@@ -1,12 +1,14 @@
-# PRD Spartiate v6 — document de référence (PC + iPhone, fork CircleTasks)
+# PRD Spartiate v6.2 — document de référence (PC + iPhone, fork CircleTasks)
 
-30 octobre 2026 · Ali Cherif · révision 6.1 du 31 octobre 2026 (maquettes validées, D-21)
+30 octobre 2026 · Ali Cherif · révision 6.2 du 31 octobre 2026 (confrontation au dépôt, D-22 à D-45)
 
 ## 0. Statut et conventions
 
-**Version 6.0 — document de référence unique du projet Spartiate.** Il remplace le PRD Forge v5.1 et tous les documents antérieurs. Il est destiné à être exporté en `docs/PRD.md` dans le dépôt `doncivo/spartiate` (fork de `doncivo/circletasks`) et lu par sections ciblées par Claude Code et Codex. En cas de contradiction entre ce document et un ADR de CircleTasks repris, ce document prime pour Spartiate.
+**Version 6.2 — document de référence unique du projet Spartiate.** Il remplace le PRD Forge v5.1 et tous les documents antérieurs. À partir de cette révision, le PRD vivant est `docs/PRD.md` dans le dépôt `doncivo/spartiate` (fork de `doncivo/circletasks`) ; le document Claude reste l'archive de la v6.1 et toute révision ultérieure passe par une PR (D-22). Il est lu par sections ciblées par Claude Code et Codex. En cas de contradiction entre ce document et un ADR de CircleTasks repris, ce document prime pour Spartiate.
 
 **Révision 6.1 (30 octobre 2026, après ta relecture)** — ajouts : § 10.0 parcours de bout en bout, § 12.5 programmes de départ, § 12.6 pause et reprise, § 13.8 / 15.7 / 16.7 fonctions reprises du benchmark qui manquaient, § 18.4 charte visuelle, § 18.5 maquettes (règle responsive et liste), § 18.6 accessibilité, décisions D-19 et D-20, hypothèse H-19. Aucune section existante n'a été modifiée.
+
+**Révision 6.2 (31 octobre 2026)** — confrontation du PRD au dépôt réel (`doncivo/circletasks` à `c8bdb308`, identique au fork) par la relecture Codex du 31 octobre (PR #3, 43 constats, 20 modifications), arbitrée par toi. Corrections d'infrastructure, de schéma, de synchro, de CI et de preuves : migrations TypeScript (`src/db/migrations`, migrateur front, base neuve sans purge), tables techniques réelles (`settings`, `sync_*`, `conflict_log`, `epoch_carry_report` ; `app_meta` et `app_pref` abandonnés), colonnes `updated_at` / `device_id` / `hlc` et `sync_field_clock`, § 9 réécrit avec le vocabulaire canonique du § 20.2 et un périmètre de synchro explicite (D-26, D-27), workflows réels (`tests.yml`, `build-windows.yml` sur tag `vX.Y.Z`, `build-ios.yml`), secrets nommés, sauvegardes et journaux hérités exacts, plugins (`speech` / `vision` infrastructure I6, `barcode-scanner` hérité), agents réels, I-06 non prouvée sur appareil (H-5 `UNVERIFIED`), H-16 `UNVERIFIED` partout, verrou local uniformisé, découpage SPA-001a / 001b, I0 sans séance, fixtures synthétiques seulement. Décisions D-22 à D-45 au registre § 26.1 ; H-18 reformulée, H-19 scindée en H-19a / H-19b, H-20 créée, renvois H-1 / H-2 / H-8 corrigés (budget IA → H-14, écriture Santé → H-3, question HRV → H-20). Renvois de sections corrigés (synchro § 9, plugins § 19, modèle § 20, registre § 26). § 11–12, § 14–17 (contenu fonctionnel) et § 18 (hors `test:contrast` et H-19a) inchangés.
 
 ### 0.1 Ce qui change par rapport à la v5.1
 
@@ -17,7 +19,7 @@
 | Pile | Swift 6 + SwiftUI + 4 packages Swift | **Tauri 2 : React + TypeScript strict (front commun), Rust (cœur, SQLite, synchro, chiffrement), plugins Swift pour l'iPhone** — la pile de CircleTasks |
 | Moteurs | Packages Swift testés sous WSL | **TypeScript pur dans `src/domain`**, testés par Vitest sur Windows |
 | Données | SwiftData, aucune sync | **SQLite (plugin Tauri SQL)** + **synchronisation chiffrée par iCloud Drive** entre PC et iPhone (ADR 0011 de CircleTasks, réutilisée) |
-| HealthKit, Live Activity | Frameworks directs | **Plugins Swift Tauri** (`healthkit` nouveau, `live-activity` nouveau), comme `reminders`, `vision`, `speech` sur CircleTasks |
+| HealthKit, Live Activity | Frameworks directs | **Plugins Swift Tauri** (`healthkit` nouveau, `live-activity` nouveau), sur le gabarit de `haptics`, `vision`, `speech` de CircleTasks |
 | Dépôt | Neuf | **Fork de CircleTasks** : chaîne CI, SideStore, synchro, plugins, scaffold d'agents conservés ; métier et écrans remplacés |
 | Installation iPhone | SideStore | Identique ; source `spartiate-releases` |
 | Installation PC | — | Installeur NSIS + plugin updater, dépôt `spartiate-releases` (comme CircleTasks) |
@@ -39,11 +41,11 @@
 
 ### 0.4 Hypothèses
 
-Tout ce qui n'est pas vérifié est marqué `H-n` et repris au registre § 27 avec sa méthode de vérification. Les constantes numériques des moteurs sont des valeurs de départ dans des fichiers de configuration, jamais en dur.
+Tout ce qui n'est pas vérifié est marqué `H-n` et repris au registre § 26.2 avec sa méthode de vérification. Un identifiant désigne une seule hypothèse (D-45). Les constantes numériques des moteurs sont des valeurs de départ dans des fichiers de configuration, jamais en dur.
 
 ### 0.5 Comment lire
 
-Démarrer : § 3 à 9, § 25 à 26, annexes. Coder un moteur : § 12, 13, 16, 17 + § 21 + § 24. Coder un écran : § 19 + section fonctionnelle + § 5. Synchro : § 10 + § 21. Plugin iPhone : § 20.
+Démarrer : § 3 à 9, § 25 à 26, annexes. Coder un moteur : § 11, 12, 15, 16 + § 20 + § 24. Coder un écran : § 18 + section fonctionnelle + § 5. Synchro : § 9 + § 20. Plugin iPhone : § 19.
 
 ## 1. Décision produit, mission, principes
 
@@ -84,13 +86,13 @@ Spartiate est une application **personnelle** de musculation, nutrition et récu
 | Élément | Fait | Conséquence |
 | --- | --- | --- |
 | iPhone | iPhone 16 Pro Max, iOS 18+, mode développeur activé, SideStore installé avec VPN local et fichier d'appairage (CircleTasks) | Dynamic Island, Action button, Camera Control ; installation par SideStore déjà opérationnelle |
-| Watch | Apple Watch Series 11, 46 mm, watchOS 11+ | Écrit dans Apple Santé : HRV, FC de repos, sommeil avec stades, fréquence respiratoire, température du poignet, séances, pas, énergie. « Recovery HRV » non documentée comme type HealthKit (`H-1`) |
+| Watch | Apple Watch Series 11, 46 mm, watchOS 11+ | Écrit dans Apple Santé : HRV, FC de repos, sommeil avec stades, fréquence respiratoire, température du poignet, séances, pas, énergie. « Recovery HRV » non documentée comme type HealthKit (`H-20`) |
 | PC | Windows, pas de Mac ; iTunes (site Apple), iloader, iCloud pour Windows avec iCloud Drive actif (CircleTasks, 5 octobre 2026) | Dev local complet : Vitest, `cargo check` partiel (les dépendances C comme SQLite exigent `xcrun` pour iOS), Tauri dev PC ; aucune commande iOS locale |
-| Compte Apple | Identifiant gratuit utilisé par SideStore ; pas de Developer Program (D-2) | 7 jours de signature, 3 apps hors App Store : **SideStore + CircleTasks + Spartiate = la limite** (`H-16`), 10 identifiants d'app par semaine |
+| Compte Apple | Identifiant gratuit utilisé par SideStore ; pas de Developer Program (D-5) | 7 jours de signature, 3 apps hors App Store : **SideStore + CircleTasks + Spartiate = la limite** (`H-16`), 10 identifiants d'app par semaine |
 | CircleTasks | Dépôt public `doncivo/circletasks` (React 18, Vite, TypeScript 6 strict, Zustand 5, SQLite via tauri-plugin-sql, Rust Tauri 2, plugins Swift `files`, `folder-bookmark`, `haptics`, `notification-actions`, `privacy-shield`, `reminders`, `speech`, `vision`, `web-auth`) ; `build-windows.yml` (NSIS, updater) et `build-ios.yml` (IPA non signée, SideStore) ; dépôt public `doncivo/circletasks-releases` ; synchro iCloud Drive chiffrée (ADR 0011) en production entre ton PC et ton iPhone depuis octobre 2026 ; 16 ADR ; 26 agents ; AGENTS.md | Spartiate est un fork : tout cela est repris (§ 4) |
-| Outils | Claude Code, Codex, GitHub, WSL2 facultatif (plus nécessaire : les moteurs sont en TypeScript) | Scaffold et conventions CircleTasks (§ 25) |
+| Outils | Claude Code, Codex, GitHub, WSL2 facultatif (plus nécessaire : les moteurs sont en TypeScript) | Scaffold et conventions CircleTasks (§ 24) |
 | Langue | Français ; code et identifiants en anglais | — |
-| Budget | 0 € Apple ; IA à l'usage avec ta clé, plafond configurable (`H-2`) | — |
+| Budget | 0 € Apple ; IA à l'usage avec ta clé, plafond configurable (`H-14`) | — |
 | Usage | Toi seul | Pas de personas ni KPI business |
 
 ## 3. Pile et fork
@@ -111,32 +113,36 @@ Spartiate est une application **personnelle** de musculation, nutrition et récu
 
 ### 3.1 Pile (ADR 0001 de CircleTasks, reprise)
 
-React 18, Vite, TypeScript 6 strict (`strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`), Zustand 5, SQLite via `tauri-plugin-sql`, Rust (Tauri 2), plugins Swift iOS dans `src-tauri/plugins/`. Tests : Vitest (Node + jsdom), Testing Library, Playwright (projets `pc`, `iphone`, `iphone-webkit` en CI seulement), `cargo test`. Cible `es2022`. Polices et icônes : à redéfinir pour Spartiate (§ 19) ; Lucide conservé.
+React 18, Vite, TypeScript 6 strict (`strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`), Zustand 5, SQLite via `tauri-plugin-sql`, Rust (Tauri 2), plugins Swift iOS dans `src-tauri/plugins/`. Tests : Vitest (projets `node` et `dom`), Testing Library, Playwright (projets `pc` et `iphone` en Chromium sur le front Vite + SQLite Wasm, `iphone-webkit` distinct et filtré sur une liste de specs, `perf`, smoke Windows sur le binaire réel, `visual` ; tous en CI seulement), `cargo test --locked --features test-hooks --test desktop` et `cargo test --locked -p tauri-plugin-sql --features sqlite` (plugin SQL vendored). Cible `es2022`. Polices et icônes : à redéfinir pour Spartiate (§ 19) ; Lucide conservé.
 
 ### 3.2 Ce qu'on garde du fork (tel quel)
 
 | Élément | Pourquoi |
 | --- | --- |
 | Structure des couches `domain / db / sync / platform / features / ui / i18n` et leurs règles d'import | Prouvée, testée par des gardes |
-| `src-tauri` : commandes, driver SQLite, migrations (`migrator`, `migrationBackup`), coffre `keyring` / Trousseau, journal technique (ADR 0014), `signing.rs` (date d'expiration), capabilities par fenêtre et par plateforme | Infrastructure neutre |
-| `src/sync` + `src/domain/sync` + `src-tauri/src/sync` : synchro iCloud Drive chiffrée, HLC, fusion par champ, appairage par QR, clé de secours, oubli d'appareil, réinitialisation (ADR 0005, 0010, 0011) | Le PC ↔ iPhone de Spartiate ; seules les tables publiées changent (§ 10) |
-| Plugins Swift `haptics`, `notification-actions`, `files`, `vision`, `privacy-shield`, `folder-bookmark` ; notifications locales (ADR 0012) | Timer, scan, export, verrou |
-| Workflows `tests.yml`, `build-windows.yml`, `build-ios.yml` ; scripts `scripts/ios/*`, `scripts/release/*` ; contrat `plist-contract.json` ; guides d'installation | Chaîne de livraison |
-| Scaffold : `CLAUDE.md`, `AGENTS.md`, `.claude/agents/*`, `.claude/settings.json`, `docs/{adr,stories,decisions,journal,reprise,backlog,dettes,licences}` | Méthode de travail |
-| Verrou Face ID / code (ADR 0013 § 2), bandeaux d'état (A-09), écran d'échec au démarrage et restauration de sauvegarde | Confort et sécurité |
+| `src-tauri` : commandes, plugin SQL vendored (`src-tauri/vendor/tauri-plugin-sql`, copie locale corrigée, garde `ALLOWED_URL`), sauvegardes natives (`backup.rs`, `APP_SCHEMA_VERSION`), coffre `keyring` / Trousseau, journal technique (`applog.rs`, ADR 0014), `signing.rs` (date d'expiration), capabilities par fenêtre et par plateforme | Infrastructure neutre |
+| Migrations TypeScript : registre `src/db/migrations/index.ts`, exécutées par `src/db/migrator.ts` via `SqlDriver` (driver natif en production, `@sqlite.org/sqlite-wasm` en tests et dans le navigateur), historique dans `schema_migrations`, sauvegarde avant migration (`migrationBackup.ts`) | Mécanisme neutre ; le registre est réinitialisé pour Spartiate (D-23, § 20.4) |
+| `src/sync` + `src/domain/sync` + `src-tauri/src/sync` : synchro iCloud Drive chiffrée, HLC par champ, fusion par champ, tombstones, instantanés, appairage par QR, clé de secours, oubli d'appareil, réinitialisation (ADR 0005, 0010, 0011) | Le PC ↔ iPhone de Spartiate. Le protocole et ses invariants sont conservés ; le catalogue, les repositories de synchro et les règles métier d'application / réparation sont adaptés sous revue de l'agent `sync-icloud` (D-26, § 9) |
+| Table `settings` (clé / valeur, identité d'appareil `device.id`, préférences), tables techniques de synchro et `schema_migrations` (§ 20.0) | Démarrage, restauration et synchro en dépendent (D-24) |
+| Plugins Swift `haptics`, `notification-actions`, `files`, `folder-bookmark`, `privacy-shield`, `speech`, `vision` ; plugin officiel `@tauri-apps/plugin-barcode-scanner` (appairage par QR) ; notifications locales (ADR 0012) | Timer, scan, export, dictée et OCR (infrastructure I6, D-33) |
+| Base `spartiate.db` dans `app_config_dir()`, sauvegardes quotidiennes (14 gardées) et familles pré-migration / pré-restauration, journaux `logs/spartiate.log` + `.1` (256 Kio chacun) | Héritage exact (D-32, § 21) |
+| Workflows `tests.yml`, `build-windows.yml`, `build-ios.yml` ; scripts `scripts/ios/*`, `scripts/release/*`, `scripts/smoke/*` ; contrat `plist-contract.json` ; guides d'installation (renommés en 001a) | Chaîne de livraison (D-28) |
+| Scaffold : `CLAUDE.md` et `AGENTS.md` (fusionnés avec l'annexe A, D-42), `.claude/agents/*` (18 agents gardés, D-34), `.claude/settings.json`, `docs/adr`, `docs/licences.md` ; documents CircleTasks déplacés dans `docs/archive/circletasks/` ; `docs/journal.md`, `docs/decisions.md`, `docs/reprise.md` Spartiate créés vides (D-40) | Méthode de travail |
+| Verrou Face ID / code (ADR 0013 § 2) : **code conservé, entrée masquée, activation différée jusqu'à ta décision** (D-37, H-17) ; bandeaux d'état (A-09), écran d'échec au démarrage et restauration de sauvegarde | Confort et sécurité |
 
 ### 3.3 Ce qu'on retire
 
-Tout le métier CircleTasks : tâches, routines, checklists, événements, espaces Pro / Perso, objectifs, focus, statistiques, calendriers externes (`web-auth`, Google, ADR 0008), rappels Apple (`reminders`, EventKit), capture OCR / vocale (`speech`, `tesseract.js`, `chrono-node`), import CSV, maquettes. Les migrations SQL repartent de `0001` pour Spartiate (nouvelle base, nouvel identifiant).
+Tout le métier CircleTasks : tâches, routines, checklists, événements, espaces Pro / Perso, objectifs, focus, statistiques, calendriers externes (`web-auth`, Google et ses secrets `CT_GOOGLE_*`, ADR 0008), rappels Apple (`reminders`, EventKit), écrans de capture OCR / vocale et leurs dépendances (`tesseract.js`, `chrono-node` ; les plugins `speech` et `vision` eux-mêmes restent comme infrastructure I6), import CSV, maquettes CircleTasks (archivées), agents métier (`calendar-integration`, `checklists-events`, `focus-time`, `quick-capture`, `routines`, `spaces-goals`, `stats-history`, `tasks-planning`). Le registre des migrations TypeScript est réinitialisé avec `0001_spartiate_init` et `APP_SCHEMA_VERSION` (Rust) repart à 1 : Spartiate ouvre une base neuve dans son propre conteneur ; aucune base CircleTasks n'est migrée ni purgée (D-23). La purge avance par lots verticaux compilables à partir d'un point de composition minimal, pas par suppression de dossiers (D-44, SPA-001b).
 
 ### 3.4 Ce qu'on ajoute
 
 | Ajout | Où | Itération |
 | --- | --- | --- |
 | Moteurs `training`, `nutrition`, `recovery` | `src/domain/` | I2, I4, I5 |
-| Tables Spartiate et leurs colonnes publiées | `src/db/migrations/`, `src/domain/sync/syncTables.ts` | I1+ |
+| Tables Spartiate et leurs colonnes publiées (`profile` et `body_weight` dès I0, D-25) | `src/db/migrations/`, `src/domain/sync/syncTables.ts`, `SYNC_TABLE_ORDER` dans `src/domain/sync/format.ts`, `naturalIds.ts` | I0, puis I1+ |
 | Plugin Swift `healthkit` (lecture, écriture, observer queries) | `src-tauri/plugins/healthkit` | I1 (spike I0) |
 | Plugin Swift `live-activity` + extension ActivityKit | `src-tauri/plugins/live-activity`, cible d'extension injectée dans `gen/apple` | I1 (spike I0) |
+| Plugin `camera` (photo de repas) | `src-tauri/plugins/camera` ou plugin officiel Tauri, à trancher en I4 | I4 |
 | Écrans Spartiate (§ 19), design system | `src/features`, `src/ui` | I1+ |
 | Contenu : exercices, Ciqual | `content/` | I1, I4 |
 | Adaptateur IA (`src/platform/ai`), commandes Rust pour les appels réseau avec la clé du coffre | — | I4 |
@@ -157,12 +163,12 @@ Le même front tourne sur les deux ; ce qui diffère, c'est l'accès au matérie
 | Progrès, graphiques, bilans IA, exports | **Principal** | Oui | — |
 | Diagnostic, journaux | Oui | Oui | Export des journaux iPhone via Fichiers / iCloud Drive |
 | Notifications | Non (choix CircleTasks : le PC n'envoie pas de rappels) | Oui | — |
-| Verrou | Code / Windows | Face ID / code | Repris de CircleTasks |
+| Verrou | Code / Windows | Face ID / code | Code repris de CircleTasks, entrée masquée, activation différée jusqu'à ta décision (D-37, H-17) |
 | Mise à jour | Bannière updater | SideStore | — |
 
 ### 4.1 Règles
 
-- **Un seul écrivain par appareil, fusion par champ** (ADR 0011) : une séance commencée sur l'iPhone et éditée sur le PC se fusionne champ par champ avec HLC ; la séance en cours (non terminée) n'est **pas publiée** tant qu'elle n'est pas terminée, pour éviter les conflits en direct.
+- **Un seul écrivain par appareil, fusion par champ** (ADR 0011) : une séance commencée sur l'iPhone et éditée sur le PC se fusionne champ par champ avec HLC ; la séance en cours (non terminée) n'est **pas publiée** tant qu'elle n'est pas terminée, pour éviter les conflits en direct. Cette publication à la clôture est une conception et un lot de tests I1 (§ 9.1, D-27), pas un acquis du catalogue hérité.
 - Les scores de récupération et les mesures HealthKit sont publiés **par l'iPhone** sous forme de résumés quotidiens (table `recovery_day`), jamais les échantillons bruts.
 - Les photos (repas, progression) restent sur l'appareil qui les a prises ; seules leurs métadonnées sont publiées (option « synchroniser les photos de progression » en I6 via le dossier iCloud).
 - Les clés : clé de synchro dans le coffre de chaque appareil (ADR 0011 § 2) ; clé API IA dans le coffre de chaque appareil, saisie une fois par appareil, jamais synchronisée.
@@ -173,9 +179,10 @@ Identique à CircleTasks, avec deux dépôts publics : `doncivo/spartiate` (code
 
 ### 5.1 PC Windows (`build-windows.yml`, repris)
 
-- Runner `windows-latest` ; `npm run tauri build` → installeur NSIS ; sur tag `vX.Y.Z` : signature avec la clé updater (`TAURI_SIGNING_PRIVATE_KEY` dans GitHub Secrets, **nouvelle paire de clés pour Spartiate**), `latest.json`, publication sur `spartiate-releases`.
-- Mise à jour par la bannière in-app (plugin updater) ; le désinstalleur **ne supprime jamais les données** (REL-TECH-02 de CircleTasks, repris).
-- Dev local : `npm run tauri dev` sur ton PC ; tests Vitest ; e2e Playwright en CI seulement.
+- Runner `windows-latest` ; déclenchement manuel ou tag `vX.Y.Z` ; `npm run tauri build` → installeur NSIS ; sur tag : signature avec la clé updater (secrets GitHub `TAURI_SIGNING_PRIVATE_KEY` et `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, **nouvelle paire minisign pour Spartiate**, D-29), `latest.json`, publication sur `spartiate-releases` avec `RELEASES_TOKEN`. Les noms des secrets sont documentés, jamais leurs valeurs ; la lecture du YAML ne prouve pas leur configuration dans GitHub.
+- Updater : en SPA-001a le bloc `plugins.updater` est retiré de `tauri.conf.json` et `features/updater` affiche « mises à jour non configurées », sans requête réseau ; SPA-002 le rétablit avec la clé publique Spartiate et l'endpoint `spartiate-releases`. Aucune clé vide ni factice (D-30).
+- Mise à jour par la bannière in-app (plugin updater) ; le désinstalleur **ne supprime jamais les données** (REL-TECH-02 de CircleTasks, repris). L'installeur est éprouvé par le smoke CI (installe / lance / désinstalle sur le runner) ; tu l'installes toi-même quand tu le décides, aucun agent ne te demande de lancer un installeur (D-39).
+- Dev local : `npm run tauri dev` sur ton PC ; tests Vitest du module en cours ; e2e Playwright, smoke et Rust en CI seulement, jamais en local sur ce PC.
 
 ### 5.2 iPhone (`build-ios.yml`, repris et complété)
 
@@ -187,7 +194,9 @@ Identique à CircleTasks, avec deux dépôts publics : `doncivo/spartiate` (code
 
 ### 5.3 Ce qui est `INHERITED` (prouvé sur CircleTasks)
 
-IPA non signée en CI ; installation et mise à jour par SideStore sans perte (I-06) ; date d'expiration lisible (I-02) ; notifications locales avec actions ; Face ID ; Trousseau ; caméra et scan ; haptique ; Fichiers ; synchro iCloud PC ↔ iPhone ; installeur et updater PC ; minutes macOS gratuites sur dépôt public.
+IPA non signée en CI ; installation par SideStore ; date d'expiration lisible (I-02) ; notifications locales avec actions ; Face ID ; Trousseau ; caméra et scan ; haptique ; Fichiers ; synchro iCloud PC ↔ iPhone ; installeur et updater PC ; minutes macOS gratuites sur dépôt public.
+
+N'est **pas** `INHERITED` : la mise à jour SideStore N → N+1 sans perte (I-06). Côté CircleTasks, I-06 est « code fusionné, en attente de vérification appareil » : le code et ses tests existent, la recette sur l'iPhone n'a pas été archivée. H-5 reste `UNVERIFIED (code hérité)` jusqu'à la preuve Spartiate de SPA-010 (D-36).
 
 ### 5.4 Ce qui reste `UNVERIFIED`
 
@@ -196,11 +205,12 @@ IPA non signée en CI ; installation et mise à jour par SideStore sans perte (I
 | **HealthKit via SideStore (H-3)** | Entitlement `com.apple.developer.healthkit` à faire porter par le binaire (signature ad hoc) pour qu'AltSign demande la capacité ; jamais testé | SPA-006 |
 | **Extension Live Activity (H-4)** | Deux difficultés : injecter une cible d'extension dans le projet généré par `tauri ios init` (script sur `project.pbxproj` ou `project.yml` de Tauri), et la faire signer par SideStore (consomme un identifiant d'app) | SPA-007 |
 | Signature ad hoc après `--no-sign` | `codesign` sur le `.app` produit par Tauri, avant zip ; à vérifier que SideStore accepte | SPA-003 |
-| Trois apps sideloadées (H-16) | SideStore + CircleTasks + Spartiate | SPA-004 |
+| Trois apps sideloadées (H-16) | SideStore + CircleTasks + Spartiate ; aucun YAML ne le prouve | SPA-004 |
+| Mise à jour N → N+1 sans perte (H-5) | Conservation de la base et du Trousseau par SideStore ; code hérité, preuve appareil ouverte | SPA-010 |
 
 ### 5.5 Débogage sans Mac
 
-Repris de CircleTasks : écran Diagnostic (version, build, SHA, expiration, permissions, matrice, journaux expurgés), journal technique persistant (ADR 0014), export des journaux vers Fichiers / iCloud Drive lisible par Claude Code quand tu le désignes, e2e Playwright `iphone` (WebKit) en CI pour le front, `cargo test` pour Rust ; les plugins Swift ne se testent que sur l'iPhone.
+Repris de CircleTasks : écran Diagnostic (version, build, SHA, expiration, permissions, matrice, journaux expurgés), journal technique persistant (ADR 0014), export des journaux vers Fichiers / iCloud Drive lisible par Claude Code quand tu le désignes, e2e Playwright en CI pour le front (`pc` et `iphone` en Chromium sur Vite + SQLite Wasm ; `iphone-webkit` en WebKit sur une liste de specs filtrées), smoke Windows sur le binaire natif, `cargo test` pour Rust ; aucun e2e local sur ce PC ; les plugins Swift ne se testent que sur l'iPhone, par tes essais.
 
 ## 6. Matrice de capacités — état initial
 
@@ -208,18 +218,19 @@ Tenue à jour dans `docs/capability-matrix.md` (annexe B) par le ticket qui chan
 
 | Capacité | Statut | Précédent CircleTasks | Fallback si `BLOCKED` | Ticket |
 | --- | --- | --- | --- | --- |
-| Fork, nettoyage du métier, base vide, tests verts | `UNVERIFIED` | — | — | SPA-000 à 002 |
-| Build PC (NSIS) et updater | `INHERITED` | `build-windows.yml`, REL-TECH-02 | — | SPA-003 |
+| Fork, renommage, purge du métier, base neuve, tests verts | `UNVERIFIED` | — | — | SPA-000, 001a, 001b |
+| Build PC (NSIS), smoke installeur et updater | `INHERITED` (updater non configuré jusqu'à SPA-002, D-30) | `build-windows.yml`, smoke CI, REL-TECH-02 | — | SPA-002 |
 | Build IPA non signée en CI | `INHERITED` | POC-01 | — | SPA-003 |
 | Signature ad hoc après `--no-sign` avec entitlements | `UNVERIFIED` | — | Sans entitlements (perd HealthKit) | SPA-003 |
 | Publication `spartiate-releases` (PC + source SideStore) | `INHERITED` | `circletasks-releases` | Import manuel | SPA-004 |
-| Installation et ouverture SideStore ; 3 apps | `INHERITED` (`H-16`) | 1.0.x | AltStore ; retirer une app | SPA-004 |
-| Mise à jour iPhone sans perte | `INHERITED` | I-06 | Export avant mise à jour | SPA-005 |
+| Installation et ouverture SideStore | `INHERITED` | 1.0.x | AltStore | SPA-004 |
+| Trois apps sideloadées ensemble | `UNVERIFIED` (`H-16`) | — | Retirer une app | SPA-004 |
+| Mise à jour iPhone sans perte | `UNVERIFIED (code hérité)` (`H-5`) | I-06 : code fusionné, preuve appareil ouverte | Export avant mise à jour | SPA-010 |
 | Date d'expiration lisible | `INHERITED` | I-02 | Saisie manuelle | SPA-004 |
-| Synchro iCloud PC ↔ iPhone sur les tables Spartiate | `INHERITED` (mécanisme) / `UNVERIFIED` (tables) | ADR 0011, lots Y | Export / import manuel | SPA-008 |
+| Synchro iCloud PC ↔ iPhone sur les tables Spartiate | `INHERITED` (protocole) / `UNVERIFIED` (catalogue et repositories adaptés, D-26) | ADR 0011, lots Y | Export / import manuel | SPA-008 |
 | Export / import JSON | `UNVERIFIED` | P-04 (restauration, partiel) | — | SPA-005 |
 | **HealthKit lecture / écriture** (plugin Swift) | `UNVERIFIED` — **risque principal** (`H-3`) | Aucun | Saisie manuelle ; séances dans l'app seulement | SPA-006 |
-| HealthKit HRV / FC repos / sommeil | `UNVERIFIED` (`H-3`, `H-1`, `H-13`) | Aucun | Fatigue déclarée | I5 |
+| HealthKit HRV / FC repos / sommeil | `UNVERIFIED` (`H-3`, `H-20`, `H-13`) | Aucun | Fatigue déclarée | I5 |
 | **Live Activity / Dynamic Island** (plugin + extension) | `UNVERIFIED` — risque élevé (`H-4`) | Aucun ; extensions exclues sans test | Timer in-app + notification locale (`INHERITED`) | SPA-007 |
 | Notifications locales | `INHERITED` | N-01, ADR 0012 | — | SPA-007 |
 | Face ID, Trousseau, haptique, Fichiers, caméra, scan | `INHERITED` | lots I, M, Y, CAP, FILES | — | I1 / I4 |
@@ -234,11 +245,11 @@ Tenue à jour dans `docs/capability-matrix.md` (annexe B) par le ticket qui chan
 
 ### 7.1 Essais
 
-1. Fork nettoyé : `npm run lint`, `npm run typecheck`, `npm run test` verts avec le métier CircleTasks retiré et une base vide (migration `0001`) ; `npm run tauri dev` ouvre Spartiate sur le PC avec l'écran Diagnostic.
-2. `build-windows.yml` vert sur une branche ; installeur NSIS installé sur ton PC ; tag `v0.0.1` publié sur `spartiate-releases` ; `v0.0.2` reçue par la bannière de mise à jour, données conservées.
+1. Fork nettoyé : `npm run lint`, `npm run typecheck`, `npm run test` verts avec le métier CircleTasks retiré et une base neuve (migration `0001_spartiate_init`) ; `tests.yml` « suite verte » ; `npm run tauri dev` ouvre Spartiate sur le PC avec l'écran Diagnostic.
+2. `build-windows.yml` vert sur une branche ; smoke CI : installeur NSIS installé, lancé, désinstallé sur le runner, donnée témoin conservée ; tag `v0.0.1` publié sur `spartiate-releases` ; tu installes quand tu le décides ; `v0.0.2` reçue par la bannière de mise à jour, données conservées (D-39).
 3. `build-ios.yml` vert : IPA signée ad hoc, `codesign -d --entitlements` montre HealthKit ; tag `ios-v0.0.1` publié ; source ajoutée dans SideStore ; Spartiate installée et ouverte ; `ios-v0.0.2` appliquée par « Mettre à jour » sans suppression ; données conservées ; les trois apps coexistent.
 4. Export / import JSON : export sur l'iPhone, import sur le PC (base vide) → mêmes compteurs et identifiants.
-5. Synchro : dossier `iCloud Drive/Spartiate` choisi sur le PC, appairage de l'iPhone par QR, une séance de test créée sur l'iPhone apparaît sur le PC, une modification sur le PC revient sur l'iPhone, aucun conflit parasite.
+5. Synchro : dossier `iCloud Drive/Spartiate` choisi sur le PC, appairage de l'iPhone par QR, un poids saisi sur l'iPhone apparaît sur le PC, une modification du profil sur le PC revient sur l'iPhone, aucun conflit parasite. Aucune séance n'est exigée avant I1 (D-43).
 6. HealthKit (plugin) : permission affichée ; pas du jour lus ; pesée de test écrite, lue, supprimée ; entitlements de l'app installée inspectés depuis Diagnostic.
 7. Live Activity (plugin + extension) : compteur visible sur l'écran verrouillé et dans la Dynamic Island ; extension signalée par SideStore ; notification locale à la date programmée.
 8. Diagnostic complet sur les deux appareils ; journaux exportés et lus.
@@ -246,7 +257,7 @@ Tenue à jour dans `docs/capability-matrix.md` (annexe B) par le ticket qui chan
 
 ### 7.2 Seuil de passage
 
-**Obligatoire :** 1 à 5 et 8. **Conditionnel :** 6 et 7 peuvent être `BLOCKED` avec fallback accepté ; dans ce cas I5 est repoussé et le timer utilise le fallback.
+**Obligatoire :** 1 à 5 et 8. **Conditionnel :** 6 et 7 peuvent être `BLOCKED` avec fallback accepté ; dans ce cas I5 est repoussé et le timer utilise le fallback. I0 prouve profil et poids synchronisés, navigation minimale, diagnostics et chaîne de livraison ; la coquille 001b est fonctionnelle et sobre, la mise en page fidèle aux maquettes est SPA-009 (D-43).
 
 ### 7.3 Fallbacks
 
@@ -256,13 +267,13 @@ Tenue à jour dans `docs/capability-matrix.md` (annexe B) par le ticket qui chan
 | Live Activity indisponible | Timer in-app sur date de fin persistée + notification locale (prouvée) |
 | Synchro en échec | Export / import manuel entre appareils ; bandeau d'état (A-09) |
 | Mise à jour destructive | Export, réinstallation, import ; jamais de suppression automatique |
-| Installation iPhone impossible | Diagnostiquer entitlements et signature ad hoc ; retirer la signature ad hoc pour isoler ; reconsidérer le canal (§ 27, D-2) |
+| Installation iPhone impossible | Diagnostiquer entitlements et signature ad hoc ; retirer la signature ad hoc pour isoler ; reconsidérer le canal (§ 26.1, D-5) |
 
 ## 8. Itérations et critères « terminé »
 
 | Itération | Contenu | Critère « terminé » | Remplace |
 | --- | --- | --- | --- |
-| **I0 — Fork et pipeline** | § 7 et tickets § 26 | Gate § 7.2 passé, matrice remplie | — |
+| **I0 — Fork et pipeline** | § 7 et tickets § 25.2 | Gate § 7.2 passé, matrice remplie | — |
 | **I1 — Carnet** | Bibliothèque 150 exercices, profils de matériel, routines, écran de séance (iPhone et PC), timer (Live Activity si `CONFIRMED`), historique, PR, constance, export / import, synchro des tables I1, écriture HealthKit si `CONFIRMED`, Diagnostic | Une séance entière hors ligne sur l'iPhone ; reprise après fermeture forcée ; visible sur le PC après synchro ; export / import vérifié ; 2 semaines d'usage réel | Hevy |
 | **I2 — Moteur** | `src/domain/training` : 1RM avec confiance, double progression, snap, difficulté, explication, fatigue, stagnation, deload manuel ; séries pré-remplies | Fixtures déterministes ; même historique → même prescription ; zéro augmentation imposée ; adhérence ≥ 70 % sur 2 semaines | Gravl |
 | **I3 — Programme** | Onboarding, génération, mésocycle, Semaine, « moins de temps », Strength Score ; édition confortable sur PC | Programme modifiable ; aucun exercice impossible ; deload non destructif ; un mésocycle suivi | Gravl + Alpha |
@@ -274,31 +285,47 @@ Dépendances : I0 avant tout ; I2 avant I3 ; I4 et I5 indépendants après I3 ; 
 
 ## 9. Synchronisation PC ↔ iPhone
 
-Le mécanisme de CircleTasks (ADR 0011) est repris **sans modification** : dossier `iCloud Drive/Spartiate`, un sous-dossier par appareil, journaux d'opérations chiffrés AES-256-GCM (clé maîtresse dans le coffre de chaque appareil, jamais dans iCloud), HLC par champ, fusion par champ, instantanés, appairage par QR entre PC et iPhone, clé de secours imprimable, oubli d'appareil, réinitialisation, bandeaux d'état. Seul le **catalogue des tables publiées** (`src/domain/sync/syncTables.ts`) change.
+Le mécanisme de CircleTasks (ADR 0011) est repris : dossier `iCloud Drive/Spartiate`, un sous-dossier par appareil, journaux d'opérations chiffrés AES-256-GCM (clé maîtresse dans le coffre de chaque appareil, jamais dans iCloud), HLC par champ, fusion par champ, tombstones, instantanés, reprise après interruption, appairage par QR entre PC et iPhone, clé de secours imprimable, oubli d'appareil, réinitialisation, bandeaux d'état. Ces **invariants sont conservés et testés** (vecteurs existants, tests Rust).
+
+La synchro n'est pas « inchangée » pour autant (D-26). Le fork adapte :
+
+| Élément | Fichiers | Ce qui change |
+| --- | --- | --- |
+| Catalogue des tables publiées | `src/domain/sync/syncTables.ts`, `SYNC_TABLE_ORDER` dans `src/domain/sync/format.ts`, `src/domain/sync/naturalIds.ts` | Tables, colonnes et identifiants naturels Spartiate ; ordre d'application respectant les clés étrangères |
+| Captures SQL et repositories de synchro | `src/db/repositories/syncRepository.ts`, `src/db/repositories/sql/syncRepository.ts`, déclencheurs de `sync_outbox` dans la migration `0001_spartiate_init` | Déclencheurs recréés pour les tables Spartiate ; méthodes métier CircleTasks (`routinePauses`, `setRoutinePaused`, `openFocusSessions`, …) retirées |
+| Règles métier d'application et de réparation | `src/sync/apply.ts`, `repair.ts`, `snapshot.ts`, `epochSwitch.ts` | Restauration de rappels, recalcul des pauses de routine, fermeture des focus, suppression d'événements externes et traitement des réglages / espaces fixes retirés ; règles Spartiate (séance close, § 9.1) ajoutées |
+| Réglages partagés | `settings` (mécanisme hérité) | Aucun réglage partagé en I0 ; tout partage ultérieur est une décision explicite |
+
+Toute PR touchant `src/sync/**`, `src/domain/sync/**` ou `src-tauri/src/sync/**` est relue par l'agent `sync-icloud`, avec un périmètre écrit dans le ticket et des tests de non-régression (deux bases profil / poids, conflit, instantané, reset, oubli d'appareil, reprise). Aucun seuil de lignes ne remplace cette revue.
 
 ### 9.1 Tables publiées
 
-| Table | Publiée | Règle propre à Spartiate |
-| --- | --- | --- |
-| `user_profile`, `goal`, `equipment_profile`, `machine`, `injury` | Oui | Fusion par champ |
-| `exercise` (custom seulement ; la bibliothèque embarquée n'est pas publiée) | Oui | Identifiant naturel = `id` du JSON |
-| `workout_program`, `workout_template`, `template_exercise`, `planned_workout` | Oui | Édition surtout PC |
-| `workout_session`, `session_exercise`, `workout_set` | **Oui, seulement quand la séance est terminée** (`ended_at` non nul) ; une séance en cours reste locale | Évite les conflits en direct ; la fin de séance publie tout d'un coup |
-| `prescription`, `recommendation_decision`, `strength_estimate` | Oui | `strength_estimate` est **recalculable** : en cas de conflit, le dernier HLC gagne, puis recalcul local depuis l'historique |
-| `nutrition_strategy`, `nutrition_target`, `food` (user), `recipe`, `food_entry`, `nutrition_day`, `supplement`, `supplement_log` | Oui | — |
-| `body_measurement`, `expenditure_estimate` | Oui (sans le chemin de photo) | — |
-| `recovery_day`, `muscle_recovery` | **Oui, écrits par l'iPhone seul** ; le PC est lecteur | Résumés quotidiens, jamais les échantillons HealthKit |
-| `recovery_observation` (mesures brutes) | **Non** | Reste sur l'iPhone |
-| `cardio_session` (I6) | Oui, tracé compressé | — |
-| `capability_status`, `diagnostic_event`, `export_manifest` | Non | Locaux |
+Vocabulaire canonique = § 20.2 (D-25). Toute table absente de ce tableau est locale.
+
+| Table | Publiée | Itération | Règle propre à Spartiate |
+| --- | --- | --- | --- |
+| `profile`, `body_weight` | Oui | **I0** | Fusion par champ ; `body_weight` unique par date et source |
+| `equipment_profile` | Oui | I1 | Le profil actif reste une préférence locale (`settings`) |
+| `exercise` (custom seulement ; la bibliothèque embarquée n'est pas publiée) | Oui | I1 | Identifiant naturel = `id` du JSON ; `is_custom = 0` jamais publié, dans les journaux comme dans les instantanés |
+| `routine`, `routine_day`, `routine_exercise`, `mesocycle` | Oui | I1 / I3 | Édition surtout PC |
+| `workout`, `workout_set` | **Oui, seulement quand la séance est close** (`ended_at` non nul) ; une séance en cours reste locale | I1 | Voir ci-dessous |
+| `recommendation_decision`, `progression_profile` | Oui | I2 | `progression_profile` est **recalculable** : en cas de conflit, le dernier HLC gagne, puis recalcul local depuis l'historique |
+| `food`, `food_portion` (custom + cache OFF), `meal_entry`, `nutrition_target` | Oui | I4 | — |
+| `measurement` | Oui | I6 | — |
+| `progress_photo` | Métadonnées seulement | I6 | Le fichier reste sur l'appareil (option « synchroniser les photos de progression » via le dossier iCloud, I6) |
+| `recovery_day`, `muscle_recovery` | **Oui, écrits par l'iPhone seul** ; le PC est lecteur | I5 | Résumés quotidiens, jamais les échantillons HealthKit |
+| `cardio_session` | Oui, tracé compressé | I6 | — |
+| `health_sample_cache`, `ai_call`, `settings` (hors réglages partagés explicites), tables techniques § 20.0 | **Non** | — | Locales ; les métadonnées d'appareil et du moteur de synchro ne sont jamais publiées comme données métier |
+
+**Séance close (D-27).** L'exclusion des séances ouvertes et des exercices embarqués vaut pour les journaux **et** les instantanés. Le catalogue hérité ne connaît ni filtre de ligne ni publication atomique d'un agrégat : les déclencheurs capturent chaque écriture et les instantanés ont leur propre parcours. La clôture doit rendre publiable l'agrégat complet (`workout` + ses `workout_set`) ; interruption pendant la clôture, réessai, reprise après crash, édition ultérieure d'une séance close et suppression sont conçus et testés en I1. C'est une adaptation I1, pas un acquis.
 
 ### 9.2 Règles
 
-- Les colonnes techniques (`hlc`, `device_id`, `updated_at`) ne circulent pas ; `deleted_at` porte les suppressions ; restauration par `deleted_at` à `null` avec un HLC plus récent.
-- Les conflits (même champ modifié des deux côtés) sont consultables et réversibles dans Réglages → Synchronisation (écran repris).
+- Les lignes publiées portent notamment `updated_at`, `device_id` et `hlc` ; `sync_field_clock` conserve les horloges et bases par champ (§ 20.1). Les suppressions passent par les tombstones (`sync_tombstone`) ; `deleted_at` porte la suppression logique côté métier ; restauration par `deleted_at` à `null` avec un HLC plus récent.
+- Les conflits (même champ modifié des deux côtés) sont consignés dans `conflict_log`, consultables et réversibles dans Plus → Appareils et synchro (écran repris).
 - Un appareil qui voit une version de format supérieure se met en pause et demande la mise à jour (`SYNC_FORMAT_MAJOR`, repris).
-- La synchro tourne au premier plan sur l'iPhone et en cycle périodique sur le PC (comme CircleTasks) ; une séance terminée sur l'iPhone est visible sur le PC au cycle suivant.
-- Tests : vecteurs de synchro existants (`tests/fixtures/sync/vectors.json`) étendus aux tables Spartiate ; scénario e2e « séance iPhone → PC → édition PC → iPhone » en CI.
+- La synchro tourne au premier plan sur l'iPhone et en cycle périodique sur le PC (comme CircleTasks) ; une séance close sur l'iPhone est visible sur le PC au cycle suivant.
+- Tests : vecteurs de synchro existants (`tests/fixtures/sync/vectors.json`) étendus aux tables Spartiate ; test de catalogue (`src/domain/sync/catalogue.test.ts`) vérifiant qu'il couvre exactement les tables « Oui » du § 9.1 ; en I0, deux bases profil / poids, conflit, instantané, reset, oubli, reprise ; en I1, scénario e2e « séance iPhone → PC → édition PC → iPhone » en CI.
 
 ## 10. Onboarding et profil
 
@@ -338,7 +365,7 @@ Brouillon persisté ; toute question non essentielle ignorable.
 
 ### 10.2 Profil éditable
 
-Tout ce qui précède, mensurations, photos de progression (locales, synchro optionnelle I6), % MG déclaré, blessures avec check-in bimensuel, clé API et plafond (par appareil), unités, jour de check-in, notifications (iPhone), verrou (Face ID / code iPhone, code PC), profil de matériel actif, synchronisation (écran repris de CircleTasks).
+Tout ce qui précède, mensurations, photos de progression (locales, synchro optionnelle I6), % MG déclaré, blessures avec check-in bimensuel, clé API et plafond (par appareil), unités, jour de check-in, notifications (iPhone), verrou (Face ID / code iPhone, code PC : code conservé, entrée masquée, activation différée jusqu'à ta décision, D-37), profil de matériel actif, synchronisation (écran repris de CircleTasks).
 
 ### 10.3 Permissions (iPhone)
 
@@ -528,11 +555,11 @@ Date de fin persistée (jamais un compteur) ; Live Activity via plugin si `CONFI
 
 ### 13.4 Persistance et interruptions
 
-Chaque série écrite dans SQLite à la validation (repository, transaction) ; reprise après verrouillage, fermeture forcée, redémarrage ; correction d'une série validée tracée. **La séance en cours n'est pas publiée** par la synchro ; la fin de séance publie tout.
+Chaque série écrite dans SQLite à la validation (repository, transaction) ; reprise après verrouillage, fermeture forcée, redémarrage ; correction d'une série validée tracée. **La séance en cours n'est pas publiée** par la synchro, ni dans les journaux ni dans les instantanés ; la clôture rend publiable l'agrégat complet (`workout` + `workout_set`). Interruption pendant la clôture, réessai, suppression et correction ultérieure d'une séance close sont testés. Ce mécanisme est une adaptation I1 de la synchro (§ 9.1, D-27), non un acquis du catalogue hérité.
 
 ### 13.5 Fin de séance
 
-Résumé (durée, séries, volume hors drop / partielles / chrono, PR, écart, prochaine séance) ; image partageable ; écriture Apple Santé (plugin, si `CONFIRMED`) : un `HKWorkout` `traditionalStrengthTraining` avec début, fin, énergie estimée ; **les séries restent dans Spartiate** (`H-8`).
+Résumé (durée, séries, volume hors drop / partielles / chrono, PR, écart, prochaine séance) ; image partageable ; écriture Apple Santé (plugin, si `CONFIRMED`) : un `HKWorkout` `traditionalStrengthTraining` avec début, fin, énergie estimée ; **les séries restent dans Spartiate** (`H-3` : l'écriture dépend de l'entitlement HealthKit).
 
 ### 13.6 Rattachement d'une séance Watch
 
@@ -620,9 +647,9 @@ La dépense est **mesurée** depuis les apports loggés et la tendance de poids 
 | --- | --- | --- | --- |
 | Recherche (récents, favoris, go-tos ; Perso / Ciqual / OFF ; grammes ou portions ; provenance) | Oui | Oui | I4 |
 | Quick Add, recettes, assiette | Oui | Oui | I4 |
-| Code-barres (plugin `barcode-scanner` repris ; Camera Control si `CONFIRMED`) | — | Oui | I4 |
+| Code-barres (plugin officiel `@tauri-apps/plugin-barcode-scanner`, hérité de CircleTasks où il sert à l'appairage ; Camera Control si `CONFIRMED`) | — | Oui | I4 |
 | Photo → API IA (aperçu, confirmation, JSON strict, lignes corrigeables, « estimation ») | Import d'une image possible | Caméra | I4 |
-| Describe (texte / dictée) | Texte | Texte, dictée via plugin `speech` repris | I6 |
+| Describe (texte / dictée) | Texte | Texte, dictée via plugin `speech` hérité (infrastructure conservée, écrans de capture CircleTasks supprimés, D-33) | I6 |
 | Compléments avec rappels | Oui | Oui (rappels iPhone) | I6 |
 
 ### 15.4 Bases alimentaires et licences
@@ -649,7 +676,7 @@ Fixtures 8 semaines : couverture complète, partielle, pesée aberrante, changem
 | --- | --- | --- | --- |
 | Étiquette nutritionnelle → fiche | Photo de l'étiquette → même adaptateur IA que la photo de repas → fiche `food` custom pré-remplie (par 100 g et par portion), à confirmer | MacroFactor | I6 |
 | Repères de qualité | Sel, sucres, graisses saturées, fibres du jour face aux repères OMS, calculés depuis Ciqual ; affichage seul, jamais d'ajustement de cible ; « inconnu » quand la fiche n'a pas la donnée (jamais 0) | Reboot Plan (OMS), MacroFactor | I6 |
-| Micronutriments | 8 nutriments épinglés (fer, calcium, magnésium, potassium, vitamines D, B12, C, zinc) depuis Ciqual, seuils min / cible configurables ; les fiches Open Food Facts sans donnée comptent « inconnu » (H-19) | MacroFactor Nutrient Explorer | I6 |
+| Micronutriments | 8 nutriments épinglés (fer, calcium, magnésium, potassium, vitamines D, B12, C, zinc) depuis Ciqual, seuils min / cible configurables ; les fiches Open Food Facts sans donnée comptent « inconnu » (H-19b) | MacroFactor Nutrient Explorer | I6 |
 | Jours hauts / bas | Répartition hebdomadaire des calories (jours d'entraînement +, repos −) à somme constante ; option de la Stratégie | MacroFactor | I4 |
 | Note d'équilibre par aliment | Non retenu : classement « équilibré / à surveiller / à limiter » jugé culpabilisant et redondant avec les repères ci-dessus | Reboot Plan | — |
 
@@ -665,7 +692,7 @@ Heuristiques expérimentales inspirées de Recovery / Strain / Sleep ; jamais un
 | B | Sommeil (durée) et FC repos sans baseline complète | Modulation prudente par seuils absolus, avec message | I5 |
 | C | ≥ 7 nuits (14 recommandées) HRV, FC repos, sommeil | Recovery, Exertion, zone cible, besoin de sommeil | I5 |
 
-### 16.2 Plugin `healthkit` (contrat, § 20)
+### 16.2 Plugin `healthkit` (contrat, § 19)
 
 | Commande | Entrée | Sortie |
 | --- | --- | --- |
@@ -754,7 +781,7 @@ Capture, PDF ou texte → `{sessions:[{name, exercises:[{name, sets, repsMin, re
 |  | iPhone (16 Pro Max, iOS 18+) | PC (Windows 10/11) |
 | --- | --- | --- |
 | Navigation | 5 onglets bas : Aujourd'hui, Entraînement, Nutrition, Progrès, Plus | Barre latérale rétractable avec les mêmes 5 sections + Réglages ; raccourcis clavier (`Ctrl+1…5`, `Ctrl+K` recherche) |
-| Largeur | Une colonne, safe areas Dynamic Island / home indicator (mécanisme CircleTasks `platform/ios`) | Fenêtre redimensionnable ≥ 1 024 × 700 ; vues maître-détail (liste à gauche, fiche à droite) |
+| Largeur | Une colonne, safe areas Dynamic Island / home indicator (mécanisme CircleTasks, `src/platform`) | Fenêtre redimensionnable ≥ 1 024 × 700 ; vues maître-détail (liste à gauche, fiche à droite) |
 | Gestes | Swipe, long-press, haptique (plugin `haptics` repris) | Clic droit → menus, double-clic, glisser-déposer pour réordonner |
 | Séance | Minuteur système (Live Activity si `CONFIRMED`), verrouillage géré (ADR 0013) | Minuteur en fenêtre + badge dans le titre ; pas de notification système requise |
 | Rôle principal | Séance, scan, photo, Santé, récupération | Programmation, bibliothèque, profils matériel, bilans, export, saisie nutrition au clavier |
@@ -799,7 +826,7 @@ Identité **laconique, sombre, rouge et bronze**. Tokens dans `src/ui/tokens.css
 | `--bronze` / `--bronze-2` | `#C28E4C` / `#E0B577` | `#8E6530` / `#C28E4C` | Records, 1RM, scores, titres de section |
 | `--ok` / `--warn` / `--info` | `#5E9E6B` / `#D9A441` / `#6F8FB3` | mêmes | Zones verte / jaune de récupération, états |
 
-Règles de contraste (WCAG AA, vérifiées : ivoire sur fond 15,7 ; secondaire sur surface 6,6 ; bronze sur surface 6,2 ; ivoire sur rouge 4,8) : le rouge **n'est jamais une couleur de texte** sur fond sombre (3,0) — uniquement un fond portant du texte ivoire ; le vert porte du texte sombre, jamais ivoire (2,6). Un test `test:contrast` (script Node) recalcule ces ratios à chaque modification des tokens.
+Règles de contraste (WCAG AA, vérifiées : ivoire sur fond 15,7 ; secondaire sur surface 6,6 ; bronze sur surface 6,2 ; ivoire sur rouge 4,8) : le rouge **n'est jamais une couleur de texte** sur fond sombre (3,0) — uniquement un fond portant du texte ivoire ; le vert porte du texte sombre, jamais ivoire (2,6). Un test `test:contrast` (script Node) recalculant ces ratios à chaque modification des tokens est **à créer** (D-35, ticket dédié rattaché à SPA-009) ; il n'existe pas dans CircleTasks et `lint` seul ne prouve pas toutes les règles de couleur.
 
 | Élément | Choix |
 | --- | --- |
@@ -832,7 +859,7 @@ L'interface est **responsive** : un seul code, les composants se réorganisent s
 | Plus → Appareils et synchro | ✓ | ✓ | QR à scanner vs QR à afficher |
 | États dégradés (3) | ✓ | — | Bandeaux et cartes vides, identiques |
 
-**Maquettes validées le 31 octobre 2026 (D-21)** : 24 planches HTML autonomes à taille réelle (iPhone 16 Pro Max 440 × 956 pt, PC 1440 × 900), même méthode que CircleTasks, mode sombre selon § 18.4, données d'exemple figées (ven. 30 oct. 2026, programme Haut / Bas 4 j, semaine 2 / 5). Livrées dans `docs/maquettes/` du fork avec `index.html` ; le PRD les désigne comme **référence visuelle** : écart PRD / maquette → la maquette est suivie et l'écart noté dans `docs/decisions.md` ; écran sans maquette → composé à partir des motifs de Plus / Réglages et consigné. `npm run visual` capture l'app et la maquette à la même taille pour comparaison à chaque lot. Point de rupture unique `≥ 900 px` = disposition PC (H-19 : aucune largeur intermédiaire, pas d'iPad).
+**Maquettes validées le 31 octobre 2026 (D-21)** : 24 planches HTML autonomes à taille réelle (iPhone 16 Pro Max 440 × 956 pt, PC 1440 × 900), même méthode que CircleTasks, mode sombre selon § 18.4, données d'exemple figées (ven. 30 oct. 2026, programme Haut / Bas 4 j, semaine 2 / 5). Livrées dans `docs/maquettes/` du fork avec `index.html` ; le PRD les désigne comme **référence visuelle** : écart PRD / maquette → la maquette est suivie et l'écart noté dans `docs/decisions.md` ; écran sans maquette → composé à partir des motifs de Plus / Réglages et consigné. `npm run visual` capture l'app et la maquette à la même taille pour comparaison à chaque lot ; les paires de captures sont relues par un humain, sans seuil de pixels automatique (D-35). Point de rupture unique `≥ 900 px` = disposition PC (H-19a : aucune largeur intermédiaire, pas d'iPad).
 
 | Fichier | Écran | Ce que la planche fixe |
 | --- | --- | --- |
@@ -859,17 +886,18 @@ Dynamic Type suivi jusqu'à « Très grand » sans troncature des charges et du 
 
 ## 19. Plugins Swift et contrat iOS
 
-### 19.1 Plugins repris de CircleTasks (`src-tauri/plugins/`)
+### 19.1 Plugins repris de CircleTasks
 
-| Plugin | Usage Spartiate | Décision |
-| --- | --- | --- |
-| `haptics` | Retour à chaque série validée, record, fin de repos | Repris tel quel |
-| `notification-actions` | Fin de repos, notification du matin, expiration de signature, check-in | Repris tel quel |
-| `files` / `folder-bookmark` | Dossier iCloud Drive de la synchro, export / import | Repris tel quel |
-| `privacy-shield` | Masque l'app dans le sélecteur (données corporelles) | Repris, activable |
-| `speech` | Dictée Describe (I6) | Repris, I6 |
-| `vision` | OCR d'un programme papier (I6) | Repris, I6 |
-| `reminders`, `web-auth` | Sans usage identifié | **Supprimés au fork** (SPA-001) ; réintroduction possible depuis l'historique git |
+| Plugin | Type | Usage Spartiate | Décision |
+| --- | --- | --- | --- |
+| `haptics` | Local Swift (`src-tauri/plugins/haptics`) | Retour à chaque série validée, record, fin de repos | Repris tel quel |
+| `notification-actions` | Local Swift | Fin de repos, notification du matin, expiration de signature, check-in | Repris tel quel |
+| `files` / `folder-bookmark` | Local Swift | Dossier iCloud Drive de la synchro, export / import | Repris tel quel |
+| `privacy-shield` | Local Swift | Masque l'app dans le sélecteur (données corporelles) | Repris, activable |
+| `speech` | Local Swift | Dictée Describe (I6) | Infrastructure conservée, écrans de capture CircleTasks supprimés (D-33) |
+| `vision` | Local Swift | OCR d'un programme papier (I6) | Infrastructure conservée, écrans de capture CircleTasks supprimés (D-33) |
+| `barcode-scanner` | Officiel Tauri (`@tauri-apps/plugin-barcode-scanner`, `tauri-plugin-barcode-scanner`) | Appairage par QR dès I0 ; scan de code-barres alimentaire en I4 | Hérité, nécessaire dès SPA-008 ; la caméra reste autorisée pour l'appairage (D-33) |
+| `reminders`, `web-auth` | Local Swift | Sans usage identifié | **Supprimés** en SPA-001b (D-18 confirmé) avec leurs dépendances Cargo, commandes, permissions, textes plist et tests ; réintroduction possible depuis l'historique git |
 
 ### 19.2 Nouveaux plugins
 
@@ -877,10 +905,9 @@ Dynamic Type suivi jusqu'à « Très grand » sans troncature des charges et du 
 | --- | --- | --- | --- |
 | `healthkit` | Lecture / écriture Apple Santé (§ 16.2), observer queries | `H-3` : entitlement `com.apple.developer.healthkit` doit survivre à la signature SideStore (plan D-14) | SPA-006 |
 | `live-activity` | Minuteur de repos en Dynamic Island / écran verrouillé via ActivityKit | `H-4` : cible d'extension WidgetKit à injecter dans le projet Xcode généré par `tauri ios init` ; `tauri.conf.json` ne le prévoit pas | SPA-007 |
-| `barcode-scanner` | Scan code-barres (AVFoundation), Camera Control si disponible | Faible (API standard) | I4 |
-| `camera` | Photo de repas | Faible | I4 |
+| `camera` | Photo de repas (plugin local ou officiel, à trancher) | Faible | I4 |
 
-Chaque plugin suit le gabarit CircleTasks : `Package.swift`, `Sources/<Nom>/Plugin.swift` héritant de `Plugin`, commandes `@objc`, enregistrement dans `src-tauri/src/lib.rs` sous `#[cfg(target_os = "ios")]`, façade TypeScript dans `src/platform/ios/<nom>.ts` avec stub Windows retournant `unsupported`. Pas de dépendance Swift externe.
+Structure réelle d'un plugin local CircleTasks, à suivre pour tout nouveau plugin : `src-tauri/plugins/<nom>/Cargo.toml`, `build.rs`, pont Rust dans `src/` du plugin, `ios/Package.swift`, `ios/Sources/<Nom>Plugin.swift` héritant de `Plugin` avec commandes `@objc` ; enregistrement dans `src-tauri/src/lib.rs` sous `#[cfg(target_os = "ios")]` ; permissions et capabilities générées ; façade TypeScript dans `src/platform/<nom>` là où elle existe (par exemple `src/platform/haptics`, `src/platform/speech`), avec un stub Windows retournant `unsupported`. Il n'existe pas de dossier `src/platform/ios` : la plateforme est choisie par `platform.kind`. Pas de dépendance Swift externe. Le contrat plist actuel interdit `UIBackgroundModes` : toute évolution I5 / I6 qui en aurait besoin est revue explicitement.
 
 ### 19.3 Contrat `Info.plist` (`scripts/ios/plist-contract.json`, repris et étendu)
 
@@ -906,18 +933,37 @@ Pas d'App Groups, pas d'iCloud container, pas de push (interdits en équipe pers
 
 ## 20. Modèle de données SQLite
 
-Schéma repris de CircleTasks : migrations numérotées dans `src-tauri/migrations/` appliquées par `tauri-plugin-sql`, repositories dans `src/db/repositories/`, types générés dans `src/db/schema.ts`. Toutes les tables métier CircleTasks (tâches, cercles, rappels…) sont **supprimées** par la migration `0001_spartiate_init` du fork ; les tables de synchro (`sync_device`, `sync_outbox`, `sync_cursor`, `sync_log`) et `app_meta` sont conservées.
+Mécanisme repris de CircleTasks : migrations TypeScript dans `src/db/migrations/`, registre `src/db/migrations/index.ts`, exécutées par `src/db/migrator.ts` via `SqlDriver` (driver natif `tauri-plugin-sql` vendored en production, `@sqlite.org/sqlite-wasm` en mémoire dans les tests et le navigateur), historique dans `schema_migrations`, sauvegarde avant migration (`src/db/migrationBackup.ts`) et sauvegardes natives (`src-tauri/src/backup.rs`, `APP_SCHEMA_VERSION`). Repositories dans `src/db/repositories/` ; aucun type généré, les types sont écrits à la main. Spartiate initialise une **nouvelle base** : le registre est réinitialisé avec `0001_spartiate_init` et `APP_SCHEMA_VERSION` vaut 1 ; aucune base CircleTasks n'est migrée ni purgée (D-23).
+
+### 20.0 Tables techniques héritées (D-24)
+
+Conservées telles quelles, jamais publiées comme données métier :
+
+| Table | Rôle |
+| --- | --- |
+| `settings` | Clé / valeur, local ou partagé : identité d'appareil (`device.id`), préférences, version ; utilisée par le démarrage (`src/features/app/bootstrap.ts`), `settingsRepository` et la restauration Rust |
+| `schema_migrations` | Historique des migrations appliquées |
+| `sync_guard` | Verrou d'exclusivité de la synchro |
+| `sync_field_clock` | Horloges HLC et bases par champ |
+| `sync_outbox` | File d'envoi alimentée par les déclencheurs |
+| `sync_state`, `sync_meta` | État et métadonnées du moteur |
+| `sync_tombstone` | Suppressions à propager |
+| `sync_unknown`, `sync_parked` | Lignes de format inconnu ou mises en attente |
+| `conflict_log` | Conflits consultables et réversibles |
+| `epoch_carry_report` | Rapport local des bascules d'époque (restauration, concurrence, reset) |
+
+`app_meta` et `app_pref` n'existent pas et ne sont pas créées : leurs usages (identité, version, préférences) sont couverts par `settings`. Les tables métier Spartiate sont celles du § 20.2 ; les déclencheurs de `sync_outbox` sont recréés pour elles dans `0001_spartiate_init`.
 
 ### 20.1 Colonnes communes
 
-Chaque table publiée porte `id TEXT PRIMARY KEY` (UUID v7), `created_at`, `updated_at`, `deleted_at` (suppression logique), `device_id`, et un `hlc_<colonne>` par champ synchronisé (mécanisme ADR 0011). Les tables locales (préférences, cache) n'ont ni `device_id` ni HLC.
+Chaque table métier porte `id TEXT PRIMARY KEY` (UUID v7), `created_at`, `updated_at`, `deleted_at` (suppression logique). Les lignes publiées portent notamment `updated_at`, `device_id` et `hlc` ; `sync_field_clock` conserve les horloges et bases par champ (mécanisme ADR 0011). Les colonnes publiées, locales et techniques de chaque table sont définies dans le catalogue (`src/domain/sync/syncTables.ts`). Les tables locales (cache, journal d'appels) n'ont ni `device_id` ni `hlc`.
 
 ### 20.2 Tables
 
 | Table | Colonnes principales | Publiée | Itération |
 | --- | --- | --- | --- |
 | `profile` | sex, birth\_year, height\_cm, goal, experience, units | Oui | I0 |
-| `body_weight` | date, kg, source (manual / health), health\_uuid | Oui | I1 |
+| `body_weight` | date, kg, source (manual / health), health\_uuid | Oui | I0 |
 | `exercise` | id, name\_fr, aliases\_en (JSON), muscles (JSON), equipment (JSON), pattern, kind, metric, bodyweight\_fraction, default\_rep\_min / max, default\_rest\_sec, instructions (JSON), media (JSON), strength\_standard\_key, is\_custom, schema\_version | Oui (custom uniquement ; les 150 embarqués sont lus du JSON) | I1 |
 | `equipment_profile` | name, kind, inventory (JSON), increments (JSON) | Oui | I1 |
 | `routine` / `routine_day` / `routine_exercise` | name, mode (Libre / Programme), day\_order, exercise\_id, sets, rep\_min, rep\_max, rir, rest\_sec, position | Oui | I1 |
@@ -933,8 +979,9 @@ Chaque table publiée porte `id TEXT PRIMARY KEY` (UUID v7), `created_at`, `upda
 | `muscle_recovery` | date, muscle\_id, percent | Oui | I5 |
 | `health_sample_cache` | type, start, end, value, uuid | **Non** (local iPhone) | I5 |
 | `ai_call` | date, kind, tokens\_in / out, cost\_estimate, status | Non (local, par appareil) | I4 |
-| `app_pref` | key, value | Non | I0 |
-| `measurement` / `progress_photo` | date, kind, value / file\_name | Oui / photos **non** (fichiers locaux, export manuel) | I6 |
+| `settings` (héritée, § 20.0) | key, value, portée (local / partagé) | Non en I0 ; tout réglage partagé est une décision explicite | I0 |
+| `measurement` / `progress_photo` | date, kind, value / file\_name | Oui / photos : métadonnées seulement (fichiers locaux, export manuel) | I6 |
+| `cardio_session` | started\_at, ended\_at, distance\_m, track (compressé), avg\_hr | Oui | I6 |
 
 ### 20.3 Index et contraintes
 
@@ -942,33 +989,37 @@ Chaque table publiée porte `id TEXT PRIMARY KEY` (UUID v7), `created_at`, `upda
 
 ### 20.4 Migrations
 
-`0001_spartiate_init` (purge CircleTasks + tables I0/I1), puis une migration par itération. Jamais de modification d'une migration publiée ; `test:migrations` (Vitest + SQLite en mémoire via `better-sqlite3` en dev) rejoue 0001 → N sur une base vide et sur une fixture de données réelles anonymisées. Le catalogue des tables publiées (`src/sync/catalog.ts`) est le **seul** fichier de la synchro modifié ; un test vérifie qu'il couvre exactement les tables marquées « Oui » ci-dessus.
+`0001_spartiate_init` crée les tables techniques du § 20.0, `profile`, `body_weight` et leurs déclencheurs de synchro (I0) ; les tables I1 et suivantes arrivent par une migration par itération, jamais créées par anticipation. Jamais de modification d'une migration publiée. Tests : Vitest + `@sqlite.org/sqlite-wasm` (driver mémoire, clés étrangères actives), commande ciblée `npx vitest run --coverage.enabled=false src/db/migrator.test.ts src/db/migrations` ; chaque migration a son test colocalisé (`000N_*.test.ts`) qui rejoue 0001 → N sur une base vide et sur des **fixtures synthétiques** (jamais une donnée réelle, D-38) et vérifie insertion, modification, suppression, restauration, `sync_guard`, file d'envoi et horloges. Le plugin SQL natif vendored est validé en CI par `cargo test --locked -p tauri-plugin-sql --features sqlite` ; la parité Wasm / natif (DDL, déclencheurs, transactions, pragmas, restauration) reste l'hypothèse H-18 (D-31). Le test de catalogue vérifie que `syncTables.ts` couvre exactement les tables marquées « Oui » au § 9.1.
 
 ## 21. Persistance, sauvegarde, export / import
 
 ### 21.1 Emplacements
 
+La base est résolue nativement par `app_config_dir()` (plugin SQL vendored, `wrapper.rs`) : `<app_config_dir>/spartiate.db`. Trois constantes alignées désignent ce fichier et changent ensemble (D-32, SPA-001a) : `TAURI_DB_URL` (`sqlite:spartiate.db`, `src/platform/tauri/sqlDriver.ts`), `ALLOWED_URL` (garde du plugin vendored, `guard.rs` : seule URL ouvrable, jamais élargie à des noms arbitraires) et `DB_FILE` (`src-tauri/src/backup.rs`).
+
 | Appareil | Base | Fichiers | Clé de chiffrement |
 | --- | --- | --- | --- |
-| Windows | `%APPDATA%\fr.spartiate.app\spartiate.db` | `%APPDATA%\fr.spartiate.app\media\`, exports dans Documents | Windows Credential Manager (`keyring`) |
-| iPhone | Conteneur de l'app (`Application Support/spartiate.db`) | `Documents/media/` | Trousseau iOS |
+| Windows | `%APPDATA%\fr.spartiate.app\spartiate.db` | `backups/`, `logs/`, `media/` dans le même dossier ; exports dans Documents | Windows Credential Manager (`keyring`) |
+| iPhone | Conteneur de l'app (`app_config_dir()`, `spartiate.db`) | `backups/`, `logs/`, `Documents/media/` | Trousseau iOS |
 | iCloud Drive | `iCloud Drive/Spartiate/<device_id>/` : paquets chiffrés AES-256-GCM, jamais la base en clair | — | — |
 
-**Règle absolue (AGENTS.md)** : aucun agent ne lit ni n'écrit ces emplacements ; seuls les fichiers que tu désignes explicitement (un export, un journal) peuvent être lus.
+**Données réelles (D-38).** Tant que tu n'as pas commencé à utiliser Spartiate (annoncé par toi, consigné dans `docs/decisions.md`), le conteneur `fr.spartiate.app` est un conteneur de laboratoire : `tauri dev` et la lecture de `spartiate.db` sont permis aux agents. Dès ta première utilisation réelle, la règle CircleTasks s'applique : aucun agent ne lit ni n'écrit ces emplacements, fixtures synthétiques uniquement, smoke / Rust / e2e en CI ; seuls les fichiers que tu désignes explicitement (un export, un journal) peuvent être lus. Les données réelles de CircleTasks (`%APPDATA%\fr.circletasks.planner`, dossier iCloud `CircleTasks`) restent interdites en permanence.
 
-### 21.2 Sauvegarde
+### 21.2 Sauvegarde et journaux (héritage exact, D-32)
 
 - Écriture SQLite en WAL, `synchronous = NORMAL`, checkpoint à la fermeture (configuration CircleTasks).
-- Sauvegarde locale automatique quotidienne `spartiate-YYYY-MM-DD.db` (7 conservées) sur PC ; sur iPhone, la synchro iCloud fait office de sauvegarde (D-16).
-- Mise à jour SideStore = conteneur conservé (`INHERITED` I-06) ; **ne jamais supprimer l'app** ; si réinstallation nécessaire, restauration depuis la synchro ou un export.
+- Sauvegardes natives (`backup.rs`) : quotidienne `spartiate-daily-AAAAMMJJ.db` (14 gardées), familles pré-migration et pré-restauration conservées avec leurs propres quotas ; version de schéma lue dans `schema_migrations`, repli sur `APP_SCHEMA_VERSION`. Sur PC comme sur iPhone ; sur iPhone, la synchro iCloud reste la sauvegarde hors appareil (D-16).
+- Journaux (`applog.rs`, ADR 0014) : `logs/spartiate.log` (courant) et `spartiate.log.1` (précédent), 256 Kio chacun, une entrée JSON par ligne.
+- Mise à jour SideStore : le code hérité conserve le conteneur ; la preuve appareil N → N+1 est ouverte (H-5 `UNVERIFIED (code hérité)`, SPA-010) ; **ne jamais supprimer l'app** ; si réinstallation nécessaire, restauration depuis la synchro ou un export.
+- Toute politique différente (quota, taille, nommage) est un changement explicite à tester, pas une propriété attribuée au fork.
 
-### 21.3 Export / import (I1, SPA-005)
+### 21.3 Export / import (SPA-005 en I0 sur le format Spartiate profil / poids ; complet en I1)
 
 | Format | Contenu | Usage |
 | --- | --- | --- |
 | `spartiate-export-<date>.zip` | `data.json` (toutes les tables publiées + préférences), `media/`, `manifest.json` (version schéma, app, appareil, sha256) | Sauvegarde complète, migration d'appareil |
 | CSV par domaine | `workouts.csv`, `sets.csv`, `nutrition.csv`, `weight.csv` | Analyse externe |
-| Import | Zip Spartiate (fusion ou remplacement, aperçu avant), CSV Hevy / Strong (mapping exercices avec validation) | Reprise d'historique |
+| Import | Zip Spartiate (fusion ou remplacement, aperçu avant) ; CSV Hevy / Strong (mapping exercices avec validation) en I6 (Q-4) | Reprise d'historique |
 
 L'import passe par les repositories (jamais SQL direct), génère des HLC et entre dans la synchro comme n'importe quelle écriture. Export déclenché depuis Plus → Export / import, sur PC vers un dossier choisi, sur iPhone via la feuille de partage (plugin `files`).
 
@@ -982,79 +1033,91 @@ L'import passe par les repositories (jamais SQL direct), génère des HLC et ent
 | --- | --- |
 | Données au repos | SQLite en clair dans le conteneur de l'app (protégé par l'OS : Data Protection iOS, profil Windows) ; chiffrement complet de la base **non retenu** (D-17 : complexité vs bénéfice pour un usage personnel ; révisable) |
 | Données en transit | iCloud Drive : paquets AES-256-GCM, clé dérivée lors de l'appairage QR, jamais dans iCloud (ADR 0011) ; API IA et Open Food Facts : HTTPS via `reqwest` côté Rust, `rustls`, pas de HTTP |
-| Secrets | Clé IA et clé de synchro dans le coffre OS uniquement ; aucune valeur dans le dépôt, les journaux, les artefacts CI, les prompts, les exports ; `RELEASES_TOKEN` seul secret GitHub (publication) |
+| Secrets | Clé IA et clé de synchro dans le coffre OS uniquement ; aucune valeur dans le dépôt, les journaux, les artefacts CI, les prompts, les exports. Secrets GitHub nommés (jamais leurs valeurs, D-29) : `RELEASES_TOKEN` (publication vers `spartiate-releases`), `TAURI_SIGNING_PRIVATE_KEY` et `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (nouvelle paire minisign Spartiate, indépendante de CircleTasks, SPA-002) ; les `CT_GOOGLE_*` hérités disparaissent en SPA-001b |
 | WebView | CSP stricte héritée (`tauri.conf.json`), `withGlobalTauri: false`, commandes exposées listées dans `capabilities/*.json` par plateforme ; la WebView n'a jamais accès au réseau direct ni aux clés |
 | Permissions iOS | Demandées au premier usage, chacune avec sa raison ; refus = fonction masquée, pas de relance automatique |
-| Journaux | `tracing` Rust + logger front → fichier tournant `logs/spartiate.log` (5 × 2 Mo) dans le conteneur ; **aucune donnée corporelle, alimentaire ni clé** ; identifiants d'enregistrements uniquement ; export depuis Plus → Journaux pour me les transmettre (seule lecture autorisée aux agents) |
+| Journaux | Journal technique hérité (`applog.rs`, ADR 0014) : `logs/spartiate.log` + `spartiate.log.1`, 256 Kio chacun, dans le conteneur ; **aucune donnée corporelle, alimentaire ni clé** ; identifiants d'enregistrements uniquement ; export depuis Plus → Journaux pour les transmettre aux agents (seule lecture autorisée après ta première utilisation réelle, D-38) |
 | Dépendances | `npm audit` et `cargo audit` en CI (jobs CircleTasks repris) ; versions épinglées ; pas d'ajout de dépendance sans ligne dans le ticket |
-| Mise à jour | IPA et NSIS publiés avec sha256 dans `source.json` et `latest.json` ; SideStore vérifie le hash ; sur PC, l'app compare `latest.json` et propose le téléchargement (mécanisme CircleTasks) |
-| Privé | `privacy-shield` optionnel ; verrou local (Face ID / code Windows Hello) **DEFERRED** (`H-17`, utilité à confirmer) |
+| Mise à jour | IPA et NSIS publiés avec sha256 dans `source.json` et `latest.json` ; SideStore vérifie le hash ; sur PC, l'updater vérifie la signature minisign avec la clé publique Spartiate et propose le téléchargement (mécanisme CircleTasks). Jusqu'à SPA-002 l'updater est non configuré : bloc `plugins.updater` retiré, écran « mises à jour non configurées », aucune requête réseau, aucune clé vide ni factice (D-30) |
+| Privé | `privacy-shield` optionnel ; verrou local (Face ID / code Windows Hello) : code conservé, entrée masquée, activation différée jusqu'à ta décision (D-37, `H-17` `DEFERRED`) |
 
 ## 23. Qualité et tests
 
-### 23.1 Pyramide (scripts `package.json` repris)
+### 23.1 Pyramide (scripts `package.json` hérités, D-35)
 
 | Niveau | Outil | Cible | Seuil |
 | --- | --- | --- | --- |
-| Domaine | Vitest (`test`) | `src/domain/**` : moteur, mésocycle, nutrition, récupération, parse | Couverture lignes ≥ 90 % sur `src/domain`, 100 % des vecteurs des § 11–16 verts |
-| DB | Vitest + SQLite mémoire (`test:migrations`) | Migrations 0001 → N, repositories, catalogue de synchro | Toutes les tables publiées couvertes |
-| Synchro | Vitest (vecteurs ADR 0011 repris) + `cargo test` | Chiffrement, HLC, fusion, reset, oubli d'appareil | Vecteurs existants + `recovery_day`, `workout` fin-de-séance |
-| Rust | `cargo test`, `cargo clippy -D warnings`, `cargo fmt --check` | Commandes, `app_signing_info`, client HTTP, coffre | Zéro warning |
+| Domaine | Vitest (`test`, projets `node` et `dom`) | `src/domain/**` : moteur, mésocycle, nutrition, récupération, parse | Couverture `src/domain/**` ≥ 80 % (lignes, fonctions, branches, instructions — seuil hérité, jamais relâché) ; objectif 90 % pour `src/domain/training` seulement ; 100 % des vecteurs des § 11–16 verts |
+| DB | Vitest + `@sqlite.org/sqlite-wasm` en mémoire (tests colocalisés `src/db/**`, commande ciblée § 20.4) | Migrations 0001 → N, repositories, catalogue de synchro | Toutes les tables publiées couvertes ; parité natif / Wasm = H-18 |
+| Synchro | Vitest (vecteurs ADR 0011 repris) + tests Rust | Chiffrement, HLC, fusion, tombstones, instantanés, reset, oubli d'appareil, reprise | Vecteurs existants + `profile` / `body_weight` (I0), `recovery_day`, `workout` séance close (I1+) |
+| Rust | `cargo test --locked --features test-hooks --test desktop`, `cargo test --locked -p tauri-plugin-sql --features sqlite`, `cargo clippy --locked -- -D warnings`, `cargo fmt --check` | Commandes, `app_signing_info`, sauvegardes, plugin SQL vendored, client HTTP, coffre | Zéro warning ; en CI (Windows) |
 | Front | `typecheck` (TS strict), `lint` (ESLint config CircleTasks) | Tout `src/` | Zéro erreur |
-| E2E PC | Playwright (`e2e`) sur build Windows | Onboarding, séance complète au clavier, journal nutrition, export / import, synchro simulée (deux profils) | Scénarios nominaux par itération |
-| Visuel | `visual` (captures Playwright, deux largeurs : 440 px iPhone, 1 440 px PC) | Écrans de chaque onglet, états dégradés § 18.3 | Diff ≤ 0,1 % |
-| Perf | `test:perf`, `test:bundle` | Démarrage < 1,5 s PC / < 2 s iPhone ; graphiques < 300 ms ; bundle de départ ≤ plafond CircleTasks | Budget en CI |
-| Installeur | `test:nsis`, `test:smoke` | NSIS Windows installe / lance / désinstalle ; IPA : contrat plist, lipo arm64, `source.json` | Vert avant publication |
-| iPhone réel | Manuel, toi, check-list `docs/qa/iphone.md` | Install SideStore, Santé, Live Activity, verrouillage, renouvellement, mise à jour sans perte | Check-list signée par itération |
+| E2E navigateur | Playwright (`e2e`) projets `pc` et `iphone` : Chromium sur le front Vite + SQLite Wasm, pas le binaire | Onboarding, séance complète au clavier, journal nutrition, export / import, synchro simulée (deux profils) | Scénarios nominaux par itération ; Ubuntu en CI, jamais en local |
+| E2E WebKit | Playwright projet `iphone-webkit` (WebKit, `testMatch` filtré sur une liste de specs à redéfinir après la purge) | Comportements propres à WKWebView | Liste de specs Spartiate définie en SPA-001b |
+| Smoke natif | `test:smoke:build` + `test:smoke` (Playwright sur le binaire Windows réel via CDP), `test:nsis` | Démarrage du binaire, installeur NSIS installe / lance / désinstalle, donnée témoin conservée (REL-TECH-02) | Vert avant publication ; Windows en CI |
+| Visuel | `visual` (captures Playwright, deux largeurs : 440 px iPhone, 1 440 px PC, scénarios Spartiate à écrire en SPA-009) | Écrans de chaque onglet, états dégradés § 18.3 | Paires de captures app / maquette relues par un humain ; tout seuil de pixels automatique est un outillage à créer, avec ticket et références définies |
+| Perf | `test:perf`, `test:perf:e2e` (projet `perf`), `test:bundle` | Démarrage < 1,5 s PC / < 2 s iPhone ; graphiques < 300 ms ; bundle de départ ≤ **358 400 octets gzip**, garde `tests/bundle/start-modules.json` | Budget en CI ; plafond jamais relevé |
+| Installeur iOS | Scripts `scripts/ios/*` (tests Vitest) | Contrat plist, lipo arm64, `source.json`, guides | Vert avant publication |
+| iPhone réel | Manuel, toi, check-list `docs/qa/iphone.md` | Install SideStore, Santé, Live Activity, verrouillage, renouvellement, mise à jour N → N+1 sans perte | Check-list signée par itération ; résultat identifié (date, version) |
 
-### 23.2 CI (`.github/workflows/`, repris)
+Sur ton PC : seulement les tests Vitest du module en cours, avec `--coverage.enabled=false` pour un test ciblé. La suite complète, les e2e, le smoke et Rust tournent en CI.
+
+### 23.2 CI (`.github/workflows/`, repris, D-28)
 
 | Workflow | Déclencheur | Runner | Contenu |
 | --- | --- | --- | --- |
-| `ci.yml` | push, PR | ubuntu | typecheck, lint, test, test:migrations, cargo test / clippy, audit |
-| `build-windows.yml` | tag `win-v*` | windows-latest | build NSIS, `test:nsis`, `test:smoke`, publication `latest.json` |
-| `build-ios.yml` | tag `ios-v*`, manuel | macos-latest | `tauri ios build --ci --no-sign`, codesign ad-hoc + entitlements (D-14), contrat plist, lipo, `make-source-json`, `check-source`, publication vers `spartiate-releases` |
-| `e2e.yml` | nightly, manuel | windows-latest | Playwright + visuel |
+| `tests.yml` | push de branche, PR | ubuntu (lint, typecheck, Vitest `node` × 5 et `dom` × 3, couverture fusionnée, cargo audit, e2e `pc` et `iphone` × 4, perf et bundle) ; windows (`cargo test`, smoke Windows) | Seul workflow de tests ; termine par le statut **« suite verte »**, exigé pour fusionner dans `main` avec branche à jour |
+| `build-windows.yml` | tag `vX.Y.Z`, manuel | windows-latest (build) ; ubuntu (publication) | build NSIS, signature updater, `latest.json`, publication sur `spartiate-releases` sur tag seulement |
+| `build-ios.yml` | tag `ios-vX.Y.Z`, manuel (IPA en artefact ; publication sur tag seulement) | macos-latest (build) ; ubuntu (publication) | `tauri ios build --ci --no-sign`, codesign ad-hoc + entitlements (D-14), contrat plist, lipo, `make-source-json`, `check-source`, publication vers `spartiate-releases` |
 
-Dépôts **publics** (D-13) : minutes macOS gratuites. Aucune donnée personnelle dans les fixtures (générées).
+Il n'existe ni workflow `ci.yml` ni workflow e2e séparé. Dépôts **publics** (D-13) : minutes macOS gratuites. Fixtures entièrement synthétiques (D-38) ; aucune donnée personnelle, même anonymisée.
 
 ### 23.3 Matrice de non-régression à chaque release
 
-Mise à jour SideStore conserve la base (I-06) · expiration lue et notifiée (I-02) · synchro bidirectionnelle PC ↔ iPhone sur 3 tables au moins · séance interrompue par verrouillage reprise · export puis import identique (hash `data.json`) · aucune régression visuelle.
+Mise à jour SideStore conserve la base (H-5, prouvée en SPA-010 puis rejouée) · expiration lue et notifiée (I-02) · synchro bidirectionnelle PC ↔ iPhone sur 3 tables au moins · séance interrompue par verrouillage reprise · export puis import identique (hash `data.json`) · aucune régression visuelle.
 
 ## 24. Contrat d'exécution (Claude Code + Codex)
 
-### 24.1 Agents repris de CircleTasks (`.claude/agents/`)
+### 24.1 Agents (`.claude/agents/`, D-34)
 
-| Agent | Rôle | Adaptation |
+Correspondance explicite avec les 26 agents de CircleTasks. Aucune étape obligatoire ne dépend d'un nom inexistant.
+
+| Agent | Sort | Rôle sur Spartiate |
 | --- | --- | --- |
-| `ci-release` | Tags, workflows, `source.json`, publication | Identifiants et dépôts Spartiate |
-| `ios-plugin` | Plugins Swift, contrat plist, entitlements | + `healthkit`, `live-activity` |
-| `sync-guardian` | Toute modification sous `src/sync` ou `src-tauri/src/sync` | Inchangé ; seul `catalog.ts` est ouvert |
-| `reviewer` | Relecture avant merge : couches ADR 0001, sécurité § 22, tests | Inchangé |
-| `domain-engineer` (nouveau) | Moteurs `src/domain/*` : implémente uniquement depuis les § 11–16, vecteurs d'abord | Nouveau |
+| `architect`, `product-owner`, `qa-test`, `code-reviewer`, `debugger`, `docs-writer` | Gardés | Passes de travail (§ 24.2) ; `code-reviewer` vérifie couches ADR 0001, sécurité § 22, tests, DoD § 24.4 |
+| `ci-release` | Gardé | Tags `vX.Y.Z` / `ios-vX.Y.Z`, workflows, `source.json`, publication ; identifiants et dépôts Spartiate |
+| `desktop-tauri` | Gardé | Commandes Rust, plugin SQL vendored, sauvegardes, updater |
+| `ios-mobile` | Gardé | Plugins Swift, contrat plist, entitlements ; + `healthkit`, `live-activity` |
+| `sync-icloud` | Gardé | Relit toute PR touchant `src/sync/**`, `src/domain/sync/**`, `src-tauri/src/sync/**` (D-26) |
+| `domain-logic` | Gardé | Moteurs `src/domain/*` : implémente uniquement depuis les § 11–16, vecteurs d'abord |
+| `data-model` | Gardé | Migrations, repositories, catalogue (§ 20) |
+| `ui-design-system`, `accessibility-i18n` | Gardés | Tokens § 18.4, maquettes § 18.5, accessibilité § 18.6, FR seul |
+| `security-privacy`, `performance`, `notifications`, `settings-personalization` | Gardés | § 22, § 23.1 perf et bundle, ADR 0012, `settings` |
+| `calendar-integration`, `checklists-events`, `focus-time`, `quick-capture`, `routines`, `spaces-goals`, `stats-history`, `tasks-planning` | **Supprimés** (métier CircleTasks, SPA-001b) | — |
 
 ### 24.2 Passes et outils
 
 | Passe | Outil | Règle |
 | --- | --- | --- |
 | Spécification | Ce PRD (`docs/PRD.md`) + ADR | Toute décision nouvelle = ADR numéroté ; toute hypothèse = `H-n` dans le registre § 26 |
-| Implémentation | Claude Code (Opus) | Un ticket = une branche = une PR ; tests avant code pour `src/domain` |
+| Implémentation | Claude Code (Opus) | Un ticket = une branche = une PR ; **preuve rouge avant code pour toute story** : un commit qui n'ajoute que les tests et échoue, puis le commit de code qui les fait passer, les deux identifiants dans la fiche |
 | Relecture croisée | Codex | Relit chaque PR ; commentaires résolus avant merge ; ne pousse jamais directement |
 | Intégration | CI GitHub | Verte obligatoire ; merge par toi |
-| Validation iPhone | Toi | Check-list § 23.1 ; ton retour clôt le ticket |
+| Validation iPhone | Toi | Check-list § 23.1 ; ton retour clôt le ticket. Chaque agent assure lui-même product-owner → agent du module → qa-test → code-reviewer en passes distinctes, dans cet ordre, et consigne chaque résultat |
 
 ### 24.3 Budget et discipline
 
 - Tokens : chaque ticket annonce un budget (S ≤ 50 k, M ≤ 150 k, L ≤ 400 k) ; dépassement = arrêt et point d'étape, pas de poursuite silencieuse.
-- Interdits (AGENTS.md) : `git push --force`, `git reset --hard`, `rm -rf`, lecture des données réelles, installation manuelle demandée à toi, suppression de l'app sideloadée, secrets dans un prompt.
-- Toute capacité non prouvée reste `UNVERIFIED` dans `docs/capability-matrix.md` jusqu'à un spike documenté (log CI ou capture iPhone).
+- Interdits (AGENTS.md) : `git push --force`, `git reset --hard`, `rm -rf`, lecture des données réelles (CircleTasks toujours ; Spartiate dès ta première utilisation réelle, D-38), installation manuelle demandée à toi (D-39), suppression de l'app sideloadée, secrets dans un prompt, boucle de surveillance de la CI (une lecture à la fois, `gh pr checks` / `gh run view`), écriture hors de `C:\Dev\spartiate` et de ses worktrees.
+- Tests : jamais de test désactivé, sauté ou retardé ; **pas de `test.fixme` de commodité** — on adapte le test, ou on supprime celui d'une fonction effectivement supprimée (D-35). Aucun seuil de taille ni de couverture relâché.
+- Bundle de départ : plafond **358 400 octets gzip** (`tests/bundle/startBundle.test.ts`), toujours écrit en octets, jamais relevé ; tout écran hors du premier affichage d'Aujourd'hui est en chargement à la demande dès sa création ; garde par liste blanche `tests/bundle/start-modules.json` ; `npm run test:bundle` avant tout push.
+- Toute capacité non prouvée reste `UNVERIFIED` dans `docs/capability-matrix.md` jusqu'à un spike documenté (log CI ou capture iPhone). Aucun statut `CONFIRMED` depuis une lecture de code (D-36).
 
 ### 24.4 Definition of Done (par ticket)
 
-1. Critères d'acceptation du ticket couverts par un test automatisé ou, pour l'iPhone, par la check-list manuelle.
-2. `ci.yml` vert ; pas de nouvelle dépendance non justifiée.
-3. Couches ADR 0001 respectées (vérifié par `reviewer`).
+1. Critères d'acceptation du ticket couverts par un test automatisé (preuve rouge puis verte) ou, pour l'iPhone, par la check-list manuelle.
+2. `tests.yml` au statut « suite verte » sur la branche à jour ; bundle mesuré avant push ; pas de nouvelle dépendance non justifiée.
+3. Couches ADR 0001 respectées (vérifié par `code-reviewer`).
 4. `docs/capability-matrix.md` et registre `H-n` mis à jour si le ticket touche une hypothèse.
 5. Note de version (`scripts/release/release-notes.mjs`) à jour.
 6. Relecture Codex résolue.
@@ -1079,26 +1142,28 @@ Itération : I0 | Taille : S/M/L | Budget tokens : …
 
 1. Créer `doncivo/spartiate` (public) depuis `doncivo/circletasks` (fork GitHub ou `git clone` + nouveau remote ; l'historique est conservé pour pouvoir réintroduire un plugin).
 2. Créer `doncivo/spartiate-releases` (public, vide, `source.json` initial généré par la CI).
-3. Secret `RELEASES_TOKEN` (fine-grained, contenu de `spartiate-releases` uniquement).
-4. Ajouter la source `https://raw.githubusercontent.com/doncivo/spartiate-releases/main/source.json` dans SideStore sur l'iPhone **après** la première publication.
+3. Secrets GitHub, par leur nom seulement (D-29) : `RELEASES_TOKEN` (fine-grained, contenu de `spartiate-releases` uniquement) ; `TAURI_SIGNING_PRIVATE_KEY` et `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (nouvelle paire minisign générée pour Spartiate, indépendante de CircleTasks ; la clé publique correspondante entre dans `tauri.conf.json` en SPA-002). Les `CT_GOOGLE_*` ne sont pas créés et leurs références disparaissent en SPA-001b.
+4. Déposer ce PRD en `docs/PRD.md` (D-22) et créer `docs/journal.md`, `docs/decisions.md`, `docs/reprise.md` vides (D-40).
+5. Ajouter la source `https://raw.githubusercontent.com/doncivo/spartiate-releases/main/source.json` dans SideStore sur l'iPhone **après** la première publication.
 
 ### 25.2 Tickets I0 (ordre imposé)
 
 | Ticket | Titre | Taille | Preuve | Dépend de |
 | --- | --- | --- | --- | --- |
-| SPA-000 | Fork, dépôts, secret, README Spartiate | S | Dépôts visibles, CI `ci.yml` verte sur le fork intact | — |
-| SPA-001 | Nettoyage : renommage `fr.circletasks.planner` → `fr.spartiate.app`, nom, icône, suppression features / tables / plugins CircleTasks (`reminders`, `web-auth`), migration `0001_spartiate_init`, i18n FR seul | M | App vide « Spartiate » démarre sur PC ; `typecheck` / `lint` / `test` verts ; aucune chaîne « CircleTasks » hors `docs/adr` et licences | SPA-000 |
-| SPA-002 | Build Windows NSIS + `latest.json` + `test:nsis` / `test:smoke` | S | Installeur installé sur ton PC, lance, se désinstalle | SPA-001 |
-| SPA-003 | Build iOS CI : `--no-sign`, codesign ad-hoc + `Spartiate.entitlements` (D-14), contrat plist, `source.json`, publication | M | IPA dans `spartiate-releases`, `codesign -d --entitlements` montre HealthKit | SPA-001 |
-| SPA-004 | Installation SideStore + `app_signing_info` + notification 24 h (I-02 repris) | S | App installée sur l'iPhone ; date d'expiration affichée dans Plus → À propos | SPA-003 |
-| SPA-005 | Export / import zip + CSV (§ 21.3) sur données I0 (profil, poids) | M | Export → reset → import = hash identique (test E2E) | SPA-002 |
+| SPA-000 | Fork, dépôts, secrets, README Spartiate (phrase de provenance), PRD déposé | S | Dépôts visibles, `tests.yml` « suite verte » sur le fork intact | — |
+| SPA-001a | Renommage : `fr.circletasks.planner` → `fr.spartiate.app`, nom, version 0.1.0, icône ; matrice identité → consommateurs (`src-tauri/Cargo.toml` package / lib / bin, `Cargo.lock`, `main.rs`, `package-lock.json`, `index.html`, `Info.ios.plist`, scripts release / smoke, noms de sauvegarde / journal / export) ; les trois constantes de base `TAURI_DB_URL` / `ALLOWED_URL` / `DB_FILE` changées ensemble avec `guard_tests.rs` ; updater retiré (D-30) ; guides renommés et tests lecteurs adaptés (D-40) | S / M | `typecheck` / `lint` / `test` verts ; `git grep` d'identité sur fichiers suivis avec exemptions nommées (D-41) ; test d'identité couvrant URL unique et restauration | SPA-000 |
+| SPA-001b | Purge : inventaire au niveau des symboles validé par toi ; point de composition minimal (`src/features/app/bootstrap.ts`, `navigation.ts`, `tabsConfig.ts`, `src/db/repositories/sql/index.ts`) puis lots verticaux compilables (D-44) ; features, agents métier, plugins `reminders` / `web-auth` et leurs dépendances Cargo / commandes / permissions / plist / tests ; registre de migrations réinitialisé `0001_spartiate_init` avec `settings`, tables techniques, `profile`, `body_weight`, déclencheurs ; `APP_SCHEMA_VERSION = 1` ; adaptation de la synchro sous revue `sync-icloud` (D-26) ; i18n `fr` seul à tous les niveaux ; e2e / visual / WebKit : imports, serveurs, sélection de specs et fixtures adaptés ; documents CircleTasks archivés (D-40) | L | App « Spartiate » démarre sur PC avec profil, poids, navigation minimale et Diagnostic ; « suite verte » ; deux bases profil / poids synchronisées en test ; aucun `test.fixme` ; bundle ≤ 358 400 octets | SPA-001a |
+| SPA-002 | Build Windows NSIS + updater rétabli (clé publique Spartiate, endpoint `spartiate-releases`) + `latest.json` + `test:nsis` / smoke | S | Smoke CI : installeur installe / lance / désinstalle sur le runner, donnée témoin conservée ; `v0.0.1` publié ; `v0.0.2` reçue par la bannière (D-39) | SPA-001b |
+| SPA-003 | Build iOS CI : `--no-sign`, codesign ad-hoc + `Spartiate.entitlements` (D-14), contrat plist, `source.json`, publication | M | IPA dans `spartiate-releases`, `codesign -d --entitlements` montre HealthKit | SPA-001b |
+| SPA-004 | Installation SideStore + `app_signing_info` + notification 24 h (I-02 repris) ; trois apps (H-16) | S | App installée sur l'iPhone ; date d'expiration affichée dans Plus → À propos ; capture des trois apps | SPA-003 |
+| SPA-005 | Export / import zip + CSV (§ 21.3) au format Spartiate sur les données I0 (profil, poids) | M | Export → reset → import = hash identique (test e2e) | SPA-002 |
 | SPA-006 | **Spike HealthKit** : plugin minimal `healthkit_authorize` + lecture `bodyMass` sur l'IPA SideStore | M | Capture iPhone de la demande d'autorisation et d'une valeur lue ; sinon `H-3 = BLOCKED` + ADR fallback | SPA-004 |
 | SPA-007 | **Spike Live Activity** : extension WidgetKit injectée dans `gen/apple` par script post-`tauri ios init`, minuteur fictif 60 s | L | Capture Dynamic Island ; sinon `H-4 = BLOCKED` + ADR fallback timer en app | SPA-004 |
-| SPA-008 | Synchro PC ↔ iPhone : catalogue `profile`, `body_weight`, `app_meta` ; appairage QR ; test deux appareils | M | Poids saisi sur PC visible sur iPhone < 60 s et inversement ; vecteurs verts | SPA-004, SPA-002 |
-| SPA-009 | Coquilles `MobileShell` / `DesktopShell`, 5 onglets vides, états dégradés § 18.3 génériques, tests visuels | M | Captures 440 / 1 440 px en CI | SPA-001 |
-| SPA-010 | Mesure et go / no-go I0 : mise à jour SideStore sans perte (I-06), renouvellement 7 j, consommation CI, `capability-matrix.md` à jour | S | Tableau § 7 mis à jour, décision écrite d'ouvrir I1 | Tous |
+| SPA-008 | Synchro PC ↔ iPhone : catalogue `profile`, `body_weight` ; appairage QR (plugin `barcode-scanner` hérité) ; test deux appareils | M | Poids saisi sur PC visible sur iPhone < 60 s et inversement ; vecteurs verts ; aucune métadonnée technique publiée | SPA-004, SPA-002 |
+| SPA-009 | Coquilles `MobileShell` / `DesktopShell` fidèles aux maquettes § 18.5, 5 onglets, états dégradés § 18.3, scénarios `visual` Spartiate, `test:contrast` | M | Paires de captures 440 / 1 440 px relues ; `test:contrast` vert | SPA-001b |
+| SPA-010 | Mesure et go / no-go I0 : preuve N → N+1 sans perte sur Spartiate (base et Trousseau, H-5 → `CONFIRMED` ou `BLOCKED`), renouvellement 7 j, consommation CI, `capability-matrix.md` à jour | S | Capture iPhone datée avant / après mise à jour ; tableau § 7 mis à jour ; décision écrite d'ouvrir I1 | Tous |
 
-Critère de sortie I0 : SPA-000 → 005, 008, 009, 010 faits ; SPA-006 et SPA-007 **conclus** (CONFIRMED ou BLOCKED avec ADR), quel que soit le résultat. I1 (séance et journal, § 9) s'ouvre ensuite avec son propre lot de tickets dérivés des § 13–14.
+Critère de sortie I0 : SPA-000 → 005, 008, 009, 010 faits ; SPA-006 et SPA-007 **conclus** (CONFIRMED ou BLOCKED avec ADR), quel que soit le résultat. I0 ne contient aucune séance (D-43). I1 (séance et journal, § 13–14, publication à la clôture § 9.1) s'ouvre ensuite avec son propre lot de tickets.
 
 ## 26. Registre des décisions et des hypothèses
 
@@ -1127,30 +1192,58 @@ Critère de sortie I0 : SPA-000 → 005, 008, 009, 010 faits ; SPA-006 et SPA-00
 | D-19 | Charte visuelle laconique, sombre, rouge / bronze ; sombre par défaut ; tokens § 18.4 | Toi (30 oct.) |
 | D-20 | Quatre programmes de départ livrés comme contenu, périodisation reprise d'Alpha Progression (§ 12.5) | Toi (30 oct.) |
 | D-21 | 24 maquettes HTML validées (§ 18.5) = référence visuelle ; méthode CircleTasks (docs/maquettes, index, npm run visual) | Toi (31 oct.) |
+| D-22 | Le PRD vivant est `docs/PRD.md` dans `doncivo/spartiate` à partir de v6.2 ; le document Claude reste l'archive v6.1 ; toute révision = PR | Relecture Codex 31 oct., arbitrage Ali |
+| D-23 | Base Spartiate neuve : aucune migration ne purge une base CircleTasks ; registre TS `src/db/migrations/index.ts` réinitialisé avec `0001_spartiate_init` ; `APP_SCHEMA_VERSION` (Rust) = 1 | Relecture Codex 31 oct., arbitrage Ali |
+| D-24 | Tables techniques héritées conservées telles quelles (`settings`, `schema_migrations`, `sync_guard`, `sync_field_clock`, `sync_outbox`, `sync_state`, `sync_tombstone`, `sync_unknown`, `sync_parked`, `conflict_log`, `sync_meta`, `epoch_carry_report`) ; `app_meta` et `app_pref` abandonnés (doublons de `settings`) | Relecture Codex 31 oct., arbitrage Ali |
+| D-25 | Modèle canonique = § 20.2 ; § 9.1 réécrit avec ces noms ; `profile` et `body_weight` créés et publiés dès I0 | Relecture Codex 31 oct., arbitrage Ali |
+| D-26 | Synchro non « inchangée » : catalogue (`syncTables.ts`, `SYNC_TABLE_ORDER`, `naturalIds.ts`), repositories de synchro et règles d'application / réparation adaptés ; invariants conservés et testés ; toute PR `src/sync/**`, `src/domain/sync/**`, `src-tauri/src/sync/**` relue par `sync-icloud` ; seuil « 200 lignes » supprimé | Relecture Codex 31 oct., arbitrage Ali |
+| D-27 | Publication d'une séance à sa clôture (journaux et instantanés, enfants, édition ultérieure, suppression) = conception et tests I1, pas un acquis | Relecture Codex 31 oct., arbitrage Ali |
+| D-28 | Workflows réels : `tests.yml` (« suite verte »), `build-windows.yml` (tag `vX.Y.Z`, manuel), `build-ios.yml` (tag `ios-vX.Y.Z`, manuel) ; commandes Rust CI `cargo test --locked --features test-hooks --test desktop`, `cargo test --locked -p tauri-plugin-sql --features sqlite`, `cargo clippy --locked -- -D warnings` | Relecture Codex 31 oct., arbitrage Ali |
+| D-29 | Secrets GitHub nommés, jamais leurs valeurs : `RELEASES_TOKEN`, `TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (nouvelle paire minisign, SPA-002) ; `CT_GOOGLE_*` supprimés en 001b | Relecture Codex 31 oct., arbitrage Ali |
+| D-30 | Updater Windows : en 001a bloc `plugins.updater` retiré et écran « mises à jour non configurées » sans requête réseau ; SPA-002 le rétablit avec la nouvelle clé et l'endpoint `spartiate-releases` ; pas de clé vide ni factice | Relecture Codex 31 oct., arbitrage Ali |
+| D-31 | Tests de migration : Vitest + `@sqlite.org/sqlite-wasm` (mémoire), `npx vitest run --coverage.enabled=false src/db/migrator.test.ts src/db/migrations` ; plugin SQL natif = copie vendored `src-tauri/vendor/tauri-plugin-sql` (garde `ALLOWED_URL`) testée par `cargo test -p tauri-plugin-sql` ; H-18 = parité Wasm / natif | Relecture Codex 31 oct., arbitrage Ali |
+| D-32 | Héritage exact : base `app_config_dir()` → `spartiate.db` (`TAURI_DB_URL`, `ALLOWED_URL`, `DB_FILE` alignées) ; sauvegardes quotidiennes `spartiate-daily-AAAAMMJJ.db` gardées 14, familles pré-migration / pré-restauration ; journaux `logs/spartiate.log` + `.1`, 256 Kio chacun (ADR 0014) ; « 7 sauvegardes » et « tracing 5 × 2 Mo » de la v6.1 retirés | Relecture Codex 31 oct., arbitrage Ali |
+| D-33 | Plugins : `speech` et `vision` conservés comme infrastructure I6 (écrans de capture supprimés) ; `@tauri-apps/plugin-barcode-scanner` officiel déjà présent (appairage), reclassé hérité ; `reminders` et `web-auth` supprimés (D-18 confirmé) ; structure réelle `src-tauri/plugins/<nom>/ios/Package.swift`, `ios/Sources/<Nom>Plugin.swift`, pont Rust, façade `src/platform/<nom>` là où elle existe | Relecture Codex 31 oct., arbitrage Ali |
+| D-34 | Agents : 18 gardés (`architect`, `product-owner`, `qa-test`, `code-reviewer`, `debugger`, `docs-writer`, `ci-release`, `desktop-tauri`, `ios-mobile`, `sync-icloud`, `domain-logic`, `data-model`, `ui-design-system`, `security-privacy`, `performance`, `accessibility-i18n`, `notifications`, `settings-personalization`) ; 8 agents métier CircleTasks supprimés ; les noms `sync-guardian`, `ios-plugin`, `reviewer`, `domain-engineer` de la v6.1 remplacés par les noms réels | Relecture Codex 31 oct., arbitrage Ali |
+| D-35 | Qualité héritée : couverture `src/domain/**` 80 % (lignes, fonctions, branches, instructions), objectif 90 % pour `src/domain/training` seul ; plafond bundle 358 400 octets gzip jamais relevé ; `visual` = paires relues par un humain ; `test:contrast` et tout seuil pixel = outillage à créer (ticket rattaché à SPA-009) ; `test.fixme` de commodité interdit | Relecture Codex 31 oct., arbitrage Ali |
+| D-36 | Preuves appareil : I-06 non prouvée sur appareil côté CircleTasks ; H-5 `UNVERIFIED (code hérité)`, prouvée sur Spartiate en SPA-010 ; H-16 `UNVERIFIED` partout ; aucun `CONFIRMED` depuis une lecture de code | Relecture Codex 31 oct., arbitrage Ali |
+| D-37 | Verrou local : code conservé, entrée masquée, activation différée jusqu'à décision d'Ali (§ 3.2, 4, 10.2, 22, H-17) | Relecture Codex 31 oct., arbitrage Ali |
+| D-38 | Données réelles : conteneur `fr.spartiate.app` = laboratoire tant qu'Ali n'a pas commencé à utiliser Spartiate (annoncé par lui, consigné dans `decisions.md`) ; ensuite règle CircleTasks (aucune lecture, fixtures synthétiques, CI) ; « données réelles anonymisées » retiré | Relecture Codex 31 oct., arbitrage Ali |
+| D-39 | Installation PC : installeur NSIS éprouvé par le smoke CI ; Ali installe lui-même quand il le décide ; aucun agent ne lui demande de lancer un installeur ; mise à jour ensuite par l'updater | Relecture Codex 31 oct., arbitrage Ali |
+| D-40 | Documents CircleTasks déplacés dans `docs/archive/circletasks/` (stories, essais, reprise, journal, backlog, dettes, audits, maquettes-refonte), liens de preuve conservés ; `docs/journal.md`, `docs/decisions.md`, `docs/reprise.md` Spartiate créés vides ; tests lecteurs de guides adaptés en 001a | Relecture Codex 31 oct., arbitrage Ali |
+| D-41 | Contrôle d'identité : `git grep` sur fichiers suivis avec exemptions nommées (`docs/PRD.md`, `docs/SPA-*.md`, `docs/relecture-*.md`, `docs/decisions.md`, `docs/adr/**`, `docs/archive/**`, `docs/licences.md`, `README.md`, en-têtes « repris de CircleTasks ») ; trois niveaux : nom utilisateur, identifiant technique actif, référence historique | Relecture Codex 31 oct., arbitrage Ali |
+| D-42 | `CLAUDE.md` et `AGENTS.md` : fusion de l'annexe A avec les règles permanentes CircleTasks (bundle, chargement à la demande, passes distinctes, preuve rouge, pas de fixme, bundle avant push, pas de surveillance de CI en boucle, données des deux apps protégées, périmètre `C:\Dev\spartiate`) ; pas de remplacement intégral | Relecture Codex 31 oct., arbitrage Ali |
+| D-43 | I0 prouve profil et poids synchronisés, navigation minimale, diagnostics, chaîne de livraison ; coquille 001b fonctionnelle et sobre, mise en page fidèle aux maquettes en SPA-009 ; le gate § 7 ne demande pas de séance avant I1 | Relecture Codex 31 oct., arbitrage Ali |
+| D-44 | SPA-001 découpé en 001a (renommage, S / M) et 001b (purge, L, inventaire au niveau des symboles validé par Ali) ; 001b avance par lots verticaux compilables depuis un point de composition minimal, pas par suppression de dossiers | Relecture Codex 31 oct., arbitrage Ali |
+| D-45 | Un identifiant = une hypothèse ; renvois corrigés (budget IA → H-14, écriture Santé → H-3, question HRV → H-20) ; H-19 scindée en H-19a (responsive 440 / 1 440, rupture 900 px) et H-19b (micronutriments Ciqual) | Relecture Codex 31 oct., arbitrage Ali |
 
-### 26.2 Hypothèses (H-n) — statut au 30 octobre 2026
+### 26.2 Hypothèses (H-n) — statut au 31 octobre 2026
+
+Un identifiant désigne une seule hypothèse (D-45). Aucune promotion depuis la seule lecture du code (D-36).
 
 | ID | Hypothèse | Statut | Comment la lever |
 | --- | --- | --- | --- |
 | H-1 | Les algorithmes publiés par Gravl sont reproductibles à partir de leur documentation publique | UNVERIFIED | Vecteurs de test comparés à des exemples publiés (I2) |
-| H-2 | Tauri 2 iOS supporte iOS 18 avec la WebView requise sans régression | INHERITED | Prouvé par CircleTasks sur ton iPhone |
-| H-3 | L'entitlement HealthKit survit à la re-signature SideStore (AltSign) | **UNVERIFIED — risque I0** | SPA-006 |
+| H-2 | Tauri 2 iOS supporte iOS 18 avec la WebView requise sans régression | INHERITED | Cible iOS 18 attestée par le code CircleTasks ; revalidation sur l'IPA Spartiate re-signée en SPA-004 |
+| H-3 | L'entitlement HealthKit survit à la re-signature SideStore (AltSign) ; conditionne lecture et écriture Apple Santé | **UNVERIFIED — risque I0** | SPA-006 |
 | H-4 | Une extension WidgetKit (Live Activity) peut être injectée dans le projet généré par `tauri ios init` et passée par SideStore | **UNVERIFIED — risque I0** | SPA-007 |
-| H-5 | La mise à jour via SideStore conserve le conteneur et le Trousseau | INHERITED (I-06) | Rejoué en SPA-010 |
-| H-6 | Quota CI macOS suffisant | INHERITED (D-13) | Mesuré en SPA-010 |
-| H-7 | La date d'expiration du profil est lisible par l'app | INHERITED (I-02, `app_signing_info`) | Rejoué en SPA-004 |
-| H-8 | 150 exercices suffisent pour tes routines | UNVERIFIED | Ta relecture de la bibliothèque (I1) |
+| H-5 | La mise à jour via SideStore conserve le conteneur et le Trousseau | **UNVERIFIED (code hérité)** — I-06 CircleTasks « code fusionné, en attente de vérification appareil », aucun essai archivé | Preuve appareil en SPA-010 (capture datée avant / après N → N+1) |
+| H-6 | Quota CI macOS suffisant | INHERITED (D-13) | Consommation et disponibilité mesurées en SPA-010 |
+| H-7 | La date d'expiration du profil est lisible par l'app | INHERITED (I-02, `app_signing_info`, implémentation attestée) | Rejoué sur l'IPA Spartiate en SPA-004 |
+| H-8 | 150 exercices et quatre programmes de départ suffisent pour tes routines | UNVERIFIED | Ta relecture de la bibliothèque et des programmes (I1) |
 | H-9 | Médias d'exercices disponibles sous licence compatible | UNVERIFIED | Recherche de sources (I1) ; fallback : sans image |
-| H-10 | Camera Control utilisable par une WebView Tauri / plugin AVFoundation | UNVERIFIED | Spike I4 ; fallback bouton |
+| H-10 | Camera Control utilisable par une WebView Tauri / plugin AVFoundation ; le scanner existant ne le prouve pas | UNVERIFIED | Spike I4 ; fallback bouton |
 | H-11 | Licence Ciqual (Etalab 2.0) autorise l'embarquement | UNVERIFIED (très probable) | Lecture de la licence, note dans `docs/licences.md` (I4) |
-| H-12 | API Open Food Facts accessible sans clé à l'usage prévu | UNVERIFIED | Appel de test (I4) |
-| H-13 | Les observer queries HealthKit se déclenchent pour une app sans mode fond | UNVERIFIED | SPA-006 étendu (I5) ; fallback lecture à l'ouverture |
-| H-14 | Fournisseur IA et coût mensuel acceptables | UNVERIFIED | Décision avant I4 |
-| H-15 | Recharts tient les volumes (3 ans de séries) en < 300 ms | UNVERIFIED | `test:perf` avec fixture 3 ans (I2) |
+| H-12 | API Open Food Facts accessible sans clé à l'usage prévu | UNVERIFIED | Appel de test (I4) ; la présence de `reqwest` ne prouve rien |
+| H-13 | Les observer queries HealthKit se déclenchent pour une app sans mode fond (`UIBackgroundModes` interdit par le contrat plist) | UNVERIFIED | SPA-006 étendu (I5) ; fallback lecture à l'ouverture |
+| H-14 | Fournisseur IA, coût mensuel et plafond configurable acceptables | UNVERIFIED | Décision avant I4 (Q-2) |
+| H-15 | Recharts tient les volumes (3 ans de séries Spartiate) en < 300 ms | UNVERIFIED | `test:perf` avec fixture synthétique 3 ans sur le chemin réel des graphiques (I2) |
 | H-16 | Limite de 3 apps sideloadées : SideStore + CircleTasks + Spartiate tiennent ensemble | UNVERIFIED | Vérifié en SPA-004 ; fallback : retirer une app ou bascule Spartiate seul |
-| H-17 | Un verrou local (Face ID / Windows Hello) a une utilité pour toi | DEFERRED | Ta décision |
-| H-18 | `better-sqlite3` en dev reproduit fidèlement `tauri-plugin-sql` pour les tests de migration | UNVERIFIED | Vérifier ce que CircleTasks utilise déjà pour `test:migrations` (SPA-001) |
-| H-19 | Deux largeurs (440 / 1 440 px, rupture 900 px) couvrent tous les usages ; Ciqual fournit les 8 micronutriments pour la majorité des aliments génériques | UNVERIFIED | Captures visuelles aux deux largeurs (SPA-009) ; comptage des colonnes Ciqual au chargement (I6) |
+| H-17 | Un verrou local (Face ID / Windows Hello) a une utilité pour toi | DEFERRED (code conservé, entrée masquée, D-37) | Ta décision (Q-6) |
+| H-18 | Le driver `@sqlite.org/sqlite-wasm` des tests reproduit fidèlement le plugin SQL natif vendored : parité DDL, déclencheurs, transactions, pragmas, restauration | UNVERIFIED (outil identifié, D-31) | Tests natifs CI (`cargo test -p tauri-plugin-sql`, `--test desktop`) couvrant les mêmes scénarios que `migrator.test.ts` ; smoke Windows |
+| H-19a | Deux largeurs (440 / 1 440 px, rupture unique 900 px) couvrent tous les usages, y compris zoom et texte agrandi, sans débordement autour de 900 px | UNVERIFIED | Scénarios `visual` Spartiate aux deux largeurs plus relecture à 900 px et en Dynamic Type « Très grand » (SPA-009) |
+| H-19b | Ciqual fournit les 8 micronutriments épinglés pour la majorité des aliments génériques | UNVERIFIED | Comptage des colonnes Ciqual au chargement (I6) |
+| H-20 | « Recovery HRV » de l'Apple Watch est lisible comme un type HealthKit (ou dérivable de `hrvSDNN`) | UNVERIFIED | Lecture des types exposés par `healthkit_read_quantity` sur l'iPhone (I5) ; fallback : HRV SDNN nocturne seule |
 
 Règle : aucune hypothèse ne passe `CONFIRMED` sans preuve archivée (log CI, capture, vecteur) référencée dans `docs/capability-matrix.md`.
 
@@ -1164,7 +1257,7 @@ Règle : aucune hypothèse ne passe `CONFIRMED` sans preuve archivée (log CI, c
 | Q-2 | Fournisseur IA (Anthropic, OpenAI, autre) et plafond mensuel | Avant I4 | Abstraction `AiProvider`, choix reporté |
 | Q-3 | Sources des médias d'exercices (photos libres, dessins générés, aucune) | I1 | Aucune image en I1 |
 | Q-4 | Import d'historique Hevy / Strong nécessaire dès I1 ? | I1 | Reporté en I6 |
-| Q-5 | Langue : FR seul ou FR + EN (i18n CircleTasks conservée) | SPA-001 | FR seul, infrastructure i18n gardée |
+| Q-5 | Langue : FR seul ou FR + EN (i18n CircleTasks conservée) | SPA-001b | FR seul à tous les niveaux, chargement à la demande gardé |
 | Q-6 | Verrou local (H-17) | I6 | Non |
 | Q-7 | Objectif initial (prise de masse / perte / maintien) pour le profil par défaut | Onboarding | Saisi à l'onboarding, pas de défaut |
 
@@ -1197,84 +1290,142 @@ Règle : aucune hypothèse ne passe `CONFIRMED` sans preuve archivée (log CI, c
 - SideStore — format `source.json`, renouvellement.
 - ANSES Ciqual (Licence Ouverte 2.0), Open Food Facts (ODbL).
 
-## Annexe A — `CLAUDE.md` du fork et extrait `AGENTS.md`
+## Annexe A — `CLAUDE.md` et `AGENTS.md` du fork (fusion, D-42)
+
+Les deux fichiers de CircleTasks ne sont **pas remplacés** : leurs règles permanentes sont conservées, le métier CircleTasks est retiré, le périmètre devient `C:\Dev\spartiate`. Le texte ci-dessous est la cible après SPA-001a / 001b.
 
 ### A.1 `CLAUDE.md` (racine du dépôt `doncivo/spartiate`)
 
 ```md
-# Spartiate
+# Spartiate — mémoire projet
 
-App personnelle d'entraînement, nutrition et récupération. PC Windows + iPhone 16 Pro Max,
-même code. Fork de CircleTasks (Tauri 2, React 18, TypeScript strict, Zustand, SQLite, Rust).
-Spécification : docs/PRD.md (source de vérité). Décisions : docs/adr/. Capacités : docs/capability-matrix.md.
+App personnelle d'entraînement, nutrition et récupération, pour un seul utilisateur. PC Windows (Tauri 2) et iPhone 16 Pro Max
+(Tauri 2 iOS), même code React, livraison unique. Fork de CircleTasks (Tauri 2, React 18, TypeScript strict, Zustand, SQLite, Rust).
+Spécification : docs/PRD.md (source de vérité, v6.2+). Décisions : docs/decisions.md et docs/adr/. Capacités : docs/capability-matrix.md.
+Référence visuelle : docs/maquettes/ (24 planches du 31 octobre 2026, ouvrir index.html) ; charte en § 18.4 du PRD.
+Règles de travail (passes, git, périmètre, tri des défauts, A-09) : AGENTS.md, qui vaut pour tout agent, Claude Code compris.
+Archive CircleTasks : docs/archive/circletasks/ (lecture seule, liens de preuve).
+
+## Stack
+React 18, Vite, TypeScript strict, Zustand, SQLite (plugin Tauri SQL vendored dans src-tauri/vendor/tauri-plugin-sql), Rust (Tauri 2),
+plugins Swift pour iOS (haptics, notification-actions, files, folder-bookmark, privacy-shield, speech, vision ; healthkit et
+live-activity à venir), plugin officiel barcode-scanner. Tests : Vitest, Testing Library, Playwright, cargo test.
 
 ## Couches (ADR 0001) — dépendances dans ce sens uniquement
 domain ← db ← sync, platform, features, ui, i18n
 - Règles métier UNIQUEMENT dans src/domain (pur, sans import Tauri ni React).
 - Accès DB UNIQUEMENT via src/db/repositories.
-- src/sync : ne pas modifier hors src/sync/catalog.ts sans l'agent sync-guardian.
-- Plugins Swift dans src-tauri/plugins, façade dans src/platform/ios, stub Windows obligatoire.
+- Migrations TypeScript dans src/db/migrations (registre index.ts, migrateur src/db/migrator.ts, schema_migrations).
+- Synchro : toute PR touchant src/sync/**, src/domain/sync/** ou src-tauri/src/sync/** est relue par l'agent sync-icloud
+  avec périmètre écrit et tests de non-régression (D-26). Catalogue : src/domain/sync/syncTables.ts.
+- Plugins Swift dans src-tauri/plugins/<nom>/ios, façade dans src/platform/<nom>, stub Windows obligatoire.
 
 ## Commandes
-npm run dev | build | tauri | test | test:migrations | typecheck | lint | e2e | visual | test:perf
-cargo test | cargo clippy -D warnings (dans src-tauri)
+npm run dev | npm run tauri dev | npm run test | npm run lint | npm run typecheck | npm run test:bundle | npm run tauri build
+Migrations : npx vitest run --coverage.enabled=false src/db/migrator.test.ts src/db/migrations
+Rust (dans src-tauri) : cargo test --locked --features test-hooks --test desktop | cargo test --locked -p tauri-plugin-sql --features sqlite
+| cargo clippy --locked -- -D warnings
+En CI seulement : e2e (pc, iphone, iphone-webkit), visual, test:smoke, test:nsis, test:perf — jamais en local sur ce PC.
 
-## Travail
-- Un ticket SPA-xxx = une branche = une PR. Tests avant code dans src/domain.
-- Toute hypothèse non prouvée = H-n dans docs/PRD.md § 26 + ligne UNVERIFIED dans capability-matrix.md.
-- Toute décision structurante = ADR numéroté.
+## Règles
+- Un ticket SPA-xxx = une branche = une PR ; ID dans chaque commit.
+- Interface en français, heures en 24 h, textes dans src/i18n, jamais en dur ; locale fr seule.
+- Tokens de couleur dans src/ui/tokens.css, aucune couleur en dur ; les maquettes sont la référence visuelle.
+- Pas de Mac : aucune commande iOS locale ; builds iOS via .github/workflows/build-ios.yml, installation par SideStore.
+- Mise à jour PC par plugin updater et dépôt public spartiate-releases ; non configuré avant SPA-002.
+- Synchro par journaux chiffrés dans iCloud Drive (hlc, schema_version) ; téléchargement forcé des fichiers avant lecture.
+- Notifications émises sur l'iPhone uniquement ; le PC n'envoie aucune notification.
+- Pas de secret en clair ; jetons dans le coffre système ; secrets GitHub nommés RELEASES_TOKEN, TAURI_SIGNING_PRIVATE_KEY,
+  TAURI_SIGNING_PRIVATE_KEY_PASSWORD (noms seulement).
+- Bundle de départ : plafond 358 400 octets gzip (tests/bundle/startBundle.test.ts), toujours écrit en octets, jamais relevé. Tout écran,
+  fenêtre, bandeau ou catalogue de textes qui ne sert pas au premier affichage d'Aujourd'hui est en chargement à la demande dès sa
+  création (import dynamique, catalogue i18n chargé avec lui, assertion « hors du départ »), jamais après coup. Garde par liste blanche
+  tests/bundle/start-modules.json : tout module nouveau dans le départ est refusé, la liste ne s'étend que par un commit qui le justifie ;
+  mesure normalisée insensible aux hachages ; le plafond reste le dernier juge.
+- Toute hypothèse non prouvée = H-n dans docs/PRD.md § 26.2 + ligne UNVERIFIED dans capability-matrix.md ; aucun CONFIRMED depuis une
+  lecture de code. Toute décision structurante = ligne dans docs/decisions.md ou ADR numéroté.
 - Budget tokens annoncé par ticket (S 50k / M 150k / L 400k) ; dépassement = arrêt et point d'étape.
 
+## Délégation
+Tout agent (Codex, Claude Code ou autre) assure lui-même product-owner, agent du module, qa-test puis code-reviewer en passes distinctes,
+dans cet ordre, et consigne chaque résultat (détails dans AGENTS.md).
+
+## Méthode
+- Suite complète dans la CI, plus en local : unitaires, Rust, e2e pc et iphone, perf et bundle, smoke Windows sur des runners parallèles
+  (.github/workflows/tests.yml, seul workflow de tests), à chaque push de branche. En local : seulement les tests du module en cours.
+- Une fusion dans main attend la CI verte sur la branche (statut « suite verte », branche à jour), jamais une suite locale.
+- Une seule compilation iPhone (build-ios.yml) par lot terminé, pas une par essai ; exception SideStore N → N+1 dans AGENTS.md.
+- Pas de « fait » sans test rouge avant et vert après, tests verts, lint, typage et revue approuvée ; jamais de test désactivé,
+  retardé ou test.fixme de commodité ; aucun échec silencieux.
+
 ## Interdits
-- Lire ou écrire les données réelles : %APPDATA%\fr.spartiate.app, iCloud Drive/Spartiate, conteneur iPhone.
+- Lire ou écrire les données réelles de CircleTasks : %APPDATA%\fr.circletasks.planner, iCloud Drive/CircleTasks — toujours.
+- Lire ou écrire les données réelles de Spartiate : %APPDATA%\fr.spartiate.app, iCloud Drive/Spartiate, conteneur iPhone — dès la
+  première utilisation réelle annoncée par Ali dans docs/decisions.md (avant : conteneur de laboratoire, D-38).
+- Écrire hors de C:\Dev\spartiate et de ses worktrees ; fichiers temporaires sous .codex-tmp/ (ignoré par git).
 - Secrets dans le dépôt, les logs, les artefacts CI, les prompts.
-- git push --force, git reset --hard, rm -rf.
+- git push --force, git reset --hard, rm -rf ; boucle de surveillance de la CI (une lecture à la fois).
 - Demander à Ali d'exécuter un installeur ; supprimer l'app sideloadée (perte de données).
 - Envoyer des données corporelles (HRV, FC, sommeil, poids, photos) à une API.
 ```
 
-### A.2 Extrait `AGENTS.md` (règles reprises de CircleTasks, adaptées)
+### A.2 `AGENTS.md` — sections adaptées (le reste des règles permanentes CircleTasks est conservé mot pour mot)
 
 ```md
-## Données de l'utilisateur
-Les agents ne lisent jamais la base, les exports ou les journaux réels sauf fichier
-explicitement désigné par Ali dans le ticket. Les fixtures de test sont générées.
+## Périmètre d'écriture et de lecture
+- Interdiction d'écrire, de modifier ou de supprimer quoi que ce soit hors de C:\Dev\spartiate et de ses worktrees.
+- Données réelles de CircleTasks (%APPDATA%\fr.circletasks.planner, iCloud CircleTasks) : interdites en permanence, lecture comme écriture.
+- Données réelles de Spartiate : conteneur de laboratoire jusqu'à la première utilisation réelle annoncée par Ali (docs/decisions.md) ;
+  ensuite interdites comme celles de CircleTasks. Fixtures synthétiques uniquement ; smoke, Rust et e2e en CI.
+- Lire un fichier qu'Ali désigne explicitement (export, journal iPhone déposé dans iCloud Drive) est permis.
+
+## Référence visuelle
+docs/maquettes/ (24 planches Spartiate du 31 octobre 2026, D-21) pour tous les écrans ; écran sans maquette → motifs de Plus / Réglages,
+consigné dans docs/decisions.md. Les maquettes CircleTasks sont archivées (docs/archive/circletasks/) et ne font plus référence.
 
 ## iOS
-La chaîne est : CI macOS (tauri ios build --ci --no-sign) → codesign ad-hoc + entitlements
-→ IPA → spartiate-releases/source.json → SideStore. Aucun agent ne possède de Mac ni de
-compte développeur ; toute preuve iPhone vient d'Ali (capture) ou de la CI (log).
+La chaîne est : CI macOS (tauri ios build --ci --no-sign) → codesign ad-hoc + entitlements → IPA → spartiate-releases/source.json
+→ SideStore. Aucun agent ne possède de Mac ni de compte développeur ; toute preuve iPhone vient d'Ali (capture) ou de la CI (log).
+Une seule compilation iPhone par lot ; exception N → N+1 : l'IPA installée sert de N, une compilation fournit N+1 (SPA-010).
 
 ## Synchro
-src/sync est verrouillé : seul catalog.ts évolue avec le schéma. Toute autre modification
-passe par l'agent sync-guardian et un ADR.
+Toute PR touchant src/sync/**, src/domain/sync/** ou src-tauri/src/sync/** porte un périmètre écrit, est relue par l'agent sync-icloud
+et ajoute des tests de non-régression (deux bases, conflit, instantané, reset, oubli, reprise). Invariants intouchables : protocole
+chiffré, HLC par champ, tombstones, reprise, reset, oubli d'appareil.
 
-## Relecture
-Codex relit chaque PR ; `reviewer` vérifie couches, sécurité § 22, tests, DoD § 24.4.
+## Passes de travail
+L'agent assure lui-même product-owner → agent du module → qa-test → code-reviewer en passes séparées, dans cet ordre, et consigne
+chaque résultat dans la fiche. Test rouge avant, vert après, pour toute story sans exception (deux commits identifiés). Pas de
+test.fixme de commodité : on adapte le test ou on supprime celui d'une fonction effectivement supprimée. Mesure du bundle
+(npm run test:bundle) avant tout push. Codex relit chaque PR ; code-reviewer vérifie couches, sécurité § 22, tests, DoD § 24.4.
 ```
 
 ## Annexe B — `docs/capability-matrix.md` (état initial)
 
 | Capacité | Statut | Preuve | Ticket |
 | --- | --- | --- | --- |
-| Build Windows NSIS | INHERITED | CircleTasks `build-windows.yml` | SPA-002 |
+| Build Windows NSIS + smoke installeur | INHERITED | CircleTasks `build-windows.yml`, `tests.yml` smoke-windows | SPA-002 |
+| Updater Windows signé (clé Spartiate) | UNVERIFIED (non configuré avant SPA-002, D-30) | — | SPA-002 |
 | Build iOS non signé en CI | INHERITED | CircleTasks `build-ios.yml` | SPA-003 |
-| Installation et renouvellement SideStore | INHERITED | `docs/install-iphone.md` | SPA-004 |
+| Installation et renouvellement SideStore | INHERITED | `docs/archive/circletasks/install-iphone.md` | SPA-004 |
 | Lecture date d'expiration + notification | INHERITED | I-02 | SPA-004 |
-| Mise à jour sans perte de données | INHERITED | I-06 | SPA-010 |
-| Synchro iCloud chiffrée PC ↔ iPhone | INHERITED | ADR 0011 + vecteurs | SPA-008 |
+| Mise à jour N → N+1 sans perte de données (base et Trousseau) | **UNVERIFIED (code hérité)** — H-5 ; I-06 CircleTasks non prouvée sur appareil | — | SPA-010 |
+| Synchro iCloud chiffrée PC ↔ iPhone (protocole) | INHERITED | ADR 0011 + vecteurs | SPA-008 |
+| Synchro des tables Spartiate (`profile`, `body_weight`) | UNVERIFIED (catalogue et repositories adaptés, D-26) | — | SPA-008 |
 | Verrouillage / reprise de session | INHERITED | ADR 0013 | I1 |
-| Haptique, notifications locales, fichiers | INHERITED | Plugins existants | I1 |
+| Haptique, notifications locales, fichiers, scanner QR | INHERITED | Plugins existants | I1 |
 | Entitlement HealthKit via SideStore | UNVERIFIED | — | SPA-006 |
 | Lecture HRV / FC / sommeil / workouts | UNVERIFIED (dépend H-3) | — | I5 |
-| Observer queries sans mode fond | UNVERIFIED | — | I5 |
+| Recovery HRV comme type HealthKit | UNVERIFIED (H-20) | — | I5 |
+| Observer queries sans mode fond | UNVERIFIED (H-13) | — | I5 |
 | Live Activity (extension WidgetKit) | UNVERIFIED | — | SPA-007 |
 | Widgets écran d'accueil | BLOCKED | Pas d'App Groups en équipe personnelle | — |
 | App Apple Watch | BLOCKED | Interdit en équipe personnelle | — |
 | Push distant | BLOCKED | Interdit en équipe personnelle | — |
-| Scan code-barres / Camera Control | UNVERIFIED | — | I4 |
-| Appels API IA via Rust | UNVERIFIED (fournisseur Q-2) | — | I4 |
-| Trois apps sideloadées simultanées | UNVERIFIED | — | SPA-004 |
-| Verrou local Face ID / Windows Hello | DEFERRED | — | — |
+| Scan code-barres alimentaire / Camera Control | UNVERIFIED (scanner présent, Camera Control non prouvé, H-10) | — | I4 |
+| Appels API IA via Rust | UNVERIFIED (fournisseur Q-2, H-14) | — | I4 |
+| Trois apps sideloadées simultanées | UNVERIFIED (H-16) | — | SPA-004 |
+| Parité SQLite Wasm / natif | UNVERIFIED (H-18) | — | SPA-001b |
+| Verrou local Face ID / Windows Hello | DEFERRED (code conservé, entrée masquée, D-37) | — | — |
 
-*Fin du document. Toute modification passe par une nouvelle révision numérotée (v6.1, v6.2…) avec journal des changements en tête.*
+*Fin du document. Toute modification passe par une nouvelle révision numérotée (v6.3, v6.4…) avec journal des changements en tête, par PR sur `docs/PRD.md` (D-22).*
