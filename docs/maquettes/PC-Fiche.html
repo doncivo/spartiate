@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Spartiate — PC — Bibliothèque</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap">
+<style>
+:root{--bg:#0D0E11;--surface:#15171C;--surface-2:#1D2027;--line:#2A2E37;--fg:#EDE7DC;--fg-2:#A39C90;--accent:#B8322A;--accent-h:#D23B31;--bronze:#C28E4C;--bronze-2:#E0B577;--ok:#5E9E6B;--warn:#D9A441;--info:#6F8FB3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--fg);font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums}
+h1,h2,.display{font-family:Cinzel,"Times New Roman",serif;font-weight:600;letter-spacing:.02em;margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;font-weight:600;font-size:16px;border:0;cursor:pointer;color:var(--fg);background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--fg)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.bronze{background:transparent;border:1px solid var(--bronze);color:var(--bronze-2)}
+.num{font-family:Cinzel,serif;font-weight:600}
+.bronze{color:var(--bronze-2)}
+.muted{color:var(--fg-2)}
+.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg-2)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
+.pill.warn{border-color:var(--warn);color:var(--warn)}
+.pill.red{background:var(--accent);border-color:var(--accent);color:var(--fg)}
+.dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dial svg{display:block}
+.dial .v{font-family:Cinzel,serif;font-size:26px;font-weight:600;line-height:1}
+.dial .l{font-size:12px;color:var(--fg-2)}
+svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+.win{width:1440px;height:900px;background:var(--bg);display:flex;overflow:hidden}
+.side{width:220px;flex:none;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 12px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 22px}
+.brand .shield{width:30px;height:30px;border-radius:50%;background:var(--bronze);display:flex;align-items:center;justify-content:center;color:var(--accent);font-family:Cinzel,serif;font-weight:600;font-size:18px}
+.nav a{display:flex;align-items:center;gap:10px;height:40px;padding:0 10px;border-radius:8px;color:var(--fg-2);font-size:14px;font-weight:500}
+.nav a.on{background:var(--surface-2);color:var(--fg)}
+.nav a kbd{margin-left:auto;font:11px ui-monospace,monospace;color:var(--fg-2);opacity:.7}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.top{height:56px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.sub{display:flex;gap:18px;font-size:14px;color:var(--fg-2)}
+.sub span.on{color:var(--fg);border-bottom:2px solid var(--bronze);padding-bottom:4px}
+.cols{flex:1;display:grid;grid-template-columns:280px 1fr;min-height:0}
+.list{border-right:1px solid var(--line);padding:18px 16px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.search{height:40px;border:2px solid var(--bronze-2);border-radius:10px;background:var(--bg);display:flex;align-items:center;padding:0 12px;gap:8px;font-size:15px;box-shadow:0 0 0 3px rgba(224,181,119,.18)}
+.search .caret{width:1.5px;height:18px;background:var(--fg)}
+.search .ph{color:var(--fg-2);margin-left:auto;font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{height:28px;padding:0 10px;border-radius:14px;border:1px solid var(--line);font-size:12px;display:inline-flex;align-items:center;gap:6px;color:var(--fg-2)}
+.chip.on{border-color:var(--bronze);color:var(--bronze-2)}
+.res{display:flex;flex-direction:column;gap:2px;flex:1;min-height:0}
+.r{display:flex;align-items:center;gap:10px;height:50px;padding:0 10px;border-radius:8px;color:var(--fg)}
+.r .t{display:flex;flex-direction:column}
+.r .t small{font-size:12px;color:var(--fg-2)}
+.r .l{margin-left:auto;font-size:12px;color:var(--bronze-2);white-space:nowrap}
+.r.on{background:var(--surface-2);box-shadow:inset 3px 0 0 var(--bronze)}
+.r.mut{color:var(--fg-2)}
+.fiche{padding:22px 28px;display:flex;flex-direction:column;gap:16px;min-width:0;min-height:0}
+.three{display:grid;grid-template-columns:236px 1fr 280px;gap:14px;flex:1;min-height:0}
+.kv{display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-top:1px solid var(--line);gap:12px}
+.kv:first-of-type{border-top:0}
+.kv span:last-child{text-align:right}
+.col h3{margin:0;font-size:13px;font-weight:600;color:var(--fg)}
+.col ol{margin:4px 0 0;padding-left:18px;font-size:13px;line-height:1.45;color:var(--fg)}
+.col ol li{margin-bottom:4px}
+.err{display:grid;grid-template-columns:18px 1fr;gap:8px;font-size:12.5px;line-height:1.4;padding:6px 0;border-top:1px solid var(--line)}
+.err i{color:var(--warn);font-style:normal;font-weight:700}
+.hist{display:grid;grid-template-columns:62px 1fr 60px;gap:10px;font-size:13px;padding:7px 0;border-top:1px solid var(--line)}
+.hist:first-of-type{border-top:0}
+.muscle{display:flex;gap:6px;flex-wrap:wrap}
+.muscle span{height:24px;padding:0 9px;border-radius:12px;font-size:12px;display:inline-flex;align-items:center;background:var(--surface-2)}
+.muscle span.p{border:1px solid var(--bronze);color:var(--bronze-2);background:transparent}
+kbd.k{font:12px ui-monospace,monospace;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--fg)}
+</style>
+</head>
+<body>
+<div class="win">
+  <aside class="side">
+    <div class="brand"><span class="shield">Λ</span><span class="display" style="font-size:17px">Spartiate</span></div>
+    <nav class="nav" style="display:flex;flex-direction:column;gap:2px">
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3v18"/></svg>Aujourd'hui<kbd>Ctrl 1</kbd></a>
+      <a class="on"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>Entraînement<kbd>Ctrl 2</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M4 8h16l-1.5 12h-13z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>Nutrition<kbd>Ctrl 3</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M3 20h18M5 17l5-6 4 3 5-8"/></svg>Progrès<kbd>Ctrl 4</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>Plus<kbd>Ctrl 5</kbd></a>
+    </nav>
+    <div style="flex:1"></div>
+    <div class="card" style="padding:10px 12px;font-size:12px;color:var(--fg-2);display:flex;flex-direction:column;gap:4px">
+      <span style="color:var(--fg)">PC · Bureau</span>
+      <span>Synchro iCloud il y a 2 min</span>
+      <span>iPhone vu il y a 2 min</span>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="top">
+      <div style="display:flex;align-items:center;gap:22px">
+        <h1 style="font-size:22px">Entraînement</h1>
+        <div class="sub"><span>Lancer</span><span>Programme</span><span>Historique</span><span class="on">Bibliothèque</span><span>Matériel</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center"><span class="muted" style="font-size:13px">150 exercices · 3 personnalisés</span><span class="pill">Ctrl K · rechercher</span></div>
+    </div>
+
+    <div class="cols">
+      <aside class="list">
+        <div class="search"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px;color:var(--fg-2)"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>row</span><span class="caret"></span><span class="ph">Échap efface</span></div>
+        <div class="chips">
+          <span class="chip on">Dos ×</span><span class="chip">Muscle ▾</span><span class="chip">Matériel ▾</span><span class="chip">Pattern ▾</span>
+        </div>
+        <div class="muted" style="font-size:12px;display:flex;justify-content:space-between"><span>6 résultats</span><span><kbd class="k">↑</kbd><kbd class="k">↓</kbd> <kbd class="k">Entrée</kbd></span></div>
+        <div class="res">
+          <div class="r on"><div class="t">Rowing barre<small>barre · tirage horizontal</small></div><span class="l">84 kg</span></div>
+          <div class="r"><div class="t">Rowing haltère unilatéral<small>haltères · tirage horizontal</small></div><span class="l">36 kg</span></div>
+          <div class="r"><div class="t">Rowing machine assis<small>machine · tirage horizontal</small></div><span class="l">—</span></div>
+          <div class="r"><div class="t">Rowing T-bar<small>barre + poignée · tirage horizontal</small></div><span class="l">—</span></div>
+          <div class="r"><div class="t">Rowing poulie basse<small>câble · tirage horizontal</small></div><span class="l">—</span></div>
+          <div class="r"><div class="t">Rowing inversé<small>poids de corps · tirage horizontal</small></div><span class="l">14 reps</span></div>
+          <div class="muted" style="font-size:12px;padding:10px 10px 0;text-align:right">1RM estimé ou record en bronze</div>
+        </div>
+        <button class="btn ghost" style="height:40px;font-size:13px;padding:0 10px;white-space:nowrap">Créer un exercice personnalisé</button>
+      </aside>
+
+      <section class="fiche">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="eyebrow">Bibliothèque · composé · dos</div>
+            <h2 style="font-size:30px;margin-top:2px">Rowing barre</h2>
+            <div class="muted" style="font-size:13px;margin-top:4px">Barbell row · dans Haut A du programme actif · dernière fois le 26 oct.</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn ghost" style="height:36px;font-size:14px">Dupliquer en perso</button>
+            <button class="btn primary" style="height:36px;font-size:14px;white-space:nowrap">Ajouter à une routine</button>
+          </div>
+        </div>
+
+        <div class="three">
+          <div class="card col" style="padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+            <div class="eyebrow">Info</div>
+            <div>
+              <div class="muted" style="font-size:12px;margin-bottom:6px">Muscles</div>
+              <div class="muscle"><span class="p">Grand dorsal</span><span class="p">Trapèzes</span><span>Rhomboïdes</span><span>Deltoïde post.</span><span>Biceps</span><span>Érecteurs</span></div>
+            </div>
+            <div>
+              <div class="kv"><span>Matériel</span><span>Barre olympique</span></div>
+              <div class="kv"><span>Pattern</span><span>Tirage horizontal</span></div>
+              <div class="kv"><span>Mesure</span><span>Charge × reps</span></div>
+              <div class="kv"><span>Plage par défaut</span><span>3 séries · 6–10 reps</span></div>
+              <div class="kv"><span>Repos par défaut</span><span>2:30</span></div>
+              <div class="kv"><span>Incrément</span><span>2,5 kg (Salle Antony)</span></div>
+              <div class="kv"><span>Substituts</span><span>Haltère, T-bar, machine</span></div>
+            </div>
+            <div style="flex:1"></div>
+            <svg viewBox="0 0 120 150" style="width:96px;height:120px;align-self:center" aria-label="Carte du corps, dos, zones sollicitées">
+              <g fill="none" stroke="var(--line)" stroke-width="1.5">
+                <circle cx="60" cy="16" r="11"/>
+                <path d="M38 34h44l10 50-8 2-6-34v40l4 50h-12l-6-44-6 44H46l4-50V52l-6 34-8-2z"/>
+              </g>
+              <path d="M44 36h32l6 30-22 22-22-22z" fill="var(--bronze)" opacity=".8"/>
+              <path d="M50 30h20l4 10H46z" fill="var(--bronze)" opacity=".55"/>
+              <path d="M30 40l6-4 6 34-6 2zM90 40l-6-4-6 34 6 2z" fill="var(--bronze)" opacity=".35"/>
+            </svg>
+          </div>
+
+          <div class="card col" style="padding:16px 20px;display:flex;flex-direction:column;gap:12px;min-width:0">
+            <div class="eyebrow">Instructions</div>
+            <div>
+              <h3>Mise en place</h3>
+              <ol>
+                <li>Barre au sol, prise pronation un peu plus large que les épaules.</li>
+                <li>Pieds largeur de hanches, genoux souples, buste penché à 45°.</li>
+                <li>Dos neutre, regard au sol un mètre devant, barre contre les tibias.</li>
+              </ol>
+            </div>
+            <div>
+              <h3>Exécution</h3>
+              <ol>
+                <li>Tire la barre vers le bas du sternum en menant avec les coudes.</li>
+                <li>Serre les omoplates une seconde en haut, sans relever le buste.</li>
+                <li>Redescends en 2 s jusqu'à bras tendus, sans rebond au sol.</li>
+              </ol>
+            </div>
+            <div>
+              <h3>Erreurs fréquentes</h3>
+              <div style="margin-top:4px">
+                <div class="err"><i>1</i><span><b>Buste qui se redresse</b> à chaque rep : la charge est trop lourde, redescends d'un cran.</span></div>
+                <div class="err"><i>2</i><span><b>Dos rond</b> en bas du mouvement : raccourcis l'amplitude ou pose la barre entre les reps.</span></div>
+                <div class="err"><i>3</i><span><b>Tirer avec les bras</b> : pense à ramener les coudes vers l'arrière, les mains ne font que tenir.</span></div>
+              </div>
+            </div>
+            <div style="flex:1"></div>
+            <div class="muted" style="font-size:12px">Médias : schéma Spartiate (CC BY 4.0). Vidéo disponible sur l'iPhone.</div>
+          </div>
+
+          <div class="card col" style="padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0">
+            <div style="display:flex;justify-content:space-between"><div class="eyebrow">Historique</div><span class="muted" style="font-size:12px">14 séances depuis juil.</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+              <div><div class="num bronze" style="font-size:26px">84 <span style="font-size:12px;font-family:inherit;color:var(--fg-2)">kg</span></div><div class="muted" style="font-size:11px">1RM est. · conf. 78 %</div></div>
+              <div><div class="num" style="font-size:26px">70 <span style="font-size:12px;font-family:inherit;color:var(--fg-2)">kg</span></div><div class="muted" style="font-size:11px">prévu lundi</div></div>
+              <div><div class="num" style="font-size:26px">67,5 <span style="font-size:12px;font-family:inherit;color:var(--fg-2)">× 8</span></div><div class="muted" style="font-size:11px">record · 26 oct.</div></div>
+            </div>
+            <svg viewBox="0 0 320 120" style="width:100%;height:120px" aria-label="1RM estimé sur 8 semaines, 74 à 84 kg, bande de confiance">
+              <line x1="30" y1="100" x2="320" y2="100" stroke="var(--line)"/>
+              <line x1="30" y1="60" x2="320" y2="60" stroke="var(--line)" stroke-dasharray="2 3"/>
+              <line x1="30" y1="20" x2="320" y2="20" stroke="var(--line)" stroke-dasharray="2 3"/>
+              <text x="0" y="104" fill="var(--fg-2)" font-size="10">70</text><text x="0" y="64" fill="var(--fg-2)" font-size="10">78</text><text x="0" y="24" fill="var(--fg-2)" font-size="10">86</text>
+              <polygon fill="var(--bronze)" opacity=".16" points="40,74 80,70 120,66 160,58 200,54 240,44 280,36 316,26 316,42 280,52 240,58 200,66 160,70 120,78 80,82 40,88"/>
+              <polyline fill="none" stroke="var(--bronze)" stroke-width="2.5" points="40,81 80,76 120,72 160,64 200,60 240,51 280,44 316,34"/>
+              <circle cx="316" cy="34" r="4" fill="var(--bronze-2)"/>
+              <text x="40" y="116" fill="var(--fg-2)" font-size="10">7 sept.</text><text x="316" y="116" fill="var(--fg-2)" font-size="10" text-anchor="end">26 oct.</text>
+            </svg>
+            <div>
+              <div class="muted" style="font-size:12px;margin-bottom:4px">5 dernières séances</div>
+              <div class="hist"><span>26 oct.</span><span>67,5 × 8, 8, 8</span><span class="muted">Juste</span></div>
+              <div class="hist"><span>19 oct.</span><span>67,5 × 8, 8, 7</span><span class="muted">Juste</span></div>
+              <div class="hist"><span>12 oct.</span><span>65 × 9, 9, 8</span><span class="muted">Facile</span></div>
+              <div class="hist"><span>5 oct.</span><span>65 × 8, 8, 8</span><span class="muted">Juste</span></div>
+              <div class="hist"><span>28 sept.</span><span>62,5 × 10, 9, 8</span><span class="muted">Dur</span></div>
+            </div>
+            <div style="flex:1"></div>
+            <div class="muted" style="font-size:12px;line-height:1.45">Confiance 78 % : 14 séances, toutes à RIR ≥ 1. Une série proche de l'échec affinerait l'estimation.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+</body>
+</html>

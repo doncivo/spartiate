@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Spartiate — iPhone — Progrès</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap">
+<style>
+:root{--bg:#0D0E11;--surface:#15171C;--surface-2:#1D2027;--line:#2A2E37;--fg:#EDE7DC;--fg-2:#A39C90;--accent:#B8322A;--accent-h:#D23B31;--bronze:#C28E4C;--bronze-2:#E0B577;--ok:#5E9E6B;--warn:#D9A441;--info:#6F8FB3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--fg);font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums}
+h1,h2,.display{font-family:Cinzel,"Times New Roman",serif;font-weight:600;letter-spacing:.02em;margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;font-weight:600;font-size:16px;border:0;cursor:pointer;color:var(--fg);background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--fg)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.bronze{background:transparent;border:1px solid var(--bronze);color:var(--bronze-2)}
+.num{font-family:Cinzel,serif;font-weight:600}
+.bronze{color:var(--bronze-2)}
+.muted{color:var(--fg-2)}
+.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg-2)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
+.pill.warn{border-color:var(--warn);color:var(--warn)}
+.pill.red{background:var(--accent);border-color:var(--accent);color:var(--fg)}
+.dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dial svg{display:block}
+.dial .v{font-family:Cinzel,serif;font-size:26px;font-weight:600;line-height:1}
+.dial .l{font-size:12px;color:var(--fg-2)}
+svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+.phone{width:440px;height:956px;background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:126px;height:37px;border-radius:20px;background:#000}
+.status{height:59px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 32px 10px;font-size:15px;font-weight:600}
+.scroll{flex:1;overflow:hidden;padding:4px 20px 0;display:flex;flex-direction:column;gap:12px}
+.tabbar{height:83px;border-top:1px solid var(--line);background:var(--surface);display:flex;justify-content:space-around;padding:8px 8px 0}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--fg-2);width:64px}
+.tab.on{color:var(--bronze-2)}
+.home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:var(--fg);opacity:.8}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.chips{display:flex;gap:6px;overflow:hidden;margin:0 -20px;padding:0 20px}
+.chip{flex:none;height:34px;padding:0 10px;border-radius:17px;border:1px solid var(--line);display:flex;align-items:center;font-size:12.5px;font-weight:600;color:var(--fg-2);white-space:nowrap}
+.chip.on{background:var(--surface-2);border-color:var(--bronze);color:var(--bronze-2)}
+svg text{font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:10px;fill:var(--fg-2)}
+.kpi{flex:1;padding:10px 12px}
+.kpi .eyebrow{font-size:10px}
+.kpi .v{margin-top:3px;font-size:20px}
+.kpi .s{font-size:11px;color:var(--fg-2);margin-top:1px}
+.vol{display:flex;align-items:center;gap:10px;font-size:13px;padding:6px 0}
+.vol .n{width:72px;flex:none}
+.vol .track{flex:1;height:14px;position:relative}
+.vol .range{position:absolute;top:4px;height:6px;border-radius:3px;background:var(--surface-2);border:1px solid var(--line)}
+.vol .dot{position:absolute;top:1px;width:12px;height:12px;border-radius:50%;background:var(--ok);transform:translateX(-50%)}
+.vol .dot.low{background:var(--warn)}
+.vol .c{width:80px;white-space:nowrap;flex:none;text-align:right;color:var(--fg-2);font-variant-numeric:tabular-nums}
+.vol .c b{color:var(--fg);font-weight:600}
+.vol .c b.low{color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="island"></div>
+  <div class="status"><span>17:02</span><span>●●●● ᯤ ▮</span></div>
+  <div class="scroll">
+    <div class="row" style="align-items:flex-end">
+      <div>
+        <div class="eyebrow">ven. 30 oct. · mésocycle 1 · semaine 2 / 5</div>
+        <h1 style="font-size:30px;margin-top:2px;line-height:1.1">Progrès</h1>
+      </div>
+      <button class="btn ghost" style="height:36px;padding:0 12px;font-size:13px;gap:6px">12 sem.<svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M6 9l6 6 6-6"/></svg></button>
+    </div>
+
+    <div class="chips">
+      <span class="chip on">Charges</span><span class="chip">Records</span><span class="chip">Volume</span><span class="chip">Corps</span><span class="chip">Strength Score</span>
+    </div>
+
+    <!-- Exercice + graphique -->
+    <div class="card" style="padding:12px 16px 8px">
+      <div class="row">
+        <div style="display:flex;align-items:center;gap:8px">
+          <h2 style="font-size:19px">Développé couché barre</h2>
+          <svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--fg-2)"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <span class="muted" style="font-size:12px">Haut A</span>
+      </div>
+      <div class="row" style="margin-top:6px;align-items:baseline">
+        <span class="eyebrow">1RM estimé · 12 semaines</span>
+        <span style="font-size:13px"><span class="muted">88</span> <span class="muted">→</span> <b class="num bronze" style="font-size:20px">102</b> <span class="muted">kg</span> <span style="color:var(--ok);font-weight:600;margin-left:4px">+14</span></span>
+      </div>
+      <!-- y : 85 → 105 kg, 5,5 px / kg ; x : 12 semaines, 30 px -->
+      <svg width="368" height="150" viewBox="0 0 368 150" style="display:block;margin-top:8px">
+        <line x1="10" y1="47.5" x2="352" y2="47.5" stroke="var(--line)" stroke-dasharray="2 4"/><text x="368" y="51" text-anchor="end">100</text>
+        <line x1="10" y1="75" x2="352" y2="75" stroke="var(--line)" stroke-dasharray="2 4"/><text x="368" y="78.5" text-anchor="end">95</text>
+        <line x1="10" y1="102.5" x2="352" y2="102.5" stroke="var(--line)" stroke-dasharray="2 4"/><text x="368" y="106" text-anchor="end">90</text>
+        <path d="M20 102.5 L50 96.6 L80 87.9 L110 84.7 L140 73.2 L170 67.3 L200 58.6 L230 55.4 L260 44.0 L290 38.0 L320 29.4 L350 20.7 L350 52.3 L320 60.1 L290 68.0 L260 73.0 L230 83.6 L200 85.9 L170 93.7 L140 98.8 L110 109.3 L80 111.6 L50 119.4 L20 124.5 Z" fill="var(--bronze)" opacity=".12"/>
+        <path d="M20 113.5 L50 108.0 L80 99.8 L110 97.0 L140 86.0 L170 80.5 L200 72.2 L230 69.5 L260 58.5 L290 53.0 L320 44.8 L350 36.5" fill="none" stroke="var(--bronze-2)" stroke-width="2"/>
+        <circle cx="20" cy="113.5" r="3" fill="var(--bronze-2)"/><circle cx="50" cy="108.0" r="3" fill="var(--bronze-2)"/><circle cx="80" cy="99.8" r="3" fill="var(--bronze-2)"/><circle cx="110" cy="97.0" r="3" fill="var(--bronze-2)"/><circle cx="140" cy="86.0" r="3" fill="var(--bronze-2)"/><circle cx="170" cy="80.5" r="3" fill="var(--bronze-2)"/><circle cx="200" cy="72.2" r="3" fill="var(--bronze-2)"/><circle cx="230" cy="69.5" r="3" fill="var(--bronze-2)"/><circle cx="260" cy="58.5" r="3" fill="var(--bronze-2)"/><circle cx="290" cy="53.0" r="3" fill="var(--bronze-2)"/><circle cx="320" cy="44.8" r="3" fill="var(--bronze-2)"/>
+        <circle cx="350" cy="36.5" r="4.5" fill="var(--bronze-2)" stroke="var(--bg)" stroke-width="2"/>
+        <line x1="230" y1="20" x2="230" y2="130" stroke="var(--line)"/><text x="226" y="140" text-anchor="end">début méso 1</text>
+        <text x="20" y="147">7 août</text><text x="140" y="147" text-anchor="middle">18 sept.</text><text x="350" y="147" text-anchor="end">30 oct.</text>
+      </svg>
+      <div class="row muted" style="font-size:11px;margin-top:2px"><span><i style="display:inline-block;width:10px;height:6px;background:var(--bronze);opacity:.3;border-radius:2px;margin-right:5px"></i>bande de confiance ± 2,5 kg</span><span>Epley, séries ≤ 10 reps</span></div>
+    </div>
+
+    <!-- KPI -->
+    <div class="row" style="gap:10px;align-items:stretch">
+      <div class="card kpi"><div class="eyebrow">Record</div><div class="v num bronze">82,5 <span style="font-family:inherit;font-size:13px;color:var(--fg-2)">× 8</span></div><div class="s">mar. 27 oct. · série 1</div></div>
+      <div class="card kpi"><div class="eyebrow">1RM estimé</div><div class="v num bronze">102 <span style="font-family:inherit;font-size:13px;color:var(--fg-2)">kg</span></div><div class="s">confiance 81 %</div></div>
+    </div>
+    <div class="row" style="gap:10px;align-items:stretch">
+      <div class="card kpi"><div class="eyebrow">Tonnage semaine</div><div class="v num">31 200 <span style="font-family:inherit;font-size:13px;color:var(--fg-2)">kg</span></div><div class="s">3 séances sur 4 · +6 % vs S1</div></div>
+      <div class="card kpi"><div class="eyebrow">Constance</div><div class="v num">4 <span style="font-family:inherit;font-size:13px;color:var(--fg-2)">séances / sem.</span></div><div class="s">streak 6 semaines</div></div>
+    </div>
+
+    <!-- Volume -->
+    <div class="card" style="padding:10px 16px 8px">
+      <div class="row" style="margin-bottom:4px"><div class="eyebrow">Séries par muscle · semaine 2</div><span class="muted" style="font-size:11px">point = fait · barre = plage</span></div>
+      <!-- échelle : 0 → 20 séries sur 100 % -->
+      <div class="vol"><span class="n">Pectoraux</span><span class="track"><span class="range" style="left:50%;width:30%"></span><span class="dot" style="left:60%"></span></span><span class="c"><b>12</b> · 10–16</span></div>
+      <div class="vol"><span class="n">Dos</span><span class="track"><span class="range" style="left:50%;width:40%"></span><span class="dot" style="left:70%"></span></span><span class="c"><b>14</b> · 10–18</span></div>
+      <div class="vol"><span class="n">Jambes</span><span class="track"><span class="range" style="left:50%;width:30%"></span><span class="dot low" style="left:45%"></span></span><span class="c"><b class="low">9</b> · 10–16</span></div>
+      <div class="vol"><span class="n">Épaules</span><span class="track"><span class="range" style="left:40%;width:40%"></span><span class="dot" style="left:55%"></span></span><span class="c"><b>11</b> · 8–16</span></div>
+      <div class="muted" style="font-size:11px;margin-top:4px">Jambes sous la plage · Bas B samedi ajoute 9 séries</div>
+    </div>
+  </div>
+
+  <nav class="tabbar">
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18M12 3v18"/><circle cx="12" cy="12" r="9"/></svg>Aujourd'hui</a>
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>Entraînement</a>
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M4 8h16l-1.5 12h-13z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>Nutrition</a>
+    <a class="tab on"><svg class="ic" viewBox="0 0 24 24"><path d="M3 20h18M5 17l5-6 4 3 5-8"/></svg>Progrès</a>
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>Plus</a>
+  </nav>
+  <div class="home"></div>
+</div>
+</body>
+</html>
