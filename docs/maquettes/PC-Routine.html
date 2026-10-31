@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Spartiate — PC — Programme</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap">
+<style>
+:root{--bg:#0D0E11;--surface:#15171C;--surface-2:#1D2027;--line:#2A2E37;--fg:#EDE7DC;--fg-2:#A39C90;--accent:#B8322A;--accent-h:#D23B31;--bronze:#C28E4C;--bronze-2:#E0B577;--ok:#5E9E6B;--warn:#D9A441;--info:#6F8FB3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--fg);font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums}
+h1,h2,.display{font-family:Cinzel,"Times New Roman",serif;font-weight:600;letter-spacing:.02em;margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;font-weight:600;font-size:16px;border:0;cursor:pointer;color:var(--fg);background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--fg)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.bronze{background:transparent;border:1px solid var(--bronze);color:var(--bronze-2)}
+.num{font-family:Cinzel,serif;font-weight:600}
+.bronze{color:var(--bronze-2)}
+.muted{color:var(--fg-2)}
+.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg-2)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
+.pill.warn{border-color:var(--warn);color:var(--warn)}
+.pill.red{background:var(--accent);border-color:var(--accent);color:var(--fg)}
+.dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dial svg{display:block}
+.dial .v{font-family:Cinzel,serif;font-size:26px;font-weight:600;line-height:1}
+.dial .l{font-size:12px;color:var(--fg-2)}
+svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+.win{width:1440px;height:900px;background:var(--bg);display:flex;overflow:hidden}
+.side{width:220px;flex:none;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 12px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 22px}
+.brand .shield{width:30px;height:30px;border-radius:50%;background:var(--bronze);display:flex;align-items:center;justify-content:center;color:var(--accent);font-family:Cinzel,serif;font-weight:600;font-size:18px}
+.nav a{display:flex;align-items:center;gap:10px;height:40px;padding:0 10px;border-radius:8px;color:var(--fg-2);font-size:14px;font-weight:500}
+.nav a.on{background:var(--surface-2);color:var(--fg)}
+.nav a kbd{margin-left:auto;font:11px ui-monospace,monospace;color:var(--fg-2);opacity:.7}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.top{height:56px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.cols{flex:1;display:grid;grid-template-columns:220px 1fr 290px;gap:20px;padding:22px 28px;min-height:0;align-items:stretch}
+.sub{display:flex;gap:18px;font-size:14px;color:var(--fg-2)}
+.sub span.on{color:var(--fg);border-bottom:2px solid var(--bronze);padding-bottom:4px}
+.pl{display:flex;flex-direction:column;gap:2px}
+.pl a{display:flex;flex-direction:column;justify-content:center;height:52px;padding:0 12px;border-radius:8px;color:var(--fg);font-size:14px}
+.pl a small{font-size:12px;color:var(--fg-2)}
+.pl a.on{background:var(--surface-2);box-shadow:inset 3px 0 0 var(--bronze)}
+.pl a.new{color:var(--fg-2);height:44px}
+.weeks{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.wk{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--fg-2)}
+.wk b{display:block;color:var(--fg);font-size:13px}
+.wk.on{border-color:var(--bronze);background:var(--surface-2)}
+.wk.on b{color:var(--bronze-2)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;flex:1;min-height:0}
+.day{display:flex;flex-direction:column;gap:6px;min-width:0}
+.dh{display:flex;flex-direction:column;gap:2px;padding:0 4px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+.dh b{font-family:Cinzel,serif;font-size:15px;font-weight:600}
+.dh small{font-size:11px;color:var(--fg-2)}
+.xc{display:grid;grid-template-columns:14px 1fr;gap:6px;padding:7px 8px 7px 6px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:12.5px;line-height:1.25;min-width:0}
+.xc .h{color:var(--fg-2);opacity:.7;font-size:14px;letter-spacing:-2px;line-height:1;padding-top:2px}
+.xc .m{font-size:11px;color:var(--fg-2);margin-top:3px;white-space:nowrap}
+.xc .m b{color:var(--bronze-2);font-weight:600}
+.xc.on{border-color:var(--bronze-2);background:var(--surface-2);box-shadow:0 0 0 3px rgba(224,181,119,.14)}
+.xc.add{border-style:dashed;color:var(--fg-2);justify-content:center;grid-template-columns:1fr;text-align:center;padding:9px}
+.right{display:flex;flex-direction:column;gap:14px;min-width:0}
+.kv{display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-top:1px solid var(--line);gap:10px}
+.kv:first-of-type{border-top:0}
+.fld{height:36px;border:1px solid var(--line);border-radius:8px;background:var(--bg);display:flex;align-items:center;padding:0 10px;font-size:14px;font-weight:600;gap:6px}
+.fld span{color:var(--fg-2);font-weight:400;font-size:12px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;height:34px;font-size:13px}
+.seg span{flex:1;display:flex;align-items:center;justify-content:center;color:var(--fg-2)}
+.seg span.on{background:var(--surface-2);color:var(--fg);font-weight:600}
+kbd.k{font:12px ui-monospace,monospace;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--fg)}
+</style>
+</head>
+<body>
+<div class="win">
+  <aside class="side">
+    <div class="brand"><span class="shield">Λ</span><span class="display" style="font-size:17px">Spartiate</span></div>
+    <nav class="nav" style="display:flex;flex-direction:column;gap:2px">
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3v18"/></svg>Aujourd'hui<kbd>Ctrl 1</kbd></a>
+      <a class="on"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>Entraînement<kbd>Ctrl 2</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M4 8h16l-1.5 12h-13z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>Nutrition<kbd>Ctrl 3</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M3 20h18M5 17l5-6 4 3 5-8"/></svg>Progrès<kbd>Ctrl 4</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>Plus<kbd>Ctrl 5</kbd></a>
+    </nav>
+    <div style="flex:1"></div>
+    <div class="card" style="padding:10px 12px;font-size:12px;color:var(--fg-2);display:flex;flex-direction:column;gap:4px">
+      <span style="color:var(--fg)">PC · Bureau</span>
+      <span>Synchro iCloud il y a 2 min</span>
+      <span>iPhone vu il y a 2 min</span>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="top">
+      <div style="display:flex;align-items:center;gap:22px">
+        <h1 style="font-size:22px">Entraînement</h1>
+        <div class="sub"><span>Lancer</span><span class="on">Programme</span><span>Historique</span><span>Bibliothèque</span><span>Matériel</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="muted" style="font-size:13px">Modifié il y a 4 min · non enregistré</span>
+        <button class="btn ghost" style="height:36px;padding:0 14px;font-size:14px;white-space:nowrap">Mettre en pause le programme</button>
+        <button class="btn primary" style="height:36px;padding:0 16px;font-size:14px">Enregistrer</button>
+      </div>
+    </div>
+
+    <div class="cols">
+      <aside class="card" style="padding:12px 8px;display:flex;flex-direction:column">
+        <div class="eyebrow" style="padding:4px 12px 10px">Mes programmes</div>
+        <div class="pl">
+          <a class="on">Haut / Bas 4 j<small>actif · méso 1 · sem. 2 / 5</small></a>
+          <a>Full Body 3 j<small>guidé · 45 min</small></a>
+          <a>Rappel dos<small>libre · 2 séances</small></a>
+          <a>Voyage haltères<small>maison · profil Voyage</small></a>
+          <a class="new">+ Nouveau</a>
+        </div>
+        <div style="flex:1"></div>
+        <div style="border-top:1px solid var(--line);padding:12px 12px 4px">
+          <div class="eyebrow">Programmes de départ</div>
+          <div class="muted" style="font-size:12px;margin-top:6px;line-height:1.5">Full Body 3 j · Haut / Bas 4 j · PPL 5 j · Maison poids de corps</div>
+          <button class="btn ghost" style="height:36px;font-size:13px;margin-top:10px;width:100%">Parcourir</button>
+        </div>
+      </aside>
+
+      <section style="display:flex;flex-direction:column;gap:14px;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end">
+          <div><div class="eyebrow">Haut / Bas 4 j · mésocycle 1</div><h2 style="font-size:24px;margin-top:2px;white-space:nowrap">Semaine 2 <span class="muted" style="font-family:inherit;font-size:14px;font-weight:400">· 4 séances · 26 exercices · 74 séries</span></h2></div>
+          <div class="muted" style="font-size:12px;text-align:right;line-height:1.7;white-space:nowrap">Glisser la poignée <span style="color:var(--fg)">⋮⋮</span> vers un autre jour ou rang<br><kbd class="k">↑</kbd><kbd class="k">↓</kbd> déplacer · <kbd class="k">Suppr</kbd> retirer</div>
+        </div>
+
+        <div class="weeks">
+          <div class="wk"><b>S1</b>RIR 3 · séries de base</div>
+          <div class="wk on"><b>S2 · en cours</b>RIR 2–3 · +1 série / muscle</div>
+          <div class="wk"><b>S3</b>RIR 2 · +1 série / muscle</div>
+          <div class="wk"><b>S4</b>RIR 1 · +1 série / muscle</div>
+          <div class="wk"><b>S5 · deload</b>séries ÷ 2 · RIR 4+ · charge × 0,9</div>
+        </div>
+
+        <div class="grid">
+          <div class="day">
+            <div class="dh"><b>Haut A</b><small>lun. · 7 ex. · 20 séries</small></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Développé couché barre<div class="m"><b>3 × 6–10</b> · RIR 2 · 3:00</div></div></div>
+            <div class="xc on"><span class="h">⋮⋮</span><div>Rowing barre<div class="m"><b>3 × 6–10</b> · RIR 2 · 2:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Développé incliné haltères<div class="m"><b>3 × 8–12</b> · RIR 2 · 2:00</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Tirage vertical<div class="m"><b>3 × 8–12</b> · RIR 2 · 2:00</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Élévations latérales<div class="m"><b>3 × 12–15</b> · RIR 2 · 1:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Curl barre<div class="m"><b>2 × 8–12</b> · RIR 2 · 1:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Extension triceps poulie<div class="m"><b>2 × 8–12</b> · RIR 2 · 1:30</div></div></div>
+            <div class="xc add">+ Exercice</div>
+          </div>
+          <div class="day">
+            <div class="dh"><b>Bas A</b><small>mar. · 6 ex. · 18 séries</small></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Squat barre<div class="m"><b>3 × 5–8</b> · RIR 2 · 3:00</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Soulevé de terre roumain<div class="m"><b>3 × 6–10</b> · RIR 2 · 2:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Presse à cuisses<div class="m"><b>3 × 8–12</b> · RIR 2 · 2:00</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Leg curl allongé<div class="m"><b>3 × 10–15</b> · RIR 2 · 1:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Mollets debout<div class="m"><b>3 × 10–15</b> · RIR 2 · 1:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Planche<div class="m"><b>3 × 45 s</b> · 1:00</div></div></div>
+            <div class="xc add">+ Exercice</div>
+          </div>
+          <div class="day">
+            <div class="dh"><b>Haut B</b><small>jeu. · 7 ex. · 18 séries</small></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Développé militaire barre<div class="m"><b>3 × 6–10</b> · RIR 2 · 2:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Tractions<div class="m"><b>3 × 6–10</b> · RIR 2 · 2:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Développé couché haltères<div class="m"><b>3 × 8–12</b> · RIR 2 · 2:00</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Rowing haltère unilatéral<div class="m"><b>3 × 8–12</b> · RIR 2 · 1:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Écarté poulie<div class="m"><b>2 × 12–15</b> · RIR 2 · 1:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Curl incliné haltères<div class="m"><b>2 × 10–15</b> · RIR 2 · 1:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Dips<div class="m"><b>2 × 8–12</b> · RIR 2 · 1:30</div></div></div>
+            <div class="xc add">+ Exercice</div>
+          </div>
+          <div class="day">
+            <div class="dh"><b>Bas B</b><small>sam. · 6 ex. · 18 séries</small></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Soulevé de terre<div class="m"><b>3 × 4–6</b> · RIR 2 · 3:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Fente bulgare<div class="m"><b>3 × 8–12</b> · RIR 2 · 2:00</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Hip thrust<div class="m"><b>3 × 8–12</b> · RIR 2 · 2:00</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Leg extension<div class="m"><b>3 × 12–15</b> · RIR 2 · 1:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Mollets assis<div class="m"><b>3 × 12–15</b> · RIR 2 · 1:30</div></div></div>
+            <div class="xc"><span class="h">⋮⋮</span><div>Relevé de jambes<div class="m"><b>3 × 10–15</b> · 1:00</div></div></div>
+            <div class="xc add">+ Exercice</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="right">
+        <div class="card" style="padding:16px 18px">
+          <div class="eyebrow">Haut A · exercice 2</div>
+          <h2 style="font-size:22px;margin-top:4px">Rowing barre</h2>
+          <div class="muted" style="font-size:12px;margin-top:2px">Dos · tirage horizontal · barre olympique</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px">
+            <div><div class="eyebrow" style="font-size:10px">Séries</div><div class="fld" style="margin-top:4px">3</div></div>
+            <div><div class="eyebrow" style="font-size:10px">Reps</div><div class="fld" style="margin-top:4px">6–10</div></div>
+            <div><div class="eyebrow" style="font-size:10px">Repos</div><div class="fld" style="margin-top:4px">2:30</div></div>
+          </div>
+          <div style="margin-top:10px"><div class="eyebrow" style="font-size:10px">RIR cette semaine</div>
+            <div class="seg" style="margin-top:4px"><span>3</span><span class="on">2</span><span>1</span><span>0</span></div>
+            <div class="muted" style="font-size:11px;margin-top:4px">Suit la périodisation S1–S5 ; modifier ici fige l'exercice.</div>
+          </div>
+          <div style="margin-top:10px">
+            <div class="kv"><span>Charge prévue</span><span class="bronze">70 kg · barre + 2 × 25</span></div>
+            <div class="kv"><span>1RM estimé</span><span class="bronze">84 kg · confiance 78 %</span></div>
+            <div class="kv"><span>Dernière fois</span><span>26 oct. · 3 × 8 @ 67,5 kg</span></div>
+            <div class="kv"><span>Progression</span><span>double, pas +2,5 kg</span></div>
+          </div>
+        </div>
+        <div class="card" style="padding:16px 18px">
+          <div class="eyebrow">Remplacer</div>
+          <div class="muted" style="font-size:12px;margin-top:6px">Même pattern, matériel Salle Antony</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:13px">
+            <span>Rowing haltère unilatéral</span><span>Rowing T-bar</span><span>Rowing machine assis</span>
+          </div>
+          <button class="btn ghost" style="height:34px;font-size:13px;margin-top:10px;width:100%">Chercher dans la bibliothèque</button>
+        </div>
+        <div class="card" style="padding:16px 18px;flex:1;display:flex;flex-direction:column">
+          <div class="eyebrow">Notes épinglées</div>
+          <div style="flex:1;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:10px;margin-top:8px;font-size:13px;line-height:1.5">Prise large, buste à 45°, talons au sol. Pas de triche aux dernières reps.</div>
+          <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px" class="muted"><span>Affichée en séance</span><span>Retirer de ce jour</span></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+</body>
+</html>

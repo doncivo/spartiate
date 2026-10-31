@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Spartiate — PC — Séance active</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap">
+<style>
+:root{--bg:#0D0E11;--surface:#15171C;--surface-2:#1D2027;--line:#2A2E37;--fg:#EDE7DC;--fg-2:#A39C90;--accent:#B8322A;--accent-h:#D23B31;--bronze:#C28E4C;--bronze-2:#E0B577;--ok:#5E9E6B;--warn:#D9A441;--info:#6F8FB3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--fg);font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums}
+h1,h2,.display{font-family:Cinzel,"Times New Roman",serif;font-weight:600;letter-spacing:.02em;margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;font-weight:600;font-size:16px;border:0;cursor:pointer;color:var(--fg);background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--fg)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.bronze{background:transparent;border:1px solid var(--bronze);color:var(--bronze-2)}
+.num{font-family:Cinzel,serif;font-weight:600}
+.bronze{color:var(--bronze-2)}
+.muted{color:var(--fg-2)}
+.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg-2)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
+.pill.warn{border-color:var(--warn);color:var(--warn)}
+.pill.red{background:var(--accent);border-color:var(--accent);color:var(--fg)}
+.dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dial svg{display:block}
+.dial .v{font-family:Cinzel,serif;font-size:26px;font-weight:600;line-height:1}
+.dial .l{font-size:12px;color:var(--fg-2)}
+svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+.win{width:1440px;height:900px;background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+.top{height:56px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--surface)}
+.cols{flex:1;display:grid;grid-template-columns:280px 1fr 380px;min-height:0}
+.list{border-right:1px solid var(--line);padding:16px 12px;display:flex;flex-direction:column;gap:4px}
+.li{display:flex;align-items:center;gap:10px;height:48px;padding:0 10px;border-radius:8px;font-size:14px;color:var(--fg-2)}
+.li .k{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex:none}
+.li.done{color:var(--fg-2)}.li.done .k{background:var(--bronze);border-color:var(--bronze);color:var(--bg)}
+.li.on{background:var(--surface-2);color:var(--fg)}.li.on .k{border-color:var(--bronze-2);color:var(--bronze-2)}
+.li small{margin-left:auto;font-size:12px;white-space:nowrap;flex:none}
+.center{padding:24px 32px;display:flex;flex-direction:column;gap:18px;min-width:0}
+table{width:100%;border-collapse:collapse;font-size:16px}
+th{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-2);text-align:left;padding:0 10px 10px}
+td{padding:8px 10px;border-top:1px solid var(--line);height:56px;vertical-align:middle}
+tr.warm td{color:var(--fg-2);font-size:14px;height:42px}
+tr.cur td{background:var(--surface-2)}
+.field{display:inline-flex;align-items:center;justify-content:center;width:92px;height:40px;border-radius:8px;background:var(--bg);border:1px solid var(--line);font-size:17px;font-weight:600}
+.field.focus{border:2px solid var(--bronze-2);box-shadow:0 0 0 3px rgba(224,181,119,.18)}
+.field.target{color:var(--fg-2);font-weight:400;border-style:dashed}
+.check{width:30px;height:30px;border-radius:8px;border:2px solid var(--line);display:inline-flex;align-items:center;justify-content:center}
+.check.on{background:var(--accent);border-color:var(--accent)}
+.right{border-left:1px solid var(--line);padding:24px 22px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.kv{display:grid;grid-template-columns:1fr auto auto;gap:12px;font-size:13px;padding:8px 0;border-top:1px solid var(--line)}
+.kv:first-of-type{border-top:0}
+kbd{font:12px ui-monospace,monospace;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--fg)}
+.rate{display:flex;gap:8px}
+.rate button{height:40px;padding:0 18px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--fg-2);font-size:14px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="top">
+    <div style="display:flex;align-items:center;gap:16px">
+      <button class="btn ghost" style="height:36px;padding:0 12px;font-size:14px">Pause</button>
+      <div><div class="eyebrow">Séance en cours · Haut A · semaine 2</div><div style="font-size:14px" class="muted">Démarrée à 17:02 sur ce PC</div></div>
+    </div>
+    <div class="num" style="font-size:24px">23:41</div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--bronze);border-radius:10px;padding:6px 12px">
+        <span class="eyebrow">Repos</span><span class="num" style="font-size:22px;line-height:1">1:32</span>
+        <button class="btn ghost" style="height:30px;padding:0 10px;font-size:13px">+30 s</button>
+        <button class="btn" style="height:30px;padding:0 10px;font-size:13px">Passer</button>
+      </div>
+      <button class="btn bronze" style="height:36px;padding:0 16px;font-size:14px">Terminer la séance</button>
+    </div>
+  </div>
+
+  <div class="cols">
+    <aside class="list">
+      <div class="eyebrow" style="padding:0 10px 10px">7 exercices · 20 séries</div>
+      <div class="li done"><span class="k">✓</span>Développé couché barre<small>3 / 3</small></div>
+      <div class="li on"><span class="k">2</span>Rowing barre<small>2 / 3</small></div>
+      <div class="li"><span class="k">3</span>Développé incliné haltères<small>0 / 3</small></div>
+      <div class="li"><span class="k">4</span>Tirage vertical<small>0 / 3</small></div>
+      <div class="li"><span class="k">5</span>Élévations latérales<small>0 / 3</small></div>
+      <div class="li"><span class="k">6</span>Curl barre<small>0 / 2</small></div>
+      <div class="li"><span class="k">7</span>Extension triceps poulie<small>0 / 2</small></div>
+      <div style="flex:1"></div>
+      <button class="btn ghost" style="height:40px;font-size:14px">Ajouter un exercice</button>
+    </aside>
+
+    <section class="center">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <h2 style="font-size:30px">Rowing barre</h2>
+          <div class="muted" style="font-size:14px;margin-top:4px">Cible 3 × 6–10 · repos 2:30 · séance précédente 3 × 8 @ 67,5 kg (26 oct.)</div>
+        </div>
+        <div style="display:flex;gap:8px"><button class="btn ghost" style="height:36px;font-size:14px;white-space:nowrap">Remplacer</button><button class="btn ghost" style="height:36px;font-size:14px;white-space:nowrap">Passer l'exercice</button></div>
+      </div>
+
+      <div class="card" style="padding:14px 12px 8px">
+        <table>
+          <thead><tr><th style="width:48px">#</th><th>Précédent</th><th>Charge (kg)</th><th>Reps</th><th>RIR</th><th style="width:56px"></th></tr></thead>
+          <tbody>
+            <tr class="warm"><td>É</td><td>—</td><td>40</td><td>× 6</td><td>—</td><td><span class="check on" style="width:22px;height:22px;border-radius:6px"><svg class="ic" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M5 12l5 5 9-10"/></svg></span></td></tr>
+            <tr><td>1</td><td class="muted">67,5 × 8</td><td><span class="field">70</span></td><td><span class="field">8</span></td><td><span class="field">2</span></td><td><span class="check on"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M5 12l5 5 9-10"/></svg></span></td></tr>
+            <tr><td>2</td><td class="muted">67,5 × 8</td><td><span class="field">70</span></td><td><span class="field">8</span></td><td><span class="field">2</span></td><td><span class="check on"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M5 12l5 5 9-10"/></svg></span></td></tr>
+            <tr class="cur"><td>3</td><td class="muted">67,5 × 7</td><td><span class="field">70</span></td><td><span class="field focus target">7–8</span></td><td><span class="field target">1–2</span></td><td><span class="check"></span></td></tr>
+          </tbody>
+        </table>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 10px 6px;font-size:13px" class="muted">
+          <span><kbd>Entrée</kbd> valide la série · <kbd>Tab</kbd> champ suivant · <kbd>↑</kbd><kbd>↓</kbd> ± 2,5 kg · <kbd>+</kbd> ajoute une série</span>
+          <span>barre 20 + 2 × 25 kg</span>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="rate" aria-label="Difficulté, après la dernière série"><button>Facile</button><button>Juste</button><button>Dur</button></div>
+        <span class="muted" style="font-size:13px">Note épinglée : prise large, buste à 45°, talons au sol.</span>
+      </div>
+    </section>
+
+    <aside class="right">
+      <div class="card" style="padding:16px 18px">
+        <div class="eyebrow">Pourquoi 70 kg ?</div>
+        <p style="margin:8px 0 0;font-size:14px;line-height:1.55">Le 26 octobre tu as fait 3 × 8 à 67,5 kg, jugé <b>Juste</b>. Le haut de la plage 6–10 n'est pas atteint, mais deux séances « Juste » de suite à la même charge déclenchent +2,5 kg, le plus petit cran de ta salle. 1RM estimé : <b class="bronze">84 kg</b>, confiance 78 %.</p>
+        <div class="muted" style="font-size:12px;margin-top:8px">Moteur v1 · règle « double progression » · plafond +10 % respecté</div>
+      </div>
+      <div class="card" style="padding:16px 18px">
+        <div style="display:flex;justify-content:space-between"><div class="eyebrow">Historique · 1RM estimé</div><span class="muted" style="font-size:12px">8 semaines</span></div>
+        <svg viewBox="0 0 320 90" style="width:100%;margin-top:8px" aria-label="1RM estimé du rowing barre sur 8 semaines">
+          <line x1="0" y1="80" x2="320" y2="80" stroke="var(--line)"/>
+          <polyline fill="none" stroke="var(--bronze)" stroke-width="2.5" points="0,66 40,62 80,58 120,52 160,50 200,42 240,36 280,30 320,24"/>
+          <circle cx="320" cy="24" r="4" fill="var(--bronze-2)"/>
+          <text x="0" y="90" fill="var(--fg-2)" font-size="10">74 kg</text><text x="320" y="90" fill="var(--fg-2)" font-size="10" text-anchor="end">84 kg</text>
+        </svg>
+        <div style="margin-top:8px">
+          <div class="kv"><span>26 oct.</span><span>67,5 × 8, 8, 8</span><span class="muted">Juste</span></div>
+          <div class="kv"><span>19 oct.</span><span>67,5 × 8, 8, 7</span><span class="muted">Juste</span></div>
+          <div class="kv"><span>12 oct.</span><span>65 × 9, 9, 8</span><span class="muted">Facile</span></div>
+          <div class="kv"><span>5 oct.</span><span>65 × 8, 8, 8</span><span class="muted">Juste</span></div>
+        </div>
+      </div>
+      <div class="card" style="padding:16px 18px;flex:1">
+        <div class="eyebrow">Récupération du jour</div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:14px"><span>Dos</span><span class="ok" style="color:var(--ok)">92 %</span></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:14px"><span>Biceps</span><span class="ok" style="color:var(--ok)">88 %</span></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:14px"><span>Pectoraux</span><span style="color:var(--warn)">61 % · travaillés il y a 10 min</span></div>
+        <div class="muted" style="font-size:12px;margin-top:10px">Lue sur l'iPhone ce matin ; le PC n'accède pas à Apple Santé.</div>
+      </div>
+    </aside>
+  </div>
+</div>
+</body>
+</html>

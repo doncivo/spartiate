@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Spartiate — iPhone — Récupération</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap">
+<style>
+:root{--bg:#0D0E11;--surface:#15171C;--surface-2:#1D2027;--line:#2A2E37;--fg:#EDE7DC;--fg-2:#A39C90;--accent:#B8322A;--accent-h:#D23B31;--bronze:#C28E4C;--bronze-2:#E0B577;--ok:#5E9E6B;--warn:#D9A441;--info:#6F8FB3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--fg);font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums}
+h1,h2,.display{font-family:Cinzel,"Times New Roman",serif;font-weight:600;letter-spacing:.02em;margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;font-weight:600;font-size:16px;border:0;cursor:pointer;color:var(--fg);background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--fg)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.bronze{background:transparent;border:1px solid var(--bronze);color:var(--bronze-2)}
+.num{font-family:Cinzel,serif;font-weight:600}
+.bronze{color:var(--bronze-2)}
+.muted{color:var(--fg-2)}
+.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg-2)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
+.pill.warn{border-color:var(--warn);color:var(--warn)}
+.pill.red{background:var(--accent);border-color:var(--accent);color:var(--fg)}
+.dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dial svg{display:block}
+.dial .v{font-family:Cinzel,serif;font-size:26px;font-weight:600;line-height:1}
+.dial .l{font-size:12px;color:var(--fg-2)}
+svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+.phone{width:440px;height:956px;background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:126px;height:37px;border-radius:20px;background:#000}
+.status{height:59px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 32px 10px;font-size:15px;font-weight:600}
+.scroll{flex:1;overflow:hidden;padding:4px 20px 0;display:flex;flex-direction:column;gap:12px}
+.tabbar{height:83px;border-top:1px solid var(--line);background:var(--surface);display:flex;justify-content:space-around;padding:8px 8px 0}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--fg-2);width:64px}
+.tab.on{color:var(--bronze-2)}
+.home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:var(--fg);opacity:.8}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ctr{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;padding:5px 0;border-top:1px solid var(--line)}
+.ctr:first-child{border-top:0;padding-top:0}
+.ctr b{font-weight:600}
+.ctr .b{color:var(--fg-2);font-size:12px}
+.mus{display:grid;grid-template-columns:1fr 1fr;column-gap:16px;row-gap:7px;font-size:13px}
+.mus .m{display:flex;align-items:center;gap:8px}
+.mus .m span:first-child{width:66px;flex:none}
+.mus .bar{flex:1;height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.mus .bar i{display:block;height:100%;background:var(--ok)}
+.mus .bar i.w{background:var(--warn)}
+.mus .p{width:44px;text-align:right;font-variant-numeric:tabular-nums;color:var(--fg-2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chk{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 11px 0 8px;border-radius:16px;border:1px solid var(--line);font-size:13px;color:var(--fg-2)}
+.chk i{width:16px;height:16px;border-radius:5px;border:1.5px solid var(--line);display:inline-flex;align-items:center;justify-content:center}
+.chk.on{color:var(--fg);border-color:var(--bronze)}
+.chk.on i{background:var(--bronze);border-color:var(--bronze)}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="island"></div>
+  <div class="status"><span>07:38</span><span>●●●● ᯤ ▮</span></div>
+  <div class="scroll">
+    <div class="row">
+      <button class="btn ghost" style="height:36px;padding:0 12px;font-size:14px;gap:4px"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M15 5l-7 7 7 7"/></svg>Aujourd'hui</button>
+      <span class="pill">Niveau C · 14 nuits</span>
+    </div>
+    <div>
+      <div class="eyebrow">ven. 30 oct. · Apple Watch, lu à 07:35</div>
+      <h1 style="font-size:28px;margin-top:2px;line-height:1.1">Récupération</h1>
+    </div>
+
+    <!-- Recovery -->
+    <div class="card" style="padding:12px 16px;display:flex;gap:16px;align-items:center">
+      <div class="dial" style="flex:none">
+        <svg width="96" height="96" viewBox="0 0 96 96"><circle cx="48" cy="48" r="41" stroke="var(--surface-2)" stroke-width="8" fill="none"/><circle cx="48" cy="48" r="41" stroke="var(--ok)" stroke-width="8" fill="none" stroke-dasharray="258" stroke-dashoffset="72" stroke-linecap="round" transform="rotate(-90 48 48)"/><text x="48" y="54" text-anchor="middle" fill="var(--fg)" font-family="Cinzel,serif" font-size="30" font-weight="600">72</text></svg>
+        <span class="l" style="color:var(--ok);font-weight:600">bonne</span>
+      </div>
+      <div style="flex:1">
+        <div class="eyebrow" style="margin-bottom:6px">Recovery · contributeurs</div>
+        <div class="ctr"><span>HRV <b>58 ms</b></span><span class="b">baseline 54 ± 6 · <span style="color:var(--ok)">+0,7 σ</span></span></div>
+        <div class="ctr"><span>FC repos <b>52</b></span><span class="b">baseline 54 ± 3 · <span style="color:var(--ok)">+0,7 σ</span></span></div>
+        <div class="ctr"><span>Sommeil <b>93 %</b></span><span class="b">du besoin · facteur 0,97</span></div>
+      </div>
+    </div>
+
+    <!-- Exertion + Sommeil -->
+    <div class="row" style="gap:10px;align-items:stretch">
+      <div class="card" style="flex:1;padding:12px 14px">
+        <div class="eyebrow">Exertion hier</div>
+        <div style="margin-top:4px"><span class="num" style="font-size:26px">6,4</span> <span class="muted" style="font-size:12px">/ 10</span></div>
+        <div class="muted" style="font-size:12px;margin-top:2px">Haut A · 7 400 kg</div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:13px">Zone cible du jour <b class="bronze">6–8</b></div>
+      </div>
+      <div class="card" style="flex:1.35;padding:12px 14px">
+        <div class="eyebrow">Sommeil</div>
+        <div style="margin-top:4px"><span class="num" style="font-size:26px">7:12</span> <span class="muted" style="font-size:12px">besoin 7:45</span></div>
+        <div class="muted" style="font-size:12px;margin-top:2px">23:48 → 07:00 · ± 32 min</div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:13px">Coucher cible ce soir <b class="bronze">23:15</b></div>
+      </div>
+    </div>
+
+    <!-- Muscles -->
+    <div class="card" style="padding:12px 16px">
+      <div class="row" style="margin-bottom:8px"><div class="eyebrow">Récupération par muscle</div><span class="muted" style="font-size:12px">approximation</span></div>
+      <div class="mus">
+        <div class="m"><span>Jambes</span><span class="bar"><i style="width:100%"></i></span><span class="p">100 %</span></div>
+        <div class="m"><span>Dos</span><span class="bar"><i style="width:92%"></i></span><span class="p">92 %</span></div>
+        <div class="m"><span>Biceps</span><span class="bar"><i style="width:88%"></i></span><span class="p">88 %</span></div>
+        <div class="m"><span>Épaules</span><span class="bar"><i style="width:74%"></i></span><span class="p">74 %</span></div>
+        <div class="m"><span>Triceps</span><span class="bar"><i class="w" style="width:66%"></i></span><span class="p">66 %</span></div>
+        <div class="m"><span>Pectoraux</span><span class="bar"><i class="w" style="width:61%"></i></span><span class="p">61 %</span></div>
+      </div>
+      <div class="muted" style="font-size:12px;margin-top:8px">Pectoraux à 100 % demain 14 h · Bas A prêt aujourd'hui</div>
+    </div>
+
+    <!-- Journal de facteurs -->
+    <div class="card" style="padding:12px 16px">
+      <div class="row" style="margin-bottom:8px"><div class="eyebrow">Journal du matin</div><span class="muted" style="font-size:12px">hier · facultatif</span></div>
+      <div class="chips">
+        <span class="chk"><i></i>Alcool</span>
+        <span class="chk"><i></i>Caféine tard</span>
+        <span class="chk"><i></i>Repas tardif</span>
+        <span class="chk"><i></i>Stress</span>
+        <span class="chk on"><i><svg class="ic" viewBox="0 0 24 24" style="width:11px;height:11px;stroke-width:3"><path d="M5 12l5 5 9-10"/></svg></i>Courbatures</span>
+        <span class="chk"><i></i>Maladie</span>
+        <span class="chk"><i></i>Voyage</span>
+      </div>
+    </div>
+
+    <div class="muted" style="font-size:12px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Estimation, pas un avis médical</div>
+  </div>
+
+  <nav class="tabbar">
+    <a class="tab on"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18M12 3v18"/><circle cx="12" cy="12" r="9"/></svg>Aujourd'hui</a>
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>Entraînement</a>
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M4 8h16l-1.5 12h-13z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>Nutrition</a>
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M3 20h18M5 17l5-6 4 3 5-8"/></svg>Progrès</a>
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>Plus</a>
+  </nav>
+  <div class="home"></div>
+</div>
+</body>
+</html>
