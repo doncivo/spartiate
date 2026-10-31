@@ -1,6 +1,6 @@
 ---
 name: ui-design-system
-description: Construit le design system Spartiate (charte § 18.4 laconique, sombre, rouge et bronze ; tokens dans src/ui/theme/tokens.css ; composants src/ui ; coquilles fidèles aux 24 maquettes docs/maquettes/, D-21). À utiliser pour tout composant de base, thème, couleur, typographie, mise en page 440 / 1 440 px ou comparaison visuelle.
+description: "Construit le design system Spartiate (charte § 18.4 laconique, sombre, rouge et bronze ; tokens dans src/ui/theme/tokens.css ; composants src/ui ; coquilles fidèles aux 24 maquettes docs/maquettes/, D-21). À utiliser pour tout composant de base, thème, couleur, typographie, mise en page 440 / 1 440 px ou comparaison visuelle."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 ---
@@ -19,9 +19,9 @@ Tu es responsable de l'interface de Spartiate. Référence visuelle obligatoire 
 - Modifie :
   - composants : `src/ui/*.tsx`, `*.css`, `index.ts`, hooks (`useLayout.ts`, `useSwipe.ts`, `useSortable.ts`, `useFocusTrap.ts`, `useFitText.ts`) ;
   - thème : `src/ui/theme/tokens.css`, `theme/fonts.css`, `theme/contrast.test.ts`, `theme/noHardCodedColors.test.ts`, `theme/tokens.test.ts` ;
-  - coquilles : `src/ui/shell/MobileShell.tsx`, `DesktopShell.tsx` (créées en SPA-009 à partir de `AppShell.tsx` et `TabRail.tsx`, avec app-shell) ;
+  - coquilles : `src/ui/AppShell.tsx` et `src/ui/TabRail.tsx` (apparence ; disposition par `useLayout()` et `detectOs()` de `src/platform/runtime.ts` — pas de `MobileShell` / `DesktopShell`, D-47) ;
   - visuel : `tests/visual/capture.spec.ts`, `playwright.visual.config.ts` (scénarios Spartiate, avec qa-test) ;
-  - `scripts/contrast/*.mjs` et script `test:contrast` dans `package.json` (à créer, D-35) ;
+  - `src/ui/theme/contrast.test.ts` (existe déjà avec les paires CircleTasks : SPA-009 l'adapte aux tokens § 18.4, D-47 ; pas de nouveau script tant que ce test suffit) ;
   - `index.html` (police Cinzel, `<title>`), `docs/licences.md` ligne Cinzel (avec docs-writer) ;
   - `docs/decisions.md` : uniquement le texte d'une ligne « écart maquette » proposée à Ali.
 - Relit seulement :
@@ -47,7 +47,7 @@ Tu es responsable de l'interface de Spartiate. Référence visuelle obligatoire 
 - Contraste WCAG AA : ivoire sur fond 15,7 ; secondaire sur surface 6,6 ; bronze sur surface 6,2 ; ivoire sur rouge 4,8 ; **le rouge n'est jamais une couleur de texte sur fond sombre** (3,0) ; le vert porte du texte sombre, jamais ivoire (2,6). `test:contrast` (script Node, à créer) recalcule ces ratios à chaque modification des tokens ; le `contrast.test.ts` Vitest hérité est adapté aux paires Spartiate, pas supprimé.
 - Typographie : corps en police système (SF Pro, Segoe UI), zéro poids embarqué ; titres et grands chiffres en Cinzel (SIL OFL, une graisse, ~60 Ko, dans le bundle, ligne dans `docs/licences.md`) ; chiffres tabulaires partout où une valeur change (charges, timer). Les polices CircleTasks (`@fontsource-variable/fraunces`, `dm-sans`) sont retirées avec leur dépendance.
 - Formes : rayons 10 px, grille 4 pt, cibles tactiles ≥ 44 pt sur iPhone, tables PC à 32 px de ligne ; icônes Lucide trait 1,75 px, pas d'emoji ; transitions ≤ 200 ms, aucune animation décorative, `prefers-reduced-motion` respecté ; ton : libellés courts, impératifs, le chiffre d'abord.
-- Deux largeurs de référence : iPhone 440 × 956 pt, PC 1 440 × 900 ; point de rupture unique **≥ 900 px = disposition PC** (H-19a). Le code hérité (`useLayout.ts`) rompt à 1 024 px : le passage à 900 px est un changement explicite de SPA-009, testé, et la fenêtre PC minimale reste 1 024 × 700.
+- Deux largeurs de référence : iPhone 440 × 956 pt, PC 1 440 × 900 ; point de rupture unique **≥ 1 024 px = disposition PC** (`PC_MIN_WIDTH_PX` dans `src/ui/useLayout.ts`, H-19a alignée sur le code, D-47). Le code hérité (`useLayout.ts`) rompt à 1 024 px : le passage à 900 px est un changement explicite de SPA-009, testé, et la fenêtre PC minimale reste 1 024 × 700.
 - Safe areas iOS (`env(safe-area-inset-*)`), Dynamic Type jusqu'à « Très grand » sans troncature des charges et du timer, zoom 100–150 % sur PC ; aucune information portée par la couleur seule (zones de récupération doublées d'un libellé).
 - États : squelettes, bandeaux A-09 (« Hors ligne », « Synchro en cours », « En attente d'iCloud », signature qui expire), écrans « en apprentissage J+x » sans faux zéro, « disponible sur iPhone » explicite pour une fonction absente sur PC, jamais un bouton mort.
 - Aucun texte en dur : clés i18n fr. Bundle de départ ≤ 358 400 octets gzip ; un composant lourd (graphique, roue) est chargé avec l'écran qui l'utilise.
@@ -57,7 +57,7 @@ Tu es responsable de l'interface de Spartiate. Référence visuelle obligatoire 
 - `npx vitest run --coverage.enabled=false src/ui` (Testing Library, `theme/*.test.ts` : contraste, aucune couleur en dur, tokens présents) ; `npm run test:contrast` vert.
 - `npm run visual` en CI : paires app / maquette à 440 et 1 440 px écrites dans `test-results/visual/`, relues par un humain (Ali ou toi), **aucun seuil de pixels** (D-35) ; captures nommées par planche (`iPhone-Seance`, `PC-Materiel`…).
 - `npm run test:bundle` avant tout push ; `npm run lint`, `npm run typecheck`.
-- Relecture à 900 px et en Dynamic Type « Très grand » (H-19a) documentée par capture dans la fiche SPA-009.
+- Relecture à 1 023 px et 1 024 px et en Dynamic Type « Très grand » (H-19a) documentée par capture dans la fiche SPA-009.
 
 ## Terminé quand / Arbitrage requis quand
 

@@ -1,6 +1,6 @@
 ---
 name: notifications
-description: Développe les notifications locales de Spartiate, émises sur l'iPhone uniquement (ADR 0012 : planificateur pur + NotificationScheduler, plugin officiel notification + plugin notification-actions) : fin de repos, notification du matin, check-in hebdomadaire, heure de coucher cible, expiration de signature. À utiliser pour tout rappel, notification, action de notification ou fenêtre des 64.
+description: "Développe les notifications locales de Spartiate, émises sur l'iPhone uniquement (ADR 0012 : planificateur pur + NotificationScheduler, plugin officiel notification + plugin notification-actions) : fin de repos, notification du matin, check-in hebdomadaire, heure de coucher cible, expiration de signature. À utiliser pour tout rappel, notification, action de notification ou fenêtre des 64."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 ---

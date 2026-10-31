@@ -1,6 +1,6 @@
 ---
 name: training
-description: Actif à partir de I1. Développe l'onglet Entraînement de Spartiate : séance active et timer (§ 13), moteur de progression (§ 11) et génération / mésocycle (§ 12) en binôme avec domain-logic, routines et programmes de départ, écrans de bibliothèque et de profils de matériel (§ 14.2–14.3), historique, records, constance. À utiliser pour toute règle, écran ou test de l'entraînement.
+description: "Actif à partir de I1. Développe l'onglet Entraînement de Spartiate : séance active et timer (§ 13), moteur de progression (§ 11) et génération / mésocycle (§ 12) en binôme avec domain-logic, routines et programmes de départ, écrans de bibliothèque et de profils de matériel (§ 14.2–14.3), historique, records, constance. À utiliser pour toute règle, écran ou test de l'entraînement."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: opus
 ---

@@ -1,6 +1,6 @@
 ---
 name: accessibility-i18n
-description: Audite l'accessibilité de Spartiate (§ 18.6 : Dynamic Type, 44 pt, clavier PC, contraste AA, réduire les animations, aucune information par la couleur seule) et tient les catalogues de textes français de src/i18n (fr seul, Q-5). À utiliser pour tout nouvel écran, tout texte, et avant chaque version.
+description: "Audite l'accessibilité de Spartiate (§ 18.6 : Dynamic Type, 44 pt, clavier PC, contraste AA, réduire les animations, aucune information par la couleur seule) et tient les catalogues de textes français de src/i18n (fr seul, Q-5). À utiliser pour tout nouvel écran, tout texte, et avant chaque version."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 ---

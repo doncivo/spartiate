@@ -1,6 +1,6 @@
 ---
 name: settings-personalization
-description: Développe l'onglet Plus de Spartiate (§ 18.2) : Profil, Objectifs, Apparence, Appareils et synchro (entrée), Apple Santé (entrée), Clé IA et budget (entrée), Export / import (SPA-005), Sauvegarde et restauration, Journaux, À propos et licences, Diagnostic ; réglages locaux dans la table settings. À utiliser pour tout réglage, préférence, écran de Plus, export, import, sauvegarde ou onboarding.
+description: "Développe l'onglet Plus de Spartiate (§ 18.2) : Profil, Objectifs, Apparence, Appareils et synchro (entrée), Apple Santé (entrée), Clé IA et budget (entrée), Export / import (SPA-005), Sauvegarde et restauration, Journaux, À propos et licences, Diagnostic ; réglages locaux dans la table settings. À utiliser pour tout réglage, préférence, écran de Plus, export, import, sauvegarde ou onboarding."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 ---

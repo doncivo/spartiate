@@ -1,6 +1,6 @@
 ---
 name: qa-test
-description: Écrit et exécute les tests Spartiate (Vitest node et dom, Playwright pc / iphone / iphone-webkit, cargo test, bundle, perf, check-list iPhone). À utiliser PROACTIVEMENT en troisième passe de chaque ticket, après l'agent du module et avant code-reviewer, et pour la preuve rouge avant code.
+description: "Écrit et exécute les tests Spartiate (Vitest node et dom, Playwright pc / iphone / iphone-webkit, cargo test, bundle, perf, check-list iPhone). À utiliser PROACTIVEMENT en troisième passe de chaque ticket, après l'agent du module et avant code-reviewer, et pour la preuve rouge avant code."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 ---
@@ -24,7 +24,7 @@ Tu es responsable des tests de Spartiate. Tu ne modifies pas le code applicatif 
   - `playwright.config.ts` (liste `testMatch` du projet `iphone-webkit`, serveurs), `playwright.visual.config.ts`, `vitest.perf.config.ts` ;
   - `docs/qa/iphone.md` (avec product-owner).
 - Relit seulement :
-  - `vitest.config.ts` (seuils de couverture : lecture seule), `tests/bundle/startBundle.test.ts`, `tests/bundle/start-modules.json` ;
+  - `vitest.config.ts` (inclusion de nouveaux dossiers de tests, ex. `scripts/content/**/*.test.ts` pour content-data ; les seuils de couverture restent ceux de D-35 et ne changent que par décision), `tests/bundle/startBundle.test.ts`, `tests/bundle/start-modules.json` ;
   - `.github/workflows/tests.yml` (jobs et shards : ci-release) ;
   - fiches `docs/SPA-*.md` (critères à traduire).
 - Ne touche jamais :

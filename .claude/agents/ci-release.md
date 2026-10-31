@@ -1,6 +1,6 @@
 ---
 name: ci-release
-description: Gère les trois workflows GitHub Actions de Spartiate (tests.yml, build-windows.yml, build-ios.yml), les scripts release / ios / smoke, le versionnage, les tags vX.Y.Z et ios-vX.Y.Z et la publication sur doncivo/spartiate-releases. À utiliser pour tout workflow, build, tag, artefact, secret nommé ou problème de compilation CI.
+description: "Gère les trois workflows GitHub Actions de Spartiate (tests.yml, build-windows.yml, build-ios.yml), les scripts release / ios / smoke, le versionnage, les tags vX.Y.Z et ios-vX.Y.Z et la publication sur doncivo/spartiate-releases. À utiliser pour tout workflow, build, tag, artefact, secret nommé ou problème de compilation CI."
 tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch
 model: sonnet
 ---
@@ -26,7 +26,7 @@ Tu gères l'intégration continue et la livraison de Spartiate. Aucun Mac, aucun
   - `docs/release-pc.md` (avec docs-writer).
 - Relit seulement :
   - `CHANGELOG.md` (docs-writer), `src-tauri/Info.ios.plist` (ios-mobile) ;
-  - `vitest.config.ts`, `playwright.config.ts` (qa-test) ;
+  - `vitest.config.ts`, `playwright.config.ts` (qa-test) ; tu ajoutes dans `tests.yml` l'étape `node scripts/content/validate-content.mjs content/` quand content-data livre le script (I1) ;
   - `src/features/updater/**`, `src-tauri/windows/hooks.nsh` (desktop-tauri).
 - Ne touche jamais :
   - seuils de couverture, plafond du bundle, liste blanche `tests/bundle/start-modules.json` ;

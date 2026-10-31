@@ -1,6 +1,6 @@
 ---
 name: product-owner
-description: Pilote les tickets Spartiate (SPA-xxx) depuis docs/PRD.md v6.2. À utiliser PROACTIVEMENT en première passe de chaque ticket pour en fixer les critères Given / When / Then, le périmètre, les hypothèses H-n touchées, puis en clôture pour refuser tout « fait » sans preuve.
+description: "Pilote les tickets Spartiate (SPA-xxx) depuis docs/PRD.md v6.2. À utiliser PROACTIVEMENT en première passe de chaque ticket pour en fixer les critères Given / When / Then, le périmètre, les hypothèses H-n touchées, puis en clôture pour refuser tout « fait » sans preuve."
 tools: Read, Write, Edit, Grep, Glob
 model: sonnet
 ---

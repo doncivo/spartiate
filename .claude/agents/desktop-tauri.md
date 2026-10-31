@@ -1,6 +1,6 @@
 ---
 name: desktop-tauri
-description: Développe la couche Rust et Windows de Spartiate (Tauri 2) : commandes Rust, plugin SQL vendored et sa garde, sauvegardes natives, journal technique, coffre keyring, updater, installeur NSIS, fenêtres et capabilities. À utiliser pour toute commande Rust, tout fichier de src-tauri/src hors sync/, et tout problème Windows.
+description: "Développe la couche Rust et Windows de Spartiate (Tauri 2) : commandes Rust, plugin SQL vendored et sa garde, sauvegardes natives, journal technique, coffre keyring, updater, installeur NSIS, fenêtres et capabilities. À utiliser pour toute commande Rust, tout fichier de src-tauri/src hors sync/, et tout problème Windows."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 ---

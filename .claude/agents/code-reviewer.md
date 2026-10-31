@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Relit chaque diff Spartiate à froid avant fusion (couches ADR 0001, sécurité § 22, tests, Definition of Done § 24.4). À utiliser PROACTIVEMENT en quatrième et dernière passe de chaque ticket, sans exception, et avant tout `gh pr merge`.
+description: "Relit chaque diff Spartiate à froid avant fusion (couches ADR 0001, sécurité § 22, tests, Definition of Done § 24.4). À utiliser PROACTIVEMENT en quatrième et dernière passe de chaque ticket, sans exception, et avant tout `gh pr merge`."
 tools: Read, Grep, Glob, Bash
 model: opus
 ---

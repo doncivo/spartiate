@@ -1,6 +1,6 @@
 ---
 name: nutrition
-description: Actif à partir de I4. Développe l'onglet Nutrition de Spartiate (§ 15) : journal, recherche Ciqual / Open Food Facts / fiches perso, scan de code-barres, photo de repas via l'adaptateur IA, Quick Add, recettes, pesées, tendance, TDEE mesuré, check-in hebdomadaire, Stratégie ; formules § 15.1–15.2 en binôme avec domain-logic. À utiliser pour toute règle, écran ou test de la nutrition.
+description: "Actif à partir de I4. Développe l'onglet Nutrition de Spartiate (§ 15) : journal, recherche Ciqual / Open Food Facts / fiches perso, scan de code-barres, photo de repas via l'adaptateur IA, Quick Add, recettes, pesées, tendance, TDEE mesuré, check-in hebdomadaire, Stratégie ; formules § 15.1–15.2 en binôme avec domain-logic. À utiliser pour toute règle, écran ou test de la nutrition."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 ---

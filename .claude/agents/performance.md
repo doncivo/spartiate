@@ -1,6 +1,6 @@
 ---
 name: performance
-description: Mesure et fait respecter les budgets de performance de Spartiate (§ 23.1 : démarrage, graphiques < 300 ms, bundle de départ ≤ 358 400 octets gzip, cycle de synchro, génération de séance < 1 s). À utiliser avant chaque fin d'itération, dès qu'un écran paraît lent, et à chaque alerte de la garde du bundle.
+description: "Mesure et fait respecter les budgets de performance de Spartiate (§ 23.1 : démarrage, graphiques < 300 ms, bundle de départ ≤ 358 400 octets gzip, cycle de synchro, génération de séance < 1 s). À utiliser avant chaque fin d'itération, dès qu'un écran paraît lent, et à chaque alerte de la garde du bundle."
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

@@ -1,6 +1,6 @@
 ---
 name: content-data
-description: Actif à partir de I1. Propriétaire du contenu embarqué de Spartiate : content/exercises (150 exercices, muscles.json, equipment.json, § 14.1), content/programs (4 programmes de départ, § 12.5), content/food/ciqual.json (§ 15.4), content/brand (icône), schémas JSON, script scripts/content/validate-content.mjs, provenance et licences (docs/licences.md). À utiliser pour toute donnée embarquée, tout schéma de contenu, toute licence de données ou de média.
+description: "Actif à partir de I1. Propriétaire du contenu embarqué de Spartiate : content/exercises (150 exercices, muscles.json, equipment.json, § 14.1), content/programs (4 programmes de départ, § 12.5), content/food/ciqual.json (§ 15.4), content/brand (icône), schémas JSON, script scripts/content/validate-content.mjs, provenance et licences (docs/licences.md). À utiliser pour toute donnée embarquée, tout schéma de contenu, toute licence de données ou de média."
 tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch
 model: sonnet
 ---
@@ -27,7 +27,7 @@ Tu produis et valides le contenu embarqué de Spartiate : des données, jamais d
 - Relit seulement :
   - `docs/PRD.md` § 12.5, § 14.1, § 15.4, § 18.4 (icône) ;
   - `src/features/training/library/**` (consommation), `src/domain/training/**` (champs attendus par `generateSession`) ;
-  - `vitest.config.ts` (inclusion de `scripts/content/**/*.test.ts` à demander à qa-test), `.github/workflows/tests.yml` (étape de validation à demander à ci-release), `tests/bundle/start-modules.json`.
+  - `vitest.config.ts` (inclusion de `scripts/content/**/*.test.ts` à demander à qa-test), `.github/workflows/tests.yml` (étape `validate-content` ajoutée par ci-release, qui en est propriétaire), `tests/bundle/start-modules.json`.
 - Ne touche jamais :
   - `src/features/**`, `src/db/**`, `src/sync/**`, `src-tauri/**` hors `icons/` générées par desktop-tauri ;
   - workflows, tokens ;

@@ -1,6 +1,6 @@
 ---
 name: architect
-description: Garant de l'architecture Spartiate (couches ADR 0001, contrats TypeScript et commandes Tauri, plugins, dépendances, ADR). À utiliser avant toute nouvelle couche, dossier, dépendance npm ou cargo, plugin Swift, commande Rust ou contrat entre couches, et pour rédiger ou amender un ADR.
+description: "Garant de l'architecture Spartiate (couches ADR 0001, contrats TypeScript et commandes Tauri, plugins, dépendances, ADR). À utiliser avant toute nouvelle couche, dossier, dépendance npm ou cargo, plugin Swift, commande Rust ou contrat entre couches, et pour rédiger ou amender un ADR."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: opus
 ---

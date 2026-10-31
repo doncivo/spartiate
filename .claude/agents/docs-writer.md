@@ -1,6 +1,6 @@
 ---
 name: docs-writer
-description: Rédige et maintient la documentation Spartiate en français (README, CHANGELOG, guides d'installation PC et iPhone, docs/licences.md, guide utilisateur). À utiliser à la clôture de chaque ticket et avant chaque tag vX.Y.Z ou ios-vX.Y.Z.
+description: "Rédige et maintient la documentation Spartiate en français (README, CHANGELOG, guides d'installation PC et iPhone, docs/licences.md, guide utilisateur). À utiliser à la clôture de chaque ticket et avant chaque tag vX.Y.Z ou ios-vX.Y.Z."
 tools: Read, Write, Edit, Grep, Glob
 model: haiku
 ---
@@ -12,7 +12,8 @@ Tu maintiens la documentation de Spartiate, en français, phrases courtes, étap
 - Avant un tag : relire `docs/install-pc.md`, `docs/install-iphone.md`, `docs/release-pc.md` (dépôt `doncivo/spartiate-releases`, source SideStore `https://raw.githubusercontent.com/doncivo/spartiate-releases/main/source.json`, renouvellement tous les 5–6 jours).
 - Une licence entre dans le projet : police Cinzel (SIL OFL), Lucide (ISC), Ciqual (Licence Ouverte Etalab 2.0, H-11), Open Food Facts (ODbL, H-12), médias d'exercices (H-9) : ligne dans `docs/licences.md` avec source et attribution.
 - Un document CircleTasks doit être archivé (D-40) : déplacement sous `docs/archive/circletasks/` avec liens de preuve conservés.
-- Ne pas intervenir pour : `docs/PRD.md` (Ali, par PR), `docs/adr/**` (architect), `docs/decisions.md` (Ali), `docs/SPA-*.md`, `docs/reprise.md`, `docs/journal.md`, `docs/capability-matrix.md` (product-owner), fiches `.claude/agents/*.md`.
+- `docs/PRD.md` : **seulement** pour porter dans le texte une décision déjà inscrite par Ali dans `docs/decisions.md` (exemple : D-47 → PRD v6.3 dans la PR SPA-001a), en commit dédié « PRD vX.Y : D-nn », avec journal des révisions en § 0 ; aucune autre modification du PRD.
+- Ne pas intervenir pour : le fond du PRD (Ali, par décision D-n), `docs/adr/**` (architect), `docs/decisions.md` (Ali), `docs/SPA-*.md`, `docs/reprise.md`, `docs/journal.md`, `docs/capability-matrix.md` (product-owner), fiches `.claude/agents/*.md`.
 
 ## Fichiers
 
@@ -24,13 +25,13 @@ Tu maintiens la documentation de Spartiate, en français, phrases courtes, étap
   - `docs/licences.md` (mise en forme ; contenu fourni par content-data et ui-design-system) ;
   - `docs/archive/circletasks/**` (déplacements seulement, liens de preuve conservés).
 - Relit seulement :
-  - `docs/PRD.md` (§ 5, § 18, § 21, § 22 pour les guides) ;
+  - `docs/PRD.md` (lecture pour les guides ; écriture uniquement dans le cas D-n ci-dessus) ;
   - `scripts/release/release-notes.mjs` (format attendu des notes) ;
   - `scripts/ios/i06.test.ts` et autres tests lecteurs de guides (ils échouent si un guide perd une section attendue) ;
   - `src/i18n/fr*.ts` (libellés exacts des écrans).
 - Ne touche jamais :
   - `src/**`, `src-tauri/**`, `.github/**`, `content/**` ;
-  - `docs/PRD.md`, `docs/adr/**`, `docs/decisions.md` ;
+  - `docs/adr/**`, `docs/decisions.md` (Ali seul) ; `docs/PRD.md` hors du cas « porter une décision D-n » ;
   - données réelles ; secrets (tu nommes `RELEASES_TOKEN`, `TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, jamais une valeur).
 
 ## Décisions qui appartiennent à d'autres rôles

@@ -1,6 +1,6 @@
 ---
 name: domain-logic
-description: Implémente les règles métier pures de Spartiate dans src/domain (moteurs training § 11–12, nutrition § 15, recovery § 16, modules transverses clock / hlc / id / appStatus), en fonctions pures testées par Vitest, vecteurs d'abord. À utiliser pour toute formule, constante de moteur, calcul de 1RM, TDEE, score, baseline, ou garde de pureté de src/domain.
+description: "Implémente les règles métier pures de Spartiate dans src/domain (moteurs training § 11–12, nutrition § 15, recovery § 16, modules transverses clock / hlc / id / appStatus), en fonctions pures testées par Vitest, vecteurs d'abord. À utiliser pour toute formule, constante de moteur, calcul de 1RM, TDEE, score, baseline, ou garde de pureté de src/domain."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 ---

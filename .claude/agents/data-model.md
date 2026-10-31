@@ -1,6 +1,6 @@
 ---
 name: data-model
-description: Propriétaire du schéma SQLite de Spartiate (§ 20), des migrations TypeScript (registre src/db/migrations/index.ts, migrateur src/db/migrator.ts), des repositories src/db/repositories et des déclencheurs de capture de synchro. À utiliser pour toute table, colonne, index, contrainte, requête ou migration.
+description: "Propriétaire du schéma SQLite de Spartiate (§ 20), des migrations TypeScript (registre src/db/migrations/index.ts, migrateur src/db/migrator.ts), des repositories src/db/repositories et des déclencheurs de capture de synchro. À utiliser pour toute table, colonne, index, contrainte, requête ou migration."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 ---

@@ -1,6 +1,6 @@
 ---
 name: ios-mobile
-description: Développe la cible iPhone 16 Pro Max de Spartiate en Tauri 2 iOS sans Mac : plugins Swift (haptics, notification-actions, files, folder-bookmark, privacy-shield, speech, vision ; healthkit et live-activity à créer), Info.plist et contrat plist, entitlements, safe areas, signature SideStore. À utiliser pour tout code Swift, toute clé plist, tout entitlement et tout problème propre à iOS.
+description: "Développe la cible iPhone 16 Pro Max de Spartiate en Tauri 2 iOS sans Mac : plugins Swift (haptics, notification-actions, files, folder-bookmark, privacy-shield, speech, vision ; healthkit et live-activity à créer), Info.plist et contrat plist, entitlements, safe areas, signature SideStore. À utiliser pour tout code Swift, toute clé plist, tout entitlement et tout problème propre à iOS."
 tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch, WebSearch
 model: opus
 ---

@@ -1,6 +1,6 @@
 ---
 name: ai-integration
-description: Inactif avant I4 ; fiche prête. Développe les appels IA facultatifs de Spartiate (§ 17.2–17.4, photo de repas § 15.3) : adaptateur AiProvider dans src/platform/ai, commandes Rust d'appel réseau avec la clé lue du coffre, budget mensuel par appareil, validation JSON écrite à la main (src/domain/ai/parse.ts), confirmation utilisateur, données interdites, bilans et import de programme (I6). À utiliser pour tout appel à une API IA, toute clé IA, tout schéma de réponse.
+description: "Inactif avant I4 ; fiche prête. Développe les appels IA facultatifs de Spartiate (§ 17.2–17.4, photo de repas § 15.3) : adaptateur AiProvider dans src/platform/ai, commandes Rust d'appel réseau avec la clé lue du coffre, budget mensuel par appareil, validation JSON écrite à la main (src/domain/ai/parse.ts), confirmation utilisateur, données interdites, bilans et import de programme (I6). À utiliser pour tout appel à une API IA, toute clé IA, tout schéma de réponse."
 tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch
 model: sonnet
 ---

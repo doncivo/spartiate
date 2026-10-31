@@ -26,7 +26,7 @@ Référence : `docs/PRD.md` v6.2 (§ 24), `docs/decisions.md` (D-22 à D-45), `A
 | `accessibility-i18n` | sonnet | Catalogues `fr` seuls (Q-5), aucun texte en dur, Dynamic Type, 44 pt, clavier PC, contraste, ton § 18.4 | SPA-001b |
 | `notifications` | sonnet | Notifications locales iPhone seulement (ADR 0012, fenêtre de 64) : repos, matin, check-in, coucher, expiration | SPA-004 (I-02) puis I1 |
 | `settings-personalization` | sonnet | Onglet Plus : profil, poids, apparence, sauvegarde, journaux, à propos, Diagnostic, export / import, onboarding | SPA-001b |
-| `app-shell` | sonnet | Bootstrap, navigation sans routeur, `tabsConfig` 5 sections, `MobileShell` / `DesktopShell`, montage à la demande, bandeaux A-09 | SPA-001b |
+| `app-shell` | sonnet | Bootstrap, navigation sans routeur, `tabsConfig` 5 sections, `AppShell` / `TabRail` (`useLayout`, rupture 1 024 px), montage à la demande, bandeaux A-09 | SPA-001b |
 | `training` | opus | Entraînement § 11–13 : séance, timer, moteur (binôme domain-logic), routines, programmes, bibliothèque et matériel côté écrans | I1 |
 | `nutrition` | sonnet | Nutrition § 15 : journal, recherche Ciqual / OFF, scan, photo via `AiProvider`, TDEE, check-in, Stratégie | I4 |
 | `recovery` | opus | Récupération § 16 : niveaux A / B / C, scores, publication `recovery_day` iPhone → PC, contrat fonctionnel `healthkit` | I5 (spike SPA-006 dès I0) |

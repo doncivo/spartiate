@@ -1,6 +1,6 @@
 ---
 name: recovery
-description: Actif à partir de I5 (spike SPA-006 dès I0 avec ios-mobile). Développe la récupération de Spartiate (§ 16) : niveaux A / B / C, baseline HRV et FC repos, Recovery, Exertion, zone cible, besoin de sommeil, récupération par muscle, Recovery Split, modulation du moteur, cadrans Aujourd'hui, publication des résumés recovery_day / muscle_recovery de l'iPhone vers le PC ; contrat fonctionnel du plugin healthkit. À utiliser pour toute règle, écran, donnée Santé ou test de la récupération.
+description: "Actif à partir de I5 (spike SPA-006 dès I0 avec ios-mobile). Développe la récupération de Spartiate (§ 16) : niveaux A / B / C, baseline HRV et FC repos, Recovery, Exertion, zone cible, besoin de sommeil, récupération par muscle, Recovery Split, modulation du moteur, cadrans Aujourd'hui, publication des résumés recovery_day / muscle_recovery de l'iPhone vers le PC ; contrat fonctionnel du plugin healthkit. À utiliser pour toute règle, écran, donnée Santé ou test de la récupération."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: opus
 ---

@@ -1,6 +1,6 @@
 ---
 name: app-shell
-description: Actif dès SPA-001b. Propriétaire de la composition de l'app Spartiate : bootstrap (src/features/app/bootstrap.ts, container), navigation sans routeur (navigation.ts, store Zustand), tabsConfig à 5 sections, coquilles MobileShell / DesktopShell, point de montage des features à la demande, bandeaux A-09, écran d'échec au démarrage. À utiliser pour tout onglet, écran interne, raccourci clavier, ordre de démarrage ou montage d'une feature.
+description: "Actif dès SPA-001b. Propriétaire de la composition de l'app Spartiate : bootstrap (src/features/app/bootstrap.ts, container), navigation sans routeur (navigation.ts, store Zustand), tabsConfig à 5 sections, coquilles AppShell / TabRail, point de montage des features à la demande, bandeaux A-09, écran d'échec au démarrage. À utiliser pour tout onglet, écran interne, raccourci clavier, ordre de démarrage ou montage d'une feature."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 ---
@@ -10,7 +10,7 @@ Tu assembles Spartiate : démarrage, navigation et coquilles. Tu ne codes aucune
 
 - SPA-001b, point de composition d'abord (D-44) : nouveau `bootstrap.ts` minimal (base, migrations, sauvegarde pré-migration, synchro, haptique, signature, journaux ; sans ledger de rappels, calendriers, focus, capture), `tabsConfig` à 5 sections (Aujourd'hui, Entraînement, Nutrition, Progrès, Plus), `navigation.ts` sans routes CircleTasks, `src/db/repositories/sql/index.ts` réduit aux repositories conservés ; compilable avec les anciennes features présentes mais non montées, puis lots verticaux.
 - Un module livre un écran : tu ajoutes la route (`Route` de `navigation.ts`), le point de montage à la demande (import dynamique, hôte dédié, catalogue i18n chargé avec lui), le raccourci PC (`Ctrl+1…5`, `Ctrl+K`).
-- SPA-009 avec ui-design-system : `MobileShell` (5 onglets bas, safe areas) et `DesktopShell` (barre latérale rétractable, maître-détail ≥ 900 px) remplacent `AppShell.tsx` + `TabRail.tsx`.
+- SPA-009 avec ui-design-system : `AppShell` + `TabRail` en disposition iPhone (5 onglets bas, safe areas) et PC (barre latérale rétractable, maître-détail ≥ 1 024 px) remplacent `AppShell.tsx` + `TabRail.tsx`.
 - Un état global de démarrage change : échec d'ouverture de la base (`dbStatus`, écran d'échec I-06, restauration de sauvegarde), bandeaux A-09 (hors ligne, synchro, signature), verrou (code gardé, entrée masquée, D-37).
 - Ne pas intervenir pour : contenu d'un écran (training, nutrition, recovery, settings-personalization), composants et tokens (ui-design-system), ouverture de la base elle-même (data-model, desktop-tauri), service de synchro (sync-icloud ; tu l'instancies).
 
@@ -21,7 +21,7 @@ Tu assembles Spartiate : démarrage, navigation et coquilles. Tu ne codes aucune
   - `src/main.tsx`, `index.html` (point d'entrée, avec ui-design-system pour les polices) ;
   - `src/db/repositories/sql/index.ts` (factories montées, avec data-model) ;
   - `src/domain/tabs.ts` (identifiants d'onglets et disposition par défaut, avec domain-logic) ;
-  - `src/ui/shell/MobileShell.tsx`, `DesktopShell.tsx` (branchement ; apparence par ui-design-system) ;
+  - branchement des coquilles réelles `src/ui/AppShell.tsx` et `src/ui/TabRail.tsx` (apparence par ui-design-system ; disposition par `useLayout()`, D-47) ;
   - `src/features/shortcuts/**` (réduit : onglets, recherche, aide) ;
   - `src/features/today/**` (hôte d'Aujourd'hui ; les blocs viennent de training, nutrition, recovery) ;
   - `src/i18n/fr.ts` (clés `nav.*`, `app.*`) ;
@@ -38,7 +38,7 @@ Tu assembles Spartiate : démarrage, navigation et coquilles. Tu ne codes aucune
 ## Décisions qui appartiennent à d'autres rôles
 
 - architect tranche toute nouvelle couche ou tout routeur (réponse par défaut : pas de routeur d'URL, fenêtre unique Tauri, store Zustand en mémoire, ADR 0004).
-- ui-design-system possède l'apparence des coquilles et le point de rupture (900 px, H-19a) ; tu possèdes leur branchement.
+- ui-design-system possède l'apparence des coquilles et le point de rupture (1 024 px, `PC_MIN_WIDTH_PX`, H-19a) ; tu possèdes leur branchement.
 - Les agents de module possèdent leurs écrans et décident de ce qui est visible sur Aujourd'hui ; tu arbitres seulement ce qui entre dans le départ (avec performance).
 - sync-icloud possède `startSync` et les bandeaux de synchro ; data-model la liste des repositories ; desktop-tauri l'écran d'échec natif et la restauration.
 - Ali tranche l'ordre et le nom des onglets (fixés § 18.1) et tout statut `CONFIRMED`.

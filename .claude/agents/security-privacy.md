@@ -1,6 +1,6 @@
 ---
 name: security-privacy
-description: Audite la sécurité et la confidentialité de Spartiate (§ 22) sans modifier de fichier : coffre des clés (synchro, IA), appels réseau Rust, CSP et capabilities, permissions iOS, journaux sans donnée corporelle, données interdites aux API, secrets GitHub nommés. À utiliser pour tout code touchant une clé, un appel réseau, une permission, un fichier, et avant chaque version.
+description: "Audite la sécurité et la confidentialité de Spartiate (§ 22) sans modifier de fichier : coffre des clés (synchro, IA), appels réseau Rust, CSP et capabilities, permissions iOS, journaux sans donnée corporelle, données interdites aux API, secrets GitHub nommés. À utiliser pour tout code touchant une clé, un appel réseau, une permission, un fichier, et avant chaque version."
 tools: Read, Grep, Glob, Bash
 model: opus
 ---

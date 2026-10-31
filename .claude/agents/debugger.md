@@ -1,6 +1,6 @@
 ---
 name: debugger
-description: Diagnostique les bugs et les tests rouges de Spartiate (PC et iPhone). À utiliser dès qu'un test échoue deux fois, qu'une erreur apparaît à l'exécution, qu'un job tests.yml tombe, ou qu'Ali signale un défaut avec un journal exporté.
+description: "Diagnostique les bugs et les tests rouges de Spartiate (PC et iPhone). À utiliser dès qu'un test échoue deux fois, qu'une erreur apparaît à l'exécution, qu'un job tests.yml tombe, ou qu'Ali signale un défaut avec un journal exporté."
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 ---
