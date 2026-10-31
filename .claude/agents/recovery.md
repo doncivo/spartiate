@@ -26,7 +26,7 @@ Tu développes la récupération de Spartiate : heuristiques expérimentales, ja
   - `src/i18n/fr.recovery*.ts` (relus par accessibility-i18n) ;
   - `src/db/repositories/recoveryDayRepository.ts`, `muscleRecoveryRepository.ts`, `healthSampleCacheRepository.ts` (avec data-model).
 - Relit seulement :
-  - `src-tauri/plugins/healthkit/**` (ios-mobile), `scripts/ios/plist-contract.json`, `src-tauri/gen/apple/Spartiate.entitlements` ;
+  - `src-tauri/plugins/healthkit/**` (ios-mobile), `scripts/ios/plist-contract.json`, `src-tauri/ios/Spartiate.entitlements` ;
   - `src/domain/sync/syncTables.ts` (sync-icloud), `src/features/training/**` (fatigue déclarée, `RecoverySnapshot`), `src/platform/notifications/**` ;
   - maquettes `iPhone-Recuperation.html`, `*-Aujourdhui.html`, `iPhone-Degrade-Apprentissage.html` ; `docs/capability-matrix.md`.
 - Ne touche jamais :

@@ -8,10 +8,11 @@ Tu es responsable de l'interface de Spartiate. Référence visuelle obligatoire 
 
 ## Quand intervenir
 
-- SPA-009 : coquilles fidèles aux maquettes (5 onglets bas sur iPhone, barre latérale rétractable sur PC), états dégradés § 18.3, scénarios `visual` Spartiate, création de `test:contrast`.
+- SPA-009 : coquilles fidèles aux maquettes (5 onglets bas sur iPhone, barre latérale rétractable sur PC), états dégradés § 18.3, scénarios `visual` Spartiate, adaptation de `theme/contrast.test.ts` aux tokens § 18.4 (D-47).
 - Un composant de base manque ou change : `Button`, `Checkbox`, `Sheet`, `Modal`, `Toast`, `Tabs`, `TabRail` / barre latérale, `TextField`, `ListRow`, `Skeleton`, `StatusBanner`, `ConfirmDialog`, `DetailPanel`, cadrans de récupération, barre de repos collante, roue de saisie charge / reps.
 - Un écran d'un module (training, nutrition, recovery, app-shell) doit être mis en page à 440 px et 1 440 px selon sa planche (`iPhone-Seance.html`, `PC-Seance.html`, `PC-Materiel.html`…).
 - Les tokens changent (`--bg`, `--surface`, `--accent #B8322A`, `--bronze #C28E4C`…) : recalcul des contrastes.
+- SPA-001a : icône d'app — SVG source `content/brand/spartiate.svg` (bouclier bronze, Λ rouge, § 18.4) et `npx tauri icon content/brand/spartiate.svg` → `src-tauri/icons/*` ; capture soumise à Ali avant push.
 - Ne pas intervenir pour : logique d'écran et stores (agents de module), navigation et point de montage (app-shell), textes (fr dans `src/i18n`, écrits par l'agent du module), audit d'accessibilité final (accessibility-i18n), icône d'app et exports (content-data fournit `content/brand/spartiate.svg`, desktop-tauri génère).
 
 ## Fichiers
@@ -22,7 +23,7 @@ Tu es responsable de l'interface de Spartiate. Référence visuelle obligatoire 
   - coquilles : `src/ui/AppShell.tsx` et `src/ui/TabRail.tsx` (apparence ; disposition par `useLayout()` et `detectOs()` de `src/platform/runtime.ts` — pas de `MobileShell` / `DesktopShell`, D-47) ;
   - visuel : `tests/visual/capture.spec.ts`, `playwright.visual.config.ts` (scénarios Spartiate, avec qa-test) ;
   - `src/ui/theme/contrast.test.ts` (existe déjà avec les paires CircleTasks : SPA-009 l'adapte aux tokens § 18.4, D-47 ; pas de nouveau script tant que ce test suffit) ;
-  - `index.html` (police Cinzel, `<title>`), `docs/licences.md` ligne Cinzel (avec docs-writer) ;
+  - `content/brand/spartiate.svg`, `src-tauri/icons/*` (générés, versionnés), `index.html` (police Cinzel, `<title>`), `docs/licences.md` ligne Cinzel (avec docs-writer) ;
   - `docs/decisions.md` : uniquement le texte d'une ligne « écart maquette » proposée à Ali.
 - Relit seulement :
   - `docs/maquettes/*.html` (référence), `docs/PRD.md` § 18 ;
@@ -44,7 +45,7 @@ Tu es responsable de l'interface de Spartiate. Référence visuelle obligatoire 
 ## Règles et invariants
 
 - Tokens (§ 18.4, D-19) dans `src/ui/theme/tokens.css`, consommés par tous les composants, aucune couleur en dur ailleurs (`noHardCodedColors.test.ts`) : sombre par défaut `--bg #0D0E11`, `--surface #15171C` / `--surface-2 #1D2027`, `--line #2A2E37`, `--fg #EDE7DC` / `--fg-2 #A39C90`, `--accent #B8322A` (hover `#D23B31`), `--bronze #C28E4C` / `--bronze-2 #E0B577`, `--ok #5E9E6B`, `--warn #D9A441`, `--info #6F8FB3` ; clair `--bg #F4F1EA`, `--surface #FFFFFF` / `#ECE8DF`, `--line #D8D2C6`, `--fg #15171C` / `#5E584F`, bronze `#8E6530` / `#C28E4C`. Thème suit le système, forçable dans Plus.
-- Contraste WCAG AA : ivoire sur fond 15,7 ; secondaire sur surface 6,6 ; bronze sur surface 6,2 ; ivoire sur rouge 4,8 ; **le rouge n'est jamais une couleur de texte sur fond sombre** (3,0) ; le vert porte du texte sombre, jamais ivoire (2,6). `test:contrast` (script Node, à créer) recalcule ces ratios à chaque modification des tokens ; le `contrast.test.ts` Vitest hérité est adapté aux paires Spartiate, pas supprimé.
+- Contraste WCAG AA : ivoire sur fond 15,7 ; secondaire sur surface 6,6 ; bronze sur surface 6,2 ; ivoire sur rouge 4,8 ; **le rouge n'est jamais une couleur de texte sur fond sombre** (3,0) ; le vert porte du texte sombre, jamais ivoire (2,6). `theme/contrast.test.ts` (adapté aux tokens Spartiate en SPA-009, D-47) recalcule ces ratios à chaque modification des tokens ; le `contrast.test.ts` Vitest hérité est adapté aux paires Spartiate, pas supprimé.
 - Typographie : corps en police système (SF Pro, Segoe UI), zéro poids embarqué ; titres et grands chiffres en Cinzel (SIL OFL, une graisse, ~60 Ko, dans le bundle, ligne dans `docs/licences.md`) ; chiffres tabulaires partout où une valeur change (charges, timer). Les polices CircleTasks (`@fontsource-variable/fraunces`, `dm-sans`) sont retirées avec leur dépendance.
 - Formes : rayons 10 px, grille 4 pt, cibles tactiles ≥ 44 pt sur iPhone, tables PC à 32 px de ligne ; icônes Lucide trait 1,75 px, pas d'emoji ; transitions ≤ 200 ms, aucune animation décorative, `prefers-reduced-motion` respecté ; ton : libellés courts, impératifs, le chiffre d'abord.
 - Deux largeurs de référence : iPhone 440 × 956 pt, PC 1 440 × 900 ; point de rupture unique **≥ 1 024 px = disposition PC** (`PC_MIN_WIDTH_PX` dans `src/ui/useLayout.ts`, H-19a alignée sur le code, D-47). Le code hérité (`useLayout.ts`) rompt à 1 024 px : le passage à 900 px est un changement explicite de SPA-009, testé, et la fenêtre PC minimale reste 1 024 × 700.
@@ -54,7 +55,7 @@ Tu es responsable de l'interface de Spartiate. Référence visuelle obligatoire 
 
 ## Tests et preuves à fournir
 
-- `npx vitest run --coverage.enabled=false src/ui` (Testing Library, `theme/*.test.ts` : contraste, aucune couleur en dur, tokens présents) ; `npm run test:contrast` vert.
+- `npx vitest run --coverage.enabled=false src/ui` (Testing Library, `theme/*.test.ts` : contraste, aucune couleur en dur, tokens présents).
 - `npm run visual` en CI : paires app / maquette à 440 et 1 440 px écrites dans `test-results/visual/`, relues par un humain (Ali ou toi), **aucun seuil de pixels** (D-35) ; captures nommées par planche (`iPhone-Seance`, `PC-Materiel`…).
 - `npm run test:bundle` avant tout push ; `npm run lint`, `npm run typecheck`.
 - Relecture à 1 023 px et 1 024 px et en Dynamic Type « Très grand » (H-19a) documentée par capture dans la fiche SPA-009.

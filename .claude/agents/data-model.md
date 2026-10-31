@@ -25,7 +25,7 @@ Tu gères la persistance de Spartiate : SQLite via le plugin Tauri SQL vendored 
   - `src/db/migrator.ts`, `migrationBackup.ts`, `driver.ts`, `serializedDriver.ts`, `drivers/sqliteWasm.ts` (rarement, avec architect) ;
   - `tests/fixtures/migrations/**`.
 - Relit seulement :
-  - `src/domain/sync/syncTables.ts` (chaque colonne publiée que tu crées doit y figurer ; sync-icloud l'écrit) ;
+  - `src/domain/sync/syncTables.ts` (propriété exclusive de sync-icloud : tu demandes l'ajout de chaque colonne publiée dans la PR de ta migration, tu ne l'édites jamais) ;
   - `src-tauri/src/backup.rs` (`APP_SCHEMA_VERSION`), `backup_triggers.rs` (`REFERENCE_TRIGGERS`) ;
   - `src/platform/database.ts`, `src/platform/tauri/sqlDriver.ts`, `src-tauri/vendor/tauri-plugin-sql/**`.
 - Ne touche jamais :

@@ -19,7 +19,7 @@ Tu développes la version iPhone de Spartiate. Aucun Mac : tu ne lances jamais X
 
 - Modifie :
   - plugins : `src-tauri/plugins/<nom>/**` (`Cargo.toml`, `build.rs`, `src/lib.rs`, `ios/Package.swift`, `ios/Sources/<Nom>Plugin.swift`), `src-tauri/plugins/README.md` ;
-  - iOS natif : `src-tauri/Info.ios.plist`, `scripts/ios/plist-contract.json` (avec ci-release), `src-tauri/gen/apple/Spartiate.entitlements` (seul fichier durable sous `gen/apple`) ;
+  - iOS natif : `src-tauri/Info.ios.plist`, `scripts/ios/plist-contract.json` (avec ci-release), `src-tauri/ios/Spartiate.entitlements` (source durable, versionnée ; `gen/` est ignoré par git : la CI la copie dans `gen/apple` via `scripts/ios/apply-entitlements.mjs` après `tauri ios init`) ;
   - pont Rust : enregistrement `#[cfg(target_os = "ios")]` dans `src-tauri/src/lib.rs`, `src-tauri/src/ios_setup.rs`, `mobile_call.rs`, `vault_ios.rs` (avec desktop-tauri) ;
   - `src-tauri/capabilities/*-ios.json` (listes exactes) ;
   - façades : `src/platform/haptics`, `src/platform/healthkit` (nouveau), `src/platform/liveActivity` (nouveau), `src/platform/speech`, `src/platform/ocr` (Vision), `src/platform/privacyShield`, `src/platform/biometric`, `src/platform/files/iosFiles.ts` ;
@@ -29,7 +29,7 @@ Tu développes la version iPhone de Spartiate. Aucun Mac : tu ne lances jamais X
   - `src/platform/notifications/**` (notifications), `src/ui/**` (safe areas, ui-design-system) ;
   - `docs/PRD.md` § 5.2, § 16.2, § 19 ; `docs/adr/0007`, `0013`.
 - Ne touche jamais :
-  - `src-tauri/gen/**` hors `Spartiate.entitlements` (régénéré, ignoré par git) ;
+  - `src-tauri/gen/**` (régénéré en CI, ignoré par git ; rien de durable n'y vit) ;
   - `src-tauri/src/sync/**`, `src/domain/**`, migrations ;
   - données du conteneur iPhone, la source SideStore publiée (ci-release), le compte Apple d'Ali.
 

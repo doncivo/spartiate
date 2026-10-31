@@ -1,8 +1,8 @@
 # Agents Spartiate (`.claude/agents/`)
 
-24 fiches : 18 reprises de CircleTasks et réécrites pour Spartiate (D-34), 6 nouvelles. Chaque fiche suit la même structure : quand intervenir, fichiers (modifie / relit / ne touche jamais), décisions d'autres rôles, règles et invariants, preuves, « terminé quand / arbitrage requis quand ». Les 8 agents métier CircleTasks (`calendar-integration`, `checklists-events`, `focus-time`, `quick-capture`, `routines`, `spaces-goals`, `stats-history`, `tasks-planning`) sont supprimés en SPA-001b.
+24 fiches : 18 reprises de CircleTasks et réécrites pour Spartiate (D-34), 6 nouvelles. Chaque fiche suit la même structure : quand intervenir, fichiers (modifie / relit / ne touche jamais), décisions d'autres rôles, règles et invariants, preuves, « terminé quand / arbitrage requis quand ». Les 8 agents métier CircleTasks (`calendar-integration`, `checklists-events`, `focus-time`, `quick-capture`, `routines`, `spaces-goals`, `stats-history`, `tasks-planning`) sont supprimés dans la PR qui introduit ces fiches (D-46).
 
-Référence : `docs/PRD.md` v6.2 (§ 24), `docs/decisions.md` (D-22 à D-45), `AGENTS.md`, `CLAUDE.md`.
+Référence : `docs/PRD.md` v6.2 (§ 24), `docs/decisions.md` (D-22 à D-47), `AGENTS.md`, `CLAUDE.md`.
 
 ## Les 24 rôles
 
@@ -13,14 +13,14 @@ Référence : `docs/PRD.md` v6.2 (§ 24), `docs/decisions.md` (D-22 à D-45), `A
 | `qa-test` | sonnet | Tests Vitest / Playwright / cargo, preuve rouge, vecteurs, fixtures synthétiques, check-list iPhone | SPA-000 |
 | `code-reviewer` | opus | Revue à froid du diff : couches, sécurité § 22, tests, DoD § 24.4 ; verdict APPROUVÉ / À CORRIGER | SPA-000 |
 | `debugger` | sonnet | Reproduction, cause racine, correctif minimal, test de non-régression ; journaux exportés | SPA-000 |
-| `docs-writer` | haiku | README, CHANGELOG, guides d'installation PC / iPhone, guide utilisateur, `docs/licences.md`, archivage D-40 | SPA-000 |
+| `docs-writer` | haiku | README, CHANGELOG, guides d'installation PC / iPhone, guide utilisateur, `docs/licences.md`, archivage D-40 ; `docs/PRD.md` uniquement pour porter une décision D-n déjà inscrite (ex. D-47 → v6.3), en commit dédié | SPA-000 |
 | `ci-release` | sonnet | `tests.yml`, `build-windows.yml`, `build-ios.yml`, scripts release / ios / smoke, tags, `spartiate-releases` | SPA-000 |
 | `desktop-tauri` | sonnet | Rust hors `sync/`, plugin SQL vendored et `ALLOWED_URL`, sauvegardes, `applog`, coffre, updater, NSIS, capabilities | SPA-001a |
 | `ios-mobile` | opus | Plugins Swift (repris + `healthkit`, `live-activity`, `camera`), plist, entitlements, SideStore ; aucun Mac | SPA-001b (spikes SPA-006 / 007) |
 | `sync-icloud` | opus | `src/sync`, `src/domain/sync`, `src-tauri/src/sync`, catalogue, séance close, vecteurs ; relecture obligatoire D-26 | SPA-001b |
 | `domain-logic` | sonnet | Fonctions pures `src/domain` : moteurs § 11–12, 15, 16 (vecteurs d'abord), modules transverses | SPA-001b |
 | `data-model` | sonnet | Migrations TypeScript (`0001_spartiate_init` puis une par itération), repositories, déclencheurs de capture | SPA-001b |
-| `ui-design-system` | sonnet | Tokens § 18.4 (`src/ui/theme/tokens.css`), composants `src/ui`, coquilles fidèles aux 24 maquettes, `visual`, `test:contrast` | SPA-001b (charte en SPA-009) |
+| `ui-design-system` | sonnet | Tokens § 18.4 (`src/ui/theme/tokens.css`), composants `src/ui`, coquilles fidèles aux 24 maquettes, `visual`, `theme/contrast.test.ts`, icône d'app (`content/brand/spartiate.svg`, `npx tauri icon`) | SPA-001b (charte en SPA-009) |
 | `security-privacy` | opus | Audit sans écriture : clés, réseau Rust, CSP, capabilities, plist, journaux, données interdites aux API | SPA-001a |
 | `performance` | sonnet | Budgets § 23.1, bundle de départ 358 400 octets gzip, graphiques < 300 ms, cycle de synchro, `generateSession` < 1 s | SPA-001b |
 | `accessibility-i18n` | sonnet | Catalogues `fr` seuls (Q-5), aucun texte en dur, Dynamic Type, 44 pt, clavier PC, contraste, ton § 18.4 | SPA-001b |
@@ -30,7 +30,7 @@ Référence : `docs/PRD.md` v6.2 (§ 24), `docs/decisions.md` (D-22 à D-45), `A
 | `training` | opus | Entraînement § 11–13 : séance, timer, moteur (binôme domain-logic), routines, programmes, bibliothèque et matériel côté écrans | I1 |
 | `nutrition` | sonnet | Nutrition § 15 : journal, recherche Ciqual / OFF, scan, photo via `AiProvider`, TDEE, check-in, Stratégie | I4 |
 | `recovery` | opus | Récupération § 16 : niveaux A / B / C, scores, publication `recovery_day` iPhone → PC, contrat fonctionnel `healthkit` | I5 (spike SPA-006 dès I0) |
-| `content-data` | sonnet | `content/` : 150 exercices, 4 programmes, Ciqual, icône ; schémas, `validate-content.mjs`, provenance, licences | I1 |
+| `content-data` | sonnet | `content/` : 150 exercices, 4 programmes, Ciqual ; schémas, `validate-content.mjs`, provenance, licences | I1 |
 | `ai-integration` | sonnet | Appels IA § 17.2–17.4, photo de repas : `src/platform/ai`, commandes Rust avec clé du coffre, budget, validation à la main | Inactif avant I4 |
 
 Modèles et outils des 18 agents repris : inchangés par rapport à CircleTasks. Nouveaux agents : `content-data` et `ai-integration` ont `WebFetch` (licences et documentation d'API à vérifier à la source) ; les quatre autres ont les outils standard (`Read, Write, Edit, Grep, Glob, Bash`).
@@ -51,12 +51,14 @@ Puis relecture Codex (§ 24.2), fusion par PR quand « suite verte » est obtenu
 | Zone | Écrit | Relit obligatoirement avant fusion | Tranche en cas de doute |
 | --- | --- | --- | --- |
 | Migrations `src/db/migrations/**`, registre, `APP_SCHEMA_VERSION` | `data-model` (version Rust alignée par `desktop-tauri`) | `sync-icloud` (colonnes publiées, déclencheurs, instantanés, restauration) | `architect` (schéma hors § 20.2) ; Ali (migration destructive, H-18) |
-| Synchro `src/sync/**`, `src/domain/sync/**`, `src-tauri/src/sync/**`, `src/platform/sync/**`, `features/sync` | `sync-icloud` | `sync-icloud` relit toute PR tierce (D-26), puis `code-reviewer` | `architect` par ADR pour tout changement de protocole ; Ali pour toute perte de données |
-| Plugins Swift `src-tauri/plugins/**`, `Info.ios.plist`, `plist-contract.json`, entitlements | `ios-mobile` | `security-privacy` (permissions, textes d'usage) ; `ci-release` (étape de build) | `architect` (contrat, clé plist interdite) ; Ali (issue d'un spike, `CONFIRMED` / `BLOCKED`) |
+| Synchro `src/sync/**`, `src/domain/sync/**` (dont le catalogue `syncTables.ts`, `SYNC_TABLE_ORDER`, `naturalIds.ts`), `src-tauri/src/sync/**`, `src/platform/sync/**`, `features/sync` | `sync-icloud` (seul auteur du catalogue ; `data-model` demande l'ajout d'une colonne publiée dans la PR de sa migration) | `sync-icloud` relit toute PR tierce (D-26), puis `code-reviewer` | `architect` par ADR pour tout changement de protocole ; Ali pour toute perte de données |
+| Plugins Swift `src-tauri/plugins/**`, `Info.ios.plist`, `plist-contract.json`, entitlements (source durable `src-tauri/ios/Spartiate.entitlements`, copiée dans `gen/apple` par `scripts/ios/apply-entitlements.mjs` en CI ; `gen/` est ignoré par git) | `ios-mobile` | `security-privacy` (permissions, textes d'usage) ; `ci-release` (étape de build) | `architect` (contrat, clé plist interdite) ; Ali (issue d'un spike, `CONFIRMED` / `BLOCKED`) |
 | Workflows `.github/workflows/*.yml`, scripts release / ios / smoke, tags, secrets nommés | `ci-release` | `security-privacy` (permissions des jobs, secrets) | `architect` (action tierce) ; Ali (tag, secrets GitHub, quota) |
 | Tokens UI `src/ui/theme/tokens.css`, composants `src/ui`, coquilles, maquettes | `ui-design-system` (coquilles branchées par `app-shell`) | `accessibility-i18n` (contraste, Dynamic Type, clavier) ; `performance` (départ) | Ali (écart maquette, nouvelle planche, point de rupture) |
 | Contenu JSON `content/**`, `validate-content.mjs`, `docs/licences.md` (données et médias) | `content-data` | `training` / `nutrition` (sémantique) ; `docs-writer` (mise en forme des licences) | Ali (relecture H-8, médias Q-3, licence douteuse) |
 | Appels IA `src/platform/ai/**`, `src/domain/ai/**`, `src-tauri/src/ai/**`, écran Clé IA | `ai-integration` (Rust avec `desktop-tauri`, écran avec `settings-personalization`) | `security-privacy` (clé, données interdites, journaux) | Ali (fournisseur Q-2, plafond H-14, toute donnée à la frontière) ; `architect` (abstraction, crate) |
+
+Parcours I6 (§ 8, § 17) et leurs propriétaires : bilans rédigés et import de programme → `ai-integration` (agrégats par `training` / `nutrition`) ; vidéos d'exercices et complétion IA d'un exercice custom → `content-data` (+ `ai-integration`) ; photos de progression et mensurations → `settings-personalization` (écran Corps) avec `sync-icloud` (métadonnées publiées) ; cardio GPS (plugin geolocation officiel) → `ios-mobile` (plugin) + `recovery` (effort, écriture Santé) ; App Intents / Siri / bouton Action → `ios-mobile` + `app-shell` ; Describe (dictée) → `nutrition` avec le plugin `speech` (`ios-mobile`) ; compléments et rappels → `nutrition` + `notifications`.
 
 Zones transverses sans propriétaire unique : `src/domain/**` hors `sync` (`domain-logic` écrit les fonctions ; l'agent du module écrit les vecteurs) ; `src/i18n/**` (l'agent du module écrit les clés, `accessibility-i18n` relit et tient l'infrastructure) ; `tests/bundle/start-modules.json` (ajout par l'agent du module, commit justifié, relu par `performance`) ; `docs/decisions.md` et `docs/PRD.md` (Ali seul, par PR ; les agents proposent le texte).
 

@@ -20,12 +20,11 @@ Tu produis et valides le contenu embarqué de Spartiate : des données, jamais d
   - `content/exercises/` : `exercises.json`, `muscles.json`, `equipment.json`, `media/` (images sous licence) ;
   - `content/programs/*.json` (quatre programmes de départ) ;
   - `content/food/ciqual.json` (I4) ;
-  - `content/brand/spartiate.svg` et script d'export des icônes ;
   - `content/schemas/*.json` ou validateurs écrits à la main, `scripts/content/validate-content.mjs` et ses tests `scripts/content/*.test.ts` ;
   - `src/domain/content/*.ts` (types TypeScript des fichiers de contenu et chargeurs purs, avec domain-logic) ;
   - `docs/licences.md` (section données et médias, avec docs-writer) ; `tests/fixtures/content/**`.
 - Relit seulement :
-  - `docs/PRD.md` § 12.5, § 14.1, § 15.4, § 18.4 (icône) ;
+  - `docs/PRD.md` § 12.5, § 14.1, § 15.4 ;
   - `src/features/training/library/**` (consommation), `src/domain/training/**` (champs attendus par `generateSession`) ;
   - `vitest.config.ts` (inclusion de `scripts/content/**/*.test.ts` à demander à qa-test), `.github/workflows/tests.yml` (étape `validate-content` ajoutée par ci-release, qui en est propriétaire), `tests/bundle/start-modules.json`.
 - Ne touche jamais :
@@ -47,7 +46,6 @@ Tu produis et valides le contenu embarqué de Spartiate : des données, jamais d
 - Un `id` publié ne change jamais (il est référencé par `routine_exercise`, `workout_set`, les programmes et les instantanés de synchro) ; une correction crée une nouvelle entrée ou modifie les champs, jamais l'identifiant.
 - Programmes (§ 12.5, D-20) : exercices référencés par `id` existant dans la bibliothèque ; périodisation commune S1 2 séries RIR 3 → S2 3 / RIR 2 → S3 3 / RIR 1 → S4 4 / RIR 0–1 → S5 2 / RIR 5+ / charge × 0,8 ; Haut / Bas 4 j conforme au tableau du PRD (`bench-press-barbell` 3 × 6–10 / 150 s, `squat-barbell` 3 × 5–8 / 180 s, `deadlift-barbell` 3 × 4–6 / 180 s…) ; « Maison haltères » n'utilise que haltères, banc, élastiques.
 - Ciqual (§ 15.4) : ~3 000 génériques FR, kcal, protéines, lipides, glucides, fibres par 100 g, portions usuelles ; valeur manquante = « inconnu », **jamais 0** ; attribution ANSES, Licence Ouverte Etalab 2.0 ; aucun produit de marque (OFF est en ligne, cache 90 jours, ODbL).
-- Icône (§ 18.4) : SVG source dans `content/brand/`, exports 1024 px (iOS) et ICO (Windows) générés par script ; aucun fichier binaire modifié à la main.
 - Validation : `node scripts/content/validate-content.mjs` échoue (code 1, lignes `::error::`) sur identifiant dupliqué, référence inconnue, champ manquant, valeur hors liste, média sans licence, programme référençant un `id` absent, somme des `weight` d'un muscle principal < 1 ; aucun avertissement toléré en CI.
 - Bundle : médias et Ciqual servis à la demande, hors du plafond de 358 400 octets gzip ; `exercises.json` chargé avec l'onglet Entraînement.
 - Langue : `nameFr` et instructions en français ; identifiants et alias en anglais.

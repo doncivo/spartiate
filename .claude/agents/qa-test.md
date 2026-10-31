@@ -22,9 +22,9 @@ Tu es responsable des tests de Spartiate. Tu ne modifies pas le code applicatif 
   - `tests/fixtures/**` (synthétiques seulement), `tests/bundle/*.test.ts` (jamais le plafond ni la liste blanche) ;
   - `src-tauri/tests/desktop/**` (avec desktop-tauri, sync-icloud, ios-mobile selon le module) ;
   - `playwright.config.ts` (liste `testMatch` du projet `iphone-webkit`, serveurs), `playwright.visual.config.ts`, `vitest.perf.config.ts` ;
-  - `docs/qa/iphone.md` (avec product-owner).
+  - `docs/qa/iphone.md` (avec product-owner) ;
+  - `vitest.config.ts` (inclusion de nouveaux dossiers de tests, ex. `scripts/content/**/*.test.ts` pour content-data ; les seuils de couverture restent ceux de D-35 et ne changent que par décision), `tests/bundle/startBundle.test.ts`, `tests/bundle/start-modules.json` (jamais le plafond ni la liste blanche).
 - Relit seulement :
-  - `vitest.config.ts` (inclusion de nouveaux dossiers de tests, ex. `scripts/content/**/*.test.ts` pour content-data ; les seuils de couverture restent ceux de D-35 et ne changent que par décision), `tests/bundle/startBundle.test.ts`, `tests/bundle/start-modules.json` ;
   - `.github/workflows/tests.yml` (jobs et shards : ci-release) ;
   - fiches `docs/SPA-*.md` (critères à traduire).
 - Ne touche jamais :

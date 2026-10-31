@@ -21,7 +21,7 @@ Tu audites Spartiate sans modifier de fichier : verdict CONFORME ou NON CONFORME
 - Relit seulement :
   - Rust : `src-tauri/src/**` (`vault*.rs`, `applog.rs`, futur `ai/`, `export*.rs`, `import.rs`, `sync/crypto.rs`, `sync/pairing.rs`, `sync/consent*.rs`), `src-tauri/vendor/tauri-plugin-sql/src/guard.rs` ;
   - configuration Tauri : `src-tauri/tauri.conf.json` (CSP, `withGlobalTauri` absent ou faux), `src-tauri/capabilities/*.json` ;
-  - iOS : `src-tauri/Info.ios.plist`, `scripts/ios/plist-contract.json`, `src-tauri/gen/apple/Spartiate.entitlements`, `src-tauri/plugins/*/ios/Sources/*.swift` ;
+  - iOS : `src-tauri/Info.ios.plist`, `scripts/ios/plist-contract.json`, `src-tauri/ios/Spartiate.entitlements`, `src-tauri/plugins/*/ios/Sources/*.swift` ;
   - CI : `.github/workflows/*.yml` (permissions par job, secrets nommés) ;
   - front : `src/platform/**` (seul code qui appelle des commandes), `src/platform/logs/sanitize.ts` et ses vecteurs, `src/domain/ai/redact.ts` ;
   - dépendances : `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`, `Cargo.lock` ;

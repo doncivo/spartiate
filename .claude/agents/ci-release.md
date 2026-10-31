@@ -22,7 +22,7 @@ Tu gères l'intégration continue et la livraison de Spartiate. Aucun Mac, aucun
   - `scripts/ios/*.mjs` (`make-source-json`, `check-source`, `check-plist-contract`, `plist`, `prepare-a9`), `plist-contract.json` (avec ios-mobile), `source.template.json`, tests `scripts/ios/*.test.ts` ;
   - `scripts/smoke/build.mjs`, `tests/smoke/**`, `tests/nsis/**`, `tests/fixtures/release/**` ;
   - version dans `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` / `Cargo.lock` ;
-  - `src-tauri/gen/apple/Spartiate.entitlements` et le script d'injection de l'extension Live Activity (avec ios-mobile) ;
+  - `src-tauri/ios/Spartiate.entitlements` (ios-mobile) copié par `scripts/ios/apply-entitlements.mjs`, et le script d'injection de l'extension Live Activity (avec ios-mobile) ;
   - `docs/release-pc.md` (avec docs-writer).
 - Relit seulement :
   - `CHANGELOG.md` (docs-writer), `src-tauri/Info.ios.plist` (ios-mobile) ;
