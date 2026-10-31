@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Spartiate — iPhone — Nutrition · Dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap">
+<style>
+:root{--bg:#0D0E11;--surface:#15171C;--surface-2:#1D2027;--line:#2A2E37;--fg:#EDE7DC;--fg-2:#A39C90;--accent:#B8322A;--accent-h:#D23B31;--bronze:#C28E4C;--bronze-2:#E0B577;--ok:#5E9E6B;--warn:#D9A441;--info:#6F8FB3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--fg);font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums}
+h1,h2,.display{font-family:Cinzel,"Times New Roman",serif;font-weight:600;letter-spacing:.02em;margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;font-weight:600;font-size:16px;border:0;cursor:pointer;color:var(--fg);background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--fg)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.bronze{background:transparent;border:1px solid var(--bronze);color:var(--bronze-2)}
+.num{font-family:Cinzel,serif;font-weight:600}
+.bronze{color:var(--bronze-2)}
+.muted{color:var(--fg-2)}
+.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg-2)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
+.pill.warn{border-color:var(--warn);color:var(--warn)}
+.pill.red{background:var(--accent);border-color:var(--accent);color:var(--fg)}
+.dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dial svg{display:block}
+.dial .v{font-family:Cinzel,serif;font-size:26px;font-weight:600;line-height:1}
+.dial .l{font-size:12px;color:var(--fg-2)}
+svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+.phone{width:440px;height:956px;background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:126px;height:37px;border-radius:20px;background:#000}
+.status{height:59px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 32px 10px;font-size:15px;font-weight:600}
+.scroll{flex:1;overflow:hidden;padding:4px 20px 0;display:flex;flex-direction:column;gap:12px}
+.tabbar{height:83px;border-top:1px solid var(--line);background:var(--surface);display:flex;justify-content:space-around;padding:8px 8px 0}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--fg-2);width:64px}
+.tab.on{color:var(--bronze-2)}
+.home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:var(--fg);opacity:.8}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg span{flex:1;text-align:center;height:32px;line-height:32px;border-radius:8px;font-size:14px;font-weight:600;color:var(--fg-2)}
+.seg span.on{background:var(--surface-2);color:var(--bronze-2)}
+.bar{height:4px;border-radius:2px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--bronze)}
+.macro{flex:1}
+.macro .lab{font-size:11px;color:var(--fg-2)}
+.macro .val{font-size:13px;margin:1px 0 5px}
+svg text{font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:11px;fill:var(--fg-2)}
+.kv{display:flex;justify-content:space-between;font-size:13px}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="island"></div>
+  <div class="status"><span>17:02</span><span>●●●● ᯤ ▮</span></div>
+  <div class="scroll">
+    <div class="seg"><span>Journal</span><span class="on">Dashboard</span><span>Stratégie</span></div>
+
+    <div class="row" style="align-items:flex-end">
+      <div>
+        <div class="eyebrow">ven. 30 oct. · perte de gras</div>
+        <h1 style="font-size:28px;margin-top:2px;line-height:1.1">Dashboard</h1>
+      </div>
+      <span class="pill ok">Sur la trajectoire</span>
+    </div>
+
+    <!-- Aujourd'hui -->
+    <div class="card" style="padding:12px 16px 14px;display:flex;gap:14px;align-items:center">
+      <div class="dial" style="flex:none">
+        <svg width="86" height="86" viewBox="0 0 86 86"><circle cx="43" cy="43" r="37" stroke="var(--surface-2)" stroke-width="7" fill="none"/><circle cx="43" cy="43" r="37" stroke="var(--bronze)" stroke-width="7" fill="none" stroke-dasharray="232" stroke-dashoffset="104" stroke-linecap="round" transform="rotate(-90 43 43)"/><text x="43" y="41" text-anchor="middle" fill="var(--fg)" font-size="18" font-weight="600" style="fill:var(--fg);font-family:Cinzel,serif">1 460</text><text x="43" y="56" text-anchor="middle" font-size="10">/ 2 650</text></svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="row" style="align-items:baseline"><span class="eyebrow">Aujourd'hui</span><span class="muted" style="font-size:12px">1 190 kcal restantes</span></div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <div class="macro"><div class="lab">Protéines</div><div class="val">96 <span class="muted">/ 170</span></div><div class="bar"><i style="width:56%;background:var(--bronze-2)"></i></div></div>
+          <div class="macro"><div class="lab">Glucides</div><div class="val">150 <span class="muted">/ 300</span></div><div class="bar"><i style="width:50%;background:var(--info)"></i></div></div>
+          <div class="macro"><div class="lab">Lipides</div><div class="val">48 <span class="muted">/ 75</span></div><div class="bar"><i style="width:64%;background:var(--fg-2)"></i></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Balance 7 jours -->
+    <div class="card" style="padding:12px 16px 10px">
+      <div class="row" style="align-items:baseline">
+        <div class="eyebrow">Balance 7 jours</div>
+        <span style="font-size:13px"><b class="num bronze" style="font-size:18px">−310</b> <span class="muted">kcal / j en moyenne</span></span>
+      </div>
+      <svg width="368" height="100" viewBox="0 0 368 100" style="display:block;margin-top:6px">
+<line x1="0" y1="22" x2="368" y2="22" stroke="var(--line)"/>
+<line x1="0" y1="46.8" x2="368" y2="46.8" stroke="var(--line)" stroke-dasharray="2 4"/>
+<rect x="14" y="22.0" width="32" height="20.8" rx="3" fill="var(--ok)"/>
+<text x="30" y="80" text-anchor="middle" font-size="10" style="fill:var(--fg)">−260</text>
+<text x="30" y="95" text-anchor="middle">sam.</text>
+<rect x="64" y="12.4" width="32" height="9.6" rx="3" fill="var(--warn)"/>
+<text x="80" y="80" text-anchor="middle" font-size="10" style="fill:var(--fg)">+120</text>
+<text x="80" y="95" text-anchor="middle">dim.</text>
+<rect x="114" y="22.0" width="32" height="38.4" rx="3" fill="var(--ok)"/>
+<text x="130" y="80" text-anchor="middle" font-size="10" style="fill:var(--fg)">−480</text>
+<text x="130" y="95" text-anchor="middle">lun.</text>
+<rect x="164" y="22.0" width="32" height="31.2" rx="3" fill="var(--ok)"/>
+<text x="180" y="80" text-anchor="middle" font-size="10" style="fill:var(--fg)">−390</text>
+<text x="180" y="95" text-anchor="middle">mar.</text>
+<rect x="214" y="22" width="32" height="24.8" rx="3" fill="none" stroke="var(--fg-2)" stroke-dasharray="3 3"/>
+<text x="230" y="80" text-anchor="middle" font-size="10">imputé</text>
+<text x="230" y="95" text-anchor="middle">mer.</text>
+<rect x="264" y="22.0" width="32" height="43.2" rx="3" fill="var(--ok)"/>
+<text x="280" y="80" text-anchor="middle" font-size="10" style="fill:var(--fg)">−540</text>
+<text x="280" y="95" text-anchor="middle">jeu.</text>
+<rect x="314" y="22" width="32" height="24.8" rx="3" fill="var(--ok)" opacity=".35"/>
+<text x="330" y="80" text-anchor="middle" font-size="10">partiel</text>
+<text x="330" y="95" text-anchor="middle">ven.</text>
+</svg>
+      <div class="kv muted" style="font-size:12px"><span>5 jours loggés / 7 · 3 pesées</span><span>pointillé : cible −310 · mer. exclu</span></div>
+    </div>
+
+    <!-- Tendance de poids -->
+    <div class="card" style="padding:12px 16px 10px">
+      <div class="row" style="align-items:baseline">
+        <div class="eyebrow">Tendance de poids · 28 j</div>
+        <span style="font-size:13px"><b class="num" style="font-size:20px">81,4</b> <span class="muted">kg · −0,3 kg / sem.</span></span>
+      </div>
+      <!-- y: 83.0 → 4 ; 80.6 → 76 (30 px / kg) ; x: j0=10 → j27=350 (12.6 px/j) -->
+      <svg width="368" height="92" viewBox="0 0 368 92" style="display:block;margin-top:6px">
+        <line x1="0" y1="13" x2="356" y2="13" stroke="var(--line)" stroke-dasharray="2 4"/><text x="368" y="17" text-anchor="end" font-size="10">82,7</text>
+        <line x1="0" y1="43" x2="356" y2="43" stroke="var(--line)" stroke-dasharray="2 4"/><text x="368" y="47" text-anchor="end" font-size="10">81,7</text>
+        <line x1="0" y1="73" x2="356" y2="73" stroke="var(--line)" stroke-dasharray="2 4"/><text x="368" y="77" text-anchor="end" font-size="10">80,7</text>
+        <!-- pesées -->
+        <g fill="var(--fg-2)">
+          <circle cx="10" cy="10" r="2.5"/><circle cx="35" cy="20" r="2.5"/><circle cx="48" cy="12" r="2.5"/><circle cx="73" cy="22" r="2.5"/><circle cx="98" cy="18" r="2.5"/><circle cx="111" cy="30" r="2.5"/><circle cx="136" cy="24" r="2.5"/><circle cx="161" cy="34" r="2.5"/><circle cx="174" cy="26" r="2.5"/><circle cx="199" cy="36" r="2.5"/><circle cx="224" cy="44" r="2.5"/><circle cx="237" cy="33" r="2.5"/><circle cx="262" cy="45" r="2.5"/><circle cx="287" cy="40" r="2.5"/><circle cx="312" cy="50" r="2.5"/><circle cx="338" cy="44" r="2.5"/>
+        </g>
+        <!-- tendance EMA -->
+        <path d="M10 15 C 60 19, 110 24, 160 30 S 260 42, 350 52" fill="none" stroke="var(--bronze-2)" stroke-width="2"/>
+        <circle cx="350" cy="52" r="4" fill="var(--bronze-2)"/>
+        <text x="10" y="88" font-size="10">3 oct.</text><text x="180" y="88" text-anchor="middle" font-size="10">17 oct.</text><text x="350" y="88" text-anchor="end" font-size="10">30 oct.</text>
+      </svg>
+      <div class="kv muted" style="font-size:12px"><span>16 pesées · dernière ce matin 81,2 kg</span><span>objectif −0,4 kg / sem.</span></div>
+    </div>
+
+    <!-- Dépense -->
+    <div class="card" style="padding:12px 16px">
+      <div class="row">
+        <div>
+          <div class="eyebrow">Dépense estimée</div>
+          <div style="margin-top:4px"><span class="num" style="font-size:26px">2 790</span> <span class="muted" style="font-size:13px">kcal / j</span></div>
+        </div>
+        <div style="text-align:right">
+          <span class="pill warn">confiance moyenne</span>
+          <div class="muted" style="font-size:12px;margin-top:6px">19 jours complets sur 28</div>
+        </div>
+      </div>
+      <div class="muted" style="font-size:12px;margin-top:8px;border-top:1px solid var(--line);padding-top:8px">Apports 2 480 kcal / j + perte 0,3 kg / sem. · formule 25 %</div>
+    </div>
+
+    <div class="card" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px">
+      <span><span class="eyebrow" style="margin-right:6px">Couverture</span><b class="num" style="font-size:16px">5</b> <span class="muted">j / 7 · </span><b class="num" style="font-size:16px">3</b> <span class="muted">pesées</span></span>
+      <span><span class="eyebrow" style="margin-right:6px">Check-in</span>dimanche</span>
+    </div>
+  </div>
+
+  <nav class="tabbar">
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18M12 3v18"/><circle cx="12" cy="12" r="9"/></svg>Aujourd'hui</a>
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>Entraînement</a>
+    <a class="tab on"><svg class="ic" viewBox="0 0 24 24"><path d="M4 8h16l-1.5 12h-13z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>Nutrition</a>
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M3 20h18M5 17l5-6 4 3 5-8"/></svg>Progrès</a>
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>Plus</a>
+  </nav>
+  <div class="home"></div>
+</div>
+</body>
+</html>

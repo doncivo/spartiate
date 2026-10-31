@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Spartiate — PC — Profils de matériel</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap">
+<style>
+:root{--bg:#0D0E11;--surface:#15171C;--surface-2:#1D2027;--line:#2A2E37;--fg:#EDE7DC;--fg-2:#A39C90;--accent:#B8322A;--accent-h:#D23B31;--bronze:#C28E4C;--bronze-2:#E0B577;--ok:#5E9E6B;--warn:#D9A441;--info:#6F8FB3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--fg);font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums}
+h1,h2,.display{font-family:Cinzel,"Times New Roman",serif;font-weight:600;letter-spacing:.02em;margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;font-weight:600;font-size:16px;border:0;cursor:pointer;color:var(--fg);background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--fg)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.bronze{background:transparent;border:1px solid var(--bronze);color:var(--bronze-2)}
+.num{font-family:Cinzel,serif;font-weight:600}
+.bronze{color:var(--bronze-2)}
+.muted{color:var(--fg-2)}
+.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg-2)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
+.pill.warn{border-color:var(--warn);color:var(--warn)}
+.pill.red{background:var(--accent);border-color:var(--accent);color:var(--fg)}
+.dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dial svg{display:block}
+.dial .v{font-family:Cinzel,serif;font-size:26px;font-weight:600;line-height:1}
+.dial .l{font-size:12px;color:var(--fg-2)}
+svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+.win{width:1440px;height:900px;background:var(--bg);display:flex;overflow:hidden}
+.side{width:220px;flex:none;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 12px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 22px}
+.brand .shield{width:30px;height:30px;border-radius:50%;background:var(--bronze);display:flex;align-items:center;justify-content:center;color:var(--accent);font-family:Cinzel,serif;font-weight:600;font-size:18px}
+.nav a{display:flex;align-items:center;gap:10px;height:40px;padding:0 10px;border-radius:8px;color:var(--fg-2);font-size:14px;font-weight:500}
+.nav a.on{background:var(--surface-2);color:var(--fg)}
+.nav a kbd{margin-left:auto;font:11px ui-monospace,monospace;color:var(--fg-2);opacity:.7}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.top{height:56px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.sub{display:flex;gap:18px;font-size:14px;color:var(--fg-2)}
+.sub span.on{color:var(--fg);border-bottom:2px solid var(--bronze);padding-bottom:4px}
+.cols{flex:1;display:grid;grid-template-columns:230px 1fr 300px;gap:20px;padding:22px 28px;min-height:0}
+.pl{display:flex;flex-direction:column;gap:2px}
+.pl a{display:flex;flex-direction:column;justify-content:center;height:52px;padding:0 12px;border-radius:8px;color:var(--fg);font-size:14px}
+.pl a small{font-size:12px;color:var(--fg-2)}
+.pl a.on{background:var(--surface-2);box-shadow:inset 3px 0 0 var(--bronze)}
+.form{display:grid;grid-template-columns:1.25fr 1fr;gap:12px;align-content:start;min-height:0}
+.stack{display:flex;flex-direction:column;gap:12px;min-width:0}
+.sec{padding:12px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.sec .hd{display:flex;justify-content:space-between;align-items:center}
+.row{display:grid;align-items:center;gap:8px;font-size:13px;height:30px}
+.fld{height:30px;min-width:52px;border:1px solid var(--line);border-radius:7px;background:var(--bg);display:inline-flex;align-items:center;justify-content:center;padding:0 8px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.fld.w{min-width:60px}
+.unit{font-size:12px;color:var(--fg-2)}
+.plates{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.plate{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;font-size:12px}
+.plate .d{border-radius:50%;background:var(--surface-2);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--fg)}
+.plate .c{display:flex;align-items:center;gap:4px;color:var(--fg-2)}
+.plate .c b{color:var(--fg);font-weight:600}
+.tg{width:34px;height:20px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);position:relative;flex:none}
+.tg::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--fg-2)}
+.tg.on{background:var(--bronze);border-color:var(--bronze)}
+.tg.on::after{left:16px;background:var(--bg)}
+.mach{display:grid;grid-template-columns:1fr 42px 48px 42px 56px;gap:5px;align-items:center;font-size:13px;height:32px;white-space:nowrap}
+.mach .fld{min-width:0;padding:0 4px;width:100%}
+.mach span:nth-child(n+2){text-align:center}.mach span:last-child{text-align:right}
+.mach.hd{height:22px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-2);font-weight:600}
+.tag{display:inline-flex;align-items:center;height:26px;padding:0 9px;border-radius:13px;font-size:12px;border:1px solid var(--line);gap:6px}
+.tag.ok{border-color:var(--ok);color:var(--ok)}
+.tag.no{color:var(--fg-2);text-decoration:line-through}
+.loads{display:flex;flex-wrap:wrap;gap:5px;font-size:12px}
+.loads span{height:24px;padding:0 7px;border-radius:6px;background:var(--surface-2);display:inline-flex;align-items:center;font-variant-numeric:tabular-nums}
+.loads span.b{color:var(--bronze-2);border:1px solid var(--bronze)}
+.kv{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-top:1px solid var(--line)}
+.kv:first-of-type{border-top:0}
+</style>
+</head>
+<body>
+<div class="win">
+  <aside class="side">
+    <div class="brand"><span class="shield">Λ</span><span class="display" style="font-size:17px">Spartiate</span></div>
+    <nav class="nav" style="display:flex;flex-direction:column;gap:2px">
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3v18"/></svg>Aujourd'hui<kbd>Ctrl 1</kbd></a>
+      <a class="on"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>Entraînement<kbd>Ctrl 2</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M4 8h16l-1.5 12h-13z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>Nutrition<kbd>Ctrl 3</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M3 20h18M5 17l5-6 4 3 5-8"/></svg>Progrès<kbd>Ctrl 4</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>Plus<kbd>Ctrl 5</kbd></a>
+    </nav>
+    <div style="flex:1"></div>
+    <div class="card" style="padding:10px 12px;font-size:12px;color:var(--fg-2);display:flex;flex-direction:column;gap:4px">
+      <span style="color:var(--fg)">PC · Bureau</span>
+      <span>Synchro iCloud il y a 2 min</span>
+      <span>iPhone vu il y a 2 min</span>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="top">
+      <div style="display:flex;align-items:center;gap:22px">
+        <h1 style="font-size:22px">Entraînement</h1>
+        <div class="sub"><span>Lancer</span><span>Programme</span><span>Historique</span><span>Bibliothèque</span><span class="on">Matériel</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="muted" style="font-size:13px">Enregistré · synchronisé il y a 2 min</span>
+        <button class="btn ghost" style="height:36px;padding:0 14px;font-size:14px">Dupliquer</button>
+        <button class="btn primary" style="height:36px;padding:0 16px;font-size:14px;white-space:nowrap">Activer sur ce PC</button>
+      </div>
+    </div>
+
+    <div class="cols">
+      <aside class="card" style="padding:12px 8px;display:flex;flex-direction:column">
+        <div class="eyebrow" style="padding:4px 12px 10px">Profils de matériel</div>
+        <div class="pl">
+          <a class="on">Salle Antony<small>actif sur ce PC et l'iPhone</small></a>
+          <a>Maison haltères<small>haltères 2–24 kg · banc</small></a>
+          <a>Voyage<small>poids de corps · élastiques</small></a>
+          <a style="color:var(--fg-2);height:44px">+ Nouveau profil</a>
+        </div>
+        <div style="flex:1"></div>
+        <div class="muted" style="font-size:12px;line-height:1.5;padding:12px 12px 4px;border-top:1px solid var(--line)">Le profil actif est un réglage local à chaque appareil ; les profils eux-mêmes sont synchronisés.</div>
+      </aside>
+
+      <section style="display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end">
+          <div><div class="eyebrow">Profil</div><h2 style="font-size:24px;margin-top:2px">Salle Antony</h2></div>
+          <span class="muted" style="font-size:12px">Modifié le 12 oct. · utilisé par 26 exercices du programme actif</span>
+        </div>
+        <div class="form">
+          <div class="card sec">
+            <div class="hd"><span class="eyebrow">Barres</span><span class="muted" style="font-size:12px">+ Ajouter</span></div>
+            <div class="row" style="grid-template-columns:1fr auto auto"><span>Olympique</span><span class="fld w">20</span><span class="unit">kg</span></div>
+            <div class="row" style="grid-template-columns:1fr auto auto"><span>EZ</span><span class="fld w">10</span><span class="unit">kg</span></div>
+            <div class="row" style="grid-template-columns:1fr auto auto"><span class="muted">Trap bar</span><span class="fld w muted" style="border-style:dashed;font-weight:400">—</span><span class="unit">absente</span></div>
+          </div>
+          <div class="card sec">
+            <div class="hd"><span class="eyebrow">Haltères</span><span class="muted" style="font-size:12px">fixes</span></div>
+            <div class="row" style="grid-template-columns:auto auto auto auto auto auto"><span class="muted">De</span><span class="fld">2</span><span class="muted">à</span><span class="fld">40</span><span class="muted">kg, pas</span><span class="fld">2</span></div>
+            <div class="muted" style="font-size:12px">20 paires · 2, 4, 6 … 38, 40 kg</div>
+            <div class="row" style="grid-template-columns:1fr auto"><span class="muted">Kettlebells</span><span class="unit">aucune</span></div>
+          </div>
+
+          <div class="card sec" style="grid-column:1 / -1">
+            <div class="hd"><span class="eyebrow">Disques · inventaire par côté de barre</span><span class="muted" style="font-size:12px">Cliquer un compteur, ou ← → pour ajuster</span></div>
+            <div class="plates" style="margin-top:4px">
+              <div class="plate"><span class="d" style="width:58px;height:58px;font-size:14px;border-color:var(--accent)">25</span><span class="c">× <b>2</b></span></div>
+              <div class="plate"><span class="d" style="width:52px;height:52px;font-size:14px;border-color:var(--info)">20</span><span class="c">× <b>2</b></span></div>
+              <div class="plate"><span class="d" style="width:46px;height:46px;font-size:13px;border-color:var(--warn)">15</span><span class="c">× <b>2</b></span></div>
+              <div class="plate"><span class="d" style="width:42px;height:42px;font-size:13px;border-color:var(--ok)">10</span><span class="c">× <b>2</b></span></div>
+              <div class="plate"><span class="d" style="width:36px;height:36px;font-size:12px">5</span><span class="c">× <b>2</b></span></div>
+              <div class="plate"><span class="d" style="width:32px;height:32px;font-size:11px">2,5</span><span class="c">× <b>2</b></span></div>
+              <div class="plate"><span class="d" style="width:28px;height:28px;font-size:10px">1,25</span><span class="c">× <b>2</b></span></div>
+            </div>
+            <div class="muted" style="font-size:12px">Plus petit cran barre : 2,5 kg · charge max barre olympique : 177,5 kg</div>
+          </div>
+
+          <div class="card sec">
+            <div class="hd"><span class="eyebrow">Machines à stack</span><span class="muted" style="font-size:12px">+ Ajouter une machine</span></div>
+            <div class="mach hd"><span>Machine</span><span>Min</span><span>Max</span><span>Pas</span><span>1RM est.</span></div>
+            <div class="mach"><span>Tirage vertical</span><span class="fld">5</span><span class="fld">100</span><span class="fld">5</span><span class="bronze" style="text-align:right">78 kg</span></div>
+            <div class="mach"><span>Leg curl</span><span class="fld">5</span><span class="fld">90</span><span class="fld">5</span><span class="bronze" style="text-align:right">62 kg</span></div>
+            <div class="mach"><span>Presse</span><span class="fld">40</span><span class="fld">300</span><span class="fld">20</span><span class="bronze" style="text-align:right">236 kg</span></div>
+            <div class="mach"><span>Leg extension</span><span class="fld">5</span><span class="fld">100</span><span class="fld">5</span><span class="bronze" style="text-align:right">68 kg</span></div>
+            <div class="muted" style="font-size:12px;margin-top:2px">1RM propre à ce profil ; une autre salle repart de sa propre presse.</div>
+          </div>
+
+          <div class="stack">
+          <div class="card sec">
+            <div class="hd"><span class="eyebrow">Incréments par type</span></div>
+            <div class="row" style="grid-template-columns:1fr auto auto"><span>Barre</span><span class="fld">2,5</span><span class="unit">kg</span></div>
+            <div class="row" style="grid-template-columns:1fr auto auto"><span>Haltères (la paire)</span><span class="fld">2</span><span class="unit">kg</span></div>
+            <div class="row" style="grid-template-columns:1fr auto auto"><span>Machine</span><span class="fld">5</span><span class="unit">kg ou cran</span></div>
+                      </div>
+          <div class="card sec">
+            <div class="hd"><span class="eyebrow">Autres équipements</span></div>
+            <div class="row" style="grid-template-columns:1fr auto"><span>Rack avec sécurités</span><span class="tg on"></span></div>
+            <div class="row" style="grid-template-columns:1fr auto"><span>Banc inclinable</span><span class="tg on"></span></div>
+                        <div class="row" style="grid-template-columns:1fr auto"><span>Élastiques</span><span class="tg"></span></div>
+          </div>
+          </div>
+
+          <div class="card sec" style="grid-column:1 / -1">
+            <div class="hd"><span class="eyebrow">Exercices forcés / interdits dans ce profil</span><span class="muted" style="font-size:12px">+ Ajouter</span></div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <span class="tag ok">Forcé · Tractions</span><span class="tag ok">Forcé · Soulevé de terre</span>
+              <span class="tag no">Développé militaire machine</span><span class="tag no">Hack squat</span><span class="tag no">Smith machine</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside style="display:flex;flex-direction:column;gap:14px;min-width:0">
+        <div class="card" style="padding:16px 18px">
+          <div class="eyebrow">Aperçu · barre olympique 20 kg</div>
+          <div class="muted" style="font-size:12px;margin-top:4px">Charges possibles, par 2,5 kg jusqu'à 177,5</div>
+          <div class="loads" style="margin-top:10px">
+            <span>20</span><span>22,5</span><span>25</span><span>27,5</span><span>30</span><span>32,5</span><span>35</span><span>37,5</span><span>40</span><span>…</span><span>65</span><span>67,5</span><span class="b">70</span><span>72,5</span><span>75</span><span>…</span><span class="b">82,5</span><span>…</span><span class="b">110</span><span>…</span><span class="b">140</span><span>…</span><span>177,5</span>
+          </div>
+          <div class="muted" style="font-size:12px;margin-top:10px;line-height:1.5">En bronze, les charges du programme actif. 70 kg = barre + 25 par côté ; 82,5 = 25 + 5 + 1,25.</div>
+        </div>
+        <div class="card" style="padding:16px 18px">
+          <div class="eyebrow">Aperçu · EZ 10 kg</div>
+          <div class="loads" style="margin-top:8px">
+            <span>10</span><span>12,5</span><span>15</span><span>17,5</span><span>20</span><span>22,5</span><span>25</span><span>27,5</span><span class="b">30</span><span>32,5</span><span>…</span>
+          </div>
+        </div>
+        <div class="card" style="padding:16px 18px">
+          <div class="eyebrow">Impossible dans ce profil</div>
+          <div class="kv"><span>Barre à 71 kg</span><span class="muted">arrondi 70 / 72,5</span></div>
+          <div class="kv"><span>Haltères 27 kg</span><span class="muted">arrondi 26 / 28</span></div>
+          <div class="kv"><span>Trap bar</span><span class="muted">remplacé</span></div>
+        </div>
+        <div class="card" style="padding:16px 18px;flex:1">
+          <div class="eyebrow">Préréglages</div>
+          <div class="muted" style="font-size:12px;margin-top:4px">Remplace l'inventaire, l'historique est conservé.</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+            <button class="btn ghost" style="height:36px;font-size:13px;justify-content:space-between">Salle commerciale<span class="muted">appliqué</span></button>
+            <button class="btn ghost" style="height:36px;font-size:13px;justify-content:space-between">Maison haltères<span class="muted">2–24 kg</span></button>
+            <button class="btn ghost" style="height:36px;font-size:13px;justify-content:space-between">Poids de corps<span class="muted">sans charge</span></button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Spartiate — iPhone — Fiche exercice</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap">
+<style>
+:root{--bg:#0D0E11;--surface:#15171C;--surface-2:#1D2027;--line:#2A2E37;--fg:#EDE7DC;--fg-2:#A39C90;--accent:#B8322A;--accent-h:#D23B31;--bronze:#C28E4C;--bronze-2:#E0B577;--ok:#5E9E6B;--warn:#D9A441;--info:#6F8FB3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--fg);font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums}
+h1,h2,.display{font-family:Cinzel,"Times New Roman",serif;font-weight:600;letter-spacing:.02em;margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;font-weight:600;font-size:16px;border:0;cursor:pointer;color:var(--fg);background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--fg)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.bronze{background:transparent;border:1px solid var(--bronze);color:var(--bronze-2)}
+.num{font-family:Cinzel,serif;font-weight:600}
+.bronze{color:var(--bronze-2)}
+.muted{color:var(--fg-2)}
+.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg-2)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
+.pill.warn{border-color:var(--warn);color:var(--warn)}
+.pill.red{background:var(--accent);border-color:var(--accent);color:var(--fg)}
+.dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dial svg{display:block}
+.dial .v{font-family:Cinzel,serif;font-size:26px;font-weight:600;line-height:1}
+.dial .l{font-size:12px;color:var(--fg-2)}
+svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+.phone{width:440px;height:956px;background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:126px;height:37px;border-radius:20px;background:#000}
+.status{height:59px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 32px 10px;font-size:15px;font-weight:600}
+.scroll{flex:1;overflow:hidden;padding:4px 20px 0;display:flex;flex-direction:column;gap:10px}
+.tabbar{height:83px;border-top:1px solid var(--line);background:var(--surface);display:flex;justify-content:space-around;padding:8px 8px 0}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--fg-2);width:64px}
+.tab.on{color:var(--bronze-2)}
+.home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:var(--fg);opacity:.8}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tabs span{flex:1;text-align:center;padding:8px 0 10px;font-size:14px;font-weight:600;color:var(--fg-2);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs span.on{color:var(--bronze-2);border-bottom-color:var(--bronze)}
+.meta{display:flex;flex-wrap:wrap;gap:6px}
+.li{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-top:1px solid var(--line);font-size:14px}
+.li:first-of-type{border-top:0}
+.mb{display:flex;align-items:center;gap:10px;font-size:13px;padding:2px 0}
+.mb .t{height:6px;border-radius:3px;background:var(--surface-2);flex:1;overflow:hidden}
+.mb .t i{display:block;height:100%;background:var(--bronze)}
+.chart text{font-family:system-ui,sans-serif;font-size:10px;fill:var(--fg-2)}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="island"></div>
+  <div class="status"><span>17:09</span><span>●●●● ᯤ ▮</span></div>
+  <div class="scroll">
+    <div class="row">
+      <a class="muted" style="display:inline-flex;align-items:center;gap:4px;font-size:15px"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M15 6l-6 6 6 6"/></svg>Bibliothèque</a>
+      <button class="btn ghost" style="width:36px;height:36px;padding:0" aria-label="Plus"><svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button>
+    </div>
+    <div>
+      <h1 style="font-size:28px">Rowing barre</h1>
+      <div class="meta" style="margin-top:6px">
+        <span class="pill">Tirage horizontal</span><span class="pill">Barre</span><span class="pill">Charge × reps</span>
+      </div>
+    </div>
+
+    <div class="tabs"><span>Info</span><span>Instructions</span><span class="on">Historique</span></div>
+
+    <div class="card" style="padding:12px 16px">
+      <div class="row" style="align-items:flex-start">
+        <div>
+          <div class="eyebrow">1RM estimé</div>
+          <div class="num bronze" style="font-size:30px;line-height:1.1;margin-top:2px">84 <span style="font-size:14px;font-family:system-ui,sans-serif;color:var(--fg-2);font-weight:400">kg</span></div>
+          <div class="muted" style="font-size:12px">confiance 78 % · 12 séances</div>
+        </div>
+        <div style="text-align:right">
+          <div class="eyebrow">Record</div>
+          <div class="num" style="font-size:22px;line-height:1.1;margin-top:2px">70 × 8</div>
+          <div class="muted" style="font-size:12px">aujourd'hui</div>
+        </div>
+      </div>
+      <svg class="chart" viewBox="0 0 368 120" width="368" height="120" style="display:block;margin-top:10px" aria-label="1RM estimé sur 8 semaines, de 74 à 84 kg">
+        <line x1="34" y1="10" x2="360" y2="10" stroke="var(--line)"/><text x="30" y="13" text-anchor="end">85</text>
+        <line x1="34" y1="50" x2="360" y2="50" stroke="var(--line)"/><text x="30" y="53" text-anchor="end">80</text>
+        <line x1="34" y1="90" x2="360" y2="90" stroke="var(--line)"/><text x="30" y="93" text-anchor="end">75</text>
+        <polyline fill="none" stroke="var(--bronze)" stroke-width="2" stroke-linejoin="round" points="46,98 90,90 134,86 178,74 222,66 266,54 310,42 354,18"/>
+        <circle cx="46" cy="98" r="3" fill="var(--bronze)"/><circle cx="90" cy="90" r="3" fill="var(--bronze)"/><circle cx="134" cy="86" r="3" fill="var(--bronze)"/><circle cx="178" cy="74" r="3" fill="var(--bronze)"/><circle cx="222" cy="66" r="3" fill="var(--bronze)"/><circle cx="266" cy="54" r="3" fill="var(--bronze)"/><circle cx="310" cy="42" r="3" fill="var(--bronze)"/><circle cx="354" cy="18" r="4" fill="var(--bronze-2)"/>
+        <text x="46" y="114" text-anchor="middle">4 sept.</text><text x="178" y="114" text-anchor="middle">25 sept.</text><text x="266" y="114" text-anchor="middle">9 oct.</text><text x="354" y="114" text-anchor="middle">30 oct.</text>
+      </svg>
+      <div class="row muted" style="font-size:11px;margin-top:2px"><span>8 semaines · 1RM estimé (kg)</span><span>+ 10 kg</span></div>
+    </div>
+
+    <div class="card" style="padding:8px 16px">
+      <div class="eyebrow" style="padding:4px 0 2px">5 dernières séances</div>
+      <div class="li"><span><b style="font-weight:600">ven. 30 oct.</b> <span class="muted" style="font-size:12px">· Haut A</span></span><span><span class="bronze" style="font-weight:600">70</span> × 8, 8, 8 <span class="muted" style="font-size:12px">· juste</span></span></div>
+      <div class="li"><span><b style="font-weight:600">lun. 26 oct.</b> <span class="muted" style="font-size:12px">· Haut A</span></span><span><span class="bronze" style="font-weight:600">67,5</span> × 8, 8, 7 <span class="muted" style="font-size:12px">· juste</span></span></div>
+      <div class="li"><span><b style="font-weight:600">ven. 23 oct.</b> <span class="muted" style="font-size:12px">· Haut A</span></span><span><span class="bronze" style="font-weight:600">67,5</span> × 7, 7, 6 <span class="muted" style="font-size:12px">· dur</span></span></div>
+      <div class="li"><span><b style="font-weight:600">lun. 19 oct.</b> <span class="muted" style="font-size:12px">· Haut A</span></span><span><span class="bronze" style="font-weight:600">65</span> × 9, 8, 8 <span class="muted" style="font-size:12px">· facile</span></span></div>
+      <div class="li"><span><b style="font-weight:600">ven. 16 oct.</b> <span class="muted" style="font-size:12px">· Haut A</span></span><span><span class="bronze" style="font-weight:600">65</span> × 8, 8, 7 <span class="muted" style="font-size:12px">· juste</span></span></div>
+    </div>
+
+    <div class="card" style="padding:10px 16px">
+      <div class="eyebrow" style="margin-bottom:4px">Muscles</div>
+      <div class="mb"><span style="width:118px">Dos</span><span class="t"><i style="width:100%"></i></span><span class="num" style="width:30px;text-align:right">1,0</span></div>
+      <div class="mb"><span style="width:118px">Biceps</span><span class="t"><i style="width:50%"></i></span><span class="num" style="width:30px;text-align:right">0,5</span></div>
+      <div class="mb"><span style="width:118px">Arrière d'épaule</span><span class="t"><i style="width:30%"></i></span><span class="num" style="width:30px;text-align:right">0,3</span></div>
+    </div>
+  </div>
+
+  <div style="padding:10px 20px 0"><button class="btn bronze" style="width:100%">Ajouter à une routine</button></div>
+
+  <nav class="tabbar" style="margin-top:8px">
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18M12 3v18"/><circle cx="12" cy="12" r="9"/></svg>Aujourd'hui</a>
+    <a class="tab on"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>Entraînement</a>
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M4 8h16l-1.5 12h-13z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>Nutrition</a>
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M3 20h18M5 17l5-6 4 3 5-8"/></svg>Progrès</a>
+    <a class="tab"><svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>Plus</a>
+  </nav>
+  <div class="home"></div>
+</div>
+</body>
+</html>

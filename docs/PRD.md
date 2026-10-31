@@ -1,1489 +1,1280 @@
-# PRD — CircleTasks
+# PRD Spartiate v6 — document de référence (PC + iPhone, fork CircleTasks)
 
-Version du 1er octobre 2026 · Auteur : Ali · Référence unique du projet · **Révision PRD-02 du 28 octobre 2026** : alignement des stories sur les huit refontes (décisions d'Ali par lot, `docs/stories/PRD-02.md`) ; les dessins de la section 5 datent de septembre, la référence visuelle est `docs/maquettes-refonte/` pour les écrans qu'elle couvre.
+30 octobre 2026 · Ali Cherif · révision 6.1 du 31 octobre 2026 (maquettes validées, D-21)
 
-## 1. Contexte, vision et objectifs
+## 0. Statut et conventions
 
-CircleTasks est un planificateur personnel qui reproduit le périmètre complet de NoteCircle : tâches, vue semaine, routines, événements, checklists, calendriers, capture rapide, Focus Time et statistiques. L'application est développée en une seule fois et livrée en même temps sur PC Windows et sur iPhone 16 Pro Max, pour un usage strictement personnel.
+**Version 6.0 — document de référence unique du projet Spartiate.** Il remplace le PRD Forge v5.1 et tous les documents antérieurs. Il est destiné à être exporté en `docs/PRD.md` dans le dépôt `doncivo/spartiate` (fork de `doncivo/circletasks`) et lu par sections ciblées par Claude Code et Codex. En cas de contradiction entre ce document et un ADR de CircleTasks repris, ce document prime pour Spartiate.
 
-**Vision.** Un seul espace minimaliste, inspiré du papier, qui répond à deux questions : « qu'est-ce que je dois faire et quand ? » et « qu'est-ce que j'ai réellement accompli ? ».
+**Révision 6.1 (30 octobre 2026, après ta relecture)** — ajouts : § 10.0 parcours de bout en bout, § 12.5 programmes de départ, § 12.6 pause et reprise, § 13.8 / 15.7 / 16.7 fonctions reprises du benchmark qui manquaient, § 18.4 charte visuelle, § 18.5 maquettes (règle responsive et liste), § 18.6 accessibilité, décisions D-19 et D-20, hypothèse H-19. Aucune section existante n'a été modifiée.
+
+### 0.1 Ce qui change par rapport à la v5.1
 
-**Utilisateur cible.** Un utilisateur unique (Ali), multi-activités (missions de conseil, contrôle de gestion, projets personnels), qui planifie à la semaine et veut suivre ses routines.
+| Sujet | v5.1 (Forge) | v6 (Spartiate) |
+| --- | --- | --- |
+| Nom | Forge (nom de code) | **Spartiate** ; identifiant `fr.spartiate.app` |
+| Plateformes | iPhone seul | **PC Windows + iPhone**, même code, livrés ensemble |
+| Pile | Swift 6 + SwiftUI + 4 packages Swift | **Tauri 2 : React + TypeScript strict (front commun), Rust (cœur, SQLite, synchro, chiffrement), plugins Swift pour l'iPhone** — la pile de CircleTasks |
+| Moteurs | Packages Swift testés sous WSL | **TypeScript pur dans `src/domain`**, testés par Vitest sur Windows |
+| Données | SwiftData, aucune sync | **SQLite (plugin Tauri SQL)** + **synchronisation chiffrée par iCloud Drive** entre PC et iPhone (ADR 0011 de CircleTasks, réutilisée) |
+| HealthKit, Live Activity | Frameworks directs | **Plugins Swift Tauri** (`healthkit` nouveau, `live-activity` nouveau), comme `reminders`, `vision`, `speech` sur CircleTasks |
+| Dépôt | Neuf | **Fork de CircleTasks** : chaîne CI, SideStore, synchro, plugins, scaffold d'agents conservés ; métier et écrans remplacés |
+| Installation iPhone | SideStore | Identique ; source `spartiate-releases` |
+| Installation PC | — | Installeur NSIS + plugin updater, dépôt `spartiate-releases` (comme CircleTasks) |
 
-**Objectifs mesurables**
+### 0.2 Niveaux normatifs
+
+**doit** = obligatoire ; **devrait** = recommandé, s'en écarter demande une entrée dans `docs/decisions.md` ; **peut** = option.
 
-| Objectif               | Indicateur                           | Cible     |
-|------------------------|--------------------------------------|-----------|
-| Capture rapide         | Temps de création d'une tâche simple | \< 5 s    |
-| Planification hebdo    | Vue semaine chargée                  | \< 300 ms |
-| Adoption               | Jours d'usage par semaine            | ≥ 5       |
-| Fiabilité des rappels  | Rappels délivrés à l'heure           | ≥ 99 %    |
-| Continuité PC ↔ iPhone | Données reprises sans perte          | 100 %     |
+### 0.3 Statuts de capacité
 
-**Hors objectifs.** Pas de multi-utilisateur, pas de collaboration temps réel, pas de publication App Store, pas de monétisation (le découpage Free/Premium de NoteCircle n'est pas reproduit : tout est inclus).
+| Statut | Sens | Preuve |
+| --- | --- | --- |
+| `CONFIRMED` | Exécuté sur ton iPhone ou ton PC via la chaîne réelle | Capture ou log daté |
+| `INHERITED` | Prouvé sur CircleTasks, même appareil, même chaîne ; **à rejouer sur Spartiate avant d'être `CONFIRMED`** | Référence à la story CircleTasks |
+| `PROTOTYPED` | Compile en CI | Build vert |
+| `UNVERIFIED` | Hypothèse | — |
+| `BLOCKED` | Testé, indisponible, fallback actif | Erreur documentée |
+| `DEFERRED` | Reporté | Itération cible |
 
-**Glossaire**
+### 0.4 Hypothèses
 
-| Terme            | Définition                                                                                                                           | Exemple                         |
-|------------------|--------------------------------------------------------------------------------------------------------------------------------------|---------------------------------|
-| Tâche            | Action ponctuelle à faire, datée ou non ; peut être récurrente sans suivi de série                                                   | Envoyer la facture              |
-| Tâche récurrente | Tâche qui se recrée selon une règle (hebdo, mensuelle, annuelle) ; chaque occurrence se termine séparément                           | Payer le loyer le 5 du mois     |
-| Routine          | Habitude répétée (jours de semaine, X fois par semaine, tous les N jours ou toutes les N semaines), avec série et taux de complétion | Sport lundi, mercredi, vendredi |
-| Événement        | Moment daté, sans case à cocher                                                                                                      | Rendez-vous, anniversaire       |
-| Checklist        | Liste nommée d'items cochables, réutilisable comme modèle                                                                            | Valise voyage                   |
-| Espace           | Cloisonnement de premier niveau : Pro ou Perso                                                                                       | Pro                             |
-| Projet           | Regroupement facultatif dans un espace                                                                                               | Mission client                  |
-| Occurrence       | Instance datée d'une routine ou d'une tâche récurrente                                                                               | Routine Sport du 12 octobre     |
+Tout ce qui n'est pas vérifié est marqué `H-n` et repris au registre § 27 avec sa méthode de vérification. Les constantes numériques des moteurs sont des valeurs de départ dans des fichiers de configuration, jamais en dur.
+
+### 0.5 Comment lire
 
-**Hors périmètre fonctionnel** — ces fonctions ne sont pas développées, et aucun agent ne doit les ajouter de lui-même :
+Démarrer : § 3 à 9, § 25 à 26, annexes. Coder un moteur : § 12, 13, 16, 17 + § 21 + § 24. Coder un écran : § 19 + section fonctionnelle + § 5. Synchro : § 10 + § 21. Plugin iPhone : § 20.
 
-- Sous-tâches imbriquées (les checklists couvrent le besoin).
+## 1. Décision produit, mission, principes
 
-- Niveaux de priorité, étiquettes ou tags, couleurs par tâche (seuls espaces et projets classent).
+### 1.1 Décision
 
-- Pièces jointes : fichiers, photos, liens enrichis (la photo d'un scan n'est pas conservée).
+Spartiate est une application **personnelle** de musculation, nutrition et récupération, en français, sans compte, sans abonnement, sans serveur propriétaire, sans commercialisation. Une seule base de code React exécutée dans Tauri 2 sur **PC Windows** (WebView2) et sur **iPhone 16 Pro Max** (WKWebView), livrée en une fois, comme CircleTasks. Données locales en SQLite sur chaque appareil, **synchronisées de bout en bout chiffrées par un dossier iCloud Drive**, sans serveur. L'iPhone lit l'Apple Watch Series 11 via Apple Santé et publie les résultats vers le PC. Appels IA facultatifs, explicites, avec ta clé.
 
-- Partage, collaboration, multi-utilisateur, commentaires, assignation à d'autres personnes.
+### 1.2 Mission
+
+**Savoir chaque jour quoi soulever, à quelle charge et pourquoi ; quoi manger et combien ; quand lever le pied — à partir de tes séries, de ton poids, de ton sommeil et de ta fréquence cardiaque, sur le PC comme sur l'iPhone, sans jamais perdre le contrôle de tes données.**
+
+### 1.3 Ce que Spartiate assemble
+
+| Brique | Référence | Repris |
+| --- | --- | --- |
+| Moteur de progression | Gravl | 1RM estimé, double progression, arrondi au matériel, « pourquoi cette charge » |
+| Programmation | Alpha Progression | Wizard, mésocycle, deload |
+| Écran de séance | Hevy | Un écran, démarrage < 10 s |
+| Timer et intégration iOS | Reboot Plan | Dynamic Island, Live Activity, Apple Santé |
+| Nutrition | MacroFactor | Dépense mesurée, check-in hebdo |
+| Récupération | Athlytic, WHOOP, Gravl | Recovery / Exertion / sommeil, récupération par muscle |
+| Pile, chaîne, synchro, scaffold | **CircleTasks** | Tauri 2, SideStore, synchro iCloud, agents, conventions |
+
+### 1.4 Principes
+
+1. **Explicable** : chaque charge affiche la règle qui l'a produite, par template, jamais par IA.
+2. **Tu as toujours le dernier mot** : toute proposition est modifiable ; la modification est conservée et tracée.
+3. **Local-first sur chaque appareil, synchro sans serveur** : rien ne quitte tes appareils et ton iCloud Drive, sauf les appels IA que tu déclenches.
+4. **Règles métier dans `src/domain` uniquement**, testées par Vitest ; accès base par `src/db/repositories` uniquement (règle CircleTasks).
+5. **Installation répétable avant tout** : I0 prouve PC et iPhone, mise à jour sans perte, synchro.
+6. **Fiabilité avant IA** : l'IA n'est jamais dans la boucle critique d'une séance.
+7. **Aucune affirmation non vérifiée** : `UNVERIFIED` ou `INHERITED` tant que ce n'est pas rejoué sur Spartiate.
+8. **Aucune prétention médicale** ; l'app propose, n'interdit jamais.
+9. **Aucune défaillance silencieuse** : toute erreur durable est visible dans l'app (règle CircleTasks).
 
-- Dépendances entre tâches, diagramme de Gantt, suivi du temps hors Focus Time.
+## 2. Contexte — faits établis
 
-- Apple Watch, iPad, Mac, Vision Pro, Android, version web.
+| Élément | Fait | Conséquence |
+| --- | --- | --- |
+| iPhone | iPhone 16 Pro Max, iOS 18+, mode développeur activé, SideStore installé avec VPN local et fichier d'appairage (CircleTasks) | Dynamic Island, Action button, Camera Control ; installation par SideStore déjà opérationnelle |
+| Watch | Apple Watch Series 11, 46 mm, watchOS 11+ | Écrit dans Apple Santé : HRV, FC de repos, sommeil avec stades, fréquence respiratoire, température du poignet, séances, pas, énergie. « Recovery HRV » non documentée comme type HealthKit (`H-1`) |
+| PC | Windows, pas de Mac ; iTunes (site Apple), iloader, iCloud pour Windows avec iCloud Drive actif (CircleTasks, 5 octobre 2026) | Dev local complet : Vitest, `cargo check` partiel (les dépendances C comme SQLite exigent `xcrun` pour iOS), Tauri dev PC ; aucune commande iOS locale |
+| Compte Apple | Identifiant gratuit utilisé par SideStore ; pas de Developer Program (D-2) | 7 jours de signature, 3 apps hors App Store : **SideStore + CircleTasks + Spartiate = la limite** (`H-16`), 10 identifiants d'app par semaine |
+| CircleTasks | Dépôt public `doncivo/circletasks` (React 18, Vite, TypeScript 6 strict, Zustand 5, SQLite via tauri-plugin-sql, Rust Tauri 2, plugins Swift `files`, `folder-bookmark`, `haptics`, `notification-actions`, `privacy-shield`, `reminders`, `speech`, `vision`, `web-auth`) ; `build-windows.yml` (NSIS, updater) et `build-ios.yml` (IPA non signée, SideStore) ; dépôt public `doncivo/circletasks-releases` ; synchro iCloud Drive chiffrée (ADR 0011) en production entre ton PC et ton iPhone depuis octobre 2026 ; 16 ADR ; 26 agents ; AGENTS.md | Spartiate est un fork : tout cela est repris (§ 4) |
+| Outils | Claude Code, Codex, GitHub, WSL2 facultatif (plus nécessaire : les moteurs sont en TypeScript) | Scaffold et conventions CircleTasks (§ 25) |
+| Langue | Français ; code et identifiants en anglais | — |
+| Budget | 0 € Apple ; IA à l'usage avec ta clé, plafond configurable (`H-2`) | — |
+| Usage | Toi seul | Pas de personas ni KPI business |
 
-- Widgets, Live Activity, Dynamic Island, Siri et Raccourcis iOS.
+## 3. Pile et fork
 
-- Assistant ou génération par IA dans l'app.
+```
+                 PC Windows (WebView2)        iPhone 16 Pro Max (WKWebView)
+                 ───────────────────────      ─────────────────────────────
+  React / TS     ui ─ features ─ i18n   ←→   ui ─ features ─ i18n
+                        │  platform (windows)        │  platform (ios : plugins Swift)
+                        ▼                            ▼
+  Domaine        src/domain (training · nutrition · recovery · sync-catalog)   ← règles métier, pur TS
+                        │
+  Données        src/db/repositories → SQLite (tauri-plugin-sql)
+                        │
+  Synchro        src/sync + Rust (AES-256-GCM, HLC) ⇄ iCloud Drive/Spartiate/<device>/ ⇄ autre appareil
+```
+*Schéma des couches (ADR 0001 CircleTasks) : domain ← db ← sync, platform, features, ui, i18n.*
 
-- Publicité, abonnement, fonctions verrouillées, liens vers d'autres apps.
+### 3.1 Pile (ADR 0001 de CircleTasks, reprise)
 
-Toute fonction absente des modules M1 à M18 est hors périmètre par défaut ; une demande nouvelle passe par une mise à jour de ce PRD.
-
-## 2. Stratégie plateforme
-
-PC Windows et iPhone 16 Pro Max partagent le même code React (Tauri 2 et Tauri 2 mobile) et sont livrés ensemble, sans Mac et sans compte Apple Developer payant. Les rappels ne sonnent que sur l'iPhone.
-
-| Plateforme                  | Ordre de construction | Rôle                                                                      | Distribution                                                                                                          |
-|-----------------------------|-----------------------|---------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| PC Windows 10/11            | 0 à 4                 | Application principale, planification au clavier                          | Installeur .msi/.exe local                                                                                            |
-| iPhone 16 Pro Max (iOS 18+) | 1 bis et 5            | Capture en mobilité, seul appareil qui émet les rappels, routines du jour | IPA compilée sur un runner macOS GitHub Actions, installée et re-signée sur l'iPhone par SideStore (Apple ID gratuit) |
-
-**Adaptations de la parité NoteCircle**
-
-- Apple Watch, iPad, Mac et Vision Pro sont hors périmètre : pas de Mac pour les compiler et Tauri ne cible pas watchOS.
-
-- Widgets, Live Activity, Dynamic Island et Raccourcis Siri sont hors périmètre : ils exigent des extensions natives et des App Groups, indisponibles avec un Apple ID gratuit.
-
-- Saisie vocale : dictée Windows sur PC ; sur iPhone, dictée du clavier iOS, puis plugin Swift Tauri (framework Speech) si besoin.
-
-- Scan papier : import d'image ou webcam sur PC ; appareil photo + plugin Swift Tauri (framework Vision) sur iPhone.
-
-- Calendriers : Google Calendar via son API et Apple Calendar via iCloud CalDAV, sur les deux plateformes.
-
-**Déploiement iPhone par SideStore.** SideStore est installé une seule fois depuis le PC avec iloader (câble USB), qui place aussi le fichier d'appairage. Ensuite, tout se fait sur l'iPhone : SideStore installe CircleTasks et le re-signe tous les 7 jours via un VPN local (LocalDevVPN ou StosVPN), de préférence en Wi-Fi, sans ordinateur. SideStore occupe l'une des 3 places d'un Apple ID gratuit ; s'il expire lui-même, il se réinstalle depuis le PC avec iloader. Le mode développeur doit être activé ; les données de l'app sont conservées tant qu'elle n'est pas supprimée.
-
-**Prérequis et comptes à préparer**
-
-| Élément                                                                                                | Pourquoi                                                                                       | Quand             | Point d'attention                                                                                                                                              |
-|--------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|-------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Compte GitHub + dépôt privé `circletasks`                                                              | Code, tests, builds Windows et iOS                                                             | Avant ordre 0     | Minutes macOS limitées sur dépôt privé                                                                                                                         |
-| Dépôt public `circletasks-releases`                                                                    | Publication des installeurs et du fichier `latest.json` lu par la mise à jour automatique      | Avant ordre 0     | Ne contient que les binaires, jamais le code                                                                                                                   |
-| Clé de signature des mises à jour Tauri (`tauri signer generate`)                                      | Signer chaque version PC                                                                       | Avant ordre 0     | Clé privée dans GitHub Secrets et sauvegardée hors du dépôt : sa perte bloque toute mise à jour                                                                |
-| Node.js LTS, Rust (rustup), Visual Studio Build Tools, WebView2                                        | Développement Tauri sur Windows                                                                | Avant ordre 0     | WebView2 est déjà présent sur Windows 11                                                                                                                       |
-| Claude Code                                                                                            | Développement par agents                                                                       | Avant ordre 0     | —                                                                                                                                                              |
-| Projet Google Cloud + API Calendar + écran de consentement OAuth                                       | Lecture de Google Calendar                                                                     | Avant ordre 2     | Passer l'app en « Production » : en statut « Test », la connexion expire tous les 7 jours ; l'avertissement « app non vérifiée » est acceptable en usage perso |
-| Mot de passe d'application iCloud (appleid.apple.com)                                                  | Accès CalDAV à Apple Calendar                                                                  | Avant ordre 2     | Double authentification Apple requise                                                                                                                          |
-| iCloud pour Windows, iCloud Drive activé                                                               | Synchronisation                                                                                | Avant ordre 4     | —                                                                                                                                                              |
-| Apple ID (gratuit)                                                                                     | Signature de l'app iPhone                                                                      | Avant ordre 1 bis | 3 apps sideloadées maximum                                                                                                                                     |
-| SideStore (installé via iloader sur le PC) + VPN local LocalDevVPN ou StosVPN sur l'iPhone             | Installation initiale, puis installation, mise à jour et re-signature directement sur l'iPhone | Avant ordre 1 bis | iloader exige iTunes téléchargé depuis le site d'Apple, pas depuis le Microsoft Store ; SideStore occupe 1 des 3 places de l'Apple ID gratuit                  |
-| Mode développeur activé sur l'iPhone                                                                   | Lancer une app sideloadée                                                                      | Avant ordre 1 bis | Réglages \> Confidentialité et sécurité                                                                                                                        |
-| Pack de langue français avec reconnaissance de texte (Paramètres Windows \> Heure et langue \> Langue) | Lire en français les photos de listes manuscrites (OCR Windows)                                | Avant ordre 3     | Sans lui, la lecture échoue ou se fait en anglais ; l'app vérifie sa présence et affiche la marche à suivre                                                    |
-
-## 3. Périmètre fonctionnel
-
-Le périmètre couvre 18 modules : les 14 repris de NoteCircle (dont l'objectif de la semaine et la liste « Un jour ») et 4 ajoutés pour l'usage d'Ali ; la priorité fixe l'ordre de livraison (P1 = socle, P3 = finitions).
-
-| \#  | Module                 | Contenu                                                                                                       | Priorité | Ordre de construction                           |
-|-----|------------------------|---------------------------------------------------------------------------------------------------------------|----------|-------------------------------------------------|
-| M1  | Tâches                 | Création, date, heure, terminer, reporter, récurrences, historique                                            | P1       | 1                                               |
-| M2  | Aujourd'hui            | Liste du jour : tâches, routines, événements, checklists                                                      | P1       | 1                                               |
-| M3  | Semaine                | Vue 7 jours, glisser-déposer entre jours, navigation                                                          | P1       | 1                                               |
-| M4  | Routines               | Jours de semaine, tous les N jours ou toutes les N semaines, suivi, icône, masquage dans la liste             | P1       | 1                                               |
-| M5  | Rappels                | Notifications sur l'iPhone uniquement, réglages, fiabilité, fuseaux horaires                                  | P1       | 1 (données, réglages) et 5 (envoi sur l'iPhone) |
-| M6  | Checklists             | Listes nommées d'items cochables, réutilisables                                                               | P2       | 2                                               |
-| M7  | Événements             | Événements, anniversaires, dates importantes, jours fériés FR/TN                                              | P2       | 2                                               |
-| M8  | Calendriers            | Lecture Google Calendar et Apple Calendar (iCloud), synchronisation avec l'app Rappels d'Apple (via l'iPhone) | P2       | 2                                               |
-| M9  | Capture rapide         | Saisie texte, saisie vocale, photo → OCR → tâches                                                             | P2       | 3                                               |
-| M10 | Focus Time             | Sessions minutées liées à une tâche, historique                                                               | P3       | 3                                               |
-| M11 | Statistiques           | Vue mensuelle, taux de complétion, rapport de routines                                                        | P3       | 3                                               |
-| M12 | Personnalisation       | Menu, thème, préférences, premier lancement, import, sauvegarde                                               | P3       | 3                                               |
-| M13 | Espaces et projets     | Espaces Pro / Perso, projets facultatifs, filtre Pro / Perso / Tout                                           | P1       | 1                                               |
-| M14 | Recherche              | Recherche plein texte sur tous les éléments, filtres                                                          | P2       | 2                                               |
-| M15 | Synchronisation        | Synchro PC ↔ iPhone par iCloud Drive, conflits, état                                                          | P1       | 4                                               |
-| M16 | Intégration système    | Zone de notification, démarrage auto, mise à jour PC, installation iPhone, Face ID, logs                      | P2       | 1 à 5                                           |
-| M17 | Objectif de la semaine | Objectif hebdomadaire épinglé en haut de la liste, tâches rattachées, avancement, historique                  | P2       | 1                                               |
-| M18 | Un jour (Someday)      | Liste des tâches sans date, à planifier plus tard, déplaçables vers un jour en un geste                       | P2       | 1                                               |
-
-Le module Compte de NoteCircle (connexion e-mail) est remplacé par un profil local unique et par la synchronisation M15. Le découpage en espaces est posé dès l'ordre 1 car il touche toutes les tables.
-
-## 4. Exigences fonctionnelles et user stories
-
-Chaque user story a un identifiant stable (module-numéro) et des critères d'acceptation testables ; elles valent pour PC et iPhone sauf mention contraire.
-
-### M1 — Tâches
-
-| ID   | User story                                        | Critères d'acceptation                                                                                                                                                                             |
-|------|---------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| T-01 | Je crée une tâche avec un titre seul              | Entrée valide ; tâche ajoutée à Aujourd'hui par défaut ; \< 5 s                                                                                                                                    |
-| T-02 | J'affecte une date et une heure optionnelle       | Tâche visible le bon jour en Semaine ; heure affichée et triée                                                                                                                                     |
-| T-03 | J'ajoute une note et une icône                    | Note multi-lignes ; choix « Icône » (icônes au trait colorées de la bibliothèque libre Lucide) ou « Emoji », affiché dans la fiche Détail, le formulaire et la carte PC de la Semaine ; l'agenda d'Aujourd'hui et la ligne iPhone de la Semaine n'affichent pas l'icône (PRD-02, lot C)                                               |
-| T-04 | Je marque une tâche terminée                      | Case cochée, texte barré, date de fin horodatée ; annulation possible 5 s                                                                                                                          |
-| T-05 | Je reporte une tâche                              | Actions « Demain », « Semaine prochaine », « Choisir une date »                                                                                                                                    |
-| T-06 | Les tâches non faites passent au lendemain        | Option en réglage ; report automatique à 00:00 avec badge « reportée »                                                                                                                             |
-| T-07 | Je consulte les tâches terminées                  | Liste filtrable par jour, semaine, mois                                                                                                                                                            |
-| T-08 | Je supprime une tâche                             | Confirmation ; corbeille conservée 30 jours                                                                                                                                                        |
-| T-09 | Je rends une tâche récurrente                     | Règles : tous les N jours, hebdomadaire (jours choisis), mensuelle (jour X ou Nᵉ jour de semaine, ex. 2ᵉ lundi), annuelle ; occurrence suivante créée dès que la précédente est terminée ou passée |
-| T-10 | Je modifie ou arrête une récurrence               | Choix « cette occurrence » ou « toutes les suivantes » ; fin à une date ou après N occurrences                                                                                                     |
-| T-11 | Mes heures restent justes quand je change de pays | Tâches et routines en heure locale « flottante » (10h reste 10h là où je suis) ; événements externes convertis depuis UTC ; fuseau courant affiché dans Réglages (PC : valeur et « Suit celui de Windows », PRD-02, lot B)                                   |
-| T-12 | Je duplique une tâche                             | Copie avec titre, note, icône, espace, projet, rappels ; date proposée à choisir ; Ctrl+Maj+D sur PC, action du menu sur iPhone                                                                    |
-| T-13 | J'annule ma dernière action                       | Terminer, reporter, déplacer, dupliquer, supprimer : message « Annuler » affiché 5 s ; Ctrl+Z sur PC ; 20 dernières actions annulables dans la session                                             |
-| T-14 | Je choisis une date adaptée à mon appareil        | iPhone : roue jour + heure + minutes ; PC : champ date avec mini-calendrier et saisie libre (« demain », « lun. 10h ») ; raccourcis Aujourd'hui, Demain, Un jour                                   |
-
-### M2 — Aujourd'hui
-
-| ID   | User story                                 | Critères d'acceptation                                                                                                                                                                                      |
-|------|--------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| A-01 | J'ouvre l'app sur la liste du jour         | Écran par défaut ; tâches, routines, événements, checklists du jour                                                                                                                                         |
-| A-02 | Je réordonne ma liste                      | Glisser-déposer ; ordre persistant                                                                                                                                                                          |
-| A-03 | Je masque les routines de la liste du jour | Interrupteur en réglage ; routines toujours visibles dans leur onglet                                                                                                                                       |
-| A-04 | J'accède à Aujourd'hui en un geste         | Raccourci Alt+1 sur PC ; onglet fixe sur iPhone                                                                                                                                                             |
-| A-05 | Je passe en mode édition                   | « Mode édition » (iPhone : entrée du menu « Plus d’options » d'Aujourd'hui ; PC : bouton nommé « Édition » dans la barre fixe ; PRD-02, lot A) : bouton de suppression et poignée de déplacement sur chaque élément, sélection multiple (déplacer, reporter, supprimer) ; même commande pour revenir au mode normal |
-| A-06 | Je replie la liste en vue compacte         | « Vue compacte » (iPhone : menu « Plus d’options » d'Aujourd'hui ; PC : bouton nommé « Compacte » dans la barre fixe, bascule aussi sur Routines et Checklists ; PRD-02, lot A) : une ligne par élément, heures et notes masquées ; choix mémorisé par écran ; sur iPhone, Routines et Checklists n'ont pas de vue compacte                                                         |
-| A-07 | J'agis d'un geste sur iPhone               | Balayer vers la droite : terminer ; vers la gauche : Reporter, Un jour, Supprimer ; appui long : fiche détail ; retour haptique ; chaque geste a un équivalent en bouton (VoiceOver)                        |
-| A-08 | J'ouvre la fiche détail d'une tâche        | PC : panneau à droite ; iPhone : feuille plein écran ; titre, date, heure, récurrence, rappels, espace, projet, objectif, note ; boutons Focus, Reporter, Un jour, Dupliquer, Supprimer                     |
-| A-09 | Je vois toujours l'état de l'app           | Squelettes pendant le chargement ; bandeau discret « Hors ligne », « Synchro en cours », « En attente d'iCloud » ; alerte si un agenda est déconnecté, avec bouton « Reconnecter »                          |
-
-### M3 — Semaine
-
-| ID   | User story                                                   | Critères d'acceptation                                                                                                              |
-|------|--------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| S-01 | Je vois ma semaine en 7 colonnes (PC) ou 7 sections (iPhone) | Lundi premier jour ; jour courant marqué par le trait d'encre et le jour en gras sur iPhone, colonne mise en évidence sur PC (PRD-02, lot D)                                                                                   |
-| S-02 | Je déplace une tâche d'un jour à l'autre                     | Glisser-déposer ; date mise à jour immédiatement                                                                                    |
-| S-03 | Je navigue entre semaines                                    | Flèches, Ctrl+← / Ctrl+→ sur PC, balayage sur iPhone ; retour « Cette semaine », affiché seulement hors de la semaine courante (PRD-02, lot D)                                                     |
-| S-04 | Je crée une tâche directement dans un jour                   | PC : champ d'ajout rapide en bas de chaque jour ; iPhone : un seul champ en bas de l'écran (« Ajouter à jeudi 24 ») qui vise le jour sélectionné, aujourd'hui par défaut, un toucher sur l'en-tête d'un jour le sélectionne (PRD-02, lot D)                                                                                          |
-| S-05 | Je vois les événements calendrier dans la semaine            | Événements externes en lecture seule, couleur distincte                                                                             |
-| S-06 | Je planifie depuis « Un jour » en glissant                   | PC : panneau « Un jour » ouvrable à droite de la Semaine, glisser-déposer vers un jour ; iPhone : action « Planifier » sur la tâche |
-
-### M4 — Routines
-
-| ID   | User story                                                        | Critères d'acceptation                                                                                             |
-|------|-------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
-| R-01 | Je crée une routine avec icône et fréquence                       | Choix : tous les jours, jours précis, X fois par semaine ; tous les N jours ou N semaines (R-07)                   |
-| R-02 | J'associe une heure optionnelle                                   | Routine triée à l'heure ; rappel possible                                                                          |
-| R-03 | Je valide une routine du jour                                     | Une occurrence par jour ; historique conservé                                                                      |
-| R-04 | Je suis ma série                                                  | Série en cours et meilleure série affichées                                                                        |
-| R-05 | Je mets une routine en pause ou l'archive                         | Aucune occurrence générée pendant la pause ; historique intact                                                     |
-| R-06 | Je consulte le rapport de routine                                 | Taux de complétion sur 7, 30, 90 jours ; carte de chaleur mensuelle                                                |
-| R-07 | Je planifie une routine tous les N jours ou toutes les N semaines | N de 2 à 30 jours ou de 2 à 8 semaines ; date de départ choisie ; compteur et séries calculés sur les jours prévus |
-
-### M5 — Rappels
-
-| ID   | User story                                           | Critères d'acceptation                                                                                                                                                                                    |
-|------|------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| N-01 | Je reçois un rappel à l'heure d'une tâche            | Notification iOS sur l'iPhone uniquement, jamais sur le PC ; ≤ 60 s de décalage                                                                                                                           |
-| N-02 | Je choisis une avance (0, 5, 15, 30, 60 min, 1 jour) | Plusieurs rappels par élément possibles                                                                                                                                                                   |
-| N-03 | Je termine ou reporte depuis la notification         | Actions « Fait » et « +15 min »                                                                                                                                                                           |
-| N-04 | Je règle un récapitulatif matin et soir              | Heures configurables ; contenu = liste du jour / non fait                                                                                                                                                 |
-| N-05 | Les rappels survivent au redémarrage                 | Notifications locales planifiées sur l'iPhone, recalculées à chaque ouverture et à chaque synchro ; le PC n'en émet aucune                                                                                |
-| N-06 | Mes rappels suivent mon changement de fuseau         | Replanification automatique à la détection d'un nouveau fuseau ; aucun rappel perdu ni doublé                                                                                                             |
-| N-07 | Un rappel créé sur le PC sonne sur l'iPhone          | Planifié sur l'iPhone à sa synchro suivante ; sur PC, avertissement si le rappel est à moins de 2 h et que l'iPhone ne s'est pas synchronisé depuis 2 h ; le récapitulatif du matin invite à ouvrir l'app |
-
-### M6 — Checklists
-
-| ID   | User story                          | Critères d'acceptation                                                                                                                                             |
-|------|-------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| C-01 | Je crée une checklist nommée        | Items ajoutés à la chaîne par Entrée                                                                                                                               |
-| C-02 | Je coche des items                  | Progression affichée : « 2 sur 3 » sur iPhone, « 3 / 6 » sur PC (PRD-02, lot B)                                                                                                                                       |
-| C-03 | J'associe une checklist à un jour   | Visible dans Aujourd'hui et Semaine                                                                                                                                |
-| C-04 | Je réutilise une checklist modèle   | « Dupliquer et réinitialiser » (ex. valise voyage)                                                                                                                 |
-| C-05 | J'efface d'un coup les items cochés | Bouton « Supprimer les 2 éléments cochés » sur iPhone (compte, rouge, inactif à zéro) et « Effacer les cochés » sur PC, avec confirmation, annulable 5 s ; option « Tout décocher » pour réutiliser la liste ; bouton « Réorganiser » pour l'ordre des items (PRD-02, lot B) |
-
-### M7 — Événements
-
-| ID   | User story                                     | Critères d'acceptation                                                                                                                                                                                                                             |
-|------|------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| E-01 | Je crée un événement daté, avec ou sans heure  | Journée entière ou plage horaire ; répétition Une fois / Mensuel / Annuel ; case « commence et finit le même jour »                                                                                                                                |
-| E-02 | Je crée un anniversaire ou une date importante | Récurrence annuelle ; année de naissance facultative, âge affiché seulement si elle est renseignée                                                                                                                                                 |
-| E-03 | J'affiche les jours fériés                     | Calendriers France et Tunisie activables séparément ; fêtes religieuses tunisiennes (Aïd el-Fitr, Aïd el-Idha, Ras el am el hejri, Mouled) lues dans une table mise à jour chaque année, date modifiable à la main si l'annonce officielle diffère ; dans la liste Événements de l'iPhone, les fériés sont en gris avec le pays en toutes lettres (« Jour férié en France ») et une pastille « Masquer les fériés » mémorisée par appareil (PRD-02, lots B et F) |
-| E-04 | Je vois un compte à rebours                    | « J-12 » sur les événements marqués importants                                                                                                                                                                                                     |
-
-### M8 — Calendriers externes
-
-| ID   | User story                                          | Critères d'acceptation                                                                                                                                                                                                       |
-|------|-----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| K-01 | Je connecte Google Calendar                         | OAuth ; choix des agendas affichés                                                                                                                                                                                           |
-| K-02 | Je connecte Apple Calendar                          | iCloud CalDAV avec mot de passe d'application, sur PC et iPhone                                                                                                                                                              |
-| K-03 | Mes événements externes se mettent à jour           | Rafraîchissement à l'ouverture et toutes les 15 min                                                                                                                                                                          |
-| K-04 | Je crée une tâche depuis un événement externe       | Tâche liée, même date                                                                                                                                                                                                        |
-| K-05 | Je vois mes Rappels Apple dans CircleTasks          | Sur iPhone, lecture des listes Rappels choisies (EventKit) ; chaque liste rattachée à un espace ; rappels affichés comme tâches à leur date, sans date dans « Un jour »                                                      |
-| K-06 | Je coche un rappel dans CircleTasks ou dans Rappels | Titre, date et statut terminé synchronisés dans les deux sens sur l'iPhone ; création d'un rappel Apple depuis CircleTasks en option                                                                                         |
-| K-07 | Je retrouve mes Rappels Apple sur le PC             | Pas d'accès direct à Rappels sous Windows : les rappels importés sur l'iPhone arrivent sur le PC par la synchro iCloud Drive (M15) ; les modifications faites sur PC repartent vers Rappels au prochain passage sur l'iPhone |
-
-### M9 — Capture rapide
-
-| ID   | User story                                    | Critères d'acceptation                                                                                                                                      |
-|------|-----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Q-01 | J'ajoute une tâche depuis n'importe où sur PC | Raccourci global (ex. Ctrl+Alt+Espace) ouvrant une mini-fenêtre                                                                                             |
-| Q-02 | Je saisis en langage naturel                  | « Appeler le notaire demain 10h » → date et heure détectées (FR)                                                                                            |
-| Q-03 | Je dicte une tâche                            | Transcription FR ; relecture avant validation                                                                                                               |
-| Q-04 | Je photographie une liste manuscrite          | OCR → une ligne = une tâche proposée ; cases à cocher pour choisir                                                                                          |
-| Q-05 | Je capture vite depuis l'iPhone               | Bouton + flottant actif dès l'ouverture ; champ prêt à la saisie (widgets et Siri hors périmètre)                                                           |
-| Q-06 | Je choisis espace et projet en tapant         | « \#pro », « \#perso » et « @projet » reconnus dans la saisie, retirés du titre, suggestions à la frappe ; ex. « Relancer client demain 9h \#pro @mission » |
-
-### M10 — Focus Time
-
-| ID   | User story                         | Critères d'acceptation                                |
-|------|------------------------------------|-------------------------------------------------------|
-| F-01 | Je lance une session sur une tâche | Durées 25/50/90 min ou libre ; minuteur visible       |
-| F-02 | Je fais une pause                  | Pause/reprise ; temps réel comptabilisé               |
-| F-03 | Je vois mon temps de concentration | Total par jour, semaine, tâche                        |
-| F-04 | La fin de session me notifie       | Son + notification ; proposition de terminer la tâche |
-
-### M11 — Statistiques
-
-| ID   | User story                              | Critères d'acceptation                                          |
-|------|-----------------------------------------|-----------------------------------------------------------------|
-| H-01 | Je vois ce que j'ai accompli ce mois-ci | Vue mensuelle : tâches faites, routines validées, événements    |
-| H-02 | Je vois mon taux de complétion          | Par semaine et par mois, en graphique                           |
-| H-03 | J'exporte mon historique                | Export CSV et JSON ; rapport mensuel exporté en PDF ou en image |
-
-### M12 — Personnalisation
-
-| ID   | User story                                                          | Critères d'acceptation                                                                                                                                                                                                                                                                                           |
-|------|---------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| P-01 | Je réordonne et masque les onglets                                  | Glisser-déposer en réglage ; la ligne de Réglages dit « 5 visibles » (iPhone) ou « Onglets visibles · 5 sur 5 » (PC, Réglages non compté ; PRD-02, lot B)                                                                                                                                                                                                                                                                                       |
-| P-02 | Je choisis clair, sombre ou système                                 | Changement instantané                                                                                                                                                                                                                                                                                            |
-| P-03 | Je règle le premier jour de semaine, la langue et le format d'heure | Défaut : lundi, français, 24 h ; Réglages : une ligne « Thème · semaine · heure » sur iPhone, trois lignes (Thème, Début de semaine, Format de l'heure) sur PC (PRD-02, lot B)                                                                                                                                                                                                                                                                                   |
-| P-04 | Je sauvegarde et restaure mes données                               | Sauvegarde automatique quotidienne locale ; restauration en 1 clic                                                                                                                                                                                                                                               |
-| P-05 | Je suis guidé au premier lancement                                  | 4 écrans maximum : langue et semaine ; espaces Pro / Perso ; association PC ↔ iPhone par QR code et choix du dossier iCloud (passable, puis accessible dans Réglages) ; sur iPhone seulement, autorisation des notifications ; données d'exemple en option ; passable à tout moment ; relançable depuis Réglages |
-| P-06 | Un écran vide m'indique quoi faire                                  | Chaque écran vide affiche un message et une action (ex. « Aucune tâche aujourd'hui — Ajouter »)                                                                                                                                                                                                                  |
-| P-07 | J'importe mes tâches existantes                                     | Import CSV (titre ; date ; heure ; espace ; projet ; note) ; aperçu avant import ; rapport des lignes rejetées ; import annulable                                                                                                                                                                                |
-| P-08 | Je consulte les raccourcis clavier                                  | Ctrl+/ affiche la liste complète (section 5) ; Réglages PC : ligne « Tous les raccourcis · Ctrl / » (PRD-02, lot B)                                                                                                                                                                                                                                                                     |
-
-### M13 — Espaces et projets
-
-| ID    | User story                                            | Critères d'acceptation                                                                                                                                     |
-|-------|-------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ES-01 | J'ai deux espaces Pro et Perso                        | Créés par défaut ; renommables ; une couleur chacun                                                                                                        |
-| ES-02 | Chaque élément appartient à un espace                 | Tâches, routines, événements, checklists ; espace par défaut = espace actif                                                                                |
-| ES-03 | Je filtre Pro / Perso / Tout                          | Sélecteur en haut d'écran ; filtre appliqué à Aujourd'hui, Semaine, Statistiques, Recherche ; choix mémorisé ; en « Tout », pastille de couleur par espace |
-| ES-04 | Je crée des projets dans un espace                    | Facultatifs ; nom, couleur, archivage ; filtre par projet                                                                                                  |
-| ES-05 | Je déplace un élément d'un espace ou projet à l'autre | Depuis le détail ou par lot (sélection multiple)                                                                                                           |
-| ES-06 | Je rattache un agenda externe à un espace             | Chaque agenda Google ou iCloud affecté à Pro ou Perso                                                                                                      |
-| ES-07 | Je définis des plages silencieuses par espace         | Ex. aucun rappel Pro de 19:00 à 08:00 et le week-end ; rappels décalés à la fin de la plage                                                                |
-| ES-08 | Je vois statistiques et Focus par espace et projet    | Filtres dans M10 et M11                                                                                                                                    |
-
-### M14 — Recherche
-
-| ID    | User story                          | Critères d'acceptation                                                                                                   |
-|-------|-------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| RC-01 | Je cherche n'importe quel élément   | Ctrl+K sur PC, champ en haut sur iPhone ; titre, note, items de checklist ; insensible aux accents ; résultats \< 200 ms |
-| RC-02 | Je filtre les résultats             | Espace, projet, type, statut (à faire / fait), période                                                                   |
-| RC-03 | J'ouvre un résultat                 | Résultats groupés par type ; navigation clavier ; ouverture du détail                                                    |
-| RC-04 | Je retrouve mes recherches récentes | 10 dernières recherches, effaçables                                                                                      |
-
-### M15 — Synchronisation
-
-| ID   | User story                                   | Critères d'acceptation                                                                                                                                                                                              |
-|------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Y-01 | Je choisis le dossier de synchro             | Une fois par appareil (iCloud Drive/CircleTasks) ; choix mémorisé après redémarrage                                                                                                                                 |
-| Y-02 | Mes données se synchronisent seules          | À l'ouverture, à la fermeture, toutes les 5 min en premier plan ; indicateur d'état et heure de dernière synchro                                                                                                    |
-| Y-03 | Je lance une synchro manuelle                | Bouton dans Réglages et dans la zone de notification PC                                                                                                                                                             |
-| Y-04 | Je consulte les conflits                     | Journal : élément et champ nommés en clair (« Heure prévue de « Envoyer la facture » »), valeur appliquée, valeur écartée, appareil, date ; « Rétablir » la valeur écartée en 1 clic (PRD-02, lots B et E)                                                                                               |
-| Y-05 | Je travaille hors ligne                      | Modifications conservées et envoyées au retour ; aucune perte                                                                                                                                                       |
-| Y-06 | Je raccorde un nouvel appareil               | Association par QR code affiché sur le PC et scanné par l'iPhone (Réglages → Synchronisation → Associer) ; l'iPhone récupère l'instantané complet puis les journaux ; progression affichée                          |
-| Y-07 | Mes deux appareils n'ont pas la même version | Chaque ligne de journal porte la version du schéma ; un appareil plus ancien garde les champs inconnus sans les effacer et affiche « Mettez à jour l'app » ; lecture suspendue si la version majeure est supérieure |
-| Y-08 | Mes données dans iCloud sont chiffrées       | Journaux et instantané chiffrés (AES-256-GCM) ; clé créée au premier appairage, transmise du PC à l'iPhone par QR code, gardée dans le coffre de chaque appareil, jamais dans iCloud ; clé de secours imprimable    |
-| Y-09 | Un élément supprimé ne réapparaît jamais     | Trace de suppression conservée tant que tous les appareils ne l'ont pas lue, puis 30 jours ; un appareil hors ligne plus de 180 jours repart de l'instantané                                                        |
-
-### M16 — Intégration système
-
-| ID   | User story                                      | Critères d'acceptation                                                                                                                                                                                                                 |
-|------|-------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| D-01 | L'app PC reste active en zone de notification   | Fermer la fenêtre la réduit ; menu : ouvrir, ajout rapide, synchro, quitter                                                                                                                                                            |
-| D-02 | L'app PC démarre avec Windows                   | Activable en réglage ; démarrage réduit                                                                                                                                                                                                |
-| D-03 | Je mets à jour l'app PC                         | Vérification automatique au lancement et toutes les 24 h ; nouvelle version proposée avec ses notes ; installation en 1 clic puis redémarrage ; signature vérifiée ; aucune perte de données ; vérification manuelle dans « À propos » |
-| D-04 | J'utilise les raccourcis clavier                | Tous les raccourcis de la section 5 fonctionnels ; raccourci global configurable ; une combinaison prise par une autre application est dite en une phrase sous « Capture rapide », touche en ambre (PRD-02, lot B)                                                                                                                                                       |
-| I-01 | J'installe l'app sur l'iPhone                   | Procédure docs/install-iphone.md suivie en \< 15 min                                                                                                                                                                                   |
-| I-02 | Je suis prévenu avant l'expiration hebdomadaire | Notification locale 24 h avant la fin des 7 jours ; date d'expiration affichée dans « À propos »                                                                                                                                       |
-| I-03 | Je protège l'app par Face ID                    | Option ; repli code de l'iPhone                                                                                                                                                                                                        |
-| I-04 | Je consulte et exporte les logs                 | Écran de logs (erreurs, synchro, notifications) ; export texte partageable                                                                                                                                                             |
-| I-05 | Les autorisations sont demandées au bon moment  | Caméra, micro, notifications demandés à la première utilisation, avec explication                                                                                                                                                      |
-| I-06 | Je mets à jour l'app iPhone depuis SideStore    | Source CircleTasks ajoutée une fois dans SideStore ; nouvelle version visible avec ses notes ; installation en 1 tap ; données conservées                                                                                              |
-
-### M17 — Objectif de la semaine
-
-| ID    | User story                               | Critères d'acceptation                                                                                                       |
-|-------|------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| OB-01 | Je fixe un objectif pour la semaine      | Accès depuis Aujourd'hui (iPhone : menu « Plus d’options » ; PC : bouton nommé « Objectif » dans la barre fixe ; PRD-02, lot A) ; titre, icône ou emoji, espace ; un ou plusieurs objectifs par semaine        |
-| OB-02 | J'épingle l'objectif en haut de ma liste | Interrupteur « Épinglé en haut de la liste » ; objectif affiché en tête d'Aujourd'hui en une ligne « Objectif · titre · 2/5 », sans cadre, un toucher ouvre Objectif, tous les jours de la semaine (PRD-02, lot C) |
-| OB-03 | Je rattache une tâche à un objectif      | Interrupteur « Rattacher à mon objectif » dans la fenêtre d'ajout et le détail ; icône cible sur la tâche                    |
-| OB-04 | Je vois l'avancement de l'objectif       | Tâches rattachées faites / total ; objectif marquable comme atteint                                                          |
-| OB-05 | Je reconduis un objectif non atteint     | Proposition le lundi suivant : reconduire ou clore ; tâches non faites reportées si reconduit                                |
-| OB-06 | Je consulte mes objectifs passés         | Historique par semaine dans Statistiques : atteint ou non, tâches rattachées                                                 |
-
-### M18 — Un jour (Someday)
-
-| ID    | User story                                    | Critères d'acceptation                                                                                           |
-|-------|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| SD-01 | J'ajoute une tâche sans date dans « Un jour » | Accès depuis Aujourd'hui (iPhone : menu « Plus d’options », avec le nombre de tâches ; PC : bouton nommé « Un jour » avec son badge ; PRD-02, lot A) ; saisie rapide sans date |
-| SD-02 | Je planifie une tâche « Un jour » en un geste | Boutons « Aujourd'hui », « Demain », « Choisir une date » ; la tâche quitte la liste « Un jour »                 |
-| SD-03 | Je renvoie une tâche datée vers « Un jour »   | Action « Plus tard » depuis Aujourd'hui, Semaine ou la notification ; date retirée                               |
-| SD-04 | J'organise la liste « Un jour »               | Réordonnancement, filtre espace et projet, mode édition et vue compacte comme Aujourd'hui                        |
-
-## 5. Écrans et navigation
-
-Sur iPhone comme sur PC, la navigation passe par des onglets verticaux colorés sur le bord gauche, à la manière de NoteCircle ; sur PC s'y ajoute un panneau de détail à droite, sur iPhone des feuilles modales.
-
-```mermaid
-flowchart LR
-    Tabs[Onglets verticaux] --> Today[Tâches · Aujourd'hui]
-    Tabs --> Week[Semaine]
-    Tabs --> Routines[Routines]
-    Tabs --> Events[Événements]
-    Tabs --> Lists[Checklists]
-    Tabs --> Settings[Réglages]
-    Today --> Someday[Un jour]
-    Today --> Goal[Objectif de la semaine]
-    Today --> Report[Rapport du mois]
-    Today --> Search[Recherche]
-    Today --> Detail[Fiche détail]
-    Week --> Detail
-    Detail --> Focus[Focus Time]
-    Settings --> Sync[Synchronisation et appairage]
+React 18, Vite, TypeScript 6 strict (`strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`), Zustand 5, SQLite via `tauri-plugin-sql`, Rust (Tauri 2), plugins Swift iOS dans `src-tauri/plugins/`. Tests : Vitest (Node + jsdom), Testing Library, Playwright (projets `pc`, `iphone`, `iphone-webkit` en CI seulement), `cargo test`. Cible `es2022`. Polices et icônes : à redéfinir pour Spartiate (§ 19) ; Lucide conservé.
+
+### 3.2 Ce qu'on garde du fork (tel quel)
+
+| Élément | Pourquoi |
+| --- | --- |
+| Structure des couches `domain / db / sync / platform / features / ui / i18n` et leurs règles d'import | Prouvée, testée par des gardes |
+| `src-tauri` : commandes, driver SQLite, migrations (`migrator`, `migrationBackup`), coffre `keyring` / Trousseau, journal technique (ADR 0014), `signing.rs` (date d'expiration), capabilities par fenêtre et par plateforme | Infrastructure neutre |
+| `src/sync` + `src/domain/sync` + `src-tauri/src/sync` : synchro iCloud Drive chiffrée, HLC, fusion par champ, appairage par QR, clé de secours, oubli d'appareil, réinitialisation (ADR 0005, 0010, 0011) | Le PC ↔ iPhone de Spartiate ; seules les tables publiées changent (§ 10) |
+| Plugins Swift `haptics`, `notification-actions`, `files`, `vision`, `privacy-shield`, `folder-bookmark` ; notifications locales (ADR 0012) | Timer, scan, export, verrou |
+| Workflows `tests.yml`, `build-windows.yml`, `build-ios.yml` ; scripts `scripts/ios/*`, `scripts/release/*` ; contrat `plist-contract.json` ; guides d'installation | Chaîne de livraison |
+| Scaffold : `CLAUDE.md`, `AGENTS.md`, `.claude/agents/*`, `.claude/settings.json`, `docs/{adr,stories,decisions,journal,reprise,backlog,dettes,licences}` | Méthode de travail |
+| Verrou Face ID / code (ADR 0013 § 2), bandeaux d'état (A-09), écran d'échec au démarrage et restauration de sauvegarde | Confort et sécurité |
+
+### 3.3 Ce qu'on retire
+
+Tout le métier CircleTasks : tâches, routines, checklists, événements, espaces Pro / Perso, objectifs, focus, statistiques, calendriers externes (`web-auth`, Google, ADR 0008), rappels Apple (`reminders`, EventKit), capture OCR / vocale (`speech`, `tesseract.js`, `chrono-node`), import CSV, maquettes. Les migrations SQL repartent de `0001` pour Spartiate (nouvelle base, nouvel identifiant).
+
+### 3.4 Ce qu'on ajoute
+
+| Ajout | Où | Itération |
+| --- | --- | --- |
+| Moteurs `training`, `nutrition`, `recovery` | `src/domain/` | I2, I4, I5 |
+| Tables Spartiate et leurs colonnes publiées | `src/db/migrations/`, `src/domain/sync/syncTables.ts` | I1+ |
+| Plugin Swift `healthkit` (lecture, écriture, observer queries) | `src-tauri/plugins/healthkit` | I1 (spike I0) |
+| Plugin Swift `live-activity` + extension ActivityKit | `src-tauri/plugins/live-activity`, cible d'extension injectée dans `gen/apple` | I1 (spike I0) |
+| Écrans Spartiate (§ 19), design system | `src/features`, `src/ui` | I1+ |
+| Contenu : exercices, Ciqual | `content/` | I1, I4 |
+| Adaptateur IA (`src/platform/ai`), commandes Rust pour les appels réseau avec la clé du coffre | — | I4 |
+| Cardio GPS (plugin `geolocation` officiel Tauri, iPhone seulement) | `src-tauri` | I6 |
+
+## 4. Répartition PC / iPhone
+
+Le même front tourne sur les deux ; ce qui diffère, c'est l'accès au matériel. Le PC est le poste de pilotage (programme, nutrition au clavier, analyses, exports) ; l'iPhone est le poste de terrain (séance, timer, scan, photo, Watch). Rien n'est réservé au PC sauf par confort.
+
+| Fonction | PC | iPhone | Note |
+| --- | --- | --- | --- |
+| Séance active, timer, Live Activity | Possible (saisie clavier, timer in-app) | **Principal** | Live Activity et haptique iPhone seulement |
+| Programme, mésocycle, routines, bibliothèque, profils de matériel | **Principal** (édition confortable) | Oui | — |
+| Journal alimentaire | Saisie clavier, recettes, stratégie | Scan, photo, saisie rapide | Photo et scan iPhone seulement (caméra) |
+| Pesée | Saisie manuelle | Manuelle ou Apple Santé | — |
+| Récupération (HRV, FC, sommeil, scores) | **Lecture seule** des résultats publiés par l'iPhone | **Calcul** via HealthKit | Le PC n'a jamais accès à Apple Santé |
+| Cardio GPS | — | Oui (I6) | — |
+| Progrès, graphiques, bilans IA, exports | **Principal** | Oui | — |
+| Diagnostic, journaux | Oui | Oui | Export des journaux iPhone via Fichiers / iCloud Drive |
+| Notifications | Non (choix CircleTasks : le PC n'envoie pas de rappels) | Oui | — |
+| Verrou | Code / Windows | Face ID / code | Repris de CircleTasks |
+| Mise à jour | Bannière updater | SideStore | — |
+
+### 4.1 Règles
+
+- **Un seul écrivain par appareil, fusion par champ** (ADR 0011) : une séance commencée sur l'iPhone et éditée sur le PC se fusionne champ par champ avec HLC ; la séance en cours (non terminée) n'est **pas publiée** tant qu'elle n'est pas terminée, pour éviter les conflits en direct.
+- Les scores de récupération et les mesures HealthKit sont publiés **par l'iPhone** sous forme de résumés quotidiens (table `recovery_day`), jamais les échantillons bruts.
+- Les photos (repas, progression) restent sur l'appareil qui les a prises ; seules leurs métadonnées sont publiées (option « synchroniser les photos de progression » en I6 via le dossier iCloud).
+- Les clés : clé de synchro dans le coffre de chaque appareil (ADR 0011 § 2) ; clé API IA dans le coffre de chaque appareil, saisie une fois par appareil, jamais synchronisée.
+
+## 5. Chaîne de build, installation et mise à jour
+
+Identique à CircleTasks, avec deux dépôts publics : `doncivo/spartiate` (code) et `doncivo/spartiate-releases` (installeur PC, `latest.json`, IPA, `source.json`, `icon.png`).
+
+### 5.1 PC Windows (`build-windows.yml`, repris)
+
+- Runner `windows-latest` ; `npm run tauri build` → installeur NSIS ; sur tag `vX.Y.Z` : signature avec la clé updater (`TAURI_SIGNING_PRIVATE_KEY` dans GitHub Secrets, **nouvelle paire de clés pour Spartiate**), `latest.json`, publication sur `spartiate-releases`.
+- Mise à jour par la bannière in-app (plugin updater) ; le désinstalleur **ne supprime jamais les données** (REL-TECH-02 de CircleTasks, repris).
+- Dev local : `npm run tauri dev` sur ton PC ; tests Vitest ; e2e Playwright en CI seulement.
+
+### 5.2 iPhone (`build-ios.yml`, repris et complété)
+
+1. Déclenchement manuel sur une branche (IPA en artefact) ou tag `ios-vX.Y.Z` (publication). Une seule compilation iPhone par lot.
+2. `tauri ios init --ci` régénère le projet Xcode ; **script d'injection de la cible d'extension Live Activity** dans `gen/apple` (nouveau, `H-4`) ; `tauri ios build --ci --no-sign --target aarch64` ; puis **signature ad hoc avec `Spartiate.entitlements`** (`codesign -s - --entitlements …` sur le `.app` et l'extension, `H-3`) avant le zip en `Payload/`.
+3. Contrôles : bundle `fr.spartiate.app`, `MinimumOSVersion` 18, arm64, front embarqué, contrat `plist-contract.json` (`NSHealthShareUsageDescription`, `NSHealthUpdateUsageDescription`, `NSCameraUsageDescription`, `NSFaceIDUsageDescription`, `NSSupportsLiveActivities`), entitlements lus par `codesign -d --entitlements`.
+4. Publication : release GitHub + `source.json` (version, `buildVersion` croissant, `sha256`, taille, `iconURL`, notes depuis `CHANGELOG.md`) par les scripts repris.
+5. SideStore : source `https://raw.githubusercontent.com/doncivo/spartiate-releases/main/source.json` ; installer ; mettre à jour sans jamais supprimer ; renouveler tous les 5–6 jours ; l'app lit `embedded.mobileprovision` et notifie 24 h avant (I-02 repris).
+
+### 5.3 Ce qui est `INHERITED` (prouvé sur CircleTasks)
+
+IPA non signée en CI ; installation et mise à jour par SideStore sans perte (I-06) ; date d'expiration lisible (I-02) ; notifications locales avec actions ; Face ID ; Trousseau ; caméra et scan ; haptique ; Fichiers ; synchro iCloud PC ↔ iPhone ; installeur et updater PC ; minutes macOS gratuites sur dépôt public.
+
+### 5.4 Ce qui reste `UNVERIFIED`
+
+| Point | Détail | Ticket |
+| --- | --- | --- |
+| **HealthKit via SideStore (H-3)** | Entitlement `com.apple.developer.healthkit` à faire porter par le binaire (signature ad hoc) pour qu'AltSign demande la capacité ; jamais testé | SPA-006 |
+| **Extension Live Activity (H-4)** | Deux difficultés : injecter une cible d'extension dans le projet généré par `tauri ios init` (script sur `project.pbxproj` ou `project.yml` de Tauri), et la faire signer par SideStore (consomme un identifiant d'app) | SPA-007 |
+| Signature ad hoc après `--no-sign` | `codesign` sur le `.app` produit par Tauri, avant zip ; à vérifier que SideStore accepte | SPA-003 |
+| Trois apps sideloadées (H-16) | SideStore + CircleTasks + Spartiate | SPA-004 |
+
+### 5.5 Débogage sans Mac
+
+Repris de CircleTasks : écran Diagnostic (version, build, SHA, expiration, permissions, matrice, journaux expurgés), journal technique persistant (ADR 0014), export des journaux vers Fichiers / iCloud Drive lisible par Claude Code quand tu le désignes, e2e Playwright `iphone` (WebKit) en CI pour le front, `cargo test` pour Rust ; les plugins Swift ne se testent que sur l'iPhone.
+
+## 6. Matrice de capacités — état initial
+
+Tenue à jour dans `docs/capability-matrix.md` (annexe B) par le ticket qui change un statut.
+
+| Capacité | Statut | Précédent CircleTasks | Fallback si `BLOCKED` | Ticket |
+| --- | --- | --- | --- | --- |
+| Fork, nettoyage du métier, base vide, tests verts | `UNVERIFIED` | — | — | SPA-000 à 002 |
+| Build PC (NSIS) et updater | `INHERITED` | `build-windows.yml`, REL-TECH-02 | — | SPA-003 |
+| Build IPA non signée en CI | `INHERITED` | POC-01 | — | SPA-003 |
+| Signature ad hoc après `--no-sign` avec entitlements | `UNVERIFIED` | — | Sans entitlements (perd HealthKit) | SPA-003 |
+| Publication `spartiate-releases` (PC + source SideStore) | `INHERITED` | `circletasks-releases` | Import manuel | SPA-004 |
+| Installation et ouverture SideStore ; 3 apps | `INHERITED` (`H-16`) | 1.0.x | AltStore ; retirer une app | SPA-004 |
+| Mise à jour iPhone sans perte | `INHERITED` | I-06 | Export avant mise à jour | SPA-005 |
+| Date d'expiration lisible | `INHERITED` | I-02 | Saisie manuelle | SPA-004 |
+| Synchro iCloud PC ↔ iPhone sur les tables Spartiate | `INHERITED` (mécanisme) / `UNVERIFIED` (tables) | ADR 0011, lots Y | Export / import manuel | SPA-008 |
+| Export / import JSON | `UNVERIFIED` | P-04 (restauration, partiel) | — | SPA-005 |
+| **HealthKit lecture / écriture** (plugin Swift) | `UNVERIFIED` — **risque principal** (`H-3`) | Aucun | Saisie manuelle ; séances dans l'app seulement | SPA-006 |
+| HealthKit HRV / FC repos / sommeil | `UNVERIFIED` (`H-3`, `H-1`, `H-13`) | Aucun | Fatigue déclarée | I5 |
+| **Live Activity / Dynamic Island** (plugin + extension) | `UNVERIFIED` — risque élevé (`H-4`) | Aucun ; extensions exclues sans test | Timer in-app + notification locale (`INHERITED`) | SPA-007 |
+| Notifications locales | `INHERITED` | N-01, ADR 0012 | — | SPA-007 |
+| Face ID, Trousseau, haptique, Fichiers, caméra, scan | `INHERITED` | lots I, M, Y, CAP, FILES | — | I1 / I4 |
+| Camera Control | `UNVERIFIED` | — | Bouton | I4 |
+| App Intents (Siri, Action button) | `UNVERIFIED` ; nécessite un plugin Swift | — | Démarrage depuis l'app | I6 |
+| Widgets lisant les données | `BLOCKED` (App Groups) | contrat plist | `DEFERRED` | — |
+| Background modes (observer queries HealthKit, GPS) | `UNVERIFIED` ; `UIBackgroundModes` interdit par choix sur CircleTasks | — | Lecture au premier plan | I5 / I6 |
+| Quota CI | `INHERITED` (dépôt public) | — | Builds par lot | SPA-003 |
+| Open Food Facts, API IA | `UNVERIFIED` | — | Ciqual + manuel | I4 |
+
+## 7. Gate I0 — aucun travail I1 avant passage
+
+### 7.1 Essais
+
+1. Fork nettoyé : `npm run lint`, `npm run typecheck`, `npm run test` verts avec le métier CircleTasks retiré et une base vide (migration `0001`) ; `npm run tauri dev` ouvre Spartiate sur le PC avec l'écran Diagnostic.
+2. `build-windows.yml` vert sur une branche ; installeur NSIS installé sur ton PC ; tag `v0.0.1` publié sur `spartiate-releases` ; `v0.0.2` reçue par la bannière de mise à jour, données conservées.
+3. `build-ios.yml` vert : IPA signée ad hoc, `codesign -d --entitlements` montre HealthKit ; tag `ios-v0.0.1` publié ; source ajoutée dans SideStore ; Spartiate installée et ouverte ; `ios-v0.0.2` appliquée par « Mettre à jour » sans suppression ; données conservées ; les trois apps coexistent.
+4. Export / import JSON : export sur l'iPhone, import sur le PC (base vide) → mêmes compteurs et identifiants.
+5. Synchro : dossier `iCloud Drive/Spartiate` choisi sur le PC, appairage de l'iPhone par QR, une séance de test créée sur l'iPhone apparaît sur le PC, une modification sur le PC revient sur l'iPhone, aucun conflit parasite.
+6. HealthKit (plugin) : permission affichée ; pas du jour lus ; pesée de test écrite, lue, supprimée ; entitlements de l'app installée inspectés depuis Diagnostic.
+7. Live Activity (plugin + extension) : compteur visible sur l'écran verrouillé et dans la Dynamic Island ; extension signalée par SideStore ; notification locale à la date programmée.
+8. Diagnostic complet sur les deux appareils ; journaux exportés et lus.
+9. Mesure : durées des jobs, minutes CI.
+
+### 7.2 Seuil de passage
+
+**Obligatoire :** 1 à 5 et 8. **Conditionnel :** 6 et 7 peuvent être `BLOCKED` avec fallback accepté ; dans ce cas I5 est repoussé et le timer utilise le fallback.
+
+### 7.3 Fallbacks
+
+| Situation | Fallback |
+| --- | --- |
+| HealthKit indisponible | Poids, sommeil (durée) et fatigue saisis à la main sur l'iPhone ou le PC ; aucune prétention HRV / FC |
+| Live Activity indisponible | Timer in-app sur date de fin persistée + notification locale (prouvée) |
+| Synchro en échec | Export / import manuel entre appareils ; bandeau d'état (A-09) |
+| Mise à jour destructive | Export, réinstallation, import ; jamais de suppression automatique |
+| Installation iPhone impossible | Diagnostiquer entitlements et signature ad hoc ; retirer la signature ad hoc pour isoler ; reconsidérer le canal (§ 27, D-2) |
+
+## 8. Itérations et critères « terminé »
+
+| Itération | Contenu | Critère « terminé » | Remplace |
+| --- | --- | --- | --- |
+| **I0 — Fork et pipeline** | § 7 et tickets § 26 | Gate § 7.2 passé, matrice remplie | — |
+| **I1 — Carnet** | Bibliothèque 150 exercices, profils de matériel, routines, écran de séance (iPhone et PC), timer (Live Activity si `CONFIRMED`), historique, PR, constance, export / import, synchro des tables I1, écriture HealthKit si `CONFIRMED`, Diagnostic | Une séance entière hors ligne sur l'iPhone ; reprise après fermeture forcée ; visible sur le PC après synchro ; export / import vérifié ; 2 semaines d'usage réel | Hevy |
+| **I2 — Moteur** | `src/domain/training` : 1RM avec confiance, double progression, snap, difficulté, explication, fatigue, stagnation, deload manuel ; séries pré-remplies | Fixtures déterministes ; même historique → même prescription ; zéro augmentation imposée ; adhérence ≥ 70 % sur 2 semaines | Gravl |
+| **I3 — Programme** | Onboarding, génération, mésocycle, Semaine, « moins de temps », Strength Score ; édition confortable sur PC | Programme modifiable ; aucun exercice impossible ; deload non destructif ; un mésocycle suivi | Gravl + Alpha |
+| **I4 — Nutrition** | `src/domain/nutrition` : cibles, journal (PC clavier, iPhone scan et photo), Ciqual + OFF, pesées, tendance, TDEE, check-in ; adaptateur IA | Journées incomplètes neutres ; check-in suspendu sans données ; photo corrigeable ; budget plafonné ; ≥ 4 j/7 loggés | MacroFactor |
+| **I5 — Récupération** | Plugin HealthKit complet, `src/domain/recovery`, scores, récupération par muscle, Recovery Split, modulation, cadrans ; publication des résumés vers le PC | Scores masqués sans données ; tests 30 nuits ; aucune hausse due au score ; PC affiche la Recovery du jour | Athlytic + WHOOP |
+| **I6 — Confort** | App Intents (plugin), bilans rédigés, import de programme, vidéos, cardio GPS, photos de progression synchronisées, export complet | Seules les surfaces `CONFIRMED` ; bilan avec nombres vérifiés | Reboot Plan |
+
+Dépendances : I0 avant tout ; I2 avant I3 ; I4 et I5 indépendants après I3 ; I6 après I5. Hors périmètre définitif : app Watch, social, commercialisation, Android, form check, coach conversationnel.
+
+## 9. Synchronisation PC ↔ iPhone
+
+Le mécanisme de CircleTasks (ADR 0011) est repris **sans modification** : dossier `iCloud Drive/Spartiate`, un sous-dossier par appareil, journaux d'opérations chiffrés AES-256-GCM (clé maîtresse dans le coffre de chaque appareil, jamais dans iCloud), HLC par champ, fusion par champ, instantanés, appairage par QR entre PC et iPhone, clé de secours imprimable, oubli d'appareil, réinitialisation, bandeaux d'état. Seul le **catalogue des tables publiées** (`src/domain/sync/syncTables.ts`) change.
+
+### 9.1 Tables publiées
+
+| Table | Publiée | Règle propre à Spartiate |
+| --- | --- | --- |
+| `user_profile`, `goal`, `equipment_profile`, `machine`, `injury` | Oui | Fusion par champ |
+| `exercise` (custom seulement ; la bibliothèque embarquée n'est pas publiée) | Oui | Identifiant naturel = `id` du JSON |
+| `workout_program`, `workout_template`, `template_exercise`, `planned_workout` | Oui | Édition surtout PC |
+| `workout_session`, `session_exercise`, `workout_set` | **Oui, seulement quand la séance est terminée** (`ended_at` non nul) ; une séance en cours reste locale | Évite les conflits en direct ; la fin de séance publie tout d'un coup |
+| `prescription`, `recommendation_decision`, `strength_estimate` | Oui | `strength_estimate` est **recalculable** : en cas de conflit, le dernier HLC gagne, puis recalcul local depuis l'historique |
+| `nutrition_strategy`, `nutrition_target`, `food` (user), `recipe`, `food_entry`, `nutrition_day`, `supplement`, `supplement_log` | Oui | — |
+| `body_measurement`, `expenditure_estimate` | Oui (sans le chemin de photo) | — |
+| `recovery_day`, `muscle_recovery` | **Oui, écrits par l'iPhone seul** ; le PC est lecteur | Résumés quotidiens, jamais les échantillons HealthKit |
+| `recovery_observation` (mesures brutes) | **Non** | Reste sur l'iPhone |
+| `cardio_session` (I6) | Oui, tracé compressé | — |
+| `capability_status`, `diagnostic_event`, `export_manifest` | Non | Locaux |
+
+### 9.2 Règles
+
+- Les colonnes techniques (`hlc`, `device_id`, `updated_at`) ne circulent pas ; `deleted_at` porte les suppressions ; restauration par `deleted_at` à `null` avec un HLC plus récent.
+- Les conflits (même champ modifié des deux côtés) sont consultables et réversibles dans Réglages → Synchronisation (écran repris).
+- Un appareil qui voit une version de format supérieure se met en pause et demande la mise à jour (`SYNC_FORMAT_MAJOR`, repris).
+- La synchro tourne au premier plan sur l'iPhone et en cycle périodique sur le PC (comme CircleTasks) ; une séance terminée sur l'iPhone est visible sur le PC au cycle suivant.
+- Tests : vecteurs de synchro existants (`tests/fixtures/sync/vectors.json`) étendus aux tables Spartiate ; scénario e2e « séance iPhone → PC → édition PC → iPhone » en CI.
+
+## 10. Onboarding et profil
+
+En I1, configuration minimale (unités, premier profil de matériel, dossier iCloud si tu veux synchroniser). L'onboarding complet arrive en I3, sur PC ou iPhone, et se synchronise. HealthKit (iPhone) est demandé de façon contextuelle avec un mode dégradé.
+
+### 10.0 Parcours de bout en bout (J0 → J7)
+
+Le fil complet, de l'installation à la première synchro, avec pour chaque étape l'application de référence dont on reprend le geste. Il sert de scénario E2E de référence (§ 23) et de check-list de la première semaine.
+
+| Étape | Appareil | Ce qui se passe | Référence reprise | Cible |
+| --- | --- | --- | --- | --- |
+| 1. Installer | PC | Installeur NSIS depuis `spartiate-releases` (chaîne CircleTasks) ; premier lancement, choix du dossier iCloud Drive | CircleTasks | < 2 min |
+| 2. Onboarding | PC | 8 écrans (§ 10.1) : objectif, expérience, fréquence, durée, matériel, body map, split, résultat ; estimation initiale de la dépense (Mifflin) affichée comme « point de départ, recalculé après 2 semaines » | Alpha Progression (wizard, body map) ; MacroFactor (dépense initiale honnête) | < 8 min |
+| 3. Première routine | PC | Un programme de départ (§ 12.5) ou génération (§ 12.1) ; édition en grille jours × exercices ; charges de départ déduites des standards de force avec décote 10 % | Alpha Progression (éditeur), Gravl (1RM initial) | < 5 min |
+| 4. Ajouter l'iPhone | PC → iPhone | Plus → Appareils → « Ajouter un iPhone » affiche un QR ; sur l'iPhone, installation via SideStore (source `spartiate-releases`), ouverture, « J'ai déjà un PC », scan du QR, appairage ; la routine et le profil arrivent en < 60 s ; aucune permission iOS demandée à ce stade | CircleTasks (SideStore, appairage ADR 0011) | < 10 min hors SideStore |
+| 5. Première séance | iPhone | Aujourd'hui → Lancer (≤ 3 taps) ; séries pré-remplies ; tap sur la charge → « charge de départ estimée depuis ton niveau, affinée dès la 2ᵉ séance » ; timer de repos Live Activity ou notification ; Facile / Juste / Dur ; Finish → résumé, écriture Apple Santé (première demande de permission, ici et pas avant) | Hevy (un écran, 10 s), Gravl (explication), Reboot Plan / Alpha (Dynamic Island) | Séance ≤ durée choisie |
+| 6. Synchro retour | iPhone → PC | La séance terminée est publiée ; le PC l'affiche dans Historique et Progrès sans action | CircleTasks (synchro) | < 60 s après Finish |
+| 7. Deuxième séance | iPhone | Premières recommandations réelles avec « Pourquoi ? » ; rep ladder ; records détectés | Alpha (recommandations dès la 2ᵉ séance), Gravl | — |
+| 8. Première semaine | Les deux | Pesées (manuelles ou Santé) ; journal nutrition facultatif tant que I4 n'est pas livré ; J+6 : notification « signature à renouveler » (I-02) ; J+7 : si ≥ 4 jours loggés, premier check-in proposé, sinon « en apprentissage » | MacroFactor (check-in), CircleTasks (expiration) | Aucun faux zéro, aucun écran vide |
+
+Critère : un utilisateur qui suit ces 8 étapes sans lire de documentation arrive à l'étape 6 le premier jour. Le scénario est rejoué à chaque release (Playwright pour 1–3, 6 ; check-list iPhone § 23.1 pour 4, 5, 7, 8).
+
+### 10.1 Onboarding complet (I3)
+
+| # | Étape | Données | Règle |
+| --- | --- | --- | --- |
+| 1 | Toi | Sexe, naissance, taille, poids (pré-rempli depuis Apple Santé sur iPhone si autorisé) | Standards de force et macros |
+| 2 | Objectif | Muscle / force / recomposition / perte de gras / maintien ; rythme en % du poids par semaine | Borné −1 % à +0,5 % |
+| 3 | Expérience | Débutant / intermédiaire / avancé | Charges de départ conservatrices |
+| 4 | Disponibilité | Séances par semaine, durée, jours | La durée plafonne les séries |
+| 5 | Matériel | Préréglage salle / maison à affiner | Profil actif |
+| 6 | Priorités | Body map : 2 muscles à prioriser, 4 à éviter ; patterns douloureux | Exclusion sans promesse de prévention |
+| 7 | Split | Proposé selon la fréquence ; variété Consistent / Balanced / Varied | Modifiable |
+| 8 | Résultat | Première séance + cibles du jour | Commencer / Modifier |
+
+Brouillon persisté ; toute question non essentielle ignorable.
+
+### 10.2 Profil éditable
+
+Tout ce qui précède, mensurations, photos de progression (locales, synchro optionnelle I6), % MG déclaré, blessures avec check-in bimensuel, clé API et plafond (par appareil), unités, jour de check-in, notifications (iPhone), verrou (Face ID / code iPhone, code PC), profil de matériel actif, synchronisation (écran repris de CircleTasks).
+
+### 10.3 Permissions (iPhone)
+
+| Permission | Quand | Mode dégradé |
+| --- | --- | --- |
+| HealthKit lecture poids | Première pesée ou étape 1 | Saisie manuelle |
+| HealthKit écriture séances / pesées | Fin de première séance | Séances dans l'app seulement |
+| HealthKit HRV, FC repos, sommeil | Premier écran Récupération (I5) | Fatigue déclarée |
+| Notifications | Fin de première séance | Timer visible dans l'app |
+| Caméra | Premier scan ou photo | Recherche texte |
+| Face ID | Activation du verrou | Code |
+| Localisation | Premier cardio (I6) | Cardio sans tracé |
+
+## 11. Moteur de progression (`src/domain/training`)
+
+Même historique → même prescription ; chaque charge explicable ; conservateur sans données ; aucun bonus cumulable. Règles issues de l'algorithme publié par Gravl et de la double progression ; constantes dans `src/domain/training/config.ts`, ajustables par exercice. Horloge et identifiants injectés (`Clock`, `IdGenerator` de CircleTasks).
+
+### 11.1 Entrée
+
+```ts
+prescribe(input: {
+  exercise: Exercise; history: readonly WorkoutSet[]; lastDecision: RecommendationDecision | null;
+  profile: ProgressionProfile; equipment: EquipmentProfile; mesocycle: MesocycleContext | null;
+  recovery: RecoverySnapshot | null; position: number; target: RepTarget; config: ProgressionConfig; now: Instant;
+}): Prescription  // { targetSets, confidence, reasons: ReasonCode[], engineVersion, activeConfig }
 ```
 
-Tous les écrans de liste ouvrent la même fiche détail ; Focus Time se lance depuis cette fiche ; l'appairage se fait depuis Réglages.
+### 11.2 Ordre de calcul (normatif)
 
-| Écran                       | PC Windows                                                                                                          | iPhone 16 Pro Max                                                                           |
-|-----------------------------|---------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
-| Aujourd'hui                 | Onglet vert « Tâches » : liste centrale + détail à droite                                                           | Onglet vert « Tâches », liste pleine hauteur                                                |
-| Semaine                     | Onglet violet clair « Semaine » : 7 colonnes côte à côte                                                            | Onglet violet clair « Semaine » : 7 jours en sections verticales défilantes                 |
-| Routines                    | Onglet rose : liste + rapport à droite                                                                              | Onglet rose ; rapport mensuel en feuille                                                    |
-| Événements                  | Onglet bleu : liste par année (← 2026 →) + calendrier                                                               | Onglet bleu ; bouton « Calendrier »                                                         |
-| Checklists                  | Onglet beige : sélecteur de liste + items                                                                           | Onglet beige ; sélecteur déroulant de liste                                                 |
-| Réglages                    | Onglet gris, en bas de la colonne                                                                                   | Onglet gris, en bas de la colonne                                                           |
-| Objectif de la semaine      | Icône cible en haut d'Aujourd'hui                                                                                   | Icône cible en haut d'Aujourd'hui, écran plein                                              |
-| Statistiques                | Icône graphique en haut d'Aujourd'hui                                                                               | Icône graphique en haut d'Aujourd'hui, écran plein                                          |
-| Focus Time                  | Bouton « Focus » de la fiche détail ou Ctrl+Maj+F ; mini-fenêtre toujours au premier plan ; seul son émis par le PC | Bouton « Focus » de la fiche détail ; plein écran, minuteur + notification de fin planifiée |
-| Capture rapide              | Fenêtre flottante par raccourci global                                                                              | Bouton + rond violet en bas à droite, sur tous les onglets                                  |
-| Scan papier                 | Import image / webcam                                                                                               | Bouton « Scan tâches » sous le champ Ajouter                                                |
-| Recherche                   | Palette Ctrl+K superposée                                                                                           | Loupe en haut d'Aujourd'hui, écran de résultats                                             |
-| Sélecteur d'espace          | Pastilles Pro / Perso / Tout en haut de chaque écran                                                                | Pastilles en haut de chaque écran                                                           |
-| Premier lancement           | Assistant en fenêtre centrée, 4 étapes                                                                              | Assistant plein écran, 4 étapes                                                             |
-| Synchro, logs, « À propos » | Réglages                                                                                                            | Réglages                                                                                    |
-| Un jour (Someday)           | Icône horloge en haut d'Aujourd'hui ; liste en panneau                                                              | Icône horloge en haut d'Aujourd'hui, écran plein                                            |
-| Fiche détail d'une tâche    | Panneau à droite de la liste (maquette PC — Aujourd'hui)                                                            | Feuille plein écran ouverte par un toucher ou un appui long                                 |
-| Appairage PC ↔ iPhone       | Réglages → Synchronisation → Associer l'iPhone : fenêtre avec QR code et clé de secours                             | Réglages → Synchronisation → Associer au PC : écran de scan, puis choix du dossier iCloud   |
+1. **Valider** : exclure des statistiques les séries non terminées, warm-up, deload, aberrantes non confirmées (> 150 % du 1RM courant) ; les garder dans l'historique brut.
+2. **Cible** : plage de reps et RIR de la semaine (mésocycle) ou de la routine ; matériel actif.
+3. **Dernière prescription effective** (valeur choisie si modifiée) et historique ; sans historique : charge de départ conservatrice, confiance faible, « provisoire ».
+4. **Double progression** : toutes les séries au haut de plage ET difficulté compatible → un cran ; sinon +1 rep sur une série (ladder 8-7-6 → 8-8-6 → 8-8-7 → 8-8-8) ; baisse répétée → stabilité ou réduction proposée.
+5. **Difficulté** = confirmation ou prudence : `Dur` / RIR ≤ 1 bloque la hausse ; `Juste` confirme ; `Facile` / RIR ≥ 4 confirme le cran. **Exception bornée** : confiance < 60 % → `Facile` recalibre le 1RM de +5 %, une fois par exercice et par mois, jamais cumulé avec le cran.
+6. **Contraintes** (fatigue, inactivité, deload, récupération) : maintien ou réduction seulement.
+7. **Snap matériel** après tout : incréments, min / max, barre, stack ; au-delà du garde-fou, charge inférieure.
+8. **Explication** : règles déclenchées dans l'ordre, confiance, version, source des données.
+9. **Présenter sans imposer** ; la modification manuelle devient la référence et est tracée.
 
-**Principes d'interface**
+**Invariant** : aucune proposition > `maxGainPerSession` ; une progression de reps n'est jamais convertie en hausse de charge dans la même prescription.
 
-- Style inspiré de NoteCircle : grands titres dans une police à empattements (ex. « 23 mer. », « Routine »), texte courant sans empattements, violet foncé sur fond blanc, colonne d'onglets sur fond violet foncé ; thème sombre équivalent.
+### 11.3 Règles et constantes
 
-- Couleurs validées : texte et colonne d'onglets \#2E2150, bouton + \#3A2A66, onglets Tâches \#B9C8A3, Semaine \#C9BEE6, Routines \#F2A7A0, Événements \#9DBBC9, Checklists \#E8DFC0, Réglages \#CFCFD4, onglet actif blanc ; espace Pro \#2F6B7A, espace Perso \#B5483B ; objectif \#3F7FC4 ; texte secondaire \#5E557A. Polices : Fraunces pour les titres, DM Sans pour le texte, embarquées dans l'app (licence SIL OFL) et jamais chargées depuis Internet ; icônes Lucide au trait, colorées.
+| Règle | Spécification | Constante |
+| --- | --- | --- |
+| 1RM estimé | Epley `w × (1 + reps/30)` ; séries > 15 reps ou < 60 % du 1RM pondérées 0,25 ; 1RM courant = moyenne pondérée par récence (1 / 0,6 / 0,3) des 3 dernières séances ; indicatif | `maxRepsForEstimate: 15` |
+| Confiance | 0,4 × (séries valides / 6, plafonné) + 0,3 × (1 − dispersion relative) + 0,3 × récence (1 si < 14 j, 0 si > 60 j) ; < 0,4 → provisoire, hausse ≤ 1 cran | `minSetsForConfident: 3` |
+| Charge de départ | Niveau × standards (sexe, poids) × 0,9 | `startDiscount: 0.10` |
+| Cran | +1 incrément du matériel | — |
+| Position | 2ᵉ exercice d'un muscle × 0,93 ; 3ᵉ × 0,88 | `positionDiscount: [1, 0.93, 0.88]` |
+| Snap | Arrondi au cran ; écart > 3 % → ± 1 rep ; sinon inférieur | `snapTolerance: 0.03` |
+| Fatigue intra-séance | Baisse > 20 % de reps à charge égale → alerte, −5 % ou −2 reps, refusable | `fatigueDrop: 0.20` |
+| Stagnation | 3 séances sans progression → variante, autre plage, ou mini-deload −10 % | `stallSessions: 3` |
+| Inactivité | 14 j sans ce muscle : −1 %/semaine, plancher −10 % ; une séance manquée ≠ régression | `detrainStart: 14` |
+| Deload | Volume d'abord : séries ÷ 2 ; charge × `deloadLoad` (0,8 par défaut, par exercice) ; RIR 4+ ; exclu des calculs, visible | `deloadLoad: 0.8` |
+| Plafond | 1RM +10 % max par séance | `maxGainPerSession: 0.10` |
+| Récupération (I5) | Recovery ≤ 33 ou sommeil < 6 h ou FC repos > +8 % : charge × 0,95 et −1 série sur les secondaires ; jamais de bonus | `lowRecovery: 33` |
+| Machines | 1RM par profil de salle ; poids libres partagés | — |
+| Sans charge | Poids de corps : reps puis lest ; chronométrés : secondes ; drop sets et partielles hors tonnage et 1RM | — |
 
-- Bouton + rond violet toujours visible en bas à droite (repris de NoteCircle 4.04).
+### 11.4 Explication
 
-- Une seule base React avec deux mises en page : PC (≥ 1 024 px, onglets + liste + détail) et mobile (440 × 956 points de l'iPhone 16 Pro Max, onglets + liste) ; zones tactiles ≥ 44 points, marges de sécurité iOS respectées.
+Template depuis `reasons` (textes dans `src/i18n`) : « +2,5 kg — haut de plage atteint sur les 3 séries, difficulté Juste (confiance 72 %) » ; détail ligne par ligne.
 
-- Sans Mac, la mise en page mobile se teste d'abord dans Chrome en mode appareil à 440 × 956, puis sur l'iPhone.
+### 11.5 Garde-fous
 
-- PC : navigation complète au clavier, fenêtre minimale 1 024 × 700 px.
+Jamais d'augmentation imposée ; modification manuelle tracée ; aberrantes signalées avant enregistrement ; série non terminée ≠ réussie ; séance < 50 % des séries ne met pas à jour le 1RM ; douleur ≠ incitation ; retour à une prescription antérieure ; absence de RIR n'empêche pas la progression.
 
-**Raccourcis clavier PC**
+### 11.6 Tests (Vitest)
 
-| Raccourci                | Action                                              | Portée                   |
-|--------------------------|-----------------------------------------------------|--------------------------|
-| Ctrl+Alt+Espace          | Capture rapide (configurable)                       | Global, même app réduite |
-| Ctrl+N                   | Nouvelle tâche                                      | Application              |
-| Ctrl+K                   | Recherche                                           | Application              |
-| Alt+1                    | Aller à l'onglet Tâches (Aujourd'hui)               | Application              |
-| Alt+2 à Alt+6            | Semaine, Routines, Événements, Checklists, Réglages | Application              |
-| Ctrl+← / Ctrl+→          | Semaine précédente / suivante                       | Semaine                  |
-| Ctrl+1 / Ctrl+2 / Ctrl+3 | Espace Pro / Perso / Tout                           | Application              |
-| Espace                   | Terminer / rouvrir l'élément sélectionné            | Listes                   |
-| Entrée                   | Ouvrir le détail                                    | Listes                   |
-| ↑ / ↓                    | Élément précédent / suivant                         | Listes                   |
-| Alt+↑ / Alt+↓            | Déplacer l'élément dans la liste                    | Listes                   |
-| Ctrl+D                   | Reporter à demain                                   | Listes                   |
-| Suppr                    | Supprimer (vers la corbeille)                       | Listes                   |
-| Ctrl+Z                   | Annuler la dernière action                          | Application              |
-| Ctrl+Maj+F               | Lancer une session Focus sur l'élément              | Listes                   |
-| Ctrl+,                   | Réglages                                            | Application              |
-| Ctrl+/                   | Liste des raccourcis                                | Application              |
-| Échap                    | Fermer le panneau ou la fenêtre active              | Application              |
-| Ctrl+Maj+D               | Dupliquer l'élément                                 | Listes                   |
+Fixtures `tests/fixtures/training/` : nominal 8 séances, stagnation, deload, changement de salle, séance partielle, `Facile` répété, retour après 3 semaines, modification manuelle, charge aberrante, haltères pas 2 kg, stack 5 kg ; propriétés : déterminisme, monotonie du snap, plafond. Couverture `src/domain` ≥ 80 % (seuil CircleTasks), training ≥ 90 %.
 
-**Maquettes filaires**
+## 12. Génération de séance et mésocycle (`src/domain/training`, I3)
 
-Les maquettes visuelles font référence pour l'apparence : [Maquettes CircleTasks](maquettes/index.html) (copie locale dans docs/maquettes/) (34 écrans : 21 iPhone dont la fiche détail, les gestes de balayage, l'appairage et la routine « tous les N jours », 9 PC dont l'appairage par QR code, le choix de la date, le panneau « Un jour » et l'avertissement de rappel, et 4 variantes de l'écran Aujourd'hui : sombre, édition, compacte, vide). Les croquis ci-dessous restent indicatifs.
+### 12.1 Séance
 
-PC — Aujourd'hui
+`generateSession({ day, program, library, equipment, profile, recovery, timeBudgetMin, config, clock })`
 
-    ┌──────────────┬───────────────────────────────┬──────────────────────┐
-    │ [Pro|Perso|Tout]  Aujourd'hui · mer. 14 oct.  🔍 Ctrl+K           │
-    │              ├───────────────────────────────┼──────────────────────┤
-    │ ● Aujourd'hui│ ÉVÉNEMENTS                    │ DÉTAIL               │
-    │   Semaine    │  10:00 Point client (Google)  │ Titre                │
-    │   Routines   │ ROUTINES                      │ Date · Heure         │
-    │   Événements │  [ ] 🏃 Sport                 │ Espace · Projet      │
-    │   Checklists │ TÂCHES                        │ Récurrence           │
-    │   Stats      │  [ ] 09:00 Envoyer facture    │ Rappels              │
-    │   Focus      │  [x] Relire contrat           │ Note                 │
-    │              │ CHECKLISTS                    │ [Focus] [Reporter]   │
-    │ ⚙ Réglages   │  Valise 3/5                   │                      │
-    │              │ [+ Ajouter une tâche]         │                      │
-    └──────────────┴───────────────────────────────┴──────────────────────┘
+1. Muscles du jour par le split (Full Body ≤ 3 j, Upper/Lower 4 j, PPL 5–6 j, custom ≤ 7) ; Recovery Split en I5 (muscles ≥ 80 %).
+2. Sélection : composés puis isolations ; filtre dur sur le matériel actif ; un exercice par pattern et muscle principal ; priorités en tête ; patterns douloureux exclus avec substitution.
+3. Variété Consistent / Balanced (70 % récurrents, rotation 4 semaines) / Varied (rotation par mésocycle).
+4. Volume borné par le budget temps (45 s par série + repos) et la plage de séries ; reps composés 5–10, isolations 8–15.
+5. Style droites / pyramide / inversée.
+6. « J'ai 35 min » : retrait des isolations puis réduction des séries, plan intact.
 
-PC — Semaine
+### 12.2 Mésocycle
 
-    ┌ ◀ Semaine 42 ▶ ─────────────────────────────── [Cette semaine] ┐
-    │ Lun 12 │ Mar 13 │ Mer 14 │ Jeu 15 │ Ven 16 │ Sam 17 │ Dim 18   │
-    │ ─────  │ ─────  │ ●───── │ ─────  │ ─────  │ ─────  │ ─────    │
-    │ tâche  │ tâche  │ tâche  │        │ évén.  │        │          │
-    │ routine│        │ routine│ tâche  │        │ routine│          │
-    │ + …    │ + …    │ + …    │ + …    │ + …    │ + …    │ + …      │
-    └─────────────────────────────────────────────────────────────────┘
+| Élément | Spécification | Constante |
+| --- | --- | --- |
+| Durée | 4–7 semaines, dernière = deload ; option illimité | `mesoWeeks: 5` |
+| Séries | +1 par muscle et par semaine dans la plage | `setsPerWeekIncrement: 1` |
+| Intensité | RIR 3 → 1 par défaut, borne basse choisie | `rirStart: 3, rirEnd: 1` |
+| Deload | Séries ÷ 2, RIR 4+, charge × `deloadLoad` ; anticipable | — |
+| Fin de bloc | Bilan → répéter / changer / régénérer | — |
+| Priorités | ± 1 série hebdo | — |
 
-iPhone — Aujourd'hui
+### 12.3 Modes
 
-    ┌───┬──────────────────────────┐
-    │   │ [Pro][Perso][Tout] ⏱ 🎯 📊 🔍 │
-    │ T │ sept. 2026               │
-    │ o │ 23 mer. [AUJOURD'HUI]    │
-    │ d │ ────────────────────     │
-    │ o │ 🎯 Objectif : Finir PRD  │
-    │───│ ( ) Envoyer facture   📄 │
-    │ S │     09:00                │
-    │ e │ ( ) Boire de l'eau    🥛 │
-    │ m │     08:30                │
-    │───│ (✓) Faire mon lit (barré) │
-    │ R │ ┌──────────────────────┐ │
-    │ o │ │ Ajouter              │ │
-    │ u │ └──────────────────────┘ │
-    │───│ [Scan tâches]            │
-    │ E │                          │
-    │ v │                          │
-    │───│                          │
-    │ C │                          │
-    │ h │                          │
-    │───│                          │
-    │ ⚙ │                      (+) │
-    └───┴──────────────────────────┘
+Guidé ; Libre (Variable / Fixe / Statique) ; Importé (I6, extraction IA validée) ; Maison (poids de corps).
 
-**Détails d'interface repris de NoteCircle**
+### 12.4 Tests
 
-- Aujourd'hui (révisé PRD-02, `Jour.html`, `PC-Jour.html`) : date en grand sous le mois, sans badge ; l'agenda du jour sur la colonne des heures avec la ligne « maintenant » (le passé atténué, le dû en gros avec « En retard de … », les sans-heure derrière un tiret), objectif épinglé en une ligne, événements dans l'agenda ; aucune icône par ligne ; sur iPhone, Rechercher et le menu « Plus d’options » (Un jour, Objectif, Rapport, Vue compacte, Mode édition) à droite de la date, rangée d'ajout en bas (champ, Scanner, +) ; sur PC, barre fixe nommée (Objectif, Rapport, Un jour, Ajouter, Édition, Compacte), colonne du jour bornée à 660 px, seconde colonne « Demain / Cette semaine / Raccourcis ».
+Budget ± 10 % ; aucun exercice sans matériel ; aucun doublon de pattern ; < 1 s ; changement de salle sans perte ; mésocycle 5 semaines ; deload non destructif.
 
-- Fenêtre d'ajout : champ titre, choix « Icône / Emoji » avec rangée d'icônes défilante, roue jour + heure + minutes sur iPhone (« Aujourd'hui » en tête), champ date avec mini-calendrier et saisie libre sur PC, répétition « Une fois / Mensuel / Annuel », case « commence et finit le même jour », rappels rapides « À l'heure / 30 minutes / 1 heure » (autres avances dans « Plus »), interrupteur « Rattacher à mon objectif », bouton « Enregistrer » grisé tant que le titre est vide.
+### 12.5 Programmes de départ (I1, `content/programs/*.json`)
 
-- Routines : chaque carte affiche icône, titre, 7 ronds L M M J V S D remplis quand la routine est faite ce jour-là, compteur « 1/7 », heure et bouton « Éditer » ; bouton « Rapport du mois » en bas ; phrase d'aide sous la liste.
+Quatre routines prêtes, livrées comme contenu (même schéma que `routine` / `routine_day` / `routine_exercise`, validées par `validate-content.mjs`, exercices référencés par leur `id` de la bibliothèque § 14). Elles sont **relues par toi** comme la bibliothèque (H-8 étendu). Référence : la sortie du générateur Alpha Progression pour « prise de muscle, intermédiaire, 4 j/semaine, \~1 h 05, salle commerciale », dont la structure et la périodisation sont reprises ci-dessous.
 
-- Événements : navigation par année ; bouton « Calendrier » ; les événements s'affichent en tête de la liste Aujourd'hui à leur date.
+| Programme | Jours | Public | Split |
+| --- | --- | --- | --- |
+| Haut / Bas 4 j (détaillé ci-dessous) | Lun Haut A · Mar Bas A · Jeu Haut B · Ven Bas B | Intermédiaire, salle | Upper / Lower |
+| Full Body 3 j | Lun · Mer · Ven, mêmes patterns, exercices alternés A / B | Débutant ou reprise | Full Body |
+| PPL 6 j | Push · Pull · Legs × 2 | Avancé, > 1 h disponible | PPL |
+| Maison haltères 3 j | Haltères + banc + élastiques uniquement | Déplacement, maison | Full Body |
 
-- Checklists (révisé PRD-02, `Checklists-v2.html`) : sur iPhone le titre est le sélecteur de la liste active, « + » et crayon à droite du titre, « Réorganiser » près de la progression « 2 sur 3 », items en lignes, un seul champ d'ajout, rangée du bas « Supprimer les N éléments cochés » et « Tout décocher » ; PC : sélecteur, « Réorganiser », crayon, « Effacer les cochés ».
+**Haut / Bas 4 j — exemple complet (valeurs de la semaine 2 ; la périodisation ci-dessous fait varier séries et RIR)**
 
-- États vides : phrase d'accroche, 3 icônes Lucide sur pastilles de couleur et une phrase d'explication.
+| Jour | Exercice (`id`) | Séries × reps | Repos |
+| --- | --- | --- | --- |
+| Haut A | Développé couché barre (`bench-press-barbell`) | 3 × 6–10 | 150 s |
+| Haut A | Rowing barre (`row-barbell`) | 3 × 6–10 | 150 s |
+| Haut A | Développé incliné haltères (`incline-press-dumbbell`) | 3 × 8–12 | 120 s |
+| Haut A | Tirage vertical (`lat-pulldown`) | 3 × 8–12 | 120 s |
+| Haut A | Élévations latérales (`lateral-raise-dumbbell`) | 3 × 12–15 | 60 s |
+| Haut A | Curl barre (`curl-barbell`) | 2 × 8–12 | 60 s |
+| Haut A | Extension triceps poulie (`triceps-pushdown-cable`) | 2 × 8–12 | 60 s |
+| Bas A | Squat barre (`squat-barbell`) | 3 × 5–8 | 180 s |
+| Bas A | Soulevé de terre roumain (`romanian-deadlift-barbell`) | 3 × 6–10 | 150 s |
+| Bas A | Presse à cuisses (`leg-press`) | 3 × 8–12 | 120 s |
+| Bas A | Leg curl (`leg-curl-machine`) | 3 × 10–15 | 90 s |
+| Bas A | Mollets debout (`calf-raise-standing`) | 3 × 10–15 | 60 s |
+| Bas A | Planche (`plank`) | 3 × 45 s | 60 s |
+| Haut B | Développé militaire barre (`overhead-press-barbell`) | 3 × 6–10 | 150 s |
+| Haut B | Tractions ou tirage assisté (`pull-up`) | 3 × 6–10 | 150 s |
+| Haut B | Développé couché haltères (`bench-press-dumbbell`) | 3 × 8–12 | 120 s |
+| Haut B | Rowing haltère unilatéral (`row-dumbbell-one-arm`) | 3 × 8–12 | 90 s |
+| Haut B | Écarté poulie (`cable-fly`) | 2 × 12–15 | 60 s |
+| Haut B | Curl incliné haltères (`curl-incline-dumbbell`) | 2 × 10–15 | 60 s |
+| Haut B | Dips ou extension nuque (`dips`) | 2 × 8–12 | 90 s |
+| Bas B | Soulevé de terre barre (`deadlift-barbell`) | 3 × 4–6 | 180 s |
+| Bas B | Fente bulgare (`split-squat-bulgarian`) | 3 × 8–12 | 120 s |
+| Bas B | Hip thrust (`hip-thrust-barbell`) | 3 × 8–12 | 120 s |
+| Bas B | Leg extension (`leg-extension-machine`) | 3 × 12–15 | 90 s |
+| Bas B | Mollets assis (`calf-raise-seated`) | 3 × 12–15 | 60 s |
+| Bas B | Relevé de jambes (`hanging-leg-raise`) | 3 × 10–15 | 60 s |
 
-**À ne pas reproduire**
+**Périodisation du mésocycle (5 semaines, reprise de l'exemple relevé chez Alpha Progression)**
 
-- Mélange anglais / français (« Add », « How it works ») : interface entièrement en français.
+| Semaine | Séries de travail | RIR cible | Charge | Note |
+| --- | --- | --- | --- | --- |
+| 1 | 2 | 3 | Prescription § 11 | Introduction, charges de départ |
+| 2 | 3 | 2 | § 11 | Valeurs du tableau ci-dessus |
+| 3 | 3 | 1 | § 11 | — |
+| 4 | 4 | 0–1 | § 11 | Pic ; aucune hausse > 10 % |
+| 5 | 2 | 5+ | × 0,8 | Deload planifié, 1RM et Strength Score gelés |
 
-- Heures au format AM/PM : format 24 h.
+Le mésocycle suivant repart en semaine 1 avec les 1RM à jour. Les quatre programmes partagent cette périodisation ; seuls les jours et les exercices changent. Un programme de départ chargé devient une routine ordinaire, modifiable, synchronisée.
 
-- Coquille de date (« sept..2026 »).
+### 12.6 Pause et reprise (I3)
 
-- Verrous premium : toutes les fonctions sont incluses.
+« Mettre le programme en pause » (vacances, maladie, déplacement sans salle) : les séances ne sont pas comptées comme manquées, le streak est gelé, aucune notification. À la reprise : décote de détraînement du § 11 (à partir de 14 jours, −1 %/semaine, comme Gravl), proposition d'une semaine allégée si la pause dépasse 21 jours, mésocycle décalé et non recommencé. Le profil « Maison haltères » peut être activé le temps de la pause sans toucher au programme principal.
 
-- Lien publicitaire vers une autre app (« DayCircle? »).
+## 13. Séance active (I1, enrichie I2)
 
-- Illustrations propriétaires de NoteCircle : remplacées par des icônes au trait colorées de la bibliothèque libre Lucide (licence ISC), comme dans les maquettes.
+**Priorité :** valider une série pré-remplie en une interaction, d'une main, sans réseau, sur l'iPhone ; le même écran existe sur le PC avec saisie clavier.
 
-## 6. Modèle de données
+### 13.1 Démarrage
 
-Le modèle compte 18 tables SQLite communes au PC et à l'iPhone ; chaque ligne métier porte un identifiant UUID, `created_at`, `updated_at`, `deleted_at` et `device_id` pour permettre la synchronisation.
+Aujourd'hui (séance du jour), Entraîner (routine ou vide), Siri / Action button (I6, plugin App Intents). ≤ 3 taps depuis l'écran verrouillé.
 
-| Table            | Champs principaux                                                                                                                                                                                                                                       | Relations                                                                         |
-|------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
-| space            | name, color, sort_order, quiet_hours (JSON : plages silencieuses)                                                                                                                                                                                       | 1 → n project, task, routine, event, checklist                                    |
-| project          | space_id, name, color, archived, sort_order                                                                                                                                                                                                             | n → 1 space ; 1 → n task                                                          |
-| task             | space_id, project_id, title, note, date, time (heure locale flottante), status (todo/done), done_at, sort_order, carried_over, recurrence_id, series_index, goal_id, icon (icône Lucide ou emoji), someday, source (local/apple_reminders), external_id | → space, → project, → recurrence, → checklist (option), → external_event (option) |
-| recurrence       | freq (daily/weekly/monthly/yearly), interval, weekdays, month_day, nth_weekday, until, count                                                                                                                                                            | 1 → n task                                                                        |
-| routine          | space_id, title, icon, schedule_type (daily/weekdays/x_per_week/every_n_days/every_n_weeks), weekdays, times_per_week, interval, start_date, time, paused, archived                                                                                     | 1 → n routine_log                                                                 |
-| routine_log      | routine_id, date, done_at                                                                                                                                                                                                                               | n → 1 routine ; unique (routine_id, date)                                         |
-| event            | space_id, title, start, end, all_day, kind (event/birthday/important), repeat (once/monthly/yearly), important, icon, birth_year (facultatif)                                                                                                           | → space                                                                           |
-| checklist        | space_id, title, date (option), is_template                                                                                                                                                                                                             | 1 → n checklist_item                                                              |
-| checklist_item   | checklist_id, text, checked, sort_order                                                                                                                                                                                                                 | n → 1 checklist                                                                   |
-| reminder         | target_type (task/routine/event), target_id, offset_min, fire_at, delivered                                                                                                                                                                             | n → 1 élément ciblé                                                               |
-| focus_session    | task_id (option), space_id, planned_min, started_at, ended_at, paused_sec                                                                                                                                                                               | n → 1 task                                                                        |
-| calendar_account | provider (google/icloud), label, token_ref, calendars (JSON : id, nom, space_id, affiché)                                                                                                                                                               | 1 → n external_event                                                              |
-| external_event   | account_id, calendar_id, external_id, title, start_utc, end_utc, all_day, synced_at                                                                                                                                                                     | lecture seule                                                                     |
-| settings         | key, value (JSON)                                                                                                                                                                                                                                       | clé unique ; préférences, onboarding terminé, fuseau courant                      |
-| sync_state       | device_id, device_name, last_cursor_other, last_sync_at, folder_bookmark_ref                                                                                                                                                                            | une ligne par appareil distant                                                    |
-| conflict_log     | table_name, row_id, field, kept_value, discarded_value, kept_device, discarded_device, resolved_at, restored                                                                                                                                            | historique des conflits                                                           |
-| goal             | space_id, week_start (lundi), title, icon, pinned, status (open/achieved/closed), carried_from_id                                                                                                                                                       | n → 1 space ; 1 → n task                                                          |
-| holiday          | country (FR/TN), date, name, kind (fixed/computed/lunar), source (table annuelle/saisie manuelle), overridden                                                                                                                                           | référence ; la saisie manuelle prime sur la table annuelle                        |
+### 13.2 Écran
 
-Une table virtuelle `search_index` (SQLite FTS5, tokeniseur `unicode61 remove_diacritics`) indexe titres, notes et items de checklist ; elle est reconstruite localement et n'est pas synchronisée.
+| Zone | Contenu | Interactions |
+| --- | --- | --- |
+| Titre | Nom, chrono, FC si séance Watch en cours (I5), Finish | Pause / abandonner |
+| Bandeau | Vignettes réordonnables | Glisser ; sauter |
+| Exercice | Nom, image (vidéo I6), plage cible, précédent, notes | Remplacer ; retirer « ne plus proposer » |
+| Séries | Précédent · charge cible · reps cible · RIR · coche ; types Warm-up / Normal / Drop / Failure / Chrono ; supersets | 1 tap ; clavier ou picker ; ajouter / supprimer ; swipe |
+| Charge | Tap → « Pourquoi ? » ; calculateur de disques | — |
+| Fin d'exercice | Facile / Juste / Dur ignorable ; RIR si activé | — |
+| Repos | Barre collante, +30 s, passer ; auto à la validation | — |
+| Fatigue déclarée | Frais / Normal / Fatigué au démarrage | — |
 
-**Règles de gestion**
+### 13.3 Timer
 
-- Les occurrences de routines ne sont pas stockées d'avance : elles sont calculées à l'affichage ; seules les validations sont écrites dans `routine_log`.
+Date de fin persistée (jamais un compteur) ; Live Activity via plugin si `CONFIRMED` (compact anneau + secondes ; étendu exercice suivant, charge, +30 s, passer) ; fallback notification locale programmée (plugin notifications repris, catégorie avec action « +30 s ») ; haptique via plugin `haptics`.
 
-- Une tâche récurrente ne stocke que l'occurrence en cours ; la suivante est créée quand elle est terminée ou que sa date est passée.
+### 13.4 Persistance et interruptions
 
-- Heures des tâches, routines et rappels en heure locale flottante (sans fuseau) ; événements externes en UTC, convertis à l'affichage.
+Chaque série écrite dans SQLite à la validation (repository, transaction) ; reprise après verrouillage, fermeture forcée, redémarrage ; correction d'une série validée tracée. **La séance en cours n'est pas publiée** par la synchro ; la fin de séance publie tout.
 
-- Les jours fériés FR et TN sont une table de référence embarquée, mise à jour avec l'app.
+### 13.5 Fin de séance
 
-- Les jetons OAuth et mots de passe sont stockés dans le coffre du système (Gestionnaire d'identification Windows, Trousseau iOS), jamais dans SQLite.
+Résumé (durée, séries, volume hors drop / partielles / chrono, PR, écart, prochaine séance) ; image partageable ; écriture Apple Santé (plugin, si `CONFIRMED`) : un `HKWorkout` `traditionalStrengthTraining` avec début, fin, énergie estimée ; **les séries restent dans Spartiate** (`H-8`).
 
-- `settings`, `sync_state` et `search_index` sont locaux à chaque appareil, sauf les préférences marquées « partagées » (thème, espaces, premier jour).
+### 13.6 Rattachement d'une séance Watch
 
-- Suppression logique : `deleted_at` renseigné, purge définitive 30 jours après que tous les appareils connus ont lu la suppression ; un seul champ icon par élément, qui contient soit une icône Lucide, soit un emoji.
+Si un `HKWorkout` de force chevauche ≥ 50 % de la séance : lier (UUID stocké), ne pas écrire ; sinon proposer l'écriture. Jamais de double écriture.
 
-Les tâches « Un jour » ont `someday` à vrai et aucune date. Les rappels Apple sont des tâches avec `source = apple_reminders` et l'identifiant du rappel dans `external_id` ; seul l'iPhone les lit et les écrit via EventKit, le PC les reçoit et les modifie uniquement à travers la synchro iCloud Drive.
+### 13.7 Tests
 
-Pour la synchronisation, chaque modification porte en plus une horloge logique hybride (`hlc` : heure de l'appareil + compteur + identifiant d'appareil), qui départage les modifications même si les horloges du PC et de l'iPhone sont décalées. Chaque ligne de journal porte la version du schéma (`schema_version`). Les traces de suppression restent tant que tous les appareils connus ne les ont pas lues, puis 30 jours.
+Reprise après 5 séries et fermeture ; timer après verrouillage ; charge impossible jamais affichée ; séance partielle ne pollue pas le 1RM ; refus HealthKit ne bloque rien ; rattachement sans doublon ; séance en cours absente de la synchro, séance terminée présente.
 
-## 7. Architecture technique
+### 13.8 Compléments issus du benchmark (révision 6.1)
 
-PC et iPhone partagent une seule base de code Tauri 2 (React, Vite, TypeScript, SQLite) ; l'iPhone est compilé dans le cloud sur un runner macOS, installé depuis Windows, et synchronisé par un dossier iCloud Drive.
+| Fonction | Spécification | Référence | Itération |
+| --- | --- | --- | --- |
+| Calculateur d'échauffement | Pour le premier exercice composé de chaque pattern : rampes 40 % × 8, 60 % × 5, 80 % × 2 de la charge de travail, snappées au matériel, insérées comme séries Warm-up, ignorables ; paramètres dans `config/training.json` | Alpha Progression, Hevy Pro | I2 |
+| Démarrer par copie | Lancer une séance en copiant une séance passée (exercices et dernières charges) ; aucune routine créée | Hevy | I1 |
+| Mise à jour de la routine | À la fin, si des exercices ont été remplacés / ajoutés / retirés ou le nombre de séries changé : « Mettre à jour la routine ? » (Oui / Cette fois seulement) | Hevy | I1 |
+| Historique éditable | Corriger une série passée (charge, reps, type) depuis Historique ; recalcul du 1RM et des records ; correction tracée (`recommendation_decision` conservée) | Alpha Progression | I1 |
+| Replay set par set | Timeline de la séance : charge / reps / repos réels face aux cibles, écarts en couleur | uFit AI (inspiration) | I6 |
+| Circuits | Enchaînement de 3+ exercices sans repos intermédiaire, repos après le tour ; type de groupe à côté des supersets | Hevy | I6 |
 
-```mermaid
-flowchart LR
-    Code[Code React + Rust<br/>dépôt GitHub] --> CIW[GitHub Actions<br/>runner Windows]
-    Code --> CIM[GitHub Actions<br/>runner macOS]
-    CIW --> Rel[circletasks-releases<br/>installeur + IPA]
-    CIM --> Rel
-    Rel -->|mise à jour auto| PC[App PC<br/>Tauri 2 Windows]
-    Rel -->|source| Side[SideStore<br/>sur l'iPhone]
-    Side --> IOS[App iPhone<br/>Tauri 2 iOS]
-    IOS <--> EK[Rappels Apple<br/>EventKit]
-    PC <--> Drive[Dossier iCloud Drive<br/>journaux de synchro]
-    IOS <--> Drive
+## 14. Bibliothèque d'exercices et profils de matériel
+
+### 14.1 Contenu (I1)
+
+150 exercices en JSON embarqué (`content/exercises/exercises.json`), générés avec Claude Code et **relus par toi**, validés en CI par `scripts/content/validate-content.mjs` (Node, sans dépendance, comme les scripts CircleTasks) :
+
+```json
+{
+  "id": "bench-press-barbell",
+  "nameFr": "Développé couché à la barre",
+  "aliasesEn": ["barbell bench press"],
+  "muscles": [{"id": "chest", "weight": 1.0}, {"id": "triceps", "weight": 0.5}, {"id": "front-delts", "weight": 0.3}],
+  "equipment": ["barbell", "flat-bench"],
+  "pattern": "push-horizontal",
+  "kind": "compound",
+  "metric": "load-reps",
+  "bodyweightFraction": null,
+  "defaultRepRange": [5, 10],
+  "defaultRestSec": 150,
+  "instructions": {"setup": "…", "execution": "…", "mistakes": ["…", "…", "…"]},
+  "media": {"images": ["bench-press-barbell-1.jpg", "bench-press-barbell-2.jpg"], "video": null, "license": "…", "source": "…"},
+  "strengthStandardKey": "bench",
+  "schemaVersion": 1
+}
 ```
 
-Le PC accède au dossier via iCloud pour Windows ; l'iPhone via l'app Fichiers, sans entitlement iCloud.
+Règles : `id` unique et stable ; `nameFr` et instructions non vides ; muscles et matériel dans des listes fermées (`muscles.json`, `equipment.json`) ; pattern ∈ {push-horizontal, push-vertical, pull-horizontal, pull-vertical, hinge, squat, lunge, carry, core, isolation} ; `metric` ∈ {load-reps, bodyweight-reps, time, distance} ; chaque média a licence et source (`H-9`). Les médias sont servis depuis le bundle (hors du plafond du bundle de départ : chargés à la demande, règle CircleTasks).
 
-| Brique                   | PC Windows                                                                                                                                                           | iPhone                                                                     |
-|--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|
-| Interface                | React 18 + Vite + TypeScript, Zustand                                                                                                                                | Même code, mise en page mobile                                             |
-| Base locale              | SQLite via plugin Tauri SQL                                                                                                                                          | Même plugin, même schéma                                                   |
-| Notifications            | Aucun rappel sur le PC (décision : rappels sur l'iPhone uniquement) ; seul le son de fin de Focus ; app en zone de notification pour la capture rapide et la synchro | Plugin Tauri notification (locales, 64 planifiées max : fenêtre glissante) |
-| Saisie vocale            | Dictée Windows                                                                                                                                                       | Dictée du clavier iOS ; plugin Swift (Speech) en option                    |
-| OCR                      | Windows.Media.Ocr (natif, français) via Rust                                                                                                                         | Plugin Swift Tauri (Vision), repli tesseract.js                            |
-| Dates en langage naturel | chrono-node (locale fr)                                                                                                                                              | Même code                                                                  |
-| Calendriers              | API Google + iCloud CalDAV                                                                                                                                           | Même code                                                                  |
-| Biométrie                | —                                                                                                                                                                    | Plugin Tauri biometric (Face ID)                                           |
-| Graphiques               | Recharts                                                                                                                                                             | Même code                                                                  |
-| QR code d'appairage      | Génération avec la bibliothèque qrcode (npm), valable 5 min                                                                                                          | Scan avec le plugin officiel Tauri barcode-scanner                         |
-| Chiffrement              | Web Crypto (AES-256-GCM) intégré à la WebView ; clé dans le Gestionnaire d'identification Windows                                                                    | Même code ; clé dans le Trousseau iOS                                      |
-| Polices et icônes        | Fraunces et DM Sans embarquées (fichiers locaux) ; icônes lucide-react                                                                                               | Même code                                                                  |
+### 14.2 Fiche, recherche, custom
 
-**Chaîne de build iPhone sans Mac**
+Fiche Info / Instructions / Historique (PR, 1RM, confiance, graphique Recharts) ; recherche nom FR / alias EN, body map, matériel, pattern ; custom en I1 (table `exercise`, publiée par la synchro), complétion IA depuis le nom en I6 ; évaluation hypertrophie en I6.
 
-1.  Push sur GitHub → workflow sur runner `macos-latest` : `tauri ios init`, puis compilation Xcode sans signature (`CODE_SIGNING_ALLOWED=NO`).
+### 14.3 Profils de matériel
 
-2.  Le dossier `Payload/` est zippé en `CircleTasks.ipa`, publié sur le dépôt public `circletasks-releases` avec un fichier `source.json` (version, date, notes, URL de l'IPA) au format des sources SideStore.
+Plusieurs profils (salle, maison, voyage), un actif par appareil (le profil actif est une préférence locale, les profils eux-mêmes sont synchronisés) ; barres (type, poids), disques (inventaire par côté), haltères (plage, pas), kettlebells, machines (stack min / max / pas, 1RM par profil), câbles, bancs, racks, poids de corps ; incréments par type ; forcés / interdits ; préréglages « salle commerciale », « maison haltères », « poids de corps ».
 
-3.  Sur l'iPhone, SideStore lit cette source : il signe l'IPA avec l'Apple ID gratuit, l'installe, puis la re-signe tous les 7 jours via le VPN local, sans ordinateur.
+## 15. Nutrition adaptative (`src/domain/nutrition`, I4)
 
-4.  Installation initiale unique : iloader sur le PC installe SideStore sur l'iPhone par câble USB et place le fichier d'appairage.
+La dépense est **mesurée** depuis les apports loggés et la tendance de poids ; les cibles sont ajustées chaque semaine avec ton accord ; chaque valeur est traçable. Saisie au clavier sur PC, scan et photo sur iPhone ; tout se synchronise.
 
-5.  Débogage : console web de l'app remontée dans un écran de logs interne, faute d'inspecteur Safari sans Mac.
+### 15.1 Formules (normatives)
 
-Les minutes macOS sont décomptées avec un multiplicateur sur un dépôt privé : builds iOS déclenchés à la main ou sur tag, pas à chaque push.
+- Tendance `T(t)` : EMA des pesées, demi-vie 14 jours ; pesée à > 2 % de `T` pondérée 0,25.
+- Dépense sur `N` jours (21) : `TDEE = moyenne(kcal des jours complets) − (ΔT_kg / N) × 7 700`, `ΔT_kg = T(fin) − T(début)` ; lissage EMA demi-vie 7 jours.
+- Initialisation Mifflin-St Jeor × activité ; pondération formule → mesure sur 28 jours.
+- Jours non loggés : **jamais 0** ; imputés à l'affichage avec incertitude ; exclus du TDEE si couverture insuffisante.
+- Confiance affichée (couverture, pesées).
 
-**Synchronisation par iCloud Drive (ordre 4)**
+### 15.2 Fiabilité et ajustement
 
-- Dossier `iCloud Drive/CircleTasks/` choisi une fois sur chaque appareil (sur iPhone, via le sélecteur de dossier de Fichiers, mémorisé par un signet de sécurité dans un plugin Swift).
+| Règle | Spécification | Constante |
+| --- | --- | --- |
+| Couverture | ≥ 4 jours complets / 7 et ≥ 2 pesées / 7 j sur 2 semaines, sinon aucun ajustement | `minLoggedDays: 4`, `minWeighIns: 2` |
+| Jour complet | Déclaré ou déduit (≥ 3 entrées sur ≥ 8 h) ; sinon `partial` / `unknown` | — |
+| Amplitude | ≤ ± 150 kcal / semaine ; semaines indépendantes | `maxWeeklyDelta: 150` |
+| Macros | Protéines 1,6–2,2 g/kg (± 2 g par check-in) ; lipides ≥ 0,6 g/kg ; ajustement sur glucides | — |
+| Check-in | Jour configurable ; accepter / refuser / personnaliser ; relançable ; sur PC ou iPhone | `checkInWeekday` |
+| Bornes | Plancher 1 200 kcal (800 sur confirmation) ; perte ≤ 1 %/semaine ; > ±25 % du TDEE → alerte et révision manuelle | — |
+| Styles | Guidé / Collaboratif / Manuel | — |
+| Modificateurs (I6) | Tendance de pas (iPhone) accélère les mises à jour | opt-in |
 
-- Chaque appareil écrit uniquement son propre journal (`changes-pc.jsonl`, `changes-iphone.jsonl`) et lit celui de l'autre : aucun conflit d'écriture sur un même fichier.
+### 15.3 Saisie
 
-- Un instantané complet `snapshot.json` est réécrit chaque semaine pour compacter les journaux.
+| Méthode | PC | iPhone | Itération |
+| --- | --- | --- | --- |
+| Recherche (récents, favoris, go-tos ; Perso / Ciqual / OFF ; grammes ou portions ; provenance) | Oui | Oui | I4 |
+| Quick Add, recettes, assiette | Oui | Oui | I4 |
+| Code-barres (plugin `barcode-scanner` repris ; Camera Control si `CONFIRMED`) | — | Oui | I4 |
+| Photo → API IA (aperçu, confirmation, JSON strict, lignes corrigeables, « estimation ») | Import d'une image possible | Caméra | I4 |
+| Describe (texte / dictée) | Texte | Texte, dictée via plugin `speech` repris | I6 |
+| Compléments avec rappels | Oui | Oui (rappels iPhone) | I6 |
 
-- Conflits : la modification à l'horloge logique hybride (`hlc`) la plus élevée gagne, champ par champ ; les `routine_log` s'additionnent ; l'heure de l'appareil ne sert qu'en appoint.
+### 15.4 Bases alimentaires et licences
 
-- Versions : chaque ligne porte `schema_version` ; un appareil plus ancien conserve les champs inconnus sans les effacer, affiche « Mettez à jour l'app » et suspend la lecture si la version majeure est supérieure.
+| Base | Usage | Licence | Statut |
+| --- | --- | --- | --- |
+| Ciqual (ANSES) | \~3 000 génériques FR embarqués (`content/food/ciqual.json`) | Licence Ouverte Etalab 2.0 avec attribution (`H-11`) | I4 |
+| Open Food Facts | Produits de marque, API publique appelée par Rust, cache local 90 jours | ODbL, attribution (`H-12`) | I4 |
+| Fiches perso | Créées / corrigées, synchronisées | — | I4 |
 
-- Suppressions : traces conservées tant que tous les appareils ne les ont pas lues, puis 30 jours ; un appareil hors ligne plus de 180 jours repart de l'instantané.
+Licences consignées dans `docs/licences.md` (fichier CircleTasks repris).
 
-- Chiffrement : journaux et instantané chiffrés en AES-256-GCM ; clé créée au premier appairage, transmise du PC à l'iPhone par QR code, gardée dans le coffre de chaque appareil, jamais dans iCloud ; clé de secours imprimable.
+### 15.5 Écrans
 
-- Rappels : seul l'iPhone planifie les notifications ; il les recalcule après chaque synchro.
+Journal timeline horaire, cibles restantes, couverture du jour ; dashboard calories / macros, balance 7 j, tendance de poids et dépense avec confiance ; Stratégie. Écriture Apple Santé (iPhone, si `CONFIRMED`).
 
-- Déclenchement : à l'ouverture, à la fermeture et toutes les 5 min en premier plan ; l'iPhone ne synchronise pas en arrière-plan. Avant toute lecture, l'app force le téléchargement des fichiers restés dans le nuage (iPhone : startDownloadingUbiquitousItem ; PC : dossier marqué « Toujours conserver sur cet appareil ») et attend leur arrivée.
+### 15.6 Tests
 
-**Mise à jour de l'app PC**
+Fixtures 8 semaines : couverture complète, partielle, pesée aberrante, changement d'objectif, plancher ; signe de la formule ; jamais 0 ; borne ± 150.
 
-- Plugin updater de Tauri actif dès l'ordre 1 : l'app lit `latest.json` sur le dépôt public `circletasks-releases`, vérifie la signature, télécharge et installe la nouvelle version.
+### 15.7 Compléments issus du benchmark (révision 6.1)
 
-- Chaque tag `vX.Y.Z` déclenche `build-windows.yml` : installeur signé avec la clé updater, `latest.json` régénéré, publication sur `circletasks-releases`.
+| Fonction | Spécification | Référence | Itération |
+| --- | --- | --- | --- |
+| Étiquette nutritionnelle → fiche | Photo de l'étiquette → même adaptateur IA que la photo de repas → fiche `food` custom pré-remplie (par 100 g et par portion), à confirmer | MacroFactor | I6 |
+| Repères de qualité | Sel, sucres, graisses saturées, fibres du jour face aux repères OMS, calculés depuis Ciqual ; affichage seul, jamais d'ajustement de cible ; « inconnu » quand la fiche n'a pas la donnée (jamais 0) | Reboot Plan (OMS), MacroFactor | I6 |
+| Micronutriments | 8 nutriments épinglés (fer, calcium, magnésium, potassium, vitamines D, B12, C, zinc) depuis Ciqual, seuils min / cible configurables ; les fiches Open Food Facts sans donnée comptent « inconnu » (H-19) | MacroFactor Nutrient Explorer | I6 |
+| Jours hauts / bas | Répartition hebdomadaire des calories (jours d'entraînement +, repos −) à somme constante ; option de la Stratégie | MacroFactor | I4 |
+| Note d'équilibre par aliment | Non retenu : classement « équilibré / à surveiller / à limiter » jugé culpabilisant et redondant avec les repères ci-dessus | Reboot Plan | — |
 
-- La base SQLite, stockée dans le dossier de données utilisateur, n'est jamais touchée par l'installeur ; une sauvegarde automatique est faite avant chaque migration.
+## 16. Récupération (`src/domain/recovery` + plugin `healthkit`, I5)
 
-- Chaque migration de base est rejouable et testée sur une copie de la base de la version précédente avant publication.
+Heuristiques expérimentales inspirées de Recovery / Strain / Sleep ; jamais un diagnostic ; abstention quand les données manquent ; proposition seulement. Les mesures sont lues **sur l'iPhone** par le plugin Swift `healthkit`, les résumés quotidiens sont publiés vers le PC par la synchro.
 
-**Organisation du code (reprise du scaffold Claude Code)**
+### 16.1 Niveaux
 
-Le développement est confié à 26 sous-agents Claude Code, détaillés en section 11. Les règles métier restent en TypeScript, testées une seule fois pour les deux plateformes.
+| Niveau | Données | Comportement | Itération |
+| --- | --- | --- | --- |
+| A | Fatigue déclarée, historique | Récupération par muscle estimée ; suggestion prudente | I1 / I5 |
+| B | Sommeil (durée) et FC repos sans baseline complète | Modulation prudente par seuils absolus, avec message | I5 |
+| C | ≥ 7 nuits (14 recommandées) HRV, FC repos, sommeil | Recovery, Exertion, zone cible, besoin de sommeil | I5 |
 
-## 8. Exigences non fonctionnelles
+### 16.2 Plugin `healthkit` (contrat, § 20)
 
-L'application doit rester rapide, fiable hors ligne et sans perte de données, sur les deux plateformes.
+| Commande | Entrée | Sortie |
+| --- | --- | --- |
+| `healthkit_authorize` | types lecture / écriture | statut par type |
+| `healthkit_read_quantity` | type (`hrvSDNN`, `restingHeartRate`, `stepCount`, `activeEnergy`, `heartRate`, `respiratoryRate`, `wristTemperature`, `bodyMass`), fenêtre | échantillons horodatés |
+| `healthkit_read_sleep` | fenêtre | segments avec stade |
+| `healthkit_read_workouts` | fenêtre | workouts (type, début, fin, énergie, UUID) |
+| `healthkit_write_workout` | début, fin, énergie | UUID |
+| `healthkit_write_body_mass` / `delete_sample` | valeur, date / UUID | ok |
+| `healthkit_observe` | types | événements vers le front (observer queries, `H-13`) |
 
-| Domaine       | Exigence                                                  | Cible                                                                                                                                                                  |
-|---------------|-----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Performance   | Démarrage à froid                                         | PC \< 2 s ; iPhone \< 1 s                                                                                                                                              |
-| Performance   | Affichage Aujourd'hui / Semaine                           | \< 300 ms avec 5 000 tâches                                                                                                                                            |
-| Performance   | Recherche plein texte                                     | \< 200 ms avec 5 000 tâches                                                                                                                                            |
-| Performance   | Taille de l'installeur PC                                 | \< 15 Mo                                                                                                                                                               |
-| Hors ligne    | Toutes les fonctions sauf calendriers externes et synchro | 100 % disponibles                                                                                                                                                      |
-| Fiabilité     | Rappels délivrés                                          | ≥ 99 %, décalage ≤ 60 s                                                                                                                                                |
-| Données       | Sauvegarde automatique locale                             | Quotidienne, 14 versions conservées                                                                                                                                    |
-| Données       | Perte à la synchronisation                                | Aucune ; journal de conflits consultable                                                                                                                               |
-| Données       | Migrations de base                                        | Sans perte, testées sur la base de la version précédente                                                                                                               |
-| Sécurité      | Jetons et identifiants                                    | Coffre système uniquement ; HTTPS pour tout échange                                                                                                                    |
-| Sécurité      | Verrouillage iPhone                                       | Face ID optionnel à l'ouverture                                                                                                                                        |
-| Accessibilité | Taille de texte                                           | Jusqu'à 200 %. Retiré de la 1.0 (décision d'Ali du 2026-10-17, audit B12) : l'app ne suit pas le réglage iOS de taille de texte (`font: -apple-system-body` non implémenté) ; à revoir après la 1.0. |
-| Accessibilité | Contraste et animations                                   | Contraste AA ; respect de « Réduire les animations »                                                                                                                   |
-| Langue        | Interface                                                 | Français d'abord ; anglais en option                                                                                                                                   |
-| Qualité       | Tests                                                     | Règles métier couvertes à ≥ 80 % ; tests de bout en bout sur les 12 parcours clés ci-dessous                                                                           |
-| Ergonomie     | Gestes, annulation, états                                 | Chaque geste iPhone a un bouton équivalent ; toute action destructive annulable 5 s ; état hors ligne, synchro et chargement toujours visible                          |
-| Sécurité      | Données dans iCloud                                       | Chiffrées de bout en bout (AES-256-GCM), clé jamais stockée dans iCloud                                                                                                |
+### 16.3 Scores (niveau C)
 
-**Les 12 parcours clés (tests de bout en bout, PC et mobile)**
+| Score | Définition | Constante |
+| --- | --- | --- |
+| Baseline | Moyenne et σ glissants sur 14 nuits valides (7 min) de HRV et FC repos ; outliers > 2,5 σ exclus de la baseline | `baselineDays: 14`, `minNights: 7` |
+| Recovery 0–100 | `z_hrv = (HRV − μ) / σ`, `z_fc = (μ_fc − FC) / σ_fc` ; `raw = 0,7 z_hrv + 0,3 z_fc` borné \[−2, 2\] ; `score = 50 + 25 raw`, × facteur sommeil \[0,8 ; 1,0\] ; **null** avec raison si mesure absente, < 7 nuits ou σ = 0 | `hrvWeight: 0.7` |
+| Qualité | good / partial / insufficient | — |
+| Exertion 0–10 | `cardio = Σ min_zone_i × w_i`, w = \[1,2,3,4,5\] (zones depuis FC max estimée ou mesurée) ; `muscu = tonnage/1000 × facteur` (0,8 / 1 / 1,2) ; `10 × (1 − e^(−(cardio+muscu)/k))` | `k: 300` |
+| Zone cible | ≥ 66 → 6–8 ; 34–65 → 4–6 ; ≤ 33 → 0–3 ; null → aucune | — |
+| Sommeil | Besoin = 7 h 30 + 0,2 h × max(0, Exertion\_veille − 5) + dette (7 j, plafond 3 h) ; score = durée / besoin ; régularité σ coucher 7 j | `baseSleepHours: 7.5` |
+| Par muscle | 0 % après séance (séries × difficulté) → 100 % sur `recoveryHours[muscle]` (48 / 72 / 96 h) ; cardio importé retire 10 / 25 / 40 % aux jambes, 5 / 10 / 20 % au reste ; **approximation** | `recoveryHours` |
 
-| \#  | Parcours                                                                                                                                                      | Stories couvertes                       |
-|-----|---------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------|
-| 1   | Premier lancement : langue, espaces, notifications, arrivée sur Aujourd'hui                                                                                   | P-05, ES-01, A-01                       |
-| 2   | Créer sur le PC une tâche datée avec rappel, ouvrir l'iPhone pour synchroniser, recevoir le rappel sur l'iPhone, la terminer depuis la notification           | T-01, T-02, N-01, N-03                  |
-| 3   | Planifier la semaine : créer 5 tâches, en déplacer 2 entre jours, naviguer à la semaine suivante                                                              | S-01 à S-04                             |
-| 4   | Créer une routine 3 fois par semaine, la valider 3 jours, consulter série et rapport                                                                          | R-01, R-03, R-04, R-06                  |
-| 5   | Créer une tâche mensuelle récurrente, la terminer, vérifier l'occurrence suivante                                                                             | T-09, T-10                              |
-| 6   | Basculer Pro / Perso / Tout et vérifier le filtrage d'Aujourd'hui, Semaine et Statistiques                                                                    | ES-02, ES-03, ES-08                     |
-| 7   | Capture rapide en langage naturel puis scan d'une liste manuscrite avec relecture                                                                             | Q-01, Q-02, Q-04                        |
-| 8   | Connecter Google Calendar, voir les événements dans la Semaine, créer une tâche liée                                                                          | K-01, K-03, K-04, S-05                  |
-| 9   | Rechercher une tâche par un mot de sa note, filtrer par espace, ouvrir le détail                                                                              | RC-01 à RC-03                           |
-| 10  | Modifier la même tâche sur PC et iPhone hors ligne, synchroniser, consulter et restaurer le conflit                                                           | Y-02, Y-04, Y-05                        |
-| 11  | Associer l'iPhone au PC par QR code, choisir le dossier iCloud, vérifier qu'une tâche créée sur le PC apparaît chiffrée dans iCloud puis lisible sur l'iPhone | P-05, Y-01, Y-06, Y-08                  |
-| 12  | Fixer l'objectif de la semaine, y rattacher 2 tâches, ranger une tâche dans « Un jour » puis la glisser vers un jour de la Semaine                            | OB-01, OB-03, OB-04, SD-01, SD-02, S-06 |
+### 16.4 Effets et publication
 
-## 9. Plan de développement (livraison unique)
+Recovery Split ; modulation du moteur (maintien ou réduction) ; cadrans Aujourd'hui ; notification du matin ≤ 1/jour (iPhone). L'iPhone écrit `recovery_day` (date, niveau, scores, qualité, raison d'abstention) et `muscle_recovery` ; le PC les lit et les affiche, sans recalcul.
 
-Le développement se fait en une seule fois : les 18 modules sont construits d'affilée et livrés ensemble, sur PC et sur iPhone, sans version intermédiaire. Durée totale indicative : environ 22 semaines à temps partiel avec Claude Code.
+### 16.5 Présentation
 
-Les ordres ci-dessous ne sont pas des livraisons : ils indiquent l'ordre de construction, imposé par les dépendances techniques (on ne peut pas construire la synchro avant les tables, ni l'iPhone avant l'interface).
+Valeur ou « en apprentissage J+x/14 », qualité, contributeurs, « estimation, pas un avis médical » ; aucun cadran à faux zéro.
+
+### 16.6 Tests
+
+Fixtures 30 nuits : baseline, abstention, σ = 0, nuit courte, FC élevée, 3 jours sans Watch, outlier, cardio importé ; vecteurs de synchro pour `recovery_day`.
+
+### 16.7 Compléments issus du benchmark (révision 6.1)
 
-| Ordre                       | Contenu construit                                                                                                                                                                                               | Durée indicative | Contrôle interne en fin d'étape                                               |
-|-----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------|-------------------------------------------------------------------------------|
-| 0 — Préparation             | Prérequis et comptes (section 2), maquettes visuelles (34 écrans validés), reprise de l'existant, installation des 26 agents et de CLAUDE.md                                                                    | 1 sem.           | Dépôt initialisé, maquettes validées, backlog chargé                          |
-| 1 — Socle                   | M1 à M4 (dont tâches récurrentes et heures flottantes), M5 données et réglages des rappels, M13 espaces et projets, M17 objectif de la semaine, M18 Un jour, modes édition et compact (A-05, A-06), D-01 à D-03 | 6 sem.           | Stories testées vertes                                                        |
-| 1 bis — Vérification iPhone | Chaîne de build sans Mac : IPA non signée, installation de SideStore via iloader, installation de l'app par la source SideStore, affichage de la liste du jour                                                  | 3 jours          | App ouverte sur l'iPhone ; sinon bascule vers une PWA avant d'aller plus loin |
-| 2 — Organisation            | M6 à M8, M14 recherche                                                                                                                                                                                          | 4 sem.           | Stories testées vertes                                                        |
-| 3 — Fonctions avancées      | M9 à M12 (dont premier lancement et import CSV), D-04                                                                                                                                                           | 4 sem.           | Stories testées vertes                                                        |
-| 4 — Synchro                 | M15 : journaux, instantané, conflits, état                                                                                                                                                                      | 2 sem.           | Parcours 10 vert en simulation deux appareils                                 |
-| 5 — iPhone                  | Mise en page mobile, plugins Swift (OCR, dossier iCloud, Rappels Apple) et scan QR, envoi des rappels (N-01, N-03, N-05 à N-07), I-01 à I-06, Rappels Apple (K-05 à K-07)                                       | 4 sem.           | Stories iPhone testées vertes                                                 |
-
-**Livraison unique** — elle a lieu quand toutes les user stories sont validées, que les 12 parcours clés (section 8) passent sur PC et sur iPhone, et que la synchro est vérifiée entre les deux appareils.
-
-**Conséquence à assumer** — aucune utilisation réelle avant la fin, soit environ 22 semaines. Pour limiter le risque, chaque story est testée dès qu'elle est écrite (agent qa-test), et la vérification iPhone reste placée au début pour ne pas découvrir un blocage en fin de projet.
-
-**Reprise de l'existant (ordre 0)**
-
-- Le PRD v3 (45 user stories) et le scaffold Expo sont archivés dans `docs/archive/` ; ce PRD devient la seule référence.
-
-- Le product-owner compare les 45 anciennes stories aux stories de ce PRD et signale toute story absente pour arbitrage.
-
-- Du scaffold Expo, seuls le schéma SQLite et la logique métier réutilisables sont repris dans `src/db` et `src/domain`, après revue de l'architect ; les écrans React Native ne sont pas repris.
-
-- Les tâches en cours dans d'autres outils sont importées par CSV (P-07) à la fin de l'ordre 3.
-
-Si la vérification iPhone (ordre 1 bis) échoue, la partie iPhone bascule vers une PWA installée sur l'écran d'accueil, sans remettre en cause la partie PC.
-
-## 10. Risques, hypothèses et points ouverts
-
-Le risque principal est la chaîne iPhone sans Mac (build cloud + sideload gratuit) ; il est levé par la vérification de l'ordre 1 bis.
-
-| Risque                                                                         | Impact                                                                             | Parade                                                                                                                                                                                       |
-|--------------------------------------------------------------------------------|------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Build iOS non signé impossible ou instable sur le runner macOS                 | Pas d'app iPhone                                                                   | Vérification à l'ordre 1 bis ; repli PWA                                                                                                                                                     |
-| App iPhone expirant tous les 7 jours                                           | Réinstallation hebdomadaire                                                        | Re-signature par SideStore sur l'iPhone via le VPN local ; alerte 24 h avant (I-02) ; automatisation Raccourcis iOS pour lancer le refresh                                                   |
-| Débogage sans Safari Web Inspector                                             | Bugs iPhone difficiles à diagnostiquer                                             | Écran de logs interne (I-04) ; tests de mise en page dans Chrome à 440 × 956                                                                                                                 |
-| Minutes macOS GitHub limitées sur dépôt privé                                  | Builds iOS bloqués en fin de mois                                                  | Builds iOS manuels ou sur tag uniquement                                                                                                                                                     |
-| Accès au dossier iCloud Drive refusé sur iPhone                                | Pas de synchro                                                                     | Plugin Swift avec signet de sécurité, testé dès le POC ; repli export/import manuel                                                                                                          |
-| Fichier de journal lu pendant qu'iCloud le synchronise                         | Lignes tronquées ou manquantes                                                     | Lecture ligne par ligne, ligne incomplète ignorée puis relue au cycle suivant ; curseur par appareil                                                                                         |
-| App Google OAuth laissée en statut « Test »                                    | Déconnexion de Google Calendar tous les 7 jours                                    | Passage en « Production » (prérequis section 2)                                                                                                                                              |
-| Changement de fuseau France ↔ Tunisie                                          | Rappels décalés d'une heure                                                        | Heures flottantes et replanification automatique (T-11, N-06)                                                                                                                                |
-| Rappel créé sur le PC pas encore reçu par l'iPhone                             | Rappels non délivrés                                                               | Synchro à chaque ouverture de l'iPhone ; avertissement sur le PC pour un rappel à moins de 2 h (N-07) ; récapitulatif du matin qui invite à ouvrir l'app                                     |
-| Limite de 64 notifications planifiées sur iOS                                  | Rappels lointains non planifiés                                                    | Fenêtre glissante recalculée à chaque ouverture                                                                                                                                              |
-| OCR manuscrit imprécis                                                         | Tâches mal reconnues                                                               | Écran de relecture obligatoire avant création                                                                                                                                                |
-| Migration de base ratée lors d'une mise à jour                                 | Perte de données                                                                   | Sauvegarde automatique avant migration ; migrations testées sur la base précédente                                                                                                           |
-| Perte de la clé de signature des mises à jour                                  | Plus aucune mise à jour automatique possible                                       | Clé dans GitHub Secrets et copie chiffrée hors du dépôt ; en dernier recours, réinstallation manuelle avec une nouvelle clé                                                                  |
-| Développement d'un seul bloc (effet tunnel)                                    | Aucun usage réel pendant environ 22 semaines ; défauts d'ergonomie découverts tard | Tests à chaque story ; démonstration de l'app à la fin de chaque étape de construction ; vérification iPhone placée au début                                                                 |
-| Refresh SideStore qui échoue (VPN local instable) ou SideStore lui-même expiré | App iPhone inutilisable jusqu'à la réinstallation                                  | Refresh manuel dès l'alerte I-02 ; réinstallation via iloader depuis le PC en secours ; données conservées tant que l'app n'est pas supprimée ; synchro iCloud Drive comme filet de sécurité |
-| Rappels Apple inaccessibles depuis Windows                                     | Rappels visibles sur PC seulement après un passage sur l'iPhone                    | Lecture et écriture via EventKit sur l'iPhone, puis synchro iCloud Drive vers le PC ; délai assumé et heure de dernière mise à jour affichée                                                 |
-| Horloges du PC et de l'iPhone décalées                                         | Une modification plus ancienne écrase une plus récente                             | Horloge logique hybride (hlc) dans chaque modification ; l'heure de l'appareil ne sert qu'en appoint                                                                                         |
-| Fichier de synchro resté dans le nuage (non téléchargé)                        | Modifications de l'autre appareil ignorées                                         | Téléchargement forcé avant lecture ; dossier PC en « Toujours conserver sur cet appareil » ; état « en attente d'iCloud » affiché                                                            |
-| Pack de langue français absent sur le PC                                       | Scan de liste illisible                                                            | Vérification au premier scan et marche à suivre ; repli tesseract.js                                                                                                                         |
-| PC et iPhone sur des versions différentes                                      | Journaux mal lus, champs perdus                                                    | schema_version dans chaque ligne ; champs inconnus conservés ; lecture suspendue et alerte si version majeure supérieure (Y-07)                                                              |
-| Appareil longtemps hors ligne                                                  | Éléments supprimés qui réapparaissent                                              | Traces de suppression gardées jusqu'à lecture par tous les appareils ; au-delà de 180 jours hors ligne, reprise depuis l'instantané (Y-09)                                                   |
-| Fêtes religieuses tunisiennes à date lunaire                                   | Jour férié affiché à la mauvaise date                                              | Table annuelle livrée avec chaque version ; date modifiable à la main ; mention « date estimée » tant qu'elle n'est pas confirmée                                                            |
-| Perte de la clé de chiffrement (PC et iPhone réinitialisés)                    | Journaux iCloud illisibles                                                         | Clé de secours imprimable à l'appairage ; sauvegardes locales non chiffrées par iCloud restent utilisables                                                                                   |
-
-**Hypothèses**
-
-- Un seul utilisateur, sans partage ni collaboration.
-
-- Windows 10/11 sur le PC ; iOS 18 ou ultérieur sur l'iPhone 16 Pro Max, mode développeur activé.
-
-- Aucun Mac disponible : toute compilation iOS passe par GitHub Actions.
-
-- iCloud pour Windows installé sur le PC, avec iCloud Drive activé.
-
-- iTunes installé depuis le site d'Apple (version hors Microsoft Store), exigé par iloader pour l'installation initiale de SideStore.
-
-**Décisions prises**
-
-- Installation iPhone gratuite (pas de compte Apple Developer), déployée et re-signée chaque semaine par SideStore, installé une fois via iloader.
-
-- Synchronisation par dossier iCloud Drive, journaux chiffrés.
-
-- iPhone en Tauri 2 mobile, réutilisation du code React.
-
-- Pas de Mac : build iOS sur runner macOS GitHub Actions.
-
-- Apple Watch, widgets, Live Activity et Siri hors périmètre.
-
-- Espaces Pro / Perso avec projets, complets.
-
-- Heure locale flottante pour tâches, routines et rappels.
-
-- Récurrences portées par les tâches (T-09, T-10), distinctes des routines.
-
-- Mise à jour automatique de l'app PC par plugin updater.
-
-- Développement en une seule fois : livraison unique PC + iPhone, sans version intermédiaire.
-
-- Rappels uniquement sur l'iPhone ; le PC n'émet aucune notification de rappel.
-
-## 11. Agents Claude Code
-
-Le développement s'appuie sur 26 sous-agents Claude Code, un par responsabilité, déposés dans `.claude/agents/` ; ils remplacent les 9 agents du scaffold précédent et couvrent les 18 modules, les 2 plateformes, la synchro, la livraison et la qualité.
-
-### 11.1 Liste complète
-
-| \#  | Agent (`name`)             | Famille     | Périmètre                                                                                                                               | Ordre de construction | Modèle | Droits                     |
-|-----|----------------------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------|-----------------------|--------|----------------------------|
-| 1   | `product-owner`            | Pilotage    | Backlog, user stories, critères d'acceptation, ordre des tâches                                                                         | Toutes                | opus   | Lecture + écriture `docs/` |
-| 2   | `architect`                | Pilotage    | Structure du dépôt, ADR, contrats entre couches                                                                                         | Toutes                | opus   | Lecture + écriture         |
-| 3   | `code-reviewer`            | Pilotage    | Revue de chaque changement avant commit                                                                                                 | Toutes                | opus   | Lecture seule              |
-| 4   | `data-model`               | Socle       | Schéma SQLite (18 tables + index FTS5), migrations, repositories                                                                        | 1, 4                  | sonnet | Lecture + écriture         |
-| 5   | `domain-logic`             | Socle       | Récurrences de routines et de tâches, heures flottantes, report, séries, calculs de stats                                               | 1 à 3                 | sonnet | Lecture + écriture         |
-| 6   | `ui-design-system`         | Socle       | Thème papier, clair/sombre, composants, mises en page PC et mobile                                                                      | 1, 5                  | sonnet | Lecture + écriture         |
-| 7   | `tasks-planning`           | Fonctionnel | M1 Tâches (dont récurrences), M2 Aujourd'hui, M3 Semaine                                                                                | 1                     | sonnet | Lecture + écriture         |
-| 8   | `routines`                 | Fonctionnel | M4 Routines et rapport                                                                                                                  | 1                     | sonnet | Lecture + écriture         |
-| 9   | `notifications`            | Fonctionnel | M5 Rappels (iPhone uniquement), fuseaux, plages silencieuses                                                                            | 1, 5                  | sonnet | Lecture + écriture         |
-| 10  | `checklists-events`        | Fonctionnel | M6 Checklists, M7 Événements, jours fériés FR/TN                                                                                        | 2                     | sonnet | Lecture + écriture         |
-| 11  | `calendar-integration`     | Fonctionnel | M8 Google Calendar, iCloud CalDAV, Rappels Apple (via iPhone)                                                                           | 2                     | sonnet | Lecture + écriture + web   |
-| 12  | `quick-capture`            | Fonctionnel | M9 Saisie rapide, langage naturel, dictée, OCR                                                                                          | 3, 5                  | sonnet | Lecture + écriture         |
-| 13  | `focus-time`               | Fonctionnel | M10 Focus Time                                                                                                                          | 3                     | sonnet | Lecture + écriture         |
-| 14  | `stats-history`            | Fonctionnel | M11 Statistiques, historique, export                                                                                                    | 3                     | sonnet | Lecture + écriture         |
-| 15  | `settings-personalization` | Fonctionnel | M12 Réglages, menu, thèmes, sauvegarde/restauration, premier lancement, import CSV                                                      | 3                     | sonnet | Lecture + écriture         |
-| 16  | `desktop-tauri`            | Plateforme  | M16 côté PC (D-01 à D-04) : zone de notification, démarrage auto, raccourcis, fenêtres, installeur, mise à jour                         | 1 à 3                 | sonnet | Lecture + écriture         |
-| 17  | `ios-mobile`               | Plateforme  | M16 côté iPhone (I-01 à I-06), scan du QR code : Tauri iOS, plugins Swift, zones sûres, Face ID, logs, alerte d'expiration, permissions | 1 bis, 5              | opus   | Lecture + écriture + web   |
-| 18  | `sync-icloud`              | Plateforme  | M15 (Y-01 à Y-09) : appairage par QR code, journaux chiffrés, instantané, conflits, signet iCloud Drive                                 | 4, 5                  | opus   | Lecture + écriture         |
-| 19  | `ci-release`               | Plateforme  | GitHub Actions Windows et macOS, IPA non signée, versions                                                                               | 1 bis à 5             | sonnet | Lecture + écriture         |
-| 20  | `qa-test`                  | Qualité     | Tests unitaires, intégration, bout en bout, couverture                                                                                  | Toutes                | sonnet | Lecture + écriture tests   |
-| 21  | `security-privacy`         | Qualité     | Secrets, OAuth, coffres système, permissions, suppression                                                                               | 2, 4, 5               | opus   | Lecture seule              |
-| 22  | `performance`              | Qualité     | Budgets de démarrage, rendu, taille, mémoire                                                                                            | 3, 5                  | sonnet | Lecture + Bash             |
-| 23  | `accessibility-i18n`       | Qualité     | Contraste, tailles de texte, clavier, animations, FR/EN                                                                                 | 3, 5                  | sonnet | Lecture + écriture `i18n/` |
-| 24  | `debugger`                 | Support     | Diagnostic des tests rouges et bugs remontés                                                                                            | Toutes                | sonnet | Lecture + écriture + Bash  |
-| 25  | `docs-writer`              | Support     | README, guide d'installation iPhone, CHANGELOG, guide utilisateur                                                                       | Toutes                | haiku  | Lecture + écriture `docs/` |
-| 26  | `spaces-goals`             | Fonctionnel | M13 Espaces et projets, M14 Recherche, M17 Objectif de la semaine, M18 Un jour                                                          | 1, 2                  | sonnet | Lecture + écriture         |
-
-### 11.2 Orchestration
-
-```mermaid
-flowchart TD
-    Main[Session principale] --> PO[product-owner<br/>choisit la story]
-    PO --> ARCH[architect<br/>contrats + ADR]
-    ARCH --> SOCLE[data-model / domain-logic<br/>ui-design-system]
-    SOCLE --> FEAT[Agent du module<br/>ou de la plateforme]
-    FEAT --> QA[qa-test<br/>tests verts]
-    QA --> REV[code-reviewer<br/>+ audits qualité]
-    REV --> DOC[docs-writer]
-    DOC --> CI[ci-release<br/>build + tag]
+| Fonction | Spécification | Référence | Itération |
+| --- | --- | --- | --- |
+| Journal de facteurs | Cases cochées le matin (alcool, caféine après 16 h, repas tardif, stress, courbatures, maladie, voyage, entraînement tardif) ; après 30 jours et ≥ 5 occurrences, moyenne de Recovery avec / sans le facteur, affichée avec `n` ; corrélation, pas causalité, dit tel quel | WHOOP Journal, Athlytic | I6 |
+| Heure de coucher cible | Besoin de sommeil (§ 16.3) − heure de lever habituelle (médiane 14 j) → heure de coucher proposée ; notification iPhone optionnelle 30 min avant | WHOOP Sleep Planner, Athlytic | I5 |
+| Valeurs inhabituelles | FC repos > μ + 2 σ ou HRV < μ − 2 σ deux nuits de suite → carte « valeurs inhabituelles, repos conseillé » ; aucune hypothèse médicale | WHOOP Health Monitor (simplifié) | I6 |
+| Pas | Tuile Aujourd'hui : pas du jour, moyenne 7 j (`stepCount`), sans classement ni duel | Reboot Plan | I5 |
+| Récupération en séance | Si Recovery ≤ 33 au lancement : bandeau « journée rouge : maintien des charges proposé », un tap pour accepter ou ignorer | Athlytic (zone cible) | I5 |
+
+## 17. Progrès, bilans, appels IA
+
+### 17.1 Indicateurs
+
+| Indicateur | Définition | Itération |
+| --- | --- | --- |
+| Charges et 1RM | Par exercice, bande de confiance | I2 |
+| Records | Charge, reps, volume, 1RM estimé ; notification en séance | I1 |
+| Volume | Séries par muscle / semaine vs plage | I3 |
+| Constance | Streak, séances / semaine, calendrier | I1 |
+| Corps | Tendance, dépense et confiance, mensurations, photos côte à côte | I4 / I6 |
+| Strength Score | 8 groupes, barre et haltères, ajusté poids et sexe ; inchangé en deload | I3 |
+| Récupération | Tendances 30 j (lues depuis `recovery_day`) | I5 |
+
+Graphiques Recharts (dépendance CircleTasks), calculés côté front depuis les repositories, < 300 ms ; sur PC, vues larges multi-graphiques.
+
+### 17.2 Appels IA — règles
+
+| Règle | Spécification |
+| --- | --- |
+| Déclenchement | Bouton explicite, aperçu de l'envoi |
+| Clé | Coffre de l'appareil (keyring Windows / Trousseau iOS, mécanisme CircleTasks) ; saisie par appareil ; jamais synchronisée ni dans le dépôt |
+| Appel | Effectué **par Rust** (`reqwest`, déjà présent) avec la clé lue du coffre ; la WebView ne voit jamais la clé (règle ADR 0008) |
+| Budget | Plafond mensuel par appareil, compteur, blocage |
+| Données | Image de repas, texte, programme à importer, agrégats de bilan ; **jamais** HRV, FC, sommeil, poids nominatif, photos corporelles |
+| Réponse | JSON validé contre un schéma écrit à la main (`src/domain/ai/parse.ts`, comme `sync/parse.ts`) ; rejet sinon ; aucune action sans confirmation |
+| Fournisseur | Abstrait (`AiProvider` dans `src/platform/ai`) ; à décider avant I4 (`H-14`) |
+
+### 17.3 Bilans (I6)
+
+Agrégat local → texte (3 faits, 1 recommandation) → **vérification que chaque nombre existe dans l'agrégat** → affichage ; fallback template. Export CSV / JSON.
+
+### 17.4 Import de programme (I6)
+
+Capture, PDF ou texte → `{sessions:[{name, exercises:[{name, sets, repsMin, repsMax, rir?}]}]}` → mapping validé → routine Libre.
+
+## 18. Navigation, écrans et états dégradés
+
+### 18.1 Deux coquilles, un même code
+
+|  | iPhone (16 Pro Max, iOS 18+) | PC (Windows 10/11) |
+| --- | --- | --- |
+| Navigation | 5 onglets bas : Aujourd'hui, Entraînement, Nutrition, Progrès, Plus | Barre latérale rétractable avec les mêmes 5 sections + Réglages ; raccourcis clavier (`Ctrl+1…5`, `Ctrl+K` recherche) |
+| Largeur | Une colonne, safe areas Dynamic Island / home indicator (mécanisme CircleTasks `platform/ios`) | Fenêtre redimensionnable ≥ 1 024 × 700 ; vues maître-détail (liste à gauche, fiche à droite) |
+| Gestes | Swipe, long-press, haptique (plugin `haptics` repris) | Clic droit → menus, double-clic, glisser-déposer pour réordonner |
+| Séance | Minuteur système (Live Activity si `CONFIRMED`), verrouillage géré (ADR 0013) | Minuteur en fenêtre + badge dans le titre ; pas de notification système requise |
+| Rôle principal | Séance, scan, photo, Santé, récupération | Programmation, bibliothèque, profils matériel, bilans, export, saisie nutrition au clavier |
+
+Les écrans sont les mêmes composants React (`src/features/*`) ; seule la coquille (`src/ui/shell/MobileShell.tsx`, `DesktopShell.tsx`) change, choisie par `platform.kind` au démarrage. Aucun écran n'est réservé à un appareil : une fonction indisponible (caméra, Santé) affiche un état « disponible sur iPhone » explicite, jamais un bouton mort.
+
+### 18.2 Écrans par onglet
+
+| Onglet | Écrans | Itération |
+| --- | --- | --- |
+| Aujourd'hui | Cadrans récupération / sommeil / effort, séance du jour, cibles nutrition restantes, streak, état de la synchro et de la signature | I1 → I5 |
+| Entraînement | Routines, Mes programmes, Lancer, Séance active, Résumé, Historique, Bibliothèque, Profils matériel | I1 → I3 |
+| Nutrition | Journal, Recherche / Scan / Photo, Dashboard, Stratégie, Check-in | I4 |
+| Progrès | Graphiques, Records, Strength Score, Corps, Bilans | I2 → I6 |
+| Plus | Profil, Objectifs, Appareils et synchro, Apple Santé, Clé IA et budget, Export / import, Journaux, À propos et licences | I0 → I6 |
+
+### 18.3 États dégradés (obligatoires, testés)
+
+| Situation | Comportement |
+| --- | --- |
+| Aucune donnée (première semaine) | Écrans d'apprentissage « J+x », pas de faux zéro, pas de graphique vide |
+| Pas de Watch / Santé refusée | Niveau A ou B (§ 16), cadrans masqués avec explication |
+| iCloud absent ou hors ligne | Tout fonctionne en local ; bandeau discret « dernière synchro il y a … » ; reprise automatique (ADR 0011) |
+| Conflit de synchro | Résolu par HLC par champ ; ligne dans le journal ; jamais de boîte de dialogue bloquante |
+| Signature expirée dans < 24 h | Notification + bandeau Aujourd'hui (I-02 repris) ; procédure SideStore en un lien |
+| Clé IA absente / budget épuisé | Fonctions IA grisées avec cause ; tout le reste intact |
+| Live Activity indisponible | Minuteur en app + notification locale ; même précision |
+| Verrouillage pendant une séance | Reprise exacte (timer, série en cours) à la réouverture (ADR 0013) |
+| Crash | Séance en cours restaurée depuis SQLite (écriture à chaque série) |
+
+### 18.4 Charte visuelle (D-19)
+
+Identité **laconique, sombre, rouge et bronze**. Tokens dans `src/ui/tokens.css`, consommés par tous les composants ; aucune couleur en dur ailleurs (règle vérifiée par `lint`).
+
+| Token | Sombre (défaut) | Clair | Usage |
+| --- | --- | --- | --- |
+| `--bg` | `#0D0E11` | `#F4F1EA` | Fond de page |
+| `--surface` / `--surface-2` | `#15171C` / `#1D2027` | `#FFFFFF` / `#ECE8DF` | Cartes, barres |
+| `--line` | `#2A2E37` | `#D8D2C6` | Séparateurs |
+| `--fg` / `--fg-2` | `#EDE7DC` / `#A39C90` | `#15171C` / `#5E584F` | Texte ivoire / secondaire |
+| `--accent` | `#B8322A` (hover `#D23B31`) | `#B8322A` | Rouge : bouton principal, série validée, zone rouge |
+| `--bronze` / `--bronze-2` | `#C28E4C` / `#E0B577` | `#8E6530` / `#C28E4C` | Records, 1RM, scores, titres de section |
+| `--ok` / `--warn` / `--info` | `#5E9E6B` / `#D9A441` / `#6F8FB3` | mêmes | Zones verte / jaune de récupération, états |
+
+Règles de contraste (WCAG AA, vérifiées : ivoire sur fond 15,7 ; secondaire sur surface 6,6 ; bronze sur surface 6,2 ; ivoire sur rouge 4,8) : le rouge **n'est jamais une couleur de texte** sur fond sombre (3,0) — uniquement un fond portant du texte ivoire ; le vert porte du texte sombre, jamais ivoire (2,6). Un test `test:contrast` (script Node) recalcule ces ratios à chaque modification des tokens.
+
+| Élément | Choix |
+| --- | --- |
+| Typographie | Corps : police système (SF Pro sur iPhone, Segoe UI sur Windows), zéro poids embarqué ; titres et grands chiffres : capitales romaines « Cinzel » (SIL OFL, une graisse, \~60 Ko, dans le bundle) ; chiffres tabulaires partout où une valeur change (charges, timer) |
+| Mode | Sombre par défaut, clair disponible, suit le système, forçable dans Plus |
+| Icônes | Jeu d'icônes déjà présent dans CircleTasks s'il existe, sinon Lucide (ISC) ; trait 1,75 px ; pas d'emoji dans l'interface |
+| Icône d'app | Bouclier rond bronze sur fond `#0D0E11`, lambda (Λ) rouge au centre ; SVG source dans `content/brand/`, exports 1024 px (iOS) et ICO (Windows) générés par script |
+| Formes | Rayons 10 px ; grille 4 pt ; cibles tactiles ≥ 44 pt sur iPhone ; densité plus forte sur PC (tables à 32 px de ligne) |
+| Ton | Libellés courts, impératifs, sans point d'exclamation ni confetti ; le chiffre d'abord, l'explication en dessous ; aucune mascotte |
+| Mouvement | Transitions ≤ 200 ms ; aucune animation décorative ; respect de « réduire les animations » |
+
+### 18.5 Maquettes
+
+L'interface est **responsive** : un seul code, les composants se réorganisent selon la largeur (`platform.kind` ne choisit que la coquille § 18.1). Responsive ne veut pas dire identique : à 440 px un écran tient en une colonne défilante, à 1 440 px il devient maître-détail ou multi-colonnes. Les maquettes fixent donc **la disposition à chaque largeur**, pas une image par appareil ; une seule largeur suffit quand la mise en page ne fait que se reflouer.
+
+| Maquette | 440 px | 1 440 px | Raison |
+| --- | --- | --- | --- |
+| Onboarding (8 écrans) | ✓ | — | Formulaire pas à pas, même disposition centrée sur PC |
+| Aujourd'hui | ✓ | ✓ | Cadrans empilés vs grille 3 + 2 |
+| Routine / Programme | ✓ | ✓ | Liste par jour vs grille jours × exercices |
+| Séance active | ✓ | ✓ | Un écran tactile vs saisie clavier avec historique à droite |
+| Résumé de séance | ✓ | — | — |
+| Fiche exercice | ✓ | ✓ | Onglets vs trois colonnes |
+| Profil de matériel | — | ✓ | Édition principalement sur PC ; reflow suffisant sur iPhone |
+| Journal nutrition | ✓ | ✓ | Timeline vs timeline + recherche permanente |
+| Dashboard nutrition | ✓ | ✓ | Cartes empilées vs grille |
+| Check-in hebdo | ✓ | — | Carte unique |
+| Récupération | ✓ | — | Lecture seule sur PC, même carte |
+| Progrès | ✓ | ✓ | Un graphique à la fois vs tableau de bord |
+| Plus → Appareils et synchro | ✓ | ✓ | QR à scanner vs QR à afficher |
+| États dégradés (3) | ✓ | — | Bandeaux et cartes vides, identiques |
+
+**Maquettes validées le 31 octobre 2026 (D-21)** : 24 planches HTML autonomes à taille réelle (iPhone 16 Pro Max 440 × 956 pt, PC 1440 × 900), même méthode que CircleTasks, mode sombre selon § 18.4, données d'exemple figées (ven. 30 oct. 2026, programme Haut / Bas 4 j, semaine 2 / 5). Livrées dans `docs/maquettes/` du fork avec `index.html` ; le PRD les désigne comme **référence visuelle** : écart PRD / maquette → la maquette est suivie et l'écart noté dans `docs/decisions.md` ; écran sans maquette → composé à partir des motifs de Plus / Réglages et consigné. `npm run visual` capture l'app et la maquette à la même taille pour comparaison à chaque lot. Point de rupture unique `≥ 900 px` = disposition PC (H-19 : aucune largeur intermédiaire, pas d'iPad).
+
+| Fichier | Écran | Ce que la planche fixe |
+| --- | --- | --- |
+| `iPhone-Onboarding.html` | Onboarding, étape 6 / 8 | Body map priorités / évités, mouvements douloureux, « ignorer » toujours possible ; gabarit des 7 autres étapes |
+| `iPhone-Aujourdhui.html` · `PC-Aujourdhui.html` | Aujourd'hui | Trois cadrans, séance du jour avec charges, nutrition restante, semaine, poids ; PC en trois colonnes bornées |
+| `iPhone-Routine.html` · `PC-Routine.html` | Programme | Mésocycle et périodisation S1–S5, jours, Lancer / Sauter / Deload, pause ; PC grille jours × exercices, actions de page en haut |
+| `iPhone-Seance.html` · `PC-Seance.html` | Séance active | Un écran, série en cours, « Pourquoi ? », repos collant, Facile / Juste / Dur ; PC clavier, historique et explication à droite |
+| `iPhone-Resume.html` | Résumé de séance | Records, écart au plan, muscle map, Apple Santé, « Mettre à jour la routine ? » |
+| `iPhone-Fiche.html` · `PC-Fiche.html` | Fiche exercice | Info / Instructions / Historique ; PC recherche permanente + trois colonnes |
+| `PC-Materiel.html` | Profil de matériel | Barres, disques par côté, haltères, machines et 1RM, incréments, forcés / interdits, aperçu des charges |
+| `iPhone-Journal.html` · `PC-Journal.html` | Journal nutrition | Timeline horaire, provenance par aliment, jour partiel ; PC recherche au clavier, cibles à droite |
+| `iPhone-Dashboard.html` · `PC-Dashboard.html` | Dashboard nutrition | Balance 7 j, tendance 28 j, dépense avec confiance et couverture ; PC + Stratégie et historique des check-ins |
+| `iPhone-CheckIn.html` | Check-in hebdomadaire | Résumé, proposition motivée (lissage 4 semaines), Accepter / Personnaliser / Refuser |
+| `iPhone-Recuperation.html` | Récupération | Contributeurs vs baseline, zone cible, coucher cible, par muscle, journal de facteurs |
+| `iPhone-Progres.html` · `PC-Progres.html` | Progrès | Un graphique à la fois ; PC tableau de bord, Strength Score, constance, export |
+| `iPhone-Appairage.html` · `PC-Appairage.html` | Appareils et synchro | Scanner / afficher le QR, clé de récupération, journal ; destructif en bas et annoncé |
+| `iPhone-Degrade-Apprentissage.html` · `-HorsLigne.html` · `-Signature.html` | États dégradés | J+3 sans faux zéro, hors ligne local, signature qui expire (bannière + bandeau) |
+
+Décisions de dessin consignées (D-21) : actions de page en barre du haut sur PC ; caméra d'appairage en bloc et non plein écran ; cadrans remplacés par « en apprentissage » la première semaine ; bandeau de signature prioritaire sur le contenu.
+
+### 18.6 Accessibilité
+
+Dynamic Type suivi jusqu'à « Très grand » sans troncature des charges et du timer ; zoom 100–150 % sur PC ; contraste AA (§ 18.4) ; chaque action tactile a un équivalent clavier sur PC ; « réduire les animations » et « réduire la transparence » respectés ; aucune information portée par la couleur seule (zones de récupération doublées d'un libellé).
+
+## 19. Plugins Swift et contrat iOS
+
+### 19.1 Plugins repris de CircleTasks (`src-tauri/plugins/`)
+
+| Plugin | Usage Spartiate | Décision |
+| --- | --- | --- |
+| `haptics` | Retour à chaque série validée, record, fin de repos | Repris tel quel |
+| `notification-actions` | Fin de repos, notification du matin, expiration de signature, check-in | Repris tel quel |
+| `files` / `folder-bookmark` | Dossier iCloud Drive de la synchro, export / import | Repris tel quel |
+| `privacy-shield` | Masque l'app dans le sélecteur (données corporelles) | Repris, activable |
+| `speech` | Dictée Describe (I6) | Repris, I6 |
+| `vision` | OCR d'un programme papier (I6) | Repris, I6 |
+| `reminders`, `web-auth` | Sans usage identifié | **Supprimés au fork** (SPA-001) ; réintroduction possible depuis l'historique git |
+
+### 19.2 Nouveaux plugins
+
+| Plugin | Rôle | Risque | Spike |
+| --- | --- | --- | --- |
+| `healthkit` | Lecture / écriture Apple Santé (§ 16.2), observer queries | `H-3` : entitlement `com.apple.developer.healthkit` doit survivre à la signature SideStore (plan D-14) | SPA-006 |
+| `live-activity` | Minuteur de repos en Dynamic Island / écran verrouillé via ActivityKit | `H-4` : cible d'extension WidgetKit à injecter dans le projet Xcode généré par `tauri ios init` ; `tauri.conf.json` ne le prévoit pas | SPA-007 |
+| `barcode-scanner` | Scan code-barres (AVFoundation), Camera Control si disponible | Faible (API standard) | I4 |
+| `camera` | Photo de repas | Faible | I4 |
+
+Chaque plugin suit le gabarit CircleTasks : `Package.swift`, `Sources/<Nom>/Plugin.swift` héritant de `Plugin`, commandes `@objc`, enregistrement dans `src-tauri/src/lib.rs` sous `#[cfg(target_os = "ios")]`, façade TypeScript dans `src/platform/ios/<nom>.ts` avec stub Windows retournant `unsupported`. Pas de dépendance Swift externe.
+
+### 19.3 Contrat `Info.plist` (`scripts/ios/plist-contract.json`, repris et étendu)
+
+| Clé | Valeur | Vérifiée en CI |
+| --- | --- | --- |
+| `CFBundleIdentifier` | `fr.spartiate.app` | Oui |
+| `MinimumOSVersion` | `18.0` | Oui |
+| `NSHealthShareUsageDescription` / `NSHealthUpdateUsageDescription` | Textes FR explicites | Oui (I5) |
+| `NSCameraUsageDescription` | Scan et photo de repas | Oui (I4) |
+| `NSSupportsLiveActivities` | `true` | Oui (si H-4 confirmé) |
+| `UIBackgroundModes` | aucun (pas de fond) | Oui |
+| `ITSAppUsesNonExemptEncryption` | `false` | Oui |
+
+### 19.4 Entitlements (`src-tauri/gen/apple/Spartiate.entitlements`, D-14)
+
+```xml
+<key>com.apple.developer.healthkit</key><true/>
+<key>com.apple.developer.healthkit.access</key><array/>
+<key>keychain-access-groups</key><array><string>$(AppIdentifierPrefix)fr.spartiate.app</string></array>
 ```
 
-Chaque user story suit ce circuit ; un refus du `code-reviewer` ou d'un audit renvoie la story à l'agent du module, et `debugger` intervient sur tout test rouge non résolu en 2 tentatives.
+Pas d'App Groups, pas d'iCloud container, pas de push (interdits en équipe personnelle, § 6). La CI exécute `codesign -s - --entitlements Spartiate.entitlements --force Spartiate.app` après `--no-sign`, puis vérifie `codesign -d --entitlements :- Spartiate.app` (SPA-003). Si SideStore n'applique pas l'entitlement HealthKit → fallback saisie manuelle (§ 16.1 niveau A/B) et `H-3` passe `BLOCKED`.
 
-### 11.3 Règles communes à tous les agents
+## 20. Modèle de données SQLite
 
-- Une user story à la fois, identifiée par son ID (ex. R-04) dans le message de commit.
+Schéma repris de CircleTasks : migrations numérotées dans `src-tauri/migrations/` appliquées par `tauri-plugin-sql`, repositories dans `src/db/repositories/`, types générés dans `src/db/schema.ts`. Toutes les tables métier CircleTasks (tâches, cercles, rappels…) sont **supprimées** par la migration `0001_spartiate_init` du fork ; les tables de synchro (`sync_device`, `sync_outbox`, `sync_cursor`, `sync_log`) et `app_meta` sont conservées.
 
-- Aucune modification hors de son périmètre de dossiers ; un besoin hors périmètre est signalé à la session principale.
+### 20.1 Colonnes communes
 
-- Toute règle métier vit dans `src/domain/`, jamais dans un composant.
+Chaque table publiée porte `id TEXT PRIMARY KEY` (UUID v7), `created_at`, `updated_at`, `deleted_at` (suppression logique), `device_id`, et un `hlc_<colonne>` par champ synchronisé (mécanisme ADR 0011). Les tables locales (préférences, cache) n'ont ni `device_id` ni HLC.
 
-- Tout accès base passe par `src/db/repositories/`.
+### 20.2 Tables
 
-- Aucun secret en clair dans le code, les logs ou SQLite.
+| Table | Colonnes principales | Publiée | Itération |
+| --- | --- | --- | --- |
+| `profile` | sex, birth\_year, height\_cm, goal, experience, units | Oui | I0 |
+| `body_weight` | date, kg, source (manual / health), health\_uuid | Oui | I1 |
+| `exercise` | id, name\_fr, aliases\_en (JSON), muscles (JSON), equipment (JSON), pattern, kind, metric, bodyweight\_fraction, default\_rep\_min / max, default\_rest\_sec, instructions (JSON), media (JSON), strength\_standard\_key, is\_custom, schema\_version | Oui (custom uniquement ; les 150 embarqués sont lus du JSON) | I1 |
+| `equipment_profile` | name, kind, inventory (JSON), increments (JSON) | Oui | I1 |
+| `routine` / `routine_day` / `routine_exercise` | name, mode (Libre / Programme), day\_order, exercise\_id, sets, rep\_min, rep\_max, rir, rest\_sec, position | Oui | I1 |
+| `mesocycle` | routine\_id, start\_date, weeks, deload\_week, status | Oui | I3 |
+| `workout` | started\_at, ended\_at, routine\_day\_id, notes, rating, health\_uuid, device\_id | Oui **à la fin** (`ended_at` non nul) | I1 |
+| `workout_set` | workout\_id, exercise\_id, position, set\_index, kg, reps, rir, difficulty, is\_warmup, is\_pr, rest\_sec\_actual | Oui (avec le workout) | I1 |
+| `recommendation_decision` | workout\_set\_id, exercise\_id, engine\_version, prescription (JSON), reasons (JSON), accepted | Oui | I2 |
+| `progression_profile` | exercise\_id, estimated\_1rm, confidence, last\_easy\_recalibration | Oui | I2 |
+| `food` / `food_portion` | source (ciqual / off / custom), barcode, name, kcal, protein, fat, carbs, fiber, per\_100g (JSON) | Oui (custom + cache OFF) | I4 |
+| `meal_entry` | date, time, food\_id, grams, kcal, macros (JSON), method (search / scan / photo / quickadd), confidence | Oui | I4 |
+| `nutrition_target` | week\_start, kcal, protein, fat, carbs, source (auto / manual), accepted | Oui | I4 |
+| `recovery_day` | date, level (A / B / C), recovery, exertion, sleep\_score, quality, abstain\_reason, inputs (JSON) | Oui (iPhone → PC) | I5 |
+| `muscle_recovery` | date, muscle\_id, percent | Oui | I5 |
+| `health_sample_cache` | type, start, end, value, uuid | **Non** (local iPhone) | I5 |
+| `ai_call` | date, kind, tokens\_in / out, cost\_estimate, status | Non (local, par appareil) | I4 |
+| `app_pref` | key, value | Non | I0 |
+| `measurement` / `progress_photo` | date, kind, value / file\_name | Oui / photos **non** (fichiers locaux, export manuel) | I6 |
 
-- Définition du fini : critères d'acceptation vérifiés, tests écrits et verts, lint et typage sans erreur, revue validée.
+### 20.3 Index et contraintes
 
-### 11.4 Arborescence du dépôt
+`workout_set(exercise_id, created_at)`, `meal_entry(date)`, `body_weight(date)`, `recovery_day(date)` ; `UNIQUE(date)` sur `recovery_day` et `body_weight` par source ; clés étrangères activées (`PRAGMA foreign_keys = ON`, déjà le cas). Les JSON sont validés à l'écriture par `src/db/parse/*.ts` (fonctions écrites à la main, règle ADR 0008).
 
-    circletasks/
-    ├── CLAUDE.md
-    ├── .claude/agents/          # 26 fichiers d'agents
-    ├── docs/                    # PRD, ADR, guides
-    ├── src/
-    │   ├── domain/              # règles métier TypeScript
-    │   ├── db/                  # schéma, migrations, repositories
-    │   ├── ui/                  # design system
-    │   ├── features/            # tasks, today, week, routines, checklists, spaces, search, goals, someday,
-    │   │                        # events, calendars, capture, focus, stats, settings
-    │   ├── sync/                # journaux et fusion
-    │   ├── platform/            # abstractions PC / iOS
-    │   └── i18n/
-    ├── src-tauri/
-    │   ├── src/                 # commandes Rust, tray, raccourcis, OCR Windows
-    │   ├── plugins/             # plugins Swift iOS (vision, speech, folder-bookmark, reminders)
-    │   └── gen/apple/           # projet Xcode généré
-    ├── tests/                   # e2e Playwright, jeux de données communs
-    └── .github/workflows/       # build-windows.yml, build-ios.yml, tests.yml
+### 20.4 Migrations
 
-### 11.5 Fichier CLAUDE.md
+`0001_spartiate_init` (purge CircleTasks + tables I0/I1), puis une migration par itération. Jamais de modification d'une migration publiée ; `test:migrations` (Vitest + SQLite en mémoire via `better-sqlite3` en dev) rejoue 0001 → N sur une base vide et sur une fixture de données réelles anonymisées. Le catalogue des tables publiées (`src/sync/catalog.ts`) est le **seul** fichier de la synchro modifié ; un test vérifie qu'il couvre exactement les tables marquées « Oui » ci-dessus.
 
-```markdown
-# CircleTasks — mémoire projet
+## 21. Persistance, sauvegarde, export / import
 
-Planificateur personnel inspiré de NoteCircle, pour un seul utilisateur.
-PC Windows (Tauri 2) et iPhone 16 Pro Max (Tauri 2 iOS), même code React, livraison unique.
-Référence fonctionnelle : docs/PRD.md (user stories M1 à M18, IDs stables).
-Référence visuelle : maquettes validées (lien en section 5 du PRD) ; couleurs et polices en section 5.
+### 21.1 Emplacements
 
-## Stack
-React 18, Vite, TypeScript strict, Zustand, SQLite (plugin Tauri SQL), Rust (Tauri 2), plugins Swift pour iOS
-(vision, speech, folder-bookmark, reminders). Tests : Vitest, Testing Library, Playwright, cargo test.
+| Appareil | Base | Fichiers | Clé de chiffrement |
+| --- | --- | --- | --- |
+| Windows | `%APPDATA%\fr.spartiate.app\spartiate.db` | `%APPDATA%\fr.spartiate.app\media\`, exports dans Documents | Windows Credential Manager (`keyring`) |
+| iPhone | Conteneur de l'app (`Application Support/spartiate.db`) | `Documents/media/` | Trousseau iOS |
+| iCloud Drive | `iCloud Drive/Spartiate/<device_id>/` : paquets chiffrés AES-256-GCM, jamais la base en clair | — | — |
+
+**Règle absolue (AGENTS.md)** : aucun agent ne lit ni n'écrit ces emplacements ; seuls les fichiers que tu désignes explicitement (un export, un journal) peuvent être lus.
+
+### 21.2 Sauvegarde
+
+- Écriture SQLite en WAL, `synchronous = NORMAL`, checkpoint à la fermeture (configuration CircleTasks).
+- Sauvegarde locale automatique quotidienne `spartiate-YYYY-MM-DD.db` (7 conservées) sur PC ; sur iPhone, la synchro iCloud fait office de sauvegarde (D-16).
+- Mise à jour SideStore = conteneur conservé (`INHERITED` I-06) ; **ne jamais supprimer l'app** ; si réinstallation nécessaire, restauration depuis la synchro ou un export.
+
+### 21.3 Export / import (I1, SPA-005)
+
+| Format | Contenu | Usage |
+| --- | --- | --- |
+| `spartiate-export-<date>.zip` | `data.json` (toutes les tables publiées + préférences), `media/`, `manifest.json` (version schéma, app, appareil, sha256) | Sauvegarde complète, migration d'appareil |
+| CSV par domaine | `workouts.csv`, `sets.csv`, `nutrition.csv`, `weight.csv` | Analyse externe |
+| Import | Zip Spartiate (fusion ou remplacement, aperçu avant), CSV Hevy / Strong (mapping exercices avec validation) | Reprise d'historique |
+
+L'import passe par les repositories (jamais SQL direct), génère des HLC et entre dans la synchro comme n'importe quelle écriture. Export déclenché depuis Plus → Export / import, sur PC vers un dossier choisi, sur iPhone via la feuille de partage (plugin `files`).
+
+### 21.4 Réinitialisation
+
+« Effacer mes données » : confirmation en deux étapes, suppression de la base, des médias, de la clé locale et du dossier iCloud de cet appareil (procédure ADR 0011 « reset ») ; les autres appareils reçoivent un marqueur et proposent de conserver ou d'oublier.
+
+## 22. Sécurité, journaux, clé API
+
+| Sujet | Règle |
+| --- | --- |
+| Données au repos | SQLite en clair dans le conteneur de l'app (protégé par l'OS : Data Protection iOS, profil Windows) ; chiffrement complet de la base **non retenu** (D-17 : complexité vs bénéfice pour un usage personnel ; révisable) |
+| Données en transit | iCloud Drive : paquets AES-256-GCM, clé dérivée lors de l'appairage QR, jamais dans iCloud (ADR 0011) ; API IA et Open Food Facts : HTTPS via `reqwest` côté Rust, `rustls`, pas de HTTP |
+| Secrets | Clé IA et clé de synchro dans le coffre OS uniquement ; aucune valeur dans le dépôt, les journaux, les artefacts CI, les prompts, les exports ; `RELEASES_TOKEN` seul secret GitHub (publication) |
+| WebView | CSP stricte héritée (`tauri.conf.json`), `withGlobalTauri: false`, commandes exposées listées dans `capabilities/*.json` par plateforme ; la WebView n'a jamais accès au réseau direct ni aux clés |
+| Permissions iOS | Demandées au premier usage, chacune avec sa raison ; refus = fonction masquée, pas de relance automatique |
+| Journaux | `tracing` Rust + logger front → fichier tournant `logs/spartiate.log` (5 × 2 Mo) dans le conteneur ; **aucune donnée corporelle, alimentaire ni clé** ; identifiants d'enregistrements uniquement ; export depuis Plus → Journaux pour me les transmettre (seule lecture autorisée aux agents) |
+| Dépendances | `npm audit` et `cargo audit` en CI (jobs CircleTasks repris) ; versions épinglées ; pas d'ajout de dépendance sans ligne dans le ticket |
+| Mise à jour | IPA et NSIS publiés avec sha256 dans `source.json` et `latest.json` ; SideStore vérifie le hash ; sur PC, l'app compare `latest.json` et propose le téléchargement (mécanisme CircleTasks) |
+| Privé | `privacy-shield` optionnel ; verrou local (Face ID / code Windows Hello) **DEFERRED** (`H-17`, utilité à confirmer) |
+
+## 23. Qualité et tests
+
+### 23.1 Pyramide (scripts `package.json` repris)
+
+| Niveau | Outil | Cible | Seuil |
+| --- | --- | --- | --- |
+| Domaine | Vitest (`test`) | `src/domain/**` : moteur, mésocycle, nutrition, récupération, parse | Couverture lignes ≥ 90 % sur `src/domain`, 100 % des vecteurs des § 11–16 verts |
+| DB | Vitest + SQLite mémoire (`test:migrations`) | Migrations 0001 → N, repositories, catalogue de synchro | Toutes les tables publiées couvertes |
+| Synchro | Vitest (vecteurs ADR 0011 repris) + `cargo test` | Chiffrement, HLC, fusion, reset, oubli d'appareil | Vecteurs existants + `recovery_day`, `workout` fin-de-séance |
+| Rust | `cargo test`, `cargo clippy -D warnings`, `cargo fmt --check` | Commandes, `app_signing_info`, client HTTP, coffre | Zéro warning |
+| Front | `typecheck` (TS strict), `lint` (ESLint config CircleTasks) | Tout `src/` | Zéro erreur |
+| E2E PC | Playwright (`e2e`) sur build Windows | Onboarding, séance complète au clavier, journal nutrition, export / import, synchro simulée (deux profils) | Scénarios nominaux par itération |
+| Visuel | `visual` (captures Playwright, deux largeurs : 440 px iPhone, 1 440 px PC) | Écrans de chaque onglet, états dégradés § 18.3 | Diff ≤ 0,1 % |
+| Perf | `test:perf`, `test:bundle` | Démarrage < 1,5 s PC / < 2 s iPhone ; graphiques < 300 ms ; bundle de départ ≤ plafond CircleTasks | Budget en CI |
+| Installeur | `test:nsis`, `test:smoke` | NSIS Windows installe / lance / désinstalle ; IPA : contrat plist, lipo arm64, `source.json` | Vert avant publication |
+| iPhone réel | Manuel, toi, check-list `docs/qa/iphone.md` | Install SideStore, Santé, Live Activity, verrouillage, renouvellement, mise à jour sans perte | Check-list signée par itération |
+
+### 23.2 CI (`.github/workflows/`, repris)
+
+| Workflow | Déclencheur | Runner | Contenu |
+| --- | --- | --- | --- |
+| `ci.yml` | push, PR | ubuntu | typecheck, lint, test, test:migrations, cargo test / clippy, audit |
+| `build-windows.yml` | tag `win-v*` | windows-latest | build NSIS, `test:nsis`, `test:smoke`, publication `latest.json` |
+| `build-ios.yml` | tag `ios-v*`, manuel | macos-latest | `tauri ios build --ci --no-sign`, codesign ad-hoc + entitlements (D-14), contrat plist, lipo, `make-source-json`, `check-source`, publication vers `spartiate-releases` |
+| `e2e.yml` | nightly, manuel | windows-latest | Playwright + visuel |
+
+Dépôts **publics** (D-13) : minutes macOS gratuites. Aucune donnée personnelle dans les fixtures (générées).
+
+### 23.3 Matrice de non-régression à chaque release
+
+Mise à jour SideStore conserve la base (I-06) · expiration lue et notifiée (I-02) · synchro bidirectionnelle PC ↔ iPhone sur 3 tables au moins · séance interrompue par verrouillage reprise · export puis import identique (hash `data.json`) · aucune régression visuelle.
+
+## 24. Contrat d'exécution (Claude Code + Codex)
+
+### 24.1 Agents repris de CircleTasks (`.claude/agents/`)
+
+| Agent | Rôle | Adaptation |
+| --- | --- | --- |
+| `ci-release` | Tags, workflows, `source.json`, publication | Identifiants et dépôts Spartiate |
+| `ios-plugin` | Plugins Swift, contrat plist, entitlements | + `healthkit`, `live-activity` |
+| `sync-guardian` | Toute modification sous `src/sync` ou `src-tauri/src/sync` | Inchangé ; seul `catalog.ts` est ouvert |
+| `reviewer` | Relecture avant merge : couches ADR 0001, sécurité § 22, tests | Inchangé |
+| `domain-engineer` (nouveau) | Moteurs `src/domain/*` : implémente uniquement depuis les § 11–16, vecteurs d'abord | Nouveau |
+
+### 24.2 Passes et outils
+
+| Passe | Outil | Règle |
+| --- | --- | --- |
+| Spécification | Ce PRD (`docs/PRD.md`) + ADR | Toute décision nouvelle = ADR numéroté ; toute hypothèse = `H-n` dans le registre § 26 |
+| Implémentation | Claude Code (Opus) | Un ticket = une branche = une PR ; tests avant code pour `src/domain` |
+| Relecture croisée | Codex | Relit chaque PR ; commentaires résolus avant merge ; ne pousse jamais directement |
+| Intégration | CI GitHub | Verte obligatoire ; merge par toi |
+| Validation iPhone | Toi | Check-list § 23.1 ; ton retour clôt le ticket |
+
+### 24.3 Budget et discipline
+
+- Tokens : chaque ticket annonce un budget (S ≤ 50 k, M ≤ 150 k, L ≤ 400 k) ; dépassement = arrêt et point d'étape, pas de poursuite silencieuse.
+- Interdits (AGENTS.md) : `git push --force`, `git reset --hard`, `rm -rf`, lecture des données réelles, installation manuelle demandée à toi, suppression de l'app sideloadée, secrets dans un prompt.
+- Toute capacité non prouvée reste `UNVERIFIED` dans `docs/capability-matrix.md` jusqu'à un spike documenté (log CI ou capture iPhone).
+
+### 24.4 Definition of Done (par ticket)
+
+1. Critères d'acceptation du ticket couverts par un test automatisé ou, pour l'iPhone, par la check-list manuelle.
+2. `ci.yml` vert ; pas de nouvelle dépendance non justifiée.
+3. Couches ADR 0001 respectées (vérifié par `reviewer`).
+4. `docs/capability-matrix.md` et registre `H-n` mis à jour si le ticket touche une hypothèse.
+5. Note de version (`scripts/release/release-notes.mjs`) à jour.
+6. Relecture Codex résolue.
+
+### 24.5 Gabarit de ticket
+
+```md
+# SPA-0xx — <titre>
+Itération : I0 | Taille : S/M/L | Budget tokens : …
+## Objectif
+## Hors périmètre
+## Références PRD : § … | ADR : … | Hypothèses : H-…
+## Critères d'acceptation (Given / When / Then)
+## Tests à écrire
+## Risques et plan B
+## Preuve attendue (log CI, capture, vecteur)
+```
+
+## 25. Plan de fork et tickets I0
+
+### 25.1 Procédure de fork (SPA-000, toi + Claude Code)
+
+1. Créer `doncivo/spartiate` (public) depuis `doncivo/circletasks` (fork GitHub ou `git clone` + nouveau remote ; l'historique est conservé pour pouvoir réintroduire un plugin).
+2. Créer `doncivo/spartiate-releases` (public, vide, `source.json` initial généré par la CI).
+3. Secret `RELEASES_TOKEN` (fine-grained, contenu de `spartiate-releases` uniquement).
+4. Ajouter la source `https://raw.githubusercontent.com/doncivo/spartiate-releases/main/source.json` dans SideStore sur l'iPhone **après** la première publication.
+
+### 25.2 Tickets I0 (ordre imposé)
+
+| Ticket | Titre | Taille | Preuve | Dépend de |
+| --- | --- | --- | --- | --- |
+| SPA-000 | Fork, dépôts, secret, README Spartiate | S | Dépôts visibles, CI `ci.yml` verte sur le fork intact | — |
+| SPA-001 | Nettoyage : renommage `fr.circletasks.planner` → `fr.spartiate.app`, nom, icône, suppression features / tables / plugins CircleTasks (`reminders`, `web-auth`), migration `0001_spartiate_init`, i18n FR seul | M | App vide « Spartiate » démarre sur PC ; `typecheck` / `lint` / `test` verts ; aucune chaîne « CircleTasks » hors `docs/adr` et licences | SPA-000 |
+| SPA-002 | Build Windows NSIS + `latest.json` + `test:nsis` / `test:smoke` | S | Installeur installé sur ton PC, lance, se désinstalle | SPA-001 |
+| SPA-003 | Build iOS CI : `--no-sign`, codesign ad-hoc + `Spartiate.entitlements` (D-14), contrat plist, `source.json`, publication | M | IPA dans `spartiate-releases`, `codesign -d --entitlements` montre HealthKit | SPA-001 |
+| SPA-004 | Installation SideStore + `app_signing_info` + notification 24 h (I-02 repris) | S | App installée sur l'iPhone ; date d'expiration affichée dans Plus → À propos | SPA-003 |
+| SPA-005 | Export / import zip + CSV (§ 21.3) sur données I0 (profil, poids) | M | Export → reset → import = hash identique (test E2E) | SPA-002 |
+| SPA-006 | **Spike HealthKit** : plugin minimal `healthkit_authorize` + lecture `bodyMass` sur l'IPA SideStore | M | Capture iPhone de la demande d'autorisation et d'une valeur lue ; sinon `H-3 = BLOCKED` + ADR fallback | SPA-004 |
+| SPA-007 | **Spike Live Activity** : extension WidgetKit injectée dans `gen/apple` par script post-`tauri ios init`, minuteur fictif 60 s | L | Capture Dynamic Island ; sinon `H-4 = BLOCKED` + ADR fallback timer en app | SPA-004 |
+| SPA-008 | Synchro PC ↔ iPhone : catalogue `profile`, `body_weight`, `app_meta` ; appairage QR ; test deux appareils | M | Poids saisi sur PC visible sur iPhone < 60 s et inversement ; vecteurs verts | SPA-004, SPA-002 |
+| SPA-009 | Coquilles `MobileShell` / `DesktopShell`, 5 onglets vides, états dégradés § 18.3 génériques, tests visuels | M | Captures 440 / 1 440 px en CI | SPA-001 |
+| SPA-010 | Mesure et go / no-go I0 : mise à jour SideStore sans perte (I-06), renouvellement 7 j, consommation CI, `capability-matrix.md` à jour | S | Tableau § 7 mis à jour, décision écrite d'ouvrir I1 | Tous |
+
+Critère de sortie I0 : SPA-000 → 005, 008, 009, 010 faits ; SPA-006 et SPA-007 **conclus** (CONFIRMED ou BLOCKED avec ADR), quel que soit le résultat. I1 (séance et journal, § 9) s'ouvre ensuite avec son propre lot de tickets dérivés des § 13–14.
+
+## 26. Registre des décisions et des hypothèses
+
+### 26.1 Décisions (D-n)
+
+| ID | Décision | Source |
+| --- | --- | --- |
+| D-1 | Usage personnel, aucune commercialisation, aucun App Store | Toi |
+| D-2 | Références : Gravl, Alpha Progression, Hevy, MacroFactor, WHOOP / Athlytic, Reboot Plan | Benchmark validé |
+| D-3 | Cibles : iPhone 16 Pro Max (iOS 18+) + PC Windows, même code | Toi |
+| D-4 | Apple Watch Series 11 46 mm comme **source de données** via Santé ; pas d'app Watch (interdit en équipe personnelle) | Contraintes § 6 |
+| D-5 | Pas de compte développeur, pas de Mac : chaîne CI macOS → IPA non signée → SideStore | Toi + CircleTasks |
+| D-6 | Développement Claude Code + Codex, contrat § 24 | Toi |
+| D-7 | Fork de `doncivo/circletasks` (Tauri 2, React, Rust, SQLite, synchro iCloud) plutôt que projet neuf | Toi (« OK pour le fork ») |
+| D-8 | Nom : **Spartiate**, identifiant `fr.spartiate.app` | Toi |
+| D-9 | Moteurs (progression, mésocycle, nutrition, récupération) en TypeScript dans `src/domain`, testés Vitest sur Windows ; natif Swift limité aux plugins d'accès système | PRD v6 |
+| D-10 | Séance en cours jamais publiée par la synchro avant sa fin | PRD v6 § 13 |
+| D-11 | Récupération calculée sur l'iPhone, publiée en résumé vers le PC, pas de recalcul PC | PRD v6 § 16 |
+| D-12 | Appels IA effectués par Rust avec clé du coffre ; données corporelles jamais envoyées | PRD v6 § 17 |
+| D-13 | Dépôts publics pour minutes macOS gratuites | CircleTasks ADR 0007 |
+| D-14 | Entitlements injectés par codesign ad-hoc en CI après `--no-sign` | PRD v6 § 19.4 |
+| D-15 | Conventions CircleTasks reprises intégralement (ADR 0001, AGENTS.md, scripts) | PRD v6 |
+| D-16 | Pas de sauvegarde locale sur iPhone au-delà de la synchro iCloud | PRD v6 § 21 |
+| D-17 | Pas de chiffrement complet de la base locale | PRD v6 § 22 |
+| D-18 | Suppression des plugins `reminders` et `web-auth` au fork | PRD v6 § 19.1 |
+| D-19 | Charte visuelle laconique, sombre, rouge / bronze ; sombre par défaut ; tokens § 18.4 | Toi (30 oct.) |
+| D-20 | Quatre programmes de départ livrés comme contenu, périodisation reprise d'Alpha Progression (§ 12.5) | Toi (30 oct.) |
+| D-21 | 24 maquettes HTML validées (§ 18.5) = référence visuelle ; méthode CircleTasks (docs/maquettes, index, npm run visual) | Toi (31 oct.) |
+
+### 26.2 Hypothèses (H-n) — statut au 30 octobre 2026
+
+| ID | Hypothèse | Statut | Comment la lever |
+| --- | --- | --- | --- |
+| H-1 | Les algorithmes publiés par Gravl sont reproductibles à partir de leur documentation publique | UNVERIFIED | Vecteurs de test comparés à des exemples publiés (I2) |
+| H-2 | Tauri 2 iOS supporte iOS 18 avec la WebView requise sans régression | INHERITED | Prouvé par CircleTasks sur ton iPhone |
+| H-3 | L'entitlement HealthKit survit à la re-signature SideStore (AltSign) | **UNVERIFIED — risque I0** | SPA-006 |
+| H-4 | Une extension WidgetKit (Live Activity) peut être injectée dans le projet généré par `tauri ios init` et passée par SideStore | **UNVERIFIED — risque I0** | SPA-007 |
+| H-5 | La mise à jour via SideStore conserve le conteneur et le Trousseau | INHERITED (I-06) | Rejoué en SPA-010 |
+| H-6 | Quota CI macOS suffisant | INHERITED (D-13) | Mesuré en SPA-010 |
+| H-7 | La date d'expiration du profil est lisible par l'app | INHERITED (I-02, `app_signing_info`) | Rejoué en SPA-004 |
+| H-8 | 150 exercices suffisent pour tes routines | UNVERIFIED | Ta relecture de la bibliothèque (I1) |
+| H-9 | Médias d'exercices disponibles sous licence compatible | UNVERIFIED | Recherche de sources (I1) ; fallback : sans image |
+| H-10 | Camera Control utilisable par une WebView Tauri / plugin AVFoundation | UNVERIFIED | Spike I4 ; fallback bouton |
+| H-11 | Licence Ciqual (Etalab 2.0) autorise l'embarquement | UNVERIFIED (très probable) | Lecture de la licence, note dans `docs/licences.md` (I4) |
+| H-12 | API Open Food Facts accessible sans clé à l'usage prévu | UNVERIFIED | Appel de test (I4) |
+| H-13 | Les observer queries HealthKit se déclenchent pour une app sans mode fond | UNVERIFIED | SPA-006 étendu (I5) ; fallback lecture à l'ouverture |
+| H-14 | Fournisseur IA et coût mensuel acceptables | UNVERIFIED | Décision avant I4 |
+| H-15 | Recharts tient les volumes (3 ans de séries) en < 300 ms | UNVERIFIED | `test:perf` avec fixture 3 ans (I2) |
+| H-16 | Limite de 3 apps sideloadées : SideStore + CircleTasks + Spartiate tiennent ensemble | UNVERIFIED | Vérifié en SPA-004 ; fallback : retirer une app ou bascule Spartiate seul |
+| H-17 | Un verrou local (Face ID / Windows Hello) a une utilité pour toi | DEFERRED | Ta décision |
+| H-18 | `better-sqlite3` en dev reproduit fidèlement `tauri-plugin-sql` pour les tests de migration | UNVERIFIED | Vérifier ce que CircleTasks utilise déjà pour `test:migrations` (SPA-001) |
+| H-19 | Deux largeurs (440 / 1 440 px, rupture 900 px) couvrent tous les usages ; Ciqual fournit les 8 micronutriments pour la majorité des aliments génériques | UNVERIFIED | Captures visuelles aux deux largeurs (SPA-009) ; comptage des colonnes Ciqual au chargement (I6) |
+
+Règle : aucune hypothèse ne passe `CONFIRMED` sans preuve archivée (log CI, capture, vecteur) référencée dans `docs/capability-matrix.md`.
+
+## 27. Questions ouvertes, glossaire, références
+
+### 27.1 Questions ouvertes (à trancher par toi)
+
+| # | Question | Échéance | Option par défaut si silence |
+| --- | --- | --- | --- |
+| Q-1 | Garder CircleTasks installée en parallèle (3 apps max) ? | SPA-004 | Oui, on vérifie H-16 |
+| Q-2 | Fournisseur IA (Anthropic, OpenAI, autre) et plafond mensuel | Avant I4 | Abstraction `AiProvider`, choix reporté |
+| Q-3 | Sources des médias d'exercices (photos libres, dessins générés, aucune) | I1 | Aucune image en I1 |
+| Q-4 | Import d'historique Hevy / Strong nécessaire dès I1 ? | I1 | Reporté en I6 |
+| Q-5 | Langue : FR seul ou FR + EN (i18n CircleTasks conservée) | SPA-001 | FR seul, infrastructure i18n gardée |
+| Q-6 | Verrou local (H-17) | I6 | Non |
+| Q-7 | Objectif initial (prise de masse / perte / maintien) pour le profil par défaut | Onboarding | Saisi à l'onboarding, pas de défaut |
+
+### 27.2 Glossaire
+
+| Terme | Définition |
+| --- | --- |
+| 1RM | Charge maximale théorique sur une répétition (estimée par Epley) |
+| RIR | Reps in Reserve, répétitions restantes avant l'échec |
+| Double progression | Monter les reps dans la plage puis la charge |
+| Mésocycle | Bloc de 4–6 semaines avec progression et deload |
+| Deload | Semaine allégée (charge × 0,8) |
+| TDEE | Dépense énergétique quotidienne totale, ici mesurée |
+| HRV | Variabilité de la fréquence cardiaque (SDNN) |
+| HLC | Hybrid Logical Clock, horodatage de la synchro par champ |
+| IPA / NSIS | Paquet iOS / installeur Windows |
+| SideStore | Installateur d'apps sideloadées sur iPhone, renouvelle la signature 7 j |
+| Entitlement | Droit iOS déclaré à la signature (HealthKit…) |
+| Live Activity | Affichage temps réel Dynamic Island / écran verrouillé |
+| INHERITED | Capacité prouvée sur CircleTasks, à rejouer sur Spartiate |
+
+### 27.3 Références
+
+- Benchmark apps fitness (6 références) — document précédent.
+- PRD Forge v5.1 — version iPhone natif, remplacée par ce document.
+- Dépôt `doncivo/circletasks` : `CLAUDE.md`, `AGENTS.md`, `docs/adr/0001`, `0007`, `0008`, `0010`, `0011`, `0013`, `docs/install-iphone.md`, `.github/workflows/build-ios.yml`, `scripts/ios/*`, `docs/stories/I-02.md`, `I-06`.
+- Gravl — documentation publique de l'algorithme de progression.
+- Apple — HealthKit, ActivityKit, WidgetKit, équipes personnelles (limites de sideload).
+- Tauri 2 — guide iOS, plugins Swift, `tauri ios init --ci`.
+- SideStore — format `source.json`, renouvellement.
+- ANSES Ciqual (Licence Ouverte 2.0), Open Food Facts (ODbL).
+
+## Annexe A — `CLAUDE.md` du fork et extrait `AGENTS.md`
+
+### A.1 `CLAUDE.md` (racine du dépôt `doncivo/spartiate`)
+
+```md
+# Spartiate
+
+App personnelle d'entraînement, nutrition et récupération. PC Windows + iPhone 16 Pro Max,
+même code. Fork de CircleTasks (Tauri 2, React 18, TypeScript strict, Zustand, SQLite, Rust).
+Spécification : docs/PRD.md (source de vérité). Décisions : docs/adr/. Capacités : docs/capability-matrix.md.
+
+## Couches (ADR 0001) — dépendances dans ce sens uniquement
+domain ← db ← sync, platform, features, ui, i18n
+- Règles métier UNIQUEMENT dans src/domain (pur, sans import Tauri ni React).
+- Accès DB UNIQUEMENT via src/db/repositories.
+- src/sync : ne pas modifier hors src/sync/catalog.ts sans l'agent sync-guardian.
+- Plugins Swift dans src-tauri/plugins, façade dans src/platform/ios, stub Windows obligatoire.
 
 ## Commandes
-npm run dev | npm run tauri dev | npm run test | npm run lint | npm run typecheck | npm run tauri build
+npm run dev | build | tauri | test | test:migrations | typecheck | lint | e2e | visual | test:perf
+cargo test | cargo clippy -D warnings (dans src-tauri)
 
-## Règles
-- Une user story par branche, ID dans le commit (ex. "T-04: annulation 5 s").
-- Règles métier dans src/domain uniquement ; accès base via src/db/repositories uniquement.
-- Chaque élément appartient à un espace (Pro ou Perso) ; filtre Pro / Perso / Tout partout.
-- Interface entièrement en français, heures en 24 h, textes dans src/i18n, jamais en dur.
-- Polices Fraunces et DM Sans embarquées ; icônes Lucide au trait colorées ; les maquettes sont la référence visuelle.
-- Rappels : données et réglages à l'ordre 1, envoi sur l'iPhone à l'ordre 5.
-- Ne jamais ajouter une fonction de la liste « Hors périmètre » (PRD section 1).
-- Pas de Mac : aucune commande iOS locale ; builds iOS via .github/workflows/build-ios.yml, installation par SideStore.
-- Mise à jour PC par plugin updater et dépôt public circletasks-releases.
-- Synchro par journaux chiffrés dans iCloud Drive (hlc, schema_version) ; téléchargement forcé des fichiers avant lecture.
-- Rappels émis sur l'iPhone uniquement ; le PC n'envoie aucune notification de rappel.
-- Pas de secret en clair ; jetons dans le coffre système ; clé updater dans GitHub Secrets.
+## Travail
+- Un ticket SPA-xxx = une branche = une PR. Tests avant code dans src/domain.
+- Toute hypothèse non prouvée = H-n dans docs/PRD.md § 26 + ligne UNVERIFIED dans capability-matrix.md.
+- Toute décision structurante = ADR numéroté.
+- Budget tokens annoncé par ticket (S 50k / M 150k / L 400k) ; dépassement = arrêt et point d'étape.
 
-## Délégation
-Toujours passer par product-owner pour choisir la story, puis l'agent du module, puis qa-test et code-reviewer.
+## Interdits
+- Lire ou écrire les données réelles : %APPDATA%\fr.spartiate.app, iCloud Drive/Spartiate, conteneur iPhone.
+- Secrets dans le dépôt, les logs, les artefacts CI, les prompts.
+- git push --force, git reset --hard, rm -rf.
+- Demander à Ali d'exécuter un installeur ; supprimer l'app sideloadée (perte de données).
+- Envoyer des données corporelles (HRV, FC, sommeil, poids, photos) à une API.
 ```
 
-### 11.6 Fiches — pilotage et socle
+### A.2 Extrait `AGENTS.md` (règles reprises de CircleTasks, adaptées)
 
-Chaque fiche ci-dessous est le contenu exact du fichier `.claude/agents/<name>.md`, prêt à copier.
+```md
+## Données de l'utilisateur
+Les agents ne lisent jamais la base, les exports ou les journaux réels sauf fichier
+explicitement désigné par Ali dans le ticket. Les fixtures de test sont générées.
 
-```markdown
----
-name: product-owner
-description: Pilote le backlog CircleTasks. À utiliser PROACTIVEMENT au début de chaque tâche pour choisir la prochaine user story, préciser ses critères d'acceptation et vérifier qu'une story est terminée.
-tools: Read, Write, Edit, Grep, Glob
-model: opus
----
-Tu es le product owner de CircleTasks, planificateur personnel clone de NoteCircle.
+## iOS
+La chaîne est : CI macOS (tauri ios build --ci --no-sign) → codesign ad-hoc + entitlements
+→ IPA → spartiate-releases/source.json → SideStore. Aucun agent ne possède de Mac ni de
+compte développeur ; toute preuve iPhone vient d'Ali (capture) ou de la CI (log).
 
-Référence : docs/PRD.md (modules M1 à M18, IDs de stories stables) et docs/backlog.md.
+## Synchro
+src/sync est verrouillé : seul catalog.ts évolue avec le schéma. Toute autre modification
+passe par l'agent sync-guardian et un ADR.
 
-Responsabilités :
-- Tenir docs/backlog.md : une ligne par story, statut (à faire, en cours, en revue, fait), ordre de construction, agent responsable.
-- Choisir la prochaine story selon l'ordre de construction en cours et les dépendances.
-- Reformuler une story ambiguë en critères testables (Étant donné / Quand / Alors) avant tout développement.
-- Vérifier chaque critère d'acceptation à la fin et refuser la clôture s'il en manque un.
-- Signaler tout écart avec le PRD et proposer sa mise à jour, sans la décider seul.
-
-Règles : tu n'écris pas de code applicatif ; tu écris uniquement dans docs/.
-Livrable : story sélectionnée, critères, agent désigné, ordre des sous-tâches.
+## Relecture
+Codex relit chaque PR ; `reviewer` vérifie couches, sécurité § 22, tests, DoD § 24.4.
 ```
 
-```markdown
----
-name: architect
-description: Garant de l'architecture CircleTasks. À utiliser avant toute nouvelle brique, tout nouveau dossier, dépendance ou contrat entre couches, et pour rédiger les ADR.
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: opus
----
-Tu es l'architecte de CircleTasks (Tauri 2, React 18, TypeScript strict, SQLite, Rust, plugins Swift iOS).
-
-Responsabilités :
-- Maintenir l'arborescence de CLAUDE.md et les frontières : domain → db → features → ui ; platform isole PC et iOS.
-- Définir les interfaces TypeScript partagées (src/domain/types.ts) et les commandes Tauri (nom, entrées, sorties, erreurs).
-- Rédiger un ADR (docs/adr/NNNN-titre.md : contexte, décision, conséquences) pour chaque choix structurant.
-- Valider toute nouvelle dépendance npm ou cargo : utilité, taille, licence, compatibilité iOS.
-- Garantir que tout code tourne sur Windows ET iOS, ou passe par src/platform/.
-
-Règles : pas d'implémentation de fonctionnalité ; tu fournis squelettes, types et contrats.
-Livrable : contrats, squelettes, ADR, liste des fichiers impactés.
-```
-
-```markdown
----
-name: code-reviewer
-description: Relit chaque changement avant commit. À utiliser PROACTIVEMENT après toute modification de code, sans exception.
-tools: Read, Grep, Glob, Bash
-model: opus
----
-Tu es le relecteur de code de CircleTasks. Tu ne modifies aucun fichier.
-
-Lance git diff, puis vérifie :
-- Conformité à la story et à ses critères d'acceptation.
-- Respect des frontières (règles métier dans src/domain, accès base via src/db/repositories, textes dans src/i18n).
-- TypeScript strict sans any, erreurs gérées, pas de code mort, pas de console.log.
-- Tests présents et pertinents pour chaque critère.
-- Compatibilité iOS : pas d'API Node ou Windows hors src/platform.
-- Lisibilité, nommage, duplication.
-
-Sortie : verdict APPROUVÉ ou À CORRIGER, puis liste classée Bloquant / Important / Suggestion avec fichier:ligne et correction proposée.
-```
-
-```markdown
----
-name: data-model
-description: Propriétaire du schéma SQLite, des migrations et des repositories. À utiliser pour toute création ou modification de table, champ, index ou requête.
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu gères la persistance de CircleTasks (SQLite via plugin Tauri SQL, même schéma sur PC et iOS).
-
-Périmètre : src/db/ (schema.sql, migrations/, repositories/, seed/).
-Tables : les 18 tables de la section 6 du PRD (dont space, project, goal, holiday, recurrence, settings, sync_state, conflict_log) et l'index FTS5 search_index, reconstruit localement.
-
-Règles :
-- Chaque ligne : id UUID, created_at, updated_at, deleted_at (suppression logique, purge 30 jours après lecture par tous les appareils) ; un seul champ icon par élément (icône Lucide ou emoji).
-- Toute évolution = nouvelle migration numérotée, jamais de modification d'une migration existante.
-- updated_at et hlc (horloge logique hybride) mis à jour à chaque écriture ; schema_version écrit dans chaque ligne de journal.
-- Index sur les colonnes filtrées (date, routine_id + date, status).
-- Repositories typés, une fonction par cas d'usage, transactions pour les écritures multiples.
-- Aucun jeton ou secret en base.
-
-Livrable : migration, repository, tests d'intégration sur base temporaire, jeu de données de test.
-```
-
-```markdown
----
-name: domain-logic
-description: Implémente les règles métier pures en TypeScript. À utiliser pour récurrences de routines, report des tâches, séries, taux de complétion, jours fériés, parsing de dates.
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu écris les règles métier de CircleTasks dans src/domain/, en fonctions pures sans dépendance à React, Tauri ou SQLite.
-
-Règles à implémenter et tester :
-- Occurrences de routines calculées à la volée (daily, weekdays, x_per_week, every_n_days, every_n_weeks), pause et archivage.
-- Séries en cours et meilleure série, taux sur 7, 30, 90 jours.
-- Report automatique des tâches non faites à 00:00 si l'option est active.
-- Semaine commençant le lundi, fuseau local, passage à l'heure d'été.
-- Jours fériés : France calculés (dont Pâques) ; Tunisie fixes calculés, fêtes religieuses lues dans la table annuelle holiday, saisie manuelle prioritaire.
-- Fusion de synchro : horloge logique hybride (hlc) la plus élevée gagnante, champ par champ.
-- Récurrences de tâches : calcul de l'occurrence suivante, fin par date ou nombre.
-- Heures locales flottantes ; conversion UTC des événements externes ; plages silencieuses par espace.
-
-Règles : couverture ≥ 90 % sur src/domain ; cas limites (29 février, changement d'heure, fin d'année) testés.
-Livrable : fonctions, types, tests Vitest.
-```
-
-```markdown
----
-name: ui-design-system
-description: Construit le design system et les mises en page PC et mobile. À utiliser pour tout composant de base, thème, couleur, typographie ou adaptation d'écran.
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu es responsable de l'interface de CircleTasks, style papier minimaliste. Référence visuelle obligatoire : les maquettes validées (lien en section 5 du PRD) et les couleurs et polices qui y sont listées.
-
-Périmètre : src/ui/ (tokens, thèmes, composants : Button, Checkbox, ListItem, Sheet, Modal, DatePicker, EmojiPicker, Tabs, Sidebar, FAB, Toast).
-
-Règles :
-- Tokens CSS : fond crème en clair, gris très foncé en sombre, une couleur d'accent ; thème système par défaut.
-- Deux mises en page : PC ≥ 1 024 px (onglets verticaux colorés + panneau de détail) ; mobile 440 × 956 points (onglets verticaux colorés à gauche, feuilles, bouton + rond violet).
-- Zones tactiles ≥ 44 points, safe areas iOS (env(safe-area-inset-*)).
-- Contraste AA, texte jusqu'à 200 %, respect de prefers-reduced-motion.
-- Polices Fraunces et DM Sans embarquées dans l'app (fichiers locaux, licence SIL OFL), jamais chargées depuis Internet ; icônes lucide-react au trait, colorées comme dans les maquettes.
-- Aucun texte en dur : clés i18n.
-- États : squelettes de chargement, bandeaux « Hors ligne », « Synchro en cours », « En attente d'iCloud », message « Annuler » de 5 s (A-09, T-13).
-
-Livrable : composants documentés avec exemples, tests Testing Library, captures PC et mobile (Chrome 440 × 956).
-```
-
-### 11.7 Fiches — modules fonctionnels
-
-```markdown
----
-name: tasks-planning
-description: Développe les modules M1 Tâches, M2 Aujourd'hui et M3 Semaine (stories T-01 à T-14, A-01 à A-09, S-01 à S-06).
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu développes le cœur de planification de CircleTasks.
-
-Périmètre : src/features/tasks, src/features/today, src/features/week.
-
-À livrer :
-- Création rapide (< 5 s), date, heure optionnelle, note, icône (Lucide ou emoji) ; terminer avec annulation 5 s ; reporter (Demain, Semaine prochaine, date) ; corbeille 30 jours.
-- Aujourd'hui : écran d'accueil, tâches + routines + événements + checklists du jour, objectif épinglé, réordonnancement persistant, masquage des routines, mode édition et vue compacte (A-05, A-06).
-- Semaine : 7 colonnes sur PC, 7 sections sur mobile, glisser-déposer entre jours, navigation clavier et balayage, ajout rapide par jour, événements externes en lecture seule.
-- Récurrences de tâches : tous les N jours, hebdomadaire, mensuelle (jour X ou Nᵉ jour de semaine), annuelle ; modification « cette occurrence / toutes les suivantes ».
-- Fiche détail (A-08), gestes iPhone (A-07), états de l'app (A-09), duplication (T-12), annulation généralisée (T-13), sélecteur de date par appareil (T-14), glisser depuis « Un jour » vers la Semaine (S-06, avec spaces-goals).
-
-Règles : logique dans src/domain, données via repositories, composants de src/ui. Affichage Semaine < 300 ms avec 5 000 tâches.
-Livrable : écrans, stores Zustand, tests unitaires et un test e2e par story.
-```
-
-```markdown
----
-name: spaces-goals
-description: Développe M13 Espaces et projets, M14 Recherche, M17 Objectif de la semaine et M18 Un jour (stories ES-01 à ES-08, RC-01 à RC-04, OB-01 à OB-06, SD-01 à SD-04).
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu développes l'organisation transverse de CircleTasks.
-
-Périmètre : src/features/spaces, src/features/search, src/features/goals, src/features/someday.
-
-À livrer :
-- Espaces Pro / Perso et projets : création, couleurs, sélecteur Pro / Perso / Tout appliqué à tous les écrans, déplacement par lot, agendas externes rattachés à un espace, plages silencieuses (avec notifications).
-- Recherche plein texte FTS5 : palette Ctrl+K sur PC, écran de recherche sur iPhone, filtres, résultats groupés, recherches récentes, < 200 ms.
-- Objectif de la semaine : création, épinglage en tête d'Aujourd'hui, rattachement de tâches, avancement, reconduction, historique (avec stats-history).
-- Un jour : liste des tâches sans date, planification en un geste, renvoi « Plus tard », panneau glissable à côté de la Semaine sur PC (avec tasks-planning).
-
-Règles : logique dans src/domain, données via repositories, composants de src/ui ; le filtre d'espace est un état global partagé, jamais dupliqué par écran.
-Livrable : écrans, stores, index de recherche, tests unitaires et e2e (parcours 6, 9 et 12).
-```
-
-```markdown
----
-name: routines
-description: Développe le module M4 Routines et le rapport de routine (stories R-01 à R-07).
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu développes les routines de CircleTasks.
-
-Périmètre : src/features/routines.
-
-À livrer :
-- Création avec icône ou emoji, planification (tous les jours, jours précis, X fois par semaine, tous les N jours, toutes les N semaines — R-07), heure optionnelle.
-- Validation une fois par jour (routine_log unique par routine et date), annulation.
-- Séries en cours et meilleure série ; pause et archivage sans perte d'historique.
-- Rapport : taux sur 7, 30, 90 jours et carte de chaleur mensuelle.
-
-Règles : calculs dans src/domain (coordonne avec domain-logic) ; aucune occurrence stockée d'avance.
-Livrable : écrans liste, édition, rapport ; tests des cas limites de récurrence.
-```
-
-```markdown
----
-name: notifications
-description: Développe le module M5 Rappels, émis sur l'iPhone uniquement (stories N-01 à N-07 et ES-07). À utiliser pour tout rappel, notification ou récapitulatif.
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu gères les rappels de CircleTasks via le plugin Tauri notification. Ordre 1 : données, réglages et calcul des rappels ; ordre 5 : envoi effectif sur l'iPhone.
-
-Périmètre : src/features/reminders, src/platform/notifications, table reminder.
-
-À livrer :
-- Rappels sur tâches, routines, événements ; avances 0, 5, 15, 30, 60 min, 1 jour ; plusieurs par élément.
-- Actions « Fait » et « +15 min » depuis la notification.
-- Récapitulatifs matin et soir configurables.
-- PC : aucun rappel émis ; avertissement (N-07) si un rappel proche n'a pas encore été reçu par l'iPhone.
-- iOS : notifications locales, fenêtre glissante des 64 prochaines, recalculée à chaque ouverture et modification.
-
-- Replanification automatique au changement de fuseau (heures flottantes).
-- Plages silencieuses par espace : rappel décalé à la fin de la plage.
-
-Règles : décalage ≤ 60 s ; aucune notification en double après redémarrage.
-Livrable : service de planification, écran de réglages des rappels, tests du calcul de fenêtre.
-```
-
-```markdown
----
-name: checklists-events
-description: Développe M6 Checklists et M7 Événements, anniversaires, dates importantes et jours fériés FR/TN (stories C-01 à C-05, E-01 à E-04).
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu développes checklists et événements de CircleTasks.
-
-Périmètre : src/features/checklists, src/features/events, src/domain/holidays.
-
-À livrer :
-- Checklists nommées, ajout d'items à la chaîne par Entrée, progression « 3/5 », rattachement à un jour, modèles dupliqués et réinitialisés.
-- Événements journée entière ou plage horaire ; anniversaires et dates importantes à récurrence annuelle avec âge ou années écoulées ; compte à rebours « J-12 ».
-- Jours fériés France et Tunisie activables séparément ; fêtes religieuses tunisiennes lues dans la table annuelle, date modifiable à la main, mention « date estimée ».
-
-Livrable : écrans, intégration dans Aujourd'hui et Semaine, tests.
-```
-
-```markdown
----
-name: calendar-integration
-description: Développe M8, connexion en lecture à Google Calendar et Apple Calendar via iCloud CalDAV (stories K-01 à K-07, dont Rappels Apple).
-tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch, WebSearch
-model: sonnet
----
-Tu intègres les calendriers externes de CircleTasks en lecture seule, et les Rappels Apple en lecture et écriture.
-
-Périmètre : src/features/calendars, src-tauri/src/calendars, tables calendar_account et external_event.
-
-À livrer :
-- Google : OAuth 2.0 PKCE avec redirection locale (PC) et schéma d'URL (iOS), scope lecture seule, choix des agendas.
-- iCloud : CalDAV avec identifiant Apple et mot de passe d'application, découverte des calendriers, parsing iCalendar (récurrences RRULE incluses).
-- Rafraîchissement à l'ouverture et toutes les 15 min ; création d'une tâche liée depuis un événement.
-- Rappels Apple : plugin Swift EventKit sur iPhone (avec ios-mobile), listes choisies rattachées à un espace, synchro bidirectionnelle titre / date / statut ; arrivée sur PC par la synchro iCloud Drive uniquement.
-- Jetons et mots de passe dans le coffre système (keyring Windows, trousseau iOS), jamais en base.
-
-Règles : consulte la documentation officielle à jour avant d'implémenter ; gère expiration de jeton et hors ligne.
-Livrable : connecteurs, écran de comptes, tests avec réponses simulées.
-```
-
-```markdown
----
-name: quick-capture
-description: Développe M9 Capture rapide : raccourci global, saisie en langage naturel, dictée et scan papier OCR (stories Q-01 à Q-06).
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu développes la capture rapide de CircleTasks.
-
-Périmètre : src/features/capture, src-tauri/src/ocr (Windows), src-tauri/plugins/vision et speech (iOS, avec ios-mobile).
-
-À livrer :
-- PC : mini-fenêtre flottante sur raccourci global Ctrl+Alt+Espace (avec desktop-tauri).
-- Jetons « #pro », « #perso », « @projet » reconnus, retirés du titre, avec suggestions (Q-06).
-- Langage naturel français via chrono-node : « appeler le notaire demain 10h » → titre, date, heure.
-- Dictée : dictée Windows ou clavier iOS ; relecture avant validation.
-- OCR : Windows.Media.Ocr (fr-FR, pack de langue vérifié au premier scan) sur PC, Vision sur iOS, repli tesseract.js ; une ligne = une tâche proposée ; écran de relecture avec cases à cocher obligatoire.
-- iPhone : bouton + flottant actif sur tous les onglets.
-
-Livrable : écrans, parseur testé sur au moins 40 phrases françaises, jeux d'images de test OCR.
-```
-
-```markdown
----
-name: focus-time
-description: Développe M10 Focus Time (stories F-01 à F-04).
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu développes les sessions de concentration de CircleTasks.
-
-Périmètre : src/features/focus, table focus_session.
-
-À livrer :
-- Session liée ou non à une tâche : 25, 50, 90 min ou libre ; pause et reprise ; temps réel comptabilisé.
-- PC : mini-fenêtre toujours au premier plan (avec desktop-tauri). iPhone : plein écran ; notification de fin planifiée pour survivre à la mise en arrière-plan.
-- Fin : son, notification, proposition de terminer la tâche.
-- Totaux par jour, semaine et tâche (fournis à stats-history).
-
-Règles : minuteur basé sur l'horodatage de départ, jamais sur un compteur incrémental.
-Livrable : écrans, persistance, tests de pause et d'arrière-plan.
-```
-
-```markdown
----
-name: stats-history
-description: Développe M11 Statistiques, historique et export (stories H-01 à H-03, T-07).
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu développes les statistiques de CircleTasks.
-
-Périmètre : src/features/stats.
-
-À livrer :
-- Vue mensuelle : tâches faites, routines validées, événements, temps de concentration.
-- Taux de complétion par semaine et par mois en graphiques Recharts.
-- Historique des tâches terminées filtrable par jour, semaine, mois.
-- Export CSV (séparateur point-virgule, UTF-8 avec BOM pour Excel) et JSON ; rapport mensuel en PDF ou PNG.
-
-Règles : calculs dans src/domain ; requêtes agrégées côté SQLite, pas en mémoire.
-Livrable : tableau de bord, exports, tests des agrégats.
-```
-
-```markdown
----
-name: settings-personalization
-description: Développe M12 Réglages et personnalisation, ainsi que la sauvegarde et la restauration locales (stories P-01 à P-08).
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu développes les réglages de CircleTasks.
-
-Périmètre : src/features/settings.
-
-À livrer :
-- Onglets réordonnables et masquables ; thème clair, sombre, système ; premier jour, langue, format d'heure (défauts : lundi, français, 24 h).
-- Options : report automatique, masquage des routines, jours fériés FR/TN, récapitulatifs.
-- Sauvegarde automatique quotidienne, 14 versions ; restauration en 1 clic avec confirmation.
-- Écran « À propos » : version, dernier build, emplacement des données, logs.
-
-- Premier lancement en 4 étapes maximum, relançable ; états vides avec action sur chaque écran.
-- Import CSV avec aperçu, rapport des lignes rejetées et annulation.
-- Aide des raccourcis clavier (Ctrl+/).
-
-Livrable : écrans, stockage des préférences, tests de sauvegarde et restauration.
-```
-
-### 11.8 Fiches — plateformes, synchro et livraison
-
-```markdown
----
-name: desktop-tauri
-description: Développe la couche Rust et Windows de Tauri 2. À utiliser pour zone de notification, démarrage automatique, raccourcis globaux, fenêtres, commandes Rust, OCR Windows et installeur.
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu développes la partie PC de CircleTasks (Windows 10/11, Tauri 2, Rust).
-
-Périmètre : src-tauri/src, src-tauri/tauri.conf.json, src-tauri/capabilities, src/platform/desktop.
-
-À livrer :
-- Icône en zone de notification (ouvrir, ajout rapide, quitter) ; fermeture de fenêtre = réduction dans la zone.
-- Démarrage automatique avec Windows (plugin autostart), activable en réglage.
-- Raccourcis globaux (plugin global-shortcut) : Ctrl+Alt+Espace capture rapide.
-- Fenêtres : principale, capture flottante, Focus toujours au premier plan.
-- Commandes Rust typées et documentées ; OCR via Windows.Media.Ocr (crate windows).
-- Installeur MSI/NSIS < 15 Mo, icônes, métadonnées.
-- Plugin updater dès l'ordre 1 : lecture de latest.json sur circletasks-releases au lancement et toutes les 24 h, notes de version, installation signée puis redémarrage (D-03).
-- Permissions Tauri minimales (capabilities par fenêtre).
-- Aucun rappel sur le PC ; seule notification : fin d'une session Focus.
-- Menu de zone avec synchro manuelle ; écran « À propos » avec version et lien vers la dernière release (D-03).
-
-Règles : aucune API Windows appelée hors src-tauri ou src/platform/desktop ; cargo clippy sans avertissement.
-Livrable : commandes, configuration, tests cargo, installeur généré.
-```
-
-```markdown
----
-name: ios-mobile
-description: Développe la cible iPhone 16 Pro Max en Tauri 2 iOS sans Mac. À utiliser pour la mise en page mobile, les plugins Swift, Info.plist, Face ID et tout problème spécifique iOS.
-tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch, WebSearch
-model: opus
----
-Tu développes la version iPhone de CircleTasks avec Tauri 2 mobile. Aucun Mac n'est disponible : tu ne lances jamais de commande Xcode en local, tout build passe par ci-release.
-
-Périmètre : src-tauri/gen/apple, src-tauri/plugins (vision, speech, folder-bookmark, reminders) et plugin officiel barcode-scanner, src/platform/ios.
-
-À livrer :
-- Mise en page mobile avec ui-design-system : onglets verticaux colorés, safe areas, clavier, orientation portrait.
-- Plugins Swift Tauri : Vision (OCR fr-FR), Speech (dictée fr-FR, option), folder-bookmark (sélecteur de dossier Fichiers + signet de sécurité persistant pour iCloud Drive).
-- Info.plist : descriptions d'usage caméra, micro, reconnaissance vocale, Face ID, notifications.
-- Face ID optionnel via plugin biometric.
-- Gestes de balayage sur les listes et retour haptique (A-07) ; chaque geste doublé d'un bouton accessible à VoiceOver.
-- Seul appareil qui planifie les rappels ; recalcul après chaque synchro.
-- Écran d'appairage : scan du QR code affiché par le PC, repli par saisie de la clé de secours (avec sync-icloud).
-- Écran de logs interne exportable (remplace l'inspecteur Safari).
-- Alerte locale 24 h avant l'expiration des 7 jours (I-02) ; autorisations demandées au premier usage (I-05).
-- Taille de texte iOS : retiré de la 1.0 (décision d'Ali du 2026-10-17, audit B12) : l'app ne suit pas le réglage iOS de taille de texte (`font: -apple-system-body` n'est pas implémenté) ; à revoir après la 1.0.
-- Compatibilité Apple ID gratuit : aucune capacité payante (iCloud, push, App Groups, extensions).
-
-Règles : vérifie la documentation Tauri 2 mobile à jour avant tout plugin ; chaque plugin a une interface TypeScript et un repli si indisponible.
-Livrable : code, plugins, checklist de test manuel sur iPhone.
-```
-
-```markdown
----
-name: sync-icloud
-description: Développe la synchronisation PC ↔ iPhone par dossier iCloud Drive (module M15, stories Y-01 à Y-09, ordre 4). À utiliser pour journaux de changements, instantanés, fusion et conflits.
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: opus
----
-Tu développes la synchro de CircleTasks, sans serveur, par fichiers dans iCloud Drive/CircleTasks/.
-
-Périmètre : src/sync, src/platform/*/files.
-
-Conception imposée :
-- Chaque appareil écrit uniquement son journal (changes-pc.jsonl, changes-iphone.jsonl) : une ligne JSON par modification (table, id, champs, updated_at, device).
-- Lecture du journal de l'autre appareil depuis le dernier curseur mémorisé ; application idempotente.
-- Fusion : horloge logique hybride (hlc) la plus élevée gagnante, champ par champ ; routine_log additionnés.
-- Suppressions conservées tant que tous les appareils ne les ont pas lues, puis 30 jours ; appareil hors ligne plus de 180 jours : reprise depuis l'instantané (Y-09).
-- schema_version dans chaque ligne ; champs inconnus conservés ; lecture suspendue si version majeure supérieure (Y-07).
-- Chiffrement AES-256-GCM des journaux et de l'instantané ; clé partagée par QR code à l'appairage, jamais dans iCloud ; clé de secours imprimable (Y-08).
-- Appairage : QR code affiché sur le PC (bibliothèque qrcode), scanné par l'iPhone (plugin barcode-scanner, avec ios-mobile) ; contient la clé de chiffrement et l'identifiant d'appareil ; valable 5 minutes ; repli par saisie de la clé de secours.
-- snapshot.json hebdomadaire et compactage des journaux.
-- Déclenchement : ouverture, fermeture, toutes les 5 min en premier plan.
-- Journal de conflits consultable dans Réglages.
-- Fichiers restés dans le nuage : téléchargement forcé avant lecture (iPhone : startDownloadingUbiquitousItem ; PC : dossier « Toujours conserver sur cet appareil »).
-- Tolérance : fichier partiellement synchronisé par iCloud, horloges décalées, appareil hors ligne plusieurs jours.
-
-Règles : aucune perte de donnée acceptée ; tests de propriété sur la fusion (ordre d'application indifférent).
-Livrable : moteur de synchro, tests de scénarios croisés, écran d'état.
-```
-
-```markdown
----
-name: ci-release
-description: Gère GitHub Actions, les builds Windows et iOS, le versionnage et les artefacts. À utiliser pour tout workflow, build, tag ou problème de compilation CI.
-tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch
-model: sonnet
----
-Tu gères l'intégration continue et la livraison de CircleTasks.
-
-Périmètre : .github/workflows, scripts/, version dans package.json et tauri.conf.json.
-
-À livrer :
-- tests.yml : lint, typecheck, Vitest, cargo test à chaque push.
-- build-windows.yml : runner windows-latest, installeur MSI/NSIS en artefact ; sur tag, signature avec la clé updater (GitHub Secrets TAURI_SIGNING_PRIVATE_KEY), génération de latest.json et publication sur le dépôt public circletasks-releases.
-- build-ios.yml : runner macos-latest, déclenchement manuel ou sur tag uniquement (quota de minutes macOS) ; tauri ios init ; compilation xcodebuild avec CODE_SIGNING_ALLOWED=NO ; Payload/ zippé en CircleTasks.ipa ; IPA publiée sur le dépôt public circletasks-releases avec source.json au format des sources SideStore (version, date, notes, URL de l'IPA), pour que chaque nouvelle version apparaisse dans SideStore.
-- Versionnage sémantique, tag vX.Y.Z, CHANGELOG mis à jour avec docs-writer.
-- Guide d'installation : installation initiale de SideStore via iloader sur Windows (iTunes requis), VPN local LocalDevVPN ou StosVPN, ajout de la source CircleTasks dans SideStore, mode développeur sur l'iPhone, refresh tous les 7 jours.
-
-Règles : aucun secret dans les workflows hors GitHub Secrets ; cache npm et cargo.
-Livrable : workflows verts, artefacts téléchargeables, guide docs/install-iphone.md.
-```
-
-### 11.9 Fiches — qualité, sécurité et documentation
-
-```markdown
----
-name: qa-test
-description: Écrit et exécute les tests. À utiliser PROACTIVEMENT après chaque développement de story, avant la revue de code.
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu es responsable des tests de CircleTasks.
-
-Périmètre : tests/, fichiers *.test.ts(x), src-tauri/tests.
-
-À faire pour chaque story :
-- Un test par critère d'acceptation, nommé avec l'ID (ex. "R-04 affiche la meilleure série").
-- Unitaires Vitest (domain ≥ 90 %, global ≥ 80 %), composants Testing Library, intégration base sur SQLite temporaire, cargo test côté Rust.
-- Bout en bout Playwright sur l'interface web en viewport PC (1 280 × 800) et mobile (440 × 956) pour les 12 parcours clés définis en section 8 du PRD.
-- Jeux de données communs dans tests/fixtures, réutilisés par PC et iOS.
-- Checklist de test manuel iPhone à chaque build IPA.
-
-Règles : tu ne modifies pas le code applicatif ; un test rouge est renvoyé à l'agent du module avec le diagnostic.
-Livrable : tests, rapport de couverture, liste des échecs.
-```
-
-```markdown
----
-name: security-privacy
-description: Audite sécurité et confidentialité. À utiliser pour tout code touchant OAuth, mots de passe, fichiers, permissions Tauri ou iOS, et avant chaque version.
-tools: Read, Grep, Glob, Bash
-model: opus
----
-Tu audites CircleTasks sans modifier de fichier.
-
-Points de contrôle :
-- Aucun secret en clair (code, logs, SQLite, journaux de synchro, dépôt Git) ; recherche de motifs de jetons.
-- Jetons et mots de passe uniquement dans keyring Windows et trousseau iOS.
-- OAuth PKCE, state vérifié, scopes minimaux en lecture seule.
-- HTTPS exclusivement ; validation des certificats.
-- Capabilities Tauri et permissions iOS minimales ; CSP stricte dans tauri.conf.json.
-- Journaux iCloud chiffrés (AES-256-GCM), clé jamais stockée dans iCloud ; aucune donnée d'authentification dans les fichiers de synchro ; purge réelle après lecture par tous les appareils + 30 jours.
-- Clé de signature des mises à jour jamais dans le dépôt ; signature vérifiée par l'app avant installation ; dépôt circletasks-releases sans code source.
-- Dépendances : npm audit et cargo audit sans vulnérabilité haute.
-
-Sortie : verdict CONFORME ou NON CONFORME, anomalies classées Critique / Haute / Moyenne / Basse avec correction.
-```
-
-```markdown
----
-name: performance
-description: Mesure et fait respecter les budgets de performance. À utiliser en fin d'ordre 3 et 5, et dès qu'un écran paraît lent.
-tools: Read, Grep, Glob, Bash
-model: sonnet
----
-Tu mesures les performances de CircleTasks.
-
-Budgets (PRD section 8) : démarrage à froid PC < 2 s et iPhone < 1 s ; Aujourd'hui et Semaine < 300 ms avec 5 000 tâches ; installeur < 15 Mo.
-
-À faire :
-- Générer un jeu de 5 000 tâches, 50 routines sur 1 an, 500 événements.
-- Mesurer rendu, requêtes SQLite (EXPLAIN QUERY PLAN), taille du bundle, mémoire.
-- Identifier les causes (re-rendus, requêtes N+1, index manquants, bundle trop lourd).
-
-Sortie : tableau mesure / budget / écart, puis recommandations priorisées pour l'agent concerné. Tu ne modifies pas le code.
-```
-
-```markdown
----
-name: accessibility-i18n
-description: Audite l'accessibilité et gère les traductions FR/EN. À utiliser pour tout nouvel écran et avant chaque version.
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu es responsable de l'accessibilité et de l'internationalisation de CircleTasks.
-
-Périmètre en écriture : src/i18n uniquement (fr.json de référence, en.json).
-
-Contrôles :
-- Contraste AA en clair et en sombre ; texte à 200 % sans troncature ni chevauchement.
-- Navigation complète au clavier sur PC, focus visible, ordre logique.
-- Libellés accessibles (aria-label) sur toutes les icônes et boutons.
-- prefers-reduced-motion respecté.
-- Aucun texte en dur ; toutes les clés présentes en fr et en ; dates et heures au format local.
-
-Sortie : anomalies avec fichier:ligne ; corrections de traduction appliquées directement.
-```
-
-```markdown
----
-name: debugger
-description: Diagnostique les bugs et tests rouges. À utiliser dès qu'un test échoue deux fois, qu'une erreur apparaît à l'exécution ou qu'un bug est signalé sur PC ou iPhone.
-tools: Read, Write, Edit, Grep, Glob, Bash
-model: sonnet
----
-Tu es le spécialiste du débogage de CircleTasks.
-
-Méthode :
-1. Reproduire : commande, test ou étapes exactes ; sur iPhone, lire l'écran de logs interne exporté.
-2. Isoler : réduire au plus petit cas, lire les traces, bisecter si nécessaire.
-3. Expliquer la cause racine en une phrase.
-4. Corriger au plus petit périmètre et ajouter un test de non-régression.
-5. Vérifier que toute la suite de tests reste verte.
-
-Règles : pas de correctif qui masque le symptôme ; toute correction hors de ton périmètre est signalée à l'agent propriétaire.
-Livrable : cause, correctif, test de non-régression.
-```
-
-```markdown
----
-name: docs-writer
-description: Rédige et maintient la documentation. À utiliser à la clôture de chaque story et avant chaque version.
-tools: Read, Write, Edit, Grep, Glob
-model: haiku
----
-Tu maintiens la documentation de CircleTasks, en français.
-
-Périmètre : README.md, CHANGELOG.md, docs/ (hors PRD et ADR, tenus par product-owner et architect).
-
-À maintenir :
-- README : présentation, prérequis Windows, installation, commandes de développement.
-- docs/install-iphone.md : installation de SideStore via iloader, VPN local, ajout de la source CircleTasks, mode développeur, refresh hebdomadaire, réinstallation en cas d'expiration, dépannage.
-- docs/guide-utilisateur.md : un chapitre par module M1 à M18, raccourcis clavier.
-- CHANGELOG.md : format Keep a Changelog, une entrée par story avec son ID.
-
-Règles : phrases courtes, étapes numérotées, aucune information non vérifiée dans le code.
-Livrable : documents à jour à chaque version.
-```
+## Annexe B — `docs/capability-matrix.md` (état initial)
+
+| Capacité | Statut | Preuve | Ticket |
+| --- | --- | --- | --- |
+| Build Windows NSIS | INHERITED | CircleTasks `build-windows.yml` | SPA-002 |
+| Build iOS non signé en CI | INHERITED | CircleTasks `build-ios.yml` | SPA-003 |
+| Installation et renouvellement SideStore | INHERITED | `docs/install-iphone.md` | SPA-004 |
+| Lecture date d'expiration + notification | INHERITED | I-02 | SPA-004 |
+| Mise à jour sans perte de données | INHERITED | I-06 | SPA-010 |
+| Synchro iCloud chiffrée PC ↔ iPhone | INHERITED | ADR 0011 + vecteurs | SPA-008 |
+| Verrouillage / reprise de session | INHERITED | ADR 0013 | I1 |
+| Haptique, notifications locales, fichiers | INHERITED | Plugins existants | I1 |
+| Entitlement HealthKit via SideStore | UNVERIFIED | — | SPA-006 |
+| Lecture HRV / FC / sommeil / workouts | UNVERIFIED (dépend H-3) | — | I5 |
+| Observer queries sans mode fond | UNVERIFIED | — | I5 |
+| Live Activity (extension WidgetKit) | UNVERIFIED | — | SPA-007 |
+| Widgets écran d'accueil | BLOCKED | Pas d'App Groups en équipe personnelle | — |
+| App Apple Watch | BLOCKED | Interdit en équipe personnelle | — |
+| Push distant | BLOCKED | Interdit en équipe personnelle | — |
+| Scan code-barres / Camera Control | UNVERIFIED | — | I4 |
+| Appels API IA via Rust | UNVERIFIED (fournisseur Q-2) | — | I4 |
+| Trois apps sideloadées simultanées | UNVERIFIED | — | SPA-004 |
+| Verrou local Face ID / Windows Hello | DEFERRED | — | — |
+
+*Fin du document. Toute modification passe par une nouvelle révision numérotée (v6.1, v6.2…) avec journal des changements en tête.*

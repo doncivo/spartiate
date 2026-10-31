@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Spartiate — PC — Journal nutrition</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap">
+<style>
+:root{--bg:#0D0E11;--surface:#15171C;--surface-2:#1D2027;--line:#2A2E37;--fg:#EDE7DC;--fg-2:#A39C90;--accent:#B8322A;--accent-h:#D23B31;--bronze:#C28E4C;--bronze-2:#E0B577;--ok:#5E9E6B;--warn:#D9A441;--info:#6F8FB3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--fg);font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums}
+h1,h2,.display{font-family:Cinzel,"Times New Roman",serif;font-weight:600;letter-spacing:.02em;margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;font-weight:600;font-size:16px;border:0;cursor:pointer;color:var(--fg);background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--fg)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.bronze{background:transparent;border:1px solid var(--bronze);color:var(--bronze-2)}
+.num{font-family:Cinzel,serif;font-weight:600}
+.bronze{color:var(--bronze-2)}
+.muted{color:var(--fg-2)}
+.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg-2)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
+.pill.warn{border-color:var(--warn);color:var(--warn)}
+.pill.red{background:var(--accent);border-color:var(--accent);color:var(--fg)}
+.dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dial svg{display:block}
+.dial .v{font-family:Cinzel,serif;font-size:26px;font-weight:600;line-height:1}
+.dial .l{font-size:12px;color:var(--fg-2)}
+svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+.win{width:1440px;height:900px;background:var(--bg);display:flex;overflow:hidden}
+.side{width:220px;flex:none;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 12px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 22px}
+.brand .shield{width:30px;height:30px;border-radius:50%;background:var(--bronze);display:flex;align-items:center;justify-content:center;color:var(--accent);font-family:Cinzel,serif;font-weight:600;font-size:18px}
+.nav a{display:flex;align-items:center;gap:10px;height:40px;padding:0 10px;border-radius:8px;color:var(--fg-2);font-size:14px;font-weight:500}
+.nav a.on{background:var(--surface-2);color:var(--fg)}
+.nav a kbd{margin-left:auto;font:11px ui-monospace,monospace;color:var(--fg-2);opacity:.7}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.top{height:56px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.sub{display:flex;gap:18px;font-size:14px;color:var(--fg-2)}
+.sub span.on{color:var(--fg);border-bottom:2px solid var(--bronze);padding-bottom:4px}
+.cols{flex:1;display:grid;grid-template-columns:400px 1fr 260px;gap:18px;padding:22px 28px;min-height:0}
+.tl{display:flex;flex-direction:column;min-height:0}
+.meal{display:grid;grid-template-columns:52px 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.meal:first-of-type{border-top:0}
+.meal .t{font-family:Cinzel,serif;font-weight:600;font-size:15px;padding-top:1px}
+.meal .sum{display:flex;justify-content:space-between;font-size:12px;color:var(--fg-2);margin-bottom:6px}
+.meal .sum b{color:var(--fg);font-weight:600}
+.it{display:grid;grid-template-columns:1fr 52px 44px;gap:8px;font-size:13.5px;padding:4px 0;align-items:baseline;white-space:nowrap}
+.it .g{color:var(--fg-2);text-align:right;font-size:12.5px}
+.it .k{text-align:right}
+.it .src{font-size:11px;color:var(--fg-2);margin-left:6px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.meal.next{opacity:.9}
+.meal.next .t{color:var(--bronze-2)}
+.search{height:44px;border:2px solid var(--bronze-2);border-radius:10px;background:var(--bg);display:flex;align-items:center;padding:0 14px;gap:10px;font-size:16px;box-shadow:0 0 0 3px rgba(224,181,119,.18)}
+.search .caret{width:1.5px;height:20px;background:var(--fg)}
+.grp{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2);padding:10px 10px 4px}
+.r{display:grid;grid-template-columns:1fr 112px 44px;gap:10px;align-items:center;height:42px;padding:0 10px;border-radius:8px;font-size:14px;white-space:nowrap}
+.r>span:first-child{overflow:hidden;text-overflow:ellipsis}
+.r small{display:block;font-size:11.5px;color:var(--fg-2)}
+.r .kc{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.r .kc i{font-style:normal;font-size:11px;color:var(--fg-2)}
+.r .src{text-align:right;font-size:11px;color:var(--fg-2)}
+.r.on{background:var(--surface-2);box-shadow:inset 3px 0 0 var(--bronze)}
+.port{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+.port span{height:34px;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--fg-2)}
+.port span.on{border-color:var(--bronze);color:var(--bronze-2);font-weight:600}
+.fld{height:40px;border:1px solid var(--line);border-radius:8px;background:var(--bg);display:inline-flex;align-items:center;justify-content:center;padding:0 10px;font-size:16px;font-weight:600;min-width:84px;gap:4px}
+.fld small{font-size:12px;color:var(--fg-2);font-weight:400}
+.bar{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}.bar i{display:block;height:100%;background:var(--bronze)}
+.mac{padding:10px 0;border-top:1px solid var(--line)}
+.mac:first-of-type{border-top:0}
+.mac .l{display:flex;justify-content:space-between;align-items:baseline;font-size:13px}
+.mac .l b{font-family:Cinzel,serif;font-size:20px;font-weight:600}
+kbd.k{font:12px ui-monospace,monospace;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--fg)}
+.tg{width:38px;height:22px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);position:relative;flex:none}
+.tg::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--fg-2)}
+</style>
+</head>
+<body>
+<div class="win">
+  <aside class="side">
+    <div class="brand"><span class="shield">Λ</span><span class="display" style="font-size:17px">Spartiate</span></div>
+    <nav class="nav" style="display:flex;flex-direction:column;gap:2px">
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3v18"/></svg>Aujourd'hui<kbd>Ctrl 1</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>Entraînement<kbd>Ctrl 2</kbd></a>
+      <a class="on"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M4 8h16l-1.5 12h-13z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>Nutrition<kbd>Ctrl 3</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M3 20h18M5 17l5-6 4 3 5-8"/></svg>Progrès<kbd>Ctrl 4</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>Plus<kbd>Ctrl 5</kbd></a>
+    </nav>
+    <div style="flex:1"></div>
+    <div class="card" style="padding:10px 12px;font-size:12px;color:var(--fg-2);display:flex;flex-direction:column;gap:4px">
+      <span style="color:var(--fg)">PC · Bureau</span>
+      <span>Synchro iCloud il y a 2 min</span>
+      <span>iPhone vu il y a 2 min</span>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="top">
+      <div style="display:flex;align-items:center;gap:22px">
+        <h1 style="font-size:22px">Nutrition</h1>
+        <div class="sub"><span class="on">Journal</span><span>Dashboard</span><span>Stratégie</span><span>Check-in dim.</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="pill">← ven. 30 oct. →</span>
+        <span class="muted" style="font-size:13px">Scan et photo : sur l'iPhone</span>
+      </div>
+    </div>
+
+    <div class="cols">
+      <section class="card tl" style="padding:18px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <div><div class="eyebrow">Journal du jour</div><h2 style="font-size:22px;margin-top:2px">Vendredi 30 octobre</h2></div>
+          <div style="text-align:right"><div class="num" style="font-size:22px">1 460 <span style="font-size:12px;font-family:inherit;color:var(--fg-2)">kcal</span></div><div class="muted" style="font-size:12px">3 repas · jour partiel</div></div>
+        </div>
+        <div style="margin-top:12px;flex:1;min-height:0">
+          <div class="meal">
+            <span class="t">07:10</span>
+            <div>
+              <div class="sum"><span>Petit-déjeuner</span><span><b>512</b> kcal · P 34 · G 58 · L 15</span></div>
+              <div class="it"><span>Flocons d'avoine <span class="src">Ciqual</span></span><span class="g">80 g</span><span class="k">296</span></div>
+              <div class="it"><span>Skyr nature Danone <span class="src">OFF</span></span><span class="g">150 g</span><span class="k">96</span></div>
+              <div class="it"><span>Banane <span class="src">Ciqual</span></span><span class="g">120 g</span><span class="k">107</span></div>
+              <div class="it"><span>Café noir <span class="src">Perso</span></span><span class="g">250 ml</span><span class="k">13</span></div>
+            </div>
+          </div>
+          <div class="meal">
+            <span class="t">12:40</span>
+            <div>
+              <div class="sum"><span>Déjeuner</span><span><b>742</b> kcal · P 52 · G 74 · L 26</span></div>
+              <div class="it"><span>Riz basmati cuit <span class="src">Ciqual</span></span><span class="g">220 g</span><span class="k">286</span></div>
+              <div class="it"><span>Saumon, pavé poêlé <span class="src">Ciqual</span></span><span class="g">140 g</span><span class="k">283</span></div>
+              <div class="it"><span>Brocoli vapeur <span class="src">Ciqual</span></span><span class="g">150 g</span><span class="k">46</span></div>
+              <div class="it"><span>Huile d'olive <span class="src">Ciqual</span></span><span class="g">10 g</span><span class="k">90</span></div>
+              <div class="it"><span>Pomme <span class="src">Ciqual</span></span><span class="g">70 g</span><span class="k">37</span></div>
+            </div>
+          </div>
+          <div class="meal">
+            <span class="t">16:30</span>
+            <div>
+              <div class="sum"><span>Collation</span><span><b>206</b> kcal · P 10 · G 18 · L 7</span></div>
+              <div class="it"><span>Barre protéinée Nākd <span class="src">OFF</span></span><span class="g">35 g</span><span class="k">142</span></div>
+              <div class="it"><span>Amandes <span class="src">Ciqual</span></span><span class="g">10 g</span><span class="k">64</span></div>
+            </div>
+          </div>
+          <div class="meal next">
+            <span class="t">19:00</span>
+            <div>
+              <div class="sum"><span>Dîner · en cours de saisie</span><span class="muted">reçoit l'ajout</span></div>
+              <div class="muted" style="font-size:13px;border:1px dashed var(--line);border-radius:8px;padding:10px;text-align:center">Aucun aliment pour l'instant</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding-top:10px;border-top:1px solid var(--line)" class="muted">
+          <span>Pesée 06:50 · 81,4 kg</span><span><kbd class="k">Suppr</kbd> retire · <kbd class="k">D</kbd> duplique hier</span>
+        </div>
+      </section>
+
+      <section style="display:flex;flex-direction:column;gap:14px;min-width:0;min-height:0">
+        <div class="search"><svg class="ic" viewBox="0 0 24 24" style="width:20px;height:20px;color:var(--fg-2)"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>poulet</span><span class="caret"></span><span class="muted" style="margin-left:auto;font-size:12px;white-space:nowrap"><kbd class="k">↑</kbd><kbd class="k">↓</kbd> choisir · <kbd class="k">Entrée</kbd> ajouter</span></div>
+        <div class="card" style="padding:6px 8px 10px;flex:1;min-height:0;display:flex;flex-direction:column">
+          <div style="flex:1;min-height:0;overflow:hidden">
+            <div class="grp">Récents</div>
+            <div class="r on"><span>Blanc de poulet, cuit<small>sans peau · 7 fois ce mois</small></span><span class="kc">165 <i>kcal / 100 g</i></span><span class="src">Ciqual</span></div>
+            <div class="r"><span>Cuisse de poulet rôtie<small>avec peau</small></span><span class="kc">215 <i>kcal / 100 g</i></span><span class="src">Ciqual</span></div>
+            <div class="grp">Perso</div>
+            <div class="r"><span>Poulet curry coco, recette<small>portion 350 g</small></span><span class="kc">188 <i>kcal / 100 g</i></span><span class="src">Perso</span></div>
+            <div class="r"><span>Wrap poulet du midi<small>assiette type</small></span><span class="kc">540 <i>kcal / part</i></span><span class="src">Perso</span></div>
+            <div class="grp">Ciqual</div>
+            <div class="r"><span>Poulet, escalope, grillée</span><span class="kc">148 <i>kcal / 100 g</i></span><span class="src">Ciqual</span></div>
+            <div class="r"><span>Poulet, aile, rôtie</span><span class="kc">236 <i>kcal / 100 g</i></span><span class="src">Ciqual</span></div>
+            <div class="r"><span>Nuggets de poulet, frits</span><span class="kc">268 <i>kcal / 100 g</i></span><span class="src">Ciqual</span></div>
+            <div class="grp">Open Food Facts</div>
+            <div class="r"><span>Émincés de poulet rôti · Fleury Michon<small>code-barres connu</small></span><span class="kc">112 <i>kcal / 100 g</i></span><span class="src">OFF</span></div>
+            <div class="r"><span>Blanc de poulet fumé · Herta</span><span class="kc">103 <i>kcal / 100 g</i></span><span class="src">OFF</span></div>
+          </div>
+          <div class="muted" style="font-size:12px;padding:8px 10px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between"><span>9 résultats · OFF en cache 90 j</span><span>Créer une fiche</span></div>
+        </div>
+
+        <div class="card" style="padding:16px 18px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div><div class="eyebrow">Ajouter</div><div style="font-size:17px;font-weight:600;margin-top:2px">Blanc de poulet, cuit</div><div class="muted" style="font-size:12px">Ciqual · 165 kcal, P 31, G 0, L 3,6 / 100 g</div></div>
+            <div style="text-align:right"><div class="num bronze" style="font-size:28px">248 <span style="font-size:12px;font-family:inherit;color:var(--fg-2)">kcal</span></div><div class="muted" style="font-size:12px;white-space:nowrap">P 47 · G 0 · L 5</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;margin-top:12px">
+            <div class="fld" style="border:2px solid var(--bronze-2)">150 <small>g</small></div>
+            <div class="port"><span>100 g</span><span class="on">150 g</span><span>200 g</span><span>1 filet</span></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px">
+            <div class="fld" style="min-width:0;gap:8px;height:40px"><span class="muted" style="font-size:12px;font-weight:400">à</span>19:00 <small>dîner</small></div>
+            <span class="muted" style="font-size:12px;flex:1"><kbd class="k">Maj Entrée</kbd> ajoute et garde la recherche</span>
+            <button class="btn primary" style="height:40px;font-size:15px;white-space:nowrap">Ajouter à 19:00</button>
+          </div>
+        </div>
+      </section>
+
+      <aside style="display:flex;flex-direction:column;gap:14px;min-width:0">
+        <div class="card" style="padding:16px 18px">
+          <div style="display:flex;justify-content:space-between"><div class="eyebrow">Reste</div><span class="muted" style="font-size:12px">cibles du 26 oct.</span></div>
+          <div class="mac" style="margin-top:4px">
+            <div class="l"><span>Calories</span><b>1 190 <span class="muted" style="font-family:inherit;font-size:12px;font-weight:400">/ 2 650</span></b></div>
+            <div class="bar" style="margin-top:6px"><i style="width:55%"></i></div>
+            <div class="muted" style="font-size:11px;margin-top:4px">après l'ajout : 942</div>
+          </div>
+          <div class="mac">
+            <div class="l"><span>Protéines</span><b>74 <span class="muted" style="font-family:inherit;font-size:12px;font-weight:400">g / 170</span></b></div>
+            <div class="bar" style="margin-top:6px"><i style="width:56%"></i></div>
+            <div class="muted" style="font-size:11px;margin-top:4px">après l'ajout : 27 g</div>
+          </div>
+          <div class="mac">
+            <div class="l"><span>Glucides</span><b>150 <span class="muted" style="font-family:inherit;font-size:12px;font-weight:400">g / 300</span></b></div>
+            <div class="bar" style="margin-top:6px"><i style="width:50%"></i></div>
+          </div>
+          <div class="mac">
+            <div class="l"><span>Lipides</span><b>27 <span class="muted" style="font-family:inherit;font-size:12px;font-weight:400">g / 75</span></b></div>
+            <div class="bar" style="margin-top:6px"><i style="width:64%"></i></div>
+          </div>
+        </div>
+        <div class="card" style="padding:16px 18px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><div style="font-size:14px;font-weight:600">Journée complète</div><div class="muted" style="font-size:12px;margin-top:2px">Compte dans la dépense estimée</div></div>
+            <span class="tg"></span>
+          </div>
+          <div class="muted" style="font-size:12px;margin-top:10px;line-height:1.5">Déduite automatiquement à partir de 3 entrées sur 8 h ; aujourd'hui, déjà remplie, à confirmer après le dîner.</div>
+        </div>
+        <div class="card" style="padding:16px 18px;flex:1">
+          <div class="eyebrow">Cette semaine</div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px"><span>Jours complets</span><span>5 sur 7</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>Pesées</span><span>4</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>Moyenne</span><span>2 580 kcal</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span>Protéines moy.</span><span>164 g</span></div>
+          <div class="muted" style="font-size:12px;margin-top:10px;line-height:1.5">Couverture suffisante : le check-in de dimanche pourra ajuster les cibles.</div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+</body>
+</html>
