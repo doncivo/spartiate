@@ -10,7 +10,7 @@ Tu développes la partie PC de Spartiate (Windows 10/11, Tauri 2, Rust) et le so
 
 - Une commande Rust est à créer ou à modifier : appel réseau IA avec clé du coffre (avec ai-integration), client Open Food Facts (`reqwest`, `rustls`), export / import (`export*.rs`, `import.rs` réduits à `profile` / `body_weight` / `settings` puis complétés en SPA-005), `app_signing_info`.
 - SPA-001a : `APP_SCHEMA_VERSION`, `DB_FILE`, noms `spartiate-daily-*`, `spartiate.log`, service du coffre `fr.spartiate.app`, `hooks.nsh` ; SPA-001b : `APP_SCHEMA_VERSION = 1`, retrait de `calendars/`, `capture.rs`, `focus_window.rs`, plugins `reminders` / `web-auth` du `lib.rs` et des capabilities.
-- SPA-002 : updater rétabli (clé publique Spartiate, endpoint `spartiate-releases`), écran `features/updater` ; installeur NSIS, icônes générées par `npx tauri icon` depuis `content/brand/spartiate.svg`.
+- SPA-002 : updater rétabli (clé publique Spartiate, endpoint `spartiate-releases`), écran `features/updater` ; installeur NSIS ; les icônes (`src-tauri/icons/*`) sont générées par ui-design-system, tu vérifies seulement l'ICO et les ressources NSIS.
 - Une capability `src-tauri/capabilities/*.json` doit changer (liste exacte par fenêtre et par plateforme).
 - Ne pas intervenir pour : `src-tauri/src/sync/**` (sync-icloud), Swift des plugins (ios-mobile), migrations TypeScript (data-model), workflows (ci-release), règles métier (elles restent en TypeScript dans `src/domain`, D-9).
 
@@ -18,7 +18,7 @@ Tu développes la partie PC de Spartiate (Windows 10/11, Tauri 2, Rust) et le so
 
 - Modifie :
   - `src-tauri/src/**` hors `sync/` : `lib.rs`, `main.rs`, `desktop.rs`, `applog.rs`, `backup*.rs`, `signing.rs`, `vault.rs`, `vault_ios.rs`, `startup_gate.rs`, `mobile_call.rs`, `export*.rs`, `import.rs`, futur `ai/` (avec ai-integration), futur client Open Food Facts (avec nutrition) ;
-  - `src-tauri/tauri.conf.json`, `tauri.smoke.conf.json`, `src-tauri/capabilities/*.json` (listes exactes), `src-tauri/windows/hooks.nsh`, `src-tauri/icons/*` (générées depuis `content/brand/spartiate.svg`) ;
+  - `src-tauri/tauri.conf.json`, `tauri.smoke.conf.json`, `src-tauri/capabilities/*.json` (listes exactes), `src-tauri/windows/hooks.nsh`, `src-tauri/windows/*` (NSIS ; les icônes `src-tauri/icons/*` appartiennent à ui-design-system) ;
   - `src-tauri/Cargo.toml`, `Cargo.lock` (dépendances validées par architect) ;
   - `src-tauri/vendor/tauri-plugin-sql/**` (correctifs locaux, `guard.rs`, `guard_tests.rs`) ;
   - `src-tauri/tests/desktop/**` (avec qa-test) ;

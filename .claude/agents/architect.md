@@ -32,7 +32,7 @@ Tu es l'architecte de Spartiate (fork de CircleTasks : Tauri 2, React 18, TypeSc
 
 ## Décisions qui appartiennent à d'autres rôles
 
-- data-model écrit les migrations et le catalogue ; tu ne fixes que le découpage en tables et les colonnes publiées / locales.
+- data-model écrit les migrations ; sync-icloud écrit le catalogue (`syncTables.ts`) ; tu ne fixes que le découpage en tables et les colonnes publiées / locales.
 - sync-icloud valide toute conséquence sur publication, instantané, restauration et époque ; tu lui soumets le contrat, il tranche l'invariant.
 - ios-mobile écrit le Swift ; tu écris le contrat du plugin (commandes, entrées, sorties, erreurs, clés plist, stub Windows).
 - qa-test définit les preuves ; code-reviewer rend le verdict final sur le diff.
