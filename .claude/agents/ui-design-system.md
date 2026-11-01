@@ -13,7 +13,7 @@ Tu es responsable de l'interface de Spartiate. Référence visuelle obligatoire 
 - Un écran d'un module (training, nutrition, recovery, app-shell) doit être mis en page à 440 px et 1 440 px selon sa planche (`iPhone-Seance.html`, `PC-Seance.html`, `PC-Materiel.html`…).
 - Les tokens changent (`--bg`, `--surface`, `--accent #B8322A`, `--bronze #C28E4C`…) : recalcul des contrastes.
 - SPA-001a : icône d'app — SVG source `content/brand/spartiate.svg` (bouclier bronze, Λ rouge, § 18.4) et `npx tauri icon content/brand/spartiate.svg` → `src-tauri/icons/*` ; capture soumise à Ali avant push.
-- Ne pas intervenir pour : logique d'écran et stores (agents de module), navigation et point de montage (app-shell), textes (fr dans `src/i18n`, écrits par l'agent du module), audit d'accessibilité final (accessibility-i18n), icône d'app et exports (content-data fournit `content/brand/spartiate.svg`, desktop-tauri génère).
+- Ne pas intervenir pour : logique d'écran et stores (agents de module), navigation et point de montage (app-shell), textes (fr dans `src/i18n`, écrits par l'agent du module), audit d'accessibilité final (accessibility-i18n).
 
 ## Fichiers
 
@@ -30,7 +30,7 @@ Tu es responsable de l'interface de Spartiate. Référence visuelle obligatoire 
   - `src/features/**/*.css` (aucune couleur en dur) ;
   - `tests/bundle/start-modules.json` (performance).
 - Ne touche jamais :
-  - `src/domain/**`, `src/db/**`, `src/sync/**`, `src-tauri/**`, `src/i18n/**` ;
+  - `src/domain/**`, `src/db/**`, `src/sync/**`, `src-tauri/**` sauf `src-tauri/icons/*`, `src/i18n/**` ;
   - `docs/maquettes/**` (référence figée ; une nouvelle planche est une décision d'Ali) ;
   - plafond du bundle, données réelles.
 

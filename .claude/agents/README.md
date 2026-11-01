@@ -2,7 +2,7 @@
 
 24 fiches : 18 reprises de CircleTasks et réécrites pour Spartiate (D-34), 6 nouvelles. Chaque fiche suit la même structure : quand intervenir, fichiers (modifie / relit / ne touche jamais), décisions d'autres rôles, règles et invariants, preuves, « terminé quand / arbitrage requis quand ». Les 8 agents métier CircleTasks (`calendar-integration`, `checklists-events`, `focus-time`, `quick-capture`, `routines`, `spaces-goals`, `stats-history`, `tasks-planning`) sont supprimés dans la PR qui introduit ces fiches (D-46).
 
-Référence : `docs/PRD.md` v6.2 (§ 24), `docs/decisions.md` (D-22 à D-47), `AGENTS.md`, `CLAUDE.md`.
+Référence : `docs/PRD.md` v6.2 (§ 24), `docs/decisions.md` (D-22 à D-53), `AGENTS.md`, `CLAUDE.md`.
 
 ## Les 24 rôles
 
@@ -20,7 +20,7 @@ Référence : `docs/PRD.md` v6.2 (§ 24), `docs/decisions.md` (D-22 à D-47), `A
 | `sync-icloud` | opus | `src/sync`, `src/domain/sync`, `src-tauri/src/sync`, catalogue, séance close, vecteurs ; relecture obligatoire D-26 | SPA-001b |
 | `domain-logic` | sonnet | Fonctions pures `src/domain` : moteurs § 11–12, 15, 16 (vecteurs d'abord), modules transverses | SPA-001b |
 | `data-model` | sonnet | Migrations TypeScript (`0001_spartiate_init` puis une par itération), repositories, déclencheurs de capture | SPA-001b |
-| `ui-design-system` | sonnet | Tokens § 18.4 (`src/ui/theme/tokens.css`), composants `src/ui`, coquilles fidèles aux 24 maquettes, `visual`, `theme/contrast.test.ts`, icône d'app (`content/brand/spartiate.svg`, `npx tauri icon`) | SPA-001b (charte en SPA-009) |
+| `ui-design-system` | sonnet | Tokens § 18.4 (`src/ui/theme/tokens.css`), composants `src/ui`, coquilles fidèles aux 24 maquettes, `visual`, `theme/contrast.test.ts`, icône d'app (`content/brand/spartiate.svg`, `npx tauri icon`) | SPA-001a (icône), SPA-009 (charte) |
 | `security-privacy` | opus | Audit sans écriture : clés, réseau Rust, CSP, capabilities, plist, journaux, données interdites aux API | SPA-001a |
 | `performance` | sonnet | Budgets § 23.1, bundle de départ 358 400 octets gzip, graphiques < 300 ms, cycle de synchro, `generateSession` < 1 s | SPA-001b |
 | `accessibility-i18n` | sonnet | Catalogues `fr` seuls (Q-5), aucun texte en dur, Dynamic Type, 44 pt, clavier PC, contraste, ton § 18.4 | SPA-001b |
@@ -50,12 +50,15 @@ Puis relecture Codex (§ 24.2), fusion par PR quand « suite verte » est obtenu
 
 | Zone | Écrit | Relit obligatoirement avant fusion | Tranche en cas de doute |
 | --- | --- | --- | --- |
+| Contrats `.claude/agents/*.md` et README | `architect` | `product-owner` et rôles concernés | Ali pour toute nouvelle décision produit |
+| Consignes CLAUDE / AGENTS, reprise et préparation des tickets | `product-owner` | `architect` | Ali pour toute modification des règles permanentes |
+| Icône `content/brand/spartiate.svg` et exports `src-tauri/icons/*` | `ui-design-system` dès SPA-001a | `desktop-tauri` (intégration), Ali (capture avant push) | Ali (identité visuelle) |
 | Migrations `src/db/migrations/**`, registre, `APP_SCHEMA_VERSION` | `data-model` (version Rust alignée par `desktop-tauri`) | `sync-icloud` (colonnes publiées, déclencheurs, instantanés, restauration) | `architect` (schéma hors § 20.2) ; Ali (migration destructive, H-18) |
 | Synchro `src/sync/**`, `src/domain/sync/**` (dont le catalogue `syncTables.ts`, `SYNC_TABLE_ORDER`, `naturalIds.ts`), `src-tauri/src/sync/**`, `src/platform/sync/**`, `features/sync` | `sync-icloud` (seul auteur du catalogue ; `data-model` demande l'ajout d'une colonne publiée dans la PR de sa migration) | `sync-icloud` relit toute PR tierce (D-26), puis `code-reviewer` | `architect` par ADR pour tout changement de protocole ; Ali pour toute perte de données |
 | Plugins Swift `src-tauri/plugins/**`, `Info.ios.plist`, `plist-contract.json`, entitlements (source durable `src-tauri/ios/Spartiate.entitlements`, copiée dans `gen/apple` par `scripts/ios/apply-entitlements.mjs` en CI ; `gen/` est ignoré par git) | `ios-mobile` | `security-privacy` (permissions, textes d'usage) ; `ci-release` (étape de build) | `architect` (contrat, clé plist interdite) ; Ali (issue d'un spike, `CONFIRMED` / `BLOCKED`) |
 | Workflows `.github/workflows/*.yml`, scripts release / ios / smoke, tags, secrets nommés | `ci-release` | `security-privacy` (permissions des jobs, secrets) | `architect` (action tierce) ; Ali (tag, secrets GitHub, quota) |
 | Tokens UI `src/ui/theme/tokens.css`, composants `src/ui`, coquilles, maquettes | `ui-design-system` (coquilles branchées par `app-shell`) | `accessibility-i18n` (contraste, Dynamic Type, clavier) ; `performance` (départ) | Ali (écart maquette, nouvelle planche, point de rupture) |
-| Contenu JSON `content/**`, `validate-content.mjs`, `docs/licences.md` (données et médias) | `content-data` | `training` / `nutrition` (sémantique) ; `docs-writer` (mise en forme des licences) | Ali (relecture H-8, médias Q-3, licence douteuse) |
+| Contenu JSON `content/**` hors `content/brand/**`, `validate-content.mjs`, `docs/licences.md` (données et médias) | `content-data` | `training` / `nutrition` (sémantique) ; `docs-writer` (mise en forme des licences) | Ali (relecture H-8, médias Q-3, licence douteuse) |
 | Appels IA `src/platform/ai/**`, `src/domain/ai/**`, `src-tauri/src/ai/**`, écran Clé IA | `ai-integration` (Rust avec `desktop-tauri`, écran avec `settings-personalization`) | `security-privacy` (clé, données interdites, journaux) | Ali (fournisseur Q-2, plafond H-14, toute donnée à la frontière) ; `architect` (abstraction, crate) |
 
 Parcours I6 (§ 8, § 17) et leurs propriétaires : bilans rédigés et import de programme → `ai-integration` (agrégats par `training` / `nutrition`) ; vidéos d'exercices et complétion IA d'un exercice custom → `content-data` (+ `ai-integration`) ; photos de progression et mensurations → `settings-personalization` (écran Corps) avec `sync-icloud` (métadonnées publiées) ; cardio GPS (plugin geolocation officiel) → `ios-mobile` (plugin) + `recovery` (effort, écriture Santé) ; App Intents / Siri / bouton Action → `ios-mobile` + `app-shell` ; Describe (dictée) → `nutrition` avec le plugin `speech` (`ios-mobile`) ; compléments et rappels → `nutrition` + `notifications`.
