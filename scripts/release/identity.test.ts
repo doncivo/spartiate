@@ -137,6 +137,15 @@ describe('qualification des mentions (convention déterministe)', () => {
     expect(classifyLine('Identifiant actif : `fr.circletasks.planner` (jamais un autre).', OLD_ID)).toBe('active');
     expect(classifyLine('Voir l’exemple : la base est `circletasks.db`.', OLD_DB)).toBe('active');
   });
+  it('une négation ne neutralise que le terme qu’elle vise (revue Codex 1)', () => {
+    const line = 'Pas de `MobileShell` ; utiliser `DesktopShell`.';
+    expect(classifyLine(line, 'MobileShell')).toBe('negative');
+    expect(classifyLine(line, 'DesktopShell')).toBe('active');
+    expect(activeMentions(line, ['MobileShell', 'DesktopShell']).map((m: { term: string }) => m.term)).toEqual(['DesktopShell']);
+    expect(classifyLine('Pas de `MobileShell` mais utiliser `DesktopShell`.', 'DesktopShell')).toBe('active');
+    // Une énumération niée reste niée.
+    expect(classifyLine('pas de `MobileShell` ni de `DesktopShell` (D-47)', 'DesktopShell')).toBe('negative');
+  });
   it('un marqueur explicite sans motif est refusé', () => {
     expect(classifyLine('- `circletasks.db` <!-- ancien-ok: -->', OLD_DB)).toBe('active');
   });

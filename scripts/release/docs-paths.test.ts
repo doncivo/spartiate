@@ -57,6 +57,14 @@ describe('contrôle des chemins', () => {
     expect(check('- `tests/desktop/config.rs` <!-- ancien-ok: -->')).not.toEqual([]);
     expect(check('- Crée `src/platform/ios`.')).not.toEqual([]);
   });
+  it('un chemin relatif se résout dans son contexte déclaré, un chemin relatif inexistant est refusé (revue Codex 2)', () => {
+    expect(check('`src-tauri/plugins/files/` : `ios/Absent.swift`')).toEqual(['docs/x.md:1 chemin introuvable et absent de docs/a-creer.md : src-tauri/plugins/files/ios/Absent.swift']);
+    expect(check('`src-tauri/plugins/files/` : `ios/Package.swift`')).toEqual([]);
+    // Sans contexte déclaré sur la ligne, il n’est pas interprété à la racine du dépôt.
+    expect(check('`ios/Absent.swift`')).toEqual([]);
+    // Une négation locale garde son effet sur un chemin relatif.
+    expect(check('pas de `src-tauri/plugins/files/` : `ios/Absent.swift` (ancien)')).toEqual([]);
+  });
   it('un chemin relatif à un plugin ne se résout pas à la racine du dépôt', () => {
     expect(check('`ios/Package.swift` et `src-tauri/plugins/files/ios/Package.swift`')).toEqual([]);
   });
