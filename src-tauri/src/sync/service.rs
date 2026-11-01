@@ -458,16 +458,27 @@ impl SyncCore {
         self.bind_checked(checked, Some(refreshed.unwrap_or_else(|| bookmark.to_owned())))
     }
 
+    /// iPhone : le contrôle du dossier refusé a pu poser sa racine de session dans le plugin (`resolve`) ; remet celle du dossier encore lié,
+    /// sinon ses opérations relatives s'appliqueraient au dossier refusé (revue sync-icloud, ADR 0017).
+    fn restore_root_after_refusal(&self) {
+        let inner = self.lock();
+        if let Some(bound) = inner.folder.as_ref() {
+            let _ = bound.fs.check_root();
+        }
+    }
+
     fn bind_checked(&self, checked: CheckedFolder, bookmark: Option<String>) -> SyncResult<FolderInfo> {
         // ADR 0017 : jamais le dossier de CircleTasks, par son nom ni par ses fichiers ; rien n'est modifié avant ce contrôle.
         // Le dossier lui-même ou l'un de ses ancêtres (un sous-dossier de l'arborescence de l'autre app est refusé aussi).
         if checked.path.components().any(|c| is_circletasks_folder_name(&c.as_os_str().to_string_lossy())) { // ancien-ok: garde de séparation ADR 0017
             log::event("folder-refused", "foreign-name");
+            self.restore_root_after_refusal();
             return fail(SyncCode::ForeignFolder);
         }
         let probe = FolderRecord { v: 1, path: checked.path.to_string_lossy().into_owned(), device_id: None, bookmark: bookmark.clone() };
         if Store::folder_has_foreign_data(self.backend.open_record(&checked, &probe).as_ref())? {
             log::event("folder-refused", "foreign-files");
+            self.restore_root_after_refusal();
             return fail(SyncCode::ForeignFolder);
         }
         let mut inner = self.lock();

@@ -31,7 +31,7 @@ export type Bytes = Uint8Array<ArrayBuffer>;
 
 /** Clé maîtresse `K` : 32 octets. */
 export const KEY_BYTES = 32;
-/** Sel et `info` de HKDF-SHA256 (section 2). Le sel est une constante du protocole (D-26), figée : ne jamais le renommer avec l'app. */
+/** Sel et `info` de HKDF-SHA256 (section 2). Sel et infos propres à Spartiate (ADR 0017) : jamais ceux de CircleTasks. */
 export const HKDF_SALT = 'spartiate';
 export const HKDF_INFO_RECORDS = 'sp/1 records';
 export const HKDF_INFO_KID = 'sp/1 kid';

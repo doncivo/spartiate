@@ -1544,13 +1544,13 @@ impl<'a> Store<'a> {
         let budget = Budget::new();
         let root = match budget.list(fs, &[DEVICES_DIR]) {
             Ok(listing) => listing,
-            Err(FsError::NotFound) => return Ok(false),
-            Err(error) => return Err(fs_error(error)),
+            // Toute erreur de lecture : pas de refus par les fichiers (le nom du dossier et la séparation cryptographique font garde).
+            Err(_) => return Ok(false),
         };
         for dev in root.entries.iter().filter(|e| e.is_dir && is_uuid_v4(&e.name)) {
             let Ok(listing) = budget.list(fs, &device_dir(&dev.name)) else { continue };
             let has_local_state = listing.entries.iter().any(|e| !e.is_dir && e.name == STATE_FILE && matches!(e.availability, Availability::Local) && e.size <= MAX_SEGMENT_BYTES);
-            if has_local_state && fs.read(&[DEVICES_DIR, &dev.name, STATE_FILE], MAX_SEGMENT_BYTES, false).ok().is_some_and(|bytes| is_foreign_header(&bytes)) {
+            if has_local_state && fs.read_head(&[DEVICES_DIR, &dev.name, STATE_FILE], MAX_HEADER_BYTES + 1).ok().is_some_and(|bytes| is_foreign_header(&bytes)) {
                 return Ok(true);
             }
         }

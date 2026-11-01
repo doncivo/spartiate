@@ -67,8 +67,8 @@ fn hex_to_bytes(text: &str) -> Vec<u8> {
 fn sp_folder_named_circletasks_is_refused() {
     for path in [r"C:\Users\Ali\iCloudDrive\CircleTasks", r"C:\Users\Ali\iCloudDrive\circletasks", r"C:\Users\Ali\iCloudDrive\CIRCLETASKS\"] {
         let fs = MemFs::new();
-        let d = Device::new(FakeBackend::with(path.trim_end_matches('\'), FolderKind::Icloud, fs));
-        assert_eq!(code(d.core.choose_folder(Path::new(path.trim_end_matches('\')))), SyncCode::ForeignFolder, "{path}");
+        let d = Device::new(FakeBackend::with(path.trim_end_matches('\\'), FolderKind::Icloud, fs));
+        assert_eq!(code(d.core.choose_folder(Path::new(path.trim_end_matches('\\')))), SyncCode::ForeignFolder, "{path}");
     }
 }
 
