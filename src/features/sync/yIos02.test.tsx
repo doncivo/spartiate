@@ -87,11 +87,11 @@ describe('écran « Associer au PC » (Y-IOS-02 critère 7)', () => {
   it('dossier d’abord : choix du dossier, puis explication de la caméra et scan ; jamais de QR affiché', async () => {
     const { phone } = await pcAndPhone(false);
     renderScreen(phone);
-    expect(await screen.findByText('Choisissez d’abord le même dossier iCloud Drive / CircleTasks que sur le PC.')).toBeInTheDocument();
+    expect(await screen.findByText('Choisissez d’abord le même dossier iCloud Drive / Spartiate que sur le PC.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ouvrir la caméra et scanner le code d’association' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Choisir le dossier iCloud Drive / CircleTasks' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Choisir le dossier iCloud Drive / Spartiate' }));
     expect(await scanButton()).toBeInTheDocument();
-    expect(screen.getByText(/CircleTasks utilise la caméra pour scanner le code d’association/)).toBeInTheDocument();
+    expect(screen.getByText(/Spartiate utilise la caméra pour scanner le code d’association/)).toBeInTheDocument();
     expect((await phone.folder.info()).configured).toBe(true);
     expect(screen.queryByRole('img', { name: /QR/ })).toBeNull();
   });

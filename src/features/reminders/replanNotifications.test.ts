@@ -73,9 +73,9 @@ describe('replanNotifications : données, textes et limite (N-01 critères 7 et 
     expect(requests.some((request) => request.id === 'recap:morning:2026-10-08')).toBe(false);
     expect(requests.find((request) => request.id === 'recap:morning:2026-10-09')).toMatchObject({
       title: 'Récapitulatif du matin',
-      body: 'Ouvrez CircleTasks pour voir votre journée',
+      body: 'Ouvrez Spartiate pour voir votre journée',
     });
-    expect(requests.find((request) => request.id === 'recap:evening:2026-10-09')).toMatchObject({ title: 'Récapitulatif du soir', body: 'Ouvrez CircleTasks pour voir votre journée' });
+    expect(requests.find((request) => request.id === 'recap:evening:2026-10-09')).toMatchObject({ title: 'Récapitulatif du soir', body: 'Ouvrez Spartiate pour voir votre journée' });
   });
 
   it('N-04 critère 12 : les plages silencieuses de l’espace Pro (20:00–08:00) ne décalent pas un récapitulatif du soir à 21:00', async () => {

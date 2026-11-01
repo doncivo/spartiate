@@ -377,7 +377,7 @@ describe('un seul bandeau, le plus urgent (critère 9 g) ; sobriété (9 h)', ()
   it('texte sans chemin, clé ni contenu ; un même état reposé ne re-rend pas la source', async () => {
     renderBanner();
     await start().refreshed();
-    set({ phase: 'error', errorCode: 'unsafe-folder', folderLabel: 'CircleTasks' });
+    set({ phase: 'error', errorCode: 'unsafe-folder', folderLabel: 'Spartiate' });
     const first = useAppStatusStore.getState().sources.syncTrouble;
     expect(first?.message).not.toMatch(/[\\/]|[A-Za-z]:|\.ctx|\.jsonl/);
     set({ conflictsThisWeek: 3 });

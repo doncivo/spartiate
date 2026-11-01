@@ -24,7 +24,7 @@ use super::SyncCode;
 /// Registre de l'oubli (dossier de configuration `sync/`).
 pub const FORGOTTEN_FILE: &str = "forgotten.json";
 /// Entrée du coffre réservée à la réinitialisation (Y-11, section 14.3) : sa présence signale une réinitialisation en cours.
-pub const SYNC_NEXT_KEY_ACCOUNT: &str = "circletasks.sync.key.next";
+pub const SYNC_NEXT_KEY_ACCOUNT: &str = "spartiate.sync.key.next";
 /// Déclarations gardées au plus dans la liste maître (borne de `forgotten`, section 1.6).
 pub const MAX_FORGOTTEN_ENTRIES: usize = 64;
 /// Une déclaration locale est refusée (`too-large`, avant la boîte) dès que la liste maître en compte autant (§18 point 5).

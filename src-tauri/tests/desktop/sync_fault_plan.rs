@@ -5,8 +5,8 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
-use circletasks_lib::sync::bookmark::BookmarkFs;
-use circletasks_lib::sync::files::{AppendMode, Availability, FsError, SyncFs};
+use spartiate_lib::sync::bookmark::BookmarkFs;
+use spartiate_lib::sync::files::{AppendMode, Availability, FsError, SyncFs};
 use serde_json::{json, Map, Value};
 
 use crate::support::fake_bookmark::{FakePlugin, SharedPlugin, BOOKMARK, ROOT};

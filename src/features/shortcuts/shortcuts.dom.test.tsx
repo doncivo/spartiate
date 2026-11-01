@@ -198,7 +198,7 @@ describe('liste des raccourcis et réglage de la capture rapide (P-08, D-04)', (
     });
 
     it.each([
-      [{ key: 'k', code: 'KeyK', ctrlKey: true }, 'Cette combinaison est déjà utilisée dans CircleTasks.'],
+      [{ key: 'k', code: 'KeyK', ctrlKey: true }, 'Cette combinaison est déjà utilisée dans Spartiate.'],
       [{ key: 'k', code: 'KeyK' }, 'Ajoutez Ctrl ou Alt à la combinaison.'],
       [{ key: 'k', code: 'KeyK', ctrlKey: true, metaKey: true }, 'La touche Windows est réservée au système.'],
     ])('refuse une combinaison invalide avec un message (critère 6) : %j', async (event, message) => {

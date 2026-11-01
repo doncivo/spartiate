@@ -1,4 +1,4 @@
-//! Plugin Swift folder-bookmark de CircleTasks (ADR 0011 §6.3 et §22) : signet de sécurité du dossier `iCloud Drive/CircleTasks`, accès
+//! Plugin Swift folder-bookmark de Spartiate (ADR 0011 §6.3 et §22) : signet de sécurité du dossier `iCloud Drive/Spartiate`, accès
 //! aux fichiers sous ce signet (`openat` sans suivre de lien, `NSFileCoordinator`), téléchargement forcé, tâche d'arrière-plan, et
 //! confirmation native (`UIAlertController`, §23 point 3).
 //!

@@ -49,7 +49,7 @@ describe('I-04 : entonnoir logFailure et ligne « Logs » de Réglages', () => {
 
   function renderAbout(os: 'ios' | 'windows') {
     const clock = db.clock;
-    const desktop = os === 'windows' ? ({ getVersion: () => Promise.resolve('0.2.0') } as never) : null;
+    const desktop = os === 'windows' ? ({ updaterConfigured: true, getVersion: () => Promise.resolve('0.2.0') } as never) : null;
     const appVersion = os === 'windows' ? { appVersion: { ok: true, version: '0.2.0', source: 'runtime' } as const } : {};
     const container = createAppContainer({ clock, hlc: createHlcClock({ clock, deviceId: DEVICE }), data: db.data, desktop, platform: { runtime: 'web', os }, ...appVersion });
     return render(

@@ -1,4 +1,4 @@
-//! CircleTasks (SEC-01, bloquant B7) : fermeture du plugin SQL.
+//! Spartiate (SEC-01, bloquant B7) : fermeture du plugin SQL.
 //!
 //! Avant ce module, la WebView (donc toute dépendance npm compromise du build du front) pouvait demander au plugin d'ouvrir ou de
 //! créer un fichier n'importe où (`load` avec un chemin absolu ou `..`), d'attacher une autre base (`ATTACH`), de copier la base
@@ -27,7 +27,7 @@ use std::sync::OnceLock;
 use crate::Error;
 
 /// Seule valeur acceptée par `load` (sensible à la casse, aucun suffixe, aucun paramètre).
-pub const ALLOWED_URL: &str = "sqlite:circletasks.db";
+pub const ALLOWED_URL: &str = "sqlite:spartiate.db";
 
 /// Crochet appelé à chaque refus avec son code stable (le programme principal y écrit `applog::write("sql-refused", code)`).
 static REFUSAL_HOOK: OnceLock<fn(&'static str)> = OnceLock::new();

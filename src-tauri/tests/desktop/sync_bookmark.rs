@@ -9,17 +9,17 @@ use std::sync::{mpsc, Arc, Condvar, Mutex};
 use std::thread::ThreadId;
 use std::time::Duration;
 
-use circletasks_lib::sync::bookmark::{
+use spartiate_lib::sync::bookmark::{
     choose_with_picker, deadline_for, ios_core, BookmarkBackend, BookmarkFs, BookmarkTransport, DeadlineLimits, DeadlineTransport, PLUGIN_COMMANDS, PLUGIN_REJECT_CODES, UNBOUNDED_COMMANDS,
 };
-use circletasks_lib::sync::crypto::{FileHeader, HeaderKind, MasterKey};
-use circletasks_lib::sync::files::{AppendMode, Chunk, FsError, Listing, SyncFs};
-use circletasks_lib::sync::folder::{config_dir, read_config_file, FolderRecord, FOLDER_FILE};
-use circletasks_lib::sync::limits::{MAX_PLUGIN_CHUNK_BYTES, MAX_SNAPSHOT_BYTES};
-use circletasks_lib::sync::service::{FolderBackend, SyncCore};
-use circletasks_lib::sync::store::{parse_file, stream_last_line, stream_last_line_with, ParseError, StreamHeader};
-use circletasks_lib::sync::{SyncCode, SyncError};
-use circletasks_lib::vault::MemoryVault;
+use spartiate_lib::sync::crypto::{FileHeader, HeaderKind, MasterKey};
+use spartiate_lib::sync::files::{AppendMode, Chunk, FsError, Listing, SyncFs};
+use spartiate_lib::sync::folder::{config_dir, read_config_file, FolderRecord, FOLDER_FILE};
+use spartiate_lib::sync::limits::{MAX_PLUGIN_CHUNK_BYTES, MAX_SNAPSHOT_BYTES};
+use spartiate_lib::sync::service::{FolderBackend, SyncCore};
+use spartiate_lib::sync::store::{parse_file, stream_last_line, stream_last_line_with, ParseError, StreamHeader};
+use spartiate_lib::sync::{SyncCode, SyncError};
+use spartiate_lib::vault::MemoryVault;
 use serde_json::{json, Value};
 
 use crate::support::fake_bookmark::{FakePlugin, Pick, SharedPlugin, BOOKMARK, CONTRACT, FRESH_BOOKMARK, ROOT};
@@ -416,7 +416,7 @@ fn y_ios_01_5_chosen_folder_keeps_its_bookmark_in_folder_json_and_never_returns_
     assert_eq!(record.bookmark.as_deref(), Some(BOOKMARK));
     let info = p.core.folder_info().unwrap();
     let json = serde_json::to_value(&info).unwrap();
-    assert_eq!(json, json!({ "configured": true, "name": "CircleTasks", "kind": "icloud", "pinned": false }), "nom et nature, jamais un chemin");
+    assert_eq!(json, json!({ "configured": true, "name": "Spartiate", "kind": "icloud", "pinned": false }), "nom et nature, jamais un chemin");
     // Parcours complet sous le signet : clé, liaison, ajout, état, lecture.
     p.core.key_create().unwrap();
     p.core.bind_device(DEV_A).unwrap();
@@ -488,10 +488,10 @@ fn y_ios_01_6_lost_moved_or_missing_bookmark_is_folder_unreachable_until_chosen_
 
 #[test]
 fn y_ios_01_5_folder_json_of_the_pc_is_read_unchanged() {
-    let record: FolderRecord = serde_json::from_value(json!({ "v": 1, "path": r"C:\Users\Ali\iCloudDrive\CircleTasks", "deviceId": DEV_A })).unwrap();
+    let record: FolderRecord = serde_json::from_value(json!({ "v": 1, "path": r"C:\Users\Ali\iCloudDrive\Spartiate", "deviceId": DEV_A })).unwrap();
     assert_eq!(record.bookmark, None);
     let written = serde_json::to_value(&record).unwrap();
-    assert_eq!(written, json!({ "v": 1, "path": r"C:\Users\Ali\iCloudDrive\CircleTasks", "deviceId": DEV_A }), "aucun champ ajouté sur PC");
+    assert_eq!(written, json!({ "v": 1, "path": r"C:\Users\Ali\iCloudDrive\Spartiate", "deviceId": DEV_A }), "aucun champ ajouté sur PC");
 }
 
 #[test]
@@ -1048,7 +1048,7 @@ fn y_ios_05_12_app_state_is_not_refused_behind_an_abandoned_file_call() {
 /// sur `fileQueue` (lecture de la source : `onFiles(invoke)` absent, travail sur `DispatchQueue.main`).
 #[test]
 fn y_ios_05_12_off_queue_commands_match_the_swift_source() {
-    use circletasks_lib::sync::bookmark::OFF_QUEUE_COMMANDS;
+    use spartiate_lib::sync::bookmark::OFF_QUEUE_COMMANDS;
     assert_eq!(OFF_QUEUE_COMMANDS, ["appState"]);
     for command in PLUGIN_COMMANDS.iter().filter(|c| !UNBOUNDED_COMMANDS.contains(c)) {
         let body = swift_method(command);
@@ -1111,7 +1111,7 @@ impl BookmarkTransport for FirstCallRouted {
 /// suivant aboutit. Aucun enregistrement n'est écrit deux fois dans le segment.
 #[test]
 fn y_ios_05_12_late_append_effect_is_caught_by_segment_mismatch() {
-    use circletasks_lib::sync::service::AppendRequest;
+    use spartiate_lib::sync::service::AppendRequest;
     let p = phone();
     p.choose();
     p.core.key_create().unwrap();
@@ -1151,7 +1151,7 @@ fn y_ios_05_12_late_append_effect_is_caught_by_segment_mismatch() {
 /// fichier, un signet ou un argument.
 #[test]
 fn y_ios_05_13_timeout_log_names_the_command_only() {
-    let capture = circletasks_lib::sync::log::capture();
+    let capture = spartiate_lib::sync::log::capture();
     let mut rig = deadline_rig(Some("readFrom"), zero());
     assert_eq!(rig.fs.read_head(&["devices", DEV_A, "state.ctx"], 1024).map(|_| ()), Err(FsError::CloudPending));
     assert_eq!(rig.deadline.call("status", json!({ "path": ["devices", DEV_A, "state.ctx"] })), Err("cloud-pending".to_owned()));
@@ -1279,8 +1279,8 @@ fn y_ios_05_17_unreadable_state_is_cloud_and_links_stay_error() {
 /// `cloud-pending`, pour le décorateur Rust et le faux TypeScript.
 #[test]
 fn y_ios_05_18_layer_values_are_consistent() {
-    use circletasks_lib::sync::bookmark::DEADLINE_CODE;
-    use circletasks_lib::sync::limits::{BOOKMARK_CALL_DEADLINE_MS, BOOKMARK_DOWNLOAD_MARGIN_MS, BOOKMARK_MAX_ABANDONED_CALLS};
+    use spartiate_lib::sync::bookmark::DEADLINE_CODE;
+    use spartiate_lib::sync::limits::{BOOKMARK_CALL_DEADLINE_MS, BOOKMARK_DOWNLOAD_MARGIN_MS, BOOKMARK_MAX_ABANDONED_CALLS};
     const MEMORY_TS: &str = include_str!("../../../src/platform/sync/memory.ts");
     let code = swift_code();
     let line = code.lines().find(|l| l.contains("private let coordinationGuardSeconds: Double = ")).expect("coordinationGuardSeconds");

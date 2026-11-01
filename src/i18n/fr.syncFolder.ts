@@ -26,7 +26,7 @@ export const syncFolderFr = {
   retry: 'Réessayer',
   retryLabel: 'Relire l’état du dossier de synchronisation',
   errorUnreachable: 'Le dossier de synchro est introuvable',
-  errorUnreachableIos: 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / CircleTasks',
+  errorUnreachableIos: 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / Spartiate',
   errorTooLarge: 'Le dossier de synchro est trop volumineux',
   errorProviderStopped: 'Ouvrez iCloud pour Windows',
   errorVault: 'Le coffre de Windows est indisponible',

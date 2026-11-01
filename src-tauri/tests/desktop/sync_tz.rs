@@ -2,8 +2,8 @@
 //! le fuseau est illisible, et l'heure est alors affichée en UTC **en le disant** (jamais une heure locale fausse sans le dire). Les cas
 //! `localtime_r` (iOS, Linux) sont sous `cfg(unix)` : exécutés par le runner Linux de `tests.yml` ; sous Windows, le fuseau du système.
 
-use circletasks_lib::sync::forget::{forget_dialog_detail, local_offset_minutes};
-use circletasks_lib::sync::state::PublishedState;
+use spartiate_lib::sync::forget::{forget_dialog_detail, local_offset_minutes};
+use spartiate_lib::sync::state::PublishedState;
 use serde_json::json;
 
 const DEV: &str = "5c6d7e8f-1a2b-4c3d-8e9f-0a1b2c3d4e5f";
@@ -32,7 +32,7 @@ fn y_ios_02_15_unknown_zone_shows_the_utc_time_and_says_so() {
 
 #[test]
 fn y_ios_02_15_system_zone_is_read_here() {
-    let log = circletasks_lib::sync::log::capture();
+    let log = spartiate_lib::sync::log::capture();
     assert!(local_offset_minutes(SUMMER_MS).is_some());
     assert!(!log.lines().iter().any(|l| l.contains("tz-unknown")));
 }
@@ -79,7 +79,7 @@ mod unix {
 
     #[test]
     fn y_ios_02_15_unreadable_time_gives_none_and_logs_the_code_only() {
-        let log = circletasks_lib::sync::log::capture();
+        let log = spartiate_lib::sync::log::capture();
         // Instant hors de toute date représentable : `localtime_r` échoue.
         assert_eq!(local_offset_minutes(u64::MAX), None);
         assert!(log.lines().iter().any(|l| l == "sync:tz-unknown utc"));

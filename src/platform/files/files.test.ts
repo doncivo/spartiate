@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createMemoryFiles, createTauriFiles, createUnavailableFiles, FileExportError, MAX_EXPORT_BYTES, type TauriFileApi } from './index';
 
-const request = { suggestedName: 'circletasks-taches-2026-10-04.csv', mime: 'text/csv', data: new Uint8Array([1, 2, 3]) };
+const request = { suggestedName: 'spartiate-taches-2026-10-04.csv', mime: 'text/csv', data: new Uint8Array([1, 2, 3]) };
 
 function api(overrides: Partial<TauriFileApi> = {}): TauriFileApi {
   return {

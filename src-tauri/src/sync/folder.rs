@@ -18,9 +18,9 @@ use super::{fail, SyncCode, SyncResult};
 /// Nom du sous-dossier de configuration de la synchro.
 pub const CONFIG_SUBDIR: &str = "sync";
 pub const FOLDER_FILE: &str = "folder.json";
-/// Dossier proposé : `%USERPROFILE%\iCloudDrive\CircleTasks`.
+/// Dossier proposé : `%USERPROFILE%\iCloudDrive\Spartiate`.
 pub const ICLOUD_DRIVE_DIR: &str = "iCloudDrive";
-pub const DEFAULT_FOLDER_NAME: &str = "CircleTasks";
+pub const DEFAULT_FOLDER_NAME: &str = "Spartiate";
 
 /// Nature du dossier choisi.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -48,7 +48,7 @@ impl CheckedFolder {
         sha256_hex(self.path.to_string_lossy().to_lowercase().as_bytes())
     }
 
-    /// Nom du dossier, jamais un chemin. Le libellé affiché (« iCloud Drive / CircleTasks ») est composé par l'interface à partir du
+    /// Nom du dossier, jamais un chemin. Le libellé affiché (« iCloud Drive / Spartiate ») est composé par l'interface à partir du
     /// nom et de la nature (textes dans `src/i18n`, revue 13). Jamais vide : une racine de lecteur est refusée par `check_sync_path`.
     pub fn name(&self) -> String {
         self.path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default()
@@ -112,7 +112,7 @@ pub fn remove_config_file(path: &Path) -> SyncResult<()> {
 }
 
 /// Dossier à lier après la boîte de choix (audit S10) : le dossier choisi ; si c'est `iCloud Drive` lui-même, son sous-dossier
-/// `CircleTasks`, à créer seulement maintenant que l'utilisateur a validé. Rend (dossier, à créer).
+/// `Spartiate`, à créer seulement maintenant que l'utilisateur a validé. Rend (dossier, à créer).
 pub fn chosen_target(chosen: &Path, icloud_drive: Option<&Path>) -> (PathBuf, bool) {
     let is_drive = icloud_drive.is_some_and(|drive| drive.to_string_lossy().to_lowercase().trim_end_matches('\\') == chosen.to_string_lossy().to_lowercase().trim_end_matches('\\'));
     if is_drive {

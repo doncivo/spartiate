@@ -3,7 +3,7 @@ import { STATE_FILE, isEpochId, parseSyncFileName, segmentFileName } from '../..
 
 /**
  * « iCloud » simulé à deux dossiers (ADR 0011, section 12 ; Y-02, Y-05, Y-09) : chaque appareil a **son propre** dossier
- * `iCloud Drive/CircleTasks` (un `MemorySyncFolder`) ; le test ordonne la recopie du dossier d'un appareil vers le dossier d'un autre, avec
+ * `iCloud Drive/Spartiate` (un `MemorySyncFolder`) ; le test ordonne la recopie du dossier d'un appareil vers le dossier d'un autre, avec
  * les défauts réels d'iCloud : dernière ligne incomplète, fichier resté dans le nuage, fichier pas encore arrivé, copie de conflit,
  * ancien `state.ctx` relivré.
  *
@@ -11,8 +11,8 @@ import { STATE_FILE, isEpochId, parseSyncFileName, segmentFileName } from '../..
  * croisés du lot Y1) ; la taille sur disque est celle des lignes chiffrées.
  */
 
-/** Même identifiant de dossier sur tous les appareils : c'est « le » dossier CircleTasks, vu de chaque appareil. */
-export const SIM_FOLDER_ID = 'icloud-circletasks';
+/** Même identifiant de dossier sur tous les appareils : c'est « le » dossier Spartiate, vu de chaque appareil. */
+export const SIM_FOLDER_ID = 'icloud-spartiate';
 
 type DeviceDir = MemorySyncFolder['devices'] extends Map<string, infer D> ? D : never;
 

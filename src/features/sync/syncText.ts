@@ -172,7 +172,7 @@ function waitingLongText(status: SyncStatus): string {
   }
 }
 
-/** Sous-ligne de la ligne « iCloud Drive / CircleTasks » de Réglages. */
+/** Sous-ligne de la ligne « iCloud Drive / Spartiate » de Réglages. */
 export function statusLine(status: SyncStatus, nowMs: number): string {
   if (failureShown(status) && status.reintegrationFailure) return failureLine(status.reintegrationFailure.fields);
   switch (status.phase) {

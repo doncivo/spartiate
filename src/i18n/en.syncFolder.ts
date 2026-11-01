@@ -24,7 +24,7 @@ export const syncFolderEn: Shape<typeof syncFolderFr> = {
   retry: 'Try again',
   retryLabel: 'Read the sync folder state again',
   errorUnreachable: 'The sync folder cannot be found',
-  errorUnreachableIos: 'iCloud Drive folder unreachable: choose the iCloud Drive / CircleTasks folder again',
+  errorUnreachableIos: 'iCloud Drive folder unreachable: choose the iCloud Drive / Spartiate folder again',
   errorTooLarge: 'The sync folder is too large',
   errorProviderStopped: 'Open iCloud for Windows',
   errorVault: 'The Windows credential vault is unavailable',

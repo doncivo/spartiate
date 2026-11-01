@@ -53,7 +53,7 @@ describe('contrat Info.plist de la capture sur iPhone (CAP-IOS-01, I-05)', () =>
       const text = String(plist[key]);
       expect(text.trim(), key).not.toBe('');
       expect(looksFrench(text), `${key} : ${text}`).toBe(true);
-      expect(text, key).toMatch(/^CircleTasks /);
+      expect(text, key).toMatch(/^Spartiate /);
       // 3 phrases au plus (I-05 critère 9, par analogie).
       expect(text.split(/[.!?]\s/).length, key).toBeLessThanOrEqual(3);
     }
@@ -87,7 +87,7 @@ describe('contrat Info.plist de la capture sur iPhone (CAP-IOS-01, I-05)', () =>
   });
 
   it('contrat négatif : un texte anglais est détecté par le contrôle de langue des tests', () => {
-    expect(looksFrench('CircleTasks uses the microphone only while you dictate a task.')).toBe(false);
+    expect(looksFrench('Spartiate uses the microphone only while you dictate a task.')).toBe(false);
     expect(looksFrench(String(plist['NSMicrophoneUsageDescription']))).toBe(true);
   });
 

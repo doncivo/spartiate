@@ -7,9 +7,9 @@ use std::process::Command;
 
 use std::os::windows::process::CommandExt;
 
-use circletasks_lib::sync::files::{AppendMode, StdFs, SyncFs};
-use circletasks_lib::sync::folder::{check_sync_path, normalize_final_path, CheckedFolder, FolderKind};
-use circletasks_lib::sync::{SyncCode, SyncError};
+use spartiate_lib::sync::files::{AppendMode, StdFs, SyncFs};
+use spartiate_lib::sync::folder::{check_sync_path, normalize_final_path, CheckedFolder, FolderKind};
+use spartiate_lib::sync::{SyncCode, SyncError};
 
 fn temp_root() -> (tempfile::TempDir, PathBuf) {
     let dir = tempfile::tempdir().expect("dossier temporaire");
@@ -32,22 +32,22 @@ fn y01_6_drive_relative_device_and_malformed_paths_are_refused() {
     for path in [
         "",
         "C:",
-        "C:CircleTasks",
-        r"C:..\CircleTasks",
-        "/CircleTasks",
-        "//serveur/partage/CircleTasks",
-        r"\\.\C:\CircleTasks",
+        "C:Spartiate",
+        r"C:..\Spartiate",
+        "/Spartiate",
+        "//serveur/partage/Spartiate",
+        r"\\.\C:\Spartiate",
         r"\\.\PhysicalDrive0",
         r"\\.\pipe\x",
-        r"\\?\Volume{00000000-0000-0000-0000-000000000000}\CircleTasks",
-        r"\\?\GLOBALROOT\Device\HarddiskVolume1\CircleTasks",
-        r"\\?\UNC\localhost\C$\CircleTasks",
-        r"\\localhost\C$\CircleTasks",
-        r"\\127.0.0.1\C$\CircleTasks",
-        "C:/CircleTasks",
-        "1:\\CircleTasks",
-        "é:\\CircleTasks",
-        "relatif\\CircleTasks",
+        r"\\?\Volume{00000000-0000-0000-0000-000000000000}\Spartiate",
+        r"\\?\GLOBALROOT\Device\HarddiskVolume1\Spartiate",
+        r"\\?\UNC\localhost\C$\Spartiate",
+        r"\\localhost\C$\Spartiate",
+        r"\\127.0.0.1\C$\Spartiate",
+        "C:/Spartiate",
+        "1:\\Spartiate",
+        "é:\\Spartiate",
+        "relatif\\Spartiate",
         ".",
         "..",
     ] {
@@ -62,15 +62,15 @@ fn y01_6_drive_relative_device_and_malformed_paths_are_refused() {
 #[test]
 fn y01_6_dot_dot_components_and_verbatim_prefix_tricks_are_refused() {
     let (_dir, root) = temp_root();
-    let folder = root.join("CircleTasks");
+    let folder = root.join("Spartiate");
     std::fs::create_dir_all(root.join("autre")).unwrap();
     std::fs::create_dir(&folder).unwrap();
     // `..` : Win32 le résoudrait en silence ; le contrôle le refuse sur chaque composant.
-    let dotdot = format!(r"{}\autre\..\CircleTasks", root.display());
+    let dotdot = format!(r"{}\autre\..\Spartiate", root.display());
     assert_eq!(refused(check_sync_path(Path::new(&dotdot))), SyncCode::UnsafeFolder);
-    let dot = format!(r"{}\.\CircleTasks", root.display());
+    let dot = format!(r"{}\.\Spartiate", root.display());
     assert_eq!(refused(check_sync_path(Path::new(&dot))), SyncCode::UnsafeFolder);
-    let verbatim_dotdot = format!(r"\\?\{}\autre\..\CircleTasks", root.display());
+    let verbatim_dotdot = format!(r"\\?\{}\autre\..\Spartiate", root.display());
     assert_eq!(refused(check_sync_path(Path::new(&verbatim_dotdot))), SyncCode::UnsafeFolder);
     // Le préfixe verbatim seul est accepté et normalisé ; la barre finale aussi.
     let verbatim = PathBuf::from(format!(r"\\?\{}", folder.display()));
@@ -82,15 +82,15 @@ fn y01_6_dot_dot_components_and_verbatim_prefix_tricks_are_refused() {
 #[test]
 fn y01_6_trailing_dot_space_and_stream_names_do_not_alias_another_folder() {
     let (_dir, root) = temp_root();
-    let folder = root.join("CircleTasks");
+    let folder = root.join("Spartiate");
     std::fs::create_dir(&folder).unwrap();
     // Win32 retire le point et l'espace finaux : le chemin final diffère du chemin demandé, donc refus (jamais accepté tel quel).
-    for alias in ["CircleTasks.", "CircleTasks ", "CircleTasks. .", "CircleTasks..."] {
+    for alias in ["Spartiate.", "Spartiate ", "Spartiate. .", "Spartiate..."] {
         let requested = format!(r"{}\{alias}", root.display());
         let code = refused(check_sync_path(Path::new(&requested)));
         assert!(matches!(code, SyncCode::UnsafeFolder | SyncCode::FolderUnreachable), "{alias:?} -> {code:?}");
     }
-    for alias in [r"CircleTasks::$DATA", r"CircleTasks:flux", r"CircleTasks::$INDEX_ALLOCATION", "CircleTasks\\CON", "CircleTasks\\NUL", "CircleTasks?", "CircleTasks*", "CircleTasks<", "CircleTasks|"] {
+    for alias in [r"Spartiate::$DATA", r"Spartiate:flux", r"Spartiate::$INDEX_ALLOCATION", "Spartiate\\CON", "Spartiate\\NUL", "Spartiate?", "Spartiate*", "Spartiate<", "Spartiate|"] {
         let requested = format!(r"{}\{alias}", root.display());
         let code = refused(check_sync_path(Path::new(&requested)));
         assert!(REFUSALS.contains(&code), "{alias:?} -> {code:?}");
@@ -102,7 +102,7 @@ fn y01_6_trailing_dot_space_and_stream_names_do_not_alias_another_folder() {
 #[test]
 fn y01_6_short_8_3_names_are_refused_when_the_volume_creates_them() {
     let (_dir, root) = temp_root();
-    let folder = root.join("CircleTasksLongFolderName");
+    let folder = root.join("SpartiateLongFolderName");
     std::fs::create_dir(&folder).unwrap();
     let probe = Command::new("cmd").raw_arg(format!(r#"/C "for %I in ("{}") do @echo %~sI""#, folder.display())).output().unwrap();
     let short = String::from_utf8_lossy(&probe.stdout).trim().to_owned();
@@ -116,7 +116,7 @@ fn y01_6_short_8_3_names_are_refused_when_the_volume_creates_them() {
 #[test]
 fn y01_6_subst_drive_is_refused_even_though_windows_calls_it_fixed() {
     let (_dir, root) = temp_root();
-    let folder = root.join("CircleTasks");
+    let folder = root.join("Spartiate");
     std::fs::create_dir(&folder).unwrap();
     let Some(letter) = ('M'..='Z').rev().find(|c| !Path::new(&format!("{c}:\\")).exists()) else {
         eprintln!("aucune lettre libre : cas non exercé");
@@ -144,7 +144,7 @@ fn y01_6_subst_drive_is_refused_even_though_windows_calls_it_fixed() {
 #[test]
 fn y01_6_case_and_trailing_slash_do_not_change_the_folder_identity() {
     let (_dir, root) = temp_root();
-    let folder = root.join("CircleTasks");
+    let folder = root.join("Spartiate");
     std::fs::create_dir(&folder).unwrap();
     let a = check_sync_path(&folder).unwrap();
     let b = check_sync_path(Path::new(&folder.to_string_lossy().to_uppercase())).unwrap();
@@ -154,7 +154,7 @@ fn y01_6_case_and_trailing_slash_do_not_change_the_folder_identity() {
     assert_eq!(a.folder_id(), c.folder_id());
     assert_eq!(a.folder_id(), d.folder_id());
     assert_eq!(a.folder_id().len(), 64);
-    assert!(!a.folder_id().contains("circletasks") && !a.name().contains('\\'), "ni chemin ni libellé à backslash");
+    assert!(!a.folder_id().contains("spartiate") && !a.name().contains('\\'), "ni chemin ni libellé à backslash");
     assert_eq!(a.kind, FolderKind::Local);
     // Deux dossiers distincts : deux identifiants distincts.
     let other = root.join("Autre");
@@ -177,7 +177,7 @@ fn y01_6_a_drive_root_is_not_a_usable_sync_folder() {
 #[test]
 fn y01_13_names_with_windows_traps_never_reach_the_disk_through_stdfs() {
     let (_dir, root) = temp_root();
-    let folder = root.join("CircleTasks");
+    let folder = root.join("Spartiate");
     std::fs::create_dir(&folder).unwrap();
     let fs = StdFs::new(check_sync_path(&folder).unwrap().path);
     fs.create_dir(&["devices"]).unwrap();
@@ -201,10 +201,10 @@ mod persisted {
     use std::path::Path;
     use std::sync::Arc;
 
-    use circletasks_lib::sync::consent::ConsentGate;
-    use circletasks_lib::sync::service::{SyncCore, SyncOptions, SystemBackend};
-    use circletasks_lib::sync::SyncCode;
-    use circletasks_lib::vault::MemoryVault;
+    use spartiate_lib::sync::consent::ConsentGate;
+    use spartiate_lib::sync::service::{SyncCore, SyncOptions, SystemBackend};
+    use spartiate_lib::sync::SyncCode;
+    use spartiate_lib::vault::MemoryVault;
 
     use super::temp_root;
     use crate::sync_support::{FakeUi, TestClock, DEV_A, DEV_B, NOW};
@@ -215,7 +215,7 @@ mod persisted {
         SyncCore::new(SyncOptions::new(base.to_path_buf()), Arc::new(MemoryVault::default()), Arc::new(SystemBackend), consent, clock.clock())
     }
 
-    fn code<T>(result: Result<T, circletasks_lib::sync::SyncError>) -> SyncCode {
+    fn code<T>(result: Result<T, spartiate_lib::sync::SyncError>) -> SyncCode {
         match result {
             Ok(_) => panic!("erreur attendue"),
             Err(error) => error.code,
@@ -235,12 +235,12 @@ mod persisted {
         let base = tempfile::tempdir().unwrap();
         let outside = root.join("dehors");
         std::fs::create_dir(&outside).unwrap();
-        let folder = root.join("CircleTasks");
+        let folder = root.join("Spartiate");
         std::fs::create_dir(&folder).unwrap();
         let real = folder.to_string_lossy().into_owned();
         for (path, expected) in [
-            (r"\\serveur\partage\CircleTasks".to_owned(), SyncCode::NotLocal),
-            (r"\\?\UNC\serveur\partage\CircleTasks".to_owned(), SyncCode::NotLocal),
+            (r"\\serveur\partage\Spartiate".to_owned(), SyncCode::NotLocal),
+            (r"\\?\UNC\serveur\partage\Spartiate".to_owned(), SyncCode::NotLocal),
             (format!(r"{real}\..\dehors"), SyncCode::UnsafeFolder),
             (format!(r"{real}\absent"), SyncCode::FolderUnreachable),
             ("relatif".to_owned(), SyncCode::NotLocal),
@@ -261,7 +261,7 @@ mod persisted {
     fn y01_4_unreadable_or_foreign_folder_json_is_treated_as_not_configured_without_panic() {
         let (_dir, root) = temp_root();
         let base = tempfile::tempdir().unwrap();
-        let folder = root.join("CircleTasks");
+        let folder = root.join("Spartiate");
         std::fs::create_dir(&folder).unwrap();
         let dir = base.path().join("sync");
         std::fs::create_dir_all(&dir).unwrap();
@@ -273,14 +273,14 @@ mod persisted {
         // Un dossier valide persisté puis relu par une nouvelle instance : même libellé, sans nouvelle boîte (critère 4).
         write_record(base.path(), &folder.to_string_lossy(), Some(DEV_B));
         let info = core_on(base.path()).folder_info().unwrap();
-        assert_eq!((info.configured, info.name.as_deref()), (true, Some("CircleTasks")));
+        assert_eq!((info.configured, info.name.as_deref()), (true, Some("Spartiate")));
     }
 
     #[test]
     fn y01_7_a_linked_folder_replaced_by_a_junction_is_refused_at_the_next_load() {
         let (_dir, root) = temp_root();
         let base = tempfile::tempdir().unwrap();
-        let folder = root.join("CircleTasks");
+        let folder = root.join("Spartiate");
         std::fs::create_dir(&folder).unwrap();
         let first = core_on(base.path());
         first.choose_folder(&folder).unwrap();
@@ -297,19 +297,19 @@ mod persisted {
         assert!(std::fs::read_dir(&elsewhere).unwrap().next().is_none(), "aucune écriture à travers la jonction");
     }
 
-    /// Défaut QA-Y1-3 (faible) : renommer le dossier lié en ne changeant que la casse (`CircleTasks` -> `circletasks`) fait comparer le
+    /// Défaut QA-Y1-3 (faible) : renommer le dossier lié en ne changeant que la casse (`Spartiate` -> `spartiate`) fait comparer le
     /// chemin de `folder.json` au chemin final en respectant la casse : `unsafe-folder` permanent jusqu'à « Oublier le dossier ».
     /// Attendu : comparaison insensible à la casse comme dans `check_sync_path`.
     #[test]
     fn y01_7_a_case_only_rename_of_the_linked_folder_is_still_the_same_folder() {
         let (_dir, root) = temp_root();
         let base = tempfile::tempdir().unwrap();
-        let folder = root.join("CircleTasks");
+        let folder = root.join("Spartiate");
         std::fs::create_dir(&folder).unwrap();
         let first = core_on(base.path());
         first.choose_folder(&folder).unwrap();
         drop(first);
-        std::fs::rename(&folder, root.join("circletasks")).unwrap();
+        std::fs::rename(&folder, root.join("spartiate")).unwrap();
         assert!(core_on(base.path()).folder_info().is_ok());
     }
 }
@@ -338,7 +338,7 @@ fn y01_2_no_capability_grants_a_dialog_or_fs_permission_to_any_window() {
 /// autre balise (jonction, lien symbolique, WCI, OneDrive hérité, balise inconnue) est refusée.
 #[test]
 fn y01_6_only_cloud_reparse_tags_are_accepted() {
-    use circletasks_lib::sync::folder::is_accepted_reparse;
+    use spartiate_lib::sync::folder::is_accepted_reparse;
     const REPARSE: u32 = 0x400;
     const DIRECTORY: u32 = 0x10;
     // Sans attribut de point d'analyse : toujours accepté, quelle que soit la valeur de balise lue.

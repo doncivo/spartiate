@@ -5,12 +5,12 @@ import { getLocale } from './index';
  * Catalogue à part (chargé avec les écrans qui enregistrent, hors du bundle de départ) ; mêmes clés en anglais (`fileFailureText.test.ts`).
  */
 export const fileFailureFr = {
-  unsafeFolder: 'Le dossier temporaire de l’app est anormal : fermez puis rouvrez CircleTasks, il est remis en ordre au lancement.',
+  unsafeFolder: 'Le dossier temporaire de l’app est anormal : fermez puis rouvrez Spartiate, il est remis en ordre au lancement.',
   badName: 'Le nom du fichier a été refusé, rien n’a été enregistré : exportez les logs (Réglages › À propos › Logs) pour le signaler.',
 } as const;
 
 export const fileFailureEn: { readonly [K in keyof typeof fileFailureFr]: string } = {
-  unsafeFolder: 'The app temporary folder is abnormal: close and reopen CircleTasks, it is fixed at launch.',
+  unsafeFolder: 'The app temporary folder is abnormal: close and reopen Spartiate, it is fixed at launch.',
   badName: 'The file name was refused, nothing was saved: export the logs (Settings › About › Logs) to report it.',
 };
 

@@ -43,7 +43,7 @@ export const calendarsFr = {
   remove: 'Supprimer le compte',
   removeLabel: 'Supprimer le compte {label}',
   removeTitle: 'Supprimer ce compte ?',
-  removeBody: 'Les événements de {label} disparaissent de CircleTasks. Les tâches créées depuis ces événements sont conservées.',
+  removeBody: 'Les événements de {label} disparaissent de Spartiate. Les tâches créées depuis ces événements sont conservées.',
   removeConfirm: 'Supprimer',
   removeCancel: 'Annuler',
   calendarsCaption: 'AGENDAS',

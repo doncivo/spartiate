@@ -1,4 +1,4 @@
-//! CircleTasks (SEC-01, bloquant B7) : le plugin SQL est fermé. Une seule base (`sqlite:circletasks.db`), ni `ATTACH`, ni `VACUUM INTO`,
+//! Spartiate (SEC-01, bloquant B7) : le plugin SQL est fermé. Une seule base (`sqlite:spartiate.db`), ni `ATTACH`, ni `VACUUM INTO`,
 //! ni pragma hors liste blanche, ni fonction ou table virtuelle dangereuse. Tous les tests passent par l'API existante du plugin
 //! (`open_sqlite_pool`, `DbPool::execute` / `select` / `connect_in`), comme le ferait la WebView, et n'écrivent que dans `target/`.
 
@@ -72,8 +72,8 @@ impl Fixture {
 // ------------------------------------------------------------------------------------------------------------------------------
 
 #[test]
-fn sec01_1_the_only_accepted_url_is_circletasks_db() {
-    assert!(validate_db_url("sqlite:circletasks.db").is_ok());
+fn sec01_1_the_only_accepted_url_is_spartiate_db() {
+    assert!(validate_db_url("sqlite:spartiate.db").is_ok());
 }
 
 #[test]
@@ -84,18 +84,18 @@ fn sec01_2_every_other_url_is_refused_with_the_url_code() {
         r"sqlite:\\?\C:\x.db",
         "sqlite:../x.db",
         "sqlite:sub/../../x.db",
-        r"sqlite:sub\circletasks.db",
-        "sqlite:CircleTasks.db",
-        "sqlite:circletasks.db?mode=ro",
-        "sqlite:circletasks.db-wal",
+        r"sqlite:sub\spartiate.db",
+        "sqlite:Spartiate.db",
+        "sqlite:spartiate.db?mode=ro",
+        "sqlite:spartiate.db-wal",
         "sqlite::memory:",
-        "sqlite://circletasks.db",
-        "sqlite:file:circletasks.db",
+        "sqlite://spartiate.db",
+        "sqlite:file:spartiate.db",
         "sqlite:",
-        "sqlite:circletasks.db ",
+        "sqlite:spartiate.db ",
         "mysql://h/d",
         "postgres://h/d",
-        "circletasks.db",
+        "spartiate.db",
         "",
     ];
     for url in refused {
@@ -127,8 +127,8 @@ async fn sec01_3_load_with_an_absolute_path_or_dotdot_refuses_and_creates_nothin
 async fn sec01_3_load_of_the_legitimate_url_creates_the_database_in_the_app_dir() {
     let base = target_dir("db-load-ok-");
     let app_dir = base.path().join("app");
-    let db = DbPool::connect_in("sqlite:circletasks.db", || app_dir.clone()).await.unwrap_or_else(|e| panic!("{e}"));
-    assert!(app_dir.join("circletasks.db").exists());
+    let db = DbPool::connect_in("sqlite:spartiate.db", || app_dir.clone()).await.unwrap_or_else(|e| panic!("{e}"));
+    assert!(app_dir.join("spartiate.db").exists());
     db.close().await;
 }
 

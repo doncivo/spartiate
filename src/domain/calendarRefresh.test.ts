@@ -136,7 +136,7 @@ describe('localAccountState (K-01 D1) : compte connecté sur un autre appareil',
   });
 
   it('référence présente mais secret absent du coffre de cet appareil : « à reconnecter », bandeau gardé', () => {
-    const state = localAccountState({ tokenRef: 'circletasks.calendar.icloud.x', secretPresent: false }, connected());
+    const state = localAccountState({ tokenRef: 'spartiate.calendar.icloud.x', secretPresent: false }, connected());
     expect(state).toEqual({ kind: 'reconnect-required', lastSuccessAt: T0 });
     expect(calendarAppStatuses([account], only(state))).toEqual({ calendarDisconnected: { detail: 'Compte iCloud' } });
   });

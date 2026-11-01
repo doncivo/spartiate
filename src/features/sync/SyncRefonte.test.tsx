@@ -43,7 +43,7 @@ beforeEach(async () => {
     await platform.folder.choose();
     await platform.key.create();
   }
-  sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-05T15:58:00.000Z' as IsoDateTime, folderLabel: 'CircleTasks', folderKind: 'icloud', devices, conflictsThisWeek: 0 });
+  sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-05T15:58:00.000Z' as IsoDateTime, folderLabel: 'Spartiate', folderKind: 'icloud', devices, conflictsThisWeek: 0 });
   container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync, syncPlatform: platform });
 });
 
@@ -125,7 +125,7 @@ describe('UI-REFONTE-04 — Synchronisation', () => {
     expect(card).not.toBeNull();
     expect(card).toHaveAttribute('data-tone', 'success');
     expect(within(card).getByTestId('sync-status-text')).toHaveTextContent('À jour · il y a 2 min');
-    expect(within(card).getByText('iCloud Drive / CircleTasks')).toBeInTheDocument();
+    expect(within(card).getByText('iCloud Drive / Spartiate')).toBeInTheDocument();
     expect(within(card).getByRole('button', { name: 'Synchroniser' })).toBeInTheDocument();
     // La phrase d'état garde sa classe et ses attributs (aides e2e, bandeau).
     expect(within(card).getByTestId('sync-status-text')).toHaveClass('ct-sync__sub');

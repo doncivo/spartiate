@@ -40,8 +40,8 @@ use super::store::{Accepted, AppendResult, NextKey, SnapshotEndKey, FolderScan, 
 use super::{fail, log, SyncCode, SyncError, SyncResult};
 use crate::vault::{SecretVault, VaultError};
 
-/// Compte de la clé au coffre (service `fr.circletasks.planner`).
-pub const SYNC_KEY_ACCOUNT: &str = "circletasks.sync.key.v1";
+/// Compte de la clé au coffre (service `fr.spartiate.app`).
+pub const SYNC_KEY_ACCOUNT: &str = "spartiate.sync.key.v1";
 pub const OWN_FILE: &str = "own.json";
 pub const USAGE_FILE: &str = "usage.json";
 
@@ -118,7 +118,7 @@ impl SyncOptions {
     }
 }
 
-/// Forme IPC de `SyncFolderInfo` : nom du dossier et nature, jamais un chemin ; le libellé affiché (« iCloud Drive / CircleTasks »)
+/// Forme IPC de `SyncFolderInfo` : nom du dossier et nature, jamais un chemin ; le libellé affiché (« iCloud Drive / Spartiate »)
 /// est composé par l'interface (`src/i18n`, revue 13).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct FolderInfo {
@@ -133,7 +133,7 @@ pub struct FolderInfo {
 pub struct KeyStatus {
     pub present: bool,
     pub kid: Option<String>,
-    /// Y-11 : `kid` de l'entrée `circletasks.sync.key.next` (nouvelle clé d'une réinitialisation), ou null ; fait foi pour le moteur.
+    /// Y-11 : `kid` de l'entrée `spartiate.sync.key.next` (nouvelle clé d'une réinitialisation), ou null ; fait foi pour le moteur.
     pub next_kid: Option<String>,
     /// Y-11 (§18 point 17) : dernier refus de `sync_key_import` pour ce dossier (`sync/import-failure.json`), ou null.
     pub import_failure: Option<ImportFailureView>,
@@ -677,7 +677,7 @@ impl SyncCore {
         MasterKey::from_vault_value(&value).map(Some).ok_or(SyncError::new(SyncCode::VaultUnavailable))
     }
 
-    /// `sync_key_create` : `key-exists` si une clé existe ; `folder-has-data` si le dossier contient déjà des données CircleTasks.
+    /// `sync_key_create` : `key-exists` si une clé existe ; `folder-has-data` si le dossier contient déjà des données Spartiate.
     pub fn key_create(&self) -> SyncResult<String> {
         // Clé existante contrôlée sous le verrou (revue 17) : deux appels simultanés ne créent jamais deux clés.
         let mut inner = self.lock();
@@ -1290,7 +1290,7 @@ impl SyncCore {
     /// `sync_key_import` : dossier d'abord, clé ensuite (section 10.3). `owner` : fenêtre appelante (premier plan, boîte).
     ///
     /// Y-11 (§14.3 « Réassociation de B ») : un appareil déjà associé à ce dossier avec une autre clé (son propre état se déchiffre avec
-    /// elle) qui importe la nouvelle clé d'une réinitialisation l'écrit sous `circletasks.sync.key.next`, jamais par-dessus `.v1` avant la
+    /// elle) qui importe la nouvelle clé d'une réinitialisation l'écrit sous `spartiate.sync.key.next`, jamais par-dessus `.v1` avant la
     /// bascule (confirmation native de remplacement de Y-08) ; `reset.json` passe au rôle `joined`.
     pub fn key_import(&self, input: KeyInput, owner: isize) -> SyncResult<KeyImportResult> {
         let result = self.key_import_inner(input, owner);
@@ -1911,7 +1911,7 @@ impl SyncCore {
     }
 
     /// `sync_reset_key` : refus avant toute boîte, reprise d'une réinitialisation interrompue (même `K2`, sans boîte), puis confirmation
-    /// native (« Annuler » par défaut), puis `K2` créée par Rust sous `circletasks.sync.key.next` et `sync/reset.json`. Ne rend que le
+    /// native (« Annuler » par défaut), puis `K2` créée par Rust sous `spartiate.sync.key.next` et `sync/reset.json`. Ne rend que le
     /// `kid` : la clé ne traverse jamais la WebView.
     pub fn reset_key(&self, owner: isize) -> SyncResult<String> {
         if let ResetPlan::Resume(kid) = self.reset_plan(&mut self.lock())? {

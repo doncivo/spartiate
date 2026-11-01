@@ -608,8 +608,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "circletasks"
-version = "1.0.2"
+name = "spartiate"
+version = "0.1.0"
 dependencies = [
  "aws-lc-rs",
  "base64 0.22.1",

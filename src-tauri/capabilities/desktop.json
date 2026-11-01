@@ -19,7 +19,7 @@
     "process:allow-restart",
     {
       "identifier": "opener:allow-open-url",
-      "allow": [{ "url": "https://github.com/doncivo/circletasks-releases/releases/*" }]
+      "allow": [{ "url": "https://github.com/doncivo/spartiate-releases/releases/*" }]
     }
   ]
 }

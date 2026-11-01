@@ -85,7 +85,7 @@ test.describe('N-01 — rappel à l’heure d’une tâche (iPhone, planificateu
   test('Réglages > Rappels : « Planifiés jusqu’au » et ligne fixe du fuseau (critère 10, N-06)', async ({ page }) => {
     await openReminderSettings(page);
     await expect(page.getByText(/^Planifiés jusqu’au /)).toBeVisible();
-    await expect(page.getByText('Après un changement de fuseau, ouvrez CircleTasks : les rappels sont recalculés à l’ouverture.')).toBeVisible();
+    await expect(page.getByText('Après un changement de fuseau, ouvrez Spartiate : les rappels sont recalculés à l’ouverture.')).toBeVisible();
   });
 
   test('autorisation non décidée : invitation, « Autoriser » appelle requestPermission() sur geste (critère 11)', async ({ page }) => {

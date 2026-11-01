@@ -42,7 +42,7 @@ describe('I-02 QA : bornes de l’échéance et fuseau', () => {
     await replanNotifications(h.container, 'open');
     expect(alert.scheduled).toHaveLength(0);
     expect(banner()?.detail).toBe('soon');
-    expect(banner()?.message).toBe('CircleTasks expire dans 23 h : actualisez-la dans SideStore');
+    expect(banner()?.message).toBe('Spartiate expire dans 23 h : actualisez-la dans SideStore');
   });
 
   it('I-02 critère 4 : 24 h 1 min restantes : alerte dans une minute, pas de bandeau', async () => {

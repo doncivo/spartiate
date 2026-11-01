@@ -38,18 +38,18 @@ import { appUpdateFr } from './fr.appUpdate';
  */
 export const fr = {
   app: {
-    name: 'CircleTasks',
+    name: 'Spartiate',
     loading: 'Chargement…',
     dbError: 'Impossible d’ouvrir la base de données.',
     screenError: 'Impossible d’afficher cet écran.',
     screenRetry: 'Réessayer',
     screenReload: 'Recharger',
-    dbBackupError: 'Mise à jour des données interrompue : la sauvegarde de sécurité a échoué. Vos données n’ont pas été modifiées. Libérez de l’espace disque puis relancez CircleTasks.',
+    dbBackupError: 'Mise à jour des données interrompue : la sauvegarde de sécurité a échoué. Vos données n’ont pas été modifiées. Libérez de l’espace disque puis relancez Spartiate.',
     version: 'Version {version}',
     versionUnknown: 'Version inconnue',
     update: appUpdateFr,
     dbStalled: 'L’ouverture est peut-être encore en cours ; si rien ne change, touchez « Réessayer ».',
-    startError: 'Le démarrage de CircleTasks a échoué.',
+    startError: 'Le démarrage de Spartiate a échoué.',
     diag: {
       title: 'Détail technique',
       step: 'Étape : {step}',
@@ -406,7 +406,7 @@ export const fr = {
     sectionAbout: 'À PROPOS',
     checkUpdates: 'Rechercher une mise à jour',
     checkingUpdates: 'Recherche en cours…',
-    upToDate: 'CircleTasks est à jour',
+    upToDate: 'Spartiate est à jour',
     updateCheckFailed: 'Impossible de vérifier les mises à jour',
     latestRelease: 'Dernière version',
     latestReleaseOpen: 'Ouvrir',
@@ -425,7 +425,7 @@ export const fr = {
   },
   desktop: {
     tray: {
-      open: 'Ouvrir CircleTasks',
+      open: 'Ouvrir Spartiate',
       quickAdd: 'Ajout rapide',
       sync: 'Synchroniser maintenant',
       quit: 'Quitter',
@@ -433,7 +433,8 @@ export const fr = {
   },
   updater: {
     available: 'Nouvelle version {version} disponible',
-    bannerLabel: 'Mise à jour de CircleTasks',
+    bannerLabel: 'Mise à jour de Spartiate',
+    notConfigured: 'Mises à jour : non configurées (SPA-002)',
     viewNotes: 'Voir les notes',
     hideNotes: 'Masquer les notes',
     notesTitle: 'Notes de la version {version}',
@@ -574,7 +575,7 @@ export const fr = {
     syncDevice: '{device} : {state}',
     loading: 'Chargement',
     /** I-02 (ADR 0013 §3.3) : moins de 24 h avant l'expiration de la signature (texte précis composé par I-02 dans `message`). */
-    signingSoon: 'CircleTasks expire bientôt : actualisez-la dans SideStore',
+    signingSoon: 'Spartiate expire bientôt : actualisez-la dans SideStore',
     /** I-02 : signature expirée. */
     signingExpired: 'La signature est expirée : réinstallez l’app',
     signingViewLabel: 'Voir l’expiration de la signature dans Réglages',

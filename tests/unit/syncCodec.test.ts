@@ -45,7 +45,7 @@ describe('vecteurs croisés (Y-08 critère 4)', () => {
     expect(vectors).toEqual(built);
   });
 
-  it('clé d’enregistrement, kid et clé de secours dérivés de K (HKDF-SHA256, sel « circletasks »)', async () => {
+  it('clé d’enregistrement, kid et clé de secours dérivés de K (HKDF-SHA256, sel « circletasks », constante de protocole figée)', async () => {
     expect(toHex(await recordKeyOf(key))).toBe(vectors.recordKey);
     expect(await kidOf(key)).toBe(vectors.kid);
     expect(vectors.kid).toMatch(/^[0-9a-f]{16}$/);

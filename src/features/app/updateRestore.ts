@@ -15,7 +15,7 @@ import { writeMarkerFailed, writeRestoreResult } from '../settings/restoreMemo';
  * (`openStartupRecovery`), copie de sécurité de la base actuelle faite par Rust avant l'échange, puis relance (PC) ou rechargement
  * (iPhone). Retour arrière LOCAL (revue I2) : aucun marqueur de synchro. L'issue est mémorisée comme une restauration P-04 (message et
  * entrée `restore-done` du journal après le redémarrage). Ne rejette jamais : un échec rend le texte de P-04 et le code, l'écran reste.
- * Revue I3 : la relance est HORS de la restauration : si elle échoue, la restauration reste réussie et l'écran dit « Relancez CircleTasks ».
+ * Revue I3 : la relance est HORS de la restauration : si elle échoue, la restauration reste réussie et l'écran dit « Relancez Spartiate ».
  */
 export type UpdateRestoreOutcome =
   | { readonly ok: true; readonly restartFailed?: boolean }

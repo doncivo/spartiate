@@ -1,6 +1,6 @@
 //! Coffre système (ADR 0008 ; ADR 0011 section 2.2). Production : crate `keyring` 3 (Gestionnaire d'identification Windows,
-//! Trousseau iOS), service `fr.circletasks.planner`. Comptes : jetons d'agendas (`circletasks.calendar.*`, `token_ref`) et clé de
-//! synchronisation (`circletasks.sync.key.v1`, voir `sync_key_vault`). Tests : `MemoryVault`. Un secret n'est jamais journalisé ni
+//! Trousseau iOS), service `fr.spartiate.app`. Comptes : jetons d'agendas (`spartiate.calendar.*`, `token_ref`) et clé de
+//! synchronisation (`spartiate.sync.key.v1`, voir `sync_key_vault`). Tests : `MemoryVault`. Un secret n'est jamais journalisé ni
 //! renvoyé à la WebView.
 //!
 //! Déplacé de `calendars/vault.rs` au lot Y1 (réexporté par `calendars::vault`, sans changement de comportement pour les agendas).
@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::sync::Mutex;
 
 /// Service du coffre système (identique sur PC et iPhone).
-pub const VAULT_SERVICE: &str = "fr.circletasks.planner";
+pub const VAULT_SERVICE: &str = "fr.spartiate.app";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VaultError {
@@ -57,7 +57,7 @@ impl SecretVault for MemoryVault {
 }
 
 /// Coffre système : Gestionnaire d'identification Windows (`windows-native`), Trousseau iOS (`apple-native`). Service
-/// `fr.circletasks.planner`, compte = `token_ref`. Sur une autre cible (aucune n'est livrée), tout accès rend `Unavailable`.
+/// `fr.spartiate.app`, compte = `token_ref`. Sur une autre cible (aucune n'est livrée), tout accès rend `Unavailable`.
 pub struct SystemVault;
 
 #[cfg(any(windows, target_os = "ios"))]
@@ -104,7 +104,7 @@ impl SecretVault for SystemVault {
     }
 }
 
-/// Espace de noms d'une référence du coffre : `circletasks.calendar.<fournisseur>.<uuid>`. Les jetons Google (écrits par le seul
+/// Espace de noms d'une référence du coffre : `spartiate.calendar.<fournisseur>.<uuid>`. Les jetons Google (écrits par le seul
 /// flux OAuth de Rust) et les mots de passe iCloud (écrits par la WebView) ne se mélangent jamais.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RefNamespace {
@@ -112,9 +112,9 @@ pub enum RefNamespace {
     Icloud,
 }
 
-/// Fournisseur d'une référence au format exact (`circletasks.calendar.google.<uuid>` ou `.icloud.`), sinon `None`.
+/// Fournisseur d'une référence au format exact (`spartiate.calendar.google.<uuid>` ou `.icloud.`), sinon `None`.
 pub fn parse_token_ref(token_ref: &str) -> Option<RefNamespace> {
-    let rest = token_ref.strip_prefix("circletasks.calendar.")?;
+    let rest = token_ref.strip_prefix("spartiate.calendar.")?;
     let (namespace, uuid) = rest.split_once('.')?;
     let groups: Vec<&str> = uuid.split('-').collect();
     let shape = [8usize, 4, 4, 4, 12];

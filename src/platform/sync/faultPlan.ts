@@ -24,7 +24,7 @@ export type FaultCode = 'io' | 'cloud-pending';
 export interface FaultEntry {
   readonly id: string;
   readonly op: FaultOp;
-  /** Chemin sous la racine `CircleTasks`, composants séparés par `/`, `*` = toute suite de caractères dans un composant. */
+  /** Chemin sous la racine `Spartiate`, composants séparés par `/`, `*` = toute suite de caractères dans un composant. */
   readonly file: string;
   /** Rang (à partir de 1) du premier appel de `op` sur un chemin qui correspond à `file`. */
   readonly nth: number;

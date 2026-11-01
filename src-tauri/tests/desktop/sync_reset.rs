@@ -10,17 +10,17 @@ use std::sync::{Arc, Mutex};
 
 use base64::engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD};
 use base64::Engine;
-use circletasks_lib::sync::crypto::{parse_qr_text, MasterKey, Place};
-use circletasks_lib::sync::folder::FolderKind;
-use circletasks_lib::sync::forget::SYNC_NEXT_KEY_ACCOUNT;
-use circletasks_lib::sync::log;
-use circletasks_lib::sync::reset::{
+use spartiate_lib::sync::crypto::{parse_qr_text, MasterKey, Place};
+use spartiate_lib::sync::folder::FolderKind;
+use spartiate_lib::sync::forget::SYNC_NEXT_KEY_ACCOUNT;
+use spartiate_lib::sync::log;
+use spartiate_lib::sync::reset::{
     reset_precondition, reset_waiting, reset_winner, restore_candidates, valid_reset, ForgottenCut, LagReason, OpenedEpoch, PreconditionDevice, ResetCandidate, ResetKnown, RESET_FILE,
 };
-use circletasks_lib::sync::service::{AppendRequest, KeyInput, ResetView, SYNC_KEY_ACCOUNT};
-use circletasks_lib::sync::state::DeviceAck;
-use circletasks_lib::sync::{SyncCode, SyncError};
-use circletasks_lib::vault::SecretVault;
+use spartiate_lib::sync::service::{AppendRequest, KeyInput, ResetView, SYNC_KEY_ACCOUNT};
+use spartiate_lib::sync::state::DeviceAck;
+use spartiate_lib::sync::{SyncCode, SyncError};
+use spartiate_lib::vault::SecretVault;
 use serde_json::{json, Value};
 use zeroize::Zeroizing;
 
@@ -223,7 +223,7 @@ impl Net {
         self.devs.iter_mut().find(|d| d.id == id).expect("appareil")
     }
 
-    fn core(&self, id: &str) -> &circletasks_lib::sync::service::SyncCore {
+    fn core(&self, id: &str) -> &spartiate_lib::sync::service::SyncCore {
         &self.dev(id).d.core
     }
 
@@ -410,7 +410,7 @@ fn reset_key_dialog_refused_or_background_or_rate_limited_creates_nothing() {
     assert_eq!(code(a.core.reset_key(1)), SyncCode::ConsentDenied);
     assert_eq!(a.ui.prompts(), 1);
     let spec = a.ui.last.lock().unwrap().clone().expect("boîte");
-    assert_eq!(spec.default_button, circletasks_lib::sync::consent::IDCANCEL, "« Annuler » par défaut");
+    assert_eq!(spec.default_button, spartiate_lib::sync::consent::IDCANCEL, "« Annuler » par défaut");
     assert!(spec.texts.instruction.contains("Réinitialiser"), "texte natif de native/fr.json");
     assert!(!a.vault.contains(SYNC_NEXT_KEY_ACCOUNT).unwrap(), "refus : rien n'est créé");
     assert!(net.reset_file(DEV_A).is_none());
@@ -894,7 +894,7 @@ fn the_old_key_still_opens_old_files_but_reads_and_forges_nothing_written_after(
     let forged_line = k.seal(&Place::Journal { dev: DEV_A, epoch: &new_epoch, segment: 1, index: 0 }, br#"{"forged":true}"#, 1, SV as u32).unwrap();
     let header = json!({ "f": "ct-j", "sm": 1, "kid": k.kid(), "dev": DEV_A, "e": new_epoch, "n": 1 }).to_string();
     net.fs.put(&["devices", DEV_A, &new_epoch, "j-00000001.ctj"], format!("{header}\n{forged_line}\n").as_bytes());
-    let from = circletasks_lib::sync::store::RecordCursor { segment: 0, record: 0 };
+    let from = spartiate_lib::sync::store::RecordCursor { segment: 0, record: 0 };
     assert_eq!(code(net.core(DEV_B).read_journal(DEV_A, &new_epoch, from, None)), SyncCode::KeyMismatch, "segment forgé sous K refusé");
     let mut forged_state = state_json(net.dev(DEV_A), json!({ "kid": k.kid(), "epoch": epoch(3, DEV_A), "at": hlc(NOW_FORGE, DEV_A) }));
     forged_state["stateSeq"] = json!(9_999);
@@ -922,7 +922,7 @@ const DEV_Z: &str = "1b2c3d4e-5f6a-4b7c-8d9e-0f1a2b3c4d5e";
 impl Net {
     /// `id` ouvre une époque `e<n+1>-<id>` sous la clé locale (restauration « Appliquer partout ») : instantané, état.
     fn open_restore(&mut self, id: &str) -> Result<String, SyncError> {
-        let n = circletasks_lib::sync::names::EpochId::parse(&self.dev(id).epoch).unwrap().n + 1;
+        let n = spartiate_lib::sync::names::EpochId::parse(&self.dev(id).epoch).unwrap().n + 1;
         let target = epoch(n, id);
         let dev = self.dev_mut(id);
         dev.epoch = target.clone();
@@ -1043,8 +1043,8 @@ fn audit5_own_state_back_only_for_the_last_state_written_under_k() {
 fn audit6_old_key_withdrawal_fails_closed_when_a_state_is_still_in_the_cloud() {
     let mut net = Net::new(&[DEV_B]);
     net.cycle(DEV_B).unwrap();
-    net.fs.set_availability(&["devices", DEV_A, "state.ctx"], circletasks_lib::sync::files::Availability::Cloud);
-    *net.fs.hydrate_error.lock().unwrap() = Some(circletasks_lib::sync::files::FsError::CloudPending);
+    net.fs.set_availability(&["devices", DEV_A, "state.ctx"], spartiate_lib::sync::files::Availability::Cloud);
+    *net.fs.hydrate_error.lock().unwrap() = Some(spartiate_lib::sync::files::FsError::CloudPending);
     assert_eq!(code(net.core(DEV_B).pairing_preconditions(true)), SyncCode::CloudPending, "liste incomplète : refus");
     // Hydraté au contrôle suivant : rien d'annoncé, l'ancienne clé peut être donnée.
     assert!(net.core(DEV_B).pairing_preconditions(true).is_ok());
@@ -1261,7 +1261,7 @@ fn p17_import_failure_is_persisted_and_cleared() {
     assert_eq!(code(net.core(DEV_B).key_import(KeyInput::RecoveryKey(stranger.recovery_key()), 1)), SyncCode::KeyMismatch);
     assert_eq!(net.import_failure(DEV_B).unwrap()["code"], "key-mismatch");
     // QR expiré : écrit.
-    let qr = circletasks_lib::sync::crypto::qr_text_of(&stranger, DEV_A, None, 1);
+    let qr = spartiate_lib::sync::crypto::qr_text_of(&stranger, DEV_A, None, 1);
     assert_eq!(code(net.core(DEV_B).key_import(KeyInput::QrText(Zeroizing::new((*qr).clone())), 1)), SyncCode::PairingExpired);
     assert_eq!(net.import_failure(DEV_B).unwrap()["code"], "pairing-expired");
     // Premier plan perdu : montré sur-le-champ, rien d'écrit.
@@ -1355,8 +1355,8 @@ fn second_review_pairing_ignores_a_forgotten_or_expired_device_still_in_the_clou
         net.cycle(id).unwrap();
     }
     net.core(DEV_B).device_forget(DEV_C, 1).unwrap();
-    net.fs.set_availability(&["devices", DEV_C, "state.ctx"], circletasks_lib::sync::files::Availability::Cloud);
-    *net.fs.hydrate_error.lock().unwrap() = Some(circletasks_lib::sync::files::FsError::CloudPending);
+    net.fs.set_availability(&["devices", DEV_C, "state.ctx"], spartiate_lib::sync::files::Availability::Cloud);
+    *net.fs.hydrate_error.lock().unwrap() = Some(spartiate_lib::sync::files::FsError::CloudPending);
     assert!(net.core(DEV_B).pairing_preconditions(true).is_ok(), "oublié ignoré");
     // Expiré (180 jours sans synchro, vu au dernier scan) dans le nuage : ignoré aussi.
     let mut net = Net::new(&[DEV_B, DEV_C]);
@@ -1365,8 +1365,8 @@ fn second_review_pairing_ignores_a_forgotten_or_expired_device_still_in_the_clou
     }
     net.dev(DEV_B).d.clock.advance(181 * 86_400_000);
     net.read_all(DEV_B).unwrap();
-    net.fs.set_availability(&["devices", DEV_C, "state.ctx"], circletasks_lib::sync::files::Availability::Cloud);
-    *net.fs.hydrate_error.lock().unwrap() = Some(circletasks_lib::sync::files::FsError::CloudPending);
+    net.fs.set_availability(&["devices", DEV_C, "state.ctx"], spartiate_lib::sync::files::Availability::Cloud);
+    *net.fs.hydrate_error.lock().unwrap() = Some(spartiate_lib::sync::files::FsError::CloudPending);
     assert!(net.core(DEV_B).pairing_preconditions(true).is_ok(), "expiré ignoré");
 }
 
@@ -1449,14 +1449,14 @@ fn shared_table_stale_acks() {
         v.as_array().unwrap().iter().map(|a| (a["deviceId"].as_str().unwrap().to_owned(), serde_json::from_value(a["acks"].clone()).unwrap())).collect()
     };
     for case in cases {
-        let published: BTreeMap<String, circletasks_lib::sync::names::EpochId> = case["published"]
+        let published: BTreeMap<String, spartiate_lib::sync::names::EpochId> = case["published"]
             .as_object()
             .unwrap()
             .iter()
-            .map(|(id, e)| (id.clone(), circletasks_lib::sync::names::EpochId::parse(e.as_str().unwrap()).unwrap()))
+            .map(|(id, e)| (id.clone(), spartiate_lib::sync::names::EpochId::parse(e.as_str().unwrap()).unwrap()))
             .collect();
         let mut got = ackers(&case["ackers"]);
-        circletasks_lib::sync::reset::without_stale_acks(&mut got, &published);
+        spartiate_lib::sync::reset::without_stale_acks(&mut got, &published);
         assert_eq!(got, ackers(&case["expected"]), "{}", case["name"]);
     }
 }

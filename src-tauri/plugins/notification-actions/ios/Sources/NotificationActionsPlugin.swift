@@ -1,4 +1,4 @@
-// Plugin notification-actions de CircleTasks (ADR 0012 avenant N-03, N3.1 à N3.3 ; story N-03).
+// Plugin notification-actions de Spartiate (ADR 0012 avenant N-03, N3.1 à N3.3 ; story N-03).
 //
 // Rôle : prendre la place du délégué `UNUserNotificationCenterDelegate` du plugin officiel (un seul délégué existe), enregistrer les
 // catégories et actions « Fait » et « +15 min », et écrire chaque action reçue (app ouverte, en arrière-plan ou tuée) dans un fichier
@@ -67,14 +67,14 @@ private struct WakePayload: Encodable {
 private let directoryName = "ct-notification-actions"
 private let queueFileName = "queue.jsonl"
 private let categoriesFileName = "categories.json"
-private let writeFailuresKey = "fr.circletasks.notification-actions.writeFailures"
+private let writeFailuresKey = "fr.spartiate.notification-actions.writeFailures"
 private let knownActions: Set<String> = ["done", "snooze15"]
 
 /// Lecture et écriture du fichier ; une seule file série pour tout le plugin.
 private final class ActionStore {
   static let shared = ActionStore()
 
-  private let queue = DispatchQueue(label: "fr.circletasks.notification-actions.file")
+  private let queue = DispatchQueue(label: "fr.spartiate.notification-actions.file")
 
   private func directory() throws -> URL {
     let manager = FileManager.default

@@ -1,6 +1,6 @@
 //! Sauvegarde avant migration (D-03 critères 8 et 9) : copie réelle d'une base SQLite en mode WAL.
 
-use circletasks_lib::backup::{
+use spartiate_lib::backup::{
     create_migration_backup, is_valid_stamp, migration_backup_name, prune_migration_backups, BACKUP_DIR, DB_FILE,
     KEEP_MIGRATION_BACKUPS,
 };
@@ -30,7 +30,7 @@ fn stamp_and_name_format() {
     assert!(!is_valid_stamp("2026-10-02"));
     assert_eq!(
         migration_backup_name(2, 4, "20261002T101500Z"),
-        "circletasks-pre-migration-v0002-to-v0004-20261002T101500Z.db"
+        "spartiate-pre-migration-v0002-to-v0004-20261002T101500Z.db"
     );
 }
 
@@ -86,18 +86,18 @@ fn keeps_only_the_five_latest_migration_backups_and_spares_daily_ones() {
     let _conn = make_db(dir.path(), 3);
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    fs::write(backups.join("circletasks-daily-20261001.db"), b"daily").unwrap(); // P-04 : intouchable
+    fs::write(backups.join("spartiate-daily-20261001.db"), b"daily").unwrap(); // P-04 : intouchable
     for i in 0..8 {
         let stamp = format!("20261002T10150{i}Z");
         create_migration_backup(&dir.path().join(DB_FILE), &backups, 1, 4, &stamp, KEEP_MIGRATION_BACKUPS).unwrap();
     }
     let mut names: Vec<String> = fs::read_dir(&backups).unwrap().map(|e| e.unwrap().file_name().to_string_lossy().into_owned()).collect();
     names.sort();
-    let migration: Vec<_> = names.iter().filter(|n| n.starts_with("circletasks-pre-migration-") && n.ends_with(".db")).collect();
+    let migration: Vec<_> = names.iter().filter(|n| n.starts_with("spartiate-pre-migration-") && n.ends_with(".db")).collect();
     assert_eq!(migration.len(), 5);
     assert!(migration[0].contains("20261002T101503Z"), "les plus anciennes sont supprimées : {migration:?}");
     assert!(!names.iter().any(|n| n.ends_with("-wal") || n.ends_with(".tmp")), "VACUUM INTO : ni -wal ni .tmp : {names:?}");
-    assert!(names.contains(&"circletasks-daily-20261001.db".to_owned()));
+    assert!(names.contains(&"spartiate-daily-20261001.db".to_owned()));
     assert_eq!(prune_migration_backups(&backups, 5).unwrap(), 0);
 }
 
@@ -114,7 +114,7 @@ fn orphan_tmp_files_are_removed_at_the_start_of_a_backup() {
     let _conn = make_db(dir.path(), 2);
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    let orphan = backups.join("circletasks-pre-migration-v0001-to-v0002-20250101T000000Z.db.tmp");
+    let orphan = backups.join("spartiate-pre-migration-v0001-to-v0002-20250101T000000Z.db.tmp");
     fs::write(&orphan, b"partiel").unwrap();
     create_migration_backup(&dir.path().join(DB_FILE), &backups, 1, 4, "20261002T101500Z", 5).unwrap();
     assert!(!orphan.exists());

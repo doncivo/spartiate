@@ -210,7 +210,7 @@ describe('aucun échec silencieux (critère 15)', () => {
     await a.restart();
     await a.cycle();
     expect(a.service.status().forget?.failure).toMatchObject({ deviceId: x.id, code: 'not-foreground' });
-    expect(JSON.stringify(await meta(a, FORGET_META.failure))).not.toMatch(/[\\/]|CircleTasks/);
+    expect(JSON.stringify(await meta(a, FORGET_META.failure))).not.toMatch(/[\\/]|Spartiate/);
     a.platform.testing.setForeground(true);
     expect(await a.service.forgetDevice(x.id as DeviceId)).toEqual({ kind: 'done' });
     expect(a.service.status().forget?.failure ?? null).toBeNull();
@@ -350,7 +350,7 @@ describe('journaux sans contenu (critère 19)', () => {
         expect(value === null || typeof value === 'number' || typeof value === 'boolean' || /^[0-9a-f-]{36}$|^[a-z-]{1,32}$/.test(String(value)), `${e.event} : ${String(value)}`).toBe(true);
       }
     }
-    expect(JSON.stringify(a.logger.entries)).not.toMatch(/Titre secret|CircleTasks|[\\]/);
+    expect(JSON.stringify(a.logger.entries)).not.toMatch(/Titre secret|Spartiate|[\\]/);
   });
 });
 

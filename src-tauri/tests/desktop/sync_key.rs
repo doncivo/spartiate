@@ -5,18 +5,18 @@ use std::path::Path;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
-use circletasks_lib::sync::crypto::{qr_text_of, MasterKey};
-use circletasks_lib::sync::folder::FolderKind;
-use circletasks_lib::sync::limits::PAIRING_VALIDITY_MS;
-use circletasks_lib::sync::service::{KeyInput, SYNC_KEY_ACCOUNT};
-use circletasks_lib::sync::{log, SyncCode};
-use circletasks_lib::vault::SecretVault;
-use circletasks_lib::vault_ios::{is_sync_key_account, sync_key_attributes};
+use spartiate_lib::sync::crypto::{qr_text_of, MasterKey};
+use spartiate_lib::sync::folder::FolderKind;
+use spartiate_lib::sync::limits::PAIRING_VALIDITY_MS;
+use spartiate_lib::sync::service::{KeyInput, SYNC_KEY_ACCOUNT};
+use spartiate_lib::sync::{log, SyncCode};
+use spartiate_lib::vault::SecretVault;
+use spartiate_lib::vault_ios::{is_sync_key_account, sync_key_attributes};
 use zeroize::Zeroizing;
 
 use crate::sync_support::{device, epoch, hlc, Device, FakeBackend, MemFs, DEV_A, DEV_B, DEV_C, FOLDER};
 
-fn code<T>(result: Result<T, circletasks_lib::sync::SyncError>) -> SyncCode {
+fn code<T>(result: Result<T, spartiate_lib::sync::SyncError>) -> SyncCode {
     match result {
         Ok(_) => panic!("erreur attendue"),
         Err(error) => error.code,
@@ -74,7 +74,7 @@ fn y_ios_02_key_origin_write_failure_fails_the_import_and_stores_no_key() {
 #[test]
 fn y08_6_create_status_and_key_exists() {
     let (d, _) = device();
-    assert_eq!(d.core.key_status().unwrap(), circletasks_lib::sync::service::KeyStatus { present: false, kid: None, next_kid: None, import_failure: None, paired_by: None, imported: false });
+    assert_eq!(d.core.key_status().unwrap(), spartiate_lib::sync::service::KeyStatus { present: false, kid: None, next_kid: None, import_failure: None, paired_by: None, imported: false });
     assert_eq!(code(d.core.key_create()), SyncCode::NotConfigured);
     d.core.choose_folder(Path::new(FOLDER)).unwrap();
     let kid = d.core.key_create().unwrap();
@@ -86,8 +86,8 @@ fn y08_6_create_status_and_key_exists() {
     // Valeur du coffre : K en base64, 32 octets ; compte et service fixés.
     let value = d.vault.get(SYNC_KEY_ACCOUNT).unwrap().unwrap();
     assert_eq!(STANDARD.decode(value).unwrap().len(), 32);
-    assert_eq!(SYNC_KEY_ACCOUNT, "circletasks.sync.key.v1");
-    assert_eq!(circletasks_lib::vault::VAULT_SERVICE, "fr.circletasks.planner");
+    assert_eq!(SYNC_KEY_ACCOUNT, "spartiate.sync.key.v1");
+    assert_eq!(spartiate_lib::vault::VAULT_SERVICE, "fr.spartiate.app");
 }
 
 #[test]
@@ -100,7 +100,7 @@ fn y08_6_create_refused_on_a_folder_with_data_even_in_the_cloud() {
     assert_eq!(code(b.core.key_create()), SyncCode::FolderHasData);
     assert_eq!(b.vault.get(SYNC_KEY_ACCOUNT).unwrap(), None, "aucune clé écrite");
     // Fichier resté dans le nuage : compte aussi comme donnée.
-    fs.set_availability(&["devices", DEV_A, "state.ctx"], circletasks_lib::sync::files::Availability::Cloud);
+    fs.set_availability(&["devices", DEV_A, "state.ctx"], spartiate_lib::sync::files::Availability::Cloud);
     assert_eq!(code(b.core.key_create()), SyncCode::FolderHasData);
     // Un dossier d'appareil sans fichier ct-* valide n'est pas une donnée.
     let empty = MemFs::new();
@@ -162,7 +162,7 @@ fn y08_7_and_16_key_never_leaves_the_vault_and_logs_hold_no_secret() {
             for secret in secrets {
                 assert!(!text.contains(secret), "{}", entry.display());
             }
-            assert!(!text.contains("CircleTasks") || entry.ends_with("folder.json"), "chemin hors de folder.json : {}", entry.display());
+            assert!(!text.contains("Spartiate") || entry.ends_with("folder.json"), "chemin hors de folder.json : {}", entry.display());
         }
     }
     // Journal technique : aucun secret, aucun chemin complet.
@@ -316,7 +316,7 @@ fn y08_9_foreign_device_is_marked_per_device() {
     assert_eq!(status(DEV_B), "foreign", "statut par appareil, l'autre est lu normalement");
     assert_ne!(scan.devices.iter().find(|d| d.device_id == DEV_B).unwrap().kid, scan.devices.iter().find(|d| d.device_id == DEV_A).unwrap().kid);
     // Lecture du journal de l'appareil étranger : key-mismatch, jamais déchiffré.
-    assert_eq!(code(a.core.read_journal(DEV_B, &epoch(1, DEV_B), circletasks_lib::sync::store::RecordCursor { segment: 0, record: 0 }, None)), SyncCode::KeyMismatch);
+    assert_eq!(code(a.core.read_journal(DEV_B, &epoch(1, DEV_B), spartiate_lib::sync::store::RecordCursor { segment: 0, record: 0 }, None)), SyncCode::KeyMismatch);
 }
 
 #[test]
@@ -324,12 +324,12 @@ fn y08_17_keychain_attributes_and_accounts() {
     let attributes = sync_key_attributes();
     assert_eq!(attributes.accessible, "kSecAttrAccessibleWhenUnlockedThisDeviceOnly");
     assert!(!attributes.synchronizable);
-    assert_eq!(attributes.service, "fr.circletasks.planner");
-    assert!(is_sync_key_account("circletasks.sync.key.v1"));
-    assert!(is_sync_key_account("circletasks.sync.key.next"));
-    assert!(!is_sync_key_account("circletasks.calendar.google.x"));
-    assert!(!is_sync_key_account("circletasks.sync.key."));
-    assert!(!is_sync_key_account("circletasks.sync.key.V1"));
+    assert_eq!(attributes.service, "fr.spartiate.app");
+    assert!(is_sync_key_account("spartiate.sync.key.v1"));
+    assert!(is_sync_key_account("spartiate.sync.key.next"));
+    assert!(!is_sync_key_account("spartiate.calendar.google.x"));
+    assert!(!is_sync_key_account("spartiate.sync.key."));
+    assert!(!is_sync_key_account("spartiate.sync.key.V1"));
 }
 
 #[test]
@@ -341,7 +341,7 @@ fn y08_18_nonce_budget_warns_then_refuses() {
     });
     d.setup(DEV_A);
     let append = |seg: u64, expect: u64, ms: u64, n: usize| {
-        let request = circletasks_lib::sync::service::AppendRequest {
+        let request = spartiate_lib::sync::service::AppendRequest {
             epoch: epoch(1, DEV_A),
             segment: seg,
             expect_records: expect,
@@ -362,9 +362,9 @@ fn y08_18_nonce_budget_warns_then_refuses() {
 #[test]
 fn y08_7_calendar_vault_moved_without_behaviour_change() {
     // Les agendas lisent toujours le coffre par `calendars::vault` (réexport) ; même service.
-    use circletasks_lib::calendars::vault::{MemoryVault, SecretVault as CalendarVault};
+    use spartiate_lib::calendars::vault::{MemoryVault, SecretVault as CalendarVault};
     let vault = MemoryVault::default();
-    vault.set("circletasks.calendar.icloud.x", "pw").unwrap();
-    assert_eq!(vault.get("circletasks.calendar.icloud.x").unwrap().as_deref(), Some("pw"));
-    assert_eq!(circletasks_lib::calendars::VAULT_SERVICE, circletasks_lib::vault::VAULT_SERVICE);
+    vault.set("spartiate.calendar.icloud.x", "pw").unwrap();
+    assert_eq!(vault.get("spartiate.calendar.icloud.x").unwrap().as_deref(), Some("pw"));
+    assert_eq!(spartiate_lib::calendars::VAULT_SERVICE, spartiate_lib::vault::VAULT_SERVICE);
 }

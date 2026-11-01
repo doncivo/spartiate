@@ -3,18 +3,18 @@
 
 use std::sync::Arc;
 
-use circletasks_lib::sync::consent::{ConsentGate, ConsentKind, ConsentUi, DialogSpec};
-use circletasks_lib::sync::files::Availability;
-use circletasks_lib::sync::folder::FolderKind;
-use circletasks_lib::sync::limits::CONSENT_BLOCK_MS;
-use circletasks_lib::sync::service::AppendRequest;
-use circletasks_lib::sync::SyncCode;
+use spartiate_lib::sync::consent::{ConsentGate, ConsentKind, ConsentUi, DialogSpec};
+use spartiate_lib::sync::files::Availability;
+use spartiate_lib::sync::folder::FolderKind;
+use spartiate_lib::sync::limits::CONSENT_BLOCK_MS;
+use spartiate_lib::sync::service::AppendRequest;
+use spartiate_lib::sync::SyncCode;
 
 use crate::sync_support::{device, epoch, hlc, Device, FakeBackend, FakeUi, MemFs, TestClock, DEV_A, DEV_B, FOLDER, NOW};
 
 const OWNER: isize = 0x1234;
 
-fn code<T>(result: Result<T, circletasks_lib::sync::SyncError>) -> SyncCode {
+fn code<T>(result: Result<T, spartiate_lib::sync::SyncError>) -> SyncCode {
     match result {
         Ok(_) => panic!("erreur attendue"),
         Err(error) => error.code,
@@ -134,7 +134,7 @@ fn y_tech_02_a_refusal_that_cannot_be_written_survives_a_restart() {
 /// marqueur qui ne peut pas être retiré rend `io` (la cause est l'écriture), jamais `rate-limited`.
 #[test]
 fn y_tech_02_refusal_marker_carries_its_deadline_and_answers_io_when_it_cannot_be_removed() {
-    use circletasks_lib::sync::consent::CONSENT_REFUSED_MARKER;
+    use spartiate_lib::sync::consent::CONSENT_REFUSED_MARKER;
     let dir = tempfile::tempdir().unwrap();
     let inner = FakeUi::new();
     let clock = TestClock::new(NOW);
@@ -164,7 +164,7 @@ fn y_tech_02_refusal_marker_carries_its_deadline_and_answers_io_when_it_cannot_b
 #[cfg(windows)]
 #[test]
 fn y_tech_02_an_expired_marker_that_cannot_be_removed_answers_io() {
-    use circletasks_lib::sync::consent::CONSENT_REFUSED_MARKER;
+    use spartiate_lib::sync::consent::CONSENT_REFUSED_MARKER;
     use std::os::windows::fs::OpenOptionsExt;
     let dir = tempfile::tempdir().unwrap();
     let inner = FakeUi::new();
@@ -204,7 +204,7 @@ impl ConsentUi for RefuseWithMarker {
 /// pendant le blocage garde les compteurs d'affichage et d'import, jamais un fichier réécrit vide.
 #[test]
 fn y_tech_02_a_refusal_during_a_marker_block_keeps_the_counters() {
-    use circletasks_lib::sync::consent::{CONSENT_FILE, CONSENT_REFUSED_MARKER};
+    use spartiate_lib::sync::consent::{CONSENT_FILE, CONSENT_REFUSED_MARKER};
     let dir = tempfile::tempdir().unwrap();
     let inner = FakeUi::new();
     let clock = TestClock::new(NOW);
@@ -222,13 +222,13 @@ fn y_tech_02_a_refusal_during_a_marker_block_keeps_the_counters() {
 /// Quatrième revue, point E : `consent.json` illisible pendant le blocage du marqueur : blocage du marqueur gardé, illisibilité journalisée.
 #[test]
 fn y_tech_02_an_unreadable_file_during_a_marker_block_is_logged() {
-    use circletasks_lib::sync::consent::{CONSENT_FILE, CONSENT_REFUSED_MARKER};
+    use spartiate_lib::sync::consent::{CONSENT_FILE, CONSENT_REFUSED_MARKER};
     let dir = tempfile::tempdir().unwrap();
     let inner = FakeUi::new();
     let clock = TestClock::new(NOW);
     std::fs::write(dir.path().join(CONSENT_FILE), b"{pas du json").unwrap();
     std::fs::write(dir.path().join(CONSENT_REFUSED_MARKER), (NOW + CONSENT_BLOCK_MS / 2).to_string()).unwrap();
-    let capture = circletasks_lib::sync::log::capture();
+    let capture = spartiate_lib::sync::log::capture();
     let consent = ConsentGate::new(dir.path().to_path_buf(), inner.clone(), clock.clock());
     assert_eq!(code(consent.precheck(OWNER)), SyncCode::RateLimited);
     assert!(capture.lines().iter().any(|l| l == "sync:consent-file-unreadable blocked"), "{:?}", capture.lines());

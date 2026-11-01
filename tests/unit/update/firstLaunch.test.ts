@@ -42,7 +42,7 @@ function fakeBackups(db: SqlDriver, fail = false) {
       const columns = await db.select<{ name: string }>('PRAGMA table_info(task)');
       requests.push({ ...request, columnPresent: columns.some((c) => c.name === 'i06_note') });
       if (fail) throw new Error('disque plein');
-      const name = `circletasks-pre-migration-v${pad(request.fromVersion)}-to-v${pad(request.toVersion)}-${request.stamp}.db`;
+      const name = `spartiate-pre-migration-v${pad(request.fromVersion)}-to-v${pad(request.toVersion)}-${request.stamp}.db`;
       names.push(name);
       return { name };
     },
@@ -122,7 +122,7 @@ describe('critère 9 : premier lancement de N+1 sans perte', () => {
     expect(container?.launch).toBe('updated');
     // Sauvegarde « Avant mise à jour » : une seule, AVANT la migration (la colonne n'existe pas encore pendant la copie).
     expect(backups.requests).toEqual([{ fromVersion: LAST, toVersion: LAST + 1, stamp: '20261009T080000Z', columnPresent: false }]);
-    expect(backups.names).toEqual([`circletasks-pre-migration-v${pad(LAST)}-to-v${pad(LAST + 1)}-20261009T080000Z.db`]);
+    expect(backups.names).toEqual([`spartiate-pre-migration-v${pad(LAST)}-to-v${pad(LAST + 1)}-20261009T080000Z.db`]);
     expect(await applied(db)).toEqual(NEXT.map((m) => m.version));
     // Mêmes lignes partout (comptage et contenu), hors colonne ajoutée ; réglages (device.id, filtre, thème, verrou) inchangés.
     expect(await snapshot(db)).toEqual(before);
@@ -212,7 +212,7 @@ describe('critère 13 : migration en échec après la mise à jour', () => {
       appVersion: '0.3.0',
       schemaVersion: LAST,
       appSchemaVersion: LAST + 1,
-      updateBackup: { name: `circletasks-pre-migration-v${pad(LAST)}-to-v${pad(LAST + 1)}-20261009T080000Z.db` },
+      updateBackup: { name: `spartiate-pre-migration-v${pad(LAST)}-to-v${pad(LAST + 1)}-20261009T080000Z.db` },
     });
     expect(logged()).toContain(`[desktop:db] migration ${String(LAST + 1)} impossible (DbError)`);
     expect(JSON.parse(String(await lastLaunched(db)))).toBe('0.2.3');

@@ -10,13 +10,13 @@ use std::io;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::{Path, PathBuf};
 
-use circletasks_lib::backup::{
+use spartiate_lib::backup::{
     check_backup_file, create_daily_backup, recover_interrupted_restore, restore_backup_file, Recovery, RestoreStep, BACKUP_DIR, DB_FILE,
 };
 use rusqlite::Connection;
 
 const APP_VERSION: u32 = 4;
-const SAVED: &str = "circletasks-daily-20261003.db";
+const SAVED: &str = "spartiate-daily-20261003.db";
 const STAMP: &str = "20261008T101500Z";
 const NO_FAIL: &dyn Fn(RestoreStep) -> io::Result<()> = &|_| Ok(());
 
@@ -75,14 +75,14 @@ fn crashed_app_dir(saved_version: u32) -> (tempfile::TempDir, PathBuf, PathBuf) 
     // Instantané octet pour octet de ce que le disque contient maintenant (base + journal), puis fin de la connexion.
     let snapshot = scratch();
     fs::copy(&db, snapshot.path().join(DB_FILE)).unwrap();
-    fs::copy(dir.path().join("circletasks.db-wal"), snapshot.path().join("circletasks.db-wal")).unwrap();
+    fs::copy(dir.path().join("spartiate.db-wal"), snapshot.path().join("spartiate.db-wal")).unwrap();
     drop(live);
     for entry in fs::read_dir(dir.path()).unwrap() {
         fs::remove_file(entry.unwrap().path()).unwrap();
     }
     fs::copy(snapshot.path().join(DB_FILE), &db).unwrap();
-    fs::copy(snapshot.path().join("circletasks.db-wal"), dir.path().join("circletasks.db-wal")).unwrap();
-    assert!(dir.path().join("circletasks.db-wal").metadata().unwrap().len() > 0, "le -wal doit porter la dernière tâche");
+    fs::copy(snapshot.path().join("spartiate.db-wal"), dir.path().join("spartiate.db-wal")).unwrap();
+    assert!(dir.path().join("spartiate.db-wal").metadata().unwrap().len() > 0, "le -wal doit porter la dernière tâche");
     // Sauvegarde choisie.
     let source = scratch();
     let src_db = source.path().join(DB_FILE);
@@ -123,7 +123,7 @@ fn relaunch_then_restore_again(dir: &Path, db: &Path, backups: &Path) {
 fn p04_ios_qa_kill_before_the_copy_leaves_the_old_database_untouched() {
     let (dir, db, backups) = crashed_app_dir(APP_VERSION);
     // Copie de sécurité déjà écrite (première étape de `restore_backup_file`), rien d'autre.
-    fs::copy(&db, backups.join("circletasks-pre-restore-20261008T101500Z.db")).unwrap();
+    fs::copy(&db, backups.join("spartiate-pre-restore-20261008T101500Z.db")).unwrap();
     assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::Nothing);
     assert_eq!(open_and_titles(&db), old_titles());
     relaunch_then_restore_again(dir.path(), &db, &backups);
@@ -135,7 +135,7 @@ fn p04_ios_qa_kill_before_the_copy_leaves_the_old_database_untouched() {
 fn p04_ios_qa_kill_during_the_copy_discards_the_partial_staged_file() {
     let (dir, db, backups) = crashed_app_dir(APP_VERSION);
     let whole = fs::read(backups.join(SAVED)).unwrap();
-    fs::write(dir.path().join("circletasks.db.restoring"), &whole[..whole.len() / 2]).unwrap();
+    fs::write(dir.path().join("spartiate.db.restoring"), &whole[..whole.len() / 2]).unwrap();
     assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::StagedRemoved);
     assert_clean(dir.path());
     assert_eq!(open_and_titles(&db), old_titles());
@@ -149,7 +149,7 @@ fn p04_ios_qa_kill_during_the_copy_discards_the_partial_staged_file() {
 fn p04_ios_qa_kill_after_staging_keeps_the_old_database_and_drops_the_staged_copy() {
     let (dir, db, backups) = crashed_app_dir(APP_VERSION);
     kill_at(&db, &backups, RestoreStep::Staged);
-    assert!(dir.path().join("circletasks.db.restoring").is_file());
+    assert!(dir.path().join("spartiate.db.restoring").is_file());
     assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::StagedRemoved);
     assert_clean(dir.path());
     assert_eq!(open_and_titles(&db), old_titles(), "le -wal n'a pas bougé : la dernière tâche est là");
@@ -163,7 +163,7 @@ fn p04_ios_qa_kill_between_the_old_files_moved_and_the_new_one_in_place_puts_the
     let (dir, db, backups) = crashed_app_dir(APP_VERSION);
     kill_at(&db, &backups, RestoreStep::OldMoved);
     assert!(!db.exists(), "à ce point, aucune base n'est en place");
-    assert!(dir.path().join("circletasks.db.restore-old").is_file());
+    assert!(dir.path().join("spartiate.db.restore-old").is_file());
     assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::PutBack);
     assert_clean(dir.path());
     assert_eq!(open_and_titles(&db), old_titles());
@@ -177,15 +177,15 @@ fn p04_ios_qa_kill_after_the_swap_opens_on_the_restored_state_and_archives_the_o
     let (dir, db, backups) = crashed_app_dir(APP_VERSION);
     // État laissé par un échange abouti dont le ménage des `.restore-old` n'a pas eu lieu : nouvelle base en place + anciens fichiers.
     let old_main = fs::read(&db).unwrap();
-    let old_wal = fs::read(dir.path().join("circletasks.db-wal")).unwrap();
+    let old_wal = fs::read(dir.path().join("spartiate.db-wal")).unwrap();
     restore_backup_file(&db, &backups, SAVED, APP_VERSION, STAMP, NO_FAIL).unwrap();
-    fs::write(dir.path().join("circletasks.db.restore-old"), &old_main).unwrap();
-    fs::write(dir.path().join("circletasks.db-wal.restore-old"), &old_wal).unwrap();
+    fs::write(dir.path().join("spartiate.db.restore-old"), &old_main).unwrap();
+    fs::write(dir.path().join("spartiate.db-wal.restore-old"), &old_wal).unwrap();
     assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::Archived);
     assert_clean(dir.path());
     assert_eq!(open_and_titles(&db), saved_titles(), "la version restaurée est celle qui s'ouvre");
     // L'ancien état n'est pas perdu : il est archivé dans la famille « Avant restauration » et s'ouvre, WAL compris.
-    let archived: Vec<String> = names(&backups).into_iter().filter(|n| n.starts_with("circletasks-pre-restore-") && n.ends_with(".db")).collect();
+    let archived: Vec<String> = names(&backups).into_iter().filter(|n| n.starts_with("spartiate-pre-restore-") && n.ends_with(".db")).collect();
     assert!(archived.iter().any(|n| open_and_titles(&backups.join(n)) == old_titles()), "{archived:?}");
     assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::Nothing);
 }
@@ -197,8 +197,8 @@ fn p04_ios_qa_kill_in_the_middle_of_the_recovery_is_finished_by_the_next_launch(
     let (dir, db, backups) = crashed_app_dir(APP_VERSION);
     kill_at(&db, &backups, RestoreStep::OldMoved);
     // La récupération a remis la base puis a été tuée avant de remettre le -wal.
-    fs::rename(dir.path().join("circletasks.db.restore-old"), &db).unwrap();
-    assert!(dir.path().join("circletasks.db-wal.restore-old").is_file());
+    fs::rename(dir.path().join("spartiate.db.restore-old"), &db).unwrap();
+    assert!(dir.path().join("spartiate.db-wal.restore-old").is_file());
     assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::PutBack);
     assert_clean(dir.path());
     assert_eq!(open_and_titles(&db), old_titles());
@@ -274,12 +274,12 @@ fn p04_ios_qa_disk_full_at_any_step_changes_nothing_and_leaves_no_partial_file()
     for step in [RestoreStep::Staged, RestoreStep::OldMoved] {
         let (dir, db, backups) = crashed_app_dir(APP_VERSION);
         let main_before = fs::read(&db).unwrap();
-        let wal_before = fs::read(dir.path().join("circletasks.db-wal")).unwrap();
+        let wal_before = fs::read(dir.path().join("spartiate.db-wal")).unwrap();
         let full = move |s: RestoreStep| if s == step { Err(io::Error::from(io::ErrorKind::StorageFull)) } else { Ok(()) };
         let err = restore_backup_file(&db, &backups, SAVED, APP_VERSION, STAMP, &full).unwrap_err();
         assert_eq!(err.code, "io", "{step:?}");
         assert_eq!(fs::read(&db).unwrap(), main_before, "{step:?}");
-        assert_eq!(fs::read(dir.path().join("circletasks.db-wal")).unwrap(), wal_before, "{step:?}");
+        assert_eq!(fs::read(dir.path().join("spartiate.db-wal")).unwrap(), wal_before, "{step:?}");
         assert_clean(dir.path());
         assert_eq!(open_and_titles(&db), old_titles());
         // L'espace libéré, la même restauration réussit.
@@ -292,7 +292,7 @@ fn p04_ios_qa_disk_full_at_any_step_changes_nothing_and_leaves_no_partial_file()
 fn p04_ios_qa_a_safety_copy_that_cannot_be_written_stops_before_anything_moves() {
     let (dir, db, backups) = crashed_app_dir(APP_VERSION);
     // La cible de la copie de sécurité est occupée par un dossier : l'écriture échoue (équivalent d'un disque plein à cette étape).
-    fs::create_dir(backups.join(format!("circletasks-pre-restore-{STAMP}.db"))).unwrap();
+    fs::create_dir(backups.join(format!("spartiate-pre-restore-{STAMP}.db"))).unwrap();
     let without_shm = |dir: &Path| names(dir).into_iter().filter(|n| !n.ends_with("-shm")).collect::<Vec<_>>();
     let before_files = without_shm(dir.path());
     let err = restore_backup_file(&db, &backups, SAVED, APP_VERSION, STAMP, NO_FAIL).unwrap_err();

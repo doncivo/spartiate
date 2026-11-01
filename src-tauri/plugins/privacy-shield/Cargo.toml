@@ -1,7 +1,7 @@
 [package]
 name = "tauri-plugin-privacy-shield"
 version = "0.1.0"
-description = "CircleTasks : cache de confidentialité natif iOS (I-03, ADR 0013 §2.5), vue opaque sur la fenêtre quand l'app devient inactive."
+description = "Spartiate : cache de confidentialité natif iOS (I-03, ADR 0013 §2.5), vue opaque sur la fenêtre quand l'app devient inactive."
 authors = ["Ali Cherif"]
 edition = "2021"
 rust-version = "1.80"

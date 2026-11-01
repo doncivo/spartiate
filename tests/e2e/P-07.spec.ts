@@ -42,7 +42,7 @@ test.describe('P-07 — import CSV', () => {
     await page.getByRole('button', { name: 'Télécharger un modèle' }).click();
     await expect(page.getByText('Modèle enregistré')).toBeVisible();
     const file = await onlySaved(page);
-    expect(file.name).toBe('circletasks-modele-import.csv');
+    expect(file.name).toBe('spartiate-modele-import.csv');
     expect(textOf(file)).toContain('titre;date;heure;espace;projet;note\r\nAppeler Paul;2026-10-06;10:00;Pro;;\r\n');
   });
 

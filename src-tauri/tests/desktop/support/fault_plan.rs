@@ -91,7 +91,7 @@ pub enum Times {
 pub struct Entry {
     pub id: String,
     pub op: Op,
-    /// Chemin sous la racine `CircleTasks`, composants séparés par `/`, `*` = toute suite de caractères dans un composant.
+    /// Chemin sous la racine `Spartiate`, composants séparés par `/`, `*` = toute suite de caractères dans un composant.
     pub file: String,
     pub nth: u64,
     pub times: Times,

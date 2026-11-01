@@ -8,12 +8,12 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
-use circletasks_lib::sync::consent::{ConsentGate, ConsentUi, DialogSpec};
-use circletasks_lib::sync::files::{AppendMode, Availability, Chunk, FsEntry, FsError, Listing, SyncFs};
-use circletasks_lib::sync::folder::{CheckedFolder, FolderKind};
-use circletasks_lib::sync::service::{FolderBackend, SyncCore, SyncOptions};
-use circletasks_lib::sync::{fail, SyncCode, SyncResult};
-use circletasks_lib::vault::MemoryVault;
+use spartiate_lib::sync::consent::{ConsentGate, ConsentUi, DialogSpec};
+use spartiate_lib::sync::files::{AppendMode, Availability, Chunk, FsEntry, FsError, Listing, SyncFs};
+use spartiate_lib::sync::folder::{CheckedFolder, FolderKind};
+use spartiate_lib::sync::service::{FolderBackend, SyncCore, SyncOptions};
+use spartiate_lib::sync::{fail, SyncCode, SyncResult};
+use spartiate_lib::vault::MemoryVault;
 
 use crate::support::fault_plan::{self, Armed, Code, Effect, Entry, Firing, Op, Plan};
 
@@ -620,7 +620,7 @@ impl TestClock {
 }
 
 pub const NOW: u64 = 1_790_000_000_000;
-pub const FOLDER: &str = r"C:\Users\Ali\iCloudDrive\CircleTasks";
+pub const FOLDER: &str = r"C:\Users\Ali\iCloudDrive\Spartiate";
 
 /// Un appareil de test : service, dossier de configuration, coffre, confirmation et horloge.
 pub struct Device {

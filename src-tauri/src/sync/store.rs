@@ -1499,7 +1499,7 @@ impl<'a> Store<'a> {
     // Clé et dossier
     // --------------------------------------------------------------------------------------------------------------------------
 
-    /// Le dossier contient-il des données CircleTasks ? Un dossier `devices/<uuid>/` avec un `state.ctx` ou un fichier de nom strict
+    /// Le dossier contient-il des données Spartiate ? Un dossier `devices/<uuid>/` avec un `state.ctx` ou un fichier de nom strict
     /// d'en-tête valide ; un fichier resté dans le nuage compte (son en-tête ne peut pas être lu sans hydratation). Budget commun de
     /// 50 000 entrées et 64 époques par appareil (audit S2) : au-delà, la recherche s'arrête sur « pas de données trouvées ».
     pub fn folder_has_data(fs: &dyn SyncFs) -> SyncResult<bool> {

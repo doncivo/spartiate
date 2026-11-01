@@ -58,7 +58,7 @@ export function syncErrorCodeOf(error: unknown): SyncErrorCode {
 export interface SyncFolderInfo {
   readonly configured: boolean;
   /**
-   * Nom du dossier (« CircleTasks »), jamais un chemin. Le libellé affiché (« iCloud Drive / CircleTasks ») est composé par l'interface
+   * Nom du dossier (« Spartiate »), jamais un chemin. Le libellé affiché (« iCloud Drive / Spartiate ») est composé par l'interface
    * avec `kind` et les textes de `src/i18n` (revue 13 du lot Y1).
    */
   readonly label: string | null;

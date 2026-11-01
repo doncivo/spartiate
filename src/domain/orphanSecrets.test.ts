@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { orphansOutsideAccounts, parseOrphanSecrets, withOrphan, withoutOrphan } from './orphanSecrets';
 
-const G = 'circletasks.calendar.google.a0000000-0000-4000-8000-000000000001';
-const I = 'circletasks.calendar.icloud.a0000000-0000-4000-8000-000000000002';
+const G = 'spartiate.calendar.google.a0000000-0000-4000-8000-000000000001';
+const I = 'spartiate.calendar.icloud.a0000000-0000-4000-8000-000000000002';
 
 describe('orphanSecrets (K-01, seconde revue PR #25)', () => {
   it('valeur brute : seules les références valables au format du coffre et du même fournisseur, sans doublon', () => {
@@ -16,7 +16,7 @@ describe('orphanSecrets (K-01, seconde revue PR #25)', () => {
         { provider: 'icloud', tokenRef: G },
         { provider: 'outlook', tokenRef: G },
         { provider: 'google', tokenRef: '' },
-        { provider: 'google', tokenRef: 'circletasks.calendar.google.' },
+        { provider: 'google', tokenRef: 'spartiate.calendar.google.' },
         { provider: 'google', tokenRef: 42 },
         null,
       ]),

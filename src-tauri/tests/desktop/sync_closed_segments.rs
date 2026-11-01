@@ -3,26 +3,26 @@
 
 use serde_json::{json, Value};
 
-use circletasks_lib::sync::files::Availability;
-use circletasks_lib::sync::limits::MAX_STATE_CLOSED_SEGMENTS;
-use circletasks_lib::sync::service::AppendRequest;
-use circletasks_lib::sync::state::PublishedState;
-use circletasks_lib::sync::store::{OwnFileRef, RecordCursor};
-use circletasks_lib::sync::SyncCode;
+use spartiate_lib::sync::files::Availability;
+use spartiate_lib::sync::limits::MAX_STATE_CLOSED_SEGMENTS;
+use spartiate_lib::sync::service::AppendRequest;
+use spartiate_lib::sync::state::PublishedState;
+use spartiate_lib::sync::store::{OwnFileRef, RecordCursor};
+use spartiate_lib::sync::SyncCode;
 
 use crate::support::fault_plan;
 use crate::sync_support::{device, epoch, hlc, Device, MemFs, DEV_A, DEV_B};
 
 const TABLE: &str = include_str!("../../../tests/fixtures/sync/closed-segments.json");
 
-fn code<T>(result: Result<T, circletasks_lib::sync::SyncError>) -> SyncCode {
+fn code<T>(result: Result<T, spartiate_lib::sync::SyncError>) -> SyncCode {
     match result {
         Ok(_) => panic!("erreur attendue"),
         Err(error) => error.code,
     }
 }
 
-fn append(d: &Device, ep: &str, segment: u64, ms: u64, n: u64) -> Result<circletasks_lib::sync::store::AppendResult, circletasks_lib::sync::SyncError> {
+fn append(d: &Device, ep: &str, segment: u64, ms: u64, n: u64) -> Result<spartiate_lib::sync::store::AppendResult, spartiate_lib::sync::SyncError> {
     let records = (0..n).map(|i| format!("{{\"k\":\"ops\",\"s\":{segment},\"i\":{i}}}")).collect();
     d.core.append_journal(&AppendRequest { epoch: ep.to_owned(), segment, expect_records: 0, sv: 14, max_hlc: hlc(ms, DEV_A), records })
 }
@@ -250,10 +250,10 @@ fn y_tech_02_closed_rebuilt_from_its_own_state_only() {
     let closed: Vec<(u64, u64)> = published(&d).closed.iter().map(|c| (c.segment, c.records)).collect();
     assert_eq!(closed, vec![(1, 2)]);
     // Un accusé authentifié sur soi dépasse l'entrée dans ce segment : écartée à la reconstruction.
-    let b = Device::new(circletasks_lib_backend(&fs));
+    let b = Device::new(spartiate_lib_backend(&fs));
     b.core.choose_folder(std::path::Path::new(crate::sync_support::FOLDER)).unwrap();
-    let account = circletasks_lib::sync::service::SYNC_KEY_ACCOUNT;
-    use circletasks_lib::vault::SecretVault;
+    let account = spartiate_lib::sync::service::SYNC_KEY_ACCOUNT;
+    use spartiate_lib::vault::SecretVault;
     b.vault.set(account, &d.vault.get(account).unwrap().unwrap()).unwrap();
     b.core.bind_device(DEV_B).unwrap();
     let mut bs = state(&ep, 1, 0, 0, None);
@@ -275,6 +275,6 @@ fn y_tech_02_closed_rebuilt_from_its_own_state_only() {
     assert!(published(&d).closed.is_empty());
 }
 
-fn circletasks_lib_backend(fs: &std::sync::Arc<MemFs>) -> std::sync::Arc<crate::sync_support::FakeBackend> {
-    crate::sync_support::FakeBackend::with(crate::sync_support::FOLDER, circletasks_lib::sync::folder::FolderKind::Icloud, fs.clone())
+fn spartiate_lib_backend(fs: &std::sync::Arc<MemFs>) -> std::sync::Arc<crate::sync_support::FakeBackend> {
+    crate::sync_support::FakeBackend::with(crate::sync_support::FOLDER, spartiate_lib::sync::folder::FolderKind::Icloud, fs.clone())
 }

@@ -1,4 +1,4 @@
-// Plugin reminders de CircleTasks (ADR 0008 §10.4 ; stories K-05, K-06, K-07) : lit les listes et les rappels d'EventKit, écrit titre,
+// Plugin reminders de Spartiate (ADR 0008 §10.4 ; stories K-05, K-06, K-07) : lit les listes et les rappels d'EventKit, écrit titre,
 // échéance et statut terminé d'un rappel, supprime un rappel, signale `EKEventStoreChanged`.
 //
 // Contrat : tests/fixtures/calendars/reminders-contract.json (commandes, champs, codes), relu par un contrôle statique contre ce fichier,
@@ -202,7 +202,7 @@ private func sameDue(_ a: DateComponents?, _ b: DateComponents?) -> Bool {
 // MARK: - Plugin
 
 class RemindersPlugin: Plugin {
-  private let work = DispatchQueue(label: "fr.circletasks.reminders.store")
+  private let work = DispatchQueue(label: "fr.spartiate.reminders.store")
   private var storeInstance: EKEventStore?
 
   /// Un seul magasin pour la durée du processus (créé à la première utilisation, sur la file de travail).

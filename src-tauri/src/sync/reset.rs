@@ -2,7 +2,7 @@
 //!
 //! - **Registre** `sync/reset.json` (dossier de configuration, `.tmp` + renommage), local à Rust, lié à `folderId` et `deviceId` : rôle
 //!   (`initiator` : cet appareil a lancé la réinitialisation ; `joined` : il a importé la nouvelle clé d'un autre), `kid` de la clé
-//!   `circletasks.sync.key.next`, époque visée `e<n+1>-<auteur>`, annonce (`reset` publié sous l'ancienne clé, maître : Rust), position de
+//!   `spartiate.sync.key.next`, époque visée `e<n+1>-<auteur>`, annonce (`reset` publié sous l'ancienne clé, maître : Rust), position de
 //!   l'époque `n` (`base`, pour revenir en arrière si la réinitialisation perd), perte constatée (`superseded`) et étape de la bascule.
 //!   Jamais de clé : seulement des `kid`, des époques, des positions et des hlc.
 //! - **Fonctions pures**, mêmes règles que `epoch.ts` et même table de cas (`tests/fixtures/sync/reset-order.json`) : validité d'une
@@ -110,7 +110,7 @@ pub struct ResetRecord {
     pub folder_id: String,
     pub device_id: String,
     pub role: ResetRole,
-    /// `kid` de la nouvelle clé (entrée `circletasks.sync.key.next`).
+    /// `kid` de la nouvelle clé (entrée `spartiate.sync.key.next`).
     pub kid: String,
     /// Époque visée `e<n+1>-<auteur>`.
     pub epoch: String,

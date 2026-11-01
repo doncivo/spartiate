@@ -8,10 +8,10 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use base64::{engine::general_purpose::STANDARD, Engine};
-use circletasks_lib::calendars::google::{self, build_auth_url, parse_callback, pkce_challenge, Callback, ClientConfig, GoogleEndpoints, GoogleTokens};
-use circletasks_lib::calendars::http::{execute, HttpEnv};
-use circletasks_lib::calendars::vault::{MemoryVault, SecretVault};
-use circletasks_lib::calendars::{HttpAuth, HttpRequest};
+use spartiate_lib::calendars::google::{self, build_auth_url, parse_callback, pkce_challenge, Callback, ClientConfig, GoogleEndpoints, GoogleTokens};
+use spartiate_lib::calendars::http::{execute, HttpEnv};
+use spartiate_lib::calendars::vault::{MemoryVault, SecretVault};
+use spartiate_lib::calendars::{HttpAuth, HttpRequest};
 
 #[derive(Clone, Debug)]
 struct Recorded {
@@ -387,8 +387,8 @@ async fn oauth_boucle_locale_range_les_jetons_au_coffre_apres_verification_pkce(
     let endpoints = GoogleEndpoints::from_sim_base(&google_mock.mock.base);
     let cfg = config();
     let env = HttpEnv { vault: &vault, google: &endpoints, client: Some(&cfg) };
-    google::authorize(&env, "circletasks.calendar.a1", browser, Duration::from_secs(10)).await.unwrap();
-    let tokens = google::load_tokens(&vault, "circletasks.calendar.a1").unwrap();
+    google::authorize(&env, "spartiate.calendar.a1", browser, Duration::from_secs(10)).await.unwrap();
+    let tokens = google::load_tokens(&vault, "spartiate.calendar.a1").unwrap();
     assert_eq!((tokens.access.as_str(), tokens.refresh.as_str()), ("acc", "ref"));
     assert!(tokens.expires_at > google::now_secs() + 3000);
     assert!(!google_mock.challenge.lock().unwrap().is_empty());
@@ -450,7 +450,7 @@ fn les_secrets_n_apparaissent_pas_dans_le_debug_de_la_configuration() {
 
 #[test]
 fn liste_des_hotes_de_production() {
-    use circletasks_lib::calendars::hosts::is_allowed;
+    use spartiate_lib::calendars::hosts::is_allowed;
     assert!(is_allowed("https", "accounts.google.com", false));
     assert!(is_allowed("https", "p42-caldav.icloud.com", false));
     assert!(!is_allowed("https", "evil-caldav.icloud.com", false));
@@ -462,9 +462,9 @@ fn liste_des_hotes_de_production() {
 #[cfg(windows)]
 #[test]
 fn le_coffre_systeme_range_lit_et_efface() {
-    use circletasks_lib::calendars::vault::SystemVault;
+    use spartiate_lib::calendars::vault::SystemVault;
     let vault = SystemVault;
-    let token_ref = format!("circletasks.calendar.test-{}", std::process::id());
+    let token_ref = format!("spartiate.calendar.test-{}", std::process::id());
     assert_eq!(vault.get(&token_ref).unwrap(), None);
     vault.set(&token_ref, "{\"refresh\":\"r\",\"access\":\"a\",\"expires_at\":1}").unwrap();
     assert_eq!(vault.get(&token_ref).unwrap().as_deref(), Some("{\"refresh\":\"r\",\"access\":\"a\",\"expires_at\":1}"));
@@ -546,12 +546,12 @@ async fn k02_basic_401_et_reseau_coupe_ne_fuient_pas_le_mot_de_passe() {
 
 // ---- Durcissement (revue sécurité du lot K) ----
 
-const GOOGLE_REF: &str = "circletasks.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950e";
-const ICLOUD_REF: &str = "circletasks.calendar.icloud.0f8fad5b-d9cb-469f-a165-70867728950e";
+const GOOGLE_REF: &str = "spartiate.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950e";
+const ICLOUD_REF: &str = "spartiate.calendar.icloud.0f8fad5b-d9cb-469f-a165-70867728950e";
 
 #[test]
 fn l_authentification_est_liee_a_l_hote_de_son_fournisseur() {
-    use circletasks_lib::calendars::hosts::{auth_allowed, AuthScope};
+    use spartiate_lib::calendars::hosts::{auth_allowed, AuthScope};
     let url = |text: &str| url::Url::parse(text).unwrap();
     assert!(auth_allowed(AuthScope::Google, &url("https://www.googleapis.com/calendar/v3/x")));
     assert!(!auth_allowed(AuthScope::Google, &url("https://oauth2.googleapis.com/token")));
@@ -603,7 +603,7 @@ async fn seuls_les_en_tetes_de_la_liste_blanche_passent() {
 
 #[tokio::test]
 async fn une_reponse_trop_grosse_est_refusee() {
-    use circletasks_lib::calendars::http::MAX_RESPONSE_BYTES;
+    use spartiate_lib::calendars::http::MAX_RESPONSE_BYTES;
     let big = "x".repeat(MAX_RESPONSE_BYTES + 1);
     let mock = start_mock(move |_| reply(200, &big));
     let vault = MemoryVault::default();
@@ -618,22 +618,22 @@ async fn une_reponse_trop_grosse_est_refusee() {
 
 #[test]
 fn le_delai_est_plafonne() {
-    assert_eq!(circletasks_lib::calendars::http::MAX_TIMEOUT_MS, 30_000);
+    assert_eq!(spartiate_lib::calendars::http::MAX_TIMEOUT_MS, 30_000);
 }
 
 #[test]
 fn format_et_espaces_de_noms_des_references_du_coffre() {
-    use circletasks_lib::calendars::vault::{parse_token_ref, RefNamespace};
+    use spartiate_lib::calendars::vault::{parse_token_ref, RefNamespace};
     assert_eq!(parse_token_ref(GOOGLE_REF), Some(RefNamespace::Google));
     assert_eq!(parse_token_ref(ICLOUD_REF), Some(RefNamespace::Icloud));
-    for bad in ["", "r", "circletasks.calendar.0f8fad5b-d9cb-469f-a165-70867728950e", "circletasks.calendar.autre.0f8fad5b-d9cb-469f-a165-70867728950e", "circletasks.calendar.google.pas-un-uuid", "circletasks.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950e.x", "circletasks.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950g", "autre.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950e"] {
+    for bad in ["", "r", "spartiate.calendar.0f8fad5b-d9cb-469f-a165-70867728950e", "spartiate.calendar.autre.0f8fad5b-d9cb-469f-a165-70867728950e", "spartiate.calendar.google.pas-un-uuid", "spartiate.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950e.x", "spartiate.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950g", "autre.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950e"] {
         assert_eq!(parse_token_ref(bad), None, "{bad}");
     }
 }
 
 #[test]
 fn la_webview_ne_peut_pas_ecrire_une_reference_google_ni_une_reference_mal_formee() {
-    use circletasks_lib::calendars::{calendar_secret_delete, calendar_secret_exists, calendar_secret_set, checked_auth};
+    use spartiate_lib::calendars::{calendar_secret_delete, calendar_secret_exists, calendar_secret_set, checked_auth};
     assert_eq!(calendar_secret_set(GOOGLE_REF.to_owned(), "faux-jeton".to_owned()).unwrap_err(), "vault-unavailable");
     assert_eq!(calendar_secret_set("n-importe-quoi".to_owned(), "x".to_owned()).unwrap_err(), "vault-unavailable");
     assert_eq!(calendar_secret_exists("n-importe-quoi".to_owned()).unwrap_err(), "vault-unavailable");
@@ -647,7 +647,7 @@ fn la_webview_ne_peut_pas_ecrire_une_reference_google_ni_une_reference_mal_forme
 
 #[tokio::test]
 async fn l_ecoute_oauth_abandonne_apres_cinq_connexions_parasites() {
-    use circletasks_lib::calendars::google::{wait_for_callback, MAX_CALLBACK_ATTEMPTS};
+    use spartiate_lib::calendars::google::{wait_for_callback, MAX_CALLBACK_ATTEMPTS};
     let listener = tokio::net::TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
     let port = listener.local_addr().unwrap().port();
     std::thread::spawn(move || {

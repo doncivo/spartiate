@@ -4,8 +4,8 @@
 
 use serde_json::{json, Value};
 
-use circletasks_lib::sync::service::AppendRequest;
-use circletasks_lib::sync::store::OwnFileRef;
+use spartiate_lib::sync::service::AppendRequest;
+use spartiate_lib::sync::store::OwnFileRef;
 
 use crate::sync_support::{device, epoch, hlc, Device};
 
@@ -126,8 +126,8 @@ fn y_ios_02_fix_02_delete_own_removes_an_evicted_orphan_snapshot_placeholder() {
     use std::sync::atomic::{AtomicU64, Ordering};
     use std::sync::Arc;
 
-    use circletasks_lib::sync::bookmark::{choose_with_picker, ios_core};
-    use circletasks_lib::vault::MemoryVault;
+    use spartiate_lib::sync::bookmark::{choose_with_picker, ios_core};
+    use spartiate_lib::vault::MemoryVault;
 
     use crate::support::fake_bookmark::{FakePlugin, SharedPlugin};
     use crate::sync_support::{FakeUi, NOW};

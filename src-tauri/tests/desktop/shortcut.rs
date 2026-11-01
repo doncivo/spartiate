@@ -1,6 +1,6 @@
 //! Validation du raccourci global « Capture rapide » (D-04, critères 6 et 11).
 
-use circletasks_lib::shortcut::{parse_chord, ShortcutError, DEFAULT_QUICK_CAPTURE};
+use spartiate_lib::shortcut::{parse_chord, ShortcutError, DEFAULT_QUICK_CAPTURE};
 
 #[test]
 fn default_combination_is_valid_and_canonical() {
@@ -70,7 +70,7 @@ fn error_codes_are_stable() {
 
 #[test]
 fn register_failure_is_in_use_only_when_already_registered() {
-    use circletasks_lib::shortcut::classify_register_error;
+    use spartiate_lib::shortcut::classify_register_error;
     assert_eq!(classify_register_error("HotKey already registered: HotKey { id: 1 }"), ShortcutError::InUse);
     assert_eq!(classify_register_error("os error 5: access denied"), ShortcutError::Unavailable);
 }

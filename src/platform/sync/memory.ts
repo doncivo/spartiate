@@ -202,7 +202,7 @@ export const MUTE_DEADLINE_TURNS = 100;
 const cloneFile = (file: MemFile): MemFile => ({ ...file, lines: file.lines.map((line) => ({ ...line })) });
 
 /**
- * Dossier `iCloud Drive/CircleTasks` simulé. Les méthodes publiques autres que le constructeur sont des **crochets de test** : elles
+ * Dossier `iCloud Drive/Spartiate` simulé. Les méthodes publiques autres que le constructeur sont des **crochets de test** : elles
  * modifient le dossier comme le ferait iCloud ou un tiers (fichier dans le nuage, ligne incomplète, corruption, copie de conflit).
  * `file` désigne `state.ctx` ou `<époque>/<nom strict>`.
  */
@@ -217,7 +217,7 @@ export class MemorySyncFolder {
   constructor(
     readonly id: string = 'memory-folder',
     /** Faux de dev et de test : jamais affiché tel quel, l'écran tire ses textes de src/i18n (le libellé réel vient de Rust). */
-    readonly label: string = 'CircleTasks',
+    readonly label: string = 'Spartiate',
     readonly kind: SyncFolderInfo['kind'] = 'icloud',
   ) {}
 

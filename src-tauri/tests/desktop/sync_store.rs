@@ -5,26 +5,26 @@
 use std::path::Path;
 use std::sync::atomic::Ordering;
 
-use circletasks_lib::sync::files::{Availability, FsError};
-use circletasks_lib::sync::folder::FolderKind;
-use circletasks_lib::sync::limits::{MAX_SCAN_ENTRIES_PER_FOLDER, MAX_SEGMENT_BYTES, MAX_STATE_FILE_BYTES};
-use circletasks_lib::sync::marker;
-use circletasks_lib::sync::service::AppendRequest;
-use circletasks_lib::sync::store::{OwnFileRef, RecordCursor};
-use circletasks_lib::sync::SyncCode;
-use circletasks_lib::vault::SecretVault;
+use spartiate_lib::sync::files::{Availability, FsError};
+use spartiate_lib::sync::folder::FolderKind;
+use spartiate_lib::sync::limits::{MAX_SCAN_ENTRIES_PER_FOLDER, MAX_SEGMENT_BYTES, MAX_STATE_FILE_BYTES};
+use spartiate_lib::sync::marker;
+use spartiate_lib::sync::service::AppendRequest;
+use spartiate_lib::sync::store::{OwnFileRef, RecordCursor};
+use spartiate_lib::sync::SyncCode;
+use spartiate_lib::vault::SecretVault;
 use serde_json::{json, Value};
 
 use crate::sync_support::{device, epoch, hlc, Device, FakeBackend, MemFs, DEV_A, DEV_B, DEV_C, FOLDER};
 
-fn code<T>(result: Result<T, circletasks_lib::sync::SyncError>) -> SyncCode {
+fn code<T>(result: Result<T, spartiate_lib::sync::SyncError>) -> SyncCode {
     match result {
         Ok(_) => panic!("erreur attendue"),
         Err(error) => error.code,
     }
 }
 
-fn append(d: &Device, ep: &str, segment: u64, expect: u64, ms: u64, records: &[&str]) -> Result<circletasks_lib::sync::store::AppendResult, circletasks_lib::sync::SyncError> {
+fn append(d: &Device, ep: &str, segment: u64, expect: u64, ms: u64, records: &[&str]) -> Result<spartiate_lib::sync::store::AppendResult, spartiate_lib::sync::SyncError> {
     let request = AppendRequest {
         epoch: ep.to_owned(),
         segment,
@@ -60,7 +60,7 @@ fn y01_4_folder_is_remembered_after_restart_and_only_a_label_is_returned() {
     let (mut d, _) = device();
     assert!(!d.core.folder_info().unwrap().configured);
     let info = d.core.choose_folder(Path::new(FOLDER)).unwrap();
-    assert_eq!((info.configured, info.name.as_deref(), info.kind), (true, Some("CircleTasks"), "icloud"));
+    assert_eq!((info.configured, info.name.as_deref(), info.kind), (true, Some("Spartiate"), "icloud"));
     let shown = serde_json::to_string(&info).unwrap();
     assert!(!shown.contains("Users") && !shown.contains('\\'), "jamais de chemin : {shown}");
     d.restart();
@@ -84,9 +84,9 @@ fn y01_5_device_binding_is_frozen_and_a_new_folder_resets_own_json() {
     d.core.choose_folder(Path::new(FOLDER)).unwrap();
     assert!(own.exists());
     // Autre dossier : own.json remis à zéro.
-    d.backend.add(r"C:\Autre\CircleTasks", FolderKind::Local, MemFs::new());
-    let info = d.core.choose_folder(Path::new(r"C:\Autre\CircleTasks")).unwrap();
-    assert_eq!((info.name.as_deref(), info.kind), (Some("CircleTasks"), "local"));
+    d.backend.add(r"C:\Autre\Spartiate", FolderKind::Local, MemFs::new());
+    let info = d.core.choose_folder(Path::new(r"C:\Autre\Spartiate")).unwrap();
+    assert_eq!((info.name.as_deref(), info.kind), (Some("Spartiate"), "local"));
     assert!(!own.exists());
     drop(fs);
 }
@@ -187,7 +187,7 @@ fn y01_12_scan_reports_headers_states_files_and_availability() {
     a.core.write_state(14, state(DEV_A, &ep, 1, 1, 2, Some(hlc(10, DEV_A)))).unwrap();
     let b = other(&fs);
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
-    b.vault.set(circletasks_lib::sync::service::SYNC_KEY_ACCOUNT, &a.vault.get(circletasks_lib::sync::service::SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
+    b.vault.set(spartiate_lib::sync::service::SYNC_KEY_ACCOUNT, &a.vault.get(spartiate_lib::sync::service::SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
     b.core.bind_device(DEV_B).unwrap();
     let scan = b.core.scan(&[]).unwrap();
     let dev = &scan.devices[0];
@@ -403,7 +403,7 @@ fn y01_13_segment_and_call_limits_match_the_cross_vectors() {
     a.core.append_journal(&request(2, 0, 20, 1, prefix)).unwrap();
     let path = ["devices", DEV_A, &epoch(1, DEV_A), "j-00000002.ctj"].map(str::to_owned);
     let path: Vec<&str> = path.iter().map(String::as_str).collect();
-    assert_eq!(fs.get(&path).unwrap().len() as u64, 1024 * 1024 - circletasks_lib::sync::limits::encrypted_line_bytes(4092, 1, 9) as u64);
+    assert_eq!(fs.get(&path).unwrap().len() as u64, 1024 * 1024 - spartiate_lib::sync::limits::encrypted_line_bytes(4092, 1, 9) as u64);
     let last = vec![blocks(s["last"]["blocks"].as_u64().unwrap())];
     assert_eq!(code(a.core.append_journal(&request(2, count, 30, s["last"]["refusedSv"].as_u64().unwrap(), last.clone()))), SyncCode::SegmentFull);
     a.core.append_journal(&request(2, count, 30, s["last"]["acceptedSv"].as_u64().unwrap(), last.clone())).unwrap();
@@ -443,7 +443,7 @@ fn y01_15_own_json_survives_restart_is_ignored_for_another_key_and_rebuilt_from_
     fs.remove(&["devices", DEV_A, "state.ctx"]);
     let b = other(&fs);
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
-    b.vault.set(circletasks_lib::sync::service::SYNC_KEY_ACCOUNT, &a.vault.get(circletasks_lib::sync::service::SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
+    b.vault.set(spartiate_lib::sync::service::SYNC_KEY_ACCOUNT, &a.vault.get(spartiate_lib::sync::service::SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
     b.core.bind_device(DEV_B).unwrap();
     let mut sb = state(DEV_B, &epoch(1, DEV_B), 1, 0, 0, None);
     sb["acks"] = json!({ DEV_A: { "epoch": ep, "segment": 1, "record": 1, "hlc": hlc(500, DEV_A), "stateSeq": 9 } });
@@ -541,7 +541,7 @@ fn y01_12_reading_edge_cases_cloud_pending_truncated_more_and_rollback() {
     a.core.write_state(14, state(DEV_A, &ep, 2, 2, 1, Some(hlc(20, DEV_A)))).unwrap();
     let b = other(&fs);
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
-    b.vault.set(circletasks_lib::sync::service::SYNC_KEY_ACCOUNT, &a.vault.get(circletasks_lib::sync::service::SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
+    b.vault.set(spartiate_lib::sync::service::SYNC_KEY_ACCOUNT, &a.vault.get(spartiate_lib::sync::service::SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
     b.core.bind_device(DEV_B).unwrap();
     assert_eq!(b.core.scan(&[]).unwrap().devices[0].state.as_ref().unwrap().state_seq, 2);
     fs.put(&state_path, &good_state);
@@ -708,15 +708,15 @@ fn y_ios_02_delete_own_still_refuses_the_current_epoch() {
 fn y01_16_restore_marker_written_only_when_a_folder_is_configured() {
     let (d, _) = device();
     let base = d.base.path();
-    assert!(!marker::write_after_restore(base, "circletasks-2026-10-05.db", "2026-10-05T03:00:00.000Z", "2026-10-05T09:00:00.000Z", 14).unwrap());
+    assert!(!marker::write_after_restore(base, "spartiate-2026-10-05.db", "2026-10-05T03:00:00.000Z", "2026-10-05T09:00:00.000Z", 14).unwrap());
     assert_eq!(d.core.restore_marker().unwrap(), None);
     d.core.choose_folder(Path::new(FOLDER)).unwrap();
-    assert!(marker::write_after_restore(base, "circletasks-2026-10-05.db", "2026-10-05T03:00:00.000Z", "2026-10-05T09:00:00.000Z", 14).unwrap());
+    assert!(marker::write_after_restore(base, "spartiate-2026-10-05.db", "2026-10-05T03:00:00.000Z", "2026-10-05T09:00:00.000Z", 14).unwrap());
     let read = d.core.restore_marker().unwrap().unwrap();
-    assert_eq!((read.backup.as_str(), read.schema_version), ("circletasks-2026-10-05.db", 14));
+    assert_eq!((read.backup.as_str(), read.schema_version), ("spartiate-2026-10-05.db", 14));
     let raw: Value = serde_json::from_slice(&std::fs::read(base.join("restore-marker.json")).unwrap()).unwrap();
     assert_eq!(raw["v"], 1);
-    assert_eq!(serde_json::to_value(&read).unwrap(), json!({ "backup": "circletasks-2026-10-05.db", "backupTakenAt": "2026-10-05T03:00:00.000Z", "restoredAt": "2026-10-05T09:00:00.000Z", "schemaVersion": 14 }));
+    assert_eq!(serde_json::to_value(&read).unwrap(), json!({ "backup": "spartiate-2026-10-05.db", "backupTakenAt": "2026-10-05T03:00:00.000Z", "restoredAt": "2026-10-05T09:00:00.000Z", "schemaVersion": 14 }));
     d.core.clear_restore_marker().unwrap();
     assert_eq!(d.core.restore_marker().unwrap(), None);
 }
@@ -747,10 +747,10 @@ fn cut_append(d: &Device, fs: &std::sync::Arc<MemFs>, ep: &str, segment: u64, ex
 }
 
 /// `own.json` (absent tant qu'aucun ajout n'a été enregistré : tête `(0, 0)`, aucune entrée).
-fn own_state(d: &Device) -> circletasks_lib::sync::state::OwnState {
+fn own_state(d: &Device) -> spartiate_lib::sync::state::OwnState {
     match std::fs::read(d.base.path().join("sync").join("own.json")) {
         Ok(bytes) => serde_json::from_slice(&bytes).unwrap(),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => circletasks_lib::sync::state::OwnState::empty("", ""),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => spartiate_lib::sync::state::OwnState::empty("", ""),
         Err(error) => panic!("own.json : {error}"),
     }
 }
@@ -759,7 +759,7 @@ fn own_state(d: &Device) -> circletasks_lib::sync::state::OwnState {
 fn reader_of(a: &Device, fs: &std::sync::Arc<MemFs>) -> Device {
     let b = other(fs);
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
-    let account = circletasks_lib::sync::service::SYNC_KEY_ACCOUNT;
+    let account = spartiate_lib::sync::service::SYNC_KEY_ACCOUNT;
     b.vault.set(account, &a.vault.get(account).unwrap().unwrap()).unwrap();
     b.core.bind_device(DEV_B).unwrap();
     b
@@ -780,11 +780,11 @@ fn y_fix_05_c9_first_append_cut_leaves_no_closed_entry_and_the_reader_goes_past_
     let own = own_state(&a);
     assert_eq!((own.segment, own.record), (2, 2));
     assert!(own.closed.is_empty(), "aucune entrée pour le segment tronqué : {:?}", own.closed);
-    assert!(circletasks_lib::sync::state::closed_is_valid(&own.closed, own.segment));
+    assert!(spartiate_lib::sync::state::closed_is_valid(&own.closed, own.segment));
     a.core.write_state(14, state(DEV_A, &ep, 1, 2, 2, Some(hlc(20, DEV_A)))).unwrap();
     // Aller-retour : le PC accepte l'état tel quel et lit tout, sans attente sans fin sur le segment 1.
     let b = reader_of(&a, &fs);
-    let log = circletasks_lib::sync::log::capture();
+    let log = spartiate_lib::sync::log::capture();
     let page = b.core.read_journal(DEV_A, &ep, C0, None).unwrap();
     assert_eq!((page.status, page.next, page.records.len()), ("complete", RecordCursor { segment: 2, record: 2 }, 2));
     assert!(log.lines().iter().any(|l| l == "sync:segment-tail-skipped 1"), "saut journalisé, numéro seulement : {:?}", log.lines());

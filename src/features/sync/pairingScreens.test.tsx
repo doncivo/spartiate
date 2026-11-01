@@ -18,7 +18,7 @@ const NOW = '2026-10-09T08:00:00.000Z';
 
 const SCREEN = {
   scan: 'Ouvrir la caméra et scanner le code d’association',
-  chooseFolder: 'Choisir le dossier iCloud Drive / CircleTasks',
+  chooseFolder: 'Choisir le dossier iCloud Drive / Spartiate',
   openSettings: 'Ouvrir les réglages d’iOS pour autoriser la caméra',
   recovery: 'Saisir la clé de secours imprimée à la place du code',
   cancel: 'Annuler l’association',
@@ -81,12 +81,12 @@ describe('Y-IOS-02 écran « Associer au PC » : un échec de scan ne laisse jam
     return phone;
   }
 
-  it('S01 QR illisible (pas un code CircleTasks) : message, rescanner possible', async () => {
+  it('S01 QR illisible (pas un code Spartiate) : message, rescanner possible', async () => {
     const phone = await phoneWithFolder();
     phone.testing.setScanResult('https://exemple.test/pas-un-code');
     open(phone);
     await scanNow();
-    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Ce code n’est pas un code d’association CircleTasks : affichez le code sur le PC et réessayez');
+    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Ce code n’est pas un code d’association Spartiate : affichez le code sur le PC et réessayez');
     expect(screenActions()).toEqual(AGAIN);
     expect((await phone.key.status()).present).toBe(false);
   });

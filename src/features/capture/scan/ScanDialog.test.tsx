@@ -370,7 +370,7 @@ describe('scan de tâches (Q-04)', () => {
         'Ouvrez Paramètres Windows › Heure et langue › Langue et région.',
         'Choisissez Français › Options de langue.',
         'Installez « Reconnaissance de texte ».',
-        'Redémarrez CircleTasks.',
+        'Redémarrez Spartiate.',
       ]);
       expect(screen.getByRole('button', { name: 'Vérifier de nouveau' })).toBeEnabled();
       expect(screen.getByRole('button', { name: 'Lire quand même avec le moteur intégré' })).toBeEnabled();

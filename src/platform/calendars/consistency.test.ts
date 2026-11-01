@@ -30,10 +30,10 @@ describe('agendas : contrats TypeScript / Rust / configuration', () => {
 describe('coffre en mémoire', () => {
   it('range, détecte et efface un secret (suppression idempotente)', async () => {
     const vault = new MemorySecretVault();
-    await vault.set('circletasks.calendar.a', 'secret');
-    expect(await vault.has('circletasks.calendar.a')).toBe(true);
-    await vault.delete('circletasks.calendar.a');
-    await vault.delete('circletasks.calendar.a');
-    expect(await vault.has('circletasks.calendar.a')).toBe(false);
+    await vault.set('spartiate.calendar.a', 'secret');
+    expect(await vault.has('spartiate.calendar.a')).toBe(true);
+    await vault.delete('spartiate.calendar.a');
+    await vault.delete('spartiate.calendar.a');
+    expect(await vault.has('spartiate.calendar.a')).toBe(false);
   });
 });

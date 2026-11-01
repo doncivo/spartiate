@@ -6,15 +6,15 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
-use circletasks_lib::sync::bookmark::{choose_with_picker, import_ios, ios_core, BookmarkBackend};
-use circletasks_lib::sync::consent::{dialog_spec, dialog_spec_with, dialog_texts, ConsentKind, ConsentUi};
-use circletasks_lib::sync::consent_ios::{confirm_args, IosConsentUi};
-use circletasks_lib::sync::folder::config_dir;
-use circletasks_lib::sync::limits::PAIRING_VALIDITY_MS;
-use circletasks_lib::sync::service::{SyncCore, IMPORT_FAILURE_FILE, SYNC_KEY_ACCOUNT};
-use circletasks_lib::sync::{SyncCode, SyncError};
-use circletasks_lib::vault::{MemoryVault, SecretVault, VaultError};
-use circletasks_lib::vault_ios::{
+use spartiate_lib::sync::bookmark::{choose_with_picker, import_ios, ios_core, BookmarkBackend};
+use spartiate_lib::sync::consent::{dialog_spec, dialog_spec_with, dialog_texts, ConsentKind, ConsentUi};
+use spartiate_lib::sync::consent_ios::{confirm_args, IosConsentUi};
+use spartiate_lib::sync::folder::config_dir;
+use spartiate_lib::sync::limits::PAIRING_VALIDITY_MS;
+use spartiate_lib::sync::service::{SyncCore, IMPORT_FAILURE_FILE, SYNC_KEY_ACCOUNT};
+use spartiate_lib::sync::{SyncCode, SyncError};
+use spartiate_lib::vault::{MemoryVault, SecretVault, VaultError};
+use spartiate_lib::vault_ios::{
     is_sync_key_account, keychain_delete, keychain_get, keychain_set, read_outcome, CachedVault, KeychainOps, ERR_SEC_INTERACTION_NOT_ALLOWED, ERR_SEC_ITEM_NOT_FOUND,
     SYNC_KEY_ACCOUNTS,
 };
@@ -66,9 +66,9 @@ impl KeychainOps for FakeKeychain {
 
 #[test]
 fn y_ios_02_1_only_the_two_sync_key_accounts_are_accepted() {
-    assert_eq!(SYNC_KEY_ACCOUNTS, ["circletasks.sync.key.v1", "circletasks.sync.key.next"]);
+    assert_eq!(SYNC_KEY_ACCOUNTS, ["spartiate.sync.key.v1", "spartiate.sync.key.next"]);
     let keychain = FakeKeychain::default();
-    for refused in ["circletasks.sync.key.v2", "circletasks.sync.key.", "circletasks.calendar.google.x", "circletasks.sync.key.v1 "] {
+    for refused in ["spartiate.sync.key.v2", "spartiate.sync.key.", "spartiate.calendar.google.x", "spartiate.sync.key.v1 "] {
         assert!(!is_sync_key_account(refused), "{refused}");
         assert_eq!(keychain_set(&keychain, refused, "x"), Err(VaultError::Unavailable));
         assert_eq!(keychain_get(&keychain, refused), Err(VaultError::Unavailable));
@@ -80,14 +80,14 @@ fn y_ios_02_1_only_the_two_sync_key_accounts_are_accepted() {
 #[test]
 fn y_ios_02_1_write_is_delete_add_then_identical_reread_or_nothing() {
     let keychain = FakeKeychain::default();
-    keychain_set(&keychain, "circletasks.sync.key.v1", "cle-1").unwrap();
-    assert_eq!(keychain_get(&keychain, "circletasks.sync.key.v1").unwrap().as_deref(), Some("cle-1"));
-    assert_eq!(keychain.deletes.lock().unwrap().as_slice(), ["circletasks.sync.key.v1"], "suppression avant l'ajout");
+    keychain_set(&keychain, "spartiate.sync.key.v1", "cle-1").unwrap();
+    assert_eq!(keychain_get(&keychain, "spartiate.sync.key.v1").unwrap().as_deref(), Some("cle-1"));
+    assert_eq!(keychain.deletes.lock().unwrap().as_slice(), ["spartiate.sync.key.v1"], "suppression avant l'ajout");
     // Relecture différente : élément supprimé, `vault-unavailable` (jamais une clé à moitié écrite).
     keychain.corrupt_reread.store(true, Ordering::SeqCst);
-    assert_eq!(keychain_set(&keychain, "circletasks.sync.key.next", "cle-2"), Err(VaultError::Unavailable));
+    assert_eq!(keychain_set(&keychain, "spartiate.sync.key.next", "cle-2"), Err(VaultError::Unavailable));
     keychain.corrupt_reread.store(false, Ordering::SeqCst);
-    assert_eq!(keychain_get(&keychain, "circletasks.sync.key.next").unwrap(), None);
+    assert_eq!(keychain_get(&keychain, "spartiate.sync.key.next").unwrap(), None);
 }
 
 #[test]
@@ -97,10 +97,10 @@ fn y_ios_02_4_locked_or_failing_keychain_is_unavailable_never_absent() {
         assert_eq!(read_outcome(failing), Err(VaultError::Unavailable), "{failing}");
     }
     let keychain = FakeKeychain::default();
-    keychain_set(&keychain, "circletasks.sync.key.v1", "cle").unwrap();
+    keychain_set(&keychain, "spartiate.sync.key.v1", "cle").unwrap();
     *keychain.copy_error.lock().unwrap() = Some(ERR_SEC_INTERACTION_NOT_ALLOWED);
-    assert_eq!(keychain_get(&keychain, "circletasks.sync.key.v1"), Err(VaultError::Unavailable), "iPhone verrouillé : jamais « absent »");
-    assert_eq!(keychain_delete(&keychain, "circletasks.sync.key.next"), Ok(()), "suppression d'un élément absent : sans erreur");
+    assert_eq!(keychain_get(&keychain, "spartiate.sync.key.v1"), Err(VaultError::Unavailable), "iPhone verrouillé : jamais « absent »");
+    assert_eq!(keychain_delete(&keychain, "spartiate.sync.key.next"), Ok(()), "suppression d'un élément absent : sans erreur");
 }
 
 #[test]
@@ -322,7 +322,7 @@ fn y_ios_02_6_import_needs_the_foreground_and_replacing_another_key_asks_first()
     let plugin = FakePlugin::new(clock.clone());
     let (_pc, _qr, recovery) = first_device(&plugin, &clock);
     let vault = Arc::new(MemoryVault::default());
-    vault.set(SYNC_KEY_ACCOUNT, &circletasks_lib::sync::crypto::MasterKey::generate().unwrap().to_vault_value()).unwrap();
+    vault.set(SYNC_KEY_ACCOUNT, &spartiate_lib::sync::crypto::MasterKey::generate().unwrap().to_vault_value()).unwrap();
     let iphone = phone(&plugin, &clock, vault.clone());
     choose_with_picker(&iphone.core, &iphone.backend).unwrap().unwrap();
     iphone.core.bind_device(DEV_B).unwrap();
@@ -400,7 +400,7 @@ fn y_ios_02_11_qa_alert_closed_by_going_to_background_is_a_refusal_that_blocks_t
     let plugin = FakePlugin::new(clock.clone());
     let (_pc, _qr, recovery) = first_device(&plugin, &clock);
     let vault = Arc::new(MemoryVault::default());
-    vault.set(SYNC_KEY_ACCOUNT, &circletasks_lib::sync::crypto::MasterKey::generate().unwrap().to_vault_value()).unwrap();
+    vault.set(SYNC_KEY_ACCOUNT, &spartiate_lib::sync::crypto::MasterKey::generate().unwrap().to_vault_value()).unwrap();
     let iphone = phone(&plugin, &clock, vault.clone());
     choose_with_picker(&iphone.core, &iphone.backend).unwrap().unwrap();
     iphone.core.bind_device(DEV_B).unwrap();

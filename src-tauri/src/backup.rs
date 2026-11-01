@@ -1,12 +1,12 @@
 //! Sauvegardes de la base (D-03 critères 8 et 9, P-04, PRD sections 7 et 8, ADR 0002 avenant, ADR 0009 avenant).
 //!
-//! Emplacement : `<dossier de configuration de l'app>/backups/`, à côté de `circletasks.db`
+//! Emplacement : `<dossier de configuration de l'app>/backups/`, à côté de `spartiate.db`
 //! (hors du dossier d'installation, jamais touché par l'installeur, jamais synchronisé). Trois familles de fichiers, chacune purgée
 //! séparément (la purge d'une famille ne supprime jamais un fichier d'une autre) :
 //!
-//! - migration : `circletasks-pre-migration-vNNNN-to-vMMMM-AAAAMMJJTHHMMSSZ.db` (gardées : 5) ;
-//! - quotidienne (P-04) : `circletasks-daily-AAAAMMJJ.db` (gardées : 14) ;
-//! - copie de sécurité avant restauration (P-04) : `circletasks-pre-restore-AAAAMMJJTHHMMSSZ.db` (gardées : 3).
+//! - migration : `spartiate-pre-migration-vNNNN-to-vMMMM-AAAAMMJJTHHMMSSZ.db` (gardées : 5) ;
+//! - quotidienne (P-04) : `spartiate-daily-AAAAMMJJ.db` (gardées : 14) ;
+//! - copie de sécurité avant restauration (P-04) : `spartiate-pre-restore-AAAAMMJJTHHMMSSZ.db` (gardées : 3).
 //!
 //! La copie est faite par `VACUUM INTO` (cohérente, WAL inclus). Le front fait en plus un `PRAGMA wal_checkpoint(TRUNCATE)` (busy = 0
 //! exigé) avant l'appel.
@@ -24,20 +24,20 @@ use tauri::{AppHandle, Manager};
 
 use crate::backup_triggers::{trigger_body_for, REFERENCE_TRIGGERS};
 
-/// Nom du fichier de base (tauri-plugin-sql, `sqlite:circletasks.db`).
-pub const DB_FILE: &str = "circletasks.db";
+/// Nom du fichier de base (tauri-plugin-sql, `sqlite:spartiate.db`).
+pub const DB_FILE: &str = "spartiate.db";
 /// Sous-dossier des sauvegardes.
 pub const BACKUP_DIR: &str = "backups";
 /// Préfixe des sauvegardes faites avant migration.
-pub const MIGRATION_PREFIX: &str = "circletasks-pre-migration-";
+pub const MIGRATION_PREFIX: &str = "spartiate-pre-migration-";
 /// Nombre de sauvegardes de migration conservées.
 pub const KEEP_MIGRATION_BACKUPS: usize = 5;
 /// Préfixe des sauvegardes quotidiennes (P-04).
-pub const DAILY_PREFIX: &str = "circletasks-daily-";
+pub const DAILY_PREFIX: &str = "spartiate-daily-";
 /// Nombre de sauvegardes quotidiennes conservées (P-04 critère 2).
 pub const KEEP_DAILY_BACKUPS: usize = 14;
 /// Préfixe des copies de sécurité faites avant une restauration (P-04).
-pub const PRE_RESTORE_PREFIX: &str = "circletasks-pre-restore-";
+pub const PRE_RESTORE_PREFIX: &str = "spartiate-pre-restore-";
 /// Nombre de copies de sécurité de restauration conservées (P-04 critère 6).
 pub const KEEP_PRE_RESTORE_BACKUPS: usize = 3;
 /// Version de schéma de cette app (plus haute migration de `src/db/migrations`). Une sauvegarde plus récente est refusée. Constante côté Rust :
@@ -375,7 +375,7 @@ pub struct DailyOutcome {
     pub removed: usize,
 }
 
-/// Sauvegarde quotidienne `circletasks-daily-AAAAMMJJ.db` (P-04 critères 1 et 2). Une version du jour déjà présente est conservée sauf
+/// Sauvegarde quotidienne `spartiate-daily-AAAAMMJJ.db` (P-04 critères 1 et 2). Une version du jour déjà présente est conservée sauf
 /// si `replace` (« Sauvegarder maintenant »). Purge des seules sauvegardes quotidiennes au-delà de `keep`.
 pub fn create_daily_backup(db_path: &Path, backups_dir: &Path, day: &str, replace: bool, keep: usize) -> Result<DailyOutcome, BackupError> {
     if !is_valid_day(day) {
@@ -1116,10 +1116,10 @@ pub enum Recovery {
     Archived,
 }
 
-/// Récupération au démarrage, AVANT l'ouverture de la base, fondée sur la présence de `circletasks.db.restore-old` (la base, déplacée en dernier
+/// Récupération au démarrage, AVANT l'ouverture de la base, fondée sur la présence de `spartiate.db.restore-old` (la base, déplacée en dernier
 /// par l'échange) :
 ///
-/// | `circletasks.db` | `.db.restore-old` | `-wal` / `-shm.restore-old` | action |
+/// | `spartiate.db` | `.db.restore-old` | `-wal` / `-shm.restore-old` | action |
 /// | --- | --- | --- | --- |
 /// | présente | présent | indifférent | échange terminé : les `.restore-old` sont déplacés dans `backups/` sous un nom `pre-restore` (purgé par la rotation) |
 /// | présente | absent | présent | échange interrompu avant la base, ou retour arrière partiel : `-wal` et `-shm` remis en place |
@@ -1174,7 +1174,7 @@ pub fn recover_interrupted_restore(db_path: &Path, backups_dir: &Path) -> Result
         }
         fs::create_dir_all(backups_dir).map_err(|e| fail("recovery-failed", e))?;
         let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs());
-        // Nom DÉRIVÉ de la date de modification de `circletasks.db.restore-old` : une reprise après un archivage interrompu vise le même nom que la
+        // Nom DÉRIVÉ de la date de modification de `spartiate.db.restore-old` : une reprise après un archivage interrompu vise le même nom que la
         // tentative précédente (ses `-shm` / `-wal` déjà déplacés y sont, la base y manque). Il est accepté si la base est absente et si la cible de
         // chaque fichier restant à déplacer est libre ; les autres orphelins de ce nom sont ceux de la même base (même seconde de modification).
         let resumed = fs::symlink_metadata(&olds[0].1)
@@ -1191,7 +1191,7 @@ pub fn recover_interrupted_restore(db_path: &Path, backups_dir: &Path) -> Result
                 .find(|candidate| ["", "-wal", "-shm"].iter().all(|suffix| !present(&sidecar(candidate, suffix))))
                 .ok_or_else(|| BackupError::new("recovery-conflict", "aucun nom libre pour archiver l'ancienne base"))?,
         };
-        // `-shm`, puis `-wal`, la base EN DERNIER : si l'archivage s'arrête en route, `circletasks.db.restore-old` est encore là et le démarrage suivant
+        // `-shm`, puis `-wal`, la base EN DERNIER : si l'archivage s'arrête en route, `spartiate.db.restore-old` est encore là et le démarrage suivant
         // recommence (cas « base présente + base restore-old présente ») ; ce qui a déjà été déplacé reste dans `backups/`, rien n'est perdu.
         for (suffix, old) in olds.iter().rev() {
             if present(old) {
@@ -1229,7 +1229,7 @@ fn swap_database(db_path: &Path, staged: &Path, hook: &dyn Fn(RestoreStep) -> io
     let mut moved: Vec<(PathBuf, PathBuf)> = Vec::new();
     let result = (|| -> io::Result<()> {
         // `-shm` et `-wal` d'abord, la base en dernier : si l'échange s'arrête ici, la base seule (sans son journal) n'est jamais présente
-        // avec le fichier d'un autre état ; `circletasks.db` absent + `.restore-old` présent = restauration à récupérer.
+        // avec le fichier d'un autre état ; `spartiate.db` absent + `.restore-old` présent = restauration à récupérer.
         for suffix in ["-shm", "-wal", ""] {
             let from = sidecar(db_path, suffix);
             if from.exists() {
@@ -1263,7 +1263,7 @@ fn swap_database(db_path: &Path, staged: &Path, hook: &dyn Fn(RestoreStep) -> io
 /// Restaure la sauvegarde `name` de `backups_dir` (P-04 critères 5 à 8). La connexion à la base doit être fermée par l'appelant.
 ///
 /// 1. `name` doit être une sauvegarde connue du dossier (aucun chemin) ; 2. le fichier est vérifié ; 3. l'état actuel est copié sous
-///    `circletasks-pre-restore-<stamp>.db` ; 4. le fichier choisi est copié à côté de la base (`.restoring`) et revérifié ; 5. les fichiers
+///    `spartiate-pre-restore-<stamp>.db` ; 4. le fichier choisi est copié à côté de la base (`.restoring`) et revérifié ; 5. les fichiers
 ///    de la base sont renommés vers `.restore-old`, puis le fichier préparé prend la place : au moindre échec, l'ancienne base revient et
 ///    rien n'a changé. `hook` ne sert qu'aux tests (échec simulé).
 pub fn restore_backup_file(
@@ -1366,7 +1366,7 @@ fn join_error(e: tauri::Error) -> BackupError {
 }
 
 /// Diagnostic d'ouverture de la base (0.2.1), affiché sous « Impossible d'ouvrir la base de données. » : chemins résolus et existence.
-/// Lecture seule, aucun argument venu de la WebView : seuls le dossier de configuration et `circletasks.db` y sont examinés.
+/// Lecture seule, aucun argument venu de la WebView : seuls le dossier de configuration et `spartiate.db` y sont examinés.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DbDiagnostics {
@@ -1379,7 +1379,7 @@ pub struct DbDiagnostics {
     pub wal_exists: bool,
 }
 
-/// Diagnostic du dossier `dir` (celui que tauri-plugin-sql résout pour `sqlite:circletasks.db`).
+/// Diagnostic du dossier `dir` (celui que tauri-plugin-sql résout pour `sqlite:spartiate.db`).
 pub fn diagnose_db_dir(dir: Result<PathBuf, String>) -> DbDiagnostics {
     match dir {
         Ok(dir) => {

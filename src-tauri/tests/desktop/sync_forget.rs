@@ -7,23 +7,23 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use circletasks_lib::sync::files::{delete_forgotten_device_files, Availability, FsError};
-use circletasks_lib::sync::forget::{
+use spartiate_lib::sync::files::{delete_forgotten_device_files, Availability, FsError};
+use spartiate_lib::sync::forget::{
     completed_forgotten, covers_forgotten, cutoff, eligible_snapshot, forget_gaps, forget_order, snapshot_in_epoch, forgotten_delete_check, learn_declarations, local_date_time, next_declaration_hlc, seen_devices,
     DeleteCheck, Eligible, KnownDevice, KnownState, SnapshotCandidate, SnapshotEnd, SnapshotEndRead,
     Verdict, FORGOTTEN_FILE, SYNC_NEXT_KEY_ACCOUNT,
 };
-use circletasks_lib::sync::limits::PAIRING_CLOCK_TOLERANCE_MS;
-use circletasks_lib::sync::log;
-use circletasks_lib::sync::service::{AppendRequest, SYNC_KEY_ACCOUNT};
-use circletasks_lib::sync::state::{DeviceAck, ForgottenDevice};
-use circletasks_lib::sync::store::StateStatus;
-use circletasks_lib::sync::{SyncCode, SyncError};
-use circletasks_lib::vault::SecretVault;
+use spartiate_lib::sync::limits::PAIRING_CLOCK_TOLERANCE_MS;
+use spartiate_lib::sync::log;
+use spartiate_lib::sync::service::{AppendRequest, SYNC_KEY_ACCOUNT};
+use spartiate_lib::sync::state::{DeviceAck, ForgottenDevice};
+use spartiate_lib::sync::store::StateStatus;
+use spartiate_lib::sync::{SyncCode, SyncError};
+use spartiate_lib::vault::SecretVault;
 use serde_json::{json, Value};
 
 use crate::sync_support::{device, epoch, hlc, Device, FakeBackend, MemFs, DEV_A, DEV_B, DEV_C, FOLDER, NOW};
-use circletasks_lib::sync::folder::FolderKind;
+use spartiate_lib::sync::folder::FolderKind;
 
 const DEV_X: &str = "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f";
 const DEV_Z: &str = "1b2c3d4e-5f6a-4b7c-8d9e-0f1a2b3c4d5e";
@@ -258,7 +258,7 @@ fn shared_table_seen_devices() {
 #[test]
 fn forget_detail_texts_are_all_present_in_the_compiled_file() {
     // Sécurité (basse) : une clé absente de native/fr.json donnerait un texte vide (unwrap_or_default) et une boîte sans détail.
-    let texts = circletasks_lib::sync::consent::forget_detail_texts();
+    let texts = spartiate_lib::sync::consent::forget_detail_texts();
     for (name, text) in [("detail", &texts.detail), ("never", &texts.never), ("windows", &texts.windows), ("ios", &texts.ios), ("utc", &texts.utc)] {
         assert!(!text.trim().is_empty(), "forgetDetail.{name} absent ou vide");
     }
@@ -273,7 +273,7 @@ fn forget_detail_texts_are_all_present_in_the_compiled_file() {
 // ------------------------------------------------------------------------------------------------------------------------------
 
 fn snapshot_parts(dev: &str, n: u32) -> Vec<String> {
-    vec!["devices".into(), dev.into(), epoch(1, DEV_A), circletasks_lib::sync::names::snapshot_name(n)]
+    vec!["devices".into(), dev.into(), epoch(1, DEV_A), spartiate_lib::sync::names::snapshot_name(n)]
 }
 
 #[test]
@@ -349,7 +349,7 @@ fn snapshot_end_is_read_once_per_session_across_scans_and_reused_for_the_paged_r
     net.settle(&[DEV_A, DEV_B], 3);
     let ep = epoch(1, DEV_A);
     let n = net.dev(DEV_A).snap.as_ref().unwrap().0;
-    let path = format!("devices/{DEV_A}/{ep}/{}", circletasks_lib::sync::names::snapshot_name(n as u32));
+    let path = format!("devices/{DEV_A}/{ep}/{}", spartiate_lib::sync::names::snapshot_name(n as u32));
     // A : deux cycles consécutifs (scan puis condition (h)), un seul fichier lu en entier.
     let start = net.fs.read_log.lock().unwrap().len();
     for _ in 0..2 {
@@ -381,7 +381,7 @@ fn snapshot_end_read_then_paged_read_reads_the_file_once_each() {
     let mut net = Net::new(&[DEV_B]);
     net.cycle(DEV_A).unwrap();
     let ep = epoch(1, DEV_A);
-    let path = format!("devices/{DEV_A}/{ep}/{}", circletasks_lib::sync::names::snapshot_name(1));
+    let path = format!("devices/{DEV_A}/{ep}/{}", spartiate_lib::sync::names::snapshot_name(1));
     let b = &net.dev(DEV_B).d.core;
     b.scan(&[]).unwrap();
     let start = net.fs.read_log.lock().unwrap().len();
@@ -631,7 +631,7 @@ fn device_forget_dialog_shows_what_rust_read_and_outcomes() {
     a.ui.answer(false);
     assert_eq!(code(a.core.device_forget(DEV_X, 1)), SyncCode::ConsentDenied);
     let spec = a.ui.last.lock().unwrap().clone().expect("boîte");
-    assert_eq!(spec.default_button, circletasks_lib::sync::consent::IDCANCEL, "« Annuler » par défaut");
+    assert_eq!(spec.default_button, spartiate_lib::sync::consent::IDCANCEL, "« Annuler » par défaut");
     assert_eq!(spec.texts.instruction, "Oublier cet appareil ?");
     // Audit e : détail lu par Rust dans l'état authentifié de X (plateforme, 8 caractères, date et heure sur 24 h).
     assert!(spec.texts.content.starts_with("PC Windows · identifiant 5c6d7e8f… · dernière synchronisation le "), "{}", spec.texts.content);
@@ -987,7 +987,7 @@ fn forgotten_delete_passes_are_bounded_and_keep_state_last() {
     let pass = delete_forgotten_device_files(&shared(&fs), DEV_X, 2).unwrap();
     assert_eq!((pass.deleted, pass.complete), (0, true));
     assert!(delete_forgotten_device_files(&shared(&fs), "..", 2).is_err());
-    assert_eq!(circletasks_lib::sync::forget::MAX_FORGOTTEN_DELETE_ENTRIES, 1_000);
+    assert_eq!(spartiate_lib::sync::forget::MAX_FORGOTTEN_DELETE_ENTRIES, 1_000);
 }
 
 fn a(net: &Net) -> &Device {

@@ -19,7 +19,7 @@ async function noHorizontalScroll(page: Page): Promise<void> {
   expect(overflow.scroll, JSON.stringify(overflow.wide)).toBeLessThanOrEqual(0);
 }
 
-const VERSIONS: FakeVersion[] = [{ name: 'circletasks-daily-20261007.db', kind: 'daily', stamp: '20261007', size: 40_960, at: '2026-10-07T03:12:00', tasks: 4 }];
+const VERSIONS: FakeVersion[] = [{ name: 'spartiate-daily-20261007.db', kind: 'daily', stamp: '20261007', size: 40_960, at: '2026-10-07T03:12:00', tasks: 4 }];
 
 test.describe('Lot F — écrans sans défilement horizontal, échecs avec une action utile', () => {
   test('Logs : liste, échec d’export avec code et « Réessayer »', async ({ page }) => {
@@ -95,7 +95,7 @@ test.describe('Lot F — écran « Restauration interrompue » (P-04-iOS, revue 
       g.__ctDbOpen = () => Promise.reject(Object.assign(new Error('startup-recovery: recovery-conflict'), { name: 'StartupRecoveryError' }));
     });
     await page.goto('/');
-    await expect(page.getByRole('alert').filter({ hasText: 'Restauration interrompue : fermez puis rouvrez CircleTasks.' })).toBeVisible();
+    await expect(page.getByRole('alert').filter({ hasText: 'Restauration interrompue : fermez puis rouvrez Spartiate.' })).toBeVisible();
     await expect(page.getByText(/rien n’est supprimé/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Réessayer' })).toHaveCount(0);
     await noHorizontalScroll(page);

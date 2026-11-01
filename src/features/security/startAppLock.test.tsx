@@ -127,7 +127,7 @@ describe('déverrouillage (critères 6 et 9)', () => {
     lock.requestAutoUnlock();
     await flush();
     expect(fake.authenticateCount()).toBe(1);
-    expect(fake.calls.at(-1)).toEqual({ type: 'authenticate', reason: 'Déverrouiller CircleTasks', cancelLabel: 'Annuler' });
+    expect(fake.calls.at(-1)).toEqual({ type: 'authenticate', reason: 'Déverrouiller Spartiate', cancelLabel: 'Annuler' });
     expect(state()).toMatchObject({ phase: 'locked', message: { kind: 'cancelled' } });
     await lock.unlock();
     expect(state()).toMatchObject({ phase: 'unlocked', shellReady: true, message: null });
@@ -451,10 +451,10 @@ describe('audit B3 : authentification et passage en arrière-plan', () => {
 });
 
 describe('activer et désactiver (critères 5 et 9)', () => {
-  it('activer : authentification d’abord (raison « Activer le verrouillage de CircleTasks ») ; réussite : activé, cache natif', async () => {
+  it('activer : authentification d’abord (raison « Activer le verrouillage de Spartiate ») ; réussite : activé, cache natif', async () => {
     await start();
     await state().actions?.enable();
-    expect(fake.calls.at(-1)).toEqual({ type: 'authenticate', reason: 'Activer le verrouillage de CircleTasks', cancelLabel: 'Annuler' });
+    expect(fake.calls.at(-1)).toEqual({ type: 'authenticate', reason: 'Activer le verrouillage de Spartiate', cancelLabel: 'Annuler' });
     expect(state()).toMatchObject({ enabled: true, phase: 'unlocked', settingsMessage: null });
     expect(stored).toBe(true);
     expect(shield.calls).toEqual([false, true]);
@@ -505,7 +505,7 @@ describe('activer et désactiver (critères 5 et 9)', () => {
     await state().actions?.disable();
     expect(state()).toMatchObject({ enabled: true, settingsMessage: { main: 'notDisabled' } });
     await state().actions?.disable();
-    expect(fake.calls.at(-1)).toMatchObject({ reason: 'Désactiver le verrouillage de CircleTasks' });
+    expect(fake.calls.at(-1)).toMatchObject({ reason: 'Désactiver le verrouillage de Spartiate' });
     expect(state()).toMatchObject({ enabled: false, settingsMessage: null });
     expect(stored).toBe(false);
     expect(shield.calls.at(-1)).toBe(false);

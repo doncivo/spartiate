@@ -7,7 +7,7 @@ export interface IconProps {
   size?: number;
   /** Couleur du trait ; `currentColor` par défaut pour suivre la couleur du texte ambiant. */
   color?: string;
-  /** Épaisseur du trait ; 1.8 par défaut, comme dans toutes les maquettes CircleTasks. */
+  /** Épaisseur du trait ; 1.8 par défaut, comme dans toutes les maquettes Spartiate. */
   strokeWidth?: number;
   className?: string;
   /**
@@ -19,7 +19,7 @@ export interface IconProps {
   label?: string;
 }
 
-/** Enveloppe fine autour des icônes Lucide au trait, au style des maquettes CircleTasks. */
+/** Enveloppe fine autour des icônes Lucide au trait, au style des maquettes Spartiate. */
 export function Icon({ icon: LucideIconComponent, size = 24, color = 'currentColor', strokeWidth = 1.8, className, label }: IconProps) {
   return (
     <LucideIconComponent

@@ -63,7 +63,7 @@ async function seed(page: Page, testInfo: { project: { name: string } }): Promis
 }
 
 /** Titres de l'objectif de la maquette Objectif.html : 2 faites sur 5, jours lun. à ven. (« other-days » : la tâche du mercredi passe au samedi). */
-const GOAL_TITLE = 'Finaliser le PRD CircleTasks';
+const GOAL_TITLE = 'Finaliser le PRD Spartiate';
 const GOAL_TASKS = ['Relire les user stories', 'Valider les maquettes', 'Mettre à jour CLAUDE.md', 'Préparer le dépôt GitHub', 'Lancer Claude Code'];
 
 async function seedGoalWithTasks(page: Page, days: 'objectif' | 'other-days'): Promise<void> {
@@ -350,7 +350,7 @@ const SCREENS: Screen[] = [
     },
   },
   {
-    // Écran Objectif iPhone (Objectif.html) : objectif « Finaliser le PRD CircleTasks », 2 faites sur 5.
+    // Écran Objectif iPhone (Objectif.html) : objectif « Finaliser le PRD Spartiate », 2 faites sur 5.
     name: 'Objectif',
     mockup: 'Objectif.html',
     viewport: PHONE,

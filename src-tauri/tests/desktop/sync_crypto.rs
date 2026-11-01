@@ -3,11 +3,11 @@
 
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
-use circletasks_lib::sync::crypto::{
+use spartiate_lib::sync::crypto::{
     aad_bytes, algorithm_shape, hex, key_from_recovery, pad, parse_line_prefix, parse_qr_text, qr_text_of, unpad, FileHeader, HeaderKind, MasterKey,
     OpenError, Place, RECOVERY_CHARS, SYNC_FORMAT_MAJOR,
 };
-use circletasks_lib::sync::limits::{
+use spartiate_lib::sync::limits::{
     encrypted_line_bytes, padded_plaintext_bytes, MAX_APPEND_CALL_BYTES, MAX_RECORD_LINE_BYTES, MAX_RECORD_PLAINTEXT_BYTES, SEGMENT_ROTATE_BYTES,
 };
 use serde_json::Value;
@@ -157,11 +157,11 @@ fn y08_4_limits_match_typescript_and_vectors() {
     assert_eq!(constant("MAX_RECORD_PLAINTEXT_BYTES"), MAX_RECORD_PLAINTEXT_BYTES as u64);
     assert_eq!(constant("SEGMENT_ROTATE_BYTES"), SEGMENT_ROTATE_BYTES);
     assert_eq!(constant("MAX_APPEND_CALL_BYTES"), MAX_APPEND_CALL_BYTES);
-    assert_eq!(constant("MAX_SEGMENT_BYTES"), circletasks_lib::sync::limits::MAX_SEGMENT_BYTES);
-    assert_eq!(constant("MAX_SNAPSHOT_BYTES"), circletasks_lib::sync::limits::MAX_SNAPSHOT_BYTES);
-    assert_eq!(constant("MAX_DEVICE_FOLDERS"), circletasks_lib::sync::limits::MAX_DEVICE_FOLDERS as u64);
-    assert_eq!(constant("MAX_SCAN_ENTRIES_PER_FOLDER"), circletasks_lib::sync::limits::MAX_SCAN_ENTRIES_PER_FOLDER as u64);
-    assert_eq!(constant("FOLDER_STOP_BYTES"), circletasks_lib::sync::limits::FOLDER_STOP_BYTES);
+    assert_eq!(constant("MAX_SEGMENT_BYTES"), spartiate_lib::sync::limits::MAX_SEGMENT_BYTES);
+    assert_eq!(constant("MAX_SNAPSHOT_BYTES"), spartiate_lib::sync::limits::MAX_SNAPSHOT_BYTES);
+    assert_eq!(constant("MAX_DEVICE_FOLDERS"), spartiate_lib::sync::limits::MAX_DEVICE_FOLDERS as u64);
+    assert_eq!(constant("MAX_SCAN_ENTRIES_PER_FOLDER"), spartiate_lib::sync::limits::MAX_SCAN_ENTRIES_PER_FOLDER as u64);
+    assert_eq!(constant("FOLDER_STOP_BYTES"), spartiate_lib::sync::limits::FOLDER_STOP_BYTES);
     // Plafonds exacts : 1 Mio d'octets écrits (vecteurs croisés).
     let v = vectors();
     let group = |groups: &Value| -> u64 {
@@ -290,7 +290,7 @@ fn y08_5_key_types_have_no_debug_nor_serialize() {
     <MasterKey as AmbiguousIfDebug<_>>::some_item();
     <MasterKey as AmbiguousIfSerialize<_>>::some_item();
     <MasterKey as AmbiguousIfClone<_>>::some_item();
-    <circletasks_lib::sync::crypto::QrContent as AmbiguousIfDebug<_>>::some_item();
+    <spartiate_lib::sync::crypto::QrContent as AmbiguousIfDebug<_>>::some_item();
 }
 
 #[test]

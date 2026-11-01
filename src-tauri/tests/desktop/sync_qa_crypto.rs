@@ -3,11 +3,11 @@
 
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
-use circletasks_lib::sync::crypto::{
+use spartiate_lib::sync::crypto::{
     key_from_recovery, pad, parse_line_prefix, parse_qr_text, qr_text_of, unpad, FileHeader, MasterKey, OpenError, Place, RECOVERY_CHARS,
 };
-use circletasks_lib::sync::limits::{padded_plaintext_bytes, MAX_RECORD_LINE_BYTES, MAX_RECORD_PLAINTEXT_BYTES};
-use circletasks_lib::sync::names::{is_app_version, is_epoch_id, is_kid, is_strict_hlc, is_uuid_v4, parse_file_name, EpochId, SyncFileName};
+use spartiate_lib::sync::limits::{padded_plaintext_bytes, MAX_RECORD_LINE_BYTES, MAX_RECORD_PLAINTEXT_BYTES};
+use spartiate_lib::sync::names::{is_app_version, is_epoch_id, is_kid, is_strict_hlc, is_uuid_v4, parse_file_name, EpochId, SyncFileName};
 use serde_json::Value;
 
 const DEV: &str = "3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60";
@@ -514,17 +514,17 @@ fn y08_1_line_prefix_exposes_nothing_beyond_the_sealed_payload() {
 mod service {
     use std::path::Path;
 
-    use circletasks_lib::sync::crypto::{qr_text_of, MasterKey};
-    use circletasks_lib::sync::folder::FolderKind;
-    use circletasks_lib::sync::limits::{PAIRING_CLOCK_TOLERANCE_MS, PAIRING_VALIDITY_MS};
-    use circletasks_lib::sync::service::{KeyInput, SYNC_KEY_ACCOUNT};
-    use circletasks_lib::sync::SyncCode;
-    use circletasks_lib::vault::SecretVault;
+    use spartiate_lib::sync::crypto::{qr_text_of, MasterKey};
+    use spartiate_lib::sync::folder::FolderKind;
+    use spartiate_lib::sync::limits::{PAIRING_CLOCK_TOLERANCE_MS, PAIRING_VALIDITY_MS};
+    use spartiate_lib::sync::service::{KeyInput, SYNC_KEY_ACCOUNT};
+    use spartiate_lib::sync::SyncCode;
+    use spartiate_lib::vault::SecretVault;
     use zeroize::Zeroizing;
 
     use crate::sync_support::{device, epoch, hlc, Device, FakeBackend, DEV_A, DEV_B, FOLDER};
 
-    fn code<T>(result: Result<T, circletasks_lib::sync::SyncError>) -> SyncCode {
+    fn code<T>(result: Result<T, spartiate_lib::sync::SyncError>) -> SyncCode {
         match result {
             Ok(_) => panic!("erreur attendue"),
             Err(error) => error.code,

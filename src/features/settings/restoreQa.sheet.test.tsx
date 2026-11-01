@@ -19,7 +19,7 @@ import { RESTORE_RESULT_KEY } from './restoreMemo';
  * pas réussir), sans chemin dans le message, et l'action offerte fonctionne vraiment.
  */
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000fe');
-const VERSION: BackupVersion = { name: 'circletasks-daily-20261007.db', kind: 'daily', stamp: '20261007', size: 20_480, modifiedMs: Date.parse('2026-10-07T03:12:00Z'), tasks: 4, schemaVersion: 17 };
+const VERSION: BackupVersion = { name: 'spartiate-daily-20261007.db', kind: 'daily', stamp: '20261007', size: 20_480, modifiedMs: Date.parse('2026-10-07T03:12:00Z'), tasks: 4, schemaVersion: 17 };
 
 describe('P-04-iOS QA : états d’échec de la restauration, une action utile chacun', () => {
   let db: TestDb;

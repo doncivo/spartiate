@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createIosFiles, fileErrorCode, FileExportError, MAX_EXPORT_BYTES, openFileService, type IosFileApi } from './index';
 
-const request = { suggestedName: 'circletasks-taches-2026-10-08.csv', mime: 'text/csv', data: new Uint8Array([1, 2, 3]) };
+const request = { suggestedName: 'spartiate-taches-2026-10-08.csv', mime: 'text/csv', data: new Uint8Array([1, 2, 3]) };
 
 function api(saveFile: IosFileApi['saveFile']): IosFileApi {
   return { saveFile };

@@ -27,6 +27,7 @@ pub const SYNC_FORMAT_MAJOR: u32 = 1;
 /// Préfixe de version des AAD.
 pub const AAD_VERSION: &str = "ct/1";
 pub const KEY_BYTES: usize = 32;
+/// Sel HKDF : constante du protocole (D-26), figée à la valeur héritée. Ne jamais la renommer avec l'app : toute clé dérivée et tout fichier chiffré en dépendent.
 pub const HKDF_SALT: &[u8] = b"circletasks";
 pub const HKDF_INFO_RECORDS: &[u8] = b"ct/1 records";
 pub const HKDF_INFO_KID: &[u8] = b"ct/1 kid";

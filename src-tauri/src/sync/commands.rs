@@ -81,14 +81,14 @@ pub async fn sync_folder_info(app: AppHandle, window: WebviewWindow, state: Stat
     blocking(move || core.folder_info()).await
 }
 
-/// Boîte système de choix de dossier, ouverte par Rust ; dossier proposé `%USERPROFILE%\iCloudDrive\CircleTasks` (créé s'il
+/// Boîte système de choix de dossier, ouverte par Rust ; dossier proposé `%USERPROFILE%\iCloudDrive\Spartiate` (créé s'il
 /// n'existe pas, puis retiré s'il reste vide après une annulation). Annulation : `null`.
 #[tauri::command]
 pub async fn sync_folder_choose(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>) -> SyncResult<Option<FolderInfo>> {
     require_main(&window)?;
     let core = state.core(&app)?;
-    // Rien n'est créé avant la validation (audit S10) : la boîte s'ouvre sur `iCloud Drive\CircleTasks` s'il existe, sinon sur
-    // `iCloud Drive` ; choisir `iCloud Drive` lui-même crée puis lie `iCloud Drive\CircleTasks`.
+    // Rien n'est créé avant la validation (audit S10) : la boîte s'ouvre sur `iCloud Drive\Spartiate` s'il existe, sinon sur
+    // `iCloud Drive` ; choisir `iCloud Drive` lui-même crée puis lie `iCloud Drive\Spartiate`.
     let icloud = std::env::var_os("USERPROFILE").map(|home| PathBuf::from(home).join(ICLOUD_DRIVE_DIR)).filter(|drive| drive.is_dir());
     let start = icloud.as_ref().map(|drive| drive.join(DEFAULT_FOLDER_NAME)).filter(|dir| dir.is_dir()).or_else(|| icloud.clone());
     let dialog_app = app.clone();
@@ -289,7 +289,7 @@ async fn open_pairing_window(app: &AppHandle, main: &WebviewWindow, core: &Arc<S
         return fail(SyncCode::AlreadyOpen);
     }
     let window = WebviewWindowBuilder::new(app, PAIRING_WINDOW, WebviewUrl::App(PAIRING_PAGE.into()))
-        .title("CircleTasks")
+        .title("Spartiate")
         .inner_size(PAIRING_WIDTH, PAIRING_HEIGHT)
         .resizable(false)
         .maximizable(false)
@@ -623,7 +623,7 @@ pub async fn sync_forgotten_delete(app: AppHandle, window: WebviewWindow, state:
 }
 
 /// Y-11 : réinitialisation avec une nouvelle clé. Fenêtre `main` au premier plan, confirmation native (`ConsentKind::ResetKey`, « Annuler »
-/// par défaut), puis `K2` créée par Rust sous `circletasks.sync.key.next` ; seul le `kid` est rendu (jamais la clé). Une réinitialisation
+/// par défaut), puis `K2` créée par Rust sous `spartiate.sync.key.next` ; seul le `kid` est rendu (jamais la clé). Une réinitialisation
 /// interrompue est reprise (même `K2`, sans boîte).
 #[tauri::command]
 pub async fn sync_reset_key(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>) -> SyncResult<KeyCreated> {

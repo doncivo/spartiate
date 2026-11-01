@@ -74,7 +74,7 @@ export function createMemoryBackup(options: MemoryBackupOptions = {}): MemoryBac
         return Promise.reject(error as Error);
       }
       dailyCalls.push(request);
-      const name = `circletasks-daily-${request.day}.db`;
+      const name = `spartiate-daily-${request.day}.db`;
       const index = versions.findIndex((version) => version.name === name);
       if (index >= 0 && !request.replace) return Promise.resolve({ created: false });
       const previous = index >= 0 ? versions[index] : undefined;

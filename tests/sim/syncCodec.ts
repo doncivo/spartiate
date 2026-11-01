@@ -31,7 +31,7 @@ export type Bytes = Uint8Array<ArrayBuffer>;
 
 /** Clé maîtresse `K` : 32 octets. */
 export const KEY_BYTES = 32;
-/** Sel et `info` de HKDF-SHA256 (section 2). */
+/** Sel et `info` de HKDF-SHA256 (section 2). Le sel est une constante du protocole (D-26), figée : ne jamais le renommer avec l'app. */
 export const HKDF_SALT = 'circletasks';
 export const HKDF_INFO_RECORDS = 'ct/1 records';
 export const HKDF_INFO_KID = 'ct/1 kid';

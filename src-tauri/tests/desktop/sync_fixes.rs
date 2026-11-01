@@ -3,15 +3,15 @@
 use std::path::Path;
 use std::sync::atomic::Ordering;
 
-use circletasks_lib::sync::crypto::{aad_bytes, qr_text_of, MasterKey, Place};
-use circletasks_lib::sync::files::{is_safe_component, Availability, FsError};
-use circletasks_lib::sync::folder::{chosen_target, FolderKind};
-use circletasks_lib::sync::limits::{MAX_STATE_CANDIDATES, PAIRING_VALIDITY_MS};
-use circletasks_lib::sync::pairing::pairing_page_listed;
-use circletasks_lib::sync::service::{AppendRequest, KeyInput, SYNC_KEY_ACCOUNT};
-use circletasks_lib::sync::store::RecordCursor;
-use circletasks_lib::sync::{SyncCode, SyncError};
-use circletasks_lib::vault::SecretVault;
+use spartiate_lib::sync::crypto::{aad_bytes, qr_text_of, MasterKey, Place};
+use spartiate_lib::sync::files::{is_safe_component, Availability, FsError};
+use spartiate_lib::sync::folder::{chosen_target, FolderKind};
+use spartiate_lib::sync::limits::{MAX_STATE_CANDIDATES, PAIRING_VALIDITY_MS};
+use spartiate_lib::sync::pairing::pairing_page_listed;
+use spartiate_lib::sync::service::{AppendRequest, KeyInput, SYNC_KEY_ACCOUNT};
+use spartiate_lib::sync::store::RecordCursor;
+use spartiate_lib::sync::{SyncCode, SyncError};
+use spartiate_lib::vault::SecretVault;
 use serde_json::{json, Value};
 use zeroize::Zeroizing;
 
@@ -32,7 +32,7 @@ fn state(dev: &str, ep: &str, seq: u64, segment: u64, record: u64, head_hlc: Opt
     })
 }
 
-fn append(d: &Device, ep: &str, segment: u64, expect: u64, ms: u64) -> Result<circletasks_lib::sync::store::AppendResult, SyncError> {
+fn append(d: &Device, ep: &str, segment: u64, expect: u64, ms: u64) -> Result<spartiate_lib::sync::store::AppendResult, SyncError> {
     d.core.append_journal(&AppendRequest { epoch: ep.to_owned(), segment, expect_records: expect, sv: 14, max_hlc: hlc(ms, DEV_A), records: vec!["{}".into()] })
 }
 
@@ -111,11 +111,11 @@ fn s2_global_entry_budget_cuts_the_scan() {
 #[cfg(windows)]
 #[test]
 fn s3_write_atomic_never_truncates_a_hard_linked_temp_file() {
-    use circletasks_lib::sync::files::{StdFs, SyncFs};
-    use circletasks_lib::sync::folder::{check_sync_path, normalize_final_path};
+    use spartiate_lib::sync::files::{StdFs, SyncFs};
+    use spartiate_lib::sync::folder::{check_sync_path, normalize_final_path};
     let dir = tempfile::tempdir().unwrap();
     let root = std::path::PathBuf::from(normalize_final_path(&std::fs::canonicalize(dir.path()).unwrap().to_string_lossy()).unwrap());
-    let folder = root.join("CircleTasks");
+    let folder = root.join("Spartiate");
     std::fs::create_dir_all(folder.join("devices")).unwrap();
     let victim = root.join("victime.txt");
     std::fs::write(&victim, b"contenu precieux").unwrap();
@@ -154,7 +154,7 @@ fn s4_import_requires_a_state_that_decrypts_with_the_candidate_key() {
 /// S5 (revue 12) : la charge utile est effacée à la destruction ; le QR est analysé sans copie intermédiaire de la clé.
 #[test]
 fn s5_payload_is_zeroized_and_qr_parsing_keeps_no_intermediate_map() {
-    assert!(std::mem::needs_drop::<circletasks_lib::sync::service::PairingPayload>());
+    assert!(std::mem::needs_drop::<spartiate_lib::sync::service::PairingPayload>());
     let service = include_str!("../../src/sync/service.rs");
     assert!(service.contains("impl Drop for PairingPayload") && service.contains("zeroize(&mut self.recovery_key)"));
     let crypto = include_str!("../../src/sync/crypto.rs");
@@ -169,8 +169,8 @@ fn s5_payload_is_zeroized_and_qr_parsing_keeps_no_intermediate_map() {
         serde_json::from_slice::<Value>(&json).unwrap()["k"].as_str().unwrap().to_owned()
     };
     let encode = |json: &str| format!("CTPAIR1.{}", base64::Engine::encode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, json));
-    assert!(circletasks_lib::sync::crypto::parse_qr_text(&encode(&format!(r#"{{"v":1,"k":"{k}","d":"{DEV_A}","x":1}}"#))).is_none());
-    assert!(circletasks_lib::sync::crypto::parse_qr_text(&encode(&format!(r#"{{"v":1,"k":"{k}","d":"{DEV_A}","e":null,"x":1}}"#))).is_some());
+    assert!(spartiate_lib::sync::crypto::parse_qr_text(&encode(&format!(r#"{{"v":1,"k":"{k}","d":"{DEV_A}","x":1}}"#))).is_none());
+    assert!(spartiate_lib::sync::crypto::parse_qr_text(&encode(&format!(r#"{{"v":1,"k":"{k}","d":"{DEV_A}","e":null,"x":1}}"#))).is_some());
 }
 
 /// S7 : un segment déposé (`j-99999999.ctj`, en-tête d'une autre clé ou illisible) ne bloque ni l'ajout ni la reconstruction.
@@ -221,13 +221,13 @@ fn s9_usage_is_kept_when_the_same_key_comes_back() {
     drop(fs);
 }
 
-/// S10 : rien n'est créé avant la validation ; choisir « iCloud Drive » lie (et crée) son sous-dossier CircleTasks.
+/// S10 : rien n'est créé avant la validation ; choisir « iCloud Drive » lie (et crée) son sous-dossier Spartiate.
 #[test]
 fn s10_proposed_folder_is_created_only_after_validation() {
     let drive = Path::new(r"C:\Users\Ali\iCloudDrive");
-    assert_eq!(chosen_target(drive, Some(drive)), (drive.join("CircleTasks"), true));
+    assert_eq!(chosen_target(drive, Some(drive)), (drive.join("Spartiate"), true));
     assert!(chosen_target(Path::new(r"c:\users\ali\iclouddrive\"), Some(drive)).1);
-    assert_eq!(chosen_target(&drive.join("CircleTasks"), Some(drive)), (drive.join("CircleTasks"), false));
+    assert_eq!(chosen_target(&drive.join("Spartiate"), Some(drive)), (drive.join("Spartiate"), false));
     assert_eq!(chosen_target(Path::new(r"C:\Temp\ct"), None), (Path::new(r"C:\Temp\ct").to_path_buf(), false));
     let source = include_str!("../../src/sync/commands.rs");
     let choose = &source[source.find("pub async fn sync_folder_choose").unwrap()..];
@@ -286,7 +286,7 @@ fn r5_snapshot_writers_are_unique_and_capped() {
     let ep = epoch(1, DEV_A);
     let stale = a.core.snapshot_begin(&ep, 1, 14).unwrap();
     // Revue Y-IOS : même époque, même numéro resté ouvert (cycle interrompu entre deux pages) : abandonné, jamais un refus à chaque cycle.
-    let log = circletasks_lib::sync::log::capture();
+    let log = spartiate_lib::sync::log::capture();
     let first = a.core.snapshot_begin(&ep, 1, 14).unwrap();
     assert!(log.lines().iter().any(|l| l == "sync:snapshot-abandoned 1"));
     assert_eq!(code(a.core.snapshot_append(stale, &["{}".into()])), SyncCode::BadName, "un seul écrivain par numéro");

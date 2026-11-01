@@ -1,5 +1,5 @@
 // swift-tools-version:5.3
-// Plugin folder-bookmark de CircleTasks (ADR 0011 §22) : compilé par build-ios.yml seulement (aucun Mac local).
+// Plugin folder-bookmark de Spartiate (ADR 0011 §22) : compilé par build-ios.yml seulement (aucun Mac local).
 
 import PackageDescription
 

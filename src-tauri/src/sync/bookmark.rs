@@ -1,4 +1,4 @@
-//! iPhone : accès au dossier `iCloud Drive/CircleTasks` par le signet de sécurité du plugin Swift folder-bookmark (ADR 0011 §6.3 et §22 ;
+//! iPhone : accès au dossier `iCloud Drive/Spartiate` par le signet de sécurité du plugin Swift folder-bookmark (ADR 0011 §6.3 et §22 ;
 //! Y-IOS-01).
 //!
 //! `BookmarkFs` implémente `SyncFs` au-dessus d'un transport injectable (`BookmarkTransport`) : le plugin sur iOS (`PluginTransport`), un

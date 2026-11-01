@@ -102,7 +102,7 @@ describe('dossier et liaison (Y-01)', () => {
     expect(await p.folder.info()).toEqual({ configured: false, label: null, kind: 'unknown', pinned: false });
     expect(await codeOf(p.scan({ keep: [] }))).toBe('not-configured');
     expect(await codeOf(p.bindDevice(A))).toBe('not-configured');
-    expect(await p.folder.choose()).toEqual({ configured: true, label: 'CircleTasks', kind: 'icloud', pinned: true });
+    expect(await p.folder.choose()).toEqual({ configured: true, label: 'Spartiate', kind: 'icloud', pinned: true });
     p.testing.setChooser(null);
     expect(await p.folder.choose()).toBeNull();
     expect((await p.folder.info()).configured).toBe(true);
@@ -863,7 +863,7 @@ describe('marqueur de restauration (ADR 0010, règle 2)', () => {
     const p = createMemorySyncPlatform({ nowMs: clock });
     expect(await p.restoreMarker.get()).toBeNull();
     const marker: RestoreMarker = {
-      backup: 'circletasks-2026-10-01.db',
+      backup: 'spartiate-2026-10-01.db',
       backupTakenAt: '2026-10-01T08:00:00.000Z' as IsoDateTime,
       restoredAt: '2026-10-05T08:00:00.000Z' as IsoDateTime,
       schemaVersion: 14,

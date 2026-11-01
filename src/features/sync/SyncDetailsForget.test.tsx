@@ -32,7 +32,7 @@ const platform = createMemorySyncPlatform();
 
 beforeEach(async () => {
   db = await openTestDb(SELF, NOW);
-  sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-06T08:00:00.000Z' as IsoDateTime, folderLabel: 'CircleTasks', folderKind: 'icloud', devices: [self, other(IPHONE, 'ios')] });
+  sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-06T08:00:00.000Z' as IsoDateTime, folderLabel: 'Spartiate', folderKind: 'icloud', devices: [self, other(IPHONE, 'ios')] });
   container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync, syncPlatform: platform });
 });
 
@@ -174,7 +174,7 @@ describe('boîte de l’app avant la confirmation native (critères 2, 3 et 4, D
 
   it('le texte de la boîte native est dans src/i18n/native/fr.json, « Annuler » par défaut', () => {
     expect(native.consent.forgetDevice).toEqual({
-      title: 'CircleTasks',
+      title: 'Spartiate',
       instruction: 'Oublier cet appareil ?',
       content: expect.stringContaining('ne s\'annule pas') as unknown as string,
       confirm: 'Oublier l\'appareil',
@@ -188,7 +188,7 @@ describe('emplacement forget : aucun échec silencieux (critère 15)', () => {
     sync.setStatus({ forget: { failure: { deviceId: IPHONE, code: 'not-foreground', at: '2026-10-06T07:45:00.000Z' as IsoDateTime, step: 'declare' }, deletions: [] } });
     renderIn(<SyncDetailsForget />);
     const region = screen.getByRole('status');
-    expect(region.textContent).toContain('L’oubli de iPhone a échoué : CircleTasks n’était pas au premier plan');
+    expect(region.textContent).toContain('L’oubli de iPhone a échoué : Spartiate n’était pas au premier plan');
     expect(region.textContent).toMatch(/Dernier essai : \d{2}:\d{2}/);
     expect(region.textContent).not.toMatch(/not-foreground|[\\/]/);
     expect(region.querySelector('[data-trouble="true"]')).not.toBeNull();

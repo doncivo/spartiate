@@ -9,7 +9,7 @@ import { checkPlistContract, validateContract } from './check-plist-contract.mjs
 type Json = Record<string, unknown>;
 const root = resolve(__dirname, '..', '..');
 const read = (p: string): string => readFileSync(join(root, p), 'utf8');
-const FACE_ID_TEXT = 'CircleTasks utilise Face ID pour garder vos tâches privées.';
+const FACE_ID_TEXT = 'Spartiate utilise Face ID pour garder vos tâches privées.';
 
 describe('contrat Info.plist du verrouillage Face ID (I-03)', () => {
   const contract = JSON.parse(read('scripts/ios/plist-contract.json')) as Json;
