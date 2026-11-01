@@ -2,7 +2,7 @@
 
 1er novembre 2026 — CADRAGE-01. Complément opérationnel à SPA-001 v2.4, après relecture du socle et de D-49 à D-53. Aucun code ni PRD modifié par ce lot. Les 24 rôles suffisent ; aucun agent supplémentaire.
 
-Les corrections factuelles déjà décidées s'appliquent dans SPA-001. Les choix de conception ci-dessous restent à arrêter dans le ticket indiqué, par le propriétaire et les relecteurs nommés ; une modification du produit ou du PRD requiert une décision D-n d'Ali. Une ligne ouverte n'est jamais une capacité acquise. Pas de blocage de SPA-001a pour une décision propre à I1 ou I4.
+Les corrections factuelles déjà décidées s'appliquent dans SPA-001. P-02 à P-07 sont tranchés par D-54 à D-59 ; P-01, P-08, P-09, P-10 restent des contrats à exécuter. Les choix de conception restants sont à arrêter dans le ticket indiqué, par le propriétaire et les relecteurs nommés ; une modification du produit ou du PRD requiert une décision D-n d'Ali. Une ligne ouverte n'est jamais une capacité acquise. Pas de blocage de SPA-001a pour une décision propre à I1 ou I4.
 
 ## P-01 — Contrôles documentaires, avant SPA-001a
 
@@ -18,6 +18,8 @@ Preuves : fixtures positives et négatives pour chaque distinction, commit de te
 
 ## P-02 — Base de laboratoire 19 → 1, avant SPA-001b
 
+**Statut : tranché par D-54 (1er novembre 2026).** Le texte ci-dessous reste le contrat de preuve.
+
 Auteur : data-model + desktop-tauri ; relecture : sync-icloud et qa-test. Livrable : procédure incluse dans l'inventaire soumis à Ali.
 
 Un démarrage en 001a peut créer une base Spartiate au schéma 19 ; le migrateur refuse ensuite une application au schéma 1. Déclarer la provenance synthétique, l'emplacement isolé et le cycle de vie de la base de recette. Préférer une nouvelle fixture ou un environnement isolé. Toute réinitialisation d'un conteneur existant exige une cible vérifiée et une autorisation explicite ; D-38 n'autorise pas une suppression implicite. Ne jamais intervenir sur les données CircleTasks. Si Ali a commencé l'usage réel, arrêter cette procédure de laboratoire.
@@ -25,6 +27,8 @@ Un démarrage en 001a peut créer une base Spartiate au schéma 19 ; le migrateu
 Preuves : base vide → schéma 1 ; base 19 → refus explicite sans altération ; checksum divergent → refus ; sauvegarde/restauration et transactions. H-18 : mêmes cas et DDL pertinents sur Wasm et SQLite natif, résultats consignés séparément ; un test du plugin seul ne prouve pas toute la parité des migrations.
 
 ## P-03 — Identité des données synchronisées, avant le schéma de SPA-001b
+
+**Statut : tranché par D-55 (1er novembre 2026).** Le texte ci-dessous reste le contrat de preuve.
 
 Auteur : sync-icloud pour le contrat d'identité et le catalogue ; data-model pour contraintes/repositories ; architect arbitre la conception, product-owner les comportements métier.
 
@@ -34,6 +38,8 @@ Preuves : deux bases hors ligne créent le même objet logique avec des identifi
 
 ## P-04 — Versions et publication, avant SPA-002
 
+**Statut : tranché par D-58 (1er novembre 2026).** Le texte ci-dessous reste le contrat de preuve.
+
 Auteur : ci-release ; relecture : desktop-tauri, ios-mobile et qa-test.
 
 Proposition à reporter au PRD après décision : prendre 0.1.0 comme N (identité imposée par SPA-001a), puis 0.1.1 comme N+1 ; aligner tags Windows/iOS, configuration, paquets, notes et recettes. Aucun tag 0.0.x avec une application 0.1.0. Confirmer les versions réellement disponibles avant l'essai et consigner les identifiants des artefacts.
@@ -41,6 +47,8 @@ Proposition à reporter au PRD après décision : prendre 0.1.0 comme N (identit
 RELEASES_TOKEN doit être disponible avant la première publication Windows SPA-002 ; il sert aussi à SPA-003. La paire minisign reste propre à Spartiate. Preuves : contrôles de version exacts, publication vers spartiate-releases, mise à jour N → N+1 sans perte. Aucune valeur de secret dans les preuves.
 
 ## P-05 — HealthKit et sortie I0, avant SPA-003 / SPA-006
+
+**Statut : tranché par D-59 (1er novembre 2026).** Le texte ci-dessous reste le contrat de preuve.
 
 Auteur : ios-mobile ; relecture : recovery, security-privacy et qa-test ; product-owner propose la clarification du critère I0 à Ali.
 
@@ -50,6 +58,8 @@ Preuves : entitlement de l'artefact installé, opérations réellement testées 
 
 ## P-06 — Délai de synchronisation, avant SPA-008
 
+**Statut : tranché par D-56 (1er novembre 2026).** Le texte ci-dessous reste le contrat de preuve.
+
 Auteur : sync-icloud ; relecture : performance et qa-test.
 
 Le moteur hérité a un intervalle de cinq minutes. Spécifier les déclencheurs d'envoi après transaction et de réception, la reprise après arrière-plan, la coalescence et le comportement hors ligne. Ne pas transformer le délai produit en promesse inconditionnelle sur la propagation iCloud.
@@ -57,6 +67,8 @@ Le moteur hérité a un intervalle de cinq minutes. Spécifier les déclencheurs
 Preuves : départ du chronomètre et arrivée définis, préconditions réseau et état des deux apps consignés, aller/retour < 60 s dans ces conditions, sans action manuelle si le parcours l'exige ; panne durable visible ; reprise sans doublon. Tests de planification à horloge contrôlée, puis recette sur appareils. Aucun délai ou timeout de test allongé pour masquer un défaut.
 
 ## P-07 — Export/import, avant SPA-005
+
+**Statut : tranché par D-57 (1er novembre 2026).** Le texte ci-dessous reste le contrat de preuve.
 
 Auteur : settings-personalization + desktop-tauri + data-model ; relecture : sync-icloud, security-privacy et qa-test.
 
