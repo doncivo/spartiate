@@ -6,7 +6,7 @@
 
 SPA-000 clos : dépôt issu de CircleTasks, remote circletasks en lecture seule (push DISABLED), spartiate-releases créé. Fusionnées : #1 à #7, #9 et #10 (réconciliation CADRAGE-01, D-54 à D-59 : SPA-001 v2.4 et reprise restaurés). #8 fermée sans fusion (contenu entré par #9). Le résultat du run initial 41192279832 reste à consigner, sans le présumer vert.
 
-## SPA-001a — renommage (branche spa-001a-renommage, PR ouverte)
+## SPA-001a — renommage (branche spa-001a-renommage, non poussée : capture à valider)
 
 Fait : tests rouges (2346b2dc) ; `scripts/release/rename.mjs` exécuté, rapport dans la PR ; updater non configuré (D-30) ; icône régénérée depuis `content/brand/spartiate.svg` ; CLAUDE.md et AGENTS.md fusionnés ; PRD v6.3 en chapitres (`docs/prd/`, source `docs/archive/PRD-v6.2.md`, corrections dans `scripts/release/fixtures/prd-v6.3-changes.json`) ; registre `docs/a-creer.md` ; journal et changelog CircleTasks archivés dans `docs/archive/circletasks/`. Reste : capture icône et fenêtre validée par Ali avant push, `tests.yml` vert, revue D-53 (rapport ≤ 40 lignes). Le reste de `docs/` CircleTasks (stories, audits, backlog, essais, maquettes-refonte) est archivé par 001b, lot (i).
 

@@ -14,6 +14,8 @@ const EXPLICIT = /<!--\s*ancien-ok:\s*(\S[^>]{2,}?)\s*-->/;
 const DATA_PATH = /%APPDATA%|%LOCALAPPDATA%|iCloud Drive[\\/]|Drive[\\/]CircleTasks|iCloud `?CircleTasks/i;
 const PROHIBITION = /\b(toujours|jamais|interdit\w*|intouchables?|prot[ée]g\w*|aucune lecture|ne lis|ne touche|ne modifie|hors de)\b/i;
 
+/** Verbes qui prescrivent un usage : « toujours écrire dans … » n'est pas une protection. */
+const PRESCRIPTIVE = /((?:toujours|obligatoirement) écri(?:re|s|vez) dans|identifiant actif)/i;
 const PROVENANCE = /\b(fork|forké|issu(?:e|es|s)?|repris(?:e|es)?|hérit\w*|dérivé\w*|copie|copié\w*|provenance|origine|ex-)\b/i;
 
 const NEGATIVE = new RegExp(
@@ -24,7 +26,8 @@ const NEGATIVE = new RegExp(
     'jamais',
     'alors que',
     'au lieu de',
-    'exemple',
+    'contre-exemple',
+    'exemple (?:négatif|interdit)',
     'proscri',
     'obsol[eè]t',
     'ancien',
@@ -51,10 +54,12 @@ const isBrandTerm = (term) => /^circletasks$/i.test(term);
 export function classifyLine(line, term) {
   if (EXPLICIT.test(line)) return 'explicit';
   const bare = line.replace(COMMENT, '');
-  if (DATA_PATH.test(bare) && PROHIBITION.test(bare)) return 'protection';
+  if (DATA_PATH.test(bare) && PROHIBITION.test(bare) && !PRESCRIPTIVE.test(bare)) return 'protection';
   if (isBrandTerm(term) && /HKDF/.test(bare)) return 'protocol';
   if (isBrandTerm(term) && PROVENANCE.test(bare)) return 'provenance';
-  if (NEGATIVE.test(bare)) return 'negative';
+  // La négation doit PRÉCÉDER le terme de près : « jamais un autre » après l'identifiant ne le nie pas.
+  const at = bare.indexOf(term);
+  if (NEGATIVE.test(at < 0 ? bare : bare.slice(Math.max(0, at - 90), at))) return 'negative';
   return 'active';
 }
 

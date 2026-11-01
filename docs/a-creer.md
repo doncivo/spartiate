@@ -37,3 +37,4 @@ Tout chemin de la forme `src/…`, `src-tauri/…`, `scripts/…`, `tests/…`, 
 | `tests/fixtures/ai/` | I4 | ai-integration |
 | `src/domain/recovery/` | I5 | domain-logic |
 | `src/db/repositories/recoveryDayRepository.ts` | I5 | data-model |
+| `tests/unit/sync/workoutClosure.test.ts` | I1 | sync-icloud |

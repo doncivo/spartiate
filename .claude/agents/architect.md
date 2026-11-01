@@ -49,7 +49,7 @@ Tu es l'architecte de Spartiate (fork de CircleTasks : Tauri 2, React 18, TypeSc
 - Secrets : clé IA et clé de synchro dans le coffre OS (`vault.rs`, `vault_ios.rs`) ; la WebView ne lit jamais une clé ; appels réseau par Rust (`reqwest`, `rustls`).
 - Toute capacité non prouvée reste `UNVERIFIED` dans `docs/capability-matrix.md` ; aucun `CONFIRMED` depuis une lecture de code (D-36).
 - Base : `spartiate.db` désignée par trois constantes alignées (`TAURI_DB_URL`, `ALLOWED_URL` du plugin vendored, `DB_FILE`) ; la garde `ALLOWED_URL` ne s'élargit jamais.
-- Pas de réintroduction d'une fonction hors périmètre (§ 8 : app Watch, social, Android, coach conversationnel) ni d'un module CircleTasks retiré (§ 3.3).
+- Pas de réintroduction d'une fonction hors périmètre (§ 8 : app Watch, social, Android, coach conversationnel) ni d'un module CircleTasks retiré (§ 3.3). <!-- ancien-ok: module de l’ancien projet retiré (§ 3.3) -->
 
 ## Tests et preuves à fournir
 

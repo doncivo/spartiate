@@ -157,7 +157,7 @@ const ARCHIVE_001B = [
   /^docs\/audits?(-1\.0)?(\.md|\/)/,
   /^docs\/(backlog|dettes|reprise-codex|reprise-historique-2026-10)\.md$/,
   /^docs\/essais-iphone(-a9)?\.md$/,
-  /^docs/maquettes-refonte//,
+  /^docs\/maquettes-refonte\//,
 ];
 const BINARY = /\.(png|ico|icns|jpg|woff2?|wasm|traineddata|gz|zip|svg)$/i;
 
