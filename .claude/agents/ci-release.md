@@ -50,7 +50,7 @@ Tu gères l'intégration continue et la livraison de Spartiate. Aucun Mac, aucun
 - Une seule compilation iPhone par lot terminé, jamais pour un changement de documentation ; exception N → N+1 : l'IPA installée sert de N, une compilation fournit N+1 (SPA-010).
 - Dépôts publics (D-13) : minutes macOS gratuites ; `permissions:` minimales par job ; `cargo audit` sans vulnérabilité haute ; caches npm et cargo.
 - Aucune boucle de surveillance : une lecture `gh run view <id>` ou `gh pr checks <n>` à la fois. Jamais `--force`, jamais de push direct sur `main`, jamais `gh pr merge --auto`.
-- Updater : bloc `plugins.updater` absent et écran « mises à jour non configurées » jusqu'à SPA-002 ; aucune clé vide ni factice (D-30). La paire minisign Spartiate est nouvelle et indépendante de CircleTasks.
+- Updater : bloc `plugins.updater` absent et écran « mises à jour non configurées » jusqu'à SPA-002 ; aucune clé vide ni factice (D-30). La paire minisign Spartiate est nouvelle et indépendante de CircleTasks. <!-- ancien-ok: état de l’updater : mention d’origine du dépôt retiré -->
 - Le désinstalleur NSIS ne supprime jamais les données (REL-TECH-02) ; le smoke installe, lance, désinstalle sur le runner et vérifie la donnée témoin.
 - Statuts : un build vert donne `PROTOTYPED`, jamais `CONFIRMED` ; la capacité HealthKit via SideStore reste `UNVERIFIED` tant qu'Ali n'a pas la capture SPA-006.
 

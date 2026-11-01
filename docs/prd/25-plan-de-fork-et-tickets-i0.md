@@ -1,0 +1,28 @@
+## 25. Plan de fork et tickets I0
+
+### 25.1 Procédure de fork (SPA-000, toi + Claude Code)
+
+1. Créer `doncivo/spartiate` (public) depuis `doncivo/circletasks` (fork GitHub ou `git clone` + nouveau remote ; l'historique est conservé pour pouvoir réintroduire un plugin).
+2. Créer `doncivo/spartiate-releases` (public, vide, `source.json` initial généré par la CI).
+3. Secrets GitHub, par leur nom seulement (D-29) : `RELEASES_TOKEN` (fine-grained, contenu de `spartiate-releases` uniquement) ; `TAURI_SIGNING_PRIVATE_KEY` et `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (nouvelle paire minisign générée pour Spartiate, indépendante de CircleTasks ; la clé publique correspondante entre dans `tauri.conf.json` en SPA-002). Les `CT_GOOGLE_*` ne sont pas créés et leurs références disparaissent en SPA-001b.
+4. Déposer ce PRD en `docs/PRD.md` (D-22) et créer `docs/journal.md`, `docs/decisions.md`, `docs/reprise.md` vides (D-40).
+5. Ajouter la source `https://raw.githubusercontent.com/doncivo/spartiate-releases/main/source.json` dans SideStore sur l'iPhone **après** la première publication.
+
+### 25.2 Tickets I0 (ordre imposé)
+
+| Ticket | Titre | Taille | Preuve | Dépend de |
+| --- | --- | --- | --- | --- |
+| SPA-000 | Fork, dépôts, secrets, README Spartiate (phrase de provenance), PRD déposé | S | Dépôts visibles, `tests.yml` « suite verte » sur le fork intact | — |
+| SPA-001a | Renommage : `fr.circletasks.planner` → `fr.spartiate.app`, nom, version 0.1.0, icône ; matrice identité → consommateurs (`src-tauri/Cargo.toml` package / lib / bin, `Cargo.lock`, `main.rs`, `package-lock.json`, `index.html`, `Info.ios.plist`, scripts release / smoke, noms de sauvegarde / journal / export) ; les trois constantes de base `TAURI_DB_URL` / `ALLOWED_URL` / `DB_FILE` changées ensemble avec `guard_tests.rs` ; updater retiré (D-30) ; guides renommés et tests lecteurs adaptés (D-40) | S / M | `typecheck` / `lint` / `test` verts ; `git grep` d'identité sur fichiers suivis avec exemptions nommées (D-41) ; test d'identité couvrant URL unique et restauration | SPA-000 |
+| SPA-001b | Purge : inventaire au niveau des symboles validé par toi ; point de composition minimal (`src/features/app/bootstrap.ts`, `navigation.ts`, `tabsConfig.ts`, `src/db/repositories/sql/index.ts`) puis lots verticaux compilables (D-44) ; features, agents métier, plugins `reminders` / `web-auth` et leurs dépendances Cargo / commandes / permissions / plist / tests ; registre de migrations réinitialisé `0001_spartiate_init` avec `settings`, tables techniques, `profile`, `body_weight`, déclencheurs ; `APP_SCHEMA_VERSION = 1` ; adaptation de la synchro sous revue `sync-icloud` (D-26) ; i18n `fr` seul à tous les niveaux ; e2e / visual / WebKit : imports, serveurs, sélection de specs et fixtures adaptés ; documents CircleTasks archivés (D-40) | L | App « Spartiate » démarre sur PC avec profil, poids, navigation minimale et Diagnostic ; « suite verte » ; deux bases profil / poids synchronisées en test ; aucun `test.fixme` ; bundle ≤ 358 400 octets | SPA-001a |
+| SPA-002 | Build Windows NSIS + updater rétabli (clé publique Spartiate, endpoint `spartiate-releases`) + `latest.json` + `test:nsis` / smoke | S | Smoke CI : installeur installe / lance / désinstalle sur le runner, donnée témoin conservée ; `v0.0.1` publié ; `v0.0.2` reçue par la bannière (D-39) | SPA-001b |
+| SPA-003 | Build iOS CI : `--no-sign`, codesign ad-hoc + `Spartiate.entitlements` (D-14), contrat plist, `source.json`, publication | M | IPA dans `spartiate-releases`, `codesign -d --entitlements` montre HealthKit | SPA-001b |
+| SPA-004 | Installation SideStore + `app_signing_info` + notification 24 h (I-02 repris) ; trois apps (H-16) | S | App installée sur l'iPhone ; date d'expiration affichée dans Plus → À propos ; capture des trois apps | SPA-003 |
+| SPA-005 | Export / import zip + CSV (§ 21.3) au format Spartiate sur les données I0 (profil, poids) | M | Export → reset → import = hash identique (test e2e) | SPA-002 |
+| SPA-006 | **Spike HealthKit** : plugin minimal `healthkit_authorize` + lecture `bodyMass` sur l'IPA SideStore | M | Capture iPhone de la demande d'autorisation et d'une valeur lue ; sinon `H-3 = BLOCKED` + ADR fallback | SPA-004 |
+| SPA-007 | **Spike Live Activity** : extension WidgetKit injectée dans `gen/apple` par script post-`tauri ios init`, minuteur fictif 60 s | L | Capture Dynamic Island ; sinon `H-4 = BLOCKED` + ADR fallback timer en app | SPA-004 |
+| SPA-008 | Synchro PC ↔ iPhone : catalogue `profile`, `body_weight` ; appairage QR (plugin `barcode-scanner` hérité) ; test deux appareils | M | Poids saisi sur PC visible sur iPhone < 60 s et inversement ; vecteurs verts ; aucune métadonnée technique publiée | SPA-004, SPA-002 |
+| SPA-009 | Coquilles `src/ui/AppShell.tsx` / `TabRail.tsx` fidèles aux maquettes § 18.5, 5 onglets, états dégradés § 18.3, scénarios `visual` Spartiate, adaptation de `src/ui/theme/contrast.test.ts` aux tokens § 18.4 | M | Paires de captures 440 / 1 440 px relues ; `contrast.test.ts` vert | SPA-001b |
+| SPA-010 | Mesure et go / no-go I0 : preuve N → N+1 sans perte sur Spartiate (base et Trousseau, H-5 → `CONFIRMED` ou `BLOCKED`), renouvellement 7 j, consommation CI, `capability-matrix.md` à jour | S | Capture iPhone datée avant / après mise à jour ; tableau § 7 mis à jour ; décision écrite d'ouvrir I1 | Tous |
+
+Critère de sortie I0 : SPA-000 → 005, 008, 009, 010 faits ; SPA-006 et SPA-007 **conclus** (CONFIRMED ou BLOCKED avec ADR), quel que soit le résultat. I0 ne contient aucune séance (D-43). I1 (séance et journal, § 13–14, publication à la clôture § 9.1) s'ouvre ensuite avec son propre lot de tickets.

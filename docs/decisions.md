@@ -2,6 +2,34 @@
 
 Registre vivant des décisions prises après le PRD. D-1 à D-21 sont dans `docs/PRD.md` § 26.1 (copiées ici en SPA-001a). Une décision ne se réécrit pas : on en ajoute une nouvelle qui la remplace, avec renvoi.
 
+## 2026-10-30 — Décisions D-1 à D-21 (recopiées du chapitre 26 du PRD, SPA-001a)
+
+Texte du PRD v6.2, § 26.1, sans modification ; le chapitre 26 les conserve aussi (aucune perte).
+
+| ID | Décision | Source |
+| --- | --- | --- |
+| D-1 | Usage personnel, aucune commercialisation, aucun App Store | Toi |
+| D-2 | Références : Gravl, Alpha Progression, Hevy, MacroFactor, WHOOP / Athlytic, Reboot Plan | Benchmark validé |
+| D-3 | Cibles : iPhone 16 Pro Max (iOS 18+) + PC Windows, même code | Toi |
+| D-4 | Apple Watch Series 11 46 mm comme **source de données** via Santé ; pas d'app Watch (interdit en équipe personnelle) | Contraintes § 6 |
+| D-5 | Pas de compte développeur, pas de Mac : chaîne CI macOS → IPA non signée → SideStore | Toi + CircleTasks |
+| D-6 | Développement Claude Code + Codex, contrat § 24 | Toi |
+| D-7 | Fork de `doncivo/circletasks` (Tauri 2, React, Rust, SQLite, synchro iCloud) plutôt que projet neuf | Toi (« OK pour le fork ») |
+| D-8 | Nom : **Spartiate**, identifiant `fr.spartiate.app` | Toi |
+| D-9 | Moteurs (progression, mésocycle, nutrition, récupération) en TypeScript dans `src/domain`, testés Vitest sur Windows ; natif Swift limité aux plugins d'accès système | PRD v6 |
+| D-10 | Séance en cours jamais publiée par la synchro avant sa fin | PRD v6 § 13 |
+| D-11 | Récupération calculée sur l'iPhone, publiée en résumé vers le PC, pas de recalcul PC | PRD v6 § 16 |
+| D-12 | Appels IA effectués par Rust avec clé du coffre ; données corporelles jamais envoyées | PRD v6 § 17 |
+| D-13 | Dépôts publics pour minutes macOS gratuites | CircleTasks ADR 0007 |
+| D-14 | Entitlements injectés par codesign ad-hoc en CI après `--no-sign` | PRD v6 § 19.4 |
+| D-15 | Conventions CircleTasks reprises intégralement (ADR 0001, AGENTS.md, scripts) | PRD v6 |
+| D-16 | Pas de sauvegarde locale sur iPhone au-delà de la synchro iCloud | PRD v6 § 21 |
+| D-17 | Pas de chiffrement complet de la base locale | PRD v6 § 22 |
+| D-18 | Suppression des plugins `reminders` et `web-auth` au fork | PRD v6 § 19.1 |
+| D-19 | Charte visuelle laconique, sombre, rouge / bronze ; sombre par défaut ; tokens § 18.4 | Toi (30 oct.) |
+| D-20 | Quatre programmes de départ livrés comme contenu, périodisation reprise d'Alpha Progression (§ 12.5) | Toi (30 oct.) |
+| D-21 | 24 maquettes HTML validées (§ 18.5) = référence visuelle ; méthode CircleTasks (docs/maquettes, index, npm run visual) | Toi (31 oct.) |
+
 ## 2026-10-31 — Arbitrage de la relecture Codex (PR #3, `docs/relecture-codex-2026-10-31.md`)
 
 Tous les constats factuels de la relecture ont été vérifiés sur le dépôt et retenus. Décisions d'Ali, rédigées par Claude :

@@ -8,7 +8,7 @@ Tu gères la persistance de Spartiate : SQLite via le plugin Tauri SQL vendored 
 
 ## Quand intervenir
 
-- SPA-001b : registre réinitialisé avec `0001_spartiate_init.ts` (D-23) qui crée `settings`, les tables techniques du § 20.0 avec leur DDL final tel qu'il résulte de 0015 + 0016 + 0019 de CircleTasks (copié, pas réinventé), `profile`, `body_weight`, leurs index et les déclencheurs de capture recréés pour ces deux tables ; `APP_SCHEMA_VERSION = 1` aligné par desktop-tauri.
+- SPA-001b : registre réinitialisé avec `0001_spartiate_init.ts` (D-23) qui crée `settings`, les tables techniques du § 20.0 avec leur DDL final tel qu'il résulte de 0015 + 0016 + 0019 de CircleTasks (copié, pas réinventé), `profile`, `body_weight`, leurs index et les déclencheurs de capture recréés pour ces deux tables ; `APP_SCHEMA_VERSION = 1` aligné par desktop-tauri. <!-- ancien-ok: provenance : DDL final hérité de CircleTasks -->
 - Une itération ajoute ses tables (§ 20.2) : I1 `exercise`, `equipment_profile`, `routine`, `routine_day`, `routine_exercise`, `workout`, `workout_set` ; I2 `recommendation_decision`, `progression_profile` ; I3 `mesocycle` ; I4 `food`, `food_portion`, `meal_entry`, `nutrition_target`, `ai_call` ; I5 `recovery_day`, `muscle_recovery`, `health_sample_cache` ; I6 `measurement`, `progress_photo`, `cardio_session`. Une migration par itération, jamais par anticipation.
 - Un repository est à créer (`profileRepository`, `bodyWeightRepository`, `workoutRepository`…) ou une requête à optimiser (`EXPLAIN QUERY PLAN`, index manquant).
 - Un JSON persisté doit être validé à l'écriture (`src/db/parse/*.ts`, fonctions écrites à la main, règle ADR 0008).
