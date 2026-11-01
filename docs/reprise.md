@@ -14,7 +14,7 @@ Fait : tests rouges (2346b2dc) ; `scripts/release/rename.mjs` exécuté, rapport
 
 - Fusion de 001a, puis inventaire au niveau des symboles `docs/spa-001b-inventaire.md` validé par Ali (D-44) : nouvelle session.
 - D-54 : Ali supprime lui-même `%APPDATA%\fr.spartiate.app` (chemin exact affiché, aucun joker) avant le premier lancement de 001b. D-55 : identités profil / pesée. Gardes du migrateur conservées. `settings` hors publication I0 ; 24 fiches conservées ; AppShell / TabRail et rupture 1 024 px.
-- Tests métier CircleTasks laissés verts en 001a et supprimés en 001b : liste dans la PR.
+- Fichiers métier CircleTasks renommés mais laissés verts en 001a, supprimés en 001b : `docs/spa-001a-fichiers-metier-reportes.md` (122 fichiers par lot).
 
 ## Secrets et décisions attendues
 
