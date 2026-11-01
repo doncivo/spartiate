@@ -1798,5 +1798,7 @@ impl StrOptionExt for Option<&String> {
 /// Première ligne d'un fichier de CircleTasks : balise de format `ct-j`, `ct-s` ou `ct-state` (ADR 0017). // ancien-ok: garde de séparation ADR 0017
 fn is_foreign_header(bytes: &[u8]) -> bool {
     let first = bytes.split(|b| *b == b'\n').next().unwrap_or(&[]);
-    String::from_utf8_lossy(first).contains("\"f\":\"ct-")
+    // Espaces ignorés : l'en-tête est du JSON, sa mise en forme ne doit pas contourner la garde.
+    let compact: String = String::from_utf8_lossy(first).chars().filter(|c| !c.is_whitespace()).collect();
+    compact.contains("\"f\":\"ct-")
 }

@@ -460,7 +460,8 @@ impl SyncCore {
 
     fn bind_checked(&self, checked: CheckedFolder, bookmark: Option<String>) -> SyncResult<FolderInfo> {
         // ADR 0017 : jamais le dossier de CircleTasks, par son nom ni par ses fichiers ; rien n'est modifié avant ce contrôle.
-        if is_circletasks_folder_name(&checked.name()) { // ancien-ok: garde de séparation ADR 0017
+        // Le dossier lui-même ou l'un de ses ancêtres (un sous-dossier de l'arborescence de l'autre app est refusé aussi).
+        if checked.path.components().any(|c| is_circletasks_folder_name(&c.as_os_str().to_string_lossy())) { // ancien-ok: garde de séparation ADR 0017
             log::event("folder-refused", "foreign-name");
             return fail(SyncCode::ForeignFolder);
         }

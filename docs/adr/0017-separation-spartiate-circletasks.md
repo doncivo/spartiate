@@ -32,7 +32,7 @@ Ne changent pas : la logique de fusion, les époques, les HLC, les tombstones, l
 
 Avant toute liaison (`choose_folder`, `choose_bookmarked_folder`, donc PC et iPhone), et avant d'écrire quoi que ce soit (`folder.json`, `own.json`, clé) :
 
-1. refus du dossier dont le nom est `CircleTasks`, sans tenir compte de la casse ni des espaces de bord (`is_circletasks_folder_name`) ;
+1. refus du dossier dont le nom, ou celui de l’un de ses ancêtres, est `CircleTasks`, sans tenir compte de la casse ni des espaces de bord (`is_circletasks_folder_name`) ;
 2. refus du dossier dont un `devices/<uuid>/state.ctx` déjà présent sur le disque porte un en-tête `"f":"ct-…"` (`Store::folder_has_foreign_data`) ; un fichier resté dans le nuage n'est pas hydraté pour cela (le nom du dossier fait alors garde) ; même budget d'entrées que `folder_has_data` ;
 3. code d'erreur `foreign-folder` (nouveau, 39e code de `SYNC_ERROR_CODES`, même ordre en Rust et en TypeScript), famille « dossier », message clair en français : « Ce dossier appartient à CircleTasks : Spartiate ne le lie jamais. Choisissez un autre dossier. » ; « Choisir le dossier » est proposé à côté.
 
@@ -58,3 +58,4 @@ Avant toute liaison (`choose_folder`, `choose_bookmarked_folder`, donc PC et iPh
 ## Vérification
 
 Vitest (`tests/unit/syncSeparation.test.ts`, `tests/unit/syncCodec*.test.ts`, `src/domain/sync/format*.test.ts`) ; `cargo test --locked --features test-hooks --test desktop` (dont `sync_separation.rs`, en CI) ; `scripts/release/identity.test.ts` pour l'absence de l'ancienne identité active.
+- Limite acceptée à confirmer par Ali (revue security-privacy) : une copie renommée du dossier dont les `state.ctx` sont restés dans le nuage, ou qui ne contient que des `.ctj`, est liée ; Spartiate y écrirait son propre dossier `devices/<uuid>/`, sans jamais déchiffrer ni modifier un fichier de CircleTasks.
