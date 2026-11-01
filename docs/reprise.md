@@ -1,35 +1,36 @@
-# Reprise — dépôt Spartiate
+# Reprise — état courant du dépôt Spartiate
 
-État au 2026-11-01. Mémoire inter-sessions (D-52). Règles : AGENTS.md et CLAUDE.md ; leur adaptation Spartiate reste SPA-001a (D-42). PRD v6.2 inchangé ; décisions D-22 à D-53 dans docs/decisions.md. Les décisions approuvées priment sur les textes historiques. Benchmark : archive de recherche, aucun périmètre nouveau.
+Fichier court, pour tout agent (Claude Code, Codex ou autre) : l'état vivant et les décisions applicables. Chaque jalon remplace la section « État au … ». Règles de travail : `AGENTS.md`. Stack : `CLAUDE.md`. Spécification : `docs/PRD.md` (v6.2, vivant, D-22). Décisions : `docs/decisions.md` (D-1 à D-21 dans le PRD § 26.1, D-22 à D-53 ici). Rôles : `.claude/agents/README.md`. Maquettes : `docs/maquettes/` (D-21). Benchmark des six apps de référence : `docs/benchmark.md`.
 
-## Fusionné
+## État au 2026-10-31, soir
 
-SPA-000 clos : dépôt issu de CircleTasks, remote circletasks en lecture seule (push DISABLED), spartiate-releases créé. PR #1 à #7 fusionnées ; main de référence 9bc73302. PR #5 : 24 agents ; #6 : benchmark ; #7 : D-49 à D-53 et SPA-001 v2.3. Le résultat du run initial 41192279832 reste à consigner, sans le présumer vert.
+### Fusionné dans `main` (785261dc)
+- SPA-000 clos : dépôt créé par clone de `doncivo/circletasks` (remote `circletasks` en lecture seule, push `DISABLED`), `doncivo/spartiate-releases` vide. PR #1 PRD v6.1 + 24 maquettes, PR #2 SPA-001 v1, PR #3 relecture Codex, PR #4 PRD v6.2 + SPA-001 v2 + D-22…D-45, PR #5 24 fiches agents (D-46), D-47, D-48, SPA-001 v2.2. Run `tests.yml` 41192279832 sur `main` intact : résultat final à inscrire ici par Ali (`gh run view 41192279832`).
 
-## Préparation en cours
+### À faire avant tout code (dans la PR SPA-001a)
+- PRD v6.3 par `docs-writer` : corrections D-47 (AppShell / TabRail, `src/ui/theme/tokens.css`, rupture 1 024 px, commandes CI réelles, `contrast.test.ts`, caméra seule sur iPhone, `settings` hors catalogue, quotas 14 / 5 / 3, `withGlobalTauri: false` explicite) et D-48 (rubrique Relais au gabarit § 24.5). Chemins encore faux à corriger au passage : `src/platform/ios` (→ `src/platform/<plugin>`), `src-tauri/gen/apple/Spartiate.entitlements` (→ `src-tauri/ios/Spartiate.entitlements`, copié en CI).
+- Fiches agents : chemins erronés `tests/desktop/config.rs` → `src-tauri/tests/desktop/config.rs` (ai-integration, desktop-tauri, ios-mobile, security-privacy) ; `src/lib.rs` → `src-tauri/src/lib.rs` (ios-mobile:21, où il s'agit du `src/lib.rs` **du plugin**, à préciser). Couverts par `agents.test.ts` (chaînes proscrites à étendre : `tests/desktop/config.rs` sans préfixe).
+- Fichiers annoncés et encore absents, à créer par leur propriétaire au ticket indiqué : `content/brand/spartiate.svg` (ui-design-system, 001a) ; `scripts/release/identity.test.ts`, `scripts/release/agents.test.ts` (001a) ; `docs/capability-matrix.md`, `docs/qa/iphone.md`, `docs/journal.md` Spartiate, `docs/spa-001b-inventaire.md` (001b) ; `src-tauri/ios/Spartiate.entitlements`, `scripts/ios/apply-entitlements.mjs` (SPA-003) ; `CHANGELOG.md` (001a, docs-writer).
 
-Branche cadrage-avant-spa-001 : SPA-001 v2.4, cohérence des fiches, benchmark non normatif et docs/preparation-spa.md (P-01 à P-10 : responsables, échéances, preuves et propositions PRD). Aucun changement applicatif ni PRD dans ce lot. Lire seulement les lignes concernant le ticket à ouvrir. Ne pas convertir les choix encore ouverts en décisions acquises.
+### Décisions d'Ali attendues (hors code)
+- Q-1 garder CircleTasks installée à côté (H-16) → vérifié en SPA-004.
+- Q-2 fournisseur IA et plafond mensuel → avant I4.
+- Q-3 sources des médias d'exercices → I1.
+- Q-5 FR seul : appliqué par défaut en 001b.
+- Première utilisation réelle de Spartiate : à annoncer (D-38, fin du conteneur de laboratoire).
 
-## Prochaine session : SPA-001a
+### Secrets et comptes (jamais de valeur dans le dépôt)
+- `RELEASES_TOKEN` (fine-grained, contenu de `spartiate-releases`) : SPA-003.
+- Paire minisign Spartiate pour l'updater Windows : SPA-002 — `npm run tauri signer generate -- -w <chemin hors dépôt>\spartiate.key`, clé publique dans `tauri.conf.json`, clé privée et mot de passe dans `TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. La clé CircleTasks ne sert jamais.
+- `CT_GOOGLE_*` : retirés des workflows en 001b.
 
-- Appliquer SPA-001.md et D-49 à D-53 : tests rouges, script de renommage idempotent, retouches, contrôles ciblés, PR ; capture icône/fenêtre soumise à Ali avant push.
-- Architect maintient les contrats des fiches ; ci-release écrit leurs contrôles ; qa-test possède la configuration Vitest ; docs-writer porte seulement les décisions approuvées au PRD ; product-owner tient reprise, journal et tickets.
-- PRD v6.3 : report D-47/D-48 et découpage D-49 avec preuve de conservation du contenu. Préserver toutes les décisions existantes. Les propositions P-04/P-05 et suivantes ne sont pas des D-n approuvées.
-- Ne pas modifier le PRD sur la base du benchmark. Protéger les données CircleTasks, y compris dans les contrôles automatiques et le script de renommage.
-- Fichiers futurs, propriétaires et tickets : registre docs/a-creer.md à produire en 001a (D-50). Icône : ui-design-system dès 001a ; contrôles : ci-release. Entitlements durables et copie CI : ios-mobile / ci-release en SPA-003. Matrice de capacités, recette appareil et inventaire : product-owner en 001b.
+### Économie de tokens (D-49 à D-53)
+- Lire par chapitres (`docs/prd/` dès la v6.3), jamais « le PRD ». Vérifier par test (`identity`, `agents`, `docs-paths`) avant toute relecture LLM. Mécanique par script. Une session Claude Code par ticket, `reprise.md` seule mémoire. Relecture Codex bornée au diff et aux critères, ≤ 40 lignes, après CI verte.
 
-## Avant SPA-001b
+### Règles en vigueur
+- Jamais de push direct sur `main`, jamais de `--force`, jamais de `rm -rf` ; une PR par ticket ; CI verte et relecture Codex avant fusion ; passes product-owner → agent du module → qa-test → code-reviewer par le même agent.
+- Données réelles : `%APPDATA%\fr.circletasks.planner` et `iCloud Drive/CircleTasks` intouchables. Conteneur `fr.spartiate.app` = laboratoire jusqu'à l'annonce d'Ali (D-38).
+- Preuve rouge avant code ; aucun `fixme` ; bundle de départ ≤ 358 400 octets gzip mesuré avant push ; e2e, smoke et Rust lourds en CI ; aucune boucle de surveillance de la CI ; aucun statut CONFIRMED depuis une lecture de code.
 
-Inventaire au niveau des symboles validé par Ali (D-44). Y arrêter P-02 (base de laboratoire 19 → 1) et P-03 (identités profil/pesée). Gardes du migrateur conservées. settings hors publication I0 ; 24 fiches conservées ; AppShell / TabRail et rupture 1 024 px.
-
-## Secrets et décisions attendues
-
-- RELEASES_TOKEN : prêt avant la première publication Windows SPA-002, réutilisé pour SPA-003 ; jamais de valeur dans le dépôt.
-- Nouvelle paire minisign Spartiate : SPA-002 ; clé publique dans la configuration, privée et mot de passe dans TAURI_SIGNING_PRIVATE_KEY / TAURI_SIGNING_PRIVATE_KEY_PASSWORD. Ne pas réutiliser la clé CircleTasks. Retirer CT_GOOGLE_* en 001b.
-- Fournisseur IA et plafond : Ali avant I4. Médias : Ali avant I1. Coexistence CircleTasks : preuve SPA-004, pas acquise. Première utilisation réelle de Spartiate annoncée par Ali : fin du laboratoire D-38.
-
-## Ordre et règles
-
-001a → fusion → inventaire approuvé → 001b → SPA-002 → 003 → 004 → 005 → spikes 006/007 → 008 → 009 → 010. Compléments P-04 à P-08 intégrés aux tickets correspondants ; P-09/P-10 avant les modules métier.
-
-PR obligatoire, pas de push main ni force. Bundle ≤ 358 400 octets gzip avant push ; tests légers ciblés en local ; suite complète, e2e et Rust lourds en CI ; aucune surveillance en boucle. Données réelles CircleTasks intouchables ; aucun statut CONFIRMED depuis une lecture de code. Une revue bornée au diff après CI verte (D-53), rapport ≤ 40 lignes.
+### Reste à faire, dans l'ordre
+SPA-001a → fusion → `docs/spa-001b-inventaire.md` validé par Ali → SPA-001b → SPA-002 (Windows, clé minisign, updater) → SPA-003 (iOS CI, entitlements) → SPA-004 (SideStore, expiration, H-16) → SPA-005 (export / import profil-poids) → SPA-006 / 007 (spikes HealthKit, Live Activity) → SPA-008 (synchro deux appareils) → SPA-009 (coquilles fidèles aux maquettes, contraste) → SPA-010 (mesure, I-06, go / no-go I0).
