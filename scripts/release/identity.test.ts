@@ -125,6 +125,11 @@ describe('qualification des mentions (convention déterministe)', () => {
     expect(classifyLine('// Protocole repris de CircleTasks (ADR 0011).', 'CircleTasks')).toBe('provenance');
     expect(classifyLine('Le fork de CircleTasks utilise `fr.circletasks.planner`.', OLD_ID)).toBe('active');
   });
+  it('refuse les prescriptions actives que la revue a fait passer à tort (I2)', () => {
+    expect(classifyLine('Toujours écrire dans `%APPDATA%\fr.circletasks.planner`.', OLD_ID)).toBe('active');
+    expect(classifyLine('Identifiant actif : `fr.circletasks.planner` (jamais un autre).', OLD_ID)).toBe('active');
+    expect(classifyLine('Voir l’exemple : la base est `circletasks.db`.', OLD_DB)).toBe('active');
+  });
   it('un marqueur explicite sans motif est refusé', () => {
     expect(classifyLine('- `circletasks.db` <!-- ancien-ok: -->', OLD_DB)).toBe('active');
   });
@@ -152,7 +157,7 @@ const ARCHIVE_001B = [
   /^docs\/audits?(-1\.0)?(\.md|\/)/,
   /^docs\/(backlog|dettes|reprise-codex|reprise-historique-2026-10)\.md$/,
   /^docs\/essais-iphone(-a9)?\.md$/,
-  /^docs\/maquettes(-refonte)?\//,
+  /^docs/maquettes-refonte//,
 ];
 const BINARY = /\.(png|ico|icns|jpg|woff2?|wasm|traineddata|gz|zip|svg)$/i;
 
