@@ -35,7 +35,7 @@ export async function createExportFile(kind: ExportKind, period: ExportPeriod, c
     return { suggestedName, mime, data };
   }
   const layout = reportLayout(reportTextsOf(context.report, { currentYear: Number(context.today.slice(0, 4)), filterLabel: context.filterLabel, today: context.today }));
-  const title = `CircleTasks · ${formatReportMonth(context.month, Number(context.today.slice(0, 4)))}`;
+  const title = `Spartiate · ${formatReportMonth(context.month, Number(context.today.slice(0, 4)))}`;
   const data = kind === 'png' ? await renderReportPng(layout) : await renderReportPdf(layout, title);
   return { suggestedName, mime, data };
 }

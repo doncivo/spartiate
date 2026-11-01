@@ -59,7 +59,7 @@ level = "full"
 notes = ""
 
 [features]
-# CircleTasks : mysql et postgres ne sont jamais utilises ; vides pour que Cargo.lock ne tire ni rustls ni webpki-roots (cargo audit).
+# Spartiate : mysql et postgres ne sont jamais utilises ; vides pour que Cargo.lock ne tire ni rustls ni webpki-roots (cargo audit).
 mysql = []
 postgres = []
 sqlite = [
@@ -79,7 +79,7 @@ version = "0.3"
 version = "2"
 features = ["serde"]
 
-# CircleTasks (SEC-01) : autorisateur SQLite et limite d'attachement posés sur le descripteur de chaque connexion ; même version que
+# Spartiate (SEC-01) : autorisateur SQLite et limite d'attachement posés sur le descripteur de chaque connexion ; même version que
 # sqlx-sqlite 0.8.6 et rusqlite 0.32 (Cargo.lock), aucune nouvelle bibliothèque.
 [dependencies.libsqlite3-sys]
 version = "0.30.1"

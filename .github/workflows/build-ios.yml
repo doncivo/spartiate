@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: "Publier l'IPA et source.json sur circletasks-releases (sur un tag ios-v* seulement ; environnement releases + secret RELEASES_TOKEN)"
+        description: "Publier l'IPA et source.json sur spartiate-releases (sur un tag ios-v* seulement ; environnement releases + secret RELEASES_TOKEN)"
         type: boolean
         default: false
   push:
@@ -46,7 +46,7 @@ jobs:
           fi
 
       # I-06 (ADR 0007 avenant I-06 point 3) : notes de version tirées de CHANGELOG.md (script commun avec build-windows.yml), calculées
-      # AVANT la compilation. Tag ios-v* : section absente = échec ; branche : avertissement visible et repli « CircleTasks X.Y.Z ».
+      # AVANT la compilation. Tag ios-v* : section absente = échec ; branche : avertissement visible et repli « Spartiate X.Y.Z ».
       - name: Notes de version
         run: |
           set -euo pipefail
@@ -56,8 +56,8 @@ jobs:
             case "${GITHUB_REF}" in
               refs/tags/ios-v*) echo "::error::Aucune section « ## ${VERSION} » dans CHANGELOG.md : publication refusée"; exit 1;;
             esac
-            echo "::warning::Aucune section « ## ${VERSION} » dans CHANGELOG.md : notes de repli « CircleTasks ${VERSION} »"
-            echo "CircleTasks ${VERSION}" > notes/notes.txt
+            echo "::warning::Aucune section « ## ${VERSION} » dans CHANGELOG.md : notes de repli « Spartiate ${VERSION} »"
+            echo "Spartiate ${VERSION}" > notes/notes.txt
           fi
 
       - name: Rust stable et cible iOS
@@ -93,7 +93,7 @@ jobs:
           if echo "$windows" | grep -q '^tauri-plugin-folder-bookmark '; then echo "::error::tauri-plugin-folder-bookmark dans la cible Windows"; exit 1; fi
           # ADR 0011 §23 point 1 (Y-IOS-02) : Trousseau par security-framework 3.7.0 (celle de keyring), utilisé directement par l'app.
           sf=$(cargo tree --locked --target aarch64-apple-ios -e normal -i security-framework@3.7.0 --prefix none)
-          echo "$sf" | grep -q '^circletasks ' || { echo "::error::security-framework 3.7.0 n'est pas une dépendance directe de l'app iOS"; exit 1; }
+          echo "$sf" | grep -q '^spartiate ' || { echo "::error::security-framework 3.7.0 n'est pas une dépendance directe de l'app iOS"; exit 1; }
           echo "$ios" | grep -q '^tauri-plugin-barcode-scanner ' || { echo "::error::tauri-plugin-barcode-scanner absent de la cible iOS"; exit 1; }
           # ADR 0008 §9 (K-TECH-01) : session d'authentification web de la connexion Google, cible iOS seulement.
           echo "$ios" | grep -q '^tauri-plugin-web-auth ' || { echo "::error::tauri-plugin-web-auth absent de la cible iOS"; exit 1; }
@@ -145,8 +145,8 @@ jobs:
 
       # Option officielle du CLI Tauri `--no-sign` (crates/tauri-cli/src/mobile/ios/build.rs, v2.12.1) :
       # `xcodebuild archive` avec CODE_SIGNING_ALLOWED=NO pendant que le CLI sert ses options à la phase
-      # Xcode « Build Rust Code » (tauri ios xcode-script), puis Products/Applications/CircleTasks.app est
-      # zippé en Payload/ dans gen/apple/build/arm64/CircleTasks.ipa. beforeBuildCommand (npm run build)
+      # Xcode « Build Rust Code » (tauri ios xcode-script), puis Products/Applications/Spartiate.app est
+      # zippé en Payload/ dans gen/apple/build/arm64/Spartiate.ipa. beforeBuildCommand (npm run build)
       # compile le front, embarqué dans le binaire Rust. Pourquoi ce choix : ADR 0007, avenant POC-01.
       # Client OAuth Google « iOS » (K-01), lu à la compilation par src-tauri/build.rs (BUILD_SECRETS).
       # Identifiant public (non confidentiel) ; jamais le secret du client de bureau ici. Uniquement cette étape.
@@ -155,25 +155,25 @@ jobs:
           CT_GOOGLE_IOS_CLIENT_ID: ${{ secrets.CT_GOOGLE_IOS_CLIENT_ID }}
         run: npx tauri ios build --ci --no-sign --target aarch64
 
-      - name: Vérifier et copier CircleTasks.ipa
+      - name: Vérifier et copier Spartiate.ipa
         run: |
           set -euo pipefail
-          SRC=src-tauri/gen/apple/build/arm64/CircleTasks.ipa
+          SRC=src-tauri/gen/apple/build/arm64/Spartiate.ipa
           test -f "$SRC" || { echo "::error::IPA absente : $SRC"; find src-tauri/gen/apple/build -maxdepth 3 || true; exit 1; }
-          rm -rf ipa && mkdir -p ipa && cp "$SRC" ipa/CircleTasks.ipa
-          ls -l ipa/CircleTasks.ipa
+          rm -rf ipa && mkdir -p ipa && cp "$SRC" ipa/Spartiate.ipa
+          ls -l ipa/Spartiate.ipa
           CHECK="$RUNNER_TEMP/check"
           rm -rf "$CHECK" && mkdir -p "$CHECK"
-          unzip -q ipa/CircleTasks.ipa -d "$CHECK"
-          APP="$CHECK/Payload/CircleTasks.app"
-          test -d "$APP" || { echo "::error::Payload/CircleTasks.app absent"; find "$CHECK" -maxdepth 3; exit 1; }
+          unzip -q ipa/Spartiate.ipa -d "$CHECK"
+          APP="$CHECK/Payload/Spartiate.app"
+          test -d "$APP" || { echo "::error::Payload/Spartiate.app absent"; find "$CHECK" -maxdepth 3; exit 1; }
           PB=/usr/libexec/PlistBuddy
           ID=$($PB -c "Print :CFBundleIdentifier" "$APP/Info.plist")
           MIN=$($PB -c "Print :MinimumOSVersion" "$APP/Info.plist")
           EXE=$($PB -c "Print :CFBundleExecutable" "$APP/Info.plist")
           VER=$($PB -c "Print :CFBundleShortVersionString" "$APP/Info.plist")
           echo "Bundle ${ID}, version ${VER}, iOS minimum ${MIN}, exécutable ${EXE}"
-          [ "$ID" = "fr.circletasks.planner" ] || { echo "::error::Bundle id inattendu : $ID"; exit 1; }
+          [ "$ID" = "fr.spartiate.app" ] || { echo "::error::Bundle id inattendu : $ID"; exit 1; }
           case "$MIN" in 18|18.0) ;; *) echo "::error::MinimumOSVersion inattendu : $MIN"; exit 1;; esac
           ARCHS=$(lipo -archs "$APP/$EXE")
           echo "Architectures : $ARCHS"
@@ -192,20 +192,20 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf info && mkdir -p info
-          plutil -convert xml1 -o info/Info.plist "$RUNNER_TEMP/check/Payload/CircleTasks.app/Info.plist"
+          plutil -convert xml1 -o info/Info.plist "$RUNNER_TEMP/check/Payload/Spartiate.app/Info.plist"
           node scripts/ios/check-plist-contract.mjs scripts/ios/plist-contract.json info/Info.plist
           PB=/usr/libexec/PlistBuddy
           USAGES=$( (grep -o '<key>NS[A-Za-z]*UsageDescription</key>' info/Info.plist || true) | sed 's/<[^>]*>//g' | tr '\n' ' ')
           {
-            echo "### IPA CircleTasks (${GITHUB_REF_NAME})"
+            echo "### IPA Spartiate (${GITHUB_REF_NAME})"
             echo ""
-            echo "- Taille : $(stat -f%z ipa/CircleTasks.ipa) octets"
-            echo "- SHA-256 : $(shasum -a 256 ipa/CircleTasks.ipa | cut -d' ' -f1)"
+            echo "- Taille : $(stat -f%z ipa/Spartiate.ipa) octets"
+            echo "- SHA-256 : $(shasum -a 256 ipa/Spartiate.ipa | cut -d' ' -f1)"
             echo "- Version : $($PB -c 'Print :CFBundleShortVersionString' info/Info.plist) ($($PB -c 'Print :CFBundleVersion' info/Info.plist))"
             echo "- Descriptions d'usage : ${USAGES:-aucune}"
             # I-02 (ADR 0013 §3.1) : information seulement. Une IPA non signée n'a pas de profil ; SideStore écrit embedded.mobileprovision
             # (profil de 7 jours) à l'installation, et la commande app_signing_info le lit sur l'appareil (contrôle A1 de la fiche I-02).
-            if [ -f "$RUNNER_TEMP/check/Payload/CircleTasks.app/embedded.mobileprovision" ]; then echo "- embedded.mobileprovision : présent dans l'IPA"; else echo "- embedded.mobileprovision : absent de l'IPA (normal pour une IPA non signée ; SideStore l'écrit à l'installation, I-02)"; fi
+            if [ -f "$RUNNER_TEMP/check/Payload/Spartiate.app/embedded.mobileprovision" ]; then echo "- embedded.mobileprovision : présent dans l'IPA"; else echo "- embedded.mobileprovision : absent de l'IPA (normal pour une IPA non signée ; SideStore l'écrit à l'installation, I-02)"; fi
           } >> "$GITHUB_STEP_SUMMARY"
 
       # I-06 (ADR 0007 avenant I-06 point 2, critère 5) : source SideStore SIMULÉE avec l'IPA de ce build et la source publiée (lue à l'URL
@@ -217,12 +217,12 @@ jobs:
           VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
           NOTES=$(cat notes/notes.txt)
           rm -rf sim && mkdir -p sim
-          if ! curl -fsSL "https://raw.githubusercontent.com/doncivo/circletasks-releases/main/source.json" -o sim/published.json; then
+          if ! curl -fsSL "https://raw.githubusercontent.com/doncivo/spartiate-releases/main/source.json" -o sim/published.json; then
             echo "::warning::Source publiée illisible : simulation sans les versions déjà publiées"
             rm -f sim/published.json
           fi
-          node scripts/ios/make-source-json.mjs --version "$VERSION" --ipa ipa/CircleTasks.ipa --info-plist info/Info.plist \
-            --url "https://github.com/doncivo/circletasks-releases/releases/download/ios-v${VERSION}/CircleTasks.ipa" --notes "$NOTES" \
+          node scripts/ios/make-source-json.mjs --version "$VERSION" --ipa ipa/Spartiate.ipa --info-plist info/Info.plist \
+            --url "https://github.com/doncivo/spartiate-releases/releases/download/ios-v${VERSION}/Spartiate.ipa" --notes "$NOTES" \
             --existing sim/published.json > sim/source.json
           # Hors tag ios-v* (branche de lot) : une version plus basse que la plus haute publiée n'est qu'un avertissement (revue I-06 M2).
           DOWNGRADE=error
@@ -242,7 +242,7 @@ jobs:
         run: |
           set -euo pipefail
           PB=/usr/libexec/PlistBuddy
-          APP="$RUNNER_TEMP/check/Payload/CircleTasks.app"
+          APP="$RUNNER_TEMP/check/Payload/Spartiate.app"
           EXE=$($PB -c "Print :CFBundleExecutable" "$APP/Info.plist")
           if grep -aEq '[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com' "$APP/$EXE"; then
             STATE="présent"
@@ -254,14 +254,14 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: CircleTasks-ipa
-          path: ipa/CircleTasks.ipa
+          name: Spartiate-ipa
+          path: ipa/Spartiate.ipa
           if-no-files-found: error
           retention-days: 30
 
       - uses: actions/upload-artifact@v4
         with:
-          name: CircleTasks-info-plist
+          name: Spartiate-info-plist
           path: info/Info.plist
           if-no-files-found: error
           retention-days: 30
@@ -298,15 +298,15 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: CircleTasks-ipa
+          name: Spartiate-ipa
           path: ipa
 
       - uses: actions/download-artifact@v4
         with:
-          name: CircleTasks-info-plist
+          name: Spartiate-info-plist
           path: info
 
-      - name: Publier sur circletasks-releases
+      - name: Publier sur spartiate-releases
         env:
           GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
@@ -323,24 +323,24 @@ jobs:
             echo "::error::Le tag ${GITHUB_REF_NAME} ne correspond pas à la version ${VERSION}"
             exit 1
           fi
-          REPO="doncivo/circletasks-releases"
-          IPA_URL="https://github.com/${REPO}/releases/download/${TAG}/CircleTasks.ipa"
+          REPO="doncivo/spartiate-releases"
+          IPA_URL="https://github.com/${REPO}/releases/download/${TAG}/Spartiate.ipa"
           # I-06 : notes de CHANGELOG.md (script commun) ; sur un tag, une section absente fait échouer la publication.
           NOTES=$(node scripts/release/release-notes.mjs "$VERSION") || { echo "::error::Aucune section « ## ${VERSION} » dans CHANGELOG.md : publication refusée"; exit 1; }
           # Le jeton passe par le credential helper de gh, jamais dans l'URL ni dans .git/config.
           gh auth setup-git
           git clone "https://github.com/${REPO}.git" releases
-          node scripts/ios/make-source-json.mjs --version "$VERSION" --ipa ipa/CircleTasks.ipa --info-plist info/Info.plist \
+          node scripts/ios/make-source-json.mjs --version "$VERSION" --ipa ipa/Spartiate.ipa --info-plist info/Info.plist \
             --url "$IPA_URL" --notes "$NOTES" --existing releases/source.json > source.new.json
           # I-06 : contrôle de la source AVANT toute publication (release et push) ; un écart arrête tout.
           node scripts/ios/check-source.mjs source.new.json --published "$VERSION"
-          gh release create "$TAG" ipa/CircleTasks.ipa --repo "$REPO" --title "CircleTasks iPhone ${VERSION}" --notes "$NOTES" --latest=false \
-            || gh release upload "$TAG" ipa/CircleTasks.ipa --repo "$REPO" --clobber
+          gh release create "$TAG" ipa/Spartiate.ipa --repo "$REPO" --title "Spartiate iPhone ${VERSION}" --notes "$NOTES" --latest=false \
+            || gh release upload "$TAG" ipa/Spartiate.ipa --repo "$REPO" --clobber
           cp source.new.json releases/source.json
           # iconURL est obligatoire pour SideStore (StoreApp.swift) : icône servie par le dépôt public.
           cp src-tauri/icons/icon.png releases/icon.png
           cd releases
-          git config user.name "circletasks-ci"
+          git config user.name "spartiate-ci"
           git config user.email "ci@users.noreply.github.com"
           git add source.json icon.png
           git commit -m "source.json: iPhone ${VERSION}" || echo "Rien à valider"

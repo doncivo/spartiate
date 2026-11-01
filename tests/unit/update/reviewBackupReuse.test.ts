@@ -29,7 +29,7 @@ function port(extra: string[], listFails = false) {
   const value: MigrationBackup = {
     backup(request) {
       made.push(request);
-      const name = `circletasks-pre-migration-v${pad(request.fromVersion)}-to-v${pad(request.toVersion)}-${request.stamp}.db`;
+      const name = `spartiate-pre-migration-v${pad(request.fromVersion)}-to-v${pad(request.toVersion)}-${request.stamp}.db`;
       names.push(name);
       return Promise.resolve({ name });
     },
@@ -57,7 +57,7 @@ describe('revue I1 : jamais une sauvegarde périmée présentée comme « avant 
     clock.advance(20 * 86_400_000);
     const restored = await openSqliteWasmDriver();
     await migrate(restored, migrations);
-    backups.names.push('circletasks-daily-20260928.db', 'circletasks-pre-restore-20261021T080000Z.db');
+    backups.names.push('spartiate-daily-20260928.db', 'spartiate-pre-restore-20261021T080000Z.db');
     clock.advance(3_600_000);
     expect(await bootstrapDatabase(() => Promise.resolve(keepOpen(restored)), { clock, backup: backups.factory, migrations: [...migrations, A] })).toBeDefined();
     expect(backups.made).toHaveLength(2);
@@ -73,7 +73,7 @@ describe('revue I1 : jamais une sauvegarde périmée présentée comme « avant 
     expect(await bootstrapDatabase(() => Promise.resolve(keepOpen(db)), { clock, backup: backups.factory, migrations: [...migrations, A, BROKEN_B] })).toBeUndefined();
     expect(useAppStore.getState().dbFailure?.updateBackup?.name).toBe(backups.names[0]);
     // L'app a servi les jours suivants (quotidiennes du 10 et du 11) ; puis la version corrigée.
-    backups.names.push('circletasks-daily-20261010.db', 'circletasks-daily-20261011.db');
+    backups.names.push('spartiate-daily-20261010.db', 'spartiate-daily-20261011.db');
     clock.advance(3 * 86_400_000);
     useAppStore.setState({ dbStatus: 'idle', dbFailure: null });
     expect(await bootstrapDatabase(() => Promise.resolve(keepOpen(db)), { clock, backup: backups.factory, migrations: [...migrations, A, FIXED_B] })).toBeDefined();

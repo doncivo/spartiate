@@ -120,7 +120,7 @@ export async function buildSyncVectors(rustSealed: SyncVectors['rustSealed'] = [
   const padding = [0, 1, 2, 4092, 4093, 5000, 8188, 8189, 262_144].map((jsonBytes) => ({ jsonBytes, paddedBytes: paddedPlaintextBytes(jsonBytes) }));
 
   const header = (f: FileHeader['f'], n: number): FileHeader => ({ f, sm: 1, kid, dev: VECTOR_DEVICE, e: VECTOR_EPOCH, n });
-  const headers = [header('ct-j', 1), header('ct-s', 12), header('ct-state', 99_999_999), header('ct-state', 123_456_789_012)].map((h) => {
+  const headers = [header('sp-j', 1), header('sp-s', 12), header('sp-state', 99_999_999), header('sp-state', 123_456_789_012)].map((h) => {
     const line = headerLine(h);
     return { header: h, line, bytes: new TextEncoder().encode(line).length + 1 };
   });
@@ -178,7 +178,7 @@ export async function buildSyncVectors(rustSealed: SyncVectors['rustSealed'] = [
   }
 
   // Plafonds (section 1.3, avenant « Amorce ») : combinaisons de lignes dont la somme tombe exactement sur 1 Mio et 1 Mio + 1.
-  const segmentHeader = header('ct-j', 1);
+  const segmentHeader = header('sp-j', 1);
   const segmentHeaderBytes = new TextEncoder().encode(headerLine(segmentHeader)).length + 1;
   const MIB = 1024 * 1024;
 

@@ -17,7 +17,7 @@ export const RESTORE_FAILURE_META = META.restoreFailure;
  * - « Appliquer cette version sur tous mes appareils » : règle 1, ouverture de l'époque `n+1` par cet appareil, instantané complet de la
  *   base restaurée (`covers[B]` = maximum de ce que la base restaurée et le dernier état publié savaient de B), file vidée, nouvel état.
  * - « Garder les données synchronisées » : reprise depuis l'instantané en fusion (cycle forcé par le service) ; la copie
- *   `circletasks-pre-restore-…` reste disponible.
+ *   `spartiate-pre-restore-…` reste disponible.
  * Le marqueur n'est effacé qu'après application complète du choix (par le service).
  */
 

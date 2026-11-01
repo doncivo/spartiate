@@ -6,7 +6,7 @@ import type { OsFamily, Runtime } from '../runtime';
  * (N-01). Indépendant du plugin Speech. Absent (PC, navigateur) : aucune action « Ouvrir les réglages » n'est proposée.
  */
 export interface SystemSettings {
-  /** Ouvre Réglages › CircleTasks ; rejette `SystemSettingsError` (code `settings-open-failed`), jamais un bouton muet. */
+  /** Ouvre Réglages › Spartiate ; rejette `SystemSettingsError` (code `settings-open-failed`), jamais un bouton muet. */
   openApp(): Promise<void>;
 }
 
@@ -47,7 +47,7 @@ export function openSystemSettings(runtime: Runtime, os: OsFamily): SystemSettin
 }
 
 /**
- * API du lot K (Rappels Apple) : ouvre Réglages › CircleTasks par le même ouvreur que la dictée et le scan (commande Rust de Réglages),
+ * API du lot K (Rappels Apple) : ouvre Réglages › Spartiate par le même ouvreur que la dictée et le scan (commande Rust de Réglages),
  * jamais par le plugin de lecture de code QR. Sans ouvreur (PC, navigateur) : rejette `settings-unavailable`, l'appelant garde son texte.
  */
 export async function openAppSettings(): Promise<void> {

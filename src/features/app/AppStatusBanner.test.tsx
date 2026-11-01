@@ -39,11 +39,11 @@ describe('bandeau d’état de l’app (A-09)', () => {
       set('calendarDisconnected', { detail: 'Perso' });
       set('signingExpiry', { detail: 'soon' });
     });
-    expect(document.querySelector('.ct-status-banner')).toHaveTextContent('CircleTasks expire bientôt : actualisez-la dans SideStore');
+    expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Spartiate expire bientôt : actualisez-la dans SideStore');
     act(() => set('signingExpiry', { detail: 'expired' }));
     expect(document.querySelector('.ct-status-banner')).toHaveTextContent('La signature est expirée : réinstallez l’app');
-    act(() => set('signingExpiry', { detail: 'soon', message: 'CircleTasks expire dans 5 h' }));
-    expect(document.querySelector('.ct-status-banner')).toHaveTextContent('CircleTasks expire dans 5 h');
+    act(() => set('signingExpiry', { detail: 'soon', message: 'Spartiate expire dans 5 h' }));
+    expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Spartiate expire dans 5 h');
     act(() => set('signingExpiry', null));
     expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Agenda Perso déconnecté');
   });

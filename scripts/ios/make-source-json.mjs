@@ -2,7 +2,7 @@
 // Génère ou met à jour source.json (source SideStore, format AltStore ; champs vérifiés dans le code de
 // SideStore, branche develop : StoreApp.swift, AppVersion.swift, VerifyAppOperation.swift).
 // Usage :
-//   node scripts/ios/make-source-json.mjs --version X.Y.Z --ipa CircleTasks.ipa --info-plist Info.plist(XML)
+//   node scripts/ios/make-source-json.mjs --version X.Y.Z --ipa Spartiate.ipa --info-plist Info.plist(XML)
 //        --url <URL de l'IPA> [--notes "…"] [--existing source.json] [--date ISO] > source.json
 // Toutes les versions du fichier existant sont conservées, la nouvelle en premier ; une version republiée
 // remplace seulement sa propre entrée. Contrôles avant écriture : version, identifiant et iOS minimum du
@@ -16,9 +16,9 @@ import { parsePlist } from './plist.mjs';
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..', '..');
 
-export const RELEASES_REPO = 'doncivo/circletasks-releases';
+export const RELEASES_REPO = 'doncivo/spartiate-releases';
 export const SOURCE_URL = `https://raw.githubusercontent.com/${RELEASES_REPO}/main/source.json`;
-export const IPA_NAME = 'CircleTasks.ipa';
+export const IPA_NAME = 'Spartiate.ipa';
 export const ipaUrlFor = (version) => `https://github.com/${RELEASES_REPO}/releases/download/ios-v${version}/${IPA_NAME}`;
 
 export function loadTemplate() {
@@ -67,7 +67,7 @@ export function buildSource({ template, existing, info, version, downloadURL, si
     version,
     buildVersion: info.CFBundleVersion,
     date,
-    localizedDescription: notes && notes.trim() !== '' ? notes : `CircleTasks ${version}`,
+    localizedDescription: notes && notes.trim() !== '' ? notes : `Spartiate ${version}`,
     downloadURL,
     size,
     sha256,

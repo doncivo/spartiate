@@ -4,7 +4,7 @@ import { localDate, openRemindersScreen, useFakeReminders } from './helpers/remi
 import { rowOf } from './helpers/today';
 
 /**
- * K-05 — Je vois mes Rappels Apple dans CircleTasks. Projet `iphone` : faux EventKit (`__ctRemindersFake`, développement seulement), aucun
+ * K-05 — Je vois mes Rappels Apple dans Spartiate. Projet `iphone` : faux EventKit (`__ctRemindersFake`, développement seulement), aucun
  * compte réel. Critères couverts : 7, 8, 9, 12, 13. Sur `pc`, la section est en lecture seule (voir K-07).
  */
 test.describe('K-05 — Rappels Apple (iPhone)', () => {

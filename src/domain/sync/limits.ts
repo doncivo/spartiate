@@ -39,17 +39,17 @@ export const MAX_SNAPSHOT_BYTES = 256 * MIB;
 export const MAX_IPC_PAGE_BYTES = 2 * MIB;
 
 /**
- * `state.ctx` : en-tête et une seule ligne chiffrée, chacun suivi de `\n` (section 1.6, second audit point 12 ; remplace le
+ * `state.spx` : en-tête et une seule ligne chiffrée, chacun suivi de `\n` (section 1.6, second audit point 12 ; remplace le
  * « 1 Mio » de docs/decisions.md du 2026-10-05, antérieur). Au-delà : `too-large`, appareil en `corrupt`.
  */
 export const MAX_STATE_FILE_BYTES = MAX_HEADER_BYTES + 1 + MAX_RECORD_LINE_BYTES + 1;
 /** Identifiant de ligne publié (`id` d'une opération, section 3.3). */
 export const MAX_SYNC_ID_LENGTH = 128;
 
-/** Accusés et appareils oubliés dans un `state.ctx`. */
+/** Accusés et appareils oubliés dans un `state.spx`. */
 export const MAX_STATE_ACKS = 64;
 export const MAX_STATE_FORGOTTEN = 64;
-/** Y-TECH-02 (ADR 0011 §21 point 2) : entrées `closed` (segments clos de l'époque courante) d'un `state.ctx`. */
+/** Y-TECH-02 (ADR 0011 §21 point 2) : entrées `closed` (segments clos de l'époque courante) d'un `state.spx`. */
 export const MAX_STATE_CLOSED_SEGMENTS = 1_024;
 /** Dossiers d'appareils pris en compte dans `devices/`. */
 export const MAX_DEVICE_FOLDERS = 16;
@@ -84,7 +84,7 @@ export const SNAPSHOTS_KEPT_PER_EPOCH = 2;
 /** Repères locaux de ses états publiés (section 5.5, condition 3) : un par jour au plus, 182 au plus. */
 export const OWN_STATE_MARK_SPACING_MS = DAY_MS;
 export const MAX_OWN_STATE_MARKS = 182;
-/** `state.ctx` réécrit pour le seul `lastSyncHlc` au plus toutes les 30 minutes (audit M1). */
+/** `state.spx` réécrit pour le seul `lastSyncHlc` au plus toutes les 30 minutes (audit M1). */
 export const STATE_REFRESH_MS = 30 * 60_000;
 
 /** Déclenchement (section 10.1) et appairage (section 10.3). */

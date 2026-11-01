@@ -1,18 +1,18 @@
 {
-  "name": "CircleTasks",
-  "subtitle": "Source SideStore de CircleTasks",
-  "description": "Planificateur personnel CircleTasks pour iPhone.",
-  "identifier": "fr.circletasks.source",
-  "website": "https://github.com/doncivo/circletasks-releases",
-  "iconURL": "https://raw.githubusercontent.com/doncivo/circletasks-releases/main/icon.png",
+  "name": "Spartiate",
+  "subtitle": "Source SideStore de Spartiate",
+  "description": "Planificateur personnel Spartiate pour iPhone.",
+  "identifier": "fr.spartiate.source",
+  "website": "https://github.com/doncivo/spartiate-releases",
+  "iconURL": "https://raw.githubusercontent.com/doncivo/spartiate-releases/main/icon.png",
   "apps": [
     {
-      "name": "CircleTasks",
-      "bundleIdentifier": "fr.circletasks.planner",
+      "name": "Spartiate",
+      "bundleIdentifier": "fr.spartiate.app",
       "developerName": "Ali Cherif",
       "subtitle": "Planificateur personnel",
       "localizedDescription": "Tâches, routines, événements et checklists, synchronisés avec la version PC.",
-      "iconURL": "https://raw.githubusercontent.com/doncivo/circletasks-releases/main/icon.png",
+      "iconURL": "https://raw.githubusercontent.com/doncivo/spartiate-releases/main/icon.png",
       "tintColor": "#C2410C",
       "versions": []
     }

@@ -18,7 +18,7 @@ Tu es responsable des tests de Spartiate. Tu ne modifies pas le code applicatif 
 
 - Modifie :
   - tests colocalisés `src/**/*.test.ts(x)`, `tests/unit/**`, `tests/setup/**` ;
-  - `tests/e2e/**` (specs et `helpers/`, `globalSetup.ts` sans simulateurs CircleTasks), `tests/visual/capture.spec.ts` (scénarios Spartiate, SPA-009) ;
+  - `tests/e2e/**` (specs et `helpers/`, `globalSetup.ts` sans simulateurs CircleTasks), `tests/visual/capture.spec.ts` (scénarios Spartiate, SPA-009) ; <!-- ancien-ok: simulateurs de l’ancien projet à ne pas conserver -->
   - `tests/fixtures/**` (synthétiques seulement), `tests/bundle/*.test.ts` (jamais le plafond ni la liste blanche) ;
   - `src-tauri/tests/desktop/**` (avec desktop-tauri, sync-icloud, ios-mobile selon le module) ;
   - `playwright.config.ts` (liste `testMatch` du projet `iphone-webkit`, serveurs), `playwright.visual.config.ts`, `vitest.perf.config.ts` ;

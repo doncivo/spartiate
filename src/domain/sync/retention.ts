@@ -407,7 +407,7 @@ export function declarationHlc(nowMs: number, seen: readonly string[], self: Dev
   return Number.isSafeInteger(ms) && ms >= 0 && isStrictHlc(out) ? out : null;
 }
 
-/** Statut de lecture d'un `state.ctx` (même vocabulaire que `DeviceScan.stateStatus`). */
+/** Statut de lecture d'un `state.spx` (même vocabulaire que `DeviceScan.stateStatus`). */
 export type ForgetStateStatus = 'ok' | 'missing' | 'cloud-pending' | 'foreign' | 'corrupt' | 'rollback' | 'too-large' | 'newer-format';
 
 /** Appareil connu pour la suppression (section 14.2 (c)). */
@@ -423,7 +423,7 @@ export interface ForgetKnownDevice {
 /**
  * Peut-on supprimer les fichiers de `target` (section 14.2, conditions (c) à (g), §18 points 8 et 9) ?
  * - `refused` : cible = soi (`bad-name`) ; cible non oubliée par la liste maître, ou appareil local oublié (`state-mismatch`) ;
- * - `waiting` : `state.ctx` de la cible dans le nuage (g) ; un actif (non oublié, `expired` compris, sauf **fantôme** jamais vu, auteur
+ * - `waiting` : `state.spx` de la cible dans le nuage (g) ; un actif (non oublié, `expired` compris, sauf **fantôme** jamais vu, auteur
  *   d'aucune déclaration et d'état non `ok`) bloque : état dans le nuage, illisible ou absent, en retard sur la coupure (sauf cible de
  *   `done`), ou ne republie pas toutes les déclarations retenues de la liste maître (f) ; `device` : le premier par identifiant ;
  * - `ready` : les fichiers peuvent être supprimés.
@@ -530,7 +530,7 @@ export function eligibleSnapshot(candidates: readonly SnapshotCandidate[], maste
 
 /**
  * Trous (§18 point 11) : oubliés retenus dont la coupure n'est pas nulle, que le journal ne peut plus combler (`gone` : terminés, ou
- * `state.ctx` `missing`) et dont le curseur local est sous la coupure (ou absent). Non vide : reprise depuis un instantané éligible,
+ * `state.spx` `missing`) et dont le curseur local est sous la coupure (ou absent). Non vide : reprise depuis un instantané éligible,
  * aucun instantané écrit avant. Ordre total.
  */
 export function forgetGaps(master: readonly ForgottenDevice[], ackers: readonly Acker[], cursors: ReadonlyMap<DeviceId, DeviceAck>, gone: ReadonlySet<DeviceId>): readonly DeviceId[] {

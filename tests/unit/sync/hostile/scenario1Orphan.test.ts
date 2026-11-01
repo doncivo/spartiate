@@ -6,7 +6,7 @@ import { B_ID, ORPHAN, ORPHAN_SNAPSHOT, events, orphanScenarioViolations, orphan
 
 /**
  * Y-TECH-03 (B13), scénario 1 du banc, critère 19 (a) et (c) : l'instantané orphelin du 8 octobre (B1). L'iPhone a abandonné son époque
- * orpheline, `s-00000001.cts` reste dans iCloud sous forme de substitut évincé (`.s-00000001.cts.icloud`), `orphanEpoch` est nul et la
+ * orpheline, `s-00000001.sps` reste dans iCloud sous forme de substitut évincé (`.s-00000001.sps.icloud`), `orphanEpoch` est nul et la
  * première suppression échoue (`io`). Plans de `tests/fixtures/sync/fault-plan.json` ; horloge injectée, rangs d'appel et cycles comptés.
  * La preuve (b) (rouge avec l'ancienne règle de `canPublish`) est dans scenario1OldRule.test.ts (module de règle remplacé dans ce fichier
  * seulement).
@@ -43,7 +43,7 @@ describe('Y-TECH-03 scénario 1 : instantané orphelin évincé, première suppr
     expect(obs.cycles[1]?.events.filter((e) => e.startsWith('orphan-epoch-'))).toEqual(['orphan-epoch-deleted']);
     expect(obs.cycles[2]?.events.filter((e) => e.startsWith('orphan-epoch-'))).toEqual(['orphan-epoch-cleared']);
     // Publication dès le premier cycle malgré l'échec (l'instantané orphelin ne borne rien) ; aucun publish-deferred à aucun cycle.
-    expect(obs.cycles[0]?.ownFiles).toContain('state.ctx');
+    expect(obs.cycles[0]?.ownFiles).toContain('state.spx');
     expect(events(b, 'publish-deferred')).toBe(0);
     expect(obs.cycles.every((c) => !c.warnings.includes('publish-blocked'))).toBe(true);
     expect(b.folder.devices.get(B_ID)?.epochs.has(ORPHAN) ?? false).toBe(false);

@@ -55,7 +55,7 @@ describe('récapitulatifs sur l’iPhone : contenu du jour (N-04 critères 10 et
   it('le corps des jours suivants est le texte générique, jamais le contenu du jour', async () => {
     await seedReminderTask(h.container, { title: 'Confidentiel', date: '2026-10-09', time: null, offsets: [] });
     await replanNotifications(h.container, 'open');
-    expect(recap(h, 'recap:morning:2026-10-09')?.body).toBe('Ouvrez CircleTasks pour voir votre journée');
+    expect(recap(h, 'recap:morning:2026-10-09')?.body).toBe('Ouvrez Spartiate pour voir votre journée');
     expect(JSON.stringify(recap(h, 'recap:evening:2026-10-09'))).not.toContain('Confidentiel');
   });
 });

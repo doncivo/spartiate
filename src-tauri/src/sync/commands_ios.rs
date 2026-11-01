@@ -135,7 +135,7 @@ pub async fn sync_folder_info<R: Runtime>(app: AppHandle<R>, window: WebviewWind
 }
 
 /// Sélecteur de dossier du plugin (`UIDocumentPickerViewController`, §22 point 5) : annulé → `null`, rien n'est écrit, aucune erreur ;
-/// erreur du sélecteur → code seul. Choisir la racine d'iCloud Drive crée puis lie `CircleTasks` dessous (Swift).
+/// erreur du sélecteur → code seul. Choisir la racine d'iCloud Drive crée puis lie `Spartiate` dessous (Swift).
 #[tauri::command]
 pub async fn sync_folder_choose<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>, state: State<'_, SyncState>) -> SyncResult<Option<FolderInfo>> {
     require_main(&window)?;

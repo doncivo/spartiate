@@ -5,12 +5,12 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 
-use circletasks_lib::calendars::google::{self, pkce_challenge, GoogleEndpoints};
-use circletasks_lib::calendars::http::HttpEnv;
-use circletasks_lib::calendars::vault::{MemoryVault, SecretVault};
-use circletasks_lib::calendars::web_auth::{self, authorize_ios, ios_redirect, parse_redirect, IosClientConfig, TransportWebAuth, WebAuthError, WebAuthRunner, WebAuthSession};
+use spartiate_lib::calendars::google::{self, pkce_challenge, GoogleEndpoints};
+use spartiate_lib::calendars::http::HttpEnv;
+use spartiate_lib::calendars::vault::{MemoryVault, SecretVault};
+use spartiate_lib::calendars::web_auth::{self, authorize_ios, ios_redirect, parse_redirect, IosClientConfig, TransportWebAuth, WebAuthError, WebAuthRunner, WebAuthSession};
 #[cfg(debug_assertions)]
-use circletasks_lib::sync::log;
+use spartiate_lib::sync::log;
 use serde_json::Value;
 
 use crate::support::fake_web_auth::{FakeWebAuth, CONTRACT};
@@ -127,7 +127,7 @@ async fn run_with(consent: Consent, fake: FakeWebAuth) -> Run {
     let calls = fake.calls();
     let result = {
         let env = HttpEnv { vault: &vault, google: &endpoints, client: Some(&config) };
-        authorize_ios(&env, "circletasks.calendar.google.a1", runner(fake), &WebAuthSession::new()).await
+        authorize_ios(&env, "spartiate.calendar.google.a1", runner(fake), &WebAuthSession::new()).await
     };
     Run { result, vault, google: google_mock, calls }
 }
@@ -200,7 +200,7 @@ async fn k_tech_01_1_the_authorization_url_asks_read_only_with_pkce_s256_and_a_r
 async fn k_tech_01_2_the_code_is_exchanged_without_a_secret_and_tokens_go_to_the_vault() {
     let run = run_with(Consent::Grant, follow_google()).await;
     assert_eq!(run.result, Ok(()));
-    let tokens = google::load_tokens(&run.vault, "circletasks.calendar.google.a1").unwrap();
+    let tokens = google::load_tokens(&run.vault, "spartiate.calendar.google.a1").unwrap();
     assert_eq!((tokens.access.as_str(), tokens.refresh.as_str()), ("acc", "ref"));
     assert!(tokens.expires_at > google::now_secs() + 3000);
     let exchange = run.google.mock.requests_to("/token");
@@ -221,7 +221,7 @@ async fn k_tech_01_2_a_falsified_return_url_is_rejected_before_anything_else_and
     ] {
         let run = run_with(consent, follow_google()).await;
         assert_eq!(run.result, Err(expected.to_owned()));
-        assert_eq!(run.vault.get("circletasks.calendar.google.a1").unwrap(), None);
+        assert_eq!(run.vault.get("spartiate.calendar.google.a1").unwrap(), None);
         assert!(run.google.mock.requests_to("/token").is_empty(), "aucun échange de code");
     }
 }
@@ -252,7 +252,7 @@ async fn k_tech_01_2_plugin_rejections_map_to_distinct_codes_and_write_nothing()
         let code = plugin_code.to_owned();
         let run = run_with(Consent::Grant, FakeWebAuth::new(move |_, _| Err(code.clone()))).await;
         assert_eq!(run.result, Err(expected.to_owned()), "{plugin_code}");
-        assert_eq!(run.vault.get("circletasks.calendar.google.a1").unwrap(), None);
+        assert_eq!(run.vault.get("spartiate.calendar.google.a1").unwrap(), None);
         assert!(run.google.mock.requests_to("/token").is_empty());
     }
     assert_ne!(WebAuthError::Unavailable.code(), WebAuthError::Failed.code(), "messages distincts côté écran");
@@ -270,7 +270,7 @@ async fn k_tech_01_2_a_google_token_error_after_a_good_return_writes_nothing() {
     .await;
     // Code refusé : jamais présenté comme une annulation de l'utilisateur.
     assert_eq!(run.result, Err("reauth-required".to_owned()));
-    assert_eq!(run.vault.get("circletasks.calendar.google.a1").unwrap(), None);
+    assert_eq!(run.vault.get("spartiate.calendar.google.a1").unwrap(), None);
 }
 
 #[tokio::test]
@@ -290,19 +290,19 @@ async fn k_tech_01_2_only_one_session_at_a_time() {
         release_rx.lock().unwrap().recv().unwrap();
         raw_get_location(url).ok_or_else(|| "failed".to_owned())
     });
-    let first = authorize_ios(&env, "circletasks.calendar.google.a1", runner(blocking), &session);
+    let first = authorize_ios(&env, "spartiate.calendar.google.a1", runner(blocking), &session);
     let second = async {
         started_rx.recv().unwrap();
-        let rejected = authorize_ios(&env, "circletasks.calendar.google.a2", runner(follow_google()), &session).await;
+        let rejected = authorize_ios(&env, "spartiate.calendar.google.a2", runner(follow_google()), &session).await;
         release_tx.send(()).unwrap();
         rejected
     };
     let (first, second) = tokio::join!(first, second);
     assert_eq!(first, Ok(()));
     assert_eq!(second, Err("web-auth-unavailable".to_owned()));
-    assert_eq!(vault.get("circletasks.calendar.google.a2").unwrap(), None);
+    assert_eq!(vault.get("spartiate.calendar.google.a2").unwrap(), None);
     // La garde est libérée : une session suivante réussit.
-    assert_eq!(authorize_ios(&env, "circletasks.calendar.google.a3", runner(follow_google()), &session).await, Ok(()));
+    assert_eq!(authorize_ios(&env, "spartiate.calendar.google.a3", runner(follow_google()), &session).await, Ok(()));
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------

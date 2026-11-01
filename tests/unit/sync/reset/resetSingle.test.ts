@@ -25,7 +25,7 @@ describe('appareil seul (critère 14)', () => {
     expect(after.kid).not.toBe(before.kid);
     expect(after.nextKid ?? null).toBeNull();
     expect(a.platform.testing.resetRecord()).toBeNull();
-    // L'époque visée est ouverte et l'état publié sous la nouvelle clé dans state.ctx ; l'ancienne époque a disparu.
+    // L'époque visée est ouverte et l'état publié sous la nouvelle clé dans state.spx ; l'ancienne époque a disparu.
     const state = publishedState(a, a.id);
     expect(state?.epoch).toMatch(/^e0002-/);
     expect(state?.reset).toBeNull();

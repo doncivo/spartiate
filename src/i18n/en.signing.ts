@@ -1,9 +1,9 @@
 import type { Messages } from './types';
 
 export const signingEn: Messages['signing'] = {
-  alertTitle: 'CircleTasks is about to expire',
+  alertTitle: 'Spartiate is about to expire',
   alertBody: 'Check in SideStore that the app has been refreshed (expires on {date} at {time})',
-  bannerSoon: 'CircleTasks expires in {duration}: refresh it in SideStore',
+  bannerSoon: 'Spartiate expires in {duration}: refresh it in SideStore',
   durationHours: '{n} h',
   durationMinutes: '{n} min',
   about: {
@@ -13,7 +13,7 @@ export const signingEn: Messages['signing'] = {
     remainingHours: 'in {n} h',
     remainingMinutes: 'in {n} min',
     alertAt: 'Alert planned on {date} at {time}',
-    alertSoon: 'Less than 24 h left: refresh CircleTasks in SideStore',
+    alertSoon: 'Less than 24 h left: refresh Spartiate in SideStore',
     unknown: 'Expiry date unknown: the alert before expiry is turned off',
     unknownAt: 'Last read gave no result at {time} ({code})',
     codeMissing: 'signing profile missing',

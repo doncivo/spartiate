@@ -6,7 +6,7 @@ import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '
 /**
  * Y-05 critère 6, point laissé non prouvé par la QA du lot Y2 et repris par Y-04 (critère 13 b) : **un cycle interrompu reprend où il
  * s'est arrêté** sur une file de 5 000 opérations. Le cycle de publication du PC est d'abord compté (écritures : ajouts au journal,
- * `state.ctx`, transactions), puis rejoué en mourant juste avant les écritures qui encadrent le premier ajout, celui du milieu et le dernier (avant l'ajout,
+ * `state.spx`, transactions), puis rejoué en mourant juste avant les écritures qui encadrent le premier ajout, celui du milieu et le dernier (avant l'ajout,
  * et entre l'ajout et le retrait de la file, là où l'intention `inflight` sert). Après redémarrage : file vide, chaque tâche publiée **une seule
  * fois** dans le journal du PC (aucun doublon), les 5 000 présentes sur l'iPhone (aucune perte). Aucun délai : arrêts par compteur.
  */

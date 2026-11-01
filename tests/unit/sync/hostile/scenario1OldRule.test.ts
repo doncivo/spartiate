@@ -39,7 +39,7 @@ describe('Y-TECH-03 scénario 1 avec l’ancienne règle de canPublish (critère
     const { b } = session;
     const obs = await playOrphanScenario(session, fixture.plans.find((p) => p.name === 'scenario-1-orphelin'), statusLine, 5);
     const violations = orphanScenarioViolations(obs);
-    expect(violations).toEqual(expect.arrayContaining(['orphan-epoch-relisted absent', 'dossier orphelin toujours présent', 'publication jamais reprise (aucun state.ctx)', 'publish-blocked au dernier cycle', 'publish-deferred au dernier cycle (dure)']));
+    expect(violations).toEqual(expect.arrayContaining(['orphan-epoch-relisted absent', 'dossier orphelin toujours présent', 'publication jamais reprise (aucun state.spx)', 'publish-blocked au dernier cycle', 'publish-deferred au dernier cycle (dure)']));
     // La P1 telle que vue sur l'iPhone : publish-deferred à chaque cycle, jamais « À jour ».
     expect(obs.cycles.every((c) => c.warnings.includes('publish-blocked'))).toBe(true);
     expect(events(b, 'publish-deferred')).toBe(5);

@@ -68,7 +68,7 @@ export async function installFakeBackups(page: Page, versions: readonly FakeVers
         createDaily: async (request: { day: string; replace: boolean }) => {
           check('daily');
           state.dailyCalls.push(request);
-          const name = `circletasks-daily-${request.day}.db`;
+          const name = `spartiate-daily-${request.day}.db`;
           const index = state.versions.findIndex((v) => v.name === name);
           if (index >= 0 && !request.replace) return { created: false };
           const entry = { name, kind: 'daily' as const, stamp: request.day, size: 20_480, modifiedMs: Date.now(), tasks: 0, schemaVersion: 14 };
@@ -88,7 +88,7 @@ export async function installFakeBackups(page: Page, versions: readonly FakeVers
         },
       };
     },
-    { versions, available: options.available ?? true, directory: options.directory === undefined ? 'C:\\Users\\Ali\\AppData\\Roaming\\fr.circletasks.planner\\backups' : options.directory, failFirstDaily: options.failFirstDaily ?? false },
+    { versions, available: options.available ?? true, directory: options.directory === undefined ? 'C:\\Users\\Ali\\AppData\\Roaming\\fr.spartiate.app\\backups' : options.directory, failFirstDaily: options.failFirstDaily ?? false },
   );
 }
 

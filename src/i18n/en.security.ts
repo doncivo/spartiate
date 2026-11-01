@@ -2,9 +2,9 @@ import type { Messages } from './types';
 
 export const securityEn: Messages['security'] = {
   lock: {
-    title: 'CircleTasks is locked',
+    title: 'Spartiate is locked',
     unlock: 'Unlock',
-    unlockLabel: 'Unlock CircleTasks',
+    unlockLabel: 'Unlock Spartiate',
     retry: 'Try again',
     cancelled: 'Unlock cancelled',
     failed: 'Unable to unlock ({code})',
@@ -13,15 +13,15 @@ export const securityEn: Messages['security'] = {
     settingUnreadable: 'The lock setting is unreadable: unlock to continue.',
     disable: 'Turn off the lock',
     disableConfirmTitle: 'Turn off the lock?',
-    disableConfirmText: 'CircleTasks data will be readable again without protection',
+    disableConfirmText: 'Spartiate data will be readable again without protection',
     disableConfirm: 'Turn off',
     disableFailed: 'The lock could not be turned off: you can try again.',
     loadFailed: 'The lock screen could not be loaded. Your data is intact: restart the app.',
   },
   reason: {
-    unlock: 'Unlock CircleTasks',
-    enable: 'Turn on the CircleTasks lock',
-    disable: 'Turn off the CircleTasks lock',
+    unlock: 'Unlock Spartiate',
+    enable: 'Turn on the Spartiate lock',
+    disable: 'Turn off the Spartiate lock',
   },
   cancel: 'Cancel',
   settings: {

@@ -7,7 +7,7 @@ import { fr } from '../../src/i18n/fr';
 import { decodePng, measureRegion } from './pixels';
 
 /**
- * REL-TECH-01 (ADR 0016) : test de fumée du VRAI binaire Windows. Le binaire `circletasks.exe` (build debug, front embarqué, identifiant de
+ * REL-TECH-01 (ADR 0016) : test de fumée du VRAI binaire Windows. Le binaire `spartiate.exe` (build debug, front embarqué, identifiant de
  * fumée, dossier cargo dédié `target/smoke` : `npm run test:smoke:build`) est lancé sur un dossier de données neuf ; la WebView2 est observée
  * par CDP (port de `src-tauri/tauri.smoke.conf.json`) ; puis la fenêtre Win32 est capturée en PNG (PrintWindow, `window-capture.ps1`) et ses
  * pixels sont mesurés en Node (`pixels.ts`, dont le détecteur est prouvé par `tests/unit/smoke/pixels.test.ts`). Les deux niveaux sont
@@ -16,9 +16,9 @@ import { decodePng, measureRegion } from './pixels';
 const ROOT = resolve(import.meta.dirname, '..', '..');
 const CONF_PATH = join(ROOT, 'src-tauri', 'tauri.smoke.conf.json');
 const CAPTURE_SCRIPT = join(ROOT, 'tests', 'smoke', 'window-capture.ps1');
-const BINARY = join(ROOT, 'src-tauri', 'target', 'smoke', 'debug', 'circletasks.exe');
+const BINARY = join(ROOT, 'src-tauri', 'target', 'smoke', 'debug', 'spartiate.exe');
 /** Seul identifiant dont les dossiers de données peuvent être effacés (ADR 0016). */
-const SMOKE_IDENTIFIER = 'fr.circletasks.planner.smoke';
+const SMOKE_IDENTIFIER = 'fr.spartiate.app.smoke';
 /** Démarrage complet de l'app (base neuve, migrations, écrans) sur un runner chargé. */
 const APP_READY_TIMEOUT_MS = 90_000;
 /** Part maximale de pixels quasi noirs admise dans la zone cliente (fenêtre noire du 2026-10-10 : 100 %). */
@@ -159,7 +159,7 @@ test('le binaire Windows démarre sur une base neuve et affiche l’écran du jo
     // 2. Les pixels : la fenêtre Win32 existe, est visible, non réduite ; sa zone cliente (sans cadre ni barre de titre) n'est pas noire.
     const capture = captureWindow(app.pid ?? 0, capturePath);
     await testInfo.attach('capture.json', { body: JSON.stringify(capture), contentType: 'application/json' });
-    expect(capture.found, 'fenêtre « CircleTasks » introuvable pour le processus').toBe(true);
+    expect(capture.found, 'fenêtre « Spartiate » introuvable pour le processus').toBe(true);
     expect(capture.visible, 'fenêtre principale invisible').toBe(true);
     expect(capture.iconic, 'fenêtre principale réduite').toBe(false);
     expect(capture.clientWidth, 'largeur de la zone cliente').toBeGreaterThanOrEqual(1024);
@@ -180,7 +180,7 @@ test('le binaire Windows démarre sur une base neuve et affiche l’écran du jo
     if (existsSync(capturePath)) await testInfo.attach('fenetre.png', { path: capturePath, contentType: 'image/png' });
     await browser?.close().catch(() => undefined);
     killTree(app);
-    // L'app se cache dans la zone de notification à la fermeture : sa fin est attendue et vérifiée (jamais un circletasks.exe de fumée qui reste).
+    // L'app se cache dans la zone de notification à la fermeture : sa fin est attendue et vérifiée (jamais un spartiate.exe de fumée qui reste).
     await expect.poll(() => app.exitCode !== null || app.signalCode !== null, { message: 'binaire de fumée toujours actif après taskkill', timeout: 15_000 }).toBe(true);
     if (output.length > 0) await testInfo.attach('binaire.txt', { body: output.join(''), contentType: 'text/plain' });
   }

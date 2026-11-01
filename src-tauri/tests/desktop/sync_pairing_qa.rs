@@ -1,8 +1,8 @@
 //! Y-06 (QA) critères 8, 9 et 18 : arrivée de l'appareil associé (une seule détection, jamais par un appareil déjà associé, référence
 //! conservée après « Nouveau code », remise à zéro à chaque nouvelle fenêtre) et fermeture par chaque chemin côté registre.
 
-use circletasks_lib::sync::pairing::{Caller, PairingMode, PairingRegistry, PAIRING_WINDOW};
-use circletasks_lib::sync::SyncCode;
+use spartiate_lib::sync::pairing::{Caller, PairingMode, PairingRegistry, PAIRING_WINDOW};
+use spartiate_lib::sync::SyncCode;
 
 use crate::sync_support::{DEV_B, DEV_C, NOW};
 

@@ -101,7 +101,7 @@ describe('échec d’un oubli et suppression en attente (critère 15 d)', () => 
     await settle();
     const forget = { failure: { deviceId: PHONE, code: 'not-foreground', at: NOW as IsoDateTime, step: 'declare' as const }, deletions: [] };
     set({ phase: 'idle', devices: DEVICES, forget });
-    expect(text()).toContain('L’oubli de iPhone a échoué : CircleTasks n’était pas au premier plan');
+    expect(text()).toContain('L’oubli de iPhone a échoué : Spartiate n’était pas au premier plan');
     // Redémarrage : le service repart sans état ; l'échec gardé dans la base est montré dès la première lecture.
     await db.data.repos.sync.setMeta(FORGET_META.failure, JSON.stringify(forget.failure));
     await db.data.repos.sync.saveState(SELF, { isSelf: true, platform: 'windows', status: 'active' });

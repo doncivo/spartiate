@@ -48,7 +48,7 @@ describe('UpdateBanner (D-03)', () => {
     desktop.nextCheck = fakePendingUpdate('1.2.0');
     renderBanner();
     await check();
-    const banner = screen.getByRole('region', { name: 'Mise à jour de CircleTasks' });
+    const banner = screen.getByRole('region', { name: 'Mise à jour de Spartiate' });
     expect(within(banner).getByText('Nouvelle version 1.2.0 disponible')).toBeInTheDocument();
     expect(within(banner).getAllByRole('button').map((b) => b.textContent)).toEqual([
       'Voir les notes',

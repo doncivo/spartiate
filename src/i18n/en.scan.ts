@@ -81,7 +81,7 @@ export const scanEn: Messages['scan'] = {
     step1: 'Open Windows Settings › Time & language › Language & region.',
     step2: 'Choose French › Language options.',
     step3: 'Install “Text recognition”.',
-    step4: 'Restart CircleTasks.',
+    step4: 'Restart Spartiate.',
     recheck: 'Check again',
     rechecking: 'Checking',
     stillMissing: 'The pack is not detected yet. Restart the app after installing it.',
@@ -111,9 +111,9 @@ export const scanEn: Messages['scan'] = {
   code: 'Code: {code}',
   cleanupFailed: 'A temporary copy of a previous photo could not be deleted from the iPhone. Restart the app.',
   cameraHint: {
-    text: 'To photograph a list, allow the camera: iOS will ask the first time. If nothing happens, open Settings › CircleTasks › Camera.',
+    text: 'To photograph a list, allow the camera: iOS will ask the first time. If nothing happens, open Settings › Spartiate › Camera.',
     openSettings: 'Open settings',
-    settingsFailed: 'Settings could not be opened. Open Settings › CircleTasks › Camera.',
+    settingsFailed: 'Settings could not be opened. Open Settings › Spartiate › Camera.',
   },
   checking: 'Checking the reading engine',
 };

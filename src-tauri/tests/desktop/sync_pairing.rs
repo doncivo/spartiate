@@ -5,11 +5,11 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
-use circletasks_lib::sync::consent::{dialog_spec, dialog_texts, ConsentGate, ConsentKind, ConsentUi, IDCANCEL, ID_CONFIRM};
-use circletasks_lib::sync::consent_ios::IosConsentUi;
-use circletasks_lib::sync::limits::{CONSENT_BLOCK_MS, PAIRING_VALIDITY_MS};
-use circletasks_lib::sync::pairing::{is_pairing_url, Caller, PairingMode, PairingRegistry, PAIRING_WINDOW};
-use circletasks_lib::sync::SyncCode;
+use spartiate_lib::sync::consent::{dialog_spec, dialog_texts, ConsentGate, ConsentKind, ConsentUi, IDCANCEL, ID_CONFIRM};
+use spartiate_lib::sync::consent_ios::IosConsentUi;
+use spartiate_lib::sync::limits::{CONSENT_BLOCK_MS, PAIRING_VALIDITY_MS};
+use spartiate_lib::sync::pairing::{is_pairing_url, Caller, PairingMode, PairingRegistry, PAIRING_WINDOW};
+use spartiate_lib::sync::SyncCode;
 
 use crate::support::fake_bookmark::{FakePlugin, SharedPlugin};
 use crate::sync_support::{FakeUi, TestClock, NOW};
@@ -78,7 +78,7 @@ fn gate(dir: &std::path::Path, rig: &dyn Rig, clock: &Arc<TestClock>) -> Consent
     ConsentGate::new(dir.to_path_buf(), rig.ui(), clock.clock())
 }
 
-fn code(result: Result<impl Sized, circletasks_lib::sync::SyncError>) -> SyncCode {
+fn code(result: Result<impl Sized, spartiate_lib::sync::SyncError>) -> SyncCode {
     match result {
         Ok(_) => panic!("erreur attendue"),
         Err(error) => error.code,
@@ -181,11 +181,11 @@ struct SlowUi {
     opened: std::sync::mpsc::SyncSender<()>,
 }
 
-impl circletasks_lib::sync::consent::ConsentUi for SlowUi {
+impl spartiate_lib::sync::consent::ConsentUi for SlowUi {
     fn owner_ready(&self, _owner: isize) -> bool {
         true
     }
-    fn ask(&self, _spec: &circletasks_lib::sync::consent::DialogSpec) -> bool {
+    fn ask(&self, _spec: &spartiate_lib::sync::consent::DialogSpec) -> bool {
         self.inner.prompts.fetch_add(1, Ordering::SeqCst);
         let _ = self.opened.send(());
         let _ = self.release.lock().unwrap().recv();

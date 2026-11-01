@@ -1,7 +1,7 @@
 //! OCR Windows (Q-04) : contrôle des entrées, nettoyage des lignes, et lecture réelle d'images de test
 //! (tests/fixtures/ocr) avec Windows.Media.Ocr si le pack de langue français est installé.
 
-use circletasks_lib::ocr::{check_dimensions, clean_lines, pick_french, recognize_bytes, sniff_image, status, validate_image, ImageKind, OcrError, MAX_IMAGE_BYTES, MAX_LINES};
+use spartiate_lib::ocr::{check_dimensions, clean_lines, pick_french, recognize_bytes, sniff_image, status, validate_image, ImageKind, OcrError, MAX_IMAGE_BYTES, MAX_LINES};
 
 const PRINTED: &[u8] = include_bytes!("../../../tests/fixtures/ocr/liste-imprimee.png");
 const PHOTO: &[u8] = include_bytes!("../../../tests/fixtures/ocr/photo-liste.jpg");

@@ -1,7 +1,7 @@
 [package]
 name = "tauri-plugin-notification-actions"
 version = "0.1.0"
-description = "CircleTasks : actions « Fait » et « +15 min » des notifications sur iPhone (ADR 0012 avenant N-03). Délégué des notifications, catégories, fichier durable des actions reçues."
+description = "Spartiate : actions « Fait » et « +15 min » des notifications sur iPhone (ADR 0012 avenant N-03). Délégué des notifications, catégories, fichier durable des actions reçues."
 authors = ["Ali Cherif"]
 edition = "2021"
 rust-version = "1.80"

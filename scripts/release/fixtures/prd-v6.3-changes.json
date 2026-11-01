@@ -1,0 +1,213 @@
+{
+  "source": "docs/archive/PRD-v6.2.md",
+  "changes": [
+    {
+      "id": "v63-titre",
+      "decision": "D-49",
+      "section": "00",
+      "old": "# PRD Spartiate v6.2 — document de référence (PC + iPhone, fork CircleTasks)",
+      "new": "# PRD Spartiate v6.3 — document de référence (PC + iPhone, fork CircleTasks)",
+      "why": "Version portée à 6.3 dans le titre du document découpé."
+    },
+    {
+      "id": "v63-statut",
+      "decision": "D-49",
+      "section": "00",
+      "old": "**Version 6.2 — document de référence unique du projet Spartiate.**",
+      "new": "**Version 6.3 — document de référence unique du projet Spartiate (lu par chapitre : `docs/prd/README.md`, D-49).**",
+      "why": "Le PRD vivant devient le dossier docs/prd/ (un chapitre par section), docs/PRD.md renvoie à l’index."
+    },
+    {
+      "id": "v63-vivant",
+      "decision": "D-49",
+      "section": "00",
+      "old": "le PRD vivant est `docs/PRD.md` dans le dépôt",
+      "new": "le PRD vivant est le dossier `docs/prd/` (index `docs/prd/README.md` ; `docs/PRD.md` n’est plus qu’une page de renvoi, D-49) dans le dépôt",
+      "why": "Même motif : le fichier vivant est le dossier de chapitres ; docs/PRD.md n’est plus qu’une page de renvoi."
+    },
+    {
+      "id": "v63-revision",
+      "decision": "D-49",
+      "section": "00",
+      "old": "### 0.1 Ce qui change par rapport à la v5.1",
+      "new": "**Révision 6.3 (1er novembre 2026, SPA-001a)** — portage des décisions déjà approuvées, sans autre changement de fond : D-47 (coquilles réelles `AppShell` / `TabRail`, rupture 1 024 px, commandes CI réelles, `contrast.test.ts`, caméra seule sur iPhone, `settings` hors catalogue, quotas de sauvegarde, `withGlobalTauri` explicite), D-48 (rubrique « Relais » au gabarit de ticket § 24.5), D-49 (PRD découpé en `docs/prd/NN-<titre>.md`, un chapitre par section), D-58 (versions 0.1.0 / 0.1.1) et D-59 (H-3 scindée en H-3a, H-3b, H-3c). Les corrections sont listées dans `scripts/release/fixtures/prd-v6.3-changes.json` ; la v6.2 est conservée dans `docs/archive/PRD-v6.2.md`.\n\n### 0.1 Ce qui change par rapport à la v5.1",
+      "why": "Journal de la révision 6.3 : liste des décisions portées (D-47, D-48, D-49, D-58, D-59), sans aucun autre changement de fond."
+    },
+    {
+      "id": "v7-tag-v001",
+      "decision": "D-58",
+      "section": "07",
+      "old": "tag `v0.0.1` publié sur `spartiate-releases`",
+      "new": "tag `v0.1.0` publié sur `spartiate-releases` (N = 0.1.0, aucun tag 0.0.x ; `RELEASES_TOKEN` disponible avant SPA-002, D-58)",
+      "why": "N = 0.1.0 (identité SPA-001a), aucun tag 0.0.x ; RELEASES_TOKEN disponible avant SPA-002."
+    },
+    {
+      "id": "v7-tag-v002",
+      "decision": "D-58",
+      "section": "07",
+      "old": "`v0.0.2` reçue par la bannière de mise à jour",
+      "new": "`v0.1.1` reçue par la bannière de mise à jour",
+      "why": "N+1 = 0.1.1 pour l’essai de mise à jour."
+    },
+    {
+      "id": "v7-tag-ios-001",
+      "decision": "D-58",
+      "section": "07",
+      "old": "tag `ios-v0.0.1` publié",
+      "new": "tag `ios-v0.1.0` publié",
+      "why": "Tag iPhone aligné sur N = 0.1.0."
+    },
+    {
+      "id": "v7-tag-ios-002",
+      "decision": "D-58",
+      "section": "07",
+      "old": "`ios-v0.0.2` appliquée par",
+      "new": "`ios-v0.1.1` appliquée par",
+      "why": "Tag iPhone aligné sur N+1 = 0.1.1."
+    },
+    {
+      "id": "v7-healthkit",
+      "decision": "D-59",
+      "section": "07",
+      "old": "la mise en page fidèle aux maquettes est SPA-009 (D-43).",
+      "new": "la mise en page fidèle aux maquettes est SPA-009 (D-43). **HealthKit (D-59)** : le gate I0 exige H-3a (entitlement présent dans l’artefact signé, SPA-003) prouvée ou `BLOCKED` documenté, et H-3b (autorisation, lecture `bodyMass` et `stepCount`, SPA-006) `CONFIRMED` ou `BLOCKED` avec fallback saisie manuelle ; H-3c (écriture puis suppression d’un échantillon **créé par Spartiate** : I1 pour la séance, I5 pour le reste) n’est pas un critère I0 ; jamais de suppression d’un échantillon d’une autre source.",
+      "why": "Critères HealthKit du gate I0 : H-3 scindée en H-3a, H-3b, H-3c ; H-3c n’est pas un critère I0."
+    },
+    {
+      "id": "v18-coquille",
+      "decision": "D-47",
+      "section": "18",
+      "old": "seule la coquille (`src/ui/shell/MobileShell.tsx`, `DesktopShell.tsx`) change, choisie par `platform.kind` au démarrage.",
+      "new": "seule la coquille change : `src/ui/AppShell.tsx` et `src/ui/TabRail.tsx`, dont la disposition est choisie par `useLayout()` (`src/ui/useLayout.ts`, rupture à 1 024 px, `PC_MIN_WIDTH_PX`) et `detectOs()` (`src/platform/runtime.ts`) ; pas de `MobileShell` / `DesktopShell` ni de `platform.kind` (D-47).",
+      "why": "Coquilles réelles : AppShell / TabRail, useLayout() et detectOs(), pas de MobileShell / DesktopShell / platform.kind."
+    },
+    {
+      "id": "v18-tokens",
+      "decision": "D-47",
+      "section": "18",
+      "old": "Tokens dans `src/ui/tokens.css`",
+      "new": "Tokens dans `src/ui/theme/tokens.css`",
+      "why": "Le fichier réel des tokens est src/ui/theme/tokens.css."
+    },
+    {
+      "id": "v18-layout",
+      "decision": "D-47",
+      "section": "18",
+      "old": "(`platform.kind` ne choisit que la coquille § 18.1)",
+      "new": "(`useLayout()` ne choisit que la disposition de la coquille § 18.1)",
+      "why": "useLayout() ne choisit que la disposition de la coquille."
+    },
+    {
+      "id": "v19-photos",
+      "decision": "D-47",
+      "section": "19",
+      "old": "| `NSCameraUsageDescription` | Scan et photo de repas | Oui (I4) |",
+      "new": "| `NSCameraUsageDescription` | Scan et photo de repas | Oui (I4) |\n| `NSPhotoLibraryUsageDescription` | **Interdite** (`forbiddenKeys` de `plist-contract.json`) : sur iPhone, photo de repas et étiquette passent par la caméra seule ; l’import d’image reste une fonction PC ; toute ouverture de la photothèque demande un ADR (D-47) | Oui |",
+      "why": "plist-contract.json interdit NSPhotoLibraryUsageDescription : photo de repas et étiquette passent par la caméra seule sur iPhone."
+    },
+    {
+      "id": "v20-settings",
+      "decision": "D-47",
+      "section": "20",
+      "old": "Non en I0 ; tout réglage partagé est une décision explicite | I0 |",
+      "new": "Non en I0 ; tout réglage partagé est une décision explicite ; le catalogue hérité publie encore des clés de `settings` : SPA-001b les retire explicitement du catalogue et des chemins de publication (D-47) | I0 |",
+      "why": "Le catalogue hérité publie encore des clés de settings : SPA-001b les retire explicitement."
+    },
+    {
+      "id": "v21-quotas",
+      "decision": "D-47",
+      "section": "21",
+      "old": "conservées avec leurs propres quotas",
+      "new": "conservées avec leurs propres quotas (réels : quotidiennes 14, pré-migration 5, pré-restauration 3, D-47)",
+      "why": "Quotas de sauvegarde réels : quotidiennes 14, pré-migration 5, pré-restauration 3."
+    },
+    {
+      "id": "v22-global",
+      "decision": "D-47",
+      "section": "22",
+      "old": "`withGlobalTauri: false`,",
+      "new": "`withGlobalTauri: false` (explicite dans `tauri.conf.json` depuis SPA-001a ; absent avant, valeur par défaut, D-47),",
+      "why": "withGlobalTauri absent de tauri.conf.json avant 001a (valeur par défaut false) : rendu explicite."
+    },
+    {
+      "id": "v22-audit",
+      "decision": "D-47",
+      "section": "22",
+      "old": "`npm audit` et `cargo audit` en CI (jobs CircleTasks repris)",
+      "new": "`cargo audit` en CI (job repris) ; `npm audit` à ajouter à `tests.yml` (SPA-001b, lot workflows, D-47)",
+      "why": "tests.yml ne lance que cargo audit : npm audit est à ajouter."
+    },
+    {
+      "id": "v23-contraste",
+      "decision": "D-47",
+      "section": "23",
+      "old": "| Tout `src/` | Zéro erreur |",
+      "new": "| Tout `src/` ; contraste AA : `src/ui/theme/contrast.test.ts` (Vitest, paires CircleTasks héritées ; SPA-009 l’adapte aux tokens § 18.4, aucun script `test:contrast`, D-47) | Zéro erreur |",
+      "why": "Un test de contraste Vitest existe déjà : SPA-009 l’adapte aux tokens § 18.4 au lieu de créer un script."
+    },
+    {
+      "id": "v23-clippy",
+      "decision": "D-47",
+      "section": "23",
+      "old": "`cargo clippy --locked -- -D warnings`, `cargo fmt --check` | Commandes",
+      "new": "`cargo clippy --locked -- -D warnings`, `cargo fmt --check` (à ajouter à `tests.yml`, SPA-001b lot workflows : il ne les lance pas, D-47) | Commandes",
+      "why": "tests.yml ne lance ni clippy ni fmt : à ajouter en SPA-001b (lot workflows)."
+    },
+    {
+      "id": "v23-ci",
+      "decision": "D-47",
+      "section": "23",
+      "old": "windows (`cargo test`, smoke Windows) |",
+      "new": "windows (`cargo test`, smoke Windows) ; ne lance ni `cargo clippy`, ni `cargo fmt --check`, ni `npm audit` : à ajouter (SPA-001b, lot workflows, D-47) |",
+      "why": "Même constat dans la description du workflow tests.yml."
+    },
+    {
+      "id": "v24-relais",
+      "decision": "D-48",
+      "section": "24",
+      "old": "## Preuve attendue (log CI, capture, vecteur)\n```",
+      "new": "## Preuve attendue (log CI, capture, vecteur)\n## Relais (auteur · relecteur obligatoire · livrable · test de réception · dépendances)\n```\n\nLa rubrique « Relais » (D-48) est un tableau d’une ligne par lot : **auteur**, **relecteur obligatoire**, **livrable**, **test de réception**, **dépendances**. Elle ne duplique pas les fiches `.claude/agents/`, qui restent la référence des règles.",
+      "why": "Le gabarit de ticket reçoit la rubrique « Relais » (auteur · relecteur obligatoire · livrable · test de réception · dépendances)."
+    },
+    {
+      "id": "v25-spa009",
+      "decision": "D-47",
+      "section": "25",
+      "old": "Coquilles `MobileShell` / `DesktopShell` fidèles aux maquettes § 18.5, 5 onglets, états dégradés § 18.3, scénarios `visual` Spartiate, `test:contrast` | M | Paires de captures 440 / 1 440 px relues ; `test:contrast` vert",
+      "new": "Coquilles `src/ui/AppShell.tsx` / `TabRail.tsx` fidèles aux maquettes § 18.5, 5 onglets, états dégradés § 18.3, scénarios `visual` Spartiate, adaptation de `src/ui/theme/contrast.test.ts` aux tokens § 18.4 | M | Paires de captures 440 / 1 440 px relues ; `contrast.test.ts` vert",
+      "why": "SPA-009 : coquilles réelles et adaptation de contrast.test.ts."
+    },
+    {
+      "id": "v26-h3",
+      "decision": "D-59",
+      "section": "26",
+      "old": "| H-3 | L'entitlement HealthKit survit à la re-signature SideStore (AltSign) ; conditionne lecture et écriture Apple Santé | **UNVERIFIED — risque I0** | SPA-006 |",
+      "new": "| H-3a | L'entitlement HealthKit est présent dans l'artefact signé (`codesign -d --entitlements`) et survit à la re-signature SideStore (AltSign) | **UNVERIFIED — risque I0** | SPA-003 |\n| H-3b | Autorisation Santé accordée, lecture de `bodyMass` et `stepCount` sur l'IPA SideStore | **UNVERIFIED — risque I0** | SPA-006 |\n| H-3c | Écriture puis suppression d'un échantillon **créé par Spartiate** (jamais d'une autre source) | UNVERIFIED | I1 (séance), I5 (reste) |\n\nLes renvois « H-3 » du texte désignent la famille H-3a, H-3b, H-3c (D-59).",
+      "why": "H-3 scindée : H-3a entitlement dans l’artefact signé, H-3b autorisation et lecture, H-3c écriture puis suppression d’un échantillon créé par Spartiate."
+    },
+    {
+      "id": "v26-h19a",
+      "decision": "D-47",
+      "section": "26",
+      "old": "rupture unique 900 px) couvrent tous les usages, y compris zoom et texte agrandi, sans débordement autour de 900 px",
+      "new": "rupture unique 1 024 px, `PC_MIN_WIDTH_PX` de `src/ui/useLayout.ts`) couvrent tous les usages, y compris zoom et texte agrandi, sans débordement autour de 1 024 px",
+      "why": "H-19a alignée sur la rupture réelle de 1 024 px (PC_MIN_WIDTH_PX), non 900 px."
+    },
+    {
+      "id": "v26-h19a-relecture",
+      "decision": "D-47",
+      "section": "26",
+      "old": "plus relecture à 900 px et en Dynamic Type",
+      "new": "plus relecture à 1 024 px et en Dynamic Type",
+      "why": "Relecture visuelle à la rupture réelle."
+    },
+    {
+      "id": "v28-tokens",
+      "decision": "D-47",
+      "section": "28",
+      "old": "Tokens de couleur dans src/ui/tokens.css",
+      "new": "Tokens de couleur dans src/ui/theme/tokens.css",
+      "why": "Le fichier réel des tokens est src/ui/theme/tokens.css."
+    }
+  ]
+}

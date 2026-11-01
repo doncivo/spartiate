@@ -1,6 +1,6 @@
 //! Y-11 « Je réinitialise la synchronisation avec une nouvelle clé » (ADR 0011 sections 2.2, 9.1, 11.1, 14.3, 14.4 et 18 point 2) :
 //! table de cas commune avec `epoch.ts`, `sync_reset_key` (refus avant la boîte, précondition, confirmation, `K2` sous `.next`, reprise),
-//! annonce maîtresse (Rust), époque `n+1` sous `K2` dans `state.next.ctx`, réassociation vers `.next`, bascule (et reprise après un arrêt
+//! annonce maîtresse (Rust), époque `n+1` sous `K2` dans `state.next.spx`, réassociation vers `.next`, bascule (et reprise après un arrêt
 //! avant chacune de ses écritures), perte d'une réinitialisation simultanée (et ses arrêts), isolement des clés, journal sans clé.
 //! Horloge contrôlée : aucune attente réelle.
 
@@ -10,17 +10,17 @@ use std::sync::{Arc, Mutex};
 
 use base64::engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD};
 use base64::Engine;
-use circletasks_lib::sync::crypto::{parse_qr_text, MasterKey, Place};
-use circletasks_lib::sync::folder::FolderKind;
-use circletasks_lib::sync::forget::SYNC_NEXT_KEY_ACCOUNT;
-use circletasks_lib::sync::log;
-use circletasks_lib::sync::reset::{
+use spartiate_lib::sync::crypto::{parse_qr_text, MasterKey, Place};
+use spartiate_lib::sync::folder::FolderKind;
+use spartiate_lib::sync::forget::SYNC_NEXT_KEY_ACCOUNT;
+use spartiate_lib::sync::log;
+use spartiate_lib::sync::reset::{
     reset_precondition, reset_waiting, reset_winner, restore_candidates, valid_reset, ForgottenCut, LagReason, OpenedEpoch, PreconditionDevice, ResetCandidate, ResetKnown, RESET_FILE,
 };
-use circletasks_lib::sync::service::{AppendRequest, KeyInput, ResetView, SYNC_KEY_ACCOUNT};
-use circletasks_lib::sync::state::DeviceAck;
-use circletasks_lib::sync::{SyncCode, SyncError};
-use circletasks_lib::vault::SecretVault;
+use spartiate_lib::sync::service::{AppendRequest, KeyInput, ResetView, SYNC_KEY_ACCOUNT};
+use spartiate_lib::sync::state::DeviceAck;
+use spartiate_lib::sync::{SyncCode, SyncError};
+use spartiate_lib::vault::SecretVault;
 use serde_json::{json, Value};
 use zeroize::Zeroizing;
 
@@ -223,7 +223,7 @@ impl Net {
         self.devs.iter_mut().find(|d| d.id == id).expect("appareil")
     }
 
-    fn core(&self, id: &str) -> &circletasks_lib::sync::service::SyncCore {
+    fn core(&self, id: &str) -> &spartiate_lib::sync::service::SyncCore {
         &self.dev(id).d.core
     }
 
@@ -316,7 +316,7 @@ impl Net {
     }
 
     /// `id` importe la nouvelle clé de `from` (clé de secours de la fenêtre `pairing` de `from`), puis rejoint l'époque visée : ajout et
-    /// état sous la nouvelle clé (`state.next.ctx`).
+    /// état sous la nouvelle clé (`state.next.spx`).
     fn join(&mut self, id: &str, from: &str) -> String {
         let payload = self.core(from).pairing_payload(u64::MAX >> 12).unwrap();
         let recovery = Zeroizing::new(payload.recovery_key.clone());
@@ -410,7 +410,7 @@ fn reset_key_dialog_refused_or_background_or_rate_limited_creates_nothing() {
     assert_eq!(code(a.core.reset_key(1)), SyncCode::ConsentDenied);
     assert_eq!(a.ui.prompts(), 1);
     let spec = a.ui.last.lock().unwrap().clone().expect("boîte");
-    assert_eq!(spec.default_button, circletasks_lib::sync::consent::IDCANCEL, "« Annuler » par défaut");
+    assert_eq!(spec.default_button, spartiate_lib::sync::consent::IDCANCEL, "« Annuler » par défaut");
     assert!(spec.texts.instruction.contains("Réinitialiser"), "texte natif de native/fr.json");
     assert!(!a.vault.contains(SYNC_NEXT_KEY_ACCOUNT).unwrap(), "refus : rien n'est créé");
     assert!(net.reset_file(DEV_A).is_none());
@@ -484,7 +484,7 @@ fn announcement_is_mastered_by_rust_and_no_k2_data_precedes_it() {
         r
     };
     assert_eq!(code(early), SyncCode::StateMismatch, "état de l'époque visée avant l'annonce : refusé");
-    // Annonce exacte : acceptée ; B la lit dans le state.ctx de A, déchiffré avec la clé locale.
+    // Annonce exacte : acceptée ; B la lit dans le state.spx de A, déchiffré avec la clé locale.
     net.publish(DEV_A, notice.clone()).unwrap();
     assert_eq!(net.reset_file(DEV_A).unwrap()["stage"], "announced");
     let seen = net.read_all(DEV_B).unwrap();
@@ -501,9 +501,9 @@ fn announcement_is_mastered_by_rust_and_no_k2_data_precedes_it() {
     assert_eq!(code(net.publish(DEV_A, notice)), SyncCode::StateMismatch);
     net.publish(DEV_A, Value::Null).unwrap();
     assert_eq!(net.reset_file(DEV_A).unwrap()["stage"], "opened");
-    let next = net.fs.get(&["devices", DEV_A, "state.next.ctx"]).expect("état K2 publié dans state.next.ctx");
+    let next = net.fs.get(&["devices", DEV_A, "state.next.spx"]).expect("état K2 publié dans state.next.spx");
     assert_eq!(header_kid(&next).as_deref(), Some(kid.as_str()));
-    assert_ne!(header_kid(&net.fs.get(&["devices", DEV_A, "state.ctx"]).unwrap()).as_deref(), Some(kid.as_str()), "state.ctx reste sous K");
+    assert_ne!(header_kid(&net.fs.get(&["devices", DEV_A, "state.spx"]).unwrap()).as_deref(), Some(kid.as_str()), "state.spx reste sous K");
 }
 
 #[test]
@@ -528,7 +528,7 @@ fn files_of_the_new_epoch_never_open_with_k_and_no_key_byte_is_in_the_folder() {
             for (i, line) in lines.iter().enumerate() {
                 let line = std::str::from_utf8(line).unwrap();
                 let place = match parts.last() {
-                    Some(&"state.next.ctx") | Some(&"state.ctx") => {
+                    Some(&"state.next.spx") | Some(&"state.spx") => {
                         let h: Value = serde_json::from_slice(&bytes[..bytes.iter().position(|&b| b == b'\n').unwrap()]).unwrap();
                         Place::State { dev: parts[1], epoch: Box::leak(h["e"].as_str().unwrap().to_owned().into_boxed_str()), state_seq: h["n"].as_u64().unwrap() }
                     }
@@ -539,7 +539,7 @@ fn files_of_the_new_epoch_never_open_with_k_and_no_key_byte_is_in_the_folder() {
                 assert!(k.open(&place, line).is_err(), "{path} : illisible avec K");
                 assert!(k2.open(&place, line).is_ok(), "{path} : lisible avec K2");
             }
-            assert!(path.contains(&target) || path.ends_with("state.next.ctx"), "{path} : seuls l'époque visée et state.next.ctx sont sous K2");
+            assert!(path.contains(&target) || path.ends_with("state.next.spx"), "{path} : seuls l'époque visée et state.next.spx sont sous K2");
         }
     }
     assert!(k2_files >= 3, "état, instantané et segment sous K2");
@@ -591,12 +591,12 @@ fn single_device_switches_at_the_first_scan_and_the_old_recovery_key_imports_not
     assert_eq!(net.core(DEV_A).key_status().unwrap().next_kid, None);
     let files = net.files_of(DEV_A);
     assert!(!files.iter().any(|f| f.contains(&epoch(1, DEV_A))), "ancienne époque supprimée : {files:?}");
-    assert!(!files.iter().any(|f| f.ends_with("state.next.ctx")));
-    assert_eq!(header_kid(&net.fs.get(&["devices", DEV_A, "state.ctx"]).unwrap()).as_deref(), Some(kid.as_str()));
+    assert!(!files.iter().any(|f| f.ends_with("state.next.spx")));
+    assert_eq!(header_kid(&net.fs.get(&["devices", DEV_A, "state.spx"]).unwrap()).as_deref(), Some(kid.as_str()));
     assert_eq!(net.own_json(DEV_A)["kid"], kid, "own.json passé à la nouvelle clé");
-    // L'état suivant (écrit par le moteur) va dans state.ctx, sous K2.
+    // L'état suivant (écrit par le moteur) va dans state.spx, sous K2.
     net.publish(DEV_A, Value::Null).unwrap();
-    assert!(net.fs.get(&["devices", DEV_A, "state.next.ctx"]).is_none());
+    assert!(net.fs.get(&["devices", DEV_A, "state.next.spx"]).is_none());
     // Ancienne clé de secours : rien ne porte plus son kid.
     let before = net.dev(DEV_A).d.vault.get(SYNC_KEY_ACCOUNT).unwrap();
     assert_eq!(code(net.core(DEV_A).key_import(KeyInput::RecoveryKey(old.recovery_key()), 1)), SyncCode::KeyMismatch);
@@ -628,12 +628,12 @@ fn three_devices_reassociate_then_everyone_switches_and_k_reads_nothing_written_
     let view = net.read_all(DEV_A).unwrap().reset.unwrap();
     assert!(!view.switched);
     assert_eq!(view.waiting, vec![DEV_B.to_owned(), DEV_C.to_owned()]);
-    // B se réassocie : K2 sous .next, .v1 (K) intacte, état K2 dans state.next.ctx.
+    // B se réassocie : K2 sous .next, .v1 (K) intacte, état K2 dans state.next.spx.
     assert_eq!(net.join(DEV_B, DEV_A), target);
     assert_eq!(net.vault_kid(DEV_B, SYNC_NEXT_KEY_ACCOUNT).as_deref(), Some(kid.as_str()));
     assert_eq!(net.vault_kid(DEV_B, SYNC_KEY_ACCOUNT).as_deref(), Some(k.kid()));
     assert_eq!(net.reset_file(DEV_B).unwrap()["role"], "joined");
-    assert!(net.fs.get(&["devices", DEV_B, "state.next.ctx"]).is_some());
+    assert!(net.fs.get(&["devices", DEV_B, "state.next.spx"]).is_some());
     assert_eq!(net.dev(DEV_B).d.ui.last.lock().unwrap().as_ref().unwrap().texts.instruction, "Remplacer la clé de synchronisation de cet appareil ?", "confirmation de remplacement de Y-08");
     let view = net.read_all(DEV_A).unwrap().reset.unwrap();
     assert_eq!(view.waiting, vec![DEV_C.to_owned()], "B réassocié");
@@ -641,7 +641,7 @@ fn three_devices_reassociate_then_everyone_switches_and_k_reads_nothing_written_
     assert!(!net.read_all(DEV_B).unwrap().reset.unwrap().switched);
     // C se réassocie avec la clé de secours de B (même K2).
     net.join(DEV_C, DEV_B);
-    // A bascule ; puis B et C, qui lisent le state.ctx de A sous K2.
+    // A bascule ; puis B et C, qui lisent le state.spx de A sous K2.
     assert!(net.read_all(DEV_A).unwrap().reset.unwrap().switched);
     net.publish(DEV_A, Value::Null).unwrap();
     for id in [DEV_B, DEV_C] {
@@ -655,7 +655,7 @@ fn three_devices_reassociate_then_everyone_switches_and_k_reads_nothing_written_
     for (path, bytes) in net.fs.all_files() {
         assert_eq!(header_kid(&bytes).as_deref(), Some(kid.as_str()), "{path} : seulement la nouvelle clé");
     }
-    let state = net.fs.get(&["devices", DEV_A, "state.ctx"]).unwrap();
+    let state = net.fs.get(&["devices", DEV_A, "state.spx"]).unwrap();
     let h: Value = serde_json::from_slice(&state[..state.iter().position(|&b| b == b'\n').unwrap()]).unwrap();
     let line = std::str::from_utf8(&state[state.iter().position(|&b| b == b'\n').unwrap() + 1..state.len() - 1]).unwrap();
     let place = Place::State { dev: DEV_A, epoch: h["e"].as_str().unwrap(), state_seq: h["n"].as_u64().unwrap() };
@@ -698,7 +698,7 @@ fn a_foreign_state_with_a_forged_notice_or_an_unknown_announcer_suspends_nothing
     let mut net = Net::new(&[DEV_B]);
     net.cycle(DEV_B).unwrap();
     net.cycle(DEV_A).unwrap();
-    // Faux state.ctx d'un appareil inconnu, sous une clé inconnue, avec une annonce forgée.
+    // Faux state.spx d'un appareil inconnu, sous une clé inconnue, avec une annonce forgée.
     let stranger = MasterKey::generate().unwrap();
     let ghost = "abababab-abab-4bab-8bab-abababababab";
     let ep = epoch(1, DEV_A);
@@ -711,8 +711,8 @@ fn a_foreign_state_with_a_forged_notice_or_an_unknown_announcer_suspends_nothing
     .to_string();
     let place = Place::State { dev: ghost, epoch: &ep, state_seq: 1 };
     let line = stranger.seal(&place, state.as_bytes(), 1, SV as u32).unwrap();
-    let header = json!({ "f": "ct-state", "sm": 1, "kid": stranger.kid(), "dev": ghost, "e": ep, "n": 1 }).to_string();
-    net.fs.put(&["devices", ghost, "state.ctx"], format!("{header}\n{line}\n").as_bytes());
+    let header = json!({ "f": "sp-state", "sm": 1, "kid": stranger.kid(), "dev": ghost, "e": ep, "n": 1 }).to_string();
+    net.fs.put(&["devices", ghost, "state.spx"], format!("{header}\n{line}\n").as_bytes());
     let out = net.read_all(DEV_A).unwrap();
     assert_eq!(out.states[ghost].0, "foreign", "seulement « Clé différente »");
     // Rien n'est suspendu : A peut toujours réinitialiser et donner sa clé.
@@ -790,7 +790,7 @@ fn concurrent_resets_the_greater_epoch_wins_and_the_loser_steps_back_without_any
         assert_eq!(lost.by.as_deref(), Some(DEV_W));
         let record = net.reset_file(DEV_A).unwrap();
         assert_eq!(record["superseded"]["done"], true, "étapes (1) à (4)");
-        assert!(net.fs.get(&["devices", DEV_A, "state.next.ctx"]).is_none(), "(2) state.next.ctx supprimé");
+        assert!(net.fs.get(&["devices", DEV_A, "state.next.spx"]).is_none(), "(2) state.next.spx supprimé");
         assert!(!net.dev(DEV_A).d.vault.contains(SYNC_NEXT_KEY_ACCOUNT).unwrap(), "(3) .next effacée");
         assert_eq!(net.core(DEV_A).key_status().unwrap().next_kid, None);
         let own = net.own_json(DEV_A);
@@ -873,7 +873,7 @@ fn the_old_key_still_opens_old_files_but_reads_and_forges_nothing_written_after(
     let k = net.key_of(DEV_A, SYNC_KEY_ACCOUNT);
     let old_epoch = epoch(1, DEV_A);
     // Fichier écrit avant : encore lisible avec K tant qu'il existe (copie d'un appareil perdu, « Supprimés récemment »).
-    let old_segment = net.fs.get(&["devices", DEV_A, &old_epoch, "j-00000001.ctj"]).expect("segment de l'époque 1");
+    let old_segment = net.fs.get(&["devices", DEV_A, &old_epoch, "j-00000001.spj"]).expect("segment de l'époque 1");
     let line = std::str::from_utf8(old_segment.split(|&b| b == b'\n').nth(1).unwrap()).unwrap();
     assert!(k.open(&Place::Journal { dev: DEV_A, epoch: &old_epoch, segment: 1, index: 0 }, line).is_ok(), "ancien fichier lisible avec K");
     // Réinitialisation complète (B réassocié, tous basculent), puis A écrit dans la nouvelle époque.
@@ -886,15 +886,15 @@ fn the_old_key_still_opens_old_files_but_reads_and_forges_nothing_written_after(
     net.write(DEV_A).unwrap();
     net.publish(DEV_A, Value::Null).unwrap();
     let new_epoch = epoch(2, DEV_A);
-    let segment = net.fs.get(&["devices", DEV_A, &new_epoch, "j-00000001.ctj"]).expect("segment de l'époque 2");
+    let segment = net.fs.get(&["devices", DEV_A, &new_epoch, "j-00000001.spj"]).expect("segment de l'époque 2");
     assert_eq!(header_kid(&segment).as_deref(), Some(kid.as_str()));
     let line = std::str::from_utf8(segment.split(|&b| b == b'\n').nth(1).unwrap()).unwrap();
     assert!(k.open(&Place::Journal { dev: DEV_A, epoch: &new_epoch, segment: 1, index: 0 }, line).is_err(), "K ne lit rien d'écrit après");
     // Un détenteur de K seul forge un segment et un état dans le dossier de A : ni lus, ni appliqués, aucune suspension.
     let forged_line = k.seal(&Place::Journal { dev: DEV_A, epoch: &new_epoch, segment: 1, index: 0 }, br#"{"forged":true}"#, 1, SV as u32).unwrap();
-    let header = json!({ "f": "ct-j", "sm": 1, "kid": k.kid(), "dev": DEV_A, "e": new_epoch, "n": 1 }).to_string();
-    net.fs.put(&["devices", DEV_A, &new_epoch, "j-00000001.ctj"], format!("{header}\n{forged_line}\n").as_bytes());
-    let from = circletasks_lib::sync::store::RecordCursor { segment: 0, record: 0 };
+    let header = json!({ "f": "sp-j", "sm": 1, "kid": k.kid(), "dev": DEV_A, "e": new_epoch, "n": 1 }).to_string();
+    net.fs.put(&["devices", DEV_A, &new_epoch, "j-00000001.spj"], format!("{header}\n{forged_line}\n").as_bytes());
+    let from = spartiate_lib::sync::store::RecordCursor { segment: 0, record: 0 };
     assert_eq!(code(net.core(DEV_B).read_journal(DEV_A, &new_epoch, from, None)), SyncCode::KeyMismatch, "segment forgé sous K refusé");
     let mut forged_state = state_json(net.dev(DEV_A), json!({ "kid": k.kid(), "epoch": epoch(3, DEV_A), "at": hlc(NOW_FORGE, DEV_A) }));
     forged_state["stateSeq"] = json!(9_999);
@@ -902,8 +902,8 @@ fn the_old_key_still_opens_old_files_but_reads_and_forges_nothing_written_after(
     let text = forged_state.to_string();
     let place = Place::State { dev: DEV_A, epoch: &new_epoch, state_seq: 9_999 };
     let sealed = k.seal(&place, text.as_bytes(), 1, SV as u32).unwrap();
-    let header = json!({ "f": "ct-state", "sm": 1, "kid": k.kid(), "dev": DEV_A, "e": new_epoch, "n": 9_999 }).to_string();
-    net.fs.put(&["devices", DEV_A, "state.ctx"], format!("{header}\n{sealed}\n").as_bytes());
+    let header = json!({ "f": "sp-state", "sm": 1, "kid": k.kid(), "dev": DEV_A, "e": new_epoch, "n": 9_999 }).to_string();
+    net.fs.put(&["devices", DEV_A, "state.spx"], format!("{header}\n{sealed}\n").as_bytes());
     let seen = net.read_all(DEV_B).unwrap();
     assert_eq!(seen.states[DEV_A].0, "foreign", "état forgé sous K : clé différente, rien de lu");
     assert!(seen.reset.is_none(), "aucune suspension");
@@ -922,7 +922,7 @@ const DEV_Z: &str = "1b2c3d4e-5f6a-4b7c-8d9e-0f1a2b3c4d5e";
 impl Net {
     /// `id` ouvre une époque `e<n+1>-<id>` sous la clé locale (restauration « Appliquer partout ») : instantané, état.
     fn open_restore(&mut self, id: &str) -> Result<String, SyncError> {
-        let n = circletasks_lib::sync::names::EpochId::parse(&self.dev(id).epoch).unwrap().n + 1;
+        let n = spartiate_lib::sync::names::EpochId::parse(&self.dev(id).epoch).unwrap().n + 1;
         let target = epoch(n, id);
         let dev = self.dev_mut(id);
         dev.epoch = target.clone();
@@ -970,8 +970,8 @@ fn audit2_membership_comes_from_local_proofs_and_never_overwrites_v1() {
     let k = net.vault_kid(DEV_B, SYNC_KEY_ACCOUNT);
     net.reset_and_open(DEV_A);
     let k2 = net.vault_kid(DEV_A, SYNC_NEXT_KEY_ACCOUNT);
-    // Le state.ctx de B a disparu du dossier : B reste membre (own.json, registre, déjà publié) et importe K2 sous .next.
-    net.fs.remove(&["devices", DEV_B, "state.ctx"]);
+    // Le state.spx de B a disparu du dossier : B reste membre (own.json, registre, déjà publié) et importe K2 sous .next.
+    net.fs.remove(&["devices", DEV_B, "state.spx"]);
     net.join(DEV_B, DEV_A);
     assert_eq!(net.vault_kid(DEV_B, SYNC_KEY_ACCOUNT), k, ".v1 reste K");
     assert_eq!(net.vault_kid(DEV_B, SYNC_NEXT_KEY_ACCOUNT), k2, "K2 sous .next");
@@ -985,9 +985,9 @@ fn audit2_own_state_in_the_cloud_is_cloud_pending_never_an_ordinary_import() {
     net.cycle(DEV_A).unwrap();
     let k = net.vault_kid(DEV_B, SYNC_KEY_ACCOUNT);
     net.reset_and_open(DEV_A);
-    // Son state.ctx est en cours de livraison par iCloud (ligne incomplète) : `cloud-pending`, rien d'écrit.
-    let len = net.fs.get(&["devices", DEV_B, "state.ctx"]).unwrap().len();
-    net.fs.truncate(&["devices", DEV_B, "state.ctx"], len - 10);
+    // Son state.spx est en cours de livraison par iCloud (ligne incomplète) : `cloud-pending`, rien d'écrit.
+    let len = net.fs.get(&["devices", DEV_B, "state.spx"]).unwrap().len();
+    net.fs.truncate(&["devices", DEV_B, "state.spx"], len - 10);
     let payload = net.core(DEV_A).pairing_payload(u64::MAX >> 12).unwrap();
     let first = net.core(DEV_B).key_import(KeyInput::RecoveryKey(Zeroizing::new(payload.recovery_key.clone())), 1);
     assert_eq!(code(first), SyncCode::CloudPending);
@@ -999,13 +999,13 @@ fn audit2_own_state_in_the_cloud_is_cloud_pending_never_an_ordinary_import() {
 fn audit3_switch_rechecks_its_own_k2_state_before_erasing_anything() {
     let mut net = Net::new(&[]);
     net.cycle(DEV_A).unwrap();
-    let old_state = net.fs.get(&["devices", DEV_A, "state.ctx"]).unwrap();
+    let old_state = net.fs.get(&["devices", DEV_A, "state.spx"]).unwrap();
     let k = net.vault_kid(DEV_A, SYNC_KEY_ACCOUNT);
     net.reset_and_open(DEV_A);
     net.dev(DEV_A).stop.at("switch-3");
     assert_eq!(code(net.read_all(DEV_A)), SyncCode::Io);
-    // Un tiers remet un ancien state.ctx sous K à la place de l'état copié à l'étape 1.
-    net.fs.put(&["devices", DEV_A, "state.ctx"], &old_state);
+    // Un tiers remet un ancien state.spx sous K à la place de l'état copié à l'étape 1.
+    net.fs.put(&["devices", DEV_A, "state.spx"], &old_state);
     net.dev_mut(DEV_A).d.restart();
     assert_eq!(code(net.read_all(DEV_A)), SyncCode::StateMismatch, "bascule arrêtée");
     assert_eq!(net.vault_kid(DEV_A, SYNC_KEY_ACCOUNT), k, "K jamais effacée");
@@ -1023,7 +1023,7 @@ fn audit5_own_state_back_only_for_the_last_state_written_under_k() {
     // A publie son annonce deux fois (reprise) ; un tiers rejoue ensuite la première copie.
     let notice = serde_json::to_value(net.read_all(DEV_A).unwrap().reset.unwrap().notice.unwrap()).unwrap();
     net.publish(DEV_A, notice.clone()).unwrap();
-    let first = net.fs.get(&["devices", DEV_A, "state.ctx"]).unwrap();
+    let first = net.fs.get(&["devices", DEV_A, "state.spx"]).unwrap();
     net.publish(DEV_A, notice).unwrap();
     let dev = net.dev_mut(DEV_A);
     dev.epoch = epoch(2, DEV_A);
@@ -1033,7 +1033,7 @@ fn audit5_own_state_back_only_for_the_last_state_written_under_k() {
     net.dev_mut(DEV_A).acks = json!({});
     net.publish(DEV_A, Value::Null).unwrap();
     net.announce_and_open(DEV_W, &kid_w);
-    net.fs.put(&["devices", DEV_A, "state.ctx"], &first);
+    net.fs.put(&["devices", DEV_A, "state.spx"], &first);
     let out = net.read_all(DEV_A).unwrap();
     assert!(out.reset.unwrap().superseded.is_some());
     assert_eq!(out.states[DEV_A].0, "rollback", "un état rejoué n'est jamais repris par l'anti-rejeu de soi");
@@ -1043,8 +1043,8 @@ fn audit5_own_state_back_only_for_the_last_state_written_under_k() {
 fn audit6_old_key_withdrawal_fails_closed_when_a_state_is_still_in_the_cloud() {
     let mut net = Net::new(&[DEV_B]);
     net.cycle(DEV_B).unwrap();
-    net.fs.set_availability(&["devices", DEV_A, "state.ctx"], circletasks_lib::sync::files::Availability::Cloud);
-    *net.fs.hydrate_error.lock().unwrap() = Some(circletasks_lib::sync::files::FsError::CloudPending);
+    net.fs.set_availability(&["devices", DEV_A, "state.spx"], spartiate_lib::sync::files::Availability::Cloud);
+    *net.fs.hydrate_error.lock().unwrap() = Some(spartiate_lib::sync::files::FsError::CloudPending);
     assert_eq!(code(net.core(DEV_B).pairing_preconditions(true)), SyncCode::CloudPending, "liste incomplète : refus");
     // Hydraté au contrôle suivant : rien d'annoncé, l'ancienne clé peut être donnée.
     assert!(net.core(DEV_B).pairing_preconditions(true).is_ok());
@@ -1082,19 +1082,19 @@ fn review1_withdrawal_needs_a_seen_announcement_and_a_newer_state() {
     for id in [DEV_B, DEV_C, DEV_A] {
         net.cycle(id).unwrap();
     }
-    let before = net.fs.get(&["devices", DEV_A, "state.ctx"]).unwrap();
+    let before = net.fs.get(&["devices", DEV_A, "state.spx"]).unwrap();
     net.reset_and_open(DEV_A);
     net.join(DEV_C, DEV_A);
-    // B voit encore l'état de A d'avant l'annonce et pas son state.next.ctx (iCloud en retard) ; il importe K2 par C.
-    let saved_next = net.fs.get(&["devices", DEV_A, "state.next.ctx"]).unwrap();
-    let saved_state = net.fs.get(&["devices", DEV_A, "state.ctx"]).unwrap();
-    net.fs.put(&["devices", DEV_A, "state.ctx"], &before);
-    net.fs.remove(&["devices", DEV_A, "state.next.ctx"]);
+    // B voit encore l'état de A d'avant l'annonce et pas son state.next.spx (iCloud en retard) ; il importe K2 par C.
+    let saved_next = net.fs.get(&["devices", DEV_A, "state.next.spx"]).unwrap();
+    let saved_state = net.fs.get(&["devices", DEV_A, "state.spx"]).unwrap();
+    net.fs.put(&["devices", DEV_A, "state.spx"], &before);
+    net.fs.remove(&["devices", DEV_A, "state.next.spx"]);
     net.join(DEV_B, DEV_C);
     let view = net.read_all(DEV_B).unwrap().reset.unwrap();
     assert!(view.superseded.is_none(), "import avant l'annonce visible : jamais une perte");
-    net.fs.put(&["devices", DEV_A, "state.ctx"], &saved_state);
-    net.fs.put(&["devices", DEV_A, "state.next.ctx"], &saved_next);
+    net.fs.put(&["devices", DEV_A, "state.spx"], &saved_state);
+    net.fs.put(&["devices", DEV_A, "state.next.spx"], &saved_next);
     let view = net.read_all(DEV_B).unwrap().reset.unwrap();
     assert!(view.superseded.is_none());
     assert!(net.reset_file(DEV_B).unwrap()["noticeSeq"].as_u64().is_some(), "annonce apprise ensuite");
@@ -1253,7 +1253,7 @@ fn p17_import_failure_is_persisted_and_cleared() {
     let mut net = Net::new(&[DEV_B]);
     net.cycle(DEV_B).unwrap();
     assert!(net.import_failure(DEV_B).is_none());
-    assert_eq!(code(net.core(DEV_B).key_import(KeyInput::RecoveryKey(Zeroizing::new("CT1-AAAAA".into())), 1)), SyncCode::InvalidPairing);
+    assert_eq!(code(net.core(DEV_B).key_import(KeyInput::RecoveryKey(Zeroizing::new("SP1-AAAAA".into())), 1)), SyncCode::InvalidPairing);
     let failure = net.import_failure(DEV_B).unwrap();
     assert_eq!(failure["code"], "invalid-pairing");
     assert!(failure["at"].as_str().unwrap().ends_with('Z'));
@@ -1261,7 +1261,7 @@ fn p17_import_failure_is_persisted_and_cleared() {
     assert_eq!(code(net.core(DEV_B).key_import(KeyInput::RecoveryKey(stranger.recovery_key()), 1)), SyncCode::KeyMismatch);
     assert_eq!(net.import_failure(DEV_B).unwrap()["code"], "key-mismatch");
     // QR expiré : écrit.
-    let qr = circletasks_lib::sync::crypto::qr_text_of(&stranger, DEV_A, None, 1);
+    let qr = spartiate_lib::sync::crypto::qr_text_of(&stranger, DEV_A, None, 1);
     assert_eq!(code(net.core(DEV_B).key_import(KeyInput::QrText(Zeroizing::new((*qr).clone())), 1)), SyncCode::PairingExpired);
     assert_eq!(net.import_failure(DEV_B).unwrap()["code"], "pairing-expired");
     // Premier plan perdu : montré sur-le-champ, rien d'écrit.
@@ -1355,8 +1355,8 @@ fn second_review_pairing_ignores_a_forgotten_or_expired_device_still_in_the_clou
         net.cycle(id).unwrap();
     }
     net.core(DEV_B).device_forget(DEV_C, 1).unwrap();
-    net.fs.set_availability(&["devices", DEV_C, "state.ctx"], circletasks_lib::sync::files::Availability::Cloud);
-    *net.fs.hydrate_error.lock().unwrap() = Some(circletasks_lib::sync::files::FsError::CloudPending);
+    net.fs.set_availability(&["devices", DEV_C, "state.spx"], spartiate_lib::sync::files::Availability::Cloud);
+    *net.fs.hydrate_error.lock().unwrap() = Some(spartiate_lib::sync::files::FsError::CloudPending);
     assert!(net.core(DEV_B).pairing_preconditions(true).is_ok(), "oublié ignoré");
     // Expiré (180 jours sans synchro, vu au dernier scan) dans le nuage : ignoré aussi.
     let mut net = Net::new(&[DEV_B, DEV_C]);
@@ -1365,8 +1365,8 @@ fn second_review_pairing_ignores_a_forgotten_or_expired_device_still_in_the_clou
     }
     net.dev(DEV_B).d.clock.advance(181 * 86_400_000);
     net.read_all(DEV_B).unwrap();
-    net.fs.set_availability(&["devices", DEV_C, "state.ctx"], circletasks_lib::sync::files::Availability::Cloud);
-    *net.fs.hydrate_error.lock().unwrap() = Some(circletasks_lib::sync::files::FsError::CloudPending);
+    net.fs.set_availability(&["devices", DEV_C, "state.spx"], spartiate_lib::sync::files::Availability::Cloud);
+    *net.fs.hydrate_error.lock().unwrap() = Some(spartiate_lib::sync::files::FsError::CloudPending);
     assert!(net.core(DEV_B).pairing_preconditions(true).is_ok(), "expiré ignoré");
 }
 
@@ -1376,13 +1376,13 @@ fn second_review_withdrawal_is_proven_by_a_newer_author_state_read_after_the_imp
     for id in [DEV_B, DEV_C, DEV_A] {
         net.cycle(id).unwrap();
     }
-    let before = net.fs.get(&["devices", DEV_A, "state.ctx"]).unwrap();
+    let before = net.fs.get(&["devices", DEV_A, "state.spx"]).unwrap();
     let k = net.key_of(DEV_A, SYNC_KEY_ACCOUNT);
     net.reset_and_open(DEV_A);
     net.join(DEV_C, DEV_A);
     // B importe K2 par C en ne voyant que l'état de A d'avant l'annonce (annonce jamais lue).
-    net.fs.put(&["devices", DEV_A, "state.ctx"], &before);
-    net.fs.remove(&["devices", DEV_A, "state.next.ctx"]);
+    net.fs.put(&["devices", DEV_A, "state.spx"], &before);
+    net.fs.remove(&["devices", DEV_A, "state.next.spx"]);
     net.join(DEV_B, DEV_C);
     assert!(net.read_all(DEV_B).unwrap().reset.unwrap().superseded.is_none());
     // A republie ensuite sous K un état plus récent, sans annonce (réinitialisation retirée) : preuve du retrait.
@@ -1397,8 +1397,8 @@ fn second_review_withdrawal_is_proven_by_a_newer_author_state_read_after_the_imp
     let ep = epoch(1, DEV_A);
     let text = state.to_string();
     let sealed = k.seal(&Place::State { dev: DEV_A, epoch: &ep, state_seq: seq }, text.as_bytes(), 1, SV as u32).unwrap();
-    let header = json!({ "f": "ct-state", "sm": 1, "kid": k.kid(), "dev": DEV_A, "e": ep, "n": seq }).to_string();
-    net.fs.put(&["devices", DEV_A, "state.ctx"], format!("{header}\n{sealed}\n").as_bytes());
+    let header = json!({ "f": "sp-state", "sm": 1, "kid": k.kid(), "dev": DEV_A, "e": ep, "n": seq }).to_string();
+    net.fs.put(&["devices", DEV_A, "state.spx"], format!("{header}\n{sealed}\n").as_bytes());
     let view = net.read_all(DEV_B).unwrap().reset.unwrap();
     let lost = view.superseded.expect("retrait prouvé par un état plus récent que celui lu à l'import");
     assert!(lost.epoch.is_none());
@@ -1408,15 +1408,15 @@ fn second_review_withdrawal_is_proven_by_a_newer_author_state_read_after_the_imp
 fn audit_low_switch_rechecks_its_own_k2_state_before_deleting_state_next() {
     let mut net = Net::new(&[]);
     net.cycle(DEV_A).unwrap();
-    let old_state = net.fs.get(&["devices", DEV_A, "state.ctx"]).unwrap();
+    let old_state = net.fs.get(&["devices", DEV_A, "state.spx"]).unwrap();
     net.reset_and_open(DEV_A);
     net.dev(DEV_A).stop.at("switch-2");
     assert_eq!(code(net.read_all(DEV_A)), SyncCode::Io);
-    // Un tiers remet un ancien state.ctx sous K après l'étape 1 : rien n'est supprimé, state.next.ctx reste.
-    net.fs.put(&["devices", DEV_A, "state.ctx"], &old_state);
+    // Un tiers remet un ancien state.spx sous K après l'étape 1 : rien n'est supprimé, state.next.spx reste.
+    net.fs.put(&["devices", DEV_A, "state.spx"], &old_state);
     net.dev_mut(DEV_A).d.restart();
     assert_eq!(code(net.read_all(DEV_A)), SyncCode::StateMismatch);
-    assert!(net.fs.get(&["devices", DEV_A, "state.next.ctx"]).is_some(), "state.next.ctx gardé");
+    assert!(net.fs.get(&["devices", DEV_A, "state.next.spx"]).is_some(), "state.next.spx gardé");
 }
 
 #[test]
@@ -1425,7 +1425,7 @@ fn final_remarks_replayed_older_k_state_never_lowers_the_cutoff() {
     for id in [DEV_B, DEV_C, DEV_A] {
         net.cycle(id).unwrap();
     }
-    let old_b = net.fs.get(&["devices", DEV_B, "state.ctx"]).unwrap();
+    let old_b = net.fs.get(&["devices", DEV_B, "state.spx"]).unwrap();
     net.reset_and_open(DEV_A);
     // C publie dans n ; B le lit (son accusé sous K dépasse les covers de A), puis A oublie C et B se réassocie.
     net.write(DEV_C).unwrap();
@@ -1434,8 +1434,8 @@ fn final_remarks_replayed_older_k_state_never_lowers_the_cutoff() {
     net.core(DEV_A).device_forget(DEV_C, 1).unwrap();
     net.join(DEV_B, DEV_A);
     assert_eq!(net.read_all(DEV_A).unwrap().reset.unwrap().waiting, vec![DEV_C.to_owned()]);
-    // Une copie plus ancienne du state.ctx de B (accusé sur C plus bas) est remise : la coupure ne baisse pas, la bascule n'avance pas.
-    net.fs.put(&["devices", DEV_B, "state.ctx"], &old_b);
+    // Une copie plus ancienne du state.spx de B (accusé sur C plus bas) est remise : la coupure ne baisse pas, la bascule n'avance pas.
+    net.fs.put(&["devices", DEV_B, "state.spx"], &old_b);
     let view = net.read_all(DEV_A).unwrap().reset.unwrap();
     assert!(!view.switched, "bascule non avancée par un rejeu");
     assert_eq!(view.waiting, vec![DEV_C.to_owned()]);
@@ -1449,14 +1449,14 @@ fn shared_table_stale_acks() {
         v.as_array().unwrap().iter().map(|a| (a["deviceId"].as_str().unwrap().to_owned(), serde_json::from_value(a["acks"].clone()).unwrap())).collect()
     };
     for case in cases {
-        let published: BTreeMap<String, circletasks_lib::sync::names::EpochId> = case["published"]
+        let published: BTreeMap<String, spartiate_lib::sync::names::EpochId> = case["published"]
             .as_object()
             .unwrap()
             .iter()
-            .map(|(id, e)| (id.clone(), circletasks_lib::sync::names::EpochId::parse(e.as_str().unwrap()).unwrap()))
+            .map(|(id, e)| (id.clone(), spartiate_lib::sync::names::EpochId::parse(e.as_str().unwrap()).unwrap()))
             .collect();
         let mut got = ackers(&case["ackers"]);
-        circletasks_lib::sync::reset::without_stale_acks(&mut got, &published);
+        spartiate_lib::sync::reset::without_stale_acks(&mut got, &published);
         assert_eq!(got, ackers(&case["expected"]), "{}", case["name"]);
     }
 }

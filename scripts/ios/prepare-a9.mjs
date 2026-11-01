@@ -76,7 +76,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   const mode = process.argv[2];
   if (branch !== `i-06-a9-build-${mode}`) throw new Error('A9 branch/mode mismatch');
   const conf = JSON.parse(readFileSync('src-tauri/tauri.conf.json', 'utf8'));
-  if (conf.version !== '1.0.0' || conf.identifier !== 'fr.circletasks.planner') throw new Error('A9 requires the reviewed 1.0.0 candidate identity');
+  if (conf.version !== '1.0.0' || conf.identifier !== 'fr.spartiate.app') throw new Error('A9 requires the reviewed 1.0.0 candidate identity');
   const path = 'src/features/app/bootstrap.ts';
   const source = readFileSync(path, 'utf8');
   writeFileSync(path, instrumentBootstrap(source, mode));
@@ -87,6 +87,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   const workflow = '.github/workflows/build-ios.yml';
   writeFileSync(workflow, instrumentWorkflow(readFileSync(workflow, 'utf8')));
   const plist = 'src-tauri/Info.ios.plist';
-  writeFileSync(plist, replaceOnce(readFileSync(plist, 'utf8'), '<dict>', `<dict>\n\t<key>CFBundleDisplayName</key>\n\t<string>CircleTasks A9 ${mode === 'afterapply' ? 'erreur' : 'arrêt'}</string>`));
+  writeFileSync(plist, replaceOnce(readFileSync(plist, 'utf8'), '<dict>', `<dict>\n\t<key>CFBundleDisplayName</key>\n\t<string>Spartiate A9 ${mode === 'afterapply' ? 'erreur' : 'arrêt'}</string>`));
   console.log(`A9 ${mode}: bootstrap instrumented; publish=false only, same bundle identifier`);
 }

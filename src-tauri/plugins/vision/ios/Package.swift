@@ -1,5 +1,5 @@
 // swift-tools-version:5.3
-// Plugin vision de CircleTasks (ADR 0015) : compilé par build-ios.yml seulement (aucun Mac local).
+// Plugin vision de Spartiate (ADR 0015) : compilé par build-ios.yml seulement (aucun Mac local).
 
 import PackageDescription
 

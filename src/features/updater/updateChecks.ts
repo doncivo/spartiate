@@ -39,7 +39,8 @@ export interface UpdateChecks {
  * sort de veille vérifie dès le tick suivant. Sans intégration PC, ne planifie rien.
  */
 export function startUpdateChecks(container: AppContainer, timers: UpdateTimers = browserTimers): UpdateChecks {
-  if (!container.desktop) return { tick: () => Promise.resolve(), dispose: () => undefined };
+  // Sans intégration PC, ou updater non configuré (D-30) : aucune minuterie, aucune requête.
+  if (!container.desktop?.updaterConfigured) return { tick: () => Promise.resolve(), dispose: () => undefined };
 
   const store = updaterStore.get(container);
   let nextCheckAt = container.clock.nowMs() + LAUNCH_CHECK_DELAY_MS;

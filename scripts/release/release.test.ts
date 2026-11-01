@@ -28,7 +28,7 @@ const b64 = (s: string | Buffer): string => Buffer.from(s).toString('base64');
 
 describe('make-latest-json', () => {
   const exe = (): string => {
-    const p = join(tmp, 'CircleTasks_1.2.3_x64-setup.exe');
+    const p = join(tmp, 'Spartiate_1.2.3_x64-setup.exe');
     writeFileSync(p, 'exe');
     return p;
   };
@@ -37,7 +37,7 @@ describe('make-latest-json', () => {
     writeFileSync(p, content);
     return p;
   };
-  const base = 'https://github.com/doncivo/circletasks-releases/releases/download/v1.2.3';
+  const base = 'https://github.com/doncivo/spartiate-releases/releases/download/v1.2.3';
 
   it('produit le format updater Tauri 2 complet', () => {
     const out = execFileSync(process.execPath, [script('make-latest-json.mjs'), '1.2.3', exe(), sig('SIGNATURE\n'), base, 'Notes'], {
@@ -51,15 +51,15 @@ describe('make-latest-json', () => {
     const platforms = json['platforms'] as Record<string, { signature: string; url: string }>;
     expect(Object.keys(platforms)).toEqual(['windows-x86_64']);
     expect(platforms['windows-x86_64']?.signature).toBe('SIGNATURE');
-    expect(platforms['windows-x86_64']?.url).toBe(`${base}/CircleTasks_1.2.3_x64-setup.exe`);
+    expect(platforms['windows-x86_64']?.url).toBe(`${base}/Spartiate_1.2.3_x64-setup.exe`);
   });
 
   it('utilise des notes par défaut et tolère une barre finale dans l’URL de base', () => {
     const out = JSON.parse(
       execFileSync(process.execPath, [script('make-latest-json.mjs'), '1.2.3', exe(), sig('S'), `${base}/`], { encoding: 'utf8' }),
     ) as { notes: string; platforms: Record<string, { url: string }> };
-    expect(out.notes).toBe('CircleTasks 1.2.3');
-    expect(out.platforms['windows-x86_64']?.url).toBe(`${base}/CircleTasks_1.2.3_x64-setup.exe`);
+    expect(out.notes).toBe('Spartiate 1.2.3');
+    expect(out.platforms['windows-x86_64']?.url).toBe(`${base}/Spartiate_1.2.3_x64-setup.exe`);
   });
 
   it('échoue : signature vide, argument manquant, version invalide, exe absent', () => {
@@ -110,7 +110,7 @@ describe('verify-signature', () => {
   function sigFile(data: Buffer, opts: { algo?: 'ED' | 'Ed'; id?: Buffer; trusted?: string; priv?: KeyObject } = {}): string {
     const algo = opts.algo ?? 'ED';
     const priv = opts.priv ?? pair.privateKey;
-    const trusted = opts.trusted ?? 'timestamp:1\tfile:CircleTasks_1.2.3_x64-setup.exe\tversion:1.2.3';
+    const trusted = opts.trusted ?? 'timestamp:1\tfile:Spartiate_1.2.3_x64-setup.exe\tversion:1.2.3';
     const message = algo === 'ED' ? createHash('blake2b512').update(data).digest() : data;
     const signature = sign(null, message, priv);
     const raw = Buffer.concat([Buffer.from(algo), opts.id ?? keyId, signature]);

@@ -1,4 +1,4 @@
-// Plugin web-auth de CircleTasks (ADR 0008 §9.1 ; K-TECH-01) : connexion Google sur iPhone par une session d'authentification web.
+// Plugin web-auth de Spartiate (ADR 0008 §9.1 ; K-TECH-01) : connexion Google sur iPhone par une session d'authentification web.
 //
 // Contrat : tests/fixtures/calendars/web-auth-contract.json (commande, champs, codes), relu par un contrôle statique contre ce fichier et
 // src-tauri/src/calendars/web_auth.rs. Seul Rust appelle cette commande (aucune permission pour la WebView).

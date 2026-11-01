@@ -9,7 +9,7 @@ export interface OrphanSecret {
   readonly tokenRef: string;
 }
 
-const REF_PATTERN = /^circletasks\.calendar\.(google|icloud)\.[A-Za-z0-9-]+$/;
+const REF_PATTERN = /^spartiate\.calendar\.(google|icloud)\.[A-Za-z0-9-]+$/;
 
 /** Valeur brute du réglage → entrées valables seulement (fournisseur connu, référence au format du coffre et du même fournisseur), sans doublon. */
 export function parseOrphanSecrets(raw: unknown): OrphanSecret[] {

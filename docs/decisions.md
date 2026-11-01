@@ -2,6 +2,34 @@
 
 Registre vivant des décisions prises après le PRD. D-1 à D-21 sont dans `docs/PRD.md` § 26.1 (copiées ici en SPA-001a). Une décision ne se réécrit pas : on en ajoute une nouvelle qui la remplace, avec renvoi.
 
+## 2026-10-30 — Décisions D-1 à D-21 (recopiées du chapitre 26 du PRD, SPA-001a)
+
+Texte du PRD v6.2, § 26.1, sans modification ; le chapitre 26 les conserve aussi (aucune perte).
+
+| ID | Décision | Source |
+| --- | --- | --- |
+| D-1 | Usage personnel, aucune commercialisation, aucun App Store | Toi |
+| D-2 | Références : Gravl, Alpha Progression, Hevy, MacroFactor, WHOOP / Athlytic, Reboot Plan | Benchmark validé |
+| D-3 | Cibles : iPhone 16 Pro Max (iOS 18+) + PC Windows, même code | Toi |
+| D-4 | Apple Watch Series 11 46 mm comme **source de données** via Santé ; pas d'app Watch (interdit en équipe personnelle) | Contraintes § 6 |
+| D-5 | Pas de compte développeur, pas de Mac : chaîne CI macOS → IPA non signée → SideStore | Toi + CircleTasks |
+| D-6 | Développement Claude Code + Codex, contrat § 24 | Toi |
+| D-7 | Fork de `doncivo/circletasks` (Tauri 2, React, Rust, SQLite, synchro iCloud) plutôt que projet neuf | Toi (« OK pour le fork ») |
+| D-8 | Nom : **Spartiate**, identifiant `fr.spartiate.app` | Toi |
+| D-9 | Moteurs (progression, mésocycle, nutrition, récupération) en TypeScript dans `src/domain`, testés Vitest sur Windows ; natif Swift limité aux plugins d'accès système | PRD v6 |
+| D-10 | Séance en cours jamais publiée par la synchro avant sa fin | PRD v6 § 13 |
+| D-11 | Récupération calculée sur l'iPhone, publiée en résumé vers le PC, pas de recalcul PC | PRD v6 § 16 |
+| D-12 | Appels IA effectués par Rust avec clé du coffre ; données corporelles jamais envoyées | PRD v6 § 17 |
+| D-13 | Dépôts publics pour minutes macOS gratuites | CircleTasks ADR 0007 |
+| D-14 | Entitlements injectés par codesign ad-hoc en CI après `--no-sign` | PRD v6 § 19.4 |
+| D-15 | Conventions CircleTasks reprises intégralement (ADR 0001, AGENTS.md, scripts) | PRD v6 |
+| D-16 | Pas de sauvegarde locale sur iPhone au-delà de la synchro iCloud | PRD v6 § 21 |
+| D-17 | Pas de chiffrement complet de la base locale | PRD v6 § 22 |
+| D-18 | Suppression des plugins `reminders` et `web-auth` au fork | PRD v6 § 19.1 |
+| D-19 | Charte visuelle laconique, sombre, rouge / bronze ; sombre par défaut ; tokens § 18.4 | Toi (30 oct.) |
+| D-20 | Quatre programmes de départ livrés comme contenu, périodisation reprise d'Alpha Progression (§ 12.5) | Toi (30 oct.) |
+| D-21 | 24 maquettes HTML validées (§ 18.5) = référence visuelle ; méthode CircleTasks (docs/maquettes, index, npm run visual) | Toi (31 oct.) |
+
 ## 2026-10-31 — Arbitrage de la relecture Codex (PR #3, `docs/relecture-codex-2026-10-31.md`)
 
 Tous les constats factuels de la relecture ont été vérifiés sur le dépôt et retenus. Décisions d'Ali, rédigées par Claude :
@@ -75,3 +103,5 @@ Les points P-01 (contrôles), P-08 (gate), P-09 et P-10 (avant I1) restent des c
 | D-57 | **P-07 — Export / import.** Export (sauvegarde complète, distincte du filtre de publication) : `profile`, `body_weight` et liste blanche de `settings` (unités, jour de check-in, thème) ; dès I1, séances **ouvertes comprises** (marquées). Exclus : identité d'appareil, clés, bookmarks, `sync_*`, `conflict_log`, `epoch_carry_report`, journaux. `manifest.json` (`app`, `sv`, date, sha256 de `data.json`). Import : validation complète avant écriture ; refus si archive corrompue ou `sv` supérieur ; modes « fusionner » (identités D-55) ou « remplacer » (après aperçu). **Atomicité et republication** : une seule transaction, `sync_guard` posé pour éviter le bruit des déclencheurs, et **dans cette même transaction** : écriture des lignes, nouvelles horloges `sync_field_clock` (HLC de l'appareil importateur), une entrée `sync_outbox` ligne entière (`'*'`) par ligne importée ou modifiée ; en mode « remplacer », chaque ligne locale absente de l'archive est **supprimée logiquement** comme toute suppression du moteur hérité : `deleted_at` renseigné, horloge de ce champ dans `sync_field_clock`, entrée `sync_outbox` pour `deleted_at` — la suppression est ainsi publiée et appliquée par les autres appareils ; `sync_tombstone` n'est jamais écrit à l'import (il reste réservé à la purge héritée, après la rétention) ; retrait de `sync_guard` avant le commit. Crash avant commit : rien n'est écrit ; crash après commit : la file persistée est publiée au cycle suivant. Aucun nouvel époque, aucun `restore-marker.json` (ce n'est pas une restauration de sauvegarde). Preuve : export → reset → import → export, hash du `data.json` **canonique** (tri stable, sans `hlc`, `device_id`, `updated_at`) identique ; import puis cycle → l'autre appareil reçoit tout ; crash simulé avant et après commit ; archive corrompue, version future, import répété (idempotent en mode fusionner). |
 | D-58 | **P-04 — Versions et secrets.** N = `0.1.0` (identité SPA-001a), N+1 = `0.1.1` pour l'essai SPA-010 ; tags `v0.1.0` / `ios-v0.1.0` alignés ; aucun tag 0.0.x. `RELEASES_TOKEN` disponible avant SPA-002 (première publication Windows). PRD § 7 corrigé en v6.3. |
 | D-59 | **P-05 — HealthKit.** H-3 scindée : H-3a entitlement présent dans l'artefact signé (SPA-003) ; H-3b autorisation + lecture `bodyMass` et `stepCount` (SPA-006) ; H-3c écriture puis suppression d'un échantillon **créé par Spartiate** (I1 pour la séance, I5 pour le reste). Le gate I0 exige H-3a prouvée ou BLOCKED documenté, et H-3b CONFIRMED **ou** BLOCKED avec fallback saisie manuelle ; H-3c n'est pas un critère I0. Jamais de suppression d'un échantillon d'une autre source. PRD § 7 et § 26.2 corrigés en v6.3. |
+| D-60 | **Rust local autorisé quand une modification de synchro, de garde ou de coffre le justifie** : `cargo test --locked --features test-hooks --test desktop` et `cargo test --locked -p tauri-plugin-sql --features sqlite` (compilation incrémentale, `-j 2`). E2E Playwright et smoke jamais en local. Exception assumée en SPA-001a, où la compilation locale a révélé deux oublis (garde de dossier non remplacée, AAD attendue d'un test) avant la CI. | Décision d'Ali du 2026-11-01 |
+| D-61 | **Dérogation unique, SPA-001a, updater (D-30).** Le commit rouge n'a pas précédé le retrait de l'updater ; la preuve a été établie rétrospectivement en exécutant `updaterNoPlugin.test.ts` sur `main` (eb93e83c), avec trois échecs attendus, consignés dans `docs/SPA-001.md`. Réécrire l'historique est exclu. Dérogation accordée par Ali le 1er novembre 2026 ; elle ne crée aucun précédent : la règle « commit rouge avant implémentation » reste entière. |

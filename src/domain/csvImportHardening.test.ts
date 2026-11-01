@@ -138,7 +138,7 @@ describe('Colonnes et noms (P-07, revue)', () => {
   });
 
   it('noms de fichier du modèle et du rapport', () => {
-    expect(importFileName('template')).toBe('circletasks-modele-import.csv');
-    expect(importFileName('report')).toBe('circletasks-import-lignes-rejetees.csv');
+    expect(importFileName('template')).toBe('spartiate-modele-import.csv');
+    expect(importFileName('report')).toBe('spartiate-import-lignes-rejetees.csv');
   });
 });

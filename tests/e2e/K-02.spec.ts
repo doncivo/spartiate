@@ -12,7 +12,7 @@ import { browserMonday, dayOf, openWeek } from './helpers/week';
 
 let sims: TestSims;
 
-const ics = (...lines: string[]): string => ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//CircleTasks//E2E//FR', ...lines, 'END:VCALENDAR', ''].join('\r\n');
+const ics = (...lines: string[]): string => ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Spartiate//E2E//FR', ...lines, 'END:VCALENDAR', ''].join('\r\n');
 const compact = (iso: string): string => iso.replace(/-/g, '');
 
 test.describe('K-02 — Apple Calendar', () => {

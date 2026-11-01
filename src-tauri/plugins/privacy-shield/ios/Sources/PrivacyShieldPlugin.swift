@@ -1,4 +1,4 @@
-// Plugin privacy-shield de CircleTasks (I-03, ADR 0013 §2.5).
+// Plugin privacy-shield de Spartiate (I-03, ADR 0013 §2.5).
 //
 // Une commande appelée par le JS (src/platform/privacyShield/tauriPrivacyShield.ts) : setEnabled({ enabled }). Activé, le plugin pose
 // une vue opaque au-dessus du contenu de la fenêtre à `willResignActive` (sélecteur d'apps, centre de contrôle, passage en arrière-plan)

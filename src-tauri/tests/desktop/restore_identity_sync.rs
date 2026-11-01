@@ -5,13 +5,13 @@
 use std::fs;
 use std::path::Path;
 
-use circletasks_lib::backup::{restore_backup_file, RestoreStep, APP_SCHEMA_VERSION, BACKUP_DIR, DB_FILE};
+use spartiate_lib::backup::{restore_backup_file, RestoreStep, APP_SCHEMA_VERSION, BACKUP_DIR, DB_FILE};
 use rusqlite::Connection;
 
 const CURRENT: &str = "7d0b0a0a-0000-4000-8000-00000000007d";
 const FORGOTTEN: &str = "56d40a0a-0000-4000-8000-000000000056";
 const PEER: &str = "aaaaaaaa-0000-4000-8000-0000000000aa";
-const BACKUP: &str = "circletasks-daily-20261016.db";
+const BACKUP: &str = "spartiate-daily-20261016.db";
 
 const NO_FAIL: &dyn Fn(RestoreStep) -> std::io::Result<()> = &|_| Ok(());
 

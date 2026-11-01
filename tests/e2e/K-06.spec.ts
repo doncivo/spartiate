@@ -4,7 +4,7 @@ import { localDate, openRemindersScreen, useFakeReminders } from './helpers/remi
 import { createTask, rowOf } from './helpers/today';
 
 /**
- * K-06 — Je coche un rappel dans CircleTasks ou dans Rappels. Parcours complet avec le faux EventKit (`__ctRemindersFake`, développement
+ * K-06 — Je coche un rappel dans Spartiate ou dans Rappels. Parcours complet avec le faux EventKit (`__ctRemindersFake`, développement
  * seulement) sur le projet `iphone` : importer, terminer ici, terminer dans le faux, modifier un titre des deux côtés, créer avec le réglage
  * activé, supprimer. Projet `pc` : les Rappels n'ont aucun plugin, le réglage de création n'est pas proposé (« Se règle sur l'iPhone »).
  * L'écriture vers Rappels part 6 s après l'écriture locale (annulation de 5 s, T-13) : les attentes sont des sondages bornés, jamais un délai.

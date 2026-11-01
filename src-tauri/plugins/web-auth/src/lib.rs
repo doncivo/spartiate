@@ -1,4 +1,4 @@
-//! Plugin Swift web-auth de CircleTasks (ADR 0008 §9.1) : une session `ASWebAuthenticationSession` qui rend l'URL de retour de
+//! Plugin Swift web-auth de Spartiate (ADR 0008 §9.1) : une session `ASWebAuthenticationSession` qui rend l'URL de retour de
 //! l'autorisation Google sur iPhone. Le plugin ne voit ni code, ni jeton, ni secret : il ouvre l'URL reçue et rend l'URL de retour ;
 //! Rust vérifie le `state` et échange le code.
 //!

@@ -4,8 +4,8 @@
 
 use serde_json::{json, Value};
 
-use circletasks_lib::sync::service::AppendRequest;
-use circletasks_lib::sync::store::OwnFileRef;
+use spartiate_lib::sync::service::AppendRequest;
+use spartiate_lib::sync::store::OwnFileRef;
 
 use crate::sync_support::{device, epoch, hlc, Device};
 
@@ -72,7 +72,7 @@ fn y_ios_02_fix_02_rebuild_own_matches_the_publish_bound_table() {
     assert!(checked >= 4, "cas de parité lus : {checked}");
 }
 
-/// État réel de la séance : `own.json` sans époque après l'abandon, `s-00000001.cts` de l'orpheline toujours listé : `sync_write_state`
+/// État réel de la séance : `own.json` sans époque après l'abandon, `s-00000001.sps` de l'orpheline toujours listé : `sync_write_state`
 /// accepte l'état dans l'époque du PC (tête vide, `stateSeq` 1), puis `sync_delete_own` supprime l'orpheline (non courante). Même résultat
 /// quand `own.json` est perdu (reconstruit sans l'orpheline).
 #[test]
@@ -85,7 +85,7 @@ fn y_ios_02_fix_02_state_is_written_with_the_orphan_snapshot_still_listed() {
         snapshot(&a, &high, 1);
         // `own.json` désigne l'orpheline (état écrit puis retiré, `stateSeq` remis à 0), puis abandon (§24 point 4 (b)).
         a.core.write_state(14, state(&high, 1)).unwrap();
-        fs.remove(&["devices", IPHONE, "state.ctx"]);
+        fs.remove(&["devices", IPHONE, "state.spx"]);
         let path = a.base.path().join("sync").join("own.json");
         let mut own: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
         own["stateSeq"] = json!(0);
@@ -95,16 +95,16 @@ fn y_ios_02_fix_02_state_is_written_with_the_orphan_snapshot_still_listed() {
         if lost {
             forget_own_json(&mut a);
         }
-        assert!(fs.get(&["devices", IPHONE, &high, "s-00000001.cts"]).is_some());
+        assert!(fs.get(&["devices", IPHONE, &high, "s-00000001.sps"]).is_some());
         a.core.write_state(14, state(&low, 1)).unwrap_or_else(|e| panic!("own.json perdu = {lost} : {e:?}"));
         assert_eq!(a.core.delete_own(&[OwnFileRef { epoch: high.clone(), kind: "epoch".into(), n: None }]).unwrap(), 1);
-        assert!(fs.get(&["devices", IPHONE, &high, "s-00000001.cts"]).is_none());
-        assert!(fs.get(&["devices", IPHONE, "state.ctx"]).is_some());
+        assert!(fs.get(&["devices", IPHONE, &high, "s-00000001.sps"]).is_none());
+        assert!(fs.get(&["devices", IPHONE, "state.spx"]).is_some());
     }
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------
-// Cause racine (2026-10-16) : fichier évincé par iOS, substitut `.s-00000001.cts.icloud`
+// Cause racine (2026-10-16) : fichier évincé par iOS, substitut `.s-00000001.sps.icloud`
 // ------------------------------------------------------------------------------------------------------------------------------
 
 const SWIFT: &str = include_str!("../../plugins/folder-bookmark/ios/Sources/FolderBookmarkPlugin.swift");
@@ -116,8 +116,8 @@ fn swift_fn(signature: &str) -> &'static str {
     &body[..body.find("\n  }\n").expect("fin de fonction")]
 }
 
-/// Y-IOS-02-FIX-02, cause racine : iOS a évincé `s-00000001.cts` de l'orpheline (« Optimiser le stockage ») ; seul reste le substitut
-/// `.s-00000001.cts.icloud`, que `list` présente sous le nom réel (disponibilité `cloud`). Avant : `remove` ne trouvait pas le nom réel,
+/// Y-IOS-02-FIX-02, cause racine : iOS a évincé `s-00000001.sps` de l'orpheline (« Optimiser le stockage ») ; seul reste le substitut
+/// `.s-00000001.sps.icloud`, que `list` présente sous le nom réel (disponibilité `cloud`). Avant : `remove` ne trouvait pas le nom réel,
 /// répondait « rien supprimé », le dossier restait non vide, `sync_delete_own` rendait 0 et le moteur effaçait le mémo (fichier resté dans
 /// iCloud). Contrat Swift attendu, reflété par le faux : supprimer le substitut (coordination `forDeleting`), `removed` vrai ; le dossier
 /// d'époque est alors vide et disparaît.
@@ -126,8 +126,8 @@ fn y_ios_02_fix_02_delete_own_removes_an_evicted_orphan_snapshot_placeholder() {
     use std::sync::atomic::{AtomicU64, Ordering};
     use std::sync::Arc;
 
-    use circletasks_lib::sync::bookmark::{choose_with_picker, ios_core};
-    use circletasks_lib::vault::MemoryVault;
+    use spartiate_lib::sync::bookmark::{choose_with_picker, ios_core};
+    use spartiate_lib::vault::MemoryVault;
 
     use crate::support::fake_bookmark::{FakePlugin, SharedPlugin};
     use crate::sync_support::{FakeUi, NOW};
@@ -146,7 +146,7 @@ fn y_ios_02_fix_02_delete_own_removes_an_evicted_orphan_snapshot_placeholder() {
     let handle = core.snapshot_begin(&high, 1, 14).unwrap();
     core.snapshot_append(handle, &["{\"k\":\"snap-rows\"}".to_owned()]).unwrap();
     core.snapshot_commit(handle).unwrap();
-    let file = ["devices", IPHONE, high.as_str(), "s-00000001.cts"];
+    let file = ["devices", IPHONE, high.as_str(), "s-00000001.sps"];
     let bytes = plugin.get(&file).expect("instantané écrit");
     plugin.with(|s| s.nodes.remove(&file.join("/")));
     plugin.put_evicted(&file, &bytes);

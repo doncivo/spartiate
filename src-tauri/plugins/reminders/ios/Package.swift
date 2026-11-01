@@ -1,5 +1,5 @@
 // swift-tools-version:5.3
-// Plugin reminders de CircleTasks (ADR 0008 §10.4) : compilé par build-ios.yml seulement (aucun Mac local).
+// Plugin reminders de Spartiate (ADR 0008 §10.4) : compilé par build-ios.yml seulement (aucun Mac local).
 
 import PackageDescription
 

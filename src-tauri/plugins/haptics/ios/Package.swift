@@ -1,5 +1,5 @@
 // swift-tools-version:5.3
-// Plugin haptics de CircleTasks (ADR 0013 §1.1) : compilé par build-ios.yml seulement (aucun Mac local).
+// Plugin haptics de Spartiate (ADR 0013 §1.1) : compilé par build-ios.yml seulement (aucun Mac local).
 
 import PackageDescription
 

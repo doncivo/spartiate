@@ -29,19 +29,19 @@ export * from './limits';
 /** `sm` : version majeure du format de synchro (Y-07). Égale à la constante Rust (test croisé). */
 export const SYNC_FORMAT_MAJOR = 1;
 
-/** Préfixe de version des AAD (`ct/1`, section 2). */
-export const AAD_VERSION = 'ct/1';
+/** Préfixe de version des AAD (`sp/1`, section 2). */
+export const AAD_VERSION = 'sp/1';
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 // Noms stricts (section 1.1)
 // ---------------------------------------------------------------------------------------------------------------------------------
 
 /** État publié d'un appareil. */
-export const STATE_FILE = 'state.ctx';
+export const STATE_FILE = 'state.spx';
 /** Y-11 (section 14.3) : état sous la nouvelle clé pendant une réinitialisation. */
-export const STATE_NEXT_FILE = 'state.next.ctx';
-export const JOURNAL_EXTENSION = '.ctj';
-export const SNAPSHOT_EXTENSION = '.cts';
+export const STATE_NEXT_FILE = 'state.next.spx';
+export const JOURNAL_EXTENSION = '.spj';
+export const SNAPSHOT_EXTENSION = '.sps';
 
 /** Plus grands numéros représentables : époque sur 4 chiffres, segment et instantané sur 8. */
 export const MAX_EPOCH_NUMBER = 9_999;
@@ -50,8 +50,8 @@ export const MAX_FILE_NUMBER = 99_999_999;
 const UUID_V4 = '[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
 const UUID_V4_RE = new RegExp(`^${UUID_V4}$`);
 const EPOCH_RE = new RegExp(`^e(\\d{4})-(${UUID_V4})$`);
-const SEGMENT_RE = /^j-(\d{8})\.ctj$/;
-const SNAPSHOT_RE = /^s-(\d{8})\.cts$/;
+const SEGMENT_RE = /^j-(\d{8})\.spj$/;
+const SNAPSHOT_RE = /^s-(\d{8})\.sps$/;
 /** hlc strict (ADR 0005, audit M4) : `<15 chiffres>-<4 hexa>-<uuid v4 minuscule>`, validé avant toute comparaison. */
 const STRICT_HLC_RE = new RegExp(`^\\d{15}-[0-9a-f]{4}-${UUID_V4}$`);
 /** `kid` : 8 octets en hexadécimal minuscule. */
@@ -124,7 +124,7 @@ export type SyncFileName =
   | { readonly kind: 'snapshot'; readonly n: number };
 
 /**
- * Reconnaît un nom de fichier strict. Tout autre nom (copie de conflit iCloud « state 2.ctx », `*.tmp`, `state.next.ctx` réservé,
+ * Reconnaît un nom de fichier strict. Tout autre nom (copie de conflit iCloud « state 2.spx », `*.tmp`, `state.next.spx` réservé,
  * fichier étranger) renvoie null : il est ignoré, jamais lu ni supprimé.
  */
 export function parseSyncFileName(name: string): SyncFileName | null {
@@ -146,11 +146,11 @@ export function parseSyncFileName(name: string): SyncFileName | null {
 // En-tête en clair (section 1.2)
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-export type FileHeaderKind = 'ct-j' | 'ct-s' | 'ct-state';
-const HEADER_KINDS: readonly FileHeaderKind[] = ['ct-j', 'ct-s', 'ct-state'];
+export type FileHeaderKind = 'sp-j' | 'sp-s' | 'sp-state';
+const HEADER_KINDS: readonly FileHeaderKind[] = ['sp-j', 'sp-s', 'sp-state'];
 const HEADER_KEYS = ['dev', 'e', 'f', 'kid', 'n', 'sm'] as const;
 
-/** En-tête JSON de la ligne 1 : exactement ces six clés. `n` = segment, instantané ou `stateSeq` (`state.ctx`). */
+/** En-tête JSON de la ligne 1 : exactement ces six clés. `n` = segment, instantané ou `stateSeq` (`state.spx`). */
 export interface FileHeader {
   readonly f: FileHeaderKind;
   readonly sm: number;
@@ -183,7 +183,7 @@ export function parseFileHeader(line: string): FileHeader | null {
   if (!isKid(h['kid']) || !isSyncDeviceId(h['dev']) || !isEpochId(h['e'])) return null;
   const n = h['n'];
   if (typeof n !== 'number' || !Number.isSafeInteger(n) || n < 1) return null;
-  if (h['f'] !== 'ct-state' && !isFileNumber(n)) return null;
+  if (h['f'] !== 'sp-state' && !isFileNumber(n)) return null;
   return { f: h['f'] as FileHeaderKind, sm: h['sm'], kid: h['kid'], dev: h['dev'], e: h['e'], n };
 }
 
@@ -236,7 +236,7 @@ export function hasStrictJsonShape(text: string, keys: number): boolean {
   return count === keys;
 }
 
-/** Emplacement d'un fichier : dossier d'appareil, dossier d'époque (null pour `state.ctx`) et nom. */
+/** Emplacement d'un fichier : dossier d'appareil, dossier d'époque (null pour `state.spx`) et nom. */
 export interface SyncFilePath {
   readonly deviceId: DeviceId;
   readonly epoch: EpochId | null;
@@ -244,19 +244,19 @@ export interface SyncFilePath {
 }
 
 /**
- * L'en-tête correspond-il au chemin (audit B2) ? `dev` = dossier d'appareil, `e` = dossier d'époque (pour `state.ctx`, l'époque
+ * L'en-tête correspond-il au chemin (audit B2) ? `dev` = dossier d'appareil, `e` = dossier d'époque (pour `state.spx`, l'époque
  * annoncée), `n` = numéro du nom, `f` = extension.
  */
 export function headerMatchesPath(header: FileHeader, path: SyncFilePath): boolean {
   if (header.dev !== path.deviceId) return false;
   switch (path.file.kind) {
     case 'state':
-      // L'époque d'un `state.ctx` doit exister : l'appelant passe l'époque attendue s'il la connaît.
-      return header.f === 'ct-state' && (path.epoch === null || header.e === path.epoch);
+      // L'époque d'un `state.spx` doit exister : l'appelant passe l'époque attendue s'il la connaît.
+      return header.f === 'sp-state' && (path.epoch === null || header.e === path.epoch);
     case 'segment':
-      return header.f === 'ct-j' && header.e === path.epoch && header.n === path.file.n;
+      return header.f === 'sp-j' && header.e === path.epoch && header.n === path.file.n;
     case 'snapshot':
-      return header.f === 'ct-s' && header.e === path.epoch && header.n === path.file.n;
+      return header.f === 'sp-s' && header.e === path.epoch && header.n === path.file.n;
   }
 }
 
@@ -318,6 +318,7 @@ export const SYNC_ERROR_CODES = [
   'segment-full',
   'state-mismatch',
   'folder-has-data',
+  'foreign-folder',
   'wrong-window',
   'wrong-mode',
   'hlc-order',
@@ -339,10 +340,10 @@ export function isSyncErrorCode(value: unknown): value is SyncErrorCode {
 // Appairage (sections 2, 10.3)
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-/** Préfixe du texte du QR : `CTPAIR1.<base64url(JSON { v:1, k, d, e, x })>`. */
-export const PAIRING_QR_PREFIX = 'CTPAIR1.';
+/** Préfixe du texte du QR : `SPPAIR1.<base64url(JSON { v:1, k, d, e, x })>`. */
+export const PAIRING_QR_PREFIX = 'SPPAIR1.';
 /** Préfixe de la clé de secours imprimable (base32 Crockford, groupes de 5). */
-export const RECOVERY_KEY_PREFIX = 'CT1-';
+export const RECOVERY_KEY_PREFIX = 'SP1-';
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 // État publié (section 1.4) et accusés
@@ -377,7 +378,7 @@ export interface ForgottenDevice {
   readonly lastAck: DeviceAck | null;
 }
 
-/** Texte clair de l'unique enregistrement de `state.ctx`. */
+/** Texte clair de l'unique enregistrement de `state.spx`. */
 export interface PublishedDeviceState {
   readonly deviceId: DeviceId;
   readonly platform: SyncDevicePlatform;
@@ -413,7 +414,7 @@ export interface ClosedSegment {
 }
 
 /**
- * Forme JSON de `PublishedDeviceState` (texte clair chiffré dans `state.ctx`, et forme qui passe par l'IPC) : `acks` est un objet
+ * Forme JSON de `PublishedDeviceState` (texte clair chiffré dans `state.spx`, et forme qui passe par l'IPC) : `acks` est un objet
  * indexé par `device_id`, `pairedBy` est absent s'il n'est pas connu.
  */
 export interface PublishedDeviceStateJson extends Omit<PublishedDeviceState, 'acks'> {

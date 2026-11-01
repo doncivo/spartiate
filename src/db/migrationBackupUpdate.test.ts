@@ -11,16 +11,16 @@ const m = (version: number): Migration => ({ version, name: `m${String(version)}
 
 describe('findUpdateBackup', () => {
   const names = [
-    'circletasks-pre-migration-v0017-to-v0019-20261009T080000Z.db',
-    'circletasks-pre-migration-v0017-to-v0019-20261010T080000Z.db',
-    'circletasks-pre-migration-v0016-to-v0017-20261001T080000Z.db',
-    'circletasks-daily-20261009.db',
-    'circletasks-pre-restore-20261009T090000Z.db',
+    'spartiate-pre-migration-v0017-to-v0019-20261009T080000Z.db',
+    'spartiate-pre-migration-v0017-to-v0019-20261010T080000Z.db',
+    'spartiate-pre-migration-v0016-to-v0017-20261001T080000Z.db',
+    'spartiate-daily-20261009.db',
+    'spartiate-pre-restore-20261009T090000Z.db',
     'autre-fichier.db',
   ];
 
   it('chaîne vraiment interrompue (départ strictement inférieur à la version courante, rien de plus récent) : la plus récente est réutilisée', () => {
-    expect(findUpdateBackup(names, { fromVersion: 18, toVersion: 19 })).toEqual({ name: 'circletasks-pre-migration-v0017-to-v0019-20261010T080000Z.db' });
+    expect(findUpdateBackup(names, { fromVersion: 18, toVersion: 19 })).toEqual({ name: 'spartiate-pre-migration-v0017-to-v0019-20261010T080000Z.db' });
     expect(findUpdateBackup(names, { fromVersion: 18, toVersion: 20 })).toBeNull();
     expect(findUpdateBackup([], { fromVersion: 18, toVersion: 19 })).toBeNull();
   });
@@ -32,23 +32,23 @@ describe('findUpdateBackup', () => {
 
   it('revue I1 : restauration P-04 d’une ancienne quotidienne des semaines après une mise à jour réussie : nouvelle sauvegarde', () => {
     // Mise à jour 18 -> 19 réussie le 1er octobre ; le 20, restauration de la quotidienne du 28 septembre (schéma 18, copie pre-restore du 20).
-    const list = ['circletasks-pre-migration-v0018-to-v0019-20261001T080000Z.db', 'circletasks-daily-20260928.db', 'circletasks-pre-restore-20261020T090000Z.db'];
+    const list = ['spartiate-pre-migration-v0018-to-v0019-20261001T080000Z.db', 'spartiate-daily-20260928.db', 'spartiate-pre-restore-20261020T090000Z.db'];
     expect(findUpdateBackup(list, { fromVersion: 18, toVersion: 19 })).toBeNull();
     // Même avec une chaîne qui paraîtrait interrompue (départ 17), la copie pre-restore plus récente l'emporte.
-    expect(findUpdateBackup(['circletasks-pre-migration-v0017-to-v0019-20261001T080000Z.db', 'circletasks-pre-restore-20261020T090000Z.db'], { fromVersion: 18, toVersion: 19 })).toBeNull();
+    expect(findUpdateBackup(['spartiate-pre-migration-v0017-to-v0019-20261001T080000Z.db', 'spartiate-pre-restore-20261020T090000Z.db'], { fromVersion: 18, toVersion: 19 })).toBeNull();
   });
 
   it('revue I1 : N+1 en échec, N utilisée des jours (sauvegardes quotidiennes postérieures), N+1 corrigée : nouvelle sauvegarde, pas l’ancienne', () => {
-    const list = ['circletasks-pre-migration-v0017-to-v0019-20261009T080000Z.db', 'circletasks-daily-20261010.db', 'circletasks-daily-20261011.db'];
+    const list = ['spartiate-pre-migration-v0017-to-v0019-20261009T080000Z.db', 'spartiate-daily-20261010.db', 'spartiate-daily-20261011.db'];
     expect(findUpdateBackup(list, { fromVersion: 18, toVersion: 19 })).toBeNull();
     // La quotidienne du jour même (faite avant la mise à jour) ne compte pas comme plus récente.
-    expect(findUpdateBackup(['circletasks-pre-migration-v0017-to-v0019-20261009T080000Z.db', 'circletasks-daily-20261009.db'], { fromVersion: 18, toVersion: 19 })).toEqual({ name: 'circletasks-pre-migration-v0017-to-v0019-20261009T080000Z.db' });
+    expect(findUpdateBackup(['spartiate-pre-migration-v0017-to-v0019-20261009T080000Z.db', 'spartiate-daily-20261009.db'], { fromVersion: 18, toVersion: 19 })).toEqual({ name: 'spartiate-pre-migration-v0017-to-v0019-20261009T080000Z.db' });
     // Une autre « Avant mise à jour » plus récente (autre cible) : l'app a servi depuis.
-    expect(findUpdateBackup(['circletasks-pre-migration-v0017-to-v0019-20261009T080000Z.db', 'circletasks-pre-migration-v0018-to-v0020-20261012T080000Z.db'], { fromVersion: 18, toVersion: 19 })).toBeNull();
+    expect(findUpdateBackup(['spartiate-pre-migration-v0017-to-v0019-20261009T080000Z.db', 'spartiate-pre-migration-v0018-to-v0020-20261012T080000Z.db'], { fromVersion: 18, toVersion: 19 })).toBeNull();
   });
 
   it('backupNameOf : nom seul, jamais le chemin (Windows et iPhone)', () => {
-    expect(backupNameOf('C:\\Users\\x\\AppData\\Roaming\\fr.circletasks.planner\\backups\\a.db')).toBe('a.db');
+    expect(backupNameOf('C:\\Users\\x\\AppData\\Roaming\\fr.spartiate.app\\backups\\a.db')).toBe('a.db');
     expect(backupNameOf('/var/mobile/Containers/Data/Application/X/Library/backups/b.db')).toBe('b.db');
     expect(backupNameOf('c.db')).toBe('c.db');
   });
@@ -59,16 +59,16 @@ describe('createBackupBeforeMigration : nom et réutilisation', () => {
     const db = await openSqliteWasmDriver();
     await migrate(db, [m(1)]);
     const seen: { name: string; reused: boolean }[] = [];
-    const backup = vi.fn(() => Promise.resolve({ name: 'circletasks-pre-migration-v0001-to-v0003-20261009T080000Z.db' }));
+    const backup = vi.fn(() => Promise.resolve({ name: 'spartiate-pre-migration-v0001-to-v0003-20261009T080000Z.db' }));
     const port: MigrationBackup = { backup, findPrevious: () => Promise.resolve(null) };
     await expect(migrate(db, [m(1), m(2), m(3)].slice(0, 2), { beforeApply: createBackupBeforeMigration(port, clock, (b) => seen.push(b)) })).resolves.toBeDefined();
-    expect(seen).toEqual([{ name: 'circletasks-pre-migration-v0001-to-v0003-20261009T080000Z.db', reused: false }]);
+    expect(seen).toEqual([{ name: 'spartiate-pre-migration-v0001-to-v0003-20261009T080000Z.db', reused: false }]);
 
     const reuse = vi.fn(() => Promise.resolve({ name: 'x.db' }));
-    const found: MigrationBackup = { backup: reuse, findPrevious: () => Promise.resolve({ name: 'circletasks-pre-migration-v0001-to-v0003-20261009T080000Z.db' }) };
+    const found: MigrationBackup = { backup: reuse, findPrevious: () => Promise.resolve({ name: 'spartiate-pre-migration-v0001-to-v0003-20261009T080000Z.db' }) };
     await migrate(db, [m(1), m(2), m(3)], { beforeApply: createBackupBeforeMigration(found, clock, (b) => seen.push(b)) });
     expect(reuse).not.toHaveBeenCalled();
-    expect(seen.at(-1)).toEqual({ name: 'circletasks-pre-migration-v0001-to-v0003-20261009T080000Z.db', reused: true });
+    expect(seen.at(-1)).toEqual({ name: 'spartiate-pre-migration-v0001-to-v0003-20261009T080000Z.db', reused: true });
     await db.close();
   });
 

@@ -3,15 +3,15 @@
 use std::path::Path;
 use std::sync::atomic::Ordering;
 
-use circletasks_lib::sync::crypto::{aad_bytes, qr_text_of, MasterKey, Place};
-use circletasks_lib::sync::files::{is_safe_component, Availability, FsError};
-use circletasks_lib::sync::folder::{chosen_target, FolderKind};
-use circletasks_lib::sync::limits::{MAX_STATE_CANDIDATES, PAIRING_VALIDITY_MS};
-use circletasks_lib::sync::pairing::pairing_page_listed;
-use circletasks_lib::sync::service::{AppendRequest, KeyInput, SYNC_KEY_ACCOUNT};
-use circletasks_lib::sync::store::RecordCursor;
-use circletasks_lib::sync::{SyncCode, SyncError};
-use circletasks_lib::vault::SecretVault;
+use spartiate_lib::sync::crypto::{aad_bytes, qr_text_of, MasterKey, Place};
+use spartiate_lib::sync::files::{is_safe_component, Availability, FsError};
+use spartiate_lib::sync::folder::{chosen_target, FolderKind};
+use spartiate_lib::sync::limits::{MAX_STATE_CANDIDATES, PAIRING_VALIDITY_MS};
+use spartiate_lib::sync::pairing::pairing_page_listed;
+use spartiate_lib::sync::service::{AppendRequest, KeyInput, SYNC_KEY_ACCOUNT};
+use spartiate_lib::sync::store::RecordCursor;
+use spartiate_lib::sync::{SyncCode, SyncError};
+use spartiate_lib::vault::SecretVault;
 use serde_json::{json, Value};
 use zeroize::Zeroizing;
 
@@ -32,7 +32,7 @@ fn state(dev: &str, ep: &str, seq: u64, segment: u64, record: u64, head_hlc: Opt
     })
 }
 
-fn append(d: &Device, ep: &str, segment: u64, expect: u64, ms: u64) -> Result<circletasks_lib::sync::store::AppendResult, SyncError> {
+fn append(d: &Device, ep: &str, segment: u64, expect: u64, ms: u64) -> Result<spartiate_lib::sync::store::AppendResult, SyncError> {
     d.core.append_journal(&AppendRequest { epoch: ep.to_owned(), segment, expect_records: expect, sv: 14, max_hlc: hlc(ms, DEV_A), records: vec!["{}".into()] })
 }
 
@@ -68,8 +68,8 @@ fn s2_scan_reads_states_only_for_candidates_and_lists_epochs_only_for_kept_devic
     d.core.write_state(14, state(DEV_A, &epoch(1, DEV_A), 1, 0, 0, None)).unwrap();
     let ids: Vec<String> = (0..100).map(|i| format!("{:08x}-0000-4000-8000-{:012x}", i + 1, i + 1)).collect();
     for id in &ids {
-        fs.put(&["devices", id, "state.ctx"], b"x");
-        fs.put(&["devices", id, &epoch(1, id), "j-00000001.ctj"], b"x");
+        fs.put(&["devices", id, "state.spx"], b"x");
+        fs.put(&["devices", id, &epoch(1, id), "j-00000001.spj"], b"x");
     }
     let reads = fs.reads.load(Ordering::SeqCst);
     let scan = d.core.scan(&[]).unwrap();
@@ -82,7 +82,7 @@ fn s2_scan_reads_states_only_for_candidates_and_lists_epochs_only_for_kept_devic
     let (d, fs) = device();
     d.setup(DEV_A);
     for n in 1..=70 {
-        fs.put(&["devices", DEV_A, &epoch(n, DEV_A), "j-00000001.ctj"], b"x");
+        fs.put(&["devices", DEV_A, &epoch(n, DEV_A), "j-00000001.spj"], b"x");
     }
     let scan = d.core.scan(&[]).unwrap();
     assert!(scan.incomplete);
@@ -111,22 +111,22 @@ fn s2_global_entry_budget_cuts_the_scan() {
 #[cfg(windows)]
 #[test]
 fn s3_write_atomic_never_truncates_a_hard_linked_temp_file() {
-    use circletasks_lib::sync::files::{StdFs, SyncFs};
-    use circletasks_lib::sync::folder::{check_sync_path, normalize_final_path};
+    use spartiate_lib::sync::files::{StdFs, SyncFs};
+    use spartiate_lib::sync::folder::{check_sync_path, normalize_final_path};
     let dir = tempfile::tempdir().unwrap();
     let root = std::path::PathBuf::from(normalize_final_path(&std::fs::canonicalize(dir.path()).unwrap().to_string_lossy()).unwrap());
-    let folder = root.join("CircleTasks");
+    let folder = root.join("Spartiate");
     std::fs::create_dir_all(folder.join("devices")).unwrap();
     let victim = root.join("victime.txt");
     std::fs::write(&victim, b"contenu precieux").unwrap();
-    std::fs::hard_link(&victim, folder.join("devices").join("state.ctx.tmp")).unwrap();
+    std::fs::hard_link(&victim, folder.join("devices").join("state.spx.tmp")).unwrap();
     let fs = StdFs::new(check_sync_path(&folder).unwrap().path);
-    fs.write_atomic(&["devices", "state.ctx"], b"nouvel etat").unwrap();
+    fs.write_atomic(&["devices", "state.spx"], b"nouvel etat").unwrap();
     assert_eq!(std::fs::read(&victim).unwrap(), b"contenu precieux");
-    assert_eq!(std::fs::read(folder.join("devices").join("state.ctx")).unwrap(), b"nouvel etat");
+    assert_eq!(std::fs::read(folder.join("devices").join("state.spx")).unwrap(), b"nouvel etat");
 }
 
-/// S4 : un `state.ctx` qui recopie le `kid` en clair mais ne se déchiffre pas avec la clé candidate : `key-mismatch`.
+/// S4 : un `state.spx` qui recopie le `kid` en clair mais ne se déchiffre pas avec la clé candidate : `key-mismatch`.
 #[test]
 fn s4_import_requires_a_state_that_decrypts_with_the_candidate_key() {
     let (a, fs) = device();
@@ -134,11 +134,11 @@ fn s4_import_requires_a_state_that_decrypts_with_the_candidate_key() {
     a.core.write_state(14, state(DEV_A, &epoch(1, DEV_A), 1, 0, 0, None)).unwrap();
     let real = a.core.pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS).unwrap();
     // Le tiers remplace l'état par un fichier au bon kid (en clair) et au contenu illisible.
-    let original = fs.get(&["devices", DEV_A, "state.ctx"]).unwrap();
+    let original = fs.get(&["devices", DEV_A, "state.spx"]).unwrap();
     let header_end = original.iter().position(|&b| b == b'\n').unwrap();
     let mut forged = original[..=header_end].to_vec();
     forged.extend_from_slice(format!("1.14.{}\n", "A".repeat(5504 - 6)).as_bytes());
-    fs.put(&["devices", DEV_A, "state.ctx"], &forged);
+    fs.put(&["devices", DEV_A, "state.spx"], &forged);
     let b = second(&fs);
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
     assert_eq!(code(b.core.key_import(KeyInput::RecoveryKey(Zeroizing::new(real.recovery_key.clone())), 1)), SyncCode::KeyMismatch);
@@ -147,14 +147,14 @@ fn s4_import_requires_a_state_that_decrypts_with_the_candidate_key() {
     assert_eq!(code(b.core.key_import(KeyInput::QrText(qr_text_of(&attacker, DEV_A, None, b.clock.now() + 60_000)), 1)), SyncCode::KeyMismatch);
     assert_eq!(b.vault.get(SYNC_KEY_ACCOUNT).unwrap(), None);
     // État authentique de retour : la vraie clé est acceptée.
-    fs.put(&["devices", DEV_A, "state.ctx"], &original);
+    fs.put(&["devices", DEV_A, "state.spx"], &original);
     b.core.key_import(KeyInput::RecoveryKey(Zeroizing::new(real.recovery_key.clone())), 1).unwrap();
 }
 
 /// S5 (revue 12) : la charge utile est effacée à la destruction ; le QR est analysé sans copie intermédiaire de la clé.
 #[test]
 fn s5_payload_is_zeroized_and_qr_parsing_keeps_no_intermediate_map() {
-    assert!(std::mem::needs_drop::<circletasks_lib::sync::service::PairingPayload>());
+    assert!(std::mem::needs_drop::<spartiate_lib::sync::service::PairingPayload>());
     let service = include_str!("../../src/sync/service.rs");
     assert!(service.contains("impl Drop for PairingPayload") && service.contains("zeroize(&mut self.recovery_key)"));
     let crypto = include_str!("../../src/sync/crypto.rs");
@@ -165,27 +165,27 @@ fn s5_payload_is_zeroized_and_qr_parsing_keeps_no_intermediate_map() {
     let key = MasterKey::generate().unwrap();
     let k = {
         let text = qr_text_of(&key, DEV_A, None, 1);
-        let json = base64::Engine::decode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, text.strip_prefix("CTPAIR1.").unwrap()).unwrap();
+        let json = base64::Engine::decode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, text.strip_prefix("SPPAIR1.").unwrap()).unwrap();
         serde_json::from_slice::<Value>(&json).unwrap()["k"].as_str().unwrap().to_owned()
     };
-    let encode = |json: &str| format!("CTPAIR1.{}", base64::Engine::encode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, json));
-    assert!(circletasks_lib::sync::crypto::parse_qr_text(&encode(&format!(r#"{{"v":1,"k":"{k}","d":"{DEV_A}","x":1}}"#))).is_none());
-    assert!(circletasks_lib::sync::crypto::parse_qr_text(&encode(&format!(r#"{{"v":1,"k":"{k}","d":"{DEV_A}","e":null,"x":1}}"#))).is_some());
+    let encode = |json: &str| format!("SPPAIR1.{}", base64::Engine::encode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, json));
+    assert!(spartiate_lib::sync::crypto::parse_qr_text(&encode(&format!(r#"{{"v":1,"k":"{k}","d":"{DEV_A}","x":1}}"#))).is_none());
+    assert!(spartiate_lib::sync::crypto::parse_qr_text(&encode(&format!(r#"{{"v":1,"k":"{k}","d":"{DEV_A}","e":null,"x":1}}"#))).is_some());
 }
 
-/// S7 : un segment déposé (`j-99999999.ctj`, en-tête d'une autre clé ou illisible) ne bloque ni l'ajout ni la reconstruction.
+/// S7 : un segment déposé (`j-99999999.spj`, en-tête d'une autre clé ou illisible) ne bloque ni l'ajout ni la reconstruction.
 #[test]
 fn s7_a_dropped_high_segment_never_blocks_appends_nor_rebuilds() {
     let (mut a, fs) = device();
     a.setup(DEV_A);
     let ep = epoch(1, DEV_A);
     append(&a, &ep, 1, 0, 10).unwrap();
-    let real = fs.get(&["devices", DEV_A, &ep, "j-00000001.ctj"]).unwrap();
+    let real = fs.get(&["devices", DEV_A, &ep, "j-00000001.spj"]).unwrap();
     let header = String::from_utf8(real[..real.iter().position(|&b| b == b'\n').unwrap()].to_vec()).unwrap();
     // Même kid en clair, numéro maximal, ligne illisible.
     let forged = format!("{}\n1.14.{}\n", header.replace("\"n\":1", "\"n\":99999999"), "A".repeat(5498));
-    fs.put(&["devices", DEV_A, &ep, "j-99999999.ctj"], forged.as_bytes());
-    fs.put(&["devices", DEV_A, &ep, "j-99999998.ctj"], b"pas d'en-tete");
+    fs.put(&["devices", DEV_A, &ep, "j-99999999.spj"], forged.as_bytes());
+    fs.put(&["devices", DEV_A, &ep, "j-99999998.spj"], b"pas d'en-tete");
     append(&a, &ep, 1, 1, 20).unwrap();
     append(&a, &ep, 2, 0, 30).unwrap();
     // own.json perdu : reconstruit depuis le seul segment authentifié.
@@ -221,13 +221,13 @@ fn s9_usage_is_kept_when_the_same_key_comes_back() {
     drop(fs);
 }
 
-/// S10 : rien n'est créé avant la validation ; choisir « iCloud Drive » lie (et crée) son sous-dossier CircleTasks.
+/// S10 : rien n'est créé avant la validation ; choisir « iCloud Drive » lie (et crée) son sous-dossier Spartiate.
 #[test]
 fn s10_proposed_folder_is_created_only_after_validation() {
     let drive = Path::new(r"C:\Users\Ali\iCloudDrive");
-    assert_eq!(chosen_target(drive, Some(drive)), (drive.join("CircleTasks"), true));
+    assert_eq!(chosen_target(drive, Some(drive)), (drive.join("Spartiate"), true));
     assert!(chosen_target(Path::new(r"c:\users\ali\iclouddrive\"), Some(drive)).1);
-    assert_eq!(chosen_target(&drive.join("CircleTasks"), Some(drive)), (drive.join("CircleTasks"), false));
+    assert_eq!(chosen_target(&drive.join("Spartiate"), Some(drive)), (drive.join("Spartiate"), false));
     assert_eq!(chosen_target(Path::new(r"C:\Temp\ct"), None), (Path::new(r"C:\Temp\ct").to_path_buf(), false));
     let source = include_str!("../../src/sync/commands.rs");
     let choose = &source[source.find("pub async fn sync_folder_choose").unwrap()..];
@@ -259,7 +259,7 @@ fn r2_key_create_and_import_revalidate_the_root() {
     assert_eq!(d.vault.get(SYNC_KEY_ACCOUNT).unwrap(), None);
 }
 
-/// Revue 4 : propre `state.ctx` présent mais dans le nuage, sans accusé qui borne : `cloud-pending`, rien en cache ; lisible ensuite.
+/// Revue 4 : propre `state.spx` présent mais dans le nuage, sans accusé qui borne : `cloud-pending`, rien en cache ; lisible ensuite.
 #[test]
 fn r4_rebuild_waits_for_its_own_state_in_the_cloud() {
     let (mut a, fs) = device();
@@ -269,7 +269,7 @@ fn r4_rebuild_waits_for_its_own_state_in_the_cloud() {
     a.core.write_state(14, state(DEV_A, &ep, 5, 1, 1, Some(hlc(100, DEV_A)))).unwrap();
     std::fs::remove_file(a.base.path().join("sync").join("own.json")).unwrap();
     a.restart();
-    fs.set_availability(&["devices", DEV_A, "state.ctx"], Availability::Cloud);
+    fs.set_availability(&["devices", DEV_A, "state.spx"], Availability::Cloud);
     *fs.hydrate_error.lock().unwrap() = Some(FsError::CloudPending);
     assert_eq!(code(append(&a, &ep, 1, 1, 200)), SyncCode::CloudPending);
     assert!(!a.base.path().join("sync").join("own.json").exists(), "rien n'est retenu");
@@ -286,7 +286,7 @@ fn r5_snapshot_writers_are_unique_and_capped() {
     let ep = epoch(1, DEV_A);
     let stale = a.core.snapshot_begin(&ep, 1, 14).unwrap();
     // Revue Y-IOS : même époque, même numéro resté ouvert (cycle interrompu entre deux pages) : abandonné, jamais un refus à chaque cycle.
-    let log = circletasks_lib::sync::log::capture();
+    let log = spartiate_lib::sync::log::capture();
     let first = a.core.snapshot_begin(&ep, 1, 14).unwrap();
     assert!(log.lines().iter().any(|l| l == "sync:snapshot-abandoned 1"));
     assert_eq!(code(a.core.snapshot_append(stale, &["{}".into()])), SyncCode::BadName, "un seul écrivain par numéro");
@@ -294,11 +294,11 @@ fn r5_snapshot_writers_are_unique_and_capped() {
     for seq in 2..=5 {
         a.core.snapshot_begin(&ep, seq, 14).unwrap();
     }
-    assert!(fs.get(&["devices", DEV_A, &ep, "s-00000001.cts.tmp"]).is_none(), "le plus ancien est abandonné, .tmp supprimé");
+    assert!(fs.get(&["devices", DEV_A, &ep, "s-00000001.sps.tmp"]).is_none(), "le plus ancien est abandonné, .tmp supprimé");
     assert_eq!(code(a.core.snapshot_append(first, &["{}".into()])), SyncCode::BadName);
 }
 
-/// Revue 11 : les 38 codes Rust (35, plus `not-foreground`, `already-open` et `window-unprotected` de Y-06) sont exactement `SYNC_ERROR_CODES` de format.ts, dans le même ordre.
+/// Revue 11 : les 39 codes Rust (35, plus `not-foreground`, `already-open` et `window-unprotected` de Y-06) sont exactement `SYNC_ERROR_CODES` de format.ts, dans le même ordre.
 #[test]
 fn r11_error_codes_match_typescript() {
     let format = include_str!("../../../src/domain/sync/format.ts");
@@ -306,7 +306,7 @@ fn r11_error_codes_match_typescript() {
     let body = &format[start..start + format[start..].find("] as const").unwrap()];
     let ts: Vec<&str> = body.split('\'').skip(1).step_by(2).collect();
     let rust: Vec<&str> = SyncCode::ALL.iter().map(|c| c.as_str()).collect();
-    assert_eq!(rust.len(), 38);
+    assert_eq!(rust.len(), 39);
     assert_eq!(rust, ts);
 }
 
@@ -338,7 +338,7 @@ fn r15_snapshot_pages_do_not_reread_the_file() {
         }
     }
     assert_eq!(pages, 6);
-    // Une lecture de state.ctx par page (anti-rejeu), une seule de l'instantané.
+    // Une lecture de state.spx par page (anti-rejeu), une seule de l'instantané.
     assert_eq!(snapshot_reads() - before, pages + 1);
 }
 
@@ -349,7 +349,7 @@ fn r16_kid_of_a_device_whose_state_is_in_the_cloud() {
     a.setup(DEV_A);
     append(&a, &epoch(1, DEV_A), 1, 0, 10).unwrap();
     a.core.write_state(14, state(DEV_A, &epoch(1, DEV_A), 1, 1, 1, Some(hlc(10, DEV_A)))).unwrap();
-    fs.set_availability(&["devices", DEV_A, "state.ctx"], Availability::Cloud);
+    fs.set_availability(&["devices", DEV_A, "state.spx"], Availability::Cloud);
     *fs.hydrate_error.lock().unwrap() = Some(FsError::CloudPending);
     let scan = a.core.scan(&[]).unwrap();
     assert_eq!(scan.devices[0].state_status, "cloud-pending");
@@ -396,10 +396,10 @@ fn r18_snapshot_budget_checked_before_sealing() {
 /// Revue 19 : noms de périphérique, point ou espace final, flux, caractères interdits refusés.
 #[test]
 fn r19_unsafe_path_components_are_refused() {
-    for good in ["state.ctx", "j-00000001.ctj", "e0001-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60", "devices", "console.txt", "COM10"] {
+    for good in ["state.spx", "j-00000001.spj", "e0001-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60", "devices", "console.txt", "COM10"] {
         assert!(is_safe_component(good), "{good}");
     }
-    for bad in ["", ".", "..", "CON", "con.txt", "NUL", "aux.ctx", "COM1", "lpt9.cts", "COM¹", "CONIN$", "a.", "a ", "a:b", "x::$DATA", "a\\b", "a/b", "a*", "a?", "a|b", "a\u{1}"] {
+    for bad in ["", ".", "..", "CON", "con.txt", "NUL", "aux.spx", "COM1", "lpt9.sps", "COM¹", "CONIN$", "a.", "a ", "a:b", "x::$DATA", "a\\b", "a/b", "a*", "a?", "a|b", "a\u{1}"] {
         assert!(!is_safe_component(bad), "{bad:?}");
     }
     assert!(!is_safe_component(&"a".repeat(256)));
@@ -410,13 +410,13 @@ fn r19_unsafe_path_components_are_refused() {
 fn r20_aad_fields_are_never_truncated() {
     let long = "x".repeat(70_000);
     assert!(aad_bytes(std::slice::from_ref(&long)).is_none());
-    assert_eq!(aad_bytes(&["ct/1".into()]).unwrap(), b"\x00\x04ct/1");
+    assert_eq!(aad_bytes(&["sp/1".into()]).unwrap(), b"\x00\x04sp/1");
     let key = MasterKey::generate().unwrap();
     let place = Place::Journal { dev: &long, epoch: "e0001-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60", segment: 1, index: 0 };
     assert!(key.seal(&place, b"{}", 1, 1).is_err());
 }
 
-/// Revue B1 (jumeau de `memory.fixes.test.ts`) : propre `state.ctx` remplacé (corrompu) : reconstruction avec le `stateSeq` lu en
+/// Revue B1 (jumeau de `memory.fixes.test.ts`) : propre `state.spx` remplacé (corrompu) : reconstruction avec le `stateSeq` lu en
 /// clair dans l'en-tête du fichier remplacé, puis réécriture possible ; seul un état en transfert fait attendre.
 #[test]
 fn b1_replaced_own_state_is_rebuilt_from_its_clear_header_and_can_be_rewritten() {
@@ -427,7 +427,7 @@ fn b1_replaced_own_state_is_rebuilt_from_its_clear_header_and_can_be_rewritten()
     a.core.write_state(14, state(DEV_A, &ep, 5, 1, 1, Some(hlc(100, DEV_A)))).unwrap();
     std::fs::remove_file(a.base.path().join("sync").join("own.json")).unwrap();
     a.restart();
-    let path = ["devices", DEV_A, "state.ctx"];
+    let path = ["devices", DEV_A, "state.spx"];
     let mut bytes = fs.get(&path).unwrap();
     let pos = bytes.len() - 20;
     bytes[pos] = if bytes[pos] == b'A' { b'B' } else { b'A' };
@@ -447,7 +447,7 @@ fn a1_self_and_keep_are_listed_before_hostile_folders() {
     let ep = epoch(1, DEV_A);
     append(&d, &ep, 1, 0, 10).unwrap();
     d.core.write_state(14, state(DEV_A, &ep, 1, 1, 1, Some(hlc(10, DEV_A)))).unwrap();
-    fs.put(&["devices", DEV_B, &epoch(1, DEV_B), "j-00000001.ctj"], b"x");
+    fs.put(&["devices", DEV_B, &epoch(1, DEV_B), "j-00000001.spj"], b"x");
     for i in 0..5 {
         let id = format!("00000000-0000-4000-8000-{i:012}");
         for j in 0..10_000 {
@@ -469,7 +469,7 @@ fn a3_a_pairing_device_is_never_crowded_out_by_fake_folders() {
     a.setup(DEV_A);
     a.core.write_state(14, state(DEV_A, &epoch(1, DEV_A), 1, 0, 0, None)).unwrap();
     for i in 0..65 {
-        fs.put(&["devices", &format!("00000000-0000-4000-8000-{i:012}"), "state.ctx"], b"{\"f\":\"ct-state\"}\nfaux\n");
+        fs.put(&["devices", &format!("00000000-0000-4000-8000-{i:012}"), "state.spx"], b"{\"f\":\"sp-state\"}\nfaux\n");
     }
     // Appareil réel, nommé pour passer en dernier, qui s'associe à A.
     let joiner = "ffffffff-0000-4000-8000-000000000001";
@@ -495,13 +495,13 @@ fn a4_fake_high_segments_are_filtered_on_their_header_only() {
     let ep = epoch(1, DEV_A);
     append(&a, &ep, 1, 0, 10).unwrap();
     append(&a, &ep, 2, 0, 20).unwrap();
-    let real = fs.get(&["devices", DEV_A, &ep, "j-00000002.ctj"]).unwrap();
+    let real = fs.get(&["devices", DEV_A, &ep, "j-00000002.spj"]).unwrap();
     let header = String::from_utf8(real[..real.iter().position(|&b| b == b'\n').unwrap()].to_vec()).unwrap();
     let kid = a.core.key_status().unwrap().kid.unwrap();
     for i in 0..16u32 {
         let n = 99_999_999 - i;
         let fake = header.replace("\"n\":2", &format!("\"n\":{n}")).replace(&kid, "0000000000000000");
-        fs.put(&["devices", DEV_A, &ep, &format!("j-{n:08}.ctj")], format!("{fake}\n1.14.{}\n", "A".repeat(5499)).as_bytes());
+        fs.put(&["devices", DEV_A, &ep, &format!("j-{n:08}.spj")], format!("{fake}\n1.14.{}\n", "A".repeat(5499)).as_bytes());
     }
     std::fs::remove_file(a.base.path().join("sync").join("own.json")).unwrap();
     a.restart();
@@ -545,11 +545,11 @@ fn b3_snapshot_cache_is_dropped_at_the_start_of_a_scan() {
     assert_eq!(first.status, "more");
     let before = snapshot_reads();
     a.core.read_snapshot(DEV_A, &ep, 1, first.next.record, Some(4_000)).unwrap();
-    assert_eq!(snapshot_reads() - before, 1, "page suivante : seul state.ctx est relu");
+    assert_eq!(snapshot_reads() - before, 1, "page suivante : seul state.spx est relu");
     a.core.scan(&[]).unwrap();
     let before = snapshot_reads();
     a.core.read_snapshot(DEV_A, &ep, 1, 2, Some(4_000)).unwrap();
-    assert_eq!(snapshot_reads() - before, 2, "après un scan : state.ctx et l'instantané relus");
+    assert_eq!(snapshot_reads() - before, 2, "après un scan : state.spx et l'instantané relus");
     let service = include_str!("../../src/sync/service.rs");
     assert_eq!(service.matches("inner.snapshot_cache = None;").count(), 4, "choose_folder, scan, key_import, bascule de Y-11 (changement de clé)");
 }
@@ -576,7 +576,7 @@ fn b5_no_log_buffer_in_production() {
     }
 }
 
-/// Revue B1, décision 1 (jumeau de `memory.fixes.test.ts`) : son propre `state.ctx` d'un format plus récent n'est jamais réécrit ;
+/// Revue B1, décision 1 (jumeau de `memory.fixes.test.ts`) : son propre `state.spx` d'un format plus récent n'est jamais réécrit ;
 /// l'appareil n'écrit rien (`newer-format`, Y-07 « Mettez à jour l'app »).
 #[test]
 fn b1_own_state_of_a_newer_format_is_never_rewritten() {
@@ -587,7 +587,7 @@ fn b1_own_state_of_a_newer_format_is_never_rewritten() {
     a.core.write_state(14, state(DEV_A, &ep, 5, 1, 1, Some(hlc(100, DEV_A)))).unwrap();
     std::fs::remove_file(a.base.path().join("sync").join("own.json")).unwrap();
     a.restart();
-    let path = ["devices", DEV_A, "state.ctx"];
+    let path = ["devices", DEV_A, "state.spx"];
     let newer = String::from_utf8(fs.get(&path).unwrap()).unwrap().replacen("\"sm\":1", "\"sm\":2", 1);
     fs.put(&path, newer.as_bytes());
     assert_eq!(code(append(&a, &ep, 1, 1, 200)), SyncCode::NewerFormat);
@@ -606,7 +606,7 @@ fn b1_an_absurd_clear_header_number_is_ignored() {
     a.core.write_state(14, state(DEV_A, &ep, 5, 1, 1, Some(hlc(100, DEV_A)))).unwrap();
     std::fs::remove_file(a.base.path().join("sync").join("own.json")).unwrap();
     a.restart();
-    let path = ["devices", DEV_A, "state.ctx"];
+    let path = ["devices", DEV_A, "state.spx"];
     let forged = String::from_utf8(fs.get(&path).unwrap()).unwrap().replacen("\"n\":5", "\"n\":9007199254740991", 1);
     fs.put(&path, forged.as_bytes());
     append(&a, &ep, 1, 1, 200).unwrap();

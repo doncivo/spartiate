@@ -24,7 +24,7 @@ use tauri_plugin_updater::UpdaterExt;
 /// Version courante de l'app de test : celle du paquet (tauri::test::mock_context la lit dans Cargo.toml).
 const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
 const TARGET: &str = "test-target";
-const PAYLOAD: &[u8] = b"faux installeur CircleTasks";
+const PAYLOAD: &[u8] = b"faux installeur Spartiate";
 
 type Routes = Arc<Mutex<HashMap<String, Vec<u8>>>>;
 
@@ -97,8 +97,8 @@ impl TestKey {
     /// Signature au format de `latest.json` (fichier .sig encodé en base64), version signée incluse.
     fn sign(&self, data: &[u8], signed_version: Option<&str>) -> String {
         let trusted = match signed_version {
-            Some(v) => format!("timestamp:1\tfile:CircleTasks_setup.exe\tversion:{v}"),
-            None => "timestamp:1\tfile:CircleTasks_setup.exe".to_owned(),
+            Some(v) => format!("timestamp:1\tfile:Spartiate_setup.exe\tversion:{v}"),
+            None => "timestamp:1\tfile:Spartiate_setup.exe".to_owned(),
         };
         let signature = minisign::sign(Some(&self.pair.pk), &self.pair.sk, Cursor::new(data), Some(&trusted), Some("jetable"))
             .expect("signature");
@@ -111,7 +111,7 @@ fn manifest(server: &Server, version: &str, signature: &str) -> Vec<u8> {
         "version": version,
         "notes": "Corrections et nouveautés.",
         "pub_date": "2026-10-02T10:00:00Z",
-        "platforms": { TARGET: { "url": server.url("/CircleTasks_setup.exe"), "signature": signature } }
+        "platforms": { TARGET: { "url": server.url("/Spartiate_setup.exe"), "signature": signature } }
     })
     .to_string()
     .into_bytes()
@@ -148,7 +148,7 @@ async fn download(update: &tauri_plugin_updater::Update) -> tauri_plugin_updater
 fn server_with(version: &str, signature: &str, payload: &[u8]) -> Server {
     let server = Server::start();
     server.serve("/latest.json", manifest(&server, version, signature));
-    server.serve("/CircleTasks_setup.exe", payload.to_vec());
+    server.serve("/Spartiate_setup.exe", payload.to_vec());
     server
 }
 

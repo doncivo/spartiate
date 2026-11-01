@@ -68,7 +68,7 @@ async function installAtN(page: Page, mode: Mode): Promise<void> {
         const pad = (n: number): string => String(n).padStart(4, '0');
         g['__ctMigrationBackup'] = {
           backup: (request: { fromVersion: number; toVersion: number; stamp: string }) =>
-            Promise.resolve({ name: `circletasks-pre-migration-v${pad(request.fromVersion)}-to-v${pad(request.toVersion)}-${request.stamp}.db` }),
+            Promise.resolve({ name: `spartiate-pre-migration-v${pad(request.fromVersion)}-to-v${pad(request.toVersion)}-${request.stamp}.db` }),
         };
         g['__ctRestored'] = [];
         g['__ctStartupRecovery'] = {
@@ -106,12 +106,12 @@ test.describe('I-06 — mise à jour N vers N+1 (iPhone, base préremplie, versi
     await installAtN(page, 'fail');
     await page.goto('/');
     await expect(page.getByRole('alert').first()).toHaveText('Impossible d’ouvrir la base de données.', { timeout: APP_READY_TIMEOUT_MS });
-    await expect(page.getByText('Vos données sont intactes. Ne supprimez pas CircleTasks. Envoyez le détail pour obtenir un correctif.')).toBeVisible();
+    await expect(page.getByText('Vos données sont intactes. Ne supprimez pas Spartiate. Envoyez le détail pour obtenir un correctif.')).toBeVisible();
     const detail = page.getByTestId('db-failure-detail');
     await expect(detail).toContainText('Étape : migration 19');
     await expect(detail).toContainText('Version de l’app : 0.3.0');
     await expect(detail).toContainText('Schéma de la base : 18 (dernier connu de l’app : 19)');
-    await expect(detail).toContainText('Sauvegarde d’avant la mise à jour : circletasks-pre-migration-v0018-to-v0019-');
+    await expect(detail).toContainText('Sauvegarde d’avant la mise à jour : spartiate-pre-migration-v0018-to-v0019-');
     await expect(page.getByRole('button', { name: 'Réessayer' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Copier le détail' })).toBeVisible();
     const restore = page.getByRole('button', { name: 'Restaurer la sauvegarde d’avant la mise à jour' });
@@ -129,14 +129,14 @@ test.describe('I-06 — mise à jour N vers N+1 (iPhone, base préremplie, versi
     const readRestored = () => page.evaluate(() => (globalThis as { __ctRestored?: string[] }).__ctRestored ?? []);
     await expect.poll(async () => (await readRestored()).length).toBe(1);
     const restored = await readRestored();
-    expect(restored[0]).toMatch(/^circletasks-pre-migration-v0018-to-v0019-\d{8}T\d{6}Z\.db$/);
+    expect(restored[0]).toMatch(/^spartiate-pre-migration-v0018-to-v0019-\d{8}T\d{6}Z\.db$/);
   });
 
   test('base plus récente que l’app : consigne SideStore, données non modifiées, pas de restauration, jamais de page blanche', async ({ page }) => {
     await installAtN(page, 'newer');
     await page.goto('/');
     await expect(page.getByRole('alert').first()).toHaveText(
-      'Cette version de CircleTasks est plus ancienne que vos données. Installez la dernière version depuis SideStore. Vos données ne sont pas modifiées.',
+      'Cette version de Spartiate est plus ancienne que vos données. Installez la dernière version depuis SideStore. Vos données ne sont pas modifiées.',
       { timeout: APP_READY_TIMEOUT_MS },
     );
     await expect(page.getByText(/inconnue de cette version/)).toHaveCount(0);

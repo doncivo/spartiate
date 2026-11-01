@@ -25,13 +25,13 @@ mod guard;
 mod wrapper;
 
 pub use error::Error;
-/// CircleTasks (SEC-01) : crochet appelé à chaque refus du plugin (code stable), pour le journal du programme.
+/// Spartiate (SEC-01) : crochet appelé à chaque refus du plugin (code stable), pour le journal du programme.
 pub use guard::set_refusal_hook;
 pub use wrapper::DbPool;
-/// CircleTasks : pool à une connexion, réexporté pour les tests de l'app (aucune 2e connexion pendant une restauration, P-04-iOS).
+/// Spartiate : pool à une connexion, réexporté pour les tests de l'app (aucune 2e connexion pendant une restauration, P-04-iOS).
 #[cfg(feature = "sqlite")]
 pub use wrapper::open_sqlite_pool;
-/// CircleTasks : contrôle « restauration en attente » appliqué par `load` (réexporté pour les tests de l'app).
+/// Spartiate : contrôle « restauration en attente » appliqué par `load` (réexporté pour les tests de l'app).
 pub use wrapper::restore_pending;
 
 use futures_core::future::BoxFuture;

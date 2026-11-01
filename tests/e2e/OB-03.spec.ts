@@ -25,13 +25,13 @@ test.describe('OB-03 — rattacher une tâche à un objectif', () => {
 
   test('un seul objectif ouvert : rattachement direct, icône cible sur la ligne, liste de l’écran Objectif, détachement (critères 1, 3, 4, 5, 7)', async ({ page }, testInfo) => {
     await openApp(page);
-    await insertGoals(page, [{ title: 'Finaliser le PRD CircleTasks', weekStart: await browserWeek(page) }]);
+    await insertGoals(page, [{ title: 'Finaliser le PRD Spartiate', weekStart: await browserWeek(page) }]);
     await createTask(page, testInfo, { title: 'Relire le PRD' });
     await rowOf(page, 'Relire le PRD').getByRole('button', { name: 'Relire le PRD', exact: true }).click();
     const fiche = detailOf(page);
     await expect(attachSwitch(fiche)).toBeEnabled();
     await attachSwitch(fiche).click();
-    await expect(fiche.getByText('Rattachée : Finaliser le PRD CircleTasks')).toBeVisible();
+    await expect(fiche.getByText('Rattachée : Finaliser le PRD Spartiate')).toBeVisible();
     await expect(attachSwitch(fiche)).toHaveAttribute('aria-checked', 'true');
 
     // Ferme la fiche : la ligne porte l'icône cible.
@@ -79,13 +79,13 @@ test.describe('OB-03 — rattacher une tâche à un objectif', () => {
   test('feuille « Nouvelle tâche » : l’interrupteur rattache la tâche créée (critère 1, iPhone)', async ({ page }, testInfo) => {
     test.skip(!isPhone(testInfo), 'La feuille d’ajout est propre à l’iPhone ; sur PC, rattachement par la fiche');
     await openApp(page);
-    await insertGoals(page, [{ title: 'Finaliser le PRD CircleTasks', weekStart: await browserWeek(page) }]);
+    await insertGoals(page, [{ title: 'Finaliser le PRD Spartiate', weekStart: await browserWeek(page) }]);
     await page.getByRole('button', { name: 'Ajouter', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Nouvelle tâche' });
     await dialog.getByRole('button', { name: /Plus d.options/ }).click();
     await dialog.getByLabel('Titre').fill('Écrire le plan');
     await attachSwitch(dialog).click();
-    await expect(dialog.getByText('Rattachée : Finaliser le PRD CircleTasks')).toBeVisible();
+    await expect(dialog.getByText('Rattachée : Finaliser le PRD Spartiate')).toBeVisible();
     await dialog.getByRole('button', { name: /^(Ajouter la tâche|Enregistrer)$/ }).click();
     await expect(dialog).not.toBeVisible();
     await expect(rowOf(page, 'Écrire le plan').getByRole('img', { name: 'Rattachée à l’objectif' })).toBeVisible();

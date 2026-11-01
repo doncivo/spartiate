@@ -13,7 +13,7 @@
 //!   est refusé en écriture ; le handle créé est recontrôlé (balise, chemin final) avant la première écriture ;
 //! - toute I/O se fait sur ce handle ; la taille annoncée est comparée à la borne **avant** lecture ou hydratation ;
 //! - un fichier « dans le nuage » n'est hydraté que si l'appelant le demande (fichier annoncé par une tête authentifiée ou
-//!   `state.ctx`), sur un fil dédié, 60 s par fichier et 3 minutes par cycle (le cycle commence à `revalidate`).
+//!   `state.spx`), sur un fil dédié, 60 s par fichier et 3 minutes par cycle (le cycle commence à `revalidate`).
 
 use std::time::Duration;
 
@@ -177,7 +177,7 @@ pub fn is_safe_component(name: &str) -> bool {
 // Seule région du code qui supprime dans le dossier d'un **autre** appareil ; seul appelant : `SyncCore::forgotten_delete`
 // (`sync_forgotten_delete`), après les conditions de `forget::forgotten_delete_check`. Jamais d'écriture, de renommage ni de création ;
 // jamais d'hydratation (liste et suppression seulement) ; seuls les noms stricts de la section 1.1 sont supprimés : segments et
-// instantanés des dossiers d'époque, dossiers d'époque vidés, `state.next.ctx`, puis `state.ctx` **en dernier**, enfin le dossier
+// instantanés des dossiers d'époque, dossiers d'époque vidés, `state.next.spx`, puis `state.spx` **en dernier**, enfin le dossier
 // d'appareil s'il est vide. Un nom étranger (`.tmp`, copie de conflit, fichier déposé) n'est ni lu ni supprimé : le dossier reste.
 
 /// Résultat d'une passe de suppression.
@@ -254,7 +254,7 @@ pub fn delete_forgotten_device_files(fs: &dyn SyncFs, dev: &str, max_entries: us
         }
     }
     if cut {
-        // Une liste coupée : des noms stricts peuvent rester ; `state.ctx` est gardé pour la passe suivante.
+        // Une liste coupée : des noms stricts peuvent rester ; `state.spx` est gardé pour la passe suivante.
         return Ok(out);
     }
     for (present, name) in [(has_next, STATE_NEXT_FILE), (has_state, STATE_FILE)] {

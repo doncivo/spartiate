@@ -20,7 +20,7 @@ export interface CaldavSimCalendar {
   objects: readonly CaldavSimObject[];
 }
 
-const ics = (...lines: string[]): string => ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//CircleTasks//Simulateur//FR', ...lines, 'END:VCALENDAR', ''].join('\r\n');
+const ics = (...lines: string[]): string => ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Spartiate//Simulateur//FR', ...lines, 'END:VCALENDAR', ''].join('\r\n');
 
 const PARIS_TZ = ['BEGIN:VTIMEZONE', 'TZID:Europe/Paris', 'BEGIN:DAYLIGHT', 'TZOFFSETFROM:+0100', 'TZOFFSETTO:+0200', 'DTSTART:19700329T020000', 'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU', 'END:DAYLIGHT', 'BEGIN:STANDARD', 'TZOFFSETFROM:+0200', 'TZOFFSETTO:+0100', 'DTSTART:19701025T030000', 'RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU', 'END:STANDARD', 'END:VTIMEZONE'];
 

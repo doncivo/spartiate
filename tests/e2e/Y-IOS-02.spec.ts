@@ -68,7 +68,7 @@ test('Y-IOS-02 : caméra refusée visible, puis « Associer au PC » par le scan
   await page.getByRole('button', { name: 'Associer cet iPhone au PC : scanner le code d’association' }).click();
   const dialog = page.getByRole('dialog', { name: 'Scannez le code affiché sur le PC' });
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByText(/CircleTasks utilise la caméra pour scanner le code d’association/)).toBeVisible();
+  await expect(dialog.getByText(/Spartiate utilise la caméra pour scanner le code d’association/)).toBeVisible();
   await expect(page.getByRole('img', { name: /QR/ })).toHaveCount(0);
   await dialog.getByRole('button', { name: 'Ouvrir la caméra et scanner le code d’association' }).click();
   await expect(page.getByText('Cet iPhone est associé au PC')).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });
@@ -108,13 +108,13 @@ test('Y-IOS-02 QA : écrans d’association de l’iPhone, dossier d’abord, pu
   const dialog = page.getByRole('dialog', { name: 'Scannez le code affiché sur le PC' });
   await expect(dialog).toBeVisible();
   // Étape 1 : le dossier, rien d'autre (ni caméra, ni scan, ni QR).
-  await expect(dialog.getByText('Choisissez d’abord le même dossier iCloud Drive / CircleTasks que sur le PC.')).toBeVisible();
+  await expect(dialog.getByText('Choisissez d’abord le même dossier iCloud Drive / Spartiate que sur le PC.')).toBeVisible();
   await expect(dialog.getByRole('button', { name: 'Ouvrir la caméra et scanner le code d’association' })).toHaveCount(0);
   await expect(page.getByRole('img', { name: /QR/ })).toHaveCount(0);
-  await dialog.getByRole('button', { name: 'Choisir le dossier iCloud Drive / CircleTasks' }).click();
+  await dialog.getByRole('button', { name: 'Choisir le dossier iCloud Drive / Spartiate' }).click();
   // Étape 2 : la caméra expliquée, puis le scan.
-  await expect(dialog.getByText(/CircleTasks utilise la caméra pour scanner le code d’association/)).toBeVisible();
-  await expect(dialog.getByText('Choisissez d’abord le même dossier iCloud Drive / CircleTasks que sur le PC.')).toHaveCount(0);
+  await expect(dialog.getByText(/Spartiate utilise la caméra pour scanner le code d’association/)).toBeVisible();
+  await expect(dialog.getByText('Choisissez d’abord le même dossier iCloud Drive / Spartiate que sur le PC.')).toHaveCount(0);
   await dialog.getByRole('button', { name: 'Ouvrir la caméra et scanner le code d’association' }).click();
   await expect(page.getByText('Cet iPhone est associé au PC')).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });
   await page.getByRole('button', { name: 'Fermer', exact: true }).click();

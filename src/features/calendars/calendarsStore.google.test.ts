@@ -39,7 +39,7 @@ describe('connexion Google (K-01)', () => {
   it('crée le compte (adresse = label), range les jetons au coffre, charge les agendas en Pro et les événements', async () => {
     const accountId = await connected();
     const [account] = await h.container.data.repos.calendarAccounts.listAll();
-    expect(account).toMatchObject({ id: accountId, provider: 'google', label: GOOGLE_ACCOUNT, tokenRef: `circletasks.calendar.google.${accountId}` });
+    expect(account).toMatchObject({ id: accountId, provider: 'google', label: GOOGLE_ACCOUNT, tokenRef: `spartiate.calendar.google.${accountId}` });
     expect(account?.calendars).toEqual([
       { id: GOOGLE_ACCOUNT, name: 'Travail', spaceId: SPACE_PRO_ID, shown: true },
       { id: 'famille@group.calendar.google.com', name: 'Famille', spaceId: SPACE_PRO_ID, shown: true },
@@ -50,7 +50,7 @@ describe('connexion Google (K-01)', () => {
 
   it('aucun jeton ni identifiant client dans la base, l’état de l’interface ni les messages', async () => {
     await connected();
-    const secret = h.vault.read(`circletasks.calendar.google.${state().accounts[0]?.id ?? ''}`) ?? '';
+    const secret = h.vault.read(`spartiate.calendar.google.${state().accounts[0]?.id ?? ''}`) ?? '';
     expect(secret).toContain('sim-refresh-');
     const dump = await dumpDatabaseText(h.db);
     for (const fragment of ['sim-refresh-', 'sim-access-', h.google.clientId]) {
@@ -158,7 +158,7 @@ describe('jeton refusé ou révoqué (K-01 critère 7, A-09 critère 10)', () =>
   });
 
   it('un appareil sans secret (compte venu de la synchro) apparaît « à reconnecter » dès le chargement (D1)', async () => {
-    await h.container.data.repos.calendarAccounts.create({ id: 'a0000000-0000-4000-8000-000000000001' as CalendarAccountId, provider: 'google', label: 'autre@example.com', tokenRef: 'circletasks.calendar.google.a0000000-0000-4000-8000-000000000009', calendars: [] });
+    await h.container.data.repos.calendarAccounts.create({ id: 'a0000000-0000-4000-8000-000000000001' as CalendarAccountId, provider: 'google', label: 'autre@example.com', tokenRef: 'spartiate.calendar.google.a0000000-0000-4000-8000-000000000009', calendars: [] });
     await state().load();
     expect(state().states['a0000000-0000-4000-8000-000000000001']).toMatchObject({ kind: 'reconnect-required' });
     expect(useAppStatusStore.getState().sources.calendarDisconnected?.detail).toBe('autre@example.com');
@@ -184,7 +184,7 @@ describe('connexion abandonnée dont le jeton ne s’efface pas (revue PR #25, p
 
 describe('orphelins persistés et jamais confondus avec un secret valable (seconde revue PR #25)', () => {
   const RECEIVED = 'a0000000-0000-4000-8000-0000000000d1' as CalendarAccountId;
-  const REF = `circletasks.calendar.google.${RECEIVED}`;
+  const REF = `spartiate.calendar.google.${RECEIVED}`;
 
   /** Ligne reçue du PC (libellé d'un autre compte Google) : « Connecter ici » est refusé et le jeton ne s'efface pas. */
   async function orphanAfterRefusal(): Promise<ReturnType<typeof vi.spyOn>> {
@@ -254,7 +254,7 @@ describe('orphelins persistés et jamais confondus avec un secret valable (secon
 
 describe('« Connecter ici » : compte Google reçu du PC, jamais connecté sur cet appareil (K-01 D1)', () => {
   const RECEIVED = 'a0000000-0000-4000-8000-0000000000c1' as CalendarAccountId;
-  const FRESH_REF = `circletasks.calendar.google.${RECEIVED}`;
+  const FRESH_REF = `spartiate.calendar.google.${RECEIVED}`;
 
   /** Ligne telle que la synchro la crée : colonnes publiées, `token_ref` local vide. */
   async function received(label = GOOGLE_ACCOUNT): Promise<void> {

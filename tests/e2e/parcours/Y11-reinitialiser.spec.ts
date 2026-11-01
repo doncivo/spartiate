@@ -33,7 +33,7 @@ async function recoveryKeyShown(owner: SyncedPage, open: () => Promise<void>): P
   await open();
   const show = await openPairingWindow(owner.context, room, 'pc');
   const key = show.getByTestId('pairing-recovery-key');
-  await expect(key).toHaveText(/^CT1(-[0-9A-Z]{5})+$/, { timeout: APP_READY_TIMEOUT_MS });
+  await expect(key).toHaveText(/^SP1(-[0-9A-Z]{5})+$/, { timeout: APP_READY_TIMEOUT_MS });
   const text = (await key.textContent()) ?? '';
   await show.getByRole('button', { name: 'Annuler et fermer la fenêtre d’association' }).click();
   await show.close();

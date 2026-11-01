@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { compareVersions, ipaUrlFor } from './make-source-json.mjs';
 
-export const BUNDLE_ID = 'fr.circletasks.planner';
+export const BUNDLE_ID = 'fr.spartiate.app';
 /** iOS minimum de référence (tauri.conf.json, PRD 7) : au-delà, la version doit le dire dans ses notes. */
 export const BASE_MIN_OS = 18;
 
@@ -81,7 +81,7 @@ export function checkSource(source, { published, downgrade = 'error' } = {}) {
     const others = versions.filter((v) => v?.version !== published).map((v) => v?.version);
     const highest = others.sort((a, b) => compareVersions(b, a))[0];
     if (highest !== undefined && compareVersions(published, highest) < 0) (downgrade === 'warn' ? warnings : errors).push(`version publiée ${published} inférieure à la plus haute déjà présente (${String(highest)}) : aucune rétrogradation`);
-    if (entry && String(entry.localizedDescription ?? '').trim() === `CircleTasks ${published}`) warnings.push(`notes de ${published} égales au repli : aucune section dans CHANGELOG.md`);
+    if (entry && String(entry.localizedDescription ?? '').trim() === `Spartiate ${published}`) warnings.push(`notes de ${published} égales au repli : aucune section dans CHANGELOG.md`);
   }
 
   const latest = versions[0];

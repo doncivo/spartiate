@@ -170,7 +170,7 @@ describe('purge par la corbeille : horizon de purge (revue Y2, point 8)', () => 
 });
 
 describe('purge au démarrage : rien tant qu’un appareil a des écritures publiées non lues (revue Y2 passe 2, point 1)', () => {
-  it('state.ctx de B arrivé, son segment encore dans le nuage : aucune purge par la corbeille ; puis la restauration de B est appliquée', async () => {
+  it('state.spx de B arrivé, son segment encore dans le nuage : aucune purge par la corbeille ; puis la restauration de B est appliquée', async () => {
     const a = await createSimDevice('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', { name: 'PC' });
     const b = await createSimDevice(READER, { name: 'iPhone', clock: a.clock });
     devices = [a, b];

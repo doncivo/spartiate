@@ -81,6 +81,8 @@ pub enum SyncCode {
     SegmentFull,
     StateMismatch,
     FolderHasData,
+    /// Dossier de CircleTasks (nom ou fichiers d'en-tête `ct-*`) : jamais lié (ADR 0017). // ancien-ok: garde de séparation ADR 0017
+    ForeignFolder,
     WrongWindow,
     WrongMode,
     HlcOrder,
@@ -93,7 +95,7 @@ pub enum SyncCode {
 }
 
 impl SyncCode {
-    pub const ALL: [SyncCode; 38] = [
+    pub const ALL: [SyncCode; 39] = [
         SyncCode::NotConfigured,
         SyncCode::FolderUnreachable,
         SyncCode::UnsafeFolder,
@@ -123,6 +125,7 @@ impl SyncCode {
         SyncCode::SegmentFull,
         SyncCode::StateMismatch,
         SyncCode::FolderHasData,
+        SyncCode::ForeignFolder,
         SyncCode::WrongWindow,
         SyncCode::WrongMode,
         SyncCode::HlcOrder,
@@ -165,6 +168,7 @@ impl SyncCode {
             SyncCode::SegmentFull => "segment-full",
             SyncCode::StateMismatch => "state-mismatch",
             SyncCode::FolderHasData => "folder-has-data",
+            SyncCode::ForeignFolder => "foreign-folder",
             SyncCode::WrongWindow => "wrong-window",
             SyncCode::WrongMode => "wrong-mode",
             SyncCode::HlcOrder => "hlc-order",

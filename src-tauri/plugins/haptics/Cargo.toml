@@ -1,7 +1,7 @@
 [package]
 name = "tauri-plugin-ct-haptics"
 version = "0.1.0"
-description = "CircleTasks : retour haptique iOS (A-07, ADR 0013 §1.1), générateurs UIKit sur le fil principal. Plugin Tauri « haptics »."
+description = "Spartiate : retour haptique iOS (A-07, ADR 0013 §1.1), générateurs UIKit sur le fil principal. Plugin Tauri « haptics »."
 authors = ["Ali Cherif"]
 edition = "2021"
 rust-version = "1.80"

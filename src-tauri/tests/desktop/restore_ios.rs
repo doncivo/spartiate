@@ -5,8 +5,8 @@
 use std::fs;
 use std::path::Path;
 
-use circletasks_lib::backup::{carry_app_lock, restore_backup_file, RestoreStep, APP_LOCK_SETTING_KEY, APP_SCHEMA_VERSION, BACKUP_DIR, DB_FILE};
-use circletasks_lib::startup_gate::{
+use spartiate_lib::backup::{carry_app_lock, restore_backup_file, RestoreStep, APP_LOCK_SETTING_KEY, APP_SCHEMA_VERSION, BACKUP_DIR, DB_FILE};
+use spartiate_lib::startup_gate::{
     open_sql_pools, register_sql_after_recovery, status_of, write_marker_with_retry, MarkerToWrite, StartupGate, StartupStatus,
 };
 use rusqlite::Connection;
@@ -41,9 +41,9 @@ fn restore_with(current: Option<&str>, saved: Option<&str>) -> Option<String> {
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    make_db(&backups.join("circletasks-daily-20261007.db"), saved);
+    make_db(&backups.join("spartiate-daily-20261007.db"), saved);
     make_db(&dir.path().join(DB_FILE), current);
-    restore_backup_file(&dir.path().join(DB_FILE), &backups, "circletasks-daily-20261007.db", APP_SCHEMA_VERSION, "20261008T080000Z", NO_FAIL).expect("restauration");
+    restore_backup_file(&dir.path().join(DB_FILE), &backups, "spartiate-daily-20261007.db", APP_SCHEMA_VERSION, "20261008T080000Z", NO_FAIL).expect("restauration");
     lock_value(&dir.path().join(DB_FILE))
 }
 
@@ -146,7 +146,7 @@ fn p04_ios_6_restore_requires_every_sql_pool_to_be_closed() {
         let pool = tauri_plugin_sql::open_sqlite_pool(&url).await.unwrap();
         assert_eq!(pool.options().get_max_connections(), 1, "pool à une connexion");
         let instances = tauri_plugin_sql::DbInstances::default();
-        instances.0.write().await.insert("sqlite:circletasks.db".into(), tauri_plugin_sql::DbPool::Sqlite(pool.clone()));
+        instances.0.write().await.insert("sqlite:spartiate.db".into(), tauri_plugin_sql::DbPool::Sqlite(pool.clone()));
         assert_eq!(open_sql_pools(&instances).await, 1, "connexion ouverte : restauration refusée (db-open)");
         pool.close().await;
         assert_eq!(open_sql_pools(&instances).await, 0, "connexion fermée par le front : restauration permise");
@@ -162,7 +162,7 @@ fn p04_ios_6_restore_requires_every_sql_pool_to_be_closed() {
 #[test]
 fn p04_ios_12_marker_outcome_is_returned_not_configured_or_failed() {
     let dir = scratch();
-    let marker = MarkerToWrite { config_dir: dir.path().to_path_buf(), backup: "circletasks-daily-20261007.db".into(), restored_at_secs: 1_791_446_400, schema_version: 17 };
+    let marker = MarkerToWrite { config_dir: dir.path().to_path_buf(), backup: "spartiate-daily-20261007.db".into(), restored_at_secs: 1_791_446_400, schema_version: 17 };
     // Aucun dossier de synchro configuré : aucun marqueur, ce n'est pas un échec.
     assert_eq!(write_marker_with_retry(&marker, std::time::Duration::from_millis(0)), ("not-configured", None));
     // Dossier de configuration inutilisable (un fichier à sa place) : échec renvoyé avec son code, jamais seulement journalisé.
@@ -183,24 +183,24 @@ fn p04_ios_12_marker_outcome_is_returned_not_configured_or_failed() {
 fn p04_ios_4_same_rust_code_on_the_platform_data_folder() {
     // Le dossier de l'iPhone (`Library/Application Support/<identifiant>`) : mêmes noms et même échange que sur PC.
     let dir = scratch();
-    let config = dir.path().join("Library").join("Application Support").join("fr.circletasks.planner");
+    let config = dir.path().join("Library").join("Application Support").join("fr.spartiate.app");
     fs::create_dir_all(config.join(BACKUP_DIR)).unwrap();
-    make_db(&config.join(BACKUP_DIR).join("circletasks-daily-20261007.db"), None);
+    make_db(&config.join(BACKUP_DIR).join("spartiate-daily-20261007.db"), None);
     make_db(&config.join(DB_FILE), None);
-    let outcome = restore_backup_file(&config.join(DB_FILE), &config.join(BACKUP_DIR), "circletasks-daily-20261007.db", APP_SCHEMA_VERSION, "20261008T080000Z", NO_FAIL).unwrap();
+    let outcome = restore_backup_file(&config.join(DB_FILE), &config.join(BACKUP_DIR), "spartiate-daily-20261007.db", APP_SCHEMA_VERSION, "20261008T080000Z", NO_FAIL).unwrap();
     assert_eq!(outcome.marker, "not-configured");
-    assert!(config.join(BACKUP_DIR).join("circletasks-pre-restore-20261008T080000Z.db").is_file());
+    assert!(config.join(BACKUP_DIR).join("spartiate-pre-restore-20261008T080000Z.db").is_file());
 }
 
 // --- revue B1 : échange en échec sans retour arrière complet, jamais une base vide ---
 
 #[test]
 fn p04_ios_b1_failed_rollback_is_recovered_immediately_and_never_leaves_an_empty_base() {
-    use circletasks_lib::startup_gate::recover_after_failed_swap;
+    use spartiate_lib::startup_gate::recover_after_failed_swap;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    make_db(&backups.join("circletasks-daily-20261007.db"), Some("false"));
+    make_db(&backups.join("spartiate-daily-20261007.db"), Some("false"));
     make_db(&dir.path().join(DB_FILE), Some("true"));
     let db = dir.path().join(DB_FILE);
     // Pendant l'échange, un obstacle prend la place de la base : le retour arrière de la base échoue (`rollback-failed`).
@@ -212,7 +212,7 @@ fn p04_ios_b1_failed_rollback_is_recovered_immediately_and_never_leaves_an_empty
         }
         Ok(())
     };
-    let error = restore_backup_file(&db, &backups, "circletasks-daily-20261007.db", APP_SCHEMA_VERSION, "20261008T080000Z", &hook).unwrap_err();
+    let error = restore_backup_file(&db, &backups, "spartiate-daily-20261007.db", APP_SCHEMA_VERSION, "20261008T080000Z", &hook).unwrap_err();
     assert_eq!(error.code, "rollback-failed");
     assert!(tauri_plugin_sql::restore_pending(&db), "le plugin SQL refuse d'ouvrir ou de créer la base");
     // L'obstacle passager disparaît : la récupération immédiate remet la vraie base en place.
@@ -225,7 +225,7 @@ fn p04_ios_b1_failed_rollback_is_recovered_immediately_and_never_leaves_an_empty
 
 #[test]
 fn p04_ios_b1_failed_immediate_recovery_closes_the_gate_and_keeps_the_files() {
-    use circletasks_lib::startup_gate::recover_after_failed_swap;
+    use spartiate_lib::startup_gate::recover_after_failed_swap;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
@@ -258,8 +258,8 @@ fn p04_ios_b1_the_sql_plugin_checks_for_a_pending_restore_before_creating_the_da
 
 #[test]
 fn p04_ios_i1_conflicting_files_are_set_aside_never_deleted_then_recovery_succeeds() {
-    use circletasks_lib::backup::recover_interrupted_restore;
-    use circletasks_lib::startup_gate::set_aside_conflicts;
+    use spartiate_lib::backup::recover_interrupted_restore;
+    use spartiate_lib::startup_gate::set_aside_conflicts;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
@@ -269,19 +269,19 @@ fn p04_ios_i1_conflicting_files_are_set_aside_never_deleted_then_recovery_succee
     fs::write(dir.path().join(format!("{DB_FILE}-wal")), b"wal en conflit").unwrap();
     assert_eq!(recover_interrupted_restore(&db, &backups).unwrap_err().code, "recovery-conflict");
     assert_eq!(set_aside_conflicts(&db, &backups, "20261009T080000Z").map(|aside| aside.moved), Ok(1));
-    let aside = backups.join("circletasks-set-aside-20261009T080000Z");
+    let aside = backups.join("spartiate-set-aside-20261009T080000Z");
     assert_eq!(fs::read(aside.join(format!("{DB_FILE}-wal"))).unwrap(), b"wal en conflit", "déplacé, jamais supprimé");
     recover_interrupted_restore(&db, &backups).expect("récupération possible");
     assert_eq!(fs::read(dir.path().join(format!("{DB_FILE}-wal"))).unwrap(), b"ancien wal");
     // Le dossier mis de côté n'est ni listé ni purgé comme une sauvegarde.
-    assert!(circletasks_lib::backup::list_backups_in(&backups).unwrap().iter().all(|entry| !entry.name.contains("set-aside")));
+    assert!(spartiate_lib::backup::list_backups_in(&backups).unwrap().iter().all(|entry| !entry.name.contains("set-aside")));
     assert!(aside.is_dir());
 }
 
 #[test]
 fn p04_ios_i1_an_unsafe_restore_old_is_set_aside() {
-    use circletasks_lib::backup::recover_interrupted_restore;
-    use circletasks_lib::startup_gate::set_aside_conflicts;
+    use spartiate_lib::backup::recover_interrupted_restore;
+    use spartiate_lib::startup_gate::set_aside_conflicts;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
@@ -290,7 +290,7 @@ fn p04_ios_i1_an_unsafe_restore_old_is_set_aside() {
     fs::create_dir_all(dir.path().join(format!("{DB_FILE}.restore-old"))).unwrap();
     assert_eq!(recover_interrupted_restore(&db, &backups).unwrap_err().code, "unsafe-restore-file");
     assert_eq!(set_aside_conflicts(&db, &backups, "20261009T080001Z").map(|aside| aside.moved), Ok(1));
-    assert!(backups.join("circletasks-set-aside-20261009T080001Z").join(format!("{DB_FILE}.restore-old")).is_dir());
+    assert!(backups.join("spartiate-set-aside-20261009T080001Z").join(format!("{DB_FILE}.restore-old")).is_dir());
     recover_interrupted_restore(&db, &backups).expect("plus rien d'anormal");
     assert_eq!(lock_value(&db).as_deref(), Some("true"), "base actuelle intacte");
     assert_eq!(set_aside_conflicts(&db, &backups, "20261009T080002Z").map(|aside| aside.moved), Ok(0), "rien à déplacer");
@@ -300,7 +300,7 @@ fn p04_ios_i1_an_unsafe_restore_old_is_set_aside() {
 
 #[test]
 fn p04_ios_set_aside_is_refused_unless_the_gate_failed_on_a_conflict_and_no_pool_is_open() {
-    use circletasks_lib::startup_gate::set_aside_allowed;
+    use spartiate_lib::startup_gate::set_aside_allowed;
     assert_eq!(set_aside_allowed(Some(Err("recovery-conflict")), 0), Ok(()));
     assert_eq!(set_aside_allowed(Some(Err("unsafe-restore-file")), 0), Ok(()));
     assert_eq!(set_aside_allowed(Some(Err("recovery-conflict")), 1), Err("db-open"), "jamais avec une connexion ouverte");
@@ -316,8 +316,8 @@ fn p04_ios_set_aside_is_refused_unless_the_gate_failed_on_a_conflict_and_no_pool
 
 #[test]
 fn p04_ios_set_aside_moves_an_abnormal_backups_entry_itself_then_recovery_succeeds() {
-    use circletasks_lib::backup::{recover_interrupted_restore, Recovery};
-    use circletasks_lib::startup_gate::set_aside_conflicts;
+    use spartiate_lib::backup::{recover_interrupted_restore, Recovery};
+    use spartiate_lib::startup_gate::set_aside_conflicts;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::write(&backups, b"un fichier a la place du dossier").unwrap();
@@ -328,7 +328,7 @@ fn p04_ios_set_aside_moves_an_abnormal_backups_entry_itself_then_recovery_succee
     let aside = set_aside_conflicts(&db, &backups, "20261009T090000Z").unwrap();
     assert_eq!(aside.moved, 1);
     assert!(!aside.fresh_base);
-    let holder = dir.path().join("circletasks-set-aside-20261009T090000Z");
+    let holder = dir.path().join("spartiate-set-aside-20261009T090000Z");
     assert_eq!(fs::read(holder.join(BACKUP_DIR)).unwrap(), b"un fichier a la place du dossier", "déplacé, jamais supprimé");
     assert!(backups.is_dir());
     assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::Archived);
@@ -336,10 +336,10 @@ fn p04_ios_set_aside_moves_an_abnormal_backups_entry_itself_then_recovery_succee
 
 #[test]
 fn p04_ios_set_aside_destination_is_created_exclusively_never_overwritten() {
-    use circletasks_lib::startup_gate::set_aside_conflicts;
+    use spartiate_lib::startup_gate::set_aside_conflicts;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
-    let taken = backups.join("circletasks-set-aside-20261009T080000Z");
+    let taken = backups.join("spartiate-set-aside-20261009T080000Z");
     fs::create_dir_all(&taken).unwrap();
     fs::write(taken.join(format!("{DB_FILE}-wal")), b"mise de cote precedente").unwrap();
     let db = dir.path().join(DB_FILE);
@@ -348,14 +348,14 @@ fn p04_ios_set_aside_destination_is_created_exclusively_never_overwritten() {
     fs::write(dir.path().join(format!("{DB_FILE}-wal")), b"wal en conflit").unwrap();
     assert_eq!(set_aside_conflicts(&db, &backups, "20261009T080000Z").map(|aside| aside.moved), Ok(1));
     assert_eq!(fs::read(taken.join(format!("{DB_FILE}-wal"))).unwrap(), b"mise de cote precedente", "jamais écrasé");
-    let next = backups.join("circletasks-set-aside-20261009T080000Z-1");
+    let next = backups.join("spartiate-set-aside-20261009T080000Z-1");
     assert_eq!(fs::read(next.join(format!("{DB_FILE}-wal"))).unwrap(), b"wal en conflit");
 }
 
 #[test]
 fn p04_ios_set_aside_of_an_unsafe_old_base_takes_its_journal_and_reports_a_fresh_base() {
-    use circletasks_lib::backup::recover_interrupted_restore;
-    use circletasks_lib::startup_gate::set_aside_conflicts;
+    use spartiate_lib::backup::recover_interrupted_restore;
+    use spartiate_lib::startup_gate::set_aside_conflicts;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
@@ -365,7 +365,7 @@ fn p04_ios_set_aside_of_an_unsafe_old_base_takes_its_journal_and_reports_a_fresh
     let aside = set_aside_conflicts(&db, &backups, "20261009T100000Z").unwrap();
     assert_eq!(aside.moved, 2, "le journal de l'ancienne base suit sa base : jamais remis à côté d'une autre");
     assert!(aside.fresh_base, "l'app va créer une base neuve : le message renvoie vers « Avant restauration »");
-    let target = backups.join("circletasks-set-aside-20261009T100000Z");
+    let target = backups.join("spartiate-set-aside-20261009T100000Z");
     assert_eq!(fs::read(target.join(format!("{DB_FILE}-wal.restore-old"))).unwrap(), b"wal de l'ancienne base");
     recover_interrupted_restore(&db, &backups).expect("plus rien d'anormal");
     assert!(!dir.path().join(format!("{DB_FILE}-wal")).exists(), "aucun ancien journal remis");
@@ -373,22 +373,22 @@ fn p04_ios_set_aside_of_an_unsafe_old_base_takes_its_journal_and_reports_a_fresh
 
 #[test]
 fn p04_ios_set_aside_folders_are_purged_after_30_days() {
-    use circletasks_lib::backup::utc_stamp;
-    use circletasks_lib::startup_gate::purge_set_aside;
+    use spartiate_lib::backup::utc_stamp;
+    use spartiate_lib::startup_gate::purge_set_aside;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
     let now = 1_791_590_400_u64; // 2026-10-10T00:00:00Z
-    let old = backups.join(format!("circletasks-set-aside-{}", utc_stamp(now - 31 * 86_400)));
-    let old_suffixed = dir.path().join(format!("circletasks-set-aside-{}-1", utc_stamp(now - 40 * 86_400)));
-    let recent = backups.join(format!("circletasks-set-aside-{}", utc_stamp(now - 29 * 86_400)));
+    let old = backups.join(format!("spartiate-set-aside-{}", utc_stamp(now - 31 * 86_400)));
+    let old_suffixed = dir.path().join(format!("spartiate-set-aside-{}-1", utc_stamp(now - 40 * 86_400)));
+    let recent = backups.join(format!("spartiate-set-aside-{}", utc_stamp(now - 29 * 86_400)));
     for folder in [&old, &old_suffixed, &recent] {
         fs::create_dir_all(folder).unwrap();
         fs::write(folder.join("x"), b"x").unwrap();
     }
-    let not_a_folder = backups.join(format!("circletasks-set-aside-{}", utc_stamp(now - 90 * 86_400)));
+    let not_a_folder = backups.join(format!("spartiate-set-aside-{}", utc_stamp(now - 90 * 86_400)));
     fs::write(&not_a_folder, b"fichier").unwrap();
-    let odd = backups.join("circletasks-set-aside-pas-une-date");
+    let odd = backups.join("spartiate-set-aside-pas-une-date");
     fs::create_dir_all(&odd).unwrap();
     assert_eq!(purge_set_aside(dir.path(), now), 2);
     assert!(!old.exists() && !old_suffixed.exists());
@@ -403,32 +403,32 @@ fn p04_ios_set_aside_folders_are_purged_after_30_days() {
 
 #[test]
 fn p04_ios_i2_marker_retry_revalidates_the_name_and_reports_its_outcome() {
-    use circletasks_lib::startup_gate::{write_marker_for, MarkerWriteOutcome};
+    use spartiate_lib::startup_gate::{write_marker_for, MarkerWriteOutcome};
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    make_db(&backups.join("circletasks-daily-20261007.db"), None);
-    assert_eq!(write_marker_for(dir.path(), "../circletasks.db", 1_791_446_400), MarkerWriteOutcome { marker: "failed", code: Some("bad-name") });
-    assert_eq!(write_marker_for(dir.path(), "circletasks-daily-20261001.db", 1_791_446_400).marker, "failed", "sauvegarde absente");
-    assert_eq!(write_marker_for(dir.path(), "circletasks-daily-20261007.db", 1_791_446_400), MarkerWriteOutcome { marker: "not-configured", code: None });
+    make_db(&backups.join("spartiate-daily-20261007.db"), None);
+    assert_eq!(write_marker_for(dir.path(), "../spartiate.db", 1_791_446_400), MarkerWriteOutcome { marker: "failed", code: Some("bad-name") });
+    assert_eq!(write_marker_for(dir.path(), "spartiate-daily-20261001.db", 1_791_446_400).marker, "failed", "sauvegarde absente");
+    assert_eq!(write_marker_for(dir.path(), "spartiate-daily-20261007.db", 1_791_446_400), MarkerWriteOutcome { marker: "not-configured", code: None });
 }
 
 // --- revue : marqueur provisoire écrit AVANT l'échange, retiré si l'échange échoue ---
 
 fn sync_configured(dir: &Path) {
-    let config = dir.join(circletasks_lib::sync::folder::CONFIG_SUBDIR);
+    let config = dir.join(spartiate_lib::sync::folder::CONFIG_SUBDIR);
     fs::create_dir_all(&config).unwrap();
-    fs::write(config.join(circletasks_lib::sync::folder::FOLDER_FILE), b"{}").unwrap();
+    fs::write(config.join(spartiate_lib::sync::folder::FOLDER_FILE), b"{}").unwrap();
 }
 
 #[test]
 fn p04_ios_marker_is_written_before_the_swap_and_undone_when_the_swap_fails() {
-    use circletasks_lib::startup_gate::restore_with_provisional_marker;
-    use circletasks_lib::sync::marker::MARKER_FILE;
+    use spartiate_lib::startup_gate::restore_with_provisional_marker;
+    use spartiate_lib::sync::marker::MARKER_FILE;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    make_db(&backups.join("circletasks-daily-20261007.db"), None);
+    make_db(&backups.join("spartiate-daily-20261007.db"), None);
     make_db(&dir.path().join(DB_FILE), None);
     sync_configured(dir.path());
     let marker = dir.path().join(MARKER_FILE);
@@ -443,19 +443,19 @@ fn p04_ios_marker_is_written_before_the_swap_and_undone_when_the_swap_fails() {
         }
         Ok(())
     };
-    assert!(restore_with_provisional_marker(dir.path(), "circletasks-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &failing).is_err());
+    assert!(restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &failing).is_err());
     assert!(*seen.lock().unwrap(), "marqueur écrit avant l'échange");
     assert!(!marker.exists(), "marqueur provisoire retiré après l'échec");
     // Un marqueur d'une restauration précédente (choix pas encore fait) est remis tel quel.
     fs::write(&marker, br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#).unwrap();
     let before = fs::read(&marker).unwrap();
-    assert!(restore_with_provisional_marker(dir.path(), "circletasks-daily-20261007.db", "20261008T080001Z", 1_791_446_401, &failing).is_err());
+    assert!(restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080001Z", 1_791_446_401, &failing).is_err());
     assert_eq!(fs::read(&marker).unwrap(), before);
     // Échange abouti : marqueur écrit, issue « written ».
-    let (outcome, pending) = restore_with_provisional_marker(dir.path(), "circletasks-daily-20261007.db", "20261008T080002Z", 1_791_446_402, NO_FAIL).unwrap();
+    let (outcome, pending) = restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080002Z", 1_791_446_402, NO_FAIL).unwrap();
     assert_eq!(outcome.marker, "written");
     assert!(pending.is_none());
-    assert!(fs::read_to_string(&marker).unwrap().contains("circletasks-daily-20261007.db"));
+    assert!(fs::read_to_string(&marker).unwrap().contains("spartiate-daily-20261007.db"));
 }
 
 #[test]
@@ -478,16 +478,16 @@ fn p04_ios_11_unreadable_current_base_writes_true_with_valid_device_and_clock() 
 
 /// Restauration arrêtée net (panic) au point `stop`, avec un dossier de synchro configuré et, si `previous`, un marqueur d'une restauration
 /// précédente ; puis démarrage : récupération et règlement du marqueur. Rend le marqueur lu après le démarrage.
-fn crash_then_start(stop: RestoreStep, previous: bool) -> (Option<circletasks_lib::sync::marker::RestoreMarker>, tempfile::TempDir) {
-    use circletasks_lib::startup_gate::{recover_and_settle, restore_with_provisional_marker};
+fn crash_then_start(stop: RestoreStep, previous: bool) -> (Option<spartiate_lib::sync::marker::RestoreMarker>, tempfile::TempDir) {
+    use spartiate_lib::startup_gate::{recover_and_settle, restore_with_provisional_marker};
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    make_db(&backups.join("circletasks-daily-20261007.db"), None);
+    make_db(&backups.join("spartiate-daily-20261007.db"), None);
     make_db(&dir.path().join(DB_FILE), Some("true"));
     sync_configured(dir.path());
     if previous {
-        fs::write(dir.path().join(circletasks_lib::sync::marker::MARKER_FILE), br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#).unwrap();
+        fs::write(dir.path().join(spartiate_lib::sync::marker::MARKER_FILE), br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#).unwrap();
     }
     let hook = move |step: RestoreStep| -> std::io::Result<()> {
         if step == stop {
@@ -495,13 +495,13 @@ fn crash_then_start(stop: RestoreStep, previous: bool) -> (Option<circletasks_li
         }
         Ok(())
     };
-    let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| restore_with_provisional_marker(dir.path(), "circletasks-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook)));
+    let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook)));
     assert!(crashed.is_err(), "arrêt simulé");
     // Journal global : `recover_and_settle` y verse `provisional-marker-settled` ; sans le verrou, cette entrée tombait dans le journal
     // redirigé par le test « base illisible » (ligne ~752), rouge une fois sur deux (constaté le 2026-10-17, relecture de Y-TECH-03).
     let _log_dir = crate::support::applog_dir_lock();
     recover_and_settle(dir.path()).expect("récupération");
-    (circletasks_lib::sync::marker::read(dir.path()).unwrap(), dir)
+    (spartiate_lib::sync::marker::read(dir.path()).unwrap(), dir)
 }
 
 #[test]
@@ -517,7 +517,7 @@ fn p04_ios_provisional_marker_is_settled_after_a_forced_stop_at_each_step() {
     // Version en place (Archived au démarrage) : marqueur confirmé, la fenêtre de choix complète est due.
     let (marker, _dir) = crash_then_start(RestoreStep::Swapped, false);
     let marker = marker.expect("marqueur");
-    assert_eq!(marker.backup, "circletasks-daily-20261007.db");
+    assert_eq!(marker.backup, "spartiate-daily-20261007.db");
     assert!(!marker.provisional);
 }
 
@@ -528,21 +528,21 @@ fn p04_ios_provisional_marker_restores_the_previous_pending_marker_when_the_vers
         let marker = marker.expect("marqueur d'avant remis");
         assert_eq!(marker.backup, "ancien", "{stop:?}");
         assert!(!marker.provisional);
-        assert!(!dir.path().join(circletasks_lib::startup_gate::PREVIOUS_MARKER_FILE).exists());
+        assert!(!dir.path().join(spartiate_lib::startup_gate::PREVIOUS_MARKER_FILE).exists());
     }
     let (marker, _dir) = crash_then_start(RestoreStep::Swapped, true);
-    assert_eq!(marker.expect("nouveau").backup, "circletasks-daily-20261007.db");
+    assert_eq!(marker.expect("nouveau").backup, "spartiate-daily-20261007.db");
 }
 
 // --- P-04-iOS : issue distincte `StagedRemoved`, marqueur annulé ou confirmé selon CHAQUE point d'arrêt ---
 
 /// Restauration arrêtée net au point `stop` (ou jamais lancée si `None`), SANS récupération ; rend le dossier de données.
 fn crashed_at(stop: Option<RestoreStep>) -> tempfile::TempDir {
-    use circletasks_lib::startup_gate::restore_with_provisional_marker;
+    use spartiate_lib::startup_gate::restore_with_provisional_marker;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    make_db(&backups.join("circletasks-daily-20261007.db"), None);
+    make_db(&backups.join("spartiate-daily-20261007.db"), None);
     make_db(&dir.path().join(DB_FILE), Some("true"));
     sync_configured(dir.path());
     if let Some(stop) = stop {
@@ -552,41 +552,41 @@ fn crashed_at(stop: Option<RestoreStep>) -> tempfile::TempDir {
             }
             Ok(())
         };
-        let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| restore_with_provisional_marker(dir.path(), "circletasks-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook)));
+        let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook)));
         assert!(crashed.is_err(), "arrêt simulé");
     }
     dir
 }
 
 /// Démarrage : récupération puis règlement du marqueur ; rend l'issue de la récupération et le marqueur lu ensuite.
-fn start(dir: &Path) -> (circletasks_lib::backup::Recovery, Option<circletasks_lib::sync::marker::RestoreMarker>) {
+fn start(dir: &Path) -> (spartiate_lib::backup::Recovery, Option<spartiate_lib::sync::marker::RestoreMarker>) {
     // Chemin de production : `recover_and_settle` (récupération, puis règlement du marqueur d'après la base en place).
     // Verrou du journal global : même raison que dans `crash_then_start`.
     let _log_dir = crate::support::applog_dir_lock();
-    let recovery = circletasks_lib::startup_gate::recover_and_settle(dir);
-    (recovery.expect("récupération"), circletasks_lib::sync::marker::read(dir).unwrap())
+    let recovery = spartiate_lib::startup_gate::recover_and_settle(dir);
+    (recovery.expect("récupération"), spartiate_lib::sync::marker::read(dir).unwrap())
 }
 
 #[test]
 fn p04_ios_marker_before_staged_there_is_no_marker_and_nothing_to_recover() {
-    use circletasks_lib::backup::Recovery;
+    use spartiate_lib::backup::Recovery;
     let dir = crashed_at(None);
     assert_eq!(start(dir.path()), (Recovery::Nothing, None));
 }
 
 #[test]
 fn p04_ios_marker_staged_to_first_rename_reports_staged_removed_and_cancels_the_marker() {
-    use circletasks_lib::backup::Recovery;
+    use spartiate_lib::backup::Recovery;
     let dir = crashed_at(Some(RestoreStep::Staged));
-    assert!(circletasks_lib::sync::marker::is_provisional(dir.path()), "marqueur provisoire écrit au point Staged");
-    assert!(dir.path().join("circletasks.db.restoring").is_file());
+    assert!(spartiate_lib::sync::marker::is_provisional(dir.path()), "marqueur provisoire écrit au point Staged");
+    assert!(dir.path().join("spartiate.db.restoring").is_file());
     assert_eq!(start(dir.path()), (Recovery::StagedRemoved, None));
     assert_eq!(lock_value(&dir.path().join(DB_FILE)).as_deref(), Some("true"));
 }
 
 #[test]
 fn p04_ios_marker_during_the_renames_with_the_database_missing_is_put_back_and_cancelled() {
-    use circletasks_lib::backup::Recovery;
+    use spartiate_lib::backup::Recovery;
     let dir = crashed_at(Some(RestoreStep::OldMoved));
     assert!(!dir.path().join(DB_FILE).exists());
     assert_eq!(start(dir.path()), (Recovery::PutBack, None));
@@ -595,13 +595,13 @@ fn p04_ios_marker_during_the_renames_with_the_database_missing_is_put_back_and_c
 
 #[test]
 fn p04_ios_marker_after_the_swap_with_restore_old_is_archived_and_confirmed() {
-    use circletasks_lib::backup::Recovery;
+    use spartiate_lib::backup::Recovery;
     let dir = crashed_at(Some(RestoreStep::Swapped));
     let (recovery, marker) = start(dir.path());
     assert_eq!(recovery, Recovery::Archived);
     let marker = marker.expect("marqueur");
     assert!(!marker.provisional);
-    assert_eq!(marker.backup, "circletasks-daily-20261007.db");
+    assert_eq!(marker.backup, "spartiate-daily-20261007.db");
 }
 
 #[test]
@@ -609,32 +609,32 @@ fn p04_ios_marker_after_the_swap_without_restore_old_is_nothing_and_still_confir
     // Triple échec : confirmation au point Swapped, nouvel essai, puis relance à froid. Les `.restore-old` ont déjà été retirés, la
     // version restaurée est en place, et le marqueur est resté provisoire.
     let dir = crashed_at(Some(RestoreStep::Swapped));
-    for name in ["circletasks.db.restore-old", "circletasks.db-wal.restore-old", "circletasks.db-shm.restore-old"] {
+    for name in ["spartiate.db.restore-old", "spartiate.db-wal.restore-old", "spartiate.db-shm.restore-old"] {
         let _ = fs::remove_file(dir.path().join(name));
     }
-    assert!(!dir.path().join("circletasks.db.restore-old").exists());
+    assert!(!dir.path().join("spartiate.db.restore-old").exists());
     // Le point Swapped a confirmé le marqueur avant l'arrêt : on le remet provisoire, comme si la confirmation avait échoué.
-    let token = circletasks_lib::backup::database_token(&dir.path().join(DB_FILE)).unwrap().expect("la base en place porte le jeton de la restauration");
-    circletasks_lib::backup::write_provisional_marker(dir.path(), &dir.path().join(BACKUP_DIR), "circletasks-daily-20261007.db", 1_791_446_400, APP_SCHEMA_VERSION, token).unwrap();
-    assert!(circletasks_lib::sync::marker::is_provisional(dir.path()));
+    let token = spartiate_lib::backup::database_token(&dir.path().join(DB_FILE)).unwrap().expect("la base en place porte le jeton de la restauration");
+    spartiate_lib::backup::write_provisional_marker(dir.path(), &dir.path().join(BACKUP_DIR), "spartiate-daily-20261007.db", 1_791_446_400, APP_SCHEMA_VERSION, token).unwrap();
+    assert!(spartiate_lib::sync::marker::is_provisional(dir.path()));
     let (recovery, marker) = start(dir.path());
-    assert_eq!(recovery, circletasks_lib::backup::Recovery::Nothing);
+    assert_eq!(recovery, spartiate_lib::backup::Recovery::Nothing);
     let marker = marker.expect("le marqueur n'est pas annulé : la version restaurée est en place");
     assert!(!marker.provisional);
-    assert_eq!(marker.backup, "circletasks-daily-20261007.db");
+    assert_eq!(marker.backup, "spartiate-daily-20261007.db");
 }
 
 /// Arrêt au point `stop` avec un marqueur d'avant en attente, puis démarrage dont l'ANNULATION du marqueur échoue (le fichier temporaire du
 /// marqueur est occupé par un dossier). La preuve doit rester ; le démarrage suivant, sans le blocage, annule toujours et ne confirme jamais.
-fn cancellation_fails_then_next_launch_cancels(stop: RestoreStep, evidence: &str, expected: circletasks_lib::backup::Recovery) {
-    use circletasks_lib::startup_gate::recover_and_settle;
+fn cancellation_fails_then_next_launch_cancels(stop: RestoreStep, evidence: &str, expected: spartiate_lib::backup::Recovery) {
+    use spartiate_lib::startup_gate::recover_and_settle;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    make_db(&backups.join("circletasks-daily-20261007.db"), None);
+    make_db(&backups.join("spartiate-daily-20261007.db"), None);
     make_db(&dir.path().join(DB_FILE), Some("true"));
     sync_configured(dir.path());
-    let marker_path = dir.path().join(circletasks_lib::sync::marker::MARKER_FILE);
+    let marker_path = dir.path().join(spartiate_lib::sync::marker::MARKER_FILE);
     fs::write(&marker_path, br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#).unwrap();
     let hook = move |step: RestoreStep| -> std::io::Result<()> {
         if step == stop {
@@ -642,11 +642,11 @@ fn cancellation_fails_then_next_launch_cancels(stop: RestoreStep, evidence: &str
         }
         Ok(())
     };
-    let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| circletasks_lib::startup_gate::restore_with_provisional_marker(dir.path(), "circletasks-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook)));
+    let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| spartiate_lib::startup_gate::restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook)));
     assert!(crashed.is_err());
-    assert!(circletasks_lib::sync::marker::is_provisional(dir.path()));
+    assert!(spartiate_lib::sync::marker::is_provisional(dir.path()));
     let mut blocker = marker_path.as_os_str().to_owned();
-    blocker.push(circletasks_lib::sync::names::TEMP_SUFFIX);
+    blocker.push(spartiate_lib::sync::names::TEMP_SUFFIX);
     let blocker = std::path::PathBuf::from(blocker);
     fs::create_dir(&blocker).unwrap();
     // Verrou du journal global pour les trois démarrages : même raison que dans `crash_then_start`.
@@ -654,14 +654,14 @@ fn cancellation_fails_then_next_launch_cancels(stop: RestoreStep, evidence: &str
     // Annulation impossible : la récupération n'est PAS bloquée (la preuve disparaît), le marqueur reste provisoire (jamais confirmé).
     assert_eq!(recover_and_settle(dir.path()).unwrap(), expected);
     assert!(!dir.path().join(evidence).exists(), "la récupération a eu lieu : {evidence} n'est plus là");
-    assert!(circletasks_lib::sync::marker::is_provisional(dir.path()));
+    assert!(spartiate_lib::sync::marker::is_provisional(dir.path()));
     // Sans preuve (le démarrage suivant voit `Nothing`), le jeton de la base en place décide encore : toujours pas confirmé.
-    assert_eq!(recover_and_settle(dir.path()).unwrap(), circletasks_lib::backup::Recovery::Nothing);
-    assert!(circletasks_lib::sync::marker::is_provisional(dir.path()));
+    assert_eq!(recover_and_settle(dir.path()).unwrap(), spartiate_lib::backup::Recovery::Nothing);
+    assert!(spartiate_lib::sync::marker::is_provisional(dir.path()));
     // Le blocage disparaît : le démarrage suivant annule (marqueur d'avant remis), il ne confirme jamais.
     fs::remove_dir(&blocker).unwrap();
-    assert_eq!(recover_and_settle(dir.path()).unwrap(), circletasks_lib::backup::Recovery::Nothing);
-    let marker = circletasks_lib::sync::marker::read(dir.path()).unwrap().expect("marqueur d'avant");
+    assert_eq!(recover_and_settle(dir.path()).unwrap(), spartiate_lib::backup::Recovery::Nothing);
+    let marker = spartiate_lib::sync::marker::read(dir.path()).unwrap().expect("marqueur d'avant");
     assert_eq!(marker.backup, "ancien");
     assert!(!marker.provisional);
     assert_eq!(lock_value(&dir.path().join(DB_FILE)).as_deref(), Some("true"));
@@ -669,27 +669,27 @@ fn cancellation_fails_then_next_launch_cancels(stop: RestoreStep, evidence: &str
 
 #[test]
 fn p04_ios_marker_cancellation_failure_after_staged_never_confirms_even_without_the_staged_file() {
-    cancellation_fails_then_next_launch_cancels(RestoreStep::Staged, "circletasks.db.restoring", circletasks_lib::backup::Recovery::StagedRemoved);
+    cancellation_fails_then_next_launch_cancels(RestoreStep::Staged, "spartiate.db.restoring", spartiate_lib::backup::Recovery::StagedRemoved);
 }
 
 #[test]
 fn p04_ios_marker_cancellation_failure_before_put_back_never_confirms_even_without_the_restore_old() {
-    cancellation_fails_then_next_launch_cancels(RestoreStep::OldMoved, "circletasks.db.restore-old", circletasks_lib::backup::Recovery::PutBack);
+    cancellation_fails_then_next_launch_cancels(RestoreStep::OldMoved, "spartiate.db.restore-old", spartiate_lib::backup::Recovery::PutBack);
 }
 
 #[test]
 fn p04_ios_marker_clean_swap_failure_with_blocked_undo_is_never_confirmed_and_blocks_a_new_restore() {
-    use circletasks_lib::startup_gate::{restore_with_provisional_marker, PREVIOUS_MARKER_FILE};
+    use spartiate_lib::startup_gate::{restore_with_provisional_marker, PREVIOUS_MARKER_FILE};
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    make_db(&backups.join("circletasks-daily-20261007.db"), None);
+    make_db(&backups.join("spartiate-daily-20261007.db"), None);
     make_db(&dir.path().join(DB_FILE), Some("true"));
     sync_configured(dir.path());
-    let marker_path = dir.path().join(circletasks_lib::sync::marker::MARKER_FILE);
+    let marker_path = dir.path().join(spartiate_lib::sync::marker::MARKER_FILE);
     fs::write(&marker_path, br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#).unwrap();
     let mut blocker = marker_path.as_os_str().to_owned();
-    blocker.push(circletasks_lib::sync::names::TEMP_SUFFIX);
+    blocker.push(spartiate_lib::sync::names::TEMP_SUFFIX);
     let blocker = std::path::PathBuf::from(blocker);
     // Le marqueur provisoire est écrit au point Staged ; le blocage est posé juste après, puis l'échange échoue PROPREMENT (retour arrière
     // réussi, `.restoring` supprimé) : l'annulation du marqueur échoue, aucune preuve ne reste dans le dossier.
@@ -701,14 +701,14 @@ fn p04_ios_marker_clean_swap_failure_with_blocked_undo_is_never_confirmed_and_bl
             RestoreStep::Swapped => Ok(()),
         }
     };
-    let error = restore_with_provisional_marker(dir.path(), "circletasks-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook).unwrap_err();
+    let error = restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook).unwrap_err();
     assert_eq!(error.code, "io");
-    assert!(circletasks_lib::sync::marker::is_provisional(dir.path()), "annulation impossible : le marqueur reste provisoire");
-    assert!(!dir.path().join("circletasks.db.restoring").exists() && !dir.path().join("circletasks.db.restore-old").exists(), "aucune preuve");
+    assert!(spartiate_lib::sync::marker::is_provisional(dir.path()), "annulation impossible : le marqueur reste provisoire");
+    assert!(!dir.path().join("spartiate.db.restoring").exists() && !dir.path().join("spartiate.db.restore-old").exists(), "aucune preuve");
     assert_eq!(lock_value(&dir.path().join(DB_FILE)).as_deref(), Some("true"), "l'ancienne base est en place");
     let previous = fs::read(dir.path().join(PREVIOUS_MARKER_FILE)).expect("le marqueur d'avant est gardé");
     // Une nouvelle restauration est refusée tant que le marqueur est provisoire : le marqueur d'avant n'est pas écrasé.
-    let refused = restore_with_provisional_marker(dir.path(), "circletasks-daily-20261007.db", "20261008T080001Z", 1_791_446_401, &|_| Ok(())).unwrap_err();
+    let refused = restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080001Z", 1_791_446_401, &|_| Ok(())).unwrap_err();
     assert_eq!(refused.code, "restore-unconfirmed");
     assert_eq!(fs::read(dir.path().join(PREVIOUS_MARKER_FILE)).unwrap(), previous);
     // Démarrage avec le blocage encore là : pas de confirmation (la base en place ne porte pas le jeton).
@@ -725,48 +725,48 @@ fn p04_ios_marker_clean_swap_failure_with_blocked_undo_is_never_confirmed_and_bl
 
 #[test]
 fn p04_ios_marker_provisional_without_a_matching_token_is_cancelled_whatever_the_recovery() {
-    use circletasks_lib::backup::write_restore_marker_as;
+    use spartiate_lib::backup::write_restore_marker_as;
     // Marqueur provisoire sans jeton (ancien format), ou avec un autre jeton : la base en place ne le prouve pas -> annulé.
     for token in [None, Some(0x1234_5678_u32)] {
         let dir = crashed_at(None);
         let backups = dir.path().join(BACKUP_DIR);
         match token {
-            None => assert!(write_restore_marker_as(dir.path(), &backups, "circletasks-daily-20261007.db", 1_791_446_400, APP_SCHEMA_VERSION, true).unwrap()),
-            Some(token) => assert!(circletasks_lib::backup::write_provisional_marker(dir.path(), &backups, "circletasks-daily-20261007.db", 1_791_446_400, APP_SCHEMA_VERSION, token).unwrap()),
+            None => assert!(write_restore_marker_as(dir.path(), &backups, "spartiate-daily-20261007.db", 1_791_446_400, APP_SCHEMA_VERSION, true).unwrap()),
+            Some(token) => assert!(spartiate_lib::backup::write_provisional_marker(dir.path(), &backups, "spartiate-daily-20261007.db", 1_791_446_400, APP_SCHEMA_VERSION, token).unwrap()),
         }
-        assert_eq!(start(dir.path()), (circletasks_lib::backup::Recovery::Nothing, None), "{token:?}");
+        assert_eq!(start(dir.path()), (spartiate_lib::backup::Recovery::Nothing, None), "{token:?}");
     }
 }
 
 #[test]
 fn p04_ios_marker_with_an_unreadable_database_in_place_stays_provisional_and_blocks_a_new_restore() {
-    use circletasks_lib::startup_gate::{recover_and_settle, restore_with_provisional_marker};
+    use spartiate_lib::startup_gate::{recover_and_settle, restore_with_provisional_marker};
     let dir = crashed_at(Some(RestoreStep::Swapped));
-    let token = circletasks_lib::backup::database_token(&dir.path().join(DB_FILE)).unwrap().expect("jeton");
-    for name in ["circletasks.db.restore-old", "circletasks.db-wal.restore-old", "circletasks.db-shm.restore-old"] {
+    let token = spartiate_lib::backup::database_token(&dir.path().join(DB_FILE)).unwrap().expect("jeton");
+    for name in ["spartiate.db.restore-old", "spartiate.db-wal.restore-old", "spartiate.db-shm.restore-old"] {
         let _ = fs::remove_file(dir.path().join(name));
     }
-    circletasks_lib::backup::write_provisional_marker(dir.path(), &dir.path().join(BACKUP_DIR), "circletasks-daily-20261007.db", 1_791_446_400, APP_SCHEMA_VERSION, token).unwrap();
+    spartiate_lib::backup::write_provisional_marker(dir.path(), &dir.path().join(BACKUP_DIR), "spartiate-daily-20261007.db", 1_791_446_400, APP_SCHEMA_VERSION, token).unwrap();
     // Un dossier à la place du fichier : la base est « là » mais illisible. Ni confirmation ni annulation.
     let db = dir.path().join(DB_FILE);
     let aside = dir.path().join("base-mise-de-cote");
     fs::rename(&db, &aside).unwrap();
     fs::create_dir(&db).unwrap();
-    assert!(circletasks_lib::backup::database_token(&db).is_err());
+    assert!(spartiate_lib::backup::database_token(&db).is_err());
     // Démarrage : un dossier à la place de la base n'est ni un `.restore-old` ni un `.restoring` -> la récupération rend `Nothing`, puis le
     // règlement tombe sur la base illisible : rien n'est décidé et le journal le consigne.
     // Le verrou remet le journal à neuf (`support::applog_dir_lock`) : les entrées notées avant `init` par les autres tests n'y sont pas versées.
     let _log_dir = crate::support::applog_dir_lock();
     let logs = dir.path().join("logs");
-    circletasks_lib::applog::init(logs.clone());
-    assert_eq!(recover_and_settle(dir.path()).expect("la récupération elle-même aboutit"), circletasks_lib::backup::Recovery::Nothing);
-    let logged = circletasks_lib::applog::read_entries(&logs, 500).unwrap();
+    spartiate_lib::applog::init(logs.clone());
+    assert_eq!(recover_and_settle(dir.path()).expect("la récupération elle-même aboutit"), spartiate_lib::backup::Recovery::Nothing);
+    let logged = spartiate_lib::applog::read_entries(&logs, 500).unwrap();
     assert!(logged.iter().any(|e| e.scope == "backup-recovery" && e.code == "provisional-marker-db-unreadable"), "{logged:?}");
     assert!(!logged.iter().any(|e| e.code == "provisional-marker-settled"), "ni confirmé ni annulé");
-    assert!(circletasks_lib::sync::marker::is_provisional(dir.path()), "ni annulé ni confirmé");
-    let refused = restore_with_provisional_marker(dir.path(), "circletasks-daily-20261007.db", "20261008T080001Z", 1_791_446_401, &|_| Ok(())).unwrap_err();
+    assert!(spartiate_lib::sync::marker::is_provisional(dir.path()), "ni annulé ni confirmé");
+    let refused = restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080001Z", 1_791_446_401, &|_| Ok(())).unwrap_err();
     assert_eq!(refused.code, "restore-unconfirmed");
-    assert!(circletasks_lib::sync::marker::is_provisional(dir.path()));
+    assert!(spartiate_lib::sync::marker::is_provisional(dir.path()));
     // La base redevient lisible : la décision est reprise, la restauration a bien eu lieu -> confirmée.
     fs::remove_dir(&db).unwrap();
     fs::rename(&aside, &db).unwrap();
@@ -775,7 +775,7 @@ fn p04_ios_marker_with_an_unreadable_database_in_place_stays_provisional_and_blo
     let (_, marker) = start(dir.path());
     let marker = marker.expect("marqueur");
     assert!(!marker.provisional);
-    assert_eq!(marker.backup, "circletasks-daily-20261007.db");
+    assert_eq!(marker.backup, "spartiate-daily-20261007.db");
 }
 
 #[test]
@@ -783,13 +783,13 @@ fn p04_ios_restore_stamps_a_fresh_token_that_the_database_in_place_carries() {
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    make_db(&backups.join("circletasks-daily-20261007.db"), None);
+    make_db(&backups.join("spartiate-daily-20261007.db"), None);
     make_db(&dir.path().join(DB_FILE), None);
-    assert_eq!(circletasks_lib::backup::database_token(&dir.path().join(DB_FILE)).unwrap(), None);
+    assert_eq!(spartiate_lib::backup::database_token(&dir.path().join(DB_FILE)).unwrap(), None);
     let mut seen = Vec::new();
     for n in 0..3 {
-        restore_backup_file(&dir.path().join(DB_FILE), &backups, "circletasks-daily-20261007.db", APP_SCHEMA_VERSION, &format!("20261008T08000{n}Z"), &|_| Ok(())).unwrap();
-        let token = circletasks_lib::backup::database_token(&dir.path().join(DB_FILE)).unwrap().expect("jeton");
+        restore_backup_file(&dir.path().join(DB_FILE), &backups, "spartiate-daily-20261007.db", APP_SCHEMA_VERSION, &format!("20261008T08000{n}Z"), &|_| Ok(())).unwrap();
+        let token = spartiate_lib::backup::database_token(&dir.path().join(DB_FILE)).unwrap().expect("jeton");
         assert!(!seen.contains(&token), "chaque restauration a son jeton");
         seen.push(token);
     }
@@ -797,21 +797,21 @@ fn p04_ios_restore_stamps_a_fresh_token_that_the_database_in_place_carries() {
 
 #[test]
 fn p04_ios_marker_staged_removed_puts_back_the_previous_pending_marker() {
-    use circletasks_lib::backup::Recovery;
+    use spartiate_lib::backup::Recovery;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    make_db(&backups.join("circletasks-daily-20261007.db"), None);
+    make_db(&backups.join("spartiate-daily-20261007.db"), None);
     make_db(&dir.path().join(DB_FILE), None);
     sync_configured(dir.path());
-    fs::write(dir.path().join(circletasks_lib::sync::marker::MARKER_FILE), br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#).unwrap();
+    fs::write(dir.path().join(spartiate_lib::sync::marker::MARKER_FILE), br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#).unwrap();
     let hook = |step: RestoreStep| -> std::io::Result<()> {
         if step == RestoreStep::Staged {
             panic!("arrêt forcé");
         }
         Ok(())
     };
-    let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| circletasks_lib::startup_gate::restore_with_provisional_marker(dir.path(), "circletasks-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook)));
+    let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| spartiate_lib::startup_gate::restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook)));
     assert!(crashed.is_err());
     let (recovery, marker) = start(dir.path());
     assert_eq!(recovery, Recovery::StagedRemoved);
@@ -822,20 +822,20 @@ fn p04_ios_marker_staged_removed_puts_back_the_previous_pending_marker() {
 
 #[test]
 fn i06_update_restore_is_a_local_rollback_without_any_sync_marker() {
-    use circletasks_lib::startup_gate::restore_local_rollback;
-    use circletasks_lib::sync::marker::MARKER_FILE;
+    use spartiate_lib::startup_gate::restore_local_rollback;
+    use spartiate_lib::sync::marker::MARKER_FILE;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    let name = "circletasks-pre-migration-v0001-to-v0002-20261009T080000Z.db";
+    let name = "spartiate-pre-migration-v0001-to-v0002-20261009T080000Z.db";
     make_db(&backups.join(name), None);
-    make_db(&backups.join("circletasks-daily-20261007.db"), None);
+    make_db(&backups.join("spartiate-daily-20261007.db"), None);
     make_db(&dir.path().join(DB_FILE), None);
     Connection::open(dir.path().join(DB_FILE)).unwrap().execute("INSERT INTO task (title) VALUES ('après la migration ratée')", []).unwrap();
     sync_configured(dir.path());
     let marker = dir.path().join(MARKER_FILE);
     // Seule une sauvegarde d'avant mise à jour : une quotidienne garde le chemin P-04 (marqueur, choix de la synchro).
-    assert_eq!(restore_local_rollback(dir.path(), "circletasks-daily-20261007.db", "20261009T090000Z", NO_FAIL).unwrap_err().code, "bad-name");
+    assert_eq!(restore_local_rollback(dir.path(), "spartiate-daily-20261007.db", "20261009T090000Z", NO_FAIL).unwrap_err().code, "bad-name");
     let outcome = restore_local_rollback(dir.path(), name, "20261009T090001Z", NO_FAIL).expect("retour arrière");
     assert_eq!(outcome.marker, "skipped");
     assert!(outcome.safety_copy.is_some(), "copie de sécurité de la base actuelle");
@@ -869,13 +869,13 @@ fn i06_a9_child_exits_after_committed_schema_19() {
 
 #[test]
 fn i06_a9_committed_19_survives_process_exit_and_native_rollback_recovers_18() {
-    use circletasks_lib::backup::check_backup_file;
-    use circletasks_lib::startup_gate::restore_local_rollback;
+    use spartiate_lib::backup::check_backup_file;
+    use spartiate_lib::startup_gate::restore_local_rollback;
     let dir = scratch();
     let database = dir.path().join(DB_FILE);
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    let name = "circletasks-pre-migration-v0018-to-v0019-20261021T163000Z.db";
+    let name = "spartiate-pre-migration-v0018-to-v0019-20261021T163000Z.db";
     make_db(&database, Some("true"));
     {
         let conn = Connection::open(&database).unwrap();

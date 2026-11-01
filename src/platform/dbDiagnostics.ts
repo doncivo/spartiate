@@ -3,7 +3,7 @@ import { readAppVersion } from './appVersion';
 import { detectOs, detectRuntime, type Runtime } from './runtime';
 
 /** URL de la base de l'app installée (tauri-plugin-sql), recopiée ici pour ne pas charger le driver Tauri dans le diagnostic. */
-export const DB_URL = 'sqlite:circletasks.db';
+export const DB_URL = 'sqlite:spartiate.db';
 
 /** Réponse de la commande Rust `db_diagnostics` (src-tauri/src/backup.rs). */
 export interface DbPathDiagnostics {

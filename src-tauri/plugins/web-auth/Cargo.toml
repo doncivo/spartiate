@@ -1,7 +1,7 @@
 [package]
 name = "tauri-plugin-web-auth"
 version = "0.1.0"
-description = "CircleTasks : session d'authentification web (ASWebAuthenticationSession) pour la connexion Google sur iPhone (ADR 0008 §9). Appelé par Rust seulement."
+description = "Spartiate : session d'authentification web (ASWebAuthenticationSession) pour la connexion Google sur iPhone (ADR 0008 §9). Appelé par Rust seulement."
 authors = ["Ali Cherif"]
 edition = "2021"
 rust-version = "1.80"

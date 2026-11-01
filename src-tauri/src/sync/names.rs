@@ -1,14 +1,14 @@
 //! Noms stricts du dossier de synchronisation (ADR 0011 section 1.1, audit B5). Mêmes expressions que `src/domain/sync/format.ts`.
 //!
 //! Tout nom de fichier ou paramètre de chemin est validé ici avant toute construction de chemin. Un nom non strict (copie de
-//! conflit iCloud « state 2.ctx », `*.tmp`, `state.next.ctx` réservé, fichier étranger) est ignoré, jamais lu ni supprimé.
+//! conflit iCloud « state 2.spx », `*.tmp`, `state.next.spx` réservé, fichier étranger) est ignoré, jamais lu ni supprimé.
 
 use std::cmp::Ordering;
 
 pub const DEVICES_DIR: &str = "devices";
-pub const STATE_FILE: &str = "state.ctx";
+pub const STATE_FILE: &str = "state.spx";
 /// Réservé à la transition de Y-11 (section 14.3) : jamais écrit ni lu avant le lot Y4.
-pub const STATE_NEXT_FILE: &str = "state.next.ctx";
+pub const STATE_NEXT_FILE: &str = "state.next.spx";
 pub const TEMP_SUFFIX: &str = ".tmp";
 
 pub const MAX_EPOCH_NUMBER: u32 = 9_999;
@@ -99,11 +99,11 @@ pub fn is_file_number(n: u64) -> bool {
 }
 
 pub fn segment_name(n: u32) -> String {
-    format!("j-{n:08}.ctj")
+    format!("j-{n:08}.spj")
 }
 
 pub fn snapshot_name(n: u32) -> String {
-    format!("s-{n:08}.cts")
+    format!("s-{n:08}.sps")
 }
 
 /// Fichier reconnu dans un dossier d'appareil ou d'époque.
@@ -128,10 +128,10 @@ pub fn parse_file_name(name: &str) -> Option<SyncFileName> {
     if name == STATE_FILE {
         return Some(SyncFileName::State);
     }
-    if let Some(n) = numbered(name, "j-", ".ctj") {
+    if let Some(n) = numbered(name, "j-", ".spj") {
         return Some(SyncFileName::Segment(n));
     }
-    numbered(name, "s-", ".cts").map(SyncFileName::Snapshot)
+    numbered(name, "s-", ".sps").map(SyncFileName::Snapshot)
 }
 
 /// Version de l'app publiée : `[0-9A-Za-z.+-]{1,64}`.

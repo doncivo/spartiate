@@ -28,7 +28,7 @@ export function bannerDuration(remainingMs: number): string {
   return t('signing.durationMinutes', { n: Math.max(1, Math.floor(remainingMs / MINUTE_MS)) });
 }
 
-/** Bandeau « CircleTasks expire dans {durée} : actualisez-la dans SideStore » (D3). */
+/** Bandeau « Spartiate expire dans {durée} : actualisez-la dans SideStore » (D3). */
 export function bannerSoonText(remainingMs: number): string {
   return t('signing.bannerSoon', { duration: bannerDuration(remainingMs) });
 }

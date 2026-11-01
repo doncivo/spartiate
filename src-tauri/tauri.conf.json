@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "CircleTasks",
-  "version": "1.0.2",
-  "identifier": "fr.circletasks.planner",
+  "productName": "Spartiate",
+  "version": "0.1.0",
+  "identifier": "fr.spartiate.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -10,10 +10,11 @@
     "frontendDist": "../dist"
   },
   "app": {
+    "withGlobalTauri": false,
     "windows": [
       {
         "label": "main",
-        "title": "CircleTasks",
+        "title": "Spartiate",
         "width": 1440,
         "height": 900,
         "minWidth": 1024,
@@ -44,21 +45,13 @@
     "publisher": "Ali Cherif",
     "copyright": "Ali Cherif",
     "shortDescription": "Planificateur personnel",
-    "longDescription": "CircleTasks : planificateur personnel (tâches, routines, événements, checklists).",
+    "longDescription": "Spartiate : planificateur personnel (tâches, routines, événements, checklists).",
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
     "windows": {
       "nsis": { "languages": ["French"], "installMode": "currentUser", "installerHooks": "./windows/hooks.nsh" }
     },
     "iOS": {
       "minimumSystemVersion": "18.0"
-    }
-  },
-  "plugins": {
-    "updater": {
-      "endpoints": ["https://github.com/doncivo/circletasks-releases/releases/latest/download/latest.json"],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRGMEYyOTEwOUZGNTVFMEYKUldRUFh2V2ZFQ2tQVHl4bjJESG9UNDJPYXJ5WDBFd1pyenRDM1FNemxBMHJHY1E2K1QvY2F3NjUK",
-      "requireSignedVersion": true,
-      "windows": { "installMode": "passive" }
     }
   }
 }

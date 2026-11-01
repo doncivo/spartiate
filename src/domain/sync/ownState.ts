@@ -5,10 +5,10 @@ import { publishedStateToText } from './parse';
 /**
  * Règles pures de l'état publié et du statut des appareils (Y-TECH-02, point 6 : déplacées de `src/sync/engine.ts` et `src/sync/join.ts`
  * sans changement de comportement) : comparaison « réécrit seulement s'il a changé » (section 1.4, Y-TECH-01), accusés attendus, statut
- * local d'un appareil d'après son `state.ctx` au scan, appareils dont le curseur est posé à la fin d'une reprise.
+ * local d'un appareil d'après son `state.spx` au scan, appareils dont le curseur est posé à la fin d'une reprise.
  */
 
-/** Statut du `state.ctx` d'un appareil au scan (`sync_scan`, section 11.2). */
+/** Statut du `state.spx` d'un appareil au scan (`sync_scan`, section 11.2). */
 export type DeviceStateStatus = 'ok' | 'missing' | 'cloud-pending' | 'foreign' | 'corrupt' | 'rollback' | 'too-large' | 'newer-format';
 
 const ZERO_HLC = '000000000000000-0000-00000000-0000-4000-8000-000000000000' as Hlc;
@@ -29,7 +29,7 @@ export function comparableState(state: PublishedDeviceState): string {
 export const AWAITING_ACK_SEQ: ReadonlySet<DeviceStateStatus> = new Set(['missing', 'foreign', 'corrupt', 'rollback', 'too-large']);
 
 /**
- * Y-TECH-01 : un accusé dont le `stateSeq` a avancé depuis le dernier état publié, sur un appareil dont le `state.ctx` est absent,
+ * Y-TECH-01 : un accusé dont le `stateSeq` a avancé depuis le dernier état publié, sur un appareil dont le `state.spx` est absent,
  * étranger, illisible ou rejoué à ce scan (`awaiting`), est republié aussitôt. Cet appareil attend ce `stateSeq` : borne de la règle 1
  * (état reconstruit ou rejoué sous un `stateSeq` trop bas, refusé par les autres tant qu'il ne la dépasse pas) et condition (iii) de la
  * reconstruction de `forgotten.json` (§18 point 7). Sans boucle : la ligne de cet appareil ne change que lorsqu'un de ses états est
@@ -42,7 +42,7 @@ export function ackSeqAwaited(state: PublishedDeviceState, published: PublishedD
   return false;
 }
 
-/** Statut local d'un appareil d'après le statut de son `state.ctx` au scan (un état invalide garde son dernier accusé connu). */
+/** Statut local d'un appareil d'après le statut de son `state.spx` au scan (un état invalide garde son dernier accusé connu). */
 export function deviceStatusOf(scan: { readonly stateStatus: DeviceStateStatus; readonly state: { readonly sm: number } | null }, previous: string | undefined): string {
   switch (scan.stateStatus) {
     case 'foreign':

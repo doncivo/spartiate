@@ -108,7 +108,7 @@ describe('« À jour » jamais affiché en silence', () => {
   });
 });
 
-describe('échec d’écriture de state.ctx', () => {
+describe('échec d’écriture de state.spx', () => {
   it('visible : phase d’erreur avec son code, jamais « À jour » ; le cycle suivant, une fois l’écriture possible, publie l’état', async () => {
     const b = await createSimDevice(B_ID, { name: 'iPhone' });
     devices.push(b);

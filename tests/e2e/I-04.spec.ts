@@ -70,7 +70,7 @@ test.describe('I-04 — écran Logs', () => {
     await page.getByRole('button', { name: 'Exporter' }).click();
     await expect(page.getByText('Logs exportés')).toBeVisible();
     const file = await onlySaved(page);
-    expect(file.name).toMatch(/^circletasks-logs-\d{8}-\d{4}\.txt$/);
+    expect(file.name).toMatch(/^spartiate-logs-\d{8}-\d{4}\.txt$/);
     expect(file.mime).toBe('text/plain');
     const text = textOf(file);
     expect(text).toContain('Ce fichier ne contient ni titres ni notes.');

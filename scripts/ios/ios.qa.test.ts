@@ -125,7 +125,7 @@ describe('I-01 QA : contrat Info.plist (cas limites)', () => {
 
 describe('I-01 QA : source SideStore (cas limites)', () => {
   const info = (version: string, extra: Record<string, string> = {}): Record<string, string> => ({
-    CFBundleIdentifier: 'fr.circletasks.planner',
+    CFBundleIdentifier: 'fr.spartiate.app',
     CFBundleShortVersionString: version,
     CFBundleVersion: version,
     MinimumOSVersion: '18.0',
@@ -240,9 +240,9 @@ describe('I-01 QA : cohérence du guide après modification d’une valeur', () 
   });
 
   it('I-01 critère 4 : changer l’URL, le bundle, le nom ou le tag dans le guide est détecté', () => {
-    expect(problems(guide.replace(SOURCE_URL, SOURCE_URL.replace('circletasks-releases', 'autre-depot')))).toEqual(['url']);
-    expect(problems(guide.replaceAll(conf.identifier, 'fr.circletasks.autre'))).toContain('bundle');
-    expect(problems(guide.replaceAll('CircleTasks.ipa', 'App.ipa'))).toContain('nom');
+    expect(problems(guide.replace(SOURCE_URL, SOURCE_URL.replace('spartiate-releases', 'autre-depot')))).toEqual(['url']);
+    expect(problems(guide.replaceAll(conf.identifier, 'fr.spartiate.autre'))).toContain('bundle');
+    expect(problems(guide.replaceAll('Spartiate.ipa', 'App.ipa'))).toContain('nom');
     expect(problems(guide.replaceAll('ios-vX.Y.Z', 'v1.2.3'))).toContain('tag');
     expect(problems(`${guide}\nTag : ios-v1.0.0`)).toContain('tag');
     expect(problems(`${guide}\n${SOURCE_URL}x`)).toContain('url');

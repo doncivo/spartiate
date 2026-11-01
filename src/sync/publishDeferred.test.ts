@@ -61,7 +61,7 @@ describe('openedHere et io sur l’état (contre-revue S2)', () => {
       if (unit === 'write-state') b.clock.advance(HIDE_SYNC_DEADLINE_MS);
     });
     await b.service.syncNow('hide', { deadlineAt: b.clock.nowMs() + HIDE_SYNC_DEADLINE_MS });
-    expect(b.folder.fileNames(b.id)).not.toContain('state.ctx');
+    expect(b.folder.fileNames(b.id)).not.toContain('state.spx');
     await b.restart();
     b.service = service({ ...b.platform, writeState: () => Promise.reject(new SyncPlatformError('io')) });
     const before = b.logger.entries.length;

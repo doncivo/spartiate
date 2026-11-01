@@ -115,7 +115,7 @@ describe('Réglages > Rappels : état des rappels (N-01)', () => {
       await replanNotifications(harness.container, 'open');
     });
     expect(screen.getAllByText('Les notifications sont refusées : les rappels ne sonneront pas', { exact: false }).length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText(/Réglages > Notifications > CircleTasks/)).toBeInTheDocument();
+    expect(screen.getByText(/Réglages > Notifications > Spartiate/)).toBeInTheDocument();
     expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Les notifications sont refusées : les rappels ne sonneront pas');
   });
 
@@ -221,18 +221,18 @@ describe('Réglages > Rappels : état des rappels (N-01)', () => {
     expect(screen.queryByText(/refusées|planifiés|Autoriser/)).toBeNull();
   });
 
-  it('N-06 : ligne fixe « Après un changement de fuseau, ouvrez CircleTasks » sur l’iPhone, et « Fuseau modifié » après un changement', async () => {
+  it('N-06 : ligne fixe « Après un changement de fuseau, ouvrez Spartiate » sur l’iPhone, et « Fuseau modifié » après un changement', async () => {
     await open({ mode: 'real' }, async (harness) => {
       await replanNotifications(harness.container, 'open');
       harness.zone.name = 'America/New_York';
       await replanNotifications(harness.container, 'resume');
     });
-    expect(screen.getByText('Après un changement de fuseau, ouvrez CircleTasks : les rappels sont recalculés à l’ouverture.')).toBeInTheDocument();
+    expect(screen.getByText('Après un changement de fuseau, ouvrez Spartiate : les rappels sont recalculés à l’ouverture.')).toBeInTheDocument();
     expect(screen.getByText(/^Fuseau modifié : rappels recalculés à \d{2}:\d{2}$/)).toBeInTheDocument();
   });
 
   const PREVIEWS_HELP =
-    'Sur l’écran verrouillé, iOS masque le contenu des rappels tant que l’iPhone n’est pas déverrouillé. Pour voir le titre du rappel : Réglages iOS › Notifications › CircleTasks › Afficher les aperçus › Toujours.';
+    'Sur l’écran verrouillé, iOS masque le contenu des rappels tant que l’iPhone n’est pas déverrouillé. Pour voir le titre du rappel : Réglages iOS › Notifications › Spartiate › Afficher les aperçus › Toujours.';
 
   it('N-IOS-FIX-01 : iPhone : ligne d’aide sur le masquage des aperçus iOS (texte simple, ni alerte ni lien)', async () => {
     await open({ mode: 'real' }, async (harness) => {

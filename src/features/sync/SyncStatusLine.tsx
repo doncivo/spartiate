@@ -17,7 +17,7 @@ export interface SyncStatusLineProps {
 }
 
 /**
- * Ligne « iCloud Drive / CircleTasks » de Réglages (Reglages.html : sous-ligne « À jour · il y a 2 min » en 13 px vert, lien « Détails »),
+ * Ligne « iCloud Drive / Spartiate » de Réglages (Reglages.html : sous-ligne « À jour · il y a 2 min » en 13 px vert, lien « Détails »),
  * avec le bouton « Synchroniser » (Y-03). Composant fourni au lot Y1 (`SyncSettingsSection`) et utilisé par l'écran de détails (variante
  * `card`). La sous-ligne n'est pas une région vivante (son âge change chaque minute) ; une erreur n'ouvre jamais de boîte bloquante.
  */

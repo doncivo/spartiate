@@ -1,7 +1,7 @@
 //! Y-TECH-04 partie C (côté Rust) : la liste des sauvegardes dit quel appareil a fait chaque copie et dans quelle époque (`deviceId`,
 //! `platform`, `epoch`), lus en lecture seule. Chaque champ absent ou illisible vaut `None`, jamais une erreur de liste.
 
-use circletasks_lib::backup::{list_backups_in, BackupEntry, BACKUP_DIR, MAX_BACKUP_BYTES};
+use spartiate_lib::backup::{list_backups_in, BackupEntry, BACKUP_DIR, MAX_BACKUP_BYTES};
 use rusqlite::Connection;
 use std::fs;
 use std::path::Path;
@@ -64,7 +64,7 @@ fn listed(spec: &Spec) -> (tempfile::TempDir, BackupEntry) {
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    make_backup(&backups.join("circletasks-daily-20261016.db"), spec);
+    make_backup(&backups.join("spartiate-daily-20261016.db"), spec);
     let mut entries = list_backups_in(&backups).unwrap();
     assert_eq!(entries.len(), 1);
     (dir, entries.remove(0))
@@ -133,7 +133,7 @@ fn y_tech_04_16_an_oversized_identifier_gives_none() {
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    let path = backups.join("circletasks-daily-20261016.db");
+    let path = backups.join("spartiate-daily-20261016.db");
     make_backup(&path, &Spec { own: None, ..Spec::full() });
     Connection::open(&path).unwrap().execute("INSERT INTO sync_state (device_id, is_self, platform) VALUES (?1, 1, 'windows')", [&long]).unwrap();
     let entry = list_backups_in(&backups).unwrap().remove(0);
@@ -145,7 +145,7 @@ fn y_tech_04_16_a_file_over_the_size_bound_is_listed_without_being_read() {
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    let path = backups.join("circletasks-daily-20261016.db");
+    let path = backups.join("spartiate-daily-20261016.db");
     make_backup(&path, &Spec::full());
     fs::OpenOptions::new().write(true).open(&path).unwrap().set_len(MAX_BACKUP_BYTES + 1).unwrap();
     let entry = list_backups_in(&backups).unwrap().remove(0);
@@ -159,9 +159,9 @@ fn y_tech_04_17_an_unreadable_backup_stays_listed_and_the_others_are_not_affecte
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    make_backup(&backups.join("circletasks-daily-20261016.db"), &Spec::full());
-    fs::write(backups.join("circletasks-daily-20261015.db"), b"ceci n'est pas une base SQLite, aucune en-tete").unwrap();
-    fs::write(backups.join("circletasks-daily-20261014.db"), b"").unwrap();
+    make_backup(&backups.join("spartiate-daily-20261016.db"), &Spec::full());
+    fs::write(backups.join("spartiate-daily-20261015.db"), b"ceci n'est pas une base SQLite, aucune en-tete").unwrap();
+    fs::write(backups.join("spartiate-daily-20261014.db"), b"").unwrap();
     let entries = list_backups_in(&backups).unwrap();
     assert_eq!(entries.len(), 3);
     for entry in &entries {
@@ -178,8 +178,8 @@ fn y_tech_04_17_listing_never_writes_into_a_backup() {
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    let healthy = backups.join("circletasks-daily-20261016.db");
-    let broken = backups.join("circletasks-daily-20261015.db");
+    let healthy = backups.join("spartiate-daily-20261016.db");
+    let broken = backups.join("spartiate-daily-20261015.db");
     make_backup(&healthy, &Spec::full());
     fs::write(&broken, b"ceci n'est pas une base SQLite, aucune en-tete").unwrap();
     let names = || {
@@ -206,7 +206,7 @@ fn y_tech_04_16_the_listing_keeps_its_order_newest_first() {
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
     for day in ["20261014", "20261016", "20261015"] {
-        make_backup(&backups.join(format!("circletasks-daily-{day}.db")), &Spec::full());
+        make_backup(&backups.join(format!("spartiate-daily-{day}.db")), &Spec::full());
     }
     let stamps: Vec<String> = list_backups_in(&backups).unwrap().into_iter().map(|e| e.stamp).collect();
     // Même ordre qu'avant : date de modification décroissante, puis horodatage du nom décroissant (fichiers créés dans la même seconde).
@@ -215,7 +215,7 @@ fn y_tech_04_16_the_listing_keeps_its_order_newest_first() {
             .unwrap()
             .map(|e| {
                 let e = e.unwrap();
-                (e.metadata().unwrap().modified().unwrap().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis(), e.file_name().to_string_lossy().replace("circletasks-daily-", "").replace(".db", ""))
+                (e.metadata().unwrap().modified().unwrap().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis(), e.file_name().to_string_lossy().replace("spartiate-daily-", "").replace(".db", ""))
             })
             .collect();
         all.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| b.1.cmp(&a.1)));
@@ -229,7 +229,7 @@ fn y_tech_04_17_a_backup_left_in_wal_mode_is_read_without_leaving_a_journal_or_c
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    let path = backups.join("circletasks-daily-20261016.db");
+    let path = backups.join("spartiate-daily-20261016.db");
     make_backup(&path, &Spec::full());
     // Copie déposée à la main par l'utilisateur : l'en-tête du fichier annonce le mode WAL (copie d'une base qui l'utilisait).
     {
@@ -252,7 +252,7 @@ fn y_tech_04_16_a_folder_name_with_special_characters_is_read_like_any_other() {
     let dir = scratch();
     let backups = dir.path().join("sauvegardes #é 100% +x");
     fs::create_dir_all(&backups).unwrap();
-    make_backup(&backups.join("circletasks-daily-20261016.db"), &Spec::full());
+    make_backup(&backups.join("spartiate-daily-20261016.db"), &Spec::full());
     let entry = list_backups_in(&backups).unwrap().remove(0);
     assert_eq!((identity(&entry).0, entry.tasks), (Some(DEVICE), Some(2)));
 }

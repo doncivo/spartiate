@@ -20,7 +20,7 @@ const fr = {
   timeZoneHint: 'Suit celui de Windows',
   tabsVisible: 'Onglets visibles',
   tabsCount: '{visible} sur {total}',
-  launchHint: 'CircleTasks s’ouvre réduit dans la zone de notification',
+  launchHint: 'Spartiate s’ouvre réduit dans la zone de notification',
   allShortcuts: 'Tous les raccourcis',
   quickCaptureTaken: '{keys} est utilisé par une autre application. Choisissez-en un autre.',
 } as const;
@@ -40,7 +40,7 @@ const en: Record<keyof typeof fr, string> = {
   timeZoneHint: 'Follows Windows',
   tabsVisible: 'Visible tabs',
   tabsCount: '{visible} of {total}',
-  launchHint: 'CircleTasks opens minimized in the notification area',
+  launchHint: 'Spartiate opens minimized in the notification area',
   allShortcuts: 'All shortcuts',
   quickCaptureTaken: '{keys} is used by another application. Choose another one.',
 };

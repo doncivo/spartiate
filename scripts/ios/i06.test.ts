@@ -28,7 +28,7 @@ const read = (p: string): string => readFileSync(join(root, p), 'utf8');
 const runNode = (script: string, args: string[]) => spawnSync(process.execPath, [join(root, script), ...args], { encoding: 'utf8' });
 const sha = (c: string): string => c.repeat(64);
 
-const info = (version: string, build = version, extra: Record<string, string> = {}) => ({ CFBundleIdentifier: 'fr.circletasks.planner', CFBundleShortVersionString: version, CFBundleVersion: build, MinimumOSVersion: '18.0', ...extra });
+const info = (version: string, build = version, extra: Record<string, string> = {}) => ({ CFBundleIdentifier: 'fr.spartiate.app', CFBundleShortVersionString: version, CFBundleVersion: build, MinimumOSVersion: '18.0', ...extra });
 
 function publish(existing: Source | null, version: string, options: { build?: string; notes?: string; size?: number; sha?: string; date?: string } = {}): Source {
   return buildSource({
@@ -57,7 +57,7 @@ describe('critère 1 : source avec deux versions', () => {
     expect(app['versionDate']).toBe('2026-10-20T08:00:00.000Z');
     expect(app['downloadURL']).toBe(ipaUrlFor('0.3.0'));
     expect(app['size']).toBe(7_100_000);
-    expect(app.bundleIdentifier).toBe('fr.circletasks.planner');
+    expect(app.bundleIdentifier).toBe('fr.spartiate.app');
     expect(app.iconURL).toBeTruthy();
     expect((checkSource(n1, { published: '0.3.0' }) as Check).errors).toEqual([]);
   });
@@ -103,7 +103,7 @@ describe('critère 2 : contrôle de cohérence de la source (check-source.mjs)',
     expect(errors(mutate((app) => ((app.versions[0] as Version).downloadURL = 'https://example.com/x.ipa'))).some((e) => e.includes('downloadURL'))).toBe(true);
     expect(errors(mutate((app) => delete (app.versions[0] as Version).sha256)).some((e) => e.includes('sha256'))).toBe(true);
     expect(errors(mutate((app) => ((app.versions[0] as Version).size = 0))).some((e) => e.includes('size'))).toBe(true);
-    expect(errors(mutate((app) => (app.bundleIdentifier = 'fr.circletasks.autre'))).some((e) => e.includes('la mise à jour perdrait les données'))).toBe(true);
+    expect(errors(mutate((app) => (app.bundleIdentifier = 'fr.spartiate.autre'))).some((e) => e.includes('la mise à jour perdrait les données'))).toBe(true);
     expect(errors(mutate((app) => (app['version'] = '0.2.3'))).some((e) => e.includes("champ d'app hérité version"))).toBe(true);
     expect(errors(mutate((app) => (app.iconURL = '')))).toContain('iconURL absent (obligatoire pour SideStore)');
   });
@@ -163,7 +163,7 @@ describe('critère 3 : notes de version (script commun PC et iPhone)', () => {
     expect(windows).not.toMatch(/\bawk\b/);
     expect(windows).toContain('node scripts/release/release-notes.mjs "${VERSION}"');
     expect(ios).toContain('node scripts/release/release-notes.mjs "$VERSION"');
-    expect(ios).not.toContain('NOTES="CircleTasks ${VERSION}"\n          # Le jeton');
+    expect(ios).not.toContain('NOTES="Spartiate ${VERSION}"\n          # Le jeton');
     for (const text of [windows, ios]) expect(text).toContain('CHANGELOG.md : publication refusée');
   });
 
@@ -186,9 +186,9 @@ describe('critère 4 : identifiant immuable entre N et N+1', () => {
       checkSource: BUNDLE_ID,
       vault: /pub const VAULT_SERVICE: &str = "([^"]+)";/.exec(vault)?.[1],
     };
-    for (const [where, value] of Object.entries(values)) expect(value, `${where} : la mise à jour perdrait les données`).toBe('fr.circletasks.planner');
+    for (const [where, value] of Object.entries(values)) expect(value, `${where} : la mise à jour perdrait les données`).toBe('fr.spartiate.app');
     // Compte de la clé au Trousseau et fichiers du signet (dossier de configuration) : inchangés, sinon la clé et le dossier sont perdus.
-    expect(service, 'clé du Trousseau : la mise à jour perdrait les données').toContain('pub const SYNC_KEY_ACCOUNT: &str = "circletasks.sync.key.v1";');
+    expect(service, 'clé du Trousseau : la mise à jour perdrait les données').toContain('pub const SYNC_KEY_ACCOUNT: &str = "spartiate.sync.key.v1";');
     expect(folder, 'signet du dossier : la mise à jour perdrait les données').toContain('pub const CONFIG_SUBDIR: &str = "sync";');
     expect(folder, 'signet du dossier : la mise à jour perdrait les données').toContain('pub const FOLDER_FILE: &str = "folder.json";');
   });
@@ -201,7 +201,7 @@ describe('critère 5 : build-ios.yml simule la source sur une branche, contrôle
 
   it('simulation : source publiée lue à l’URL publique sans secret, source construite avec l’IPA du build, contrôle et résumé', () => {
     expect(ios).toContain('- name: Source SideStore simulée');
-    expect(ios).toContain('curl -fsSL "https://raw.githubusercontent.com/doncivo/circletasks-releases/main/source.json"');
+    expect(ios).toContain('curl -fsSL "https://raw.githubusercontent.com/doncivo/spartiate-releases/main/source.json"');
     expect(ios).toContain('node scripts/ios/check-source.mjs sim/source.json --published "$VERSION"');
     for (const line of ['version ${VERSION}, build ${BUILD}', 'Notes (première ligne)', '- source valide']) expect(ios).toContain(line);
     const simulation = ios.slice(ios.indexOf('- name: Source SideStore simulée'));

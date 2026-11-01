@@ -128,10 +128,10 @@ describe('transport HTTP en mémoire', () => {
 
 describe('durcissement miroir de Rust', () => {
   it('la WebView ne peut pas écrire une référence Google ; le flux OAuth le peut', async () => {
-    await expect(platform.vault.set('circletasks.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950e', 'faux')).rejects.toMatchObject({ code: 'vault-unavailable' });
-    await platform.vault.set('circletasks.calendar.icloud.0f8fad5b-d9cb-469f-a165-70867728950e', 'pw');
-    await platform.oauth.authorizeGoogle('circletasks.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950e');
-    expect(await platform.vault.has('circletasks.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950e')).toBe(true);
+    await expect(platform.vault.set('spartiate.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950e', 'faux')).rejects.toMatchObject({ code: 'vault-unavailable' });
+    await platform.vault.set('spartiate.calendar.icloud.0f8fad5b-d9cb-469f-a165-70867728950e', 'pw');
+    await platform.oauth.authorizeGoogle('spartiate.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950e');
+    expect(await platform.vault.has('spartiate.calendar.google.0f8fad5b-d9cb-469f-a165-70867728950e')).toBe(true);
   });
 
   it('seuls les en-têtes de la liste blanche passent', async () => {

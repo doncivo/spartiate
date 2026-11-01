@@ -25,7 +25,7 @@ describe('Objectif : un seul moyen d’ajouter (UI-FIX-05)', () => {
   it('avec un objectif : le bouton ouvre un brouillon et disparaît ; il revient après la création', async () => {
     await seedGoal(h);
     renderGoals(h.container);
-    await screen.findByDisplayValue('Finaliser le PRD CircleTasks');
+    await screen.findByDisplayValue('Finaliser le PRD Spartiate');
     expect(addButton()).not.toBeNull();
     fireEvent.click(addButton() as HTMLElement);
     const draft = await screen.findByRole('textbox', { name: 'Objectif de la semaine (2)' });
@@ -41,7 +41,7 @@ describe('Objectif : un seul moyen d’ajouter (UI-FIX-05)', () => {
   it('un brouillon laissé vide ne crée rien et garde le champ ; la saisie et le focus sont conservés', async () => {
     await seedGoal(h);
     renderGoals(h.container);
-    await screen.findByDisplayValue('Finaliser le PRD CircleTasks');
+    await screen.findByDisplayValue('Finaliser le PRD Spartiate');
     fireEvent.click(addButton() as HTMLElement);
     const draft = await screen.findByRole('textbox', { name: 'Objectif de la semaine (2)' });
     fireEvent.change(draft, { target: { value: 'Brouillon en cours' } });

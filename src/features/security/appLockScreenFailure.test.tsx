@@ -42,7 +42,7 @@ describe('I-03-6 écran de verrou chargé à la demande en échec', () => {
     );
     const alert = await untilPresent(() => screen.queryByRole('alert'));
     expect(alert).toHaveTextContent('L’écran de verrou n’a pas pu être chargé. Vos données sont intactes : relancez l’app.');
-    expect(screen.getByRole('heading', { name: 'CircleTasks est verrouillée' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Spartiate est verrouillée' })).toBeInTheDocument();
     expect(screen.queryByText('Acheter du lait')).toBeNull();
   });
 

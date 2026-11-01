@@ -3,8 +3,8 @@
 //! ici : chaque refus écrit une ligne `sql-refused` au journal (sans texte SQL ni chemin, rafales bornées) et le crochet est câblé là où
 //! le plugin est construit.
 
-use circletasks_lib::applog::read_entries;
-use circletasks_lib::startup_gate::install_sql_refusal_hook;
+use spartiate_lib::applog::read_entries;
+use spartiate_lib::startup_gate::install_sql_refusal_hook;
 use tauri_plugin_sql::{open_sqlite_pool, DbPool};
 
 /// Dossier de test dans le dossier cible du dépôt (jamais le dossier temporaire du système).
@@ -18,7 +18,7 @@ fn runtime() -> tokio::runtime::Runtime {
 
 /// Base temporaire du test (dans le dossier temporaire du test, qui vit dans `target/` via `tempfile` du dépôt).
 async fn open(dir: &std::path::Path) -> DbPool {
-    let url = format!("sqlite:{}", dir.join("circletasks.db").to_string_lossy());
+    let url = format!("sqlite:{}", dir.join("spartiate.db").to_string_lossy());
     sqlx_create(&url).await;
     DbPool::Sqlite(open_sqlite_pool(&url).await.unwrap())
 }
@@ -36,11 +36,11 @@ fn sec01_14_refusals_are_logged_with_a_stable_code_and_bursts_are_bounded() {
     let _log_dir = crate::support::applog_dir_lock();
     // Le test peut commencer juste avant xx:xx:00 : une rafale à l'horloge réelle aurait alors légitimement 20 lignes.
     const MINUTE: u64 = 1_791_446_400;
-    let mut clock = circletasks_lib::applog::clock_for_tests(MINUTE + 59);
+    let mut clock = spartiate_lib::applog::clock_for_tests(MINUTE + 59);
     install_sql_refusal_hook();
     let logs_root = scratch();
     let logs = logs_root.path().join("logs");
-    circletasks_lib::applog::init(logs.clone());
+    spartiate_lib::applog::init(logs.clone());
     let dir = scratch();
     let secret_path = dir.path().join("secret-destination.db");
     let attach = format!("ATTACH DATABASE '{}' AS secret_alias", secret_path.to_string_lossy());
@@ -63,7 +63,7 @@ fn sec01_14_refusals_are_logged_with_a_stable_code_and_bursts_are_bounded() {
     // Exactement 10 lignes par minute et par code (RATE_PER_MINUTE) ; le résumé `log` / `suppressed` du reste est écrit à la minute suivante
     // (testé par `i04_a_burst_of_the_same_entry_is_limited_to_10_per_minute_then_summarized` dans applog.rs).
     assert_eq!(attach_lines, 10, "1 001 refus ATTACH : 10 lignes, pas 1 001");
-    assert!(refused.iter().all(|e| e.at == circletasks_lib::applog::iso_of(MINUTE + 59)), "toute la rafale dans une seule minute injectée");
+    assert!(refused.iter().all(|e| e.at == spartiate_lib::applog::iso_of(MINUTE + 59)), "toute la rafale dans une seule minute injectée");
     // Ni texte SQL, ni chemin, ni alias dans le fichier du journal.
     let raw: String = std::fs::read_dir(&logs).unwrap().map(|f| std::fs::read_to_string(f.unwrap().path()).unwrap()).collect();
     for forbidden in ["ATTACH", "secret_alias", "secret-destination", "writable_schema", "VACUUM"] {

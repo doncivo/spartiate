@@ -1,28 +1,28 @@
-//! Y-TECH-02, ADR 0011 §21 point 2 : nombre d'enregistrements des segments clos (`closed` de `state.ctx`, maître Rust). Table commune avec
+//! Y-TECH-02, ADR 0011 §21 point 2 : nombre d'enregistrements des segments clos (`closed` de `state.spx`, maître Rust). Table commune avec
 //! Vitest (`tests/fixtures/sync/closed-segments.json`), schéma (`state.rs`), écriture (`own.json`, `sync_write_state`).
 
 use serde_json::{json, Value};
 
-use circletasks_lib::sync::files::Availability;
-use circletasks_lib::sync::limits::MAX_STATE_CLOSED_SEGMENTS;
-use circletasks_lib::sync::service::AppendRequest;
-use circletasks_lib::sync::state::PublishedState;
-use circletasks_lib::sync::store::{OwnFileRef, RecordCursor};
-use circletasks_lib::sync::SyncCode;
+use spartiate_lib::sync::files::Availability;
+use spartiate_lib::sync::limits::MAX_STATE_CLOSED_SEGMENTS;
+use spartiate_lib::sync::service::AppendRequest;
+use spartiate_lib::sync::state::PublishedState;
+use spartiate_lib::sync::store::{OwnFileRef, RecordCursor};
+use spartiate_lib::sync::SyncCode;
 
 use crate::support::fault_plan;
 use crate::sync_support::{device, epoch, hlc, Device, MemFs, DEV_A, DEV_B};
 
 const TABLE: &str = include_str!("../../../tests/fixtures/sync/closed-segments.json");
 
-fn code<T>(result: Result<T, circletasks_lib::sync::SyncError>) -> SyncCode {
+fn code<T>(result: Result<T, spartiate_lib::sync::SyncError>) -> SyncCode {
     match result {
         Ok(_) => panic!("erreur attendue"),
         Err(error) => error.code,
     }
 }
 
-fn append(d: &Device, ep: &str, segment: u64, ms: u64, n: u64) -> Result<circletasks_lib::sync::store::AppendResult, circletasks_lib::sync::SyncError> {
+fn append(d: &Device, ep: &str, segment: u64, ms: u64, n: u64) -> Result<spartiate_lib::sync::store::AppendResult, spartiate_lib::sync::SyncError> {
     let records = (0..n).map(|i| format!("{{\"k\":\"ops\",\"s\":{segment},\"i\":{i}}}")).collect();
     d.core.append_journal(&AppendRequest { epoch: ep.to_owned(), segment, expect_records: 0, sv: 14, max_hlc: hlc(ms, DEV_A), records })
 }
@@ -36,7 +36,7 @@ fn state(ep: &str, seq: u64, segment: u64, record: u64, head_hlc: Option<String>
 }
 
 fn segment_path(ep: &str, n: u64) -> Vec<String> {
-    vec!["devices".to_owned(), DEV_A.to_owned(), ep.to_owned(), format!("j-{n:08}.ctj")]
+    vec!["devices".to_owned(), DEV_A.to_owned(), ep.to_owned(), format!("j-{n:08}.spj")]
 }
 
 fn published(d: &Device) -> PublishedState {
@@ -107,7 +107,7 @@ fn y_tech_02_closed_segments_common_table() {
             let written = s["written"].as_u64().unwrap();
             // Y-FIX-05 (§33) : ajout coupé net (`partialLastLine`) : refusé en `io`, jamais enregistré, hors de la tête.
             if s["cut"].as_bool() == Some(true) {
-                let file = format!("devices/{DEV_A}/{ep}/j-{n:08}.ctj");
+                let file = format!("devices/{DEV_A}/{ep}/j-{n:08}.spj");
                 let faults = json!([{ "id": "cut", "op": "write", "file": file, "nth": 1, "effect": "error", "code": "io", "partialLastLine": true }]);
                 fs.arm(fault_plan::parse_plan(&json!({ "name": name, "faults": faults })).unwrap()).unwrap();
                 assert_eq!(code(append(&d, &ep, n, ms, written)), SyncCode::Io, "{name} : ajout coupé");
@@ -250,10 +250,10 @@ fn y_tech_02_closed_rebuilt_from_its_own_state_only() {
     let closed: Vec<(u64, u64)> = published(&d).closed.iter().map(|c| (c.segment, c.records)).collect();
     assert_eq!(closed, vec![(1, 2)]);
     // Un accusé authentifié sur soi dépasse l'entrée dans ce segment : écartée à la reconstruction.
-    let b = Device::new(circletasks_lib_backend(&fs));
+    let b = Device::new(spartiate_lib_backend(&fs));
     b.core.choose_folder(std::path::Path::new(crate::sync_support::FOLDER)).unwrap();
-    let account = circletasks_lib::sync::service::SYNC_KEY_ACCOUNT;
-    use circletasks_lib::vault::SecretVault;
+    let account = spartiate_lib::sync::service::SYNC_KEY_ACCOUNT;
+    use spartiate_lib::vault::SecretVault;
     b.vault.set(account, &d.vault.get(account).unwrap().unwrap()).unwrap();
     b.core.bind_device(DEV_B).unwrap();
     let mut bs = state(&ep, 1, 0, 0, None);
@@ -267,14 +267,14 @@ fn y_tech_02_closed_rebuilt_from_its_own_state_only() {
     d.core.write_state(14, state(&ep, 3, 2, 1, Some(hlc(20, DEV_A)))).unwrap();
     assert!(published(&d).closed.is_empty(), "entrée dépassée par l'accusé de B : écartée");
     // État absent et own.json perdu : aucune entrée (règle d'avant), jamais inventée ; tête reconstruite des fichiers, sans hlc.
-    fs.remove(&["devices", DEV_B, "state.ctx"]);
-    fs.remove(&["devices", DEV_A, "state.ctx"]);
+    fs.remove(&["devices", DEV_B, "state.spx"]);
+    fs.remove(&["devices", DEV_A, "state.spx"]);
     std::fs::remove_file(d.base.path().join("sync").join("own.json")).unwrap();
     d.restart();
     d.core.write_state(14, state(&ep, 4, 2, 1, None)).unwrap();
     assert!(published(&d).closed.is_empty());
 }
 
-fn circletasks_lib_backend(fs: &std::sync::Arc<MemFs>) -> std::sync::Arc<crate::sync_support::FakeBackend> {
-    crate::sync_support::FakeBackend::with(crate::sync_support::FOLDER, circletasks_lib::sync::folder::FolderKind::Icloud, fs.clone())
+fn spartiate_lib_backend(fs: &std::sync::Arc<MemFs>) -> std::sync::Arc<crate::sync_support::FakeBackend> {
+    crate::sync_support::FakeBackend::with(crate::sync_support::FOLDER, spartiate_lib::sync::folder::FolderKind::Icloud, fs.clone())
 }

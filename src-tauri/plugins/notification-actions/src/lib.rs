@@ -1,4 +1,4 @@
-//! Plugin Swift notification-actions de CircleTasks (ADR 0012 avenant N-03) : prend la place du délégué `UNUserNotificationCenterDelegate`
+//! Plugin Swift notification-actions de Spartiate (ADR 0012 avenant N-03) : prend la place du délégué `UNUserNotificationCenterDelegate`
 //! du plugin officiel `tauri-plugin-notification`, enregistre les catégories et actions (« Fait », « +15 min »), et écrit chaque action
 //! reçue (y compris app tuée) dans un fichier durable que la WebView tire par `drain` puis acquitte par `ack`.
 //!

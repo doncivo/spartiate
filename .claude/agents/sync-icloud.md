@@ -8,7 +8,7 @@ Tu développes et gardes la synchro de Spartiate, sans serveur, par fichiers chi
 
 ## Quand intervenir
 
-- SPA-001b lot (c) : catalogue `syncTables.ts` réduit à `profile` et `body_weight`, `SYNC_TABLE_ORDER` dans `format.ts`, `naturalIds.ts` sans identifiants CircleTasks ; retrait des règles métier de `apply.ts`, `repair.ts`, `snapshot.ts`, `epochSwitch.ts`, `publisher.ts` (rappels, pauses de routine, focus, événements externes, espaces fixes) et des méthodes `routinePauses`, `setRoutinePaused`, `openFocusSessions` des repositories.
+- SPA-001b lot (c) : catalogue `syncTables.ts` réduit à `profile` et `body_weight`, `SYNC_TABLE_ORDER` dans `format.ts`, `naturalIds.ts` sans identifiants CircleTasks ; retrait des règles métier de `apply.ts`, `repair.ts`, `snapshot.ts`, `epochSwitch.ts`, `publisher.ts` (rappels, pauses de routine, focus, événements externes, espaces fixes) et des méthodes `routinePauses`, `setRoutinePaused`, `openFocusSessions` des repositories. <!-- ancien-ok: identifiants de l’ancien projet à retirer en 001b -->
 - SPA-008 : deux appareils réels, appairage QR, poids visible sur l'autre appareil en moins de 60 s, aucune métadonnée technique publiée.
 - I1 (D-27) : publication d'une séance à sa clôture (`workout` + `workout_set` quand `ended_at` non nul), dans les journaux **et** les instantanés ; interruption pendant la clôture, réessai, reprise après crash, édition et suppression d'une séance close.
 - Chaque itération qui publie une table (I2 `recommendation_decision`, `progression_profile` recalculable ; I4 `food`, `meal_entry`, `nutrition_target` ; I5 `recovery_day`, `muscle_recovery` écrites par l'iPhone seul).

@@ -30,7 +30,7 @@ export function ocrAssets(): Plugin {
     res.end(found.body);
   };
   return {
-    name: 'circletasks-ocr-assets',
+    name: 'spartiate-ocr-assets',
     configureServer: (server) => void server.middlewares.use(middleware),
     configurePreviewServer: (server) => void server.middlewares.use(middleware),
     generateBundle() {

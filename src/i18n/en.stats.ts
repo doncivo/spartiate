@@ -61,5 +61,5 @@ export const statsEn: Messages['stats'] = {
   exportRevealError: 'Unable to show the file in its folder.',
   routinesNoProject: 'Routines have no project: they are not counted under a project filter.',
   reportFilter: 'Space: {filter}',
-  reportFooter: 'CircleTasks · {date}',
+  reportFooter: 'Spartiate · {date}',
 };

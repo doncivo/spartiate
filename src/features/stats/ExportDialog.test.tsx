@@ -72,28 +72,28 @@ describe('Fenêtre « Exporter l’historique » (H-03)', () => {
     expect(within(dialog).queryByRole('group', { name: 'Période' })).toBeNull();
   });
 
-  it('critères 2 et 7 : « Exporter » propose circletasks-taches-AAAA-MM-JJ.csv, message « Historique exporté » et « Afficher dans le dossier »', async () => {
+  it('critères 2 et 7 : « Exporter » propose spartiate-taches-AAAA-MM-JJ.csv, message « Historique exporté » et « Afficher dans le dossier »', async () => {
     renderReport();
     const dialog = await openDialog();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Exporter' }));
     expect(await screen.findByText('Historique exporté')).toBeInTheDocument();
     expect(files.saved).toHaveLength(1);
-    expect(files.saved[0]?.suggestedName).toBe('circletasks-taches-2026-09-23.csv');
+    expect(files.saved[0]?.suggestedName).toBe('spartiate-taches-2026-09-23.csv');
     expect(files.saved[0]?.mime).toContain('text/csv');
     expect(new TextDecoder('utf-8', { ignoreBOM: true }).decode(files.saved[0]?.data)).toContain('Envoyer la facture;2026-09-10');
     expect(screen.queryByRole('dialog')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Afficher dans le dossier' }));
-    expect(files.revealed).toEqual(['C:\\Export\\circletasks-taches-2026-09-23.csv']);
+    expect(files.revealed).toEqual(['C:\\Export\\spartiate-taches-2026-09-23.csv']);
   });
 
-  it('critère 3 : JSON du mois affiché, nom circletasks-historique-…json', async () => {
+  it('critère 3 : JSON du mois affiché, nom spartiate-historique-…json', async () => {
     renderReport();
     const dialog = await openDialog();
     fireEvent.click(within(dialog).getByRole('radio', { name: 'Historique en JSON' }));
     fireEvent.click(within(dialog).getByRole('radio', { name: 'Mois affiché' }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Exporter' }));
     await screen.findByText('Historique exporté');
-    expect(files.saved[0]?.suggestedName).toBe('circletasks-historique-2026-09-23.json');
+    expect(files.saved[0]?.suggestedName).toBe('spartiate-historique-2026-09-23.json');
     const json = JSON.parse(new TextDecoder().decode(files.saved[0]?.data)) as { schema_version: number; filter: { period: { kind: string } }; tasks: unknown[] };
     expect(json.schema_version).toBe(1);
     expect(json.filter.period.kind).toBe('month');
@@ -107,7 +107,7 @@ describe('Fenêtre « Exporter l’historique » (H-03)', () => {
     expect(within(dialog).getByText('Filtre : Pro')).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Exporter' }));
     await screen.findByText('Historique exporté');
-    expect(files.saved[0]?.suggestedName).toBe('circletasks-taches-2026-09-23-pro.csv');
+    expect(files.saved[0]?.suggestedName).toBe('spartiate-taches-2026-09-23-pro.csv');
   });
 
   it('critère 7 : annuler la boîte « Enregistrer sous » n’affiche aucune erreur et laisse la fenêtre ouverte', async () => {
@@ -235,7 +235,7 @@ describe('Fenêtre « Exporter l’historique » (H-03)', () => {
       const dialog = await openDialog();
       fireEvent.click(within(dialog).getByRole('button', { name: 'Exporter' }));
       expect(await screen.findByText('Historique exporté')).toBeInTheDocument();
-      expect(saveFile).toHaveBeenCalledWith('circletasks-taches-2026-09-23.csv', expect.any(Uint8Array));
+      expect(saveFile).toHaveBeenCalledWith('spartiate-taches-2026-09-23.csv', expect.any(Uint8Array));
       expect(kinds).toEqual(['file-picker']);
       expect(screen.queryByRole('button', { name: 'Afficher dans le dossier' })).toBeNull();
     });
@@ -255,7 +255,7 @@ describe('Fenêtre « Exporter l’historique » (H-03)', () => {
         expect(await screen.findByText('Historique exporté')).toBeInTheDocument();
         view.unmount();
       }
-      expect(names).toEqual(['circletasks-taches-2026-09-23.csv', 'circletasks-historique-2026-09-23.json']);
+      expect(names).toEqual(['spartiate-taches-2026-09-23.csv', 'spartiate-historique-2026-09-23.json']);
     });
 
     it('iPhone : annuler le sélecteur n’affiche rien ; un fichier trop volumineux affiche « Fichier trop volumineux » (code too-large)', async () => {

@@ -1,6 +1,6 @@
 // REL-TECH-01 (ADR 0016) : build debug du binaire de fumée (front embarqué, identifiant `.smoke`, port CDP) dans un dossier cargo DÉDIÉ
 // (`src-tauri/target/smoke`) : jamais le binaire de `tauri dev` (`src-tauri/target/debug`), qui peut tourner pendant le test en local.
-// Usage : `npm run test:smoke:build` ; le test lit le binaire dans `src-tauri/target/smoke/debug/circletasks.exe`.
+// Usage : `npm run test:smoke:build` ; le test lit le binaire dans `src-tauri/target/smoke/debug/spartiate.exe`.
 //
 // REL-TECH-02 : `--nsis` (`npm run test:smoke:installer-build`) construit en plus l'installeur NSIS de fumée (`--bundles nsis`) : même configuration,
 // même dossier cargo ; installeur dans `src-tauri/target/smoke/debug/bundle/nsis/` et script généré dans `src-tauri/target/smoke/debug/nsis/x64/installer.nsi`.

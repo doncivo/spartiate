@@ -10,9 +10,9 @@ import { settingsSectionHeading } from './helpers/settings';
  * (src-tauri/tests/desktop/restore.rs). Exécuté sur `pc` et `iphone`.
  */
 const OLDER: FakeVersion[] = [
-  { name: 'circletasks-daily-20261003.db', kind: 'daily', stamp: '20261003', size: 2_411_725, at: '2026-10-03T03:12:00', tasks: 48 },
-  { name: 'circletasks-daily-20261004.db', kind: 'daily', stamp: '20261004', size: 40_960, at: '2026-10-04T21:40:00', tasks: 1 },
-  { name: 'circletasks-pre-migration-v0013-to-v0014-20261001T080000Z.db', kind: 'pre-migration', stamp: '20261001T080000Z', size: 30_720, at: '2026-10-01T10:00:00', tasks: null },
+  { name: 'spartiate-daily-20261003.db', kind: 'daily', stamp: '20261003', size: 2_411_725, at: '2026-10-03T03:12:00', tasks: 48 },
+  { name: 'spartiate-daily-20261004.db', kind: 'daily', stamp: '20261004', size: 40_960, at: '2026-10-04T21:40:00', tasks: 1 },
+  { name: 'spartiate-pre-migration-v0013-to-v0014-20261001T080000Z.db', kind: 'pre-migration', stamp: '20261001T080000Z', size: 30_720, at: '2026-10-01T10:00:00', tasks: null },
 ];
 
 const tab = (page: Page, name: string) => page.getByRole('navigation').getByRole('button', { name, exact: true });
@@ -43,7 +43,7 @@ test.describe('P-04 — sauvegarde et restauration', () => {
   });
 
   test('critère 1 : la sauvegarde du jour existante n’est pas recréée', async ({ page }) => {
-    await openSettings(page, [...OLDER, { name: 'circletasks-daily-20261005.db', kind: 'daily', stamp: '20261005', size: 1000, at: '2026-10-05T03:12:00', tasks: 3 }]);
+    await openSettings(page, [...OLDER, { name: 'spartiate-daily-20261005.db', kind: 'daily', stamp: '20261005', size: 1000, at: '2026-10-05T03:12:00', tasks: 3 }]);
     await expect(page.getByTestId('backup-summary')).toHaveText('Aujourd’hui 03:12 · 3 versions');
     expect((await backupState(page)).dailyCalls).toEqual([]);
   });
@@ -108,7 +108,7 @@ test.describe('P-04 — sauvegarde et restauration', () => {
     await expect(dialog.getByText('Restauration terminée, redémarrage')).toBeVisible();
     const state = await backupState(page);
     expect(state.restores).toHaveLength(1);
-    expect(state.restores[0]?.name).toBe('circletasks-daily-20261003.db');
+    expect(state.restores[0]?.name).toBe('spartiate-daily-20261003.db');
     expect(state.restores[0]?.stamp).toMatch(/^20261005T\d{6}Z$/);
     await expect.poll(async () => (await backupState(page)).restarts, { timeout: 5000 }).toBe(1);
   });
@@ -119,7 +119,7 @@ test.describe('P-04 — sauvegarde et restauration', () => {
     await failNextBackup(page, 'restore', 'newer-schema');
     await dialog.getByRole('button', { name: /4 oct\. à 21:40/ }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Restaurer' }).click();
-    await expect(dialog.getByRole('alert').filter({ hasText: 'plus récente de CircleTasks' })).toBeVisible();
+    await expect(dialog.getByRole('alert').filter({ hasText: 'plus récente de Spartiate' })).toBeVisible();
     await page.waitForTimeout(1500);
     expect((await backupState(page)).restarts).toBe(0);
   });
@@ -130,7 +130,7 @@ test.describe('P-04 — sauvegarde et restauration', () => {
     await failNextBackup(page, 'restore', 'io', true);
     await dialog.getByRole('button', { name: /4 oct\. à 21:40/ }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Restaurer' }).click();
-    await expect(dialog.getByText('Redémarrez CircleTasks pour retrouver vos données actuelles', { exact: false })).toBeVisible();
+    await expect(dialog.getByText('Redémarrez Spartiate pour retrouver vos données actuelles', { exact: false })).toBeVisible();
     await dialog.getByRole('button', { name: 'Redémarrer' }).click();
     await expect.poll(async () => (await backupState(page)).restarts).toBe(1);
   });

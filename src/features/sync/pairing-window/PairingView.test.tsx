@@ -98,7 +98,7 @@ describe('instance show : affichage (critères 5 et 22)', () => {
     expect(screen.getByText(T.window.step3)).toBeTruthy();
     expect(qr.querySelector('path')?.getAttribute('d')?.length).toBeGreaterThan(100);
     const key = screen.getByTestId('pairing-recovery-key').textContent ?? '';
-    expect(key).toMatch(/^CT1(-[0-9A-Z]{5})+$/);
+    expect(key).toMatch(/^SP1(-[0-9A-Z]{5})+$/);
     expect(qr.getAttribute('aria-label')).not.toContain(key);
     // L'attente est annoncée (role=status).
     expect(screen.getByText(T.window.waiting).closest('[role="status"]')).not.toBeNull();
@@ -114,7 +114,7 @@ describe('instance show : affichage (critères 5 et 22)', () => {
   });
 
   it('le QR dessiné se relit : même texte que la charge utile (qrcode-generator, zone calme de 4 modules)', () => {
-    const drawn = qrPath(qrcode, 'CTPAIR1.abc');
+    const drawn = qrPath(qrcode, 'SPPAIR1.abc');
     expect(drawn.size).toBeGreaterThan(21 + 7);
     expect(drawn.d.startsWith('M4 4h1v1h-1z')).toBe(true);
   });
@@ -182,7 +182,7 @@ describe('minuteur, nouveau code, impression, fermeture (critères 6, 7, 8 et 16
     fireEvent.click(screen.getByRole('button', { name: T.window.renewLabel }));
     expect(await screen.findByText(T.window.renewDenied)).toBeTruthy();
     expect(screen.getByRole('img', { name: T.window.qrLabel })).toBeTruthy();
-    expect(screen.getByTestId('pairing-recovery-key').textContent).toMatch(/^CT1-/);
+    expect(screen.getByTestId('pairing-recovery-key').textContent).toMatch(/^SP1-/);
     // Après un refus, 10 minutes de blocage : « Trop de demandes ».
     platform.testing.setConsent(true);
     fireEvent.click(screen.getByRole('button', { name: T.window.renewLabel }));
@@ -233,7 +233,7 @@ describe('minuteur, nouveau code, impression, fermeture (critères 6, 7, 8 et 16
     const slot = createSecretSlot();
     const view = render(<PairingView platform={reduced} now={now} slot={slot} loadQr={loadQr} print={() => undefined} />);
     await screen.findByRole('img', { name: T.window.qrLabel });
-    expect(slot.peek()?.qrText.startsWith('CTPAIR1.')).toBe(true);
+    expect(slot.peek()?.qrText.startsWith('SPPAIR1.')).toBe(true);
     view.unmount();
     expect(slot.peek()).toBeNull();
   });
@@ -310,7 +310,7 @@ describe('instance import : clé de secours (critères 10, 11, 12 et 16)', () =>
     const { reduced } = await openImport();
     render(<RecoveryKeyEntry platform={reduced} now={now} closeAfterMs={PAIRING_VALIDITY_MS} />);
     const field = screen.getByLabelText<HTMLInputElement>(T.import.field);
-    fireEvent.change(field, { target: { value: 'CT1-ABCDE' } });
+    fireEvent.change(field, { target: { value: 'SP1-ABCDE' } });
     await tick(4 * 60_000);
     expect(screen.getByTestId('pairing-import-timer').textContent).toBe('Cette fenêtre se fermera dans 1 min');
     await tick(60_000);
@@ -332,7 +332,7 @@ describe('instance import : clé de secours (critères 10, 11, 12 et 16)', () =>
       ['io', T.errors.generic],
     ];
     for (const [code, text] of cases) expect(pairingErrorText(T, new SyncPlatformError(code as never))).toBe(text);
-    expect(new SyncPlatformError('invalid-pairing').message).not.toMatch(/CT1/);
+    expect(new SyncPlatformError('invalid-pairing').message).not.toMatch(/SP1/);
   });
 });
 
@@ -347,7 +347,7 @@ describe('exposition de la clé (critère 16) et textes (critère 22)', () => {
     await screen.findByRole('img', { name: T.window.qrLabel });
     const secrets = slot.peek();
     if (!secrets) throw new Error('charge utile absente');
-    const k = JSON.parse(atob(secrets.qrText.slice('CTPAIR1.'.length).replace(/-/g, '+').replace(/_/g, '/'))) as { k: string };
+    const k = JSON.parse(atob(secrets.qrText.slice('SPPAIR1.'.length).replace(/-/g, '+').replace(/_/g, '/'))) as { k: string };
     const needles = [secrets.qrText, secrets.recoveryKey, k.k];
     const places = [JSON.stringify({ ...localStorage }), JSON.stringify({ ...sessionStorage }), window.location.href, document.title, logs.join('\n')];
     for (const needle of needles) for (const place of places) expect(place).not.toContain(needle);

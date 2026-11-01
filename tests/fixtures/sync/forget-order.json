@@ -1,5 +1,5 @@
 {
-  "description": "Table de cas commune Rust / Vitest (Y-10 ; ADR 0011 §14.2, §11.2 et §18 points 3 à 10) : ordre total sur la liste maître (auteur = appareil du hlc at), apprentissage du registre, coupure, conditions de suppression (fantômes, done, déclarations republiées, state.ctx de la cible dans le nuage), comparaison de forgotten par sync_write_state, hlc d'une nouvelle déclaration, appareils vus, couverture des oubliés par un instantané (condition (h)), instantané éligible, trous, oubli annulé (§18 points 11 à 13). Lue par forget_order, learn_declarations, cutoff, forgotten_delete_check, completed_forgotten, next_declaration_hlc, seen_devices, covers_forgotten, eligible_snapshot, forget_gaps et snapshot_in_epoch (src-tauri/src/sync/forget.rs) et par forgetOrder, learnDeclarations, cutoff, forgottenDeleteCheck, completedForgotten, declarationHlc, seenDevices, coversForgotten, eligibleSnapshot, forgetGaps et snapshotInEpoch (src/domain/sync/retention.ts). Valeurs attendues écrites à la main.",
+  "description": "Table de cas commune Rust / Vitest (Y-10 ; ADR 0011 §14.2, §11.2 et §18 points 3 à 10) : ordre total sur la liste maître (auteur = appareil du hlc at), apprentissage du registre, coupure, conditions de suppression (fantômes, done, déclarations republiées, state.spx de la cible dans le nuage), comparaison de forgotten par sync_write_state, hlc d'une nouvelle déclaration, appareils vus, couverture des oubliés par un instantané (condition (h)), instantané éligible, trous, oubli annulé (§18 points 11 à 13). Lue par forget_order, learn_declarations, cutoff, forgotten_delete_check, completed_forgotten, next_declaration_hlc, seen_devices, covers_forgotten, eligible_snapshot, forget_gaps et snapshot_in_epoch (src-tauri/src/sync/forget.rs) et par forgetOrder, learnDeclarations, cutoff, forgottenDeleteCheck, completedForgotten, declarationHlc, seenDevices, coversForgotten, eligibleSnapshot, forgetGaps et snapshotInEpoch (src/domain/sync/retention.ts). Valeurs attendues écrites à la main.",
   "forgetOrder": [
     {
       "name": "déclaration seule",
@@ -4372,7 +4372,7 @@
       }
     },
     {
-      "name": "state.ctx de la cible dans le nuage : en attente",
+      "name": "state.spx de la cible dans le nuage : en attente",
       "target": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
       "self": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       "master": [

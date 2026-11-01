@@ -33,7 +33,7 @@ const E1 = epochId(1, A);
 const E2A = epochId(2, A);
 const E2B = epochId(2, B);
 const hlc = (ms: number, dev: string = A): Hlc => `${String(ms).padStart(15, '0')}-0000-${dev}` as Hlc;
-const seg = (epoch: EpochId, n: number): string => `${epoch}/j-${String(n).padStart(8, '0')}.ctj`;
+const seg = (epoch: EpochId, n: number): string => `${epoch}/j-${String(n).padStart(8, '0')}.spj`;
 
 let nowMs = 1_800_000_000_000;
 const clock = (): number => nowMs;
@@ -106,7 +106,7 @@ const kidOf = async (p: MemorySyncPlatform): Promise<string> => {
 };
 const headerBytes = (h: object): number => utf8Bytes(JSON.stringify(h)) + 1;
 const journalHeader = async (p: MemorySyncPlatform, n: number, dev: DeviceId = A, epoch: EpochId = E1): Promise<object> => ({
-  f: 'ct-j',
+  f: 'sp-j',
   sm: 1,
   kid: await kidOf(p),
   dev,
@@ -199,13 +199,13 @@ describe('bornes exactes à l’écriture (section 1.6)', () => {
   it('snapshot : 256 Mio exactement acceptés, un enregistrement de plus : too-large et rien n’est publié', async () => {
     const big = 'x'.repeat(MAX_RECORD_PLAINTEXT_BYTES);
     const line = encryptedLineBytes(MAX_RECORD_PLAINTEXT_BYTES, 1, 14);
-    const header = { f: 'ct-s', sm: 1, kid: await kidOf(a), dev: A, e: E1, n: 1 };
+    const header = { f: 'sp-s', sm: 1, kid: await kidOf(a), dev: A, e: E1, n: 1 };
     const fit = Math.floor((MAX_SNAPSHOT_BYTES - headerBytes(header)) / line);
     expect(headerBytes(header) + (fit + 1) * line).toBeGreaterThan(MAX_SNAPSHOT_BYTES);
     expect(await codeOf(a.writeSnapshot({ epoch: E1, seq: 1, sv: 14, records: pages(Array<string>(fit + 1).fill(big)) }))).toBe('too-large');
     expect(folder.fileNames(A)).toEqual([]);
     await a.writeSnapshot({ epoch: E1, seq: 1, sv: 14, records: pages(Array<string>(fit).fill(big)) });
-    expect(folder.fileNames(A)).toEqual([`${E1}/s-00000001.cts`]);
+    expect(folder.fileNames(A)).toEqual([`${E1}/s-00000001.sps`]);
   }, 60_000);
 });
 
@@ -241,26 +241,26 @@ describe('bornes exactes à la lecture et au scan (section 1.6)', () => {
     expect(await codeOf(a.readJournal({ deviceId: A, epoch: E1, from: { segment: 0, record: 0 } }))).toBe('too-large');
   });
 
-  it('state.ctx : taille maximale exacte acceptée, un octet de plus : too-large (statut du scan et code de lecture)', async () => {
+  it('state.spx : taille maximale exacte acceptée, un octet de plus : too-large (statut du scan et code de lecture)', async () => {
     const text = JSON.stringify(publishedStateToJson(stateOf(A, E1, 1, { segment: 1, record: 1, hlc: hlc(10) })));
-    const header = { f: 'ct-state', sm: 1, kid: await kidOf(a), dev: A, e: E1, n: 1 };
+    const header = { f: 'sp-state', sm: 1, kid: await kidOf(a), dev: A, e: E1, n: 1 };
     const size = headerBytes(header) + encryptedLineBytes(utf8Bytes(text), 1, 14);
-    folder.addBytes(A, 'state.ctx', MAX_STATE_FILE_BYTES - size);
+    folder.addBytes(A, 'state.spx', MAX_STATE_FILE_BYTES - size);
     expect((await a.scan({ keep: [] })).devices[0]?.stateStatus).toBe('ok');
-    folder.addBytes(A, 'state.ctx', 1);
+    folder.addBytes(A, 'state.spx', 1);
     expect((await a.scan({ keep: [] })).devices[0]?.stateStatus).toBe('too-large');
     expect(await codeOf(a.readJournal({ deviceId: A, epoch: E1, from: { segment: 0, record: 0 } }))).toBe('too-large');
   });
 
   it('scan : 10 000 entrées exactement (état compris) : complet ; 10 001 : incomplet', async () => {
-    folder.addStrayEntries(A, 9_998); // 1 (state.ctx) + 1 (époque) + 9 998 = 10 000
+    folder.addStrayEntries(A, 9_998); // 1 (state.spx) + 1 (époque) + 9 998 = 10 000
     expect((await a.scan({ keep: [] })).incomplete).toBe(false);
     folder.addStrayEntries(A, 1);
     expect((await a.scan({ keep: [] })).incomplete).toBe(true);
   });
 
-  // QA-1 corrigé : state.ctx n'est compté que s'il existe.
-  it('scan : un dossier d’appareil sans state.ctx et 10 000 entrées exactement n’est pas incomplet', async () => {
+  // QA-1 corrigé : state.spx n'est compté que s'il existe.
+  it('scan : un dossier d’appareil sans state.spx et 10 000 entrées exactement n’est pas incomplet', async () => {
     folder.addStrayEntries(B, 10_000);
     expect((await a.scan({ keep: [] })).incomplete).toBe(false);
   });
@@ -396,7 +396,7 @@ describe('époques (section 9)', () => {
     await a.writeState({ sv: 14, state: stateOf(A, E2A, 2, { segment: 0, record: 0, hlc: null }) });
     expect(await a.deleteOwn([{ epoch: E1, kind: 'epoch' }])).toBe(1);
     expect(await codeOf(a.deleteOwn([{ epoch: E2A, kind: 'epoch' }]))).toBe('current-epoch');
-    expect(folder.fileNames(A)).toEqual(['state.ctx']);
+    expect(folder.fileNames(A)).toEqual(['state.spx']);
   });
 
   it('suppression atomique : une référence invalide dans la liste n’en supprime aucune', async () => {
@@ -459,10 +459,10 @@ describe('appairage hostile (sections 2 et 10.3)', () => {
   let a: MemorySyncPlatform;
   let qr: string;
   const decode = (text: string): string => {
-    const b64 = text.slice('CTPAIR1.'.length).replace(/-/g, '+').replace(/_/g, '/');
+    const b64 = text.slice('SPPAIR1.'.length).replace(/-/g, '+').replace(/_/g, '/');
     return atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4));
   };
-  const encode = (json: string): string => `CTPAIR1.${btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')}`;
+  const encode = (json: string): string => `SPPAIR1.${btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')}`;
   const importer = async (): Promise<MemorySyncPlatform> => {
     const b = createMemorySyncPlatform({ folder, nowMs: clock });
     await b.folder.choose();
@@ -506,8 +506,8 @@ describe('appairage hostile (sections 2 et 10.3)', () => {
       nowMs += 11 * 60_000; // hors du blocage et de la fenêtre de limitation
     }
     const b = await importer();
-    expect(await codeOf(b.key.import({ qrText: `CTPAIR1.${'A'.repeat(1100)}` })), 'trop long').toBe('invalid-pairing');
-    expect(await codeOf(b.key.import({ qrText: qr.replace('CTPAIR1.', 'CTPAIR2.') }))).toBe('invalid-pairing');
+    expect(await codeOf(b.key.import({ qrText: `SPPAIR1.${'A'.repeat(1100)}` })), 'trop long').toBe('invalid-pairing');
+    expect(await codeOf(b.key.import({ qrText: qr.replace('SPPAIR1.', 'CTPAIR2.') }))).toBe('invalid-pairing');
   });
 
   // QA-2 corrigé : clé répétée refusée comme le fait serde (analyse lexicale partagée avec parseFileHeader).
@@ -519,7 +519,7 @@ describe('appairage hostile (sections 2 et 10.3)', () => {
 
   it('la clé de secours : mauvaise longueur, caractère hors alphabet, texte vide, types hostiles : invalid-pairing', async () => {
     const { recoveryKey } = await a.key.pairingPayload({ renew: true });
-    for (const bad of ['', 'CT1-', recoveryKey.slice(0, -1), `${recoveryKey}0`, recoveryKey.replace(/.$/, 'U'), 42 as unknown as string]) {
+    for (const bad of ['', 'SP1-', recoveryKey.slice(0, -1), `${recoveryKey}0`, recoveryKey.replace(/.$/, 'U'), 42 as unknown as string]) {
       const fresh = await importer();
       expect(await codeOf(fresh.key.import({ recoveryKey: bad })), String(bad)).toBe('invalid-pairing');
     }

@@ -26,12 +26,13 @@ export const syncFolderFr = {
   retry: 'Réessayer',
   retryLabel: 'Relire l’état du dossier de synchronisation',
   errorUnreachable: 'Le dossier de synchro est introuvable',
-  errorUnreachableIos: 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / CircleTasks',
+  errorUnreachableIos: 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / Spartiate',
   errorTooLarge: 'Le dossier de synchro est trop volumineux',
   errorProviderStopped: 'Ouvrez iCloud pour Windows',
   errorVault: 'Le coffre de Windows est indisponible',
   errorVaultIos: 'Le Trousseau de l’iPhone est indisponible : déverrouillez l’iPhone, la synchro reprendra',
   errorDenied: 'Action annulée',
+  errorForeign: 'Ce dossier appartient à CircleTasks : Spartiate ne le lie jamais. Choisissez un autre dossier (par exemple « Spartiate » dans iCloud Drive).', // ancien-ok: nom de l'autre app dans le message de refus (ADR 0017)
   errorRateLimited: 'Trop de tentatives : réessayez dans quelques minutes',
   errorGeneric: 'La synchronisation a rencontré une erreur',
 } as const;

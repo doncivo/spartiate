@@ -1,8 +1,8 @@
 //! Journal technique persistant (I-04, ADR 0014) : PC et iPhone, sans `cfg`.
 //!
-//! Fichiers `<app_config_dir>/logs/circletasks.log` (courant) et `circletasks.log.1` (précédent), 256 Kio chacun : une entrée JSON par ligne
+//! Fichiers `<app_config_dir>/logs/spartiate.log` (courant) et `spartiate.log.1` (précédent), 256 Kio chacun : une entrée JSON par ligne
 //! `{ at, scope, code, detail, n? }`, ajoutée en fin ; rotation à l'écriture. Jamais dans le dossier iCloud ni dans `backups/` : une
-//! restauration (P-04) ne touche que `circletasks.db*` et `backups/`, le journal lui survit.
+//! restauration (P-04) ne touche que `spartiate.db*` et `backups/`, le journal lui survit.
 //!
 //! Règles :
 //! - aucun contenu personnel : `scope` et `code` ont une forme stricte (sinon `invalid`), `detail` passe la seconde barrière d'assainissement
@@ -24,8 +24,8 @@ use serde::{Deserialize, Serialize};
 
 /// Sous-dossier du dossier de configuration de l'app.
 pub const LOG_DIR: &str = "logs";
-pub const CURRENT_FILE: &str = "circletasks.log";
-pub const PREVIOUS_FILE: &str = "circletasks.log.1";
+pub const CURRENT_FILE: &str = "spartiate.log";
+pub const PREVIOUS_FILE: &str = "spartiate.log.1";
 /// Taille maximale d'un fichier (256 Kio) : 512 Kio au plus pour le journal entier.
 pub const MAX_FILE_BYTES: u64 = 256 * 1024;
 /// Taille maximale d'une ligne (4 Kio) : au-delà, `detail` est tronqué et marqué.
@@ -408,7 +408,7 @@ fn open_no_follow(path: &Path, options: &mut OpenOptions) -> Result<File, LogErr
     Ok(file)
 }
 
-/// Ajoute des lignes en fin de `circletasks.log`, avec rotation : si taille actuelle + ligne dépasse 256 Kio, le fichier devient `.1` (l'ancien
+/// Ajoute des lignes en fin de `spartiate.log`, avec rotation : si taille actuelle + ligne dépasse 256 Kio, le fichier devient `.1` (l'ancien
 /// `.1` est remplacé) et un nouveau fichier est créé.
 pub fn append_lines(dir: &Path, lines: &[String]) -> Result<usize, LogError> {
     if lines.is_empty() {

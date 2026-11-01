@@ -4,7 +4,7 @@ import type { DeviceId } from '../../../src/domain/types';
 import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
 
 /**
- * Y-TECH-01, QA : nombre d'écritures de `state.ctx` par cycle à 2, 3 et 4 appareils (actifs ou non, avec écritures locales, avec un appareil
+ * Y-TECH-01, QA : nombre d'écritures de `state.spx` par cycle à 2, 3 et 4 appareils (actifs ou non, avec écritures locales, avec un appareil
  * hors ligne qui revient, avec un oubli en cours) et convergence identique partout. Horloge injectée (aucun délai réel) : un cycle de chaque
  * appareil toutes les 5 minutes, iCloud recopié après chaque cycle. Les bornes sont déduites de la règle (une écriture locale = au plus une
  * republication par appareil au cycle même, plus le rafraîchissement de 30 minutes), jamais élargies pour faire passer un test.

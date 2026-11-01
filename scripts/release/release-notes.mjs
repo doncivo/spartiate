@@ -36,7 +36,7 @@ export function extractReleaseNotes(changelog, version) {
 }
 
 /** Notes de repli quand la section manque (branche seulement : sur un tag, l'absence fait échouer le job). */
-export const fallbackNotes = (version) => `CircleTasks ${version}`;
+export const fallbackNotes = (version) => `Spartiate ${version}`;
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const version = process.argv[2];

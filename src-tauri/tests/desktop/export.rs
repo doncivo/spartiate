@@ -1,6 +1,6 @@
 //! Export de fichiers (H-03) : règles de `export_save_file` / `reveal_exported_file` (écriture atomique, taille, chemins, noms).
 
-use circletasks_lib::export::{allowed_extension, body_bytes, decode_name, is_local_disk_path, reveal_target, sanitize_file_name, write_atomically, write_atomically_with, MAX_EXPORT_BYTES, MAX_HEADER_LEN};
+use spartiate_lib::export::{allowed_extension, body_bytes, decode_name, is_local_disk_path, reveal_target, sanitize_file_name, write_atomically, write_atomically_with, MAX_EXPORT_BYTES, MAX_HEADER_LEN};
 use std::io::Write;
 use std::path::Path;
 
@@ -112,7 +112,7 @@ fn nothing_to_reveal_before_the_first_export() {
 
 #[test]
 fn suggested_names_are_reduced_to_a_plain_file_name() {
-    assert_eq!(sanitize_file_name("circletasks-rapport-2026-09.pdf"), "circletasks-rapport-2026-09.pdf");
+    assert_eq!(sanitize_file_name("spartiate-rapport-2026-09.pdf"), "spartiate-rapport-2026-09.pdf");
     assert_eq!(sanitize_file_name("..\\..\\Windows\\evil.exe"), "evil.exe");
     assert_eq!(sanitize_file_name("a/b/c.csv"), "c.csv");
     assert_eq!(sanitize_file_name("x:y*z?.csv"), "xyz.csv");

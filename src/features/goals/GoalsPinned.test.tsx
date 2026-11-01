@@ -38,7 +38,7 @@ describe('Encadrés d’objectif épinglés dans Aujourd’hui (OB-02)', () => {
     await seedGoal(h);
     await seedTask(h, { title: 'Envoyer la facture' });
     renderToday(h);
-    const card = await screen.findByRole('button', { name: /^Objectif : Finaliser le PRD CircleTasks/ });
+    const card = await screen.findByRole('button', { name: /^Objectif : Finaliser le PRD Spartiate/ });
     const task = screen.getByRole('button', { name: 'Envoyer la facture' });
     expect(card.compareDocumentPosition(task) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(card).getByText('Objectif')).toBeInTheDocument();
@@ -108,7 +108,7 @@ describe('Encadrés d’objectif épinglés dans Aujourd’hui (OB-02)', () => {
       await (await import('./goalUseCases')).createGoalUseCases(h.container).update(goal.id, { pinned: false });
     });
     await waitFor(() => expect(cards()).toHaveLength(0));
-    expect((await h.container.data.repos.goals.getById(goal.id))?.title).toBe('Finaliser le PRD CircleTasks');
+    expect((await h.container.data.repos.goals.getById(goal.id))?.title).toBe('Finaliser le PRD Spartiate');
   });
 
   it('toucher l’encadré ouvre l’écran Objectif (critère 4)', async () => {

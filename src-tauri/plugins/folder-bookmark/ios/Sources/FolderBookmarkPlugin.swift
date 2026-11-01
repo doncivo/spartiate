@@ -1,4 +1,4 @@
-// Plugin folder-bookmark de CircleTasks (ADR 0011 §6.3 et §22 ; Y-IOS-01).
+// Plugin folder-bookmark de Spartiate (ADR 0011 §6.3 et §22 ; Y-IOS-01).
 //
 // Contrat : tests/fixtures/sync/folder-bookmark-contract.json (noms, champs, codes), relu par un contrôle statique contre ce fichier et
 // src-tauri/src/sync/bookmark.rs. Seul Rust appelle ces commandes (aucune permission pour la WebView).
@@ -186,7 +186,7 @@ private final class PickerDelegate: NSObject, UIDocumentPickerDelegate, UIAdapti
 
 class FolderBookmarkPlugin: Plugin {
   /// File des opérations de fichier (série : une opération à la fois, dans l'ordre des appels de Rust).
-  private let fileQueue = DispatchQueue(label: "fr.circletasks.folder-bookmark.files")
+  private let fileQueue = DispatchQueue(label: "fr.spartiate.folder-bookmark.files")
   /// Racine résolue pour la session (accès de sécurité ouvert) ; lue et écrite sur `fileQueue` seulement.
   private var root: URL?
   private var rootPath: String?
@@ -659,7 +659,7 @@ class FolderBookmarkPlugin: Plugin {
     return presenter
   }
 
-  /// Sélecteur de dossier (`UIDocumentPickerViewController`, dossiers seulement). La racine d'iCloud Drive choisie : `CircleTasks` y est
+  /// Sélecteur de dossier (`UIDocumentPickerViewController`, dossiers seulement). La racine d'iCloud Drive choisie : `Spartiate` y est
   /// créé puis lié (règle du PC, section 6.1).
   @objc public func pickFolder(_ invoke: Invoke) {
     DispatchQueue.main.async {
@@ -700,7 +700,7 @@ class FolderBookmarkPlugin: Plugin {
     var target = chosen
     if chosen.lastPathComponent == "com~apple~CloudDocs" {
       let parentPath = chosen.path
-      let child = "CircleTasks"
+      let child = "Spartiate"
       guard let fd = try openDirectory(parentPath, [child], create: true) else {
         throw Failure(code: .io)
       }

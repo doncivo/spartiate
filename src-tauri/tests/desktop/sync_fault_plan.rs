@@ -5,8 +5,8 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
-use circletasks_lib::sync::bookmark::BookmarkFs;
-use circletasks_lib::sync::files::{AppendMode, Availability, FsError, SyncFs};
+use spartiate_lib::sync::bookmark::BookmarkFs;
+use spartiate_lib::sync::files::{AppendMode, Availability, FsError, SyncFs};
 use serde_json::{json, Map, Value};
 
 use crate::support::fake_bookmark::{FakePlugin, SharedPlugin, BOOKMARK, ROOT};
@@ -14,11 +14,11 @@ use crate::support::fault_plan::{self, Effect, Plan};
 use crate::sync_support::{MemFs, SharedFs};
 
 const EPOCH: &str = "e0001-0f8fad5b-d9cb-469f-a165-70867728950e";
-const S1: [&str; 4] = ["devices", "a", EPOCH, "s-00000001.cts"];
-const S2: [&str; 4] = ["devices", "a", EPOCH, "s-00000002.cts"];
-const J1: [&str; 4] = ["devices", "a", EPOCH, "j-00000001.ctj"];
-const S1_PATH: &str = "devices/a/e0001-0f8fad5b-d9cb-469f-a165-70867728950e/s-00000001.cts";
-const J1_PATH: &str = "devices/a/e0001-0f8fad5b-d9cb-469f-a165-70867728950e/j-00000001.ctj";
+const S1: [&str; 4] = ["devices", "a", EPOCH, "s-00000001.sps"];
+const S2: [&str; 4] = ["devices", "a", EPOCH, "s-00000002.sps"];
+const J1: [&str; 4] = ["devices", "a", EPOCH, "j-00000001.spj"];
+const S1_PATH: &str = "devices/a/e0001-0f8fad5b-d9cb-469f-a165-70867728950e/s-00000001.sps";
+const J1_PATH: &str = "devices/a/e0001-0f8fad5b-d9cb-469f-a165-70867728950e/j-00000001.spj";
 const DIR: [&str; 3] = ["devices", "a", EPOCH];
 
 fn plan(faults: Value) -> Plan {
@@ -97,10 +97,10 @@ fn y_tech_03_3_the_strict_reader_refuses_and_names_the_entry() {
         ("code absent", refusal(|e| drop(e.remove("code"))), "« code » attendu"),
         ("code inconnu", refusal(|e| drop(e.insert("code".into(), json!("boom")))), "« code » attendu"),
         ("paramètre en trop", refusal(|e| drop(e.insert("content".into(), json!(["a"])))), "« content » sans objet"),
-        ("horodatage dans le chemin", refusal(|e| drop(e.insert("file".into(), json!("devices/a/s-1800000000000.cts")))), "horodatage interdit"),
-        ("date ISO dans le chemin", refusal(|e| drop(e.insert("file".into(), json!("devices/a/2026-10-17T10:00/s.cts")))), "horodatage interdit"),
-        ("chemin hors devices", refusal(|e| drop(e.insert("file".into(), json!("autre/s.cts")))), "chemin « autre/s.cts » invalide"),
-        ("chemin qui remonte", refusal(|e| drop(e.insert("file".into(), json!("devices/../s.cts")))), "invalide"),
+        ("horodatage dans le chemin", refusal(|e| drop(e.insert("file".into(), json!("devices/a/s-1800000000000.sps")))), "horodatage interdit"),
+        ("date ISO dans le chemin", refusal(|e| drop(e.insert("file".into(), json!("devices/a/2026-10-17T10:00/s.sps")))), "horodatage interdit"),
+        ("chemin hors devices", refusal(|e| drop(e.insert("file".into(), json!("autre/s.sps")))), "chemin « autre/s.sps » invalide"),
+        ("chemin qui remonte", refusal(|e| drop(e.insert("file".into(), json!("devices/../s.sps")))), "invalide"),
         ("dossier pour une suppression", refusal(|e| drop(e.insert("file".into(), json!("devices/a/")))), "désigne un fichier"),
         ("partialLastLine sur une suppression", refusal(|e| drop(e.insert("partialLastLine".into(), json!(true)))), "« partialLastLine » sans objet"),
     ];
@@ -186,7 +186,7 @@ fn y_tech_03_12_mem_fs_remove_file_fails_with_the_armed_code_and_keeps_the_file(
         mem.arm(plan(json!([{ "id": "r", "op": "remove", "file": S1_PATH, "nth": 1, "effect": "error", "code": code }]))).unwrap();
         let fs = SharedFs(mem.clone());
         assert_eq!(fs.remove_file(&S1), Err(expected), "{code}");
-        assert_eq!(names(&fs), ["s-00000001.cts"], "le fichier reste listé");
+        assert_eq!(names(&fs), ["s-00000001.sps"], "le fichier reste listé");
         assert_eq!(fs.read(&S1, 100, false), Ok(b"snap\n".to_vec()), "et lisible");
     }
 }
@@ -211,7 +211,7 @@ fn y_tech_03_12_mem_fs_a_removal_accepted_but_not_propagated_comes_back_after_ex
         assert_eq!(names(&fs), Vec::<String>::new());
         for cycle in 1..=3usize {
             mem.advance_cycle();
-            let expected = if back_after.is_some_and(|n| cycle >= n) { vec!["s-00000001.cts".to_owned()] } else { Vec::new() };
+            let expected = if back_after.is_some_and(|n| cycle >= n) { vec!["s-00000001.sps".to_owned()] } else { Vec::new() };
             assert_eq!(names(&fs), expected, "N = {cycles}, après {cycle} cycle(s)");
         }
         if back_after.is_some() {
@@ -239,13 +239,13 @@ fn y_tech_03_12_mem_fs_write_refused_leaves_no_partial_byte_unless_the_plan_asks
 #[test]
 fn y_tech_03_12_mem_fs_a_refused_rename_keeps_the_temporary_file() {
     let mem = MemFs::new();
-    mem.put(&["devices", "a", EPOCH, "s-00000001.cts.tmp"], b"snap\n");
+    mem.put(&["devices", "a", EPOCH, "s-00000001.sps.tmp"], b"snap\n");
     mem.arm(plan(json!([{ "id": "rn", "op": "rename", "file": S1_PATH, "nth": 1, "effect": "error", "code": "io" }]))).unwrap();
     let fs = SharedFs(mem.clone());
-    assert_eq!(fs.rename(&DIR, "s-00000001.cts.tmp", "s-00000001.cts"), Err(FsError::Io));
-    assert_eq!(names(&fs), ["s-00000001.cts.tmp"]);
-    assert_eq!(fs.rename(&DIR, "s-00000001.cts.tmp", "s-00000001.cts"), Ok(()));
-    assert_eq!(names(&fs), ["s-00000001.cts"]);
+    assert_eq!(fs.rename(&DIR, "s-00000001.sps.tmp", "s-00000001.sps"), Err(FsError::Io));
+    assert_eq!(names(&fs), ["s-00000001.sps.tmp"]);
+    assert_eq!(fs.rename(&DIR, "s-00000001.sps.tmp", "s-00000001.sps"), Ok(()));
+    assert_eq!(names(&fs), ["s-00000001.sps"]);
 }
 
 // --- Critère 13 : fake_bookmark, substitut, mode correct ---------------------------------------------------------------------------
@@ -255,7 +255,7 @@ fn y_tech_03_13_the_fake_plugin_lists_the_placeholder_under_the_real_name_in_the
     let (plugin, fs) = bookmark();
     plugin.put(&S1, b"snap\n");
     plugin.arm(plan(json!([{ "id": "ph", "op": "list", "file": S1_PATH, "nth": 1, "effect": "placeholder" }]))).unwrap();
-    assert_eq!(names(&fs), ["s-00000001.cts~"], "substitut listé sous le vrai nom, disponibilité cloud");
+    assert_eq!(names(&fs), ["s-00000001.sps~"], "substitut listé sous le vrai nom, disponibilité cloud");
     assert!(plugin.has_placeholder(&S1) && plugin.get(&S1).is_none(), "seul le substitut .<nom>.icloud reste dans le dossier");
     assert_eq!(fs.read(&S1, 100, false), Err(FsError::CloudPending), "sans hydratation");
     assert_eq!(fs.remove_file(&S1), Ok(true), "remove du vrai nom");
@@ -268,9 +268,9 @@ fn y_tech_03_13_a_read_with_hydration_downloads_the_placeholder() {
     let (plugin, fs) = bookmark();
     plugin.put(&S1, b"snap\n");
     plugin.arm(plan(json!([{ "id": "ph", "op": "list", "file": S1_PATH, "nth": 1, "effect": "placeholder" }]))).unwrap();
-    assert_eq!(names(&fs), ["s-00000001.cts~"]);
+    assert_eq!(names(&fs), ["s-00000001.sps~"]);
     assert_eq!(fs.read(&S1, 100, true), Ok(b"snap\n".to_vec()), "la lecture déclenche l'hydratation");
-    assert_eq!(names(&fs), ["s-00000001.cts"], "puis il est local");
+    assert_eq!(names(&fs), ["s-00000001.sps"], "puis il est local");
     assert!(!plugin.has_placeholder(&S1));
     assert_eq!(plugin.calls("download").len(), 1);
 }
@@ -282,18 +282,18 @@ fn y_tech_03_14_in_historic_mode_the_placeholder_stays_and_the_file_reappears_at
     let (plugin, fs) = bookmark();
     plugin.put(&S1, b"snap\n");
     let historic = fault_plan::reference_plan("exemple-placeholder-historique");
-    // Le plan de référence vise `devices/*/*/s-00000001.cts` : le dossier `a` / époque convient.
+    // Le plan de référence vise `devices/*/*/s-00000001.sps` : le dossier `a` / époque convient.
     plugin.arm(historic).unwrap();
-    assert_eq!(names(&fs), ["s-00000001.cts~"]);
+    assert_eq!(names(&fs), ["s-00000001.sps~"]);
     assert_eq!(fs.remove_file(&S1), Ok(false), "rien supprimé, sans erreur : le bug du 8 octobre est reproductible");
     assert!(plugin.has_placeholder(&S1), "le substitut reste");
-    assert_eq!(names(&fs), ["s-00000001.cts~"], "le fichier réapparaît au listage suivant");
+    assert_eq!(names(&fs), ["s-00000001.sps~"], "le fichier réapparaît au listage suivant");
     assert_eq!(fs.remove_file(&S1), Ok(false), "et ce, à chaque cycle");
     // Mode correct, même scénario : la suppression emporte le substitut.
     let (plugin, fs) = bookmark();
     plugin.put(&S1, b"snap\n");
     plugin.arm(fault_plan::reference_plan("exemple-placeholder")).unwrap();
-    assert_eq!(names(&fs), ["s-00000001.cts~"]);
+    assert_eq!(names(&fs), ["s-00000001.sps~"]);
     assert_eq!(fs.remove_file(&S1), Ok(true));
     assert_eq!(names(&fs), Vec::<String>::new());
 }
@@ -304,9 +304,9 @@ fn y_tech_03_14_in_historic_mode_mem_fs_leaves_the_evicted_file_too() {
     mem.put(&S1, b"snap\n");
     mem.arm(fault_plan::reference_plan("exemple-placeholder-historique")).unwrap();
     let fs = SharedFs(mem.clone());
-    assert_eq!(names(&fs), ["s-00000001.cts~"]);
+    assert_eq!(names(&fs), ["s-00000001.sps~"]);
     assert_eq!(fs.remove_file(&S1), Ok(false));
-    assert_eq!(names(&fs), ["s-00000001.cts~"]);
+    assert_eq!(names(&fs), ["s-00000001.sps~"]);
     assert_eq!(fs.read(&S1, 100, true), Ok(b"snap\n".to_vec()), "hydraté puis local : la suppression réussit");
     assert_eq!(fs.remove_file(&S1), Ok(true));
 }
@@ -328,12 +328,12 @@ fn y_tech_03_15_eviction_after_a_read_is_armed_by_name_and_rank_on_both_fakes() 
     plugin.arm(eviction_plan()).unwrap();
     for (fake, fs) in [("MemFs", &fs as &dyn SyncFs), ("fake_bookmark", &bookmark_fs as &dyn SyncFs)] {
         assert_eq!(fs.read(&J1, 100, false), Ok(b"l1\n".to_vec()), "{fake} : rang 1, pas d'éviction");
-        assert_eq!(names(fs), ["j-00000001.ctj"], "{fake}");
+        assert_eq!(names(fs), ["j-00000001.spj"], "{fake}");
         assert_eq!(fs.read(&J1, 100, false), Ok(b"l1\n".to_vec()), "{fake} : rang 2, lu puis évincé");
-        assert_eq!(names(fs), ["j-00000001.ctj~"], "{fake} : la disponibilité repasse à cloud");
+        assert_eq!(names(fs), ["j-00000001.spj~"], "{fake} : la disponibilité repasse à cloud");
         assert_eq!(fs.read(&J1, 100, false), Err(FsError::CloudPending), "{fake} : une nouvelle lecture suppose une hydratation");
         assert_eq!(fs.read(&J1, 100, true), Ok(b"l1\n".to_vec()), "{fake}");
-        assert_eq!(names(fs), ["j-00000001.ctj"], "{fake}");
+        assert_eq!(names(fs), ["j-00000001.spj"], "{fake}");
     }
 }
 
@@ -348,7 +348,7 @@ fn y_tech_03_15_overwrite_before_read_returns_the_other_devices_content_on_both_
     plugin.put(&J1, b"l1\n");
     plugin.arm(armed()).unwrap();
     for (fake, fs) in [("MemFs", &fs as &dyn SyncFs), ("fake_bookmark", &bookmark_fs as &dyn SyncFs)] {
-        assert_eq!(names(fs), ["j-00000001.ctj"], "{fake}");
+        assert_eq!(names(fs), ["j-00000001.spj"], "{fake}");
         assert_eq!(fs.read(&J1, 100, false), Ok(b"autre\nappareil\n".to_vec()), "{fake} : le contenu de l'autre appareil, pas celui listé");
         assert_eq!(fs.read(&J1, 100, false), Ok(b"autre\nappareil\n".to_vec()), "{fake} : il reste");
         let size = fs.list(&DIR, 100).unwrap().entries[0].size;
@@ -370,10 +370,10 @@ fn y_tech_03_15_download_error_leaves_the_file_in_the_cloud_until_its_rank_is_pa
     for (fake, fs) in [("MemFs", &fs as &dyn SyncFs), ("fake_bookmark", &bookmark_fs as &dyn SyncFs)] {
         assert_eq!(fs.read(&J1, 100, false), Err(FsError::CloudPending), "{fake} : sans hydratation, aucune tentative comptée");
         assert_eq!(fs.read(&J1, 100, true), Err(FsError::CloudError), "{fake} : téléchargement 1 en échec");
-        assert_eq!(names(fs), ["j-00000001.ctj~"], "{fake} : reste dans le nuage");
+        assert_eq!(names(fs), ["j-00000001.spj~"], "{fake} : reste dans le nuage");
         assert_eq!(fs.read(&J1, 100, true), Err(FsError::CloudError), "{fake} : téléchargement 2, encore couvert par times");
         assert_eq!(fs.read(&J1, 100, true), Ok(b"l1\n".to_vec()), "{fake} : téléchargement 3 réussi");
-        assert_eq!(names(fs), ["j-00000001.ctj"], "{fake}");
+        assert_eq!(names(fs), ["j-00000001.spj"], "{fake}");
     }
 }
 
@@ -386,7 +386,7 @@ fn y_tech_03_15_the_fake_plugin_never_uses_delay_ms_nor_the_clock_for_a_bank_tes
     plugin.arm(plan(json!([
         { "id": "ph", "op": "list", "file": S1_PATH, "nth": 1, "effect": "placeholder" },
         { "id": "ev", "op": "read", "file": J1_PATH, "nth": 1, "effect": "evict-after-read" },
-        { "id": "dl", "op": "hydrate", "file": "devices/a/e0001-0f8fad5b-d9cb-469f-a165-70867728950e/s-00000002.cts", "nth": 1, "effect": "download-error" }
+        { "id": "dl", "op": "hydrate", "file": "devices/a/e0001-0f8fad5b-d9cb-469f-a165-70867728950e/s-00000002.sps", "nth": 1, "effect": "download-error" }
     ])))
     .unwrap();
     let _ = names(&fs);
@@ -413,7 +413,7 @@ fn y_tech_03_15_the_fake_plugin_comes_back_after_exactly_n_cycles() {
     assert_eq!(plugin.advance_cycle(), 0);
     assert_eq!(names(&fs), Vec::<String>::new(), "pas encore après 1 cycle");
     assert_eq!(plugin.advance_cycle(), 1);
-    assert_eq!(names(&fs), ["s-00000001.cts"], "revenu après exactement 2 cycles");
+    assert_eq!(names(&fs), ["s-00000001.sps"], "revenu après exactement 2 cycles");
     assert_eq!(fs.read(&S1, 100, false), Ok(b"snap\n".to_vec()));
 }
 

@@ -86,16 +86,16 @@ describe('écran de verrou et coquille (critères 6, 7 et 11)', () => {
     fake.enqueue('user-cancel');
     await boot(true);
     // Écran de verrou chargé à la demande : attendu, puis l'authentification automatique qu'il lance.
-    expect(await screen.findByRole('heading', { name: 'CircleTasks est verrouillée' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Spartiate est verrouillée' })).toBeInTheDocument();
     await flush();
     expect(screen.queryByText('Courses')).toBeNull();
-    expect(screen.getByText('CircleTasks', { selector: '.ct-lock__app' })).toBeInTheDocument();
+    expect(screen.getByText('Spartiate', { selector: '.ct-lock__app' })).toBeInTheDocument();
     expect(fake.authenticateCount()).toBe(1);
     expect(screen.getByRole('alert')).toHaveTextContent('Déverrouillage annulé');
-    fireEvent.click(screen.getByRole('button', { name: 'Déverrouiller CircleTasks' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Déverrouiller Spartiate' }));
     await flush();
     expect(screen.getByText('Courses')).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'CircleTasks est verrouillée' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Spartiate est verrouillée' })).toBeNull();
   });
 
   it('retour après 31 s : coquille montée mais hidden, inert, aria-hidden ; saisie retrouvée au déverrouillage', async () => {
@@ -114,7 +114,7 @@ describe('écran de verrou et coquille (critères 6, 7 et 11)', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Déverrouillage impossible (authentication-failed)');
     // Le seul contenu lisible : l'écran de verrou (le reste est caché aux technologies d'assistance).
     expect(screen.queryByRole('textbox', { name: 'Saisie' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Déverrouiller CircleTasks' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Déverrouiller Spartiate' }));
     await flush();
     expect(screen.getByRole('textbox', { name: 'Saisie' })).toHaveValue('Acheter du pain');
     expect(screen.getByTestId('app-lock-content')).not.toHaveAttribute('inert');
@@ -123,7 +123,7 @@ describe('écran de verrou et coquille (critères 6, 7 et 11)', () => {
   it('plugin en échec : message persistant avec le code et « Réessayer », jamais de déverrouillage', async () => {
     fake.setDefault('unavailable');
     await boot(true);
-    await screen.findByRole('heading', { name: 'CircleTasks est verrouillée' });
+    await screen.findByRole('heading', { name: 'Spartiate est verrouillée' });
     await flush();
     expect(screen.getByRole('alert')).toHaveTextContent('Le verrouillage ne répond pas (unavailable). Vos données sont intactes.');
     fireEvent.click(screen.getByRole('button', { name: 'Réessayer' }));
@@ -135,12 +135,12 @@ describe('écran de verrou et coquille (critères 6, 7 et 11)', () => {
   it('aucun code sur l’iPhone : message, sortie « Désactiver le verrouillage » avec confirmation ; réglage écrit faux', async () => {
     fake.enqueue('passcode-not-set');
     const { container } = await boot(true);
-    await screen.findByRole('heading', { name: 'CircleTasks est verrouillée' });
+    await screen.findByRole('heading', { name: 'Spartiate est verrouillée' });
     await flush();
     expect(screen.getByRole('alert')).toHaveTextContent('Déverrouillage impossible : aucun code n’est défini sur l’iPhone');
     fireEvent.click(screen.getByRole('button', { name: 'Désactiver le verrouillage' }));
     const dialog = screen.getByRole('alertdialog', { name: 'Désactiver le verrouillage ?' });
-    expect(dialog).toHaveTextContent('Les données de CircleTasks seront de nouveau lisibles sans protection');
+    expect(dialog).toHaveTextContent('Les données de Spartiate seront de nouveau lisibles sans protection');
     fireEvent.click(screen.getByRole('button', { name: 'Désactiver' }));
     await flush();
     expect(screen.getByText('Courses')).toBeInTheDocument();
@@ -150,7 +150,7 @@ describe('écran de verrou et coquille (critères 6, 7 et 11)', () => {
   it('sans code, avant tout retour passcode-not-set : pas de sortie proposée', async () => {
     fake.enqueue('user-cancel');
     await boot(true);
-    await screen.findByRole('heading', { name: 'CircleTasks est verrouillée' });
+    await screen.findByRole('heading', { name: 'Spartiate est verrouillée' });
     await flush();
     expect(screen.queryByRole('button', { name: 'Désactiver le verrouillage' })).toBeNull();
   });
@@ -202,7 +202,7 @@ describe('Réglages > DONNÉES ET SÉCURITÉ (critères 5 et 9, D2)', () => {
     expect(await container.data.repos.settings.get('security.appLock')).toBe(false);
     fireEvent.click(screen.getByRole('switch', { name: 'Verrouillage Face ID' }));
     await flush();
-    expect(fake.calls.at(-1)).toMatchObject({ reason: 'Activer le verrouillage de CircleTasks' });
+    expect(fake.calls.at(-1)).toMatchObject({ reason: 'Activer le verrouillage de Spartiate' });
     expect(screen.getByRole('switch', { name: 'Verrouillage Face ID' })).toHaveAttribute('aria-checked', 'true');
     expect(await container.data.repos.settings.get('security.appLock')).toBe(true);
   });

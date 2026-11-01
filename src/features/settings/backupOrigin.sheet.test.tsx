@@ -23,7 +23,7 @@ const OWN_ID = asEntityId<DeviceId>(OWN);
 const local = (iso: string): number => new Date(iso).getTime();
 
 const entry = (day: string, at: string, extra: Partial<BackupVersion>): BackupVersion => ({
-  name: `circletasks-daily-${day}.db`,
+  name: `spartiate-daily-${day}.db`,
   kind: 'daily',
   stamp: day,
   size: 40_960,
@@ -126,6 +126,6 @@ describe('Y-TECH-04 partie C : appareil, date et époque sur chaque ligne de res
     expect(within(confirm).getByText('Les données actuelles seront remplacées par celles du 6 oct. à 07:30. Une copie de l’état actuel est faite avant.')).toBeInTheDocument();
     expect(backups.restores).toEqual([]);
     fireEvent.click(within(confirm).getByRole('button', { name: 'Restaurer' }));
-    await waitFor(() => expect(backups.restores).toEqual([{ name: 'circletasks-daily-20261006.db', stamp: expect.stringMatching(/^\d{8}T\d{6}Z$/) as string }]));
+    await waitFor(() => expect(backups.restores).toEqual([{ name: 'spartiate-daily-20261006.db', stamp: expect.stringMatching(/^\d{8}T\d{6}Z$/) as string }]));
   });
 });

@@ -47,7 +47,7 @@ for (const stop of [null, 'supersede-2', 'supersede-3', 'supersede-4'] as const)
       expect(wStatus.reset).toMatchObject({ step: 'superseded', superseded: true, by: a.id });
       expect(w.platform.testing.resetRecord()?.superseded).toMatchObject({ by: a.id, done: true });
       expect((await w.platform.key.status()).nextKid ?? null, '.next effacée').toBeNull();
-      expect(w.folder.devices.get(w.id)?.nextState ?? null, 'state.next.ctx supprimé').toBeNull();
+      expect(w.folder.devices.get(w.id)?.nextState ?? null, 'state.next.spx supprimé').toBeNull();
       // Republication unique sous K, sans annonce ; la file est gardée, rien d'autre n'est publié.
       expect(publishedState(w, w.id)?.reset).toBeNull();
       const seq = publishedState(w, w.id)?.stateSeq;

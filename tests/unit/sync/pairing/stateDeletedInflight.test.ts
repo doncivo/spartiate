@@ -70,7 +70,7 @@ describe('état supprimé après publication, intention d’ajout en cours (revu
       const blocked = await b.cycle();
       expect(blocked.warnings, `cycle ${String(cycle)}`).toContain('publish-blocked');
       expect(statusLine(blocked, b.clock.nowMs())).not.toContain('À jour');
-      expect(b.folder.fileNames(b.id)).not.toContain('state.ctx');
+      expect(b.folder.fileNames(b.id)).not.toContain('state.spx');
       expect(await meta(b, 'inflight')).toEqual(inflight);
       expect(await meta(b, 'stateSeq')).toBe(1);
     }

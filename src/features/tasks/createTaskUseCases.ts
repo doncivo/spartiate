@@ -130,7 +130,7 @@ function createBaseTaskUseCases(deps: TaskUseCaseDeps): TaskUseCases {
         : deps.clock.nowMs();
 
       // K-06 (ADR 0008 §10.7) : réglage « Créer aussi dans Rappels » de l'espace (désactivé par défaut) : la tâche naît « à créer » (liste de
-      // destination), sur PC comme sur iPhone ; l'iPhone l'envoie à son prochain passage. Jamais pour une série CircleTasks.
+      // destination), sur PC comme sur iPhone ; l'iPhone l'envoie à son prochain passage. Jamais pour une série Spartiate.
       const appleDestination = recurrence === null ? await appleCreateDestination(deps, input.spaceId) : null;
       const newTask: NewTask = {
         id: input.id ?? newEntityId<TaskId>(deps.ids),

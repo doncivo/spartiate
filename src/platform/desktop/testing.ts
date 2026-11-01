@@ -36,6 +36,8 @@ export interface FakeDesktop extends DesktopPlatform {
   /** Résultat de la prochaine vérification : mise à jour, null, ou erreur à lever. */
   nextCheck: PendingUpdate | null | Error;
   checks: number;
+  /** Vrai par défaut : les tests de mise à jour supposent un updater configuré ; mettre faux pour l'état D-30. */
+  updaterConfigured: boolean;
   openedReleases: number;
   /** Déclenche « Ajout rapide » comme le fait le menu de la zone de notification. */
   emitQuickAdd(): void;
@@ -151,6 +153,7 @@ export function createFakeDesktop(initial: Partial<Pick<FakeDesktop, 'autostart'
       return Promise.resolve();
     },
     getVersion: () => Promise.resolve(fake.version),
+    updaterConfigured: true,
     checkForUpdate: () => {
       fake.checks += 1;
       return fake.nextCheck instanceof Error ? Promise.reject(fake.nextCheck) : Promise.resolve(fake.nextCheck);

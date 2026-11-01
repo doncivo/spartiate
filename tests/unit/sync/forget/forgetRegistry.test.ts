@@ -116,7 +116,7 @@ describe('X oublie Z, A oublie X, suppression de X (§18 point 10)', () => {
     expect(publishedForgotten(a).sort()).toEqual([x.id, z.id].sort());
   });
 
-  it('variante : le state.ctx de X est supprimé par un tiers sans clé avant l’oubli de X : Z reste oublié (déjà republié)', async () => {
+  it('variante : le state.spx de X est supprimé par un tiers sans clé avant l’oubli de X : Z reste oublié (déjà republié)', async () => {
     const [a, b, x, z] = (await setup([B_ID, X_ID, Z_ID])) as [SimDevice, SimDevice, SimDevice, SimDevice];
     expect(await x.service.forgetDevice(z.id as DeviceId)).toEqual({ kind: 'done' });
     await settle([a, b, x]);

@@ -121,7 +121,7 @@ export interface HarnessOptions {
 /** Démarre l'app sur `platform` : intégration de la synchro (planificateur, bandeaux) et cycles demandés. */
 export async function harness(platform: SyncPlatform, os: Os, options: HarnessOptions = {}): Promise<Harness> {
   vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(os === 'ios' ? IPHONE_AGENT : WINDOWS_AGENT);
-  const fake = options.fake ? createFakeSyncService({ folderLabel: 'CircleTasks', folderKind: 'icloud', lastSyncAt: '2026-10-09T07:55:00.000Z' as IsoDateTime, ...options.fake }) : null;
+  const fake = options.fake ? createFakeSyncService({ folderLabel: 'Spartiate', folderKind: 'icloud', lastSyncAt: '2026-10-09T07:55:00.000Z' as IsoDateTime, ...options.fake }) : null;
   const container = containerFor(platform, os, fake, options.data);
   const integration = startSyncIntegration(container, { document: options.realDocument ? document : fakeDocument(), ...noTimers });
   if (!fake && options.noCycle !== true) {

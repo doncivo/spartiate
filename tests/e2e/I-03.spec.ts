@@ -64,8 +64,8 @@ test.describe('I-03 — verrouillage Face ID (iPhone, biométrie injectée)', ()
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-checked', 'true');
     expect(await page.evaluate(() => window.__ctBiometric?.calls.filter((call) => call.type === 'authenticate').map((call) => call.reason))).toEqual([
-      'Activer le verrouillage de CircleTasks',
-      'Activer le verrouillage de CircleTasks',
+      'Activer le verrouillage de Spartiate',
+      'Activer le verrouillage de Spartiate',
     ]);
 
     // Retour sous 30 s : cache posé puis retiré, aucune demande.
@@ -82,7 +82,7 @@ test.describe('I-03 — verrouillage Face ID (iPhone, biométrie injectée)', ()
     await page.clock.fastForward(31_000);
     await page.evaluate(() => window.__ctBiometric?.enqueue('user-cancel', 'authentication-failed'));
     await setVisibility(page, 'visible');
-    await expect(page.getByRole('heading', { name: 'CircleTasks est verrouillée' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Spartiate est verrouillée' })).toBeVisible();
     await expect(page.getByRole('alert')).toHaveText('Déverrouillage annulé');
     await expect(page.locator('#root')).toHaveAttribute('inert', '');
     await expect(page.locator('#root')).toHaveAttribute('aria-hidden', 'true');
@@ -90,11 +90,11 @@ test.describe('I-03 — verrouillage Face ID (iPhone, biométrie injectée)', ()
     await expect(page.getByRole('navigation')).toBeHidden();
 
     // Échec, puis réussite : l'écran précédent (Réglages) est retrouvé.
-    const unlock = page.getByRole('button', { name: 'Déverrouiller CircleTasks' });
+    const unlock = page.getByRole('button', { name: 'Déverrouiller Spartiate' });
     await unlock.click();
     await expect(page.getByRole('alert')).toHaveText('Déverrouillage impossible (authentication-failed)');
     await unlock.click();
-    await expect(page.getByRole('heading', { name: 'CircleTasks est verrouillée' })).toBeHidden();
+    await expect(page.getByRole('heading', { name: 'Spartiate est verrouillée' })).toBeHidden();
     await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
     await expect(page.locator('#root')).not.toHaveAttribute('inert', '');
 
@@ -115,10 +115,10 @@ test.describe('I-03 — verrouillage Face ID (iPhone, biométrie injectée)', ()
     await expect(page.getByRole('alert')).toHaveText('Déverrouillage impossible : aucun code n’est défini sur l’iPhone');
     await page.getByRole('button', { name: 'Désactiver le verrouillage' }).click();
     const dialog = page.getByRole('alertdialog', { name: 'Désactiver le verrouillage ?' });
-    await expect(dialog).toContainText('Les données de CircleTasks seront de nouveau lisibles sans protection');
+    await expect(dialog).toContainText('Les données de Spartiate seront de nouveau lisibles sans protection');
     // Vrai clic : Playwright échoue si un autre élément (l'écran de verrou) intercepte le pointeur.
     await dialog.getByRole('button', { name: 'Désactiver', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'CircleTasks est verrouillée' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Spartiate est verrouillée' })).toHaveCount(0);
     await expect(page.getByRole('switch', { name: 'Verrouillage Face ID' })).toHaveAttribute('aria-checked', 'false');
   });
 
@@ -137,7 +137,7 @@ test.describe('I-03 — verrouillage Face ID (iPhone, biométrie injectée)', ()
     await expect(page.locator('html')).not.toHaveAttribute('data-privacy', 'on');
     await page.clock.fastForward(120_000);
     await setVisibility(page, 'visible');
-    await expect(page.getByRole('heading', { name: 'CircleTasks est verrouillée' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Spartiate est verrouillée' })).toHaveCount(0);
   });
 });
 
@@ -157,7 +157,7 @@ test.describe('I-03 — PC : aucune section, aucun verrou', () => {
       Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
       document.dispatchEvent(new Event('visibilitychange'));
     });
-    await expect(page.getByRole('heading', { name: 'CircleTasks est verrouillée' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Spartiate est verrouillée' })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
   });
 });

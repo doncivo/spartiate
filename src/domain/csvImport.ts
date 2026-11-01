@@ -116,7 +116,7 @@ export type ImportFileKind = 'template' | 'report';
 
 /** Noms de fichier proposés à l'enregistrement du modèle et du rapport des lignes rejetées (comme `exportFileName` de H-03). */
 export function importFileName(kind: ImportFileKind): string {
-  return kind === 'template' ? 'circletasks-modele-import.csv' : 'circletasks-import-lignes-rejetees.csv';
+  return kind === 'template' ? 'spartiate-modele-import.csv' : 'spartiate-import-lignes-rejetees.csv';
 }
 
 /** Début d'une cellule neutralisée par l'export H-03 (voir `neutralizeFormula` de `historyExport.ts`). */

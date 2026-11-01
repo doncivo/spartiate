@@ -27,7 +27,7 @@
 #   - French.nlf de NSIS 3 : ^SetupCaption « Installation de $(^Name) » ; ^UninstallCaption « Désinstallation de $(^Name) » ;
 #     ^NextBtn « &Suivant > » ; ^InstallBtn « &Installer » ; ^UninstallBtn « &Désinstaller » ; ^CloseBtn « &Fermer ».
 #   - MUI2 : bouton de la page finale « &Terminer » ; case « Exécuter <produit> » (MUI_FINISHPAGE_RUN) ; « Créer un raccourci sur le bureau » (createDesktop).
-#   - Page de bienvenue observée en CI : « Bienvenue dans le programme d'installation de CircleTasks Smoke », bouton « Suivant > » (identifiant 1).
+#   - Page de bienvenue observée en CI : « Bienvenue dans le programme d'installation de Spartiate Smoke », bouton « Suivant > » (identifiant 1).
 # Les motifs ci-dessous sont en ASCII (« D.sinstaller » pour « Désinstaller ») : PowerShell 5.1 lit mal un script sans BOM, le motif ne dépend pas de l'encodage.
 #
 # Attentes : toujours bornées (Wait-Until : délai maximal, état observable, échec nommant l'étape), jamais de pause fixe.
@@ -130,7 +130,7 @@ function Format-Name([string]$Text) { return ($Text -replace '&', '').Trim() }
 
 # Garde : seul le produit de fumée est manipulé, jamais l'application réelle.
 function Assert-SmokeOnly {
-  if ($ProductName -eq 'CircleTasks' -or $ProductName -notmatch ' Smoke$') { throw ("produit refuse (seul un produit « ... Smoke » est manipule) : " + $ProductName) }
+  if ($ProductName -eq 'Spartiate' -or $ProductName -notmatch ' Smoke$') { throw ("produit refuse (seul un produit « ... Smoke » est manipule) : " + $ProductName) }
   if ((Split-Path -Leaf $InstallDir) -ne $ProductName) { throw ("dossier d'installation refuse (nom different du produit de fumee) : " + $InstallDir) }
   if ((Split-Path -Parent $InstallDir) -ne $env:LOCALAPPDATA) { throw ("dossier d'installation refuse (hors de LOCALAPPDATA) : " + $InstallDir) }
   # Stop-SmokeProcesses tue tout processus dont le chemin est $Installer : installeur de fumee (nom du produit) ou fichier du dossier d'installation.

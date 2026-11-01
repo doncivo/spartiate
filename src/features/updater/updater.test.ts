@@ -35,6 +35,30 @@ describe('mise à jour PC (D-03)', () => {
     await db.close();
   });
 
+  describe('updater non configuré (D-30, SPA-001a critère 4)', () => {
+    it('aucune requête : ni vérification directe, ni planification ; état « non configuré », aucun bandeau', async () => {
+      desktop.updaterConfigured = false;
+      desktop.nextCheck = fakePendingUpdate('9.9.9');
+      await expect(store().getState().check()).resolves.toBe('ok');
+      expect(desktop.checks).toBe(0);
+      expect(store().getState()).toMatchObject({ status: 'notConfigured', bannerVisible: false, version: null });
+      await expect(db.data.repos.settings.get('desktop.updater')).resolves.toEqual({ lastCheckAt: null });
+
+      const scheduled: number[] = [];
+      const timers: UpdateTimers = {
+        setTimeout: (_h, ms) => scheduled.push(ms),
+        clearTimeout: () => undefined,
+        setInterval: (_h, ms) => scheduled.push(ms),
+        clearInterval: () => undefined,
+      };
+      const checks = startUpdateChecks(container, timers);
+      await checks.tick();
+      checks.dispose();
+      expect(scheduled).toEqual([]);
+      expect(desktop.checks).toBe(0);
+    });
+  });
+
   describe('vérification', () => {
     it('version supérieure : proposée avec ses notes ; lastCheckAt est mis à jour (critères 1 et 2)', async () => {
       desktop.nextCheck = fakePendingUpdate('1.2.0', { notes: 'Nouveautés' });

@@ -120,7 +120,7 @@ describe('désordre d’iCloud à trois appareils (§21 point 2)', () => {
     const [a, b] = (await group([A_ID, B_ID])) as [SimDevice, SimDevice];
     await writeThenRotate(a, [b]);
     const { epoch } = epochDirOf(a, a.id);
-    propagate(a.folder, b.folder, a.id, { drop: [`${epoch}/j-00000001.ctj`] });
+    propagate(a.folder, b.folder, a.id, { drop: [`${epoch}/j-00000001.spj`] });
     // Le fichier absent, jamais « sauté » : le numéro manquant n'est pas un trou.
     expect(epochDirOf(b, a.id).dir.segments.has(1)).toBe(false);
     for (let i = 0; i < 3; i += 1) {
@@ -136,7 +136,7 @@ describe('désordre d’iCloud à trois appareils (§21 point 2)', () => {
     const [a, b] = (await group([A_ID, B_ID])) as [SimDevice, SimDevice];
     await writeThenRotate(a, [b]);
     const { epoch } = epochDirOf(a, a.id);
-    propagate(a.folder, b.folder, a.id, { drop: [`${epoch}/j-00000001.ctj`] });
+    propagate(a.folder, b.folder, a.id, { drop: [`${epoch}/j-00000001.spj`] });
     // Reprises comptées depuis ici (l'arrivée de B, dans `group`, en est une).
     const before = b.logger.entries.length;
     await b.cycle();
@@ -149,7 +149,7 @@ describe('désordre d’iCloud à trois appareils (§21 point 2)', () => {
     const [a, b] = (await group([A_ID, B_ID])) as [SimDevice, SimDevice];
     await writeThenRotate(a, [b]);
     const { epoch } = epochDirOf(a, a.id);
-    propagate(a.folder, b.folder, a.id, { drop: [`${epoch}/j-00000001.ctj`] });
+    propagate(a.folder, b.folder, a.id, { drop: [`${epoch}/j-00000001.spj`] });
     const before = b.logger.entries.length;
     for (let i = 0; i < 5; i += 1) {
       expect((await b.cycle()).phase, `cycle ${String(i)}`).toBe('waiting-icloud');

@@ -4,8 +4,8 @@
 
 use std::path::Path;
 
-use circletasks_lib::backup::{check_backup_file, normalize_sql, reset_triggers, APP_SCHEMA_VERSION};
-use circletasks_lib::backup_triggers::{introduced_in, trigger_body_for, REFERENCE_TRIGGERS, SUPERSEDED_TRIGGERS};
+use spartiate_lib::backup::{check_backup_file, normalize_sql, reset_triggers, APP_SCHEMA_VERSION};
+use spartiate_lib::backup_triggers::{introduced_in, trigger_body_for, REFERENCE_TRIGGERS, SUPERSEDED_TRIGGERS};
 use rusqlite::Connection;
 
 const REPLACED: [&str; 3] = ["sync_settings_ai", "sync_settings_au", "sync_task_au"];

@@ -15,7 +15,7 @@ import { SCHEMA_VERSION, type SimDevice } from './syncDevice';
  *   que la version locale ignore (`x`), comme une migration additive de la version suivante l'ajouterait ;
  * - la « mise à jour » d'un appareil plus ancien : migration de test qui ajoute la colonne `x` (et son déclencheur de capture, pour
  *   prouver que la réintégration passe sous garde), catalogue étendu de cette colonne, migrations rejouées avec le crochet de fin ;
- * - un appareil de majeure supérieure vu par un autre (en-tête de son `state.ctx` à `sm` 2 dans la copie du dossier de l'autre).
+ * - un appareil de majeure supérieure vu par un autre (en-tête de son `state.spx` à `sm` 2 dans la copie du dossier de l'autre).
  */
 
 /** Colonne de test ajoutée par la « version suivante ». */

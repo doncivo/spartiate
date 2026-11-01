@@ -10,7 +10,7 @@ import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, taskSna
 /**
  * ADR 0011 §24 (avenant Y-IOS-02, PR #24) : époque orpheline, attente de l'appareil connu, étapes de l'abandon (arrêt entre chacune),
  * suppression en échec non bloquante. Topologie réelle du point de contrôle 0.2.3 : dossier du PC `56d4` avec l'instantané 1 (avant « Test Pc »)
- * et un journal de deux enregistrements, dossier de l'iPhone `ef50` avec le seul instantané 1 et aucun `state.ctx`.
+ * et un journal de deux enregistrements, dossier de l'iPhone `ef50` avec le seul instantané 1 et aucun `state.spx`.
  */
 
 const A_ID = '56d4eec1-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
@@ -52,8 +52,8 @@ async function topology(cursor: 'ack-set' | 'ack-null' = 'ack-null', via: { read
   await a.cycle();
   const localIphone = (await b.createTask('Écrite sur l’iPhone')).id as TaskId;
   // État du PC absent chez l'iPhone (pas encore arrivé, ses autres fichiers si) au premier cycle, borné par l'échéance de `hide` : l'ancien
-  // moteur ouvrait `ef50` puis s'arrêtait avant `state.ctx`. Ici l'orpheline est fabriquée à la main pour tester le rattrapage.
-  propagate(a.folder, b.folder, a.id, { drop: ['state.ctx'] });
+  // moteur ouvrait `ef50` puis s'arrêtait avant `state.spx`. Ici l'orpheline est fabriquée à la main pour tester le rattrapage.
+  propagate(a.folder, b.folder, a.id, { drop: ['state.spx'] });
   await seedOrphan(b);
   // Position de lecture laissée par le défaut sur le PC (curseur après l'enregistrement 2, accusé au hlc de minuit ou nul).
   const pcRow = (await a.data.repos.sync.getStates()).find((r) => r.isSelf);
@@ -89,7 +89,7 @@ async function converge(list: readonly SimDevice[], rounds = 4): Promise<void> {
 }
 
 describe('attente avant toute ouverture d’époque (§24 point 1)', () => {
-  it('instantané 1 et journal 1 du PC téléchargés, state.ctx non listé : l’iPhone n’ouvre rien, nomme le PC, jamais « À jour », puis rejoint 56d4', async () => {
+  it('instantané 1 et journal 1 du PC téléchargés, state.spx non listé : l’iPhone n’ouvre rien, nomme le PC, jamais « À jour », puis rejoint 56d4', async () => {
     const a = await createSimDevice(A_ID, { name: 'PC' });
     const b = await createSimDevice(B_ID, { name: 'iPhone', clock: a.clock });
     devices.push(a, b);
@@ -100,7 +100,7 @@ describe('attente avant toute ouverture d’époque (§24 point 1)', () => {
     await a.updateTask(task.id as TaskId, { carriedOver: true });
     await a.cycle();
     await pair(a, b);
-    propagate(a.folder, b.folder, a.id, { drop: ['state.ctx'] });
+    propagate(a.folder, b.folder, a.id, { drop: ['state.spx'] });
     const local = (await b.createTask('Écrite sur l’iPhone')).id as TaskId;
     for (let i = 0; i < 3; i += 1) {
       const status = await b.cycle();
@@ -112,7 +112,7 @@ describe('attente avant toute ouverture d’époque (§24 point 1)', () => {
     expect(b.folder.devices.get(b.id)?.epochs.size ?? 0).toBe(0);
     expect(b.folder.devices.get(b.id)?.state ?? null).toBeNull();
     expect(b.logger.entries.some((e) => e.event === 'epoch-open-deferred')).toBe(true);
-    // Le state.ctx arrive : l'iPhone rejoint l'époque du PC, la tâche arrive, celle de l'iPhone part.
+    // Le state.spx arrive : l'iPhone rejoint l'époque du PC, la tâche arrive, celle de l'iPhone part.
     propagate(a.folder, b.folder, a.id);
     const joined = await b.cycle();
     expect((await b.task(task.id as TaskId))?.carriedOver).toBe(true);
@@ -382,7 +382,7 @@ describe('abandon de l’orpheline : étapes, arrêts, refus, suppression', () =
   });
   }
 
-  it('chemin exact d’Ali : clé d’avant (imported faux, pas de key-origin.json), pairedBy, orpheline ef50 avec s-1 seul, époque 56d4 avec s-1, j-1 de 2 enregistrements et state.ctx : rejoint 56d4, rien perdu, Test Pc avec ses champs de minuit', async () => {
+  it('chemin exact d’Ali : clé d’avant (imported faux, pas de key-origin.json), pairedBy, orpheline ef50 avec s-1 seul, époque 56d4 avec s-1, j-1 de 2 enregistrements et state.spx : rejoint 56d4, rien perdu, Test Pc avec ses champs de minuit', async () => {
     const { a, b, testPc, localIphone } = await topology('ack-set', { qr: true, legacyKey: true });
     const key = await b.platform.key.status();
     expect(key.imported).toBe(false);

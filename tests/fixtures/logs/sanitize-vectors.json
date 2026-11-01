@@ -155,7 +155,7 @@
       "expected": "appareil 60000000-0000-4000-8000-0000000000f7 ok"
     },
     {
-      "input": "sauvegarde circletasks-daily-20261007.db",
+      "input": "sauvegarde spartiate-daily-20261007.db",
       "expected": "sauvegarde [masqué]"
     },
     {

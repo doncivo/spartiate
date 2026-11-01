@@ -137,11 +137,11 @@ describe('nouvel appareil : instantané en fusion, progression, reprise (critèr
     const b = await joiner(a);
     await pair(a, b);
     const epoch = [...(b.folder.devices.get(A_ID)?.epochs.keys() ?? [])][0] as string;
-    b.folder.setAvailability(A_ID, `${epoch}/s-00000001.cts`, 'cloud');
+    b.folder.setAvailability(A_ID, `${epoch}/s-00000001.sps`, 'cloud');
     const waiting = await b.cycle();
     expect(waiting.phase).toBe('waiting-icloud');
     expect((await joinState(b))?.failure ?? null).toBeNull();
-    b.folder.setAvailability(A_ID, `${epoch}/s-00000001.cts`, 'local');
+    b.folder.setAvailability(A_ID, `${epoch}/s-00000001.sps`, 'local');
     expect((await b.cycle()).phase).toBe('idle');
     expect(await joinState(b)).toBeNull();
   });
@@ -149,7 +149,7 @@ describe('nouvel appareil : instantané en fusion, progression, reprise (critèr
 
 describe('arrivée suivie dès le premier cycle (revue 1, bloquant)', () => {
   /** Premier instantané du PC (époque 1). */
-  const snapshotFile = (b: SimDevice): string => `${[...(b.folder.devices.get(A_ID)?.epochs.keys() ?? [])][0] as string}/s-00000001.cts`;
+  const snapshotFile = (b: SimDevice): string => `${[...(b.folder.devices.get(A_ID)?.epochs.keys() ?? [])][0] as string}/s-00000001.sps`;
 
   it('premier cycle en attente d’iCloud : l’arrivée est mémorisée, le second cycle passe par join (reprise au même endroit)', async () => {
     const a = await pcWithTasks(130);

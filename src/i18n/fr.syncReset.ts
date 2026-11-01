@@ -65,7 +65,7 @@ export const syncResetFr = {
     folderUnreachable: 'dossier de synchronisation introuvable',
     keyExhausted: 'limite d’utilisation de la clé atteinte',
     stateMismatch: 'les appareils ne sont pas encore à jour',
-    notForeground: 'CircleTasks n’était pas au premier plan',
+    notForeground: 'Spartiate n’était pas au premier plan',
     rateLimited: 'trop de demandes, réessayez dans 10 minutes',
     io: 'erreur d’écriture',
     keyMismatch: 'cette clé ne correspond pas à la nouvelle clé du dossier',

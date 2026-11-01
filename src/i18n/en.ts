@@ -35,18 +35,18 @@ import { syncResetEn } from './en.syncReset';
 /** Anglais (option, PRD section 8) : même forme que fr.ts, vérifiée par le typage. */
 export const en: Messages = {
   app: {
-    name: 'CircleTasks',
+    name: 'Spartiate',
     loading: 'Loading…',
     dbError: 'Unable to open the database.',
     screenError: 'Unable to display this screen.',
     screenRetry: 'Retry',
     screenReload: 'Reload',
-    dbBackupError: 'Data update interrupted: the safety backup failed. Your data was not modified. Free some disk space, then restart CircleTasks.',
+    dbBackupError: 'Data update interrupted: the safety backup failed. Your data was not modified. Free some disk space, then restart Spartiate.',
     version: 'Version {version}',
     versionUnknown: 'Unknown version',
     update: appUpdateEn,
     dbStalled: 'Opening may still be in progress; if nothing changes, tap “Retry”.',
-    startError: 'CircleTasks failed to start.',
+    startError: 'Spartiate failed to start.',
     diag: {
       title: 'Technical details',
       step: 'Step: {step}',
@@ -400,7 +400,7 @@ export const en: Messages = {
     sectionAbout: 'ABOUT',
     checkUpdates: 'Check for updates',
     checkingUpdates: 'Checking…',
-    upToDate: 'CircleTasks is up to date',
+    upToDate: 'Spartiate is up to date',
     updateCheckFailed: 'Unable to check for updates',
     latestRelease: 'Latest version',
     latestReleaseOpen: 'Open',
@@ -419,7 +419,7 @@ export const en: Messages = {
   },
   desktop: {
     tray: {
-      open: 'Open CircleTasks',
+      open: 'Open Spartiate',
       quickAdd: 'Quick add',
       sync: 'Sync now',
       quit: 'Quit',
@@ -427,7 +427,8 @@ export const en: Messages = {
   },
   updater: {
     available: 'New version {version} available',
-    bannerLabel: 'CircleTasks update',
+    bannerLabel: 'Spartiate update',
+    notConfigured: 'Updates: not configured (SPA-002)',
     viewNotes: 'View notes',
     hideNotes: 'Hide notes',
     notesTitle: 'Release notes for version {version}',
@@ -562,7 +563,7 @@ export const en: Messages = {
     syncReloadFailed: 'Some received changes are not shown yet: retrying at the next sync',
     syncDevice: '{device}: {state}',
     loading: 'Loading',
-    signingSoon: 'CircleTasks expires soon: refresh it in SideStore',
+    signingSoon: 'Spartiate expires soon: refresh it in SideStore',
     signingExpired: 'The signature has expired: reinstall the app',
     signingViewLabel: 'View the signature expiry in Settings',
   },

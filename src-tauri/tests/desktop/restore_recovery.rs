@@ -1,10 +1,10 @@
 //! P-04 (quatrième série) : archivage sûr, restes de récupération, casse du type dans sqlite_master, dossier lié, recherche après restauration.
 
-use circletasks_lib::backup::{
+use spartiate_lib::backup::{
     check_backup_file, create_daily_backup, create_migration_backup, normalize_sql, parse_backup_name, recover_interrupted_restore, reset_triggers,
     restore_backup_file, utc_stamp, Family, Recovery, RestoreStep, BACKUP_DIR, DB_FILE,
 };
-use circletasks_lib::backup_triggers::REFERENCE_TRIGGERS;
+use spartiate_lib::backup_triggers::REFERENCE_TRIGGERS;
 use rusqlite::Connection;
 use std::fs;
 use std::path::Path;
@@ -23,7 +23,7 @@ fn write(dir: &Path, name: &str, content: &[u8]) {
     fs::write(dir.join(name), content).unwrap();
 }
 
-fn recover(dir: &Path) -> Result<Recovery, circletasks_lib::backup::BackupError> {
+fn recover(dir: &Path) -> Result<Recovery, spartiate_lib::backup::BackupError> {
     recover_interrupted_restore(&dir.join(DB_FILE), &dir.join(BACKUP_DIR))
 }
 
@@ -52,17 +52,17 @@ fn p04_archiving_never_mixes_with_an_orphan_wal_or_shm_at_the_target_name() {
     let start = now_secs();
     for n in 0..8 {
         let stamp = utc_stamp(start + n);
-        fs::write(backups.join(format!("circletasks-pre-restore-{stamp}.db-wal")), b"orphelin wal").unwrap();
+        fs::write(backups.join(format!("spartiate-pre-restore-{stamp}.db-wal")), b"orphelin wal").unwrap();
     }
-    write(dir.path(), "circletasks.db", b"nouvelle");
-    write(dir.path(), "circletasks.db.restore-old", b"ancienne");
-    write(dir.path(), "circletasks.db-wal.restore-old", b"ancien wal");
+    write(dir.path(), "spartiate.db", b"nouvelle");
+    write(dir.path(), "spartiate.db.restore-old", b"ancienne");
+    write(dir.path(), "spartiate.db-wal.restore-old", b"ancien wal");
     assert_eq!(recover(dir.path()).unwrap(), Recovery::Archived);
     let kept = names(&backups);
     let main = kept.iter().find(|n| n.ends_with(".db")).expect("base archivée");
     assert_eq!(fs::read(backups.join(main)).unwrap(), b"ancienne");
     assert_eq!(fs::read(backups.join(format!("{main}-wal"))).unwrap(), b"ancien wal", "le -wal archivé est celui de l'ancienne base");
-    let orphan_names: Vec<String> = (0..8).map(|n| format!("circletasks-pre-restore-{}.db", utc_stamp(start + n))).collect();
+    let orphan_names: Vec<String> = (0..8).map(|n| format!("spartiate-pre-restore-{}.db", utc_stamp(start + n))).collect();
     assert!(!orphan_names.contains(main), "le nom choisi n'est pas celui d'un orphelin : {main}");
     // La rotation a supprimé les -wal orphelins (leur base est absente) : il ne reste que l'archive complète.
     assert_eq!(kept, [main.clone(), format!("{main}-wal")]);
@@ -73,15 +73,15 @@ fn p04_a_resumed_archive_targets_the_same_name_as_the_interrupted_one() {
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    write(dir.path(), "circletasks.db", b"nouvelle");
-    write(dir.path(), "circletasks.db.restore-old", b"ancienne");
-    write(dir.path(), "circletasks.db-wal.restore-old", b"ancien wal");
-    write(dir.path(), "circletasks.db-shm.restore-old", b"ancien shm");
+    write(dir.path(), "spartiate.db", b"nouvelle");
+    write(dir.path(), "spartiate.db.restore-old", b"ancienne");
+    write(dir.path(), "spartiate.db-wal.restore-old", b"ancien wal");
+    write(dir.path(), "spartiate.db-shm.restore-old", b"ancien shm");
     // Nom dérivé de la date de modification de la base restore-old.
-    let modified = fs::metadata(dir.path().join("circletasks.db.restore-old")).unwrap().modified().unwrap();
-    let stem = format!("circletasks-pre-restore-{}.db", utc_stamp(modified.duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()));
+    let modified = fs::metadata(dir.path().join("spartiate.db.restore-old")).unwrap().modified().unwrap();
+    let stem = format!("spartiate-pre-restore-{}.db", utc_stamp(modified.duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()));
     // Première tentative interrompue : seul le -shm a été déplacé, sous ce nom.
-    fs::rename(dir.path().join("circletasks.db-shm.restore-old"), backups.join(format!("{stem}-shm"))).unwrap();
+    fs::rename(dir.path().join("spartiate.db-shm.restore-old"), backups.join(format!("{stem}-shm"))).unwrap();
     assert_eq!(recover(dir.path()).unwrap(), Recovery::Archived);
     assert_eq!(names(&backups), [stem.clone(), format!("{stem}-shm"), format!("{stem}-wal")], "la reprise complète le MÊME nom");
     assert_eq!(fs::read(backups.join(&stem)).unwrap(), b"ancienne");
@@ -94,15 +94,15 @@ fn p04_rotation_removes_the_wal_and_shm_of_a_pre_restore_name_whose_base_is_abse
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    fs::write(backups.join("circletasks-pre-restore-20260101T000000Z.db-wal"), b"orphelin").unwrap();
-    fs::write(backups.join("circletasks-pre-restore-20260101T000000Z.db-shm"), b"orphelin").unwrap();
-    fs::write(backups.join("circletasks-pre-restore-20260202T000000Z.db"), b"base").unwrap();
-    fs::write(backups.join("circletasks-pre-restore-20260202T000000Z.db-wal"), b"wal vivant").unwrap();
-    fs::write(backups.join("circletasks-daily-20260301.db-wal"), b"autre famille").unwrap();
-    circletasks_lib::backup::prune_family(&backups, Family::PreRestore, 3).unwrap();
+    fs::write(backups.join("spartiate-pre-restore-20260101T000000Z.db-wal"), b"orphelin").unwrap();
+    fs::write(backups.join("spartiate-pre-restore-20260101T000000Z.db-shm"), b"orphelin").unwrap();
+    fs::write(backups.join("spartiate-pre-restore-20260202T000000Z.db"), b"base").unwrap();
+    fs::write(backups.join("spartiate-pre-restore-20260202T000000Z.db-wal"), b"wal vivant").unwrap();
+    fs::write(backups.join("spartiate-daily-20260301.db-wal"), b"autre famille").unwrap();
+    spartiate_lib::backup::prune_family(&backups, Family::PreRestore, 3).unwrap();
     assert_eq!(
         names(&backups),
-        ["circletasks-daily-20260301.db-wal", "circletasks-pre-restore-20260202T000000Z.db", "circletasks-pre-restore-20260202T000000Z.db-wal"],
+        ["spartiate-daily-20260301.db-wal", "spartiate-pre-restore-20260202T000000Z.db", "spartiate-pre-restore-20260202T000000Z.db-wal"],
         "seuls les -wal / -shm sans base de la famille pre-restore disparaissent"
     );
 }
@@ -113,15 +113,15 @@ fn p04_a_partial_archive_is_finished_at_the_next_startup_without_losing_anything
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
     // Premier démarrage interrompu : le -shm est déjà dans backups/, la base et le -wal sont encore en .restore-old.
-    fs::write(backups.join("circletasks-pre-restore-20261005T100000Z.db-shm"), b"ancien shm").unwrap();
-    write(dir.path(), "circletasks.db", b"nouvelle");
-    write(dir.path(), "circletasks.db.restore-old", b"ancienne");
-    write(dir.path(), "circletasks.db-wal.restore-old", b"ancien wal");
+    fs::write(backups.join("spartiate-pre-restore-20261005T100000Z.db-shm"), b"ancien shm").unwrap();
+    write(dir.path(), "spartiate.db", b"nouvelle");
+    write(dir.path(), "spartiate.db.restore-old", b"ancienne");
+    write(dir.path(), "spartiate.db-wal.restore-old", b"ancien wal");
     assert_eq!(recover(dir.path()).unwrap(), Recovery::Archived);
-    assert_eq!(names(dir.path()), ["backups", "circletasks.db"]);
+    assert_eq!(names(dir.path()), ["backups", "spartiate.db"]);
     let kept = names(&backups);
     // Un -shm orphelin d'un AUTRE nom (base absente) n'est pas celui de cette base : l'archive va sous un nom propre et la rotation le supprime.
-    assert!(!kept.contains(&"circletasks-pre-restore-20261005T100000Z.db-shm".to_owned()));
+    assert!(!kept.contains(&"spartiate-pre-restore-20261005T100000Z.db-shm".to_owned()));
     let main = kept.iter().find(|n| n.ends_with(".db")).expect("base archivée au second passage");
     assert_eq!(fs::read(backups.join(main)).unwrap(), b"ancienne");
     assert_eq!(fs::read(backups.join(format!("{main}-wal"))).unwrap(), b"ancien wal");
@@ -129,10 +129,10 @@ fn p04_a_partial_archive_is_finished_at_the_next_startup_without_losing_anything
 
 #[test]
 fn p04_a_staged_leftover_that_is_not_a_plain_file_is_refused_and_nothing_moves() {
-    for leftover in ["circletasks.db.restoring", "circletasks.db.restoring.tmp"] {
+    for leftover in ["spartiate.db.restoring", "spartiate.db.restoring.tmp"] {
         let dir = scratch();
-        write(dir.path(), "circletasks.db", b"nouvelle");
-        write(dir.path(), "circletasks.db.restore-old", b"ancienne");
+        write(dir.path(), "spartiate.db", b"nouvelle");
+        write(dir.path(), "spartiate.db.restore-old", b"ancienne");
         fs::create_dir(dir.path().join(leftover)).unwrap();
         let before = names(dir.path());
         let error = recover(dir.path()).unwrap_err();
@@ -145,12 +145,12 @@ fn p04_a_staged_leftover_that_is_not_a_plain_file_is_refused_and_nothing_moves()
 #[test]
 fn p04_the_staged_wal_shm_and_journal_leftovers_are_removed() {
     let dir = scratch();
-    write(dir.path(), "circletasks.db", b"main");
-    for name in ["circletasks.db.restoring", "circletasks.db.restoring.tmp", "circletasks.db.restoring-wal", "circletasks.db.restoring-shm", "circletasks.db.restoring-journal"] {
+    write(dir.path(), "spartiate.db", b"main");
+    for name in ["spartiate.db.restoring", "spartiate.db.restoring.tmp", "spartiate.db.restoring-wal", "spartiate.db.restoring-shm", "spartiate.db.restoring-journal"] {
         write(dir.path(), name, b"reste");
     }
     assert_eq!(recover(dir.path()).unwrap(), Recovery::StagedRemoved);
-    assert_eq!(names(dir.path()), ["circletasks.db"]);
+    assert_eq!(names(dir.path()), ["spartiate.db"]);
 }
 
 fn trap(path: &Path, kind: &str, type_in_master: &str) {
@@ -267,7 +267,7 @@ fn p04_after_a_restore_the_search_index_still_follows_new_tasks() {
     create_daily_backup(&db, &backups, "20261003", false, 14).unwrap();
     // L'état courant diffère : une tâche de plus.
     Connection::open(&db).unwrap().execute("INSERT INTO task (id, title) VALUES ('t9', 'Tâche récente')", []).unwrap();
-    restore_backup_file(&db, &backups, "circletasks-daily-20261003.db", 14, "20261005T101500Z", NO_FAIL).unwrap();
+    restore_backup_file(&db, &backups, "spartiate-daily-20261003.db", 14, "20261005T101500Z", NO_FAIL).unwrap();
     assert_eq!(search(&db, "restaurant"), ["t1"], "l'index restauré retrouve les tâches de la version");
     assert!(search(&db, "récente").is_empty());
     // Une insertion après la restauration passe par le déclencheur recréé : elle est trouvée dans search_index.
@@ -276,5 +276,5 @@ fn p04_after_a_restore_the_search_index_still_follows_new_tasks() {
     let conn = Connection::open(&db).unwrap();
     let triggers: u64 = conn.query_row("SELECT COUNT(*) FROM sqlite_master WHERE type = 'trigger'", [], |r| r.get(0)).unwrap();
     assert_eq!(triggers, 3);
-    assert!(parse_backup_name("circletasks-daily-20261003.db").is_some_and(|(family, _)| family == Family::Daily));
+    assert!(parse_backup_name("spartiate-daily-20261003.db").is_some_and(|(family, _)| family == Family::Daily));
 }

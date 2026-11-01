@@ -1,7 +1,7 @@
 /**
  * Époques, règle 1 de l'ADR 0010 et choix après une restauration (ADR 0011, sections 1.4, 9 et 9.1 ; Y-02 critères 13 à 15).
  *
- * - Époque courante du dossier : la plus grande époque annoncée par un `state.ctx` authentifié (clé locale) et dotée d'un instantané
+ * - Époque courante du dossier : la plus grande époque annoncée par un `state.spx` authentifié (clé locale) et dotée d'un instantané
  *   complet (un appareil de cette époque annonce un instantané).
  * - Règle 1 : aucun numéro de segment, d'enregistrement ou de `stateSeq` publié n'est réutilisé ; maxima de la base locale, de son état
  *   publié, des accusés des autres appareils sur soi (et, pour le segment, des fichiers listés). Segment, enregistrement et hlc : époque
@@ -58,7 +58,7 @@ export interface OwnSources {
   readonly epoch: EpochId;
   /** Ce que la base locale sait de sa propre publication. */
   readonly local: { readonly epoch: EpochId | null; readonly stateSeq: number; readonly head: DeviceAck | null };
-  /** Son `state.ctx` authentifié (null : absent ou non authentifié). */
+  /** Son `state.spx` authentifié (null : absent ou non authentifié). */
   readonly published: PublishedDeviceState | null;
   /** Accusés des autres appareils sur soi (`acks[self]` de leurs états authentifiés). */
   readonly acksOnSelf: readonly DeviceAck[];
@@ -120,7 +120,7 @@ export interface ListedFilesContext {
  * - Un instantané compte s'il est dans l'époque courante (il prouve une publication antérieure, sauf à l'ouverture, déjà couverte par
  *   `openedHere`), dans une époque annoncée par une source authentifiée, ou dans une époque qui a un segment.
  * - Un instantané seul dans une époque non courante jamais annoncée ne borne rien : une époque n'existe pour les autres appareils que
- *   par un `state.ctx` authentifié qui l'annonce (`folderEpoch`), personne ne l'a donc acceptée (reste d'une orpheline, §24 point 4 (e)).
+ *   par un `state.spx` authentifié qui l'annonce (`folderEpoch`), personne ne l'a donc acceptée (reste d'une orpheline, §24 point 4 (e)).
  * Même règle que Rust (`rebuild_own` ne retient que les époques listées qui ont un segment authentifié), qui reste maître de `stateSeq`
  * (`sync_write_state` refuse tout numéro non croissant). Table commune : `tests/fixtures/sync/publish-bound.json`.
  */
@@ -143,7 +143,7 @@ export function listedFilesForPublish(ownEpochs: readonly OwnEpochListing[], ctx
 /**
  * Y-IOS-02 (point de contrôle 0.2.3, étape 4) : époque **orpheline** = ouverte par cet appareil et jamais publiée. Preuve locale : l'époque
  * locale a un instantané enregistré localement (`storedSnapshot`), c'est le seul fichier listé dans le dossier de l'appareil (aucun segment,
- * aucune autre époque), `state.ctx` est absent (`missing` : ni illisible ni dans le nuage), `stateSeq` jamais écrit, et aucun autre appareil
+ * aucune autre époque), `state.spx` est absent (`missing` : ni illisible ni dans le nuage), `stateSeq` jamais écrit, et aucun autre appareil
  * n'a d'accusé sur lui. Une seule règle pour l'abandon de l'orpheline et pour la reprise de l'état jamais écrit.
  */
 export function isOrphanEpoch(input: {
@@ -163,7 +163,7 @@ export function isOrphanEpoch(input: {
 
 /**
  * Y-IOS-02 (ADR 0011 §24 point 1) : appareils (hors soi et hors oubliés) dont l'état n'est pas encore lisible à ce scan : état dans le
- * nuage, fichiers en attente d'iCloud, époques listées sans `state.ctx` lisible (absent, illisible, trop gros), et tout appareil **connu**
+ * nuage, fichiers en attente d'iCloud, époques listées sans `state.spx` lisible (absent, illisible, trop gros), et tout appareil **connu**
  * (`expected` : celui par lequel on a été associé, ceux qui ont une ligne `sync_state`) dont aucun état `ok` n'est listé, même si son
  * dossier n'apparaît pas encore dans le scan (iCloud pas synchronisé). Tant qu'il en existe un, un appareil qui n'a suivi aucune époque
  * n'en ouvre pas : il ne sait pas encore s'il est le premier.
@@ -204,7 +204,7 @@ export function restoreOptions(backupTakenAt: IsoDateTime, purgeHorizons: readon
 
 /**
  * `covers[B]` de l'instantané qui ouvre une époque après restauration : le **maximum** de ce que la base restaurée sait de B et de
- * l'accusé de B dans le dernier `state.ctx` publié avant la restauration (tout ce que cet appareil a vu de B est couvert).
+ * l'accusé de B dans le dernier `state.spx` publié avant la restauration (tout ce que cet appareil a vu de B est couvert).
  */
 export function openingCover(restored: DeviceAck | null, published: DeviceAck | null): DeviceAck | null {
   if (!restored) return published;

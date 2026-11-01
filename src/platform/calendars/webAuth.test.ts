@@ -22,12 +22,12 @@ describe('codes web-auth', () => {
   it("la commande d'autorisation de Google rejette avec le code reçu, sur tous les systèmes", async () => {
     const platform = createTauriCalendarPlatform();
     invokeMock.mockRejectedValueOnce('web-auth-failed');
-    await expect(platform.oauth.authorizeGoogle('circletasks.calendar.google.a')).rejects.toMatchObject({ code: 'web-auth-failed' });
+    await expect(platform.oauth.authorizeGoogle('spartiate.calendar.google.a')).rejects.toMatchObject({ code: 'web-auth-failed' });
     invokeMock.mockRejectedValueOnce('web-auth-unavailable');
-    await expect(platform.oauth.authorizeGoogle('circletasks.calendar.google.a')).rejects.toMatchObject({ code: 'web-auth-unavailable' });
+    await expect(platform.oauth.authorizeGoogle('spartiate.calendar.google.a')).rejects.toMatchObject({ code: 'web-auth-unavailable' });
     invokeMock.mockResolvedValueOnce(null);
-    await expect(platform.oauth.authorizeGoogle('circletasks.calendar.google.a')).resolves.toBeUndefined();
-    expect(invokeMock).toHaveBeenLastCalledWith('calendar_oauth_google_authorize', { tokenRef: 'circletasks.calendar.google.a' });
+    await expect(platform.oauth.authorizeGoogle('spartiate.calendar.google.a')).resolves.toBeUndefined();
+    expect(invokeMock).toHaveBeenLastCalledWith('calendar_oauth_google_authorize', { tokenRef: 'spartiate.calendar.google.a' });
   });
 
   it('isWebAuthFailure ne reconnaît que les deux codes de la feuille', () => {
@@ -39,8 +39,8 @@ describe('codes web-auth', () => {
   it("le coffre mémoire injecte l'échec après le contrôle de configuration, comme Rust", async () => {
     const endpoints = simulatorEndpoints('http://127.0.0.1:9', 'http://127.0.0.1:9');
     const configured = createMemoryCalendarPlatform(endpoints, { googleClientId: 'sim', webAuthFailure: () => 'web-auth-unavailable' });
-    await expect(configured.oauth.authorizeGoogle('circletasks.calendar.google.a')).rejects.toEqual(new CalendarPlatformError('web-auth-unavailable'));
+    await expect(configured.oauth.authorizeGoogle('spartiate.calendar.google.a')).rejects.toEqual(new CalendarPlatformError('web-auth-unavailable'));
     const unconfigured = createMemoryCalendarPlatform(endpoints, { webAuthFailure: () => 'web-auth-unavailable' });
-    await expect(unconfigured.oauth.authorizeGoogle('circletasks.calendar.google.a')).rejects.toEqual(new CalendarPlatformError('config-missing'));
+    await expect(unconfigured.oauth.authorizeGoogle('spartiate.calendar.google.a')).rejects.toEqual(new CalendarPlatformError('config-missing'));
   });
 });

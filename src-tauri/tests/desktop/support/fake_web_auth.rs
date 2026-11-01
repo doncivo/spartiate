@@ -7,7 +7,7 @@
 use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex};
 
-use circletasks_lib::calendars::web_auth::WebAuthTransport;
+use spartiate_lib::calendars::web_auth::WebAuthTransport;
 use serde_json::{json, Value};
 
 pub const CONTRACT: &str = include_str!("../../../../tests/fixtures/calendars/web-auth-contract.json");
