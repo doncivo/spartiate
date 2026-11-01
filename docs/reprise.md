@@ -4,7 +4,7 @@
 
 ## Fusionné
 
-SPA-000 clos : dépôt issu de CircleTasks, remote circletasks en lecture seule (push DISABLED), spartiate-releases créé. Fusionnées : #1 à #7, #9 et #10 (réconciliation). #8 (CADRAGE-01) fermée sans fusion : son contenu est entré par #9, qui a toutefois écrasé ses versions de SPA-001 et de la reprise ; #10 les restaure. PR #5 : 24 agents ; #6 : benchmark ; #7 : D-49 à D-53 et SPA-001 v2.3. Le résultat du run initial 41192279832 reste à consigner, sans le présumer vert.
+SPA-000 clos : dépôt issu de CircleTasks, remote circletasks en lecture seule (push DISABLED), spartiate-releases créé. Fusionnées : #1 à #7 et #9. #8 (CADRAGE-01) fermée sans fusion : son contenu est entré par #9, qui a toutefois écrasé ses versions de SPA-001 et de la reprise. #10 (réconciliation, D-54 à D-59) les restaure : à mettre à jour ici après sa fusion. PR #5 : 24 agents ; #6 : benchmark ; #7 : D-49 à D-53 et SPA-001 v2.3. Le résultat du run initial 41192279832 reste à consigner, sans le présumer vert.
 
 ## Préparation en cours
 
