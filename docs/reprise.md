@@ -16,6 +16,11 @@ Fait : tests rouges (2346b2dc) ; `scripts/release/rename.mjs` exécuté, rapport
 - D-54 : Ali supprime lui-même `%APPDATA%\fr.spartiate.app` (chemin exact affiché, aucun joker) avant le premier lancement de 001b. D-55 : identités profil / pesée. Gardes du migrateur conservées. `settings` hors publication I0 ; 24 fiches conservées ; AppShell / TabRail et rupture 1 024 px.
 - Fichiers métier CircleTasks renommés mais laissés verts en 001a, supprimés en 001b : `docs/spa-001a-fichiers-metier-reportes.md` (122 fichiers par lot).
 
+## Notes pour les tickets suivants
+
+- SPA-009 : fenêtre PC initiale adaptée à l'écran (constat 001a : elle dépasse de l'écran d'Ali), minimum 1 024 × 700.
+- D-60 : Rust local autorisé pour les changements de synchro, de garde ou de coffre ; e2e et smoke jamais en local.
+
 ## Secrets et décisions attendues
 
 - RELEASES_TOKEN : prêt avant la première publication Windows SPA-002, réutilisé pour SPA-003 ; jamais de valeur dans le dépôt.

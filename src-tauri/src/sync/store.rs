@@ -1538,24 +1538,24 @@ impl<'a> Store<'a> {
         Ok(false)
     }
 
-    /// ADR 0017 : l'arborescence contient-elle un nom de la famille de fichiers de CircleTasks (`state.ctx`, `*.ctj`, `*.cts`, y compris
+    /// ADR 0017 : l'arborescence contient-elle un nom de la famille de fichiers de CircleTasks (`state.ctx`, `*.ctj`, `*.cts`, y compris // ancien-ok: garde de séparation ADR 0017
     /// `state.next.ctx`, copie de conflit, `.tmp` et placeholder iCloud) ? Les noms seuls sont examinés : aucun fichier n'est lu ni téléchargé. // ancien-ok: garde de séparation ADR 0017
     /// Spartiate écrit sa propre famille (`state.spx`, `*.spj`, `*.sps`), donc les deux apps se distinguent par le seul nom. Même budget
     /// d'entrées que `folder_has_data` ; une erreur de listage ne refuse pas (le nom du dossier et la séparation cryptographique font garde).
     pub fn folder_has_foreign_data(fs: &dyn SyncFs) -> SyncResult<bool> {
         let budget = Budget::new();
         let Ok(root) = budget.list(fs, &[DEVICES_DIR]) else { return Ok(false) };
-        if root.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) {
+        if root.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) { // ancien-ok: garde de séparation ADR 0017
             return Ok(true);
         }
         for dev in root.entries.iter().filter(|e| e.is_dir) {
             let Ok(listing) = budget.list(fs, &[DEVICES_DIR, &dev.name]) else { continue };
-            if listing.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) {
+            if listing.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) { // ancien-ok: garde de séparation ADR 0017
                 return Ok(true);
             }
             for entry in listing.entries.iter().filter(|e| e.is_dir).take(MAX_EPOCHS_PER_DEVICE) {
                 let Ok(files) = budget.list(fs, &[DEVICES_DIR, &dev.name, &entry.name]) else { continue };
-                if files.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) {
+                if files.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) { // ancien-ok: garde de séparation ADR 0017
                     return Ok(true);
                 }
             }

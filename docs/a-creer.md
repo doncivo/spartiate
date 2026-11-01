@@ -38,3 +38,7 @@ Tout chemin de la forme `src/…`, `src-tauri/…`, `scripts/…`, `tests/…`, 
 | `src/domain/recovery/` | I5 | domain-logic |
 | `src/db/repositories/recoveryDayRepository.ts` | I5 | data-model |
 | `tests/unit/sync/workoutClosure.test.ts` | I1 | sync-icloud |
+
+## Dépendances gardées sans usage jusqu'à SPA-002 (D-30)
+
+- `tauri-plugin-updater` (crate, `src-tauri/Cargo.toml`) et `@tauri-apps/plugin-updater` (npm, `package.json`) : conservées, **non initialisées** côté Rust, aucun chemin d'exécution ne les appelle (`src/features/updater/updaterNoPlugin.test.ts`). SPA-002 (ci-release / desktop-tauri) les rétablit avec la nouvelle clé publique, le point d'accès `spartiate-releases`, l'enregistrement du plugin et les permissions `updater:*`.
