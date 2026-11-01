@@ -1,7 +1,7 @@
 // SPA-001a, critères 1 à 4 : identité technique et de marque de Spartiate (D-30, D-32, D-41, D-47, D-51).
 // La convention de qualification des mentions (protection des données CircleTasks, négation, historique) vit dans lib/mentions.mjs.
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error script .mjs sans déclaration de types
@@ -41,6 +41,17 @@ describe('configuration Tauri', () => {
     const smoke = json('src-tauri/tauri.smoke.conf.json');
     expect(smoke.identifier).toBe('fr.spartiate.app.smoke');
     expect(JSON.stringify(smoke).toLowerCase()).not.toContain('circletasks');
+  });
+});
+
+describe('updater : tout revient en SPA-002 (D-30)', () => {
+  it('aucune permission updater dans aucune capability', () => {
+    const dir = resolve(root, 'src-tauri/capabilities');
+    for (const file of readdirSync(dir).filter((name) => name.endsWith('.json'))) expect(readFileSync(resolve(dir, file), 'utf8'), file).not.toContain('updater:');
+  });
+  it('le plugin updater n’est initialisé nulle part côté Rust', () => {
+    const result = spawnSync('git', ['grep', '-l', '-I', 'tauri_plugin_updater', '--', 'src-tauri/src'], { cwd: root, encoding: 'utf8' });
+    expect(result.stdout.trim()).toBe('');
   });
 });
 
