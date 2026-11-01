@@ -88,3 +88,19 @@ fn sp_empty_or_spartiate_folder_is_accepted() {
     let d = Device::new(FakeBackend::with(r"C:\Users\Ali\iCloudDrive\Spartiate", FolderKind::Icloud, fs));
     assert!(d.core.choose_folder(Path::new(r"C:\Users\Ali\iCloudDrive\Spartiate")).is_ok());
 }
+
+#[test]
+fn sp_folder_inside_the_circletasks_tree_is_refused() {
+    for path in [r"C:\Users\Ali\iCloudDrive\CircleTasks\devices", r"C:\Users\Ali\iCloudDrive\CircleTasks\devices\3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60"] {
+        let d = Device::new(FakeBackend::with(path, FolderKind::Icloud, MemFs::new()));
+        assert_eq!(code(d.core.choose_folder(Path::new(path))), SyncCode::ForeignFolder, "{path}");
+    }
+}
+
+#[test]
+fn sp_header_with_spaces_is_still_foreign() {
+    let fs = MemFs::new();
+    fs.put(&["devices", DEV_A, "state.ctx"], b"{ \"f\": \"ct-state\", \"sm\": 1 }\nligne\n");
+    let d = Device::new(FakeBackend::with(r"C:\Users\Ali\iCloudDrive\Copie", FolderKind::Icloud, fs));
+    assert_eq!(code(d.core.choose_folder(Path::new(r"C:\Users\Ali\iCloudDrive\Copie"))), SyncCode::ForeignFolder);
+}
