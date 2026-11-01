@@ -58,7 +58,7 @@ Tu intègres les appels IA de Spartiate : explicites, facultatifs, avec la clé 
 
 - `npx vitest run --coverage.enabled=false src/domain/ai src/platform/ai` : vecteurs `tests/fixtures/ai/` (réponse valide, clé inconnue, type faux, hors borne, JSON tronqué → rejet), `redact.ts` (chaque donnée interdite refusée), `budget.ts` (plafond, mois glissant, blocage).
 - Tests Rust `src-tauri/tests/desktop/ai.rs` : clé jamais rendue, appel refusé sans clé, bornes, erreur réseau propre (serveur simulé local, aucun appel réel en CI).
-- `consistency.test.ts` : aucun chemin de la WebView vers `fetch` ou une URL de fournisseur ; capability `ai*.json` à liste exacte (`tests/desktop/config.rs`).
+- `consistency.test.ts` : aucun chemin de la WebView vers `fetch` ou une URL de fournisseur ; capability `ai*.json` à liste exacte (`src-tauri/tests/desktop/config.rs`).
 - e2e CI avec `fake.ts` : photo → aperçu → confirmation → lignes corrigeables ; clé absente → fonction grisée avec cause ; budget épuisé → blocage.
 - Preuve réelle (Ali) : un appel photo réussi avec coût affiché, capture datée ; `docs/capability-matrix.md` mis à jour par product-owner.
 

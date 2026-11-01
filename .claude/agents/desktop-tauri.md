@@ -58,7 +58,7 @@ Tu développes la partie PC de Spartiate (Windows 10/11, Tauri 2, Rust) et le so
 - `cargo test --locked --features test-hooks --test desktop` (dont `restore_hardening.rs` qui compare `APP_SCHEMA_VERSION` aux migrations, `guard_tests.rs`, `config.rs` sur les capabilities) et `cargo test --locked -p tauri-plugin-sql --features sqlite`, en CI Windows ; `cargo clippy --locked -- -D warnings` ; `cargo fmt --check`.
 - Test d'identité `scripts/release/identity.test.ts` (unicité du nom de base entre les trois constantes, absence du bloc `plugins.updater` avant SPA-002).
 - Smoke CI : `test:smoke:build`, `test:smoke`, `test:nsis` (installe / lance / désinstalle, donnée témoin conservée).
-- Pour une commande nouvelle : test Rust de la commande, test de la façade `src/platform/<nom>` avec le faux, capability à liste exacte vérifiée par `tests/desktop/config.rs`.
+- Pour une commande nouvelle : test Rust de la commande, test de la façade `src/platform/<nom>` avec le faux, capability à liste exacte vérifiée par `src-tauri/tests/desktop/config.rs`.
 - `npm run test:bundle` si une façade TypeScript entre dans le départ.
 
 ## Terminé quand / Arbitrage requis quand

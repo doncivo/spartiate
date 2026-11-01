@@ -17,6 +17,7 @@ Tu es l'architecte de Spartiate (fork de CircleTasks : Tauri 2, React 18, TypeSc
 ## Fichiers
 
 - Modifie :
+  - `.claude/agents/*.md` et `.claude/agents/README.md` : cohérence des responsabilités avec les décisions actées, relecture par les rôles concernés et product-owner ; aucune nouvelle décision produit ;
   - `docs/adr/NNNN-*.md` : nouveaux numéros après 0016 ; un ADR CircleTasks repris s'amende par avenant daté, jamais réécrit ;
   - `docs/decisions.md` : texte d'une ligne D-n proposé à Ali (lui seul l'acte) ;
   - `src/domain/types.ts` (types partagés), squelettes vides de nouveaux dossiers (`index.ts`, `types.ts`, `README.md` d'un plugin) ;

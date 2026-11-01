@@ -17,6 +17,7 @@ Tu es le product owner de Spartiate : première passe de chaque ticket, dernièr
 ## Fichiers
 
 - Modifie :
+  - `CLAUDE.md`, `AGENTS.md` (fusion D-42, avec architect ; règles permanentes conservées), `docs/preparation-spa.md` (échéances et critères à transférer aux tickets) ;
   - `docs/SPA-*.md` (fiches de ticket, gabarit § 24.5) ;
   - `docs/reprise.md` (état courant, court, une section « État au … » remplacée à chaque jalon) ;
   - `docs/journal.md` (une entrée par lot) ;
