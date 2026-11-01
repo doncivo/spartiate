@@ -2,6 +2,8 @@
 
 30 octobre 2026 · Ali Cherif · référence du PRD § 1.3 et § 27.3 ; prix et notes relevés le 30 octobre 2026
 
+> **Archive de recherche non normative.** Les listes « retenues » et la cible décrite ci-dessous sont historiques : elles ne constituent pas le périmètre autorisé. Le PRD et les décisions approuvées priment, notamment les exclusions (social, commercialisation, Apple Watch) et les cinq onglets. Les prix et capacités des apps ne sont pas revérifiés par cette note. Aucun ticket ne peut être déduit du benchmark seul.
+
 ## Objectif et méthode
 
 Ce benchmark retient six apps, une par brique fonctionnelle, pour servir de référence à la nouvelle app : chacune est la meilleure du marché sur sa brique, pas globalement. Pour chaque app, le doc inventorie les fonctionnalités puis les écrans (ce que l'utilisateur voit et manipule), avant une matrice comparative et une sélection « best of » qui alimentera la spécification.

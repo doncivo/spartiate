@@ -1,6 +1,6 @@
 ---
 name: content-data
-description: "Actif à partir de I1. Propriétaire du contenu embarqué de Spartiate : content/exercises (150 exercices, muscles.json, equipment.json, § 14.1), content/programs (4 programmes de départ, § 12.5), content/food/ciqual.json (§ 15.4), content/brand (icône), schémas JSON, script scripts/content/validate-content.mjs, provenance et licences (docs/licences.md). À utiliser pour toute donnée embarquée, tout schéma de contenu, toute licence de données ou de média."
+description: "Actif à partir de I1. Propriétaire du contenu embarqué de Spartiate : content/exercises (150 exercices, muscles.json, equipment.json, § 14.1), content/programs (4 programmes de départ, § 12.5), content/food/ciqual.json (§ 15.4), schémas JSON, script scripts/content/validate-content.mjs, provenance et licences (docs/licences.md). À utiliser pour toute donnée embarquée, tout schéma de contenu, toute licence de données ou de média."
 tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch
 model: sonnet
 ---
@@ -8,7 +8,7 @@ Tu produis et valides le contenu embarqué de Spartiate : des données, jamais d
 
 ## Quand intervenir
 
-- I1 : `content/exercises/exercises.json` (150 exercices au schéma § 14.1), `muscles.json`, `equipment.json` (listes fermées), `content/programs/*.json` (Haut / Bas 4 j, Full Body 3 j, PPL 6 j, Maison haltères 3 j, même schéma que `routine` / `routine_day` / `routine_exercise`, périodisation 5 semaines), `scripts/content/validate-content.mjs` (Node, sans dépendance), `content/brand/spartiate.svg` (bouclier rond bronze sur `#0D0E11`, lambda rouge) et script d'export 1024 px / ICO.
+- I1 : `content/exercises/exercises.json` (150 exercices au schéma § 14.1), `muscles.json`, `equipment.json` (listes fermées), `content/programs/*.json` (Haut / Bas 4 j, Full Body 3 j, PPL 6 j, Maison haltères 3 j, même schéma que `routine` / `routine_day` / `routine_exercise`, périodisation 5 semaines), `scripts/content/validate-content.mjs` (Node, sans dépendance).
 - I4 : `content/food/ciqual.json` (~3 000 génériques ANSES, par 100 g, portions), schéma et validation, attribution Licence Ouverte Etalab 2.0 (H-11) ; I6 : colonnes micronutriments (8 épinglés, H-19b : comptage des colonnes au chargement).
 - Un média d'exercice entre (Q-3, H-9) : licence et source dans `media.license` / `media.source`, ligne dans `docs/licences.md` ; sans licence compatible → sans image.
 - Un agent demande une correction de fiche (training : plage par défaut, pattern ; nutrition : valeur Ciqual) : tu corriges le JSON, le validateur et les tests suivent.
@@ -28,7 +28,7 @@ Tu produis et valides le contenu embarqué de Spartiate : des données, jamais d
   - `src/features/training/library/**` (consommation), `src/domain/training/**` (champs attendus par `generateSession`) ;
   - `vitest.config.ts` (inclusion de `scripts/content/**/*.test.ts` à demander à qa-test), `.github/workflows/tests.yml` (étape `validate-content` ajoutée par ci-release, qui en est propriétaire), `tests/bundle/start-modules.json`.
 - Ne touche jamais :
-  - `src/features/**`, `src/db/**`, `src/sync/**`, `src-tauri/**` hors `icons/` générées par desktop-tauri ;
+  - `src/features/**`, `src/db/**`, `src/sync/**`, `src-tauri/**`, `content/brand/**` (icône et exports : ui-design-system dès SPA-001a) ;
   - workflows, tokens ;
   - données réelles ; aucune donnée personnelle d'Ali dans un fichier de contenu.
 

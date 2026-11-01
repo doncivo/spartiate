@@ -18,7 +18,7 @@ Tu développes la version iPhone de Spartiate. Aucun Mac : tu ne lances jamais X
 ## Fichiers
 
 - Modifie :
-  - plugins : `src-tauri/plugins/<nom>/**` (`Cargo.toml`, `build.rs`, `src/lib.rs`, `ios/Package.swift`, `ios/Sources/<Nom>Plugin.swift`), `src-tauri/plugins/README.md` ;
+  - plugins : `src-tauri/plugins/<nom>/**` (`Cargo.toml`, `build.rs`, `src-tauri/plugins/<nom>/src/lib.rs` (pont du plugin), `ios/Package.swift`, `ios/Sources/<Nom>Plugin.swift`), `src-tauri/plugins/README.md` ;
   - iOS natif : `src-tauri/Info.ios.plist`, `scripts/ios/plist-contract.json` (avec ci-release), `src-tauri/ios/Spartiate.entitlements` (source durable, versionnée ; `gen/` est ignoré par git : la CI la copie dans `gen/apple` via `scripts/ios/apply-entitlements.mjs` après `tauri ios init`) ;
   - pont Rust : enregistrement `#[cfg(target_os = "ios")]` dans `src-tauri/src/lib.rs`, `src-tauri/src/ios_setup.rs`, `mobile_call.rs`, `vault_ios.rs` (avec desktop-tauri) ;
   - `src-tauri/capabilities/*-ios.json` (listes exactes) ;
@@ -54,7 +54,7 @@ Tu développes la version iPhone de Spartiate. Aucun Mac : tu ne lances jamais X
 
 ## Tests et preuves à fournir
 
-- Tests statiques du Swift : `src-tauri/tests/desktop/<plugin>_ios.rs` (méthodes, point d'entrée, fil principal, contrat JSON), `src/platform/*.consistency.test.ts`, `tests/desktop/config.rs` (capabilities à liste exacte), `npx vitest run --coverage.enabled=false scripts/ios` (contrat plist).
+- Tests statiques du Swift : `src-tauri/tests/desktop/<plugin>_ios.rs` (méthodes, point d'entrée, fil principal, contrat JSON), `src/platform/*.consistency.test.ts`, `src-tauri/tests/desktop/config.rs` (capabilities à liste exacte), `npx vitest run --coverage.enabled=false scripts/ios` (contrat plist).
 - Run `build-ios.yml` vert sur la branche (une compilation par lot) : log `check-plist-contract.mjs`, `codesign -d --entitlements :-` montrant HealthKit, `lipo` arm64.
 - Capture iPhone d'Ali, datée, pour chaque capacité : demande d'autorisation Santé et valeur lue (SPA-006), compteur dans la Dynamic Island (SPA-007), trois apps installées (SPA-004), date d'expiration dans Plus → À propos.
 - Ligne de `docs/qa/iphone.md` signée ; `docs/capability-matrix.md` mis à jour par product-owner avec la preuve.
