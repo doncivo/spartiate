@@ -116,7 +116,7 @@ pub struct ResetRecord {
     pub epoch: String,
     /// Auteur de l'annonce (appareil de l'époque visée).
     pub by: String,
-    /// Annonce publiée sous l'ancienne clé (`reset` de `state.ctx`) : l'appareil qui réinitialise la fixe ; un appareil réassocié la garde
+    /// Annonce publiée sous l'ancienne clé (`reset` de `state.spx`) : l'appareil qui réinitialise la fixe ; un appareil réassocié la garde
     /// s'il l'a lue (sinon null : l'auteur a déjà basculé).
     pub notice: Option<ResetNotice>,
     /// Époque de l'état qui porte l'annonce (`n`).

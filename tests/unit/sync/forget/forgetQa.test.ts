@@ -115,12 +115,12 @@ describe('faux dossier devices/<uuid> et appareil seulement cité : la suppressi
     expect(ghost).toMatchObject({ self: false, seen: false });
   });
 
-  it('QA-1 (corrigé) : un faux dossier à state.ctx illisible a, lui aussi, une ligne dans APPAREILS', async () => {
+  it('QA-1 (corrigé) : un faux dossier à state.spx illisible a, lui aussi, une ligne dans APPAREILS', async () => {
     const [a, b, x] = (await setup([B_ID, X_ID])) as [SimDevice, SimDevice, SimDevice];
     const copy = a.folder.devices.get(b.id);
     expect(copy).toBeDefined();
     a.folder.devices.set(GHOST, structuredClone(copy) as NonNullable<typeof copy>);
-    a.folder.corruptRecord(GHOST, 'state.ctx', 0);
+    a.folder.corruptRecord(GHOST, 'state.spx', 0);
     await a.service.forgetDevice(x.id as DeviceId);
     for (let i = 0; i < 2; i += 1) {
       a.clock.advance(1_000);

@@ -63,7 +63,7 @@ describe('bascule interrompue avant chacune de ses écritures (critère 12)', ()
       expect((await a.platform.key.status()).kid).toBe(k2);
       // Même état final que sans arrêt (fichiers, registre, tâches) ; le second appareil bascule ensuite.
       expect(await shape(a)).toMatchObject({ hasNext: null, record: null, step: 'done' });
-      expect((await shape(a) as { files: string[] }).files.every((f) => f === 'state.ctx' || f.startsWith('e0002'))).toBe(true);
+      expect((await shape(a) as { files: string[] }).files.every((f) => f === 'state.spx' || f.startsWith('e0002'))).toBe(true);
       await settle(room.devices, 3);
       const b = room.devices[1] as SimDevice;
       expect((await b.platform.key.status()).kid).toBe(k2);

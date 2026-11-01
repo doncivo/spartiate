@@ -408,53 +408,53 @@ fn y08_header_numeric_bounds_and_hostile_documents() {
 
 #[test]
 fn y01_11_strict_file_names_refuse_every_windows_and_icloud_variant() {
-    assert_eq!(parse_file_name("state.ctx"), Some(SyncFileName::State));
-    assert_eq!(parse_file_name("j-00000001.ctj"), Some(SyncFileName::Segment(1)));
-    assert_eq!(parse_file_name("j-99999999.ctj"), Some(SyncFileName::Segment(99_999_999)));
-    assert_eq!(parse_file_name("s-00000042.cts"), Some(SyncFileName::Snapshot(42)));
+    assert_eq!(parse_file_name("state.spx"), Some(SyncFileName::State));
+    assert_eq!(parse_file_name("j-00000001.spj"), Some(SyncFileName::Segment(1)));
+    assert_eq!(parse_file_name("j-99999999.spj"), Some(SyncFileName::Segment(99_999_999)));
+    assert_eq!(parse_file_name("s-00000042.sps"), Some(SyncFileName::Snapshot(42)));
     for refused in [
         "",
-        "state 2.ctx",
-        "state (1).ctx",
-        "state.ctx.tmp",
-        "state.ctx.",
-        "state.ctx ",
-        " state.ctx",
-        "State.ctx",
+        "state 2.spx",
+        "state (1).spx",
+        "state.spx.tmp",
+        "state.spx.",
+        "state.spx ",
+        " state.spx",
+        "State.spx",
         "STATE.CTX",
         "state.CTX",
-        "state.ctx:stream",
-        "state.ctx::$DATA",
-        "state.next.ctx",
-        "state.ctx\0",
-        "state.ctx\n",
-        "../state.ctx",
-        "..\\state.ctx",
-        "a/state.ctx",
-        "j-00000000.ctj",
-        "j-100000000.ctj",
-        "j-0000001.ctj",
-        "j-000000001.ctj",
-        "j-1.ctj",
-        "j-0000000a.ctj",
-        "j-００００００１.ctj",
-        "j-+0000001.ctj",
-        "j-00000001.ctj.",
-        "j-00000001.ctj.tmp",
-        "j-00000001 2.ctj",
+        "state.spx:stream",
+        "state.spx::$DATA",
+        "state.next.spx",
+        "state.spx\0",
+        "state.spx\n",
+        "../state.spx",
+        "..\\state.spx",
+        "a/state.spx",
+        "j-00000000.spj",
+        "j-100000000.spj",
+        "j-0000001.spj",
+        "j-000000001.spj",
+        "j-1.spj",
+        "j-0000000a.spj",
+        "j-００００００１.spj",
+        "j-+0000001.spj",
+        "j-00000001.spj.",
+        "j-00000001.spj.tmp",
+        "j-00000001 2.spj",
         "j-00000001.CTJ",
-        "J-00000001.ctj",
-        "j-00000001.cts",
-        "s-00000001.ctj",
+        "J-00000001.spj",
+        "j-00000001.sps",
+        "s-00000001.spj",
         "j-00000001",
-        "j-00000001.ctj\0.txt",
+        "j-00000001.spj\0.txt",
         "CON",
-        "NUL.ctj",
+        "NUL.spj",
         ".DS_Store",
         "desktop.ini",
         "Thumbs.db",
-        "~$state.ctx",
-        ".state.ctx.icloud",
+        "~$state.spx",
+        ".state.spx.icloud",
     ] {
         assert_eq!(parse_file_name(refused), None, "{refused:?}");
     }
@@ -575,7 +575,7 @@ mod service {
         let other = stranger.recovery_key();
         assert_eq!(code(b.core.key_import(KeyInput::RecoveryKey(Zeroizing::new((*other).clone())), 1)), SyncCode::KeyMismatch);
         assert_eq!(b.vault.get(SYNC_KEY_ACCOUNT).unwrap(), None);
-        // Le QR désigne l'appareil qui l'a émis (`d`) : le `kid` est lu dans le `state.ctx` de cet appareil seulement ; un appareil
+        // Le QR désigne l'appareil qui l'a émis (`d`) : le `kid` est lu dans le `state.spx` de cet appareil seulement ; un appareil
         // absent du dossier donne `cloud-pending` (jamais un enregistrement sur la foi d'un autre appareil).
         let key = MasterKey::from_vault_value(&a.vault.get(SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
         let unknown_dev = qr_text_of(&key, DEV_B, None, b.clock.now() + PAIRING_VALIDITY_MS);

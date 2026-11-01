@@ -153,7 +153,7 @@ function parseEntry(raw: unknown, index: number, plan: string, seen: Set<string>
   if (has('partialLastLine')) {
     if (typeof raw['partialLastLine'] !== 'boolean') throw new FaultPlanError(`${where} : « partialLastLine » booléen attendu`);
     // Seul un ajout à un segment de journal peut laisser une ligne incomplète (état et instantané : remplacement atomique).
-    if (!/(\.ctj|\*)$/.test(file)) throw new FaultPlanError(`${where} : « partialLastLine » réservé aux segments de journal (*.ctj)`);
+    if (!/(\.spj|\*)$/.test(file)) throw new FaultPlanError(`${where} : « partialLastLine » réservé aux segments de journal (*.spj)`);
     entry.partialLastLine = raw['partialLastLine'];
   }
   if (has('about')) {

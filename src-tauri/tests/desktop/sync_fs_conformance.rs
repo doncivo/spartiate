@@ -339,7 +339,7 @@ impl StdWorld {
         let outside = base.join("ailleurs");
         std::fs::create_dir_all(&root).unwrap();
         std::fs::create_dir_all(&outside).unwrap();
-        std::fs::write(outside.join("state.ctx"), b"hors de la racine").unwrap();
+        std::fs::write(outside.join("state.spx"), b"hors de la racine").unwrap();
         let fs = FaultyStd::new(spartiate_lib::sync::files::StdFs::new(check_sync_path(&root).unwrap().path));
         Self { _dir: dir, root, outside, fs }
     }

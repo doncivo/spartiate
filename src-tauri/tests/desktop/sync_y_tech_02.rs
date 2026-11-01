@@ -32,9 +32,9 @@ fn y_tech_02_scan_reports_a_folder_over_one_gib_without_failing() {
     d.setup(DEV_A);
     let scan = d.core.scan(&[]).unwrap();
     assert!(!scan.folder_large);
-    fs.put(&["devices", DEV_B, "state.ctx"], b"x");
-    fs.set_extra(&["devices", DEV_B, "state.ctx"], 2 * 1024 * 1024 * 1024);
-    fs.set_availability(&["devices", DEV_B, "state.ctx"], Availability::Cloud);
+    fs.put(&["devices", DEV_B, "state.spx"], b"x");
+    fs.set_extra(&["devices", DEV_B, "state.spx"], 2 * 1024 * 1024 * 1024);
+    fs.set_availability(&["devices", DEV_B, "state.spx"], Availability::Cloud);
     let scan = d.core.scan(&[]).unwrap();
     assert!(scan.folder_large, "au-delà de 1 Gio : avertissement rendu, pas seulement journalisé");
     let json = serde_json::to_value(&scan).unwrap();

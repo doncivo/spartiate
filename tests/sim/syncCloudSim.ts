@@ -5,7 +5,7 @@ import { STATE_FILE, isEpochId, parseSyncFileName, segmentFileName } from '../..
  * « iCloud » simulé à deux dossiers (ADR 0011, section 12 ; Y-02, Y-05, Y-09) : chaque appareil a **son propre** dossier
  * `iCloud Drive/Spartiate` (un `MemorySyncFolder`) ; le test ordonne la recopie du dossier d'un appareil vers le dossier d'un autre, avec
  * les défauts réels d'iCloud : dernière ligne incomplète, fichier resté dans le nuage, fichier pas encore arrivé, copie de conflit,
- * ancien `state.ctx` relivré.
+ * ancien `state.spx` relivré.
  *
  * Les enregistrements sont gardés en texte clair par `memory.ts` (le chiffrement réel est vérifié par le codec de référence et les vecteurs
  * croisés du lot Y1) ; la taille sur disque est celle des lignes chiffrées.
@@ -21,15 +21,15 @@ export interface PropagateOptions {
   readonly partialLastLine?: boolean;
   /** Les fichiers recopiés restent « dans le nuage » (placeholders) chez le destinataire. */
   readonly placeholder?: boolean;
-  /** Fichiers non recopiés (pas encore arrivés) : noms `state.ctx` ou `<époque>/<nom>`. */
+  /** Fichiers non recopiés (pas encore arrivés) : noms `state.spx` ou `<époque>/<nom>`. */
   readonly drop?: readonly string[];
-  /** Une copie de conflit iCloud (« state 2.ctx ») apparaît à côté. */
+  /** Une copie de conflit iCloud (« state 2.spx ») apparaît à côté. */
   readonly conflictCopy?: boolean;
-  /** `state.ctx` du destinataire laissé dans sa version précédente (iCloud relivre un ancien état). */
+  /** `state.spx` du destinataire laissé dans sa version précédente (iCloud relivre un ancien état). */
   readonly staleState?: boolean;
   /**
    * Y-TECH-03 : suppressions de l'émetteur pas encore transmises (différées) : fichiers absents chez `from` mais gardés chez `to` dans leur
-   * version précédente (noms `state.ctx` ou `<époque>/<nom>`) ; transmises au prochain `propagate` sans cette option.
+   * version précédente (noms `state.spx` ou `<époque>/<nom>`) ; transmises au prochain `propagate` sans cette option.
    */
   readonly deferDeletions?: readonly string[];
 }
@@ -81,7 +81,7 @@ export function propagate(from: MemorySyncFolder, to: MemorySyncFolder, deviceId
 
 /**
  * Remet dans `copy` le fichier `name` de la version précédente du destinataire, s'il y était et qu'il manque à la copie. Noms pris en
- * charge : `state.ctx` et `<époque>/<segment ou instantané>` ; tout autre nom, dont `state.next.ctx` (état d'une réinitialisation, jamais
+ * charge : `state.spx` et `<époque>/<segment ou instantané>` ; tout autre nom, dont `state.next.spx` (état d'une réinitialisation, jamais
  * supprimé par le moteur ni armé par un scénario du banc), est ignoré.
  */
 function keepPrevious(previous: DeviceDir, copy: DeviceDir, name: string): void {
@@ -122,5 +122,5 @@ export function hydrate(folder: MemorySyncFolder, deviceId: string): void {
   for (const name of folder.fileNames(deviceId)) folder.setAvailability(deviceId, name, 'local');
 }
 
-/** Nom d'un segment dans un dossier d'époque (`<époque>/j-0000000n.ctj`). */
+/** Nom d'un segment dans un dossier d'époque (`<époque>/j-0000000n.spj`). */
 export const segmentPath = (epoch: string, n: number): string => `${epoch}/${segmentFileName(n)}`;

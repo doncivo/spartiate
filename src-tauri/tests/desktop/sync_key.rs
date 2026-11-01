@@ -100,12 +100,12 @@ fn y08_6_create_refused_on_a_folder_with_data_even_in_the_cloud() {
     assert_eq!(code(b.core.key_create()), SyncCode::FolderHasData);
     assert_eq!(b.vault.get(SYNC_KEY_ACCOUNT).unwrap(), None, "aucune clé écrite");
     // Fichier resté dans le nuage : compte aussi comme donnée.
-    fs.set_availability(&["devices", DEV_A, "state.ctx"], spartiate_lib::sync::files::Availability::Cloud);
+    fs.set_availability(&["devices", DEV_A, "state.spx"], spartiate_lib::sync::files::Availability::Cloud);
     assert_eq!(code(b.core.key_create()), SyncCode::FolderHasData);
     // Un dossier d'appareil sans fichier ct-* valide n'est pas une donnée.
     let empty = MemFs::new();
     empty.mkdir(&["devices", DEV_B]);
-    empty.put(&["devices", DEV_B, "state 2.ctx"], b"copie de conflit");
+    empty.put(&["devices", DEV_B, "state 2.spx"], b"copie de conflit");
     let c = Device::new(FakeBackend::with(FOLDER, FolderKind::Icloud, empty));
     c.core.choose_folder(Path::new(FOLDER)).unwrap();
     assert!(c.core.key_create().is_ok());
@@ -209,7 +209,7 @@ fn y08_14_import_requires_the_folder_and_a_matching_kid() {
     // Sans dossier : not-configured.
     assert_eq!(code(b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)), SyncCode::NotConfigured);
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
-    // Dossier encore vide (aucun state.ctx lisible) : cloud-pending.
+    // Dossier encore vide (aucun state.spx lisible) : cloud-pending.
     assert_eq!(code(b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)), SyncCode::CloudPending);
     publish_state(&a, DEV_A, 1);
     // Clé d'un autre dossier : key-mismatch, rien d'enregistré.

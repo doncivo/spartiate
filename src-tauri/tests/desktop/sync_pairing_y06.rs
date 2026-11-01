@@ -355,7 +355,7 @@ fn y06_4_already_open_and_not_foreground_have_their_own_codes() {
 /// Audit 2, QA 3 : la référence d'arrivée est la liste de `devices/` **à l'ouverture**, quel que soit l'état des appareils.
 #[test]
 fn y06_9_reference_is_the_folder_listing_at_opening() {
-    // iPhone déjà associé, son state.ctx pas encore livré par iCloud à l'ouverture : son dossier est listé, donc jamais un arrivant.
+    // iPhone déjà associé, son state.spx pas encore livré par iCloud à l'ouverture : son dossier est listé, donc jamais un arrivant.
     let (a, fs) = device();
     a.setup(DEV_A);
     publish(&a, DEV_A, &epoch(1, DEV_A), None);
@@ -363,8 +363,8 @@ fn y06_9_reference_is_the_folder_listing_at_opening() {
     let b = joiner(&fs, DEV_B);
     b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1).unwrap();
     publish(&b, DEV_B, &epoch(1, DEV_A), None);
-    let state_bytes = fs.get(&["devices", DEV_B, "state.ctx"]).expect("état de B");
-    fs.remove(&["devices", DEV_B, "state.ctx"]);
+    let state_bytes = fs.get(&["devices", DEV_B, "state.spx"]).expect("état de B");
+    fs.remove(&["devices", DEV_B, "state.spx"]);
     let registry = PairingRegistry::default();
     registry.begin_open(false).unwrap();
     registry.register(42, PairingMode::Show, NOW);
@@ -374,7 +374,7 @@ fn y06_9_reference_is_the_folder_listing_at_opening() {
     let first = a.core.scan(&[]).unwrap();
     assert!(a.core.paired_with_self(&first).is_empty(), "état pas encore livré au premier scan");
     assert_eq!(registry.observe_paired(&a.core.paired_with_self(&first)), None);
-    fs.put(&["devices", DEV_B, "state.ctx"], &state_bytes);
+    fs.put(&["devices", DEV_B, "state.spx"], &state_bytes);
     let later = a.core.scan(&[]).unwrap();
     assert_eq!(a.core.paired_with_self(&later), vec![DEV_B.to_owned()]);
     assert_eq!(registry.observe_paired(&a.core.paired_with_self(&later)), None, "déjà là à l'ouverture : pas une arrivée");

@@ -146,19 +146,19 @@ fn y01_11_strict_names_conflict_copies_and_bad_parameters() {
     let (d, fs) = device();
     d.setup(DEV_A);
     d.core.write_state(14, state(DEV_A, &epoch(1, DEV_A), 1, 0, 0, None)).unwrap();
-    fs.put(&["devices", DEV_A, "state 2.ctx"], b"copie");
-    fs.put(&["devices", DEV_A, "state.ctx.tmp"], b"tmp");
-    fs.put(&["devices", DEV_A, "state.next.ctx"], b"reserve");
-    fs.put(&["devices", "pas-un-uuid", "state.ctx"], b"x");
+    fs.put(&["devices", DEV_A, "state 2.spx"], b"copie");
+    fs.put(&["devices", DEV_A, "state.spx.tmp"], b"tmp");
+    fs.put(&["devices", DEV_A, "state.next.spx"], b"reserve");
+    fs.put(&["devices", "pas-un-uuid", "state.spx"], b"x");
     fs.put(&["devices", "notes.txt"], b"x");
-    let before = fs.get(&["devices", DEV_A, "state 2.ctx"]);
+    let before = fs.get(&["devices", DEV_A, "state 2.spx"]);
     let scan = d.core.scan(&[]).unwrap();
     assert_eq!(scan.devices.len(), 1);
-    // Y-11 (lot Y4) : state.next.ctx est un nom reconnu (état sous la nouvelle clé d'une réinitialisation), plus compté comme ignoré ;
-    // il n'est lu que si state.ctx est d'une autre clé, jamais supprimé ni écrit ici.
+    // Y-11 (lot Y4) : state.next.spx est un nom reconnu (état sous la nouvelle clé d'une réinitialisation), plus compté comme ignoré ;
+    // il n'est lu que si state.spx est d'une autre clé, jamais supprimé ni écrit ici.
     assert_eq!(scan.ignored, 4);
-    assert_eq!(fs.get(&["devices", DEV_A, "state.next.ctx"]).as_deref(), Some(&b"reserve"[..]));
-    assert_eq!(fs.get(&["devices", DEV_A, "state 2.ctx"]), before, "jamais lu ni supprimé");
+    assert_eq!(fs.get(&["devices", DEV_A, "state.next.spx"]).as_deref(), Some(&b"reserve"[..]));
+    assert_eq!(fs.get(&["devices", DEV_A, "state 2.spx"]), before, "jamais lu ni supprimé");
     let ep = epoch(1, DEV_A);
     assert_eq!(code(d.core.read_journal("../x", &ep, C0, None)), SyncCode::BadName);
     assert_eq!(code(d.core.read_journal(DEV_B, "e1-x", C0, None)), SyncCode::BadName);
@@ -174,7 +174,7 @@ fn y01_11_strict_names_conflict_copies_and_bad_parameters() {
     assert_eq!(code(d.core.append_journal(&zero_sv)), SyncCode::BadName);
     // Toute écriture va dans devices/<appareil lié>/ seulement.
     append(&d, &ep, 1, 0, 10, &["{}"]).unwrap();
-    assert!(fs.names().iter().filter(|n| n.contains(".ctj")).all(|n| n.starts_with(&format!("devices/{DEV_A}/"))));
+    assert!(fs.names().iter().filter(|n| n.contains(".spj")).all(|n| n.starts_with(&format!("devices/{DEV_A}/"))));
 }
 
 #[test]
@@ -196,15 +196,15 @@ fn y01_12_scan_reports_headers_states_files_and_availability() {
     assert_eq!(dev.epochs[0].segments, vec![1]);
     assert!(dev.pending.is_empty());
     assert!(scan.total_bytes > 0 && !scan.incomplete && !scan.too_many_devices);
-    // Dossier iCloud : state.ctx et segments annoncés épinglés fichier par fichier, jamais le dossier.
+    // Dossier iCloud : state.spx et segments annoncés épinglés fichier par fichier, jamais le dossier.
     let pinned = fs.pinned.lock().unwrap().clone();
-    assert!(pinned.contains(&format!("devices/{DEV_A}/state.ctx")));
-    assert!(pinned.contains(&format!("devices/{DEV_A}/{ep}/j-00000001.ctj")));
-    assert!(pinned.iter().all(|p| p.ends_with(".ctx") || p.ends_with(".ctj") || p.ends_with(".cts")));
+    assert!(pinned.contains(&format!("devices/{DEV_A}/state.spx")));
+    assert!(pinned.contains(&format!("devices/{DEV_A}/{ep}/j-00000001.spj")));
+    assert!(pinned.iter().all(|p| p.ends_with(".spx") || p.ends_with(".spj") || p.ends_with(".sps")));
     // Segment annoncé resté dans le nuage : listé en attente.
-    fs.set_availability(&["devices", DEV_A, &ep, "j-00000001.ctj"], Availability::Cloud);
+    fs.set_availability(&["devices", DEV_A, &ep, "j-00000001.spj"], Availability::Cloud);
     let scan = b.core.scan(&[]).unwrap();
-    assert_eq!(scan.devices[0].pending[0].file, format!("{ep}/j-00000001.ctj"));
+    assert_eq!(scan.devices[0].pending[0].file, format!("{ep}/j-00000001.spj"));
     assert_eq!(scan.devices[0].pending[0].availability, "cloud");
 }
 
@@ -240,9 +240,9 @@ fn y01_12_listing_cut_at_ten_thousand_entries_and_folder_size_limits() {
     assert!(scan.incomplete);
     let (d, fs) = device();
     d.setup(DEV_A);
-    fs.put(&["devices", DEV_B, "state.ctx"], b"x");
-    fs.set_extra(&["devices", DEV_B, "state.ctx"], 5 * 1024 * 1024 * 1024);
-    fs.set_availability(&["devices", DEV_B, "state.ctx"], Availability::Cloud);
+    fs.put(&["devices", DEV_B, "state.spx"], b"x");
+    fs.set_extra(&["devices", DEV_B, "state.spx"], 5 * 1024 * 1024 * 1024);
+    fs.set_availability(&["devices", DEV_B, "state.spx"], Availability::Cloud);
     assert_eq!(code(d.core.scan(&[])), SyncCode::FolderTooLarge);
     assert_eq!(fs.hydrations.load(Ordering::SeqCst), 0, "plus aucune hydratation au-delà de 4 Gio");
 }
@@ -254,27 +254,27 @@ fn y01_13_and_14_bounds_checked_before_hydration_and_cloud_errors_are_not_fatal(
     let ep = epoch(1, DEV_A);
     append(&a, &ep, 1, 0, 10, &["{}"]).unwrap();
     a.core.write_state(14, state(DEV_A, &ep, 1, 1, 1, Some(hlc(10, DEV_A)))).unwrap();
-    // Placeholder qui annonce plus que la borne d'un state.ctx : pas d'hydratation, too-large.
-    fs.put(&["devices", DEV_B, "state.ctx"], b"");
-    fs.set_extra(&["devices", DEV_B, "state.ctx"], MAX_STATE_FILE_BYTES + 1);
-    fs.set_availability(&["devices", DEV_B, "state.ctx"], Availability::Cloud);
+    // Placeholder qui annonce plus que la borne d'un state.spx : pas d'hydratation, too-large.
+    fs.put(&["devices", DEV_B, "state.spx"], b"");
+    fs.set_extra(&["devices", DEV_B, "state.spx"], MAX_STATE_FILE_BYTES + 1);
+    fs.set_availability(&["devices", DEV_B, "state.spx"], Availability::Cloud);
     let scan = a.core.scan(&[]).unwrap();
     assert_eq!(scan.devices.iter().find(|d| d.device_id == DEV_B).unwrap().state_status, "too-large");
     assert_eq!(fs.hydrations.load(Ordering::SeqCst), 0);
-    // state.ctx dans le nuage : hydraté (annoncé par nature).
-    fs.set_availability(&["devices", DEV_A, "state.ctx"], Availability::Cloud);
+    // state.spx dans le nuage : hydraté (annoncé par nature).
+    fs.set_availability(&["devices", DEV_A, "state.spx"], Availability::Cloud);
     a.core.scan(&[]).unwrap();
     assert_eq!(fs.hydrations.load(Ordering::SeqCst), 1);
     // Segment annoncé dans le nuage : hydraté à la lecture ; iCloud arrêté ou délai : page « en attente », jamais fatale.
-    fs.set_availability(&["devices", DEV_A, &ep, "j-00000001.ctj"], Availability::Cloud);
+    fs.set_availability(&["devices", DEV_A, &ep, "j-00000001.spj"], Availability::Cloud);
     *fs.hydrate_error.lock().unwrap() = Some(FsError::ProviderStopped);
     let page = a.core.read_journal(DEV_A, &ep, C0, None).unwrap();
     assert_eq!((page.status, page.records.len()), ("cloud-pending", 0));
     let page = a.core.read_journal(DEV_A, &ep, C0, None).unwrap();
     assert_eq!((page.status, page.records.as_slice()), ("complete", ["{}".to_owned()].as_slice()));
     // Segment au-delà de la borne de lecture : too-large, sans hydratation.
-    fs.set_extra(&["devices", DEV_A, &ep, "j-00000001.ctj"], MAX_SEGMENT_BYTES);
-    fs.set_availability(&["devices", DEV_A, &ep, "j-00000001.ctj"], Availability::Cloud);
+    fs.set_extra(&["devices", DEV_A, &ep, "j-00000001.spj"], MAX_SEGMENT_BYTES);
+    fs.set_availability(&["devices", DEV_A, &ep, "j-00000001.spj"], Availability::Cloud);
     let hydrations = fs.hydrations.load(Ordering::SeqCst);
     assert_eq!(code(a.core.read_journal(DEV_A, &ep, C0, None)), SyncCode::TooLarge);
     assert_eq!(fs.hydrations.load(Ordering::SeqCst), hydrations);
@@ -288,7 +288,7 @@ fn y01_14_files_beyond_the_head_are_never_hydrated() {
     append(&a, &ep, 1, 0, 10, &["{}"]).unwrap();
     a.core.write_state(14, state(DEV_A, &ep, 1, 1, 1, Some(hlc(10, DEV_A)))).unwrap();
     append(&a, &ep, 2, 0, 20, &["{}"]).unwrap(); // pas encore annoncé
-    fs.set_availability(&["devices", DEV_A, &ep, "j-00000002.ctj"], Availability::Cloud);
+    fs.set_availability(&["devices", DEV_A, &ep, "j-00000002.spj"], Availability::Cloud);
     let page = a.core.read_journal(DEV_A, &ep, C0, None).unwrap();
     assert_eq!((page.status, page.next), ("complete", RecordCursor { segment: 1, record: 1 }));
     a.core.scan(&[]).unwrap();
@@ -305,7 +305,7 @@ fn y_ios_07_evicted_head_refuses_before_write_then_next_segment_needs_no_read_or
     a.setup(DEV_A);
     let ep = epoch(1, DEV_A);
     append(&a, &ep, 1, 0, 10, &["{}", "{}"]).unwrap();
-    let path = ["devices", DEV_A, ep.as_str(), "j-00000001.ctj"];
+    let path = ["devices", DEV_A, ep.as_str(), "j-00000001.spj"];
     let before = fs.get(&path).unwrap();
     fs.set_availability(&path, Availability::Cloud);
     fs.arm(crate::support::fault_plan::parse_plan(&json!({ "name": "Y-IOS-07", "faults": [
@@ -332,7 +332,7 @@ fn y_ios_07_partial_write_cloud_pending_never_claims_before_write() {
     a.setup(DEV_A);
     let ep = epoch(1, DEV_A);
     append(&a, &ep, 1, 0, 10, &["{}"]).unwrap();
-    let file = format!("devices/{DEV_A}/{ep}/j-00000001.ctj");
+    let file = format!("devices/{DEV_A}/{ep}/j-00000001.spj");
     fs.arm(crate::support::fault_plan::parse_plan(&json!({ "name": "Y-IOS-07-partial", "faults": [
         { "id": "partial", "op": "write", "file": file, "nth": 1, "effect": "error", "code": "cloud-pending", "partialLastLine": true }
     ] })).unwrap()).unwrap();
@@ -354,14 +354,14 @@ fn y01_13_append_checks_segment_records_and_first_record_is_computed() {
     assert_eq!(code(append(&a, &ep, 1, 1, 20, &["{}"])), SyncCode::SegmentMismatch);
     assert_eq!(append(&a, &ep, 1, 2, 20, &["{}"]).unwrap().first_record, 2);
     // Ligne incomplète en fin de segment : segment-mismatch, le moteur ouvre le suivant.
-    let path = ["devices", DEV_A, ep.as_str(), "j-00000001.ctj"];
+    let path = ["devices", DEV_A, ep.as_str(), "j-00000001.spj"];
     let len = fs.get(&path).unwrap().len();
     fs.truncate(&path, len - 10);
     assert_eq!(code(append(&a, &ep, 1, 3, 30, &["{}"])), SyncCode::SegmentMismatch);
     assert_eq!(append(&a, &ep, 2, 0, 30, &["{}"]).unwrap().head, RecordCursor { segment: 2, record: 1 });
     assert_eq!(code(append(&a, &ep, 1, 3, 40, &["{}"])), SyncCode::SegmentMismatch, "jamais en arrière");
     // Le fichier écrit : en-tête en clair, lignes opaques ; aucun texte clair ni nom de table.
-    let bytes = fs.get(&["devices", DEV_A, ep.as_str(), "j-00000002.ctj"]).unwrap();
+    let bytes = fs.get(&["devices", DEV_A, ep.as_str(), "j-00000002.spj"]).unwrap();
     let text = String::from_utf8(bytes).unwrap();
     assert!(text.starts_with(r#"{"f":"sp-j","sm":1,"kid":""#));
     assert_eq!(text.lines().count(), 2);
@@ -401,7 +401,7 @@ fn y01_13_segment_and_call_limits_match_the_cross_vectors() {
     let prefix = records(&s["prefix"]);
     let count = prefix.len() as u64;
     a.core.append_journal(&request(2, 0, 20, 1, prefix)).unwrap();
-    let path = ["devices", DEV_A, &epoch(1, DEV_A), "j-00000002.ctj"].map(str::to_owned);
+    let path = ["devices", DEV_A, &epoch(1, DEV_A), "j-00000002.spj"].map(str::to_owned);
     let path: Vec<&str> = path.iter().map(String::as_str).collect();
     assert_eq!(fs.get(&path).unwrap().len() as u64, 1024 * 1024 - spartiate_lib::sync::limits::encrypted_line_bytes(4092, 1, 9) as u64);
     let last = vec![blocks(s["last"]["blocks"].as_u64().unwrap())];
@@ -438,9 +438,9 @@ fn y01_15_own_json_survives_restart_is_ignored_for_another_key_and_rebuilt_from_
     a.restart();
     assert_eq!(code(append(&a, &ep, 1, 1, 100, &["{}"])), SyncCode::HlcOrder, "own.json relu après redémarrage");
     assert_eq!(code(a.core.write_state(14, state(DEV_A, &ep, 5, 1, 1, Some(hlc(100, DEV_A))))), SyncCode::StateMismatch, "stateSeq non croissant");
-    // own.json perdu et state.ctx supprimé : reconstruit depuis les accusés de B sur A et les fichiers listés.
+    // own.json perdu et state.spx supprimé : reconstruit depuis les accusés de B sur A et les fichiers listés.
     std::fs::remove_file(a.base.path().join("sync").join("own.json")).unwrap();
-    fs.remove(&["devices", DEV_A, "state.ctx"]);
+    fs.remove(&["devices", DEV_A, "state.spx"]);
     let b = other(&fs);
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
     b.vault.set(spartiate_lib::sync::service::SYNC_KEY_ACCOUNT, &a.vault.get(spartiate_lib::sync::service::SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
@@ -517,7 +517,7 @@ fn y01_12_reading_edge_cases_cloud_pending_truncated_more_and_rollback() {
     // Époque autre que celle de la tête : cloud-pending.
     assert_eq!(a.core.read_journal(DEV_A, &epoch(2, DEV_A), C0, None).unwrap().status, "cloud-pending");
     // Segment manquant sous la tête : cloud-pending, jamais sauté.
-    let seg1 = ["devices", DEV_A, ep.as_str(), "j-00000001.ctj"];
+    let seg1 = ["devices", DEV_A, ep.as_str(), "j-00000001.spj"];
     let saved = fs.get(&seg1).unwrap();
     fs.remove(&seg1);
     let page = a.core.read_journal(DEV_A, &ep, C0, None).unwrap();
@@ -530,14 +530,14 @@ fn y01_12_reading_edge_cases_cloud_pending_truncated_more_and_rollback() {
     let page = a.core.read_journal(DEV_A, &ep, C0, None).unwrap();
     assert_eq!((page.status, page.records.len()), ("truncated", 2));
     fs.put(&seg1, &saved);
-    // state.ctx à ligne incomplète : cloud-pending.
-    let state_path = ["devices", DEV_A, "state.ctx"];
+    // state.spx à ligne incomplète : cloud-pending.
+    let state_path = ["devices", DEV_A, "state.spx"];
     let good_state = fs.get(&state_path).unwrap();
     fs.truncate(&state_path, good_state.len() - 1);
     let scan = a.core.scan(&[]).unwrap();
     assert_eq!(scan.devices[0].state_status, "cloud-pending");
     fs.put(&state_path, &good_state);
-    // Ancien state.ctx relivré (rejeu) : rollback.
+    // Ancien state.spx relivré (rejeu) : rollback.
     a.core.write_state(14, state(DEV_A, &ep, 2, 2, 1, Some(hlc(20, DEV_A)))).unwrap();
     let b = other(&fs);
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
@@ -567,10 +567,10 @@ fn y01_12_snapshots_and_own_file_deletion() {
     append(&a, &ep, 2, 0, 20, &["{}"]).unwrap();
     let handle = a.core.snapshot_begin(&ep, 1, 14).unwrap();
     a.core.snapshot_append(handle, &["{\"k\":\"snap-rows\"}".to_owned()]).unwrap();
-    assert!(fs.get(&["devices", DEV_A, &ep, "s-00000001.cts"]).is_none(), "visible seulement après le dernier appel");
+    assert!(fs.get(&["devices", DEV_A, &ep, "s-00000001.sps"]).is_none(), "visible seulement après le dernier appel");
     a.core.snapshot_commit(handle).unwrap();
-    assert!(fs.get(&["devices", DEV_A, &ep, "s-00000001.cts"]).is_some());
-    assert!(fs.get(&["devices", DEV_A, &ep, "s-00000001.cts.tmp"]).is_none());
+    assert!(fs.get(&["devices", DEV_A, &ep, "s-00000001.sps"]).is_some());
+    assert!(fs.get(&["devices", DEV_A, &ep, "s-00000001.sps.tmp"]).is_none());
     assert_eq!(code(a.core.snapshot_begin(&ep, 1, 14)), SyncCode::SegmentMismatch, "numéro déjà pris");
     let mut s = state(DEV_A, &ep, 1, 2, 1, Some(hlc(20, DEV_A)));
     s["snapshot"] = json!({ "seq": 1, "endHlc": hlc(20, DEV_A) });
@@ -605,9 +605,9 @@ fn orphan_device(ep: &str) -> (Device, std::sync::Arc<MemFs>) {
     a.setup(DEV_A);
     open_snapshot_only(&a, ep);
     // `own.json` désigne l'orpheline sans état : un état d'abord écrit (pour que Rust retienne l'époque), puis `stateSeq` remis à 0 et
-    // `state.ctx` retiré.
+    // `state.spx` retiré.
     a.core.write_state(14, state(DEV_A, ep, 1, 0, 0, None)).unwrap();
-    fs.remove(&["devices", DEV_A, "state.ctx"]);
+    fs.remove(&["devices", DEV_A, "state.spx"]);
     let path = a.base.path().join("sync").join("own.json");
     let mut own: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
     own["stateSeq"] = json!(0);
@@ -628,16 +628,16 @@ fn y_ios_02_abandon_orphan_epoch_resets_own_json_only_and_is_idempotent() {
     let (a, fs) = orphan_device(&high);
     assert!(a.core.snapshot_begin(&low_epoch(), 1, 14).is_err(), "own.json désigne l'orpheline (plus grande) : l'époque du PC est refusée");
     a.core.abandon_orphan_epoch(&high).unwrap();
-    assert!(fs.get(&["devices", DEV_A, &high, "s-00000001.cts"]).is_some(), "aucun fichier touché");
+    assert!(fs.get(&["devices", DEV_A, &high, "s-00000001.sps"]).is_some(), "aucun fichier touché");
     a.core.abandon_orphan_epoch(&high).unwrap();
     a.core.abandon_orphan_epoch(&epoch(1, DEV_B)).unwrap();
     let handle = a.core.snapshot_begin(&low_epoch(), 1, 14).unwrap();
     a.core.snapshot_commit(handle).unwrap();
     assert_eq!(a.core.delete_own(&[OwnFileRef { epoch: high.clone(), kind: "epoch".into(), n: None }]).unwrap(), 1);
-    assert!(fs.get(&["devices", DEV_A, &high, "s-00000001.cts"]).is_none());
+    assert!(fs.get(&["devices", DEV_A, &high, "s-00000001.sps"]).is_none());
 }
 
-/// Refus (`state-mismatch`, rien d'écrit) quand la preuve ne tient pas : `state.ctx`, `state.next.ctx`, segment, second instantané, autre
+/// Refus (`state-mismatch`, rien d'écrit) quand la preuve ne tient pas : `state.spx`, `state.next.spx`, segment, second instantané, autre
 /// époque, `stateSeq` > 0 sans enregistrement ; nom invalide (`bad-name`).
 #[test]
 fn y_ios_02_abandon_orphan_epoch_refusals() {
@@ -648,18 +648,18 @@ fn y_ios_02_abandon_orphan_epoch_refusals() {
         assert_eq!(code(a.core.abandon_orphan_epoch(&high)), SyncCode::StateMismatch);
         assert!(a.core.snapshot_begin(&low_epoch(), 1, 14).is_err(), "own.json inchangé");
     };
-    refused(&|fs| fs.put(&["devices", DEV_A, "state.ctx"], b"x"));
-    refused(&|fs| fs.put(&["devices", DEV_A, "state.next.ctx"], b"x"));
-    refused(&|fs| fs.put(&["devices", DEV_A, &epoch(1, IPHONE), "j-00000001.ctj"], b"x"));
-    refused(&|fs| fs.put(&["devices", DEV_A, &epoch(1, IPHONE), "s-00000002.cts"], b"x"));
-    refused(&|fs| fs.put(&["devices", DEV_A, &epoch(2, IPHONE), "s-00000001.cts"], b"x"));
+    refused(&|fs| fs.put(&["devices", DEV_A, "state.spx"], b"x"));
+    refused(&|fs| fs.put(&["devices", DEV_A, "state.next.spx"], b"x"));
+    refused(&|fs| fs.put(&["devices", DEV_A, &epoch(1, IPHONE), "j-00000001.spj"], b"x"));
+    refused(&|fs| fs.put(&["devices", DEV_A, &epoch(1, IPHONE), "s-00000002.sps"], b"x"));
+    refused(&|fs| fs.put(&["devices", DEV_A, &epoch(2, IPHONE), "s-00000001.sps"], b"x"));
     // `stateSeq` > 0 sans enregistrement ni fichier d'état (état publié puis fichier disparu).
     let (a, fs) = orphan_device(&high);
     a.core.write_state(14, state(DEV_A, &high, 1, 0, 0, None)).unwrap();
-    fs.remove(&["devices", DEV_A, "state.ctx"]);
+    fs.remove(&["devices", DEV_A, "state.spx"]);
     assert_eq!(code(a.core.abandon_orphan_epoch(&high)), SyncCode::StateMismatch);
     assert_eq!(code(a.core.abandon_orphan_epoch("pas-une-epoque")), SyncCode::BadName);
-    assert!(fs.get(&["devices", DEV_A, &high, "s-00000001.cts"]).is_some());
+    assert!(fs.get(&["devices", DEV_A, &high, "s-00000001.sps"]).is_some());
 }
 
 /// Réinitialisation en cours (`reset.json` actif) : l'abandon est refusé (`state-mismatch`), `own.json` inchangé.
@@ -691,7 +691,7 @@ fn y_ios_02_abandon_orphan_epoch_refuses_a_truncated_listing() {
         fs.put(&["devices", DEV_A, &format!("z{i:05}.txt")], b"x");
     }
     assert_eq!(code(b.core.abandon_orphan_epoch(&high)), SyncCode::StateMismatch);
-    assert!(fs.get(&["devices", DEV_A, &high, "s-00000001.cts"]).is_some());
+    assert!(fs.get(&["devices", DEV_A, &high, "s-00000001.sps"]).is_some());
 }
 
 /// B5 reste entière : `sync_delete_own` refuse l'époque courante, même orpheline.
@@ -739,7 +739,7 @@ fn y01_12_device_without_state_reports_its_kid_and_a_third_device_folder() {
 
 /// Ajout coupé net (`partialLastLine` du plan de pannes) : refusé en `io`, lignes complètes sauf la dernière, `own.json` inchangé.
 fn cut_append(d: &Device, fs: &std::sync::Arc<MemFs>, ep: &str, segment: u64, expect: u64, ms: u64, records: &[&str]) {
-    let file = format!("devices/{DEV_A}/{ep}/j-{segment:08}.ctj");
+    let file = format!("devices/{DEV_A}/{ep}/j-{segment:08}.spj");
     let faults = json!([{ "id": "cut", "op": "write", "file": file, "nth": 1, "effect": "error", "code": "io", "partialLastLine": true }]);
     fs.arm(crate::support::fault_plan::parse_plan(&json!({ "name": "Y-FIX-05", "faults": faults })).unwrap()).unwrap();
     assert_eq!(code(append(d, ep, segment, expect, ms, records)), SyncCode::Io);
@@ -772,7 +772,7 @@ fn y_fix_05_c9_first_append_cut_leaves_no_closed_entry_and_the_reader_goes_past_
     let ep = epoch(1, DEV_A);
     // Premier ajout coupé : segment 1 = en-tête et une demi-ligne, jamais enregistré (own.segment = 0).
     cut_append(&a, &fs, &ep, 1, 0, 10, &["{\"k\":\"ops\",\"i\":0}"]);
-    let parts = ["devices", DEV_A, ep.as_str(), "j-00000001.ctj"];
+    let parts = ["devices", DEV_A, ep.as_str(), "j-00000001.spj"];
     assert!(!fs.get(&parts).unwrap().ends_with(b"\n"), "ligne incomplète en fin");
     assert_eq!((own_state(&a).segment, own_state(&a).record), (0, 0));
     // Ajout suivant au segment 2 (`max + 1`) : accepté, aucune entrée `closed` (jamais d'entrée à 0), état valide.

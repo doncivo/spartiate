@@ -54,7 +54,7 @@ describe('réinitialisation à trois appareils, B hors ligne, C éteint (critèr
     const k2 = (await a.platform.key.status()).nextKid;
     expect(k2).toMatch(/^[0-9a-f]{16}$/);
     expect(a.service.status().reset).toMatchObject({ role: 'initiator', step: 'waiting-devices', waiting: [B_ID, C_ID].sort() });
-    // L'annonce est sous K dans state.ctx de A ; l'état sous K2 dans state.next.ctx.
+    // L'annonce est sous K dans state.spx de A ; l'état sous K2 dans state.next.spx.
     expect(publishedState(a, a.id)?.reset).toMatchObject({ kid: k2 });
     expect(publishedState(a, a.id, 'next')?.epoch).toMatch(/^e0002-/);
     await a.createTask('A après la réinitialisation');
@@ -97,7 +97,7 @@ describe('réinitialisation à trois appareils, B hors ligne, C éteint (critèr
     await reassociate(a, iphone, [a, b, iphone]);
     await iphone.cycle();
     syncOnline([a, b, iphone]);
-    // A bascule (B et C réassociés), puis B et C, qui lisent le state.ctx de A sous K2.
+    // A bascule (B et C réassociés), puis B et C, qui lisent le state.spx de A sous K2.
     await a.cycle();
     expect(a.service.status().reset).toMatchObject({ step: 'done' });
     expect((await a.platform.key.status()).kid).toBe(k2);
@@ -125,7 +125,7 @@ describe('réinitialisation à trois appareils, B hors ligne, C éteint (critèr
 });
 
 describe('suspension seulement sur une annonce authentique (critères 8 et 9)', () => {
-  it('faux state.ctx étranger avec annonce forgée, ancien état rejoué, annonce d’un appareil inconnu : aucune suspension', async () => {
+  it('faux state.spx étranger avec annonce forgée, ancien état rejoué, annonce d’un appareil inconnu : aucune suspension', async () => {
     const [a, b] = (await setupRoom(room, [B_ID])) as [SimDevice, SimDevice];
     const forgedId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd' as DeviceId;
     const ep = publishedState(a, a.id)?.epoch ?? '';

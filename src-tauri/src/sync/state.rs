@@ -1,6 +1,6 @@
-//! État publié d'un appareil (`state.ctx`, ADR 0011 section 1.4) et tête de ses propres ajouts (`own.json`).
+//! État publié d'un appareil (`state.spx`, ADR 0011 section 1.4) et tête de ses propres ajouts (`own.json`).
 //!
-//! `PublishedState` est le texte clair de l'unique enregistrement de `state.ctx`, sous la forme canonique de
+//! `PublishedState` est le texte clair de l'unique enregistrement de `state.spx`, sous la forme canonique de
 //! `publishedStateToJson` (`format.ts`) : clés dans un ordre fixe, accusés triés par `device_id`, `pairedBy` absent s'il n'est pas
 //! connu. Analyse stricte : clés exactes (une clé facultative absente est refusée, sauf `pairedBy`), entiers non signés, noms et hlc
 //! stricts, 64 accusés et 64 appareils oubliés au plus, tête dans l'époque annoncée.
@@ -77,7 +77,7 @@ pub fn closed_is_valid(closed: &[ClosedSegment], head_segment: u64) -> bool {
         && closed.windows(2).all(|w| w[0].segment < w[1].segment)
 }
 
-/// Texte clair de `state.ctx`.
+/// Texte clair de `state.spx`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PublishedState {

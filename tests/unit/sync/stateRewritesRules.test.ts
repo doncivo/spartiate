@@ -6,9 +6,9 @@ import { A_ID, B_ID, C_ID, closeAll, DAY, reassociate, setupRoom, type Room } fr
 
 /**
  * Y-TECH-01, QA : aucune règle de synchro n'est bloquée plus de 30 minutes de cycles (6 tours de 5 minutes) par la nouvelle comparaison de
- * `state.ctx` : purge d'une suppression (Y-09), suppression des fichiers d'un appareil oublié (Y-10), bascule d'une réinitialisation (Y-11).
+ * `state.spx` : purge d'une suppression (Y-09), suppression des fichiers d'un appareil oublié (Y-10), bascule d'une réinitialisation (Y-11).
  * Horloge injectée, aucun délai réel. Les accusés attendus par une règle doivent être publiés au cycle même de la lecture, pas au prochain
- * rafraîchissement : les assertions « avant tout rafraîchissement » le vérifient directement dans le `state.ctx` publié.
+ * rafraîchissement : les assertions « avant tout rafraîchissement » le vérifient directement dans le `state.spx` publié.
  */
 
 const CYCLE_MS = 5 * 60_000;
@@ -98,7 +98,7 @@ describe('Y-TECH-01 QA : suppression des fichiers d\'un oublié (Y-10), 3 appare
 });
 
 describe('Y-TECH-01 QA : réinitialisation en cours puis oubli (Y-10 et Y-11 ensemble), C éteint', () => {
-  it('A et B attendent C pendant 2 heures : écritures de state.ctx bornées (rafraîchissement) ; A oublie C : bascule de A et B en au plus 6 tours', async () => {
+  it('A et B attendent C pendant 2 heures : écritures de state.spx bornées (rafraîchissement) ; A oublie C : bascule de A et B en au plus 6 tours', async () => {
     const [a, b, c] = (await setupRoom(room, [B_ID, C_ID])) as [SimDevice, SimDevice, SimDevice];
     const live = [a, b];
     for (let t = 0; t < MAX_TICKS; t += 1) await tick(live);

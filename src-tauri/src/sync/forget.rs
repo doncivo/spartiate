@@ -3,7 +3,7 @@
 //! - **Registre** `sync/forgotten.json` (dossier de configuration, `.tmp` + renommage), lié à `folderId` et `deviceId`, qui **ne fait que
 //!   grandir** : `entries` (liste maître : ses déclarations et toutes les déclarations bien formées **retenues** lues dans un état
 //!   authentifié, dans l'ordre d'apprentissage, 64 au plus), `accepted` (anti-rejeu persistant `(epoch, stateSeq, digest)` par appareil),
-//!   `done` (appareils oubliés terminés). Chaque appareil republie la liste maître entière dans son `state.ctx`.
+//!   `done` (appareils oubliés terminés). Chaque appareil republie la liste maître entière dans son `state.spx`.
 //! - Auteur d'une déclaration = appareil de son hlc `at`, jamais l'appareil qui la publie.
 //! - `forget_order`, `learn_declarations`, `cutoff`, `forgotten_delete_check`, `completed_forgotten`, `next_declaration_hlc` : fonctions
 //!   pures, **mêmes règles que `retention.ts`**, vérifiées sur la même table de cas (`tests/fixtures/sync/forget-order.json`).

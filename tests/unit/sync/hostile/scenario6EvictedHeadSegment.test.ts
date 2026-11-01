@@ -36,9 +36,9 @@ describe('Y-TECH-03 scénario 6 : segment de tête de l’iPhone évincé (défa
     syncFolders([a, b]);
     await a.cycle();
     syncFolders([a, b]);
-    expect(b.folder.fileNames(b.id).filter((f) => f.endsWith('.ctj'))).toHaveLength(1);
+    expect(b.folder.fileNames(b.id).filter((f) => f.endsWith('.spj'))).toHaveLength(1);
     // iOS évince le segment de tête de l'iPhone ; le téléchargement est possible (1 s).
-    b.folder.armFaults({ name: 'tete-evincee', faults: [{ id: 'head-placeholder', op: 'list', file: `devices/${B_ID}/*/j-*.ctj`, nth: 1, effect: 'placeholder' }] });
+    b.folder.armFaults({ name: 'tete-evincee', faults: [{ id: 'head-placeholder', op: 'list', file: `devices/${B_ID}/*/j-*.spj`, nth: 1, effect: 'placeholder' }] });
     b.platform.testing.setHydrationDelay(1_000);
     const late = await b.createTask('iPhone 2');
     const statuses = [];

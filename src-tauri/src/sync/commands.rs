@@ -613,7 +613,7 @@ pub async fn sync_device_forget(app: AppHandle, window: WebviewWindow, state: St
 }
 
 /// Y-10 : suppression des fichiers d'un appareil oublié, appelée par le cycle (sans boîte) ; conditions recalculées par Rust depuis
-/// les `state.ctx` authentifiés, seule entrée : l'identifiant.
+/// les `state.spx` authentifiés, seule entrée : l'identifiant.
 #[tauri::command]
 pub async fn sync_forgotten_delete(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>, device_id: String) -> SyncResult<ForgottenDeleted> {
     require_main(&window)?;

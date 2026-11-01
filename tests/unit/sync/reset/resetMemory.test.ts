@@ -218,11 +218,11 @@ describe('seconde revue, point 2 : don de la clé hors réinitialisation', () =>
   it('un oublié dont l’état attend iCloud ne bloque pas « Associer l’iPhone » ; un actif, si (cloud-pending)', async () => {
     const [a, b, c] = (await setupRoom(room, [B_ID, C_ID])) as [SimDevice, SimDevice, SimDevice];
     void a;
-    b.folder.setAvailability(C_ID, 'state.ctx', 'cloud');
+    b.folder.setAvailability(C_ID, 'state.spx', 'cloud');
     expect(await codeOf(b.platform.key.openPairing('show'))).toBe('cloud-pending');
-    b.folder.setAvailability(C_ID, 'state.ctx', 'local');
+    b.folder.setAvailability(C_ID, 'state.spx', 'local');
     expect(await b.service.forgetDevice(c.id)).toEqual({ kind: 'done' });
-    b.folder.setAvailability(C_ID, 'state.ctx', 'cloud');
+    b.folder.setAvailability(C_ID, 'state.spx', 'cloud');
     expect(await codeOf(b.platform.key.openPairing('show'))).toBe('ok');
   });
 });
@@ -255,8 +255,8 @@ describe('seconde revue, point 3 : retrait prouvé sans annonce lue', () => {
   });
 });
 
-describe('seconde revue, audit bas : revérification sous K2 avant la suppression de state.next.ctx', () => {
-  it('arrêt avant l’étape 2, ancien state.ctx remis : state-mismatch, state.next.ctx gardé, ancienne clé gardée', async () => {
+describe('seconde revue, audit bas : revérification sous K2 avant la suppression de state.next.spx', () => {
+  it('arrêt avant l’étape 2, ancien state.spx remis : state-mismatch, state.next.spx gardé, ancienne clé gardée', async () => {
     const [a] = (await setupRoom(room, [])) as [SimDevice];
     const old = a.folder.takeState(a.id);
     const k = (await a.platform.key.status()).kid;

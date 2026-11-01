@@ -608,52 +608,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "spartiate"
-version = "0.1.0"
-dependencies = [
- "aws-lc-rs",
- "base64 0.22.1",
- "keyring",
- "libc",
- "minisign",
- "rand 0.9.5",
- "reqwest",
- "rusqlite",
- "security-framework 3.7.0",
- "serde",
- "serde_json",
- "sha2",
- "tauri",
- "tauri-build",
- "tauri-plugin-autostart",
- "tauri-plugin-barcode-scanner",
- "tauri-plugin-biometric",
- "tauri-plugin-ct-files",
- "tauri-plugin-ct-haptics",
- "tauri-plugin-dialog",
- "tauri-plugin-folder-bookmark",
- "tauri-plugin-global-shortcut",
- "tauri-plugin-notification",
- "tauri-plugin-notification-actions",
- "tauri-plugin-opener",
- "tauri-plugin-privacy-shield",
- "tauri-plugin-process",
- "tauri-plugin-reminders",
- "tauri-plugin-single-instance",
- "tauri-plugin-speech",
- "tauri-plugin-sql",
- "tauri-plugin-updater",
- "tauri-plugin-vision",
- "tauri-plugin-web-auth",
- "tempfile",
- "tokio",
- "url",
- "webview2-com",
- "windows",
- "zeroize",
-]
-
-[[package]]
 name = "cmake"
 version = "0.1.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4507,6 +4461,52 @@ dependencies = [
  "gobject-sys",
  "libc",
  "system-deps",
+]
+
+[[package]]
+name = "spartiate"
+version = "0.1.0"
+dependencies = [
+ "aws-lc-rs",
+ "base64 0.22.1",
+ "keyring",
+ "libc",
+ "minisign",
+ "rand 0.9.5",
+ "reqwest",
+ "rusqlite",
+ "security-framework 3.7.0",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-autostart",
+ "tauri-plugin-barcode-scanner",
+ "tauri-plugin-biometric",
+ "tauri-plugin-ct-files",
+ "tauri-plugin-ct-haptics",
+ "tauri-plugin-dialog",
+ "tauri-plugin-folder-bookmark",
+ "tauri-plugin-global-shortcut",
+ "tauri-plugin-notification",
+ "tauri-plugin-notification-actions",
+ "tauri-plugin-opener",
+ "tauri-plugin-privacy-shield",
+ "tauri-plugin-process",
+ "tauri-plugin-reminders",
+ "tauri-plugin-single-instance",
+ "tauri-plugin-speech",
+ "tauri-plugin-sql",
+ "tauri-plugin-updater",
+ "tauri-plugin-vision",
+ "tauri-plugin-web-auth",
+ "tempfile",
+ "tokio",
+ "url",
+ "webview2-com",
+ "windows",
+ "zeroize",
 ]
 
 [[package]]

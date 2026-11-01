@@ -8,7 +8,7 @@ import { SyncPlatformError } from '../../../src/platform/sync/types';
 import table from '../../fixtures/sync/closed-segments.json';
 
 /**
- * Y-TECH-02, ADR 0011 §21 point 2 : nombre d'enregistrements des segments clos (`closed` de `state.ctx`, maître Rust, reproduit par
+ * Y-TECH-02, ADR 0011 §21 point 2 : nombre d'enregistrements des segments clos (`closed` de `state.spx`, maître Rust, reproduit par
  * `memory.ts`). Table commune avec Rust (`tests/fixtures/sync/closed-segments.json`), schéma, écriture. Aucun délai réel.
  */
 
@@ -74,7 +74,7 @@ async function writeSegments(p: MemorySyncPlatform, segments: readonly SegmentCa
     ms += 10;
     if (s.cut === true) {
       if (!folder) throw new Error('cut sans dossier');
-      folder.armFaults({ name: 'cut', faults: [{ id: 'cut', op: 'write', file: `devices/${A}/${E1}/j-${String(s.segment).padStart(8, '0')}.ctj`, nth: 1, effect: 'error', code: 'io', partialLastLine: true }] });
+      folder.armFaults({ name: 'cut', faults: [{ id: 'cut', op: 'write', file: `devices/${A}/${E1}/j-${String(s.segment).padStart(8, '0')}.spj`, nth: 1, effect: 'error', code: 'io', partialLastLine: true }] });
       const refused = await p.appendJournal({ epoch: E1, segment: s.segment, expectRecords: 0, sv: 14, maxHlc: hlc(ms), records }).then(
         () => 'ok',
         (e: unknown) => (e instanceof SyncPlatformError ? e.code : 'autre'),
@@ -155,7 +155,7 @@ describe('schéma de closed (parse.ts, format.ts)', () => {
     expect(publishedStateFromJson(base(many, { segment: MAX_STATE_CLOSED_SEGMENTS + 2, record: 1, hlc: hlc(30) }))).toBeNull();
     expect(publishedStateFromJson(base(many.slice(1), { segment: MAX_STATE_CLOSED_SEGMENTS + 2, record: 1, hlc: hlc(30) }))?.closed).toHaveLength(MAX_STATE_CLOSED_SEGMENTS);
   });
-  it('texte de state.ctx : la clé closed compte comme pairedBy (champ facultatif de premier niveau)', () => {
+  it('texte de state.spx : la clé closed compte comme pairedBy (champ facultatif de premier niveau)', () => {
     const text = JSON.stringify(base([{ segment: 1, records: 3 }]));
     expect(parsePublishedStateText(text)?.closed).toEqual([{ segment: 1, records: 3 }]);
     expect(parsePublishedStateText(text.replace('"closed"', '"closed":[],"closed"'))).toBeNull();

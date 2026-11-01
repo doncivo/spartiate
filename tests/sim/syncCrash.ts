@@ -2,7 +2,7 @@ import type { SimDevice } from './syncDevice';
 
 /**
  * Arrêt brutal simulé d'un appareil (ADR 0011, sections 3.3, 5.5, 9.1 et 10.2 ; Y-02, Y-05 critère 5) : le processus meurt juste avant
- * la n-ième **écriture** du cycle (ajout au journal, `state.ctx`, instantané, suppression de ses fichiers, transaction ou écriture
+ * la n-ième **écriture** du cycle (ajout au journal, `state.spx`, instantané, suppression de ses fichiers, transaction ou écriture
  * hors transaction dans la base). Une fois mort, tout appel (lecture comprise) échoue : le cycle ne peut plus rien faire, comme un
  * processus tué. Les lectures ne sont pas des points d'arrêt : un arrêt avant une lecture équivaut à un arrêt avant l'écriture suivante.
  *

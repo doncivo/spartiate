@@ -68,7 +68,7 @@ export interface SyncFolderInfo {
 
 export type FileAvailability = 'local' | 'cloud' | 'error';
 
-/** Statut du `state.ctx` au scan : liste unique dans `src/domain/sync/ownState.ts` (Y-TECH-02, règles pures du statut). */
+/** Statut du `state.spx` au scan : liste unique dans `src/domain/sync/ownState.ts` (Y-TECH-02, règles pures du statut). */
 export type { DeviceStateStatus } from '../../domain/sync/ownState';
 
 export interface EpochListing {
@@ -483,7 +483,7 @@ export interface SyncDeviceStatus {
   readonly self: boolean;
   readonly lastReadAt: IsoDateTime | null;
   /**
-   * N-07 (ADR 0012 avenant N1.6) : instant de la dernière synchro PUBLIÉE par cet appareil (`lastSyncHlc` de son dernier `state.ctx` accepté),
+   * N-07 (ADR 0012 avenant N1.6) : instant de la dernière synchro PUBLIÉE par cet appareil (`lastSyncHlc` de son dernier `state.spx` accepté),
    * rafraîchi toutes les 30 minutes au plus ; pour les AUTRES appareils seulement, null si inconnu. Sert à l'avertissement du PC (un rappel
    * proche que l'iPhone n'a peut-être pas encore reçu). Champ facultatif : le format publié ne change pas.
    */

@@ -11,7 +11,7 @@ import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, taskSna
 /**
  * Y-IOS-02-FIX-02 (ADR 0011 §24 point 10) : publication bloquée pour toujours par l'instantané d'une orpheline resté dans iCloud alors que
  * le mémo `sync_meta.orphanEpoch` a été perdu. État réel de la séance 0.3.2 du 2026-10-16 : l'iPhone `ef50…` suit l'époque du PC
- * `e0001-56d4…`, lit son journal, n'a jamais publié d'état (`stateSeq` 0), `orphanEpoch` nul, et `devices/ef50…/e0001-ef50…/s-00000001.cts`
+ * `e0001-56d4…`, lit son journal, n'a jamais publié d'état (`stateSeq` 0), `orphanEpoch` nul, et `devices/ef50…/e0001-ef50…/s-00000001.sps`
  * est le seul fichier de son dossier. Horloge injectée, faux dossier en mémoire, aucun délai réel.
  */
 
@@ -57,7 +57,7 @@ async function seedOrphan(b: SimDevice): Promise<void> {
 
 /**
  * Reproduit l'état de la séance : abandon de l'orpheline et arrivée dans `56d4` faits (journal du PC lu), état jamais écrit (cycle
- * interrompu avant `state.ctx` et avant tout segment), puis mémo `orphanEpoch` effacé alors que `s-00000001.cts` reste dans le dossier.
+ * interrompu avant `state.spx` et avant tout segment), puis mémo `orphanEpoch` effacé alors que `s-00000001.sps` reste dans le dossier.
  */
 async function aliState(memo: 'lost' | 'kept' = 'lost'): Promise<{ a: SimDevice; b: SimDevice; testPc: TaskId; localIphone: TaskId }> {
   const a = await createSimDevice(A_ID, { name: 'PC' });
@@ -112,7 +112,7 @@ async function converge(list: readonly SimDevice[], rounds = 2): Promise<void> {
 }
 
 describe('Y-IOS-02-FIX-02 : état réel de la séance (critère 16)', () => {
-  it('orphanEpoch nul et s-00000001.cts de ef50 listé seul : le cycle suivant réarme, supprime, publie, le PC lit l’iPhone, les tâches circulent dans les deux sens', async () => {
+  it('orphanEpoch nul et s-00000001.sps de ef50 listé seul : le cycle suivant réarme, supprime, publie, le PC lit l’iPhone, les tâches circulent dans les deux sens', async () => {
     const { a, b, testPc, localIphone } = await aliState();
     const status = await b.cycle();
     expect(status.phase).toBe('idle');
@@ -287,7 +287,7 @@ describe('Y-IOS-02-FIX-02 : format du journal (ADR 0014, critère 13)', () => {
     expect(sanitizeLogDetail(`publish-deferred ${deferred}`)).toBe(`publish-deferred ${deferred}`);
     const relisted = JSON.stringify({ epoch: ORPHAN.slice(0, 14) });
     expect(sanitizeLogDetail(`orphan-epoch-relisted ${relisted}`)).toBe(`orphan-epoch-relisted ${relisted}`);
-    expect(relisted).not.toContain('.cts');
+    expect(relisted).not.toContain('.sps');
     // Époque complète (42 caractères) : masquée à l'export, d'où la forme tronquée (limite des autres entrées notée dans docs/dettes.md).
     expect(sanitizeLogDetail(JSON.stringify({ epoch: ORPHAN }))).toBe(LOG_MASK);
   });
@@ -357,7 +357,7 @@ describe('Y-IOS-02-FIX-02 : garde-fous du réarmement (QA, critères 8, 10, 11, 
     await b.platform.writeSnapshot({ epoch: PC_EPOCH, seq: 1, sv: SCHEMA_VERSION, records: (async function* () { yield ['{"k":"snap-end","count":0,"covers":{},"epoch":"' + PC_EPOCH + '","sv":' + String(SCHEMA_VERSION) + '}']; })() });
     const text = JSON.stringify(b.logger.entries.filter((e) => ['orphan-epoch-relisted', 'orphan-epoch-delete-failed', 'publish-deferred'].includes(e.event)));
     expect(text).toContain('orphan-epoch-relisted');
-    expect(text).not.toMatch(/\.cts|\.json|devices|\\|\/|s-0000/);
+    expect(text).not.toMatch(/\.sps|\.json|devices|\\|\/|s-0000/);
     expect(text).not.toContain(B_ID);
     expect(text).not.toContain(A_ID);
   });
@@ -414,7 +414,7 @@ function scanWith(b: SimDevice, opts: { own?: (epochs: ScanDevice['epochs']) => 
 const hideOrphan = (epochs: ScanDevice['epochs']): ScanDevice['epochs'] => epochs.filter((e) => e.epoch !== ORPHAN);
 
 describe('Y-IOS-02-FIX-02 : revue « à corriger » (points 1 à 4)', () => {
-  it('point 1 : state.ctx supprimé par un tiers, base restaurée à stateSeq 0, seul un instantané d’ancienne époque non annoncée : Rust refuse stateSeq 1, publish-blocked, jamais « À jour »', async () => {
+  it('point 1 : state.spx supprimé par un tiers, base restaurée à stateSeq 0, seul un instantané d’ancienne époque non annoncée : Rust refuse stateSeq 1, publish-blocked, jamais « À jour »', async () => {
     const { b } = await aliState();
     // Aucune écriture à publier : le dossier de l'iPhone ne contiendra que son état (aucun segment).
     await b.data.repos.sync.clearOutbox(await b.data.repos.sync.maxOutboxSeq());
@@ -422,7 +422,7 @@ describe('Y-IOS-02-FIX-02 : revue « à corriger » (points 1 à 4)', () => {
     withPlatform(b, { ...b.platform, deleteOwn: (files) => (files.some((f) => f.kind === 'epoch') ? Promise.reject(new SyncPlatformError('io')) : b.platform.deleteOwn(files)) });
     expect((await b.cycle()).warnings ?? []).not.toContain('publish-blocked');
     expect(b.folder.devices.get(b.id)?.state ?? null).not.toBeNull();
-    // Un tiers supprime state.ctx ; la base est restaurée d'avant toute publication (stateSeq 0, mémo et dernier état effacés).
+    // Un tiers supprime state.spx ; la base est restaurée d'avant toute publication (stateSeq 0, mémo et dernier état effacés).
     const own = b.folder.devices.get(b.id);
     if (own) own.state = null;
     for (const key of ['stateSeq', 'lastState', 'orphanEpoch']) await b.data.repos.sync.setMeta(key, null);

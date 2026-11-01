@@ -379,7 +379,7 @@ describe('un seul bandeau, le plus urgent (critère 9 g) ; sobriété (9 h)', ()
     await start().refreshed();
     set({ phase: 'error', errorCode: 'unsafe-folder', folderLabel: 'Spartiate' });
     const first = useAppStatusStore.getState().sources.syncTrouble;
-    expect(first?.message).not.toMatch(/[\\/]|[A-Za-z]:|\.ctx|\.jsonl/);
+    expect(first?.message).not.toMatch(/[\\/]|[A-Za-z]:|.spx|\.jsonl/);
     set({ conflictsThisWeek: 3 });
     expect(useAppStatusStore.getState().sources.syncTrouble).toBe(first);
   });

@@ -172,9 +172,9 @@ describe('identifiants et noms : bornes exactes et hostiles (section 1.1)', () =
   });
 
   it('noms de fichier : bornes de numéro, saut de ligne, chiffres hors ASCII, casse', () => {
-    expect(parseSyncFileName('j-99999999.ctj')).toEqual({ kind: 'segment', n: 99_999_999 });
-    expect(parseSyncFileName('s-99999999.cts')).toEqual({ kind: 'snapshot', n: 99_999_999 });
-    for (const name of ['j-100000000.ctj', 'j-00000001.ctj\n', 'j-0000000١.ctj', 's-00000000.cts', 'State.ctx', 'state.ctx ', ' state.ctx', 'j-00000001.CTJ', 's-00000001.ctj', '', '.', '..', 'j-00000001.ctj/x']) {
+    expect(parseSyncFileName('j-99999999.spj')).toEqual({ kind: 'segment', n: 99_999_999 });
+    expect(parseSyncFileName('s-99999999.sps')).toEqual({ kind: 'snapshot', n: 99_999_999 });
+    for (const name of ['j-100000000.spj', 'j-00000001.spj\n', 'j-0000000١.spj', 's-00000000.sps', 'State.spx', 'state.spx ', ' state.spx', 'j-00000001.CTJ', 's-00000001.spj', '', '.', '..', 'j-00000001.spj/x']) {
       expect(parseSyncFileName(name), name).toBeNull();
     }
   });

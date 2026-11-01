@@ -239,7 +239,7 @@ describe('réassociation de B : échec visible et persistant (critère 18)', () 
   });
 });
 
-describe('state.ctx étranger sans annonce (critères 8 et 9, §1.4)', () => {
+describe('state.spx étranger sans annonce (critères 8 et 9, §1.4)', () => {
   const foreignState = (owner: SimDevice, deviceId: string, withNotice: boolean): StateFileCopy => {
     const real = JSON.parse(owner.folder.devices.get(owner.id)?.state?.lines[0]?.text ?? '{}') as Record<string, unknown>;
     return {
@@ -254,7 +254,7 @@ describe('state.ctx étranger sans annonce (critères 8 et 9, §1.4)', () => {
     } as unknown as StateFileCopy;
   };
 
-  it('un state.ctx étranger sans annonce : « Clé différente » pour cet appareil seulement, rien n’est suspendu, B continue de publier', async () => {
+  it('un state.spx étranger sans annonce : « Clé différente » pour cet appareil seulement, rien n’est suspendu, B continue de publier', async () => {
     const [a, b] = (await setupRoom(room, [B_ID])) as [SimDevice, SimDevice];
     b.folder.putState(foreignState(a, X_ID, false));
     for (let i = 0; i < 2; i += 1) expect((await b.cycle()).phase).not.toMatch(/reset-required|key-mismatch/);
@@ -265,7 +265,7 @@ describe('state.ctx étranger sans annonce (critères 8 et 9, §1.4)', () => {
     expect(await titles(a)).toContain('B publie');
   });
 
-  it('le state.ctx d’un appareil dont B est le propriétaire, remplacé par un tiers, est réécrit aussitôt sous la clé de B', async () => {
+  it('le state.spx d’un appareil dont B est le propriétaire, remplacé par un tiers, est réécrit aussitôt sous la clé de B', async () => {
     const [a, b] = (await setupRoom(room, [B_ID])) as [SimDevice, SimDevice];
     const kid = (await b.platform.key.status()).kid;
     b.folder.putState(foreignState(b, b.id, true));
@@ -337,7 +337,7 @@ describe('bascule en échec transitoire, sans redémarrage (critères 12 et 17)'
 });
 
 describe('ancien état rejoué et appareil resté sous l’ancienne clé', () => {
-  it('ancien state.ctx de A (annonce sous K) rejoué chez B après la bascule : aucune suspension, rien d’écrit', async () => {
+  it('ancien state.spx de A (annonce sous K) rejoué chez B après la bascule : aucune suspension, rien d’écrit', async () => {
     const [a, b] = (await setupRoom(room, [B_ID])) as [SimDevice, SimDevice];
     expect((await a.service.resetSync()).kind).toBe('started');
     const announced = a.folder.takeState(a.id);
@@ -357,7 +357,7 @@ describe('ancien état rejoué et appareil resté sous l’ancienne clé', () =>
       expect(await meta(d, RESET_META)).toMatchObject({ step: 'done' });
     }
     // Un état sous K est « Clé différente » pour B : B ne publie aucun journal de plus (au plus un instantané redondant, sous K2).
-    expect(b.folder.fileNames(b.id).filter((f) => f.endsWith('.ctj')).join()).toBe(JSON.parse(files).filter((f: string) => f.endsWith('.ctj')).join());
+    expect(b.folder.fileNames(b.id).filter((f) => f.endsWith('.spj')).join()).toBe(JSON.parse(files).filter((f: string) => f.endsWith('.spj')).join());
     expect(publishedState(a, a.id)?.stateSeq, 'l’état de A n’est pas remplacé').toBeGreaterThanOrEqual(seq ?? 0);
     await b.createTask('B après rejeu');
     await settle(room.devices, 3);

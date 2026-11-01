@@ -97,7 +97,7 @@ fn y01_7_root_replaced_by_a_junction_between_two_operations_is_refused() {
     assert!(junction(&folder, &elsewhere));
     assert_eq!(fs.start_cycle(), Err(FsError::Unsafe), "dossier devenu jonction");
     assert_eq!(fs.list(&["devices"], 10), Err(FsError::Unsafe));
-    assert_eq!(fs.append(&["x.ctj"], b"x", AppendMode::CreateNew), Err(FsError::Unsafe), "aucune écriture");
+    assert_eq!(fs.append(&["x.spj"], b"x", AppendMode::CreateNew), Err(FsError::Unsafe), "aucune écriture");
     assert!(std::fs::read_dir(&elsewhere).unwrap().next().is_none());
 }
 
@@ -108,22 +108,22 @@ fn y01_13_files_are_opened_relative_to_the_checked_folder_and_hard_links_are_ref
     std::fs::create_dir(&folder).unwrap();
     let fs = StdFs::new(check_sync_path(&folder).unwrap().path);
     fs.create_dir(&["devices", DEV_A]).unwrap();
-    fs.append(&["devices", DEV_A, "j.ctj"], b"ligne\n", AppendMode::CreateNew).unwrap();
-    assert_eq!(fs.append(&["devices", DEV_A, "j.ctj"], b"x", AppendMode::CreateNew), Err(FsError::Exists));
-    fs.append(&["devices", DEV_A, "j.ctj"], b"suite\n", AppendMode::Existing).unwrap();
-    assert_eq!(fs.read(&["devices", DEV_A, "j.ctj"], 100, false).unwrap(), b"ligne\nsuite\n");
-    assert_eq!(fs.read(&["devices", DEV_A, "j.ctj"], 5, false), Err(FsError::TooLarge), "taille contrôlée avant lecture");
-    fs.write_atomic(&["devices", DEV_A, "state.ctx"], b"v1").unwrap();
-    fs.write_atomic(&["devices", DEV_A, "state.ctx"], b"v2").unwrap();
-    assert_eq!(std::fs::read(folder.join("devices").join(DEV_A).join("state.ctx")).unwrap(), b"v2");
-    assert!(!folder.join("devices").join(DEV_A).join("state.ctx.tmp").exists());
+    fs.append(&["devices", DEV_A, "j.spj"], b"ligne\n", AppendMode::CreateNew).unwrap();
+    assert_eq!(fs.append(&["devices", DEV_A, "j.spj"], b"x", AppendMode::CreateNew), Err(FsError::Exists));
+    fs.append(&["devices", DEV_A, "j.spj"], b"suite\n", AppendMode::Existing).unwrap();
+    assert_eq!(fs.read(&["devices", DEV_A, "j.spj"], 100, false).unwrap(), b"ligne\nsuite\n");
+    assert_eq!(fs.read(&["devices", DEV_A, "j.spj"], 5, false), Err(FsError::TooLarge), "taille contrôlée avant lecture");
+    fs.write_atomic(&["devices", DEV_A, "state.spx"], b"v1").unwrap();
+    fs.write_atomic(&["devices", DEV_A, "state.spx"], b"v2").unwrap();
+    assert_eq!(std::fs::read(folder.join("devices").join(DEV_A).join("state.spx")).unwrap(), b"v2");
+    assert!(!folder.join("devices").join(DEV_A).join("state.spx.tmp").exists());
     let listing = fs.list(&["devices", DEV_A], 10).unwrap();
     let mut names: Vec<_> = listing.entries.iter().map(|e| (e.name.clone(), e.availability.as_str())).collect();
     names.sort();
-    assert_eq!(names, vec![("j.ctj".to_owned(), "local"), ("state.ctx".to_owned(), "local")]);
+    assert_eq!(names, vec![("j.spj".to_owned(), "local"), ("state.spx".to_owned(), "local")]);
     // Fichier à plusieurs liens physiques : refusé en écriture.
-    std::fs::hard_link(folder.join("devices").join(DEV_A).join("j.ctj"), root.join("autre-lien")).unwrap();
-    assert_eq!(fs.append(&["devices", DEV_A, "j.ctj"], b"x", AppendMode::Existing), Err(FsError::Unsafe));
+    std::fs::hard_link(folder.join("devices").join(DEV_A).join("j.spj"), root.join("autre-lien")).unwrap();
+    assert_eq!(fs.append(&["devices", DEV_A, "j.spj"], b"x", AppendMode::Existing), Err(FsError::Unsafe));
     // Sous-dossier remplacé par une jonction : refusé.
     let outside = root.join("dehors");
     std::fs::create_dir(&outside).unwrap();
@@ -134,8 +134,8 @@ fn y01_13_files_are_opened_relative_to_the_checked_folder_and_hard_links_are_ref
     let entry = fs.list(&["devices"], 10).unwrap().entries.into_iter().find(|e| e.name == "piege").unwrap();
     assert_eq!(entry.availability, Availability::Error, "listé comme point d'analyse refusé");
     // Suppression par handle ; dossier non vide jamais supprimé.
-    assert!(fs.remove_file(&["devices", DEV_A, "state.ctx"]).unwrap());
-    assert!(!fs.remove_file(&["devices", DEV_A, "state.ctx"]).unwrap());
+    assert!(fs.remove_file(&["devices", DEV_A, "state.spx"]).unwrap());
+    assert!(!fs.remove_file(&["devices", DEV_A, "state.spx"]).unwrap());
     fs.remove_empty_dir(&["devices", DEV_A]).unwrap();
     assert!(folder.join("devices").join(DEV_A).exists());
 }
@@ -167,7 +167,7 @@ fn y01_full_flow_on_disk_with_the_production_backend() {
     assert_eq!(scan.devices[0].state_status, "ok");
     let page = core.read_journal(DEV_A, &ep, RecordCursor { segment: 0, record: 0 }, None).unwrap();
     assert_eq!(page.records, vec!["{\"t\":\"Acheter du pain\"}".to_owned()]);
-    let on_disk = std::fs::read(folder.join("devices").join(DEV_A).join(&ep).join("j-00000001.ctj")).unwrap();
+    let on_disk = std::fs::read(folder.join("devices").join(DEV_A).join(&ep).join("j-00000001.spj")).unwrap();
     assert!(!String::from_utf8_lossy(&on_disk).contains("Acheter"));
     // Contrôles de l'existant inchangés : le dossier de sauvegarde garde son contrôle strict.
     assert!(spartiate_lib::export::is_local_disk_path(&folder));

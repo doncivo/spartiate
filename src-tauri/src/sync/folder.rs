@@ -116,6 +116,16 @@ pub fn is_circletasks_folder_name(name: &str) -> bool { // ancien-ok: garde de s
     name.trim().eq_ignore_ascii_case("circletasks") // ancien-ok: garde de séparation ADR 0017
 }
 
+/// ADR 0017 : nom de fichier de la famille de CircleTasks (`.ctx`, `.ctj`, `.cts`), jamais écrit par Spartiate (`.spx`, `.spj`, `.sps`). Casse ignorée ; // ancien-ok: garde de séparation ADR 0017
+/// `.tmp`, copie de conflit (`state 2.ctx`) et placeholder iCloud (`.nom.icloud`) comptent.
+pub fn is_circletasks_file_name(name: &str) -> bool { // ancien-ok: garde de séparation ADR 0017
+    let lower = name.to_lowercase();
+    let base = lower.trim_start_matches('.');
+    let base = base.strip_suffix(".icloud").unwrap_or(base);
+    let base = base.strip_suffix(".tmp").unwrap_or(base);
+    [".ctx", ".ctj", ".cts"].iter().any(|ext| base.ends_with(ext))
+}
+
 /// Dossier à lier après la boîte de choix (audit S10) : le dossier choisi ; si c'est `iCloud Drive` lui-même, son sous-dossier
 /// `Spartiate`, à créer seulement maintenant que l'utilisateur a validé. Rend (dossier, à créer).
 pub fn chosen_target(chosen: &Path, icloud_drive: Option<&Path>) -> (PathBuf, bool) {

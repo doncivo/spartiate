@@ -122,7 +122,7 @@ describe('coupure au maximum des accusés, à trois appareils actifs (critère 8
 });
 
 describe('déclarations authentifiées seulement (critère 9, D5)', () => {
-  it('un faux state.ctx étranger qui prétend oublier A et B n’oublie personne et ne coupe personne', async () => {
+  it('un faux state.spx étranger qui prétend oublier A et B n’oublie personne et ne coupe personne', async () => {
     const [a, b] = (await setup([B_ID])) as [SimDevice, SimDevice];
     const fake: StateFileCopy = {
       deviceId: C_ID,

@@ -1,4 +1,4 @@
-//! Y-TECH-02, ADR 0011 §21 point 2 : nombre d'enregistrements des segments clos (`closed` de `state.ctx`, maître Rust). Table commune avec
+//! Y-TECH-02, ADR 0011 §21 point 2 : nombre d'enregistrements des segments clos (`closed` de `state.spx`, maître Rust). Table commune avec
 //! Vitest (`tests/fixtures/sync/closed-segments.json`), schéma (`state.rs`), écriture (`own.json`, `sync_write_state`).
 
 use serde_json::{json, Value};
@@ -36,7 +36,7 @@ fn state(ep: &str, seq: u64, segment: u64, record: u64, head_hlc: Option<String>
 }
 
 fn segment_path(ep: &str, n: u64) -> Vec<String> {
-    vec!["devices".to_owned(), DEV_A.to_owned(), ep.to_owned(), format!("j-{n:08}.ctj")]
+    vec!["devices".to_owned(), DEV_A.to_owned(), ep.to_owned(), format!("j-{n:08}.spj")]
 }
 
 fn published(d: &Device) -> PublishedState {
@@ -107,7 +107,7 @@ fn y_tech_02_closed_segments_common_table() {
             let written = s["written"].as_u64().unwrap();
             // Y-FIX-05 (§33) : ajout coupé net (`partialLastLine`) : refusé en `io`, jamais enregistré, hors de la tête.
             if s["cut"].as_bool() == Some(true) {
-                let file = format!("devices/{DEV_A}/{ep}/j-{n:08}.ctj");
+                let file = format!("devices/{DEV_A}/{ep}/j-{n:08}.spj");
                 let faults = json!([{ "id": "cut", "op": "write", "file": file, "nth": 1, "effect": "error", "code": "io", "partialLastLine": true }]);
                 fs.arm(fault_plan::parse_plan(&json!({ "name": name, "faults": faults })).unwrap()).unwrap();
                 assert_eq!(code(append(&d, &ep, n, ms, written)), SyncCode::Io, "{name} : ajout coupé");
@@ -267,8 +267,8 @@ fn y_tech_02_closed_rebuilt_from_its_own_state_only() {
     d.core.write_state(14, state(&ep, 3, 2, 1, Some(hlc(20, DEV_A)))).unwrap();
     assert!(published(&d).closed.is_empty(), "entrée dépassée par l'accusé de B : écartée");
     // État absent et own.json perdu : aucune entrée (règle d'avant), jamais inventée ; tête reconstruite des fichiers, sans hlc.
-    fs.remove(&["devices", DEV_B, "state.ctx"]);
-    fs.remove(&["devices", DEV_A, "state.ctx"]);
+    fs.remove(&["devices", DEV_B, "state.spx"]);
+    fs.remove(&["devices", DEV_A, "state.spx"]);
     std::fs::remove_file(d.base.path().join("sync").join("own.json")).unwrap();
     d.restart();
     d.core.write_state(14, state(&ep, 4, 2, 1, None)).unwrap();

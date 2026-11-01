@@ -132,7 +132,7 @@ describe('UI-REFONTE-04 — Synchronisation', () => {
   });
 
   it('carte d’état : grise avec des fichiers en attente, rouge sur une erreur (règle 5)', async () => {
-    sync.setStatus({ pendingFiles: ['bbbbbbbb/e0001/j-00000002.ctj'] });
+    sync.setStatus({ pendingFiles: ['bbbbbbbb/e0001/j-00000002.spj'] });
     renderScreen();
     await keyRead();
     expect(document.querySelector('.ct-sync__stateCard')).toHaveAttribute('data-tone', 'neutral');
@@ -146,7 +146,7 @@ describe('UI-REFONTE-04 — Synchronisation', () => {
   });
 
   it('titres de section en bas de casse, dans l’ordre : Appareils, Conflits de cette semaine, Repartir de zéro (critère 3)', async () => {
-    sync.setStatus({ pendingFiles: ['bbbbbbbb/e0001/j-00000002.ctj'], warnings: ['folder-large'] });
+    sync.setStatus({ pendingFiles: ['bbbbbbbb/e0001/j-00000002.spj'], warnings: ['folder-large'] });
     renderScreen();
     await keyRead();
     const titles = headings();

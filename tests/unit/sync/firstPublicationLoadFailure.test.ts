@@ -76,7 +76,7 @@ describe('bloc orphanEpoch impossible à charger (revue M3)', () => {
     expect(s.phase).toBe('error');
     expect(s.errorCode).toBe('io');
     expect(statusLine(s, b.clock.nowMs())).not.toContain('À jour');
-    expect(b.folder.fileNames(b.id)).not.toContain('state.ctx');
+    expect(b.folder.fileNames(b.id)).not.toContain('state.spx');
     expect(b.logger.entries.slice(before).filter((e) => e.event === 'cycle-failed').map((e) => e.detail)).toEqual([{ code: 'io' }]);
   });
 
@@ -104,7 +104,7 @@ describe('bloc orphanEpoch impossible à charger (revue M3)', () => {
     expect(s.phase).toBe('error');
     expect(s.errorCode).toBe('io');
     expect(statusLine(s, b.clock.nowMs())).not.toContain('À jour');
-    expect(b.folder.fileNames(b.id)).not.toContain('state.ctx');
+    expect(b.folder.fileNames(b.id)).not.toContain('state.spx');
     expect(b.logger.entries.slice(before).filter((e) => e.event === 'publish-deferred')).toHaveLength(0);
   });
 });

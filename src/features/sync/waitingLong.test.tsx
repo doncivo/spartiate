@@ -18,7 +18,7 @@ const SELF = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000f4');
 const LAST = '2026-10-05T08:00:00.000Z' as IsoDateTime;
 const last = Date.parse(LAST);
 
-const waiting = (patch: Partial<SyncStatus> = {}): SyncStatus => ({ ...INITIAL_STATUS, phase: 'waiting-icloud', lastSyncAt: LAST, pendingFiles: ['aaaaaaaa/e0001-x/j-00000001.ctj'], ...patch });
+const waiting = (patch: Partial<SyncStatus> = {}): SyncStatus => ({ ...INITIAL_STATUS, phase: 'waiting-icloud', lastSyncAt: LAST, pendingFiles: ['aaaaaaaa/e0001-x/j-00000001.spj'], ...patch });
 
 describe('ligne de Réglages', () => {
   it('sous le seuil : « En attente d’iCloud » ; au seuil : attente prolongée, avec l’âge de la dernière synchro complète', () => {

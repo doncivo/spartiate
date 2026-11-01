@@ -290,8 +290,8 @@ fn parse_entry(raw: &Value, index: usize, plan: &str, seen: &mut Vec<String>) ->
     let mut partial_last_line = false;
     if let Some(value) = raw.get("partialLastLine") {
         partial_last_line = value.as_bool().ok_or_else(|| format!("{at} : « partialLastLine » booléen attendu"))?;
-        if !(file.ends_with(".ctj") || file.ends_with('*')) {
-            return Err(format!("{at} : « partialLastLine » réservé aux segments de journal (*.ctj)"));
+        if !(file.ends_with(".spj") || file.ends_with('*')) {
+            return Err(format!("{at} : « partialLastLine » réservé aux segments de journal (*.spj)"));
         }
     }
     if let Some(about) = raw.get("about") {

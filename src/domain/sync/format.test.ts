@@ -106,18 +106,18 @@ describe('identifiants et noms stricts (section 1.1)', () => {
   });
 
   it('segments et instantanés : 8 chiffres, 1 à 99 999 999', () => {
-    expect(segmentFileName(1)).toBe('j-00000001.ctj');
-    expect(snapshotFileName(42)).toBe('s-00000042.cts');
+    expect(segmentFileName(1)).toBe('j-00000001.spj');
+    expect(snapshotFileName(42)).toBe('s-00000042.sps');
     expect(() => segmentFileName(0)).toThrow(RangeError);
     expect(() => snapshotFileName(100_000_000)).toThrow(RangeError);
     expect(isFileNumber(1.5)).toBe(false);
   });
 
-  it('noms reconnus ; copies de conflit, temporaires et state.next.ctx ignorés', () => {
-    expect(parseSyncFileName('state.ctx')).toEqual({ kind: 'state' });
-    expect(parseSyncFileName('j-00000003.ctj')).toEqual({ kind: 'segment', n: 3 });
-    expect(parseSyncFileName('s-00000002.cts')).toEqual({ kind: 'snapshot', n: 2 });
-    for (const name of ['state 2.ctx', 'state.ctx.tmp', 'state.next.ctx', 'j-00000000.ctj', 'j-1.ctj', 'J-00000001.ctj', 's-00000001.cts.tmp', 'notes.txt']) {
+  it('noms reconnus ; copies de conflit, temporaires et state.next.spx ignorés', () => {
+    expect(parseSyncFileName('state.spx')).toEqual({ kind: 'state' });
+    expect(parseSyncFileName('j-00000003.spj')).toEqual({ kind: 'segment', n: 3 });
+    expect(parseSyncFileName('s-00000002.sps')).toEqual({ kind: 'snapshot', n: 2 });
+    for (const name of ['state 2.spx', 'state.spx.tmp', 'state.next.spx', 'j-00000000.spj', 'j-1.spj', 'J-00000001.spj', 's-00000001.sps.tmp', 'notes.txt']) {
       expect(parseSyncFileName(name)).toBeNull();
     }
   });

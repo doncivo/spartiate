@@ -319,7 +319,7 @@ export function snapshotRecordToText(record: SnapshotRecord): string {
 // ---------------------------------------------------------------------------------------------------------------------------------
 
 /**
- * Texte clair de `state.ctx` : forme lexicale de serde (clés de premier niveau comptées, répétitions comprises ; entiers canoniques),
+ * Texte clair de `state.spx` : forme lexicale de serde (clés de premier niveau comptées, répétitions comprises ; entiers canoniques),
  * clés sûres à tous les niveaux, puis analyse stricte de la forme (`publishedStateFromJson`). Null : état `corrupt`.
  */
 export function parsePublishedStateText(text: string): PublishedDeviceState | null {

@@ -275,10 +275,10 @@ fn y_ios_01_not_configured_triggers_one_resolve_then_one_retry() {
 fn y_ios_01_3_cloud_file_is_downloaded_within_sixty_seconds_then_read() {
     let r = rig();
     r.fs.start_cycle().unwrap();
-    r.plugin.put_cloud(&["devices", "a", "state.ctx"], b"etat", 30_000, false);
-    assert_eq!(r.fs.read(&["devices", "a", "state.ctx"], 100, false), Err(FsError::CloudPending), "jamais d'hydratation sans demande");
+    r.plugin.put_cloud(&["devices", "a", "state.spx"], b"etat", 30_000, false);
+    assert_eq!(r.fs.read(&["devices", "a", "state.spx"], 100, false), Err(FsError::CloudPending), "jamais d'hydratation sans demande");
     assert!(r.plugin.calls("download").is_empty());
-    assert_eq!(r.fs.read(&["devices", "a", "state.ctx"], 100, true).unwrap(), b"etat");
+    assert_eq!(r.fs.read(&["devices", "a", "state.spx"], 100, true).unwrap(), b"etat");
     let download = &r.plugin.calls("download")[0];
     assert_eq!(download["timeoutMs"], json!(60_000), "60 s par fichier");
     assert_eq!(download["limit"], json!(100), "borne transmise : rien au-delà n'est téléchargé");
@@ -288,37 +288,37 @@ fn y_ios_01_3_cloud_file_is_downloaded_within_sixty_seconds_then_read() {
 fn y_ios_01_3_download_timeout_error_and_cycle_budget() {
     let r = rig();
     r.fs.start_cycle().unwrap();
-    r.plugin.put_cloud(&["devices", "a", "e1", "s-00000001.cts"], b"lent", 70_000, false);
-    r.plugin.put_cloud(&["devices", "b", "state.ctx"], b"erreur", 0, true);
-    assert_eq!(r.fs.read(&["devices", "a", "e1", "s-00000001.cts"], 100, true), Err(FsError::CloudPending), "délai de 60 s dépassé");
-    assert_eq!(r.fs.read(&["devices", "b", "state.ctx"], 100, true), Err(FsError::CloudError), "erreur d'iCloud");
+    r.plugin.put_cloud(&["devices", "a", "e1", "s-00000001.sps"], b"lent", 70_000, false);
+    r.plugin.put_cloud(&["devices", "b", "state.spx"], b"erreur", 0, true);
+    assert_eq!(r.fs.read(&["devices", "a", "e1", "s-00000001.sps"], 100, true), Err(FsError::CloudPending), "délai de 60 s dépassé");
+    assert_eq!(r.fs.read(&["devices", "b", "state.spx"], 100, true), Err(FsError::CloudError), "erreur d'iCloud");
     // Budget de 3 minutes par cycle : 60 s déjà consommées ; deux téléchargements de 55 s, puis il reste 10 s.
     for dev in ["c", "d"] {
-        r.plugin.put_cloud(&["devices", dev, "state.ctx"], b"ok", 55_000, false);
-        assert_eq!(r.fs.read(&["devices", dev, "state.ctx"], 100, true).unwrap(), b"ok");
+        r.plugin.put_cloud(&["devices", dev, "state.spx"], b"ok", 55_000, false);
+        assert_eq!(r.fs.read(&["devices", dev, "state.spx"], 100, true).unwrap(), b"ok");
     }
-    r.plugin.put_cloud(&["devices", "e", "state.ctx"], b"trop tard", 15_000, false);
-    assert_eq!(r.fs.read(&["devices", "e", "state.ctx"], 100, true), Err(FsError::CloudPending));
+    r.plugin.put_cloud(&["devices", "e", "state.spx"], b"trop tard", 15_000, false);
+    assert_eq!(r.fs.read(&["devices", "e", "state.spx"], 100, true), Err(FsError::CloudPending));
     assert_eq!(r.plugin.calls("download").last().unwrap()["timeoutMs"], json!(10_000), "jamais au-delà du reste du budget");
     // Budget épuisé : plus aucun téléchargement demandé.
     let before = r.plugin.calls("download").len();
-    assert_eq!(r.fs.read(&["devices", "e", "state.ctx"], 100, true), Err(FsError::CloudPending));
+    assert_eq!(r.fs.read(&["devices", "e", "state.spx"], 100, true), Err(FsError::CloudPending));
     assert_eq!(r.plugin.calls("download").len(), before);
     // Nouveau cycle : budget rétabli.
     r.fs.start_cycle().unwrap();
-    assert_eq!(r.fs.read(&["devices", "e", "state.ctx"], 100, true).unwrap(), b"trop tard");
+    assert_eq!(r.fs.read(&["devices", "e", "state.spx"], 100, true).unwrap(), b"trop tard");
 }
 
 #[test]
 fn y_ios_01_3_reduced_cycle_budget_bounds_every_download() {
     let r = rig();
     r.fs.start_cycle_within(std::time::Duration::from_millis(12_000)).unwrap();
-    r.plugin.put_cloud(&["devices", "a", "state.ctx"], b"etat", 20_000, false);
-    assert_eq!(r.fs.read(&["devices", "a", "state.ctx"], 100, true), Err(FsError::CloudPending));
+    r.plugin.put_cloud(&["devices", "a", "state.spx"], b"etat", 20_000, false);
+    assert_eq!(r.fs.read(&["devices", "a", "state.spx"], 100, true), Err(FsError::CloudPending));
     assert_eq!(r.plugin.calls("download")[0]["timeoutMs"], json!(12_000));
     // Un budget au-delà de 3 minutes est ramené à 3 minutes.
     r.fs.start_cycle_within(std::time::Duration::from_secs(3_600)).unwrap();
-    assert_eq!(r.fs.read(&["devices", "a", "state.ctx"], 100, true).unwrap(), b"etat");
+    assert_eq!(r.fs.read(&["devices", "a", "state.spx"], 100, true).unwrap(), b"etat");
     let _ = &r.clock;
 }
 
@@ -326,15 +326,15 @@ fn y_ios_01_3_reduced_cycle_budget_bounds_every_download() {
 fn y_ios_01_4_links_replaced_components_and_paths_outside_the_root_are_refused_before_any_io() {
     let r = rig();
     r.fs.start_cycle().unwrap();
-    r.plugin.put(&["devices", "a", "state.ctx"], b"etat");
+    r.plugin.put(&["devices", "a", "state.spx"], b"etat");
     r.plugin.link(&["devices", "b"]);
-    assert_eq!(r.fs.read(&["devices", "b", "state.ctx"], 100, false), Err(FsError::Unsafe));
-    assert_eq!(r.fs.append(&["devices", "b", "x.ctj"], b"x", AppendMode::CreateNew), Err(FsError::Unsafe));
-    assert!(r.plugin.get(&["devices", "b", "x.ctj"]).is_none(), "rien d'écrit");
+    assert_eq!(r.fs.read(&["devices", "b", "state.spx"], 100, false), Err(FsError::Unsafe));
+    assert_eq!(r.fs.append(&["devices", "b", "x.spj"], b"x", AppendMode::CreateNew), Err(FsError::Unsafe));
+    assert!(r.plugin.get(&["devices", "b", "x.spj"]).is_none(), "rien d'écrit");
     // Composant remplacé par un lien entre deux appels.
-    assert_eq!(r.fs.read(&["devices", "a", "state.ctx"], 100, false).unwrap(), b"etat");
+    assert_eq!(r.fs.read(&["devices", "a", "state.spx"], 100, false).unwrap(), b"etat");
     r.plugin.link(&["devices", "a"]);
-    assert_eq!(r.fs.write_atomic(&["devices", "a", "state.ctx"], b"pirate"), Err(FsError::Unsafe));
+    assert_eq!(r.fs.write_atomic(&["devices", "a", "state.spx"], b"pirate"), Err(FsError::Unsafe));
     // Sortie de la racine : refusée par Rust avant tout appel au plugin.
     r.plugin.with(|s| s.calls.clear());
     for bad in [&["devices", "..", "x"][..], &["devices", "a/b"], &["."], &["devices", ""], &[]] {
@@ -350,14 +350,14 @@ fn y_ios_01_large_pages_are_split_into_calls_of_one_mebibyte_at_most() {
     r.fs.start_cycle().unwrap();
     r.plugin.mkdir(&["devices", "a", "e1"]);
     let big = vec![b'x'; MAX_PLUGIN_CHUNK_BYTES * 2 + 10];
-    r.fs.append(&["devices", "a", "e1", "s-00000001.cts.tmp"], &big, AppendMode::CreateNew).unwrap();
+    r.fs.append(&["devices", "a", "e1", "s-00000001.sps.tmp"], &big, AppendMode::CreateNew).unwrap();
     let appends = r.plugin.calls("append");
     assert_eq!(appends.len(), 3);
     assert_eq!(appends.iter().map(|a| a["createNew"].as_bool().unwrap()).collect::<Vec<_>>(), [true, false, false]);
-    assert_eq!(r.fs.read(&["devices", "a", "e1", "s-00000001.cts.tmp"], u64::MAX, false).unwrap(), big);
+    assert_eq!(r.fs.read(&["devices", "a", "e1", "s-00000001.sps.tmp"], u64::MAX, false).unwrap(), big);
     assert!(r.plugin.calls("readFrom").iter().all(|c| c["max"].as_u64().unwrap() <= MAX_PLUGIN_CHUNK_BYTES as u64));
-    assert_eq!(r.fs.write_atomic(&["devices", "a", "state.ctx"], &big), Err(FsError::TooLarge), "état de plus de 1 Mio : refusé");
-    assert!(r.fs.pin(&["devices", "a", "e1", "s-00000001.cts.tmp"]).is_ok(), "pas d'épinglage sur iOS, aucun appel");
+    assert_eq!(r.fs.write_atomic(&["devices", "a", "state.spx"], &big), Err(FsError::TooLarge), "état de plus de 1 Mio : refusé");
+    assert!(r.fs.pin(&["devices", "a", "e1", "s-00000001.sps.tmp"]).is_ok(), "pas d'épinglage sur iOS, aucun appel");
     let _ = &r.refreshed;
 }
 
@@ -428,7 +428,7 @@ fn y_ios_01_5_chosen_folder_keeps_its_bookmark_in_folder_json_and_never_returns_
     let big = format!("\"{}\"", "s".repeat(200_000));
     p.core.snapshot_append(handle, &vec![big; 7]).unwrap();
     p.core.snapshot_commit(handle).unwrap();
-    assert!(p.plugin.get(&["devices", DEV_A, &ep, "s-00000001.cts"]).is_some());
+    assert!(p.plugin.get(&["devices", DEV_A, &ep, "s-00000001.sps"]).is_some());
 }
 
 #[test]
@@ -519,7 +519,7 @@ fn y_ios_01_hydrate_budget_ms_out_of_bounds_is_bad_name() {
         assert!(p.core.scan_within(&[], Some(good)).is_ok(), "{good}");
     }
     // Budget réduit transmis au téléchargement d'un état resté dans le nuage.
-    p.plugin.put_cloud(&["devices", "7d4e1a2b-3c5f-4a6b-8d7e-9f0a1b2c3d4e", "state.ctx"], b"x", 50_000, false);
+    p.plugin.put_cloud(&["devices", "7d4e1a2b-3c5f-4a6b-8d7e-9f0a1b2c3d4e", "state.spx"], b"x", 50_000, false);
     p.core.scan_within(&[], Some(5_000)).unwrap();
     let downloads = p.plugin.calls("download");
     assert!(!downloads.is_empty() && downloads.iter().all(|d| d["timeoutMs"].as_u64().unwrap() <= 5_000), "{downloads:?}");
@@ -655,7 +655,7 @@ fn y_ios_01_5_tail_of_a_64_mib_snapshot_is_streamed_with_bounded_memory() {
     let lines = 64 * 1024 * 1024 / filler.len() as u64;
     let snapshot = VirtualSnapshot { header, filler, lines, last: b"derniere\n".to_vec(), calls: AtomicUsize::new(0), largest: AtomicUsize::new(0) };
     assert!(snapshot.size() >= 64 * 1024 * 1024);
-    let tail = stream_last_line(&snapshot, &["s-00000001.cts"], MAX_SNAPSHOT_BYTES).unwrap();
+    let tail = stream_last_line(&snapshot, &["s-00000001.sps"], MAX_SNAPSHOT_BYTES).unwrap();
     assert!(matches!(tail.header, StreamHeader::Ok(_)));
     assert_eq!(tail.lines, lines + 1);
     assert_eq!(tail.last.as_deref(), Some(&b"derniere"[..]));
@@ -916,8 +916,8 @@ fn y_ios_05_8_muted_call_is_cloud_pending_at_the_deadline() {
     type Access = fn(&BookmarkFs) -> Result<(), FsError>;
     let accesses: [(&'static str, Access); 5] = [
         ("list", |fs| fs.list(&["devices"], 10).map(|_| ())),
-        ("status", |fs| fs.read(&["devices", DEV_A, "state.ctx"], 1024, true).map(|_| ())),
-        ("readFrom", |fs| fs.read_head(&["devices", DEV_A, "state.ctx"], 1024).map(|_| ())),
+        ("status", |fs| fs.read(&["devices", DEV_A, "state.spx"], 1024, true).map(|_| ())),
+        ("readFrom", |fs| fs.read_head(&["devices", DEV_A, "state.spx"], 1024).map(|_| ())),
         ("append", |fs| fs.append(&["devices", DEV_A, "j.tmp"], b"x\n", AppendMode::Existing)),
         ("resolve", |fs| fs.check_root()),
     ];
@@ -1125,7 +1125,7 @@ fn y_ios_05_12_late_append_effect_is_caught_by_segment_mismatch() {
     let (core, _backend) = ios_core(p.base.path().to_path_buf(), routed, p.vault.clone(), FakeUi::new(), Arc::new(move || now.load(Ordering::SeqCst)));
     let ep = epoch(1, DEV_A);
     let request = |segment: u64, ms: u64| AppendRequest { epoch: ep.clone(), segment, expect_records: 0, sv: 14, max_hlc: crate::sync_support::hlc(ms, DEV_A), records: vec!["{}".to_owned()] };
-    let segment1 = ["devices", DEV_A, ep.as_str(), "j-00000001.ctj"];
+    let segment1 = ["devices", DEV_A, ep.as_str(), "j-00000001.spj"];
     let records = |path: &[&str]| p.plugin.get(path).map(|bytes| String::from_utf8(bytes).unwrap().lines().count() - 1);
     // L'ajout muet : abandonné à l'échéance, rien encore écrit.
     assert_eq!(code(core.append_journal(&request(1, 10))), SyncCode::CloudPending);
@@ -1142,7 +1142,7 @@ fn y_ios_05_12_late_append_effect_is_caught_by_segment_mismatch() {
     // Le moteur passe au segment suivant.
     let next = core.append_journal(&request(2, 20)).unwrap();
     assert_eq!(next.first_record, 0);
-    assert_eq!(records(&["devices", DEV_A, ep.as_str(), "j-00000002.ctj"]), Some(1));
+    assert_eq!(records(&["devices", DEV_A, ep.as_str(), "j-00000002.spj"]), Some(1));
     assert_eq!(records(&segment1), Some(1));
     assert_eq!(transport.commands().iter().filter(|c| *c == "append").count(), 2, "un append abandonné, un append au segment suivant");
 }
@@ -1153,8 +1153,8 @@ fn y_ios_05_12_late_append_effect_is_caught_by_segment_mismatch() {
 fn y_ios_05_13_timeout_log_names_the_command_only() {
     let capture = spartiate_lib::sync::log::capture();
     let mut rig = deadline_rig(Some("readFrom"), zero());
-    assert_eq!(rig.fs.read_head(&["devices", DEV_A, "state.ctx"], 1024).map(|_| ()), Err(FsError::CloudPending));
-    assert_eq!(rig.deadline.call("status", json!({ "path": ["devices", DEV_A, "state.ctx"] })), Err("cloud-pending".to_owned()));
+    assert_eq!(rig.fs.read_head(&["devices", DEV_A, "state.spx"], 1024).map(|_| ()), Err(FsError::CloudPending));
+    assert_eq!(rig.deadline.call("status", json!({ "path": ["devices", DEV_A, "state.spx"] })), Err("cloud-pending".to_owned()));
     let lines = capture.lines();
     assert!(lines.contains(&"sync:bookmark-call-timeout readFrom".to_owned()), "{lines:?}");
     assert!(lines.contains(&"sync:bookmark-call-skipped status".to_owned()), "{lines:?}");
@@ -1164,7 +1164,7 @@ fn y_ios_05_13_timeout_log_names_the_command_only() {
         assert!(matches!(parts.next(), Some("sync:bookmark-call-timeout" | "sync:bookmark-call-skipped")), "{line}");
         assert!(parts.next().is_some_and(|detail| PLUGIN_COMMANDS.contains(&detail)), "{line}");
         assert_eq!(parts.next(), None, "{line}");
-        for secret in [ROOT, BOOKMARK, DEV_A, "state.ctx", "devices"] {
+        for secret in [ROOT, BOOKMARK, DEV_A, "state.spx", "devices"] {
             assert!(!line.contains(secret), "fuite dans le journal : {line}");
         }
     }

@@ -33,7 +33,7 @@ const E1 = epochId(1, A);
 const E2A = epochId(2, A);
 const E2B = epochId(2, B);
 const hlc = (ms: number, dev: string = A): Hlc => `${String(ms).padStart(15, '0')}-0000-${dev}` as Hlc;
-const seg = (epoch: EpochId, n: number): string => `${epoch}/j-${String(n).padStart(8, '0')}.ctj`;
+const seg = (epoch: EpochId, n: number): string => `${epoch}/j-${String(n).padStart(8, '0')}.spj`;
 
 let nowMs = 1_800_000_000_000;
 const clock = (): number => nowMs;
@@ -205,7 +205,7 @@ describe('bornes exactes à l’écriture (section 1.6)', () => {
     expect(await codeOf(a.writeSnapshot({ epoch: E1, seq: 1, sv: 14, records: pages(Array<string>(fit + 1).fill(big)) }))).toBe('too-large');
     expect(folder.fileNames(A)).toEqual([]);
     await a.writeSnapshot({ epoch: E1, seq: 1, sv: 14, records: pages(Array<string>(fit).fill(big)) });
-    expect(folder.fileNames(A)).toEqual([`${E1}/s-00000001.cts`]);
+    expect(folder.fileNames(A)).toEqual([`${E1}/s-00000001.sps`]);
   }, 60_000);
 });
 
@@ -241,26 +241,26 @@ describe('bornes exactes à la lecture et au scan (section 1.6)', () => {
     expect(await codeOf(a.readJournal({ deviceId: A, epoch: E1, from: { segment: 0, record: 0 } }))).toBe('too-large');
   });
 
-  it('state.ctx : taille maximale exacte acceptée, un octet de plus : too-large (statut du scan et code de lecture)', async () => {
+  it('state.spx : taille maximale exacte acceptée, un octet de plus : too-large (statut du scan et code de lecture)', async () => {
     const text = JSON.stringify(publishedStateToJson(stateOf(A, E1, 1, { segment: 1, record: 1, hlc: hlc(10) })));
     const header = { f: 'sp-state', sm: 1, kid: await kidOf(a), dev: A, e: E1, n: 1 };
     const size = headerBytes(header) + encryptedLineBytes(utf8Bytes(text), 1, 14);
-    folder.addBytes(A, 'state.ctx', MAX_STATE_FILE_BYTES - size);
+    folder.addBytes(A, 'state.spx', MAX_STATE_FILE_BYTES - size);
     expect((await a.scan({ keep: [] })).devices[0]?.stateStatus).toBe('ok');
-    folder.addBytes(A, 'state.ctx', 1);
+    folder.addBytes(A, 'state.spx', 1);
     expect((await a.scan({ keep: [] })).devices[0]?.stateStatus).toBe('too-large');
     expect(await codeOf(a.readJournal({ deviceId: A, epoch: E1, from: { segment: 0, record: 0 } }))).toBe('too-large');
   });
 
   it('scan : 10 000 entrées exactement (état compris) : complet ; 10 001 : incomplet', async () => {
-    folder.addStrayEntries(A, 9_998); // 1 (state.ctx) + 1 (époque) + 9 998 = 10 000
+    folder.addStrayEntries(A, 9_998); // 1 (state.spx) + 1 (époque) + 9 998 = 10 000
     expect((await a.scan({ keep: [] })).incomplete).toBe(false);
     folder.addStrayEntries(A, 1);
     expect((await a.scan({ keep: [] })).incomplete).toBe(true);
   });
 
-  // QA-1 corrigé : state.ctx n'est compté que s'il existe.
-  it('scan : un dossier d’appareil sans state.ctx et 10 000 entrées exactement n’est pas incomplet', async () => {
+  // QA-1 corrigé : state.spx n'est compté que s'il existe.
+  it('scan : un dossier d’appareil sans state.spx et 10 000 entrées exactement n’est pas incomplet', async () => {
     folder.addStrayEntries(B, 10_000);
     expect((await a.scan({ keep: [] })).incomplete).toBe(false);
   });
@@ -396,7 +396,7 @@ describe('époques (section 9)', () => {
     await a.writeState({ sv: 14, state: stateOf(A, E2A, 2, { segment: 0, record: 0, hlc: null }) });
     expect(await a.deleteOwn([{ epoch: E1, kind: 'epoch' }])).toBe(1);
     expect(await codeOf(a.deleteOwn([{ epoch: E2A, kind: 'epoch' }]))).toBe('current-epoch');
-    expect(folder.fileNames(A)).toEqual(['state.ctx']);
+    expect(folder.fileNames(A)).toEqual(['state.spx']);
   });
 
   it('suppression atomique : une référence invalide dans la liste n’en supprime aucune', async () => {

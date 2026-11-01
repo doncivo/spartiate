@@ -143,7 +143,7 @@ describe('détails (Y-02 critère 17, Y-09 critère 10)', () => {
         { deviceId: SELF, platform: 'windows', self: true, lastReadAt: '2026-10-05T08:00:00.000Z' as IsoDateTime, status: 'active' },
         { deviceId: IPHONE, platform: 'ios', self: false, lastReadAt: '2026-10-05T07:42:00.000Z' as IsoDateTime, status: 'clock-ahead' },
       ],
-      pendingFiles: ['bbbbbbbb/e0001/j-00000002.ctj'],
+      pendingFiles: ['bbbbbbbb/e0001/j-00000002.spj'],
       conflictsThisWeek: 2,
     });
     renderIn(<SyncDetailsScreen />);

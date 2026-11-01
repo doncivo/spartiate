@@ -67,7 +67,7 @@ async function folderBytes(folder: MemorySyncFolder, key: Uint8Array<ArrayBuffer
       }
       files.set(`${dev}/${name}`, lines.map((l) => `${l}\n`).join(''));
     };
-    if (dir.state) await write('state.ctx', dir.state, () => ({ kind: 'state', dev, epoch: dir.state?.header.e ?? '', stateSeq: dir.state?.header.n ?? 0 }));
+    if (dir.state) await write('state.spx', dir.state, () => ({ kind: 'state', dev, epoch: dir.state?.header.e ?? '', stateSeq: dir.state?.header.n ?? 0 }));
     for (const [epoch, epochDir] of dir.epochs) {
       for (const [n, file] of epochDir.segments) await write(`${epoch}/j-${String(n)}`, file, (index) => ({ kind: 'j', dev, epoch, segment: n, index }));
       for (const [n, file] of epochDir.snapshots) await write(`${epoch}/s-${String(n)}`, file, (index) => ({ kind: 's', dev, epoch, seq: n, index }));
@@ -115,7 +115,7 @@ describe('parcours 11 en simulation (critère 19)', () => {
     const key = keyOfQr(payload.qrText);
     const { files, plain } = await folderBytes(pc.folder, key);
     expect(files.size).toBeGreaterThanOrEqual(2);
-    expect([...files.keys()].some((name) => !name.endsWith('state.ctx'))).toBe(true);
+    expect([...files.keys()].some((name) => !name.endsWith('state.spx'))).toBe(true);
     expect(plain.join('\n')).toContain(TITLE);
     for (const text of files.values()) {
       expect(text).not.toContain(TITLE);
