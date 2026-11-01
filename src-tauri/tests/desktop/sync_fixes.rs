@@ -410,7 +410,7 @@ fn r19_unsafe_path_components_are_refused() {
 fn r20_aad_fields_are_never_truncated() {
     let long = "x".repeat(70_000);
     assert!(aad_bytes(std::slice::from_ref(&long)).is_none());
-    assert_eq!(aad_bytes(&["sp/1".into()]).unwrap(), b"\x00\x04ct/1");
+    assert_eq!(aad_bytes(&["sp/1".into()]).unwrap(), b"\x00\x04sp/1");
     let key = MasterKey::generate().unwrap();
     let place = Place::Journal { dev: &long, epoch: "e0001-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60", segment: 1, index: 0 };
     assert!(key.seal(&place, b"{}", 1, 1).is_err());

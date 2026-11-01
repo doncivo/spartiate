@@ -1538,21 +1538,26 @@ impl<'a> Store<'a> {
         Ok(false)
     }
 
-    /// ADR 0017 : un `state.spx` du dossier porte-t-il un en-tête de CircleTasks (`"f":"ct-…"`) ? Seuls les états déjà présents sur le // ancien-ok: garde de séparation ADR 0017
-    /// disque sont lus (un fichier resté dans le nuage ne peut pas l'être sans hydratation : le nom du dossier fait alors garde). Même budget
-    /// d'entrées que `folder_has_data`.
+    /// ADR 0017 : l'arborescence contient-elle un nom de la famille de fichiers de CircleTasks (`state.ctx`, `*.ctj`, `*.cts`, y compris
+    /// `state.next.ctx`, copie de conflit, `.tmp` et placeholder iCloud) ? Les noms seuls sont examinés : aucun fichier n'est lu ni téléchargé. // ancien-ok: garde de séparation ADR 0017
+    /// Spartiate écrit sa propre famille (`state.spx`, `*.spj`, `*.sps`), donc les deux apps se distinguent par le seul nom. Même budget
+    /// d'entrées que `folder_has_data` ; une erreur de listage ne refuse pas (le nom du dossier et la séparation cryptographique font garde).
     pub fn folder_has_foreign_data(fs: &dyn SyncFs) -> SyncResult<bool> {
         let budget = Budget::new();
-        let root = match budget.list(fs, &[DEVICES_DIR]) {
-            Ok(listing) => listing,
-            // Toute erreur de lecture : pas de refus par les fichiers (le nom du dossier et la séparation cryptographique font garde).
-            Err(_) => return Ok(false),
-        };
-        for dev in root.entries.iter().filter(|e| e.is_dir && is_uuid_v4(&e.name)) {
-            let Ok(listing) = budget.list(fs, &device_dir(&dev.name)) else { continue };
-            let has_local_state = listing.entries.iter().any(|e| !e.is_dir && e.name == STATE_FILE && matches!(e.availability, Availability::Local) && e.size <= MAX_SEGMENT_BYTES);
-            if has_local_state && fs.read_head(&[DEVICES_DIR, &dev.name, STATE_FILE], MAX_HEADER_BYTES + 1).ok().is_some_and(|bytes| is_foreign_header(&bytes)) {
+        let Ok(root) = budget.list(fs, &[DEVICES_DIR]) else { return Ok(false) };
+        if root.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) {
+            return Ok(true);
+        }
+        for dev in root.entries.iter().filter(|e| e.is_dir) {
+            let Ok(listing) = budget.list(fs, &[DEVICES_DIR, &dev.name]) else { continue };
+            if listing.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) {
                 return Ok(true);
+            }
+            for entry in listing.entries.iter().filter(|e| e.is_dir).take(MAX_EPOCHS_PER_DEVICE) {
+                let Ok(files) = budget.list(fs, &[DEVICES_DIR, &dev.name, &entry.name]) else { continue };
+                if files.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) {
+                    return Ok(true);
+                }
             }
         }
         Ok(false)

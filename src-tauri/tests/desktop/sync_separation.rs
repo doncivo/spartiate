@@ -51,11 +51,11 @@ fn sp_circletasks_sealed_line_does_not_decrypt() {
     let key = MasterKey::from_bytes(&hex_to_bytes(v["key"].as_str().unwrap())).expect("clé de test");
     for case in v["rustSealed"].as_array().unwrap() {
         let p = &case["place"];
-        let place = Place::Journal {
-            dev: p["dev"].as_str().unwrap(),
-            epoch: p["epoch"].as_str().unwrap(),
-            segment: p["segment"].as_u64().unwrap() as u32,
-            index: p["index"].as_u64().unwrap(),
+        let (dev, epoch) = (p["dev"].as_str().unwrap(), p["epoch"].as_str().unwrap());
+        let place = match p["kind"].as_str().unwrap() {
+            "j" => Place::Journal { dev, epoch, segment: p["segment"].as_u64().unwrap() as u32, index: p["index"].as_u64().unwrap() },
+            "s" => Place::Snapshot { dev, epoch, seq: p["seq"].as_u64().unwrap() as u32, index: p["index"].as_u64().unwrap() },
+            _ => Place::State { dev, epoch, state_seq: p["stateSeq"].as_u64().unwrap() },
         };
         assert!(key.open(&place, case["line"].as_str().unwrap()).is_err(), "ligne CircleTasks déchiffrée");
     }
