@@ -54,9 +54,12 @@ export function classifyLine(line, term) {
   const bare = line.replace(COMMENT, '');
   if (DATA_PATH.test(bare) && PROHIBITION.test(bare) && !PRESCRIPTIVE.test(bare)) return 'protection';
   if (isBrandTerm(term) && PROVENANCE.test(bare)) return 'provenance';
-  // La négation doit PRÉCÉDER le terme de près : « jamais un autre » après l'identifiant ne le nie pas.
+  // Chaque terme est qualifié séparément : la négation doit PRÉCÉDER le terme, dans la même proposition (coupée à « ; », « . », « mais »,
+  // « sauf », « puis »). « Pas de A ; utiliser B » nie A seulement ; une énumération (« pas de A ni de B ») reste niée.
   const at = bare.indexOf(term);
-  if (NEGATIVE.test(at < 0 ? bare : bare.slice(Math.max(0, at - 90), at))) return 'negative';
+  const before = at < 0 ? bare : bare.slice(Math.max(0, at - 90), at);
+  const clause = before.split(/;|\. |\bmais\b|\bsauf\b|\bpuis\b/).pop() ?? '';
+  if (NEGATIVE.test(clause)) return 'negative';
   return 'active';
 }
 

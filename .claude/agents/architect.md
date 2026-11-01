@@ -11,7 +11,7 @@ Tu es l'architecte de Spartiate (fork de CircleTasks : Tauri 2, React 18, TypeSc
 - Un ticket ajoute un dossier de premier niveau (`src/domain/training`, `src/platform/ai`, `src-tauri/plugins/healthkit`, `content/`) ou un contrat entre couches (façade `src/platform/<nom>` d'un plugin, type partagé dans `src/domain/types.ts`).
 - Une dépendance npm ou cargo est proposée (le PRD § 22 exige une ligne dans le ticket ; aucune n'entre sans ton avis : utilité, taille, licence, compatibilité iOS, effet sur le bundle de départ).
 - Une décision structurante doit être tracée : publication d'une séance à sa clôture (D-27), fallback d'un spike `BLOCKED` (SPA-006, SPA-007), choix du fournisseur IA (H-14), plugin `camera` local ou officiel (I4).
-- Le PRD v6.2 et le code réel se contredisent (exemple : § 18.1 nomme `src/ui/shell/MobileShell.tsx` / `DesktopShell.tsx` alors que le code a `src/ui/AppShell.tsx` + `useLayout.ts` à 1 024 px ; § 18.4 nomme `src/ui/tokens.css` alors que le fichier est `src/ui/theme/tokens.css`). Tu arbitres la cible et l'écris dans `docs/decisions.md` ou un ADR.
+- Le PRD v6.2 et le code réel se contredisent (exemple : § 18.1 nomme `src/ui/shell/MobileShell.tsx` / `DesktopShell.tsx` alors que le code a `src/ui/AppShell.tsx` + `useLayout.ts` à 1 024 px ; § 18.4 nomme `src/ui/tokens.css` alors que le fichier est `src/ui/theme/tokens.css`). Tu arbitres la cible et l'écris dans `docs/decisions.md` ou un ADR. <!-- ancien-ok: contre-exemple cité pour arbitrer un écart PRD / code (D-47) -->
 - Ne pas intervenir pour : une story ordinaire dans un module existant, un bug, un texte, une maquette, une migration qui ajoute une colonne à une table déjà cataloguée.
 
 ## Fichiers

@@ -358,19 +358,22 @@ describe('cohérence du guide, du workflow et des scripts', () => {
     expect(section).toContain('`v*`');
   });
 
-  it('secrets Google : seulement dans l’étape de compilation, client de bureau jamais dans le build iOS', () => {
+  it('secrets Google : absents, ou confinés à l’étape de compilation (retirés en SPA-001b) ; client de bureau jamais dans le build iOS', () => {
     const steps = (yml: string) => yml.split(/^ {6}- /m).slice(1);
     const win = read('.github/workflows/build-windows.yml');
     const withSecret = (yml: string, name: string) => steps(yml).filter((s) => s.includes(name));
     for (const name of ['CT_GOOGLE_CLIENT_ID', 'CT_GOOGLE_CLIENT_SECRET']) {
+      // SPA-001a critère 5 : plus d'exigence de présence ; si le secret est là, il est confiné à l'étape de compilation.
       const found = withSecret(win, name);
-      expect(found).toHaveLength(1);
-      expect(found[0]).toContain("name: Compiler l'installeur NSIS");
-      expect(found[0]).toContain(`${name}: \${{ secrets.${name} }}`);
+      expect(found.length).toBeLessThanOrEqual(1);
+      for (const step of found) {
+        expect(step).toContain("name: Compiler l'installeur NSIS");
+        expect(step).toContain(`${name}: \${{ secrets.${name} }}`);
+      }
     }
     const iosSteps = withSecret(workflow, 'CT_GOOGLE_IOS_CLIENT_ID');
-    expect(iosSteps).toHaveLength(1);
-    expect(iosSteps[0]).toContain("name: Compiler l'IPA sans signature");
+    expect(iosSteps.length).toBeLessThanOrEqual(1);
+    for (const step of iosSteps) expect(step).toContain("name: Compiler l'IPA sans signature");
     expect(workflow).not.toContain('CT_GOOGLE_CLIENT_SECRET');
     expect(workflow).not.toContain('CT_GOOGLE_CLIENT_ID');
     expect(win).not.toContain('CT_GOOGLE_IOS_CLIENT_ID');
@@ -384,7 +387,7 @@ describe('cohérence du guide, du workflow et des scripts', () => {
     }
     expect(win.slice(win.indexOf('\n  publish:\n'))).not.toContain('CT_GOOGLE');
     expect(workflow.slice(workflow.indexOf('\n  publish:\n'))).not.toContain('CT_GOOGLE');
-    expect(read('src-tauri/build.rs')).toContain('"CT_GOOGLE_IOS_CLIENT_ID"');
+    // build.rs : plus d'exigence de présence ; la variable disparaît avec les secrets (SPA-001b).
   });
 
   it('annonce l’alerte de I-02 avec la phrase définitive, la même que le comportement livré', () => {
