@@ -2,7 +2,7 @@
 // rejeté par Spartiate (et inversement). Fixture figée : tests/fixtures/sync/circletasks-foreign.json (clé de test, format CircleTasks).
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { AAD_VERSION, PAIRING_QR_PREFIX, RECOVERY_KEY_PREFIX, SYNC_ERROR_CODES, parseFileHeader } from '../../src/domain/sync/format';
+import { AAD_VERSION, JOURNAL_EXTENSION, PAIRING_QR_PREFIX, RECOVERY_KEY_PREFIX, SNAPSHOT_EXTENSION, STATE_FILE, STATE_NEXT_FILE, SYNC_ERROR_CODES, parseFileHeader, parseSyncFileName } from '../../src/domain/sync/format';
 import { HKDF_INFO_KID, HKDF_INFO_RECORDS, HKDF_SALT, fromHex, keyFromRecovery, kidOf, openRecord, parseQrText, qrTextOf, sealRecord, type RecordPlace } from '../sim/syncCodec';
 
 interface Foreign {
@@ -28,6 +28,21 @@ describe('constantes de Spartiate (ADR 0017)', () => {
   it('le dossier refusé a son code d’erreur : foreign-folder', () => {
     expect(SYNC_ERROR_CODES).toContain('foreign-folder');
     expect(SYNC_ERROR_CODES).toHaveLength(39);
+  });
+});
+
+describe('noms de fichiers propres à Spartiate (ADR 0017, garde par le seul nom)', () => {
+  it('état, journal et instantané portent la famille .spx / .spj / .sps', () => {
+    expect(STATE_FILE).toBe('state.spx');
+    expect(STATE_NEXT_FILE).toBe('state.next.spx');
+    expect(JOURNAL_EXTENSION).toBe('.spj');
+    expect(SNAPSHOT_EXTENSION).toBe('.sps');
+  });
+  it('les noms de la famille CircleTasks ne sont pas des fichiers de synchro', () => {
+    expect(parseSyncFileName('j-00000001.spj')).not.toBeNull();
+    expect(parseSyncFileName('s-00000001.sps')).not.toBeNull();
+    expect(parseSyncFileName('j-00000001.ctj')).toBeNull();
+    expect(parseSyncFileName('s-00000001.cts')).toBeNull();
   });
 });
 

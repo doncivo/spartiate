@@ -7,11 +7,13 @@ use serde_json::Value;
 use spartiate_lib::sync::crypto::{
     key_from_recovery, parse_qr_text, FileHeader, MasterKey, Place, AAD_VERSION, HKDF_SALT, PAIRING_QR_PREFIX, RECOVERY_KEY_PREFIX,
 };
+use spartiate_lib::sync::files::Availability;
 use spartiate_lib::sync::folder::FolderKind;
 use spartiate_lib::sync::{SyncCode, SyncError};
 
 use crate::sync_support::{Device, FakeBackend, MemFs, DEV_A};
 
+const PARTAGE: &str = r"C:\Users\Ali\iCloudDrive\Partage";
 const FOREIGN: &str = include_str!("../../../tests/fixtures/sync/circletasks-foreign.json");
 
 fn foreign() -> Value {
@@ -73,13 +75,78 @@ fn sp_folder_named_circletasks_is_refused() {
 }
 
 #[test]
-fn sp_folder_holding_a_circletasks_header_is_refused_whatever_its_name() {
-    for (file, header) in [("state.ctx", r#"{"f":"ct-state","sm":1}"#), ("state.ctx", r#"{"f":"ct-j","sm":1}"#)] {
+fn sp_folder_holding_circletasks_state_file_is_refused_whatever_its_name() {
+    for name in ["state.ctx", "state.next.ctx", "state 2.ctx"] {
         let fs = MemFs::new();
-        fs.put(&["devices", DEV_A, file], format!("{header}\nligne\n").as_bytes());
-        let d = Device::new(FakeBackend::with(r"C:\Users\Ali\iCloudDrive\Partage", FolderKind::Icloud, fs));
-        assert_eq!(code(d.core.choose_folder(Path::new(r"C:\Users\Ali\iCloudDrive\Partage"))), SyncCode::ForeignFolder);
+        fs.put(&["devices", DEV_A, name], b"contenu quelconque");
+        let d = Device::new(FakeBackend::with(PARTAGE, FolderKind::Icloud, fs));
+        assert_eq!(code(d.core.choose_folder(Path::new(PARTAGE))), SyncCode::ForeignFolder, "{name}");
     }
+}
+
+#[test]
+fn sp_folder_holding_only_ctj_or_cts_files_is_refused() {
+    for name in ["j-00000001.ctj", "s-00000001.cts"] {
+        let fs = MemFs::new();
+        let ep = format!("e0001-{DEV_A}");
+        fs.put(&["devices", DEV_A, &ep, name], b"contenu quelconque");
+        let d = Device::new(FakeBackend::with(PARTAGE, FolderKind::Icloud, fs));
+        assert_eq!(code(d.core.choose_folder(Path::new(PARTAGE))), SyncCode::ForeignFolder, "{name}");
+    }
+}
+
+#[test]
+fn sp_not_downloaded_circletasks_state_file_is_refused_without_reading_it() {
+    let fs = MemFs::new();
+    fs.put(&["devices", DEV_A, "state.ctx"], b"x");
+    fs.set_availability(&["devices", DEV_A, "state.ctx"], Availability::Cloud);
+    let d = Device::new(FakeBackend::with(PARTAGE, FolderKind::Icloud, fs));
+    assert_eq!(code(d.core.choose_folder(Path::new(PARTAGE))), SyncCode::ForeignFolder);
+}
+
+#[test]
+fn sp_clean_spartiate_folder_with_its_own_file_family_is_accepted() {
+    let fs = MemFs::new();
+    let ep = format!("e0001-{DEV_A}");
+    fs.put(&["devices", DEV_A, "state.spx"], b"x");
+    fs.put(&["devices", DEV_A, &ep, "j-00000001.spj"], b"x");
+    fs.put(&["devices", DEV_A, &ep, "s-00000001.sps"], b"x");
+    let d = Device::new(FakeBackend::with(PARTAGE, FolderKind::Icloud, fs));
+    assert!(d.core.choose_folder(Path::new(PARTAGE)).is_ok());
+}
+
+#[test]
+fn sp_iphone_path_choose_bookmarked_folder_applies_the_same_guard() {
+    for (path, fs) in [(r"C:\Users\Ali\iCloudDrive\CircleTasks", MemFs::new()), (PARTAGE, {
+        let fs = MemFs::new();
+        fs.put(&["devices", DEV_A, "state.ctx"], b"x");
+        fs
+    })] {
+        let d = Device::new(FakeBackend::with(path, FolderKind::Icloud, fs));
+        assert_eq!(code(d.core.choose_bookmarked_folder(path, "signet")), SyncCode::ForeignFolder, "{path}");
+    }
+}
+
+#[test]
+fn sp_refusal_writes_no_folder_json_nor_own_json() {
+    let fs = MemFs::new();
+    fs.put(&["devices", DEV_A, "state.ctx"], b"x");
+    let d = Device::new(FakeBackend::with(PARTAGE, FolderKind::Icloud, fs));
+    assert_eq!(code(d.core.choose_folder(Path::new(PARTAGE))), SyncCode::ForeignFolder);
+    let config = d.base.path().join("sync");
+    assert!(!config.join("folder.json").exists(), "folder.json écrit malgré le refus");
+    assert!(!config.join("own.json").exists(), "own.json écrit malgré le refus");
+}
+
+#[test]
+fn sp_refusal_keeps_the_previously_bound_spartiate_folder() {
+    let (d, _fs) = crate::sync_support::device();
+    d.core.choose_folder(Path::new(crate::sync_support::FOLDER)).unwrap();
+    let foreign = r"C:\Users\Ali\iCloudDrive\CircleTasks";
+    d.backend.add(foreign, FolderKind::Icloud, MemFs::new());
+    assert_eq!(code(d.core.choose_folder(Path::new(foreign))), SyncCode::ForeignFolder);
+    let record = std::fs::read_to_string(d.base.path().join("sync").join("folder.json")).unwrap();
+    assert!(record.contains("Spartiate") && !record.contains("CircleTasks"), "{record}");
 }
 
 #[test]
@@ -95,12 +162,4 @@ fn sp_folder_inside_the_circletasks_tree_is_refused() {
         let d = Device::new(FakeBackend::with(path, FolderKind::Icloud, MemFs::new()));
         assert_eq!(code(d.core.choose_folder(Path::new(path))), SyncCode::ForeignFolder, "{path}");
     }
-}
-
-#[test]
-fn sp_header_with_spaces_is_still_foreign() {
-    let fs = MemFs::new();
-    fs.put(&["devices", DEV_A, "state.ctx"], b"{ \"f\": \"ct-state\", \"sm\": 1 }\nligne\n");
-    let d = Device::new(FakeBackend::with(r"C:\Users\Ali\iCloudDrive\Copie", FolderKind::Icloud, fs));
-    assert_eq!(code(d.core.choose_folder(Path::new(r"C:\Users\Ali\iCloudDrive\Copie"))), SyncCode::ForeignFolder);
 }
