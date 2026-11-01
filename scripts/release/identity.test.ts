@@ -1,6 +1,6 @@
 // SPA-001a, critères 1 à 4 : identité technique et de marque de Spartiate (D-30, D-32, D-41, D-47, D-51).
 // La convention de qualification des mentions (protection des données CircleTasks, négation, historique) vit dans lib/mentions.mjs.
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -9,8 +9,15 @@ import { activeMentions, classifyLine } from './lib/mentions.mjs';
 
 const root = resolve(__dirname, '..', '..');
 const read = (path: string): string => readFileSync(resolve(root, path), 'utf8');
-const json = (path: string): Record<string, any> => JSON.parse(read(path)) as Record<string, any>;
-const tracked = (): string[] => execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).split('\0').filter(Boolean);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- lecture de JSON de configuration, forme libre
+type Json = Record<string, any>;
+const json = (path: string): Json => JSON.parse(read(path)) as Json;
+/** Fichiers suivis qui contiennent « circletasks » (insensible à la casse) : préfiltre git, lire les 2 800 fichiers suivis serait trop lent. */
+const tracked = (): string[] => {
+  const result = spawnSync('git', ['grep', '-l', '-i', '-z', '-I', 'circletasks'], { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  if (result.status !== 0 && result.status !== 1) throw new Error(`git grep a échoué : ${result.stderr}`);
+  return result.stdout.split('\0').filter(Boolean);
+};
 
 const OLD_ID = 'fr.circletasks.planner';
 const OLD_DB = 'circletasks.db';
@@ -109,6 +116,10 @@ describe('qualification des mentions (convention déterministe)', () => {
     expect(classifyLine('- Ancien identifiant `fr.circletasks.planner`, remplacé en 001a.', OLD_ID)).toBe('negative');
     expect(classifyLine('- Cas particulier `circletasks.db` <!-- ancien-ok: preuve de migration -->', OLD_DB)).toBe('explicit');
   });
+  it('le sel HKDF du protocole de synchro reste « circletasks » (D-26) : admis pour la marque seulement', () => {
+    expect(classifyLine('pub const HKDF_SALT: &[u8] = b"circletasks";', 'circletasks')).toBe('protocol');
+    expect(classifyLine('pub const DB: &str = "circletasks.db"; // HKDF', OLD_DB)).toBe('active');
+  });
   it('une phrase de provenance (fork, repris de) est admise pour la marque, jamais pour l’identifiant technique', () => {
     expect(classifyLine('Spartiate est un fork de CircleTasks (ADR 0001).', 'CircleTasks')).toBe('provenance');
     expect(classifyLine('// Protocole repris de CircleTasks (ADR 0011).', 'CircleTasks')).toBe('provenance');
@@ -135,6 +146,14 @@ const TOOLING = new Set([
   'scripts/release/lib/agentsCheck.mjs',
 ]);
 const DOC_EXEMPT = [/^docs\/PRD\.md$/, /^docs\/prd\//, /^docs\/SPA-[^/]+\.md$/, /^docs\/relecture-[^/]+$/, /^docs\/decisions\.md$/, /^docs\/adr\//, /^docs\/archive\//, /^docs\/licences\.md$/];
+/** Documents CircleTasks que SPA-001b archive dans docs/archive/circletasks/ (D-40, lot (i)) : exemption transitoire, retirée avec l’archivage. */
+const ARCHIVE_001B = [
+  /^docs\/stories\//,
+  /^docs\/audits?(-1\.0)?(\.md|\/)/,
+  /^docs\/(backlog|dettes|reprise-codex|reprise-historique-2026-10)\.md$/,
+  /^docs\/essais-iphone(-a9)?\.md$/,
+  /^docs\/maquettes(-refonte)?\//,
+];
 const BINARY = /\.(png|ico|icns|jpg|woff2?|wasm|traineddata|gz|zip|svg)$/i;
 
 const lines = (file: string): string[] | null => {
@@ -149,7 +168,7 @@ describe('critère 1 : identité technique', () => {
   it('ni fr.circletasks.planner ni circletasks.db actifs dans les fichiers suivis hors exemptions D-41', () => {
     const found: string[] = [];
     for (const file of tracked()) {
-      if (TOOLING.has(file) || DOC_EXEMPT.some((re) => re.test(file)) || BINARY.test(file)) continue;
+      if (TOOLING.has(file) || [...DOC_EXEMPT, ...ARCHIVE_001B].some((re) => re.test(file)) || BINARY.test(file)) continue;
       const text = lines(file);
       if (!text) continue;
       for (const hit of activeMentions(text.join('\n'), [OLD_ID, OLD_DB]) as { lineNo: number; term: string }[]) found.push(`${file}:${hit.lineNo} ${hit.term}`);
