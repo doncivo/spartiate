@@ -1,6 +1,6 @@
 # Reprise — état courant du dépôt Spartiate
 
-Fichier court, pour tout agent (Claude Code, Codex ou autre) : l'état vivant et les décisions applicables. Chaque jalon remplace la section « État au … ». Règles de travail : `AGENTS.md`. Stack : `CLAUDE.md`. Spécification : `docs/PRD.md` (v6.2, vivant, D-22). Décisions : `docs/decisions.md` (D-1 à D-21 dans le PRD § 26.1, D-22 à D-48 ici). Rôles : `.claude/agents/README.md`. Maquettes : `docs/maquettes/` (D-21). Benchmark des six apps de référence : `docs/benchmark.md`.
+Fichier court, pour tout agent (Claude Code, Codex ou autre) : l'état vivant et les décisions applicables. Chaque jalon remplace la section « État au … ». Règles de travail : `AGENTS.md`. Stack : `CLAUDE.md`. Spécification : `docs/PRD.md` (v6.2, vivant, D-22). Décisions : `docs/decisions.md` (D-1 à D-21 dans le PRD § 26.1, D-22 à D-53 ici). Rôles : `.claude/agents/README.md`. Maquettes : `docs/maquettes/` (D-21). Benchmark des six apps de référence : `docs/benchmark.md`.
 
 ## État au 2026-10-31, soir
 
@@ -23,6 +23,9 @@ Fichier court, pour tout agent (Claude Code, Codex ou autre) : l'état vivant et
 - `RELEASES_TOKEN` (fine-grained, contenu de `spartiate-releases`) : SPA-003.
 - Paire minisign Spartiate pour l'updater Windows : SPA-002 — `npm run tauri signer generate -- -w <chemin hors dépôt>\spartiate.key`, clé publique dans `tauri.conf.json`, clé privée et mot de passe dans `TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. La clé CircleTasks ne sert jamais.
 - `CT_GOOGLE_*` : retirés des workflows en 001b.
+
+### Économie de tokens (D-49 à D-53)
+- Lire par chapitres (`docs/prd/` dès la v6.3), jamais « le PRD ». Vérifier par test (`identity`, `agents`, `docs-paths`) avant toute relecture LLM. Mécanique par script. Une session Claude Code par ticket, `reprise.md` seule mémoire. Relecture Codex bornée au diff et aux critères, ≤ 40 lignes, après CI verte.
 
 ### Règles en vigueur
 - Jamais de push direct sur `main`, jamais de `--force`, jamais de `rm -rf` ; une PR par ticket ; CI verte et relecture Codex avant fusion ; passes product-owner → agent du module → qa-test → code-reviewer par le même agent.
