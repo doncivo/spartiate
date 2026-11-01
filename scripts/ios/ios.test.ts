@@ -122,12 +122,12 @@ describe('contrat des permissions Info.plist', () => {
   });
 
   it('échoue sur toute description d’usage vide, déclarée ou non ; avertit si elle n’est pas déclarée', () => {
-    const plist = { NSCameraUsageDescription: '  ', NSMicrophoneUsageDescription: '', NSFaceIDUsageDescription: 'Déverrouiller CircleTasks.', BGTaskSchedulerPermittedIdentifiers: [], UIBackgroundModes: ['fetch'] };
+    const plist = { NSCameraUsageDescription: '  ', NSMicrophoneUsageDescription: '', NSFaceIDUsageDescription: 'Déverrouiller Spartiate.', BGTaskSchedulerPermittedIdentifiers: [], UIBackgroundModes: ['fetch'] };
     const { errors, warnings } = checkPlistContract(camera, plist);
     expect(errors).toEqual(['NSCameraUsageDescription : description d\'usage vide', 'NSMicrophoneUsageDescription : description d\'usage vide']);
     expect(warnings).toEqual(['NSFaceIDUsageDescription présente mais absente de plist-contract.json']);
     // Contrat versionné (CAP-IOS-01 y ajoute vision et speech) : la caméra non textuelle est refusée, le micro et la reconnaissance manquent.
-    expect(checkPlistContract(contract, { NSCameraUsageDescription: true, NSFaceIDUsageDescription: 'Déverrouiller CircleTasks.', NSRemindersFullAccessUsageDescription: 'Lire les rappels.' }).errors).toEqual([
+    expect(checkPlistContract(contract, { NSCameraUsageDescription: true, NSFaceIDUsageDescription: 'Déverrouiller Spartiate.', NSRemindersFullAccessUsageDescription: 'Lire les rappels.' }).errors).toEqual([
       'NSMicrophoneUsageDescription absente (plugin speech, CAP-IOS-01)',
       'NSSpeechRecognitionUsageDescription absente (plugin speech, CAP-IOS-01)',
       'NSCameraUsageDescription : description d\'usage vide',
@@ -166,7 +166,7 @@ describe('contrat des permissions Info.plist', () => {
 
 describe('make-source-json (source SideStore)', () => {
   const info = (version: string, extra: Record<string, string> = {}): Record<string, string> => ({
-    CFBundleIdentifier: 'fr.circletasks.planner',
+    CFBundleIdentifier: 'fr.spartiate.app',
     CFBundleShortVersionString: version,
     CFBundleVersion: version,
     MinimumOSVersion: '18.0',
@@ -189,15 +189,15 @@ describe('make-source-json (source SideStore)', () => {
     for (const k of ['name', 'apps', 'news']) expect(s).toHaveProperty(k);
     const app = s.apps[0] as App;
     for (const k of ['name', 'bundleIdentifier', 'developerName', 'localizedDescription', 'iconURL', 'versions']) expect(app[k]).toBeTruthy();
-    expect(app.bundleIdentifier).toBe('fr.circletasks.planner');
-    expect(app.iconURL).toMatch(/^https:\/\/raw\.githubusercontent\.com\/doncivo\/circletasks-releases\/main\/icon\.png$/);
+    expect(app.bundleIdentifier).toBe('fr.spartiate.app');
+    expect(app.iconURL).toMatch(/^https:\/\/raw\.githubusercontent\.com\/doncivo\/spartiate-releases\/main\/icon\.png$/);
     expect(app.versions).toEqual([
       {
         version: '1.2.3',
         buildVersion: '1.2.3',
         date: '2026-10-07T08:00:00.000Z',
         localizedDescription: 'Notes 1.2.3',
-        downloadURL: 'https://github.com/doncivo/circletasks-releases/releases/download/ios-v1.2.3/CircleTasks.ipa',
+        downloadURL: 'https://github.com/doncivo/spartiate-releases/releases/download/ios-v1.2.3/Spartiate.ipa',
         size: Buffer.byteLength('IPA 1.2.3'),
         sha256: createHash('sha256').update(Buffer.from('IPA 1.2.3')).digest('hex'),
         minOSVersion: '18.0',
@@ -224,7 +224,7 @@ describe('make-source-json (source SideStore)', () => {
       ['1.0.0', 'Notes 1.0.0'],
     ]);
     const many = Array.from({ length: 12 }, (_, i) => ({ version: `0.0.${i}`, date: '2026-10-01', downloadURL: 'u', size: 1 }));
-    const p3 = writeTmp('source-3.json', JSON.stringify({ apps: [{ bundleIdentifier: 'fr.circletasks.planner', versions: many }] }));
+    const p3 = writeTmp('source-3.json', JSON.stringify({ apps: [{ bundleIdentifier: 'fr.spartiate.app', versions: many }] }));
     expect(cli('2.0.0', p3).json?.apps[0]?.versions).toHaveLength(13);
   });
 
@@ -250,8 +250,8 @@ describe('make-source-json (source SideStore)', () => {
 
   it('reprend la source publiée avant I-01 (sans iconURL) et la complète', () => {
     const published = {
-      name: 'CircleTasks',
-      apps: [{ name: 'CircleTasks', bundleIdentifier: 'fr.circletasks.planner', versions: [{ version: '0.1.0', date: '2026-10-04T15:26:20.914Z', localizedDescription: 'CircleTasks 0.1.0', downloadURL: ipaUrlFor('0.1.0'), size: 3861443, minOSVersion: '18.0' }] }],
+      name: 'Spartiate',
+      apps: [{ name: 'Spartiate', bundleIdentifier: 'fr.spartiate.app', versions: [{ version: '0.1.0', date: '2026-10-04T15:26:20.914Z', localizedDescription: 'Spartiate 0.1.0', downloadURL: ipaUrlFor('0.1.0'), size: 3861443, minOSVersion: '18.0' }] }],
       news: [],
     };
     const r = cli('0.1.1', writeTmp('published.json', JSON.stringify(published)));
@@ -267,8 +267,8 @@ describe('make-source-json (source SideStore)', () => {
     expect(cli('1.0.0', null, [], info('1.0.0', { MinimumOSVersion: '17.0' })).stderr).toMatch(/iOS minimum/);
     expect(cli('1.0', null, [], info('1.0')).stderr).toMatch(/Version invalide/);
     const base = { template: loadTemplate(), existing: null, info: info('1.0.0'), version: '1.0.0', downloadURL: ipaUrlFor('1.0.0'), size: 10, sha256: 'a'.repeat(64), notes: '', date: '2026-10-07', minOSVersion: '18' };
-    expect((buildSource(base) as Source).apps[0]?.versions[0]?.localizedDescription).toBe('CircleTasks 1.0.0');
-    expect(() => buildSource({ ...base, downloadURL: 'http://ailleurs/CircleTasks.ipa' })).toThrow(/URL/);
+    expect((buildSource(base) as Source).apps[0]?.versions[0]?.localizedDescription).toBe('Spartiate 1.0.0');
+    expect(() => buildSource({ ...base, downloadURL: 'http://ailleurs/Spartiate.ipa' })).toThrow(/URL/);
     expect(() => buildSource({ ...base, size: 0 })).toThrow(/Taille/);
     expect(() => buildSource({ ...base, sha256: 'x' })).toThrow(/SHA-256/);
     expect(() => buildSource({ ...base, date: 'hier' })).toThrow(/Date/);
@@ -292,7 +292,7 @@ describe('cohérence du guide, du workflow et des scripts', () => {
 
   it('même URL de source partout', () => {
     expect(workflow).toContain(`REPO="${RELEASES_REPO}"`);
-    expect(workflow).toContain('IPA_URL="https://github.com/${REPO}/releases/download/${TAG}/CircleTasks.ipa"');
+    expect(workflow).toContain('IPA_URL="https://github.com/${REPO}/releases/download/${TAG}/Spartiate.ipa"');
     const urls = guide.match(/https:\/\/raw\.githubusercontent\.com\/[^\s`)]+/g);
     expect(urls).toEqual([SOURCE_URL]);
     expect(SOURCE_URL).toBe(`https://raw.githubusercontent.com/${RELEASES_REPO}/main/source.json`);
@@ -301,12 +301,12 @@ describe('cohérence du guide, du workflow et des scripts', () => {
   });
 
   it('même nom d’app et même identifiant de bundle', () => {
-    expect(conf.productName).toBe('CircleTasks');
+    expect(conf.productName).toBe('Spartiate');
     expect(app.name).toBe(conf.productName);
     expect(template.name).toBe(conf.productName);
     expect(workflow).toContain(`Payload/${conf.productName}.app`);
     expect(guide).toContain(`${conf.productName}.ipa`);
-    expect(guide).toMatch(/^# Installer CircleTasks sur l'iPhone/);
+    expect(guide).toMatch(/^# Installer Spartiate sur l'iPhone/);
     expect(app.bundleIdentifier).toBe(conf.identifier);
     expect(workflow).toContain(`[ "$ID" = "${conf.identifier}" ]`);
     expect(guide).toContain(`\`${conf.identifier}\``);
@@ -316,7 +316,7 @@ describe('cohérence du guide, du workflow et des scripts', () => {
     expect(workflow).toContain('tags: ["ios-v*"]');
     expect(workflow).toContain('if [ "ios-v${VERSION}" != "${GITHUB_REF_NAME}" ]');
     expect(workflow).toContain('TAG="ios-v${VERSION}"');
-    expect(ipaUrlFor('1.2.3')).toContain('/download/ios-v1.2.3/CircleTasks.ipa');
+    expect(ipaUrlFor('1.2.3')).toContain('/download/ios-v1.2.3/Spartiate.ipa');
     expect(guide).toContain('`ios-vX.Y.Z`');
     // ios-vX.Y.Z (tag d'une version) ou ios-v* (motif de l'environnement releases) ; jamais un numéro réel.
     expect(guide).not.toMatch(/ios-v(?!X\.Y\.Z|\*)/);
@@ -331,7 +331,7 @@ describe('cohérence du guide, du workflow et des scripts', () => {
   });
 
   it('push de source.json : rebase avant, une seule nouvelle tentative, échec visible sinon', () => {
-    const publish = workflow.slice(workflow.indexOf('- name: Publier sur circletasks-releases'));
+    const publish = workflow.slice(workflow.indexOf('- name: Publier sur spartiate-releases'));
     expect(publish).toContain('if [ "${TAG}" != "${GITHUB_REF_NAME}" ]; then');
     expect(publish).not.toContain('GITHUB_REF_TYPE');
     const tail = publish.slice(publish.indexOf('git add source.json icon.png'));
@@ -358,19 +358,22 @@ describe('cohérence du guide, du workflow et des scripts', () => {
     expect(section).toContain('`v*`');
   });
 
-  it('secrets Google : seulement dans l’étape de compilation, client de bureau jamais dans le build iOS', () => {
+  it('secrets Google : absents, ou confinés à l’étape de compilation (retirés en SPA-001b) ; client de bureau jamais dans le build iOS', () => {
     const steps = (yml: string) => yml.split(/^ {6}- /m).slice(1);
     const win = read('.github/workflows/build-windows.yml');
     const withSecret = (yml: string, name: string) => steps(yml).filter((s) => s.includes(name));
     for (const name of ['CT_GOOGLE_CLIENT_ID', 'CT_GOOGLE_CLIENT_SECRET']) {
+      // SPA-001a critère 5 : plus d'exigence de présence ; si le secret est là, il est confiné à l'étape de compilation.
       const found = withSecret(win, name);
-      expect(found).toHaveLength(1);
-      expect(found[0]).toContain("name: Compiler l'installeur NSIS");
-      expect(found[0]).toContain(`${name}: \${{ secrets.${name} }}`);
+      expect(found.length).toBeLessThanOrEqual(1);
+      for (const step of found) {
+        expect(step).toContain("name: Compiler l'installeur NSIS");
+        expect(step).toContain(`${name}: \${{ secrets.${name} }}`);
+      }
     }
     const iosSteps = withSecret(workflow, 'CT_GOOGLE_IOS_CLIENT_ID');
-    expect(iosSteps).toHaveLength(1);
-    expect(iosSteps[0]).toContain("name: Compiler l'IPA sans signature");
+    expect(iosSteps.length).toBeLessThanOrEqual(1);
+    for (const step of iosSteps) expect(step).toContain("name: Compiler l'IPA sans signature");
     expect(workflow).not.toContain('CT_GOOGLE_CLIENT_SECRET');
     expect(workflow).not.toContain('CT_GOOGLE_CLIENT_ID');
     expect(win).not.toContain('CT_GOOGLE_IOS_CLIENT_ID');
@@ -384,13 +387,13 @@ describe('cohérence du guide, du workflow et des scripts', () => {
     }
     expect(win.slice(win.indexOf('\n  publish:\n'))).not.toContain('CT_GOOGLE');
     expect(workflow.slice(workflow.indexOf('\n  publish:\n'))).not.toContain('CT_GOOGLE');
-    expect(read('src-tauri/build.rs')).toContain('"CT_GOOGLE_IOS_CLIENT_ID"');
+    // build.rs : plus d'exigence de présence ; la variable disparaît avec les secrets (SPA-001b).
   });
 
   it('annonce l’alerte de I-02 avec la phrase définitive, la même que le comportement livré', () => {
     // I-02 critère 9 : « préviendra … (à l'ordre 5) » est remplacée ; l'alerte part 24 h avant l'expiration (SIGNING_ALERT_LEAD_MS) et le texte
     // d'alerte renvoie à SideStore (src/i18n/fr.signing.ts).
-    expect(guide).toContain("CircleTasks vous prévient 24 h avant l'expiration ; actualisez-la alors dans SideStore.");
+    expect(guide).toContain("Spartiate vous prévient 24 h avant l'expiration ; actualisez-la alors dans SideStore.");
     expect(guide).not.toContain("à l'ordre 5");
     expect(read('src/domain/signingNotice.ts')).toContain('SIGNING_ALERT_LEAD_MS = 24 * 3_600_000');
     expect(read('src/i18n/fr.signing.ts')).toContain('Vérifiez dans SideStore que l’app a été actualisée');

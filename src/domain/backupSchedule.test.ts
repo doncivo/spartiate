@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { backupDay, backupStamp, dayToLocalDate, isDailyBackupDue, sortBackupVersions, summarizeBackups, type BackupVersionInfo } from './backupSchedule';
 import { createManualClock } from './clock';
 
-const daily = (day: string, modifiedMs: number): BackupVersionInfo => ({ name: `circletasks-daily-${day}.db`, kind: 'daily', stamp: day, modifiedMs });
+const daily = (day: string, modifiedMs: number): BackupVersionInfo => ({ name: `spartiate-daily-${day}.db`, kind: 'daily', stamp: day, modifiedMs });
 const local = (iso: string): number => new Date(iso).getTime();
 
 describe('Sauvegarde quotidienne (P-04 critère 10, horloge injectable)', () => {

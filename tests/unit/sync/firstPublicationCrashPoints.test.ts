@@ -58,7 +58,7 @@ async function meta<T>(d: SimDevice, key: string): Promise<T | null> {
   return raw === null ? null : (JSON.parse(raw) as T);
 }
 
-const segments = (d: SimDevice): string[] => d.folder.fileNames(d.id).filter((f) => f.endsWith('.ctj'));
+const segments = (d: SimDevice): string[] => d.folder.fileNames(d.id).filter((f) => f.endsWith('.spj'));
 const events = (d: SimDevice, event: string) => d.logger.entries.filter((e) => e.event === event);
 
 /** Rangs (comptés par `armCrash`) des écritures du premier cycle de l'iPhone : premier ajout et premier état qui le suit. */
@@ -144,15 +144,15 @@ describe('Y-FIX-02 critère 3 : crashPoints de la première publication', () => 
   ] as const;
 
   for (const cp of crashPoints) {
-    it(`${cp.point} (${cp.name}) : au plus deux cycles jusqu’à state.ctx, jamais publish-blocked, résultat de l’exécution sans arrêt`, async () => {
+    it(`${cp.point} (${cp.name}) : au plus deux cycles jusqu’à state.spx, jamais publish-blocked, résultat de l’exécution sans arrêt`, async () => {
       const ranks = await writeRanks();
       const ref = await reference();
       const { a, b, stateSeqs } = await crashAt(cp.rank(ranks));
       // P4 : l'état est écrit, seule sa transaction locale manque ; sinon aucun état.
-      expect(b.folder.fileNames(b.id).includes('state.ctx')).toBe(cp.point === 'P4');
+      expect(b.folder.fileNames(b.id).includes('state.spx')).toBe(cp.point === 'P4');
       const statuses: SyncStatus[] = [];
-      for (let i = 0; i < 2 && !b.folder.fileNames(b.id).includes('state.ctx'); i += 1) statuses.push(await b.cycle());
-      expect(b.folder.fileNames(b.id)).toContain('state.ctx');
+      for (let i = 0; i < 2 && !b.folder.fileNames(b.id).includes('state.spx'); i += 1) statuses.push(await b.cycle());
+      expect(b.folder.fileNames(b.id)).toContain('state.spx');
       statuses.push(await b.cycle());
       for (const s of statuses) expect(s.warnings ?? []).not.toContain('publish-blocked');
       expect(statusLine(statuses.at(-1) as SyncStatus, b.clock.nowMs())).toContain('À jour');
@@ -179,7 +179,7 @@ describe('Y-FIX-02 critère 2 : reprise complète après l’arrêt P2 (inflight
     // État laissé par l'arrêt : intention posée, segment écrit, aucun état, rien de publié en local.
     expect(await meta(b, 'inflight')).not.toBeNull();
     expect(segments(b)).toHaveLength(1);
-    expect(b.folder.fileNames(b.id)).not.toContain('state.ctx');
+    expect(b.folder.fileNames(b.id)).not.toContain('state.spx');
     expect(await meta(b, 'stateSeq')).toBeNull();
     const result = await b.cycle();
     expect(await meta(b, 'inflight')).toBeNull();
@@ -209,7 +209,7 @@ describe('Y-FIX-02 critère 4 : P1, ajout manqué', () => {
     expect(events(b, 'write-state-failed').map((e) => e.detail)).toEqual([{ code: 'state-mismatch' }]);
     // La file gardée a été republiée : segment 1 depuis le premier enregistrement, une seule ligne, tête { 1, 1 }.
     expect(segments(b)).toHaveLength(1);
-    expect(segments(b)[0]).toMatch(/j-00000001\.ctj$/);
+    expect(segments(b)[0]).toMatch(/j-00000001\.spj$/);
     expect(b.folder.records(b.id, segments(b)[0] as string)).toHaveLength(1);
     expect(b.folder.records(b.id, segments(b)[0] as string)[0]).toContain(T_ID);
     expect(await meta<{ segment: number; record: number }>(b, 'head')).toMatchObject({ segment: 1, record: 1 });
@@ -227,19 +227,19 @@ describe('Y-FIX-02 critère 4 : P1, ajout manqué', () => {
 describe('Y-FIX-02 critère 5 : premier ajout à moitié écrit (partialLastLine)', () => {
   it('iPhone : aucun enregistrement perdu ni publié deux fois, segment accepté par Rust, état à la tête de Rust, aucun message', async () => {
     const { a, b } = await joined(['Deuxième du lot', 'Troisième du lot']);
-    b.folder.armFaults({ name: 'Y-FIX-02 critère 5', faults: [{ id: 'partial', op: 'write', file: `devices/${B_ID}/*/j-00000001.ctj`, nth: 1, effect: 'error', code: 'io', partialLastLine: true }] });
+    b.folder.armFaults({ name: 'Y-FIX-02 critère 5', faults: [{ id: 'partial', op: 'write', file: `devices/${B_ID}/*/j-00000001.spj`, nth: 1, effect: 'error', code: 'io', partialLastLine: true }] });
     await b.cycle();
     expect(b.folder.faultLog().map((f) => f.id)).toEqual(['partial']);
     b.folder.disarmFaults();
     await b.restart();
     let last = await b.cycle();
-    if (!b.folder.fileNames(b.id).includes('state.ctx') || (await b.data.repos.sync.outboxCount()) > 0) last = await b.cycle();
+    if (!b.folder.fileNames(b.id).includes('state.spx') || (await b.data.repos.sync.outboxCount()) > 0) last = await b.cycle();
     expect(await b.data.repos.sync.outboxCount()).toBe(0);
     expect(last.warnings ?? []).not.toContain('publish-blocked');
     expect(last.errorCode).toBeNull();
     expect(statusLine(last, b.clock.nowMs())).toContain('À jour');
     // Segment 1 tronqué (aucune ligne complète), lot entier publié une fois dans le segment 2 ouvert par `max + 1`.
-    expect(segments(b).map((f) => f.slice(-14))).toEqual(['j-00000001.ctj', 'j-00000002.ctj']);
+    expect(segments(b).map((f) => f.slice(-14))).toEqual(['j-00000001.spj', 'j-00000002.spj']);
     const [cut, accepted] = segments(b) as [string, string];
     expect(b.folder.records(b.id, cut)).toEqual([]);
     const lines = b.folder.records(b.id, accepted);
@@ -261,13 +261,13 @@ describe('Y-FIX-02 critère 5 : premier ajout à moitié écrit (partialLastLine
 describe('Y-FIX-05 C11 et C12 : critère 5 côté PC, segment tronqué jamais clos', () => {
   const LOT = [T_ID, '7b000002-0000-4000-8000-bbbbbbbbbbbb', '7b000003-0000-4000-8000-bbbbbbbbbbbb'];
   const U_ID = '7b000009-0000-4000-8000-bbbbbbbbbbbb' as TaskId;
-  const cut = (id: string, n: number) => ({ id, op: 'write', file: `devices/${B_ID}/*/j-0000000${String(n)}.ctj`, nth: 1, effect: 'error', code: 'io', partialLastLine: true });
+  const cut = (id: string, n: number) => ({ id, op: 'write', file: `devices/${B_ID}/*/j-0000000${String(n)}.spj`, nth: 1, effect: 'error', code: 'io', partialLastLine: true });
   const skipped = (d: SimDevice) => d.platform.testing.nativeEvents().filter((e) => e.event === 'segment-tail-skipped');
   const ids = async (d: SimDevice): Promise<string[]> => ((await taskSnapshot(d)) as { id: string }[]).map((t) => t.id);
 
   /** iPhone : cycles (relance après chaque arrêt) jusqu'au calme : état publié, file vide. */
   async function phoneUntilCalm(b: SimDevice): Promise<void> {
-    for (let i = 0; i < 6 && (!b.folder.fileNames(b.id).includes('state.ctx') || (await b.data.repos.sync.outboxCount()) > 0 || b.folder.unfiredFaults().length > 0); i += 1) {
+    for (let i = 0; i < 6 && (!b.folder.fileNames(b.id).includes('state.spx') || (await b.data.repos.sync.outboxCount()) > 0 || b.folder.unfiredFaults().length > 0); i += 1) {
       await b.cycle();
       await b.restart();
     }
@@ -317,7 +317,7 @@ describe('Y-FIX-05 C11 et C12 : critère 5 côté PC, segment tronqué jamais cl
     const { a, b } = await joined(['Deuxième du lot', 'Troisième du lot']);
     b.folder.armFaults({ name: 'Y-FIX-05 C11', faults: [cut('partial', 1)] });
     await phoneUntilCalm(b);
-    expect(segments(b).map((f) => f.slice(-14))).toEqual(['j-00000001.ctj', 'j-00000002.ctj']);
+    expect(segments(b).map((f) => f.slice(-14))).toEqual(['j-00000001.spj', 'j-00000002.spj']);
     await expectPcUnblocked(a, b, 1);
     for (const id of LOT) expect(await ids(a)).toContain(id);
   });
@@ -332,7 +332,7 @@ describe('Y-FIX-05 C11 et C12 : critère 5 côté PC, segment tronqué jamais cl
     // Ajout au segment 1 coupé, puis segment 2 ouvert (segment-mismatch) et coupé à son tour : jamais enregistré, sans entrée.
     b.folder.armFaults({ name: 'Y-FIX-05 C11 variante', faults: [cut('cut-j1', 1), cut('cut-j2', 2)] });
     await phoneUntilCalm(b);
-    expect(segments(b).map((f) => f.slice(-14))).toEqual(['j-00000001.ctj', 'j-00000002.ctj', 'j-00000003.ctj']);
+    expect(segments(b).map((f) => f.slice(-14))).toEqual(['j-00000001.spj', 'j-00000002.spj', 'j-00000003.spj']);
     await expectPcUnblocked(a, b, 2);
     expect((await ids(a)).filter((id) => id === U_ID)).toHaveLength(1);
   });
@@ -345,14 +345,14 @@ describe('Y-FIX-05 C11 et C12 : critère 5 côté PC, segment tronqué jamais cl
     const file = a.folder.devices.get(b.id)?.epochs.values().next().value?.segments.get(1) as unknown as { availability: string } | undefined;
     if (!file) throw new Error('segment 1 absent chez le PC');
     file.availability = 'cloud';
-    a.folder.armFaults({ name: 'Y-FIX-05 C13', faults: [{ id: 'stay-cloud', op: 'hydrate', file: `devices/${B_ID}/*/j-00000001.ctj`, nth: 1, times: 'all', effect: 'download-error' }] });
+    a.folder.armFaults({ name: 'Y-FIX-05 C13', faults: [{ id: 'stay-cloud', op: 'hydrate', file: `devices/${B_ID}/*/j-00000001.spj`, nth: 1, times: 'all', effect: 'download-error' }] });
     const first = await a.cycle();
     expect(first.phase).toBe('waiting-icloud');
     a.clock.advance(WAITING_ICLOUD_LONG_MS);
     const later = await a.cycle();
     expect(later.phase).toBe('waiting-icloud');
     // Le segment attendu est listé (le moteur y ajoute aussi « appareil/époque » : double compte signalé dans la fiche, Écarts, hors périmètre).
-    expect(later.pendingFiles).toContain(`${B_ID.slice(0, 8)}/${epochId(1, A_ID as DeviceId)}/j-00000001.ctj`);
+    expect(later.pendingFiles).toContain(`${B_ID.slice(0, 8)}/${epochId(1, A_ID as DeviceId)}/j-00000001.spj`);
     expect(pendingFileCount(later.pendingFiles)).toBe(1);
     expect(statusLine(later, a.clock.nowMs())).toBe(t('sync.status.waitingIcloudLongWindows'));
     expect(skipped(a)).toEqual([]);
@@ -392,7 +392,7 @@ describe('Y-FIX-02 critère 6 : arrêt pendant la reprise elle-même', () => {
       crash.disarm();
       await b.restart();
       for (let i = 0; i < 2; i += 1) await b.cycle();
-      expect(b.folder.fileNames(b.id)).toContain('state.ctx');
+      expect(b.folder.fileNames(b.id)).toContain('state.spx');
       expect(stateSeqs.length).toBeGreaterThanOrEqual(1);
       expect(stateSeqs).toEqual([...new Set(stateSeqs)].sort((x, y) => x - y));
       expect(await meta(b, 'inflight')).toBeNull();
@@ -406,7 +406,7 @@ describe('Y-FIX-02 critère 6 : arrêt pendant la reprise elle-même', () => {
 });
 
 describe('Y-FIX-02 critère 7 : échéance du cycle hide entre la transaction d’ajout et l’état', () => {
-  it('le cycle suivant, avec une nouvelle échéance, publie state.ctx sans jamais lever publish-blocked', async () => {
+  it('le cycle suivant, avec une nouvelle échéance, publie state.spx sans jamais lever publish-blocked', async () => {
     const { a, b } = await joined();
     let appended = false;
     const real = b.platform.appendJournal.bind(b.platform);
@@ -424,10 +424,10 @@ describe('Y-FIX-02 critère 7 : échéance du cycle hide entre la transaction d�
     await b.service.syncNow('hide', { deadlineAt: b.clock.nowMs() + HIDE_SYNC_DEADLINE_MS });
     expect(appended).toBe(true);
     expect(events(b, 'cycle-interrupted').map((e) => e.detail)).toEqual([{ unit: 'write-state' }]);
-    expect(b.folder.fileNames(b.id)).not.toContain('state.ctx');
+    expect(b.folder.fileNames(b.id)).not.toContain('state.spx');
     appended = false;
     await b.service.syncNow('hide', { deadlineAt: b.clock.nowMs() + HIDE_SYNC_DEADLINE_MS });
-    expect(b.folder.fileNames(b.id)).toContain('state.ctx');
+    expect(b.folder.fileNames(b.id)).toContain('state.spx');
     expect(b.service.status().warnings ?? []).not.toContain('publish-blocked');
     expect(events(b, 'publish-deferred')).toHaveLength(0);
     await expectConverged(a, b);
@@ -469,7 +469,7 @@ describe('Y-FIX-02 critère 9 : fichier que la trace n’explique pas', () => {
     expect(inflight).not.toBeNull();
     for (let cycle = 1; cycle <= 2; cycle += 1) {
       const result = await b.cycle();
-      expect(b.folder.fileNames(b.id), `cycle ${String(cycle)}`).not.toContain('state.ctx');
+      expect(b.folder.fileNames(b.id), `cycle ${String(cycle)}`).not.toContain('state.spx');
       expect(stateSeqs).toEqual([]);
       expect(await meta(b, 'inflight')).toEqual(inflight);
       expect(await b.data.repos.sync.outboxCount()).toBe(queued);
@@ -508,11 +508,11 @@ describe('Y-FIX-02 critère 11 : échec durable de l’état pendant la reprise,
       expect(await meta(b, 'inflight')).toBeNull();
       expect(await meta<{ segment: number; record: number }>(b, 'head')).toMatchObject({ segment: 1, record: 1 });
     }
-    expect(b.folder.fileNames(b.id)).not.toContain('state.ctx');
+    expect(b.folder.fileNames(b.id)).not.toContain('state.spx');
     refusing = false;
     await b.service.syncNow('manual');
     const healed = b.service.status();
-    expect(b.folder.fileNames(b.id)).toContain('state.ctx');
+    expect(b.folder.fileNames(b.id)).toContain('state.spx');
     expect(healed.warnings ?? []).not.toContain('publish-blocked');
     expect(healed.warnings ?? []).not.toContain('first-publication-state-refused');
     expect(statusLine(healed, b.clock.nowMs())).toContain('À jour');
@@ -540,6 +540,6 @@ describe('Y-FIX-02 critère 12 : journal sans contenu', () => {
     expect(watched.map((e) => e.event)).toEqual(expect.arrayContaining(['inflight-resolved', 'publish-deferred']));
     for (const e of watched) for (const key of Object.keys(e.detail)) expect(allowed.has(key), `${e.event}.${key}`).toBe(true);
     const text = JSON.stringify(b.logger.entries);
-    for (const needle of [T_TITLE, 'j-00000001.ctj', 'j-00000002.ctj', 'state.ctx']) expect(text).not.toContain(needle);
+    for (const needle of [T_TITLE, 'j-00000001.spj', 'j-00000002.spj', 'state.spx']) expect(text).not.toContain(needle);
   });
 });

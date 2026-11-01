@@ -3,11 +3,11 @@
 
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
-use circletasks_lib::sync::crypto::{
+use spartiate_lib::sync::crypto::{
     key_from_recovery, pad, parse_line_prefix, parse_qr_text, qr_text_of, unpad, FileHeader, MasterKey, OpenError, Place, RECOVERY_CHARS,
 };
-use circletasks_lib::sync::limits::{padded_plaintext_bytes, MAX_RECORD_LINE_BYTES, MAX_RECORD_PLAINTEXT_BYTES};
-use circletasks_lib::sync::names::{is_app_version, is_epoch_id, is_kid, is_strict_hlc, is_uuid_v4, parse_file_name, EpochId, SyncFileName};
+use spartiate_lib::sync::limits::{padded_plaintext_bytes, MAX_RECORD_LINE_BYTES, MAX_RECORD_PLAINTEXT_BYTES};
+use spartiate_lib::sync::names::{is_app_version, is_epoch_id, is_kid, is_strict_hlc, is_uuid_v4, parse_file_name, EpochId, SyncFileName};
 use serde_json::Value;
 
 const DEV: &str = "3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60";
@@ -268,8 +268,8 @@ fn y08_8_recovery_key_hostile_inputs_are_refused_without_panic() {
     let body: String = recovery.chars().skip(4).filter(|c| *c != '-').collect();
     for (input, why) in [
         (String::new(), "vide"),
-        ("CT1-".to_owned(), "préfixe seul"),
-        (format!("CT2-{body}"), "autre préfixe"),
+        ("SP1-".to_owned(), "préfixe seul"),
+        (format!("SP2-{body}"), "autre préfixe"),
         (format!("{body}0"), "un caractère de trop"),
         (body[..54].to_owned(), "un caractère de moins"),
         (format!("{body}{body}"), "doublée"),
@@ -283,7 +283,7 @@ fn y08_8_recovery_key_hostile_inputs_are_refused_without_panic() {
         assert!(key_from_recovery(&input).is_none(), "{why}");
     }
     assert!(key_from_recovery(&body).is_some(), "sans préfixe");
-    assert!(key_from_recovery(&format!("ct1 {}", body.to_lowercase())).is_some(), "préfixe en minuscules");
+    assert!(key_from_recovery(&format!("sp1 {}", body.to_lowercase())).is_some(), "préfixe en minuscules");
     // Longueur plafonnée à 256 octets avant tout traitement (même avec des espaces).
     assert!(key_from_recovery(&format!("{}{}", " ".repeat(300), body)).is_none());
     assert!(key_from_recovery(&format!("{}{}", " ".repeat(150), body)).is_some());
@@ -309,10 +309,10 @@ fn y08_8_recovery_key_nonzero_padding_bits_are_refused() {
 
 fn qr_json(key: &MasterKey, tweak: impl FnOnce(&mut Value)) -> String {
     let text = qr_text_of(key, DEV, Some(EPOCH), 1_790_000_000_000);
-    let json = URL_SAFE_NO_PAD.decode(text.strip_prefix("CTPAIR1.").unwrap()).unwrap();
+    let json = URL_SAFE_NO_PAD.decode(text.strip_prefix("SPPAIR1.").unwrap()).unwrap();
     let mut value: Value = serde_json::from_slice(&json).unwrap();
     tweak(&mut value);
-    format!("CTPAIR1.{}", URL_SAFE_NO_PAD.encode(serde_json::to_vec(&value).unwrap()))
+    format!("SPPAIR1.{}", URL_SAFE_NO_PAD.encode(serde_json::to_vec(&value).unwrap()))
 }
 
 #[test]
@@ -335,9 +335,9 @@ fn y08_14_qr_text_bounds_and_hostile_fields() {
     }
     // Non-objets, texte brut, base64 invalide.
     for raw in ["null", "[]", "1", "\"x\"", "{}", "{"] {
-        assert!(parse_qr_text(&format!("CTPAIR1.{}", URL_SAFE_NO_PAD.encode(raw))).is_none(), "{raw}");
+        assert!(parse_qr_text(&format!("SPPAIR1.{}", URL_SAFE_NO_PAD.encode(raw))).is_none(), "{raw}");
     }
-    assert!(parse_qr_text("CTPAIR1.").is_none());
+    assert!(parse_qr_text("SPPAIR1.").is_none());
     assert!(parse_qr_text("").is_none());
     assert!(parse_qr_text("ctpair1.AAAA").is_none(), "préfixe sensible à la casse");
     assert!(parse_qr_text(&format!(" {}", qr_json(&key, |_| {}))).is_none(), "espace initial");
@@ -358,7 +358,7 @@ fn y08_header_numeric_bounds_and_hostile_documents() {
         format!(r#"{{"f":"{f}","sm":1,"kid":"0123456789abcdef","dev":"{DEV}","e":"{EPOCH}","n":{n}}}"#)
     };
     // Journal et instantané : 1 à 99 999 999.
-    for f in ["ct-j", "ct-s"] {
+    for f in ["sp-j", "sp-s"] {
         assert!(FileHeader::parse(base(f, "1").as_bytes()).is_some());
         assert!(FileHeader::parse(base(f, "99999999").as_bytes()).is_some());
         assert!(FileHeader::parse(base(f, "100000000").as_bytes()).is_none());
@@ -369,21 +369,21 @@ fn y08_header_numeric_bounds_and_hostile_documents() {
         assert!(FileHeader::parse(base(f, "1e0").as_bytes()).is_none());
     }
     // État : 1 à 2^53 - 1.
-    assert!(FileHeader::parse(base("ct-state", "9007199254740991").as_bytes()).is_some());
-    assert!(FileHeader::parse(base("ct-state", "9007199254740992").as_bytes()).is_none());
-    assert!(FileHeader::parse(base("ct-state", "18446744073709551616").as_bytes()).is_none());
+    assert!(FileHeader::parse(base("sp-state", "9007199254740991").as_bytes()).is_some());
+    assert!(FileHeader::parse(base("sp-state", "9007199254740992").as_bytes()).is_none());
+    assert!(FileHeader::parse(base("sp-state", "18446744073709551616").as_bytes()).is_none());
     // sm : 1 à u32.
-    let sm = |s: &str| base("ct-j", "1").replace(r#""sm":1"#, &format!(r#""sm":{s}"#));
+    let sm = |s: &str| base("sp-j", "1").replace(r#""sm":1"#, &format!(r#""sm":{s}"#));
     assert!(FileHeader::parse(sm("4294967295").as_bytes()).is_some());
     assert!(FileHeader::parse(sm("4294967296").as_bytes()).is_none());
     assert!(FileHeader::parse(sm("0").as_bytes()).is_none());
     assert!(FileHeader::parse(sm("1.5").as_bytes()).is_none());
     // Taille : 1 024 octets au plus (en-tête rempli d'espaces, valide sinon).
-    let good = base("ct-j", "1");
+    let good = base("sp-j", "1");
     assert!(FileHeader::parse(format!("{good}{}", " ".repeat(1024 - good.len())).as_bytes()).is_some());
     assert!(FileHeader::parse(format!("{good}{}", " ".repeat(1025 - good.len())).as_bytes()).is_none());
     // Documents hostiles.
-    for raw in ["", "null", "[]", "{}", "\u{feff}", "{\"f\":\"ct-j\"", "\u{feff}{}"] {
+    for raw in ["", "null", "[]", "{}", "\u{feff}", "{\"f\":\"sp-j\"", "\u{feff}{}"] {
         assert!(FileHeader::parse(raw.as_bytes()).is_none(), "{raw}");
     }
     assert!(FileHeader::parse(&[0xff, 0xfe]).is_none());
@@ -408,53 +408,53 @@ fn y08_header_numeric_bounds_and_hostile_documents() {
 
 #[test]
 fn y01_11_strict_file_names_refuse_every_windows_and_icloud_variant() {
-    assert_eq!(parse_file_name("state.ctx"), Some(SyncFileName::State));
-    assert_eq!(parse_file_name("j-00000001.ctj"), Some(SyncFileName::Segment(1)));
-    assert_eq!(parse_file_name("j-99999999.ctj"), Some(SyncFileName::Segment(99_999_999)));
-    assert_eq!(parse_file_name("s-00000042.cts"), Some(SyncFileName::Snapshot(42)));
+    assert_eq!(parse_file_name("state.spx"), Some(SyncFileName::State));
+    assert_eq!(parse_file_name("j-00000001.spj"), Some(SyncFileName::Segment(1)));
+    assert_eq!(parse_file_name("j-99999999.spj"), Some(SyncFileName::Segment(99_999_999)));
+    assert_eq!(parse_file_name("s-00000042.sps"), Some(SyncFileName::Snapshot(42)));
     for refused in [
         "",
-        "state 2.ctx",
-        "state (1).ctx",
-        "state.ctx.tmp",
-        "state.ctx.",
-        "state.ctx ",
-        " state.ctx",
-        "State.ctx",
+        "state 2.spx",
+        "state (1).spx",
+        "state.spx.tmp",
+        "state.spx.",
+        "state.spx ",
+        " state.spx",
+        "State.spx",
         "STATE.CTX",
         "state.CTX",
-        "state.ctx:stream",
-        "state.ctx::$DATA",
-        "state.next.ctx",
-        "state.ctx\0",
-        "state.ctx\n",
-        "../state.ctx",
-        "..\\state.ctx",
-        "a/state.ctx",
-        "j-00000000.ctj",
-        "j-100000000.ctj",
-        "j-0000001.ctj",
-        "j-000000001.ctj",
-        "j-1.ctj",
-        "j-0000000a.ctj",
-        "j-００００００１.ctj",
-        "j-+0000001.ctj",
-        "j-00000001.ctj.",
-        "j-00000001.ctj.tmp",
-        "j-00000001 2.ctj",
+        "state.spx:stream",
+        "state.spx::$DATA",
+        "state.next.spx",
+        "state.spx\0",
+        "state.spx\n",
+        "../state.spx",
+        "..\\state.spx",
+        "a/state.spx",
+        "j-00000000.spj",
+        "j-100000000.spj",
+        "j-0000001.spj",
+        "j-000000001.spj",
+        "j-1.spj",
+        "j-0000000a.spj",
+        "j-００００００１.spj",
+        "j-+0000001.spj",
+        "j-00000001.spj.",
+        "j-00000001.spj.tmp",
+        "j-00000001 2.spj",
         "j-00000001.CTJ",
-        "J-00000001.ctj",
-        "j-00000001.cts",
-        "s-00000001.ctj",
+        "J-00000001.spj",
+        "j-00000001.sps",
+        "s-00000001.spj",
         "j-00000001",
-        "j-00000001.ctj\0.txt",
+        "j-00000001.spj\0.txt",
         "CON",
-        "NUL.ctj",
+        "NUL.spj",
         ".DS_Store",
         "desktop.ini",
         "Thumbs.db",
-        "~$state.ctx",
-        ".state.ctx.icloud",
+        "~$state.spx",
+        ".state.spx.icloud",
     ] {
         assert_eq!(parse_file_name(refused), None, "{refused:?}");
     }
@@ -514,17 +514,17 @@ fn y08_1_line_prefix_exposes_nothing_beyond_the_sealed_payload() {
 mod service {
     use std::path::Path;
 
-    use circletasks_lib::sync::crypto::{qr_text_of, MasterKey};
-    use circletasks_lib::sync::folder::FolderKind;
-    use circletasks_lib::sync::limits::{PAIRING_CLOCK_TOLERANCE_MS, PAIRING_VALIDITY_MS};
-    use circletasks_lib::sync::service::{KeyInput, SYNC_KEY_ACCOUNT};
-    use circletasks_lib::sync::SyncCode;
-    use circletasks_lib::vault::SecretVault;
+    use spartiate_lib::sync::crypto::{qr_text_of, MasterKey};
+    use spartiate_lib::sync::folder::FolderKind;
+    use spartiate_lib::sync::limits::{PAIRING_CLOCK_TOLERANCE_MS, PAIRING_VALIDITY_MS};
+    use spartiate_lib::sync::service::{KeyInput, SYNC_KEY_ACCOUNT};
+    use spartiate_lib::sync::SyncCode;
+    use spartiate_lib::vault::SecretVault;
     use zeroize::Zeroizing;
 
     use crate::sync_support::{device, epoch, hlc, Device, FakeBackend, DEV_A, DEV_B, FOLDER};
 
-    fn code<T>(result: Result<T, circletasks_lib::sync::SyncError>) -> SyncCode {
+    fn code<T>(result: Result<T, spartiate_lib::sync::SyncError>) -> SyncCode {
         match result {
             Ok(_) => panic!("erreur attendue"),
             Err(error) => error.code,
@@ -575,7 +575,7 @@ mod service {
         let other = stranger.recovery_key();
         assert_eq!(code(b.core.key_import(KeyInput::RecoveryKey(Zeroizing::new((*other).clone())), 1)), SyncCode::KeyMismatch);
         assert_eq!(b.vault.get(SYNC_KEY_ACCOUNT).unwrap(), None);
-        // Le QR désigne l'appareil qui l'a émis (`d`) : le `kid` est lu dans le `state.ctx` de cet appareil seulement ; un appareil
+        // Le QR désigne l'appareil qui l'a émis (`d`) : le `kid` est lu dans le `state.spx` de cet appareil seulement ; un appareil
         // absent du dossier donne `cloud-pending` (jamais un enregistrement sur la foi d'un autre appareil).
         let key = MasterKey::from_vault_value(&a.vault.get(SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
         let unknown_dev = qr_text_of(&key, DEV_B, None, b.clock.now() + PAIRING_VALIDITY_MS);
@@ -587,7 +587,7 @@ mod service {
     fn y08_14_hostile_inputs_are_refused_before_any_folder_access() {
         let (_a, b, fs) = pair();
         let reads_before = fs.all_files().len();
-        for text in ["", "CTPAIR1.", "CTPAIR1.AAAA", "x".repeat(5000).as_str(), "CTPAIR1.\u{0}", "CT1-ZZZZZ"] {
+        for text in ["", "SPPAIR1.", "SPPAIR1.AAAA", "x".repeat(5000).as_str(), "SPPAIR1.\u{0}", "SP1-ZZZZZ"] {
             let qr = code(b.core.key_import(KeyInput::QrText(Zeroizing::new(text.to_owned())), 1));
             assert_eq!(qr, SyncCode::InvalidPairing, "{text:.20}");
             b.clock.advance(3 * 60_000); // reste sous la limite de 5 appels par 10 minutes

@@ -12,7 +12,7 @@ test.describe('OB-02 — épingler l’objectif en tête d’Aujourd’hui', () 
   test('un nouvel objectif est épinglé : l’encadré apparaît ; l’interrupteur le retire (critères 1, 2 et 8)', async ({ page }, testInfo) => {
     await openApp(page);
     await openGoalScreen(page);
-    await goalTitleField(page).fill('Finaliser le PRD CircleTasks');
+    await goalTitleField(page).fill('Finaliser le PRD Spartiate');
     await goalTitleField(page).press('Enter');
     await expect(goalSections(page)).toHaveCount(1);
     const pin = page.getByRole('switch', { name: 'Épinglé en haut de la liste' });
@@ -21,7 +21,7 @@ test.describe('OB-02 — épingler l’objectif en tête d’Aujourd’hui', () 
     await closeGoalScreen(page, testInfo);
     await expect(goalCards(page)).toHaveCount(1);
     await expect(goalCards(page).first()).toContainText('Objectif'); // ligne « Objectif · titre » (UI-REFONTE-02 sur iPhone, UI-REFONTE-08 sur PC)
-    await expect(goalCards(page).first()).toContainText('Finaliser le PRD CircleTasks');
+    await expect(goalCards(page).first()).toContainText('Finaliser le PRD Spartiate');
 
     // Désépingler : l'encadré disparaît d'Aujourd'hui, l'objectif reste dans l'écran Objectif.
     await openGoalScreen(page);
@@ -30,7 +30,7 @@ test.describe('OB-02 — épingler l’objectif en tête d’Aujourd’hui', () 
     await closeGoalScreen(page, testInfo);
     await expect(goalCards(page)).toHaveCount(0);
     await openGoalScreen(page);
-    await expect(goalTitleField(page)).toHaveValue('Finaliser le PRD CircleTasks');
+    await expect(goalTitleField(page)).toHaveValue('Finaliser le PRD Spartiate');
   });
 
   test('un encadré par objectif épinglé ; le filtre d’espace s’applique (critères 5 et 9)', async ({ page }) => {

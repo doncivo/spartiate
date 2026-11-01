@@ -1,4 +1,4 @@
-//! Plugin Swift ct-files de CircleTasks (FILES-IOS-01, ADR 0009 avenant lot F point A1, décision du 2026-10-08) : présente le sélecteur
+//! Plugin Swift ct-files de Spartiate (FILES-IOS-01, ADR 0009 avenant lot F point A1, décision du 2026-10-08) : présente le sélecteur
 //! « Enregistrer dans Fichiers » (`UIDocumentPickerViewController(forExporting:asCopy: true)`) sur un fichier temporaire écrit par Rust
 //! (`src-tauri/src/export_ios.rs`), qui le supprime ensuite dans tous les cas.
 //!

@@ -7,7 +7,7 @@
  * Erreurs : toute méthode rejette avec `CalendarPlatformError` (code stable, message sans secret).
  */
 
-/** Référence d'une entrée du coffre (`calendar_account.token_ref`), ex. « circletasks.calendar.<accountId> ». */
+/** Référence d'une entrée du coffre (`calendar_account.token_ref`), ex. « spartiate.calendar.<accountId> ». */
 export type TokenRef = string;
 
 export type CalendarPlatformErrorCode =

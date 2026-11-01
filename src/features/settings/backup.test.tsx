@@ -16,7 +16,7 @@ const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000e4');
 const local = (iso: string): number => new Date(iso).getTime();
 
 const daily = (day: string, at: string, extra: Partial<BackupVersion> = {}): BackupVersion => ({
-  name: `circletasks-daily-${day}.db`,
+  name: `spartiate-daily-${day}.db`,
   kind: 'daily',
   stamp: day,
   size: 51_200,
@@ -231,7 +231,7 @@ describe('Sauvegarde et restauration (P-04)', () => {
     const versions = [
       daily('20261003', '2026-10-03T03:12:00', { tasks: 48, size: 2_411_725 }),
       daily('20261004', '2026-10-04T21:40:00', { tasks: 1, size: 40_960 }),
-      { name: 'circletasks-pre-migration-v0013-to-v0014-20261001T080000Z.db', kind: 'pre-migration' as const, stamp: '20261001T080000Z', size: 30_720, modifiedMs: local('2026-10-01T10:00:00'), tasks: null, schemaVersion: 13 },
+      { name: 'spartiate-pre-migration-v0013-to-v0014-20261001T080000Z.db', kind: 'pre-migration' as const, stamp: '20261001T080000Z', size: 30_720, modifiedMs: local('2026-10-01T10:00:00'), tasks: null, schemaVersion: 13 },
     ];
 
     async function openSheet() {
@@ -292,7 +292,7 @@ describe('Sauvegarde et restauration (P-04)', () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
       await user.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Restaurer' }));
       expect(await screen.findByText('Restauration terminée, redémarrage')).toHaveAttribute('role', 'status');
-      expect(backups.restores).toEqual([{ name: 'circletasks-daily-20261003.db', stamp: expect.stringMatching(/^20261005T\d{6}Z$/) as string }]);
+      expect(backups.restores).toEqual([{ name: 'spartiate-daily-20261003.db', stamp: expect.stringMatching(/^20261005T\d{6}Z$/) as string }]);
       expect(backups.restarts.count).toBe(0);
       await act(async () => {
         await vi.advanceTimersByTimeAsync(RESTART_ANNOUNCE_MS + 10);
@@ -306,7 +306,7 @@ describe('Sauvegarde et restauration (P-04)', () => {
       const { user, dialog } = await openSheet();
       await user.click(await within(dialog).findByRole('button', { name: /3 oct\. à 03:12/ }));
       await user.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Restaurer' }));
-      expect(await screen.findByText('Cette sauvegarde vient d’une version plus récente de CircleTasks. Rien n’a été modifié.')).toBeInTheDocument();
+      expect(await screen.findByText('Cette sauvegarde vient d’une version plus récente de Spartiate. Rien n’a été modifié.')).toBeInTheDocument();
       expect(backups.restarts.count).toBe(0);
       expect(screen.queryByRole('button', { name: 'Redémarrer' })).not.toBeInTheDocument();
     });
@@ -317,7 +317,7 @@ describe('Sauvegarde et restauration (P-04)', () => {
       const { user, dialog } = await openSheet();
       await user.click(await within(dialog).findByRole('button', { name: /3 oct\. à 03:12/ }));
       await user.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Restaurer' }));
-      expect(await screen.findByText('La restauration a échoué. Redémarrez CircleTasks pour retrouver vos données actuelles.')).toBeInTheDocument();
+      expect(await screen.findByText('La restauration a échoué. Redémarrez Spartiate pour retrouver vos données actuelles.')).toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: 'Redémarrer' }));
       expect(backups.restarts.count).toBe(1);
     });

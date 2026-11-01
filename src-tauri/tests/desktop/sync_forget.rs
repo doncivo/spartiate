@@ -7,23 +7,23 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use circletasks_lib::sync::files::{delete_forgotten_device_files, Availability, FsError};
-use circletasks_lib::sync::forget::{
+use spartiate_lib::sync::files::{delete_forgotten_device_files, Availability, FsError};
+use spartiate_lib::sync::forget::{
     completed_forgotten, covers_forgotten, cutoff, eligible_snapshot, forget_gaps, forget_order, snapshot_in_epoch, forgotten_delete_check, learn_declarations, local_date_time, next_declaration_hlc, seen_devices,
     DeleteCheck, Eligible, KnownDevice, KnownState, SnapshotCandidate, SnapshotEnd, SnapshotEndRead,
     Verdict, FORGOTTEN_FILE, SYNC_NEXT_KEY_ACCOUNT,
 };
-use circletasks_lib::sync::limits::PAIRING_CLOCK_TOLERANCE_MS;
-use circletasks_lib::sync::log;
-use circletasks_lib::sync::service::{AppendRequest, SYNC_KEY_ACCOUNT};
-use circletasks_lib::sync::state::{DeviceAck, ForgottenDevice};
-use circletasks_lib::sync::store::StateStatus;
-use circletasks_lib::sync::{SyncCode, SyncError};
-use circletasks_lib::vault::SecretVault;
+use spartiate_lib::sync::limits::PAIRING_CLOCK_TOLERANCE_MS;
+use spartiate_lib::sync::log;
+use spartiate_lib::sync::service::{AppendRequest, SYNC_KEY_ACCOUNT};
+use spartiate_lib::sync::state::{DeviceAck, ForgottenDevice};
+use spartiate_lib::sync::store::StateStatus;
+use spartiate_lib::sync::{SyncCode, SyncError};
+use spartiate_lib::vault::SecretVault;
 use serde_json::{json, Value};
 
 use crate::sync_support::{device, epoch, hlc, Device, FakeBackend, MemFs, DEV_A, DEV_B, DEV_C, FOLDER, NOW};
-use circletasks_lib::sync::folder::FolderKind;
+use spartiate_lib::sync::folder::FolderKind;
 
 const DEV_X: &str = "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f";
 const DEV_Z: &str = "1b2c3d4e-5f6a-4b7c-8d9e-0f1a2b3c4d5e";
@@ -258,7 +258,7 @@ fn shared_table_seen_devices() {
 #[test]
 fn forget_detail_texts_are_all_present_in_the_compiled_file() {
     // Sécurité (basse) : une clé absente de native/fr.json donnerait un texte vide (unwrap_or_default) et une boîte sans détail.
-    let texts = circletasks_lib::sync::consent::forget_detail_texts();
+    let texts = spartiate_lib::sync::consent::forget_detail_texts();
     for (name, text) in [("detail", &texts.detail), ("never", &texts.never), ("windows", &texts.windows), ("ios", &texts.ios), ("utc", &texts.utc)] {
         assert!(!text.trim().is_empty(), "forgetDetail.{name} absent ou vide");
     }
@@ -273,7 +273,7 @@ fn forget_detail_texts_are_all_present_in_the_compiled_file() {
 // ------------------------------------------------------------------------------------------------------------------------------
 
 fn snapshot_parts(dev: &str, n: u32) -> Vec<String> {
-    vec!["devices".into(), dev.into(), epoch(1, DEV_A), circletasks_lib::sync::names::snapshot_name(n)]
+    vec!["devices".into(), dev.into(), epoch(1, DEV_A), spartiate_lib::sync::names::snapshot_name(n)]
 }
 
 #[test]
@@ -349,7 +349,7 @@ fn snapshot_end_is_read_once_per_session_across_scans_and_reused_for_the_paged_r
     net.settle(&[DEV_A, DEV_B], 3);
     let ep = epoch(1, DEV_A);
     let n = net.dev(DEV_A).snap.as_ref().unwrap().0;
-    let path = format!("devices/{DEV_A}/{ep}/{}", circletasks_lib::sync::names::snapshot_name(n as u32));
+    let path = format!("devices/{DEV_A}/{ep}/{}", spartiate_lib::sync::names::snapshot_name(n as u32));
     // A : deux cycles consécutifs (scan puis condition (h)), un seul fichier lu en entier.
     let start = net.fs.read_log.lock().unwrap().len();
     for _ in 0..2 {
@@ -381,7 +381,7 @@ fn snapshot_end_read_then_paged_read_reads_the_file_once_each() {
     let mut net = Net::new(&[DEV_B]);
     net.cycle(DEV_A).unwrap();
     let ep = epoch(1, DEV_A);
-    let path = format!("devices/{DEV_A}/{ep}/{}", circletasks_lib::sync::names::snapshot_name(1));
+    let path = format!("devices/{DEV_A}/{ep}/{}", spartiate_lib::sync::names::snapshot_name(1));
     let b = &net.dev(DEV_B).d.core;
     b.scan(&[]).unwrap();
     let start = net.fs.read_log.lock().unwrap().len();
@@ -631,7 +631,7 @@ fn device_forget_dialog_shows_what_rust_read_and_outcomes() {
     a.ui.answer(false);
     assert_eq!(code(a.core.device_forget(DEV_X, 1)), SyncCode::ConsentDenied);
     let spec = a.ui.last.lock().unwrap().clone().expect("boîte");
-    assert_eq!(spec.default_button, circletasks_lib::sync::consent::IDCANCEL, "« Annuler » par défaut");
+    assert_eq!(spec.default_button, spartiate_lib::sync::consent::IDCANCEL, "« Annuler » par défaut");
     assert_eq!(spec.texts.instruction, "Oublier cet appareil ?");
     // Audit e : détail lu par Rust dans l'état authentifié de X (plateforme, 8 caractères, date et heure sur 24 h).
     assert!(spec.texts.content.starts_with("PC Windows · identifiant 5c6d7e8f… · dernière synchronisation le "), "{}", spec.texts.content);
@@ -823,8 +823,8 @@ fn registry_rebuilt_case_iii_when_own_state_was_replaced_and_an_active_acknowled
     net.cycle(DEV_A).unwrap();
     net.cycle(DEV_B).unwrap();
     net.cycle(DEV_B).unwrap();
-    // Un tiers remplace le state.ctx de A ; le registre de A est perdu (dossier de configuration effacé, own.json gardé).
-    net.fs.put(&["devices", DEV_A, "state.ctx"], b"{\"f\":\"ct-state\"}\nfaux\n");
+    // Un tiers remplace le state.spx de A ; le registre de A est perdu (dossier de configuration effacé, own.json gardé).
+    net.fs.put(&["devices", DEV_A, "state.spx"], b"{\"f\":\"sp-state\"}\nfaux\n");
     std::fs::remove_file(registry_path(&net.dev(DEV_A).d)).unwrap();
     net.dev_mut(DEV_A).d.restart();
     // B a accusé l'état de A au stateSeq de own.json : reconstruction (iii) ; la déclaration revient par la liste republiée par B.
@@ -838,24 +838,24 @@ fn registry_rebuild_refusals() {
     let mut net = Net::new(&[DEV_B]);
     net.cycle(DEV_A).unwrap();
     net.cycle(DEV_A).unwrap();
-    net.fs.put(&["devices", DEV_A, "state.ctx"], b"{\"f\":\"ct-state\"}\nfaux\n");
+    net.fs.put(&["devices", DEV_A, "state.spx"], b"{\"f\":\"sp-state\"}\nfaux\n");
     std::fs::remove_file(registry_path(&net.dev(DEV_A).d)).unwrap();
     net.dev_mut(DEV_A).d.restart();
     assert_eq!(code(net.dev(DEV_A).d.core.scan(&[])), SyncCode::StateMismatch);
     assert!(!registry_path(&net.dev(DEV_A).d).exists(), "rien n'est écrit");
 
     let mut net = Net::new(&[DEV_B]);
-    net.fs.set_availability(&["devices", DEV_A, "state.ctx"], Availability::Cloud);
+    net.fs.set_availability(&["devices", DEV_A, "state.spx"], Availability::Cloud);
     *net.fs.hydrate_error.lock().unwrap() = Some(FsError::CloudPending);
     std::fs::remove_file(registry_path(&net.dev(DEV_A).d)).unwrap();
     net.dev_mut(DEV_A).d.restart();
     assert_eq!(code(net.dev(DEV_A).d.core.forgotten_delete(DEV_B)), SyncCode::CloudPending);
 
     let mut net = Net::new(&[DEV_B]);
-    let mut bytes = net.fs.get(&["devices", DEV_A, "state.ctx"]).unwrap();
+    let mut bytes = net.fs.get(&["devices", DEV_A, "state.spx"]).unwrap();
     let text = String::from_utf8(bytes.clone()).unwrap().replacen("\"sm\":1", "\"sm\":2", 1);
     bytes = text.into_bytes();
-    net.fs.put(&["devices", DEV_A, "state.ctx"], &bytes);
+    net.fs.put(&["devices", DEV_A, "state.spx"], &bytes);
     std::fs::remove_file(registry_path(&net.dev(DEV_A).d)).unwrap();
     net.dev_mut(DEV_A).d.restart();
     assert_eq!(code(net.dev(DEV_A).d.core.scan(&[])), SyncCode::NewerFormat);
@@ -868,14 +868,14 @@ fn replayed_state_after_restart_is_rollback_even_before_the_first_cycle_and_noth
     // Oublis croisés : X oublie B d'abord (déclaration la plus ancienne), puis A oublie X.
     net.dev(DEV_X).d.core.device_forget(DEV_B, 1).unwrap();
     net.cycle(DEV_X).unwrap();
-    let old_x = net.fs.get(&["devices", DEV_X, "state.ctx"]).unwrap();
+    let old_x = net.fs.get(&["devices", DEV_X, "state.spx"]).unwrap();
     net.settle(&[DEV_A, DEV_B], 2);
     // X publie un état plus récent ; A le lit (anti-rejeu persistant).
     net.cycle(DEV_X).unwrap();
     net.dev(DEV_A).d.core.scan(&[]).unwrap();
     // Redémarrage de Rust chez A ; un tiers remet l'ancien état de X ; une WebView compromise appelle la suppression avant tout cycle.
     net.dev_mut(DEV_A).d.restart();
-    net.fs.put(&["devices", DEV_X, "state.ctx"], &old_x);
+    net.fs.put(&["devices", DEV_X, "state.spx"], &old_x);
     let files = net.files_of(DEV_B);
     assert!(net.dev(DEV_A).d.core.forgotten_delete(DEV_B).is_err());
     let scan = net.dev(DEV_A).d.core.scan(&[]).unwrap();
@@ -892,8 +892,8 @@ fn forgotten_delete_removes_only_strict_names_state_last_records_done_and_is_ide
     let mut net = Net::new(&[DEV_B, DEV_X]);
     net.journal(DEV_X);
     let ep = epoch(1, DEV_A);
-    net.fs.put(&["devices", DEV_X, "state 2.ctx"], b"copie de conflit");
-    net.fs.put(&["devices", DEV_X, &ep, "j-00000003.ctj.tmp"], b"temporaire");
+    net.fs.put(&["devices", DEV_X, "state 2.spx"], b"copie de conflit");
+    net.fs.put(&["devices", DEV_X, &ep, "j-00000003.spj.tmp"], b"temporaire");
     net.settle(&[DEV_A, DEV_B], 1);
     net.dev(DEV_A).d.core.device_forget(DEV_X, 1).unwrap();
     net.settle(&[DEV_A, DEV_B], 2);
@@ -901,8 +901,8 @@ fn forgotten_delete_removes_only_strict_names_state_last_records_done_and_is_ide
     let capture = log::capture();
     let result = net.dev(DEV_A).d.core.forgotten_delete(DEV_X).unwrap();
     assert!(result.complete);
-    assert_eq!(result.deleted, 3, "deux segments et state.ctx (dossier d'époque gardé : nom étranger)");
-    assert!(net.files_of(DEV_X).iter().any(|n| n.ends_with("state 2.ctx")) && net.files_of(DEV_X).iter().any(|n| n.ends_with(".tmp")));
+    assert_eq!(result.deleted, 3, "deux segments et state.spx (dossier d'époque gardé : nom étranger)");
+    assert!(net.files_of(DEV_X).iter().any(|n| n.ends_with("state 2.spx")) && net.files_of(DEV_X).iter().any(|n| n.ends_with(".tmp")));
     let others_after: Vec<String> = net.fs.names().into_iter().filter(|n| !n.starts_with(&format!("devices/{DEV_X}")) && !n.contains("sync/")).collect();
     assert_eq!(others_before, others_after, "aucun fichier d'un autre dossier n'est touché");
     assert_eq!(net.registry(DEV_A)["done"], json!([DEV_X]));
@@ -940,15 +940,15 @@ fn forgotten_delete_refusals_one_by_one_delete_nothing() {
     assert_eq!(code(a(&net).core.forgotten_delete(DEV_X)), SyncCode::StateMismatch);
     // État de B dans le nuage : cloud-pending.
     net.settle(&[DEV_A, DEV_B], 2);
-    net.fs.set_availability(&["devices", DEV_B, "state.ctx"], Availability::Cloud);
+    net.fs.set_availability(&["devices", DEV_B, "state.spx"], Availability::Cloud);
     *net.fs.hydrate_error.lock().unwrap() = Some(FsError::CloudPending);
     assert_eq!(code(a(&net).core.forgotten_delete(DEV_X)), SyncCode::CloudPending);
-    net.fs.set_availability(&["devices", DEV_B, "state.ctx"], Availability::Local);
-    // state.ctx de X lui-même dans le nuage (condition g) : cloud-pending.
-    net.fs.set_availability(&["devices", DEV_X, "state.ctx"], Availability::Cloud);
+    net.fs.set_availability(&["devices", DEV_B, "state.spx"], Availability::Local);
+    // state.spx de X lui-même dans le nuage (condition g) : cloud-pending.
+    net.fs.set_availability(&["devices", DEV_X, "state.spx"], Availability::Cloud);
     *net.fs.hydrate_error.lock().unwrap() = Some(FsError::CloudPending);
     assert_eq!(code(a(&net).core.forgotten_delete(DEV_X)), SyncCode::CloudPending);
-    net.fs.set_availability(&["devices", DEV_X, "state.ctx"], Availability::Local);
+    net.fs.set_availability(&["devices", DEV_X, "state.spx"], Availability::Local);
     // Réinitialisation en cours.
     a(&net).vault.set(SYNC_NEXT_KEY_ACCOUNT, "réservé").unwrap();
     assert_eq!(code(a(&net).core.forgotten_delete(DEV_X)), SyncCode::StateMismatch);
@@ -964,11 +964,11 @@ fn forgotten_delete_passes_are_bounded_and_keep_state_last() {
     d.setup(DEV_A);
     let ep = epoch(1, DEV_X);
     for n in 1..=5u32 {
-        fs.put(&["devices", DEV_X, &ep, &format!("j-{n:08}.ctj")], b"x");
+        fs.put(&["devices", DEV_X, &ep, &format!("j-{n:08}.spj")], b"x");
     }
-    fs.put(&["devices", DEV_X, &ep, "s-00000001.cts"], b"x");
-    fs.put(&["devices", DEV_X, "state.ctx"], b"x");
-    fs.put(&["devices", DEV_X, "state.next.ctx"], b"x");
+    fs.put(&["devices", DEV_X, &ep, "s-00000001.sps"], b"x");
+    fs.put(&["devices", DEV_X, "state.spx"], b"x");
+    fs.put(&["devices", DEV_X, "state.next.spx"], b"x");
     let mut passes = 0;
     let mut total = 0;
     loop {
@@ -976,7 +976,7 @@ fn forgotten_delete_passes_are_bounded_and_keep_state_last() {
         let pass = delete_forgotten_device_files(&shared(&fs), DEV_X, 2).unwrap();
         total += pass.deleted;
         if !pass.complete {
-            assert!(fs.names().iter().any(|n| n.ends_with("/state.ctx")), "state.ctx supprimé en dernier");
+            assert!(fs.names().iter().any(|n| n.ends_with("/state.spx")), "state.spx supprimé en dernier");
             continue;
         }
         assert!(fs.names().iter().all(|n| !n.starts_with(&format!("devices/{DEV_X}"))));
@@ -987,7 +987,7 @@ fn forgotten_delete_passes_are_bounded_and_keep_state_last() {
     let pass = delete_forgotten_device_files(&shared(&fs), DEV_X, 2).unwrap();
     assert_eq!((pass.deleted, pass.complete), (0, true));
     assert!(delete_forgotten_device_files(&shared(&fs), "..", 2).is_err());
-    assert_eq!(circletasks_lib::sync::forget::MAX_FORGOTTEN_DELETE_ENTRIES, 1_000);
+    assert_eq!(spartiate_lib::sync::forget::MAX_FORGOTTEN_DELETE_ENTRIES, 1_000);
 }
 
 fn a(net: &Net) -> &Device {
@@ -1004,7 +1004,7 @@ fn phantom_never_seen_does_not_block_a_seen_device_without_folder_does() {
     net.journal(DEV_X);
     // Fantômes jamais vus : dossier vide, état illisible.
     net.fs.mkdir(&["devices", GHOST]);
-    net.fs.put(&["devices", DEV_Z, "state.ctx"], b"{\"f\":\"ct-state\"}\nfaux\n");
+    net.fs.put(&["devices", DEV_Z, "state.spx"], b"{\"f\":\"sp-state\"}\nfaux\n");
     net.settle(&[DEV_A, DEV_B], 1);
     net.dev(DEV_A).d.core.device_forget(DEV_X, 1).unwrap();
     net.settle(&[DEV_A, DEV_B], 2);
@@ -1017,7 +1017,7 @@ fn phantom_never_seen_does_not_block_a_seen_device_without_folder_does() {
     net.settle(&[DEV_A, DEV_B, DEV_C], 1);
     net.dev(DEV_A).d.core.device_forget(DEV_X, 1).unwrap();
     net.settle(&[DEV_A, DEV_B, DEV_C], 2);
-    net.fs.remove(&["devices", DEV_C, "state.ctx"]);
+    net.fs.remove(&["devices", DEV_C, "state.spx"]);
     net.fs.remove(&["devices", DEV_C]);
     assert_eq!(code(net.dev(DEV_A).d.core.forgotten_delete(DEV_X)), SyncCode::StateMismatch);
 }
@@ -1034,7 +1034,7 @@ fn x_forgets_z_then_a_forgets_x_z_stays_forgotten_after_x_files_are_gone_and_aft
     // X oublie Z ; tous lisent (A apprend la déclaration de X).
     net.dev(DEV_X).d.core.device_forget(DEV_Z, 1).unwrap();
     net.settle(&[DEV_X, DEV_A], 2);
-    // A oublie X ; A seul actif : conditions réunies, fichiers de X supprimés, state.ctx compris.
+    // A oublie X ; A seul actif : conditions réunies, fichiers de X supprimés, state.spx compris.
     net.dev(DEV_A).d.core.device_forget(DEV_X, 1).unwrap();
     net.settle(&[DEV_A], 2);
     assert!(net.dev(DEV_A).d.core.forgotten_delete(DEV_X).unwrap().complete);
@@ -1058,8 +1058,8 @@ fn x_state_deleted_by_a_third_party_before_x_is_forgotten_z_stays_forgotten() {
     let mut net = Net::new(&[DEV_B, DEV_X, DEV_Z]);
     net.dev(DEV_X).d.core.device_forget(DEV_Z, 1).unwrap();
     net.settle(&[DEV_X, DEV_A, DEV_B], 2);
-    // Un tiers sans clé supprime le state.ctx de X : la déclaration est déjà republiée par A et B.
-    net.fs.remove(&["devices", DEV_X, "state.ctx"]);
+    // Un tiers sans clé supprime le state.spx de X : la déclaration est déjà republiée par A et B.
+    net.fs.remove(&["devices", DEV_X, "state.spx"]);
     net.settle(&[DEV_A, DEV_B], 1);
     let scan = net.dev(DEV_B).d.core.scan(&[]).unwrap();
     assert!(forget_order(&scan.forgotten.entries).contains_key(DEV_Z));
@@ -1118,8 +1118,8 @@ fn attack_crossed_declarations_only_the_oldest_counts() {
 fn attack_foreign_state_forgets_nobody() {
     let mut net = Net::new(&[DEV_B, DEV_X]);
     net.journal(DEV_X);
-    // Faux state.ctx étranger (sans la clé) : statut foreign, aucune déclaration apprise ; fantôme jamais vu, il ne bloque pas.
-    net.fs.put(&["devices", DEV_C, "state.ctx"], b"{\"f\":\"ct-state\"}\nfaux\n");
+    // Faux state.spx étranger (sans la clé) : statut foreign, aucune déclaration apprise ; fantôme jamais vu, il ne bloque pas.
+    net.fs.put(&["devices", DEV_C, "state.spx"], b"{\"f\":\"sp-state\"}\nfaux\n");
     let scan = net.dev(DEV_A).d.core.scan(&[]).unwrap();
     assert_ne!(scan.devices.iter().find(|d| d.device_id == DEV_C).unwrap().state_status, "ok");
     assert!(scan.forgotten.entries.is_empty());
@@ -1150,7 +1150,7 @@ fn y_tech_01_cutoff_follows_an_ack_lowered_by_a_replacement_and_a_replayed_highe
     assert_eq!(code(net.dev(DEV_A).d.core.forgotten_delete(DEV_X)), SyncCode::StateMismatch, "B porte encore la coupure p_B");
     assert_eq!(net.files_of(DEV_X), x_files);
     // B remplace à son tour : nouvel état authentifié (stateSeq supérieur) dont l'accusé sur X baisse à p_A.
-    let old_b = net.fs.get(&["devices", DEV_B, "state.ctx"]).unwrap();
+    let old_b = net.fs.get(&["devices", DEV_B, "state.spx"]).unwrap();
     let seq_a = net.dev(DEV_A).seq;
     net.publish_raw(DEV_B, json!({ DEV_A: ack(DEV_A, 0, 0, seq_a), DEV_X: p_a }), master).unwrap();
     // Coupure recalculée sans mémoire : p_A ; condition (h) remplie par l'instantané de A.
@@ -1159,7 +1159,7 @@ fn y_tech_01_cutoff_follows_an_ack_lowered_by_a_replacement_and_a_replayed_highe
     // L'état de B lu par sync_forgotten_delete (sans scan entre-deux) fonde la suppression : il entre dans l'anti-rejeu persistant.
     // Redémarrage de Rust chez A, puis un tiers remet l'ancien état de B (p_B) : rollback ; rien de plus n'est supprimé, X reste terminé.
     net.dev_mut(DEV_A).d.restart();
-    net.fs.put(&["devices", DEV_B, "state.ctx"], &old_b);
+    net.fs.put(&["devices", DEV_B, "state.spx"], &old_b);
     let scan = net.dev(DEV_A).d.core.scan(&[]).unwrap();
     assert_eq!(scan.devices.iter().find(|d| d.device_id == DEV_B).unwrap().state_status, "rollback");
     assert_eq!(net.registry(DEV_A)["done"], json!([DEV_X]));

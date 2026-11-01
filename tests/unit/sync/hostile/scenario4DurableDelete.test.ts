@@ -59,12 +59,12 @@ describe('Y-TECH-03 scénario 4 : suppression en échec durable (critère 22, B5
       last = await a.cycle();
     }
     expect(a.logger.entries.filter((e) => e.event === 'delete-own-failed').map((e) => e.detail)).toContainEqual({ kind: 's', code: 'io' });
-    expect(a.folder.fileNames(a.id).some((f) => f.endsWith('/s-00000001.cts'))).toBe(true);
+    expect(a.folder.fileNames(a.id).some((f) => f.endsWith('/s-00000001.sps'))).toBe(true);
     expect(last && visible(last, a.clock.nowMs())).toBe(true);
     a.folder.disarmFaults();
     a.clock.advance(8 * DAY);
     const ok = await a.cycle();
-    expect(a.folder.fileNames(a.id).some((f) => f.endsWith('/s-00000001.cts'))).toBe(false);
+    expect(a.folder.fileNames(a.id).some((f) => f.endsWith('/s-00000001.sps'))).toBe(false);
     expect(visible(ok, a.clock.nowMs())).toBe(false);
   });
 });

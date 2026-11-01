@@ -1,4 +1,4 @@
-// Plugin vision de CircleTasks (CAP-IOS-01, ADR 0015 section 1.2) : lecture de texte d'une photo de liste avec Vision.
+// Plugin vision de Spartiate (CAP-IOS-01, ADR 0015 section 1.2) : lecture de texte d'une photo de liste avec Vision.
 //
 // Contrat : tests/fixtures/capture/vision-contract.json (noms, champs, codes), relu par un contrôle statique contre ce fichier et
 // src-tauri/src/ocr/vision.rs. Seul Rust appelle ces commandes (aucune permission pour la WebView).
@@ -61,9 +61,9 @@ private final class Settle {
 
 class VisionPlugin: Plugin {
   /// File des lectures (série, dédiée) : `perform` est synchrone et ne doit jamais tourner sur le fil principal.
-  private let visionQueue = DispatchQueue(label: "fr.circletasks.vision.read", qos: .userInitiated)
+  private let visionQueue = DispatchQueue(label: "fr.spartiate.vision.read", qos: .userInitiated)
   /// File des gardes de temps (distincte : la file de lecture est occupée pendant `perform`).
-  private let guardQueue = DispatchQueue(label: "fr.circletasks.vision.guard", qos: .userInitiated)
+  private let guardQueue = DispatchQueue(label: "fr.spartiate.vision.guard", qos: .userInitiated)
   /// Garde de temps d'une lecture (s) : au-delà, la requête est annulée et `timeout` rendu.
   private let readTimeoutSeconds: Double = 15
   private let stateLock = NSLock()

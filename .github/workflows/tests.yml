@@ -1,6 +1,6 @@
 name: Tests
 
-# Suite complète de CircleTasks, exécutée sur GitHub Actions (dépôt public : minutes gratuites) et non plus en local.
+# Suite complète de Spartiate, exécutée sur GitHub Actions (dépôt public : minutes gratuites) et non plus en local.
 # Jobs parallèles ; le job « suite-verte » dépend de tous les autres et sert de statut requis.
 # Pas de build iOS ni Windows ici (build-ios.yml en lancement manuel, build-windows.yml sur tag). Aucun secret transmis.
 
@@ -460,7 +460,7 @@ jobs:
   # REL-TECH-01 (ADR 0016) : test de fumée du VRAI binaire Windows. Build debug avec le front embarqué et l'identifiant de fumée
   # (tauri.smoke.conf.json), puis lancement du binaire, observation par CDP et capture des pixels réels de la fenêtre (tests/smoke).
   # Un écran noir au démarrage (2026-10-10) ne peut pas passer : le DOM seul ne suffit pas, les pixels sont contrôlés aussi.
-  # REL-TECH-02 (audit 1.0 B15) : le même job construit l'installeur NSIS de fumée (produit « CircleTasks Smoke », identifiant .smoke, sans clé de
+  # REL-TECH-02 (audit 1.0 B15) : le même job construit l'installeur NSIS de fumée (produit « Spartiate Smoke », identifiant .smoke, sans clé de
   # signature), contrôle le script NSIS généré (garde-fou, script absent = échec en CI), puis installe, réinstalle et désinstalle pour de vrai
   # (tests/smoke/pc-installeur.spec.ts) : la donnée témoin du dossier de données de fumée doit survivre. Aucun secret.
   smoke-windows:
@@ -548,7 +548,7 @@ jobs:
           NEEDS: ${{ toJSON(needs) }}
         run: |
           {
-            echo "## Suite CircleTasks"
+            echo "## Suite Spartiate"
             echo
             echo "| Job | Résultat |"
             echo "|---|---|"

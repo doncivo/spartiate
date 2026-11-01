@@ -90,7 +90,7 @@
       "name": "aucune entrée, ligne incomplète, fichier resté dans le nuage : attente, aucun saut sans lecture hydratée (Y-FIX-05 C5)",
       "announce": false,
       "segments": [{ "segment": 1, "written": 3, "partial": true, "cloud": true }, { "segment": 2, "written": 2 }],
-      "readFaults": [{ "id": "download-j1", "op": "hydrate", "file": "devices/*/*/j-00000001.ctj", "nth": 1, "effect": "download-error" }],
+      "readFaults": [{ "id": "download-j1", "op": "hydrate", "file": "devices/*/*/j-00000001.spj", "nth": 1, "effect": "download-error" }],
       "from": { "segment": 0, "record": 0 },
       "expect": { "status": "cloud-pending", "next": { "segment": 1, "record": 0 }, "records": 0 }
     },

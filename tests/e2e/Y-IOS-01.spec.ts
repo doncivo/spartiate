@@ -11,7 +11,7 @@ import { closeRoom, inspect, openSyncDetails, openSyncedPage, openTasks, setUnre
  */
 
 const IPHONE = { project: { name: 'iphone' } };
-const IOS_TEXT = 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / CircleTasks';
+const IOS_TEXT = 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / Spartiate';
 
 /**
  * Budget : une app démarrée, un rechargement, six cycles. Mesuré le 2026-10-08 (projet iphone, 1 worker, serveur de dev compilé) : 8 à 10 s ;

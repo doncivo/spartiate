@@ -122,12 +122,12 @@ describe('coupure au maximum des accusés, à trois appareils actifs (critère 8
 });
 
 describe('déclarations authentifiées seulement (critère 9, D5)', () => {
-  it('un faux state.ctx étranger qui prétend oublier A et B n’oublie personne et ne coupe personne', async () => {
+  it('un faux state.spx étranger qui prétend oublier A et B n’oublie personne et ne coupe personne', async () => {
     const [a, b] = (await setup([B_ID])) as [SimDevice, SimDevice];
     const fake: StateFileCopy = {
       deviceId: C_ID,
       file: {
-        header: { f: 'ct-state', sm: 1, kid: '0123456789abcdef', dev: C_ID as DeviceId, e: epochId(1, a.id), n: 9 },
+        header: { f: 'sp-state', sm: 1, kid: '0123456789abcdef', dev: C_ID as DeviceId, e: epochId(1, a.id), n: 9 },
         lines: [{ sm: 1, sv: 17, text: JSON.stringify({ deviceId: C_ID, forgotten: [{ deviceId: a.id, at: `001790000000000-0000-${C_ID}`, lastAck: null }] }), bytes: 4_200, corrupt: false }],
         partialTail: false,
         availability: 'local',
@@ -210,7 +210,7 @@ describe('aucun échec silencieux (critère 15)', () => {
     await a.restart();
     await a.cycle();
     expect(a.service.status().forget?.failure).toMatchObject({ deviceId: x.id, code: 'not-foreground' });
-    expect(JSON.stringify(await meta(a, FORGET_META.failure))).not.toMatch(/[\\/]|CircleTasks/);
+    expect(JSON.stringify(await meta(a, FORGET_META.failure))).not.toMatch(/[\\/]|Spartiate/);
     a.platform.testing.setForeground(true);
     expect(await a.service.forgetDevice(x.id as DeviceId)).toEqual({ kind: 'done' });
     expect(a.service.status().forget?.failure ?? null).toBeNull();
@@ -350,7 +350,7 @@ describe('journaux sans contenu (critère 19)', () => {
         expect(value === null || typeof value === 'number' || typeof value === 'boolean' || /^[0-9a-f-]{36}$|^[a-z-]{1,32}$/.test(String(value)), `${e.event} : ${String(value)}`).toBe(true);
       }
     }
-    expect(JSON.stringify(a.logger.entries)).not.toMatch(/Titre secret|CircleTasks|[\\]/);
+    expect(JSON.stringify(a.logger.entries)).not.toMatch(/Titre secret|Spartiate|[\\]/);
   });
 });
 

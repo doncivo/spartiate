@@ -15,7 +15,7 @@ const T0 = 1_800_000_000_000;
 
 let nowMs = T0;
 const now = (): number => nowMs;
-const payload = (n: number): PairingPayload => ({ qrText: `CTPAIR1.fake${String(n)}`, recoveryKey: 'CT1-AAAAA-BBBBB-CCCCC', expiresAt: T0 + 5 * 60_000 });
+const payload = (n: number): PairingPayload => ({ qrText: `SPPAIR1.fake${String(n)}`, recoveryKey: 'SP1-AAAAA-BBBBB-CCCCC', expiresAt: T0 + 5 * 60_000 });
 
 interface Fake extends PairingPlatform {
   readonly closes: () => number;
@@ -62,7 +62,7 @@ describe('Y-IOS-02 fenêtre QR du PC : chaque état offre une sortie', () => {
   it('Q01 code affiché : imprimer, nouveau code, annuler ; le QR et la clé de secours sont là', async () => {
     await mount(fakePlatform());
     expect(screen.getByRole('img', { name: T.window.qrLabel })).toBeInTheDocument();
-    expect(screen.getByTestId('pairing-recovery-key')).toHaveTextContent('CT1-AAAAA-BBBBB-CCCCC');
+    expect(screen.getByTestId('pairing-recovery-key')).toHaveTextContent('SP1-AAAAA-BBBBB-CCCCC');
     expect(names()).toEqual([T.window.cancelLabel, T.window.print, T.window.renewLabel].sort());
   });
 
@@ -161,7 +161,7 @@ describe('Y-IOS-02 fenêtre QR du PC : chaque état offre une sortie', () => {
       await Promise.resolve();
     });
     const field = screen.getByLabelText(T.import.field);
-    fireEvent.change(field, { target: { value: 'CT1-AAAAA' } });
+    fireEvent.change(field, { target: { value: 'SP1-AAAAA' } });
     fireEvent.click(screen.getByRole('button', { name: T.import.submit }));
     await act(async () => {
       await Promise.resolve();

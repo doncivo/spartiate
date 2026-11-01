@@ -1,5 +1,5 @@
 // swift-tools-version:5.3
-// Plugin speech de CircleTasks (ADR 0015) : compilé par build-ios.yml seulement (aucun Mac local).
+// Plugin speech de Spartiate (ADR 0015) : compilé par build-ios.yml seulement (aucun Mac local).
 
 import PackageDescription
 

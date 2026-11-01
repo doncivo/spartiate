@@ -98,7 +98,7 @@ describe('résultat et journal (Y-03 critères 2 et 7)', () => {
   it('chaque appel journalise sa raison (manual ou tray), sans contenu ni chemin', async () => {
     const [a] = await twoDevices();
     await a.createTask('Titre confidentiel');
-    a.platform.scan = () => Promise.reject(new Error('échec sur C:\\Users\\Ali\\iCloudDrive\\CircleTasks'));
+    a.platform.scan = () => Promise.reject(new Error('échec sur C:\\Users\\Ali\\iCloudDrive\\Spartiate'));
     await a.service.syncNow('manual');
     await a.service.syncNow('tray');
     const logged = a.logger.entries.filter((e) => e.event === 'sync-now');

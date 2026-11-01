@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "desktop",
-  "description": "PC Windows uniquement : zone de notification, démarrage avec Windows, mise à jour (D-01 à D-04).",
+  "description": "PC Windows uniquement : zone de notification, démarrage avec Windows (D-01 à D-04) ; mise à jour retirée jusqu'à SPA-002 (D-30).",
   "windows": ["main"],
   "platforms": ["windows"],
   "permissions": [
@@ -14,12 +14,10 @@
     "autostart:allow-enable",
     "autostart:allow-disable",
     "autostart:allow-is-enabled",
-    "updater:allow-check",
-    "updater:allow-download-and-install",
     "process:allow-restart",
     {
       "identifier": "opener:allow-open-url",
-      "allow": [{ "url": "https://github.com/doncivo/circletasks-releases/releases/*" }]
+      "allow": [{ "url": "https://github.com/doncivo/spartiate-releases/releases/*" }]
     }
   ]
 }

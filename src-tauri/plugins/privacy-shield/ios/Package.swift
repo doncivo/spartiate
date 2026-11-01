@@ -1,5 +1,5 @@
 // swift-tools-version:5.3
-// Plugin privacy-shield de CircleTasks (ADR 0013 §2.5) : compilé par build-ios.yml seulement (aucun Mac local).
+// Plugin privacy-shield de Spartiate (ADR 0013 §2.5) : compilé par build-ios.yml seulement (aucun Mac local).
 
 import PackageDescription
 

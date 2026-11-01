@@ -222,7 +222,7 @@ describe('Import CSV (P-07)', () => {
       expect(screen.getByRole('button', { name: 'Choisir un fichier' })).toBeEnabled();
       await click(screen.getByRole('button', { name: 'Télécharger un modèle' }));
       await waitFor(() => expect(files.saved).toHaveLength(1));
-      expect(files.saved[0]?.suggestedName).toBe('circletasks-modele-import.csv');
+      expect(files.saved[0]?.suggestedName).toBe('spartiate-modele-import.csv');
       expect(new TextDecoder().decode(files.saved[0]?.data)).toContain('titre;date;heure;espace;projet;note\r\nAppeler Paul;2026-10-03;10:00;Pro;;\r\n');
       expect(await screen.findByText('Modèle enregistré')).toBeInTheDocument();
     });
@@ -271,7 +271,7 @@ describe('Import CSV (P-07)', () => {
       await click(await screen.findByRole('button', { name: 'Télécharger le rapport des lignes rejetées' }));
       await waitFor(() => expect(files.saved).toHaveLength(1));
       const report = new TextDecoder().decode(files.saved[0]?.data);
-      expect(files.saved[0]?.suggestedName).toBe('circletasks-import-lignes-rejetees.csv');
+      expect(files.saved[0]?.suggestedName).toBe('spartiate-import-lignes-rejetees.csv');
       expect(report).toContain('ligne;motif;titre;date;heure;espace;projet;note');
       expect(report).toContain('5;date invalide « 31/02/2026 »;Soirée;31/02/2026;;;;');
       expect(report).toContain('7;espace inconnu « Famille »;Ailleurs;;;Famille;;');

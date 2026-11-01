@@ -33,7 +33,7 @@ let sync: FakeSyncService;
 
 beforeEach(async () => {
   db = await openTestDb(SELF, NOW);
-  sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-05T08:00:00.000Z' as IsoDateTime, folderLabel: 'CircleTasks', folderKind: 'icloud' });
+  sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-05T08:00:00.000Z' as IsoDateTime, folderLabel: 'Spartiate', folderKind: 'icloud' });
   container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync });
 });
 
@@ -49,7 +49,7 @@ const renderIn = (node: React.ReactNode) => render(<AppContainerProvider contain
 describe('ligne d’état de Réglages (Y-02 critère 16, Y-05 critère 2)', () => {
   it('« À jour · il y a 2 min », libellé du dossier, lien « Détails »', () => {
     renderIn(<SyncStatusLine />);
-    expect(screen.getByText('iCloud Drive / CircleTasks')).toBeTruthy();
+    expect(screen.getByText('iCloud Drive / Spartiate')).toBeTruthy();
     expect(screen.getByTestId('sync-status-text').textContent).toBe('À jour · il y a 2 min');
     fireEvent.click(screen.getByRole('button', { name: 'Détails' }));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'settings', screen: 'sync' });
@@ -143,7 +143,7 @@ describe('détails (Y-02 critère 17, Y-09 critère 10)', () => {
         { deviceId: SELF, platform: 'windows', self: true, lastReadAt: '2026-10-05T08:00:00.000Z' as IsoDateTime, status: 'active' },
         { deviceId: IPHONE, platform: 'ios', self: false, lastReadAt: '2026-10-05T07:42:00.000Z' as IsoDateTime, status: 'clock-ahead' },
       ],
-      pendingFiles: ['bbbbbbbb/e0001/j-00000002.ctj'],
+      pendingFiles: ['bbbbbbbb/e0001/j-00000002.spj'],
       conflictsThisWeek: 2,
     });
     renderIn(<SyncDetailsScreen />);

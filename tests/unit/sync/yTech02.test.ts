@@ -265,7 +265,7 @@ describe('seconde revue, point 6 : début de l’attente d’iCloud', () => {
     expect(a.service.status().waitingSince ?? null).toBeNull();
     const platform = a.platform as unknown as Record<string, unknown>;
     const realScan = platform['scan'];
-    const waitOn = (): void => patchScan(a, (scan) => ({ ...scan, devices: scan.devices.map((d) => ({ ...d, pending: [{ file: 'state.ctx', availability: 'cloud' as const }] })) }));
+    const waitOn = (): void => patchScan(a, (scan) => ({ ...scan, devices: scan.devices.map((d) => ({ ...d, pending: [{ file: 'state.spx', availability: 'cloud' as const }] })) }));
     const startedAt = a.clock.nowMs();
     waitOn();
     expect((await a.cycle()).phase).toBe('waiting-icloud');
@@ -294,7 +294,7 @@ describe('troisième revue, point M1 : début de l’attente d’iCloud stocké 
   it('valeur non ISO pendant l’attente : state-unreadable visible et journalisé, valeur remplacée, retiré au cycle suivant', async () => {
     const a = await first();
     await a.data.repos.sync.setMeta('waitingSince', JSON.stringify('pas une date'));
-    patchScan(a, (scan) => ({ ...scan, devices: scan.devices.map((d) => ({ ...d, pending: [{ file: 'state.ctx', availability: 'cloud' as const }] })) }));
+    patchScan(a, (scan) => ({ ...scan, devices: scan.devices.map((d) => ({ ...d, pending: [{ file: 'state.spx', availability: 'cloud' as const }] })) }));
     const status = await a.cycle();
     expect(status.phase).toBe('waiting-icloud');
     expect(status.stateUnreadable).toBe(true);
@@ -429,7 +429,7 @@ describe('troisième revue, point 2 : segment absent, preuve par l’état accep
     expect(ownSegments(a)).toEqual([[1, 2]]);
     const [epoch] = [...(a.folder.devices.get(a.id)?.epochs.keys() ?? [])];
     expect(a.folder.devices.get(a.id)?.epochs.get(epoch as never)?.snapshots.size, 'instantané annoncé : seule la preuve retient la reprise').toBeGreaterThan(0);
-    propagate(a.folder, b.folder, a.id, { drop: [`${String(epoch)}/j-00000001.ctj`] });
+    propagate(a.folder, b.folder, a.id, { drop: [`${String(epoch)}/j-00000001.spj`] });
     const before = b.logger.entries.length;
     for (let i = 0; i < 3; i += 1) {
       expect((await b.cycle()).phase, `cycle ${String(i)}`).toBe('waiting-icloud');
@@ -618,7 +618,7 @@ describe('quatrième revue, point D : preuve datée par l’état de nous accept
     await a.createTask('T2');
     await a.cycle();
     const [epoch] = [...(a.folder.devices.get(a.id)?.epochs.keys() ?? [])];
-    const toB = (): void => propagate(a.folder, b.folder, a.id, { drop: [`${String(epoch)}/j-00000001.ctj`] });
+    const toB = (): void => propagate(a.folder, b.folder, a.id, { drop: [`${String(epoch)}/j-00000001.spj`] });
     toB();
     const before = b.logger.entries.length;
     expect((await b.cycle()).phase, 'état de B accepté par A il y a 100 jours : A ne peut pas avoir purgé j-1').toBe('waiting-icloud');

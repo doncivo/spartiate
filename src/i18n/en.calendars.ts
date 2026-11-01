@@ -42,7 +42,7 @@ export const calendarsEn: Messages['calendars'] = {
   remove: 'Remove account',
   removeLabel: 'Remove account {label}',
   removeTitle: 'Remove this account?',
-  removeBody: 'Events from {label} disappear from CircleTasks. Tasks created from these events are kept.',
+  removeBody: 'Events from {label} disappear from Spartiate. Tasks created from these events are kept.',
   removeConfirm: 'Remove',
   removeCancel: 'Cancel',
   calendarsCaption: 'CALENDARS',

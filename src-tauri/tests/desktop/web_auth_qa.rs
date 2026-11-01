@@ -3,19 +3,19 @@
 
 use std::sync::{Arc, Mutex};
 
-use circletasks_lib::calendars::google::{self, GoogleEndpoints, GoogleTokens};
-use circletasks_lib::calendars::http::HttpEnv;
-use circletasks_lib::calendars::vault::{MemoryVault, SecretVault};
-use circletasks_lib::calendars::web_auth::{authorize_ios, ios_redirect, parse_redirect, IosClientConfig, TransportWebAuth, WebAuthError, WebAuthRunner, WebAuthSession};
+use spartiate_lib::calendars::google::{self, GoogleEndpoints, GoogleTokens};
+use spartiate_lib::calendars::http::HttpEnv;
+use spartiate_lib::calendars::vault::{MemoryVault, SecretVault};
+use spartiate_lib::calendars::web_auth::{authorize_ios, ios_redirect, parse_redirect, IosClientConfig, TransportWebAuth, WebAuthError, WebAuthRunner, WebAuthSession};
 #[cfg(debug_assertions)]
-use circletasks_lib::sync::log;
+use spartiate_lib::sync::log;
 
 use crate::support::fake_web_auth::FakeWebAuth;
 use crate::support::http_mock::{reply, start_mock, Mock};
 
 const CLIENT_ID: &str = "123-abc.apps.googleusercontent.com";
 const REDIRECT: &str = "com.googleusercontent.apps.123-abc:/oauth2redirect";
-const REF: &str = "circletasks.calendar.google.a1";
+const REF: &str = "spartiate.calendar.google.a1";
 
 fn runner(fake: FakeWebAuth) -> Arc<dyn WebAuthRunner> {
     Arc::new(TransportWebAuth(fake))
@@ -111,7 +111,7 @@ fn k_tech_01_qa_2_return_url_edge_cases() {
         "com.googleusercontent.apps.999-zzz:/oauth2redirect?code=c&state=s",
         "http://127.0.0.1:5000/?code=c&state=s",
         "javascript:alert(1)",
-        "circletasks://oauth2redirect?code=c&state=s",
+        "spartiate://oauth2redirect?code=c&state=s",
         " com.googleusercontent.apps.123-abc:/oauth2redirect?code=c&state=s",
         "?code=c&state=s",
     ] {

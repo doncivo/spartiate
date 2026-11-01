@@ -48,6 +48,7 @@ const FAMILIES: { readonly [C in SyncErrorCode]: SyncErrorFamily } = {
   // Hypothèse d'écriture refusée (un autre appareil a écrit entre-temps) : relue au cycle suivant.
   'state-mismatch': 'transient',
   'folder-has-data': 'pairing',
+  'foreign-folder': 'folder',
   'wrong-window': 'details',
   'wrong-mode': 'details',
   'hlc-order': 'details',

@@ -110,7 +110,7 @@ describe('Y-FIX-03 : lecture passagère en échec (io), critères 2 à 6', () =>
     expect((await a.task(local.id))?.title).toBe('Tâche iPhone');
     // Critère 4 : entretien sauté (aucun instantané, aucune suppression de fichier propre).
     expect(eventsSince(b, mark)).not.toContain('snapshot-written');
-    expect(b.folder.fileNames(b.id).filter((name) => !filesBefore.includes(name) && /\/s-\d+\.cts$/.test(name))).toEqual([]);
+    expect(b.folder.fileNames(b.id).filter((name) => !filesBefore.includes(name) && /\/s-\d+\.sps$/.test(name))).toEqual([]);
     expect(filesBefore.filter((name) => !b.folder.fileNames(b.id).includes(name))).toEqual([]);
     // Critère 5 : curseur et accusé de l'appareil en échec inchangés ; rien de lui appliqué.
     const rowAfter = await rowOf(b, a.id);

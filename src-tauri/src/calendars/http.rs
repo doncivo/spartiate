@@ -38,7 +38,7 @@ pub struct HttpEnv<'a> {
 
 fn client() -> &'static reqwest::Client {
     static CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
-    CLIENT.get_or_init(|| reqwest::Client::builder().redirect(Policy::none()).user_agent("CircleTasks").build().expect("client HTTP"))
+    CLIENT.get_or_init(|| reqwest::Client::builder().redirect(Policy::none()).user_agent("Spartiate").build().expect("client HTTP"))
 }
 
 fn map_transport(error: &reqwest::Error) -> String {

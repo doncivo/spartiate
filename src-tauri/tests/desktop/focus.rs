@@ -53,7 +53,7 @@ fn only_the_main_window_may_open_the_focus_window_through_rust_commands() {
 /// Libellé, URL et options fixés par Rust ; une position hors des écrans est recentrée (fenêtre centrée).
 #[test]
 fn focus_window_label_url_and_position_are_fixed_by_rust() {
-    use circletasks_lib::focus_window::{is_on_screen, usable_position, FocusPosition, Screen, FOCUS_HEIGHT, FOCUS_URL, FOCUS_WIDTH, FOCUS_WINDOW};
+    use spartiate_lib::focus_window::{is_on_screen, usable_position, FocusPosition, Screen, FOCUS_HEIGHT, FOCUS_URL, FOCUS_WIDTH, FOCUS_WINDOW};
     assert_eq!(FOCUS_WINDOW, "focus");
     assert_eq!(FOCUS_URL, "index.html?window=focus");
     assert_eq!((FOCUS_WIDTH, FOCUS_HEIGHT), (340.0, 460.0));

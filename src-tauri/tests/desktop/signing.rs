@@ -2,7 +2,7 @@
 //! binaires), sans `ExpirationDate`, clé dupliquée, date invalide, vide, tronqué, trop gros, sans `CreationDate`, absent, lien, dossier.
 //! La sortie ne contient jamais l'identifiant d'équipe ni les appareils présents dans le profil factice.
 
-use circletasks_lib::signing::{parse_provision, read_profile, SigningError, SigningInfo, MAX_PROFILE_BYTES, PROFILE_FILE};
+use spartiate_lib::signing::{parse_provision, read_profile, SigningError, SigningInfo, MAX_PROFILE_BYTES, PROFILE_FILE};
 
 const EXPIRES: &str = "2026-10-15T09:12:34Z";
 const ISSUED: &str = "2026-10-08T09:12:34Z";
@@ -10,7 +10,7 @@ const ISSUED: &str = "2026-10-08T09:12:34Z";
 /// Plist d'un profil gratuit SideStore, avec des champs sensibles qui ne doivent jamais ressortir.
 fn plist(body: &str) -> String {
     format!(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>AppIDName</key>\n\t<string>CircleTasks</string>\n\t<key>TeamIdentifier</key>\n\t<array>\n\t\t<string>ABCDE12345</string>\n\t</array>\n\t<key>ProvisionedDevices</key>\n\t<array>\n\t\t<string>00008140-001234567890001C</string>\n\t</array>\n{body}\n\t<key>Name</key>\n\t<string>iOS Team Provisioning Profile</string>\n</dict>\n</plist>"
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>AppIDName</key>\n\t<string>Spartiate</string>\n\t<key>TeamIdentifier</key>\n\t<array>\n\t\t<string>ABCDE12345</string>\n\t</array>\n\t<key>ProvisionedDevices</key>\n\t<array>\n\t\t<string>00008140-001234567890001C</string>\n\t</array>\n{body}\n\t<key>Name</key>\n\t<string>iOS Team Provisioning Profile</string>\n</dict>\n</plist>"
     )
 }
 
@@ -60,7 +60,7 @@ fn output_never_carries_team_identifier_devices_or_name() {
     let info = parse(&dates(Some(ISSUED), Some(EXPIRES))).unwrap();
     let json = serde_json::to_string(&info).unwrap();
     assert_eq!(json, format!("{{\"expiresAt\":\"{EXPIRES}\",\"issuedAt\":\"{ISSUED}\"}}"));
-    for secret in ["ABCDE12345", "00008140", "TeamIdentifier", "ProvisionedDevices", "Provisioning Profile", "CircleTasks"] {
+    for secret in ["ABCDE12345", "00008140", "TeamIdentifier", "ProvisionedDevices", "Provisioning Profile", "Spartiate"] {
         assert!(!json.contains(secret), "{secret}");
     }
     let without_issue = serde_json::to_string(&parse(&dates(None, Some(EXPIRES))).unwrap()).unwrap();

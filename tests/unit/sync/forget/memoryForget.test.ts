@@ -306,13 +306,13 @@ describe('forget.deleteFiles (sync_forgotten_delete)', () => {
     await room.publish(A, room.upToDate(A, [1, 1]));
     expect(await codeOf(a.forget.deleteFiles(X))).toBe('state-mismatch');
     await room.settle();
-    // État d'un actif dans le nuage, state.ctx de la cible dans le nuage (g), réinitialisation en cours.
-    room.folder.setAvailability(B, 'state.ctx', 'cloud');
+    // État d'un actif dans le nuage, state.spx de la cible dans le nuage (g), réinitialisation en cours.
+    room.folder.setAvailability(B, 'state.spx', 'cloud');
     expect(await codeOf(a.forget.deleteFiles(X))).toBe('cloud-pending');
-    room.folder.setAvailability(B, 'state.ctx', 'local');
-    room.folder.setAvailability(X, 'state.ctx', 'cloud');
+    room.folder.setAvailability(B, 'state.spx', 'local');
+    room.folder.setAvailability(X, 'state.spx', 'cloud');
     expect(await codeOf(a.forget.deleteFiles(X))).toBe('cloud-pending');
-    room.folder.setAvailability(X, 'state.ctx', 'local');
+    room.folder.setAvailability(X, 'state.spx', 'local');
     a.testing.setResetInProgress(true);
     expect(await codeOf(a.forget.deleteFiles(X))).toBe('state-mismatch');
     a.testing.setResetInProgress(false);
@@ -366,7 +366,7 @@ describe('attaques', () => {
     expect(await codeOf((room.devs.get(B) as Dev).p.forget.deleteFiles(X))).toBe('state-mismatch');
   });
 
-  it('faux state.ctx étranger : n’oublie personne ; fantôme jamais vu, il ne bloque pas la suppression (ADR 0011 §18 point 8 a)', async () => {
+  it('faux state.spx étranger : n’oublie personne ; fantôme jamais vu, il ne bloque pas la suppression (ADR 0011 §18 point 8 a)', async () => {
     const room = await Room.started();
     // Un autre dossier, une autre clé : son état recopié ici est « étranger ».
     const other = new MemorySyncFolder('ailleurs');

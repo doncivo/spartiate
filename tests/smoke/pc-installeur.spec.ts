@@ -7,9 +7,9 @@ import { basename, join, resolve } from 'node:path';
 /**
  * REL-TECH-02 (audit 1.0 B15, décision 9 d'Ali du 2026-10-17) : la désinstallation ne supprime JAMAIS les données de l'application.
  *
- * L'installeur NSIS de fumée (`npm run test:smoke:installer-build`, produit « CircleTasks Smoke », identifiant `.smoke` : jamais
- * `%LOCALAPPDATA%\CircleTasks` ni `%APPDATA%\fr.circletasks.planner`) est exécuté pour de vrai :
- *   (a) installation silencieuse ; (b) donnée témoin dans `%APPDATA%\fr.circletasks.planner.smoke` ;
+ * L'installeur NSIS de fumée (`npm run test:smoke:installer-build`, produit « Spartiate Smoke », identifiant `.smoke` : jamais
+ * `%LOCALAPPDATA%\Spartiate` ni `%APPDATA%\fr.spartiate.app`) est exécuté pour de vrai :
+ *   (a) installation silencieuse ; (b) donnée témoin dans `%APPDATA%\fr.spartiate.app.smoke` ;
  *   (c) même installeur en graphique (messages Win32 postés par `installer-drive.ps1`) : « Désinstaller avant d'installer », case « Supprimer les données
  *       de l'application » COCHÉE et vérifiée, désinstallation, installation jusqu'à « Terminer » ;
  *   (d) la donnée témoin existe toujours, l'application réinstallée démarre ;
@@ -24,7 +24,7 @@ const DRIVE_SCRIPT = join(ROOT, 'tests', 'smoke', 'installer-drive.ps1');
 const CAPTURE_SCRIPT = join(ROOT, 'tests', 'smoke', 'window-capture.ps1');
 const INSTALLER_DIR = join(TAURI_DIR, 'target', 'smoke', 'debug', 'bundle', 'nsis');
 /** Seul identifiant dont les dossiers de données peuvent être effacés (ADR 0016). */
-const SMOKE_IDENTIFIER = 'fr.circletasks.planner.smoke';
+const SMOKE_IDENTIFIER = 'fr.spartiate.app.smoke';
 const APP_READY_TIMEOUT_MS = 90_000;
 /**
  * Bornes emboîtées (ADR 0016, avenant REL-TECH-02). Durées observées en CI le 2026-10-17 : installation silencieuse et chaque pilotage graphique
@@ -75,7 +75,7 @@ function readConf(): { productName: string; identifier: string; version: string;
 /** Garde : seul le produit de fumée est installé, désinstallé ou effacé (jamais l'application réelle ni ses données). */
 function assertSmokeOnly(productName: string, identifier: string): void {
   if (identifier !== SMOKE_IDENTIFIER) throw new Error(`identifiant ${identifier} : seuls les dossiers de ${SMOKE_IDENTIFIER} peuvent être effacés`);
-  if (productName === 'CircleTasks' || !productName.endsWith(' Smoke')) throw new Error(`productName « ${productName} » : un produit « … Smoke » est exigé`);
+  if (productName === 'Spartiate' || !productName.endsWith(' Smoke')) throw new Error(`productName « ${productName} » : un produit « … Smoke » est exigé`);
 }
 
 function localAppData(): string {
@@ -251,7 +251,7 @@ test("la désinstallation (réinstallation et uninstall.exe, case « Supprimer l
         const capture = captureWindow(child.pid ?? 0, testInfo.outputPath('application-installee.png'));
         captured = true;
         await testInfo.attach('application-installee.json', { body: JSON.stringify(capture), contentType: 'application/json' });
-        expect(capture.found, 'fenêtre « CircleTasks » de l’application installée introuvable').toBe(true);
+        expect(capture.found, 'fenêtre « Spartiate » de l’application installée introuvable').toBe(true);
         expect(capture.visible, 'fenêtre de l’application installée invisible').toBe(true);
         expect(capture.iconic, 'fenêtre de l’application installée réduite').toBe(false);
       } finally {

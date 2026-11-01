@@ -5,7 +5,7 @@ const version = (name: string, extra: Partial<BackupVersion> = {}): BackupVersio
 
 function makeApi(overrides: Partial<TauriBackupApi> = {}): TauriBackupApi {
   return {
-    list: () => Promise.resolve({ directory: 'C:\\Users\\Ali\\AppData\\Roaming\\fr.circletasks.planner\\backups', entries: [version('circletasks-daily-20261003.db')] }),
+    list: () => Promise.resolve({ directory: 'C:\\Users\\Ali\\AppData\\Roaming\\fr.spartiate.app\\backups', entries: [version('spartiate-daily-20261003.db')] }),
     daily: () => Promise.resolve({ created: true }),
     check: () => Promise.resolve(14),
     restore: () => Promise.resolve({ safetyCopy: 'x', schemaVersion: 14 }),
@@ -37,13 +37,13 @@ describe('Service de sauvegarde Tauri (P-04)', () => {
     const { db } = makeDb();
     const listing = await createTauriBackup({ db, api: makeApi() }).list();
     expect(listing.directory).toContain('backups');
-    expect(listing.versions.map((v) => v.name)).toEqual(['circletasks-daily-20261003.db']);
+    expect(listing.versions.map((v) => v.name)).toEqual(['spartiate-daily-20261003.db']);
   });
 
   it('liste : deviceId, platform et epoch de Rust (Y-TECH-04 partie C) traversent sans être interprétés, null compris', async () => {
     const { db } = makeDb();
-    const full = version('circletasks-daily-20261003.db', { deviceId: '56d40a0a-1b2c-4d3e-8f4a-5b6c7d8e9f01', platform: 'windows', epoch: 'e0001-56d40a0a-1b2c-4d3e-8f4a-5b6c7d8e9f01' });
-    const empty = version('circletasks-daily-20261002.db', { deviceId: null, platform: null, epoch: null });
+    const full = version('spartiate-daily-20261003.db', { deviceId: '56d40a0a-1b2c-4d3e-8f4a-5b6c7d8e9f01', platform: 'windows', epoch: 'e0001-56d40a0a-1b2c-4d3e-8f4a-5b6c7d8e9f01' });
+    const empty = version('spartiate-daily-20261002.db', { deviceId: null, platform: null, epoch: null });
     const api = makeApi({ list: () => Promise.resolve({ directory: null, entries: [full, empty] }) });
     const listing = await createTauriBackup({ db, api }).list();
     expect(listing.versions).toEqual([full, empty]);
@@ -91,12 +91,12 @@ describe('Service de sauvegarde Tauri (P-04)', () => {
       },
     });
     const service = createTauriBackup({ db, api });
-    await service.restore({ name: 'circletasks-daily-20261003.db', stamp: '20261005T101500Z' });
+    await service.restore({ name: 'spartiate-daily-20261003.db', stamp: '20261005T101500Z' });
     expect(calls).toEqual([
-      'check:circletasks-daily-20261003.db',
+      'check:spartiate-daily-20261003.db',
       'PRAGMA wal_checkpoint(TRUNCATE)',
       'close',
-      'restore:circletasks-daily-20261003.db:20261005T101500Z',
+      'restore:spartiate-daily-20261003.db:20261005T101500Z',
     ]);
   });
 
@@ -105,7 +105,7 @@ describe('Service de sauvegarde Tauri (P-04)', () => {
       const { db } = makeDb();
       const restore = vi.fn(() => Promise.resolve({}));
       const service = createTauriBackup({ db, api: makeApi({ check: () => Promise.reject({ code, message: 'x' }), restore }) });
-      const error = await service.restore({ name: 'circletasks-daily-20261003.db', stamp: '20261005T101500Z' }).catch((e: unknown) => e);
+      const error = await service.restore({ name: 'spartiate-daily-20261003.db', stamp: '20261005T101500Z' }).catch((e: unknown) => e);
       expect(error).toBeInstanceOf(BackupError);
       expect(error).toMatchObject({ reason: code, databaseClosed: false });
       expect(db.close).not.toHaveBeenCalled();
@@ -116,7 +116,7 @@ describe('Service de sauvegarde Tauri (P-04)', () => {
   it('critère 8 : un échec de Rust après la fermeture signale qu’un redémarrage est nécessaire', async () => {
     const { db } = makeDb();
     const service = createTauriBackup({ db, api: makeApi({ restore: () => Promise.reject({ code: 'io', message: 'échec' }) }) });
-    await expect(service.restore({ name: 'circletasks-daily-20261003.db', stamp: '20261005T101500Z' })).rejects.toMatchObject({ reason: 'io', databaseClosed: true });
+    await expect(service.restore({ name: 'spartiate-daily-20261003.db', stamp: '20261005T101500Z' })).rejects.toMatchObject({ reason: 'io', databaseClosed: true });
   });
 
   it('redémarrage et dossier : commandes sans paramètre venant de l’interface', async () => {

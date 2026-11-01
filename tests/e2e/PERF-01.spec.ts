@@ -72,8 +72,9 @@ test.describe('PERF-01 — temps d’affichage avec 5 000 tâches', () => {
 
   test('le rapport du mois s’affiche en moins de 300 ms une fois le bloc Recharts chargé, médiane de 5 essais (H-01, H-02) @perf', async ({ page }, testInfo) => {
     const today = await browserToday(page);
-    // 5 000 tâches sur trois ans (≈ 4,5 par jour, ≈ 140 dans le mois courant).
-    await page.evaluate(([first]) => window.__ctTest?.seedTasks(5000, first ?? '', 1095), [addIsoDays(today, -1095)] as const);
+    // 5 000 tâches sur trois ans, de today − 1 094 j à today inclus (≈ 4,5 par jour, ≈ 140 dans le mois courant). Le 1er du mois, une période qui s'arrêtait
+    // la veille laissait le mois courant vide (« Rien à compter ») : le graphique n'apparaissait jamais et le test expirait (constat CI du 2026-11-01, run 41335936823).
+    await page.evaluate(([first]) => window.__ctTest?.seedTasks(5000, first ?? '', 1095), [addIsoDays(today, -1094)] as const);
     const chart = '.ct-stats__chart .ct-stats__bar';
     const open = (): Promise<number> => measureClickToVisible(page, { name: 'Rapport mensuel', inNav: false }, chart);
 

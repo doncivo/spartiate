@@ -28,7 +28,7 @@ test('Y-IOS-02-FIX-01 : échec visible sur iPhone, cause et dossier, nouvelle te
   const failure = page.locator('.ct-sync__ownDeletion');
   await expect(failure).toBeVisible();
   await expect(failure).toContainText("Des fichiers anciens de cet appareil n'ont pas pu être supprimés");
-  await expect(failure).toContainText('CircleTasks › devices');
+  await expect(failure).toContainText('Spartiate › devices');
   await expect(failure).toContainText(epoch);
   await expect(failure).toContainText(/Dernier essai à \d{2}:\d{2}/);
 

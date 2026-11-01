@@ -1,6 +1,6 @@
 //! Mini-fenêtre de capture rapide (Q-01) : bascule, placement, bornes, capability minimale.
 
-use circletasks_lib::capture::{
+use spartiate_lib::capture::{
     is_valid_submit, SubmitRequest, CONTEXT_REQUEST_EVENT, SUBMIT_EVENT,
     centered_origin, clamp_height, quick_add_route, QuickAddRoute, physical_size, toggle_action, ToggleAction, CAPTURE_PAGE, CAPTURE_WINDOW, DEFAULT_HEIGHT, MAX_HEIGHT, WINDOW_WIDTH,
 };
@@ -81,7 +81,7 @@ fn only_the_main_window_is_declared_in_the_configuration() {
 #[test]
 fn capture_page_and_events_match_the_front() {
     assert_eq!(CAPTURE_PAGE, "capture.html");
-    for needle in [circletasks_lib::capture::SHOWN_EVENT, circletasks_lib::capture::BLURRED_EVENT, CAPTURE_WINDOW] {
+    for needle in [spartiate_lib::capture::SHOWN_EVENT, spartiate_lib::capture::BLURRED_EVENT, CAPTURE_WINDOW] {
         assert!(FRONT_EVENTS.contains(&format!("'{needle}'")), "{needle} absent de src/platform/capture/events.ts");
     }
 }

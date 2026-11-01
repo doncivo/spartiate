@@ -40,7 +40,7 @@ async function withKey(os: 'ios' | 'windows'): Promise<MemorySyncPlatform> {
 }
 
 function show(platform: MemorySyncPlatform, os: 'ios' | 'windows', status: Partial<SyncStatus>): void {
-  const sync = createFakeSyncService({ folderLabel: 'CircleTasks', folderKind: 'icloud', lastSyncAt: '2026-10-09T07:59:00.000Z' as IsoDateTime, ...status });
+  const sync = createFakeSyncService({ folderLabel: 'Spartiate', folderKind: 'icloud', lastSyncAt: '2026-10-09T07:59:00.000Z' as IsoDateTime, ...status });
   const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync, syncPlatform: platform, platform: { runtime: 'tauri', os } });
   render(
     <AppContainerProvider container={container}>

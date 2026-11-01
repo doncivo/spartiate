@@ -158,14 +158,14 @@ interface EpochDir {
 
 interface DeviceDir {
   state: MemFile | null;
-  /** Y-11 : `state.next.ctx` (état sous la nouvelle clé pendant une réinitialisation). */
+  /** Y-11 : `state.next.spx` (état sous la nouvelle clé pendant une réinitialisation). */
   nextState: MemFile | null;
   readonly epochs: Map<EpochId, EpochDir>;
   /** Entrées au nom non strict (copies de conflit, `*.tmp`, fichiers étrangers) : ignorées, comptées. */
   strays: number;
 }
 
-/** Copie opaque d'un `state.ctx` (crochets `takeState` / `putState` : rejeu d'un ancien état). */
+/** Copie opaque d'un `state.spx` (crochets `takeState` / `putState` : rejeu d'un ancien état). */
 export interface StateFileCopy {
   readonly deviceId: string;
   readonly file: MemFile | null;
@@ -202,9 +202,9 @@ export const MUTE_DEADLINE_TURNS = 100;
 const cloneFile = (file: MemFile): MemFile => ({ ...file, lines: file.lines.map((line) => ({ ...line })) });
 
 /**
- * Dossier `iCloud Drive/CircleTasks` simulé. Les méthodes publiques autres que le constructeur sont des **crochets de test** : elles
+ * Dossier `iCloud Drive/Spartiate` simulé. Les méthodes publiques autres que le constructeur sont des **crochets de test** : elles
  * modifient le dossier comme le ferait iCloud ou un tiers (fichier dans le nuage, ligne incomplète, corruption, copie de conflit).
- * `file` désigne `state.ctx` ou `<époque>/<nom strict>`.
+ * `file` désigne `state.spx` ou `<époque>/<nom strict>`.
  */
 export class MemorySyncFolder {
   /** Contenu par dossier d'appareil (nom = `device_id`, ou nom quelconque posé par `addDeviceFolder`). */
@@ -217,7 +217,7 @@ export class MemorySyncFolder {
   constructor(
     readonly id: string = 'memory-folder',
     /** Faux de dev et de test : jamais affiché tel quel, l'écran tire ses textes de src/i18n (le libellé réel vient de Rust). */
-    readonly label: string = 'CircleTasks',
+    readonly label: string = 'Spartiate',
     readonly kind: SyncFolderInfo['kind'] = 'icloud',
   ) {}
 
@@ -386,7 +386,7 @@ export class MemorySyncFolder {
     return back;
   }
 
-  /** Suppressions non propagées encore en attente pour un appareil (noms `state.ctx` ou `<époque>/<nom>`). */
+  /** Suppressions non propagées encore en attente pour un appareil (noms `state.spx` ou `<époque>/<nom>`). */
   pendingResurrections(deviceId: string): readonly string[] {
     return this.resurrections.filter((r) => r.deviceId === deviceId).map((r) => r.file);
   }
@@ -422,7 +422,7 @@ export class MemorySyncFolder {
   putLines(deviceId: string, file: string, lines: readonly string[], availability: FileAvailability = 'local'): void {
     const where = file === STATE_FILE || file === STATE_NEXT_FILE ? null : splitFile(file);
     if (!where && file !== STATE_FILE && file !== STATE_NEXT_FILE) throw new RangeError('nom non strict');
-    const header: FileHeader = { f: where === null ? 'ct-state' : where.kind === 'segment' ? 'ct-j' : 'ct-s', sm: SYNC_FORMAT_MAJOR, kid: 'conformance', dev: deviceId as FileHeader['dev'], e: where?.epoch ?? ('e0001-00000000-0000-4000-8000-000000000000' as EpochId), n: where?.n ?? 1 };
+    const header: FileHeader = { f: where === null ? 'sp-state' : where.kind === 'segment' ? 'sp-j' : 'sp-s', sm: SYNC_FORMAT_MAJOR, kid: 'conformance', dev: deviceId as FileHeader['dev'], e: where?.epoch ?? ('e0001-00000000-0000-4000-8000-000000000000' as EpochId), n: where?.n ?? 1 };
     this.restoreFile(deviceId, file, { header, lines: lines.map((text) => makeLine(text, SYNC_FORMAT_MAJOR, 1)), partialTail: false, availability, extraBytes: 0 });
   }
 
@@ -559,7 +559,7 @@ export class MemorySyncFolder {
     if (dir) dir.state = copy.file ? cloneFile(copy.file) : null;
   }
 
-  /** Noms stricts présents dans un dossier d'appareil (`state.ctx`, `<époque>/<fichier>`), triés. */
+  /** Noms stricts présents dans un dossier d'appareil (`state.spx`, `<époque>/<fichier>`), triés. */
   fileNames(deviceId: string): string[] {
     const dir = this.devices.get(deviceId);
     if (!dir) return [];
@@ -659,11 +659,11 @@ function fromBase64Url(text: string): Bytes | null {
   }
 }
 
-/** `kid = hex(HKDF-SHA256(K, sel "circletasks", info "ct/1 kid")[0..8])` (section 2). */
+/** `kid = hex(HKDF-SHA256(K, sel "spartiate", info "sp/1 kid")[0..8])` (section 2). */
 async function kidOf(key: Bytes): Promise<string> {
   const base = await crypto.subtle.importKey('raw', key, 'HKDF', false, ['deriveBits']);
   const bits = await crypto.subtle.deriveBits(
-    { name: 'HKDF', hash: 'SHA-256', salt: encoder.encode('circletasks'), info: encoder.encode('ct/1 kid') },
+    { name: 'HKDF', hash: 'SHA-256', salt: encoder.encode('spartiate'), info: encoder.encode('sp/1 kid') },
     base,
     64,
   );
@@ -679,7 +679,7 @@ const KEY_BYTES = 32;
 const RECOVERY_BYTES = KEY_BYTES + 2;
 const RECOVERY_CHARS = Math.ceil((RECOVERY_BYTES * 8) / 5); // 55
 
-/** Clé de secours : `K ‖ SHA-256(K)[0..2]` en base32 Crockford, groupes de 5 caractères, préfixe `CT1-`. */
+/** Clé de secours : `K ‖ SHA-256(K)[0..2]` en base32 Crockford, groupes de 5 caractères, préfixe `SP1-`. */
 async function recoveryKeyOf(key: Bytes): Promise<string> {
   const digest = await sha256(key);
   const data = new Uint8Array(RECOVERY_BYTES);
@@ -741,7 +741,7 @@ function qrTextOf(content: QrContent): string {
   return PAIRING_QR_PREFIX + toBase64Url(encoder.encode(json));
 }
 
-/** Analyse stricte du texte du QR : `CTPAIR1.<base64url(JSON { v:1, k, d, e, x })>`, clés exactes. */
+/** Analyse stricte du texte du QR : `SPPAIR1.<base64url(JSON { v:1, k, d, e, x })>`, clés exactes. */
 function parseQrText(text: string): QrContent | null {
   if (!text.startsWith(PAIRING_QR_PREFIX) || text.length > 1024) return null;
   const bytes = fromBase64Url(text.slice(PAIRING_QR_PREFIX.length));
@@ -1074,7 +1074,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
   let resetOpenings: number[] = [];
   /** Y-11 : arrêt simulé avant l'étape nommée (une fois). */
   let interruptAt: string | null = null;
-  /** Remarques finales : anti-rejeu et derniers accusés des `state.ctx` relus sous l'ancienne clé pour la coupure (comme Rust). */
+  /** Remarques finales : anti-rejeu et derniers accusés des `state.spx` relus sous l'ancienne clé pour la coupure (comme Rust). */
   const kAccepted = new Map<string, AcceptedState>();
   const kAcks = new Map<string, ReadonlyMap<DeviceId, DeviceAck>>();
   /** Seconde revue, point 2 : dernière synchro (ms) de chaque appareil vue au dernier scan (expiré à 180 jours). */
@@ -1123,7 +1123,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
   };
 
   /**
-   * Reconstruction de `own.json` (règle 1 de l'ADR 0010, section 9) depuis trois sources : son propre `state.ctx` authentifié, les
+   * Reconstruction de `own.json` (règle 1 de l'ADR 0010, section 9) depuis trois sources : son propre `state.spx` authentifié, les
    * accusés `acks[self]` publiés par les autres appareils et la liste de ses fichiers. L'époque courante est la plus grande des trois ;
    * dans cette époque, la tête (segment, enregistrement) et le plus grand hlc sont les maxima des sources ; `stateSeq` est le maximum
    * sur toute la vie de l'appareil, toutes époques confondues. Rust ne lit pas le texte clair qu'il chiffre : les fichiers ne donnent
@@ -1141,7 +1141,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
       const ack = read.status === 'ok' ? read.state?.acks.get(self) : undefined;
       if (ack) acks.push(ack);
     }
-    // Son propre state.ctx en transfert (nuage, ligne incomplète) sans accusé qui borne : en attente, rien n'est retenu (revue 4 du lot
+    // Son propre state.spx en transfert (nuage, ligne incomplète) sans accusé qui borne : en attente, rien n'est retenu (revue 4 du lot
     // Y1, même règle que Rust).
     if (mine?.status === 'cloud-pending' && acks.length === 0) fail('cloud-pending');
     // État d'une version plus récente du format : jamais réécrit (Y-07, « Mettez à jour l'app »).
@@ -1152,7 +1152,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     let replacedSeq = 0;
     if (mine && mine.status !== 'ok' && mine.status !== 'missing' && mine.status !== 'cloud-pending') {
       const authenticated = Math.max(accepted.get(self)?.seq ?? 0, ...acks.map((a) => a.stateSeq));
-      const header = dir?.state && dir.state.header.f === 'ct-state' && dir.state.header.dev === self ? dir.state.header.n : 0;
+      const header = dir?.state && dir.state.header.f === 'sp-state' && dir.state.header.dev === self ? dir.state.header.n : 0;
       replacedSeq = header <= authenticated + MAX_UNAUTHENTICATED_SEQ_JUMP ? Math.max(authenticated, header) : authenticated;
     }
     // Comme Rust (`rebuild_own`) : une époque listée n'est retenue que si elle contient un segment (la plus grande qui en a un) ; un
@@ -1249,7 +1249,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     readonly kid: string | null;
     readonly state: PublishedDeviceState | null;
     readonly status: DeviceStateStatus;
-    /** Y-11 : état lu dans `state.next.ctx`. */
+    /** Y-11 : état lu dans `state.next.spx`. */
     readonly fromNext?: boolean;
   }
 
@@ -1263,9 +1263,9 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
   };
 
   /**
-   * État présenté (Y-11, même règle que `read_state` de `store.rs`) : pendant une réinitialisation, `state.next.ctx` sous la nouvelle clé,
-   * puis `state.ctx` sous la nouvelle clé ou la clé locale (d'après l'en-tête) ; sinon `state.ctx` sous la clé locale, et `state.next.ctx`
-   * seulement si `state.ctx` est d'une autre clé (appareil associé pendant la transition).
+   * État présenté (Y-11, même règle que `read_state` de `store.rs`) : pendant une réinitialisation, `state.next.spx` sous la nouvelle clé,
+   * puis `state.spx` sous la nouvelle clé ou la clé locale (d'après l'en-tête) ; sinon `state.spx` sous la clé locale, et `state.next.spx`
+   * seulement si `state.spx` est d'une autre clé (appareil associé pendant la transition).
    */
   const readState = (deviceId: string, dir: DeviceDir, localKid: string, remember: boolean): StateRead => {
     const next = activeNext();
@@ -1300,7 +1300,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
   const readFileState = (deviceId: string, file: MemFile, kids: readonly string[], remember: boolean, replay: boolean): StateRead => {
     if (fileBytes(file) > MAX_STATE_FILE_BYTES) return { kid: null, state: null, status: 'too-large' };
     const h = file.header;
-    if (h.f !== 'ct-state' || h.dev !== deviceId || !kids.includes(h.kid)) return { kid: h.kid, state: null, status: 'foreign' };
+    if (h.f !== 'sp-state' || h.dev !== deviceId || !kids.includes(h.kid)) return { kid: h.kid, state: null, status: 'foreign' };
     if (h.sm > SYNC_FORMAT_MAJOR) return { kid: h.kid, state: null, status: 'newer-format' };
     // Ligne incomplète : iCloud est en train de livrer le fichier, il sera relu au cycle suivant (section 1.2).
     if (file.partialTail) return { kid: h.kid, state: null, status: 'cloud-pending' };
@@ -1380,7 +1380,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
         snapshots: snapshots.slice(0, Math.max(0, MAX_SCAN_ENTRIES_PER_FOLDER - segments.length)),
       });
     }
-    // Fichiers attendus et pas encore lisibles : `state.ctx`, puis ce que la tête authentifiée annonce (jamais au-delà), plafonnés à
+    // Fichiers attendus et pas encore lisibles : `state.spx`, puis ce que la tête authentifiée annonce (jamais au-delà), plafonnés à
     // 10 000 entrées, `incomplete` au-delà (même règle que `store.rs`, Y-TECH-02).
     const pending: { file: string; availability: FileAvailability }[] = [];
     const push = (file: string, availability: FileAvailability): void => {
@@ -1388,7 +1388,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
       else pending.push({ file, availability });
     };
     if (dir.state && dir.state.availability !== 'local') push(STATE_FILE, dir.state.availability);
-    // Y-11 : `state.next.ctx` attendu seulement de l'appareil dont l'état présenté en vient.
+    // Y-11 : `state.next.spx` attendu seulement de l'appareil dont l'état présenté en vient.
     if (read.fromNext === true && dir.nextState && dir.nextState.availability !== 'local') push(STATE_NEXT_FILE, dir.nextState.availability);
     const state = read.state;
     const epochDir = state ? dir.epochs.get(state.epoch) : undefined;
@@ -1552,7 +1552,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
         break;
       }
       checkFileForRead(file, kid, MAX_SEGMENT_BYTES);
-      if (file.header.f !== 'ct-j' || file.header.dev !== r.deviceId || file.header.e !== r.epoch || file.header.n !== segment) fail('bad-header');
+      if (file.header.f !== 'sp-j' || file.header.dev !== r.deviceId || file.header.e !== r.epoch || file.header.n !== segment) fail('bad-header');
       if (record >= file.lines.length) {
         // Segment clos avec entrée : il en manque (version ancienne livrée par iCloud, troncature) → attente, jamais le segment suivant.
         // Sans entrée, sous une tête plus grande : segment suivant. Y-FIX-05 (§33, B18) : y compris après une ligne incomplète (ajout
@@ -1611,7 +1611,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     }
     if (!file || !hydrated(file, r.deviceId, name)) return { records: [], next: from, status: 'cloud-pending' };
     checkFileForRead(file, kid, MAX_SNAPSHOT_BYTES);
-    if (file.header.f !== 'ct-s' || file.header.dev !== r.deviceId || file.header.e !== r.epoch || file.header.n !== r.seq) fail('bad-header');
+    if (file.header.f !== 'sp-s' || file.header.dev !== r.deviceId || file.header.e !== r.epoch || file.header.n !== r.seq) fail('bad-header');
     if (r.tail === true) {
       const last = file.lines[file.lines.length - 1];
       if (file.partialTail || !last) return { records: [], next: from, status: 'cloud-pending' };
@@ -1746,7 +1746,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     const dir = epochDirOf(f, self, r.epoch);
     let file = dir.segments.get(r.segment);
     if (!file) {
-      file = { header: { f: 'ct-j', sm: SYNC_FORMAT_MAJOR, kid, dev: self, e: r.epoch, n: r.segment }, lines: [], partialTail: false, availability: 'local', extraBytes: 0 };
+      file = { header: { f: 'sp-j', sm: SYNC_FORMAT_MAJOR, kid, dev: self, e: r.epoch, n: r.segment }, lines: [], partialTail: false, availability: 'local', extraBytes: 0 };
       dir.segments.set(r.segment, file);
     }
     if (refused?.effect === 'error') {
@@ -1812,18 +1812,18 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
       fail('state-mismatch');
     }
     checkBudget(1, toNext);
-    // Y-TECH-03 : écriture de l'état refusée : remplacement atomique, l'ancien `state.ctx` reste entier (aucun octet partiel).
+    // Y-TECH-03 : écriture de l'état refusée : remplacement atomique, l'ancien `state.spx` reste entier (aucun octet partiel).
     const refused = f.writeGate(self, toNext ? STATE_NEXT_FILE : STATE_FILE);
     if (refused?.effect === 'error') {
-      if (refused.partialLastLine === true) throw new Error(`plan de pannes, entrée « ${refused.id} » : partialLastLine impossible sur un remplacement atomique (state.ctx)`);
+      if (refused.partialLastLine === true) throw new Error(`plan de pannes, entrée « ${refused.id} » : partialLastLine impossible sur un remplacement atomique (state.spx)`);
       fail(refused.code ?? 'io');
     }
     f.addDeviceFolder(self);
     const dir = f.devices.get(self);
     if (!dir) return fail('io');
     const line = makeLine(text, SYNC_FORMAT_MAJOR, r.sv);
-    const file: MemFile = { header: { f: 'ct-state', sm: SYNC_FORMAT_MAJOR, kid: kidFor(s.epoch, kid), dev: self, e: s.epoch, n: s.stateSeq }, lines: [line], partialTail: false, availability: 'local', extraBytes: 0 };
-    // Y-11 : l'état de l'époque visée va dans `state.next.ctx`, sous la nouvelle clé (§14.3 étape 4).
+    const file: MemFile = { header: { f: 'sp-state', sm: SYNC_FORMAT_MAJOR, kid: kidFor(s.epoch, kid), dev: self, e: s.epoch, n: s.stateSeq }, lines: [line], partialTail: false, availability: 'local', extraBytes: 0 };
+    // Y-11 : l'état de l'époque visée va dans `state.next.spx`, sous la nouvelle clé (§14.3 étape 4).
     if (toNext) dir.nextState = file;
     else dir.state = file;
     addSealed(1, toNext);
@@ -1878,7 +1878,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
       if (refused.partialLastLine === true) throw new Error(`plan de pannes, entrée « ${refused.id} » : partialLastLine impossible sur un instantané (.tmp puis renommage)`);
       fail(refused.code ?? 'io');
     }
-    const header: FileHeader = { f: 'ct-s', sm: SYNC_FORMAT_MAJOR, kid, dev: self, e: r.epoch, n: r.seq };
+    const header: FileHeader = { f: 'sp-s', sm: SYNC_FORMAT_MAJOR, kid, dev: self, e: r.epoch, n: r.seq };
     const lines: MemLine[] = [];
     let bytes = headerBytes(header);
     // Pages fournies par l'appelant : une erreur de sa part (cycle interrompu) laisse l'écrivain ouvert, comme dans Rust (aucun appel).
@@ -2155,7 +2155,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     return { author: self, epoch: state.epoch, seq: state.snapshot.seq, endHlc: state.snapshot.endHlc, covers: end.covers };
   };
 
-  /** Seuls les noms stricts (en mémoire : segments, instantanés, dossiers d'époque, état), `state.ctx` en dernier. */
+  /** Seuls les noms stricts (en mémoire : segments, instantanés, dossiers d'époque, état), `state.spx` en dernier. */
   const deleteDeviceFiles = (f: MemorySyncFolder, deviceId: DeviceId): ForgottenDeleteResult => {
     const dir = f.devices.get(deviceId);
     if (!dir) return { deleted: 0, complete: true };
@@ -2187,7 +2187,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
   const folderHasData =(f: MemorySyncFolder): boolean =>
     [...f.devices].some(([name, dir]) => isSyncDeviceId(name) && (dir.state !== null || [...dir.epochs.values()].some((e) => e.segments.size + e.snapshots.size > 0)));
 
-  /** États lisibles et `kid` qu'ils portent ; Y-11 : `state.next.ctx` compris, et plus grande époque d'un état de chaque `kid`. */
+  /** États lisibles et `kid` qu'ils portent ; Y-11 : `state.next.spx` compris, et plus grande époque d'un état de chaque `kid`. */
   const folderKids = (f: MemorySyncFolder, only: DeviceId | null): { readonly readable: number; readonly kids: Set<string>; readonly epochs: Map<string, EpochId> } => {
     let readable = 0;
     const kids = new Set<string>();
@@ -2195,7 +2195,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     for (const [name, dir] of f.devices) {
       if (!isSyncDeviceId(name) || (only !== null && name !== only)) continue;
       for (const file of [dir.state, dir.nextState]) {
-        if (!file || file.availability !== 'local' || file.header.f !== 'ct-state') continue;
+        if (!file || file.availability !== 'local' || file.header.f !== 'sp-state') continue;
         readable += 1;
         if (file.lines.length !== 1 || file.lines[0]?.corrupt === true || file.partialTail) continue;
         kids.add(file.header.kid);
@@ -2404,7 +2404,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     waiting,
   });
 
-  /** Étapes du perdant (§18 point 2), idempotentes : `state.next.ctx` supprimé, `.next` effacée, own.json ramené à l'époque `n`. */
+  /** Étapes du perdant (§18 point 2), idempotentes : `state.next.spx` supprimé, `.next` effacée, own.json ramené à l'époque `n`. */
   const supersedeSteps = (f: MemorySyncFolder, record: MemResetRecord): void => {
     interrupt('supersede-2');
     const dir = f.devices.get(record.deviceId);
@@ -2434,7 +2434,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     if (record.superseded) record.superseded.done = true;
   };
 
-  /** Bascule (§14.3 étape 5), étapes mémorisées : état K2 sous `state.ctx`, `state.next.ctx` supprimé, anciennes époques supprimées, K2 sous `.v1`, `.next` effacée, registre supprimé. */
+  /** Bascule (§14.3 étape 5), étapes mémorisées : état K2 sous `state.spx`, `state.next.spx` supprimé, anciennes époques supprimées, K2 sous `.v1`, `.next` effacée, registre supprimé. */
   const finishSwitch = (f: MemorySyncFolder, record: MemResetRecord): void => {
     const dir = f.devices.get(record.deviceId);
     if (record.switchStep < 1) {
@@ -2443,8 +2443,8 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
       dir.state = cloneFile(dir.nextState);
       record.switchStep = 1;
     }
-    // Audit 3 et audit bas de la seconde revue : avant d'effacer quoi que ce soit (étapes 2 à 5, dès la suppression de state.next.ctx),
-    // son `state.ctx` doit être sous la nouvelle clé dans l'époque visée.
+    // Audit 3 et audit bas de la seconde revue : avant d'effacer quoi que ce soit (étapes 2 à 5, dès la suppression de state.next.spx),
+    // son `state.spx` doit être sous la nouvelle clé dans l'époque visée.
     if (record.switchStep < 5) {
       const state = dir?.state;
       const read = state && dir ? readStateFile(record.deviceId, dir, 'state', [record.kid], false, false) : null;
@@ -2480,8 +2480,8 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
   };
 
   /**
-   * Oubliés retenus que l'instantané annoncé dans son `state.next.ctx` ne couvre pas (§18 point 14, `uncovered_forgotten` de Rust) :
-   * coupure sur les accusés de chaque actif non oublié, lus dans son état présenté et dans son `state.ctx` sous l'ancienne clé.
+   * Oubliés retenus que l'instantané annoncé dans son `state.next.spx` ne couvre pas (§18 point 14, `uncovered_forgotten` de Rust) :
+   * coupure sur les accusés de chaque actif non oublié, lus dans son état présenté et dans son `state.spx` sous l'ancienne clé.
    */
   const uncoveredForgotten = (f: MemorySyncFolder, record: MemResetRecord, reads: ReadonlyMap<DeviceId, StateRead>, mine: StateRead | undefined, entries: readonly ForgottenDevice[]): DeviceId[] => {
     const localKid = key?.kid ?? '';

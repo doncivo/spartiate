@@ -56,7 +56,7 @@ async function restore(device: SimDevice, copy: Map<string, unknown[]>, backupTa
     await tx.execute('DELETE FROM sync_guard');
   });
   await device.driver.execute('PRAGMA foreign_keys = ON');
-  const marker: RestoreMarker = { backup: 'circletasks-daily-20261005.db', backupTakenAt: backupTakenAt as RestoreMarker['backupTakenAt'], restoredAt: new Date(device.clock.nowMs()).toISOString() as RestoreMarker['restoredAt'], schemaVersion: 17, ...(provisional ? { provisional: true } : {}) };
+  const marker: RestoreMarker = { backup: 'spartiate-daily-20261005.db', backupTakenAt: backupTakenAt as RestoreMarker['backupTakenAt'], restoredAt: new Date(device.clock.nowMs()).toISOString() as RestoreMarker['restoredAt'], schemaVersion: 17, ...(provisional ? { provisional: true } : {}) };
   device.platform.testing.setRestoreMarker(marker);
   await device.restart();
 }

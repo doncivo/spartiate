@@ -64,6 +64,8 @@ export function syncErrorMessageKey(code: SyncErrorCode, ios = false): PlainMess
       return 'sync.key.mismatch';
     case 'folder-has-data':
       return 'sync.key.needsPairing';
+    case 'foreign-folder':
+      return 'sync.folder.errorForeign';
     default:
       return 'sync.folder.errorGeneric';
   }
@@ -103,7 +105,7 @@ export async function chooseFolderAndBind(
 
 /** Le texte d'erreur demande de choisir un dossier (de nouveau, ou un autre) : « Choisir le dossier » proposé à côté. */
 export function asksForFolder(code: SyncErrorCode, ios: boolean): boolean {
-  return code === 'unsafe-folder' || code === 'not-local' || (ios && code === 'folder-unreachable');
+  return code === 'unsafe-folder' || code === 'not-local' || code === 'foreign-folder' || (ios && code === 'folder-unreachable');
 }
 
 /** État de la section, lu sur la plateforme : dossier, puis présence de la clé. */

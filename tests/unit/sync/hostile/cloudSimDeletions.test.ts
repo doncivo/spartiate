@@ -10,15 +10,15 @@ import { createSimFolder, hydrate, mirrorDeviceFolder, propagate } from '../../.
 
 const DEV = '0f8fad5b-d9cb-469f-a165-70867728950e';
 const E = `e0001-${DEV}`;
-const S1 = `${E}/s-00000001.cts`;
-const J1 = `${E}/j-00000001.ctj`;
+const S1 = `${E}/s-00000001.sps`;
+const J1 = `${E}/j-00000001.spj`;
 
 function folders(): { pc: ReturnType<typeof createSimFolder>; phone: ReturnType<typeof createSimFolder> } {
   const pc = createSimFolder();
   const phone = createSimFolder();
   pc.putLines(DEV, J1, ['l1', 'l2']);
   pc.putLines(DEV, S1, ['instantane']);
-  pc.putLines(DEV, 'state.ctx', ['etat']);
+  pc.putLines(DEV, 'state.spx', ['etat']);
   propagate(pc, phone, DEV);
   return { pc, phone };
 }
@@ -28,7 +28,7 @@ describe('Y-TECH-03 : propagation des suppressions selon le plan (critère 10)',
     const { pc, phone } = folders();
     expect(pc.removeWithFaults(DEV, S1)).toBe(true);
     propagate(pc, phone, DEV);
-    expect(phone.fileNames(DEV)).toEqual([J1, 'state.ctx']);
+    expect(phone.fileNames(DEV)).toEqual([J1, 'state.spx']);
   });
 
   it('différée : gardée chez le destinataire tant que deferDeletions la cite, transmise ensuite', () => {
@@ -70,7 +70,7 @@ describe('Y-TECH-03 : propagation des suppressions selon le plan (critère 10)',
     const { pc, phone } = folders();
     pc.armFaults({ name: 'lecture', faults: [{ id: 'read-io', op: 'read', file: `devices/${DEV}/${J1}`, nth: 1, effect: 'error', code: 'io' }] });
     propagate(pc, phone, DEV, { placeholder: true, drop: [S1] });
-    expect(phone.fileNames(DEV)).toEqual([J1, 'state.ctx']);
+    expect(phone.fileNames(DEV)).toEqual([J1, 'state.spx']);
     expect(phone.availabilityOf(DEV, J1)).toBe('cloud');
     expect(phone.isPlaceholder(DEV, J1)).toBe(false);
     hydrate(phone, DEV);

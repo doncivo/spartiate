@@ -1,7 +1,7 @@
 [package]
 name = "tauri-plugin-speech"
 version = "0.1.0"
-description = "CircleTasks : dictée française sur l'appareil (SFSpeechRecognizer) et ouverture des Réglages (ADR 0015). Appelé par Rust seulement."
+description = "Spartiate : dictée française sur l'appareil (SFSpeechRecognizer) et ouverture des Réglages (ADR 0015). Appelé par Rust seulement."
 authors = ["Ali Cherif"]
 edition = "2021"
 rust-version = "1.80"

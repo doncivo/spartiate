@@ -2,7 +2,7 @@
 //!
 //! Même comportement que l'implémentation mémoire `src/platform/sync/memory.ts` (mêmes codes d'erreur, mêmes cas limites), avec le
 //! vrai format sur disque : en-tête en clair, lignes chiffrées, bornes contrôlées avant toute allocation ou hydratation. Rust ne
-//! lit jamais le texte clair qu'il chiffre, sauf `state.ctx` (contrôle de l'état publié) ; aucune règle de fusion ici.
+//! lit jamais le texte clair qu'il chiffre, sauf `state.spx` (contrôle de l'état publié) ; aucune règle de fusion ici.
 
 use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
@@ -10,6 +10,7 @@ use std::sync::Arc;
 
 use serde::Serialize;
 
+use super::folder::is_circletasks_file_name; // ancien-ok: garde de séparation ADR 0017
 use super::crypto::{parse_line_prefix, sha256_hex, FileHeader, HeaderKind, MasterKey, Place, SYNC_FORMAT_MAJOR};
 use super::files::{AppendMode, Availability, FsEntry, FsError, Listing, SyncFs};
 use super::limits::{
@@ -314,13 +315,13 @@ pub fn is_rollback(previous: &Accepted, current: &Accepted) -> bool {
     current.epoch == previous.epoch && current.head < previous.head
 }
 
-/// Lecture d'un `state.ctx` (ou, pendant une réinitialisation, de `state.next.ctx`, Y-11).
+/// Lecture d'un `state.spx` (ou, pendant une réinitialisation, de `state.next.spx`, Y-11).
 pub struct StateRead {
     pub kid: Option<String>,
     pub state: Option<PublishedState>,
     pub digest: Option<String>,
     pub status: StateStatus,
-    /// Y-11 : état lu dans `state.next.ctx` (nouvelle clé publiée pendant la transition).
+    /// Y-11 : état lu dans `state.next.spx` (nouvelle clé publiée pendant la transition).
     pub from_next_file: bool,
 }
 
@@ -345,7 +346,7 @@ struct DeviceListing {
     /// Le dossier d'appareil existe.
     exists: bool,
     state: Option<FsEntry>,
-    /// Y-11 : `state.next.ctx` (état sous la nouvelle clé pendant une réinitialisation).
+    /// Y-11 : `state.next.spx` (état sous la nouvelle clé pendant une réinitialisation).
     next_state: Option<FsEntry>,
     /// Dossiers d'époque présents (noms stricts), listés ou non.
     epoch_names: BTreeSet<EpochId>,
@@ -356,7 +357,7 @@ struct DeviceListing {
 }
 
 impl DeviceListing {
-    /// Un fichier d'état est listé (`state.ctx`, ou `state.next.ctx` pendant une réinitialisation).
+    /// Un fichier d'état est listé (`state.spx`, ou `state.next.spx` pendant une réinitialisation).
     fn has_state(&self) -> bool {
         self.state.is_some() || self.next_state.is_some()
     }
@@ -401,7 +402,7 @@ pub struct NextKey<'a> {
 }
 
 /// Contexte d'accès : dossier lié et clé locale. `pin` : épingler les fichiers annoncés (dossier iCloud). `next` (Y-11) : pendant une
-/// réinitialisation, l'époque visée est lue et écrite avec la nouvelle clé, son état publié dans `state.next.ctx` ; tout le reste garde
+/// réinitialisation, l'époque visée est lue et écrite avec la nouvelle clé, son état publié dans `state.next.spx` ; tout le reste garde
 /// la clé locale (`.v1`).
 pub struct Store<'a> {
     pub fs: &'a dyn SyncFs,
@@ -427,8 +428,8 @@ impl<'a> Store<'a> {
         }
     }
 
-    /// Fichier d'état et clé d'un état publié par cet appareil dans `epoch` : `state.next.ctx` sous la nouvelle clé pour l'époque visée
-    /// d'une réinitialisation en cours, sinon `state.ctx` sous la clé locale.
+    /// Fichier d'état et clé d'un état publié par cet appareil dans `epoch` : `state.next.spx` sous la nouvelle clé pour l'époque visée
+    /// d'une réinitialisation en cours, sinon `state.spx` sous la clé locale.
     pub fn state_target(&self, epoch: &str) -> (&'static str, &'a MasterKey) {
         match self.next {
             Some(next) if next.epoch == epoch => (STATE_NEXT_FILE, next.key),
@@ -436,7 +437,7 @@ impl<'a> Store<'a> {
         }
     }
 
-    /// Premier niveau d'un dossier d'appareil : `state.ctx` et noms des dossiers d'époque (sans les lister).
+    /// Premier niveau d'un dossier d'appareil : `state.spx` et noms des dossiers d'époque (sans les lister).
     fn list_device_top(&self, dev: &str, budget: &Budget) -> Result<DeviceListing, FsError> {
         let mut out = DeviceListing::default();
         let listing = match budget.list(self.fs, &device_dir(dev)) {
@@ -524,7 +525,7 @@ impl<'a> Store<'a> {
     }
 
     /// Dernier segment authentifié d'une époque de `dev` parmi `segments` (plus grand numéro d'abord) : en-tête qui correspond au
-    /// chemin, à notre `kid`, et dernière ligne complète déchiffrée à sa place (audit S7). Un fichier déposé (`j-99999999.ctj`, en-tête
+    /// chemin, à notre `kid`, et dernière ligne complète déchiffrée à sa place (audit S7). Un fichier déposé (`j-99999999.spj`, en-tête
     /// illisible ou d'une autre clé) est ignoré. Rend (numéro, nombre d'enregistrements). 16 essais au plus.
     fn authenticated_tail(&self, dev: &str, epoch: &str, segments: impl Iterator<Item = u32>) -> Option<(u32, u64)> {
         let key = self.key_for(epoch);
@@ -553,9 +554,9 @@ impl<'a> Store<'a> {
         None
     }
 
-    /// État présenté d'un appareil (Y-11, §14.3) : pendant une réinitialisation, `state.next.ctx` sous la nouvelle clé, puis `state.ctx`
-    /// sous la nouvelle clé (appareil qui a déjà basculé) ; sinon `state.next.ctx` sous la clé locale (appareil associé pendant la
-    /// transition, qui ne détient que la nouvelle clé) ; enfin `state.ctx` sous la clé locale (cas ordinaire). Un `state.next.ctx` d'une
+    /// État présenté d'un appareil (Y-11, §14.3) : pendant une réinitialisation, `state.next.spx` sous la nouvelle clé, puis `state.spx`
+    /// sous la nouvelle clé (appareil qui a déjà basculé) ; sinon `state.next.spx` sous la clé locale (appareil associé pendant la
+    /// transition, qui ne détient que la nouvelle clé) ; enfin `state.spx` sous la clé locale (cas ordinaire). Un `state.next.spx` d'une
     /// autre clé est ignoré (jamais `foreign` à la place de l'état ordinaire).
     pub fn read_state(&self, dev: &str, accepted: &HashMap<String, Accepted>) -> StateRead {
         if let Some(next) = self.next {
@@ -563,11 +564,11 @@ impl<'a> Store<'a> {
             if !matches!(read.status, StateStatus::Missing | StateStatus::Foreign) {
                 return read;
             }
-            // `state.ctx` lu une fois : clé choisie d'après l'en-tête (nouvelle clé d'un appareil qui a basculé, ou clé locale).
+            // `state.spx` lu une fois : clé choisie d'après l'en-tête (nouvelle clé d'un appareil qui a basculé, ou clé locale).
             return self.read_state_keys(dev, STATE_FILE, &[next.key, self.key], accepted);
         }
         let read = self.read_state_keys(dev, STATE_FILE, &[self.key], accepted);
-        // `state.next.ctx` n'est lu que si `state.ctx` est d'une autre clé (appareil associé pendant une transition, qui ne détient
+        // `state.next.spx` n'est lu que si `state.spx` est d'une autre clé (appareil associé pendant une transition, qui ne détient
         // que la nouvelle clé) : aucun coût dans le cas ordinaire.
         if read.status == StateStatus::Foreign {
             let next = self.read_state_keys(dev, STATE_NEXT_FILE, &[self.key], accepted);
@@ -578,7 +579,7 @@ impl<'a> Store<'a> {
         read
     }
 
-    /// Lecture d'un fichier d'état (`state.ctx` ou `state.next.ctx`) avec une clé : bornes, en-tête, clé, majeure, ligne unique,
+    /// Lecture d'un fichier d'état (`state.spx` ou `state.next.spx`) avec une clé : bornes, en-tête, clé, majeure, ligne unique,
     /// déchiffrement, analyse stricte, anti-rejeu.
     pub fn read_state_file(&self, dev: &str, file_name: &'static str, key: &MasterKey, accepted: &HashMap<String, Accepted>) -> StateRead {
         self.read_state_keys(dev, file_name, &[key], accepted)
@@ -712,7 +713,7 @@ impl<'a> Store<'a> {
         Self::check_total(total)?;
         // 2. Choix des dossiers retenus (16 ; soi et `keep` jamais écartés). L'état est lu pour les appareils protégés et pour 64
         //    candidats au plus (audit S2), choisis d'abord par leur en-tête en clair (1 Kio : notre `kid` et le bon chemin), puis par
-        //    la taille de leur `state.ctx` : des dossiers factices n'écartent pas un appareil en cours d'association (audit A3).
+        //    la taille de leur `state.spx` : des dossiers factices n'écartent pas un appareil en cours d'association (audit A3).
         let mut reads: BTreeMap<String, StateRead> = BTreeMap::new();
         for (dev, listing) in &listings {
             if protected.contains(dev.as_str()) && listing.has_state() {
@@ -813,7 +814,7 @@ impl<'a> Store<'a> {
             .iter()
             .map(|(epoch, files)| EpochListing { epoch: epoch.name(), segments: files.segments.keys().copied().collect(), snapshots: files.snapshots.keys().copied().collect() })
             .collect();
-        // Fichiers attendus et pas encore lisibles : `state.ctx`, puis ce que la tête authentifiée annonce (jamais au-delà), plafonnés à
+        // Fichiers attendus et pas encore lisibles : `state.spx`, puis ce que la tête authentifiée annonce (jamais au-delà), plafonnés à
         // 10 000 entrées (`incomplete` au-delà, dette de l'amorce).
         let mut pending = Vec::new();
         let push = |pending: &mut Vec<PendingFile>, incomplete: &mut bool, file: String, availability: Availability| {
@@ -825,7 +826,7 @@ impl<'a> Store<'a> {
         };
         for (entry, name) in [(&listing.state, STATE_FILE), (&listing.next_state, STATE_NEXT_FILE)] {
             let Some(entry) = entry else { continue };
-            // Y-11 : `state.next.ctx` n'est attendu que de l'appareil dont l'état présenté en vient (sinon une autre clé : jamais attendu).
+            // Y-11 : `state.next.spx` n'est attendu que de l'appareil dont l'état présenté en vient (sinon une autre clé : jamais attendu).
             if name == STATE_NEXT_FILE && !read.from_next_file {
                 continue;
             }
@@ -1168,7 +1169,7 @@ impl<'a> Store<'a> {
         if same_epoch && segment == own.segment && expect_records != own.record {
             return fail(SyncCode::SegmentMismatch);
         }
-        // Plus grand segment listé **authentifié** (audit S7) : un fichier déposé par un tiers (`j-99999999.ctj`) ne bloque rien.
+        // Plus grand segment listé **authentifié** (audit S7) : un fichier déposé par un tiers (`j-99999999.spj`) ne bloque rien.
         let mut segments: Vec<u32> = match self.fs.list(&[DEVICES_DIR, self_id, epoch], MAX_SCAN_ENTRIES_PER_FOLDER) {
             Ok(listing) => listing
                 .entries
@@ -1322,7 +1323,7 @@ impl<'a> Store<'a> {
             return fail(SyncCode::StateMismatch);
         }
         check_budget(usage, nonce_max, 1)?;
-        // Y-11 : l'état de l'époque visée par une réinitialisation va dans `state.next.ctx`, sous la nouvelle clé (§14.3 étape 4).
+        // Y-11 : l'état de l'époque visée par une réinitialisation va dans `state.next.spx`, sous la nouvelle clé (§14.3 étape 4).
         let (file_name, key) = self.state_target(&state.epoch);
         let place = Place::State { dev: self_id, epoch: &state.epoch, state_seq: state.state_seq };
         let line = key.seal(&place, text.as_bytes(), SYNC_FORMAT_MAJOR, sv as u32).map_err(|_| SyncError::new(SyncCode::Io))?;
@@ -1459,7 +1460,7 @@ impl<'a> Store<'a> {
     }
 
     /// `sync_abandon_orphan_epoch` (ADR 0011 §24 points 2 et 4) : preuve d'époque orpheline recontrôlée dans `own.json` et dans le dossier.
-    /// `stateSeq`, segment et enregistrement à 0 ; ni `state.ctx` ni `state.next.ctx` (même dans le nuage) ; aucune autre époque à cet
+    /// `stateSeq`, segment et enregistrement à 0 ; ni `state.spx` ni `state.next.spx` (même dans le nuage) ; aucune autre époque à cet
     /// appareil ; dans `epoch`, un seul instantané et rien d'autre (les `.tmp` d'instantané ne sont pas des fichiers annoncés). Sinon
     /// `state-mismatch`. Aucune écriture : `own.json` est remis sans époque par l'appelant.
     pub fn check_orphan_proof(&self, own: &OwnState, self_id: &str, epoch: &str) -> SyncResult<()> {
@@ -1470,7 +1471,7 @@ impl<'a> Store<'a> {
             Ok(listing) => listing,
             Err(error) => return Err(fs_error(error)),
         };
-        // Une liste tronquée ne prouve rien (un `state.ctx` ou une autre époque peut se trouver au-delà) : refus.
+        // Une liste tronquée ne prouve rien (un `state.spx` ou une autre époque peut se trouver au-delà) : refus.
         if listing.truncated {
             return fail(SyncCode::StateMismatch);
         }
@@ -1499,7 +1500,7 @@ impl<'a> Store<'a> {
     // Clé et dossier
     // --------------------------------------------------------------------------------------------------------------------------
 
-    /// Le dossier contient-il des données CircleTasks ? Un dossier `devices/<uuid>/` avec un `state.ctx` ou un fichier de nom strict
+    /// Le dossier contient-il des données Spartiate ? Un dossier `devices/<uuid>/` avec un `state.spx` ou un fichier de nom strict
     /// d'en-tête valide ; un fichier resté dans le nuage compte (son en-tête ne peut pas être lu sans hydratation). Budget commun de
     /// 50 000 entrées et 64 époques par appareil (audit S2) : au-delà, la recherche s'arrête sur « pas de données trouvées ».
     pub fn folder_has_data(fs: &dyn SyncFs) -> SyncResult<bool> {
@@ -1537,7 +1538,32 @@ impl<'a> Store<'a> {
         Ok(false)
     }
 
-    /// Le dossier porte-t-il la clé `key` ? Lit les `state.ctx` (hydratés au besoin ; 64 au plus, audit S2) ; `only` : un seul appareil
+    /// ADR 0017 : l'arborescence contient-elle un nom de la famille de fichiers de CircleTasks (`state.ctx`, `*.ctj`, `*.cts`, y compris // ancien-ok: garde de séparation ADR 0017
+    /// `state.next.ctx`, copie de conflit, `.tmp` et placeholder iCloud) ? Les noms seuls sont examinés : aucun fichier n'est lu ni téléchargé. // ancien-ok: garde de séparation ADR 0017
+    /// Spartiate écrit sa propre famille (`state.spx`, `*.spj`, `*.sps`), donc les deux apps se distinguent par le seul nom. Même budget
+    /// d'entrées que `folder_has_data` ; une erreur de listage ne refuse pas (le nom du dossier et la séparation cryptographique font garde).
+    pub fn folder_has_foreign_data(fs: &dyn SyncFs) -> SyncResult<bool> {
+        let budget = Budget::new();
+        let Ok(root) = budget.list(fs, &[DEVICES_DIR]) else { return Ok(false) };
+        if root.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) { // ancien-ok: garde de séparation ADR 0017
+            return Ok(true);
+        }
+        for dev in root.entries.iter().filter(|e| e.is_dir) {
+            let Ok(listing) = budget.list(fs, &[DEVICES_DIR, &dev.name]) else { continue };
+            if listing.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) { // ancien-ok: garde de séparation ADR 0017
+                return Ok(true);
+            }
+            for entry in listing.entries.iter().filter(|e| e.is_dir).take(MAX_EPOCHS_PER_DEVICE) {
+                let Ok(files) = budget.list(fs, &[DEVICES_DIR, &dev.name, &entry.name]) else { continue };
+                if files.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) { // ancien-ok: garde de séparation ADR 0017
+                    return Ok(true);
+                }
+            }
+        }
+        Ok(false)
+    }
+
+    /// Le dossier porte-t-il la clé `key` ? Lit les `state.spx` (hydratés au besoin ; 64 au plus, audit S2) ; `only` : un seul appareil
     /// (QR). `readable` compte les états dont l'en-tête est lisible ; `decrypts` est vrai si l'un d'eux annonce le `kid` de la clé **et**
     /// se déchiffre avec elle (audit S4 : un `kid` recopié en clair ne suffit pas).
     pub fn folder_kids(fs: &dyn SyncFs, only: Option<&str>, key: &MasterKey) -> SyncResult<KidCheck> {
@@ -1550,7 +1576,7 @@ impl<'a> Store<'a> {
         let mut check = KidCheck::default();
         let devices = root.entries.iter().filter(|e| e.is_dir && is_uuid_v4(&e.name) && only.is_none_or_eq(&e.name));
         for dev in devices.take(MAX_STATE_CANDIDATES) {
-            // Y-11 : la nouvelle clé d'une réinitialisation en cours n'est encore portée que par des `state.next.ctx`.
+            // Y-11 : la nouvelle clé d'une réinitialisation en cours n'est encore portée que par des `state.next.spx`.
             for name in [STATE_FILE, STATE_NEXT_FILE] {
                 let Ok(bytes) = fs.read(&[DEVICES_DIR, &dev.name, name], MAX_STATE_FILE_BYTES, true) else { continue };
                 let Ok(file) = parse_file(&bytes) else { continue };
@@ -1578,10 +1604,10 @@ impl<'a> Store<'a> {
     }
 
     /// Reconstruction de `own.json` (règle 1, section 9 ; avenant « Amorce » point 2) : maximum, pour l'époque courante, de son
-    /// `state.ctx` authentifié, des accusés `acks[self]` des autres et de ses segments listés **authentifiés** (audit S7 : un fichier
+    /// `state.spx` authentifié, des accusés `acks[self]` des autres et de ses segments listés **authentifiés** (audit S7 : un fichier
     /// déposé, d'en-tête illisible ou d'une autre clé, est ignoré) ; `stateSeq` toutes époques confondues.
     ///
-    /// Son propre `state.ctx` présent mais illisible (dans le nuage, incomplet, remplacé) et aucun accusé qui borne : `cloud-pending`,
+    /// Son propre `state.spx` présent mais illisible (dans le nuage, incomplet, remplacé) et aucun accusé qui borne : `cloud-pending`,
     /// rien n'est mis en cache (revue 4) ; l'appareil ne publie pas sur une tête qu'il ne connaît pas.
     pub fn rebuild_own(&self, folder_id: &str, self_id: &str, accepted: &HashMap<String, Accepted>) -> SyncResult<OwnState> {
         let mine = self.read_state(self_id, accepted);

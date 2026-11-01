@@ -80,7 +80,7 @@ describe('terminer ici ou dans Rappels (K-06 critères 1 et 2)', () => {
 });
 
 describe('titre, date et heure (K-06 critère 3)', () => {
-  it('le rappel suit le titre, la date et l’heure ; une date retirée efface l’échéance ; les notes et les rappels CircleTasks ne partent jamais', async () => {
+  it('le rappel suit le titre, la date et l’heure ; une date retirée efface l’échéance ; les notes et les rappels Spartiate ne partent jamais', async () => {
     const { reminder, task } = await linked('Dentiste', { due: { date: D('2026-10-09'), time: T('10:00') } });
     h.db.clock.advance(60_000);
     await uc().update(task.id, { title: 'Dentiste (contrôle)', date: D('2026-10-14'), time: T('16:30'), note: 'Apporter la radio' });
@@ -190,7 +190,7 @@ describe('création dans Rappels (K-06 critères 5 et 6, ADR 0008 §10.7)', () =
     expect(status().notices.map((notice) => notice.kind)).toContain('creation-off');
   });
 
-  it('création en série CircleTasks : jamais envoyée vers Rappels', async () => {
+  it('création en série Spartiate : jamais envoyée vers Rappels', async () => {
     await enable(PERSO, 'L-courses');
     const series = await uc().create({ title: 'Chaque jour', spaceId: PERSO, date: D('2026-10-09'), recurrence: { freq: 'daily', interval: 1, weekdays: [], monthDay: null, nthWeekday: null, until: null, count: null } });
     expect(series.ok && series.value).toMatchObject({ source: 'local', appleListId: null });
@@ -340,7 +340,7 @@ describe('aucun échec silencieux (K-06 critère 8)', () => {
   });
 });
 
-describe('rappel récurrent : aucune écriture vers Rappels, refus dans CircleTasks (ADR 0008 §10.6)', () => {
+describe('rappel récurrent : aucune écriture vers Rappels, refus dans Spartiate (ADR 0008 §10.6)', () => {
   it('terminer, rouvrir, titre, date, heure, « Un jour », report et suppression sont refusés avec le message ; note, icône et espace restent modifiables', async () => {
     const { reminder, task } = await linked('Poubelles', { due: { date: D('2026-10-09'), time: null }, recurring: true });
     expect(task.appleRecurring).toBe(true);
@@ -371,7 +371,7 @@ describe('rappel récurrent : aucune écriture vers Rappels, refus dans CircleTa
     expect(h.reminders.get(reminder.id)).toBeDefined();
   });
 
-  it('un rappel non récurrent n’est jamais refusé ; une tâche liée ne reçoit pas de répétition CircleTasks', async () => {
+  it('un rappel non récurrent n’est jamais refusé ; une tâche liée ne reçoit pas de répétition Spartiate', async () => {
     const { task } = await linked('Normal', { due: { date: D('2026-10-09'), time: null } });
     useNoticeStore.getState().clear();
     await uc().update(task.id, { title: 'Normal bis' });

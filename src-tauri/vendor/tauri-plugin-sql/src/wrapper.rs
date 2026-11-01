@@ -79,7 +79,7 @@ impl DbPool {
         conn_url: &str,
         _app: &AppHandle<R>,
     ) -> Result<Self, crate::Error> {
-        // CircleTasks (SEC-01) : le contrôle de l'URL est fait par `load` puis par `connect_in`, AVANT toute lecture de chemin (le dossier
+        // Spartiate (SEC-01) : le contrôle de l'URL est fait par `load` puis par `connect_in`, AVANT toute lecture de chemin (le dossier
         // de données n'est demandé que par la fermeture `app_dir`, appelée après ce contrôle).
         #[cfg(feature = "sqlite")]
         let app_dir = || _app.path().app_config_dir().expect("No App config path was found!");
@@ -106,7 +106,7 @@ impl DbPool {
                 create_dir_all(&app_path).expect("Couldn't create app config dir");
 
                 let conn_url = &path_mapper(app_path, conn_url);
-                // CircleTasks (P-04-iOS, revue B1) : jamais d'ouverture ni de création pendant une restauration en attente de récupération.
+                // Spartiate (P-04-iOS, revue B1) : jamais d'ouverture ni de création pendant une restauration en attente de récupération.
                 let file = conn_url.trim_start_matches("sqlite:").split('?').next().unwrap_or_default();
                 if restore_pending(std::path::Path::new(file)) {
                     return Err(crate::Error::RestorePending);
@@ -157,7 +157,7 @@ impl DbPool {
         Ok(())
     }
 
-    /// Ferme le pool (CircleTasks : public pour les tests du programme).
+    /// Ferme le pool (Spartiate : public pour les tests du programme).
     pub async fn close(&self) {
         match self {
             #[cfg(feature = "sqlite")]
@@ -174,7 +174,7 @@ impl DbPool {
         }
     }
 
-    /// Exécute une instruction (CircleTasks, SEC-01 : après le filtre `VACUUM` ; pour le reste, l'autorisateur SQLite du pool décide).
+    /// Exécute une instruction (Spartiate, SEC-01 : après le filtre `VACUUM` ; pour le reste, l'autorisateur SQLite du pool décide).
     pub async fn execute(
         &self,
         _query: String,
@@ -350,7 +350,7 @@ impl DbPool {
     }
 }
 
-/// CircleTasks (P-04-iOS, revue B1) : un fichier `.restore-old` de la base, de son `-wal` ou de son `-shm` existe (lien compris) : une
+/// Spartiate (P-04-iOS, revue B1) : un fichier `.restore-old` de la base, de son `-wal` ou de son `-shm` existe (lien compris) : une
 /// restauration interrompue doit être récupérée avant toute ouverture.
 pub fn restore_pending(db_file: &std::path::Path) -> bool {
     ["", "-wal", "-shm"].iter().any(|suffix| {
@@ -380,7 +380,7 @@ fn path_mapper(mut app_path: std::path::PathBuf, connection_string: &str) -> Str
     )
 }
 
-/// CircleTasks : pool SQLite a UNE seule connexion, mode WAL des l'ouverture.
+/// Spartiate : pool SQLite a UNE seule connexion, mode WAL des l'ouverture.
 ///
 /// Pourquoi : le front envoie `BEGIN IMMEDIATE`, les ecritures puis `COMMIT` comme des appels separes et les attend un a un. Avec le
 /// pool d'origine (`Pool::connect` : 10 connexions), la connexion d'un appel est rendue au pool par une tache asynchrone
@@ -400,7 +400,7 @@ pub async fn open_sqlite_pool(conn_url: &str) -> Result<Pool<Sqlite>, sqlx::Erro
     use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
 
     let options = SqliteConnectOptions::from_str(conn_url)?.journal_mode(SqliteJournalMode::Wal).foreign_keys(true);
-    // CircleTasks (SEC-01) : limite d'attachement à 0 et autorisateur sur chaque connexion (voir `guard`), posés après les pragmas ci-dessus.
+    // Spartiate (SEC-01) : limite d'attachement à 0 et autorisateur sur chaque connexion (voir `guard`), posés après les pragmas ci-dessus.
     let state = std::sync::Arc::new(std::sync::atomic::AtomicU8::new(0));
     let pool = crate::guard::harden_pool_options(SqlitePoolOptions::new(), std::sync::Arc::clone(&state))
         .max_connections(1)

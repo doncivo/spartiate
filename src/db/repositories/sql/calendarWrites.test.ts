@@ -26,13 +26,13 @@ describe('écritures des agendas externes (K-01, K-03, K-04)', () => {
   let db: TestDb;
   beforeEach(async () => {
     db = await openTestDb(DEVICE);
-    await db.data.repos.calendarAccounts.create({ id: ACCOUNT, provider: 'google', label: 'ali@example.com', tokenRef: `circletasks.calendar.${ACCOUNT}`, calendars: [{ id: 'cal', name: 'Travail', spaceId: SPACE_PRO_ID, shown: true }] });
+    await db.data.repos.calendarAccounts.create({ id: ACCOUNT, provider: 'google', label: 'ali@example.com', tokenRef: `spartiate.calendar.${ACCOUNT}`, calendars: [{ id: 'cal', name: 'Travail', spaceId: SPACE_PRO_ID, shown: true }] });
   });
   afterEach(() => db.close());
 
   it('crée un compte avec un tampon de synchro et la référence du coffre, jamais un secret', async () => {
     const account = await db.data.repos.calendarAccounts.getById(ACCOUNT);
-    expect(account).toMatchObject({ provider: 'google', label: 'ali@example.com', tokenRef: `circletasks.calendar.${ACCOUNT}`, deviceId: DEVICE });
+    expect(account).toMatchObject({ provider: 'google', label: 'ali@example.com', tokenRef: `spartiate.calendar.${ACCOUNT}`, deviceId: DEVICE });
     expect(account?.hlc).toBeTruthy();
     const columns = await db.driver.select<{ name: string }>('PRAGMA table_info(calendar_account)');
     expect(columns.map((column) => column.name).filter((name) => /secret|password|token$|access|refresh/.test(name))).toEqual([]);

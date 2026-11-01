@@ -2,7 +2,7 @@
 
 use std::time::{Duration, Instant};
 
-use circletasks_lib::desktop::{wait_for_confirmation, QuitGate, QUIT_GRACE};
+use spartiate_lib::desktop::{wait_for_confirmation, QuitGate, QUIT_GRACE};
 
 #[test]
 fn confirmation_before_the_deadline_lets_the_app_quit_at_once() {

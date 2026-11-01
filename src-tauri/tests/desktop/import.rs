@@ -1,6 +1,6 @@
 //! P-07 : lecture du seul fichier choisi (plafond de taille, type, disque local, fichier ordinaire).
 
-use circletasks_lib::import::{display_name, has_import_extension, read_import_file, IMPORT_EXTENSIONS, MAX_IMPORT_BYTES};
+use spartiate_lib::import::{display_name, has_import_extension, read_import_file, IMPORT_EXTENSIONS, MAX_IMPORT_BYTES};
 use std::fs;
 use std::path::Path;
 

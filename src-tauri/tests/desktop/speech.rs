@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, Instant};
 
-use circletasks_lib::speech::{
+use spartiate_lib::speech::{
     listen_code_of, listen_with, open_settings_with, permission_state, request_permissions_with, status_with, stop_with, Limits, SpeechState, SpeechTransport, PLUGIN_COMMANDS,
     PLUGIN_REJECT_CODES,
 };

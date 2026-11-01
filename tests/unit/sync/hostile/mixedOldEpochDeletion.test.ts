@@ -27,8 +27,8 @@ it('REL-02 : une suppression partielle ne dit pas À jour quand un substitut anc
     lines: source.lines.map((line) => ({ ...line, text: line.text.replaceAll(current, OLD) })),
   });
   dir.epochs.set(OLD, { segments: new Map(), snapshots: new Map([[1, copy(1)], [2, copy(2)]]) });
-  const first = `${OLD}/s-00000001.cts`;
-  const left = `${OLD}/s-00000002.cts`;
+  const first = `${OLD}/s-00000001.sps`;
+  const left = `${OLD}/s-00000002.sps`;
   a.folder.armFaults({ name: 'suppression-ancienne-partielle', options: { removeLeavesPlaceholder: true }, faults: [
     { id: 'substitut', op: 'list', file: `devices/${SELF}/${left}`, nth: 1, effect: 'placeholder' },
     { id: 'premier-refus', op: 'remove', file: `devices/${SELF}/${first}`, nth: 1, effect: 'error', code: 'io' },

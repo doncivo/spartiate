@@ -28,27 +28,27 @@ test.describe('OB-01 — fixer un objectif pour la semaine', () => {
     await openGoalScreen(page);
     await expect(goalTitleField(page)).toBeFocused();
     await expect(page.getByText('Fixez ce qui compte cette semaine')).toBeVisible();
-    await goalTitleField(page).fill('Finaliser le PRD CircleTasks');
+    await goalTitleField(page).fill('Finaliser le PRD Spartiate');
     await goalTitleField(page).press('Enter');
     await expect(goalSections(page)).toHaveCount(1);
-    await expect(goalTitleField(page)).toHaveValue('Finaliser le PRD CircleTasks');
+    await expect(goalTitleField(page)).toHaveValue('Finaliser le PRD Spartiate');
     // L'objectif est enregistré : il survit à la fermeture et à la réouverture de l'écran.
     await closeGoalScreen(page, testInfo);
     await openGoalScreen(page);
-    await expect(goalTitleField(page)).toHaveValue('Finaliser le PRD CircleTasks');
+    await expect(goalTitleField(page)).toHaveValue('Finaliser le PRD Spartiate');
   });
 
   test('titre modifiable, vide refusé, espace, plusieurs objectifs en sections empilées (critères 5 et 6)', async ({ page }) => {
     await openApp(page);
     await openGoalScreen(page);
-    await goalTitleField(page).fill('Finaliser le PRD CircleTasks');
+    await goalTitleField(page).fill('Finaliser le PRD Spartiate');
     await goalTitleField(page).press('Enter');
     await expect(goalSections(page)).toHaveCount(1);
 
     // Un titre vide est refusé : l'ancien revient.
     await goalTitleField(page).fill('');
     await goalTitleField(page).blur();
-    await expect(goalTitleField(page)).toHaveValue('Finaliser le PRD CircleTasks');
+    await expect(goalTitleField(page)).toHaveValue('Finaliser le PRD Spartiate');
 
     // Espace Pro / Perso.
     const space = page.getByRole('group', { name: 'Espace de l’objectif' });

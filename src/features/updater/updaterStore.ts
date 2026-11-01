@@ -6,6 +6,7 @@ import { defineFeatureStore, type AppContainer } from '../app/container';
 /**
  * États de la mise à jour PC (D-03) :
  * - `idle` : aucune vérification terminée ;
+ * - `notConfigured` : updater non configuré (D-30, jusqu'à SPA-002) : aucune requête n'est émise ;
  * - `checking` : vérification en cours ;
  * - `upToDate` : la version publiée n'est pas plus récente (rien à afficher, critère 3) ;
  * - `available` : version plus récente trouvée (bandeau, sauf après « Plus tard ») ;
@@ -13,7 +14,7 @@ import { defineFeatureStore, type AppContainer } from '../app/container';
  * - `checkFailed` : `latest.json` inaccessible ou illisible (critère 6), jamais bloquant ;
  * - `installFailed` : installation refusée ou échouée, l'app actuelle continue (critère 5).
  */
-export type UpdaterStatus = 'idle' | 'checking' | 'upToDate' | 'available' | 'downloading' | 'checkFailed' | 'installFailed';
+export type UpdaterStatus = 'idle' | 'notConfigured' | 'checking' | 'upToDate' | 'available' | 'downloading' | 'checkFailed' | 'installFailed';
 
 export interface UpdaterState {
   readonly status: UpdaterStatus;
@@ -57,6 +58,10 @@ export const updaterStore = defineFeatureStore<UpdaterState>((container: AppCont
     async check() {
       const desktop = container.desktop;
       if (!desktop) return 'ok';
+      if (!desktop.updaterConfigured) {
+        set({ status: 'notConfigured', bannerVisible: false });
+        return 'ok';
+      }
       // Pas de vérification pendant une installation.
       if (get().status === 'downloading') return 'ok';
       set({ status: 'checking' });

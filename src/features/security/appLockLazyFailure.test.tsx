@@ -61,7 +61,7 @@ describe('I-03 chargement à la demande du contrôleur en échec', () => {
         </ul>
       </AppLockGate>,
     );
-    expect(await screen.findByRole('heading', { name: 'CircleTasks est verrouillée' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Spartiate est verrouillée' })).toBeInTheDocument();
     await flush();
     expect(screen.getByRole('alert')).toHaveTextContent('unavailable');
     expect(screen.queryByText('Acheter du lait')).toBeNull();

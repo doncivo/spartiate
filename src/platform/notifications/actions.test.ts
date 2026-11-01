@@ -47,7 +47,7 @@ describe('adaptateur du plugin (faux invoke)', () => {
 
   it('N-IOS-FIX-01 : transmet le texte des aperçus au natif sans modifier les actions', async () => {
     const call = vi.fn().mockResolvedValue({ registered: 1 });
-    const placeholder = 'Rappel CircleTasks : déverrouillez pour voir la tâche';
+    const placeholder = 'Rappel Spartiate : déverrouillez pour voir la tâche';
     await createTauriNotificationActionSource(call).registerActionTypes([{ ...SPEC, hiddenPreviewsBodyPlaceholder: placeholder }]);
     expect(call).toHaveBeenCalledWith('plugin:notification-actions|register_action_types', {
       types: [{ id: 'ct.task', actions: [{ id: 'done', title: 'Fait', foreground: true }], hiddenPreviewsBodyPlaceholder: placeholder }],

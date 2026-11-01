@@ -1,10 +1,10 @@
-# Installer CircleTasks sur l'iPhone
+# Installer Spartiate sur l'iPhone
 
 Ce guide est pour l'iPhone 16 Pro Max (iOS 18 ou plus). Il ne demande ni Mac ni compte Apple Developer payant : un Apple ID gratuit suffit. L'installation de départ se fait une seule fois depuis le PC Windows ; ensuite tout se passe sur l'iPhone.
 
 Durée : 15 minutes environ, lecture comprise (iTunes et iloader déjà téléchargés). Ensuite, une mise à jour prend 2 minutes.
 
-Un Apple ID gratuit limite à 3 apps installées hors App Store. SideStore en occupe une, CircleTasks une autre. Les apps ainsi installées expirent au bout de 7 jours : SideStore les renouvelle (étape 8).
+Un Apple ID gratuit limite à 3 apps installées hors App Store. SideStore en occupe une, Spartiate une autre. Les apps ainsi installées expirent au bout de 7 jours : SideStore les renouvelle (étape 8).
 
 ## Ce qu'il faut avoir
 
@@ -38,25 +38,25 @@ Si l'option n'apparaît pas, elle s'affiche après la première installation d'u
 
 SideStore parle à l'iPhone lui-même par un VPN local. Installe **LocalDevVPN** (ou **StosVPN**) depuis l'App Store, ouvre-le, puis active la connexion. Accepte l'ajout de la configuration VPN. Le VPN doit être actif à chaque installation ou renouvellement.
 
-## 5. Ajouter la source CircleTasks dans SideStore
+## 5. Ajouter la source Spartiate dans SideStore
 
 1. Ouvre SideStore, onglet « Sources », bouton « + ».
-2. Colle l'adresse : `https://raw.githubusercontent.com/doncivo/circletasks-releases/main/source.json`
-3. Valide. CircleTasks apparaît dans la source (identifiant `fr.circletasks.planner`).
+2. Colle l'adresse : `https://raw.githubusercontent.com/doncivo/spartiate-releases/main/source.json`
+3. Valide. Spartiate apparaît dans la source (identifiant `fr.spartiate.app`).
 
-## 6. Installer CircleTasks
+## 6. Installer Spartiate
 
-1. Ouvre la source CircleTasks, touche « Gratuit » (ou « Installer ») à côté de CircleTasks. Garde le VPN actif et reste en Wi-Fi.
+1. Ouvre la source Spartiate, touche « Gratuit » (ou « Installer ») à côté de Spartiate. Garde le VPN actif et reste en Wi-Fi.
 2. L'installation prend un moment. L'icône apparaît sur l'écran d'accueil.
 3. Premier lancement : si l'iPhone parle d'un développeur non approuvé, refais l'approbation de l'étape 3.4.
 
 ### Variante : importer l'IPA à la main
 
-Si la source n'est pas encore publiée : télécharge `CircleTasks.ipa` (artefact du workflow « Build iOS » sur GitHub, à dézipper), envoie-le sur l'iPhone (AirDrop, iCloud Drive), puis dans SideStore touche « + » en haut de « Mes apps » et choisis le fichier.
+Si la source n'est pas encore publiée : télécharge `Spartiate.ipa` (artefact du workflow « Build iOS » sur GitHub, à dézipper), envoie-le sur l'iPhone (AirDrop, iCloud Drive), puis dans SideStore touche « + » en haut de « Mes apps » et choisis le fichier.
 
-## 7. Mises à jour de CircleTasks
+## 7. Mises à jour de Spartiate
 
-1. **Notes** : dans SideStore, ouvre la source CircleTasks, puis la fiche de l'app : « Nouveautés » liste les changements.
+1. **Notes** : dans SideStore, ouvre la source Spartiate, puis la fiche de l'app : « Nouveautés » liste les changements.
 2. **Un geste** : VPN actif, Wi-Fi, touche « Mettre à jour ». Ne supprime jamais l'app pour la réinstaller : ses données locales seraient perdues.
 3. **Conservé** : tâches, réglages, Face ID, dossier iCloud Drive, clé de synchronisation et rappels (replanifiés seuls au premier lancement).
 4. **Vérifier en 30 secondes** : Réglages > « À propos » affiche le nouveau numéro de version.
@@ -68,11 +68,11 @@ Si la source n'est pas encore publiée : télécharge `CircleTasks.ipa` (artefac
 
 - Ouvre SideStore, VPN actif, en Wi-Fi, et touche « Tout actualiser » (Mes apps). Le faire tous les 5 ou 6 jours est plus sûr.
 - SideStore peut le faire seul en arrière-plan ; une automatisation Raccourcis qui ouvre SideStore chaque jour aide.
-- CircleTasks vous prévient 24 h avant l'expiration ; actualisez-la alors dans SideStore. À partir du paquet A (1.0.1), la date d'expiration lue par l'app est affichée en tête de Réglages ; en 1.0.0, elle reste dans « À propos ».
+- Spartiate vous prévient 24 h avant l'expiration ; actualisez-la alors dans SideStore. À partir du paquet A (1.0.1), la date d'expiration lue par l'app est affichée en tête de Réglages ; en 1.0.0, elle reste dans « À propos ».
 
 ## Pour publier une version (une fois, côté GitHub)
 
-Une seule fois : dans le dépôt CircleTasks sur GitHub, Settings > Environments > `releases` (New environment s'il n'existe pas), ajoute le secret `RELEASES_TOKEN` (jeton limité au dépôt circletasks-releases, droit « Contents : écriture »). Aucune approbation manuelle n'est demandée (décision du 2026-10-07). Recommandation facultative : dans « Deployment branches and tags », limite aux tags `ios-v*` et `v*`.
+Une seule fois : dans le dépôt Spartiate sur GitHub, Settings > Environments > `releases` (New environment s'il n'existe pas), ajoute le secret `RELEASES_TOKEN` (jeton limité au dépôt spartiate-releases, droit « Contents : écriture »). Aucune approbation manuelle n'est demandée (décision du 2026-10-07). Recommandation facultative : dans « Deployment branches and tags », limite aux tags `ios-v*` et `v*`.
 
 Secrets de dépôt pour Google Agenda (noms seulement, valeurs dans GitHub) : `CT_GOOGLE_CLIENT_ID` et `CT_GOOGLE_CLIENT_SECRET` (client « Application de bureau », build PC), `CT_GOOGLE_IOS_CLIENT_ID` (client « iOS », build iPhone). Seul un tag `ios-vX.Y.Z` publie (X.Y.Z = version de l'app) ; un lancement du workflow « Build iOS » sur une branche produit seulement l'IPA en artefact, même avec « publish » coché.
 
@@ -83,6 +83,6 @@ Secrets de dépôt pour Google Agenda (noms seulement, valeurs dans GitHub) : `C
 | iloader ne voit pas l'iPhone | Vérifie iTunes (version du site d'Apple), le câble, la confiance de l'ordinateur sur l'iPhone. |
 | « Impossible de vérifier l'application » | Approuve le profil dans Réglages > Général > VPN et gestion de l'appareil. |
 | Le renouvellement échoue | Active LocalDevVPN/StosVPN, passe en Wi-Fi, ferme et rouvre SideStore. Vérifie le fichier d'appairage. |
-| CircleTasks ne s'ouvre plus (expirée) | Renouvelle-la dans SideStore. Ne la supprime pas : tu perdrais les données locales. |
+| Spartiate ne s'ouvre plus (expirée) | Renouvelle-la dans SideStore. Ne la supprime pas : tu perdrais les données locales. |
 | SideStore lui-même ne s'ouvre plus | Réinstalle-le avec iloader depuis le PC (étape 3). Les apps déjà là restent à renouveler ensuite. |
 | Plus de place (3 apps max) | Supprime une autre app installée hors App Store, ou patiente 7 jours. |

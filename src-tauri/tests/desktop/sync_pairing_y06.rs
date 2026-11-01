@@ -4,19 +4,19 @@
 
 use std::path::Path;
 
-use circletasks_lib::sync::folder::FolderKind;
-use circletasks_lib::sync::limits::PAIRING_VALIDITY_MS;
-use circletasks_lib::sync::pairing::{
+use spartiate_lib::sync::folder::FolderKind;
+use spartiate_lib::sync::limits::PAIRING_VALIDITY_MS;
+use spartiate_lib::sync::pairing::{
     affinity_outcome, pairing_page_listed, pairing_window_action, watch_decision, Caller, PairingMode, PairingRegistry, PairingWindowAction, PairingWindowEvent,
     WatchInput, PAIRING_PAGE_MARKER, PAIRING_WINDOW,
 };
-use circletasks_lib::sync::service::KeyInput;
-use circletasks_lib::sync::SyncCode;
+use spartiate_lib::sync::service::KeyInput;
+use spartiate_lib::sync::SyncCode;
 use zeroize::Zeroizing;
 
 use crate::sync_support::{device, epoch, hlc, Device, FakeBackend, MemFs, DEV_A, DEV_B, DEV_C, FOLDER, NOW};
 
-fn code<T>(result: Result<T, circletasks_lib::sync::SyncError>) -> SyncCode {
+fn code<T>(result: Result<T, spartiate_lib::sync::SyncError>) -> SyncCode {
     match result {
         Ok(_) => panic!("erreur attendue"),
         Err(error) => error.code,
@@ -82,7 +82,7 @@ fn http(status: &str, body: &str) -> Vec<u8> {
 #[cfg(debug_assertions)]
 #[test]
 fn y06_3_dev_server_answering_index_html_is_refused_the_pairing_page_is_accepted() {
-    use circletasks_lib::sync::pairing::{dev_page_has_marker, dev_response_is_pairing_page};
+    use spartiate_lib::sync::pairing::{dev_page_has_marker, dev_response_is_pairing_page};
     // Page absente : Vite répond index.html (l'application entière) avec un code 200 : refus.
     let (port, server) = serve_once(http("200 OK", include_str!("../../../index.html")));
     assert!(!dev_page_has_marker("127.0.0.1", port));
@@ -266,7 +266,7 @@ fn y06_9_state_not_authenticated_never_counts() {
 #[cfg(debug_assertions)]
 #[test]
 fn y06_16_arrival_logs_hold_no_secret() {
-    let capture = circletasks_lib::sync::log::capture();
+    let capture = spartiate_lib::sync::log::capture();
     let (a, fs) = device();
     a.setup(DEV_A);
     publish(&a, DEV_A, &epoch(1, DEV_A), None);
@@ -281,7 +281,7 @@ fn y06_16_arrival_logs_hold_no_secret() {
     assert_eq!(registry.observe_paired(&a.core.paired_with_self(&a.core.scan(&[]).unwrap())), Some(42));
     let lines = capture.lines().join("\n");
     assert!(lines.contains("pairing-arrival"));
-    let key_part = payload.qr_text.trim_start_matches("CTPAIR1.");
+    let key_part = payload.qr_text.trim_start_matches("SPPAIR1.");
     for needle in [payload.qr_text.as_str(), key_part, payload.recovery_key.as_str()] {
         assert!(!lines.contains(needle));
     }
@@ -339,7 +339,7 @@ fn y06_4_already_open_and_not_foreground_have_their_own_codes() {
     let dir = tempfile::tempdir().unwrap();
     let ui = crate::sync_support::FakeUi::new();
     let clock = crate::sync_support::TestClock::new(NOW);
-    let consent = circletasks_lib::sync::consent::ConsentGate::new(dir.path().to_path_buf(), ui.clone(), clock.clock());
+    let consent = spartiate_lib::sync::consent::ConsentGate::new(dir.path().to_path_buf(), ui.clone(), clock.clock());
     ui.ready(false);
     assert_eq!(code(consent.confirm_show(1)), SyncCode::NotForeground);
     assert_eq!(code(consent.count_import(1)), SyncCode::NotForeground);
@@ -355,7 +355,7 @@ fn y06_4_already_open_and_not_foreground_have_their_own_codes() {
 /// Audit 2, QA 3 : la référence d'arrivée est la liste de `devices/` **à l'ouverture**, quel que soit l'état des appareils.
 #[test]
 fn y06_9_reference_is_the_folder_listing_at_opening() {
-    // iPhone déjà associé, son state.ctx pas encore livré par iCloud à l'ouverture : son dossier est listé, donc jamais un arrivant.
+    // iPhone déjà associé, son state.spx pas encore livré par iCloud à l'ouverture : son dossier est listé, donc jamais un arrivant.
     let (a, fs) = device();
     a.setup(DEV_A);
     publish(&a, DEV_A, &epoch(1, DEV_A), None);
@@ -363,8 +363,8 @@ fn y06_9_reference_is_the_folder_listing_at_opening() {
     let b = joiner(&fs, DEV_B);
     b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1).unwrap();
     publish(&b, DEV_B, &epoch(1, DEV_A), None);
-    let state_bytes = fs.get(&["devices", DEV_B, "state.ctx"]).expect("état de B");
-    fs.remove(&["devices", DEV_B, "state.ctx"]);
+    let state_bytes = fs.get(&["devices", DEV_B, "state.spx"]).expect("état de B");
+    fs.remove(&["devices", DEV_B, "state.spx"]);
     let registry = PairingRegistry::default();
     registry.begin_open(false).unwrap();
     registry.register(42, PairingMode::Show, NOW);
@@ -374,7 +374,7 @@ fn y06_9_reference_is_the_folder_listing_at_opening() {
     let first = a.core.scan(&[]).unwrap();
     assert!(a.core.paired_with_self(&first).is_empty(), "état pas encore livré au premier scan");
     assert_eq!(registry.observe_paired(&a.core.paired_with_self(&first)), None);
-    fs.put(&["devices", DEV_B, "state.ctx"], &state_bytes);
+    fs.put(&["devices", DEV_B, "state.spx"], &state_bytes);
     let later = a.core.scan(&[]).unwrap();
     assert_eq!(a.core.paired_with_self(&later), vec![DEV_B.to_owned()]);
     assert_eq!(registry.observe_paired(&a.core.paired_with_self(&later)), None, "déjà là à l'ouverture : pas une arrivée");
@@ -407,7 +407,7 @@ fn y06_9_association_before_the_first_scan_is_an_arrival() {
 /// Ctrl+P, F5, Ctrl+Maj+S…), le remplissage automatique et l'enregistrement des mots de passe ; un échec détruit la fenêtre (`io`).
 #[test]
 fn y06_18_webview_is_hardened_before_it_is_shown() {
-    use circletasks_lib::sync::pairing::hardening_outcome;
+    use spartiate_lib::sync::pairing::hardening_outcome;
     assert_eq!(code(hardening_outcome(false)), SyncCode::WindowUnprotected);
     // Remarque finale 4 : distinct de `io` (page absente, « Installation incomplète ») ; texte générique côté interface.
     assert_eq!(SyncCode::WindowUnprotected.as_str(), "window-unprotected");

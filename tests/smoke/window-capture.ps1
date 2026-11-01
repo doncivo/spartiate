@@ -1,12 +1,12 @@
-# REL-TECH-01 (ADR 0016) : capture de la fenêtre principale de CircleTasks (Win32, PrintWindow avec PW_RENDERFULLCONTENT : contenu composé de
+# REL-TECH-01 (ADR 0016) : capture de la fenêtre principale de Spartiate (Win32, PrintWindow avec PW_RENDERFULLCONTENT : contenu composé de
 # WebView2, fenêtre au premier plan ou non). Le script ne fait QUE capturer : la mesure des pixels est en Node (tests/smoke/pixels.ts), car les
 # boucles PowerShell et son démarrage à froid sur un runner chargé ont dépassé 60 s puis 120 s le 2026-10-15.
-#   -ProcessId <pid> -Out <png>   enregistre le PNG de la fenêtre « CircleTasks » du processus et rend une ligne JSON :
+#   -ProcessId <pid> -Out <png>   enregistre le PNG de la fenêtre « Spartiate » du processus et rend une ligne JSON :
 #   found, visible, iconic, width, height (fenêtre entière), clientX, clientY, clientWidth, clientHeight (zone cliente dans le PNG), printed, elapsedMs.
 param(
   [Parameter(Mandatory = $true)][int]$ProcessId,
   [Parameter(Mandatory = $true)][string]$Out,
-  [string]$Title = 'CircleTasks'
+  [string]$Title = 'Spartiate'
 )
 $ErrorActionPreference = 'Stop'
 $started = [DateTime]::UtcNow

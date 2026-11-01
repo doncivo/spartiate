@@ -42,7 +42,7 @@ describe('intégration PC de la coquille (D-01)', () => {
     const integration = startDesktopIntegration(container);
     await vi.waitFor(() => expect(desktop.trayLabels).not.toBeNull());
     expect(desktop.trayLabels).toEqual({
-      open: 'Ouvrir CircleTasks',
+      open: 'Ouvrir Spartiate',
       quickAdd: 'Ajout rapide',
       sync: 'Synchroniser maintenant',
       quit: 'Quitter',

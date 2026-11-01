@@ -4,9 +4,9 @@ import type { CalendarAccountId, Result } from '../../domain/types';
 import type { CalendarPlatform, TokenRef } from '../../platform/calendars';
 import { logFailure } from '../../platform/desktop/log';
 
-/** Référence du coffre d'un compte (ADR 0008) : `circletasks.calendar.<fournisseur>.<uuid>`, deux espaces de noms (Rust impose le format et refuse à la WebView d'écrire un jeton Google) ; propre à l'appareil, jamais synchronisée avec le secret qu'elle désigne. */
+/** Référence du coffre d'un compte (ADR 0008) : `spartiate.calendar.<fournisseur>.<uuid>`, deux espaces de noms (Rust impose le format et refuse à la WebView d'écrire un jeton Google) ; propre à l'appareil, jamais synchronisée avec le secret qu'elle désigne. */
 export function tokenRefFor(provider: CalendarProviderKind, accountId: CalendarAccountId): TokenRef {
-  return `circletasks.calendar.${provider}.${accountId}`;
+  return `spartiate.calendar.${provider}.${accountId}`;
 }
 
 /**

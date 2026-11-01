@@ -41,7 +41,7 @@ const statusOf = (d: SimDevice, of: string): string | undefined => d.service.sta
 const rowOf = async (d: SimDevice, of: string): Promise<string | undefined> => (await d.data.repos.sync.getStates()).find((r) => r.deviceId === of)?.status;
 const titlesOf = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title')).map((r) => r.title);
 const epochOf = (d: SimDevice): EpochId => [...(d.folder.devices.get(d.id)?.epochs.keys() ?? [])].at(-1) as EpochId;
-const dropFirstSegment = (a: SimDevice, b: SimDevice): void => propagate(a.folder, b.folder, a.id, { drop: [`${epochOf(a)}/j-00000001.ctj`] });
+const dropFirstSegment = (a: SimDevice, b: SimDevice): void => propagate(a.folder, b.folder, a.id, { drop: [`${epochOf(a)}/j-00000001.spj`] });
 
 async function deviceA(): Promise<SimDevice> {
   const a = await createSimDevice(A_ID, { name: 'A' });

@@ -1,35 +1,34 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-01. Mémoire inter-sessions (D-52). Règles : AGENTS.md et CLAUDE.md ; leur adaptation Spartiate reste SPA-001a (D-42). PRD v6.2 inchangé ; décisions D-22 à D-59 dans docs/decisions.md. Les décisions approuvées priment sur les textes historiques. Benchmark : archive de recherche, aucun périmètre nouveau.
+État au 2026-11-01 (fin de session SPA-001a). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md, fusionnés en 001a (D-42). PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-59 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Benchmark : archive de recherche, aucun périmètre nouveau.
 
 ## Fusionné
 
-SPA-000 clos : dépôt issu de CircleTasks, remote circletasks en lecture seule (push DISABLED), spartiate-releases créé. Fusionnées : #1 à #7 et #9. #8 (CADRAGE-01) fermée sans fusion : son contenu est entré par #9, qui a toutefois écrasé ses versions de SPA-001 et de la reprise. #10 (réconciliation, D-54 à D-59) les restaure : à mettre à jour ici après sa fusion. PR #5 : 24 agents ; #6 : benchmark ; #7 : D-49 à D-53 et SPA-001 v2.3. Le résultat du run initial 41192279832 reste à consigner, sans le présumer vert.
+SPA-000 clos : dépôt issu de CircleTasks, remote circletasks en lecture seule (push DISABLED), spartiate-releases créé. Fusionnées : #1 à #7, #9 et #10 (réconciliation CADRAGE-01, D-54 à D-59 : SPA-001 v2.4 et reprise restaurés). #8 fermée sans fusion (contenu entré par #9). Le résultat du run initial 41192279832 reste à consigner, sans le présumer vert.
 
-## Préparation en cours
+## SPA-001a — renommage (branche spa-001a-renommage poussée, PR #11)
 
-CADRAGE-01 (fusionné) : SPA-001 v2.4, cohérence des fiches, benchmark non normatif et docs/preparation-spa.md (P-01 à P-10 : responsables, échéances, preuves et propositions PRD). Aucun changement applicatif ni PRD dans ce lot. Lire seulement les lignes concernant le ticket à ouvrir. P-02 à P-07 tranchés par D-54 à D-59 ; P-01, P-08 à P-10 restent des contrats.
-
-## Prochaine session : SPA-001a
-
-- Appliquer SPA-001.md et D-49 à D-53 : tests rouges, script de renommage idempotent, retouches, contrôles ciblés, PR ; capture icône/fenêtre soumise à Ali avant push.
-- Architect maintient les contrats des fiches ; ci-release écrit leurs contrôles ; qa-test possède la configuration Vitest ; docs-writer porte seulement les décisions approuvées au PRD ; product-owner tient reprise, journal et tickets.
-- PRD v6.3 : report D-47/D-48 et découpage D-49 avec preuve de conservation du contenu. Préserver toutes les décisions existantes. Reporter aussi D-58 (versions) et D-59 (HealthKit) au § 7 et § 26.2.
-- Ne pas modifier le PRD sur la base du benchmark. Protéger les données CircleTasks, y compris dans les contrôles automatiques et le script de renommage.
-- Fichiers futurs, propriétaires et tickets : registre docs/a-creer.md à produire en 001a (D-50). Icône : ui-design-system dès 001a ; contrôles : ci-release. Entitlements durables et copie CI : ios-mobile / ci-release en SPA-003. Matrice de capacités, recette appareil et inventaire : product-owner en 001b.
+Fait : tests rouges (2346b2dc) ; `scripts/release/rename.mjs` exécuté, rapport dans la PR ; updater non configuré (D-30) ; icône régénérée depuis `content/brand/spartiate.svg` ; CLAUDE.md et AGENTS.md fusionnés ; PRD v6.3 en chapitres (`docs/prd/`, source `docs/archive/PRD-v6.2.md`, corrections dans `scripts/release/fixtures/prd-v6.3-changes.json`) ; registre `docs/a-creer.md` ; journal et changelog CircleTasks archivés dans `docs/archive/circletasks/`. Version finale reçue par la relecture Codex : ADR 0017 appliquée (séparation cryptographique, fichiers .spx / .spj / .sps, garde de dossier par noms ; le risque du dossier renommé est refusé et traité), tests iPhone et non-écriture de folder.json / own.json présents, preuve rouge de l'updater sur main consignée. Reste : `tests.yml` vert sur la PR #11, corrections de la relecture Codex (D-53), fusion. Le reste de `docs/` CircleTasks (stories, audits, backlog, essais, maquettes-refonte) est archivé par 001b, lot (i).
 
 ## Avant SPA-001b
 
-Inventaire au niveau des symboles validé par Ali (D-44). Appliquer D-54 (Ali supprime le conteneur de laboratoire avant 001b) et D-55 (identités profil / pesée). Gardes du migrateur conservées. settings hors publication I0 ; 24 fiches conservées ; AppShell / TabRail et rupture 1 024 px.
+- Fusion de 001a, puis inventaire au niveau des symboles `docs/spa-001b-inventaire.md` validé par Ali (D-44) : nouvelle session.
+- D-54 : Ali supprime lui-même `%APPDATA%\fr.spartiate.app` (chemin exact affiché, aucun joker) avant le premier lancement de 001b. D-55 : identités profil / pesée. Gardes du migrateur conservées. `settings` hors publication I0 ; 24 fiches conservées ; AppShell / TabRail et rupture 1 024 px.
+- Fichiers métier CircleTasks renommés mais laissés verts en 001a, supprimés en 001b : `docs/spa-001a-fichiers-metier-reportes.md` (122 fichiers par lot).
+
+## Notes pour les tickets suivants
+
+- SPA-009 : fenêtre PC initiale adaptée à l'écran (constat 001a : elle dépasse de l'écran d'Ali), minimum 1 024 × 700.
+- D-60 : Rust local autorisé pour les changements de synchro, de garde ou de coffre ; e2e et smoke jamais en local.
 
 ## Secrets et décisions attendues
 
 - RELEASES_TOKEN : prêt avant la première publication Windows SPA-002, réutilisé pour SPA-003 ; jamais de valeur dans le dépôt.
-- Nouvelle paire minisign Spartiate : SPA-002 ; clé publique dans la configuration, privée et mot de passe dans TAURI_SIGNING_PRIVATE_KEY / TAURI_SIGNING_PRIVATE_KEY_PASSWORD. Ne pas réutiliser la clé CircleTasks. Retirer CT_GOOGLE_* en 001b.
+- Nouvelle paire minisign Spartiate : SPA-002 ; clé publique dans la configuration, privée et mot de passe dans TAURI_SIGNING_PRIVATE_KEY / TAURI_SIGNING_PRIVATE_KEY_PASSWORD. Ne pas réutiliser la clé CircleTasks. Retirer CT_GOOGLE_* en 001b. L'updater n'est pas enregistré tant que SPA-002 n'a pas posé clé et endpoint.
 - Fournisseur IA et plafond : Ali avant I4. Médias : Ali avant I1. Coexistence CircleTasks : preuve SPA-004, pas acquise. Première utilisation réelle de Spartiate annoncée par Ali : fin du laboratoire D-38.
 
 ## Ordre et règles
 
-001a → fusion → inventaire approuvé → 001b → SPA-002 → 003 → 004 → 005 → spikes 006/007 → 008 → 009 → 010. Compléments P-04 à P-08 intégrés aux tickets correspondants ; P-09/P-10 avant les modules métier.
+001a → fusion → inventaire approuvé → 001b → SPA-002 → 003 → 004 → 005 → spikes 006/007 → 008 → 009 → 010. Compléments P-04 à P-08 intégrés aux tickets ; P-09 / P-10 avant les modules métier.
 
-PR obligatoire, pas de push main ni force. Bundle ≤ 358 400 octets gzip avant push ; tests légers ciblés en local ; suite complète, e2e et Rust lourds en CI ; aucune surveillance en boucle. Données réelles CircleTasks intouchables ; aucun statut CONFIRMED depuis une lecture de code. Une revue bornée au diff après CI verte (D-53), rapport ≤ 40 lignes.
+PR obligatoire, pas de push main ni force. Bundle ≤ 358 400 octets gzip avant push ; tests légers ciblés en local ; suite complète, e2e et Rust lourds en CI ; aucune surveillance en boucle. Données réelles CircleTasks intouchables ; aucun statut CONFIRMED depuis une lecture de code. Une revue bornée au diff après CI verte (D-53).
