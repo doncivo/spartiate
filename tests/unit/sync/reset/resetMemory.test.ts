@@ -20,7 +20,7 @@ const codeOf = (p: Promise<unknown>): Promise<string> =>
   );
 
 function qrJson(qrText: string): { k: string; d: string; e: string | null } {
-  return JSON.parse(Buffer.from(qrText.slice('CTPAIR1.'.length), 'base64url').toString('utf8')) as { k: string; d: string; e: string | null };
+  return JSON.parse(Buffer.from(qrText.slice('SPPAIR1.'.length), 'base64url').toString('utf8')) as { k: string; d: string; e: string | null };
 }
 
 describe('annonce maîtresse et clé de la transition (critères 5 et 7, D1)', () => {
@@ -171,15 +171,15 @@ describe('ADR 0011 §18 points 14, 16 et 17 sur la plateforme mémoire (mêmes c
     const [a, b] = (await setupRoom(room, [B_ID])) as [SimDevice, SimDevice];
     expect((await b.platform.key.status()).importFailure ?? null).toBeNull();
     // Fenêtre `pairing` absente (wrong-window) : aucune entrée légitime traitée, rien d'écrit.
-    expect(await codeOf(b.platform.key.import({ recoveryKey: 'CT1-AAAAA' }))).toBe('wrong-window');
+    expect(await codeOf(b.platform.key.import({ recoveryKey: 'SP1-AAAAA' }))).toBe('wrong-window');
     expect((await b.platform.key.status()).importFailure ?? null).toBeNull();
     await openImport(b);
-    expect(await codeOf(b.platform.key.import({ recoveryKey: 'CT1-AAAAA' }))).toBe('invalid-pairing');
+    expect(await codeOf(b.platform.key.import({ recoveryKey: 'SP1-AAAAA' }))).toBe('invalid-pairing');
     const first = (await b.platform.key.status()).importFailure;
     expect(first?.code).toBe('invalid-pairing');
     expect(first?.at).toMatch(/Z$/);
     b.platform.testing.setForeground(false);
-    expect(await codeOf(b.platform.key.import({ recoveryKey: 'CT1-AAAAA' }))).toBe('not-foreground');
+    expect(await codeOf(b.platform.key.import({ recoveryKey: 'SP1-AAAAA' }))).toBe('not-foreground');
     b.platform.testing.setForeground(true);
     expect((await b.platform.key.status()).importFailure?.code).toBe('invalid-pairing');
     expect((await a.service.resetSync()).kind).toBe('started');
@@ -198,7 +198,7 @@ describe('ADR 0011 §18 points 14, 16 et 17 sur la plateforme mémoire (mêmes c
     await b.platform.key.import({ recoveryKey: recovery });
     expect((await b.platform.key.status()).importFailure ?? null, 'effacé à la réussite').toBeNull();
     await openImport(b);
-    expect(await codeOf(b.platform.key.import({ recoveryKey: 'CT1-AAAAA' }))).toBe('invalid-pairing');
+    expect(await codeOf(b.platform.key.import({ recoveryKey: 'SP1-AAAAA' }))).toBe('invalid-pairing');
     await b.platform.folder.forget({ eraseKey: false });
     expect((await b.platform.key.status()).importFailure ?? null, 'effacé par l’oubli du dossier').toBeNull();
   });

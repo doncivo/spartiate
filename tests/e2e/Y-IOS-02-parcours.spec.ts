@@ -113,7 +113,7 @@ test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis r�
   await dialog.getByRole('button', { name: RECOVERY }).click();
   const field = page.getByLabel('Clé de secours');
   await expect(field).toBeVisible();
-  await field.fill('CT1-AAAAA-BBBBB-CCCCC-DDDDD-EEEEE-FFFFF-GGGGG');
+  await field.fill('SP1-AAAAA-BBBBB-CCCCC-DDDDD-EEEEE-FFFFF-GGGGG');
   await page.getByRole('button', { name: 'Associer', exact: true }).click();
   await expect(page.getByTestId('pairing-import-message')).toBeVisible();
   await expect(field).toHaveValue('');

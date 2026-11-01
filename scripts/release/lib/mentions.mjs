@@ -3,13 +3,12 @@
 //
 //   'explicit'    : la ligne porte `<!-- ancien-ok: motif -->` avec un motif d'au moins 3 caractères (motif vide = refus).
 //   'protection'  : la ligne protège les données CircleTasks (chemin de données + mot d'interdiction : « toujours », « jamais »…).
-//   'protocol'    : la ligne porte une constante du protocole de synchro (sel HKDF « circletasks », D-26) : figée, jamais renommée.
 //   'provenance'  : la ligne dit d'où vient Spartiate (« fork de », « repris de »…) ; admise pour le nom de marque seulement.
 //   'negative'    : la ligne cite le terme pour le proscrire ou le dater (« pas de », « ancien », « alors que », « remplacé »…).
 //   'active'      : tout le reste, c'est-à-dire une prescription ou un usage réel : refusé.
 
 const COMMENT = /<!--[\s\S]*?-->/g;
-const EXPLICIT = /<!--\s*ancien-ok:\s*(\S[^>]{2,}?)\s*-->/;
+const EXPLICIT = /(?:<!--|\/\/)\s*ancien-ok:\s*(\S[^>]{2,}?)\s*(?:-->)?\s*$/;
 
 const DATA_PATH = /%APPDATA%|%LOCALAPPDATA%|iCloud Drive[\\/]|Drive[\\/]CircleTasks|iCloud `?CircleTasks/i;
 const PROHIBITION = /\b(toujours|jamais|interdit\w*|intouchables?|prot[ée]g\w*|aucune lecture|ne lis|ne touche|ne modifie|hors de)\b/i;
@@ -49,13 +48,11 @@ const isBrandTerm = (term) => /^circletasks$/i.test(term);
  * Qualifie la mention de `term` dans `line`.
  * @param {string} line
  * @param {string} term
- * @returns {'explicit' | 'protection' | 'protocol' | 'provenance' | 'negative' | 'active'}
  */
 export function classifyLine(line, term) {
   if (EXPLICIT.test(line)) return 'explicit';
   const bare = line.replace(COMMENT, '');
   if (DATA_PATH.test(bare) && PROHIBITION.test(bare) && !PRESCRIPTIVE.test(bare)) return 'protection';
-  if (isBrandTerm(term) && /HKDF/.test(bare)) return 'protocol';
   if (isBrandTerm(term) && PROVENANCE.test(bare)) return 'provenance';
   // La négation doit PRÉCÉDER le terme de près : « jamais un autre » après l'identifiant ne le nie pas.
   const at = bare.indexOf(term);

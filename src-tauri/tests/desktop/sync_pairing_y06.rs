@@ -281,7 +281,7 @@ fn y06_16_arrival_logs_hold_no_secret() {
     assert_eq!(registry.observe_paired(&a.core.paired_with_self(&a.core.scan(&[]).unwrap())), Some(42));
     let lines = capture.lines().join("\n");
     assert!(lines.contains("pairing-arrival"));
-    let key_part = payload.qr_text.trim_start_matches("CTPAIR1.");
+    let key_part = payload.qr_text.trim_start_matches("SPPAIR1.");
     for needle in [payload.qr_text.as_str(), key_part, payload.recovery_key.as_str()] {
         assert!(!lines.contains(needle));
     }

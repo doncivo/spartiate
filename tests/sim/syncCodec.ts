@@ -32,9 +32,9 @@ export type Bytes = Uint8Array<ArrayBuffer>;
 /** Clé maîtresse `K` : 32 octets. */
 export const KEY_BYTES = 32;
 /** Sel et `info` de HKDF-SHA256 (section 2). Le sel est une constante du protocole (D-26), figée : ne jamais le renommer avec l'app. */
-export const HKDF_SALT = 'circletasks';
-export const HKDF_INFO_RECORDS = 'ct/1 records';
-export const HKDF_INFO_KID = 'ct/1 kid';
+export const HKDF_SALT = 'spartiate';
+export const HKDF_INFO_RECORDS = 'sp/1 records';
+export const HKDF_INFO_KID = 'sp/1 kid';
 
 const encoder = new TextEncoder();
 const subtle = globalThis.crypto.subtle;
@@ -75,10 +75,10 @@ async function hkdf(key: Bytes, info: string, bytes: number): Promise<Bytes> {
   return new Uint8Array(bits);
 }
 
-/** `K_rec = HKDF(K, info "ct/1 records")`, 32 octets : chiffre tous les fichiers. */
+/** `K_rec = HKDF(K, info "sp/1 records")`, 32 octets : chiffre tous les fichiers. */
 export const recordKeyOf = (key: Bytes): Promise<Bytes> => hkdf(key, HKDF_INFO_RECORDS, 32);
 
-/** `kid = hex(HKDF(K, info "ct/1 kid")[0..8])` : 16 caractères hexadécimaux. */
+/** `kid = hex(HKDF(K, info "sp/1 kid")[0..8])` : 16 caractères hexadécimaux. */
 export const kidOf = async (key: Bytes): Promise<string> => toHex(await hkdf(key, HKDF_INFO_KID, 8));
 
 // ---------------------------------------------------------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ export type RecordPlace =
   | { readonly kind: 's'; readonly dev: string; readonly epoch: string; readonly seq: number; readonly index: number }
   | { readonly kind: 'state'; readonly dev: string; readonly epoch: string; readonly stateSeq: number };
 
-/** Champs de l'AAD, dans l'ordre : journal `ct/1|j|dev|époque|segment|index|sm|sv`, instantané `ct/1|s|…`, état `ct/1|state|dev|époque|stateSeq|sm|sv`. */
+/** Champs de l'AAD, dans l'ordre : journal `sp/1|j|dev|époque|segment|index|sm|sv`, instantané `sp/1|s|…`, état `sp/1|state|dev|époque|stateSeq|sm|sv`. */
 export function aadFields(place: RecordPlace, sm: number, sv: number): string[] {
   switch (place.kind) {
     case 'j':
@@ -241,7 +241,7 @@ async function sha256(bytes: Bytes): Promise<Bytes> {
   return new Uint8Array(await subtle.digest('SHA-256', bytes));
 }
 
-/** `K ‖ SHA-256(K)[0..2]` en base32 Crockford, groupes de 5 caractères, préfixe `CT1-`. */
+/** `K ‖ SHA-256(K)[0..2]` en base32 Crockford, groupes de 5 caractères, préfixe `SP1-`. */
 export async function recoveryKeyOf(key: Bytes): Promise<string> {
   if (key.length !== KEY_BYTES) throw new RangeError('clé de 32 octets attendue');
   const data = new Uint8Array(RECOVERY_BYTES);
@@ -312,7 +312,7 @@ export interface QrContent {
   readonly expiresAt: number;
 }
 
-/** `CTPAIR1.<base64url(JSON { v:1, k, d, e, x })>`, clés dans cet ordre. */
+/** `SPPAIR1.<base64url(JSON { v:1, k, d, e, x })>`, clés dans cet ordre. */
 export function qrTextOf(content: QrContent): string {
   const json = JSON.stringify({ v: 1, k: toBase64Url(content.key), d: content.deviceId, e: content.epoch, x: content.expiresAt });
   return PAIRING_QR_PREFIX + toBase64Url(encoder.encode(json));

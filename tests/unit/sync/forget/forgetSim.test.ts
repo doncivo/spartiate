@@ -127,7 +127,7 @@ describe('déclarations authentifiées seulement (critère 9, D5)', () => {
     const fake: StateFileCopy = {
       deviceId: C_ID,
       file: {
-        header: { f: 'ct-state', sm: 1, kid: '0123456789abcdef', dev: C_ID as DeviceId, e: epochId(1, a.id), n: 9 },
+        header: { f: 'sp-state', sm: 1, kid: '0123456789abcdef', dev: C_ID as DeviceId, e: epochId(1, a.id), n: 9 },
         lines: [{ sm: 1, sv: 17, text: JSON.stringify({ deviceId: C_ID, forgotten: [{ deviceId: a.id, at: `001790000000000-0000-${C_ID}`, lastAck: null }] }), bytes: 4_200, corrupt: false }],
         partialTail: false,
         availability: 'local',

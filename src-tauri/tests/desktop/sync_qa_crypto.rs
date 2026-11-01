@@ -268,8 +268,8 @@ fn y08_8_recovery_key_hostile_inputs_are_refused_without_panic() {
     let body: String = recovery.chars().skip(4).filter(|c| *c != '-').collect();
     for (input, why) in [
         (String::new(), "vide"),
-        ("CT1-".to_owned(), "préfixe seul"),
-        (format!("CT2-{body}"), "autre préfixe"),
+        ("SP1-".to_owned(), "préfixe seul"),
+        (format!("SP2-{body}"), "autre préfixe"),
         (format!("{body}0"), "un caractère de trop"),
         (body[..54].to_owned(), "un caractère de moins"),
         (format!("{body}{body}"), "doublée"),
@@ -283,7 +283,7 @@ fn y08_8_recovery_key_hostile_inputs_are_refused_without_panic() {
         assert!(key_from_recovery(&input).is_none(), "{why}");
     }
     assert!(key_from_recovery(&body).is_some(), "sans préfixe");
-    assert!(key_from_recovery(&format!("ct1 {}", body.to_lowercase())).is_some(), "préfixe en minuscules");
+    assert!(key_from_recovery(&format!("sp1 {}", body.to_lowercase())).is_some(), "préfixe en minuscules");
     // Longueur plafonnée à 256 octets avant tout traitement (même avec des espaces).
     assert!(key_from_recovery(&format!("{}{}", " ".repeat(300), body)).is_none());
     assert!(key_from_recovery(&format!("{}{}", " ".repeat(150), body)).is_some());
@@ -309,10 +309,10 @@ fn y08_8_recovery_key_nonzero_padding_bits_are_refused() {
 
 fn qr_json(key: &MasterKey, tweak: impl FnOnce(&mut Value)) -> String {
     let text = qr_text_of(key, DEV, Some(EPOCH), 1_790_000_000_000);
-    let json = URL_SAFE_NO_PAD.decode(text.strip_prefix("CTPAIR1.").unwrap()).unwrap();
+    let json = URL_SAFE_NO_PAD.decode(text.strip_prefix("SPPAIR1.").unwrap()).unwrap();
     let mut value: Value = serde_json::from_slice(&json).unwrap();
     tweak(&mut value);
-    format!("CTPAIR1.{}", URL_SAFE_NO_PAD.encode(serde_json::to_vec(&value).unwrap()))
+    format!("SPPAIR1.{}", URL_SAFE_NO_PAD.encode(serde_json::to_vec(&value).unwrap()))
 }
 
 #[test]
@@ -335,9 +335,9 @@ fn y08_14_qr_text_bounds_and_hostile_fields() {
     }
     // Non-objets, texte brut, base64 invalide.
     for raw in ["null", "[]", "1", "\"x\"", "{}", "{"] {
-        assert!(parse_qr_text(&format!("CTPAIR1.{}", URL_SAFE_NO_PAD.encode(raw))).is_none(), "{raw}");
+        assert!(parse_qr_text(&format!("SPPAIR1.{}", URL_SAFE_NO_PAD.encode(raw))).is_none(), "{raw}");
     }
-    assert!(parse_qr_text("CTPAIR1.").is_none());
+    assert!(parse_qr_text("SPPAIR1.").is_none());
     assert!(parse_qr_text("").is_none());
     assert!(parse_qr_text("ctpair1.AAAA").is_none(), "préfixe sensible à la casse");
     assert!(parse_qr_text(&format!(" {}", qr_json(&key, |_| {}))).is_none(), "espace initial");
@@ -358,7 +358,7 @@ fn y08_header_numeric_bounds_and_hostile_documents() {
         format!(r#"{{"f":"{f}","sm":1,"kid":"0123456789abcdef","dev":"{DEV}","e":"{EPOCH}","n":{n}}}"#)
     };
     // Journal et instantané : 1 à 99 999 999.
-    for f in ["ct-j", "ct-s"] {
+    for f in ["sp-j", "sp-s"] {
         assert!(FileHeader::parse(base(f, "1").as_bytes()).is_some());
         assert!(FileHeader::parse(base(f, "99999999").as_bytes()).is_some());
         assert!(FileHeader::parse(base(f, "100000000").as_bytes()).is_none());
@@ -369,21 +369,21 @@ fn y08_header_numeric_bounds_and_hostile_documents() {
         assert!(FileHeader::parse(base(f, "1e0").as_bytes()).is_none());
     }
     // État : 1 à 2^53 - 1.
-    assert!(FileHeader::parse(base("ct-state", "9007199254740991").as_bytes()).is_some());
-    assert!(FileHeader::parse(base("ct-state", "9007199254740992").as_bytes()).is_none());
-    assert!(FileHeader::parse(base("ct-state", "18446744073709551616").as_bytes()).is_none());
+    assert!(FileHeader::parse(base("sp-state", "9007199254740991").as_bytes()).is_some());
+    assert!(FileHeader::parse(base("sp-state", "9007199254740992").as_bytes()).is_none());
+    assert!(FileHeader::parse(base("sp-state", "18446744073709551616").as_bytes()).is_none());
     // sm : 1 à u32.
-    let sm = |s: &str| base("ct-j", "1").replace(r#""sm":1"#, &format!(r#""sm":{s}"#));
+    let sm = |s: &str| base("sp-j", "1").replace(r#""sm":1"#, &format!(r#""sm":{s}"#));
     assert!(FileHeader::parse(sm("4294967295").as_bytes()).is_some());
     assert!(FileHeader::parse(sm("4294967296").as_bytes()).is_none());
     assert!(FileHeader::parse(sm("0").as_bytes()).is_none());
     assert!(FileHeader::parse(sm("1.5").as_bytes()).is_none());
     // Taille : 1 024 octets au plus (en-tête rempli d'espaces, valide sinon).
-    let good = base("ct-j", "1");
+    let good = base("sp-j", "1");
     assert!(FileHeader::parse(format!("{good}{}", " ".repeat(1024 - good.len())).as_bytes()).is_some());
     assert!(FileHeader::parse(format!("{good}{}", " ".repeat(1025 - good.len())).as_bytes()).is_none());
     // Documents hostiles.
-    for raw in ["", "null", "[]", "{}", "\u{feff}", "{\"f\":\"ct-j\"", "\u{feff}{}"] {
+    for raw in ["", "null", "[]", "{}", "\u{feff}", "{\"f\":\"sp-j\"", "\u{feff}{}"] {
         assert!(FileHeader::parse(raw.as_bytes()).is_none(), "{raw}");
     }
     assert!(FileHeader::parse(&[0xff, 0xfe]).is_none());
@@ -587,7 +587,7 @@ mod service {
     fn y08_14_hostile_inputs_are_refused_before_any_folder_access() {
         let (_a, b, fs) = pair();
         let reads_before = fs.all_files().len();
-        for text in ["", "CTPAIR1.", "CTPAIR1.AAAA", "x".repeat(5000).as_str(), "CTPAIR1.\u{0}", "CT1-ZZZZZ"] {
+        for text in ["", "SPPAIR1.", "SPPAIR1.AAAA", "x".repeat(5000).as_str(), "SPPAIR1.\u{0}", "SP1-ZZZZZ"] {
             let qr = code(b.core.key_import(KeyInput::QrText(Zeroizing::new(text.to_owned())), 1));
             assert_eq!(qr, SyncCode::InvalidPairing, "{text:.20}");
             b.clock.advance(3 * 60_000); // reste sous la limite de 5 appels par 10 minutes

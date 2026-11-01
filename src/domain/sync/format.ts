@@ -29,8 +29,8 @@ export * from './limits';
 /** `sm` : version majeure du format de synchro (Y-07). Égale à la constante Rust (test croisé). */
 export const SYNC_FORMAT_MAJOR = 1;
 
-/** Préfixe de version des AAD (`ct/1`, section 2). */
-export const AAD_VERSION = 'ct/1';
+/** Préfixe de version des AAD (`sp/1`, section 2). */
+export const AAD_VERSION = 'sp/1';
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 // Noms stricts (section 1.1)
@@ -146,8 +146,8 @@ export function parseSyncFileName(name: string): SyncFileName | null {
 // En-tête en clair (section 1.2)
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-export type FileHeaderKind = 'ct-j' | 'ct-s' | 'ct-state';
-const HEADER_KINDS: readonly FileHeaderKind[] = ['ct-j', 'ct-s', 'ct-state'];
+export type FileHeaderKind = 'sp-j' | 'sp-s' | 'sp-state';
+const HEADER_KINDS: readonly FileHeaderKind[] = ['sp-j', 'sp-s', 'sp-state'];
 const HEADER_KEYS = ['dev', 'e', 'f', 'kid', 'n', 'sm'] as const;
 
 /** En-tête JSON de la ligne 1 : exactement ces six clés. `n` = segment, instantané ou `stateSeq` (`state.ctx`). */
@@ -183,7 +183,7 @@ export function parseFileHeader(line: string): FileHeader | null {
   if (!isKid(h['kid']) || !isSyncDeviceId(h['dev']) || !isEpochId(h['e'])) return null;
   const n = h['n'];
   if (typeof n !== 'number' || !Number.isSafeInteger(n) || n < 1) return null;
-  if (h['f'] !== 'ct-state' && !isFileNumber(n)) return null;
+  if (h['f'] !== 'sp-state' && !isFileNumber(n)) return null;
   return { f: h['f'] as FileHeaderKind, sm: h['sm'], kid: h['kid'], dev: h['dev'], e: h['e'], n };
 }
 
@@ -252,11 +252,11 @@ export function headerMatchesPath(header: FileHeader, path: SyncFilePath): boole
   switch (path.file.kind) {
     case 'state':
       // L'époque d'un `state.ctx` doit exister : l'appelant passe l'époque attendue s'il la connaît.
-      return header.f === 'ct-state' && (path.epoch === null || header.e === path.epoch);
+      return header.f === 'sp-state' && (path.epoch === null || header.e === path.epoch);
     case 'segment':
-      return header.f === 'ct-j' && header.e === path.epoch && header.n === path.file.n;
+      return header.f === 'sp-j' && header.e === path.epoch && header.n === path.file.n;
     case 'snapshot':
-      return header.f === 'ct-s' && header.e === path.epoch && header.n === path.file.n;
+      return header.f === 'sp-s' && header.e === path.epoch && header.n === path.file.n;
   }
 }
 
@@ -318,6 +318,7 @@ export const SYNC_ERROR_CODES = [
   'segment-full',
   'state-mismatch',
   'folder-has-data',
+  'foreign-folder',
   'wrong-window',
   'wrong-mode',
   'hlc-order',
@@ -339,10 +340,10 @@ export function isSyncErrorCode(value: unknown): value is SyncErrorCode {
 // Appairage (sections 2, 10.3)
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-/** Préfixe du texte du QR : `CTPAIR1.<base64url(JSON { v:1, k, d, e, x })>`. */
-export const PAIRING_QR_PREFIX = 'CTPAIR1.';
+/** Préfixe du texte du QR : `SPPAIR1.<base64url(JSON { v:1, k, d, e, x })>`. */
+export const PAIRING_QR_PREFIX = 'SPPAIR1.';
 /** Préfixe de la clé de secours imprimable (base32 Crockford, groupes de 5). */
-export const RECOVERY_KEY_PREFIX = 'CT1-';
+export const RECOVERY_KEY_PREFIX = 'SP1-';
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 // État publié (section 1.4) et accusés

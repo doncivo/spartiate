@@ -16,7 +16,7 @@ use super::consent::{ConsentGate, ConsentKind};
 use super::crypto::{key_from_recovery, parse_qr_text, qr_text_of, MasterKey};
 use super::files::{StdFs, SyncFs};
 use super::folder::{
-    check_sync_path, config_dir, read_config_file, remove_config_file, write_config_file, CheckedFolder, FolderKind, FolderRecord, FOLDER_FILE,
+    check_sync_path, config_dir, is_circletasks_folder_name, read_config_file, remove_config_file, write_config_file, CheckedFolder, FolderKind, FolderRecord, FOLDER_FILE, // ancien-ok: garde de séparation ADR 0017
 };
 use super::limits::{NONCE_MAX_RECORDS, NONCE_WARN_RECORDS, PAIRING_CLOCK_TOLERANCE_MS};
 use super::marker::{self, RestoreMarker};
@@ -459,6 +459,16 @@ impl SyncCore {
     }
 
     fn bind_checked(&self, checked: CheckedFolder, bookmark: Option<String>) -> SyncResult<FolderInfo> {
+        // ADR 0017 : jamais le dossier de CircleTasks, par son nom ni par ses fichiers ; rien n'est modifié avant ce contrôle.
+        if is_circletasks_folder_name(&checked.name()) { // ancien-ok: garde de séparation ADR 0017
+            log::event("folder-refused", "foreign-name");
+            return fail(SyncCode::ForeignFolder);
+        }
+        let probe = FolderRecord { v: 1, path: checked.path.to_string_lossy().into_owned(), device_id: None, bookmark: bookmark.clone() };
+        if Store::folder_has_foreign_data(self.backend.open_record(&checked, &probe).as_ref())? {
+            log::event("folder-refused", "foreign-files");
+            return fail(SyncCode::ForeignFolder);
+        }
         let mut inner = self.lock();
         // Autre dossier, ou le même rechoisi : aucun instantané en cache (revue B3).
         inner.snapshot_cache = None;

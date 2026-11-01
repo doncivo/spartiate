@@ -422,7 +422,7 @@ export class MemorySyncFolder {
   putLines(deviceId: string, file: string, lines: readonly string[], availability: FileAvailability = 'local'): void {
     const where = file === STATE_FILE || file === STATE_NEXT_FILE ? null : splitFile(file);
     if (!where && file !== STATE_FILE && file !== STATE_NEXT_FILE) throw new RangeError('nom non strict');
-    const header: FileHeader = { f: where === null ? 'ct-state' : where.kind === 'segment' ? 'ct-j' : 'ct-s', sm: SYNC_FORMAT_MAJOR, kid: 'conformance', dev: deviceId as FileHeader['dev'], e: where?.epoch ?? ('e0001-00000000-0000-4000-8000-000000000000' as EpochId), n: where?.n ?? 1 };
+    const header: FileHeader = { f: where === null ? 'sp-state' : where.kind === 'segment' ? 'sp-j' : 'sp-s', sm: SYNC_FORMAT_MAJOR, kid: 'conformance', dev: deviceId as FileHeader['dev'], e: where?.epoch ?? ('e0001-00000000-0000-4000-8000-000000000000' as EpochId), n: where?.n ?? 1 };
     this.restoreFile(deviceId, file, { header, lines: lines.map((text) => makeLine(text, SYNC_FORMAT_MAJOR, 1)), partialTail: false, availability, extraBytes: 0 });
   }
 
@@ -659,11 +659,11 @@ function fromBase64Url(text: string): Bytes | null {
   }
 }
 
-/** `kid = hex(HKDF-SHA256(K, sel "circletasks", info "ct/1 kid")[0..8])` (section 2). */
+/** `kid = hex(HKDF-SHA256(K, sel "spartiate", info "sp/1 kid")[0..8])` (section 2). */
 async function kidOf(key: Bytes): Promise<string> {
   const base = await crypto.subtle.importKey('raw', key, 'HKDF', false, ['deriveBits']);
   const bits = await crypto.subtle.deriveBits(
-    { name: 'HKDF', hash: 'SHA-256', salt: encoder.encode('circletasks'), info: encoder.encode('ct/1 kid') },
+    { name: 'HKDF', hash: 'SHA-256', salt: encoder.encode('spartiate'), info: encoder.encode('sp/1 kid') },
     base,
     64,
   );
@@ -679,7 +679,7 @@ const KEY_BYTES = 32;
 const RECOVERY_BYTES = KEY_BYTES + 2;
 const RECOVERY_CHARS = Math.ceil((RECOVERY_BYTES * 8) / 5); // 55
 
-/** Clé de secours : `K ‖ SHA-256(K)[0..2]` en base32 Crockford, groupes de 5 caractères, préfixe `CT1-`. */
+/** Clé de secours : `K ‖ SHA-256(K)[0..2]` en base32 Crockford, groupes de 5 caractères, préfixe `SP1-`. */
 async function recoveryKeyOf(key: Bytes): Promise<string> {
   const digest = await sha256(key);
   const data = new Uint8Array(RECOVERY_BYTES);
@@ -741,7 +741,7 @@ function qrTextOf(content: QrContent): string {
   return PAIRING_QR_PREFIX + toBase64Url(encoder.encode(json));
 }
 
-/** Analyse stricte du texte du QR : `CTPAIR1.<base64url(JSON { v:1, k, d, e, x })>`, clés exactes. */
+/** Analyse stricte du texte du QR : `SPPAIR1.<base64url(JSON { v:1, k, d, e, x })>`, clés exactes. */
 function parseQrText(text: string): QrContent | null {
   if (!text.startsWith(PAIRING_QR_PREFIX) || text.length > 1024) return null;
   const bytes = fromBase64Url(text.slice(PAIRING_QR_PREFIX.length));
@@ -1152,7 +1152,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     let replacedSeq = 0;
     if (mine && mine.status !== 'ok' && mine.status !== 'missing' && mine.status !== 'cloud-pending') {
       const authenticated = Math.max(accepted.get(self)?.seq ?? 0, ...acks.map((a) => a.stateSeq));
-      const header = dir?.state && dir.state.header.f === 'ct-state' && dir.state.header.dev === self ? dir.state.header.n : 0;
+      const header = dir?.state && dir.state.header.f === 'sp-state' && dir.state.header.dev === self ? dir.state.header.n : 0;
       replacedSeq = header <= authenticated + MAX_UNAUTHENTICATED_SEQ_JUMP ? Math.max(authenticated, header) : authenticated;
     }
     // Comme Rust (`rebuild_own`) : une époque listée n'est retenue que si elle contient un segment (la plus grande qui en a un) ; un
@@ -1300,7 +1300,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
   const readFileState = (deviceId: string, file: MemFile, kids: readonly string[], remember: boolean, replay: boolean): StateRead => {
     if (fileBytes(file) > MAX_STATE_FILE_BYTES) return { kid: null, state: null, status: 'too-large' };
     const h = file.header;
-    if (h.f !== 'ct-state' || h.dev !== deviceId || !kids.includes(h.kid)) return { kid: h.kid, state: null, status: 'foreign' };
+    if (h.f !== 'sp-state' || h.dev !== deviceId || !kids.includes(h.kid)) return { kid: h.kid, state: null, status: 'foreign' };
     if (h.sm > SYNC_FORMAT_MAJOR) return { kid: h.kid, state: null, status: 'newer-format' };
     // Ligne incomplète : iCloud est en train de livrer le fichier, il sera relu au cycle suivant (section 1.2).
     if (file.partialTail) return { kid: h.kid, state: null, status: 'cloud-pending' };
@@ -1552,7 +1552,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
         break;
       }
       checkFileForRead(file, kid, MAX_SEGMENT_BYTES);
-      if (file.header.f !== 'ct-j' || file.header.dev !== r.deviceId || file.header.e !== r.epoch || file.header.n !== segment) fail('bad-header');
+      if (file.header.f !== 'sp-j' || file.header.dev !== r.deviceId || file.header.e !== r.epoch || file.header.n !== segment) fail('bad-header');
       if (record >= file.lines.length) {
         // Segment clos avec entrée : il en manque (version ancienne livrée par iCloud, troncature) → attente, jamais le segment suivant.
         // Sans entrée, sous une tête plus grande : segment suivant. Y-FIX-05 (§33, B18) : y compris après une ligne incomplète (ajout
@@ -1611,7 +1611,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     }
     if (!file || !hydrated(file, r.deviceId, name)) return { records: [], next: from, status: 'cloud-pending' };
     checkFileForRead(file, kid, MAX_SNAPSHOT_BYTES);
-    if (file.header.f !== 'ct-s' || file.header.dev !== r.deviceId || file.header.e !== r.epoch || file.header.n !== r.seq) fail('bad-header');
+    if (file.header.f !== 'sp-s' || file.header.dev !== r.deviceId || file.header.e !== r.epoch || file.header.n !== r.seq) fail('bad-header');
     if (r.tail === true) {
       const last = file.lines[file.lines.length - 1];
       if (file.partialTail || !last) return { records: [], next: from, status: 'cloud-pending' };
@@ -1746,7 +1746,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     const dir = epochDirOf(f, self, r.epoch);
     let file = dir.segments.get(r.segment);
     if (!file) {
-      file = { header: { f: 'ct-j', sm: SYNC_FORMAT_MAJOR, kid, dev: self, e: r.epoch, n: r.segment }, lines: [], partialTail: false, availability: 'local', extraBytes: 0 };
+      file = { header: { f: 'sp-j', sm: SYNC_FORMAT_MAJOR, kid, dev: self, e: r.epoch, n: r.segment }, lines: [], partialTail: false, availability: 'local', extraBytes: 0 };
       dir.segments.set(r.segment, file);
     }
     if (refused?.effect === 'error') {
@@ -1822,7 +1822,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     const dir = f.devices.get(self);
     if (!dir) return fail('io');
     const line = makeLine(text, SYNC_FORMAT_MAJOR, r.sv);
-    const file: MemFile = { header: { f: 'ct-state', sm: SYNC_FORMAT_MAJOR, kid: kidFor(s.epoch, kid), dev: self, e: s.epoch, n: s.stateSeq }, lines: [line], partialTail: false, availability: 'local', extraBytes: 0 };
+    const file: MemFile = { header: { f: 'sp-state', sm: SYNC_FORMAT_MAJOR, kid: kidFor(s.epoch, kid), dev: self, e: s.epoch, n: s.stateSeq }, lines: [line], partialTail: false, availability: 'local', extraBytes: 0 };
     // Y-11 : l'état de l'époque visée va dans `state.next.ctx`, sous la nouvelle clé (§14.3 étape 4).
     if (toNext) dir.nextState = file;
     else dir.state = file;
@@ -1878,7 +1878,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
       if (refused.partialLastLine === true) throw new Error(`plan de pannes, entrée « ${refused.id} » : partialLastLine impossible sur un instantané (.tmp puis renommage)`);
       fail(refused.code ?? 'io');
     }
-    const header: FileHeader = { f: 'ct-s', sm: SYNC_FORMAT_MAJOR, kid, dev: self, e: r.epoch, n: r.seq };
+    const header: FileHeader = { f: 'sp-s', sm: SYNC_FORMAT_MAJOR, kid, dev: self, e: r.epoch, n: r.seq };
     const lines: MemLine[] = [];
     let bytes = headerBytes(header);
     // Pages fournies par l'appelant : une erreur de sa part (cycle interrompu) laisse l'écrivain ouvert, comme dans Rust (aucun appel).
@@ -2195,7 +2195,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     for (const [name, dir] of f.devices) {
       if (!isSyncDeviceId(name) || (only !== null && name !== only)) continue;
       for (const file of [dir.state, dir.nextState]) {
-        if (!file || file.availability !== 'local' || file.header.f !== 'ct-state') continue;
+        if (!file || file.availability !== 'local' || file.header.f !== 'sp-state') continue;
         readable += 1;
         if (file.lines.length !== 1 || file.lines[0]?.corrupt === true || file.partialTail) continue;
         kids.add(file.header.kid);

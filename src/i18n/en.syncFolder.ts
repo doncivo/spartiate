@@ -30,6 +30,7 @@ export const syncFolderEn: Shape<typeof syncFolderFr> = {
   errorVault: 'The Windows credential vault is unavailable',
   errorVaultIos: 'The iPhone Keychain is unavailable: unlock the iPhone, sync will resume',
   errorDenied: 'Action cancelled',
+  errorForeign: 'This folder belongs to CircleTasks: Spartiate never links it. Choose another folder (for example “Spartiate” in iCloud Drive).', // ancien-ok: nom de l'autre app dans le message de refus (ADR 0017)
   errorRateLimited: 'Too many attempts: try again in a few minutes',
   errorGeneric: 'Sync ran into an error',
 };

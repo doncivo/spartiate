@@ -130,7 +130,7 @@ export const syncPairingWindowFr = {
   },
   import: {
     title: 'Associer cet appareil',
-    text: 'Saisissez la clé de secours imprimée sur le premier appareil (CT1-…). Majuscules, minuscules, espaces et tirets sont acceptés.',
+    text: 'Saisissez la clé de secours imprimée sur le premier appareil (SP1-…). Majuscules, minuscules, espaces et tirets sont acceptés.',
     field: 'Clé de secours',
     submit: 'Associer',
     busy: 'Association…',

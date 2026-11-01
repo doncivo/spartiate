@@ -121,7 +121,7 @@ export const syncPairingWindowEn: Shape<typeof syncPairingWindowFr> = {
   },
   import: {
     title: 'Pair this device',
-    text: 'Type the recovery key printed on the first device (CT1-…). Upper case, lower case, spaces and dashes are accepted.',
+    text: 'Type the recovery key printed on the first device (SP1-…). Upper case, lower case, spaces and dashes are accepted.',
     field: 'Recovery key',
     submit: 'Pair',
     busy: 'Pairing…',

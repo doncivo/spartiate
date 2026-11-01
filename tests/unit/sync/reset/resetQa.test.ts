@@ -245,7 +245,7 @@ describe('state.ctx étranger sans annonce (critères 8 et 9, §1.4)', () => {
     return {
       deviceId,
       file: {
-        header: { f: 'ct-state', sm: 1, kid: 'ffffffffffffffff', dev: deviceId as DeviceId, e: real['epoch'] as never, n: 9 },
+        header: { f: 'sp-state', sm: 1, kid: 'ffffffffffffffff', dev: deviceId as DeviceId, e: real['epoch'] as never, n: 9 },
         lines: [{ sm: 1, sv: 17, text: JSON.stringify({ ...real, deviceId, reset: withNotice ? { kid: 'ffffffffffffffff', epoch: `e0009-${deviceId}`, at: `000000000001000-0000-${deviceId}` } : null }), bytes: 4200, corrupt: false }],
         partialTail: false,
         availability: 'local',

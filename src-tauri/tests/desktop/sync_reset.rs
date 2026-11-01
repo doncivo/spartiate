@@ -711,7 +711,7 @@ fn a_foreign_state_with_a_forged_notice_or_an_unknown_announcer_suspends_nothing
     .to_string();
     let place = Place::State { dev: ghost, epoch: &ep, state_seq: 1 };
     let line = stranger.seal(&place, state.as_bytes(), 1, SV as u32).unwrap();
-    let header = json!({ "f": "ct-state", "sm": 1, "kid": stranger.kid(), "dev": ghost, "e": ep, "n": 1 }).to_string();
+    let header = json!({ "f": "sp-state", "sm": 1, "kid": stranger.kid(), "dev": ghost, "e": ep, "n": 1 }).to_string();
     net.fs.put(&["devices", ghost, "state.ctx"], format!("{header}\n{line}\n").as_bytes());
     let out = net.read_all(DEV_A).unwrap();
     assert_eq!(out.states[ghost].0, "foreign", "seulement « Clé différente »");
@@ -892,7 +892,7 @@ fn the_old_key_still_opens_old_files_but_reads_and_forges_nothing_written_after(
     assert!(k.open(&Place::Journal { dev: DEV_A, epoch: &new_epoch, segment: 1, index: 0 }, line).is_err(), "K ne lit rien d'écrit après");
     // Un détenteur de K seul forge un segment et un état dans le dossier de A : ni lus, ni appliqués, aucune suspension.
     let forged_line = k.seal(&Place::Journal { dev: DEV_A, epoch: &new_epoch, segment: 1, index: 0 }, br#"{"forged":true}"#, 1, SV as u32).unwrap();
-    let header = json!({ "f": "ct-j", "sm": 1, "kid": k.kid(), "dev": DEV_A, "e": new_epoch, "n": 1 }).to_string();
+    let header = json!({ "f": "sp-j", "sm": 1, "kid": k.kid(), "dev": DEV_A, "e": new_epoch, "n": 1 }).to_string();
     net.fs.put(&["devices", DEV_A, &new_epoch, "j-00000001.ctj"], format!("{header}\n{forged_line}\n").as_bytes());
     let from = spartiate_lib::sync::store::RecordCursor { segment: 0, record: 0 };
     assert_eq!(code(net.core(DEV_B).read_journal(DEV_A, &new_epoch, from, None)), SyncCode::KeyMismatch, "segment forgé sous K refusé");
@@ -902,7 +902,7 @@ fn the_old_key_still_opens_old_files_but_reads_and_forges_nothing_written_after(
     let text = forged_state.to_string();
     let place = Place::State { dev: DEV_A, epoch: &new_epoch, state_seq: 9_999 };
     let sealed = k.seal(&place, text.as_bytes(), 1, SV as u32).unwrap();
-    let header = json!({ "f": "ct-state", "sm": 1, "kid": k.kid(), "dev": DEV_A, "e": new_epoch, "n": 9_999 }).to_string();
+    let header = json!({ "f": "sp-state", "sm": 1, "kid": k.kid(), "dev": DEV_A, "e": new_epoch, "n": 9_999 }).to_string();
     net.fs.put(&["devices", DEV_A, "state.ctx"], format!("{header}\n{sealed}\n").as_bytes());
     let seen = net.read_all(DEV_B).unwrap();
     assert_eq!(seen.states[DEV_A].0, "foreign", "état forgé sous K : clé différente, rien de lu");
@@ -1253,7 +1253,7 @@ fn p17_import_failure_is_persisted_and_cleared() {
     let mut net = Net::new(&[DEV_B]);
     net.cycle(DEV_B).unwrap();
     assert!(net.import_failure(DEV_B).is_none());
-    assert_eq!(code(net.core(DEV_B).key_import(KeyInput::RecoveryKey(Zeroizing::new("CT1-AAAAA".into())), 1)), SyncCode::InvalidPairing);
+    assert_eq!(code(net.core(DEV_B).key_import(KeyInput::RecoveryKey(Zeroizing::new("SP1-AAAAA".into())), 1)), SyncCode::InvalidPairing);
     let failure = net.import_failure(DEV_B).unwrap();
     assert_eq!(failure["code"], "invalid-pairing");
     assert!(failure["at"].as_str().unwrap().ends_with('Z'));
@@ -1397,7 +1397,7 @@ fn second_review_withdrawal_is_proven_by_a_newer_author_state_read_after_the_imp
     let ep = epoch(1, DEV_A);
     let text = state.to_string();
     let sealed = k.seal(&Place::State { dev: DEV_A, epoch: &ep, state_seq: seq }, text.as_bytes(), 1, SV as u32).unwrap();
-    let header = json!({ "f": "ct-state", "sm": 1, "kid": k.kid(), "dev": DEV_A, "e": ep, "n": seq }).to_string();
+    let header = json!({ "f": "sp-state", "sm": 1, "kid": k.kid(), "dev": DEV_A, "e": ep, "n": seq }).to_string();
     net.fs.put(&["devices", DEV_A, "state.ctx"], format!("{header}\n{sealed}\n").as_bytes());
     let view = net.read_all(DEV_B).unwrap().reset.unwrap();
     let lost = view.superseded.expect("retrait prouvé par un état plus récent que celui lu à l'import");

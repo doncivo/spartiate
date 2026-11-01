@@ -824,7 +824,7 @@ fn registry_rebuilt_case_iii_when_own_state_was_replaced_and_an_active_acknowled
     net.cycle(DEV_B).unwrap();
     net.cycle(DEV_B).unwrap();
     // Un tiers remplace le state.ctx de A ; le registre de A est perdu (dossier de configuration effacé, own.json gardé).
-    net.fs.put(&["devices", DEV_A, "state.ctx"], b"{\"f\":\"ct-state\"}\nfaux\n");
+    net.fs.put(&["devices", DEV_A, "state.ctx"], b"{\"f\":\"sp-state\"}\nfaux\n");
     std::fs::remove_file(registry_path(&net.dev(DEV_A).d)).unwrap();
     net.dev_mut(DEV_A).d.restart();
     // B a accusé l'état de A au stateSeq de own.json : reconstruction (iii) ; la déclaration revient par la liste republiée par B.
@@ -838,7 +838,7 @@ fn registry_rebuild_refusals() {
     let mut net = Net::new(&[DEV_B]);
     net.cycle(DEV_A).unwrap();
     net.cycle(DEV_A).unwrap();
-    net.fs.put(&["devices", DEV_A, "state.ctx"], b"{\"f\":\"ct-state\"}\nfaux\n");
+    net.fs.put(&["devices", DEV_A, "state.ctx"], b"{\"f\":\"sp-state\"}\nfaux\n");
     std::fs::remove_file(registry_path(&net.dev(DEV_A).d)).unwrap();
     net.dev_mut(DEV_A).d.restart();
     assert_eq!(code(net.dev(DEV_A).d.core.scan(&[])), SyncCode::StateMismatch);
@@ -1004,7 +1004,7 @@ fn phantom_never_seen_does_not_block_a_seen_device_without_folder_does() {
     net.journal(DEV_X);
     // Fantômes jamais vus : dossier vide, état illisible.
     net.fs.mkdir(&["devices", GHOST]);
-    net.fs.put(&["devices", DEV_Z, "state.ctx"], b"{\"f\":\"ct-state\"}\nfaux\n");
+    net.fs.put(&["devices", DEV_Z, "state.ctx"], b"{\"f\":\"sp-state\"}\nfaux\n");
     net.settle(&[DEV_A, DEV_B], 1);
     net.dev(DEV_A).d.core.device_forget(DEV_X, 1).unwrap();
     net.settle(&[DEV_A, DEV_B], 2);
@@ -1119,7 +1119,7 @@ fn attack_foreign_state_forgets_nobody() {
     let mut net = Net::new(&[DEV_B, DEV_X]);
     net.journal(DEV_X);
     // Faux state.ctx étranger (sans la clé) : statut foreign, aucune déclaration apprise ; fantôme jamais vu, il ne bloque pas.
-    net.fs.put(&["devices", DEV_C, "state.ctx"], b"{\"f\":\"ct-state\"}\nfaux\n");
+    net.fs.put(&["devices", DEV_C, "state.ctx"], b"{\"f\":\"sp-state\"}\nfaux\n");
     let scan = net.dev(DEV_A).d.core.scan(&[]).unwrap();
     assert_ne!(scan.devices.iter().find(|d| d.device_id == DEV_C).unwrap().state_status, "ok");
     assert!(scan.forgotten.entries.is_empty());

@@ -1,11 +1,11 @@
 //! Chiffrement de la synchronisation (ADR 0011, sections 1.2 et 2 ; Y-08).
 //!
 //! - Clé maîtresse `K` : 32 octets de `SystemRandom`, gardée dans un `Zeroizing`, sans `Debug` ni `Serialize`.
-//! - `K_rec = HKDF-SHA256(K, sel "circletasks", info "ct/1 records")` chiffre tous les fichiers ; `kid = hex(HKDF(K, info "ct/1 kid")[0..8])`.
+//! - `K_rec = HKDF-SHA256(K, sel "spartiate", info "sp/1 records")` chiffre tous les fichiers ; `kid = hex(HKDF(K, info "sp/1 kid")[0..8])`.
 //! - AES-256-GCM par `RandomizedNonceKey` : le nonce de 96 bits est tiré par la bibliothèque, jamais fourni par ce code.
 //! - Ligne `<sm>.<sv>.<base64url(nonce ‖ texte chiffré ‖ étiquette)>` ; texte clair bourré `u32 ‖ JSON ‖ zéros` au multiple de 4 Kio ;
 //!   AAD = champs préfixés par leur longueur (u16 gros-boutiste), reconstruite par le lecteur depuis le chemin et la position.
-//! - Clé de secours (base32 Crockford, `CT1-`, somme de contrôle) et texte du QR (`CTPAIR1.`) : codage et décodage en Rust seulement.
+//! - Clé de secours (base32 Crockford, `SP1-`, somme de contrôle) et texte du QR (`SPPAIR1.`) : codage et décodage en Rust seulement.
 //!
 //! Aucune fonction de ce module ne journalise ni ne renvoie dans une erreur une clé, un texte clair ou une entrée reçue.
 
@@ -25,14 +25,14 @@ use super::names::{is_epoch_id, is_file_number, is_kid, is_uuid_v4};
 /// Version majeure du format (`sm`), égale à `SYNC_FORMAT_MAJOR` de `format.ts`.
 pub const SYNC_FORMAT_MAJOR: u32 = 1;
 /// Préfixe de version des AAD.
-pub const AAD_VERSION: &str = "ct/1";
+pub const AAD_VERSION: &str = "sp/1";
 pub const KEY_BYTES: usize = 32;
-/// Sel HKDF : constante du protocole (D-26), figée à la valeur héritée. Ne jamais la renommer avec l'app : toute clé dérivée et tout fichier chiffré en dépendent.
-pub const HKDF_SALT: &[u8] = b"circletasks";
-pub const HKDF_INFO_RECORDS: &[u8] = b"ct/1 records";
-pub const HKDF_INFO_KID: &[u8] = b"ct/1 kid";
-pub const PAIRING_QR_PREFIX: &str = "CTPAIR1.";
-pub const RECOVERY_KEY_PREFIX: &str = "CT1-";
+/// Sel HKDF propre à Spartiate (ADR 0017) : une clé de CircleTasks ne dérive pas les mêmes clés ici, ses fichiers ne se déchiffrent pas. // ancien-ok: garde de séparation ADR 0017
+pub const HKDF_SALT: &[u8] = b"spartiate";
+pub const HKDF_INFO_RECORDS: &[u8] = b"sp/1 records";
+pub const HKDF_INFO_KID: &[u8] = b"sp/1 kid";
+pub const PAIRING_QR_PREFIX: &str = "SPPAIR1.";
+pub const RECOVERY_KEY_PREFIX: &str = "SP1-";
 /// Longueur maximale acceptée d'un texte de QR.
 pub const MAX_QR_TEXT_BYTES: usize = 1024;
 
@@ -133,7 +133,7 @@ impl MasterKey {
         &self.raw
     }
 
-    /// Clé de secours imprimable : `K ‖ SHA-256(K)[0..2]` en base32 Crockford, groupes de 5, préfixe `CT1-`.
+    /// Clé de secours imprimable : `K ‖ SHA-256(K)[0..2]` en base32 Crockford, groupes de 5, préfixe `SP1-`.
     pub fn recovery_key(&self) -> Zeroizing<String> {
         recovery_key_of(&self.raw)
     }
@@ -290,9 +290,9 @@ pub enum HeaderKind {
 impl HeaderKind {
     pub fn tag(self) -> &'static str {
         match self {
-            HeaderKind::Journal => "ct-j",
-            HeaderKind::Snapshot => "ct-s",
-            HeaderKind::State => "ct-state",
+            HeaderKind::Journal => "sp-j",
+            HeaderKind::Snapshot => "sp-s",
+            HeaderKind::State => "sp-state",
         }
     }
 }
@@ -316,9 +316,9 @@ impl FileHeader {
 
     pub fn kind(&self) -> Option<HeaderKind> {
         match self.f.as_str() {
-            "ct-j" => Some(HeaderKind::Journal),
-            "ct-s" => Some(HeaderKind::Snapshot),
-            "ct-state" => Some(HeaderKind::State),
+            "sp-j" => Some(HeaderKind::Journal),
+            "sp-s" => Some(HeaderKind::Snapshot),
+            "sp-state" => Some(HeaderKind::State),
             _ => None,
         }
     }
@@ -459,7 +459,7 @@ pub struct QrContent {
     pub expires_at: u64,
 }
 
-/// `CTPAIR1.<base64url(JSON { v:1, k, d, e, x })>`.
+/// `SPPAIR1.<base64url(JSON { v:1, k, d, e, x })>`.
 pub fn qr_text_of(key: &MasterKey, device_id: &str, epoch: Option<&str>, expires_at: u64) -> Zeroizing<String> {
     let payload = QrPayload { v: 1, k: URL_SAFE_NO_PAD.encode(key.raw()), d: device_id.to_owned(), e: epoch.map(str::to_owned), x: expires_at };
     let json = Zeroizing::new(serde_json::to_string(&payload).unwrap_or_default());

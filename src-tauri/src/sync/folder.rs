@@ -111,6 +111,11 @@ pub fn remove_config_file(path: &Path) -> SyncResult<()> {
     }
 }
 
+/// ADR 0017 : le dossier de CircleTasks n'est jamais lié à Spartiate. Nom comparé sans tenir compte de la casse ni des espaces de bord. // ancien-ok: garde de séparation ADR 0017
+pub fn is_circletasks_folder_name(name: &str) -> bool { // ancien-ok: garde de séparation ADR 0017
+    name.trim().eq_ignore_ascii_case("circletasks") // ancien-ok: garde de séparation ADR 0017
+}
+
 /// Dossier à lier après la boîte de choix (audit S10) : le dossier choisi ; si c'est `iCloud Drive` lui-même, son sous-dossier
 /// `Spartiate`, à créer seulement maintenant que l'utilisateur a validé. Rend (dossier, à créer).
 pub fn chosen_target(chosen: &Path, icloud_drive: Option<&Path>) -> (PathBuf, bool) {

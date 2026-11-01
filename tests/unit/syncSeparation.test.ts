@@ -57,7 +57,8 @@ describe('aller-retour Spartiate', () => {
   it('un QR et une ligne scellés par Spartiate se relisent', async () => {
     const parsed = parseQrText(qrTextOf({ key, deviceId: '3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60' as never, epoch: null, expiresAt: 1790000000000 }));
     expect(parsed?.expiresAt).toBe(1790000000000);
-    const place = foreign.rustSealed[0]!.place;
+    const place = foreign.rustSealed[0]?.place;
+    if (!place) throw new Error('fixture sans ligne');
     const line = await sealRecord({ key, place, sm: 1, sv: 14, json: '{"k":"ops","sv":14,"ops":[]}' });
     expect(await openRecord(key, place, line)).toEqual({ sm: 1, sv: 14, json: '{"k":"ops","sv":14,"ops":[]}' });
   });

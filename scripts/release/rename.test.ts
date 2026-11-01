@@ -45,10 +45,6 @@ describe('renameText (une chaîne)', () => {
     const once = renameText('src/a.ts', 'CircleTasks fr.circletasks.planner').text;
     expect(renameText('src/a.ts', once)).toEqual({ text: once, count: 0 });
   });
-  it('laisse intacte toute ligne portant le sel HKDF du protocole (D-26)', () => {
-    const salt = 'pub const HKDF_SALT: &[u8] = b"circletasks";';
-    expect(renameText('src-tauri/src/sync/crypto.rs', `${salt}\nCircleTasks`)).toEqual({ text: `${salt}\nSpartiate`, count: 1 });
-  });
   it('laisse intacte une ligne de provenance (repris de CircleTasks)', () => {
     expect(renameText('src/b.rs', '// repris de CircleTasks (ADR 0011)\nCircleTasks\n').text).toBe('// repris de CircleTasks (ADR 0011)\nSpartiate\n');
   });

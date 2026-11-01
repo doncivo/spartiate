@@ -31,8 +31,6 @@ const DOCS_RENAMED = new Set(['docs/install-iphone.md', 'docs/install-pc.md', 'd
 const PROVENANCE = /\b(repris(?:e|es)?|issu(?:e|es|s)?|hérit\w+|dérivé\w*|fork|copie)\s+(?:de|du|des|d['’])\s*CircleTasks/g;
 /** Marque temporaire des phrases protégées (caractère d'usage privé Unicode, absent des sources). */
 const MARK = '';
-/** Constantes du protocole de synchro (D-26) : le sel HKDF reste « circletasks », sinon toute clé dérivée et tout fichier chiffré changent. Ligne intacte. */
-const PROTOCOL_LINE = /HKDF(?:_SALT)?/;
 const BINARY_EXT = /\.(png|jpe?g|gif|ico|icns|woff2?|ttf|wasm|traineddata|gz|zip|mp3|wav|ogg|pdf|jar|a|so|dll|exe)$/i;
 
 /** @param {string} file */
@@ -55,7 +53,7 @@ export function renameText(file, text) {
     kept.push(match);
     return `${MARK}${kept.length - 1}${MARK}`;
   };
-  let work = text.replace(PROVENANCE, keep).replace(/^.*$/gm, (line) => (PROTOCOL_LINE.test(line) ? keep(line) : line));
+  let work = text.replace(PROVENANCE, keep);
   let count = 0;
   for (const [from, to] of RULES) {
     work = work.split(from).join('\u0001');

@@ -303,13 +303,13 @@ fn y_ios_02_5_scanned_text_and_recovery_key_are_imported_from_main_and_scan_true
     // `{ scan: true }` (scan lancé par Rust, inexistant) : refusé et inscrit, comme sur PC.
     assert_eq!(code(import_ios(&iphone.core, None, None, Some(true))), SyncCode::InvalidPairing);
     assert!(config_dir(iphone.base.path()).join(IMPORT_FAILURE_FILE).exists());
-    assert_eq!(code(import_ios(&iphone.core, Some("CTPAIR1.autre-format".into()), None, None)), SyncCode::InvalidPairing);
+    assert_eq!(code(import_ios(&iphone.core, Some("SPPAIR1.autre-format".into()), None, None)), SyncCode::InvalidPairing);
     // Texte du QR passé aussitôt par le JS : clé importée, `pairedBy` et époque rendus, jamais la clé.
     let result = import_ios(&iphone.core, Some(qr), None, None).unwrap();
     assert_eq!(result.paired_by.as_deref(), Some(DEV_A));
     assert!(!config_dir(iphone.base.path()).join(IMPORT_FAILURE_FILE).exists(), "échec effacé à la réussite");
     let json = serde_json::to_string(&result).unwrap();
-    assert!(!json.contains("CTPAIR1") && !json.contains("CT1-"));
+    assert!(!json.contains("SPPAIR1") && !json.contains("SP1-"));
     // Clé de secours, même clé : aucune confirmation (rien à remplacer).
     let before = plugin.calls("confirm").len();
     import_ios(&iphone.core, None, Some(recovery), None).unwrap();

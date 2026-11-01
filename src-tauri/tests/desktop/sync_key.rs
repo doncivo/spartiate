@@ -123,7 +123,7 @@ fn y08_7_and_16_key_never_leaves_the_vault_and_logs_hold_no_secret() {
     let raw = qr_text_of(&key, DEV_A, None, 0); // contient K en base64url
     let k_b64 = STANDARD.encode(&*Zeroizing::new(STANDARD.decode(a.vault.get(SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap()));
     let k_url = {
-        let json = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(raw.strip_prefix("CTPAIR1.").unwrap()).unwrap();
+        let json = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(raw.strip_prefix("SPPAIR1.").unwrap()).unwrap();
         serde_json::from_slice::<serde_json::Value>(&json).unwrap()["k"].as_str().unwrap().to_owned()
     };
     let k_bytes = STANDARD.decode(&k_b64).unwrap();
@@ -193,7 +193,7 @@ fn walk(dir: &Path) -> Vec<std::path::PathBuf> {
 fn y08_16_errors_never_copy_the_input() {
     let (a, _) = device();
     a.core.choose_folder(Path::new(FOLDER)).unwrap();
-    let secret = "CT1-SECRE-TSECR-ETSEC C:\\Users\\Ali";
+    let secret = "SP1-SECRE-TSECR-ETSEC C:\\Users\\Ali";
     let error = a.core.key_import(KeyInput::RecoveryKey(Zeroizing::new(secret.to_owned())), 1).unwrap_err();
     let shown = format!("{error} {error:?} {}", serde_json::to_string(&error).unwrap());
     assert!(!shown.contains("SECRE") && !shown.contains("Users"), "{shown}");
@@ -221,7 +221,7 @@ fn y08_14_import_requires_the_folder_and_a_matching_kid() {
     b.clock.advance(PAIRING_VALIDITY_MS + 2 * 60_000 + 1);
     assert_eq!(code(b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)), SyncCode::PairingExpired);
     // Texte invalide : invalid-pairing.
-    assert_eq!(code(b.core.key_import(KeyInput::QrText(Zeroizing::new("CTPAIR1.xx".into())), 1)), SyncCode::InvalidPairing);
+    assert_eq!(code(b.core.key_import(KeyInput::QrText(Zeroizing::new("SPPAIR1.xx".into())), 1)), SyncCode::InvalidPairing);
     // Clé de secours valide (au-delà de la limite de 5 appels par 10 minutes) : enregistrée, même kid ; pairedBy inconnu.
     b.clock.advance(10 * 60_000);
     let result = b.core.key_import(KeyInput::RecoveryKey(Zeroizing::new(payload.recovery_key.clone())), 1).unwrap();

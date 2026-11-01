@@ -222,7 +222,7 @@ describe('Y-IOS-02 écran « Associer au PC » : clé de secours à la place du 
     const phone = await world.device('ios', SELF, true);
     open(phone);
     fireEvent.click(await screen.findByRole('button', { name: SCREEN.recovery }));
-    fireEvent.change(await screen.findByLabelText('Clé de secours'), { target: { value: 'CT1-ABCDE' } });
+    fireEvent.change(await screen.findByLabelText('Clé de secours'), { target: { value: 'SP1-ABCDE' } });
     fireEvent.click(screen.getByRole('button', { name: 'Associer' }));
     expect(await screen.findByTestId('pairing-import-message')).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Clé de secours'), { target: { value: await world.recoveryKey() } });

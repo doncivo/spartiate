@@ -43,9 +43,9 @@ async function device(id: string, name: string, base?: SimDevice): Promise<SimDe
   return d;
 }
 
-/** Clé maîtresse `K` contenue dans le texte du QR (`CTPAIR1.<base64url(JSON)>`). */
+/** Clé maîtresse `K` contenue dans le texte du QR (`SPPAIR1.<base64url(JSON)>`). */
 function keyOfQr(qrText: string): Uint8Array<ArrayBuffer> {
-  const json = JSON.parse(new TextDecoder().decode(fromBase64Url(qrText.slice('CTPAIR1.'.length)) ?? new Uint8Array())) as { k: string };
+  const json = JSON.parse(new TextDecoder().decode(fromBase64Url(qrText.slice('SPPAIR1.'.length)) ?? new Uint8Array())) as { k: string };
   const key = fromBase64Url(json.k);
   if (!key) throw new Error('clé absente du QR');
   return key;
@@ -195,7 +195,7 @@ describe('exposition de la clé pendant un appairage complet (critère 16)', () 
     propagate(pc.folder, phone.folder, PC_ID);
     await readyToImport(phone);
     const typed = `${first.recoveryKey.toLowerCase()} `;
-    expect(await errorCode(phone.platform.key.import({ recoveryKey: 'ct1-zzzzz' }))).toBe('invalid-pairing');
+    expect(await errorCode(phone.platform.key.import({ recoveryKey: 'sp1-zzzzz' }))).toBe('invalid-pairing');
     await phone.platform.key.import({ recoveryKey: typed });
     expect((await phone.cycle()).phase).toBe('idle');
     // Import par QR sur un troisième appareil.
@@ -222,7 +222,7 @@ describe('exposition de la clé pendant un appairage complet (critère 16)', () 
     for (const needle of needles) for (const haystack of haystacks) expect(haystack).not.toContain(needle);
     // SyncPlatformError ne recopie jamais l'entrée.
     try {
-      await phone.platform.key.import({ recoveryKey: 'ct1-aaaaa-entree-secrete' });
+      await phone.platform.key.import({ recoveryKey: 'sp1-aaaaa-entree-secrete' });
     } catch (error) {
       expect(String(error)).not.toContain('entree-secrete');
       expect(JSON.stringify(error)).not.toContain('entree-secrete');

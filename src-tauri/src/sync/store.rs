@@ -1537,6 +1537,26 @@ impl<'a> Store<'a> {
         Ok(false)
     }
 
+    /// ADR 0017 : un `state.ctx` du dossier porte-t-il un en-tête de CircleTasks (`"f":"ct-…"`) ? Seuls les états déjà présents sur le // ancien-ok: garde de séparation ADR 0017
+    /// disque sont lus (un fichier resté dans le nuage ne peut pas l'être sans hydratation : le nom du dossier fait alors garde). Même budget
+    /// d'entrées que `folder_has_data`.
+    pub fn folder_has_foreign_data(fs: &dyn SyncFs) -> SyncResult<bool> {
+        let budget = Budget::new();
+        let root = match budget.list(fs, &[DEVICES_DIR]) {
+            Ok(listing) => listing,
+            Err(FsError::NotFound) => return Ok(false),
+            Err(error) => return Err(fs_error(error)),
+        };
+        for dev in root.entries.iter().filter(|e| e.is_dir && is_uuid_v4(&e.name)) {
+            let Ok(listing) = budget.list(fs, &device_dir(&dev.name)) else { continue };
+            let has_local_state = listing.entries.iter().any(|e| !e.is_dir && e.name == STATE_FILE && matches!(e.availability, Availability::Local) && e.size <= MAX_SEGMENT_BYTES);
+            if has_local_state && fs.read(&[DEVICES_DIR, &dev.name, STATE_FILE], MAX_SEGMENT_BYTES, false).ok().is_some_and(|bytes| is_foreign_header(&bytes)) {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
     /// Le dossier porte-t-il la clé `key` ? Lit les `state.ctx` (hydratés au besoin ; 64 au plus, audit S2) ; `only` : un seul appareil
     /// (QR). `readable` compte les états dont l'en-tête est lisible ; `decrypts` est vrai si l'un d'eux annonce le `kid` de la clé **et**
     /// se déchiffre avec elle (audit S4 : un `kid` recopié en clair ne suffit pas).
@@ -1773,4 +1793,10 @@ impl StrOptionExt for Option<&String> {
     fn is_none_or_less(&self, value: &str) -> bool {
         self.map_or(true, |v| v.as_str() < value)
     }
+}
+
+/// Première ligne d'un fichier de CircleTasks : balise de format `ct-j`, `ct-s` ou `ct-state` (ADR 0017). // ancien-ok: garde de séparation ADR 0017
+fn is_foreign_header(bytes: &[u8]) -> bool {
+    let first = bytes.split(|b| *b == b'\n').next().unwrap_or(&[]);
+    String::from_utf8_lossy(first).contains("\"f\":\"ct-")
 }

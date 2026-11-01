@@ -45,7 +45,7 @@ describe('vecteurs croisés (Y-08 critère 4)', () => {
     expect(vectors).toEqual(built);
   });
 
-  it('clé d’enregistrement, kid et clé de secours dérivés de K (HKDF-SHA256, sel « circletasks », constante de protocole figée)', async () => {
+  it('clé d’enregistrement, kid et clé de secours dérivés de K (HKDF-SHA256, sel « spartiate »)', async () => {
     expect(toHex(await recordKeyOf(key))).toBe(vectors.recordKey);
     expect(await kidOf(key)).toBe(vectors.kid);
     expect(vectors.kid).toMatch(/^[0-9a-f]{16}$/);
@@ -53,8 +53,8 @@ describe('vecteurs croisés (Y-08 critère 4)', () => {
     expect(await recoveryKeyOf(key)).toBe(vectors.recoveryKey);
   });
 
-  it('clé de secours : 55 caractères utiles en groupes de 5 préfixés CT1-, saisie tolérante, somme de contrôle', async () => {
-    expect(vectors.recoveryKey).toMatch(/^CT1-([0-9A-HJKMNP-TV-Z]{5}-){10}[0-9A-HJKMNP-TV-Z]{5}$/);
+  it('clé de secours : 55 caractères utiles en groupes de 5 préfixés SP1-, saisie tolérante, somme de contrôle', async () => {
+    expect(vectors.recoveryKey).toMatch(/^SP1-([0-9A-HJKMNP-TV-Z]{5}-){10}[0-9A-HJKMNP-TV-Z]{5}$/);
     for (const { input, ok } of vectors.recoveryInputs) {
       const decoded = await keyFromRecovery(input);
       expect(decoded === null ? null : toHex(decoded), input).toBe(ok ? vectors.key : null);
@@ -63,8 +63,8 @@ describe('vecteurs croisés (Y-08 critère 4)', () => {
 
   it('AAD : chaque champ préfixé par sa longueur (u16 gros-boutiste)', () => {
     for (const v of vectors.aad) expect(toHex(aadBytes(aadFields(v.place, v.sm, v.sv)))).toBe(v.hex);
-    // ct/1 | j : 00 04 'ct/1' 00 01 'j' …
-    expect(vectors.aad[0]?.hex.startsWith('0004' + toHex(new TextEncoder().encode('ct/1')) + '00016a')).toBe(true);
+    // sp/1 | j : 00 04 'sp/1' 00 01 'j' …
+    expect(vectors.aad[0]?.hex.startsWith('0004' + toHex(new TextEncoder().encode('sp/1')) + '00016a')).toBe(true);
   });
 
   it('bourrage au multiple de 4 Kio supérieur (4 Kio au minimum), longueur annoncée et zéros contrôlés', () => {
@@ -164,7 +164,7 @@ describe('codec de référence (Y-08 critères 1 à 3)', () => {
   it('les octets d’un fichier chiffré ne contiennent ni le titre ni un nom de table', async () => {
     // Nonce fixe : résultat déterministe (une suite base64 aléatoire pourrait contenir un mot court par hasard).
     const lines = [await sealRecord({ key, place, json, sm: 1, sv: 14, nonce: fromHex('0102030405060708090a0b0c') })];
-    const text = fileText({ f: 'ct-j', sm: 1, kid: vectors.kid, dev: VECTOR_DEVICE, e: VECTOR_EPOCH, n: 2 }, lines);
+    const text = fileText({ f: 'sp-j', sm: 1, kid: vectors.kid, dev: VECTOR_DEVICE, e: VECTOR_EPOCH, n: 2 }, lines);
     for (const secret of ['Acheter du pain', 'task', 'ops']) expect(text).not.toContain(secret);
   });
 

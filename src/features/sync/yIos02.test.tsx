@@ -107,7 +107,7 @@ describe('écran « Associer au PC » (Y-IOS-02 critère 7)', () => {
     await synced;
     expect(sync.calls).toContain('manual');
     expect((await phone.key.status()).present).toBe(true);
-    expect(document.body.textContent).not.toContain('CTPAIR1');
+    expect(document.body.textContent).not.toContain('SPPAIR1');
     fireEvent.click(screen.getByRole('button', { name: 'Fermer' }));
     expect(view.closed()).toBe(1);
   });

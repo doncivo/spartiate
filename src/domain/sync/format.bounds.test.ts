@@ -41,7 +41,7 @@ const B = '7c9e6679-7425-40de-944b-e07fc1f90ae7' as DeviceId;
 const KID = '0123456789abcdef';
 const E1 = epochId(1, A);
 const hlc = (ms: number, dev: string = A): Hlc => `${String(ms).padStart(15, '0')}-0000-${dev}` as Hlc;
-const header = (over: Record<string, unknown> = {}): string => JSON.stringify({ f: 'ct-j', sm: 1, kid: KID, dev: A, e: E1, n: 1, ...over });
+const header = (over: Record<string, unknown> = {}): string => JSON.stringify({ f: 'sp-j', sm: 1, kid: KID, dev: A, e: E1, n: 1, ...over });
 const ack = (over: Partial<DeviceAck> = {}): DeviceAck => ({ epoch: E1, segment: 1, record: 2, hlc: hlc(10), stateSeq: 3, ...over });
 const state = (over: Partial<PublishedDeviceState> = {}): PublishedDeviceState => ({
   deviceId: A,
@@ -88,11 +88,11 @@ describe('en-tête : bornes exactes et entrées hostiles (section 1.2)', () => {
   it('n : bornes par type de fichier (segment 8 chiffres, stateSeq entier sûr)', () => {
     expect(parseFileHeader(header({ n: 99_999_999 }))?.n).toBe(99_999_999);
     expect(parseFileHeader(header({ n: 100_000_000 }))).toBeNull();
-    expect(parseFileHeader(header({ f: 'ct-s', n: 99_999_999 }))?.n).toBe(99_999_999);
-    expect(parseFileHeader(header({ f: 'ct-s', n: 100_000_000 }))).toBeNull();
-    expect(parseFileHeader(header({ f: 'ct-state', n: Number.MAX_SAFE_INTEGER }))?.n).toBe(Number.MAX_SAFE_INTEGER);
-    expect(parseFileHeader(header({ f: 'ct-state' }).replace('"n":1', '"n":9007199254740993'))).toBeNull();
-    expect(parseFileHeader(header({ f: 'ct-state', n: 0 }))).toBeNull();
+    expect(parseFileHeader(header({ f: 'sp-s', n: 99_999_999 }))?.n).toBe(99_999_999);
+    expect(parseFileHeader(header({ f: 'sp-s', n: 100_000_000 }))).toBeNull();
+    expect(parseFileHeader(header({ f: 'sp-state', n: Number.MAX_SAFE_INTEGER }))?.n).toBe(Number.MAX_SAFE_INTEGER);
+    expect(parseFileHeader(header({ f: 'sp-state' }).replace('"n":1', '"n":9007199254740993'))).toBeNull();
+    expect(parseFileHeader(header({ f: 'sp-state', n: 0 }))).toBeNull();
   });
 
   it('clés répétées (toute clé, y compris échappée), clés inconnues et clés héritées refusées', () => {
@@ -112,7 +112,7 @@ describe('en-tête : bornes exactes et entrées hostiles (section 1.2)', () => {
   });
 
   it('entrées vides ou non JSON refusées', () => {
-    for (const bad of ['', ' ', 'null', 'true', '1', '"x"', '{}', '{"f":}', "{'f':'ct-j'}"]) expect(parseFileHeader(bad), bad).toBeNull();
+    for (const bad of ['', ' ', 'null', 'true', '1', '"x"', '{}', '{"f":}', "{'f':'sp-j'}"]) expect(parseFileHeader(bad), bad).toBeNull();
   });
 
 });

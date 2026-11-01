@@ -127,10 +127,6 @@ describe('qualification des mentions (convention déterministe)', () => {
     expect(classifyLine('- Ancien identifiant `fr.circletasks.planner`, remplacé en 001a.', OLD_ID)).toBe('negative');
     expect(classifyLine('- Cas particulier `circletasks.db` <!-- ancien-ok: preuve de migration -->', OLD_DB)).toBe('explicit');
   });
-  it('le sel HKDF du protocole de synchro reste « circletasks » (D-26) : admis pour la marque seulement', () => {
-    expect(classifyLine('pub const HKDF_SALT: &[u8] = b"circletasks";', 'circletasks')).toBe('protocol');
-    expect(classifyLine('pub const DB: &str = "circletasks.db"; // HKDF', OLD_DB)).toBe('active');
-  });
   it('une phrase de provenance (fork, repris de) est admise pour la marque, jamais pour l’identifiant technique', () => {
     expect(classifyLine('Spartiate est un fork de CircleTasks (ADR 0001).', 'CircleTasks')).toBe('provenance');
     expect(classifyLine('// Protocole repris de CircleTasks (ADR 0011).', 'CircleTasks')).toBe('provenance');
@@ -158,6 +154,9 @@ const TOOLING = new Set([
   'scripts/release/prd-split.test.ts',
   'scripts/release/rename.mjs',
   'scripts/release/rename.test.ts',
+  'tests/unit/syncSeparation.test.ts', // ADR 0017 : refus de ce qui vient de CircleTasks
+  'src-tauri/tests/desktop/sync_separation.rs', // idem, côté Rust
+  'tests/fixtures/sync/circletasks-foreign.json', // fixture figée au format CircleTasks
   'scripts/release/lib/mentions.mjs',
   'scripts/release/lib/agentsCheck.mjs',
 ]);

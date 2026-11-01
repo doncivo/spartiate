@@ -344,8 +344,8 @@ describe('appairage (Y-06, sections 2.1 et 10.3)', () => {
   it('QR : la clé passe, pairedBy et époque rendus, fenêtre détruite', async () => {
     await a.key.openPairing('show');
     const payload = await a.key.pairingPayload();
-    expect(payload.qrText.startsWith('CTPAIR1.')).toBe(true);
-    expect(payload.recoveryKey).toMatch(/^CT1-([0-9A-HJKMNP-TV-Z]{5}-){10}[0-9A-HJKMNP-TV-Z]{5}$/);
+    expect(payload.qrText.startsWith('SPPAIR1.')).toBe(true);
+    expect(payload.recoveryKey).toMatch(/^SP1-([0-9A-HJKMNP-TV-Z]{5}-){10}[0-9A-HJKMNP-TV-Z]{5}$/);
     expect(payload.expiresAt).toBe(nowMs + PAIRING_VALIDITY_MS);
     const b = createMemorySyncPlatform({ folder, nowMs: clock });
     await b.folder.choose();
@@ -381,7 +381,7 @@ describe('appairage (Y-06, sections 2.1 et 10.3)', () => {
     expect(await codeOf(a.key.closePairing())).toBe('wrong-window');
     await a.key.openPairing('show');
     expect(await codeOf(a.key.openPairing('show'))).toBe('already-open');
-    expect(await codeOf(a.key.import({ recoveryKey: 'CT1-x' }))).toBe('wrong-mode');
+    expect(await codeOf(a.key.import({ recoveryKey: 'SP1-x' }))).toBe('wrong-mode');
     await a.key.pairingPayload();
     expect(await codeOf(a.key.pairingPayload())).toBe('wrong-window'); // jeton à usage unique
     await a.key.closePairing();
@@ -424,7 +424,7 @@ describe('appairage (Y-06, sections 2.1 et 10.3)', () => {
     const b = createMemorySyncPlatform({ folder, nowMs: clock });
     await b.folder.choose();
     await b.key.openPairing('import');
-    expect(await codeOf(b.key.import({ qrText: 'CTPAIR1.e30' }))).toBe('invalid-pairing');
+    expect(await codeOf(b.key.import({ qrText: 'SPPAIR1.e30' }))).toBe('invalid-pairing');
     expect(await codeOf(b.key.import({ qrText: 'n’importe quoi' }))).toBe('invalid-pairing');
     nowMs = expiresAt + PAIRING_CLOCK_TOLERANCE_MS + 1;
     // la fenêtre `import` a expiré avec le temps : on en rouvre une
@@ -488,7 +488,7 @@ describe('appairage (Y-06, sections 2.1 et 10.3)', () => {
     const b = createMemorySyncPlatform({ folder, nowMs: clock });
     await b.folder.choose();
     await b.key.openPairing('import');
-    const secret = 'CT1-SECRE-TSECR-ETSEC';
+    const secret = 'SP1-SECRE-TSECR-ETSEC';
     try {
       await b.key.import({ recoveryKey: secret });
       throw new Error('rejet attendu');
@@ -811,7 +811,7 @@ describe('abandon d’une époque orpheline (ADR 0011 §24 point 4, miroir de sy
     if (!e) throw new Error('époque absente');
     return e as never;
   };
-  const file = { header: { f: 'ct-state' }, lines: [], partialTail: false, availability: 'local', extraBytes: 0 } as never;
+  const file = { header: { f: 'sp-state' }, lines: [], partialTail: false, availability: 'local', extraBytes: 0 } as never;
   const refused: [string, (f: MemorySyncFolder) => void][] = [
     ['state.ctx', (f) => void (dirOf(f).state = file)],
     ['state.next.ctx', (f) => void (dirOf(f).nextState = file)],

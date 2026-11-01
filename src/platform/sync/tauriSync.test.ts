@@ -57,7 +57,7 @@ describe('tauriSync (Y-01 critère 18)', () => {
     await sync.key.openPairing('show');
     await sync.key.pairingPayload({ renew: true });
     await sync.key.pairingPayload();
-    await sync.key.import({ recoveryKey: 'CT1-…' });
+    await sync.key.import({ recoveryKey: 'SP1-…' });
     await sync.key.closePairing();
     expect(await sync.deleteOwn([{ epoch: EPOCH, kind: 'j', n: 1 }])).toBe(2);
     await sync.writeSnapshot({
@@ -118,14 +118,14 @@ describe('tauriSync (Y-01 critère 18)', () => {
   });
 
   it('un rejet Rust devient SyncPlatformError { code } sans recopier le message ni l’entrée', async () => {
-    const secret = 'CT1-AAAAA-BBBBB C:\\Users\\Ali\\iCloudDrive\\Spartiate';
+    const secret = 'SP1-AAAAA-BBBBB C:\\Users\\Ali\\iCloudDrive\\Spartiate';
     const { invoke } = fakeInvoker({ sync_key_import: { code: 'key-mismatch', message: secret } });
     const error = await createTauriSync({ available: true, invoke })
       .key.import({ recoveryKey: secret })
       .catch((e: unknown) => e);
     expect(error).toBeInstanceOf(SyncPlatformError);
     expect((error as SyncPlatformError).code).toBe('key-mismatch');
-    expect(String((error as Error).message)).not.toContain('CT1');
+    expect(String((error as Error).message)).not.toContain('SP1');
     expect(JSON.stringify(error)).not.toContain('Users');
     const unknown = await createTauriSync({ available: true, invoke: (async () => Promise.reject(new Error('boom'))) as SyncInvoker })
       .folder.info()

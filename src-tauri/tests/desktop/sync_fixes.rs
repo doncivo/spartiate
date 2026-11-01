@@ -165,10 +165,10 @@ fn s5_payload_is_zeroized_and_qr_parsing_keeps_no_intermediate_map() {
     let key = MasterKey::generate().unwrap();
     let k = {
         let text = qr_text_of(&key, DEV_A, None, 1);
-        let json = base64::Engine::decode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, text.strip_prefix("CTPAIR1.").unwrap()).unwrap();
+        let json = base64::Engine::decode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, text.strip_prefix("SPPAIR1.").unwrap()).unwrap();
         serde_json::from_slice::<Value>(&json).unwrap()["k"].as_str().unwrap().to_owned()
     };
-    let encode = |json: &str| format!("CTPAIR1.{}", base64::Engine::encode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, json));
+    let encode = |json: &str| format!("SPPAIR1.{}", base64::Engine::encode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, json));
     assert!(spartiate_lib::sync::crypto::parse_qr_text(&encode(&format!(r#"{{"v":1,"k":"{k}","d":"{DEV_A}","x":1}}"#))).is_none());
     assert!(spartiate_lib::sync::crypto::parse_qr_text(&encode(&format!(r#"{{"v":1,"k":"{k}","d":"{DEV_A}","e":null,"x":1}}"#))).is_some());
 }
@@ -298,7 +298,7 @@ fn r5_snapshot_writers_are_unique_and_capped() {
     assert_eq!(code(a.core.snapshot_append(first, &["{}".into()])), SyncCode::BadName);
 }
 
-/// Revue 11 : les 38 codes Rust (35, plus `not-foreground`, `already-open` et `window-unprotected` de Y-06) sont exactement `SYNC_ERROR_CODES` de format.ts, dans le même ordre.
+/// Revue 11 : les 39 codes Rust (35, plus `not-foreground`, `already-open` et `window-unprotected` de Y-06) sont exactement `SYNC_ERROR_CODES` de format.ts, dans le même ordre.
 #[test]
 fn r11_error_codes_match_typescript() {
     let format = include_str!("../../../src/domain/sync/format.ts");
@@ -306,7 +306,7 @@ fn r11_error_codes_match_typescript() {
     let body = &format[start..start + format[start..].find("] as const").unwrap()];
     let ts: Vec<&str> = body.split('\'').skip(1).step_by(2).collect();
     let rust: Vec<&str> = SyncCode::ALL.iter().map(|c| c.as_str()).collect();
-    assert_eq!(rust.len(), 38);
+    assert_eq!(rust.len(), 39);
     assert_eq!(rust, ts);
 }
 
@@ -410,7 +410,7 @@ fn r19_unsafe_path_components_are_refused() {
 fn r20_aad_fields_are_never_truncated() {
     let long = "x".repeat(70_000);
     assert!(aad_bytes(std::slice::from_ref(&long)).is_none());
-    assert_eq!(aad_bytes(&["ct/1".into()]).unwrap(), b"\x00\x04ct/1");
+    assert_eq!(aad_bytes(&["sp/1".into()]).unwrap(), b"\x00\x04ct/1");
     let key = MasterKey::generate().unwrap();
     let place = Place::Journal { dev: &long, epoch: "e0001-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60", segment: 1, index: 0 };
     assert!(key.seal(&place, b"{}", 1, 1).is_err());
@@ -469,7 +469,7 @@ fn a3_a_pairing_device_is_never_crowded_out_by_fake_folders() {
     a.setup(DEV_A);
     a.core.write_state(14, state(DEV_A, &epoch(1, DEV_A), 1, 0, 0, None)).unwrap();
     for i in 0..65 {
-        fs.put(&["devices", &format!("00000000-0000-4000-8000-{i:012}"), "state.ctx"], b"{\"f\":\"ct-state\"}\nfaux\n");
+        fs.put(&["devices", &format!("00000000-0000-4000-8000-{i:012}"), "state.ctx"], b"{\"f\":\"sp-state\"}\nfaux\n");
     }
     // Appareil réel, nommé pour passer en dernier, qui s'associe à A.
     let joiner = "ffffffff-0000-4000-8000-000000000001";

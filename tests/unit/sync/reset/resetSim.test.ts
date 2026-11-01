@@ -133,7 +133,7 @@ describe('suspension seulement sur une annonce authentique (critères 8 et 9)', 
     const fake: StateFileCopy = {
       deviceId: forgedId,
       file: {
-        header: { f: 'ct-state', sm: 1, kid: 'ffffffffffffffff', dev: forgedId, e: ep as never, n: 1 },
+        header: { f: 'sp-state', sm: 1, kid: 'ffffffffffffffff', dev: forgedId, e: ep as never, n: 1 },
         lines: [{ sm: 1, sv: 1, text: JSON.stringify({ ...forged, deviceId: forgedId, reset: { kid: 'ffffffffffffffff', epoch: `e0009-${forgedId}`, at: `000000000001000-0000-${forgedId}` } }), bytes: 4200, corrupt: false }],
         partialTail: false,
         availability: 'local',

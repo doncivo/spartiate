@@ -363,7 +363,7 @@ fn y01_13_append_checks_segment_records_and_first_record_is_computed() {
     // Le fichier écrit : en-tête en clair, lignes opaques ; aucun texte clair ni nom de table.
     let bytes = fs.get(&["devices", DEV_A, ep.as_str(), "j-00000002.ctj"]).unwrap();
     let text = String::from_utf8(bytes).unwrap();
-    assert!(text.starts_with(r#"{"f":"ct-j","sm":1,"kid":""#));
+    assert!(text.starts_with(r#"{"f":"sp-j","sm":1,"kid":""#));
     assert_eq!(text.lines().count(), 2);
 }
 

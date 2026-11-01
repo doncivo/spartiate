@@ -32,6 +32,7 @@ export const syncFolderFr = {
   errorVault: 'Le coffre de Windows est indisponible',
   errorVaultIos: 'Le Trousseau de l’iPhone est indisponible : déverrouillez l’iPhone, la synchro reprendra',
   errorDenied: 'Action annulée',
+  errorForeign: 'Ce dossier appartient à CircleTasks : Spartiate ne le lie jamais. Choisissez un autre dossier (par exemple « Spartiate » dans iCloud Drive).', // ancien-ok: nom de l'autre app dans le message de refus (ADR 0017)
   errorRateLimited: 'Trop de tentatives : réessayez dans quelques minutes',
   errorGeneric: 'La synchronisation a rencontré une erreur',
 } as const;
