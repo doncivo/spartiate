@@ -12,7 +12,7 @@ const MARGIN_PT = 28;
  * Document d'une page A4 portrait avec l'image `jpeg` (largeur et hauteur en pixels) : réduite pour tenir dans les marges, centrée
  * horizontalement, collée en haut. Table des références (xref) calculée sur les décalages réels.
  */
-export function buildPdfWithJpeg(jpeg: Uint8Array, imageWidth: number, imageHeight: number, title = 'CircleTasks'): Uint8Array {
+export function buildPdfWithJpeg(jpeg: Uint8Array, imageWidth: number, imageHeight: number, title = 'Spartiate'): Uint8Array {
   const encoder = new TextEncoder();
   const scale = Math.min((A4_WIDTH_PT - 2 * MARGIN_PT) / imageWidth, (A4_HEIGHT_PT - 2 * MARGIN_PT) / imageHeight);
   const width = Math.round(imageWidth * scale * 100) / 100;
@@ -56,7 +56,7 @@ export function buildPdfWithJpeg(jpeg: Uint8Array, imageWidth: number, imageHeig
     text('\nendstream');
   });
   object(5, () => text(`<< /Length ${String(content.length)} >>\nstream\n${content}\nendstream`));
-  object(6, () => text(`<< /Title (${safeTitle}) /Producer (CircleTasks) >>`));
+  object(6, () => text(`<< /Title (${safeTitle}) /Producer (Spartiate) >>`));
 
   const xrefAt = length;
   text(`xref\n0 7\n0000000000 65535 f \n`);

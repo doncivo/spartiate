@@ -116,11 +116,11 @@ describe('Aujourd’hui iPhone : l’agenda du jour (UI-REFONTE-02)', () => {
 
   it('objectif épinglé en une ligne : « Objectif », titre, « 2/5 », sans cadre ni légende ; un toucher ouvre Objectif (critère 3)', async () => {
     plug({
-      goals: [{ goal: { id: 'g', spaceId: SPACE_PRO_ID, title: 'Finaliser le PRD CircleTasks', icon: null, weekStart: '2026-09-28', pinned: true, status: 'open', createdAt: '2026-09-28T08:00:00.000Z', deletedAt: null } as unknown as Goal, progress: { done: 2, total: 5 } }],
+      goals: [{ goal: { id: 'g', spaceId: SPACE_PRO_ID, title: 'Finaliser le PRD Spartiate', icon: null, weekStart: '2026-09-28', pinned: true, status: 'open', createdAt: '2026-09-28T08:00:00.000Z', deletedAt: null } as unknown as Goal, progress: { done: 2, total: 5 } }],
     });
     mockViewport(440);
     renderToday(h.container);
-    const line = await screen.findByRole('button', { name: 'Objectif : Finaliser le PRD CircleTasks, 2 sur 5' });
+    const line = await screen.findByRole('button', { name: 'Objectif : Finaliser le PRD Spartiate, 2 sur 5' });
     expect(line).toHaveClass('ct-agenda-goal');
     expect(line).toHaveTextContent('Objectif');
     expect(line).toHaveTextContent('2/5');

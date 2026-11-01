@@ -30,11 +30,11 @@ pub enum Error {
     /// to JSON. Contains the name of that SQL type.
     #[error("unsupported datatype: {0}")]
     UnsupportedDatatype(String),
-    /// CircleTasks (P-04-iOS, revue B1) : une restauration interrompue attend sa récupération (`.restore-old` à côté de la base) ; la base
+    /// Spartiate (P-04-iOS, revue B1) : une restauration interrompue attend sa récupération (`.restore-old` à côté de la base) ; la base
     /// n'est ni ouverte ni créée (une base vide masquerait la vraie).
     #[error("restore-pending: database not opened while a restore is pending")]
     RestorePending,
-    /// CircleTasks (SEC-01, bloquant B7) : le plugin refuse l'appel (URL de base autre que `sqlite:circletasks.db`, `ATTACH`, `DETACH`,
+    /// Spartiate (SEC-01, bloquant B7) : le plugin refuse l'appel (URL de base autre que `sqlite:spartiate.db`, `ATTACH`, `DETACH`,
     /// `VACUUM`, pragma hors liste blanche, fonction ou table virtuelle dangereuse). Contient un **code stable** (`url`, `attach`,
     /// `vacuum`, `pragma`, `function`, `vtable`, `auth`), jamais le texte SQL ni l'URL (ils peuvent contenir des chemins ou des données).
     #[error("sql-refused: {0}")]

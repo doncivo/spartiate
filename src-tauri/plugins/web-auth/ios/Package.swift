@@ -1,5 +1,5 @@
 // swift-tools-version:5.3
-// Plugin web-auth de CircleTasks (ADR 0008 §9.1) : compilé par build-ios.yml seulement (aucun Mac local).
+// Plugin web-auth de Spartiate (ADR 0008 §9.1) : compilé par build-ios.yml seulement (aucun Mac local).
 // Plateforme .iOS(.v14) : la plus récente que swift-tools-version 5.3 connaisse (comme folder-bookmark) ; ASWebAuthenticationSession
 // et prefersEphemeralWebBrowserSession existent depuis iOS 13 ; l'app exige iOS 18.
 

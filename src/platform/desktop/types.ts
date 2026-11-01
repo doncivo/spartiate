@@ -102,6 +102,11 @@ export interface DesktopPlatform {
   setAutostart(enabled: boolean): Promise<void>;
   /** Version installée (tauri.conf.json). */
   getVersion(): Promise<string>;
+  /**
+   * Vrai seulement quand l'updater a une clé publique et un point d'accès (SPA-002). Faux (D-30) : aucune vérification n'est lancée,
+   * aucune requête n'est émise, et « À propos » affiche « Mises à jour : non configurées (SPA-002) ».
+   */
+  readonly updaterConfigured: boolean;
   /** Interroge `latest.json` ; null si la version publiée n'est pas plus récente. Rejette si injoignable. */
   checkForUpdate(): Promise<PendingUpdate | null>;
   /** Ouvre la page de la dernière version dans le navigateur (D-03, « À propos »). */

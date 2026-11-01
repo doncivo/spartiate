@@ -141,17 +141,17 @@ describe('Y-08 critère 8 : clé de secours', () => {
     expect(alphabet.indexOf(body.at(-1) ?? '') & 7).toBe(0);
     const variant = body.slice(0, -1) + (alphabet[alphabet.indexOf(body.at(-1) ?? '') | 1] ?? '');
     expect(await keyFromRecovery(variant)).toBeNull();
-    for (const input of ['', 'CT1-', `CT2-${body}`, `${body}0`, body.slice(0, 54), `${body}${body}`, '😀'.repeat(20), '0'.repeat(55), body.replace(body[0] ?? '', 'U')]) {
+    for (const input of ['', 'SP1-', `SP2-${body}`, `${body}0`, body.slice(0, 54), `${body}${body}`, '😀'.repeat(20), '0'.repeat(55), body.replace(body[0] ?? '', 'U')]) {
       expect(await keyFromRecovery(input), input.slice(0, 12)).toBeNull();
     }
     expect(await keyFromRecovery(body)).not.toBeNull();
-    expect(await keyFromRecovery(`ct1 ${body.toLowerCase()}`)).not.toBeNull();
+    expect(await keyFromRecovery(`sp1 ${body.toLowerCase()}`)).not.toBeNull();
   });
 });
 
 describe('Y-08 critère 14 : texte du QR aux bornes', () => {
   const content = { key, deviceId: VECTOR_DEVICE, epoch: VECTOR_EPOCH, expiresAt: 1_790_000_000_000 };
-  const encode = (value: unknown): string => `CTPAIR1.${toBase64Url(new TextEncoder().encode(JSON.stringify(value)))}`;
+  const encode = (value: unknown): string => `SPPAIR1.${toBase64Url(new TextEncoder().encode(JSON.stringify(value)))}`;
   const base = { v: 1, k: toBase64Url(key), d: VECTOR_DEVICE, e: VECTOR_EPOCH, x: 1 };
 
   it('x : 2^53 - 1 accepté, 2^53, négatif, texte et fractionnaire refusés', () => {
@@ -175,8 +175,8 @@ describe('Y-08 critère 14 : texte du QR aux bornes', () => {
     ]) {
       expect(parseQrText(encode({ ...base, ...patch })), JSON.stringify(patch)).toBeNull();
     }
-    for (const raw of ['null', '[]', '1', '"x"', '{}', '{']) expect(parseQrText(`CTPAIR1.${toBase64Url(new TextEncoder().encode(raw))}`), raw).toBeNull();
-    expect(parseQrText('CTPAIR1.')).toBeNull();
+    for (const raw of ['null', '[]', '1', '"x"', '{}', '{']) expect(parseQrText(`SPPAIR1.${toBase64Url(new TextEncoder().encode(raw))}`), raw).toBeNull();
+    expect(parseQrText('SPPAIR1.')).toBeNull();
     expect(parseQrText('')).toBeNull();
     expect(parseQrText(` ${qrTextOf(content)}`)).toBeNull();
     expect(parseQrText(`${qrTextOf(content)}\n`)).toBeNull();
@@ -201,7 +201,7 @@ describe('Y-08 critère 4 : parité TS / Rust sur les entrées exotiques (défau
   it('QR : clé répétée et x = 1.0 refusés comme Rust', () => {
     const k = toBase64Url(key);
     const duplicate = `{"v":1,"k":"${k}","k":"${k}","d":"${VECTOR_DEVICE}","e":null,"x":1}`;
-    const text = (json: string): string => `CTPAIR1.${toBase64Url(new TextEncoder().encode(json))}`;
+    const text = (json: string): string => `SPPAIR1.${toBase64Url(new TextEncoder().encode(json))}`;
     expect(parseQrText(text(duplicate))).toBeNull();
     expect(parseQrText(text(`{"v":1,"k":"${k}","d":"${VECTOR_DEVICE}","e":null,"x":1.0}`))).toBeNull();
   });

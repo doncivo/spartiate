@@ -44,7 +44,7 @@ const METHODS: readonly CalendarHttpMethod[] = ['GET', 'POST', 'PROPFIND', 'REPO
 /** En-têtes que la WebView peut poser (miroir de la liste blanche de Rust, `ALLOWED_REQUEST_HEADERS`). */
 const ALLOWED_HEADERS = new Set(['depth', 'content-type', 'accept', 'prefer', 'if-none-match', 'if-match']);
 /** Les jetons Google ne sont écrits que par le flux OAuth (Rust) : la WebView ne peut pas les poser. */
-const GOOGLE_REF = /^circletasks\.calendar\.google\./;
+const GOOGLE_REF = /^spartiate\.calendar\.google\./;
 
 export interface MemoryPlatformOptions {
   /** ID client OAuth du simulateur ; absent : `config-missing` (miroir de « non configuré »). */

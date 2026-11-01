@@ -98,7 +98,7 @@ export async function retryOrphanDeletion(deps: SyncDeps, ownScan: DeviceScan | 
  * supprimait pas) alors qu'une époque jamais annoncée ne garde que des instantanés dans son dossier : réarmé, puis supprimé par la voie unique
  * (`retryOrphanDeletion`). Jamais sans son propre état publié connu, jamais tant qu'un autre appareil non oublié a un état qui ne se lit pas
  * à ce scan (revue, point 2 : son annonce échapperait au contrôle, et `sync_delete_own` ne protège que l'époque courante) : illisible, dans
- * le nuage, en attente (`unreadable`), ou non accepté (étranger, rejoué, trop grand, version plus récente). Un dossier sans `state.ctx` ni
+ * le nuage, en attente (`unreadable`), ou non accepté (étranger, rejoué, trop grand, version plus récente). Un dossier sans `state.spx` ni
  * fichier n'annonce rien. Le moteur a déjà vérifié : aucune réinitialisation, mémo nul, au moins une époque candidate listée.
  */
 export async function relistOrphanEpoch(
@@ -137,7 +137,7 @@ export async function relistOrphanEpoch(
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------
-// Y-FIX-02 (ADR 0011 §30) : reprise de l'état jamais écrit (instantané orphelin, segment écrit sans state.ctx) et journal de la décision
+// Y-FIX-02 (ADR 0011 §30) : reprise de l'état jamais écrit (instantané orphelin, segment écrit sans state.spx) et journal de la décision
 // ---------------------------------------------------------------------------------------------------------------------------------
 
 /*

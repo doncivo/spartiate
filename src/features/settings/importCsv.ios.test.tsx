@@ -74,12 +74,12 @@ describe('FILES-IOS-01 : P-07 sur iPhone (critères 5, 6 et 9)', () => {
     renderScreen();
     await click(screen.getByRole('button', { name: 'Télécharger un modèle' }));
     await waitFor(() => expect(api.saved).toHaveLength(1));
-    expect(api.saved[0]).toMatchObject({ name: 'circletasks-modele-import.csv', excursion: 'file-picker' });
+    expect(api.saved[0]).toMatchObject({ name: 'spartiate-modele-import.csv', excursion: 'file-picker' });
     expect(await screen.findByText('Modèle enregistré')).toBeInTheDocument();
     await click(screen.getByRole('button', { name: 'Choisir un fichier' }));
     await click(await screen.findByRole('button', { name: 'Télécharger le rapport des lignes rejetées' }));
     await waitFor(() => expect(api.saved).toHaveLength(2));
-    expect(api.saved[1]?.name).toBe('circletasks-import-lignes-rejetees.csv');
+    expect(api.saved[1]?.name).toBe('spartiate-import-lignes-rejetees.csv');
     expect(await screen.findByText('Rapport enregistré')).toBeInTheDocument();
   });
 
@@ -119,7 +119,7 @@ describe('FILES-IOS-01 : P-07 sur iPhone (critères 5, 6 et 9)', () => {
     expect(screen.getByRole('button', { name: 'Importer 2 tâches' })).toBeInTheDocument();
     await click(within(alert).getByRole('button', { name: 'Réessayer' }));
     await waitFor(() => expect(api.saved).toHaveLength(1));
-    expect(api.saved[0]?.name).toBe('circletasks-import-lignes-rejetees.csv');
+    expect(api.saved[0]?.name).toBe('spartiate-import-lignes-rejetees.csv');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 

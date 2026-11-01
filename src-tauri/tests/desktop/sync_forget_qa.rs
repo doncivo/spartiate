@@ -6,16 +6,16 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use circletasks_lib::sync::forget::{cutoff, forget_order, forgotten_delete_check, learn_declarations, DeleteCheck, Verdict, FORGOTTEN_FILE};
-use circletasks_lib::sync::folder::FolderKind;
-use circletasks_lib::sync::state::DeviceAck;
-use circletasks_lib::sync::{SyncCode, SyncError};
-use circletasks_lib::vault::SecretVault;
+use spartiate_lib::sync::forget::{cutoff, forget_order, forgotten_delete_check, learn_declarations, DeleteCheck, Verdict, FORGOTTEN_FILE};
+use spartiate_lib::sync::folder::FolderKind;
+use spartiate_lib::sync::state::DeviceAck;
+use spartiate_lib::sync::{SyncCode, SyncError};
+use spartiate_lib::vault::SecretVault;
 use serde_json::{json, Value};
 
 use crate::sync_forget::{check_json, entries_of, known_of, snapshot_of};
 use crate::sync_support::{device, epoch, hlc, Device, FakeBackend, MemFs, DEV_A, FOLDER};
-use circletasks_lib::sync::service::SYNC_KEY_ACCOUNT;
+use spartiate_lib::sync::service::SYNC_KEY_ACCOUNT;
 
 const DEV_X: &str = "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f";
 const GHOST: &str = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";

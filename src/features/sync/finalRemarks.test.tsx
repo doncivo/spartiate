@@ -28,7 +28,7 @@ describe('remarques finales de Y-06', () => {
 
   it('2. « Nouveau code » refusé faute de premier plan : texte not-foreground, l’ancien code reste', async () => {
     let calls = 0;
-    const payload: PairingPayload = { qrText: 'CTPAIR1.abc', recoveryKey: 'CT1-AAAAA-BBBBB', expiresAt: NOW_MS + 300_000 };
+    const payload: PairingPayload = { qrText: 'SPPAIR1.abc', recoveryKey: 'SP1-AAAAA-BBBBB', expiresAt: NOW_MS + 300_000 };
     const platform: PairingPlatform = {
       pairingPayload: () => {
         calls += 1;

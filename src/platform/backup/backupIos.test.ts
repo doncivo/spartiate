@@ -61,7 +61,7 @@ describe('P-04-iOS : service de sauvegarde de l’iPhone', () => {
     const log: string[] = [];
     const { db, afterClose } = countingDb(log);
     const service = createTauriBackup({ db, api: makeApi(log), restart: () => Promise.resolve(), reveal: false });
-    const result = await service.restore({ name: 'circletasks-daily-20261007.db', stamp: '20261008T080000Z' }, { prepare: () => Promise.resolve(void log.push('quiesce')) });
+    const result = await service.restore({ name: 'spartiate-daily-20261007.db', stamp: '20261008T080000Z' }, { prepare: () => Promise.resolve(void log.push('quiesce')) });
     expect(log).toEqual(['check', 'quiesce', 'checkpoint', 'close', 'restore']);
     expect(afterClose).toEqual([]);
     expect(result).toEqual({ marker: 'written', markerCode: null });

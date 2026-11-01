@@ -55,7 +55,7 @@ test.describe('H-03 — export de l’historique', () => {
     await dialog.getByRole('button', { name: 'Exporter', exact: true }).click();
     await expect(page.getByText('Historique exporté')).toBeVisible();
     const file = await onlySaved(page);
-    expect(file.name).toBe('circletasks-taches-2026-09-23.csv');
+    expect(file.name).toBe('spartiate-taches-2026-09-23.csv');
     expect(file.bytes.slice(0, 3)).toEqual([0xef, 0xbb, 0xbf]);
     const text = textOf(file);
     const lines = text.slice(1).split('\r\n');
@@ -85,7 +85,7 @@ test.describe('H-03 — export de l’historique', () => {
     await dialog.getByRole('button', { name: 'Exporter', exact: true }).click();
     await expect(page.getByText('Historique exporté')).toBeVisible();
     const file = await onlySaved(page);
-    expect(file.name).toBe('circletasks-historique-2026-09-23.json');
+    expect(file.name).toBe('spartiate-historique-2026-09-23.json');
     const json = JSON.parse(textOf(file)) as Record<string, unknown>;
     expect(Object.keys(json)).toEqual(['schema_version', 'exported_at', 'filter', 'tasks', 'routines', 'focus_sessions', 'goals']);
     expect(json['schema_version']).toBe(1);
@@ -104,12 +104,12 @@ test.describe('H-03 — export de l’historique', () => {
     await dialog.getByRole('button', { name: 'Exporter', exact: true }).click();
     await expect(page.getByText('Historique exporté')).toBeVisible();
     const file = await onlySaved(page);
-    expect(file.name).toBe('circletasks-taches-2026-09-23-pro.csv');
+    expect(file.name).toBe('spartiate-taches-2026-09-23-pro.csv');
     expect(textOf(file)).not.toContain('Courses');
     expect(textOf(file)).toContain('Réunion');
   });
 
-  test('critère 5 : rapport en PDF — une page A4, image JPEG, nom circletasks-rapport-2026-09.pdf', async ({ page }) => {
+  test('critère 5 : rapport en PDF — une page A4, image JPEG, nom spartiate-rapport-2026-09.pdf', async ({ page }) => {
     await prepare(page);
     const dialog = await openDialog(page);
     await dialog.getByRole('radio', { name: 'Rapport du mois en PDF' }).check();
@@ -117,7 +117,7 @@ test.describe('H-03 — export de l’historique', () => {
     await dialog.getByRole('button', { name: 'Exporter', exact: true }).click();
     await expect(page.getByText('Historique exporté')).toBeVisible();
     const file = await onlySaved(page);
-    expect(file.name).toBe('circletasks-rapport-2026-09.pdf');
+    expect(file.name).toBe('spartiate-rapport-2026-09.pdf');
     expect(file.mime).toBe('application/pdf');
     const raw = new TextDecoder('latin1').decode(new Uint8Array(file.bytes));
     expect(raw.startsWith('%PDF-1.4')).toBe(true);
@@ -127,7 +127,7 @@ test.describe('H-03 — export de l’historique', () => {
     expect(raw).toContain('/Width 1080');
   });
 
-  test('critère 6 : rapport en image — PNG de 1 080 px de large, nom circletasks-rapport-2026-09.png', async ({ page }) => {
+  test('critère 6 : rapport en image — PNG de 1 080 px de large, nom spartiate-rapport-2026-09.png', async ({ page }) => {
     await prepare(page);
     const dialog = await openDialog(page);
     await dialog.getByRole('radio', { name: 'Rapport du mois en image' }).check();
@@ -135,7 +135,7 @@ test.describe('H-03 — export de l’historique', () => {
     await dialog.getByRole('button', { name: 'Exporter', exact: true }).click();
     await expect(page.getByText('Historique exporté')).toBeVisible();
     const file = await onlySaved(page);
-    expect(file.name).toBe('circletasks-rapport-2026-09.png');
+    expect(file.name).toBe('spartiate-rapport-2026-09.png');
     const bytes = file.bytes;
     expect(bytes.slice(0, 8)).toEqual([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
     const width = be32(bytes, 16);
@@ -155,7 +155,7 @@ test.describe('H-03 — export de l’historique', () => {
     await dialog.getByRole('button', { name: 'Exporter', exact: true }).click();
     await expect(page.getByText('Historique exporté')).toBeVisible();
     await page.getByRole('button', { name: 'Afficher dans le dossier' }).click();
-    expect(await revealedPaths(page)).toEqual(['C:\\Export\\circletasks-taches-2026-09-23.csv']);
+    expect(await revealedPaths(page)).toEqual(['C:\\Export\\spartiate-taches-2026-09-23.csv']);
   });
 
   test('critère 9 : un échec affiche un message clair et n’enregistre rien', async ({ page }) => {

@@ -66,13 +66,13 @@ describe('I-04 critère 6 : aucune sentinelle de titre dans le journal', () => {
 
     // Export H-03 : nom proposé et contenu porteurs de la sentinelle, enregistrement en échec.
     files.failNext('write-failed', 'io');
-    await saveFile(files, { suggestedName: `circletasks-${SENTINEL}.csv`, mime: 'text/csv', data: new TextEncoder().encode(`${SENTINEL};2026-10-09`) }, 'export-save');
+    await saveFile(files, { suggestedName: `spartiate-${SENTINEL}.csv`, mime: 'text/csv', data: new TextEncoder().encode(`${SENTINEL};2026-10-09`) }, 'export-save');
 
     // Sauvegarde et restauration (P-04) en échec.
     const backup = backupStore.get(container);
     backups.failNext('daily', 'io');
     await backup.getState().backupNow();
-    backups.versions.push({ name: 'circletasks-daily-20261007.db', kind: 'daily', stamp: '20261007', size: 10, modifiedMs: 0, tasks: 1, schemaVersion: 17 });
+    backups.versions.push({ name: 'spartiate-daily-20261007.db', kind: 'daily', stamp: '20261007', size: 10, modifiedMs: 0, tasks: 1, schemaVersion: 17 });
     backups.failNext('restore', 'corrupt');
     await backup.getState().restore(backups.versions[0] ?? (() => { throw new Error('version'); })());
     expect(backup.getState().restorePhase).toBe('failed');

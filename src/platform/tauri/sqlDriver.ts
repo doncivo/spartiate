@@ -6,7 +6,7 @@ import { detectOs } from '../runtime';
 
 /**
  * Récupération d'une restauration interrompue impossible au démarrage de l'iPhone (P-04-iOS, ADR 0009 avenant lot F B3) : aucune base n'est
- * ouverte ni créée ; l'écran d'erreur persistant affiche le code (« Restauration interrompue : fermez puis rouvrez CircleTasks »).
+ * ouverte ni créée ; l'écran d'erreur persistant affiche le code (« Restauration interrompue : fermez puis rouvrez Spartiate »).
  */
 export class StartupRecoveryError extends Error {
   override readonly name = 'StartupRecoveryError';
@@ -59,7 +59,7 @@ export async function awaitStartupGate(options: StartupGateOptions = {}): Promis
 }
 
 /** Fichier de base dans le dossier de configuration de l'app (géré par tauri-plugin-sql). */
-export const TAURI_DB_URL = 'sqlite:circletasks.db';
+export const TAURI_DB_URL = 'sqlite:spartiate.db';
 
 /**
  * Driver de production (PC et iPhone) : tauri-plugin-sql, SQLite via sqlx côté Rust.

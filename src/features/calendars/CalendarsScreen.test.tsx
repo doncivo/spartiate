@@ -150,7 +150,7 @@ describe('écran Agendas (K-01 à K-03)', () => {
   });
 
   it('après un redémarrage : jeton orphelin relu du réglage local et encore au coffre, message et « Réessayer l’effacement » affichés', async () => {
-    const ref = 'circletasks.calendar.icloud.a7000000-0000-4000-8000-0000000000e9';
+    const ref = 'spartiate.calendar.icloud.a7000000-0000-4000-8000-0000000000e9';
     await h.container.calendars.vault.set(ref, 'mot-de-passe-de-test');
     await h.container.data.repos.settings.set('calendars.orphanSecrets', [{ provider: 'icloud', tokenRef: ref }]);
     renderScreen();

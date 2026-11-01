@@ -39,7 +39,7 @@ function backupPort(options: { fail?: boolean } = {}) {
   const port: MigrationBackup = {
     backup(request) {
       if (options.fail) return Promise.reject(new Error('disque plein'));
-      const name = `circletasks-pre-migration-v${pad(request.fromVersion)}-to-v${pad(request.toVersion)}-${request.stamp}.db`;
+      const name = `spartiate-pre-migration-v${pad(request.fromVersion)}-to-v${pad(request.toVersion)}-${request.stamp}.db`;
       names.push(name);
       return Promise.resolve({ name });
     },

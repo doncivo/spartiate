@@ -26,7 +26,7 @@ vi.mock('./calendarsConnect', async (importOriginal) => {
   };
 });
 
-const REF = 'circletasks.calendar.icloud.a7000000-0000-4000-8000-0000000000f1';
+const REF = 'spartiate.calendar.icloud.a7000000-0000-4000-8000-0000000000f1';
 
 let h: CalendarHarness;
 const state = (): CalendarsState => calendarsStore.get(h.container).getState();

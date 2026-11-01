@@ -19,19 +19,19 @@ test.describe('OB-05 — reconduire un objectif non atteint', () => {
   async function seed(page: Page, now = '2026-10-05T08:00:00Z'): Promise<void> {
     await page.clock.setFixedTime(new Date(now));
     await openApp(page);
-    await insertGoals(page, [{ title: 'Finaliser le PRD CircleTasks', weekStart: '2026-09-28' }]);
+    await insertGoals(page, [{ title: 'Finaliser le PRD Spartiate', weekStart: '2026-09-28' }]);
     await insertTasks(page, [
       { title: 'Relire le brief', date: '2026-09-29', done: true },
       { title: 'Écrire le plan', date: '2026-10-02', time: '09:00' },
       { title: 'Valider la maquette', date: '2026-10-07' },
     ]);
-    await attachTasks(page, 'Finaliser le PRD CircleTasks', ['Relire le brief', 'Écrire le plan', 'Valider la maquette']);
+    await attachTasks(page, 'Finaliser le PRD Spartiate', ['Relire le brief', 'Écrire le plan', 'Valider la maquette']);
     await reload(page);
   }
 
   test('le lundi suivant, la carte propose Reconduire ou Clore (critère 1)', async ({ page }) => {
     await seed(page);
-    await expect(reviews(page)).toContainText('Objectif non atteint : Finaliser le PRD CircleTasks');
+    await expect(reviews(page)).toContainText('Objectif non atteint : Finaliser le PRD Spartiate');
     await expect(reviews(page).getByRole('button', { name: /^Reconduire/ })).toBeVisible();
     await expect(reviews(page).getByRole('button', { name: /^Clore/ })).toBeVisible();
     await expect(goalCards(page)).toHaveCount(0);
@@ -42,13 +42,13 @@ test.describe('OB-05 — reconduire un objectif non atteint', () => {
     await reviews(page).getByRole('button', { name: /^Reconduire/ }).click();
     await expect(reviews(page)).toHaveCount(0);
     await expect(goalCards(page)).toHaveCount(1);
-    await expect(goalCards(page).first()).toContainText('Finaliser le PRD CircleTasks');
+    await expect(goalCards(page).first()).toContainText('Finaliser le PRD Spartiate');
     // La tâche restée dans le passé prend la date d'aujourd'hui (QB-14), heure conservée ; l'autre garde sa date.
     await expect(rowOf(page, 'Écrire le plan')).toContainText('09:00');
     await expect(goalCards(page).first()).toContainText('0/2');
     // « Annuler » rétablit la carte, l'ancien objectif et la date d'origine.
     await page.getByRole('status').getByRole('button', { name: 'Annuler' }).click();
-    await expect(reviews(page)).toContainText('Objectif non atteint : Finaliser le PRD CircleTasks');
+    await expect(reviews(page)).toContainText('Objectif non atteint : Finaliser le PRD Spartiate');
     await expect(goalCards(page)).toHaveCount(0);
     await expect(rowOf(page, 'Écrire le plan')).toHaveCount(0);
   });

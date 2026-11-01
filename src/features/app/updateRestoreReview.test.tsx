@@ -20,7 +20,7 @@ import { restoreUpdateBackup, updateRestoreFailureText } from './updateRestore';
  * l'entonnoir des échecs : l'issue est dite après le redémarrage).
  */
 
-const BACKUP = 'circletasks-pre-migration-v0018-to-v0019-20261009T080000Z.db';
+const BACKUP = 'spartiate-pre-migration-v0018-to-v0019-20261009T080000Z.db';
 const clock = createManualClock('2026-10-09T08:00:00.000Z');
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000fc');
 
@@ -77,7 +77,7 @@ describe('I2 : retour arrière local, aucun marqueur de synchro', () => {
 });
 
 describe('I3 : relance hors de la restauration', () => {
-  it('relance impossible : restauration réussie, consigne « Relancez CircleTasks » visible, action retirée', async () => {
+  it('relance impossible : restauration réussie, consigne « Relancez Spartiate » visible, action retirée', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const recovery = openStartupRecovery('tauri', 'windows', api({ relaunchFails: true }));
     const outcome = await restoreUpdateBackup(BACKUP, clock, recovery);

@@ -88,9 +88,9 @@ describe('N-03 : « Fait » et « +15 min » depuis la notification', () => {
   it('N-IOS-FIX-01 : chaque catégorie porte un texte d’aperçu masqué tiré de i18n, sans titre d’élément', async () => {
     const specs = actionTypeSpecs();
     expect(specs.map((spec) => [spec.id, spec.hiddenPreviewsBodyPlaceholder])).toEqual([
-      ['ct.task', 'Rappel CircleTasks : déverrouillez pour voir la tâche'],
-      ['ct.routine', 'Rappel CircleTasks : déverrouillez pour voir la routine'],
-      ['ct.event', 'Rappel CircleTasks : déverrouillez pour voir l’événement'],
+      ['ct.task', 'Rappel Spartiate : déverrouillez pour voir la tâche'],
+      ['ct.routine', 'Rappel Spartiate : déverrouillez pour voir la routine'],
+      ['ct.event', 'Rappel Spartiate : déverrouillez pour voir l’événement'],
     ]);
     expect(new Set(specs.map((spec) => spec.hiddenPreviewsBodyPlaceholder)).size).toBe(3);
     // Le texte ne dépend d'aucune donnée : identique avant et après la création d'une tâche.

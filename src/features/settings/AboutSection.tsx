@@ -12,7 +12,7 @@ import { onboardingStore } from './onboardingStore';
 /**
  * Section « À PROPOS » (Reglages.html, D-03 critères 6 et 7, P-05 critère 8, I-04 critère 1). Partout : ligne « Version … » avec le lien
  * « Logs » (écran du journal technique ; un échec d'écriture ou de lecture du journal y est signalé en rouge, critère 10). Sur PC : version installée, « Rechercher une mise à jour »
- * (résultat : « CircleTasks est à jour », « Impossible de vérifier les mises à jour » ou le bandeau de mise à jour) et lien vers la dernière
+ * (résultat : « Spartiate est à jour », « Impossible de vérifier les mises à jour » ou le bandeau de mise à jour) et lien vers la dernière
  * version. Partout (PC et iPhone) : « Revoir le guide de bienvenue », qui relance l'assistant sans toucher aux données. L'iPhone se met à
  * jour par SideStore (I-06) : il n'y a pas de ligne de mise à jour, mais la version y est lue (vérifier qu'une mise à jour a pris).
  * I-06 : la version vient du conteneur (`platform/appVersion.ts`, lue une fois au démarrage, PC et iPhone) ; illisible : « Version inconnue ».
@@ -31,8 +31,11 @@ export function AboutSection({ heading = true }: { readonly heading?: boolean } 
   const logFailureCode = logStatus.writeError ?? logStatus.readError ?? journalUnavailable;
 
   const checking = status === 'checking';
+  const updaterConfigured = desktop?.updaterConfigured ?? false;
   const hint =
-    status === 'checking'
+    desktop && !updaterConfigured
+      ? t('updater.notConfigured')
+      : status === 'checking'
       ? t('settings.checkingUpdates')
       : status === 'upToDate'
         ? t('settings.upToDate')
@@ -69,7 +72,7 @@ export function AboutSection({ heading = true }: { readonly heading?: boolean } 
           <Button variant="secondary" ariaLabel={tLogs('rowOpenLabel')} onClick={() => navigate({ tab: 'settings', screen: 'logs' })} className="ct-settings__link">
             {tLogs('rowLabel')}
           </Button>
-          {desktop && (
+          {desktop && updaterConfigured && (
             <Button variant="secondary" onClick={() => void check()} disabled={checking} className="ct-settings__link">
               {t('settings.checkUpdates')}
             </Button>

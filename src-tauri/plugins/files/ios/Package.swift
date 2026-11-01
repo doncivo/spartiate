@@ -1,5 +1,5 @@
 // swift-tools-version:5.3
-// Plugin ct-files de CircleTasks (FILES-IOS-01, ADR 0009 avenant lot F) : compilé par build-ios.yml seulement (aucun Mac local).
+// Plugin ct-files de Spartiate (FILES-IOS-01, ADR 0009 avenant lot F) : compilé par build-ios.yml seulement (aucun Mac local).
 
 import PackageDescription
 

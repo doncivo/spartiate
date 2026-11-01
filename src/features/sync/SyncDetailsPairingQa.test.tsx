@@ -41,7 +41,7 @@ async function make(platformOverride?: SyncPlatform): Promise<AppContainer> {
 
 beforeEach(async () => {
   db = await openTestDb(SELF, NOW);
-  sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-05T08:00:00.000Z' as IsoDateTime, folderLabel: 'CircleTasks', folderKind: 'icloud' });
+  sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-05T08:00:00.000Z' as IsoDateTime, folderLabel: 'Spartiate', folderKind: 'icloud' });
   platform = createMemorySyncPlatform({ folder: new MemorySyncFolder() });
   await platform.folder.choose();
   await platform.bindDevice(SELF);

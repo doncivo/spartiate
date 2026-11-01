@@ -16,8 +16,8 @@ use std::process::Command;
 use std::sync::atomic::AtomicU64;
 use std::sync::{Arc, Mutex};
 
-use circletasks_lib::sync::bookmark::BookmarkFs;
-use circletasks_lib::sync::files::{AppendMode, Availability, FsError, SyncFs};
+use spartiate_lib::sync::bookmark::BookmarkFs;
+use spartiate_lib::sync::files::{AppendMode, Availability, FsError, SyncFs};
 use serde_json::Value;
 
 use crate::support::fake_bookmark::{FakePlugin, SharedPlugin, BOOKMARK, ROOT};
@@ -168,7 +168,7 @@ type DeferredDeletes = Vec<(Vec<String>, Vec<u8>, u64)>;
 
 #[cfg(windows)]
 struct FaultyStd {
-    inner: circletasks_lib::sync::files::StdFs,
+    inner: spartiate_lib::sync::files::StdFs,
     armed: Mutex<Option<fault_plan::Armed>>,
     /// Suppressions acceptées mais non propagées : (chemin, contenu, cycles restants).
     back: Mutex<DeferredDeletes>,
@@ -176,7 +176,7 @@ struct FaultyStd {
 
 #[cfg(windows)]
 impl FaultyStd {
-    fn new(inner: circletasks_lib::sync::files::StdFs) -> Self {
+    fn new(inner: spartiate_lib::sync::files::StdFs) -> Self {
         Self { inner, armed: Mutex::new(None), back: Mutex::new(Vec::new()) }
     }
 
@@ -246,7 +246,7 @@ impl SyncFs for FaultyStd {
     fn read_head(&self, file: &[&str], max: usize) -> Result<Vec<u8>, FsError> {
         self.inner.read_head(file, max)
     }
-    fn list(&self, dir: &[&str], max: usize) -> Result<circletasks_lib::sync::files::Listing, FsError> {
+    fn list(&self, dir: &[&str], max: usize) -> Result<spartiate_lib::sync::files::Listing, FsError> {
         if let Some(fault_plan::Effect::Error(code)) = self.hit(fault_plan::Op::List, &fault_plan::dir_path(dir)).map(|entry| entry.effect) {
             return Err(plan_error(code));
         }
@@ -256,7 +256,7 @@ impl SyncFs for FaultyStd {
         self.read_gate(file)?;
         self.inner.read(file, limit, hydrate)
     }
-    fn read_from(&self, file: &[&str], offset: u64, max: usize, hydrate: bool) -> Result<circletasks_lib::sync::files::Chunk, FsError> {
+    fn read_from(&self, file: &[&str], offset: u64, max: usize, hydrate: bool) -> Result<spartiate_lib::sync::files::Chunk, FsError> {
         if offset == 0 {
             self.read_gate(file)?;
         }
@@ -331,16 +331,16 @@ struct StdWorld {
 #[cfg(windows)]
 impl StdWorld {
     fn new() -> Self {
-        use circletasks_lib::sync::folder::{check_sync_path, normalize_final_path};
+        use spartiate_lib::sync::folder::{check_sync_path, normalize_final_path};
         let dir = tempfile::tempdir().expect("dossier temporaire");
         let canonical = std::fs::canonicalize(dir.path()).unwrap();
         let base = PathBuf::from(normalize_final_path(&canonical.to_string_lossy()).expect("chemin local"));
-        let root = base.join("CircleTasks");
+        let root = base.join("Spartiate");
         let outside = base.join("ailleurs");
         std::fs::create_dir_all(&root).unwrap();
         std::fs::create_dir_all(&outside).unwrap();
-        std::fs::write(outside.join("state.ctx"), b"hors de la racine").unwrap();
-        let fs = FaultyStd::new(circletasks_lib::sync::files::StdFs::new(check_sync_path(&root).unwrap().path));
+        std::fs::write(outside.join("state.spx"), b"hors de la racine").unwrap();
+        let fs = FaultyStd::new(spartiate_lib::sync::files::StdFs::new(check_sync_path(&root).unwrap().path));
         Self { _dir: dir, root, outside, fs }
     }
 

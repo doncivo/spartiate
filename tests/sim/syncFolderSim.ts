@@ -7,7 +7,7 @@ import { createSimFolder, propagate } from './syncCloudSim';
  * Simulateur de dossier iCloud pour Playwright (Y-04 critère 12 ; ADR 0011 §12, parcours 10) : chaque page du navigateur de dev reçoit
  * une `SyncPlatform` dont les appels arrivent ici (`globalThis.__ctSyncSim`, client installé par `src/platform/sync/index.ts` en
  * développement seulement). Le simulateur tient le rôle de Rust pour chaque appareil : plateforme mémoire, **son propre** dossier
- * `iCloud Drive/CircleTasks`, son coffre. « iCloud » ne recopie les dossiers que sur ordre du test (`/propagate`) : sans recopie, les
+ * `iCloud Drive/Spartiate`, son coffre. « iCloud » ne recopie les dossiers que sur ordre du test (`/propagate`) : sans recopie, les
  * appareils sont hors ligne l'un pour l'autre.
  *
  * Les appareils vivent dans un **espace** propre au test (`room`) : deux workers ne partagent jamais un état. Le premier appareil d'un

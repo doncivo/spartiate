@@ -91,7 +91,7 @@ pub enum Times {
 pub struct Entry {
     pub id: String,
     pub op: Op,
-    /// Chemin sous la racine `CircleTasks`, composants séparés par `/`, `*` = toute suite de caractères dans un composant.
+    /// Chemin sous la racine `Spartiate`, composants séparés par `/`, `*` = toute suite de caractères dans un composant.
     pub file: String,
     pub nth: u64,
     pub times: Times,
@@ -290,8 +290,8 @@ fn parse_entry(raw: &Value, index: usize, plan: &str, seen: &mut Vec<String>) ->
     let mut partial_last_line = false;
     if let Some(value) = raw.get("partialLastLine") {
         partial_last_line = value.as_bool().ok_or_else(|| format!("{at} : « partialLastLine » booléen attendu"))?;
-        if !(file.ends_with(".ctj") || file.ends_with('*')) {
-            return Err(format!("{at} : « partialLastLine » réservé aux segments de journal (*.ctj)"));
+        if !(file.ends_with(".spj") || file.ends_with('*')) {
+            return Err(format!("{at} : « partialLastLine » réservé aux segments de journal (*.spj)"));
         }
     }
     if let Some(about) = raw.get("about") {

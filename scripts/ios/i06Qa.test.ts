@@ -23,7 +23,7 @@ function publish(existing: Source | null, version: string, build = version): Sou
   return buildSource({
     template: loadTemplate(),
     existing,
-    info: { CFBundleIdentifier: 'fr.circletasks.planner', CFBundleShortVersionString: version, CFBundleVersion: build, MinimumOSVersion: '18.0' },
+    info: { CFBundleIdentifier: 'fr.spartiate.app', CFBundleShortVersionString: version, CFBundleVersion: build, MinimumOSVersion: '18.0' },
     version,
     downloadURL: ipaUrlFor(version),
     size: 7_000_000,

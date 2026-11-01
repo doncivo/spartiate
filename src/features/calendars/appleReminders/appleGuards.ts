@@ -6,11 +6,11 @@ import { useNoticeStore } from '../../app/notice';
 import type { TaskUseCaseDeps, TaskUseCases } from '../../tasks/taskUseCases';
 
 /**
- * Garde des tâches liées à un rappel Apple RÉCURRENT (ADR 0008 §10.6) : « aucune écriture sur une série » EventKit. Dans CircleTasks, sur PC
+ * Garde des tâches liées à un rappel Apple RÉCURRENT (ADR 0008 §10.6) : « aucune écriture sur une série » EventKit. Dans Spartiate, sur PC
  * comme sur iPhone, la case (terminer, rouvrir), le titre, la date, l'heure et la suppression d'une telle tâche sont refusés avec le message
  * « Modifiez ce rappel récurrent dans Rappels ». Un seul point de passage : les cas d'usage de tâches (fiche, listes, balayages A-07, lot A-05,
  * Semaine, « Un jour »). Le refus est un message (5 s, comme « Ajouté dans Perso ») et une absence d'écriture : jamais une erreur technique ;
- * les autres champs (note, icône, projet, objectif, espace, rappels CircleTasks) restent modifiables.
+ * les autres champs (note, icône, projet, objectif, espace, rappels Spartiate) restent modifiables.
  */
 
 /** Champs de la tâche qui reviendraient à Rappels. */
@@ -101,7 +101,7 @@ export function withAppleGuards(base: TaskUseCases, deps: TaskUseCaseDeps): Task
       return base.remove(await allowed(ids), options);
     },
     async setRecurrence(id, rule) {
-      // Une tâche liée à un rappel (ou à créer dans Rappels) ne reçoit pas de répétition CircleTasks (ADR 0008 §10.2, « Copies »).
+      // Une tâche liée à un rappel (ou à créer dans Rappels) ne reçoit pas de répétition Spartiate (ADR 0008 §10.2, « Copies »).
       const task = await read(id);
       if (task && ['linked', 'to-create'].includes(appleLinkState(task))) return { ok: false, error: 'apple-linked' };
       return base.setRecurrence(id, rule);

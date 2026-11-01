@@ -35,7 +35,7 @@ let sync: FakeSyncService;
 
 beforeEach(async () => {
   db = await openTestDb(SELF, NOW);
-  sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-05T08:00:00.000Z' as IsoDateTime, folderLabel: 'CircleTasks', folderKind: 'icloud', devices: [self] });
+  sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-05T08:00:00.000Z' as IsoDateTime, folderLabel: 'Spartiate', folderKind: 'icloud', devices: [self] });
   container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync });
 });
 

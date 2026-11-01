@@ -103,13 +103,13 @@ describe('recurrenceCode', () => {
 describe('noms de fichier (H-03 critères 2 à 6)', () => {
   const base = { today: d('2026-10-04'), month: { year: 2026, month: 9 } };
   it('CSV, JSON, PDF et PNG', () => {
-    expect(exportFileName('csv', { ...base, spaceName: null })).toBe('circletasks-taches-2026-10-04.csv');
-    expect(exportFileName('json', { ...base, spaceName: null })).toBe('circletasks-historique-2026-10-04.json');
-    expect(exportFileName('pdf', { ...base, spaceName: null })).toBe('circletasks-rapport-2026-09.pdf');
-    expect(exportFileName('png', { ...base, spaceName: null })).toBe('circletasks-rapport-2026-09.png');
+    expect(exportFileName('csv', { ...base, spaceName: null })).toBe('spartiate-taches-2026-10-04.csv');
+    expect(exportFileName('json', { ...base, spaceName: null })).toBe('spartiate-historique-2026-10-04.json');
+    expect(exportFileName('pdf', { ...base, spaceName: null })).toBe('spartiate-rapport-2026-09.pdf');
+    expect(exportFileName('png', { ...base, spaceName: null })).toBe('spartiate-rapport-2026-09.png');
   });
   it('filtre d’espace : suffixe -pro', () => {
-    expect(exportFileName('csv', { ...base, spaceName: 'Pro' })).toBe('circletasks-taches-2026-10-04-pro.csv');
+    expect(exportFileName('csv', { ...base, spaceName: 'Pro' })).toBe('spartiate-taches-2026-10-04-pro.csv');
     expect(filterFileSuffix('Mon Espace é')).toBe('-mon-espace-e');
     expect(filterFileSuffix('???')).toBe('');
   });

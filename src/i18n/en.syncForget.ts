@@ -39,7 +39,7 @@ export const syncForgetEn: Shape<typeof syncForgetFr> = {
   requestCancelled: 'Request cancelled',
   cancelFailed: 'The request could not be cancelled: {reason}',
   reasons: {
-    notForeground: 'CircleTasks was not in the foreground',
+    notForeground: 'Spartiate was not in the foreground',
     rateLimited: 'too many requests, try again in 10 minutes',
     cloudPending: 'a file is still waiting for iCloud',
     folderUnreachable: 'sync folder not found',
@@ -55,7 +55,7 @@ export const syncForgetEn: Shape<typeof syncForgetFr> = {
   rejoinLabel: 'Pair again: this device',
   rejoinTitle: 'Pair this device again?',
   rejoinBody:
-    'The folder is unlinked (the key is kept), this device gets a new identifier, then the app restarts; then choose the CircleTasks folder again. Nothing is erased: your data is merged then published.',
+    'The folder is unlinked (the key is kept), this device gets a new identifier, then the app restarts; then choose the Spartiate folder again. Nothing is erased: your data is merged then published.',
   rejoinRunning: 'Pairing…',
   banner: 'This device was forgotten: pair it again',
   bannerPending: '{device} forgotten: deletion of its files waiting for {waiting}',

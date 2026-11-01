@@ -24,7 +24,7 @@ export type FaultCode = 'io' | 'cloud-pending';
 export interface FaultEntry {
   readonly id: string;
   readonly op: FaultOp;
-  /** Chemin sous la racine `CircleTasks`, composants séparés par `/`, `*` = toute suite de caractères dans un composant. */
+  /** Chemin sous la racine `Spartiate`, composants séparés par `/`, `*` = toute suite de caractères dans un composant. */
   readonly file: string;
   /** Rang (à partir de 1) du premier appel de `op` sur un chemin qui correspond à `file`. */
   readonly nth: number;
@@ -153,7 +153,7 @@ function parseEntry(raw: unknown, index: number, plan: string, seen: Set<string>
   if (has('partialLastLine')) {
     if (typeof raw['partialLastLine'] !== 'boolean') throw new FaultPlanError(`${where} : « partialLastLine » booléen attendu`);
     // Seul un ajout à un segment de journal peut laisser une ligne incomplète (état et instantané : remplacement atomique).
-    if (!/(\.ctj|\*)$/.test(file)) throw new FaultPlanError(`${where} : « partialLastLine » réservé aux segments de journal (*.ctj)`);
+    if (!/(\.spj|\*)$/.test(file)) throw new FaultPlanError(`${where} : « partialLastLine » réservé aux segments de journal (*.spj)`);
     entry.partialLastLine = raw['partialLastLine'];
   }
   if (has('about')) {

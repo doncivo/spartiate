@@ -29,7 +29,7 @@ export async function seedGoal(h: TodayHarness, overrides: Partial<GoalFields> =
     id: newEntityId<GoalId>(h.container.ids),
     spaceId: SPACE_PRO_ID,
     weekStart: '2026-09-28' as LocalDate,
-    title: 'Finaliser le PRD CircleTasks',
+    title: 'Finaliser le PRD Spartiate',
     icon: null,
     pinned: true,
     status: 'open',

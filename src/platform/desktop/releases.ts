@@ -4,7 +4,7 @@
  * src-tauri/capabilities/desktop.json (vérifié par releases.test.ts et cargo test).
  * Aucun secret : le dépôt est public.
  */
-export const RELEASES_REPOSITORY_URL = 'https://github.com/doncivo/circletasks-releases';
+export const RELEASES_REPOSITORY_URL = 'https://github.com/doncivo/spartiate-releases';
 
 /** Page de la dernière version, ouverte depuis « À propos ». */
 export const LATEST_RELEASE_URL = `${RELEASES_REPOSITORY_URL}/releases/latest`;

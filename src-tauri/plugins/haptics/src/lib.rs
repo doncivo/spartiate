@@ -1,4 +1,4 @@
-//! Plugin Tauri `haptics` de CircleTasks (A-07, ADR 0013 §1.1) : retour haptique iOS. Aucune commande Rust : les appels JS
+//! Plugin Tauri `haptics` de Spartiate (A-07, ADR 0013 §1.1) : retour haptique iOS. Aucune commande Rust : les appels JS
 //! `plugin:haptics|impact_feedback`, `|notification_feedback` et `|selection_feedback` vont directement au Swift (`HapticsPlugin.swift`),
 //! qui déclenche les générateurs UIKit sur le fil principal (Tauri appelle les plugins sur une file d'arrière-plan, constat 1 de l'ADR).
 //! Enregistré dans le bloc iOS de `lib.rs` de l'app seulement ; aucune clé Info.plist.

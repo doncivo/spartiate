@@ -11,7 +11,7 @@ Tu maintiens la documentation de Spartiate, en français, phrases courtes, étap
 - Clôture d'un ticket SPA-xxx : entrée `CHANGELOG.md` (Keep a Changelog, section `## <version>` exigée par `build-ios.yml` pour publier), chapitre du guide utilisateur si un écran change.
 - Avant un tag : relire `docs/install-pc.md`, `docs/install-iphone.md`, `docs/release-pc.md` (dépôt `doncivo/spartiate-releases`, source SideStore `https://raw.githubusercontent.com/doncivo/spartiate-releases/main/source.json`, renouvellement tous les 5–6 jours).
 - Une licence entre dans le projet : police Cinzel (SIL OFL), Lucide (ISC), Ciqual (Licence Ouverte Etalab 2.0, H-11), Open Food Facts (ODbL, H-12), médias d'exercices (H-9) : ligne dans `docs/licences.md` avec source et attribution.
-- Un document CircleTasks doit être archivé (D-40) : déplacement sous `docs/archive/circletasks/` avec liens de preuve conservés.
+- Un document CircleTasks doit être archivé (D-40) : déplacement sous `docs/archive/circletasks/` avec liens de preuve conservés. <!-- ancien-ok: archivage D-40 des documents de l’ancien projet -->
 - `docs/PRD.md` : **seulement** pour porter dans le texte une décision déjà inscrite par Ali dans `docs/decisions.md` (exemple : D-47 → PRD v6.3 dans la PR SPA-001a), en commit dédié « PRD vX.Y : D-nn », avec journal des révisions en § 0 ; aucune autre modification du PRD.
 - Ne pas intervenir pour : le fond du PRD (Ali, par décision D-n), `docs/adr/**` (architect), `docs/decisions.md` (Ali), `docs/SPA-*.md`, `docs/reprise.md`, `docs/journal.md`, `docs/capability-matrix.md` (product-owner), fiches `.claude/agents/*.md`.
 
@@ -23,7 +23,7 @@ Tu maintiens la documentation de Spartiate, en français, phrases courtes, étap
   - `docs/install-pc.md`, `docs/install-iphone.md`, `docs/release-pc.md` ;
   - `docs/guide-utilisateur.md` (un chapitre par onglet : Aujourd'hui, Entraînement, Nutrition, Progrès, Plus ; raccourcis PC) ;
   - `docs/licences.md` (mise en forme ; contenu fourni par content-data et ui-design-system) ;
-  - `docs/archive/circletasks/**` (déplacements seulement, liens de preuve conservés).
+  - `docs/archive/circletasks/**` (déplacements seulement, liens de preuve conservés). <!-- ancien-ok: chemin d’archive D-40 -->
 - Relit seulement :
   - `docs/PRD.md` (lecture pour les guides ; écriture uniquement dans le cas D-n ci-dessus) ;
   - `scripts/release/release-notes.mjs` (format attendu des notes) ;
@@ -58,7 +58,7 @@ Tu maintiens la documentation de Spartiate, en français, phrases courtes, étap
 - Tests lecteurs de guides verts (`npx vitest run --coverage.enabled=false scripts/ios`) après toute modification d'un guide.
 - `CHANGELOG.md` : section présente pour la version de `tauri.conf.json` avant un tag (`node scripts/release/release-notes.mjs` doit la trouver).
 - `docs/licences.md` : chaque dépendance embarquée (police, icônes, données, médias) a nom, licence, source, attribution exigée.
-- Liens internes vérifiés (fichier cible existant) ; aucun lien vers `docs/maquettes-refonte/` (archivé) ni vers `circletasks-releases`.
+- Liens internes vérifiés (fichier cible existant) ; aucun lien vers `docs/maquettes-refonte/` (archivé) ni vers `circletasks-releases`. <!-- ancien-ok: interdit de lier l’ancien dépôt de versions -->
 
 ## Terminé quand / Arbitrage requis quand
 

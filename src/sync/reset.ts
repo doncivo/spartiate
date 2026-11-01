@@ -442,7 +442,7 @@ export function resetLagging(
 /**
  * Ouverture de l'époque visée (§14.3 étape 4) juste après la publication de l'annonce : instantané complet de la base (`covers` = accusés
  * de l'époque `n`, têtes lues et position sur chaque oublié retenu, plus sa propre tête), file vidée jusqu'au numéro pris avant
- * l'instantané (l'instantané contient tout), époque locale déplacée, puis état sous la nouvelle clé (`state.next.ctx`, Rust choisit la
+ * l'instantané (l'instantané contient tout), époque locale déplacée, puis état sous la nouvelle clé (`state.next.spx`, Rust choisit la
  * clé et le fichier d'après l'époque). Chaque échec est gardé (étape `snapshot`).
  */
 export async function openResetEpoch(

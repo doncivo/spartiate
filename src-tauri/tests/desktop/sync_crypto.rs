@@ -3,11 +3,11 @@
 
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
-use circletasks_lib::sync::crypto::{
+use spartiate_lib::sync::crypto::{
     aad_bytes, algorithm_shape, hex, key_from_recovery, pad, parse_line_prefix, parse_qr_text, qr_text_of, unpad, FileHeader, HeaderKind, MasterKey,
     OpenError, Place, RECOVERY_CHARS, SYNC_FORMAT_MAJOR,
 };
-use circletasks_lib::sync::limits::{
+use spartiate_lib::sync::limits::{
     encrypted_line_bytes, padded_plaintext_bytes, MAX_APPEND_CALL_BYTES, MAX_RECORD_LINE_BYTES, MAX_RECORD_PLAINTEXT_BYTES, SEGMENT_ROTATE_BYTES,
 };
 use serde_json::Value;
@@ -98,8 +98,8 @@ fn y08_4_vectors_aad_padding_headers() {
     for case in v["headers"].as_array().unwrap() {
         let h = &case["header"];
         let kind = match h["f"].as_str().unwrap() {
-            "ct-j" => HeaderKind::Journal,
-            "ct-s" => HeaderKind::Snapshot,
+            "sp-j" => HeaderKind::Journal,
+            "sp-s" => HeaderKind::Snapshot,
             _ => HeaderKind::State,
         };
         let header = FileHeader::new(kind, h["kid"].as_str().unwrap(), h["dev"].as_str().unwrap(), h["e"].as_str().unwrap(), h["n"].as_u64().unwrap());
@@ -157,11 +157,11 @@ fn y08_4_limits_match_typescript_and_vectors() {
     assert_eq!(constant("MAX_RECORD_PLAINTEXT_BYTES"), MAX_RECORD_PLAINTEXT_BYTES as u64);
     assert_eq!(constant("SEGMENT_ROTATE_BYTES"), SEGMENT_ROTATE_BYTES);
     assert_eq!(constant("MAX_APPEND_CALL_BYTES"), MAX_APPEND_CALL_BYTES);
-    assert_eq!(constant("MAX_SEGMENT_BYTES"), circletasks_lib::sync::limits::MAX_SEGMENT_BYTES);
-    assert_eq!(constant("MAX_SNAPSHOT_BYTES"), circletasks_lib::sync::limits::MAX_SNAPSHOT_BYTES);
-    assert_eq!(constant("MAX_DEVICE_FOLDERS"), circletasks_lib::sync::limits::MAX_DEVICE_FOLDERS as u64);
-    assert_eq!(constant("MAX_SCAN_ENTRIES_PER_FOLDER"), circletasks_lib::sync::limits::MAX_SCAN_ENTRIES_PER_FOLDER as u64);
-    assert_eq!(constant("FOLDER_STOP_BYTES"), circletasks_lib::sync::limits::FOLDER_STOP_BYTES);
+    assert_eq!(constant("MAX_SEGMENT_BYTES"), spartiate_lib::sync::limits::MAX_SEGMENT_BYTES);
+    assert_eq!(constant("MAX_SNAPSHOT_BYTES"), spartiate_lib::sync::limits::MAX_SNAPSHOT_BYTES);
+    assert_eq!(constant("MAX_DEVICE_FOLDERS"), spartiate_lib::sync::limits::MAX_DEVICE_FOLDERS as u64);
+    assert_eq!(constant("MAX_SCAN_ENTRIES_PER_FOLDER"), spartiate_lib::sync::limits::MAX_SCAN_ENTRIES_PER_FOLDER as u64);
+    assert_eq!(constant("FOLDER_STOP_BYTES"), spartiate_lib::sync::limits::FOLDER_STOP_BYTES);
     // Plafonds exacts : 1 Mio d'octets écrits (vecteurs croisés).
     let v = vectors();
     let group = |groups: &Value| -> u64 {
@@ -264,7 +264,7 @@ fn y08_5_kid_is_16_hex_and_reveals_nothing_of_the_key() {
 
 fn qr_key(key: &MasterKey) -> String {
     let text = qr_text_of(key, "3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60", None, 1);
-    let json = URL_SAFE_NO_PAD.decode(text.strip_prefix("CTPAIR1.").unwrap()).unwrap();
+    let json = URL_SAFE_NO_PAD.decode(text.strip_prefix("SPPAIR1.").unwrap()).unwrap();
     let value: Value = serde_json::from_slice(&json).unwrap();
     value["k"].as_str().unwrap().to_owned()
 }
@@ -290,14 +290,14 @@ fn y08_5_key_types_have_no_debug_nor_serialize() {
     <MasterKey as AmbiguousIfDebug<_>>::some_item();
     <MasterKey as AmbiguousIfSerialize<_>>::some_item();
     <MasterKey as AmbiguousIfClone<_>>::some_item();
-    <circletasks_lib::sync::crypto::QrContent as AmbiguousIfDebug<_>>::some_item();
+    <spartiate_lib::sync::crypto::QrContent as AmbiguousIfDebug<_>>::some_item();
 }
 
 #[test]
 fn y08_8_recovery_key_round_trip_tolerant_input_and_checksum() {
     let key = MasterKey::generate().unwrap();
     let recovery = key.recovery_key();
-    assert!(recovery.starts_with("CT1-"));
+    assert!(recovery.starts_with("SP1-"));
     let body: String = recovery.chars().skip(4).filter(|c| *c != '-').collect();
     assert_eq!(body.len(), RECOVERY_CHARS);
     assert_eq!(RECOVERY_CHARS, 55);
@@ -309,7 +309,7 @@ fn y08_8_recovery_key_round_trip_tolerant_input_and_checksum() {
     let last = wrong.pop().unwrap();
     wrong.push(if last == '0' { '4' } else { '0' });
     assert!(key_from_recovery(&wrong).is_none(), "somme de contrôle fausse");
-    assert!(key_from_recovery("CT1-AAAAA").is_none());
+    assert!(key_from_recovery("SP1-AAAAA").is_none());
     assert!(key_from_recovery(&"0".repeat(10_000)).is_none());
 }
 
@@ -326,7 +326,7 @@ fn y08_qr_text_round_trip_and_strictness() {
     let v = vectors();
     let ts = parse_qr_text(v["qr"]["text"].as_str().unwrap()).unwrap();
     assert!(ts.key.same_as(&self::key()));
-    let encode = |json: &str| format!("CTPAIR1.{}", URL_SAFE_NO_PAD.encode(json));
+    let encode = |json: &str| format!("SPPAIR1.{}", URL_SAFE_NO_PAD.encode(json));
     let k = qr_key(&key);
     assert!(parse_qr_text(&encode(&format!(r#"{{"v":1,"k":"{k}","d":"{dev}","e":null,"x":1}}"#))).is_some());
     for bad in [
@@ -340,19 +340,19 @@ fn y08_qr_text_round_trip_and_strictness() {
     ] {
         assert!(parse_qr_text(&encode(&bad)).is_none(), "{bad}");
     }
-    assert!(parse_qr_text(&text.replacen("CTPAIR1.", "CTPAIR2.", 1)).is_none());
-    assert!(parse_qr_text(&format!("CTPAIR1.{}", "A".repeat(2000))).is_none());
+    assert!(parse_qr_text(&text.replacen("SPPAIR1.", "CTPAIR2.", 1)).is_none());
+    assert!(parse_qr_text(&format!("SPPAIR1.{}", "A".repeat(2000))).is_none());
 }
 
 #[test]
 fn y08_header_is_strict() {
-    let good = r#"{"f":"ct-j","sm":1,"kid":"0123456789abcdef","dev":"3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60","e":"e0001-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60","n":1}"#;
+    let good = r#"{"f":"sp-j","sm":1,"kid":"0123456789abcdef","dev":"3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60","e":"e0001-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60","n":1}"#;
     assert!(FileHeader::parse(good.as_bytes()).is_some());
     for bad in [
         good.replace(r#""n":1"#, r#""n":1,"x":2"#),
         good.replace(r#""n":1"#, r#""n":0"#),
         good.replace(r#""n":1"#, r#""n":1.0"#),
-        good.replace(r#""f":"ct-j""#, r#""f":"ct-x""#),
+        good.replace(r#""f":"sp-j""#, r#""f":"ct-x""#),
         good.replace("0123456789abcdef", "0123456789ABCDEF"),
         good.replace(r#""sm":1"#, r#""sm":1,"sm":1"#),
         format!("{}{}", good, " ".repeat(1100)),

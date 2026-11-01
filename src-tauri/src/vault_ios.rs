@@ -3,8 +3,8 @@
 //! `keyring` (`apple-native`) ne permet pas de fixer l'accessibilité ni la synchronisation iCloud d'un élément : la clé de synchro passe
 //! donc par `security-framework` 3 directement (`keyring` ne sert qu'aux jetons d'agenda, `vault.rs`).
 //!
-//! - Comptes acceptés : **exactement** `circletasks.sync.key.v1` et `circletasks.sync.key.next` (tout autre : `Unavailable`).
-//! - Élément `kSecClassGenericPassword`, service `fr.circletasks.planner`, `AccessibleWhenUnlockedThisDeviceOnly` sans drapeau de présence,
+//! - Comptes acceptés : **exactement** `spartiate.sync.key.v1` et `spartiate.sync.key.next` (tout autre : `Unavailable`).
+//! - Élément `kSecClassGenericPassword`, service `fr.spartiate.app`, `AccessibleWhenUnlockedThisDeviceOnly` sans drapeau de présence,
 //!   `kSecAttrSynchronizable = false` à l'écriture **et** dans chaque requête.
 //! - Écriture : suppression puis ajout, puis **relecture** : une valeur relue différente supprime l'élément et rend `Unavailable` (jamais
 //!   une clé à moitié écrite).
@@ -24,9 +24,9 @@ use zeroize::Zeroizing;
 use crate::vault::{SecretVault, VaultError};
 
 /// Préfixe des comptes de clé de synchronisation.
-pub const SYNC_KEY_ACCOUNT_PREFIX: &str = "circletasks.sync.key.";
+pub const SYNC_KEY_ACCOUNT_PREFIX: &str = "spartiate.sync.key.";
 /// Les deux seuls comptes acceptés (clé courante, nouvelle clé d'une réinitialisation, Y-11).
-pub const SYNC_KEY_ACCOUNTS: [&str; 2] = ["circletasks.sync.key.v1", "circletasks.sync.key.next"];
+pub const SYNC_KEY_ACCOUNTS: [&str; 2] = ["spartiate.sync.key.v1", "spartiate.sync.key.next"];
 
 /// `errSecItemNotFound`.
 pub const ERR_SEC_ITEM_NOT_FOUND: i32 = -25300;

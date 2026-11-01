@@ -3,7 +3,7 @@
 //! - **Registre** `sync/forgotten.json` (dossier de configuration, `.tmp` + renommage), lié à `folderId` et `deviceId`, qui **ne fait que
 //!   grandir** : `entries` (liste maître : ses déclarations et toutes les déclarations bien formées **retenues** lues dans un état
 //!   authentifié, dans l'ordre d'apprentissage, 64 au plus), `accepted` (anti-rejeu persistant `(epoch, stateSeq, digest)` par appareil),
-//!   `done` (appareils oubliés terminés). Chaque appareil republie la liste maître entière dans son `state.ctx`.
+//!   `done` (appareils oubliés terminés). Chaque appareil republie la liste maître entière dans son `state.spx`.
 //! - Auteur d'une déclaration = appareil de son hlc `at`, jamais l'appareil qui la publie.
 //! - `forget_order`, `learn_declarations`, `cutoff`, `forgotten_delete_check`, `completed_forgotten`, `next_declaration_hlc` : fonctions
 //!   pures, **mêmes règles que `retention.ts`**, vérifiées sur la même table de cas (`tests/fixtures/sync/forget-order.json`).
@@ -24,7 +24,7 @@ use super::SyncCode;
 /// Registre de l'oubli (dossier de configuration `sync/`).
 pub const FORGOTTEN_FILE: &str = "forgotten.json";
 /// Entrée du coffre réservée à la réinitialisation (Y-11, section 14.3) : sa présence signale une réinitialisation en cours.
-pub const SYNC_NEXT_KEY_ACCOUNT: &str = "circletasks.sync.key.next";
+pub const SYNC_NEXT_KEY_ACCOUNT: &str = "spartiate.sync.key.next";
 /// Déclarations gardées au plus dans la liste maître (borne de `forgotten`, section 1.6).
 pub const MAX_FORGOTTEN_ENTRIES: usize = 64;
 /// Une déclaration locale est refusée (`too-large`, avant la boîte) dès que la liste maître en compte autant (§18 point 5).

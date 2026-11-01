@@ -40,7 +40,7 @@ export const syncForgetFr = {
   requestCancelled: 'Demande annulée',
   cancelFailed: 'La demande n’a pas pu être annulée : {reason}',
   reasons: {
-    notForeground: 'CircleTasks n’était pas au premier plan',
+    notForeground: 'Spartiate n’était pas au premier plan',
     rateLimited: 'trop de demandes, réessayez dans 10 minutes',
     cloudPending: 'un fichier attend encore iCloud',
     folderUnreachable: 'dossier de synchronisation introuvable',
@@ -56,7 +56,7 @@ export const syncForgetFr = {
   rejoinLabel: 'Associer de nouveau cet appareil',
   rejoinTitle: 'Associer de nouveau cet appareil ?',
   rejoinBody:
-    'Le dossier est délié (la clé est gardée), cet appareil reçoit un nouvel identifiant, puis l’app redémarre ; choisissez alors de nouveau le dossier CircleTasks. Rien n’est effacé : vos données sont fusionnées puis publiées.',
+    'Le dossier est délié (la clé est gardée), cet appareil reçoit un nouvel identifiant, puis l’app redémarre ; choisissez alors de nouveau le dossier Spartiate. Rien n’est effacé : vos données sont fusionnées puis publiées.',
   rejoinRunning: 'Association en cours…',
   banner: 'Cet appareil a été oublié : associez-le de nouveau',
   bannerPending: '{device} oublié : suppression de ses fichiers en attente de {waiting}',

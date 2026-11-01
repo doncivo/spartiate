@@ -163,7 +163,7 @@ describe('Avancement dans l’encadré d’Aujourd’hui (OB-04)', () => {
     await waitFor(() => expect(card()).toHaveTextContent('2/5'));
     fireEvent.click(await screen.findByRole('checkbox', { name: 'Terminer : C' }));
     await waitFor(() => expect(card()).toHaveTextContent('3/5'));
-    expect(card()).toHaveAccessibleName('Objectif : Finaliser le PRD CircleTasks, 3 sur 5') // UI-REFONTE-02 : ligne iPhone « Objectif : titre, avancement »;
+    expect(card()).toHaveAccessibleName('Objectif : Finaliser le PRD Spartiate, 3 sur 5') // UI-REFONTE-02 : ligne iPhone « Objectif : titre, avancement »;
   });
 
   it('aucune tâche rattachée : l’encadré n’affiche pas de compteur (critère 4)', async () => {
@@ -171,7 +171,7 @@ describe('Avancement dans l’encadré d’Aujourd’hui (OB-04)', () => {
     renderToday();
     await waitFor(() => expect(card()).toBeTruthy());
     expect(card()).not.toHaveTextContent('/');
-    expect(card()).toHaveAccessibleName('Objectif : Finaliser le PRD CircleTasks');
+    expect(card()).toHaveAccessibleName('Objectif : Finaliser le PRD Spartiate');
   });
 
   it('atteint : l’encadré affiche « Atteint » à la place du compteur (critère 5)', async () => {

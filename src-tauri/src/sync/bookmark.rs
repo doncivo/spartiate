@@ -1,4 +1,4 @@
-//! iPhone : accès au dossier `iCloud Drive/CircleTasks` par le signet de sécurité du plugin Swift folder-bookmark (ADR 0011 §6.3 et §22 ;
+//! iPhone : accès au dossier `iCloud Drive/Spartiate` par le signet de sécurité du plugin Swift folder-bookmark (ADR 0011 §6.3 et §22 ;
 //! Y-IOS-01).
 //!
 //! `BookmarkFs` implémente `SyncFs` au-dessus d'un transport injectable (`BookmarkTransport`) : le plugin sur iOS (`PluginTransport`), un
@@ -300,7 +300,7 @@ impl SyncFs for BookmarkFs {
 
     fn write_atomic(&self, file: &[&str], bytes: &[u8]) -> Result<(), FsError> {
         let path = components(file, false)?;
-        // Seuls `state.ctx` et `state.next.ctx` (moins de 1 Mio) sont écrits ainsi.
+        // Seuls `state.spx` et `state.next.spx` (moins de 1 Mio) sont écrits ainsi.
         if bytes.len() > MAX_PLUGIN_CHUNK_BYTES {
             return Err(FsError::TooLarge);
         }

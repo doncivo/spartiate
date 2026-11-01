@@ -57,7 +57,7 @@ export const shortcutsUiFr = {
     noModifier: 'Ajoutez Ctrl ou Alt à la combinaison.',
     windowsKey: 'La touche Windows est réservée au système.',
     reserved: 'Cette combinaison est réservée par Windows.',
-    appConflict: 'Cette combinaison est déjà utilisée dans CircleTasks.',
+    appConflict: 'Cette combinaison est déjà utilisée dans Spartiate.',
     inUse: 'Combinaison déjà utilisée par une autre application',
     unavailable: 'Impossible d’enregistrer cette combinaison.',
   },

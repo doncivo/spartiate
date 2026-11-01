@@ -109,7 +109,7 @@ describe('service (Y-02 critère 1, Y-03 critère 3)', () => {
     devices = [a];
     await setupFirst(a);
     await a.cycle();
-    a.platform.testing.setRestoreMarker({ backup: 'circletasks-daily-20261005.db', backupTakenAt: '2026-10-05T07:00:00.000Z' as IsoDateTime, restoredAt: '2026-10-05T08:00:00.000Z' as IsoDateTime, schemaVersion: 17 });
+    a.platform.testing.setRestoreMarker({ backup: 'spartiate-daily-20261005.db', backupTakenAt: '2026-10-05T07:00:00.000Z' as IsoDateTime, restoredAt: '2026-10-05T08:00:00.000Z' as IsoDateTime, schemaVersion: 17 });
     const running = a.service.syncNow('open');
     const queuedSync = a.service.syncNow('timer');
     const choice = a.service.chooseRestoreOption('keep-synced');
@@ -133,8 +133,8 @@ describe('service (Y-02 critère 1, Y-03 critère 3)', () => {
     const status = await a.cycle();
     expect(status.phase).toBe('idle');
     expect(status.lastSyncAt).toBe('2026-10-05T08:00:00.000Z');
-    // Nom et nature du dossier (Y1 : le libellé « iCloud Drive / CircleTasks » est composé par l'interface).
-    expect(status.folderLabel).toBe('CircleTasks');
+    // Nom et nature du dossier (Y1 : le libellé « iCloud Drive / Spartiate » est composé par l'interface).
+    expect(status.folderLabel).toBe('Spartiate');
     expect(status.folderKind).toBe('icloud');
     expect(status.devices).toEqual([{ deviceId: A_ID, platform: 'windows', self: true, lastReadAt: '2026-10-05T08:00:00.000Z', status: 'active' }]);
     expect(status.conflictsThisWeek).toBe(0);

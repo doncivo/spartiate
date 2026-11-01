@@ -1,7 +1,7 @@
 [package]
 name = "tauri-plugin-reminders"
 version = "0.1.0"
-description = "CircleTasks : lecture et écriture des Rappels Apple (EventKit) sur iPhone (ADR 0008 §10). Appelé par la WebView."
+description = "Spartiate : lecture et écriture des Rappels Apple (EventKit) sur iPhone (ADR 0008 §10). Appelé par la WebView."
 authors = ["Ali Cherif"]
 edition = "2021"
 rust-version = "1.80"

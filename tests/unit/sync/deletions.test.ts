@@ -99,7 +99,7 @@ describe('purge (Y-09 critères 2, 3, 6, 11)', () => {
     expect(await a.driver.select("SELECT * FROM sync_outbox WHERE row_id = ?", [t.id])).toEqual([]);
     expect(await a.driver.select('SELECT * FROM sync_field_clock WHERE row_id = ?', [t.id])).toEqual([]);
     // L'état publié porte le plus grand hlc purgé (règle 4).
-    expect(a.folder.fileNames(A_ID)).toContain('state.ctx');
+    expect(a.folder.fileNames(A_ID)).toContain('state.spx');
     expect(await a.data.repos.sync.getMeta('purgeHorizon')).not.toBeNull();
     // Un appareil tiers qui rejoint reçoit la liste des identifiants purgés dans l'instantané.
     const c = await createSimDevice(C_ID, { clock: createManualClock(a.clock.nowMs()) });

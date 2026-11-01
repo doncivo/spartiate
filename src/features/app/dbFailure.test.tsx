@@ -130,7 +130,7 @@ const ENV: DbEnvironment = {
   os: 'ios',
   buildPlatform: 'ios',
   appVersion: '0.2.1',
-  paths: { configDir: '/var/mobile/X/Library/Application Support/fr.ct', configDirError: null, dirExists: true, dbPath: '/var/mobile/X/Library/Application Support/fr.ct/circletasks.db', fileExists: false, fileBytes: null, walExists: false },
+  paths: { configDir: '/var/mobile/X/Library/Application Support/fr.ct', configDirError: null, dirExists: true, dbPath: '/var/mobile/X/Library/Application Support/fr.ct/spartiate.db', fileExists: false, fileBytes: null, walExists: false },
   pathsError: null,
 };
 
@@ -157,8 +157,8 @@ describe('0.2.1 diagnostic : affichage et copie', () => {
     const detail = screen.getByTestId('db-failure-detail');
     expect(detail).toHaveTextContent(t('app.diag.step', { step: label }));
     expect(detail).toHaveTextContent(t('app.diag.error', { name: item.errorName, message: item.message }));
-    expect(detail).toHaveTextContent('sqlite:circletasks.db');
-    await waitFor(() => expect(detail).toHaveTextContent('/var/mobile/X/Library/Application Support/fr.ct/circletasks.db'));
+    expect(detail).toHaveTextContent('sqlite:spartiate.db');
+    await waitFor(() => expect(detail).toHaveTextContent('/var/mobile/X/Library/Application Support/fr.ct/spartiate.db'));
   });
 
   it('0.2.2 : le mode de journal effectif est affiché, « inconnu » s’il est illisible, rien si la base n’était pas ouverte', () => {
@@ -176,7 +176,7 @@ describe('0.2.1 diagnostic : affichage et copie', () => {
     const writeText = vi.fn(() => Promise.resolve());
     vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
     render(<DbFailureDetails failure={MIGRATION_FAILURE} readEnvironment={() => Promise.resolve(ENV)} />);
-    await waitFor(() => expect(screen.getByTestId('db-failure-detail')).toHaveTextContent('circletasks.db (existe'));
+    await waitFor(() => expect(screen.getByTestId('db-failure-detail')).toHaveTextContent('spartiate.db (existe'));
     fireEvent.click(screen.getByRole('button', { name: t('app.diag.copy') }));
     expect(await screen.findByRole('status')).toHaveTextContent(t('app.diag.copied'));
     expect(writeText).toHaveBeenCalledWith(screen.getByTestId('db-failure-detail').textContent);

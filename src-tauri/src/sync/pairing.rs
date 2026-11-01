@@ -256,7 +256,7 @@ impl PairingRegistry {
     }
 
     /// Référence d'arrivée (audit 2, QA 3) : identifiants listés dans `devices/` à l'ouverture de l'instance, quel que soit leur état
-    /// (`state.ctx` dans le nuage, illisible…). Posée par `sync_pairing_open` avant l'affichage.
+    /// (`state.spx` dans le nuage, illisible…). Posée par `sync_pairing_open` avant l'affichage.
     pub fn set_arrival_baseline(&self, hwnd: isize, listed: Vec<String>) {
         let mut state = self.lock();
         if state.instance.is_some_and(|i| i.hwnd == hwnd) {

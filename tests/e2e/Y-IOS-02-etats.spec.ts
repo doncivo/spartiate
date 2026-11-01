@@ -143,7 +143,7 @@ test('Y-IOS-02 QA : PC sans clé, association par la clé de secours : erronée 
   await reglages(first.page).click();
   await first.page.getByRole('button', { name: SHOW_QR }).click();
   const show = await openPairingWindow(first.context, room, 'pc');
-  await expect(show.getByTestId('pairing-recovery-key')).toHaveText(/^CT1(-[0-9A-Z]{5})+$/, { timeout: APP_READY_TIMEOUT_MS });
+  await expect(show.getByTestId('pairing-recovery-key')).toHaveText(/^SP1(-[0-9A-Z]{5})+$/, { timeout: APP_READY_TIMEOUT_MS });
   const recoveryKey = (await show.getByTestId('pairing-recovery-key').textContent()) ?? '';
   await show.getByRole('button', { name: 'Annuler et fermer la fenêtre d’association' }).click();
   await show.close();
@@ -173,7 +173,7 @@ test('Y-IOS-02 QA : PC sans clé, association par la clé de secours : erronée 
   const entry = await openPairingWindow(second.context, room, 'pc2');
   const field = entry.getByLabel('Clé de secours');
   await expect(field).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });
-  await field.fill('CT1-AAAAA-BBBBB-CCCCC-DDDDD-EEEEE-FFFFF-GGGGG');
+  await field.fill('SP1-AAAAA-BBBBB-CCCCC-DDDDD-EEEEE-FFFFF-GGGGG');
   await entry.getByRole('button', { name: 'Associer', exact: true }).click();
   await expect(entry.getByTestId('pairing-import-message')).toBeVisible();
   await expect(field).toHaveValue('');

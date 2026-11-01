@@ -16,7 +16,7 @@ use super::consent::{ConsentGate, ConsentKind};
 use super::crypto::{key_from_recovery, parse_qr_text, qr_text_of, MasterKey};
 use super::files::{StdFs, SyncFs};
 use super::folder::{
-    check_sync_path, config_dir, read_config_file, remove_config_file, write_config_file, CheckedFolder, FolderKind, FolderRecord, FOLDER_FILE,
+    check_sync_path, config_dir, is_circletasks_folder_name, read_config_file, remove_config_file, write_config_file, CheckedFolder, FolderKind, FolderRecord, FOLDER_FILE, // ancien-ok: garde de séparation ADR 0017
 };
 use super::limits::{NONCE_MAX_RECORDS, NONCE_WARN_RECORDS, PAIRING_CLOCK_TOLERANCE_MS};
 use super::marker::{self, RestoreMarker};
@@ -40,8 +40,8 @@ use super::store::{Accepted, AppendResult, NextKey, SnapshotEndKey, FolderScan, 
 use super::{fail, log, SyncCode, SyncError, SyncResult};
 use crate::vault::{SecretVault, VaultError};
 
-/// Compte de la clé au coffre (service `fr.circletasks.planner`).
-pub const SYNC_KEY_ACCOUNT: &str = "circletasks.sync.key.v1";
+/// Compte de la clé au coffre (service `fr.spartiate.app`).
+pub const SYNC_KEY_ACCOUNT: &str = "spartiate.sync.key.v1";
 pub const OWN_FILE: &str = "own.json";
 pub const USAGE_FILE: &str = "usage.json";
 
@@ -118,7 +118,7 @@ impl SyncOptions {
     }
 }
 
-/// Forme IPC de `SyncFolderInfo` : nom du dossier et nature, jamais un chemin ; le libellé affiché (« iCloud Drive / CircleTasks »)
+/// Forme IPC de `SyncFolderInfo` : nom du dossier et nature, jamais un chemin ; le libellé affiché (« iCloud Drive / Spartiate »)
 /// est composé par l'interface (`src/i18n`, revue 13).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct FolderInfo {
@@ -133,7 +133,7 @@ pub struct FolderInfo {
 pub struct KeyStatus {
     pub present: bool,
     pub kid: Option<String>,
-    /// Y-11 : `kid` de l'entrée `circletasks.sync.key.next` (nouvelle clé d'une réinitialisation), ou null ; fait foi pour le moteur.
+    /// Y-11 : `kid` de l'entrée `spartiate.sync.key.next` (nouvelle clé d'une réinitialisation), ou null ; fait foi pour le moteur.
     pub next_kid: Option<String>,
     /// Y-11 (§18 point 17) : dernier refus de `sync_key_import` pour ce dossier (`sync/import-failure.json`), ou null.
     pub import_failure: Option<ImportFailureView>,
@@ -286,7 +286,7 @@ struct Inner {
     /// Dernière synchro (`lastSyncHlc`, ms) de chaque appareil vue au dernier scan de la session : un appareil expiré (180 jours) dont
     /// l'état attend iCloud ne bloque pas le don de la clé (seconde revue, point 2).
     last_seen: HashMap<String, u64>,
-    /// Remarques finales (sécurité basse) : anti-rejeu des `state.ctx` sous l'ancienne clé relus pour la coupure pendant une
+    /// Remarques finales (sécurité basse) : anti-rejeu des `state.spx` sous l'ancienne clé relus pour la coupure pendant une
     /// réinitialisation (appareils déjà réassociés), et derniers accusés acceptés : une copie plus ancienne remise n'abaisse jamais la
     /// coupure.
     k_accepted: HashMap<String, Accepted>,
@@ -458,7 +458,29 @@ impl SyncCore {
         self.bind_checked(checked, Some(refreshed.unwrap_or_else(|| bookmark.to_owned())))
     }
 
+    /// iPhone : le contrôle du dossier refusé a pu poser sa racine de session dans le plugin (`resolve`) ; remet celle du dossier encore lié,
+    /// sinon ses opérations relatives s'appliqueraient au dossier refusé (revue sync-icloud, ADR 0017).
+    fn restore_root_after_refusal(&self) {
+        let inner = self.lock();
+        if let Some(bound) = inner.folder.as_ref() {
+            let _ = bound.fs.check_root();
+        }
+    }
+
     fn bind_checked(&self, checked: CheckedFolder, bookmark: Option<String>) -> SyncResult<FolderInfo> {
+        // ADR 0017 : jamais le dossier de CircleTasks, par son nom ni par ses fichiers ; rien n'est modifié avant ce contrôle.
+        // Le dossier lui-même ou l'un de ses ancêtres (un sous-dossier de l'arborescence de l'autre app est refusé aussi).
+        if checked.path.components().any(|c| is_circletasks_folder_name(&c.as_os_str().to_string_lossy())) { // ancien-ok: garde de séparation ADR 0017
+            log::event("folder-refused", "foreign-name");
+            self.restore_root_after_refusal();
+            return fail(SyncCode::ForeignFolder);
+        }
+        let probe = FolderRecord { v: 1, path: checked.path.to_string_lossy().into_owned(), device_id: None, bookmark: bookmark.clone() };
+        if Store::folder_has_foreign_data(self.backend.open_record(&checked, &probe).as_ref())? {
+            log::event("folder-refused", "foreign-files");
+            self.restore_root_after_refusal();
+            return fail(SyncCode::ForeignFolder);
+        }
         let mut inner = self.lock();
         // Autre dossier, ou le même rechoisi : aucun instantané en cache (revue B3).
         inner.snapshot_cache = None;
@@ -511,7 +533,7 @@ impl SyncCore {
         inner.snapshot_ends.clear();
         remove_config_file(&self.path(FOLDER_FILE))?;
         remove_config_file(&self.path(OWN_FILE))?;
-        // Y-10 : les déclarations sont liées au dossier et à l'appareil ; reconstruites depuis son `state.ctx` si le même dossier est
+        // Y-10 : les déclarations sont liées au dossier et à l'appareil ; reconstruites depuis son `state.spx` si le même dossier est
         // repris sous la même identité, jamais héritées par une nouvelle identité (« Associer de nouveau »).
         remove_config_file(&self.path(FORGOTTEN_FILE))?;
         // Y-11 : réinitialisation liée au dossier : abandonnée (nouvelle clé effacée, `.v1` gardée sauf `erase_key`) ; échec d'import
@@ -677,7 +699,7 @@ impl SyncCore {
         MasterKey::from_vault_value(&value).map(Some).ok_or(SyncError::new(SyncCode::VaultUnavailable))
     }
 
-    /// `sync_key_create` : `key-exists` si une clé existe ; `folder-has-data` si le dossier contient déjà des données CircleTasks.
+    /// `sync_key_create` : `key-exists` si une clé existe ; `folder-has-data` si le dossier contient déjà des données Spartiate.
     pub fn key_create(&self) -> SyncResult<String> {
         // Clé existante contrôlée sous le verrou (revue 17) : deux appels simultanés ne créent jamais deux clés.
         let mut inner = self.lock();
@@ -1023,7 +1045,7 @@ impl SyncCore {
         // Y-11 (§18 point 16) : aucune autre époque que celle de la réinitialisation (ou de la restauration gagnante).
         self.refuse_epoch_open(&mut inner, &key, &self_id, &own, &state.epoch)?;
         // Y-11 (§14.3 étapes 3 et 4, §11.1) : Rust est maître de `reset`. Sous l'ancienne clé, l'appareil qui réinitialise publie son
-        // annonce, tout autre état publie `reset: null` ; sous la nouvelle clé (`state.next.ctx`), `reset` est toujours nul ; aucune
+        // annonce, tout autre état publie `reset: null` ; sous la nouvelle clé (`state.next.spx`), `reset` est toujours nul ; aucune
         // donnée de l'époque visée avant l'annonce.
         let record = self.reset_record(&mut inner, &self_id)?;
         let next = self.active_next(&mut inner)?;
@@ -1290,7 +1312,7 @@ impl SyncCore {
     /// `sync_key_import` : dossier d'abord, clé ensuite (section 10.3). `owner` : fenêtre appelante (premier plan, boîte).
     ///
     /// Y-11 (§14.3 « Réassociation de B ») : un appareil déjà associé à ce dossier avec une autre clé (son propre état se déchiffre avec
-    /// elle) qui importe la nouvelle clé d'une réinitialisation l'écrit sous `circletasks.sync.key.next`, jamais par-dessus `.v1` avant la
+    /// elle) qui importe la nouvelle clé d'une réinitialisation l'écrit sous `spartiate.sync.key.next`, jamais par-dessus `.v1` avant la
     /// bascule (confirmation native de remplacement de Y-08) ; `reset.json` passe au rôle `joined`.
     pub fn key_import(&self, input: KeyInput, owner: isize) -> SyncResult<KeyImportResult> {
         let result = self.key_import_inner(input, owner);
@@ -1323,7 +1345,7 @@ impl SyncCore {
                 KeyInput::RecoveryKey(text) => (key_from_recovery(text).ok_or(SyncError::new(SyncCode::InvalidPairing))?, None, None),
             };
             drop(input);
-            // La clé doit être celle du dossier avant tout enregistrement (audit B3) : un state.ctx présent doit se déchiffrer avec
+            // La clé doit être celle du dossier avant tout enregistrement (audit B3) : un state.spx présent doit se déchiffrer avec
             // elle, pas seulement annoncer son kid en clair (audit S4).
             let check = Store::folder_kids(bound.fs.as_ref(), paired_by.as_deref(), &key)?;
             if check.readable == 0 {
@@ -1406,7 +1428,7 @@ impl SyncCore {
             inner.pending_paired_by = paired_by.clone();
         }
         if let Some(self_id) = Self::bound_device(&inner) {
-            // own.json pas encore reconstructible (propre state.ctx dans le nuage) : pairedBy reste en attente, l'import réussit.
+            // own.json pas encore reconstructible (propre state.spx dans le nuage) : pairedBy reste en attente, l'import réussit.
             if let Ok(own) = self.valid_own(&mut inner, &key, &self_id) {
                 self.apply_pending(&mut inner, own)?;
             }
@@ -1706,7 +1728,7 @@ impl SyncCore {
     }
 
     /// `sync_forgotten_delete` : conditions recalculées depuis le dossier et le registre (section 14.2 (a) à (g)), puis suppression des
-    /// noms stricts de `devices/<device_id>/` (`state.ctx` en dernier) ; terminé : inscrit dans `done`. Aucune boîte.
+    /// noms stricts de `devices/<device_id>/` (`state.spx` en dernier) ; terminé : inscrit dans `done`. Aucune boîte.
     pub fn forgotten_delete(&self, device_id: &str) -> SyncResult<ForgottenDeletion> {
         if !is_uuid_v4(device_id) {
             return fail(SyncCode::BadName);
@@ -1911,7 +1933,7 @@ impl SyncCore {
     }
 
     /// `sync_reset_key` : refus avant toute boîte, reprise d'une réinitialisation interrompue (même `K2`, sans boîte), puis confirmation
-    /// native (« Annuler » par défaut), puis `K2` créée par Rust sous `circletasks.sync.key.next` et `sync/reset.json`. Ne rend que le
+    /// native (« Annuler » par défaut), puis `K2` créée par Rust sous `spartiate.sync.key.next` et `sync/reset.json`. Ne rend que le
     /// `kid` : la clé ne traverse jamais la WebView.
     pub fn reset_key(&self, owner: isize) -> SyncResult<String> {
         if let ResetPlan::Resume(kid) = self.reset_plan(&mut self.lock())? {
@@ -2296,8 +2318,8 @@ impl SyncCore {
         Ok(Some(Self::view(&record, Vec::new(), true, false)))
     }
 
-    /// Oubliés retenus que l'instantané annoncé dans son `state.next.ctx` ne couvre pas (§18 point 14) : coupure calculée sur les
-    /// accusés de chaque actif non oublié, lus dans son `state.ctx` sous l'ancienne clé et dans son état sous la nouvelle ; fin
+    /// Oubliés retenus que l'instantané annoncé dans son `state.next.spx` ne couvre pas (§18 point 14) : coupure calculée sur les
+    /// accusés de chaque actif non oublié, lus dans son `state.spx` sous l'ancienne clé et dans son état sous la nouvelle ; fin
     /// d'instantané lue sous la nouvelle clé (même lecture que `tail`). Fin illisible : chaque oublié retenu de coupure non nulle.
     #[allow(clippy::too_many_arguments)]
     fn uncovered_forgotten(
@@ -2378,7 +2400,7 @@ impl SyncCore {
         }
     }
 
-    /// Bascule (§14.3 étape 5) : (1) `state.ctx` ← état sous la nouvelle clé, (2) `state.next.ctx` supprimé, (3) ses fichiers des
+    /// Bascule (§14.3 étape 5) : (1) `state.spx` ← état sous la nouvelle clé, (2) `state.next.spx` supprimé, (3) ses fichiers des
     /// époques antérieures (ancienne clé) supprimés, (4) nouvelle clé écrite sous `.v1` (l'ancienne est remplacée : jamais d'instant sans
     /// clé valide), `own.json` et budget de nonces passés à la nouvelle clé, (5) entrée `.next` effacée, (6) registre supprimé. Chaque
     /// étape est mémorisée dans le registre ; reprise au scan suivant après un arrêt.
@@ -2402,8 +2424,8 @@ impl SyncCore {
             self.save_reset(record)?;
         }
         // Audit 3 et audit bas de la seconde revue : avant d'effacer quoi que ce soit (étapes 2 à 5, dès la suppression de
-        // `state.next.ctx`), son `state.ctx` doit se déchiffrer avec la nouvelle clé dans l'époque visée ; sinon la bascule s'arrête
-        // (`state-mismatch`), l'ancienne clé et `state.next.ctx` restent.
+        // `state.next.spx`), son `state.spx` doit se déchiffrer avec la nouvelle clé dans l'époque visée ; sinon la bascule s'arrête
+        // (`state-mismatch`), l'ancienne clé et `state.next.spx` restent.
         if record.switch_step < 5 {
             let next = match self.read_vault_next()?.filter(|k| k.kid() == record.kid) {
                 Some(next) => next,
@@ -2489,7 +2511,7 @@ impl SyncCore {
     }
 
     /// Étapes du perdant (§18 point 2), chacune idempotente : (1) registre marqué `superseded` (fait par l'appelant), (2) son
-    /// `state.next.ctx` supprimé, (3) entrée `.next` effacée (`nextKid` devient nul), (4) `own.json` ramené à la position de l'époque `n`
+    /// `state.next.spx` supprimé, (3) entrée `.next` effacée (`nextKid` devient nul), (4) `own.json` ramené à la position de l'époque `n`
     /// (`stateSeq` garde son maximum). L'ancienne clé reste sous `.v1` pendant toute la perte.
     fn supersede_steps(&self, inner: &mut Inner, record: &mut ResetRecord) -> SyncResult<()> {
         let self_id = record.device_id.clone();
@@ -2528,7 +2550,7 @@ impl SyncCore {
         Ok(())
     }
 
-    /// Perte (§18 point 2) : son état publié redevient celui de l'ancienne clé (`state.ctx`, plus ancien que ses états sous la nouvelle
+    /// Perte (§18 point 2) : son état publié redevient celui de l'ancienne clé (`state.spx`, plus ancien que ses états sous la nouvelle
     /// clé). L'anti-rejeu de **cet appareil seul** revient à cet état, à condition qu'il soit bien le sien : déchiffré avec la clé locale,
     /// et portant l'annonce de cette réinitialisation (appareil qui réinitialise) ou figé dans l'époque de l'import (appareil réassocié).
     /// Sans cela, son propre état serait vu comme un rejeu et il ne pourrait ni republier sans annonce, ni se réassocier.

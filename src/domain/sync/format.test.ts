@@ -43,7 +43,7 @@ const hlc = (ms: number, dev: string = A): Hlc => `${String(ms).padStart(15, '0'
 const E1 = epochId(1, A);
 const KID = '0123456789abcdef';
 
-const header = (over: Record<string, unknown> = {}): string => JSON.stringify({ f: 'ct-j', sm: 1, kid: KID, dev: A, e: E1, n: 1, ...over });
+const header = (over: Record<string, unknown> = {}): string => JSON.stringify({ f: 'sp-j', sm: 1, kid: KID, dev: A, e: E1, n: 1, ...over });
 
 const ack = (over: Partial<DeviceAck> = {}): DeviceAck => ({ epoch: E1, segment: 1, record: 2, hlc: hlc(10), stateSeq: 3, ...over });
 
@@ -106,18 +106,18 @@ describe('identifiants et noms stricts (section 1.1)', () => {
   });
 
   it('segments et instantanés : 8 chiffres, 1 à 99 999 999', () => {
-    expect(segmentFileName(1)).toBe('j-00000001.ctj');
-    expect(snapshotFileName(42)).toBe('s-00000042.cts');
+    expect(segmentFileName(1)).toBe('j-00000001.spj');
+    expect(snapshotFileName(42)).toBe('s-00000042.sps');
     expect(() => segmentFileName(0)).toThrow(RangeError);
     expect(() => snapshotFileName(100_000_000)).toThrow(RangeError);
     expect(isFileNumber(1.5)).toBe(false);
   });
 
-  it('noms reconnus ; copies de conflit, temporaires et state.next.ctx ignorés', () => {
-    expect(parseSyncFileName('state.ctx')).toEqual({ kind: 'state' });
-    expect(parseSyncFileName('j-00000003.ctj')).toEqual({ kind: 'segment', n: 3 });
-    expect(parseSyncFileName('s-00000002.cts')).toEqual({ kind: 'snapshot', n: 2 });
-    for (const name of ['state 2.ctx', 'state.ctx.tmp', 'state.next.ctx', 'j-00000000.ctj', 'j-1.ctj', 'J-00000001.ctj', 's-00000001.cts.tmp', 'notes.txt']) {
+  it('noms reconnus ; copies de conflit, temporaires et state.next.spx ignorés', () => {
+    expect(parseSyncFileName('state.spx')).toEqual({ kind: 'state' });
+    expect(parseSyncFileName('j-00000003.spj')).toEqual({ kind: 'segment', n: 3 });
+    expect(parseSyncFileName('s-00000002.sps')).toEqual({ kind: 'snapshot', n: 2 });
+    for (const name of ['state 2.spx', 'state.spx.tmp', 'state.next.spx', 'j-00000000.spj', 'j-1.spj', 'J-00000001.spj', 's-00000001.sps.tmp', 'notes.txt']) {
       expect(parseSyncFileName(name)).toBeNull();
     }
   });
@@ -125,16 +125,16 @@ describe('identifiants et noms stricts (section 1.1)', () => {
 
 describe('en-tête en clair (section 1.2)', () => {
   it('accepte exactement les six clés, espaces JSON compris', () => {
-    expect(parseFileHeader(header())).toEqual({ f: 'ct-j', sm: 1, kid: KID, dev: A, e: E1, n: 1 });
-    expect(parseFileHeader(header({ f: 'ct-state', n: 123_456_789_012 }))?.n).toBe(123_456_789_012);
+    expect(parseFileHeader(header())).toEqual({ f: 'sp-j', sm: 1, kid: KID, dev: A, e: E1, n: 1 });
+    expect(parseFileHeader(header({ f: 'sp-state', n: 123_456_789_012 }))?.n).toBe(123_456_789_012);
     expect(parseFileHeader(header().replace(/,/g, ' , '))).not.toBeNull();
   });
 
   it('refuse clé en trop, clé manquante, clé répétée, __proto__', () => {
     expect(parseFileHeader(header({ x: 1 }))).toBeNull();
-    expect(parseFileHeader(JSON.stringify({ f: 'ct-j', sm: 1, kid: KID, dev: A, e: E1 }))).toBeNull();
+    expect(parseFileHeader(JSON.stringify({ f: 'sp-j', sm: 1, kid: KID, dev: A, e: E1 }))).toBeNull();
     expect(parseFileHeader(header().replace('{', '{"n":1,'))).toBeNull();
-    expect(parseFileHeader(header().replace('"f":"ct-j"', '"__proto__":"ct-j"'))).toBeNull();
+    expect(parseFileHeader(header().replace('"f":"sp-j"', '"__proto__":"sp-j"'))).toBeNull();
   });
 
   it('refuse types et valeurs hors schéma', () => {
@@ -164,12 +164,12 @@ describe('en-tête en clair (section 1.2)', () => {
     expect(headerMatchesPath(h, { deviceId: A, epoch: epochId(2, A), file: { kind: 'segment', n: 4 } })).toBe(false);
     expect(headerMatchesPath(h, { deviceId: B, epoch: E1, file: { kind: 'segment', n: 4 } })).toBe(false);
     expect(headerMatchesPath(h, { deviceId: A, epoch: E1, file: { kind: 'snapshot', n: 4 } })).toBe(false);
-    const s = parseFileHeader(header({ f: 'ct-state', n: 9 }));
+    const s = parseFileHeader(header({ f: 'sp-state', n: 9 }));
     if (!s) throw new Error('en-tête attendu');
     expect(headerMatchesPath(s, { deviceId: A, epoch: null, file: { kind: 'state' } })).toBe(true);
     expect(headerMatchesPath(s, { deviceId: A, epoch: E1, file: { kind: 'state' } })).toBe(true);
     expect(headerMatchesPath(s, { deviceId: A, epoch: epochId(2, B), file: { kind: 'state' } })).toBe(false);
-    const snap = parseFileHeader(header({ f: 'ct-s', n: 2 }));
+    const snap = parseFileHeader(header({ f: 'sp-s', n: 2 }));
     if (!snap) throw new Error('en-tête attendu');
     expect(headerMatchesPath(snap, { deviceId: A, epoch: E1, file: { kind: 'snapshot', n: 2 } })).toBe(true);
   });
@@ -208,9 +208,9 @@ describe('ligne chiffrée (section 1.2, Y-07)', () => {
 });
 
 describe('codes d’erreur (section 11.1)', () => {
-  it('38 codes (35, plus not-foreground, already-open et window-unprotected de Y-06), sans doublon, reconnus par isSyncErrorCode', () => {
-    expect(SYNC_ERROR_CODES).toHaveLength(38);
-    expect(new Set(SYNC_ERROR_CODES).size).toBe(38);
+  it('39 codes (35, plus not-foreground, already-open et window-unprotected de Y-06, plus foreign-folder de l’ADR 0017), sans doublon, reconnus par isSyncErrorCode', () => {
+    expect(SYNC_ERROR_CODES).toHaveLength(39);
+    expect(new Set(SYNC_ERROR_CODES).size).toBe(39);
     expect(isSyncErrorCode('segment-full')).toBe(true);
     expect(isSyncErrorCode('SEGMENT-FULL')).toBe(false);
     expect(isSyncErrorCode(undefined)).toBe(false);

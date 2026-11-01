@@ -49,7 +49,7 @@ export const captureFr = {
     // Autorisations de la dictée (I-05) : explication avant les fenêtres d’iOS, refus nommé et persistant, ouverture des Réglages.
     explain: {
       title: 'Dicter une tâche',
-      text: 'CircleTasks écoute votre voix pour la transformer en texte, sur l’iPhone. Rien n’est enregistré ni envoyé. iOS vous demandera deux autorisations : le micro, puis la reconnaissance vocale.',
+      text: 'Spartiate écoute votre voix pour la transformer en texte, sur l’iPhone. Rien n’est enregistré ni envoyé. iOS vous demandera deux autorisations : le micro, puis la reconnaissance vocale.',
       continue: 'Continuer',
       later: 'Pas maintenant',
     },
@@ -60,7 +60,7 @@ export const captureFr = {
       speechRecognitionRestricted: 'La reconnaissance vocale est restreinte sur cet iPhone par Temps d’écran ou un profil de gestion. Seule la personne qui a posé la restriction peut la lever.',
       openSettings: 'Ouvrir les réglages',
     },
-    settingsFailed: 'Les réglages n’ont pas pu s’ouvrir. Ouvrez Réglages › CircleTasks.',
+    settingsFailed: 'Les réglages n’ont pas pu s’ouvrir. Ouvrez Réglages › Spartiate.',
     onDeviceUnavailable: 'La dictée hors ligne en français n’est pas disponible sur cet iPhone. Activez la dictée dans Réglages › Général › Clavier › Dictée. Le micro du clavier reste utilisable.',
     pluginUnavailable: 'Dictée indisponible sur cet iPhone. Le micro du clavier reste utilisable.',
     nothingHeard: 'Rien n’a été entendu. Réessayez.',

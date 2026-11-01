@@ -89,7 +89,7 @@ describe('I-04 : écran Logs', () => {
     expect(await screen.findByText('Aucune entrée')).toBeInTheDocument();
   });
 
-  it('critère 7 : « Exporter » -> texte UTF-8 circletasks-logs-AAAAMMJJ-HHMM.txt (en-tête, lignes UTC), sélecteur iPhone en excursion', async () => {
+  it('critère 7 : « Exporter » -> texte UTF-8 spartiate-logs-AAAAMMJJ-HHMM.txt (en-tête, lignes UTC), sélecteur iPhone en excursion', async () => {
     renderScreen();
     await waitFor(() => expect(rows()).toHaveLength(5));
     fireEvent.click(screen.getByRole('button', { name: 'Exporter' }));
@@ -97,10 +97,10 @@ describe('I-04 : écran Logs', () => {
     expect(files.saved).toHaveLength(1);
     const saved = files.saved[0];
     expect(saved?.suggestedName).toBe(logExportName(new Date('2026-10-08T08:12:00.000Z')));
-    expect(saved?.suggestedName).toMatch(/^circletasks-logs-\d{8}-\d{4}\.txt$/);
+    expect(saved?.suggestedName).toMatch(/^spartiate-logs-\d{8}-\d{4}\.txt$/);
     expect(saved?.mime).toBe('text/plain');
     const text = new TextDecoder('utf-8', { fatal: true }).decode(saved?.data);
-    expect(text).toContain('Application : CircleTasks 0.2.0');
+    expect(text).toContain('Application : Spartiate 0.2.0');
     expect(text).toContain('Système : iPhone (iOS)');
     expect(text).toMatch(/Version de schéma : \d+/);
     expect(text).toContain('Entrées : 5');

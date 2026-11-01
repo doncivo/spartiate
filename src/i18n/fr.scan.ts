@@ -85,7 +85,7 @@ export const scanFr = {
     step1: 'Ouvrez Paramètres Windows › Heure et langue › Langue et région.',
     step2: 'Choisissez Français › Options de langue.',
     step3: 'Installez « Reconnaissance de texte ».',
-    step4: 'Redémarrez CircleTasks.',
+    step4: 'Redémarrez Spartiate.',
     recheck: 'Vérifier de nouveau',
     rechecking: 'Vérification en cours',
     stillMissing: 'Le pack n’est pas encore détecté. Redémarrez l’application après l’installation.',
@@ -117,9 +117,9 @@ export const scanFr = {
   cleanupFailed: 'Une copie temporaire d’une photo précédente n’a pas pu être supprimée de l’iPhone. Redémarrez l’application.',
   // Caméra du sélecteur de photo de l’iPhone (I-05 critère 10) : l’état de l’autorisation n’est pas lisible, la phrase ne dépend d’aucun état.
   cameraHint: {
-    text: 'Pour photographier une liste, autorisez la caméra : iOS vous le demandera la première fois. Si rien ne se passe, ouvrez Réglages › CircleTasks › Caméra.',
+    text: 'Pour photographier une liste, autorisez la caméra : iOS vous le demandera la première fois. Si rien ne se passe, ouvrez Réglages › Spartiate › Caméra.',
     openSettings: 'Ouvrir les réglages',
-    settingsFailed: 'Les réglages n’ont pas pu s’ouvrir. Ouvrez Réglages › CircleTasks › Caméra.',
+    settingsFailed: 'Les réglages n’ont pas pu s’ouvrir. Ouvrez Réglages › Spartiate › Caméra.',
   },
   checking: 'Vérification du moteur de lecture',
 } as const;

@@ -4,7 +4,7 @@ import type { Messages } from './types';
 export const syncEngineEn: Pick<Messages['sync'], 'status'> = {
   status: {
     title: 'Sync',
-    folderFallback: 'iCloud Drive / CircleTasks',
+    folderFallback: 'iCloud Drive / Spartiate',
     upToDate: 'Up to date · {age}',
     upToDateAnnounce: 'Up to date',
     ageNow: 'just now',
@@ -34,7 +34,7 @@ export const syncEngineEn: Pick<Messages['sync'], 'status'> = {
     errorStoppedReset: 'The encryption key reached its limit (code {code}): reset sync in Details',
     errorStoppedUpdate: 'Data from a newer version (code {code}): update the app',
     errorFolderUnreachable: 'Sync folder not found: your changes will be sent when it is back',
-    errorFolderUnreachableIos: 'iCloud Drive folder unreachable: choose the iCloud Drive / CircleTasks folder again',
+    errorFolderUnreachableIos: 'iCloud Drive folder unreachable: choose the iCloud Drive / Spartiate folder again',
     errorCloudProviderStopped: 'Open iCloud for Windows: your changes will be sent when it is back',
     errorCloud: 'iCloud is not responding: your changes will be sent when it is back',
     errorUnsafeFolder: 'This folder cannot be used for sync: choose another one',

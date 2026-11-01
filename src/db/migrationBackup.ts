@@ -8,7 +8,7 @@ import type { MigrateOptions } from './migrator';
  * ne contient que l'orchestration, testable sans Tauri.
  *
  * I-06 (ADR 0007 avenant I-06 point 6) : la sauvegarde « Avant mise à jour » est UNIQUE pour une cible : une sauvegarde
- * `circletasks-pre-migration-vAAAA-to-vBBBB-…` avec BBBB = cible et AAAA ≤ version courante (mise à jour interrompue puis reprise, ou
+ * `spartiate-pre-migration-vAAAA-to-vBBBB-…` avec BBBB = cible et AAAA ≤ version courante (mise à jour interrompue puis reprise, ou
  * nouvel essai après une restauration) est réutilisée au lieu d'en faire une autre. Liste illisible : nouvelle sauvegarde (un doublon vaut
  * mieux qu'aucune).
  */
@@ -46,10 +46,10 @@ export function backupStamp(clock: Clock): string {
   return new Date(clock.nowMs()).toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
 }
 
-const PRE_MIGRATION_NAME = /^circletasks-pre-migration-v(\d{4})-to-v(\d{4})-(\d{8}T\d{6}Z)\.db$/;
+const PRE_MIGRATION_NAME = /^spartiate-pre-migration-v(\d{4})-to-v(\d{4})-(\d{8}T\d{6}Z)\.db$/;
 
-const PRE_RESTORE_NAME = /^circletasks-pre-restore-(\d{8}T\d{6}Z)\.db$/;
-const DAILY_NAME = /^circletasks-daily-(\d{8})\.db$/;
+const PRE_RESTORE_NAME = /^spartiate-pre-restore-(\d{8}T\d{6}Z)\.db$/;
+const DAILY_NAME = /^spartiate-daily-(\d{8})\.db$/;
 
 /**
  * Parmi des noms de sauvegardes, la sauvegarde « Avant mise à jour » à RÉUTILISER pour la cible, ou null (nouvelle sauvegarde). Pur : la

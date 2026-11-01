@@ -1,4 +1,4 @@
-//! Plugin Swift reminders de CircleTasks (ADR 0008 §10.4, K-05 à K-07) : lit les listes et les rappels d'EventKit choisis par l'utilisateur et
+//! Plugin Swift reminders de Spartiate (ADR 0008 §10.4, K-05 à K-07) : lit les listes et les rappels d'EventKit choisis par l'utilisateur et
 //! écrit titre, échéance et statut terminé d'un rappel (jamais notes, priorité, alertes ajoutées, lieu ni sous-tâches).
 //!
 //! Aucune commande Rust : toutes sont transmises à Swift (voir `build.rs`). Le crate n'existe que dans la cible iOS (dépendance sous

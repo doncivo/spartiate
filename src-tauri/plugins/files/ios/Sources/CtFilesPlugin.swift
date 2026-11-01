@@ -1,4 +1,4 @@
-// Plugin ct-files de CircleTasks (FILES-IOS-01, ADR 0009 avenant lot F point A2, décision du 2026-10-08).
+// Plugin ct-files de Spartiate (FILES-IOS-01, ADR 0009 avenant lot F point A2, décision du 2026-10-08).
 //
 // Contrat : tests/fixtures/files/files-contract.json (commande, champs, codes, types), relu par un contrôle statique contre ce fichier et
 // src-tauri/src/export_ios.rs. Seul Rust appelle ce plugin (aucune permission pour la WebView).

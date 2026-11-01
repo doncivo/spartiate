@@ -130,5 +130,5 @@ pub fn run() {
     // premier et le plugin SQL ne serait jamais enregistré).
     builder
         .run(tauri::generate_context!())
-        .expect("échec du démarrage de CircleTasks");
+        .expect("échec du démarrage de Spartiate");
 }

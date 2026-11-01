@@ -1,4 +1,4 @@
-// Plugin speech de CircleTasks (CAP-IOS-01, ADR 0015 section 2.2) : dictée française SUR L'APPAREIL et ouverture des Réglages de l'app.
+// Plugin speech de Spartiate (CAP-IOS-01, ADR 0015 section 2.2) : dictée française SUR L'APPAREIL et ouverture des Réglages de l'app.
 //
 // Contrat : tests/fixtures/capture/speech-contract.json (noms, champs, codes), relu par un contrôle statique contre ce fichier et
 // src-tauri/src/speech/mod.rs. Seul Rust appelle ces commandes (aucune permission pour la WebView).
@@ -67,7 +67,7 @@ private final class Listening {
 // MARK: - Plugin
 
 class SpeechPlugin: Plugin {
-  private let speechQueue = DispatchQueue(label: "fr.circletasks.speech.state", qos: .userInitiated)
+  private let speechQueue = DispatchQueue(label: "fr.spartiate.speech.state", qos: .userInitiated)
   /// Attente du résultat final après la fin de l'audio (s), puis la tâche est annulée.
   private let finalResultWaitSeconds: Double = 1.5
   /// Erreur de la reconnaissance pour « aucune parole détectée » : domaine ET code (un autre domaine avec le même code n'est pas cette erreur).

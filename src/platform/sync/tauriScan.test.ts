@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createTauriSync, type SyncInvoker } from './tauriSync';
 import { SYNC_COMMAND_WINDOWS_IOS, type SyncCommand } from './types';
 
-const QR = 'CTPAIR1.c2VjcmV0LXF1aS1uZS1kb2l0LWphbWFpcy1zb3J0aXI';
+const QR = 'SPPAIR1.c2VjcmV0LXF1aS1uZS1kb2l0LWphbWFpcy1zb3J0aXI';
 
 function fakeDocument(state: DocumentVisibilityState = 'visible') {
   const listeners = new Set<() => void>();
@@ -74,8 +74,8 @@ describe('scan du QR par le JS (ADR 0011 §23 point 2)', () => {
     const outcome = await pending;
     expect(outcome).toEqual({ kind: 'imported', result: { kid: '0123456789abcdef', pairedBy: 'a', epoch: null } });
     expect(calls).toEqual([{ command: 'sync_key_import', args: { qrText: QR } }]);
-    expect(JSON.stringify(outcome)).not.toContain('CTPAIR1');
-    expect(JSON.stringify(logs)).not.toContain('CTPAIR1');
+    expect(JSON.stringify(outcome)).not.toContain('SPPAIR1');
+    expect(JSON.stringify(logs)).not.toContain('SPPAIR1');
   });
 
   it('refus de Rust : code seul, jamais le texte', async () => {
@@ -85,7 +85,7 @@ describe('scan du QR par le JS (ADR 0011 §23 point 2)', () => {
     fake.read(QR);
     const outcome = await pending;
     expect(outcome).toEqual({ kind: 'failed', code: 'key-mismatch' });
-    expect(JSON.stringify(outcome)).not.toContain('CTPAIR1');
+    expect(JSON.stringify(outcome)).not.toContain('SPPAIR1');
   });
 
   it('« Annuler » et masquage de la page pendant le scan : cancel(), aucun import', async () => {

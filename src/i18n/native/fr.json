@@ -2,35 +2,35 @@
   "$comment": "Textes des boîtes de confirmation natives ouvertes par Rust (ADR 0011 section 2.1). Compilés dans le binaire par include_str! (src-tauri/src/sync/consent.rs) : jamais fournis par la WebView.",
   "consent": {
     "showKey": {
-      "title": "CircleTasks",
+      "title": "Spartiate",
       "instruction": "Afficher la clé de synchronisation ?",
       "content": "Le code et la clé de secours qui vont s'afficher donnent accès à toutes vos données synchronisées. Ne les montrez qu'à vos propres appareils.",
       "confirm": "Afficher la clé",
       "cancel": "Annuler"
     },
     "replaceKey": {
-      "title": "CircleTasks",
+      "title": "Spartiate",
       "instruction": "Remplacer la clé de synchronisation de cet appareil ?",
       "content": "Cet appareil a déjà une autre clé. Elle sera remplacée par la clé que vous venez de saisir.",
       "confirm": "Remplacer la clé",
       "cancel": "Annuler"
     },
     "eraseKey": {
-      "title": "CircleTasks",
+      "title": "Spartiate",
       "instruction": "Oublier le dossier et la clé ?",
       "content": "Sans clé, cet appareil devra être associé de nouveau.",
       "confirm": "Oublier la clé",
       "cancel": "Annuler"
     },
     "forgetDevice": {
-      "title": "CircleTasks",
+      "title": "Spartiate",
       "instruction": "Oublier cet appareil ?",
       "content": "Il ne sera plus synchronisé et ses fichiers seront supprimés d'iCloud. L'oubli ne s'annule pas : l'appareil devra être associé de nouveau.",
       "confirm": "Oublier l'appareil",
       "cancel": "Annuler"
     },
     "resetKey": {
-      "title": "CircleTasks",
+      "title": "Spartiate",
       "instruction": "Réinitialiser la synchronisation avec une nouvelle clé ?",
       "content": "Une nouvelle clé et une nouvelle clé de secours vont être créées. Vos autres appareils devront être associés de nouveau, ou oubliés. L'ancienne clé de secours ne servira plus.",
       "confirm": "Réinitialiser",

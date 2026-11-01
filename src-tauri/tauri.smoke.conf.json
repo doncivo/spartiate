@@ -1,12 +1,12 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "CircleTasks Smoke",
-  "identifier": "fr.circletasks.planner.smoke",
+  "productName": "Spartiate Smoke",
+  "identifier": "fr.spartiate.app.smoke",
   "app": {
     "windows": [
       {
         "label": "main",
-        "title": "CircleTasks",
+        "title": "Spartiate",
         "width": 1440,
         "height": 900,
         "minWidth": 1024,

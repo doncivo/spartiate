@@ -14,7 +14,7 @@ describe('i18n', () => {
 
   it('le français est la langue par défaut', () => {
     expect(getLocale()).toBe('fr');
-    expect(t('app.name')).toBe('CircleTasks');
+    expect(t('app.name')).toBe('Spartiate');
     expect(t('app.loading')).toBe('Chargement…');
   });
 

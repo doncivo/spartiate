@@ -56,7 +56,7 @@ export const shortcutsUiEn: Messages['shortcutsUi'] = {
     noModifier: 'Add Ctrl or Alt to the combination.',
     windowsKey: 'The Windows key is reserved by the system.',
     reserved: 'This combination is reserved by Windows.',
-    appConflict: 'This combination is already used in CircleTasks.',
+    appConflict: 'This combination is already used in Spartiate.',
     inUse: 'Combination already used by another application',
     unavailable: 'Could not register this combination.',
   },

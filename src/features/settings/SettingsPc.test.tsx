@@ -103,7 +103,7 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
     expect(within(general).getByText('Suit celui de Windows')).toBeInTheDocument();
     expect(within(general).getByText('Europe/Paris')).toBeInTheDocument();
     expect(screen.queryByText(/\(automatique\)/)).toBeNull();
-    expect(within(general).getByText('CircleTasks s’ouvre réduit dans la zone de notification')).toBeInTheDocument();
+    expect(within(general).getByText('Spartiate s’ouvre réduit dans la zone de notification')).toBeInTheDocument();
     expect(within(general).getByRole('switch', { name: 'Démarrer avec Windows' })).toBeInTheDocument();
   });
 

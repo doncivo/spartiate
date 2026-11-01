@@ -20,7 +20,7 @@ describe('RecoveryFailure', () => {
     const reload = vi.fn();
     render(<RecoveryFailure message="startup-recovery: unsafe-restore-file" setAside={() => Promise.resolve({ state: 'failed', code: 'io' })} reload={reload} />);
     fireEvent.click(screen.getByRole('button', { name: 'Mettre les fichiers en conflit de côté' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('fermez puis rouvrez CircleTasks');
+    expect(await screen.findByRole('alert')).toHaveTextContent('fermez puis rouvrez Spartiate');
     expect(screen.getByRole('alert')).toHaveTextContent('Code : io');
     expect(screen.queryByRole('button')).toBeNull();
     expect(reload).not.toHaveBeenCalled();

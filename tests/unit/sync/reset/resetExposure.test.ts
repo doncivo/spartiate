@@ -15,9 +15,9 @@ afterEach(async () => {
   await closeAll(room);
 });
 
-/** Clé (base64url) portée par un texte de QR `CTPAIR1.<base64url(JSON)>`. */
+/** Clé (base64url) portée par un texte de QR `SPPAIR1.<base64url(JSON)>`. */
 function keyOfQr(qrText: string): string {
-  const json = JSON.parse(Buffer.from(qrText.slice('CTPAIR1.'.length), 'base64url').toString('utf8')) as { k: string };
+  const json = JSON.parse(Buffer.from(qrText.slice('SPPAIR1.'.length), 'base64url').toString('utf8')) as { k: string };
   return json.k;
 }
 

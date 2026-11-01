@@ -19,7 +19,7 @@ async function noHorizontalScroll(page: Page): Promise<void> {
   expect(overflow.scroll, JSON.stringify(overflow.wide)).toBeLessThanOrEqual(0);
 }
 
-const VERSIONS: FakeVersion[] = [{ name: 'circletasks-daily-20261007.db', kind: 'daily', stamp: '20261007', size: 40_960, at: '2026-10-07T03:12:00', tasks: 4 }];
+const VERSIONS: FakeVersion[] = [{ name: 'spartiate-daily-20261007.db', kind: 'daily', stamp: '20261007', size: 40_960, at: '2026-10-07T03:12:00', tasks: 4 }];
 
 async function openSheet(page: Page, options: Parameters<typeof installFakeBackups>[2] = { directory: null }) {
   await page.clock.setFixedTime(new Date('2026-10-08T08:00:00Z'));
@@ -42,7 +42,7 @@ test.describe('Lot F QA — P-04-iOS : échecs de la restauration', () => {
     const sheet = await openSheet(page);
     for (const [reason, text] of [
       ['corrupt', 'Cette sauvegarde est illisible'],
-      ['newer-schema', 'plus récente de CircleTasks'],
+      ['newer-schema', 'plus récente de Spartiate'],
     ] as const) {
       await failNextBackup(page, 'restore', reason);
       await restoreFirst(page, sheet);

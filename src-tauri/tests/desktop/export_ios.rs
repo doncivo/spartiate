@@ -8,8 +8,8 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use base64::{engine::general_purpose::STANDARD, Engine};
-use circletasks_lib::export_common::{mime_for, ALLOWED_EXTENSIONS, MAX_EXPORT_BYTES};
-use circletasks_lib::export_ios::{prepare, purge_exports, save_prepared, ExportIosState, PreparedExport, SaveTransport, EXPORTS_DIR, PLUGIN_REJECT_CODES};
+use spartiate_lib::export_common::{mime_for, ALLOWED_EXTENSIONS, MAX_EXPORT_BYTES};
+use spartiate_lib::export_ios::{prepare, purge_exports, save_prepared, ExportIosState, PreparedExport, SaveTransport, EXPORTS_DIR, PLUGIN_REJECT_CODES};
 use serde_json::Value;
 
 const CONTRACT: &str = include_str!("../../../tests/fixtures/files/files-contract.json");
@@ -95,7 +95,7 @@ fn files_ios_01_3_names_are_reduced_like_on_the_pc() {
 
 #[test]
 fn files_ios_01_3_the_type_is_derived_from_the_extension_never_from_the_request() {
-    for (name, mime) in [("a.csv", "text/csv"), ("a.JSON", "application/json"), ("a.pdf", "application/pdf"), ("a.png", "image/png"), ("circletasks-logs-20261008-0912.txt", "text/plain")] {
+    for (name, mime) in [("a.csv", "text/csv"), ("a.JSON", "application/json"), ("a.pdf", "application/pdf"), ("a.png", "image/png"), ("spartiate-logs-20261008-0912.txt", "text/plain")] {
         assert_eq!(prepared(name, b"1").mime, mime, "{name}");
     }
     assert_eq!(prepared("a.exe", b"1").mime, "application/octet-stream");
@@ -109,14 +109,14 @@ fn files_ios_01_3_success_writes_under_exports_then_removes_everything() {
     let cache = tempfile::tempdir().unwrap();
     let state = ExportIosState::default();
     let (transport, seen) = FakeTransport::new(Ok(true));
-    let (result, report) = save_prepared(&state, cache.path(), &prepared("circletasks-taches.csv", b"titre;date\r\n"), &transport);
+    let (result, report) = save_prepared(&state, cache.path(), &prepared("spartiate-taches.csv", b"titre;date\r\n"), &transport);
     assert!(result.unwrap().completed);
     assert!(!report.remove_failed);
     let seen = seen.lock().unwrap().clone();
     let path = seen.path.expect("présenté");
     assert_eq!(seen.content.as_deref(), Some(&b"titre;date\r\n"[..]), "fichier complet au moment de la présentation");
     assert_eq!(seen.mime.as_deref(), Some("text/csv"));
-    assert_eq!(path.file_name().unwrap(), "circletasks-taches.csv", "le nom proposé reste visible dans le sélecteur");
+    assert_eq!(path.file_name().unwrap(), "spartiate-taches.csv", "le nom proposé reste visible dans le sélecteur");
     let token = path.parent().unwrap().file_name().unwrap().to_string_lossy().into_owned();
     assert_eq!(token.len(), 16);
     assert!(token.chars().all(|c| c.is_ascii_hexdigit() && !c.is_ascii_uppercase()), "{token}");
@@ -221,7 +221,7 @@ fn files_ios_01_3_an_exports_entry_that_is_not_a_plain_folder_is_refused_without
 #[test]
 fn files_ios_01_3_the_exports_folder_is_created_when_missing() {
     let cache = tempfile::tempdir().unwrap();
-    let nested = cache.path().join("fr.circletasks.planner");
+    let nested = cache.path().join("fr.spartiate.app");
     let (transport, _) = FakeTransport::new(Ok(true));
     let (result, _) = save_prepared(&ExportIosState::default(), &nested, &prepared("a.txt", b"log"), &transport);
     assert!(result.unwrap().completed);
@@ -421,7 +421,7 @@ fn files_ios_01_i4_silent_presentation_failures_reject_and_rust_bounds_the_wait(
     assert!(code.contains("self.failPending()"));
     assert!(code.contains("stale.presentingViewController == nil"), "appel en suspens d'un sélecteur disparu résolu d'abord");
     assert!(EXPORT_IOS_RS.contains("call_with_deadline(move || plugin.call(\"present\", args), PRESENT_DEADLINE)"));
-    assert_eq!(circletasks_lib::export_ios::PRESENT_DEADLINE, std::time::Duration::from_secs(900));
+    assert_eq!(spartiate_lib::export_ios::PRESENT_DEADLINE, std::time::Duration::from_secs(900));
     // Le délai dépassé est visible avec son code et le temporaire est supprimé.
     let cache = tempfile::tempdir().unwrap();
     let (transport, _) = FakeTransport::new(Err("timeout".to_owned()));

@@ -173,7 +173,7 @@ pub fn retry_pending_marker<R: Runtime>(app: &AppHandle<R>) -> Result<(), crate:
 }
 
 /// Préfixe des dossiers de mise de côté (dans `backups/`, ou à côté de lui quand `backups` lui-même n'était pas un dossier ordinaire).
-pub const SET_ASIDE_PREFIX: &str = "circletasks-set-aside-";
+pub const SET_ASIDE_PREFIX: &str = "spartiate-set-aside-";
 /// Durée de conservation des dossiers mis de côté (purgés au démarrage, comme les copies « Avant restauration » sont tournées).
 pub const KEEP_SET_ASIDE_DAYS: u64 = 30;
 
@@ -199,7 +199,7 @@ pub fn set_aside_allowed(outcome: Option<Result<(), &'static str>>, open_pools: 
     Ok(())
 }
 
-/// Crée un dossier de mise de côté NEUF (`create_dir`, exclusif) : `circletasks-set-aside-<stamp>`, sinon `-1`, `-2`… ; jamais un dossier existant.
+/// Crée un dossier de mise de côté NEUF (`create_dir`, exclusif) : `spartiate-set-aside-<stamp>`, sinon `-1`, `-2`… ; jamais un dossier existant.
 fn create_set_aside_dir(parent: &Path, stamp: &str) -> Result<PathBuf, &'static str> {
     for n in 0..1_000 {
         let name = if n == 0 { format!("{SET_ASIDE_PREFIX}{stamp}") } else { format!("{SET_ASIDE_PREFIX}{stamp}-{n}") };
@@ -214,7 +214,7 @@ fn create_set_aside_dir(parent: &Path, stamp: &str) -> Result<PathBuf, &'static 
 }
 
 /// Revue I1 et revue du lot F : action utile de l'écran « Restauration interrompue » pour `recovery-conflict` et `unsafe-restore-file`. Ce qui
-/// empêche la récupération est DÉPLACÉ (jamais supprimé, jamais écrasé) dans un dossier neuf `backups/circletasks-set-aside-<horodatage>[-n]/` :
+/// empêche la récupération est DÉPLACÉ (jamais supprimé, jamais écrasé) dans un dossier neuf `backups/spartiate-set-aside-<horodatage>[-n]/` :
 /// un `.restore-old` qui n'est pas un fichier ordinaire (lien, dossier ; celui de la base emmène aussi les `-wal` / `-shm.restore-old`, qui lui
 /// appartiennent), l'occupant d'une cible du retour en place, un fichier préparé `.restoring` anormal. Si `backups` lui-même n'est pas un dossier
 /// ordinaire, il est d'abord déplacé dans un dossier neuf à côté de lui, puis un `backups/` ordinaire est créé. `io` si un déplacement échoue.
@@ -269,7 +269,7 @@ pub fn set_aside_conflicts(db_path: &Path, backups_dir: &Path, stamp: &str) -> R
 }
 
 /// Supprime les dossiers de mise de côté datés de plus de `KEEP_SET_ASIDE_DAYS` jours, dans `config_dir` et `config_dir/backups` : seulement
-/// des DOSSIERS ordinaires au nom `circletasks-set-aside-<horodatage>[-n]` valide (jamais un lien, un fichier ou un nom inconnu). Rend le
+/// des DOSSIERS ordinaires au nom `spartiate-set-aside-<horodatage>[-n]` valide (jamais un lien, un fichier ou un nom inconnu). Rend le
 /// nombre supprimé.
 pub fn purge_set_aside(config_dir: &Path, now_secs: u64) -> usize {
     let cutoff = crate::backup::utc_stamp(now_secs.saturating_sub(KEEP_SET_ASIDE_DAYS * 86_400));
@@ -404,7 +404,7 @@ pub fn restore_with_provisional_marker(
     let backups = config_dir.join(crate::backup::BACKUP_DIR);
     let schema = crate::backup::check_named_backup(&backups, name)?;
     // Un marqueur encore provisoire (règlement précédent impossible) est d'abord réglé d'après la base en place ; s'il l'est toujours, la
-    // restauration est refusée (`restore-unconfirmed`, « rouvrez CircleTasks ») : `restore-marker.previous.json` n'est jamais écrasé.
+    // restauration est refusée (`restore-unconfirmed`, « rouvrez Spartiate ») : `restore-marker.previous.json` n'est jamais écrasé.
     if !settle_provisional_marker(config_dir, &Ok(crate::backup::Recovery::Nothing)) {
         return Err(crate::backup::BackupError { code: "restore-unconfirmed", message: "un marqueur de restauration provisoire n'est pas encore réglé (redémarrage)".to_owned() });
     }

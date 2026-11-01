@@ -43,7 +43,7 @@ export const captureEn: Messages['capture'] = {
     failed: 'Dictation did not work. Try again or use the keyboard microphone.',
     explain: {
       title: 'Dictate a task',
-      text: 'CircleTasks listens to your voice to turn it into text, on the iPhone. Nothing is recorded or sent. iOS will ask for two permissions: the microphone, then speech recognition.',
+      text: 'Spartiate listens to your voice to turn it into text, on the iPhone. Nothing is recorded or sent. iOS will ask for two permissions: the microphone, then speech recognition.',
       continue: 'Continue',
       later: 'Not now',
     },
@@ -54,7 +54,7 @@ export const captureEn: Messages['capture'] = {
       speechRecognitionRestricted: 'Speech recognition is restricted on this iPhone by Screen Time or a management profile. Only the person who set the restriction can lift it.',
       openSettings: 'Open settings',
     },
-    settingsFailed: 'Settings could not be opened. Open Settings › CircleTasks.',
+    settingsFailed: 'Settings could not be opened. Open Settings › Spartiate.',
     onDeviceUnavailable: 'Offline French dictation is not available on this iPhone. Turn on dictation in Settings › General › Keyboard › Dictation. The keyboard microphone remains usable.',
     pluginUnavailable: 'Dictation is unavailable on this iPhone. The keyboard microphone remains usable.',
     nothingHeard: 'Nothing was heard. Try again.',

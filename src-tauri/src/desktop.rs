@@ -31,7 +31,7 @@ pub const QUIT_GRACE: Duration = Duration::from_secs(5);
 /// Identifiant de l'icône de la zone de notification.
 pub const TRAY_ID: &str = "main-tray";
 /// Info-bulle de l'icône : nom du produit, identique dans toutes les langues.
-pub const TRAY_TOOLTIP: &str = "CircleTasks";
+pub const TRAY_TOOLTIP: &str = "Spartiate";
 
 /// Libellés de repli du menu, utilisés seulement entre la création de l'icône et la réception
 /// des textes du front (`set_tray_labels`). EXCEPTION documentée à la règle « textes dans
@@ -39,7 +39,7 @@ pub const TRAY_TOOLTIP: &str = "CircleTasks";
 /// « Quitter » serait inaccessible. Un test Vitest vérifie qu'ils restent égaux à `fr.ts`.
 pub fn fallback_labels() -> TrayLabels {
     TrayLabels {
-        open: "Ouvrir CircleTasks".to_owned(),
+        open: "Ouvrir Spartiate".to_owned(),
         quick_add: "Ajout rapide".to_owned(),
         sync: "Synchroniser maintenant".to_owned(),
         quit: "Quitter".to_owned(),
@@ -60,7 +60,7 @@ pub struct CommandError {
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrayLabels {
-    /// « Ouvrir CircleTasks ».
+    /// « Ouvrir Spartiate ».
     pub open: String,
     /// « Ajout rapide ».
     pub quick_add: String,
@@ -299,12 +299,12 @@ pub fn set_tray_labels(app: AppHandle, labels: TrayLabels) -> Result<(), Command
 
 /// Début du texte de la boîte montrée quand la récupération d'une restauration interrompue échoue. Exception assumée à « textes dans
 /// `src/i18n` » : la boîte précède toute WebView ; ce début est celui de `backup.recoveryFailed` (vérifié par `recoveryMessage.test.ts`).
-pub const RECOVERY_FAILED_MESSAGE: &str = "Restauration interrompue : redémarrez CircleTasks.";
+pub const RECOVERY_FAILED_MESSAGE: &str = "Restauration interrompue : redémarrez Spartiate.";
 
 /// Texte complet de la boîte : le début, le code d'erreur et la consigne (sans chemin personnel : le dossier est désigné par `%APPDATA%`).
 pub fn recovery_failed_text(code: &str, identifier: &str) -> String {
     format!(
-        "{RECOVERY_FAILED_MESSAGE}\n\nCode : {code}\n\nSi ce message revient : fermez CircleTasks, ouvrez le dossier %APPDATA%\\{identifier} et conservez les fichiers « .restore-old », « .restoring » et « restore-marker.json » (ne les supprimez pas : ils servent à retrouver ou à vérifier la version restaurée), puis demandez de l'aide."
+        "{RECOVERY_FAILED_MESSAGE}\n\nCode : {code}\n\nSi ce message revient : fermez Spartiate, ouvrez le dossier %APPDATA%\\{identifier} et conservez les fichiers « .restore-old », « .restoring » et « restore-marker.json » (ne les supprimez pas : ils servent à retrouver ou à vérifier la version restaurée), puis demandez de l'aide."
     )
 }
 
@@ -321,7 +321,7 @@ fn abort_startup_after_failed_recovery(code: &'static str, identifier: &str) -> 
         use windows::Win32::UI::WindowsAndMessaging::{MessageBoxW, MB_ICONERROR, MB_OK};
         // SAFETY : appel Win32 sans fenêtre parente, chaînes valides pour la durée de l'appel.
         unsafe {
-            MessageBoxW(None, &HSTRING::from(recovery_failed_text(code, identifier)), w!("CircleTasks"), MB_OK | MB_ICONERROR);
+            MessageBoxW(None, &HSTRING::from(recovery_failed_text(code, identifier)), w!("Spartiate"), MB_OK | MB_ICONERROR);
         }
     }
     format!("restauration interrompue non récupérée ({code})").into()
@@ -363,7 +363,7 @@ pub fn configure(builder: tauri::Builder<Wry>) -> tauri::Builder<Wry> {
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec![MINIMIZED_ARG]),
         ))
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        // D-30 : updater non enregistré tant que SPA-002 n'a pas posé la clé et le point d'accès (sans configuration, son initialisation échoue).
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())

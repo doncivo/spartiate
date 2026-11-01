@@ -1,5 +1,5 @@
 // swift-tools-version:5.3
-// Plugin notification-actions de CircleTasks (ADR 0012 avenant N-03) : compilé par build-ios.yml seulement (aucun Mac local).
+// Plugin notification-actions de Spartiate (ADR 0012 avenant N-03) : compilé par build-ios.yml seulement (aucun Mac local).
 
 import PackageDescription
 

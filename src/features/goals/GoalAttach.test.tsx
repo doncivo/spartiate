@@ -54,7 +54,7 @@ describe('Rattacher une tâche à un objectif : fiche détail PC (OB-03)', () =>
     await waitFor(() => expect(goalSwitch()).toBeEnabled());
     fireEvent.click(goalSwitch());
     await waitFor(async () => expect(await taskGoalId(h, task.id)).toBe(goal.id));
-    expect(await within(fiche).findByText('Rattachée : Finaliser le PRD CircleTasks')).toBeInTheDocument();
+    expect(await within(fiche).findByText('Rattachée : Finaliser le PRD Spartiate')).toBeInTheDocument();
     expect(goalSwitch()).toHaveAttribute('aria-checked', 'true');
     fireEvent.click(goalSwitch());
     await waitFor(async () => expect(await taskGoalId(h, task.id)).toBeNull());
@@ -153,7 +153,7 @@ describe('Rattacher à la création : feuille « Nouvelle tâche » iPhone (OB-0
     fireEvent.click(await within(dialog).findByRole('button', { name: /Plus d.options/ }));
     await waitFor(() => expect(within(dialog).getByRole('switch', { name: 'Rattacher à mon objectif' })).toBeEnabled());
     fireEvent.click(within(dialog).getByRole('switch', { name: 'Rattacher à mon objectif' }));
-    expect(await within(dialog).findByText('Rattachée : Finaliser le PRD CircleTasks')).toBeInTheDocument();
+    expect(await within(dialog).findByText('Rattachée : Finaliser le PRD Spartiate')).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Ajouter la tâche' }));
     await waitFor(async () => {
       const [created] = (await h.container.data.repos.tasks.listForDay(h.today, 'all')).filter((task) => task.title === 'Écrire le plan');

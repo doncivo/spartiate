@@ -13,7 +13,7 @@ const fixture = JSON.parse(readFileSync(join(root, 'tests', 'fixtures', 'sync', 
 const plans = parseFaultPlanFile(readFileSync(join(root, 'tests', 'fixtures', 'sync', 'fault-plan.json'), 'utf8'));
 const invalid = JSON.parse(readFileSync(join(root, 'tests', 'fixtures', 'sync', 'fault-plan-invalid.json'), 'utf8')) as { readonly cases: readonly { readonly name: string; readonly planText: string; readonly message: string }[] };
 
-const entry = (extra: Record<string, unknown>): unknown => ({ name: 'essai', faults: [{ id: 'e1', op: 'remove', file: 'devices/*/state.ctx', nth: 1, effect: 'error', code: 'io', ...extra }] });
+const entry = (extra: Record<string, unknown>): unknown => ({ name: 'essai', faults: [{ id: 'e1', op: 'remove', file: 'devices/*/state.spx', nth: 1, effect: 'error', code: 'io', ...extra }] });
 const refusalText = (text: string): string => {
   try {
     parseFaultPlanText(text);
@@ -100,11 +100,11 @@ describe('Y-TECH-03 : le schéma refuse (critères 1 et 3)', () => {
 
   it('un effet que l’opération ne sait pas rejouer', () => {
     expect(refusal(entry({ effect: 'evict-after-read', code: undefined }))).toContain('entrée « e1 »');
-    expect(refusal({ name: 'essai', faults: [{ id: 'e2', op: 'write', file: 'devices/a/state.ctx', nth: 1, effect: 'download-error' }] })).toBe("plan « essai », entrée « e2 » : effet « download-error » non rejouable sur l'opération « write »");
+    expect(refusal({ name: 'essai', faults: [{ id: 'e2', op: 'write', file: 'devices/a/state.spx', nth: 1, effect: 'download-error' }] })).toBe("plan « essai », entrée « e2 » : effet « download-error » non rejouable sur l'opération « write »");
   });
 
   it('un rang absent ou invalide', () => {
-    const noRank = { name: 'essai', faults: [{ id: 'e1', op: 'remove', file: 'devices/a/state.ctx', effect: 'error', code: 'io' }] };
+    const noRank = { name: 'essai', faults: [{ id: 'e1', op: 'remove', file: 'devices/a/state.spx', effect: 'error', code: 'io' }] };
     expect(refusal(noRank)).toBe('plan « essai », entrée « e1 » : rang « nth » absent');
     expect(refusal(entry({ nth: 0 }))).toContain('rang « nth » invalide');
     expect(refusal(entry({ nth: 1.5 }))).toContain('rang « nth » invalide');
@@ -119,8 +119,8 @@ describe('Y-TECH-03 : le schéma refuse (critères 1 et 3)', () => {
 
   it('un horodatage dans le chemin, un chemin hors de devices/, un dossier pour une opération sur fichier', () => {
     expect(refusal(entry({ file: 'devices/a/2026-10-08T10:00:00Z' }))).toContain('horodatage interdit');
-    expect(refusal(entry({ file: 'devices/a/1791000000000.ctx' }))).toContain('horodatage interdit');
-    expect(refusal(entry({ file: 'autre/a/state.ctx' }))).toContain('invalide');
+    expect(refusal(entry({ file: 'devices/a/1791000000000.spx' }))).toContain('horodatage interdit');
+    expect(refusal(entry({ file: 'autre/a/state.spx' }))).toContain('invalide');
     expect(refusal(entry({ file: 'devices/a/' }))).toContain('désigne un fichier');
     expect(refusal({ name: 'essai', faults: [{ id: 'e1', op: 'list', file: 'devices/a', nth: 1, effect: 'error', code: 'io' }] })).toContain('désigne un dossier');
   });
@@ -129,35 +129,35 @@ describe('Y-TECH-03 : le schéma refuse (critères 1 et 3)', () => {
     expect(refusal(entry({ code: undefined }))).toContain('« code » attendu');
     expect(refusal(entry({ code: 'disk-full' }))).toContain('« code » attendu');
     expect(refusal(entry({ resurrectAfterCycles: 2 }))).toContain('« resurrectAfterCycles » sans objet');
-    expect(refusal({ name: 'essai', faults: [{ id: 'e1', op: 'remove', file: 'devices/a/state.ctx', nth: 1, effect: 'accept-not-propagated' }] })).toContain('« resurrectAfterCycles » attendu');
-    expect(refusal({ name: 'essai', faults: [{ id: 'e1', op: 'read', file: 'devices/a/state.ctx', nth: 1, effect: 'overwrite-before-read' }] })).toContain('« content » attendu');
-    expect(refusal({ name: 'essai', faults: [{ id: 'e1', op: 'write', file: 'devices/a/state.ctx', nth: 1, effect: 'error', code: 'io', partialLastLine: true }] })).toContain('réservé aux segments');
-    expect(refusal({ name: 'essai', faults: [{ id: 'e1', op: 'remove', file: 'devices/a/state.ctx', nth: 1, effect: 'error', code: 'io' }, { id: 'e1', op: 'read', file: 'devices/a/state.ctx', nth: 1, effect: 'error', code: 'io' }] })).toContain('« id » en double');
+    expect(refusal({ name: 'essai', faults: [{ id: 'e1', op: 'remove', file: 'devices/a/state.spx', nth: 1, effect: 'accept-not-propagated' }] })).toContain('« resurrectAfterCycles » attendu');
+    expect(refusal({ name: 'essai', faults: [{ id: 'e1', op: 'read', file: 'devices/a/state.spx', nth: 1, effect: 'overwrite-before-read' }] })).toContain('« content » attendu');
+    expect(refusal({ name: 'essai', faults: [{ id: 'e1', op: 'write', file: 'devices/a/state.spx', nth: 1, effect: 'error', code: 'io', partialLastLine: true }] })).toContain('réservé aux segments');
+    expect(refusal({ name: 'essai', faults: [{ id: 'e1', op: 'remove', file: 'devices/a/state.spx', nth: 1, effect: 'error', code: 'io' }, { id: 'e1', op: 'read', file: 'devices/a/state.spx', nth: 1, effect: 'error', code: 'io' }] })).toContain('« id » en double');
     expect(refusal({ name: 'essai', options: { lent: true }, faults: [] })).toContain('option inconnue « lent »');
   });
 
   it('memory.ts refuse de s’armer avec une entrée qu’il ne sait pas rejouer, message qui nomme l’entrée (jamais ignorée)', () => {
     const folder = new MemorySyncFolder();
-    expect(() => folder.armFaults({ name: 'essai', faults: [{ id: 'panne-x', op: 'remove', file: 'devices/a/state.ctx', nth: 1, effect: 'teleport' }] })).toThrow(/entrée « panne-x » : effet inconnu « teleport »/);
+    expect(() => folder.armFaults({ name: 'essai', faults: [{ id: 'panne-x', op: 'remove', file: 'devices/a/state.spx', nth: 1, effect: 'teleport' }] })).toThrow(/entrée « panne-x » : effet inconnu « teleport »/);
     expect(folder.faultLog()).toEqual([]);
   });
 });
 
 describe('Y-TECH-03 : rang d’appel et déterminisme (critères 2 et 4)', () => {
   it('motifs : joker dans un composant seulement, dossier et fichier distingués', () => {
-    expect(matchFaultPath('devices/*/e0001-*/s-00000001.cts', 'devices/ef50/e0001-ef50/s-00000001.cts')).toBe(true);
-    expect(matchFaultPath('devices/*/s-00000001.cts', 'devices/ef50/e0001-ef50/s-00000001.cts')).toBe(false);
+    expect(matchFaultPath('devices/*/e0001-*/s-00000001.sps', 'devices/ef50/e0001-ef50/s-00000001.sps')).toBe(true);
+    expect(matchFaultPath('devices/*/s-00000001.sps', 'devices/ef50/e0001-ef50/s-00000001.sps')).toBe(false);
     expect(matchFaultPath('devices/*/', 'devices/ef50/')).toBe(true);
-    expect(matchFaultPath('devices/*/', 'devices/ef50/state.ctx')).toBe(false);
-    expect(matchFaultPath('devices/a.b/state.ctx', 'devices/aXb/state.ctx')).toBe(false);
+    expect(matchFaultPath('devices/*/', 'devices/ef50/state.spx')).toBe(false);
+    expect(matchFaultPath('devices/a.b/state.spx', 'devices/aXb/state.spx')).toBe(false);
   });
 
   it('nth et times : seuls les appels du rang armé sont touchés, chaque entrée compte ses appels', () => {
-    const counters = new FaultCounters(parseFaultPlan({ name: 'rangs', faults: [{ id: 'deux-trois', op: 'remove', file: 'devices/a/*', nth: 2, times: 2, effect: 'error', code: 'io' }, { id: 'tous', op: 'read', file: 'devices/a/state.ctx', nth: 1, times: 'all', effect: 'error', code: 'cloud-pending' }] }));
-    const removes = [1, 2, 3, 4].map(() => counters.hit('remove', 'devices/a/state.ctx')?.id ?? null);
+    const counters = new FaultCounters(parseFaultPlan({ name: 'rangs', faults: [{ id: 'deux-trois', op: 'remove', file: 'devices/a/*', nth: 2, times: 2, effect: 'error', code: 'io' }, { id: 'tous', op: 'read', file: 'devices/a/state.spx', nth: 1, times: 'all', effect: 'error', code: 'cloud-pending' }] }));
+    const removes = [1, 2, 3, 4].map(() => counters.hit('remove', 'devices/a/state.spx')?.id ?? null);
     expect(removes).toEqual([null, 'deux-trois', 'deux-trois', null]);
-    expect([1, 2, 3].map(() => counters.hit('read', 'devices/a/state.ctx')?.id ?? null)).toEqual(['tous', 'tous', 'tous']);
-    expect(counters.hit('read', 'devices/b/state.ctx')).toBeNull();
+    expect([1, 2, 3].map(() => counters.hit('read', 'devices/a/state.spx')?.id ?? null)).toEqual(['tous', 'tous', 'tous']);
+    expect(counters.hit('read', 'devices/b/state.spx')).toBeNull();
     expect(counters.unfired()).toEqual([]);
   });
 
@@ -166,7 +166,7 @@ describe('Y-TECH-03 : rang d’appel et déterminisme (critères 2 et 4)', () =>
       const reference = plans.find((p) => p.name === 'exemple-error-io');
       if (!reference) throw new Error('plan exemple-error-io absent');
       const counters = new FaultCounters(reference);
-      const calls = ['devices/x/e0001-x/s-00000001.cts', 'devices/x/e0001-x/j-00000001.ctj', 'devices/x/e0001-x/s-00000001.cts', 'devices/x/e0001-x/s-00000001.cts'];
+      const calls = ['devices/x/e0001-x/s-00000001.sps', 'devices/x/e0001-x/j-00000001.spj', 'devices/x/e0001-x/s-00000001.sps', 'devices/x/e0001-x/s-00000001.sps'];
       return { results: calls.map((path) => counters.hit('remove', path)?.id ?? null), log: counters.fired() };
     };
     expect(run()).toEqual(run());

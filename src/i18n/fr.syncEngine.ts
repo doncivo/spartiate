@@ -5,7 +5,7 @@
 export const syncEngineFr = {
   status: {
     title: 'Synchronisation',
-    folderFallback: 'iCloud Drive / CircleTasks',
+    folderFallback: 'iCloud Drive / Spartiate',
     upToDate: 'À jour · {age}',
     upToDateAnnounce: 'À jour',
     ageNow: 'à l’instant',
@@ -38,7 +38,7 @@ export const syncEngineFr = {
     errorStoppedUpdate: 'Données d’une version plus récente (code {code}) : mettez à jour l’app',
     errorFolderUnreachable: 'Dossier de synchro introuvable : vos modifications seront envoyées au retour',
     // ADR 0011 §22 point 8 : signet du dossier perdu sur l'iPhone (réinstallation, dossier supprimé ou déplacé).
-    errorFolderUnreachableIos: 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / CircleTasks',
+    errorFolderUnreachableIos: 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / Spartiate',
     errorCloudProviderStopped: 'Ouvrez iCloud pour Windows : vos modifications seront envoyées au retour',
     errorCloud: 'iCloud ne répond pas : vos modifications seront envoyées au retour',
     errorUnsafeFolder: 'Ce dossier ne peut pas servir à la synchronisation : choisissez-en un autre',

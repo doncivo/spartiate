@@ -25,14 +25,14 @@ pub const MAX_APPEND_CALL_BYTES: u64 = MIB;
 /// Bornes de lecture.
 pub const MAX_SEGMENT_BYTES: u64 = 8 * MIB;
 pub const MAX_SNAPSHOT_BYTES: u64 = 256 * MIB;
-/// `state.ctx` : en-tête et une seule ligne chiffrée, chacun suivi de `\n`.
+/// `state.spx` : en-tête et une seule ligne chiffrée, chacun suivi de `\n`.
 pub const MAX_STATE_FILE_BYTES: u64 = (MAX_HEADER_BYTES + 1 + MAX_RECORD_LINE_BYTES + 1) as u64;
 /// Pages de texte clair échangées par l'IPC.
 pub const MAX_IPC_PAGE_BYTES: usize = 2 * 1024 * 1024;
 
 pub const MAX_STATE_ACKS: usize = 64;
 pub const MAX_STATE_FORGOTTEN: usize = 64;
-/// Y-TECH-02 (ADR 0011 §21 point 2) : entrées `closed` (segments clos de l'époque courante) d'un `state.ctx` et d'`own.json`.
+/// Y-TECH-02 (ADR 0011 §21 point 2) : entrées `closed` (segments clos de l'époque courante) d'un `state.spx` et d'`own.json`.
 pub const MAX_STATE_CLOSED_SEGMENTS: usize = 1_024;
 pub const MAX_DEVICE_FOLDERS: usize = 16;
 pub const MAX_SCAN_ENTRIES_PER_FOLDER: usize = 10_000;
@@ -89,7 +89,7 @@ pub fn encrypted_line_bytes(json_bytes: usize, sm: u32, sv: u32) -> usize {
 pub const MAX_SCAN_ENTRIES_TOTAL: usize = 50_000;
 /// Dossiers d'époque listés au plus par appareil retenu (les plus récents).
 pub const MAX_EPOCHS_PER_DEVICE: usize = 64;
-/// `state.ctx` d'appareils non protégés lus au plus par opération (candidats au plafond de 16 dossiers, import, reconstruction).
+/// `state.spx` d'appareils non protégés lus au plus par opération (candidats au plafond de 16 dossiers, import, reconstruction).
 pub const MAX_STATE_CANDIDATES: usize = 64;
 
 /// Y-IOS-05 (B6, ADR 0011 §32) : échéance d'un appel de fichier au plugin folder-bookmark (Rust, seconde ligne derrière la garde de

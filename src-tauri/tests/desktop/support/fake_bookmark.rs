@@ -12,14 +12,14 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use base64::{engine::general_purpose::STANDARD, Engine};
-use circletasks_lib::sync::bookmark::BookmarkTransport;
+use spartiate_lib::sync::bookmark::BookmarkTransport;
 use serde_json::{json, Value};
 
 use super::fault_plan::{self, Armed, Effect, Firing, Op, Plan};
 
 pub const CONTRACT: &str = include_str!("../../../../tests/fixtures/sync/folder-bookmark-contract.json");
-/// Racine résolue simulée (chemin canonique d'iCloud Drive/CircleTasks sur l'iPhone).
-pub const ROOT: &str = "/private/var/mobile/Library/Mobile Documents/com~apple~CloudDocs/CircleTasks";
+/// Racine résolue simulée (chemin canonique d'iCloud Drive/Spartiate sur l'iPhone).
+pub const ROOT: &str = "/private/var/mobile/Library/Mobile Documents/com~apple~CloudDocs/Spartiate";
 pub const BOOKMARK: &str = "Ym9va21hcmstMQ==";
 pub const FRESH_BOOKMARK: &str = "Ym9va21hcmstMg==";
 

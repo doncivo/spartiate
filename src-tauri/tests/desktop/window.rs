@@ -1,6 +1,6 @@
 //! P-04 : la fenêtre principale est créée par `setup` après la récupération d'une restauration interrompue (configuration `create: false`).
 
-use circletasks_lib::desktop::{build_window_from_config, recovery_failed_text, MAIN_WINDOW, RECOVERY_FAILED_MESSAGE};
+use spartiate_lib::desktop::{build_window_from_config, recovery_failed_text, MAIN_WINDOW, RECOVERY_FAILED_MESSAGE};
 use tauri::utils::config::WindowConfig;
 use tauri::Manager;
 
@@ -33,13 +33,13 @@ fn build_window_from_config_creates_the_main_window_once_and_hidden() {
 
 #[test]
 fn the_failure_dialog_gives_the_code_and_a_next_step_without_a_personal_path() {
-    let text = recovery_failed_text("recovery-conflict", "fr.circletasks.planner");
+    let text = recovery_failed_text("recovery-conflict", "fr.spartiate.app");
     assert!(text.starts_with(RECOVERY_FAILED_MESSAGE));
     assert!(text.contains("recovery-conflict"));
-    assert!(text.contains("%APPDATA%\\fr.circletasks.planner"));
+    assert!(text.contains("%APPDATA%\\fr.spartiate.app"));
     assert!(text.contains(".restore-old") && text.contains(".restoring") && text.contains("restore-marker.json"));
     assert!(!text.contains("Users"));
     for code in ["no-data-dir", "window-failed"] {
-        assert!(recovery_failed_text(code, "fr.circletasks.planner").contains(code), "{code}");
+        assert!(recovery_failed_text(code, "fr.spartiate.app").contains(code), "{code}");
     }
 }

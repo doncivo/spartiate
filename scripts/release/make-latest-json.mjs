@@ -1,7 +1,7 @@
 /* global process, console */
 // Génère latest.json au format de l'updater Tauri 2 (une seule plateforme : windows-x86_64).
 // Usage : node scripts/release/make-latest-json.mjs <version> <installeur.exe> <installeur.exe.sig> <baseUrl> [notes] > latest.json
-// <baseUrl> : https://github.com/<proprietaire>/circletasks-releases/releases/download/vX.Y.Z
+// <baseUrl> : https://github.com/<proprietaire>/spartiate-releases/releases/download/vX.Y.Z
 import { existsSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 
@@ -22,7 +22,7 @@ if (signature.length === 0) fail('Signature vide');
 
 const latest = {
   version,
-  notes: notes || `CircleTasks ${version}`,
+  notes: notes || `Spartiate ${version}`,
   pub_date: new Date().toISOString(),
   platforms: {
     'windows-x86_64': {

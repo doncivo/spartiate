@@ -27,7 +27,7 @@ const headOf = async (d: SimDevice) => {
   if (!head) throw new Error('tête absente');
   return head;
 };
-const fileOf = (head: DeviceAck) => `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.ctj`;
+const fileOf = (head: DeviceAck) => `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.spj`;
 
 describe('Y-IOS-07 : lecture et purge après rotation', () => {
   it('le PC ne traverse pas le segment évincé tant que son dernier enregistrement manque', async () => {
@@ -63,7 +63,7 @@ describe('Y-IOS-07 : lecture et purge après rotation', () => {
       await b.cycle();
     }
     const current = await headOf(b);
-    expect(b.folder.fileNames(b.id).filter((name) => name.endsWith('.ctj'))).toHaveLength(21);
+    expect(b.folder.fileNames(b.id).filter((name) => name.endsWith('.spj'))).toHaveLength(21);
     a.clock.advance(31 * 86_400_000);
     // Le PC est actif mais n'a pas lu ces segments : annonce fraîche, accusés inchangés.
     const own = (await a.platform.scan({ keep: [] })).devices.find((d) => d.deviceId === a.id)?.state;
@@ -72,13 +72,13 @@ describe('Y-IOS-07 : lecture et purge après rotation', () => {
     syncFolders(devices);
     const beforeAck = await b.cycle();
     expect(beforeAck.warnings ?? []).not.toContain('folder-large');
-    expect(b.folder.fileNames(b.id).filter((name) => name.endsWith('.ctj'))).toHaveLength(21);
+    expect(b.folder.fileNames(b.id).filter((name) => name.endsWith('.spj'))).toHaveLength(21);
     syncFolders(devices);
     await a.cycle();
     for (const task of tasks) expect((await a.task(task.id))?.title).toBe(task.title);
     syncFolders(devices);
     await b.cycle();
-    expect(b.folder.fileNames(b.id).filter((name) => name.endsWith('.ctj'))).toEqual([fileOf(current)]);
+    expect(b.folder.fileNames(b.id).filter((name) => name.endsWith('.spj'))).toEqual([fileOf(current)]);
     expect((await headOf(b)).segment).toBe(current.segment);
   });
 });

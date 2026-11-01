@@ -34,27 +34,27 @@ describe('Y-IOS-02-FIX-01 : défauts 2 et 3 connus du banc', () => {
     devices.push(a);
     await setupFirst(a);
     await a.cycle();
-    a.folder.armFaults({ name: 'suppression-non-propagee', faults: [{ id: 'revient', op: 'remove', file: `devices/${A_ID}/*/s-00000001.cts`, nth: 1, times: 'all', effect: 'accept-not-propagated', resurrectAfterCycles: 2 }] });
+    a.folder.armFaults({ name: 'suppression-non-propagee', faults: [{ id: 'revient', op: 'remove', file: `devices/${A_ID}/*/s-00000001.sps`, nth: 1, times: 'all', effect: 'accept-not-propagated', resurrectAfterCycles: 2 }] });
     for (let i = 0; i < 2; i += 1) {
       a.clock.advance(8 * DAY);
       await a.createTask(`Semaine ${String(i)}`);
       await a.cycle();
     }
     // Suppression acceptée, absence temporaire, puis retour contrôlé par le banc : aucune attente réelle.
-    expect(a.folder.fileNames(a.id).some((f) => f.endsWith('/s-00000001.cts'))).toBe(false);
+    expect(a.folder.fileNames(a.id).some((f) => f.endsWith('/s-00000001.sps'))).toBe(false);
     await a.restart();
     a.folder.advanceCycle();
     await a.cycle();
     const before = a.folder.faultLog().filter((f) => f.id === 'revient').length;
     expect(a.folder.advanceCycle()).toBe(1);
-    expect(a.folder.fileNames(a.id).some((f) => f.endsWith('/s-00000001.cts'))).toBe(true);
+    expect(a.folder.fileNames(a.id).some((f) => f.endsWith('/s-00000001.sps'))).toBe(true);
     await a.cycle();
     expect(a.folder.faultLog().filter((f) => f.id === 'revient').length).toBeGreaterThan(before);
     expect(statusLine(a.service.status(), a.clock.nowMs())).not.toContain('À jour');
     a.folder.disarmFaults();
     await a.cycle();
     await a.cycle();
-    expect(a.folder.fileNames(a.id).some((f) => f.endsWith('/s-00000001.cts'))).toBe(false);
+    expect(a.folder.fileNames(a.id).some((f) => f.endsWith('/s-00000001.sps'))).toBe(false);
     expect(statusLine(a.service.status(), a.clock.nowMs())).toContain('À jour');
   });
 });

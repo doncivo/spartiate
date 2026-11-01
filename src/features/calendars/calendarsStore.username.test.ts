@@ -62,7 +62,7 @@ describe('calendar_account.username (Y-02 critère 10)', () => {
     expect(outcome).toEqual({ ok: true, accountId: RECEIVED });
     const accounts = await h.container.data.repos.calendarAccounts.listAll();
     expect(accounts).toHaveLength(1);
-    expect(accounts[0]).toMatchObject({ id: RECEIVED, username: CALDAV_USER, label: '', tokenRef: `circletasks.calendar.icloud.${RECEIVED}` });
+    expect(accounts[0]).toMatchObject({ id: RECEIVED, username: CALDAV_USER, label: '', tokenRef: `spartiate.calendar.icloud.${RECEIVED}` });
     // Les colonnes locales complétées n'entrent pas dans la file d'envoi (rien n'est publié).
     expect(await h.db.driver.select("SELECT field FROM sync_outbox WHERE table_name = 'calendar_account' AND field <> '*'")).toEqual([]);
     expect(await state().connectIcloud(CALDAV_USER.toUpperCase(), CALDAV_APP_PASSWORD)).toEqual({ ok: false, failure: 'duplicate' });
@@ -89,8 +89,8 @@ describe('calendar_account.username (Y-02 critère 10)', () => {
   it('providerFactory : l’identifiant Basic est lu dans username, jamais dans label', async () => {
     const requests: CalendarHttpRequest[] = [];
     const http: CalendarHttp = { request: async (request) => (requests.push(request), { status: 500, headers: {}, body: '' }) } as CalendarHttp;
-    const provider = createProviderFor({ provider: 'icloud', tokenRef: 'circletasks.calendar.icloud.x', username: 'ali@icloud.com' }, { ...h.container.calendars, http }, () => 0, () => 'Europe/Paris');
+    const provider = createProviderFor({ provider: 'icloud', tokenRef: 'spartiate.calendar.icloud.x', username: 'ali@icloud.com' }, { ...h.container.calendars, http }, () => 0, () => 'Europe/Paris');
     await provider.listCalendars();
-    expect(requests[0]?.auth).toEqual({ kind: 'basic', tokenRef: 'circletasks.calendar.icloud.x', username: 'ali@icloud.com' });
+    expect(requests[0]?.auth).toEqual({ kind: 'basic', tokenRef: 'spartiate.calendar.icloud.x', username: 'ali@icloud.com' });
   });
 });

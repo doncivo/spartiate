@@ -24,12 +24,13 @@ export const syncFolderEn: Shape<typeof syncFolderFr> = {
   retry: 'Try again',
   retryLabel: 'Read the sync folder state again',
   errorUnreachable: 'The sync folder cannot be found',
-  errorUnreachableIos: 'iCloud Drive folder unreachable: choose the iCloud Drive / CircleTasks folder again',
+  errorUnreachableIos: 'iCloud Drive folder unreachable: choose the iCloud Drive / Spartiate folder again',
   errorTooLarge: 'The sync folder is too large',
   errorProviderStopped: 'Open iCloud for Windows',
   errorVault: 'The Windows credential vault is unavailable',
   errorVaultIos: 'The iPhone Keychain is unavailable: unlock the iPhone, sync will resume',
   errorDenied: 'Action cancelled',
+  errorForeign: 'This folder belongs to CircleTasks: Spartiate never links it. Choose another folder (for example “Spartiate” in iCloud Drive).', // ancien-ok: nom de l'autre app dans le message de refus (ADR 0017)
   errorRateLimited: 'Too many attempts: try again in a few minutes',
   errorGeneric: 'Sync ran into an error',
 };

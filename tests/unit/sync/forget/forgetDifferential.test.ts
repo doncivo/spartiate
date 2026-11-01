@@ -68,7 +68,7 @@ describe('table commune forget-order.json : chaque condition de suppression du c
     expectCase(/un actif n’a pas lu jusqu’à la coupure/, 'waiting', 'state-mismatch');
     expectCase(/ne republie pas une déclaration retenue/, 'waiting', 'state-mismatch');
     expectCase(/fantôme jamais vu/, 'ready');
-    expectCase(/state\.ctx de la cible dans le nuage/, 'waiting', 'cloud-pending');
+    expectCase(/state.spx de la cible dans le nuage/, 'waiting', 'cloud-pending');
     expectCase(/cible terminée/, 'ready');
     expectCase(/état d’un actif dans le nuage/, 'waiting', 'cloud-pending');
     expectCase(/actif étranger|actif rejoué/, 'waiting', 'state-mismatch');

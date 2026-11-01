@@ -34,7 +34,7 @@ async function twoDevices(): Promise<[SimDevice, SimDevice]> {
 function journalOf(device: SimDevice): { segment: string; texts: string[] }[] {
   return device.folder
     .fileNames(device.id)
-    .filter((name) => /\/j-\d{8}\.ctj$/.test(name))
+    .filter((name) => /\/j-\d{8}\.spj$/.test(name))
     .map((segment) => ({ segment, texts: device.folder.records(device.id, segment) }));
 }
 
@@ -154,7 +154,7 @@ describe('lecture (Y-02 critère 6, Y-05 critère 7)', () => {
     const t1 = await a.createTask('Un');
     await a.cycle();
     propagate(a.folder, b.folder, A_ID, { placeholder: true });
-    // `state.ctx` dans le nuage aussi : rien n'est lisible.
+    // `state.spx` dans le nuage aussi : rien n'est lisible.
     expect((await b.cycle()).phase).toBe('waiting-icloud');
     hydrate(b.folder, A_ID);
     await b.cycle();
@@ -183,7 +183,7 @@ describe('lecture (Y-02 critère 6, Y-05 critère 7)', () => {
     a.clock.advance(8 * 86_400_000);
     await a.cycle();
     propagate(a.folder, b.folder, A_ID);
-    const segment = a.folder.fileNames(A_ID).find((n) => /\/j-00000001\.ctj$/.test(n)) ?? '';
+    const segment = a.folder.fileNames(A_ID).find((n) => /\/j-00000001\.spj$/.test(n)) ?? '';
     b.folder.corruptRecord(A_ID, segment, 0);
     await b.cycle();
     expect(b.logger.entries.some((e) => e.event === 'resumed-from-snapshot')).toBe(true);
@@ -191,7 +191,7 @@ describe('lecture (Y-02 critère 6, Y-05 critère 7)', () => {
     expect((await b.task(t2.id))?.title).toBe('Deux');
   });
 
-  it('copie de conflit iCloud et ancien state.ctx relivré : ignorée ; rollback détecté, dernier état accepté gardé', async () => {
+  it('copie de conflit iCloud et ancien state.spx relivré : ignorée ; rollback détecté, dernier état accepté gardé', async () => {
     const [a, b] = await twoDevices();
     const t1 = await a.createTask('Un');
     await a.cycle();

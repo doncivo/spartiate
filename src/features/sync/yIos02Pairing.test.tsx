@@ -145,7 +145,7 @@ describe('iPhone sans clé : « Associer au PC » ne disparaît jamais (constat 
     const phone = await folderFromPc('ios');
     await phone.folder.choose();
     await phone.bindDevice(PHONE);
-    const sync = createFakeSyncService({ phase: 'error', errorCode: 'io', folderLabel: 'CircleTasks', folderKind: 'icloud', lastSyncAt: '2026-10-08T07:00:00.000Z' as IsoDateTime });
+    const sync = createFakeSyncService({ phase: 'error', errorCode: 'io', folderLabel: 'Spartiate', folderKind: 'icloud', lastSyncAt: '2026-10-08T07:00:00.000Z' as IsoDateTime });
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), data: db.data, sync, syncPlatform: phone, platform: { runtime: 'tauri', os: 'ios' } });
     renderIn(container, <SyncDetailsScreen />);
     expect(await screen.findByRole('button', { name: ASSOCIATE_PC })).toBeInTheDocument();
@@ -156,7 +156,7 @@ describe('iPhone sans clé : « Associer au PC » ne disparaît jamais (constat 
     const pcLike = await folderFromPc('windows');
     await pcLike.folder.choose();
     await pcLike.bindDevice(PHONE);
-    const sync = createFakeSyncService({ phase: 'error', errorCode: 'io', folderLabel: 'CircleTasks', folderKind: 'icloud' });
+    const sync = createFakeSyncService({ phase: 'error', errorCode: 'io', folderLabel: 'Spartiate', folderKind: 'icloud' });
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), data: db.data, sync, syncPlatform: pcLike });
     renderIn(container, <SyncDetailsScreen />);
     expect(await screen.findByRole('button', { name: 'Associer cet appareil avec la clé de secours' })).toBeInTheDocument();
@@ -171,7 +171,7 @@ describe('PC : « Associer l’iPhone » dans Réglages › Synchronisation (con
     await pc.folder.choose();
     await pc.key.create();
     await pc.bindDevice(PHONE);
-    const sync = createFakeSyncService({ phase: 'idle', folderLabel: 'CircleTasks', folderKind: 'icloud', lastSyncAt: '2026-10-08T07:59:00.000Z' as IsoDateTime });
+    const sync = createFakeSyncService({ phase: 'idle', folderLabel: 'Spartiate', folderKind: 'icloud', lastSyncAt: '2026-10-08T07:59:00.000Z' as IsoDateTime });
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), data: db.data, sync, syncPlatform: pc });
     renderIn(container, <SyncSettingsSection />);
     expect(await screen.findByRole('button', { name: SHOW_QR })).toBeInTheDocument();
@@ -183,7 +183,7 @@ describe('PC : « Associer l’iPhone » dans Réglages › Synchronisation (con
     await phone.folder.choose();
     await phone.key.create();
     await phone.bindDevice(PHONE);
-    const sync = createFakeSyncService({ phase: 'idle', folderLabel: 'CircleTasks', folderKind: 'icloud', lastSyncAt: '2026-10-08T07:59:00.000Z' as IsoDateTime });
+    const sync = createFakeSyncService({ phase: 'idle', folderLabel: 'Spartiate', folderKind: 'icloud', lastSyncAt: '2026-10-08T07:59:00.000Z' as IsoDateTime });
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), data: db.data, sync, syncPlatform: phone, platform: { runtime: 'tauri', os: 'ios' } });
     renderIn(container, <SyncSettingsSection />);
     expect(await screen.findByRole('button', { name: 'Détails' })).toBeInTheDocument();
@@ -338,7 +338,7 @@ describe('clé présente mais pas celle du dossier (point 2)', () => {
     await pc.key.create();
     await pc.bindDevice(PHONE);
     const kid = (await pc.key.status()).kid ?? '';
-    const sync = createFakeSyncService({ phase: 'idle', folderLabel: 'CircleTasks', folderKind: 'icloud', lastSyncAt: '2026-10-08T07:59:00.000Z' as IsoDateTime });
+    const sync = createFakeSyncService({ phase: 'idle', folderLabel: 'Spartiate', folderKind: 'icloud', lastSyncAt: '2026-10-08T07:59:00.000Z' as IsoDateTime });
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), data: db.data, sync, syncPlatform: pc });
     renderIn(container, <SyncDetailsScreen />);
     expect(await screen.findByTestId('sync-key-id')).toHaveTextContent(`Clé de chiffrement (identifiant)${kid.slice(0, 8)}`);
@@ -455,7 +455,7 @@ describe('dossier à choisir de nouveau (famille folder) : « Choisir le dossier
     await pc.folder.choose();
     await pc.key.create();
     await pc.bindDevice(PHONE);
-    const sync = createFakeSyncService({ phase: 'error', errorCode: 'not-bound', folderLabel: 'CircleTasks', folderKind: 'icloud' });
+    const sync = createFakeSyncService({ phase: 'error', errorCode: 'not-bound', folderLabel: 'Spartiate', folderKind: 'icloud' });
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), data: db.data, sync, syncPlatform: pc });
     renderIn(container, <SyncSettingsSection />);
     expect(await screen.findByRole('button', { name: 'Choisir le dossier de synchronisation' })).toBeInTheDocument();
@@ -473,7 +473,7 @@ describe('erreur du dossier lié relue (audit des impasses, G)', () => {
     await phone.key.create();
     await phone.bindDevice(PHONE);
     phone.testing.setVaultAvailable(false);
-    const sync = createFakeSyncService({ phase: 'idle', folderLabel: 'CircleTasks', folderKind: 'icloud', lastSyncAt: '2026-10-08T07:59:00.000Z' as IsoDateTime });
+    const sync = createFakeSyncService({ phase: 'idle', folderLabel: 'Spartiate', folderKind: 'icloud', lastSyncAt: '2026-10-08T07:59:00.000Z' as IsoDateTime });
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), data: db.data, sync, syncPlatform: phone, platform: { runtime: 'tauri', os: 'ios' } });
     renderIn(container, <SyncSettingsSection />);
     expect(await screen.findByText(VAULT)).toBeInTheDocument();

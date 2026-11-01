@@ -30,7 +30,7 @@ describe('Détails : échec de suppression propre', () => {
     render(<AppContainerProvider container={container}><SyncDetailsOwnDeletion /></AppContainerProvider>);
     expect(screen.getByRole('status').textContent).toContain("Les fichiers de l'ancienne époque");
     expect(screen.getByRole('status').textContent).toMatch(/Dernier essai à \d{2}:\d{2}/);
-    expect(screen.getByRole('status').textContent).toContain(`CircleTasks › devices › ef50b6f7 › ${EPOCH}`);
+    expect(screen.getByRole('status').textContent).toContain(`Spartiate › devices › ef50b6f7 › ${EPOCH}`);
     expect(screen.getByRole('status').textContent).not.toContain(' : io');
     act(() => sync.setStatus({ ownDelete: [] }));
     expect(screen.queryByRole('status')).toBeNull();

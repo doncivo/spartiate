@@ -324,7 +324,7 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
   /** Y-FIX-02 (§30) : échec (`io`) de l'état pendant une première publication ouverte par la borne locale : visible (`publish-blocked`, cause). */
   let onStateIo: (() => Promise<void>) | undefined;
 
-  /** Écrit son `state.ctx` ; renvoie faux sur `state-mismatch` (hypothèse refusée par Rust). */
+  /** Écrit son `state.spx` ; renvoie faux sur `state-mismatch` (hypothèse refusée par Rust). */
   const writeState = async (state: PublishedDeviceState, force: boolean): Promise<boolean> => {
     const comparable = comparableState(state);
     if (state.acks.size > MAX_STATE_ACKS) {
@@ -524,7 +524,7 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
     /**
      * Y-IOS-02 (point de contrôle 0.2.3, étape 4) : époque ouverte par cet appareil dont l'état n'a jamais été écrit (arrêt entre
      * l'instantané et l'état : échéance du cycle `hide` de l'iPhone, erreur d'écriture). Preuve locale : son propre instantané est le seul
-     * fichier listé, aucun segment, `stateSeq` jamais écrit, aucun accusé d'un autre appareil sur lui, `state.ctx` absent (pas illisible ni
+     * fichier listé, aucun segment, `stateSeq` jamais écrit, aucun accusé d'un autre appareil sur lui, `state.spx` absent (pas illisible ni
      * dans le nuage) : aucun autre appareil n'a rien accepté de lui, la borne de la règle 1 est vide. Sans cette exception, `canPublish`
      * refuse pour toujours (instantané listé, état absent) : l'appareil ne publie jamais rien.
      */
@@ -586,7 +586,7 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
       unreadable: unreadable.length,
     };
     /**
-     * Y-FIX-02 (ADR 0011 §30) : première publication interrompue (segment écrit, `state.ctx` jamais écrit) : borne locale, demandée au bloc
+     * Y-FIX-02 (ADR 0011 §30) : première publication interrompue (segment écrit, `state.spx` jamais écrit) : borne locale, demandée au bloc
      * à la demande seulement quand la règle actuelle refuse (la règle exige qu'aucun état n'ait été écrit). Rust juge la tête présentée.
      */
     const first: LocalBound | null = ruleAllows ? null : (await firstModule()).bound(logger, facts);
@@ -697,7 +697,7 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
     }
     /** Aucun instantané éligible trouvé par une reprise de ce cycle (§14.2) : oublié non couvert. */
     let noEligible: DeviceId | null = null;
-    /** Trous sur les oubliés (§18 point 11) : curseur sous la coupure et journal disparu (terminé, ou `state.ctx` absent). */
+    /** Trous sur les oubliés (§18 point 11) : curseur sous la coupure et journal disparu (terminé, ou `state.spx` absent). */
     const gaps = async (): Promise<readonly DeviceId[]> => {
       if (forgetView.order.size === 0) return [];
       const cursors = new Map<DeviceId, DeviceAck>();
@@ -908,11 +908,11 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
     {
       const rowsNow = new Map((await repos.sync.getStates()).map((row) => [row.deviceId, row]));
       for (const entry of scanPending) {
-        if (/^(?:.+\/)?s-\d{8}\.cts$/.test(entry.file)) {
+        if (/^(?:.+\/)?s-\d{8}\.sps$/.test(entry.file)) {
           pending.delete(entry.key);
           continue;
         }
-        const segment = /^(.+)\/j-(\d{8})\.ctj$/.exec(entry.file);
+        const segment = /^(.+)\/j-(\d{8})\.spj$/.exec(entry.file);
         const row = rowsNow.get(entry.deviceId);
         if (!segment || !row || row.epoch !== segment[1]) continue;
         const n = Number(segment[2]);
@@ -989,7 +989,7 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
     const forceState = ownScan?.stateStatus === 'foreign' || ownScan?.stateStatus === 'corrupt' || (lastWritten ?? ownState)?.epoch !== currentEpoch || announcing;
     if (publishAllowed && !(await writeState(await nextState(head), forceState))) {
       // Revue Y-IOS-02-FIX-02, point 1 (§24 point 10 (a)) : état refusé par Rust (`state-mismatch`, déjà journalisé `write-state-failed` ;
-      // ou plus de 64 accusés) : jamais « À jour » ni silence. Cas résiduel : `state.ctx` supprimé par un tiers, base restaurée à `stateSeq` 0,
+      // ou plus de 64 accusés) : jamais « À jour » ni silence. Cas résiduel : `state.spx` supprimé par un tiers, base restaurée à `stateSeq` 0,
       // aucun accusé, seul un instantané d'une ancienne époque jamais annoncée : le moteur propose `stateSeq` 1, Rust (maître) refuse.
       await deferPublish(true);
     }

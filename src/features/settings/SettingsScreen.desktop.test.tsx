@@ -101,10 +101,18 @@ describe('SettingsScreen PC (D-02, D-03)', () => {
       expect(screen.getByRole('button', { name: 'Rechercher une mise à jour' })).toBeEnabled();
     });
 
-    it('à jour : « CircleTasks est à jour »', async () => {
+    it('updater non configuré (D-30) : « Mises à jour : non configurées (SPA-002) », pas de bouton de vérification, aucune requête', async () => {
+      desktop.updaterConfigured = false;
+      renderScreen();
+      expect(await screen.findByText('Mises à jour : non configurées (SPA-002)')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Rechercher une mise à jour' })).not.toBeInTheDocument();
+      expect(desktop.checks).toBe(0);
+    });
+
+    it('à jour : « Spartiate est à jour »', async () => {
       renderScreen();
       (await screen.findByRole('button', { name: 'Rechercher une mise à jour' })).click();
-      expect(await screen.findByText('CircleTasks est à jour')).toBeInTheDocument();
+      expect(await screen.findByText('Spartiate est à jour')).toBeInTheDocument();
     });
 
     it('latest.json inaccessible : « Impossible de vérifier les mises à jour »', async () => {

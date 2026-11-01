@@ -44,7 +44,7 @@ Tu développes les réglages et l'onglet Plus de Spartiate, ainsi que l'onboardi
 
 ## Règles et invariants
 
-- Réglages dans la table `settings` (clé / valeur, portée locale ou partagée, identité `device.id`, D-24) via `settingsRepository` ; aucun `app_pref` ni `app_meta` ; le profil de matériel actif est local, les profils synchronisés (§ 14.3).
+- Réglages dans la table `settings` (clé / valeur, portée locale ou partagée, identité `device.id`, D-24) via `settingsRepository` ; aucun `app_pref` ni `app_meta` ; le profil de matériel actif est local, les profils synchronisés (§ 14.3). <!-- ancien-ok: tables abandonnées citées pour les proscrire (D-24) -->
 - Apparence : sombre par défaut, clair disponible, suit le système, forçable dans Plus (§ 18.4) ; fr seul ; heures 24 h.
 - Export / import (§ 21.3) : l'import passe par les repositories, génère des HLC et entre dans la synchro comme toute écriture ; aperçu avant import, rapport des lignes rejetées ; `manifest.json` avec sha256 ; export → reset → import = hash identique de `data.json`. CSV Hevy / Strong en I6 (Q-4).
 - Sauvegarde et restauration : sauvegarde automatique quotidienne (14 gardées, `spartiate-daily-AAAAMMJJ.db`), restauration par nom de fichier (jamais un chemin), confirmation, copie pré-restauration ; après restauration, le choix « Appliquer partout » / « Garder » appartient au flux de sync-icloud (`restore-marker.json`, ADR 0010) ; sur iPhone, la synchro iCloud est la sauvegarde hors appareil (D-16).

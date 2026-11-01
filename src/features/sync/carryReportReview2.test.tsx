@@ -59,7 +59,7 @@ beforeEach(async () => {
   sync = createFakeSyncService({
     phase: "idle",
     lastSyncAt: "2026-10-18T08:00:00.000Z" as IsoDateTime,
-    folderLabel: "CircleTasks",
+    folderLabel: "Spartiate",
     folderKind: "icloud",
   });
   container = createAppContainer({

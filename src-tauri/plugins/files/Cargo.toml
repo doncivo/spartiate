@@ -1,7 +1,7 @@
 [package]
 name = "tauri-plugin-ct-files"
 version = "0.1.0"
-description = "CircleTasks : enregistrer un fichier dans Fichiers sur iPhone (FILES-IOS-01, ADR 0009 avenant lot F). Appelé par Rust seulement."
+description = "Spartiate : enregistrer un fichier dans Fichiers sur iPhone (FILES-IOS-01, ADR 0009 avenant lot F). Appelé par Rust seulement."
 authors = ["Ali Cherif"]
 edition = "2021"
 rust-version = "1.80"

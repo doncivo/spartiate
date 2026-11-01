@@ -22,7 +22,7 @@ import { restoreUpdateBackup, updateRestoreFailureText } from './updateRestore';
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148';
 const ENV: DbEnvironment = { runtime: 'tauri', os: 'ios', buildPlatform: 'ios', appVersion: '0.3.0', paths: null, pathsError: null };
 const readEnvironment = () => Promise.resolve(ENV);
-const BACKUP = 'circletasks-pre-migration-v0018-to-v0019-20261009T080000Z.db';
+const BACKUP = 'spartiate-pre-migration-v0018-to-v0019-20261009T080000Z.db';
 const MIGRATION_FAILURE: DbFailure = {
   phase: 'open',
   step: 'migration',
@@ -51,14 +51,14 @@ describe('critère 13 : migration en échec après la mise à jour', () => {
     expect(text).toContain(t('app.update.appVersionLine', { version: '0.3.0' }));
     expect(text).toContain(t('app.update.schemaLine', { database: '18', app: '19' }));
     expect(text).toContain(t('app.update.backupLine', { name: BACKUP }));
-    expect(text).toContain('sqlite:circletasks.db');
+    expect(text).toContain('sqlite:spartiate.db');
     expect(formatDbFailure({ ...MIGRATION_FAILURE, appVersion: null, schemaVersion: null }, ENV)).toContain(t('app.update.appVersionLine', { version: t('app.diag.unknown') }));
   });
 
   it('trois actions : Réessayer, Copier le détail, Restaurer ; confirmation avec « Annuler » par défaut, Annuler ne fait rien', async () => {
     const restore = vi.fn(() => Promise.resolve({ ok: true } as const));
     render(<DbFailureDetails failure={MIGRATION_FAILURE} readEnvironment={readEnvironment} canRestore restore={restore} />);
-    expect(screen.getByText('Vos données sont intactes. Ne supprimez pas CircleTasks. Envoyez le détail pour obtenir un correctif.')).toBeInTheDocument();
+    expect(screen.getByText('Vos données sont intactes. Ne supprimez pas Spartiate. Envoyez le détail pour obtenir un correctif.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: t('app.diag.retry') })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: t('app.diag.copy') })).toBeInTheDocument();
     fireEvent.click(await screen.findByRole('button', { name: tUpdateRestore('restore') }));
@@ -160,7 +160,7 @@ describe('critère 14 : base plus récente que l’app', () => {
   it('message de consigne (iPhone : SideStore ; PC : page des versions), jamais le message brut ; pas de restauration', () => {
     vi.stubGlobal('navigator', { ...navigator, userAgent: IPHONE });
     expect(failureAlertKey(NEWER_FAILURE, false)).toBe('app.update.schemaNewer');
-    expect(t('app.update.schemaNewer')).toBe('Cette version de CircleTasks est plus ancienne que vos données. Installez la dernière version depuis SideStore. Vos données ne sont pas modifiées.');
+    expect(t('app.update.schemaNewer')).toBe('Cette version de Spartiate est plus ancienne que vos données. Installez la dernière version depuis SideStore. Vos données ne sont pas modifiées.');
     vi.stubGlobal('navigator', { ...navigator, userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' });
     expect(failureAlertKey(NEWER_FAILURE, false)).toBe('app.update.schemaNewerPc');
     expect(t('app.update.schemaNewer')).not.toMatch(/inconnue de cette version/);
@@ -183,7 +183,7 @@ describe('critère 8 : « À propos » affiche la version sur l’iPhone', () =>
 
   async function renderAbout(os: 'ios' | 'windows', appVersion: Parameters<typeof createAppContainer>[0]['appVersion']) {
     const db = await openTestDb(DEVICE, '2026-10-09T08:00:00.000Z');
-    const desktop = os === 'windows' ? ({ getVersion: () => Promise.resolve('0.3.0'), openLatestRelease: () => Promise.resolve() } as never) : null;
+    const desktop = os === 'windows' ? ({ updaterConfigured: true, getVersion: () => Promise.resolve('0.3.0'), openLatestRelease: () => Promise.resolve() } as never) : null;
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, desktop, platform: { runtime: 'tauri', os }, ...(appVersion ? { appVersion } : {}) });
     render(
       <AppContainerProvider container={container}>

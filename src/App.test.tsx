@@ -71,7 +71,7 @@ describe('App (coquille, T-01)', () => {
     const detail = screen.getByTestId('db-failure-detail');
     expect(detail).toHaveTextContent(t('app.diag.steps.migration', { version: '12' }));
     expect(detail).toHaveTextContent('no such table: tasks');
-    expect(detail).toHaveTextContent('sqlite:circletasks.db');
+    expect(detail).toHaveTextContent('sqlite:spartiate.db');
     expect(screen.getByRole('button', { name: t('app.diag.copy') })).toBeInTheDocument();
   });
 

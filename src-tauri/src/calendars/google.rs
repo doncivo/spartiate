@@ -198,8 +198,8 @@ pub fn parse_callback(request_line: &str, expected_state: &str) -> Callback {
     }
 }
 
-const PAGE_OK: &str = "<!doctype html><meta charset=\"utf-8\"><title>CircleTasks</title><body style=\"font-family:sans-serif;margin:3em\"><h1>Connexion terminée</h1><p>Vous pouvez fermer cet onglet et revenir à CircleTasks.</p></body>";
-const PAGE_KO: &str = "<!doctype html><meta charset=\"utf-8\"><title>CircleTasks</title><body style=\"font-family:sans-serif;margin:3em\"><h1>Connexion annulée</h1><p>Vous pouvez fermer cet onglet et revenir à CircleTasks.</p></body>";
+const PAGE_OK: &str = "<!doctype html><meta charset=\"utf-8\"><title>Spartiate</title><body style=\"font-family:sans-serif;margin:3em\"><h1>Connexion terminée</h1><p>Vous pouvez fermer cet onglet et revenir à Spartiate.</p></body>";
+const PAGE_KO: &str = "<!doctype html><meta charset=\"utf-8\"><title>Spartiate</title><body style=\"font-family:sans-serif;margin:3em\"><h1>Connexion annulée</h1><p>Vous pouvez fermer cet onglet et revenir à Spartiate.</p></body>";
 
 async fn respond(stream: &mut TcpStream, status: &str, body: &str) {
     let reply = format!("HTTP/1.1 {status}\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len());

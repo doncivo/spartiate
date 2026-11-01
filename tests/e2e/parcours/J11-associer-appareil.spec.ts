@@ -59,7 +59,7 @@ test('parcours 11 : le PC affiche le QR et la clé de secours, « Nouveau code �
   const qr = show.getByRole('img', { name: 'QR code d’association' });
   await expect(qr).toBeVisible();
   const key = show.getByTestId('pairing-recovery-key');
-  await expect(key).toHaveText(/^CT1(-[0-9A-Z]{5})+$/);
+  await expect(key).toHaveText(/^SP1(-[0-9A-Z]{5})+$/);
   const recoveryKey = (await key.textContent()) ?? '';
   await expect(show.getByText('Code valable 5 minutes')).toBeVisible();
   await expect(show.getByText('En attente de l’iPhone…')).toBeVisible();

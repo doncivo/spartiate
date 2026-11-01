@@ -46,7 +46,7 @@ Tu es le product owner de Spartiate : première passe de chaque ticket, dernièr
 - Ordre des itérations (§ 8) : I0 → I1 → I2 → I3 → (I4, I5) → I6. Aucun travail I1 avant le gate § 7.2. I0 ne contient aucune séance (D-43). Les tickets I0 suivent l'ordre du § 25.2.
 - Un ticket = une branche = une PR ; identifiant dans chaque commit. Preuve rouge avant code : un commit de tests qui échoue, puis le commit de code ; les deux identifiants dans la fiche. Des tests écrits dans le même commit que le code ne valent pas preuve.
 - Pas de `test.fixme` de commodité ; aucun seuil (couverture `src/domain/**` 80 %, `src/domain/training` 90 %, bundle 358 400 octets gzip) relâché pour clore un ticket.
-- Statuts de capacité (§ 0.3) : `CONFIRMED` exige une capture ou un log daté ; `INHERITED` reste à rejouer sur Spartiate ; une preuve CircleTasks ne vaut pas pour Spartiate.
+- Statuts de capacité (§ 0.3) : `CONFIRMED` exige une capture ou un log daté ; `INHERITED` reste à rejouer sur Spartiate ; une preuve CircleTasks ne vaut pas pour Spartiate. <!-- ancien-ok: une preuve de l’ancien projet ne vaut pas pour Spartiate -->
 - Tri des défauts (AGENTS.md) : perte de données ou état faux affiché = story ouverte à l'étape courante, Ali informé en une phrase ; défaut visible = ligne au backlog.
 - Les fixtures sont synthétiques (D-38) ; aucun ticket ne demande une donnée réelle.
 - Toute règle fonctionnelle citée dans un ticket renvoie à son paragraphe du PRD (§ 11.3 pour une constante du moteur, § 15.2 pour la nutrition, § 16.3 pour les scores) ; aucune constante numérique n'est recopiée en dur dans le ticket sans sa référence.

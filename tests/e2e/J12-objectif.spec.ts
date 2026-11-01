@@ -11,7 +11,7 @@ import { createTask, rowOf } from './helpers/today';
 test('parcours 12 (objectif) : fixer l’objectif, rattacher 2 tâches, l’encadré passe de 0/2 à 1/2', async ({ page }, testInfo) => {
   await openApp(page);
   await openGoalScreen(page);
-  await goalTitleField(page).fill('Finaliser le PRD CircleTasks');
+  await goalTitleField(page).fill('Finaliser le PRD Spartiate');
   await goalTitleField(page).press('Enter');
   await closeGoalScreen(page, testInfo);
   await expect(goalCards(page)).toHaveCount(1);
@@ -21,7 +21,7 @@ test('parcours 12 (objectif) : fixer l’objectif, rattacher 2 tâches, l’enca
     await rowOf(page, title).getByRole('button', { name: title, exact: true }).click();
     const fiche = detailOf(page);
     await fiche.getByRole('switch', { name: 'Rattacher à mon objectif' }).click();
-    await expect(fiche.getByText('Rattachée : Finaliser le PRD CircleTasks')).toBeVisible();
+    await expect(fiche.getByText('Rattachée : Finaliser le PRD Spartiate')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(fiche).toHaveCount(0);
   }

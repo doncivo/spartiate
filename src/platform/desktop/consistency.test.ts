@@ -50,8 +50,8 @@ describe('cohérence TypeScript / Rust / configuration', () => {
     expect(field('quit')).toBe(fr.desktop.tray.quit);
   });
 
-  it('le dépôt des versions est le même : endpoint du plugin, lien « À propos », périmètre de l’opener', () => {
-    expect(conf.plugins.updater.endpoints).toEqual([`${RELEASES_REPOSITORY_URL}/releases/latest/download/latest.json`]);
+  it('le dépôt des versions est le même : lien « À propos » et périmètre de l’opener ; l’updater n’est pas configuré (D-30)', () => {
+    expect(conf.plugins?.updater).toBeUndefined();
     const opener = capability.permissions.find((p) => typeof p !== 'string' && p.identifier === 'opener:allow-open-url');
     expect(typeof opener === 'object' && opener.allow?.[0]?.url).toBe(`${RELEASES_REPOSITORY_URL}/releases/*`);
     expect(LATEST_RELEASE_URL.startsWith(`${RELEASES_REPOSITORY_URL}/releases/`)).toBe(true);

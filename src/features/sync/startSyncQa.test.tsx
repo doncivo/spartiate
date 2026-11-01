@@ -179,7 +179,7 @@ describe('aucun échec silencieux : chaque phase bloquée (9 c, 9 e, 9 i)', () =
         const line = statusLine(sync.status(), db.clock.nowMs());
         expect(line, `${phase}/${errorCode}`).not.toBe('');
         expect(banner()?.textContent, `${phase}/${errorCode}`).toContain(line);
-        expect(line).not.toMatch(/[\\/]|[A-Za-z]:|\.ctx|\.jsonl|CT1-|CTPAIR/);
+        expect(line).not.toMatch(/[\\/]|[A-Za-z]:|.spx|\.jsonl|SP1-|SPPAIR/);
         expect(screen.queryByRole('alert')).toBeNull();
         expect(document.querySelectorAll('.ct-status-banner')).toHaveLength(1);
       }

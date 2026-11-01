@@ -65,7 +65,7 @@ test.describe('I-02 — alerte avant expiration (iPhone, profil et planificateur
     await resume(page);
     await expect.poll(() => signing(page, (hooks) => hooks.alert.scheduled.length)).toBe(1);
     const [first] = await signing(page, (hooks) => hooks.alert.scheduled);
-    expect(first).toMatchObject({ instant: Date.parse('2026-10-13T07:00:00Z'), title: 'CircleTasks va expirer' });
+    expect(first).toMatchObject({ instant: Date.parse('2026-10-13T07:00:00Z'), title: 'Spartiate va expirer' });
     expect(first?.body).toContain('expiration prévue le mer. 14 oct. à 09:00');
     // Le premier profil peut avoir été lu après expireAt, pendant le démarrage différé.
     // Vérifier une lecture nouvelle après la reprise, pas trois passages absolus : les reprises en rafale sont coalescées.
@@ -89,10 +89,10 @@ test.describe('I-02 — alerte avant expiration (iPhone, profil et planificateur
   test('moins de 24 h : aucune notification, bandeau « expire dans 16 h » (critère 6)', async ({ page }) => {
     await signing(page, (hooks) => hooks.source.expireAt('2026-10-08T23:30:00Z'));
     await resume(page);
-    await expect(page.locator('.ct-status-banner')).toContainText('CircleTasks expire dans 16 h : actualisez-la dans SideStore');
+    await expect(page.locator('.ct-status-banner')).toContainText('Spartiate expire dans 16 h : actualisez-la dans SideStore');
     expect(await signing(page, (hooks) => hooks.alert.scheduled.length)).toBe(0);
     await openSettings(page);
-    await expect(page.getByText('Moins de 24 h restantes : actualisez CircleTasks dans SideStore')).toBeVisible();
+    await expect(page.getByText('Moins de 24 h restantes : actualisez Spartiate dans SideStore')).toBeVisible();
   });
 
   test('signature expirée : bandeau « La signature est expirée : réinstallez l’app »', async ({ page }) => {
@@ -159,7 +159,7 @@ test.describe('I-02 — 440 × 956 : À propos et bandeau sans défilement horiz
     await expect(page.locator('.ct-status-banner')).toContainText('expire dans 16 h');
     await expectFitsViewport(page, 'bandeau d’expiration');
     await page.getByRole('button', { name: 'Voir l’expiration de la signature dans Réglages' }).click();
-    await expect(page.getByText('Moins de 24 h restantes : actualisez CircleTasks dans SideStore')).toBeVisible();
+    await expect(page.getByText('Moins de 24 h restantes : actualisez Spartiate dans SideStore')).toBeVisible();
     await expectFitsViewport(page, 'À propos, moins de 24 h');
   });
 

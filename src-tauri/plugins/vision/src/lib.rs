@@ -1,4 +1,4 @@
-//! Plugin Swift vision de CircleTasks (CAP-IOS-01, ADR 0015 section 1.2).
+//! Plugin Swift vision de Spartiate (CAP-IOS-01, ADR 0015 section 1.2).
 //!
 //! Aucune commande n'est exposée à la WebView (`build.rs`) : Rust seul appelle le plugin, par `Vision::call` (bloquant, toujours depuis un fil
 //! dédié avec délai : `src/mobile_call.rs` de l'app). Le nom de commande est exactement celui de la méthode Swift

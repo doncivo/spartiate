@@ -138,13 +138,13 @@ describe('D6 écran « Associer au PC » : cause masquée pendant le scan', () =
     expect(screen.getByTestId('ios-pairing-message').textContent).toMatch(/Trousseau|déverrouill/);
   });
 
-  it('dossier devenu inaccessible pendant le scan : « Choisir le dossier iCloud Drive / CircleTasks » est offert pour le rechoisir', async () => {
+  it('dossier devenu inaccessible pendant le scan : « Choisir le dossier iCloud Drive / Spartiate » est offert pour le rechoisir', async () => {
     const phone = await world.device('ios', SELF, true);
     const failing: SyncPlatform = { ...phone, key: { ...phone.key, scanAndImport: () => Promise.resolve({ kind: 'failed', code: 'folder-unreachable' } as const) } };
     open(failing);
     fireEvent.click(await screen.findByRole('button', { name: 'Ouvrir la caméra et scanner le code d’association' }));
     await settle(db.driver);
-    expect(screen.getByRole('button', { name: 'Choisir le dossier iCloud Drive / CircleTasks' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Choisir le dossier iCloud Drive / Spartiate' })).toBeInTheDocument();
   });
 });
 

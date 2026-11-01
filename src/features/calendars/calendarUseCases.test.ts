@@ -35,7 +35,7 @@ describe('cas d’usage des comptes d’agendas (K-01, ES-06)', () => {
       id: ACCOUNT,
       provider: 'google',
       label: 'ali@example.com',
-      tokenRef: `circletasks.calendar.google.${ACCOUNT}`,
+      tokenRef: `spartiate.calendar.google.${ACCOUNT}`,
       calendars: [
         { id: 'travail', name: 'Travail', spaceId: SPACE_PRO_ID, shown: true },
         { id: 'sport', name: 'Sport', spaceId: SPACE_PRO_ID, shown: true },

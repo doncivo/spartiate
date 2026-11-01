@@ -27,7 +27,7 @@ function texts(overrides: Partial<ReportTexts> = {}): ReportTexts {
       { title: 'Faire mon lit', value: '93 %' },
       { title: 'Sport', value: '70 %' },
     ],
-    footer: 'CircleTasks',
+    footer: 'Spartiate',
     ...overrides,
   };
 }

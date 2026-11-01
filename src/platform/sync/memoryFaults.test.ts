@@ -9,9 +9,9 @@ import { createMemorySyncPlatform, MemorySyncFolder, MUTE_DEADLINE_TURNS, type M
 const A = '0f8fad5b-d9cb-469f-a165-70867728950e' as DeviceId;
 const B = '7c9e6679-7425-40de-944b-e07fc1f90ae7' as DeviceId;
 const E1 = epochId(1, A);
-const SEGMENT = `${E1}/j-00000001.ctj`;
-const S1 = `${E1}/s-00000001.cts`;
-const S2 = `${E1}/s-00000002.cts`;
+const SEGMENT = `${E1}/j-00000001.spj`;
+const S1 = `${E1}/s-00000001.sps`;
+const S2 = `${E1}/s-00000002.sps`;
 const hlc = (ms: number): Hlc => `${String(ms).padStart(15, '0')}-0000-${A}` as Hlc;
 const nowMs = (): number => 1_800_000_000_000;
 const RECORDS = ['{"k":"ops","n":1}', '{"k":"ops","n":2}'];
@@ -97,19 +97,19 @@ describe('Y-TECH-03 : suppression en échec (critères 2 et 5)', () => {
 
   it('critère 2 : un autre fichier se supprime normalement ; seule la première suppression du fichier désigné échoue', async () => {
     const { folder, a } = await twoDevices();
-    folder.armFaults(plan([{ id: 'remove-s1', op: 'remove', file: 'devices/*/e0001-*/s-00000001.cts', nth: 1, effect: 'error', code: 'io' }]));
+    folder.armFaults(plan([{ id: 'remove-s1', op: 'remove', file: 'devices/*/e0001-*/s-00000001.sps', nth: 1, effect: 'error', code: 'io' }]));
     expect(await a.deleteOwn([{ epoch: E1, kind: 's', n: 2 }])).toBe(1);
     await expect(a.deleteOwn([{ epoch: E1, kind: 's', n: 1 }])).rejects.toMatchObject({ code: 'io' });
     expect(await a.deleteOwn([{ epoch: E1, kind: 's', n: 1 }])).toBe(1);
-    expect(folder.fileNames(A)).toEqual([SEGMENT, 'state.ctx']);
+    expect(folder.fileNames(A)).toEqual([SEGMENT, 'state.spx']);
   });
 
   it('suppression d’une époque : arrêt à la première suppression en échec, dossier gardé, reprise au rang suivant', async () => {
     const { folder, a } = await twoDevices();
     const other = epochId(2, A);
     // Seconde époque avec un instantané seul (fichier d'une époque non courante).
-    folder.putLines(A, `${other}/s-00000001.cts`, ['{"k":"snap-end"}']);
-    folder.armFaults(plan([{ id: 'remove-epoch-s1', op: 'remove', file: `devices/*/${other}/s-00000001.cts`, nth: 1, effect: 'error', code: 'io' }]));
+    folder.putLines(A, `${other}/s-00000001.sps`, ['{"k":"snap-end"}']);
+    folder.armFaults(plan([{ id: 'remove-epoch-s1', op: 'remove', file: `devices/*/${other}/s-00000001.sps`, nth: 1, effect: 'error', code: 'io' }]));
     await expect(a.deleteOwn([{ epoch: other, kind: 'epoch' }])).rejects.toMatchObject({ code: 'io' });
     expect(folder.devices.get(A)?.epochs.has(other)).toBe(true);
     expect(await a.deleteOwn([{ epoch: other, kind: 'epoch' }])).toBe(1);
@@ -198,7 +198,7 @@ describe('Y-TECH-03 : écriture refusée (critère 9)', () => {
       const stateBefore = folder.takeState(A);
       folder.armFaults(plan([
         { id: 'append', op: 'write', file: at(SEGMENT), nth: 1, effect: 'error', code },
-        { id: 'state', op: 'write', file: at('state.ctx'), nth: 1, effect: 'error', code },
+        { id: 'state', op: 'write', file: at('state.spx'), nth: 1, effect: 'error', code },
       ]));
       await expect(a.appendJournal({ epoch: E1, segment: 1, expectRecords: 2, sv: 14, maxHlc: hlc(50), records: ['{"k":"ops","n":3}'] })).rejects.toMatchObject({ code });
       expect(folder.records(A, SEGMENT)).toEqual(records);
@@ -215,12 +215,12 @@ describe('Y-TECH-03 : écriture refusée (critère 9)', () => {
   it('instantané refusé à l’écriture ou au renommage : aucun instantané visible', async () => {
     const { folder, a } = await twoDevices();
     folder.armFaults(plan([
-      { id: 'tmp', op: 'write', file: `devices/*/${E1}/s-00000003.cts`, nth: 1, effect: 'error', code: 'io' },
-      { id: 'commit', op: 'rename', file: `devices/*/${E1}/s-00000004.cts`, nth: 1, effect: 'error', code: 'cloud-pending' },
+      { id: 'tmp', op: 'write', file: `devices/*/${E1}/s-00000003.sps`, nth: 1, effect: 'error', code: 'io' },
+      { id: 'commit', op: 'rename', file: `devices/*/${E1}/s-00000004.sps`, nth: 1, effect: 'error', code: 'cloud-pending' },
     ]));
     await expect(a.writeSnapshot({ epoch: E1, seq: 3, sv: 14, records: pages(['{"k":"snap-end"}']) })).rejects.toMatchObject({ code: 'io' });
     await expect(a.writeSnapshot({ epoch: E1, seq: 4, sv: 14, records: pages(['{"k":"snap-end"}']) })).rejects.toMatchObject({ code: 'cloud-pending' });
-    expect(folder.fileNames(A)).toEqual([SEGMENT, S1, S2, 'state.ctx']);
+    expect(folder.fileNames(A)).toEqual([SEGMENT, S1, S2, 'state.spx']);
   });
 
   it('partialLastLine explicite : lignes complètes écrites, dernière incomplète, appel en échec, own.json inchangé', async () => {
@@ -253,7 +253,7 @@ describe('Y-TECH-03 : téléchargement en échec (critère 11)', () => {
     folder.armFaults(plan([{ id: 'read-io', op: 'read', file: at(SEGMENT), nth: 1, effect: 'error', code: 'io' }]));
     await expect(journal(b)).rejects.toMatchObject({ code: 'io' });
     expect((await journal(b)).status).toBe('complete');
-    folder.armFaults(plan([{ id: 'state-io', op: 'read', file: at('state.ctx'), nth: 1, times: 'all', effect: 'error', code: 'io' }]));
+    folder.armFaults(plan([{ id: 'state-io', op: 'read', file: at('state.spx'), nth: 1, times: 'all', effect: 'error', code: 'io' }]));
     expect((await listedOf(b))?.stateStatus).toBe('corrupt');
   });
 });
@@ -339,7 +339,7 @@ describe('Y-TECH-03 : sans plan, comportement inchangé ; même plan, même rés
       const { folder, a, b } = await twoDevices();
       folder.armFaults(plan([
         { id: 'read-io', op: 'read', file: at(SEGMENT), nth: 2, effect: 'error', code: 'io' },
-        { id: 'remove-io', op: 'remove', file: 'devices/*/*/s-*.cts', nth: 1, effect: 'error', code: 'cloud-pending' },
+        { id: 'remove-io', op: 'remove', file: 'devices/*/*/s-*.sps', nth: 1, effect: 'error', code: 'cloud-pending' },
         { id: 'evict', op: 'read', file: at(S2), nth: 1, effect: 'evict-after-read' },
       ]));
       const out: unknown[] = [];

@@ -191,7 +191,7 @@ describe('K-06 modification pendant un passage et suppression croisée', () => {
     expect(await h.pass('full')).toMatchObject({ sent: 0, updated: 0, pending: 0 });
   });
 
-  it('K-05 supprimé dans Rappels puis modifié dans CircleTasks avant le passage (passage complet) : jamais de perte sans trace', async () => {
+  it('K-05 supprimé dans Rappels puis modifié dans Spartiate avant le passage (passage complet) : jamais de perte sans trace', async () => {
     const { reminder, task } = await linked('Fragile');
     h.reminders.add({ listId: 'L-courses', title: 'Autre' });
     h.reminders.remove(reminder.id);
@@ -206,7 +206,7 @@ describe('K-06 modification pendant un passage et suppression croisée', () => {
     expect(h.reminders.writes).toEqual([]);
   });
 
-  it('K-05 supprimé dans Rappels puis modifié dans CircleTasks (passage push) : rien n’est recréé ni supprimé en silence', async () => {
+  it('K-05 supprimé dans Rappels puis modifié dans Spartiate (passage push) : rien n’est recréé ni supprimé en silence', async () => {
     const { reminder, task } = await linked('Orpheline');
     h.reminders.remove(reminder.id);
     h.db.clock.advance(60_000);

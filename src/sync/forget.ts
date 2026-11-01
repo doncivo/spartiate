@@ -26,7 +26,7 @@ import { META, readJson, writeJson } from './meta';
  * Oubli d'un appareil (Y-10 ; ADR 0011 sections 14.2, 1.4 et 18) : partie moteur.
  *
  * - **Déclaration** (`declareForget`) : intention `forgetPublish` posée avant l'appel à Rust (`sync_device_forget`, confirmation
- *   native), puis le cycle republie son `state.ctx` (Rust complète la liste `forgotten` dont il est maître). Un arrêt à n'importe quel
+ *   native), puis le cycle republie son `state.spx` (Rust complète la liste `forgotten` dont il est maître). Un arrêt à n'importe quel
  *   instant reprend : l'intention force une publication au cycle suivant, `forgotten.json` (Rust) fait foi.
  * - **Ordre total** (`evaluateForget`, au début de chaque cycle) : déclarations lues dans les seuls états **authentifiés** (D5 : un
  *   `forgotten` d'un état `foreign`, `corrupt` ou `rollback` est ignoré), gardées dans `sync_meta.forgetDeclarations` (un oubli ne

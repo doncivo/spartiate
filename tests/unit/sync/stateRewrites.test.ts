@@ -5,7 +5,7 @@ import { propagate } from '../../sim/syncCloudSim';
 import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
 
 /**
- * Y-TECH-01 (dettes, revue de Y-10 point 6) : entre appareils actifs qui se lisent, `state.ctx` ne doit pas être réécrit à chaque cycle.
+ * Y-TECH-01 (dettes, revue de Y-10 point 6) : entre appareils actifs qui se lisent, `state.spx` ne doit pas être réécrit à chaque cycle.
  * Avant la correction, l'accusé publié porte le `stateSeq` de l'état lu de l'autre appareil et ce champ entrait dans la comparaison
  * « réécrit seulement s'il a changé » (section 1.4) : chaque écriture changeait l'accusé de l'autre, qui réécrivait à son tour, sans fin
  * (mesuré avant : 71 et 72 réécritures pour 72 cycles à deux appareils, 72 pour chacun des trois ; après : 12, soit une par 30 minutes).
@@ -44,7 +44,7 @@ interface PublishedJson {
   readonly forgotten: readonly { readonly deviceId: string }[];
 }
 
-/** `state.ctx` publié par `of`, tel qu'il est dans son propre dossier (texte clair gardé par la plateforme mémoire). */
+/** `state.spx` publié par `of`, tel qu'il est dans son propre dossier (texte clair gardé par la plateforme mémoire). */
 function published(of: SimDevice): PublishedJson {
   const text = of.folder.devices.get(of.id)?.state?.lines[0]?.text;
   if (text === undefined) throw new Error(`aucun état publié par ${of.name}`);
@@ -189,12 +189,12 @@ function foreignCopy(of: SimDevice): ReturnType<SimDevice['folder']['takeState']
 
 describe('Y-TECH-01 (revue, point 5) : accusé republié aussitôt pour chaque état illisible (AWAITING_ACK_SEQ), jamais pour cloud-pending', () => {
   const cases: readonly [string, (a: SimDevice, b: SimDevice, old: ReturnType<SimDevice['folder']['takeState']>) => void, boolean][] = [
-    ['missing', (a, b) => a.folder.removeFile(b.id, 'state.ctx'), true],
+    ['missing', (a, b) => a.folder.removeFile(b.id, 'state.spx'), true],
     ['foreign', (a, b) => a.folder.putState(foreignCopy(b)), true],
-    ['corrupt', (a, b) => a.folder.corruptRecord(b.id, 'state.ctx', 0), true],
+    ['corrupt', (a, b) => a.folder.corruptRecord(b.id, 'state.spx', 0), true],
     ['rollback', (a, _b, old) => a.folder.putState(old), true],
-    ['too-large', (a, b) => a.folder.addBytes(b.id, 'state.ctx', 1_000_000), true],
-    ['cloud-pending', (a, b) => a.folder.setAvailability(b.id, 'state.ctx', 'cloud'), false],
+    ['too-large', (a, b) => a.folder.addBytes(b.id, 'state.spx', 1_000_000), true],
+    ['cloud-pending', (a, b) => a.folder.setAvailability(b.id, 'state.spx', 'cloud'), false],
   ];
   it.each(cases)('%s', async (_status, damage, rewrites) => {
     const [a, b] = (await associated([A_ID, B_ID])) as [SimDevice, SimDevice];
@@ -229,10 +229,10 @@ describe('Y-TECH-01 (revue, point 5) : accusé republié aussitôt pour chaque �
 });
 
 describe('Y-TECH-01 (revue, point 4) : état absent puis reconstruit à deux appareils', () => {
-  it('B perd son state.ctx et own.json : stateSeq reconstruit depuis les accusés, éventuellement en retard ; réparé seul en quelques cycles', async () => {
+  it('B perd son state.spx et own.json : stateSeq reconstruit depuis les accusés, éventuellement en retard ; réparé seul en quelques cycles', async () => {
     const [a, b] = (await associated([A_ID, B_ID])) as [SimDevice, SimDevice];
     await staleAckOnB(a, b);
-    b.folder.removeFile(b.id, 'state.ctx');
+    b.folder.removeFile(b.id, 'state.spx');
     b.platform.testing.dropOwnState();
     syncFolders([a, b]);
     const task = await b.createTask('Après la reconstruction');

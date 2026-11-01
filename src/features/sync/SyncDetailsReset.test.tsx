@@ -49,7 +49,7 @@ beforeEach(async () => {
     await platform.folder.choose();
     await platform.key.create();
   }
-  sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-06T08:00:00.000Z' as IsoDateTime, folderLabel: 'CircleTasks', folderKind: 'icloud', devices: [self, other(IPHONE, 'ios', '2026-10-01T09:30:00.000Z')] });
+  sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-06T08:00:00.000Z' as IsoDateTime, folderLabel: 'Spartiate', folderKind: 'icloud', devices: [self, other(IPHONE, 'ios', '2026-10-01T09:30:00.000Z')] });
   container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync, syncPlatform: platform });
 });
 
@@ -145,7 +145,7 @@ describe('étapes, échecs persistants, appareils à associer, rappel (critères
     cleanup();
     sync.setStatus({ reset: state({ step: 'start', failure: { code: 'not-foreground', at: '2026-10-06T08:01:00.000Z' as IsoDateTime, step: 'start' } }) });
     renderIn(<SyncDetailsReset />);
-    expect(within(slot()).getByText('La réinitialisation n’a pas pu commencer : CircleTasks n’était pas au premier plan')).toBeTruthy();
+    expect(within(slot()).getByText('La réinitialisation n’a pas pu commencer : Spartiate n’était pas au premier plan')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Réessayer la réinitialisation' }));
     expect(screen.getByRole('alertdialog')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Annuler' }));

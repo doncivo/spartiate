@@ -8,8 +8,8 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use base64::{engine::general_purpose::STANDARD, Engine};
-use circletasks_lib::ocr::vision::{error_of_code, read_lines, read_result, recognize_with, MAX_RAW_LINES, status_with, VisionState, VisionTransport, PLUGIN_REJECT_CODES, VISION_LANGUAGES};
-use circletasks_lib::ocr::{declared_dimensions, validate_for_vision, ImageKind, OcrError, MAX_LINES, VISION_MAX_SIDE};
+use spartiate_lib::ocr::vision::{error_of_code, read_lines, read_result, recognize_with, MAX_RAW_LINES, status_with, VisionState, VisionTransport, PLUGIN_REJECT_CODES, VISION_LANGUAGES};
+use spartiate_lib::ocr::{declared_dimensions, validate_for_vision, ImageKind, OcrError, MAX_LINES, VISION_MAX_SIDE};
 use serde_json::{json, Value};
 
 const CONTRACT: &str = include_str!("../../../tests/fixtures/capture/vision-contract.json");
@@ -174,7 +174,7 @@ fn cap_ios_01_2_an_unusable_confidence_is_absent_not_zero() {
 
 #[test]
 fn cap_ios_01_2_serialized_lines_omit_confidence_for_windows_and_status_omits_reason() {
-    use circletasks_lib::ocr::{clean_lines, OcrStatus};
+    use spartiate_lib::ocr::{clean_lines, OcrStatus};
     // Windows : jamais de `confidence` ni de `reason` dans les réponses (additif, compatible avec le front existant).
     assert_eq!(serde_json::to_value(clean_lines(["Ligne"])).unwrap(), json!([{ "text": "Ligne" }]));
     let status = OcrStatus { available: true, languages: vec!["fr-FR".to_owned()], reason: None, cleanup_failed: false };
@@ -471,7 +471,7 @@ fn cap_ios_01_temporary_photo_copies_are_removed_after_every_read_and_a_failure_
 
 #[test]
 fn cap_ios_01_status_serializes_cleanup_failure_only_when_true() {
-    use circletasks_lib::ocr::OcrStatus;
+    use spartiate_lib::ocr::OcrStatus;
     let mut status = OcrStatus { available: true, languages: vec!["fr-FR".to_owned()], reason: None, cleanup_failed: false };
     assert!(serde_json::to_value(&status).unwrap().get("cleanupFailed").is_none());
     status.cleanup_failed = true;

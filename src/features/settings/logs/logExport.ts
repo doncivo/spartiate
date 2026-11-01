@@ -26,9 +26,9 @@ function offsetOf(date: Date): string {
   return `${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
 }
 
-/** Nom du fichier : `circletasks-logs-AAAAMMJJ-HHMM.txt` (heure locale). */
+/** Nom du fichier : `spartiate-logs-AAAAMMJJ-HHMM.txt` (heure locale). */
 export function logExportName(now: Date): string {
-  return `circletasks-logs-${String(now.getFullYear())}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.txt`;
+  return `spartiate-logs-${String(now.getFullYear())}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.txt`;
 }
 
 /** Ligne d'une entrée : `AAAA-MM-JJ HH:MM:SS scope code détail` (UTC), suivie de `×n` pour des entrées fusionnées. */

@@ -73,14 +73,14 @@ test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis r�
   // Écran « Associer au PC », étape 1 : le dossier.
   await associate.click();
   const dialog = page.getByRole('dialog', { name: 'Scannez le code affiché sur le PC' });
-  await expect(dialog.getByText('Choisissez d’abord le même dossier iCloud Drive / CircleTasks que sur le PC.')).toBeVisible();
+  await expect(dialog.getByText('Choisissez d’abord le même dossier iCloud Drive / Spartiate que sur le PC.')).toBeVisible();
   await expect(dialog.getByRole('button', { name: SCAN })).toHaveCount(0);
   await expect(dialog.getByRole('button', { name: RECOVERY })).toHaveCount(0);
   await expectFitsViewport(page, 'Associer au PC, étape dossier');
-  await dialog.getByRole('button', { name: 'Choisir le dossier iCloud Drive / CircleTasks' }).click();
+  await dialog.getByRole('button', { name: 'Choisir le dossier iCloud Drive / Spartiate' }).click();
 
   // Étape 2 : la caméra expliquée.
-  await expect(dialog.getByText(/CircleTasks utilise la caméra pour scanner le code d’association/)).toBeVisible();
+  await expect(dialog.getByText(/Spartiate utilise la caméra pour scanner le code d’association/)).toBeVisible();
   await expect(dialog.getByRole('button', { name: SCAN })).toBeVisible();
   await expect(dialog.getByRole('button', { name: RECOVERY })).toBeVisible();
   await expectFitsViewport(page, 'Associer au PC, étape caméra');
@@ -92,10 +92,10 @@ test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis r�
   await expect(dialog.getByRole('button', { name: SCAN })).toBeVisible();
   await expectFitsViewport(page, 'Associer au PC, scan annulé');
 
-  // QR illisible (pas un code CircleTasks) : dit, rescanner possible, aucune clé.
+  // QR illisible (pas un code Spartiate) : dit, rescanner possible, aucune clé.
   await presentText(room, 'iphone', 'https://exemple.test/pas-un-code');
   await dialog.getByRole('button', { name: SCAN }).click();
-  await expect(page.getByTestId('ios-pairing-message')).toHaveText('Ce code n’est pas un code d’association CircleTasks : affichez le code sur le PC et réessayez');
+  await expect(page.getByTestId('ios-pairing-message')).toHaveText('Ce code n’est pas un code d’association Spartiate : affichez le code sur le PC et réessayez');
   await expect(dialog.getByRole('button', { name: SCAN })).toBeVisible();
   await expectFitsViewport(page, 'Associer au PC, QR illisible');
 
@@ -113,7 +113,7 @@ test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis r�
   await dialog.getByRole('button', { name: RECOVERY }).click();
   const field = page.getByLabel('Clé de secours');
   await expect(field).toBeVisible();
-  await field.fill('CT1-AAAAA-BBBBB-CCCCC-DDDDD-EEEEE-FFFFF-GGGGG');
+  await field.fill('SP1-AAAAA-BBBBB-CCCCC-DDDDD-EEEEE-FFFFF-GGGGG');
   await page.getByRole('button', { name: 'Associer', exact: true }).click();
   await expect(page.getByTestId('pairing-import-message')).toBeVisible();
   await expect(field).toHaveValue('');

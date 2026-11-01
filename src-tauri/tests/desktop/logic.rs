@@ -1,6 +1,6 @@
 //! Logique pure de la zone de notification et du démarrage réduit (D-01, D-02).
 
-use circletasks_lib::desktop::{
+use spartiate_lib::desktop::{
     fallback_labels, hides_on_close, is_minimized_launch, menu_layout, sync_tray_effect, SyncTrayEffect, TrayAction, TrayEntry, TrayLabels, TraySyncState,
     MAIN_WINDOW, TRAY_SYNC_NOW_EVENT,
 };
@@ -81,9 +81,9 @@ fn action_ids_round_trip() {
 
 #[test]
 fn minimized_launch_is_read_from_arguments() {
-    assert!(is_minimized_launch(["circletasks.exe", "--minimized"]));
-    assert!(!is_minimized_launch(["circletasks.exe"]));
-    assert!(!is_minimized_launch(["circletasks.exe", "--minimized-not"]));
+    assert!(is_minimized_launch(["spartiate.exe", "--minimized"]));
+    assert!(!is_minimized_launch(["spartiate.exe"]));
+    assert!(!is_minimized_launch(["spartiate.exe", "--minimized-not"]));
 }
 
 #[test]

@@ -22,7 +22,7 @@ import { createFakeSyncService, type FakeSyncService } from './testKit';
 const SELF = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000a1');
 const PC = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000b2');
 const NOW = '2026-10-08T08:00:00.000Z';
-const IOS_TEXT = 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / CircleTasks';
+const IOS_TEXT = 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / Spartiate';
 const IPHONE_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148';
 
 const self = (platform: 'ios' | 'windows'): SyncDeviceStatus => ({ deviceId: SELF, platform, self: true, status: 'active', lastReadAt: null });
@@ -120,7 +120,7 @@ describe('Y-IOS-01 critère 12 : signet perdu visible et persistant', () => {
     expect(await screen.findByText(IOS_TEXT)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Oublier le dossier de synchronisation' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Choisir le dossier de synchronisation' }));
-    expect(await screen.findByText('iCloud Drive / CircleTasks')).toBeInTheDocument();
+    expect(await screen.findByText('iCloud Drive / Spartiate')).toBeInTheDocument();
     expect(screen.queryByText(IOS_TEXT)).toBeNull();
   });
 });

@@ -1,7 +1,7 @@
 [package]
-name = "circletasks"
-version = "1.0.2"
-description = "CircleTasks : planificateur personnel (PC Windows et iPhone)"
+name = "spartiate"
+version = "0.1.0"
+description = "Spartiate : planificateur personnel (PC Windows et iPhone)"
 authors = ["Ali Cherif"]
 edition = "2021"
 rust-version = "1.80"
@@ -9,7 +9,7 @@ publish = false
 
 [lib]
 # Nom distinct du binaire (conflit sous Windows) ; staticlib requis pour iOS.
-name = "circletasks_lib"
+name = "spartiate_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 # Les tests vivent dans tests/desktop (manifeste Windows comctl32 v6, voir build.rs) : un test
 # unitaire lié à tauri ne démarre pas sous Windows (STATUS_ENTRYPOINT_NOT_FOUND).
@@ -17,7 +17,7 @@ test = false
 doctest = false
 
 [[bin]]
-name = "circletasks"
+name = "spartiate"
 path = "src/main.rs"
 test = false
 
@@ -73,7 +73,7 @@ tauri-plugin-notification = "=2.5.1"
 # Actions « Fait » et « +15 min » des notifications (N-03, ADR 0012 avenant N-03) : plugin Swift local qui prend la place du délégué des
 # notifications et écrit les actions reçues dans un fichier durable. iPhone seulement, comme le plugin officiel (jamais sous cfg(desktop)).
 tauri-plugin-notification-actions = { path = "plugins/notification-actions" }
-# Signet de sécurité du dossier iCloud Drive/CircleTasks et accès aux fichiers (ADR 0011 §22, Y-IOS-01) : plugin Swift local, appelé par Rust seul.
+# Signet de sécurité du dossier iCloud Drive/Spartiate et accès aux fichiers (ADR 0011 §22, Y-IOS-01) : plugin Swift local, appelé par Rust seul.
 tauri-plugin-folder-bookmark = { path = "plugins/folder-bookmark" }
 # Vision (lecture des photos de listes) et dictée sur l'appareil (CAP-IOS-01, ADR 0015) : plugins Swift locaux, appelés par Rust seul, iPhone seulement.
 tauri-plugin-vision = { path = "plugins/vision" }

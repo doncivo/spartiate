@@ -13,8 +13,8 @@ import { SyncPlatformError } from './types';
 const A = '0f8fad5b-d9cb-469f-a165-70867728950e' as DeviceId;
 const B = '7c9e6679-7425-40de-944b-e07fc1f90ae7' as DeviceId;
 const E1 = epochId(1, A);
-const SEGMENT = `${E1}/j-00000001.ctj`;
-const SNAPSHOT = `${E1}/s-00000001.cts`;
+const SEGMENT = `${E1}/j-00000001.spj`;
+const SNAPSHOT = `${E1}/s-00000001.sps`;
 const hlc = (ms: number): Hlc => `${String(ms).padStart(15, '0')}-0000-${A}` as Hlc;
 
 const table = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'tests', 'fixtures', 'sync', 'syncfs-conformance.json'), 'utf8')) as {

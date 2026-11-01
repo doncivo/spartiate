@@ -7,8 +7,8 @@ import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, type SimDevice } fro
 /**
  * Y-TECH-03 (B13), scénario 1 du banc : état réel de l'iPhone du 8 octobre et de la séance 0.3.2 (B1, ADR 0011 §24 point 10), reconstruit
  * avec le plan de pannes au lieu d'une plateforme truquée : l'iPhone `ef50…` a abandonné son époque orpheline `e0001-ef50…`, suit l'époque du
- * PC `e0001-56d4…` et lit son journal, n'a jamais publié d'état (`stateSeq` 0, cycle coupé avant tout segment et avant `state.ctx` par des
- * écritures refusées en `io`), le mémo `orphanEpoch` est perdu et `devices/ef50…/e0001-ef50…/s-00000001.cts` est le seul fichier de son
+ * PC `e0001-56d4…` et lit son journal, n'a jamais publié d'état (`stateSeq` 0, cycle coupé avant tout segment et avant `state.spx` par des
+ * écritures refusées en `io`), le mémo `orphanEpoch` est perdu et `devices/ef50…/e0001-ef50…/s-00000001.sps` est le seul fichier de son
  * dossier. Même construction que `aliState` de tests/unit/sync/pairing/orphanRelisted.test.ts (Y-IOS-02-FIX-02), pannes comprises.
  */
 
@@ -17,7 +17,7 @@ export const B_ID = 'ef50b6f7-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 export const PC_EPOCH = `e0001-${A_ID}` as EpochId;
 export const ORPHAN = `e0001-${B_ID}` as EpochId;
 /** L'instantané orphelin, nom relatif au dossier de l'iPhone. */
-export const ORPHAN_SNAPSHOT = `${ORPHAN}/s-00000001.cts`;
+export const ORPHAN_SNAPSHOT = `${ORPHAN}/s-00000001.sps`;
 
 export interface OrphanSession {
   readonly a: SimDevice;
@@ -66,8 +66,8 @@ export async function orphanSession(devices: SimDevice[], memo: 'lost' | 'kept' 
   b.folder.armFaults({
     name: 'premier-cycle-coupe',
     faults: [
-      { id: 'segment-refuse', op: 'write', file: `devices/${B_ID}/*/j-*.ctj`, nth: 1, times: 'all', effect: 'error', code: 'io' },
-      { id: 'etat-refuse', op: 'write', file: `devices/${B_ID}/state.ctx`, nth: 1, times: 'all', effect: 'error', code: 'io' },
+      { id: 'segment-refuse', op: 'write', file: `devices/${B_ID}/*/j-*.spj`, nth: 1, times: 'all', effect: 'error', code: 'io' },
+      { id: 'etat-refuse', op: 'write', file: `devices/${B_ID}/state.spx`, nth: 1, times: 'all', effect: 'error', code: 'io' },
     ],
   });
   await b.cycle();
@@ -140,7 +140,7 @@ export function orphanScenarioViolations(obs: OrphanObservation): string[] {
   if (deleted < 0 || deleted < relisted) out.push('orphan-epoch-deleted absent ou avant le réarmement');
   const last = obs.cycles.at(-1);
   if (!last || last.ownFiles.some((f) => f.startsWith(`${ORPHAN}/`))) out.push('dossier orphelin toujours présent');
-  if (!last?.ownFiles.includes('state.ctx')) out.push('publication jamais reprise (aucun state.ctx)');
+  if (!last?.ownFiles.includes('state.spx')) out.push('publication jamais reprise (aucun state.spx)');
   if (last?.warnings.includes('publish-blocked')) out.push('publish-blocked au dernier cycle');
   if (last?.events.includes('publish-deferred')) out.push('publish-deferred au dernier cycle (dure)');
   if (!last?.line.includes('À jour')) out.push(`ligne d'état du dernier cycle : ${last?.line ?? 'aucune'}`);

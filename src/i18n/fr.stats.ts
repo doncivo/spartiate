@@ -65,5 +65,5 @@ export const statsFr = {
   exportRevealError: 'Impossible d’afficher le fichier dans le dossier.',
   routinesNoProject: 'Les routines n’ont pas de projet : elles ne sont pas comptées sous un filtre de projet.',
   reportFilter: 'Espace : {filter}',
-  reportFooter: 'CircleTasks · {date}',
+  reportFooter: 'Spartiate · {date}',
 } as const;

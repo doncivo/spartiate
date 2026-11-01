@@ -44,7 +44,7 @@ afterEach(async () => {
 describe('K-01 critère 7 : jeton expiré puis révoqué', () => {
   it('K-01 c.7 jeton expiré : rafraîchi sans reconnexion, le compte reste « Connecté » et les événements sont relus', async () => {
     const accountId = await connectGoogle();
-    const ref = `circletasks.calendar.google.${accountId}`;
+    const ref = `spartiate.calendar.google.${accountId}`;
     const before = h.vault.read(ref);
     h.google.expireAccessTokens();
     h.db.clock.advance(20 * MIN);
@@ -147,7 +147,7 @@ describe('K-01 c.3, K-02 c.7 : aucun secret dans la base, l’état ni les sorti
 
     const google = await connectGoogle();
     const icloud = await connectIcloud();
-    const secrets = [h.vault.read(`circletasks.calendar.google.${google}`) ?? '', CALDAV_APP_PASSWORD, h.google.clientId];
+    const secrets = [h.vault.read(`spartiate.calendar.google.${google}`) ?? '', CALDAV_APP_PASSWORD, h.google.clientId];
     const refreshToken = /"refresh":"([^"]+)"/.exec(secrets[0] ?? '')?.[1] ?? '';
     const accessToken = /"access":"([^"]+)"/.exec(secrets[0] ?? '')?.[1] ?? '';
     expect(refreshToken).not.toBe('');
@@ -170,7 +170,7 @@ describe('K-01 c.3, K-02 c.7 : aucun secret dans la base, l’état ni les sorti
     await state().removeAccount(icloud);
     text = await snapshot();
     for (const fragment of fragments) expect(text).not.toContain(fragment);
-    expect(h.vault.read(`circletasks.calendar.google.${google}`)).toBeNull();
-    expect(h.vault.read(`circletasks.calendar.icloud.${icloud}`)).toBeNull();
+    expect(h.vault.read(`spartiate.calendar.google.${google}`)).toBeNull();
+    expect(h.vault.read(`spartiate.calendar.icloud.${icloud}`)).toBeNull();
   });
 });

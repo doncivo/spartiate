@@ -1,7 +1,7 @@
 [package]
 name = "tauri-plugin-vision"
 version = "0.1.0"
-description = "CircleTasks : lecture de texte d'une image avec Vision (ADR 0015). Appelé par Rust seulement."
+description = "Spartiate : lecture de texte d'une image avec Vision (ADR 0015). Appelé par Rust seulement."
 authors = ["Ali Cherif"]
 edition = "2021"
 rust-version = "1.80"

@@ -12,7 +12,7 @@ test.describe('OB-04 — avancement de l’objectif', () => {
   async function seed(page: Page): Promise<void> {
     await openApp(page);
     const today = await browserToday(page);
-    await insertGoals(page, [{ title: 'Finaliser le PRD CircleTasks', weekStart: await browserWeek(page) }]);
+    await insertGoals(page, [{ title: 'Finaliser le PRD Spartiate', weekStart: await browserWeek(page) }]);
     await insertTasks(page, [
       { title: 'Relire les user stories', date: today, done: true },
       { title: 'Valider les maquettes', date: today, done: true },
@@ -20,7 +20,7 @@ test.describe('OB-04 — avancement de l’objectif', () => {
       { title: 'Préparer le dépôt GitHub', date: today },
       { title: 'Lancer Claude Code', date: today },
     ]);
-    await attachTasks(page, 'Finaliser le PRD CircleTasks', ['Relire les user stories', 'Valider les maquettes', 'Mettre à jour CLAUDE.md', 'Préparer le dépôt GitHub', 'Lancer Claude Code']);
+    await attachTasks(page, 'Finaliser le PRD Spartiate', ['Relire les user stories', 'Valider les maquettes', 'Mettre à jour CLAUDE.md', 'Préparer le dépôt GitHub', 'Lancer Claude Code']);
     await weekTab(page).click();
     await todayTab(page).click();
     await expect(goalCards(page)).toHaveCount(1);

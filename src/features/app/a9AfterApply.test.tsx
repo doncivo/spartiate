@@ -20,7 +20,7 @@ import { afterApplyFault, pauseAfterCommit } from '../../../scripts/ios/prepare-
 const fault = { mode: 'afterapply', completedHooks: 0 };
 const actual = { migrate: migrator.migrate };
 const clock = createManualClock('2026-10-21T16:30:00.000Z');
-const BACKUP = 'circletasks-pre-migration-v0018-to-v0019-20261021T163000Z.db';
+const BACKUP = 'spartiate-pre-migration-v0018-to-v0019-20261021T163000Z.db';
 const CANARY = 'a9000000-0000-4000-8000-000000000019';
 const DEVICE = 'a9000000-0000-4000-8000-000000000001';
 const drivers: SqlDriver[] = [];

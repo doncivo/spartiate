@@ -5,7 +5,7 @@ import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type Si
 
 /**
  * Y-TECH-03 (B13), scénario 2 du banc, critère 20 (B2, cousin S2 de B1) : arrêt brutal entre l'ajout du premier segment et l'écriture de
- * `state.ctx` lors de la première publication d'un appareil associé. Au redémarrage, l'appareil doit détecter l'état manquant et publier (ou
+ * `state.spx` lors de la première publication d'un appareil associé. Au redémarrage, l'appareil doit détecter l'état manquant et publier (ou
  * le signaler visiblement), jamais rester `publish-blocked` pour toujours. Arrêt armé par compteur d'écritures (`armCrash`), jamais par le
  * temps. Si ce scénario est rouge avec le code actuel, il est livré sur la branche de Y-FIX-02 (règle d'Ali).
  */
@@ -34,7 +34,7 @@ async function joined(): Promise<{ a: SimDevice; b: SimDevice }> {
 }
 
 /**
- * Rang de l'écriture de `state.ctx` qui suit le premier ajout au journal pendant le premier cycle de l'iPhone (comptage sans arrêt sur un
+ * Rang de l'écriture de `state.spx` qui suit le premier ajout au journal pendant le premier cycle de l'iPhone (comptage sans arrêt sur un
  * jeu identique : le simulateur est déterministe).
  */
 async function stateWriteRank(): Promise<number> {
@@ -55,11 +55,11 @@ async function stateWriteRank(): Promise<number> {
   probe.disarm();
   await Promise.all(devices.map((d) => d.close()));
   devices = [];
-  if (rank === null) throw new Error('aucune écriture de state.ctx après un ajout au premier cycle');
+  if (rank === null) throw new Error('aucune écriture de state.spx après un ajout au premier cycle');
   return rank;
 }
 
-describe('Y-TECH-03 scénario 2 : arrêt entre le premier segment et state.ctx (critère 20, B2)', () => {
+describe('Y-TECH-03 scénario 2 : arrêt entre le premier segment et state.spx (critère 20, B2)', () => {
   it('au redémarrage, l’appareil publie son état (ou le signale), jamais publish-blocked pour toujours', async () => {
     const rank = await stateWriteRank();
     const { a, b } = await joined();
@@ -67,9 +67,9 @@ describe('Y-TECH-03 scénario 2 : arrêt entre le premier segment et state.ctx (
     await b.cycle();
     expect(probe.crashed).toBe(true);
     probe.disarm();
-    // État laissé par l'arrêt : un segment de l'iPhone dans iCloud, aucun state.ctx.
-    expect(b.folder.fileNames(b.id).some((f) => f.endsWith('.ctj'))).toBe(true);
-    expect(b.folder.fileNames(b.id)).not.toContain('state.ctx');
+    // État laissé par l'arrêt : un segment de l'iPhone dans iCloud, aucun state.spx.
+    expect(b.folder.fileNames(b.id).some((f) => f.endsWith('.spj'))).toBe(true);
+    expect(b.folder.fileNames(b.id)).not.toContain('state.spx');
     await b.restart();
     const statuses: Awaited<ReturnType<SimDevice['cycle']>>[] = [];
     for (let i = 0; i < 4; i += 1) {
@@ -77,7 +77,7 @@ describe('Y-TECH-03 scénario 2 : arrêt entre le premier segment et state.ctx (
       syncFolders([a, b]);
     }
     const last = statuses.at(-1);
-    expect(b.folder.fileNames(b.id)).toContain('state.ctx');
+    expect(b.folder.fileNames(b.id)).toContain('state.spx');
     expect(last?.warnings ?? []).not.toContain('publish-blocked');
     if (!last) throw new Error('aucun cycle');
     expect(statusLine(last, b.clock.nowMs())).toContain('À jour');

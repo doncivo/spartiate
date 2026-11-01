@@ -40,7 +40,7 @@ describe('Y-IOS-07 : rotation locale et origine du refus', () => {
   });
 
   it('ouvre max + 1 avec zéro attendu sans lire ni hydrater le segment évincé', async () => {
-    const file = `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.ctj`;
+    const file = `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.spj`;
     const before = d.folder.fileSize(d.id, file);
     d.folder.setAvailability(d.id, file, 'cloud');
     d.folder.armFaults({ name: 'aucune-lecture-pour-ecrire', faults: [
@@ -70,7 +70,7 @@ describe('Y-IOS-07 : rotation locale et origine du refus', () => {
   });
 
   it('l’écriture aboutit localement quand tous les accès de lecture et d’hydratation sont muets', async () => {
-    const file = `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.ctj`;
+    const file = `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.spj`;
     d.folder.setAvailability(d.id, file, 'cloud');
     d.folder.armFaults({ name: 'hors-ligne-ecriture', faults: [
       { id: 'no-read', op: 'read', file: 'devices/*', nth: 1, effect: 'mute' },
@@ -110,7 +110,7 @@ describe('Y-IOS-07 : rotation locale et origine du refus', () => {
   });
 
   it('reprend une intention après arrêt entre ajout au nouveau segment et retrait de la file', async () => {
-    const evict = () => d.folder.setAvailability(d.id, `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.ctj`, 'cloud');
+    const evict = () => d.folder.setAvailability(d.id, `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.spj`, 'cloud');
     evict();
     const count = armCrash(d, null);
     const append = d.platform.appendJournal.bind(d.platform);
@@ -138,7 +138,7 @@ describe('Y-IOS-07 : rotation locale et origine du refus', () => {
     expect(await d.data.repos.sync.readOutbox()).toEqual([]);
     expect(await d.data.repos.sync.getMeta(META.inflight)).toBeNull();
     expect(await d.data.repos.sync.getMeta('publishRotation')).toBeNull();
-    expect(d.folder.fileNames(d.id).filter((name) => name.endsWith('.ctj'))).toHaveLength(2);
+    expect(d.folder.fileNames(d.id).filter((name) => name.endsWith('.spj'))).toHaveLength(2);
   });
 
   it('un échec de rotation reste visible au redémarrage avant tout nouveau cycle', async () => {
@@ -183,7 +183,7 @@ describe('Y-IOS-07 : rotation locale et origine du refus', () => {
 
   it('la limite des numéros ne produit ni cible invalide ni mémo illisible', async () => {
     const names = d.folder.fileNames(d.id);
-    d.folder.setAvailability(d.id, `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.ctj`, 'cloud');
+    d.folder.setAvailability(d.id, `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.spj`, 'cloud');
     const result = await publishOutbox(deps, head.epoch, head, MAX_FILE_NUMBER);
     expect(result.error).toBe('folder-too-large');
     expect(d.folder.fileNames(d.id)).toEqual(names);

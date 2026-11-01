@@ -1,6 +1,6 @@
 //! 0.2.1 : diagnostic d'ouverture de la base (commande `db_diagnostics`).
 
-use circletasks_lib::backup::{diagnose_db_dir, DB_FILE};
+use spartiate_lib::backup::{diagnose_db_dir, DB_FILE};
 use std::fs;
 
 fn scratch() -> tempfile::TempDir {

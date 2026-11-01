@@ -24,7 +24,7 @@ const C = '9b2f4c1e-3d5a-4e6b-8c7d-1a2b3c4d5e6f' as DeviceId;
 const E1 = epochId(1, A);
 const E2 = epochId(2, A);
 const hlc = (ms: number, dev: string = A): Hlc => `${String(ms).padStart(15, '0')}-0000-${dev}` as Hlc;
-const seg = (epoch: EpochId, n: number): string => `${epoch}/j-${String(n).padStart(8, '0')}.ctj`;
+const seg = (epoch: EpochId, n: number): string => `${epoch}/j-${String(n).padStart(8, '0')}.spj`;
 
 let nowMs = 1_800_000_000_000;
 const clock = (): number => nowMs;
@@ -102,7 +102,7 @@ describe('dossier et liaison (Y-01)', () => {
     expect(await p.folder.info()).toEqual({ configured: false, label: null, kind: 'unknown', pinned: false });
     expect(await codeOf(p.scan({ keep: [] }))).toBe('not-configured');
     expect(await codeOf(p.bindDevice(A))).toBe('not-configured');
-    expect(await p.folder.choose()).toEqual({ configured: true, label: 'CircleTasks', kind: 'icloud', pinned: true });
+    expect(await p.folder.choose()).toEqual({ configured: true, label: 'Spartiate', kind: 'icloud', pinned: true });
     p.testing.setChooser(null);
     expect(await p.folder.choose()).toBeNull();
     expect((await p.folder.info()).configured).toBe(true);
@@ -224,7 +224,7 @@ describe('ajout au journal (sections 1.3, 1.4)', () => {
     expect(await codeOf(a.appendJournal({ epoch: E1, segment: 1, expectRecords: 0, sv: 14, maxHlc: hlc(1), records: ['x'] }))).toBe('key-exhausted');
   });
 
-  it('own.json perdu : reconstruit depuis son state.ctx et ses fichiers (règle 1)', async () => {
+  it('own.json perdu : reconstruit depuis son state.spx et ses fichiers (règle 1)', async () => {
     await publish(a);
     a.testing.dropOwnState();
     await a.deleteOwn([]);
@@ -235,13 +235,13 @@ describe('ajout au journal (sections 1.3, 1.4)', () => {
     await a.writeState({ sv: 14, state: stateOf(A, E1, 2, { segment: 1, record: 2, hlc: hlc(20) }) });
   });
 
-  it('state.ctx supprimé, segments présents, accusé de B sur A : hlc-order toujours appliqué', async () => {
+  it('state.spx supprimé, segments présents, accusé de B sur A : hlc-order toujours appliqué', async () => {
     await publish(a);
     const b = await pairByQr(a, folder);
     await b.appendJournal({ epoch: E1, segment: 1, expectRecords: 0, sv: 14, maxHlc: hlc(1, B), records: ['b0'] });
     const ackOfA = { epoch: E1, segment: 1, record: 1, hlc: hlc(10), stateSeq: 1 };
     await b.writeState({ sv: 14, state: stateOf(B, E1, 1, { segment: 1, record: 1, hlc: hlc(1, B) }, { pairedBy: A, acks: new Map([[A, ackOfA]]) }) });
-    folder.removeFile(A, 'state.ctx');
+    folder.removeFile(A, 'state.spx');
     a.testing.dropOwnState();
     await a.deleteOwn([]);
     expect(await codeOf(a.appendJournal({ epoch: E1, segment: 1, expectRecords: 1, sv: 14, maxHlc: hlc(5), records: ['x'] }))).toBe('hlc-order');
@@ -271,7 +271,7 @@ describe('ajout au journal (sections 1.3, 1.4)', () => {
   });
 });
 
-describe('écriture de state.ctx (section 1.4, second audit point 6)', () => {
+describe('écriture de state.spx (section 1.4, second audit point 6)', () => {
   let folder: MemorySyncFolder;
   let a: MemorySyncPlatform;
   beforeEach(async () => {
@@ -288,7 +288,7 @@ describe('écriture de state.ctx (section 1.4, second audit point 6)', () => {
     expect(scan.devices[0]?.stateStatus).toBe('ok');
     expect(scan.devices[0]?.state?.acks.get(B)?.stateSeq).toBe(1);
     expect(scan.devices[0]?.epochs).toEqual([{ epoch: E1, segments: [1], snapshots: [] }]);
-    expect(folder.fileNames(A)).toEqual([seg(E1, 1), 'state.ctx']);
+    expect(folder.fileNames(A)).toEqual([seg(E1, 1), 'state.spx']);
   });
 
   it('tête différente de own.json, stateSeq qui ne croît pas : state-mismatch', async () => {
@@ -344,8 +344,8 @@ describe('appairage (Y-06, sections 2.1 et 10.3)', () => {
   it('QR : la clé passe, pairedBy et époque rendus, fenêtre détruite', async () => {
     await a.key.openPairing('show');
     const payload = await a.key.pairingPayload();
-    expect(payload.qrText.startsWith('CTPAIR1.')).toBe(true);
-    expect(payload.recoveryKey).toMatch(/^CT1-([0-9A-HJKMNP-TV-Z]{5}-){10}[0-9A-HJKMNP-TV-Z]{5}$/);
+    expect(payload.qrText.startsWith('SPPAIR1.')).toBe(true);
+    expect(payload.recoveryKey).toMatch(/^SP1-([0-9A-HJKMNP-TV-Z]{5}-){10}[0-9A-HJKMNP-TV-Z]{5}$/);
     expect(payload.expiresAt).toBe(nowMs + PAIRING_VALIDITY_MS);
     const b = createMemorySyncPlatform({ folder, nowMs: clock });
     await b.folder.choose();
@@ -381,7 +381,7 @@ describe('appairage (Y-06, sections 2.1 et 10.3)', () => {
     expect(await codeOf(a.key.closePairing())).toBe('wrong-window');
     await a.key.openPairing('show');
     expect(await codeOf(a.key.openPairing('show'))).toBe('already-open');
-    expect(await codeOf(a.key.import({ recoveryKey: 'CT1-x' }))).toBe('wrong-mode');
+    expect(await codeOf(a.key.import({ recoveryKey: 'SP1-x' }))).toBe('wrong-mode');
     await a.key.pairingPayload();
     expect(await codeOf(a.key.pairingPayload())).toBe('wrong-window'); // jeton à usage unique
     await a.key.closePairing();
@@ -424,7 +424,7 @@ describe('appairage (Y-06, sections 2.1 et 10.3)', () => {
     const b = createMemorySyncPlatform({ folder, nowMs: clock });
     await b.folder.choose();
     await b.key.openPairing('import');
-    expect(await codeOf(b.key.import({ qrText: 'CTPAIR1.e30' }))).toBe('invalid-pairing');
+    expect(await codeOf(b.key.import({ qrText: 'SPPAIR1.e30' }))).toBe('invalid-pairing');
     expect(await codeOf(b.key.import({ qrText: 'n’importe quoi' }))).toBe('invalid-pairing');
     nowMs = expiresAt + PAIRING_CLOCK_TOLERANCE_MS + 1;
     // la fenêtre `import` a expiré avec le temps : on en rouvre une
@@ -449,7 +449,7 @@ describe('appairage (Y-06, sections 2.1 et 10.3)', () => {
   });
 
   it('dossier sans état lisible : cloud-pending ; 5 imports par 10 minutes', async () => {
-    folder.setAvailability(A, 'state.ctx', 'cloud');
+    folder.setAvailability(A, 'state.spx', 'cloud');
     await a.key.openPairing('show');
     const { recoveryKey } = await a.key.pairingPayload();
     const b = createMemorySyncPlatform({ folder, nowMs: clock });
@@ -488,7 +488,7 @@ describe('appairage (Y-06, sections 2.1 et 10.3)', () => {
     const b = createMemorySyncPlatform({ folder, nowMs: clock });
     await b.folder.choose();
     await b.key.openPairing('import');
-    const secret = 'CT1-SECRE-TSECR-ETSEC';
+    const secret = 'SP1-SECRE-TSECR-ETSEC';
     try {
       await b.key.import({ recoveryKey: secret });
       throw new Error('rejet attendu');
@@ -606,7 +606,7 @@ describe('scan (sections 1.1, 1.4, 1.6, 3.4)', () => {
     expect(await codeOf(a.readJournal({ deviceId: C, epoch: E1, from: { segment: 0, record: 0 } }))).toBe('key-mismatch');
   });
 
-  it('ancien state.ctx relivré : rollback, dernier état gardé ailleurs (anti-rejeu)', async () => {
+  it('ancien state.spx relivré : rollback, dernier état gardé ailleurs (anti-rejeu)', async () => {
     const b = await pairByQr(a, folder);
     const old = folder.takeState(A);
     await a.appendJournal({ epoch: E1, segment: 1, expectRecords: 1, sv: 14, maxHlc: hlc(20), records: ['r1'] });
@@ -619,13 +619,13 @@ describe('scan (sections 1.1, 1.4, 1.6, 3.4)', () => {
     expect(await codeOf(b.readJournal({ deviceId: A, epoch: E1, from: { segment: 0, record: 0 } }))).toBe('rollback');
   });
 
-  it('state.ctx corrompu ou trop grand', async () => {
-    folder.corruptRecord(A, 'state.ctx', 0);
+  it('state.spx corrompu ou trop grand', async () => {
+    folder.corruptRecord(A, 'state.spx', 0);
     expect((await a.scan({ keep: [] })).devices[0]?.stateStatus).toBe('corrupt');
     const big = new MemorySyncFolder('big');
     const p = await firstDevice(big);
     await publish(p);
-    big.addBytes(A, 'state.ctx', 400_000);
+    big.addBytes(A, 'state.spx', 400_000);
     expect((await p.scan({ keep: [] })).devices[0]?.stateStatus).toBe('too-large');
   });
 
@@ -659,15 +659,15 @@ describe('scan (sections 1.1, 1.4, 1.6, 3.4)', () => {
     expect(await codeOf(a.scan({ keep: [] }))).toBe('folder-too-large');
   });
 
-  it('state.ctx dans le nuage : cloud-pending et listé en attente', async () => {
-    folder.setAvailability(A, 'state.ctx', 'cloud');
+  it('state.spx dans le nuage : cloud-pending et listé en attente', async () => {
+    folder.setAvailability(A, 'state.spx', 'cloud');
     const device = (await a.scan({ keep: [] })).devices[0];
     expect(device?.stateStatus).toBe('cloud-pending');
-    expect(device?.pending).toEqual([{ file: 'state.ctx', availability: 'cloud' }]);
+    expect(device?.pending).toEqual([{ file: 'state.spx', availability: 'cloud' }]);
   });
 
-  it('state.ctx avec une ligne incomplète : cloud-pending, pas corrupt', async () => {
-    folder.setPartialTail(A, 'state.ctx', true);
+  it('state.spx avec une ligne incomplète : cloud-pending, pas corrupt', async () => {
+    folder.setPartialTail(A, 'state.spx', true);
     expect((await a.scan({ keep: [] })).devices[0]?.stateStatus).toBe('cloud-pending');
   });
 
@@ -743,7 +743,7 @@ describe('instantanés (section 5)', () => {
     await a.writeSnapshot({ epoch: E1, seq: 1, sv: 14, records: pages(['s0']) });
     expect(await codeOf(a.writeSnapshot({ epoch: E1, seq: 1, sv: 14, records: pages(['s0']) }))).toBe('segment-mismatch');
     expect(await codeOf(a.writeSnapshot({ epoch: E1, seq: 2, sv: 14, records: pages(['ok'], ['x'.repeat(MAX_RECORD_PLAINTEXT_BYTES + 1)]) }))).toBe('too-large');
-    expect(folder.fileNames(A)).toEqual([seg(E1, 1), `${E1}/s-00000001.cts`]);
+    expect(folder.fileNames(A)).toEqual([seg(E1, 1), `${E1}/s-00000001.sps`]);
     expect(await codeOf(a.writeSnapshot({ epoch: E1, seq: 0, sv: 14, records: pages() }))).toBe('bad-name');
   });
 });
@@ -794,7 +794,7 @@ describe('abandon d’une époque orpheline (ADR 0011 §24 point 4, miroir de sy
     await orphan();
     expect(await codeOf(a.deleteOwn([{ epoch: ORPHAN, kind: 'epoch' }]))).toBe('current-epoch');
     await a.abandonOrphanEpoch(ORPHAN);
-    expect(folder.fileNames(A)).toEqual([`${ORPHAN}/s-00000001.cts`]);
+    expect(folder.fileNames(A)).toEqual([`${ORPHAN}/s-00000001.sps`]);
     await a.abandonOrphanEpoch(ORPHAN);
     await a.abandonOrphanEpoch(E1);
     expect(await a.deleteOwn([{ epoch: ORPHAN, kind: 'epoch' }])).toBe(1);
@@ -811,10 +811,10 @@ describe('abandon d’une époque orpheline (ADR 0011 §24 point 4, miroir de sy
     if (!e) throw new Error('époque absente');
     return e as never;
   };
-  const file = { header: { f: 'ct-state' }, lines: [], partialTail: false, availability: 'local', extraBytes: 0 } as never;
+  const file = { header: { f: 'sp-state' }, lines: [], partialTail: false, availability: 'local', extraBytes: 0 } as never;
   const refused: [string, (f: MemorySyncFolder) => void][] = [
-    ['state.ctx', (f) => void (dirOf(f).state = file)],
-    ['state.next.ctx', (f) => void (dirOf(f).nextState = file)],
+    ['state.spx', (f) => void (dirOf(f).state = file)],
+    ['state.next.spx', (f) => void (dirOf(f).nextState = file)],
     ['segment', (f) => void epochDirOf(f).segments.set(1, file)],
     ['second instantané', (f) => void epochDirOf(f).snapshots.set(2, file)],
     ['autre époque', (f) => void dirOf(f).epochs.set(E2, { segments: new Map(), snapshots: new Map([[1, file]]) } as never)],
@@ -863,7 +863,7 @@ describe('marqueur de restauration (ADR 0010, règle 2)', () => {
     const p = createMemorySyncPlatform({ nowMs: clock });
     expect(await p.restoreMarker.get()).toBeNull();
     const marker: RestoreMarker = {
-      backup: 'circletasks-2026-10-01.db',
+      backup: 'spartiate-2026-10-01.db',
       backupTakenAt: '2026-10-01T08:00:00.000Z' as IsoDateTime,
       restoredAt: '2026-10-05T08:00:00.000Z' as IsoDateTime,
       schemaVersion: 14,

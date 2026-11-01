@@ -54,7 +54,7 @@ async function pc(folder = new MemorySyncFolder()): Promise<MemorySyncPlatform> 
 }
 
 /** Clé maîtresse `K` (base64url) lue dans le texte du QR. */
-const masterKeyOf = (qrText: string): string => (JSON.parse(atob(qrText.slice('CTPAIR1.'.length).replace(/-/g, '+').replace(/_/g, '/'))) as { k: string }).k;
+const masterKeyOf = (qrText: string): string => (JSON.parse(atob(qrText.slice('SPPAIR1.'.length).replace(/-/g, '+').replace(/_/g, '/'))) as { k: string }).k;
 
 const loadQr = () => Promise.resolve(qrcode);
 
@@ -132,7 +132,7 @@ describe('exposition de la clé : appairage complet par la fenêtre (critère 16
     expect(screen.getByTestId('pairing-recovery-key').textContent).toBe(first.recoveryKey);
     expect(document.body.innerHTML).not.toContain(first.qrText);
     expect(document.body.innerHTML).not.toContain(masterKeyOf(first.qrText));
-    expect(screen.getByRole('img', { name: T.window.qrLabel }).getAttribute('aria-label')).not.toMatch(/CT1|CTPAIR/);
+    expect(screen.getByRole('img', { name: T.window.qrLabel }).getAttribute('aria-label')).not.toMatch(/SP1|SPPAIR/);
     // « Nouveau code ».
     nowMs += 1_000;
     const renewed = nextChange(showSlot, () => showSlot.peek()?.qrText !== first.qrText);
@@ -158,7 +158,7 @@ describe('exposition de la clé : appairage complet par la fenêtre (critère 16
     const entry = reducePairingPlatform(b.key);
     render(<RecoveryKeyEntry platform={entry} now={now} closeAfterMs={PAIRING_VALIDITY_MS} />);
     const field = screen.getByLabelText<HTMLInputElement>(T.import.field);
-    const wrong = 'CT1-ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ';
+    const wrong = 'SP1-ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ';
     fireEvent.change(field, { target: { value: wrong } });
     fireEvent.click(screen.getByRole('button', { name: T.import.submit }));
     await screen.findByTestId('pairing-import-message');
@@ -194,7 +194,7 @@ describe('exposition de la clé : appairage complet par la fenêtre (critère 16
     fireEvent.change(field, { target: { value: payload.qrText } });
     fireEvent.click(screen.getByRole('button', { name: T.import.submit }));
     const message = await screen.findByTestId('pairing-import-message');
-    expect(message.textContent).not.toContain('CTPAIR1');
+    expect(message.textContent).not.toContain('SPPAIR1');
     expect(document.body.innerHTML).not.toContain(payload.qrText);
     expectNothingOutsideTheScreen([payload.qrText, masterKeyOf(payload.qrText)], window.location.href);
   });
@@ -266,7 +266,7 @@ describe('fermeture par chaque chemin : état vidé, une seule destruction (crit
       vi.spyOn(entry, 'closePairing');
       const view = render(<RecoveryKeyEntry platform={entry} now={now} closeAfterMs={PAIRING_VALIDITY_MS} />);
       const field = screen.getByLabelText<HTMLInputElement>(T.import.field);
-      fireEvent.change(field, { target: { value: 'CT1-SAISIE-EN-COURS' } });
+      fireEvent.change(field, { target: { value: 'SP1-SAISIE-EN-COURS' } });
       if (path === 'cancel') fireEvent.click(screen.getByRole('button', { name: T.window.cancelLabel }));
       else if (path === 'escape') fireEvent.keyDown(document, { key: 'Escape' });
       else await tick(PAIRING_VALIDITY_MS);
@@ -312,7 +312,7 @@ describe('échecs visibles dans la fenêtre (exigence d’Ali, critère 22)', ()
     vi.spyOn(entry, 'import').mockRejectedValue(new Error('inattendu'));
     render(<PairingWindow platform={entry} now={now} />);
     const field = await screen.findByLabelText<HTMLInputElement>(T.import.field);
-    fireEvent.change(field, { target: { value: 'CT1-ABCDE' } });
+    fireEvent.change(field, { target: { value: 'SP1-ABCDE' } });
     fireEvent.click(screen.getByRole('button', { name: T.import.submit }));
     const message = await screen.findByTestId('pairing-import-message');
     expect((message.textContent ?? '').trim()).not.toBe('');

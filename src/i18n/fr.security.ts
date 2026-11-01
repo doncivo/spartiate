@@ -1,9 +1,9 @@
 /** Verrouillage de l'app par Face ID ou code de l'iPhone (I-03, ADR 0013 §2). Écran sans maquette : composé avec les composants existants. */
 export const securityFr = {
   lock: {
-    title: 'CircleTasks est verrouillée',
+    title: 'Spartiate est verrouillée',
     unlock: 'Déverrouiller',
-    unlockLabel: 'Déverrouiller CircleTasks',
+    unlockLabel: 'Déverrouiller Spartiate',
     retry: 'Réessayer',
     cancelled: 'Déverrouillage annulé',
     failed: 'Déverrouillage impossible ({code})',
@@ -12,16 +12,16 @@ export const securityFr = {
     settingUnreadable: 'Le réglage du verrouillage est illisible : déverrouillez pour continuer.',
     disable: 'Désactiver le verrouillage',
     disableConfirmTitle: 'Désactiver le verrouillage ?',
-    disableConfirmText: 'Les données de CircleTasks seront de nouveau lisibles sans protection',
+    disableConfirmText: 'Les données de Spartiate seront de nouveau lisibles sans protection',
     disableConfirm: 'Désactiver',
     disableFailed: 'Le verrouillage n’a pas pu être désactivé : nouvel essai possible.',
     loadFailed: 'L’écran de verrou n’a pas pu être chargé. Vos données sont intactes : relancez l’app.',
   },
   /** Raisons affichées par iOS dans la fenêtre Face ID (jamais vides). */
   reason: {
-    unlock: 'Déverrouiller CircleTasks',
-    enable: 'Activer le verrouillage de CircleTasks',
-    disable: 'Désactiver le verrouillage de CircleTasks',
+    unlock: 'Déverrouiller Spartiate',
+    enable: 'Activer le verrouillage de Spartiate',
+    disable: 'Désactiver le verrouillage de Spartiate',
   },
   cancel: 'Annuler',
   settings: {

@@ -6,8 +6,8 @@ describe('adaptateur Tauri du plugin biometric (ADR 0013 §2.2, constats 3 à 6)
   it('authenticate : toujours avec repli sur le code de l’iPhone, raison et « Annuler » transmis', async () => {
     const call = vi.fn(() => Promise.resolve(undefined));
     const raw = createTauriAuthenticator(call);
-    await expect(raw.authenticate('Déverrouiller CircleTasks', 'Annuler')).resolves.toEqual({ ok: true });
-    expect(call).toHaveBeenCalledWith('plugin:biometric|authenticate', { reason: 'Déverrouiller CircleTasks', allowDeviceCredential: true, cancelTitle: 'Annuler' });
+    await expect(raw.authenticate('Déverrouiller Spartiate', 'Annuler')).resolves.toEqual({ ok: true });
+    expect(call).toHaveBeenCalledWith('plugin:biometric|authenticate', { reason: 'Déverrouiller Spartiate', allowDeviceCredential: true, cancelTitle: 'Annuler' });
   });
 
   it('rejets du Swift : table des codes, annulations marquées, code nul ou inconnu → unknown', async () => {

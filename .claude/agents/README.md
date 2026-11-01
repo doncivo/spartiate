@@ -35,7 +35,7 @@ Référence : `docs/PRD.md` v6.2 (§ 24), `docs/decisions.md` (D-22 à D-53), `A
 
 Modèles et outils des 18 agents repris : inchangés par rapport à CircleTasks. Nouveaux agents : `content-data` et `ai-integration` ont `WebFetch` (licences et documentation d'API à vérifier à la source) ; les quatre autres ont les outils standard (`Read, Write, Edit, Grep, Glob, Bash`).
 
-## Ordre des passes (règle CircleTasks conservée)
+## Ordre des passes (règle CircleTasks conservée) <!-- ancien-ok: titre de rubrique : la règle d’ordre des passes vient de CircleTasks -->
 
 Tout agent (Claude Code, Codex ou autre) assure **lui-même**, en passes distinctes et dans cet ordre, en consignant chaque résultat dans `docs/SPA-0xx.md` :
 

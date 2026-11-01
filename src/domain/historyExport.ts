@@ -150,19 +150,19 @@ export function filterFileSuffix(spaceName: string | null): string {
 
 export type ExportKind = 'csv' | 'json' | 'pdf' | 'png';
 
-/** Nom du fichier proposé : `circletasks-taches-AAAA-MM-JJ[-pro].csv`, `circletasks-historique-…json`, `circletasks-rapport-AAAA-MM[-pro].pdf|png`. */
+/** Nom du fichier proposé : `spartiate-taches-AAAA-MM-JJ[-pro].csv`, `spartiate-historique-…json`, `spartiate-rapport-AAAA-MM[-pro].pdf|png`. */
 export function exportFileName(kind: ExportKind, input: { readonly today: LocalDate; readonly month: { readonly year: number; readonly month: number }; readonly spaceName: string | null }): string {
   const suffix = filterFileSuffix(input.spaceName);
   const month = `${String(input.month.year).padStart(4, '0')}-${pad(input.month.month)}`;
   switch (kind) {
     case 'csv':
-      return `circletasks-taches-${input.today}${suffix}.csv`;
+      return `spartiate-taches-${input.today}${suffix}.csv`;
     case 'json':
-      return `circletasks-historique-${input.today}${suffix}.json`;
+      return `spartiate-historique-${input.today}${suffix}.json`;
     case 'pdf':
-      return `circletasks-rapport-${month}${suffix}.pdf`;
+      return `spartiate-rapport-${month}${suffix}.pdf`;
     case 'png':
-      return `circletasks-rapport-${month}${suffix}.png`;
+      return `spartiate-rapport-${month}${suffix}.png`;
   }
 }
 

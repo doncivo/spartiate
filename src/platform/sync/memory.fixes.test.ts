@@ -48,31 +48,31 @@ async function published(folder: MemorySyncFolder): Promise<MemorySyncPlatform> 
 }
 
 describe('memory.ts, corrections du lot Y1', () => {
-  it('revue 4 : propre state.ctx dans le nuage sans accusé : cloud-pending, rien retenu ; lisible ensuite', async () => {
+  it('revue 4 : propre state.spx dans le nuage sans accusé : cloud-pending, rien retenu ; lisible ensuite', async () => {
     const folder = new MemorySyncFolder();
     const a = await published(folder);
     a.testing.dropOwnState();
-    folder.setAvailability(A, 'state.ctx', 'cloud');
+    folder.setAvailability(A, 'state.spx', 'cloud');
     const next = { epoch: E1, segment: 1, expectRecords: 1, sv: 14, maxHlc: hlc(200), records: ['{}'] };
     expect(await codeOf(a.appendJournal(next))).toBe('cloud-pending');
     expect(await codeOf(a.appendJournal(next))).toBe('cloud-pending');
-    folder.setAvailability(A, 'state.ctx', 'local');
+    folder.setAvailability(A, 'state.spx', 'local');
     expect(await codeOf(a.appendJournal({ ...next, maxHlc: hlc(100) }))).toBe('hlc-order');
     expect(await codeOf(a.writeState({ sv: 14, state: stateOf(5, { segment: 1, record: 1, hlc: hlc(100) }) }))).toBe('state-mismatch');
   });
 
-  it('revue B1 : propre state.ctx remplacé (corrompu) : reconstruit avec le stateSeq lu en clair, réécriture possible', async () => {
+  it('revue B1 : propre state.spx remplacé (corrompu) : reconstruit avec le stateSeq lu en clair, réécriture possible', async () => {
     const folder = new MemorySyncFolder();
     const a = await published(folder);
     a.testing.dropOwnState();
-    folder.corruptRecord(A, 'state.ctx', 0);
+    folder.corruptRecord(A, 'state.spx', 0);
     expect(await codeOf(a.appendJournal({ epoch: E1, segment: 1, expectRecords: 1, sv: 14, maxHlc: hlc(200), records: ['{}'] }))).toBe('resolved');
     const head = { segment: 1, record: 2, hlc: hlc(200) };
     expect(await codeOf(a.writeState({ sv: 14, state: stateOf(5, head) }))).toBe('state-mismatch');
     expect(await codeOf(a.writeState({ sv: 14, state: stateOf(6, head) }))).toBe('resolved');
   });
 
-  it('revue B1, décision 1 : propre state.ctx d’un format plus récent jamais réécrit (newer-format)', async () => {
+  it('revue B1, décision 1 : propre state.spx d’un format plus récent jamais réécrit (newer-format)', async () => {
     const folder = new MemorySyncFolder();
     const a = await published(folder);
     a.testing.dropOwnState();
@@ -91,7 +91,7 @@ describe('memory.ts, corrections du lot Y1', () => {
     const file = folder.devices.get(A)?.state;
     if (!file) throw new Error('état absent');
     (file.header as { n: number }).n = Number.MAX_SAFE_INTEGER;
-    folder.corruptRecord(A, 'state.ctx', 0);
+    folder.corruptRecord(A, 'state.spx', 0);
     expect(await codeOf(a.appendJournal({ epoch: E1, segment: 1, expectRecords: 1, sv: 14, maxHlc: hlc(200), records: ['{}'] }))).toBe('resolved');
     expect(await codeOf(a.writeState({ sv: 14, state: stateOf(6, { segment: 1, record: 2, hlc: hlc(200) }) }))).toBe('resolved');
   });
@@ -99,7 +99,7 @@ describe('memory.ts, corrections du lot Y1', () => {
   it('revue 16 : état dans le nuage : kid tiré d’un fichier présent', async () => {
     const folder = new MemorySyncFolder();
     const a = await published(folder);
-    folder.setAvailability(A, 'state.ctx', 'cloud');
+    folder.setAvailability(A, 'state.spx', 'cloud');
     const scan = await a.scan({ keep: [] });
     expect(scan.devices[0]?.stateStatus).toBe('cloud-pending');
     expect(scan.devices[0]?.kid).toBe((await a.key.status()).kid);

@@ -5,7 +5,7 @@
 use std::fs;
 use std::path::Path;
 
-use circletasks_lib::applog::{
+use spartiate_lib::applog::{
     append_in, append_lines, clear_in, init, is_code, is_iso_instant, is_scope, line_of, normalize, read_entries, sanitize_detail, write, write_count, write_error, LogEntry, LogEntryIn, RateTable, CURRENT_FILE,
     MAX_FILE_BYTES, MAX_LINE_BYTES, PREVIOUS_FILE, TRUNCATED,
 };

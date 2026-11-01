@@ -54,7 +54,7 @@ describe('SyncSettingsSection (Y-01)', () => {
     const platform = createMemorySyncPlatform();
     renderSection(platform);
     fireEvent.click(await screen.findByRole('button', { name: 'Choisir le dossier de synchronisation' }));
-    expect(await screen.findByText('iCloud Drive / CircleTasks')).toBeInTheDocument();
+    expect(await screen.findByText('iCloud Drive / Spartiate')).toBeInTheDocument();
     expect(state()).toHaveTextContent('Dossier choisi');
     expect(screen.queryByTestId('sync-folder-warning')).toBeNull();
     expect((await platform.key.status()).present).toBe(true);
@@ -163,7 +163,7 @@ describe('SyncSettingsSection branchée sur le service (Y-02 critère 16, branch
 
   it('dossier et clé choisis : premier cycle demandé tout de suite ; la ligne d’état (« Détails », « Synchroniser ») remplace « Dossier choisi »', async () => {
     const platform = createMemorySyncPlatform();
-    const sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-05T08:00:00.000Z' as IsoDateTime, folderLabel: 'CircleTasks', folderKind: 'icloud' });
+    const sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-05T08:00:00.000Z' as IsoDateTime, folderLabel: 'Spartiate', folderKind: 'icloud' });
     const container = createAppContainer({ clock, hlc: createHlcClock({ clock, deviceId: DEVICE }), data: {} as DataAccess, sync, syncPlatform: platform });
     render(
       <AppContainerProvider container={container}>
@@ -179,7 +179,7 @@ describe('SyncSettingsSection branchée sur le service (Y-02 critère 16, branch
     expect(sync.calls).toEqual(['open']);
     expect((await platform.folder.info()).configured).toBe(true);
     expect(await screen.findByRole('button', { name: 'Détails' })).toBeInTheDocument();
-    expect(screen.getByText('iCloud Drive / CircleTasks')).toBeInTheDocument();
+    expect(screen.getByText('iCloud Drive / Spartiate')).toBeInTheDocument();
     expect(screen.queryByText('Dossier choisi')).toBeNull();
     expect(screen.getByRole('button', { name: 'Oublier le dossier de synchronisation' })).toBeInTheDocument();
   });

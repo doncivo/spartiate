@@ -64,7 +64,7 @@ export const syncResetEn: Shape<typeof syncResetFr> = {
     folderUnreachable: 'sync folder not found',
     keyExhausted: 'key usage limit reached',
     stateMismatch: 'devices are not up to date yet',
-    notForeground: 'CircleTasks was not in the foreground',
+    notForeground: 'Spartiate was not in the foreground',
     rateLimited: 'too many requests, try again in 10 minutes',
     io: 'write error',
     keyMismatch: 'this key does not match the folder’s new key',

@@ -357,7 +357,7 @@ export function PairingWindow({ platform, texts = pairingTexts(), now = Date.now
   const [mode, setMode] = useState<'show' | 'import'>('show');
   const toImport = useCallback(() => setMode('import'), []);
   useEffect(() => {
-    document.title = 'CircleTasks';
+    document.title = 'Spartiate';
   }, []);
   if (mode === 'import') return <RecoveryKeyEntry platform={platform} texts={texts} now={now} closeAfterMs={PAIRING_VALIDITY_MS} />;
   return <PairingView platform={platform} texts={texts} now={now} onImportMode={toImport} />;

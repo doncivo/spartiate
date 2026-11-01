@@ -5,15 +5,15 @@
 use std::fs;
 use std::path::Path;
 
-use circletasks_lib::backup::{carry_device_identity, restore_backup_file, RestoreStep, APP_SCHEMA_VERSION, BACKUP_DIR, DB_FILE};
-use circletasks_lib::startup_gate::{recover_and_settle, restore_local_rollback, restore_with_provisional_marker};
+use spartiate_lib::backup::{carry_device_identity, restore_backup_file, RestoreStep, APP_SCHEMA_VERSION, BACKUP_DIR, DB_FILE};
+use spartiate_lib::startup_gate::{recover_and_settle, restore_local_rollback, restore_with_provisional_marker};
 use rusqlite::Connection;
 
 /// Appareil courant (nouveau PC) et appareil oublié (ancien PC), identifiants du 2026-10-17.
 const CURRENT: &str = "7d0b0a0a-0000-4000-8000-00000000007d";
 const FORGOTTEN: &str = "56d40a0a-0000-4000-8000-000000000056";
-const BACKUP: &str = "circletasks-daily-20261016.db";
-const PRE_MIGRATION: &str = "circletasks-pre-migration-v0017-to-v0018-20261016T101500Z.db";
+const BACKUP: &str = "spartiate-daily-20261016.db";
+const PRE_MIGRATION: &str = "spartiate-pre-migration-v0017-to-v0018-20261016T101500Z.db";
 
 fn scratch() -> tempfile::TempDir {
     tempfile::tempdir_in(env!("CARGO_TARGET_TMPDIR")).unwrap()
@@ -319,5 +319,5 @@ fn y_tech_04_i1_a_current_database_that_fails_for_another_reason_than_corruption
     assert!(!error.message.contains(env!("CARGO_TARGET_TMPDIR")), "pas de chemin dans le message : {}", error.message);
     // Rien n'a bougé : la base en place est celle d'avant et aucun fichier préparé ne traîne.
     assert_eq!(dump(&live), before);
-    assert!(!dir.path().join("circletasks.db.restoring").exists());
+    assert!(!dir.path().join("spartiate.db.restoring").exists());
 }

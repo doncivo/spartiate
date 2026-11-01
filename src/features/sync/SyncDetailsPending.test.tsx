@@ -15,7 +15,7 @@ it('Y-FIX-05 C13 : un segment et son marqueur appareil/époque représentent un 
   const self = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000f4');
   const db = await openTestDb(self, '2026-10-19T08:00:00.000Z');
   try {
-    const sync = createFakeSyncService({ phase: 'waiting-icloud', pendingFiles: ['bbbbbbbb/e0001-x/j-00000001.ctj', 'bbbbbbbb/e0001-x'] });
+    const sync = createFakeSyncService({ phase: 'waiting-icloud', pendingFiles: ['bbbbbbbb/e0001-x/j-00000001.spj', 'bbbbbbbb/e0001-x'] });
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: self }), data: db.data, sync });
     await act(async () => {
       render(<AppContainerProvider container={container}><SyncDetailsScreen slots={{ pairing: null, conflicts: null, version: null, forget: null, reset: null, carryReport: null }} /></AppContainerProvider>);

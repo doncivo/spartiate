@@ -73,7 +73,7 @@ async function restore(device: SimDevice, copy: Map<string, unknown[]>): Promise
     await tx.execute('DELETE FROM sync_guard');
   });
   await device.driver.execute('PRAGMA foreign_keys = ON');
-  const marker: RestoreMarker = { backup: 'circletasks-daily-20261016.db', backupTakenAt: '2026-10-16T07:00:00.000Z' as RestoreMarker['backupTakenAt'], restoredAt: new Date(device.clock.nowMs()).toISOString() as RestoreMarker['restoredAt'], schemaVersion: SCHEMA_VERSION };
+  const marker: RestoreMarker = { backup: 'spartiate-daily-20261016.db', backupTakenAt: '2026-10-16T07:00:00.000Z' as RestoreMarker['backupTakenAt'], restoredAt: new Date(device.clock.nowMs()).toISOString() as RestoreMarker['restoredAt'], schemaVersion: SCHEMA_VERSION };
   device.platform.testing.setRestoreMarker(marker);
   await device.restart();
 }

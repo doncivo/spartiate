@@ -9,7 +9,7 @@ type Repos = Parameters<Parameters<DataAccess['transaction']>[0]>[0];
 /**
  * Écriture dans la tâche de ce que Rappels a gagné (titre, échéance, statut), par les repositories dans la transaction `repos` (ADR 0008
  * §10.5, « Écritures vers la tâche ») : mêmes invariants que les cas d'usage de tâches (pas d'heure sans date, « Un jour » sans échéance,
- * rappels CircleTasks recalculés, badge « reportée » effacé quand l'échéance vient de Rappels ou que la tâche est terminée). Rend la
+ * rappels Spartiate recalculés, badge « reportée » effacé quand l'échéance vient de Rappels ou que la tâche est terminée). Rend la
  * tâche relue, ou null si rien n'a été écrit. Le passage ne pose pas `sync_guard` : ces écritures sont publiées (visibles sur le PC).
  */
 export async function applyValuesToTask(repos: Repos, current: Task, toTask: MergeResult['toTask'], now: IsoDateTime): Promise<Task | null> {

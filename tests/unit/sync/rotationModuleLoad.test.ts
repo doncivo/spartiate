@@ -21,7 +21,7 @@ beforeEach(async () => {
   const value = await readJson<DeviceAck>(d.data.repos, META.head);
   if (!value || value.segment < 1) throw new Error('tête absente');
   head = value;
-  d.folder.setAvailability(d.id, `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.ctj`, 'cloud');
+  d.folder.setAvailability(d.id, `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.spj`, 'cloud');
   await d.createTask('Après');
   deps = { data: d.data, platform: d.platform, deviceId: d.id, devicePlatform: d.devicePlatform, hlc: d.hlc, clock: d.clock, logger: d.logger, sv: SCHEMA_VERSION, appVersion: '0.3.3' };
 });

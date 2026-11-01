@@ -1,4 +1,4 @@
-// Plugin haptics de CircleTasks (A-07, ADR 0013 §1.1).
+// Plugin haptics de Spartiate (A-07, ADR 0013 §1.1).
 //
 // Trois commandes appelées par le JS (src/platform/haptics/tauriHaptics.ts) : impactFeedback({ style }), notificationFeedback({ type }),
 // selectionFeedback(). Tauri appelle les plugins sur une file série d'arrière-plan (constat 1) : chaque générateur UIKit est créé et

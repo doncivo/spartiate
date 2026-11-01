@@ -3,10 +3,10 @@
  * l'app sans l'ouvrir, la date lue peut donc devenir fausse avant que l'alerte ne sonne. Jamais un titre de tâche.
  */
 export const signingFr = {
-  alertTitle: 'CircleTasks va expirer',
+  alertTitle: 'Spartiate va expirer',
   alertBody: 'Vérifiez dans SideStore que l’app a été actualisée (expiration prévue le {date} à {time})',
   /** Bandeau sous 24 h : durée restante composée par `durationHours` / `durationMinutes`. */
-  bannerSoon: 'CircleTasks expire dans {duration} : actualisez-la dans SideStore',
+  bannerSoon: 'Spartiate expire dans {duration} : actualisez-la dans SideStore',
   durationHours: '{n} h',
   durationMinutes: '{n} min',
   about: {
@@ -17,7 +17,7 @@ export const signingFr = {
     remainingHours: 'dans {n} h',
     remainingMinutes: 'dans {n} min',
     alertAt: 'Alerte prévue le {date} à {time}',
-    alertSoon: 'Moins de 24 h restantes : actualisez CircleTasks dans SideStore',
+    alertSoon: 'Moins de 24 h restantes : actualisez Spartiate dans SideStore',
     unknown: 'Date d’expiration inconnue : l’alerte avant expiration est désactivée',
     unknownAt: 'Dernière lecture sans résultat à {time} ({code})',
     codeMissing: 'profil de signature absent',

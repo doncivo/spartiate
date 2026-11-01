@@ -47,7 +47,7 @@ describe('I-02 : planification de l’alerte (critères 4 et 5)', () => {
     await replanNotifications(r.h.container, 'open');
     expect(r.alert.scheduled).toHaveLength(1);
     const request = r.alert.scheduled[0];
-    expect(request).toMatchObject({ instant: IN_6_DAYS_ALERT, zone: 'Europe/Paris', title: 'CircleTasks va expirer' });
+    expect(request).toMatchObject({ instant: IN_6_DAYS_ALERT, zone: 'Europe/Paris', title: 'Spartiate va expirer' });
     expect(request?.body).toBe('Vérifiez dans SideStore que l’app a été actualisée (expiration prévue le mer. 14 oct. à 10:00)');
     expect(banner()).toBeUndefined();
     const saved = await storedSigning(r.h.container);
@@ -150,7 +150,7 @@ describe('I-02 : place dans le plafond de 64 (critère 5, adaptateur réel sur f
     expect([...r.h.bridge.pendingMap.keys()].sort((a, b) => a - b)).toEqual([1, 2]);
     // Contenu envoyé au plugin : identifiant 2, sans catégorie, `sid` signing.
     const shown = r.h.bridge.shown.find((payload) => payload.id === 2);
-    expect(shown).toMatchObject({ id: 2, sound: 'default', extra: { sid: 'signing' }, title: 'CircleTasks va expirer' });
+    expect(shown).toMatchObject({ id: 2, sound: 'default', extra: { sid: 'signing' }, title: 'Spartiate va expirer' });
     expect(shown).not.toHaveProperty('actionTypeId');
     expect(shown?.schedule.at.date).toBe('2026-10-13T10:00:00.000Z');
   });
@@ -167,7 +167,7 @@ describe('I-02 : moins de 24 h et expirée (critère 6)', () => {
     r.source.expireAt('2026-10-08T18:00:00Z');
     await replanNotifications(r.h.container, 'open');
     expect(r.alert.scheduled).toHaveLength(0);
-    expect(banner()).toMatchObject({ detail: 'soon', message: 'CircleTasks expire dans 10 h : actualisez-la dans SideStore' });
+    expect(banner()).toMatchObject({ detail: 'soon', message: 'Spartiate expire dans 10 h : actualisez-la dans SideStore' });
     // Actualisation par SideStore : nouvelle échéance à 7 jours, bandeau retiré, alerte planifiée.
     r.source.expireAt('2026-10-15T08:00:00Z');
     await replanNotifications(r.h.container, 'resume');
@@ -178,7 +178,7 @@ describe('I-02 : moins de 24 h et expirée (critère 6)', () => {
   it('sous une heure : durée en minutes', async () => {
     r.source.expireAt('2026-10-08T08:40:00Z');
     await replanNotifications(r.h.container, 'open');
-    expect(banner()?.message).toBe('CircleTasks expire dans 40 min : actualisez-la dans SideStore');
+    expect(banner()?.message).toBe('Spartiate expire dans 40 min : actualisez-la dans SideStore');
   });
 
   it('l’alerte déjà planifiée est retirée quand l’échéance passe sous 24 h', async () => {
@@ -295,7 +295,7 @@ describe('I-02 : aucun échec silencieux (critère 7)', () => {
     await replanNotifications(r.h.container, 'resume');
     const lines = warn.mock.calls.map((call) => String(call[0]));
     expect(lines.some((line) => line.includes('[desktop:signing]'))).toBe(true);
-    for (const line of lines) expect(line).not.toMatch(/CircleTasks va expirer|Vérifiez|2026-10/);
+    for (const line of lines) expect(line).not.toMatch(/Spartiate va expirer|Vérifiez|2026-10/);
   });
 });
 
@@ -335,9 +335,9 @@ describe('I-02 : bandeau tenu à jour tant que l’app est ouverte (revue)', () 
   it('la durée restante suit l’heure : 10 h, puis 9 h une heure plus tard, puis « expirée »', async () => {
     r.source.expireAt('2026-10-08T18:00:00Z');
     await replanNotifications(r.h.container, 'open');
-    expect(banner()?.message).toBe('CircleTasks expire dans 10 h : actualisez-la dans SideStore');
+    expect(banner()?.message).toBe('Spartiate expire dans 10 h : actualisez-la dans SideStore');
     tick(60);
-    expect(banner()?.message).toBe('CircleTasks expire dans 9 h : actualisez-la dans SideStore');
+    expect(banner()?.message).toBe('Spartiate expire dans 9 h : actualisez-la dans SideStore');
     tick(9 * 60);
     expect(banner()).toMatchObject({ detail: 'expired', message: 'La signature est expirée : réinstallez l’app' });
     // Plus de minuterie une fois expirée.
