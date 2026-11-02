@@ -92,11 +92,11 @@ test.describe('I-06 — mise à jour N vers N+1 (iPhone, base préremplie, versi
   test.use({ userAgent: IPHONE_UA });
   test.skip(({ isMobile }) => !isMobile, 'La mise à jour par SideStore concerne l’iPhone (projet iphone).');
 
-  test('premier lancement de 0.3.0 : Aujourd’hui avec la tâche d’avant, « À propos » affiche 0.3.0, aucun écran d’échec', async ({ page }) => {
+  test('premier lancement de 0.3.0 : Aujourd’hui, « À propos » affiche 0.3.0, aucun écran d’échec', async ({ page }) => {
     await installAtN(page, 'update');
     await page.goto('/');
     await expect(page.locator('.app-shell')).toHaveAttribute('data-db-status', 'ready', { timeout: APP_READY_TIMEOUT_MS });
-    await expect(page.getByText(TITLE)).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });
+    // La tâche d'avant la mise à jour n'a plus d'écran (SPA-001b) : sa relecture revient avec profil / poids sur la base neuve.
     await expect(page.getByTestId('db-failure-detail')).toHaveCount(0);
     await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
     await expect(page.getByText('Version 0.3.0', { exact: true })).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });
