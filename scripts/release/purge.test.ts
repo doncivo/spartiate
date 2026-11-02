@@ -96,3 +96,26 @@ describe('lot (d) : Rust calendriers, capture, focus, raccourci', () => {
     expect(desktop).not.toMatch(/GlobalShortcuts|QuickCapture/);
   });
 });
+
+// Lot (e) plugins reminders et web-auth (D-64) : dossiers, inscriptions, capability, plist, contrats et façade TypeScript.
+describe('lot (e) : plugins reminders et web-auth retirés', () => {
+  for (const path of ['src-tauri/plugins/reminders', 'src-tauri/plugins/web-auth', 'src-tauri/capabilities/reminders-ios.json', 'src/platform/reminders', 'tests/fixtures/calendars']) {
+    it(`${path} n'existe plus`, () => {
+      expect(present(path)).toBe(false);
+    });
+  }
+  it('Cargo.toml, lib.rs et le plist ne citent plus ces plugins', () => {
+    expect(read('src-tauri/Cargo.toml')).not.toMatch(/tauri-plugin-(reminders|web-auth)/);
+    expect(read('src-tauri/src/lib.rs')).not.toMatch(/tauri_plugin_(reminders|web_auth)/);
+    expect(read('src-tauri/Info.ios.plist')).not.toMatch(/NSRemindersFullAccessUsageDescription/);
+    expect(read('src-tauri/Cargo.lock')).not.toMatch(/name = "tauri-plugin-(reminders|web-auth)"/);
+  });
+  it('le contrat de plist, le workflow iOS et le README des plugins ne les citent plus', () => {
+    expect(read('scripts/ios/plist-contract.json')).not.toMatch(/reminders|NSRemindersFullAccess/i);
+    expect(read('.github/workflows/build-ios.yml')).not.toMatch(/tauri-plugin-(reminders|web-auth)/);
+    expect(read('src-tauri/plugins/README.md')).not.toMatch(/reminders|web-auth/);
+  });
+  it('les plugins conservés sont toujours là', () => {
+    for (const name of ['files', 'folder-bookmark', 'haptics', 'notification-actions', 'privacy-shield', 'speech', 'vision']) expect(present(`src-tauri/plugins/${name}`), name).toBe(true);
+  });
+});
