@@ -14,7 +14,10 @@ fn dossier_absent() {
     let report = diagnose_db_dir(Ok(missing.clone()));
     assert!(!report.dir_exists);
     assert!(!report.file_exists);
-    assert_eq!(report.db_path.as_deref(), Some(missing.join(DB_FILE).to_string_lossy().as_ref()));
+    assert_eq!(
+        report.db_path.as_deref(),
+        Some(missing.join(DB_FILE).to_string_lossy().as_ref())
+    );
 }
 
 #[test]

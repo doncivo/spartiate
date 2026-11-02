@@ -17,8 +17,9 @@ use serde::{Deserialize, Serialize};
 use zeroize::Zeroizing;
 
 use super::limits::{
-    padded_plaintext_bytes, MAX_HEADER_BYTES, MAX_PADDED_PLAINTEXT_BYTES, MAX_RECORD_LINE_BYTES, MAX_RECORD_PLAINTEXT_BYTES, NONCE_BYTES,
-    PADDING_BLOCK_BYTES, PADDING_LENGTH_PREFIX_BYTES, TAG_BYTES,
+    padded_plaintext_bytes, MAX_HEADER_BYTES, MAX_PADDED_PLAINTEXT_BYTES, MAX_RECORD_LINE_BYTES,
+    MAX_RECORD_PLAINTEXT_BYTES, NONCE_BYTES, PADDING_BLOCK_BYTES, PADDING_LENGTH_PREFIX_BYTES,
+    TAG_BYTES,
 };
 use super::names::{is_epoch_id, is_file_number, is_kid, is_uuid_v4};
 
@@ -70,7 +71,9 @@ impl hkdf::KeyType for Len {
 fn hkdf_expand(key: &[u8; KEY_BYTES], info: &[u8], out: &mut [u8]) -> Result<(), CryptoError> {
     let prk = hkdf::Salt::new(hkdf::HKDF_SHA256, HKDF_SALT).extract(key);
     let info = [info];
-    prk.expand(&info, Len(out.len())).and_then(|okm| okm.fill(out)).map_err(|_| CryptoError::Unavailable)
+    prk.expand(&info, Len(out.len()))
+        .and_then(|okm| okm.fill(out))
+        .map_err(|_| CryptoError::Unavailable)
 }
 
 /// Clé maîtresse `K` et ses dérivées. Volontairement sans `Debug`, `Clone` ni `Serialize` (test de compilation).
@@ -99,8 +102,13 @@ impl MasterKey {
         hkdf_expand(&raw, HKDF_INFO_RECORDS, record.as_mut())?;
         let mut kid = Zeroizing::new([0u8; 8]);
         hkdf_expand(&raw, HKDF_INFO_KID, kid.as_mut())?;
-        let record = RandomizedNonceKey::new(&AES_256_GCM, record.as_ref()).map_err(|_| CryptoError::Unavailable)?;
-        Ok(Self { raw, record, kid: hex(kid.as_ref()) })
+        let record = RandomizedNonceKey::new(&AES_256_GCM, record.as_ref())
+            .map_err(|_| CryptoError::Unavailable)?;
+        Ok(Self {
+            raw,
+            record,
+            kid: hex(kid.as_ref()),
+        })
     }
 
     /// `kid` : 16 caractères hexadécimaux, ne révèle rien de `K`.
@@ -115,7 +123,11 @@ impl MasterKey {
 
     /// Lecture de la valeur du coffre ; `None` si elle n'est pas une clé de 32 octets en base64.
     pub fn from_vault_value(value: &str) -> Option<Self> {
-        let bytes = Zeroizing::new(base64::engine::general_purpose::STANDARD.decode(value.trim()).ok()?);
+        let bytes = Zeroizing::new(
+            base64::engine::general_purpose::STANDARD
+                .decode(value.trim())
+                .ok()?,
+        );
         Self::from_bytes(&bytes)
     }
 
@@ -139,7 +151,13 @@ impl MasterKey {
     }
 
     /// Chiffre un texte clair JSON à sa place. Renvoie la ligne, sans `\n`.
-    pub fn seal(&self, place: &Place<'_>, json: &[u8], sm: u32, sv: u32) -> Result<String, CryptoError> {
+    pub fn seal(
+        &self,
+        place: &Place<'_>,
+        json: &[u8],
+        sm: u32,
+        sv: u32,
+    ) -> Result<String, CryptoError> {
         if json.len() > MAX_RECORD_PLAINTEXT_BYTES {
             return Err(CryptoError::TooLarge);
         }
@@ -149,7 +167,10 @@ impl MasterKey {
         }
         let aad = aad_bytes(&place.aad_fields(sm, sv)).ok_or(CryptoError::TooLarge)?;
         let mut in_out = pad(json);
-        let nonce = self.record.seal_in_place_append_tag(Aad::from(aad.as_slice()), &mut *in_out).map_err(|_| CryptoError::Unavailable)?;
+        let nonce = self
+            .record
+            .seal_in_place_append_tag(Aad::from(aad.as_slice()), &mut *in_out)
+            .map_err(|_| CryptoError::Unavailable)?;
         let mut payload = Vec::with_capacity(NONCE_BYTES + in_out.len());
         payload.extend_from_slice(nonce.as_ref());
         payload.extend_from_slice(&in_out);
@@ -159,16 +180,34 @@ impl MasterKey {
     /// Ouvre une ligne (sans `\n`) à sa place : longueur contrôlée avant le base64, AAD reconstruite, bourrage vérifié.
     pub fn open(&self, place: &Place<'_>, line: &str) -> Result<Opened, OpenError> {
         let prefix = parse_line_prefix(line).ok_or(OpenError::Malformed)?;
-        let mut payload = Zeroizing::new(URL_SAFE_NO_PAD.decode(prefix.payload).map_err(|_| OpenError::Malformed)?);
+        let mut payload = Zeroizing::new(
+            URL_SAFE_NO_PAD
+                .decode(prefix.payload)
+                .map_err(|_| OpenError::Malformed)?,
+        );
         if payload.len() < NONCE_BYTES + TAG_BYTES {
             return Err(OpenError::Malformed);
         }
-        let nonce = Nonce::try_assume_unique_for_key(&payload[..NONCE_BYTES]).map_err(|_| OpenError::Malformed)?;
+        let nonce = Nonce::try_assume_unique_for_key(&payload[..NONCE_BYTES])
+            .map_err(|_| OpenError::Malformed)?;
         let aad = aad_bytes(&place.aad_fields(prefix.sm, prefix.sv)).ok_or(OpenError::Malformed)?;
-        let plain = self.record.open_in_place(nonce, Aad::from(aad.as_slice()), &mut payload[NONCE_BYTES..]).map_err(|_| OpenError::Decrypt)?;
+        let plain = self
+            .record
+            .open_in_place(
+                nonce,
+                Aad::from(aad.as_slice()),
+                &mut payload[NONCE_BYTES..],
+            )
+            .map_err(|_| OpenError::Decrypt)?;
         let json = unpad(plain).ok_or(OpenError::Decrypt)?;
-        let text = std::str::from_utf8(json).map_err(|_| OpenError::Decrypt)?.to_owned();
-        Ok(Opened { sm: prefix.sm, sv: prefix.sv, json: text })
+        let text = std::str::from_utf8(json)
+            .map_err(|_| OpenError::Decrypt)?
+            .to_owned();
+        Ok(Opened {
+            sm: prefix.sm,
+            sv: prefix.sv,
+            json: text,
+        })
     }
 }
 
@@ -183,23 +222,77 @@ pub struct Opened {
 /// Place d'un enregistrement (AAD) : journal, instantané ou état.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Place<'a> {
-    Journal { dev: &'a str, epoch: &'a str, segment: u32, index: u64 },
-    Snapshot { dev: &'a str, epoch: &'a str, seq: u32, index: u64 },
-    State { dev: &'a str, epoch: &'a str, state_seq: u64 },
+    Journal {
+        dev: &'a str,
+        epoch: &'a str,
+        segment: u32,
+        index: u64,
+    },
+    Snapshot {
+        dev: &'a str,
+        epoch: &'a str,
+        seq: u32,
+        index: u64,
+    },
+    State {
+        dev: &'a str,
+        epoch: &'a str,
+        state_seq: u64,
+    },
 }
 
 impl Place<'_> {
     /// Champs de l'AAD dans l'ordre de la section 2.
     pub fn aad_fields(&self, sm: u32, sv: u32) -> Vec<String> {
         match *self {
-            Place::Journal { dev, epoch, segment, index } => {
-                vec![AAD_VERSION.into(), "j".into(), dev.into(), epoch.into(), segment.to_string(), index.to_string(), sm.to_string(), sv.to_string()]
+            Place::Journal {
+                dev,
+                epoch,
+                segment,
+                index,
+            } => {
+                vec![
+                    AAD_VERSION.into(),
+                    "j".into(),
+                    dev.into(),
+                    epoch.into(),
+                    segment.to_string(),
+                    index.to_string(),
+                    sm.to_string(),
+                    sv.to_string(),
+                ]
             }
-            Place::Snapshot { dev, epoch, seq, index } => {
-                vec![AAD_VERSION.into(), "s".into(), dev.into(), epoch.into(), seq.to_string(), index.to_string(), sm.to_string(), sv.to_string()]
+            Place::Snapshot {
+                dev,
+                epoch,
+                seq,
+                index,
+            } => {
+                vec![
+                    AAD_VERSION.into(),
+                    "s".into(),
+                    dev.into(),
+                    epoch.into(),
+                    seq.to_string(),
+                    index.to_string(),
+                    sm.to_string(),
+                    sv.to_string(),
+                ]
             }
-            Place::State { dev, epoch, state_seq } => {
-                vec![AAD_VERSION.into(), "state".into(), dev.into(), epoch.into(), state_seq.to_string(), sm.to_string(), sv.to_string()]
+            Place::State {
+                dev,
+                epoch,
+                state_seq,
+            } => {
+                vec![
+                    AAD_VERSION.into(),
+                    "state".into(),
+                    dev.into(),
+                    epoch.into(),
+                    state_seq.to_string(),
+                    sm.to_string(),
+                    sv.to_string(),
+                ]
             }
         }
     }
@@ -221,7 +314,8 @@ pub fn aad_bytes(fields: &[String]) -> Option<Vec<u8>> {
 pub fn pad(json: &[u8]) -> Zeroizing<Vec<u8>> {
     let mut out = Zeroizing::new(vec![0u8; padded_plaintext_bytes(json.len())]);
     out[..PADDING_LENGTH_PREFIX_BYTES].copy_from_slice(&(json.len() as u32).to_be_bytes());
-    out[PADDING_LENGTH_PREFIX_BYTES..PADDING_LENGTH_PREFIX_BYTES + json.len()].copy_from_slice(json);
+    out[PADDING_LENGTH_PREFIX_BYTES..PADDING_LENGTH_PREFIX_BYTES + json.len()]
+        .copy_from_slice(json);
     out
 }
 
@@ -229,11 +323,16 @@ pub fn pad(json: &[u8]) -> Zeroizing<Vec<u8>> {
 pub fn unpad(padded: &[u8]) -> Option<&[u8]> {
     let head: [u8; 4] = padded.get(..PADDING_LENGTH_PREFIX_BYTES)?.try_into().ok()?;
     let length = u32::from_be_bytes(head) as usize;
-    if length > padded.len() - PADDING_LENGTH_PREFIX_BYTES || padded_plaintext_bytes(length) != padded.len() {
+    if length > padded.len() - PADDING_LENGTH_PREFIX_BYTES
+        || padded_plaintext_bytes(length) != padded.len()
+    {
         return None;
     }
     let end = PADDING_LENGTH_PREFIX_BYTES + length;
-    padded[end..].iter().all(|&b| b == 0).then(|| &padded[PADDING_LENGTH_PREFIX_BYTES..end])
+    padded[end..]
+        .iter()
+        .all(|&b| b == 0)
+        .then(|| &padded[PADDING_LENGTH_PREFIX_BYTES..end])
 }
 
 /// Préfixe d'une ligne chiffrée, lu avant tout déchiffrement (Y-07).
@@ -258,8 +357,12 @@ pub fn is_sealed_payload_length(chars: usize) -> bool {
         return false;
     }
     let bytes = chars * 3 / 4;
-    let Some(padded) = bytes.checked_sub(NONCE_BYTES + TAG_BYTES) else { return false };
-    padded >= PADDING_BLOCK_BYTES && padded % PADDING_BLOCK_BYTES == 0 && padded <= MAX_PADDED_PLAINTEXT_BYTES
+    let Some(padded) = bytes.checked_sub(NONCE_BYTES + TAG_BYTES) else {
+        return false;
+    };
+    padded >= PADDING_BLOCK_BYTES
+        && padded % PADDING_BLOCK_BYTES == 0
+        && padded <= MAX_PADDED_PLAINTEXT_BYTES
 }
 
 /// `<sm>.<sv>.<base64url>` : longueur contrôlée d'abord, entiers canoniques, alphabet et longueur du base64.
@@ -271,7 +374,9 @@ pub fn parse_line_prefix(line: &str) -> Option<LinePrefix<'_>> {
     let sm = canonical_number(parts.next()?)?;
     let sv = canonical_number(parts.next()?)?;
     let payload = parts.next()?;
-    let alphabet = payload.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_');
+    let alphabet = payload
+        .bytes()
+        .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_');
     (alphabet && is_sealed_payload_length(payload.len())).then_some(LinePrefix { sm, sv, payload })
 }
 
@@ -311,7 +416,14 @@ pub struct FileHeader {
 
 impl FileHeader {
     pub fn new(kind: HeaderKind, kid: &str, dev: &str, epoch: &str, n: u64) -> Self {
-        Self { f: kind.tag().to_owned(), sm: SYNC_FORMAT_MAJOR, kid: kid.to_owned(), dev: dev.to_owned(), e: epoch.to_owned(), n }
+        Self {
+            f: kind.tag().to_owned(),
+            sm: SYNC_FORMAT_MAJOR,
+            kid: kid.to_owned(),
+            dev: dev.to_owned(),
+            e: epoch.to_owned(),
+            n,
+        }
     }
 
     pub fn kind(&self) -> Option<HeaderKind> {
@@ -339,7 +451,12 @@ impl FileHeader {
             HeaderKind::State => header.n >= 1 && header.n < (1u64 << 53),
             _ => is_file_number(header.n),
         };
-        (header.sm >= 1 && is_kid(&header.kid) && is_uuid_v4(&header.dev) && is_epoch_id(&header.e) && n_ok).then_some(header)
+        (header.sm >= 1
+            && is_kid(&header.kid)
+            && is_uuid_v4(&header.dev)
+            && is_epoch_id(&header.e)
+            && n_ok)
+            .then_some(header)
     }
 }
 
@@ -374,7 +491,9 @@ fn recovery_key_of(key: &[u8; KEY_BYTES]) -> Zeroizing<String> {
     if bits > 0 {
         chars.push(char::from(CROCKFORD[((value << (5 - bits)) & 31) as usize]));
     }
-    let mut out = Zeroizing::new(String::with_capacity(RECOVERY_KEY_PREFIX.len() + RECOVERY_CHARS + 11));
+    let mut out = Zeroizing::new(String::with_capacity(
+        RECOVERY_KEY_PREFIX.len() + RECOVERY_CHARS + 11,
+    ));
     out.push_str(RECOVERY_KEY_PREFIX);
     for (i, c) in chars.chars().enumerate() {
         if i > 0 && i % 5 == 0 {
@@ -400,7 +519,11 @@ pub fn key_from_recovery(input: &str) -> Option<MasterKey> {
         }
     }
     let prefix = RECOVERY_KEY_PREFIX.trim_end_matches('-');
-    let body: &str = if text.len() == RECOVERY_CHARS + prefix.len() && text.starts_with(prefix) { &text[prefix.len()..] } else { &text };
+    let body: &str = if text.len() == RECOVERY_CHARS + prefix.len() && text.starts_with(prefix) {
+        &text[prefix.len()..]
+    } else {
+        &text
+    };
     if body.len() != RECOVERY_CHARS {
         return None;
     }
@@ -460,10 +583,24 @@ pub struct QrContent {
 }
 
 /// `SPPAIR1.<base64url(JSON { v:1, k, d, e, x })>`.
-pub fn qr_text_of(key: &MasterKey, device_id: &str, epoch: Option<&str>, expires_at: u64) -> Zeroizing<String> {
-    let payload = QrPayload { v: 1, k: URL_SAFE_NO_PAD.encode(key.raw()), d: device_id.to_owned(), e: epoch.map(str::to_owned), x: expires_at };
+pub fn qr_text_of(
+    key: &MasterKey,
+    device_id: &str,
+    epoch: Option<&str>,
+    expires_at: u64,
+) -> Zeroizing<String> {
+    let payload = QrPayload {
+        v: 1,
+        k: URL_SAFE_NO_PAD.encode(key.raw()),
+        d: device_id.to_owned(),
+        e: epoch.map(str::to_owned),
+        x: expires_at,
+    };
     let json = Zeroizing::new(serde_json::to_string(&payload).unwrap_or_default());
-    Zeroizing::new(format!("{PAIRING_QR_PREFIX}{}", URL_SAFE_NO_PAD.encode(json.as_bytes())))
+    Zeroizing::new(format!(
+        "{PAIRING_QR_PREFIX}{}",
+        URL_SAFE_NO_PAD.encode(json.as_bytes())
+    ))
 }
 
 /// Analyse stricte du texte du QR ; `None` : `invalid-pairing`.
@@ -484,7 +621,12 @@ pub fn parse_qr_text(text: &str) -> Option<QrContent> {
     }
     let raw = Zeroizing::new(URL_SAFE_NO_PAD.decode(&payload.k).ok()?);
     let key = MasterKey::from_bytes(&raw)?;
-    Some(QrContent { key, device_id: payload.d.clone(), epoch: payload.e.clone(), expires_at: payload.x })
+    Some(QrContent {
+        key,
+        device_id: payload.d.clone(),
+        epoch: payload.e.clone(),
+        expires_at: payload.x,
+    })
 }
 
 /// Hexadécimal minuscule.

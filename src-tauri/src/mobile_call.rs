@@ -27,10 +27,12 @@ where
     F: FnOnce() -> Result<Value, String> + Send + 'static,
 {
     let (sender, receiver) = mpsc::channel();
-    let spawned = std::thread::Builder::new().name("ct-plugin-call".to_owned()).spawn(move || {
-        // Le destinataire a pu partir (délai dépassé) : la réponse tardive est simplement abandonnée.
-        let _ = sender.send(call());
-    });
+    let spawned = std::thread::Builder::new()
+        .name("ct-plugin-call".to_owned())
+        .spawn(move || {
+            // Le destinataire a pu partir (délai dépassé) : la réponse tardive est simplement abandonnée.
+            let _ = sender.send(call());
+        });
     if spawned.is_err() {
         return Err(CallError::Rejected("failed".to_owned()));
     }
@@ -45,7 +47,9 @@ where
 /// Code court d'un rejet pour un message d'erreur ou un journal : forme `a-z` et `-` de 32 signes au plus, sinon `failed`
 /// (jamais le texte d'une erreur système, un chemin ou un texte reconnu).
 pub fn shaped_code(code: &str) -> &str {
-    let shaped = !code.is_empty() && code.len() <= 32 && code.bytes().all(|b| b.is_ascii_lowercase() || b == b'-');
+    let shaped = !code.is_empty()
+        && code.len() <= 32
+        && code.bytes().all(|b| b.is_ascii_lowercase() || b == b'-');
     if shaped {
         code
     } else {

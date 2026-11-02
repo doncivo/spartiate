@@ -53,7 +53,11 @@ impl Server {
                         break;
                     }
                 }
-                let path = request_line.split_whitespace().nth(1).unwrap_or("/").to_owned();
+                let path = request_line
+                    .split_whitespace()
+                    .nth(1)
+                    .unwrap_or("/")
+                    .to_owned();
                 let body = shared.lock().expect("verrou").get(&path).cloned();
                 let mut stream = reader.into_inner();
                 let _ = match body {
@@ -62,9 +66,13 @@ impl Server {
                             "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nContent-Type: application/octet-stream\r\nConnection: close\r\n\r\n",
                             body.len()
                         );
-                        stream.write_all(head.as_bytes()).and_then(|()| stream.write_all(&body))
+                        stream
+                            .write_all(head.as_bytes())
+                            .and_then(|()| stream.write_all(&body))
                     }
-                    None => stream.write_all(b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"),
+                    None => stream.write_all(
+                        b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+                    ),
                 };
             }
         });
@@ -72,7 +80,10 @@ impl Server {
     }
 
     fn serve(&self, path: &str, body: Vec<u8>) {
-        self.routes.lock().expect("verrou").insert(path.to_owned(), body);
+        self.routes
+            .lock()
+            .expect("verrou")
+            .insert(path.to_owned(), body);
     }
 
     fn url(&self, path: &str) -> String {
@@ -86,7 +97,9 @@ struct TestKey {
 
 impl TestKey {
     fn generate() -> Self {
-        Self { pair: KeyPair::generate_unencrypted_keypair().expect("clé jetable") }
+        Self {
+            pair: KeyPair::generate_unencrypted_keypair().expect("clé jetable"),
+        }
     }
 
     /// Clé publique au format attendu dans tauri.conf.json (fichier .pub encodé en base64).
@@ -100,8 +113,14 @@ impl TestKey {
             Some(v) => format!("timestamp:1\tfile:Spartiate_setup.exe\tversion:{v}"),
             None => "timestamp:1\tfile:Spartiate_setup.exe".to_owned(),
         };
-        let signature = minisign::sign(Some(&self.pair.pk), &self.pair.sk, Cursor::new(data), Some(&trusted), Some("jetable"))
-            .expect("signature");
+        let signature = minisign::sign(
+            Some(&self.pair.pk),
+            &self.pair.sk,
+            Cursor::new(data),
+            Some(&trusted),
+            Some("jetable"),
+        )
+        .expect("signature");
         STANDARD.encode(signature.to_string())
     }
 }
@@ -136,8 +155,15 @@ fn build_app(pubkey: &str, endpoint: &str) -> tauri::App<MockRuntime> {
         .expect("application de test")
 }
 
-async fn check(app: &tauri::App<MockRuntime>) -> tauri_plugin_updater::Result<Option<tauri_plugin_updater::Update>> {
-    app.handle().updater_builder().target(TARGET).build()?.check().await
+async fn check(
+    app: &tauri::App<MockRuntime>,
+) -> tauri_plugin_updater::Result<Option<tauri_plugin_updater::Update>> {
+    app.handle()
+        .updater_builder()
+        .target(TARGET)
+        .build()?
+        .check()
+        .await
 }
 
 async fn download(update: &tauri_plugin_updater::Update) -> tauri_plugin_updater::Result<Vec<u8>> {
@@ -157,7 +183,10 @@ async fn newer_version_is_offered_with_its_notes() {
     let key = TestKey::generate();
     let server = server_with("1.1.0", &key.sign(PAYLOAD, Some("1.1.0")), PAYLOAD);
     let app = build_app(&key.pubkey(), &server.url("/latest.json"));
-    let update = check(&app).await.expect("vérification").expect("mise à jour proposée");
+    let update = check(&app)
+        .await
+        .expect("vérification")
+        .expect("mise à jour proposée");
     assert_eq!(update.version, "1.1.0");
     assert_eq!(update.current_version, CURRENT_VERSION);
     assert_eq!(update.body.as_deref(), Some("Corrections et nouveautés."));
@@ -169,7 +198,10 @@ async fn equal_or_older_version_is_not_offered() {
     for version in [CURRENT_VERSION, "0.0.1"] {
         let server = server_with(version, &key.sign(PAYLOAD, Some(version)), PAYLOAD);
         let app = build_app(&key.pubkey(), &server.url("/latest.json"));
-        assert!(check(&app).await.expect("vérification").is_none(), "{version}");
+        assert!(
+            check(&app).await.expect("vérification").is_none(),
+            "{version}"
+        );
     }
 }
 
@@ -194,7 +226,11 @@ async fn package_signed_with_another_key_is_refused() {
 #[tokio::test(flavor = "current_thread")]
 async fn modified_package_is_refused() {
     let key = TestKey::generate();
-    let server = server_with("1.1.0", &key.sign(PAYLOAD, Some("1.1.0")), b"paquet modifie en chemin");
+    let server = server_with(
+        "1.1.0",
+        &key.sign(PAYLOAD, Some("1.1.0")),
+        b"paquet modifie en chemin",
+    );
     let app = build_app(&key.pubkey(), &server.url("/latest.json"));
     let update = check(&app).await.expect("vérification").expect("proposée");
     assert!(download(&update).await.is_err());
@@ -224,7 +260,10 @@ async fn placeholder_public_key_never_installs_anything() {
     // Tant que la clé de production n'est pas fournie (PREP-01), aucun paquet n'est accepté.
     let key = TestKey::generate();
     let server = server_with("1.1.0", &key.sign(PAYLOAD, Some("1.1.0")), PAYLOAD);
-    let app = build_app("A_REMPLACER_PAR_LA_CLE_PUBLIQUE", &server.url("/latest.json"));
+    let app = build_app(
+        "A_REMPLACER_PAR_LA_CLE_PUBLIQUE",
+        &server.url("/latest.json"),
+    );
     let update = check(&app).await.expect("vérification").expect("proposée");
     assert!(download(&update).await.is_err());
 }
@@ -235,7 +274,10 @@ async fn unreachable_or_missing_manifest_is_an_error_not_a_panic() {
     // Port fermé : on réserve un port puis on le libère.
     let closed = {
         let listener = TcpListener::bind("127.0.0.1:0").expect("port");
-        format!("http://{}/latest.json", listener.local_addr().expect("adresse"))
+        format!(
+            "http://{}/latest.json",
+            listener.local_addr().expect("adresse")
+        )
     };
     let app = build_app(&key.pubkey(), &closed);
     assert!(check(&app).await.is_err());

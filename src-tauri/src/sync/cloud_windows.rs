@@ -15,10 +15,13 @@ use windows::core::PCWSTR;
 use windows::Wdk::Storage::FileSystem::RtlSetProcessPlaceholderCompatibilityMode;
 use windows::Win32::Foundation::HANDLE;
 use windows::Win32::Storage::CloudFilters::{
-    CfGetSyncRootInfoByPath, CfHydratePlaceholder, CfSetPinState, CF_HYDRATE_FLAG_NONE, CF_PIN_STATE_PINNED, CF_SET_PIN_FLAG_NONE,
-    CF_SYNC_ROOT_INFO_PROVIDER, CF_SYNC_ROOT_PROVIDER_INFO,
+    CfGetSyncRootInfoByPath, CfHydratePlaceholder, CfSetPinState, CF_HYDRATE_FLAG_NONE,
+    CF_PIN_STATE_PINNED, CF_SET_PIN_FLAG_NONE, CF_SYNC_ROOT_INFO_PROVIDER,
+    CF_SYNC_ROOT_PROVIDER_INFO,
 };
-use windows::Win32::Storage::FileSystem::{FILE_ATTRIBUTE_OFFLINE, FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS, FILE_ATTRIBUTE_RECALL_ON_OPEN};
+use windows::Win32::Storage::FileSystem::{
+    FILE_ATTRIBUTE_OFFLINE, FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS, FILE_ATTRIBUTE_RECALL_ON_OPEN,
+};
 
 use super::files::FsError;
 
@@ -41,7 +44,8 @@ static EXPOSE: Once = Once::new();
 pub fn expose_placeholders() {
     EXPOSE.call_once(|| {
         // SAFETY: appel sans pointeur ; renvoie l'ancien mode ou -1 (journalisé seulement).
-        let previous = unsafe { RtlSetProcessPlaceholderCompatibilityMode(PHCM_EXPOSE_PLACEHOLDERS) };
+        let previous =
+            unsafe { RtlSetProcessPlaceholderCompatibilityMode(PHCM_EXPOSE_PLACEHOLDERS) };
         if previous < 0 {
             super::log::event("placeholder-mode-failed", &previous.to_string());
         }
@@ -50,13 +54,19 @@ pub fn expose_placeholders() {
 
 /// Un attribut indique-t-il un fichier dont les données ne sont pas sur le disque ?
 pub fn is_cloud_attributes(attributes: u32) -> bool {
-    attributes & (FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS.0 | FILE_ATTRIBUTE_RECALL_ON_OPEN.0 | FILE_ATTRIBUTE_OFFLINE.0) != 0
+    attributes
+        & (FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS.0
+            | FILE_ATTRIBUTE_RECALL_ON_OPEN.0
+            | FILE_ATTRIBUTE_OFFLINE.0)
+        != 0
 }
 
 /// Code d'erreur Win32 (dans un HRESULT `0x8007xxxx`, un NTSTATUS cloud `0xC000CFxx` ou brut) vers l'erreur de fichier.
 pub fn win32_error(code: u32) -> Option<FsError> {
     match code {
-        ERROR_CLOUD_FILE_PROVIDER_NOT_RUNNING | ERROR_CLOUD_FILE_PROVIDER_TERMINATED => Some(FsError::ProviderStopped),
+        ERROR_CLOUD_FILE_PROVIDER_NOT_RUNNING | ERROR_CLOUD_FILE_PROVIDER_TERMINATED => {
+            Some(FsError::ProviderStopped)
+        }
         ERROR_CLOUD_FILE_NETWORK_UNAVAILABLE
         | ERROR_CLOUD_FILE_REQUEST_TIMEOUT
         | ERROR_CLOUD_FILE_REQUEST_CANCELED
@@ -114,12 +124,18 @@ pub fn hydrate(handle: HANDLE) -> Result<(), FsError> {
 /// Épingle un fichier (« Toujours conserver sur cet appareil »).
 pub fn pin(handle: HANDLE) -> Result<(), FsError> {
     // SAFETY: handle de fichier valide pendant l'appel.
-    unsafe { CfSetPinState(handle, CF_PIN_STATE_PINNED, CF_SET_PIN_FLAG_NONE, None) }.map_err(|e| hresult_error(e.code().0))
+    unsafe { CfSetPinState(handle, CF_PIN_STATE_PINNED, CF_SET_PIN_FLAG_NONE, None) }
+        .map_err(|e| hresult_error(e.code().0))
 }
 
 /// Nom du fournisseur de la racine de synchronisation qui contient `path`, ou `None` si le dossier n'est sous aucune racine.
 pub fn sync_root_provider(path: &Path) -> Option<String> {
-    let wide: Vec<u16> = path.as_os_str().to_string_lossy().encode_utf16().chain(std::iter::once(0)).collect();
+    let wide: Vec<u16> = path
+        .as_os_str()
+        .to_string_lossy()
+        .encode_utf16()
+        .chain(std::iter::once(0))
+        .collect();
     let mut info = Box::<CF_SYNC_ROOT_PROVIDER_INFO>::default();
     // SAFETY: chaîne terminée par zéro ; tampon de la taille de la structure.
     let result = unsafe {
@@ -132,7 +148,11 @@ pub fn sync_root_provider(path: &Path) -> Option<String> {
         )
     };
     result.ok()?;
-    let end = info.ProviderName.iter().position(|&c| c == 0).unwrap_or(info.ProviderName.len());
+    let end = info
+        .ProviderName
+        .iter()
+        .position(|&c| c == 0)
+        .unwrap_or(info.ProviderName.len());
     Some(String::from_utf16_lossy(&info.ProviderName[..end]))
 }
 

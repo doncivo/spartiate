@@ -3,23 +3,36 @@
 
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
-use spartiate_lib::sync::crypto::{
-    key_from_recovery, pad, parse_line_prefix, parse_qr_text, qr_text_of, unpad, FileHeader, MasterKey, OpenError, Place, RECOVERY_CHARS,
-};
-use spartiate_lib::sync::limits::{padded_plaintext_bytes, MAX_RECORD_LINE_BYTES, MAX_RECORD_PLAINTEXT_BYTES};
-use spartiate_lib::sync::names::{is_app_version, is_epoch_id, is_kid, is_strict_hlc, is_uuid_v4, parse_file_name, EpochId, SyncFileName};
 use serde_json::Value;
+use spartiate_lib::sync::crypto::{
+    key_from_recovery, pad, parse_line_prefix, parse_qr_text, qr_text_of, unpad, FileHeader,
+    MasterKey, OpenError, Place, RECOVERY_CHARS,
+};
+use spartiate_lib::sync::limits::{
+    padded_plaintext_bytes, MAX_RECORD_LINE_BYTES, MAX_RECORD_PLAINTEXT_BYTES,
+};
+use spartiate_lib::sync::names::{
+    is_app_version, is_epoch_id, is_kid, is_strict_hlc, is_uuid_v4, parse_file_name, EpochId,
+    SyncFileName,
+};
 
 const DEV: &str = "3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60";
 const EPOCH: &str = "e0001-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60";
 
 fn fixed_key() -> MasterKey {
-    let bytes: Vec<u8> = (0u8..32).map(|i| i.wrapping_mul(7).wrapping_add(3)).collect();
+    let bytes: Vec<u8> = (0u8..32)
+        .map(|i| i.wrapping_mul(7).wrapping_add(3))
+        .collect();
     MasterKey::from_bytes(&bytes).unwrap()
 }
 
 fn journal() -> Place<'static> {
-    Place::Journal { dev: DEV, epoch: EPOCH, segment: 1, index: 0 }
+    Place::Journal {
+        dev: DEV,
+        epoch: EPOCH,
+        segment: 1,
+        index: 0,
+    }
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------
@@ -33,18 +46,35 @@ fn y08_1_every_region_of_the_payload_is_authenticated() {
     let prefix = "1.14.";
     let payload = URL_SAFE_NO_PAD.decode(&line[prefix.len()..]).unwrap();
     // Un bit retourné dans le nonce, le premier et le dernier octet chiffré, l'étiquette : toujours `Decrypt`.
-    for index in [0, 11, 12, 13, payload.len() / 2, payload.len() - 17, payload.len() - 16, payload.len() - 1] {
+    for index in [
+        0,
+        11,
+        12,
+        13,
+        payload.len() / 2,
+        payload.len() - 17,
+        payload.len() - 16,
+        payload.len() - 1,
+    ] {
         let mut tampered = payload.clone();
         tampered[index] ^= 0x01;
         let text = format!("{prefix}{}", URL_SAFE_NO_PAD.encode(&tampered));
-        assert_eq!(key.open(&journal(), &text).err(), Some(OpenError::Decrypt), "octet {index}");
+        assert_eq!(
+            key.open(&journal(), &text).err(),
+            Some(OpenError::Decrypt),
+            "octet {index}"
+        );
     }
     // Étiquette tronquée ou allongée d'un octet : la longueur n'est plus un palier, donc forme invalide.
     for len in [payload.len() - 1, payload.len() + 1] {
         let mut changed = payload.clone();
         changed.resize(len, 0);
         let text = format!("{prefix}{}", URL_SAFE_NO_PAD.encode(&changed));
-        assert_eq!(key.open(&journal(), &text).err(), Some(OpenError::Malformed), "longueur {len}");
+        assert_eq!(
+            key.open(&journal(), &text).err(),
+            Some(OpenError::Malformed),
+            "longueur {len}"
+        );
     }
 }
 
@@ -64,9 +94,15 @@ fn y08_1_hostile_line_shapes_are_refused_without_panic() {
         (format!(" {line}"), "espace initial"),
         (format!("{line} "), "espace final"),
         (format!("{line}="), "remplissage base64"),
-        (format!("1.14.{}", body.replace('-', "+")), "alphabet base64 standard"),
+        (
+            format!("1.14.{}", body.replace('-', "+")),
+            "alphabet base64 standard",
+        ),
         (format!("1.14.{}é", &body[..body.len() - 1]), "non ASCII"),
-        (format!("1.14.{}\u{0}", &body[..body.len() - 1]), "octet nul"),
+        (
+            format!("1.14.{}\u{0}", &body[..body.len() - 1]),
+            "octet nul",
+        ),
         (format!("1.14.{}", &body[..body.len() - 4]), "tronquée"),
         (format!("1.14.{body}.extra"), "champ en trop"),
         (format!("1.14.1.{body}"), "préfixe en trop"),
@@ -79,10 +115,17 @@ fn y08_1_hostile_line_shapes_are_refused_without_panic() {
         (format!("1.1e1.{body}"), "notation scientifique"),
         (format!("1.１４.{body}"), "chiffres pleine chasse"),
         (format!("1234567.14.{body}"), "sm de 7 chiffres"),
-        (format!("1.14.{}", "A".repeat(MAX_RECORD_LINE_BYTES + 1)), "ligne au-delà de la borne"),
+        (
+            format!("1.14.{}", "A".repeat(MAX_RECORD_LINE_BYTES + 1)),
+            "ligne au-delà de la borne",
+        ),
     ];
     for (text, why) in &cases {
-        assert_eq!(key.open(&journal(), text).err(), Some(OpenError::Malformed), "{why}");
+        assert_eq!(
+            key.open(&journal(), text).err(),
+            Some(OpenError::Malformed),
+            "{why}"
+        );
     }
     assert!(key.open(&journal(), &line).is_ok());
 }
@@ -98,7 +141,10 @@ fn y08_1_base64_is_canonical_one_string_per_ciphertext() {
     let other = alphabet.chars().nth(at ^ 1).unwrap();
     let variant = format!("{}{other}", &line[..line.len() - 1]);
     assert_ne!(variant, line);
-    assert!(key.open(&journal(), &variant).is_err(), "variante non canonique acceptée");
+    assert!(
+        key.open(&journal(), &variant).is_err(),
+        "variante non canonique acceptée"
+    );
 }
 
 #[test]
@@ -138,7 +184,14 @@ fn y08_2_plaintext_size_boundaries_seal_and_open() {
         let opened = key.open(&journal(), &line).unwrap();
         assert_eq!(opened.json.len(), len);
     }
-    assert!(key.seal(&journal(), &vec![b'a'; MAX_RECORD_PLAINTEXT_BYTES + 1], 1, 14).is_err());
+    assert!(key
+        .seal(
+            &journal(),
+            &vec![b'a'; MAX_RECORD_PLAINTEXT_BYTES + 1],
+            1,
+            14
+        )
+        .is_err());
     // Taille masquée : 1 octet et 4 092 octets donnent des lignes de même longueur.
     let short = key.seal(&journal(), b"x", 1, 14).unwrap();
     let long = key.seal(&journal(), &vec![b'x'; 4092], 1, 14).unwrap();
@@ -167,8 +220,17 @@ fn y08_3_nonces_are_never_repeated_over_many_seals() {
 #[test]
 fn y08_3_aad_separates_the_three_kinds_even_with_equal_numbers() {
     let key = fixed_key();
-    let state = Place::State { dev: DEV, epoch: EPOCH, state_seq: 1 };
-    let snap = Place::Snapshot { dev: DEV, epoch: EPOCH, seq: 1, index: 0 };
+    let state = Place::State {
+        dev: DEV,
+        epoch: EPOCH,
+        state_seq: 1,
+    };
+    let snap = Place::Snapshot {
+        dev: DEV,
+        epoch: EPOCH,
+        seq: 1,
+        index: 0,
+    };
     let line = key.seal(&journal(), b"{}", 1, 14).unwrap();
     assert!(key.open(&state, &line).is_err());
     assert!(key.open(&snap, &line).is_err());
@@ -176,10 +238,20 @@ fn y08_3_aad_separates_the_three_kinds_even_with_equal_numbers() {
     assert!(key.open(&journal(), &line).is_err());
     assert!(key.open(&snap, &line).is_ok());
     // Numéros aux limites du format (8 chiffres, 4 chiffres d'époque) : AAD stable, aller-retour.
-    let edge = Place::Journal { dev: DEV, epoch: "e9999-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60", segment: 99_999_999, index: u64::from(u32::MAX) + 1 };
+    let edge = Place::Journal {
+        dev: DEV,
+        epoch: "e9999-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60",
+        segment: 99_999_999,
+        index: u64::from(u32::MAX) + 1,
+    };
     let line = key.seal(&edge, b"{}", 1, 14).unwrap();
     assert!(key.open(&edge, &line).is_ok());
-    let off_by_one = Place::Journal { dev: DEV, epoch: "e9999-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60", segment: 99_999_999, index: u64::from(u32::MAX) };
+    let off_by_one = Place::Journal {
+        dev: DEV,
+        epoch: "e9999-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60",
+        segment: 99_999_999,
+        index: u64::from(u32::MAX),
+    };
     assert!(key.open(&off_by_one, &line).is_err());
 }
 
@@ -199,22 +271,42 @@ fn y08_1_seal_refuses_a_version_the_reader_cannot_parse() {
 #[test]
 fn y08_5_key_length_and_vault_value_edge_cases() {
     for len in [0usize, 1, 31, 33, 64] {
-        assert!(MasterKey::from_bytes(&vec![7u8; len]).is_none(), "{len} octets");
+        assert!(
+            MasterKey::from_bytes(&vec![7u8; len]).is_none(),
+            "{len} octets"
+        );
     }
     let key = fixed_key();
     let value = key.to_vault_value();
     assert!(MasterKey::from_vault_value(&value).unwrap().same_as(&key));
-    assert!(MasterKey::from_vault_value(&format!(" {} \n", *value)).unwrap().same_as(&key), "espaces tolérés autour de la valeur");
-    for bad in ["", "AAAA", "!!!!", &"A".repeat(43), &"A".repeat(45), &value.replace('=', "")] {
+    assert!(
+        MasterKey::from_vault_value(&format!(" {} \n", *value))
+            .unwrap()
+            .same_as(&key),
+        "espaces tolérés autour de la valeur"
+    );
+    for bad in [
+        "",
+        "AAAA",
+        "!!!!",
+        &"A".repeat(43),
+        &"A".repeat(45),
+        &value.replace('=', ""),
+    ] {
         assert!(MasterKey::from_vault_value(bad).is_none(), "{bad:?}");
     }
     // Deux clés distinctes : `same_as` faux, `kid` différents ; la même clé : même `kid` à chaque lecture.
     let other = MasterKey::generate().unwrap();
     assert!(!key.same_as(&other));
     assert_ne!(key.kid(), other.kid());
-    assert_eq!(MasterKey::from_vault_value(&value).unwrap().kid(), key.kid());
+    assert_eq!(
+        MasterKey::from_vault_value(&value).unwrap().kid(),
+        key.kid()
+    );
     // Clé presque identique (un bit) : `same_as` faux.
-    let mut raw = (0u8..32).map(|i| i.wrapping_mul(7).wrapping_add(3)).collect::<Vec<_>>();
+    let mut raw = (0u8..32)
+        .map(|i| i.wrapping_mul(7).wrapping_add(3))
+        .collect::<Vec<_>>();
     raw[31] ^= 1;
     assert!(!key.same_as(&MasterKey::from_bytes(&raw).unwrap()));
 }
@@ -258,7 +350,11 @@ fn y08_8_recovery_key_detects_every_single_character_substitution_of_a_fixed_key
             }
         }
     }
-    assert!(accepted <= 2, "{accepted} substitutions non détectées sur {}", body.len() * 31);
+    assert!(
+        accepted <= 2,
+        "{accepted} substitutions non détectées sur {}",
+        body.len() * 31
+    );
 }
 
 #[test]
@@ -283,7 +379,10 @@ fn y08_8_recovery_key_hostile_inputs_are_refused_without_panic() {
         assert!(key_from_recovery(&input).is_none(), "{why}");
     }
     assert!(key_from_recovery(&body).is_some(), "sans préfixe");
-    assert!(key_from_recovery(&format!("sp1 {}", body.to_lowercase())).is_some(), "préfixe en minuscules");
+    assert!(
+        key_from_recovery(&format!("sp1 {}", body.to_lowercase())).is_some(),
+        "préfixe en minuscules"
+    );
     // Longueur plafonnée à 256 octets avant tout traitement (même avec des espaces).
     assert!(key_from_recovery(&format!("{}{}", " ".repeat(300), body)).is_none());
     assert!(key_from_recovery(&format!("{}{}", " ".repeat(150), body)).is_some());
@@ -309,10 +408,15 @@ fn y08_8_recovery_key_nonzero_padding_bits_are_refused() {
 
 fn qr_json(key: &MasterKey, tweak: impl FnOnce(&mut Value)) -> String {
     let text = qr_text_of(key, DEV, Some(EPOCH), 1_790_000_000_000);
-    let json = URL_SAFE_NO_PAD.decode(text.strip_prefix("SPPAIR1.").unwrap()).unwrap();
+    let json = URL_SAFE_NO_PAD
+        .decode(text.strip_prefix("SPPAIR1.").unwrap())
+        .unwrap();
     let mut value: Value = serde_json::from_slice(&json).unwrap();
     tweak(&mut value);
-    format!("SPPAIR1.{}", URL_SAFE_NO_PAD.encode(serde_json::to_vec(&value).unwrap()))
+    format!(
+        "SPPAIR1.{}",
+        URL_SAFE_NO_PAD.encode(serde_json::to_vec(&value).unwrap())
+    )
 }
 
 #[test]
@@ -320,28 +424,71 @@ fn y08_14_qr_text_bounds_and_hostile_fields() {
     let key = fixed_key();
     let max = (1u64 << 53) - 1;
     assert!(parse_qr_text(&qr_json(&key, |v| v["x"] = max.into())).is_some());
-    assert!(parse_qr_text(&qr_json(&key, |v| v["x"] = (max + 1).into())).is_none(), "x au-delà de 2^53 - 1");
+    assert!(
+        parse_qr_text(&qr_json(&key, |v| v["x"] = (max + 1).into())).is_none(),
+        "x au-delà de 2^53 - 1"
+    );
     assert!(parse_qr_text(&qr_json(&key, |v| v["x"] = 0.into())).is_some());
-    assert!(parse_qr_text(&qr_json(&key, |v| v["x"] = (-1).into())).is_none(), "x négatif");
-    assert!(parse_qr_text(&qr_json(&key, |v| v["x"] = "1".into())).is_none(), "x texte");
-    assert!(parse_qr_text(&qr_json(&key, |v| v["e"] = Value::Null)).is_some(), "époque absente (null)");
-    assert!(parse_qr_text(&qr_json(&key, |v| v["e"] = "e0000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60".into())).is_none(), "époque 0");
-    assert!(parse_qr_text(&qr_json(&key, |v| v["e"] = 1.into())).is_none(), "époque numérique");
-    assert!(parse_qr_text(&qr_json(&key, |v| v["d"] = DEV.to_uppercase().into())).is_none(), "appareil en majuscules");
+    assert!(
+        parse_qr_text(&qr_json(&key, |v| v["x"] = (-1).into())).is_none(),
+        "x négatif"
+    );
+    assert!(
+        parse_qr_text(&qr_json(&key, |v| v["x"] = "1".into())).is_none(),
+        "x texte"
+    );
+    assert!(
+        parse_qr_text(&qr_json(&key, |v| v["e"] = Value::Null)).is_some(),
+        "époque absente (null)"
+    );
+    assert!(
+        parse_qr_text(&qr_json(&key, |v| v["e"] =
+            "e0000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60".into()))
+        .is_none(),
+        "époque 0"
+    );
+    assert!(
+        parse_qr_text(&qr_json(&key, |v| v["e"] = 1.into())).is_none(),
+        "époque numérique"
+    );
+    assert!(
+        parse_qr_text(&qr_json(&key, |v| v["d"] = DEV.to_uppercase().into())).is_none(),
+        "appareil en majuscules"
+    );
     assert!(parse_qr_text(&qr_json(&key, |v| v["d"] = Value::Null)).is_none());
     assert!(parse_qr_text(&qr_json(&key, |v| v["v"] = 0.into())).is_none());
-    for bad_k in [URL_SAFE_NO_PAD.encode([1u8; 31]), URL_SAFE_NO_PAD.encode([1u8; 33]), format!("{}=", URL_SAFE_NO_PAD.encode([1u8; 32])), String::new()] {
-        assert!(parse_qr_text(&qr_json(&key, |v| v["k"] = bad_k.clone().into())).is_none(), "{bad_k}");
+    for bad_k in [
+        URL_SAFE_NO_PAD.encode([1u8; 31]),
+        URL_SAFE_NO_PAD.encode([1u8; 33]),
+        format!("{}=", URL_SAFE_NO_PAD.encode([1u8; 32])),
+        String::new(),
+    ] {
+        assert!(
+            parse_qr_text(&qr_json(&key, |v| v["k"] = bad_k.clone().into())).is_none(),
+            "{bad_k}"
+        );
     }
     // Non-objets, texte brut, base64 invalide.
     for raw in ["null", "[]", "1", "\"x\"", "{}", "{"] {
-        assert!(parse_qr_text(&format!("SPPAIR1.{}", URL_SAFE_NO_PAD.encode(raw))).is_none(), "{raw}");
+        assert!(
+            parse_qr_text(&format!("SPPAIR1.{}", URL_SAFE_NO_PAD.encode(raw))).is_none(),
+            "{raw}"
+        );
     }
     assert!(parse_qr_text("SPPAIR1.").is_none());
     assert!(parse_qr_text("").is_none());
-    assert!(parse_qr_text("ctpair1.AAAA").is_none(), "préfixe sensible à la casse");
-    assert!(parse_qr_text(&format!(" {}", qr_json(&key, |_| {}))).is_none(), "espace initial");
-    assert!(parse_qr_text(&format!("{}\n", qr_json(&key, |_| {}))).is_none(), "retour à la ligne final");
+    assert!(
+        parse_qr_text("ctpair1.AAAA").is_none(),
+        "préfixe sensible à la casse"
+    );
+    assert!(
+        parse_qr_text(&format!(" {}", qr_json(&key, |_| {}))).is_none(),
+        "espace initial"
+    );
+    assert!(
+        parse_qr_text(&format!("{}\n", qr_json(&key, |_| {}))).is_none(),
+        "retour à la ligne final"
+    );
     // Taille : 1 024 octets au plus.
     let ok = qr_json(&key, |_| {});
     assert!(ok.len() < 1024);
@@ -355,7 +502,9 @@ fn y08_14_qr_text_bounds_and_hostile_fields() {
 #[test]
 fn y08_header_numeric_bounds_and_hostile_documents() {
     let base = |f: &str, n: &str| {
-        format!(r#"{{"f":"{f}","sm":1,"kid":"0123456789abcdef","dev":"{DEV}","e":"{EPOCH}","n":{n}}}"#)
+        format!(
+            r#"{{"f":"{f}","sm":1,"kid":"0123456789abcdef","dev":"{DEV}","e":"{EPOCH}","n":{n}}}"#
+        )
     };
     // Journal et instantané : 1 à 99 999 999.
     for f in ["sp-j", "sp-s"] {
@@ -380,14 +529,29 @@ fn y08_header_numeric_bounds_and_hostile_documents() {
     assert!(FileHeader::parse(sm("1.5").as_bytes()).is_none());
     // Taille : 1 024 octets au plus (en-tête rempli d'espaces, valide sinon).
     let good = base("sp-j", "1");
-    assert!(FileHeader::parse(format!("{good}{}", " ".repeat(1024 - good.len())).as_bytes()).is_some());
-    assert!(FileHeader::parse(format!("{good}{}", " ".repeat(1025 - good.len())).as_bytes()).is_none());
+    assert!(
+        FileHeader::parse(format!("{good}{}", " ".repeat(1024 - good.len())).as_bytes()).is_some()
+    );
+    assert!(
+        FileHeader::parse(format!("{good}{}", " ".repeat(1025 - good.len())).as_bytes()).is_none()
+    );
     // Documents hostiles.
-    for raw in ["", "null", "[]", "{}", "\u{feff}", "{\"f\":\"sp-j\"", "\u{feff}{}"] {
+    for raw in [
+        "",
+        "null",
+        "[]",
+        "{}",
+        "\u{feff}",
+        "{\"f\":\"sp-j\"",
+        "\u{feff}{}",
+    ] {
         assert!(FileHeader::parse(raw.as_bytes()).is_none(), "{raw}");
     }
     assert!(FileHeader::parse(&[0xff, 0xfe]).is_none());
-    assert!(FileHeader::parse(format!("\u{feff}{good}").as_bytes()).is_none(), "BOM");
+    assert!(
+        FileHeader::parse(format!("\u{feff}{good}").as_bytes()).is_none(),
+        "BOM"
+    );
     // Un `kid` ou un appareil mal formés, majuscules, longueur, époque 0 ou à 5 chiffres.
     for (from, to) in [
         ("0123456789abcdef", "0123456789abcde"),
@@ -398,7 +562,10 @@ fn y08_header_numeric_bounds_and_hostile_documents() {
         ("e0001-3f2b", "e0000-3f2b"),
         ("e0001-3f2b", "e00001-3f2b"),
     ] {
-        assert!(FileHeader::parse(good.replace(from, to).as_bytes()).is_none(), "{to}");
+        assert!(
+            FileHeader::parse(good.replace(from, to).as_bytes()).is_none(),
+            "{to}"
+        );
     }
 }
 
@@ -409,9 +576,18 @@ fn y08_header_numeric_bounds_and_hostile_documents() {
 #[test]
 fn y01_11_strict_file_names_refuse_every_windows_and_icloud_variant() {
     assert_eq!(parse_file_name("state.spx"), Some(SyncFileName::State));
-    assert_eq!(parse_file_name("j-00000001.spj"), Some(SyncFileName::Segment(1)));
-    assert_eq!(parse_file_name("j-99999999.spj"), Some(SyncFileName::Segment(99_999_999)));
-    assert_eq!(parse_file_name("s-00000042.sps"), Some(SyncFileName::Snapshot(42)));
+    assert_eq!(
+        parse_file_name("j-00000001.spj"),
+        Some(SyncFileName::Segment(1))
+    );
+    assert_eq!(
+        parse_file_name("j-99999999.spj"),
+        Some(SyncFileName::Segment(99_999_999))
+    );
+    assert_eq!(
+        parse_file_name("s-00000042.sps"),
+        Some(SyncFileName::Snapshot(42))
+    );
     for refused in [
         "",
         "state 2.spx",
@@ -481,21 +657,53 @@ fn y01_11_strict_identifiers_refuse_traversal_case_and_unicode() {
         assert!(!is_uuid_v4(refused), "{refused:?}");
     }
     assert!(is_epoch_id(EPOCH));
-    for refused in ["", "e0000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60", "e10000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60", "E0001-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60", "e+001-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60", "e０００１-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60", "e0001-", "e0001-../..", "e0001_3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60"] {
+    for refused in [
+        "",
+        "e0000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60",
+        "e10000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60",
+        "E0001-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60",
+        "e+001-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60",
+        "e０００１-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60",
+        "e0001-",
+        "e0001-../..",
+        "e0001_3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60",
+    ] {
         assert!(!is_epoch_id(refused), "{refused:?}");
     }
     let low = EpochId::parse("e0002-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60").unwrap();
     let high = EpochId::parse("e0010-00000000-0000-4000-8000-000000000000").unwrap();
     assert!(low < high, "ordre numérique, pas lexical sur le texte");
     assert_eq!(low.name(), "e0002-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60");
-    assert!(is_kid("0123456789abcdef") && !is_kid("0123456789ABCDEF") && !is_kid("0123456789abcde") && !is_kid("0123456789abcdef0"));
+    assert!(
+        is_kid("0123456789abcdef")
+            && !is_kid("0123456789ABCDEF")
+            && !is_kid("0123456789abcde")
+            && !is_kid("0123456789abcdef0")
+    );
     let good_hlc = format!("000001790000000-00ff-{DEV}");
     assert!(is_strict_hlc(&good_hlc));
-    for refused in ["", "1790000000-00ff-x", &good_hlc.replace("00ff", "00FF"), &good_hlc.replace("-00ff-", "-00fg-"), &format!("{good_hlc}\n"), &good_hlc[1..]] {
+    for refused in [
+        "",
+        "1790000000-00ff-x",
+        &good_hlc.replace("00ff", "00FF"),
+        &good_hlc.replace("-00ff-", "-00fg-"),
+        &format!("{good_hlc}\n"),
+        &good_hlc[1..],
+    ] {
         assert!(!is_strict_hlc(refused), "{refused:?}");
     }
-    assert!(is_app_version("0.1.1") && is_app_version("1.2.3-rc.1+build5") && is_app_version(&"a".repeat(64)));
-    assert!(!is_app_version("") && !is_app_version(&"a".repeat(65)) && !is_app_version("1.0 beta") && !is_app_version("../1") && !is_app_version("é"));
+    assert!(
+        is_app_version("0.1.1")
+            && is_app_version("1.2.3-rc.1+build5")
+            && is_app_version(&"a".repeat(64))
+    );
+    assert!(
+        !is_app_version("")
+            && !is_app_version(&"a".repeat(65))
+            && !is_app_version("1.0 beta")
+            && !is_app_version("../1")
+            && !is_app_version("é")
+    );
 }
 
 #[test]
@@ -552,15 +760,23 @@ mod service {
     #[test]
     fn y08_14_qr_expiry_tolerance_is_exactly_two_minutes() {
         let (a, b, _fs) = pair();
-        let key = MasterKey::from_vault_value(&a.vault.get(SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
+        let key =
+            MasterKey::from_vault_value(&a.vault.get(SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
         let x = b.clock.now() + PAIRING_VALIDITY_MS;
         let qr = |x: u64| Zeroizing::new((*qr_text_of(&key, DEV_A, None, x)).clone());
         // `x` dépassé de 2 minutes pile : accepté ; de 2 minutes et 1 ms : refusé (borne incluse).
-        b.clock.advance(PAIRING_VALIDITY_MS + PAIRING_CLOCK_TOLERANCE_MS + 1);
-        assert_eq!(code(b.core.key_import(KeyInput::QrText(qr(x)), 1)), SyncCode::PairingExpired);
+        b.clock
+            .advance(PAIRING_VALIDITY_MS + PAIRING_CLOCK_TOLERANCE_MS + 1);
+        assert_eq!(
+            code(b.core.key_import(KeyInput::QrText(qr(x)), 1)),
+            SyncCode::PairingExpired
+        );
         b.clock.advance(10 * 60_000);
         let exact = b.clock.now() - PAIRING_CLOCK_TOLERANCE_MS;
-        assert!(b.core.key_import(KeyInput::QrText(qr(exact)), 1).is_ok(), "x + 2 min exactement : accepté");
+        assert!(
+            b.core.key_import(KeyInput::QrText(qr(exact)), 1).is_ok(),
+            "x + 2 min exactement : accepté"
+        );
     }
 
     #[test]
@@ -568,18 +784,34 @@ mod service {
         let (a, b, _fs) = pair();
         let stranger = MasterKey::generate().unwrap();
         let wrong = qr_text_of(&stranger, DEV_A, None, b.clock.now() + PAIRING_VALIDITY_MS);
-        assert_eq!(code(b.core.key_import(KeyInput::QrText(wrong), 1)), SyncCode::KeyMismatch);
+        assert_eq!(
+            code(b.core.key_import(KeyInput::QrText(wrong), 1)),
+            SyncCode::KeyMismatch
+        );
         assert_eq!(b.vault.get(SYNC_KEY_ACCOUNT).unwrap(), None);
         assert!(!b.core.key_status().unwrap().present);
         // Clé de secours d'une autre clé : même résultat, rien d'enregistré.
         let other = stranger.recovery_key();
-        assert_eq!(code(b.core.key_import(KeyInput::RecoveryKey(Zeroizing::new((*other).clone())), 1)), SyncCode::KeyMismatch);
+        assert_eq!(
+            code(
+                b.core
+                    .key_import(KeyInput::RecoveryKey(Zeroizing::new((*other).clone())), 1)
+            ),
+            SyncCode::KeyMismatch
+        );
         assert_eq!(b.vault.get(SYNC_KEY_ACCOUNT).unwrap(), None);
         // Le QR désigne l'appareil qui l'a émis (`d`) : le `kid` est lu dans le `state.spx` de cet appareil seulement ; un appareil
         // absent du dossier donne `cloud-pending` (jamais un enregistrement sur la foi d'un autre appareil).
-        let key = MasterKey::from_vault_value(&a.vault.get(SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
+        let key =
+            MasterKey::from_vault_value(&a.vault.get(SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
         let unknown_dev = qr_text_of(&key, DEV_B, None, b.clock.now() + PAIRING_VALIDITY_MS);
-        assert_eq!(code(b.core.key_import(KeyInput::QrText(Zeroizing::new((*unknown_dev).clone())), 1)), SyncCode::CloudPending);
+        assert_eq!(
+            code(
+                b.core
+                    .key_import(KeyInput::QrText(Zeroizing::new((*unknown_dev).clone())), 1)
+            ),
+            SyncCode::CloudPending
+        );
         assert_eq!(b.vault.get(SYNC_KEY_ACCOUNT).unwrap(), None);
     }
 
@@ -587,8 +819,18 @@ mod service {
     fn y08_14_hostile_inputs_are_refused_before_any_folder_access() {
         let (_a, b, fs) = pair();
         let reads_before = fs.all_files().len();
-        for text in ["", "SPPAIR1.", "SPPAIR1.AAAA", "x".repeat(5000).as_str(), "SPPAIR1.\u{0}", "SP1-ZZZZZ"] {
-            let qr = code(b.core.key_import(KeyInput::QrText(Zeroizing::new(text.to_owned())), 1));
+        for text in [
+            "",
+            "SPPAIR1.",
+            "SPPAIR1.AAAA",
+            "x".repeat(5000).as_str(),
+            "SPPAIR1.\u{0}",
+            "SP1-ZZZZZ",
+        ] {
+            let qr = code(
+                b.core
+                    .key_import(KeyInput::QrText(Zeroizing::new(text.to_owned())), 1),
+            );
             assert_eq!(qr, SyncCode::InvalidPairing, "{text:.20}");
             b.clock.advance(3 * 60_000); // reste sous la limite de 5 appels par 10 minutes
         }

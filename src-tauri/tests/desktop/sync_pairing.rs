@@ -5,10 +5,14 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
-use spartiate_lib::sync::consent::{dialog_spec, dialog_texts, ConsentGate, ConsentKind, ConsentUi, IDCANCEL, ID_CONFIRM};
+use spartiate_lib::sync::consent::{
+    dialog_spec, dialog_texts, ConsentGate, ConsentKind, ConsentUi, IDCANCEL, ID_CONFIRM,
+};
 use spartiate_lib::sync::consent_ios::IosConsentUi;
 use spartiate_lib::sync::limits::{CONSENT_BLOCK_MS, PAIRING_VALIDITY_MS};
-use spartiate_lib::sync::pairing::{is_pairing_url, Caller, PairingMode, PairingRegistry, PAIRING_WINDOW};
+use spartiate_lib::sync::pairing::{
+    is_pairing_url, Caller, PairingMode, PairingRegistry, PAIRING_WINDOW,
+};
 use spartiate_lib::sync::SyncCode;
 
 use crate::support::fake_bookmark::{FakePlugin, SharedPlugin};
@@ -61,7 +65,8 @@ impl Rig for IosRig {
         self.plugin.with(|s| s.confirm_answer = Ok(value));
     }
     fn ready(&self, value: bool) {
-        self.plugin.with(|s| s.app_state = if value { "active" } else { "background" });
+        self.plugin
+            .with(|s| s.app_state = if value { "active" } else { "background" });
     }
     fn prompts(&self) -> usize {
         self.plugin.calls("confirm").len()
@@ -70,7 +75,10 @@ impl Rig for IosRig {
 
 fn rigs() -> Vec<Box<dyn Rig>> {
     let plugin = FakePlugin::new(Arc::new(AtomicU64::new(NOW)));
-    let ios = IosRig { ui: Arc::new(IosConsentUi::new(Arc::new(SharedPlugin(plugin.clone())))), plugin };
+    let ios = IosRig {
+        ui: Arc::new(IosConsentUi::new(Arc::new(SharedPlugin(plugin.clone())))),
+        plugin,
+    };
     vec![Box::new(FakeUi::new()), Box::new(ios)]
 }
 
@@ -90,15 +98,33 @@ fn y08_10_dialog_config_has_two_buttons_cancel_by_default_and_compiled_texts() {
     let spec = dialog_spec(ConsentKind::ShowKey, OWNER);
     assert_eq!(spec.owner, OWNER);
     assert_eq!(spec.default_button, IDCANCEL);
-    assert_eq!(spec.buttons, vec![(ID_CONFIRM, "Afficher la clé".to_owned()), (IDCANCEL, "Annuler".to_owned())]);
-    assert_eq!(spec.texts.instruction, "Afficher la clé de synchronisation ?");
-    for kind in [ConsentKind::ShowKey, ConsentKind::ReplaceKey, ConsentKind::EraseKey] {
+    assert_eq!(
+        spec.buttons,
+        vec![
+            (ID_CONFIRM, "Afficher la clé".to_owned()),
+            (IDCANCEL, "Annuler".to_owned())
+        ]
+    );
+    assert_eq!(
+        spec.texts.instruction,
+        "Afficher la clé de synchronisation ?"
+    );
+    for kind in [
+        ConsentKind::ShowKey,
+        ConsentKind::ReplaceKey,
+        ConsentKind::EraseKey,
+    ] {
         let texts = dialog_texts(kind);
-        assert!(!texts.title.is_empty() && !texts.instruction.is_empty() && !texts.confirm.is_empty());
+        assert!(
+            !texts.title.is_empty() && !texts.instruction.is_empty() && !texts.confirm.is_empty()
+        );
         assert_eq!(texts.cancel, "Annuler");
         assert_eq!(dialog_spec(kind, OWNER).default_button, IDCANCEL);
     }
-    assert_eq!(dialog_texts(ConsentKind::EraseKey).content, "Sans clé, cet appareil devra être associé de nouveau.");
+    assert_eq!(
+        dialog_texts(ConsentKind::EraseKey).content,
+        "Sans clé, cet appareil devra être associé de nouveau."
+    );
     // Les textes viennent du fichier compilé, jamais de la WebView.
     let source = include_str!("../../src/sync/consent.rs");
     assert!(source.contains("include_str!(\"../../../src/i18n/native/fr.json\")"));
@@ -111,12 +137,27 @@ fn y08_10_refusal_returns_consent_denied_and_blocks_ten_minutes() {
         let clock = TestClock::new(NOW);
         let consent = gate(dir.path(), rig.as_ref(), &clock);
         rig.answer(false);
-        assert_eq!(code(consent.confirm_show(OWNER)), SyncCode::ConsentDenied, "{}", rig.name());
+        assert_eq!(
+            code(consent.confirm_show(OWNER)),
+            SyncCode::ConsentDenied,
+            "{}",
+            rig.name()
+        );
         rig.answer(true);
-        assert_eq!(code(consent.confirm_show(OWNER)), SyncCode::RateLimited, "{}", rig.name());
+        assert_eq!(
+            code(consent.confirm_show(OWNER)),
+            SyncCode::RateLimited,
+            "{}",
+            rig.name()
+        );
         // Blocage persistant : un redémarrage (nouvelle instance) le relit.
         let restarted = gate(dir.path(), rig.as_ref(), &clock);
-        assert_eq!(code(restarted.confirm_show(OWNER)), SyncCode::RateLimited, "{}", rig.name());
+        assert_eq!(
+            code(restarted.confirm_show(OWNER)),
+            SyncCode::RateLimited,
+            "{}",
+            rig.name()
+        );
         clock.advance(CONSENT_BLOCK_MS);
         assert!(restarted.confirm_show(OWNER).is_ok(), "{}", rig.name());
     }
@@ -129,9 +170,24 @@ fn y08_11_preconditions_without_dialog() {
         let clock = TestClock::new(NOW);
         let consent = gate(dir.path(), rig.as_ref(), &clock);
         rig.ready(false);
-        assert_eq!(code(consent.confirm_show(OWNER)), SyncCode::NotForeground, "{}", rig.name());
-        assert_eq!(code(consent.confirm(ConsentKind::EraseKey, OWNER)), SyncCode::NotForeground, "{}", rig.name());
-        assert_eq!(rig.prompts(), 0, "{} : aucune boîte si la fenêtre n'est pas au premier plan", rig.name());
+        assert_eq!(
+            code(consent.confirm_show(OWNER)),
+            SyncCode::NotForeground,
+            "{}",
+            rig.name()
+        );
+        assert_eq!(
+            code(consent.confirm(ConsentKind::EraseKey, OWNER)),
+            SyncCode::NotForeground,
+            "{}",
+            rig.name()
+        );
+        assert_eq!(
+            rig.prompts(),
+            0,
+            "{} : aucune boîte si la fenêtre n'est pas au premier plan",
+            rig.name()
+        );
     }
 }
 
@@ -145,17 +201,36 @@ fn y08_11_three_openings_per_ten_minutes_refusals_included_persisted() {
             consent.confirm_show(OWNER).unwrap();
             clock.advance(60_000);
         }
-        assert_eq!(code(consent.confirm_show(OWNER)), SyncCode::RateLimited, "{}", rig.name());
+        assert_eq!(
+            code(consent.confirm_show(OWNER)),
+            SyncCode::RateLimited,
+            "{}",
+            rig.name()
+        );
         assert_eq!(rig.prompts(), 3, "{}", rig.name());
         let restarted = gate(dir.path(), rig.as_ref(), &clock);
-        assert_eq!(code(restarted.confirm_show(OWNER)), SyncCode::RateLimited, "{} : process:allow-restart ne remet rien à zéro", rig.name());
+        assert_eq!(
+            code(restarted.confirm_show(OWNER)),
+            SyncCode::RateLimited,
+            "{} : process:allow-restart ne remet rien à zéro",
+            rig.name()
+        );
         clock.advance(8 * 60_000);
-        assert!(restarted.confirm_show(OWNER).is_ok(), "{} : fenêtre glissante de 10 minutes", rig.name());
+        assert!(
+            restarted.confirm_show(OWNER).is_ok(),
+            "{} : fenêtre glissante de 10 minutes",
+            rig.name()
+        );
         // Cinq imports par 10 minutes.
         for _ in 0..5 {
             restarted.count_import(OWNER).unwrap();
         }
-        assert_eq!(code(restarted.count_import(OWNER)), SyncCode::RateLimited, "{}", rig.name());
+        assert_eq!(
+            code(restarted.count_import(OWNER)),
+            SyncCode::RateLimited,
+            "{}",
+            rig.name()
+        );
     }
 }
 
@@ -166,9 +241,19 @@ fn y08_11_unreadable_file_blocks_ten_minutes() {
         std::fs::write(dir.path().join("consent.json"), b"{pas du json").unwrap();
         let clock = TestClock::new(NOW);
         let consent = gate(dir.path(), rig.as_ref(), &clock);
-        assert_eq!(code(consent.confirm_show(OWNER)), SyncCode::RateLimited, "{}", rig.name());
+        assert_eq!(
+            code(consent.confirm_show(OWNER)),
+            SyncCode::RateLimited,
+            "{}",
+            rig.name()
+        );
         clock.advance(CONSENT_BLOCK_MS - 1);
-        assert_eq!(code(consent.confirm_show(OWNER)), SyncCode::RateLimited, "{} : le blocage ne se prolonge pas à chaque lecture", rig.name());
+        assert_eq!(
+            code(consent.confirm_show(OWNER)),
+            SyncCode::RateLimited,
+            "{} : le blocage ne se prolonge pas à chaque lecture",
+            rig.name()
+        );
         clock.advance(1);
         assert!(consent.confirm_show(OWNER).is_ok(), "{}", rig.name());
     }
@@ -198,9 +283,17 @@ fn y08_11_one_dialog_at_a_time() {
     let dir = tempfile::tempdir().unwrap();
     let (release_tx, release_rx) = std::sync::mpsc::channel();
     let (opened_tx, opened_rx) = std::sync::mpsc::sync_channel(1);
-    let ui = Arc::new(SlowUi { inner: FakeUi::new(), release: std::sync::Mutex::new(release_rx), opened: opened_tx });
+    let ui = Arc::new(SlowUi {
+        inner: FakeUi::new(),
+        release: std::sync::Mutex::new(release_rx),
+        opened: opened_tx,
+    });
     let clock = TestClock::new(NOW);
-    let consent = Arc::new(ConsentGate::new(dir.path().to_path_buf(), ui.clone(), clock.clock()));
+    let consent = Arc::new(ConsentGate::new(
+        dir.path().to_path_buf(),
+        ui.clone(),
+        clock.clock(),
+    ));
     let first = {
         let consent = consent.clone();
         std::thread::spawn(move || consent.confirm(ConsentKind::EraseKey, OWNER))
@@ -219,7 +312,11 @@ fn y08_11_one_dialog_at_a_time() {
 // ------------------------------------------------------------------------------------------------------------------------------
 
 fn caller(hwnd: isize) -> Caller<'static> {
-    Caller { label: PAIRING_WINDOW, url: URL, hwnd }
+    Caller {
+        label: PAIRING_WINDOW,
+        url: URL,
+        hwnd,
+    }
 }
 
 #[test]
@@ -236,7 +333,10 @@ fn y08_12_exact_url_and_vite_only_in_debug() {
         assert!(!is_pairing_url(bad), "{bad}");
     }
     // L'URL du serveur Vite n'est acceptée que dans un build de développement ; `cargo test --release` vérifie le refus.
-    assert_eq!(is_pairing_url("http://localhost:1420/pairing.html"), cfg!(debug_assertions));
+    assert_eq!(
+        is_pairing_url("http://localhost:1420/pairing.html"),
+        cfg!(debug_assertions)
+    );
 }
 
 #[test]
@@ -249,9 +349,26 @@ fn y08_12_never_reuses_a_window_and_checks_label_url_hwnd() {
     // Une seconde ouverture pendant la boîte : refus.
     assert_eq!(code(registry.begin_open(false)), SyncCode::AlreadyOpen);
     let instance = registry.register(42, PairingMode::Show, NOW);
-    assert_eq!(code(registry.begin_open(false)), SyncCode::AlreadyOpen, "instance existante jamais réutilisée");
+    assert_eq!(
+        code(registry.begin_open(false)),
+        SyncCode::AlreadyOpen,
+        "instance existante jamais réutilisée"
+    );
     // Fenêtres de test : même libellé, autre URL ou autre HWND ; ou `main`.
-    for fake in [Caller { label: PAIRING_WINDOW, url: "http://tauri.localhost/index.html", hwnd: 42 }, caller(43), Caller { label: "main", url: URL, hwnd: 42 }, caller(0)] {
+    for fake in [
+        Caller {
+            label: PAIRING_WINDOW,
+            url: "http://tauri.localhost/index.html",
+            hwnd: 42,
+        },
+        caller(43),
+        Caller {
+            label: "main",
+            url: URL,
+            hwnd: 42,
+        },
+        caller(0),
+    ] {
         assert_eq!(code(registry.verify(&fake, NOW)), SyncCode::WrongWindow);
         assert_eq!(code(registry.take_token(&fake, NOW)), SyncCode::WrongWindow);
     }
@@ -265,15 +382,26 @@ fn y08_12_token_is_single_use_and_bound_to_the_generation() {
     registry.register(42, PairingMode::Show, NOW);
     let first = registry.take_token(&caller(42), NOW).unwrap();
     assert_eq!(first.generation, 1);
-    assert_eq!(code(registry.take_token(&caller(42), NOW)), SyncCode::WrongWindow, "jeton à usage unique");
+    assert_eq!(
+        code(registry.take_token(&caller(42), NOW)),
+        SyncCode::WrongWindow,
+        "jeton à usage unique"
+    );
     let renewed = registry.renew(&caller(42), 1, NOW + 1_000).unwrap();
     assert_eq!(renewed.generation, 2);
     assert_eq!(renewed.expires_at, NOW + 1_000 + PAIRING_VALIDITY_MS);
-    assert_eq!(code(registry.renew(&caller(42), 1, NOW)), SyncCode::WrongWindow, "génération périmée");
+    assert_eq!(
+        code(registry.renew(&caller(42), 1, NOW)),
+        SyncCode::WrongWindow,
+        "génération périmée"
+    );
     // Destruction : jeton et instance effacés ; un ancien jeton ne sert plus.
     registry.clear(42);
     assert!(registry.current().is_none());
-    assert_eq!(code(registry.verify(&caller(42), NOW)), SyncCode::WrongWindow);
+    assert_eq!(
+        code(registry.verify(&caller(42), NOW)),
+        SyncCode::WrongWindow
+    );
 }
 
 #[test]
@@ -281,8 +409,15 @@ fn y08_12_mode_is_bound_to_the_instance() {
     let registry = PairingRegistry::default();
     registry.begin_open(false).unwrap();
     registry.register(7, PairingMode::Import, NOW);
-    assert_eq!(code(registry.take_token(&caller(7), NOW)), SyncCode::WrongMode, "pas de charge utile dans une instance import");
-    assert_eq!(registry.verify(&caller(7), NOW).unwrap().mode, PairingMode::Import);
+    assert_eq!(
+        code(registry.take_token(&caller(7), NOW)),
+        SyncCode::WrongMode,
+        "pas de charge utile dans une instance import"
+    );
+    assert_eq!(
+        registry.verify(&caller(7), NOW).unwrap().mode,
+        PairingMode::Import
+    );
     assert_eq!(PairingMode::parse("show"), Some(PairingMode::Show));
     assert_eq!(PairingMode::parse("other"), None);
 }
@@ -299,22 +434,42 @@ fn y08_13_one_timer_per_generation_old_timers_have_no_effect() {
     assert!(!registry.expire_if_due(9, 2, NOW + PAIRING_VALIDITY_MS));
     assert!(registry.expire_if_due(9, 2, NOW + 60_000 + PAIRING_VALIDITY_MS));
     // Échue : plus aucun appel accepté.
-    assert_eq!(code(registry.verify(&caller(9), NOW + 60_000 + PAIRING_VALIDITY_MS)), SyncCode::WrongWindow);
+    assert_eq!(
+        code(registry.verify(&caller(9), NOW + 60_000 + PAIRING_VALIDITY_MS)),
+        SyncCode::WrongWindow
+    );
 }
 
 #[test]
 fn y08_12_pairing_window_is_never_declared_in_the_configuration() {
-    for conf in [include_str!("../../tauri.conf.json"), include_str!("../../tauri.windows.conf.json")] {
+    for conf in [
+        include_str!("../../tauri.conf.json"),
+        include_str!("../../tauri.windows.conf.json"),
+    ] {
         let value: serde_json::Value = serde_json::from_str(conf).unwrap();
-        let windows = value["app"]["windows"].as_array().cloned().unwrap_or_default();
-        assert!(windows.iter().all(|w| w["label"] != PAIRING_WINDOW && !w["url"].as_str().unwrap_or("").contains("pairing")));
+        let windows = value["app"]["windows"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default();
+        assert!(windows.iter().all(|w| w["label"] != PAIRING_WINDOW
+            && !w["url"].as_str().unwrap_or("").contains("pairing")));
     }
     // Création par Rust : masquée, puis affinité d'affichage vérifiée avant l'affichage ; `main` n'est jamais concernée.
     let source = include_str!("../../src/sync/commands.rs");
-    let build = source.find("WebviewWindowBuilder::new(app, PAIRING_WINDOW").expect("création par Rust");
+    let build = source
+        .find("WebviewWindowBuilder::new(app, PAIRING_WINDOW")
+        .expect("création par Rust");
     let affinity = source.find("exclude_from_capture(hwnd)").expect("affinité");
     let show = source.find("window.show()").expect("affichage");
     assert!(build < affinity && affinity < show);
-    assert!(source.contains(".visible(false)") && source.contains("WDA_EXCLUDEFROMCAPTURE") && source.contains("run_on_main_thread"));
-    assert_eq!(source.matches("exclude_from_capture(").count(), 3, "définitions (Windows et repli) et un seul appel, sur la fenêtre pairing");
+    assert!(
+        source.contains(".visible(false)")
+            && source.contains("WDA_EXCLUDEFROMCAPTURE")
+            && source.contains("run_on_main_thread")
+    );
+    assert_eq!(
+        source.matches("exclude_from_capture(").count(),
+        3,
+        "définitions (Windows et repli) et un seul appel, sur la fenêtre pairing"
+    );
 }
