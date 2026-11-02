@@ -362,3 +362,9 @@ Source fusionnée : [liste de report SPA-001a](spa-001a-fichiers-metier-reportes
 | `tests/sim/syncCodec.ts` | Garder | Simulateur/codec de synchro, familles ADR 0017 conservées ; ajuster les seules fixtures métier (S1–S5). |
 | `tests/sim/syncFolderSim.ts` | Garder | Simulateur/codec de synchro, familles ADR 0017 conservées ; ajuster les seules fixtures métier (S1–S5). |
 | `tests/visual/capture.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+
+## Journal des écarts (D-62)
+
+| Date | Écart | Décision |
+| --- | --- | --- |
+| 2026-11-02 | `signingNotice.ts`, `signingStatus.ts`, `signingText.ts`, `SigningAbout.tsx` et leurs 2 tests (Garder) dépendent du planificateur de rappels de tâches supprimé avec `reminders`. | Validé par Ali : déplacés vers `src/features/signing/`, découplés de `reminders`. Le contrôleur appelle directement `src/platform/notifications` : la notification système d’expiration (24 h avant, iPhone) reste planifiée, mêmes déclencheurs (démarrage, retour au premier plan, après renouvellement), même texte, annulation de l’ancienne quand la date change. Les 2 tests gardent leurs assertions (heure de planification, annulation, texte) ; seule la mise en place change (conteneur minimal sans tâches). Commit rouge d’abord. |
