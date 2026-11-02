@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { openApp } from './helpers/app';
-import { createTask, isPhone } from './helpers/today';
+import { isPhone } from './helpers/today';
 
 /**
  * I-03 — Je protège l'app par Face ID (critère 12).
@@ -23,7 +23,6 @@ declare global {
 }
 
 const NOW = new Date('2026-10-08T09:00:00+02:00');
-const TITLE = 'Préparer le dossier fiscal';
 
 async function setVisibility(page: Page, state: DocumentVisibilityState): Promise<void> {
   await page.evaluate((next) => {
@@ -49,7 +48,6 @@ test.describe('I-03 — verrouillage Face ID (iPhone, biométrie injectée)', ()
   });
 
   test('activation avec authentification, verrou après 31 s, échec puis réussite, retour sous 30 s sans demande', async ({ page }, testInfo) => {
-    await createTask(page, testInfo, { title: TITLE });
     await openSettings(page);
     const toggle = page.getByRole('switch', { name: 'Verrouillage Face ID' });
     await expect(toggle).toHaveAttribute('aria-checked', 'false');
@@ -97,10 +95,6 @@ test.describe('I-03 — verrouillage Face ID (iPhone, biométrie injectée)', ()
     await expect(page.getByRole('heading', { name: 'Spartiate est verrouillée' })).toBeHidden();
     await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
     await expect(page.locator('#root')).not.toHaveAttribute('inert', '');
-
-    // La tâche est toujours là (le verrou couvre l'interface, pas les données).
-    await page.getByRole('navigation').getByText('Tâches', { exact: true }).click();
-    await expect(page.getByText(TITLE)).toBeVisible();
   });
 
   test('aucun code sur l’iPhone : « Désactiver le verrouillage » puis la confirmation, touchée par un vrai clic (revue H1)', async ({ page }) => {

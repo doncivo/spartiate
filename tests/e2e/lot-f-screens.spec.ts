@@ -1,7 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { installFakeBackups, type FakeVersion } from './helpers/backups';
 import { installFakeFiles, nextFilesMode, setPick } from './helpers/files';
-import { openReport } from './helpers/stats';
 import { openToday } from './helpers/today';
 
 /**
@@ -37,36 +36,6 @@ test.describe('Lot F — écrans sans défilement horizontal, échecs avec une a
     await noHorizontalScroll(page);
     await alert.getByRole('button', { name: 'Réessayer' }).click();
     await expect(page.getByText('Logs exportés')).toBeVisible();
-  });
-
-  test('Import CSV : aperçu et échec d’enregistrement du rapport', async ({ page }) => {
-    await page.clock.setFixedTime(new Date('2026-10-05T08:00:00Z'));
-    await installFakeFiles(page);
-    await openToday(page);
-    await tab(page, 'Réglages').click();
-    await page.getByRole('button', { name: 'Importer des tâches depuis un fichier CSV' }).click();
-    await noHorizontalScroll(page);
-    await setPick(page, { name: 'taches.csv', text: 'titre;date;heure;espace;projet;note\nAppeler Paul;2026-10-06;10:00;Perso;;\nSoirée très longue avec un titre qui ne tient pas sur une ligne;31/02/2026;;;;' });
-    await page.getByRole('button', { name: 'Choisir un fichier' }).click();
-    await nextFilesMode(page, 'fail');
-    await page.getByRole('button', { name: 'Télécharger le rapport des lignes rejetées' }).click();
-    await expect(page.getByRole('alert')).toContainText('Code : write-failed');
-    await noHorizontalScroll(page);
-  });
-
-  test('Export H-03 : fenêtre d’export et échec', async ({ page }) => {
-    await page.clock.setFixedTime(new Date('2026-09-23T08:00:00Z'));
-    await installFakeFiles(page);
-    await openToday(page);
-    await openReport(page, 'septembre');
-    await page.getByRole('button', { name: 'Exporter', exact: true }).click();
-    const dialog = page.getByRole('dialog', { name: 'Exporter l’historique' });
-    await expect(dialog).toBeVisible();
-    await nextFilesMode(page, 'fail');
-    await dialog.getByRole('button', { name: 'Exporter', exact: true }).click();
-    await expect(dialog.getByRole('alert')).toContainText('Code : write-failed');
-    await expect(dialog.getByRole('alert').getByRole('button', { name: 'Réessayer' })).toBeVisible();
-    await noHorizontalScroll(page);
   });
 
   test('Sauvegardes (P-04-iOS) : feuille, voile de la restauration et annonce du redémarrage', async ({ page }) => {

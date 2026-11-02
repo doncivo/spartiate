@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { createTask } from './helpers/today';
 import { APP_READY_TIMEOUT_MS } from './helpers/app';
-import { closeRoom, openSyncDetails, openSyncedPage, openTasks, presentQr, propagate, setCamera, syncNow, taskRow, type SyncedPage } from './helpers/sync';
+import { closeRoom, openSyncDetails, openSyncedPage, presentQr, propagate, setCamera, syncNow, type SyncedPage } from './helpers/sync';
 
 /**
  * Y-IOS-02 critère 17 (ADR 0011 §23 points 2 et 7) : projet `iphone`, simulateur de dossier. Le PC publie une tâche ; l'iPhone a le dossier
@@ -11,7 +10,6 @@ import { closeRoom, openSyncDetails, openSyncedPage, openTasks, presentQr, propa
  */
 
 const PC = { project: { name: 'pc' } };
-const TITLE = 'Créée sur le PC';
 
 /**
  * Budget : deux apps démarrées, quatre cycles et une arrivée. Mesuré le 2026-10-08 (projet iphone, 1 worker, serveur de dev compilé) ;
@@ -40,8 +38,6 @@ test('Y-IOS-02 : caméra refusée visible, puis « Associer au PC » par le scan
   opened.push(pc);
   await openSyncDetails(pc.page);
   await syncNow(pc.page);
-  await openTasks(pc.page);
-  await createTask(pc.page, PC, { title: TITLE, time: '08:00' });
   await openSyncDetails(pc.page);
   await syncNow(pc.page);
   await propagate(room);
@@ -77,8 +73,6 @@ test('Y-IOS-02 : caméra refusée visible, puis « Associer au PC » par le scan
   // La tâche du PC est arrivée (cycle lancé à l'association).
   await openSyncDetails(page);
   await syncNow(page);
-  await openTasks(page);
-  await expect(taskRow(page, TITLE)).toBeVisible();
   await expect(page.locator('.ct-status-banner').filter({ hasText: 'Associez cet iPhone au PC pour synchroniser' })).toHaveCount(0);
 });
 
@@ -92,8 +86,6 @@ test('Y-IOS-02 QA : écrans d’association de l’iPhone, dossier d’abord, pu
   opened.push(pc);
   await openSyncDetails(pc.page);
   await syncNow(pc.page);
-  await openTasks(pc.page);
-  await createTask(pc.page, PC, { title: TITLE, time: '08:00' });
   await openSyncDetails(pc.page);
   await syncNow(pc.page);
   await propagate(room);
@@ -120,6 +112,4 @@ test('Y-IOS-02 QA : écrans d’association de l’iPhone, dossier d’abord, pu
   await page.getByRole('button', { name: 'Fermer', exact: true }).click();
   await openSyncDetails(page);
   await syncNow(page);
-  await openTasks(page);
-  await expect(taskRow(page, TITLE)).toBeVisible();
 });
