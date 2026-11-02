@@ -47,7 +47,7 @@ test.describe('I-03 — verrouillage Face ID (iPhone, biométrie injectée)', ()
     await openApp(page);
   });
 
-  test('activation avec authentification, verrou après 31 s, échec puis réussite, retour sous 30 s sans demande', async ({ page }, testInfo) => {
+  test('activation avec authentification, verrou après 31 s, échec puis réussite, retour sous 30 s sans demande', async ({ page }) => {
     await openSettings(page);
     const toggle = page.getByRole('switch', { name: 'Verrouillage Face ID' });
     await expect(toggle).toHaveAttribute('aria-checked', 'false');

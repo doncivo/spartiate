@@ -9,7 +9,6 @@ import { closeRoom, openSyncDetails, openSyncedPage, presentQr, propagate, setCa
  * n'affiche jamais le QR. Le refus de la confirmation de remplacement est couvert par `yIos02.test.tsx` (clé déjà présente sur l'iPhone).
  */
 
-const PC = { project: { name: 'pc' } };
 
 /**
  * Budget : deux apps démarrées, quatre cycles et une arrivée. Mesuré le 2026-10-08 (projet iphone, 1 worker, serveur de dev compilé) ;

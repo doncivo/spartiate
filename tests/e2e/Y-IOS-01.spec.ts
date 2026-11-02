@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { APP_READY_TIMEOUT_MS } from './helpers/app';
-import { closeRoom, inspect, openSyncDetails, openSyncedPage, openTasks, setUnreachable, syncNow, syncStatusLine, type SyncedPage } from './helpers/sync';
+import { closeRoom, inspect, openSyncDetails, openSyncedPage, setUnreachable, syncNow, syncStatusLine, type SyncedPage } from './helpers/sync';
 
 /**
  * Y-IOS-01 critère 14 (ADR 0011 §22) : projet `iphone`, simulateur de dossier, plateforme `ios`. Dossier choisi, tâche créée, page passée en
@@ -9,7 +9,6 @@ import { closeRoom, inspect, openSyncDetails, openSyncedPage, openTasks, setUnre
  * rechargement de la page, disparu quand le dossier est rétabli.
  */
 
-const IPHONE = { project: { name: 'iphone' } };
 const IOS_TEXT = 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / Spartiate';
 
 /**

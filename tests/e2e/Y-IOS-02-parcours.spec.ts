@@ -13,7 +13,6 @@ import { closeRoom, inspect, openPairingWindow, openSyncDetails, openSyncedPage,
  * Projet `iphone` : le parcours (les deux pages) ; projet `pc` : les états du PC (voir `Y-IOS-02-etats.spec.ts`).
  */
 
-const PC = { project: { name: 'pc' } };
 const SHOW_QR = 'Associer l’iPhone : afficher le code d’association';
 const ASSOCIATE_PC = 'Associer cet iPhone au PC : scanner le code d’association';
 const SCAN = 'Ouvrir la caméra et scanner le code d’association';

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { installFakeBackups, type FakeVersion } from './helpers/backups';
-import { installFakeFiles, nextFilesMode, setPick } from './helpers/files';
+import { installFakeFiles, nextFilesMode } from './helpers/files';
 import { openToday } from './helpers/today';
 
 /**
