@@ -419,7 +419,6 @@ export const en: Messages = {
   desktop: {
     tray: {
       open: 'Open Spartiate',
-      quickAdd: 'Quick add',
       sync: 'Sync now',
       quit: 'Quit',
     },

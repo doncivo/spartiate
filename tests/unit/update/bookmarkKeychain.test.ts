@@ -12,7 +12,6 @@ import type { AppContainer } from '../../../src/features/app/container';
 import { isTroublePhase, statusLine } from '../../../src/features/sync/syncText';
 import { t } from '../../../src/i18n';
 import { createUnavailableBackup } from '../../../src/platform/backup';
-import { createMemoryCalendarPlatform, PRODUCTION_ENDPOINTS } from '../../../src/platform/calendars';
 import { createUnavailableFiles } from '../../../src/platform/files';
 import { SyncPlatformError } from '../../../src/platform/sync';
 import { createMemorySyncPlatform, type MemorySyncPlatform } from '../../../src/platform/sync/memory';
@@ -27,7 +26,7 @@ const LAST = migrations.at(-1)?.version ?? 0;
 const NEXT: Migration[] = [...migrations, { version: LAST + 1, name: 'test_i06_additive', statements: ['ALTER TABLE task ADD COLUMN i06_note TEXT'] }];
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148';
 const clock = createManualClock('2026-10-09T08:00:00.000Z');
-const common = { desktop: null, focusWindow: null, files: createUnavailableFiles(), calendars: createMemoryCalendarPlatform(PRODUCTION_ENDPOINTS), backups: createUnavailableBackup(), clock } as const;
+const common = { desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), clock } as const;
 
 const keepOpen = (db: SqlDriver): SqlDriver => ({ kind: db.kind, execute: (s, p) => db.execute(s, p), select: (s, p) => db.select(s, p), transaction: (fn) => db.transaction(fn), close: () => Promise.resolve() });
 

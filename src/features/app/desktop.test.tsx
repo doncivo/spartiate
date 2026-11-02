@@ -40,7 +40,6 @@ describe('intégration PC de la coquille (D-01)', () => {
     await vi.waitFor(() => expect(desktop.trayLabels).not.toBeNull());
     expect(desktop.trayLabels).toEqual({
       open: 'Ouvrir Spartiate',
-      quickAdd: 'Ajout rapide',
       sync: 'Synchroniser maintenant',
       quit: 'Quitter',
       syncEnabled: false,

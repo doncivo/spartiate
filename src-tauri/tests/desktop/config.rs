@@ -58,7 +58,7 @@ fn main_window_starts_hidden_on_windows_only() {
     assert!(base.get("create").is_none(), "iOS garde la création automatique de la fenêtre");
 }
 
-/// `setup` récupère d'abord, puis crée la fenêtre principale, puis seulement le reste (zone de notification, capture rapide, affichage).
+/// `setup` récupère d'abord, puis crée la fenêtre principale, puis seulement le reste (zone de notification, affichage).
 #[test]
 fn setup_recovers_first_then_creates_the_main_window_before_anything_that_uses_it() {
     let setup = DESKTOP_SOURCE.split(".setup(|app| {").nth(1).expect("setup");
@@ -66,7 +66,7 @@ fn setup_recovers_first_then_creates_the_main_window_before_anything_that_uses_i
     let recover = position("recover_and_settle");
     let create = position("create_main_window(app.handle())");
     assert!(recover < create, "récupération avant la création de la fenêtre");
-    for later in ["crate::shortcut::manage", "crate::capture::setup", "create_tray(", "show_main_window("] {
+    for later in ["create_tray(", "show_main_window("] {
         assert!(create < position(later), "{later} après la création de la fenêtre");
     }
     // Dossier de données introuvable ou fenêtre impossible à créer : même arrêt avec la boîte système, jamais une app sans interface.
@@ -279,16 +279,6 @@ fn backups_capability_grants_only_the_five_backup_commands_to_the_main_window_on
     }
 }
 
-/// Les fenêtres secondaires (capture rapide, Focus) n'ont aucun accès aux fichiers, aux boîtes système ni à l'ouverture d'adresses.
-#[test]
-fn secondary_window_capabilities_have_no_fs_dialog_or_opener_permission() {
-    for (name, text) in [("capture", include_str!("../../capabilities/capture.json")), ("focus", include_str!("../../capabilities/focus.json"))] {
-        for permission in permissions_of(text) {
-            assert!(!["fs:", "dialog:", "opener:"].iter().any(|prefix| permission.starts_with(prefix)), "{name} : {permission}");
-        }
-    }
-}
-
 /// Pas de plugin fs côté WebView : ni crate fs, ni enregistrement du plugin.
 #[test]
 fn no_fs_plugin_is_registered_for_the_webview() {
@@ -305,7 +295,6 @@ const LIB_SOURCE: &str = include_str!("../../src/lib.rs");
 const BUILD_SOURCE: &str = include_str!("../../build.rs");
 const SYNC_CAPABILITY: &str = include_str!("../../capabilities/sync.json");
 const SYNC_PAIRING_CAPABILITY: &str = include_str!("../../capabilities/sync-pairing.json");
-const FOCUS_LAUNCHER_CAPABILITY: &str = include_str!("../../capabilities/focus-launcher.json");
 
 /// Les 25 commandes `sync_*`, dans l'ordre de la section 11.1 (même liste que `SYNC_COMMANDS` de `types.ts`) ; les trois dernières
 /// sont celles du lot Y4 (section 18).
@@ -374,7 +363,7 @@ fn sync_1_handlers_equal_the_build_manifest() {
     let handlers = handler_commands();
     let manifest = manifest_commands();
     assert_eq!(handlers, manifest);
-    for command in SYNC_COMMANDS.iter().chain(["focus_window_open", "focus_window_bring_to_front", "focus_window_close"].iter()) {
+    for command in SYNC_COMMANDS.iter() {
         assert!(manifest.contains(*command), "{command}");
     }
     assert_eq!(manifest.iter().filter(|c| c.starts_with("sync_")).count(), 25);
@@ -497,16 +486,6 @@ fn sync_5_no_capability_applying_to_main_grants_window_creation() {
     expand("core:default", &manifests, &mut core);
     assert!(core.contains("core:window:allow-get-all-windows"));
     assert!(glob_matches("*", "main") && glob_matches("ma?n", "main") && !glob_matches("pairing", "main"));
-}
-
-/// (6) `focus-launcher.json` n'accorde que les trois commandes de la mini-fenêtre Focus.
-#[test]
-fn sync_6_focus_launcher_grants_only_the_three_focus_commands() {
-    let capability: Value = serde_json::from_str(FOCUS_LAUNCHER_CAPABILITY).expect("focus-launcher.json valide");
-    assert_eq!(capability["windows"], serde_json::json!(["main"]));
-    let mut granted = permissions_of(FOCUS_LAUNCHER_CAPABILITY);
-    granted.sort();
-    assert_eq!(granted, ["allow-focus-window-bring-to-front", "allow-focus-window-close", "allow-focus-window-open"]);
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------
@@ -895,62 +874,7 @@ fn i02_signing_command_exists_for_ios_only() {
     assert!(manifest_commands().contains("app_signing_info"));
 }
 
-const IOS_REMINDERS_CAPABILITY: &str = include_str!("../../capabilities/reminders-ios.json");
 
-/// K-05 (ADR 0008 §10.4) : liste EXACTE des permissions de la capability iOS des Rappels Apple ; fenêtre principale, iOS seulement ; aucune
-/// capability (Windows comprise) n'accorde `reminders:`.
-#[test]
-fn k05_ios_reminders_capability_grants_exactly_the_listed_permissions_and_no_other_capability_does() {
-    let capability: Value = serde_json::from_str(IOS_REMINDERS_CAPABILITY).expect("capability valide");
-    assert_eq!(capability["windows"], serde_json::json!(["main"]));
-    assert_eq!(capability["platforms"], serde_json::json!(["iOS"]));
-    let mut names = permissions_of(IOS_REMINDERS_CAPABILITY);
-    names.sort();
-    assert_eq!(
-        names,
-        [
-            "reminders:allow-delete",
-            "reminders:allow-fetch",
-            "reminders:allow-lists",
-            "reminders:allow-register-listener",
-            "reminders:allow-remove-listener",
-            "reminders:allow-request-access",
-            "reminders:allow-set-completed",
-            "reminders:allow-status",
-            "reminders:allow-upsert",
-        ]
-    );
-    for forbidden in [":default", "allow-check-permissions", "allow-request-permissions"] {
-        assert!(!names.iter().any(|name| name.contains(forbidden)), "{forbidden}");
-    }
-    for other in other_capabilities("reminders-ios.json") {
-        assert!(!other.contains("reminders:"), "une autre capability accorde reminders:");
-    }
-}
-
-/// K-05 : le plugin des Rappels n'est déclaré que dans la section des dépendances iOS de Cargo.toml et enregistré sous `cfg(target_os = "ios")`.
-#[test]
-fn k05_reminders_plugin_is_ios_only() {
-    let mut section = String::new();
-    let mut declarations = 0;
-    for line in CARGO.lines() {
-        let trimmed = line.trim();
-        if trimmed.starts_with('[') && trimmed.ends_with(']') {
-            section = trimmed.to_owned();
-        }
-        if trimmed.starts_with("tauri-plugin-reminders") {
-            declarations += 1;
-            assert_eq!(section, "[target.'cfg(target_os = \"ios\")'.dependencies]", "plugin des Rappels hors de la section iOS");
-            assert!(trimmed.contains("path = \"plugins/reminders\""), "{trimmed}");
-        }
-    }
-    assert_eq!(declarations, 1);
-    let lines: Vec<&str> = LIB_SOURCE.lines().collect();
-    let uses: Vec<usize> = lines.iter().enumerate().filter(|(_, l)| l.contains("tauri_plugin_reminders::")).map(|(i, _)| i).collect();
-    assert_eq!(uses.len(), 1, "un seul enregistrement");
-    assert_eq!(lines[uses[0] - 1].trim(), "#[cfg(target_os = \"ios\")]");
-    assert!(!DESKTOP_SOURCE.contains("reminders"));
-}
 
 /// Fusion du lot C : un seul `setup` dans lib.rs (Tauri n'en garde qu'un ; un second remplacerait `ios_setup` et le plugin SQL ne serait
 /// jamais enregistré sur l'iPhone) ; le nettoyage de Vision au lancement passe par `ios_setup`.
