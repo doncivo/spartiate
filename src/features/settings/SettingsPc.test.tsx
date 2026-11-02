@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId } from '../../domain/types';
@@ -11,7 +11,7 @@ import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { SettingsScreen } from './SettingsScreen';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000d9');
-const SECTIONS = ['Général', 'Tâches', 'Rappels', 'Espaces et agendas', 'Synchronisation', 'Sauvegardes et données', 'Clavier', 'À propos'];
+const SECTIONS = ['Général', 'Synchronisation', 'Sauvegardes et données', 'Clavier', 'À propos'];
 
 function mockViewport(width: number): void {
   vi.stubGlobal('matchMedia', (query: string) => ({
@@ -24,7 +24,7 @@ function mockViewport(width: number): void {
 
 /**
  * UI-REFONTE-09 — Réglages sur PC (docs/maquettes-refonte/PC-Reglages.html) : sommaire à gauche, colonne bornée, titres en minuscules,
- * « Général » en six lignes (Thème, Début de semaine, Format de l'heure, Fuseau horaire, Onglets visibles, Démarrer avec Windows),
+ * « Général » en cinq lignes (Thème, Début de semaine, Format de l’heure, Fuseau horaire, Démarrer avec Windows),
  * « Clavier » avec « Tous les raccourcis » et le conflit expliqué en une phrase. L'iPhone ne change pas.
  */
 describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
@@ -67,7 +67,7 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
     await db.close();
   });
 
-  it('sommaire : titre, huit sections dans l’ordre en minuscules, section courante, un clic fait défiler la section (critères 1, 2)', async () => {
+  it('sommaire : titre, cinq sections dans l’ordre en minuscules, section courante, un clic fait défiler la section (critères 1, 2)', async () => {
     renderScreen();
     await ready();
     expect(screen.getByRole('heading', { level: 1, name: 'Réglages' })).toBeInTheDocument();
@@ -86,7 +86,7 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
     expect(document.querySelector('.ct-settings__rule')).toBeNull();
   });
 
-  it('Général : Thème, Début de semaine et Format de l’heure en trois lignes vers Apparence ; Onglets visibles « 5 sur 5 » ; fuseau expliqué ; démarrage expliqué (critère 3)', async () => {
+  it('Général : Thème, Début de semaine et Format de l’heure en trois lignes vers Apparence  ; fuseau expliqué ; démarrage expliqué (critère 3)', async () => {
     renderScreen();
     await ready();
     const general = region('Général');
@@ -97,8 +97,6 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
       expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'appearance' });
       useNavigationStore.setState(INITIAL_NAVIGATION);
     }
-    fireEvent.click(within(general).getByRole('button', { name: 'Onglets visibles : 5 sur 5' }));
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'tabs' });
     expect(within(general).getByText('Fuseau horaire')).toBeInTheDocument();
     expect(within(general).getByText('Suit celui de Windows')).toBeInTheDocument();
     expect(within(general).getByText('Europe/Paris')).toBeInTheDocument();
@@ -110,25 +108,11 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
   it('les lignes partagées rejoignent leurs sections (critère 4)', async () => {
     renderScreen();
     await ready();
-    const tasks = region('Tâches');
-    expect(within(tasks).getByRole('switch', { name: 'Reporter les tâches non faites' })).toBeInTheDocument();
-    expect(within(tasks).getByRole('switch', { name: 'Masquer les routines de la liste' })).toBeInTheDocument();
-    expect(within(region('Rappels')).getByRole('button', { name: /^Récapitulatifs :/ })).toBeInTheDocument();
-    const spaces = region('Espaces et agendas');
-    expect(within(spaces).getByRole('button', { name: /^Espaces et projets :/ })).toBeInTheDocument();
-    expect(within(spaces).getByRole('button', { name: /^Agendas · Rappels Apple :/ })).toBeInTheDocument();
-    expect(within(spaces).getByRole('button', { name: /^Jours fériés :/ })).toBeInTheDocument();
-    expect(within(tasks).queryByRole('button', { name: /^Jours fériés :/ })).toBeNull();
-    const data = region('Sauvegardes et données');
-    expect(within(data).getByRole('button', { name: 'Ouvrir la corbeille' })).toBeInTheDocument();
-    expect(within(data).getByRole('button', { name: 'Importer des tâches depuis un fichier CSV' })).toBeInTheDocument();
     const about = region('À propos');
     expect(within(about).getByRole('button', { name: 'Rechercher une mise à jour' })).toBeInTheDocument();
-    expect(within(about).getByRole('button', { name: 'Revoir le guide de bienvenue' })).toBeInTheDocument();
   });
 
-  it('Clavier : « Tous les raccourcis » avec « Ctrl / » ouvre la liste ; une combinaison prise s’explique en une phrase, sans note barrée (critère 5)', async () => {
-    desktop.takenChords.add('Ctrl+Alt+Space');
+  it('Clavier : « Tous les raccourcis » avec « Ctrl / » ouvre la liste ; aucune ligne de capture rapide (supprimée en 001b-front)', async () => {
     renderScreen();
     await ready();
     const keyboard = region('Clavier');
@@ -139,16 +123,12 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
     expect(screen.queryByText('Raccourcis clavier')).toBeNull();
     fireEvent.click(all);
     expect(useNavigationStore.getState().overlays).toEqual([{ kind: 'shortcutsHelp' }]);
-    const sentence = await within(keyboard).findByText('Ctrl+Alt+Espace est utilisé par une autre application. Choisissez-en un autre.');
-    expect(sentence).toHaveAttribute('data-tone', 'warning');
-    expect(screen.queryByText('Indisponible : combinaison prise par une autre application')).toBeNull();
-    expect(within(keyboard).getByRole('button', { name: /^Capture rapide : Ctrl\+Alt\+Espace/ })).toHaveAttribute('data-state', 'unavailable');
   });
 
   it('iPhone : écran inchangé (critère 7)', async () => {
     mockViewport(440);
     renderScreen(containerWith(null));
-    await waitFor(() => expect(screen.getByRole('switch', { name: 'Reporter les tâches non faites' })).not.toBeDisabled());
+    await screen.findByRole('heading', { name: 'GÉNÉRAL' });
     expect(screen.queryByRole('navigation', { name: 'Sections des réglages' })).toBeNull();
     expect(screen.getByRole('heading', { name: 'GÉNÉRAL' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'DONNÉES ET SÉCURITÉ' })).toBeInTheDocument();

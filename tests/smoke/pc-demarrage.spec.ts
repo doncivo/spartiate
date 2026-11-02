@@ -145,7 +145,7 @@ test('le binaire Windows démarre sur une base neuve et affiche l’écran du jo
     await guide.getByRole('button', { name: fr.onboarding.skipLabel }).click();
     await expect(guide).toHaveCount(0);
     // Écran du jour (A-01) : onglet Tâches courant, titre du jour local de la machine formaté comme l'écran (PC : style long), badge.
-    await expect(page.getByRole('navigation').locator('[aria-current="page"]')).toContainText(fr.nav.tabs.tasks);
+    await expect(page.getByRole('navigation').locator('[aria-current="page"]')).toContainText(fr.nav.tabs.today);
     const heading = page.getByRole('heading', { level: 1 }).first();
     await expect(heading).toBeVisible();
     const today = new Date();

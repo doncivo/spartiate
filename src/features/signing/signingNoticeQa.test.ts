@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createFakeSigningAlert, createFakeSigningSource, type FakeSigningAlert, type FakeSigningSource } from '../../platform/signing';
-import { createTauriSigningAlert } from '../../platform/signing/tauriSigningAlert';
 import { useAppStatusStore } from '../app/appStatus';
 import { replanSigning } from './signingRun';
 import { setupSigning, type SigningHarness } from './testKit';

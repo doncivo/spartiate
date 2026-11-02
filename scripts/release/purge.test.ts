@@ -42,7 +42,7 @@ describe('point de composition minimal', () => {
   });
   it('bootstrap ne compose plus de calendriers ni de rappels', () => {
     const boot = read('src/features/app/bootstrap.ts');
-    for (const word of ['developmentCalendarSetup', 'openCalendarPlatform', 'openRemindersPlatform', 'openFocusWindowPlatform', 'createSettingsLedger']) {
+    for (const word of ['developmentCalendarSetup', 'openCalendarPlatform', 'openRemindersPlatform', 'openFocusWindowPlatform']) {
       expect(boot, word).not.toContain(word);
     }
   });

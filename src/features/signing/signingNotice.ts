@@ -30,7 +30,7 @@ import { signingStatusController } from './signingStatus';
 /** Une alerte à moins de 5 s n'est plus transmise (iOS la refuserait) : même marge que les rappels (`SEND_MARGIN_MS`, copiée pour ne pas charger l'adaptateur iOS au démarrage). */
 const SEND_MARGIN_MS = 5_000;
 
-/** Déclencheurs d'un passage (ex-ReplanTrigger des rappels) ; seuls `SIGNING_TRIGGERS` lisent le profil. */
+/** Déclencheurs d'un passage (ancien déclencheur des rappels de tâches) ; seuls `SIGNING_TRIGGERS` lisent le profil. */
 export type SigningTrigger = 'open' | 'update' | 'resume' | 'permission' | 'hide' | 'zone' | 'sync' | 'edit' | 'action';
 
 export type PlanFailureReason = 'schedule-failed';

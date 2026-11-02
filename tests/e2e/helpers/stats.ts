@@ -1,7 +1,10 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import { clickTodayHeaderAction } from './today';
-import { REPORT_FONT_FACES, REPORT_FONT_SAMPLE } from '../../../src/features/stats/reportFonts';
 import { APP_READY_TIMEOUT_MS, waitForScreenLoaded } from './app';
+
+// SPA-001b-front : constantes recopiées de la feature stats supprimée ; ce helper disparaît avec les specs e2e métier (lot h, 001b-docs).
+const REPORT_FONT_SAMPLE = 'Septembre 0123456789 éèêàçù % — · / ÉÈ';
+const REPORT_FONT_FACES: readonly string[] = ['700 44px "Fraunces Variable"', '400 12px "DM Sans Variable"', '600 14px "DM Sans Variable"', '700 12px "DM Sans Variable"'];
 
 /** Aides e2e des statistiques (H-01 à H-03, ES-08), communes aux projets `pc` et `iphone`. */
 

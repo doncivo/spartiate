@@ -3,9 +3,7 @@ import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createFakeAuthenticator, guardAuthenticator, type FakeAuthenticator } from '../../platform/biometric';
 import { createFakePrivacyShield } from '../../platform/privacyShield';
-import { getNotificationRunner } from '../reminders/notificationRunner';
-import { startNotificationIntegration } from '../reminders/startNotifications';
-import { reopenReminders, seedReminderTask, setupReminders, type ReminderHarness } from '../reminders/testKit';
+import { reopenSigning as reopenReminders, setupSigning as setupReminders, type SigningHarness as ReminderHarness } from '../signing/testKit';
 import { createFakeSyncService } from '../sync/testKit';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { SettingsScreen } from '../settings/SettingsScreen';
@@ -153,24 +151,6 @@ describe('écran de verrou et coquille (critères 6, 7 et 11)', () => {
     await screen.findByRole('heading', { name: 'Spartiate est verrouillée' });
     await flush();
     expect(screen.queryByRole('button', { name: 'Désactiver le verrouillage' })).toBeNull();
-  });
-});
-
-describe('le verrou couvre l’interface, pas les données (critère 7)', () => {
-  it('pendant le verrou, un onRemoteChanges simulé replanifie les rappels', async () => {
-    fake.setDefault('user-cancel');
-    const { container, sync } = await boot(true);
-    expect(useAppLockStore.getState().phase).toBe('locked');
-    const integration = startNotificationIntegration(container, { document: { visibilityState: 'visible', addEventListener: () => undefined, removeEventListener: () => undefined } as never });
-    await integration.opened();
-    const replaces = () => h.fake.calls.filter((call) => call.type === 'replace').length;
-    const before = replaces();
-    await seedReminderTask(container, { title: 'Appeler le notaire', date: '2026-10-09', time: '09:00' });
-    sync.emitChanges({ tables: new Set(['task']), ids: new Map() });
-    await getNotificationRunner(container).request('action');
-    expect(replaces()).toBeGreaterThan(before);
-    expect(useAppLockStore.getState().phase).toBe('locked');
-    integration.dispose();
   });
 });
 

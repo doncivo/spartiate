@@ -83,7 +83,7 @@ export async function bootDevice(device: SimDevice, options: BootOptions = {}): 
     startup,
     integration,
     async settled() {
-      await startup.firstCheck;
+      await startup.ready;
       for (let cycle = device.service.running(); cycle !== null; cycle = device.service.running()) await cycle;
       await integration.refreshed();
     },

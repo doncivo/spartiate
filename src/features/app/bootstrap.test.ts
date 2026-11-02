@@ -63,7 +63,7 @@ describe('I-06 (régression CI) : un seul démarrage', () => {
     let release: () => void = () => undefined;
     const held = new Promise<void>((resolve) => (release = resolve));
     const { bootstrapApp } = await import('./bootstrap');
-    const started = bootstrapApp({ open: openSqliteWasmDriver, desktop: null, focusWindow: null, syncPlatform: null, appVersion: () => held.then(() => ({ ok: true, version: '0.3.0', source: 'runtime' }) as const) });
+    const started = bootstrapApp({ open: openSqliteWasmDriver, desktop: null, syncPlatform: null, appVersion: () => held.then(() => ({ ok: true, version: '0.3.0', source: 'runtime' }) as const) });
     // App.tsx ne lance `bootstrapApp` que sur « idle » : l'état doit déjà avoir changé avant toute attente.
     expect(useAppStore.getState().dbStatus).toBe('loading');
     release();

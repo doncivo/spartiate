@@ -1,8 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createManualClock } from '../../../src/domain/clock';
 import type { RoutineId } from '../../../src/domain/types';
-import { createAppContainer, type AppContainer } from '../../../src/features/app/container';
-import { createTaskUseCases } from '../../../src/features/tasks/createTaskUseCases';
 import { SyncPlatformError, type SyncErrorCode } from '../../../src/platform/sync/types';
 import { PRO, createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../sim/syncDevice';
 
@@ -31,7 +29,6 @@ async function twoDevices(): Promise<[SimDevice, SimDevice]> {
   return [a, b];
 }
 
-const containerOf = (d: SimDevice): AppContainer => createAppContainer({ clock: d.clock, hlc: d.hlc, data: d.data, sync: d.service });
 
 describe('file d’envoi (Y-05 critère 1)', () => {
   it('création, modification, suppression, restauration de tâche, routine, réglage partagé : dans la file jusqu’à la publication', async () => {
@@ -118,41 +115,5 @@ describe('retour en ligne (Y-05 critères 3 et 4, parcours 10)', () => {
     expect(await log(a)).toEqual([{ field: 'title', kept_value: '"Titre de l’iPhone"', discarded_value: '"Titre du PC"', kept_device: B_ID, discarded_device: A_ID }]);
     expect(await log(b)).toEqual(await log(a));
     expect(await taskSnapshot(a)).toEqual(await taskSnapshot(b));
-  });
-});
-
-describe('annulation après publication (Y-05 critère 8, T-13)', () => {
-  it('l’annulation est une nouvelle écriture publiée ; si l’autre appareil a modifié la ligne entre-temps, elle est refusée (stale)', async () => {
-    const [a, b] = await twoDevices();
-    const ca = containerOf(a);
-    const useCases = createTaskUseCases(ca);
-    const created = await useCases.create({ title: 'À annuler', spaceId: PRO, date: '2026-10-05' as never });
-    if (!created.ok) throw new Error('création');
-    a.clock.advance(1_000);
-    await useCases.remove([created.value.id]);
-    await a.cycle();
-    syncFolders(devices);
-    await b.cycle();
-    expect((await b.task(created.value.id))?.deletedAt).not.toBeNull();
-    expect((await ca.undo.undoLast()).status).toBe('undone');
-    a.clock.advance(1_000);
-    await a.cycle();
-    syncFolders(devices);
-    await b.cycle();
-    expect((await b.task(created.value.id))?.deletedAt).toBeNull();
-    // Nouvelle suppression, puis B modifie la tâche avant que A n'annule : refus.
-    a.clock.advance(1_000);
-    await useCases.remove([created.value.id]);
-    await a.cycle();
-    syncFolders(devices);
-    await b.cycle();
-    b.clock.advance(5_000);
-    await b.data.repos.tasks.restore([created.value.id]);
-    await b.updateTask(created.value.id, { title: 'Modifiée par l’iPhone' });
-    await b.cycle();
-    syncFolders(devices);
-    await a.cycle();
-    expect((await ca.undo.undoLast()).status).toBe('stale');
-    expect((await a.task(created.value.id))?.title).toBe('Modifiée par l’iPhone');
   });
 });
