@@ -14,8 +14,9 @@ Fait : tests rouges, `rename.mjs` exécuté, updater non configuré (D-30), icô
 
 - 001b-front fusionnée (#15, D-63). Découpage final D-64 : **001b-périphérie** (branche spa-001b-peripherie, commitée, **non poussée**, pas de PR), puis **001b-base** (migration 0001, catalogue, identités, adaptations de synchro, repositories, formulaire profil / poids, APP_SCHEMA_VERSION = 1, capture ; arbitrage des cinq choix de docs/spa-001b-base-neuve.md en D-65).
 - Fait en périphérie (commit rouge puis vert par lot, purge.test.ts, 46+ tests) : lot Rust (calendars/, capture, focus_window, shortcut, tray « Ajout rapide », import neutralisé « unsupported », capabilities, façades platform/calendars|capture|focus), lot plugins (reminders, web-auth, Cargo.lock, plist, contrat plist, fixtures calendars), lot workflows (CT_GOOGLE_* retiré, tests.yml sur pull_request + push main, clippy bloquant). Locaux verts : tsc, lint, Vitest scripts/ et platform/ et features/app, cargo test config/logic/capture_ios/import/sync_key (suite desktop complète verte avant les lots plugins), cargo clippy, test:bundle.
-- **Reste** : (1) i18n français seul (en.* et 50 fichiers citant Locale / 'en' : chargeurs, types, ensureLocale, réglages, tests colocalisés), (2) archivage D-40 dans docs/archive/circletasks/, (3) PR avec liste des suppressions par lot et tests retirés avec motif, (4) rapport. Avant le push : npm run test:bundle.
-- Écarts à trancher par Ali (journal de docs/spa-001b-inventaire.md) : cargo fmt --check non branché (~2 500 écarts dont src/sync) ; restes « reminders » (bandeau, domaine, repositories) pour 001b-base.
+- **001b-périphérie 2/2 (session neuve)** : i18n français seul (en.* et ~50 fichiers citant Locale / 'en'), archivage D-40 dans docs/archive/circletasks/. PR 1/2 « Rust, plugins, workflows » poussée ; avant le push de 2/2 : npm run test:bundle.
+- **Décision d'Ali** : PR dédiée de formatage (cargo fmt) juste après la fusion de 001b-périphérie et avant 001b-base ; relue par sync-icloud (touche src/sync), puis étape fmt --check dans tests.yml.
+- Restes « reminders » (AppStatusBanner remindersTrouble, domaine, repositories) : 001b-base.
 - D-54 : Ali supprime %APPDATA%r.spartiate.app avant le premier lancement de la base neuve.
 
 ## Notes pour les tickets suivants
