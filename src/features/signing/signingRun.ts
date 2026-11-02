@@ -20,10 +20,21 @@ export interface SigningPermissionState {
 export const signingPermissionStore = defineFeatureStore(() => createStore<SigningPermissionState>()(() => ({ permission: null })));
 
 const queues = new WeakMap<AppContainer, Promise<void>>();
+const paused = new WeakSet<AppContainer>();
+
+/** Restauration de sauvegarde : plus aucun passage ne démarre, le passage en cours est attendu (P-04-iOS critère 6). */
+export async function pauseSigning(container: AppContainer): Promise<void> {
+  paused.add(container);
+  await (queues.get(container) ?? Promise.resolve());
+}
+
+export function resumeSigning(container: AppContainer): void {
+  paused.delete(container);
+}
 
 /** Un passage, à la suite des précédents du même conteneur. */
 export function replanSigning(container: AppContainer, trigger: SigningTrigger): Promise<void> {
-  if (!container.signing.source.supported) return Promise.resolve();
+  if (!container.signing.source.supported || paused.has(container)) return Promise.resolve();
   const previous = queues.get(container) ?? Promise.resolve();
   const next = previous.then(() => pass(container, trigger));
   queues.set(container, next);

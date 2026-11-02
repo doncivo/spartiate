@@ -179,6 +179,6 @@ describe('Onglets (P-01)', () => {
     useTabsConfigStore.setState({ config: { order: [], hidden: ['events'] } });
     const row = await screen.findByRole('button', { name: 'Onglets visibles : 4 sur 5' });
     fireEvent.click(row);
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'settings', screen: 'tabs' });
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'tabs' });
   });
 });

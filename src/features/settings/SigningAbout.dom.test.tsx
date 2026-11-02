@@ -130,7 +130,7 @@ describe('À propos : expiration de la signature (I-02)', () => {
     renderAbout();
     await screen.findByText('Les notifications sont refusées : vous ne serez pas prévenu');
     fireEvent.click(screen.getByRole('button', { name: 'Voir les réglages des rappels pour autoriser les notifications' }));
-    expect(useNavigationStore.getState().route).toMatchObject({ tab: 'settings', screen: 'reminders' });
+    expect(useNavigationStore.getState().route).toMatchObject({ tab: 'more', screen: 'reminders' });
   });
 
   it('bandeau d’expiration sous 24 h : « Voir » ouvre la tête de Réglages', async () => {
@@ -142,7 +142,7 @@ describe('À propos : expiration de la signature (I-02)', () => {
       </AppContainerProvider>,
     );
     fireEvent.click(await screen.findByRole('button', { name: 'Voir l’expiration de la signature dans Réglages' }));
-    expect(useNavigationStore.getState().route).toMatchObject({ tab: 'settings', screen: 'home' });
+    expect(useNavigationStore.getState().route).toMatchObject({ tab: 'more', screen: 'home' });
   });
 
   it('alerte non planifiée : « L’alerte n’a pas pu être planifiée »', async () => {

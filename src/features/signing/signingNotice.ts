@@ -66,7 +66,7 @@ export function signingAlertFailure(container: AppContainer): PlanFailureReason 
 }
 
 /** Action « Voir » : expiration en tête de Réglages, avant les sections de configuration. */
-const openSigningSettings = (): void => useNavigationStore.getState().navigate({ tab: 'settings', screen: 'home' });
+const openSigningSettings = (): void => useNavigationStore.getState().navigate({ tab: 'more', screen: 'home' });
 
 const setBanner = (state: { readonly detail: 'soon' | 'expired'; readonly message: string } | null): void => useAppStatusStore.getState().setStatus('signingExpiry', state === null ? null : { ...state, onAction: openSigningSettings });
 

@@ -245,7 +245,7 @@ describe('liste des raccourcis et réglage de la capture rapide (P-08, D-04)', (
     renderShell();
     act(() => useNavigationStore.getState().navigate({ tab: 'events' }));
     press({ key: ',', code: 'Comma', ctrlKey: true });
-    expect(useNavigationStore.getState().route).toMatchObject({ tab: 'settings', screen: 'home' });
+    expect(useNavigationStore.getState().route).toMatchObject({ tab: 'more', screen: 'home' });
     ctrlSlash();
     await screen.findByRole('dialog');
     act(() => useNavigationStore.getState().navigate({ tab: 'events' }));

@@ -7,7 +7,6 @@ import { localDateTimeAt } from '../../domain/notificationInstant';
 import type { SigningStatusV1 } from '../../domain/signingNotice';
 import { Button } from '../../ui';
 import { useAppContainer, useFeatureStore } from '../app/AppContainerContext';
-import { useNavigationStore } from '../app/navigation';
 import { signingPermissionStore } from './signingRun';
 import { requestPermissionOnGesture } from './requestPermission';
 import { signingAlertFailure } from './signingNotice';
@@ -136,11 +135,6 @@ export function SigningAboutRow() {
         {action === 'allow' && (
           <Button variant="secondary" ariaLabel={t('signing.about.allowLabel')} onClick={() => void requestPermissionOnGesture(container)} className="ct-settings__link">
             {t('signing.about.allow')}
-          </Button>
-        )}
-        {action === 'view' && (
-          <Button variant="secondary" ariaLabel={t('signing.about.viewRemindersLabel')} onClick={() => useNavigationStore.getState().navigate({ tab: 'settings', screen: 'reminders' })} className="ct-settings__link">
-            {t('signing.about.viewReminders')}
           </Button>
         )}
       </span>

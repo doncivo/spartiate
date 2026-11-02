@@ -103,7 +103,7 @@ describe('SettingsScreen (T-06)', () => {
     expect(screen.getByRole('heading', { name: 'DONNÉES ET SÉCURITÉ' })).toBeInTheDocument();
     expect(screen.getByText('Corbeille')).toBeInTheDocument();
     screen.getByRole('button', { name: 'Ouvrir la corbeille' }).click();
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'settings', screen: 'trash' });
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'trash' });
   });
 
   describe('« Masquer les routines de la liste » (A-03)', () => {

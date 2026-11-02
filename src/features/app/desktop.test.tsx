@@ -64,7 +64,7 @@ describe('intégration PC de la coquille (D-01)', () => {
   });
 
   it('« Ajout rapide » : va sur Aujourd’hui et lève la demande de focus (critère 5)', async () => {
-    useNavigationStore.getState().navigate({ tab: 'settings', screen: 'home' });
+    useNavigationStore.getState().navigate({ tab: 'more', screen: 'home' });
     const integration = startDesktopIntegration(container);
     await vi.waitFor(() => expect(desktop.quickAddListeners).toBe(1));
     desktop.emitQuickAdd();

@@ -52,7 +52,7 @@ describe('ligne d’état de Réglages (Y-02 critère 16, Y-05 critère 2)', () 
     expect(screen.getByText('iCloud Drive / Spartiate')).toBeTruthy();
     expect(screen.getByTestId('sync-status-text').textContent).toBe('À jour · il y a 2 min');
     fireEvent.click(screen.getByRole('button', { name: 'Détails' }));
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'settings', screen: 'sync' });
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'sync' });
   });
 
   it('la sous-ligne n’est pas une région vivante ; seule « À jour » (sans âge) est annoncée, rien pendant un problème (le bandeau l’annonce)', () => {

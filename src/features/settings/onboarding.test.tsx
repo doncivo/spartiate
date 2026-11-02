@@ -239,8 +239,8 @@ describe('Premier lancement (P-05)', () => {
       await click(within(dialog).getByRole('button', { name: 'Continuer' }));
       await click(await within(dialog).findByRole('button', { name: /Modifier le silence de l’espace Pro/ }));
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-      expect(useNavigationStore.getState().route).toMatchObject({ tab: 'settings', screen: 'quiet', spaceId: SPACE_PRO_ID });
-      act(() => useNavigationStore.getState().navigate({ tab: 'settings', screen: 'home' }));
+      expect(useNavigationStore.getState().route).toMatchObject({ tab: 'more', screen: 'quiet', spaceId: SPACE_PRO_ID });
+      act(() => useNavigationStore.getState().navigate({ tab: 'more', screen: 'home' }));
       const back = await screen.findByRole('dialog');
       expect(within(back).getByText('Étape 2 sur 3')).toBeInTheDocument();
     });

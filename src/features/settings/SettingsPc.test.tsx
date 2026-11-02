@@ -94,11 +94,11 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
     const rows = ['Thème : Système', 'Début de semaine : Lundi', 'Format de l’heure : 24 h'];
     for (const name of rows) {
       fireEvent.click(within(general).getByRole('button', { name }));
-      expect(useNavigationStore.getState().route).toEqual({ tab: 'settings', screen: 'appearance' });
+      expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'appearance' });
       useNavigationStore.setState(INITIAL_NAVIGATION);
     }
     fireEvent.click(within(general).getByRole('button', { name: 'Onglets visibles : 5 sur 5' }));
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'settings', screen: 'tabs' });
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'tabs' });
     expect(within(general).getByText('Fuseau horaire')).toBeInTheDocument();
     expect(within(general).getByText('Suit celui de Windows')).toBeInTheDocument();
     expect(within(general).getByText('Europe/Paris')).toBeInTheDocument();

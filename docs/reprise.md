@@ -16,6 +16,7 @@ Fait : tests rouges (2346b2dc) ; `scripts/release/rename.mjs` exécuté, rapport
 - `spa-001b-wip` (locale, non verte, jamais poussée) : 15 features retirées, 5 sections fixes, conteneur et bootstrap réduits, Réglages épurés ; ~150 erreurs de typage, surtout des tests. Base de départ de 001b-front.
 - Décisions d’Ali : `signingAlertFailure` dans À propos accepté pour I0 (SPA-004 remet l’alerte sur Aujourd’hui) ; `conflictRestore.ts` Garder si générique sinon Adapter, `syncConflictUseCases.ts` Adapter, en 001b-sync avec relecture sync-icloud, S1 à S5 intacts ; `tabsConfig.ts` et `domain/tabs.ts` supprimés.
 - Découpage : 001b-front, 001b-sync, 001b-rust, 001b-docs (réunissable avec rust), puis base neuve et coquille. Chaque sous-PR verte et fusionnable seule, `purge.test.ts` découpé par sous-PR, jamais de branche rouge poussée.
+- `spa-001b-front` (locale, non verte, jamais poussée) : wip fusionnée en squash + pont minimal de synchro ; le code source compile, restent ~170 erreurs de typage dans des tests (dont 12 tests de synchro sur fixtures tâches). Arrêt demandé à Ali.
 - D-54 : Ali supprime `%APPDATA%r.spartiate.app` avant le premier lancement de la base neuve.
 
 ## Notes pour les tickets suivants
