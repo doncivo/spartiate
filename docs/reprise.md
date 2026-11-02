@@ -18,13 +18,13 @@ Fait : tests rouges, `rename.mjs` exécuté, updater non configuré (D-30), icô
 - Découpage : 001b-front, 001b-sync, 001b-rust, 001b-docs (réunissable avec rust), puis base neuve et coquille. Chaque sous-PR verte et fusionnable seule, `purge.test.ts` découpé par sous-PR, jamais de branche rouge poussée.
 - `spa-001b-front` (locale, non poussée, base ae96c8f1) : wip fusionnée + pont minimal de synchro + kits de test génériques. Vert en local : source (tsc, lint), purge.test.ts (22), signature (35), Réglages, raccourcis, contraste, restauration de conflit. Reste ~30 erreurs tsc, toutes dans `tests/e2e/`.
 - Décision d’Ali : lot (h) intégré à 001b-front (supprimer par script les specs et helpers e2e métier, adapter au strict nécessaire les specs « Garder vidé », `playwright.config.ts` et `globalSetup.ts` sans simulateurs de calendriers, simulateur de synchro gardé). Consignée au journal. Budget 250 k dépassé : repartir de l’état commité.
-- Lot (h) fait et commité (7df0a6d8 + suivant) : 140 specs/helpers e2e métier et 4 simulateurs retirés, globalSetup/playwright.config/capture.spec réduits, tsc et eslint (src, tests, scripts) verts. Y-IOS-01/02, I-03 : assertions sur tâches retirées (reviennent avec profil/poids), P-07 et 2 tests de lot-f-screens supprimés (import CSV, export H-03 : fonctions retirées).
+- Lot (h) fait et commité (7df0a6d8 + suivant) : 140 specs/helpers e2e métier et 4 simulateurs retirés, globalSetup/playwright.config/capture.spec réduits, tsc et eslint (src, tests, scripts) verts. Assertions sur tâches retirées des specs gardées ; P-07 et 2 tests de lot-f-screens supprimés (CSV, export : fonctions retirées).
 - Arrêt : Vitest complet tué par le système (mémoire), non relancé. Reste : Vitest par dossiers (src/features, tests/unit, scripts) sur demande d'Ali ; bundle ; capture 5 sections ; passe sync-icloud distincte ; PR ; rapport. Diff sync (src/sync, src/domain/sync, src-tauri/src/sync) vide vs main.
 - D-54 : Ali supprime `%APPDATA%r.spartiate.app` avant le premier lancement de la base neuve.
 
 ## Notes pour les tickets suivants
 
-- SPA-009 : fenêtre PC initiale adaptée à l'écran (constat 001a : elle dépasse de l'écran d'Ali), minimum 1 024 × 700.
+- SPA-009 : fenêtre PC initiale adaptée à l'écran, minimum 1 024 × 700.
 - D-60 : Rust local autorisé pour les changements de synchro, de garde ou de coffre ; e2e et smoke jamais en local.
 
 ## Secrets et décisions attendues
