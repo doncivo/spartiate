@@ -1310,9 +1310,7 @@ fn i02_signing_command_exists_for_ios_only() {
         .expect("bloc PC");
     let desktop_block = &LIB_SOURCE[desktop_start
         ..desktop_start
-            + LIB_SOURCE[desktop_start..]
-                .find("\n    ]);")
-                .expect("fin du bloc PC")];
+            + crate::support::block_end(&LIB_SOURCE[desktop_start..]).expect("fin du bloc PC")];
     assert!(
         !desktop_block.contains("app_signing_info"),
         "commande iOS dans le gestionnaire du PC"

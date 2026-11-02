@@ -176,7 +176,10 @@ jobs:
         with:
           workspaces: src-tauri -> target
           save-if: ${{ github.ref == 'refs/heads/main' }}
-      # D-64 : clippy bloquant. `cargo fmt --check` n'est pas branché : le code hérité compte ~2 500 écarts de format, dont src/sync (hors périmètre de 001b-périphérie) ; PR de formatage dédiée proposée.
+      - name: cargo fmt --check
+        shell: bash
+        working-directory: src-tauri
+        run: cargo fmt --check
       - name: cargo clippy
         shell: bash
         working-directory: src-tauri
