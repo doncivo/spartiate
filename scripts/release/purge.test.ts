@@ -119,3 +119,21 @@ describe('lot (e) : plugins reminders et web-auth retirés', () => {
     for (const name of ['files', 'folder-bookmark', 'haptics', 'notification-actions', 'privacy-shield', 'speech', 'vision']) expect(present(`src-tauri/plugins/${name}`), name).toBe(true);
   });
 });
+
+// Lot (f) workflows (D-64) : plus de CT_GOOGLE_*, tests.yml sans double exécution, fmt et clippy en CI.
+describe('lot (f) : workflows', () => {
+  const tests = read('.github/workflows/tests.yml');
+  it('plus aucun secret ni variable CT_GOOGLE_* dans les workflows', () => {
+    for (const f of ['tests.yml', 'build-windows.yml', 'build-ios.yml']) expect(read(`.github/workflows/${f}`), f).not.toContain('CT_GOOGLE');
+  });
+  it('tests.yml ne se déclenche que sur pull_request et sur push vers main (D-64)', () => {
+    const on = tests.slice(tests.indexOf('\non:'), tests.indexOf('\npermissions:'));
+    expect(on).toMatch(/pull_request:/);
+    expect(on).toMatch(/push:\s*\n\s*branches: \["main"\]/);
+    expect(on).not.toContain('"**"');
+  });
+  it('la CI Rust exécute cargo fmt --check et cargo clippy --locked -- -D warnings', () => {
+    expect(tests).toContain('cargo fmt --check');
+    expect(tests).toContain('cargo clippy --locked -- -D warnings');
+  });
+});
