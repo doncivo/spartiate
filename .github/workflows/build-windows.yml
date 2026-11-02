@@ -87,13 +87,6 @@ jobs:
 
       # CI-SEC-01 : compilation et beforeBuildCommand sans clé updater ; signature du fichier produit dans l'étape suivante.
       - name: Compiler l'installeur NSIS
-        env:
-          # Client OAuth Google « Application de bureau » (K-01), lu à la compilation par src-tauri/build.rs (option_env!).
-          # Contrairement à la clé de signature, transmis aussi aux builds de branche : sans eux, l'installeur de test
-          # affiche « Google non configuré ». Google déclare ce client non confidentiel ; la valeur est de toute façon
-          # embarquée en clair dans l'exécutable livré. Uniquement cette étape : ni test, ni publication.
-          CT_GOOGLE_CLIENT_ID: ${{ secrets.CT_GOOGLE_CLIENT_ID }}
-          CT_GOOGLE_CLIENT_SECRET: ${{ secrets.CT_GOOGLE_CLIENT_SECRET }}
         run: |
           set -euo pipefail
           rm -rf src-tauri/target/release/bundle

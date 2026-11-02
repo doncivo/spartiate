@@ -358,36 +358,8 @@ describe('cohérence du guide, du workflow et des scripts', () => {
     expect(section).toContain('`v*`');
   });
 
-  it('secrets Google : absents, ou confinés à l’étape de compilation (retirés en SPA-001b) ; client de bureau jamais dans le build iOS', () => {
-    const steps = (yml: string) => yml.split(/^ {6}- /m).slice(1);
-    const win = read('.github/workflows/build-windows.yml');
-    const withSecret = (yml: string, name: string) => steps(yml).filter((s) => s.includes(name));
-    for (const name of ['CT_GOOGLE_CLIENT_ID', 'CT_GOOGLE_CLIENT_SECRET']) {
-      // SPA-001a critère 5 : plus d'exigence de présence ; si le secret est là, il est confiné à l'étape de compilation.
-      const found = withSecret(win, name);
-      expect(found.length).toBeLessThanOrEqual(1);
-      for (const step of found) {
-        expect(step).toContain("name: Compiler l'installeur NSIS");
-        expect(step).toContain(`${name}: \${{ secrets.${name} }}`);
-      }
-    }
-    const iosSteps = withSecret(workflow, 'CT_GOOGLE_IOS_CLIENT_ID');
-    expect(iosSteps.length).toBeLessThanOrEqual(1);
-    for (const step of iosSteps) expect(step).toContain("name: Compiler l'IPA sans signature");
-    expect(workflow).not.toContain('CT_GOOGLE_CLIENT_SECRET');
-    expect(workflow).not.toContain('CT_GOOGLE_CLIENT_ID');
-    expect(win).not.toContain('CT_GOOGLE_IOS_CLIENT_ID');
-    for (const f of readdirSync(join(root, '.github/workflows'))) {
-      if (f !== 'build-windows.yml' && f !== 'build-ios.yml') expect(read(`.github/workflows/${f}`), f).not.toContain('CT_GOOGLE');
-    }
-    for (const yml of [win, workflow]) {
-      expect(yml).not.toMatch(/^\s*(pull_request|pull_request_target|workflow_run)\b/m);
-      // Pas d'env au niveau workflow ou job : aucune mention avant le premier `steps:`.
-      expect(yml.slice(0, yml.indexOf('steps:'))).not.toContain('CT_GOOGLE');
-    }
-    expect(win.slice(win.indexOf('\n  publish:\n'))).not.toContain('CT_GOOGLE');
-    expect(workflow.slice(workflow.indexOf('\n  publish:\n'))).not.toContain('CT_GOOGLE');
-    // build.rs : plus d'exigence de présence ; la variable disparaît avec les secrets (SPA-001b).
+  it('secrets Google : retirés des workflows (SPA-001b, D-64)', () => {
+    for (const f of readdirSync(join(root, '.github/workflows'))) expect(read(`.github/workflows/${f}`), f).not.toContain('CT_GOOGLE');
   });
 
   it('annonce l’alerte de I-02 avec la phrase définitive, la même que le comportement livré', () => {

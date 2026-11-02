@@ -68,7 +68,7 @@ describe('rappels : aucun envoi réel hors adaptateur iOS (N-TECH-01 critère 5,
   });
 
   it('les résolveurs ne chargent un adaptateur réel que pour (tauri, ios), jamais pour windows ni web', () => {
-    for (const path of ['src/platform/notifications/index.ts', 'src/platform/focus/index.ts']) {
+    for (const path of ['src/platform/notifications/index.ts']) {
       const lines = read(path).split(/\r?\n/);
       const guard = lines.findIndex((line) => /runtime\s*===\s*'tauri'\s*&&\s*os\s*===\s*'ios'/.test(line));
       expect(guard, path).toBeGreaterThan(-1);

@@ -104,9 +104,9 @@ describe('accessibilité du bouton (Y-03 critère 8)', () => {
 
 describe('menu de la zone de notification et langue (Y-03 critères 4 et 8)', () => {
   it('« Synchroniser maintenant » en français puis en anglais, jamais en dur', () => {
-    expect(trayLabels(null, true).sync).toBe('Synchroniser maintenant');
+    expect(trayLabels(true).sync).toBe('Synchroniser maintenant');
     setLocale('en');
-    const english = trayLabels(null, true).sync;
+    const english = trayLabels(true).sync;
     expect(english).toBe(t('desktop.tray.sync'));
     expect(english).not.toBe('Synchroniser maintenant');
     expect(english.length).toBeGreaterThan(3);

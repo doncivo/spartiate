@@ -4,7 +4,6 @@ import { fr } from '../../i18n/fr';
 import {
   CONFIRM_QUIT_COMMAND,
   LATEST_RELEASE_URL,
-  QUICK_ADD_EVENT,
   QUITTING_EVENT,
   RELEASES_REPOSITORY_URL,
   SET_TRAY_LABELS_COMMAND,
@@ -24,10 +23,6 @@ const capability = JSON.parse(read('src-tauri/capabilities/desktop.json')) as {
 };
 
 describe('cohérence TypeScript / Rust / configuration', () => {
-  it('l’événement « ajout rapide » est le même des deux côtés', () => {
-    expect(rust).toContain(`pub const QUICK_ADD_EVENT: &str = "${QUICK_ADD_EVENT}";`);
-  });
-
   it('la sortie propre : événement et commande de confirmation identiques des deux côtés', () => {
     expect(rust).toContain(`pub const QUITTING_EVENT: &str = "${QUITTING_EVENT}";`);
     expect(rust).toContain(`pub fn ${CONFIRM_QUIT_COMMAND}(`);
@@ -45,7 +40,6 @@ describe('cohérence TypeScript / Rust / configuration', () => {
     const fallback = rust.slice(rust.indexOf('pub fn fallback_labels'), rust.indexOf('/// Erreur renvoyée'));
     const field = (name: string): string => new RegExp(`${name}: "([^"]+)"\\.to_owned\\(\\)`).exec(fallback)?.[1] ?? '';
     expect(field('open')).toBe(fr.desktop.tray.open);
-    expect(field('quick_add')).toBe(fr.desktop.tray.quickAdd);
     expect(field('sync')).toBe(fr.desktop.tray.sync);
     expect(field('quit')).toBe(fr.desktop.tray.quit);
   });

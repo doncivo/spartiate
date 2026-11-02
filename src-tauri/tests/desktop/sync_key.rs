@@ -360,11 +360,9 @@ fn y08_18_nonce_budget_warns_then_refuses() {
 }
 
 #[test]
-fn y08_7_calendar_vault_moved_without_behaviour_change() {
-    // Les agendas lisent toujours le coffre par `calendars::vault` (réexport) ; même service.
-    use spartiate_lib::calendars::vault::{MemoryVault, SecretVault as CalendarVault};
+fn y08_7_vault_keeps_its_service_and_round_trips() {
+    use spartiate_lib::vault::{MemoryVault, SecretVault};
     let vault = MemoryVault::default();
-    vault.set("spartiate.calendar.icloud.x", "pw").unwrap();
-    assert_eq!(vault.get("spartiate.calendar.icloud.x").unwrap().as_deref(), Some("pw"));
-    assert_eq!(spartiate_lib::calendars::VAULT_SERVICE, spartiate_lib::vault::VAULT_SERVICE);
+    vault.set("spartiate.sync.x", "pw").unwrap();
+    assert_eq!(vault.get("spartiate.sync.x").unwrap().as_deref(), Some("pw"));
 }

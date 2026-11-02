@@ -20,7 +20,6 @@
         "src/features/app/notice.ts",
         "src/features/app/screenNames.ts",
         "src/features/app/shortcuts.ts",
-        "src/features/app/shortcutsHelp.ts",
         "src/features/app/startup.ts",
         "src/features/app/tabShortcuts.ts",
         "src/features/app/timeZoneWatcher.ts",
@@ -33,7 +32,6 @@
       "fichiers": [
         "src/ui/AppShell.tsx",
         "src/ui/Button.tsx",
-        "src/ui/Kbd.tsx",
         "src/ui/StatusBanner.tsx",
         "src/ui/TabRail.tsx",
         "src/ui/Toast.tsx",
