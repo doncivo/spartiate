@@ -1,6 +1,7 @@
 // SPA-001b, lot composition + (a) features métier (D-44, D-62) : la purge se prouve par l'état du dépôt, pas par un compte de fichiers.
 // Ce fichier grossit lot après lot (un bloc par lot, rouge avant le code).
-import { existsSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -135,5 +136,47 @@ describe('lot (f) : workflows', () => {
   it('la CI Rust exécute cargo clippy --locked -- -D warnings', () => {
     // `cargo fmt --check` : non branché, ~2 500 écarts hérités dont src/sync (journal des écarts de l'inventaire) ; PR de formatage à part.
     expect(tests).toContain('cargo clippy --locked -- -D warnings');
+  });
+});
+
+// Lot (g) i18n français seul (D-64, inventaire § Lots périphériques) : plus de catalogue anglais, de chargeur ni de choix de langue.
+describe('lot (g) : i18n français seul', () => {
+  const walk = (dir: string): string[] =>
+    readdirSync(resolve(root, dir), { withFileTypes: true }).flatMap((entry) => {
+      const path = `${dir}/${entry.name}`;
+      return entry.isDirectory() ? walk(path) : [path];
+    });
+  const sources = [...walk('src'), ...walk('tests'), ...walk('scripts')].filter((p) => /\.(ts|tsx|mjs)$/.test(p) && !p.endsWith('purge.test.ts'));
+  it('aucun catalogue anglais dans src/i18n', () => {
+    expect(walk('src/i18n').filter((p) => /\/en(\.[A-Za-z]+)?\.ts$/.test(p))).toEqual([]);
+  });
+  it('index.ts et types.ts ne connaissent que le français : ni chargeur, ni ensureLocale, ni registerCatalog, ni setLocale', () => {
+    const index = read('src/i18n/index.ts');
+    for (const word of ['ensureLocale', 'registerCatalog', 'setLocale', 'setCatalogFailureReporter', 'loaders', "'en'"]) expect(index, word).not.toContain(word);
+    expect(read('src/i18n/types.ts')).not.toMatch(/'en'/);
+  });
+  it('aucune source ne choisit une langue ni n’importe un catalogue anglais', () => {
+    const offenders = sources.filter((p) => {
+      const text = read(p);
+      return /getLocale\(\) === 'en'|setLocale\('en'\)|ensureLocale|registerCatalog|i18n\/en['.]|from '\.\/en['.]|'en-US'/.test(text);
+    });
+    expect(offenders).toEqual([]);
+  });
+});
+
+// Lot (h) archivage D-40 : les documents CircleTasks vont dans docs/archive/circletasks/ (git mv), les liens suivent.
+describe('lot (h) : archivage CircleTasks (D-40)', () => {
+  const moved = ['stories', 'maquettes-refonte', 'backlog.md', 'dettes.md', 'audit-1.0.md', 'audits', 'essais-iphone.md', 'essais-iphone-a9.md', 'reprise-codex.md', 'reprise-historique-2026-10.md'];
+  for (const name of moved) {
+    it(`docs/${name} est archivé`, () => {
+      expect(present(`docs/${name}`)).toBe(false);
+      expect(present(`docs/archive/circletasks/${name}`)).toBe(true);
+    });
+  }
+  it('aucun document ou source actif ne pointe vers l’ancien emplacement', () => {
+    const stale = /docs\/(stories|maquettes-refonte|audits|audit-1\.0\.md|backlog\.md|dettes\.md|essais-iphone(-a9)?\.md|reprise-codex\.md|reprise-historique-2026-10\.md)/;
+    const files = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' }).split('\n').filter((p) => p && !p.startsWith('docs/archive/') && !p.endsWith('purge.test.ts') && !/\.(png|ico|icns|jpg|woff2?|wasm|traineddata|gz|zip|svg|lock)$/i.test(p));
+    const offenders = files.filter((p) => present(p) && stale.test(read(p)) && !new RegExp(`docs/archive/circletasks/(${stale.source.slice(5, -1)})`).test(read(p).replace(new RegExp(`docs/archive/circletasks/${stale.source.slice(5)}`, 'g'), '')));
+    expect(offenders).toEqual([]);
   });
 });
