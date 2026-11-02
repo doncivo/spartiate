@@ -1,8 +1,8 @@
 # SPA-001b — Inventaire préparatoire au niveau des symboles
 
-PREP-001B-002 · 1er novembre 2026 · base lue : eb93e83c5d31c537913ee6aa4dc2f4016a89f508 (main avant 001a).
+PREP-001B-002 · actualisé le 2 novembre 2026 · base lue : c3ffe686 (main, PR #11 SPA-001a fusionnée). Branche prep-001b-002 mise à jour par fusion, sans réécriture d’historique.
 
-**Brouillon, non validé par Ali, aucune purge autorisée.** Analyse en lecture seule des couplages de SPA-001, D-44. Ce document n'est pas l'inventaire exhaustif final : il précise les points de composition et le cœur couplé, recense toutes les méthodes de SyncRepository, puis délimite le reste à détailler après fusion de 001a. Il ne remplace pas la validation de docs/spa-001b-inventaire.md (**à créer — SPA-001b, app-shell avec sync-icloud**). Aucun code modifié, aucun travail I1.
+**Brouillon, non validé par Ali, aucune purge autorisée.** Analyse en lecture seule des couplages de SPA-001, D-44. Ce document n'est pas l'inventaire exhaustif final : il précise les points de composition et le cœur couplé, recense toutes les méthodes de SyncRepository, puis délimite le reste à détailler avant validation de 001b. Il ne remplace pas la validation de docs/spa-001b-inventaire.md (**à créer — SPA-001b, app-shell avec sync-icloud**). Aucun code modifié, aucun travail I1.
 
 ## Lecture des décisions
 
@@ -10,14 +10,40 @@ Garder = contrat conservé ; Garder vidé = hôte conservé, consommateurs méti
 
 Invariants : **S1** protocole chiffré, formats et validation inchangés ; **S2** HLC par champ, fusion déterministe, identité et rejeu convergents ; **S3** transaction gardée, file persistante et curseurs cohérents, reprise après interruption ; **S4** suppression logique, rétention puis tombstone de purge, absence de résurrection implicite ; **S5** instantané/reset/changement d'époque/oubli d'appareil sans perte silencieuse ; **S6** seuls profile et body_weight publiés en I0, settings entièrement local ; **S7** erreur durable visible, persistante, effacée au succès. Ces codes sont développés ici pour rendre chaque adaptation vérifiable, pas pour changer le protocole D-26.
 
-## Dépendances explicites de SPA-001a non fusionnée
+## Socle acquis sur main après SPA-001a
 
-- Tous les noms actifs (app, crate, coffre, dossier iCloud, base, sauvegardes, logs, releases, guides) sont encore ceux de CircleTasks sur cette base. Refaire les recherches sur le commit **fusionné** de 001a avant validation ; ne jamais lire ni modifier l'autre worktree pour anticiper ses changements.
-- `TAURI_DB_URL`, `ALLOWED_URL`, `DB_FILE` : renommage ensemble par 001a ; **Garder** ce contrat en 001b. `APP_SCHEMA_VERSION` reste 19 en 001a ; passage à 1 seulement avec la nouvelle base de 001b.
-- Updater : état non configuré sans requête attendu de 001a ; **Garder** jusqu'à SPA-002, qui rétablit vraie clé et endpoint. Aucun retour à une clé CircleTasks.
-- Guides et historique : D-40 partiellement traité en 001a (notamment journal) ; examiner le résultat avant d'archiver, sans écraser de registre Spartiate. Découpage PRD et registre docs/a-creer.md dépendent de 001a ; ce brouillon ne les crée pas.
-- Tests identity/agents/docs-paths et script rename sont attendus de 001a, pas acquis ici. Les agents et leur répertoire sont hors lecture et écriture dans cette session ; leurs responsabilités ci-dessous proviennent uniquement des tickets/décisions.
-- Aucun changement des formats historiques `AAD_VERSION = 'ct/1'`, extensions .ctj/.cts ou state.ctx pour satisfaire un grep de marque : ce sont des éléments de protocole (S1), à qualifier comme héritage dans le contrôle d'identité.
+- Identité active : Spartiate, paquet/crate spartiate 0.1.0, bibliothèque spartiate_lib, identifiant et service du coffre fr.spartiate.app ; comptes spartiate.sync.key.v1 / spartiate.sync.key.next ; dossier proposé iCloud Drive/Spartiate ; dépôt doncivo/spartiate-releases et source fr.spartiate.source.
+- TAURI_DB_URL et ALLOWED_URL valent sqlite:spartiate.db, DB_FILE vaut spartiate.db. Sauvegardes spartiate-daily-AAAAMMJJ.db (14), pré-migration (5), pré-restauration (3) ; logs/spartiate.log et .1. **Garder** ces identités ; APP_SCHEMA_VERSION vaut encore 19, passage à 1 seulement avec la nouvelle base 001b (D-54).
+- Updater non configuré : bloc plugins.updater absent, plugin non enregistré dans `src-tauri/src/desktop.rs`, permissions updater retirées de `src-tauri/capabilities/desktop.json`, updaterConfigured false dans `src/platform/desktop/tauriDesktop.ts`. Dépendances npm/Cargo conservées, aucun appel du plugin ; **Garder** cet état jusqu’à SPA-002.
+- Guides renommés ; journal, changelog et DEMARRAGE CircleTasks déjà archivés dans docs/archive/circletasks. Ne pas déplacer le journal Spartiate. L’archivage du reste des preuves historiques appartient à 001b.
+- PRD découpé et registre [docs/a-creer.md](a-creer.md) présents ; contrôles identity, agents, docs-paths, prd-split et script rename présents. Ne pas réexécuter le renommage : 001b retire les fonctions métier par lots compilables.
+- [ADR 0017](adr/0017-separation-spartiate-circletasks.md) amende D-26 pour les constantes d’identité uniquement : **S1 désigne désormais le format Spartiate fusionné**. AAD sp/1, sel HKDF spartiate, infos sp/1 records et sp/1 kid, QR SPPAIR1., secours SP1-, balises sp-j / sp-s / sp-state ; sm reste 1. Fichiers state.spx, state.next.spx, j-NNNNNNNN.spj, s-NNNNNNNN.sps. Aucun retour aux formats CircleTasks, aucun pont de migration.
+
+### ADR 0017 — symboles à garder et preuves de réception
+
+| Source / symboles | Décision | Contrat |
+| --- | --- | --- |
+| `src-tauri/src/sync/crypto.rs` : AAD_VERSION, HKDF_SALT, HKDF_INFO_RECORDS, HKDF_INFO_KID, PAIRING_QR_PREFIX, RECOVERY_KEY_PREFIX, HeaderKind::tag | Garder | S1 : identités cryptographiques Spartiate, bornes et algorithmes inchangés |
+| `src-tauri/src/sync/folder.rs` : is_circletasks_folder_name, is_circletasks_file_name | Garder | Refuser CircleTasks dans tout ancêtre ; détecter les noms .ctx/.ctj/.cts, copies de conflit, .tmp et placeholders .icloud, casse ignorée ; aucun renommage de ces gardes historiques |
+| `src-tauri/src/sync/store.rs` : Store::folder_has_foreign_data | Garder | Liste de noms sous devices/appareil/époque, sans lecture ni hydratation ; budgets conservés et erreur de listage non bloquante selon ADR 0017 |
+| `src-tauri/src/sync/service.rs` : bind_checked, choose_folder, choose_bookmarked_folder, restore_root_after_refusal | Garder | Garde avant écriture de folder.json / own.json / clé, ancien dossier lié et racine iPhone conservés en cas de refus |
+| `src/domain/sync/format.ts` : SYNC_ERROR_CODES ; `src/domain/sync/errorFamily.ts` ; `src/i18n/fr.syncFolder.ts` | Garder | foreign-folder et message français conservés ; action Choisir le dossier disponible, S7 |
+| `tests/unit/syncSeparation.test.ts`, `src-tauri/tests/desktop/sync_separation.rs`, `tests/fixtures/sync/circletasks-foreign.json` | Garder | Fixture étrangère figée, clés synthétiques uniquement ; refus QR/clé/en-têtes/déchiffrement, garde PC/iPhone et absence d’écriture |
+
+Les traces .ctx/.ctj/.cts dans ces gardes et fixtures sont des références de refus de l’ancien format, pas des noms actifs à remplacer ou des données à lire.
+
+## Décisions D-54 à D-61 : application à cette préparation
+
+| Décision | Conséquence et ticket de réception |
+| --- | --- |
+| D-54 | Base laboratoire 19 non migrée vers 1 ; Ali seul supprime le conteneur exact avant 001b ; procédure annulée si usage réel. Gardes du migrateur intactes. |
+| D-55 | Profil unique et pesée (date locale, source), fusion HLC ; settings jamais publié en I0. Contrat détaillé ci-dessous. |
+| D-56 | SPA-008 : émission après transaction avec coalescence 5 s ; réception au premier plan toutes les 30 s et au retour ; iPhone sans cycle en arrière-plan, PC masqué 5 min ; < 60 s seulement deux apps au premier plan et iCloud joignable. Aucun changement de cadence dans cette préparation. |
+| D-57 | SPA-005 : sauvegarde profil/poids et préférences autorisées, aucune donnée technique ; import atomique avec garde, horloges et outbox dans la même transaction, tombstones réservés à la purge après rétention. Ne pas supprimer les primitives nécessaires. |
+| D-58 | N = 0.1.0, N+1 = 0.1.1 en SPA-010 ; RELEASES_TOKEN dès SPA-002. |
+| D-59 | H-3a : entitlement signé en SPA-003 ; H-3b : lecture en SPA-006 ; H-3c : I1/I5, hors gate I0. H-3a prouvée ou BLOCKED documenté ; H-3b CONFIRMED ou BLOCKED avec saisie manuelle. |
+| D-60 | Rust local autorisé si modification de synchro, garde ou coffre le justifie : tests desktop et plugin SQL avec --locked et -j 2 ; aucune compilation Rust nécessaire pour ces documents. E2E et smoke uniquement en CI. |
+| D-61 | Dérogation unique pour la preuve rouge rétrospective de l’updater SPA-001a ; elle est close, ne dispense ni 001b ni SPA-002/003 d’un commit rouge avant code. |
 
 ## Point de composition minimal — avant toute suppression
 
@@ -59,7 +85,7 @@ Invariants : **S1** protocole chiffré, formats et validation inchangés ; **S2*
 | `src/domain/sync/syncTables.ts` : SYNC_TABLES, TABLES, COLUMNS, syncTable, syncColumn, childRelations, tableRank, publishedColumns, isValidRowId, isValidValue, isPurgeable | Adapter (synchro) | Catalogue exact profil/poids et règles naturelles ; conserver validation avant SQL, ordre déterministe et purge. S1, S2, S4, S6 |
 | Même fichier : SHARED_SETTING_KEYS, settingKeyScope, SettingKeyScope, FIXED_SPACE_IDS | Supprimer | Aucun réglage publié, aucun espace fixe ; retirer les appels dans tout le graphe, pas seulement l'export |
 | `src/domain/sync/format.ts` : SYNC_TABLE_ORDER | Adapter (synchro) | Ordre canonique I0 concordant avec catalogue : S1/S6 |
-| Même fichier : SYNC_FORMAT_MAJOR, AAD_VERSION, STATE_FILE, STATE_NEXT_FILE, JOURNAL_EXTENSION, SNAPSHOT_EXTENSION, validateurs et noms de fichiers | Garder | Formats et chiffrement hérités ; aucun renommage cosmétique du protocole |
+| Même fichier : SYNC_FORMAT_MAJOR, AAD_VERSION, STATE_FILE, STATE_NEXT_FILE, JOURNAL_EXTENSION, SNAPSHOT_EXTENSION, validateurs et noms de fichiers | Garder | Formats et chiffrement Spartiate de l’ADR 0017 (.spx/.spj/.sps, sp/1) ; aucun nouveau changement de protocole |
 | `src/sync/publisher.ts` : materializeOutbox | Garder | Consomme syncTable, aucune branche settings spécifique constatée ; catalogue I0 suffit. Preuve négative settings dans journaux ET snapshots, coupure des écritures concurrentes et reprise conservées |
 | Même fichier : readOutboxPaged, createSlicer, buildRecords, buildRecordsSliced, splitOp, batchRecords, publishOutbox, readInflight, ROW_REPUBLISH_FIELD | Garder | Pagination, découpage et publication persistante indépendants du métier ; fixtures I0 sans changer protocole ni budgets |
 
@@ -74,7 +100,7 @@ Les pauses et clôtures focus se trouvent dans runRepairs, la suppression des é
 | `src/db/migrations/index.ts` : migrations | Garder vidé | Une seule migration I0 ; aucun chemin 19 → 1 toléré |
 | `src-tauri/src/backup.rs` : APP_SCHEMA_VERSION | Garder vidé | Valeur 1 avec schéma I0 final, garder quotas et vérifications de restauration |
 
-`src/db/migrations/0001_spartiate_init.ts` : **à créer — SPA-001b, data-model**. Repositories profil/poids : **à créer — SPA-001b, data-model**, noms/chemins à arrêter dans l'inventaire final et enregistrer dans docs/a-creer.md après 001a. Garder migrateur et schema_migrations, vérifier qui crée cette dernière pour éviter un doublon.
+`src/db/migrations/0001_spartiate_init.ts` : **à créer — SPA-001b, data-model**. Repositories profil/poids : **à créer — SPA-001b, data-model**, noms/chemins à arrêter dans l'inventaire final et enregistrer dans le registre existant docs/a-creer.md. Garder migrateur et schema_migrations, vérifier qui crée cette dernière pour éviter un doublon.
 
 D-54 : une base de laboratoire schéma 19 est refusée sans altération par le schéma 1. Avant premier lancement 001b, Ali seul supprime le conteneur exact prévu par D-54 après vérification de cible ; aucun agent ne le lit ou supprime dans cette préparation. Si usage réel annoncé, procédure annulée. Tests en Wasm mémoire et répertoires synthétiques isolés ; checksums divergents et version future refusés, sauvegardes avant migration et parité Wasm/natif H-18 séparément prouvées.
 
@@ -101,20 +127,20 @@ D-55 : profil unique, fusion HLC par champ ; poids identifié par date locale et
 | `tests/sim/googleSim.ts`, `tests/sim/caldavSim.ts`, `tests/sim/caldavFixtures.ts`, `tests/sim/reminders-sim.ts` | Supprimer | Simulateurs métier après retrait des importeurs ; httpSim à garder tant qu'un simulateur conservé l'importe |
 | `tests/sim/syncFolderSim.ts`, `tests/sim/syncCloudSim.ts`, `tests/sim/syncDevice.ts`, `tests/sim/syncCodec.ts`, `tests/sim/syncVectors.ts`, `tests/sim/syncVersions.ts`, `tests/sim/syncStartup.ts`, `tests/sim/syncCrash.ts`, `tests/sim/syncOrphanSession.ts` | Garder | Infrastructure de preuve de synchro ; adapter fixtures métier séparément. Précision motivée de la ligne trop large tests/sim du ticket |
 | `tests/visual/capture.spec.ts` : imports setWheels, createTask, openToday, insertGoals, insertChecklists, insertFocusSessions, insertEvents, insertRoutines, insertTasks, GOOGLE_ACCOUNT | Garder vidé | Retirer scènes métier avant leurs helpers ; préserver les helpers encore importés ailleurs ; nouvelles scènes SPA-009 |
-| `tests/bundle/`, `tests/nsis/`, `tests/smoke/`, scripts ios/release/smoke | Garder | Garde 358 400 octets gzip, installation, livraison et contrats ; adapter fixtures d'identité seulement si 001a l'exige |
+| `tests/bundle/`, `tests/nsis/`, `tests/smoke/`, scripts ios/release/smoke | Garder | Garde 358 400 octets gzip, installation, livraison et contrats ; identités Spartiate déjà reçues de 001a |
 | Documents historiques D-40 (stories, maquettes-refonte, essais, backlog, audits, reprises CircleTasks) | Archiver | Sous docs/archive/circletasks, conserver liens de preuve ; contrôler ce que 001a a déjà déplacé |
 
-Les dossiers de ce tableau sont des périmètres à explorer dans la future session 001b, pas des symboles prétendument inventoriés. Les fichiers interdits à cette session restent intacts. Les nouveaux chemins proposés seront recensés par ticket/propriétaire dans le registre D-50 après fusion de 001a.
+Les dossiers de ce tableau sont des périmètres à explorer dans la future session 001b, pas des symboles prétendument inventoriés. Les fichiers interdits à cette session restent intacts. Les nouveaux chemins proposés seront recensés par ticket/propriétaire dans le registre D-50 existant.
 
 ## Exécution future et réception
 
-1. Après fusion 001a : relever son commit, compléter exports/importeurs des zones périphériques, actualiser chemins et registre, produire l'inventaire final ; **validation d'Ali avant toute suppression**.
+1. Sur la base fusionnée c3ffe686 : compléter exports/importeurs des zones périphériques, actualiser chemins et registre, produire l'inventaire final ; **validation d'Ali avant toute suppression**.
 2. Point de composition minimal compilable avec anciennes features non montées ; puis lots verticaux D-44 : métier, repositories/migrations, synchro, Rust, plugins, workflows, i18n, tests/config, archives ; base neuve/coquille fonctionnelle en dernier. Grouper les retraits liés si un lot isolé ne compile pas, sans introduire de façade de succès fictif.
-3. Chaque lot : tests rouges commités avant code, puis code vert et typecheck ; tableaux de suppressions de tests motivés. Tests ciblés locaux sans couverture ; suite complète/80 % domain et Rust/e2e en CI seulement. Bundle avant chaque push, pas de seuil modifié.
+3. Chaque lot : tests rouges commités avant code, puis code vert et typecheck ; tableaux de suppressions de tests motivés. Tests ciblés locaux sans couverture ; suite complète/80 % domain en CI ; Rust local possible dans le périmètre D-60 avec -j 2, e2e/smoke en CI seulement. Bundle avant chaque push, pas de seuil modifié.
 4. Réception synchro : adapter `tests/unit/sync/apply.test.ts`, `syncRepository.test.ts`, `deletions.test.ts`, `tombstoneProperties.test.ts`, `snapshotGuards.test.ts`, `restoreThenForget.test.ts`, `resumeCrash.test.ts`, `twoDevices.test.ts` aux fixtures profil/poids ; garder les preuves du protocole. Couvrir catalogue négatif settings, divergence HLC, duplication/rejeu, snapshot/reset, oubli et reprise. Relecture sync-icloud obligatoire pour tout diff de synchro ; pas une délégation effectuée par cette préparation.
 5. Défaut de protocole ou besoin de modifier S1–S5 : arrêt et arbitrage, pas d'extension implicite à I1. D-56 cadence < 60 s appartient à SPA-008.
 
-Passes PREP-001B-002 : product-owner — préparation seulement, gate I0 conservé ; module — relevé des couplages ci-dessus ; QA — chemins et inventaire des méthodes confrontés aux fichiers suivis ; revue locale distincte — cohérence D-44/D-54/D-55 et limites du brouillon. Revue PR D-53 après CI verte reste ouverte. Les stories d'exécution ne sont pas déclarées faites.
+Passes PREP-001B-002 : product-owner — préparation seulement, gate I0 conservé ; module — relevé des couplages ci-dessus ; QA — chemins et inventaire des méthodes confrontés aux fichiers suivis ; revue locale distincte — cohérence D-44, ADR 0017, D-54 à D-61 et limites du brouillon. Revue PR D-53 après CI verte reste ouverte. Les stories d'exécution ne sont pas déclarées faites.
 
 ## Annexe — chaque méthode de SyncRepository
 
@@ -180,3 +206,159 @@ Sources présentes : `src/db/repositories/syncRepository.ts` (contrat) et `src/d
 | openFocusSessions | Supprimer | Accès métier rappels/routines/focus/cache calendrier ; retirer appelants avant méthode. |
 | closeFocusSession | Supprimer | Accès métier rappels/routines/focus/cache calendrier ; retirer appelants avant méthode. |
 | deleteExternalEventsOf | Supprimer | Accès métier rappels/routines/focus/cache calendrier ; retirer appelants avant méthode. |
+
+## Annexe — rapprochement exhaustif des 122 fichiers reportés
+
+Source fusionnée : [liste de report SPA-001a](spa-001a-fichiers-metier-reportes.md), liée par le suivi de SPA-001a. Les 122 chemins existent sur c3ffe686 ; ils sont repris une fois chacun ci-dessous. Ce rapport de renommage ne constitue pas une autorisation de supprimer 122 fichiers : les lignes Garder/Garder vidé corrigent explicitement son intitulé général pour préserver l’infrastructure. Le lot indiqué reste celui du rapport source ; les catalogues EN passent au lot g à l’exécution. Les symboles encore à préciser restent soumis à la validation finale D-44.
+
+### Lot 001b (e) plugins reminders / web-auth et façades — 13 fichiers
+
+| Fichier | Décision proposée | Motif / réception |
+| --- | --- | --- |
+| `src-tauri/plugins/reminders/Cargo.toml` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src-tauri/plugins/reminders/ios/Package.swift` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src-tauri/plugins/reminders/ios/Sources/RemindersPlugin.swift` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src-tauri/plugins/reminders/src/lib.rs` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src-tauri/plugins/web-auth/Cargo.toml` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src-tauri/plugins/web-auth/ios/Package.swift` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src-tauri/plugins/web-auth/ios/Sources/WebAuthPlugin.swift` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src-tauri/plugins/web-auth/src/lib.rs` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/platform/calendars/consistency.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/platform/calendars/memory.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/platform/calendars/memory.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/platform/calendars/types.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/platform/calendars/webAuth.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+
+### Lot 001b (d) Rust — 5 fichiers
+
+| Fichier | Décision proposée | Motif / réception |
+| --- | --- | --- |
+| `src-tauri/src/calendars/google.rs` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src-tauri/src/calendars/http.rs` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src-tauri/tests/desktop/calendars.rs` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src-tauri/tests/desktop/capture.rs` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src-tauri/tests/desktop/focus.rs` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+
+### Lot 001b (b) repositories et migrations — 1 fichiers
+
+| Fichier | Décision proposée | Motif / réception |
+| --- | --- | --- |
+| `src/db/repositories/sql/calendarWrites.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+
+### Lot 001b (a) domaines et catalogues i18n métier — 41 fichiers
+
+| Fichier | Décision proposée | Motif / réception |
+| --- | --- | --- |
+| `src/domain/calendarRefresh.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/domain/csvImport.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/domain/csvImportHardening.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/domain/historyExport.test.ts` | Garder vidé | Retirer preuves export tâches avec la fonction, garder celles des helpers réutilisés. |
+| `src/domain/historyExport.ts` | Garder vidé | Retirer ExportTask/CSV_HEADERS/taskCsvCells/historyToJson ; réévaluer csvCell/csvRow/EXPORT_MIME pour SPA-005. |
+| `src/domain/orphanSecrets.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/domain/orphanSecrets.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/domain/pdfDocument.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/domain/reportLayout.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/i18n/en.appUpdate.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.appUpdateRestore.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.appleReminders.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.backup.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.backupRestore.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.calendars.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.capture.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.logs.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.notificationPreviews.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.notifications.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.onboarding.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.scan.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.security.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.shortcuts.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.signing.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.stats.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.syncEngine.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.syncFolder.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.syncForget.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.syncOwnDeletion.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.syncPairing.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.syncReset.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.syncRestore.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/en.ts` | Supprimer | FR seul (lot g de 001b), avec retrait des chargeurs et tests EN. |
+| `src/i18n/fr.appleReminders.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/i18n/fr.calendars.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/i18n/fr.capture.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/i18n/fr.notificationPreviews.ts` | Garder vidé | Séparer textes conservés et textes tâches/routines ; réception finale au niveau des clés, aucun catalogue supprimé en bloc. |
+| `src/i18n/fr.onboarding.ts` | Garder vidé | Séparer textes conservés et textes tâches/routines ; réception finale au niveau des clés, aucun catalogue supprimé en bloc. |
+| `src/i18n/fr.scan.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/i18n/fr.stats.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/i18n/fr.ts` | Garder vidé | Catalogue racine FR et identités Spartiate conservés ; retirer uniquement les clés métier. |
+
+### Lot 001b (a) features métier, leurs domaines, i18n et tests — 32 fichiers
+
+| Fichier | Décision proposée | Motif / réception |
+| --- | --- | --- |
+| `src/features/calendars/CalendarsScreen.test.tsx` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/calendars/appleReminders/AppleRemindersReadOnly.test.tsx` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/calendars/appleReminders/appleGuards.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/calendars/appleReminders/appleQa.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/calendars/appleReminders/appleTaskWrites.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/calendars/appleReminders/remindersWrites.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/calendars/calendarUseCases.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/calendars/calendarsStore.connectModule.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/calendars/calendarsStore.google.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/calendars/calendarsStore.icloud.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/calendars/calendarsStore.username.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/calendars/providerFactory.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/calendars/providerFactory.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/calendars/qaEdgeCases.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/capture/scan/ScanDialog.test.tsx` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/goals/GoalAttach.test.tsx` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/goals/GoalsAddOnce.test.tsx` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/goals/GoalsPinned.test.tsx` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/goals/GoalsProgress.test.tsx` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/goals/GoalsScreen.test.tsx` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/goals/testKit.tsx` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/reminders/RemindersStatus.dom.test.tsx` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/reminders/notificationActions.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/reminders/recapNotifications.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/reminders/replanNotifications.test.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/reminders/signingNotice.test.ts` | Garder | Expiration de signature I-02 / SPA-004 : déplacer si nécessaire, préserver fonctions et preuves. |
+| `src/features/reminders/signingNoticeQa.test.ts` | Garder | Expiration de signature I-02 / SPA-004 : déplacer si nécessaire, préserver fonctions et preuves. |
+| `src/features/reminders/signingText.ts` | Garder | Expiration de signature I-02 / SPA-004 : déplacer si nécessaire, préserver fonctions et preuves. |
+| `src/features/stats/ExportDialog.test.tsx` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/stats/exportActions.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/tasks/createTaskUseCases.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `src/features/today/TodayAgenda.test.tsx` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+
+### Lot 001b (h) tests et configuration Playwright — 30 fichiers
+
+| Fichier | Décision proposée | Motif / réception |
+| --- | --- | --- |
+| `tests/e2e/D-01.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+| `tests/e2e/H-03.spec.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `tests/e2e/I-02.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+| `tests/e2e/I-03.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+| `tests/e2e/I-04.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+| `tests/e2e/I-06.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+| `tests/e2e/J12-objectif.spec.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `tests/e2e/K-02.spec.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `tests/e2e/K-05.spec.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `tests/e2e/K-06.spec.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `tests/e2e/N-01.spec.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `tests/e2e/OB-01.spec.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `tests/e2e/OB-02.spec.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `tests/e2e/OB-03.spec.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `tests/e2e/OB-04.spec.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `tests/e2e/OB-05.spec.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `tests/e2e/P-04.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+| `tests/e2e/P-07.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+| `tests/e2e/Y-IOS-01.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+| `tests/e2e/Y-IOS-02-FIX-01.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+| `tests/e2e/Y-IOS-02-parcours.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+| `tests/e2e/Y-IOS-02.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+| `tests/e2e/helpers/backups.ts` | Garder | Helpers de sauvegarde utiles aux preuves de restauration ; conserver noms Spartiate. |
+| `tests/e2e/lot-f-qa.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+| `tests/e2e/lot-f-screens.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
+| `tests/sim/caldavFixtures.ts` | Supprimer | Fonction métier CircleTasks et ses tests ; suppression après retrait des derniers importeurs, jamais avant validation de l’inventaire. |
+| `tests/sim/syncCloudSim.ts` | Garder | Simulateur/codec de synchro, familles ADR 0017 conservées ; ajuster les seules fixtures métier (S1–S5). |
+| `tests/sim/syncCodec.ts` | Garder | Simulateur/codec de synchro, familles ADR 0017 conservées ; ajuster les seules fixtures métier (S1–S5). |
+| `tests/sim/syncFolderSim.ts` | Garder | Simulateur/codec de synchro, familles ADR 0017 conservées ; ajuster les seules fixtures métier (S1–S5). |
+| `tests/visual/capture.spec.ts` | Garder vidé | Conserver assertions infrastructure/signature/sauvegarde/synchro ; remplacer scénarios métier par fixtures I0, e2e en CI. |
