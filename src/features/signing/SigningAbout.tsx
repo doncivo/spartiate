@@ -8,7 +8,7 @@ import type { SigningStatusV1 } from '../../domain/signingNotice';
 import { Button } from '../../ui';
 import { useAppContainer, useFeatureStore } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
-import { notificationStatusStore } from './notificationStatus';
+import { signingPermissionStore } from './signingRun';
 import { requestPermissionOnGesture } from './requestPermission';
 import { signingAlertFailure } from './signingNotice';
 import { signingStatusController, signingStatusStore } from './signingStatus';
@@ -72,7 +72,7 @@ export function SigningRemindersLine() {
 /** Ligne « Expire le … » de « À propos » (iPhone). */
 export function SigningAboutRow() {
   const { container, status, zone, nowMs } = useSigningState();
-  const permission = useFeatureStore(notificationStatusStore, (s) => s.status.permission);
+  const permission = useFeatureStore(signingPermissionStore, (s) => s.permission);
   if (!container.signing.source.supported) return null;
 
   let main: string;

@@ -1,6 +1,5 @@
 import { signingNotice } from '../../domain/signingNotice';
 import type { IsoDateTime } from '../../domain/types';
-import type { PlanFailureReason } from '../../domain/notificationStatus';
 import { isValidTimeZone } from '../../domain/timeZone';
 import { t } from '../../i18n';
 import { logFailure } from '../../platform/desktop/log';
@@ -8,7 +7,6 @@ import type { NotificationPermission } from '../../platform/notifications';
 import { useAppStatusStore } from '../app/appStatus';
 import { useNavigationStore } from '../app/navigation';
 import type { AppContainer } from '../app/container';
-import type { ReplanTrigger } from './replanNotifications';
 import { bannerSoonText, signingAlertText } from './signingText';
 import { signingStatusController } from './signingStatus';
 
@@ -32,7 +30,12 @@ import { signingStatusController } from './signingStatus';
 /** Une alerte à moins de 5 s n'est plus transmise (iOS la refuserait) : même marge que les rappels (`SEND_MARGIN_MS`, copiée pour ne pas charger l'adaptateur iOS au démarrage). */
 const SEND_MARGIN_MS = 5_000;
 
-export const SIGNING_TRIGGERS: readonly ReplanTrigger[] = ['open', 'update', 'resume', 'permission'];
+/** Déclencheurs d'un passage (ex-ReplanTrigger des rappels) ; seuls `SIGNING_TRIGGERS` lisent le profil. */
+export type SigningTrigger = 'open' | 'update' | 'resume' | 'permission' | 'hide' | 'zone' | 'sync' | 'edit' | 'action';
+
+export type PlanFailureReason = 'schedule-failed';
+
+export const SIGNING_TRIGGERS: readonly SigningTrigger[] = ['open', 'update', 'resume', 'permission'];
 
 interface ProcessMemory {
   /** Instant et texte du dernier envoi réussi de CE processus. */
@@ -99,7 +102,7 @@ function keepBannerFresh(container: AppContainer, memory: ProcessMemory, expires
 }
 
 export interface SigningStepInput {
-  readonly trigger: ReplanTrigger;
+  readonly trigger: SigningTrigger;
   readonly permission: NotificationPermission;
   readonly nowMs: number;
   readonly zone: string | null;
