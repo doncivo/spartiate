@@ -39,16 +39,13 @@ tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rusqlite = "0.32"
-# Agendas externes (ADR 0008) : HTTP limité aux hôtes autorisés, PKCE, analyse d'URL.
-reqwest = { version = "0.13", default-features = false, features = ["rustls"] }
 url = "2"
-sha2 = "0.10"
 rand = "0.9"
 base64 = "0.22"
 tokio = { version = "1", features = ["time", "net", "io-util"] }
 # Synchronisation (ADR 0011, Y-08) : AES-256-GCM et HKDF-SHA256 par aws-lc-rs, déjà compilée (fournisseur de rustls) ; tampons de clé effacés
 # par zeroize. Fonctionnalités limitées à celles déjà actives : aucune nouvelle entrée dans Cargo.lock.
-aws-lc-rs = { version = "1", default-features = false, features = ["aws-lc-sys", "alloc"] }
+aws-lc-rs = { version = "1", default-features = false, features = ["aws-lc-sys", "alloc", "prebuilt-nasm"] }
 zeroize = "1"
 
 # Coffre système : Gestionnaire d'identification Windows, Trousseau iOS (ADR 0008 section 3).
@@ -111,7 +108,6 @@ tauri-plugin-process = "2"
 tauri-plugin-opener = "2"
 # Export (H-03) : « Enregistrer sous » système, ouvert et écrit par Rust (src/export.rs) ; la WebView n'a ni dialog ni fs.
 tauri-plugin-dialog = "2"
-tauri-plugin-global-shortcut = "2"
 
 [dev-dependencies]
 # Test de sauvegarde avec un vrai WAL (même libsqlite3-sys 0.30 que sqlx).

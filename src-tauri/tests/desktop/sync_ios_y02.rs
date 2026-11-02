@@ -104,7 +104,7 @@ fn y_ios_02_4_locked_or_failing_keychain_is_unavailable_never_absent() {
 }
 
 #[test]
-fn y_ios_02_3_ios_vault_is_compiled_for_ios_and_keyring_serves_only_calendars() {
+fn y_ios_02_3_ios_vault_is_compiled_for_ios_and_keyring_never_serves_the_sync_key() {
     let vault = include_str!("../../src/vault.rs");
     let start = vault.find("pub fn sync_key_vault()").unwrap();
     let body = &vault[start..];
@@ -112,7 +112,7 @@ fn y_ios_02_3_ios_vault_is_compiled_for_ios_and_keyring_serves_only_calendars() 
     let ios = include_str!("../../src/vault_ios.rs");
     assert!(ios.contains("ProtectionMode::AccessibleWhenUnlockedThisDeviceOnly") && ios.contains("set_access_synchronized(Some(sync_key_attributes().synchronizable))"));
     assert!(!ios.contains("keyring::") && !ios.contains("use keyring"), "la clé de synchro ne passe jamais par keyring");
-    for (name, text) in [("lib.rs", include_str!("../../src/lib.rs")), ("sync/service.rs", include_str!("../../src/sync/service.rs")), ("calendars/mod.rs", include_str!("../../src/calendars/mod.rs"))] {
+    for (name, text) in [("lib.rs", include_str!("../../src/lib.rs")), ("sync/service.rs", include_str!("../../src/sync/service.rs"))] {
         assert!(!text.contains("keyring::"), "{name}");
     }
     let cargo = include_str!("../../Cargo.toml");

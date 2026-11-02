@@ -425,7 +425,6 @@ export const fr = {
   desktop: {
     tray: {
       open: 'Ouvrir Spartiate',
-      quickAdd: 'Ajout rapide',
       sync: 'Synchroniser maintenant',
       quit: 'Quitter',
     },

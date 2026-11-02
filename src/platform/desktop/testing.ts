@@ -1,4 +1,4 @@
-import { GlobalShortcutError, type DesktopPlatform, type GlobalShortcutFailure, type PendingUpdate, type TrayLabels, type UpdateProgress } from './types';
+import { type DesktopPlatform, type PendingUpdate, type TrayLabels, type UpdateProgress } from './types';
 
 /** Faux `PendingUpdate` pour les tests. */
 export interface FakePendingUpdate extends PendingUpdate {
@@ -39,9 +39,6 @@ export interface FakeDesktop extends DesktopPlatform {
   /** Vrai par défaut : les tests de mise à jour supposent un updater configuré ; mettre faux pour l'état D-30. */
   updaterConfigured: boolean;
   openedReleases: number;
-  /** Déclenche « Ajout rapide » comme le fait le menu de la zone de notification. */
-  emitQuickAdd(): void;
-  quickAddListeners: number;
   /** Déclenche « Synchroniser maintenant » comme le fait le menu (Y-03). */
   emitTraySyncNow(): void;
   traySyncListeners: number;
@@ -53,20 +50,9 @@ export interface FakeDesktop extends DesktopPlatform {
   quitConfirmed: boolean;
   quittingHandler: (() => Promise<void>) | null;
   failAutostart: boolean;
-  /** Combinaison enregistrée auprès du faux système (D-04), null si aucune. */
-  globalChord: string | null;
-  /** Combinaisons « prises par une autre application » : `register` les refuse (`in-use`). */
-  takenChords: Set<string>;
-  /** Journal des appels de `globalShortcuts` (« register:Ctrl+Alt+Space », « unregister »). */
-  shortcutCalls: string[];
-  /** Force un refus à la prochaine inscription. */
-  nextRegisterFailure: GlobalShortcutFailure | null;
-  /** Déclenche la combinaison globale comme le fait le système (équivaut à « Ajout rapide »). */
-  pressGlobalShortcut(): void;
 }
 
 export function createFakeDesktop(initial: Partial<Pick<FakeDesktop, 'autostart' | 'version' | 'nextCheck'>> = {}): FakeDesktop {
-  const handlers = new Set<() => void>();
   const syncHandlers = new Set<() => void>();
   const pairedHandlers = new Set<() => void>();
   const fake: FakeDesktop = {
@@ -76,7 +62,6 @@ export function createFakeDesktop(initial: Partial<Pick<FakeDesktop, 'autostart'
     nextCheck: initial.nextCheck ?? null,
     checks: 0,
     openedReleases: 0,
-    quickAddListeners: 0,
     traySyncListeners: 0,
     syncPairedListeners: 0,
     emitSyncPaired: () => pairedHandlers.forEach((handler) => handler()),
@@ -110,41 +95,9 @@ export function createFakeDesktop(initial: Partial<Pick<FakeDesktop, 'autostart'
       });
     },
     failAutostart: false,
-    globalChord: null,
-    takenChords: new Set<string>(),
-    shortcutCalls: [],
-    nextRegisterFailure: null,
-    pressGlobalShortcut: () => {
-      if (fake.globalChord !== null) handlers.forEach((handler) => handler());
-    },
-    globalShortcuts: {
-      register: (chord) => {
-        fake.shortcutCalls.push(`register:${chord}`);
-        const failure = fake.nextRegisterFailure ?? (fake.takenChords.has(chord) && fake.globalChord !== chord ? 'in-use' : null);
-        fake.nextRegisterFailure = null;
-        if (failure) return Promise.reject(new GlobalShortcutError(failure));
-        fake.globalChord = chord;
-        return Promise.resolve();
-      },
-      unregister: () => {
-        fake.shortcutCalls.push('unregister');
-        fake.globalChord = null;
-        return Promise.resolve();
-      },
-      isRegistered: (chord) => Promise.resolve(fake.globalChord === chord),
-    },
-    emitQuickAdd: () => handlers.forEach((handler) => handler()),
     setTrayLabels: (labels) => {
       fake.trayLabels = labels;
       return Promise.resolve();
-    },
-    onQuickAdd: (handler) => {
-      handlers.add(handler);
-      fake.quickAddListeners = handlers.size;
-      return Promise.resolve(() => {
-        handlers.delete(handler);
-        fake.quickAddListeners = handlers.size;
-      });
     },
     getAutostart: () => Promise.resolve(fake.autostart),
     setAutostart: (enabled) => {

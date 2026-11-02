@@ -5,14 +5,11 @@ import type { AppContainer } from './container';
 import { useNavigationStore } from './navigation';
 import { syncBeforeQuit } from '../sync/startSync';
 import { syncStore } from '../sync/syncStore';
-import { formatChord } from './shortcutsHelp';
 
 /** Textes du menu de la zone de notification (D-01) : seule source, src/i18n. */
-export function trayLabels(quickCaptureKeys: string | null = null, syncConfigured = false): TrayLabels {
+export function trayLabels(syncConfigured = false): TrayLabels {
   return {
     open: t('desktop.tray.open'),
-    // D-04 : la combinaison de la capture rapide s'affiche à droite de l'entrée (tabulation = colonne des raccourcis du menu Windows).
-    quickAdd: quickCaptureKeys ? `${t('desktop.tray.quickAdd')}\t${formatChord(quickCaptureKeys)}` : t('desktop.tray.quickAdd'),
     sync: t('desktop.tray.sync'),
     quit: t('desktop.tray.quit'),
     // Y-03 : synchro configurée → cycle silencieux ; sinon l'entrée ouvre Réglages › Synchronisation (D1). Jamais grisée.
@@ -27,7 +24,7 @@ export interface DesktopIntegration {
 
 /**
  * Branche l'app PC sur le système (D-01, D-03) : menu de la zone de notification avec les
- * textes de l'interface, entrée « Ajout rapide », vérifications de mise à jour. Sans
+ * textes de l'interface, vérifications de mise à jour. Sans
  * intégration PC (navigateur, iPhone), ne fait rien. Aucune erreur ne remonte : l'échec
  * d'un branchement est journalisé et l'app reste utilisable.
  */
@@ -44,7 +41,7 @@ export function startDesktopIntegration(container: AppContainer): DesktopIntegra
 
   // Menu de la zone de notification (textes de l'interface) ; réécrit quand l'état de la synchro change.
   const pushLabels = (): void => {
-    desktop.setTrayLabels(trayLabels(null, syncConfigured())).catch((error: unknown) => logDesktopFailure('tray-labels', error));
+    desktop.setTrayLabels(trayLabels(syncConfigured())).catch((error: unknown) => logDesktopFailure('tray-labels', error));
   };
   pushLabels();
   // Y-03 : le libellé et l'effet de « Synchroniser maintenant » suivent la configuration de la synchro.

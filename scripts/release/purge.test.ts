@@ -59,9 +59,9 @@ describe('point de composition minimal', () => {
 describe('lot (d) : Rust calendriers, capture, focus, raccourci', () => {
   const gone = [
     'src-tauri/src/calendars', 'src-tauri/src/capture.rs', 'src-tauri/src/focus_window.rs', 'src-tauri/src/shortcut.rs',
-    'src-tauri/tests/desktop/calendars.rs', 'src-tauri/tests/desktop/capture.rs', 'src-tauri/tests/desktop/capture_ios.rs', 'src-tauri/tests/desktop/focus.rs',
+    'src-tauri/tests/desktop/calendars.rs', 'src-tauri/tests/desktop/capture.rs', 'src-tauri/tests/desktop/focus.rs',
     'src-tauri/tests/desktop/shortcut.rs', 'src-tauri/tests/desktop/web_auth.rs', 'src-tauri/tests/desktop/web_auth_qa.rs', 'src-tauri/tests/desktop/support/fake_web_auth.rs',
-    'src-tauri/capabilities/calendars.json', 'src-tauri/capabilities/capture.json', 'src-tauri/capabilities/capture-ios.json',
+    'src-tauri/capabilities/calendars.json', 'src-tauri/capabilities/capture.json',
     'src-tauri/capabilities/focus.json', 'src-tauri/capabilities/focus-launcher.json',
     'src/platform/calendars', 'src/platform/capture', 'src/platform/focus',
   ];

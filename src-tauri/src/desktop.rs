@@ -19,8 +19,6 @@ use tauri::{
 pub const MAIN_WINDOW: &str = "main";
 /// Argument de démarrage réduit, passé par le plugin autostart (D-02).
 pub const MINIMIZED_ARG: &str = "--minimized";
-/// Événement envoyé à la fenêtre principale par l'entrée « Ajout rapide » (D-01, critère 5).
-pub const QUICK_ADD_EVENT: &str = "desktop://quick-add";
 /// Événement envoyé au front avant de quitter : il termine ses écritures puis appelle `confirm_quit`.
 pub const QUITTING_EVENT: &str = "desktop://quitting";
 /// Événement envoyé à la fenêtre principale par l'entrée « Synchroniser maintenant » (Y-03, critère 4).
@@ -40,7 +38,6 @@ pub const TRAY_TOOLTIP: &str = "Spartiate";
 pub fn fallback_labels() -> TrayLabels {
     TrayLabels {
         open: "Ouvrir Spartiate".to_owned(),
-        quick_add: "Ajout rapide".to_owned(),
         sync: "Synchroniser maintenant".to_owned(),
         quit: "Quitter".to_owned(),
         sync_enabled: false,
@@ -63,7 +60,6 @@ pub struct TrayLabels {
     /// « Ouvrir Spartiate ».
     pub open: String,
     /// « Ajout rapide ».
-    pub quick_add: String,
     /// « Synchroniser ».
     pub sync: String,
     /// « Quitter ».
@@ -77,7 +73,6 @@ pub struct TrayLabels {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TrayAction {
     Open,
-    QuickAdd,
     Sync,
     Quit,
 }
@@ -87,7 +82,6 @@ impl TrayAction {
     pub const fn id(self) -> &'static str {
         match self {
             Self::Open => "open",
-            Self::QuickAdd => "quick-add",
             Self::Sync => "sync",
             Self::Quit => "quit",
         }
@@ -95,7 +89,7 @@ impl TrayAction {
 
     /// Action correspondant à un identifiant d'entrée de menu.
     pub fn from_id(id: &str) -> Option<Self> {
-        [Self::Open, Self::QuickAdd, Self::Sync, Self::Quit]
+        [Self::Open, Self::Sync, Self::Quit]
             .into_iter()
             .find(|action| action.id() == id)
     }
@@ -108,13 +102,12 @@ pub enum TrayEntry {
     Separator,
 }
 
-/// Disposition du menu (D-01, critère 3) : Ouvrir, Ajout rapide, Synchroniser maintenant, séparateur, Quitter. Toutes les entrées
+/// Disposition du menu (D-01, critère 3) : Ouvrir, Synchroniser maintenant, séparateur, Quitter. Toutes les entrées
 /// sont actives (Y-03 D1 : sans synchro configurée, « Synchroniser maintenant » guide vers Réglages au lieu d'être grisée).
 pub fn menu_layout(labels: &TrayLabels) -> Vec<TrayEntry> {
     let item = |action, label: &str, enabled| TrayEntry::Item { action, label: label.to_owned(), enabled };
     vec![
         item(TrayAction::Open, &labels.open, true),
-        item(TrayAction::QuickAdd, &labels.quick_add, true),
         item(TrayAction::Sync, &labels.sync, true),
         TrayEntry::Separator,
         item(TrayAction::Quit, &labels.quit, true),
@@ -193,8 +186,6 @@ pub fn show_main_window(app: &AppHandle) {
 fn run_action(app: &AppHandle, action: TrayAction) {
     match action {
         TrayAction::Open => show_main_window(app),
-        // Q-01 : « Ajout rapide » ouvre la mini-fenêtre ; sans elle, repli sur Aujourd'hui (capture::trigger).
-        TrayAction::QuickAdd => crate::capture::trigger(app),
         // Y-03 : la fenêtre principale lance `syncNow('tray')` ; sans synchro configurée, elle s'affiche sur Réglages.
         TrayAction::Sync => {
             let configured = app.try_state::<TraySyncState>().map(|state| state.get()).unwrap_or(false);
@@ -367,7 +358,6 @@ pub fn configure(builder: tauri::Builder<Wry>) -> tauri::Builder<Wry> {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(crate::shortcut::plugin())
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 if hides_on_close(window.label()) {
@@ -396,11 +386,6 @@ pub fn configure(builder: tauri::Builder<Wry>) -> tauri::Builder<Wry> {
             }
             app.manage(QuitGate::default());
             app.manage(TraySyncState::default());
-            crate::shortcut::manage(app.handle());
-            // Q-01 : mini-fenêtre créée masquée ; un échec n'empêche pas l'app de démarrer (repli sur Aujourd'hui).
-            if let Err(error) = crate::capture::setup(app.handle()) {
-                crate::capture::record_setup_failure(app.handle(), error.to_string());
-            }
             create_tray(app.handle())?;
             if !is_minimized_launch(std::env::args()) {
                 show_main_window(app.handle());

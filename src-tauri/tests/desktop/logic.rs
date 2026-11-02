@@ -8,7 +8,6 @@ use spartiate_lib::desktop::{
 fn labels(sync_enabled: bool) -> TrayLabels {
     TrayLabels {
         open: "Ouvrir".into(),
-        quick_add: "Ajout".into(),
         sync: "Synchro".into(),
         quit: "Quitter".into(),
         sync_enabled,
@@ -25,7 +24,7 @@ fn menu_order_matches_story() {
             TrayEntry::Separator => "-",
         })
         .collect();
-    assert_eq!(shape, ["open", "quick-add", "sync", "-", "quit"]);
+    assert_eq!(shape, ["open", "sync", "-", "quit"]);
 }
 
 #[test]
@@ -42,7 +41,7 @@ fn sync_now_is_never_greyed() {
 
 #[test]
 fn sync_now_label_comes_from_the_front() {
-    assert_eq!(menu_layout(&labels(true))[2], TrayEntry::Item { action: TrayAction::Sync, label: "Synchro".into(), enabled: true });
+    assert_eq!(menu_layout(&labels(true))[1], TrayEntry::Item { action: TrayAction::Sync, label: "Synchro".into(), enabled: true });
 }
 
 #[test]
@@ -60,20 +59,20 @@ fn sync_now_is_silent_when_configured_and_opens_settings_otherwise() {
 fn labels_come_from_the_front() {
     let layout = menu_layout(&labels(true));
     assert_eq!(layout[0], TrayEntry::Item { action: TrayAction::Open, label: "Ouvrir".into(), enabled: true });
-    assert_eq!(layout[4], TrayEntry::Item { action: TrayAction::Quit, label: "Quitter".into(), enabled: true });
+    assert_eq!(layout[3], TrayEntry::Item { action: TrayAction::Quit, label: "Quitter".into(), enabled: true });
 }
 
 #[test]
 fn fallback_labels_are_complete_and_assume_sync_not_configured() {
     let fallback = fallback_labels();
-    assert!([&fallback.open, &fallback.quick_add, &fallback.sync, &fallback.quit].iter().all(|l| !l.is_empty()));
+    assert!([&fallback.open, &fallback.sync, &fallback.quit].iter().all(|l| !l.is_empty()));
     assert_eq!(fallback.sync, "Synchroniser maintenant");
     assert!(!fallback.sync_enabled);
 }
 
 #[test]
 fn action_ids_round_trip() {
-    for action in [TrayAction::Open, TrayAction::QuickAdd, TrayAction::Sync, TrayAction::Quit] {
+    for action in [TrayAction::Open, TrayAction::Sync, TrayAction::Quit] {
         assert_eq!(TrayAction::from_id(action.id()), Some(action));
     }
     assert_eq!(TrayAction::from_id("autre"), None);
@@ -95,7 +94,6 @@ fn only_the_main_window_hides_on_close() {
 #[test]
 fn labels_deserialize_from_camel_case() {
     let parsed: TrayLabels =
-        serde_json::from_str(r#"{"open":"a","quickAdd":"b","sync":"c","quit":"d","syncEnabled":false}"#).expect("JSON valide");
-    assert_eq!(parsed.quick_add, "b");
+        serde_json::from_str(r#"{"open":"a","sync":"c","quit":"d","syncEnabled":false}"#).expect("JSON valide");
     assert!(!parsed.sync_enabled);
 }
