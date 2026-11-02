@@ -247,13 +247,13 @@ describe('critère 18 : guide, étape 7', () => {
 describe('critère 19 : non-régression (aucune clé Info.plist, plugin, capability, migration ni format nouveaux)', () => {
   it('Info.ios.plist : mêmes clés qu’avant I-06', () => {
     const keys = Object.keys(parsePlist(read('src-tauri/Info.ios.plist')) as Record<string, unknown>).sort();
-    expect(keys).toEqual(['ITSAppUsesNonExemptEncryption', 'NSCameraUsageDescription', 'NSFaceIDUsageDescription', 'NSMicrophoneUsageDescription', 'NSRemindersFullAccessUsageDescription', 'NSSpeechRecognitionUsageDescription', 'UIRequiresFullScreen', 'UISupportedInterfaceOrientations', 'UISupportedInterfaceOrientations~ipad']);
+    expect(keys).toEqual(['ITSAppUsesNonExemptEncryption', 'NSCameraUsageDescription', 'NSFaceIDUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'UIRequiresFullScreen', 'UISupportedInterfaceOrientations', 'UISupportedInterfaceOrientations~ipad']);
   });
 
   it('plugins et capabilities : listes d’avant I-06', () => {
-    expect(readdirSync(join(root, 'src-tauri', 'plugins')).filter((d) => d !== 'README.md').sort()).toEqual(['files', 'folder-bookmark', 'haptics', 'notification-actions', 'privacy-shield', 'reminders', 'speech', 'vision', 'web-auth']);
+    expect(readdirSync(join(root, 'src-tauri', 'plugins')).filter((d) => d !== 'README.md').sort()).toEqual(['files', 'folder-bookmark', 'haptics', 'notification-actions', 'privacy-shield', 'speech', 'vision']);
     expect(readdirSync(join(root, 'src-tauri', 'capabilities')).sort()).toEqual([
-      'backups-ios.json', 'backups.json', 'biometric-ios.json', 'calendars.json', 'capture-ios.json', 'capture.json', 'default.json', 'desktop.json', 'export-ios.json', 'export.json', 'focus-launcher.json', 'focus.json', 'haptics-ios.json', 'import.json', 'logs-ios.json', 'logs.json', 'notifications-ios.json', 'ocr.json', 'privacy-shield-ios.json', 'reminders-ios.json', 'signing-ios.json', 'sync-ios.json', 'sync-pairing.json', 'sync.json',
+      'backups-ios.json', 'backups.json', 'biometric-ios.json', 'capture-ios.json', 'default.json', 'desktop.json', 'export-ios.json', 'export.json', 'haptics-ios.json', 'import.json', 'logs-ios.json', 'logs.json', 'notifications-ios.json', 'ocr.json', 'privacy-shield-ios.json', 'signing-ios.json', 'sync-ios.json', 'sync-pairing.json', 'sync.json',
     ]);
     // `getVersion` est couvert par core:default (aucune permission ajoutée).
     expect(read('src-tauri/capabilities/default.json')).toContain('"core:default"');

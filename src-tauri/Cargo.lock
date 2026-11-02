@@ -4336,13 +4336,11 @@ dependencies = [
  "tauri-plugin-opener",
  "tauri-plugin-privacy-shield",
  "tauri-plugin-process",
- "tauri-plugin-reminders",
  "tauri-plugin-single-instance",
  "tauri-plugin-speech",
  "tauri-plugin-sql",
  "tauri-plugin-updater",
  "tauri-plugin-vision",
- "tauri-plugin-web-auth",
  "tempfile",
  "tokio",
  "url",
@@ -5075,14 +5073,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-plugin-reminders"
-version = "0.1.0"
-dependencies = [
- "tauri",
- "tauri-plugin",
-]
-
-[[package]]
 name = "tauri-plugin-single-instance"
 version = "2.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5162,15 +5152,6 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-vision"
-version = "0.1.0"
-dependencies = [
- "serde_json",
- "tauri",
- "tauri-plugin",
-]
-
-[[package]]
-name = "tauri-plugin-web-auth"
 version = "0.1.0"
 dependencies = [
  "serde_json",
