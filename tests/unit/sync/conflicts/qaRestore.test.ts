@@ -156,6 +156,8 @@ describe('Y-04 critère 6 : annulation (compléments de la QA)', () => {
     await published();
     const conflictId = await bench.conflict({ table: 'task', rowId: task.id, field: 'deleted_at', kept: removed?.deletedAt ?? null, discarded: 'modified' });
     expect(await bench.useCases.restore(conflictId)).toEqual({ status: 'restored' });
+    // Voie générique writeField : la sortie de suppression est une écriture publiable (+ et deleted_at dans la file d'envoi).
+    expect((await outbox('task', task.id)).map((e) => e.field)).toContain('deleted_at');
     bench.clock.advance(1_000);
     await bench.data.repos.tasks.softDelete([task.id]);
     bench.clock.advance(1_000);
