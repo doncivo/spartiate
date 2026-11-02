@@ -22,9 +22,9 @@ describe('lot (a) : features métier retirées', () => {
     for (const name of ['signingNotice.ts', 'signingStatus.ts', 'signingText.ts', 'SigningAbout.tsx', 'signingNotice.test.ts', 'signingNoticeQa.test.ts']) {
       expect(present(`src/features/signing/${name}`), name).toBe(true);
     }
-    expect(read('src/features/signing/signingNotice.ts')).not.toMatch(/replanNotifications|ReplanTrigger|reminders//);
+    expect(read('src/features/signing/signingNotice.ts')).not.toMatch(/replanNotifications|ReplanTrigger|reminders\//);
     // Condition d’Ali : la notification système d’expiration reste planifiée par l’infrastructure conservée.
-    expect(read('src/features/signing/signingNotice.ts')).toMatch(/platform/(notifications|signing)/);
+    expect(read('src/features/signing/signingNotice.ts')).toMatch(/platform\/notifications/);
   });
 });
 
