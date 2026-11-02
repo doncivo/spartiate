@@ -8,7 +8,7 @@ SPA-000 clos : dépôt issu de CircleTasks, remote circletasks en lecture seule 
 
 ## SPA-001a — renommage (branche spa-001a-renommage poussée, PR #11)
 
-Fait : tests rouges (2346b2dc) ; `scripts/release/rename.mjs` exécuté, rapport dans la PR ; updater non configuré (D-30) ; icône régénérée depuis `content/brand/spartiate.svg` ; CLAUDE.md et AGENTS.md fusionnés ; PRD v6.3 en chapitres (`docs/prd/`, source `docs/archive/PRD-v6.2.md`, corrections dans `scripts/release/fixtures/prd-v6.3-changes.json`) ; registre `docs/a-creer.md` ; journal et changelog CircleTasks archivés dans `docs/archive/circletasks/`. Relecture Codex : ADR 0017 appliquée. Reste : `tests.yml` vert sur la PR #11, corrections de la relecture Codex (D-53), fusion. Le reste de `docs/` CircleTasks (stories, audits, backlog, essais, maquettes-refonte) est archivé par 001b, lot (i).
+Fait : tests rouges, `rename.mjs` exécuté, updater non configuré (D-30), icône régénérée, CLAUDE.md et AGENTS.md fusionnés, PRD v6.3 en chapitres, journal CircleTasks archivé. Relecture Codex : ADR 0017 appliquée. Reste : `tests.yml` vert sur la PR #11, corrections D-53, fusion. Le reste de `docs/` CircleTasks est archivé par 001b, lot (i).
 
 ## SPA-001b — point d’étape (arrêt de session)
 
