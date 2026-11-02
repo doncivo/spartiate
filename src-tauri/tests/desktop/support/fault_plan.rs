@@ -1,4 +1,4 @@
-//! Y-TECH-03 (B13 de docs/audit-1.0.md), phase B : lecteur Rust du plan de pannes d'iCloud, `tests/fixtures/sync/fault-plan.json`.
+//! Y-TECH-03 (B13 de docs/archive/circletasks/audit-1.0.md), phase B : lecteur Rust du plan de pannes d'iCloud, `tests/fixtures/sync/fault-plan.json`.
 //!
 //! Un seul format, lu tel quel par les trois faux iCloud du dépôt : `memory.ts` (`src/platform/sync/faultPlan.ts`), `MemFs`
 //! (`sync_support.rs`) et `fake_bookmark` (ce dossier). La lecture est **aussi stricte** que celle de `faultPlan.ts` : champ inconnu,

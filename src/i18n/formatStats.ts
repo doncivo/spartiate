@@ -1,7 +1,7 @@
 import type { MonthRef } from '../domain/monthReport';
-import { getLocale, t } from './index';
+import { t } from './index';
 
-const intlLocale = (): string => (getLocale() === 'fr' ? 'fr-FR' : 'en-US');
+const intlLocale = (): string => 'fr-FR';
 
 /** Nom du mois en lettres (« septembre »), selon la langue courante. */
 export function formatMonthName(ref: MonthRef): string {

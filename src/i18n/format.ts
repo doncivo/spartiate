@@ -1,7 +1,7 @@
 import { formatTime as formatDomainTime, formatTimeRange as formatDomainTimeRange } from '../domain/timeFormat';
 import { weekdayOrder } from '../domain/week';
 import { getFirstWeekday, getTimeFormat } from './formatPrefs';
-import { getLocale, t } from './index';
+import { t } from './index';
 
 /** P-03 : heure 'HH:mm' dans le format choisi (24 h : « 09:00 » ; 12 h : « 9:00 AM »). Seul point d'affichage d'une heure. */
 export function formatTime(time: string): string {
@@ -20,7 +20,7 @@ const dayLabelFormatters = new Map<string, Intl.DateTimeFormat>();
 export function formatDayLabel(isoDate: string): string {
   const [year, month, day] = isoDate.split('-').map(Number);
   const date = new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, day ?? 1));
-  const locale = getLocale() === 'fr' ? 'fr-FR' : 'en-US';
+  const locale = 'fr-FR';
   let formatter = dayLabelFormatters.get(locale);
   if (!formatter) {
     formatter = new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
@@ -41,7 +41,7 @@ function utcDate(isoDate: string): Date {
  * « 23 sept. », « 21 – 27 sept. » (« 28 sept. – 4 oct. » à cheval sur deux mois), « septembre 2026 ».
  */
 export function formatDonePeriodLabel(kind: 'day' | 'week' | 'month', from: string, to: string): string {
-  const locale = getLocale() === 'fr' ? 'fr-FR' : 'en-US';
+  const locale = 'fr-FR';
   const fmt = (options: Intl.DateTimeFormatOptions, date: string) =>
     new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' }).format(utcDate(date));
   if (kind === 'month') return new Intl.DateTimeFormat(locale, MONTH_LABEL_OPTIONS).format(utcDate(from));
@@ -52,7 +52,7 @@ export function formatDonePeriodLabel(kind: 'day' | 'week' | 'month', from: stri
     : `${fmt({ day: 'numeric', month: 'short' }, from)} – ${fmt({ day: 'numeric', month: 'short' }, to)}`;
 }
 
-const intlLocale = (): string => (getLocale() === 'fr' ? 'fr-FR' : 'en-US');
+const intlLocale = (): string => 'fr-FR';
 const capitalize = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
 
 /** Jour complet pour le bandeau « Compris : » (« vendredi 25 sept. »), selon la langue courante. */
@@ -171,7 +171,7 @@ export function formatDropDayLabel(isoDate: string): string {
 export function formatDayMonth(isoDate: string): string {
   const [year, month, day] = isoDate.split('-').map(Number);
   const date = new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, day ?? 1));
-  const locale = getLocale() === 'fr' ? 'fr-FR' : 'en-US';
+  const locale = 'fr-FR';
   return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(date);
 }
 
@@ -179,6 +179,6 @@ export function formatDayMonth(isoDate: string): string {
 export function formatDayMonthYear(isoDate: string): string {
   const [year, month, day] = isoDate.split('-').map(Number);
   const date = new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, day ?? 1));
-  const locale = getLocale() === 'fr' ? 'fr-FR' : 'en-US';
+  const locale = 'fr-FR';
   return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(date);
 }

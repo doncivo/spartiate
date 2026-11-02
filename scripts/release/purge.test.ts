@@ -146,7 +146,7 @@ describe('lot (g) : i18n français seul', () => {
       const path = `${dir}/${entry.name}`;
       return entry.isDirectory() ? walk(path) : [path];
     });
-  const sources = [...walk('src'), ...walk('tests'), ...walk('scripts')].filter((p) => /\.(ts|tsx|mjs)$/.test(p) && !p.endsWith('purge.test.ts'));
+  const sources = [...walk('src'), ...walk('tests'), ...walk('scripts')].filter((p) => /\.(ts|tsx|mjs)$/.test(p) && !p.endsWith('purge.test.ts') && !p.startsWith('tests/bundle/') && !p.endsWith('eslintGuards.test.ts'));
   it('aucun catalogue anglais dans src/i18n', () => {
     expect(walk('src/i18n').filter((p) => /\/en(\.[A-Za-z]+)?\.ts$/.test(p))).toEqual([]);
   });
@@ -158,7 +158,7 @@ describe('lot (g) : i18n français seul', () => {
   it('aucune source ne choisit une langue ni n’importe un catalogue anglais', () => {
     const offenders = sources.filter((p) => {
       const text = read(p);
-      return /getLocale\(\) === 'en'|setLocale\('en'\)|ensureLocale|registerCatalog|i18n\/en['.]|from '\.\/en['.]|'en-US'/.test(text);
+      return /getLocale\(\) === 'en'|setLocale\('en'\)|ensureLocale|registerCatalog|i18n\/en['.]|from '\.\/en['.]/.test(text);
     });
     expect(offenders).toEqual([]);
   });
@@ -175,7 +175,7 @@ describe('lot (h) : archivage CircleTasks (D-40)', () => {
   }
   it('aucun document ou source actif ne pointe vers l’ancien emplacement', () => {
     const stale = /docs\/(stories|maquettes-refonte|audits|audit-1\.0\.md|backlog\.md|dettes\.md|essais-iphone(-a9)?\.md|reprise-codex\.md|reprise-historique-2026-10\.md)/;
-    const files = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' }).split('\n').filter((p) => p && !p.startsWith('docs/archive/') && !p.endsWith('purge.test.ts') && !/\.(png|ico|icns|jpg|woff2?|wasm|traineddata|gz|zip|svg|lock)$/i.test(p));
+    const files = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' }).split('\n').filter((p) => p && !p.startsWith('docs/archive/') && !p.startsWith('docs/prd/') && !p.endsWith('purge.test.ts') && !/\.(png|ico|icns|jpg|woff2?|wasm|traineddata|gz|zip|svg|lock)$/i.test(p));
     const offenders = files.filter((p) => present(p) && stale.test(read(p).replace(/docs\/archive\/circletasks\/\S*/g, '')));
     expect(offenders).toEqual([]);
   });

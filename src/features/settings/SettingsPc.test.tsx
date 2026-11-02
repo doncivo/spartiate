@@ -23,7 +23,7 @@ function mockViewport(width: number): void {
 }
 
 /**
- * UI-REFONTE-09 — Réglages sur PC (docs/maquettes-refonte/PC-Reglages.html) : sommaire à gauche, colonne bornée, titres en minuscules,
+ * UI-REFONTE-09 — Réglages sur PC (docs/archive/circletasks/maquettes-refonte/PC-Reglages.html) : sommaire à gauche, colonne bornée, titres en minuscules,
  * « Général » en cinq lignes (Thème, Début de semaine, Format de l’heure, Fuseau horaire, Démarrer avec Windows),
  * « Clavier » avec « Tous les raccourcis » et le conflit expliqué en une phrase. L'iPhone ne change pas.
  */

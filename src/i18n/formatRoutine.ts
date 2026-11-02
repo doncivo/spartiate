@@ -1,9 +1,9 @@
 import type { Routine } from '../domain/model';
 import type { StreakUnit } from '../domain/routineStreaks';
 import type { Weekday } from '../domain/types';
-import { getLocale, t, tDynamic, type MessageKey } from './index';
+import { t, tDynamic, type MessageKey } from './index';
 
-const intlLocale = (): string => (getLocale() === 'fr' ? 'fr-FR' : 'en-US');
+const intlLocale = (): string => 'fr-FR';
 
 /** Nom du jour de la semaine (1 = lundi) : « lun. » (court) ou « lundi » (long). */
 export function weekdayName(weekday: Weekday, style: 'short' | 'long'): string {

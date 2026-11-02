@@ -330,7 +330,7 @@ jobs:
       # son propre délai (8 min ; nominal 26 à 67 s à miroir normal, 305 s observés deux fois à miroir lent) pour échouer vite au lieu
       # de consommer les 20 min du job ; ce délai ne porte sur aucun test. Les .deb téléchargés sont sauvegardés même si l'étape échoue ou
       # expire, sous une clé qui porte leur nombre (une clé existante n'est jamais réécrite) : chaque tentative qui reçoit de nouveaux
-      # paquets enrichit le cache, la relance repart de ce qui est déjà reçu. Mesure avant / après dans docs/stories/CI-WEBKIT-01.md.
+      # paquets enrichit le cache, la relance repart de ce qui est déjà reçu. Mesure avant / après dans docs/archive/circletasks/stories/CI-WEBKIT-01.md.
       - name: Clé du cache des paquets système de WebKit
         id: webkit-deps-key
         run: |

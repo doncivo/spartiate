@@ -1,5 +1,3 @@
-import { getLocale } from './index';
-import { logsEn } from './en.logs';
 import { logsFr } from './fr.logs';
 
 /**
@@ -10,7 +8,7 @@ import { logsFr } from './fr.logs';
 export type LogsTextKey = keyof typeof logsFr;
 
 export function tLogs(key: LogsTextKey, params?: Readonly<Record<string, string | number>>): string {
-  const table: Readonly<Record<LogsTextKey, string>> = getLocale() === 'en' ? logsEn : logsFr;
+  const table: Readonly<Record<LogsTextKey, string>> = logsFr;
   const text = table[key];
   if (!params) return text;
   return text.replace(/\{(\w+)\}/g, (match, name: string) => {

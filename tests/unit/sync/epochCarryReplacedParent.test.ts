@@ -4,7 +4,7 @@ import type { RestoreMarker } from '../../../src/platform/sync/types';
 import { PRO, createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
 
 /**
- * Y-FIX-04 (bloquant B4 de `docs/audit-1.0.md`) : report d'époque d'une ligne dont le parent a été **remplacé** par la restauration
+ * Y-FIX-04 (bloquant B4 de `docs/archive/circletasks/audit-1.0.md`) : report d'époque d'une ligne dont le parent a été **remplacé** par la restauration
  * « Appliquer partout ». L'ouvreur A avait lu le parent, absent de sa sauvegarde ; l'enfant, écrit par B, A ne l'avait jamais lu (ADR 0011
  * §24 point 6 : il doit survivre). Avant le correctif, `reapply` le rejouait avec `noPark` : ni appliqué, ni gardé, ni journalisé, puis
  * son report effacé ; il disparaissait des deux appareils.

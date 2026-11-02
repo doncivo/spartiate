@@ -16,8 +16,6 @@ import { createMemorySyncPlatform, MemorySyncFolder, SyncPlatformError, type Mem
 import { INITIAL_STATUS, type SyncErrorCode, type SyncReason, type SyncStatus } from '../../platform/sync/types';
 import { createSyncService, silentSyncLogger, startSyncScheduler } from '../../sync';
 import { statusLine } from './syncText';
-import { syncFolderEn } from '../../i18n/en.syncFolder';
-import { syncPairingEn, syncPairingWindowEn } from '../../i18n/en.syncPairing';
 import { syncFolderFr } from '../../i18n/fr.syncFolder';
 import { syncPairingFr, syncPairingWindowFr } from '../../i18n/fr.syncPairing';
 import { AppContainerProvider } from '../app/AppContainerContext';
@@ -192,10 +190,9 @@ describe('PC : « Associer l’iPhone » dans Réglages › Synchronisation (con
 });
 
 describe('chemins d’association dits à l’utilisateur = libellés réels des boutons (constat B)', () => {
-  it('iPhone → « Sur le PC : Réglages → Synchronisation → Associer l’iPhone » ; fenêtre du PC → « … → Associer au PC » (FR et EN)', () => {
+  it('iPhone → « Sur le PC : Réglages → Synchronisation → Associer l’iPhone » ; fenêtre du PC → « … → Associer au PC » ', () => {
     for (const [texts, window, folder] of [
       [syncPairingFr, syncPairingWindowFr, syncFolderFr],
-      [syncPairingEn, syncPairingWindowEn, syncFolderEn],
     ] as const) {
       const section = folder.sectionTitle.charAt(0) + folder.sectionTitle.slice(1).toLowerCase();
       expect(texts.ios.hint).toContain(`${section} → ${texts.show}.`);

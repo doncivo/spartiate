@@ -50,7 +50,7 @@ const VISIBLE_FORMAT = new Set([0x600, 0x601, 0x602, 0x603, 0x604, 0x605, 0x6dd,
  *
  * Autres exceptions : un modificateur de teinte (U+1F3FB à U+1F3FF) avant une liaison U+200D ; les balises U+E0020 à U+E007F qui suivent le drapeau noir
  * U+1F3F4 (drapeaux de subdivision : Écosse, Pays de Galles) ; U+FE0F devant U+20E3 (touches « 1️⃣ »). Sont aussi retirés les blancs qui ne sont pas Cf :
- * remplisseurs hangul U+115F, U+1160, U+3164, U+FFA0 et le braille vide U+2800. Limite connue : U+200C (liaison nulle, persan) est retiré (docs/dettes.md).
+ * remplisseurs hangul U+115F, U+1160, U+3164, U+FFA0 et le braille vide U+2800. Limite connue : U+200C (liaison nulle, persan) est retiré (docs/archive/circletasks/dettes.md).
  */
 function isInvisible(code: number, chars: readonly string[], index: number): boolean {
   const previous = chars[index - 1];
