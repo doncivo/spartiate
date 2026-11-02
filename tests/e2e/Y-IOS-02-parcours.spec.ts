@@ -41,12 +41,11 @@ test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis r�
   test.setTimeout(BUDGET_MS);
   room = `yios02qa-${String(info.workerIndex)}-${info.testId}-${String(info.repeatEachIndex)}`;
 
-  // --- PC : dossier, clé, tâche publiée ; « Associer l'iPhone » directement dans Réglages ---------------------------------------------
+  // --- PC : dossier, clé ; « Associer l'iPhone » directement dans Réglages ---------------------------------------------
   const pc = await openSyncedPage(browser, room, 'pc', 'first', 'pc');
   opened.push(pc);
   await openSyncDetails(pc.page);
   await syncNow(pc.page);
-  await openTasks(pc.page);
   await openSyncDetails(pc.page);
   await syncNow(pc.page);
   await propagate(room);
