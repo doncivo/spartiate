@@ -59,8 +59,8 @@ const WEBKIT_SERVER: NonNullable<PlaywrightTestConfig['webServer']> = {
 };
 const WEBKIT_PROJECT: NonNullable<PlaywrightTestConfig['projects']>[number] = {
   name: 'iphone-webkit',
-  // SPA-001b : écrans conservés (Réglages, sauvegardes, journaux) vérifiés aussi dans le moteur de l'iPhone ; les specs de la roue (T-14) sont retirées.
-  testMatch: /(IOS-titres|T-14-roue-tactile|UI-REFONTE-01)\.spec\.ts$/,
+  // SPA-001b : écrans conservés (Logs, sauvegardes, restauration interrompue) vérifiés aussi dans le moteur de l'iPhone ; les specs de titres et de roue sont retirées.
+  testMatch: /lot-f-screens\.spec\.ts$/,
   use: {
     browserName: 'webkit',
     viewport: { width: 440, height: 956 },

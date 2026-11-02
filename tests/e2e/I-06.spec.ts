@@ -98,7 +98,7 @@ test.describe('I-06 — mise à jour N vers N+1 (iPhone, base préremplie, versi
     await expect(page.locator('.app-shell')).toHaveAttribute('data-db-status', 'ready', { timeout: APP_READY_TIMEOUT_MS });
     await expect(page.getByText(TITLE)).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });
     await expect(page.getByTestId('db-failure-detail')).toHaveCount(0);
-    await page.getByRole('navigation').getByText('Réglages', { exact: true }).click();
+    await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
     await expect(page.getByText('Version 0.3.0', { exact: true })).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });
   });
 

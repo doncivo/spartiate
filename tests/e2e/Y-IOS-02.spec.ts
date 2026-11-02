@@ -46,7 +46,7 @@ test('Y-IOS-02 : caméra refusée visible, puis « Associer au PC » par le scan
   opened.push(phone);
   const page = phone.page;
   await setCamera(room, 'iphone', 'denied');
-  await page.getByRole('navigation').getByText('Réglages', { exact: true }).click();
+  await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
   await expect(page.getByTestId('sync-camera-denied')).toHaveText('L’accès à la caméra est refusé', { timeout: APP_READY_TIMEOUT_MS });
   await expect(page.getByRole('button', { name: 'Ouvrir les réglages d’iOS pour autoriser la caméra' })).toBeVisible();
   await expect(page.locator('.ct-status-banner').filter({ hasText: 'Associez cet iPhone au PC pour synchroniser' })).toBeVisible();
@@ -94,7 +94,7 @@ test('Y-IOS-02 QA : écrans d’association de l’iPhone, dossier d’abord, pu
   opened.push(phone);
   const page = phone.page;
   await presentQr(room, 'iphone', 'pc');
-  await page.getByRole('navigation').getByText('Réglages', { exact: true }).click();
+  await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
   await page.getByRole('button', { name: 'Associer cet iPhone au PC : scanner le code d’association' }).click({ timeout: APP_READY_TIMEOUT_MS });
   const dialog = page.getByRole('dialog', { name: 'Scannez le code affiché sur le PC' });
   await expect(dialog).toBeVisible();

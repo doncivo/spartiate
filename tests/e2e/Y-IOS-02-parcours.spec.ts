@@ -33,7 +33,7 @@ test.afterEach(async () => {
   room = '';
 });
 
-const reglages = (page: Page) => page.getByRole('navigation').getByText('Réglages', { exact: true });
+const reglages = (page: Page) => page.getByRole('navigation').getByText('Plus', { exact: true });
 
 test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis réussite, 440 × 956 sans débordement à chaque écran', async ({ browser }) => {
   const info = test.info();

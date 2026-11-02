@@ -32,7 +32,7 @@ async function setVisibility(page: Page, state: DocumentVisibilityState): Promis
 }
 
 async function openSettings(page: Page): Promise<void> {
-  await page.getByRole('navigation').getByText('Réglages', { exact: true }).click();
+  await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
 }
 

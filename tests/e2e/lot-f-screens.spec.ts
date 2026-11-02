@@ -25,7 +25,7 @@ test.describe('Lot F — écrans sans défilement horizontal, échecs avec une a
     await page.clock.setFixedTime(new Date('2026-10-08T08:00:00Z'));
     await installFakeFiles(page);
     await openToday(page);
-    await tab(page, 'Réglages').click();
+    await tab(page, 'Plus').click();
     await page.getByRole('button', { name: 'Ouvrir l’écran des logs' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Logs' })).toBeVisible();
     await noHorizontalScroll(page);
@@ -42,7 +42,7 @@ test.describe('Lot F — écrans sans défilement horizontal, échecs avec une a
     await page.clock.setFixedTime(new Date('2026-10-08T08:00:00Z'));
     await installFakeBackups(page, VERSIONS, { directory: null });
     await openToday(page);
-    await tab(page, 'Réglages').click();
+    await tab(page, 'Plus').click();
     await page.getByRole('button', { name: 'Restaurer une sauvegarde' }).click();
     const sheet = page.getByRole('dialog', { name: 'Restaurer une sauvegarde' });
     await expect(sheet).toBeVisible();
