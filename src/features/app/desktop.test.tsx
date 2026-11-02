@@ -8,8 +8,6 @@ import { fr } from '../../i18n/fr';
 import { createAppContainer, type AppContainer } from './container';
 import { startDesktopIntegration, trayLabels } from './desktop';
 import { INITIAL_NAVIGATION, useNavigationStore } from './navigation';
-import { quickCaptureStore } from '../shortcuts';
-import { useQuickAddStore } from './quickAdd';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000d1');
 
@@ -34,7 +32,6 @@ describe('intégration PC de la coquille (D-01)', () => {
   afterEach(async () => {
     vi.restoreAllMocks();
     useNavigationStore.setState(INITIAL_NAVIGATION);
-    useQuickAddStore.setState({ pending: false });
     await db.close();
   });
 
@@ -52,36 +49,10 @@ describe('intégration PC de la coquille (D-01)', () => {
     integration.dispose();
   });
 
-  it('D-04 : le raccourci global est enregistré au démarrage et sa combinaison s’affiche dans le menu, puis suit les changements', async () => {
-    const integration = startDesktopIntegration(container);
-    await vi.waitFor(() => expect(desktop.trayLabels?.quickAdd).toBe('Ajout rapide\tCtrl+Alt+Espace'));
-    expect(desktop.globalChord).toBe('Ctrl+Alt+Space');
-    await quickCaptureStore.get(container).getState().applyChord('Ctrl+Shift+Space');
-    await vi.waitFor(() => expect(desktop.trayLabels?.quickAdd).toBe('Ajout rapide\tCtrl+Maj+Espace'));
-    await quickCaptureStore.get(container).getState().setEnabled(false);
-    await vi.waitFor(() => expect(desktop.trayLabels?.quickAdd).toBe('Ajout rapide'));
-    integration.dispose();
-  });
-
-  it('« Ajout rapide » : va sur Aujourd’hui et lève la demande de focus (critère 5)', async () => {
-    useNavigationStore.getState().navigate({ tab: 'settings', screen: 'home' });
-    const integration = startDesktopIntegration(container);
-    await vi.waitFor(() => expect(desktop.quickAddListeners).toBe(1));
-    desktop.emitQuickAdd();
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'tasks', screen: 'today' });
-    expect(useQuickAddStore.getState().pending).toBe(true);
-    expect(useQuickAddStore.getState().consume()).toBe(true);
-    expect(useQuickAddStore.getState().consume()).toBe(false);
-    integration.dispose();
-  });
-
-  it('dispose retire l’écouteur, même avant la fin de l’abonnement ; idempotent', async () => {
+  it('dispose est idempotent, même avant la fin de l’abonnement', () => {
     const integration = startDesktopIntegration(container);
     integration.dispose();
-    integration.dispose();
-    await vi.waitFor(() => expect(desktop.quickAddListeners).toBe(0));
-    desktop.emitQuickAdd();
-    expect(useQuickAddStore.getState().pending).toBe(false);
+    expect(() => integration.dispose()).not.toThrow();
   });
 
   it('un échec du branchement est journalisé sans interrompre l’app', async () => {

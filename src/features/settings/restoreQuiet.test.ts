@@ -6,9 +6,6 @@ import { isRestoreQuiet, quietWorkSettled, setRestoreQuiet, trackQuietWork } fro
 import { createMemorySyncPlatform } from '../../platform/sync';
 import { createMemorySyncLogger, createSyncService } from '../../sync';
 import { createAppContainer } from '../app/container';
-import { calendarsStore } from '../calendars/calendarsStore';
-import { startCalendarScheduler } from '../calendars/scheduler';
-import { runRemindersPass } from '../calendars/appleReminders/remindersPass';
 import { quiesceForRestore } from './restoreQuiesce';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000fe');
@@ -37,21 +34,6 @@ describe('mise au calme au niveau des services', () => {
     expect(service.running()).toBeNull();
     if (typeof handle === 'object') handle.release();
     expect(isRestoreQuiet()).toBe(false);
-  });
-
-  it('passage des Rappels Apple et rafraîchissement des agendas : sautés pendant le calme', async () => {
-    const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data });
-    setRestoreQuiet(true);
-    expect(await runRemindersPass(container, 'full')).toMatchObject({ status: 'skipped', reason: 'restore' });
-    const refresh = vi.spyOn(calendarsStore.get(container).getState(), 'refreshAll');
-    const scheduler = startCalendarScheduler(container, {
-      document: { visibilityState: 'visible', addEventListener: () => undefined, removeEventListener: () => undefined } as never,
-      setInterval: () => 0,
-      clearInterval: () => undefined,
-    });
-    await scheduler.resume();
-    expect(refresh).not.toHaveBeenCalled();
-    scheduler.dispose();
   });
 
   it('un travail en cours est attendu ; au-delà du délai, la mise au calme est refusée (busy) et relâchée', async () => {

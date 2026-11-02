@@ -6,13 +6,12 @@ import { fireEvent } from '@testing-library/react';
 import { useNavigationStore } from '../app/navigation';
 import { AppStatusBanner } from '../app/AppStatusBanner';
 import { useAppStatusStore } from '../app/appStatus';
-import { RemindersStatusSection } from '../reminders/RemindersStatusSection';
-import { replanNotifications } from '../reminders/replanNotifications';
-import { clearSigningBanner } from '../reminders/signingNotice';
-import { setupReminders, type ReminderHarness } from '../reminders/testKit';
+import { replanSigning as replanNotifications } from '../signing/signingRun';
+import { clearSigningBanner } from '../signing/signingNotice';
+import { setupSigning as setupReminders, type SigningHarness as ReminderHarness } from '../signing/testKit';
 import { AboutSection } from './AboutSection';
 import { SettingsScreen } from './SettingsScreen';
-import { SigningAboutRow } from '../reminders/SigningAbout';
+import { SigningAboutRow } from '../signing/SigningAbout';
 
 /**
  * I-02 critères 7 et 8 : la ligne « Expire le … » de « À propos » (iPhone), l'état « date inconnue » dans « À propos » et dans Réglages >
@@ -48,7 +47,6 @@ describe('À propos : expiration de la signature (I-02)', () => {
         <AppStatusBanner />
         <AboutSection />
         <SigningAboutRow />
-        <RemindersStatusSection />
       </AppContainerProvider>,
     );
 
@@ -91,14 +89,14 @@ describe('À propos : expiration de la signature (I-02)', () => {
     expect(screen.getByText('La signature est expirée : réinstallez l’app')).toBeInTheDocument();
   });
 
-  it('profil absent ou illisible : « Date d’expiration inconnue » dans À propos ET dans Réglages > Rappels, avec le code', async () => {
+  it('profil absent ou illisible : « Date d’expiration inconnue » dans À propos, avec le code', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     source.fail('profile-missing');
     await replanNotifications(h.container, 'open');
     renderAbout();
     const lines = await screen.findAllByText(/Date d’expiration inconnue : l’alerte avant expiration est désactivée/);
-    expect(lines).toHaveLength(2);
-    expect(screen.getAllByText(/profil de signature absent/)).toHaveLength(2);
+    expect(lines).toHaveLength(1);
+    expect(screen.getAllByText(/profil de signature absent/)).toHaveLength(1);
   });
 
   it('autorisation refusée : « Les notifications sont refusées : vous ne serez pas prévenu » à la place de l’alerte prévue', async () => {
@@ -123,16 +121,6 @@ describe('À propos : expiration de la signature (I-02)', () => {
     expect(screen.queryByRole('button', { name: /Autoriser les notifications pour l’alerte/ })).toBeNull();
   });
 
-  it('notifications refusées : « Voir » ouvre Réglages > Rappels', async () => {
-    source.expireAt('2026-10-14T08:00:00Z');
-    h.fake.setPermission('denied');
-    await replanNotifications(h.container, 'open');
-    renderAbout();
-    await screen.findByText('Les notifications sont refusées : vous ne serez pas prévenu');
-    fireEvent.click(screen.getByRole('button', { name: 'Voir les réglages des rappels pour autoriser les notifications' }));
-    expect(useNavigationStore.getState().route).toMatchObject({ tab: 'settings', screen: 'reminders' });
-  });
-
   it('bandeau d’expiration sous 24 h : « Voir » ouvre la tête de Réglages', async () => {
     source.expireAt('2026-10-08T20:00:00Z');
     await replanNotifications(h.container, 'open');
@@ -142,7 +130,7 @@ describe('À propos : expiration de la signature (I-02)', () => {
       </AppContainerProvider>,
     );
     fireEvent.click(await screen.findByRole('button', { name: 'Voir l’expiration de la signature dans Réglages' }));
-    expect(useNavigationStore.getState().route).toMatchObject({ tab: 'settings', screen: 'home' });
+    expect(useNavigationStore.getState().route).toMatchObject({ tab: 'more', screen: 'home' });
   });
 
   it('alerte non planifiée : « L’alerte n’a pas pu être planifiée »', async () => {
@@ -182,7 +170,6 @@ describe('À propos : expiration de la signature (I-02)', () => {
       <AppContainerProvider container={pc.container}>
         <AboutSection />
         <SigningAboutRow />
-        <RemindersStatusSection />
       </AppContainerProvider>,
     );
     expect(screen.queryByText(/Expire le|Date d’expiration|Lecture de la date/)).toBeNull();

@@ -98,7 +98,6 @@ const GROUPS: readonly { readonly scope: ShortcutScope; readonly labelKey: Plain
 const plain = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 
 export interface HelpInput {
-  readonly quickCapture: QuickCaptureHelpState;
   /** Raccourcis ayant un gestionnaire monté (`registry.activeIds()`), pour griser ceux de l'écran courant. */
   readonly activeIds: readonly ShortcutId[];
   /** Recherche instantanée (champ « Filtrer »), sur la description et la combinaison. */
@@ -118,17 +117,10 @@ export function buildHelpGroups(input: HelpInput): HelpGroup[] {
 
   const entryOf = (id: ShortcutId): HelpEntry => {
     const definition = SHORTCUTS[id];
-    const isGlobal = definition.scope === 'global';
-    const keys = isGlobal ? input.quickCapture.keys : definition.keys;
+    const keys = definition.keys;
     let note: string | null = null;
     let dimmed = false;
-    if (isGlobal && input.quickCapture.state === 'unavailable') {
-      note = t('shortcutsUi.unavailable');
-      dimmed = true;
-    } else if (isGlobal && input.quickCapture.state === 'off') {
-      note = t('shortcutsUi.disabled');
-      dimmed = true;
-    } else if (RESERVED_SHORTCUTS.includes(id)) {
+    if (RESERVED_SHORTCUTS.includes(id)) {
       note = t('shortcutsUi.comingSoon');
       dimmed = true;
     } else if (definition.scope === 'week' && !scopeActive('week')) {

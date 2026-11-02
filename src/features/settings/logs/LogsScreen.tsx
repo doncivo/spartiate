@@ -125,7 +125,7 @@ export function LogsScreen({ journal: injected, version }: LogsScreenProps = {})
     <div className="ct-logs-shell" data-layout={layout}>
       <div className="ct-logs">
         <div className="ct-logs__topRow">
-          <button type="button" className="ct-logs__back" aria-label={tLogs('back')} onClick={() => navigate({ tab: 'settings', screen: 'home' })}>
+          <button type="button" className="ct-logs__back" aria-label={tLogs('back')} onClick={() => navigate({ tab: 'more', screen: 'home' })}>
             <Icon icon={Undo2} size={26} />
           </button>
         </div>

@@ -37,7 +37,7 @@ async function openLogs(page: Page): Promise<void> {
   await installFakeFiles(page);
   await installFakeLogs(page);
   await openToday(page);
-  await page.getByRole('navigation').getByRole('button', { name: 'Réglages', exact: true }).click();
+  await page.getByRole('navigation').getByRole('button', { name: 'Plus', exact: true }).click();
   await page.getByRole('button', { name: 'Ouvrir l’écran des logs' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Logs' })).toBeVisible();
 }

@@ -202,7 +202,7 @@ export function BackupSheet({ onClose }: { onClose: () => void }) {
           <p>
             {t('backup.markerFailed')} {t('backup.errorCode', { code: markerFailure })}
           </p>
-          <Button variant="secondary" onClick={() => navigate({ tab: 'settings', screen: 'sync' })}>
+          <Button variant="secondary" onClick={() => navigate({ tab: 'more', screen: 'sync' })}>
             {tBackupRestore('seeSync')}
           </Button>
         </div>

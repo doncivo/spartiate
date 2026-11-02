@@ -75,7 +75,7 @@ export function SyncStatusLine({ showDetailsLink = true, variant = 'line' }: Syn
       </div>
       <div className="ct-sync__lineActions">
         {showDetailsLink && (
-          <button type="button" className="ct-sync__details" onClick={() => navigate({ tab: 'settings', screen: 'sync' })}>
+          <button type="button" className="ct-sync__details" onClick={() => navigate({ tab: 'more', screen: 'sync' })}>
             {t('sync.status.details')}
           </button>
         )}

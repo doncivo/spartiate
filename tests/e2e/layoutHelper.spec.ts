@@ -1,10 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectFitsViewport } from './helpers/layout';
+import { installFakeBackups } from './helpers/backups';
 import { isPhone, openToday } from './helpers/today';
 
 /**
  * Test négatif de `expectFitsViewport` (revue de la PR #19) : le contrôle doit échouer pour un vrai débordement, dans la coquille de l'app
- * comme dans une feuille (deux conteneurs qui rognent leur contenu), et laisser passer la seule rangée défilante désignée (`data-scroll-row`).
+ * comme dans une feuille (deux conteneurs qui rognent leur contenu), (le cas de la rangée d'icônes désignée `data-scroll-row` est retiré avec le sélecteur d'icônes, SPA-001b).
  */
 test.describe('expectFitsViewport : le contrôle de mise en page contrôle vraiment', () => {
   test.beforeEach(async ({ page }, testInfo) => {
@@ -29,21 +30,13 @@ test.describe('expectFitsViewport : le contrôle de mise en page contrôle vraim
   });
 
   test('un élément de 600 px dans une feuille fait échouer le contrôle', async ({ page }) => {
-    await page.getByRole('button', { name: 'Ajouter', exact: true }).tap();
-    await expect(page.getByRole('dialog', { name: 'Nouvelle tâche' })).toBeVisible();
+    // Feuille conservée : « Restaurer une sauvegarde » (P-04), versions simulées.
+    await installFakeBackups(page, [{ name: 'spartiate-daily-20261007.db', kind: 'daily', stamp: '20261007', size: 40_960, at: '2026-10-07T03:12:00', tasks: 4 }], { directory: null });
+    await openToday(page);
+    await page.getByRole('navigation').getByRole('button', { name: 'Plus', exact: true }).tap();
+    await page.getByRole('button', { name: 'Restaurer une sauvegarde' }).tap();
+    await expect(page.getByRole('dialog', { name: 'Restaurer une sauvegarde' })).toBeVisible();
     await inject(page, '.ct-sheet');
     await expect(expectFitsViewport(page, 'feuille')).rejects.toThrow(/hors de la largeur|défilement horizontal/);
-  });
-
-  test('la rangée d’icônes désignée défile sans faire échouer le contrôle, mais seulement si elle tient elle-même dans la fenêtre', async ({ page }) => {
-    await page.getByRole('button', { name: 'Ajouter', exact: true }).tap();
-    await page.getByRole('dialog', { name: 'Nouvelle tâche' }).getByRole('button', { name: /Plus d.options/ }).click();
-    await expect(page.locator('.ct-icon-picker')).toBeVisible();
-    await expectFitsViewport(page, 'feuille avec la rangée d’icônes');
-    await page.evaluate(() => {
-      const row = document.querySelector<HTMLElement>('.ct-icon-picker');
-      if (row) row.style.width = '700px';
-    });
-    await expect(expectFitsViewport(page, 'rangée trop large')).rejects.toThrow(/hors de la largeur|défilement horizontal/);
   });
 });

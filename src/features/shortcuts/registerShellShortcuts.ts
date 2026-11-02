@@ -24,7 +24,7 @@ export function registerShellShortcuts(container: Pick<AppContainer, 'shortcuts'
   offs.push(
     container.shortcuts.register('app.settings', (): boolean => {
       if (isModalOpen()) return false;
-      useNavigationStore.getState().navigate(DEFAULT_ROUTES.settings);
+      useNavigationStore.getState().navigate(DEFAULT_ROUTES.more);
       return true;
     }),
   );

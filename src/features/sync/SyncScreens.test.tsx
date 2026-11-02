@@ -10,7 +10,6 @@ import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { RestoreChoiceDialog } from './RestoreChoiceDialog';
 import { SyncDetailsScreen } from './SyncDetailsScreen';
 import { SyncStatusLine } from './SyncStatusLine';
-import { applyRemoteChanges } from './remoteChanges';
 import { startSyncIntegration } from './startSync';
 import { createFakeSyncService, nextCall, type FakeSyncService } from './testKit';
 import { tRestore } from '../../i18n/syncRestoreText';
@@ -52,7 +51,7 @@ describe('ligne d’état de Réglages (Y-02 critère 16, Y-05 critère 2)', () 
     expect(screen.getByText('iCloud Drive / Spartiate')).toBeTruthy();
     expect(screen.getByTestId('sync-status-text').textContent).toBe('À jour · il y a 2 min');
     fireEvent.click(screen.getByRole('button', { name: 'Détails' }));
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'settings', screen: 'sync' });
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'sync' });
   });
 
   it('la sous-ligne n’est pas une région vivante ; seule « À jour » (sans âge) est annoncée, rien pendant un problème (le bandeau l’annonce)', () => {
@@ -236,17 +235,6 @@ describe('branchements (Y-02 critères 17 à 19)', () => {
     expect(useAppStatusStore.getState().sources).toEqual({});
   });
 
-  it('onRemoteChanges : taskEntities reçoit les tâches relues, une tâche supprimée en est retirée', async () => {
-    const task = await db.data.repos.tasks.create({
-      id: asEntityId('12000000-0000-4000-8000-000000000001'), spaceId: asEntityId('00000000-0000-4000-8000-000000000001'), projectId: null, title: 'Reçue', note: '', date: null, time: null,
-      status: 'todo', doneAt: null, sortOrder: 1, carriedOver: false, recurrenceId: null, seriesIndex: null, seriesTemplate: null, goalId: null, icon: null, someday: false, source: 'local', externalId: null, appleListId: null, appleRecurring: false, externalEventId: null,
-    });
-    await applyRemoteChanges(container, { tables: new Set(['task']), ids: new Map([['task', new Set([task.id])]]) });
-    expect(container.taskEntities.get(task.id)?.title).toBe('Reçue');
-    await db.data.repos.tasks.softDelete([task.id]);
-    await applyRemoteChanges(container, { tables: new Set(['task']), ids: new Map([['task', new Set([task.id])]]) });
-    expect(container.taskEntities.get(task.id)).toBeUndefined();
-  });
 });
 
 describe('choix après restauration pendant une réinitialisation (Y-11, ADR 0011 §18 point 16 ; QA-1)', () => {

@@ -20,7 +20,6 @@ Tu assembles Spartiate : démarrage, navigation et coquilles. Tu ne codes aucune
   - `src/features/app/**` : `bootstrap.ts`, `container.ts`, `appStore.ts`, `navigation.ts`, `tabsConfig.ts`, `shortcuts.ts`, `App.tsx` ou équivalent, hôtes d'écrans à la demande ;
   - `src/main.tsx`, `index.html` (point d'entrée, avec ui-design-system pour les polices) ;
   - `src/db/repositories/sql/index.ts` (factories montées, avec data-model) ;
-  - `src/domain/tabs.ts` (identifiants d'onglets et disposition par défaut, avec domain-logic) ;
   - branchement des coquilles réelles `src/ui/AppShell.tsx` et `src/ui/TabRail.tsx` (apparence par ui-design-system ; disposition par `useLayout()`, D-47) ;
   - `src/features/shortcuts/**` (réduit : onglets, recherche, aide) ;
   - `src/features/today/**` (hôte d'Aujourd'hui ; les blocs viennent de training, nutrition, recovery) ;

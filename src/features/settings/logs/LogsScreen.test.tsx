@@ -61,7 +61,7 @@ describe('I-04 : écran Logs', () => {
     const title = screen.getByRole('heading', { level: 1, name: 'Logs' });
     await waitFor(() => expect(title).toHaveFocus());
     fireEvent.click(screen.getByRole('button', { name: 'Retour aux réglages' }));
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'settings', screen: 'home' });
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'home' });
   });
 
   it('critère 2 : de la plus récente à la plus ancienne (heure locale 24 h, scope, code) ; filtres Tout, Synchro, Notifications, Erreurs', async () => {

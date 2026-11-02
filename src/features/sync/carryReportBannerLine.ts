@@ -23,7 +23,7 @@ async function carryReportLine(container: AppContainer): Promise<{ readonly mess
   const open = (id: number | null): (() => void) => {
     return () => {
       requestCarryReportOpen(id);
-      useNavigationStore.getState().navigate({ tab: 'settings', screen: 'sync' });
+      useNavigationStore.getState().navigate({ tab: 'more', screen: 'sync' });
     };
   };
   if (failure) return { message: tCarry('failed', { cause: carryFailureCause(failure.code) }), onAction: open(null) };
@@ -59,7 +59,7 @@ export async function refreshCarryLine(container: AppContainer): Promise<void> {
     await loadCarryLine(container);
   } catch (error) {
     logFailure('sync', `carry-banner-failed ${JSON.stringify({ name: error instanceof Error ? error.name : typeof error })}`);
-    carryLines.set(container, { message: t('sync.status.errorGeneric'), onAction: () => useNavigationStore.getState().navigate({ tab: 'settings', screen: 'sync' }) });
+    carryLines.set(container, { message: t('sync.status.errorGeneric'), onAction: () => useNavigationStore.getState().navigate({ tab: 'more', screen: 'sync' }) });
     appliers.get(container)?.();
   }
 }

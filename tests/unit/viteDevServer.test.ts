@@ -15,6 +15,6 @@ describe('vite.config : serveur de développement', () => {
   });
 
   it('le balayage des dépendances part des trois pages de l’app seulement (pairing.html : Y-06)', () => {
-    expect(config.optimizeDeps?.entries).toEqual(['index.html', 'capture.html', 'pairing.html']);
+    expect(config.optimizeDeps?.entries).toEqual(['index.html', 'pairing.html']);
   });
 });

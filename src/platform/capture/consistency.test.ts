@@ -50,10 +50,4 @@ describe('capture rapide : cohérence avec src-tauri', () => {
     }
     expect(ocrCapability.windows).toEqual([MAIN_WINDOW_LABEL]);
   });
-
-  it('la page de la mini-fenêtre est un second point d’entrée Vite', () => {
-    expect(rust).toContain('pub const CAPTURE_PAGE: &str = "capture.html";');
-    expect(read('vite.config.ts')).toContain("capture.html");
-    expect(read('capture.html')).toContain('/src/captureMain.tsx');
-  });
 });

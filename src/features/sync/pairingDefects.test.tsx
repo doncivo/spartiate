@@ -62,7 +62,7 @@ describe('D2 erreur permanente de dossier à rechoisir (not-bound, unsafe-folder
       const h = await fakePhase(os, { phase: 'error', errorCode: 'not-bound' });
       await observe(h);
       useAppStatusStore.getState().sources.syncTrouble?.onAction?.();
-      expect(useNavigationStore.getState().route).toMatchObject({ tab: 'settings', screen: 'sync' });
+      expect(useNavigationStore.getState().route).toMatchObject({ tab: 'more', screen: 'sync' });
       renderIn(h.container, <SyncDetailsScreen />);
       await settle(current().db.driver);
       expect(visibleActions()).toContain('choose');

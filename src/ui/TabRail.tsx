@@ -12,7 +12,8 @@ export interface TabRailItem {
   readonly id: string;
   readonly labelKey: PlainMessageKey;
   /** Variable CSS de la couleur de l'onglet (src/ui/theme/tokens.css). */
-  readonly colorVar: string;
+  /** Variable CSS de la couleur de l'onglet ; absente : fond neutre (charte en SPA-009). */
+  readonly colorVar?: string;
 }
 
 export interface TabRailProps {
@@ -77,7 +78,7 @@ export function TabRail({ items, settingsItem, activeId, onSelect, className }: 
         style={{
           height: size.tabHeight,
           marginRight: active ? 0 : layout === 'pc' ? 8 : 6,
-          background: active ? 'var(--ct-color-tab-active-bg)' : `var(${item.colorVar})`,
+          background: active ? 'var(--ct-color-tab-active-bg)' : item.colorVar ? `var(${item.colorVar})` : 'transparent',
           color: active ? 'var(--ct-color-text)' : 'var(--ct-color-tab-text)',
         }}
       >

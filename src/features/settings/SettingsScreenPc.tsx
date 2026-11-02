@@ -1,33 +1,23 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { t } from '../../i18n';
 import { tSettingsRefonte, type SettingsRefonteKey } from '../../i18n/settingsRefonteText';
-import { Button, Switch } from '../../ui';
+import { Switch } from '../../ui';
 import { useFeatureStore } from '../app/AppContainerContext';
 import { useAppStore } from '../app/appStore';
 import { useNavigationStore } from '../app/navigation';
-import { CalendarsSummaryRow } from '../calendars';
-import { HolidaysSummaryRow } from '../events';
-import { FocusSoundSetting } from '../focus/FocusSoundSetting';
-import { formatRecapSummary, SigningAboutRow } from '../reminders';
+import { SigningAboutRow } from '../signing/SigningAbout';
 import { ShortcutsSettingsSection } from '../shortcuts';
-import { QuietHoursRows, SpacesSummaryRow } from '../spaces';
 import { SyncSettingsSection, useSyncAvailable } from '../sync/SyncSettingsSection';
 import { AboutSection } from './AboutSection';
 import { BackupRow } from './BackupRow';
-import { ImportRow } from './ImportRow';
-import { SampleDataRow } from './SampleDataRow';
 import { SecuritySection } from './SecuritySection';
 import { formatAppearanceParts } from './AppearanceScreen';
-import { useTabCounts } from './TabsScreen';
 import { settingsStore } from './settingsStore';
 
-const SECTION_IDS = ['general', 'tasks', 'reminders', 'spaces', 'sync', 'data', 'keyboard', 'about'] as const;
+const SECTION_IDS = ['general', 'sync', 'data', 'keyboard', 'about'] as const;
 type SectionId = (typeof SECTION_IDS)[number];
 const SECTION_TITLES: Readonly<Record<SectionId, SettingsRefonteKey>> = {
   general: 'sectionGeneral',
-  tasks: 'sectionTasks',
-  reminders: 'sectionReminders',
-  spaces: 'sectionSpaces',
   sync: 'sectionSync',
   data: 'sectionData',
   keyboard: 'sectionKeyboard',
@@ -45,13 +35,7 @@ const PIN_MS = 800;
  */
 export function SettingsScreenPc() {
   const load = useFeatureStore(settingsStore, (s) => s.load);
-  const carryOverUndone = useFeatureStore(settingsStore, (s) => s.carryOverUndone);
-  const status = useFeatureStore(settingsStore, (s) => s.status);
   const errorKey = useFeatureStore(settingsStore, (s) => s.errorKey);
-  const setCarryOverUndone = useFeatureStore(settingsStore, (s) => s.setCarryOverUndone);
-  const hideRoutines = useFeatureStore(settingsStore, (s) => s.hideRoutines);
-  const setHideRoutines = useFeatureStore(settingsStore, (s) => s.setHideRoutines);
-  const recaps = useFeatureStore(settingsStore, (s) => s.recaps);
   const timeZone = useAppStore((s) => s.timeZone);
   const launchAtStartup = useFeatureStore(settingsStore, (s) => s.launchAtStartup);
   const setLaunchAtStartup = useFeatureStore(settingsStore, (s) => s.setLaunchAtStartup);
@@ -59,7 +43,6 @@ export function SettingsScreenPc() {
   const firstWeekday = useFeatureStore(settingsStore, (s) => s.firstWeekday);
   const timeFormat = useFeatureStore(settingsStore, (s) => s.timeFormat);
   const theme = useFeatureStore(settingsStore, (s) => s.theme);
-  const tabs = useTabCounts();
   const syncAvailable = useSyncAvailable();
   const [themeText = '', weekdayText = '', formatText = ''] = formatAppearanceParts(theme, firstWeekday, timeFormat);
   const weekdayCapitalized = weekdayText.charAt(0).toLocaleUpperCase() + weekdayText.slice(1);
@@ -121,8 +104,7 @@ export function SettingsScreenPc() {
     );
   };
 
-  const openAppearance = () => navigate({ tab: 'settings', screen: 'appearance' });
-  const tabsCount = tSettingsRefonte('tabsCount', { visible: String(tabs.visible), total: String(tabs.total) });
+  const openAppearance = () => navigate({ tab: 'more', screen: 'appearance' });
 
   return (
     <div className="ct-settings ct-settings--pc">
@@ -163,7 +145,6 @@ export function SettingsScreenPc() {
               </span>
               <span className="ct-settings__value">{timeZone ?? t('settings.timeZoneUnknown')}</span>
             </div>
-            <LinkRow label={tSettingsRefonte('tabsVisible')} value={tabsCount} onClick={() => navigate({ tab: 'settings', screen: 'tabs' })} />
             {launchAtStartup !== null && (
               <div className="ct-settings__row">
                 <span className="ct-settings__stack">
@@ -175,64 +156,12 @@ export function SettingsScreenPc() {
             )}
           </>,
         )}
-        {section(
-          'tasks',
-          <>
-            <div className="ct-settings__row">
-              <span>{t('settings.carryOverUndone')}</span>
-              <Switch
-                checked={carryOverUndone}
-                onChange={(value) => void setCarryOverUndone(value)}
-                label={t('settings.carryOverUndone')}
-                disabled={status !== 'ready' && status !== 'error'}
-              />
-            </div>
-            <div className="ct-settings__row">
-              <span>{t('settings.hideRoutines')}</span>
-              <Switch
-                checked={hideRoutines}
-                onChange={(value) => void setHideRoutines(value)}
-                label={t('settings.hideRoutines')}
-                disabled={status !== 'ready' && status !== 'error'}
-              />
-            </div>
-            <FocusSoundSetting />
-          </>,
-        )}
-        {section(
-          'reminders',
-          <>
-            <LinkRow label={t('reminders.recaps')} value={formatRecapSummary(recaps)} onClick={() => navigate({ tab: 'settings', screen: 'reminders' })} />
-            <QuietHoursRows />
-          </>,
-        )}
-        {section(
-          'spaces',
-          <>
-            <SpacesSummaryRow />
-            <CalendarsSummaryRow />
-            <HolidaysSummaryRow />
-          </>,
-        )}
         {syncAvailable && section('sync', <SyncSettingsSection heading={false} />)}
         {section(
           'data',
           <>
             <SecuritySection />
             <BackupRow />
-            <ImportRow />
-            <SampleDataRow />
-            <div className="ct-settings__row">
-              <span>{t('settings.trash')}</span>
-              <Button
-                variant="secondary"
-                ariaLabel={t('settings.trashOpenLabel')}
-                onClick={() => navigate({ tab: 'settings', screen: 'trash' })}
-                className="ct-settings__link"
-              >
-                {t('settings.trashOpen')}
-              </Button>
-            </div>
           </>,
         )}
         {section('keyboard', <ShortcutsSettingsSection heading={false} />)}

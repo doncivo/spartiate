@@ -11,7 +11,12 @@ import { createAppContainer, type AppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { useNoticeStore } from '../app/notice';
 import { announcePendingRestore as announceRestoreResult } from './restoreMemoPeek';
-import { createNotificationRunner, getNotificationRunner } from '../reminders/notificationRunner';
+import * as signingRun from '../signing/signingRun';
+
+vi.mock('../signing/signingRun', async (original) => {
+  const actual = await original<typeof signingRun>();
+  return { ...actual, pauseSigning: vi.fn(actual.pauseSigning) };
+});
 import { RestoreMarkerResume } from '../sync/RestoreMarkerResume';
 import { startSyncIntegration, type SyncIntegration } from '../sync/startSync';
 import { restoreMarkerFailure } from '../sync/syncRestoreControl';
@@ -61,24 +66,6 @@ describe('P-04-iOS : restauration sur iPhone (mise au calme, mémo, marqueur, é
   };
 
   // --- critère 6 : mise au calme ---
-
-  it('coordinateur des rappels : en pause, aucun passage ne démarre ; la pause attend le passage en cours ; reprise = un passage', async () => {
-    let finish: (() => void) | undefined;
-    const pass = vi.fn(() => new Promise<{ status: 'done' }>((resolve) => (finish = () => resolve({ status: 'done' }))) as never);
-    const runner = createNotificationRunner(pass);
-    void runner.request('open');
-    let paused = false;
-    const pausing = runner.pause().then(() => (paused = true));
-    await Promise.resolve();
-    expect(paused).toBe(false);
-    void runner.request('sync');
-    finish?.();
-    await pausing;
-    expect(pass).toHaveBeenCalledTimes(1);
-    runner.resume();
-    await waitFor(() => expect(pass).toHaveBeenCalledTimes(2));
-    finish?.();
-  });
 
   it('cycle de synchro qui ne finit pas en 10 s : sync-busy, tout est relâché, rien n’est modifié', async () => {
     startIntegration();
@@ -212,7 +199,7 @@ describe('P-04-iOS : restauration sur iPhone (mise au calme, mémo, marqueur, é
     document.body.appendChild(root);
     const ios = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, sync, backups: { ...backups, reveal: undefined } as never, platform: { runtime: 'tauri', os: 'ios' } });
     let release: (() => void) | undefined;
-    vi.spyOn(getNotificationRunner(ios), 'pause').mockImplementation(() => new Promise<void>((resolve) => (release = resolve)));
+    vi.mocked(signingRun.pauseSigning).mockImplementation(() => new Promise<void>((resolve) => (release = resolve)));
     render(
       <AppContainerProvider container={ios}>
         <BackupSheet onClose={() => undefined} />

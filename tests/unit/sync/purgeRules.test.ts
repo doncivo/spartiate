@@ -6,7 +6,7 @@ import { PAGE_ROWS, type DeviceAck, type EpochId } from '../../../src/domain/syn
 import { UNBOUNDED } from '../../../src/domain/sync/retention';
 import type { DeviceId, Hlc, IsoDateTime, LocalDate, LocalDateTime, ReminderId, SpaceId, TaskId } from '../../../src/domain/types';
 import { createAppContainer } from '../../../src/features/app/container';
-import { createTrashUseCases } from '../../../src/features/tasks/trashUseCases';
+import { purgeExpired } from './purgeKit';
 import { createMemorySyncLogger } from '../../../src/sync/log';
 import { purgeDeleted } from '../../../src/sync/maintenance';
 import { guarded } from '../../../src/sync/guarded';
@@ -163,7 +163,7 @@ describe('purge par la corbeille : horizon de purge (revue Y2, point 8)', () => 
     expect(await a.data.repos.sync.getMeta('purgeHorizon')).toBeNull();
     a.clock.advance(31 * DAY);
     const container = createAppContainer({ clock: a.clock, hlc: a.hlc, data: a.data, sync: a.service });
-    expect(await createTrashUseCases(container).purgeExpired()).toBe(1);
+    expect(await purgeExpired(container)).toBe(1);
     const deleted = (await a.driver.select<{ deleted_hlc: string }>('SELECT deleted_hlc FROM sync_tombstone WHERE row_id = ?', [t.id]))[0]?.deleted_hlc;
     expect(JSON.parse(String(await a.data.repos.sync.getMeta('purgeHorizon')))).toBe(deleted);
   });
@@ -195,7 +195,7 @@ describe('purge au démarrage : rien tant qu’un appareil a des écritures publ
     a.folder.setAvailability(READER, STATE_FILE, 'local');
     expect((await a.cycle()).phase).toBe('waiting-icloud');
     const container = createAppContainer({ clock: a.clock, hlc: a.hlc, data: a.data, sync: a.service });
-    expect(await createTrashUseCases(container).purgeExpired()).toBe(0);
+    expect(await purgeExpired(container)).toBe(0);
     expect(await a.task(t.id)).not.toBeNull();
     hydrate(a.folder, READER);
     await a.cycle();

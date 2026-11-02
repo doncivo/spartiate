@@ -7,7 +7,6 @@ import { useAppContainer, useFeatureStore } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
 import { updaterStore } from '../updater';
 import { useLogJournal, useLogStatus } from './logs/useLogJournal';
-import { onboardingStore } from './onboardingStore';
 
 /**
  * Section « À PROPOS » (Reglages.html, D-03 critères 6 et 7, P-05 critère 8, I-04 critère 1). Partout : ligne « Version … » avec le lien
@@ -22,7 +21,6 @@ export function AboutSection({ heading = true }: { readonly heading?: boolean } 
   const desktop = container.desktop;
   const status = useFeatureStore(updaterStore, (s) => s.status);
   const check = useFeatureStore(updaterStore, (s) => s.check);
-  const relaunchGuide = useFeatureStore(onboardingStore, (s) => s.relaunch);
   const version = container.appVersion.version;
   const [openFailed, setOpenFailed] = useState(false);
   const navigate = useNavigationStore((s) => s.navigate);
@@ -69,7 +67,7 @@ export function AboutSection({ heading = true }: { readonly heading?: boolean } 
           )}
         </span>
         <span className="ct-settings__actions">
-          <Button variant="secondary" ariaLabel={tLogs('rowOpenLabel')} onClick={() => navigate({ tab: 'settings', screen: 'logs' })} className="ct-settings__link">
+          <Button variant="secondary" ariaLabel={tLogs('rowOpenLabel')} onClick={() => navigate({ tab: 'more', screen: 'logs' })} className="ct-settings__link">
             {tLogs('rowLabel')}
           </Button>
           {desktop && updaterConfigured && (
@@ -96,12 +94,6 @@ export function AboutSection({ heading = true }: { readonly heading?: boolean } 
           </div>
         </>
       )}
-      <div className="ct-settings__row">
-        <span>{t('onboarding.guideRow')}</span>
-        <Button variant="secondary" ariaLabel={t('onboarding.guideOpenLabel')} onClick={() => void relaunchGuide()} className="ct-settings__link">
-          {t('onboarding.guideOpen')}
-        </Button>
-      </div>
     </>
   );
 }

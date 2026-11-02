@@ -16,9 +16,8 @@ test("Réglages hors app PC : ni « Démarrer avec Windows » ni ligne de mise �
   page.on('pageerror', (error) => errors.push(error.message));
 
   await openApp(page);
-  await page.getByRole('navigation').getByText('Réglages', { exact: true }).click();
+  await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
-  await expect(page.getByRole('switch', { name: 'Reporter les tâches non faites' })).toBeEnabled();
 
   await expect(page.getByRole('switch', { name: 'Démarrer avec Windows' })).toHaveCount(0);
   // P-05 : « À PROPOS » existe partout (Revoir le guide de bienvenue) ; seules les lignes de mise à jour restent propres au PC.

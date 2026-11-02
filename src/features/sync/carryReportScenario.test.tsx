@@ -83,7 +83,7 @@ describe('Y-TECH-05 critère 26 : bandeau, écran et « J’ai vu » du compte r
     view(container);
     expect((await screen.findByText(BANNER)).textContent).toBe(text);
     fireEvent.click(screen.getByRole('button', { name: 'Voir le problème de synchronisation' }));
-    expect(useNavigationStore.getState().route).toMatchObject({ tab: 'settings', screen: 'sync' });
+    expect(useNavigationStore.getState().route).toMatchObject({ tab: 'more', screen: 'sync' });
 
     // Le détail s'ouvre sur le compte rendu non acquitté ; « À jeter » est dans la liste des rétablis.
     const dialog = await screen.findByRole('dialog');

@@ -33,7 +33,7 @@ const signing = <T>(page: Page, run: (hooks: SigningHooks) => T): Promise<T> =>
   page.evaluate(`(${run.toString()})(window.__ctSigning)`) as Promise<T>;
 
 async function openSettings(page: Page): Promise<void> {
-  await page.getByRole('navigation').getByText('Réglages', { exact: true }).click();
+  await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
 }
 
@@ -101,15 +101,12 @@ test.describe('I-02 — alerte avant expiration (iPhone, profil et planificateur
     await expect(page.locator('.ct-status-banner')).toContainText('La signature est expirée : réinstallez l’app');
   });
 
-  test('date inconnue : dite dans À propos et dans Réglages > Rappels (critère 7)', async ({ page }) => {
+  test('date inconnue : dite dans À propos (critère 7)', async ({ page }) => {
     await signing(page, (hooks) => hooks.source.fail('profile-unreadable'));
     await resume(page);
     await openSettings(page);
     await expect(page.getByText('Date d’expiration inconnue : l’alerte avant expiration est désactivée')).toBeVisible();
     await expect(page.getByText(/profil de signature illisible/)).toBeVisible();
-    await page.getByRole('button', { name: /^Récapitulatifs :/ }).click();
-    await expect(page.getByRole('heading', { name: 'Récapitulatifs' })).toBeVisible();
-    await expect(page.getByText(/Date d’expiration inconnue : l’alerte avant expiration est désactivée/)).toBeVisible();
     expect(await signing(page, (hooks) => hooks.alert.scheduled.length)).toBe(0);
   });
 
@@ -143,14 +140,12 @@ test.describe('I-02 — 440 × 956 : À propos et bandeau sans défilement horiz
     await expectFitsViewport(page, 'À propos, notifications non autorisées');
   });
 
-  test('notifications refusées : « Voir » mène à Réglages > Rappels ; date inconnue : la ligne tient dans la largeur', async ({ page }) => {
+  test('notifications refusées : la ligne tient dans la largeur', async ({ page }) => {
     await page.evaluate(() => window.__ctNotifications?.setPermission('denied'));
     await signing(page, (hooks) => hooks.source.expireAt('2026-10-14T07:00:00Z'));
     await resume(page);
     await openSettings(page);
     await expectFitsViewport(page, 'À propos, notifications refusées');
-    await page.getByRole('button', { name: 'Voir les réglages des rappels pour autoriser les notifications' }).click();
-    await expect(page.getByRole('heading', { name: 'Récapitulatifs' })).toBeVisible();
   });
 
   test('bandeau sous 24 h : « Voir » ouvre la tête de Réglages, sans défilement horizontal', async ({ page }) => {

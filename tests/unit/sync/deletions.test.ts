@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createManualClock } from '../../../src/domain/clock';
 import { createAppContainer } from '../../../src/features/app/container';
-import { createTrashUseCases } from '../../../src/features/tasks/trashUseCases';
+import { purgeExpired } from './purgeKit';
 import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../sim/syncDevice';
 
 /** Un élément supprimé ne réapparaît jamais (ADR 0011, sections 3.4, 4.2, 4.4, 5.4, 5.5 ; Y-09 critères 1 à 4, 6, 7, 10, 11). */
@@ -118,7 +118,7 @@ describe('purge (Y-09 critères 2, 3, 6, 11)', () => {
     await a.deleteTask(t.id);
     advance(31 * DAY);
     const withSync = createAppContainer({ clock: a.clock, hlc: a.hlc, data: a.data, sync: a.service });
-    expect(await createTrashUseCases(withSync).purgeExpired()).toBe(0);
+    expect(await purgeExpired(withSync)).toBe(0);
     expect(await a.task(t.id)).not.toBeNull();
     const alone = await createSimDevice('dddddddd-dddd-4ddd-8ddd-dddddddddddd');
     devices.push(alone);
@@ -126,7 +126,7 @@ describe('purge (Y-09 critères 2, 3, 6, 11)', () => {
     await alone.deleteTask(u.id);
     alone.clock.advance(31 * DAY);
     const plain = createAppContainer({ clock: alone.clock, hlc: alone.hlc, data: alone.data });
-    expect(await createTrashUseCases(plain).purgeExpired()).toBe(1);
+    expect(await purgeExpired(plain)).toBe(1);
     expect(await alone.task(u.id)).toBeNull();
   });
 });

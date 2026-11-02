@@ -184,7 +184,7 @@ describe('bundle de la fenêtre pairing (pairing.html)', () => {
     const page = join(outDir, 'pairing.html');
     expect(existsSync(page)).toBe(true);
     expect(readFileSync(page, 'utf8')).toContain('data-ct-page="pairing"');
-    for (const other of ['index.html', 'capture.html']) expect(readFileSync(join(outDir, other), 'utf8')).not.toContain('data-ct-page="pairing"');
+    for (const other of ['index.html']) expect(readFileSync(join(outDir, other), 'utf8')).not.toContain('data-ct-page="pairing"');
   });
 
   it('critère 2 : tout le graphe de pairing.html est dans la liste blanche', () => {
@@ -209,8 +209,8 @@ describe('bundle de la fenêtre pairing (pairing.html)', () => {
     expect(theme).not.toMatch(/\bimport\b|fetch|XMLHttpRequest|__TAURI/);
   });
 
-  it('critère 2 : qrcode-generator est absent du bundle principal et du bundle capture', () => {
-    for (const page of ['index.html', 'capture.html']) {
+  it('critère 2 : qrcode-generator est absent du bundle principal', () => {
+    for (const page of ['index.html']) {
       expect(modulesOf(page).filter((module) => module.includes('qrcode-generator'))).toEqual([]);
     }
   });

@@ -13,12 +13,8 @@ import { createDataAccess, createSqlRepositories, reintegrateUnknownFields, type
 import { detectOs, detectRuntime, openDesktopPlatform, type DesktopPlatform } from '../../platform';
 import { openBackupService, type BackupService } from '../../platform/backup';
 import { openFileService, type FileService } from '../../platform/files';
-import { openFocusEndScheduler, openFocusWindowPlatform, type FocusEndScheduler, type FocusWindowPlatform } from '../../platform/focus';
-import { createLedgerStore, openNotificationActionSource, openNotificationScheduler, systemNotificationClock, type NotificationActionSource, type NotificationClock, type NotificationScheduler } from '../../platform/notifications';
-import { composeFocusEndText } from '../reminders/focusEndText';
-import { createSettingsLedger } from '../reminders/settingsLedger';
-import { openRemindersPlatform, type RemindersPlatform } from '../../platform/reminders';
-import { openCalendarPlatform, PRODUCTION_ENDPOINTS, simulatorEndpoints, type CalendarPlatform, type MemoryPlatformOptions, type WebAuthFailureCode } from '../../platform/calendars';
+import { createLedgerStore, openNotificationScheduler, systemNotificationClock, type NotificationClock, type NotificationScheduler } from '../../platform/notifications';
+import { createSettingsLedger } from './settingsLedger';
 import { createMigrationBackup, openDatabase } from '../../platform/database';
 import { logFailure } from '../../platform/desktop/log';
 import { openSyncPlatform } from '../../platform/sync';
@@ -177,20 +173,10 @@ export interface BootstrapAppOptions {
   readonly ids?: IdGenerator;
   /** Intégration PC ; `openDesktopPlatform` par défaut (null hors Windows installé). */
   readonly desktop?: DesktopPlatform | null;
-  /** Agendas externes ; `openCalendarPlatform` par défaut (commandes Rust, ou mémoire + simulateurs en développement). */
-  readonly calendars?: CalendarPlatform;
-  /** Rappels Apple (K-05) ; `openRemindersPlatform` par défaut (plugin EventKit sur l'iPhone installé, indisponible ailleurs). */
-  readonly reminders?: RemindersPlatform;
-  /** Mini-fenêtre Focus (F-01) ; `openFocusWindowPlatform` par défaut (null hors Windows installé). */
-  readonly focusWindow?: FocusWindowPlatform | null;
-  /** Notifications locales de rappel (N-01) ; `openNotificationScheduler` par défaut (adaptateur réel sur l'iPhone installé, vide ailleurs). */
+  /** Notifications locales (avis d'expiration de la signature) ; `openNotificationScheduler` par défaut (adaptateur réel sur l'iPhone installé, vide ailleurs). */
   readonly notifications?: NotificationScheduler;
-  /** Notification de fin de session Focus (F-04) ; `openFocusEndScheduler` par défaut. */
-  readonly focusEndScheduler?: FocusEndScheduler;
   /** Instant et fuseau de la planification des rappels ; l'horloge du système par défaut. */
   readonly notificationClock?: NotificationClock;
-  /** Source des actions de notification (tests, e2e) ; sinon le plugin Swift sur l'iPhone installé, aucune ailleurs. */
-  readonly notificationActions?: NotificationActionSource | null;
   /** Enregistrement de fichiers (H-03) ; `openFileService` par défaut. */
   readonly files?: FileService;
   /** Sauvegardes locales (P-04) ; `openBackupService` par défaut. */
@@ -285,8 +271,6 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
       .then(() => data.repos.sync.assertGuardEmpty())
       .catch(() => 0);
     if (strayGuards > 0) logFailure('sync', `garde trouvée au démarrage : ${String(strayGuards)}`);
-    // N-01 : registre local partagé entre les rappels et la fin de Focus (réglage local, sur la base BRUTE : jamais observée).
-    const notificationLedger = at('notificationLedger', () => createLedgerStore(createSettingsLedger(data.repos.settings)));
     const notificationClock = options.notificationClock ?? systemNotificationClock;
     const runtime = at('detectRuntime', () => detectRuntime());
     const os = detectOs();
@@ -324,16 +308,10 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
       desktop,
       sync,
       syncPlatform,
-      notificationLedger,
       notificationClock,
-      notificationActions: options.notificationActions === undefined ? at('openNotificationActionSource', () => openNotificationActionSource(runtime, os)) : options.notificationActions,
-      notifications: options.notifications ?? at('openNotificationScheduler', () => openNotificationScheduler(runtime, os, { ledger: notificationLedger, clock: notificationClock, log: (code, counts) => logFailure('notifications', `${code} ${JSON.stringify(counts ?? {})}`) })),
-      focusEndScheduler: options.focusEndScheduler ?? at('openFocusEndScheduler', () => openFocusEndScheduler(runtime, os, { ledger: notificationLedger, clock: notificationClock, compose: composeFocusEndText })),
-      focusWindow: options.focusWindow === undefined ? await at('openFocusWindowPlatform', () => openFocusWindowPlatform()) : options.focusWindow,
+      notifications: options.notifications ?? at('openNotificationScheduler', () => openNotificationScheduler(runtime, os, { ledger: createLedgerStore(createSettingsLedger(data.repos.settings)), clock: notificationClock, log: (code, counts) => logFailure('notifications', `${code} ${JSON.stringify(counts ?? {})}`) })),
       files: options.files ?? at('openFileService', () => openFileService(detectRuntime(), detectOs())),
       backups: options.backups ?? at('openBackupService', () => openBackupService(detectRuntime(), detectOs(), { db: driver })),
-      calendars: options.calendars ?? (await at('openCalendarPlatform', () => openCalendarPlatform(...developmentCalendarSetup()))),
-      reminders: options.reminders ?? at('openRemindersPlatform', () => openRemindersPlatform(runtime, os)),
       haptics: options.haptics ?? at('openHaptics', () => openHaptics(runtime, os, { log: (code) => logFailure('haptics', code) })),
       authenticator: options.authenticator ?? at('openAuthenticator', () => openAuthenticator(runtime, os, { log: (code) => logFailure('security', code) })),
       privacyShield: options.privacyShield ?? at('openPrivacyShield', () => openPrivacyShield(runtime, os)),
@@ -363,21 +341,3 @@ export function publishStartFailure(step: string, error: unknown): void {
   logFailure('startup', `démarrage impossible (${step}) : ${errorName(error)}: ${message}`);
   useAppStore.getState().setDbStatus('error', { detail: message, failure: { phase: 'start', step, errorName: errorName(error), message } });
 }
-
-/**
- * Points d'accès et ID client des simulateurs d'agendas, en développement seulement (variables VITE_CT_GOOGLE_SIM, VITE_CT_CALDAV_SIM,
- * VITE_CT_GOOGLE_SIM_CLIENT_ID posées par Playwright) : un build de production n'en lit jamais.
- */
-function developmentCalendarSetup(): [CalendarEndpointsArg, undefined, MemoryPlatformOptions] {
-  const env = import.meta.env;
-  if (!env.DEV) return [PRODUCTION_ENDPOINTS, undefined, {}];
-  // Playwright : un test qui modifie l'état d'un simulateur en démarre un à lui et l'annonce avant le chargement de la page.
-  const override = (globalThis as { __ctCalendarSims?: { google: string; caldav: string; clientId?: string } }).__ctCalendarSims;
-  // K-TECH-01 (e2e iphone) : échec de la feuille de connexion Google posé par le test (`window.__ctWebAuthFailure`), relu à chaque connexion.
-  const webAuthFailure = (): WebAuthFailureCode | null => (globalThis as { __ctWebAuthFailure?: WebAuthFailureCode }).__ctWebAuthFailure ?? null;
-  if (override) return [simulatorEndpoints(override.google, override.caldav), undefined, { ...(override.clientId ? { googleClientId: override.clientId } : {}), webAuthFailure }];
-  if (!env.VITE_CT_GOOGLE_SIM || !env.VITE_CT_CALDAV_SIM) return [PRODUCTION_ENDPOINTS, undefined, {}];
-  return [simulatorEndpoints(env.VITE_CT_GOOGLE_SIM, env.VITE_CT_CALDAV_SIM), undefined, env.VITE_CT_GOOGLE_SIM_CLIENT_ID ? { googleClientId: env.VITE_CT_GOOGLE_SIM_CLIENT_ID } : {}];
-}
-
-type CalendarEndpointsArg = Parameters<typeof openCalendarPlatform>[0];

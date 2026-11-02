@@ -43,7 +43,7 @@ describe('SettingsScreen PC (D-02, D-03)', () => {
   describe('démarrage avec Windows (D-02)', () => {
     it('hors PC : pas de ligne « Démarrer avec Windows » ni de ligne de mise à jour (critère 1 ; GÉNÉRAL porte le fuseau de T-11 ; À PROPOS ne porte que le guide, P-05)', async () => {
       renderScreen(containerWith(null));
-      await waitFor(() => expect(screen.getByRole('switch', { name: 'Reporter les tâches non faites' })).not.toBeDisabled());
+      await screen.findByRole('heading', { level: 2, name: 'Général' });
       expect(screen.queryByRole('switch', { name: 'Démarrer avec Windows' })).not.toBeInTheDocument();
       expect(screen.getByRole('heading', { level: 2, name: 'À propos' })).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Rechercher une mise à jour' })).not.toBeInTheDocument();

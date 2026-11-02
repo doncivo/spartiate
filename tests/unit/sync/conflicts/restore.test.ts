@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { SqlExecutor } from '../../../../src/db/driver';
 import type { TaskId } from '../../../../src/domain/types';
 import { undoMessage } from '../../../../src/features/app/undo';
-import { OTHER, PRO, SELF, STAMP_AT, STAMP_DEVICE, STAMP_HLC, openConflictBench, otherHlc, type ConflictBench } from './kit';
+import { OTHER, SELF, openConflictBench, otherHlc, type ConflictBench } from './kit';
 
 /**
  * Restauration de la valeur écartée (Y-04 critères 5 à 10 ; ADR 0011 §4.2, §4.3, §5.4 ; decisions.md Y-04 D3) : une seule transaction,
@@ -72,7 +72,6 @@ describe('restauration d’une valeur (critère 5)', () => {
     expect(await outbox('task', taskId)).toEqual([{ field: 'time' }]);
     expect(await conflictRow(conflictId)).toEqual({ restored: 1, resolved_at: new Date(bench.clock.nowMs()).toISOString() });
     // Le champ affiche la valeur restaurée sans recharger : la source unique des tâches est à jour.
-    expect(bench.taskEntities.get(taskId)?.time).toBe('10:00');
   });
 
   it('déjà restaurée : rien n’est réécrit', async () => {
@@ -104,7 +103,6 @@ describe('annulation (critère 6)', () => {
     expect(clock?.base_hlc).toBe(restoredHlc);
     expect(await outbox('task', taskId)).toEqual([{ field: 'time' }]);
     expect(await conflictRow(conflictId)).toEqual({ restored: 0, resolved_at: null });
-    expect(bench.taskEntities.get(taskId)?.time).toBe('09:00');
   });
 
   it('champ modifié depuis la restauration : refusée (stale), rien n’est écrasé', async () => {
@@ -120,56 +118,6 @@ describe('annulation (critère 6)', () => {
 });
 
 describe('suppression contre modification (critère 7)', () => {
-  it('tâche supprimée ailleurs, modifiée ici : « Restaurer » restaure la tâche et ses rappels (corbeille T-08), annulable', async () => {
-    const task = await bench.createTask('Courses', { time: '09:00' as never });
-    await bench.data.repos.reminders.replaceForTarget({ type: 'task', id: task.id }, [
-      { id: '70000000-0000-4000-8000-000000000001' as never, targetType: 'task', targetId: task.id, offsetMin: 15, fireAt: '2026-10-05T08:45' as never },
-    ]);
-    bench.clock.advance(1_000);
-    const [removed] = await bench.data.repos.tasks.softDelete([task.id]);
-    await bench.data.repos.reminders.softDeleteForTarget({ type: 'task', id: task.id }, removed?.deletedAt ?? undefined);
-    await published();
-    bench.clock.advance(1_000);
-    const conflictId = await bench.conflict({ table: 'task', rowId: task.id, field: 'deleted_at', kept: removed?.deletedAt ?? null, discarded: 'modified', keptHlc: otherHlc(900), discardedHlc: otherHlc(800, SELF) });
-
-    expect(await bench.useCases.restore(conflictId)).toEqual({ status: 'restored' });
-    expect((await bench.data.repos.tasks.getById(task.id))?.deletedAt).toBeNull();
-    expect((await bench.data.repos.reminders.listForTarget({ type: 'task', id: task.id })).map((r) => r.deletedAt)).toEqual([null]);
-    // Restauration : la ligne repart entière (« + », Y-09) avec ses rappels.
-    expect((await outbox('task', task.id)).map((e) => e.field)).toContain('+');
-    expect(bench.taskEntities.get(task.id)?.title).toBe('Courses');
-    expect(await conflictRow(conflictId)).toMatchObject({ restored: 1 });
-
-    await published();
-    bench.clock.advance(1_000);
-    expect((await bench.undo.undoLast()).status).toBe('undone');
-    expect((await bench.data.repos.tasks.getById(task.id, { includeDeleted: true }))?.deletedAt).not.toBeNull();
-    expect((await bench.data.repos.reminders.listForTarget({ type: 'task', id: task.id })).length).toBe(0);
-    expect(bench.taskEntities.get(task.id)).toBeUndefined();
-    expect(await conflictRow(conflictId)).toEqual({ restored: 0, resolved_at: null });
-  });
-
-  it('routine (voie générique) : deleted_at remis à nul par une écriture tamponnée, rappels de la routine restaurés', async () => {
-    const id = '30000000-0000-4000-8000-000000000001';
-    await bench.stamped(
-      "INSERT INTO routine (id, space_id, title, schedule_type, start_date, created_at, updated_at, device_id, hlc) VALUES (?, ?, 'Méditer', 'daily', '2026-10-01', ?, ?, ?, ?)",
-      [id, PRO, STAMP_AT, STAMP_AT, STAMP_DEVICE, STAMP_HLC],
-    );
-    await bench.data.repos.reminders.replaceForTarget({ type: 'routine', id: id as never }, [
-      { id: '70000000-0000-4000-8000-000000000002' as never, targetType: 'routine', targetId: id as never, offsetMin: 0, fireAt: '2026-10-05T07:00' as never },
-    ]);
-    bench.clock.advance(1_000);
-    const deletedAt = new Date(bench.clock.nowMs()).toISOString();
-    await bench.stamped('UPDATE routine SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [deletedAt, STAMP_AT, STAMP_DEVICE, STAMP_HLC, id]);
-    bench.clock.advance(5);
-    await bench.data.repos.reminders.softDeleteForTarget({ type: 'routine', id: id as never }, deletedAt as never);
-    await published();
-    const conflictId = await bench.conflict({ table: 'routine', rowId: id, field: 'deleted_at', kept: deletedAt, discarded: 'modified' });
-    expect(await bench.useCases.restore(conflictId)).toEqual({ status: 'restored' });
-    expect(await bench.select('SELECT deleted_at FROM routine WHERE id = ?', [id])).toEqual([{ deleted_at: null }]);
-    expect(await bench.select("SELECT deleted_at FROM reminder WHERE target_type = 'routine'")).toEqual([{ deleted_at: null }]);
-    expect((await outbox('routine', id)).map((e) => e.field)).toEqual(expect.arrayContaining(['+', 'deleted_at']));
-  });
 
   it('valeur écartée = une suppression (restauration ici, suppression ailleurs) : l’élément est supprimé de nouveau, annulable', async () => {
     const task = await bench.createTask('Restaurée ici');
@@ -177,7 +125,6 @@ describe('suppression contre modification (critère 7)', () => {
     const conflictId = await bench.conflict({ table: 'task', rowId: task.id, field: 'deleted_at', kept: null, discarded: '2026-10-05T07:00:00.000Z' });
     expect(await bench.useCases.restore(conflictId)).toEqual({ status: 'restored' });
     expect((await bench.data.repos.tasks.getById(task.id, { includeDeleted: true }))?.deletedAt).not.toBeNull();
-    expect(bench.taskEntities.get(task.id)).toBeUndefined();
     expect((await bench.undo.undoLast()).status).toBe('undone');
     expect((await bench.data.repos.tasks.getById(task.id))?.deletedAt).toBeNull();
     // Deux suppressions concurrentes : l'élément est déjà supprimé, rien à écrire.
