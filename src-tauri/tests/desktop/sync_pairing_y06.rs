@@ -127,7 +127,7 @@ fn y06_18_window_decisions_destroy_and_never_hide() {
     assert_eq!(watch_decision(WatchInput { main_shown: true, expired: false }), None);
     // Les commandes appliquent ces décisions : destruction (jamais `hide`), fermeture limitée à l'instance appelante.
     let source = include_str!("../../src/sync/commands.rs");
-    assert!(source.contains("match pairing_window_action(seen)") && source.contains("watch_decision(WatchInput { main_shown, expired })"));
+    assert!(crate::support::has(source, "match pairing_window_action(seen)") && crate::support::has(source, "watch_decision(WatchInput { main_shown, expired })"));
     assert!(source.contains("if let Err(error) = affinity_outcome(hwnd, excluded)"));
     assert!(!source.contains(".hide()"), "la fenêtre pairing n'est jamais masquée");
     let close = &source[source.find("pub async fn sync_pairing_close").unwrap()..];

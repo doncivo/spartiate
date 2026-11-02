@@ -152,7 +152,7 @@ fn n01_notification_plugin_is_registered_for_ios_only() {
     let lines: Vec<&str> = LIB_SOURCE.lines().collect();
     let uses: Vec<usize> = lines.iter().enumerate().filter(|(_, l)| l.contains("tauri_plugin_notification::")).map(|(i, _)| i).collect();
     assert_eq!(uses.len(), 1, "un seul enregistrement");
-    assert_eq!(lines[uses[0] - 1].trim(), "#[cfg(target_os = \"ios\")]");
+    assert_eq!(crate::support::stmt_attr(&lines, uses[0]), "#[cfg(target_os = \"ios\")]");
     assert!(!lines.iter().any(|l| l.contains("NotificationExt")));
 }
 
@@ -162,7 +162,7 @@ fn n03_actions_plugin_is_registered_for_ios_only_after_the_official_plugin() {
     let lines: Vec<&str> = LIB_SOURCE.lines().collect();
     let uses: Vec<usize> = lines.iter().enumerate().filter(|(_, l)| l.contains("tauri_plugin_notification_actions::")).map(|(i, _)| i).collect();
     assert_eq!(uses.len(), 1, "un seul enregistrement");
-    assert_eq!(lines[uses[0] - 1].trim(), "#[cfg(target_os = \"ios\")]");
+    assert_eq!(crate::support::stmt_attr(&lines, uses[0]), "#[cfg(target_os = \"ios\")]");
     let official = lines.iter().position(|l| l.contains("tauri_plugin_notification::init")).expect("plugin officiel");
     assert!(official < uses[0], "le plugin d'actions doit venir après le plugin officiel");
     assert!(!DESKTOP_SOURCE.contains("notification_actions"));
@@ -564,7 +564,7 @@ fn sync_8_no_capability_grants_the_folder_bookmark_plugin() {
     let ios_deps = &ios_deps[..ios_deps[1..].find("\n[").map_or(ios_deps.len(), |i| i + 1)];
     assert!(ios_deps.contains("tauri-plugin-folder-bookmark = { path = \"plugins/folder-bookmark\" }"));
     assert_eq!(CARGO.matches("tauri-plugin-folder-bookmark").count(), 1, "aucune autre cible");
-    assert!(LIB_SOURCE.contains("#[cfg(target_os = \"ios\")]\n    let builder = builder.plugin(tauri_plugin_folder_bookmark::init())"));
+    assert!(crate::support::has(LIB_SOURCE, "#[cfg(target_os = \"ios\")]\n    let builder = builder.plugin(tauri_plugin_folder_bookmark::init())"));
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------
@@ -611,7 +611,7 @@ fn lot_m_plugins_are_registered_for_ios_only() {
     for krate in ["tauri_plugin_biometric", "tauri_plugin_ct_haptics", "tauri_plugin_privacy_shield"] {
         let uses: Vec<usize> = lines.iter().enumerate().filter(|(_, l)| l.contains(krate)).map(|(i, _)| i).collect();
         assert_eq!(uses.len(), 1, "{krate} : un seul enregistrement");
-        assert_eq!(lines[uses[0] - 1].trim(), "#[cfg(target_os = \"ios\")]", "{krate}");
+        assert_eq!(crate::support::stmt_attr(&lines, uses[0]), "#[cfg(target_os = \"ios\")]", "{krate}");
         assert!(lines[uses[0]].contains(&format!("{krate}::init()")), "{krate}");
         assert!(!DESKTOP_SOURCE.contains(krate), "{krate} dans desktop.rs");
     }
@@ -675,7 +675,7 @@ fn lot_m_local_plugins_acl_prefix_matches_runtime_name() {
     assert!(HAPTICS_CARGO.contains("links = \"tauri-plugin-haptics\""));
     assert!(HAPTICS_LIB.contains("Builder::new(\"haptics\")"));
     assert!(HAPTICS_LIB.contains("tauri::ios_plugin_binding!(init_plugin_ct_haptics);"));
-    assert!(HAPTICS_BUILD.contains("const COMMANDS: &[&str] = &[\"impact_feedback\", \"notification_feedback\", \"selection_feedback\"];"));
+    assert!(crate::support::has(HAPTICS_BUILD, "const COMMANDS: &[&str] = &[\"impact_feedback\", \"notification_feedback\", \"selection_feedback\"];"));
     assert!(SHIELD_CARGO.contains("name = \"tauri-plugin-privacy-shield\""));
     assert!(SHIELD_CARGO.contains("links = \"tauri-plugin-privacy-shield\""));
     assert!(SHIELD_LIB.contains("Builder::new(\"privacy-shield\")"));
@@ -719,7 +719,7 @@ fn files_ios_01_4_plugin_is_ios_only_and_the_ios_handler_has_only_the_save_comma
     let lines: Vec<&str> = LIB_SOURCE.lines().collect();
     let uses: Vec<usize> = lines.iter().enumerate().filter(|(_, l)| l.contains("tauri_plugin_ct_files::init()")).map(|(i, _)| i).collect();
     assert_eq!(uses.len(), 1);
-    assert_eq!(lines[uses[0] - 1].trim(), "#[cfg(target_os = \"ios\")]");
+    assert_eq!(crate::support::stmt_attr(&lines, uses[0]), "#[cfg(target_os = \"ios\")]");
     assert!(!DESKTOP_SOURCE.contains("ct_files"));
     let ios = ios_handler_commands();
     assert!(ios.contains("export_save_file"));
@@ -842,7 +842,7 @@ fn p04_ios_sql_plugin_is_registered_late_on_iphone_only() {
     let lines: Vec<&str> = LIB_SOURCE.lines().collect();
     let uses: Vec<usize> = lines.iter().enumerate().filter(|(_, l)| l.contains("tauri_plugin_sql::Builder")).map(|(i, _)| i).collect();
     assert_eq!(uses.len(), 1, "un seul enregistrement dans lib.rs");
-    assert_eq!(lines[uses[0] - 1].trim(), "#[cfg(desktop)]");
+    assert_eq!(crate::support::stmt_attr(&lines, uses[0]), "#[cfg(desktop)]");
     let configure = lines.iter().position(|l| l.contains("desktop::configure(builder)")).unwrap();
     assert!(configure < uses[0], "après desktop::configure (instance unique d'abord)");
     let gate = include_str!("../../src/startup_gate.rs");

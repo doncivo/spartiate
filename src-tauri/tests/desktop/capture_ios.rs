@@ -318,7 +318,7 @@ fn cap_ios_01_5_plugins_are_called_by_rust_only() {
     ] {
         assert!(build.contains("const COMMANDS: &[&str] = &[];"), "{name} : aucune commande déclarée");
         assert!(build.contains(".ios_path(\"ios\")"));
-        assert!(lib.contains("pub fn call(&self, command: &str, args: serde_json::Value) -> Result<serde_json::Value, String>"));
+        assert!(crate::support::has(lib, "pub fn call(&self, command: &str, args: serde_json::Value) -> Result<serde_json::Value, String>"));
         assert!(lib.contains("run_mobile_plugin") && !lib.contains("#[tauri::command]"));
         assert!(lib.contains(&format!("Builder::new(\"{name}\")")) && lib.contains(&format!("init_plugin_{name}")));
     }
@@ -350,12 +350,13 @@ fn cap_ios_01_15_crates_are_ios_dependencies_only_and_registered_for_ios_only() 
     let line_of = |needle: &str| lines.iter().position(|l| l.contains(needle)).unwrap_or_else(|| panic!("{needle} absent de lib.rs"));
     // Enregistrement des plugins et de leurs états : sous cfg(target_os = "ios").
     let plugins = line_of("tauri_plugin_vision::init()");
-    assert_eq!(lines[plugins - 1].trim(), "#[cfg(target_os = \"ios\")]");
-    assert!(lines[plugins].contains("tauri_plugin_speech::init()") && lines[plugins].contains("SpeechState::default()") && lines[plugins].contains("VisionState::default()"));
+    assert_eq!(crate::support::stmt_attr(&lines, plugins), "#[cfg(target_os = \"ios\")]");
+    let plugin_stmt = crate::support::stmt_text(&lines, plugins);
+    assert!(plugin_stmt.contains("tauri_plugin_speech::init()") && plugin_stmt.contains("SpeechState::default()") && plugin_stmt.contains("VisionState::default()"));
     // Commandes de dictée : dans le gestionnaire iOS seulement.
     let first_speech_command = line_of("speech::ios::speech_status");
     let handler = (0..first_speech_command).rev().find(|i| lines[*i].contains("invoke_handler")).expect("gestionnaire");
-    assert_eq!(lines[handler - 1].trim(), "#[cfg(target_os = \"ios\")]", "les commandes speech_* ne sont que dans le gestionnaire iOS");
+    assert_eq!(crate::support::stmt_attr(&lines, handler), "#[cfg(target_os = \"ios\")]", "les commandes speech_* ne sont que dans le gestionnaire iOS");
     assert_eq!(LIB_RS.matches("speech::ios::").count(), 5, "cinq commandes, une fois chacune");
     assert!(LIB_RS.contains("#[cfg(any(desktop, target_os = \"ios\"))]\npub mod ocr;"));
     // Manifeste des commandes.

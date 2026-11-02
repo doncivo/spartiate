@@ -228,7 +228,7 @@ fn y_ios_01_1_swift_has_no_french_text_nor_label() {
 fn y_ios_01_1_plugin_exposes_no_command_to_the_webview_and_rust_is_its_only_caller() {
     assert!(PLUGIN_BUILD.contains("const COMMANDS: &[&str] = &[];"), "aucune commande déclarée");
     assert!(PLUGIN_BUILD.contains(".ios_path(\"ios\")"));
-    assert!(PLUGIN_LIB.contains("pub fn call(&self, command: &str, args: serde_json::Value) -> Result<serde_json::Value, String>"));
+    assert!(crate::support::has(PLUGIN_LIB, "pub fn call(&self, command: &str, args: serde_json::Value) -> Result<serde_json::Value, String>"));
     assert!(PLUGIN_LIB.contains("run_mobile_plugin"));
     assert!(!PLUGIN_LIB.contains("#[tauri::command]"));
 }
@@ -740,7 +740,7 @@ fn app_sources() -> Vec<(String, String)> {
 #[test]
 fn y_ios_05_14_production_transport_is_wrapped_by_the_deadline() {
     assert!(
-        COMMANDS_IOS_RS.contains("DeadlineTransport::new(Arc::new(PluginTransport(plugin.inner().clone())))"),
+        crate::support::has(COMMANDS_IOS_RS, "DeadlineTransport::new(Arc::new(PluginTransport(plugin.inner().clone())))"),
         "commands_ios.rs : le transport du plugin passe par DeadlineTransport::new"
     );
     assert_eq!(

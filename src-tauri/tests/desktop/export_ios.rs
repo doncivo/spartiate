@@ -408,7 +408,7 @@ fn files_ios_01_4_plugin_exposes_no_command_to_the_webview() {
     assert!(PLUGIN_CARGO.contains("name = \"tauri-plugin-ct-files\"") && PLUGIN_CARGO.contains("links = \"tauri-plugin-ct-files\""));
     assert!(PACKAGE_SWIFT.contains("name: \"tauri-plugin-ct-files\""));
     assert!(!PLUGIN_LIB.contains("invoke_handler"));
-    assert!(PLUGIN_LIB.contains("pub fn call(&self, command: &str, args: serde_json::Value) -> Result<serde_json::Value, String>"));
+    assert!(crate::support::has(PLUGIN_LIB, "pub fn call(&self, command: &str, args: serde_json::Value) -> Result<serde_json::Value, String>"));
 }
 
 // --- revue I4 : jamais d'appel en suspens ni d'occupation permanente ---
@@ -420,7 +420,7 @@ fn files_ios_01_i4_silent_presentation_failures_reject_and_rust_bounds_the_wait(
     assert!(code.contains("controller.presentingViewController == nil || controller.isBeingDismissed"));
     assert!(code.contains("self.failPending()"));
     assert!(code.contains("stale.presentingViewController == nil"), "appel en suspens d'un sélecteur disparu résolu d'abord");
-    assert!(EXPORT_IOS_RS.contains("call_with_deadline(move || plugin.call(\"present\", args), PRESENT_DEADLINE)"));
+    assert!(crate::support::has(EXPORT_IOS_RS, "call_with_deadline(move || plugin.call(\"present\", args), PRESENT_DEADLINE)"));
     assert_eq!(spartiate_lib::export_ios::PRESENT_DEADLINE, std::time::Duration::from_secs(900));
     // Le délai dépassé est visible avec son code et le temporaire est supprimé.
     let cache = tempfile::tempdir().unwrap();

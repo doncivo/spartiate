@@ -176,7 +176,7 @@ fn p04_ios_12_marker_outcome_is_returned_not_configured_or_failed() {
     }
     let source = include_str!("../../src/backup.rs");
     assert!(!source.contains("eprintln!"), "plus aucun eprintln! pour le marqueur");
-    assert!(include_str!("../../src/startup_gate.rs").contains("RestoreOutcome { marker: state, marker_code: code, ..outcome }"));
+    assert!(crate::support::has(include_str!("../../src/startup_gate.rs"), "RestoreOutcome { marker: state, marker_code: code, ..outcome }"));
 }
 
 #[test]
@@ -310,8 +310,9 @@ fn p04_ios_set_aside_is_refused_unless_the_gate_failed_on_a_conflict_and_no_pool
     // La commande vérifie la porte et les pools AVANT tout déplacement.
     let source = include_str!("../../src/startup_gate.rs");
     let command = &source[source.find("pub async fn backup_set_aside_conflicts(").unwrap()..];
-    let allowed = command.find("set_aside_allowed(").unwrap();
-    assert!(command.find("open_sql_pools(").unwrap() < allowed && allowed < command.find("set_aside_conflicts(&").unwrap());
+    let command = crate::support::sq(command);
+    let allowed = command.find(&crate::support::sq("set_aside_allowed(")).unwrap();
+    assert!(command.find(&crate::support::sq("open_sql_pools(")).unwrap() < allowed && allowed < command.find(&crate::support::sq("set_aside_conflicts(&")).unwrap());
 }
 
 #[test]
@@ -911,7 +912,7 @@ fn i06_a9_committed_19_survives_process_exit_and_native_rollback_recovers_18() {
 fn i06_local_rollback_is_chosen_by_the_command_flag_after_the_sql_guard() {
     let source = include_str!("../../src/backup.rs");
     let command = &source[source.find("pub async fn restore_backup(").unwrap()..];
-    assert!(command.starts_with("pub async fn restore_backup(app: AppHandle, name: String, stamp: String, local: Option<bool>)"));
+    assert!(crate::support::sq(command).starts_with(&crate::support::sq("pub async fn restore_backup(app: AppHandle, name: String, stamp: String, local: Option<bool>)")));
     let guard = command.find("ensure_sql_closed(&app).await?").unwrap();
     assert!(guard < command.find("restore_local_rollback(").unwrap(), "contrôle AVANT l'échange");
 }

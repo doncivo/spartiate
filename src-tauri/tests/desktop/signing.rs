@@ -234,8 +234,8 @@ fn source_reads_only_the_two_documented_keys() {
 fn source_opens_without_following_links_and_checks_the_descriptor() {
     const SOURCE: &str = include_str!("../../src/signing.rs");
     let code: String = SOURCE.lines().filter(|l| !l.trim_start().starts_with("//")).collect::<Vec<_>>().join("\n");
-    assert!(code.contains("libc::O_NOFOLLOW"));
-    assert!(code.contains("file.metadata()"));
+    assert!(crate::support::has(&code, "libc::O_NOFOLLOW"));
+    assert!(crate::support::has(&code, "file.metadata()"));
     // Le contrôle de taille et de type ne passe plus par le chemin (hors garde de lien des cibles non unix).
     assert_eq!(code.matches("symlink_metadata").count(), 1);
 }
