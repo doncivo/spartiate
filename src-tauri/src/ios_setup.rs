@@ -17,7 +17,11 @@ pub fn setup(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     match app.path().app_cache_dir() {
         Ok(cache_dir) => match crate::export_ios::purge_exports(&cache_dir) {
             Ok(0) => {}
-            Ok(count) => crate::applog::write_count("export", "temp-purged", u32::try_from(count).unwrap_or(u32::MAX)),
+            Ok(count) => crate::applog::write_count(
+                "export",
+                "temp-purged",
+                u32::try_from(count).unwrap_or(u32::MAX),
+            ),
             Err(_) => crate::applog::write("export", "temp-purge-failed"),
         },
         Err(_) => crate::applog::write("export", "no-cache-dir"),

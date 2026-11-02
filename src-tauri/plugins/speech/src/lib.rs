@@ -35,17 +35,30 @@ impl<R: Runtime> Clone for Speech<R> {
 impl<R: Runtime> Speech<R> {
     /// Appelle la commande Swift `command` avec `args` ; rend sa réponse JSON, ou le code de rejet.
     #[cfg(target_os = "ios")]
-    pub fn call(&self, command: &str, args: serde_json::Value) -> Result<serde_json::Value, String> {
+    pub fn call(
+        &self,
+        command: &str,
+        args: serde_json::Value,
+    ) -> Result<serde_json::Value, String> {
         use tauri::plugin::mobile::PluginInvokeError;
-        self.handle.run_mobile_plugin::<serde_json::Value>(command, args).map_err(|error| match error {
-            PluginInvokeError::InvokeRejected(response) => response.code.filter(|code| !code.is_empty()).unwrap_or_else(|| "failed".to_owned()),
-            _ => "unavailable".to_owned(),
-        })
+        self.handle
+            .run_mobile_plugin::<serde_json::Value>(command, args)
+            .map_err(|error| match error {
+                PluginInvokeError::InvokeRejected(response) => response
+                    .code
+                    .filter(|code| !code.is_empty())
+                    .unwrap_or_else(|| "failed".to_owned()),
+                _ => "unavailable".to_owned(),
+            })
     }
 
     /// Hors iOS (le crate n'est une dépendance que de la cible iOS) : aucun plugin, `unavailable`.
     #[cfg(not(target_os = "ios"))]
-    pub fn call(&self, _command: &str, _args: serde_json::Value) -> Result<serde_json::Value, String> {
+    pub fn call(
+        &self,
+        _command: &str,
+        _args: serde_json::Value,
+    ) -> Result<serde_json::Value, String> {
         Err("unavailable".to_owned())
     }
 }
@@ -55,11 +68,15 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("speech")
         .setup(|app, api| {
             #[cfg(target_os = "ios")]
-            let plugin = Speech { handle: api.register_ios_plugin(init_plugin_speech)? };
+            let plugin = Speech {
+                handle: api.register_ios_plugin(init_plugin_speech)?,
+            };
             #[cfg(not(target_os = "ios"))]
             let plugin = {
                 let _ = api;
-                Speech::<R> { _runtime: std::marker::PhantomData }
+                Speech::<R> {
+                    _runtime: std::marker::PhantomData,
+                }
             };
             app.manage(plugin);
             Ok(())

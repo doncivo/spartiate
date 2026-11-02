@@ -101,7 +101,10 @@ pub struct BackupError {
 
 impl BackupError {
     fn new(code: &'static str, message: impl Into<String>) -> Self {
-        Self { code, message: message.into() }
+        Self {
+            code,
+            message: message.into(),
+        }
     }
 }
 
@@ -189,12 +192,21 @@ pub fn parse_backup_name(name: &str) -> Option<(Family, String)> {
     }
     if let Some(stamp) = migration_stamp(name) {
         // Forme stricte : `vNNNN-to-vMMMM-AAAAMMJJTHHMMSSZ`.
-        let middle = name.strip_prefix(MIGRATION_PREFIX)?.strip_suffix(".db")?.strip_suffix(stamp)?.strip_suffix('-')?;
+        let middle = name
+            .strip_prefix(MIGRATION_PREFIX)?
+            .strip_suffix(".db")?
+            .strip_suffix(stamp)?
+            .strip_suffix('-')?;
         let (from, to) = middle.split_once("-to-")?;
-        let versions_ok = [from, to].iter().all(|v| v.len() == 5 && v.starts_with('v') && v[1..].bytes().all(|b| b.is_ascii_digit()));
+        let versions_ok = [from, to].iter().all(|v| {
+            v.len() == 5 && v.starts_with('v') && v[1..].bytes().all(|b| b.is_ascii_digit())
+        });
         return versions_ok.then(|| (Family::Migration, stamp.to_owned()));
     }
-    if let Some(day) = name.strip_prefix(DAILY_PREFIX).and_then(|r| r.strip_suffix(".db")) {
+    if let Some(day) = name
+        .strip_prefix(DAILY_PREFIX)
+        .and_then(|r| r.strip_suffix(".db"))
+    {
         return is_valid_day(day).then(|| (Family::Daily, day.to_owned()));
     }
     let stamp = name.strip_prefix(PRE_RESTORE_PREFIX)?.strip_suffix(".db")?;
@@ -212,7 +224,9 @@ pub fn prune_family(dir: &Path, family: Family, keep: usize) -> io::Result<usize
     let mut found: Vec<(String, PathBuf)> = Vec::new();
     for entry in fs::read_dir(dir)? {
         let path = entry?.path();
-        let Some(name) = path.file_name().and_then(|n| n.to_str()) else { continue };
+        let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
+            continue;
+        };
         if let Some((found_family, key)) = parse_backup_name(name) {
             if found_family == family {
                 found.push((format!("{key}{name}"), path));
@@ -235,11 +249,23 @@ pub fn prune_family(dir: &Path, family: Family, keep: usize) -> io::Result<usize
 /// Rotation des copies `pre-restore` : supprime les `-wal` / `-shm` dont la base `.db` du même nom est absente (restes d'un archivage interrompu
 /// jamais repris). Appelée seulement quand aucun archivage n'est en cours (après un archivage ou une restauration abouti).
 fn remove_orphan_sidecars(dir: &Path) {
-    let Ok(entries) = fs::read_dir(dir) else { return };
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
     for path in entries.filter_map(Result::ok).map(|e| e.path()) {
-        let Some(name) = path.file_name().and_then(|n| n.to_str()) else { continue };
-        let Some(base) = name.strip_suffix("-wal").or_else(|| name.strip_suffix("-shm")) else { continue };
-        if parse_backup_name(base).is_some_and(|(family, _)| family == Family::PreRestore) && !present(&dir.join(base)) && is_plain_file(&path) {
+        let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
+            continue;
+        };
+        let Some(base) = name
+            .strip_suffix("-wal")
+            .or_else(|| name.strip_suffix("-shm"))
+        else {
+            continue;
+        };
+        if parse_backup_name(base).is_some_and(|(family, _)| family == Family::PreRestore)
+            && !present(&dir.join(base))
+            && is_plain_file(&path)
+        {
             let _ = fs::remove_file(&path);
         }
     }
@@ -248,7 +274,9 @@ fn remove_orphan_sidecars(dir: &Path) {
 /// Vrai pour un fichier ordinaire, jamais pour un lien symbolique, une jonction ou tout autre point d'analyse (`FILE_ATTRIBUTE_REPARSE_POINT`).
 /// `symlink_metadata` ne suit pas les liens : un fichier du dossier des sauvegardes qui pointerait ailleurs n'est ni lu ni restauré.
 pub fn is_plain_file(path: &Path) -> bool {
-    let Ok(meta) = fs::symlink_metadata(path) else { return false };
+    let Ok(meta) = fs::symlink_metadata(path) else {
+        return false;
+    };
     if meta.file_type().is_symlink() || !meta.is_file() {
         return false;
     }
@@ -277,14 +305,19 @@ fn ensure_plain_backups_dir(dir: &Path) -> Result<(), BackupError> {
         }
     });
     if linked {
-        return Err(BackupError::new("unsafe-folder", "le dossier des sauvegardes est un lien ou une jonction"));
+        return Err(BackupError::new(
+            "unsafe-folder",
+            "le dossier des sauvegardes est un lien ou une jonction",
+        ));
     }
     Ok(())
 }
 
 /// Vrai pour un dossier ordinaire (ni lien ni jonction).
 pub fn is_plain_dir(path: &Path) -> bool {
-    let Ok(meta) = fs::symlink_metadata(path) else { return false };
+    let Ok(meta) = fs::symlink_metadata(path) else {
+        return false;
+    };
     if meta.file_type().is_symlink() || !meta.is_dir() {
         return false;
     }
@@ -305,10 +338,15 @@ pub fn prune_migration_backups(dir: &Path, keep: usize) -> io::Result<usize> {
 
 /// Supprime les `.tmp` orphelins d'une sauvegarde interrompue (début de chaque sauvegarde), toutes familles.
 fn remove_orphan_tmp(dir: &Path) {
-    let Ok(entries) = fs::read_dir(dir) else { return };
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
     for path in entries.filter_map(Result::ok).map(|e| e.path()) {
         let is_tmp = path.file_name().and_then(|n| n.to_str()).is_some_and(|n| {
-            n.ends_with(".tmp") && [MIGRATION_PREFIX, DAILY_PREFIX, PRE_RESTORE_PREFIX].iter().any(|prefix| n.starts_with(prefix))
+            n.ends_with(".tmp")
+                && [MIGRATION_PREFIX, DAILY_PREFIX, PRE_RESTORE_PREFIX]
+                    .iter()
+                    .any(|prefix| n.starts_with(prefix))
         });
         if is_tmp {
             let _ = fs::remove_file(path);
@@ -324,9 +362,14 @@ fn copy_database(source: &Path, target: &Path, busy_ms: u64) -> Result<(), Backu
     let _ = fs::remove_file(&tmp);
     let result = (|| {
         let conn = open_read_only_with(source, busy_ms).map_err(sql_err)?;
-        conn.execute("VACUUM INTO ?1", [tmp.to_string_lossy().as_ref()]).map_err(sql_err)?;
+        conn.execute("VACUUM INTO ?1", [tmp.to_string_lossy().as_ref()])
+            .map_err(sql_err)?;
         drop(conn);
-        fs::File::options().write(true).open(&tmp).and_then(|f| f.sync_all()).map_err(io_err)?;
+        fs::File::options()
+            .write(true)
+            .open(&tmp)
+            .and_then(|f| f.sync_all())
+            .map_err(io_err)?;
         fs::rename(&tmp, target).map_err(io_err)
     })();
     if result.is_err() {
@@ -347,13 +390,19 @@ pub fn create_migration_backup(
     keep: usize,
 ) -> Result<BackupOutcome, BackupError> {
     if !is_valid_stamp(stamp) {
-        return Err(BackupError::new("bad-stamp", format!("horodatage invalide : {stamp}")));
+        return Err(BackupError::new(
+            "bad-stamp",
+            format!("horodatage invalide : {stamp}"),
+        ));
     }
     if !db_path.is_file() {
         if from_version >= 1 {
             return Err(BackupError::new("no-database", "base introuvable"));
         }
-        return Ok(BackupOutcome { path: None, removed: 0 });
+        return Ok(BackupOutcome {
+            path: None,
+            removed: 0,
+        });
     }
     ensure_plain_backups_dir(backups_dir)?;
     fs::create_dir_all(backups_dir).map_err(io_err)?;
@@ -362,7 +411,10 @@ pub fn create_migration_backup(
     copy_database(db_path, &target, DEFAULT_BUSY_MS)?;
     // Le nettoyage ne doit jamais faire échouer une sauvegarde réussie.
     let removed = prune_family(backups_dir, Family::Migration, keep).unwrap_or(0);
-    Ok(BackupOutcome { path: Some(target.to_string_lossy().into_owned()), removed })
+    Ok(BackupOutcome {
+        path: Some(target.to_string_lossy().into_owned()),
+        removed,
+    })
 }
 
 /// Résultat d'une sauvegarde quotidienne.
@@ -377,9 +429,18 @@ pub struct DailyOutcome {
 
 /// Sauvegarde quotidienne `spartiate-daily-AAAAMMJJ.db` (P-04 critères 1 et 2). Une version du jour déjà présente est conservée sauf
 /// si `replace` (« Sauvegarder maintenant »). Purge des seules sauvegardes quotidiennes au-delà de `keep`.
-pub fn create_daily_backup(db_path: &Path, backups_dir: &Path, day: &str, replace: bool, keep: usize) -> Result<DailyOutcome, BackupError> {
+pub fn create_daily_backup(
+    db_path: &Path,
+    backups_dir: &Path,
+    day: &str,
+    replace: bool,
+    keep: usize,
+) -> Result<DailyOutcome, BackupError> {
     if !is_valid_day(day) {
-        return Err(BackupError::new("bad-day", format!("jour invalide : {day}")));
+        return Err(BackupError::new(
+            "bad-day",
+            format!("jour invalide : {day}"),
+        ));
     }
     if !db_path.is_file() {
         return Err(BackupError::new("no-database", "base introuvable"));
@@ -390,11 +451,19 @@ pub fn create_daily_backup(db_path: &Path, backups_dir: &Path, day: &str, replac
     let name = daily_backup_name(day);
     let target = backups_dir.join(&name);
     if target.is_file() && !replace {
-        return Ok(DailyOutcome { name, created: false, removed: 0 });
+        return Ok(DailyOutcome {
+            name,
+            created: false,
+            removed: 0,
+        });
     }
     copy_database(db_path, &target, DAILY_BUSY_MS)?;
     let removed = prune_family(backups_dir, Family::Daily, keep).unwrap_or(0);
-    Ok(DailyOutcome { name, created: true, removed })
+    Ok(DailyOutcome {
+        name,
+        created: true,
+        removed,
+    })
 }
 
 /// Une version listée dans la feuille de restauration.
@@ -424,7 +493,10 @@ pub struct BackupEntry {
 /// Liste des sauvegardes de `dir`, les plus récentes d'abord. Dossier absent : liste vide. Les fichiers d'autres noms sont ignorés.
 pub fn list_backups_in(dir: &Path) -> Result<Vec<BackupEntry>, BackupError> {
     if present(dir) && !is_plain_dir(dir) {
-        return Err(BackupError::new("not-found", "le dossier des sauvegardes n'est pas un dossier ordinaire"));
+        return Err(BackupError::new(
+            "not-found",
+            "le dossier des sauvegardes n'est pas un dossier ordinaire",
+        ));
     }
     let reader = match fs::read_dir(dir) {
         Ok(reader) => reader,
@@ -435,8 +507,12 @@ pub fn list_backups_in(dir: &Path) -> Result<Vec<BackupEntry>, BackupError> {
     for entry in reader {
         let entry = entry.map_err(io_err)?;
         let path = entry.path();
-        let Some(name) = path.file_name().and_then(|n| n.to_str()).map(str::to_owned) else { continue };
-        let Some((family, stamp)) = parse_backup_name(&name) else { continue };
+        let Some(name) = path.file_name().and_then(|n| n.to_str()).map(str::to_owned) else {
+            continue;
+        };
+        let Some((family, stamp)) = parse_backup_name(&name) else {
+            continue;
+        };
         let Ok(meta) = entry.metadata() else { continue };
         if !is_plain_file(&path) {
             continue;
@@ -446,17 +522,47 @@ pub fn list_backups_in(dir: &Path) -> Result<Vec<BackupEntry>, BackupError> {
             .ok()
             .and_then(|m| m.duration_since(std::time::UNIX_EPOCH).ok())
             .map_or(0, |d| u64::try_from(d.as_millis()).unwrap_or(u64::MAX));
-        let BackupSummary { tasks, schema_version, device_id, platform, epoch } = if meta.len() > MAX_BACKUP_BYTES { BackupSummary::default() } else { read_summary(&path) };
-        entries.push(BackupEntry { name, kind: family.kind(), stamp, size: meta.len(), modified_ms, tasks, schema_version, device_id, platform, epoch });
+        let BackupSummary {
+            tasks,
+            schema_version,
+            device_id,
+            platform,
+            epoch,
+        } = if meta.len() > MAX_BACKUP_BYTES {
+            BackupSummary::default()
+        } else {
+            read_summary(&path)
+        };
+        entries.push(BackupEntry {
+            name,
+            kind: family.kind(),
+            stamp,
+            size: meta.len(),
+            modified_ms,
+            tasks,
+            schema_version,
+            device_id,
+            platform,
+            epoch,
+        });
     }
-    entries.sort_by(|a, b| b.modified_ms.cmp(&a.modified_ms).then_with(|| b.stamp.cmp(&a.stamp)).then_with(|| b.name.cmp(&a.name)));
+    entries.sort_by(|a, b| {
+        b.modified_ms
+            .cmp(&a.modified_ms)
+            .then_with(|| b.stamp.cmp(&a.stamp))
+            .then_with(|| b.name.cmp(&a.name))
+    });
     Ok(entries)
 }
 
 /// Ouvre un fichier de sauvegarde en lecture seule avec `trusted_schema = OFF` : les fonctions SQL « non fiables » des déclencheurs et des vues
 /// d'une base venue de l'extérieur ne sont pas exécutées.
-pub fn open_read_only_with(path: &Path, busy_ms: u64) -> Result<rusqlite::Connection, rusqlite::Error> {
-    let conn = rusqlite::Connection::open_with_flags(path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+pub fn open_read_only_with(
+    path: &Path,
+    busy_ms: u64,
+) -> Result<rusqlite::Connection, rusqlite::Error> {
+    let conn =
+        rusqlite::Connection::open_with_flags(path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?;
     conn.busy_timeout(std::time::Duration::from_millis(busy_ms))?;
     conn.pragma_update(None, "trusted_schema", "OFF")?;
     Ok(conn)
@@ -470,7 +576,11 @@ fn open_read_only(path: &Path) -> Result<rusqlite::Connection, rusqlite::Error> 
 /// `None` si le chemin n'est pas en UTF-8.
 fn immutable_uri(path: &Path) -> Option<String> {
     let text = path.to_str()?.replace('\\', "/");
-    let mut uri = String::from(if text.starts_with('/') { "file:" } else { "file:///" });
+    let mut uri = String::from(if text.starts_with('/') {
+        "file:"
+    } else {
+        "file:///"
+    });
     for byte in text.bytes() {
         if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.' | b'~' | b'/' | b':') {
             uri.push(char::from(byte));
@@ -486,12 +596,22 @@ fn immutable_uri(path: &Path) -> Option<String> {
 /// faite par `VACUUM INTO`, n'en a jamais) est ouverte `immutable=1`, sans verrou ni journal : même une copie dont l'en-tête annonce le mode WAL
 /// ne se voit pas créer de `-wal` ni de `-shm` à côté d'elle. Avec un journal présent (cas anormal) : ouverture en lecture seule ordinaire.
 fn open_for_summary(path: &Path) -> Result<rusqlite::Connection, rusqlite::Error> {
-    if ["-wal", "-shm", "-journal"].iter().any(|suffix| present(&sidecar(path, suffix))) {
+    if ["-wal", "-shm", "-journal"]
+        .iter()
+        .any(|suffix| present(&sidecar(path, suffix)))
+    {
         return open_read_only(path);
     }
-    let Some(uri) = immutable_uri(path) else { return open_read_only(path) };
+    let Some(uri) = immutable_uri(path) else {
+        return open_read_only(path);
+    };
     // Ouverture URI impossible (chemin ou VFS inattendu) : repli sur l'ouverture en lecture seule ordinaire, jamais une erreur de liste.
-    let Ok(conn) = rusqlite::Connection::open_with_flags(uri, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_URI) else { return open_read_only(path) };
+    let Ok(conn) = rusqlite::Connection::open_with_flags(
+        uri,
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_URI,
+    ) else {
+        return open_read_only(path);
+    };
     conn.busy_timeout(std::time::Duration::from_millis(DEFAULT_BUSY_MS))?;
     conn.pragma_update(None, "trusted_schema", "OFF")?;
     Ok(conn)
@@ -515,13 +635,33 @@ struct BackupSummary {
 /// `device_id` et `platform` ; `sync_meta` (clé `epoch`, valeur JSON texte décodée) donne `epoch`. Aucune écriture : le fichier est ouvert en
 /// lecture seule (`open_read_only`), un fichier sans `-wal` n'en reçoit pas.
 fn read_summary(path: &Path) -> BackupSummary {
-    let Ok(conn) = open_for_summary(path) else { return BackupSummary::default() };
-    let is_table = |name: &str| -> bool {
-        conn.query_row("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?1", [name], |r| r.get::<_, u64>(0)).is_ok_and(|n| n == 1)
+    let Ok(conn) = open_for_summary(path) else {
+        return BackupSummary::default();
     };
-    let tasks = if is_table("task") { conn.query_row("SELECT COUNT(*) FROM task WHERE deleted_at IS NULL", [], |r| r.get::<_, u64>(0)).ok() } else { None };
+    let is_table = |name: &str| -> bool {
+        conn.query_row(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?1",
+            [name],
+            |r| r.get::<_, u64>(0),
+        )
+        .is_ok_and(|n| n == 1)
+    };
+    let tasks = if is_table("task") {
+        conn.query_row(
+            "SELECT COUNT(*) FROM task WHERE deleted_at IS NULL",
+            [],
+            |r| r.get::<_, u64>(0),
+        )
+        .ok()
+    } else {
+        None
+    };
     let schema_version = if is_table("schema_migrations") {
-        conn.query_row("SELECT MAX(version) FROM schema_migrations", [], |r| r.get::<_, Option<u32>>(0)).ok().flatten()
+        conn.query_row("SELECT MAX(version) FROM schema_migrations", [], |r| {
+            r.get::<_, Option<u32>>(0)
+        })
+        .ok()
+        .flatten()
     } else {
         None
     };
@@ -532,20 +672,32 @@ fn read_summary(path: &Path) -> BackupSummary {
         (None, None)
     };
     let epoch = if is_table("sync_meta") {
-        conn.query_row("SELECT value FROM sync_meta WHERE key = 'epoch'", [], |r| r.get::<_, String>(0))
-            .ok()
-            .and_then(|raw| serde_json::from_str::<Option<String>>(&raw).ok().flatten())
+        conn.query_row("SELECT value FROM sync_meta WHERE key = 'epoch'", [], |r| {
+            r.get::<_, String>(0)
+        })
+        .ok()
+        .and_then(|raw| serde_json::from_str::<Option<String>>(&raw).ok().flatten())
     } else {
         None
     };
     // Un texte vide ou démesuré (fichier venu de l'extérieur) n'est pas un identifiant : `None`.
-    let clean = |value: Option<String>| value.filter(|v| !v.is_empty() && v.len() <= MAX_SUMMARY_TEXT);
-    BackupSummary { tasks, schema_version, device_id: clean(device_id), platform: clean(platform), epoch: clean(epoch) }
+    let clean =
+        |value: Option<String>| value.filter(|v| !v.is_empty() && v.len() <= MAX_SUMMARY_TEXT);
+    BackupSummary {
+        tasks,
+        schema_version,
+        device_id: clean(device_id),
+        platform: clean(platform),
+        epoch: clean(epoch),
+    }
 }
 
 /// SQL aux espaces ASCII compactés (retours à la ligne et indentation sans effet sur la comparaison ; une espace Unicode, elle, est une différence).
 pub fn normalize_sql(sql: &str) -> String {
-    sql.split(|c: char| c.is_ascii_whitespace()).filter(|part| !part.is_empty()).collect::<Vec<_>>().join(" ")
+    sql.split(|c: char| c.is_ascii_whitespace())
+        .filter(|part| !part.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 /// Supprime tous les déclencheurs du fichier puis recrée ceux de l'app depuis leur référence (pour les tables présentes). Appelée sur le fichier
@@ -554,28 +706,52 @@ pub fn normalize_sql(sql: &str) -> String {
 /// la migration le fera à l'ouverture.
 pub fn reset_triggers(path: &Path) -> Result<(), BackupError> {
     let conn = rusqlite::Connection::open(path).map_err(sql_err)?;
-    conn.pragma_update(None, "trusted_schema", "OFF").map_err(sql_err)?;
+    conn.pragma_update(None, "trusted_schema", "OFF")
+        .map_err(sql_err)?;
     // Journal « DELETE » : le fichier préparé reste un fichier unique (ni `-wal` ni `-shm` à côté, qu'un échange laisserait derrière lui).
-    conn.query_row("PRAGMA journal_mode = DELETE", [], |r| r.get::<_, String>(0)).map_err(sql_err)?;
+    conn.query_row("PRAGMA journal_mode = DELETE", [], |r| {
+        r.get::<_, String>(0)
+    })
+    .map_err(sql_err)?;
     let tx = conn.unchecked_transaction().map_err(sql_err)?;
     let existing: Vec<String> = {
-        let mut statement = tx.prepare("SELECT name FROM sqlite_master WHERE lower(type) = 'trigger'").map_err(sql_err)?;
-        let rows = statement.query_map([], |r| r.get::<_, String>(0)).map_err(sql_err)?.collect::<Result<_, _>>().map_err(sql_err)?;
+        let mut statement = tx
+            .prepare("SELECT name FROM sqlite_master WHERE lower(type) = 'trigger'")
+            .map_err(sql_err)?;
+        let rows = statement
+            .query_map([], |r| r.get::<_, String>(0))
+            .map_err(sql_err)?
+            .collect::<Result<_, _>>()
+            .map_err(sql_err)?;
         rows
     };
     for name in existing {
-        tx.execute_batch(&format!("DROP TRIGGER \"{}\"", name.replace('"', "\"\""))).map_err(sql_err)?;
+        tx.execute_batch(&format!("DROP TRIGGER \"{}\"", name.replace('"', "\"\"")))
+            .map_err(sql_err)?;
     }
     // Un objet dont le `type` de sqlite_master a une autre casse ('Trigger') n'est pas supprimé par DROP TRIGGER (SQLite cherche 'trigger') : s'il en
     // reste un, le fichier n'est pas fiable (`check_backup_file` l'aurait déjà refusé) et la préparation échoue, transaction annulée.
     let leftover: u64 = tx
-        .query_row("SELECT COUNT(*) FROM sqlite_master WHERE lower(type) = 'trigger'", [], |r| r.get(0))
+        .query_row(
+            "SELECT COUNT(*) FROM sqlite_master WHERE lower(type) = 'trigger'",
+            [],
+            |r| r.get(0),
+        )
         .map_err(sql_err)?;
     if leftover > 0 {
-        return Err(BackupError::new("corrupt", "un déclencheur n'a pas pu être supprimé"));
+        return Err(BackupError::new(
+            "corrupt",
+            "un déclencheur n'a pas pu être supprimé",
+        ));
     }
     let has_table = |table: &str| -> Result<bool, BackupError> {
-        tx.query_row("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?1", [table], |r| r.get::<_, u64>(0)).map(|n| n == 1).map_err(sql_err)
+        tx.query_row(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?1",
+            [table],
+            |r| r.get::<_, u64>(0),
+        )
+        .map(|n| n == 1)
+        .map_err(sql_err)
     };
     // Déclencheurs de capture de la synchro (`sync_*`, migration 0015) : seulement si leurs tables existent (une sauvegarde plus ancienne
     // les recevra par la migration à l'ouverture ; les créer ici ferait échouer cette migration).
@@ -583,7 +759,12 @@ pub fn reset_triggers(path: &Path) -> Result<(), BackupError> {
     // Corps valables à la version de la sauvegarde (une sauvegarde de version 17 reçoit les corps de la migration 0015, jamais un corps qui
     // cite une colonne absente d'elle ; la migration 0018 les remplace à l'ouverture). Sans table de versions : corps actuels.
     let version = if has_table("schema_migrations")? {
-        tx.query_row("SELECT MAX(version) FROM schema_migrations", [], |r| r.get::<_, Option<u32>>(0)).map_err(sql_err)?.filter(|v| *v >= 1).unwrap_or(APP_SCHEMA_VERSION)
+        tx.query_row("SELECT MAX(version) FROM schema_migrations", [], |r| {
+            r.get::<_, Option<u32>>(0)
+        })
+        .map_err(sql_err)?
+        .filter(|v| *v >= 1)
+        .unwrap_or(APP_SCHEMA_VERSION)
     } else {
         APP_SCHEMA_VERSION
     };
@@ -592,7 +773,9 @@ pub fn reset_triggers(path: &Path) -> Result<(), BackupError> {
             if name.starts_with("sync_") && !has_sync {
                 continue;
             }
-            let Some(sql) = trigger_body_for(name, table, version) else { continue };
+            let Some(sql) = trigger_body_for(name, table, version) else {
+                continue;
+            };
             if has_table(table)? {
                 tx.execute_batch(sql).map_err(sql_err)?;
             }
@@ -612,7 +795,9 @@ pub fn check_backup_file(path: &Path, app_version: u32) -> Result<u32, BackupErr
         return Err(corrupt("sauvegarde de plus de 512 Mo".into()));
     }
     let conn = open_read_only(path).map_err(|e| corrupt(e.to_string()))?;
-    let mut statement = conn.prepare("PRAGMA integrity_check").map_err(|e| corrupt(e.to_string()))?;
+    let mut statement = conn
+        .prepare("PRAGMA integrity_check")
+        .map_err(|e| corrupt(e.to_string()))?;
     let rows: Vec<String> = statement
         .query_map([], |r| r.get::<_, String>(0))
         .map_err(|e| corrupt(e.to_string()))?
@@ -629,7 +814,14 @@ pub fn check_backup_file(path: &Path, app_version: u32) -> Result<u32, BackupErr
         .prepare("SELECT type, name, tbl_name, sql FROM sqlite_master WHERE type NOT IN ('table', 'index')")
         .map_err(|e| corrupt(e.to_string()))?;
     let found: Vec<(String, String, String, Option<String>)> = definitions
-        .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?, r.get::<_, String>(2)?, r.get::<_, Option<String>>(3)?)))
+        .query_map([], |r| {
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, String>(1)?,
+                r.get::<_, String>(2)?,
+                r.get::<_, Option<String>>(3)?,
+            ))
+        })
         .map_err(|e| corrupt(e.to_string()))?
         .collect::<Result<_, _>>()
         .map_err(|e| corrupt(e.to_string()))?;
@@ -637,12 +829,23 @@ pub fn check_backup_file(path: &Path, app_version: u32) -> Result<u32, BackupErr
     // Version de schéma lue d'abord : le corps admis d'un déclencheur dépend d'elle (une sauvegarde de version 17 porte les corps de la migration
     // 0015, remplacés par la 0018 : `SUPERSEDED_TRIGGERS`). Les erreurs de lecture ne sont rendues qu'après le contrôle des définitions (même ordre qu'avant).
     let version_read = conn
-        .query_row("SELECT MAX(version) FROM schema_migrations", [], |r| r.get::<_, Option<u32>>(0))
+        .query_row("SELECT MAX(version) FROM schema_migrations", [], |r| {
+            r.get::<_, Option<u32>>(0)
+        })
         .map_err(|e| corrupt(e.to_string()));
-    let version_for_triggers = version_read.as_ref().ok().copied().flatten().filter(|v| *v >= 1).unwrap_or(app_version);
+    let version_for_triggers = version_read
+        .as_ref()
+        .ok()
+        .copied()
+        .flatten()
+        .filter(|v| *v >= 1)
+        .unwrap_or(app_version);
     for (kind, name, table, sql) in &found {
         let matches_reference = kind == "trigger"
-            && trigger_body_for(name, table, version_for_triggers).is_some_and(|ref_sql| sql.as_deref().is_some_and(|text| normalize_sql(text) == normalize_sql(ref_sql)));
+            && trigger_body_for(name, table, version_for_triggers).is_some_and(|ref_sql| {
+                sql.as_deref()
+                    .is_some_and(|text| normalize_sql(text) == normalize_sql(ref_sql))
+            });
         if !matches_reference {
             return Err(corrupt(format!("définition inattendue : {kind} {name}")));
         }
@@ -651,7 +854,10 @@ pub fn check_backup_file(path: &Path, app_version: u32) -> Result<u32, BackupErr
         .filter(|v| *v >= 1)
         .ok_or_else(|| corrupt("aucune version de schéma".into()))?;
     if version > app_version {
-        return Err(BackupError::new("newer-schema", format!("version de schéma {version} > {app_version}")));
+        return Err(BackupError::new(
+            "newer-schema",
+            format!("version de schéma {version} > {app_version}"),
+        ));
     }
     Ok(version)
 }
@@ -695,11 +901,16 @@ pub fn carry_app_lock(current_db: &Path, staged: &Path) -> Result<(), BackupErro
     let read = || -> Result<Option<Row>, rusqlite::Error> {
         let conn = open_read_only(current_db)?;
         // Base sans table `settings` (jamais le cas de l'app ; bases de test) : aucune valeur à reporter.
-        let has_settings = conn.query_row("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'settings'", [], |r| r.get::<_, u64>(0))? == 1;
+        let has_settings = conn.query_row(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'settings'",
+            [],
+            |r| r.get::<_, u64>(0),
+        )? == 1;
         if !has_settings {
             return Ok(None);
         }
-        let mut stmt = conn.prepare("SELECT value, updated_at, device_id, hlc FROM settings WHERE key = ?1")?;
+        let mut stmt =
+            conn.prepare("SELECT value, updated_at, device_id, hlc FROM settings WHERE key = ?1")?;
         let mut rows = stmt.query([APP_LOCK_SETTING_KEY])?;
         match rows.next()? {
             Some(row) => Ok(Some((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))),
@@ -713,17 +924,34 @@ pub fn carry_app_lock(current_db: &Path, staged: &Path) -> Result<(), BackupErro
         // Base actuelle illisible : échec fermé, le verrou est activé dans la version restaurée. Métadonnées valides (revue) : celles de la
         // ligne du fichier préparé si elle existe, sinon l'identifiant d'appareil et la plus haute horloge des réglages préparés.
         Err(_) => {
-            let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs());
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0, |d| d.as_secs());
             let conn = rusqlite::Connection::open(staged).map_err(sql_err)?;
             let existing: Option<(String, String)> = conn
-                .query_row("SELECT device_id, hlc FROM settings WHERE key = ?1", [APP_LOCK_SETTING_KEY], |r| Ok((r.get(0)?, r.get(1)?)))
+                .query_row(
+                    "SELECT device_id, hlc FROM settings WHERE key = ?1",
+                    [APP_LOCK_SETTING_KEY],
+                    |r| Ok((r.get(0)?, r.get(1)?)),
+                )
                 .ok();
             let (device_id, hlc) = match existing {
                 Some(found) => found,
                 None => {
-                    let device: Option<String> = conn.query_row("SELECT value FROM settings WHERE key = 'device.id'", [], |r| r.get(0)).ok();
-                    let device = device.map(|raw| serde_json::from_str::<String>(&raw).unwrap_or(raw)).unwrap_or_default();
-                    let hlc: Option<String> = conn.query_row("SELECT MAX(hlc) FROM settings", [], |r| r.get(0)).ok().flatten();
+                    let device: Option<String> = conn
+                        .query_row(
+                            "SELECT value FROM settings WHERE key = 'device.id'",
+                            [],
+                            |r| r.get(0),
+                        )
+                        .ok();
+                    let device = device
+                        .map(|raw| serde_json::from_str::<String>(&raw).unwrap_or(raw))
+                        .unwrap_or_default();
+                    let hlc: Option<String> = conn
+                        .query_row("SELECT MAX(hlc) FROM settings", [], |r| r.get(0))
+                        .ok()
+                        .flatten();
                     (device, hlc.unwrap_or_default())
                 }
             };
@@ -787,13 +1015,19 @@ struct CurrentIdentity {
 }
 
 fn has_table(conn: &rusqlite::Connection, table: &str) -> Result<bool, rusqlite::Error> {
-    Ok(conn.query_row("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?1", [table], |r| r.get::<_, u64>(0))? == 1)
+    Ok(conn.query_row(
+        "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?1",
+        [table],
+        |r| r.get::<_, u64>(0),
+    )? == 1)
 }
 
 /// Identifiant désigné par la valeur du réglage `device.id` : texte JSON (`"uuid"`) ; une valeur non JSON est lue telle quelle, `null` ou vide ne
 /// désigne personne.
 fn identity_of_setting(raw: &str) -> Option<String> {
-    serde_json::from_str::<Option<String>>(raw).unwrap_or_else(|_| Some(raw.to_owned())).filter(|id| !id.is_empty())
+    serde_json::from_str::<Option<String>>(raw)
+        .unwrap_or_else(|_| Some(raw.to_owned()))
+        .filter(|id| !id.is_empty())
 }
 
 /// Vrai si l'erreur dit que le FICHIER est inutilisable (pas une base, base corrompue), par opposition à un verrou, une panne d'entrée-sortie ou
@@ -806,7 +1040,8 @@ fn is_corruption(error: &rusqlite::Error) -> bool {
 fn read_current_identity(current_db: &Path) -> Result<Option<CurrentIdentity>, rusqlite::Error> {
     let conn = open_read_only(current_db)?;
     let setting: Option<SettingRow> = if has_table(&conn, "settings")? {
-        let mut stmt = conn.prepare("SELECT value, updated_at, device_id, hlc FROM settings WHERE key = ?1")?;
+        let mut stmt =
+            conn.prepare("SELECT value, updated_at, device_id, hlc FROM settings WHERE key = ?1")?;
         let mut rows = stmt.query([DEVICE_ID_SETTING_KEY])?;
         match rows.next()? {
             Some(row) => Some((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
@@ -815,7 +1050,10 @@ fn read_current_identity(current_db: &Path) -> Result<Option<CurrentIdentity>, r
     } else {
         None
     };
-    let own_row: Option<(String, Option<String>, Option<String>)> = if has_table(&conn, "sync_state")? {
+    let own_row: Option<(String, Option<String>, Option<String>)> = if has_table(
+        &conn,
+        "sync_state",
+    )? {
         let mut stmt = conn.prepare("SELECT device_id, platform, app_version FROM sync_state WHERE is_self = 1 ORDER BY device_id LIMIT 1")?;
         let mut rows = stmt.query([])?;
         match rows.next()? {
@@ -831,15 +1069,29 @@ fn read_current_identity(current_db: &Path) -> Result<Option<CurrentIdentity>, r
         let rows = stmt.query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))?;
         for row in rows {
             let (key, value) = row?;
-            if IDENTITY_META_KEYS.contains(&key.as_str()) && !QUEUE_META_KEYS.contains(&key.as_str()) {
+            if IDENTITY_META_KEYS.contains(&key.as_str())
+                && !QUEUE_META_KEYS.contains(&key.as_str())
+            {
                 meta.push((key, value));
             }
         }
     }
-    let from_setting = setting.as_ref().and_then(|(raw, ..)| identity_of_setting(raw));
-    let (platform, app_version) = own_row.as_ref().map_or((None, None), |(_, platform, version)| (platform.clone(), version.clone()));
+    let from_setting = setting
+        .as_ref()
+        .and_then(|(raw, ..)| identity_of_setting(raw));
+    let (platform, app_version) = own_row
+        .as_ref()
+        .map_or((None, None), |(_, platform, version)| {
+            (platform.clone(), version.clone())
+        });
     let id = from_setting.clone().or_else(|| own_row.map(|(id, ..)| id));
-    Ok(id.map(|id| CurrentIdentity { setting: from_setting.and(setting), platform, app_version, meta, id }))
+    Ok(id.map(|id| CurrentIdentity {
+        setting: from_setting.and(setting),
+        platform,
+        app_version,
+        meta,
+        id,
+    }))
 }
 
 /// Vrai si l'horloge hybride `hlc` (15 chiffres, `-`, compteur, `-`, identifiant : 21 caractères avant l'identifiant) est signée de `device`.
@@ -853,24 +1105,44 @@ fn signed_by(hlc: &str, device: &str) -> bool {
 /// écritures resteraient dans la base sans jamais partir. Seuls les champs de la file sont touchés ; ce qui était déjà publié garde sa signature.
 /// À appeler sous la garde de la synchro (`sync_guard`) : aucune de ces mises à jour ne doit repartir dans la file.
 fn resign_outbox(conn: &rusqlite::Connection, old: &str, new: &str) -> Result<(), BackupError> {
-    if !(has_table(conn, "sync_outbox").map_err(sql_err)? && has_table(conn, "sync_field_clock").map_err(sql_err)?) {
+    if !(has_table(conn, "sync_outbox").map_err(sql_err)?
+        && has_table(conn, "sync_field_clock").map_err(sql_err)?)
+    {
         return Ok(());
     }
     let restamp = "substr(hlc, 1, 21) || ?3";
     // Tables et clés de la capture : celles des déclencheurs de l'app (jamais un nom lu dans la base).
-    for table in REFERENCE_TRIGGERS.iter().filter(|(name, ..)| name.starts_with("sync_") && name.ends_with("_ai")).map(|(_, table, _)| *table) {
+    for table in REFERENCE_TRIGGERS
+        .iter()
+        .filter(|(name, ..)| name.starts_with("sync_") && name.ends_with("_ai"))
+        .map(|(_, table, _)| *table)
+    {
         if !has_table(conn, table).map_err(sql_err)? {
             continue;
         }
         let key = if table == "settings" { "key" } else { "id" };
         let entries: Vec<(String, String)> = {
-            let mut stmt = conn.prepare("SELECT row_id, field FROM sync_outbox WHERE table_name = ?1 ORDER BY seq").map_err(sql_err)?;
-            let rows = stmt.query_map([table], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))).map_err(sql_err)?.collect::<Result<_, _>>().map_err(sql_err)?;
+            let mut stmt = conn
+                .prepare("SELECT row_id, field FROM sync_outbox WHERE table_name = ?1 ORDER BY seq")
+                .map_err(sql_err)?;
+            let rows = stmt
+                .query_map([table], |r| {
+                    Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
+                })
+                .map_err(sql_err)?
+                .collect::<Result<_, _>>()
+                .map_err(sql_err)?;
             rows
         };
         let mut whole_rows: Vec<String> = Vec::new();
         for (row_id, field) in entries {
-            let row_hlc: Option<String> = conn.query_row(&format!("SELECT hlc FROM {table} WHERE {key} = ?1"), [&row_id], |r| r.get(0)).ok();
+            let row_hlc: Option<String> = conn
+                .query_row(
+                    &format!("SELECT hlc FROM {table} WHERE {key} = ?1"),
+                    [&row_id],
+                    |r| r.get(0),
+                )
+                .ok();
             let Some(row_hlc) = row_hlc else { continue };
             if !whole_rows.contains(&row_id) {
                 whole_rows.push(row_id.clone());
@@ -903,8 +1175,16 @@ fn resign_outbox(conn: &rusqlite::Connection, old: &str, new: &str) -> Result<()
         // hlc est ≤ à la tête (l'appareil courant a publié depuis l'écriture de l'autre) serait écartée comme déjà publiée, sans signal. Un hlc
         // neuf n'est pas une option : il écraserait des écritures plus récentes des autres appareils.
         for row_id in whole_rows {
-            conn.execute("DELETE FROM sync_outbox WHERE table_name = ?1 AND row_id = ?2", rusqlite::params![table, row_id]).map_err(sql_err)?;
-            conn.execute("INSERT INTO sync_outbox (table_name, row_id, field) VALUES (?1, ?2, '+')", rusqlite::params![table, row_id]).map_err(sql_err)?;
+            conn.execute(
+                "DELETE FROM sync_outbox WHERE table_name = ?1 AND row_id = ?2",
+                rusqlite::params![table, row_id],
+            )
+            .map_err(sql_err)?;
+            conn.execute(
+                "INSERT INTO sync_outbox (table_name, row_id, field) VALUES (?1, ?2, '+')",
+                rusqlite::params![table, row_id],
+            )
+            .map_err(sql_err)?;
         }
     }
     Ok(())
@@ -913,14 +1193,22 @@ fn resign_outbox(conn: &rusqlite::Connection, old: &str, new: &str) -> Result<()
 /// Les clés de `IDENTITY_META_KEYS` du fichier préparé (état de publication de l'AUTRE appareil) sont remplacées par celles de la base en place
 /// (état de publication de CET appareil, que son journal dans le dossier de synchro contient déjà) ; une clé que la base en place n'a pas est
 /// absente du fichier préparé. Le reste de `sync_meta` (horizon de purge, trous, etc.) vient de la sauvegarde, comme avant.
-fn replace_identity_meta(conn: &rusqlite::Connection, current: &[(String, String)]) -> Result<(), BackupError> {
+fn replace_identity_meta(
+    conn: &rusqlite::Connection,
+    current: &[(String, String)],
+) -> Result<(), BackupError> {
     if !has_table(conn, "sync_meta").map_err(sql_err)? {
         return Ok(());
     }
     for key in IDENTITY_META_KEYS {
-        conn.execute("DELETE FROM sync_meta WHERE key = ?1", [key]).map_err(sql_err)?;
+        conn.execute("DELETE FROM sync_meta WHERE key = ?1", [key])
+            .map_err(sql_err)?;
         if let Some((_, value)) = current.iter().find(|(k, _)| k == key) {
-            conn.execute("INSERT INTO sync_meta (key, value) VALUES (?1, ?2)", [key, value.as_str()]).map_err(sql_err)?;
+            conn.execute(
+                "INSERT INTO sync_meta (key, value) VALUES (?1, ?2)",
+                [key, value.as_str()],
+            )
+            .map_err(sql_err)?;
         }
     }
     Ok(())
@@ -955,39 +1243,67 @@ pub fn carry_device_identity(current_db: &Path, staged: &Path) -> Result<(), Bac
             crate::applog::write("backup", "identity-unreadable");
             return Ok(());
         }
-        Err(_) => return Err(BackupError::new("io", "l'identité de la base actuelle n'a pas pu être lue")),
+        Err(_) => {
+            return Err(BackupError::new(
+                "io",
+                "l'identité de la base actuelle n'a pas pu être lue",
+            ))
+        }
     };
     let conn = rusqlite::Connection::open(staged).map_err(sql_err)?;
-    conn.pragma_update(None, "trusted_schema", "OFF").map_err(sql_err)?;
+    conn.pragma_update(None, "trusted_schema", "OFF")
+        .map_err(sql_err)?;
     let tx = conn.unchecked_transaction().map_err(sql_err)?;
     let id = identity.id.as_str();
     let has_settings = has_table(&tx, "settings").map_err(sql_err)?;
     let has_state = has_table(&tx, "sync_state").map_err(sql_err)?;
     // Identité de la sauvegarde : son réglage `device.id`, à défaut sa ligne propre. Lue avant toute modification.
     let staged_setting: Option<String> = if has_settings {
-        tx.query_row("SELECT value FROM settings WHERE key = ?1", [DEVICE_ID_SETTING_KEY], |r| r.get(0)).ok()
+        tx.query_row(
+            "SELECT value FROM settings WHERE key = ?1",
+            [DEVICE_ID_SETTING_KEY],
+            |r| r.get(0),
+        )
+        .ok()
     } else {
         None
     };
     let staged_self: Option<String> = if has_state {
-        tx.query_row("SELECT device_id FROM sync_state WHERE is_self = 1 ORDER BY device_id LIMIT 1", [], |r| r.get(0)).ok()
+        tx.query_row(
+            "SELECT device_id FROM sync_state WHERE is_self = 1 ORDER BY device_id LIMIT 1",
+            [],
+            |r| r.get(0),
+        )
+        .ok()
     } else {
         None
     };
-    let backup_identity = staged_setting.as_deref().and_then(identity_of_setting).or(staged_self);
+    let backup_identity = staged_setting
+        .as_deref()
+        .and_then(identity_of_setting)
+        .or(staged_self);
     // Garde de la synchro : les écritures ci-dessous ne passent pas par les déclencheurs de capture (rien ne repart dans la file d'envoi).
     let guarded = has_table(&tx, "sync_guard").map_err(sql_err)?;
     if guarded {
-        tx.execute("INSERT OR IGNORE INTO sync_guard (id) VALUES (1)", []).map_err(sql_err)?;
+        tx.execute("INSERT OR IGNORE INTO sync_guard (id) VALUES (1)", [])
+            .map_err(sql_err)?;
     }
     if has_settings {
         let wanted: Option<SettingRow> = match &identity.setting {
             Some(row) => Some(row.clone()),
             // Réglage absent de la base en place : écrit d'après sa ligne `is_self` (le démarrage en créerait un autre, jamais celui du fichier).
             None => {
-                let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_millis());
-                let value = serde_json::to_string(id).map_err(|e| BackupError::new("io", e.to_string()))?;
-                Some((value, iso_instant(u64::try_from(now / 1000).unwrap_or(0)), id.to_owned(), format!("{now:015}-0000-{id}")))
+                let now = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map_or(0, |d| d.as_millis());
+                let value =
+                    serde_json::to_string(id).map_err(|e| BackupError::new("io", e.to_string()))?;
+                Some((
+                    value,
+                    iso_instant(u64::try_from(now / 1000).unwrap_or(0)),
+                    id.to_owned(),
+                    format!("{now:015}-0000-{id}"),
+                ))
             }
         };
         if let Some((value, updated_at, device_id, hlc)) = wanted {
@@ -1003,8 +1319,18 @@ pub fn carry_device_identity(current_db: &Path, staged: &Path) -> Result<(), Bac
     }
     // Sauvegarde d'un schéma antérieur à `sync_state` : la migration la créera, le moteur écrira la ligne propre au premier cycle.
     if has_state {
-        tx.execute("UPDATE sync_state SET is_self = 0 WHERE is_self = 1 AND device_id <> ?1", [id]).map_err(sql_err)?;
-        let known: Option<bool> = tx.query_row("SELECT is_self FROM sync_state WHERE device_id = ?1", [id], |r| r.get(0)).ok();
+        tx.execute(
+            "UPDATE sync_state SET is_self = 0 WHERE is_self = 1 AND device_id <> ?1",
+            [id],
+        )
+        .map_err(sql_err)?;
+        let known: Option<bool> = tx
+            .query_row(
+                "SELECT is_self FROM sync_state WHERE device_id = ?1",
+                [id],
+                |r| r.get(0),
+            )
+            .ok();
         match known {
             Some(true) => {}
             Some(false) => {
@@ -1043,7 +1369,9 @@ pub fn database_token(db: &Path) -> Result<Option<u32>, BackupError> {
         return Ok(None);
     }
     let conn = open_read_only(db).map_err(sql_err)?;
-    let raw: i64 = conn.query_row("PRAGMA application_id", [], |r| r.get(0)).map_err(sql_err)?;
+    let raw: i64 = conn
+        .query_row("PRAGMA application_id", [], |r| r.get(0))
+        .map_err(sql_err)?;
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     let token = raw as i32 as u32;
     Ok((token != 0).then_some(token))
@@ -1067,7 +1395,8 @@ fn stamp_restore_token(staged: &Path, current_db: &Path) -> Result<u32, BackupEr
     };
     let conn = rusqlite::Connection::open(staged).map_err(sql_err)?;
     #[allow(clippy::cast_possible_wrap)]
-    conn.pragma_update(None, "application_id", token as i32).map_err(sql_err)?;
+    conn.pragma_update(None, "application_id", token as i32)
+        .map_err(sql_err)?;
     drop(conn);
     if database_token(staged)? == Some(token) {
         Ok(token)
@@ -1078,7 +1407,9 @@ fn stamp_restore_token(staged: &Path, current_db: &Path) -> Result<u32, BackupEr
 
 /// Des fichiers `.restore-old` existent-ils ? (restauration interrompue, ou retour arrière incomplet `rollback-failed`)
 pub fn has_pending_restore(db_path: &Path) -> bool {
-    ["", "-wal", "-shm"].iter().any(|suffix| present(&sidecar(&sidecar(db_path, suffix), OLD_SUFFIX)))
+    ["", "-wal", "-shm"]
+        .iter()
+        .any(|suffix| present(&sidecar(&sidecar(db_path, suffix), OLD_SUFFIX)))
 }
 
 /// Le chemin existe-t-il, lien inclus (un lien brisé existe) ?
@@ -1099,7 +1430,12 @@ pub fn utc_stamp(secs: u64) -> String {
     let day = doy - (153 * mp + 2) / 5 + 1;
     let month = if mp < 10 { mp + 3 } else { mp - 9 };
     let year = yoe + era * 400 + i64::from(month <= 2);
-    format!("{year:04}{month:02}{day:02}T{:02}{:02}{:02}Z", rest / 3_600, rest % 3_600 / 60, rest % 60)
+    format!(
+        "{year:04}{month:02}{day:02}T{:02}{:02}{:02}Z",
+        rest / 3_600,
+        rest % 3_600 / 60,
+        rest % 60
+    )
 }
 
 /// Ce qu'a fait la récupération au démarrage.
@@ -1133,23 +1469,41 @@ pub enum Recovery {
 /// L'issue ne décide PAS du marqueur de restauration : `Nothing` est ambigu (échange jamais commencé ET déjà nettoyé, ou échange abouti et
 /// déjà nettoyé). Le règlement du marqueur provisoire se fait au démarrage par le jeton que porte la base en place
 /// (`startup_gate::settle_provisional_marker`, `database_token`).
-pub fn recover_interrupted_restore(db_path: &Path, backups_dir: &Path) -> Result<Recovery, BackupError> {
+pub fn recover_interrupted_restore(
+    db_path: &Path,
+    backups_dir: &Path,
+) -> Result<Recovery, BackupError> {
     let fail = |code: &'static str, e: io::Error| BackupError::new(code, e.to_string());
     let old_of = |suffix: &str| sidecar(&sidecar(db_path, suffix), OLD_SUFFIX);
-    let olds: Vec<(&str, PathBuf)> = ["", "-wal", "-shm"].into_iter().map(|suffix| (suffix, old_of(suffix))).collect();
+    let olds: Vec<(&str, PathBuf)> = ["", "-wal", "-shm"]
+        .into_iter()
+        .map(|suffix| (suffix, old_of(suffix)))
+        .collect();
     let staged = sidecar(db_path, STAGING_SUFFIX);
     // Vérifications avant tout déplacement.
     for (_, old) in &olds {
         if present(old) && !is_plain_file(old) {
-            return Err(BackupError::new("unsafe-restore-file", "un fichier de restauration n'est pas un fichier ordinaire"));
+            return Err(BackupError::new(
+                "unsafe-restore-file",
+                "un fichier de restauration n'est pas un fichier ordinaire",
+            ));
         }
     }
-    let leftovers: Vec<PathBuf> = [staged.clone(), sidecar(&staged, ".tmp"), sidecar(&staged, "-wal"), sidecar(&staged, "-shm"), sidecar(&staged, "-journal")]
-        .into_iter()
-        .filter(|leftover| present(leftover))
-        .collect();
+    let leftovers: Vec<PathBuf> = [
+        staged.clone(),
+        sidecar(&staged, ".tmp"),
+        sidecar(&staged, "-wal"),
+        sidecar(&staged, "-shm"),
+        sidecar(&staged, "-journal"),
+    ]
+    .into_iter()
+    .filter(|leftover| present(leftover))
+    .collect();
     if leftovers.iter().any(|leftover| !is_plain_file(leftover)) {
-        return Err(BackupError::new("unsafe-restore-file", "un fichier de restauration n'est pas un fichier ordinaire"));
+        return Err(BackupError::new(
+            "unsafe-restore-file",
+            "un fichier de restauration n'est pas un fichier ordinaire",
+        ));
     }
     let staged_removed = !leftovers.is_empty();
     let remove_leftovers = || -> Result<(), BackupError> {
@@ -1170,10 +1524,15 @@ pub fn recover_interrupted_restore(db_path: &Path, backups_dir: &Path) -> Result
     if db_present && main_old {
         remove_leftovers()?;
         if present(backups_dir) && !is_plain_dir(backups_dir) {
-            return Err(BackupError::new("unsafe-restore-file", "le dossier des sauvegardes n'est pas un dossier ordinaire"));
+            return Err(BackupError::new(
+                "unsafe-restore-file",
+                "le dossier des sauvegardes n'est pas un dossier ordinaire",
+            ));
         }
         fs::create_dir_all(backups_dir).map_err(|e| fail("recovery-failed", e))?;
-        let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs());
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |d| d.as_secs());
         // Nom DÉRIVÉ de la date de modification de `spartiate.db.restore-old` : une reprise après un archivage interrompu vise le même nom que la
         // tentative précédente (ses `-shm` / `-wal` déjà déplacés y sont, la base y manque). Il est accepté si la base est absente et si la cible de
         // chaque fichier restant à déplacer est libre ; les autres orphelins de ce nom sont ceux de la même base (même seconde de modification).
@@ -1182,20 +1541,36 @@ pub fn recover_interrupted_restore(db_path: &Path, backups_dir: &Path) -> Result
             .ok()
             .and_then(|time| time.duration_since(std::time::UNIX_EPOCH).ok())
             .map(|elapsed| backups_dir.join(pre_restore_backup_name(&utc_stamp(elapsed.as_secs()))))
-            .filter(|candidate| !present(candidate) && olds.iter().filter(|(_, old)| present(old)).all(|(suffix, _)| !present(&sidecar(candidate, suffix))));
+            .filter(|candidate| {
+                !present(candidate)
+                    && olds
+                        .iter()
+                        .filter(|(_, old)| present(old))
+                        .all(|(suffix, _)| !present(&sidecar(candidate, suffix)))
+            });
         let target = match resumed {
             Some(candidate) => candidate,
             None => (0..1_000)
                 .map(|n| backups_dir.join(pre_restore_backup_name(&utc_stamp(now + n))))
                 // La cible ET ses -wal / -shm doivent être absents : un reste orphelin d'une autre archive n'est jamais mélangé à une nouvelle.
-                .find(|candidate| ["", "-wal", "-shm"].iter().all(|suffix| !present(&sidecar(candidate, suffix))))
-                .ok_or_else(|| BackupError::new("recovery-conflict", "aucun nom libre pour archiver l'ancienne base"))?,
+                .find(|candidate| {
+                    ["", "-wal", "-shm"]
+                        .iter()
+                        .all(|suffix| !present(&sidecar(candidate, suffix)))
+                })
+                .ok_or_else(|| {
+                    BackupError::new(
+                        "recovery-conflict",
+                        "aucun nom libre pour archiver l'ancienne base",
+                    )
+                })?,
         };
         // `-shm`, puis `-wal`, la base EN DERNIER : si l'archivage s'arrête en route, `spartiate.db.restore-old` est encore là et le démarrage suivant
         // recommence (cas « base présente + base restore-old présente ») ; ce qui a déjà été déplacé reste dans `backups/`, rien n'est perdu.
         for (suffix, old) in olds.iter().rev() {
             if present(old) {
-                fs::rename(old, sidecar(&target, suffix)).map_err(|e| fail("recovery-failed", e))?;
+                fs::rename(old, sidecar(&target, suffix))
+                    .map_err(|e| fail("recovery-failed", e))?;
             }
         }
         let _ = prune_family(backups_dir, Family::PreRestore, KEEP_PRE_RESTORE_BACKUPS);
@@ -1204,13 +1579,20 @@ pub fn recover_interrupted_restore(db_path: &Path, backups_dir: &Path) -> Result
     if put_back {
         // Base d'abord (si absente), puis son journal ; une cible occupée n'est jamais écrasée.
         // Toutes les cibles sont vérifiées AVANT le premier déplacement : un conflit ne laisse rien à moitié remis en place.
-        if olds.iter().any(|(suffix, old)| present(old) && present(&sidecar(db_path, suffix))) {
-            return Err(BackupError::new("recovery-conflict", "un fichier de la base existe déjà : l'ancien n'est pas écrasé"));
+        if olds
+            .iter()
+            .any(|(suffix, old)| present(old) && present(&sidecar(db_path, suffix)))
+        {
+            return Err(BackupError::new(
+                "recovery-conflict",
+                "un fichier de la base existe déjà : l'ancien n'est pas écrasé",
+            ));
         }
         remove_leftovers()?;
         for (suffix, old) in &olds {
             if present(old) {
-                fs::rename(old, sidecar(db_path, suffix)).map_err(|e| fail("recovery-failed", e))?;
+                fs::rename(old, sidecar(db_path, suffix))
+                    .map_err(|e| fail("recovery-failed", e))?;
             }
         }
         return Ok(Recovery::PutBack);
@@ -1220,11 +1602,18 @@ pub fn recover_interrupted_restore(db_path: &Path, backups_dir: &Path) -> Result
 
 /// Échange la base par le fichier préparé. Tout ce qui est déplacé est remis en place si une étape échoue : l'ancienne base (et son
 /// `-wal`) revient, le fichier préparé est supprimé par l'appelant.
-fn swap_database(db_path: &Path, staged: &Path, hook: &dyn Fn(RestoreStep) -> io::Result<()>) -> Result<(), BackupError> {
+fn swap_database(
+    db_path: &Path,
+    staged: &Path,
+    hook: &dyn Fn(RestoreStep) -> io::Result<()>,
+) -> Result<(), BackupError> {
     // Une restauration interrompue a laissé des `.restore-old` : ils portent peut-être la seule copie de la base. On ne les écrase jamais ;
     // `recover_interrupted_restore` (au démarrage, avant l'ouverture de la base) les remet en place.
     if has_pending_restore(db_path) {
-        return Err(BackupError::new("restore-pending", "une restauration interrompue doit d'abord être récupérée (redémarrage)"));
+        return Err(BackupError::new(
+            "restore-pending",
+            "une restauration interrompue doit d'abord être récupérée (redémarrage)",
+        ));
     }
     let mut moved: Vec<(PathBuf, PathBuf)> = Vec::new();
     let result = (|| -> io::Result<()> {
@@ -1255,7 +1644,10 @@ fn swap_database(db_path: &Path, staged: &Path, hook: &dyn Fn(RestoreStep) -> io
         }
     }
     if rollback_failed {
-        return Err(BackupError::new("rollback-failed", format!("restauration interrompue et retour arrière incomplet : {error}")));
+        return Err(BackupError::new(
+            "rollback-failed",
+            format!("restauration interrompue et retour arrière incomplet : {error}"),
+        ));
     }
     Err(BackupError::new("io", error.to_string()))
 }
@@ -1275,17 +1667,26 @@ pub fn restore_backup_file(
     hook: &dyn Fn(RestoreStep) -> io::Result<()>,
 ) -> Result<RestoreOutcome, BackupError> {
     if !is_valid_stamp(stamp) {
-        return Err(BackupError::new("bad-stamp", format!("horodatage invalide : {stamp}")));
+        return Err(BackupError::new(
+            "bad-stamp",
+            format!("horodatage invalide : {stamp}"),
+        ));
     }
     if parse_backup_name(name).is_none() {
         return Err(BackupError::new("bad-name", "nom de sauvegarde inconnu"));
     }
     let source = backups_dir.join(name);
     if !is_plain_dir(backups_dir) || !is_plain_file(&source) {
-        return Err(BackupError::new("not-found", format!("sauvegarde introuvable : {name}")));
+        return Err(BackupError::new(
+            "not-found",
+            format!("sauvegarde introuvable : {name}"),
+        ));
     }
     if has_pending_restore(db_path) {
-        return Err(BackupError::new("restore-pending", "une restauration interrompue doit d'abord être récupérée (redémarrage)"));
+        return Err(BackupError::new(
+            "restore-pending",
+            "une restauration interrompue doit d'abord être récupérée (redémarrage)",
+        ));
     }
     let schema_version = check_backup_file(&source, app_version)?;
 
@@ -1321,44 +1722,118 @@ pub fn restore_backup_file(
         return Err(error);
     }
     let _ = prune_family(backups_dir, Family::PreRestore, KEEP_PRE_RESTORE_BACKUPS);
-    Ok(RestoreOutcome { safety_copy, schema_version, marker: "not-configured", marker_code: None })
+    Ok(RestoreOutcome {
+        safety_copy,
+        schema_version,
+        marker: "not-configured",
+        marker_code: None,
+    })
 }
 
 /// Instant ISO 8601 UTC à la milliseconde (`2026-10-05T08:00:00.000Z`), forme de `IsoDateTime` côté TypeScript.
 pub fn iso_instant(secs: u64) -> String {
     let stamp = utc_stamp(secs);
-    format!("{}-{}-{}T{}:{}:{}.000Z", &stamp[0..4], &stamp[4..6], &stamp[6..8], &stamp[9..11], &stamp[11..13], &stamp[13..15])
+    format!(
+        "{}-{}-{}T{}:{}:{}.000Z",
+        &stamp[0..4],
+        &stamp[4..6],
+        &stamp[6..8],
+        &stamp[9..11],
+        &stamp[11..13],
+        &stamp[13..15]
+    )
 }
 
 /// Marqueur de restauration de la synchro après un échange abouti (ADR 0010 règle 2, ADR 0011 section 9 ; Y-01 critère 16) : écrit par
 /// `sync::marker::write_after_restore` du lot Y1 (`restore-marker.json`, `.tmp` + renommage), **seulement si un dossier de synchro est
 /// configuré**. L'heure de la sauvegarde est celle de son fichier (sinon l'heure de restauration). Renvoie vrai s'il a été écrit. Jamais
 /// appelé par la récupération au démarrage (`recover_interrupted_restore`) : une restauration interrompue puis récupérée n'a pas de marqueur.
-pub fn write_restore_marker(config_dir: &Path, backups_dir: &Path, backup: &str, restored_at_secs: u64, schema_version: u32) -> Result<bool, crate::sync::SyncError> {
-    write_restore_marker_as(config_dir, backups_dir, backup, restored_at_secs, schema_version, false)
+pub fn write_restore_marker(
+    config_dir: &Path,
+    backups_dir: &Path,
+    backup: &str,
+    restored_at_secs: u64,
+    schema_version: u32,
+) -> Result<bool, crate::sync::SyncError> {
+    write_restore_marker_as(
+        config_dir,
+        backups_dir,
+        backup,
+        restored_at_secs,
+        schema_version,
+        false,
+    )
 }
 
 /// Comme `write_restore_marker`, provisoire (avant l'échange) ou confirmé.
-pub fn write_restore_marker_as(config_dir: &Path, backups_dir: &Path, backup: &str, restored_at_secs: u64, schema_version: u32, provisional: bool) -> Result<bool, crate::sync::SyncError> {
-    write_restore_marker_token(config_dir, backups_dir, backup, restored_at_secs, schema_version, None, provisional)
+pub fn write_restore_marker_as(
+    config_dir: &Path,
+    backups_dir: &Path,
+    backup: &str,
+    restored_at_secs: u64,
+    schema_version: u32,
+    provisional: bool,
+) -> Result<bool, crate::sync::SyncError> {
+    write_restore_marker_token(
+        config_dir,
+        backups_dir,
+        backup,
+        restored_at_secs,
+        schema_version,
+        None,
+        provisional,
+    )
 }
 
 /// Marqueur provisoire portant le jeton de restauration (`token`), ou confirmé (`provisional` faux).
-pub fn write_provisional_marker(config_dir: &Path, backups_dir: &Path, backup: &str, restored_at_secs: u64, schema_version: u32, token: u32) -> Result<bool, crate::sync::SyncError> {
-    write_restore_marker_token(config_dir, backups_dir, backup, restored_at_secs, schema_version, Some(token), true)
+pub fn write_provisional_marker(
+    config_dir: &Path,
+    backups_dir: &Path,
+    backup: &str,
+    restored_at_secs: u64,
+    schema_version: u32,
+    token: u32,
+) -> Result<bool, crate::sync::SyncError> {
+    write_restore_marker_token(
+        config_dir,
+        backups_dir,
+        backup,
+        restored_at_secs,
+        schema_version,
+        Some(token),
+        true,
+    )
 }
 
-fn write_restore_marker_token(config_dir: &Path, backups_dir: &Path, backup: &str, restored_at_secs: u64, schema_version: u32, token: Option<u32>, provisional: bool) -> Result<bool, crate::sync::SyncError> {
+fn write_restore_marker_token(
+    config_dir: &Path,
+    backups_dir: &Path,
+    backup: &str,
+    restored_at_secs: u64,
+    schema_version: u32,
+    token: Option<u32>,
+    provisional: bool,
+) -> Result<bool, crate::sync::SyncError> {
     let taken = fs::metadata(backups_dir.join(backup))
         .and_then(|m| m.modified())
         .ok()
         .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
         .map_or(restored_at_secs, |d| d.as_secs());
-    crate::sync::marker::write_marker_token(config_dir, backup, &iso_instant(taken), &iso_instant(restored_at_secs), u64::from(schema_version), provisional, token)
+    crate::sync::marker::write_marker_token(
+        config_dir,
+        backup,
+        &iso_instant(taken),
+        &iso_instant(restored_at_secs),
+        u64::from(schema_version),
+        provisional,
+        token,
+    )
 }
 
 fn data_dir(app: &AppHandle) -> Result<PathBuf, BackupError> {
-    app.path().app_config_dir().map_err(|e| BackupError::new("no-data-dir", e.to_string()))
+    app.path()
+        .app_config_dir()
+        .map_err(|e| BackupError::new("no-data-dir", e.to_string()))
 }
 
 fn join_error(e: tauri::Error) -> BackupError {
@@ -1395,7 +1870,15 @@ pub fn diagnose_db_dir(dir: Result<PathBuf, String>) -> DbDiagnostics {
                 wal_exists: dir.join(format!("{DB_FILE}-wal")).is_file(),
             }
         }
-        Err(error) => DbDiagnostics { config_dir: None, config_dir_error: Some(error), dir_exists: false, db_path: None, file_exists: false, file_bytes: None, wal_exists: false },
+        Err(error) => DbDiagnostics {
+            config_dir: None,
+            config_dir_error: Some(error),
+            dir_exists: false,
+            db_path: None,
+            file_exists: false,
+            file_bytes: None,
+            wal_exists: false,
+        },
     }
 }
 
@@ -1414,14 +1897,28 @@ pub fn backup_database_before_migration(
     stamp: String,
 ) -> Result<BackupOutcome, BackupError> {
     let dir = data_dir(&app)?;
-    let outcome = create_migration_backup(&dir.join(DB_FILE), &dir.join(BACKUP_DIR), from_version, to_version, &stamp, KEEP_MIGRATION_BACKUPS)?;
+    let outcome = create_migration_backup(
+        &dir.join(DB_FILE),
+        &dir.join(BACKUP_DIR),
+        from_version,
+        to_version,
+        &stamp,
+        KEEP_MIGRATION_BACKUPS,
+    )?;
     Ok(outcome_for_webview(outcome))
 }
 
 /// Ce que la WebView reçoit d'une sauvegarde avant migration : le NOM du fichier créé seulement, jamais le chemin absolu.
 pub fn outcome_for_webview(outcome: BackupOutcome) -> BackupOutcome {
-    let name = outcome.path.as_deref().and_then(|path| Path::new(path).file_name()).map(|n| n.to_string_lossy().into_owned());
-    BackupOutcome { path: name, removed: outcome.removed }
+    let name = outcome
+        .path
+        .as_deref()
+        .and_then(|path| Path::new(path).file_name())
+        .map(|n| n.to_string_lossy().into_owned());
+    BackupOutcome {
+        path: name,
+        removed: outcome.removed,
+    }
 }
 
 /// Vérifie la sauvegarde `name` du dossier : nom connu, dossier et fichier ordinaires (ni lien ni jonction), puis `check_backup_file`.
@@ -1431,19 +1928,34 @@ pub fn check_named_backup(backups_dir: &Path, name: &str) -> Result<u32, BackupE
     }
     let path = backups_dir.join(name);
     if !is_plain_dir(backups_dir) || !is_plain_file(&path) {
-        return Err(BackupError::new("not-found", format!("sauvegarde introuvable : {name}")));
+        return Err(BackupError::new(
+            "not-found",
+            format!("sauvegarde introuvable : {name}"),
+        ));
     }
     check_backup_file(&path, APP_SCHEMA_VERSION)
 }
 
 /// Sauvegarde quotidienne (P-04) ; `replace` = « Sauvegarder maintenant ». Hors du fil de l'interface.
 #[tauri::command]
-pub async fn daily_backup(app: AppHandle, day: String, replace: bool) -> Result<DailyOutcome, BackupError> {
+pub async fn daily_backup(
+    app: AppHandle,
+    day: String,
+    replace: bool,
+) -> Result<DailyOutcome, BackupError> {
     crate::startup_gate::ensure_ready(&app)?;
     let dir = data_dir(&app)?;
-    tauri::async_runtime::spawn_blocking(move || create_daily_backup(&dir.join(DB_FILE), &dir.join(BACKUP_DIR), &day, replace, KEEP_DAILY_BACKUPS))
-        .await
-        .map_err(join_error)?
+    tauri::async_runtime::spawn_blocking(move || {
+        create_daily_backup(
+            &dir.join(DB_FILE),
+            &dir.join(BACKUP_DIR),
+            &day,
+            replace,
+            KEEP_DAILY_BACKUPS,
+        )
+    })
+    .await
+    .map_err(join_error)?
 }
 
 /// Liste des sauvegardes et dossier qui les contient (affiché dans l'aide).
@@ -1464,10 +1976,17 @@ pub fn neutral_directory_label(identifier: &str) -> String {
 #[tauri::command]
 pub async fn list_backups(app: AppHandle) -> Result<BackupListing, BackupError> {
     let dir = data_dir(&app)?.join(BACKUP_DIR);
-    let label = if cfg!(target_os = "ios") { None } else { Some(neutral_directory_label(&app.config().identifier)) };
+    let label = if cfg!(target_os = "ios") {
+        None
+    } else {
+        Some(neutral_directory_label(&app.config().identifier))
+    };
     tauri::async_runtime::spawn_blocking(move || {
         let entries = list_backups_in(&dir)?;
-        Ok(BackupListing { directory: label, entries })
+        Ok(BackupListing {
+            directory: label,
+            entries,
+        })
     })
     .await
     .map_err(join_error)?
@@ -1478,20 +1997,25 @@ pub async fn list_backups(app: AppHandle) -> Result<BackupListing, BackupError> 
 pub async fn check_backup(app: AppHandle, name: String) -> Result<u32, BackupError> {
     crate::startup_gate::ensure_ready(&app)?;
     let dir = data_dir(&app)?.join(BACKUP_DIR);
-    tauri::async_runtime::spawn_blocking(move || {
-        check_named_backup(&dir, &name)
-    })
-    .await
-    .map_err(join_error)?
+    tauri::async_runtime::spawn_blocking(move || check_named_backup(&dir, &name))
+        .await
+        .map_err(join_error)?
 }
 
 /// Refus de la restauration tant qu'un pool du plugin SQL est ouvert : jamais une 2e connexion pendant l'échange (P-04-iOS, pool à une
 /// connexion de `vendor/tauri-plugin-sql`). Plugin absent (porte de démarrage fermée) : rien d'ouvert.
-pub async fn ensure_sql_closed<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> Result<(), BackupError> {
-    let Some(instances) = app.try_state::<tauri_plugin_sql::DbInstances>() else { return Ok(()) };
+pub async fn ensure_sql_closed<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+) -> Result<(), BackupError> {
+    let Some(instances) = app.try_state::<tauri_plugin_sql::DbInstances>() else {
+        return Ok(());
+    };
     match crate::startup_gate::open_sql_pools(&instances).await {
         0 => Ok(()),
-        _ => Err(BackupError::new("db-open", "la connexion à la base n'est pas fermée")),
+        _ => Err(BackupError::new(
+            "db-open",
+            "la connexion à la base n'est pas fermée",
+        )),
     }
 }
 
@@ -1499,7 +2023,12 @@ pub async fn ensure_sql_closed<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> 
 /// restauration de la synchro est écrit après l'échange ; son échec est RENDU (`marker: failed`, code), gardé pour un nouvel essai
 /// (`PendingRestoreMarker`) et inscrit au journal (P-04-iOS critère 12) : la restauration reste faite.
 #[tauri::command]
-pub async fn restore_backup(app: AppHandle, name: String, stamp: String, local: Option<bool>) -> Result<RestoreOutcome, BackupError> {
+pub async fn restore_backup(
+    app: AppHandle,
+    name: String,
+    stamp: String,
+    local: Option<bool>,
+) -> Result<RestoreOutcome, BackupError> {
     crate::startup_gate::ensure_ready(&app)?;
     ensure_sql_closed(&app).await?;
     let dir = data_dir(&app)?;
@@ -1507,22 +2036,35 @@ pub async fn restore_backup(app: AppHandle, name: String, stamp: String, local: 
     // I-06 (revue I2) : `local` = retour arrière local de l'écran d'échec d'une migration, sans marqueur de synchro.
     let local = local == Some(true);
     let outcome = tauri::async_runtime::spawn_blocking(move || {
-        let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs());
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |d| d.as_secs());
         let done = if local {
-            crate::startup_gate::restore_local_rollback(&dir, &name, &stamp, &|_| Ok(())).map(|outcome| (outcome, None))
+            crate::startup_gate::restore_local_rollback(&dir, &name, &stamp, &|_| Ok(()))
+                .map(|outcome| (outcome, None))
         } else {
-            crate::startup_gate::restore_with_provisional_marker(&dir, &name, &stamp, now, &|_| Ok(()))
+            crate::startup_gate::restore_with_provisional_marker(&dir, &name, &stamp, now, &|_| {
+                Ok(())
+            })
         };
         match done {
             Ok(done) => Ok(done),
             Err(error) => {
                 // Revue B1 : retour arrière incomplet -> récupération immédiate ; si elle échoue, la porte passe à l'échec (le rechargement
                 // montre l'écran persistant, jamais une base vide créée puis copiée par la sauvegarde du jour).
-                if let Some(Err(code)) = crate::startup_gate::recover_after_failed_swap(&dir.join(DB_FILE), &dir.join(BACKUP_DIR)) {
-                    if gate_app.try_state::<crate::startup_gate::StartupGate>().is_none() {
+                if let Some(Err(code)) = crate::startup_gate::recover_after_failed_swap(
+                    &dir.join(DB_FILE),
+                    &dir.join(BACKUP_DIR),
+                ) {
+                    if gate_app
+                        .try_state::<crate::startup_gate::StartupGate>()
+                        .is_none()
+                    {
                         gate_app.manage(crate::startup_gate::StartupGate::default());
                     }
-                    gate_app.state::<crate::startup_gate::StartupGate>().set(Err(code));
+                    gate_app
+                        .state::<crate::startup_gate::StartupGate>()
+                        .set(Err(code));
                 }
                 Err(error)
             }
@@ -1547,5 +2089,6 @@ pub fn reveal_backups_folder(app: AppHandle) -> Result<(), BackupError> {
     let dir = data_dir(&app)?.join(BACKUP_DIR);
     ensure_plain_backups_dir(&dir)?;
     fs::create_dir_all(&dir).map_err(io_err)?;
-    tauri_plugin_opener::open_path(dir, None::<&str>).map_err(|e| BackupError::new("io", e.to_string()))
+    tauri_plugin_opener::open_path(dir, None::<&str>)
+        .map_err(|e| BackupError::new("io", e.to_string()))
 }

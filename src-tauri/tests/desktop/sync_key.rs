@@ -14,7 +14,9 @@ use spartiate_lib::vault::SecretVault;
 use spartiate_lib::vault_ios::{is_sync_key_account, sync_key_attributes};
 use zeroize::Zeroizing;
 
-use crate::sync_support::{device, epoch, hlc, Device, FakeBackend, MemFs, DEV_A, DEV_B, DEV_C, FOLDER};
+use crate::sync_support::{
+    device, epoch, hlc, Device, FakeBackend, MemFs, DEV_A, DEV_B, DEV_C, FOLDER,
+};
 
 fn code<T>(result: Result<T, spartiate_lib::sync::SyncError>) -> SyncCode {
     match result {
@@ -61,12 +63,21 @@ fn y_ios_02_key_origin_write_failure_fails_the_import_and_stores_no_key() {
     let (a, fs) = device();
     a.setup(DEV_A);
     publish_state(&a, DEV_A, 1);
-    let payload = a.core.pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS).unwrap();
+    let payload = a
+        .core
+        .pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS)
+        .unwrap();
     let b = second(&fs);
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
     b.core.bind_device(DEV_B).unwrap();
     std::fs::create_dir_all(b.base.path().join("sync").join("key-origin.json")).unwrap();
-    assert_eq!(code(b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)), SyncCode::Io);
+    assert_eq!(
+        code(
+            b.core
+                .key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)
+        ),
+        SyncCode::Io
+    );
     assert!(!b.core.key_status().unwrap().present);
     assert!(b.vault.get(SYNC_KEY_ACCOUNT).unwrap().is_none());
 }
@@ -74,7 +85,17 @@ fn y_ios_02_key_origin_write_failure_fails_the_import_and_stores_no_key() {
 #[test]
 fn y08_6_create_status_and_key_exists() {
     let (d, _) = device();
-    assert_eq!(d.core.key_status().unwrap(), spartiate_lib::sync::service::KeyStatus { present: false, kid: None, next_kid: None, import_failure: None, paired_by: None, imported: false });
+    assert_eq!(
+        d.core.key_status().unwrap(),
+        spartiate_lib::sync::service::KeyStatus {
+            present: false,
+            kid: None,
+            next_kid: None,
+            import_failure: None,
+            paired_by: None,
+            imported: false
+        }
+    );
     assert_eq!(code(d.core.key_create()), SyncCode::NotConfigured);
     d.core.choose_folder(Path::new(FOLDER)).unwrap();
     let kid = d.core.key_create().unwrap();
@@ -98,9 +119,16 @@ fn y08_6_create_refused_on_a_folder_with_data_even_in_the_cloud() {
     let b = second(&fs);
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
     assert_eq!(code(b.core.key_create()), SyncCode::FolderHasData);
-    assert_eq!(b.vault.get(SYNC_KEY_ACCOUNT).unwrap(), None, "aucune clé écrite");
+    assert_eq!(
+        b.vault.get(SYNC_KEY_ACCOUNT).unwrap(),
+        None,
+        "aucune clé écrite"
+    );
     // Fichier resté dans le nuage : compte aussi comme donnée.
-    fs.set_availability(&["devices", DEV_A, "state.spx"], spartiate_lib::sync::files::Availability::Cloud);
+    fs.set_availability(
+        &["devices", DEV_A, "state.spx"],
+        spartiate_lib::sync::files::Availability::Cloud,
+    );
     assert_eq!(code(b.core.key_create()), SyncCode::FolderHasData);
     // Un dossier d'appareil sans fichier ct-* valide n'est pas une donnée.
     let empty = MemFs::new();
@@ -121,33 +149,57 @@ fn y08_7_and_16_key_never_leaves_the_vault_and_logs_hold_no_secret() {
     publish_state(&a, DEV_A, 1);
     let key = vault_key(&a);
     let raw = qr_text_of(&key, DEV_A, None, 0); // contient K en base64url
-    let k_b64 = STANDARD.encode(&*Zeroizing::new(STANDARD.decode(a.vault.get(SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap()));
+    let k_b64 = STANDARD.encode(&*Zeroizing::new(
+        STANDARD
+            .decode(a.vault.get(SYNC_KEY_ACCOUNT).unwrap().unwrap())
+            .unwrap(),
+    ));
     let k_url = {
-        let json = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(raw.strip_prefix("SPPAIR1.").unwrap()).unwrap();
-        serde_json::from_slice::<serde_json::Value>(&json).unwrap()["k"].as_str().unwrap().to_owned()
+        let json = base64::engine::general_purpose::URL_SAFE_NO_PAD
+            .decode(raw.strip_prefix("SPPAIR1.").unwrap())
+            .unwrap();
+        serde_json::from_slice::<serde_json::Value>(&json).unwrap()["k"]
+            .as_str()
+            .unwrap()
+            .to_owned()
     };
     let k_bytes = STANDARD.decode(&k_b64).unwrap();
     // Appairage complet : charge utile, import sur un second appareil.
-    let payload = a.core.pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS).unwrap();
+    let payload = a
+        .core
+        .pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS)
+        .unwrap();
     let b = second(&fs);
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
     b.core.bind_device(DEV_B).unwrap();
-    b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1).unwrap();
+    b.core
+        .key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)
+        .unwrap();
     // Y-IOS-02 : origine de la clé persistée (`sync/key-origin.json`) : importée sur B, créée sur A (`a.setup` crée la clé).
     assert!(b.core.key_status().unwrap().imported);
     assert!(!a.core.key_status().unwrap().imported);
     // Import depuis un fil annexe (comme `spawn_blocking` dans la commande) : ses lignes sont capturées aussi.
     let recovery = payload.recovery_key.clone();
     let b = std::thread::spawn(move || {
-        b.core.key_import(KeyInput::RecoveryKey(Zeroizing::new(recovery)), 1).unwrap();
+        b.core
+            .key_import(KeyInput::RecoveryKey(Zeroizing::new(recovery)), 1)
+            .unwrap();
         b
     })
     .join()
     .unwrap();
-    let secrets = [k_b64.as_str(), k_url.as_str(), payload.qr_text.as_str(), payload.recovery_key.as_str()];
+    let secrets = [
+        k_b64.as_str(),
+        k_url.as_str(),
+        payload.qr_text.as_str(),
+        payload.recovery_key.as_str(),
+    ];
     // Dossier iCloud : ni la clé, ni sa forme base64, ni le QR.
     for (name, bytes) in fs.all_files() {
-        assert!(!bytes.windows(32).any(|w| w == k_bytes.as_slice()), "{name}");
+        assert!(
+            !bytes.windows(32).any(|w| w == k_bytes.as_slice()),
+            "{name}"
+        );
         let text = String::from_utf8_lossy(&bytes);
         for secret in secrets {
             assert!(!text.contains(secret), "{name}");
@@ -157,17 +209,32 @@ fn y08_7_and_16_key_never_leaves_the_vault_and_logs_hold_no_secret() {
     for base in [a.base.path(), b.base.path()] {
         for entry in walk(base) {
             let bytes = std::fs::read(&entry).unwrap();
-            assert!(!bytes.windows(32).any(|w| w == k_bytes.as_slice()), "{}", entry.display());
+            assert!(
+                !bytes.windows(32).any(|w| w == k_bytes.as_slice()),
+                "{}",
+                entry.display()
+            );
             let text = String::from_utf8_lossy(&bytes);
             for secret in secrets {
                 assert!(!text.contains(secret), "{}", entry.display());
             }
-            assert!(!text.contains("Spartiate") || entry.ends_with("folder.json"), "chemin hors de folder.json : {}", entry.display());
+            assert!(
+                !text.contains("Spartiate") || entry.ends_with("folder.json"),
+                "chemin hors de folder.json : {}",
+                entry.display()
+            );
         }
     }
     // Journal technique : aucun secret, aucun chemin complet.
     let lines = capture.lines();
-    assert!(lines.iter().filter(|l| l.starts_with("sync:key-imported")).count() >= 2, "fil principal et fil annexe : {lines:?}");
+    assert!(
+        lines
+            .iter()
+            .filter(|l| l.starts_with("sync:key-imported"))
+            .count()
+            >= 2,
+        "fil principal et fil annexe : {lines:?}"
+    );
     for line in lines {
         for secret in secrets {
             assert!(!line.contains(secret), "{line}");
@@ -194,37 +261,85 @@ fn y08_16_errors_never_copy_the_input() {
     let (a, _) = device();
     a.core.choose_folder(Path::new(FOLDER)).unwrap();
     let secret = "SP1-SECRE-TSECR-ETSEC C:\\Users\\Ali";
-    let error = a.core.key_import(KeyInput::RecoveryKey(Zeroizing::new(secret.to_owned())), 1).unwrap_err();
-    let shown = format!("{error} {error:?} {}", serde_json::to_string(&error).unwrap());
-    assert!(!shown.contains("SECRE") && !shown.contains("Users"), "{shown}");
-    assert_eq!(serde_json::to_value(error).unwrap(), serde_json::json!({ "code": "invalid-pairing", "message": "synchro" }));
+    let error = a
+        .core
+        .key_import(KeyInput::RecoveryKey(Zeroizing::new(secret.to_owned())), 1)
+        .unwrap_err();
+    let shown = format!(
+        "{error} {error:?} {}",
+        serde_json::to_string(&error).unwrap()
+    );
+    assert!(
+        !shown.contains("SECRE") && !shown.contains("Users"),
+        "{shown}"
+    );
+    assert_eq!(
+        serde_json::to_value(error).unwrap(),
+        serde_json::json!({ "code": "invalid-pairing", "message": "synchro" })
+    );
 }
 
 #[test]
 fn y08_14_import_requires_the_folder_and_a_matching_kid() {
     let (a, fs) = device();
     a.setup(DEV_A);
-    let payload = a.core.pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS).unwrap();
+    let payload = a
+        .core
+        .pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS)
+        .unwrap();
     let b = second(&fs);
     // Sans dossier : not-configured.
-    assert_eq!(code(b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)), SyncCode::NotConfigured);
+    assert_eq!(
+        code(
+            b.core
+                .key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)
+        ),
+        SyncCode::NotConfigured
+    );
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
     // Dossier encore vide (aucun state.spx lisible) : cloud-pending.
-    assert_eq!(code(b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)), SyncCode::CloudPending);
+    assert_eq!(
+        code(
+            b.core
+                .key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)
+        ),
+        SyncCode::CloudPending
+    );
     publish_state(&a, DEV_A, 1);
     // Clé d'un autre dossier : key-mismatch, rien d'enregistré.
     let stranger = MasterKey::generate().unwrap();
     let wrong = qr_text_of(&stranger, DEV_A, None, a.clock.now() + PAIRING_VALIDITY_MS);
-    assert_eq!(code(b.core.key_import(KeyInput::QrText(wrong), 1)), SyncCode::KeyMismatch);
+    assert_eq!(
+        code(b.core.key_import(KeyInput::QrText(wrong), 1)),
+        SyncCode::KeyMismatch
+    );
     assert_eq!(b.vault.get(SYNC_KEY_ACCOUNT).unwrap(), None);
     // QR expiré de plus de 2 minutes : pairing-expired.
     b.clock.advance(PAIRING_VALIDITY_MS + 2 * 60_000 + 1);
-    assert_eq!(code(b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)), SyncCode::PairingExpired);
+    assert_eq!(
+        code(
+            b.core
+                .key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)
+        ),
+        SyncCode::PairingExpired
+    );
     // Texte invalide : invalid-pairing.
-    assert_eq!(code(b.core.key_import(KeyInput::QrText(Zeroizing::new("SPPAIR1.xx".into())), 1)), SyncCode::InvalidPairing);
+    assert_eq!(
+        code(
+            b.core
+                .key_import(KeyInput::QrText(Zeroizing::new("SPPAIR1.xx".into())), 1)
+        ),
+        SyncCode::InvalidPairing
+    );
     // Clé de secours valide (au-delà de la limite de 5 appels par 10 minutes) : enregistrée, même kid ; pairedBy inconnu.
     b.clock.advance(10 * 60_000);
-    let result = b.core.key_import(KeyInput::RecoveryKey(Zeroizing::new(payload.recovery_key.clone())), 1).unwrap();
+    let result = b
+        .core
+        .key_import(
+            KeyInput::RecoveryKey(Zeroizing::new(payload.recovery_key.clone())),
+            1,
+        )
+        .unwrap();
     assert_eq!(result.kid, a.core.key_status().unwrap().kid.unwrap());
     assert_eq!(result.paired_by, None);
     assert!(vault_key(&b).same_as(&vault_key(&a)));
@@ -239,26 +354,64 @@ fn y08_14_qr_import_sets_paired_by_and_epoch_and_replacing_a_key_asks_first() {
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
     b.core.bind_device(DEV_B).unwrap();
     // B a déjà une autre clé : la confirmation « Remplacer la clé ? » est demandée.
-    b.vault.set(SYNC_KEY_ACCOUNT, &MasterKey::generate().unwrap().to_vault_value()).unwrap();
-    let payload = a.core.pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS).unwrap();
+    b.vault
+        .set(
+            SYNC_KEY_ACCOUNT,
+            &MasterKey::generate().unwrap().to_vault_value(),
+        )
+        .unwrap();
+    let payload = a
+        .core
+        .pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS)
+        .unwrap();
     b.ui.answer(false);
-    assert_eq!(code(b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)), SyncCode::ConsentDenied);
-    assert!(!vault_key(&b).same_as(&vault_key(&a)), "refus : clé inchangée");
+    assert_eq!(
+        code(
+            b.core
+                .key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)
+        ),
+        SyncCode::ConsentDenied
+    );
+    assert!(
+        !vault_key(&b).same_as(&vault_key(&a)),
+        "refus : clé inchangée"
+    );
     assert_eq!(b.ui.prompts(), 1);
     let last = b.ui.last.lock().unwrap().clone().unwrap();
-    assert_eq!(last.texts.instruction, "Remplacer la clé de synchronisation de cet appareil ?");
+    assert_eq!(
+        last.texts.instruction,
+        "Remplacer la clé de synchronisation de cet appareil ?"
+    );
     // Après le refus, 10 minutes de blocage.
     b.ui.answer(true);
-    assert_eq!(code(b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)), SyncCode::RateLimited);
+    assert_eq!(
+        code(
+            b.core
+                .key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)
+        ),
+        SyncCode::RateLimited
+    );
     b.clock.advance(10 * 60_000);
-    let fresh = a.core.pairing_payload(b.clock.now() + PAIRING_VALIDITY_MS).unwrap();
-    let result = b.core.key_import(KeyInput::QrText(Zeroizing::new(fresh.qr_text.clone())), 1).unwrap();
+    let fresh = a
+        .core
+        .pairing_payload(b.clock.now() + PAIRING_VALIDITY_MS)
+        .unwrap();
+    let result = b
+        .core
+        .key_import(KeyInput::QrText(Zeroizing::new(fresh.qr_text.clone())), 1)
+        .unwrap();
     assert_eq!(result.paired_by.as_deref(), Some(DEV_A));
-    assert_eq!(result.epoch.as_deref(), Some(epoch(1, DEV_A).as_str()), "époque annoncée par A");
+    assert_eq!(
+        result.epoch.as_deref(),
+        Some(epoch(1, DEV_A).as_str()),
+        "époque annoncée par A"
+    );
     assert!(vault_key(&b).same_as(&vault_key(&a)));
     // Même clé : sans effet, aucune boîte.
     let prompts = b.ui.prompts();
-    b.core.key_import(KeyInput::QrText(Zeroizing::new(fresh.qr_text.clone())), 1).unwrap();
+    b.core
+        .key_import(KeyInput::QrText(Zeroizing::new(fresh.qr_text.clone())), 1)
+        .unwrap();
     assert_eq!(b.ui.prompts(), prompts);
     // pairedBy mémorisé par Rust (own.json), maître : un autre pairedBy est refusé ; omis, il est complété par Rust (Y-06,
     // sync_pairing_y06.rs) ; le même est accepté.
@@ -273,7 +426,10 @@ fn y08_14_qr_import_sets_paired_by_and_epoch_and_replacing_a_key_asks_first() {
         }
         s
     };
-    assert_eq!(code(b.core.write_state(14, state(Some(DEV_C)))), SyncCode::StateMismatch);
+    assert_eq!(
+        code(b.core.write_state(14, state(Some(DEV_C)))),
+        SyncCode::StateMismatch
+    );
     b.core.write_state(14, state(Some(DEV_A))).unwrap();
 }
 
@@ -285,18 +441,48 @@ fn y08_14_import_is_limited_to_five_calls_per_ten_minutes_and_needs_the_foregrou
     let b = second(&fs);
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
     b.ui.ready(false);
-    assert_eq!(code(b.core.key_import(KeyInput::RecoveryKey(Zeroizing::new("x".into())), 1)), SyncCode::NotForeground);
+    assert_eq!(
+        code(
+            b.core
+                .key_import(KeyInput::RecoveryKey(Zeroizing::new("x".into())), 1)
+        ),
+        SyncCode::NotForeground
+    );
     b.ui.ready(true);
     for _ in 0..5 {
-        assert_eq!(code(b.core.key_import(KeyInput::RecoveryKey(Zeroizing::new("x".into())), 1)), SyncCode::InvalidPairing);
+        assert_eq!(
+            code(
+                b.core
+                    .key_import(KeyInput::RecoveryKey(Zeroizing::new("x".into())), 1)
+            ),
+            SyncCode::InvalidPairing
+        );
     }
-    assert_eq!(code(b.core.key_import(KeyInput::RecoveryKey(Zeroizing::new("x".into())), 1)), SyncCode::RateLimited);
+    assert_eq!(
+        code(
+            b.core
+                .key_import(KeyInput::RecoveryKey(Zeroizing::new("x".into())), 1)
+        ),
+        SyncCode::RateLimited
+    );
     // Compteurs persistés : un redémarrage ne remet rien à zéro.
     let mut b = b;
     b.restart();
-    assert_eq!(code(b.core.key_import(KeyInput::RecoveryKey(Zeroizing::new("x".into())), 1)), SyncCode::RateLimited);
+    assert_eq!(
+        code(
+            b.core
+                .key_import(KeyInput::RecoveryKey(Zeroizing::new("x".into())), 1)
+        ),
+        SyncCode::RateLimited
+    );
     b.clock.advance(10 * 60_000);
-    assert_eq!(code(b.core.key_import(KeyInput::RecoveryKey(Zeroizing::new("x".into())), 1)), SyncCode::InvalidPairing);
+    assert_eq!(
+        code(
+            b.core
+                .key_import(KeyInput::RecoveryKey(Zeroizing::new("x".into())), 1)
+        ),
+        SyncCode::InvalidPairing
+    );
 }
 
 #[test]
@@ -307,22 +493,62 @@ fn y08_9_foreign_device_is_marked_per_device() {
     // B écrit avec une autre clé dans le même dossier.
     let b = second(&fs);
     b.core.choose_folder(Path::new(FOLDER)).unwrap();
-    b.vault.set(SYNC_KEY_ACCOUNT, &MasterKey::generate().unwrap().to_vault_value()).unwrap();
+    b.vault
+        .set(
+            SYNC_KEY_ACCOUNT,
+            &MasterKey::generate().unwrap().to_vault_value(),
+        )
+        .unwrap();
     b.core.bind_device(DEV_B).unwrap();
     publish_state(&b, DEV_B, 1);
     let scan = a.core.scan(&[]).unwrap();
-    let status = |dev: &str| scan.devices.iter().find(|d| d.device_id == dev).unwrap().state_status;
+    let status = |dev: &str| {
+        scan.devices
+            .iter()
+            .find(|d| d.device_id == dev)
+            .unwrap()
+            .state_status
+    };
     assert_eq!(status(DEV_A), "ok");
-    assert_eq!(status(DEV_B), "foreign", "statut par appareil, l'autre est lu normalement");
-    assert_ne!(scan.devices.iter().find(|d| d.device_id == DEV_B).unwrap().kid, scan.devices.iter().find(|d| d.device_id == DEV_A).unwrap().kid);
+    assert_eq!(
+        status(DEV_B),
+        "foreign",
+        "statut par appareil, l'autre est lu normalement"
+    );
+    assert_ne!(
+        scan.devices
+            .iter()
+            .find(|d| d.device_id == DEV_B)
+            .unwrap()
+            .kid,
+        scan.devices
+            .iter()
+            .find(|d| d.device_id == DEV_A)
+            .unwrap()
+            .kid
+    );
     // Lecture du journal de l'appareil étranger : key-mismatch, jamais déchiffré.
-    assert_eq!(code(a.core.read_journal(DEV_B, &epoch(1, DEV_B), spartiate_lib::sync::store::RecordCursor { segment: 0, record: 0 }, None)), SyncCode::KeyMismatch);
+    assert_eq!(
+        code(a.core.read_journal(
+            DEV_B,
+            &epoch(1, DEV_B),
+            spartiate_lib::sync::store::RecordCursor {
+                segment: 0,
+                record: 0
+            },
+            None
+        )),
+        SyncCode::KeyMismatch
+    );
 }
 
 #[test]
 fn y08_17_keychain_attributes_and_accounts() {
     let attributes = sync_key_attributes();
-    assert_eq!(attributes.accessible, "kSecAttrAccessibleWhenUnlockedThisDeviceOnly");
+    assert_eq!(
+        attributes.accessible,
+        "kSecAttrAccessibleWhenUnlockedThisDeviceOnly"
+    );
     assert!(!attributes.synchronizable);
     assert_eq!(attributes.service, "fr.spartiate.app");
     assert!(is_sync_key_account("spartiate.sync.key.v1"));
@@ -364,5 +590,8 @@ fn y08_7_vault_keeps_its_service_and_round_trips() {
     use spartiate_lib::vault::{MemoryVault, SecretVault};
     let vault = MemoryVault::default();
     vault.set("spartiate.sync.x", "pw").unwrap();
-    assert_eq!(vault.get("spartiate.sync.x").unwrap().as_deref(), Some("pw"));
+    assert_eq!(
+        vault.get("spartiate.sync.x").unwrap().as_deref(),
+        Some("pw")
+    );
 }

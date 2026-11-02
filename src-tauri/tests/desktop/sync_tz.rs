@@ -2,9 +2,9 @@
 //! le fuseau est illisible, et l'heure est alors affichée en UTC **en le disant** (jamais une heure locale fausse sans le dire). Les cas
 //! `localtime_r` (iOS, Linux) sont sous `cfg(unix)` : exécutés par le runner Linux de `tests.yml` ; sous Windows, le fuseau du système.
 
+use serde_json::json;
 use spartiate_lib::sync::forget::{forget_dialog_detail, local_offset_minutes};
 use spartiate_lib::sync::state::PublishedState;
-use serde_json::json;
 
 const DEV: &str = "5c6d7e8f-1a2b-4c3d-8e9f-0a1b2c3d4e5f";
 /// 2026-07-15T08:00:00Z.
@@ -84,6 +84,8 @@ mod unix {
         assert_eq!(local_offset_minutes(u64::MAX), None);
         assert!(log.lines().iter().any(|l| l == "sync:tz-unknown utc"));
         // Fuseau inconnu de la bibliothèque C : lu comme UTC (décalage 0), jamais une erreur.
-        with_tz("Fuseau/Inexistant", || assert_eq!(local_offset_minutes(SUMMER_MS), Some(0)));
+        with_tz("Fuseau/Inexistant", || {
+            assert_eq!(local_offset_minutes(SUMMER_MS), Some(0))
+        });
     }
 }

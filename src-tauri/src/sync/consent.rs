@@ -73,7 +73,8 @@ pub struct DialogTexts {
 /// Textes d'une boîte, lus dans le fichier compilé.
 pub fn dialog_texts(kind: ConsentKind) -> DialogTexts {
     static TEXTS: OnceLock<serde_json::Value> = OnceLock::new();
-    let all = TEXTS.get_or_init(|| serde_json::from_str(NATIVE_TEXTS).unwrap_or(serde_json::Value::Null));
+    let all =
+        TEXTS.get_or_init(|| serde_json::from_str(NATIVE_TEXTS).unwrap_or(serde_json::Value::Null));
     serde_json::from_value(all["consent"][kind.key()].clone()).unwrap_or_else(|_| DialogTexts {
         title: String::new(),
         instruction: String::new(),
@@ -97,7 +98,8 @@ pub struct ForgetDetailTexts {
 
 /// Textes du détail de la boîte d'oubli, lus dans le fichier compilé.
 pub fn forget_detail_texts() -> ForgetDetailTexts {
-    let all: serde_json::Value = serde_json::from_str(NATIVE_TEXTS).unwrap_or(serde_json::Value::Null);
+    let all: serde_json::Value =
+        serde_json::from_str(NATIVE_TEXTS).unwrap_or(serde_json::Value::Null);
     serde_json::from_value(all["forgetDetail"].clone()).unwrap_or_default()
 }
 
@@ -120,8 +122,16 @@ pub fn dialog_spec_with(kind: ConsentKind, owner: isize, detail: Option<&str>) -
     if let Some(detail) = detail {
         texts.content = format!("{detail}\n\n{}", texts.content);
     }
-    let buttons = vec![(ID_CONFIRM, texts.confirm.clone()), (IDCANCEL, texts.cancel.clone())];
-    DialogSpec { owner, texts, buttons, default_button: IDCANCEL }
+    let buttons = vec![
+        (ID_CONFIRM, texts.confirm.clone()),
+        (IDCANCEL, texts.cancel.clone()),
+    ];
+    DialogSpec {
+        owner,
+        texts,
+        buttons,
+        default_button: IDCANCEL,
+    }
 }
 
 /// Boîte et préconditions de premier plan (injectables).
@@ -168,7 +178,11 @@ impl Drop for BusyGuard<'_> {
 
 impl ConsentGate {
     /// `config_dir` : dossier `sync/` du dossier de configuration.
-    pub fn new(config_dir: PathBuf, ui: Arc<dyn ConsentUi>, now: Arc<dyn Fn() -> u64 + Send + Sync>) -> Self {
+    pub fn new(
+        config_dir: PathBuf,
+        ui: Arc<dyn ConsentUi>,
+        now: Arc<dyn Fn() -> u64 + Send + Sync>,
+    ) -> Self {
         Self {
             marker: config_dir.join(CONSENT_REFUSED_MARKER),
             path: config_dir.join(CONSENT_FILE),
@@ -191,16 +205,25 @@ impl ConsentGate {
                 }
                 counters
             }
-            Ok(None) => Counters { blocked_until: marker.unwrap_or(0), ..Counters::default() },
+            Ok(None) => Counters {
+                blocked_until: marker.unwrap_or(0),
+                ..Counters::default()
+            },
             // Fichier illisible pendant le blocage du marqueur : comportement inchangé (compteurs vides, échéance du marqueur).
             Err(()) if marker.is_some() => {
                 log::event("consent-file-unreadable", "blocked");
-                Counters { blocked_until: marker.unwrap_or(0), ..Counters::default() }
+                Counters {
+                    blocked_until: marker.unwrap_or(0),
+                    ..Counters::default()
+                }
             }
             Err(()) => {
                 // Fichier illisible : bloqué 10 minutes (et réécrit, pour que le blocage ne se prolonge pas à chaque lecture).
                 log::event("consent-file-unreadable", "blocked");
-                let blocked = Counters { blocked_until: now + CONSENT_BLOCK_MS, ..Counters::default() };
+                let blocked = Counters {
+                    blocked_until: now + CONSENT_BLOCK_MS,
+                    ..Counters::default()
+                };
                 self.block_in_memory(blocked.blocked_until);
                 // Échec d'écriture journalisé par `save` : le blocage reste en mémoire, et le fichier illisible le redonne au démarrage.
                 let _ = self.save(&blocked);
@@ -258,7 +281,9 @@ impl ConsentGate {
 
     /// Écrit les compteurs ; un échec est journalisé et rendu (`io`) : l'appelant n'ouvre alors aucune boîte.
     fn save(&self, counters: &Counters) -> SyncResult<()> {
-        let written = serde_json::to_vec(counters).map_err(|_| super::SyncError::new(SyncCode::Io)).and_then(|bytes| write_config_file(&self.path, &bytes));
+        let written = serde_json::to_vec(counters)
+            .map_err(|_| super::SyncError::new(SyncCode::Io))
+            .and_then(|bytes| write_config_file(&self.path, &bytes));
         if written.is_err() {
             log::event("consent-file-write-failed", "io");
         }
@@ -277,7 +302,11 @@ impl ConsentGate {
         if !self.ui.owner_ready(owner) {
             return fail(SyncCode::NotForeground);
         }
-        if now < counters.blocked_until.max(self.blocked_until.load(Ordering::SeqCst)) {
+        if now
+            < counters
+                .blocked_until
+                .max(self.blocked_until.load(Ordering::SeqCst))
+        {
             return fail(SyncCode::RateLimited);
         }
         Ok(())
@@ -421,27 +450,44 @@ pub struct WindowsConsentUi;
 impl ConsentUi for WindowsConsentUi {
     fn owner_ready(&self, owner: isize) -> bool {
         use windows::Win32::Foundation::HWND;
-        use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, IsIconic, IsWindowVisible};
+        use windows::Win32::UI::WindowsAndMessaging::{
+            GetForegroundWindow, IsIconic, IsWindowVisible,
+        };
         if owner == 0 {
             return false;
         }
         let hwnd = HWND(owner as *mut core::ffi::c_void);
         // SAFETY: fonctions de lecture d'état, tout handle accepté.
-        unsafe { IsWindowVisible(hwnd).as_bool() && !IsIconic(hwnd).as_bool() && GetForegroundWindow() == hwnd }
+        unsafe {
+            IsWindowVisible(hwnd).as_bool()
+                && !IsIconic(hwnd).as_bool()
+                && GetForegroundWindow() == hwnd
+        }
     }
 
     fn ask(&self, spec: &DialogSpec) -> bool {
         use windows::core::PCWSTR;
         use windows::Win32::Foundation::HWND;
-        use windows::Win32::UI::Controls::{TaskDialogIndirect, TASKDIALOGCONFIG, TASKDIALOG_BUTTON, TDF_ALLOW_DIALOG_CANCELLATION, TDF_POSITION_RELATIVE_TO_WINDOW};
+        use windows::Win32::UI::Controls::{
+            TaskDialogIndirect, TASKDIALOGCONFIG, TASKDIALOG_BUTTON, TDF_ALLOW_DIALOG_CANCELLATION,
+            TDF_POSITION_RELATIVE_TO_WINDOW,
+        };
 
-        let wide = |text: &str| -> Vec<u16> { text.encode_utf16().chain(std::iter::once(0)).collect() };
+        let wide =
+            |text: &str| -> Vec<u16> { text.encode_utf16().chain(std::iter::once(0)).collect() };
         let title = wide(&spec.texts.title);
         let instruction = wide(&spec.texts.instruction);
         let content = wide(&spec.texts.content);
         let labels: Vec<Vec<u16>> = spec.buttons.iter().map(|(_, label)| wide(label)).collect();
-        let buttons: Vec<TASKDIALOG_BUTTON> =
-            spec.buttons.iter().zip(&labels).map(|((id, _), label)| TASKDIALOG_BUTTON { nButtonID: *id, pszButtonText: PCWSTR(label.as_ptr()) }).collect();
+        let buttons: Vec<TASKDIALOG_BUTTON> = spec
+            .buttons
+            .iter()
+            .zip(&labels)
+            .map(|((id, _), label)| TASKDIALOG_BUTTON {
+                nButtonID: *id,
+                pszButtonText: PCWSTR(label.as_ptr()),
+            })
+            .collect();
         let config = TASKDIALOGCONFIG {
             cbSize: std::mem::size_of::<TASKDIALOGCONFIG>() as u32,
             hwndParent: HWND(spec.owner as *mut core::ffi::c_void),

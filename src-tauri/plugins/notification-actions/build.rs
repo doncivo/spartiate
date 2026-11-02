@@ -2,7 +2,14 @@
 //! (sur mobile, une commande de plugin sans gestionnaire Rust est transmise à la méthode Swift du même nom en lowerCamelCase).
 //! Les permissions `notification-actions:allow-<commande>` sont générées ici ; seule la capability iOS les accorde (test `config.rs`).
 
-const COMMANDS: &[&str] = &["drain", "ack", "status", "register_action_types", "register_listener", "remove_listener"];
+const COMMANDS: &[&str] = &[
+    "drain",
+    "ack",
+    "status",
+    "register_action_types",
+    "register_listener",
+    "remove_listener",
+];
 
 fn main() {
     tauri_plugin::Builder::new(COMMANDS).ios_path("ios").build();

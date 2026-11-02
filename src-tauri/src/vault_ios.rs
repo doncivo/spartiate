@@ -46,7 +46,11 @@ pub struct SyncKeyAttributes {
 
 /// Attributs de la clé de synchro : `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`, `kSecAttrSynchronizable = false`.
 pub const fn sync_key_attributes() -> SyncKeyAttributes {
-    SyncKeyAttributes { accessible: "kSecAttrAccessibleWhenUnlockedThisDeviceOnly", synchronizable: false, service: crate::vault::VAULT_SERVICE }
+    SyncKeyAttributes {
+        accessible: "kSecAttrAccessibleWhenUnlockedThisDeviceOnly",
+        synchronizable: false,
+        service: crate::vault::VAULT_SERVICE,
+    }
 }
 
 /// Compte accepté par le coffre iOS de la clé : exactement l'un des deux comptes de `SYNC_KEY_ACCOUNTS`.
@@ -77,7 +81,8 @@ pub fn keychain_set(ops: &dyn KeychainOps, account: &str, secret: &str) -> Resul
         return Err(VaultError::Unavailable);
     }
     keychain_delete(ops, account)?;
-    ops.add(account, secret.as_bytes()).map_err(|_| VaultError::Unavailable)?;
+    ops.add(account, secret.as_bytes())
+        .map_err(|_| VaultError::Unavailable)?;
     let reread = ops.copy(account).map(Zeroizing::new);
     let same = matches!(&reread, Ok(bytes) if bytes.as_slice() == secret.as_bytes());
     if !same {
@@ -98,7 +103,9 @@ pub fn keychain_get(ops: &dyn KeychainOps, account: &str) -> Result<Option<Strin
         // Revue (audit) : octets effacés sur tous les chemins, y compris quand ils ne sont pas de l'UTF-8.
         Ok(bytes) => {
             let bytes = Zeroizing::new(bytes);
-            std::str::from_utf8(&bytes).map(|text| Some(text.to_owned())).map_err(|_| VaultError::Unavailable)
+            std::str::from_utf8(&bytes)
+                .map(|text| Some(text.to_owned()))
+                .map_err(|_| VaultError::Unavailable)
         }
         Err(code) => read_outcome(code).map(|_| None),
     }
@@ -126,15 +133,24 @@ pub struct CachedVault {
 
 impl CachedVault {
     pub fn new(inner: Box<dyn SecretVault>) -> Self {
-        Self { inner, cache: Mutex::new(HashMap::new()) }
+        Self {
+            inner,
+            cache: Mutex::new(HashMap::new()),
+        }
     }
 
     fn remember(&self, account: &str, value: Option<Zeroizing<String>>) {
-        self.cache.lock().unwrap_or_else(|e| e.into_inner()).insert(account.to_owned(), value);
+        self.cache
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .insert(account.to_owned(), value);
     }
 
     fn forget(&self, account: &str) {
-        self.cache.lock().unwrap_or_else(|e| e.into_inner()).remove(account);
+        self.cache
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .remove(account);
     }
 }
 
@@ -147,7 +163,12 @@ impl SecretVault for CachedVault {
     }
 
     fn get(&self, account: &str) -> Result<Option<String>, VaultError> {
-        if let Some(cached) = self.cache.lock().unwrap_or_else(|e| e.into_inner()).get(account) {
+        if let Some(cached) = self
+            .cache
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .get(account)
+        {
             return Ok(cached.as_ref().map(|value| value.as_str().to_owned()));
         }
         let value = self.inner.get(account)?;
@@ -170,14 +191,18 @@ impl SecretVault for CachedVault {
 #[cfg(target_os = "ios")]
 mod keychain {
     use security_framework::access_control::{ProtectionMode, SecAccessControl};
-    use security_framework::passwords::{delete_generic_password_options, generic_password, set_generic_password_options, PasswordOptions};
+    use security_framework::passwords::{
+        delete_generic_password_options, generic_password, set_generic_password_options,
+        PasswordOptions,
+    };
 
     use super::{keychain_delete, keychain_get, keychain_set, sync_key_attributes, KeychainOps};
     use crate::vault::{SecretVault, VaultError};
 
     /// Requête : service, compte, magasin non synchronisé seulement (`kSecAttrSynchronizable = false` dans chaque requête).
     fn query(account: &str) -> PasswordOptions {
-        let mut options = PasswordOptions::new_generic_password(sync_key_attributes().service, account);
+        let mut options =
+            PasswordOptions::new_generic_password(sync_key_attributes().service, account);
         options.set_access_synchronized(Some(sync_key_attributes().synchronizable));
         options
     }
@@ -187,7 +212,11 @@ mod keychain {
 
     impl KeychainOps for Keychain {
         fn add(&self, account: &str, secret: &[u8]) -> Result<(), i32> {
-            let access = SecAccessControl::create_with_protection(Some(ProtectionMode::AccessibleWhenUnlockedThisDeviceOnly), 0).map_err(|e| e.code())?;
+            let access = SecAccessControl::create_with_protection(
+                Some(ProtectionMode::AccessibleWhenUnlockedThisDeviceOnly),
+                0,
+            )
+            .map_err(|e| e.code())?;
             let mut options = query(account);
             options.set_access_control(access);
             set_generic_password_options(secret, options).map_err(|e| e.code())

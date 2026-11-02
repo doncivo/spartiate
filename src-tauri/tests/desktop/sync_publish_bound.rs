@@ -24,12 +24,21 @@ fn state(ep: &str, seq: u64) -> Value {
 
 fn snapshot(d: &Device, ep: &str, seq: u64) {
     let handle = d.core.snapshot_begin(ep, seq, 14).unwrap();
-    d.core.snapshot_append(handle, &["{\"k\":\"snap-rows\"}".to_owned()]).unwrap();
+    d.core
+        .snapshot_append(handle, &["{\"k\":\"snap-rows\"}".to_owned()])
+        .unwrap();
     d.core.snapshot_commit(handle).unwrap();
 }
 
 fn segment(d: &Device, ep: &str, n: u64) {
-    let request = AppendRequest { epoch: ep.to_owned(), segment: n, expect_records: 0, sv: 14, max_hlc: hlc(100 * n, IPHONE), records: vec!["{}".to_owned()] };
+    let request = AppendRequest {
+        epoch: ep.to_owned(),
+        segment: n,
+        expect_records: 0,
+        sv: 14,
+        max_hlc: hlc(100 * n, IPHONE),
+        records: vec!["{}".to_owned()],
+    };
     d.core.append_journal(&request).unwrap();
 }
 
@@ -51,10 +60,16 @@ fn y_ios_02_fix_02_rebuild_own_matches_the_publish_bound_table() {
     let low = epoch(1, PC);
     let mut checked = 0;
     for case in table["cases"].as_array().unwrap() {
-        let Some(bounds) = case["rustBounds"].as_bool() else { continue };
+        let Some(bounds) = case["rustBounds"].as_bool() else {
+            continue;
+        };
         let name = case["name"].as_str().unwrap();
         let listing = &case["epochs"][0];
-        assert_eq!((listing["role"].as_str(), listing["announced"].as_bool()), (Some("other"), Some(false)), "{name}");
+        assert_eq!(
+            (listing["role"].as_str(), listing["announced"].as_bool()),
+            (Some("other"), Some(false)),
+            "{name}"
+        );
         let (mut a, _fs) = device();
         a.setup(IPHONE);
         for n in 1..=listing["snapshots"].as_u64().unwrap() {
@@ -95,10 +110,25 @@ fn y_ios_02_fix_02_state_is_written_with_the_orphan_snapshot_still_listed() {
         if lost {
             forget_own_json(&mut a);
         }
-        assert!(fs.get(&["devices", IPHONE, &high, "s-00000001.sps"]).is_some());
-        a.core.write_state(14, state(&low, 1)).unwrap_or_else(|e| panic!("own.json perdu = {lost} : {e:?}"));
-        assert_eq!(a.core.delete_own(&[OwnFileRef { epoch: high.clone(), kind: "epoch".into(), n: None }]).unwrap(), 1);
-        assert!(fs.get(&["devices", IPHONE, &high, "s-00000001.sps"]).is_none());
+        assert!(fs
+            .get(&["devices", IPHONE, &high, "s-00000001.sps"])
+            .is_some());
+        a.core
+            .write_state(14, state(&low, 1))
+            .unwrap_or_else(|e| panic!("own.json perdu = {lost} : {e:?}"));
+        assert_eq!(
+            a.core
+                .delete_own(&[OwnFileRef {
+                    epoch: high.clone(),
+                    kind: "epoch".into(),
+                    n: None
+                }])
+                .unwrap(),
+            1
+        );
+        assert!(fs
+            .get(&["devices", IPHONE, &high, "s-00000001.sps"])
+            .is_none());
         assert!(fs.get(&["devices", IPHONE, "state.spx"]).is_some());
     }
 }
@@ -107,11 +137,14 @@ fn y_ios_02_fix_02_state_is_written_with_the_orphan_snapshot_still_listed() {
 // Cause racine (2026-10-16) : fichier évincé par iOS, substitut `.s-00000001.sps.icloud`
 // ------------------------------------------------------------------------------------------------------------------------------
 
-const SWIFT: &str = include_str!("../../plugins/folder-bookmark/ios/Sources/FolderBookmarkPlugin.swift");
+const SWIFT: &str =
+    include_str!("../../plugins/folder-bookmark/ios/Sources/FolderBookmarkPlugin.swift");
 
 /// Corps d'une fonction du Swift, de sa déclaration à la fin de son bloc (indentation de la classe).
 fn swift_fn(signature: &str) -> &'static str {
-    let start = SWIFT.find(signature).unwrap_or_else(|| panic!("{signature} absent"));
+    let start = SWIFT
+        .find(signature)
+        .unwrap_or_else(|| panic!("{signature} absent"));
     let body = &SWIFT[start..];
     &body[..body.find("\n  }\n").expect("fin de fonction")]
 }
@@ -137,14 +170,23 @@ fn y_ios_02_fix_02_delete_own_removes_an_evicted_orphan_snapshot_placeholder() {
     let plugin = FakePlugin::new(clock.clone());
     let now = clock.clone();
     let clock_fn: Arc<dyn Fn() -> u64 + Send + Sync> = Arc::new(move || now.load(Ordering::SeqCst));
-    let (core, backend) = ios_core(base.path().to_path_buf(), Arc::new(SharedPlugin(plugin.clone())), Arc::new(MemoryVault::default()), FakeUi::new(), clock_fn);
-    choose_with_picker(&core, &backend).unwrap().expect("dossier choisi");
+    let (core, backend) = ios_core(
+        base.path().to_path_buf(),
+        Arc::new(SharedPlugin(plugin.clone())),
+        Arc::new(MemoryVault::default()),
+        FakeUi::new(),
+        clock_fn,
+    );
+    choose_with_picker(&core, &backend)
+        .unwrap()
+        .expect("dossier choisi");
     core.key_create().unwrap();
     core.bind_device(IPHONE).unwrap();
     let high = epoch(1, IPHONE);
     // L'instantané de l'orpheline, écrit puis évincé : seul le substitut reste.
     let handle = core.snapshot_begin(&high, 1, 14).unwrap();
-    core.snapshot_append(handle, &["{\"k\":\"snap-rows\"}".to_owned()]).unwrap();
+    core.snapshot_append(handle, &["{\"k\":\"snap-rows\"}".to_owned()])
+        .unwrap();
     core.snapshot_commit(handle).unwrap();
     let file = ["devices", IPHONE, high.as_str(), "s-00000001.sps"];
     let bytes = plugin.get(&file).expect("instantané écrit");
@@ -153,13 +195,37 @@ fn y_ios_02_fix_02_delete_own_removes_an_evicted_orphan_snapshot_placeholder() {
     assert!(plugin.has_placeholder(&file) && plugin.get(&file).is_none());
     // Le scan le voit sous son nom réel (dans le nuage).
     let scan = core.scan(&[]).unwrap();
-    let own = scan.devices.iter().find(|d| d.device_id == IPHONE).expect("dossier de l'iPhone listé");
-    assert_eq!(serde_json::to_value(own).unwrap()["epochs"][0]["epoch"], json!(high));
+    let own = scan
+        .devices
+        .iter()
+        .find(|d| d.device_id == IPHONE)
+        .expect("dossier de l'iPhone listé");
+    assert_eq!(
+        serde_json::to_value(own).unwrap()["epochs"][0]["epoch"],
+        json!(high)
+    );
     // `sync_delete_own` de l'époque (non courante : own.json sans époque) : substitut supprimé, dossier d'époque disparu, 1 supprimé.
-    assert_eq!(core.delete_own(&[OwnFileRef { epoch: high.clone(), kind: "epoch".into(), n: None }]).unwrap(), 1);
+    assert_eq!(
+        core.delete_own(&[OwnFileRef {
+            epoch: high.clone(),
+            kind: "epoch".into(),
+            n: None
+        }])
+        .unwrap(),
+        1
+    );
     assert!(!plugin.has_placeholder(&file), "substitut supprimé");
-    assert!(!plugin.exists(&["devices", IPHONE, high.as_str()]), "dossier d'époque supprimé");
-    assert!(plugin.calls("remove").iter().all(|args| !args.to_string().contains(".icloud")), "Rust ne demande que le nom réel");
+    assert!(
+        !plugin.exists(&["devices", IPHONE, high.as_str()]),
+        "dossier d'époque supprimé"
+    );
+    assert!(
+        plugin
+            .calls("remove")
+            .iter()
+            .all(|args| !args.to_string().contains(".icloud")),
+        "Rust ne demande que le nom réel"
+    );
 }
 
 /// Relecture statique du Swift (aucune compilation locale) : `remove` et `removeEmptyDir` sous `forDeleting` ; un fichier absent dont le
@@ -168,20 +234,43 @@ fn y_ios_02_fix_02_delete_own_removes_an_evicted_orphan_snapshot_placeholder() {
 #[test]
 fn y_ios_02_fix_02_swift_remove_deletes_the_icloud_placeholder_under_for_deleting() {
     let delete = swift_fn("private func coordinatedDelete<T>(");
-    assert!(delete.contains("coordinate(writingItemAt: url, options: .forDeleting, error: &coordinationError)"));
+    assert!(delete.contains(
+        "coordinate(writingItemAt: url, options: .forDeleting, error: &coordinationError)"
+    ));
     let remove = swift_fn("@objc public func remove(");
-    assert!(remove.contains("self.coordinatedDelete(url)") && !remove.contains("coordinatedWrite("));
+    assert!(
+        remove.contains("self.coordinatedDelete(url)") && !remove.contains("coordinatedWrite(")
+    );
     assert!(remove.contains("return try self.removePlaceholder(dirFd, name)"));
-    assert!(remove.find("errno != ENOENT").unwrap() < remove.find("removePlaceholder").unwrap(), "substitut cherché seulement si le nom réel est absent");
+    assert!(
+        remove.find("errno != ENOENT").unwrap() < remove.find("removePlaceholder").unwrap(),
+        "substitut cherché seulement si le nom réel est absent"
+    );
     let stub = swift_fn("private func removePlaceholder(");
     assert!(stub.contains("placeholderName(name)") && stub.contains("AT_SYMLINK_NOFOLLOW"));
-    assert!(stub.contains("!isRegular(st.st_mode) || st.st_nlink > 1") && stub.contains("Failure(code: .unsafeFolder)"));
-    assert!(stub.contains("unlinkat(dirFd, placeholder, 0)") && stub.contains("return [\"removed\": true]"));
+    assert!(
+        stub.contains("!isRegular(st.st_mode) || st.st_nlink > 1")
+            && stub.contains("Failure(code: .unsafeFolder)")
+    );
+    assert!(
+        stub.contains("unlinkat(dirFd, placeholder, 0)")
+            && stub.contains("return [\"removed\": true]")
+    );
     for body in [delete, stub] {
         // Erreurs en codes seulement (`Failure(code: …)`, un seul argument), jamais un nom interpolé.
-        assert_eq!(body.matches("Failure(").count(), body.matches("Failure(code: ").count(), "codes seulement");
-        assert!(!body.contains("Failure(code: .io, ") && !body.contains("message:"), "aucun texte");
-        assert!(!body.contains(r"\(name)") && !body.contains(r"\(placeholder)"), "aucun nom dans un message");
+        assert_eq!(
+            body.matches("Failure(").count(),
+            body.matches("Failure(code: ").count(),
+            "codes seulement"
+        );
+        assert!(
+            !body.contains("Failure(code: .io, ") && !body.contains("message:"),
+            "aucun texte"
+        );
+        assert!(
+            !body.contains(r"\(name)") && !body.contains(r"\(placeholder)"),
+            "aucun nom dans un message"
+        );
     }
     let remove_dir = swift_fn("@objc public func removeEmptyDir(");
     assert!(remove_dir.contains("self.coordinatedDelete(url)"));

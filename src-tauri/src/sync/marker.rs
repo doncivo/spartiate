@@ -9,7 +9,9 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
-use super::folder::{config_dir, read_config_file, remove_config_file, write_config_file, FOLDER_FILE};
+use super::folder::{
+    config_dir, read_config_file, remove_config_file, write_config_file, FOLDER_FILE,
+};
 use super::{fail, SyncCode, SyncResult};
 
 pub const MARKER_FILE: &str = "restore-marker.json";
@@ -51,21 +53,65 @@ pub fn sync_folder_configured(base: &Path) -> bool {
 }
 
 /// Écrit le marqueur si un dossier de synchro est configuré ; renvoie `true` s'il a été écrit.
-pub fn write_after_restore(base: &Path, backup: &str, backup_taken_at: &str, restored_at: &str, schema_version: u64) -> SyncResult<bool> {
-    write_marker(base, backup, backup_taken_at, restored_at, schema_version, false)
+pub fn write_after_restore(
+    base: &Path,
+    backup: &str,
+    backup_taken_at: &str,
+    restored_at: &str,
+    schema_version: u64,
+) -> SyncResult<bool> {
+    write_marker(
+        base,
+        backup,
+        backup_taken_at,
+        restored_at,
+        schema_version,
+        false,
+    )
 }
 
 /// Écrit le marqueur, provisoire ou confirmé, si un dossier de synchro est configuré.
-pub fn write_marker(base: &Path, backup: &str, backup_taken_at: &str, restored_at: &str, schema_version: u64, provisional: bool) -> SyncResult<bool> {
-    write_marker_token(base, backup, backup_taken_at, restored_at, schema_version, provisional, None)
+pub fn write_marker(
+    base: &Path,
+    backup: &str,
+    backup_taken_at: &str,
+    restored_at: &str,
+    schema_version: u64,
+    provisional: bool,
+) -> SyncResult<bool> {
+    write_marker_token(
+        base,
+        backup,
+        backup_taken_at,
+        restored_at,
+        schema_version,
+        provisional,
+        None,
+    )
 }
 
 /// Comme `write_marker`, avec le jeton de restauration d'un marqueur provisoire.
-pub fn write_marker_token(base: &Path, backup: &str, backup_taken_at: &str, restored_at: &str, schema_version: u64, provisional: bool, token: Option<u32>) -> SyncResult<bool> {
+pub fn write_marker_token(
+    base: &Path,
+    backup: &str,
+    backup_taken_at: &str,
+    restored_at: &str,
+    schema_version: u64,
+    provisional: bool,
+    token: Option<u32>,
+) -> SyncResult<bool> {
     if !sync_folder_configured(base) {
         return Ok(false);
     }
-    let marker = MarkerFile { v: 1, backup: backup.to_owned(), backup_taken_at: backup_taken_at.to_owned(), restored_at: restored_at.to_owned(), schema_version, provisional, token };
+    let marker = MarkerFile {
+        v: 1,
+        backup: backup.to_owned(),
+        backup_taken_at: backup_taken_at.to_owned(),
+        restored_at: restored_at.to_owned(),
+        schema_version,
+        provisional,
+        token,
+    };
     let bytes = serde_json::to_vec(&marker).map_err(|_| super::SyncError::new(SyncCode::Io))?;
     write_config_file(&base.join(MARKER_FILE), &bytes)?;
     Ok(true)
@@ -74,7 +120,13 @@ pub fn write_marker_token(base: &Path, backup: &str, backup_taken_at: &str, rest
 /// Marqueur présent, ou `None`.
 pub fn read(base: &Path) -> SyncResult<Option<RestoreMarker>> {
     match read_config_file::<MarkerFile>(&base.join(MARKER_FILE)) {
-        Ok(Some(m)) if m.v == 1 => Ok(Some(RestoreMarker { backup: m.backup, backup_taken_at: m.backup_taken_at, restored_at: m.restored_at, schema_version: m.schema_version, provisional: m.provisional })),
+        Ok(Some(m)) if m.v == 1 => Ok(Some(RestoreMarker {
+            backup: m.backup,
+            backup_taken_at: m.backup_taken_at,
+            restored_at: m.restored_at,
+            schema_version: m.schema_version,
+            provisional: m.provisional,
+        })),
         Ok(None) => Ok(None),
         // Marqueur illisible : la synchro reste suspendue (le choix explicite reste dû), jamais ignorée.
         _ => fail(SyncCode::Io),
@@ -87,10 +139,13 @@ pub fn clear(base: &Path) -> SyncResult<()> {
 
 /// Confirme un marqueur provisoire (échange abouti) ; `Ok(false)` s'il n'y en a pas.
 pub fn confirm(base: &Path) -> SyncResult<bool> {
-    match read_config_file::<MarkerFile>(&base.join(MARKER_FILE)).map_err(|()| super::SyncError::new(SyncCode::Io))? {
+    match read_config_file::<MarkerFile>(&base.join(MARKER_FILE))
+        .map_err(|()| super::SyncError::new(SyncCode::Io))?
+    {
         Some(mut marker) if marker.provisional => {
             marker.provisional = false;
-            let bytes = serde_json::to_vec(&marker).map_err(|_| super::SyncError::new(SyncCode::Io))?;
+            let bytes =
+                serde_json::to_vec(&marker).map_err(|_| super::SyncError::new(SyncCode::Io))?;
             write_config_file(&base.join(MARKER_FILE), &bytes)?;
             Ok(true)
         }

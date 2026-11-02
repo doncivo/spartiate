@@ -14,7 +14,10 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Manager, State};
 use tauri_plugin_dialog::DialogExt;
 
-pub use crate::export_common::{allowed_extension, body_bytes, decode_name, mime_for, sanitize_file_name, ALLOWED_EXTENSIONS, MAX_EXPORT_BYTES, MAX_HEADER_LEN, MAX_NAME_LEN, NAME_HEADER};
+pub use crate::export_common::{
+    allowed_extension, body_bytes, decode_name, mime_for, sanitize_file_name, ALLOWED_EXTENSIONS,
+    MAX_EXPORT_BYTES, MAX_HEADER_LEN, MAX_NAME_LEN, NAME_HEADER,
+};
 
 /// Dernier fichier écrit par `export_save_file` (état géré par Tauri).
 #[derive(Default)]
@@ -36,8 +39,14 @@ pub fn write_atomically(path: &Path, bytes: &[u8]) -> io::Result<()> {
 }
 
 /// Comme `write_atomically`, avec l'écriture injectée (pour tester un échec au milieu).
-pub fn write_atomically_with(path: &Path, bytes: &[u8], write: &dyn Fn(&mut File, &[u8]) -> io::Result<()>) -> io::Result<()> {
-    let name = path.file_name().ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "nom de fichier absent"))?;
+pub fn write_atomically_with(
+    path: &Path,
+    bytes: &[u8],
+    write: &dyn Fn(&mut File, &[u8]) -> io::Result<()>,
+) -> io::Result<()> {
+    let name = path
+        .file_name()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "nom de fichier absent"))?;
     let temp = path.with_file_name(format!(".{}.ct-partial", name.to_string_lossy()));
     let open = || OpenOptions::new().write(true).create_new(true).open(&temp);
     let mut file = match open() {
@@ -61,7 +70,11 @@ pub fn write_atomically_with(path: &Path, bytes: &[u8], write: &dyn Fn(&mut File
 /// Ouvre « Enregistrer sous » (modale de la fenêtre principale), écrit les octets reçus dans le fichier choisi et en renvoie le chemin ;
 /// `None` si l'utilisateur annule. Écriture atomique : en cas d'échec, aucun fichier partiel et le fichier existant reste intact.
 #[tauri::command]
-pub async fn export_save_file(app: AppHandle, state: State<'_, ExportState>, request: tauri::ipc::Request<'_>) -> Result<Option<String>, String> {
+pub async fn export_save_file(
+    app: AppHandle,
+    state: State<'_, ExportState>,
+    request: tauri::ipc::Request<'_>,
+) -> Result<Option<String>, String> {
     // Contrôles de taille d'abord : avant toute autre opération.
     let data = body_bytes(request.body()).map_err(str::to_owned)?;
     let name = request

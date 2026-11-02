@@ -1,11 +1,12 @@
 //! P-04 (quatrième série) : archivage sûr, restes de récupération, casse du type dans sqlite_master, dossier lié, recherche après restauration.
 
+use rusqlite::Connection;
 use spartiate_lib::backup::{
-    check_backup_file, create_daily_backup, create_migration_backup, normalize_sql, parse_backup_name, recover_interrupted_restore, reset_triggers,
-    restore_backup_file, utc_stamp, Family, Recovery, RestoreStep, BACKUP_DIR, DB_FILE,
+    check_backup_file, create_daily_backup, create_migration_backup, normalize_sql,
+    parse_backup_name, recover_interrupted_restore, reset_triggers, restore_backup_file, utc_stamp,
+    Family, Recovery, RestoreStep, BACKUP_DIR, DB_FILE,
 };
 use spartiate_lib::backup_triggers::REFERENCE_TRIGGERS;
-use rusqlite::Connection;
 use std::fs;
 use std::path::Path;
 
@@ -14,7 +15,10 @@ fn scratch() -> tempfile::TempDir {
 }
 
 fn names(dir: &Path) -> Vec<String> {
-    let mut all: Vec<String> = fs::read_dir(dir).unwrap().map(|e| e.unwrap().file_name().to_string_lossy().into_owned()).collect();
+    let mut all: Vec<String> = fs::read_dir(dir)
+        .unwrap()
+        .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+        .collect();
     all.sort();
     all
 }
@@ -30,7 +34,10 @@ fn recover(dir: &Path) -> Result<Recovery, spartiate_lib::backup::BackupError> {
 const NO_FAIL: &dyn Fn(RestoreStep) -> std::io::Result<()> = &|_| Ok(());
 
 fn now_secs() -> u64 {
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
 }
 
 #[test]
@@ -52,18 +59,34 @@ fn p04_archiving_never_mixes_with_an_orphan_wal_or_shm_at_the_target_name() {
     let start = now_secs();
     for n in 0..8 {
         let stamp = utc_stamp(start + n);
-        fs::write(backups.join(format!("spartiate-pre-restore-{stamp}.db-wal")), b"orphelin wal").unwrap();
+        fs::write(
+            backups.join(format!("spartiate-pre-restore-{stamp}.db-wal")),
+            b"orphelin wal",
+        )
+        .unwrap();
     }
     write(dir.path(), "spartiate.db", b"nouvelle");
     write(dir.path(), "spartiate.db.restore-old", b"ancienne");
     write(dir.path(), "spartiate.db-wal.restore-old", b"ancien wal");
     assert_eq!(recover(dir.path()).unwrap(), Recovery::Archived);
     let kept = names(&backups);
-    let main = kept.iter().find(|n| n.ends_with(".db")).expect("base archivée");
+    let main = kept
+        .iter()
+        .find(|n| n.ends_with(".db"))
+        .expect("base archivée");
     assert_eq!(fs::read(backups.join(main)).unwrap(), b"ancienne");
-    assert_eq!(fs::read(backups.join(format!("{main}-wal"))).unwrap(), b"ancien wal", "le -wal archivé est celui de l'ancienne base");
-    let orphan_names: Vec<String> = (0..8).map(|n| format!("spartiate-pre-restore-{}.db", utc_stamp(start + n))).collect();
-    assert!(!orphan_names.contains(main), "le nom choisi n'est pas celui d'un orphelin : {main}");
+    assert_eq!(
+        fs::read(backups.join(format!("{main}-wal"))).unwrap(),
+        b"ancien wal",
+        "le -wal archivé est celui de l'ancienne base"
+    );
+    let orphan_names: Vec<String> = (0..8)
+        .map(|n| format!("spartiate-pre-restore-{}.db", utc_stamp(start + n)))
+        .collect();
+    assert!(
+        !orphan_names.contains(main),
+        "le nom choisi n'est pas celui d'un orphelin : {main}"
+    );
     // La rotation a supprimé les -wal orphelins (leur base est absente) : il ne reste que l'archive complète.
     assert_eq!(kept, [main.clone(), format!("{main}-wal")]);
 }
@@ -78,15 +101,40 @@ fn p04_a_resumed_archive_targets_the_same_name_as_the_interrupted_one() {
     write(dir.path(), "spartiate.db-wal.restore-old", b"ancien wal");
     write(dir.path(), "spartiate.db-shm.restore-old", b"ancien shm");
     // Nom dérivé de la date de modification de la base restore-old.
-    let modified = fs::metadata(dir.path().join("spartiate.db.restore-old")).unwrap().modified().unwrap();
-    let stem = format!("spartiate-pre-restore-{}.db", utc_stamp(modified.duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()));
+    let modified = fs::metadata(dir.path().join("spartiate.db.restore-old"))
+        .unwrap()
+        .modified()
+        .unwrap();
+    let stem = format!(
+        "spartiate-pre-restore-{}.db",
+        utc_stamp(
+            modified
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_secs()
+        )
+    );
     // Première tentative interrompue : seul le -shm a été déplacé, sous ce nom.
-    fs::rename(dir.path().join("spartiate.db-shm.restore-old"), backups.join(format!("{stem}-shm"))).unwrap();
+    fs::rename(
+        dir.path().join("spartiate.db-shm.restore-old"),
+        backups.join(format!("{stem}-shm")),
+    )
+    .unwrap();
     assert_eq!(recover(dir.path()).unwrap(), Recovery::Archived);
-    assert_eq!(names(&backups), [stem.clone(), format!("{stem}-shm"), format!("{stem}-wal")], "la reprise complète le MÊME nom");
+    assert_eq!(
+        names(&backups),
+        [stem.clone(), format!("{stem}-shm"), format!("{stem}-wal")],
+        "la reprise complète le MÊME nom"
+    );
     assert_eq!(fs::read(backups.join(&stem)).unwrap(), b"ancienne");
-    assert_eq!(fs::read(backups.join(format!("{stem}-shm"))).unwrap(), b"ancien shm");
-    assert_eq!(fs::read(backups.join(format!("{stem}-wal"))).unwrap(), b"ancien wal");
+    assert_eq!(
+        fs::read(backups.join(format!("{stem}-shm"))).unwrap(),
+        b"ancien shm"
+    );
+    assert_eq!(
+        fs::read(backups.join(format!("{stem}-wal"))).unwrap(),
+        b"ancien wal"
+    );
 }
 
 #[test]
@@ -94,15 +142,39 @@ fn p04_rotation_removes_the_wal_and_shm_of_a_pre_restore_name_whose_base_is_abse
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
-    fs::write(backups.join("spartiate-pre-restore-20260101T000000Z.db-wal"), b"orphelin").unwrap();
-    fs::write(backups.join("spartiate-pre-restore-20260101T000000Z.db-shm"), b"orphelin").unwrap();
-    fs::write(backups.join("spartiate-pre-restore-20260202T000000Z.db"), b"base").unwrap();
-    fs::write(backups.join("spartiate-pre-restore-20260202T000000Z.db-wal"), b"wal vivant").unwrap();
-    fs::write(backups.join("spartiate-daily-20260301.db-wal"), b"autre famille").unwrap();
+    fs::write(
+        backups.join("spartiate-pre-restore-20260101T000000Z.db-wal"),
+        b"orphelin",
+    )
+    .unwrap();
+    fs::write(
+        backups.join("spartiate-pre-restore-20260101T000000Z.db-shm"),
+        b"orphelin",
+    )
+    .unwrap();
+    fs::write(
+        backups.join("spartiate-pre-restore-20260202T000000Z.db"),
+        b"base",
+    )
+    .unwrap();
+    fs::write(
+        backups.join("spartiate-pre-restore-20260202T000000Z.db-wal"),
+        b"wal vivant",
+    )
+    .unwrap();
+    fs::write(
+        backups.join("spartiate-daily-20260301.db-wal"),
+        b"autre famille",
+    )
+    .unwrap();
     spartiate_lib::backup::prune_family(&backups, Family::PreRestore, 3).unwrap();
     assert_eq!(
         names(&backups),
-        ["spartiate-daily-20260301.db-wal", "spartiate-pre-restore-20260202T000000Z.db", "spartiate-pre-restore-20260202T000000Z.db-wal"],
+        [
+            "spartiate-daily-20260301.db-wal",
+            "spartiate-pre-restore-20260202T000000Z.db",
+            "spartiate-pre-restore-20260202T000000Z.db-wal"
+        ],
         "seuls les -wal / -shm sans base de la famille pre-restore disparaissent"
     );
 }
@@ -113,7 +185,11 @@ fn p04_a_partial_archive_is_finished_at_the_next_startup_without_losing_anything
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
     // Premier démarrage interrompu : le -shm est déjà dans backups/, la base et le -wal sont encore en .restore-old.
-    fs::write(backups.join("spartiate-pre-restore-20261005T100000Z.db-shm"), b"ancien shm").unwrap();
+    fs::write(
+        backups.join("spartiate-pre-restore-20261005T100000Z.db-shm"),
+        b"ancien shm",
+    )
+    .unwrap();
     write(dir.path(), "spartiate.db", b"nouvelle");
     write(dir.path(), "spartiate.db.restore-old", b"ancienne");
     write(dir.path(), "spartiate.db-wal.restore-old", b"ancien wal");
@@ -122,9 +198,15 @@ fn p04_a_partial_archive_is_finished_at_the_next_startup_without_losing_anything
     let kept = names(&backups);
     // Un -shm orphelin d'un AUTRE nom (base absente) n'est pas celui de cette base : l'archive va sous un nom propre et la rotation le supprime.
     assert!(!kept.contains(&"spartiate-pre-restore-20261005T100000Z.db-shm".to_owned()));
-    let main = kept.iter().find(|n| n.ends_with(".db")).expect("base archivée au second passage");
+    let main = kept
+        .iter()
+        .find(|n| n.ends_with(".db"))
+        .expect("base archivée au second passage");
     assert_eq!(fs::read(backups.join(main)).unwrap(), b"ancienne");
-    assert_eq!(fs::read(backups.join(format!("{main}-wal"))).unwrap(), b"ancien wal");
+    assert_eq!(
+        fs::read(backups.join(format!("{main}-wal"))).unwrap(),
+        b"ancien wal"
+    );
 }
 
 #[test]
@@ -146,7 +228,13 @@ fn p04_a_staged_leftover_that_is_not_a_plain_file_is_refused_and_nothing_moves()
 fn p04_the_staged_wal_shm_and_journal_leftovers_are_removed() {
     let dir = scratch();
     write(dir.path(), "spartiate.db", b"main");
-    for name in ["spartiate.db.restoring", "spartiate.db.restoring.tmp", "spartiate.db.restoring-wal", "spartiate.db.restoring-shm", "spartiate.db.restoring-journal"] {
+    for name in [
+        "spartiate.db.restoring",
+        "spartiate.db.restoring.tmp",
+        "spartiate.db.restoring-wal",
+        "spartiate.db.restoring-shm",
+        "spartiate.db.restoring-journal",
+    ] {
         write(dir.path(), name, b"reste");
     }
     assert_eq!(recover(dir.path()).unwrap(), Recovery::StagedRemoved);
@@ -157,19 +245,37 @@ fn trap(path: &Path, kind: &str, type_in_master: &str) {
     let conn = Connection::open(path).unwrap();
     conn.execute_batch("CREATE TABLE task (id INTEGER PRIMARY KEY, title TEXT, deleted_at TEXT); CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY); INSERT INTO schema_migrations VALUES (14); CREATE TABLE journal (x);").unwrap();
     if kind == "trigger" {
-        conn.execute_batch("CREATE TRIGGER evil AFTER INSERT ON task BEGIN INSERT INTO journal VALUES (1); END;").unwrap();
+        conn.execute_batch(
+            "CREATE TRIGGER evil AFTER INSERT ON task BEGIN INSERT INTO journal VALUES (1); END;",
+        )
+        .unwrap();
     } else {
-        conn.execute_batch("CREATE VIEW evil AS SELECT * FROM task;").unwrap();
+        conn.execute_batch("CREATE VIEW evil AS SELECT * FROM task;")
+            .unwrap();
     }
     conn.execute_batch("PRAGMA writable_schema = ON;").unwrap();
-    conn.execute("UPDATE sqlite_master SET type = ?1 WHERE name = 'evil'", [type_in_master]).unwrap();
+    conn.execute(
+        "UPDATE sqlite_master SET type = ?1 WHERE name = 'evil'",
+        [type_in_master],
+    )
+    .unwrap();
     conn.execute_batch("PRAGMA writable_schema = OFF;").unwrap();
 }
 
 #[test]
 fn p04_a_type_with_a_modified_case_in_sqlite_master_is_refused() {
     let dir = scratch();
-    for (index, (kind, forged)) in [("trigger", "trigger"), ("trigger", "Trigger"), ("trigger", "TRIGGER"), ("view", "view"), ("view", "View"), ("view", "VIEW")].into_iter().enumerate() {
+    for (index, (kind, forged)) in [
+        ("trigger", "trigger"),
+        ("trigger", "Trigger"),
+        ("trigger", "TRIGGER"),
+        ("view", "view"),
+        ("view", "View"),
+        ("view", "VIEW"),
+    ]
+    .into_iter()
+    .enumerate()
+    {
         let path = dir.path().join(format!("{index}-{kind}.db"));
         trap(&path, kind, forged);
         let error = check_backup_file(&path, 99).unwrap_err();
@@ -185,14 +291,25 @@ fn p04_reset_triggers_also_removes_a_trigger_whose_type_has_another_case() {
     // DROP TRIGGER ne supprime pas une ligne dont le type est « Trigger » : la préparation échoue au lieu de laisser un déclencheur étranger.
     assert_eq!(reset_triggers(&path).unwrap_err().code, "corrupt");
     // Transaction annulée : le fichier n'a pas été modifié à moitié (aucun déclencheur de référence n'a été créé).
-    let count: u64 = Connection::open(&path).unwrap().query_row("SELECT COUNT(*) FROM sqlite_master WHERE name LIKE 'search_%'", [], |r| r.get(0)).unwrap();
+    let count: u64 = Connection::open(&path)
+        .unwrap()
+        .query_row(
+            "SELECT COUNT(*) FROM sqlite_master WHERE name LIKE 'search_%'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
     assert_eq!(count, 0);
 }
 
 #[test]
 fn p04_normalize_sql_only_collapses_ascii_whitespace() {
     assert_eq!(normalize_sql("  a \t b\r\n c  "), "a b c");
-    assert_eq!(normalize_sql("a\u{a0}b"), "a\u{a0}b", "l'espace insécable est une différence");
+    assert_eq!(
+        normalize_sql("a\u{a0}b"),
+        "a\u{a0}b",
+        "l'espace insécable est une différence"
+    );
     assert_eq!(normalize_sql("a\u{2003}b"), "a\u{2003}b");
 }
 
@@ -205,8 +322,15 @@ fn p04_reset_triggers_leaves_a_single_file_without_wal_or_journal() {
     conn.execute_batch("CREATE TABLE task (id INTEGER PRIMARY KEY, title TEXT, deleted_at TEXT); CREATE TABLE search_index_doc (x);").unwrap();
     drop(conn);
     reset_triggers(&path).unwrap();
-    assert_eq!(names(dir.path()), ["prepare.db"], "ni -wal ni -journal ni -shm");
-    let mode: String = Connection::open(&path).unwrap().query_row("PRAGMA journal_mode", [], |r| r.get(0)).unwrap();
+    assert_eq!(
+        names(dir.path()),
+        ["prepare.db"],
+        "ni -wal ni -journal ni -shm"
+    );
+    let mode: String = Connection::open(&path)
+        .unwrap()
+        .query_row("PRAGMA journal_mode", [], |r| r.get(0))
+        .unwrap();
     assert_eq!(mode, "delete");
 }
 
@@ -214,7 +338,10 @@ fn p04_reset_triggers_leaves_a_single_file_without_wal_or_journal() {
 fn p04_a_backups_folder_that_is_a_link_refuses_daily_and_migration_backups() {
     let dir = scratch();
     let db = dir.path().join(DB_FILE);
-    Connection::open(&db).unwrap().execute_batch("CREATE TABLE t (x);").unwrap();
+    Connection::open(&db)
+        .unwrap()
+        .execute_batch("CREATE TABLE t (x);")
+        .unwrap();
     let real = dir.path().join("vrai");
     fs::create_dir_all(&real).unwrap();
     let link = dir.path().join(BACKUP_DIR);
@@ -223,9 +350,22 @@ fn p04_a_backups_folder_that_is_a_link_refuses_daily_and_migration_backups() {
     #[cfg(unix)]
     let made = std::os::unix::fs::symlink(&real, &link);
     if made.is_ok() {
-        assert_eq!(create_daily_backup(&db, &link, "20261005", false, 14).unwrap_err().code, "unsafe-folder");
-        assert_eq!(create_migration_backup(&db, &link, 3, 4, "20261005T101500Z", 5).unwrap_err().code, "unsafe-folder");
-        assert!(names(&real).is_empty(), "rien n'est écrit à travers le lien");
+        assert_eq!(
+            create_daily_backup(&db, &link, "20261005", false, 14)
+                .unwrap_err()
+                .code,
+            "unsafe-folder"
+        );
+        assert_eq!(
+            create_migration_backup(&db, &link, 3, 4, "20261005T101500Z", 5)
+                .unwrap_err()
+                .code,
+            "unsafe-folder"
+        );
+        assert!(
+            names(&real).is_empty(),
+            "rien n'est écrit à travers le lien"
+        );
     }
 }
 
@@ -247,14 +387,24 @@ fn make_search_db(path: &Path, tasks: &[&str]) {
         }
     }
     for (index, title) in tasks.iter().enumerate() {
-        conn.execute("INSERT INTO task (id, title) VALUES (?1, ?2)", [format!("t{index}"), (*title).to_owned()]).unwrap();
+        conn.execute(
+            "INSERT INTO task (id, title) VALUES (?1, ?2)",
+            [format!("t{index}"), (*title).to_owned()],
+        )
+        .unwrap();
     }
 }
 
 fn search(path: &Path, word: &str) -> Vec<String> {
     let conn = Connection::open(path).unwrap();
-    let mut statement = conn.prepare("SELECT ref_id FROM search_index WHERE search_index MATCH ?1 ORDER BY ref_id").unwrap();
-    let rows = statement.query_map([word], |r| r.get::<_, String>(0)).unwrap().map(Result::unwrap).collect();
+    let mut statement = conn
+        .prepare("SELECT ref_id FROM search_index WHERE search_index MATCH ?1 ORDER BY ref_id")
+        .unwrap();
+    let rows = statement
+        .query_map([word], |r| r.get::<_, String>(0))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect();
     rows
 }
 
@@ -266,15 +416,46 @@ fn p04_after_a_restore_the_search_index_still_follows_new_tasks() {
     make_search_db(&db, &["Appeler Paul", "Réserver restaurant"]);
     create_daily_backup(&db, &backups, "20261003", false, 14).unwrap();
     // L'état courant diffère : une tâche de plus.
-    Connection::open(&db).unwrap().execute("INSERT INTO task (id, title) VALUES ('t9', 'Tâche récente')", []).unwrap();
-    restore_backup_file(&db, &backups, "spartiate-daily-20261003.db", 14, "20261005T101500Z", NO_FAIL).unwrap();
-    assert_eq!(search(&db, "restaurant"), ["t1"], "l'index restauré retrouve les tâches de la version");
+    Connection::open(&db)
+        .unwrap()
+        .execute(
+            "INSERT INTO task (id, title) VALUES ('t9', 'Tâche récente')",
+            [],
+        )
+        .unwrap();
+    restore_backup_file(
+        &db,
+        &backups,
+        "spartiate-daily-20261003.db",
+        14,
+        "20261005T101500Z",
+        NO_FAIL,
+    )
+    .unwrap();
+    assert_eq!(
+        search(&db, "restaurant"),
+        ["t1"],
+        "l'index restauré retrouve les tâches de la version"
+    );
     assert!(search(&db, "récente").is_empty());
     // Une insertion après la restauration passe par le déclencheur recréé : elle est trouvée dans search_index.
-    Connection::open(&db).unwrap().execute("INSERT INTO task (id, title) VALUES ('t5', 'Planifier vacances')", []).unwrap();
+    Connection::open(&db)
+        .unwrap()
+        .execute(
+            "INSERT INTO task (id, title) VALUES ('t5', 'Planifier vacances')",
+            [],
+        )
+        .unwrap();
     assert_eq!(search(&db, "vacances"), ["t5"]);
     let conn = Connection::open(&db).unwrap();
-    let triggers: u64 = conn.query_row("SELECT COUNT(*) FROM sqlite_master WHERE type = 'trigger'", [], |r| r.get(0)).unwrap();
+    let triggers: u64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'trigger'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
     assert_eq!(triggers, 3);
-    assert!(parse_backup_name("spartiate-daily-20261003.db").is_some_and(|(family, _)| family == Family::Daily));
+    assert!(parse_backup_name("spartiate-daily-20261003.db")
+        .is_some_and(|(family, _)| family == Family::Daily));
 }

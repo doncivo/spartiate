@@ -14,34 +14,34 @@
 //! Journal technique : codes, compteurs, noms stricts, identifiants d'appareil et d'époque seulement ; jamais de clé, de texte
 //! clair, de `qrText`, de saisie ni de chemin complet (section 2.3).
 
-pub mod limits;
-pub mod names;
-pub mod crypto;
-pub mod files;
-pub mod forget;
-pub mod folder;
-#[cfg(windows)]
-pub mod cloud_windows;
-pub mod store;
-pub mod consent;
-pub mod pairing;
-pub mod reset;
-pub mod marker;
-pub mod service;
-pub mod state;
-#[cfg(desktop)]
-pub mod commands;
 /// iPhone (ADR 0011 §22) : `BookmarkFs` sur le plugin folder-bookmark ; présent dans les tests Windows (`test-hooks`), absent du PC livré.
 #[cfg(any(target_os = "ios", feature = "test-hooks"))]
 pub mod bookmark;
-/// iPhone (ADR 0011 §23 point 3) : confirmation native par `UIAlertController` (plugin folder-bookmark).
-#[cfg(any(target_os = "ios", feature = "test-hooks"))]
-pub mod consent_ios;
+#[cfg(windows)]
+pub mod cloud_windows;
+#[cfg(desktop)]
+pub mod commands;
 /// iPhone (ADR 0011 §22 point 7) : les commandes `sync_*` de l'iPhone (mêmes noms, entrées et sorties), même `SyncCore`. iOS seulement :
 /// les macros de `#[tauri::command]` portent le nom de la commande à la racine du crate et ne peuvent pas coexister avec `commands` (PC) ;
 /// leur logique (`bookmark::ios_core`, `bookmark::choose_with_picker`) est testée sous Windows.
 #[cfg(target_os = "ios")]
 pub mod commands_ios;
+pub mod consent;
+/// iPhone (ADR 0011 §23 point 3) : confirmation native par `UIAlertController` (plugin folder-bookmark).
+#[cfg(any(target_os = "ios", feature = "test-hooks"))]
+pub mod consent_ios;
+pub mod crypto;
+pub mod files;
+pub mod folder;
+pub mod forget;
+pub mod limits;
+pub mod marker;
+pub mod names;
+pub mod pairing;
+pub mod reset;
+pub mod service;
+pub mod state;
+pub mod store;
 
 use serde::Serialize;
 
@@ -201,7 +201,11 @@ fn serialize_code<S: serde::Serializer>(code: &SyncCode, serializer: S) -> Resul
 
 impl SyncError {
     pub const fn new(code: SyncCode) -> Self {
-        Self { code, message: "synchro", append_before_write: None }
+        Self {
+            code,
+            message: "synchro",
+            append_before_write: None,
+        }
     }
 }
 

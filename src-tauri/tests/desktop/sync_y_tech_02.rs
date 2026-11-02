@@ -10,7 +10,9 @@ use spartiate_lib::sync::limits::CONSENT_BLOCK_MS;
 use spartiate_lib::sync::service::AppendRequest;
 use spartiate_lib::sync::SyncCode;
 
-use crate::sync_support::{device, epoch, hlc, Device, FakeBackend, FakeUi, MemFs, TestClock, DEV_A, DEV_B, FOLDER, NOW};
+use crate::sync_support::{
+    device, epoch, hlc, Device, FakeBackend, FakeUi, MemFs, TestClock, DEV_A, DEV_B, FOLDER, NOW,
+};
 
 const OWNER: isize = 0x1234;
 
@@ -36,7 +38,10 @@ fn y_tech_02_scan_reports_a_folder_over_one_gib_without_failing() {
     fs.set_extra(&["devices", DEV_B, "state.spx"], 2 * 1024 * 1024 * 1024);
     fs.set_availability(&["devices", DEV_B, "state.spx"], Availability::Cloud);
     let scan = d.core.scan(&[]).unwrap();
-    assert!(scan.folder_large, "au-delà de 1 Gio : avertissement rendu, pas seulement journalisé");
+    assert!(
+        scan.folder_large,
+        "au-delà de 1 Gio : avertissement rendu, pas seulement journalisé"
+    );
     let json = serde_json::to_value(&scan).unwrap();
     assert_eq!(json["folderLarge"], serde_json::Value::Bool(true));
 }
@@ -44,14 +49,29 @@ fn y_tech_02_scan_reports_a_folder_over_one_gib_without_failing() {
 #[test]
 fn y_tech_02_scan_reports_the_nonce_budget_warning() {
     let fs = MemFs::new();
-    let d = Device::with_options(FakeBackend::with(FOLDER, FolderKind::Icloud, fs), |o| o.nonce_warn = 2);
+    let d = Device::with_options(FakeBackend::with(FOLDER, FolderKind::Icloud, fs), |o| {
+        o.nonce_warn = 2
+    });
     d.setup(DEV_A);
     assert!(!d.core.scan(&[]).unwrap().nonce_warning);
-    let request = AppendRequest { epoch: epoch(1, DEV_A), segment: 1, expect_records: 0, sv: 14, max_hlc: hlc(10, DEV_A), records: vec!["{}".to_owned(); 3] };
+    let request = AppendRequest {
+        epoch: epoch(1, DEV_A),
+        segment: 1,
+        expect_records: 0,
+        sv: 14,
+        max_hlc: hlc(10, DEV_A),
+        records: vec!["{}".to_owned(); 3],
+    };
     d.core.append_journal(&request).unwrap();
     let scan = d.core.scan(&[]).unwrap();
-    assert!(scan.nonce_warning, "alerte du budget de nonces rendue au moteur");
-    assert_eq!(serde_json::to_value(&scan).unwrap()["nonceWarning"], serde_json::Value::Bool(true));
+    assert!(
+        scan.nonce_warning,
+        "alerte du budget de nonces rendue au moteur"
+    );
+    assert_eq!(
+        serde_json::to_value(&scan).unwrap()["nonceWarning"],
+        serde_json::Value::Bool(true)
+    );
 }
 
 #[test]
@@ -65,7 +85,11 @@ fn y_tech_02_an_opening_that_cannot_be_counted_opens_no_dialog() {
     assert_eq!(code(consent.confirm_forget(OWNER, "PC")), SyncCode::Io);
     assert_eq!(code(consent.confirm_reset(OWNER)), SyncCode::Io);
     assert_eq!(code(consent.count_import(OWNER)), SyncCode::Io);
-    assert_eq!(ui.prompts(), 0, "aucune boîte tant que l'ouverture n'est pas comptée sur le disque");
+    assert_eq!(
+        ui.prompts(),
+        0,
+        "aucune boîte tant que l'ouverture n'est pas comptée sur le disque"
+    );
     // Sans compteur à écrire, la boîte de remplacement reste possible (seul le blocage la conditionne).
     assert!(consent.confirm(ConsentKind::ReplaceKey, OWNER).is_ok());
     assert_eq!(ui.prompts(), 1);
@@ -93,18 +117,27 @@ fn y_tech_02_a_refusal_blocks_in_memory_when_it_cannot_be_written() {
     let dir = tempfile::tempdir().unwrap();
     let inner = FakeUi::new();
     let clock = TestClock::new(NOW);
-    let ui = Arc::new(RefuseThenBreak { inner: inner.clone(), dir: dir.path().to_path_buf() });
+    let ui = Arc::new(RefuseThenBreak {
+        inner: inner.clone(),
+        dir: dir.path().to_path_buf(),
+    });
     let consent = ConsentGate::new(dir.path().to_path_buf(), ui, clock.clock());
     assert_eq!(code(consent.confirm_show(OWNER)), SyncCode::ConsentDenied);
     assert_eq!(inner.prompts(), 1);
     // Le fichier n'a pas reçu le blocage : la mémoire le tient (aucune boîte, aucun compteur à écrire).
     assert_eq!(code(consent.confirm_show(OWNER)), SyncCode::RateLimited);
-    assert_eq!(code(consent.confirm(ConsentKind::EraseKey, OWNER)), SyncCode::RateLimited);
+    assert_eq!(
+        code(consent.confirm(ConsentKind::EraseKey, OWNER)),
+        SyncCode::RateLimited
+    );
     assert_eq!(code(consent.precheck(OWNER)), SyncCode::RateLimited);
     assert_eq!(inner.prompts(), 1);
     clock.advance(CONSENT_BLOCK_MS);
     // Seconde revue, point 4 : blocage borné à son échéance (marqueur), jamais prolongé.
-    assert!(consent.precheck(OWNER).is_ok(), "blocage de 10 minutes, pas davantage");
+    assert!(
+        consent.precheck(OWNER).is_ok(),
+        "blocage de 10 minutes, pas davantage"
+    );
 }
 
 /// Audit (point bas 7) : un refus dont l'écriture échoue n'est pas perdu à la relance (marqueur lu comme un fichier illisible : blocage).
@@ -113,7 +146,10 @@ fn y_tech_02_a_refusal_that_cannot_be_written_survives_a_restart() {
     let dir = tempfile::tempdir().unwrap();
     let inner = FakeUi::new();
     let clock = TestClock::new(NOW);
-    let ui = Arc::new(RefuseThenBreak { inner: inner.clone(), dir: dir.path().to_path_buf() });
+    let ui = Arc::new(RefuseThenBreak {
+        inner: inner.clone(),
+        dir: dir.path().to_path_buf(),
+    });
     let consent = ConsentGate::new(dir.path().to_path_buf(), ui, clock.clock());
     assert_eq!(code(consent.confirm_show(OWNER)), SyncCode::ConsentDenied);
     // Relance (nouvelle instance), écritures toujours impossibles : bloqué, aucune boîte.
@@ -138,11 +174,18 @@ fn y_tech_02_refusal_marker_carries_its_deadline_and_answers_io_when_it_cannot_b
     let dir = tempfile::tempdir().unwrap();
     let inner = FakeUi::new();
     let clock = TestClock::new(NOW);
-    let ui = Arc::new(RefuseThenBreak { inner: inner.clone(), dir: dir.path().to_path_buf() });
+    let ui = Arc::new(RefuseThenBreak {
+        inner: inner.clone(),
+        dir: dir.path().to_path_buf(),
+    });
     let consent = ConsentGate::new(dir.path().to_path_buf(), ui, clock.clock());
     assert_eq!(code(consent.confirm_show(OWNER)), SyncCode::ConsentDenied);
     let marker = dir.path().join(CONSENT_REFUSED_MARKER);
-    let deadline: u64 = std::fs::read_to_string(&marker).unwrap().trim().parse().expect("échéance dans le marqueur");
+    let deadline: u64 = std::fs::read_to_string(&marker)
+        .unwrap()
+        .trim()
+        .parse()
+        .expect("échéance dans le marqueur");
     assert_eq!(deadline, NOW + CONSENT_BLOCK_MS);
     // Avant l'échéance, après des relances répétées : bloqué, échéance inchangée (jamais prolongée).
     for _ in 0..3 {
@@ -150,7 +193,10 @@ fn y_tech_02_refusal_marker_carries_its_deadline_and_answers_io_when_it_cannot_b
         let restarted = ConsentGate::new(dir.path().to_path_buf(), inner.clone(), clock.clock());
         assert_eq!(code(restarted.precheck(OWNER)), SyncCode::RateLimited);
     }
-    assert_eq!(std::fs::read_to_string(&marker).unwrap().trim(), deadline.to_string());
+    assert_eq!(
+        std::fs::read_to_string(&marker).unwrap().trim(),
+        deadline.to_string()
+    );
     // Passée l'échéance, écritures encore impossibles : plus de blocage (précondition seule) ; une ouverture non comptée : io.
     clock.advance(CONSENT_BLOCK_MS / 4);
     let after = ConsentGate::new(dir.path().to_path_buf(), inner.clone(), clock.clock());
@@ -172,7 +218,11 @@ fn y_tech_02_an_expired_marker_that_cannot_be_removed_answers_io() {
     let marker = dir.path().join(CONSENT_REFUSED_MARKER);
     std::fs::write(&marker, (NOW - 1).to_string()).unwrap();
     // Fichier ouvert sans partage de suppression : le retrait échoue.
-    let lock = std::fs::OpenOptions::new().read(true).share_mode(0).open(&marker).unwrap();
+    let lock = std::fs::OpenOptions::new()
+        .read(true)
+        .share_mode(0)
+        .open(&marker)
+        .unwrap();
     let consent = ConsentGate::new(dir.path().to_path_buf(), inner.clone(), clock.clock());
     assert_eq!(code(consent.precheck(OWNER)), SyncCode::Io);
     assert_eq!(code(consent.confirm_show(OWNER)), SyncCode::Io);
@@ -209,14 +259,35 @@ fn y_tech_02_a_refusal_during_a_marker_block_keeps_the_counters() {
     let inner = FakeUi::new();
     let clock = TestClock::new(NOW);
     let file = dir.path().join(CONSENT_FILE);
-    std::fs::write(&file, serde_json::json!({ "show": [NOW - 2, NOW - 1], "import": [NOW - 3], "blockedUntil": 0 }).to_string()).unwrap();
-    let ui = Arc::new(RefuseWithMarker { inner: inner.clone(), marker: dir.path().join(CONSENT_REFUSED_MARKER), deadline: NOW + CONSENT_BLOCK_MS / 2 });
+    std::fs::write(
+        &file,
+        serde_json::json!({ "show": [NOW - 2, NOW - 1], "import": [NOW - 3], "blockedUntil": 0 })
+            .to_string(),
+    )
+    .unwrap();
+    let ui = Arc::new(RefuseWithMarker {
+        inner: inner.clone(),
+        marker: dir.path().join(CONSENT_REFUSED_MARKER),
+        deadline: NOW + CONSENT_BLOCK_MS / 2,
+    });
     let consent = ConsentGate::new(dir.path().to_path_buf(), ui, clock.clock());
     assert_eq!(code(consent.confirm_show(OWNER)), SyncCode::ConsentDenied);
-    let written: serde_json::Value = serde_json::from_slice(&std::fs::read(&file).unwrap()).unwrap();
-    assert_eq!(written["show"], serde_json::json!([NOW - 2, NOW - 1, NOW]), "affichages gardés");
-    assert_eq!(written["import"], serde_json::json!([NOW - 3]), "imports gardés");
-    assert_eq!(written["blockedUntil"], serde_json::json!(NOW + CONSENT_BLOCK_MS));
+    let written: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&file).unwrap()).unwrap();
+    assert_eq!(
+        written["show"],
+        serde_json::json!([NOW - 2, NOW - 1, NOW]),
+        "affichages gardés"
+    );
+    assert_eq!(
+        written["import"],
+        serde_json::json!([NOW - 3]),
+        "imports gardés"
+    );
+    assert_eq!(
+        written["blockedUntil"],
+        serde_json::json!(NOW + CONSENT_BLOCK_MS)
+    );
 }
 
 /// Quatrième revue, point E : `consent.json` illisible pendant le blocage du marqueur : blocage du marqueur gardé, illisibilité journalisée.
@@ -227,10 +298,21 @@ fn y_tech_02_an_unreadable_file_during_a_marker_block_is_logged() {
     let inner = FakeUi::new();
     let clock = TestClock::new(NOW);
     std::fs::write(dir.path().join(CONSENT_FILE), b"{pas du json").unwrap();
-    std::fs::write(dir.path().join(CONSENT_REFUSED_MARKER), (NOW + CONSENT_BLOCK_MS / 2).to_string()).unwrap();
+    std::fs::write(
+        dir.path().join(CONSENT_REFUSED_MARKER),
+        (NOW + CONSENT_BLOCK_MS / 2).to_string(),
+    )
+    .unwrap();
     let capture = spartiate_lib::sync::log::capture();
     let consent = ConsentGate::new(dir.path().to_path_buf(), inner.clone(), clock.clock());
     assert_eq!(code(consent.precheck(OWNER)), SyncCode::RateLimited);
-    assert!(capture.lines().iter().any(|l| l == "sync:consent-file-unreadable blocked"), "{:?}", capture.lines());
+    assert!(
+        capture
+            .lines()
+            .iter()
+            .any(|l| l == "sync:consent-file-unreadable blocked"),
+        "{:?}",
+        capture.lines()
+    );
     assert_eq!(inner.prompts(), 0);
 }

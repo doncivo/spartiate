@@ -38,21 +38,36 @@ pub struct MemoryVault {
 
 impl SecretVault for MemoryVault {
     fn set(&self, token_ref: &str, secret: &str) -> Result<(), VaultError> {
-        self.entries.lock().map_err(|_| VaultError::Unavailable)?.insert(token_ref.to_owned(), secret.to_owned());
+        self.entries
+            .lock()
+            .map_err(|_| VaultError::Unavailable)?
+            .insert(token_ref.to_owned(), secret.to_owned());
         Ok(())
     }
 
     fn get(&self, token_ref: &str) -> Result<Option<String>, VaultError> {
-        Ok(self.entries.lock().map_err(|_| VaultError::Unavailable)?.get(token_ref).cloned())
+        Ok(self
+            .entries
+            .lock()
+            .map_err(|_| VaultError::Unavailable)?
+            .get(token_ref)
+            .cloned())
     }
 
     fn delete(&self, token_ref: &str) -> Result<(), VaultError> {
-        self.entries.lock().map_err(|_| VaultError::Unavailable)?.remove(token_ref);
+        self.entries
+            .lock()
+            .map_err(|_| VaultError::Unavailable)?
+            .remove(token_ref);
         Ok(())
     }
 
     fn contains(&self, token_ref: &str) -> Result<bool, VaultError> {
-        Ok(self.entries.lock().map_err(|_| VaultError::Unavailable)?.contains_key(token_ref))
+        Ok(self
+            .entries
+            .lock()
+            .map_err(|_| VaultError::Unavailable)?
+            .contains_key(token_ref))
     }
 }
 
@@ -70,7 +85,9 @@ impl SystemVault {
 #[cfg(any(windows, target_os = "ios"))]
 impl SecretVault for SystemVault {
     fn set(&self, token_ref: &str, secret: &str) -> Result<(), VaultError> {
-        Self::entry(token_ref)?.set_password(secret).map_err(|_| VaultError::Unavailable)
+        Self::entry(token_ref)?
+            .set_password(secret)
+            .map_err(|_| VaultError::Unavailable)
     }
 
     fn get(&self, token_ref: &str) -> Result<Option<String>, VaultError> {
@@ -118,7 +135,11 @@ pub fn parse_token_ref(token_ref: &str) -> Option<RefNamespace> {
     let (namespace, uuid) = rest.split_once('.')?;
     let groups: Vec<&str> = uuid.split('-').collect();
     let shape = [8usize, 4, 4, 4, 12];
-    let well_formed = groups.len() == 5 && groups.iter().zip(shape).all(|(group, len)| group.len() == len && group.bytes().all(|b| b.is_ascii_hexdigit()));
+    let well_formed = groups.len() == 5
+        && groups
+            .iter()
+            .zip(shape)
+            .all(|(group, len)| group.len() == len && group.bytes().all(|b| b.is_ascii_hexdigit()));
     if !well_formed {
         return None;
     }

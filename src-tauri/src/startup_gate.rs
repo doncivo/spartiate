@@ -24,26 +24,40 @@ pub struct StartupGate(RwLock<Option<Result<(), &'static str>>>);
 impl StartupGate {
     /// `None` : `setup` pas encore terminé ; `Some(Ok)` : prête ; `Some(Err(code))` : récupération impossible.
     pub fn outcome(&self) -> Option<Result<(), &'static str>> {
-        *self.0.read().unwrap_or_else(std::sync::PoisonError::into_inner)
+        *self
+            .0
+            .read()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 
     pub fn set(&self, outcome: Result<(), &'static str>) {
-        *self.0.write().unwrap_or_else(std::sync::PoisonError::into_inner) = Some(outcome);
+        *self
+            .0
+            .write()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(outcome);
     }
 }
 
 /// Revue B1 : après un échange en échec, si des `.restore-old` restent (retour arrière incomplet), la récupération est faite TOUT DE SUITE
 /// (aucun pool ouvert : la connexion est fermée avant `restore_backup`), avec la table de décision habituelle. Rend `None` si rien
 /// n'était en attente, sinon l'issue (`Err(code)` : les fichiers restent intacts, la porte doit passer à l'échec).
-pub fn recover_after_failed_swap(db_path: &Path, backups_dir: &Path) -> Option<Result<(), &'static str>> {
+pub fn recover_after_failed_swap(
+    db_path: &Path,
+    backups_dir: &Path,
+) -> Option<Result<(), &'static str>> {
     if !crate::backup::has_pending_restore(db_path) {
         return None;
     }
-    let outcome = crate::backup::recover_interrupted_restore(db_path, backups_dir).map(|_| ()).map_err(|error| error.code);
-    crate::applog::write("backup-recovery", match outcome {
-        Ok(()) => "recovered-after-swap",
-        Err(code) => code,
-    });
+    let outcome = crate::backup::recover_interrupted_restore(db_path, backups_dir)
+        .map(|_| ())
+        .map_err(|error| error.code);
+    crate::applog::write(
+        "backup-recovery",
+        match outcome {
+            Ok(()) => "recovered-after-swap",
+            Err(code) => code,
+        },
+    );
     Some(outcome)
 }
 
@@ -58,9 +72,18 @@ pub struct StartupStatus {
 
 pub fn status_of(gate: Option<&StartupGate>) -> StartupStatus {
     match gate.and_then(StartupGate::outcome) {
-        Some(Ok(())) => StartupStatus { state: "ready", code: None },
-        Some(Err(code)) => StartupStatus { state: "failed", code: Some(code) },
-        None => StartupStatus { state: "pending", code: None },
+        Some(Ok(())) => StartupStatus {
+            state: "ready",
+            code: None,
+        },
+        Some(Err(code)) => StartupStatus {
+            state: "failed",
+            code: Some(code),
+        },
+        None => StartupStatus {
+            state: "pending",
+            code: None,
+        },
     }
 }
 
@@ -74,13 +97,18 @@ pub fn install_sql_refusal_hook() {
 /// Récupère une restauration interrompue (table de décision de `backup::recover_interrupted_restore`, inchangée), puis, seulement si elle
 /// réussit, enregistre le plugin SQL. L'issue est posée dans `StartupGate` (géré ici) et inscrite au journal en cas d'échec
 /// (`backup-recovery` / code). `config_dir` : `None` si le dossier de données est introuvable (`no-data-dir`).
-pub fn register_sql_after_recovery<R: Runtime>(app: &AppHandle<R>, config_dir: Option<&Path>) -> Result<(), &'static str> {
+pub fn register_sql_after_recovery<R: Runtime>(
+    app: &AppHandle<R>,
+    config_dir: Option<&Path>,
+) -> Result<(), &'static str> {
     if app.try_state::<StartupGate>().is_none() {
         app.manage(StartupGate::default());
     }
     let outcome = match config_dir {
         None => Err("no-data-dir"),
-        Some(dir) => recover_and_settle(dir).map(|_| ()).map_err(|error| error.code),
+        Some(dir) => recover_and_settle(dir)
+            .map(|_| ())
+            .map_err(|error| error.code),
     };
     // Le plugin ne doit jamais exister sans son crochet de journal (SEC-01), même quand `run` n'a pas été appelé (tests).
     install_sql_refusal_hook();
@@ -89,7 +117,8 @@ pub fn register_sql_after_recovery<R: Runtime>(app: &AppHandle<R>, config_dir: O
         if app.try_state::<tauri_plugin_sql::DbInstances>().is_some() {
             return Ok(());
         }
-        app.plugin(tauri_plugin_sql::Builder::default().build()).map_err(|_| "sql-plugin")
+        app.plugin(tauri_plugin_sql::Builder::default().build())
+            .map_err(|_| "sql-plugin")
     });
     if let Err(code) = outcome {
         crate::applog::write("backup-recovery", code);
@@ -107,9 +136,16 @@ pub fn backup_startup_status(app: AppHandle) -> StartupStatus {
 /// Commandes de sauvegarde refusées (`restore-pending`) tant que la porte n'est pas prête ; sans porte (PC : récupération avant la fenêtre),
 /// rien à vérifier.
 pub fn ensure_ready<R: Runtime>(app: &AppHandle<R>) -> Result<(), crate::backup::BackupError> {
-    match app.try_state::<StartupGate>().as_deref().map(StartupGate::outcome) {
+    match app
+        .try_state::<StartupGate>()
+        .as_deref()
+        .map(StartupGate::outcome)
+    {
         None | Some(Some(Ok(()))) => Ok(()),
-        Some(_) => Err(crate::backup::BackupError { code: "restore-pending", message: "récupération au démarrage non terminée".to_owned() }),
+        Some(_) => Err(crate::backup::BackupError {
+            code: "restore-pending",
+            message: "récupération au démarrage non terminée".to_owned(),
+        }),
     }
 }
 
@@ -140,8 +176,19 @@ pub struct PendingRestoreMarker(pub Mutex<Option<MarkerToWrite>>);
 
 /// Écrit le marqueur (un nouvel essai après 200 ms) : `written`, `not-configured`, ou `failed` avec le code (journal :
 /// `backup` / `restore-marker-failed`).
-pub fn write_marker_with_retry(marker: &MarkerToWrite, pause: std::time::Duration) -> (&'static str, Option<&'static str>) {
-    let attempt = || crate::backup::write_restore_marker(&marker.config_dir, &marker.config_dir.join(crate::backup::BACKUP_DIR), &marker.backup, marker.restored_at_secs, marker.schema_version);
+pub fn write_marker_with_retry(
+    marker: &MarkerToWrite,
+    pause: std::time::Duration,
+) -> (&'static str, Option<&'static str>) {
+    let attempt = || {
+        crate::backup::write_restore_marker(
+            &marker.config_dir,
+            &marker.config_dir.join(crate::backup::BACKUP_DIR),
+            &marker.backup,
+            marker.restored_at_secs,
+            marker.schema_version,
+        )
+    };
     let result = attempt().or_else(|_| {
         std::thread::sleep(pause);
         attempt()
@@ -159,8 +206,17 @@ pub fn write_marker_with_retry(marker: &MarkerToWrite, pause: std::time::Duratio
 /// Avant de lire le marqueur (`sync_restore_marker_get`, PC et iPhone) : un marqueur en attente est réécrit ; réussite -> oublié ;
 /// nouvel échec -> `Err` (la précondition du cycle échoue : phase d'erreur visible, aucun cycle).
 pub fn retry_pending_marker<R: Runtime>(app: &AppHandle<R>) -> Result<(), crate::sync::SyncError> {
-    let Some(state) = app.try_state::<PendingRestoreMarker>() else { return Ok(()) };
-    let Some(marker) = state.0.lock().map_err(|_| crate::sync::SyncError::new(crate::sync::SyncCode::Io))?.clone() else { return Ok(()) };
+    let Some(state) = app.try_state::<PendingRestoreMarker>() else {
+        return Ok(());
+    };
+    let Some(marker) = state
+        .0
+        .lock()
+        .map_err(|_| crate::sync::SyncError::new(crate::sync::SyncCode::Io))?
+        .clone()
+    else {
+        return Ok(());
+    };
     match write_marker_with_retry(&marker, std::time::Duration::from_millis(0)) {
         ("failed", _) => Err(crate::sync::SyncError::new(crate::sync::SyncCode::Io)),
         _ => {
@@ -189,8 +245,14 @@ pub struct SetAside {
 
 /// Revue du lot F : la mise de côté n'est permise que si la porte a échoué sur un conflit (`recovery-conflict`, `unsafe-restore-file`) et
 /// qu'aucun pool SQL n'est ouvert ; sinon `set-aside-refused` (rien d'autre à mettre de côté) ou `db-open`.
-pub fn set_aside_allowed(outcome: Option<Result<(), &'static str>>, open_pools: usize) -> Result<(), &'static str> {
-    if !matches!(outcome, Some(Err("recovery-conflict" | "unsafe-restore-file"))) {
+pub fn set_aside_allowed(
+    outcome: Option<Result<(), &'static str>>,
+    open_pools: usize,
+) -> Result<(), &'static str> {
+    if !matches!(
+        outcome,
+        Some(Err("recovery-conflict" | "unsafe-restore-file"))
+    ) {
         return Err("set-aside-refused");
     }
     if open_pools > 0 {
@@ -202,7 +264,11 @@ pub fn set_aside_allowed(outcome: Option<Result<(), &'static str>>, open_pools: 
 /// Crée un dossier de mise de côté NEUF (`create_dir`, exclusif) : `spartiate-set-aside-<stamp>`, sinon `-1`, `-2`… ; jamais un dossier existant.
 fn create_set_aside_dir(parent: &Path, stamp: &str) -> Result<PathBuf, &'static str> {
     for n in 0..1_000 {
-        let name = if n == 0 { format!("{SET_ASIDE_PREFIX}{stamp}") } else { format!("{SET_ASIDE_PREFIX}{stamp}-{n}") };
+        let name = if n == 0 {
+            format!("{SET_ASIDE_PREFIX}{stamp}")
+        } else {
+            format!("{SET_ASIDE_PREFIX}{stamp}-{n}")
+        };
         let path = parent.join(name);
         match std::fs::create_dir(&path) {
             Ok(()) => return Ok(path),
@@ -218,13 +284,18 @@ fn create_set_aside_dir(parent: &Path, stamp: &str) -> Result<PathBuf, &'static 
 /// un `.restore-old` qui n'est pas un fichier ordinaire (lien, dossier ; celui de la base emmène aussi les `-wal` / `-shm.restore-old`, qui lui
 /// appartiennent), l'occupant d'une cible du retour en place, un fichier préparé `.restoring` anormal. Si `backups` lui-même n'est pas un dossier
 /// ordinaire, il est d'abord déplacé dans un dossier neuf à côté de lui, puis un `backups/` ordinaire est créé. `io` si un déplacement échoue.
-pub fn set_aside_conflicts(db_path: &Path, backups_dir: &Path, stamp: &str) -> Result<SetAside, &'static str> {
+pub fn set_aside_conflicts(
+    db_path: &Path,
+    backups_dir: &Path,
+    stamp: &str,
+) -> Result<SetAside, &'static str> {
     let name = |suffix: &str| {
         let mut text = db_path.as_os_str().to_owned();
         text.push(suffix);
         PathBuf::from(text)
     };
-    let plain = |path: &Path| std::fs::symlink_metadata(path).is_ok_and(|meta| meta.file_type().is_file());
+    let plain =
+        |path: &Path| std::fs::symlink_metadata(path).is_ok_and(|meta| meta.file_type().is_file());
     let present = |path: &Path| std::fs::symlink_metadata(path).is_ok();
     let mut moved = 0;
     if present(backups_dir) && !crate::backup::is_plain_dir(backups_dir) {
@@ -247,7 +318,13 @@ pub fn set_aside_conflicts(db_path: &Path, backups_dir: &Path, stamp: &str) -> R
             aside.push(current);
         }
     }
-    for leftover in [".restoring", ".restoring.tmp", ".restoring-wal", ".restoring-shm", ".restoring-journal"] {
+    for leftover in [
+        ".restoring",
+        ".restoring.tmp",
+        ".restoring-wal",
+        ".restoring-shm",
+        ".restoring-journal",
+    ] {
         let path = name(leftover);
         if present(&path) && !plain(&path) {
             aside.push(path);
@@ -257,15 +334,24 @@ pub fn set_aside_conflicts(db_path: &Path, backups_dir: &Path, stamp: &str) -> R
         std::fs::create_dir_all(backups_dir).map_err(|_| "io")?;
         let target = create_set_aside_dir(backups_dir, stamp)?;
         for path in &aside {
-            let Some(file) = path.file_name() else { return Err("io") };
+            let Some(file) = path.file_name() else {
+                return Err("io");
+            };
             std::fs::rename(path, target.join(file)).map_err(|_| "io")?;
         }
         moved += aside.len();
     }
     if moved > 0 {
-        crate::applog::write_count("backup-recovery", "conflicts-set-aside", u32::try_from(moved).unwrap_or(u32::MAX));
+        crate::applog::write_count(
+            "backup-recovery",
+            "conflicts-set-aside",
+            u32::try_from(moved).unwrap_or(u32::MAX),
+        );
     }
-    Ok(SetAside { moved, fresh_base: main_old_unsafe && !present(db_path) })
+    Ok(SetAside {
+        moved,
+        fresh_base: main_old_unsafe && !present(db_path),
+    })
 }
 
 /// Supprime les dossiers de mise de côté datés de plus de `KEEP_SET_ASIDE_DAYS` jours, dans `config_dir` et `config_dir/backups` : seulement
@@ -274,18 +360,39 @@ pub fn set_aside_conflicts(db_path: &Path, backups_dir: &Path, stamp: &str) -> R
 pub fn purge_set_aside(config_dir: &Path, now_secs: u64) -> usize {
     let cutoff = crate::backup::utc_stamp(now_secs.saturating_sub(KEEP_SET_ASIDE_DAYS * 86_400));
     let mut purged = 0;
-    for parent in [config_dir.to_path_buf(), config_dir.join(crate::backup::BACKUP_DIR)] {
+    for parent in [
+        config_dir.to_path_buf(),
+        config_dir.join(crate::backup::BACKUP_DIR),
+    ] {
         if !crate::backup::is_plain_dir(&parent) {
             continue;
         }
-        let Ok(entries) = std::fs::read_dir(&parent) else { continue };
+        let Ok(entries) = std::fs::read_dir(&parent) else {
+            continue;
+        };
         for entry in entries.flatten() {
             let path = entry.path();
-            let Some(rest) = path.file_name().and_then(|n| n.to_str()).and_then(|n| n.strip_prefix(SET_ASIDE_PREFIX)) else { continue };
-            let Some(stamp) = rest.get(..16) else { continue };
+            let Some(rest) = path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .and_then(|n| n.strip_prefix(SET_ASIDE_PREFIX))
+            else {
+                continue;
+            };
+            let Some(stamp) = rest.get(..16) else {
+                continue;
+            };
             let suffix = &rest[16..];
-            let suffix_ok = suffix.is_empty() || suffix.strip_prefix('-').is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()));
-            if crate::backup::is_valid_stamp(stamp) && suffix_ok && stamp < cutoff.as_str() && crate::backup::is_plain_dir(&path) && std::fs::remove_dir_all(&path).is_ok() {
+            let suffix_ok = suffix.is_empty()
+                || suffix
+                    .strip_prefix('-')
+                    .is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()));
+            if crate::backup::is_valid_stamp(stamp)
+                && suffix_ok
+                && stamp < cutoff.as_str()
+                && crate::backup::is_plain_dir(&path)
+                && std::fs::remove_dir_all(&path).is_ok()
+            {
                 purged += 1;
             }
         }
@@ -307,8 +414,15 @@ pub struct SetAsideStatus {
 /// recharge et ouvre la base).
 #[tauri::command]
 pub async fn backup_set_aside_conflicts(app: AppHandle) -> SetAsideStatus {
-    let failed = |code: &'static str| SetAsideStatus { state: "failed", code: Some(code), notice: None };
-    let outcome = app.try_state::<StartupGate>().as_deref().and_then(StartupGate::outcome);
+    let failed = |code: &'static str| SetAsideStatus {
+        state: "failed",
+        code: Some(code),
+        notice: None,
+    };
+    let outcome = app
+        .try_state::<StartupGate>()
+        .as_deref()
+        .and_then(StartupGate::outcome);
     let pools = match app.try_state::<tauri_plugin_sql::DbInstances>() {
         Some(instances) => open_sql_pools(&instances).await,
         None => 0,
@@ -317,12 +431,23 @@ pub async fn backup_set_aside_conflicts(app: AppHandle) -> SetAsideStatus {
         crate::applog::write("backup-recovery", code);
         return failed(code);
     }
-    let Ok(dir) = app.path().app_config_dir() else { return failed("no-data-dir") };
-    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs());
+    let Ok(dir) = app.path().app_config_dir() else {
+        return failed("no-data-dir");
+    };
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_secs());
     let stamp = crate::backup::utc_stamp(now);
     let moved = {
         let dir = dir.clone();
-        tauri::async_runtime::spawn_blocking(move || set_aside_conflicts(&dir.join(crate::backup::DB_FILE), &dir.join(crate::backup::BACKUP_DIR), &stamp)).await
+        tauri::async_runtime::spawn_blocking(move || {
+            set_aside_conflicts(
+                &dir.join(crate::backup::DB_FILE),
+                &dir.join(crate::backup::BACKUP_DIR),
+                &stamp,
+            )
+        })
+        .await
     };
     let Ok(Ok(aside)) = moved else {
         if let Some(gate) = app.try_state::<StartupGate>() {
@@ -332,7 +457,11 @@ pub async fn backup_set_aside_conflicts(app: AppHandle) -> SetAsideStatus {
     };
     let _ = register_sql_after_recovery(&app, Some(&dir));
     let status = status_of(app.try_state::<StartupGate>().as_deref());
-    SetAsideStatus { state: status.state, code: status.code, notice: (aside.fresh_base && status.state == "ready").then_some("fresh-base") }
+    SetAsideStatus {
+        state: status.state,
+        code: status.code,
+        notice: (aside.fresh_base && status.state == "ready").then_some("fresh-base"),
+    }
 }
 
 /// Réponse de `backup_restore_marker_write`.
@@ -349,18 +478,44 @@ pub fn write_marker_for(config_dir: &Path, backup: &str, now_secs: u64) -> Marke
     let backups = config_dir.join(crate::backup::BACKUP_DIR);
     let schema = match crate::backup::check_named_backup(&backups, backup) {
         Ok(version) => version,
-        Err(error) => return MarkerWriteOutcome { marker: "failed", code: Some(error.code) },
+        Err(error) => {
+            return MarkerWriteOutcome {
+                marker: "failed",
+                code: Some(error.code),
+            }
+        }
     };
-    let (marker, code) = write_marker_with_retry(&MarkerToWrite { config_dir: config_dir.to_path_buf(), backup: backup.to_owned(), restored_at_secs: now_secs, schema_version: schema }, std::time::Duration::from_millis(0));
+    let (marker, code) = write_marker_with_retry(
+        &MarkerToWrite {
+            config_dir: config_dir.to_path_buf(),
+            backup: backup.to_owned(),
+            restored_at_secs: now_secs,
+            schema_version: schema,
+        },
+        std::time::Duration::from_millis(0),
+    );
     MarkerWriteOutcome { marker, code }
 }
 
 /// « Réessayer » du marqueur non écrit (Réglages › Synchronisation, PC et iPhone).
 #[tauri::command]
 pub async fn backup_restore_marker_write(app: AppHandle, backup: String) -> MarkerWriteOutcome {
-    let Ok(dir) = app.path().app_config_dir() else { return MarkerWriteOutcome { marker: "failed", code: Some("no-data-dir") } };
-    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs());
-    let outcome = tauri::async_runtime::spawn_blocking(move || write_marker_for(&dir, &backup, now)).await.unwrap_or(MarkerWriteOutcome { marker: "failed", code: Some("io") });
+    let Ok(dir) = app.path().app_config_dir() else {
+        return MarkerWriteOutcome {
+            marker: "failed",
+            code: Some("no-data-dir"),
+        };
+    };
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_secs());
+    let outcome =
+        tauri::async_runtime::spawn_blocking(move || write_marker_for(&dir, &backup, now))
+            .await
+            .unwrap_or(MarkerWriteOutcome {
+                marker: "failed",
+                code: Some("io"),
+            });
     if outcome.marker != "failed" {
         if let Some(pending) = app.try_state::<PendingRestoreMarker>() {
             if let Ok(mut slot) = pending.0.lock() {
@@ -378,7 +533,11 @@ pub const PREVIOUS_MARKER_FILE: &str = "restore-marker.previous.json";
 fn undo_provisional_marker(config_dir: &Path) -> bool {
     let previous = config_dir.join(PREVIOUS_MARKER_FILE);
     let undone = match std::fs::read(&previous) {
-        Ok(bytes) => crate::sync::folder::write_config_file(&config_dir.join(crate::sync::marker::MARKER_FILE), &bytes).is_ok(),
+        Ok(bytes) => crate::sync::folder::write_config_file(
+            &config_dir.join(crate::sync::marker::MARKER_FILE),
+            &bytes,
+        )
+        .is_ok(),
         Err(_) => crate::sync::marker::clear(config_dir).is_ok(),
     };
     // Le marqueur d'avant n'est effacé que si l'annulation a réussi : sinon la preuve reste pour le prochain essai.
@@ -406,7 +565,11 @@ pub fn restore_with_provisional_marker(
     // Un marqueur encore provisoire (règlement précédent impossible) est d'abord réglé d'après la base en place ; s'il l'est toujours, la
     // restauration est refusée (`restore-unconfirmed`, « rouvrez Spartiate ») : `restore-marker.previous.json` n'est jamais écrasé.
     if !settle_provisional_marker(config_dir, &Ok(crate::backup::Recovery::Nothing)) {
-        return Err(crate::backup::BackupError { code: "restore-unconfirmed", message: "un marqueur de restauration provisoire n'est pas encore réglé (redémarrage)".to_owned() });
+        return Err(crate::backup::BackupError {
+            code: "restore-unconfirmed",
+            message: "un marqueur de restauration provisoire n'est pas encore réglé (redémarrage)"
+                .to_owned(),
+        });
     }
     let written = Cell::new(false);
     let confirmed = Cell::new(false);
@@ -414,17 +577,24 @@ pub fn restore_with_provisional_marker(
         match step {
             RestoreStep::Staged => {
                 // Le jeton est celui que le fichier préparé porte déjà : la base en place le portera si, et seulement si, l'échange a lieu.
-                let token = crate::backup::staged_restore_token(&config_dir.join(crate::backup::DB_FILE))
-                    .ok()
-                    .flatten()
-                    .ok_or_else(|| std::io::Error::other("jeton de restauration"))?;
+                let token =
+                    crate::backup::staged_restore_token(&config_dir.join(crate::backup::DB_FILE))
+                        .ok()
+                        .flatten()
+                        .ok_or_else(|| std::io::Error::other("jeton de restauration"))?;
                 let marker = config_dir.join(crate::sync::marker::MARKER_FILE);
                 let previous = config_dir.join(PREVIOUS_MARKER_FILE);
                 let _ = std::fs::remove_file(&previous);
                 if let Ok(bytes) = std::fs::read(&marker) {
-                    crate::sync::folder::write_config_file(&previous, &bytes).map_err(|_| std::io::Error::other("marqueur précédent"))?;
+                    crate::sync::folder::write_config_file(&previous, &bytes)
+                        .map_err(|_| std::io::Error::other("marqueur précédent"))?;
                 }
-                written.set(matches!(crate::backup::write_provisional_marker(config_dir, &backups, name, now_secs, schema, token), Ok(true)));
+                written.set(matches!(
+                    crate::backup::write_provisional_marker(
+                        config_dir, &backups, name, now_secs, schema, token
+                    ),
+                    Ok(true)
+                ));
             }
             RestoreStep::Swapped => {
                 if written.get() {
@@ -435,7 +605,14 @@ pub fn restore_with_provisional_marker(
         }
         hook(step)
     };
-    let outcome = match crate::backup::restore_backup_file(&config_dir.join(crate::backup::DB_FILE), &backups, name, crate::backup::APP_SCHEMA_VERSION, stamp, &wrapped) {
+    let outcome = match crate::backup::restore_backup_file(
+        &config_dir.join(crate::backup::DB_FILE),
+        &backups,
+        name,
+        crate::backup::APP_SCHEMA_VERSION,
+        stamp,
+        &wrapped,
+    ) {
         Ok(outcome) => outcome,
         Err(error) => {
             if written.get() && !undo_provisional_marker(config_dir) {
@@ -445,10 +622,26 @@ pub fn restore_with_provisional_marker(
         }
     };
     let _ = std::fs::remove_file(config_dir.join(PREVIOUS_MARKER_FILE));
-    let marker = MarkerToWrite { config_dir: config_dir.to_path_buf(), backup: name.to_owned(), restored_at_secs: now_secs, schema_version: outcome.schema_version };
-    let (state, code) = if written.get() && confirmed.get() { ("written", None) } else { write_marker_with_retry(&marker, std::time::Duration::from_millis(200)) };
+    let marker = MarkerToWrite {
+        config_dir: config_dir.to_path_buf(),
+        backup: name.to_owned(),
+        restored_at_secs: now_secs,
+        schema_version: outcome.schema_version,
+    };
+    let (state, code) = if written.get() && confirmed.get() {
+        ("written", None)
+    } else {
+        write_marker_with_retry(&marker, std::time::Duration::from_millis(200))
+    };
     let pending = (state == "failed").then_some(marker);
-    Ok((crate::backup::RestoreOutcome { marker: state, marker_code: code, ..outcome }, pending))
+    Ok((
+        crate::backup::RestoreOutcome {
+            marker: state,
+            marker_code: code,
+            ..outcome
+        },
+        pending,
+    ))
 }
 
 /// I-06 (revue I2) : « Restaurer la sauvegarde d'avant la mise à jour » depuis l'écran d'échec d'une migration = RETOUR ARRIÈRE LOCAL,
@@ -464,16 +657,38 @@ pub fn restore_local_rollback(
     stamp: &str,
     hook: &dyn Fn(crate::backup::RestoreStep) -> std::io::Result<()>,
 ) -> Result<crate::backup::RestoreOutcome, crate::backup::BackupError> {
-    if !matches!(crate::backup::parse_backup_name(name), Some((crate::backup::Family::Migration, _))) {
-        return Err(crate::backup::BackupError { code: "bad-name", message: "seule une sauvegarde d'avant mise à jour se restaure sans marqueur".to_owned() });
+    if !matches!(
+        crate::backup::parse_backup_name(name),
+        Some((crate::backup::Family::Migration, _))
+    ) {
+        return Err(crate::backup::BackupError {
+            code: "bad-name",
+            message: "seule une sauvegarde d'avant mise à jour se restaure sans marqueur"
+                .to_owned(),
+        });
     }
     let backups = config_dir.join(crate::backup::BACKUP_DIR);
     crate::backup::check_named_backup(&backups, name)?;
     if !settle_provisional_marker(config_dir, &Ok(crate::backup::Recovery::Nothing)) {
-        return Err(crate::backup::BackupError { code: "restore-unconfirmed", message: "un marqueur de restauration provisoire n'est pas encore réglé (redémarrage)".to_owned() });
+        return Err(crate::backup::BackupError {
+            code: "restore-unconfirmed",
+            message: "un marqueur de restauration provisoire n'est pas encore réglé (redémarrage)"
+                .to_owned(),
+        });
     }
-    let outcome = crate::backup::restore_backup_file(&config_dir.join(crate::backup::DB_FILE), &backups, name, crate::backup::APP_SCHEMA_VERSION, stamp, hook)?;
-    Ok(crate::backup::RestoreOutcome { marker: "skipped", marker_code: None, ..outcome })
+    let outcome = crate::backup::restore_backup_file(
+        &config_dir.join(crate::backup::DB_FILE),
+        &backups,
+        name,
+        crate::backup::APP_SCHEMA_VERSION,
+        stamp,
+        hook,
+    )?;
+    Ok(crate::backup::RestoreOutcome {
+        marker: "skipped",
+        marker_code: None,
+        ..outcome
+    })
 }
 
 /// Règle un marqueur provisoire (au démarrage après la récupération, et avant toute nouvelle restauration). La DÉCISION vient de la base en
@@ -482,7 +697,10 @@ pub fn restore_local_rollback(
 /// l'annulation échoue, le marqueur reste provisoire (la décision se reprend, identique, au prochain essai) : la fenêtre de choix le dit
 /// (`sync.restore.provisional`), « Appliquer partout » reste retiré, une nouvelle restauration est refusée, et le journal le consigne.
 /// Rend vrai si le marqueur n'est plus provisoire. Récupération en erreur : rien n'est touché (la porte reste fermée).
-pub fn settle_provisional_marker(config_dir: &Path, recovery: &Result<crate::backup::Recovery, crate::backup::BackupError>) -> bool {
+pub fn settle_provisional_marker(
+    config_dir: &Path,
+    recovery: &Result<crate::backup::Recovery, crate::backup::BackupError>,
+) -> bool {
     let Some(token) = crate::sync::marker::provisional_token(config_dir) else {
         let _ = std::fs::remove_file(config_dir.join(PREVIOUS_MARKER_FILE));
         return true;
@@ -491,7 +709,8 @@ pub fn settle_provisional_marker(config_dir: &Path, recovery: &Result<crate::bac
         return false;
     }
     // Base en place illisible : on ne décide RIEN (ni confirmation ni annulation), le marqueur reste provisoire et la décision est reprise.
-    let Ok(in_place) = crate::backup::database_token(&config_dir.join(crate::backup::DB_FILE)) else {
+    let Ok(in_place) = crate::backup::database_token(&config_dir.join(crate::backup::DB_FILE))
+    else {
         crate::applog::write("backup-recovery", "provisional-marker-db-unreadable");
         return false;
     };
@@ -505,20 +724,38 @@ pub fn settle_provisional_marker(config_dir: &Path, recovery: &Result<crate::bac
     } else {
         undo_provisional_marker(config_dir)
     };
-    crate::applog::write("backup-recovery", if done { "provisional-marker-settled" } else { "provisional-marker-settle-failed" });
+    crate::applog::write(
+        "backup-recovery",
+        if done {
+            "provisional-marker-settled"
+        } else {
+            "provisional-marker-settle-failed"
+        },
+    );
     done
 }
 
 /// Récupération au démarrage puis règlement du marqueur provisoire (PC et iPhone).
-pub fn recover_and_settle(config_dir: &Path) -> Result<crate::backup::Recovery, crate::backup::BackupError> {
-    let recovery = crate::backup::recover_interrupted_restore(&config_dir.join(crate::backup::DB_FILE), &config_dir.join(crate::backup::BACKUP_DIR));
+pub fn recover_and_settle(
+    config_dir: &Path,
+) -> Result<crate::backup::Recovery, crate::backup::BackupError> {
+    let recovery = crate::backup::recover_interrupted_restore(
+        &config_dir.join(crate::backup::DB_FILE),
+        &config_dir.join(crate::backup::BACKUP_DIR),
+    );
     settle_provisional_marker(config_dir, &recovery);
     if recovery.is_ok() {
         // Revue du lot F : conservation des dossiers mis de côté (30 jours).
-        let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs());
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |d| d.as_secs());
         let purged = purge_set_aside(config_dir, now);
         if purged > 0 {
-            crate::applog::write_count("backup-recovery", "set-aside-purged", u32::try_from(purged).unwrap_or(u32::MAX));
+            crate::applog::write_count(
+                "backup-recovery",
+                "set-aside-purged",
+                u32::try_from(purged).unwrap_or(u32::MAX),
+            );
         }
     }
     recovery

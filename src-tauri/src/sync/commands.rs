@@ -10,7 +10,10 @@ use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
 use serde::Serialize;
-use tauri::{AppHandle, Emitter, Manager, State, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent};
+use tauri::{
+    AppHandle, Emitter, Manager, State, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
+    WindowEvent,
+};
 use tauri_plugin_dialog::DialogExt;
 use zeroize::Zeroizing;
 
@@ -18,10 +21,14 @@ use super::consent::{ConsentGate, WindowsConsentUi};
 use super::folder::{chosen_target, config_dir, DEFAULT_FOLDER_NAME, ICLOUD_DRIVE_DIR};
 use super::marker::RestoreMarker;
 use super::pairing::{
-    affinity_outcome, hardening_outcome, pairing_page_listed, pairing_window_action, watch_decision, Caller, PairingMode, PairingRegistry, PairingWindowAction, PairingWindowEvent,
+    affinity_outcome, hardening_outcome, pairing_page_listed, pairing_window_action,
+    watch_decision, Caller, PairingMode, PairingRegistry, PairingWindowAction, PairingWindowEvent,
     WatchInput, PAIRING_PAGE, PAIRING_WINDOW,
 };
-use super::service::{system_clock, AppendRequest, FolderInfo, KeyImportResult, KeyInput, KeyStatus, PairingPayload, SyncCore, SyncOptions, SystemBackend};
+use super::service::{
+    system_clock, AppendRequest, FolderInfo, KeyImportResult, KeyInput, KeyStatus, PairingPayload,
+    SyncCore, SyncOptions, SystemBackend,
+};
 use super::store::{AppendResult, FolderScan, OwnFileRef, ReadPage, RecordCursor};
 use super::{fail, log, SyncCode, SyncError, SyncResult};
 use crate::desktop::MAIN_WINDOW;
@@ -44,10 +51,23 @@ impl SyncState {
         if let Some(core) = self.core.get() {
             return Ok(core.clone());
         }
-        let base = app.path().app_config_dir().map_err(|_| SyncError::new(SyncCode::Io))?;
+        let base = app
+            .path()
+            .app_config_dir()
+            .map_err(|_| SyncError::new(SyncCode::Io))?;
         let clock = system_clock();
-        let consent = Arc::new(ConsentGate::new(config_dir(&base), Arc::new(WindowsConsentUi), clock.clone()));
-        let core = Arc::new(SyncCore::new(SyncOptions::new(base), Arc::from(crate::vault::sync_key_vault()), Arc::new(SystemBackend), consent, clock));
+        let consent = Arc::new(ConsentGate::new(
+            config_dir(&base),
+            Arc::new(WindowsConsentUi),
+            clock.clone(),
+        ));
+        let core = Arc::new(SyncCore::new(
+            SyncOptions::new(base),
+            Arc::from(crate::vault::sync_key_vault()),
+            Arc::new(SystemBackend),
+            consent,
+            clock,
+        ));
         Ok(self.core.get_or_init(|| core).clone())
     }
 }
@@ -56,9 +76,12 @@ fn hwnd_of(window: &WebviewWindow) -> isize {
     window.hwnd().map(|h| h.0 as isize).unwrap_or(0)
 }
 
-
-async fn blocking<T: Send + 'static>(f: impl FnOnce() -> SyncResult<T> + Send + 'static) -> SyncResult<T> {
-    tauri::async_runtime::spawn_blocking(f).await.map_err(|_| SyncError::new(SyncCode::Io))?
+async fn blocking<T: Send + 'static>(
+    f: impl FnOnce() -> SyncResult<T> + Send + 'static,
+) -> SyncResult<T> {
+    tauri::async_runtime::spawn_blocking(f)
+        .await
+        .map_err(|_| SyncError::new(SyncCode::Io))?
 }
 
 /// Seule la fenêtre `main` appelle les 21 commandes qui lui sont accordées (la capability le garantit ; contrôle redondant).
@@ -75,7 +98,11 @@ fn require_main(window: &WebviewWindow) -> SyncResult<()> {
 // ------------------------------------------------------------------------------------------------------------------------------
 
 #[tauri::command]
-pub async fn sync_folder_info(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>) -> SyncResult<FolderInfo> {
+pub async fn sync_folder_info(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+) -> SyncResult<FolderInfo> {
     require_main(&window)?;
     let core = state.core(&app)?;
     blocking(move || core.folder_info()).await
@@ -84,13 +111,23 @@ pub async fn sync_folder_info(app: AppHandle, window: WebviewWindow, state: Stat
 /// Boîte système de choix de dossier, ouverte par Rust ; dossier proposé `%USERPROFILE%\iCloudDrive\Spartiate` (créé s'il
 /// n'existe pas, puis retiré s'il reste vide après une annulation). Annulation : `null`.
 #[tauri::command]
-pub async fn sync_folder_choose(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>) -> SyncResult<Option<FolderInfo>> {
+pub async fn sync_folder_choose(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+) -> SyncResult<Option<FolderInfo>> {
     require_main(&window)?;
     let core = state.core(&app)?;
     // Rien n'est créé avant la validation (audit S10) : la boîte s'ouvre sur `iCloud Drive\Spartiate` s'il existe, sinon sur
     // `iCloud Drive` ; choisir `iCloud Drive` lui-même crée puis lie `iCloud Drive\Spartiate`.
-    let icloud = std::env::var_os("USERPROFILE").map(|home| PathBuf::from(home).join(ICLOUD_DRIVE_DIR)).filter(|drive| drive.is_dir());
-    let start = icloud.as_ref().map(|drive| drive.join(DEFAULT_FOLDER_NAME)).filter(|dir| dir.is_dir()).or_else(|| icloud.clone());
+    let icloud = std::env::var_os("USERPROFILE")
+        .map(|home| PathBuf::from(home).join(ICLOUD_DRIVE_DIR))
+        .filter(|drive| drive.is_dir());
+    let start = icloud
+        .as_ref()
+        .map(|drive| drive.join(DEFAULT_FOLDER_NAME))
+        .filter(|dir| dir.is_dir())
+        .or_else(|| icloud.clone());
     let dialog_app = app.clone();
     let chosen = tauri::async_runtime::spawn_blocking(move || {
         let mut dialog = dialog_app.dialog().file();
@@ -104,7 +141,9 @@ pub async fn sync_folder_choose(app: AppHandle, window: WebviewWindow, state: St
     })
     .await
     .map_err(|_| SyncError::new(SyncCode::Io))?;
-    let Some(path) = chosen.and_then(|file| file.into_path().ok()) else { return Ok(None) };
+    let Some(path) = chosen.and_then(|file| file.into_path().ok()) else {
+        return Ok(None);
+    };
     let (path, create) = chosen_target(&path, icloud.as_deref());
     if create && !path.exists() {
         std::fs::create_dir(&path).map_err(|_| SyncError::new(SyncCode::Io))?;
@@ -113,7 +152,12 @@ pub async fn sync_folder_choose(app: AppHandle, window: WebviewWindow, state: St
 }
 
 #[tauri::command]
-pub async fn sync_folder_forget(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>, erase_key: bool) -> SyncResult<()> {
+pub async fn sync_folder_forget(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+    erase_key: bool,
+) -> SyncResult<()> {
     require_main(&window)?;
     let core = state.core(&app)?;
     let owner = hwnd_of(&window);
@@ -121,7 +165,12 @@ pub async fn sync_folder_forget(app: AppHandle, window: WebviewWindow, state: St
 }
 
 #[tauri::command]
-pub async fn sync_bind_device(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>, device_id: String) -> SyncResult<()> {
+pub async fn sync_bind_device(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+    device_id: String,
+) -> SyncResult<()> {
     require_main(&window)?;
     let core = state.core(&app)?;
     blocking(move || core.bind_device(&device_id)).await
@@ -132,7 +181,11 @@ pub async fn sync_bind_device(app: AppHandle, window: WebviewWindow, state: Stat
 // ------------------------------------------------------------------------------------------------------------------------------
 
 #[tauri::command]
-pub async fn sync_key_status(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>) -> SyncResult<KeyStatus> {
+pub async fn sync_key_status(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+) -> SyncResult<KeyStatus> {
     require_main(&window)?;
     let core = state.core(&app)?;
     blocking(move || core.key_status()).await
@@ -144,7 +197,11 @@ pub struct KeyCreated {
 }
 
 #[tauri::command]
-pub async fn sync_key_create(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>) -> SyncResult<KeyCreated> {
+pub async fn sync_key_create(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+) -> SyncResult<KeyCreated> {
     require_main(&window)?;
     let core = state.core(&app)?;
     blocking(move || core.key_create().map(|kid| KeyCreated { kid })).await
@@ -190,9 +247,14 @@ fn destroy_pairing(app: &AppHandle, registry: &PairingRegistry, hwnd: isize) {
 #[cfg(windows)]
 fn exclude_from_capture(hwnd: isize) -> bool {
     use windows::Win32::Foundation::HWND;
-    use windows::Win32::UI::WindowsAndMessaging::{SetWindowDisplayAffinity, WDA_EXCLUDEFROMCAPTURE};
+    use windows::Win32::UI::WindowsAndMessaging::{
+        SetWindowDisplayAffinity, WDA_EXCLUDEFROMCAPTURE,
+    };
     // SAFETY: HWND de la fenêtre que Rust vient de créer, appelé sur son fil propriétaire.
-    unsafe { SetWindowDisplayAffinity(HWND(hwnd as *mut core::ffi::c_void), WDA_EXCLUDEFROMCAPTURE) }.is_ok()
+    unsafe {
+        SetWindowDisplayAffinity(HWND(hwnd as *mut core::ffi::c_void), WDA_EXCLUDEFROMCAPTURE)
+    }
+    .is_ok()
 }
 
 #[cfg(not(windows))]
@@ -231,16 +293,24 @@ fn harden_webview(_webview: &tauri::webview::PlatformWebview) -> bool {
 fn watch_pairing(app: AppHandle, registry: Arc<PairingRegistry>, core: Arc<SyncCore>, hwnd: isize) {
     std::thread::spawn(move || loop {
         std::thread::sleep(Duration::from_millis(500));
-        let Some(instance) = registry.current().filter(|i| i.hwnd == hwnd) else { return };
-        let main_shown = app
-            .get_webview_window(MAIN_WINDOW)
-            .is_some_and(|main| main.is_visible().unwrap_or(false) && !main.is_minimized().unwrap_or(true));
+        let Some(instance) = registry.current().filter(|i| i.hwnd == hwnd) else {
+            return;
+        };
+        let main_shown = app.get_webview_window(MAIN_WINDOW).is_some_and(|main| {
+            main.is_visible().unwrap_or(false) && !main.is_minimized().unwrap_or(true)
+        });
         let expired = registry.expire_if_due(hwnd, instance.generation, core.now());
-        if let Some(reason) = watch_decision(WatchInput { main_shown, expired }) {
+        if let Some(reason) = watch_decision(WatchInput {
+            main_shown,
+            expired,
+        }) {
             log::event("pairing-destroyed", reason);
             let handle = app.clone();
             let registry = registry.clone();
-            if app.run_on_main_thread(move || destroy_pairing(&handle, &registry, hwnd)).is_err() {
+            if app
+                .run_on_main_thread(move || destroy_pairing(&handle, &registry, hwnd))
+                .is_err()
+            {
                 log::event("pairing-destroy-failed", "watch");
             }
             return;
@@ -251,7 +321,12 @@ fn watch_pairing(app: AppHandle, registry: Arc<PairingRegistry>, core: Arc<SyncC
 /// `sync_pairing_open({ mode })` (fenêtre `main`) : `show` → confirmation native (propriétaire `main`) puis fenêtre dédiée ; jamais
 /// de réutilisation d'une fenêtre existante (libellé occupé avant ou pendant la boîte : `consent-denied`).
 #[tauri::command]
-pub async fn sync_pairing_open(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>, mode: String) -> SyncResult<()> {
+pub async fn sync_pairing_open(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+    mode: String,
+) -> SyncResult<()> {
     require_main(&window)?;
     let mode = PairingMode::parse(&mode).ok_or(SyncError::new(SyncCode::WrongMode))?;
     let core = state.core(&app)?;
@@ -274,7 +349,13 @@ pub async fn sync_pairing_open(app: AppHandle, window: WebviewWindow, state: Sta
     result
 }
 
-async fn open_pairing_window(app: &AppHandle, main: &WebviewWindow, core: &Arc<SyncCore>, registry: &Arc<PairingRegistry>, mode: PairingMode) -> SyncResult<()> {
+async fn open_pairing_window(
+    app: &AppHandle,
+    main: &WebviewWindow,
+    core: &Arc<SyncCore>,
+    registry: &Arc<PairingRegistry>,
+    mode: PairingMode,
+) -> SyncResult<()> {
     let owner = hwnd_of(main);
     if mode == PairingMode::Show {
         let consent = core.consent().clone();
@@ -288,23 +369,31 @@ async fn open_pairing_window(app: &AppHandle, main: &WebviewWindow, core: &Arc<S
         log::event("pairing-refused", "label-taken");
         return fail(SyncCode::AlreadyOpen);
     }
-    let window = WebviewWindowBuilder::new(app, PAIRING_WINDOW, WebviewUrl::App(PAIRING_PAGE.into()))
-        .title("Spartiate")
-        .inner_size(PAIRING_WIDTH, PAIRING_HEIGHT)
-        .resizable(false)
-        .maximizable(false)
-        .minimizable(false)
-        .visible(false)
-        .center()
-        .build()
-        .map_err(|_| SyncError::new(SyncCode::Io))?;
+    let window =
+        WebviewWindowBuilder::new(app, PAIRING_WINDOW, WebviewUrl::App(PAIRING_PAGE.into()))
+            .title("Spartiate")
+            .inner_size(PAIRING_WIDTH, PAIRING_HEIGHT)
+            .resizable(false)
+            .maximizable(false)
+            .minimizable(false)
+            .visible(false)
+            .center()
+            .build()
+            .map_err(|_| SyncError::new(SyncCode::Io))?;
     let hwnd = hwnd_of(&window);
     // Affinité d'affichage appliquée sur le fil propriétaire, vérifiée avant l'affichage ; échec : fenêtre détruite, rien de renvoyé.
     let (sender, receiver) = std::sync::mpsc::channel();
     let applied = app.run_on_main_thread(move || {
         let _ = sender.send(exclude_from_capture(hwnd));
     });
-    let excluded = applied.is_ok() && tauri::async_runtime::spawn_blocking(move || receiver.recv_timeout(Duration::from_secs(5)).unwrap_or(false)).await.unwrap_or(false);
+    let excluded = applied.is_ok()
+        && tauri::async_runtime::spawn_blocking(move || {
+            receiver
+                .recv_timeout(Duration::from_secs(5))
+                .unwrap_or(false)
+        })
+        .await
+        .unwrap_or(false);
     if let Err(error) = affinity_outcome(hwnd, excluded) {
         if window.destroy().is_err() {
             log::event("pairing-destroy-failed", "display-affinity");
@@ -317,7 +406,14 @@ async fn open_pairing_window(app: &AppHandle, main: &WebviewWindow, core: &Arc<S
     let asked = window.with_webview(move |webview| {
         let _ = sender.send(harden_webview(&webview));
     });
-    let hardened = asked.is_ok() && tauri::async_runtime::spawn_blocking(move || receiver.recv_timeout(Duration::from_secs(5)).unwrap_or(false)).await.unwrap_or(false);
+    let hardened = asked.is_ok()
+        && tauri::async_runtime::spawn_blocking(move || {
+            receiver
+                .recv_timeout(Duration::from_secs(5))
+                .unwrap_or(false)
+        })
+        .await
+        .unwrap_or(false);
     if let Err(error) = hardening_outcome(hardened) {
         if window.destroy().is_err() {
             log::event("pairing-destroy-failed", "webview-settings");
@@ -363,17 +459,33 @@ async fn open_pairing_window(app: &AppHandle, main: &WebviewWindow, core: &Arc<S
     }
     let _ = window.set_focus();
     watch_pairing(app.clone(), registry.clone(), core.clone(), hwnd);
-    log::event("pairing-opened", if mode == PairingMode::Show { "show" } else { "import" });
+    log::event(
+        "pairing-opened",
+        if mode == PairingMode::Show {
+            "show"
+        } else {
+            "import"
+        },
+    );
     Ok(())
 }
 
 /// `sync_pairing_payload({ renew? })` (fenêtre `pairing`, instance `show`).
 #[tauri::command]
-pub async fn sync_pairing_payload(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>, renew: Option<bool>) -> SyncResult<PairingPayload> {
+pub async fn sync_pairing_payload(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+    renew: Option<bool>,
+) -> SyncResult<PairingPayload> {
     let core = state.core(&app)?;
     let registry = state.pairing.clone();
     let url = caller_url(&window);
-    let caller = Caller { label: window.label(), url: &url, hwnd: hwnd_of(&window) };
+    let caller = Caller {
+        label: window.label(),
+        url: &url,
+        hwnd: hwnd_of(&window),
+    };
     let instance = if renew == Some(true) {
         let instance = registry.verify(&caller, core.now())?;
         if instance.mode != PairingMode::Show {
@@ -406,7 +518,11 @@ pub async fn sync_key_import(
     let core = state.core(&app)?;
     let registry = state.pairing.clone();
     let url = caller_url(&window);
-    let caller = Caller { label: window.label(), url: &url, hwnd: hwnd_of(&window) };
+    let caller = Caller {
+        label: window.label(),
+        url: &url,
+        hwnd: hwnd_of(&window),
+    };
     let instance = registry.verify(&caller, core.now())?;
     if instance.mode != PairingMode::Import {
         return fail(SyncCode::WrongMode);
@@ -432,10 +548,18 @@ pub async fn sync_key_import(
 
 /// `sync_pairing_close()` : détruit la seule fenêtre appelante (aucun paramètre de cible).
 #[tauri::command]
-pub async fn sync_pairing_close(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>) -> SyncResult<()> {
+pub async fn sync_pairing_close(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+) -> SyncResult<()> {
     let core = state.core(&app)?;
     let url = caller_url(&window);
-    let caller = Caller { label: window.label(), url: &url, hwnd: hwnd_of(&window) };
+    let caller = Caller {
+        label: window.label(),
+        url: &url,
+        hwnd: hwnd_of(&window),
+    };
     let instance = state.pairing.verify(&caller, core.now())?;
     destroy_pairing(&app, &state.pairing, instance.hwnd);
     Ok(())
@@ -446,7 +570,13 @@ pub async fn sync_pairing_close(app: AppHandle, window: WebviewWindow, state: St
 // ------------------------------------------------------------------------------------------------------------------------------
 
 #[tauri::command]
-pub async fn sync_scan(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>, keep: Vec<String>, hydrate_budget_ms: Option<u64>) -> SyncResult<FolderScan> {
+pub async fn sync_scan(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+    keep: Vec<String>,
+    hydrate_budget_ms: Option<u64>,
+) -> SyncResult<FolderScan> {
     require_main(&window)?;
     let core = state.core(&app)?;
     let scan_core = core.clone();
@@ -456,7 +586,10 @@ pub async fn sync_scan(app: AppHandle, window: WebviewWindow, state: State<'_, S
     if let Some(hwnd) = state.pairing.observe_paired(&core.paired_with_self(&scan)) {
         let handle = app.clone();
         let registry = state.pairing.clone();
-        if app.run_on_main_thread(move || destroy_pairing(&handle, &registry, hwnd)).is_err() {
+        if app
+            .run_on_main_thread(move || destroy_pairing(&handle, &registry, hwnd))
+            .is_err()
+        {
             log::event("pairing-destroy-failed", "arrival");
         }
         if app.emit_to(MAIN_WINDOW, PAIRED_EVENT, ()).is_err() {
@@ -496,12 +629,25 @@ pub async fn sync_append_journal(
 ) -> SyncResult<AppendResult> {
     require_main(&window)?;
     let core = state.core(&app)?;
-    let request = AppendRequest { epoch, segment, expect_records, sv, max_hlc, records };
+    let request = AppendRequest {
+        epoch,
+        segment,
+        expect_records,
+        sv,
+        max_hlc,
+        records,
+    };
     blocking(move || core.append_journal(&request)).await
 }
 
 #[tauri::command]
-pub async fn sync_write_state(app: AppHandle, window: WebviewWindow, sync: State<'_, SyncState>, sv: u64, state: serde_json::Value) -> SyncResult<()> {
+pub async fn sync_write_state(
+    app: AppHandle,
+    window: WebviewWindow,
+    sync: State<'_, SyncState>,
+    sv: u64,
+    state: serde_json::Value,
+) -> SyncResult<()> {
     require_main(&window)?;
     let core = sync.core(&app)?;
     blocking(move || core.write_state(sv, state)).await
@@ -513,21 +659,43 @@ pub struct SnapshotHandle {
 }
 
 #[tauri::command]
-pub async fn sync_snapshot_begin(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>, epoch: String, seq: u64, sv: u64) -> SyncResult<SnapshotHandle> {
+pub async fn sync_snapshot_begin(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+    epoch: String,
+    seq: u64,
+    sv: u64,
+) -> SyncResult<SnapshotHandle> {
     require_main(&window)?;
     let core = state.core(&app)?;
-    blocking(move || core.snapshot_begin(&epoch, seq, sv).map(|handle| SnapshotHandle { handle })).await
+    blocking(move || {
+        core.snapshot_begin(&epoch, seq, sv)
+            .map(|handle| SnapshotHandle { handle })
+    })
+    .await
 }
 
 #[tauri::command]
-pub async fn sync_snapshot_append(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>, handle: u32, records: Vec<String>) -> SyncResult<()> {
+pub async fn sync_snapshot_append(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+    handle: u32,
+    records: Vec<String>,
+) -> SyncResult<()> {
     require_main(&window)?;
     let core = state.core(&app)?;
     blocking(move || core.snapshot_append(handle, &records)).await
 }
 
 #[tauri::command]
-pub async fn sync_snapshot_commit(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>, handle: u32) -> SyncResult<()> {
+pub async fn sync_snapshot_commit(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+    handle: u32,
+) -> SyncResult<()> {
     require_main(&window)?;
     let core = state.core(&app)?;
     blocking(move || core.snapshot_commit(handle)).await
@@ -549,7 +717,17 @@ pub async fn sync_read_snapshot(
     require_main(&window)?;
     let core = state.core(&app)?;
     // tail (§18 point 11) : dernier enregistrement seul de l'instantané annoncé.
-    blocking(move || core.read_snapshot_with(&device_id, &epoch, seq, from_record, max_bytes, tail == Some(true))).await
+    blocking(move || {
+        core.read_snapshot_with(
+            &device_id,
+            &epoch,
+            seq,
+            from_record,
+            max_bytes,
+            tail == Some(true),
+        )
+    })
+    .await
 }
 
 #[derive(Serialize)]
@@ -558,7 +736,12 @@ pub struct Deleted {
 }
 
 #[tauri::command]
-pub async fn sync_delete_own(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>, files: Vec<OwnFileRef>) -> SyncResult<Deleted> {
+pub async fn sync_delete_own(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+    files: Vec<OwnFileRef>,
+) -> SyncResult<Deleted> {
     require_main(&window)?;
     let core = state.core(&app)?;
     blocking(move || core.delete_own(&files).map(|deleted| Deleted { deleted })).await
@@ -566,14 +749,23 @@ pub async fn sync_delete_own(app: AppHandle, window: WebviewWindow, state: State
 
 /// Y-IOS-02 (ADR 0011 §24 point 4 (b)) : `own.json` revient sans époque pour une époque orpheline (preuve recontrôlée).
 #[tauri::command]
-pub async fn sync_abandon_orphan_epoch(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>, epoch: String) -> SyncResult<()> {
+pub async fn sync_abandon_orphan_epoch(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+    epoch: String,
+) -> SyncResult<()> {
     require_main(&window)?;
     let core = state.core(&app)?;
     blocking(move || core.abandon_orphan_epoch(&epoch)).await
 }
 
 #[tauri::command]
-pub async fn sync_restore_marker_get(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>) -> SyncResult<Option<RestoreMarker>> {
+pub async fn sync_restore_marker_get(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+) -> SyncResult<Option<RestoreMarker>> {
     require_main(&window)?;
     // P-04-iOS critère 12 : un marqueur de restauration non écrit est réessayé ici ; nouvel échec -> erreur (aucun cycle).
     crate::startup_gate::retry_pending_marker(&app)?;
@@ -582,7 +774,11 @@ pub async fn sync_restore_marker_get(app: AppHandle, window: WebviewWindow, stat
 }
 
 #[tauri::command]
-pub async fn sync_restore_marker_clear(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>) -> SyncResult<()> {
+pub async fn sync_restore_marker_clear(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+) -> SyncResult<()> {
     require_main(&window)?;
     let core = state.core(&app)?;
     blocking(move || core.clear_restore_marker()).await
@@ -605,7 +801,12 @@ pub struct ForgottenDeleted {
 /// Y-10 : déclaration d'oubli d'un autre appareil. Fenêtre `main` au premier plan, confirmation native (`ConsentKind::ForgetDevice`,
 /// « Annuler » par défaut), puis `sync/forgotten.json` ; seule entrée : l'identifiant.
 #[tauri::command]
-pub async fn sync_device_forget(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>, device_id: String) -> SyncResult<()> {
+pub async fn sync_device_forget(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+    device_id: String,
+) -> SyncResult<()> {
     require_main(&window)?;
     let core = state.core(&app)?;
     let owner = hwnd_of(&window);
@@ -615,18 +816,30 @@ pub async fn sync_device_forget(app: AppHandle, window: WebviewWindow, state: St
 /// Y-10 : suppression des fichiers d'un appareil oublié, appelée par le cycle (sans boîte) ; conditions recalculées par Rust depuis
 /// les `state.spx` authentifiés, seule entrée : l'identifiant.
 #[tauri::command]
-pub async fn sync_forgotten_delete(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>, device_id: String) -> SyncResult<ForgottenDeleted> {
+pub async fn sync_forgotten_delete(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+    device_id: String,
+) -> SyncResult<ForgottenDeleted> {
     require_main(&window)?;
     let core = state.core(&app)?;
     let result = blocking(move || core.forgotten_delete(&device_id)).await?;
-    Ok(ForgottenDeleted { deleted: result.deleted, complete: result.complete })
+    Ok(ForgottenDeleted {
+        deleted: result.deleted,
+        complete: result.complete,
+    })
 }
 
 /// Y-11 : réinitialisation avec une nouvelle clé. Fenêtre `main` au premier plan, confirmation native (`ConsentKind::ResetKey`, « Annuler »
 /// par défaut), puis `K2` créée par Rust sous `spartiate.sync.key.next` ; seul le `kid` est rendu (jamais la clé). Une réinitialisation
 /// interrompue est reprise (même `K2`, sans boîte).
 #[tauri::command]
-pub async fn sync_reset_key(app: AppHandle, window: WebviewWindow, state: State<'_, SyncState>) -> SyncResult<KeyCreated> {
+pub async fn sync_reset_key(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SyncState>,
+) -> SyncResult<KeyCreated> {
     require_main(&window)?;
     let core = state.core(&app)?;
     let owner = hwnd_of(&window);

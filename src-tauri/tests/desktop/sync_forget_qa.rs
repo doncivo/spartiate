@@ -6,12 +6,15 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use spartiate_lib::sync::forget::{cutoff, forget_order, forgotten_delete_check, learn_declarations, DeleteCheck, Verdict, FORGOTTEN_FILE};
+use serde_json::{json, Value};
 use spartiate_lib::sync::folder::FolderKind;
+use spartiate_lib::sync::forget::{
+    cutoff, forget_order, forgotten_delete_check, learn_declarations, DeleteCheck, Verdict,
+    FORGOTTEN_FILE,
+};
 use spartiate_lib::sync::state::DeviceAck;
 use spartiate_lib::sync::{SyncCode, SyncError};
 use spartiate_lib::vault::SecretVault;
-use serde_json::{json, Value};
 
 use crate::sync_forget::{check_json, entries_of, known_of, snapshot_of};
 use crate::sync_support::{device, epoch, hlc, Device, FakeBackend, MemFs, DEV_A, FOLDER};
@@ -29,7 +32,10 @@ fn code<T>(result: Result<T, SyncError>) -> SyncCode {
 }
 
 fn random_table() -> Value {
-    serde_json::from_str(include_str!("../../../tests/fixtures/sync/forget-order-random.json")).expect("table aléatoire figée")
+    serde_json::from_str(include_str!(
+        "../../../tests/fixtures/sync/forget-order-random.json"
+    ))
+    .expect("table aléatoire figée")
 }
 
 #[test]
@@ -37,8 +43,14 @@ fn qa_differential_forget_order_matches_typescript() {
     let cases = random_table()["forgetOrder"].as_array().unwrap().clone();
     assert_eq!(cases.len(), 120);
     for case in cases {
-        let expected: BTreeMap<String, Verdict> = serde_json::from_value(case["expected"].clone()).unwrap();
-        assert_eq!(forget_order(&entries_of(&case["entries"])), expected, "{}", case["name"]);
+        let expected: BTreeMap<String, Verdict> =
+            serde_json::from_value(case["expected"].clone()).unwrap();
+        assert_eq!(
+            forget_order(&entries_of(&case["entries"])),
+            expected,
+            "{}",
+            case["name"]
+        );
     }
 }
 
@@ -48,8 +60,17 @@ fn qa_differential_learn_matches_typescript() {
     assert_eq!(cases.len(), 80);
     for case in cases {
         let cap = case["cap"].as_u64().unwrap() as usize;
-        let (entries, overflow) = learn_declarations(&entries_of(&case["master"]), &entries_of(&case["candidates"]), cap);
-        assert_eq!(json!({ "entries": entries, "overflow": overflow }), case["expected"], "{}", case["name"]);
+        let (entries, overflow) = learn_declarations(
+            &entries_of(&case["master"]),
+            &entries_of(&case["candidates"]),
+            cap,
+        );
+        assert_eq!(
+            json!({ "entries": entries, "overflow": overflow }),
+            case["expected"],
+            "{}",
+            case["name"]
+        );
     }
 }
 
@@ -62,23 +83,41 @@ fn qa_differential_cutoff_matches_typescript() {
             .as_array()
             .unwrap()
             .iter()
-            .map(|a| (a["deviceId"].as_str().unwrap().to_owned(), serde_json::from_value(a["acks"].clone()).unwrap()))
+            .map(|a| {
+                (
+                    a["deviceId"].as_str().unwrap().to_owned(),
+                    serde_json::from_value(a["acks"].clone()).unwrap(),
+                )
+            })
             .collect();
         let expected: Option<DeviceAck> = serde_json::from_value(case["expected"].clone()).unwrap();
-        let result = cutoff(case["target"].as_str().unwrap(), ackers.iter().map(|(id, acks)| (id.as_str(), acks)));
+        let result = cutoff(
+            case["target"].as_str().unwrap(),
+            ackers.iter().map(|(id, acks)| (id.as_str(), acks)),
+        );
         assert_eq!(result, expected, "{}", case["name"]);
     }
 }
 
 #[test]
 fn qa_differential_forgotten_delete_check_matches_typescript() {
-    let cases = random_table()["forgottenDelete"].as_array().unwrap().clone();
+    let cases = random_table()["forgottenDelete"]
+        .as_array()
+        .unwrap()
+        .clone();
     assert_eq!(cases.len(), 300);
     let mut ready = 0;
     let mut waiting = 0;
     for case in cases {
         let done: Vec<String> = serde_json::from_value(case["done"].clone()).unwrap();
-        let check = forgotten_delete_check(case["target"].as_str().unwrap(), case["self"].as_str().unwrap(), &entries_of(&case["master"]), &done, &known_of(&case), &snapshot_of(&case["ownSnapshot"]));
+        let check = forgotten_delete_check(
+            case["target"].as_str().unwrap(),
+            case["self"].as_str().unwrap(),
+            &entries_of(&case["master"]),
+            &done,
+            &known_of(&case),
+            &snapshot_of(&case["ownSnapshot"]),
+        );
         let actual = check_json(&check);
         assert_eq!(actual, case["expected"], "{}", case["name"]);
         match check {
@@ -88,7 +127,10 @@ fn qa_differential_forgotten_delete_check_matches_typescript() {
         }
     }
     // La table n'est utile que si elle exerce les deux issues principales.
-    assert!(ready >= 30 && waiting >= 100, "ready {ready}, waiting {waiting}");
+    assert!(
+        ready >= 30 && waiting >= 100,
+        "ready {ready}, waiting {waiting}"
+    );
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------
@@ -97,7 +139,12 @@ fn qa_differential_forgotten_delete_check_matches_typescript() {
 
 fn joined(fs: &std::sync::Arc<MemFs>, owner: &Device, dev: &str) -> Device {
     let d = Device::new(FakeBackend::with(FOLDER, FolderKind::Icloud, fs.clone()));
-    d.vault.set(SYNC_KEY_ACCOUNT, &owner.vault.get(SYNC_KEY_ACCOUNT).unwrap().unwrap()).unwrap();
+    d.vault
+        .set(
+            SYNC_KEY_ACCOUNT,
+            &owner.vault.get(SYNC_KEY_ACCOUNT).unwrap().unwrap(),
+        )
+        .unwrap();
     d.core.choose_folder(Path::new(FOLDER)).unwrap();
     d.core.bind_device(dev).unwrap();
     d
@@ -116,7 +163,15 @@ fn state_json(dev: &str, seq: u64) -> Value {
 fn announce_snapshot(d: &Device, dev: &str, seq: u64, n: u64, covers: Value) {
     let ep = epoch(1, DEV_A);
     let handle = d.core.snapshot_begin(&ep, n, SV).unwrap();
-    d.core.snapshot_append(handle, &[json!({ "k": "snap-end", "count": 0, "covers": covers, "epoch": ep, "sv": SV }).to_string()]).unwrap();
+    d.core
+        .snapshot_append(
+            handle,
+            &[
+                json!({ "k": "snap-end", "count": 0, "covers": covers, "epoch": ep, "sv": SV })
+                    .to_string(),
+            ],
+        )
+        .unwrap();
     d.core.snapshot_commit(handle).unwrap();
     let mut state = state_json(dev, seq);
     state["snapshot"] = json!({ "seq": n, "endHlc": hlc(5_000 + n, dev) });
@@ -125,8 +180,17 @@ fn announce_snapshot(d: &Device, dev: &str, seq: u64, n: u64, covers: Value) {
 
 fn published_forgotten(a: &Device) -> Vec<String> {
     let scan = a.core.scan(&[]).unwrap();
-    let state = scan.devices.iter().find(|d| d.device_id == DEV_A).and_then(|d| d.state.clone()).expect("état publié de A");
-    state.forgotten.iter().map(|f| f.device_id.clone()).collect()
+    let state = scan
+        .devices
+        .iter()
+        .find(|d| d.device_id == DEV_A)
+        .and_then(|d| d.state.clone())
+        .expect("état publié de A");
+    state
+        .forgotten
+        .iter()
+        .map(|f| f.device_id.clone())
+        .collect()
 }
 
 fn a_and_x() -> (Device, Device, std::sync::Arc<MemFs>) {
@@ -150,7 +214,8 @@ fn qa_forgotten_json_of_another_folder_or_identity_is_rebuilt_and_a_corrupt_one_
     // falsifiée n'est jamais reprise, la déclaration authentique revient.
     let mut seq = 2;
     for forged in [
-        json!({ "folderId": "un-autre-dossier", "deviceId": DEV_A, "entries": [entry] }).to_string(),
+        json!({ "folderId": "un-autre-dossier", "deviceId": DEV_A, "entries": [entry] })
+            .to_string(),
         json!({ "folderId": "icloud", "deviceId": DEV_X, "entries": [entry] }).to_string(),
     ] {
         std::fs::write(&file, &forged).unwrap();
@@ -164,7 +229,11 @@ fn qa_forgotten_json_of_another_folder_or_identity_is_rebuilt_and_a_corrupt_one_
         std::fs::write(&file, &forged).unwrap();
         a.restart();
         seq += 1;
-        assert_eq!(code(a.core.write_state(SV, state_json(DEV_A, seq))), SyncCode::Io, "{forged}");
+        assert_eq!(
+            code(a.core.write_state(SV, state_json(DEV_A, seq))),
+            SyncCode::Io,
+            "{forged}"
+        );
         assert_eq!(code(a.core.scan(&[])), SyncCode::Io);
         assert_eq!(std::fs::read_to_string(&file).unwrap(), forged);
     }
@@ -179,11 +248,20 @@ fn qa_fake_device_folder_never_seen_does_not_block_the_deletion_and_can_still_be
     a.core.device_forget(DEV_X, 1).unwrap();
     a.core.write_state(SV, state_json(DEV_A, 2)).unwrap();
     // Condition (h) (§18 point 11) : aucun instantané annoncé par A, appel direct (WebView) : refusé, rien supprimé.
-    assert_eq!(code(a.core.forgotten_delete(DEV_X)), SyncCode::StateMismatch);
-    assert!(fs.names().iter().any(|n| n.starts_with(&format!("devices/{DEV_X}"))));
+    assert_eq!(
+        code(a.core.forgotten_delete(DEV_X)),
+        SyncCode::StateMismatch
+    );
+    assert!(fs
+        .names()
+        .iter()
+        .any(|n| n.starts_with(&format!("devices/{DEV_X}"))));
     announce_snapshot(&a, DEV_A, 3, 2, json!({}));
     assert!(a.core.forgotten_delete(DEV_X).unwrap().complete);
-    assert!(fs.names().iter().all(|n| !n.starts_with(&format!("devices/{DEV_X}"))));
+    assert!(fs
+        .names()
+        .iter()
+        .all(|n| !n.starts_with(&format!("devices/{DEV_X}"))));
     // Il reste oubliable (il est dans devices/), et ses fichiers supprimables ensuite (dossier vide : sans erreur).
     a.clock.advance(10 * 60_000);
     a.core.device_forget(GHOST, 1).unwrap();
@@ -202,14 +280,20 @@ fn qa_device_cited_only_by_a_forgotten_device_is_not_known_and_does_not_block() 
     announce_snapshot(&a, DEV_A, 2, 2, json!({}));
     // X est oublié : ses accusés ne font connaître personne (audit Y-10 c) ; la suppression se fait.
     assert!(a.core.forgotten_delete(DEV_X).unwrap().complete);
-    assert!(fs.names().iter().all(|n| !n.starts_with(&format!("devices/{DEV_X}"))));
+    assert!(fs
+        .names()
+        .iter()
+        .all(|n| !n.starts_with(&format!("devices/{DEV_X}"))));
 }
 
 #[test]
 fn qa_forget_order_ignores_a_declaration_whose_hlc_is_not_strict() {
     // Même si le suffixe est un identifiant d'appareil : un hlc mal formé n'oublie personne (TypeScript : voir forgetDifferential.test.ts).
     let bad = format!("bad791000000023-0000-{DEV_A}");
-    assert!(forget_order(&entries_of(&json!([{ "deviceId": DEV_X, "at": bad, "lastAck": null }]))).is_empty());
+    assert!(forget_order(&entries_of(
+        &json!([{ "deviceId": DEV_X, "at": bad, "lastAck": null }])
+    ))
+    .is_empty());
 }
 
 #[test]
@@ -219,11 +303,16 @@ fn qa_interrupted_write_of_forgotten_json_leaves_no_declaration_and_the_next_att
     std::fs::create_dir_all(&dir).unwrap();
     // Arrêt entre l'écriture du fichier temporaire et le renommage : un `.tmp` orphelin (même contenu falsifié) ne vaut jamais déclaration.
     let entry = json!({ "deviceId": GHOST, "at": hlc(9_000_000_000_000, DEV_A), "lastAck": null });
-    std::fs::write(dir.join(format!("{FORGOTTEN_FILE}.tmp")), json!({ "folderId": "icloud", "deviceId": DEV_A, "entries": [entry] }).to_string()).unwrap();
+    std::fs::write(
+        dir.join(format!("{FORGOTTEN_FILE}.tmp")),
+        json!({ "folderId": "icloud", "deviceId": DEV_A, "entries": [entry] }).to_string(),
+    )
+    .unwrap();
     a.core.write_state(SV, state_json(DEV_A, 2)).unwrap();
     assert!(published_forgotten(&a).is_empty(), "rien n'est déclaré");
     // Registre persisté dès le premier usage (ADR 0011 §18 point 7), sans aucune déclaration : le .tmp orphelin n'a pas été repris.
-    let registry: Value = serde_json::from_slice(&std::fs::read(dir.join(FORGOTTEN_FILE)).unwrap()).unwrap();
+    let registry: Value =
+        serde_json::from_slice(&std::fs::read(dir.join(FORGOTTEN_FILE)).unwrap()).unwrap();
     assert!(registry["entries"].as_array().unwrap().is_empty());
     // La tentative suivante aboutit : seule la déclaration confirmée est publiée, le `.tmp` orphelin est remplacé.
     a.core.device_forget(DEV_X, 1).unwrap();

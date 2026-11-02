@@ -10,10 +10,11 @@ use std::io;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::{Path, PathBuf};
 
-use spartiate_lib::backup::{
-    check_backup_file, create_daily_backup, recover_interrupted_restore, restore_backup_file, Recovery, RestoreStep, BACKUP_DIR, DB_FILE,
-};
 use rusqlite::Connection;
+use spartiate_lib::backup::{
+    check_backup_file, create_daily_backup, recover_interrupted_restore, restore_backup_file,
+    Recovery, RestoreStep, BACKUP_DIR, DB_FILE,
+};
 
 const APP_VERSION: u32 = 4;
 const SAVED: &str = "spartiate-daily-20261003.db";
@@ -25,35 +26,60 @@ fn scratch() -> tempfile::TempDir {
 }
 
 fn names(dir: &Path) -> Vec<String> {
-    let mut all: Vec<String> = fs::read_dir(dir).unwrap().map(|e| e.unwrap().file_name().to_string_lossy().into_owned()).collect();
+    let mut all: Vec<String> = fs::read_dir(dir)
+        .unwrap()
+        .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+        .collect();
     all.sort();
     all
 }
 
 fn init(conn: &Connection, version: u32, titles: &[String]) {
-    conn.execute("CREATE TABLE task (id INTEGER PRIMARY KEY, title TEXT, deleted_at TEXT)", []).unwrap();
-    conn.execute("CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY)", []).unwrap();
+    conn.execute(
+        "CREATE TABLE task (id INTEGER PRIMARY KEY, title TEXT, deleted_at TEXT)",
+        [],
+    )
+    .unwrap();
+    conn.execute(
+        "CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY)",
+        [],
+    )
+    .unwrap();
     for v in 1..=version {
-        conn.execute("INSERT INTO schema_migrations (version) VALUES (?1)", [v]).unwrap();
+        conn.execute("INSERT INTO schema_migrations (version) VALUES (?1)", [v])
+            .unwrap();
     }
     for title in titles {
-        conn.execute("INSERT INTO task (title) VALUES (?1)", [title]).unwrap();
+        conn.execute("INSERT INTO task (title) VALUES (?1)", [title])
+            .unwrap();
     }
 }
 
 /// Titres lus par une OUVERTURE RÉELLE de la base (le WAL éventuel est rejoué) ; échoue si la base est absente, vide ou abîmée.
 fn open_and_titles(path: &Path) -> Vec<String> {
     assert!(path.is_file(), "la base doit exister : {}", path.display());
-    assert!(fs::metadata(path).unwrap().len() > 0, "jamais un fichier vide");
+    assert!(
+        fs::metadata(path).unwrap().len() > 0,
+        "jamais un fichier vide"
+    );
     let conn = Connection::open(path).unwrap();
-    let check: String = conn.query_row("PRAGMA integrity_check", [], |r| r.get(0)).unwrap();
+    let check: String = conn
+        .query_row("PRAGMA integrity_check", [], |r| r.get(0))
+        .unwrap();
     assert_eq!(check, "ok", "base à moitié écrite");
     let mut stmt = conn.prepare("SELECT title FROM task ORDER BY id").unwrap();
-    stmt.query_map([], |r| r.get::<_, String>(0)).unwrap().map(Result::unwrap).collect()
+    stmt.query_map([], |r| r.get::<_, String>(0))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect()
 }
 
 fn old_titles() -> Vec<String> {
-    vec!["ancienne 1".into(), "ancienne 2".into(), "dans le wal".into()]
+    vec![
+        "ancienne 1".into(),
+        "ancienne 2".into(),
+        "dans le wal".into(),
+    ]
 }
 
 fn saved_titles() -> Vec<String> {
@@ -70,19 +96,37 @@ fn crashed_app_dir(saved_version: u32) -> (tempfile::TempDir, PathBuf, PathBuf) 
     live.pragma_update(None, "journal_mode", "WAL").unwrap();
     live.pragma_update(None, "wal_autocheckpoint", 0).unwrap();
     init(&live, APP_VERSION, &old_titles()[..2]);
-    live.query_row("PRAGMA wal_checkpoint(TRUNCATE)", [], |_| Ok(())).unwrap();
-    live.execute("INSERT INTO task (title) VALUES ('dans le wal')", []).unwrap();
+    live.query_row("PRAGMA wal_checkpoint(TRUNCATE)", [], |_| Ok(()))
+        .unwrap();
+    live.execute("INSERT INTO task (title) VALUES ('dans le wal')", [])
+        .unwrap();
     // Instantané octet pour octet de ce que le disque contient maintenant (base + journal), puis fin de la connexion.
     let snapshot = scratch();
     fs::copy(&db, snapshot.path().join(DB_FILE)).unwrap();
-    fs::copy(dir.path().join("spartiate.db-wal"), snapshot.path().join("spartiate.db-wal")).unwrap();
+    fs::copy(
+        dir.path().join("spartiate.db-wal"),
+        snapshot.path().join("spartiate.db-wal"),
+    )
+    .unwrap();
     drop(live);
     for entry in fs::read_dir(dir.path()).unwrap() {
         fs::remove_file(entry.unwrap().path()).unwrap();
     }
     fs::copy(snapshot.path().join(DB_FILE), &db).unwrap();
-    fs::copy(snapshot.path().join("spartiate.db-wal"), dir.path().join("spartiate.db-wal")).unwrap();
-    assert!(dir.path().join("spartiate.db-wal").metadata().unwrap().len() > 0, "le -wal doit porter la dernière tâche");
+    fs::copy(
+        snapshot.path().join("spartiate.db-wal"),
+        dir.path().join("spartiate.db-wal"),
+    )
+    .unwrap();
+    assert!(
+        dir.path()
+            .join("spartiate.db-wal")
+            .metadata()
+            .unwrap()
+            .len()
+            > 0,
+        "le -wal doit porter la dernière tâche"
+    );
     // Sauvegarde choisie.
     let source = scratch();
     let src_db = source.path().join(DB_FILE);
@@ -100,20 +144,35 @@ fn kill_at(db: &Path, backups: &Path, step: RestoreStep) {
         }
         Ok(())
     };
-    let outcome = catch_unwind(AssertUnwindSafe(|| restore_backup_file(db, backups, SAVED, APP_VERSION, STAMP, &hook)));
-    assert!(outcome.is_err(), "le processus aurait dû être tué à {step:?}");
+    let outcome = catch_unwind(AssertUnwindSafe(|| {
+        restore_backup_file(db, backups, SAVED, APP_VERSION, STAMP, &hook)
+    }));
+    assert!(
+        outcome.is_err(),
+        "le processus aurait dû être tué à {step:?}"
+    );
 }
 
 fn assert_clean(dir: &Path) {
     let left = names(dir);
-    assert!(!left.iter().any(|n| n.contains(".restoring") || n.contains(".restore-old")), "restes après récupération : {left:?}");
+    assert!(
+        !left
+            .iter()
+            .any(|n| n.contains(".restoring") || n.contains(".restore-old")),
+        "restes après récupération : {left:?}"
+    );
 }
 
 /// La relance : récupération avant toute ouverture, deuxième récupération sans effet, puis une restauration normale réussit.
 fn relaunch_then_restore_again(dir: &Path, db: &Path, backups: &Path) {
-    assert_eq!(recover_interrupted_restore(db, backups).unwrap(), Recovery::Nothing, "une 2e récupération n'a rien à faire");
+    assert_eq!(
+        recover_interrupted_restore(db, backups).unwrap(),
+        Recovery::Nothing,
+        "une 2e récupération n'a rien à faire"
+    );
     assert_clean(dir);
-    restore_backup_file(db, backups, SAVED, APP_VERSION, "20261008T111500Z", NO_FAIL).expect("une restauration normale reste possible après la récupération");
+    restore_backup_file(db, backups, SAVED, APP_VERSION, "20261008T111500Z", NO_FAIL)
+        .expect("une restauration normale reste possible après la récupération");
     assert_eq!(open_and_titles(db), saved_titles());
 }
 
@@ -123,8 +182,15 @@ fn relaunch_then_restore_again(dir: &Path, db: &Path, backups: &Path) {
 fn p04_ios_qa_kill_before_the_copy_leaves_the_old_database_untouched() {
     let (dir, db, backups) = crashed_app_dir(APP_VERSION);
     // Copie de sécurité déjà écrite (première étape de `restore_backup_file`), rien d'autre.
-    fs::copy(&db, backups.join("spartiate-pre-restore-20261008T101500Z.db")).unwrap();
-    assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::Nothing);
+    fs::copy(
+        &db,
+        backups.join("spartiate-pre-restore-20261008T101500Z.db"),
+    )
+    .unwrap();
+    assert_eq!(
+        recover_interrupted_restore(&db, &backups).unwrap(),
+        Recovery::Nothing
+    );
     assert_eq!(open_and_titles(&db), old_titles());
     relaunch_then_restore_again(dir.path(), &db, &backups);
 }
@@ -135,11 +201,22 @@ fn p04_ios_qa_kill_before_the_copy_leaves_the_old_database_untouched() {
 fn p04_ios_qa_kill_during_the_copy_discards_the_partial_staged_file() {
     let (dir, db, backups) = crashed_app_dir(APP_VERSION);
     let whole = fs::read(backups.join(SAVED)).unwrap();
-    fs::write(dir.path().join("spartiate.db.restoring"), &whole[..whole.len() / 2]).unwrap();
-    assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::StagedRemoved);
+    fs::write(
+        dir.path().join("spartiate.db.restoring"),
+        &whole[..whole.len() / 2],
+    )
+    .unwrap();
+    assert_eq!(
+        recover_interrupted_restore(&db, &backups).unwrap(),
+        Recovery::StagedRemoved
+    );
     assert_clean(dir.path());
     assert_eq!(open_and_titles(&db), old_titles());
-    assert_eq!(fs::read(backups.join(SAVED)).unwrap(), whole, "la sauvegarde choisie n'est jamais touchée");
+    assert_eq!(
+        fs::read(backups.join(SAVED)).unwrap(),
+        whole,
+        "la sauvegarde choisie n'est jamais touchée"
+    );
     relaunch_then_restore_again(dir.path(), &db, &backups);
 }
 
@@ -150,21 +227,32 @@ fn p04_ios_qa_kill_after_staging_keeps_the_old_database_and_drops_the_staged_cop
     let (dir, db, backups) = crashed_app_dir(APP_VERSION);
     kill_at(&db, &backups, RestoreStep::Staged);
     assert!(dir.path().join("spartiate.db.restoring").is_file());
-    assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::StagedRemoved);
+    assert_eq!(
+        recover_interrupted_restore(&db, &backups).unwrap(),
+        Recovery::StagedRemoved
+    );
     assert_clean(dir.path());
-    assert_eq!(open_and_titles(&db), old_titles(), "le -wal n'a pas bougé : la dernière tâche est là");
+    assert_eq!(
+        open_and_titles(&db),
+        old_titles(),
+        "le -wal n'a pas bougé : la dernière tâche est là"
+    );
     relaunch_then_restore_again(dir.path(), &db, &backups);
 }
 
 // --- tuée pendant le remplacement : ancienne base déplacée, nouvelle pas encore en place ---
 
 #[test]
-fn p04_ios_qa_kill_between_the_old_files_moved_and_the_new_one_in_place_puts_the_old_back_with_its_wal() {
+fn p04_ios_qa_kill_between_the_old_files_moved_and_the_new_one_in_place_puts_the_old_back_with_its_wal(
+) {
     let (dir, db, backups) = crashed_app_dir(APP_VERSION);
     kill_at(&db, &backups, RestoreStep::OldMoved);
     assert!(!db.exists(), "à ce point, aucune base n'est en place");
     assert!(dir.path().join("spartiate.db.restore-old").is_file());
-    assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::PutBack);
+    assert_eq!(
+        recover_interrupted_restore(&db, &backups).unwrap(),
+        Recovery::PutBack
+    );
     assert_clean(dir.path());
     assert_eq!(open_and_titles(&db), old_titles());
     relaunch_then_restore_again(dir.path(), &db, &backups);
@@ -181,13 +269,31 @@ fn p04_ios_qa_kill_after_the_swap_opens_on_the_restored_state_and_archives_the_o
     restore_backup_file(&db, &backups, SAVED, APP_VERSION, STAMP, NO_FAIL).unwrap();
     fs::write(dir.path().join("spartiate.db.restore-old"), &old_main).unwrap();
     fs::write(dir.path().join("spartiate.db-wal.restore-old"), &old_wal).unwrap();
-    assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::Archived);
+    assert_eq!(
+        recover_interrupted_restore(&db, &backups).unwrap(),
+        Recovery::Archived
+    );
     assert_clean(dir.path());
-    assert_eq!(open_and_titles(&db), saved_titles(), "la version restaurée est celle qui s'ouvre");
+    assert_eq!(
+        open_and_titles(&db),
+        saved_titles(),
+        "la version restaurée est celle qui s'ouvre"
+    );
     // L'ancien état n'est pas perdu : il est archivé dans la famille « Avant restauration » et s'ouvre, WAL compris.
-    let archived: Vec<String> = names(&backups).into_iter().filter(|n| n.starts_with("spartiate-pre-restore-") && n.ends_with(".db")).collect();
-    assert!(archived.iter().any(|n| open_and_titles(&backups.join(n)) == old_titles()), "{archived:?}");
-    assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::Nothing);
+    let archived: Vec<String> = names(&backups)
+        .into_iter()
+        .filter(|n| n.starts_with("spartiate-pre-restore-") && n.ends_with(".db"))
+        .collect();
+    assert!(
+        archived
+            .iter()
+            .any(|n| open_and_titles(&backups.join(n)) == old_titles()),
+        "{archived:?}"
+    );
+    assert_eq!(
+        recover_interrupted_restore(&db, &backups).unwrap(),
+        Recovery::Nothing
+    );
 }
 
 // --- tuée pendant la récupération elle-même (base remise, journal pas encore) ---
@@ -199,7 +305,10 @@ fn p04_ios_qa_kill_in_the_middle_of_the_recovery_is_finished_by_the_next_launch(
     // La récupération a remis la base puis a été tuée avant de remettre le -wal.
     fs::rename(dir.path().join("spartiate.db.restore-old"), &db).unwrap();
     assert!(dir.path().join("spartiate.db-wal.restore-old").is_file());
-    assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::PutBack);
+    assert_eq!(
+        recover_interrupted_restore(&db, &backups).unwrap(),
+        Recovery::PutBack
+    );
     assert_clean(dir.path());
     assert_eq!(open_and_titles(&db), old_titles());
 }
@@ -213,10 +322,18 @@ fn untouched_after_refusal(dir: &Path, db: &Path, backups: &Path, expected: &str
     let err = restore_backup_file(db, backups, SAVED, APP_VERSION, STAMP, NO_FAIL).unwrap_err();
     assert_eq!(err.code, expected, "{err:?}");
     assert_eq!(names(dir), before_files, "aucun fichier ajouté ni retiré");
-    assert_eq!(names(backups), before_backups, "aucune copie de sécurité pour une restauration refusée");
+    assert_eq!(
+        names(backups),
+        before_backups,
+        "aucune copie de sécurité pour une restauration refusée"
+    );
     assert_eq!(fs::read(db).unwrap(), before_main);
     assert_eq!(open_and_titles(db), old_titles());
-    assert!(!err.message.contains(&dir.to_string_lossy().into_owned()), "le message ne contient pas de chemin : {}", err.message);
+    assert!(
+        !err.message.contains(&dir.to_string_lossy().into_owned()),
+        "le message ne contient pas de chemin : {}",
+        err.message
+    );
 }
 
 #[test]
@@ -230,10 +347,19 @@ fn p04_ios_qa_truncated_backups_are_refused_and_nothing_changes() {
             n if n == usize::MAX - 1 => whole.len() / 2,
             n => n,
         };
-        assert!(cut < whole.len(), "la base de test doit dépasser {cut} octets ({} octets)", whole.len());
+        assert!(
+            cut < whole.len(),
+            "la base de test doit dépasser {cut} octets ({} octets)",
+            whole.len()
+        );
         fs::write(&path, &whole[..cut]).unwrap();
         // Même contrôle direct : le fichier tronqué n'est jamais déclaré valide.
-        assert_eq!(check_backup_file(&path, APP_VERSION).map_err(|e| e.code), Err("corrupt"), "tronquée à {cut} octets sur {}", whole.len());
+        assert_eq!(
+            check_backup_file(&path, APP_VERSION).map_err(|e| e.code),
+            Err("corrupt"),
+            "tronquée à {cut} octets sur {}",
+            whole.len()
+        );
         untouched_after_refusal(dir.path(), &db, &backups, "corrupt");
     }
 }
@@ -262,8 +388,19 @@ fn p04_ios_qa_future_schema_is_refused_past_schema_is_restored_for_the_migration
     let (dir, db, backups) = crashed_app_dir(APP_VERSION + 1);
     untouched_after_refusal(dir.path(), &db, &backups, "newer-schema");
     let (_older_dir, older_db, older_backups) = crashed_app_dir(1);
-    let out = restore_backup_file(&older_db, &older_backups, SAVED, APP_VERSION, STAMP, NO_FAIL).unwrap();
-    assert_eq!(out.schema_version, 1, "restaurée telle quelle : les migrations manquantes sont rejouées à l'ouverture");
+    let out = restore_backup_file(
+        &older_db,
+        &older_backups,
+        SAVED,
+        APP_VERSION,
+        STAMP,
+        NO_FAIL,
+    )
+    .unwrap();
+    assert_eq!(
+        out.schema_version, 1,
+        "restaurée telle quelle : les migrations manquantes sont rejouées à l'ouverture"
+    );
     assert_eq!(open_and_titles(&older_db), saved_titles());
 }
 
@@ -275,15 +412,33 @@ fn p04_ios_qa_disk_full_at_any_step_changes_nothing_and_leaves_no_partial_file()
         let (dir, db, backups) = crashed_app_dir(APP_VERSION);
         let main_before = fs::read(&db).unwrap();
         let wal_before = fs::read(dir.path().join("spartiate.db-wal")).unwrap();
-        let full = move |s: RestoreStep| if s == step { Err(io::Error::from(io::ErrorKind::StorageFull)) } else { Ok(()) };
+        let full = move |s: RestoreStep| {
+            if s == step {
+                Err(io::Error::from(io::ErrorKind::StorageFull))
+            } else {
+                Ok(())
+            }
+        };
         let err = restore_backup_file(&db, &backups, SAVED, APP_VERSION, STAMP, &full).unwrap_err();
         assert_eq!(err.code, "io", "{step:?}");
         assert_eq!(fs::read(&db).unwrap(), main_before, "{step:?}");
-        assert_eq!(fs::read(dir.path().join("spartiate.db-wal")).unwrap(), wal_before, "{step:?}");
+        assert_eq!(
+            fs::read(dir.path().join("spartiate.db-wal")).unwrap(),
+            wal_before,
+            "{step:?}"
+        );
         assert_clean(dir.path());
         assert_eq!(open_and_titles(&db), old_titles());
         // L'espace libéré, la même restauration réussit.
-        restore_backup_file(&db, &backups, SAVED, APP_VERSION, "20261008T121500Z", NO_FAIL).expect("nouvel essai");
+        restore_backup_file(
+            &db,
+            &backups,
+            SAVED,
+            APP_VERSION,
+            "20261008T121500Z",
+            NO_FAIL,
+        )
+        .expect("nouvel essai");
         assert_eq!(open_and_titles(&db), saved_titles());
     }
 }
@@ -293,12 +448,24 @@ fn p04_ios_qa_a_safety_copy_that_cannot_be_written_stops_before_anything_moves()
     let (dir, db, backups) = crashed_app_dir(APP_VERSION);
     // La cible de la copie de sécurité est occupée par un dossier : l'écriture échoue (équivalent d'un disque plein à cette étape).
     fs::create_dir(backups.join(format!("spartiate-pre-restore-{STAMP}.db"))).unwrap();
-    let without_shm = |dir: &Path| names(dir).into_iter().filter(|n| !n.ends_with("-shm")).collect::<Vec<_>>();
+    let without_shm = |dir: &Path| {
+        names(dir)
+            .into_iter()
+            .filter(|n| !n.ends_with("-shm"))
+            .collect::<Vec<_>>()
+    };
     let before_files = without_shm(dir.path());
     let err = restore_backup_file(&db, &backups, SAVED, APP_VERSION, STAMP, NO_FAIL).unwrap_err();
     assert!(!err.code.is_empty());
     assert_eq!(without_shm(dir.path()), before_files);
     assert_clean(dir.path());
     assert_eq!(open_and_titles(&db), old_titles());
-    assert!(!backups.read_dir().unwrap().any(|e| e.unwrap().file_name().to_string_lossy().ends_with(".tmp")), "aucun .tmp laissé");
+    assert!(
+        !backups.read_dir().unwrap().any(|e| e
+            .unwrap()
+            .file_name()
+            .to_string_lossy()
+            .ends_with(".tmp")),
+        "aucun .tmp laissé"
+    );
 }

@@ -16,9 +16,9 @@ use std::process::Command;
 use std::sync::atomic::AtomicU64;
 use std::sync::{Arc, Mutex};
 
+use serde_json::Value;
 use spartiate_lib::sync::bookmark::BookmarkFs;
 use spartiate_lib::sync::files::{AppendMode, Availability, FsError, SyncFs};
-use serde_json::Value;
 
 use crate::support::fake_bookmark::{FakePlugin, SharedPlugin, BOOKMARK, ROOT};
 use crate::support::fault_plan::{self, Plan};
@@ -58,7 +58,11 @@ struct MemWorld {
 impl MemWorld {
     fn new() -> Self {
         let mem = MemFs::new();
-        Self { fs: SharedFs(mem.clone()), mem, slow: Mutex::new(Vec::new()) }
+        Self {
+            fs: SharedFs(mem.clone()),
+            mem,
+            slow: Mutex::new(Vec::new()),
+        }
     }
 }
 
@@ -75,7 +79,10 @@ impl World for MemWorld {
             self.mem.set_availability(parts, Availability::Cloud);
         }
         if cloud && delay_ms > 60_000 {
-            self.slow.lock().unwrap().push(parts.iter().map(|p| (*p).to_owned()).collect());
+            self.slow
+                .lock()
+                .unwrap()
+                .push(parts.iter().map(|p| (*p).to_owned()).collect());
         }
     }
     fn link(&self, _parts: &[&str]) -> bool {
@@ -133,7 +140,8 @@ impl World for BookmarkWorld {
     }
     fn file(&self, parts: &[&str], text: &str, cloud: bool, delay_ms: u64) {
         if cloud {
-            self.plugin.put_cloud(parts, text.as_bytes(), delay_ms, false);
+            self.plugin
+                .put_cloud(parts, text.as_bytes(), delay_ms, false);
         } else {
             self.plugin.put(parts, text.as_bytes());
         }
@@ -177,12 +185,23 @@ struct FaultyStd {
 #[cfg(windows)]
 impl FaultyStd {
     fn new(inner: spartiate_lib::sync::files::StdFs) -> Self {
-        Self { inner, armed: Mutex::new(None), back: Mutex::new(Vec::new()) }
+        Self {
+            inner,
+            armed: Mutex::new(None),
+            back: Mutex::new(Vec::new()),
+        }
     }
 
     fn arm(&self, plan: Plan) -> Result<(), String> {
         fault_plan::refuse_unreplayable(&plan, "StdFs")?;
-        if let Some(entry) = plan.faults.iter().find(|e| matches!(e.effect, fault_plan::Effect::EvictAfterRead | fault_plan::Effect::Placeholder | fault_plan::Effect::DownloadError)) {
+        if let Some(entry) = plan.faults.iter().find(|e| {
+            matches!(
+                e.effect,
+                fault_plan::Effect::EvictAfterRead
+                    | fault_plan::Effect::Placeholder
+                    | fault_plan::Effect::DownloadError
+            )
+        }) {
             return Err(format!("plan « {} », entrée « {} » : effet non rejouable par StdFs (un disque local n'a ni fichier évincé, ni substitut, ni téléchargement)", plan.name, entry.id));
         }
         *self.armed.lock().unwrap() = Some(fault_plan::Armed::new(plan));
@@ -190,11 +209,20 @@ impl FaultyStd {
     }
 
     fn hit(&self, op: fault_plan::Op, path: &str) -> Option<fault_plan::Entry> {
-        self.armed.lock().unwrap().as_mut().and_then(|armed| armed.hit(op, path))
+        self.armed
+            .lock()
+            .unwrap()
+            .as_mut()
+            .and_then(|armed| armed.hit(op, path))
     }
 
     fn unfired(&self) -> Vec<String> {
-        self.armed.lock().unwrap().as_ref().map(fault_plan::Armed::unfired).unwrap_or_default()
+        self.armed
+            .lock()
+            .unwrap()
+            .as_ref()
+            .map(fault_plan::Armed::unfired)
+            .unwrap_or_default()
     }
 
     fn exists(&self, file: &[&str]) -> bool {
@@ -206,11 +234,15 @@ impl FaultyStd {
         for pending in back.iter_mut() {
             pending.2 -= 1;
         }
-        let (due, waiting): (Vec<_>, Vec<_>) = std::mem::take(&mut *back).into_iter().partition(|p| p.2 == 0);
+        let (due, waiting): (Vec<_>, Vec<_>) = std::mem::take(&mut *back)
+            .into_iter()
+            .partition(|p| p.2 == 0);
         *back = waiting;
         for (path, bytes, _) in due {
             let parts: Vec<&str> = path.iter().map(String::as_str).collect();
-            self.inner.write_atomic(&parts, &bytes).expect("retour du fichier supprimé non propagé");
+            self.inner
+                .write_atomic(&parts, &bytes)
+                .expect("retour du fichier supprimé non propagé");
         }
     }
 
@@ -219,9 +251,14 @@ impl FaultyStd {
         if !self.exists(file) {
             return Ok(());
         }
-        match self.hit(fault_plan::Op::Read, &fault_plan::file_path(file)).map(|entry| entry.effect) {
+        match self
+            .hit(fault_plan::Op::Read, &fault_plan::file_path(file))
+            .map(|entry| entry.effect)
+        {
             Some(fault_plan::Effect::Error(code)) => Err(plan_error(code)),
-            Some(fault_plan::Effect::OverwriteBeforeRead { content }) => self.inner.write_atomic(file, &fault_plan::overwrite_bytes(&content)),
+            Some(fault_plan::Effect::OverwriteBeforeRead { content }) => self
+                .inner
+                .write_atomic(file, &fault_plan::overwrite_bytes(&content)),
             _ => Ok(()),
         }
     }
@@ -246,8 +283,15 @@ impl SyncFs for FaultyStd {
     fn read_head(&self, file: &[&str], max: usize) -> Result<Vec<u8>, FsError> {
         self.inner.read_head(file, max)
     }
-    fn list(&self, dir: &[&str], max: usize) -> Result<spartiate_lib::sync::files::Listing, FsError> {
-        if let Some(fault_plan::Effect::Error(code)) = self.hit(fault_plan::Op::List, &fault_plan::dir_path(dir)).map(|entry| entry.effect) {
+    fn list(
+        &self,
+        dir: &[&str],
+        max: usize,
+    ) -> Result<spartiate_lib::sync::files::Listing, FsError> {
+        if let Some(fault_plan::Effect::Error(code)) = self
+            .hit(fault_plan::Op::List, &fault_plan::dir_path(dir))
+            .map(|entry| entry.effect)
+        {
             return Err(plan_error(code));
         }
         self.inner.list(dir, max)
@@ -256,7 +300,13 @@ impl SyncFs for FaultyStd {
         self.read_gate(file)?;
         self.inner.read(file, limit, hydrate)
     }
-    fn read_from(&self, file: &[&str], offset: u64, max: usize, hydrate: bool) -> Result<spartiate_lib::sync::files::Chunk, FsError> {
+    fn read_from(
+        &self,
+        file: &[&str],
+        offset: u64,
+        max: usize,
+        hydrate: bool,
+    ) -> Result<spartiate_lib::sync::files::Chunk, FsError> {
         if offset == 0 {
             self.read_gate(file)?;
         }
@@ -269,7 +319,9 @@ impl SyncFs for FaultyStd {
                 if let fault_plan::Effect::Error(code) = entry.effect {
                     if entry.partial_last_line {
                         // Ajout coupé : les octets partiels doivent arriver sur le disque, sinon le cas ne prouve rien (jamais avalé).
-                        self.inner.append(file, &fault_plan::partial_tail(bytes), mode).expect("écriture de la ligne incomplète armée par le plan");
+                        self.inner
+                            .append(file, &fault_plan::partial_tail(bytes), mode)
+                            .expect("écriture de la ligne incomplète armée par le plan");
                     }
                     return Err(plan_error(code));
                 }
@@ -278,7 +330,10 @@ impl SyncFs for FaultyStd {
         self.inner.append(file, bytes, mode)
     }
     fn write_atomic(&self, file: &[&str], bytes: &[u8]) -> Result<(), FsError> {
-        if let Some(fault_plan::Effect::Error(code)) = self.hit(fault_plan::Op::Write, &fault_plan::file_path(file)).map(|entry| entry.effect) {
+        if let Some(fault_plan::Effect::Error(code)) = self
+            .hit(fault_plan::Op::Write, &fault_plan::file_path(file))
+            .map(|entry| entry.effect)
+        {
             return Err(plan_error(code));
         }
         self.inner.write_atomic(file, bytes)
@@ -286,7 +341,10 @@ impl SyncFs for FaultyStd {
     fn rename(&self, dir: &[&str], from: &str, to: &str) -> Result<(), FsError> {
         let mut target: Vec<&str> = dir.to_vec();
         target.push(to);
-        if let Some(fault_plan::Effect::Error(code)) = self.hit(fault_plan::Op::Rename, &fault_plan::file_path(&target)).map(|entry| entry.effect) {
+        if let Some(fault_plan::Effect::Error(code)) = self
+            .hit(fault_plan::Op::Rename, &fault_plan::file_path(&target))
+            .map(|entry| entry.effect)
+        {
             return Err(plan_error(code));
         }
         self.inner.rename(dir, from, to)
@@ -303,12 +361,21 @@ impl SyncFs for FaultyStd {
             return Err(plan_error(*code));
         }
         let held = match entry.map(|e| e.effect) {
-            Some(fault_plan::Effect::AcceptNotPropagated { resurrect_after_cycles }) if resurrect_after_cycles > 0 => Some((self.inner.read(file, u64::MAX, false)?, resurrect_after_cycles)),
+            Some(fault_plan::Effect::AcceptNotPropagated {
+                resurrect_after_cycles,
+            }) if resurrect_after_cycles > 0 => Some((
+                self.inner.read(file, u64::MAX, false)?,
+                resurrect_after_cycles,
+            )),
             _ => None,
         };
         let removed = self.inner.remove_file(file)?;
         if let Some((bytes, left)) = held {
-            self.back.lock().unwrap().push((file.iter().map(|p| (*p).to_owned()).collect(), bytes, left));
+            self.back.lock().unwrap().push((
+                file.iter().map(|p| (*p).to_owned()).collect(),
+                bytes,
+                left,
+            ));
         }
         Ok(removed)
     }
@@ -334,14 +401,23 @@ impl StdWorld {
         use spartiate_lib::sync::folder::{check_sync_path, normalize_final_path};
         let dir = tempfile::tempdir().expect("dossier temporaire");
         let canonical = std::fs::canonicalize(dir.path()).unwrap();
-        let base = PathBuf::from(normalize_final_path(&canonical.to_string_lossy()).expect("chemin local"));
+        let base = PathBuf::from(
+            normalize_final_path(&canonical.to_string_lossy()).expect("chemin local"),
+        );
         let root = base.join("Spartiate");
         let outside = base.join("ailleurs");
         std::fs::create_dir_all(&root).unwrap();
         std::fs::create_dir_all(&outside).unwrap();
         std::fs::write(outside.join("state.spx"), b"hors de la racine").unwrap();
-        let fs = FaultyStd::new(spartiate_lib::sync::files::StdFs::new(check_sync_path(&root).unwrap().path));
-        Self { _dir: dir, root, outside, fs }
+        let fs = FaultyStd::new(spartiate_lib::sync::files::StdFs::new(
+            check_sync_path(&root).unwrap().path,
+        ));
+        Self {
+            _dir: dir,
+            root,
+            outside,
+            fs,
+        }
     }
 
     fn path(&self, parts: &[&str]) -> PathBuf {
@@ -369,7 +445,13 @@ impl World for StdWorld {
             std::fs::remove_dir_all(&path).unwrap();
         }
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
-        Command::new("cmd").args(["/C", "mklink", "/J"]).arg(&path).arg(&self.outside).output().map(|o| o.status.success()).unwrap_or(false)
+        Command::new("cmd")
+            .args(["/C", "mklink", "/J"])
+            .arg(&path)
+            .arg(&self.outside)
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
     }
     fn supports(&self, capability: &str) -> bool {
         capability == "links"
@@ -388,7 +470,12 @@ impl World for StdWorld {
 // --- Exécution de la table ----------------------------------------------------------------------------------------------------
 
 fn strings(value: &Value) -> Vec<String> {
-    value.as_array().expect("tableau").iter().map(|v| v.as_str().expect("chaîne").to_owned()).collect()
+    value
+        .as_array()
+        .expect("tableau")
+        .iter()
+        .map(|v| v.as_str().expect("chaîne").to_owned())
+        .collect()
 }
 
 fn error_name(error: FsError) -> &'static str {
@@ -409,7 +496,11 @@ fn error_name(error: FsError) -> &'static str {
 enum Outcome {
     Ok,
     Names(Vec<String>),
-    Bytes { text: Vec<u8>, size: Option<u64>, eof: Option<bool> },
+    Bytes {
+        text: Vec<u8>,
+        size: Option<u64>,
+        eof: Option<bool>,
+    },
     Removed(bool),
     Error(FsError),
 }
@@ -435,21 +526,58 @@ fn run_step(world: &dyn World, step: &Value) -> Outcome {
             Outcome::Names(names)
         }),
         "read" => fs
-            .read(&path, step["limit"].as_u64().unwrap(), step["hydrate"].as_bool().unwrap())
-            .map(|bytes| Outcome::Bytes { text: bytes, size: None, eof: None }),
+            .read(
+                &path,
+                step["limit"].as_u64().unwrap(),
+                step["hydrate"].as_bool().unwrap(),
+            )
+            .map(|bytes| Outcome::Bytes {
+                text: bytes,
+                size: None,
+                eof: None,
+            }),
         "readFrom" => fs
-            .read_from(&path, step["offset"].as_u64().unwrap(), step["max"].as_u64().unwrap() as usize, step.get("hydrate").and_then(Value::as_bool).unwrap_or(false))
-            .map(|chunk| Outcome::Bytes { text: chunk.bytes, size: Some(chunk.size), eof: Some(chunk.eof) }),
-        "readHead" => fs.read_head(&path, step["max"].as_u64().unwrap() as usize).map(|bytes| Outcome::Bytes { text: bytes, size: None, eof: None }),
+            .read_from(
+                &path,
+                step["offset"].as_u64().unwrap(),
+                step["max"].as_u64().unwrap() as usize,
+                step.get("hydrate")
+                    .and_then(Value::as_bool)
+                    .unwrap_or(false),
+            )
+            .map(|chunk| Outcome::Bytes {
+                text: chunk.bytes,
+                size: Some(chunk.size),
+                eof: Some(chunk.eof),
+            }),
+        "readHead" => fs
+            .read_head(&path, step["max"].as_u64().unwrap() as usize)
+            .map(|bytes| Outcome::Bytes {
+                text: bytes,
+                size: None,
+                eof: None,
+            }),
         "append" => {
-            let mode = if step["create"].as_bool().unwrap() { AppendMode::CreateNew } else { AppendMode::Existing };
-            fs.append(&path, text.as_bytes(), mode).map(|()| Outcome::Ok)
+            let mode = if step["create"].as_bool().unwrap() {
+                AppendMode::CreateNew
+            } else {
+                AppendMode::Existing
+            };
+            fs.append(&path, text.as_bytes(), mode)
+                .map(|()| Outcome::Ok)
         }
-        "writeAtomic" => fs.write_atomic(&path, text.as_bytes()).map(|()| Outcome::Ok),
+        "writeAtomic" => fs
+            .write_atomic(&path, text.as_bytes())
+            .map(|()| Outcome::Ok),
         "rename" => {
             let dir = strings(&step["dir"]);
             let dir: Vec<&str> = dir.iter().map(String::as_str).collect();
-            fs.rename(&dir, step["from"].as_str().unwrap(), step["to"].as_str().unwrap()).map(|()| Outcome::Ok)
+            fs.rename(
+                &dir,
+                step["from"].as_str().unwrap(),
+                step["to"].as_str().unwrap(),
+            )
+            .map(|()| Outcome::Ok)
         }
         "createDir" => fs.create_dir(&path).map(|()| Outcome::Ok),
         "remove" => fs.remove_file(&path).map(Outcome::Removed),
@@ -489,7 +617,11 @@ fn check(case: &str, implementation: &str, index: usize, outcome: Outcome, expec
         Outcome::Names(names) => assert_eq!(names, strings(&expect["names"]), "{at}"),
         Outcome::Removed(removed) => assert_eq!(Some(removed), expect["removed"].as_bool(), "{at}"),
         Outcome::Bytes { text, size, eof } => {
-            assert_eq!(String::from_utf8(text).unwrap(), expect["text"].as_str().unwrap(), "{at}");
+            assert_eq!(
+                String::from_utf8(text).unwrap(),
+                expect["text"].as_str().unwrap(),
+                "{at}"
+            );
             if let Some(expected) = expect.get("size").and_then(Value::as_u64) {
                 assert_eq!(size, Some(expected), "{at} : taille");
             }
@@ -508,7 +640,10 @@ fn run_table(implementation: &str, make: &dyn Fn() -> Box<dyn World>) -> (usize,
         let name = case["name"].as_str().unwrap();
         let world = make();
         let requires = case.get("requires").map(strings).unwrap_or_default();
-        if requires.iter().any(|capability| !world.supports(capability)) {
+        if requires
+            .iter()
+            .any(|capability| !world.supports(capability))
+        {
             skipped += 1;
             continue;
         }
@@ -541,31 +676,48 @@ fn prepare(world: &dyn World, case: &Value, implementation: &str) {
             );
         } else if let Some(parts) = item.get("link") {
             let parts = strings(parts);
-            assert!(world.link(&parts.iter().map(String::as_str).collect::<Vec<_>>()), "{implementation} : lien impossible ({name})");
+            assert!(
+                world.link(&parts.iter().map(String::as_str).collect::<Vec<_>>()),
+                "{implementation} : lien impossible ({name})"
+            );
         }
     }
 }
 
 /// Cas de pannes (`faultCases`) : (joués, déclarés non applicables avec leur raison). Un cas qui exige une capacité absente sans être
 /// déclaré `notApplicable` pour cette implémentation fait échouer le test (jamais ignoré en silence) ; une raison vide aussi.
-fn run_fault_table(implementation: &str, make: &dyn Fn() -> Box<dyn World>) -> (usize, Vec<(String, String)>) {
+fn run_fault_table(
+    implementation: &str,
+    make: &dyn Fn() -> Box<dyn World>,
+) -> (usize, Vec<(String, String)>) {
     let table: Value = serde_json::from_str(TABLE).expect("table JSON");
     let (mut played, mut declared) = (0, Vec::new());
     for case in table["faultCases"].as_array().expect("faultCases") {
         let name = case["name"].as_str().unwrap();
         let world = make();
         let requires = case.get("requires").map(strings).unwrap_or_default();
-        let unmet = requires.iter().any(|capability| !world.supports(capability));
-        if let Some(reason) = case.get("notApplicable").and_then(|n| n.get(implementation)) {
+        let unmet = requires
+            .iter()
+            .any(|capability| !world.supports(capability));
+        if let Some(reason) = case
+            .get("notApplicable")
+            .and_then(|n| n.get(implementation))
+        {
             let reason = reason.as_str().unwrap_or_default();
-            assert!(!reason.trim().is_empty(), "{implementation} : « {name} » déclaré non applicable sans raison");
+            assert!(
+                !reason.trim().is_empty(),
+                "{implementation} : « {name} » déclaré non applicable sans raison"
+            );
             declared.push((name.to_owned(), reason.to_owned()));
             continue;
         }
         assert!(!unmet, "{implementation} : « {name} » exige {requires:?} et n'est pas déclaré notApplicable pour cette implémentation");
         prepare(world.as_ref(), case, implementation);
-        let plan = fault_plan::parse_plan(&case["plan"]).unwrap_or_else(|e| panic!("{implementation} : « {name} » : {e}"));
-        world.arm(plan).unwrap_or_else(|e| panic!("{implementation} : « {name} » : {e}"));
+        let plan = fault_plan::parse_plan(&case["plan"])
+            .unwrap_or_else(|e| panic!("{implementation} : « {name} » : {e}"));
+        world
+            .arm(plan)
+            .unwrap_or_else(|e| panic!("{implementation} : « {name} » : {e}"));
         world.fs().start_cycle().expect("racine joignable");
         for (index, step) in case["steps"].as_array().unwrap().iter().enumerate() {
             world.before_step();
@@ -573,7 +725,11 @@ fn run_fault_table(implementation: &str, make: &dyn Fn() -> Box<dyn World>) -> (
             check(name, implementation, index, outcome, &step["expect"]);
         }
         // Aucune panne armée restée sans effet : une entrée jamais déclenchée serait une panne ignorée en silence.
-        assert_eq!(world.unfired(), Vec::<String>::new(), "{implementation} : « {name} » : entrées du plan jamais déclenchées");
+        assert_eq!(
+            world.unfired(),
+            Vec::<String>::new(),
+            "{implementation} : « {name} » : entrées du plan jamais déclenchées"
+        );
         played += 1;
     }
     (played, declared)
@@ -597,7 +753,10 @@ fn y_ios_01_2_conformance_table_on_bookmark_fs_with_the_fake_plugin() {
 #[test]
 fn y_ios_01_2_conformance_table_on_std_fs() {
     let (played, skipped) = run_table("StdFs", &|| Box::new(StdWorld::new()));
-    assert_eq!(skipped, 3, "StdFs : fichiers dans le nuage impossibles sur un disque local");
+    assert_eq!(
+        skipped, 3,
+        "StdFs : fichiers dans le nuage impossibles sur un disque local"
+    );
     assert!(played >= 13, "cas joués : {played}");
 }
 
@@ -620,7 +779,14 @@ fn y_tech_03_16_fault_cases_on_the_in_memory_sync_fs() {
 fn y_tech_03_16_fault_cases_on_bookmark_fs_with_the_fake_plugin() {
     let (played, declared) = run_fault_table("BookmarkFs", &|| Box::new(BookmarkWorld::new()));
     // Un seul cas déclaré : le rang d'une lecture sans hydratation d'un fichier dans le nuage (aucun appel au plugin à compter).
-    assert_eq!(declared.iter().map(|(name, _)| name.as_str()).collect::<Vec<_>>(), ["lecture sans hydratation d’un fichier dans le nuage : le rang est consommé"], "BookmarkFs");
+    assert_eq!(
+        declared
+            .iter()
+            .map(|(name, _)| name.as_str())
+            .collect::<Vec<_>>(),
+        ["lecture sans hydratation d’un fichier dans le nuage : le rang est consommé"],
+        "BookmarkFs"
+    );
     assert_eq!(played + declared.len(), fault_case_count());
     assert!(played >= 14, "cas de pannes joués : {played}");
 }
@@ -631,7 +797,11 @@ fn y_tech_03_16_fault_cases_on_std_fs_through_the_injection_wrapper() {
     let (played, declared) = run_fault_table("StdFs", &|| Box::new(StdWorld::new()));
     // Les six cas qui exigent un fichier dans le nuage (éviction, substitut ×3, téléchargement en échec, rang d'une lecture sans
     // hydratation) sont déclarés non applicables.
-    assert_eq!(declared.len(), 6, "StdFs : cas déclarés non applicables : {declared:?}");
+    assert_eq!(
+        declared.len(),
+        6,
+        "StdFs : cas déclarés non applicables : {declared:?}"
+    );
     assert_eq!(played + declared.len(), fault_case_count());
     assert!(played >= 9, "cas de pannes joués : {played}");
 }
@@ -642,10 +812,18 @@ fn y_tech_03_16_not_applicable_declarations_name_a_known_implementation_and_a_mi
     for case in table["faultCases"].as_array().unwrap() {
         let name = case["name"].as_str().unwrap();
         let requires = case.get("requires").map(strings).unwrap_or_default();
-        let Some(declared) = case.get("notApplicable").and_then(Value::as_object) else { continue };
+        let Some(declared) = case.get("notApplicable").and_then(Value::as_object) else {
+            continue;
+        };
         for (implementation, reason) in declared {
-            assert!(["StdFs", "BookmarkFs", "MemFs", "memory.ts"].contains(&implementation.as_str()), "« {name} » : implémentation inconnue « {implementation} »");
-            assert!(reason.as_str().is_some_and(|r| !r.trim().is_empty()), "« {name} » : raison absente pour {implementation}");
+            assert!(
+                ["StdFs", "BookmarkFs", "MemFs", "memory.ts"].contains(&implementation.as_str()),
+                "« {name} » : implémentation inconnue « {implementation} »"
+            );
+            assert!(
+                reason.as_str().is_some_and(|r| !r.trim().is_empty()),
+                "« {name} » : raison absente pour {implementation}"
+            );
             // Une déclaration n'est acceptée que si l'implémentation n'a vraiment pas la capacité exigée.
             let world: Box<dyn World> = match implementation.as_str() {
                 "MemFs" => Box::new(MemWorld::new()),
@@ -654,7 +832,12 @@ fn y_tech_03_16_not_applicable_declarations_name_a_known_implementation_and_a_mi
                 "StdFs" => Box::new(StdWorld::new()),
                 _ => continue,
             };
-            assert!(requires.iter().any(|capability| !world.supports(capability)), "« {name} » : déclaré non applicable pour {implementation} qui sait le rejouer");
+            assert!(
+                requires
+                    .iter()
+                    .any(|capability| !world.supports(capability)),
+                "« {name} » : déclaré non applicable pour {implementation} qui sait le rejouer"
+            );
         }
     }
 }
@@ -664,7 +847,8 @@ fn y_tech_03_16_not_applicable_declarations_name_a_known_implementation_and_a_mi
 /// erreur qui nomme le plan et l'entrée.
 #[test]
 fn y_tech_03_18_every_rust_fake_loads_the_conformance_table_and_the_reference_fault_plans() {
-    let plans = fault_plan::parse_file(REFERENCE_PLANS).expect("fault-plan.json lisible strictement");
+    let plans =
+        fault_plan::parse_file(REFERENCE_PLANS).expect("fault-plan.json lisible strictement");
     assert!(plans.len() >= 11, "plans de référence : {}", plans.len());
     let table: Value = serde_json::from_str(TABLE).expect("table JSON");
     for case in table["faultCases"].as_array().unwrap() {
@@ -672,16 +856,31 @@ fn y_tech_03_18_every_rust_fake_loads_the_conformance_table_and_the_reference_fa
     }
     let clock = Arc::new(AtomicU64::new(1_000_000));
     for plan in plans {
-        let mute = plan.faults.iter().find(|entry| entry.effect == fault_plan::Effect::Mute).map(|entry| entry.id.clone());
+        let mute = plan
+            .faults
+            .iter()
+            .find(|entry| entry.effect == fault_plan::Effect::Mute)
+            .map(|entry| entry.id.clone());
         let armed = [
             ("MemFs", MemFs::new().arm(plan.clone())),
-            ("fake_bookmark", FakePlugin::new(clock.clone()).arm(plan.clone())),
+            (
+                "fake_bookmark",
+                FakePlugin::new(clock.clone()).arm(plan.clone()),
+            ),
         ];
         for (fake, result) in armed {
             match (&mute, result) {
                 (None, result) => assert_eq!(result, Ok(()), "{fake} : plan « {} »", plan.name),
-                (Some(id), Err(message)) => assert!(message.contains(id) && message.contains(&plan.name) && message.contains("mute"), "{fake} : {message}"),
-                (Some(id), Ok(())) => panic!("{fake} : plan « {} » : l'entrée mute « {id} » aurait dû être refusée", plan.name),
+                (Some(id), Err(message)) => assert!(
+                    message.contains(id)
+                        && message.contains(&plan.name)
+                        && message.contains("mute"),
+                    "{fake} : {message}"
+                ),
+                (Some(id), Ok(())) => panic!(
+                    "{fake} : plan « {} » : l'entrée mute « {id} » aurait dû être refusée",
+                    plan.name
+                ),
             }
         }
     }

@@ -12,7 +12,12 @@ fn import_is_unsupported_until_spa_005() {
 #[test]
 fn import_module_no_longer_reads_files_or_opens_dialogs() {
     let source = include_str!("../../src/import.rs");
-    for gone in ["DialogExt", "read_import_file", "IMPORT_EXTENSIONS", "File::open"] {
+    for gone in [
+        "DialogExt",
+        "read_import_file",
+        "IMPORT_EXTENSIONS",
+        "File::open",
+    ] {
         assert!(!source.contains(gone), "{gone}");
     }
 }

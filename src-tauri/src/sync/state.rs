@@ -10,7 +10,9 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 use super::limits::{MAX_STATE_ACKS, MAX_STATE_CLOSED_SEGMENTS, MAX_STATE_FORGOTTEN};
-use super::names::{is_app_version, is_epoch_id, is_file_number, is_kid, is_strict_hlc, is_uuid_v4};
+use super::names::{
+    is_app_version, is_epoch_id, is_file_number, is_kid, is_strict_hlc, is_uuid_v4,
+};
 
 const MAX_SAFE_INTEGER: u64 = (1 << 53) - 1;
 
@@ -32,7 +34,11 @@ pub struct DeviceAck {
 
 impl DeviceAck {
     pub fn is_valid(&self) -> bool {
-        is_epoch_id(&self.epoch) && safe(self.segment) && safe(self.record) && safe(self.state_seq) && self.hlc.as_deref().map_or(true, is_strict_hlc)
+        is_epoch_id(&self.epoch)
+            && safe(self.segment)
+            && safe(self.record)
+            && safe(self.state_seq)
+            && self.hlc.as_deref().map_or(true, is_strict_hlc)
     }
 }
 
@@ -73,7 +79,11 @@ pub struct ClosedSegment {
 /// `closed` valide pour une tête : segments strictement croissants, ≥ 1 et < `head_segment`, `records` ≥ 1, 1 024 au plus.
 pub fn closed_is_valid(closed: &[ClosedSegment], head_segment: u64) -> bool {
     closed.len() <= MAX_STATE_CLOSED_SEGMENTS
-        && closed.iter().all(|c| c.segment >= 1 && c.segment < head_segment && (1..=MAX_SAFE_INTEGER).contains(&c.records))
+        && closed.iter().all(|c| {
+            c.segment >= 1
+                && c.segment < head_segment
+                && (1..=MAX_SAFE_INTEGER).contains(&c.records)
+        })
         && closed.windows(2).all(|w| w[0].segment < w[1].segment)
 }
 
@@ -126,14 +136,26 @@ impl PublishedState {
             && self.head.epoch == self.epoch
             && self.head.state_seq == self.state_seq
             && self.acks.len() <= MAX_STATE_ACKS
-            && self.acks.iter().all(|(id, ack)| is_uuid_v4(id) && ack.is_valid())
-            && self.snapshot.as_ref().map_or(true, |s| is_file_number(s.seq) && is_strict_hlc(&s.end_hlc))
+            && self
+                .acks
+                .iter()
+                .all(|(id, ack)| is_uuid_v4(id) && ack.is_valid())
+            && self
+                .snapshot
+                .as_ref()
+                .map_or(true, |s| is_file_number(s.seq) && is_strict_hlc(&s.end_hlc))
             && self.purge_horizon.as_deref().map_or(true, is_strict_hlc)
             && is_strict_hlc(&self.last_sync_hlc)
             && self.paired_by.as_deref().map_or(true, is_uuid_v4)
             && self.forgotten.len() <= MAX_STATE_FORGOTTEN
-            && self.forgotten.iter().all(|f| is_uuid_v4(&f.device_id) && is_strict_hlc(&f.at) && f.last_ack.as_ref().map_or(true, DeviceAck::is_valid))
-            && self.reset.as_ref().map_or(true, |r| is_kid(&r.kid) && is_epoch_id(&r.epoch) && is_strict_hlc(&r.at))
+            && self.forgotten.iter().all(|f| {
+                is_uuid_v4(&f.device_id)
+                    && is_strict_hlc(&f.at)
+                    && f.last_ack.as_ref().map_or(true, DeviceAck::is_valid)
+            })
+            && self.reset.as_ref().map_or(true, |r| {
+                is_kid(&r.kid) && is_epoch_id(&r.epoch) && is_strict_hlc(&r.at)
+            })
             && closed_is_valid(&self.closed, self.head.segment)
     }
 
@@ -162,7 +184,17 @@ pub struct OwnState {
 
 impl OwnState {
     pub fn empty(folder_id: &str, kid: &str) -> Self {
-        Self { folder_id: folder_id.to_owned(), kid: kid.to_owned(), epoch: None, segment: 0, record: 0, max_hlc: None, state_seq: 0, paired_by: None, closed: Vec::new() }
+        Self {
+            folder_id: folder_id.to_owned(),
+            kid: kid.to_owned(),
+            epoch: None,
+            segment: 0,
+            record: 0,
+            max_hlc: None,
+            state_seq: 0,
+            paired_by: None,
+            closed: Vec::new(),
+        }
     }
 
     /// Ferme un segment (rotation dans la même époque) ; au-delà de 1 024 entrées, la plus ancienne est retirée (journal `closed-dropped`,

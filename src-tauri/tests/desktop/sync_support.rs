@@ -9,7 +9,9 @@ use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
 use spartiate_lib::sync::consent::{ConsentGate, ConsentUi, DialogSpec};
-use spartiate_lib::sync::files::{AppendMode, Availability, Chunk, FsEntry, FsError, Listing, SyncFs};
+use spartiate_lib::sync::files::{
+    AppendMode, Availability, Chunk, FsEntry, FsError, Listing, SyncFs,
+};
 use spartiate_lib::sync::folder::{CheckedFolder, FolderKind};
 use spartiate_lib::sync::service::{FolderBackend, SyncCore, SyncOptions};
 use spartiate_lib::sync::{fail, SyncCode, SyncResult};
@@ -37,7 +39,11 @@ pub fn hlc(ms: u64, dev: &str) -> String {
 #[derive(Clone)]
 enum Node {
     Dir,
-    File { bytes: Vec<u8>, availability: Availability, extra: u64 },
+    File {
+        bytes: Vec<u8>,
+        availability: Availability,
+        extra: u64,
+    },
 }
 
 /// Pannes d'iCloud armées par un plan (Y-TECH-03, `tests/fixtures/sync/fault-plan.json`) : sans plan, le faux est complaisant, comme avant.
@@ -107,7 +113,14 @@ impl MemFs {
         for i in 1..parts.len() {
             nodes.entry(key(&parts[..i])).or_insert(Node::Dir);
         }
-        nodes.insert(key(parts), Node::File { bytes: bytes.to_vec(), availability: Availability::Local, extra: 0 });
+        nodes.insert(
+            key(parts),
+            Node::File {
+                bytes: bytes.to_vec(),
+                availability: Availability::Local,
+                extra: 0,
+            },
+        );
         self.faults.lock().unwrap().evicted.remove(&key(parts));
     }
 
@@ -126,7 +139,9 @@ impl MemFs {
     }
 
     pub fn set_availability(&self, parts: &[&str], value: Availability) {
-        if let Some(Node::File { availability, .. }) = self.nodes.lock().unwrap().get_mut(&key(parts)) {
+        if let Some(Node::File { availability, .. }) =
+            self.nodes.lock().unwrap().get_mut(&key(parts))
+        {
             *availability = value;
         }
     }
@@ -187,12 +202,24 @@ impl MemFs {
 
     /// Pannes rejouées depuis l'armement (entrée, opération, chemin, rang).
     pub fn fired(&self) -> Vec<Firing> {
-        self.faults.lock().unwrap().armed.as_ref().map(Armed::fired).unwrap_or_default()
+        self.faults
+            .lock()
+            .unwrap()
+            .armed
+            .as_ref()
+            .map(Armed::fired)
+            .unwrap_or_default()
     }
 
     /// Entrées du plan jamais déclenchées.
     pub fn unfired(&self) -> Vec<String> {
-        self.faults.lock().unwrap().armed.as_ref().map(Armed::unfired).unwrap_or_default()
+        self.faults
+            .lock()
+            .unwrap()
+            .armed
+            .as_ref()
+            .map(Armed::unfired)
+            .unwrap_or_default()
     }
 
     /// Un cycle d'iCloud (compteur explicite, jamais une durée) : chaque suppression acceptée mais non propagée se rapproche de son retour ;
@@ -203,7 +230,9 @@ impl MemFs {
         for pending in &mut faults.back {
             pending.left -= 1;
         }
-        let (due, waiting): (Vec<_>, Vec<_>) = std::mem::take(&mut faults.back).into_iter().partition(|p| p.left == 0);
+        let (due, waiting): (Vec<_>, Vec<_>) = std::mem::take(&mut faults.back)
+            .into_iter()
+            .partition(|p| p.left == 0);
         faults.back = waiting;
         let count = due.len();
         for back in due {
@@ -227,7 +256,13 @@ impl MemFs {
     /// Panne de lecture d'un fichier présent, avant l'hydratation : `error` rendue à l'appelant ; `overwrite-before-read` remplace le contenu
     /// (l'autre appareil a écrit entre le listage et la lecture) ; rend vrai si le fichier doit être évincé après la lecture.
     fn read_gate(&self, path: &str, bytes: &mut Vec<u8>) -> Result<bool, FsError> {
-        match self.faults.lock().unwrap().hit(Op::Read, path).map(|entry| entry.effect) {
+        match self
+            .faults
+            .lock()
+            .unwrap()
+            .hit(Op::Read, path)
+            .map(|entry| entry.effect)
+        {
             Some(Effect::Error(code)) => Err(code_error(code)),
             Some(Effect::OverwriteBeforeRead { content }) => {
                 *bytes = fault_plan::overwrite_bytes(&content);
@@ -240,7 +275,13 @@ impl MemFs {
 
     /// Téléchargement tenté d'un fichier dans le nuage : `download-error` armé → `CloudError`, le fichier reste dans le nuage.
     fn hydrate_gate(&self, path: &str) -> Result<(), FsError> {
-        match self.faults.lock().unwrap().hit(Op::Hydrate, path).map(|entry| entry.effect) {
+        match self
+            .faults
+            .lock()
+            .unwrap()
+            .hit(Op::Hydrate, path)
+            .map(|entry| entry.effect)
+        {
             Some(Effect::DownloadError) => Err(FsError::CloudError),
             _ => Ok(()),
         }
@@ -280,7 +321,10 @@ impl SyncFs for SharedFs {
         self.0.head_reads.fetch_add(1, Ordering::SeqCst);
         let nodes = self.0.nodes.lock().unwrap();
         match nodes.get(&key(file)) {
-            Some(Node::File { availability: Availability::Cloud, .. }) => Err(FsError::CloudPending),
+            Some(Node::File {
+                availability: Availability::Cloud,
+                ..
+            }) => Err(FsError::CloudPending),
             Some(Node::File { bytes, .. }) => Ok(bytes[..bytes.len().min(max)].to_vec()),
             _ => Err(FsError::NotFound),
         }
@@ -296,13 +340,29 @@ impl SyncFs for SharedFs {
             // Pannes du plan : le dossier (`error`), puis un appel `list` par fichier listé (`placeholder` : évincé avant d'être présenté).
             let mut faults = self.0.faults.lock().unwrap();
             if faults.armed.is_some() {
-                if let Some(Effect::Error(code)) = faults.hit(Op::List, &format!("{prefix}/")).map(|entry| entry.effect) {
+                if let Some(Effect::Error(code)) = faults
+                    .hit(Op::List, &format!("{prefix}/"))
+                    .map(|entry| entry.effect)
+                {
                     return Err(code_error(code));
                 }
-                let inside = |path: &String| if dir.is_empty() { !path.contains('/') } else { path.strip_prefix(&format!("{prefix}/")).is_some_and(|rest| !rest.contains('/')) };
-                let files: Vec<String> = nodes.iter().filter(|(path, node)| inside(path) && matches!(node, Node::File { .. })).map(|(path, _)| path.clone()).collect();
+                let inside = |path: &String| {
+                    if dir.is_empty() {
+                        !path.contains('/')
+                    } else {
+                        path.strip_prefix(&format!("{prefix}/"))
+                            .is_some_and(|rest| !rest.contains('/'))
+                    }
+                };
+                let files: Vec<String> = nodes
+                    .iter()
+                    .filter(|(path, node)| inside(path) && matches!(node, Node::File { .. }))
+                    .map(|(path, _)| path.clone())
+                    .collect();
                 for file in files {
-                    if let Some(Effect::Placeholder) = faults.hit(Op::List, &file).map(|entry| entry.effect) {
+                    if let Some(Effect::Placeholder) =
+                        faults.hit(Op::List, &file).map(|entry| entry.effect)
+                    {
                         if let Some(Node::File { availability, .. }) = nodes.get_mut(&file) {
                             *availability = Availability::Cloud;
                         }
@@ -313,15 +373,35 @@ impl SyncFs for SharedFs {
         }
         let mut listing = Listing::default();
         for (path, node) in nodes.iter() {
-            let rest = if dir.is_empty() { Some(path.as_str()) } else { path.strip_prefix(&format!("{prefix}/")) };
-            let Some(name) = rest.filter(|r| !r.contains('/')) else { continue };
+            let rest = if dir.is_empty() {
+                Some(path.as_str())
+            } else {
+                path.strip_prefix(&format!("{prefix}/"))
+            };
+            let Some(name) = rest.filter(|r| !r.contains('/')) else {
+                continue;
+            };
             if listing.entries.len() >= max {
                 listing.truncated = true;
                 break;
             }
             listing.entries.push(match node {
-                Node::Dir => FsEntry { name: name.to_owned(), is_dir: true, size: 0, availability: Availability::Local },
-                Node::File { bytes, availability, extra } => FsEntry { name: name.to_owned(), is_dir: false, size: bytes.len() as u64 + extra, availability: *availability },
+                Node::Dir => FsEntry {
+                    name: name.to_owned(),
+                    is_dir: true,
+                    size: 0,
+                    availability: Availability::Local,
+                },
+                Node::File {
+                    bytes,
+                    availability,
+                    extra,
+                } => FsEntry {
+                    name: name.to_owned(),
+                    is_dir: false,
+                    size: bytes.len() as u64 + extra,
+                    availability: *availability,
+                },
             });
         }
         Ok(listing)
@@ -332,7 +412,14 @@ impl SyncFs for SharedFs {
         self.0.read_log.lock().unwrap().push(key(file));
         let mut nodes = self.0.nodes.lock().unwrap();
         let path = key(file);
-        let Some(Node::File { bytes, availability, extra }) = nodes.get_mut(&path) else { return Err(FsError::NotFound) };
+        let Some(Node::File {
+            bytes,
+            availability,
+            extra,
+        }) = nodes.get_mut(&path)
+        else {
+            return Err(FsError::NotFound);
+        };
         let evict = self.0.read_gate(&path, bytes)?;
         if bytes.len() as u64 + *extra > limit {
             return Err(FsError::TooLarge);
@@ -361,16 +448,33 @@ impl SyncFs for SharedFs {
 
     /// Lecture positionnée (ADR 0011 §22 point 4) : mêmes règles que `read` (taille annoncée, nuage, hydratation, erreur injectée). Une
     /// lecture qui commence à l'octet 0 compte comme une lecture du fichier (`reads`, `read_log`).
-    fn read_from(&self, file: &[&str], offset: u64, max: usize, hydrate: bool) -> Result<Chunk, FsError> {
+    fn read_from(
+        &self,
+        file: &[&str],
+        offset: u64,
+        max: usize,
+        hydrate: bool,
+    ) -> Result<Chunk, FsError> {
         if offset == 0 {
             self.0.reads.fetch_add(1, Ordering::SeqCst);
             self.0.read_log.lock().unwrap().push(key(file));
         }
         let mut nodes = self.0.nodes.lock().unwrap();
         let path = key(file);
-        let Some(Node::File { bytes, availability, extra }) = nodes.get_mut(&path) else { return Err(FsError::NotFound) };
+        let Some(Node::File {
+            bytes,
+            availability,
+            extra,
+        }) = nodes.get_mut(&path)
+        else {
+            return Err(FsError::NotFound);
+        };
         // Une lecture par pages compte comme un seul appel `read` du plan (celui qui commence à l'octet 0).
-        let evict = if offset == 0 { self.0.read_gate(&path, bytes)? } else { false };
+        let evict = if offset == 0 {
+            self.0.read_gate(&path, bytes)?
+        } else {
+            false
+        };
         match *availability {
             Availability::Error => return Err(FsError::Unsafe),
             Availability::Cloud if !hydrate => return Err(FsError::CloudPending),
@@ -399,7 +503,11 @@ impl SyncFs for SharedFs {
             *availability = Availability::Cloud;
             faults.evicted.insert(path);
         }
-        Ok(Chunk { bytes: out, size, eof })
+        Ok(Chunk {
+            bytes: out,
+            size,
+            eof,
+        })
     }
 
     fn append(&self, file: &[&str], data: &[u8], mode: AppendMode) -> Result<(), FsError> {
@@ -424,11 +532,25 @@ impl SyncFs for SharedFs {
             (None, AppendMode::CreateNew) => {
                 if let Some((error, partial)) = self.0.write_gate(&path) {
                     if partial {
-                        nodes.insert(path, Node::File { bytes: fault_plan::partial_tail(data), availability: Availability::Local, extra: 0 });
+                        nodes.insert(
+                            path,
+                            Node::File {
+                                bytes: fault_plan::partial_tail(data),
+                                availability: Availability::Local,
+                                extra: 0,
+                            },
+                        );
                     }
                     return Err(error);
                 }
-                nodes.insert(path, Node::File { bytes: data.to_vec(), availability: Availability::Local, extra: 0 });
+                nodes.insert(
+                    path,
+                    Node::File {
+                        bytes: data.to_vec(),
+                        availability: Availability::Local,
+                        extra: 0,
+                    },
+                );
                 Ok(())
             }
             _ => Err(FsError::NotFound),
@@ -444,7 +566,14 @@ impl SyncFs for SharedFs {
         if let Some((error, _)) = self.0.write_gate(&key(file)) {
             return Err(error);
         }
-        nodes.insert(key(file), Node::File { bytes: data.to_vec(), availability: Availability::Local, extra: 0 });
+        nodes.insert(
+            key(file),
+            Node::File {
+                bytes: data.to_vec(),
+                availability: Availability::Local,
+                extra: 0,
+            },
+        );
         self.0.faults.lock().unwrap().evicted.remove(&key(file));
         Ok(())
     }
@@ -488,14 +617,27 @@ impl SyncFs for SharedFs {
                 return Err(code_error(*code));
             }
             let evicted = faults.evicted.remove(&path);
-            if evicted && faults.armed.as_ref().is_some_and(|armed| armed.plan.remove_leaves_placeholder) {
+            if evicted
+                && faults
+                    .armed
+                    .as_ref()
+                    .is_some_and(|armed| armed.plan.remove_leaves_placeholder)
+            {
                 faults.evicted.insert(path);
                 return Ok(false);
             }
             let node = nodes.remove(&path).expect("fichier présent");
-            if let Some(Effect::AcceptNotPropagated { resurrect_after_cycles }) = entry.map(|e| e.effect) {
+            if let Some(Effect::AcceptNotPropagated {
+                resurrect_after_cycles,
+            }) = entry.map(|e| e.effect)
+            {
                 if resurrect_after_cycles > 0 {
-                    faults.back.push(Resurrection { key: path, node, evicted, left: resurrect_after_cycles });
+                    faults.back.push(Resurrection {
+                        key: path,
+                        node,
+                        evicted,
+                        left: resurrect_after_cycles,
+                    });
                 }
             }
             return Ok(true);
@@ -538,7 +680,10 @@ impl FakeBackend {
     }
 
     pub fn add(&self, path: &str, kind: FolderKind, fs: Arc<MemFs>) {
-        self.folders.lock().unwrap().insert(PathBuf::from(path), (kind, fs));
+        self.folders
+            .lock()
+            .unwrap()
+            .insert(PathBuf::from(path), (kind, fs));
     }
 }
 
@@ -548,13 +693,23 @@ impl FolderBackend for FakeBackend {
             return fail(code);
         }
         match self.folders.lock().unwrap().get(path) {
-            Some((kind, _)) => Ok(CheckedFolder { path: path.to_path_buf(), kind: *kind, pinned: false }),
+            Some((kind, _)) => Ok(CheckedFolder {
+                path: path.to_path_buf(),
+                kind: *kind,
+                pinned: false,
+            }),
             None => fail(SyncCode::FolderUnreachable),
         }
     }
 
     fn open(&self, folder: &CheckedFolder) -> Box<dyn SyncFs> {
-        let fs = self.folders.lock().unwrap().get(&folder.path).map(|(_, fs)| fs.clone()).unwrap_or_default();
+        let fs = self
+            .folders
+            .lock()
+            .unwrap()
+            .get(&folder.path)
+            .map(|(_, fs)| fs.clone())
+            .unwrap_or_default();
         Box::new(SharedFs(fs))
     }
 }
@@ -569,7 +724,12 @@ pub struct FakeUi {
 
 impl FakeUi {
     pub fn new() -> Arc<Self> {
-        Arc::new(Self { answer: Mutex::new(true), ready: Mutex::new(true), prompts: AtomicUsize::new(0), last: Mutex::new(None) })
+        Arc::new(Self {
+            answer: Mutex::new(true),
+            ready: Mutex::new(true),
+            prompts: AtomicUsize::new(0),
+            last: Mutex::new(None),
+        })
     }
 
     pub fn answer(&self, value: bool) {
@@ -643,20 +803,51 @@ impl Device {
         let ui = FakeUi::new();
         let clock = TestClock::new(NOW);
         let core = Self::build(base.path(), &vault, &ui, &clock, &backend, tweak);
-        Self { core, base, vault, ui, clock, backend }
+        Self {
+            core,
+            base,
+            vault,
+            ui,
+            clock,
+            backend,
+        }
     }
 
-    fn build(base: &Path, vault: &Arc<MemoryVault>, ui: &Arc<FakeUi>, clock: &Arc<TestClock>, backend: &Arc<FakeBackend>, tweak: impl FnOnce(&mut SyncOptions)) -> SyncCore {
+    fn build(
+        base: &Path,
+        vault: &Arc<MemoryVault>,
+        ui: &Arc<FakeUi>,
+        clock: &Arc<TestClock>,
+        backend: &Arc<FakeBackend>,
+        tweak: impl FnOnce(&mut SyncOptions),
+    ) -> SyncCore {
         let mut options = SyncOptions::new(base.to_path_buf());
         options.platform = "windows";
         tweak(&mut options);
-        let consent = Arc::new(ConsentGate::new(base.join("sync"), ui.clone(), clock.clock()));
-        SyncCore::new(options, vault.clone(), backend.clone(), consent, clock.clock())
+        let consent = Arc::new(ConsentGate::new(
+            base.join("sync"),
+            ui.clone(),
+            clock.clock(),
+        ));
+        SyncCore::new(
+            options,
+            vault.clone(),
+            backend.clone(),
+            consent,
+            clock.clock(),
+        )
     }
 
     /// Redémarrage simulé : nouveau service sur le même dossier de configuration et le même coffre.
     pub fn restart(&mut self) {
-        self.core = Self::build(self.base.path(), &self.vault, &self.ui, &self.clock, &self.backend, |_| {});
+        self.core = Self::build(
+            self.base.path(),
+            &self.vault,
+            &self.ui,
+            &self.clock,
+            &self.backend,
+            |_| {},
+        );
     }
 
     /// Dossier choisi, clé créée, appareil lié.
@@ -670,5 +861,8 @@ impl Device {
 /// Appareil sur un dossier iCloud en mémoire.
 pub fn device() -> (Device, Arc<MemFs>) {
     let fs = MemFs::new();
-    (Device::new(FakeBackend::with(FOLDER, FolderKind::Icloud, fs.clone())), fs)
+    (
+        Device::new(FakeBackend::with(FOLDER, FolderKind::Icloud, fs.clone())),
+        fs,
+    )
 }

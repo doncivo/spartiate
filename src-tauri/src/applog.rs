@@ -86,7 +86,12 @@ const fn fail(code: &'static str) -> LogError {
 /// `^[a-z0-9][a-z0-9-]{0,39}$`
 pub fn is_scope(value: &str) -> bool {
     let bytes = value.as_bytes();
-    !bytes.is_empty() && bytes.len() <= 40 && (bytes[0].is_ascii_lowercase() || bytes[0].is_ascii_digit()) && bytes.iter().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || *b == b'-')
+    !bytes.is_empty()
+        && bytes.len() <= 40
+        && (bytes[0].is_ascii_lowercase() || bytes[0].is_ascii_digit())
+        && bytes
+            .iter()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || *b == b'-')
 }
 
 /// `^[a-z0-9][a-z0-9.-]{0,63}$`, sans séquence hexadécimale de 32+ ni jeton probable (revue du lot F, `has_code_token`).
@@ -95,7 +100,9 @@ pub fn is_code(value: &str) -> bool {
     !bytes.is_empty()
         && bytes.len() <= 64
         && (bytes[0].is_ascii_lowercase() || bytes[0].is_ascii_digit())
-        && bytes.iter().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || *b == b'-' || *b == b'.')
+        && bytes
+            .iter()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || *b == b'-' || *b == b'.')
         && !has_hex_run(value, 32)
         && !has_code_token(value)
 }
@@ -103,7 +110,8 @@ pub fn is_code(value: &str) -> bool {
 /// Jeton probable dans un code : un segment (entre `-` et `.`) de 24 caractères ou plus, hors UUID exact, ou `ya29.`. Même règle que
 /// `hasCodeToken` de TypeScript ; vecteurs `codeVectors` partagés.
 fn has_code_token(value: &str) -> bool {
-    value.contains("ya29.") || (!is_uuid(value) && value.split(['-', '.']).any(|segment| segment.len() >= 24))
+    value.contains("ya29.")
+        || (!is_uuid(value) && value.split(['-', '.']).any(|segment| segment.len() >= 24))
 }
 
 /// `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$`
@@ -113,7 +121,17 @@ pub fn is_iso_instant(value: &str) -> bool {
         return false;
     }
     let digits = |range: std::ops::Range<usize>| b[range].iter().all(u8::is_ascii_digit);
-    let base = digits(0..4) && b[4] == b'-' && digits(5..7) && b[7] == b'-' && digits(8..10) && b[10] == b'T' && digits(11..13) && b[13] == b':' && digits(14..16) && b[16] == b':' && digits(17..19);
+    let base = digits(0..4)
+        && b[4] == b'-'
+        && digits(5..7)
+        && b[7] == b'-'
+        && digits(8..10)
+        && b[10] == b'T'
+        && digits(11..13)
+        && b[13] == b':'
+        && digits(14..16)
+        && b[16] == b':'
+        && digits(17..19);
     if !base {
         return false;
     }
@@ -145,7 +163,10 @@ fn has_hex_run(token: &str, min: usize) -> bool {
 
 fn has_drive_path(chars: &[char]) -> bool {
     (0..chars.len()).any(|i| {
-        chars[i].is_ascii_alphabetic() && (i == 0 || !chars[i - 1].is_alphanumeric()) && chars.get(i + 1) == Some(&':') && matches!(chars.get(i + 2), Some('\\' | '/'))
+        chars[i].is_ascii_alphabetic()
+            && (i == 0 || !chars[i - 1].is_alphanumeric())
+            && chars.get(i + 1) == Some(&':')
+            && matches!(chars.get(i + 2), Some('\\' | '/'))
     })
 }
 
@@ -156,7 +177,10 @@ fn has_posix_path(chars: &[char]) -> bool {
         return true;
     }
     (0..chars.len()).any(|i| {
-        if chars[i] != '/' || (i > 0 && (chars[i - 1].is_alphanumeric() || chars[i - 1] == ':' || chars[i - 1] == '/')) {
+        if chars[i] != '/'
+            || (i > 0
+                && (chars[i - 1].is_alphanumeric() || chars[i - 1] == ':' || chars[i - 1] == '/'))
+        {
             return false;
         }
         let rest = &chars[i + 1..];
@@ -170,12 +194,18 @@ fn has_email(chars: &[char]) -> bool {
             return false;
         }
         let domain = &chars[at + 1..];
-        (1..domain.len()).any(|dot| domain[dot] == '.' && domain.get(dot + 1).is_some_and(char::is_ascii_alphabetic) && domain.get(dot + 2).is_some_and(char::is_ascii_alphabetic))
+        (1..domain.len()).any(|dot| {
+            domain[dot] == '.'
+                && domain.get(dot + 1).is_some_and(char::is_ascii_alphabetic)
+                && domain.get(dot + 2).is_some_and(char::is_ascii_alphabetic)
+        })
     })
 }
 
 fn has_url_with_query(token: &str) -> bool {
-    token.find("://").is_some_and(|start| token[start..].contains('?'))
+    token
+        .find("://")
+        .is_some_and(|start| token[start..].contains('?'))
 }
 
 /// Un mot à masquer : chemin (Windows, UNC, POSIX, `~/`), `file://`, URL avec requête, adresse e-mail, séquence hexadécimale de 32 caractères
@@ -183,30 +213,51 @@ fn has_url_with_query(token: &str) -> bool {
 /// Identifiant UUID exact (8-4-4-4-12 hexadécimaux), permis par l'ADR 0011 §2.3.
 fn is_uuid(run: &str) -> bool {
     let parts: Vec<&str> = run.split('-').collect();
-    parts.len() == 5 && [8, 4, 4, 4, 12].iter().zip(&parts).all(|(len, part)| part.len() == *len && part.chars().all(|c| c.is_ascii_hexdigit()))
+    parts.len() == 5
+        && [8, 4, 4, 4, 12]
+            .iter()
+            .zip(&parts)
+            .all(|(len, part)| part.len() == *len && part.chars().all(|c| c.is_ascii_hexdigit()))
 }
 
 /// Audit du lot F (moyen) : jeton probable : suite de 24 caractères ou plus de `[A-Za-z0-9+/=_.-]` (sauf un UUID exact), JWT (`eyJ`),
 /// jeton Google (`ya29.`, `1//`), `token=`. Mêmes règles que `hasTokenLike` de TypeScript.
 fn has_token_like(token: &str) -> bool {
     let lower = token.to_ascii_lowercase();
-    if token.contains("eyJ") || lower.contains("ya29.") || token.contains("1//") || lower.contains("token=") {
+    if token.contains("eyJ")
+        || lower.contains("ya29.")
+        || token.contains("1//")
+        || lower.contains("token=")
+    {
         return true;
     }
-    let allowed = |c: char| c.is_ascii_alphanumeric() || matches!(c, '+' | '/' | '=' | '_' | '.' | '-');
-    token.split(|c: char| !allowed(c)).any(|run| run.chars().count() >= 24 && !is_uuid(run))
+    let allowed =
+        |c: char| c.is_ascii_alphanumeric() || matches!(c, '+' | '/' | '=' | '_' | '.' | '-');
+    token
+        .split(|c: char| !allowed(c))
+        .any(|run| run.chars().count() >= 24 && !is_uuid(run))
 }
 
 fn is_sensitive_token(token: &str) -> bool {
     let chars: Vec<char> = token.chars().collect();
     let lower = token.to_ascii_lowercase();
-    has_token_like(token) || lower.contains("file:") || token.contains('\\') || has_drive_path(&chars) || has_posix_path(&chars) || has_url_with_query(token) || has_email(&chars) || has_hex_run(token, 32)
+    has_token_like(token)
+        || lower.contains("file:")
+        || token.contains('\\')
+        || has_drive_path(&chars)
+        || has_posix_path(&chars)
+        || has_url_with_query(token)
+        || has_email(&chars)
+        || has_hex_run(token, 32)
 }
 
 /// Seconde barrière (ADR 0014 §1) : caractères de contrôle remplacés par une espace ; plus de 300 caractères → `[masqué]` en entier ; sinon
 /// chaque mot sensible devient `[masqué]`, ainsi que `Bearer` et le mot qui le suit. Les espaces d'origine sont conservées.
 pub fn sanitize_detail(raw: &str) -> String {
-    let cleaned: String = raw.chars().map(|c| if is_control(c) { ' ' } else { c }).collect();
+    let cleaned: String = raw
+        .chars()
+        .map(|c| if is_control(c) { ' ' } else { c })
+        .collect();
     if cleaned.chars().count() > MAX_DETAIL_CHARS {
         return MASK.to_owned();
     }
@@ -245,9 +296,21 @@ pub fn sanitize_detail(raw: &str) -> String {
 /// Entrée normalisée : formes strictes (`invalid` sinon), heure de Rust si `at` n'est pas un instant ISO, détail assaini, `n` ≥ 2 seulement.
 pub fn normalize(entry: &LogEntryIn, now_iso: &str) -> LogEntry {
     LogEntry {
-        at: if is_iso_instant(&entry.at) { entry.at.clone() } else { now_iso.to_owned() },
-        scope: if is_scope(&entry.scope) { entry.scope.clone() } else { "invalid".to_owned() },
-        code: if is_code(&entry.code) { entry.code.clone() } else { "invalid".to_owned() },
+        at: if is_iso_instant(&entry.at) {
+            entry.at.clone()
+        } else {
+            now_iso.to_owned()
+        },
+        scope: if is_scope(&entry.scope) {
+            entry.scope.clone()
+        } else {
+            "invalid".to_owned()
+        },
+        code: if is_code(&entry.code) {
+            entry.code.clone()
+        } else {
+            "invalid".to_owned()
+        },
         detail: sanitize_detail(&entry.detail),
         n: entry.n.filter(|n| *n >= 2),
     }
@@ -263,7 +326,11 @@ pub fn line_of(entry: &LogEntry) -> String {
     let chars: Vec<char> = entry.detail.chars().collect();
     let build = |keep: usize| {
         let detail: String = chars[..keep].iter().collect();
-        serde_json::to_string(&LogEntry { detail: format!("{detail} {TRUNCATED}"), ..entry.clone() }).unwrap_or_default()
+        serde_json::to_string(&LogEntry {
+            detail: format!("{detail} {TRUNCATED}"),
+            ..entry.clone()
+        })
+        .unwrap_or_default()
     };
     let (mut low, mut high) = (0usize, chars.len());
     while low < high {
@@ -310,7 +377,10 @@ impl Drop for TestClock {
 #[cfg(feature = "test-hooks")]
 pub fn clock_for_tests(now: u64) -> TestClock {
     assert_ne!(now, u64::MAX);
-    TestClock { previous: TEST_NOW.swap(now, std::sync::atomic::Ordering::SeqCst), _not_send: std::marker::PhantomData }
+    TestClock {
+        previous: TEST_NOW.swap(now, std::sync::atomic::Ordering::SeqCst),
+        _not_send: std::marker::PhantomData,
+    }
 }
 
 fn now_secs() -> u64 {
@@ -321,7 +391,9 @@ fn now_secs() -> u64 {
             return now;
         }
     }
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs())
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_secs())
 }
 
 /// Instant ISO UTC d'une heure en secondes.
@@ -441,7 +513,9 @@ fn read_file(path: &Path) -> Result<String, LogError> {
     }
     let file = open_no_follow(path, OpenOptions::new().read(true))?;
     let mut bytes = Vec::new();
-    file.take(MAX_READ_BYTES).read_to_end(&mut bytes).map_err(|_| fail("unreadable"))?;
+    file.take(MAX_READ_BYTES)
+        .read_to_end(&mut bytes)
+        .map_err(|_| fail("unreadable"))?;
     Ok(String::from_utf8_lossy(&bytes).into_owned())
 }
 
@@ -455,9 +529,13 @@ pub fn read_entries(dir: &Path, max: usize) -> Result<Vec<LogEntry>, LogError> {
     for name in [PREVIOUS_FILE, CURRENT_FILE] {
         let text = read_file(&dir.join(name))?;
         for line in text.lines().filter(|l| !l.trim().is_empty()) {
-            let parsed = serde_json::from_str::<LogEntry>(line).ok().filter(|e| is_scope(&e.scope) && is_code(&e.code));
+            let parsed = serde_json::from_str::<LogEntry>(line)
+                .ok()
+                .filter(|e| is_scope(&e.scope) && is_code(&e.code));
             let entry = parsed.unwrap_or_else(|| LogEntry {
-                at: entries.last().map_or_else(|| iso_of(now_secs()), |e| e.at.clone()),
+                at: entries
+                    .last()
+                    .map_or_else(|| iso_of(now_secs()), |e| e.at.clone()),
                 scope: "log".to_owned(),
                 code: "unreadable-line".to_owned(),
                 detail: String::new(),
@@ -504,7 +582,9 @@ pub struct RateTable {
 
 impl RateTable {
     pub const fn new() -> Self {
-        Self { rates: BTreeMap::new() }
+        Self {
+            rates: BTreeMap::new(),
+        }
     }
 
     /// Résumés des minutes passées (`log` / `suppressed`, `n`), à écrire avant les nouvelles entrées.
@@ -512,11 +592,18 @@ impl RateTable {
         let mut out = Vec::new();
         for ((scope, code), rate) in &mut self.rates {
             if rate.minute < minute && rate.suppressed > 0 {
-                out.push(LogEntry { at: now_iso.to_owned(), scope: "log".to_owned(), code: "suppressed".to_owned(), detail: format!("{scope} {code}"), n: Some(rate.suppressed) });
+                out.push(LogEntry {
+                    at: now_iso.to_owned(),
+                    scope: "log".to_owned(),
+                    code: "suppressed".to_owned(),
+                    detail: format!("{scope} {code}"),
+                    n: Some(rate.suppressed),
+                });
                 rate.suppressed = 0;
             }
         }
-        self.rates.retain(|_, rate| rate.minute >= minute || rate.suppressed > 0);
+        self.rates
+            .retain(|_, rate| rate.minute >= minute || rate.suppressed > 0);
         out
     }
 
@@ -525,7 +612,10 @@ impl RateTable {
         if entry.scope == "log" && entry.code == "suppressed" {
             return true;
         }
-        let rate = self.rates.entry((entry.scope.clone(), entry.code.clone())).or_default();
+        let rate = self
+            .rates
+            .entry((entry.scope.clone(), entry.code.clone()))
+            .or_default();
         if rate.minute != minute {
             rate.minute = minute;
             rate.count = 0;
@@ -544,8 +634,17 @@ impl RateTable {
 pub fn admit_lines(rates: &mut RateTable, entries: &[LogEntry], now: u64) -> Vec<String> {
     let minute = now / 60;
     let now_iso = iso_of(now);
-    let mut lines: Vec<String> = rates.summaries(minute, &now_iso).iter().map(line_of).collect();
-    lines.extend(entries.iter().filter(|e| rates.admit(e, minute)).map(line_of));
+    let mut lines: Vec<String> = rates
+        .summaries(minute, &now_iso)
+        .iter()
+        .map(line_of)
+        .collect();
+    lines.extend(
+        entries
+            .iter()
+            .filter(|e| rates.admit(e, minute))
+            .map(line_of),
+    );
     lines
 }
 
@@ -560,10 +659,17 @@ struct State {
     rates: RateTable,
 }
 
-static STATE: Mutex<State> = Mutex::new(State { dir: None, pending: Vec::new(), write_error: None, rates: RateTable::new() });
+static STATE: Mutex<State> = Mutex::new(State {
+    dir: None,
+    pending: Vec::new(),
+    write_error: None,
+    rates: RateTable::new(),
+});
 
 fn state() -> std::sync::MutexGuard<'static, State> {
-    STATE.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
+    STATE
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
 /// Copie sur la sortie d'erreur (développement et `test-hooks` seulement) : **le seul `eprintln!` du code**.
@@ -615,7 +721,13 @@ pub fn write_count(scope: &'static str, code: &'static str, count: u32) {
 
 fn write_entry(scope: &'static str, code: &'static str, count: Option<u32>) {
     echo(&format!("[{scope}] {code}"));
-    let entry = LogEntry { at: iso_of(now_secs()), scope: scope.to_owned(), code: code.to_owned(), detail: String::new(), n: count };
+    let entry = LogEntry {
+        at: iso_of(now_secs()),
+        scope: scope.to_owned(),
+        code: code.to_owned(),
+        detail: String::new(),
+        n: count,
+    };
     let mut state = state();
     let Some(dir) = state.dir.clone() else {
         if state.pending.len() >= MAX_PENDING {
@@ -657,7 +769,12 @@ pub struct ClearOutcome {
 }
 
 /// `log_append` sur un dossier donné (tests) : au plus 100 entrées (`too-many`, rien n'est écrit), normalisées, limitées, écrites.
-pub fn append_in(dir: &Path, rates: &mut RateTable, entries: &[LogEntryIn], now: u64) -> Result<usize, LogError> {
+pub fn append_in(
+    dir: &Path,
+    rates: &mut RateTable,
+    entries: &[LogEntryIn],
+    now: u64,
+) -> Result<usize, LogError> {
     if entries.len() > MAX_APPEND_ENTRIES {
         return Err(fail("too-many"));
     }
@@ -670,18 +787,30 @@ pub fn append_in(dir: &Path, rates: &mut RateTable, entries: &[LogEntryIn], now:
 /// `log_clear` sur un dossier donné (tests) : supprime les deux fichiers, puis écrit `logs` / `logs-cleared` en première entrée.
 pub fn clear_in(dir: &Path, now: u64) -> Result<(), LogError> {
     clear_files(dir)?;
-    let entry = LogEntry { at: iso_of(now), scope: "logs".to_owned(), code: "logs-cleared".to_owned(), detail: String::new(), n: None };
+    let entry = LogEntry {
+        at: iso_of(now),
+        scope: "logs".to_owned(),
+        code: "logs-cleared".to_owned(),
+        detail: String::new(),
+        n: None,
+    };
     append_lines(dir, &[line_of(&entry)]).map(|_| ())
 }
 
 fn logs_dir<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> Result<PathBuf, LogError> {
     use tauri::Manager;
-    app.path().app_config_dir().map(|dir| dir.join(LOG_DIR)).map_err(|_| fail("io"))
+    app.path()
+        .app_config_dir()
+        .map(|dir| dir.join(LOG_DIR))
+        .map_err(|_| fail("io"))
 }
 
 /// Ajoute des entrées de la WebView (100 au plus, hors du fil de l'interface).
 #[tauri::command]
-pub async fn log_append(app: tauri::AppHandle, entries: Vec<LogEntryIn>) -> Result<AppendOutcome, LogError> {
+pub async fn log_append(
+    app: tauri::AppHandle,
+    entries: Vec<LogEntryIn>,
+) -> Result<AppendOutcome, LogError> {
     if entries.len() > MAX_APPEND_ENTRIES {
         return Err(fail("too-many"));
     }
@@ -690,7 +819,10 @@ pub async fn log_append(app: tauri::AppHandle, entries: Vec<LogEntryIn>) -> Resu
         let mut state = state();
         let outcome = append_in(&dir, &mut state.rates, &entries, now_secs());
         record_outcome(&mut state, &outcome);
-        outcome.map(|written| AppendOutcome { written, write_error: state.write_error })
+        outcome.map(|written| AppendOutcome {
+            written,
+            write_error: state.write_error,
+        })
     })
     .await
     .map_err(|_| fail("io"))?
@@ -703,7 +835,10 @@ pub async fn log_read(app: tauri::AppHandle, max: usize) -> Result<ReadOutcome, 
     tauri::async_runtime::spawn_blocking(move || {
         let state = state();
         let entries = read_entries(&dir, max.clamp(1, MAX_READ_ENTRIES))?;
-        Ok(ReadOutcome { entries, write_error: state.write_error })
+        Ok(ReadOutcome {
+            entries,
+            write_error: state.write_error,
+        })
     })
     .await
     .map_err(|_| fail("io"))?

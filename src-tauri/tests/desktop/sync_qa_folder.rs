@@ -8,13 +8,16 @@ use std::process::Command;
 use std::os::windows::process::CommandExt;
 
 use spartiate_lib::sync::files::{AppendMode, StdFs, SyncFs};
-use spartiate_lib::sync::folder::{check_sync_path, normalize_final_path, CheckedFolder, FolderKind};
+use spartiate_lib::sync::folder::{
+    check_sync_path, normalize_final_path, CheckedFolder, FolderKind,
+};
 use spartiate_lib::sync::{SyncCode, SyncError};
 
 fn temp_root() -> (tempfile::TempDir, PathBuf) {
     let dir = tempfile::tempdir().expect("dossier temporaire");
     let canonical = std::fs::canonicalize(dir.path()).unwrap();
-    let path = PathBuf::from(normalize_final_path(&canonical.to_string_lossy()).expect("chemin local"));
+    let path =
+        PathBuf::from(normalize_final_path(&canonical.to_string_lossy()).expect("chemin local"));
     (dir, path)
 }
 
@@ -25,7 +28,12 @@ fn refused(result: Result<CheckedFolder, SyncError>) -> SyncCode {
     }
 }
 
-const REFUSALS: [SyncCode; 4] = [SyncCode::NotLocal, SyncCode::UnsafeFolder, SyncCode::FolderUnreachable, SyncCode::BadName];
+const REFUSALS: [SyncCode; 4] = [
+    SyncCode::NotLocal,
+    SyncCode::UnsafeFolder,
+    SyncCode::FolderUnreachable,
+    SyncCode::BadName,
+];
 
 #[test]
 fn y01_6_drive_relative_device_and_malformed_paths_are_refused() {
@@ -67,16 +75,36 @@ fn y01_6_dot_dot_components_and_verbatim_prefix_tricks_are_refused() {
     std::fs::create_dir(&folder).unwrap();
     // `..` : Win32 le résoudrait en silence ; le contrôle le refuse sur chaque composant.
     let dotdot = format!(r"{}\autre\..\Spartiate", root.display());
-    assert_eq!(refused(check_sync_path(Path::new(&dotdot))), SyncCode::UnsafeFolder);
+    assert_eq!(
+        refused(check_sync_path(Path::new(&dotdot))),
+        SyncCode::UnsafeFolder
+    );
     let dot = format!(r"{}\.\Spartiate", root.display());
-    assert_eq!(refused(check_sync_path(Path::new(&dot))), SyncCode::UnsafeFolder);
+    assert_eq!(
+        refused(check_sync_path(Path::new(&dot))),
+        SyncCode::UnsafeFolder
+    );
     let verbatim_dotdot = format!(r"\\?\{}\autre\..\Spartiate", root.display());
-    assert_eq!(refused(check_sync_path(Path::new(&verbatim_dotdot))), SyncCode::UnsafeFolder);
+    assert_eq!(
+        refused(check_sync_path(Path::new(&verbatim_dotdot))),
+        SyncCode::UnsafeFolder
+    );
     // Le préfixe verbatim seul est accepté et normalisé ; la barre finale aussi.
     let verbatim = PathBuf::from(format!(r"\\?\{}", folder.display()));
     assert_eq!(check_sync_path(&verbatim).unwrap().path, folder);
-    assert_eq!(check_sync_path(Path::new(&format!(r"{}\", folder.display()))).unwrap().path, folder);
-    assert_eq!(check_sync_path(Path::new(&format!(r"{}\\", folder.display()))).unwrap().path, folder, "barres répétées en fin");
+    assert_eq!(
+        check_sync_path(Path::new(&format!(r"{}\", folder.display())))
+            .unwrap()
+            .path,
+        folder
+    );
+    assert_eq!(
+        check_sync_path(Path::new(&format!(r"{}\\", folder.display())))
+            .unwrap()
+            .path,
+        folder,
+        "barres répétées en fin"
+    );
 }
 
 #[test]
@@ -88,9 +116,22 @@ fn y01_6_trailing_dot_space_and_stream_names_do_not_alias_another_folder() {
     for alias in ["Spartiate.", "Spartiate ", "Spartiate. .", "Spartiate..."] {
         let requested = format!(r"{}\{alias}", root.display());
         let code = refused(check_sync_path(Path::new(&requested)));
-        assert!(matches!(code, SyncCode::UnsafeFolder | SyncCode::FolderUnreachable), "{alias:?} -> {code:?}");
+        assert!(
+            matches!(code, SyncCode::UnsafeFolder | SyncCode::FolderUnreachable),
+            "{alias:?} -> {code:?}"
+        );
     }
-    for alias in [r"Spartiate::$DATA", r"Spartiate:flux", r"Spartiate::$INDEX_ALLOCATION", "Spartiate\\CON", "Spartiate\\NUL", "Spartiate?", "Spartiate*", "Spartiate<", "Spartiate|"] {
+    for alias in [
+        r"Spartiate::$DATA",
+        r"Spartiate:flux",
+        r"Spartiate::$INDEX_ALLOCATION",
+        "Spartiate\\CON",
+        "Spartiate\\NUL",
+        "Spartiate?",
+        "Spartiate*",
+        "Spartiate<",
+        "Spartiate|",
+    ] {
         let requested = format!(r"{}\{alias}", root.display());
         let code = refused(check_sync_path(Path::new(&requested)));
         assert!(REFUSALS.contains(&code), "{alias:?} -> {code:?}");
@@ -104,13 +145,23 @@ fn y01_6_short_8_3_names_are_refused_when_the_volume_creates_them() {
     let (_dir, root) = temp_root();
     let folder = root.join("SpartiateLongFolderName");
     std::fs::create_dir(&folder).unwrap();
-    let probe = Command::new("cmd").raw_arg(format!(r#"/C "for %I in ("{}") do @echo %~sI""#, folder.display())).output().unwrap();
+    let probe = Command::new("cmd")
+        .raw_arg(format!(
+            r#"/C "for %I in ("{}") do @echo %~sI""#,
+            folder.display()
+        ))
+        .output()
+        .unwrap();
     let short = String::from_utf8_lossy(&probe.stdout).trim().to_owned();
     if short.is_empty() || short.eq_ignore_ascii_case(&folder.to_string_lossy()) {
         eprintln!("noms courts 8.3 désactivés sur ce volume : cas non exercé");
         return;
     }
-    assert_eq!(refused(check_sync_path(Path::new(&short))), SyncCode::UnsafeFolder, "{short}");
+    assert_eq!(
+        refused(check_sync_path(Path::new(&short))),
+        SyncCode::UnsafeFolder,
+        "{short}"
+    );
 }
 
 #[test]
@@ -118,12 +169,21 @@ fn y01_6_subst_drive_is_refused_even_though_windows_calls_it_fixed() {
     let (_dir, root) = temp_root();
     let folder = root.join("Spartiate");
     std::fs::create_dir(&folder).unwrap();
-    let Some(letter) = ('M'..='Z').rev().find(|c| !Path::new(&format!("{c}:\\")).exists()) else {
+    let Some(letter) = ('M'..='Z')
+        .rev()
+        .find(|c| !Path::new(&format!("{c}:\\")).exists())
+    else {
         eprintln!("aucune lettre libre : cas non exercé");
         return;
     };
     let drive = format!("{letter}:");
-    if !Command::new("subst").arg(&drive).arg(&folder).output().map(|o| o.status.success()).unwrap_or(false) {
+    if !Command::new("subst")
+        .arg(&drive)
+        .arg(&folder)
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false)
+    {
         eprintln!("subst indisponible : cas non exercé");
         return;
     }
@@ -135,10 +195,16 @@ fn y01_6_subst_drive_is_refused_even_though_windows_calls_it_fixed() {
     }
     let _guard = Unsubst(drive.clone());
     let code = refused(check_sync_path(Path::new(&format!("{drive}\\"))));
-    assert!(matches!(code, SyncCode::NotLocal | SyncCode::UnsafeFolder), "{code:?}");
+    assert!(
+        matches!(code, SyncCode::NotLocal | SyncCode::UnsafeFolder),
+        "{code:?}"
+    );
     std::fs::create_dir(folder.join("sous")).unwrap();
     let code = refused(check_sync_path(Path::new(&format!("{drive}\\sous"))));
-    assert!(matches!(code, SyncCode::NotLocal | SyncCode::UnsafeFolder), "{code:?}");
+    assert!(
+        matches!(code, SyncCode::NotLocal | SyncCode::UnsafeFolder),
+        "{code:?}"
+    );
 }
 
 #[test]
@@ -154,7 +220,10 @@ fn y01_6_case_and_trailing_slash_do_not_change_the_folder_identity() {
     assert_eq!(a.folder_id(), c.folder_id());
     assert_eq!(a.folder_id(), d.folder_id());
     assert_eq!(a.folder_id().len(), 64);
-    assert!(!a.folder_id().contains("spartiate") && !a.name().contains('\\'), "ni chemin ni libellé à backslash");
+    assert!(
+        !a.folder_id().contains("spartiate") && !a.name().contains('\\'),
+        "ni chemin ni libellé à backslash"
+    );
     assert_eq!(a.kind, FolderKind::Local);
     // Deux dossiers distincts : deux identifiants distincts.
     let other = root.join("Autre");
@@ -170,7 +239,11 @@ fn y01_6_a_drive_root_is_not_a_usable_sync_folder() {
     let system_drive = std::env::var("SystemDrive").unwrap_or_else(|_| "C:".into());
     match check_sync_path(Path::new(&format!("{system_drive}\\"))) {
         Err(_) => {}
-        Ok(folder) => assert!(!folder.name().is_empty(), "nom vide pour {}", folder.path.display()),
+        Ok(folder) => assert!(
+            !folder.name().is_empty(),
+            "nom vide pour {}",
+            folder.path.display()
+        ),
     }
 }
 
@@ -183,14 +256,27 @@ fn y01_13_names_with_windows_traps_never_reach_the_disk_through_stdfs() {
     fs.create_dir(&["devices"]).unwrap();
     // Aucun nom ne sort du dossier : `..`, séparateurs, lecteur, flux, nom de périphérique ; refusés ou sans effet hors du dossier.
     let outside = root.join("dehors.txt");
-    for name in ["..", "..\\dehors.txt", "../dehors.txt", "C:\\dehors.txt", "a:b", "x\\y", "dehors.txt::$DATA", "\\\\?\\C:\\x", ""] {
+    for name in [
+        "..",
+        "..\\dehors.txt",
+        "../dehors.txt",
+        "C:\\dehors.txt",
+        "a:b",
+        "x\\y",
+        "dehors.txt::$DATA",
+        "\\\\?\\C:\\x",
+        "",
+    ] {
         let result = fs.append(&["devices", name], b"x", AppendMode::CreateNew);
         assert!(result.is_err(), "{name:?} accepté");
     }
     assert!(!outside.exists(), "aucun fichier hors du dossier");
     let leftovers: Vec<_> = std::fs::read_dir(folder.join("devices")).unwrap().collect();
     assert!(leftovers.is_empty(), "rien n'a été créé : {leftovers:?}");
-    assert!(fs.read(&["devices", "..", "..", "x"], 10, false).is_err(), "lecture hors du dossier refusée");
+    assert!(
+        fs.read(&["devices", "..", "..", "x"], 10, false).is_err(),
+        "lecture hors du dossier refusée"
+    );
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------
@@ -211,8 +297,18 @@ mod persisted {
 
     fn core_on(base: &Path) -> SyncCore {
         let clock = TestClock::new(NOW);
-        let consent = Arc::new(ConsentGate::new(base.join("sync"), FakeUi::new(), clock.clock()));
-        SyncCore::new(SyncOptions::new(base.to_path_buf()), Arc::new(MemoryVault::default()), Arc::new(SystemBackend), consent, clock.clock())
+        let consent = Arc::new(ConsentGate::new(
+            base.join("sync"),
+            FakeUi::new(),
+            clock.clock(),
+        ));
+        SyncCore::new(
+            SyncOptions::new(base.to_path_buf()),
+            Arc::new(MemoryVault::default()),
+            Arc::new(SystemBackend),
+            consent,
+            clock.clock(),
+        )
     }
 
     fn code<T>(result: Result<T, spartiate_lib::sync::SyncError>) -> SyncCode {
@@ -226,7 +322,11 @@ mod persisted {
         let dir = base.join("sync");
         std::fs::create_dir_all(&dir).unwrap();
         let record = serde_json::json!({ "v": 1, "path": path, "deviceId": device });
-        std::fs::write(dir.join("folder.json"), serde_json::to_vec(&record).unwrap()).unwrap();
+        std::fs::write(
+            dir.join("folder.json"),
+            serde_json::to_vec(&record).unwrap(),
+        )
+        .unwrap();
     }
 
     #[test]
@@ -239,8 +339,14 @@ mod persisted {
         std::fs::create_dir(&folder).unwrap();
         let real = folder.to_string_lossy().into_owned();
         for (path, expected) in [
-            (r"\\serveur\partage\Spartiate".to_owned(), SyncCode::NotLocal),
-            (r"\\?\UNC\serveur\partage\Spartiate".to_owned(), SyncCode::NotLocal),
+            (
+                r"\\serveur\partage\Spartiate".to_owned(),
+                SyncCode::NotLocal,
+            ),
+            (
+                r"\\?\UNC\serveur\partage\Spartiate".to_owned(),
+                SyncCode::NotLocal,
+            ),
             (format!(r"{real}\..\dehors"), SyncCode::UnsafeFolder),
             (format!(r"{real}\absent"), SyncCode::FolderUnreachable),
             ("relatif".to_owned(), SyncCode::NotLocal),
@@ -254,7 +360,10 @@ mod persisted {
             assert_eq!(code(core.key_create()), expected, "clé : {path}");
         }
         assert!(std::fs::read_dir(&outside).unwrap().next().is_none());
-        assert!(std::fs::read_dir(&folder).unwrap().next().is_none(), "aucune écriture dans les dossiers désignés");
+        assert!(
+            std::fs::read_dir(&folder).unwrap().next().is_none(),
+            "aucune écriture dans les dossiers désignés"
+        );
     }
 
     #[test]
@@ -265,7 +374,16 @@ mod persisted {
         std::fs::create_dir(&folder).unwrap();
         let dir = base.path().join("sync");
         std::fs::create_dir_all(&dir).unwrap();
-        for content in [&b""[..], b"{", b"null", b"[]", b"\xff\xfe\x00", b"{\"v\":1}", b"{\"v\":1,\"path\":1,\"deviceId\":null}", b"{\"v\":1,\"path\":\"C:\\x\",\"deviceId\":null,\"extra\":1}"] {
+        for content in [
+            &b""[..],
+            b"{",
+            b"null",
+            b"[]",
+            b"\xff\xfe\x00",
+            b"{\"v\":1}",
+            b"{\"v\":1,\"path\":1,\"deviceId\":null}",
+            b"{\"v\":1,\"path\":\"C:\\x\",\"deviceId\":null,\"extra\":1}",
+        ] {
             std::fs::write(dir.join("folder.json"), content).unwrap();
             let info = core_on(base.path()).folder_info().unwrap();
             assert!(!info.configured, "{:?}", String::from_utf8_lossy(content));
@@ -273,7 +391,10 @@ mod persisted {
         // Un dossier valide persisté puis relu par une nouvelle instance : même libellé, sans nouvelle boîte (critère 4).
         write_record(base.path(), &folder.to_string_lossy(), Some(DEV_B));
         let info = core_on(base.path()).folder_info().unwrap();
-        assert_eq!((info.configured, info.name.as_deref()), (true, Some("Spartiate")));
+        assert_eq!(
+            (info.configured, info.name.as_deref()),
+            (true, Some("Spartiate"))
+        );
     }
 
     #[test]
@@ -289,12 +410,21 @@ mod persisted {
         std::fs::remove_dir(&folder).unwrap();
         let elsewhere = root.join("ailleurs");
         std::fs::create_dir(&elsewhere).unwrap();
-        let made = std::process::Command::new("cmd").args(["/C", "mklink", "/J"]).arg(&folder).arg(&elsewhere).output().map(|o| o.status.success()).unwrap_or(false);
+        let made = std::process::Command::new("cmd")
+            .args(["/C", "mklink", "/J"])
+            .arg(&folder)
+            .arg(&elsewhere)
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false);
         assert!(made, "mklink /J");
         let second = core_on(base.path());
         assert_eq!(code(second.folder_info()), SyncCode::UnsafeFolder);
         assert_eq!(code(second.scan(&[])), SyncCode::UnsafeFolder);
-        assert!(std::fs::read_dir(&elsewhere).unwrap().next().is_none(), "aucune écriture à travers la jonction");
+        assert!(
+            std::fs::read_dir(&elsewhere).unwrap().next().is_none(),
+            "aucune écriture à travers la jonction"
+        );
     }
 
     /// Défaut QA-Y1-3 (faible) : renommer le dossier lié en ne changeant que la casse (`Spartiate` -> `spartiate`) fait comparer le
@@ -324,10 +454,18 @@ fn y01_2_no_capability_grants_a_dialog_or_fs_permission_to_any_window() {
         if path.extension().and_then(|e| e.to_str()) != Some("json") {
             continue;
         }
-        let value: serde_json::Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+        let value: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
         for permission in value["permissions"].as_array().unwrap() {
-            let id = permission.as_str().or_else(|| permission["identifier"].as_str()).unwrap_or_default();
-            assert!(!id.starts_with("dialog:") && !id.starts_with("fs:"), "{} : {id}", path.display());
+            let id = permission
+                .as_str()
+                .or_else(|| permission["identifier"].as_str())
+                .unwrap_or_default();
+            assert!(
+                !id.starts_with("dialog:") && !id.starts_with("fs:"),
+                "{} : {id}",
+                path.display()
+            );
         }
         seen += 1;
     }
@@ -346,7 +484,10 @@ fn y01_6_only_cloud_reparse_tags_are_accepted() {
     assert!(is_accepted_reparse(DIRECTORY, 0xA000_0003));
     // CLOUD (0x9000001A) et CLOUD_1 à CLOUD_F (0x9000101A, ..., 0x9000F01A).
     for n in 0u32..=15 {
-        assert!(is_accepted_reparse(DIRECTORY | REPARSE, 0x9000_001A | (n << 12)), "CLOUD_{n:X}");
+        assert!(
+            is_accepted_reparse(DIRECTORY | REPARSE, 0x9000_001A | (n << 12)),
+            "CLOUD_{n:X}"
+        );
     }
     for refused in [
         0xA000_0003u32, // IO_REPARSE_TAG_MOUNT_POINT (jonction)
@@ -364,6 +505,9 @@ fn y01_6_only_cloud_reparse_tags_are_accepted() {
         0,
         u32::MAX,
     ] {
-        assert!(!is_accepted_reparse(DIRECTORY | REPARSE, refused), "{refused:#010X}");
+        assert!(
+            !is_accepted_reparse(DIRECTORY | REPARSE, refused),
+            "{refused:#010X}"
+        );
     }
 }

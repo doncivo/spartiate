@@ -64,12 +64,19 @@ pub struct EpochId {
 impl EpochId {
     pub fn parse(value: &str) -> Option<Self> {
         let b = value.as_bytes();
-        if b.len() != 1 + 4 + 1 + 36 || b[0] != b'e' || b[5] != b'-' || !b[1..5].iter().all(u8::is_ascii_digit) {
+        if b.len() != 1 + 4 + 1 + 36
+            || b[0] != b'e'
+            || b[5] != b'-'
+            || !b[1..5].iter().all(u8::is_ascii_digit)
+        {
             return None;
         }
         let n: u32 = value[1..5].parse().ok()?;
         let opener = &value[6..];
-        (n >= 1 && is_uuid_v4(opener)).then(|| Self { n, opener: opener.to_owned() })
+        (n >= 1 && is_uuid_v4(opener)).then(|| Self {
+            n,
+            opener: opener.to_owned(),
+        })
     }
 
     pub fn name(&self) -> String {
@@ -80,7 +87,9 @@ impl EpochId {
 impl Ord for EpochId {
     /// Ordre des époques (section 9) : numéro, puis UUID de l'ouvreur.
     fn cmp(&self, other: &Self) -> Ordering {
-        self.n.cmp(&other.n).then_with(|| self.opener.cmp(&other.opener))
+        self.n
+            .cmp(&other.n)
+            .then_with(|| self.opener.cmp(&other.opener))
     }
 }
 
@@ -136,5 +145,8 @@ pub fn parse_file_name(name: &str) -> Option<SyncFileName> {
 
 /// Version de l'app publiée : `[0-9A-Za-z.+-]{1,64}`.
 pub fn is_app_version(value: &str) -> bool {
-    (1..=64).contains(&value.len()) && value.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'+' | b'-'))
+    (1..=64).contains(&value.len())
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'+' | b'-'))
 }

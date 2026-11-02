@@ -5,8 +5,10 @@
 use std::fs;
 use std::path::Path;
 
-use spartiate_lib::backup::{restore_backup_file, RestoreStep, APP_SCHEMA_VERSION, BACKUP_DIR, DB_FILE};
 use rusqlite::Connection;
+use spartiate_lib::backup::{
+    restore_backup_file, RestoreStep, APP_SCHEMA_VERSION, BACKUP_DIR, DB_FILE,
+};
 
 const CURRENT: &str = "7d0b0a0a-0000-4000-8000-00000000007d";
 const FORGOTTEN: &str = "56d40a0a-0000-4000-8000-000000000056";
@@ -26,7 +28,14 @@ fn hlc(ms: u64, device: &str) -> String {
 
 /// Base synchronisée minimale : `settings` (dont les déclencheurs de capture sont recréés à la restauration), tables de la synchro, `sync_state`
 /// (ligne propre) et `sync_meta`. `settings` : (clé, valeur JSON, hlc) ; `clocks` : (clé, champ, hlc) ; `outbox` : (clé, champ) ; `meta` : (clé, valeur).
-fn make_synced_db(path: &Path, device: &str, settings: &[(&str, &str, String)], clocks: &[(&str, &str, String)], outbox: &[(&str, &str)], meta: &[(&str, &str)]) {
+fn make_synced_db(
+    path: &Path,
+    device: &str,
+    settings: &[(&str, &str, String)],
+    clocks: &[(&str, &str, String)],
+    outbox: &[(&str, &str)],
+    meta: &[(&str, &str)],
+) {
     let conn = Connection::open(path).unwrap();
     conn.pragma_update(None, "journal_mode", "WAL").unwrap();
     conn.execute_batch(
@@ -44,46 +53,105 @@ fn make_synced_db(path: &Path, device: &str, settings: &[(&str, &str, String)], 
            cursor_segment INTEGER NOT NULL DEFAULT 0, cursor_record INTEGER NOT NULL DEFAULT 0, ack_hlc TEXT, status TEXT NOT NULL DEFAULT 'active');",
     )
     .unwrap();
-    conn.execute("INSERT INTO settings VALUES ('device.id', ?1, '2026-10-01T08:00:00.000Z', ?2, ?3)", rusqlite::params![format!("\"{device}\""), device, hlc(1_790_000_000_000, device)]).unwrap();
-    conn.execute("INSERT INTO sync_state (device_id, is_self, platform) VALUES (?1, 1, 'windows')", [device]).unwrap();
+    conn.execute(
+        "INSERT INTO settings VALUES ('device.id', ?1, '2026-10-01T08:00:00.000Z', ?2, ?3)",
+        rusqlite::params![
+            format!("\"{device}\""),
+            device,
+            hlc(1_790_000_000_000, device)
+        ],
+    )
+    .unwrap();
+    conn.execute(
+        "INSERT INTO sync_state (device_id, is_self, platform) VALUES (?1, 1, 'windows')",
+        [device],
+    )
+    .unwrap();
     for (key, value, h) in settings {
-        conn.execute("INSERT INTO settings VALUES (?1, ?2, '2026-10-16T08:00:00.000Z', ?3, ?4)", rusqlite::params![key, value, &h[21..], h]).unwrap();
+        conn.execute(
+            "INSERT INTO settings VALUES (?1, ?2, '2026-10-16T08:00:00.000Z', ?3, ?4)",
+            rusqlite::params![key, value, &h[21..], h],
+        )
+        .unwrap();
     }
     for (key, field, h) in clocks {
-        conn.execute("INSERT INTO sync_field_clock VALUES ('settings', ?1, ?2, ?3, NULL)", rusqlite::params![key, field, h]).unwrap();
+        conn.execute(
+            "INSERT INTO sync_field_clock VALUES ('settings', ?1, ?2, ?3, NULL)",
+            rusqlite::params![key, field, h],
+        )
+        .unwrap();
     }
     for (key, field) in outbox {
-        conn.execute("INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('settings', ?1, ?2)", [key, field]).unwrap();
+        conn.execute(
+            "INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('settings', ?1, ?2)",
+            [key, field],
+        )
+        .unwrap();
     }
     for (key, value) in meta {
-        conn.execute("INSERT INTO sync_meta VALUES (?1, ?2)", [key, value]).unwrap();
+        conn.execute("INSERT INTO sync_meta VALUES (?1, ?2)", [key, value])
+            .unwrap();
     }
 }
 
 fn setting_hlc(db: &Path, key: &str) -> (String, String) {
-    Connection::open(db).unwrap().query_row("SELECT hlc, device_id FROM settings WHERE key = ?1", [key], |r| Ok((r.get(0)?, r.get(1)?))).unwrap()
+    Connection::open(db)
+        .unwrap()
+        .query_row(
+            "SELECT hlc, device_id FROM settings WHERE key = ?1",
+            [key],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap()
 }
 
 fn clock_of(db: &Path, key: &str, field: &str) -> Option<String> {
-    Connection::open(db).unwrap().query_row("SELECT hlc FROM sync_field_clock WHERE row_id = ?1 AND field = ?2", [key, field], |r| r.get(0)).ok()
+    Connection::open(db)
+        .unwrap()
+        .query_row(
+            "SELECT hlc FROM sync_field_clock WHERE row_id = ?1 AND field = ?2",
+            [key, field],
+            |r| r.get(0),
+        )
+        .ok()
 }
 
 fn meta_of(db: &Path) -> Vec<(String, String)> {
     let conn = Connection::open(db).unwrap();
-    let mut statement = conn.prepare("SELECT key, value FROM sync_meta ORDER BY key").unwrap();
-    let rows: Vec<(String, String)> = statement.query_map([], |r| Ok((r.get(0)?, r.get(1)?))).unwrap().map(Result::unwrap).collect();
+    let mut statement = conn
+        .prepare("SELECT key, value FROM sync_meta ORDER BY key")
+        .unwrap();
+    let rows: Vec<(String, String)> = statement
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect();
     rows
 }
 
 fn outbox_of(db: &Path) -> Vec<(String, String)> {
     let conn = Connection::open(db).unwrap();
-    let mut statement = conn.prepare("SELECT row_id, field FROM sync_outbox ORDER BY seq").unwrap();
-    let rows: Vec<(String, String)> = statement.query_map([], |r| Ok((r.get(0)?, r.get(1)?))).unwrap().map(Result::unwrap).collect();
+    let mut statement = conn
+        .prepare("SELECT row_id, field FROM sync_outbox ORDER BY seq")
+        .unwrap();
+    let rows: Vec<(String, String)> = statement
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect();
     rows
 }
 
 fn restore(dir: &Path) {
-    restore_backup_file(&dir.join(DB_FILE), &dir.join(BACKUP_DIR), BACKUP, APP_SCHEMA_VERSION, "20261017T080000Z", NO_FAIL).expect("restauration");
+    restore_backup_file(
+        &dir.join(DB_FILE),
+        &dir.join(BACKUP_DIR),
+        BACKUP,
+        APP_SCHEMA_VERSION,
+        "20261017T080000Z",
+        NO_FAIL,
+    )
+    .expect("restauration");
 }
 
 /// Appareil courant `7d0b…` avec son état de synchro propre ; sauvegarde de `56d4…` : lignes non publiées (file d'envoi), lignes publiées,
@@ -138,28 +206,61 @@ fn app_with_synced_backup() -> tempfile::TempDir {
 }
 
 #[test]
-fn y_tech_04_b1_the_unpublished_writes_of_the_other_device_are_resigned_with_the_current_identity() {
+fn y_tech_04_b1_the_unpublished_writes_of_the_other_device_are_resigned_with_the_current_identity()
+{
     let dir = app_with_synced_backup();
     restore(dir.path());
     let db = dir.path().join(DB_FILE);
     // Ligne entière non publiée : ligne et horloge d'ensemble au nom de l'appareil courant, même instant et même compteur.
-    assert_eq!(setting_hlc(&db, "general.theme"), (hlc(1_791_000_000_001, CURRENT), CURRENT.to_owned()));
+    assert_eq!(
+        setting_hlc(&db, "general.theme"),
+        (hlc(1_791_000_000_001, CURRENT), CURRENT.to_owned())
+    );
     // Champ non publié : son horloge change de signataire, l'horloge « * » déjà publiée reste celle de l'autre appareil.
-    assert_eq!(clock_of(&db, "general.locale", "value"), Some(hlc(1_791_000_000_003, CURRENT)));
-    assert_eq!(clock_of(&db, "general.locale", "*"), Some(hlc(1_791_000_000_002, FORGOTTEN)));
-    assert_eq!(setting_hlc(&db, "general.locale"), (hlc(1_791_000_000_003, CURRENT), CURRENT.to_owned()));
+    assert_eq!(
+        clock_of(&db, "general.locale", "value"),
+        Some(hlc(1_791_000_000_003, CURRENT))
+    );
+    assert_eq!(
+        clock_of(&db, "general.locale", "*"),
+        Some(hlc(1_791_000_000_002, FORGOTTEN))
+    );
+    assert_eq!(
+        setting_hlc(&db, "general.locale"),
+        (hlc(1_791_000_000_003, CURRENT), CURRENT.to_owned())
+    );
     // Les déclencheurs de capture n'ont pas tourné (garde) : aucune horloge « * » inventée pour la ligne créée.
     assert_eq!(clock_of(&db, "general.theme", "*"), None);
     // Ce qui était déjà publié (pair ou autre appareil) n'est pas touché.
-    assert_eq!(setting_hlc(&db, "general.timeFormat"), (hlc(1_791_000_000_004, PEER), PEER.to_owned()));
-    assert_eq!(setting_hlc(&db, "general.firstWeekday"), (hlc(1_791_000_000_005, FORGOTTEN), FORGOTTEN.to_owned()));
+    assert_eq!(
+        setting_hlc(&db, "general.timeFormat"),
+        (hlc(1_791_000_000_004, PEER), PEER.to_owned())
+    );
+    assert_eq!(
+        setting_hlc(&db, "general.firstWeekday"),
+        (hlc(1_791_000_000_005, FORGOTTEN), FORGOTTEN.to_owned())
+    );
     // La file d'envoi de l'autre appareil devient « ligne entière » (`+`) : republiée avec un rang neuf au-dessus de la tête, hlc d'origine gardés.
-    assert_eq!(outbox_of(&db), vec![("general.theme".to_owned(), "+".to_owned()), ("general.locale".to_owned(), "+".to_owned())]);
-    assert_eq!(Connection::open(&db).unwrap().query_row("SELECT COUNT(*) FROM sync_guard", [], |r| r.get::<_, i64>(0)).unwrap(), 0);
+    assert_eq!(
+        outbox_of(&db),
+        vec![
+            ("general.theme".to_owned(), "+".to_owned()),
+            ("general.locale".to_owned(), "+".to_owned())
+        ]
+    );
+    assert_eq!(
+        Connection::open(&db)
+            .unwrap()
+            .query_row("SELECT COUNT(*) FROM sync_guard", [], |r| r
+                .get::<_, i64>(0))
+            .unwrap(),
+        0
+    );
 }
 
 #[test]
-fn y_tech_04_b1_the_publication_state_of_the_other_device_is_replaced_by_the_one_of_the_current_device() {
+fn y_tech_04_b1_the_publication_state_of_the_other_device_is_replaced_by_the_one_of_the_current_device(
+) {
     let dir = app_with_synced_backup();
     restore(dir.path());
     let meta = meta_of(&dir.path().join(DB_FILE));
@@ -171,7 +272,14 @@ fn y_tech_04_b1_the_publication_state_of_the_other_device_is_replaced_by_the_one
     assert_eq!(get("epoch"), Some("\"e0001-56d40a0a\""));
     // Ce que l'appareil courant n'a pas est absent (jamais la valeur de l'autre appareil).
     // Les numéros de file (`inflight`, `epochCarry`, `epochSwitch`) visent la file d'envoi de la base en place, qui est remplacée par celle de la copie : remis à zéro.
-    for key in ["snapshot", "segments", "orphanTraces", "inflight", "epochCarry", "epochSwitch"] {
+    for key in [
+        "snapshot",
+        "segments",
+        "orphanTraces",
+        "inflight",
+        "epochCarry",
+        "epochSwitch",
+    ] {
         assert_eq!(get(key), None, "{key}");
     }
     // Le reste de la méta vient de la sauvegarde.
@@ -179,16 +287,41 @@ fn y_tech_04_b1_the_publication_state_of_the_other_device_is_replaced_by_the_one
 }
 
 #[test]
-fn y_tech_04_b1_restoring_a_copy_of_the_same_identity_keeps_its_publication_state_and_its_signatures() {
+fn y_tech_04_b1_restoring_a_copy_of_the_same_identity_keeps_its_publication_state_and_its_signatures(
+) {
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
     let settings = [("general.theme", "\"dark\"", hlc(1_791_000_000_001, CURRENT))];
-    make_synced_db(&backups.join(BACKUP), CURRENT, &settings, &[], &[("general.theme", "*")], &[("stateSeq", "2"), ("head", "{\"segment\":1}")]);
-    make_synced_db(&dir.path().join(DB_FILE), CURRENT, &settings, &[], &[], &[("stateSeq", "7"), ("head", "{\"segment\":6}"), ("snapshot", "{}")]);
+    make_synced_db(
+        &backups.join(BACKUP),
+        CURRENT,
+        &settings,
+        &[],
+        &[("general.theme", "*")],
+        &[("stateSeq", "2"), ("head", "{\"segment\":1}")],
+    );
+    make_synced_db(
+        &dir.path().join(DB_FILE),
+        CURRENT,
+        &settings,
+        &[],
+        &[],
+        &[
+            ("stateSeq", "7"),
+            ("head", "{\"segment\":6}"),
+            ("snapshot", "{}"),
+        ],
+    );
     restore(dir.path());
     let db = dir.path().join(DB_FILE);
     assert_eq!(meta_of(&db), meta_of(&backups.join(BACKUP)));
-    assert_eq!(setting_hlc(&db, "general.theme"), (hlc(1_791_000_000_001, CURRENT), CURRENT.to_owned()));
-    assert_eq!(outbox_of(&db), vec![("general.theme".to_owned(), "*".to_owned())]);
+    assert_eq!(
+        setting_hlc(&db, "general.theme"),
+        (hlc(1_791_000_000_001, CURRENT), CURRENT.to_owned())
+    );
+    assert_eq!(
+        outbox_of(&db),
+        vec![("general.theme".to_owned(), "*".to_owned())]
+    );
 }

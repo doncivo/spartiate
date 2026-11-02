@@ -14,7 +14,10 @@ use std::time::Duration;
 use base64::{engine::general_purpose::STANDARD, Engine};
 use serde_json::{json, Value};
 
-use super::{clean_text, pick_french, validate_for_vision, OcrCommandError, OcrError, OcrLine, OcrResult, OcrStatus, MAX_LINES, VISION_MAX_SIDE};
+use super::{
+    clean_text, pick_french, validate_for_vision, OcrCommandError, OcrError, OcrLine, OcrResult,
+    OcrStatus, MAX_LINES, VISION_MAX_SIDE,
+};
 use crate::mobile_call::{call_with_deadline, shaped_code, CallError};
 
 /// Langues demandées à Vision, par priorité (ADR 0015 §1.2, écart 1) : français d'abord, anglais pour les mots courants d'une liste mixte.
@@ -32,7 +35,15 @@ const BAND: f64 = 0.01;
 /// Commandes du plugin Swift appelées par Rust (nom exact de la méthode Swift).
 pub const PLUGIN_COMMANDS: [&str; 3] = ["status", "recognize", "cleanTemporaryUploads"];
 /// Codes que Swift peut rejeter (contrat `tests/fixtures/capture/vision-contract.json`).
-pub const PLUGIN_REJECT_CODES: [&str; 7] = ["invalid-argument", "unsupported-format", "dimensions", "language-missing", "busy", "timeout", "failed"];
+pub const PLUGIN_REJECT_CODES: [&str; 7] = [
+    "invalid-argument",
+    "unsupported-format",
+    "dimensions",
+    "language-missing",
+    "busy",
+    "timeout",
+    "failed",
+];
 
 /// Transport des commandes du plugin : réponse JSON, ou le code rejeté (`unavailable` si le plugin est absent).
 pub trait VisionTransport: Send + Sync {
@@ -61,7 +72,10 @@ impl Drop for BusyGuard {
 
 impl VisionState {
     fn acquire(&self) -> Option<BusyGuard> {
-        self.busy.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst).ok().map(|_| BusyGuard(self.busy.clone()))
+        self.busy
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            .ok()
+            .map(|_| BusyGuard(self.busy.clone()))
     }
 
     /// Vrai si la dernière suppression des copies temporaires de photos a échoué.
@@ -96,7 +110,12 @@ fn error_of_call(error: CallError) -> OcrError {
 }
 
 fn unavailable_status(reason: &'static str) -> OcrStatus {
-    OcrStatus { available: false, languages: Vec::new(), reason: Some(reason), cleanup_failed: false }
+    OcrStatus {
+        available: false,
+        languages: Vec::new(),
+        reason: Some(reason),
+        cleanup_failed: false,
+    }
 }
 
 /// État de Vision (bloquant, délai `deadline`) : français disponible, ou raison. N'échoue jamais.
@@ -108,9 +127,21 @@ pub fn status_with(transport: &Arc<dyn VisionTransport>, deadline: Duration) -> 
     let Some(items) = response.get("languages").and_then(Value::as_array) else {
         return unavailable_status("plugin-unavailable");
     };
-    let languages: Vec<String> = items.iter().filter_map(|tag| tag.as_str().map(str::to_owned)).collect();
+    let languages: Vec<String> = items
+        .iter()
+        .filter_map(|tag| tag.as_str().map(str::to_owned))
+        .collect();
     let available = pick_french(&languages).is_some();
-    OcrStatus { available, languages, reason: if available { None } else { Some("language-missing") }, cleanup_failed: false }
+    OcrStatus {
+        available,
+        languages,
+        reason: if available {
+            None
+        } else {
+            Some("language-missing")
+        },
+        cleanup_failed: false,
+    }
 }
 
 /// Confiance de Vision (0 à 1) ramenée à 0 à 100 ; absente, `NaN` ou hors de 0..1 : pas de confiance (l'heuristique du front s'applique).
@@ -138,7 +169,10 @@ pub fn read_lines(response: &Value) -> Result<Vec<OcrLine>, OcrError> {
 
 /// Comme `read_lines`, avec l'indication `truncated` (plus de `MAX_LINES` lignes rendues, ou réponse au plafond demandé à Vision).
 pub fn read_result(response: &Value) -> Result<OcrResult, OcrError> {
-    let items = response.get("lines").and_then(Value::as_array).ok_or_else(|| OcrError::Engine("failed".to_owned()))?;
+    let items = response
+        .get("lines")
+        .and_then(Value::as_array)
+        .ok_or_else(|| OcrError::Engine("failed".to_owned()))?;
     let mut raw: Vec<RawLine> = items
         .iter()
         .take(MAX_RAW_LINES)
@@ -147,14 +181,35 @@ pub fn read_result(response: &Value) -> Result<OcrResult, OcrError> {
             if text.is_empty() {
                 return None;
             }
-            let y = item.get("y").and_then(Value::as_f64).filter(|v| v.is_finite()).unwrap_or(0.0).clamp(0.0, 1.0);
-            let x = item.get("x").and_then(Value::as_f64).filter(|v| v.is_finite()).unwrap_or(0.0);
-            Some(RawLine { text, confidence: percent(item.get("confidence").and_then(Value::as_f64)), band: ((1.0 - y) / BAND).floor() as i64, x })
+            let y = item
+                .get("y")
+                .and_then(Value::as_f64)
+                .filter(|v| v.is_finite())
+                .unwrap_or(0.0)
+                .clamp(0.0, 1.0);
+            let x = item
+                .get("x")
+                .and_then(Value::as_f64)
+                .filter(|v| v.is_finite())
+                .unwrap_or(0.0);
+            Some(RawLine {
+                text,
+                confidence: percent(item.get("confidence").and_then(Value::as_f64)),
+                band: ((1.0 - y) / BAND).floor() as i64,
+                x,
+            })
         })
         .collect();
     raw.sort_by(|a, b| a.band.cmp(&b.band).then(a.x.total_cmp(&b.x)));
     let truncated = raw.len() > MAX_LINES || items.len() >= MAX_RAW_LINES;
-    let lines = raw.into_iter().take(MAX_LINES).map(|line| OcrLine { text: line.text, confidence: line.confidence }).collect();
+    let lines = raw
+        .into_iter()
+        .take(MAX_LINES)
+        .map(|line| OcrLine {
+            text: line.text,
+            confidence: line.confidence,
+        })
+        .collect();
     Ok(OcrResult { lines, truncated })
 }
 
@@ -169,7 +224,12 @@ pub fn clean_with(transport: &Arc<dyn VisionTransport>, state: &VisionState, dea
 }
 
 /// Lecture d'une image (bloquant). Entrées contrôlées **avant** tout appel du plugin ; une seule lecture à la fois ; délai `deadline`.
-pub fn recognize_with(transport: &Arc<dyn VisionTransport>, state: &VisionState, bytes: &[u8], deadline: Duration) -> Result<OcrResult, OcrCommandError> {
+pub fn recognize_with(
+    transport: &Arc<dyn VisionTransport>,
+    state: &VisionState,
+    bytes: &[u8],
+    deadline: Duration,
+) -> Result<OcrResult, OcrCommandError> {
     validate_for_vision(bytes)?;
     let guard = state.acquire().ok_or(OcrError::Busy)?;
     let args = json!({ "image": STANDARD.encode(bytes), "languages": VISION_LANGUAGES, "maxSide": VISION_MAX_SIDE, "maxLines": MAX_RAW_LINES });
@@ -208,7 +268,9 @@ impl<R: tauri::Runtime> VisionTransport for PluginTransport<R> {
 }
 
 #[cfg(target_os = "ios")]
-fn plugin_transport<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> Option<Arc<dyn VisionTransport>> {
+fn plugin_transport<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+) -> Option<Arc<dyn VisionTransport>> {
     use tauri::Manager;
     let plugin = app.try_state::<tauri_plugin_vision::Vision<R>>()?;
     Some(Arc::new(PluginTransport(plugin.inner().clone())))
@@ -218,9 +280,17 @@ fn plugin_transport<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> Option<Arc<
 #[cfg(target_os = "ios")]
 pub async fn status_on_device<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> OcrStatus {
     use tauri::Manager;
-    let Some(transport) = plugin_transport(app) else { return unavailable_status("plugin-unavailable") };
-    let state = app.try_state::<VisionState>().map(|s| s.inner().clone()).unwrap_or_default();
-    let mut status = tauri::async_runtime::spawn_blocking(move || status_with(&transport, STATUS_DEADLINE)).await.unwrap_or_else(|_| unavailable_status("plugin-unavailable"));
+    let Some(transport) = plugin_transport(app) else {
+        return unavailable_status("plugin-unavailable");
+    };
+    let state = app
+        .try_state::<VisionState>()
+        .map(|s| s.inner().clone())
+        .unwrap_or_default();
+    let mut status =
+        tauri::async_runtime::spawn_blocking(move || status_with(&transport, STATUS_DEADLINE))
+            .await
+            .unwrap_or_else(|_| unavailable_status("plugin-unavailable"));
     status.cleanup_failed = state.cleanup_failed();
     status
 }
@@ -229,22 +299,35 @@ pub async fn status_on_device<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> O
 #[cfg(target_os = "ios")]
 pub fn clean_on_launch<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
     use tauri::Manager;
-    let Some(transport) = plugin_transport(app) else { return };
-    let state = app.try_state::<VisionState>().map(|s| s.inner().clone()).unwrap_or_default();
+    let Some(transport) = plugin_transport(app) else {
+        return;
+    };
+    let state = app
+        .try_state::<VisionState>()
+        .map(|s| s.inner().clone())
+        .unwrap_or_default();
     std::thread::spawn(move || clean_with(&transport, &state, CLEAN_DEADLINE));
 }
 
 /// `ocr_recognize` sur iPhone.
 #[cfg(target_os = "ios")]
-pub async fn recognize_on_device<R: tauri::Runtime>(app: &tauri::AppHandle<R>, bytes: Vec<u8>) -> Result<OcrResult, OcrCommandError> {
+pub async fn recognize_on_device<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    bytes: Vec<u8>,
+) -> Result<OcrResult, OcrCommandError> {
     use tauri::Manager;
     // Les contrôles des entrées sont faits UNE fois, par `recognize_with` ; sans plugin, ils passent d'abord (entrée invalide = son code).
     let Some(transport) = plugin_transport(app) else {
         validate_for_vision(&bytes)?;
         return Err(OcrError::Unavailable.into());
     };
-    let state = app.try_state::<VisionState>().map(|s| s.inner().clone()).unwrap_or_default();
-    tauri::async_runtime::spawn_blocking(move || recognize_with(&transport, &state, &bytes, RECOGNIZE_DEADLINE))
-        .await
-        .map_err(|_| OcrCommandError::from(OcrError::Engine("failed".to_owned())))?
+    let state = app
+        .try_state::<VisionState>()
+        .map(|s| s.inner().clone())
+        .unwrap_or_default();
+    tauri::async_runtime::spawn_blocking(move || {
+        recognize_with(&transport, &state, &bytes, RECOGNIZE_DEADLINE)
+    })
+    .await
+    .map_err(|_| OcrCommandError::from(OcrError::Engine("failed".to_owned())))?
 }

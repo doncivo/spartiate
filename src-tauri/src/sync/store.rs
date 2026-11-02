@@ -10,17 +10,22 @@ use std::sync::Arc;
 
 use serde::Serialize;
 
-use super::folder::is_circletasks_file_name; // ancien-ok: garde de séparation ADR 0017
-use super::crypto::{parse_line_prefix, sha256_hex, FileHeader, HeaderKind, MasterKey, Place, SYNC_FORMAT_MAJOR};
+use super::crypto::{
+    parse_line_prefix, sha256_hex, FileHeader, HeaderKind, MasterKey, Place, SYNC_FORMAT_MAJOR,
+};
 use super::files::{AppendMode, Availability, FsEntry, FsError, Listing, SyncFs};
+use super::folder::is_circletasks_file_name; // ancien-ok: garde de séparation ADR 0017
 use super::limits::{
-    encrypted_line_bytes, FOLDER_STOP_BYTES, FOLDER_WARN_BYTES, MAX_APPEND_CALL_BYTES, MAX_DEVICE_FOLDERS, MAX_EPOCHS_PER_DEVICE, MAX_SCAN_ENTRIES_TOTAL, MAX_STATE_CANDIDATES, MAX_HEADER_BYTES, MAX_IPC_PAGE_BYTES,
-    MAX_PLUGIN_CHUNK_BYTES, MAX_RECORD_LINE_BYTES, MAX_RECORD_PLAINTEXT_BYTES, MAX_SCAN_ENTRIES_PER_FOLDER, MAX_SEGMENT_BYTES, MAX_SNAPSHOT_BYTES, MAX_STATE_ACKS, MAX_STATE_FILE_BYTES,
-    MAX_STATE_FORGOTTEN, SEGMENT_ROTATE_BYTES,
+    encrypted_line_bytes, FOLDER_STOP_BYTES, FOLDER_WARN_BYTES, MAX_APPEND_CALL_BYTES,
+    MAX_DEVICE_FOLDERS, MAX_EPOCHS_PER_DEVICE, MAX_HEADER_BYTES, MAX_IPC_PAGE_BYTES,
+    MAX_PLUGIN_CHUNK_BYTES, MAX_RECORD_LINE_BYTES, MAX_RECORD_PLAINTEXT_BYTES,
+    MAX_SCAN_ENTRIES_PER_FOLDER, MAX_SCAN_ENTRIES_TOTAL, MAX_SEGMENT_BYTES, MAX_SNAPSHOT_BYTES,
+    MAX_STATE_ACKS, MAX_STATE_CANDIDATES, MAX_STATE_FILE_BYTES, MAX_STATE_FORGOTTEN,
+    SEGMENT_ROTATE_BYTES,
 };
 use super::names::{
-    is_epoch_id, is_file_number, is_strict_hlc, is_uuid_v4, parse_file_name, segment_name, snapshot_name, EpochId, SyncFileName, DEVICES_DIR,
-    STATE_FILE, STATE_NEXT_FILE, TEMP_SUFFIX,
+    is_epoch_id, is_file_number, is_strict_hlc, is_uuid_v4, parse_file_name, segment_name,
+    snapshot_name, EpochId, SyncFileName, DEVICES_DIR, STATE_FILE, STATE_NEXT_FILE, TEMP_SUFFIX,
 };
 use super::state::{OwnState, PublishedState, Usage};
 use super::{fail, log, SyncCode, SyncError, SyncResult};
@@ -56,7 +61,11 @@ pub enum ParseError {
 pub fn parse_file(bytes: &[u8]) -> Result<ParsedFile<'_>, ParseError> {
     let window = &bytes[..bytes.len().min(MAX_HEADER_BYTES + 1)];
     let Some(end) = window.iter().position(|&b| b == b'\n') else {
-        return Err(if bytes.len() <= MAX_HEADER_BYTES { ParseError::Partial } else { ParseError::BadHeader });
+        return Err(if bytes.len() <= MAX_HEADER_BYTES {
+            ParseError::Partial
+        } else {
+            ParseError::BadHeader
+        });
     };
     let header = FileHeader::parse(&bytes[..end]).ok_or(ParseError::BadHeader)?;
     let mut lines = Vec::new();
@@ -65,7 +74,11 @@ pub fn parse_file(bytes: &[u8]) -> Result<ParsedFile<'_>, ParseError> {
         lines.push(&rest[..pos]);
         rest = &rest[pos + 1..];
     }
-    Ok(ParsedFile { header, lines, partial_tail: !rest.is_empty() })
+    Ok(ParsedFile {
+        header,
+        lines,
+        partial_tail: !rest.is_empty(),
+    })
 }
 
 /// En-tête d'un fichier lu en flux.
@@ -97,7 +110,12 @@ pub fn stream_last_line(fs: &dyn SyncFs, file: &[&str], limit: u64) -> Result<St
 /// demandée) ; mémoire bornée à un bloc et une ligne de `MAX_RECORD_LINE_BYTES`. Même découpage que `parse_file` (en-tête jusqu'au premier
 /// `\n`, 1 Kio au plus ; lignes terminées par `\n`). Taille annoncée au-delà de `limit` : `TooLarge` ; un bloc vide avant la fin
 /// annoncée (fichier en cours de transfert) : `CloudPending`.
-pub fn stream_last_line_with(fs: &dyn SyncFs, file: &[&str], limit: u64, chunk: usize) -> Result<StreamTail, FsError> {
+pub fn stream_last_line_with(
+    fs: &dyn SyncFs,
+    file: &[&str],
+    limit: u64,
+    chunk: usize,
+) -> Result<StreamTail, FsError> {
     let chunk = chunk.max(1);
     let mut offset = 0u64;
     let mut header_buf: Vec<u8> = Vec::new();
@@ -116,7 +134,9 @@ pub fn stream_last_line_with(fs: &dyn SyncFs, file: &[&str], limit: u64, chunk: 
             match rest.iter().position(|&b| b == b'\n') {
                 Some(pos) if header_buf.len() + pos <= MAX_HEADER_BYTES => {
                     header_buf.extend_from_slice(&rest[..pos]);
-                    header = Some(FileHeader::parse(&header_buf).map_or(StreamHeader::Bad, StreamHeader::Ok));
+                    header = Some(
+                        FileHeader::parse(&header_buf).map_or(StreamHeader::Bad, StreamHeader::Ok),
+                    );
                     rest = &rest[pos + 1..];
                 }
                 Some(_) => header = Some(StreamHeader::Bad),
@@ -129,7 +149,12 @@ pub fn stream_last_line_with(fs: &dyn SyncFs, file: &[&str], limit: u64, chunk: 
                 }
             }
             if header == Some(StreamHeader::Bad) {
-                return Ok(StreamTail { header: StreamHeader::Bad, lines: 0, last: None, partial_tail: false });
+                return Ok(StreamTail {
+                    header: StreamHeader::Bad,
+                    lines: 0,
+                    last: None,
+                    partial_tail: false,
+                });
             }
         }
         if header.is_some() {
@@ -162,12 +187,20 @@ pub fn stream_last_line_with(fs: &dyn SyncFs, file: &[&str], limit: u64, chunk: 
         }
     }
     let header = header.unwrap_or(StreamHeader::Partial);
-    Ok(StreamTail { header, lines, last, partial_tail: overlong || !current.is_empty() })
+    Ok(StreamTail {
+        header,
+        lines,
+        last,
+        partial_tail: overlong || !current.is_empty(),
+    })
 }
 
 /// En-tête analysé depuis les premiers octets d'un fichier (jusqu'au premier saut de ligne, 1 Kio au plus).
 fn header_of(head: &[u8]) -> Option<FileHeader> {
-    let end = head.iter().take(MAX_HEADER_BYTES + 1).position(|&b| b == b'\n')?;
+    let end = head
+        .iter()
+        .take(MAX_HEADER_BYTES + 1)
+        .position(|&b| b == b'\n')?;
     FileHeader::parse(&head[..end])
 }
 
@@ -327,7 +360,13 @@ pub struct StateRead {
 
 impl StateRead {
     fn status(kid: Option<String>, status: StateStatus) -> Self {
-        Self { kid, state: None, digest: None, status, from_next_file: false }
+        Self {
+            kid,
+            state: None,
+            digest: None,
+            status,
+            from_next_file: false,
+        }
     }
 }
 
@@ -376,7 +415,10 @@ struct Budget {
 
 impl Budget {
     fn new() -> Self {
-        Self { left: Cell::new(MAX_SCAN_ENTRIES_TOTAL), cut: Cell::new(false) }
+        Self {
+            left: Cell::new(MAX_SCAN_ENTRIES_TOTAL),
+            cut: Cell::new(false),
+        }
     }
 
     fn list(&self, fs: &dyn SyncFs, dir: &[&str]) -> Result<Listing, FsError> {
@@ -417,7 +459,12 @@ fn device_dir(dev: &str) -> [&str; 2] {
 
 impl<'a> Store<'a> {
     pub fn new(fs: &'a dyn SyncFs, key: &'a MasterKey, pin: bool) -> Self {
-        Self { fs, key, pin, next: None }
+        Self {
+            fs,
+            key,
+            pin,
+            next: None,
+        }
     }
 
     /// Clé d'une époque : la nouvelle clé pour l'époque visée par une réinitialisation en cours, sinon la clé locale (Y-11).
@@ -457,7 +504,11 @@ impl<'a> Store<'a> {
                 out.next_state = Some(entry);
                 continue;
             }
-            match if entry.is_dir && entry.availability != Availability::Error { EpochId::parse(&entry.name) } else { None } {
+            match if entry.is_dir && entry.availability != Availability::Error {
+                EpochId::parse(&entry.name)
+            } else {
+                None
+            } {
                 Some(epoch) => {
                     out.epoch_names.insert(epoch);
                 }
@@ -472,11 +523,22 @@ impl<'a> Store<'a> {
     }
 
     /// Liste les dossiers d'époque d'un appareil retenu : les 64 plus récents au plus (audit S2), budget commun.
-    fn list_epochs(&self, dev: &str, listing: &mut DeviceListing, budget: &Budget) -> Result<(), FsError> {
+    fn list_epochs(
+        &self,
+        dev: &str,
+        listing: &mut DeviceListing,
+        budget: &Budget,
+    ) -> Result<(), FsError> {
         if listing.epoch_names.len() > MAX_EPOCHS_PER_DEVICE {
             budget.cut.set(true);
         }
-        let names: Vec<EpochId> = listing.epoch_names.iter().rev().take(MAX_EPOCHS_PER_DEVICE).cloned().collect();
+        let names: Vec<EpochId> = listing
+            .epoch_names
+            .iter()
+            .rev()
+            .take(MAX_EPOCHS_PER_DEVICE)
+            .cloned()
+            .collect();
         for epoch in names {
             let name = epoch.name();
             let files = match budget.list(self.fs, &[DEVICES_DIR, dev, &name]) {
@@ -510,12 +572,21 @@ impl<'a> Store<'a> {
     fn any_kid(&self, dev: &str, listing: &DeviceListing) -> Option<String> {
         for (epoch, files) in &listing.epochs {
             let name = epoch.name();
-            let candidates = files.segments.iter().map(|(n, e)| (segment_name(*n), e)).chain(files.snapshots.iter().map(|(n, e)| (snapshot_name(*n), e)));
+            let candidates = files
+                .segments
+                .iter()
+                .map(|(n, e)| (segment_name(*n), e))
+                .chain(files.snapshots.iter().map(|(n, e)| (snapshot_name(*n), e)));
             for (file, entry) in candidates {
                 if entry.availability != Availability::Local || entry.size > MAX_SEGMENT_BYTES {
                     continue;
                 }
-                let Ok(bytes) = self.fs.read(&[DEVICES_DIR, dev, &name, &file], MAX_SEGMENT_BYTES, false) else { continue };
+                let Ok(bytes) =
+                    self.fs
+                        .read(&[DEVICES_DIR, dev, &name, &file], MAX_SEGMENT_BYTES, false)
+                else {
+                    continue;
+                };
                 if let Ok(parsed) = parse_file(&bytes) {
                     return Some(parsed.header.kid);
                 }
@@ -527,27 +598,67 @@ impl<'a> Store<'a> {
     /// Dernier segment authentifié d'une époque de `dev` parmi `segments` (plus grand numéro d'abord) : en-tête qui correspond au
     /// chemin, à notre `kid`, et dernière ligne complète déchiffrée à sa place (audit S7). Un fichier déposé (`j-99999999.spj`, en-tête
     /// illisible ou d'une autre clé) est ignoré. Rend (numéro, nombre d'enregistrements). 16 essais au plus.
-    fn authenticated_tail(&self, dev: &str, epoch: &str, segments: impl Iterator<Item = u32>) -> Option<(u32, u64)> {
+    fn authenticated_tail(
+        &self,
+        dev: &str,
+        epoch: &str,
+        segments: impl Iterator<Item = u32>,
+    ) -> Option<(u32, u64)> {
         let key = self.key_for(epoch);
         // Pré-filtre sur l'en-tête seul (1 Kio, sans hydratation ni déchiffrement, hors des 16 essais) : un faux segment d'en-tête
         // illisible, d'une autre clé ou d'un autre chemin ne consomme aucun essai (audit A4).
         let plausible = segments.filter(|&n| {
             self.fs
-                .read_head(&[DEVICES_DIR, dev, epoch, &segment_name(n)], MAX_HEADER_BYTES + 1)
+                .read_head(
+                    &[DEVICES_DIR, dev, epoch, &segment_name(n)],
+                    MAX_HEADER_BYTES + 1,
+                )
                 .ok()
                 .and_then(|head| header_of(&head))
-                .is_some_and(|h| h.kind() == Some(HeaderKind::Journal) && h.dev == dev && h.e == epoch && h.n == u64::from(n) && h.kid == key.kid())
+                .is_some_and(|h| {
+                    h.kind() == Some(HeaderKind::Journal)
+                        && h.dev == dev
+                        && h.e == epoch
+                        && h.n == u64::from(n)
+                        && h.kid == key.kid()
+                })
         });
         for n in plausible.take(16) {
-            let Ok(bytes) = self.fs.read(&[DEVICES_DIR, dev, epoch, &segment_name(n)], MAX_SEGMENT_BYTES, false) else { continue };
-            let Ok(file) = parse_file(&bytes) else { continue };
+            let Ok(bytes) = self.fs.read(
+                &[DEVICES_DIR, dev, epoch, &segment_name(n)],
+                MAX_SEGMENT_BYTES,
+                false,
+            ) else {
+                continue;
+            };
+            let Ok(file) = parse_file(&bytes) else {
+                continue;
+            };
             let h = &file.header;
-            if h.kind() != Some(HeaderKind::Journal) || h.dev != dev || h.e != epoch || h.n != u64::from(n) || h.kid != key.kid() {
+            if h.kind() != Some(HeaderKind::Journal)
+                || h.dev != dev
+                || h.e != epoch
+                || h.n != u64::from(n)
+                || h.kid != key.kid()
+            {
                 continue;
             }
-            let Some(last) = file.lines.last().and_then(|l| line_str(l)) else { continue };
+            let Some(last) = file.lines.last().and_then(|l| line_str(l)) else {
+                continue;
+            };
             let index = file.lines.len() as u64 - 1;
-            if key.open(&Place::Journal { dev, epoch, segment: n, index }, last).is_ok() {
+            if key
+                .open(
+                    &Place::Journal {
+                        dev,
+                        epoch,
+                        segment: n,
+                        index,
+                    },
+                    last,
+                )
+                .is_ok()
+            {
                 return Some((n, file.lines.len() as u64));
             }
         }
@@ -581,23 +692,43 @@ impl<'a> Store<'a> {
 
     /// Lecture d'un fichier d'état (`state.spx` ou `state.next.spx`) avec une clé : bornes, en-tête, clé, majeure, ligne unique,
     /// déchiffrement, analyse stricte, anti-rejeu.
-    pub fn read_state_file(&self, dev: &str, file_name: &'static str, key: &MasterKey, accepted: &HashMap<String, Accepted>) -> StateRead {
+    pub fn read_state_file(
+        &self,
+        dev: &str,
+        file_name: &'static str,
+        key: &MasterKey,
+        accepted: &HashMap<String, Accepted>,
+    ) -> StateRead {
         self.read_state_keys(dev, file_name, &[key], accepted)
     }
 
     /// Même lecture avec plusieurs clés possibles : celle dont le `kid` est celui de l'en-tête (sinon `foreign`).
-    fn read_state_keys(&self, dev: &str, file_name: &'static str, keys: &[&MasterKey], accepted: &HashMap<String, Accepted>) -> StateRead {
+    fn read_state_keys(
+        &self,
+        dev: &str,
+        file_name: &'static str,
+        keys: &[&MasterKey],
+        accepted: &HashMap<String, Accepted>,
+    ) -> StateRead {
         let mut read = self.read_state_inner(dev, file_name, keys, accepted);
         read.from_next_file = file_name == STATE_NEXT_FILE;
         read
     }
 
-    fn read_state_inner(&self, dev: &str, file_name: &'static str, keys: &[&MasterKey], accepted: &HashMap<String, Accepted>) -> StateRead {
+    fn read_state_inner(
+        &self,
+        dev: &str,
+        file_name: &'static str,
+        keys: &[&MasterKey],
+        accepted: &HashMap<String, Accepted>,
+    ) -> StateRead {
         let path = [DEVICES_DIR, dev, file_name];
         let bytes = match self.fs.read(&path, MAX_STATE_FILE_BYTES, true) {
             Ok(bytes) => bytes,
             Err(FsError::NotFound) => return StateRead::status(None, StateStatus::Missing),
-            Err(FsError::CloudPending | FsError::ProviderStopped | FsError::CloudError) => return StateRead::status(None, StateStatus::CloudPending),
+            Err(FsError::CloudPending | FsError::ProviderStopped | FsError::CloudError) => {
+                return StateRead::status(None, StateStatus::CloudPending)
+            }
             Err(FsError::TooLarge) => return StateRead::status(None, StateStatus::TooLarge),
             Err(_) => return StateRead::status(None, StateStatus::Corrupt),
         };
@@ -608,7 +739,9 @@ impl<'a> Store<'a> {
         };
         let h = &file.header;
         let kid = Some(h.kid.clone());
-        let Some(key) = keys.iter().find(|k| k.kid() == h.kid) else { return StateRead::status(kid, StateStatus::Foreign) };
+        let Some(key) = keys.iter().find(|k| k.kid() == h.kid) else {
+            return StateRead::status(kid, StateStatus::Foreign);
+        };
         if h.kind() != Some(HeaderKind::State) || h.dev != dev {
             return StateRead::status(kid, StateStatus::Foreign);
         }
@@ -619,34 +752,85 @@ impl<'a> Store<'a> {
         if file.partial_tail {
             return StateRead::status(kid, StateStatus::CloudPending);
         }
-        let [line] = file.lines.as_slice() else { return StateRead::status(kid, StateStatus::Corrupt) };
-        let Some(line) = line_str(line) else { return StateRead::status(kid, StateStatus::Corrupt) };
-        let place = Place::State { dev, epoch: &h.e, state_seq: h.n };
-        let Ok(opened) = key.open(&place, line) else { return StateRead::status(kid, StateStatus::Corrupt) };
-        let Some(state) = PublishedState::parse(&opened.json) else { return StateRead::status(kid, StateStatus::Corrupt) };
-        if state.device_id != dev || state.epoch != h.e || state.state_seq != h.n || state.sm != u64::from(opened.sm) || state.sv != u64::from(opened.sv) {
+        let [line] = file.lines.as_slice() else {
+            return StateRead::status(kid, StateStatus::Corrupt);
+        };
+        let Some(line) = line_str(line) else {
+            return StateRead::status(kid, StateStatus::Corrupt);
+        };
+        let place = Place::State {
+            dev,
+            epoch: &h.e,
+            state_seq: h.n,
+        };
+        let Ok(opened) = key.open(&place, line) else {
+            return StateRead::status(kid, StateStatus::Corrupt);
+        };
+        let Some(state) = PublishedState::parse(&opened.json) else {
+            return StateRead::status(kid, StateStatus::Corrupt);
+        };
+        if state.device_id != dev
+            || state.epoch != h.e
+            || state.state_seq != h.n
+            || state.sm != u64::from(opened.sm)
+            || state.sv != u64::from(opened.sv)
+        {
             return StateRead::status(kid, StateStatus::Corrupt);
         }
         let digest = sha256_hex(opened.json.as_bytes());
-        let Some(epoch) = EpochId::parse(&state.epoch) else { return StateRead::status(kid, StateStatus::Corrupt) };
-        let current = Accepted { epoch, seq: state.state_seq, digest: digest.clone(), head: RecordCursor { segment: state.head.segment, record: state.head.record } };
-        if accepted.get(dev).is_some_and(|previous| is_rollback(previous, &current)) {
+        let Some(epoch) = EpochId::parse(&state.epoch) else {
+            return StateRead::status(kid, StateStatus::Corrupt);
+        };
+        let current = Accepted {
+            epoch,
+            seq: state.state_seq,
+            digest: digest.clone(),
+            head: RecordCursor {
+                segment: state.head.segment,
+                record: state.head.record,
+            },
+        };
+        if accepted
+            .get(dev)
+            .is_some_and(|previous| is_rollback(previous, &current))
+        {
             return StateRead::status(kid, StateStatus::Rollback);
         }
-        StateRead { kid, state: Some(state), digest: Some(digest), status: StateStatus::Ok, from_next_file: false }
+        StateRead {
+            kid,
+            state: Some(state),
+            digest: Some(digest),
+            status: StateStatus::Ok,
+            from_next_file: false,
+        }
     }
 
     /// Retient l'état lu comme accepté.
     pub(crate) fn remember(dev: &str, read: &StateRead, accepted: &mut HashMap<String, Accepted>) {
         if let (Some(state), Some(digest)) = (&read.state, &read.digest) {
             if let Some(epoch) = EpochId::parse(&state.epoch) {
-                accepted.insert(dev.to_owned(), Accepted { epoch, seq: state.state_seq, digest: digest.clone(), head: RecordCursor { segment: state.head.segment, record: state.head.record } });
+                accepted.insert(
+                    dev.to_owned(),
+                    Accepted {
+                        epoch,
+                        seq: state.state_seq,
+                        digest: digest.clone(),
+                        head: RecordCursor {
+                            segment: state.head.segment,
+                            record: state.head.record,
+                        },
+                    },
+                );
             }
         }
     }
 
     /// Tête authentifiée d'un appareil pour une lecture ; `None` : rien de lisible pour l'instant.
-    fn authenticated_state(&self, dev: &str, accepted: &mut HashMap<String, Accepted>) -> SyncResult<Option<PublishedState>> {
+    fn authenticated_state(
+        &self,
+        dev: &str,
+        accepted: &mut HashMap<String, Accepted>,
+    ) -> SyncResult<Option<PublishedState>> {
         let read = self.read_state(dev, accepted);
         if let Some(code) = read.status.error() {
             return fail(code);
@@ -660,19 +844,35 @@ impl<'a> Store<'a> {
     // --------------------------------------------------------------------------------------------------------------------------
 
     /// `sync_scan({ keep })` : appareils, états (anti-rejeu), fichiers listés, fichiers en attente, plafonds.
-    pub fn scan(&self, self_id: Option<&str>, keep: &[String], accepted: &mut HashMap<String, Accepted>) -> SyncResult<FolderScan> {
+    pub fn scan(
+        &self,
+        self_id: Option<&str>,
+        keep: &[String],
+        accepted: &mut HashMap<String, Accepted>,
+    ) -> SyncResult<FolderScan> {
         self.scan_within(self_id, keep, accepted, None)
     }
 
     /// `sync_scan({ keep, hydrateBudgetMs })` : `budget` réduit le budget d'hydratation du cycle (ADR 0011 §22 point 4) ; None : 3 minutes.
-    pub fn scan_within(&self, self_id: Option<&str>, keep: &[String], accepted: &mut HashMap<String, Accepted>, budget: Option<std::time::Duration>) -> SyncResult<FolderScan> {
+    pub fn scan_within(
+        &self,
+        self_id: Option<&str>,
+        keep: &[String],
+        accepted: &mut HashMap<String, Accepted>,
+        budget: Option<std::time::Duration>,
+    ) -> SyncResult<FolderScan> {
         match budget {
             Some(budget) => self.fs.start_cycle_within(budget),
             None => self.fs.start_cycle(),
         }
         .map_err(fs_error)?;
         let budget = Budget::new();
-        let protected: BTreeSet<&str> = keep.iter().map(String::as_str).chain(self_id).filter(|id| is_uuid_v4(id)).collect();
+        let protected: BTreeSet<&str> = keep
+            .iter()
+            .map(String::as_str)
+            .chain(self_id)
+            .filter(|id| is_uuid_v4(id))
+            .collect();
         let mut ignored = 0u64;
         let mut total = 0u64;
         let mut listings: BTreeMap<String, DeviceListing> = BTreeMap::new();
@@ -683,7 +883,8 @@ impl<'a> Store<'a> {
             if !listing.exists {
                 continue;
             }
-            self.list_epochs(dev, &mut listing, &budget).map_err(fs_error)?;
+            self.list_epochs(dev, &mut listing, &budget)
+                .map_err(fs_error)?;
             total += listing.bytes;
             ignored += listing.ignored;
             listings.insert((*dev).to_owned(), listing);
@@ -698,13 +899,18 @@ impl<'a> Store<'a> {
             if protected.contains(entry.name.as_str()) {
                 continue;
             }
-            if !entry.is_dir || entry.availability == Availability::Error || !is_uuid_v4(&entry.name) {
+            if !entry.is_dir
+                || entry.availability == Availability::Error
+                || !is_uuid_v4(&entry.name)
+            {
                 ignored += 1;
                 total += entry.size;
                 log::event("ignored-entry", "devices");
                 continue;
             }
-            let listing = self.list_device_top(&entry.name, &budget).map_err(fs_error)?;
+            let listing = self
+                .list_device_top(&entry.name, &budget)
+                .map_err(fs_error)?;
             total += listing.bytes;
             ignored += listing.ignored;
             listings.insert(entry.name, listing);
@@ -724,18 +930,40 @@ impl<'a> Store<'a> {
             .iter()
             .filter(|(dev, l)| !protected.contains(dev.as_str()) && l.has_state())
             .map(|(dev, l)| {
-                let file = if l.state.is_some() { STATE_FILE } else { STATE_NEXT_FILE };
-                let ours = |kid: &str| kid == self.key.kid() || self.next.is_some_and(|n| n.key.kid() == kid);
-                let class = match self.fs.read_head(&[DEVICES_DIR, dev, file], MAX_HEADER_BYTES + 1) {
+                let file = if l.state.is_some() {
+                    STATE_FILE
+                } else {
+                    STATE_NEXT_FILE
+                };
+                let ours = |kid: &str| {
+                    kid == self.key.kid() || self.next.is_some_and(|n| n.key.kid() == kid)
+                };
+                let class = match self
+                    .fs
+                    .read_head(&[DEVICES_DIR, dev, file], MAX_HEADER_BYTES + 1)
+                {
                     Ok(head) => match header_of(&head) {
-                        Some(h) if h.kind() == Some(HeaderKind::State) && h.dev == *dev && ours(&h.kid) => 0,
+                        Some(h)
+                            if h.kind() == Some(HeaderKind::State)
+                                && h.dev == *dev
+                                && ours(&h.kid) =>
+                        {
+                            0
+                        }
                         _ => 2,
                     },
                     // Dans le nuage : en-tête inconnu, après les en-têtes vérifiés.
                     Err(FsError::CloudPending) => 1,
                     Err(_) => 2,
                 };
-                (class, l.state.as_ref().or(l.next_state.as_ref()).map_or(0, |s| s.size), dev)
+                (
+                    class,
+                    l.state
+                        .as_ref()
+                        .or(l.next_state.as_ref())
+                        .map_or(0, |s| s.size),
+                    dev,
+                )
             })
             .collect();
         candidates.sort();
@@ -746,25 +974,49 @@ impl<'a> Store<'a> {
             reads.insert(dev.clone(), self.read_state(dev, accepted));
         }
         // Parmi les autres : d'abord ceux qui annoncent `pairedBy` = soi (association en cours), puis le plus récent `lastSyncHlc`.
-        let mut others: Vec<&String> = listings.keys().filter(|dev| !protected.contains(dev.as_str())).collect();
+        let mut others: Vec<&String> = listings
+            .keys()
+            .filter(|dev| !protected.contains(dev.as_str()))
+            .collect();
         let state_of = |dev: &str| reads.get(dev).and_then(|r| r.state.as_ref());
-        let pairing = |dev: &str| self_id.is_some() && state_of(dev).and_then(|s| s.paired_by.as_deref()) == self_id;
-        let hlc_of = |dev: &str| state_of(dev).map(|s| s.last_sync_hlc.clone()).unwrap_or_default();
-        others.sort_by(|a, b| pairing(b).cmp(&pairing(a)).then_with(|| hlc_of(b).cmp(&hlc_of(a))).then_with(|| a.cmp(b)));
-        let kept_protected = listings.keys().filter(|dev| protected.contains(dev.as_str())).count();
+        let pairing = |dev: &str| {
+            self_id.is_some() && state_of(dev).and_then(|s| s.paired_by.as_deref()) == self_id
+        };
+        let hlc_of = |dev: &str| {
+            state_of(dev)
+                .map(|s| s.last_sync_hlc.clone())
+                .unwrap_or_default()
+        };
+        others.sort_by(|a, b| {
+            pairing(b)
+                .cmp(&pairing(a))
+                .then_with(|| hlc_of(b).cmp(&hlc_of(a)))
+                .then_with(|| a.cmp(b))
+        });
+        let kept_protected = listings
+            .keys()
+            .filter(|dev| protected.contains(dev.as_str()))
+            .count();
         let room = MAX_DEVICE_FOLDERS.saturating_sub(kept_protected);
         let dropped = others.len().saturating_sub(room) as u64;
-        let kept: BTreeSet<String> =
-            listings.keys().filter(|dev| protected.contains(dev.as_str())).cloned().chain(others.into_iter().take(room).cloned()).collect();
+        let kept: BTreeSet<String> = listings
+            .keys()
+            .filter(|dev| protected.contains(dev.as_str()))
+            .cloned()
+            .chain(others.into_iter().take(room).cloned())
+            .collect();
         // 3. Époques listées pour les seuls appareils retenus.
         let mut scans = Vec::with_capacity(kept.len());
         let mut incomplete = false;
         for dev in &kept {
-            let Some(mut listing) = listings.remove(dev) else { continue };
+            let Some(mut listing) = listings.remove(dev) else {
+                continue;
+            };
             let (bytes_before, ignored_before) = (listing.bytes, listing.ignored);
             // Époques de soi et de keep déjà listées à l'étape 1a.
             if !protected.contains(dev.as_str()) {
-                self.list_epochs(dev, &mut listing, &budget).map_err(fs_error)?;
+                self.list_epochs(dev, &mut listing, &budget)
+                    .map_err(fs_error)?;
             }
             total += listing.bytes - bytes_before;
             ignored += listing.ignored - ignored_before;
@@ -804,34 +1056,67 @@ impl<'a> Store<'a> {
         Ok(())
     }
 
-    fn scan_device(&self, dev: &str, listing: &DeviceListing, read: StateRead, accepted: &mut HashMap<String, Accepted>) -> (DeviceScan, bool) {
+    fn scan_device(
+        &self,
+        dev: &str,
+        listing: &DeviceListing,
+        read: StateRead,
+        accepted: &mut HashMap<String, Accepted>,
+    ) -> (DeviceScan, bool) {
         Self::remember(dev, &read, accepted);
         // `kid` d'un état absent ou resté dans le nuage : en-tête d'un autre fichier présent (revue 16, même règle que memory.ts).
-        let kid = read.kid.clone().or_else(|| if matches!(read.status, StateStatus::Missing | StateStatus::CloudPending) { self.any_kid(dev, listing) } else { None });
+        let kid = read.kid.clone().or_else(|| {
+            if matches!(
+                read.status,
+                StateStatus::Missing | StateStatus::CloudPending
+            ) {
+                self.any_kid(dev, listing)
+            } else {
+                None
+            }
+        });
         let mut incomplete = false;
         let epochs = listing
             .epochs
             .iter()
-            .map(|(epoch, files)| EpochListing { epoch: epoch.name(), segments: files.segments.keys().copied().collect(), snapshots: files.snapshots.keys().copied().collect() })
+            .map(|(epoch, files)| EpochListing {
+                epoch: epoch.name(),
+                segments: files.segments.keys().copied().collect(),
+                snapshots: files.snapshots.keys().copied().collect(),
+            })
             .collect();
         // Fichiers attendus et pas encore lisibles : `state.spx`, puis ce que la tête authentifiée annonce (jamais au-delà), plafonnés à
         // 10 000 entrées (`incomplete` au-delà, dette de l'amorce).
         let mut pending = Vec::new();
-        let push = |pending: &mut Vec<PendingFile>, incomplete: &mut bool, file: String, availability: Availability| {
+        let push = |pending: &mut Vec<PendingFile>,
+                    incomplete: &mut bool,
+                    file: String,
+                    availability: Availability| {
             if pending.len() >= MAX_SCAN_ENTRIES_PER_FOLDER {
                 *incomplete = true;
             } else {
-                pending.push(PendingFile { file, availability: availability.as_str() });
+                pending.push(PendingFile {
+                    file,
+                    availability: availability.as_str(),
+                });
             }
         };
-        for (entry, name) in [(&listing.state, STATE_FILE), (&listing.next_state, STATE_NEXT_FILE)] {
+        for (entry, name) in [
+            (&listing.state, STATE_FILE),
+            (&listing.next_state, STATE_NEXT_FILE),
+        ] {
             let Some(entry) = entry else { continue };
             // Y-11 : `state.next.spx` n'est attendu que de l'appareil dont l'état présenté en vient (sinon une autre clé : jamais attendu).
             if name == STATE_NEXT_FILE && !read.from_next_file {
                 continue;
             }
             if entry.availability != Availability::Local && read.status != StateStatus::Ok {
-                push(&mut pending, &mut incomplete, name.to_owned(), entry.availability);
+                push(
+                    &mut pending,
+                    &mut incomplete,
+                    name.to_owned(),
+                    entry.availability,
+                );
             }
             if self.pin && entry.availability != Availability::Error {
                 self.pin_file(&[DEVICES_DIR, dev, name]);
@@ -842,13 +1127,25 @@ impl<'a> Store<'a> {
             let files = epoch.as_ref().and_then(|e| listing.epochs.get(e));
             let epoch_name = state.epoch.as_str();
             if state.head.segment >= 1 {
-                let head = state.head.segment.min(u64::from(super::names::MAX_FILE_NUMBER)) as u32;
-                let from = files.and_then(|f| f.segments.keys().next().copied()).unwrap_or(head).min(head);
+                let head = state
+                    .head
+                    .segment
+                    .min(u64::from(super::names::MAX_FILE_NUMBER))
+                    as u32;
+                let from = files
+                    .and_then(|f| f.segments.keys().next().copied())
+                    .unwrap_or(head)
+                    .min(head);
                 for n in from..=head {
                     let entry = files.and_then(|f| f.segments.get(&n));
                     let availability = entry.map_or(Availability::Cloud, |e| e.availability);
                     if availability != Availability::Local {
-                        push(&mut pending, &mut incomplete, format!("{epoch_name}/{}", segment_name(n)), availability);
+                        push(
+                            &mut pending,
+                            &mut incomplete,
+                            format!("{epoch_name}/{}", segment_name(n)),
+                            availability,
+                        );
                         if incomplete {
                             break;
                         }
@@ -862,7 +1159,12 @@ impl<'a> Store<'a> {
                 for (n, entry) in &files.snapshots {
                     if u64::from(*n) <= snapshot.seq {
                         if entry.availability != Availability::Local {
-                            push(&mut pending, &mut incomplete, format!("{epoch_name}/{}", snapshot_name(*n)), entry.availability);
+                            push(
+                                &mut pending,
+                                &mut incomplete,
+                                format!("{epoch_name}/{}", snapshot_name(*n)),
+                                entry.availability,
+                            );
                         }
                         if self.pin && entry.availability != Availability::Error {
                             self.pin_file(&[DEVICES_DIR, dev, epoch_name, &snapshot_name(*n)]);
@@ -871,7 +1173,17 @@ impl<'a> Store<'a> {
                 }
             }
         }
-        (DeviceScan { device_id: dev.to_owned(), kid, state: read.state, state_status: read.status.as_str(), epochs, pending }, incomplete)
+        (
+            DeviceScan {
+                device_id: dev.to_owned(),
+                kid,
+                state: read.state,
+                state_status: read.status.as_str(),
+                epochs,
+                pending,
+            },
+            incomplete,
+        )
     }
 
     fn pin_file(&self, path: &[&str]) {
@@ -885,7 +1197,14 @@ impl<'a> Store<'a> {
     // --------------------------------------------------------------------------------------------------------------------------
 
     /// Fichier lu pour une lecture : borne, `kid`, majeure et correspondance de l'en-tête au chemin.
-    fn checked<'b>(&self, bytes: &'b [u8], kind: HeaderKind, dev: &str, epoch: &str, n: u64) -> SyncResult<ParsedFile<'b>> {
+    fn checked<'b>(
+        &self,
+        bytes: &'b [u8],
+        kind: HeaderKind,
+        dev: &str,
+        epoch: &str,
+        n: u64,
+    ) -> SyncResult<ParsedFile<'b>> {
         let file = match parse_file(bytes) {
             Ok(file) => file,
             Err(ParseError::Partial) => return fail(SyncCode::CloudPending),
@@ -896,7 +1215,14 @@ impl<'a> Store<'a> {
     }
 
     /// En-tête d'un fichier lu : `kid`, majeure et correspondance au chemin (mêmes règles pour la lecture complète et la lecture en flux).
-    fn check_header(&self, header: &FileHeader, kind: HeaderKind, dev: &str, epoch: &str, n: u64) -> SyncResult<()> {
+    fn check_header(
+        &self,
+        header: &FileHeader,
+        kind: HeaderKind,
+        dev: &str,
+        epoch: &str,
+        n: u64,
+    ) -> SyncResult<()> {
         if header.kid != self.key_for(epoch).kid() {
             return fail(SyncCode::KeyMismatch);
         }
@@ -910,20 +1236,47 @@ impl<'a> Store<'a> {
     }
 
     /// Page de texte clair, jamais au-delà de la tête authentifiée (section 1.4, cas limites de l'avenant « Amorce »).
-    pub fn read_journal(&self, dev: &str, epoch: &str, from: RecordCursor, max_bytes: Option<u64>, accepted: &mut HashMap<String, Accepted>) -> SyncResult<ReadPage> {
-        if !is_uuid_v4(dev) || !is_epoch_id(epoch) || from.segment > MAX_SAFE_INTEGER || from.record > MAX_SAFE_INTEGER || (from.segment == 0 && from.record != 0) {
+    pub fn read_journal(
+        &self,
+        dev: &str,
+        epoch: &str,
+        from: RecordCursor,
+        max_bytes: Option<u64>,
+        accepted: &mut HashMap<String, Accepted>,
+    ) -> SyncResult<ReadPage> {
+        if !is_uuid_v4(dev)
+            || !is_epoch_id(epoch)
+            || from.segment > MAX_SAFE_INTEGER
+            || from.record > MAX_SAFE_INTEGER
+            || (from.segment == 0 && from.record != 0)
+        {
             return fail(SyncCode::BadName);
         }
         let limit = page_limit(max_bytes)?;
         let Some(state) = self.authenticated_state(dev, accepted)? else {
-            return Ok(ReadPage { records: Vec::new(), next: from, status: "cloud-pending" });
+            return Ok(ReadPage {
+                records: Vec::new(),
+                next: from,
+                status: "cloud-pending",
+            });
         };
-        let head = RecordCursor { segment: state.head.segment, record: state.head.record };
+        let head = RecordCursor {
+            segment: state.head.segment,
+            record: state.head.record,
+        };
         if state.head.epoch != epoch {
-            return Ok(ReadPage { records: Vec::new(), next: from, status: "cloud-pending" });
+            return Ok(ReadPage {
+                records: Vec::new(),
+                next: from,
+                status: "cloud-pending",
+            });
         }
         if from >= head {
-            return Ok(ReadPage { records: Vec::new(), next: from, status: "complete" });
+            return Ok(ReadPage {
+                records: Vec::new(),
+                next: from,
+                status: "complete",
+            });
         }
         let mut records = Vec::new();
         let mut bytes_out = 0usize;
@@ -932,7 +1285,17 @@ impl<'a> Store<'a> {
         let mut status = "complete";
         let mut current: Option<(u64, Vec<u8>)> = None;
         // Y-TECH-02 (ADR 0011 §21 point 2) : nombre d'enregistrements annoncé de chaque segment clos (sans entrée : règle d'avant).
-        let closed_count = |n: u64| if n < head.segment { state.closed.iter().find(|c| c.segment == n).map(|c| c.records) } else { None };
+        let closed_count = |n: u64| {
+            if n < head.segment {
+                state
+                    .closed
+                    .iter()
+                    .find(|c| c.segment == n)
+                    .map(|c| c.records)
+            } else {
+                None
+            }
+        };
         'outer: loop {
             if (RecordCursor { segment, record }) >= head {
                 break;
@@ -944,11 +1307,22 @@ impl<'a> Store<'a> {
                 continue 'outer;
             }
             if current.as_ref().map(|(n, _)| *n) != Some(segment) {
-                let Ok(n32) = u32::try_from(segment) else { return fail(SyncCode::BadName) };
+                let Ok(n32) = u32::try_from(segment) else {
+                    return fail(SyncCode::BadName);
+                };
                 // Segment annoncé absent ou dans le nuage : en attente d'iCloud, jamais sauté.
-                match self.fs.read(&[DEVICES_DIR, dev, epoch, &segment_name(n32)], MAX_SEGMENT_BYTES, true) {
+                match self.fs.read(
+                    &[DEVICES_DIR, dev, epoch, &segment_name(n32)],
+                    MAX_SEGMENT_BYTES,
+                    true,
+                ) {
                     Ok(bytes) => current = Some((segment, bytes)),
-                    Err(FsError::NotFound | FsError::CloudPending | FsError::ProviderStopped | FsError::CloudError) => {
+                    Err(
+                        FsError::NotFound
+                        | FsError::CloudPending
+                        | FsError::ProviderStopped
+                        | FsError::CloudError,
+                    ) => {
                         status = "cloud-pending";
                         break;
                     }
@@ -991,7 +1365,15 @@ impl<'a> Store<'a> {
                     return fail(SyncCode::NewerFormat);
                 }
                 // Échec de déchiffrement d'un enregistrement que la tête annonce : corruption, rien au-delà (section 1.2).
-                let Ok(opened) = self.key_for(epoch).open(&Place::Journal { dev, epoch, segment: segment as u32, index: record }, line) else {
+                let Ok(opened) = self.key_for(epoch).open(
+                    &Place::Journal {
+                        dev,
+                        epoch,
+                        segment: segment as u32,
+                        index: record,
+                    },
+                    line,
+                ) else {
                     status = "truncated";
                     break 'outer;
                 };
@@ -1004,7 +1386,11 @@ impl<'a> Store<'a> {
                 record += 1;
             }
         }
-        Ok(ReadPage { records, next: RecordCursor { segment, record }, status })
+        Ok(ReadPage {
+            records,
+            next: RecordCursor { segment, record },
+            status,
+        })
     }
 
     /// Page d'un instantané annoncé par l'état authentifié.
@@ -1021,13 +1407,26 @@ impl<'a> Store<'a> {
         accepted: &mut HashMap<String, Accepted>,
         cache: &mut Option<SnapshotCache>,
     ) -> SyncResult<ReadPage> {
-        if !is_uuid_v4(dev) || !is_epoch_id(epoch) || !is_file_number(seq) || from_record > MAX_SAFE_INTEGER {
+        if !is_uuid_v4(dev)
+            || !is_epoch_id(epoch)
+            || !is_file_number(seq)
+            || from_record > MAX_SAFE_INTEGER
+        {
             return fail(SyncCode::BadName);
         }
         let limit = page_limit(max_bytes)?;
-        let from = RecordCursor { segment: seq, record: from_record };
-        let pending = ReadPage { records: Vec::new(), next: from, status: "cloud-pending" };
-        let Some(state) = self.authenticated_state(dev, accepted)? else { return Ok(pending) };
+        let from = RecordCursor {
+            segment: seq,
+            record: from_record,
+        };
+        let pending = ReadPage {
+            records: Vec::new(),
+            next: from,
+            status: "cloud-pending",
+        };
+        let Some(state) = self.authenticated_state(dev, accepted)? else {
+            return Ok(pending);
+        };
         if state.epoch != epoch || state.snapshot.as_ref().is_none_or_greater(seq) {
             return Ok(pending);
         }
@@ -1036,9 +1435,18 @@ impl<'a> Store<'a> {
             Some(cached) => cached.bytes.clone(),
             None => {
                 *cache = None;
-                match self.fs.read(&[DEVICES_DIR, dev, epoch, &snapshot_name(seq as u32)], MAX_SNAPSHOT_BYTES, true) {
+                match self.fs.read(
+                    &[DEVICES_DIR, dev, epoch, &snapshot_name(seq as u32)],
+                    MAX_SNAPSHOT_BYTES,
+                    true,
+                ) {
                     Ok(bytes) => Arc::new(bytes),
-                    Err(FsError::NotFound | FsError::CloudPending | FsError::ProviderStopped | FsError::CloudError) => return Ok(pending),
+                    Err(
+                        FsError::NotFound
+                        | FsError::CloudPending
+                        | FsError::ProviderStopped
+                        | FsError::CloudError,
+                    ) => return Ok(pending),
                     Err(error) => return Err(fs_error(error)),
                 }
             }
@@ -1053,7 +1461,15 @@ impl<'a> Store<'a> {
                 status = "truncated";
                 break;
             };
-            let Ok(opened) = self.key_for(epoch).open(&Place::Snapshot { dev, epoch, seq: seq as u32, index }, line) else {
+            let Ok(opened) = self.key_for(epoch).open(
+                &Place::Snapshot {
+                    dev,
+                    epoch,
+                    seq: seq as u32,
+                    index,
+                },
+                line,
+            ) else {
                 status = "truncated";
                 break;
             };
@@ -1068,8 +1484,18 @@ impl<'a> Store<'a> {
         if status == "complete" && file.partial_tail {
             status = "cloud-pending";
         }
-        *cache = (status == "more").then(|| SnapshotCache { key, bytes: bytes.clone() });
-        Ok(ReadPage { records, next: RecordCursor { segment: seq, record: index }, status })
+        *cache = (status == "more").then(|| SnapshotCache {
+            key,
+            bytes: bytes.clone(),
+        });
+        Ok(ReadPage {
+            records,
+            next: RecordCursor {
+                segment: seq,
+                record: index,
+            },
+            status,
+        })
     }
 
     /// `sync_read_snapshot` `tail` (§18 point 11) : dernier enregistrement seul de l'instantané **annoncé** (`seq` égal à celui de l'état
@@ -1090,19 +1516,45 @@ impl<'a> Store<'a> {
         if !is_uuid_v4(dev) || !is_epoch_id(epoch) || !is_file_number(seq) {
             return fail(SyncCode::BadName);
         }
-        let pending = ReadPage { records: Vec::new(), next: RecordCursor { segment: seq, record: 0 }, status: "cloud-pending" };
-        let Some(state) = self.authenticated_state(dev, accepted)? else { return Ok(pending) };
+        let pending = ReadPage {
+            records: Vec::new(),
+            next: RecordCursor {
+                segment: seq,
+                record: 0,
+            },
+            status: "cloud-pending",
+        };
+        let Some(state) = self.authenticated_state(dev, accepted)? else {
+            return Ok(pending);
+        };
         if state.epoch != epoch || state.snapshot.as_ref().map(|s| s.seq) != Some(seq) {
             return fail(SyncCode::StateMismatch);
         }
-        let key = (self.key_for(epoch).kid().to_owned(), dev.to_owned(), epoch.to_owned(), seq);
+        let key = (
+            self.key_for(epoch).kid().to_owned(),
+            dev.to_owned(),
+            epoch.to_owned(),
+            seq,
+        );
         if let Some(json) = ends.get(&key) {
-            return Ok(ReadPage { records: vec![json.clone()], next: RecordCursor { segment: seq, record: 0 }, status: "complete" });
+            return Ok(ReadPage {
+                records: vec![json.clone()],
+                next: RecordCursor {
+                    segment: seq,
+                    record: 0,
+                },
+                status: "complete",
+            });
         }
         let path = [DEVICES_DIR, dev, epoch, &snapshot_name(seq as u32)];
         let tail = match stream_last_line(self.fs, &path, MAX_SNAPSHOT_BYTES) {
             Ok(tail) => tail,
-            Err(FsError::NotFound | FsError::CloudPending | FsError::ProviderStopped | FsError::CloudError) => return Ok(pending),
+            Err(
+                FsError::NotFound
+                | FsError::CloudPending
+                | FsError::ProviderStopped
+                | FsError::CloudError,
+            ) => return Ok(pending),
             Err(error) => return Err(fs_error(error)),
         };
         let header = match tail.header {
@@ -1115,11 +1567,37 @@ impl<'a> Store<'a> {
             return Ok(pending);
         }
         let index = tail.lines - 1;
-        let truncated = ReadPage { records: Vec::new(), next: RecordCursor { segment: seq, record: index }, status: "truncated" };
-        let Some(line) = tail.last.as_deref().and_then(line_str) else { return Ok(truncated) };
-        let Ok(opened) = self.key_for(epoch).open(&Place::Snapshot { dev, epoch, seq: seq as u32, index }, line) else { return Ok(truncated) };
+        let truncated = ReadPage {
+            records: Vec::new(),
+            next: RecordCursor {
+                segment: seq,
+                record: index,
+            },
+            status: "truncated",
+        };
+        let Some(line) = tail.last.as_deref().and_then(line_str) else {
+            return Ok(truncated);
+        };
+        let Ok(opened) = self.key_for(epoch).open(
+            &Place::Snapshot {
+                dev,
+                epoch,
+                seq: seq as u32,
+                index,
+            },
+            line,
+        ) else {
+            return Ok(truncated);
+        };
         ends.insert(key, opened.json.clone());
-        Ok(ReadPage { records: vec![opened.json], next: RecordCursor { segment: seq, record: index + 1 }, status: "complete" })
+        Ok(ReadPage {
+            records: vec![opened.json],
+            next: RecordCursor {
+                segment: seq,
+                record: index + 1,
+            },
+            status: "complete",
+        })
     }
 
     // --------------------------------------------------------------------------------------------------------------------------
@@ -1141,7 +1619,11 @@ impl<'a> Store<'a> {
         max_hlc: &str,
         records: &[String],
     ) -> SyncResult<AppendResult> {
-        if !is_epoch_id(epoch) || !is_file_number(segment) || expect_records > MAX_SAFE_INTEGER || !(1..=MAX_SV).contains(&sv) {
+        if !is_epoch_id(epoch)
+            || !is_file_number(segment)
+            || expect_records > MAX_SAFE_INTEGER
+            || !(1..=MAX_SV).contains(&sv)
+        {
             return fail(SyncCode::BadName);
         }
         // Paramètres mal formés (hlc hors format strict, appel vide) : `bad-name` ; `hlc-order` est réservé à l'ordre des hlc valides.
@@ -1170,12 +1652,17 @@ impl<'a> Store<'a> {
             return fail(SyncCode::SegmentMismatch);
         }
         // Plus grand segment listé **authentifié** (audit S7) : un fichier déposé par un tiers (`j-99999999.spj`) ne bloque rien.
-        let mut segments: Vec<u32> = match self.fs.list(&[DEVICES_DIR, self_id, epoch], MAX_SCAN_ENTRIES_PER_FOLDER) {
+        let mut segments: Vec<u32> = match self
+            .fs
+            .list(&[DEVICES_DIR, self_id, epoch], MAX_SCAN_ENTRIES_PER_FOLDER)
+        {
             Ok(listing) => listing
                 .entries
                 .iter()
                 .filter_map(|e| match parse_file_name(&e.name) {
-                    Some(SyncFileName::Segment(n)) if !e.is_dir && u64::from(n) > segment => Some(n),
+                    Some(SyncFileName::Segment(n)) if !e.is_dir && u64::from(n) > segment => {
+                        Some(n)
+                    }
                     _ => None,
                 })
                 .collect(),
@@ -1183,7 +1670,10 @@ impl<'a> Store<'a> {
             Err(error) => return Err(fs_error(error)),
         };
         segments.sort_unstable_by(|a, b| b.cmp(a));
-        if self.authenticated_tail(self_id, epoch, segments.into_iter()).is_some() {
+        if self
+            .authenticated_tail(self_id, epoch, segments.into_iter())
+            .is_some()
+        {
             return fail(SyncCode::SegmentMismatch);
         }
         let segment32 = segment as u32;
@@ -1203,9 +1693,15 @@ impl<'a> Store<'a> {
         };
         let first_record = match &existing {
             Some(bytes) => {
-                let file = parse_file(bytes).map_err(|_| SyncError::new(SyncCode::SegmentMismatch))?;
+                let file =
+                    parse_file(bytes).map_err(|_| SyncError::new(SyncCode::SegmentMismatch))?;
                 let h = &file.header;
-                if h.kind() != Some(HeaderKind::Journal) || h.dev != self_id || h.e != epoch || h.n != segment || h.kid != self.key_for(epoch).kid() {
+                if h.kind() != Some(HeaderKind::Journal)
+                    || h.dev != self_id
+                    || h.e != epoch
+                    || h.n != segment
+                    || h.kid != self.key_for(epoch).kid()
+                {
                     return fail(SyncCode::SegmentMismatch);
                 }
                 if file.partial_tail || file.lines.len() as u64 != expect_records {
@@ -1227,20 +1723,38 @@ impl<'a> Store<'a> {
         let key = self.key_for(epoch);
         let mut out = String::with_capacity(add_bytes as usize + 256);
         if existing.is_none() {
-            out.push_str(&FileHeader::new(HeaderKind::Journal, key.kid(), self_id, epoch, segment).line());
+            out.push_str(
+                &FileHeader::new(HeaderKind::Journal, key.kid(), self_id, epoch, segment).line(),
+            );
             out.push('\n');
         }
         for (i, text) in records.iter().enumerate() {
-            let place = Place::Journal { dev: self_id, epoch, segment: segment32, index: first_record + i as u64 };
-            out.push_str(&key.seal(&place, text.as_bytes(), SYNC_FORMAT_MAJOR, sv32).map_err(|_| SyncError::new(SyncCode::Io))?);
+            let place = Place::Journal {
+                dev: self_id,
+                epoch,
+                segment: segment32,
+                index: first_record + i as u64,
+            };
+            out.push_str(
+                &key.seal(&place, text.as_bytes(), SYNC_FORMAT_MAJOR, sv32)
+                    .map_err(|_| SyncError::new(SyncCode::Io))?,
+            );
             out.push('\n');
         }
-        self.fs.create_dir(&[DEVICES_DIR, self_id, epoch]).map_err(fs_error)?;
-        let mode = if existing.is_some() { AppendMode::Existing } else { AppendMode::CreateNew };
-        self.fs.append(&path, out.as_bytes(), mode).map_err(|e| match e {
-            FsError::Exists => SyncError::new(SyncCode::SegmentMismatch),
-            other => fs_error(other),
-        })?;
+        self.fs
+            .create_dir(&[DEVICES_DIR, self_id, epoch])
+            .map_err(fs_error)?;
+        let mode = if existing.is_some() {
+            AppendMode::Existing
+        } else {
+            AppendMode::CreateNew
+        };
+        self.fs
+            .append(&path, out.as_bytes(), mode)
+            .map_err(|e| match e {
+                FsError::Exists => SyncError::new(SyncCode::SegmentMismatch),
+                other => fs_error(other),
+            })?;
         usage.sealed += records.len() as u64;
         // Y-TECH-02 (§21 point 2) : un ajout qui ouvre un segment plus grand dans la même époque ferme celui de la tête, avec ce que l'état
         // a pu en annoncer (`own.record`, jamais le nombre de lignes du fichier) ; une nouvelle époque repart d'une liste vide.
@@ -1255,7 +1769,13 @@ impl<'a> Store<'a> {
         own.segment = segment;
         own.record = first_record + records.len() as u64;
         own.max_hlc = Some(max_hlc.to_owned());
-        Ok(AppendResult { first_record, head: RecordCursor { segment: own.segment, record: own.record } })
+        Ok(AppendResult {
+            first_record,
+            head: RecordCursor {
+                segment: own.segment,
+                record: own.record,
+            },
+        })
     }
 
     /// `sync_write_state` : contrôles de la section 1.4 (Rust maître de `head`, `pairedBy` et `forgotten`), puis écriture atomique.
@@ -1277,20 +1797,31 @@ impl<'a> Store<'a> {
         // valeur différente reste refusée plus bas.
         let completed;
         let state = if state.paired_by.is_none() && own.paired_by.is_some() {
-            completed = PublishedState { paired_by: own.paired_by.clone(), ..state.clone() };
+            completed = PublishedState {
+                paired_by: own.paired_by.clone(),
+                ..state.clone()
+            };
             &completed
         } else {
             state
         };
         // Y-TECH-02 (§21 point 2) : Rust est maître de `closed` : omis → complété depuis `own.json` (même époque) ; fourni → égal, sinon refus.
-        let own_closed: &[super::state::ClosedSegment] = if own.epoch.as_deref() == Some(state.epoch.as_str()) { &own.closed } else { &[] };
+        let own_closed: &[super::state::ClosedSegment] =
+            if own.epoch.as_deref() == Some(state.epoch.as_str()) {
+                &own.closed
+            } else {
+                &[]
+            };
         if !state.closed.is_empty() && state.closed != own_closed {
             log::event("write-state-refused", "closed");
             return fail(SyncCode::StateMismatch);
         }
         let with_closed;
         let state = if state.closed.is_empty() && !own_closed.is_empty() {
-            with_closed = PublishedState { closed: own_closed.to_vec(), ..state.clone() };
+            with_closed = PublishedState {
+                closed: own_closed.to_vec(),
+                ..state.clone()
+            };
             &with_closed
         } else {
             state
@@ -1305,7 +1836,11 @@ impl<'a> Store<'a> {
         if !state.is_valid() {
             return fail(SyncCode::BadName);
         }
-        if state.device_id != self_id || state.platform != platform || state.sm != u64::from(SYNC_FORMAT_MAJOR) || state.sv != sv {
+        if state.device_id != self_id
+            || state.platform != platform
+            || state.sm != u64::from(SYNC_FORMAT_MAJOR)
+            || state.sv != sv
+        {
             return fail(SyncCode::StateMismatch);
         }
         // `forgotten` (Y-10) et `reset` (Y-11) : comparés à ce que Rust sait par l'appelant (`SyncCore::write_state`).
@@ -1325,11 +1860,29 @@ impl<'a> Store<'a> {
         check_budget(usage, nonce_max, 1)?;
         // Y-11 : l'état de l'époque visée par une réinitialisation va dans `state.next.spx`, sous la nouvelle clé (§14.3 étape 4).
         let (file_name, key) = self.state_target(&state.epoch);
-        let place = Place::State { dev: self_id, epoch: &state.epoch, state_seq: state.state_seq };
-        let line = key.seal(&place, text.as_bytes(), SYNC_FORMAT_MAJOR, sv as u32).map_err(|_| SyncError::new(SyncCode::Io))?;
-        let header = FileHeader::new(HeaderKind::State, key.kid(), self_id, &state.epoch, state.state_seq).line();
+        let place = Place::State {
+            dev: self_id,
+            epoch: &state.epoch,
+            state_seq: state.state_seq,
+        };
+        let line = key
+            .seal(&place, text.as_bytes(), SYNC_FORMAT_MAJOR, sv as u32)
+            .map_err(|_| SyncError::new(SyncCode::Io))?;
+        let header = FileHeader::new(
+            HeaderKind::State,
+            key.kid(),
+            self_id,
+            &state.epoch,
+            state.state_seq,
+        )
+        .line();
         self.fs.create_dir(&device_dir(self_id)).map_err(fs_error)?;
-        self.fs.write_atomic(&[DEVICES_DIR, self_id, file_name], format!("{header}\n{line}\n").as_bytes()).map_err(fs_error)?;
+        self.fs
+            .write_atomic(
+                &[DEVICES_DIR, self_id, file_name],
+                format!("{header}\n{line}\n").as_bytes(),
+            )
+            .map_err(fs_error)?;
         usage.sealed += 1;
         if own.epoch.as_deref() != Some(state.epoch.as_str()) {
             own.epoch = Some(state.epoch.clone());
@@ -1343,16 +1896,31 @@ impl<'a> Store<'a> {
     }
 
     /// `sync_snapshot_begin` : numéro libre dans l'époque, fichier `.tmp` créé avec son en-tête.
-    pub fn snapshot_begin(&self, own: &OwnState, self_id: &str, epoch: &str, seq: u64, sv: u64) -> SyncResult<SnapshotWriter> {
+    pub fn snapshot_begin(
+        &self,
+        own: &OwnState,
+        self_id: &str,
+        epoch: &str,
+        seq: u64,
+        sv: u64,
+    ) -> SyncResult<SnapshotWriter> {
         if !is_epoch_id(epoch) || !is_file_number(seq) || !(1..=MAX_SV).contains(&sv) {
             return fail(SyncCode::BadName);
         }
         check_epoch_not_older(own, epoch)?;
-        let taken = match self.fs.list(&[DEVICES_DIR, self_id, epoch], MAX_SCAN_ENTRIES_PER_FOLDER) {
-            Ok(listing) => listing.entries.iter().filter_map(|e| match parse_file_name(&e.name) {
-                Some(SyncFileName::Snapshot(n)) if !e.is_dir => Some(n),
-                _ => None,
-            }).max().unwrap_or(0),
+        let taken = match self
+            .fs
+            .list(&[DEVICES_DIR, self_id, epoch], MAX_SCAN_ENTRIES_PER_FOLDER)
+        {
+            Ok(listing) => listing
+                .entries
+                .iter()
+                .filter_map(|e| match parse_file_name(&e.name) {
+                    Some(SyncFileName::Snapshot(n)) if !e.is_dir => Some(n),
+                    _ => None,
+                })
+                .max()
+                .unwrap_or(0),
             Err(FsError::NotFound) => 0,
             Err(error) => return Err(fs_error(error)),
         };
@@ -1362,15 +1930,48 @@ impl<'a> Store<'a> {
         }
         let name = snapshot_name(seq as u32);
         let temp = format!("{name}{TEMP_SUFFIX}");
-        self.fs.create_dir(&[DEVICES_DIR, self_id, epoch]).map_err(fs_error)?;
-        self.fs.remove_file(&[DEVICES_DIR, self_id, epoch, &temp]).map_err(fs_error)?;
-        let header = format!("{}\n", FileHeader::new(HeaderKind::Snapshot, self.key_for(epoch).kid(), self_id, epoch, seq).line());
-        self.fs.append(&[DEVICES_DIR, self_id, epoch, &temp], header.as_bytes(), AppendMode::CreateNew).map_err(fs_error)?;
-        Ok(SnapshotWriter { dev: self_id.to_owned(), epoch: epoch.to_owned(), seq: seq as u32, sv: sv as u32, bytes: header.len() as u64, records: 0 })
+        self.fs
+            .create_dir(&[DEVICES_DIR, self_id, epoch])
+            .map_err(fs_error)?;
+        self.fs
+            .remove_file(&[DEVICES_DIR, self_id, epoch, &temp])
+            .map_err(fs_error)?;
+        let header = format!(
+            "{}\n",
+            FileHeader::new(
+                HeaderKind::Snapshot,
+                self.key_for(epoch).kid(),
+                self_id,
+                epoch,
+                seq
+            )
+            .line()
+        );
+        self.fs
+            .append(
+                &[DEVICES_DIR, self_id, epoch, &temp],
+                header.as_bytes(),
+                AppendMode::CreateNew,
+            )
+            .map_err(fs_error)?;
+        Ok(SnapshotWriter {
+            dev: self_id.to_owned(),
+            epoch: epoch.to_owned(),
+            seq: seq as u32,
+            sv: sv as u32,
+            bytes: header.len() as u64,
+            records: 0,
+        })
     }
 
     /// `sync_snapshot_append` : borne de 256 Mio, budget de nonces, ajout au `.tmp`.
-    pub fn snapshot_append(&self, writer: &mut SnapshotWriter, usage: &mut Usage, nonce_max: u64, records: &[String]) -> SyncResult<()> {
+    pub fn snapshot_append(
+        &self,
+        writer: &mut SnapshotWriter,
+        usage: &mut Usage,
+        nonce_max: u64,
+        records: &[String],
+    ) -> SyncResult<()> {
         let mut bytes = writer.bytes;
         for text in records {
             if text.len() > MAX_RECORD_PLAINTEXT_BYTES {
@@ -1386,12 +1987,26 @@ impl<'a> Store<'a> {
         let key = self.key_for(&writer.epoch);
         let mut out = String::new();
         for (i, text) in records.iter().enumerate() {
-            let place = Place::Snapshot { dev: &writer.dev, epoch: &writer.epoch, seq: writer.seq, index: writer.records + i as u64 };
-            out.push_str(&key.seal(&place, text.as_bytes(), SYNC_FORMAT_MAJOR, writer.sv).map_err(|_| SyncError::new(SyncCode::Io))?);
+            let place = Place::Snapshot {
+                dev: &writer.dev,
+                epoch: &writer.epoch,
+                seq: writer.seq,
+                index: writer.records + i as u64,
+            };
+            out.push_str(
+                &key.seal(&place, text.as_bytes(), SYNC_FORMAT_MAJOR, writer.sv)
+                    .map_err(|_| SyncError::new(SyncCode::Io))?,
+            );
             out.push('\n');
         }
         let temp = format!("{}{TEMP_SUFFIX}", snapshot_name(writer.seq));
-        self.fs.append(&[DEVICES_DIR, &writer.dev, &writer.epoch, &temp], out.as_bytes(), AppendMode::Existing).map_err(fs_error)?;
+        self.fs
+            .append(
+                &[DEVICES_DIR, &writer.dev, &writer.epoch, &temp],
+                out.as_bytes(),
+                AppendMode::Existing,
+            )
+            .map_err(fs_error)?;
         usage.sealed += records.len() as u64;
         writer.bytes = bytes;
         writer.records += records.len() as u64;
@@ -1402,25 +2017,40 @@ impl<'a> Store<'a> {
     pub fn snapshot_commit(&self, writer: &SnapshotWriter) -> SyncResult<()> {
         let name = snapshot_name(writer.seq);
         let temp = format!("{name}{TEMP_SUFFIX}");
-        self.fs.rename(&[DEVICES_DIR, &writer.dev, &writer.epoch], &temp, &name).map_err(fs_error)
+        self.fs
+            .rename(&[DEVICES_DIR, &writer.dev, &writer.epoch], &temp, &name)
+            .map_err(fs_error)
     }
 
     /// Abandon d'un instantané (première erreur) : le `.tmp` est supprimé.
     pub fn snapshot_discard(&self, writer: &SnapshotWriter) {
         let temp = format!("{}{TEMP_SUFFIX}", snapshot_name(writer.seq));
-        let _ = self.fs.remove_file(&[DEVICES_DIR, &writer.dev, &writer.epoch, &temp]);
+        let _ = self
+            .fs
+            .remove_file(&[DEVICES_DIR, &writer.dev, &writer.epoch, &temp]);
     }
 
     /// `sync_delete_own` : jamais l'époque courante ni son segment de tête ; seuls les noms stricts sont supprimés.
-    pub fn delete_own(&self, own: &mut OwnState, self_id: &str, files: &[OwnFileRef]) -> SyncResult<u64> {
+    pub fn delete_own(
+        &self,
+        own: &mut OwnState,
+        self_id: &str,
+        files: &[OwnFileRef],
+    ) -> SyncResult<u64> {
         for file in files {
             let valid_kind = matches!(file.kind.as_str(), "j" | "s" | "epoch");
-            let valid_n = if file.kind == "epoch" { file.n.is_none() } else { file.n.is_some_and(is_file_number) };
+            let valid_n = if file.kind == "epoch" {
+                file.n.is_none()
+            } else {
+                file.n.is_some_and(is_file_number)
+            };
             if !is_epoch_id(&file.epoch) || !valid_kind || !valid_n {
                 return fail(SyncCode::BadName);
             }
             let current = own.epoch.as_deref() == Some(file.epoch.as_str());
-            if current && (file.kind == "epoch" || (file.kind == "j" && file.n == Some(own.segment))) {
+            if current
+                && (file.kind == "epoch" || (file.kind == "j" && file.n == Some(own.segment)))
+            {
                 return fail(SyncCode::CurrentEpoch);
             }
         }
@@ -1429,23 +2059,41 @@ impl<'a> Store<'a> {
             let epoch = file.epoch.as_str();
             match (file.kind.as_str(), file.n) {
                 ("epoch", _) => {
-                    let listing = match self.fs.list(&[DEVICES_DIR, self_id, epoch], MAX_SCAN_ENTRIES_PER_FOLDER) {
+                    let listing = match self
+                        .fs
+                        .list(&[DEVICES_DIR, self_id, epoch], MAX_SCAN_ENTRIES_PER_FOLDER)
+                    {
                         Ok(listing) => listing,
                         Err(FsError::NotFound) => continue,
                         Err(error) => return Err(fs_error(error)),
                     };
                     for entry in listing.entries.iter().filter(|e| !e.is_dir) {
-                        if matches!(parse_file_name(&entry.name), Some(SyncFileName::Segment(_) | SyncFileName::Snapshot(_)))
-                            && self.fs.remove_file(&[DEVICES_DIR, self_id, epoch, &entry.name]).map_err(fs_error)?
+                        if matches!(
+                            parse_file_name(&entry.name),
+                            Some(SyncFileName::Segment(_) | SyncFileName::Snapshot(_))
+                        ) && self
+                            .fs
+                            .remove_file(&[DEVICES_DIR, self_id, epoch, &entry.name])
+                            .map_err(fs_error)?
                         {
                             deleted += 1;
                         }
                     }
-                    self.fs.remove_empty_dir(&[DEVICES_DIR, self_id, epoch]).map_err(fs_error)?;
+                    self.fs
+                        .remove_empty_dir(&[DEVICES_DIR, self_id, epoch])
+                        .map_err(fs_error)?;
                 }
                 (kind, Some(n)) => {
-                    let name = if kind == "j" { segment_name(n as u32) } else { snapshot_name(n as u32) };
-                    if self.fs.remove_file(&[DEVICES_DIR, self_id, epoch, &name]).map_err(fs_error)? {
+                    let name = if kind == "j" {
+                        segment_name(n as u32)
+                    } else {
+                        snapshot_name(n as u32)
+                    };
+                    if self
+                        .fs
+                        .remove_file(&[DEVICES_DIR, self_id, epoch, &name])
+                        .map_err(fs_error)?
+                    {
                         deleted += 1;
                     }
                     // Y-TECH-02 : l'entrée `closed` d'un segment supprimé de l'époque courante est retirée (partie avec l'état suivant).
@@ -1467,7 +2115,10 @@ impl<'a> Store<'a> {
         if own.state_seq != 0 || own.segment != 0 || own.record != 0 {
             return fail(SyncCode::StateMismatch);
         }
-        let listing = match self.fs.list(&[DEVICES_DIR, self_id], MAX_SCAN_ENTRIES_PER_FOLDER) {
+        let listing = match self
+            .fs
+            .list(&[DEVICES_DIR, self_id], MAX_SCAN_ENTRIES_PER_FOLDER)
+        {
             Ok(listing) => listing,
             Err(error) => return Err(fs_error(error)),
         };
@@ -1475,21 +2126,42 @@ impl<'a> Store<'a> {
         if listing.truncated {
             return fail(SyncCode::StateMismatch);
         }
-        if listing.entries.iter().any(|e| !e.is_dir && (e.name == STATE_FILE || e.name == STATE_NEXT_FILE)) {
+        if listing
+            .entries
+            .iter()
+            .any(|e| !e.is_dir && (e.name == STATE_FILE || e.name == STATE_NEXT_FILE))
+        {
             return fail(SyncCode::StateMismatch);
         }
-        if listing.entries.iter().any(|e| e.is_dir && e.name != epoch && is_epoch_id(&e.name)) {
+        if listing
+            .entries
+            .iter()
+            .any(|e| e.is_dir && e.name != epoch && is_epoch_id(&e.name))
+        {
             return fail(SyncCode::StateMismatch);
         }
-        let in_epoch = match self.fs.list(&[DEVICES_DIR, self_id, epoch], MAX_SCAN_ENTRIES_PER_FOLDER) {
+        let in_epoch = match self
+            .fs
+            .list(&[DEVICES_DIR, self_id, epoch], MAX_SCAN_ENTRIES_PER_FOLDER)
+        {
             Ok(listing) => listing,
             Err(error) => return Err(fs_error(error)),
         };
         if in_epoch.truncated {
             return fail(SyncCode::StateMismatch);
         }
-        let snapshots = in_epoch.entries.iter().filter(|e| !e.is_dir && matches!(parse_file_name(&e.name), Some(SyncFileName::Snapshot(_)))).count();
-        let others = in_epoch.entries.iter().any(|e| e.is_dir || (!e.name.ends_with(TEMP_SUFFIX) && !matches!(parse_file_name(&e.name), Some(SyncFileName::Snapshot(_)))));
+        let snapshots = in_epoch
+            .entries
+            .iter()
+            .filter(|e| {
+                !e.is_dir && matches!(parse_file_name(&e.name), Some(SyncFileName::Snapshot(_)))
+            })
+            .count();
+        let others = in_epoch.entries.iter().any(|e| {
+            e.is_dir
+                || (!e.name.ends_with(TEMP_SUFFIX)
+                    && !matches!(parse_file_name(&e.name), Some(SyncFileName::Snapshot(_))))
+        });
         if snapshots != 1 || others {
             return fail(SyncCode::StateMismatch);
         }
@@ -1514,20 +2186,43 @@ impl<'a> Store<'a> {
             match entry.availability {
                 Availability::Cloud => true,
                 Availability::Error => false,
-                Availability::Local => entry.size <= MAX_SEGMENT_BYTES && fs.read(path, MAX_SEGMENT_BYTES, false).ok().is_some_and(|b| parse_file(&b).is_ok()),
+                Availability::Local => {
+                    entry.size <= MAX_SEGMENT_BYTES
+                        && fs
+                            .read(path, MAX_SEGMENT_BYTES, false)
+                            .ok()
+                            .is_some_and(|b| parse_file(&b).is_ok())
+                }
             }
         };
-        for dev in root.entries.iter().filter(|e| e.is_dir && is_uuid_v4(&e.name)) {
-            let Ok(listing) = budget.list(fs, &device_dir(&dev.name)) else { continue };
+        for dev in root
+            .entries
+            .iter()
+            .filter(|e| e.is_dir && is_uuid_v4(&e.name))
+        {
+            let Ok(listing) = budget.list(fs, &device_dir(&dev.name)) else {
+                continue;
+            };
             let mut epochs = 0;
             for entry in &listing.entries {
-                if !entry.is_dir && entry.name == STATE_FILE && has_header(&[DEVICES_DIR, &dev.name, STATE_FILE], entry) {
+                if !entry.is_dir
+                    && entry.name == STATE_FILE
+                    && has_header(&[DEVICES_DIR, &dev.name, STATE_FILE], entry)
+                {
                     return Ok(true);
                 }
                 if entry.is_dir && is_epoch_id(&entry.name) && epochs < MAX_EPOCHS_PER_DEVICE {
                     epochs += 1;
-                    let Ok(files) = budget.list(fs, &[DEVICES_DIR, &dev.name, &entry.name]) else { continue };
-                    for file in files.entries.iter().filter(|f| !f.is_dir && matches!(parse_file_name(&f.name), Some(SyncFileName::Segment(_) | SyncFileName::Snapshot(_)))) {
+                    let Ok(files) = budget.list(fs, &[DEVICES_DIR, &dev.name, &entry.name]) else {
+                        continue;
+                    };
+                    for file in files.entries.iter().filter(|f| {
+                        !f.is_dir
+                            && matches!(
+                                parse_file_name(&f.name),
+                                Some(SyncFileName::Segment(_) | SyncFileName::Snapshot(_))
+                            )
+                    }) {
                         if has_header(&[DEVICES_DIR, &dev.name, &entry.name, &file.name], file) {
                             return Ok(true);
                         }
@@ -1544,18 +2239,44 @@ impl<'a> Store<'a> {
     /// d'entrées que `folder_has_data` ; une erreur de listage ne refuse pas (le nom du dossier et la séparation cryptographique font garde).
     pub fn folder_has_foreign_data(fs: &dyn SyncFs) -> SyncResult<bool> {
         let budget = Budget::new();
-        let Ok(root) = budget.list(fs, &[DEVICES_DIR]) else { return Ok(false) };
-        if root.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) { // ancien-ok: garde de séparation ADR 0017
+        let Ok(root) = budget.list(fs, &[DEVICES_DIR]) else {
+            return Ok(false);
+        };
+        if root
+            .entries
+            .iter()
+            .any(|e| !e.is_dir && is_circletasks_file_name(&e.name))
+        {
+            // ancien-ok: garde de séparation ADR 0017
             return Ok(true);
         }
         for dev in root.entries.iter().filter(|e| e.is_dir) {
-            let Ok(listing) = budget.list(fs, &[DEVICES_DIR, &dev.name]) else { continue };
-            if listing.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) { // ancien-ok: garde de séparation ADR 0017
+            let Ok(listing) = budget.list(fs, &[DEVICES_DIR, &dev.name]) else {
+                continue;
+            };
+            if listing
+                .entries
+                .iter()
+                .any(|e| !e.is_dir && is_circletasks_file_name(&e.name))
+            {
+                // ancien-ok: garde de séparation ADR 0017
                 return Ok(true);
             }
-            for entry in listing.entries.iter().filter(|e| e.is_dir).take(MAX_EPOCHS_PER_DEVICE) {
-                let Ok(files) = budget.list(fs, &[DEVICES_DIR, &dev.name, &entry.name]) else { continue };
-                if files.entries.iter().any(|e| !e.is_dir && is_circletasks_file_name(&e.name)) { // ancien-ok: garde de séparation ADR 0017
+            for entry in listing
+                .entries
+                .iter()
+                .filter(|e| e.is_dir)
+                .take(MAX_EPOCHS_PER_DEVICE)
+            {
+                let Ok(files) = budget.list(fs, &[DEVICES_DIR, &dev.name, &entry.name]) else {
+                    continue;
+                };
+                if files
+                    .entries
+                    .iter()
+                    .any(|e| !e.is_dir && is_circletasks_file_name(&e.name))
+                {
+                    // ancien-ok: garde de séparation ADR 0017
                     return Ok(true);
                 }
             }
@@ -1566,7 +2287,11 @@ impl<'a> Store<'a> {
     /// Le dossier porte-t-il la clé `key` ? Lit les `state.spx` (hydratés au besoin ; 64 au plus, audit S2) ; `only` : un seul appareil
     /// (QR). `readable` compte les états dont l'en-tête est lisible ; `decrypts` est vrai si l'un d'eux annonce le `kid` de la clé **et**
     /// se déchiffre avec elle (audit S4 : un `kid` recopié en clair ne suffit pas).
-    pub fn folder_kids(fs: &dyn SyncFs, only: Option<&str>, key: &MasterKey) -> SyncResult<KidCheck> {
+    pub fn folder_kids(
+        fs: &dyn SyncFs,
+        only: Option<&str>,
+        key: &MasterKey,
+    ) -> SyncResult<KidCheck> {
         let budget = Budget::new();
         let root = match budget.list(fs, &[DEVICES_DIR]) {
             Ok(listing) => listing,
@@ -1574,12 +2299,21 @@ impl<'a> Store<'a> {
             Err(error) => return Err(fs_error(error)),
         };
         let mut check = KidCheck::default();
-        let devices = root.entries.iter().filter(|e| e.is_dir && is_uuid_v4(&e.name) && only.is_none_or_eq(&e.name));
+        let devices = root
+            .entries
+            .iter()
+            .filter(|e| e.is_dir && is_uuid_v4(&e.name) && only.is_none_or_eq(&e.name));
         for dev in devices.take(MAX_STATE_CANDIDATES) {
             // Y-11 : la nouvelle clé d'une réinitialisation en cours n'est encore portée que par des `state.next.spx`.
             for name in [STATE_FILE, STATE_NEXT_FILE] {
-                let Ok(bytes) = fs.read(&[DEVICES_DIR, &dev.name, name], MAX_STATE_FILE_BYTES, true) else { continue };
-                let Ok(file) = parse_file(&bytes) else { continue };
+                let Ok(bytes) =
+                    fs.read(&[DEVICES_DIR, &dev.name, name], MAX_STATE_FILE_BYTES, true)
+                else {
+                    continue;
+                };
+                let Ok(file) = parse_file(&bytes) else {
+                    continue;
+                };
                 let h = &file.header;
                 if h.kind() != Some(HeaderKind::State) || h.dev != dev.name {
                     continue;
@@ -1588,11 +2322,19 @@ impl<'a> Store<'a> {
                 if h.kid != key.kid() || file.partial_tail {
                     continue;
                 }
-                let place = Place::State { dev: &dev.name, epoch: &h.e, state_seq: h.n };
+                let place = Place::State {
+                    dev: &dev.name,
+                    epoch: &h.e,
+                    state_seq: h.n,
+                };
                 if let [line] = file.lines.as_slice() {
                     if line_str(line).is_some_and(|line| key.open(&place, line).is_ok()) {
                         check.decrypts = true;
-                        let newer = check.epoch.as_deref().and_then(EpochId::parse).map_or(true, |e| EpochId::parse(&h.e).is_some_and(|f| f > e));
+                        let newer = check
+                            .epoch
+                            .as_deref()
+                            .and_then(EpochId::parse)
+                            .map_or(true, |e| EpochId::parse(&h.e).is_some_and(|f| f > e));
                         if newer {
                             check.epoch = Some(h.e.clone());
                         }
@@ -1609,20 +2351,32 @@ impl<'a> Store<'a> {
     ///
     /// Son propre `state.spx` présent mais illisible (dans le nuage, incomplet, remplacé) et aucun accusé qui borne : `cloud-pending`,
     /// rien n'est mis en cache (revue 4) ; l'appareil ne publie pas sur une tête qu'il ne connaît pas.
-    pub fn rebuild_own(&self, folder_id: &str, self_id: &str, accepted: &HashMap<String, Accepted>) -> SyncResult<OwnState> {
+    pub fn rebuild_own(
+        &self,
+        folder_id: &str,
+        self_id: &str,
+        accepted: &HashMap<String, Accepted>,
+    ) -> SyncResult<OwnState> {
         let mine = self.read_state(self_id, accepted);
-        let state = if mine.status == StateStatus::Ok { mine.state } else { None };
+        let state = if mine.status == StateStatus::Ok {
+            mine.state
+        } else {
+            None
+        };
         let mut acks = Vec::new();
         let budget = Budget::new();
         // Son propre dossier d'abord (budget réservé, audit A1).
         let mut listing = self.list_device_top(self_id, &budget).map_err(fs_error)?;
-        self.list_epochs(self_id, &mut listing, &budget).map_err(fs_error)?;
+        self.list_epochs(self_id, &mut listing, &budget)
+            .map_err(fs_error)?;
         let root = match budget.list(self.fs, &[DEVICES_DIR]) {
             Ok(listing) => listing.entries,
             Err(FsError::NotFound) => Vec::new(),
             Err(error) => return Err(fs_error(error)),
         };
-        let others = root.iter().filter(|e| e.is_dir && is_uuid_v4(&e.name) && e.name != self_id);
+        let others = root
+            .iter()
+            .filter(|e| e.is_dir && is_uuid_v4(&e.name) && e.name != self_id);
         for dev in others.take(MAX_STATE_CANDIDATES) {
             let read = self.read_state(&dev.name, accepted);
             if let Some(ack) = read.state.as_ref().and_then(|s| s.acks.get(self_id)) {
@@ -1645,10 +2399,23 @@ impl<'a> Store<'a> {
         // des sources authentifiées (accusés, état accepté) ; au-delà, un tiers pourrait l'approcher de 2^53 et interdire toute
         // réécriture : il est ignoré.
         let mut replaced_seq = 0;
-        if !matches!(mine.status, StateStatus::Ok | StateStatus::Missing | StateStatus::CloudPending) {
-            let authenticated = acks.iter().map(|a| a.state_seq).chain(accepted.get(self_id).map(|a| a.seq)).max().unwrap_or(0);
+        if !matches!(
+            mine.status,
+            StateStatus::Ok | StateStatus::Missing | StateStatus::CloudPending
+        ) {
+            let authenticated = acks
+                .iter()
+                .map(|a| a.state_seq)
+                .chain(accepted.get(self_id).map(|a| a.seq))
+                .max()
+                .unwrap_or(0);
             replaced_seq = authenticated;
-            if let Some(h) = self.fs.read_head(&[DEVICES_DIR, self_id, STATE_FILE], MAX_HEADER_BYTES + 1).ok().and_then(|head| header_of(&head)) {
+            if let Some(h) = self
+                .fs
+                .read_head(&[DEVICES_DIR, self_id, STATE_FILE], MAX_HEADER_BYTES + 1)
+                .ok()
+                .and_then(|head| header_of(&head))
+            {
                 if h.kind() == Some(HeaderKind::State) && h.dev == self_id {
                     if h.n <= authenticated.saturating_add(MAX_UNAUTHENTICATED_SEQ_JUMP) {
                         replaced_seq = replaced_seq.max(h.n);
@@ -1662,7 +2429,11 @@ impl<'a> Store<'a> {
         // Époques des fichiers listés retenues seulement si l'une d'elles contient un segment authentifié.
         let mut listed: BTreeMap<EpochId, (u32, u64)> = BTreeMap::new();
         for (epoch, files) in listing.epochs.iter().rev() {
-            if let Some(tail) = self.authenticated_tail(self_id, &epoch.name(), files.segments.keys().rev().copied()) {
+            if let Some(tail) = self.authenticated_tail(
+                self_id,
+                &epoch.name(),
+                files.segments.keys().rev().copied(),
+            ) {
                 listed.insert(epoch.clone(), tail);
                 break;
             }
@@ -1671,23 +2442,47 @@ impl<'a> Store<'a> {
         epochs.extend(state.iter().filter_map(|s| EpochId::parse(&s.epoch)));
         epochs.extend(acks.iter().filter_map(|a| EpochId::parse(&a.epoch)));
         let epoch = epochs.into_iter().max();
-        let state_seq = acks.iter().map(|a| a.state_seq).chain(state.iter().map(|s| s.state_seq)).max().unwrap_or(0).max(replaced_seq);
+        let state_seq = acks
+            .iter()
+            .map(|a| a.state_seq)
+            .chain(state.iter().map(|s| s.state_seq))
+            .max()
+            .unwrap_or(0)
+            .max(replaced_seq);
         let mut own = OwnState::empty(folder_id, self.key.kid());
         own.state_seq = state_seq;
         own.paired_by = state.as_ref().and_then(|s| s.paired_by.clone());
         let Some(epoch) = epoch else { return Ok(own) };
         let epoch_name = epoch.name();
-        let mut head = RecordCursor { segment: 0, record: 0 };
+        let mut head = RecordCursor {
+            segment: 0,
+            record: 0,
+        };
         let mut max_hlc: Option<String> = None;
         if let Some(&(n, lines)) = listed.get(&epoch) {
-            head = RecordCursor { segment: u64::from(n), record: lines };
+            head = RecordCursor {
+                segment: u64::from(n),
+                record: lines,
+            };
         }
         let mut sources: Vec<(RecordCursor, Option<String>)> = Vec::new();
         if let Some(s) = state.as_ref().filter(|s| s.epoch == epoch_name) {
-            sources.push((RecordCursor { segment: s.head.segment, record: s.head.record }, s.head.hlc.clone()));
+            sources.push((
+                RecordCursor {
+                    segment: s.head.segment,
+                    record: s.head.record,
+                },
+                s.head.hlc.clone(),
+            ));
         }
         for ack in acks.iter().filter(|a| a.epoch == epoch_name) {
-            sources.push((RecordCursor { segment: ack.segment, record: ack.record }, ack.hlc.clone()));
+            sources.push((
+                RecordCursor {
+                    segment: ack.segment,
+                    record: ack.record,
+                },
+                ack.hlc.clone(),
+            ));
         }
         for (cursor, hlc) in sources {
             head = head.max(cursor);
@@ -1703,7 +2498,12 @@ impl<'a> Store<'a> {
             own.closed = s
                 .closed
                 .iter()
-                .filter(|c| c.segment < head.segment && !acks.iter().any(|a| a.epoch == epoch_name && a.segment == c.segment && a.record > c.records))
+                .filter(|c| {
+                    c.segment < head.segment
+                        && !acks.iter().any(|a| {
+                            a.epoch == epoch_name && a.segment == c.segment && a.record > c.records
+                        })
+                })
                 .copied()
                 .collect();
         }
@@ -1752,7 +2552,12 @@ fn page_limit(max_bytes: Option<u64>) -> SyncResult<usize> {
 
 /// Une époque antérieure à celle de `own.json` n'est plus écrite (`state-mismatch`).
 fn check_epoch_not_older(own: &OwnState, epoch: &str) -> SyncResult<()> {
-    let (Some(current), Some(requested)) = (own.epoch.as_deref().and_then(EpochId::parse), EpochId::parse(epoch)) else { return Ok(()) };
+    let (Some(current), Some(requested)) = (
+        own.epoch.as_deref().and_then(EpochId::parse),
+        EpochId::parse(epoch),
+    ) else {
+        return Ok(());
+    };
     if requested < current {
         return fail(SyncCode::StateMismatch);
     }

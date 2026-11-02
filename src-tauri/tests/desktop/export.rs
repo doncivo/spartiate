@@ -1,6 +1,9 @@
 //! Export de fichiers (H-03) : règles de `export_save_file` / `reveal_exported_file` (écriture atomique, taille, chemins, noms).
 
-use spartiate_lib::export::{allowed_extension, body_bytes, decode_name, is_local_disk_path, reveal_target, sanitize_file_name, write_atomically, write_atomically_with, MAX_EXPORT_BYTES, MAX_HEADER_LEN};
+use spartiate_lib::export::{
+    allowed_extension, body_bytes, decode_name, is_local_disk_path, reveal_target,
+    sanitize_file_name, write_atomically, write_atomically_with, MAX_EXPORT_BYTES, MAX_HEADER_LEN,
+};
 use std::io::Write;
 use std::path::Path;
 
@@ -12,7 +15,10 @@ fn atomic_write_creates_the_file_and_leaves_no_temporary() {
     let target = dir.path().join("rapport.csv");
     write_atomically(&target, b"titre;date\r\n").expect("écriture");
     assert_eq!(std::fs::read(&target).expect("lecture"), b"titre;date\r\n");
-    let names: Vec<_> = std::fs::read_dir(dir.path()).expect("dossier").map(|e| e.expect("entrée").file_name()).collect();
+    let names: Vec<_> = std::fs::read_dir(dir.path())
+        .expect("dossier")
+        .map(|e| e.expect("entrée").file_name())
+        .collect();
     assert_eq!(names, [std::ffi::OsString::from("rapport.csv")]);
 }
 
@@ -35,16 +41,29 @@ fn failure_in_the_middle_leaves_no_partial_file_and_keeps_the_existing_one_intac
         Err(std::io::Error::other("disque plein"))
     };
     assert!(write_atomically_with(&target, b"nouveau contenu complet", &failing).is_err());
-    assert_eq!(std::fs::read(&target).expect("lecture"), b"ancien contenu", "le fichier existant n'est pas touché");
-    let names: Vec<_> = std::fs::read_dir(dir.path()).expect("dossier").map(|e| e.expect("entrée").file_name()).collect();
-    assert_eq!(names, [std::ffi::OsString::from("rapport.csv")], "aucun temporaire ne reste");
+    assert_eq!(
+        std::fs::read(&target).expect("lecture"),
+        b"ancien contenu",
+        "le fichier existant n'est pas touché"
+    );
+    let names: Vec<_> = std::fs::read_dir(dir.path())
+        .expect("dossier")
+        .map(|e| e.expect("entrée").file_name())
+        .collect();
+    assert_eq!(
+        names,
+        [std::ffi::OsString::from("rapport.csv")],
+        "aucun temporaire ne reste"
+    );
 }
 
 #[test]
 fn failure_on_a_new_target_leaves_nothing_at_all() {
     let dir = tempfile::tempdir().expect("dossier");
     let target = dir.path().join("nouveau.pdf");
-    let failing = |_: &mut std::fs::File, _: &[u8]| -> std::io::Result<()> { Err(std::io::Error::other("droits")) };
+    let failing = |_: &mut std::fs::File, _: &[u8]| -> std::io::Result<()> {
+        Err(std::io::Error::other("droits"))
+    };
     assert!(write_atomically_with(&target, b"x", &failing).is_err());
     assert_eq!(std::fs::read_dir(dir.path()).expect("dossier").count(), 0);
 }
@@ -83,7 +102,11 @@ fn json_array_bodies_are_accepted_as_bytes() {
 #[cfg(windows)]
 #[test]
 fn only_local_disk_paths_are_accepted() {
-    for ok in ["C:\\Users\\Ali\\Documents\\x.csv", "\\\\?\\C:\\Users\\Ali\\x.csv", "d:\\x.pdf"] {
+    for ok in [
+        "C:\\Users\\Ali\\Documents\\x.csv",
+        "\\\\?\\C:\\Users\\Ali\\x.csv",
+        "d:\\x.pdf",
+    ] {
         assert!(is_local_disk_path(Path::new(ok)), "{ok}");
         assert!(reveal_target(Some(Path::new(ok))).is_ok(), "{ok}");
     }
@@ -99,7 +122,10 @@ fn only_local_disk_paths_are_accepted() {
         "relatif\\x.csv",
     ] {
         assert!(!is_local_disk_path(Path::new(refused)), "{refused}");
-        assert!(reveal_target(Some(Path::new(refused))).is_err(), "{refused}");
+        assert!(
+            reveal_target(Some(Path::new(refused))).is_err(),
+            "{refused}"
+        );
     }
 }
 
@@ -112,7 +138,10 @@ fn nothing_to_reveal_before_the_first_export() {
 
 #[test]
 fn suggested_names_are_reduced_to_a_plain_file_name() {
-    assert_eq!(sanitize_file_name("spartiate-rapport-2026-09.pdf"), "spartiate-rapport-2026-09.pdf");
+    assert_eq!(
+        sanitize_file_name("spartiate-rapport-2026-09.pdf"),
+        "spartiate-rapport-2026-09.pdf"
+    );
     assert_eq!(sanitize_file_name("..\\..\\Windows\\evil.exe"), "evil.exe");
     assert_eq!(sanitize_file_name("a/b/c.csv"), "c.csv");
     assert_eq!(sanitize_file_name("x:y*z?.csv"), "xyz.csv");
@@ -127,7 +156,17 @@ fn trailing_spaces_and_dots_are_removed() {
 
 #[test]
 fn reserved_device_names_are_prefixed_case_insensitively_before_the_first_dot() {
-    for raw in ["CON", "con.csv", "Nul.json", "PRN.txt", "aux.png", "COM1.csv", "com9", "LPT1.pdf", "lpt9.x.csv"] {
+    for raw in [
+        "CON",
+        "con.csv",
+        "Nul.json",
+        "PRN.txt",
+        "aux.png",
+        "COM1.csv",
+        "com9",
+        "LPT1.pdf",
+        "lpt9.x.csv",
+    ] {
         assert!(sanitize_file_name(raw).starts_with('_'), "{raw}");
     }
     assert_eq!(sanitize_file_name("CON.csv"), "_CON.csv");
@@ -157,7 +196,10 @@ fn only_the_export_formats_are_offered_as_a_filter() {
 #[test]
 fn the_name_header_is_base64_of_utf8_and_bounded() {
     // « Réunion.csv »
-    assert_eq!(decode_name("UsOpdW5pb24uY3N2").as_deref(), Some("Réunion.csv"));
+    assert_eq!(
+        decode_name("UsOpdW5pb24uY3N2").as_deref(),
+        Some("Réunion.csv")
+    );
     assert_eq!(decode_name("***"), None);
     assert_eq!(decode_name(&"A".repeat(MAX_HEADER_LEN + 1)), None);
 }

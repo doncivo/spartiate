@@ -1,7 +1,10 @@
 //! OCR Windows (Q-04) : contrôle des entrées, nettoyage des lignes, et lecture réelle d'images de test
 //! (tests/fixtures/ocr) avec Windows.Media.Ocr si le pack de langue français est installé.
 
-use spartiate_lib::ocr::{check_dimensions, clean_lines, pick_french, recognize_bytes, sniff_image, status, validate_image, ImageKind, OcrError, MAX_IMAGE_BYTES, MAX_LINES};
+use spartiate_lib::ocr::{
+    check_dimensions, clean_lines, pick_french, recognize_bytes, sniff_image, status,
+    validate_image, ImageKind, OcrError, MAX_IMAGE_BYTES, MAX_LINES,
+};
 
 const PRINTED: &[u8] = include_bytes!("../../../tests/fixtures/ocr/liste-imprimee.png");
 const PHOTO: &[u8] = include_bytes!("../../../tests/fixtures/ocr/photo-liste.jpg");
@@ -9,7 +12,12 @@ const BULLETS: &[u8] = include_bytes!("../../../tests/fixtures/ocr/liste-puces.p
 const BLANK: &[u8] = include_bytes!("../../../tests/fixtures/ocr/page-vide.png");
 
 fn texts(bytes: &[u8]) -> Vec<String> {
-    recognize_bytes(bytes).expect("lecture").lines.into_iter().map(|line| line.text).collect()
+    recognize_bytes(bytes)
+        .expect("lecture")
+        .lines
+        .into_iter()
+        .map(|line| line.text)
+        .collect()
 }
 
 /// Sans pack français (poste neuf), les tests de lecture réelle sont ignorés : la marche à suivre est dans l'app (Q-04 critère 11).
@@ -25,7 +33,10 @@ fn french_pack_installed() -> bool {
 fn sniffs_formats_from_magic_bytes_only() {
     assert_eq!(sniff_image(PRINTED), Some(ImageKind::Png));
     assert_eq!(sniff_image(PHOTO), Some(ImageKind::Jpeg));
-    assert_eq!(sniff_image(b"BM\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"), Some(ImageKind::Bmp));
+    assert_eq!(
+        sniff_image(b"BM\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"),
+        Some(ImageKind::Bmp)
+    );
     assert_eq!(sniff_image(b"RIFF....WEBP"), None);
     assert_eq!(sniff_image(b"GIF89a......"), None);
     assert_eq!(sniff_image(b"%PDF-1.7"), None);
@@ -38,7 +49,10 @@ fn rejects_empty_oversized_and_unknown_inputs() {
     let mut huge = vec![0xFF, 0xD8, 0xFF];
     huge.resize(MAX_IMAGE_BYTES + 1, 0);
     assert_eq!(validate_image(&huge), Err(OcrError::TooLarge));
-    assert_eq!(validate_image(b"just some text"), Err(OcrError::UnsupportedFormat));
+    assert_eq!(
+        validate_image(b"just some text"),
+        Err(OcrError::UnsupportedFormat)
+    );
     assert_eq!(validate_image(PRINTED), Ok(ImageKind::Png));
     // À la limite exacte, l'image passe.
     let mut limit = vec![0xFF, 0xD8, 0xFF];
@@ -48,26 +62,60 @@ fn rejects_empty_oversized_and_unknown_inputs() {
 
 #[test]
 fn error_codes_are_stable_for_the_front() {
-    let codes: Vec<&str> =
-        [OcrError::EmptyImage, OcrError::TooLarge, OcrError::UnsupportedFormat, OcrError::DimensionsTooLarge, OcrError::LanguageMissing, OcrError::Unavailable, OcrError::Busy, OcrError::Timeout, OcrError::Engine("x".into())]
-            .iter()
-            .map(OcrError::code)
-            .collect();
+    let codes: Vec<&str> = [
+        OcrError::EmptyImage,
+        OcrError::TooLarge,
+        OcrError::UnsupportedFormat,
+        OcrError::DimensionsTooLarge,
+        OcrError::LanguageMissing,
+        OcrError::Unavailable,
+        OcrError::Busy,
+        OcrError::Timeout,
+        OcrError::Engine("x".into()),
+    ]
+    .iter()
+    .map(OcrError::code)
+    .collect();
     assert_eq!(
         codes,
-        ["ocr-empty-image", "ocr-too-large", "ocr-unsupported-format", "ocr-dimensions-too-large", "ocr-language-missing", "ocr-unavailable", "ocr-busy", "ocr-timeout", "ocr-engine"]
+        [
+            "ocr-empty-image",
+            "ocr-too-large",
+            "ocr-unsupported-format",
+            "ocr-dimensions-too-large",
+            "ocr-language-missing",
+            "ocr-unavailable",
+            "ocr-busy",
+            "ocr-timeout",
+            "ocr-engine"
+        ]
     );
 }
 
 #[test]
 fn cleans_blank_lines_control_characters_and_spacing() {
-    let cleaned: Vec<String> = clean_lines(["  Appeler   le plombier ", "", "   ", "Acheter\u{0}des\tampoules", "\r\n", "Payer"]).into_iter().map(|l| l.text).collect();
-    assert_eq!(cleaned, ["Appeler le plombier", "Acheter des ampoules", "Payer"]);
+    let cleaned: Vec<String> = clean_lines([
+        "  Appeler   le plombier ",
+        "",
+        "   ",
+        "Acheter\u{0}des\tampoules",
+        "\r\n",
+        "Payer",
+    ])
+    .into_iter()
+    .map(|l| l.text)
+    .collect();
+    assert_eq!(
+        cleaned,
+        ["Appeler le plombier", "Acheter des ampoules", "Payer"]
+    );
 }
 
 #[test]
 fn keeps_accents_and_caps_the_number_of_lines() {
-    let many: Vec<String> = (0..MAX_LINES + 50).map(|i| format!("Ligne {i} é")).collect();
+    let many: Vec<String> = (0..MAX_LINES + 50)
+        .map(|i| format!("Ligne {i} é"))
+        .collect();
     let cleaned = clean_lines(&many);
     assert_eq!(cleaned.len(), MAX_LINES);
     assert_eq!(cleaned[0].text, "Ligne 0 é");
@@ -76,8 +124,14 @@ fn keeps_accents_and_caps_the_number_of_lines() {
 #[test]
 fn picks_french_preferring_fr_fr() {
     let list = |tags: &[&str]| tags.iter().map(|t| (*t).to_owned()).collect::<Vec<_>>();
-    assert_eq!(pick_french(&list(&["en-US", "fr-CA", "fr-FR"])), Some(&"fr-FR".to_owned()));
-    assert_eq!(pick_french(&list(&["en-US", "fr-CA"])), Some(&"fr-CA".to_owned()));
+    assert_eq!(
+        pick_french(&list(&["en-US", "fr-CA", "fr-FR"])),
+        Some(&"fr-FR".to_owned())
+    );
+    assert_eq!(
+        pick_french(&list(&["en-US", "fr-CA"])),
+        Some(&"fr-CA".to_owned())
+    );
     assert_eq!(pick_french(&list(&["fr"])), Some(&"fr".to_owned()));
     assert_eq!(pick_french(&list(&["en-US", "de-DE", "fra-X"])), None);
     assert_eq!(pick_french(&[]), None);
@@ -98,7 +152,10 @@ fn reads_a_printed_french_list_with_windows_media_ocr() {
     let lines = texts(PRINTED);
     let joined = lines.join(" | ").to_lowercase();
     for expected in ["plombier", "ampoules", "restaurant", "cantine", "garage"] {
-        assert!(joined.contains(expected), "« {expected} » absent de la lecture : {joined}");
+        assert!(
+            joined.contains(expected),
+            "« {expected} » absent de la lecture : {joined}"
+        );
     }
     // Les accents du français passent : « Réserver ».
     assert!(joined.contains("réserver"), "{joined}");
@@ -112,9 +169,15 @@ fn reads_a_jpeg_photo_and_keeps_bullets_for_the_front_to_strip() {
         return;
     }
     let photo = texts(PHOTO).join(" | ").to_lowercase();
-    assert!(photo.contains("plombier") && photo.contains("cantine"), "{photo}");
+    assert!(
+        photo.contains("plombier") && photo.contains("cantine"),
+        "{photo}"
+    );
     let bullets = texts(BULLETS).join(" | ").to_lowercase();
-    assert!(bullets.contains("notaire") && bullets.contains("facture"), "{bullets}");
+    assert!(
+        bullets.contains("notaire") && bullets.contains("facture"),
+        "{bullets}"
+    );
 }
 
 #[cfg(windows)]
@@ -134,7 +197,10 @@ fn garbage_that_looks_like_a_png_is_an_engine_error_not_a_crash() {
     }
     let mut fake = vec![0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A];
     fake.extend_from_slice(&[0; 64]);
-    assert!(matches!(recognize_bytes(&fake), Err(OcrError::UnsupportedFormat | OcrError::Engine(_))));
+    assert!(matches!(
+        recognize_bytes(&fake),
+        Err(OcrError::UnsupportedFormat | OcrError::Engine(_))
+    ));
 }
 
 /// Q-04 : l'image n'est jamais conservée. Aucun fichier ne doit apparaître dans le dossier temporaire
@@ -159,16 +225,41 @@ fn q04_no_temporary_file_is_left_after_success_or_error() {
     let _ = recognize_bytes(PRINTED);
     let _ = recognize_bytes(PHOTO);
     let after = temp_entries();
-    let created: Vec<_> = after.difference(&before).filter(|n| !n.to_string_lossy().starts_with("cargo") && !n.to_string_lossy().starts_with("rust")).collect();
-    assert!(created.is_empty(), "fichiers temporaires restants : {created:?}");
+    let created: Vec<_> = after
+        .difference(&before)
+        .filter(|n| {
+            !n.to_string_lossy().starts_with("cargo") && !n.to_string_lossy().starts_with("rust")
+        })
+        .collect();
+    assert!(
+        created.is_empty(),
+        "fichiers temporaires restants : {created:?}"
+    );
 }
 
 #[test]
 fn q04_ocr_sources_never_write_to_disk() {
-    for source in [include_str!("../../src/ocr/mod.rs"), include_str!("../../src/ocr/win.rs")] {
-        for forbidden in ["fs::write", "File::create", "OpenOptions", "temp_dir", "tempfile", "create_dir"] {
-            let code: String = source.lines().filter(|l| !l.trim_start().starts_with("//")).collect::<Vec<_>>().join("\n");
-            assert!(!code.contains(forbidden), "{forbidden} trouvé dans le code OCR");
+    for source in [
+        include_str!("../../src/ocr/mod.rs"),
+        include_str!("../../src/ocr/win.rs"),
+    ] {
+        for forbidden in [
+            "fs::write",
+            "File::create",
+            "OpenOptions",
+            "temp_dir",
+            "tempfile",
+            "create_dir",
+        ] {
+            let code: String = source
+                .lines()
+                .filter(|l| !l.trim_start().starts_with("//"))
+                .collect::<Vec<_>>()
+                .join("\n");
+            assert!(
+                !code.contains(forbidden),
+                "{forbidden} trouvé dans le code OCR"
+            );
         }
     }
 }
@@ -179,7 +270,10 @@ fn q04_missing_french_pack_is_reported_not_crashed() {
     let s = status();
     if !s.available {
         let err = recognize_bytes(PRINTED).unwrap_err();
-        assert!(matches!(err, OcrError::LanguageMissing | OcrError::Unavailable));
+        assert!(matches!(
+            err,
+            OcrError::LanguageMissing | OcrError::Unavailable
+        ));
     }
 }
 
@@ -187,9 +281,18 @@ fn q04_missing_french_pack_is_reported_not_crashed() {
 fn declared_dimensions_are_checked_before_any_allocation() {
     assert_eq!(check_dimensions(2000, 1500, 4096), Ok(()));
     assert_eq!(check_dimensions(4096, 4096, 4096), Ok(()));
-    assert_eq!(check_dimensions(4097, 10, 4096), Err(OcrError::DimensionsTooLarge));
-    assert_eq!(check_dimensions(100_000, 100_000, 200_000), Err(OcrError::DimensionsTooLarge));
-    assert_eq!(check_dimensions(0, 10, 4096), Err(OcrError::DimensionsTooLarge));
+    assert_eq!(
+        check_dimensions(4097, 10, 4096),
+        Err(OcrError::DimensionsTooLarge)
+    );
+    assert_eq!(
+        check_dimensions(100_000, 100_000, 200_000),
+        Err(OcrError::DimensionsTooLarge)
+    );
+    assert_eq!(
+        check_dimensions(0, 10, 4096),
+        Err(OcrError::DimensionsTooLarge)
+    );
 }
 
 /// BMP de 54 octets qui déclare 30 000 x 30 000 pixels : refusé sans allouer les 3,6 Go d'un bitmap.
@@ -205,7 +308,10 @@ fn a_tiny_image_declaring_huge_dimensions_is_refused() {
     let png = png_declaring(30_000, 30_000);
     let started = std::time::Instant::now();
     let result = recognize_bytes(&png);
-    assert!(matches!(result, Err(OcrError::DimensionsTooLarge)), "{result:?}");
+    assert!(
+        matches!(result, Err(OcrError::DimensionsTooLarge)),
+        "{result:?}"
+    );
     assert!(started.elapsed().as_secs() < 5);
 }
 
@@ -216,7 +322,11 @@ fn png_declaring(width: u32, height: u32) -> Vec<u8> {
         for &b in bytes {
             crc ^= u32::from(b);
             for _ in 0..8 {
-                crc = if crc & 1 == 1 { (crc >> 1) ^ 0xEDB8_8320 } else { crc >> 1 };
+                crc = if crc & 1 == 1 {
+                    (crc >> 1) ^ 0xEDB8_8320
+                } else {
+                    crc >> 1
+                };
             }
         }
         !crc
@@ -235,7 +345,11 @@ fn png_declaring(width: u32, height: u32) -> Vec<u8> {
     ihdr.extend_from_slice(&height.to_be_bytes());
     ihdr.extend_from_slice(&[8, 6, 0, 0, 0]); // 8 bits, RGBA, compression, filtre, sans entrelacement
     chunk(&mut out, b"IHDR", &ihdr);
-    chunk(&mut out, b"IDAT", &[0x78, 0x9C, 0x03, 0x00, 0x00, 0x00, 0x00, 0x01]);
+    chunk(
+        &mut out,
+        b"IDAT",
+        &[0x78, 0x9C, 0x03, 0x00, 0x00, 0x00, 0x00, 0x01],
+    );
     chunk(&mut out, b"IEND", &[]);
     out
 }
@@ -247,7 +361,9 @@ fn png_declaring(width: u32, height: u32) -> Vec<u8> {
 fn status_survives_the_end_of_the_thread_that_first_used_winrt() {
     let first = std::thread::spawn(status).join().expect("premier fil");
     for _ in 0..5 {
-        let next = std::thread::spawn(status).join().expect("fil suivant, sans plantage");
+        let next = std::thread::spawn(status)
+            .join()
+            .expect("fil suivant, sans plantage");
         assert_eq!(next.languages, first.languages);
     }
 }

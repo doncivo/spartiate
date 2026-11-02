@@ -51,7 +51,10 @@ impl CheckedFolder {
     /// Nom du dossier, jamais un chemin. Le libellé affiché (« iCloud Drive / Spartiate ») est composé par l'interface à partir du
     /// nom et de la nature (textes dans `src/i18n`, revue 13). Jamais vide : une racine de lecteur est refusée par `check_sync_path`.
     pub fn name(&self) -> String {
-        self.path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default()
+        self.path
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_default()
     }
 }
 
@@ -112,24 +115,37 @@ pub fn remove_config_file(path: &Path) -> SyncResult<()> {
 }
 
 /// ADR 0017 : le dossier de CircleTasks n'est jamais lié à Spartiate. Nom comparé sans tenir compte de la casse ni des espaces de bord. // ancien-ok: garde de séparation ADR 0017
-pub fn is_circletasks_folder_name(name: &str) -> bool { // ancien-ok: garde de séparation ADR 0017
+pub fn is_circletasks_folder_name(name: &str) -> bool {
+    // ancien-ok: garde de séparation ADR 0017
     name.trim().eq_ignore_ascii_case("circletasks") // ancien-ok: garde de séparation ADR 0017
 }
 
 /// ADR 0017 : nom de fichier de la famille de CircleTasks (`.ctx`, `.ctj`, `.cts`), jamais écrit par Spartiate (`.spx`, `.spj`, `.sps`). Casse ignorée ; // ancien-ok: garde de séparation ADR 0017
 /// `.tmp`, copie de conflit (`state 2.ctx`) et placeholder iCloud (`.nom.icloud`) comptent.
-pub fn is_circletasks_file_name(name: &str) -> bool { // ancien-ok: garde de séparation ADR 0017
+pub fn is_circletasks_file_name(name: &str) -> bool {
+    // ancien-ok: garde de séparation ADR 0017
     let lower = name.to_lowercase();
     let base = lower.trim_start_matches('.');
     let base = base.strip_suffix(".icloud").unwrap_or(base);
     let base = base.strip_suffix(".tmp").unwrap_or(base);
-    [".ctx", ".ctj", ".cts"].iter().any(|ext| base.ends_with(ext))
+    [".ctx", ".ctj", ".cts"]
+        .iter()
+        .any(|ext| base.ends_with(ext))
 }
 
 /// Dossier à lier après la boîte de choix (audit S10) : le dossier choisi ; si c'est `iCloud Drive` lui-même, son sous-dossier
 /// `Spartiate`, à créer seulement maintenant que l'utilisateur a validé. Rend (dossier, à créer).
 pub fn chosen_target(chosen: &Path, icloud_drive: Option<&Path>) -> (PathBuf, bool) {
-    let is_drive = icloud_drive.is_some_and(|drive| drive.to_string_lossy().to_lowercase().trim_end_matches('\\') == chosen.to_string_lossy().to_lowercase().trim_end_matches('\\'));
+    let is_drive = icloud_drive.is_some_and(|drive| {
+        drive
+            .to_string_lossy()
+            .to_lowercase()
+            .trim_end_matches('\\')
+            == chosen
+                .to_string_lossy()
+                .to_lowercase()
+                .trim_end_matches('\\')
+    });
     if is_drive {
         (chosen.join(DEFAULT_FOLDER_NAME), true)
     } else {
@@ -149,7 +165,11 @@ pub fn normalize_final_path(path: &str) -> Option<String> {
     if b.len() < 3 || !b[0].is_ascii_alphabetic() || b[1] != b':' || b[2] != b'\\' {
         return None;
     }
-    let trimmed = if rest.len() > 3 { rest.trim_end_matches('\\') } else { rest };
+    let trimmed = if rest.len() > 3 {
+        rest.trim_end_matches('\\')
+    } else {
+        rest
+    };
     Some(trimmed.to_owned())
 }
 
@@ -171,9 +191,11 @@ mod win {
     use windows::core::PCWSTR;
     use windows::Win32::Foundation::HANDLE;
     use windows::Win32::Storage::FileSystem::{
-        CreateFileW, GetDriveTypeW, GetFileInformationByHandleEx, GetFinalPathNameByHandleW, FileAttributeTagInfo, FILE_ATTRIBUTE_DIRECTORY,
-        FILE_ATTRIBUTE_PINNED, FILE_ATTRIBUTE_TAG_INFO, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_NAME_NORMALIZED,
-        FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE, GETFINALPATHNAMEBYHANDLE_FLAGS, OPEN_EXISTING, VOLUME_NAME_DOS,
+        CreateFileW, FileAttributeTagInfo, GetDriveTypeW, GetFileInformationByHandleEx,
+        GetFinalPathNameByHandleW, FILE_ATTRIBUTE_DIRECTORY, FILE_ATTRIBUTE_PINNED,
+        FILE_ATTRIBUTE_TAG_INFO, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT,
+        FILE_NAME_NORMALIZED, FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE, FILE_SHARE_READ,
+        FILE_SHARE_WRITE, GETFINALPATHNAMEBYHANDLE_FLAGS, OPEN_EXISTING, VOLUME_NAME_DOS,
     };
 
     use super::{is_accepted_reparse, normalize_final_path, CheckedFolder, FolderKind};
@@ -191,7 +213,13 @@ mod win {
         let mut buffer = vec![0u16; 512];
         loop {
             // SAFETY: tampon possédé, longueur passée par la tranche.
-            let len = unsafe { GetFinalPathNameByHandleW(handle, &mut buffer, GETFINALPATHNAMEBYHANDLE_FLAGS(FILE_NAME_NORMALIZED.0 | VOLUME_NAME_DOS.0)) } as usize;
+            let len = unsafe {
+                GetFinalPathNameByHandleW(
+                    handle,
+                    &mut buffer,
+                    GETFINALPATHNAMEBYHANDLE_FLAGS(FILE_NAME_NORMALIZED.0 | VOLUME_NAME_DOS.0),
+                )
+            } as usize;
             if len == 0 {
                 return None;
             }
@@ -279,13 +307,16 @@ mod win {
     /// Contrôle complet du dossier choisi (section 6.1, étapes 1 à 3). Erreurs : `not-local`, `unsafe-folder`, `folder-unreachable`.
     pub fn check_sync_path(path: &Path) -> SyncResult<CheckedFolder> {
         cloud_windows::expose_placeholders();
-        let requested = normalize_final_path(&path.to_string_lossy()).ok_or(crate::sync::SyncError::new(SyncCode::NotLocal))?;
+        let requested = normalize_final_path(&path.to_string_lossy())
+            .ok_or(crate::sync::SyncError::new(SyncCode::NotLocal))?;
         // Racine de lecteur refusée (QA-Y1-2) : pas de nom à afficher, et `devices/` serait créé à la racine du disque.
         if requested.len() <= 3 {
             return fail(SyncCode::UnsafeFolder);
         }
         let (handle, _) = check_components(&requested)?;
-        let Some(final_path) = final_path_of(HANDLE(handle.as_raw_handle())) else { return fail(SyncCode::UnsafeFolder) };
+        let Some(final_path) = final_path_of(HANDLE(handle.as_raw_handle())) else {
+            return fail(SyncCode::UnsafeFolder);
+        };
         let Some(final_path) = normalize_final_path(&final_path) else {
             crate::sync::log::event("folder-refused", "final-path");
             return fail(SyncCode::UnsafeFolder);
@@ -303,20 +334,30 @@ mod win {
             Some(_) => FolderKind::Unknown,
             None => FolderKind::Local,
         };
-        Ok(CheckedFolder { path, kind, pinned: attributes & FILE_ATTRIBUTE_PINNED.0 != 0 })
+        Ok(CheckedFolder {
+            path,
+            kind,
+            pinned: attributes & FILE_ATTRIBUTE_PINNED.0 != 0,
+        })
     }
 }
 
 /// Repli des cibles sans contrôle Windows (aucune n'est livrée par ce lot : l'iPhone passe par son signet, ordre 5).
 #[cfg(not(windows))]
 pub fn check_sync_path(path: &Path) -> SyncResult<CheckedFolder> {
-    let meta = std::fs::symlink_metadata(path).map_err(|_| super::SyncError::new(SyncCode::FolderUnreachable))?;
+    let meta = std::fs::symlink_metadata(path)
+        .map_err(|_| super::SyncError::new(SyncCode::FolderUnreachable))?;
     if meta.file_type().is_symlink() || !meta.is_dir() {
         return fail(SyncCode::UnsafeFolder);
     }
-    let path = std::fs::canonicalize(path).map_err(|_| super::SyncError::new(SyncCode::FolderUnreachable))?;
+    let path = std::fs::canonicalize(path)
+        .map_err(|_| super::SyncError::new(SyncCode::FolderUnreachable))?;
     if path.parent().is_none() {
         return fail(SyncCode::UnsafeFolder);
     }
-    Ok(CheckedFolder { path, kind: FolderKind::Unknown, pinned: false })
+    Ok(CheckedFolder {
+        path,
+        kind: FolderKind::Unknown,
+        pinned: false,
+    })
 }

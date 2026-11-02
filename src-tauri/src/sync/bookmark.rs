@@ -25,9 +25,14 @@ use std::time::{Duration, Instant};
 use base64::{engine::general_purpose::STANDARD, Engine};
 use serde_json::{json, Value};
 
-use super::files::{is_safe_component, AppendMode, Availability, Chunk, FsEntry, FsError, Listing, SyncFs};
+use super::files::{
+    is_safe_component, AppendMode, Availability, Chunk, FsEntry, FsError, Listing, SyncFs,
+};
 use super::folder::{CheckedFolder, FolderKind, FolderRecord};
-use super::limits::{BOOKMARK_CALL_DEADLINE_MS, BOOKMARK_DOWNLOAD_MARGIN_MS, BOOKMARK_MAX_ABANDONED_CALLS, HYDRATE_CYCLE_TIMEOUT_MS, HYDRATE_FILE_TIMEOUT_MS, MAX_PLUGIN_CHUNK_BYTES};
+use super::limits::{
+    BOOKMARK_CALL_DEADLINE_MS, BOOKMARK_DOWNLOAD_MARGIN_MS, BOOKMARK_MAX_ABANDONED_CALLS,
+    HYDRATE_CYCLE_TIMEOUT_MS, HYDRATE_FILE_TIMEOUT_MS, MAX_PLUGIN_CHUNK_BYTES,
+};
 use super::service::{Clock, FolderBackend};
 use super::{fail, log, SyncCode, SyncError, SyncResult};
 use crate::mobile_call::{call_with_deadline, CallError};
@@ -39,11 +44,33 @@ pub trait BookmarkTransport: Send + Sync {
 
 /// Commandes du plugin appelées par Rust (contrat §22 point 2 ; `confirm` et `appState` servent aussi à `consent_ios.rs`).
 pub const PLUGIN_COMMANDS: [&str; 14] = [
-    "pickFolder", "resolve", "status", "list", "readFrom", "download", "append", "writeAtomic", "rename", "createDir", "remove", "removeEmptyDir", "appState", "confirm",
+    "pickFolder",
+    "resolve",
+    "status",
+    "list",
+    "readFrom",
+    "download",
+    "append",
+    "writeAtomic",
+    "rename",
+    "createDir",
+    "remove",
+    "removeEmptyDir",
+    "appState",
+    "confirm",
 ];
 
 /// Codes que Swift peut rejeter (tous des `SyncErrorCode` existants).
-pub const PLUGIN_REJECT_CODES: [&str; 8] = ["not-configured", "folder-unreachable", "unsafe-folder", "cloud-pending", "cloud-error", "too-large", "not-foreground", "io"];
+pub const PLUGIN_REJECT_CODES: [&str; 8] = [
+    "not-configured",
+    "folder-unreachable",
+    "unsafe-folder",
+    "cloud-pending",
+    "cloud-error",
+    "too-large",
+    "not-foreground",
+    "io",
+];
 
 /// Plus grand entier transmis comme borne « sans limite » (entier exact en JSON et en `Int` Swift 64 bits).
 const NO_LIMIT: u64 = (1 << 53) - 1;
@@ -59,8 +86,13 @@ pub fn fs_error_of(code: &str) -> FsError {
         "too-large" => FsError::TooLarge,
         "io" => FsError::Io,
         other => {
-            let shaped = !other.is_empty() && other.len() <= 32 && other.bytes().all(|b| b.is_ascii_lowercase() || b == b'-');
-            log::event("bookmark-unknown-code", if shaped { other } else { "invalid" });
+            let shaped = !other.is_empty()
+                && other.len() <= 32
+                && other.bytes().all(|b| b.is_ascii_lowercase() || b == b'-');
+            log::event(
+                "bookmark-unknown-code",
+                if shaped { other } else { "invalid" },
+            );
             FsError::Io
         }
     }
@@ -82,7 +114,12 @@ fn components(parts: &[&str], allow_root: bool) -> Result<Value, FsError> {
     if parts.iter().any(|p| !is_safe_component(p)) {
         return Err(FsError::Unsafe);
     }
-    Ok(Value::Array(parts.iter().map(|p| Value::String((*p).to_owned())).collect()))
+    Ok(Value::Array(
+        parts
+            .iter()
+            .map(|p| Value::String((*p).to_owned()))
+            .collect(),
+    ))
 }
 
 fn availability_of(value: Option<&Value>) -> Availability {
@@ -98,7 +135,10 @@ fn flag(value: &Value, key: &str) -> bool {
 }
 
 fn decode(value: &Value) -> Result<Vec<u8>, FsError> {
-    let text = value.get("data").and_then(Value::as_str).ok_or(FsError::Io)?;
+    let text = value
+        .get("data")
+        .and_then(Value::as_str)
+        .ok_or(FsError::Io)?;
     STANDARD.decode(text).map_err(|_| FsError::Io)
 }
 
@@ -116,24 +156,48 @@ pub struct BookmarkFs {
 }
 
 impl BookmarkFs {
-    pub fn new(transport: Arc<dyn BookmarkTransport>, root: String, bookmark: String, refreshed: Arc<Mutex<Option<String>>>, now: Clock) -> Self {
+    pub fn new(
+        transport: Arc<dyn BookmarkTransport>,
+        root: String,
+        bookmark: String,
+        refreshed: Arc<Mutex<Option<String>>>,
+        now: Clock,
+    ) -> Self {
         let started = now();
-        Self { transport, root, bookmark: Mutex::new(bookmark), refreshed, now, cycle: Mutex::new((started, HYDRATE_CYCLE_TIMEOUT_MS)) }
+        Self {
+            transport,
+            root,
+            bookmark: Mutex::new(bookmark),
+            refreshed,
+            now,
+            cycle: Mutex::new((started, HYDRATE_CYCLE_TIMEOUT_MS)),
+        }
     }
 
     /// `resolve` du signet : racine rouverte dans la session du plugin, signet obsolète rafraîchi, racine déplacée refusée.
     fn resolve(&self) -> Result<(), FsError> {
-        let bookmark = self.bookmark.lock().unwrap_or_else(|e| e.into_inner()).clone();
+        let bookmark = self
+            .bookmark
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .clone();
         if bookmark.is_empty() {
             log::event("bookmark-missing", "resolve");
             return Err(FsError::Unreachable);
         }
-        let out = self.transport.call("resolve", json!({ "bookmark": bookmark })).map_err(|code| fs_error_of(&code))?;
+        let out = self
+            .transport
+            .call("resolve", json!({ "bookmark": bookmark }))
+            .map_err(|code| fs_error_of(&code))?;
         if out.get("path").and_then(Value::as_str) != Some(self.root.as_str()) {
             log::event("bookmark-moved", "resolve");
             return Err(FsError::Unreachable);
         }
-        if let Some(fresh) = out.get("refreshed").and_then(Value::as_str).filter(|s| !s.is_empty()) {
+        if let Some(fresh) = out
+            .get("refreshed")
+            .and_then(Value::as_str)
+            .filter(|s| !s.is_empty())
+        {
             *self.bookmark.lock().unwrap_or_else(|e| e.into_inner()) = fresh.to_owned();
             *self.refreshed.lock().unwrap_or_else(|e| e.into_inner()) = Some(fresh.to_owned());
         }
@@ -146,7 +210,9 @@ impl BookmarkFs {
             Ok(value) => Ok(value),
             Err(code) if code == "not-configured" => {
                 self.resolve()?;
-                self.transport.call(command, args).map_err(|code| fs_error_of(&code))
+                self.transport
+                    .call(command, args)
+                    .map_err(|code| fs_error_of(&code))
             }
             Err(code) => Err(fs_error_of(&code)),
         }
@@ -165,11 +231,21 @@ impl BookmarkFs {
         if timeout == 0 {
             return Err(FsError::CloudPending);
         }
-        self.call("download", json!({ "path": path, "timeoutMs": timeout, "limit": limit })).map(|_| ())
+        self.call(
+            "download",
+            json!({ "path": path, "timeoutMs": timeout, "limit": limit }),
+        )
+        .map(|_| ())
     }
 
     /// Un bloc `readFrom` : `None` si le fichier est absent.
-    fn read_block(&self, path: &Value, offset: u64, max: usize, limit: u64) -> Result<Chunk, FsError> {
+    fn read_block(
+        &self,
+        path: &Value,
+        offset: u64,
+        max: usize,
+        limit: u64,
+    ) -> Result<Chunk, FsError> {
         let out = self.call("readFrom", json!({ "path": path, "offset": offset, "max": max.min(MAX_PLUGIN_CHUNK_BYTES), "limit": limit }))?;
         if flag(&out, "missing") {
             return Err(FsError::NotFound);
@@ -179,7 +255,11 @@ impl BookmarkFs {
             return Err(FsError::Io);
         }
         let size = out.get("size").and_then(Value::as_u64).ok_or(FsError::Io)?;
-        Ok(Chunk { bytes, size, eof: flag(&out, "eof") })
+        Ok(Chunk {
+            bytes,
+            size,
+            eof: flag(&out, "eof"),
+        })
     }
 }
 
@@ -210,13 +290,24 @@ impl SyncFs for BookmarkFs {
         if flag(&out, "missing") {
             return Err(FsError::NotFound);
         }
-        let mut listing = Listing { entries: Vec::new(), truncated: flag(&out, "truncated") };
-        for entry in out.get("entries").and_then(Value::as_array).ok_or(FsError::Io)? {
+        let mut listing = Listing {
+            entries: Vec::new(),
+            truncated: flag(&out, "truncated"),
+        };
+        for entry in out
+            .get("entries")
+            .and_then(Value::as_array)
+            .ok_or(FsError::Io)?
+        {
             if listing.entries.len() >= max {
                 listing.truncated = true;
                 break;
             }
-            let name = entry.get("name").and_then(Value::as_str).ok_or(FsError::Io)?.to_owned();
+            let name = entry
+                .get("name")
+                .and_then(Value::as_str)
+                .ok_or(FsError::Io)?
+                .to_owned();
             listing.entries.push(FsEntry {
                 name,
                 is_dir: flag(entry, "isDir"),
@@ -237,7 +328,11 @@ impl SyncFs for BookmarkFs {
             return Err(FsError::Unsafe);
         }
         // Taille annoncée contrôlée avant toute lecture ou hydratation (section 1.6).
-        if status.get("size").and_then(Value::as_u64).is_some_and(|size| size > limit) {
+        if status
+            .get("size")
+            .and_then(Value::as_u64)
+            .is_some_and(|size| size > limit)
+        {
             return Err(FsError::TooLarge);
         }
         match availability_of(status.get("availability")) {
@@ -265,7 +360,13 @@ impl SyncFs for BookmarkFs {
         }
     }
 
-    fn read_from(&self, file: &[&str], offset: u64, max: usize, hydrate: bool) -> Result<Chunk, FsError> {
+    fn read_from(
+        &self,
+        file: &[&str],
+        offset: u64,
+        max: usize,
+        hydrate: bool,
+    ) -> Result<Chunk, FsError> {
         let path = components(file, false)?;
         match self.read_block(&path, offset, max, NO_LIMIT) {
             Err(FsError::CloudPending) if hydrate => {
@@ -286,7 +387,10 @@ impl SyncFs for BookmarkFs {
             pieces.push(&[]);
         }
         for piece in pieces {
-            let out = self.call("append", json!({ "path": path, "data": STANDARD.encode(piece), "createNew": create }))?;
+            let out = self.call(
+                "append",
+                json!({ "path": path, "data": STANDARD.encode(piece), "createNew": create }),
+            )?;
             if flag(&out, "missing") {
                 return Err(FsError::NotFound);
             }
@@ -304,7 +408,11 @@ impl SyncFs for BookmarkFs {
         if bytes.len() > MAX_PLUGIN_CHUNK_BYTES {
             return Err(FsError::TooLarge);
         }
-        self.call("writeAtomic", json!({ "path": path, "data": STANDARD.encode(bytes) })).map(|_| ())
+        self.call(
+            "writeAtomic",
+            json!({ "path": path, "data": STANDARD.encode(bytes) }),
+        )
+        .map(|_| ())
     }
 
     fn rename(&self, dir: &[&str], from: &str, to: &str) -> Result<(), FsError> {
@@ -312,7 +420,8 @@ impl SyncFs for BookmarkFs {
         if !is_safe_component(from) || !is_safe_component(to) {
             return Err(FsError::Unsafe);
         }
-        self.call("rename", json!({ "dir": path, "from": from, "to": to })).map(|_| ())
+        self.call("rename", json!({ "dir": path, "from": from, "to": to }))
+            .map(|_| ())
     }
 
     fn create_dir(&self, dir: &[&str]) -> Result<(), FsError> {
@@ -328,7 +437,8 @@ impl SyncFs for BookmarkFs {
 
     fn remove_empty_dir(&self, dir: &[&str]) -> Result<(), FsError> {
         let path = components(dir, false)?;
-        self.call("removeEmptyDir", json!({ "path": path })).map(|_| ())
+        self.call("removeEmptyDir", json!({ "path": path }))
+            .map(|_| ())
     }
 
     /// Pas d'épinglage sur iOS (§22 point 4) : aucun appel, `pinned` toujours faux.
@@ -347,18 +457,33 @@ pub struct BookmarkBackend {
 
 impl BookmarkBackend {
     pub fn new(transport: Arc<dyn BookmarkTransport>, now: Clock) -> Self {
-        Self { transport, refreshed: Arc::new(Mutex::new(None)), now }
+        Self {
+            transport,
+            refreshed: Arc::new(Mutex::new(None)),
+            now,
+        }
     }
 
     /// Sélecteur de dossier du plugin (`pickFolder`) : `None` si l'utilisateur annule ; sinon (chemin résolu, signet). Erreur : code seul,
     /// jamais un chemin ni le texte de Swift.
     pub fn pick(&self) -> SyncResult<Option<(String, String)>> {
-        let out = self.transport.call("pickFolder", json!({})).map_err(|code| sync_error_of(&code))?;
+        let out = self
+            .transport
+            .call("pickFolder", json!({}))
+            .map_err(|code| sync_error_of(&code))?;
         if flag(&out, "cancelled") {
             return Ok(None);
         }
-        let path = out.get("path").and_then(Value::as_str).filter(|p| !p.is_empty()).ok_or(SyncError::new(SyncCode::Io))?;
-        let bookmark = out.get("bookmark").and_then(Value::as_str).filter(|b| !b.is_empty()).ok_or(SyncError::new(SyncCode::Io))?;
+        let path = out
+            .get("path")
+            .and_then(Value::as_str)
+            .filter(|p| !p.is_empty())
+            .ok_or(SyncError::new(SyncCode::Io))?;
+        let bookmark = out
+            .get("bookmark")
+            .and_then(Value::as_str)
+            .filter(|b| !b.is_empty())
+            .ok_or(SyncError::new(SyncCode::Io))?;
         Ok(Some((path.to_owned(), bookmark.to_owned())))
     }
 }
@@ -370,7 +495,13 @@ impl FolderBackend for BookmarkBackend {
     }
 
     fn open(&self, folder: &CheckedFolder) -> Box<dyn SyncFs> {
-        Box::new(BookmarkFs::new(self.transport.clone(), folder.path.to_string_lossy().into_owned(), String::new(), self.refreshed.clone(), self.now.clone()))
+        Box::new(BookmarkFs::new(
+            self.transport.clone(),
+            folder.path.to_string_lossy().into_owned(),
+            String::new(),
+            self.refreshed.clone(),
+            self.now.clone(),
+        ))
     }
 
     fn check_record(&self, record: &FolderRecord) -> SyncResult<(CheckedFolder, Option<String>)> {
@@ -379,8 +510,14 @@ impl FolderBackend for BookmarkBackend {
             log::event("bookmark-missing", "check");
             return fail(SyncCode::FolderUnreachable);
         };
-        let out = self.transport.call("resolve", json!({ "bookmark": bookmark })).map_err(|code| sync_error_of(&code))?;
-        let path = out.get("path").and_then(Value::as_str).ok_or(SyncError::new(SyncCode::Io))?;
+        let out = self
+            .transport
+            .call("resolve", json!({ "bookmark": bookmark }))
+            .map_err(|code| sync_error_of(&code))?;
+        let path = out
+            .get("path")
+            .and_then(Value::as_str)
+            .ok_or(SyncError::new(SyncCode::Io))?;
         // Dossier déplacé ou renommé (le signet le suit) : injoignable, à choisir de nouveau (jamais un autre dossier en silence).
         if path != record.path {
             log::event("bookmark-moved", "check");
@@ -391,8 +528,19 @@ impl FolderBackend for BookmarkBackend {
             Some("local") => FolderKind::Local,
             _ => FolderKind::Unknown,
         };
-        let refreshed = out.get("refreshed").and_then(Value::as_str).filter(|s| !s.is_empty()).map(str::to_owned);
-        Ok((CheckedFolder { path: PathBuf::from(path), kind, pinned: false }, refreshed))
+        let refreshed = out
+            .get("refreshed")
+            .and_then(Value::as_str)
+            .filter(|s| !s.is_empty())
+            .map(str::to_owned);
+        Ok((
+            CheckedFolder {
+                path: PathBuf::from(path),
+                kind,
+                pinned: false,
+            },
+            refreshed,
+        ))
     }
 
     fn open_record(&self, folder: &CheckedFolder, record: &FolderRecord) -> Box<dyn SyncFs> {
@@ -406,7 +554,10 @@ impl FolderBackend for BookmarkBackend {
     }
 
     fn take_refreshed(&self) -> Option<String> {
-        self.refreshed.lock().unwrap_or_else(|e| e.into_inner()).take()
+        self.refreshed
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .take()
     }
 }
 
@@ -420,25 +571,49 @@ pub fn ios_core(
     clock: Clock,
 ) -> (Arc<super::service::SyncCore>, Arc<BookmarkBackend>) {
     let backend = Arc::new(BookmarkBackend::new(transport, clock.clone()));
-    let consent = Arc::new(super::consent::ConsentGate::new(super::folder::config_dir(&base), consent_ui, clock.clone()));
+    let consent = Arc::new(super::consent::ConsentGate::new(
+        super::folder::config_dir(&base),
+        consent_ui,
+        clock.clone(),
+    ));
     let mut options = super::service::SyncOptions::new(base);
     options.platform = "ios";
-    let core = Arc::new(super::service::SyncCore::new(options, vault, backend.clone(), consent, clock));
+    let core = Arc::new(super::service::SyncCore::new(
+        options,
+        vault,
+        backend.clone(),
+        consent,
+        clock,
+    ));
     (core, backend)
 }
 
 /// `sync_folder_choose` sur iPhone (§22 point 5) : sélecteur du plugin ; annulé → `None`, rien n'est écrit ; sinon dossier lié par son signet.
-pub fn choose_with_picker(core: &super::service::SyncCore, backend: &BookmarkBackend) -> SyncResult<Option<super::service::FolderInfo>> {
-    let Some((path, bookmark)) = backend.pick()? else { return Ok(None) };
+pub fn choose_with_picker(
+    core: &super::service::SyncCore,
+    backend: &BookmarkBackend,
+) -> SyncResult<Option<super::service::FolderInfo>> {
+    let Some((path, bookmark)) = backend.pick()? else {
+        return Ok(None);
+    };
     core.choose_bookmarked_folder(&path, &bookmark).map(Some)
 }
 
 /// `sync_key_import` sur iPhone (ADR 0011 §23 points 2 et 5) : depuis `main` (une seule fenêtre, propriétaire 0), `{ qrText }` (texte du
 /// scan, passé aussitôt par le JS) ou `{ recoveryKey }` ; `{ scan: true }` (scan lancé par Rust, inexistant : aucune API Rust du plugin) et
 /// toute autre forme : `invalid-pairing`, inscrit dans `import-failure.json` comme sur PC. Mêmes contrôles que sur PC (`SyncCore::key_import`).
-pub fn import_ios(core: &super::service::SyncCore, qr_text: Option<String>, recovery_key: Option<String>, scan: Option<bool>) -> SyncResult<super::service::KeyImportResult> {
+pub fn import_ios(
+    core: &super::service::SyncCore,
+    qr_text: Option<String>,
+    recovery_key: Option<String>,
+    scan: Option<bool>,
+) -> SyncResult<super::service::KeyImportResult> {
     use zeroize::Zeroizing;
-    let input = match (qr_text.map(Zeroizing::new), recovery_key.map(Zeroizing::new), scan) {
+    let input = match (
+        qr_text.map(Zeroizing::new),
+        recovery_key.map(Zeroizing::new),
+        scan,
+    ) {
         (Some(text), None, None) => super::service::KeyInput::QrText(text),
         (None, Some(text), None) => super::service::KeyInput::RecoveryKey(text),
         _ => {
@@ -574,7 +749,11 @@ impl DeadlineTransport {
     }
 
     pub fn with_limits(inner: Arc<dyn BookmarkTransport>, limits: DeadlineLimits) -> Self {
-        Self { inner, limits, places: Arc::new(Places::default()) }
+        Self {
+            inner,
+            limits,
+            places: Arc::new(Places::default()),
+        }
     }
 
     /// Appels abandonnés en attente de leur réponse (toutes files).
@@ -587,7 +766,11 @@ impl DeadlineTransport {
     pub fn wait_abandoned(&self, count: usize, guard: Duration) -> bool {
         let total = |lanes: &[Lane; 2]| lanes.iter().map(|l| l.abandoned).sum::<usize>();
         let lanes = self.places.lock();
-        let (lanes, _) = self.places.changed.wait_timeout_while(lanes, guard, |lanes| total(lanes) != count).unwrap_or_else(|e| e.into_inner());
+        let (lanes, _) = self
+            .places
+            .changed
+            .wait_timeout_while(lanes, guard, |lanes| total(lanes) != count)
+            .unwrap_or_else(|e| e.into_inner());
         total(&lanes) == count
     }
 
@@ -599,7 +782,9 @@ impl DeadlineTransport {
         let (mut lanes, _) = self
             .places
             .changed
-            .wait_timeout_while(lanes, deadline, |lanes| lanes[lane].in_flight >= max && lanes[lane].abandoned < max)
+            .wait_timeout_while(lanes, deadline, |lanes| {
+                lanes[lane].in_flight >= max && lanes[lane].abandoned < max
+            })
             .unwrap_or_else(|e| e.into_inner());
         if lanes[lane].in_flight >= max {
             return false;
@@ -630,7 +815,11 @@ impl BookmarkTransport for DeadlineTransport {
             return Err(DEADLINE_CODE.to_owned());
         }
         let state = Arc::new(Mutex::new(CallState::Waiting));
-        let answered = Answered { state: state.clone(), places: self.places.clone(), lane };
+        let answered = Answered {
+            state: state.clone(),
+            places: self.places.clone(),
+            lane,
+        };
         let inner = self.inner.clone();
         let name = command.to_owned();
         let outcome = call_with_deadline(

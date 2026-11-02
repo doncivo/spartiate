@@ -62,7 +62,14 @@ pub struct ForgottenRegistry {
 
 impl ForgottenRegistry {
     pub fn empty(folder_id: &str, device_id: &str) -> Self {
-        Self { folder_id: folder_id.to_owned(), device_id: device_id.to_owned(), entries: Vec::new(), accepted: BTreeMap::new(), done: Vec::new(), self_forgotten: None }
+        Self {
+            folder_id: folder_id.to_owned(),
+            device_id: device_id.to_owned(),
+            entries: Vec::new(),
+            accepted: BTreeMap::new(),
+            done: Vec::new(),
+            self_forgotten: None,
+        }
     }
 
     /// Pose `self_forgotten` si l'ordre total oublie cet appareil (jamais effacé) ; vrai s'il vient d'être posé.
@@ -70,7 +77,9 @@ impl ForgottenRegistry {
         if self.self_forgotten.is_some() {
             return false;
         }
-        let Some(verdict) = forget_order(&self.entries).remove(&self.device_id) else { return false };
+        let Some(verdict) = forget_order(&self.entries).remove(&self.device_id) else {
+            return false;
+        };
         self.self_forgotten = Some(verdict.at);
         true
     }
@@ -79,15 +88,30 @@ impl ForgottenRegistry {
     /// illisible (`io`), jamais traité comme absent (§18 point 7).
     pub fn is_valid(&self) -> bool {
         self.entries.len() <= MAX_FORGOTTEN_ENTRIES
-            && self.entries.iter().all(|f| is_uuid_v4(&f.device_id) && is_strict_hlc(&f.at) && f.last_ack.as_ref().map_or(true, DeviceAck::is_valid))
-            && self.accepted.iter().all(|(id, a)| is_uuid_v4(id) && is_epoch_id(&a.epoch) && a.digest.len() == 64 && a.digest.bytes().all(|b| b.is_ascii_hexdigit()))
+            && self.entries.iter().all(|f| {
+                is_uuid_v4(&f.device_id)
+                    && is_strict_hlc(&f.at)
+                    && f.last_ack.as_ref().map_or(true, DeviceAck::is_valid)
+            })
+            && self.accepted.iter().all(|(id, a)| {
+                is_uuid_v4(id)
+                    && is_epoch_id(&a.epoch)
+                    && a.digest.len() == 64
+                    && a.digest.bytes().all(|b| b.is_ascii_hexdigit())
+            })
             && self.done.iter().all(|id| is_uuid_v4(id))
             && self.self_forgotten.as_deref().map_or(true, is_strict_hlc)
     }
 
     /// Vue rendue par `sync_scan` (`FolderScan.forgotten`).
     pub fn view(&self, overflow: bool) -> ForgottenView {
-        ForgottenView { entries: self.entries.clone(), done: self.done.clone(), overflow, accepted: self.accepted.keys().cloned().collect(), self_forgotten: self.self_forgotten.clone() }
+        ForgottenView {
+            entries: self.entries.clone(),
+            done: self.done.clone(),
+            overflow,
+            accepted: self.accepted.keys().cloned().collect(),
+            self_forgotten: self.self_forgotten.clone(),
+        }
     }
 }
 
@@ -116,8 +140,14 @@ pub fn parse_snapshot_end(json: &str, epoch: &str) -> Option<BTreeMap<String, De
         sv: u64,
     }
     let end: End = serde_json::from_str(json).ok()?;
-    let well_formed = end.k == "snap-end" && end.epoch == epoch && end.count <= MAX_SAFE_COUNT && end.sv > 0;
-    (well_formed && end.covers.iter().all(|(id, a)| is_uuid_v4(id) && a.is_valid())).then_some(end.covers)
+    let well_formed =
+        end.k == "snap-end" && end.epoch == epoch && end.count <= MAX_SAFE_COUNT && end.sv > 0;
+    (well_formed
+        && end
+            .covers
+            .iter()
+            .all(|(id, a)| is_uuid_v4(id) && a.is_valid()))
+    .then_some(end.covers)
 }
 
 const MAX_SAFE_COUNT: u64 = 9_007_199_254_740_991;
@@ -131,12 +161,15 @@ pub struct Verdict {
 
 /// Auteur d'une déclaration : appareil du hlc `at` ; `None` si `at` n'est pas strict.
 pub fn declaration_author(entry: &ForgottenDevice) -> Option<&str> {
-    is_strict_hlc(&entry.at).then(|| entry.at.get(21..)).flatten()
+    is_strict_hlc(&entry.at)
+        .then(|| entry.at.get(21..))
+        .flatten()
 }
 
 /// Bien formée : `at` strict, cible au format strict, auteur différent de la cible.
 pub fn is_well_formed(entry: &ForgottenDevice) -> bool {
-    declaration_author(entry).is_some_and(|author| author != entry.device_id) && is_uuid_v4(&entry.device_id)
+    declaration_author(entry).is_some_and(|author| author != entry.device_id)
+        && is_uuid_v4(&entry.device_id)
 }
 
 /// Ordre total des oublis (section 14.2) sur une liste de déclarations : tri par `at` puis cible ; sans effet si mal formée, si son
@@ -153,7 +186,13 @@ pub fn forget_order(entries: &[ForgottenDevice]) -> BTreeMap<String, Verdict> {
         if forgotten.contains_key(&by) || forgotten.contains_key(&entry.device_id) {
             continue;
         }
-        forgotten.insert(entry.device_id.clone(), Verdict { by, at: entry.at.clone() });
+        forgotten.insert(
+            entry.device_id.clone(),
+            Verdict {
+                by,
+                at: entry.at.clone(),
+            },
+        );
     }
     forgotten
 }
@@ -168,19 +207,32 @@ fn verdicts_in_order(order: &BTreeMap<String, Verdict>) -> Vec<(&String, &Verdic
 /// Apprentissage dans la liste maître (§18 point 3) : déclarations bien formées, inconnues (même cible, même `at`) et retenues par
 /// l'ordre total calculé sur la liste plus elles-mêmes, ajoutées à la fin ; candidates examinées par `at` puis cible ; au-delà de `cap`,
 /// non apprises et `overflow` vrai. Même fonction que `learnDeclarations`.
-pub fn learn_declarations(master: &[ForgottenDevice], candidates: &[ForgottenDevice], cap: usize) -> (Vec<ForgottenDevice>, bool) {
+pub fn learn_declarations(
+    master: &[ForgottenDevice],
+    candidates: &[ForgottenDevice],
+    cap: usize,
+) -> (Vec<ForgottenDevice>, bool) {
     let mut entries = master.to_vec();
-    let mut known: BTreeSet<(String, String)> = entries.iter().map(|e| (e.device_id.clone(), e.at.clone())).collect();
+    let mut known: BTreeSet<(String, String)> = entries
+        .iter()
+        .map(|e| (e.device_id.clone(), e.at.clone()))
+        .collect();
     let mut overflow = false;
     let mut sorted: Vec<&ForgottenDevice> = candidates.iter().collect();
     sorted.sort_by(|a, b| a.at.cmp(&b.at).then_with(|| a.device_id.cmp(&b.device_id)));
     for candidate in sorted {
-        if !is_well_formed(candidate) || known.contains(&(candidate.device_id.clone(), candidate.at.clone())) {
+        if !is_well_formed(candidate)
+            || known.contains(&(candidate.device_id.clone(), candidate.at.clone()))
+        {
             continue;
         }
         let mut trial = entries.clone();
         trial.push(candidate.clone());
-        if forget_order(&trial).get(&candidate.device_id).map(|v| v.at.as_str()) != Some(candidate.at.as_str()) {
+        if forget_order(&trial)
+            .get(&candidate.device_id)
+            .map(|v| v.at.as_str())
+            != Some(candidate.at.as_str())
+        {
             continue;
         }
         if entries.len() >= cap {
@@ -195,15 +247,23 @@ pub fn learn_declarations(master: &[ForgottenDevice], candidates: &[ForgottenDev
 
 /// Ordre des positions d'accusé : époque (section 9), segment, enregistrement. Une époque illisible passe avant les autres.
 pub fn compare_ack_positions(a: &DeviceAck, b: &DeviceAck) -> Ordering {
-    EpochId::parse(&a.epoch).cmp(&EpochId::parse(&b.epoch)).then(a.segment.cmp(&b.segment)).then(a.record.cmp(&b.record))
+    EpochId::parse(&a.epoch)
+        .cmp(&EpochId::parse(&b.epoch))
+        .then(a.segment.cmp(&b.segment))
+        .then(a.record.cmp(&b.record))
 }
 
 fn compare_acks(a: &DeviceAck, b: &DeviceAck) -> Ordering {
-    compare_ack_positions(a, b).then_with(|| a.hlc.cmp(&b.hlc)).then(a.state_seq.cmp(&b.state_seq))
+    compare_ack_positions(a, b)
+        .then_with(|| a.hlc.cmp(&b.hlc))
+        .then(a.state_seq.cmp(&b.state_seq))
 }
 
 /// Coupure d'un appareil oublié : maximum des accusés de `target` publiés par `ackers` (actifs non oubliés). Même fonction que `cutoff`.
-pub fn cutoff<'a>(target: &str, ackers: impl IntoIterator<Item = (&'a str, &'a BTreeMap<String, DeviceAck>)>) -> Option<DeviceAck> {
+pub fn cutoff<'a>(
+    target: &str,
+    ackers: impl IntoIterator<Item = (&'a str, &'a BTreeMap<String, DeviceAck>)>,
+) -> Option<DeviceAck> {
     let mut best: Option<&DeviceAck> = None;
     for (id, acks) in ackers {
         if id == target {
@@ -219,8 +279,13 @@ pub fn cutoff<'a>(target: &str, ackers: impl IntoIterator<Item = (&'a str, &'a B
 }
 
 /// Appareils cités dans les accusés des états donnés (audit Y-10 c : l'appelant ne passe que les actifs non oubliés).
-pub fn cited_devices<'a>(active_states: impl IntoIterator<Item = &'a PublishedState>) -> BTreeSet<String> {
-    active_states.into_iter().flat_map(|s| s.acks.keys().cloned()).collect()
+pub fn cited_devices<'a>(
+    active_states: impl IntoIterator<Item = &'a PublishedState>,
+) -> BTreeSet<String> {
+    active_states
+        .into_iter()
+        .flat_map(|s| s.acks.keys().cloned())
+        .collect()
 }
 
 /// Appareils « vus » (seconde revue Y-10, point 4 ; même définition que `seenDevices` de retention.ts) : état déjà accepté par
@@ -250,7 +315,11 @@ pub struct KnownState {
 
 impl From<&PublishedState> for KnownState {
     fn from(state: &PublishedState) -> Self {
-        Self { state_seq: state.state_seq, acks: state.acks.clone(), forgotten: state.forgotten.clone() }
+        Self {
+            state_seq: state.state_seq,
+            acks: state.acks.clone(),
+            forgotten: state.forgotten.clone(),
+        }
     }
 }
 
@@ -288,8 +357,15 @@ impl WaitReason {
 /// Résultat de `forgotten_delete_check` (même forme que `ForgottenDeleteCheck` de `retention.ts`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DeleteCheck {
-    Ready { by: String, cutoff: Option<DeviceAck> },
-    Waiting { device: String, code: SyncCode, reason: WaitReason },
+    Ready {
+        by: String,
+        cutoff: Option<DeviceAck>,
+    },
+    Waiting {
+        device: String,
+        code: SyncCode,
+        reason: WaitReason,
+    },
     Refused(SyncCode),
 }
 
@@ -330,10 +406,18 @@ pub fn covers_forgotten<'a>(
     ackers: impl IntoIterator<Item = (&'a str, &'a BTreeMap<String, DeviceAck>)>,
 ) -> Option<String> {
     let order = forget_order(master);
-    let live: Vec<(&str, &BTreeMap<String, DeviceAck>)> = ackers.into_iter().filter(|(id, _)| !order.contains_key(*id)).collect();
+    let live: Vec<(&str, &BTreeMap<String, DeviceAck>)> = ackers
+        .into_iter()
+        .filter(|(id, _)| !order.contains_key(*id))
+        .collect();
     for (target, _) in verdicts_in_order(&order) {
-        let Some(cut) = cutoff(target, live.iter().copied()) else { continue };
-        if covers.get(target.as_str()).map_or(true, |c| compare_ack_positions(c, &cut) == Ordering::Less) {
+        let Some(cut) = cutoff(target, live.iter().copied()) else {
+            continue;
+        };
+        if covers
+            .get(target.as_str())
+            .map_or(true, |c| compare_ack_positions(c, &cut) == Ordering::Less)
+        {
             return Some(target.clone());
         }
     }
@@ -371,7 +455,9 @@ pub fn eligible_snapshot<'a>(
     let mut uncovered: Option<(String, &str)> = None;
     let mut cloud = false;
     for c in candidates {
-        let Some((seq, end_hlc)) = &c.announced else { continue };
+        let Some((seq, end_hlc)) = &c.announced else {
+            continue;
+        };
         if !c.ok || order.contains_key(&c.author) || c.epoch != epoch {
             continue;
         }
@@ -383,11 +469,18 @@ pub fn eligible_snapshot<'a>(
             SnapshotEndRead::None | SnapshotEndRead::Unreadable => continue,
             SnapshotEndRead::End(end) => end,
         };
-        if end.author != c.author || end.epoch != epoch || end.seq != *seq || &end.end_hlc != end_hlc {
+        if end.author != c.author
+            || end.epoch != epoch
+            || end.seq != *seq
+            || &end.end_hlc != end_hlc
+        {
             continue;
         }
         if let Some(missing) = covers_forgotten(&end.covers, master, ackers.iter().copied()) {
-            if uncovered.as_ref().map_or(true, |(_, h)| end.end_hlc.as_str() > *h) {
+            if uncovered
+                .as_ref()
+                .map_or(true, |(_, h)| end.end_hlc.as_str() > *h)
+            {
                 uncovered = Some((missing, end.end_hlc.as_str()));
             }
             continue;
@@ -399,7 +492,9 @@ pub fn eligible_snapshot<'a>(
     match best {
         Some(end) => Eligible::Ok(end.clone()),
         None if cloud => Eligible::Waiting,
-        None => Eligible::None { uncovered: uncovered.map(|(t, _)| t) },
+        None => Eligible::None {
+            uncovered: uncovered.map(|(t, _)| t),
+        },
     }
 }
 
@@ -411,14 +506,22 @@ pub fn forget_gaps<'a>(
     gone: &BTreeSet<String>,
 ) -> Vec<String> {
     let order = forget_order(master);
-    let live: Vec<(&str, &BTreeMap<String, DeviceAck>)> = ackers.into_iter().filter(|(id, _)| !order.contains_key(*id)).collect();
+    let live: Vec<(&str, &BTreeMap<String, DeviceAck>)> = ackers
+        .into_iter()
+        .filter(|(id, _)| !order.contains_key(*id))
+        .collect();
     let mut out = Vec::new();
     for (target, _) in verdicts_in_order(&order) {
         if !gone.contains(target) {
             continue;
         }
-        let Some(cut) = cutoff(target, live.iter().copied()) else { continue };
-        if cursors.get(target.as_str()).map_or(true, |c| compare_ack_positions(c, &cut) == Ordering::Less) {
+        let Some(cut) = cutoff(target, live.iter().copied()) else {
+            continue;
+        };
+        if cursors
+            .get(target.as_str())
+            .map_or(true, |c| compare_ack_positions(c, &cut) == Ordering::Less)
+        {
             out.push(target.clone());
         }
     }
@@ -434,12 +537,21 @@ pub fn revived_devices(master: &[ForgottenDevice], done: &[String]) -> Vec<Strin
 
 /// Conditions (c) à (g) de la suppression des fichiers de `target` (section 14.2, §18 points 8 et 9). Même fonction que
 /// `forgottenDeleteCheck`.
-pub fn forgotten_delete_check(target: &str, self_id: &str, master: &[ForgottenDevice], done: &[String], known: &[KnownDevice], own_snapshot: &SnapshotEndRead) -> DeleteCheck {
+pub fn forgotten_delete_check(
+    target: &str,
+    self_id: &str,
+    master: &[ForgottenDevice],
+    done: &[String],
+    known: &[KnownDevice],
+    own_snapshot: &SnapshotEndRead,
+) -> DeleteCheck {
     if target == self_id {
         return DeleteCheck::Refused(SyncCode::BadName);
     }
     let order = forget_order(master);
-    let Some(verdict) = order.get(target) else { return DeleteCheck::Refused(SyncCode::StateMismatch) };
+    let Some(verdict) = order.get(target) else {
+        return DeleteCheck::Refused(SyncCode::StateMismatch);
+    };
     if order.contains_key(self_id) {
         return DeleteCheck::Refused(SyncCode::StateMismatch);
     }
@@ -447,14 +559,30 @@ pub fn forgotten_delete_check(target: &str, self_id: &str, master: &[ForgottenDe
     for d in known {
         devices.entry(d.device_id.as_str()).or_insert(d);
     }
-    let missing_self = KnownDevice { device_id: self_id.to_owned(), status: StateStatus::Missing, state: None, seen: true };
+    let missing_self = KnownDevice {
+        device_id: self_id.to_owned(),
+        status: StateStatus::Missing,
+        state: None,
+        seen: true,
+    };
     devices.entry(self_id).or_insert(&missing_self);
-    if devices.get(target).is_some_and(|d| d.status == StateStatus::CloudPending) {
-        return DeleteCheck::Waiting { device: target.to_owned(), code: SyncCode::CloudPending, reason: WaitReason::State };
+    if devices
+        .get(target)
+        .is_some_and(|d| d.status == StateStatus::CloudPending)
+    {
+        return DeleteCheck::Waiting {
+            device: target.to_owned(),
+            code: SyncCode::CloudPending,
+            reason: WaitReason::State,
+        };
     }
     // (i) Terminé dont l'oubli est annulé : bloque toujours, quel que soit son état (§18 point 12).
     if let Some(revived) = revived_devices(master, done).into_iter().next() {
-        return DeleteCheck::Waiting { device: revived, code: SyncCode::StateMismatch, reason: WaitReason::Revived };
+        return DeleteCheck::Waiting {
+            device: revived,
+            code: SyncCode::StateMismatch,
+            reason: WaitReason::Revived,
+        };
     }
     let authors: BTreeSet<&str> = master.iter().filter_map(declaration_author).collect();
     let mut states: BTreeMap<&str, &KnownState> = BTreeMap::new();
@@ -462,7 +590,8 @@ pub fn forgotten_delete_check(target: &str, self_id: &str, master: &[ForgottenDe
         if order.contains_key(*id) {
             continue;
         }
-        let phantom = *id != self_id && d.status != StateStatus::Ok && !d.seen && !authors.contains(id);
+        let phantom =
+            *id != self_id && d.status != StateStatus::Ok && !d.seen && !authors.contains(id);
         if phantom {
             continue;
         }
@@ -470,58 +599,113 @@ pub fn forgotten_delete_check(target: &str, self_id: &str, master: &[ForgottenDe
             (StateStatus::Ok, Some(state)) => {
                 states.insert(id, state);
             }
-            (StateStatus::CloudPending, _) => return DeleteCheck::Waiting { device: (*id).to_owned(), code: SyncCode::CloudPending, reason: WaitReason::State },
-            _ => return DeleteCheck::Waiting { device: (*id).to_owned(), code: SyncCode::StateMismatch, reason: WaitReason::State },
+            (StateStatus::CloudPending, _) => {
+                return DeleteCheck::Waiting {
+                    device: (*id).to_owned(),
+                    code: SyncCode::CloudPending,
+                    reason: WaitReason::State,
+                }
+            }
+            _ => {
+                return DeleteCheck::Waiting {
+                    device: (*id).to_owned(),
+                    code: SyncCode::StateMismatch,
+                    reason: WaitReason::State,
+                }
+            }
         }
     }
     let finished = done.iter().any(|d| d == target);
-    let cut = if finished { None } else { cutoff(target, states.iter().map(|(id, s)| (*id, &s.acks))) };
+    let cut = if finished {
+        None
+    } else {
+        cutoff(target, states.iter().map(|(id, s)| (*id, &s.acks)))
+    };
     if let Some(cut) = &cut {
         for (id, state) in &states {
-            if state.acks.get(target).map_or(true, |ack| compare_ack_positions(ack, cut) == Ordering::Less) {
-                return DeleteCheck::Waiting { device: (*id).to_owned(), code: SyncCode::StateMismatch, reason: WaitReason::Cutoff };
+            if state.acks.get(target).map_or(true, |ack| {
+                compare_ack_positions(ack, cut) == Ordering::Less
+            }) {
+                return DeleteCheck::Waiting {
+                    device: (*id).to_owned(),
+                    code: SyncCode::StateMismatch,
+                    reason: WaitReason::Cutoff,
+                };
             }
         }
     }
     let retained = verdicts_in_order(&order);
     for (id, state) in &states {
         for (t, v) in &retained {
-            if !state.forgotten.iter().any(|f| &f.device_id == *t && f.at == v.at) {
-                return DeleteCheck::Waiting { device: (*id).to_owned(), code: SyncCode::StateMismatch, reason: WaitReason::Declarations };
+            if !state
+                .forgotten
+                .iter()
+                .any(|f| &f.device_id == *t && f.at == v.at)
+            {
+                return DeleteCheck::Waiting {
+                    device: (*id).to_owned(),
+                    code: SyncCode::StateMismatch,
+                    reason: WaitReason::Declarations,
+                };
             }
         }
     }
     // (h) Son instantané annoncé couvre la cible jusqu'à la coupure (sans objet pour un terminé).
     if !finished {
-        let snapshot_wait = |code| DeleteCheck::Waiting { device: self_id.to_owned(), code, reason: WaitReason::Snapshot };
+        let snapshot_wait = |code| DeleteCheck::Waiting {
+            device: self_id.to_owned(),
+            code,
+            reason: WaitReason::Snapshot,
+        };
         match own_snapshot {
             SnapshotEndRead::CloudPending => return snapshot_wait(SyncCode::CloudPending),
-            SnapshotEndRead::None | SnapshotEndRead::Unreadable => return snapshot_wait(SyncCode::StateMismatch),
+            SnapshotEndRead::None | SnapshotEndRead::Unreadable => {
+                return snapshot_wait(SyncCode::StateMismatch)
+            }
             SnapshotEndRead::End(end) => {
                 if let Some(cut) = &cut {
-                    if end.covers.get(target).map_or(true, |c| compare_ack_positions(c, cut) == Ordering::Less) {
+                    if end
+                        .covers
+                        .get(target)
+                        .map_or(true, |c| compare_ack_positions(c, cut) == Ordering::Less)
+                    {
                         return snapshot_wait(SyncCode::StateMismatch);
                     }
                 }
             }
         }
     }
-    DeleteCheck::Ready { by: verdict.by.clone(), cutoff: cut }
+    DeleteCheck::Ready {
+        by: verdict.by.clone(),
+        cutoff: cut,
+    }
 }
 
 fn split_hlc(hlc: &str) -> Option<(u64, u32)> {
     if !is_strict_hlc(hlc) {
         return None;
     }
-    Some((hlc.get(..15)?.parse().ok()?, u32::from_str_radix(hlc.get(16..20)?, 16).ok()?))
+    Some((
+        hlc.get(..15)?.parse().ok()?,
+        u32::from_str_radix(hlc.get(16..20)?, 16).ok()?,
+    ))
 }
 
 /// hlc d'une nouvelle déclaration (audit Y-10 d) : après `now_ms` et après chaque hlc de `seen` (états des actifs non oubliés autres que
 /// la cible, choisis par l'appelant) ; un hlc au-delà de `now_ms + tolerance_ms` est ignoré ; `None` si le résultat n'est pas strict
 /// (`hlc-order`). Même fonction que `declarationHlc`.
-pub fn next_declaration_hlc<'a>(now_ms: u64, seen: impl IntoIterator<Item = &'a str>, self_id: &str, tolerance_ms: u64) -> Option<String> {
+pub fn next_declaration_hlc<'a>(
+    now_ms: u64,
+    seen: impl IntoIterator<Item = &'a str>,
+    self_id: &str,
+    tolerance_ms: u64,
+) -> Option<String> {
     let limit = now_ms.saturating_add(tolerance_ms);
-    let best = seen.into_iter().filter_map(split_hlc).filter(|(ms, _)| *ms <= limit).max();
+    let best = seen
+        .into_iter()
+        .filter_map(split_hlc)
+        .filter(|(ms, _)| *ms <= limit)
+        .max();
     let (ms, counter) = match best {
         Some((ms, counter)) if ms >= now_ms => {
             if counter >= 0xffff {
@@ -547,22 +731,46 @@ pub fn state_hlcs(state: &PublishedState) -> Vec<&str> {
 
 /// Liste publiée par le moteur comparée à la liste maître (section 1.4) : égale, ou **préfixe** (Rust complète) ; toute autre
 /// différence : `None` (`state-mismatch`).
-pub fn completed_forgotten(published: &[ForgottenDevice], master: &[ForgottenDevice]) -> Option<Vec<ForgottenDevice>> {
-    (published.len() <= master.len() && master[..published.len()] == *published).then(|| master.to_vec())
+pub fn completed_forgotten(
+    published: &[ForgottenDevice],
+    master: &[ForgottenDevice],
+) -> Option<Vec<ForgottenDevice>> {
+    (published.len() <= master.len() && master[..published.len()] == *published)
+        .then(|| master.to_vec())
 }
 
 /// Détail de la boîte native (audit Y-10 e) : plateforme, dernière synchro et 8 premiers caractères de l'identifiant, lus par Rust
 /// dans l'état authentifié de la cible (textes de `src/i18n/native/fr.json`, section `forgetDetail`).
 /// `local_offset_minutes` : décalage du fuseau local (None : inconnu : heure UTC, suivie de « UTC », ADR 0011 §23 point 4).
-pub fn forget_dialog_detail(device_id: &str, state: Option<&PublishedState>, local_offset_minutes: Option<i64>) -> String {
+pub fn forget_dialog_detail(
+    device_id: &str,
+    state: Option<&PublishedState>,
+    local_offset_minutes: Option<i64>,
+) -> String {
     let texts = super::consent::forget_detail_texts();
     let short: String = device_id.chars().take(8).collect();
-    let Some(state) = state else { return texts.never.replace("{id}", &short) };
-    let platform = if state.platform == "ios" { texts.ios.clone() } else { texts.windows.clone() };
-    let ms = split_hlc(&state.last_sync_hlc).map_or(0, |(ms, _)| ms) as i64 + local_offset_minutes.unwrap_or(0) * 60_000;
+    let Some(state) = state else {
+        return texts.never.replace("{id}", &short);
+    };
+    let platform = if state.platform == "ios" {
+        texts.ios.clone()
+    } else {
+        texts.windows.clone()
+    };
+    let ms = split_hlc(&state.last_sync_hlc).map_or(0, |(ms, _)| ms) as i64
+        + local_offset_minutes.unwrap_or(0) * 60_000;
     let (date, time) = local_date_time(ms);
-    let time = if local_offset_minutes.is_none() { texts.utc.replace("{time}", &time) } else { time };
-    texts.detail.replace("{platform}", &platform).replace("{id}", &short).replace("{date}", &date).replace("{time}", &time)
+    let time = if local_offset_minutes.is_none() {
+        texts.utc.replace("{time}", &time)
+    } else {
+        time
+    };
+    texts
+        .detail
+        .replace("{platform}", &platform)
+        .replace("{id}", &short)
+        .replace("{date}", &date)
+        .replace("{time}", &time)
 }
 
 /// Date (jj/mm/aaaa) et heure sur 24 h (hh:mm) d'un instant déjà décalé à l'heure locale (ms depuis 1970).
@@ -579,7 +787,10 @@ pub fn local_date_time(local_ms: i64) -> (String, String) {
     let day = doy - (153 * mp + 2) / 5 + 1;
     let month = if mp < 10 { mp + 3 } else { mp - 9 };
     let year = yoe + era * 400 + i64::from(month <= 2);
-    (format!("{day:02}/{month:02}/{year:04}"), format!("{:02}:{:02}", minutes / 60, minutes % 60))
+    (
+        format!("{day:02}/{month:02}/{year:04}"),
+        format!("{:02}:{:02}", minutes / 60, minutes % 60),
+    )
 }
 
 /// Décalage de l'heure locale (minutes) à l'instant donné (ms Unix) : fuseau du système (Windows : `SystemTimeToTzSpecificLocalTime` ;
@@ -598,20 +809,30 @@ fn system_offset_minutes(utc_ms: u64) -> Option<i64> {
     #[cfg(windows)]
     {
         use windows::Win32::Foundation::{FILETIME, SYSTEMTIME};
-        use windows::Win32::System::Time::{FileTimeToSystemTime, SystemTimeToFileTime, SystemTimeToTzSpecificLocalTime};
-        let ticks = utc_ms.saturating_mul(10_000).saturating_add(116_444_736_000_000_000);
-        let utc_ft = FILETIME { dwLowDateTime: ticks as u32, dwHighDateTime: (ticks >> 32) as u32 };
+        use windows::Win32::System::Time::{
+            FileTimeToSystemTime, SystemTimeToFileTime, SystemTimeToTzSpecificLocalTime,
+        };
+        let ticks = utc_ms
+            .saturating_mul(10_000)
+            .saturating_add(116_444_736_000_000_000);
+        let utc_ft = FILETIME {
+            dwLowDateTime: ticks as u32,
+            dwHighDateTime: (ticks >> 32) as u32,
+        };
         let mut utc = SYSTEMTIME::default();
         let mut local = SYSTEMTIME::default();
         let mut local_ft = FILETIME::default();
         // SAFETY: structures locales valides pendant les appels ; fuseau courant (None).
         let ok = unsafe {
-            FileTimeToSystemTime(&utc_ft, &mut utc).is_ok() && SystemTimeToTzSpecificLocalTime(None, &utc, &mut local).is_ok() && SystemTimeToFileTime(&local, &mut local_ft).is_ok()
+            FileTimeToSystemTime(&utc_ft, &mut utc).is_ok()
+                && SystemTimeToTzSpecificLocalTime(None, &utc, &mut local).is_ok()
+                && SystemTimeToFileTime(&local, &mut local_ft).is_ok()
         };
         if !ok {
             return None;
         }
-        let local_ticks = (u64::from(local_ft.dwHighDateTime) << 32) | u64::from(local_ft.dwLowDateTime);
+        let local_ticks =
+            (u64::from(local_ft.dwHighDateTime) << 32) | u64::from(local_ft.dwLowDateTime);
         Some((local_ticks as i64 - ticks as i64) / 600_000_000)
     }
 }
