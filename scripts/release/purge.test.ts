@@ -176,7 +176,7 @@ describe('lot (h) : archivage CircleTasks (D-40)', () => {
   it('aucun document ou source actif ne pointe vers l’ancien emplacement', () => {
     const stale = /docs\/(stories|maquettes-refonte|audits|audit-1\.0\.md|backlog\.md|dettes\.md|essais-iphone(-a9)?\.md|reprise-codex\.md|reprise-historique-2026-10\.md)/;
     const files = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' }).split('\n').filter((p) => p && !p.startsWith('docs/archive/') && !p.endsWith('purge.test.ts') && !/\.(png|ico|icns|jpg|woff2?|wasm|traineddata|gz|zip|svg|lock)$/i.test(p));
-    const offenders = files.filter((p) => present(p) && stale.test(read(p)) && !new RegExp(`docs/archive/circletasks/(${stale.source.slice(5, -1)})`).test(read(p).replace(new RegExp(`docs/archive/circletasks/${stale.source.slice(5)}`, 'g'), '')));
+    const offenders = files.filter((p) => present(p) && stale.test(read(p).replace(/docs/archive/circletasks/S*/g, '')));
     expect(offenders).toEqual([]);
   });
 });
