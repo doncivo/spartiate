@@ -1,8 +1,8 @@
-# SPA-001b — Inventaire préparatoire au niveau des symboles
+# SPA-001b — Inventaire au niveau des symboles (validé par Ali le 2 novembre 2026)
 
 PREP-001B-002 · actualisé le 2 novembre 2026 · base lue : c3ffe686 (main, PR #11 SPA-001a fusionnée). Branche prep-001b-002 mise à jour par fusion, sans réécriture d’historique.
 
-**Brouillon, non validé par Ali, aucune purge autorisée.** Analyse en lecture seule des couplages de SPA-001, D-44. Ce document n'est pas l'inventaire exhaustif final : il précise les points de composition et le cœur couplé, recense toutes les méthodes de SyncRepository, puis délimite le reste à détailler avant validation de 001b. Il ne remplace pas la validation de docs/spa-001b-inventaire.md (**à créer — SPA-001b, app-shell avec sync-icloud**). Aucun code modifié, aucun travail I1.
+**Validé par Ali le 2 novembre 2026 (D-62).** Les décisions Garder / Adapter / Supprimer ci-dessous sont exécutoires dans les conditions de D-62 ; tout écart au tableau = arrêt et question à Ali. Analyse en lecture seule des couplages de SPA-001, D-44. Ce document n'est pas l'inventaire exhaustif final : il précise les points de composition et le cœur couplé, recense toutes les méthodes de SyncRepository, puis délimite le reste à détailler avant validation de 001b. Il tient lieu de docs/spa-001b-inventaire.md (validé, D-62). Aucun code modifié, aucun travail I1.
 
 ## Lecture des décisions
 
