@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-01 (fin de session SPA-001a). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md, fusionnés en 001a (D-42). PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-59 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Benchmark : archive de recherche, aucun périmètre nouveau.
+État au 2026-11-02 (arrêt de session SPA-001b au point d’étape). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md, fusionnés en 001a (D-42). PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-59 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Benchmark : archive de recherche, aucun périmètre nouveau.
 
 ## Fusionné
 
@@ -10,11 +10,13 @@ SPA-000 clos : dépôt issu de CircleTasks, remote circletasks en lecture seule 
 
 Fait : tests rouges (2346b2dc) ; `scripts/release/rename.mjs` exécuté, rapport dans la PR ; updater non configuré (D-30) ; icône régénérée depuis `content/brand/spartiate.svg` ; CLAUDE.md et AGENTS.md fusionnés ; PRD v6.3 en chapitres (`docs/prd/`, source `docs/archive/PRD-v6.2.md`, corrections dans `scripts/release/fixtures/prd-v6.3-changes.json`) ; registre `docs/a-creer.md` ; journal et changelog CircleTasks archivés dans `docs/archive/circletasks/`. Version finale reçue par la relecture Codex : ADR 0017 appliquée (séparation cryptographique, fichiers .spx / .spj / .sps, garde de dossier par noms ; le risque du dossier renommé est refusé et traité), tests iPhone et non-écriture de folder.json / own.json présents, preuve rouge de l'updater sur main consignée. Reste : `tests.yml` vert sur la PR #11, corrections de la relecture Codex (D-53), fusion. Le reste de `docs/` CircleTasks (stories, audits, backlog, essais, maquettes-refonte) est archivé par 001b, lot (i).
 
-## Avant SPA-001b
+## SPA-001b — point d’étape (branche locale spa-001b-purge, non poussée)
 
-- Fusion de 001a, puis inventaire au niveau des symboles `docs/spa-001b-inventaire.md` validé par Ali (D-44) : nouvelle session.
-- D-54 : Ali supprime lui-même `%APPDATA%\fr.spartiate.app` (chemin exact affiché, aucun joker) avant le premier lancement de 001b. D-55 : identités profil / pesée. Gardes du migrateur conservées. `settings` hors publication I0 ; 24 fiches conservées ; AppShell / TabRail et rupture 1 024 px.
-- Fichiers métier CircleTasks renommés mais laissés verts en 001a, supprimés en 001b : `docs/spa-001a-fichiers-metier-reportes.md` (122 fichiers par lot).
+- Fait : inventaire validé (D-62) ; écart signature validé par Ali (avis d’expiration déplacé dans `src/features/signing/`, découplé de `reminders`, tests verts) ; tests rouges de la composition et du lot (a) dans `scripts/release/purge.test.ts`.
+- Travail non vert gardé en local sur `spa-001b-wip` (jamais poussé) : 15 features retirées, navigation à 5 sections, conteneur et bootstrap réduits, Réglages épurés. Reste ~150 erreurs de typage, surtout des tests.
+- Écarts à soumettre à Ali (D-62) avant la suite : `src/features/sync/syncConflictUseCases.ts` (restauration des conflits, très liée aux tâches) et `domain/sync/conflictRestore.ts` ne figurent pas au tableau ; `tabsConfig.ts` et `domain/tabs.ts` (« Garder vidé ») disparaissent entièrement (cinq sections fixes).
+- Découpage proposé : 001b-front (reprendre `spa-001b-wip`), 001b-sync (conflits, catalogue, repositories), 001b-rust, 001b-docs et base neuve.
+- D-54 : Ali supprime `%APPDATA%r.spartiate.app` avant le premier lancement de la base neuve.
 
 ## Notes pour les tickets suivants
 
