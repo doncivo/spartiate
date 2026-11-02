@@ -1,7 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
-import { createTask } from './helpers/today';
 import { APP_READY_TIMEOUT_MS } from './helpers/app';
-import { closeRoom, inspect, openSyncDetails, openSyncedPage, openTasks, setUnreachable, syncNow, syncStatusLine, type SyncedPage } from './helpers/sync';
+import { closeRoom, inspect, openSyncDetails, openSyncedPage, setUnreachable, syncNow, syncStatusLine, type SyncedPage } from './helpers/sync';
 
 /**
  * Y-IOS-01 critère 14 (ADR 0011 §22) : projet `iphone`, simulateur de dossier, plateforme `ios`. Dossier choisi, tâche créée, page passée en
@@ -10,7 +9,6 @@ import { closeRoom, inspect, openSyncDetails, openSyncedPage, openTasks, setUnre
  * rechargement de la page, disparu quand le dossier est rétabli.
  */
 
-const IPHONE = { project: { name: 'iphone' } };
 const IOS_TEXT = 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / Spartiate';
 
 /**
@@ -49,18 +47,16 @@ test('Y-IOS-01 : cycle borné au passage en arrière-plan, signet perdu visible 
   await openSyncDetails(page);
   await syncNow(page);
 
-  // Tâche créée, puis l'app passe en arrière-plan : le cycle `hide` publie la tâche, sous une échéance (budget d'hydratation du scan).
-  await openTasks(page);
-  await createTask(page, IPHONE, { title: 'Créée sur l’iPhone' });
+  // L'app passe en arrière-plan : le cycle `hide` tourne, sous une échéance (budget d'hydratation du scan). Aucune ligne métier à publier avant
+  // la base neuve (001b) : la preuve de publication reviendra avec profil / poids.
   const before = await inspect(room, 'iphone');
   await setVisibility(page, 'hidden');
-  await expect.poll(async () => (await inspect(room, 'iphone')).appends, { timeout: APP_READY_TIMEOUT_MS }).toBeGreaterThan(before.appends);
+  await expect.poll(async () => (await inspect(room, 'iphone')).scanBudgets.length, { timeout: APP_READY_TIMEOUT_MS }).toBeGreaterThan(before.scanBudgets.length);
   const hidden = await inspect(room, 'iphone');
   const budget = hidden.scanBudgets.at(-1);
   expect(typeof budget).toBe('number');
   expect(budget as number).toBeGreaterThanOrEqual(1);
   expect(budget as number).toBeLessThanOrEqual(23_000);
-  expect(Object.keys(hidden.tasks)).toHaveLength(1);
 
   // Retour au premier plan : un cycle d'ouverture, non borné.
   await setVisibility(page, 'visible');

@@ -140,7 +140,7 @@ describe('aucun échec silencieux : chaque phase bloquée (9 c, 9 e, 9 i)', () =
       const shown = text();
 
       // Ni la navigation ni le temps ne le retirent.
-      act(() => useNavigationStore.getState().navigate({ tab: 'settings', screen: 'sync' }));
+      act(() => useNavigationStore.getState().navigate({ tab: 'more', screen: 'sync' }));
       db.clock.advance(40 * 86_400_000);
       await settle();
       expect(text(), 'navigation et temps').toBe(shown);
@@ -503,7 +503,7 @@ describe('accessibilité et textes (9 h, 9 j)', () => {
     expect(document.activeElement).toBe(button);
     expect(button.tagName).toBe('BUTTON');
     fireEvent.click(button);
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'settings', screen: 'sync' });
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'sync' });
   });
 
   it('anglais : le bandeau reprend mot pour mot la ligne de Réglages en anglais, et « View » remplace « Voir »', async () => {

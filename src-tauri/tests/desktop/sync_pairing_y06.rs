@@ -32,7 +32,7 @@ fn y06_1_page_carries_the_marker_and_is_listed_by_exact_key() {
     let page = include_str!("../../../pairing.html");
     assert!(page.contains(PAIRING_PAGE_MARKER), "pairing.html porte le marqueur");
     assert!(page.contains("/theme-init.js") && page.contains("<div id=\"root\"></div>") && page.contains("/src/features/sync/pairing-window/main.tsx"));
-    for other in [include_str!("../../../index.html"), include_str!("../../../capture.html")] {
+    for other in [include_str!("../../../index.html")] {
         assert!(!other.contains(PAIRING_PAGE_MARKER), "aucune autre page ne porte le marqueur");
     }
     assert!(pairing_page_listed(["/index.html", "/pairing.html"].into_iter()));

@@ -75,7 +75,7 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
     <div className="ct-settings ct-sync">
       <div className="ct-sync__topRow">
         {/* UI-FIX-04 / UI-REFONTE-04 : retour à gauche, en texte (« Réglages »), libellé accessible inchangé. */}
-        <button type="button" className="ct-sync__back" aria-label={t('sync.status.back')} onClick={() => navigate({ tab: 'settings', screen: 'home' })}>
+        <button type="button" className="ct-sync__back" aria-label={t('sync.status.back')} onClick={() => navigate({ tab: 'more', screen: 'home' })}>
           <Icon icon={ArrowLeft} size={20} />
           <span>{tSyncRefonte('back')}</span>
         </button>

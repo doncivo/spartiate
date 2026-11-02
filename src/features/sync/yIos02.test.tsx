@@ -14,7 +14,6 @@ import { createSyncService, silentSyncLogger } from '../../sync';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { useAppStatusStore } from '../app/appStatus';
 import { createAppContainer, type AppContainer } from '../app/container';
-import { onboardingCapabilities } from '../settings/onboardingStore';
 import { IosPairingScreen } from './IosPairingScreen';
 import { startSyncIntegration } from './startSync';
 import { SyncSettingsSection } from './SyncSettingsSection';
@@ -190,15 +189,6 @@ describe('Réglages de l’iPhone (Y-IOS-02 critères 6 et 7)', () => {
     expect(screen.getByRole('button', { name: 'Ouvrir les réglages d’iOS pour autoriser la caméra' })).toBeInTheDocument();
     // Jamais la fenêtre `pairing` du PC sur l'iPhone.
     expect(screen.queryByRole('button', { name: 'Associer cet appareil avec la clé de secours' })).toBeNull();
-  });
-});
-
-describe('assistant de premier lancement (Y-IOS-02 critère 8)', () => {
-  it('iPhone, synchro disponible : étape « Synchronisation » (4 étapes) ; indisponible : 3 étapes', () => {
-    const available = phoneContainer(createMemorySyncPlatform({ platform: 'ios' }));
-    expect(onboardingCapabilities(available).pairing).toBe(true);
-    const unavailable = phoneContainer(createMemorySyncPlatform({ platform: 'ios', available: false }));
-    expect(onboardingCapabilities(unavailable).pairing).toBe(false);
   });
 });
 

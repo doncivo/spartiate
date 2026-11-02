@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { uuidGenerator } from '../../../../src/domain/id';
 import type { TaskId } from '../../../../src/domain/types';
-import { createTaskEntities } from '../../../../src/features/app/taskEntities';
 import { createUndoStack, type UndoStack } from '../../../../src/features/app/undo';
 import { createSyncConflictUseCases, type SyncConflictUseCases } from '../../../../src/features/sync/syncConflictUseCases';
 import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../../sim/syncDevice';
@@ -35,7 +34,7 @@ async function twoDevices(): Promise<[SimDevice, SimDevice]> {
 }
 
 function conflictsOf(d: SimDevice, undo: UndoStack = createUndoStack()): SyncConflictUseCases {
-  return createSyncConflictUseCases({ clock: d.clock, ids: uuidGenerator, data: d.data, undo, taskEntities: createTaskEntities(), logger: d.logger });
+  return createSyncConflictUseCases({ clock: d.clock, ids: uuidGenerator, data: d.data, undo, logger: d.logger });
 }
 
 /** Un tour complet de synchro dans les deux sens (iCloud à jour partout, chacun lit puis publie). */

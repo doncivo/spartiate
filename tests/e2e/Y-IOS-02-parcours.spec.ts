@@ -1,8 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
-import { createTask } from './helpers/today';
 import { APP_READY_TIMEOUT_MS } from './helpers/app';
 import { expectFitsViewport } from './helpers/layout';
-import { closeRoom, inspect, openPairingWindow, openSyncDetails, openSyncedPage, openTasks, presentQr, presentText, propagate, setCamera, syncNow, taskRow, type SyncedPage } from './helpers/sync';
+import { closeRoom, inspect, openPairingWindow, openSyncDetails, openSyncedPage, presentQr, presentText, propagate, setCamera, syncNow, type SyncedPage } from './helpers/sync';
 
 /**
  * Y-IOS-02, QA du parcours d'association (demande d'Ali, 0.2.2) : parcours complet PC + iPhone de bout en bout sur deux pages reliées par
@@ -14,8 +13,6 @@ import { closeRoom, inspect, openPairingWindow, openSyncDetails, openSyncedPage,
  * Projet `iphone` : le parcours (les deux pages) ; projet `pc` : les états du PC (voir `Y-IOS-02-etats.spec.ts`).
  */
 
-const PC = { project: { name: 'pc' } };
-const TITLE = 'Créée sur le PC';
 const SHOW_QR = 'Associer l’iPhone : afficher le code d’association';
 const ASSOCIATE_PC = 'Associer cet iPhone au PC : scanner le code d’association';
 const SCAN = 'Ouvrir la caméra et scanner le code d’association';
@@ -36,7 +33,7 @@ test.afterEach(async () => {
   room = '';
 });
 
-const reglages = (page: Page) => page.getByRole('navigation').getByText('Réglages', { exact: true });
+const reglages = (page: Page) => page.getByRole('navigation').getByText('Plus', { exact: true });
 
 test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis réussite, 440 × 956 sans débordement à chaque écran', async ({ browser }) => {
   const info = test.info();
@@ -44,13 +41,11 @@ test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis r�
   test.setTimeout(BUDGET_MS);
   room = `yios02qa-${String(info.workerIndex)}-${info.testId}-${String(info.repeatEachIndex)}`;
 
-  // --- PC : dossier, clé, tâche publiée ; « Associer l'iPhone » directement dans Réglages ---------------------------------------------
+  // --- PC : dossier, clé ; « Associer l'iPhone » directement dans Réglages ---------------------------------------------
   const pc = await openSyncedPage(browser, room, 'pc', 'first', 'pc');
   opened.push(pc);
   await openSyncDetails(pc.page);
   await syncNow(pc.page);
-  await openTasks(pc.page);
-  await createTask(pc.page, PC, { title: TITLE, time: '08:00' });
   await openSyncDetails(pc.page);
   await syncNow(pc.page);
   await propagate(room);
@@ -149,9 +144,6 @@ test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis r�
   await expect(page.getByRole('button', { name: 'Réinitialiser la synchronisation avec une nouvelle clé' })).toBeVisible();
   await expect(page.getByTestId('sync-key-id')).toBeVisible();
   await expectFitsViewport(page, 'Détails de la synchronisation, associé');
-  await openTasks(page);
-  await expect(taskRow(page, TITLE)).toBeVisible();
-  await expectFitsViewport(page, 'Tâches après association');
 
   // --- PC : voit l'iPhone dans APPAREILS --------------------------------------------------------------------------------------------
   await propagate(room);

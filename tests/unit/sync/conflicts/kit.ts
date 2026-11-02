@@ -9,7 +9,6 @@ import { openSqliteWasmDriver } from '../../../../src/db/drivers/sqliteWasm';
 import { migrations } from '../../../../src/db/migrations';
 import { migrate } from '../../../../src/db/migrator';
 import { createDataAccess, createSqlRepositories, type DataAccess } from '../../../../src/db/repositories';
-import { createTaskEntities, type TaskEntities } from '../../../../src/features/app/taskEntities';
 import { createUndoStack, type UndoStack } from '../../../../src/features/app/undo';
 import { createSyncConflictUseCases, type SyncConflictUseCases } from '../../../../src/features/sync/syncConflictUseCases';
 import { createMemorySyncLogger } from '../../../../src/sync';
@@ -32,7 +31,6 @@ export interface ConflictBench {
   readonly hlc: HlcClock;
   readonly stamper: WriteStamper;
   readonly undo: UndoStack;
-  readonly taskEntities: TaskEntities;
   readonly logger: ReturnType<typeof createMemorySyncLogger>;
   readonly useCases: SyncConflictUseCases;
   createTask(title: string, extra?: Partial<Task>): Promise<Task>;
@@ -73,9 +71,8 @@ export async function openConflictBench(start = START): Promise<ConflictBench> {
   const data = createDataAccess(driver, stamper, createSqlRepositories);
   await data.repos.settings.set('device.id', SELF);
   const undo = createUndoStack();
-  const taskEntities = createTaskEntities();
   const logger = createMemorySyncLogger();
-  const useCases = createSyncConflictUseCases({ clock, ids: uuidGenerator, data, undo, taskEntities, logger });
+  const useCases = createSyncConflictUseCases({ clock, ids: uuidGenerator, data, undo, logger });
   const bench: ConflictBench = {
     driver,
     data,
@@ -83,7 +80,6 @@ export async function openConflictBench(start = START): Promise<ConflictBench> {
     hlc,
     stamper,
     undo,
-    taskEntities,
     logger,
     useCases,
     async createTask(title, extra = {}) {

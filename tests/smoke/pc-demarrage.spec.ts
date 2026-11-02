@@ -2,7 +2,6 @@ import { chromium, expect, test, type Browser, type Page } from '@playwright/tes
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
-import { formatTodayHeader } from '../../src/i18n/format';
 import { fr } from '../../src/i18n/fr';
 import { decodePng, measureRegion } from './pixels';
 
@@ -139,20 +138,9 @@ test('le binaire Windows démarre sur une base neuve et affiche l’écran du jo
     await expect(page.locator('.app-shell')).toHaveAttribute('data-db-status', 'ready', { timeout: APP_READY_TIMEOUT_MS });
     await expect(page.getByRole('navigation')).toBeVisible();
     await expect(page.getByRole('alert')).toHaveCount(0);
-    // Base neuve dans l'app installée : le guide de bienvenue (P-05) s'affiche toujours, parfois après « ready » ; attendu puis passé.
-    const guide = page.getByRole('dialog', { name: fr.onboarding.dialogLabel });
-    await expect(guide).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });
-    await guide.getByRole('button', { name: fr.onboarding.skipLabel }).click();
-    await expect(guide).toHaveCount(0);
-    // Écran du jour (A-01) : onglet Tâches courant, titre du jour local de la machine formaté comme l'écran (PC : style long), badge.
-    await expect(page.getByRole('navigation').locator('[aria-current="page"]')).toContainText(fr.nav.tabs.tasks);
-    const heading = page.getByRole('heading', { level: 1 }).first();
-    await expect(heading).toBeVisible();
-    const today = new Date();
-    const localIso = new Date(today.getTime() - today.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
-    await expect(heading).toHaveText(formatTodayHeader(localIso, 'long').dayLine);
-    await expect(page.locator('main h1.ct-today__day')).toBeVisible(); // UI-REFONTE-08 : plus de badge sur PC, le jour en grand tient lieu d'en-tête
-    await expect(page.getByRole('alert')).toHaveCount(0);
+    // Coquille Spartiate : cinq sections, « Aujourd’hui » courante (section neutre jusqu’à I1, aucun texte métier attendu).
+    await expect(page.getByRole('navigation').locator('[aria-current="page"]')).toContainText(fr.nav.tabs.today);
+    await expect(page.getByRole('navigation').getByText(fr.nav.tabs.more, { exact: true })).toBeVisible();
     expect(app.exitCode, exited()).toBeNull();
     await testInfo.attach('dom.png', { body: await page.screenshot(), contentType: 'image/png' });
 

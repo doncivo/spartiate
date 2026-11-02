@@ -5,7 +5,7 @@ import type { ReminderDue, ReminderItem, ReminderList, RemindersAccess } from '.
  * Contrat plateforme des Rappels Apple (K-05 à K-07, ADR 0008 §10.4). Implémentations :
  * - iPhone (`tauri`, `ios`) : plugin Swift `reminders` (EventKit) via `tauriReminders.ts`, seul fichier de `src` à nommer ses commandes ;
  * - PC et navigateur : `unavailableReminders.ts`, aucun appel (les Rappels n'arrivent sur PC que par la synchro) ;
- * - tests : `fakeReminders.ts` sur le magasin en mémoire de `tests/sim/reminders-sim.ts`.
+ * - tests : `fakeReminders.ts` sur un magasin en mémoire (le simulateur `tests/sim/reminders-sim.ts` a été retiré en SPA-001b).
  *
  * Les types de données sont ceux du domaine (`src/domain/appleReminders.ts`). Périmètre (K-05 D1) : titre, échéance, statut terminé,
  * récurrence en lecture seule ; notes, priorité, drapeau, sous-tâches, alertes et lieu ne passent jamais.
