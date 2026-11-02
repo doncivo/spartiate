@@ -142,11 +142,7 @@ jobs:
       # Xcode « Build Rust Code » (tauri ios xcode-script), puis Products/Applications/Spartiate.app est
       # zippé en Payload/ dans gen/apple/build/arm64/Spartiate.ipa. beforeBuildCommand (npm run build)
       # compile le front, embarqué dans le binaire Rust. Pourquoi ce choix : ADR 0007, avenant POC-01.
-      # Client OAuth Google « iOS » (K-01), lu à la compilation par src-tauri/build.rs (BUILD_SECRETS).
-      # Identifiant public (non confidentiel) ; jamais le secret du client de bureau ici. Uniquement cette étape.
       - name: Compiler l'IPA sans signature
-        env:
-          CT_GOOGLE_IOS_CLIENT_ID: ${{ secrets.CT_GOOGLE_IOS_CLIENT_ID }}
         run: npx tauri ios build --ci --no-sign --target aarch64
 
       - name: Vérifier et copier Spartiate.ipa
@@ -259,11 +255,6 @@ jobs:
           path: info/Info.plist
           if-no-files-found: error
           retention-days: 30
-
-      # Les journaux Xcode peuvent répéter l'environnement du build : toute ligne CT_GOOGLE est supprimée avant l'envoi.
-      - name: Filtrer les journaux de compilation
-        if: failure()
-        run: find src-tauri/gen/apple -type f \( -name '*.log' -o -name project.yml \) -exec sed -i '' '/CT_GOOGLE/d' {} +
 
       - name: Journaux de compilation en cas d'échec
         if: failure()

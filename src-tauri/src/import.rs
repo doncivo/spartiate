@@ -1,6 +1,6 @@
 //! Import de fichier (PC) : neutralisé jusqu'à SPA-005 (export / import des données de Spartiate).
 //!
-//! L'entrée CSV de CircleTasks (boîte « Ouvrir », lecture bornée, 2 Mo) a été retirée avec les tâches (SPA-001b, D-64). La commande
+//! L'entrée CSV de l'ancien projet (boîte « Ouvrir », lecture bornée, 2 Mo) a été retirée avec les tâches (SPA-001b, D-64). La commande
 //! `import_open_file` reste déclarée (permission, façade TypeScript) et répond `unsupported` : aucune boîte système n'est ouverte et
 //! aucun fichier n'est lu. SPA-005 la remplacera par l'import des données de Spartiate.
 
