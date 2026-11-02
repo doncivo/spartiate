@@ -10,12 +10,12 @@ SPA-000 clos : dépôt issu de CircleTasks, remote circletasks en lecture seule 
 
 Fait : tests rouges (2346b2dc) ; `scripts/release/rename.mjs` exécuté, rapport dans la PR ; updater non configuré (D-30) ; icône régénérée depuis `content/brand/spartiate.svg` ; CLAUDE.md et AGENTS.md fusionnés ; PRD v6.3 en chapitres (`docs/prd/`, source `docs/archive/PRD-v6.2.md`, corrections dans `scripts/release/fixtures/prd-v6.3-changes.json`) ; registre `docs/a-creer.md` ; journal et changelog CircleTasks archivés dans `docs/archive/circletasks/`. Version finale reçue par la relecture Codex : ADR 0017 appliquée (séparation cryptographique, fichiers .spx / .spj / .sps, garde de dossier par noms ; le risque du dossier renommé est refusé et traité), tests iPhone et non-écriture de folder.json / own.json présents, preuve rouge de l'updater sur main consignée. Reste : `tests.yml` vert sur la PR #11, corrections de la relecture Codex (D-53), fusion. Le reste de `docs/` CircleTasks (stories, audits, backlog, essais, maquettes-refonte) est archivé par 001b, lot (i).
 
-## SPA-001b — point d’étape (branche locale spa-001b-purge, non poussée)
+## SPA-001b — point d’étape (arrêt de session)
 
-- Fait : inventaire validé (D-62) ; écart signature validé par Ali (avis d’expiration déplacé dans `src/features/signing/`, découplé de `reminders`, tests verts) ; tests rouges de la composition et du lot (a) dans `scripts/release/purge.test.ts`.
-- Travail non vert gardé en local sur `spa-001b-wip` (jamais poussé) : 15 features retirées, navigation à 5 sections, conteneur et bootstrap réduits, Réglages épurés. Reste ~150 erreurs de typage, surtout des tests.
-- Écarts à soumettre à Ali (D-62) avant la suite : `src/features/sync/syncConflictUseCases.ts` (restauration des conflits, très liée aux tâches) et `domain/sync/conflictRestore.ts` ne figurent pas au tableau ; `tabsConfig.ts` et `domain/tabs.ts` (« Garder vidé ») disparaissent entièrement (cinq sections fixes).
-- Découpage proposé : 001b-front (reprendre `spa-001b-wip`), 001b-sync (conflits, catalogue, repositories), 001b-rust, 001b-docs et base neuve.
+- `spa-001b-purge` (locale, non poussée, commit rouge volontaire dans `scripts/release/purge.test.ts`) : inventaire validé (D-62), avis de signature déplacé dans `src/features/signing/` et découplé, écarts consignés au journal de `docs/spa-001b-inventaire.md`.
+- `spa-001b-wip` (locale, non verte, jamais poussée) : 15 features retirées, 5 sections fixes, conteneur et bootstrap réduits, Réglages épurés ; ~150 erreurs de typage, surtout des tests. Base de départ de 001b-front.
+- Décisions d’Ali : `signingAlertFailure` dans À propos accepté pour I0 (SPA-004 remet l’alerte sur Aujourd’hui) ; `conflictRestore.ts` Garder si générique sinon Adapter, `syncConflictUseCases.ts` Adapter, en 001b-sync avec relecture sync-icloud, S1 à S5 intacts ; `tabsConfig.ts` et `domain/tabs.ts` supprimés.
+- Découpage : 001b-front, 001b-sync, 001b-rust, 001b-docs (réunissable avec rust), puis base neuve et coquille. Chaque sous-PR verte et fusionnable seule, `purge.test.ts` découpé par sous-PR, jamais de branche rouge poussée.
 - D-54 : Ali supprime `%APPDATA%r.spartiate.app` avant le premier lancement de la base neuve.
 
 ## Notes pour les tickets suivants
