@@ -37,4 +37,4 @@ Fait : tests rouges, `rename.mjs` exécuté, updater non configuré (D-30), icô
 
 001a → fusion → inventaire approuvé → 001b → SPA-002 → 003 → 004 → 005 → spikes 006/007 → 008 → 009 → 010. Compléments P-04 à P-08 intégrés aux tickets ; P-09 / P-10 avant les modules métier.
 
-PR obligatoire, pas de push main ni force. Bundle ≤ 358 400 octets gzip avant push ; tests légers ciblés en local ; suite complète, e2e et Rust lourds en CI ; aucune surveillance en boucle. Données réelles CircleTasks intouchables ; aucun statut CONFIRMED depuis une lecture de code. Une revue bornée au diff après CI verte (D-53).
+PR obligatoire, pas de push main ni force. Bundle avant push ; tests légers ciblés en local, le reste en CI ; aucune surveillance en boucle ; aucun CONFIRMED depuis une lecture de code.
