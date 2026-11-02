@@ -22,7 +22,10 @@ pub struct ImportedFile {
 
 /// Réponse unique tant que SPA-005 n'est pas livré.
 pub fn unsupported() -> ImportError {
-    ImportError { code: "unsupported", message: "import non pris en charge avant SPA-005".to_owned() }
+    ImportError {
+        code: "unsupported",
+        message: "import non pris en charge avant SPA-005".to_owned(),
+    }
 }
 
 /// Commande PC : refuse sans rien ouvrir ni lire.

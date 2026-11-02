@@ -98,14 +98,22 @@ impl TrayAction {
 /// Entrée du menu, indépendante de Tauri (testable).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TrayEntry {
-    Item { action: TrayAction, label: String, enabled: bool },
+    Item {
+        action: TrayAction,
+        label: String,
+        enabled: bool,
+    },
     Separator,
 }
 
 /// Disposition du menu (D-01, critère 3) : Ouvrir, Synchroniser maintenant, séparateur, Quitter. Toutes les entrées
 /// sont actives (Y-03 D1 : sans synchro configurée, « Synchroniser maintenant » guide vers Réglages au lieu d'être grisée).
 pub fn menu_layout(labels: &TrayLabels) -> Vec<TrayEntry> {
-    let item = |action, label: &str, enabled| TrayEntry::Item { action, label: label.to_owned(), enabled };
+    let item = |action, label: &str, enabled| TrayEntry::Item {
+        action,
+        label: label.to_owned(),
+        enabled,
+    };
     vec![
         item(TrayAction::Open, &labels.open, true),
         item(TrayAction::Sync, &labels.sync, true),
@@ -164,8 +172,18 @@ fn build_menu(app: &AppHandle, labels: &TrayLabels) -> tauri::Result<Menu<Wry>> 
     let mut items: Vec<Box<dyn IsMenuItem<Wry>>> = Vec::new();
     for entry in menu_layout(labels) {
         match entry {
-            TrayEntry::Item { action, label, enabled } => {
-                items.push(Box::new(MenuItem::with_id(app, action.id(), label, enabled, None::<&str>)?));
+            TrayEntry::Item {
+                action,
+                label,
+                enabled,
+            } => {
+                items.push(Box::new(MenuItem::with_id(
+                    app,
+                    action.id(),
+                    label,
+                    enabled,
+                    None::<&str>,
+                )?));
             }
             TrayEntry::Separator => items.push(Box::new(PredefinedMenuItem::separator(app)?)),
         }
@@ -188,7 +206,10 @@ fn run_action(app: &AppHandle, action: TrayAction) {
         TrayAction::Open => show_main_window(app),
         // Y-03 : la fenêtre principale lance `syncNow('tray')` ; sans synchro configurée, elle s'affiche sur Réglages.
         TrayAction::Sync => {
-            let configured = app.try_state::<TraySyncState>().map(|state| state.get()).unwrap_or(false);
+            let configured = app
+                .try_state::<TraySyncState>()
+                .map(|state| state.get())
+                .unwrap_or(false);
             if sync_tray_effect(configured) == SyncTrayEffect::ShowSettings {
                 show_main_window(app);
             }
@@ -263,7 +284,12 @@ fn create_tray(app: &AppHandle) -> tauri::Result<()> {
             }
         })
         .on_tray_icon_event(|tray, event| {
-            if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
+            if let TrayIconEvent::Click {
+                button: MouseButton::Left,
+                button_state: MouseButtonState::Up,
+                ..
+            } = event
+            {
                 show_main_window(tray.app_handle());
             }
         })
@@ -284,8 +310,14 @@ pub fn set_tray_labels(app: AppHandle, labels: TrayLabels) -> Result<(), Command
     if let Some(state) = app.try_state::<TraySyncState>() {
         state.set(labels.sync_enabled);
     }
-    let menu = build_menu(&app, &labels).map_err(|e| CommandError { code: "menu", message: e.to_string() })?;
-    tray.set_menu(Some(menu)).map_err(|e| CommandError { code: "menu", message: e.to_string() })
+    let menu = build_menu(&app, &labels).map_err(|e| CommandError {
+        code: "menu",
+        message: e.to_string(),
+    })?;
+    tray.set_menu(Some(menu)).map_err(|e| CommandError {
+        code: "menu",
+        message: e.to_string(),
+    })
 }
 
 /// Début du texte de la boîte montrée quand la récupération d'une restauration interrompue échoue. Exception assumée à « textes dans
@@ -303,7 +335,10 @@ pub fn recovery_failed_text(code: &str, identifier: &str) -> String {
 /// aucune WebView n'est vivante pendant la boîte, donc aucune base ne peut être ouverte ni créée. `setup` renvoie ensuite une erreur et
 /// `Builder::run` échoue. Une boîte système bloquante (`MessageBoxW`, sous Windows) montre le message d'abord ; seul le code d'erreur est journalisé,
 /// sans chemin. Les fichiers `.restore-old` restent intacts.
-fn abort_startup_after_failed_recovery(code: &'static str, identifier: &str) -> Box<dyn std::error::Error> {
+fn abort_startup_after_failed_recovery(
+    code: &'static str,
+    identifier: &str,
+) -> Box<dyn std::error::Error> {
     // Journal technique (I-04, ADR 0014) : le code seul, sans chemin.
     crate::applog::write("backup-recovery", code);
     #[cfg(windows)]
@@ -312,14 +347,22 @@ fn abort_startup_after_failed_recovery(code: &'static str, identifier: &str) -> 
         use windows::Win32::UI::WindowsAndMessaging::{MessageBoxW, MB_ICONERROR, MB_OK};
         // SAFETY : appel Win32 sans fenêtre parente, chaînes valides pour la durée de l'appel.
         unsafe {
-            MessageBoxW(None, &HSTRING::from(recovery_failed_text(code, identifier)), w!("Spartiate"), MB_OK | MB_ICONERROR);
+            MessageBoxW(
+                None,
+                &HSTRING::from(recovery_failed_text(code, identifier)),
+                w!("Spartiate"),
+                MB_OK | MB_ICONERROR,
+            );
         }
     }
     format!("restauration interrompue non récupérée ({code})").into()
 }
 
 /// Construit une fenêtre depuis sa configuration (`tauri.conf.json`), quel que soit son champ `create`. Générique sur le runtime pour être testée.
-pub fn build_window_from_config<R: tauri::Runtime>(app: &tauri::AppHandle<R>, config: &tauri::utils::config::WindowConfig) -> tauri::Result<()> {
+pub fn build_window_from_config<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    config: &tauri::utils::config::WindowConfig,
+) -> tauri::Result<()> {
     if app.get_webview_window(&config.label).is_none() {
         tauri::WebviewWindowBuilder::from_config(app, config)?.build()?;
     }
@@ -372,17 +415,26 @@ pub fn configure(builder: tauri::Builder<Wry>) -> tauri::Builder<Wry> {
             // sur un état à moitié restauré (voir `abort_startup_after_failed_recovery`). Puis seulement, la fenêtre est construite.
             // Dossier de données introuvable (`no-data-dir`) : impossible de savoir si une restauration est en suspens, donc l'app ne démarre pas non plus.
             let Ok(dir) = tauri::Manager::path(app).app_config_dir() else {
-                return Err(abort_startup_after_failed_recovery("no-data-dir", &app.config().identifier));
+                return Err(abort_startup_after_failed_recovery(
+                    "no-data-dir",
+                    &app.config().identifier,
+                ));
             };
             // I-04 (ADR 0014 §2) : journal technique d'abord, pour garder la trace de la récupération.
             crate::applog::init(dir.join(crate::applog::LOG_DIR));
             // Revue du lot F : un marqueur encore provisoire est réglé selon la récupération (`recover_and_settle`).
             if let Err(error) = crate::startup_gate::recover_and_settle(&dir) {
-                return Err(abort_startup_after_failed_recovery(error.code, &app.config().identifier));
+                return Err(abort_startup_after_failed_recovery(
+                    error.code,
+                    &app.config().identifier,
+                ));
             }
             // Fenêtre impossible à créer (`window-failed`) : même boîte système, puis arrêt (sans elle l'app tournerait sans interface).
             if create_main_window(app.handle()).is_err() {
-                return Err(abort_startup_after_failed_recovery("window-failed", &app.config().identifier));
+                return Err(abort_startup_after_failed_recovery(
+                    "window-failed",
+                    &app.config().identifier,
+                ));
             }
             app.manage(QuitGate::default());
             app.manage(TraySyncState::default());

@@ -19,7 +19,8 @@ pub const MAX_NAME_LEN: usize = 200;
 pub const ALLOWED_EXTENSIONS: [&str; 5] = ["csv", "json", "pdf", "png", "txt"];
 
 const RESERVED_NAMES: [&str; 22] = [
-    "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+    "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
+    "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
 ];
 
 /// Extension autorisée d'un nom (minuscules), ou None.
@@ -44,18 +45,35 @@ pub fn mime_for(ext: &str) -> &'static str {
 /// finaux, au plus 200 caractères (extension conservée), préfixé de `_` s'il s'agit d'un nom réservé (CON, NUL, COM1…).
 pub fn sanitize_file_name(raw: &str) -> String {
     let base = raw.rsplit(['/', '\\']).next().unwrap_or("");
-    let cleaned: String = base.chars().filter(|c| !matches!(c, '<' | '>' | ':' | '"' | '|' | '?' | '*') && !c.is_control()).collect();
-    let mut name = cleaned.trim_start().trim_end_matches([' ', '.']).to_string();
+    let cleaned: String = base
+        .chars()
+        .filter(|c| !matches!(c, '<' | '>' | ':' | '"' | '|' | '?' | '*') && !c.is_control())
+        .collect();
+    let mut name = cleaned
+        .trim_start()
+        .trim_end_matches([' ', '.'])
+        .to_string();
     if name.chars().count() > MAX_NAME_LEN {
-        let ext = Path::new(&name).extension().and_then(|e| e.to_str()).map(|e| format!(".{e}")).unwrap_or_default();
-        let ext = if ext.chars().count() <= 16 { ext } else { String::new() };
+        let ext = Path::new(&name)
+            .extension()
+            .and_then(|e| e.to_str())
+            .map(|e| format!(".{e}"))
+            .unwrap_or_default();
+        let ext = if ext.chars().count() <= 16 {
+            ext
+        } else {
+            String::new()
+        };
         let stem_len = MAX_NAME_LEN - ext.chars().count();
         let stem: String = name.chars().take(stem_len).collect();
         let stem = stem.trim_end_matches([' ', '.']);
         name = format!("{stem}{ext}");
     }
     let stem = name.split('.').next().unwrap_or("").trim_end_matches(' ');
-    if RESERVED_NAMES.iter().any(|reserved| reserved.eq_ignore_ascii_case(stem)) {
+    if RESERVED_NAMES
+        .iter()
+        .any(|reserved| reserved.eq_ignore_ascii_case(stem))
+    {
         name = format!("_{name}");
     }
     // Un nom réduit à des points (« . », « .. ») n'est jamais un nom de fichier.
@@ -90,7 +108,11 @@ pub fn body_bytes(body: &tauri::ipc::InvokeBody) -> Result<Vec<u8>, &'static str
             if items.len() > MAX_EXPORT_BYTES {
                 return Err("too-large");
             }
-            items.iter().map(|item| item.as_u64().and_then(|n| u8::try_from(n).ok())).collect::<Option<Vec<u8>>>().ok_or("bad-body")
+            items
+                .iter()
+                .map(|item| item.as_u64().and_then(|n| u8::try_from(n).ok()))
+                .collect::<Option<Vec<u8>>>()
+                .ok_or("bad-body")
         }
     }
 }

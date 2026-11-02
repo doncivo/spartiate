@@ -17,7 +17,9 @@ use std::sync::Mutex;
 
 use serde::Serialize;
 
-use crate::export_common::{allowed_extension, body_bytes, decode_name, mime_for, sanitize_file_name};
+use crate::export_common::{
+    allowed_extension, body_bytes, decode_name, mime_for, sanitize_file_name,
+};
 
 /// Sous-dossier du cache de l'app qui reçoit les temporaires d'export.
 pub const EXPORTS_DIR: &str = "exports";
@@ -65,8 +67,17 @@ pub struct PreparedExport {
 }
 
 /// Étapes 1 et 2 : taille avant toute copie (`too-large`), puis nom décodé et réduit (`bad-name` si l'en-tête manque ou est illisible).
-pub fn prepare(name_header: Option<&str>, body: &tauri::ipc::InvokeBody) -> Result<PreparedExport, ExportIosError> {
-    let data = body_bytes(body).map_err(|code| fail(if code == "too-large" { "too-large" } else { "io" }))?;
+pub fn prepare(
+    name_header: Option<&str>,
+    body: &tauri::ipc::InvokeBody,
+) -> Result<PreparedExport, ExportIosError> {
+    let data = body_bytes(body).map_err(|code| {
+        fail(if code == "too-large" {
+            "too-large"
+        } else {
+            "io"
+        })
+    })?;
     let raw = name_header.and_then(decode_name).ok_or(fail("bad-name"))?;
     let name = sanitize_file_name(&raw);
     let mime = allowed_extension(&name).map_or("application/octet-stream", |ext| mime_for(&ext));
@@ -91,7 +102,9 @@ impl TempExport {
         match fs::symlink_metadata(&self.dir) {
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => CleanupReport::default(),
             // `remove_dir_all` ne suit pas les liens : seul le contenu du sous-dossier créé par Rust est supprimé.
-            _ => CleanupReport { remove_failed: fs::remove_dir_all(&self.dir).is_err() },
+            _ => CleanupReport {
+                remove_failed: fs::remove_dir_all(&self.dir).is_err(),
+            },
         }
     }
 }
@@ -115,10 +128,12 @@ fn ensure_exports_dir(cache_dir: &Path) -> Result<PathBuf, ExportIosError> {
             fs::create_dir_all(cache_dir).map_err(|_| fail("io"))?;
             match fs::create_dir(&exports) {
                 Ok(()) => Ok(exports),
-                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => match fs::symlink_metadata(&exports) {
-                    Ok(meta) if meta.file_type().is_dir() => Ok(exports),
-                    _ => Err(fail("unsafe-folder")),
-                },
+                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
+                    match fs::symlink_metadata(&exports) {
+                        Ok(meta) if meta.file_type().is_dir() => Ok(exports),
+                        _ => Err(fail("unsafe-folder")),
+                    }
+                }
                 Err(_) => Err(fail("io")),
             }
         }
@@ -134,7 +149,12 @@ fn random_hex() -> String {
 /// Étapes 3 à 7 : un seul enregistrement à la fois (`busy`), dossier contrôlé, sous-dossier aléatoire créé exclusivement, fichier créé en
 /// `create_new`, écrit et `sync_all` (`io`), présentation par le transport, puis suppression du fichier et du sous-dossier **dans tous les
 /// cas**. Le rapport de nettoyage est rendu avec le résultat (`temp-remove-failed` au journal par l'appelant).
-pub fn save_prepared(state: &ExportIosState, cache_dir: &Path, prepared: &PreparedExport, transport: &dyn SaveTransport) -> (Result<SaveOutcome, ExportIosError>, CleanupReport) {
+pub fn save_prepared(
+    state: &ExportIosState,
+    cache_dir: &Path,
+    prepared: &PreparedExport,
+    transport: &dyn SaveTransport,
+) -> (Result<SaveOutcome, ExportIosError>, CleanupReport) {
     let Ok(_guard) = state.busy.try_lock() else {
         return (Err(fail("busy")), CleanupReport::default());
     };
@@ -146,19 +166,31 @@ pub fn save_prepared(state: &ExportIosState, cache_dir: &Path, prepared: &Prepar
     if fs::create_dir(&dir).is_err() {
         return (Err(fail("io")), CleanupReport::default());
     }
-    let mut temp = TempExport { dir: dir.clone(), done: false };
+    let mut temp = TempExport {
+        dir: dir.clone(),
+        done: false,
+    };
     let path = dir.join(&prepared.name);
     let written = OpenOptions::new()
         .write(true)
         .create_new(true)
         .open(&path)
-        .and_then(|mut file| file.write_all(&prepared.data).and_then(|()| file.sync_all()));
+        .and_then(|mut file| {
+            file.write_all(&prepared.data)
+                .and_then(|()| file.sync_all())
+        });
     let result = match written {
         Err(_) => Err(fail("io")),
         Ok(()) => match transport.present(&path, prepared.mime) {
             Ok(completed) => Ok(SaveOutcome { completed }),
             Err(code) if code == TIMEOUT_CODE => Err(fail(TIMEOUT_CODE)),
-            Err(code) => Err(fail(PLUGIN_REJECT_CODES.iter().copied().find(|known| *known == code).unwrap_or("failed"))),
+            Err(code) => Err(fail(
+                PLUGIN_REJECT_CODES
+                    .iter()
+                    .copied()
+                    .find(|known| *known == code)
+                    .unwrap_or("failed"),
+            )),
         },
     };
     let report = temp.cleanup();
@@ -168,7 +200,13 @@ pub fn save_prepared(state: &ExportIosState, cache_dir: &Path, prepared: &Prepar
 /// Supprime une entrée qui n'est pas un dossier ordinaire sans suivre de lien : fichier, lien symbolique, ou lien vers un dossier (jonction
 /// sous Windows, supprimée par `remove_dir`, qui retire le lien et jamais sa cible).
 fn remove_link_or_file(path: &Path) -> std::io::Result<()> {
-    fs::remove_file(path).or_else(|error| if cfg!(windows) { fs::remove_dir(path) } else { Err(error) })
+    fs::remove_file(path).or_else(|error| {
+        if cfg!(windows) {
+            fs::remove_dir(path)
+        } else {
+            Err(error)
+        }
+    })
 }
 
 /// Purge au démarrage : tout le contenu de `exports/` est supprimé, sans suivre de lien (un lien est supprimé lui-même, jamais sa cible).
@@ -184,7 +222,9 @@ pub fn purge_exports(cache_dir: &Path) -> Result<usize, usize> {
     if !meta.file_type().is_dir() {
         return remove_link_or_file(&exports).map(|()| 1).map_err(|_| 0);
     }
-    let Ok(entries) = fs::read_dir(&exports) else { return Err(0) };
+    let Ok(entries) = fs::read_dir(&exports) else {
+        return Err(0);
+    };
     let mut removed = 0;
     let mut failed = false;
     for entry in entries {
@@ -221,31 +261,47 @@ impl SaveTransport for PluginTransport {
         let plugin = self.0.clone();
         let args = serde_json::json!({ "path": path, "mime": mime });
         // Revue I4 : délai maximal ; une réponse tardive de Swift est ignorée, le temporaire est supprimé et le verrou rendu.
-        let answer = crate::mobile_call::call_with_deadline(move || plugin.call("present", args), PRESENT_DEADLINE).map_err(|error| match error {
+        let answer = crate::mobile_call::call_with_deadline(
+            move || plugin.call("present", args),
+            PRESENT_DEADLINE,
+        )
+        .map_err(|error| match error {
             crate::mobile_call::CallError::Timeout => TIMEOUT_CODE.to_owned(),
             crate::mobile_call::CallError::Rejected(code) => code,
         })?;
-        answer.get("completed").and_then(serde_json::Value::as_bool).ok_or_else(|| "failed".to_owned())
+        answer
+            .get("completed")
+            .and_then(serde_json::Value::as_bool)
+            .ok_or_else(|| "failed".to_owned())
     }
 }
 
 /// Enregistre le fichier reçu par le sélecteur « Enregistrer dans Fichiers » (iPhone). Corps brut et en-tête `x-file-name` comme au PC.
 #[cfg(target_os = "ios")]
 #[tauri::command]
-pub async fn export_save_file(app: tauri::AppHandle, request: tauri::ipc::Request<'_>) -> Result<SaveOutcome, ExportIosError> {
+pub async fn export_save_file(
+    app: tauri::AppHandle,
+    request: tauri::ipc::Request<'_>,
+) -> Result<SaveOutcome, ExportIosError> {
     use tauri::Manager;
-    let header = request.headers().get(crate::export_common::NAME_HEADER).and_then(|value| value.to_str().ok());
+    let header = request
+        .headers()
+        .get(crate::export_common::NAME_HEADER)
+        .and_then(|value| value.to_str().ok());
     let prepared = prepare(header, request.body())?;
     let cache_dir = app.path().app_cache_dir().map_err(|_| fail("io"))?;
-    let plugin = app.try_state::<tauri_plugin_ct_files::CtFiles<tauri::Wry>>().ok_or(fail("failed"))?;
+    let plugin = app
+        .try_state::<tauri_plugin_ct_files::CtFiles<tauri::Wry>>()
+        .ok_or(fail("failed"))?;
     let transport = PluginTransport(plugin.inner().clone());
     let handle = app.clone();
-    let (result, report) = tauri::async_runtime::spawn_blocking(move || match handle.try_state::<ExportIosState>() {
-        Some(state) => save_prepared(&state, &cache_dir, &prepared, &transport),
-        None => (Err(fail("failed")), CleanupReport::default()),
-    })
-    .await
-    .map_err(|_| fail("io"))?;
+    let (result, report) =
+        tauri::async_runtime::spawn_blocking(move || match handle.try_state::<ExportIosState>() {
+            Some(state) => save_prepared(&state, &cache_dir, &prepared, &transport),
+            None => (Err(fail("failed")), CleanupReport::default()),
+        })
+        .await
+        .map_err(|_| fail("io"))?;
     note_cleanup(report);
     result
 }

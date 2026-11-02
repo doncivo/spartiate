@@ -25,7 +25,11 @@ pub const PAIRING_WINDOW: &str = "pairing";
 /// Page de la fenêtre (troisième entrée Vite, Y-06).
 pub const PAIRING_PAGE: &str = "pairing.html";
 /// URL de la page embarquée selon la plateforme.
-pub const PAIRING_URLS: [&str; 3] = ["tauri://localhost/pairing.html", "http://tauri.localhost/pairing.html", "https://tauri.localhost/pairing.html"];
+pub const PAIRING_URLS: [&str; 3] = [
+    "tauri://localhost/pairing.html",
+    "http://tauri.localhost/pairing.html",
+    "https://tauri.localhost/pairing.html",
+];
 /// Serveur Vite (`devUrl`) : accepté seulement sous `cfg(debug_assertions)`.
 #[cfg(debug_assertions)]
 pub const PAIRING_DEV_URL: &str = "http://localhost:1420/pairing.html";
@@ -70,9 +74,13 @@ pub fn dev_page_has_marker(host: &str, port: u16) -> bool {
         return false;
     }
     let target = host.trim_start_matches('[').trim_end_matches(']');
-    let Ok(addrs) = (target, port).to_socket_addrs() else { return false };
+    let Ok(addrs) = (target, port).to_socket_addrs() else {
+        return false;
+    };
     for addr in addrs.filter(|a| a.ip().is_loopback()) {
-        let Ok(mut stream) = TcpStream::connect_timeout(&addr, Duration::from_secs(2)) else { continue };
+        let Ok(mut stream) = TcpStream::connect_timeout(&addr, Duration::from_secs(2)) else {
+            continue;
+        };
         let _ = stream.set_read_timeout(Some(Duration::from_secs(5)));
         let _ = stream.set_write_timeout(Some(Duration::from_secs(2)));
         let request = format!("GET /{PAIRING_PAGE} HTTP/1.1\r\nHost: {host}:{port}\r\nAccept: text/html\r\nConnection: close\r\n\r\n");
@@ -90,7 +98,9 @@ pub fn dev_page_has_marker(host: &str, port: u16) -> bool {
 #[cfg(debug_assertions)]
 pub fn dev_response_is_pairing_page(response: &[u8]) -> bool {
     let text = String::from_utf8_lossy(response);
-    let Some((head, body)) = text.split_once("\r\n\r\n") else { return false };
+    let Some((head, body)) = text.split_once("\r\n\r\n") else {
+        return false;
+    };
     let status_ok = head.lines().next().is_some_and(|line| {
         let mut parts = line.split_whitespace();
         parts.next().is_some_and(|v| v.starts_with("HTTP/1.")) && parts.next() == Some("200")
@@ -248,7 +258,13 @@ impl PairingRegistry {
     /// Enregistre l'instance créée par Rust ; jeton disponible pour la génération 1 en mode `show`.
     pub fn register(&self, hwnd: isize, mode: PairingMode, now: u64) -> PairingInstance {
         let mut state = self.lock();
-        let instance = PairingInstance { hwnd, mode, generation: 1, expires_at: now + PAIRING_VALIDITY_MS, token: mode == PairingMode::Show };
+        let instance = PairingInstance {
+            hwnd,
+            mode,
+            generation: 1,
+            expires_at: now + PAIRING_VALIDITY_MS,
+            token: mode == PairingMode::Show,
+        };
         state.instance = Some(instance);
         state.opening = false;
         state.paired_baseline = None;
@@ -294,8 +310,15 @@ impl PairingRegistry {
     /// Contrôles de chaque appel de la fenêtre : libellé, URL exacte, HWND de l'instance, échéance.
     pub fn verify(&self, caller: &Caller<'_>, now: u64) -> SyncResult<PairingInstance> {
         let state = self.lock();
-        let Some(instance) = state.instance else { return fail(SyncCode::WrongWindow) };
-        if caller.label != PAIRING_WINDOW || !is_pairing_url(caller.url) || caller.hwnd == 0 || caller.hwnd != instance.hwnd || now >= instance.expires_at {
+        let Some(instance) = state.instance else {
+            return fail(SyncCode::WrongWindow);
+        };
+        if caller.label != PAIRING_WINDOW
+            || !is_pairing_url(caller.url)
+            || caller.hwnd == 0
+            || caller.hwnd != instance.hwnd
+            || now >= instance.expires_at
+        {
             super::log::event("pairing-refused", "wrong-window");
             return fail(SyncCode::WrongWindow);
         }
@@ -309,7 +332,11 @@ impl PairingRegistry {
             return fail(SyncCode::WrongMode);
         }
         let mut state = self.lock();
-        let Some(current) = state.instance.as_mut().filter(|i| i.hwnd == instance.hwnd && i.generation == instance.generation) else {
+        let Some(current) = state
+            .instance
+            .as_mut()
+            .filter(|i| i.hwnd == instance.hwnd && i.generation == instance.generation)
+        else {
             return fail(SyncCode::WrongWindow);
         };
         if !current.token {
@@ -320,9 +347,18 @@ impl PairingRegistry {
     }
 
     /// « Nouveau code » (après une nouvelle confirmation) : génération suivante, nouvelle échéance, jeton consommé aussitôt.
-    pub fn renew(&self, caller: &Caller<'_>, generation: u64, now: u64) -> SyncResult<PairingInstance> {
+    pub fn renew(
+        &self,
+        caller: &Caller<'_>,
+        generation: u64,
+        now: u64,
+    ) -> SyncResult<PairingInstance> {
         let mut state = self.lock();
-        let Some(current) = state.instance.as_mut().filter(|i| i.hwnd == caller.hwnd && i.generation == generation) else {
+        let Some(current) = state
+            .instance
+            .as_mut()
+            .filter(|i| i.hwnd == caller.hwnd && i.generation == generation)
+        else {
             return fail(SyncCode::WrongWindow);
         };
         current.generation += 1;
@@ -334,7 +370,9 @@ impl PairingRegistry {
     /// Minuteur d'une génération : `true` (fenêtre à détruire) seulement si cette génération est encore la courante et échue.
     pub fn expire_if_due(&self, hwnd: isize, generation: u64, now: u64) -> bool {
         let state = self.lock();
-        state.instance.is_some_and(|i| i.hwnd == hwnd && i.generation == generation && now >= i.expires_at)
+        state
+            .instance
+            .is_some_and(|i| i.hwnd == hwnd && i.generation == generation && now >= i.expires_at)
     }
 
     /// Destruction de la fenêtre : jeton et instance effacés.

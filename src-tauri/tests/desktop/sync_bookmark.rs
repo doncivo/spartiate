@@ -9,23 +9,29 @@ use std::sync::{mpsc, Arc, Condvar, Mutex};
 use std::thread::ThreadId;
 use std::time::Duration;
 
+use serde_json::{json, Value};
 use spartiate_lib::sync::bookmark::{
-    choose_with_picker, deadline_for, ios_core, BookmarkBackend, BookmarkFs, BookmarkTransport, DeadlineLimits, DeadlineTransport, PLUGIN_COMMANDS, PLUGIN_REJECT_CODES, UNBOUNDED_COMMANDS,
+    choose_with_picker, deadline_for, ios_core, BookmarkBackend, BookmarkFs, BookmarkTransport,
+    DeadlineLimits, DeadlineTransport, PLUGIN_COMMANDS, PLUGIN_REJECT_CODES, UNBOUNDED_COMMANDS,
 };
 use spartiate_lib::sync::crypto::{FileHeader, HeaderKind, MasterKey};
 use spartiate_lib::sync::files::{AppendMode, Chunk, FsError, Listing, SyncFs};
 use spartiate_lib::sync::folder::{config_dir, read_config_file, FolderRecord, FOLDER_FILE};
 use spartiate_lib::sync::limits::{MAX_PLUGIN_CHUNK_BYTES, MAX_SNAPSHOT_BYTES};
 use spartiate_lib::sync::service::{FolderBackend, SyncCore};
-use spartiate_lib::sync::store::{parse_file, stream_last_line, stream_last_line_with, ParseError, StreamHeader};
+use spartiate_lib::sync::store::{
+    parse_file, stream_last_line, stream_last_line_with, ParseError, StreamHeader,
+};
 use spartiate_lib::sync::{SyncCode, SyncError};
 use spartiate_lib::vault::MemoryVault;
-use serde_json::{json, Value};
 
-use crate::support::fake_bookmark::{FakePlugin, Pick, SharedPlugin, BOOKMARK, CONTRACT, FRESH_BOOKMARK, ROOT};
+use crate::support::fake_bookmark::{
+    FakePlugin, Pick, SharedPlugin, BOOKMARK, CONTRACT, FRESH_BOOKMARK, ROOT,
+};
 use crate::sync_support::{epoch, FakeUi, MemFs, SharedFs, DEV_A, NOW};
 
-const SWIFT: &str = include_str!("../../plugins/folder-bookmark/ios/Sources/FolderBookmarkPlugin.swift");
+const SWIFT: &str =
+    include_str!("../../plugins/folder-bookmark/ios/Sources/FolderBookmarkPlugin.swift");
 const BOOKMARK_RS: &str = include_str!("../../src/sync/bookmark.rs");
 const CONSENT_IOS_RS: &str = include_str!("../../src/sync/consent_ios.rs");
 const PLUGIN_LIB: &str = include_str!("../../plugins/folder-bookmark/src/lib.rs");
@@ -35,7 +41,9 @@ const COMMANDS_IOS_RS: &str = include_str!("../../src/sync/commands_ios.rs");
 /// Bloc Swift équilibré : contrôles de contrat de présentation, pas une exécution de UIKit.
 fn swift_interaction_block(marker: &str) -> String {
     let code = swift_code();
-    let start = code.find(marker).unwrap_or_else(|| panic!("bloc Swift absent : {marker}"));
+    let start = code
+        .find(marker)
+        .unwrap_or_else(|| panic!("bloc Swift absent : {marker}"));
     let open = start + code[start..].find('{').expect("ouverture du bloc");
     let mut depth = 0;
     for (offset, ch) in code[open..].char_indices() {
@@ -43,7 +51,9 @@ fn swift_interaction_block(marker: &str) -> String {
             '{' => depth += 1,
             '}' => {
                 depth -= 1;
-                if depth == 0 { return code[start..open + offset + 1].to_owned(); }
+                if depth == 0 {
+                    return code[start..open + offset + 1].to_owned();
+                }
             }
             _ => {}
         }
@@ -54,19 +64,42 @@ fn swift_interaction_block(marker: &str) -> String {
 #[test]
 fn y_ios_06_01_shared_guard_checks_foreground_ownership_and_presenter() {
     let guard = swift_interaction_block("private func interactionPresenter(");
-    for required in ["UIApplication.shared.applicationState != .active", "picker != nil", "pendingAlert != nil", "presenter.viewIfLoaded?.window", "presenter.isBeingDismissed", "presenter.isBeingPresented", "reject(invoke, .notForeground)", "reject(invoke, .io)"] {
+    for required in [
+        "UIApplication.shared.applicationState != .active",
+        "picker != nil",
+        "pendingAlert != nil",
+        "presenter.viewIfLoaded?.window",
+        "presenter.isBeingDismissed",
+        "presenter.isBeingPresented",
+        "reject(invoke, .notForeground)",
+        "reject(invoke, .io)",
+    ] {
         assert!(guard.contains(required), "garde manquante : {required}");
     }
 }
 
 #[test]
 fn y_ios_06_02_both_interactions_guard_before_claiming_or_presenting() {
-    for (marker, claim) in [("@objc public func pickFolder(", "self.picker = delegate"), ("@objc public func confirm(", "self.pendingAlert = alert")] {
+    for (marker, claim) in [
+        ("@objc public func pickFolder(", "self.picker = delegate"),
+        ("@objc public func confirm(", "self.pendingAlert = alert"),
+    ] {
         let body = swift_interaction_block(marker);
-        let guard = body.find("self.interactionPresenter(invoke)").expect("garde partagée avant présentation");
-        assert!(body.find("DispatchQueue.main.async").expect("fil principal") < guard);
+        let guard = body
+            .find("self.interactionPresenter(invoke)")
+            .expect("garde partagée avant présentation");
+        assert!(
+            body.find("DispatchQueue.main.async")
+                .expect("fil principal")
+                < guard
+        );
         assert!(guard < body.find(claim).expect("interaction mémorisée"));
-        assert!(guard < body.find("presenter.present(").expect("présentation native"));
+        assert!(
+            guard
+                < body
+                    .find("presenter.present(")
+                    .expect("présentation native")
+        );
     }
 }
 
@@ -77,8 +110,15 @@ fn y_ios_06_03_interactive_dismissal_and_delegate_callbacks_answer_once() {
     assert!(delegate.contains("func presentationControllerDidDismiss("));
     let answer = swift_interaction_block("private func answer(_ reply:");
     assert!(answer.contains("guard !answered else"));
-    assert!(answer.find("answered = true").expect("réponse mémorisée") < answer.find("reply()").expect("callback"));
-    assert_eq!(delegate.matches("answer(onCancel)").count(), 2, "bouton et fermeture interactive");
+    assert!(
+        answer.find("answered = true").expect("réponse mémorisée")
+            < answer.find("reply()").expect("callback")
+    );
+    assert_eq!(
+        delegate.matches("answer(onCancel)").count(),
+        2,
+        "bouton et fermeture interactive"
+    );
     let picker = swift_interaction_block("@objc public func pickFolder(");
     assert!(picker.contains("controller.presentationController?.delegate = delegate"));
 }
@@ -139,7 +179,9 @@ fn swift_literals() -> Vec<String> {
 /// Corps de la méthode Swift `name` (jusqu'à la méthode suivante).
 fn swift_method(name: &str) -> String {
     let code = swift_code();
-    let start = code.find(&format!("@objc public func {name}(_ invoke: Invoke)")).unwrap_or_else(|| panic!("méthode Swift absente : {name}"));
+    let start = code
+        .find(&format!("@objc public func {name}(_ invoke: Invoke)"))
+        .unwrap_or_else(|| panic!("méthode Swift absente : {name}"));
     let rest = &code[start + 1..];
     let end = rest.find("@objc public func ").map_or(rest.len(), |i| i);
     rest[..end].to_owned()
@@ -148,9 +190,14 @@ fn swift_method(name: &str) -> String {
 /// Champs (`let x:`) d'une structure Swift `Decodable`.
 fn swift_struct_fields(name: &str) -> BTreeSet<String> {
     let code = swift_code();
-    let start = code.find(&format!("struct {name}: Decodable {{")).unwrap_or_else(|| panic!("structure absente : {name}"));
+    let start = code
+        .find(&format!("struct {name}: Decodable {{"))
+        .unwrap_or_else(|| panic!("structure absente : {name}"));
     let body = &code[start..start + code[start..].find('}').unwrap()];
-    body.lines().filter_map(|l| l.trim().strip_prefix("let ")).map(|l| l.split(':').next().unwrap().trim().to_owned()).collect()
+    body.lines()
+        .filter_map(|l| l.trim().strip_prefix("let "))
+        .map(|l| l.split(':').next().unwrap().trim().to_owned())
+        .collect()
 }
 
 #[test]
@@ -163,70 +210,153 @@ fn y_ios_01_1_every_contract_command_exists_in_swift_and_rust_with_the_same_fiel
     for (name, spec) in commands {
         // Swift : méthode exactement nommée (lowerCamelCase, aucune conversion), arguments décodés dans une structure aux champs du contrat.
         let body = swift_method(name);
-        let input: BTreeSet<String> = spec["input"].as_array().unwrap().iter().map(|v| v.as_str().unwrap().to_owned()).collect();
-        let decoded = body.split("args(invoke, ").nth(1).map(|rest| rest[..rest.find(".self").unwrap()].to_owned());
+        let input: BTreeSet<String> = spec["input"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap().to_owned())
+            .collect();
+        let decoded = body
+            .split("args(invoke, ")
+            .nth(1)
+            .map(|rest| rest[..rest.find(".self").unwrap()].to_owned());
         match decoded {
-            Some(structure) => assert_eq!(swift_struct_fields(&structure), input, "{name} : champs d'entrée Swift"),
+            Some(structure) => assert_eq!(
+                swift_struct_fields(&structure),
+                input,
+                "{name} : champs d'entrée Swift"
+            ),
             None => assert!(input.is_empty(), "{name} : aucune structure d'arguments"),
         }
         // Sorties : chaque clé de réponse figure dans le Swift.
         for shape in spec["output"].as_array().unwrap() {
             for key in shape.as_array().unwrap() {
                 let key = key.as_str().unwrap();
-                assert!(SWIFT.contains(&format!("\"{key}\":")) || SWIFT.contains(&format!("[\"{key}\"]")), "{name} : clé de sortie {key} absente du Swift");
+                assert!(
+                    SWIFT.contains(&format!("\"{key}\":"))
+                        || SWIFT.contains(&format!("[\"{key}\"]")),
+                    "{name} : clé de sortie {key} absente du Swift"
+                );
             }
         }
         // Rust : commande appelée par son nom exact, avec les champs du contrat.
-        assert!(rust_commands.contains(name.as_str()), "{name} absent de PLUGIN_COMMANDS");
-        assert!(rust.contains(&format!("\"{name}\"")), "{name} : jamais appelé par Rust");
+        assert!(
+            rust_commands.contains(name.as_str()),
+            "{name} absent de PLUGIN_COMMANDS"
+        );
+        assert!(
+            rust.contains(&format!("\"{name}\"")),
+            "{name} : jamais appelé par Rust"
+        );
         for field in &input {
-            assert!(rust.contains(&format!("\"{field}\":")), "{name} : champ {field} absent des appels Rust");
+            assert!(
+                rust.contains(&format!("\"{field}\":")),
+                "{name} : champ {field} absent des appels Rust"
+            );
         }
     }
     // Aucune autre méthode `@objc public func … (_ invoke: Invoke)` que celles du contrat.
     let swift_methods: BTreeSet<String> = swift_code()
         .split("@objc public func ")
         .skip(1)
-        .filter(|rest| rest.contains("(_ invoke: Invoke)") && rest.find("(_ invoke: Invoke)") < rest.find('\n'))
+        .filter(|rest| {
+            rest.contains("(_ invoke: Invoke)") && rest.find("(_ invoke: Invoke)") < rest.find('\n')
+        })
         .map(|rest| rest[..rest.find('(').unwrap()].to_owned())
         .collect();
     let contract_names: BTreeSet<String> = commands.keys().cloned().collect();
-    assert_eq!(swift_methods, contract_names, "méthodes Swift = commandes du contrat");
+    assert_eq!(
+        swift_methods, contract_names,
+        "méthodes Swift = commandes du contrat"
+    );
 }
 
 #[test]
 fn y_ios_01_1_reject_codes_are_known_sync_error_codes_on_both_sides() {
     let contract: Value = serde_json::from_str(CONTRACT).unwrap();
-    let codes: BTreeSet<&str> = contract["rejectCodes"].as_array().unwrap().iter().map(|v| v.as_str().unwrap()).collect();
+    let codes: BTreeSet<&str> = contract["rejectCodes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v.as_str().unwrap())
+        .collect();
     let known: BTreeSet<&str> = SyncCode::ALL.iter().map(|c| c.as_str()).collect();
-    assert!(codes.is_subset(&known), "codes du contrat : tous des SyncErrorCode existants");
-    assert_eq!(codes, PLUGIN_REJECT_CODES.iter().copied().collect::<BTreeSet<_>>(), "codes de bookmark.rs = contrat");
+    assert!(
+        codes.is_subset(&known),
+        "codes du contrat : tous des SyncErrorCode existants"
+    );
+    assert_eq!(
+        codes,
+        PLUGIN_REJECT_CODES.iter().copied().collect::<BTreeSet<_>>(),
+        "codes de bookmark.rs = contrat"
+    );
     // Swift : l'énumération `Code` n'a que des codes du contrat.
     let code = swift_code();
     let start = code.find("private enum Code: String {").unwrap();
     let body = &code[start..start + code[start..].find('}').unwrap()];
-    let swift_codes: BTreeSet<String> = body.lines().filter_map(|l| l.split('"').nth(1)).map(str::to_owned).collect();
-    assert_eq!(swift_codes, codes.iter().map(|c| (*c).to_owned()).collect::<BTreeSet<_>>());
+    let swift_codes: BTreeSet<String> = body
+        .lines()
+        .filter_map(|l| l.split('"').nth(1))
+        .map(str::to_owned)
+        .collect();
+    assert_eq!(
+        swift_codes,
+        codes
+            .iter()
+            .map(|c| (*c).to_owned())
+            .collect::<BTreeSet<_>>()
+    );
     // Tout rejet passe par `reject(invoke, code)` : jamais un message libre.
-    assert_eq!(code.matches("invoke.reject(").count(), 1, "un seul appel direct, dans `reject`");
+    assert_eq!(
+        code.matches("invoke.reject(").count(),
+        1,
+        "un seul appel direct, dans `reject`"
+    );
     assert!(code.contains("invoke.reject(code.rawValue, code: code.rawValue)"));
 }
 
 #[test]
 fn y_ios_01_1_swift_has_no_french_text_nor_label() {
-    const FRENCH: [&str; 14] = ["Annuler", "Choisir", "dossier", "Dossier", "clé", "Confirmer", "Synchro", "iCloud Drive /", "Oublier", "Erreur", "erreur", "Valider", "Fermer", "Réglages"];
+    const FRENCH: [&str; 14] = [
+        "Annuler",
+        "Choisir",
+        "dossier",
+        "Dossier",
+        "clé",
+        "Confirmer",
+        "Synchro",
+        "iCloud Drive /",
+        "Oublier",
+        "Erreur",
+        "erreur",
+        "Valider",
+        "Fermer",
+        "Réglages",
+    ];
     for literal in swift_literals() {
-        assert!(literal.is_ascii(), "littéral non ASCII dans le Swift : {literal:?}");
-        assert!(!literal.contains(' '), "littéral avec espace (libellé ?) dans le Swift : {literal:?}");
+        assert!(
+            literal.is_ascii(),
+            "littéral non ASCII dans le Swift : {literal:?}"
+        );
+        assert!(
+            !literal.contains(' '),
+            "littéral avec espace (libellé ?) dans le Swift : {literal:?}"
+        );
         for word in FRENCH {
-            assert!(!literal.contains(word), "texte français dans le Swift : {literal:?}");
+            assert!(
+                !literal.contains(word),
+                "texte français dans le Swift : {literal:?}"
+            );
         }
     }
 }
 
 #[test]
 fn y_ios_01_1_plugin_exposes_no_command_to_the_webview_and_rust_is_its_only_caller() {
-    assert!(PLUGIN_BUILD.contains("const COMMANDS: &[&str] = &[];"), "aucune commande déclarée");
+    assert!(
+        PLUGIN_BUILD.contains("const COMMANDS: &[&str] = &[];"),
+        "aucune commande déclarée"
+    );
     assert!(PLUGIN_BUILD.contains(".ios_path(\"ios\")"));
     assert!(crate::support::has(PLUGIN_LIB, "pub fn call(&self, command: &str, args: serde_json::Value) -> Result<serde_json::Value, String>"));
     assert!(PLUGIN_LIB.contains("run_mobile_plugin"));
@@ -249,8 +379,19 @@ fn rig() -> Rig {
     let plugin = FakePlugin::new(clock.clone());
     let refreshed = Arc::new(Mutex::new(None));
     let now = clock.clone();
-    let fs = BookmarkFs::new(Arc::new(SharedPlugin(plugin.clone())), ROOT.to_owned(), BOOKMARK.to_owned(), refreshed.clone(), Arc::new(move || now.load(Ordering::SeqCst)));
-    Rig { plugin, clock, refreshed, fs }
+    let fs = BookmarkFs::new(
+        Arc::new(SharedPlugin(plugin.clone())),
+        ROOT.to_owned(),
+        BOOKMARK.to_owned(),
+        refreshed.clone(),
+        Arc::new(move || now.load(Ordering::SeqCst)),
+    );
+    Rig {
+        plugin,
+        clock,
+        refreshed,
+        fs,
+    }
 }
 
 #[test]
@@ -259,7 +400,15 @@ fn y_ios_01_not_configured_triggers_one_resolve_then_one_retry() {
     r.plugin.mkdir(&["devices"]);
     // Racine pas encore résolue dans la session du plugin (premier appel de la session).
     assert_eq!(r.fs.list(&["devices"], 10).unwrap(), Listing::default());
-    let calls: Vec<String> = r.plugin.state.lock().unwrap().calls.iter().map(|(c, _)| c.clone()).collect();
+    let calls: Vec<String> = r
+        .plugin
+        .state
+        .lock()
+        .unwrap()
+        .calls
+        .iter()
+        .map(|(c, _)| c.clone())
+        .collect();
     assert_eq!(calls, ["list", "resolve", "list"]);
     // Résolution impossible : injoignable, sans nouvel essai.
     r.plugin.with(|s| {
@@ -275,50 +424,107 @@ fn y_ios_01_not_configured_triggers_one_resolve_then_one_retry() {
 fn y_ios_01_3_cloud_file_is_downloaded_within_sixty_seconds_then_read() {
     let r = rig();
     r.fs.start_cycle().unwrap();
-    r.plugin.put_cloud(&["devices", "a", "state.spx"], b"etat", 30_000, false);
-    assert_eq!(r.fs.read(&["devices", "a", "state.spx"], 100, false), Err(FsError::CloudPending), "jamais d'hydratation sans demande");
+    r.plugin
+        .put_cloud(&["devices", "a", "state.spx"], b"etat", 30_000, false);
+    assert_eq!(
+        r.fs.read(&["devices", "a", "state.spx"], 100, false),
+        Err(FsError::CloudPending),
+        "jamais d'hydratation sans demande"
+    );
     assert!(r.plugin.calls("download").is_empty());
-    assert_eq!(r.fs.read(&["devices", "a", "state.spx"], 100, true).unwrap(), b"etat");
+    assert_eq!(
+        r.fs.read(&["devices", "a", "state.spx"], 100, true)
+            .unwrap(),
+        b"etat"
+    );
     let download = &r.plugin.calls("download")[0];
     assert_eq!(download["timeoutMs"], json!(60_000), "60 s par fichier");
-    assert_eq!(download["limit"], json!(100), "borne transmise : rien au-delà n'est téléchargé");
+    assert_eq!(
+        download["limit"],
+        json!(100),
+        "borne transmise : rien au-delà n'est téléchargé"
+    );
 }
 
 #[test]
 fn y_ios_01_3_download_timeout_error_and_cycle_budget() {
     let r = rig();
     r.fs.start_cycle().unwrap();
-    r.plugin.put_cloud(&["devices", "a", "e1", "s-00000001.sps"], b"lent", 70_000, false);
-    r.plugin.put_cloud(&["devices", "b", "state.spx"], b"erreur", 0, true);
-    assert_eq!(r.fs.read(&["devices", "a", "e1", "s-00000001.sps"], 100, true), Err(FsError::CloudPending), "délai de 60 s dépassé");
-    assert_eq!(r.fs.read(&["devices", "b", "state.spx"], 100, true), Err(FsError::CloudError), "erreur d'iCloud");
+    r.plugin.put_cloud(
+        &["devices", "a", "e1", "s-00000001.sps"],
+        b"lent",
+        70_000,
+        false,
+    );
+    r.plugin
+        .put_cloud(&["devices", "b", "state.spx"], b"erreur", 0, true);
+    assert_eq!(
+        r.fs.read(&["devices", "a", "e1", "s-00000001.sps"], 100, true),
+        Err(FsError::CloudPending),
+        "délai de 60 s dépassé"
+    );
+    assert_eq!(
+        r.fs.read(&["devices", "b", "state.spx"], 100, true),
+        Err(FsError::CloudError),
+        "erreur d'iCloud"
+    );
     // Budget de 3 minutes par cycle : 60 s déjà consommées ; deux téléchargements de 55 s, puis il reste 10 s.
     for dev in ["c", "d"] {
-        r.plugin.put_cloud(&["devices", dev, "state.spx"], b"ok", 55_000, false);
-        assert_eq!(r.fs.read(&["devices", dev, "state.spx"], 100, true).unwrap(), b"ok");
+        r.plugin
+            .put_cloud(&["devices", dev, "state.spx"], b"ok", 55_000, false);
+        assert_eq!(
+            r.fs.read(&["devices", dev, "state.spx"], 100, true)
+                .unwrap(),
+            b"ok"
+        );
     }
-    r.plugin.put_cloud(&["devices", "e", "state.spx"], b"trop tard", 15_000, false);
-    assert_eq!(r.fs.read(&["devices", "e", "state.spx"], 100, true), Err(FsError::CloudPending));
-    assert_eq!(r.plugin.calls("download").last().unwrap()["timeoutMs"], json!(10_000), "jamais au-delà du reste du budget");
+    r.plugin
+        .put_cloud(&["devices", "e", "state.spx"], b"trop tard", 15_000, false);
+    assert_eq!(
+        r.fs.read(&["devices", "e", "state.spx"], 100, true),
+        Err(FsError::CloudPending)
+    );
+    assert_eq!(
+        r.plugin.calls("download").last().unwrap()["timeoutMs"],
+        json!(10_000),
+        "jamais au-delà du reste du budget"
+    );
     // Budget épuisé : plus aucun téléchargement demandé.
     let before = r.plugin.calls("download").len();
-    assert_eq!(r.fs.read(&["devices", "e", "state.spx"], 100, true), Err(FsError::CloudPending));
+    assert_eq!(
+        r.fs.read(&["devices", "e", "state.spx"], 100, true),
+        Err(FsError::CloudPending)
+    );
     assert_eq!(r.plugin.calls("download").len(), before);
     // Nouveau cycle : budget rétabli.
     r.fs.start_cycle().unwrap();
-    assert_eq!(r.fs.read(&["devices", "e", "state.spx"], 100, true).unwrap(), b"trop tard");
+    assert_eq!(
+        r.fs.read(&["devices", "e", "state.spx"], 100, true)
+            .unwrap(),
+        b"trop tard"
+    );
 }
 
 #[test]
 fn y_ios_01_3_reduced_cycle_budget_bounds_every_download() {
     let r = rig();
-    r.fs.start_cycle_within(std::time::Duration::from_millis(12_000)).unwrap();
-    r.plugin.put_cloud(&["devices", "a", "state.spx"], b"etat", 20_000, false);
-    assert_eq!(r.fs.read(&["devices", "a", "state.spx"], 100, true), Err(FsError::CloudPending));
+    r.fs.start_cycle_within(std::time::Duration::from_millis(12_000))
+        .unwrap();
+    r.plugin
+        .put_cloud(&["devices", "a", "state.spx"], b"etat", 20_000, false);
+    assert_eq!(
+        r.fs.read(&["devices", "a", "state.spx"], 100, true),
+        Err(FsError::CloudPending)
+    );
     assert_eq!(r.plugin.calls("download")[0]["timeoutMs"], json!(12_000));
     // Un budget au-delà de 3 minutes est ramené à 3 minutes.
-    r.fs.start_cycle_within(std::time::Duration::from_secs(3_600)).unwrap();
-    assert_eq!(r.fs.read(&["devices", "a", "state.spx"], 100, true).unwrap(), b"etat");
+    r.fs.start_cycle_within(std::time::Duration::from_secs(3_600))
+        .unwrap();
+    assert_eq!(
+        r.fs.read(&["devices", "a", "state.spx"], 100, true)
+            .unwrap(),
+        b"etat"
+    );
     let _ = &r.clock;
 }
 
@@ -328,20 +534,49 @@ fn y_ios_01_4_links_replaced_components_and_paths_outside_the_root_are_refused_b
     r.fs.start_cycle().unwrap();
     r.plugin.put(&["devices", "a", "state.spx"], b"etat");
     r.plugin.link(&["devices", "b"]);
-    assert_eq!(r.fs.read(&["devices", "b", "state.spx"], 100, false), Err(FsError::Unsafe));
-    assert_eq!(r.fs.append(&["devices", "b", "x.spj"], b"x", AppendMode::CreateNew), Err(FsError::Unsafe));
-    assert!(r.plugin.get(&["devices", "b", "x.spj"]).is_none(), "rien d'écrit");
+    assert_eq!(
+        r.fs.read(&["devices", "b", "state.spx"], 100, false),
+        Err(FsError::Unsafe)
+    );
+    assert_eq!(
+        r.fs.append(&["devices", "b", "x.spj"], b"x", AppendMode::CreateNew),
+        Err(FsError::Unsafe)
+    );
+    assert!(
+        r.plugin.get(&["devices", "b", "x.spj"]).is_none(),
+        "rien d'écrit"
+    );
     // Composant remplacé par un lien entre deux appels.
-    assert_eq!(r.fs.read(&["devices", "a", "state.spx"], 100, false).unwrap(), b"etat");
+    assert_eq!(
+        r.fs.read(&["devices", "a", "state.spx"], 100, false)
+            .unwrap(),
+        b"etat"
+    );
     r.plugin.link(&["devices", "a"]);
-    assert_eq!(r.fs.write_atomic(&["devices", "a", "state.spx"], b"pirate"), Err(FsError::Unsafe));
+    assert_eq!(
+        r.fs.write_atomic(&["devices", "a", "state.spx"], b"pirate"),
+        Err(FsError::Unsafe)
+    );
     // Sortie de la racine : refusée par Rust avant tout appel au plugin.
     r.plugin.with(|s| s.calls.clear());
-    for bad in [&["devices", "..", "x"][..], &["devices", "a/b"], &["."], &["devices", ""], &[]] {
+    for bad in [
+        &["devices", "..", "x"][..],
+        &["devices", "a/b"],
+        &["."],
+        &["devices", ""],
+        &[],
+    ] {
         assert_eq!(r.fs.read(bad, 100, false), Err(FsError::Unsafe), "{bad:?}");
-        assert_eq!(r.fs.write_atomic(bad, b"x"), Err(FsError::Unsafe), "{bad:?}");
+        assert_eq!(
+            r.fs.write_atomic(bad, b"x"),
+            Err(FsError::Unsafe),
+            "{bad:?}"
+        );
     }
-    assert!(r.plugin.state.lock().unwrap().calls.is_empty(), "aucun appel au plugin");
+    assert!(
+        r.plugin.state.lock().unwrap().calls.is_empty(),
+        "aucun appel au plugin"
+    );
 }
 
 #[test]
@@ -350,14 +585,45 @@ fn y_ios_01_large_pages_are_split_into_calls_of_one_mebibyte_at_most() {
     r.fs.start_cycle().unwrap();
     r.plugin.mkdir(&["devices", "a", "e1"]);
     let big = vec![b'x'; MAX_PLUGIN_CHUNK_BYTES * 2 + 10];
-    r.fs.append(&["devices", "a", "e1", "s-00000001.sps.tmp"], &big, AppendMode::CreateNew).unwrap();
+    r.fs.append(
+        &["devices", "a", "e1", "s-00000001.sps.tmp"],
+        &big,
+        AppendMode::CreateNew,
+    )
+    .unwrap();
     let appends = r.plugin.calls("append");
     assert_eq!(appends.len(), 3);
-    assert_eq!(appends.iter().map(|a| a["createNew"].as_bool().unwrap()).collect::<Vec<_>>(), [true, false, false]);
-    assert_eq!(r.fs.read(&["devices", "a", "e1", "s-00000001.sps.tmp"], u64::MAX, false).unwrap(), big);
-    assert!(r.plugin.calls("readFrom").iter().all(|c| c["max"].as_u64().unwrap() <= MAX_PLUGIN_CHUNK_BYTES as u64));
-    assert_eq!(r.fs.write_atomic(&["devices", "a", "state.spx"], &big), Err(FsError::TooLarge), "état de plus de 1 Mio : refusé");
-    assert!(r.fs.pin(&["devices", "a", "e1", "s-00000001.sps.tmp"]).is_ok(), "pas d'épinglage sur iOS, aucun appel");
+    assert_eq!(
+        appends
+            .iter()
+            .map(|a| a["createNew"].as_bool().unwrap())
+            .collect::<Vec<_>>(),
+        [true, false, false]
+    );
+    assert_eq!(
+        r.fs.read(
+            &["devices", "a", "e1", "s-00000001.sps.tmp"],
+            u64::MAX,
+            false
+        )
+        .unwrap(),
+        big
+    );
+    assert!(r
+        .plugin
+        .calls("readFrom")
+        .iter()
+        .all(|c| c["max"].as_u64().unwrap() <= MAX_PLUGIN_CHUNK_BYTES as u64));
+    assert_eq!(
+        r.fs.write_atomic(&["devices", "a", "state.spx"], &big),
+        Err(FsError::TooLarge),
+        "état de plus de 1 Mio : refusé"
+    );
+    assert!(
+        r.fs.pin(&["devices", "a", "e1", "s-00000001.sps.tmp"])
+            .is_ok(),
+        "pas d'épinglage sur iOS, aucun appel"
+    );
     let _ = &r.refreshed;
 }
 
@@ -375,10 +641,21 @@ struct Phone {
 }
 
 /// Service de l'iPhone tel que `commands_ios.rs` le construit (`ios_core`), sur le faux du plugin.
-fn phone_core(base: &Path, plugin: &Arc<FakePlugin>, vault: &Arc<MemoryVault>, clock: &Arc<AtomicU64>) -> (Arc<SyncCore>, Arc<BookmarkBackend>) {
+fn phone_core(
+    base: &Path,
+    plugin: &Arc<FakePlugin>,
+    vault: &Arc<MemoryVault>,
+    clock: &Arc<AtomicU64>,
+) -> (Arc<SyncCore>, Arc<BookmarkBackend>) {
     let now = clock.clone();
     let clock_fn: Arc<dyn Fn() -> u64 + Send + Sync> = Arc::new(move || now.load(Ordering::SeqCst));
-    ios_core(base.to_path_buf(), Arc::new(SharedPlugin(plugin.clone())), vault.clone(), FakeUi::new(), clock_fn)
+    ios_core(
+        base.to_path_buf(),
+        Arc::new(SharedPlugin(plugin.clone())),
+        vault.clone(),
+        FakeUi::new(),
+        clock_fn,
+    )
 }
 
 fn phone() -> Phone {
@@ -388,22 +665,34 @@ fn phone() -> Phone {
     let vault = Arc::new(MemoryVault::default());
     let (core, backend) = phone_core(base.path(), &plugin, &vault, &clock);
     assert_eq!(core.options().platform, "ios");
-    Phone { core, backend, base, plugin, vault, clock }
+    Phone {
+        core,
+        backend,
+        base,
+        plugin,
+        vault,
+        clock,
+    }
 }
 
 impl Phone {
     /// Redémarrage de l'app : nouveau service, même conteneur, nouvelle session du plugin (racine à résoudre).
     fn restart(&mut self) {
         self.plugin.with(|s| s.session = false);
-        (self.core, self.backend) = phone_core(self.base.path(), &self.plugin, &self.vault, &self.clock);
+        (self.core, self.backend) =
+            phone_core(self.base.path(), &self.plugin, &self.vault, &self.clock);
     }
 
     fn record(&self) -> FolderRecord {
-        read_config_file::<FolderRecord>(&config_dir(self.base.path()).join(FOLDER_FILE)).unwrap().expect("folder.json")
+        read_config_file::<FolderRecord>(&config_dir(self.base.path()).join(FOLDER_FILE))
+            .unwrap()
+            .expect("folder.json")
     }
 
     fn choose(&self) {
-        choose_with_picker(&self.core, &self.backend).unwrap().expect("dossier choisi");
+        choose_with_picker(&self.core, &self.backend)
+            .unwrap()
+            .expect("dossier choisi");
     }
 }
 
@@ -416,7 +705,11 @@ fn y_ios_01_5_chosen_folder_keeps_its_bookmark_in_folder_json_and_never_returns_
     assert_eq!(record.bookmark.as_deref(), Some(BOOKMARK));
     let info = p.core.folder_info().unwrap();
     let json = serde_json::to_value(&info).unwrap();
-    assert_eq!(json, json!({ "configured": true, "name": "Spartiate", "kind": "icloud", "pinned": false }), "nom et nature, jamais un chemin");
+    assert_eq!(
+        json,
+        json!({ "configured": true, "name": "Spartiate", "kind": "icloud", "pinned": false }),
+        "nom et nature, jamais un chemin"
+    );
     // Parcours complet sous le signet : clé, liaison, ajout, état, lecture.
     p.core.key_create().unwrap();
     p.core.bind_device(DEV_A).unwrap();
@@ -428,7 +721,10 @@ fn y_ios_01_5_chosen_folder_keeps_its_bookmark_in_folder_json_and_never_returns_
     let big = format!("\"{}\"", "s".repeat(200_000));
     p.core.snapshot_append(handle, &vec![big; 7]).unwrap();
     p.core.snapshot_commit(handle).unwrap();
-    assert!(p.plugin.get(&["devices", DEV_A, &ep, "s-00000001.sps"]).is_some());
+    assert!(p
+        .plugin
+        .get(&["devices", DEV_A, &ep, "s-00000001.sps"])
+        .is_some());
 }
 
 #[test]
@@ -436,7 +732,11 @@ fn y_ios_01_7_folder_kind_follows_the_plugin() {
     let p = phone();
     p.plugin.with(|s| s.kind = "local");
     p.choose();
-    assert_eq!(p.core.folder_info().unwrap().kind, "local", "hors iCloud Drive : avertissement existant");
+    assert_eq!(
+        p.core.folder_info().unwrap().kind,
+        "local",
+        "hors iCloud Drive : avertissement existant"
+    );
 }
 
 #[test]
@@ -446,7 +746,11 @@ fn y_ios_01_6_stale_bookmark_is_refreshed_and_rewritten_without_user_action() {
     p.plugin.with(|s| s.stale = true);
     p.restart();
     p.core.folder_info().unwrap();
-    assert_eq!(p.record().bookmark.as_deref(), Some(FRESH_BOOKMARK), "signet rafraîchi réécrit");
+    assert_eq!(
+        p.record().bookmark.as_deref(),
+        Some(FRESH_BOOKMARK),
+        "signet rafraîchi réécrit"
+    );
     // Rafraîchi pendant une opération (racine résolue à nouveau en cours de session) : réécrit aussi.
     p.plugin.with(|s| s.stale = true);
     p.core.folder_info().unwrap();
@@ -463,11 +767,19 @@ fn y_ios_01_6_lost_moved_or_missing_bookmark_is_folder_unreachable_until_chosen_
     p.plugin.with(|s| s.invalid = true);
     p.restart();
     assert_eq!(code(p.core.folder_info()), SyncCode::FolderUnreachable);
-    assert_eq!(code(p.core.scan(&[])), SyncCode::FolderUnreachable, "la file attend");
+    assert_eq!(
+        code(p.core.scan(&[])),
+        SyncCode::FolderUnreachable,
+        "la file attend"
+    );
     // Toujours injoignable après un redémarrage (état gardé par folder.json, rien d'effacé).
     p.restart();
     assert_eq!(code(p.core.folder_info()), SyncCode::FolderUnreachable);
-    assert_eq!(p.record().device_id.as_deref(), Some(DEV_A), "appareil lié gardé");
+    assert_eq!(
+        p.record().device_id.as_deref(),
+        Some(DEV_A),
+        "appareil lié gardé"
+    );
     // Nouveau choix du même dossier : même dossier, own.json et liaison gardés, synchro rétablie.
     p.plugin.with(|s| s.invalid = false);
     p.choose();
@@ -480,7 +792,11 @@ fn y_ios_01_6_lost_moved_or_missing_bookmark_is_folder_unreachable_until_chosen_
     assert_eq!(code(p.core.folder_info()), SyncCode::FolderUnreachable);
     // `folder.json` sans signet (écrit par une autre version) : injoignable.
     let dir = config_dir(p.base.path());
-    std::fs::write(dir.join(FOLDER_FILE), serde_json::to_vec(&json!({ "v": 1, "path": ROOT, "deviceId": DEV_A })).unwrap()).unwrap();
+    std::fs::write(
+        dir.join(FOLDER_FILE),
+        serde_json::to_vec(&json!({ "v": 1, "path": ROOT, "deviceId": DEV_A })).unwrap(),
+    )
+    .unwrap();
     p.plugin.with(|s| s.root = ROOT.to_owned());
     p.restart();
     assert_eq!(code(p.core.folder_info()), SyncCode::FolderUnreachable);
@@ -488,10 +804,17 @@ fn y_ios_01_6_lost_moved_or_missing_bookmark_is_folder_unreachable_until_chosen_
 
 #[test]
 fn y_ios_01_5_folder_json_of_the_pc_is_read_unchanged() {
-    let record: FolderRecord = serde_json::from_value(json!({ "v": 1, "path": r"C:\Users\Ali\iCloudDrive\Spartiate", "deviceId": DEV_A })).unwrap();
+    let record: FolderRecord = serde_json::from_value(
+        json!({ "v": 1, "path": r"C:\Users\Ali\iCloudDrive\Spartiate", "deviceId": DEV_A }),
+    )
+    .unwrap();
     assert_eq!(record.bookmark, None);
     let written = serde_json::to_value(&record).unwrap();
-    assert_eq!(written, json!({ "v": 1, "path": r"C:\Users\Ali\iCloudDrive\Spartiate", "deviceId": DEV_A }), "aucun champ ajouté sur PC");
+    assert_eq!(
+        written,
+        json!({ "v": 1, "path": r"C:\Users\Ali\iCloudDrive\Spartiate", "deviceId": DEV_A }),
+        "aucun champ ajouté sur PC"
+    );
 }
 
 #[test]
@@ -500,10 +823,16 @@ fn y_ios_01_13_cancelled_picker_changes_nothing_and_an_error_is_a_code_only() {
     let backend = &p.backend;
     p.plugin.with(|s| s.pick = Pick::Cancel);
     assert_eq!(choose_with_picker(&p.core, backend).unwrap(), None);
-    assert!(!config_dir(p.base.path()).join(FOLDER_FILE).exists(), "rien n'est écrit");
+    assert!(
+        !config_dir(p.base.path()).join(FOLDER_FILE).exists(),
+        "rien n'est écrit"
+    );
     p.plugin.with(|s| s.pick = Pick::Reject("io"));
     assert_eq!(code(backend.pick()), SyncCode::Io);
-    assert!(backend.check(Path::new(ROOT)).is_err(), "sans signet, aucun dossier n'est joignable");
+    assert!(
+        backend.check(Path::new(ROOT)).is_err(),
+        "sans signet, aucun dossier n'est joignable"
+    );
 }
 
 #[test]
@@ -513,16 +842,35 @@ fn y_ios_01_hydrate_budget_ms_out_of_bounds_is_bad_name() {
     p.core.key_create().unwrap();
     p.core.bind_device(DEV_A).unwrap();
     for bad in [0, 180_001, u64::MAX] {
-        assert_eq!(code(p.core.scan_within(&[], Some(bad))), SyncCode::BadName, "{bad}");
+        assert_eq!(
+            code(p.core.scan_within(&[], Some(bad))),
+            SyncCode::BadName,
+            "{bad}"
+        );
     }
     for good in [1, 25_000, 180_000] {
         assert!(p.core.scan_within(&[], Some(good)).is_ok(), "{good}");
     }
     // Budget réduit transmis au téléchargement d'un état resté dans le nuage.
-    p.plugin.put_cloud(&["devices", "7d4e1a2b-3c5f-4a6b-8d7e-9f0a1b2c3d4e", "state.spx"], b"x", 50_000, false);
+    p.plugin.put_cloud(
+        &[
+            "devices",
+            "7d4e1a2b-3c5f-4a6b-8d7e-9f0a1b2c3d4e",
+            "state.spx",
+        ],
+        b"x",
+        50_000,
+        false,
+    );
     p.core.scan_within(&[], Some(5_000)).unwrap();
     let downloads = p.plugin.calls("download");
-    assert!(!downloads.is_empty() && downloads.iter().all(|d| d["timeoutMs"].as_u64().unwrap() <= 5_000), "{downloads:?}");
+    assert!(
+        !downloads.is_empty()
+            && downloads
+                .iter()
+                .all(|d| d["timeoutMs"].as_u64().unwrap() <= 5_000),
+        "{downloads:?}"
+    );
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------
@@ -560,14 +908,29 @@ fn y_ios_01_5_streamed_tail_matches_the_full_parse_on_every_case() {
             let tail = stream_last_line_with(&fs, &["f"], MAX_SNAPSHOT_BYTES, chunk).unwrap();
             match parse_file(bytes) {
                 Ok(full) => {
-                    assert_eq!(tail.header, StreamHeader::Ok(full.header.clone()), "cas {i}, bloc {chunk}");
+                    assert_eq!(
+                        tail.header,
+                        StreamHeader::Ok(full.header.clone()),
+                        "cas {i}, bloc {chunk}"
+                    );
                     assert_eq!(tail.lines, full.lines.len() as u64, "cas {i}, bloc {chunk}");
-                    assert_eq!(tail.partial_tail, full.partial_tail, "cas {i}, bloc {chunk}");
-                    let last = full.lines.last().filter(|l| l.len() <= 360_000).map(|l| l.to_vec());
+                    assert_eq!(
+                        tail.partial_tail, full.partial_tail,
+                        "cas {i}, bloc {chunk}"
+                    );
+                    let last = full
+                        .lines
+                        .last()
+                        .filter(|l| l.len() <= 360_000)
+                        .map(|l| l.to_vec());
                     assert_eq!(tail.last, last, "cas {i}, bloc {chunk}");
                 }
-                Err(ParseError::Partial) => assert_eq!(tail.header, StreamHeader::Partial, "cas {i}, bloc {chunk}"),
-                Err(ParseError::BadHeader) => assert_eq!(tail.header, StreamHeader::Bad, "cas {i}, bloc {chunk}"),
+                Err(ParseError::Partial) => {
+                    assert_eq!(tail.header, StreamHeader::Partial, "cas {i}, bloc {chunk}")
+                }
+                Err(ParseError::BadHeader) => {
+                    assert_eq!(tail.header, StreamHeader::Bad, "cas {i}, bloc {chunk}")
+                }
             }
         }
     }
@@ -617,13 +980,23 @@ impl SyncFs for VirtualSnapshot {
     fn read(&self, _file: &[&str], _limit: u64, _hydrate: bool) -> Result<Vec<u8>, FsError> {
         panic!("lecture complète interdite : la fin se lit en flux");
     }
-    fn read_from(&self, _file: &[&str], offset: u64, max: usize, _hydrate: bool) -> Result<Chunk, FsError> {
+    fn read_from(
+        &self,
+        _file: &[&str],
+        offset: u64,
+        max: usize,
+        _hydrate: bool,
+    ) -> Result<Chunk, FsError> {
         self.calls.fetch_add(1, Ordering::SeqCst);
         self.largest.fetch_max(max, Ordering::SeqCst);
         let size = self.size();
         let end = (offset + max as u64).min(size);
         let bytes: Vec<u8> = (offset..end).map(|at| self.byte(at)).collect();
-        Ok(Chunk { eof: end >= size, bytes, size })
+        Ok(Chunk {
+            eof: end >= size,
+            bytes,
+            size,
+        })
     }
     fn append(&self, _file: &[&str], _bytes: &[u8], _mode: AppendMode) -> Result<(), FsError> {
         unreachable!()
@@ -653,17 +1026,35 @@ fn y_ios_01_5_tail_of_a_64_mib_snapshot_is_streamed_with_bounded_memory() {
     let header = format!("{}\n", header_line(DEV_A, 1)).into_bytes();
     let filler = format!("{}\n", "f".repeat(4_095)).into_bytes();
     let lines = 64 * 1024 * 1024 / filler.len() as u64;
-    let snapshot = VirtualSnapshot { header, filler, lines, last: b"derniere\n".to_vec(), calls: AtomicUsize::new(0), largest: AtomicUsize::new(0) };
+    let snapshot = VirtualSnapshot {
+        header,
+        filler,
+        lines,
+        last: b"derniere\n".to_vec(),
+        calls: AtomicUsize::new(0),
+        largest: AtomicUsize::new(0),
+    };
     assert!(snapshot.size() >= 64 * 1024 * 1024);
     let tail = stream_last_line(&snapshot, &["s-00000001.sps"], MAX_SNAPSHOT_BYTES).unwrap();
     assert!(matches!(tail.header, StreamHeader::Ok(_)));
     assert_eq!(tail.lines, lines + 1);
     assert_eq!(tail.last.as_deref(), Some(&b"derniere"[..]));
     assert!(!tail.partial_tail);
-    assert_eq!(snapshot.largest.load(Ordering::SeqCst), MAX_PLUGIN_CHUNK_BYTES, "blocs de 1 Mio au plus");
-    assert_eq!(snapshot.calls.load(Ordering::SeqCst) as u64, snapshot.size().div_ceil(MAX_PLUGIN_CHUNK_BYTES as u64), "chaque octet lu une fois");
+    assert_eq!(
+        snapshot.largest.load(Ordering::SeqCst),
+        MAX_PLUGIN_CHUNK_BYTES,
+        "blocs de 1 Mio au plus"
+    );
+    assert_eq!(
+        snapshot.calls.load(Ordering::SeqCst) as u64,
+        snapshot.size().div_ceil(MAX_PLUGIN_CHUNK_BYTES as u64),
+        "chaque octet lu une fois"
+    );
     // Au-delà de la borne d'un instantané : refusé dès le premier bloc.
-    assert_eq!(stream_last_line(&snapshot, &["s"], 1_000), Err(FsError::TooLarge));
+    assert_eq!(
+        stream_last_line(&snapshot, &["s"], 1_000),
+        Err(FsError::TooLarge)
+    );
 }
 
 /// Un transport qui n'est jamais appelé (contrôle du faux : `BookmarkTransport` est bien l'unique porte).
@@ -682,9 +1073,15 @@ impl BookmarkTransport for Never {
 fn y_ios_01_package_swift_platform_exists_in_its_tools_version() {
     let package = include_str!("../../plugins/folder-bookmark/ios/Package.swift");
     assert!(package.starts_with("// swift-tools-version:5.3"));
-    assert!(package.contains(".iOS(.v14)"), "plateforme iOS 14 (disponible en 5.3)");
+    assert!(
+        package.contains(".iOS(.v14)"),
+        "plateforme iOS 14 (disponible en 5.3)"
+    );
     for unknown in [".v15", ".v16", ".v17", ".v18"] {
-        assert!(!package.contains(unknown), "{unknown} n'existe pas en swift-tools-version 5.3");
+        assert!(
+            !package.contains(unknown),
+            "{unknown} n'existe pas en swift-tools-version 5.3"
+        );
     }
 }
 
@@ -694,21 +1091,51 @@ fn y_ios_01_swift_hardening_from_the_security_audit() {
     let code = swift_code();
     let open_directory = &code[code.find("private func openDirectory(").unwrap()..];
     let open_directory = &open_directory[..open_directory.find("\n  }\n").unwrap()];
-    assert!(open_directory.contains("open(rootPath, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)"), "racine ouverte sans suivre de lien");
-    assert!(open_directory.contains("fstat(fd, &rootStat)"), "racine contrôlée sur le descripteur");
+    assert!(
+        open_directory.contains("open(rootPath, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)"),
+        "racine ouverte sans suivre de lien"
+    );
+    assert!(
+        open_directory.contains("fstat(fd, &rootStat)"),
+        "racine contrôlée sur le descripteur"
+    );
     let read_from = swift_method("readFrom");
-    assert!(read_from.contains("st.st_nlink > 1"), "fichier à plusieurs liens physiques refusé en lecture");
+    assert!(
+        read_from.contains("st.st_nlink > 1"),
+        "fichier à plusieurs liens physiques refusé en lecture"
+    );
     let check_chain = &code[code.find("private func checkChain(").unwrap()..];
-    let check_chain = &check_chain[..check_chain.find("
+    let check_chain = &check_chain[..check_chain
+        .find(
+            "
   }
-").unwrap()];
-    assert!(check_chain.contains("openDirectory(rootPath, dir, create: false)") && check_chain.contains("AT_SYMLINK_NOFOLLOW") && check_chain.contains("st.st_nlink > 1"));
-    assert!(read_from.find("self.checkChain(").unwrap() < read_from.find("self.availability(").unwrap(), "chaîne validée avant l'état iCloud");
+",
+        )
+        .unwrap()];
+    assert!(
+        check_chain.contains("openDirectory(rootPath, dir, create: false)")
+            && check_chain.contains("AT_SYMLINK_NOFOLLOW")
+            && check_chain.contains("st.st_nlink > 1")
+    );
+    assert!(
+        read_from.find("self.checkChain(").unwrap() < read_from.find("self.availability(").unwrap(),
+        "chaîne validée avant l'état iCloud"
+    );
     let download = swift_method("download");
-    assert!(download.find("self.checkChain(").unwrap() < download.find("resourceValues(").unwrap(), "chaîne validée avant l'état iCloud");
-    assert!(download.find("self.checkChain(").unwrap() < download.find("startDownloadingUbiquitousItem").unwrap(), "chaîne validée avant le téléchargement");
+    assert!(
+        download.find("self.checkChain(").unwrap() < download.find("resourceValues(").unwrap(),
+        "chaîne validée avant l'état iCloud"
+    );
+    assert!(
+        download.find("self.checkChain(").unwrap()
+            < download.find("startDownloadingUbiquitousItem").unwrap(),
+        "chaîne validée avant le téléchargement"
+    );
     let rename = swift_method("rename");
-    assert!(rename.contains("coordinatedMove("), "source et destination coordonnées");
+    assert!(
+        rename.contains("coordinatedMove("),
+        "source et destination coordonnées"
+    );
     assert!(code.contains("options: .forMoving") && code.contains("options: .forReplacing"));
 }
 
@@ -724,7 +1151,11 @@ fn app_sources() -> Vec<(String, String)> {
             if path.is_dir() {
                 walk(&path, root, out);
             } else if path.extension().is_some_and(|e| e == "rs") {
-                let rel = path.strip_prefix(root).unwrap().to_string_lossy().replace('\\', "/");
+                let rel = path
+                    .strip_prefix(root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .replace('\\', "/");
                 out.push((rel, std::fs::read_to_string(&path).unwrap()));
             }
         }
@@ -740,12 +1171,17 @@ fn app_sources() -> Vec<(String, String)> {
 #[test]
 fn y_ios_05_14_production_transport_is_wrapped_by_the_deadline() {
     assert!(
-        crate::support::has(COMMANDS_IOS_RS, "DeadlineTransport::new(Arc::new(PluginTransport(plugin.inner().clone())))"),
+        crate::support::has(
+            COMMANDS_IOS_RS,
+            "DeadlineTransport::new(Arc::new(PluginTransport(plugin.inner().clone())))"
+        ),
         "commands_ios.rs : le transport du plugin passe par DeadlineTransport::new"
     );
     assert_eq!(
         COMMANDS_IOS_RS.matches("PluginTransport(").count(),
-        COMMANDS_IOS_RS.matches("DeadlineTransport::new(Arc::new(PluginTransport(").count(),
+        COMMANDS_IOS_RS
+            .matches("DeadlineTransport::new(Arc::new(PluginTransport(")
+            .count(),
         "commands_ios.rs : aucun PluginTransport hors du décorateur"
     );
     let mut users = BTreeSet::new();
@@ -755,13 +1191,23 @@ fn y_ios_05_14_production_transport_is_wrapped_by_the_deadline() {
         }
         if file == "sync/bookmark.rs" {
             // Le seul appel direct du plugin : `PluginTransport::call`.
-            assert_eq!(text.matches("self.0.call(").count(), 1, "bookmark.rs : un seul appel direct du plugin");
+            assert_eq!(
+                text.matches("self.0.call(").count(),
+                1,
+                "bookmark.rs : un seul appel direct du plugin"
+            );
         }
         if file == "sync/commands_ios.rs" {
-            assert!(!text.contains("plugin.call(") && !text.contains(".0.call("), "commands_ios.rs : aucun appel direct du plugin");
+            assert!(
+                !text.contains("plugin.call(") && !text.contains(".0.call("),
+                "commands_ios.rs : aucun appel direct du plugin"
+            );
         }
     }
-    let expected: BTreeSet<String> = ["lib.rs", "sync/bookmark.rs", "sync/commands_ios.rs"].iter().map(|s| (*s).to_owned()).collect();
+    let expected: BTreeSet<String> = ["lib.rs", "sync/bookmark.rs", "sync/commands_ios.rs"]
+        .iter()
+        .map(|s| (*s).to_owned())
+        .collect();
     assert_eq!(users, expected, "seuls lib.rs (init), bookmark.rs (PluginTransport) et commands_ios.rs (câblage) nomment le plugin");
 }
 
@@ -787,7 +1233,14 @@ const GUARD: Duration = Duration::from_secs(30);
 impl MutedTransport {
     fn new(plugin: Arc<FakePlugin>, muted: Option<&'static str>) -> (Arc<Self>, Release) {
         let (sender, receiver) = mpsc::channel();
-        let transport = Arc::new(Self { plugin, muted, release: Mutex::new(receiver), script: Mutex::new(BTreeMap::new()), received: Mutex::new(Vec::new()), arrived: Condvar::new() });
+        let transport = Arc::new(Self {
+            plugin,
+            muted,
+            release: Mutex::new(receiver),
+            script: Mutex::new(BTreeMap::new()),
+            received: Mutex::new(Vec::new()),
+            arrived: Condvar::new(),
+        });
         (transport, Release(sender))
     }
 
@@ -802,14 +1255,21 @@ impl MutedTransport {
     /// Attend (sur condition) que `count` appels soient arrivés ; faux si le garde-fou expire.
     fn wait_received(&self, count: usize) -> bool {
         let received = self.received.lock().unwrap();
-        let (received, _) = self.arrived.wait_timeout_while(received, GUARD, |r| r.len() < count).unwrap();
+        let (received, _) = self
+            .arrived
+            .wait_timeout_while(received, GUARD, |r| r.len() < count)
+            .unwrap();
         received.len() >= count
     }
 }
 
 impl BookmarkTransport for MutedTransport {
     fn call(&self, command: &str, args: Value) -> Result<Value, String> {
-        self.received.lock().unwrap().push((command.to_owned(), args.clone(), std::thread::current().id()));
+        self.received.lock().unwrap().push((
+            command.to_owned(),
+            args.clone(),
+            std::thread::current().id(),
+        ));
         self.arrived.notify_all();
         if self.muted.is_some_and(|m| m == "*" || m == command) {
             let _ = self.release.lock().unwrap().recv();
@@ -822,12 +1282,20 @@ impl BookmarkTransport for MutedTransport {
 }
 
 fn zero() -> DeadlineLimits {
-    DeadlineLimits { file_call: Duration::ZERO, download_margin: Duration::ZERO, max_abandoned: 1 }
+    DeadlineLimits {
+        file_call: Duration::ZERO,
+        download_margin: Duration::ZERO,
+        max_abandoned: 1,
+    }
 }
 
 /// Échéance large (transmission) : jamais atteinte par un transport qui répond aussitôt, donc aucune attente réelle.
 fn wide() -> DeadlineLimits {
-    DeadlineLimits { file_call: Duration::from_secs(3_600), download_margin: Duration::from_secs(3_600), max_abandoned: 1 }
+    DeadlineLimits {
+        file_call: Duration::from_secs(3_600),
+        download_margin: Duration::from_secs(3_600),
+        max_abandoned: 1,
+    }
 }
 
 struct DeadlineRig {
@@ -845,8 +1313,19 @@ fn deadline_rig(muted: Option<&'static str>, limits: DeadlineLimits) -> Deadline
     let (transport, release) = MutedTransport::new(plugin, muted);
     let deadline = Arc::new(DeadlineTransport::with_limits(transport.clone(), limits));
     let now = clock.clone();
-    let fs = BookmarkFs::new(deadline.clone(), ROOT.to_owned(), BOOKMARK.to_owned(), Arc::new(Mutex::new(None)), Arc::new(move || now.load(Ordering::SeqCst)));
-    DeadlineRig { muted: transport, deadline, fs, release: Some(release) }
+    let fs = BookmarkFs::new(
+        deadline.clone(),
+        ROOT.to_owned(),
+        BOOKMARK.to_owned(),
+        Arc::new(Mutex::new(None)),
+        Arc::new(move || now.load(Ordering::SeqCst)),
+    );
+    DeadlineRig {
+        muted: transport,
+        deadline,
+        fs,
+        release: Some(release),
+    }
 }
 
 /// Critère 10 : échéance par commande, fonction pure.
@@ -869,8 +1348,16 @@ fn y_ios_05_10_deadline_for_each_command() {
         ("remove", json!({}), file),
         ("removeEmptyDir", json!({}), file),
         ("appState", json!({}), file),
-        ("download", json!({ "timeoutMs": 60_000 }), Some(Duration::from_secs(65))),
-        ("download", json!({ "timeoutMs": 1_500 }), Some(Duration::from_millis(6_500))),
+        (
+            "download",
+            json!({ "timeoutMs": 60_000 }),
+            Some(Duration::from_secs(65)),
+        ),
+        (
+            "download",
+            json!({ "timeoutMs": 1_500 }),
+            Some(Duration::from_millis(6_500)),
+        ),
         ("download", json!({}), file),
         ("download", json!({ "timeoutMs": "60000" }), file),
         ("download", json!({ "timeoutMs": -1 }), file),
@@ -880,11 +1367,19 @@ fn y_ios_05_10_deadline_for_each_command() {
         ("inconnue", json!({}), file),
     ];
     for (command, args, expected) in cases {
-        assert_eq!(deadline_for(command, &args, &limits), expected, "{command} {args}");
+        assert_eq!(
+            deadline_for(command, &args, &limits),
+            expected,
+            "{command} {args}"
+        );
     }
     // Toute commande du contrat est bornée, sauf les deux d'interaction.
     for command in PLUGIN_COMMANDS {
-        assert_eq!(deadline_for(command, &json!({}), &limits).is_none(), UNBOUNDED_COMMANDS.contains(&command), "{command}");
+        assert_eq!(
+            deadline_for(command, &json!({}), &limits).is_none(),
+            UNBOUNDED_COMMANDS.contains(&command),
+            "{command}"
+        );
     }
     assert_eq!(UNBOUNDED_COMMANDS, ["pickFolder", "confirm"]);
 }
@@ -897,14 +1392,42 @@ fn y_ios_05_7_every_command_passes_through_unchanged() {
     let deadline = DeadlineTransport::with_limits(transport.clone(), wide());
     for (i, command) in PLUGIN_COMMANDS.iter().enumerate() {
         let args = json!({ "path": ["devices", format!("n{i}")], "timeoutMs": 10, "n": i });
-        let answer = json!({ "command": command, "entries": [{ "name": "x", "isDir": false }], "n": i });
-        transport.script.lock().unwrap().insert((*command).to_owned(), Ok(answer.clone()));
-        assert_eq!(deadline.call(command, args.clone()), Ok(answer), "{command} : réponse");
+        let answer =
+            json!({ "command": command, "entries": [{ "name": "x", "isDir": false }], "n": i });
+        transport
+            .script
+            .lock()
+            .unwrap()
+            .insert((*command).to_owned(), Ok(answer.clone()));
+        assert_eq!(
+            deadline.call(command, args.clone()),
+            Ok(answer),
+            "{command} : réponse"
+        );
         let (seen, seen_args, _) = transport.received().pop().unwrap();
-        assert_eq!((seen.as_str(), seen_args), (*command, args), "{command} : arguments");
-        for code in ["not-configured", "cloud-pending", "cloud-error", "too-large", "io", "unsafe-folder"] {
-            transport.script.lock().unwrap().insert((*command).to_owned(), Err(code.to_owned()));
-            assert_eq!(deadline.call(command, json!({})), Err(code.to_owned()), "{command} : code {code}");
+        assert_eq!(
+            (seen.as_str(), seen_args),
+            (*command, args),
+            "{command} : arguments"
+        );
+        for code in [
+            "not-configured",
+            "cloud-pending",
+            "cloud-error",
+            "too-large",
+            "io",
+            "unsafe-folder",
+        ] {
+            transport
+                .script
+                .lock()
+                .unwrap()
+                .insert((*command).to_owned(), Err(code.to_owned()));
+            assert_eq!(
+                deadline.call(command, json!({})),
+                Err(code.to_owned()),
+                "{command} : code {code}"
+            );
         }
     }
     assert_eq!(deadline.abandoned(), 0);
@@ -916,19 +1439,38 @@ fn y_ios_05_8_muted_call_is_cloud_pending_at_the_deadline() {
     type Access = fn(&BookmarkFs) -> Result<(), FsError>;
     let accesses: [(&'static str, Access); 5] = [
         ("list", |fs| fs.list(&["devices"], 10).map(|_| ())),
-        ("status", |fs| fs.read(&["devices", DEV_A, "state.spx"], 1024, true).map(|_| ())),
-        ("readFrom", |fs| fs.read_head(&["devices", DEV_A, "state.spx"], 1024).map(|_| ())),
-        ("append", |fs| fs.append(&["devices", DEV_A, "j.tmp"], b"x\n", AppendMode::Existing)),
+        ("status", |fs| {
+            fs.read(&["devices", DEV_A, "state.spx"], 1024, true)
+                .map(|_| ())
+        }),
+        ("readFrom", |fs| {
+            fs.read_head(&["devices", DEV_A, "state.spx"], 1024)
+                .map(|_| ())
+        }),
+        ("append", |fs| {
+            fs.append(&["devices", DEV_A, "j.tmp"], b"x\n", AppendMode::Existing)
+        }),
         ("resolve", |fs| fs.check_root()),
     ];
     for (command, access) in accesses {
         let mut rig = deadline_rig(Some(command), zero());
         assert_eq!(access(&rig.fs), Err(FsError::CloudPending), "{command}");
         assert!(rig.muted.wait_received(1));
-        assert_eq!(rig.muted.commands(), vec![command.to_owned()], "{command} : seul appel envoyé, le muet");
-        assert_eq!(rig.deadline.abandoned(), 1, "{command} : appel abandonné compté");
+        assert_eq!(
+            rig.muted.commands(),
+            vec![command.to_owned()],
+            "{command} : seul appel envoyé, le muet"
+        );
+        assert_eq!(
+            rig.deadline.abandoned(),
+            1,
+            "{command} : appel abandonné compté"
+        );
         drop(rig.release.take());
-        assert!(rig.deadline.wait_abandoned(0, GUARD), "{command} : réponse tardive reçue, compteur rendu");
+        assert!(
+            rig.deadline.wait_abandoned(0, GUARD),
+            "{command} : réponse tardive reçue, compteur rendu"
+        );
     }
 }
 
@@ -945,7 +1487,13 @@ fn y_ios_05_8_9_scan_returns_at_the_deadline_and_releases_the_core_lock() {
     let (transport, release) = MutedTransport::new(p.plugin.clone(), Some("*"));
     let deadline = Arc::new(DeadlineTransport::with_limits(transport.clone(), zero()));
     let now = p.clock.clone();
-    let (core, _backend) = ios_core(p.base.path().to_path_buf(), deadline.clone(), p.vault.clone(), FakeUi::new(), Arc::new(move || now.load(Ordering::SeqCst)));
+    let (core, _backend) = ios_core(
+        p.base.path().to_path_buf(),
+        deadline.clone(),
+        p.vault.clone(),
+        FakeUi::new(),
+        Arc::new(move || now.load(Ordering::SeqCst)),
+    );
     assert_eq!(code(core.scan(&[])), SyncCode::CloudPending);
     assert_eq!(deadline.abandoned(), 1);
     let (sender, receiver) = mpsc::channel();
@@ -953,10 +1501,19 @@ fn y_ios_05_8_9_scan_returns_at_the_deadline_and_releases_the_core_lock() {
     std::thread::spawn(move || {
         let _ = sender.send(other.listed_devices().map_err(|e| e.code));
     });
-    let listed = receiver.recv_timeout(GUARD).expect("listed_devices bloqué derrière le scan abandonné");
-    assert!(matches!(listed, Ok(_) | Err(SyncCode::CloudPending)), "{listed:?}");
+    let listed = receiver
+        .recv_timeout(GUARD)
+        .expect("listed_devices bloqué derrière le scan abandonné");
+    assert!(
+        matches!(listed, Ok(_) | Err(SyncCode::CloudPending)),
+        "{listed:?}"
+    );
     assert!(transport.wait_received(1));
-    assert_eq!(transport.commands().len(), 1, "un seul appel envoyé (le muet), les suivants refusés sans envoi");
+    assert_eq!(
+        transport.commands().len(),
+        1,
+        "un seul appel envoyé (le muet), les suivants refusés sans envoi"
+    );
     drop(release);
     assert!(deadline.wait_abandoned(0, GUARD));
 }
@@ -967,16 +1524,37 @@ fn y_ios_05_8_9_scan_returns_at_the_deadline_and_releases_the_core_lock() {
 fn y_ios_05_11_interaction_commands_run_on_the_calling_thread_without_deadline() {
     let mut rig = deadline_rig(Some("list"), zero());
     for command in UNBOUNDED_COMMANDS {
-        rig.muted.script.lock().unwrap().insert(command.to_owned(), Ok(json!({ "ok": command })));
+        rig.muted
+            .script
+            .lock()
+            .unwrap()
+            .insert(command.to_owned(), Ok(json!({ "ok": command })));
     }
     for pass in ["sans appel abandonné", "avec un appel abandonné"] {
         for command in UNBOUNDED_COMMANDS {
-            assert_eq!(rig.deadline.call(command, json!({})), Ok(json!({ "ok": command })), "{command} {pass}");
-            let (_, _, thread) = rig.muted.received().into_iter().rev().find(|(seen, _, _)| seen == command).unwrap();
-            assert_eq!(thread, std::thread::current().id(), "{command} {pass} : fil appelant");
+            assert_eq!(
+                rig.deadline.call(command, json!({})),
+                Ok(json!({ "ok": command })),
+                "{command} {pass}"
+            );
+            let (_, _, thread) = rig
+                .muted
+                .received()
+                .into_iter()
+                .rev()
+                .find(|(seen, _, _)| seen == command)
+                .unwrap();
+            assert_eq!(
+                thread,
+                std::thread::current().id(),
+                "{command} {pass} : fil appelant"
+            );
         }
         if pass == "sans appel abandonné" {
-            assert_eq!(rig.fs.list(&["devices"], 10).map(|_| ()), Err(FsError::CloudPending));
+            assert_eq!(
+                rig.fs.list(&["devices"], 10).map(|_| ()),
+                Err(FsError::CloudPending)
+            );
             // Le listage muet est noté par son propre fil : attendu avant de poursuivre.
             assert!(rig.muted.wait_received(3));
             assert_eq!(rig.deadline.abandoned(), 1);
@@ -991,21 +1569,41 @@ fn y_ios_05_11_interaction_commands_run_on_the_calling_thread_without_deadline()
 #[test]
 fn y_ios_05_12_one_abandoned_call_then_immediate_cloud_pending_until_it_answers() {
     let mut rig = deadline_rig(Some("list"), zero());
-    assert_eq!(rig.fs.list(&["devices"], 10).map(|_| ()), Err(FsError::CloudPending));
+    assert_eq!(
+        rig.fs.list(&["devices"], 10).map(|_| ()),
+        Err(FsError::CloudPending)
+    );
     assert!(rig.muted.wait_received(1));
     assert_eq!(rig.deadline.abandoned(), 1);
-    for command in ["status", "readFrom", "append", "resolve", "download", "list"] {
-        assert_eq!(rig.deadline.call(command, json!({ "timeoutMs": 1 })), Err("cloud-pending".to_owned()), "{command}");
+    for command in [
+        "status", "readFrom", "append", "resolve", "download", "list",
+    ] {
+        assert_eq!(
+            rig.deadline.call(command, json!({ "timeoutMs": 1 })),
+            Err("cloud-pending".to_owned()),
+            "{command}"
+        );
     }
-    assert_eq!(rig.muted.commands(), vec!["list".to_owned()], "aucune commande envoyée derrière l'appel abandonné");
+    assert_eq!(
+        rig.muted.commands(),
+        vec!["list".to_owned()],
+        "aucune commande envoyée derrière l'appel abandonné"
+    );
     // Réponse tardive valide (le faux répond au listage) : jetée, aucune erreur ni panique, le compteur retombe.
     rig.release.as_ref().unwrap().0.send(()).unwrap();
     assert!(rig.deadline.wait_abandoned(0, GUARD));
-    rig.muted.script.lock().unwrap().insert("status".to_owned(), Ok(json!({ "exists": false })));
+    rig.muted
+        .script
+        .lock()
+        .unwrap()
+        .insert("status".to_owned(), Ok(json!({ "exists": false })));
     // Échéance nulle : la réponse peut arriver après l'échéance ; seul compte que la commande atteigne le transport.
     let _ = rig.deadline.call("status", json!({ "path": ["devices"] }));
     assert!(rig.muted.wait_received(2));
-    assert_eq!(rig.muted.commands(), vec!["list".to_owned(), "status".to_owned()]);
+    assert_eq!(
+        rig.muted.commands(),
+        vec!["list".to_owned(), "status".to_owned()]
+    );
     drop(rig.release.take());
     assert!(rig.deadline.wait_abandoned(0, GUARD));
 }
@@ -1015,31 +1613,63 @@ fn y_ios_05_12_one_abandoned_call_then_immediate_cloud_pending_until_it_answers(
 #[test]
 fn y_ios_05_12_app_state_is_not_refused_behind_an_abandoned_file_call() {
     let mut rig = deadline_rig(Some("list"), zero());
-    rig.muted.script.lock().unwrap().insert("appState".to_owned(), Ok(json!({ "state": "active" })));
-    assert_eq!(rig.fs.list(&["devices"], 10).map(|_| ()), Err(FsError::CloudPending));
+    rig.muted
+        .script
+        .lock()
+        .unwrap()
+        .insert("appState".to_owned(), Ok(json!({ "state": "active" })));
+    assert_eq!(
+        rig.fs.list(&["devices"], 10).map(|_| ()),
+        Err(FsError::CloudPending)
+    );
     assert!(rig.muted.wait_received(1));
     assert_eq!(rig.deadline.abandoned(), 1);
     // Échéance nulle : la réponse peut arriver après l'échéance ; seul compte que la commande atteigne le transport.
     let _ = rig.deadline.call("appState", json!({}));
-    assert!(rig.muted.wait_received(2), "appState refusé sans envoi derrière un appel de fichier abandonné");
-    assert_eq!(rig.muted.commands(), vec!["list".to_owned(), "appState".to_owned()]);
+    assert!(
+        rig.muted.wait_received(2),
+        "appState refusé sans envoi derrière un appel de fichier abandonné"
+    );
+    assert_eq!(
+        rig.muted.commands(),
+        vec!["list".to_owned(), "appState".to_owned()]
+    );
     // La file des fichiers reste occupée par l'appel abandonné : la commande de fichier suivante n'est pas envoyée.
-    assert_eq!(rig.deadline.call("status", json!({ "path": ["devices"] })), Err("cloud-pending".to_owned()));
+    assert_eq!(
+        rig.deadline.call("status", json!({ "path": ["devices"] })),
+        Err("cloud-pending".to_owned())
+    );
     assert_eq!(rig.muted.commands().len(), 2);
     drop(rig.release.take());
     assert!(rig.deadline.wait_abandoned(0, GUARD));
 
     // Inverse : un `appState` abandonné (fil principal bloqué) ne ferme pas la file des fichiers.
     let mut rig = deadline_rig(Some("appState"), zero());
-    rig.muted.script.lock().unwrap().insert("status".to_owned(), Ok(json!({ "exists": false })));
-    assert_eq!(rig.deadline.call("appState", json!({})), Err("cloud-pending".to_owned()));
+    rig.muted
+        .script
+        .lock()
+        .unwrap()
+        .insert("status".to_owned(), Ok(json!({ "exists": false })));
+    assert_eq!(
+        rig.deadline.call("appState", json!({})),
+        Err("cloud-pending".to_owned())
+    );
     assert!(rig.muted.wait_received(1));
     assert_eq!(rig.deadline.abandoned(), 1);
     let _ = rig.deadline.call("status", json!({ "path": ["devices"] }));
-    assert!(rig.muted.wait_received(2), "commande de fichier refusée derrière un appState abandonné");
+    assert!(
+        rig.muted.wait_received(2),
+        "commande de fichier refusée derrière un appState abandonné"
+    );
     // Le second `appState` attend derrière le premier : refusé sans envoi.
-    assert_eq!(rig.deadline.call("appState", json!({})), Err("cloud-pending".to_owned()));
-    assert_eq!(rig.muted.commands(), vec!["appState".to_owned(), "status".to_owned()]);
+    assert_eq!(
+        rig.deadline.call("appState", json!({})),
+        Err("cloud-pending".to_owned())
+    );
+    assert_eq!(
+        rig.muted.commands(),
+        vec!["appState".to_owned(), "status".to_owned()]
+    );
     drop(rig.release.take());
     assert!(rig.deadline.wait_abandoned(0, GUARD));
 }
@@ -1050,12 +1680,22 @@ fn y_ios_05_12_app_state_is_not_refused_behind_an_abandoned_file_call() {
 fn y_ios_05_12_off_queue_commands_match_the_swift_source() {
     use spartiate_lib::sync::bookmark::OFF_QUEUE_COMMANDS;
     assert_eq!(OFF_QUEUE_COMMANDS, ["appState"]);
-    for command in PLUGIN_COMMANDS.iter().filter(|c| !UNBOUNDED_COMMANDS.contains(c)) {
+    for command in PLUGIN_COMMANDS
+        .iter()
+        .filter(|c| !UNBOUNDED_COMMANDS.contains(c))
+    {
         let body = swift_method(command);
         let on_file_queue = body.contains("onFiles(invoke)");
-        assert_eq!(on_file_queue, !OFF_QUEUE_COMMANDS.contains(command), "{command} : file de Swift");
+        assert_eq!(
+            on_file_queue,
+            !OFF_QUEUE_COMMANDS.contains(command),
+            "{command} : file de Swift"
+        );
         if !on_file_queue {
-            assert!(body.contains("DispatchQueue.main.async {"), "{command} : fil principal");
+            assert!(
+                body.contains("DispatchQueue.main.async {"),
+                "{command} : fil principal"
+            );
         }
     }
 }
@@ -1070,19 +1710,41 @@ fn y_ios_05_12_the_place_is_reserved_before_sending() {
     plugin.with(|s| s.session = true);
     let (transport, release) = MutedTransport::new(plugin, Some("*"));
     // Échéance de fichier large (le listage en vol n'est pas abandonné), échéance nulle pour `download` à `timeoutMs: 0`.
-    let limits = DeadlineLimits { file_call: Duration::from_secs(3_600), download_margin: Duration::ZERO, max_abandoned: 1 };
+    let limits = DeadlineLimits {
+        file_call: Duration::from_secs(3_600),
+        download_margin: Duration::ZERO,
+        max_abandoned: 1,
+    };
     let deadline = Arc::new(DeadlineTransport::with_limits(transport.clone(), limits));
     let first = {
         let deadline = deadline.clone();
         std::thread::spawn(move || deadline.call("list", json!({ "path": [], "max": 10 })))
     };
     assert!(transport.wait_received(1));
-    assert_eq!(deadline.call("download", json!({ "path": ["devices"], "timeoutMs": 0, "limit": 1 })), Err("cloud-pending".to_owned()));
-    assert_eq!(deadline.abandoned(), 0, "second appel envoyé puis abandonné pendant que le premier tenait la place");
+    assert_eq!(
+        deadline.call(
+            "download",
+            json!({ "path": ["devices"], "timeoutMs": 0, "limit": 1 })
+        ),
+        Err("cloud-pending".to_owned())
+    );
+    assert_eq!(
+        deadline.abandoned(),
+        0,
+        "second appel envoyé puis abandonné pendant que le premier tenait la place"
+    );
     drop(release);
     let listed = first.join().unwrap();
-    assert_ne!(listed, Err("cloud-pending".to_owned()), "le premier appel, en vol, n'est pas abandonné");
-    assert_eq!(transport.commands(), vec!["list".to_owned()], "la seconde commande n'a jamais été envoyée");
+    assert_ne!(
+        listed,
+        Err("cloud-pending".to_owned()),
+        "le premier appel, en vol, n'est pas abandonné"
+    );
+    assert_eq!(
+        transport.commands(),
+        vec!["list".to_owned()],
+        "la seconde commande n'a jamais été envoyée"
+    );
     assert!(deadline.wait_abandoned(0, GUARD));
 }
 
@@ -1120,15 +1782,40 @@ fn y_ios_05_12_late_append_effect_is_caught_by_segment_mismatch() {
     let (transport, release) = MutedTransport::new(p.plugin.clone(), Some("append"));
     let first = Arc::new(DeadlineTransport::with_limits(transport.clone(), zero()));
     let rest = Arc::new(DeadlineTransport::with_limits(transport.clone(), wide()));
-    let routed = Arc::new(FirstCallRouted { command: "append", first: first.clone(), rest, used: std::sync::atomic::AtomicBool::new(false) });
+    let routed = Arc::new(FirstCallRouted {
+        command: "append",
+        first: first.clone(),
+        rest,
+        used: std::sync::atomic::AtomicBool::new(false),
+    });
     let now = p.clock.clone();
-    let (core, _backend) = ios_core(p.base.path().to_path_buf(), routed, p.vault.clone(), FakeUi::new(), Arc::new(move || now.load(Ordering::SeqCst)));
+    let (core, _backend) = ios_core(
+        p.base.path().to_path_buf(),
+        routed,
+        p.vault.clone(),
+        FakeUi::new(),
+        Arc::new(move || now.load(Ordering::SeqCst)),
+    );
     let ep = epoch(1, DEV_A);
-    let request = |segment: u64, ms: u64| AppendRequest { epoch: ep.clone(), segment, expect_records: 0, sv: 14, max_hlc: crate::sync_support::hlc(ms, DEV_A), records: vec!["{}".to_owned()] };
+    let request = |segment: u64, ms: u64| AppendRequest {
+        epoch: ep.clone(),
+        segment,
+        expect_records: 0,
+        sv: 14,
+        max_hlc: crate::sync_support::hlc(ms, DEV_A),
+        records: vec!["{}".to_owned()],
+    };
     let segment1 = ["devices", DEV_A, ep.as_str(), "j-00000001.spj"];
-    let records = |path: &[&str]| p.plugin.get(path).map(|bytes| String::from_utf8(bytes).unwrap().lines().count() - 1);
+    let records = |path: &[&str]| {
+        p.plugin
+            .get(path)
+            .map(|bytes| String::from_utf8(bytes).unwrap().lines().count() - 1)
+    };
     // L'ajout muet : abandonné à l'échéance, rien encore écrit.
-    assert_eq!(code(core.append_journal(&request(1, 10))), SyncCode::CloudPending);
+    assert_eq!(
+        code(core.append_journal(&request(1, 10))),
+        SyncCode::CloudPending
+    );
     assert_eq!(first.abandoned(), 1);
     assert_eq!(records(&segment1), None);
     // Réponse tardive : le faux écrit, la réponse est jetée.
@@ -1137,14 +1824,32 @@ fn y_ios_05_12_late_append_effect_is_caught_by_segment_mismatch() {
     assert_eq!(records(&segment1), Some(1), "l'appel abandonné a écrit");
     drop(release);
     // Même ajout au cycle suivant (la tête du store n'a pas bougé) : segment-mismatch, rien d'écrit.
-    assert_eq!(code(core.append_journal(&request(1, 10))), SyncCode::SegmentMismatch);
-    assert_eq!(records(&segment1), Some(1), "aucun enregistrement écrit deux fois dans le segment");
+    assert_eq!(
+        code(core.append_journal(&request(1, 10))),
+        SyncCode::SegmentMismatch
+    );
+    assert_eq!(
+        records(&segment1),
+        Some(1),
+        "aucun enregistrement écrit deux fois dans le segment"
+    );
     // Le moteur passe au segment suivant.
     let next = core.append_journal(&request(2, 20)).unwrap();
     assert_eq!(next.first_record, 0);
-    assert_eq!(records(&["devices", DEV_A, ep.as_str(), "j-00000002.spj"]), Some(1));
+    assert_eq!(
+        records(&["devices", DEV_A, ep.as_str(), "j-00000002.spj"]),
+        Some(1)
+    );
     assert_eq!(records(&segment1), Some(1));
-    assert_eq!(transport.commands().iter().filter(|c| *c == "append").count(), 2, "un append abandonné, un append au segment suivant");
+    assert_eq!(
+        transport
+            .commands()
+            .iter()
+            .filter(|c| *c == "append")
+            .count(),
+        2,
+        "un append abandonné, un append au segment suivant"
+    );
 }
 
 /// Critère 13 : l'échéance inscrit `bookmark-call-timeout` avec le seul nom de la commande ; aucune ligne ne porte un chemin, un nom de
@@ -1153,16 +1858,45 @@ fn y_ios_05_12_late_append_effect_is_caught_by_segment_mismatch() {
 fn y_ios_05_13_timeout_log_names_the_command_only() {
     let capture = spartiate_lib::sync::log::capture();
     let mut rig = deadline_rig(Some("readFrom"), zero());
-    assert_eq!(rig.fs.read_head(&["devices", DEV_A, "state.spx"], 1024).map(|_| ()), Err(FsError::CloudPending));
-    assert_eq!(rig.deadline.call("status", json!({ "path": ["devices", DEV_A, "state.spx"] })), Err("cloud-pending".to_owned()));
+    assert_eq!(
+        rig.fs
+            .read_head(&["devices", DEV_A, "state.spx"], 1024)
+            .map(|_| ()),
+        Err(FsError::CloudPending)
+    );
+    assert_eq!(
+        rig.deadline
+            .call("status", json!({ "path": ["devices", DEV_A, "state.spx"] })),
+        Err("cloud-pending".to_owned())
+    );
     let lines = capture.lines();
-    assert!(lines.contains(&"sync:bookmark-call-timeout readFrom".to_owned()), "{lines:?}");
-    assert!(lines.contains(&"sync:bookmark-call-skipped status".to_owned()), "{lines:?}");
+    assert!(
+        lines.contains(&"sync:bookmark-call-timeout readFrom".to_owned()),
+        "{lines:?}"
+    );
+    assert!(
+        lines.contains(&"sync:bookmark-call-skipped status".to_owned()),
+        "{lines:?}"
+    );
     // La capture voit tous les fils (tests parallèles compris) : seules les lignes de l'échéance sont contrôlées, et entièrement.
-    for line in lines.iter().filter(|l| l.starts_with("sync:bookmark-call-")) {
+    for line in lines
+        .iter()
+        .filter(|l| l.starts_with("sync:bookmark-call-"))
+    {
         let mut parts = line.split(' ');
-        assert!(matches!(parts.next(), Some("sync:bookmark-call-timeout" | "sync:bookmark-call-skipped")), "{line}");
-        assert!(parts.next().is_some_and(|detail| PLUGIN_COMMANDS.contains(&detail)), "{line}");
+        assert!(
+            matches!(
+                parts.next(),
+                Some("sync:bookmark-call-timeout" | "sync:bookmark-call-skipped")
+            ),
+            "{line}"
+        );
+        assert!(
+            parts
+                .next()
+                .is_some_and(|detail| PLUGIN_COMMANDS.contains(&detail)),
+            "{line}"
+        );
         assert_eq!(parts.next(), None, "{line}");
         for secret in [ROOT, BOOKMARK, DEV_A, "state.spx", "devices"] {
             assert!(!line.contains(secret), "fuite dans le journal : {line}");
@@ -1175,17 +1909,26 @@ fn y_ios_05_13_timeout_log_names_the_command_only() {
 /// Corps d'une fonction Swift privée (`private func <name><`), jusqu'à la fonction suivante.
 fn swift_private_func(name: &str) -> String {
     let code = swift_code();
-    let start = code.find(&format!("private func {name}<")).unwrap_or_else(|| panic!("fonction Swift absente : {name}"));
+    let start = code
+        .find(&format!("private func {name}<"))
+        .unwrap_or_else(|| panic!("fonction Swift absente : {name}"));
     let rest = &code[start..];
-    let end = rest[1..].find("\n  private func ").or_else(|| rest[1..].find("\n  @objc public func ")).map_or(rest.len(), |i| i + 1);
+    let end = rest[1..]
+        .find("\n  private func ")
+        .or_else(|| rest[1..].find("\n  @objc public func "))
+        .map_or(rest.len(), |i| i + 1);
     rest[..end].to_owned()
 }
 
 /// Corps de la garde `CoordinationGuard` (classe de premier niveau).
 fn swift_guard_class() -> String {
     let code = swift_code();
-    let start = code.find("private final class CoordinationGuard {").expect("CoordinationGuard absente");
-    let end = code[start..].find("\n}\n").expect("fin de CoordinationGuard");
+    let start = code
+        .find("private final class CoordinationGuard {")
+        .expect("CoordinationGuard absente");
+    let end = code[start..]
+        .find("\n}\n")
+        .expect("fin de CoordinationGuard");
     code[start..start + end].to_owned()
 }
 
@@ -1195,24 +1938,64 @@ fn swift_guard_class() -> String {
 #[test]
 fn y_ios_05_15_every_coordination_is_guarded_and_cancelled() {
     let guard = swift_guard_class();
-    for piece in ["DispatchWorkItem", "asyncAfter(deadline: .now() + seconds, execute: item)", "coordinator.cancel()", "lock.lock()", "didFire = true", "item?.cancel()"] {
+    for piece in [
+        "DispatchWorkItem",
+        "asyncAfter(deadline: .now() + seconds, execute: item)",
+        "coordinator.cancel()",
+        "lock.lock()",
+        "didFire = true",
+        "item?.cancel()",
+    ] {
         assert!(guard.contains(piece), "CoordinationGuard : {piece}");
     }
     let settle = &guard[guard.find("func settle<T>(").expect("settle")..];
-    let (result, pending, io) = (settle.find("return try result.get()").unwrap(), settle.find("if fired && CoordinationGuard.isCancellation(error) {").expect("cloud-pending : garde tirée et annulation"), settle.find("throw Failure(code: .io)").unwrap());
-    assert!(result < pending && pending < io, "ordre : résultat du corps, puis cloud-pending si la garde a tiré, puis io");
+    let (result, pending, io) = (
+        settle.find("return try result.get()").unwrap(),
+        settle
+            .find("if fired && CoordinationGuard.isCancellation(error) {")
+            .expect("cloud-pending : garde tirée et annulation"),
+        settle.find("throw Failure(code: .io)").unwrap(),
+    );
+    assert!(
+        result < pending && pending < io,
+        "ordre : résultat du corps, puis cloud-pending si la garde a tiré, puis io"
+    );
     assert!(settle[pending..io].contains("throw Failure(code: .cloudPending)"));
     // Revue S2 : l'erreur de `coordinate` décide ; seule l'annulation (ou aucune erreur) après la garde donne `cloud-pending`.
-    let cancellation = &settle[settle.find("private static func isCancellation(_ error: NSError?) -> Bool {").expect("isCancellation")..];
-    assert!(cancellation.contains("guard let error = error else {\n      return true\n    }"), "aucune erreur : annulation");
-    assert!(cancellation.contains("return error.domain == NSCocoaErrorDomain && error.code == NSUserCancelledError"));
+    let cancellation = &settle[settle
+        .find("private static func isCancellation(_ error: NSError?) -> Bool {")
+        .expect("isCancellation")..];
+    assert!(
+        cancellation.contains("guard let error = error else {\n      return true\n    }"),
+        "aucune erreur : annulation"
+    );
+    assert!(cancellation.contains(
+        "return error.domain == NSCocoaErrorDomain && error.code == NSUserCancelledError"
+    ));
     assert!(!settle.contains("_ = error"), "paramètre error employé");
     let code = swift_code();
-    assert_eq!(code.matches("coordinator.cancel()").count(), 1, "cancel() seulement dans la garde");
-    assert_eq!(code.matches("CoordinationGuard(coordinator, seconds: coordinationGuardSeconds)").count(), 4);
+    assert_eq!(
+        code.matches("coordinator.cancel()").count(),
+        1,
+        "cancel() seulement dans la garde"
+    );
+    assert_eq!(
+        code.matches("CoordinationGuard(coordinator, seconds: coordinationGuardSeconds)")
+            .count(),
+        4
+    );
     assert_eq!(code.matches("coordinationGuard.disarm()").count(), 4);
-    assert_eq!(code.matches("return try coordinationGuard.settle(outcome, coordinationError)").count(), 4);
-    for name in ["coordinatedRead", "coordinatedWrite", "coordinatedDelete", "coordinatedMove"] {
+    assert_eq!(
+        code.matches("return try coordinationGuard.settle(outcome, coordinationError)")
+            .count(),
+        4
+    );
+    for name in [
+        "coordinatedRead",
+        "coordinatedWrite",
+        "coordinatedDelete",
+        "coordinatedMove",
+    ] {
         let body = swift_private_func(name);
         let (arm, coordinate, disarm, settle) = (
             body.find("let coordinationGuard = CoordinationGuard(coordinator, seconds: coordinationGuardSeconds)").unwrap_or_else(|| panic!("{name} : garde armée")),
@@ -1220,8 +2003,14 @@ fn y_ios_05_15_every_coordination_is_guarded_and_cancelled() {
             body.find("coordinationGuard.disarm()").unwrap_or_else(|| panic!("{name} : garde désarmée")),
             body.find("return try coordinationGuard.settle(outcome, coordinationError)").unwrap_or_else(|| panic!("{name} : issue")),
         );
-        assert!(arm < coordinate && coordinate < disarm && disarm < settle, "{name} : armée avant coordinate, désarmée au retour, puis issue");
-        assert!(!body.contains("if coordinationError != nil"), "{name} : plus de code io décidé avant le résultat du corps");
+        assert!(
+            arm < coordinate && coordinate < disarm && disarm < settle,
+            "{name} : armée avant coordinate, désarmée au retour, puis issue"
+        );
+        assert!(
+            !body.contains("if coordinationError != nil"),
+            "{name} : plus de code io décidé avant le résultat du corps"
+        );
     }
 }
 
@@ -1230,19 +2019,33 @@ fn y_ios_05_15_every_coordination_is_guarded_and_cancelled() {
 #[test]
 fn y_ios_05_16_the_guard_never_answers_the_call() {
     let guard = swift_guard_class();
-    assert!(!guard.contains("invoke"), "la garde ne touche jamais à l'appel");
+    assert!(
+        !guard.contains("invoke"),
+        "la garde ne touche jamais à l'appel"
+    );
     let code = swift_code();
     let mut owners = BTreeSet::new();
     for needle in ["invoke.resolve(", "invoke.reject("] {
         for (at, _) in code.match_indices(needle) {
             let before = &code[..at];
-            let private = before.rfind("private func ").map(|i| (i, &before[i + "private func ".len()..]));
-            let public = before.rfind("@objc public func ").map(|i| (i, &before[i + "@objc public func ".len()..]));
-            let (_, rest) = [private, public].into_iter().flatten().max_by_key(|(i, _)| *i).expect("fonction englobante");
+            let private = before
+                .rfind("private func ")
+                .map(|i| (i, &before[i + "private func ".len()..]));
+            let public = before
+                .rfind("@objc public func ")
+                .map(|i| (i, &before[i + "@objc public func ".len()..]));
+            let (_, rest) = [private, public]
+                .into_iter()
+                .flatten()
+                .max_by_key(|(i, _)| *i)
+                .expect("fonction englobante");
             owners.insert(rest[..rest.find(|c: char| !c.is_alphanumeric()).unwrap()].to_owned());
         }
     }
-    let expected: BTreeSet<String> = ["onFiles", "reject", "pickFolder", "confirm", "appState"].iter().map(|s| (*s).to_owned()).collect();
+    let expected: BTreeSet<String> = ["onFiles", "reject", "pickFolder", "confirm", "appState"]
+        .iter()
+        .map(|s| (*s).to_owned())
+        .collect();
     assert_eq!(owners, expected);
 }
 
@@ -1253,25 +2056,50 @@ fn y_ios_05_17_unreadable_state_is_cloud_and_links_stay_error() {
     let code = swift_code();
     let availability = &code[code.find("private func availability(").unwrap()..];
     let availability = &availability[..availability.find("\n  }\n").unwrap()];
-    assert!(availability.contains("else {\n      return \"cloud\"\n    }"), "état illisible : cloud");
+    assert!(
+        availability.contains("else {\n      return \"cloud\"\n    }"),
+        "état illisible : cloud"
+    );
     assert!(!availability.contains("\"error\""));
     let read_from = swift_method("readFrom");
-    let refuse = read_from.find("if self.availability(url) != \"local\" {").expect("readFrom : tout état non local refusé");
-    assert!(read_from[refuse..].trim_start_matches(|c| c != '\n').trim_start().starts_with("throw Failure(code: .cloudPending)"));
-    assert!(refuse < read_from.find("self.coordinatedRead(").unwrap(), "refus avant la coordination");
+    let refuse = read_from
+        .find("if self.availability(url) != \"local\" {")
+        .expect("readFrom : tout état non local refusé");
+    assert!(read_from[refuse..]
+        .trim_start_matches(|c| c != '\n')
+        .trim_start()
+        .starts_with("throw Failure(code: .cloudPending)"));
+    assert!(
+        refuse < read_from.find("self.coordinatedRead(").unwrap(),
+        "refus avant la coordination"
+    );
     let download = swift_method("download");
-    let values = download.find("let values = try? item.resourceValues(").expect("download : état lu");
+    let values = download
+        .find("let values = try? item.resourceValues(")
+        .expect("download : état lu");
     let unreadable = &download[values..download.find("let announced").unwrap()];
-    assert!(unreadable.contains("else {\n        throw Failure(code: .cloudPending)\n      }"), "download : état illisible, cloud-pending");
-    assert!(!download.contains("values?."), "download : plus d'état optionnel avalé");
+    assert!(
+        unreadable.contains("else {\n        throw Failure(code: .cloudPending)\n      }"),
+        "download : état illisible, cloud-pending"
+    );
+    assert!(
+        !download.contains("values?."),
+        "download : plus d'état optionnel avalé"
+    );
     // `"error"` : les deux liens symboliques seulement (état d'un élément, entrée listée).
     assert_eq!(code.matches("\"error\"").count(), 2);
     for (at, _) in code.match_indices("\"availability\": \"error\"") {
         let before = &code[..at];
         // Ligne précédente : le test du lien symbolique.
-        let line_start = before.trim_end_matches(|c| c != '\n').trim_end_matches('\n');
+        let line_start = before
+            .trim_end_matches(|c| c != '\n')
+            .trim_end_matches('\n');
         let previous = &line_start[line_start.rfind('\n').map_or(0, |i| i + 1)..];
-        assert_eq!(previous.trim(), "if self.isLink(st.st_mode) {", "« error » hors d'un lien symbolique");
+        assert_eq!(
+            previous.trim(),
+            "if self.isLink(st.st_mode) {",
+            "« error » hors d'un lien symbolique"
+        );
     }
 }
 
@@ -1280,22 +2108,56 @@ fn y_ios_05_17_unreadable_state_is_cloud_and_links_stay_error() {
 #[test]
 fn y_ios_05_18_layer_values_are_consistent() {
     use spartiate_lib::sync::bookmark::DEADLINE_CODE;
-    use spartiate_lib::sync::limits::{BOOKMARK_CALL_DEADLINE_MS, BOOKMARK_DOWNLOAD_MARGIN_MS, BOOKMARK_MAX_ABANDONED_CALLS};
+    use spartiate_lib::sync::limits::{
+        BOOKMARK_CALL_DEADLINE_MS, BOOKMARK_DOWNLOAD_MARGIN_MS, BOOKMARK_MAX_ABANDONED_CALLS,
+    };
     const MEMORY_TS: &str = include_str!("../../../src/platform/sync/memory.ts");
     let code = swift_code();
-    let line = code.lines().find(|l| l.contains("private let coordinationGuardSeconds: Double = ")).expect("coordinationGuardSeconds");
+    let line = code
+        .lines()
+        .find(|l| l.contains("private let coordinationGuardSeconds: Double = "))
+        .expect("coordinationGuardSeconds");
     let swift_seconds: f64 = line.rsplit("= ").next().unwrap().trim().parse().unwrap();
     assert_eq!(swift_seconds, 15.0);
     let background_cycle_ms = 25_000;
-    assert!(swift_seconds * 1000.0 < BOOKMARK_CALL_DEADLINE_MS as f64, "garde Swift < échéance Rust");
-    assert!(BOOKMARK_CALL_DEADLINE_MS < background_cycle_ms, "échéance Rust < borne du cycle en arrière-plan (§22 point 6)");
-    assert_eq!((BOOKMARK_DOWNLOAD_MARGIN_MS, BOOKMARK_MAX_ABANDONED_CALLS), (5_000, 1));
-    let turns_line = MEMORY_TS.lines().find(|l| l.starts_with("export const MUTE_DEADLINE_TURNS = ")).expect("MUTE_DEADLINE_TURNS exporté");
-    let turns: u32 = turns_line.trim_end_matches(';').rsplit("= ").next().unwrap().parse().unwrap();
+    assert!(
+        swift_seconds * 1000.0 < BOOKMARK_CALL_DEADLINE_MS as f64,
+        "garde Swift < échéance Rust"
+    );
+    assert!(
+        BOOKMARK_CALL_DEADLINE_MS < background_cycle_ms,
+        "échéance Rust < borne du cycle en arrière-plan (§22 point 6)"
+    );
+    assert_eq!(
+        (BOOKMARK_DOWNLOAD_MARGIN_MS, BOOKMARK_MAX_ABANDONED_CALLS),
+        (5_000, 1)
+    );
+    let turns_line = MEMORY_TS
+        .lines()
+        .find(|l| l.starts_with("export const MUTE_DEADLINE_TURNS = "))
+        .expect("MUTE_DEADLINE_TURNS exporté");
+    let turns: u32 = turns_line
+        .trim_end_matches(';')
+        .rsplit("= ")
+        .next()
+        .unwrap()
+        .parse()
+        .unwrap();
     assert!(turns > 50 && turns < 500, "{turns}");
     // Table commune d'une ligne : la même sortie des deux côtés.
-    let suspend = &MEMORY_TS[MEMORY_TS.find("  suspend<T>(").unwrap()..MEMORY_TS.find("  mutedCalls(): ").unwrap()];
-    for (layer, exit) in [("DeadlineTransport (Rust)", DEADLINE_CODE.to_owned()), ("memory.ts (TypeScript)", if suspend.contains("muted.fail('cloud-pending')") { "cloud-pending".to_owned() } else { String::new() })] {
+    let suspend = &MEMORY_TS
+        [MEMORY_TS.find("  suspend<T>(").unwrap()..MEMORY_TS.find("  mutedCalls(): ").unwrap()];
+    for (layer, exit) in [
+        ("DeadlineTransport (Rust)", DEADLINE_CODE.to_owned()),
+        (
+            "memory.ts (TypeScript)",
+            if suspend.contains("muted.fail('cloud-pending')") {
+                "cloud-pending".to_owned()
+            } else {
+                String::new()
+            },
+        ),
+    ] {
         assert_eq!(exit, "cloud-pending", "{layer}");
     }
     assert!(PLUGIN_REJECT_CODES.contains(&DEADLINE_CODE));

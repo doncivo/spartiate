@@ -5,11 +5,15 @@
 use std::fs;
 use std::path::Path;
 
-use spartiate_lib::backup::{carry_app_lock, restore_backup_file, RestoreStep, APP_LOCK_SETTING_KEY, APP_SCHEMA_VERSION, BACKUP_DIR, DB_FILE};
-use spartiate_lib::startup_gate::{
-    open_sql_pools, register_sql_after_recovery, status_of, write_marker_with_retry, MarkerToWrite, StartupGate, StartupStatus,
-};
 use rusqlite::Connection;
+use spartiate_lib::backup::{
+    carry_app_lock, restore_backup_file, RestoreStep, APP_LOCK_SETTING_KEY, APP_SCHEMA_VERSION,
+    BACKUP_DIR, DB_FILE,
+};
+use spartiate_lib::startup_gate::{
+    open_sql_pools, register_sql_after_recovery, status_of, write_marker_with_retry, MarkerToWrite,
+    StartupGate, StartupStatus,
+};
 use tauri::Manager;
 
 fn scratch() -> tempfile::TempDir {
@@ -22,18 +26,36 @@ const NO_FAIL: &dyn Fn(RestoreStep) -> std::io::Result<()> = &|_| Ok(());
 fn make_db(path: &Path, lock: Option<&str>) {
     let conn = Connection::open(path).unwrap();
     conn.pragma_update(None, "journal_mode", "WAL").unwrap();
-    conn.execute("CREATE TABLE task (id INTEGER PRIMARY KEY, title TEXT, deleted_at TEXT)", []).unwrap();
-    conn.execute("CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY)", []).unwrap();
-    conn.execute("INSERT INTO schema_migrations (version) VALUES (1)", []).unwrap();
+    conn.execute(
+        "CREATE TABLE task (id INTEGER PRIMARY KEY, title TEXT, deleted_at TEXT)",
+        [],
+    )
+    .unwrap();
+    conn.execute(
+        "CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY)",
+        [],
+    )
+    .unwrap();
+    conn.execute("INSERT INTO schema_migrations (version) VALUES (1)", [])
+        .unwrap();
     conn.execute("CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL, device_id TEXT NOT NULL, hlc TEXT NOT NULL)", []).unwrap();
     if let Some(value) = lock {
-        conn.execute("INSERT INTO settings VALUES (?1, ?2, '2026-10-01T08:00:00.000Z', 'appareil', 'hlc-1')", [APP_LOCK_SETTING_KEY, value]).unwrap();
+        conn.execute(
+            "INSERT INTO settings VALUES (?1, ?2, '2026-10-01T08:00:00.000Z', 'appareil', 'hlc-1')",
+            [APP_LOCK_SETTING_KEY, value],
+        )
+        .unwrap();
     }
 }
 
 fn lock_value(path: &Path) -> Option<String> {
     let conn = Connection::open(path).unwrap();
-    conn.query_row("SELECT value FROM settings WHERE key = ?1", [APP_LOCK_SETTING_KEY], |r| r.get(0)).ok()
+    conn.query_row(
+        "SELECT value FROM settings WHERE key = ?1",
+        [APP_LOCK_SETTING_KEY],
+        |r| r.get(0),
+    )
+    .ok()
 }
 
 /// App avec une base actuelle (`current`) et une sauvegarde quotidienne (`saved`), restaurée.
@@ -43,7 +65,15 @@ fn restore_with(current: Option<&str>, saved: Option<&str>) -> Option<String> {
     fs::create_dir_all(&backups).unwrap();
     make_db(&backups.join("spartiate-daily-20261007.db"), saved);
     make_db(&dir.path().join(DB_FILE), current);
-    restore_backup_file(&dir.path().join(DB_FILE), &backups, "spartiate-daily-20261007.db", APP_SCHEMA_VERSION, "20261008T080000Z", NO_FAIL).expect("restauration");
+    restore_backup_file(
+        &dir.path().join(DB_FILE),
+        &backups,
+        "spartiate-daily-20261007.db",
+        APP_SCHEMA_VERSION,
+        "20261008T080000Z",
+        NO_FAIL,
+    )
+    .expect("restauration");
     lock_value(&dir.path().join(DB_FILE))
 }
 
@@ -51,17 +81,29 @@ fn restore_with(current: Option<&str>, saved: Option<&str>) -> Option<String> {
 
 #[test]
 fn p04_ios_11_an_old_version_never_disables_the_current_lock() {
-    assert_eq!(restore_with(Some("true"), Some("false")).as_deref(), Some("true"));
+    assert_eq!(
+        restore_with(Some("true"), Some("false")).as_deref(),
+        Some("true")
+    );
     assert_eq!(restore_with(Some("true"), None).as_deref(), Some("true"));
     // Valeur actuelle illisible : échec fermé.
-    assert_eq!(restore_with(Some("peut-être"), Some("false")).as_deref(), Some("true"));
+    assert_eq!(
+        restore_with(Some("peut-être"), Some("false")).as_deref(),
+        Some("true")
+    );
 }
 
 #[test]
 fn p04_ios_11_a_version_with_lock_stays_locked_and_the_reverse_changes_nothing() {
-    assert_eq!(restore_with(Some("false"), Some("true")).as_deref(), Some("true"));
+    assert_eq!(
+        restore_with(Some("false"), Some("true")).as_deref(),
+        Some("true")
+    );
     assert_eq!(restore_with(None, Some("true")).as_deref(), Some("true"));
-    assert_eq!(restore_with(Some("false"), Some("false")).as_deref(), Some("false"));
+    assert_eq!(
+        restore_with(Some("false"), Some("false")).as_deref(),
+        Some("false")
+    );
     assert_eq!(restore_with(None, None), None);
 }
 
@@ -81,7 +123,13 @@ fn p04_ios_11_unreadable_current_database_writes_true_and_metadata_is_kept() {
     make_db(&other, Some("false"));
     carry_app_lock(&current, &other).unwrap();
     let conn = Connection::open(&other).unwrap();
-    let row: (String, String, String) = conn.query_row("SELECT value, device_id, hlc FROM settings WHERE key = ?1", [APP_LOCK_SETTING_KEY], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?))).unwrap();
+    let row: (String, String, String) = conn
+        .query_row(
+            "SELECT value, device_id, hlc FROM settings WHERE key = ?1",
+            [APP_LOCK_SETTING_KEY],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+        )
+        .unwrap();
     assert_eq!(row, ("true".into(), "appareil".into(), "hlc-1".into()));
     // Aucune base actuelle (premier lancement) : rien à reporter.
     carry_app_lock(&dir.path().join("absente.db"), &staged).unwrap();
@@ -90,9 +138,15 @@ fn p04_ios_11_unreadable_current_database_writes_true_and_metadata_is_kept() {
 #[test]
 fn p04_ios_11_the_key_is_the_one_of_the_domain() {
     let domain = include_str!("../../../src/domain/model/settings.ts");
-    assert!(domain.contains(&format!("'{APP_LOCK_SETTING_KEY}': {{ scope: 'local'")), "clé et portée locale (aucune synchro)");
+    assert!(
+        domain.contains(&format!("'{APP_LOCK_SETTING_KEY}': {{ scope: 'local'")),
+        "clé et portée locale (aucune synchro)"
+    );
     let triggers = include_str!("../../src/backup_triggers.rs");
-    assert!(!triggers.contains(APP_LOCK_SETTING_KEY), "aucun déclencheur de synchro ne vise le verrou");
+    assert!(
+        !triggers.contains(APP_LOCK_SETTING_KEY),
+        "aucun déclencheur de synchro ne vise le verrou"
+    );
 }
 
 // --- B3 : porte de démarrage et enregistrement tardif du plugin SQL (runtime de test) ---
@@ -102,14 +156,43 @@ fn p04_ios_5_sql_plugin_is_registered_only_after_a_successful_recovery() {
     // Restauration interrompue après le déplacement de la base : remise en place AVANT toute ouverture, puis plugin SQL.
     let dir = scratch();
     fs::create_dir_all(dir.path().join(BACKUP_DIR)).unwrap();
-    make_db(&dir.path().join(format!("{DB_FILE}.restore-old")), Some("true"));
-    let app = tauri::test::mock_builder().build(tauri::test::mock_context(tauri::test::noop_assets())).unwrap();
-    assert!(app.try_state::<tauri_plugin_sql::DbInstances>().is_none(), "aucun plugin SQL avant la récupération");
-    assert_eq!(status_of(None), StartupStatus { state: "pending", code: None });
-    assert_eq!(register_sql_after_recovery(app.handle(), Some(dir.path())), Ok(()));
-    assert!(dir.path().join(DB_FILE).is_file(), "ancienne base remise en place");
-    assert!(app.try_state::<tauri_plugin_sql::DbInstances>().is_some(), "plugin SQL enregistré après");
-    assert_eq!(status_of(app.try_state::<StartupGate>().as_deref()), StartupStatus { state: "ready", code: None });
+    make_db(
+        &dir.path().join(format!("{DB_FILE}.restore-old")),
+        Some("true"),
+    );
+    let app = tauri::test::mock_builder()
+        .build(tauri::test::mock_context(tauri::test::noop_assets()))
+        .unwrap();
+    assert!(
+        app.try_state::<tauri_plugin_sql::DbInstances>().is_none(),
+        "aucun plugin SQL avant la récupération"
+    );
+    assert_eq!(
+        status_of(None),
+        StartupStatus {
+            state: "pending",
+            code: None
+        }
+    );
+    assert_eq!(
+        register_sql_after_recovery(app.handle(), Some(dir.path())),
+        Ok(())
+    );
+    assert!(
+        dir.path().join(DB_FILE).is_file(),
+        "ancienne base remise en place"
+    );
+    assert!(
+        app.try_state::<tauri_plugin_sql::DbInstances>().is_some(),
+        "plugin SQL enregistré après"
+    );
+    assert_eq!(
+        status_of(app.try_state::<StartupGate>().as_deref()),
+        StartupStatus {
+            state: "ready",
+            code: None
+        }
+    );
 }
 
 #[test]
@@ -118,19 +201,37 @@ fn p04_ios_5_failed_recovery_registers_no_sql_plugin_and_keeps_the_files() {
     fs::create_dir_all(dir.path().join(BACKUP_DIR)).unwrap();
     // Conflit : base et `-wal.restore-old` présents, et la cible `-wal` occupée -> `recovery-conflict` ; rien n'est déplacé.
     make_db(&dir.path().join(DB_FILE), None);
-    fs::write(dir.path().join(format!("{DB_FILE}-wal.restore-old")), b"ancien wal").unwrap();
+    fs::write(
+        dir.path().join(format!("{DB_FILE}-wal.restore-old")),
+        b"ancien wal",
+    )
+    .unwrap();
     fs::write(dir.path().join(format!("{DB_FILE}-wal")), b"wal actuel").unwrap();
-    let app = tauri::test::mock_builder().build(tauri::test::mock_context(tauri::test::noop_assets())).unwrap();
+    let app = tauri::test::mock_builder()
+        .build(tauri::test::mock_context(tauri::test::noop_assets()))
+        .unwrap();
     let outcome = register_sql_after_recovery(app.handle(), Some(dir.path()));
     assert!(outcome.is_err());
-    assert!(app.try_state::<tauri_plugin_sql::DbInstances>().is_none(), "aucune base ne peut être ouverte ni créée");
+    assert!(
+        app.try_state::<tauri_plugin_sql::DbInstances>().is_none(),
+        "aucune base ne peut être ouverte ni créée"
+    );
     let status = status_of(app.try_state::<StartupGate>().as_deref());
     assert_eq!(status.state, "failed");
     assert_eq!(status.code, outcome.err());
-    assert_eq!(fs::read(dir.path().join(format!("{DB_FILE}-wal.restore-old"))).unwrap(), b"ancien wal", ".restore-old intact");
+    assert_eq!(
+        fs::read(dir.path().join(format!("{DB_FILE}-wal.restore-old"))).unwrap(),
+        b"ancien wal",
+        ".restore-old intact"
+    );
     // Dossier de données introuvable : même porte fermée.
-    let other = tauri::test::mock_builder().build(tauri::test::mock_context(tauri::test::noop_assets())).unwrap();
-    assert_eq!(register_sql_after_recovery(other.handle(), None), Err("no-data-dir"));
+    let other = tauri::test::mock_builder()
+        .build(tauri::test::mock_context(tauri::test::noop_assets()))
+        .unwrap();
+    assert_eq!(
+        register_sql_after_recovery(other.handle(), None),
+        Err("no-data-dir")
+    );
     assert!(other.try_state::<tauri_plugin_sql::DbInstances>().is_none());
 }
 
@@ -141,20 +242,41 @@ fn p04_ios_6_restore_requires_every_sql_pool_to_be_closed() {
     let dir = scratch();
     make_db(&dir.path().join(DB_FILE), None);
     let url = format!("sqlite:{}", dir.path().join(DB_FILE).to_string_lossy());
-    let runtime = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
     runtime.block_on(async {
         let pool = tauri_plugin_sql::open_sqlite_pool(&url).await.unwrap();
-        assert_eq!(pool.options().get_max_connections(), 1, "pool à une connexion");
+        assert_eq!(
+            pool.options().get_max_connections(),
+            1,
+            "pool à une connexion"
+        );
         let instances = tauri_plugin_sql::DbInstances::default();
-        instances.0.write().await.insert("sqlite:spartiate.db".into(), tauri_plugin_sql::DbPool::Sqlite(pool.clone()));
-        assert_eq!(open_sql_pools(&instances).await, 1, "connexion ouverte : restauration refusée (db-open)");
+        instances.0.write().await.insert(
+            "sqlite:spartiate.db".into(),
+            tauri_plugin_sql::DbPool::Sqlite(pool.clone()),
+        );
+        assert_eq!(
+            open_sql_pools(&instances).await,
+            1,
+            "connexion ouverte : restauration refusée (db-open)"
+        );
         pool.close().await;
-        assert_eq!(open_sql_pools(&instances).await, 0, "connexion fermée par le front : restauration permise");
+        assert_eq!(
+            open_sql_pools(&instances).await,
+            0,
+            "connexion fermée par le front : restauration permise"
+        );
     });
     let source = include_str!("../../src/backup.rs");
     let command = &source[source.find("pub async fn restore_backup(").unwrap()..];
     let guard = command.find("ensure_sql_closed(&app).await?").unwrap();
-    assert!(guard < command.find("restore_with_provisional_marker(").unwrap(), "contrôle AVANT l'échange");
+    assert!(
+        guard < command.find("restore_with_provisional_marker(").unwrap(),
+        "contrôle AVANT l'échange"
+    );
 }
 
 // --- critère 12 et règle 2 : marqueur renvoyé ---
@@ -162,34 +284,69 @@ fn p04_ios_6_restore_requires_every_sql_pool_to_be_closed() {
 #[test]
 fn p04_ios_12_marker_outcome_is_returned_not_configured_or_failed() {
     let dir = scratch();
-    let marker = MarkerToWrite { config_dir: dir.path().to_path_buf(), backup: "spartiate-daily-20261007.db".into(), restored_at_secs: 1_791_446_400, schema_version: 17 };
+    let marker = MarkerToWrite {
+        config_dir: dir.path().to_path_buf(),
+        backup: "spartiate-daily-20261007.db".into(),
+        restored_at_secs: 1_791_446_400,
+        schema_version: 17,
+    };
     // Aucun dossier de synchro configuré : aucun marqueur, ce n'est pas un échec.
-    assert_eq!(write_marker_with_retry(&marker, std::time::Duration::from_millis(0)), ("not-configured", None));
+    assert_eq!(
+        write_marker_with_retry(&marker, std::time::Duration::from_millis(0)),
+        ("not-configured", None)
+    );
     // Dossier de configuration inutilisable (un fichier à sa place) : échec renvoyé avec son code, jamais seulement journalisé.
     let blocked = dir.path().join("bloqué");
     fs::write(&blocked, b"x").unwrap();
-    let broken = MarkerToWrite { config_dir: blocked, ..marker };
+    let broken = MarkerToWrite {
+        config_dir: blocked,
+        ..marker
+    };
     let (state, code) = write_marker_with_retry(&broken, std::time::Duration::from_millis(0));
     assert!(state == "failed" || state == "not-configured", "{state}");
     if state == "failed" {
         assert!(code.is_some());
     }
     let source = include_str!("../../src/backup.rs");
-    assert!(!source.contains("eprintln!"), "plus aucun eprintln! pour le marqueur");
-    assert!(crate::support::has(include_str!("../../src/startup_gate.rs"), "RestoreOutcome { marker: state, marker_code: code, ..outcome }"));
+    assert!(
+        !source.contains("eprintln!"),
+        "plus aucun eprintln! pour le marqueur"
+    );
+    assert!(crate::support::has(
+        include_str!("../../src/startup_gate.rs"),
+        "RestoreOutcome { marker: state, marker_code: code, ..outcome }"
+    ));
 }
 
 #[test]
 fn p04_ios_4_same_rust_code_on_the_platform_data_folder() {
     // Le dossier de l'iPhone (`Library/Application Support/<identifiant>`) : mêmes noms et même échange que sur PC.
     let dir = scratch();
-    let config = dir.path().join("Library").join("Application Support").join("fr.spartiate.app");
+    let config = dir
+        .path()
+        .join("Library")
+        .join("Application Support")
+        .join("fr.spartiate.app");
     fs::create_dir_all(config.join(BACKUP_DIR)).unwrap();
-    make_db(&config.join(BACKUP_DIR).join("spartiate-daily-20261007.db"), None);
+    make_db(
+        &config.join(BACKUP_DIR).join("spartiate-daily-20261007.db"),
+        None,
+    );
     make_db(&config.join(DB_FILE), None);
-    let outcome = restore_backup_file(&config.join(DB_FILE), &config.join(BACKUP_DIR), "spartiate-daily-20261007.db", APP_SCHEMA_VERSION, "20261008T080000Z", NO_FAIL).unwrap();
+    let outcome = restore_backup_file(
+        &config.join(DB_FILE),
+        &config.join(BACKUP_DIR),
+        "spartiate-daily-20261007.db",
+        APP_SCHEMA_VERSION,
+        "20261008T080000Z",
+        NO_FAIL,
+    )
+    .unwrap();
     assert_eq!(outcome.marker, "not-configured");
-    assert!(config.join(BACKUP_DIR).join("spartiate-pre-restore-20261008T080000Z.db").is_file());
+    assert!(config
+        .join(BACKUP_DIR)
+        .join("spartiate-pre-restore-20261008T080000Z.db")
+        .is_file());
 }
 
 // --- revue B1 : échange en échec sans retour arrière complet, jamais une base vide ---
@@ -212,15 +369,34 @@ fn p04_ios_b1_failed_rollback_is_recovered_immediately_and_never_leaves_an_empty
         }
         Ok(())
     };
-    let error = restore_backup_file(&db, &backups, "spartiate-daily-20261007.db", APP_SCHEMA_VERSION, "20261008T080000Z", &hook).unwrap_err();
+    let error = restore_backup_file(
+        &db,
+        &backups,
+        "spartiate-daily-20261007.db",
+        APP_SCHEMA_VERSION,
+        "20261008T080000Z",
+        &hook,
+    )
+    .unwrap_err();
     assert_eq!(error.code, "rollback-failed");
-    assert!(tauri_plugin_sql::restore_pending(&db), "le plugin SQL refuse d'ouvrir ou de créer la base");
+    assert!(
+        tauri_plugin_sql::restore_pending(&db),
+        "le plugin SQL refuse d'ouvrir ou de créer la base"
+    );
     // L'obstacle passager disparaît : la récupération immédiate remet la vraie base en place.
     fs::remove_dir(&db).unwrap();
     assert_eq!(recover_after_failed_swap(&db, &backups), Some(Ok(())));
-    assert_eq!(lock_value(&db).as_deref(), Some("true"), "la base d'avant, intacte");
+    assert_eq!(
+        lock_value(&db).as_deref(),
+        Some("true"),
+        "la base d'avant, intacte"
+    );
     assert!(!tauri_plugin_sql::restore_pending(&db));
-    assert_eq!(recover_after_failed_swap(&db, &backups), None, "rien en attente");
+    assert_eq!(
+        recover_after_failed_swap(&db, &backups),
+        None,
+        "rien en attente"
+    );
 }
 
 #[test]
@@ -231,15 +407,29 @@ fn p04_ios_b1_failed_immediate_recovery_closes_the_gate_and_keeps_the_files() {
     fs::create_dir_all(&backups).unwrap();
     let db = dir.path().join(DB_FILE);
     make_db(&db, None);
-    fs::write(dir.path().join(format!("{DB_FILE}-wal.restore-old")), b"ancien wal").unwrap();
+    fs::write(
+        dir.path().join(format!("{DB_FILE}-wal.restore-old")),
+        b"ancien wal",
+    )
+    .unwrap();
     fs::write(dir.path().join(format!("{DB_FILE}-wal")), b"wal actuel").unwrap();
     let outcome = recover_after_failed_swap(&db, &backups).expect("en attente");
     let code = outcome.unwrap_err();
     let gate = StartupGate::default();
     gate.set(Ok(()));
     gate.set(Err(code));
-    assert_eq!(status_of(Some(&gate)), StartupStatus { state: "failed", code: Some(code) }, "la porte peut repasser à l'échec");
-    assert_eq!(fs::read(dir.path().join(format!("{DB_FILE}-wal.restore-old"))).unwrap(), b"ancien wal");
+    assert_eq!(
+        status_of(Some(&gate)),
+        StartupStatus {
+            state: "failed",
+            code: Some(code)
+        },
+        "la porte peut repasser à l'échec"
+    );
+    assert_eq!(
+        fs::read(dir.path().join(format!("{DB_FILE}-wal.restore-old"))).unwrap(),
+        b"ancien wal"
+    );
     assert!(tauri_plugin_sql::restore_pending(&db));
 }
 
@@ -248,7 +438,10 @@ fn p04_ios_b1_the_sql_plugin_checks_for_a_pending_restore_before_creating_the_da
     let wrapper = include_str!("../../vendor/tauri-plugin-sql/src/wrapper.rs");
     let connect = &wrapper[wrapper.find("pub(crate) async fn connect").unwrap()..];
     let check = connect.find("restore_pending(").unwrap();
-    assert!(check < connect.find("create_database").unwrap() && check < connect.find("open_sqlite_pool(").unwrap());
+    assert!(
+        check < connect.find("create_database").unwrap()
+            && check < connect.find("open_sqlite_pool(").unwrap()
+    );
     let command = include_str!("../../src/backup.rs");
     let restore = &command[command.find("pub async fn restore_backup(").unwrap()..];
     assert!(restore.contains("recover_after_failed_swap"));
@@ -265,16 +458,36 @@ fn p04_ios_i1_conflicting_files_are_set_aside_never_deleted_then_recovery_succee
     fs::create_dir_all(&backups).unwrap();
     let db = dir.path().join(DB_FILE);
     make_db(&db, Some("true"));
-    fs::write(dir.path().join(format!("{DB_FILE}-wal.restore-old")), b"ancien wal").unwrap();
+    fs::write(
+        dir.path().join(format!("{DB_FILE}-wal.restore-old")),
+        b"ancien wal",
+    )
+    .unwrap();
     fs::write(dir.path().join(format!("{DB_FILE}-wal")), b"wal en conflit").unwrap();
-    assert_eq!(recover_interrupted_restore(&db, &backups).unwrap_err().code, "recovery-conflict");
-    assert_eq!(set_aside_conflicts(&db, &backups, "20261009T080000Z").map(|aside| aside.moved), Ok(1));
+    assert_eq!(
+        recover_interrupted_restore(&db, &backups).unwrap_err().code,
+        "recovery-conflict"
+    );
+    assert_eq!(
+        set_aside_conflicts(&db, &backups, "20261009T080000Z").map(|aside| aside.moved),
+        Ok(1)
+    );
     let aside = backups.join("spartiate-set-aside-20261009T080000Z");
-    assert_eq!(fs::read(aside.join(format!("{DB_FILE}-wal"))).unwrap(), b"wal en conflit", "déplacé, jamais supprimé");
+    assert_eq!(
+        fs::read(aside.join(format!("{DB_FILE}-wal"))).unwrap(),
+        b"wal en conflit",
+        "déplacé, jamais supprimé"
+    );
     recover_interrupted_restore(&db, &backups).expect("récupération possible");
-    assert_eq!(fs::read(dir.path().join(format!("{DB_FILE}-wal"))).unwrap(), b"ancien wal");
+    assert_eq!(
+        fs::read(dir.path().join(format!("{DB_FILE}-wal"))).unwrap(),
+        b"ancien wal"
+    );
     // Le dossier mis de côté n'est ni listé ni purgé comme une sauvegarde.
-    assert!(spartiate_lib::backup::list_backups_in(&backups).unwrap().iter().all(|entry| !entry.name.contains("set-aside")));
+    assert!(spartiate_lib::backup::list_backups_in(&backups)
+        .unwrap()
+        .iter()
+        .all(|entry| !entry.name.contains("set-aside")));
     assert!(aside.is_dir());
 }
 
@@ -288,12 +501,29 @@ fn p04_ios_i1_an_unsafe_restore_old_is_set_aside() {
     let db = dir.path().join(DB_FILE);
     make_db(&db, Some("true"));
     fs::create_dir_all(dir.path().join(format!("{DB_FILE}.restore-old"))).unwrap();
-    assert_eq!(recover_interrupted_restore(&db, &backups).unwrap_err().code, "unsafe-restore-file");
-    assert_eq!(set_aside_conflicts(&db, &backups, "20261009T080001Z").map(|aside| aside.moved), Ok(1));
-    assert!(backups.join("spartiate-set-aside-20261009T080001Z").join(format!("{DB_FILE}.restore-old")).is_dir());
+    assert_eq!(
+        recover_interrupted_restore(&db, &backups).unwrap_err().code,
+        "unsafe-restore-file"
+    );
+    assert_eq!(
+        set_aside_conflicts(&db, &backups, "20261009T080001Z").map(|aside| aside.moved),
+        Ok(1)
+    );
+    assert!(backups
+        .join("spartiate-set-aside-20261009T080001Z")
+        .join(format!("{DB_FILE}.restore-old"))
+        .is_dir());
     recover_interrupted_restore(&db, &backups).expect("plus rien d'anormal");
-    assert_eq!(lock_value(&db).as_deref(), Some("true"), "base actuelle intacte");
-    assert_eq!(set_aside_conflicts(&db, &backups, "20261009T080002Z").map(|aside| aside.moved), Ok(0), "rien à déplacer");
+    assert_eq!(
+        lock_value(&db).as_deref(),
+        Some("true"),
+        "base actuelle intacte"
+    );
+    assert_eq!(
+        set_aside_conflicts(&db, &backups, "20261009T080002Z").map(|aside| aside.moved),
+        Ok(0),
+        "rien à déplacer"
+    );
 }
 
 // --- revue du lot F : mise de côté encadrée (porte, connexion, dossier ordinaire, destination exclusive, conservation) ---
@@ -302,17 +532,48 @@ fn p04_ios_i1_an_unsafe_restore_old_is_set_aside() {
 fn p04_ios_set_aside_is_refused_unless_the_gate_failed_on_a_conflict_and_no_pool_is_open() {
     use spartiate_lib::startup_gate::set_aside_allowed;
     assert_eq!(set_aside_allowed(Some(Err("recovery-conflict")), 0), Ok(()));
-    assert_eq!(set_aside_allowed(Some(Err("unsafe-restore-file")), 0), Ok(()));
-    assert_eq!(set_aside_allowed(Some(Err("recovery-conflict")), 1), Err("db-open"), "jamais avec une connexion ouverte");
-    for outcome in [None, Some(Ok(())), Some(Err("io")), Some(Err("no-data-dir")), Some(Err("sql-plugin")), Some(Err("recovery-failed"))] {
-        assert_eq!(set_aside_allowed(outcome, 0), Err("set-aside-refused"), "{outcome:?}");
+    assert_eq!(
+        set_aside_allowed(Some(Err("unsafe-restore-file")), 0),
+        Ok(())
+    );
+    assert_eq!(
+        set_aside_allowed(Some(Err("recovery-conflict")), 1),
+        Err("db-open"),
+        "jamais avec une connexion ouverte"
+    );
+    for outcome in [
+        None,
+        Some(Ok(())),
+        Some(Err("io")),
+        Some(Err("no-data-dir")),
+        Some(Err("sql-plugin")),
+        Some(Err("recovery-failed")),
+    ] {
+        assert_eq!(
+            set_aside_allowed(outcome, 0),
+            Err("set-aside-refused"),
+            "{outcome:?}"
+        );
     }
     // La commande vérifie la porte et les pools AVANT tout déplacement.
     let source = include_str!("../../src/startup_gate.rs");
-    let command = &source[source.find("pub async fn backup_set_aside_conflicts(").unwrap()..];
+    let command = &source[source
+        .find("pub async fn backup_set_aside_conflicts(")
+        .unwrap()..];
     let command = crate::support::sq(command);
-    let allowed = command.find(&crate::support::sq("set_aside_allowed(")).unwrap();
-    assert!(command.find(&crate::support::sq("open_sql_pools(")).unwrap() < allowed && allowed < command.find(&crate::support::sq("set_aside_conflicts(&")).unwrap());
+    let allowed = command
+        .find(&crate::support::sq("set_aside_allowed("))
+        .unwrap();
+    assert!(
+        command
+            .find(&crate::support::sq("open_sql_pools("))
+            .unwrap()
+            < allowed
+            && allowed
+                < command
+                    .find(&crate::support::sq("set_aside_conflicts(&"))
+                    .unwrap()
+    );
 }
 
 #[test]
@@ -324,15 +585,29 @@ fn p04_ios_set_aside_moves_an_abnormal_backups_entry_itself_then_recovery_succee
     fs::write(&backups, b"un fichier a la place du dossier").unwrap();
     let db = dir.path().join(DB_FILE);
     make_db(&db, Some("true"));
-    fs::write(dir.path().join(format!("{DB_FILE}.restore-old")), b"ancienne base").unwrap();
-    assert_eq!(recover_interrupted_restore(&db, &backups).unwrap_err().code, "unsafe-restore-file");
+    fs::write(
+        dir.path().join(format!("{DB_FILE}.restore-old")),
+        b"ancienne base",
+    )
+    .unwrap();
+    assert_eq!(
+        recover_interrupted_restore(&db, &backups).unwrap_err().code,
+        "unsafe-restore-file"
+    );
     let aside = set_aside_conflicts(&db, &backups, "20261009T090000Z").unwrap();
     assert_eq!(aside.moved, 1);
     assert!(!aside.fresh_base);
     let holder = dir.path().join("spartiate-set-aside-20261009T090000Z");
-    assert_eq!(fs::read(holder.join(BACKUP_DIR)).unwrap(), b"un fichier a la place du dossier", "déplacé, jamais supprimé");
+    assert_eq!(
+        fs::read(holder.join(BACKUP_DIR)).unwrap(),
+        b"un fichier a la place du dossier",
+        "déplacé, jamais supprimé"
+    );
     assert!(backups.is_dir());
-    assert_eq!(recover_interrupted_restore(&db, &backups).unwrap(), Recovery::Archived);
+    assert_eq!(
+        recover_interrupted_restore(&db, &backups).unwrap(),
+        Recovery::Archived
+    );
 }
 
 #[test]
@@ -342,15 +617,33 @@ fn p04_ios_set_aside_destination_is_created_exclusively_never_overwritten() {
     let backups = dir.path().join(BACKUP_DIR);
     let taken = backups.join("spartiate-set-aside-20261009T080000Z");
     fs::create_dir_all(&taken).unwrap();
-    fs::write(taken.join(format!("{DB_FILE}-wal")), b"mise de cote precedente").unwrap();
+    fs::write(
+        taken.join(format!("{DB_FILE}-wal")),
+        b"mise de cote precedente",
+    )
+    .unwrap();
     let db = dir.path().join(DB_FILE);
     make_db(&db, Some("true"));
-    fs::write(dir.path().join(format!("{DB_FILE}-wal.restore-old")), b"ancien wal").unwrap();
+    fs::write(
+        dir.path().join(format!("{DB_FILE}-wal.restore-old")),
+        b"ancien wal",
+    )
+    .unwrap();
     fs::write(dir.path().join(format!("{DB_FILE}-wal")), b"wal en conflit").unwrap();
-    assert_eq!(set_aside_conflicts(&db, &backups, "20261009T080000Z").map(|aside| aside.moved), Ok(1));
-    assert_eq!(fs::read(taken.join(format!("{DB_FILE}-wal"))).unwrap(), b"mise de cote precedente", "jamais écrasé");
+    assert_eq!(
+        set_aside_conflicts(&db, &backups, "20261009T080000Z").map(|aside| aside.moved),
+        Ok(1)
+    );
+    assert_eq!(
+        fs::read(taken.join(format!("{DB_FILE}-wal"))).unwrap(),
+        b"mise de cote precedente",
+        "jamais écrasé"
+    );
     let next = backups.join("spartiate-set-aside-20261009T080000Z-1");
-    assert_eq!(fs::read(next.join(format!("{DB_FILE}-wal"))).unwrap(), b"wal en conflit");
+    assert_eq!(
+        fs::read(next.join(format!("{DB_FILE}-wal"))).unwrap(),
+        b"wal en conflit"
+    );
 }
 
 #[test]
@@ -362,14 +655,30 @@ fn p04_ios_set_aside_of_an_unsafe_old_base_takes_its_journal_and_reports_a_fresh
     fs::create_dir_all(&backups).unwrap();
     let db = dir.path().join(DB_FILE);
     fs::create_dir_all(dir.path().join(format!("{DB_FILE}.restore-old"))).unwrap();
-    fs::write(dir.path().join(format!("{DB_FILE}-wal.restore-old")), b"wal de l'ancienne base").unwrap();
+    fs::write(
+        dir.path().join(format!("{DB_FILE}-wal.restore-old")),
+        b"wal de l'ancienne base",
+    )
+    .unwrap();
     let aside = set_aside_conflicts(&db, &backups, "20261009T100000Z").unwrap();
-    assert_eq!(aside.moved, 2, "le journal de l'ancienne base suit sa base : jamais remis à côté d'une autre");
-    assert!(aside.fresh_base, "l'app va créer une base neuve : le message renvoie vers « Avant restauration »");
+    assert_eq!(
+        aside.moved, 2,
+        "le journal de l'ancienne base suit sa base : jamais remis à côté d'une autre"
+    );
+    assert!(
+        aside.fresh_base,
+        "l'app va créer une base neuve : le message renvoie vers « Avant restauration »"
+    );
     let target = backups.join("spartiate-set-aside-20261009T100000Z");
-    assert_eq!(fs::read(target.join(format!("{DB_FILE}-wal.restore-old"))).unwrap(), b"wal de l'ancienne base");
+    assert_eq!(
+        fs::read(target.join(format!("{DB_FILE}-wal.restore-old"))).unwrap(),
+        b"wal de l'ancienne base"
+    );
     recover_interrupted_restore(&db, &backups).expect("plus rien d'anormal");
-    assert!(!dir.path().join(format!("{DB_FILE}-wal")).exists(), "aucun ancien journal remis");
+    assert!(
+        !dir.path().join(format!("{DB_FILE}-wal")).exists(),
+        "aucun ancien journal remis"
+    );
 }
 
 #[test]
@@ -380,20 +689,35 @@ fn p04_ios_set_aside_folders_are_purged_after_30_days() {
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
     let now = 1_791_590_400_u64; // 2026-10-10T00:00:00Z
-    let old = backups.join(format!("spartiate-set-aside-{}", utc_stamp(now - 31 * 86_400)));
-    let old_suffixed = dir.path().join(format!("spartiate-set-aside-{}-1", utc_stamp(now - 40 * 86_400)));
-    let recent = backups.join(format!("spartiate-set-aside-{}", utc_stamp(now - 29 * 86_400)));
+    let old = backups.join(format!(
+        "spartiate-set-aside-{}",
+        utc_stamp(now - 31 * 86_400)
+    ));
+    let old_suffixed = dir.path().join(format!(
+        "spartiate-set-aside-{}-1",
+        utc_stamp(now - 40 * 86_400)
+    ));
+    let recent = backups.join(format!(
+        "spartiate-set-aside-{}",
+        utc_stamp(now - 29 * 86_400)
+    ));
     for folder in [&old, &old_suffixed, &recent] {
         fs::create_dir_all(folder).unwrap();
         fs::write(folder.join("x"), b"x").unwrap();
     }
-    let not_a_folder = backups.join(format!("spartiate-set-aside-{}", utc_stamp(now - 90 * 86_400)));
+    let not_a_folder = backups.join(format!(
+        "spartiate-set-aside-{}",
+        utc_stamp(now - 90 * 86_400)
+    ));
     fs::write(&not_a_folder, b"fichier").unwrap();
     let odd = backups.join("spartiate-set-aside-pas-une-date");
     fs::create_dir_all(&odd).unwrap();
     assert_eq!(purge_set_aside(dir.path(), now), 2);
     assert!(!old.exists() && !old_suffixed.exists());
-    assert!(recent.is_dir() && not_a_folder.is_file() && odd.is_dir(), "seuls les dossiers datés de plus de 30 jours");
+    assert!(
+        recent.is_dir() && not_a_folder.is_file() && odd.is_dir(),
+        "seuls les dossiers datés de plus de 30 jours"
+    );
     // Purge faite au démarrage, après une récupération réussie.
     let source = include_str!("../../src/startup_gate.rs");
     let settle = &source[source.find("pub fn recover_and_settle(").unwrap()..];
@@ -409,9 +733,25 @@ fn p04_ios_i2_marker_retry_revalidates_the_name_and_reports_its_outcome() {
     let backups = dir.path().join(BACKUP_DIR);
     fs::create_dir_all(&backups).unwrap();
     make_db(&backups.join("spartiate-daily-20261007.db"), None);
-    assert_eq!(write_marker_for(dir.path(), "../spartiate.db", 1_791_446_400), MarkerWriteOutcome { marker: "failed", code: Some("bad-name") });
-    assert_eq!(write_marker_for(dir.path(), "spartiate-daily-20261001.db", 1_791_446_400).marker, "failed", "sauvegarde absente");
-    assert_eq!(write_marker_for(dir.path(), "spartiate-daily-20261007.db", 1_791_446_400), MarkerWriteOutcome { marker: "not-configured", code: None });
+    assert_eq!(
+        write_marker_for(dir.path(), "../spartiate.db", 1_791_446_400),
+        MarkerWriteOutcome {
+            marker: "failed",
+            code: Some("bad-name")
+        }
+    );
+    assert_eq!(
+        write_marker_for(dir.path(), "spartiate-daily-20261001.db", 1_791_446_400).marker,
+        "failed",
+        "sauvegarde absente"
+    );
+    assert_eq!(
+        write_marker_for(dir.path(), "spartiate-daily-20261007.db", 1_791_446_400),
+        MarkerWriteOutcome {
+            marker: "not-configured",
+            code: None
+        }
+    );
 }
 
 // --- revue : marqueur provisoire écrit AVANT l'échange, retiré si l'échange échoue ---
@@ -444,19 +784,46 @@ fn p04_ios_marker_is_written_before_the_swap_and_undone_when_the_swap_fails() {
         }
         Ok(())
     };
-    assert!(restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &failing).is_err());
+    assert!(restore_with_provisional_marker(
+        dir.path(),
+        "spartiate-daily-20261007.db",
+        "20261008T080000Z",
+        1_791_446_400,
+        &failing
+    )
+    .is_err());
     assert!(*seen.lock().unwrap(), "marqueur écrit avant l'échange");
     assert!(!marker.exists(), "marqueur provisoire retiré après l'échec");
     // Un marqueur d'une restauration précédente (choix pas encore fait) est remis tel quel.
-    fs::write(&marker, br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#).unwrap();
+    fs::write(
+        &marker,
+        br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#,
+    )
+    .unwrap();
     let before = fs::read(&marker).unwrap();
-    assert!(restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080001Z", 1_791_446_401, &failing).is_err());
+    assert!(restore_with_provisional_marker(
+        dir.path(),
+        "spartiate-daily-20261007.db",
+        "20261008T080001Z",
+        1_791_446_401,
+        &failing
+    )
+    .is_err());
     assert_eq!(fs::read(&marker).unwrap(), before);
     // Échange abouti : marqueur écrit, issue « written ».
-    let (outcome, pending) = restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080002Z", 1_791_446_402, NO_FAIL).unwrap();
+    let (outcome, pending) = restore_with_provisional_marker(
+        dir.path(),
+        "spartiate-daily-20261007.db",
+        "20261008T080002Z",
+        1_791_446_402,
+        NO_FAIL,
+    )
+    .unwrap();
     assert_eq!(outcome.marker, "written");
     assert!(pending.is_none());
-    assert!(fs::read_to_string(&marker).unwrap().contains("spartiate-daily-20261007.db"));
+    assert!(fs::read_to_string(&marker)
+        .unwrap()
+        .contains("spartiate-daily-20261007.db"));
 }
 
 #[test]
@@ -471,15 +838,34 @@ fn p04_ios_11_unreadable_current_base_writes_true_with_valid_device_and_clock() 
     fs::write(&broken, b"pas une base").unwrap();
     carry_app_lock(&broken, &staged).unwrap();
     let conn = Connection::open(&staged).unwrap();
-    let row: (String, String, String) = conn.query_row("SELECT value, device_id, hlc FROM settings WHERE key = ?1", [APP_LOCK_SETTING_KEY], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?))).unwrap();
-    assert_eq!(row, ("true".into(), "60000000-0000-4000-8000-0000000000aa".into(), "0001791446400000-0000-60000000".into()));
+    let row: (String, String, String) = conn
+        .query_row(
+            "SELECT value, device_id, hlc FROM settings WHERE key = ?1",
+            [APP_LOCK_SETTING_KEY],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+        )
+        .unwrap();
+    assert_eq!(
+        row,
+        (
+            "true".into(),
+            "60000000-0000-4000-8000-0000000000aa".into(),
+            "0001791446400000-0000-60000000".into()
+        )
+    );
 }
 
 // --- revue du lot F : marqueur provisoire, fermeture forcée à chaque étape ---
 
 /// Restauration arrêtée net (panic) au point `stop`, avec un dossier de synchro configuré et, si `previous`, un marqueur d'une restauration
 /// précédente ; puis démarrage : récupération et règlement du marqueur. Rend le marqueur lu après le démarrage.
-fn crash_then_start(stop: RestoreStep, previous: bool) -> (Option<spartiate_lib::sync::marker::RestoreMarker>, tempfile::TempDir) {
+fn crash_then_start(
+    stop: RestoreStep,
+    previous: bool,
+) -> (
+    Option<spartiate_lib::sync::marker::RestoreMarker>,
+    tempfile::TempDir,
+) {
     use spartiate_lib::startup_gate::{recover_and_settle, restore_with_provisional_marker};
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
@@ -488,7 +874,11 @@ fn crash_then_start(stop: RestoreStep, previous: bool) -> (Option<spartiate_lib:
     make_db(&dir.path().join(DB_FILE), Some("true"));
     sync_configured(dir.path());
     if previous {
-        fs::write(dir.path().join(spartiate_lib::sync::marker::MARKER_FILE), br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#).unwrap();
+        fs::write(
+            dir.path().join(spartiate_lib::sync::marker::MARKER_FILE),
+            br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#,
+        )
+        .unwrap();
     }
     let hook = move |step: RestoreStep| -> std::io::Result<()> {
         if step == stop {
@@ -496,7 +886,15 @@ fn crash_then_start(stop: RestoreStep, previous: bool) -> (Option<spartiate_lib:
         }
         Ok(())
     };
-    let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook)));
+    let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        restore_with_provisional_marker(
+            dir.path(),
+            "spartiate-daily-20261007.db",
+            "20261008T080000Z",
+            1_791_446_400,
+            &hook,
+        )
+    }));
     assert!(crashed.is_err(), "arrêt simulé");
     // Journal global : `recover_and_settle` y verse `provisional-marker-settled` ; sans le verrou, cette entrée tombait dans le journal
     // redirigé par le test « base illisible » (ligne ~752), rouge une fois sur deux (constaté le 2026-10-17, relecture de Y-TECH-03).
@@ -510,11 +908,17 @@ fn p04_ios_provisional_marker_is_settled_after_a_forced_stop_at_each_step() {
     // Fichier préparé seulement (la version n'a jamais été en place) : aucun marqueur, la base d'avant reste.
     let (marker, dir) = crash_then_start(RestoreStep::Staged, false);
     assert_eq!(marker, None);
-    assert_eq!(lock_value(&dir.path().join(DB_FILE)).as_deref(), Some("true"));
+    assert_eq!(
+        lock_value(&dir.path().join(DB_FILE)).as_deref(),
+        Some("true")
+    );
     // Ancienne base déplacée, nouvelle pas en place : ancienne remise (PutBack), aucun marqueur.
     let (marker, dir) = crash_then_start(RestoreStep::OldMoved, false);
     assert_eq!(marker, None);
-    assert_eq!(lock_value(&dir.path().join(DB_FILE)).as_deref(), Some("true"));
+    assert_eq!(
+        lock_value(&dir.path().join(DB_FILE)).as_deref(),
+        Some("true")
+    );
     // Version en place (Archived au démarrage) : marqueur confirmé, la fenêtre de choix complète est due.
     let (marker, _dir) = crash_then_start(RestoreStep::Swapped, false);
     let marker = marker.expect("marqueur");
@@ -529,10 +933,16 @@ fn p04_ios_provisional_marker_restores_the_previous_pending_marker_when_the_vers
         let marker = marker.expect("marqueur d'avant remis");
         assert_eq!(marker.backup, "ancien", "{stop:?}");
         assert!(!marker.provisional);
-        assert!(!dir.path().join(spartiate_lib::startup_gate::PREVIOUS_MARKER_FILE).exists());
+        assert!(!dir
+            .path()
+            .join(spartiate_lib::startup_gate::PREVIOUS_MARKER_FILE)
+            .exists());
     }
     let (marker, _dir) = crash_then_start(RestoreStep::Swapped, true);
-    assert_eq!(marker.expect("nouveau").backup, "spartiate-daily-20261007.db");
+    assert_eq!(
+        marker.expect("nouveau").backup,
+        "spartiate-daily-20261007.db"
+    );
 }
 
 // --- P-04-iOS : issue distincte `StagedRemoved`, marqueur annulé ou confirmé selon CHAQUE point d'arrêt ---
@@ -553,19 +963,35 @@ fn crashed_at(stop: Option<RestoreStep>) -> tempfile::TempDir {
             }
             Ok(())
         };
-        let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook)));
+        let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            restore_with_provisional_marker(
+                dir.path(),
+                "spartiate-daily-20261007.db",
+                "20261008T080000Z",
+                1_791_446_400,
+                &hook,
+            )
+        }));
         assert!(crashed.is_err(), "arrêt simulé");
     }
     dir
 }
 
 /// Démarrage : récupération puis règlement du marqueur ; rend l'issue de la récupération et le marqueur lu ensuite.
-fn start(dir: &Path) -> (spartiate_lib::backup::Recovery, Option<spartiate_lib::sync::marker::RestoreMarker>) {
+fn start(
+    dir: &Path,
+) -> (
+    spartiate_lib::backup::Recovery,
+    Option<spartiate_lib::sync::marker::RestoreMarker>,
+) {
     // Chemin de production : `recover_and_settle` (récupération, puis règlement du marqueur d'après la base en place).
     // Verrou du journal global : même raison que dans `crash_then_start`.
     let _log_dir = crate::support::applog_dir_lock();
     let recovery = spartiate_lib::startup_gate::recover_and_settle(dir);
-    (recovery.expect("récupération"), spartiate_lib::sync::marker::read(dir).unwrap())
+    (
+        recovery.expect("récupération"),
+        spartiate_lib::sync::marker::read(dir).unwrap(),
+    )
 }
 
 #[test]
@@ -579,10 +1005,16 @@ fn p04_ios_marker_before_staged_there_is_no_marker_and_nothing_to_recover() {
 fn p04_ios_marker_staged_to_first_rename_reports_staged_removed_and_cancels_the_marker() {
     use spartiate_lib::backup::Recovery;
     let dir = crashed_at(Some(RestoreStep::Staged));
-    assert!(spartiate_lib::sync::marker::is_provisional(dir.path()), "marqueur provisoire écrit au point Staged");
+    assert!(
+        spartiate_lib::sync::marker::is_provisional(dir.path()),
+        "marqueur provisoire écrit au point Staged"
+    );
     assert!(dir.path().join("spartiate.db.restoring").is_file());
     assert_eq!(start(dir.path()), (Recovery::StagedRemoved, None));
-    assert_eq!(lock_value(&dir.path().join(DB_FILE)).as_deref(), Some("true"));
+    assert_eq!(
+        lock_value(&dir.path().join(DB_FILE)).as_deref(),
+        Some("true")
+    );
 }
 
 #[test]
@@ -591,7 +1023,10 @@ fn p04_ios_marker_during_the_renames_with_the_database_missing_is_put_back_and_c
     let dir = crashed_at(Some(RestoreStep::OldMoved));
     assert!(!dir.path().join(DB_FILE).exists());
     assert_eq!(start(dir.path()), (Recovery::PutBack, None));
-    assert_eq!(lock_value(&dir.path().join(DB_FILE)).as_deref(), Some("true"));
+    assert_eq!(
+        lock_value(&dir.path().join(DB_FILE)).as_deref(),
+        Some("true")
+    );
 }
 
 #[test]
@@ -610,13 +1045,27 @@ fn p04_ios_marker_after_the_swap_without_restore_old_is_nothing_and_still_confir
     // Triple échec : confirmation au point Swapped, nouvel essai, puis relance à froid. Les `.restore-old` ont déjà été retirés, la
     // version restaurée est en place, et le marqueur est resté provisoire.
     let dir = crashed_at(Some(RestoreStep::Swapped));
-    for name in ["spartiate.db.restore-old", "spartiate.db-wal.restore-old", "spartiate.db-shm.restore-old"] {
+    for name in [
+        "spartiate.db.restore-old",
+        "spartiate.db-wal.restore-old",
+        "spartiate.db-shm.restore-old",
+    ] {
         let _ = fs::remove_file(dir.path().join(name));
     }
     assert!(!dir.path().join("spartiate.db.restore-old").exists());
     // Le point Swapped a confirmé le marqueur avant l'arrêt : on le remet provisoire, comme si la confirmation avait échoué.
-    let token = spartiate_lib::backup::database_token(&dir.path().join(DB_FILE)).unwrap().expect("la base en place porte le jeton de la restauration");
-    spartiate_lib::backup::write_provisional_marker(dir.path(), &dir.path().join(BACKUP_DIR), "spartiate-daily-20261007.db", 1_791_446_400, APP_SCHEMA_VERSION, token).unwrap();
+    let token = spartiate_lib::backup::database_token(&dir.path().join(DB_FILE))
+        .unwrap()
+        .expect("la base en place porte le jeton de la restauration");
+    spartiate_lib::backup::write_provisional_marker(
+        dir.path(),
+        &dir.path().join(BACKUP_DIR),
+        "spartiate-daily-20261007.db",
+        1_791_446_400,
+        APP_SCHEMA_VERSION,
+        token,
+    )
+    .unwrap();
     assert!(spartiate_lib::sync::marker::is_provisional(dir.path()));
     let (recovery, marker) = start(dir.path());
     assert_eq!(recovery, spartiate_lib::backup::Recovery::Nothing);
@@ -627,7 +1076,11 @@ fn p04_ios_marker_after_the_swap_without_restore_old_is_nothing_and_still_confir
 
 /// Arrêt au point `stop` avec un marqueur d'avant en attente, puis démarrage dont l'ANNULATION du marqueur échoue (le fichier temporaire du
 /// marqueur est occupé par un dossier). La preuve doit rester ; le démarrage suivant, sans le blocage, annule toujours et ne confirme jamais.
-fn cancellation_fails_then_next_launch_cancels(stop: RestoreStep, evidence: &str, expected: spartiate_lib::backup::Recovery) {
+fn cancellation_fails_then_next_launch_cancels(
+    stop: RestoreStep,
+    evidence: &str,
+    expected: spartiate_lib::backup::Recovery,
+) {
     use spartiate_lib::startup_gate::recover_and_settle;
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
@@ -636,14 +1089,26 @@ fn cancellation_fails_then_next_launch_cancels(stop: RestoreStep, evidence: &str
     make_db(&dir.path().join(DB_FILE), Some("true"));
     sync_configured(dir.path());
     let marker_path = dir.path().join(spartiate_lib::sync::marker::MARKER_FILE);
-    fs::write(&marker_path, br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#).unwrap();
+    fs::write(
+        &marker_path,
+        br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#,
+    )
+    .unwrap();
     let hook = move |step: RestoreStep| -> std::io::Result<()> {
         if step == stop {
             panic!("arrêt forcé");
         }
         Ok(())
     };
-    let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| spartiate_lib::startup_gate::restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook)));
+    let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        spartiate_lib::startup_gate::restore_with_provisional_marker(
+            dir.path(),
+            "spartiate-daily-20261007.db",
+            "20261008T080000Z",
+            1_791_446_400,
+            &hook,
+        )
+    }));
     assert!(crashed.is_err());
     assert!(spartiate_lib::sync::marker::is_provisional(dir.path()));
     let mut blocker = marker_path.as_os_str().to_owned();
@@ -654,32 +1119,56 @@ fn cancellation_fails_then_next_launch_cancels(stop: RestoreStep, evidence: &str
     let _log_dir = crate::support::applog_dir_lock();
     // Annulation impossible : la récupération n'est PAS bloquée (la preuve disparaît), le marqueur reste provisoire (jamais confirmé).
     assert_eq!(recover_and_settle(dir.path()).unwrap(), expected);
-    assert!(!dir.path().join(evidence).exists(), "la récupération a eu lieu : {evidence} n'est plus là");
+    assert!(
+        !dir.path().join(evidence).exists(),
+        "la récupération a eu lieu : {evidence} n'est plus là"
+    );
     assert!(spartiate_lib::sync::marker::is_provisional(dir.path()));
     // Sans preuve (le démarrage suivant voit `Nothing`), le jeton de la base en place décide encore : toujours pas confirmé.
-    assert_eq!(recover_and_settle(dir.path()).unwrap(), spartiate_lib::backup::Recovery::Nothing);
+    assert_eq!(
+        recover_and_settle(dir.path()).unwrap(),
+        spartiate_lib::backup::Recovery::Nothing
+    );
     assert!(spartiate_lib::sync::marker::is_provisional(dir.path()));
     // Le blocage disparaît : le démarrage suivant annule (marqueur d'avant remis), il ne confirme jamais.
     fs::remove_dir(&blocker).unwrap();
-    assert_eq!(recover_and_settle(dir.path()).unwrap(), spartiate_lib::backup::Recovery::Nothing);
-    let marker = spartiate_lib::sync::marker::read(dir.path()).unwrap().expect("marqueur d'avant");
+    assert_eq!(
+        recover_and_settle(dir.path()).unwrap(),
+        spartiate_lib::backup::Recovery::Nothing
+    );
+    let marker = spartiate_lib::sync::marker::read(dir.path())
+        .unwrap()
+        .expect("marqueur d'avant");
     assert_eq!(marker.backup, "ancien");
     assert!(!marker.provisional);
-    assert_eq!(lock_value(&dir.path().join(DB_FILE)).as_deref(), Some("true"));
+    assert_eq!(
+        lock_value(&dir.path().join(DB_FILE)).as_deref(),
+        Some("true")
+    );
 }
 
 #[test]
 fn p04_ios_marker_cancellation_failure_after_staged_never_confirms_even_without_the_staged_file() {
-    cancellation_fails_then_next_launch_cancels(RestoreStep::Staged, "spartiate.db.restoring", spartiate_lib::backup::Recovery::StagedRemoved);
+    cancellation_fails_then_next_launch_cancels(
+        RestoreStep::Staged,
+        "spartiate.db.restoring",
+        spartiate_lib::backup::Recovery::StagedRemoved,
+    );
 }
 
 #[test]
-fn p04_ios_marker_cancellation_failure_before_put_back_never_confirms_even_without_the_restore_old() {
-    cancellation_fails_then_next_launch_cancels(RestoreStep::OldMoved, "spartiate.db.restore-old", spartiate_lib::backup::Recovery::PutBack);
+fn p04_ios_marker_cancellation_failure_before_put_back_never_confirms_even_without_the_restore_old()
+{
+    cancellation_fails_then_next_launch_cancels(
+        RestoreStep::OldMoved,
+        "spartiate.db.restore-old",
+        spartiate_lib::backup::Recovery::PutBack,
+    );
 }
 
 #[test]
-fn p04_ios_marker_clean_swap_failure_with_blocked_undo_is_never_confirmed_and_blocks_a_new_restore() {
+fn p04_ios_marker_clean_swap_failure_with_blocked_undo_is_never_confirmed_and_blocks_a_new_restore()
+{
     use spartiate_lib::startup_gate::{restore_with_provisional_marker, PREVIOUS_MARKER_FILE};
     let dir = scratch();
     let backups = dir.path().join(BACKUP_DIR);
@@ -688,7 +1177,11 @@ fn p04_ios_marker_clean_swap_failure_with_blocked_undo_is_never_confirmed_and_bl
     make_db(&dir.path().join(DB_FILE), Some("true"));
     sync_configured(dir.path());
     let marker_path = dir.path().join(spartiate_lib::sync::marker::MARKER_FILE);
-    fs::write(&marker_path, br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#).unwrap();
+    fs::write(
+        &marker_path,
+        br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#,
+    )
+    .unwrap();
     let mut blocker = marker_path.as_os_str().to_owned();
     blocker.push(spartiate_lib::sync::names::TEMP_SUFFIX);
     let blocker = std::path::PathBuf::from(blocker);
@@ -702,16 +1195,45 @@ fn p04_ios_marker_clean_swap_failure_with_blocked_undo_is_never_confirmed_and_bl
             RestoreStep::Swapped => Ok(()),
         }
     };
-    let error = restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook).unwrap_err();
+    let error = restore_with_provisional_marker(
+        dir.path(),
+        "spartiate-daily-20261007.db",
+        "20261008T080000Z",
+        1_791_446_400,
+        &hook,
+    )
+    .unwrap_err();
     assert_eq!(error.code, "io");
-    assert!(spartiate_lib::sync::marker::is_provisional(dir.path()), "annulation impossible : le marqueur reste provisoire");
-    assert!(!dir.path().join("spartiate.db.restoring").exists() && !dir.path().join("spartiate.db.restore-old").exists(), "aucune preuve");
-    assert_eq!(lock_value(&dir.path().join(DB_FILE)).as_deref(), Some("true"), "l'ancienne base est en place");
-    let previous = fs::read(dir.path().join(PREVIOUS_MARKER_FILE)).expect("le marqueur d'avant est gardé");
+    assert!(
+        spartiate_lib::sync::marker::is_provisional(dir.path()),
+        "annulation impossible : le marqueur reste provisoire"
+    );
+    assert!(
+        !dir.path().join("spartiate.db.restoring").exists()
+            && !dir.path().join("spartiate.db.restore-old").exists(),
+        "aucune preuve"
+    );
+    assert_eq!(
+        lock_value(&dir.path().join(DB_FILE)).as_deref(),
+        Some("true"),
+        "l'ancienne base est en place"
+    );
+    let previous =
+        fs::read(dir.path().join(PREVIOUS_MARKER_FILE)).expect("le marqueur d'avant est gardé");
     // Une nouvelle restauration est refusée tant que le marqueur est provisoire : le marqueur d'avant n'est pas écrasé.
-    let refused = restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080001Z", 1_791_446_401, &|_| Ok(())).unwrap_err();
+    let refused = restore_with_provisional_marker(
+        dir.path(),
+        "spartiate-daily-20261007.db",
+        "20261008T080001Z",
+        1_791_446_401,
+        &|_| Ok(()),
+    )
+    .unwrap_err();
     assert_eq!(refused.code, "restore-unconfirmed");
-    assert_eq!(fs::read(dir.path().join(PREVIOUS_MARKER_FILE)).unwrap(), previous);
+    assert_eq!(
+        fs::read(dir.path().join(PREVIOUS_MARKER_FILE)).unwrap(),
+        previous
+    );
     // Démarrage avec le blocage encore là : pas de confirmation (la base en place ne porte pas le jeton).
     let (_, marker) = start(dir.path());
     assert!(marker.expect("marqueur").provisional);
@@ -732,22 +1254,57 @@ fn p04_ios_marker_provisional_without_a_matching_token_is_cancelled_whatever_the
         let dir = crashed_at(None);
         let backups = dir.path().join(BACKUP_DIR);
         match token {
-            None => assert!(write_restore_marker_as(dir.path(), &backups, "spartiate-daily-20261007.db", 1_791_446_400, APP_SCHEMA_VERSION, true).unwrap()),
-            Some(token) => assert!(spartiate_lib::backup::write_provisional_marker(dir.path(), &backups, "spartiate-daily-20261007.db", 1_791_446_400, APP_SCHEMA_VERSION, token).unwrap()),
+            None => assert!(write_restore_marker_as(
+                dir.path(),
+                &backups,
+                "spartiate-daily-20261007.db",
+                1_791_446_400,
+                APP_SCHEMA_VERSION,
+                true
+            )
+            .unwrap()),
+            Some(token) => assert!(spartiate_lib::backup::write_provisional_marker(
+                dir.path(),
+                &backups,
+                "spartiate-daily-20261007.db",
+                1_791_446_400,
+                APP_SCHEMA_VERSION,
+                token
+            )
+            .unwrap()),
         }
-        assert_eq!(start(dir.path()), (spartiate_lib::backup::Recovery::Nothing, None), "{token:?}");
+        assert_eq!(
+            start(dir.path()),
+            (spartiate_lib::backup::Recovery::Nothing, None),
+            "{token:?}"
+        );
     }
 }
 
 #[test]
-fn p04_ios_marker_with_an_unreadable_database_in_place_stays_provisional_and_blocks_a_new_restore() {
+fn p04_ios_marker_with_an_unreadable_database_in_place_stays_provisional_and_blocks_a_new_restore()
+{
     use spartiate_lib::startup_gate::{recover_and_settle, restore_with_provisional_marker};
     let dir = crashed_at(Some(RestoreStep::Swapped));
-    let token = spartiate_lib::backup::database_token(&dir.path().join(DB_FILE)).unwrap().expect("jeton");
-    for name in ["spartiate.db.restore-old", "spartiate.db-wal.restore-old", "spartiate.db-shm.restore-old"] {
+    let token = spartiate_lib::backup::database_token(&dir.path().join(DB_FILE))
+        .unwrap()
+        .expect("jeton");
+    for name in [
+        "spartiate.db.restore-old",
+        "spartiate.db-wal.restore-old",
+        "spartiate.db-shm.restore-old",
+    ] {
         let _ = fs::remove_file(dir.path().join(name));
     }
-    spartiate_lib::backup::write_provisional_marker(dir.path(), &dir.path().join(BACKUP_DIR), "spartiate-daily-20261007.db", 1_791_446_400, APP_SCHEMA_VERSION, token).unwrap();
+    spartiate_lib::backup::write_provisional_marker(
+        dir.path(),
+        &dir.path().join(BACKUP_DIR),
+        "spartiate-daily-20261007.db",
+        1_791_446_400,
+        APP_SCHEMA_VERSION,
+        token,
+    )
+    .unwrap();
     // Un dossier à la place du fichier : la base est « là » mais illisible. Ni confirmation ni annulation.
     let db = dir.path().join(DB_FILE);
     let aside = dir.path().join("base-mise-de-cote");
@@ -760,12 +1317,35 @@ fn p04_ios_marker_with_an_unreadable_database_in_place_stays_provisional_and_blo
     let _log_dir = crate::support::applog_dir_lock();
     let logs = dir.path().join("logs");
     spartiate_lib::applog::init(logs.clone());
-    assert_eq!(recover_and_settle(dir.path()).expect("la récupération elle-même aboutit"), spartiate_lib::backup::Recovery::Nothing);
+    assert_eq!(
+        recover_and_settle(dir.path()).expect("la récupération elle-même aboutit"),
+        spartiate_lib::backup::Recovery::Nothing
+    );
     let logged = spartiate_lib::applog::read_entries(&logs, 500).unwrap();
-    assert!(logged.iter().any(|e| e.scope == "backup-recovery" && e.code == "provisional-marker-db-unreadable"), "{logged:?}");
-    assert!(!logged.iter().any(|e| e.code == "provisional-marker-settled"), "ni confirmé ni annulé");
-    assert!(spartiate_lib::sync::marker::is_provisional(dir.path()), "ni annulé ni confirmé");
-    let refused = restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080001Z", 1_791_446_401, &|_| Ok(())).unwrap_err();
+    assert!(
+        logged
+            .iter()
+            .any(|e| e.scope == "backup-recovery" && e.code == "provisional-marker-db-unreadable"),
+        "{logged:?}"
+    );
+    assert!(
+        !logged
+            .iter()
+            .any(|e| e.code == "provisional-marker-settled"),
+        "ni confirmé ni annulé"
+    );
+    assert!(
+        spartiate_lib::sync::marker::is_provisional(dir.path()),
+        "ni annulé ni confirmé"
+    );
+    let refused = restore_with_provisional_marker(
+        dir.path(),
+        "spartiate-daily-20261007.db",
+        "20261008T080001Z",
+        1_791_446_401,
+        &|_| Ok(()),
+    )
+    .unwrap_err();
     assert_eq!(refused.code, "restore-unconfirmed");
     assert!(spartiate_lib::sync::marker::is_provisional(dir.path()));
     // La base redevient lisible : la décision est reprise, la restauration a bien eu lieu -> confirmée.
@@ -786,11 +1366,24 @@ fn p04_ios_restore_stamps_a_fresh_token_that_the_database_in_place_carries() {
     fs::create_dir_all(&backups).unwrap();
     make_db(&backups.join("spartiate-daily-20261007.db"), None);
     make_db(&dir.path().join(DB_FILE), None);
-    assert_eq!(spartiate_lib::backup::database_token(&dir.path().join(DB_FILE)).unwrap(), None);
+    assert_eq!(
+        spartiate_lib::backup::database_token(&dir.path().join(DB_FILE)).unwrap(),
+        None
+    );
     let mut seen = Vec::new();
     for n in 0..3 {
-        restore_backup_file(&dir.path().join(DB_FILE), &backups, "spartiate-daily-20261007.db", APP_SCHEMA_VERSION, &format!("20261008T08000{n}Z"), &|_| Ok(())).unwrap();
-        let token = spartiate_lib::backup::database_token(&dir.path().join(DB_FILE)).unwrap().expect("jeton");
+        restore_backup_file(
+            &dir.path().join(DB_FILE),
+            &backups,
+            "spartiate-daily-20261007.db",
+            APP_SCHEMA_VERSION,
+            &format!("20261008T08000{n}Z"),
+            &|_| Ok(()),
+        )
+        .unwrap();
+        let token = spartiate_lib::backup::database_token(&dir.path().join(DB_FILE))
+            .unwrap()
+            .expect("jeton");
         assert!(!seen.contains(&token), "chaque restauration a son jeton");
         seen.push(token);
     }
@@ -805,14 +1398,26 @@ fn p04_ios_marker_staged_removed_puts_back_the_previous_pending_marker() {
     make_db(&backups.join("spartiate-daily-20261007.db"), None);
     make_db(&dir.path().join(DB_FILE), None);
     sync_configured(dir.path());
-    fs::write(dir.path().join(spartiate_lib::sync::marker::MARKER_FILE), br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#).unwrap();
+    fs::write(
+        dir.path().join(spartiate_lib::sync::marker::MARKER_FILE),
+        br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#,
+    )
+    .unwrap();
     let hook = |step: RestoreStep| -> std::io::Result<()> {
         if step == RestoreStep::Staged {
             panic!("arrêt forcé");
         }
         Ok(())
     };
-    let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| spartiate_lib::startup_gate::restore_with_provisional_marker(dir.path(), "spartiate-daily-20261007.db", "20261008T080000Z", 1_791_446_400, &hook)));
+    let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        spartiate_lib::startup_gate::restore_with_provisional_marker(
+            dir.path(),
+            "spartiate-daily-20261007.db",
+            "20261008T080000Z",
+            1_791_446_400,
+            &hook,
+        )
+    }));
     assert!(crashed.is_err());
     let (recovery, marker) = start(dir.path());
     assert_eq!(recovery, Recovery::StagedRemoved);
@@ -832,37 +1437,81 @@ fn i06_update_restore_is_a_local_rollback_without_any_sync_marker() {
     make_db(&backups.join(name), None);
     make_db(&backups.join("spartiate-daily-20261007.db"), None);
     make_db(&dir.path().join(DB_FILE), None);
-    Connection::open(dir.path().join(DB_FILE)).unwrap().execute("INSERT INTO task (title) VALUES ('après la migration ratée')", []).unwrap();
+    Connection::open(dir.path().join(DB_FILE))
+        .unwrap()
+        .execute(
+            "INSERT INTO task (title) VALUES ('après la migration ratée')",
+            [],
+        )
+        .unwrap();
     sync_configured(dir.path());
     let marker = dir.path().join(MARKER_FILE);
     // Seule une sauvegarde d'avant mise à jour : une quotidienne garde le chemin P-04 (marqueur, choix de la synchro).
-    assert_eq!(restore_local_rollback(dir.path(), "spartiate-daily-20261007.db", "20261009T090000Z", NO_FAIL).unwrap_err().code, "bad-name");
-    let outcome = restore_local_rollback(dir.path(), name, "20261009T090001Z", NO_FAIL).expect("retour arrière");
+    assert_eq!(
+        restore_local_rollback(
+            dir.path(),
+            "spartiate-daily-20261007.db",
+            "20261009T090000Z",
+            NO_FAIL
+        )
+        .unwrap_err()
+        .code,
+        "bad-name"
+    );
+    let outcome = restore_local_rollback(dir.path(), name, "20261009T090001Z", NO_FAIL)
+        .expect("retour arrière");
     assert_eq!(outcome.marker, "skipped");
-    assert!(outcome.safety_copy.is_some(), "copie de sécurité de la base actuelle");
-    assert!(!marker.exists(), "aucun marqueur : pas de fenêtre « Appliquer partout »");
-    let count: i64 = Connection::open(dir.path().join(DB_FILE)).unwrap().query_row("SELECT COUNT(*) FROM task", [], |r| r.get(0)).unwrap();
+    assert!(
+        outcome.safety_copy.is_some(),
+        "copie de sécurité de la base actuelle"
+    );
+    assert!(
+        !marker.exists(),
+        "aucun marqueur : pas de fenêtre « Appliquer partout »"
+    );
+    let count: i64 = Connection::open(dir.path().join(DB_FILE))
+        .unwrap()
+        .query_row("SELECT COUNT(*) FROM task", [], |r| r.get(0))
+        .unwrap();
     assert_eq!(count, 0, "données d'avant la mise à jour");
     // Un marqueur d'une restauration P-04 précédente (choix pas encore fait) n'est jamais touché.
-    fs::write(&marker, br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#).unwrap();
+    fs::write(
+        &marker,
+        br#"{"v":1,"backup":"ancien","backupTakenAt":"x","restoredAt":"y","schemaVersion":17}"#,
+    )
+    .unwrap();
     let before = fs::read(&marker).unwrap();
-    restore_local_rollback(dir.path(), name, "20261009T090002Z", NO_FAIL).expect("second retour arrière");
+    restore_local_rollback(dir.path(), name, "20261009T090002Z", NO_FAIL)
+        .expect("second retour arrière");
     assert_eq!(fs::read(&marker).unwrap(), before);
 }
 
 /// Sous-processus de la preuve A9 : exit sans Drop, après le vrai COMMIT SQLite et avant tout afterApply.
 #[test]
 fn i06_a9_child_exits_after_committed_schema_19() {
-    let Some(path) = std::env::var_os("CT_A9_CRASH_DATABASE") else { return; };
+    let Some(path) = std::env::var_os("CT_A9_CRASH_DATABASE") else {
+        return;
+    };
     let conn = Connection::open(path).unwrap();
     conn.pragma_update(None, "journal_mode", "WAL").unwrap();
     conn.pragma_update(None, "wal_autocheckpoint", 0).unwrap();
     conn.execute_batch("BEGIN IMMEDIATE").unwrap();
     let source = include_str!("../../../src/db/migrations/0019_epoch_carry_report.ts");
-    let sql = source.lines().find(|line| line.trim_start().starts_with("\"CREATE TABLE epoch_carry_report")).unwrap()
-        .trim().strip_prefix('"').unwrap().strip_suffix("\",").unwrap();
+    let sql = source
+        .lines()
+        .find(|line| {
+            line.trim_start()
+                .starts_with("\"CREATE TABLE epoch_carry_report")
+        })
+        .unwrap()
+        .trim()
+        .strip_prefix('"')
+        .unwrap()
+        .strip_suffix("\",")
+        .unwrap();
     conn.execute(sql, []).unwrap();
-    conn.execute("INSERT INTO schema_migrations VALUES (19)", []).unwrap();
+    conn.execute("INSERT INTO schema_migrations VALUES (19)", [])
+        .unwrap();
     conn.execute_batch("COMMIT").unwrap();
     // Le fichier WAL reste récupérable par SQLite ; pas de fermeture propre ni d'exécution du traitement final.
     std::process::exit(83);
@@ -880,22 +1529,49 @@ fn i06_a9_committed_19_survives_process_exit_and_native_rollback_recovers_18() {
     make_db(&database, Some("true"));
     {
         let conn = Connection::open(&database).unwrap();
-        conn.execute("UPDATE schema_migrations SET version = 18", []).unwrap();
-        conn.execute("INSERT INTO task (title) VALUES ('A9 conserver cette tâche')", []).unwrap();
-        conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE)").unwrap();
+        conn.execute("UPDATE schema_migrations SET version = 18", [])
+            .unwrap();
+        conn.execute(
+            "INSERT INTO task (title) VALUES ('A9 conserver cette tâche')",
+            [],
+        )
+        .unwrap();
+        conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE)")
+            .unwrap();
     }
     fs::copy(&database, backups.join(name)).unwrap();
     let status = std::process::Command::new(std::env::current_exe().unwrap())
-        .args(["--exact", "restore_ios::i06_a9_child_exits_after_committed_schema_19", "--nocapture"])
+        .args([
+            "--exact",
+            "restore_ios::i06_a9_child_exits_after_committed_schema_19",
+            "--nocapture",
+        ])
         .env("CT_A9_CRASH_DATABASE", &database)
-        .status().unwrap();
-    assert_eq!(status.code(), Some(83), "arrêt abrupt au point voulu, jamais test ignoré");
+        .status()
+        .unwrap();
+    assert_eq!(
+        status.code(),
+        Some(83),
+        "arrêt abrupt au point voulu, jamais test ignoré"
+    );
     assert_eq!(check_backup_file(&database, 19).unwrap(), 19);
-    assert_eq!(check_backup_file(&database, 18).unwrap_err().code, "newer-schema");
+    assert_eq!(
+        check_backup_file(&database, 18).unwrap_err().code,
+        "newer-schema"
+    );
     {
         let conn = Connection::open(&database).unwrap();
-        assert_eq!(conn.query_row("PRAGMA integrity_check", [], |r| r.get::<_, String>(0)).unwrap(), "ok");
-        assert_eq!(conn.query_row("SELECT COUNT(*) FROM epoch_carry_report", [], |r| r.get::<_, i64>(0)).unwrap(), 0);
+        assert_eq!(
+            conn.query_row("PRAGMA integrity_check", [], |r| r.get::<_, String>(0))
+                .unwrap(),
+            "ok"
+        );
+        assert_eq!(
+            conn.query_row("SELECT COUNT(*) FROM epoch_carry_report", [], |r| r
+                .get::<_, i64>(0))
+                .unwrap(),
+            0
+        );
     }
     let outcome = restore_local_rollback(dir.path(), name, "20261021T170000Z", NO_FAIL).unwrap();
     assert_eq!(outcome.schema_version, 18);
@@ -903,8 +1579,20 @@ fn i06_a9_committed_19_survives_process_exit_and_native_rollback_recovers_18() {
     assert!(outcome.safety_copy.is_some());
     assert_eq!(check_backup_file(&database, 18).unwrap(), 18);
     let conn = Connection::open(&database).unwrap();
-    assert_eq!(conn.query_row("SELECT title FROM task", [], |r| r.get::<_, String>(0)).unwrap(), "A9 conserver cette tâche");
-    assert_eq!(conn.query_row("SELECT COUNT(*) FROM sqlite_master WHERE name='epoch_carry_report'", [], |r| r.get::<_, i64>(0)).unwrap(), 0);
+    assert_eq!(
+        conn.query_row("SELECT title FROM task", [], |r| r.get::<_, String>(0))
+            .unwrap(),
+        "A9 conserver cette tâche"
+    );
+    assert_eq!(
+        conn.query_row(
+            "SELECT COUNT(*) FROM sqlite_master WHERE name='epoch_carry_report'",
+            [],
+            |r| r.get::<_, i64>(0)
+        )
+        .unwrap(),
+        0
+    );
     assert_eq!(lock_value(&database).as_deref(), Some("true"));
 }
 
@@ -914,5 +1602,8 @@ fn i06_local_rollback_is_chosen_by_the_command_flag_after_the_sql_guard() {
     let command = &source[source.find("pub async fn restore_backup(").unwrap()..];
     assert!(crate::support::sq(command).starts_with(&crate::support::sq("pub async fn restore_backup(app: AppHandle, name: String, stamp: String, local: Option<bool>)")));
     let guard = command.find("ensure_sql_closed(&app).await?").unwrap();
-    assert!(guard < command.find("restore_local_rollback(").unwrap(), "contrôle AVANT l'échange");
+    assert!(
+        guard < command.find("restore_local_rollback(").unwrap(),
+        "contrôle AVANT l'échange"
+    );
 }

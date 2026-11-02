@@ -129,7 +129,13 @@ pub trait SyncFs: Send + Sync {
     /// Lit `max` octets au plus à partir de `offset` (ADR 0011 §22 point 4) : mémoire bornée par l'appelant. Un fichier dans le nuage
     /// n'est hydraté que si `hydrate` (sinon `CloudPending`), sous le même budget que `read` ; `size` : taille annoncée (l'appelant
     /// compare sa borne avant de continuer) ; `eof` : plus rien après ce bloc.
-    fn read_from(&self, file: &[&str], offset: u64, max: usize, hydrate: bool) -> Result<Chunk, FsError>;
+    fn read_from(
+        &self,
+        file: &[&str],
+        offset: u64,
+        max: usize,
+        hydrate: bool,
+    ) -> Result<Chunk, FsError>;
     /// Ajoute à la fin, puis `sync_all`.
     fn append(&self, file: &[&str], bytes: &[u8], mode: AppendMode) -> Result<(), FsError>;
     /// Écrit `<nom>.tmp` puis le renomme en `<nom>` (remplacement atomique).
@@ -147,9 +153,11 @@ pub trait SyncFs: Send + Sync {
 }
 
 /// Délai d'hydratation par fichier.
-pub const HYDRATE_FILE_TIMEOUT: Duration = Duration::from_millis(super::limits::HYDRATE_FILE_TIMEOUT_MS);
+pub const HYDRATE_FILE_TIMEOUT: Duration =
+    Duration::from_millis(super::limits::HYDRATE_FILE_TIMEOUT_MS);
 /// Budget d'hydratation par cycle.
-pub const HYDRATE_CYCLE_BUDGET: Duration = Duration::from_millis(super::limits::HYDRATE_CYCLE_TIMEOUT_MS);
+pub const HYDRATE_CYCLE_BUDGET: Duration =
+    Duration::from_millis(super::limits::HYDRATE_CYCLE_TIMEOUT_MS);
 
 pub use imp::StdFs;
 
@@ -157,16 +165,34 @@ pub use imp::StdFs;
 /// `:` (flux NTFS, lecteur), ni caractère interdit par Windows ou de contrôle, ni point ou espace final (Windows les retire), ni nom de
 /// périphérique réservé (`CON`, `NUL`, `COM1`, `LPT1`…, avec ou sans extension).
 pub fn is_safe_component(name: &str) -> bool {
-    if name.is_empty() || name.chars().count() > 255 || name == "." || name == ".." || name.ends_with(['.', ' ']) {
+    if name.is_empty()
+        || name.chars().count() > 255
+        || name == "."
+        || name == ".."
+        || name.ends_with(['.', ' '])
+    {
         return false;
     }
-    if name.chars().any(|c| c < ' ' || matches!(c, '\\' | '/' | ':' | '*' | '?' | '"' | '<' | '>' | '|')) {
+    if name
+        .chars()
+        .any(|c| c < ' ' || matches!(c, '\\' | '/' | ':' | '*' | '?' | '"' | '<' | '>' | '|'))
+    {
         return false;
     }
-    let stem = name.split('.').next().unwrap_or("").trim_end().to_ascii_uppercase();
-    let reserved = matches!(stem.as_str(), "CON" | "PRN" | "AUX" | "NUL" | "CONIN$" | "CONOUT$" | "CLOCK$")
-        || ((stem.starts_with("COM") || stem.starts_with("LPT")) && stem.len() == 4 && stem.as_bytes()[3].is_ascii_digit())
-        || ((stem.starts_with("COM") || stem.starts_with("LPT")) && matches!(stem.get(3..), Some("¹" | "²" | "³")));
+    let stem = name
+        .split('.')
+        .next()
+        .unwrap_or("")
+        .trim_end()
+        .to_ascii_uppercase();
+    let reserved = matches!(
+        stem.as_str(),
+        "CON" | "PRN" | "AUX" | "NUL" | "CONIN$" | "CONOUT$" | "CLOCK$"
+    ) || ((stem.starts_with("COM") || stem.starts_with("LPT"))
+        && stem.len() == 4
+        && stem.as_bytes()[3].is_ascii_digit())
+        || ((stem.starts_with("COM") || stem.starts_with("LPT"))
+            && matches!(stem.get(3..), Some("¹" | "²" | "³")));
     !reserved
 }
 
@@ -193,11 +219,21 @@ pub struct ForgottenDeletion {
 
 /// Supprime au plus `max_entries` entrées de noms stricts de `devices/<dev>/` (`dev` déjà validé par `names.rs`, différent de
 /// l'appareil local : contrôlé par l'appelant). Dossier absent ou fichier déjà supprimé : sans erreur (idempotent).
-pub fn delete_forgotten_device_files(fs: &dyn SyncFs, dev: &str, max_entries: usize) -> Result<ForgottenDeletion, FsError> {
-    use super::names::{parse_file_name, EpochId, SyncFileName, DEVICES_DIR, STATE_FILE, STATE_NEXT_FILE};
+pub fn delete_forgotten_device_files(
+    fs: &dyn SyncFs,
+    dev: &str,
+    max_entries: usize,
+) -> Result<ForgottenDeletion, FsError> {
     use super::limits::MAX_SCAN_ENTRIES_PER_FOLDER;
+    use super::names::{
+        parse_file_name, EpochId, SyncFileName, DEVICES_DIR, STATE_FILE, STATE_NEXT_FILE,
+    };
 
-    let mut out = ForgottenDeletion { deleted: 0, complete: false, strays: 0 };
+    let mut out = ForgottenDeletion {
+        deleted: 0,
+        complete: false,
+        strays: 0,
+    };
     if !super::names::is_uuid_v4(dev) || !is_safe_component(dev) {
         return Err(FsError::Unsafe);
     }
@@ -213,7 +249,10 @@ pub fn delete_forgotten_device_files(fs: &dyn SyncFs, dev: &str, max_entries: us
     let mut has_state = false;
     let mut has_next = false;
     for entry in &top.entries {
-        if entry.is_dir && entry.availability != Availability::Error && EpochId::parse(&entry.name).is_some() {
+        if entry.is_dir
+            && entry.availability != Availability::Error
+            && EpochId::parse(&entry.name).is_some()
+        {
             let epoch = entry.name.as_str();
             let files = match fs.list(&[DEVICES_DIR, dev, epoch], MAX_SCAN_ENTRIES_PER_FOLDER) {
                 Ok(listing) => listing,
@@ -223,7 +262,12 @@ pub fn delete_forgotten_device_files(fs: &dyn SyncFs, dev: &str, max_entries: us
             cut |= files.truncated;
             let mut left = 0u64;
             for file in &files.entries {
-                if file.is_dir || !matches!(parse_file_name(&file.name), Some(SyncFileName::Segment(_) | SyncFileName::Snapshot(_))) {
+                if file.is_dir
+                    || !matches!(
+                        parse_file_name(&file.name),
+                        Some(SyncFileName::Segment(_) | SyncFileName::Snapshot(_))
+                    )
+                {
                     out.strays += 1;
                     left += 1;
                     continue;
@@ -241,7 +285,10 @@ pub fn delete_forgotten_device_files(fs: &dyn SyncFs, dev: &str, max_entries: us
                 }
                 fs.remove_empty_dir(&[DEVICES_DIR, dev, epoch])?;
                 // Compté seulement s'il a vraiment disparu (revue Y-10, suggestion 10).
-                if matches!(fs.list(&[DEVICES_DIR, dev, epoch], 1), Err(FsError::NotFound)) {
+                if matches!(
+                    fs.list(&[DEVICES_DIR, dev, epoch], 1),
+                    Err(FsError::NotFound)
+                ) {
                     out.deleted += 1;
                 }
             }
@@ -286,24 +333,33 @@ mod imp {
     use windows::core::{PCWSTR, PWSTR};
     use windows::Wdk::Foundation::OBJECT_ATTRIBUTES;
     use windows::Wdk::Storage::FileSystem::{
-        NtCreateFile, NtSetInformationFile, FileRenameInformation, FileRenameInformationEx, FILE_CREATE, FILE_RENAME_INFORMATION, FILE_DIRECTORY_FILE, FILE_NON_DIRECTORY_FILE, FILE_OPEN, FILE_OPEN_IF, FILE_OPEN_REPARSE_POINT,
-        FILE_SYNCHRONOUS_IO_NONALERT, NTCREATEFILE_CREATE_DISPOSITION, NTCREATEFILE_CREATE_OPTIONS,
+        FileRenameInformation, FileRenameInformationEx, NtCreateFile, NtSetInformationFile,
+        FILE_CREATE, FILE_DIRECTORY_FILE, FILE_NON_DIRECTORY_FILE, FILE_OPEN, FILE_OPEN_IF,
+        FILE_OPEN_REPARSE_POINT, FILE_RENAME_INFORMATION, FILE_SYNCHRONOUS_IO_NONALERT,
+        NTCREATEFILE_CREATE_DISPOSITION, NTCREATEFILE_CREATE_OPTIONS,
     };
     use windows::Win32::Foundation::{HANDLE, NTSTATUS, OBJ_CASE_INSENSITIVE, UNICODE_STRING};
     use windows::Win32::Storage::FileSystem::{
-        CreateFileW, GetFileInformationByHandle, GetFileInformationByHandleEx, SetFileInformationByHandle, BY_HANDLE_FILE_INFORMATION, DELETE,
-        FILE_ACCESS_RIGHTS, FILE_APPEND_DATA, FILE_ATTRIBUTE_DIRECTORY, FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_OFFLINE, FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS,
+        CreateFileW, FileAttributeTagInfo, FileDispositionInfo, FileDispositionInfoEx,
+        FileFullDirectoryInfo, FileFullDirectoryRestartInfo, GetFileInformationByHandle,
+        GetFileInformationByHandleEx, SetFileInformationByHandle, BY_HANDLE_FILE_INFORMATION,
+        DELETE, FILE_ACCESS_RIGHTS, FILE_APPEND_DATA, FILE_ATTRIBUTE_DIRECTORY,
+        FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_OFFLINE, FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS,
         FILE_ATTRIBUTE_RECALL_ON_OPEN, FILE_ATTRIBUTE_TAG_INFO, FILE_DISPOSITION_FLAG_DELETE,
-        FILE_DISPOSITION_FLAG_POSIX_SEMANTICS, FILE_DISPOSITION_INFO, FILE_DISPOSITION_INFO_EX, FILE_DISPOSITION_INFO_EX_FLAGS, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT,
-        FILE_FULL_DIR_INFO, FILE_GENERIC_READ, FILE_LIST_DIRECTORY, FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE, FILE_SHARE_READ,
-        FILE_SHARE_WRITE, FILE_TRAVERSE, FILE_WRITE_ATTRIBUTES, FILE_WRITE_DATA, FileAttributeTagInfo, FileDispositionInfo, FileDispositionInfoEx,
-        FileFullDirectoryInfo, FileFullDirectoryRestartInfo, OPEN_EXISTING, SYNCHRONIZE,
+        FILE_DISPOSITION_FLAG_POSIX_SEMANTICS, FILE_DISPOSITION_INFO, FILE_DISPOSITION_INFO_EX,
+        FILE_DISPOSITION_INFO_EX_FLAGS, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT,
+        FILE_FULL_DIR_INFO, FILE_GENERIC_READ, FILE_LIST_DIRECTORY, FILE_READ_ATTRIBUTES,
+        FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE, FILE_TRAVERSE, FILE_WRITE_ATTRIBUTES,
+        FILE_WRITE_DATA, OPEN_EXISTING, SYNCHRONIZE,
     };
     use windows::Win32::System::IO::IO_STATUS_BLOCK;
 
     use super::super::cloud_windows;
     use super::super::folder::{final_path_of, is_accepted_reparse, normalize_final_path};
-    use super::{AppendMode, Availability, Chunk, FsEntry, FsError, Listing, SyncFs, HYDRATE_CYCLE_BUDGET, HYDRATE_FILE_TIMEOUT};
+    use super::{
+        AppendMode, Availability, Chunk, FsEntry, FsError, Listing, SyncFs, HYDRATE_CYCLE_BUDGET,
+        HYDRATE_FILE_TIMEOUT,
+    };
 
     const STATUS_OBJECT_NAME_NOT_FOUND: i32 = 0xC000_0034_u32 as i32;
     const STATUS_OBJECT_PATH_NOT_FOUND: i32 = 0xC000_003A_u32 as i32;
@@ -340,7 +396,11 @@ mod imp {
         }
         let mut wide: Vec<u16> = name.encode_utf16().collect();
         let bytes = u16::try_from(wide.len() * 2).map_err(|_| FsError::Unsafe)?;
-        let object_name = UNICODE_STRING { Length: bytes, MaximumLength: bytes, Buffer: PWSTR(wide.as_mut_ptr()) };
+        let object_name = UNICODE_STRING {
+            Length: bytes,
+            MaximumLength: bytes,
+            Buffer: PWSTR(wide.as_mut_ptr()),
+        };
         let attributes = OBJECT_ATTRIBUTES {
             Length: std::mem::size_of::<OBJECT_ATTRIBUTES>() as u32,
             RootDirectory: raw(parent),
@@ -380,7 +440,12 @@ mod imp {
         let mut info = FILE_ATTRIBUTE_TAG_INFO::default();
         // SAFETY: tampon de la taille de la structure demandée.
         unsafe {
-            GetFileInformationByHandleEx(raw(handle), FileAttributeTagInfo, (&mut info as *mut FILE_ATTRIBUTE_TAG_INFO).cast(), std::mem::size_of::<FILE_ATTRIBUTE_TAG_INFO>() as u32)
+            GetFileInformationByHandleEx(
+                raw(handle),
+                FileAttributeTagInfo,
+                (&mut info as *mut FILE_ATTRIBUTE_TAG_INFO).cast(),
+                std::mem::size_of::<FILE_ATTRIBUTE_TAG_INFO>() as u32,
+            )
         }
         .map_err(|_| FsError::Io)?;
         Ok((info.FileAttributes, info.ReparseTag))
@@ -403,7 +468,11 @@ mod imp {
     }
 
     fn is_cloud(attributes: u32) -> bool {
-        attributes & (FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS.0 | FILE_ATTRIBUTE_RECALL_ON_OPEN.0 | FILE_ATTRIBUTE_OFFLINE.0) != 0
+        attributes
+            & (FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS.0
+                | FILE_ATTRIBUTE_RECALL_ON_OPEN.0
+                | FILE_ATTRIBUTE_OFFLINE.0)
+            != 0
     }
 
     /// Dossier lié, rouvert et recontrôlé à chaque opération.
@@ -420,11 +489,21 @@ mod imp {
         pub fn new(root: PathBuf) -> Self {
             cloud_windows::expose_placeholders();
             let root_key = root.to_string_lossy().to_lowercase();
-            Self { root, root_key, cycle_started: Mutex::new((Instant::now(), HYDRATE_CYCLE_BUDGET)) }
+            Self {
+                root,
+                root_key,
+                cycle_started: Mutex::new((Instant::now(), HYDRATE_CYCLE_BUDGET)),
+            }
         }
 
         fn open_root(&self) -> Result<OwnedHandle, FsError> {
-            let wide: Vec<u16> = self.root.as_os_str().to_string_lossy().encode_utf16().chain(std::iter::once(0)).collect();
+            let wide: Vec<u16> = self
+                .root
+                .as_os_str()
+                .to_string_lossy()
+                .encode_utf16()
+                .chain(std::iter::once(0))
+                .collect();
             // SAFETY: chaîne terminée par zéro, vivante pendant l'appel.
             let handle = unsafe {
                 CreateFileW(
@@ -444,7 +523,9 @@ mod imp {
             if attributes & FILE_ATTRIBUTE_DIRECTORY.0 == 0 {
                 return Err(FsError::Unsafe);
             }
-            let final_path = final_path_of(raw(&handle)).and_then(|p| normalize_final_path(&p)).ok_or(FsError::Unsafe)?;
+            let final_path = final_path_of(raw(&handle))
+                .and_then(|p| normalize_final_path(&p))
+                .ok_or(FsError::Unsafe)?;
             if final_path.to_lowercase() != self.root_key {
                 return Err(FsError::Unsafe);
             }
@@ -456,7 +537,13 @@ mod imp {
             let mut handle = self.open_root()?;
             for name in dir {
                 let disposition = if create { FILE_OPEN_IF } else { FILE_OPEN };
-                let next = open_relative(&handle, name, FILE_LIST_DIRECTORY | FILE_TRAVERSE | FILE_READ_ATTRIBUTES, disposition, FILE_DIRECTORY_FILE)?;
+                let next = open_relative(
+                    &handle,
+                    name,
+                    FILE_LIST_DIRECTORY | FILE_TRAVERSE | FILE_READ_ATTRIBUTES,
+                    disposition,
+                    FILE_DIRECTORY_FILE,
+                )?;
                 let attributes = check_tag(&next)?;
                 if attributes & FILE_ATTRIBUTE_DIRECTORY.0 == 0 {
                     return Err(FsError::Unsafe);
@@ -479,9 +566,12 @@ mod imp {
             if by_handle(handle)?.nNumberOfLinks > 1 {
                 return Err(FsError::Unsafe);
             }
-            let final_path = final_path_of(raw(handle)).and_then(|p| normalize_final_path(&p)).ok_or(FsError::Unsafe)?;
+            let final_path = final_path_of(raw(handle))
+                .and_then(|p| normalize_final_path(&p))
+                .ok_or(FsError::Unsafe)?;
             let lower = final_path.to_lowercase();
-            if !lower.starts_with(&self.root_key) || !lower[self.root_key.len()..].starts_with('\\') {
+            if !lower.starts_with(&self.root_key) || !lower[self.root_key.len()..].starts_with('\\')
+            {
                 return Err(FsError::Unsafe);
             }
             Ok(())
@@ -489,7 +579,11 @@ mod imp {
 
         /// Renomme dans le dossier `parent` (`NtSetInformationFile`, `RootDirectory` = handle du dossier contrôlé) : le nom n'est jamais
         /// résolu par rapport au dossier courant du processus (ce que ferait `SetFileInformationByHandle` avec un nom simple).
-        fn rename_handle(handle: &OwnedHandle, parent: &OwnedHandle, to: &str) -> Result<(), FsError> {
+        fn rename_handle(
+            handle: &OwnedHandle,
+            parent: &OwnedHandle,
+            to: &str,
+        ) -> Result<(), FsError> {
             if !super::is_safe_component(to) {
                 return Err(FsError::Unsafe);
             }
@@ -500,14 +594,24 @@ mod imp {
             let mut buffer = vec![0u64; size.div_ceil(8)];
             let info = buffer.as_mut_ptr().cast::<FILE_RENAME_INFORMATION>();
             let mut last = NTSTATUS(0);
-            for (class, flags) in [(FileRenameInformationEx, FILE_RENAME_FLAG_REPLACE_IF_EXISTS | FILE_RENAME_FLAG_POSIX_SEMANTICS), (FileRenameInformation, 1)] {
+            for (class, flags) in [
+                (
+                    FileRenameInformationEx,
+                    FILE_RENAME_FLAG_REPLACE_IF_EXISTS | FILE_RENAME_FLAG_POSIX_SEMANTICS,
+                ),
+                (FileRenameInformation, 1),
+            ] {
                 let mut io = IO_STATUS_BLOCK::default();
                 // SAFETY: le tampon couvre l'en-tête et le nom ; écriture des champs dans la mémoire possédée, vivante pendant l'appel.
                 last = unsafe {
                     (*info).Anonymous.Flags = flags;
                     (*info).RootDirectory = raw(parent);
                     (*info).FileNameLength = (name.len() * 2) as u32;
-                    std::ptr::copy_nonoverlapping(name.as_ptr(), std::ptr::addr_of_mut!((*info).FileName).cast::<u16>(), name.len());
+                    std::ptr::copy_nonoverlapping(
+                        name.as_ptr(),
+                        std::ptr::addr_of_mut!((*info).FileName).cast::<u16>(),
+                        name.len(),
+                    );
                     NtSetInformationFile(raw(handle), &mut io, info.cast(), size as u32, class)
                 };
                 if last.is_ok() {
@@ -518,14 +622,30 @@ mod imp {
         }
 
         fn delete_handle(handle: &OwnedHandle) -> Result<(), FsError> {
-            let ex = FILE_DISPOSITION_INFO_EX { Flags: FILE_DISPOSITION_INFO_EX_FLAGS(FILE_DISPOSITION_FLAG_DELETE.0 | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS.0) };
+            let ex = FILE_DISPOSITION_INFO_EX {
+                Flags: FILE_DISPOSITION_INFO_EX_FLAGS(
+                    FILE_DISPOSITION_FLAG_DELETE.0 | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS.0,
+                ),
+            };
             // SAFETY: structures possédées, tailles exactes.
             unsafe {
-                if SetFileInformationByHandle(raw(handle), FileDispositionInfoEx, (&ex as *const FILE_DISPOSITION_INFO_EX).cast(), std::mem::size_of::<FILE_DISPOSITION_INFO_EX>() as u32).is_ok() {
+                if SetFileInformationByHandle(
+                    raw(handle),
+                    FileDispositionInfoEx,
+                    (&ex as *const FILE_DISPOSITION_INFO_EX).cast(),
+                    std::mem::size_of::<FILE_DISPOSITION_INFO_EX>() as u32,
+                )
+                .is_ok()
+                {
                     return Ok(());
                 }
                 let plain = FILE_DISPOSITION_INFO { DeleteFile: true };
-                SetFileInformationByHandle(raw(handle), FileDispositionInfo, (&plain as *const FILE_DISPOSITION_INFO).cast(), std::mem::size_of::<FILE_DISPOSITION_INFO>() as u32)
+                SetFileInformationByHandle(
+                    raw(handle),
+                    FileDispositionInfo,
+                    (&plain as *const FILE_DISPOSITION_INFO).cast(),
+                    std::mem::size_of::<FILE_DISPOSITION_INFO>() as u32,
+                )
             }
             .map_err(|_| FsError::Io)
         }
@@ -537,26 +657,36 @@ mod imp {
 
         /// Hydrate le fichier dans le nuage sur un fil dédié, puis `then` sur son handle ; au-delà du délai (60 s par fichier, reste du
         /// budget du cycle), le fichier reste « en attente d'iCloud » (le fil finit seul).
-        fn hydrate_then<T: Send + 'static>(&self, handle: OwnedHandle, then: impl FnOnce(File) -> Result<T, FsError> + Send + 'static) -> Result<T, FsError> {
+        fn hydrate_then<T: Send + 'static>(
+            &self,
+            handle: OwnedHandle,
+            then: impl FnOnce(File) -> Result<T, FsError> + Send + 'static,
+        ) -> Result<T, FsError> {
             let budget = self.remaining_budget().min(HYDRATE_FILE_TIMEOUT);
             if budget.is_zero() {
                 return Err(FsError::CloudPending);
             }
             let (sender, receiver) = mpsc::channel();
             std::thread::spawn(move || {
-                let result = cloud_windows::hydrate(raw(&handle)).and_then(|()| then(File::from(handle)));
+                let result =
+                    cloud_windows::hydrate(raw(&handle)).and_then(|()| then(File::from(handle)));
                 let _ = sender.send(result);
             });
-            receiver.recv_timeout(budget).unwrap_or(Err(FsError::CloudPending))
+            receiver
+                .recv_timeout(budget)
+                .unwrap_or(Err(FsError::CloudPending))
         }
     }
 
     /// Bloc de `max` octets au plus à partir de `offset`, sur le handle déjà contrôlé (lecture positionnée).
     fn read_chunk(file: &mut File, offset: u64, max: usize, size: u64) -> Result<Chunk, FsError> {
         use std::io::{Seek, SeekFrom};
-        file.seek(SeekFrom::Start(offset)).map_err(|e| cloud_windows::io_error(&e))?;
+        file.seek(SeekFrom::Start(offset))
+            .map_err(|e| cloud_windows::io_error(&e))?;
         let mut bytes = Vec::with_capacity(max.min(size.saturating_sub(offset) as usize));
-        file.take(max as u64).read_to_end(&mut bytes).map_err(|e| cloud_windows::io_error(&e))?;
+        file.take(max as u64)
+            .read_to_end(&mut bytes)
+            .map_err(|e| cloud_windows::io_error(&e))?;
         let eof = bytes.len() < max || offset.saturating_add(bytes.len() as u64) >= size;
         Ok(Chunk { bytes, size, eof })
     }
@@ -566,10 +696,21 @@ mod imp {
         let mut buffer = vec![0u64; 8 * 1024];
         let mut first = true;
         loop {
-            let class = if first { FileFullDirectoryRestartInfo } else { FileFullDirectoryInfo };
+            let class = if first {
+                FileFullDirectoryRestartInfo
+            } else {
+                FileFullDirectoryInfo
+            };
             first = false;
             // SAFETY: tampon possédé de la taille annoncée.
-            let result = unsafe { GetFileInformationByHandleEx(raw(handle), class, buffer.as_mut_ptr().cast(), (buffer.len() * 8) as u32) };
+            let result = unsafe {
+                GetFileInformationByHandleEx(
+                    raw(handle),
+                    class,
+                    buffer.as_mut_ptr().cast(),
+                    (buffer.len() * 8) as u32,
+                )
+            };
             if let Err(error) = result {
                 if error.code().0 == ERROR_NO_MORE_FILES {
                     break;
@@ -586,9 +727,19 @@ mod imp {
                     let name_ptr = std::ptr::addr_of!((*entry).FileName).cast::<u16>();
                     let chars = info.FileNameLength as usize / 2;
                     let mut name = vec![0u16; chars];
-                    std::ptr::copy_nonoverlapping(name_ptr.cast::<u8>(), name.as_mut_ptr().cast::<u8>(), chars * 2);
+                    std::ptr::copy_nonoverlapping(
+                        name_ptr.cast::<u8>(),
+                        name.as_mut_ptr().cast::<u8>(),
+                        chars * 2,
+                    );
                     // EaSize porte la balise d'analyse quand FILE_ATTRIBUTE_REPARSE_POINT est posé.
-                    (info.NextEntryOffset as usize, String::from_utf16_lossy(&name), info.FileAttributes, info.EndOfFile.max(0) as u64, info.EaSize)
+                    (
+                        info.NextEntryOffset as usize,
+                        String::from_utf16_lossy(&name),
+                        info.FileAttributes,
+                        info.EndOfFile.max(0) as u64,
+                        info.EaSize,
+                    )
                 };
                 if name != "." && name != ".." {
                     if listing.entries.len() >= max {
@@ -603,7 +754,12 @@ mod imp {
                     } else {
                         Availability::Local
                     };
-                    listing.entries.push(FsEntry { name, is_dir: attributes & FILE_ATTRIBUTE_DIRECTORY.0 != 0, size, availability });
+                    listing.entries.push(FsEntry {
+                        name,
+                        is_dir: attributes & FILE_ATTRIBUTE_DIRECTORY.0 != 0,
+                        size,
+                        availability,
+                    });
                 }
                 if next == 0 {
                     break;
@@ -616,7 +772,9 @@ mod imp {
 
     fn read_limited(file: &mut File, limit: u64) -> Result<Vec<u8>, FsError> {
         let mut out = Vec::new();
-        file.take(limit.saturating_add(1)).read_to_end(&mut out).map_err(|e| cloud_windows::io_error(&e))?;
+        file.take(limit.saturating_add(1))
+            .read_to_end(&mut out)
+            .map_err(|e| cloud_windows::io_error(&e))?;
         if out.len() as u64 > limit {
             return Err(FsError::TooLarge);
         }
@@ -634,19 +792,29 @@ mod imp {
 
         fn start_cycle_within(&self, budget: std::time::Duration) -> Result<(), FsError> {
             self.open_root()?;
-            *self.cycle_started.lock().unwrap_or_else(|e| e.into_inner()) = (Instant::now(), budget.min(HYDRATE_CYCLE_BUDGET));
+            *self.cycle_started.lock().unwrap_or_else(|e| e.into_inner()) =
+                (Instant::now(), budget.min(HYDRATE_CYCLE_BUDGET));
             Ok(())
         }
 
         fn read_head(&self, file: &[&str], max: usize) -> Result<Vec<u8>, FsError> {
             let (dir, name) = Self::split(file)?;
             let parent = self.open_dir(dir, false)?;
-            let handle = open_relative(&parent, name, FILE_GENERIC_READ, FILE_OPEN, FILE_NON_DIRECTORY_FILE)?;
+            let handle = open_relative(
+                &parent,
+                name,
+                FILE_GENERIC_READ,
+                FILE_OPEN,
+                FILE_NON_DIRECTORY_FILE,
+            )?;
             if is_cloud(check_tag(&handle)?) {
                 return Err(FsError::CloudPending);
             }
             let mut out = Vec::with_capacity(max);
-            File::from(handle).take(max as u64).read_to_end(&mut out).map_err(|e| cloud_windows::io_error(&e))?;
+            File::from(handle)
+                .take(max as u64)
+                .read_to_end(&mut out)
+                .map_err(|e| cloud_windows::io_error(&e))?;
             Ok(out)
         }
 
@@ -658,7 +826,13 @@ mod imp {
         fn read(&self, file: &[&str], limit: u64, hydrate: bool) -> Result<Vec<u8>, FsError> {
             let (dir, name) = Self::split(file)?;
             let parent = self.open_dir(dir, false)?;
-            let handle = open_relative(&parent, name, FILE_GENERIC_READ, FILE_OPEN, FILE_NON_DIRECTORY_FILE)?;
+            let handle = open_relative(
+                &parent,
+                name,
+                FILE_GENERIC_READ,
+                FILE_OPEN,
+                FILE_NON_DIRECTORY_FILE,
+            )?;
             let attributes = check_tag(&handle)?;
             let info = by_handle(&handle)?;
             let size = (u64::from(info.nFileSizeHigh) << 32) | u64::from(info.nFileSizeLow);
@@ -675,10 +849,22 @@ mod imp {
             self.hydrate_then(handle, move |mut file| read_limited(&mut file, limit))
         }
 
-        fn read_from(&self, file: &[&str], offset: u64, max: usize, hydrate: bool) -> Result<Chunk, FsError> {
+        fn read_from(
+            &self,
+            file: &[&str],
+            offset: u64,
+            max: usize,
+            hydrate: bool,
+        ) -> Result<Chunk, FsError> {
             let (dir, name) = Self::split(file)?;
             let parent = self.open_dir(dir, false)?;
-            let handle = open_relative(&parent, name, FILE_GENERIC_READ, FILE_OPEN, FILE_NON_DIRECTORY_FILE)?;
+            let handle = open_relative(
+                &parent,
+                name,
+                FILE_GENERIC_READ,
+                FILE_OPEN,
+                FILE_NON_DIRECTORY_FILE,
+            )?;
             let attributes = check_tag(&handle)?;
             let info = by_handle(&handle)?;
             let size = (u64::from(info.nFileSizeHigh) << 32) | u64::from(info.nFileSizeLow);
@@ -688,17 +874,30 @@ mod imp {
             if !hydrate {
                 return Err(FsError::CloudPending);
             }
-            self.hydrate_then(handle, move |mut file| read_chunk(&mut file, offset, max, size))
+            self.hydrate_then(handle, move |mut file| {
+                read_chunk(&mut file, offset, max, size)
+            })
         }
 
         fn append(&self, file: &[&str], bytes: &[u8], mode: AppendMode) -> Result<(), FsError> {
             let (dir, name) = Self::split(file)?;
             let parent = self.open_dir(dir, false)?;
-            let disposition = if mode == AppendMode::CreateNew { FILE_CREATE } else { FILE_OPEN };
-            let handle = open_relative(&parent, name, FILE_APPEND_DATA | FILE_READ_ATTRIBUTES, disposition, FILE_NON_DIRECTORY_FILE)?;
+            let disposition = if mode == AppendMode::CreateNew {
+                FILE_CREATE
+            } else {
+                FILE_OPEN
+            };
+            let handle = open_relative(
+                &parent,
+                name,
+                FILE_APPEND_DATA | FILE_READ_ATTRIBUTES,
+                disposition,
+                FILE_NON_DIRECTORY_FILE,
+            )?;
             self.check_writable(&handle)?;
             let mut file = File::from(handle);
-            file.write_all(bytes).map_err(|e| cloud_windows::io_error(&e))?;
+            file.write_all(bytes)
+                .map_err(|e| cloud_windows::io_error(&e))?;
             file.sync_all().map_err(|e| cloud_windows::io_error(&e))
         }
 
@@ -708,7 +907,13 @@ mod imp {
             let temp = format!("{name}{}", super::super::names::TEMP_SUFFIX);
             // Un ancien `.tmp` est supprimé (son nom seulement), puis le nouveau est créé exclusivement : un `.tmp` lien physique vers un
             // autre fichier n'est jamais tronqué ni écrit (audit S3).
-            match open_relative(&parent, &temp, DELETE | FILE_READ_ATTRIBUTES, FILE_OPEN, FILE_NON_DIRECTORY_FILE) {
+            match open_relative(
+                &parent,
+                &temp,
+                DELETE | FILE_READ_ATTRIBUTES,
+                FILE_OPEN,
+                FILE_NON_DIRECTORY_FILE,
+            ) {
                 Ok(old) => {
                     check_tag(&old)?;
                     Self::delete_handle(&old)?;
@@ -716,10 +921,17 @@ mod imp {
                 Err(FsError::NotFound) => {}
                 Err(error) => return Err(error),
             }
-            let handle = open_relative(&parent, &temp, FILE_WRITE_DATA | FILE_READ_ATTRIBUTES | DELETE, FILE_CREATE, FILE_NON_DIRECTORY_FILE)?;
+            let handle = open_relative(
+                &parent,
+                &temp,
+                FILE_WRITE_DATA | FILE_READ_ATTRIBUTES | DELETE,
+                FILE_CREATE,
+                FILE_NON_DIRECTORY_FILE,
+            )?;
             self.check_writable(&handle)?;
             let mut file = File::from(handle);
-            file.write_all(bytes).map_err(|e| cloud_windows::io_error(&e))?;
+            file.write_all(bytes)
+                .map_err(|e| cloud_windows::io_error(&e))?;
             file.sync_all().map_err(|e| cloud_windows::io_error(&e))?;
             let handle = OwnedHandle::from(file);
             Self::rename_handle(&handle, &parent, name)
@@ -727,7 +939,13 @@ mod imp {
 
         fn rename(&self, dir: &[&str], from: &str, to: &str) -> Result<(), FsError> {
             let parent = self.open_dir(dir, false)?;
-            let handle = open_relative(&parent, from, DELETE | FILE_READ_ATTRIBUTES, FILE_OPEN, FILE_NON_DIRECTORY_FILE)?;
+            let handle = open_relative(
+                &parent,
+                from,
+                DELETE | FILE_READ_ATTRIBUTES,
+                FILE_OPEN,
+                FILE_NON_DIRECTORY_FILE,
+            )?;
             self.check_writable(&handle)?;
             Self::rename_handle(&handle, &parent, to)
         }
@@ -743,7 +961,13 @@ mod imp {
                 Err(FsError::NotFound) => return Ok(false),
                 Err(error) => return Err(error),
             };
-            let handle = match open_relative(&parent, name, DELETE | FILE_READ_ATTRIBUTES, FILE_OPEN, FILE_NON_DIRECTORY_FILE) {
+            let handle = match open_relative(
+                &parent,
+                name,
+                DELETE | FILE_READ_ATTRIBUTES,
+                FILE_OPEN,
+                FILE_NON_DIRECTORY_FILE,
+            ) {
                 Ok(handle) => handle,
                 Err(FsError::NotFound) => return Ok(false),
                 Err(error) => return Err(error),
@@ -755,7 +979,13 @@ mod imp {
         fn remove_empty_dir(&self, dir: &[&str]) -> Result<(), FsError> {
             let (parent_dir, name) = Self::split(dir)?;
             let parent = self.open_dir(parent_dir, false)?;
-            let handle = match open_relative(&parent, name, DELETE | FILE_LIST_DIRECTORY | FILE_READ_ATTRIBUTES, FILE_OPEN, FILE_DIRECTORY_FILE) {
+            let handle = match open_relative(
+                &parent,
+                name,
+                DELETE | FILE_LIST_DIRECTORY | FILE_READ_ATTRIBUTES,
+                FILE_OPEN,
+                FILE_DIRECTORY_FILE,
+            ) {
                 Ok(handle) => handle,
                 Err(FsError::NotFound) => return Ok(()),
                 Err(error) => return Err(error),
@@ -770,7 +1000,13 @@ mod imp {
         fn pin(&self, file: &[&str]) -> Result<(), FsError> {
             let (dir, name) = Self::split(file)?;
             let parent = self.open_dir(dir, false)?;
-            let handle = open_relative(&parent, name, FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES, FILE_OPEN, FILE_NON_DIRECTORY_FILE)?;
+            let handle = open_relative(
+                &parent,
+                name,
+                FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES,
+                FILE_OPEN,
+                FILE_NON_DIRECTORY_FILE,
+            )?;
             check_tag(&handle)?;
             cloud_windows::pin(raw(&handle))
         }
@@ -843,7 +1079,11 @@ mod imp {
 
         fn read_head(&self, file: &[&str], max: usize) -> Result<Vec<u8>, FsError> {
             let mut out = Vec::new();
-            File::open(self.path(file)?).map_err(|e| io(&e))?.take(max as u64).read_to_end(&mut out).map_err(|e| io(&e))?;
+            File::open(self.path(file)?)
+                .map_err(|e| io(&e))?
+                .take(max as u64)
+                .read_to_end(&mut out)
+                .map_err(|e| io(&e))?;
             Ok(out)
         }
 
@@ -856,8 +1096,17 @@ mod imp {
                     break;
                 }
                 let meta = entry.metadata().map_err(|e| io(&e))?;
-                let availability = if meta.file_type().is_symlink() { Availability::Error } else { Availability::Local };
-                listing.entries.push(FsEntry { name: entry.file_name().to_string_lossy().into_owned(), is_dir: meta.is_dir(), size: meta.len(), availability });
+                let availability = if meta.file_type().is_symlink() {
+                    Availability::Error
+                } else {
+                    Availability::Local
+                };
+                listing.entries.push(FsEntry {
+                    name: entry.file_name().to_string_lossy().into_owned(),
+                    is_dir: meta.is_dir(),
+                    size: meta.len(),
+                    availability,
+                });
             }
             Ok(listing)
         }
@@ -869,21 +1118,34 @@ mod imp {
                 return Err(FsError::TooLarge);
             }
             let mut out = Vec::new();
-            File::open(&path).map_err(|e| io(&e))?.take(limit.saturating_add(1)).read_to_end(&mut out).map_err(|e| io(&e))?;
+            File::open(&path)
+                .map_err(|e| io(&e))?
+                .take(limit.saturating_add(1))
+                .read_to_end(&mut out)
+                .map_err(|e| io(&e))?;
             if out.len() as u64 > limit {
                 return Err(FsError::TooLarge);
             }
             Ok(out)
         }
 
-        fn read_from(&self, file: &[&str], offset: u64, max: usize, _hydrate: bool) -> Result<Chunk, FsError> {
+        fn read_from(
+            &self,
+            file: &[&str],
+            offset: u64,
+            max: usize,
+            _hydrate: bool,
+        ) -> Result<Chunk, FsError> {
             use std::io::{Seek, SeekFrom};
             let path = self.path(file)?;
             let mut handle = File::open(&path).map_err(|e| io(&e))?;
             let size = handle.metadata().map_err(|e| io(&e))?.len();
             handle.seek(SeekFrom::Start(offset)).map_err(|e| io(&e))?;
             let mut bytes = Vec::with_capacity(max.min(size.saturating_sub(offset) as usize));
-            handle.take(max as u64).read_to_end(&mut bytes).map_err(|e| io(&e))?;
+            handle
+                .take(max as u64)
+                .read_to_end(&mut bytes)
+                .map_err(|e| io(&e))?;
             let eof = bytes.len() < max || offset.saturating_add(bytes.len() as u64) >= size;
             Ok(Chunk { bytes, size, eof })
         }
@@ -895,7 +1157,13 @@ mod imp {
             if mode == AppendMode::CreateNew {
                 options.create_new(true);
             }
-            let mut handle = options.open(&path).map_err(|e| if e.kind() == std::io::ErrorKind::AlreadyExists { FsError::Exists } else { io(&e) })?;
+            let mut handle = options.open(&path).map_err(|e| {
+                if e.kind() == std::io::ErrorKind::AlreadyExists {
+                    FsError::Exists
+                } else {
+                    io(&e)
+                }
+            })?;
             handle.write_all(bytes).map_err(|e| io(&e))?;
             handle.sync_all().map_err(|e| io(&e))?;
             sync_dir(&path);

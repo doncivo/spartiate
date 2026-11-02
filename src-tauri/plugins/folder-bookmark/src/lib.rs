@@ -36,17 +36,30 @@ impl<R: Runtime> Clone for FolderBookmark<R> {
 impl<R: Runtime> FolderBookmark<R> {
     /// Appelle la commande Swift `command` avec `args` ; rend sa réponse JSON, ou le code de rejet (`io` si Swift n'en donne pas).
     #[cfg(target_os = "ios")]
-    pub fn call(&self, command: &str, args: serde_json::Value) -> Result<serde_json::Value, String> {
+    pub fn call(
+        &self,
+        command: &str,
+        args: serde_json::Value,
+    ) -> Result<serde_json::Value, String> {
         use tauri::plugin::mobile::PluginInvokeError;
-        self.handle.run_mobile_plugin::<serde_json::Value>(command, args).map_err(|error| match error {
-            PluginInvokeError::InvokeRejected(response) => response.code.filter(|code| !code.is_empty()).unwrap_or_else(|| "io".to_owned()),
-            _ => "io".to_owned(),
-        })
+        self.handle
+            .run_mobile_plugin::<serde_json::Value>(command, args)
+            .map_err(|error| match error {
+                PluginInvokeError::InvokeRejected(response) => response
+                    .code
+                    .filter(|code| !code.is_empty())
+                    .unwrap_or_else(|| "io".to_owned()),
+                _ => "io".to_owned(),
+            })
     }
 
     /// Hors iOS (le crate n'est une dépendance que de la cible iOS) : aucun plugin, `io`.
     #[cfg(not(target_os = "ios"))]
-    pub fn call(&self, _command: &str, _args: serde_json::Value) -> Result<serde_json::Value, String> {
+    pub fn call(
+        &self,
+        _command: &str,
+        _args: serde_json::Value,
+    ) -> Result<serde_json::Value, String> {
         Err("io".to_owned())
     }
 }
@@ -56,11 +69,15 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("folder-bookmark")
         .setup(|app, api| {
             #[cfg(target_os = "ios")]
-            let plugin = FolderBookmark { handle: api.register_ios_plugin(init_plugin_folder_bookmark)? };
+            let plugin = FolderBookmark {
+                handle: api.register_ios_plugin(init_plugin_folder_bookmark)?,
+            };
             #[cfg(not(target_os = "ios"))]
             let plugin = {
                 let _ = api;
-                FolderBookmark::<R> { _runtime: std::marker::PhantomData }
+                FolderBookmark::<R> {
+                    _runtime: std::marker::PhantomData,
+                }
             };
             app.manage(plugin);
             Ok(())

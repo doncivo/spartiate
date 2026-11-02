@@ -82,7 +82,11 @@ impl DbPool {
         // Spartiate (SEC-01) : le contrôle de l'URL est fait par `load` puis par `connect_in`, AVANT toute lecture de chemin (le dossier
         // de données n'est demandé que par la fermeture `app_dir`, appelée après ce contrôle).
         #[cfg(feature = "sqlite")]
-        let app_dir = || _app.path().app_config_dir().expect("No App config path was found!");
+        let app_dir = || {
+            _app.path()
+                .app_config_dir()
+                .expect("No App config path was found!")
+        };
         #[cfg(not(feature = "sqlite"))]
         let app_dir = std::path::PathBuf::new;
         Self::connect_in(conn_url, app_dir).await
@@ -107,7 +111,11 @@ impl DbPool {
 
                 let conn_url = &path_mapper(app_path, conn_url);
                 // Spartiate (P-04-iOS, revue B1) : jamais d'ouverture ni de création pendant une restauration en attente de récupération.
-                let file = conn_url.trim_start_matches("sqlite:").split('?').next().unwrap_or_default();
+                let file = conn_url
+                    .trim_start_matches("sqlite:")
+                    .split('?')
+                    .next()
+                    .unwrap_or_default();
                 if restore_pending(std::path::Path::new(file)) {
                     return Err(crate::Error::RestorePending);
                 }
@@ -197,7 +205,10 @@ impl DbPool {
                         query = query.bind(value);
                     }
                 }
-                let result = pool.execute(query).await.map_err(|e| crate::guard::sqlite_error(pool, e))?;
+                let result = pool
+                    .execute(query)
+                    .await
+                    .map_err(|e| crate::guard::sqlite_error(pool, e))?;
                 (
                     result.rows_affected(),
                     LastInsertId::Sqlite(result.last_insert_rowid()),
@@ -268,7 +279,10 @@ impl DbPool {
                         query = query.bind(value);
                     }
                 }
-                let rows = pool.fetch_all(query).await.map_err(|e| crate::guard::sqlite_error(pool, e))?;
+                let rows = pool
+                    .fetch_all(query)
+                    .await
+                    .map_err(|e| crate::guard::sqlite_error(pool, e))?;
                 let mut values = Vec::new();
                 for row in rows {
                     let mut value = IndexMap::default();
@@ -399,16 +413,19 @@ pub async fn open_sqlite_pool(conn_url: &str) -> Result<Pool<Sqlite>, sqlx::Erro
 
     use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
 
-    let options = SqliteConnectOptions::from_str(conn_url)?.journal_mode(SqliteJournalMode::Wal).foreign_keys(true);
+    let options = SqliteConnectOptions::from_str(conn_url)?
+        .journal_mode(SqliteJournalMode::Wal)
+        .foreign_keys(true);
     // Spartiate (SEC-01) : limite d'attachement à 0 et autorisateur sur chaque connexion (voir `guard`), posés après les pragmas ci-dessus.
     let state = std::sync::Arc::new(std::sync::atomic::AtomicU8::new(0));
-    let pool = crate::guard::harden_pool_options(SqlitePoolOptions::new(), std::sync::Arc::clone(&state))
-        .max_connections(1)
-        .min_connections(0)
-        .idle_timeout(None)
-        .max_lifetime(None)
-        .connect_with(options)
-        .await?;
+    let pool =
+        crate::guard::harden_pool_options(SqlitePoolOptions::new(), std::sync::Arc::clone(&state))
+            .max_connections(1)
+            .min_connections(0)
+            .idle_timeout(None)
+            .max_lifetime(None)
+            .connect_with(options)
+            .await?;
     crate::guard::register_pool(&pool, &state);
     Ok(pool)
 }
@@ -423,13 +440,19 @@ mod tests {
     /// l'écriture se heurte au verrou de la 1re (code 5, « database is locked »).
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn pool_has_one_connection_in_wal_mode() {
-        let dir = tempfile::Builder::new().prefix("db-wal-").tempdir_in(concat!(env!("CARGO_MANIFEST_DIR"), "/../../target")).unwrap();
+        let dir = tempfile::Builder::new()
+            .prefix("db-wal-")
+            .tempdir_in(concat!(env!("CARGO_MANIFEST_DIR"), "/../../target"))
+            .unwrap();
         let url = format!("sqlite:{}", dir.path().join("t.db").to_str().unwrap());
         Sqlite::create_database(&url).await.unwrap();
         let pool = open_sqlite_pool(&url).await.unwrap();
         assert_eq!(pool.options().get_max_connections(), 1);
         let db = DbPool::Sqlite(pool);
-        let rows = db.select("PRAGMA journal_mode".to_string(), vec![]).await.unwrap();
+        let rows = db
+            .select("PRAGMA journal_mode".to_string(), vec![])
+            .await
+            .unwrap();
         assert_eq!(rows[0]["journal_mode"], JsonValue::String("wal".into()));
         db.close().await;
     }
@@ -444,12 +467,22 @@ mod tests {
         Sqlite::create_database(&url).await.unwrap();
         let db = DbPool::Sqlite(open_sqlite_pool(&url).await.unwrap());
         let run = |sql: &'static str| db.execute(sql.to_string(), vec![]);
-        run("CREATE TABLE t (id INTEGER PRIMARY KEY, v TEXT)").await.unwrap();
+        run("CREATE TABLE t (id INTEGER PRIMARY KEY, v TEXT)")
+            .await
+            .unwrap();
         for i in 0..300 {
-            run("BEGIN IMMEDIATE").await.unwrap_or_else(|e| panic!("BEGIN {i} : {e}"));
-            run("INSERT INTO t (v) VALUES ('a')").await.unwrap_or_else(|e| panic!("INSERT a {i} : {e}"));
-            run("INSERT INTO t (v) VALUES ('b')").await.unwrap_or_else(|e| panic!("INSERT b {i} : {e}"));
-            run("COMMIT").await.unwrap_or_else(|e| panic!("COMMIT {i} : {e}"));
+            run("BEGIN IMMEDIATE")
+                .await
+                .unwrap_or_else(|e| panic!("BEGIN {i} : {e}"));
+            run("INSERT INTO t (v) VALUES ('a')")
+                .await
+                .unwrap_or_else(|e| panic!("INSERT a {i} : {e}"));
+            run("INSERT INTO t (v) VALUES ('b')")
+                .await
+                .unwrap_or_else(|e| panic!("INSERT b {i} : {e}"));
+            run("COMMIT")
+                .await
+                .unwrap_or_else(|e| panic!("COMMIT {i} : {e}"));
         }
         db.close().await;
     }

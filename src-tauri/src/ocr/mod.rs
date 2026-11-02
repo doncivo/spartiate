@@ -82,7 +82,10 @@ pub struct OcrCommandError {
 
 impl From<OcrError> for OcrCommandError {
     fn from(error: OcrError) -> Self {
-        Self { code: error.code(), message: format!("{error:?}") }
+        Self {
+            code: error.code(),
+            message: format!("{error:?}"),
+        }
     }
 }
 
@@ -138,7 +141,12 @@ pub fn sniff_image(bytes: &[u8]) -> Option<ImageKind> {
 
 /// Dimensions déclarées par l'en-tête de l'image : refus si un côté dépasse `max_side` (limite du moteur) ou si le total dépasse `MAX_PIXELS`.
 pub fn check_dimensions(width: u32, height: u32, max_side: u32) -> Result<(), OcrError> {
-    if width == 0 || height == 0 || width > max_side || height > max_side || u64::from(width) * u64::from(height) > MAX_PIXELS {
+    if width == 0
+        || height == 0
+        || width > max_side
+        || height > max_side
+        || u64::from(width) * u64::from(height) > MAX_PIXELS
+    {
         return Err(OcrError::DimensionsTooLarge);
     }
     Ok(())
@@ -181,13 +189,20 @@ pub fn declared_dimensions(bytes: &[u8], kind: ImageKind) -> Option<(u32, u32)> 
                     0xD9 | 0xDA => return None,
                     _ => {}
                 }
-                let length = usize::from(u16::from_be_bytes([*bytes.get(at)?, *bytes.get(at + 1)?]));
+                let length =
+                    usize::from(u16::from_be_bytes([*bytes.get(at)?, *bytes.get(at + 1)?]));
                 if length < 2 {
                     return None;
                 }
                 if (0xC0..=0xCF).contains(&marker) && !matches!(marker, 0xC4 | 0xC8 | 0xCC) {
-                    let height = u32::from(u16::from_be_bytes([*bytes.get(at + 3)?, *bytes.get(at + 4)?]));
-                    let width = u32::from(u16::from_be_bytes([*bytes.get(at + 5)?, *bytes.get(at + 6)?]));
+                    let height = u32::from(u16::from_be_bytes([
+                        *bytes.get(at + 3)?,
+                        *bytes.get(at + 4)?,
+                    ]));
+                    let width = u32::from(u16::from_be_bytes([
+                        *bytes.get(at + 5)?,
+                        *bytes.get(at + 6)?,
+                    ]));
                     return Some((width, height));
                 }
                 at += length;
@@ -236,13 +251,19 @@ where
         .map(|line| clean_text(line.as_ref()))
         .filter(|line| !line.is_empty())
         .take(MAX_LINES)
-        .map(|text| OcrLine { text, confidence: None })
+        .map(|text| OcrLine {
+            text,
+            confidence: None,
+        })
         .collect()
 }
 
 /// Nettoyage d'une ligne : caractères de contrôle remplacés par des espaces, espaces de bord retirés et multiples réduits.
 pub fn clean_text(line: &str) -> String {
-    let cleaned: String = line.chars().map(|c| if c.is_control() { ' ' } else { c }).collect();
+    let cleaned: String = line
+        .chars()
+        .map(|c| if c.is_control() { ' ' } else { c })
+        .collect();
     cleaned.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
@@ -252,7 +273,10 @@ pub fn pick_french(installed: &[String]) -> Option<&String> {
         let lower = tag.to_lowercase();
         lower == LANGUAGE_PREFIX || lower.starts_with("fr-")
     };
-    installed.iter().find(|tag| tag.eq_ignore_ascii_case(PREFERRED_LANGUAGE)).or_else(|| installed.iter().find(is_french))
+    installed
+        .iter()
+        .find(|tag| tag.eq_ignore_ascii_case(PREFERRED_LANGUAGE))
+        .or_else(|| installed.iter().find(is_french))
 }
 
 fn status_blocking() -> OcrStatus {
@@ -262,7 +286,12 @@ fn status_blocking() -> OcrStatus {
     }
     #[cfg(not(windows))]
     {
-        OcrStatus { available: false, languages: Vec::new(), reason: None, cleanup_failed: false }
+        OcrStatus {
+            available: false,
+            languages: Vec::new(),
+            reason: None,
+            cleanup_failed: false,
+        }
     }
 }
 
@@ -291,7 +320,12 @@ pub async fn ocr_status<R: Runtime>(app: AppHandle<R>) -> OcrStatus {
         let _ = app;
         tauri::async_runtime::spawn_blocking(status_blocking)
             .await
-            .unwrap_or(OcrStatus { available: false, languages: Vec::new(), reason: None, cleanup_failed: false })
+            .unwrap_or(OcrStatus {
+                available: false,
+                languages: Vec::new(),
+                reason: None,
+                cleanup_failed: false,
+            })
     }
 }
 
@@ -300,7 +334,10 @@ pub async fn ocr_status<R: Runtime>(app: AppHandle<R>) -> OcrStatus {
 /// Erreurs `{ code, message }` : `ocr-empty-image`, `ocr-too-large`, `ocr-unsupported-format`,
 /// `ocr-dimensions-too-large`, `ocr-language-missing`, `ocr-unavailable`, `ocr-engine`.
 #[tauri::command]
-pub async fn ocr_recognize<R: Runtime>(app: AppHandle<R>, request: Request<'_>) -> Result<OcrResult, OcrCommandError> {
+pub async fn ocr_recognize<R: Runtime>(
+    app: AppHandle<R>,
+    request: Request<'_>,
+) -> Result<OcrResult, OcrCommandError> {
     let InvokeBody::Raw(bytes) = request.body() else {
         return Err(OcrError::EmptyImage.into());
     };
@@ -316,14 +353,20 @@ pub async fn ocr_recognize<R: Runtime>(app: AppHandle<R>, request: Request<'_>) 
         let lines = tauri::async_runtime::spawn_blocking(move || recognize_blocking(&owned))
             .await
             .map_err(|e| OcrCommandError::from(OcrError::Engine(e.to_string())))??;
-        Ok(OcrResult { lines: clean_lines(lines), truncated: false })
+        Ok(OcrResult {
+            lines: clean_lines(lines),
+            truncated: false,
+        })
     }
 }
 
 /// Lecture directe pour les tests d'intégration (même chemin que la commande, sans IPC).
 pub fn recognize_bytes(bytes: &[u8]) -> Result<OcrResult, OcrError> {
     validate_image(bytes)?;
-    recognize_blocking(bytes).map(|lines| OcrResult { lines: clean_lines(lines), truncated: false })
+    recognize_blocking(bytes).map(|lines| OcrResult {
+        lines: clean_lines(lines),
+        truncated: false,
+    })
 }
 
 /// État du moteur pour les tests d'intégration.

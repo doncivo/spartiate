@@ -1,8 +1,9 @@
 //! Logique pure de la zone de notification et du démarrage réduit (D-01, D-02).
 
 use spartiate_lib::desktop::{
-    fallback_labels, hides_on_close, is_minimized_launch, menu_layout, sync_tray_effect, SyncTrayEffect, TrayAction, TrayEntry, TrayLabels, TraySyncState,
-    MAIN_WINDOW, TRAY_SYNC_NOW_EVENT,
+    fallback_labels, hides_on_close, is_minimized_launch, menu_layout, sync_tray_effect,
+    SyncTrayEffect, TrayAction, TrayEntry, TrayLabels, TraySyncState, MAIN_WINDOW,
+    TRAY_SYNC_NOW_EVENT,
 };
 
 fn labels(sync_enabled: bool) -> TrayLabels {
@@ -32,7 +33,10 @@ fn sync_now_is_never_greyed() {
     // Y-03 D1 : sans synchro configurée, l'entrée reste active et guide vers Réglages.
     for configured in [false, true] {
         for entry in menu_layout(&labels(configured)) {
-            if let TrayEntry::Item { action, enabled, .. } = entry {
+            if let TrayEntry::Item {
+                action, enabled, ..
+            } = entry
+            {
                 assert!(enabled, "{action:?}");
             }
         }
@@ -41,7 +45,14 @@ fn sync_now_is_never_greyed() {
 
 #[test]
 fn sync_now_label_comes_from_the_front() {
-    assert_eq!(menu_layout(&labels(true))[1], TrayEntry::Item { action: TrayAction::Sync, label: "Synchro".into(), enabled: true });
+    assert_eq!(
+        menu_layout(&labels(true))[1],
+        TrayEntry::Item {
+            action: TrayAction::Sync,
+            label: "Synchro".into(),
+            enabled: true
+        }
+    );
 }
 
 #[test]
@@ -58,14 +69,30 @@ fn sync_now_is_silent_when_configured_and_opens_settings_otherwise() {
 #[test]
 fn labels_come_from_the_front() {
     let layout = menu_layout(&labels(true));
-    assert_eq!(layout[0], TrayEntry::Item { action: TrayAction::Open, label: "Ouvrir".into(), enabled: true });
-    assert_eq!(layout[3], TrayEntry::Item { action: TrayAction::Quit, label: "Quitter".into(), enabled: true });
+    assert_eq!(
+        layout[0],
+        TrayEntry::Item {
+            action: TrayAction::Open,
+            label: "Ouvrir".into(),
+            enabled: true
+        }
+    );
+    assert_eq!(
+        layout[3],
+        TrayEntry::Item {
+            action: TrayAction::Quit,
+            label: "Quitter".into(),
+            enabled: true
+        }
+    );
 }
 
 #[test]
 fn fallback_labels_are_complete_and_assume_sync_not_configured() {
     let fallback = fallback_labels();
-    assert!([&fallback.open, &fallback.sync, &fallback.quit].iter().all(|l| !l.is_empty()));
+    assert!([&fallback.open, &fallback.sync, &fallback.quit]
+        .iter()
+        .all(|l| !l.is_empty()));
     assert_eq!(fallback.sync, "Synchroniser maintenant");
     assert!(!fallback.sync_enabled);
 }
@@ -94,6 +121,7 @@ fn only_the_main_window_hides_on_close() {
 #[test]
 fn labels_deserialize_from_camel_case() {
     let parsed: TrayLabels =
-        serde_json::from_str(r#"{"open":"a","sync":"c","quit":"d","syncEnabled":false}"#).expect("JSON valide");
+        serde_json::from_str(r#"{"open":"a","sync":"c","quit":"d","syncEnabled":false}"#)
+            .expect("JSON valide");
     assert!(!parsed.sync_enabled);
 }

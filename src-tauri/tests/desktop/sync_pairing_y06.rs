@@ -7,14 +7,17 @@ use std::path::Path;
 use spartiate_lib::sync::folder::FolderKind;
 use spartiate_lib::sync::limits::PAIRING_VALIDITY_MS;
 use spartiate_lib::sync::pairing::{
-    affinity_outcome, pairing_page_listed, pairing_window_action, watch_decision, Caller, PairingMode, PairingRegistry, PairingWindowAction, PairingWindowEvent,
-    WatchInput, PAIRING_PAGE_MARKER, PAIRING_WINDOW,
+    affinity_outcome, pairing_page_listed, pairing_window_action, watch_decision, Caller,
+    PairingMode, PairingRegistry, PairingWindowAction, PairingWindowEvent, WatchInput,
+    PAIRING_PAGE_MARKER, PAIRING_WINDOW,
 };
 use spartiate_lib::sync::service::KeyInput;
 use spartiate_lib::sync::SyncCode;
 use zeroize::Zeroizing;
 
-use crate::sync_support::{device, epoch, hlc, Device, FakeBackend, MemFs, DEV_A, DEV_B, DEV_C, FOLDER, NOW};
+use crate::sync_support::{
+    device, epoch, hlc, Device, FakeBackend, MemFs, DEV_A, DEV_B, DEV_C, FOLDER, NOW,
+};
 
 fn code<T>(result: Result<T, spartiate_lib::sync::SyncError>) -> SyncCode {
     match result {
@@ -30,23 +33,52 @@ fn code<T>(result: Result<T, spartiate_lib::sync::SyncError>) -> SyncCode {
 #[test]
 fn y06_1_page_carries_the_marker_and_is_listed_by_exact_key() {
     let page = include_str!("../../../pairing.html");
-    assert!(page.contains(PAIRING_PAGE_MARKER), "pairing.html porte le marqueur");
-    assert!(page.contains("/theme-init.js") && page.contains("<div id=\"root\"></div>") && page.contains("/src/features/sync/pairing-window/main.tsx"));
+    assert!(
+        page.contains(PAIRING_PAGE_MARKER),
+        "pairing.html porte le marqueur"
+    );
+    assert!(
+        page.contains("/theme-init.js")
+            && page.contains("<div id=\"root\"></div>")
+            && page.contains("/src/features/sync/pairing-window/main.tsx")
+    );
     for other in [include_str!("../../../index.html")] {
-        assert!(!other.contains(PAIRING_PAGE_MARKER), "aucune autre page ne porte le marqueur");
+        assert!(
+            !other.contains(PAIRING_PAGE_MARKER),
+            "aucune autre page ne porte le marqueur"
+        );
     }
-    assert!(pairing_page_listed(["/index.html", "/pairing.html"].into_iter()));
+    assert!(pairing_page_listed(
+        ["/index.html", "/pairing.html"].into_iter()
+    ));
     assert!(pairing_page_listed(["pairing.html"].into_iter()));
-    assert!(!pairing_page_listed(["/index.html", "/assets/pairing.html", "/pairing.html.map"].into_iter()));
+    assert!(!pairing_page_listed(
+        ["/index.html", "/assets/pairing.html", "/pairing.html.map"].into_iter()
+    ));
     // Le contrôle par les clés des actifs vient d'abord ; la requête au serveur Vite n'existe qu'en développement (D2).
     let source = include_str!("../../src/sync/commands.rs");
-    let listed = source.find("if pairing_page_listed(").expect("clés des actifs");
-    let dev = source.find("dev_page_has_marker(host, port)").expect("requête de développement");
+    let listed = source
+        .find("if pairing_page_listed(")
+        .expect("clés des actifs");
+    let dev = source
+        .find("dev_page_has_marker(host, port)")
+        .expect("requête de développement");
     assert!(listed < dev);
-    assert!(source[..dev].rfind("#[cfg(debug_assertions)]").is_some_and(|at| at > listed), "requête sous cfg(debug_assertions)");
-    assert!(!source.contains("dev_url.is_some() {\n        return true;"), "plus de contrôle sauté");
+    assert!(
+        source[..dev]
+            .rfind("#[cfg(debug_assertions)]")
+            .is_some_and(|at| at > listed),
+        "requête sous cfg(debug_assertions)"
+    );
+    assert!(
+        !source.contains("dev_url.is_some() {\n        return true;"),
+        "plus de contrôle sauté"
+    );
     // La fenêtre n'est jamais déclarée dans la configuration (§2.1).
-    for conf in [include_str!("../../tauri.conf.json"), include_str!("../../tauri.windows.conf.json")] {
+    for conf in [
+        include_str!("../../tauri.conf.json"),
+        include_str!("../../tauri.windows.conf.json"),
+    ] {
         assert!(!conf.contains("pairing"));
     }
 }
@@ -87,13 +119,19 @@ fn y06_3_dev_server_answering_index_html_is_refused_the_pairing_page_is_accepted
     let (port, server) = serve_once(http("200 OK", include_str!("../../../index.html")));
     assert!(!dev_page_has_marker("127.0.0.1", port));
     let request = server.join().unwrap();
-    assert!(request.starts_with("GET /pairing.html HTTP/1.1\r\n"), "{request}");
+    assert!(
+        request.starts_with("GET /pairing.html HTTP/1.1\r\n"),
+        "{request}"
+    );
     // La vraie page : acceptée.
     let (port, server) = serve_once(http("200 OK", include_str!("../../../pairing.html")));
     assert!(dev_page_has_marker("127.0.0.1", port));
     server.join().unwrap();
     // Marqueur avec un autre statut, réponse vide, hôte qui n'est pas de bouclage, serveur absent : refus.
-    assert!(!dev_response_is_pairing_page(&http("404 Not Found", include_str!("../../../pairing.html"))));
+    assert!(!dev_response_is_pairing_page(&http(
+        "404 Not Found",
+        include_str!("../../../pairing.html")
+    )));
     assert!(!dev_response_is_pairing_page(b""));
     assert!(!dev_page_has_marker("example.com", 80));
     let closed = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
@@ -107,33 +145,85 @@ fn y06_3_dev_server_answering_index_html_is_refused_the_pairing_page_is_accepted
 // ------------------------------------------------------------------------------------------------------------------------------
 
 fn caller(hwnd: isize) -> Caller<'static> {
-    Caller { label: PAIRING_WINDOW, url: "http://tauri.localhost/pairing.html", hwnd }
+    Caller {
+        label: PAIRING_WINDOW,
+        url: "http://tauri.localhost/pairing.html",
+        hwnd,
+    }
 }
 
 #[test]
 fn y06_18_window_decisions_destroy_and_never_hide() {
     // Croix native : fermeture empêchée puis destruction ; destruction : instance effacée.
-    assert_eq!(pairing_window_action(PairingWindowEvent::CloseRequested), PairingWindowAction::PreventAndDestroy);
-    assert_eq!(pairing_window_action(PairingWindowEvent::Destroyed), PairingWindowAction::Clear);
-    assert_eq!(pairing_window_action(PairingWindowEvent::Other), PairingWindowAction::Ignore);
+    assert_eq!(
+        pairing_window_action(PairingWindowEvent::CloseRequested),
+        PairingWindowAction::PreventAndDestroy
+    );
+    assert_eq!(
+        pairing_window_action(PairingWindowEvent::Destroyed),
+        PairingWindowAction::Clear
+    );
+    assert_eq!(
+        pairing_window_action(PairingWindowEvent::Other),
+        PairingWindowAction::Ignore
+    );
     // Échec de SetWindowDisplayAffinity (ou HWND inconnu) : `io`, la fenêtre est détruite avant tout affichage.
-    assert_eq!(code(affinity_outcome(42, false)), SyncCode::WindowUnprotected);
+    assert_eq!(
+        code(affinity_outcome(42, false)),
+        SyncCode::WindowUnprotected
+    );
     assert_eq!(code(affinity_outcome(0, true)), SyncCode::WindowUnprotected);
     assert!(affinity_outcome(42, true).is_ok());
     // Surveillance : `main` réduite, masquée ou fermée → destruction ; échéance → destruction ; sinon rien.
-    assert_eq!(watch_decision(WatchInput { main_shown: false, expired: false }), Some("main-hidden"));
-    assert_eq!(watch_decision(WatchInput { main_shown: false, expired: true }), Some("main-hidden"));
-    assert_eq!(watch_decision(WatchInput { main_shown: true, expired: true }), Some("expired"));
-    assert_eq!(watch_decision(WatchInput { main_shown: true, expired: false }), None);
+    assert_eq!(
+        watch_decision(WatchInput {
+            main_shown: false,
+            expired: false
+        }),
+        Some("main-hidden")
+    );
+    assert_eq!(
+        watch_decision(WatchInput {
+            main_shown: false,
+            expired: true
+        }),
+        Some("main-hidden")
+    );
+    assert_eq!(
+        watch_decision(WatchInput {
+            main_shown: true,
+            expired: true
+        }),
+        Some("expired")
+    );
+    assert_eq!(
+        watch_decision(WatchInput {
+            main_shown: true,
+            expired: false
+        }),
+        None
+    );
     // Les commandes appliquent ces décisions : destruction (jamais `hide`), fermeture limitée à l'instance appelante.
     let source = include_str!("../../src/sync/commands.rs");
-    assert!(crate::support::has(source, "match pairing_window_action(seen)") && crate::support::has(source, "watch_decision(WatchInput { main_shown, expired })"));
+    assert!(
+        crate::support::has(source, "match pairing_window_action(seen)")
+            && crate::support::has(source, "watch_decision(WatchInput { main_shown, expired })")
+    );
     assert!(source.contains("if let Err(error) = affinity_outcome(hwnd, excluded)"));
-    assert!(!source.contains(".hide()"), "la fenêtre pairing n'est jamais masquée");
+    assert!(
+        !source.contains(".hide()"),
+        "la fenêtre pairing n'est jamais masquée"
+    );
     let close = &source[source.find("pub async fn sync_pairing_close").unwrap()..];
     let close = &close[..close.find("\n}\n").unwrap()];
-    assert!(close.contains("state.pairing.verify(&caller") && close.contains("destroy_pairing(&app, &state.pairing, instance.hwnd)"));
-    assert!(!close.contains("get_webview_window(PAIRING_WINDOW)"), "aucune cible autre que l'instance vérifiée");
+    assert!(
+        close.contains("state.pairing.verify(&caller")
+            && close.contains("destroy_pairing(&app, &state.pairing, instance.hwnd)")
+    );
+    assert!(
+        !close.contains("get_webview_window(PAIRING_WINDOW)"),
+        "aucune cible autre que l'instance vérifiée"
+    );
 }
 
 #[test]
@@ -142,9 +232,15 @@ fn y06_18_close_only_targets_the_calling_instance() {
     registry.begin_open(false).unwrap();
     registry.register(42, PairingMode::Show, NOW);
     // Une autre fenêtre (même libellé, autre HWND) ne peut ni se faire passer pour l'instance ni l'effacer.
-    assert_eq!(code(registry.verify(&caller(43), NOW)), SyncCode::WrongWindow);
+    assert_eq!(
+        code(registry.verify(&caller(43), NOW)),
+        SyncCode::WrongWindow
+    );
     registry.clear(43);
-    assert!(registry.current().is_some(), "effacement demandé pour un autre HWND : sans effet");
+    assert!(
+        registry.current().is_some(),
+        "effacement demandé pour un autre HWND : sans effet"
+    );
     registry.clear(42);
     assert!(registry.current().is_none());
 }
@@ -183,27 +279,55 @@ fn y06_9_arrival_of_the_paired_device_closes_the_show_window_once() {
     registry.register(42, PairingMode::Show, NOW);
     let scan = a.core.scan(&[]).unwrap();
     assert!(a.core.paired_with_self(&scan).is_empty());
-    assert_eq!(registry.observe_paired(&a.core.paired_with_self(&scan)), None, "premier scan : référence");
+    assert_eq!(
+        registry.observe_paired(&a.core.paired_with_self(&scan)),
+        None,
+        "premier scan : référence"
+    );
 
     // C rejoint par la clé de secours (aucun pairedBy) : la fenêtre reste.
-    let payload = a.core.pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS).unwrap();
+    let payload = a
+        .core
+        .pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS)
+        .unwrap();
     let c = joiner(&fs, DEV_C);
-    c.core.key_import(KeyInput::RecoveryKey(Zeroizing::new(payload.recovery_key.clone())), 1).unwrap();
+    c.core
+        .key_import(
+            KeyInput::RecoveryKey(Zeroizing::new(payload.recovery_key.clone())),
+            1,
+        )
+        .unwrap();
     publish(&c, DEV_C, &epoch(1, DEV_A), None);
     let scan = a.core.scan(&[]).unwrap();
-    assert!(scan.devices.iter().any(|d| d.device_id == DEV_C && d.state_status == "ok"));
-    assert_eq!(registry.observe_paired(&a.core.paired_with_self(&scan)), None);
+    assert!(scan
+        .devices
+        .iter()
+        .any(|d| d.device_id == DEV_C && d.state_status == "ok"));
+    assert_eq!(
+        registry.observe_paired(&a.core.paired_with_self(&scan)),
+        None
+    );
 
     // B rejoint par le QR du PC : pairedBy = A → fenêtre détruite, une seule fois.
     let b = joiner(&fs, DEV_B);
-    let result = b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1).unwrap();
+    let result = b
+        .core
+        .key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)
+        .unwrap();
     assert_eq!(result.paired_by.as_deref(), Some(DEV_A));
     publish(&b, DEV_B, &epoch(1, DEV_A), Some(DEV_A));
     let scan = a.core.scan(&[]).unwrap();
     assert_eq!(a.core.paired_with_self(&scan), vec![DEV_B.to_owned()]);
-    assert_eq!(registry.observe_paired(&a.core.paired_with_self(&scan)), Some(42));
+    assert_eq!(
+        registry.observe_paired(&a.core.paired_with_self(&scan)),
+        Some(42)
+    );
     assert!(registry.current().is_none(), "instance effacée");
-    assert_eq!(registry.observe_paired(&a.core.paired_with_self(&scan)), None, "un seul événement");
+    assert_eq!(
+        registry.observe_paired(&a.core.paired_with_self(&scan)),
+        None,
+        "un seul événement"
+    );
 }
 
 #[test]
@@ -211,27 +335,47 @@ fn y06_9_already_paired_device_other_pc_and_import_instance_do_not_close() {
     let (a, fs) = device();
     a.setup(DEV_A);
     publish(&a, DEV_A, &epoch(1, DEV_A), None);
-    let payload = a.core.pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS).unwrap();
+    let payload = a
+        .core
+        .pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS)
+        .unwrap();
     // B, déjà associé par A avant l'ouverture de la fenêtre.
     let b = joiner(&fs, DEV_B);
-    b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1).unwrap();
+    b.core
+        .key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)
+        .unwrap();
     publish(&b, DEV_B, &epoch(1, DEV_A), Some(DEV_A));
     let registry = PairingRegistry::default();
     registry.begin_open(false).unwrap();
     registry.register(42, PairingMode::Show, NOW);
     let scan = a.core.scan(&[]).unwrap();
-    assert_eq!(registry.observe_paired(&a.core.paired_with_self(&scan)), None, "déjà là au premier scan");
+    assert_eq!(
+        registry.observe_paired(&a.core.paired_with_self(&scan)),
+        None,
+        "déjà là au premier scan"
+    );
     // B se resynchronise pendant l'affichage : la fenêtre reste.
     let scan = a.core.scan(&[]).unwrap();
-    assert_eq!(registry.observe_paired(&a.core.paired_with_self(&scan)), None);
+    assert_eq!(
+        registry.observe_paired(&a.core.paired_with_self(&scan)),
+        None
+    );
     // C associé par B (un autre appareil) : pas pour ce PC.
-    let from_b = b.core.pairing_payload(b.clock.now() + PAIRING_VALIDITY_MS).unwrap();
+    let from_b = b
+        .core
+        .pairing_payload(b.clock.now() + PAIRING_VALIDITY_MS)
+        .unwrap();
     let c = joiner(&fs, DEV_C);
-    c.core.key_import(KeyInput::QrText(Zeroizing::new(from_b.qr_text.clone())), 1).unwrap();
+    c.core
+        .key_import(KeyInput::QrText(Zeroizing::new(from_b.qr_text.clone())), 1)
+        .unwrap();
     publish(&c, DEV_C, &epoch(1, DEV_A), Some(DEV_B));
     let scan = a.core.scan(&[]).unwrap();
     assert!(!a.core.paired_with_self(&scan).contains(&DEV_C.to_owned()));
-    assert_eq!(registry.observe_paired(&a.core.paired_with_self(&scan)), None);
+    assert_eq!(
+        registry.observe_paired(&a.core.paired_with_self(&scan)),
+        None
+    );
     assert!(registry.current().is_some());
     // Instance `import` : jamais concernée, même par un nouvel arrivant.
     let import = PairingRegistry::default();
@@ -257,7 +401,11 @@ fn y06_9_state_not_authenticated_never_counts() {
         fs.put(&parts, &bytes);
     }
     let scan = a.core.scan(&[]).unwrap();
-    let foreign = scan.devices.iter().find(|d| d.device_id == DEV_B).expect("appareil listé");
+    let foreign = scan
+        .devices
+        .iter()
+        .find(|d| d.device_id == DEV_B)
+        .expect("appareil listé");
     assert_ne!(foreign.state_status, "ok");
     assert!(a.core.paired_with_self(&scan).is_empty());
 }
@@ -274,15 +422,27 @@ fn y06_16_arrival_logs_hold_no_secret() {
     registry.begin_open(false).unwrap();
     registry.register(42, PairingMode::Show, NOW);
     registry.observe_paired(&a.core.paired_with_self(&a.core.scan(&[]).unwrap()));
-    let payload = a.core.pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS).unwrap();
+    let payload = a
+        .core
+        .pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS)
+        .unwrap();
     let b = joiner(&fs, DEV_B);
-    b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1).unwrap();
+    b.core
+        .key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)
+        .unwrap();
     publish(&b, DEV_B, &epoch(1, DEV_A), Some(DEV_A));
-    assert_eq!(registry.observe_paired(&a.core.paired_with_self(&a.core.scan(&[]).unwrap())), Some(42));
+    assert_eq!(
+        registry.observe_paired(&a.core.paired_with_self(&a.core.scan(&[]).unwrap())),
+        Some(42)
+    );
     let lines = capture.lines().join("\n");
     assert!(lines.contains("pairing-arrival"));
     let key_part = payload.qr_text.trim_start_matches("SPPAIR1.");
-    for needle in [payload.qr_text.as_str(), key_part, payload.recovery_key.as_str()] {
+    for needle in [
+        payload.qr_text.as_str(),
+        key_part,
+        payload.recovery_key.as_str(),
+    ] {
         assert!(!lines.contains(needle));
     }
 }
@@ -298,9 +458,14 @@ fn y06_9_paired_by_is_completed_by_rust_when_the_engine_omits_it() {
     registry.begin_open(false).unwrap();
     registry.register(42, PairingMode::Show, NOW);
     registry.observe_paired(&a.core.paired_with_self(&a.core.scan(&[]).unwrap()));
-    let payload = a.core.pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS).unwrap();
+    let payload = a
+        .core
+        .pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS)
+        .unwrap();
     let b = joiner(&fs, DEV_B);
-    b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1).unwrap();
+    b.core
+        .key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)
+        .unwrap();
     // Valeur différente : refusée, rien n'est écrit.
     let mut other = serde_json::json!({
         "deviceId": DEV_B, "platform": "windows", "appVersion": "0.1.1", "sm": 1, "sv": 14, "epoch": epoch(1, DEV_A), "stateSeq": 1,
@@ -312,15 +477,35 @@ fn y06_9_paired_by_is_completed_by_rust_when_the_engine_omits_it() {
     // Omise (ce que fait le moteur) : acceptée et complétée.
     publish(&b, DEV_B, &epoch(1, DEV_A), None);
     let scan = a.core.scan(&[]).unwrap();
-    let state = scan.devices.iter().find(|d| d.device_id == DEV_B).and_then(|d| d.state.clone()).expect("état de B publié");
+    let state = scan
+        .devices
+        .iter()
+        .find(|d| d.device_id == DEV_B)
+        .and_then(|d| d.state.clone())
+        .expect("état de B publié");
     assert_eq!(state.paired_by.as_deref(), Some(DEV_A));
-    assert_eq!(registry.observe_paired(&a.core.paired_with_self(&scan)), Some(42));
+    assert_eq!(
+        registry.observe_paired(&a.core.paired_with_self(&scan)),
+        Some(42)
+    );
     // Clé de secours (aucun pairedBy connu) : l'état reste sans pairedBy.
     let c = joiner(&fs, DEV_C);
-    c.core.key_import(KeyInput::RecoveryKey(Zeroizing::new(payload.recovery_key.clone())), 1).unwrap();
+    c.core
+        .key_import(
+            KeyInput::RecoveryKey(Zeroizing::new(payload.recovery_key.clone())),
+            1,
+        )
+        .unwrap();
     publish(&c, DEV_C, &epoch(1, DEV_A), None);
     let scan = a.core.scan(&[]).unwrap();
-    assert_eq!(scan.devices.iter().find(|d| d.device_id == DEV_C).and_then(|d| d.state.as_ref()).map(|s| s.paired_by.clone()), Some(None));
+    assert_eq!(
+        scan.devices
+            .iter()
+            .find(|d| d.device_id == DEV_C)
+            .and_then(|d| d.state.as_ref())
+            .map(|s| s.paired_by.clone()),
+        Some(None)
+    );
 }
 
 /// Codes distincts (revue 2, audit 4) : fenêtre `pairing` déjà ouverte → `already-open` ; fenêtre propriétaire pas au premier plan →
@@ -328,18 +513,37 @@ fn y06_9_paired_by_is_completed_by_rust_when_the_engine_omits_it() {
 #[test]
 fn y06_4_already_open_and_not_foreground_have_their_own_codes() {
     let registry = PairingRegistry::default();
-    assert_eq!(code(registry.begin_open(true)), SyncCode::AlreadyOpen, "libellé déjà pris");
+    assert_eq!(
+        code(registry.begin_open(true)),
+        SyncCode::AlreadyOpen,
+        "libellé déjà pris"
+    );
     registry.begin_open(false).unwrap();
-    assert_eq!(code(registry.begin_open(false)), SyncCode::AlreadyOpen, "ouverture en cours");
+    assert_eq!(
+        code(registry.begin_open(false)),
+        SyncCode::AlreadyOpen,
+        "ouverture en cours"
+    );
     registry.register(42, PairingMode::Show, NOW);
-    assert_eq!(code(registry.begin_open(false)), SyncCode::AlreadyOpen, "instance existante");
+    assert_eq!(
+        code(registry.begin_open(false)),
+        SyncCode::AlreadyOpen,
+        "instance existante"
+    );
     let source = include_str!("../../src/sync/commands.rs");
-    assert!(!source.contains("fail(SyncCode::ConsentDenied)"), "libellé pris pendant la boîte : already-open");
+    assert!(
+        !source.contains("fail(SyncCode::ConsentDenied)"),
+        "libellé pris pendant la boîte : already-open"
+    );
 
     let dir = tempfile::tempdir().unwrap();
     let ui = crate::sync_support::FakeUi::new();
     let clock = crate::sync_support::TestClock::new(NOW);
-    let consent = spartiate_lib::sync::consent::ConsentGate::new(dir.path().to_path_buf(), ui.clone(), clock.clock());
+    let consent = spartiate_lib::sync::consent::ConsentGate::new(
+        dir.path().to_path_buf(),
+        ui.clone(),
+        clock.clock(),
+    );
     ui.ready(false);
     assert_eq!(code(consent.confirm_show(1)), SyncCode::NotForeground);
     assert_eq!(code(consent.count_import(1)), SyncCode::NotForeground);
@@ -347,7 +551,11 @@ fn y06_4_already_open_and_not_foreground_have_their_own_codes() {
     assert_eq!(ui.prompts(), 0);
     ui.ready(true);
     ui.answer(false);
-    assert_eq!(code(consent.confirm_show(1)), SyncCode::ConsentDenied, "refus de la boîte");
+    assert_eq!(
+        code(consent.confirm_show(1)),
+        SyncCode::ConsentDenied,
+        "refus de la boîte"
+    );
     assert_eq!(SyncCode::AlreadyOpen.as_str(), "already-open");
     assert_eq!(SyncCode::NotForeground.as_str(), "not-foreground");
 }
@@ -359,9 +567,14 @@ fn y06_9_reference_is_the_folder_listing_at_opening() {
     let (a, fs) = device();
     a.setup(DEV_A);
     publish(&a, DEV_A, &epoch(1, DEV_A), None);
-    let payload = a.core.pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS).unwrap();
+    let payload = a
+        .core
+        .pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS)
+        .unwrap();
     let b = joiner(&fs, DEV_B);
-    b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1).unwrap();
+    b.core
+        .key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)
+        .unwrap();
     publish(&b, DEV_B, &epoch(1, DEV_A), None);
     let state_bytes = fs.get(&["devices", DEV_B, "state.spx"]).expect("état de B");
     fs.remove(&["devices", DEV_B, "state.spx"]);
@@ -369,15 +582,28 @@ fn y06_9_reference_is_the_folder_listing_at_opening() {
     registry.begin_open(false).unwrap();
     registry.register(42, PairingMode::Show, NOW);
     let listed = a.core.listed_devices().expect("liste");
-    assert!(listed.contains(&DEV_B.to_owned()), "listé quel que soit l'état");
+    assert!(
+        listed.contains(&DEV_B.to_owned()),
+        "listé quel que soit l'état"
+    );
     registry.set_arrival_baseline(42, listed);
     let first = a.core.scan(&[]).unwrap();
-    assert!(a.core.paired_with_self(&first).is_empty(), "état pas encore livré au premier scan");
-    assert_eq!(registry.observe_paired(&a.core.paired_with_self(&first)), None);
+    assert!(
+        a.core.paired_with_self(&first).is_empty(),
+        "état pas encore livré au premier scan"
+    );
+    assert_eq!(
+        registry.observe_paired(&a.core.paired_with_self(&first)),
+        None
+    );
     fs.put(&["devices", DEV_B, "state.spx"], &state_bytes);
     let later = a.core.scan(&[]).unwrap();
     assert_eq!(a.core.paired_with_self(&later), vec![DEV_B.to_owned()]);
-    assert_eq!(registry.observe_paired(&a.core.paired_with_self(&later)), None, "déjà là à l'ouverture : pas une arrivée");
+    assert_eq!(
+        registry.observe_paired(&a.core.paired_with_self(&later)),
+        None,
+        "déjà là à l'ouverture : pas une arrivée"
+    );
     assert!(registry.current().is_some());
 }
 
@@ -391,15 +617,26 @@ fn y06_9_association_before_the_first_scan_is_an_arrival() {
     registry.begin_open(false).unwrap();
     registry.register(42, PairingMode::Show, NOW);
     registry.set_arrival_baseline(42, a.core.listed_devices().unwrap());
-    let payload = a.core.pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS).unwrap();
+    let payload = a
+        .core
+        .pairing_payload(a.clock.now() + PAIRING_VALIDITY_MS)
+        .unwrap();
     let b = joiner(&fs, DEV_B);
-    b.core.key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1).unwrap();
+    b.core
+        .key_import(KeyInput::QrText(Zeroizing::new(payload.qr_text.clone())), 1)
+        .unwrap();
     publish(&b, DEV_B, &epoch(1, DEV_A), None);
     let scan = a.core.scan(&[]).unwrap();
-    assert_eq!(registry.observe_paired(&a.core.paired_with_self(&scan)), Some(42), "premier scan : arrivée détectée");
+    assert_eq!(
+        registry.observe_paired(&a.core.paired_with_self(&scan)),
+        Some(42),
+        "premier scan : arrivée détectée"
+    );
     // La commande prend la liste à l'ouverture, avant l'affichage.
     let source = include_str!("../../src/sync/commands.rs");
-    let set = source.find("set_arrival_baseline(hwnd").expect("référence posée par la commande");
+    let set = source
+        .find("set_arrival_baseline(hwnd")
+        .expect("référence posée par la commande");
     assert!(set < source.find("window.show()").unwrap());
 }
 
@@ -413,10 +650,20 @@ fn y06_18_webview_is_hardened_before_it_is_shown() {
     assert_eq!(SyncCode::WindowUnprotected.as_str(), "window-unprotected");
     assert!(hardening_outcome(true).is_ok());
     let source = include_str!("../../src/sync/commands.rs");
-    for call in ["SetAreDefaultContextMenusEnabled(false)", "SetAreBrowserAcceleratorKeysEnabled(false)", "SetIsGeneralAutofillEnabled(false)", "SetIsPasswordAutosaveEnabled(false)"] {
+    for call in [
+        "SetAreDefaultContextMenusEnabled(false)",
+        "SetAreBrowserAcceleratorKeysEnabled(false)",
+        "SetIsGeneralAutofillEnabled(false)",
+        "SetIsPasswordAutosaveEnabled(false)",
+    ] {
         let at = source.find(call).unwrap_or_else(|| panic!("{call} absent"));
-        assert!(at < source.find("window.show()").unwrap(), "{call} avant l'affichage");
+        assert!(
+            at < source.find("window.show()").unwrap(),
+            "{call} avant l'affichage"
+        );
     }
-    let outcome = source.find("if let Err(error) = hardening_outcome(hardened)").expect("échec : destruction");
+    let outcome = source
+        .find("if let Err(error) = hardening_outcome(hardened)")
+        .expect("échec : destruction");
     assert!(outcome < source.find("window.show()").unwrap());
 }
