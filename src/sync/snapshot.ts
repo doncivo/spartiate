@@ -343,7 +343,7 @@ export async function replaceFromSnapshot(deps: SyncDeps, snapshot: LoadedSnapsh
       after = (page.at(-1) as ExportedRow).id;
       for (const row of page) {
         if (kept.has(row.id)) continue;
-        if (t.name === 'settings') continue; // réglage jamais publié ou local : valeur locale gardée (jamais purgé, section 5.4)
+        if (t.idKind === 'setting') continue; // réglage jamais publié ou local : valeur locale gardée (jamais purgé, section 5.4)
         if (deps.catalogue.isFixedId(t.name, row.id)) continue;
         drop.push(row.id);
       }

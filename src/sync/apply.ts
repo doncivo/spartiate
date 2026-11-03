@@ -233,7 +233,7 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
       outcomes.push('rejected');
       continue;
     }
-    if (t.name === 'settings') {
+    if (t.idKind === 'setting') {
       const scope = cat.settingScope(op.id);
       if (scope === 'local') {
         // Un appareil ne peut pas imposer un réglage local à un autre (audit M5).
