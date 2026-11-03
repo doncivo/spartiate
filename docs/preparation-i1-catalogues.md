@@ -275,7 +275,7 @@ dépend du contexte indiqué dans la table.
 ## 3. Correspondance des 150 exercices
 
 Valeurs de `pattern` et `metric` conformes à § 14.1. Règle de préparation :
-**« poussée oblique » → `push-horizontal` (à confirmer par Ali)**. Les
+**« poussée oblique » → `push-horizontal` (confirmé par Ali le 3 novembre)**. Les
 mouvements de gainage, anti-rotation, anti-extension et flexion du tronc sont
 classés `core`. Les exercices dont le matériel ou le mouvement est principalement
 au poids du corps utilisent `bodyweight-reps`, sauf les tenues statiques.
@@ -493,32 +493,22 @@ par défaut.
 
 ### Gabarit « Salle Antony »
 
-Toutes les valeurs sont volontairement à renseigner, sans présumer de
-l'équipement réel de la salle.
+Profil confirmé par Ali le 3 novembre 2026 pour Fitness Park d’Antony.
+Les poids explicitement indiqués comme à vérifier seront relevés en salle ;
+les stacks et pas de machines/poulies seront notés à la première utilisation
+de chaque équipement.
 
-| Rubrique § 14.3 | Valeur |
+| Rubrique § 14.3 | Profil confirmé |
 |---|---|
-| Barres (type, poids) | à confirmer par Ali |
-| Disques par côté | à confirmer par Ali |
-| Haltères (plage et pas) | à confirmer par Ali |
-| Kettlebells | à confirmer par Ali |
-| Machines, avec stack min / max / pas par machine | à confirmer par Ali |
-| Câbles (min / max / pas) | à confirmer par Ali |
-| Bancs | à confirmer par Ali |
-| Racks | à confirmer par Ali |
-| Poids du corps | à confirmer par Ali |
-| Incréments par type | à confirmer par Ali |
-| Équipements forcés / interdits | à confirmer par Ali |
-| `kind` du profil | à confirmer par Ali |
-
-Questions pour remplir le profil :
-
-1. La barre olympique droite pèse-t-elle 20 kg, et quelles autres barres sont disponibles ?
-2. Quels disques sont disponibles, en quelle quantité par côté ?
-3. Les haltères vont-ils de quel poids à quel poids, avec quel pas ?
-4. Quelles kettlebells sont disponibles ?
-5. Quelles machines sont présentes, et quels sont leurs stacks min / max / pas ?
-6. Quelles poulies sont disponibles, avec quelles masses min / max / pas ?
-7. Quels bancs sont disponibles : plat, incliné, réglable ou à lombaires ?
-8. Quels racks, barres de traction et barres parallèles sont disponibles ?
-9. Y a-t-il des équipements à forcer ou à interdire dans ce profil ?
+| Barres (type, poids) | Barre olympique : 20 kg. Petite barre droite : 8 à 13 kg selon le modèle (à vérifier en salle). Barre EZ : environ 8,5 kg (à vérifier en salle). Trap bar : 18 à 24 kg (à vérifier en salle). Barre guidée Smith : poids à vérifier en salle. |
+| Disques par côté | 1,25 / 2,5 / 5 / 10 / 15 / 20 / 25 / 30 kg. |
+| Haltères (plage et pas) | 2 à 50 kg par pas de 2 kg, plus une paire de 9 kg. |
+| Kettlebells | Environ 4 à 34 kg (à vérifier en salle). |
+| Machines, avec stack min / max / pas par machine | Toutes ; min / max / pas à relever à la première utilisation de chaque machine. |
+| Câbles (min / max / pas) | Plusieurs, dont un vis-à-vis ; pas à relever à la première utilisation. |
+| Bancs | Plat, incliné, réglable et à lombaires. |
+| Racks | Rack, barre de traction et barres parallèles : oui. |
+| Poids du corps | Disponible sans matériel dédié. |
+| Incréments par type | Incrément minimal à la barre : 2,5 kg. Pas des machines et poulies relevé à la première utilisation. |
+| Équipements forcés / interdits | Aucun. |
+| `kind` du profil | `salle`. |
