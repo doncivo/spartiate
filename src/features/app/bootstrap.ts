@@ -286,6 +286,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
       ? at('createSyncService', () =>
           createSyncService({
             data,
+            catalogue: (options.storage ?? SYNC_STORAGE).catalogue,
             platform: syncPlatform,
             hlc,
             clock,

@@ -28,7 +28,12 @@ const SEX_KEY = { male: 'sexMale', female: 'sexFemale' } as const satisfies Reco
 const GOAL_KEY = { gain: 'goalGain', loss: 'goalLoss', maintain: 'goalMaintain' } as const satisfies Record<BodyGoal, BodyTextKey>;
 const EXPERIENCE_KEY = { beginner: 'experienceBeginner', intermediate: 'experienceIntermediate', advanced: 'experienceAdvanced' } as const satisfies Record<Experience, BodyTextKey>;
 
-const todayOf = (nowMs: number): LocalDate => new Date(nowMs).toISOString().slice(0, 10) as LocalDate;
+/** Jour local de l'appareil (pas le jour UTC) : une pesée du soir reste à la date du jour de l'utilisateur. */
+const todayOf = (nowMs: number): LocalDate => {
+  const d = new Date(nowMs);
+  const pad = (n: number): string => String(n).padStart(2, '0');
+  return `${String(d.getFullYear())}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` as LocalDate;
+};
 
 /** Lecture seule du texte d'un champ entier : vide ou illisible → null, jamais zéro. */
 const parseInteger = (text: string): number | null => {
@@ -45,7 +50,7 @@ export function BodyScreen() {
   const container = useAppContainer();
   const layout = useLayout();
   const navigate = useNavigationStore((s) => s.navigate);
-  const { profile: profiles, bodyWeights } = container.data.repos;
+  const { repos } = container.data;
   const timeZone = useAppStore((s) => s.timeZone) ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const year = new Date(container.clock.nowMs()).getUTCFullYear();
 
@@ -68,6 +73,7 @@ export function BodyScreen() {
   useEffect(() => {
     let live = true;
     void (async () => {
+      const [profiles, bodyWeights] = await Promise.all([repos.profile(), repos.bodyWeights()]);
       const [profile, recent] = await Promise.all([profiles.get(), bodyWeights.listRecent(30)]);
       if (!live) return;
       setWeights(recent);
@@ -83,7 +89,7 @@ export function BodyScreen() {
     return () => {
       live = false;
     };
-  }, [profiles, bodyWeights]);
+  }, [repos]);
 
   useEffect(() => {
     const sync = container.sync;
@@ -111,7 +117,7 @@ export function BodyScreen() {
       return;
     }
     try {
-      await profiles.save(input, year);
+      await (await repos.profile()).save(input, year);
       setHasProfile(true);
       setProfileMessage({ kind: 'ok', text: tBody('profileSaved') });
     } catch {
@@ -132,6 +138,7 @@ export function BodyScreen() {
       return;
     }
     try {
+      const bodyWeights = await repos.bodyWeights();
       await bodyWeights.saveManual({ date: weightDate, kg, timezone: timeZone }, today);
       setWeights(await bodyWeights.listRecent(30));
       setWeightText('');
@@ -143,6 +150,7 @@ export function BodyScreen() {
 
   async function removeWeight(weight: BodyWeight): Promise<void> {
     try {
+      const bodyWeights = await repos.bodyWeights();
       await bodyWeights.softDelete(weight.date, weight.source);
       setWeights(await bodyWeights.listRecent(30));
     } catch {

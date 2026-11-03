@@ -109,7 +109,6 @@
         "src/domain/sync/ownState.ts",
         "src/domain/sync/parse.ts",
         "src/domain/sync/positions.ts",
-        "src/domain/sync/repairs.ts",
         "src/domain/sync/retention.ts",
         "src/domain/sync/stored.ts",
         "src/domain/sync/syncTables.ts",
@@ -264,6 +263,11 @@
     }
   ],
   "ajouts": [
+    {
+      "fichier": "src/db/repositories/storage.ts",
+      "story": "BUNDLE-01",
+      "raison": "SPA-001b-base : stockage de l'app (catalogue de synchro et repositories ensemble, 0,9 Ko source) : bootstrap.ts en a besoin au démarrage ; sans lui, le catalogue et les repositories se fournissent séparément (relecture sync-icloud du lot B, point a)."
+    },
     {
       "fichier": "src/features/app/settingsLedger.ts",
       "story": "BUNDLE-01",

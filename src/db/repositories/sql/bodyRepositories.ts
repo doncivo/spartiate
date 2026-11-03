@@ -107,8 +107,8 @@ export function createBodyWeightRepository(db: SqlExecutor, stamper: WriteStampe
       const { date, kg, timezone } = input;
       const id = weightId(date, 'manual');
       if (validateManualWeight({ date, kg }, today).length > 0 || timezone.length === 0) throw new RepositoryError('invalid', 'body_weight', id);
-      const stamp = stamper.next();
       const exists = (await db.select('SELECT 1 FROM body_weight WHERE id = ?', [id])).length > 0;
+      const stamp = stamper.next();
       if (exists) {
         await db.execute('UPDATE body_weight SET kg = ?, timezone = ?, deleted_at = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [kg, timezone, stamp.at, stamp.deviceId, stamp.hlc, id]);
       } else {

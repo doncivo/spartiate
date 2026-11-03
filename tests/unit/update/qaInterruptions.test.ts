@@ -6,7 +6,7 @@ import { openSqliteWasmDriver } from '../../../src/db/drivers/sqliteWasm';
 import { findUpdateBackup, type MigrationBackup } from '../../../src/db/migrationBackup';
 import { legacyMigrations as migrations } from '../../fixtures/legacy-schema';
 import type { Migration } from '../../../src/db/migrator';
-import { createSqlRepositories, type RepositoryFactory } from '../../../src/db/repositories';
+import { type RepositoryFactory } from '../../../src/db/repositories';
 import { SPACE_PRO_ID } from '../../../src/db/seed/defaultSpaces';
 import { useAppStore } from '../../../src/features/app/appStore';
 import { bootstrapApp, type BootstrapAppOptions } from '../../../src/features/app/bootstrap';
@@ -183,7 +183,7 @@ describe('critère 12 (QA) : mise à jour interrompue à chaque étape', () => {
     const backups = fakeBackups(db);
     // Écriture de la version refusée : le démarrage réussit quand même (jamais bloquant), la trace est dans le journal technique.
     const failing: RepositoryFactory = (executor, stamper) => {
-      const repos = createSqlRepositories(executor, stamper);
+      const repos = LEGACY_STORAGE.repositories(executor, stamper);
       return { ...repos, settings: { ...repos.settings, set: (key, value) => (key === 'app.lastLaunchedVersion' ? Promise.reject(new Error('disque plein')) : repos.settings.set(key, value)) } };
     };
     const first = await boot(db, { v: '0.3.0', migrations: NEXT, backup: backups.factory, storage: { ...LEGACY_STORAGE, repositories: failing } });

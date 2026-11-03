@@ -44,11 +44,20 @@ test('Y-IOS-01 : cycle borné au passage en arrière-plan, signet perdu visible 
   const phone = await openSyncedPage(browser, room, 'iphone', 'first', 'iphone');
   opened.push(phone);
   const page = phone.page;
+  // Une pesée du jour est enregistrée dans « Profil et poids » : c'est la ligne que le cycle `hide` doit publier.
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' }).format(new Date());
+  await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
+  await page.getByRole('button', { name: 'Profil et poids' }).click();
+  await page.getByLabel('Poids (kg)').fill('82,4');
+  await page.getByRole('button', { name: 'Enregistrer la pesée' }).click();
+  await expect(page.getByText('82,4 kg')).toBeVisible();
+  await page.getByRole('button', { name: 'Retour' }).click();
+
+
   await openSyncDetails(page);
   await syncNow(page);
 
-  // L'app passe en arrière-plan : le cycle `hide` tourne, sous une échéance (budget d'hydratation du scan). Aucune ligne métier à publier avant
-  // la base neuve (001b) : la preuve de publication reviendra avec profil / poids.
+  // L'app passe en arrière-plan : le cycle `hide` tourne, sous une échéance (budget d'hydratation du scan) et publie la pesée.
   const before = await inspect(room, 'iphone');
   await setVisibility(page, 'hidden');
   await expect.poll(async () => (await inspect(room, 'iphone')).scanBudgets.length, { timeout: APP_READY_TIMEOUT_MS }).toBeGreaterThan(before.scanBudgets.length);
@@ -62,6 +71,8 @@ test('Y-IOS-01 : cycle borné au passage en arrière-plan, signet perdu visible 
   await setVisibility(page, 'visible');
   await expect.poll(async () => (await inspect(room, 'iphone')).scanBudgets.length, { timeout: APP_READY_TIMEOUT_MS }).toBeGreaterThan(hidden.scanBudgets.length);
   expect((await inspect(room, 'iphone')).scanBudgets.at(-1)).toBeNull();
+  // « A publié » : la pesée est dans le dossier de l'appareil, créée une fois.
+  await expect.poll(async () => (await inspect(room, 'iphone')).rows[`body_weight|weight|${today}|manual`], { timeout: APP_READY_TIMEOUT_MS }).toBe(1);
 
   // Signet perdu : bandeau et ligne de Réglages au texte de l'iPhone.
   await setUnreachable(room, 'iphone', true);

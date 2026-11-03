@@ -1,6 +1,5 @@
 import { SYNC_CATALOGUE, type SyncCatalogue } from '../../../domain/sync/syncTables';
 import type { RepositoryFactory } from '../dataAccess';
-import { createBodyWeightRepository, createProfileRepository } from './bodyRepositories';
 import { createAppleReminderLinkRepository } from './appleReminderLinks';
 import { createCalendarAccountRepository, createEventRepository, createExternalEventRepository } from './agendaRepository';
 import { createChecklistItemRepository, createChecklistRepository } from './checklistRepository';
@@ -47,8 +46,9 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFa
   externalEvents: createExternalEventRepository(executor),
   calendarAccounts: createCalendarAccountRepository(executor, stamper),
   syncMeta: createSyncMetaRepository(executor, catalogue),
-  profile: createProfileRepository(executor, stamper),
-  bodyWeights: createBodyWeightRepository(executor, stamper),
+  // D-65 : profil et poids, implémentation chargée à la demande (hors du JavaScript de départ).
+  profile: () => import('./bodyRepositories').then((m) => m.createProfileRepository(executor, stamper)),
+  bodyWeights: () => import('./bodyRepositories').then((m) => m.createBodyWeightRepository(executor, stamper)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)
   syncConflicts: createSyncConflictRepository(executor, stamper, catalogue),
