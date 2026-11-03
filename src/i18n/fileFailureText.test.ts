@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { fileFailureEn, fileFailureFr } from './fileFailureText';
+import { fileFailureFr, tFileFailure } from './fileFailureText';
 
 describe('textes des échecs d’enregistrement sans nouvel essai', () => {
-  it('mêmes clés en anglais', () => {
-    expect(Object.keys(fileFailureEn).sort()).toEqual(Object.keys(fileFailureFr).sort());
+  it('chaque clé a un texte français non vide', () => {
+    for (const key of Object.keys(fileFailureFr) as (keyof typeof fileFailureFr)[]) expect(tFileFailure(key).length, key).toBeGreaterThan(0);
   });
 });

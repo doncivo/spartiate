@@ -1,4 +1,4 @@
-// Y-TECH-03 (B13 de docs/audit-1.0.md), critères 2, 4 à 9 et 11 : `MemorySyncFolder` armé d'un plan de pannes, vu par `SyncPlatform`
+// Y-TECH-03 (B13 de docs/archive/circletasks/audit-1.0.md), critères 2, 4 à 9 et 11 : `MemorySyncFolder` armé d'un plan de pannes, vu par `SyncPlatform`
 // (mêmes traductions que store.rs). Horloge injectée, rangs d'appel et cycles comptés : aucune attente réelle.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';

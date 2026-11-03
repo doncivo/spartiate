@@ -4,7 +4,7 @@
 ; Pourquoi : le 2026-10-17, une installation manuelle de la 0.3.3 par-dessus la 0.1.1 (choix « Désinstaller avant d'installer »)
 ; a lancé l'ancien désinstalleur. Sa page de confirmation propose la case « Supprimer les données de l'application » ; cochée, elle a effacé
 ; %APPDATA%\fr.spartiate.app et %LOCALAPPDATA%\fr.spartiate.app (base, sauvegardes locales, journal technique).
-; Constat B15 de l'audit 1.0 (docs/audit-1.0.md), décision 9 d'Ali du 2026-10-17 : un crochet, pas de modèle NSIS personnalisé.
+; Constat B15 de l'audit 1.0 (archivé dans docs/archive/), décision 9 d'Ali du 2026-10-17 : un crochet, pas de modèle NSIS personnalisé.
 ;
 ; Ce que fait le crochet : NSIS_HOOK_PREUNINSTALL est insérée en tête de `Section Uninstall`, avant le bloc qui exécute
 ; `RmDir /r "$APPDATA\${BUNDLEID}"` et `RmDir /r "$LOCALAPPDATA\${BUNDLEID}"` si `$DeleteAppDataCheckboxState = 1`. Elle remet cet état à 0 :

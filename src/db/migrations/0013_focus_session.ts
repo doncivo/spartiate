@@ -2,7 +2,7 @@ import type { Migration } from '../migrator';
 
 /**
  * F-01 : table `focus_session` (M10, PRD section 6 : task_id option, space_id, planned_min, started_at, ended_at, paused_sec + les
- * six colonnes de synchro), synchronisable. Écarts documentés (docs/stories/F-01.md D1) :
+ * six colonnes de synchro), synchronisable. Écarts documentés (docs/archive/circletasks/stories/F-01.md D1) :
  * - `paused_at` (instant) ajouté au schéma du PRD : il porte la pause EN COURS, pour la reprendre après un redémarrage ; les pauses
  *   closes se cumulent dans `paused_sec` (F-02) ;
  * - `planned_min` est nul pour une session « Libre » ;

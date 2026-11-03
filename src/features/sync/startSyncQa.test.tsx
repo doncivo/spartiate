@@ -6,9 +6,7 @@ import { SYNC_ERROR_CODES } from '../../domain/sync/format';
 import { SYNC_PHASES, SYNC_TROUBLE_ORDER } from '../../domain/syncBanners';
 import { asEntityId, type DeviceId, type IsoDateTime } from '../../domain/types';
 import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
-import { en } from '../../i18n/en';
 import { fr } from '../../i18n/fr';
-import { DEFAULT_LOCALE, registerCatalog, setLocale } from '../../i18n';
 import type { SyncDeviceStatus, SyncStatus } from '../../platform/sync/types';
 import { useAppStatusStore } from '../app/appStatus';
 import { AppStatusBanner } from '../app/AppStatusBanner';
@@ -105,7 +103,6 @@ afterEach(async () => {
   cleanup();
   integration?.dispose();
   integration = null;
-  setLocale(DEFAULT_LOCALE);
   vi.restoreAllMocks();
   await db.close();
 });
@@ -506,44 +503,9 @@ describe('accessibilité et textes (9 h, 9 j)', () => {
     expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'sync' });
   });
 
-  it('anglais : le bandeau reprend mot pour mot la ligne de Réglages en anglais, et « View » remplace « Voir »', async () => {
-    registerCatalog('en', en);
-    setLocale('en');
-    render(<AppStatusBanner />);
-    await start().refreshed();
-    for (const { name, patch } of BLOCKED) {
-      set(patch);
-      const line = statusLine(sync.status(), db.clock.nowMs());
-      expect(banner()?.textContent, name).toContain(line);
-      expect(line, name).not.toBe(statusLineFr(name));
-      if (name !== 'waiting-icloud') expect(screen.getByRole('button', { name: 'View the sync problem' }).textContent).toBe('View');
-    }
-    set({ phase: 'waiting-icloud', errorCode: null });
-    expect(text()).toBe(en.status.waitingIcloud);
-    // L'attente reste pendant le cycle suivant (QA-2) : « Syncing » se lit après un cycle conclu « à jour ».
-    set({ phase: 'idle', errorCode: null });
-    set({ phase: 'syncing' });
-    fireTimers();
-    expect(text()).toBe(en.status.syncing);
-  });
-
-  it('textes du cadre : mêmes clés status.* en français et en anglais, mêmes paramètres, aucun vide', () => {
-    const params = (s: string): string[] => (s.match(/\{\w+\}/g) ?? []).sort();
+  it('textes du cadre : tout status.* a un texte français non vide', () => {
     const frStatus = fr.status as Record<string, string>;
-    const enStatus = en.status as Record<string, string>;
-    expect(Object.keys(enStatus).sort()).toEqual(Object.keys(frStatus).sort());
-    for (const key of Object.keys(frStatus)) {
-      expect(frStatus[key], key).not.toBe('');
-      expect(enStatus[key], key).not.toBe('');
-      expect(params(enStatus[key] as string), key).toEqual(params(frStatus[key] as string));
-    }
-  });
-
-  it('textes de Réglages repris par le bandeau : tout sync.status.* a les mêmes paramètres en français et en anglais', () => {
-    const params = (s: string): string[] => (s.match(/\{\w+\}/g) ?? []).sort();
-    const frStatus = fr.sync.status as Record<string, string>;
-    const enStatus = en.sync.status as Record<string, string>;
-    for (const key of Object.keys(frStatus)) expect(params(enStatus[key] as string), key).toEqual(params(frStatus[key] as string));
+    for (const key of Object.keys(frStatus)) expect(frStatus[key], key).not.toBe('');
   });
 
   it('dispose() retire chaque état posé, y compris « (+N) » et le bouton, et un état émis ensuite est ignoré', async () => {
@@ -562,16 +524,3 @@ describe('accessibilité et textes (9 h, 9 j)', () => {
     expect(sources()).toEqual({});
   });
 });
-
-/** Texte français de la ligne de Réglages pour le cas nommé (référence de comparaison de la parité). */
-function statusLineFr(name: string): string {
-  const table: Record<string, string> = {
-    error: fr.sync.status.errorFolderUnreachable,
-    'key-mismatch': fr.sync.status.keyMismatch,
-    'clock-ahead': fr.sync.status.clockAhead.replace('{device}', 'iPhone'),
-    'needs-pairing': fr.sync.status.needsPairing,
-    'restore-choice': fr.sync.status.restoreChoice,
-    'waiting-icloud': fr.sync.status.errorCloudProviderStopped,
-  };
-  return table[name] ?? '';
-}

@@ -4,7 +4,7 @@ import { syncErrorFamily } from '../../domain/sync/errorFamily';
 import { isSyncErrorCode } from '../../domain/sync/format';
 import { WAITING_ICLOUD_LONG_MS } from '../../domain/sync/limits';
 import type { DeviceId } from '../../domain/types';
-import { getLocale, t } from '../../i18n';
+import { t } from '../../i18n';
 import { formatStamp, formatTime } from '../../i18n/format';
 import { detectOs } from '../../platform/runtime';
 import type { SyncDeviceStatus, SyncFolderInfo, SyncStatus } from '../../platform/sync/types';
@@ -330,5 +330,5 @@ export function folderLabel(info: Pick<SyncFolderInfo, 'label' | 'kind'> | null)
 
 /** Nombre groupé selon la langue courante (« 1 200 » en français, « 1,200 » en anglais). */
 export function formatCount(value: number): string {
-  return new Intl.NumberFormat(getLocale() === 'fr' ? 'fr-FR' : 'en-US').format(value);
+  return new Intl.NumberFormat('fr-FR').format(value);
 }

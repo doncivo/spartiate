@@ -1,4 +1,4 @@
-// Y-TECH-03 (B13 de docs/audit-1.0.md), critères 1, 3 et 4 : schéma du plan de pannes partagé (`tests/fixtures/sync/fault-plan.json`),
+// Y-TECH-03 (B13 de docs/archive/circletasks/audit-1.0.md), critères 1, 3 et 4 : schéma du plan de pannes partagé (`tests/fixtures/sync/fault-plan.json`),
 // refus explicite de toute entrée que le faux ne sait pas rejouer, déterminisme, et aucun délai ni nouvel essai dans les fichiers du banc.
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';

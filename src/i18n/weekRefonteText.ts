@@ -1,4 +1,3 @@
-import { getLocale } from './index';
 
 /**
  * Textes et formats propres à la Semaine iPhone (UI-REFONTE-03, Semaine-v2.html) : chargés avec l'écran Semaine, hors du bundle de
@@ -21,28 +20,10 @@ const fr = {
   addTo: 'Ajouter à {day}',
   addLabel: 'Nouvelle tâche',
 } as const;
-const en: Record<keyof typeof fr, string> = {
-  caption: 'week {number}',
-  captionYear: 'week {number} · {year}',
-  remaining: '{count} tasks left',
-  remainingOne: '1 task left',
-  remainingNone: 'none left',
-  done: '{count} done',
-  doneOne: '1 done',
-  doneNone: 'none done',
-  late: '{count} late',
-  summaryEmpty: 'Nothing planned this week',
-  dayEmpty: 'Nothing planned',
-  lateMark: 'late',
-  selectDay: 'Choose {day} for adding',
-  addTo: 'Add to {day}',
-  addLabel: 'New task',
-};
-
 export type WeekRefonteKey = keyof typeof fr;
 
 export function tWeekRefonte(key: WeekRefonteKey, params: Record<string, string | number> = {}): string {
-  let text: string = (getLocale() === 'en' ? en : fr)[key];
+  let text: string = fr[key];
   for (const [name, value] of Object.entries(params)) text = text.replace(`{${name}}`, String(value));
   return text;
 }
@@ -54,7 +35,7 @@ export function formatWeekCounts(remaining: number, done: number): string {
   return `${left} · ${finished}`;
 }
 
-const intlLocale = (): string => (getLocale() === 'fr' ? 'fr-FR' : 'en-US');
+const intlLocale = (): string => 'fr-FR';
 const utcDate = (isoDate: string): Date => new Date(`${isoDate}T00:00:00Z`);
 
 /** Jour court en minuscules (« lun. ») et numéro, pour la colonne de gauche des sections iPhone. */

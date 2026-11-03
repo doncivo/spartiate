@@ -12,7 +12,7 @@ import { armCrash } from '../../sim/syncCrash';
 import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
 
 /**
- * Y-FIX-02 (B2 de docs/audit-1.0.md, ADR 0011 §30) : première publication interrompue. L'iPhone, associé et jamais publié, a une tâche `T`
+ * Y-FIX-02 (B2 de docs/archive/circletasks/audit-1.0.md, ADR 0011 §30) : première publication interrompue. L'iPhone, associé et jamais publié, a une tâche `T`
  * en file ; un arrêt brutal (compteur d'écritures, `armCrash`, jamais le temps) tombe dans la fenêtre « intention, ajout, retrait de la
  * file, état ». Au redémarrage, la trace locale d'ajout (`META.inflight` ou `META.head`) borne la publication, Rust juge la tête : l'état
  * est publié, jamais `publish-blocked` pour toujours ; `T` arrive chez le PC une seule fois.

@@ -40,7 +40,7 @@ L'ouverture de P-04 à l'iPhone (capability `platforms: ["iOS"]`, gestionnaire m
 
 - L'ADR de synchro (ordre 4) reprend ces six règles et précise le format de l'époque, de l'instantané et du marqueur ; sync-icloud ajoute le marqueur dans `backup.rs` et ses tests `cargo test` (restaurer, marquer, synchroniser : aucune donnée défaite ne réapparaît, aucun numéro de journal réutilisé).
 - La feuille de restauration (P-04) devra, à l'ordre 4, avertir avant confirmation que l'appareil est associé et que le choix sera demandé à la prochaine synchro.
-- Dette inscrite (docs/dettes.md, ordre 4) : « Restauration P-04 et synchro : appliquer l'ADR 0010 ».
+- Dette inscrite (docs/archive/circletasks/dettes.md, ordre 4) : « Restauration P-04 et synchro : appliquer l'ADR 0010 ».
 - Alternatives écartées : ré-horodater toutes les lignes restaurées pour qu'elles gagnent la fusion (coûteux, ne traite pas les éléments créés après la sauvegarde, qui resteraient) ; interdire la restauration sur un appareil associé (prive l'utilisateur de son filet de sécurité).
 
 ## Avenant lot F (2026-10-08)

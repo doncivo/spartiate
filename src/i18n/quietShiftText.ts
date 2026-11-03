@@ -3,7 +3,6 @@ import { weekdayOf } from '../domain/localDate';
 import type { LocalDate, Weekday } from '../domain/types';
 import { formatTime } from './format';
 import { weekdayName } from './formatRoutine';
-import { getLocale } from './index';
 
 /**
  * N-FIX-04 : textes de l'avertissement de plage silencieuse (formulaires) et de la ligne de l'écran Routines. Formulation unique d'Ali :
@@ -28,34 +27,15 @@ const fr = {
   and: ' et ',
   comma: ', ',
 } as const;
-const en: Record<keyof typeof fr, string> = {
-  shiftedDay: 'Reminder moved to {day} {time} — {cause}',
-  shiftedSameDay: 'Reminder moved to {time} — {cause}',
-  causeAfter: 'no {space} reminders after {from}',
-  causeBefore: 'no {space} reminders before {to}',
-  causeWeekend: 'no {space} reminders on weekends',
-  causeDays: 'no {space} reminders on {days}',
-  allAt: 'Reminders moved to {time}',
-  all: 'Reminders moved',
-  partialTo: 'Reminders {of} moved to {day} {time}',
-  partialAt: 'Reminders {of} moved to {time}',
-  partial: 'Reminders {of} moved',
-  ofWeekend: 'on weekends',
-  ofEveryDay: 'every day',
-  ofDay: 'on {day}',
-  and: ' and ',
-  comma: ', ',
-};
-
 type Key = keyof typeof fr;
-const catalogue = (): typeof fr | typeof en => (getLocale() === 'en' ? en : fr);
+const catalogue = (): typeof fr => fr;
 
 function fill(key: Key, params: Readonly<Record<string, string>>): string {
   return catalogue()[key].replace(/\{(\w+)\}/g, (_, name: string) => params[name] ?? '');
 }
 
-/** Nom long du jour, en minuscules dans les deux langues sauf l'anglais qui garde sa majuscule. */
-const dayName = (weekday: Weekday): string => (getLocale() === 'en' ? weekdayName(weekday, 'long') : weekdayName(weekday, 'long').toLowerCase());
+/** Nom long du jour, en minuscules. */
+const dayName = (weekday: Weekday): string => weekdayName(weekday, 'long').toLowerCase();
 
 function joinDays(parts: readonly string[]): string {
   if (parts.length <= 1) return parts[0] ?? '';

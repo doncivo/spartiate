@@ -41,7 +41,7 @@ Pas de Mac, pas de compte Apple Developer payant (PRD sections 2 et 7). L'IPA do
 
 ## Avenant I-06 (2026-10-09) — mise à jour par SideStore
 
-Fiche `docs/stories/I-06.md`, décision 2026-10-09 (I-06) de `docs/decisions.md`. SideStore installe ; CircleTasks est compatible, le dit et ne perd rien. Aucune dépendance, aucun plugin, aucune capability (`getVersion` est couvert par `core:default`), aucune migration de base, aucune clé `Info.plist`, `SYNC_FORMAT_MAJOR` inchangé. **Prérequis : `lot-f-ios` (P-04-iOS, I-04) fusionné** ; la branche `i-06` ne le contient pas encore et `openBackupService` y rend un service indisponible sur iOS.
+Fiche `docs/archive/circletasks/stories/I-06.md`, décision 2026-10-09 (I-06) de `docs/decisions.md`. SideStore installe ; CircleTasks est compatible, le dit et ne perd rien. Aucune dépendance, aucun plugin, aucune capability (`getVersion` est couvert par `core:default`), aucune migration de base, aucune clé `Info.plist`, `SYNC_FORMAT_MAJOR` inchangé. **Prérequis : `lot-f-ios` (P-04-iOS, I-04) fusionné** ; la branche `i-06` ne le contient pas encore et `openBackupService` y rend un service indisponible sur iOS.
 
 **1. Version lue par l'app** (`src/platform/appVersion.ts`, nouveau, seul lecteur de la version)
 

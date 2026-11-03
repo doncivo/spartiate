@@ -1,7 +1,5 @@
 // Ordre 4 : accessibilité et parité des textes de synchro (fenêtre `pairing` comprise, que le test général de i18n.test.ts ne couvre pas).
 import { describe, expect, it } from 'vitest';
-import { en } from './en';
-import { syncPairingWindowEn } from './en.syncPairing';
 import { fr } from './fr';
 import { syncPairingWindowFr } from './fr.syncPairing';
 
@@ -11,34 +9,21 @@ function flatten(node: Tree, prefix = ''): Record<string, string> {
   return Object.fromEntries(Object.entries(node).flatMap(([key, value]) => (typeof value === 'string' ? [[`${prefix}${key}`, value]] : Object.entries(flatten(value, `${prefix}${key}.`)))));
 }
 
-const params = (text: string): string[] => (text.match(/\{\w+\}/g) ?? []).sort();
-
 describe('textes de synchro : fenêtre pairing', () => {
   const frFlat = flatten(syncPairingWindowFr as unknown as Tree);
-  const enFlat = flatten(syncPairingWindowEn as unknown as Tree);
 
-  it('mêmes clés et mêmes paramètres en français et en anglais, sans texte vide', () => {
-    expect(Object.keys(enFlat).sort()).toEqual(Object.keys(frFlat).sort());
-    for (const [key, text] of Object.entries(frFlat)) {
-      expect(enFlat[key]?.trim(), key).not.toBe('');
-      expect(params(enFlat[key] ?? ''), key).toEqual(params(text));
-    }
+  it('aucun texte français vide', () => {
+    for (const [key, text] of Object.entries(frFlat)) expect(text.trim(), key).not.toBe('');
   });
 
   it('la fenêtre est celle du PC : aucune consigne « touchez » (souris et clavier)', () => {
     for (const text of Object.values(frFlat)) expect(text).not.toMatch(/touche[zr]/i);
-    for (const text of Object.values(enFlat)) expect(text).not.toMatch(/\btap\b|\btouch\b/i);
   });
 });
 
 describe('textes de synchro : cohérence des libellés', () => {
-  it('l’anglais nomme l’action « Reset synchronization » comme son bouton, jamais « Reset sync »', () => {
-    const sync = flatten(en.sync as unknown as Tree);
-    for (const [key, text] of Object.entries(sync)) expect(text, key).not.toMatch(/Reset sync\b(?!hronization)/);
-  });
-
   it('aucun jargon technique dans les messages affichés (époque excepté, voir rapport)', () => {
-    const sync = { ...flatten(fr.sync as unknown as Tree), ...flatten(en.sync as unknown as Tree) };
+    const sync = flatten(fr.sync as unknown as Tree);
     for (const [key, text] of Object.entries(sync)) expect(text, key).not.toMatch(/budget de la clé|key budget|déclaration n’a pas pu être apprise|declaration could not be learned/i);
   });
 
@@ -60,7 +45,7 @@ describe('textes de synchro : cohérence des libellés', () => {
       ['signing.about.allow', 'signing.about.allowLabel'],
       ['signing.about.viewReminders', 'signing.about.viewRemindersLabel'],
     ];
-    for (const catalog of [fr, en]) {
+    for (const catalog of [fr]) {
       const flat = flatten(catalog as unknown as Tree);
       for (const [visible, label] of pairs) expect((flat[label] ?? '').toLowerCase(), label).toContain((flat[visible] ?? '').toLowerCase());
     }

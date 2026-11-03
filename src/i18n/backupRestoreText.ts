@@ -1,5 +1,3 @@
-import { getLocale } from './index';
-import { backupRestoreEn } from './en.backupRestore';
 import { backupRestoreFr } from './fr.backupRestore';
 
 /**
@@ -9,5 +7,5 @@ import { backupRestoreFr } from './fr.backupRestore';
 export type BackupRestoreTextKey = keyof typeof backupRestoreFr;
 
 export function tBackupRestore(key: BackupRestoreTextKey): string {
-  return (getLocale() === 'en' ? backupRestoreEn : backupRestoreFr)[key];
+  return backupRestoreFr[key];
 }

@@ -8,7 +8,6 @@ import { syncBannerFor } from '../../domain/syncBanners';
 import { asEntityId, type DeviceId, type IsoDateTime } from '../../domain/types';
 import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { t } from '../../i18n';
-import { syncPublishCauseEn } from '../../i18n/en.syncPublishCause';
 import { syncPublishCauseFr } from '../../i18n/fr.syncPublishCause';
 import { isPublishBlockedCause, publishCauseText } from '../../i18n/syncPublishCauseText';
 import type { SyncDeviceStatus, SyncStatus } from '../../platform/sync/types';
@@ -77,8 +76,7 @@ describe('cause nommée de publish-blocked (Y-FIX-02, critère 11)', () => {
     expect(banners.troubles.map((x) => x.code)).toEqual(['error', 'publish-blocked']);
   });
 
-  it('catalogue : français et anglais aux mêmes clés, aucun avertissement de SYNC_WARNINGS pris pour une cause', () => {
-    expect(Object.keys(syncPublishCauseEn).sort()).toEqual(Object.keys(syncPublishCauseFr).sort());
+  it('catalogue français : aucun avertissement de SYNC_WARNINGS pris pour une cause', () => {
     expect(publishCauseText('unexplained-files')).toBe(syncPublishCauseFr['unexplained-files']);
     expect(isPublishBlockedCause('publish-blocked')).toBe(false);
     expect(isPublishBlockedCause('first-publication-state-refused')).toBe(true);

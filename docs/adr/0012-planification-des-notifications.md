@@ -187,7 +187,7 @@ Hors N-TECH-01 : lecture en base (repositories, dont les tâches du jour et les 
 
 - Statut : accepté (contrat ; implémentation par l'agent notifications, avec ios-mobile pour Rust, capability et CI)
 - Stories : N-01, N-03, N-05, N-06, N-07, compléments ordre 5 de F-04 et N-04
-- Sources relues le 2026-10-08 : crate `tauri-plugin-notification` **2.5.1** (`ios/Sources/*.swift`, `src/{lib,mobile,commands,models}.rs`, `src/init-iife.js`, `build.rs`, `permissions/`), `tauri` 2.12.1 (`mobile/ios-api/.../Plugin.swift`), `src/platform/{notifications,focus,sync}`, `src/features/{reminders,app}`, `src/sync/deviceStatus.ts`, `src-tauri/{Cargo.toml,src/lib.rs,capabilities,tests/desktop/config.rs}`, `scripts/ios/plist-contract.json`, ADR 0007 (avenants), ADR 0011 (§1.4, §10.2), `docs/dettes.md` (lot Y2)
+- Sources relues le 2026-10-08 : crate `tauri-plugin-notification` **2.5.1** (`ios/Sources/*.swift`, `src/{lib,mobile,commands,models}.rs`, `src/init-iife.js`, `build.rs`, `permissions/`), `tauri` 2.12.1 (`mobile/ios-api/.../Plugin.swift`), `src/platform/{notifications,focus,sync}`, `src/features/{reminders,app}`, `src/sync/deviceStatus.ts`, `src-tauri/{Cargo.toml,src/lib.rs,capabilities,tests/desktop/config.rs}`, `scripts/ios/plist-contract.json`, ADR 0007 (avenants), ADR 0011 (§1.4, §10.2), `docs/archive/circletasks/dettes.md` (lot Y2)
 
 ### N1.0 Constats complémentaires (suite des constats 1 à 6)
 
@@ -349,7 +349,7 @@ Clé d'idempotence = `{identifiant stable}|{action}|{instant de la notification 
 
 ### N1.10 Rappel ressuscité (N-05)
 
-Avec deux appareils (PC et iPhone, cas du PRD) le cas de `docs/dettes.md` (lot Y2) ne se produit pas. Avec trois appareils ou plus, la ligne `reminder` ressuscitée est **vivante** dans la base de l'appareil : le planificateur la planifie et elle **peut sonner** jusqu'à la lecture de la suppression. Limite visible : le rappel figure dans la ligne « Rappels » de la tâche et peut y être supprimé. Aucun changement au lot N1.
+Avec deux appareils (PC et iPhone, cas du PRD) le cas de `docs/archive/circletasks/dettes.md` (lot Y2) ne se produit pas. Avec trois appareils ou plus, la ligne `reminder` ressuscitée est **vivante** dans la base de l'appareil : le planificateur la planifie et elle **peut sonner** jusqu'à la lecture de la suppression. Limite visible : le rappel figure dans la ligne « Rappels » de la tâche et peut y être supprimé. Aucun changement au lot N1.
 
 ### Fichiers impactés
 
@@ -491,7 +491,7 @@ Application de la décision d'Ali du 2026-10-18. Cet avenant remplace les corps 
 - Répétition : `Reporté · 14:00`, sans espace ni décalage ; la date suit la même règle, occurrence de série conservée. Les formats passent par `formatDayLabel` et le point commun `formatTime`.
 - Les quatre chaînes fr/en sont chargées avec le bloc des rappels (`*.notificationBody.ts`, `notificationBodyText.ts`), hors du départ. Les fonctions `reminderBody` / `advanceLabel` et les trois anciennes chaînes sont supprimées. Aucun nouveau module dans le départ, budget net non positif.
 
-Preuves : tableau de 26 textes finaux rouge sur `2b77799c`, puis constructeur et description verts ; tests du vrai plan, des avances, de l'espace absent, des événements répétés, de l'anglais et du format horaire. Détail et validations dans `docs/stories/N-FIX-02.md`.
+Preuves : tableau de 26 textes finaux rouge sur `2b77799c`, puis constructeur et description verts ; tests du vrai plan, des avances, de l'espace absent, des événements répétés, de l'anglais et du format horaire. Détail et validations dans `docs/archive/circletasks/stories/N-FIX-02.md`.
 
 ## Avenant N4 — remplacement vérifiable (N-FIX-03, 2026-10-27)
 
@@ -503,4 +503,4 @@ Décision d'Ali du 2026-10-27, qui remplace le point « même identifiant stable
 - **Registre perdu ou illisible** : tout numéro en attente est inconnu, donc sorti du plan : annulé d'abord, et le plan entier est reposé une fois sous des numéros libres (N-01 critère 6 inchangé dans son résultat : sans doublon).
 - La réaffirmation par processus (constat 9) est inchangée : un élément inchangé est renvoyé sous son numéro, avec le même contenu.
 
-Preuves : `tauriNotifications.test.ts` (pose rejetée, pose non gardée, cas nominal, registre perdu, fuseau), `RemindersStatus.dom.test.tsx` (texte des rappels conservés), `notificationLifecycle.test.ts` et `recapNotifications.test.ts` adaptés avec trace. Fiche : `docs/stories/N-FIX-03.md`.
+Preuves : `tauriNotifications.test.ts` (pose rejetée, pose non gardée, cas nominal, registre perdu, fuseau), `RemindersStatus.dom.test.tsx` (texte des rappels conservés), `notificationLifecycle.test.ts` et `recapNotifications.test.ts` adaptés avec trace. Fiche : `docs/archive/circletasks/stories/N-FIX-03.md`.

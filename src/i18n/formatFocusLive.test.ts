@@ -1,10 +1,8 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { formatFocusTodayLive } from './formatFocus';
-import { setLocale } from './index';
 
 /** UI-FIX-06 : pied de l'écran Focus avec la session active (secondes, puis minutes entamées). */
 describe('formatFocusTodayLive', () => {
-  afterEach(() => setLocale('fr'));
 
   it('rien de terminé, rien d’actif : « Aujourd’hui : 0 min de concentration »', () => {
     expect(formatFocusTodayLive({ minutes: 0, sessions: 0 }, 0)).toBe('Aujourd’hui : 0 min de concentration');
@@ -26,9 +24,4 @@ describe('formatFocusTodayLive', () => {
     expect(formatFocusTodayLive({ minutes: 75, sessions: 3 }, null)).toBe('Aujourd’hui : 1 h 15 de concentration · 3 sessions');
   });
 
-  it('anglais', () => {
-    setLocale('en');
-    expect(formatFocusTodayLive({ minutes: 0, sessions: 0 }, 42)).toBe('Today: 42 s of focus');
-    expect(formatFocusTodayLive({ minutes: 0, sessions: 0 }, 90)).toBe('Today: 1 min of focus · session in progress');
-  });
 });

@@ -1,8 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { setLocale } from './index';
+import { describe, expect, it } from 'vitest';
 import { formatTodayHeader, formatWeekdayName } from './format';
-
-afterEach(() => setLocale('fr'));
 
 describe('formatTodayHeader (A-01 critère 2)', () => {
   it('iPhone : « sept. 2026 » et « 23 mer. »', () => {

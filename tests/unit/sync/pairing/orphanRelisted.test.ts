@@ -288,7 +288,7 @@ describe('Y-IOS-02-FIX-02 : format du journal (ADR 0014, critère 13)', () => {
     const relisted = JSON.stringify({ epoch: ORPHAN.slice(0, 14) });
     expect(sanitizeLogDetail(`orphan-epoch-relisted ${relisted}`)).toBe(`orphan-epoch-relisted ${relisted}`);
     expect(relisted).not.toContain('.sps');
-    // Époque complète (42 caractères) : masquée à l'export, d'où la forme tronquée (limite des autres entrées notée dans docs/dettes.md).
+    // Époque complète (42 caractères) : masquée à l'export, d'où la forme tronquée (limite des autres entrées notée dans docs/archive/circletasks/dettes.md).
     expect(sanitizeLogDetail(JSON.stringify({ epoch: ORPHAN }))).toBe(LOG_MASK);
   });
 });

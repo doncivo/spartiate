@@ -3,7 +3,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId, type IsoDateTime } from '../../domain/types';
 import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
-import { syncResetEn } from '../../i18n/en.syncReset';
 import { syncResetFr } from '../../i18n/fr.syncReset';
 import native from '../../i18n/native/fr.json';
 import { createMemorySyncPlatform } from '../../platform/sync/memory';
@@ -191,11 +190,8 @@ describe('appareil à associer de nouveau (critères 8 et 18, D2)', () => {
 });
 
 describe('textes (critère 19)', () => {
-  it('sync.reset : mêmes clés en français et en anglais, aucun texte vide ; boîte native « Annuler » par défaut', () => {
-    const keys = (value: unknown, prefix = ''): string[] =>
-      typeof value === 'string' ? [prefix] : Object.entries(value as Record<string, unknown>).flatMap(([k, v]) => keys(v, prefix ? `${prefix}.${k}` : k));
-    expect(keys(syncResetEn).sort()).toEqual(keys(syncResetFr).sort());
-    for (const text of [...Object.values(syncResetFr), ...Object.values(syncResetEn)]) if (typeof text === 'string') expect(text.length).toBeGreaterThan(0);
+  it('sync.reset : aucun texte français vide ; boîte native « Annuler » par défaut', () => {
+    for (const text of Object.values(syncResetFr)) if (typeof text === 'string') expect(text.length).toBeGreaterThan(0);
     expect(native.consent.resetKey.cancel).toBe('Annuler');
     expect(native.consent.resetKey.instruction.endsWith('?')).toBe(true);
     expect(native.consent.resetKey.content).toContain('L\'ancienne clé de secours ne servira plus');

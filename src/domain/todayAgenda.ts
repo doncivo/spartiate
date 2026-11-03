@@ -2,7 +2,7 @@ import { compareTodayRows, rowIsDone, rowTime, type TodayEventEntry, type TodayL
 import type { LocalTime } from './types';
 
 /**
- * Agenda du jour (UI-REFONTE-02, docs/maquettes-refonte/Jour.html) : les lignes d'Aujourd'hui placées sur la colonne des heures.
+ * Agenda du jour (UI-REFONTE-02, docs/archive/circletasks/maquettes-refonte/Jour.html) : les lignes d'Aujourd'hui placées sur la colonne des heures.
  *
  * Le jour courant, la ligne « maintenant » s'insère à l'heure courante : ce qui est avant recule (`past`), une tâche à l'heure non
  * faite dont l'heure est passée est **due** et se place juste avant « maintenant », ce qui suit est à venir (`upcoming`), les

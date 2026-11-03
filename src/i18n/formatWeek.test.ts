@@ -1,8 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { formatWeekDayHeader, formatWeekRange } from './format';
-import { setLocale } from './index';
-
-afterEach(() => setLocale('fr'));
 
 describe('formatWeekRange (S-01 critère 2, S-03 critère 5)', () => {
   it('PC : « 21 – 27 septembre 2026 »', () => {

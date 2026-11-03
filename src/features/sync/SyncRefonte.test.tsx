@@ -13,7 +13,7 @@ import { SyncDetailsScreen } from './SyncDetailsScreen';
 import { createFakeSyncService, type FakeSyncService } from './testKit';
 
 /**
- * UI-REFONTE-04 — Réglages › Synchronisation (docs/maquettes-refonte/Synchro-v4.html) : retour texte « Réglages », carte d'état en une
+ * UI-REFONTE-04 — Réglages › Synchronisation (docs/archive/circletasks/maquettes-refonte/Synchro-v4.html) : retour texte « Réglages », carte d'état en une
  * phrase (verte seulement quand tout est parti), titres en bas de casse, appareils sur un gabarit avec pastille de statut et sans
  * identifiant interne, conflits nommés (« Heure prévue de « Envoyer la facture » », « Appliquée · iPhone, 18:04 », « Rétablir »),
  * « Repartir de zéro » isolé dans un bloc qui annonce son coût. Aucune logique ne change : les textes d'état restent ceux de la ligne.

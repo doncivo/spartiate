@@ -1,4 +1,3 @@
-import { getLocale } from './index';
 
 /**
  * Échecs d'enregistrement qu'un nouvel essai ne peut pas résoudre (revue du lot F) : texte et action utile à la place de « Réessayer ».
@@ -9,11 +8,6 @@ export const fileFailureFr = {
   badName: 'Le nom du fichier a été refusé, rien n’a été enregistré : exportez les logs (Réglages › À propos › Logs) pour le signaler.',
 } as const;
 
-export const fileFailureEn: { readonly [K in keyof typeof fileFailureFr]: string } = {
-  unsafeFolder: 'The app temporary folder is abnormal: close and reopen Spartiate, it is fixed at launch.',
-  badName: 'The file name was refused, nothing was saved: export the logs (Settings › About › Logs) to report it.',
-};
-
 export function tFileFailure(key: keyof typeof fileFailureFr): string {
-  return (getLocale() === 'en' ? fileFailureEn : fileFailureFr)[key];
+  return fileFailureFr[key];
 }

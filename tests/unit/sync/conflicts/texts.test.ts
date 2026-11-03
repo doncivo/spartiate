@@ -1,22 +1,19 @@
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { SYNC_TABLES, syncColumn, syncTable, type SyncColumn, type SyncTable } from '../../../../src/domain/sync/syncTables';
 import type { DeviceId, IsoDateTime } from '../../../../src/domain/types';
-import { registerCatalog, setLocale, tDynamic, translate, type MessageKey } from '../../../../src/i18n';
-import { en } from '../../../../src/i18n/en';
+import { translate } from '../../../../src/i18n';
 import { fr } from '../../../../src/i18n/fr';
 import { setFormatPrefs } from '../../../../src/i18n/formatPrefs';
 import { conflictDeviceName, conflictSideMeta, conflictTitle, conflictValueText, fieldKey, quoted } from '../../../../src/features/sync/conflictText';
 import type { SyncStatus } from '../../../../src/platform/sync/types';
 
 /**
- * Textes du journal (Y-04 critères 2, 3 et 14) : un libellé `sync.field.<table>.<colonne>` en français et en anglais pour **chaque**
+ * Textes du journal (Y-04 critères 2, 3 et 14) : un libellé `sync.field.<table>.<colonne>` en français pour **chaque**
  * colonne `conflictVisible` du catalogue (aucun pour les champs masqués), parité des sections `sync.conflicts` et `sync.field`, valeurs
  * formatées par type, appareils nommés comme dans APPAREILS.
  */
 
-beforeAll(() => registerCatalog('en', en));
 afterEach(() => {
-  setLocale('fr');
   setFormatPrefs({ timeFormat: '24h' });
 });
 
@@ -28,12 +25,11 @@ const leaves = (node: unknown, prefix = ''): string[] =>
 const HIDDEN = ['sort_order', 'created_at', 'done_at', 'fire_at', 'delivered', 'paused_sec', 'paused_at', 'series_template'];
 
 describe('libellés des champs (critère 2)', () => {
-  it('chaque colonne conflictVisible a son libellé en français et en anglais ; aucune colonne masquée n’en a', () => {
+  it('chaque colonne conflictVisible a son libellé en français ; aucune colonne masquée n’en a', () => {
     const visible = SYNC_TABLES.flatMap((t) => t.columns.filter((c) => c.conflictVisible).map((c) => fieldKey(t, c)));
     expect(visible.length).toBeGreaterThan(100);
     for (const key of visible) {
       expect(typeof lookup(fr, key), `fr ${key}`).toBe('string');
-      expect(typeof lookup(en, key), `en ${key}`).toBe('string');
     }
     const hidden = SYNC_TABLES.flatMap((t) => t.columns.filter((c) => !c.conflictVisible).map((c) => fieldKey(t, c)));
     expect(hidden.every((key) => lookup(fr, key) === undefined)).toBe(true);
@@ -42,15 +38,13 @@ describe('libellés des champs (critère 2)', () => {
     expect(leaves(fr.sync.field, 'sync.field.').sort()).toEqual([...visible].sort());
   });
 
-  it('sections sync.conflicts et sync.field : mêmes clés en français et en anglais, aucun texte vide', () => {
+  it('sections sync.conflicts et sync.field : aucun texte français vide', () => {
     for (const section of ['conflicts', 'field'] as const) {
-      expect(leaves(en.sync[section]).sort()).toEqual(leaves(fr.sync[section]).sort());
       for (const key of leaves(fr.sync[section])) {
         expect(String(lookup(fr.sync[section], key)).length, key).toBeGreaterThan(0);
-        expect(String(lookup(en.sync[section], key)).length, key).toBeGreaterThan(0);
       }
     }
-    expect(tDynamicIn('en', 'sync.field.task.time')).toBe('time');
+    expect(translate('fr', 'sync.field.task.time')).toBe('heure prévue');
   });
 });
 
@@ -91,11 +85,7 @@ describe('valeurs (critère 3)', () => {
     expect(text('task', 'deleted_at', null)).toBe('présent');
   });
 
-  it('en anglais', () => {
-    setLocale('en');
-    expect(text('task', 'someday', 1)).toBe('Yes');
-    expect(text('task', 'date', '2026-09-22')).toBe('Sep 22');
-  });
+  
 });
 
 const PC = '60000000-0000-4000-8000-0000000000a1' as DeviceId;
@@ -126,13 +116,3 @@ describe('appareils et heures (critère 3)', () => {
     expect(conflictTitle({ title: null, itemState: 'live', table: syncTable('settings') as SyncTable })).toBe('Réglage');
   });
 });
-
-
-function tDynamicIn(locale: 'fr' | 'en', key: string): string {
-  setLocale(locale);
-  try {
-    return tDynamic(key as MessageKey);
-  } finally {
-    setLocale('fr');
-  }
-}

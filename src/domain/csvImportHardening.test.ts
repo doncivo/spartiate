@@ -62,7 +62,7 @@ describe('Caractères de contrôle et marques bidirectionnelles (P-07, audit)', 
     expect(sanitizeLine(`a${chr(0xfe0f)}b`)).toBe('ab');
     expect(sanitizeLine(`A${chr(0x115f, 0x1160, 0x3164, 0xffa0, 0x2800)}B`)).toBe('AB');
     expect(sanitizeNote(`n${chr(0x3164, 0x2800)}ote`)).toBe('note');
-    // U+200C (liaison nulle, persan) est une limite connue : retiré (docs/dettes.md).
+    // U+200C (liaison nulle, persan) est une limite connue : retiré (docs/archive/circletasks/dettes.md).
     expect(sanitizeLine(`a${chr(0x200c)}b`)).toBe('ab');
   });
 

@@ -30,7 +30,6 @@ const ALLOWED_FILES = new Set([
   'src/features/sync/pairing-window/pairing.css',
   // Textes `sync.pairing` seulement (D6).
   'src/i18n/fr.syncPairing.ts',
-  'src/i18n/en.syncPairing.ts',
   // Contrat de plateforme réduit : `tauriSync` (seule porte vers `invoke`), ses types, le format (codes d'erreur, bornes).
   'src/platform/sync/tauriSync.ts',
   'src/platform/sync/types.ts',

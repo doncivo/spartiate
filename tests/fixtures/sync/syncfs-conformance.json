@@ -329,7 +329,7 @@
     {
       "name": "lecture sans hydratation d’un fichier dans le nuage : le rang est consommé",
       "requires": ["cloud","read-rank-without-hydration"],
-      "notApplicable": {"StdFs":"un disque local n'a ni fichier évincé, ni substitut .<nom>.icloud, ni téléchargement : sa disponibilité est toujours « local » (la table de base saute aussi ses cas requires cloud)","BookmarkFs":"BookmarkFs ne demande rien au plugin pour une lecture sans hydratation d'un fichier dans le nuage (le statut « cloud » rend cloud-pending côté Rust, avant tout readFrom) : le faux du plugin ne voit aucun appel à compter ; le rang n'est donc consommé, sur l'iPhone, que par une lecture qui atteint le plugin (règle à respecter par Y-IOS-05 et Y-FIX-03, docs/dettes.md)"},
+      "notApplicable": {"StdFs":"un disque local n'a ni fichier évincé, ni substitut .<nom>.icloud, ni téléchargement : sa disponibilité est toujours « local » (la table de base saute aussi ses cas requires cloud)","BookmarkFs":"BookmarkFs ne demande rien au plugin pour une lecture sans hydratation d'un fichier dans le nuage (le statut « cloud » rend cloud-pending côté Rust, avant tout readFrom) : le faux du plugin ne voit aucun appel à compter ; le rang n'est donc consommé, sur l'iPhone, que par une lecture qui atteint le plugin (règle à respecter par Y-IOS-05 et Y-FIX-03, docs/archive/circletasks/dettes.md)"},
       "plan": {"name":"read-rank-cloud","faults":[{"id":"read-j1-io-2","op":"read","file":"devices/a/e0001-0f8fad5b-d9cb-469f-a165-70867728950e/j-00000001.spj","nth":2,"effect":"error","code":"io"}]},
       "setup": [{"file":["devices","a","e0001-0f8fad5b-d9cb-469f-a165-70867728950e","j-00000001.spj"],"text":"l1\n","cloud":true}],
       "steps": [

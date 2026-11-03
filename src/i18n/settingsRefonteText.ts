@@ -1,4 +1,3 @@
-import { getLocale } from './index';
 
 /**
  * Textes propres à la refonte de Réglages sur PC (UI-REFONTE-09, PC-Reglages.html) : chargés avec l'écran Réglages, hors du bundle de
@@ -24,31 +23,10 @@ const fr = {
   allShortcuts: 'Tous les raccourcis',
   quickCaptureTaken: '{keys} est utilisé par une autre application. Choisissez-en un autre.',
 } as const;
-const en: Record<keyof typeof fr, string> = {
-  summaryLabel: 'Settings sections',
-  sectionGeneral: 'General',
-  sectionTasks: 'Tasks',
-  sectionReminders: 'Reminders',
-  sectionSpaces: 'Spaces and calendars',
-  sectionSync: 'Sync',
-  sectionData: 'Backups and data',
-  sectionKeyboard: 'Keyboard',
-  sectionAbout: 'About',
-  theme: 'Theme',
-  firstWeekday: 'Week starts on',
-  timeFormat: 'Time format',
-  timeZoneHint: 'Follows Windows',
-  tabsVisible: 'Visible tabs',
-  tabsCount: '{visible} of {total}',
-  launchHint: 'Spartiate opens minimized in the notification area',
-  allShortcuts: 'All shortcuts',
-  quickCaptureTaken: '{keys} is used by another application. Choose another one.',
-};
-
 export type SettingsRefonteKey = keyof typeof fr;
 
 export function tSettingsRefonte(key: SettingsRefonteKey, params: Record<string, string> = {}): string {
-  let text: string = (getLocale() === 'en' ? en : fr)[key];
+  let text: string = fr[key];
   for (const [name, value] of Object.entries(params)) text = text.replace(`{${name}}`, value);
   return text;
 }

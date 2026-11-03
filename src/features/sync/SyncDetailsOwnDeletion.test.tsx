@@ -4,8 +4,6 @@ import { createHlcClock } from '../../domain/hlc';
 import type { DeviceId, IsoDateTime } from '../../domain/types';
 import type { EpochId } from '../../domain/sync/format';
 import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
-import { syncOwnDeletionFr } from '../../i18n/fr.syncOwnDeletion';
-import { syncOwnDeletionEn } from '../../i18n/en.syncOwnDeletion';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer, type AppContainer } from '../app/container';
 import { createFakeSyncService, type FakeSyncService } from './testKit';
@@ -53,12 +51,6 @@ describe('Détails : échec de suppression propre', () => {
     expect(button.hasAttribute('disabled')).toBe(false);
   });
 
-  it('les catalogues fr/en ont les mêmes clés et paramètres', () => {
-    expect(Object.keys(syncOwnDeletionFr).sort()).toEqual(Object.keys(syncOwnDeletionEn).sort());
-    for (const key of Object.keys(syncOwnDeletionFr) as (keyof typeof syncOwnDeletionFr)[]) {
-      expect(syncOwnDeletionFr[key].match(/\{\w+\}/g) ?? []).toEqual(syncOwnDeletionEn[key].match(/\{\w+\}/g) ?? []);
-    }
-  });
 
   it('la cause reste au-dessus de la publication bloquée dans le même écran', async () => {
     sync.setStatus({ warnings: ['own-delete-failed', 'publish-blocked'] });

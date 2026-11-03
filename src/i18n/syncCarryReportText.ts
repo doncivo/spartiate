@@ -1,5 +1,3 @@
-import { getLocale } from './index';
-import { syncCarryReportEn } from './en.syncCarryReport';
 import { syncCarryReportFr } from './fr.syncCarryReport';
 
 /**
@@ -18,6 +16,6 @@ export function carryFailureCause(code: string): string {
 }
 
 export function tCarry(key: SyncCarryReportTextKey, params?: Readonly<Record<string, string | number>>): string {
-  const text: string = (getLocale() === 'en' ? syncCarryReportEn : syncCarryReportFr)[key];
+  const text: string = syncCarryReportFr[key];
   return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
 }

@@ -5,7 +5,7 @@
 //! - Un serveur HTTP local (std) sert `latest.json` et un faux paquet.
 //! - Le vrai plugin `tauri-plugin-updater` interroge ce serveur, télécharge et vérifie la
 //!   signature (`Update::download`). L'installation elle-même (lancement du NSIS) n'est pas
-//!   exécutée ici : elle est à vérifier à la main (docs/stories/D-03.md).
+//!   exécutée ici : elle est à vérifier à la main (docs/archive/circletasks/stories/D-03.md).
 
 use std::{
     collections::HashMap,

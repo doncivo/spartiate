@@ -1,6 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { formatMessageRef } from './formatRecurrence';
-import { setLocale } from './index';
 import type { RecurrenceFields } from '../domain/model';
 import { recurrenceLabel, type RecurrenceLabelStyle } from '../domain/recurrenceLabel';
 import { asLocalDate } from '../domain/types';
@@ -18,11 +17,8 @@ const base: RecurrenceFields = {
 const rule = (over: Partial<RecurrenceFields>): RecurrenceFields => ({ ...base, ...over });
 const fr = (r: RecurrenceFields, style: RecurrenceLabelStyle = 'detail', anchor = '2026-09-23') =>
   formatMessageRef(recurrenceLabel(r, d(anchor), style), 'fr');
-const en = (r: RecurrenceFields, style: RecurrenceLabelStyle = 'detail') =>
-  formatMessageRef(recurrenceLabel(r, d('2026-09-23'), style), 'en');
 
 describe('recurrenceLabel (T-09 critère 6)', () => {
-  afterEach(() => setLocale('fr'));
 
   it('détail français', () => {
     expect(fr(rule({}))).toBe('Tous les jours');
@@ -66,18 +62,5 @@ describe('recurrenceLabel (T-09 critère 6)', () => {
     expect(fr(rule({ count: 3 }), 'short')).toBe('quotidienne');
   });
 
-  it('anglais', () => {
-    expect(en(rule({ freq: 'monthly', monthDay: 23, until: d('2026-12-31') }))).toBe(
-      'Monthly, day 23, until Dec 31, 2026',
-    );
-    expect(en(rule({ freq: 'weekly', weekdays: [1, 4] }))).toBe('Every week: Mon, Thu');
-    expect(en(rule({ freq: 'monthly', nthWeekday: { nth: 2, weekday: 1 } }))).toBe('Monthly, 2nd Monday');
-    expect(en(rule({ freq: 'yearly' }))).toBe('Yearly, every Sep 23');
-    expect(en(rule({ interval: 3 }), 'short')).toBe('every 3 d');
-  });
-
-  it('utilise la langue courante par défaut', () => {
-    setLocale('en');
-    expect(formatMessageRef(recurrenceLabel(rule({}), null))).toBe('Every day');
-  });
+  
 });

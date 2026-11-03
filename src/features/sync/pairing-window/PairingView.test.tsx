@@ -6,7 +6,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PAIRING_VALIDITY_MS } from '../../../domain/sync/limits';
 import { epochId, type DeviceAck, type EpochId, type PublishedDeviceState } from '../../../domain/sync/format';
 import type { DeviceId, Hlc } from '../../../domain/types';
-import { syncPairingEn, syncPairingWindowEn } from '../../../i18n/en.syncPairing';
 import { syncPairingFr, syncPairingWindowFr } from '../../../i18n/fr.syncPairing';
 import { MemorySyncFolder, SyncPlatformError, createMemorySyncPlatform, type MemorySyncPlatform } from '../../../platform/sync';
 import { reducePairingPlatform, type PairingPlatform } from './pairingPlatform';
@@ -354,15 +353,10 @@ describe('exposition de la clé (critère 16) et textes (critère 22)', () => {
     expect(window.location.href).toBe(url);
   });
 
-  it('textes fr et en de même forme, sans valeur vide', () => {
-    const keys = (value: object, prefix = ''): string[] =>
-      Object.entries(value).flatMap(([key, v]) => (typeof v === 'object' && v !== null ? keys(v as object, `${prefix}${key}.`) : [`${prefix}${key}`]));
-    expect(keys(syncPairingEn).sort()).toEqual(keys(syncPairingFr).sort());
-    expect(keys(syncPairingWindowEn).sort()).toEqual(keys(syncPairingWindowFr).sort());
+  it('textes français sans valeur vide ; pairingTexts() rend le catalogue français', () => {
     const values = (value: object): string[] => Object.values(value).flatMap((v) => (typeof v === 'object' && v !== null ? values(v as object) : [String(v)]));
-    expect([...values(syncPairingFr), ...values(syncPairingWindowFr), ...values(syncPairingWindowEn)].every((v) => v.trim() !== '')).toBe(true);
-    expect(pairingTexts('en')).toBe(syncPairingWindowEn);
-    expect(pairingTexts('fr')).toBe(syncPairingWindowFr);
+    expect([...values(syncPairingFr), ...values(syncPairingWindowFr)].every((v) => v.trim() !== '')).toBe(true);
+    expect(pairingTexts()).toBe(syncPairingWindowFr);
   });
 });
 

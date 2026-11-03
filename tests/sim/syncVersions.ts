@@ -39,7 +39,7 @@ export function extendedCatalogue(): UnknownCatalogue {
  * Migration additive de la version suivante : colonne `task.x` et son déclencheur de capture, écrit comme ceux que génère la migration
  * 0015 (`captureTriggers`, partie par colonne) : hors garde, une écriture de `x` pose l'horloge propre du champ (hlc de la ligne ; base =
  * horloge précédente du champ, sinon repli « * », sinon ancien hlc ; base gardée si le champ attend déjà sa publication) et entre dans
- * `sync_outbox`. Une vraie migration additive doit régénérer ces déclencheurs (docs/dettes.md).
+ * `sync_outbox`. Une vraie migration additive doit régénérer ces déclencheurs (docs/archive/circletasks/dettes.md).
  */
 export const NEXT_MIGRATION: Migration = {
   version: NEXT_SV,

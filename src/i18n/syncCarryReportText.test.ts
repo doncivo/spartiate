@@ -1,17 +1,11 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { CARRY_REPORT_TABLES } from '../domain/sync/epochCarryReportView';
-import { syncCarryReportEn } from './en.syncCarryReport';
 import { syncCarryReportFr } from './fr.syncCarryReport';
-import { DEFAULT_LOCALE, setLocale } from './index';
 import { tCarry } from './syncCarryReportText';
 
 describe('textes du compte rendu du changement d’époque (Y-TECH-05)', () => {
-  afterEach(() => setLocale(DEFAULT_LOCALE));
-
-  it('mêmes clés et mêmes paramètres en anglais', () => {
-    expect(Object.keys(syncCarryReportEn).sort()).toEqual(Object.keys(syncCarryReportFr).sort());
-    const params = (text: string): string[] => (text.match(/\{\w+\}/g) ?? []).sort();
-    for (const key of Object.keys(syncCarryReportFr) as (keyof typeof syncCarryReportFr)[]) expect(params(syncCarryReportEn[key]), key).toEqual(params(syncCarryReportFr[key]));
+  it('lit le français', () => {
+    expect(tCarry('seen')).toBe('J’ai vu');
   });
 
   it('chaque type d’élément de la correspondance table → libellé a son nom au singulier', () => {
@@ -29,9 +23,4 @@ describe('textes du compte rendu du changement d’époque (Y-TECH-05)', () => {
     expect(tCarry('more', { count: 12 })).toBe('Autres éléments : 12');
   });
 
-  it('suit la langue courante', () => {
-    expect(tCarry('seen')).toBe('J’ai vu');
-    setLocale('en');
-    expect(tCarry('seen')).toBe('I have seen it');
-  });
 });

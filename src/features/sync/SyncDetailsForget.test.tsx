@@ -3,8 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId, type IsoDateTime } from '../../domain/types';
 import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
-import { syncForgetEn } from '../../i18n/en.syncForget';
-import { syncForgetFr } from '../../i18n/fr.syncForget';
 import native from '../../i18n/native/fr.json';
 import { createMemorySyncPlatform } from '../../platform/sync/memory';
 import type { ForgetStep, SyncDeviceStatus } from '../../platform/sync/types';
@@ -442,20 +440,6 @@ describe('appareil oublié qui revient (critères 16 et 17, D2)', () => {
 });
 
 describe('textes (critère 18)', () => {
-  const leaves = (value: object, prefix = ''): [string, string][] =>
-    Object.entries(value).flatMap(([k, v]) => (typeof v === 'string' ? [[`${prefix}${k}`, v] as [string, string]] : leaves(v as object, `${prefix}${k}.`)));
-
-  it('fr et en : mêmes clés, aucun texte vide, mêmes paramètres', () => {
-    const fr = leaves(syncForgetFr);
-    const en = leaves(syncForgetEn);
-    expect(en.map(([k]) => k)).toEqual(fr.map(([k]) => k));
-    const params = (s: string): string[] => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1] ?? '').sort();
-    for (const [key, text] of fr) {
-      expect(text.trim(), key).not.toBe('');
-      expect(params(en.find(([k]) => k === key)?.[1] ?? ''), key).toEqual(params(text));
-    }
-  });
-
   it('aucun texte français en dur dans les composants de Y-10', async () => {
     const { readFileSync } = await import('node:fs');
     for (const file of ['./SyncDetailsForget.tsx', './ForgetDeviceDialog.tsx']) {
