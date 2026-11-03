@@ -26,8 +26,14 @@ describe('CI-SEC-01 : portée de la clé updater', () => {
     expect(signing).toContain('node scripts/release/check-version.mjs');
     expect(signing).toContain('signer sign --app-version');
     expect(signing).toContain('if [ -z "${TAURI_SIGNING_PRIVATE_KEY:-}" ]; then');
+    expect(signing).toContain('if [ -z "${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:-}" ]; then');
+    expect(signing).toMatch(/TAURI_SIGNING_PRIVATE_KEY_PASSWORD absent/);
     expect(signing).not.toMatch(/\b(?:tauri build|npm run build|vite build|cargo build)\b/);
     expect(signing).not.toMatch(/\bset\s+-x|\b(?:echo|printf)[^\n]*\$(?:\{)?TAURI_SIGNING_PRIVATE_KEY/);
+  });
+
+  it('le commentaire de cache ne mentionne plus d’identifiants Google périmés', () => {
+    expect(workflow).not.toMatch(/Google/i);
   });
 
   it('aucune configuration globale ne réactive la signature pendant le build', () => {

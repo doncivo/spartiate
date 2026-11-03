@@ -116,6 +116,34 @@ describe('mise à jour PC (D-03)', () => {
     });
   });
 
+  describe('erreur durable (persistante jusqu’au succès)', () => {
+    const recreate = (): AppContainer =>
+      createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, desktop });
+
+    it('échec de vérification : visible après recréation du conteneur, effacé au succès', async () => {
+      desktop.nextCheck = new Error('réseau absent');
+      await store().getState().check();
+      const second = recreate();
+      await updaterStore.get(second).getState().restore();
+      expect(updaterStore.get(second).getState().status).toBe('checkFailed');
+      desktop.nextCheck = null;
+      await updaterStore.get(second).getState().check();
+      expect(updaterStore.get(second).getState().status).toBe('upToDate');
+      const third = recreate();
+      await updaterStore.get(third).getState().restore();
+      expect(updaterStore.get(third).getState().status).toBe('idle');
+    });
+
+    it('signature refusée : le type d’échec survit au redémarrage', async () => {
+      desktop.nextCheck = fakePendingUpdate('1.2.0', { install: () => Promise.reject(new UpdateInstallError('signature', 'x')) });
+      await store().getState().check();
+      await store().getState().install();
+      const second = recreate();
+      await updaterStore.get(second).getState().restore();
+      expect(updaterStore.get(second).getState()).toMatchObject({ status: 'installFailed', failure: 'signature' });
+    });
+  });
+
   describe('installation', () => {
     it('télécharge avec progression puis installe (critère 4)', async () => {
       let release: () => void = () => undefined;

@@ -16,7 +16,8 @@ import {
 const read = (path: string): string => readFileSync(new URL(`../../../${path}`, import.meta.url), 'utf8');
 const rust = read('src-tauri/src/desktop.rs');
 const conf = JSON.parse(read('src-tauri/tauri.conf.json')) as {
-  plugins: { updater: { endpoints: string[] } };
+  plugins: { updater: { pubkey: string; endpoints: string[]; requireSignedVersion?: boolean } };
+  bundle: { createUpdaterArtifacts?: unknown };
 };
 const capability = JSON.parse(read('src-tauri/capabilities/desktop.json')) as {
   permissions: Array<string | { identifier: string; allow?: Array<{ url: string }> }>;
@@ -44,8 +45,25 @@ describe('cohérence TypeScript / Rust / configuration', () => {
     expect(field('quit')).toBe(fr.desktop.tray.quit);
   });
 
-  it('le dépôt des versions est le même : lien « À propos » et périmètre de l’opener ; l’updater n’est pas configuré (D-30)', () => {
-    expect(conf.plugins?.updater).toBeUndefined();
+  it('updater rétabli ensemble (SPA-002) : endpoint exact, clé publique minisign décodable, version signée exigée', () => {
+    const updater = conf.plugins.updater;
+    expect(updater.endpoints).toEqual(['https://github.com/doncivo/spartiate-releases/releases/latest/download/latest.json']);
+    expect(updater.requireSignedVersion).toBe(true);
+    const decoded = Buffer.from(updater.pubkey, 'base64').toString('utf8').split('\n');
+    expect(decoded[0]).toMatch(/^untrusted comment: minisign public key/);
+    const raw = Buffer.from(decoded[1] ?? '', 'base64');
+    expect(raw.length).toBe(42);
+    expect(raw.subarray(0, 2).toString()).toBe('Ed');
+    expect(conf.bundle.createUpdaterArtifacts ?? false).toBe(false);
+    expect(rust).toContain('tauri_plugin_updater::Builder::new().build()');
+    expect(capability.permissions.filter((p) => typeof p === 'string' && p.startsWith('updater:')).sort()).toEqual([
+      'updater:allow-check',
+      'updater:allow-download-and-install',
+    ]);
+    expect(read('src/platform/desktop/tauriDesktop.ts')).toContain('updaterConfigured: true');
+  });
+
+  it('le dépôt des versions est le même : lien « À propos » et périmètre de l’opener', () => {
     const opener = capability.permissions.find((p) => typeof p !== 'string' && p.identifier === 'opener:allow-open-url');
     expect(typeof opener === 'object' && opener.allow?.[0]?.url).toBe(`${RELEASES_REPOSITORY_URL}/releases/*`);
     expect(LATEST_RELEASE_URL.startsWith(`${RELEASES_REPOSITORY_URL}/releases/`)).toBe(true);
