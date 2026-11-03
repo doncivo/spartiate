@@ -1,11 +1,9 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { asLocalDateTime, type LocalTime } from '../domain/types';
-import { setLocale } from './index';
 import { quietShiftFormText, routineQuietLineText } from './quietShiftText';
 
 /** N-FIX-04 : formulation unique d'Ali, « une phrase, une cause ». Catalogue chargé avec les formulaires, hors du départ. */
 describe('texte de l’avertissement de plage silencieuse (formulaires)', () => {
-  afterEach(() => setLocale('fr'));
 
   it('autre jour, plage du soir : « Rappel décalé au lundi 08:00 — aucun rappel Pro après 19:00 »', () => {
     expect(quietShiftFormText({ fireAt: asLocalDateTime('2026-10-09T20:00'), effective: asLocalDateTime('2026-10-12T08:00'), cause: { kind: 'after', from: '19:00' as LocalTime } }, 'Pro')).toBe(
@@ -31,12 +29,6 @@ describe('texte de l’avertissement de plage silencieuse (formulaires)', () => 
     );
   });
 
-  it('anglais', () => {
-    setLocale('en');
-    expect(quietShiftFormText({ fireAt: asLocalDateTime('2026-10-09T20:00'), effective: asLocalDateTime('2026-10-12T08:00'), cause: { kind: 'after', from: '19:00' as LocalTime } }, 'Pro')).toBe(
-      'Reminder moved to Monday 08:00 — no Pro reminders after 19:00',
-    );
-  });
 });
 
 describe('ligne de l’écran Routines : trois états', () => {

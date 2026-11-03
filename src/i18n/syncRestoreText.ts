@@ -1,5 +1,3 @@
-import { getLocale } from './index';
-import { syncRestoreEn } from './en.syncRestore';
 import { syncRestoreFr } from './fr.syncRestore';
 
 /**
@@ -9,6 +7,6 @@ import { syncRestoreFr } from './fr.syncRestore';
 export type SyncRestoreTextKey = keyof typeof syncRestoreFr;
 
 export function tRestore(key: SyncRestoreTextKey, params?: Readonly<Record<string, string>>): string {
-  const text: string = (getLocale() === 'en' ? syncRestoreEn : syncRestoreFr)[key];
+  const text: string = syncRestoreFr[key];
   return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => params[name] ?? match) : text;
 }

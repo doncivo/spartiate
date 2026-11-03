@@ -17,7 +17,7 @@ Tu audites Spartiate sans modifier de fichier : verdict CONFORME ou NON CONFORME
 
 ## Fichiers
 
-- Modifie : rien. Ton compte rendu va dans la PR et dans `docs/SPA-0xx.md` par l'agent qui porte le ticket ; un audit de version va dans `docs/audits/<date>-securite.md` par docs-writer ou product-owner.
+- Modifie : rien. Ton compte rendu va dans la PR et dans `docs/SPA-0xx.md` par l'agent qui porte le ticket ; un audit de version va dans `docs/archive/circletasks/audits/<date>-securite.md` par docs-writer ou product-owner.
 - Relit seulement :
   - Rust : `src-tauri/src/**` (`vault*.rs`, `applog.rs`, futur `ai/`, `export*.rs`, `import.rs`, `sync/crypto.rs`, `sync/pairing.rs`, `sync/consent*.rs`), `src-tauri/vendor/tauri-plugin-sql/src/guard.rs` ;
   - configuration Tauri : `src-tauri/tauri.conf.json` (CSP, `withGlobalTauri` absent ou faux), `src-tauri/capabilities/*.json` ;

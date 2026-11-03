@@ -1,9 +1,7 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { setLocale } from './index';
+import { describe, expect, it } from 'vitest';
 import { formatNextOccurrences, scheduleLong, scheduleShort, weekdayName } from './formatRoutine';
 
 describe('formatRoutine', () => {
-  afterEach(() => setLocale('fr'));
 
   it('noms de jours : lundi = 1', () => {
     expect(weekdayName(1, 'short')).toBe('lun.');
@@ -34,8 +32,4 @@ describe('formatRoutine', () => {
     expect(formatNextOccurrences([])).toBe('');
   });
 
-  it('en anglais', () => {
-    setLocale('en');
-    expect(scheduleShort({ scheduleType: 'every_n_days', weekdays: [], timesPerWeek: null, interval: 3 })).toBe('every 3 days');
-  });
 });

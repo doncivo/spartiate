@@ -160,7 +160,7 @@ describe('bundle de départ (index.html)', () => {
     for (const marker of markers) expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker)), marker).toBe(true);
   });
 
-  it.each(["Les fichiers de l'ancienne époque de cet appareil", 'Files from the previous epoch on this device', 'ct-sync__ownDeletion'])('Y-IOS-02-FIX-01 : « %s » hors du départ et présent dans le build', (marker) => {
+  it.each(["Les fichiers de l'ancienne époque de cet appareil", 'ct-sync__ownDeletion'])('Y-IOS-02-FIX-01 : « %s » hors du départ et présent dans le build', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);

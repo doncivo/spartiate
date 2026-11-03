@@ -10,7 +10,7 @@ import { readDevice, type ReadStatus } from '../../../../src/sync/reader';
 import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
 
 /**
- * Y-FIX-03 (B3 de docs/audit-1.0.md, ADR 0011 §31) : une lecture de journal en échec n'est jamais muette. Critères 2 à 12 de la fiche
+ * Y-FIX-03 (B3 de docs/archive/circletasks/audit-1.0.md, ADR 0011 §31) : une lecture de journal en échec n'est jamais muette. Critères 2 à 12 de la fiche
  * (le critère 1 est le scénario 3 du banc, `scenario3ReadIo.test.ts`, repris tel quel). Panne passagère (`io`) armée par le plan de
  * pannes commun ; pannes permanentes (`bad-header`, `decrypt-failed`) levées par la plateforme simulée elle-même (le plan commun n'accepte
  * que `io` et `cloud-pending`, lus aussi par les deux faux de Rust : voir « Écarts » de la fiche).

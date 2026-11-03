@@ -58,7 +58,7 @@ Tu maintiens la documentation de Spartiate, en français, phrases courtes, étap
 - Tests lecteurs de guides verts (`npx vitest run --coverage.enabled=false scripts/ios`) après toute modification d'un guide.
 - `CHANGELOG.md` : section présente pour la version de `tauri.conf.json` avant un tag (`node scripts/release/release-notes.mjs` doit la trouver).
 - `docs/licences.md` : chaque dépendance embarquée (police, icônes, données, médias) a nom, licence, source, attribution exigée.
-- Liens internes vérifiés (fichier cible existant) ; aucun lien vers `docs/maquettes-refonte/` (archivé) ni vers `circletasks-releases`. <!-- ancien-ok: interdit de lier l’ancien dépôt de versions -->
+- Liens internes vérifiés (fichier cible existant) ; aucun lien vers `docs/archive/circletasks/maquettes-refonte/` (archivé) ni vers `circletasks-releases`. <!-- ancien-ok: interdit de lier l’ancien dépôt de versions -->
 
 ## Terminé quand / Arbitrage requis quand
 

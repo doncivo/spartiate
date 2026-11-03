@@ -1,4 +1,4 @@
-//! Y-TECH-03 (B13 de docs/audit-1.0.md), phase B : le plan de pannes d'iCloud (`tests/fixtures/sync/fault-plan.json`) côté Rust.
+//! Y-TECH-03 (B13 de docs/archive/circletasks/audit-1.0.md), phase B : le plan de pannes d'iCloud (`tests/fixtures/sync/fault-plan.json`) côté Rust.
 //! Lecture stricte (critères 1 et 3), pannes armées par nom et rang d'appel sur `MemFs` et sur le faux du plugin (critères 2, 12 à 15),
 //! déterminisme (critère 4). Aucun délai, aucun retry : un rang d'appel et un compteur de cycles seulement.
 

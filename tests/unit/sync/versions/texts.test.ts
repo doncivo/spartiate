@@ -2,12 +2,10 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { SYNC_TABLES } from '../../../../src/domain/sync/syncTables';
 import { failureKinds } from '../../../../src/features/sync/syncText';
-import { syncEngineEn } from '../../../../src/i18n/en.syncEngine';
-import { syncVersionEn } from '../../../../src/i18n/en.syncVersion';
 import { syncEngineFr } from '../../../../src/i18n/fr.syncEngine';
 import { syncVersionFr } from '../../../../src/i18n/fr.syncVersion';
 
-/** Y-07 critère 12 : textes dans src/i18n (fr et en, parité), aucun texte en dur (journaux sans contenu : twoVersions.test.ts, applyRecette.test.ts). */
+/** Y-07 critère 12 : textes dans src/i18n (français seul), aucun texte en dur (journaux sans contenu : twoVersions.test.ts, applyRecette.test.ts). */
 
 const vars = (text: string): string[] => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1] ?? '').sort();
 
@@ -16,18 +14,9 @@ const flatten = (tree: Tree, prefix = ''): Map<string, string> =>
   new Map(Object.entries(tree).flatMap(([key, value]) => (typeof value === 'string' ? [[`${prefix}${key}`, value] as const] : [...flatten(value, `${prefix}${key}.`)])));
 
 describe('textes (Y-07 critère 12)', () => {
-  it('sync.version : fr et en ont les mêmes clés, aucun texte vide, mêmes variables ; idem pour la ligne nommant l’appareil', () => {
-    const fr = flatten(syncVersionFr);
-    const en = flatten(syncVersionEn);
-    expect([...en.keys()].sort()).toEqual([...fr.keys()].sort());
-    for (const [key, text] of fr) {
-      const other = en.get(key) ?? '';
-      expect(text.trim(), key).not.toBe('');
-      expect(other.trim(), key).not.toBe('');
-      expect(vars(other), key).toEqual(vars(text));
-    }
+  it('sync.version : aucun texte français vide ; la ligne nommant l’appareil porte la variable device', () => {
+    for (const [key, text] of flatten(syncVersionFr)) expect(text.trim(), key).not.toBe('');
     expect(vars(syncEngineFr.status.updateRequiredDevice)).toEqual(['device']);
-    expect(vars(syncEngineEn.status.updateRequiredDevice)).toEqual(['device']);
   });
 
   it('chaque table du catalogue a son libellé de type d’élément (échec de réintégration)', () => {

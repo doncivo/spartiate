@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId, type IsoDateTime } from '../../domain/types';
 import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
-import { DEFAULT_LOCALE, setLocale, t } from '../../i18n';
+import { t } from '../../i18n';
 import type { SyncPhase } from '../../platform/sync/types';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer, type AppContainer } from '../app/container';
@@ -34,7 +34,6 @@ beforeEach(async () => {
 
 afterEach(async () => {
   cleanup();
-  setLocale(DEFAULT_LOCALE);
   await db.close();
 });
 
@@ -103,21 +102,15 @@ describe('accessibilité du bouton (Y-03 critère 8)', () => {
 });
 
 describe('menu de la zone de notification et langue (Y-03 critères 4 et 8)', () => {
-  it('« Synchroniser maintenant » en français puis en anglais, jamais en dur', () => {
+  it('« Synchroniser maintenant » vient du catalogue, pas du code', () => {
     expect(trayLabels(true).sync).toBe('Synchroniser maintenant');
-    setLocale('en');
-    const english = trayLabels(true).sync;
-    expect(english).toBe(t('desktop.tray.sync'));
-    expect(english).not.toBe('Synchroniser maintenant');
-    expect(english.length).toBeGreaterThan(3);
+    expect(trayLabels(true).sync).toBe(t('desktop.tray.sync'));
   });
 });
 
 describe('nombres de l’arrivée selon la langue (Ordre 4)', () => {
-  it('groupement de milliers suivant la langue courante, pas une locale en dur', () => {
+  it('groupement de milliers à la française', () => {
     expect(formatCount(1200).replace(/\s/g, ' ')).toBe('1 200');
-    setLocale('en');
-    expect(formatCount(1200)).toBe('1,200');
   });
 });
 

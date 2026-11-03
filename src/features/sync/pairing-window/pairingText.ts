@@ -1,16 +1,14 @@
 import { syncErrorCodeOf } from '../../../platform/sync/types';
-import { syncPairingWindowEn } from '../../../i18n/en.syncPairing';
 import { syncPairingWindowFr } from '../../../i18n/fr.syncPairing';
 
 /**
- * Textes de la fenêtre `pairing` (Y-06 critère 22, décision D6) : lus directement dans `src/i18n/{fr,en}.syncPairing.ts` (`syncPairingWindow*`), sans le reste
- * de `src/i18n`, pour tenir la liste blanche du bundle. Le français est la langue de l'app ; l'anglais (option) n'est choisi que si
- * la page l'annonce (`<html lang="en">`).
+ * Textes de la fenêtre `pairing` (Y-06 critère 22, décision D6) : lus directement dans `src/i18n/fr.syncPairing.ts` (`syncPairingWindowFr`), sans le reste
+ * de `src/i18n`, pour tenir la liste blanche du bundle. Français seul (SPA-001b, D-64).
  */
 export type PairingTexts = typeof syncPairingWindowFr;
 
-export function pairingTexts(lang: string = typeof document === 'undefined' ? 'fr' : document.documentElement.lang): PairingTexts {
-  return (lang.startsWith('en') ? syncPairingWindowEn : syncPairingWindowFr) as PairingTexts;
+export function pairingTexts(): PairingTexts {
+  return syncPairingWindowFr;
 }
 
 /** `{name}` remplacé par sa valeur (même syntaxe que `src/i18n`). */

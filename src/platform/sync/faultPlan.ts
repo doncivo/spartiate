@@ -1,5 +1,5 @@
 /**
- * Y-TECH-03 (B13 de docs/audit-1.0.md) : plan de pannes d'iCloud (« FaultPlan »), un seul format lu tel quel par les faux du dépôt
+ * Y-TECH-03 (B13 de docs/archive/circletasks/audit-1.0.md) : plan de pannes d'iCloud (« FaultPlan »), un seul format lu tel quel par les faux du dépôt
  * (`memory.ts` en TypeScript ; `MemFs` et `fake_bookmark` en Rust, phase B) et par les simulateurs. Schéma de référence et exemples :
  * `tests/fixtures/sync/fault-plan.json` (son `$comment` décrit chaque champ et chaque effet pour la réimplémentation Rust).
  *

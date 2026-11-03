@@ -1,7 +1,6 @@
 import type { Routine } from '../domain/model';
 import type { Weekday } from '../domain/types';
 import { weekdayName } from './formatRoutine';
-import { getLocale } from './index';
 
 /**
  * Textes et formats propres à l'écran Routines iPhone (UI-REFONTE-05, Routines-v2.html) : chargés avec l'écran, hors du bundle de départ.
@@ -23,30 +22,13 @@ const fr = {
   dayArticle: 'le {day}',
   addRoutine: 'Routine',
 } as const;
-const en: Record<keyof typeof fr, string> = {
-  summary: 'Week {span} · {counts}',
-  summaryDone: '{done} of {planned} done',
-  summaryDoneOne: '{done} of {planned} done',
-  summaryNone: 'No routine planned this week',
-  spanSameMonth: 'of {from} to {to}',
-  spanOtherMonth: 'of {from} to {to}',
-  everyDay: 'every day',
-  weekdayRange: '{from} to {to}',
-  listAnd: '{list} and {last}',
-  timesPerWeek: '{count} times a week',
-  everyNDays: 'every {count} days',
-  everyNWeeksOn: 'every {count} weeks on {days}',
-  dayArticle: '{day}',
-  addRoutine: 'Routine',
-};
-
 export function tRoutinesRefonte(key: keyof typeof fr, params: Record<string, string | number> = {}): string {
-  let text: string = (getLocale() === 'en' ? en : fr)[key];
+  let text: string = fr[key];
   for (const [name, value] of Object.entries(params)) text = text.replace(`{${name}}`, String(value));
   return text;
 }
 
-const intlLocale = (): string => (getLocale() === 'fr' ? 'fr-FR' : 'en-US');
+const intlLocale = (): string => 'fr-FR';
 const utcDate = (iso: string): Date => new Date(`${iso}T00:00:00Z`);
 
 /** « du 19 au 25 oct. » (même mois) ou « du 28 sept. au 4 oct. ». */

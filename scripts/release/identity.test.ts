@@ -158,6 +158,7 @@ describe('qualification des mentions (convention déterministe)', () => {
 /** Fichiers dont la fonction est de nommer l’ancienne identité : exemptions locales et motivées (jamais un dossier entier). */
 const TOOLING = new Set([
   'scripts/release/identity.test.ts',
+  'scripts/release/purge.test.ts',
   'scripts/release/agents.test.ts',
   'scripts/release/docs-paths.test.ts',
   'scripts/release/prd-split.test.ts',
@@ -170,14 +171,6 @@ const TOOLING = new Set([
   'scripts/release/lib/agentsCheck.mjs',
 ]);
 const DOC_EXEMPT = [/^docs\/PRD\.md$/, /^docs\/prd\//, /^docs\/SPA-[^/]+\.md$/, /^docs\/relecture-[^/]+$/, /^docs\/decisions\.md$/, /^docs\/adr\//, /^docs\/archive\//, /^docs\/licences\.md$/];
-/** Documents CircleTasks que SPA-001b archive dans docs/archive/circletasks/ (D-40, lot (i)) : exemption transitoire, retirée avec l’archivage. */
-const ARCHIVE_001B = [
-  /^docs\/stories\//,
-  /^docs\/audits?(-1\.0)?(\.md|\/)/,
-  /^docs\/(backlog|dettes|reprise-codex|reprise-historique-2026-10)\.md$/,
-  /^docs\/essais-iphone(-a9)?\.md$/,
-  /^docs\/maquettes-refonte\//,
-];
 const BINARY = /\.(png|ico|icns|jpg|woff2?|wasm|traineddata|gz|zip|svg)$/i;
 
 const lines = (file: string): string[] | null => {
@@ -192,7 +185,7 @@ describe('critère 1 : identité technique', () => {
   it('ni fr.circletasks.planner ni circletasks.db actifs dans les fichiers suivis hors exemptions D-41', () => {
     const found: string[] = [];
     for (const file of tracked()) {
-      if (TOOLING.has(file) || [...DOC_EXEMPT, ...ARCHIVE_001B].some((re) => re.test(file)) || BINARY.test(file)) continue;
+      if (TOOLING.has(file) || DOC_EXEMPT.some((re) => re.test(file)) || BINARY.test(file)) continue;
       const text = lines(file);
       if (!text) continue;
       for (const hit of activeMentions(text.join('\n'), [OLD_ID, OLD_DB]) as { lineNo: number; term: string }[]) found.push(`${file}:${hit.lineNo} ${hit.term}`);
@@ -208,7 +201,9 @@ describe('critère 2 : identité de marque hors docs/', () => {
       if (file.startsWith('docs/') || TOOLING.has(file) || BINARY.test(file)) continue;
       const text = lines(file);
       if (!text) continue;
-      text.forEach((line, index) => {
+      text.forEach((raw, index) => {
+        // D-40 : le chemin de l’archive (docs/archive/circletasks/) n’est pas une mention de la marque.
+        const line = raw.replaceAll('docs/archive/circletasks/', 'docs/archive/');
         const term = /circletasks/i.exec(line)?.[0];
         if (!term) return;
         const provenance = file === 'README.md' && /fork|provenance|issu|dérive|repris/i.test(line);
