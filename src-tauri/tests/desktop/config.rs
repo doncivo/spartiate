@@ -20,7 +20,9 @@ fn updater_is_configured_with_spartiate_key_and_endpoint() {
     let updater = &conf()["plugins"]["updater"];
     assert_eq!(
         updater["endpoints"],
-        serde_json::json!(["https://github.com/doncivo/spartiate-releases/releases/latest/download/latest.json"])
+        serde_json::json!([
+            "https://github.com/doncivo/spartiate-releases/releases/latest/download/latest.json"
+        ])
     );
     assert_eq!(updater["requireSignedVersion"], Value::Bool(true));
     let pubkey = updater["pubkey"].as_str().expect("pubkey texte");
@@ -30,9 +32,15 @@ fn updater_is_configured_with_spartiate_key_and_endpoint() {
         "plugin updater non enregistré"
     );
     for permission in ["updater:allow-check", "updater:allow-download-and-install"] {
-        assert!(DESKTOP_CAPABILITY.contains(permission), "permission {permission} absente");
+        assert!(
+            DESKTOP_CAPABILITY.contains(permission),
+            "permission {permission} absente"
+        );
     }
-    assert!(!DESKTOP_CAPABILITY.contains("updater:default"), "permissions updater trop larges");
+    assert!(
+        !DESKTOP_CAPABILITY.contains("updater:default"),
+        "permissions updater trop larges"
+    );
 }
 
 /// D-47 (7) : `withGlobalTauri` est explicitement faux (API Tauri non exposée sur `window`).
