@@ -17,6 +17,7 @@ import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { startSyncIntegration, type SyncIntegration } from './startSync';
 import { isTroublePhase, statusLine } from './syncText';
 import { createFakeSyncService, type FakeSyncService } from './testKit';
+import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
 
 /**
  * Y-10 critères 15 d et 16 (bandeaux A-09, ADR 0011 §19) : appareil local oublié, échec d'un oubli, suppression des fichiers d'un
@@ -125,7 +126,7 @@ describe('échec d’un oubli et suppression en attente (critère 15 d)', () => 
     const platform = createMemorySyncPlatform();
     const logger = createMemorySyncLogger();
     const realService = (): SyncEngineService =>
-      createSyncService({ data: db.data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), clock: db.clock, deviceId: SELF, sv: SV, appVersion: '0.4.0', logger, setTimeout: () => 0, clearTimeout: () => undefined });
+      createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data: db.data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), clock: db.clock, deviceId: SELF, sv: SV, appVersion: '0.4.0', logger, setTimeout: () => 0, clearTimeout: () => undefined });
     let service = realService();
     container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync: service });
     render(<AppStatusBanner />);

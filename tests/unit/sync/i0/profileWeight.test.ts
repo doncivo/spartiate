@@ -68,7 +68,7 @@ async function putWeight(d: SimDevice, date: string, source: 'manual' | 'health'
   return id;
 }
 
-const profile = async (d: SimDevice) => (await d.driver.select<Record<string, unknown>>('SELECT sex, birth_year, height_cm, goal, deleted_at FROM profile'))[0];
+const profile = async (d: SimDevice) => (await d.driver.select('SELECT sex, birth_year, height_cm, goal, deleted_at FROM profile'))[0] as Record<string, unknown> | undefined;
 const weights = (d: SimDevice) => d.driver.select<{ id: string; kg: number; source: string; deleted_at: string | null }>('SELECT id, kg, source, deleted_at FROM body_weight ORDER BY id');
 
 describe('publication', () => {
@@ -84,7 +84,7 @@ describe('publication', () => {
   it('settings n’est pas publié : aucune clé de réglage dans sync_outbox, aucun déclencheur', async () => {
     const [a] = await twoDevices();
     await a.data.repos.settings.set('general.locale', 'fr');
-    await a.data.repos.settings.set('device.name', 'PC');
+    await a.data.repos.settings.set('general.firstWeekday', 'monday');
     expect(await a.driver.select("SELECT 1 FROM sync_outbox WHERE table_name = 'settings'")).toEqual([]);
     expect(await a.driver.select("SELECT 1 FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_settings%'")).toEqual([]);
   });
@@ -130,16 +130,17 @@ describe('conflit par champ', () => {
 });
 
 describe('singleton et identités', () => {
-  it('profil créé sur les deux appareils avant la première synchro : une seule ligne, champs fusionnés', async () => {
+  it('profil créé sur les deux appareils avant la première synchro : une seule ligne, mêmes valeurs partout (la création entière la plus récente gagne champ par champ)', async () => {
     const [a, b] = await twoDevices();
     await putProfile(a, { sex: 'female' });
     advance(500);
     await putProfile(b, { birth_year: 1990 });
     await roundTrip();
-    for (const d of [a, b]) {
-      expect(await d.driver.select('SELECT id FROM profile')).toEqual([{ id: PROFILE }]);
-      expect(await profile(d)).toMatchObject({ sex: 'female', birth_year: 1990 });
-    }
+    for (const d of [a, b]) expect(await d.driver.select('SELECT id FROM profile')).toEqual([{ id: PROFILE }]);
+    const [pa, pb] = [await profile(a), await profile(b)];
+    expect(pa).toEqual(pb);
+    // L'insertion de B est plus récente : ses valeurs NULL (sexe) l'emportent champ par champ sur la valeur de A, son année de naissance reste.
+    expect(pa).toMatchObject({ sex: null, birth_year: 1990 });
   });
 
   it('même jour : manual et health sont deux lignes ; la même identité sur deux appareils reste une ligne', async () => {

@@ -4,9 +4,12 @@ import type { Task } from '../../src/domain/model';
 import type { DeviceId, LocalDate, SpaceId, TaskId } from '../../src/domain/types';
 import type { SqlDriver } from '../../src/db/driver';
 import { exportSqliteWasmImage, openSqliteWasmDriver } from '../../src/db/drivers/sqliteWasm';
-import { legacyMigrations as migrations } from '../fixtures/legacy-schema';
+import { legacyMigrations as legacyMigrationList } from '../fixtures/legacy-schema';
 import { migrate } from '../../src/db/migrator';
 import { createDataAccess, createSqlRepositories, type DataAccess } from '../../src/db/repositories';
+import { migrations as i0Migrations } from '../../src/db/migrations';
+import { SYNC_CATALOGUE } from '../../src/domain/sync/syncTables';
+import { LEGACY_SYNC_CATALOGUE, createLegacyRepositories } from '../fixtures/legacy-schema/catalogue';
 import { createMemorySyncPlatform, type MemorySyncFolder, type MemorySyncPlatform } from '../../src/platform/sync/memory';
 import type { RemoteChanges, SyncStatus } from '../../src/platform/sync/types';
 import { createMemorySyncLogger, createSyncService, type SyncEngineService } from '../../src/sync';
@@ -19,7 +22,7 @@ import { createSimFolder, propagate, type PropagateOptions } from './syncCloudSi
  */
 
 export const PRO = '00000000-0000-4000-8000-000000000001' as SpaceId;
-export const SCHEMA_VERSION = migrations.at(-1)?.version ?? 1;
+export const SCHEMA_VERSION = legacyMigrationList.at(-1)?.version ?? 1;
 
 export interface SimDevice {
   /** Identifiant d'appareil ; change seulement par `restartAs` (Y-10, « Associer de nouveau »). */
@@ -55,9 +58,12 @@ let counter = 0;
  * Base migrée construite une seule fois par processus de test : chaque appareil en reçoit une copie au lieu de rejouer les
  * 17 migrations (la moitié du coût d'un test à deux appareils).
  */
-let migratedImage: Promise<Uint8Array> | null = null;
-function migratedDatabaseImage(): Promise<Uint8Array> {
-  migratedImage ??= (async () => {
+/** `legacy` : ancien schéma et ancien catalogue (banc de test, D-67) ; `i0` : migration 0001 réelle et catalogue de production. */
+export type SimSchema = 'legacy' | 'i0';
+const migratedImages: Partial<Record<SimSchema, Promise<Uint8Array>>> = {};
+function migratedDatabaseImage(schema: SimSchema = 'legacy'): Promise<Uint8Array> {
+  const migrations = schema === 'i0' ? i0Migrations : legacyMigrationList;
+  migratedImages[schema] ??= (async () => {
     const template = await openSqliteWasmDriver();
     try {
       await migrate(template, migrations);
@@ -66,7 +72,7 @@ function migratedDatabaseImage(): Promise<Uint8Array> {
       await template.close();
     }
   })();
-  return migratedImage;
+  return migratedImages[schema] as Promise<Uint8Array>;
 }
 
 /**
@@ -78,8 +84,10 @@ export async function warmSimDevices(): Promise<void> {
 }
 
 /** I-06 : `appVersion` (numéro publié, `0.4.0` par défaut) et `devicePlatform` (`windows` par défaut) de l'appareil simulé. */
-export async function createSimDevice(id: string, options: { readonly name?: string; readonly start?: string; readonly clock?: ManualClock; readonly appVersion?: string; readonly devicePlatform?: 'windows' | 'ios' } = {}): Promise<SimDevice> {
-  const driver = await openSqliteWasmDriver({}, await migratedDatabaseImage());
+export async function createSimDevice(id: string, options: { readonly name?: string; readonly start?: string; readonly clock?: ManualClock; readonly appVersion?: string; readonly devicePlatform?: 'windows' | 'ios'; readonly schema?: SimSchema } = {}): Promise<SimDevice> {
+  const schema = options.schema ?? 'legacy';
+  const catalogue = schema === 'i0' ? SYNC_CATALOGUE : LEGACY_SYNC_CATALOGUE;
+  const driver = await openSqliteWasmDriver({}, await migratedDatabaseImage(schema));
   const clock = options.clock ?? createManualClock(options.start ?? '2026-10-05T08:00:00.000Z');
   let deviceId = id as DeviceId;
   const folder = createSimFolder();
@@ -87,12 +95,12 @@ export async function createSimDevice(id: string, options: { readonly name?: str
   const changes: RemoteChanges[] = [];
   let hlc = createHlcClock({ clock, deviceId });
   const stamper = { next: () => createWriteStamper(clock, hlc).next() };
-  const data = createDataAccess(driver, stamper, createSqlRepositories);
+  const data = createDataAccess(driver, stamper, schema === 'i0' ? createSqlRepositories : createLegacyRepositories);
   await data.repos.settings.set('device.id', deviceId);
 
   const makePlatform = (): MemorySyncPlatform => createMemorySyncPlatform({ folder, nowMs: () => clock.nowMs(), ...(options.devicePlatform ? { platform: options.devicePlatform } : {}) });
   const makeService = (platform: MemorySyncPlatform): SyncEngineService => {
-    const service = createSyncService({ data, platform, hlc, clock, deviceId, ...(options.devicePlatform ? { devicePlatform: options.devicePlatform } : {}), sv: SCHEMA_VERSION, appVersion: options.appVersion ?? '0.4.0', logger, setTimeout: () => 0, clearTimeout: () => undefined });
+    const service = createSyncService({ data, catalogue, platform, hlc, clock, deviceId, ...(options.devicePlatform ? { devicePlatform: options.devicePlatform } : {}), sv: schema === 'i0' ? (i0Migrations.at(-1)?.version ?? 1) : SCHEMA_VERSION, appVersion: options.appVersion ?? '0.4.0', logger, setTimeout: () => 0, clearTimeout: () => undefined });
     service.onRemoteChanges((c) => changes.push(c));
     return service;
   };

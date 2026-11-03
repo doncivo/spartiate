@@ -1,3 +1,4 @@
+import { LEGACY_SYNC_CATALOGUE, createLegacyRepositories } from '../../../fixtures/legacy-schema/catalogue';
 import { uuidGenerator } from '../../../../src/domain/id';
 import { createManualClock, type ManualClock } from '../../../../src/domain/clock';
 import { createHlcClock, createWriteStamper, type HlcClock, type WriteStamper } from '../../../../src/domain/hlc';
@@ -8,7 +9,7 @@ import type { SqlDriver } from '../../../../src/db/driver';
 import { openSqliteWasmDriver } from '../../../../src/db/drivers/sqliteWasm';
 import { legacyMigrations as migrations } from '../../../fixtures/legacy-schema';
 import { migrate } from '../../../../src/db/migrator';
-import { createDataAccess, createSqlRepositories, type DataAccess } from '../../../../src/db/repositories';
+import { createDataAccess, type DataAccess } from '../../../../src/db/repositories';
 import { createUndoStack, type UndoStack } from '../../../../src/features/app/undo';
 import { createSyncConflictUseCases, type SyncConflictUseCases } from '../../../../src/features/sync/syncConflictUseCases';
 import { createMemorySyncLogger } from '../../../../src/sync';
@@ -68,11 +69,11 @@ export async function openConflictBench(start = START): Promise<ConflictBench> {
   const clock = createManualClock(start);
   const hlc = createHlcClock({ clock, deviceId: SELF });
   const stamper = createWriteStamper(clock, hlc);
-  const data = createDataAccess(driver, stamper, createSqlRepositories);
+  const data = createDataAccess(driver, stamper, createLegacyRepositories);
   await data.repos.settings.set('device.id', SELF);
   const undo = createUndoStack();
   const logger = createMemorySyncLogger();
-  const useCases = createSyncConflictUseCases({ clock, ids: uuidGenerator, data, undo, logger });
+  const useCases = createSyncConflictUseCases({ catalogue: LEGACY_SYNC_CATALOGUE, clock, ids: uuidGenerator, data, undo, logger });
   const bench: ConflictBench = {
     driver,
     data,

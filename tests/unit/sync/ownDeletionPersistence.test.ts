@@ -8,6 +8,7 @@ import type { SyncDeps } from '../../../src/sync/deps';
 import type { EpochId } from '../../../src/domain/sync/format';
 import { abandonOrphan, retryOrphanDeletion } from '../../../src/sync/orphanEpoch';
 import { createSyncService } from '../../../src/sync/service';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 const SELF = '56d4eec1-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const EPOCH = `e0009-${SELF}` as EpochId;
@@ -16,7 +17,7 @@ let deps: SyncDeps;
 beforeAll(warmSimDevices);
 beforeEach(async () => {
   device = await createSimDevice(SELF);
-  deps = { data: device.data, platform: { ...device.platform, deleteOwn: vi.fn(() => Promise.reject(new SyncPlatformError('io'))) }, hlc: device.hlc, clock: device.clock, deviceId: device.id, devicePlatform: device.devicePlatform, appVersion: '0.3.3', sv: SCHEMA_VERSION, logger: device.logger };
+  deps = { catalogue: LEGACY_SYNC_CATALOGUE, data: device.data, platform: { ...device.platform, deleteOwn: vi.fn(() => Promise.reject(new SyncPlatformError('io'))) }, hlc: device.hlc, clock: device.clock, deviceId: device.id, devicePlatform: device.devicePlatform, appVersion: '0.3.3', sv: SCHEMA_VERSION, logger: device.logger };
 });
 afterEach(async () => { await device.close(); });
 
@@ -84,7 +85,7 @@ describe('Y-IOS-02-FIX-01 : persistance et erreurs de suppression', () => {
       return result;
     };
     let markSyncing!: () => void;
-    device.service = createSyncService({ ...deps, platform: device.platform, setTimeout: (handler) => { markSyncing = handler; return 0; }, clearTimeout: () => undefined });
+    device.service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, ...deps, platform: device.platform, setTimeout: (handler) => { markSyncing = handler; return 0; }, clearTimeout: () => undefined });
     const cycle = device.cycle();
     markSyncing();
     try {

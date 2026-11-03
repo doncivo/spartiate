@@ -3,7 +3,7 @@ import { nowIso } from '../../domain/clock';
 import { conflictTarget, decideRestore, parentTableOf, type ConflictRowState, type RestoreDecision, type RestoreRefusal } from '../../domain/sync/conflictRestore';
 import type { SyncValue } from '../../domain/sync/format';
 import { hlcIso } from '../../domain/sync/parse';
-import type { SyncColumn, SyncTable } from '../../domain/sync/syncTables';
+import { SYNC_CATALOGUE, type SyncCatalogue, type SyncColumn, type SyncTable } from '../../domain/sync/syncTables';
 import type { DeviceId, Hlc, IsoDateTime } from '../../domain/types';
 import { defaultSyncLogger, type SyncLogger } from '../../sync';
 import type { AppContainer } from '../app/container';
@@ -74,7 +74,7 @@ export interface ConflictPage {
   readonly unreadable: number;
 }
 
-export type SyncConflictDeps = Pick<AppContainer, 'clock' | 'ids' | 'data' | 'undo'> & { readonly logger?: SyncLogger };
+export type SyncConflictDeps = Pick<AppContainer, 'clock' | 'ids' | 'data' | 'undo'> & { readonly logger?: SyncLogger; readonly catalogue?: SyncCatalogue };
 
 export interface SyncConflictUseCases {
   /** `pages` pages de 50 conflits ; rejette si la lecture échoue (l'écran l'affiche). */
@@ -119,9 +119,9 @@ interface Plan {
 }
 
 /** Ce que ferait « Restaurer » maintenant (lecture seule : sert aussi au refus affiché en permanence). */
-async function planRestore(repos: Repositories, table: SyncTable, column: SyncColumn, conflict: StoredConflict): Promise<Plan> {
+async function planRestore(repos: Repositories, catalogue: SyncCatalogue, table: SyncTable, column: SyncColumn, conflict: StoredConflict): Promise<Plan> {
   const current = await repos.syncConflicts.fieldState(table, column, conflict.rowId);
-  const parentTable = parentTableOf(table, column);
+  const parentTable = parentTableOf(catalogue, table, column);
   const parent = parentTable && typeof conflict.discardedValue === 'string' ? await repos.syncConflicts.rowState(parentTable, conflict.discardedValue) : null;
   return { decision: decideRestore({ column, discarded: conflict.discardedValue, row: current.row, current: current.value, parent }), previous: current.value, previousHlc: current.hlc };
 }
@@ -137,7 +137,7 @@ interface Written {
   readonly after: Hlc | null;
 }
 
-/** Écrit une valeur dans un champ par une écriture tamponnée (générique : aucune règle de table, pont minimal de SPA-001b-front). */
+/** Écrit une valeur dans un champ par une écriture tamponnée (générique : aucune règle de table ; table et colonne viennent du catalogue injecté). */
 async function writeValue(repos: Repositories, table: SyncTable, column: SyncColumn, rowId: string, value: SyncValue): Promise<Written> {
   await repos.syncConflicts.writeField(table, column, rowId, value);
   return { after: (await repos.syncConflicts.fieldState(table, column, rowId)).hlc };
@@ -149,6 +149,7 @@ async function writeValue(repos: Repositories, table: SyncTable, column: SyncCol
 
 export function createSyncConflictUseCases(deps: SyncConflictDeps): SyncConflictUseCases {
   const logger = deps.logger ?? defaultSyncLogger;
+  const catalogue = deps.catalogue ?? SYNC_CATALOGUE;
   /** Journal technique : table et champ du catalogue, issue ; jamais une valeur ni un nom reçu (section 2.3). */
   const log = (target: { table: SyncTable; column: SyncColumn } | null, outcome: string): void =>
     logger.log('conflict-restore', { table: target?.table.name ?? 'unknown', field: target?.column.name ?? 'unknown', outcome });
@@ -189,7 +190,7 @@ export function createSyncConflictUseCases(deps: SyncConflictDeps): SyncConflict
           unreadable += 1;
           continue;
         }
-        const target = conflictTarget(row.conflict);
+        const target = conflictTarget(catalogue, row.conflict);
         if (target && shown.length < wanted) shown.push({ conflict: row.conflict, ...target });
       }
       if (shown.length >= wanted || rows.length < fetch) return { shown, unreadable };
@@ -208,7 +209,7 @@ export function createSyncConflictUseCases(deps: SyncConflictDeps): SyncConflict
       const items = shown.map((s) => ({ table: s.table, rowId: s.conflict.rowId }));
       // Valeurs d'identifiant (projet, objectif…) : titre de l'élément désigné.
       const refs = shown.flatMap((s) => {
-        const parent = parentTableOf(s.table, s.column);
+        const parent = parentTableOf(catalogue, s.table, s.column);
         if (!parent) return [];
         return [s.conflict.keptValue, s.conflict.discardedValue].filter((v): v is string => typeof v === 'string').map((rowId) => ({ table: parent, rowId }));
       });
@@ -216,7 +217,7 @@ export function createSyncConflictUseCases(deps: SyncConflictDeps): SyncConflict
       const views: ConflictView[] = [];
       for (const { conflict, table, column } of shown) {
         const info = described.get(`${table.name}|${conflict.rowId}`) ?? { state: 'missing' as const, title: null };
-        const parent = parentTableOf(table, column);
+        const parent = parentTableOf(catalogue, table, column);
         const side = (value: SyncValue, device: string, hlc: Hlc): ConflictSideView => ({
           value,
           device: device as DeviceId,
@@ -226,7 +227,7 @@ export function createSyncConflictUseCases(deps: SyncConflictDeps): SyncConflict
         });
         let blocked: RestoreRefusal | null = null;
         if (!conflict.restored) {
-          const plan = await planRestore(repos, table, column, conflict);
+          const plan = await planRestore(repos, catalogue, table, column, conflict);
           blocked = plan.decision.kind === 'refused' ? plan.decision.reason : null;
         }
         views.push({
@@ -254,11 +255,11 @@ export function createSyncConflictUseCases(deps: SyncConflictDeps): SyncConflict
           const conflict = await repos.syncConflicts.getConflict(conflictId);
           if (!conflict) return { result: { status: 'refused', reason: 'row-gone' }, command: null };
           if (conflict === 'unreadable') return { result: { status: 'refused', reason: 'invalid' }, command: null };
-          target = conflictTarget(conflict);
+          target = conflictTarget(catalogue, conflict);
           if (!target) return { result: { status: 'refused', reason: 'invalid' }, command: null };
           const { table, column } = target;
           if (conflict.restored) return { result: { status: 'already' }, command: null };
-          const plan = await planRestore(repos, table, column, conflict);
+          const plan = await planRestore(repos, catalogue, table, column, conflict);
           const now = nowIso(deps.clock);
           switch (plan.decision.kind) {
             case 'refused':

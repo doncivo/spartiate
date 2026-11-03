@@ -1,6 +1,7 @@
 import type { Clock } from '../domain/clock';
 import type { HlcClock } from '../domain/hlc';
 import type { SyncDevicePlatform } from '../domain/sync/format';
+import type { SyncCatalogue } from '../domain/sync/syncTables';
 import type { DeviceId } from '../domain/types';
 import type { DataAccess } from '../db/repositories';
 import type { SyncPlatform } from '../platform/sync/types';
@@ -10,6 +11,8 @@ import type { SyncLogger } from './log';
 /** Dépendances du moteur de synchro (injectées : base, plateforme, horloges, identité, journal). */
 export interface SyncDeps {
   readonly data: DataAccess;
+  /** Catalogue des tables publiées (D-67) : I0 en production, ancien catalogue pour le banc de test. */
+  readonly catalogue: SyncCatalogue;
   readonly platform: SyncPlatform;
   readonly hlc: HlcClock;
   /** Horloge physique (dérive, âges, 180 jours) : la même que celle de `HlcClock`. */

@@ -10,6 +10,7 @@ import { pendingFileCount } from '../../../src/domain/sync/pendingFiles';
 import { t } from '../../../src/i18n';
 import { armCrash } from '../../sim/syncCrash';
 import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * Y-FIX-02 (B2 de docs/archive/circletasks/audit-1.0.md, ADR 0011 §30) : première publication interrompue. L'iPhone, associé et jamais publié, a une tâche `T`
@@ -109,7 +110,7 @@ async function crashAt(rank: number, extra: readonly string[] = []): Promise<{ a
 
 /** Service de l'iPhone sur une plateforme donnée (pannes de `writeState`, échéance). */
 function phoneService(b: SimDevice, platform: SyncPlatform, deadlineProbe?: Parameters<typeof createSyncService>[0]['deadlineProbe']): void {
-  b.service = createSyncService({
+  b.service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
     data: b.data,
     platform,
     hlc: b.hlc,

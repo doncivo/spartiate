@@ -9,6 +9,7 @@ import { MAX_FILE_NUMBER, type DeviceAck } from '../../../src/domain/sync/format
 import { parsePublishRotation } from '../../../src/domain/sync/publishRotation';
 import { armCrash } from '../../sim/syncCrash';
 import { SyncStateUnreadableError } from '../../../src/domain/sync/stored';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 const SELF = 'ef50b6f7-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 let d: SimDevice;
@@ -26,7 +27,7 @@ async function prepare() {
   head = savedHead;
   expect(head.segment).toBeGreaterThan(0);
   await d.createTask('Après éviction');
-  deps = { data: d.data, platform: d.platform, deviceId: d.id, devicePlatform: d.devicePlatform, hlc: d.hlc, clock: d.clock, logger: d.logger, sv: SCHEMA_VERSION, appVersion: '0.3.3' };
+  deps = { catalogue: LEGACY_SYNC_CATALOGUE, data: d.data, platform: d.platform, deviceId: d.id, devicePlatform: d.devicePlatform, hlc: d.hlc, clock: d.clock, logger: d.logger, sv: SCHEMA_VERSION, appVersion: '0.3.3' };
 }
 beforeEach(prepare);
 afterEach(async () => { await d.close(); });

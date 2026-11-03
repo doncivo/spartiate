@@ -6,7 +6,6 @@ import { BLOCKED, canPurgeDeletion, coveredSegment, coversForgotten, publishedAl
 import type { ForgetCoverage } from './eligible';
 import { revivedDone } from './forget';
 import { isStrictHlc } from '../domain/sync/format';
-import { SYNC_TABLES, isPurgeable } from '../domain/sync/syncTables';
 import type { DeviceId, Hlc, IsoDateTime } from '../domain/types';
 import type { DeviceScan } from '../platform/sync/types';
 import { CARRY_HELD_MARK, applyOpsIsolated } from './apply';
@@ -53,19 +52,19 @@ export async function currentPurgeHorizon(repos: Repositories, self: DeviceId, n
  * pages sont parcourues par identifiant, une page entièrement retenue n'arrête pas le parcours. `sync_meta.purgeHorizon` (plus grand hlc
  * de suppression purgé, règle 4) est relevé dans la même transaction, quel que soit l'appelant (cycle ou corbeille T-08).
  */
-export async function purgeDeleted(deps: Pick<SyncDeps, 'data' | 'logger'>, horizon: PurgeHorizon, nowMs: number): Promise<{ readonly count: number; readonly maxPurged: Hlc | null }> {
+export async function purgeDeleted(deps: Pick<SyncDeps, 'data' | 'logger' | 'catalogue'>, horizon: PurgeHorizon, nowMs: number): Promise<{ readonly count: number; readonly maxPurged: Hlc | null }> {
   let maxPurged: Hlc | null = null;
   const before = purgeBefore(nowMs);
   const purgedAt = new Date(nowMs).toISOString() as IsoDateTime;
   let total = 0;
-  for (const t of [...SYNC_TABLES].reverse()) {
+  for (const t of [...deps.catalogue.tables].reverse()) {
     if (!t.purgeable) continue;
     let after: string | null = null;
     for (;;) {
       const page = await deps.data.repos.sync.deletedRows(t, before, PAGE_ROWS, after);
       if (page.length === 0) break;
       after = (page.at(-1) as DeletedRow).id;
-      const candidates = page.filter((row) => isPurgeable(t.name, row.id) && isStrictHlc(row.deletedHlc) && canPurgeDeletion(row, horizon, nowMs));
+      const candidates = page.filter((row) => deps.catalogue.isPurgeable(t.name, row.id) && isStrictHlc(row.deletedHlc) && canPurgeDeletion(row, horizon, nowMs));
       if (candidates.length > 0) {
         const purged = await guarded(deps.data, async (repos) => {
           const ids = candidates.map((c) => c.id);
@@ -76,7 +75,7 @@ export async function purgeDeleted(deps: Pick<SyncDeps, 'data' | 'logger'>, hori
             const rowClocks = clocks.get(c.id);
             return (rowClocks?.get('deleted_at') ?? rowClocks?.get('*') ?? { hlc: row.hlc }).hlc === c.deletedHlc;
           });
-          const done = (await purgeRows(repos, t, still, purgedAt, deps.logger)).purged;
+          const done = (await purgeRows(repos, deps.catalogue, t, still, purgedAt, deps.logger)).purged;
           let pageMax: Hlc | null = null;
           for (const item of done) if (pageMax === null || item.deletedHlc > pageMax) pageMax = item.deletedHlc;
           if (pageMax !== null) {
@@ -118,7 +117,7 @@ export async function retryParked(deps: SyncDeps, stats: { carryHeld: number; re
     }
     const now = new Date(deps.clock.nowMs()).toISOString() as IsoDateTime;
     await guarded(deps.data, async (repos) => {
-      const result = await applyOpsIsolated(repos, ops, { localSv: deps.sv, remoteSv: deps.sv, now, knows: () => true, logger: deps.logger, noPark: true });
+      const result = await applyOpsIsolated(repos, ops, { catalogue: deps.catalogue, localSv: deps.sv, remoteSv: deps.sv, now, knows: () => true, logger: deps.logger, noPark: true });
       const done = parked.filter((_, i) => result.outcomes[i] !== 'parked' && !marked[i]).map((p) => p.id);
       for (const [i, p] of parked.entries()) {
         if (!marked[i]) continue;

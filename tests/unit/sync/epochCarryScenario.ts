@@ -1,5 +1,5 @@
 import { expect } from 'vitest';
-import { syncTable } from '../../../src/domain/sync/syncTables';
+import { syncTable } from '../../fixtures/legacy-schema/catalogue';
 import type { DeviceId, IsoDateTime, LocalTime } from '../../../src/domain/types';
 import { createSimDevice, pair, syncFolders, type SimDevice } from '../../sim/syncDevice';
 import { applyEverywhere, backupOf, rounds, twoDevices } from './epochCarryKit';

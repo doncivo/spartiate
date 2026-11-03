@@ -5,6 +5,7 @@ import { createSyncService, HIDE_SYNC_DEADLINE_MS } from '../../../../src/sync';
 import type { TaskId } from '../../../../src/domain/types';
 import { hydrate, propagate } from '../../../sim/syncCloudSim';
 import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
 
 const A_ID = '56d4eec1-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const B_ID = 'ef50b6f7-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -115,7 +116,7 @@ describe('échec d’écriture de state.spx', () => {
     await setupFirst(b);
     let failing = true;
     const platform = { ...b.platform, writeState: (input: Parameters<typeof b.platform.writeState>[0]) => (failing ? Promise.reject(new SyncPlatformError('io')) : b.platform.writeState(input)) };
-    b.service = createSyncService({ data: b.data, platform, hlc: b.hlc, clock: b.clock, deviceId: b.id, sv: SCHEMA_VERSION, appVersion: '0.4.0', logger: b.logger, setTimeout: () => 0, clearTimeout: () => undefined });
+    b.service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data: b.data, platform, hlc: b.hlc, clock: b.clock, deviceId: b.id, sv: SCHEMA_VERSION, appVersion: '0.4.0', logger: b.logger, setTimeout: () => 0, clearTimeout: () => undefined });
     await b.service.syncNow('manual');
     const failed = b.service.status();
     expect(failed.phase).toBe('error');
@@ -133,7 +134,7 @@ describe('état propre jamais publié après l’ouverture de l’époque (arrê
     const b = await createSimDevice(B_ID, { name: 'iPhone' });
     devices.push(b);
     await setupFirst(b);
-    b.service = createSyncService({
+    b.service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
       data: b.data,
       platform: b.platform,
       hlc: b.hlc,

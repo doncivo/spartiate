@@ -1,6 +1,6 @@
 import type { WriteStamper } from '../../../domain/hlc';
 import type { SyncValue } from '../../../domain/sync/format';
-import { childRelations, type SyncTable } from '../../../domain/sync/syncTables';
+import type { SyncCatalogue, SyncTable } from '../../../domain/sync/syncTables';
 import type { Hlc, IsoDateTime } from '../../../domain/types';
 import type { SqlExecutor, SqlRow, SqlValue } from '../../driver';
 import type {
@@ -96,7 +96,7 @@ function rowToState(row: SqlRow): SyncStateRow {
   };
 }
 
-export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper): SyncRepository {
+export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, catalogue: SyncCatalogue): SyncRepository {
   const readRows = async (t: SyncTable, ids: readonly string[]): Promise<Map<string, StoredRow>> => {
     const out = new Map<string, StoredRow>();
     const cols = columnsOf(t);
@@ -322,7 +322,7 @@ export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper): Sy
     },
     async deletedRows(t, before, limit, afterId = null) {
       if (!t.columns.some((col) => col.name === 'deleted_at')) return [];
-      const children = childRelations(t.name).map((rel) => `NOT EXISTS (SELECT 1 FROM ${rel.table.name} c WHERE c.${rel.column} = p.${keyOf(t)})`);
+      const children = catalogue.childRelations(t.name).map((rel) => `NOT EXISTS (SELECT 1 FROM ${rel.table.name} c WHERE c.${rel.column} = p.${keyOf(t)})`);
       const rows = await db.select<{ row_key: string; deleted_at: string; deleted_hlc: string }>(
         `SELECT p.${keyOf(t)} AS row_key, p.deleted_at,
                 COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = ? AND row_id = p.${keyOf(t)} AND field = 'deleted_at'),
@@ -337,7 +337,7 @@ export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper): Sy
     },
     async withChildren(t, ids) {
       const out = new Set<string>();
-      const relations = childRelations(t.name);
+      const relations = catalogue.childRelations(t.name);
       if (relations.length === 0) return out;
       for (const part of chunks([...new Set(ids)])) {
         for (const rel of relations) {

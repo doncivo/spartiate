@@ -252,7 +252,7 @@ async function applyJoin(
   const records = loaded.records;
   const rowsEnd = rowPrefix(records);
   const total = loaded.end.count;
-  const ctx = { localSv: deps.sv, remoteSv: loaded.end.sv, now: new Date(deps.clock.nowMs()).toISOString() as ApplyContext['now'], knows, logger: deps.logger };
+  const ctx = { catalogue: deps.catalogue, localSv: deps.sv, remoteSv: loaded.end.sv, now: new Date(deps.clock.nowMs()).toISOString() as ApplyContext['now'], knows, logger: deps.logger };
   hooks.onProgress?.(start.done, total);
   // Lignes, par tranches : chaque tranche mémorise `done` dans sa dernière transaction.
   for (let from = Math.min(start.done, rowsEnd); from < rowsEnd; from += JOIN_CHUNK_RECORDS) {

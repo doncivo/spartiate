@@ -2,13 +2,14 @@ import fc from 'fast-check';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { openTestDb, type TestDb } from '../../../src/db/repositories/sql/testSetup';
 import type { SyncField, SyncOp } from '../../../src/domain/sync/format';
-import { routineLogId } from '../../../src/domain/sync/naturalIds';
+import { routineLogId } from '../../fixtures/legacy-schema/naturalIds';
 import type { DeviceId, Hlc, IsoDateTime, LocalDate, RoutineId } from '../../../src/domain/types';
 import { applyOps, type ApplyContext } from '../../../src/sync/apply';
 import { guarded } from '../../../src/sync/guarded';
 import { createMemorySyncLogger } from '../../../src/sync/log';
 import { retryParked } from '../../../src/sync/maintenance';
 import type { SyncDeps } from '../../../src/sync/deps';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * Propriétés des traces de suppression (ADR 0011, sections 4 et 5.4 ; Y-09 critères 4 et 9) : un identifiant purgé ne revient jamais avec
@@ -28,7 +29,7 @@ const TOMB = h(10);
 
 let db: TestDb;
 let logger: ReturnType<typeof createMemorySyncLogger>;
-const ctx = (): ApplyContext => ({ localSv: 17, remoteSv: 17, now: AT, knows: () => false, logger });
+const ctx = (): ApplyContext => ({ catalogue: LEGACY_SYNC_CATALOGUE, localSv: 17, remoteSv: 17, now: AT, knows: () => false, logger });
 const op = (t: string, id: string, fields: Record<string, SyncField>): SyncOp => ({ t, id, at: AT, f: new Map(Object.entries(fields)) });
 const apply = (ops: SyncOp[]) => guarded(db.data, (repos) => applyOps(repos, ops, ctx()));
 

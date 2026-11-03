@@ -12,10 +12,12 @@ import { purgeDeleted } from '../../../src/sync/maintenance';
 import { guarded } from '../../../src/sync/guarded';
 import { applyOps } from '../../../src/sync/apply';
 import { purgeRows } from '../../../src/sync/purge';
-import { syncTable, type SyncTable } from '../../../src/domain/sync/syncTables';
+import { type SyncTable } from '../../../src/domain/sync/syncTables';
+import { syncTable } from '../../fixtures/legacy-schema/catalogue';
 import { STATE_FILE } from '../../../src/domain/sync/format';
 import { hydrate, propagate } from '../../sim/syncCloudSim';
 import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * Purge des lignes supprimées (ADR 0011 section 5.4 ; Y-09 critères 2, 6 et 11 ; revue Y2 points 7, 8 et 9) : suppression revérifiée
@@ -80,7 +82,7 @@ describe('purge : revérification et parcours (revue Y2, point 7)', () => {
       }
       return rows;
     };
-    const result = await purgeDeleted({ data, logger: createMemorySyncLogger() }, UNBOUNDED, db.clock.nowMs());
+    const result = await purgeDeleted({ catalogue: LEGACY_SYNC_CATALOGUE, data, logger: createMemorySyncLogger() }, UNBOUNDED, db.clock.nowMs());
     expect(restored).toBe(true);
     expect(result.count).toBe(0);
     const back = await data.repos.tasks.getById((task as { id: TaskId }).id, { includeDeleted: true });
@@ -105,7 +107,7 @@ describe('purge : revérification et parcours (revue Y2, point 7)', () => {
     db.clock.advance(31 * DAY);
     const ack: DeviceAck = { epoch: 'e0001-x' as EpochId, segment: 1, record: 1, hlc: readUpTo, stateSeq: 1 };
     const horizon = { kind: 'limited' as const, readers: [{ deviceId: READER, status: 'active', lastSeenHlc: null, acks: new Map([[SELF, ack]]) }] };
-    const result = await purgeDeleted({ data, logger: createMemorySyncLogger() }, horizon, db.clock.nowMs());
+    const result = await purgeDeleted({ catalogue: LEGACY_SYNC_CATALOGUE, data, logger: createMemorySyncLogger() }, horizon, db.clock.nowMs());
     expect(result.count).toBe(1);
     expect(await data.repos.tasks.getById(last.id, { includeDeleted: true })).toBeNull();
     expect(await db.driver.select<{ n: number }>('SELECT COUNT(*) AS n FROM task WHERE deleted_at IS NOT NULL')).toEqual([{ n: PAGE_ROWS }]);
@@ -127,7 +129,7 @@ describe('purge : rappels des tâches purgées (revue Y2, point 9 ; T-08)', () =
     await data.repos.tasks.softDelete([taskId]);
     await db.driver.execute("UPDATE reminder SET deleted_at = NULL WHERE id = '90000000-0000-4000-8000-000000000002'");
     db.clock.advance(31 * DAY);
-    await purgeDeleted({ data, logger: createMemorySyncLogger() }, UNBOUNDED, db.clock.nowMs());
+    await purgeDeleted({ catalogue: LEGACY_SYNC_CATALOGUE, data, logger: createMemorySyncLogger() }, UNBOUNDED, db.clock.nowMs());
     expect(await data.repos.tasks.getById(taskId, { includeDeleted: true })).toBeNull();
     expect(await db.driver.select('SELECT id FROM reminder')).toEqual([]);
     const tombs = await db.driver.select<{ table_name: string; row_id: string }>('SELECT table_name, row_id FROM sync_tombstone ORDER BY table_name, row_id');
@@ -215,9 +217,9 @@ describe('purge commune : enfants (revue Y2, point 11 ; décision (c))', () => {
     const logger = createMemorySyncLogger();
     const moved: string[] = [];
     await guarded(db.data, async (repos) => {
-      const routine = await purgeRows(repos, syncTable('routine') as SyncTable, [{ id: 'r1', deletedHlc: h as Hlc }], at as IsoDateTime, logger, { reattach: (_, ids) => moved.push(...ids) });
+      const routine = await purgeRows(repos, LEGACY_SYNC_CATALOGUE, syncTable('routine') as SyncTable, [{ id: 'r1', deletedHlc: h as Hlc }], at as IsoDateTime, logger, { reattach: (_, ids) => moved.push(...ids) });
       expect(routine.purged).toEqual([]);
-      const project = await purgeRows(repos, syncTable('project') as SyncTable, [{ id: 'p1', deletedHlc: h as Hlc }], at as IsoDateTime, logger, { reattach: (_, ids) => moved.push(...ids) });
+      const project = await purgeRows(repos, LEGACY_SYNC_CATALOGUE, syncTable('project') as SyncTable, [{ id: 'p1', deletedHlc: h as Hlc }], at as IsoDateTime, logger, { reattach: (_, ids) => moved.push(...ids) });
       expect(project.purged.map((p) => p.id)).toEqual(['p1']);
     });
     expect(logger.entries.find((e) => e.event === 'purge-skipped')?.detail).toEqual({ table: 'routine', reason: 'live-children', count: 1 });
@@ -241,7 +243,7 @@ describe('ligne existante qui reçoit un parent purgé (revue finale Y2, point 3
     db.clock.advance(10_000);
     const remote = `001791187205000-0000-${READER}` as Hlc;
     const op = { t: 'task', id, at: '2026-10-05T08:00:00.000Z' as IsoDateTime, f: new Map([['project_id', [purgedProject, remote, null] as const]]) } as never;
-    const result = await guarded(db.data, (repos) => applyOps(repos, [op], { localSv: 17, remoteSv: 17, now: '2026-10-05T08:00:00.000Z' as IsoDateTime, knows: () => false, logger }));
+    const result = await guarded(db.data, (repos) => applyOps(repos, [op], { catalogue: LEGACY_SYNC_CATALOGUE, localSv: 17, remoteSv: 17, now: '2026-10-05T08:00:00.000Z' as IsoDateTime, knows: () => false, logger }));
     expect(result.outcomes).toEqual(['applied']);
     expect((await db.data.repos.tasks.getById(id))?.projectId).toBeNull();
     expect(await db.driver.select('SELECT reason FROM sync_parked')).toEqual([]);

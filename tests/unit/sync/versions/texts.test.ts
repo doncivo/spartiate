@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { SYNC_TABLES } from '../../../../src/domain/sync/syncTables';
+import { SYNC_TABLES } from '../../../fixtures/legacy-schema/catalogue';
 import { failureKinds } from '../../../../src/features/sync/syncText';
 import { syncEngineFr } from '../../../../src/i18n/fr.syncEngine';
 import { syncVersionFr } from '../../../../src/i18n/fr.syncVersion';

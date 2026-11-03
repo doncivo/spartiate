@@ -13,6 +13,7 @@ import { createSyncService } from '../../sync';
 import { silentSyncLogger } from '../../sync/log';
 import { UpdateRestoreAction } from './UpdateRestoreAction';
 import { restoreUpdateBackup, updateRestoreFailureText } from './updateRestore';
+import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
 
 /**
  * Revue I-06 : B1 (raison `restore-unconfirmed`), I2 (restauration d'avant la mise à jour = retour arrière local, aucun marqueur de synchro,
@@ -68,7 +69,7 @@ describe('I2 : retour arrière local, aucun marqueur de synchro', () => {
     const platform = createMemorySyncPlatform();
     await platform.folder.choose();
     await platform.key.create();
-    const service = createSyncService({ data: db.data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), clock: db.clock, deviceId: DEVICE, sv: 18, appVersion: '0.3.0', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
+    const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data: db.data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), clock: db.clock, deviceId: DEVICE, sv: 18, appVersion: '0.3.0', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
     await service.syncNow('manual');
     expect(await platform.restoreMarker.get()).toBeNull();
     expect(service.status().phase).not.toBe('restore-choice');

@@ -14,6 +14,7 @@ import type { AppContainer } from '../../../src/features/app/container';
 import type { AppVersionRead } from '../../../src/platform/appVersion';
 import { createUnavailableBackup } from '../../../src/platform/backup';
 import { createUnavailableFiles } from '../../../src/platform/files';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * I-06 QA : états d'erreur de la mise à jour que les tests du dev ne couvrent pas (critères 9, 12, 13, 16).
@@ -25,7 +26,7 @@ import { createUnavailableFiles } from '../../../src/platform/files';
 
 const LAST = migrations.at(-1)?.version ?? 0;
 const pad = (n: number): string => String(n).padStart(4, '0');
-const common = { desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), migrations, syncPlatform: null } as const;
+const common = { catalogue: LEGACY_SYNC_CATALOGUE, desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), migrations, syncPlatform: null } as const;
 const version = (v: string): (() => Promise<AppVersionRead>) => () => Promise.resolve({ ok: true, version: v, source: 'runtime' });
 const clock = createManualClock('2026-10-09T08:00:00.000Z');
 

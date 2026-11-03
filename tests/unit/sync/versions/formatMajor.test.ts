@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SYNC_FORMAT_MAJOR } from '../../../../src/domain/sync/format';
-import { SYNC_TABLES, type SyncTable } from '../../../../src/domain/sync/syncTables';
+import { type SyncTable } from '../../../../src/domain/sync/syncTables';
+import { SYNC_TABLES } from '../../../fixtures/legacy-schema/catalogue';
 
 /**
  * Garde de la version majeure (Y-07 critère 8 ; ADR 0011 §7.2, decisions.md « Ce qu'est la version majeure ») : une colonne publiée ne

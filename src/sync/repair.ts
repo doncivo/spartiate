@@ -1,5 +1,4 @@
 import { focusSessionsToClose, routinePausedFrom } from '../domain/sync/repairs';
-import { syncTable } from '../domain/sync/syncTables';
 import type { SyncDeps } from './deps';
 
 /**
@@ -11,7 +10,7 @@ export async function runRepairs(deps: SyncDeps, touched: ReadonlyMap<string, Re
   const repos = deps.data.repos;
   const routineIds = new Set<string>(touched.get('routine') ?? []);
   const pauseIds = [...(touched.get('routine_pause') ?? [])];
-  const pauseTable = syncTable('routine_pause');
+  const pauseTable = deps.catalogue.table('routine_pause');
   if (pauseTable && pauseIds.length > 0) {
     for (const row of (await repos.sync.readRows(pauseTable, pauseIds)).values()) {
       const routineId = row.values.get('routine_id');

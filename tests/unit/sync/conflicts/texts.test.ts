@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { SYNC_TABLES, syncColumn, syncTable, type SyncColumn, type SyncTable } from '../../../../src/domain/sync/syncTables';
+import { type SyncColumn, type SyncTable } from '../../../../src/domain/sync/syncTables';
+import { SYNC_TABLES, syncColumn, syncTable } from '../../../fixtures/legacy-schema/catalogue';
 import type { DeviceId, IsoDateTime } from '../../../../src/domain/types';
 import { translate } from '../../../../src/i18n';
 import { fr } from '../../../../src/i18n/fr';

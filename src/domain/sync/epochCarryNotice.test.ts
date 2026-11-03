@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Hlc } from '../types';
 import { EPOCH_CARRY_NOTICE_MAX_ITEMS, addToEpochCarryNotice, carryLabel, carryParentVerdict, countByLink, parseEpochCarryNotice, type EpochCarryNoticeItem } from './epochCarryNotice';
-import { SYNC_TABLES, syncTable } from './syncTables';
+import { SYNC_TABLES, syncTable } from '../../../tests/fixtures/legacy-schema/catalogue';
 
 /** Y-FIX-04 (critères 12 et 15) : règle du parent remplacé tirée du catalogue, notice bornée et cumulée. */
 

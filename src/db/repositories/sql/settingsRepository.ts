@@ -3,7 +3,7 @@ import type { Hlc } from '../../../domain/types';
 import type { WriteStamper } from '../../../domain/hlc';
 import type { SqlExecutor, SqlRow } from '../../driver';
 import type { SettingsRepository, SyncMetaRepository } from '../settingsRepository';
-import { SYNC_TABLES } from '../../../domain/sync/syncTables';
+import type { SyncCatalogue } from '../../../domain/sync/syncTables';
 import { toJson } from './sqlHelpers';
 
 interface SettingsRow extends SqlRow {
@@ -48,19 +48,15 @@ export function createSettingsRepository(db: SqlExecutor, stamper: WriteStamper)
 }
 
 /**
- * Sources de `maxHlc()` (ADR 0005, ADR 0011 section 3.2) : toutes les tables publiées du catalogue de synchro (`routine_pause`,
- * `calendar_account` compris) et les horloges de champ (`sync_field_clock`), qui peuvent porter un hlc reçu plus grand que celui de la
- * ligne (champ d'une ligne dont le hlc n'a pas bougé).
+ * Sources de `maxHlc()` (ADR 0005, ADR 0011 section 3.2) : toutes les tables publiées du catalogue injecté (I0 en production : `profile` et
+ * `body_weight`) et les horloges de champ (`sync_field_clock`), qui peuvent porter un hlc reçu plus grand que celui de la ligne (champ
+ * d'une ligne dont le hlc n'a pas bougé). Ces tables existent toutes dans la base neuve : aucune lecture de `sqlite_master`.
  */
-const HLC_SOURCES: readonly string[] = [...SYNC_TABLES.map((t) => t.name), 'sync_field_clock'];
-
-export function createSyncMetaRepository(db: SqlExecutor): SyncMetaRepository {
+export function createSyncMetaRepository(db: SqlExecutor, catalogue: SyncCatalogue): SyncMetaRepository {
+  const sources: readonly string[] = [...catalogue.tables.map((t) => t.name), 'sync_field_clock'];
   return {
     async maxHlc() {
-      // Transition 001b-base (lot A, base neuve) : seules les tables du catalogue présentes dans la base sont lues ; le lot B aligne le catalogue.
-      const present = new Set((await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table'")).map((r) => r.name));
-      const union = HLC_SOURCES.filter((table) => present.has(table)).map((table) => `SELECT MAX(hlc) AS hlc FROM ${table}`).join(' UNION ALL ');
-      if (union === '') return null;
+      const union = sources.map((table) => `SELECT MAX(hlc) AS hlc FROM ${table}`).join(' UNION ALL ');
       const rows = await db.select<{ hlc: string | null }>(`SELECT MAX(hlc) AS hlc FROM (${union})`);
       const value = rows[0]?.hlc;
       return value === undefined || value === null ? null : (value as Hlc);

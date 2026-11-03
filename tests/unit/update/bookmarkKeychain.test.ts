@@ -15,6 +15,7 @@ import { createUnavailableBackup } from '../../../src/platform/backup';
 import { createUnavailableFiles } from '../../../src/platform/files';
 import { SyncPlatformError } from '../../../src/platform/sync';
 import { createMemorySyncPlatform, type MemorySyncPlatform } from '../../../src/platform/sync/memory';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * I-06 critère 10 (ADR 0007 avenant I-06 point 5) : une mise à jour (même identifiant, même Apple ID) garde le signet du dossier et la clé
@@ -26,7 +27,7 @@ const LAST = migrations.at(-1)?.version ?? 0;
 const NEXT: Migration[] = [...migrations, { version: LAST + 1, name: 'test_i06_additive', statements: ['ALTER TABLE task ADD COLUMN i06_note TEXT'] }];
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148';
 const clock = createManualClock('2026-10-09T08:00:00.000Z');
-const common = { desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), migrations, clock } as const;
+const common = { catalogue: LEGACY_SYNC_CATALOGUE, desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), migrations, clock } as const;
 
 const keepOpen = (db: SqlDriver): SqlDriver => ({ kind: db.kind, execute: (s, p) => db.execute(s, p), select: (s, p) => db.select(s, p), transaction: (fn) => db.transaction(fn), close: () => Promise.resolve() });
 

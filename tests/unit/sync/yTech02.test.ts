@@ -9,6 +9,7 @@ import { META, readJson, writeJson } from '../../../src/sync/meta';
 import { createMemorySyncLogger } from '../../../src/sync';
 import { propagate } from '../../sim/syncCloudSim';
 import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * Y-TECH-02 (revue d'ensemble de fin d'ordre 4) : avertissements du scan rendus visibles, échecs qui étaient avalés (abonnés, lectures de
@@ -510,7 +511,7 @@ describe('quatrième revue, point C : covered ne compte que les accusés de l’
     await writeJson(a.data.repos, META.snapshot, null);
     const head = (await readJson<DeviceAck>(a.data.repos, META.head)) as DeviceAck;
     const epoch = head.epoch;
-    const deps = { data: a.data, platform: a.platform, hlc: a.hlc, clock: a.clock, deviceId: a.id, devicePlatform: 'windows' as const, appVersion: '0.4.0', sv: SCHEMA_VERSION, logger: a.logger };
+    const deps = { catalogue: LEGACY_SYNC_CATALOGUE, data: a.data, platform: a.platform, hlc: a.hlc, clock: a.clock, deviceId: a.id, devicePlatform: 'windows' as const, appVersion: '0.4.0', sv: SCHEMA_VERSION, logger: a.logger };
     const run = async (accepted: Map<DeviceId, PublishedDeviceState>): Promise<void> => {
       const scan = await a.platform.scan({ keep: [...accepted.keys()] });
       await maintain(deps, { epoch, head, accepted, ownScan: scan.devices.find((d) => d.deviceId === a.id) ?? null, rows: await a.data.repos.sync.getStates() });

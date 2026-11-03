@@ -11,6 +11,7 @@ import type { SyncPlatform } from '../../platform/sync/types';
 import { useAppStore, type DbFailure } from './appStore';
 import { bootstrapApp, bootstrapDatabase } from './bootstrap';
 import { DbFailureDetails, formatDbFailure } from './DbFailureDetails';
+import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
 
 const reset = () => useAppStore.setState({ dbStatus: 'idle', dbErrorDetail: null, dbBackupFailed: false, dbFailure: null });
 const failure = () => useAppStore.getState().dbFailure;
@@ -68,7 +69,7 @@ describe('0.2.1 diagnostic : étape de l’ouverture qui a échoué', () => {
     await migrate(db, migrations.slice(0, 2));
     const transaction = db.transaction.bind(db);
     vi.spyOn(db, 'transaction').mockImplementationOnce(() => Promise.reject(new Error('no such column: space_id'))).mockImplementation(transaction);
-    await bootstrapDatabase(() => Promise.resolve(db), { migrations, backup: () => Promise.resolve(undefined) });
+    await bootstrapDatabase(() => Promise.resolve(db), { catalogue: LEGACY_SYNC_CATALOGUE, migrations, backup: () => Promise.resolve(undefined) });
     expect(failure()).toMatchObject({ step: 'migration', migration: 3, message: 'no such column: space_id' });
   });
 
@@ -77,7 +78,7 @@ describe('0.2.1 diagnostic : étape de l’ouverture qui a échoué', () => {
     const select = db.select.bind(db);
     vi.spyOn(db, 'select').mockImplementation((sql, params) => (sql === 'PRAGMA journal_mode' ? Promise.resolve([{ journal_mode: 'delete' }] as never) : select(sql, params)));
     vi.spyOn(db, 'transaction').mockRejectedValueOnce(new Error('database is locked'));
-    await bootstrapDatabase(() => Promise.resolve(db), { migrations, backup: () => Promise.resolve(undefined) });
+    await bootstrapDatabase(() => Promise.resolve(db), { catalogue: LEGACY_SYNC_CATALOGUE, migrations, backup: () => Promise.resolve(undefined) });
     expect(failure()).toMatchObject({ step: 'migration', journalMode: 'delete' });
 
     reset();
@@ -109,7 +110,7 @@ describe('0.2.1 diagnostic : démarrage après l’ouverture (app.startError)', 
         throw new TypeError('plugin folder-bookmark absent');
       },
     } as unknown as SyncPlatform;
-    const result = await bootstrapApp({ open: openSqliteWasmDriver, desktop: null, syncPlatform: broken });
+    const result = await bootstrapApp({ catalogue: LEGACY_SYNC_CATALOGUE, open: openSqliteWasmDriver, desktop: null, syncPlatform: broken });
     expect(result).toBeUndefined();
     expect(failure()).toEqual({ phase: 'start', step: 'syncPlatform.available', errorName: 'TypeError', message: 'plugin folder-bookmark absent' });
   });

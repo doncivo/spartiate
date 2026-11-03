@@ -26,6 +26,7 @@ import { startSyncIntegration } from './startSync';
 import { SyncDetailsScreen } from './SyncDetailsScreen';
 import { SyncSettingsSection } from './SyncSettingsSection';
 import { createFakeSyncService, type FakeSyncService } from './testKit';
+import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
 
 const PHONE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000c1');
 const PC = '70000000-0000-4000-8000-00000000000a' as DeviceId;
@@ -93,7 +94,7 @@ function lockedData(): DataAccess {
 }
 
 function realContainer(platform: MemorySyncPlatform, os: 'ios' | 'windows', data: DataAccess = db.data): AppContainer {
-  const service = createSyncService({ data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), clock: db.clock, deviceId: PHONE, devicePlatform: os, sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
+  const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), clock: db.clock, deviceId: PHONE, devicePlatform: os, sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
   return createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), data: db.data, sync: service, syncPlatform: platform, platform: { runtime: 'tauri', os: os === 'ios' ? 'ios' : 'windows' } });
 }
 
@@ -351,7 +352,7 @@ describe('io : passagère, espacée après 3 échecs consécutifs, jamais arrêt
     let failing = true;
     const scan = pc.scan.bind(pc);
     const flaky: SyncPlatform = { ...pc, scan: (r) => (failing ? Promise.reject(new SyncPlatformError('io')) : scan(r)) };
-    const service = createSyncService({ data: db.data, platform: flaky, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), clock: db.clock, deviceId: PHONE, devicePlatform: 'windows', sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
+    const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data: db.data, platform: flaky, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), clock: db.clock, deviceId: PHONE, devicePlatform: 'windows', sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
     const line = (): string => statusLine(service.status(), db.clock.nowMs());
     const GENERIC = 'La synchronisation a échoué : nouvel essai au prochain cycle';
     await service.syncNow('timer');

@@ -142,6 +142,8 @@ const KIND_KEYS = {
   calendar_account: 'sync.version.kinds.calendarAccount',
   holiday: 'sync.version.kinds.holiday',
   settings: 'sync.version.kinds.settings',
+  profile: 'sync.version.kinds.profile',
+  body_weight: 'sync.version.kinds.bodyWeight',
 } as const;
 
 /** Types d'éléments d'un échec (« tâches, événements »), d'après les tables du catalogue. */

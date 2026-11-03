@@ -1,5 +1,5 @@
 import type { Repositories } from '../db/repositories';
-import { childRelations, syncTable, type SyncTable } from '../domain/sync/syncTables';
+import type { SyncCatalogue, SyncTable } from '../domain/sync/syncTables';
 import type { Hlc, IsoDateTime } from '../domain/types';
 import type { SyncLogger } from './log';
 
@@ -25,6 +25,7 @@ const maxHlc = (a: Hlc, b: Hlc | undefined): Hlc => (b !== undefined && b > a ? 
 /** Purge `items` de la table `t` ; renvoie les lignes effectivement purgées et les rappels purgés avec elles. */
 export async function purgeRows(
   repos: Repositories,
+  catalogue: SyncCatalogue,
   t: SyncTable,
   items: readonly PurgeItem[],
   purgedAt: IsoDateTime,
@@ -36,7 +37,7 @@ export async function purgeRows(
   if (options.reattach && t.name === 'project') {
     // Décision (c) : trace de purge d'un projet reçue (instantané, report d'époque) ; les tâches vivantes encore dessous passent à
     // « Sans projet » du même espace et repartent entières (`'+'`) : rien n'est perdu, les appareils convergent.
-    for (const rel of childRelations(t.name)) {
+    for (const rel of catalogue.childRelations(t.name)) {
       const moved = await repos.sync.detachLiveChildren(
         rel.table,
         rel.column,
@@ -56,7 +57,7 @@ export async function purgeRows(
   const kept = items.filter((item) => !blocked.has(item.id));
   if (kept.length === 0) return { purged: [], reminders: reminderIds };
   const ids = kept.map((item) => item.id);
-  const reminderTable = syncTable('reminder');
+  const reminderTable = catalogue.table('reminder');
   if (REMINDER_TARGETS.has(t.name) && reminderTable) {
     const reminders = await repos.sync.targetReminders(t.name, ids);
     if (reminders.length > 0) {

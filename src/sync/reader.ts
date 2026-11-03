@@ -96,7 +96,7 @@ export async function readDevice(deps: SyncDeps, request: ReadRequest): Promise<
     const result = await guarded(deps.data, async (repos) => {
       let applied = { touched: new Map<string, Set<string>>(), conflicts: 0 };
       for (const item of items) {
-        const r = await applyOpsIsolated(repos, item.record.ops, { localSv: deps.sv, remoteSv: item.record.sv, now, knows: request.knows, logger: deps.logger });
+        const r = await applyOpsIsolated(repos, item.record.ops, { catalogue: deps.catalogue, localSv: deps.sv, remoteSv: item.record.sv, now, knows: request.knows, logger: deps.logger });
         mergeTouched(applied.touched, r.touched);
         applied = { touched: applied.touched, conflicts: applied.conflicts + r.conflicts };
       }

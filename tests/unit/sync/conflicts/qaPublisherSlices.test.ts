@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildRecords, buildRecordsSliced, createSlicer, materializeOutbox, NO_SLICING } from '../../../../src/sync/publisher';
 import type { TaskId } from '../../../../src/domain/types';
 import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
 
 /**
  * QA de Y-04 / Y-05 critère 6 : la publication d'une grosse file en tâches courtes (`publisher.ts`). Preuves : résultat publié identique
@@ -188,7 +189,7 @@ describe('Y-05 critère 6 : résultat publié identique avec et sans découpage'
       await pc.updateTask(taskId(i), { title: `Titre ${String(i)}` });
     }
     for (let i = 600; i < 650; i += 1) await pc.deleteTask(taskId(i));
-    const read = (slicer: Parameters<typeof materializeOutbox>[5], limit?: number) => pc.data.transaction((repos) => materializeOutbox(repos, pc.id, null, limit, [], slicer));
+    const read = (slicer: Parameters<typeof materializeOutbox>[6], limit?: number) => pc.data.transaction((repos) => materializeOutbox(repos, LEGACY_SYNC_CATALOGUE, pc.id, null, limit, [], slicer));
 
     const plain = await read(NO_SLICING);
     const slicing = forceSlicing();

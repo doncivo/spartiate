@@ -5,6 +5,7 @@ import { META, readJson } from '../../../src/sync/meta';
 import { SyncPlatformError } from '../../../src/platform/sync/types';
 import type { SyncDeps } from '../../../src/sync/deps';
 import type { DeviceAck } from '../../../src/domain/sync/format';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 vi.mock('../../../src/sync/publishRotation', () => { throw new Error('bloc de lecture indisponible'); });
 
@@ -23,7 +24,7 @@ beforeEach(async () => {
   head = value;
   d.folder.setAvailability(d.id, `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.spj`, 'cloud');
   await d.createTask('Après');
-  deps = { data: d.data, platform: d.platform, deviceId: d.id, devicePlatform: d.devicePlatform, hlc: d.hlc, clock: d.clock, logger: d.logger, sv: SCHEMA_VERSION, appVersion: '0.3.3' };
+  deps = { catalogue: LEGACY_SYNC_CATALOGUE, data: d.data, platform: d.platform, deviceId: d.id, devicePlatform: d.devicePlatform, hlc: d.hlc, clock: d.clock, logger: d.logger, sv: SCHEMA_VERSION, appVersion: '0.3.3' };
 });
 afterEach(async () => { await d.close(); });
 
