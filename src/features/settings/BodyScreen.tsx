@@ -76,17 +76,22 @@ export function BodyScreen() {
   useEffect(() => {
     let live = true;
     void (async () => {
-      const [profiles, bodyWeights] = await Promise.all([repos.profile(), repos.bodyWeights()]);
-      const [profile, recent] = await Promise.all([profiles.get(), bodyWeights.listRecent(30)]);
-      if (!live) return;
-      setWeights(recent);
-      if (profile) {
-        setHasProfile(true);
-        setSex(profile.sex ?? '');
-        setGoal(profile.goal ?? '');
-        setExperience(profile.experience ?? '');
-        setBirthYear(profile.birthYear === null ? '' : String(profile.birthYear));
-        setHeight(profile.heightCm === null ? '' : formatKg(profile.heightCm));
+      try {
+        const [profiles, bodyWeights] = await Promise.all([repos.profile(), repos.bodyWeights()]);
+        const [profile, recent] = await Promise.all([profiles.get(), bodyWeights.listRecent(30)]);
+        if (!live) return;
+        setWeights(recent);
+        if (profile) {
+          setHasProfile(true);
+          setSex(profile.sex ?? '');
+          setGoal(profile.goal ?? '');
+          setExperience(profile.experience ?? '');
+          setBirthYear(profile.birthYear === null ? '' : String(profile.birthYear));
+          setHeight(profile.heightCm === null ? '' : formatKg(profile.heightCm));
+        }
+      } catch {
+        // Base fermée avant la fin de la lecture (écran quitté) : rien à afficher ; sinon le message d'échec reste visible.
+        if (live) setProfileMessage({ kind: 'error', text: tBody('errorSave') });
       }
     })();
     return () => {
