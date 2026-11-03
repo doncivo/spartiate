@@ -98,6 +98,8 @@ Auteur : domain-logic avec training / nutrition / recovery ; relecture : qa-test
 
 Fournir formules et vecteurs avant implémentation : référentiel des standards et agrégation du StrengthScore ; interpolation de récence/dispersion ; définition et persistance d'une journée nutrition complète ; facteur sommeil et frontières de nuit/fuseau, déduplication des sources. Valeur absente distincte de zéro. I4 : ai-integration précise aussi réservation du budget, concurrence, coût inconnu et erreurs ; pas de plafond garanti sans mécanisme vérifiable.
 
+Préparation I2 : [formules et vecteurs du moteur de progression](./preparation-i2-calculs.md). Le présent document couvre § 11 et les éléments explicitement I2 de § 13.8 ; les règles de génération/mésocycle § 12.1–12.4 restent I3. Les paramètres non spécifiés sont listés comme questions à décider par Ali.
+
 ## Reports proposés au PRD, sans modification dans ce lot
 
 1. § 7 / 25 : versions cohérentes P-04 et critères HealthKit conditionnels P-05.
