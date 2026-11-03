@@ -109,7 +109,6 @@
         "src/domain/sync/ownState.ts",
         "src/domain/sync/parse.ts",
         "src/domain/sync/positions.ts",
-        "src/domain/sync/repairs.ts",
         "src/domain/sync/retention.ts",
         "src/domain/sync/stored.ts",
         "src/domain/sync/syncTables.ts",
@@ -126,25 +125,7 @@
       "fichiers": [
         "src/db/errorText.ts",
         "src/db/migrationBackup.ts",
-        "src/db/migrations/0001_core_tables.ts",
-        "src/db/migrations/0002_task_done_at_index.ts",
-        "src/db/migrations/0003_task_series_template.ts",
-        "src/db/migrations/0004_task_discarded.ts",
-        "src/db/migrations/0005_external_calendar.ts",
-        "src/db/migrations/0006_routine_pause.ts",
-        "src/db/migrations/0007_pro_quiet_hours.ts",
-        "src/db/migrations/0008_checklist_icon.ts",
-        "src/db/migrations/0009_event_reminder_offsets.ts",
-        "src/db/migrations/0010_holiday.ts",
-        "src/db/migrations/0011_search_index.ts",
-        "src/db/migrations/0012_task_external_event.ts",
-        "src/db/migrations/0013_focus_session.ts",
-        "src/db/migrations/0014_focus_session_project.ts",
-        "src/db/migrations/0015_sync_tables.ts",
-        "src/db/migrations/0016_sync_natural_ids.ts",
-        "src/db/migrations/0017_calendar_account_username.ts",
-        "src/db/migrations/0018_apple_reminders.ts",
-        "src/db/migrations/0019_epoch_carry_report.ts",
+        "src/db/migrations/0001_spartiate_init.ts",
         "src/db/migrations/index.ts",
         "src/db/migrator.ts",
         "src/db/repositories/common.ts",
@@ -167,8 +148,7 @@
         "src/db/repositories/sql/syncConflicts.ts",
         "src/db/repositories/sql/syncRepository.ts",
         "src/db/repositories/sql/syncUnknown.ts",
-        "src/db/repositories/sql/taskRepository.ts",
-        "src/db/seed/defaultSpaces.ts"
+        "src/db/repositories/sql/taskRepository.ts"
       ]
     },
     {
@@ -284,9 +264,19 @@
   ],
   "ajouts": [
     {
+      "fichier": "src/db/repositories/storage.ts",
+      "story": "BUNDLE-01",
+      "raison": "SPA-001b-base : stockage de l'app (catalogue de synchro et repositories ensemble, 0,9 Ko source) : bootstrap.ts en a besoin au démarrage ; sans lui, le catalogue et les repositories se fournissent séparément (relecture sync-icloud du lot B, point a)."
+    },
+    {
       "fichier": "src/features/app/settingsLedger.ts",
       "story": "BUNDLE-01",
       "raison": "Déplacé de src/features/reminders/settingsLedger.ts (qui était dans le départ de main) vers features/app ; importé par bootstrap.ts. Même module, même rôle, aucun code ajouté."
+    },
+    {
+      "fichier": "src/db/migrations/0001_spartiate_init.ts",
+      "story": "BUNDLE-01",
+      "raison": "Remplace les dix-neuf migrations CircleTasks du registre (base neuve, D-23) ; une seule migration au départ, plus courte que les dix-neuf retirées."
     }
   ]
 }

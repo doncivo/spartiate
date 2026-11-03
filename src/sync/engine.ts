@@ -457,7 +457,7 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
       const endHlc = deps.hlc.now();
       // Revue : l'instantané est une seule unité (de `begin` à `commit`), jamais coupé entre deux pages.
       deps.deadline?.check('snapshot');
-      await platform.writeSnapshot({ epoch, seq: 1, sv: deps.sv, records: snapshotPages(repos, epoch, new Map<DeviceId, DeviceAck>(), deps.sv) });
+      await platform.writeSnapshot({ epoch, seq: 1, sv: deps.sv, records: snapshotPages(repos, deps.catalogue, epoch, new Map<DeviceId, DeviceAck>(), deps.sv) });
       const head: DeviceAck = { epoch, segment: 0, record: 0, hlc: null, stateSeq: 0 };
       await data.transaction(async (tx) => {
         await tx.sync.clearOutbox(maxSeq);
@@ -1036,7 +1036,7 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
         if (head.hlc !== null) covers.set(self, { ...head, stateSeq });
         const endHlc = deps.hlc.now();
         deps.deadline?.check('snapshot');
-        await platform.writeSnapshot({ epoch: currentEpoch, seq, sv: deps.sv, records: snapshotPages(repos, currentEpoch, covers, deps.sv) });
+        await platform.writeSnapshot({ epoch: currentEpoch, seq, sv: deps.sv, records: snapshotPages(repos, deps.catalogue, currentEpoch, covers, deps.sv) });
         snapshotMeta = { seq, endHlc };
         await writeJson(repos, META.snapshot, { epoch: currentEpoch, ...snapshotMeta, coveredSegment: head.segment, covers: Object.fromEntries(covers) });
         // TRI-03 : état refusé juste après l'instantané (`state-mismatch`, plus de 64 accusés) : visible comme à l'étape 6, jamais « À jour ».
@@ -1295,7 +1295,7 @@ export async function resumeFromSnapshot(
     tried.applying(pick.end);
     const now = iso(deps.clock.nowMs());
     // Dernière transaction (même fonction que l'arrivée, join.ts) : curseurs aux positions couvertes, fin de la reprise, instantané essayé.
-    const result = await mergeSnapshot(deps, loaded, { localSv: deps.sv, remoteSv: loaded.end.sv, now, knows, logger: deps.logger }, hooks.onProgress, (tx) =>
+    const result = await mergeSnapshot(deps, loaded, { catalogue: deps.catalogue, localSv: deps.sv, remoteSv: loaded.end.sv, now, knows, logger: deps.logger }, hooks.onProgress, (tx) =>
       finishResumeTx(tx, deps, { epoch, from: deviceId, loaded, accepted, coverage, tried: tried.value() }),
     );
     if (result === 'clock-ahead') {

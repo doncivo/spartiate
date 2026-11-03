@@ -12,6 +12,7 @@ import type { ReminderRepository } from './reminderRepository';
 import type { RoutineLogRepository, RoutineRepository } from './routineRepository';
 import type { SettingsRepository, SyncMetaRepository } from './settingsRepository';
 import type { SyncRepository } from './syncRepository';
+import type { BodyWeightRepository, ProfileRepository } from './bodyRepositories';
 import type { ProjectRepository, SpaceRepository } from './spaceRepository';
 import type { RecurrenceRepository, TaskRepository } from './taskRepository';
 
@@ -36,6 +37,10 @@ export interface Repositories {
   readonly externalEvents: ExternalEventRepository;
   readonly calendarAccounts: CalendarAccountRepository;
   readonly syncMeta: SyncMetaRepository;
+  /** Base neuve (D-65) : profil (ligne unique `profile|singleton`) et pesées. */
+  /** Chargés à la demande (hors du JavaScript de départ, BUNDLE-01) : `await repos.profile()`. */
+  readonly profile: () => Promise<ProfileRepository>;
+  readonly bodyWeights: () => Promise<BodyWeightRepository>;
   /** Liens locaux aux Rappels Apple (K-05, ADR 0008 §10.2) : table non publiée, vide sur le PC. */
   readonly appleLinks: AppleReminderLinkRepository;
   /** Tables de la synchronisation (ADR 0011, lot Y2). */

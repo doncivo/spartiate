@@ -26,7 +26,7 @@ describe('critère 21 : aucune migration, aucun changement de format sur disque'
     const names = readdirSync(new URL('src/db/migrations/', root)).filter((f) => /^\d{4}_/.test(f));
     expect(names.length).toBeGreaterThan(0);
     for (const file of names) expect(file, file).not.toMatch(/forgot|forget|oubli|device_status/i);
-    expect(read('src/db/migrations/0015_sync_tables.ts')).toMatch(/forgotten/);
+    expect(read('src/db/migrations/0001_spartiate_init.ts')).toMatch(/forgotten/);
   });
 
   it('les clés de sync_meta de Y-10 ne sont jamais publiées : aucune n’apparaît dans le format des fichiers (domain/sync)', () => {

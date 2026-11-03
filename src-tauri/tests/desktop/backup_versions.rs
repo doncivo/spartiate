@@ -110,14 +110,15 @@ fn k05_4_the_three_replaced_triggers_have_a_superseded_body_valid_from_15_to_17(
 }
 
 #[test]
-fn k05_4_a_version_17_backup_is_accepted_and_a_version_18_one_too() {
+fn k05_4_a_version_17_or_18_backup_is_refused_by_the_schema_1_app() {
+    // Base neuve Spartiate (SPA-001b, D-54, D-67) : les sauvegardes de l'ancien projet 17 à 19 deviennent des cas de refus.
     let dir = scratch();
-    let v17 = dir.path().join("v17.db");
-    make_db(&v17, 17, 17);
-    assert_eq!(check_backup_file(&v17, APP_SCHEMA_VERSION).unwrap(), 17);
-    let v18 = dir.path().join("v18.db");
-    make_db(&v18, 18, 18);
-    assert_eq!(check_backup_file(&v18, APP_SCHEMA_VERSION).unwrap(), 18);
+    for version in [17u32, 18, 19] {
+        let path = dir.path().join(format!("v{version}.db"));
+        make_db(&path, version, version.min(18));
+        let err = check_backup_file(&path, APP_SCHEMA_VERSION).unwrap_err();
+        assert_eq!(err.code, "newer-schema", "version {version}");
+    }
 }
 
 #[test]
@@ -190,10 +191,12 @@ fn k05_4_reset_triggers_recreates_the_bodies_of_the_backup_version_and_never_a_c
             .unwrap();
         assert_eq!(evil, 0);
         drop(conn);
-        // Le fichier préparé est admis tel quel par la vérification de la même version.
+        // Une sauvegarde d'une version de l'ancien projet reste refusée par l'app au schéma 1 (D-54).
         assert_eq!(
-            check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(),
-            version
+            check_backup_file(&path, APP_SCHEMA_VERSION)
+                .unwrap_err()
+                .code,
+            "newer-schema"
         );
     }
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { affectsReminders, conflictTarget, decideRestore, parentTableOf, wantsDeleted } from './conflictRestore';
-import { syncColumn, syncTable, type SyncColumn, type SyncTable } from './syncTables';
+import { type SyncColumn, type SyncTable } from './syncTables';
+import { LEGACY_SYNC_CATALOGUE, syncColumn, syncTable } from '../../../tests/fixtures/legacy-schema/catalogue';
 
 /** Règles pures de la restauration d'un conflit (Y-04 critères 2, 7 à 10 ; revue : règles dans src/domain). */
 
@@ -9,18 +10,18 @@ const tbl = (name: string): SyncTable => syncTable(name) as SyncTable;
 
 describe('conflictTarget', () => {
   it('table et colonne visibles du catalogue seulement', () => {
-    expect(conflictTarget({ table: 'task', field: 'time' })?.column.name).toBe('time');
-    expect(conflictTarget({ table: 'task', field: 'sort_order' })).toBeNull();
-    expect(conflictTarget({ table: 'task', field: 'discarded' })).toBeNull();
-    expect(conflictTarget({ table: 'tâche', field: 'time' })).toBeNull();
-    expect(conflictTarget({ table: '__proto__', field: 'constructor' })).toBeNull();
+    expect(conflictTarget(LEGACY_SYNC_CATALOGUE, { table: 'task', field: 'time' })?.column.name).toBe('time');
+    expect(conflictTarget(LEGACY_SYNC_CATALOGUE, { table: 'task', field: 'sort_order' })).toBeNull();
+    expect(conflictTarget(LEGACY_SYNC_CATALOGUE, { table: 'task', field: 'discarded' })).toBeNull();
+    expect(conflictTarget(LEGACY_SYNC_CATALOGUE, { table: 'tâche', field: 'time' })).toBeNull();
+    expect(conflictTarget(LEGACY_SYNC_CATALOGUE, { table: '__proto__', field: 'constructor' })).toBeNull();
   });
 });
 
 describe('parentTableOf, wantsDeleted, affectsReminders', () => {
   it('parent d’une clé étrangère du catalogue', () => {
-    expect(parentTableOf(tbl('task'), col('task', 'project_id'))?.name).toBe('project');
-    expect(parentTableOf(tbl('task'), col('task', 'title'))).toBeUndefined();
+    expect(parentTableOf(LEGACY_SYNC_CATALOGUE, tbl('task'), col('task', 'project_id'))?.name).toBe('project');
+    expect(parentTableOf(LEGACY_SYNC_CATALOGUE, tbl('task'), col('task', 'title'))).toBeUndefined();
   });
 
   it('suppression voulue : date ISO → supprimé ; nul ou « modifié » → présent ; autre → invalide', () => {

@@ -1,6 +1,6 @@
 import { decideReintegration, keptFieldsOf, REINTEGRATION_FAILURE_META, type ClockState, type ReintegrationDecision, type ReintegrationFailure, type StoredUnknown } from '../../../domain/sync/compat';
 import type { SyncValue } from '../../../domain/sync/format';
-import { isValidRowId, settingKeyScope, syncColumn, syncTable, tableRank, type SyncTable } from '../../../domain/sync/syncTables';
+import { SYNC_CATALOGUE, type SyncTable } from '../../../domain/sync/syncTables';
 import type { Hlc, IsoDateTime } from '../../../domain/types';
 import type { SqlExecutor, SqlValue } from '../../driver';
 import type { ReintegrateUnknownFields, UnknownCatalogue } from '../syncUnknownRepository';
@@ -20,7 +20,7 @@ import type { ReintegrateUnknownFields, UnknownCatalogue } from '../syncUnknownR
  *   retirée avant le COMMIT ; un échec hors d'une ligne annule la page, garde comprise. Rejouable.
  */
 
-const DEFAULT_CATALOGUE: UnknownCatalogue = { table: syncTable, column: syncColumn, settingScope: settingKeyScope };
+const DEFAULT_CATALOGUE: UnknownCatalogue = SYNC_CATALOGUE;
 
 const marks = (n: number): string => Array.from({ length: n }, () => '?').join(', ');
 
@@ -93,7 +93,7 @@ async function upsertClock(tx: SqlExecutor, t: SyncTable, id: string, clock: { r
 
 /** Réintègre les champs gardés d'une ligne ; `tableName` et `rowId` sont des valeurs reçues, jamais des identifiants SQL. */
 async function reintegrateRow(tx: SqlExecutor, catalogue: UnknownCatalogue, t: SyncTable, tableName: string, rowId: string, now: IsoDateTime): Promise<RowOutcome> {
-  if (!isValidRowId(t, rowId)) return NOTHING;
+  if (!catalogue.isValidRowId(t, rowId)) return NOTHING;
   if (t.idKind === 'setting' && catalogue.settingScope(rowId) !== 'shared') return NOTHING;
   const stored = await tx.select<StoredUnknown & Record<string, SqlValue>>('SELECT field, value, hlc, base_hlc FROM sync_unknown WHERE table_name = ? AND row_id = ? ORDER BY field', [tableName, rowId]);
   const fields = keptFieldsOf(t, (name) => catalogue.column(t.name, name), stored);
@@ -142,7 +142,7 @@ const reintegrateAll: ReintegrateUnknownFields = async (db, options) => {
     const tables = (await db.select<{ table_name: string }>('SELECT DISTINCT table_name FROM sync_unknown'))
       .map((r) => r.table_name)
       .filter((name) => catalogue.table(name) !== undefined)
-      .sort((a, b) => tableRank(a) - tableRank(b) || (a < b ? -1 : 1));
+      .sort((a, b) => catalogue.rank(a) - catalogue.rank(b) || (a < b ? -1 : 1));
     for (const tableName of tables) {
       const t = catalogue.table(tableName) as SyncTable;
       let after: string | null = null;

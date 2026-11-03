@@ -4,9 +4,9 @@ import type { LocalDate, SpaceId, TaskId } from '../../../src/domain/types';
 import type { SqlDriver, SqlRow } from '../../../src/db/driver';
 import { openSqliteWasmDriver } from '../../../src/db/drivers/sqliteWasm';
 import { findUpdateBackup, type MigrationBackup } from '../../../src/db/migrationBackup';
-import { migrations } from '../../../src/db/migrations';
+import { legacyMigrations as migrations } from '../../fixtures/legacy-schema';
 import type { Migration } from '../../../src/db/migrator';
-import { createSqlRepositories, type RepositoryFactory } from '../../../src/db/repositories';
+import { type RepositoryFactory } from '../../../src/db/repositories';
 import { SPACE_PRO_ID } from '../../../src/db/seed/defaultSpaces';
 import { useAppStore } from '../../../src/features/app/appStore';
 import { bootstrapApp, type BootstrapAppOptions } from '../../../src/features/app/bootstrap';
@@ -14,6 +14,7 @@ import type { AppContainer } from '../../../src/features/app/container';
 import type { AppVersionRead } from '../../../src/platform/appVersion';
 import { createUnavailableBackup } from '../../../src/platform/backup';
 import { createUnavailableFiles } from '../../../src/platform/files';
+import { LEGACY_STORAGE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * I-06 QA : états d'erreur de la mise à jour que les tests du dev ne couvrent pas (critères 9, 12, 13, 16).
@@ -25,7 +26,7 @@ import { createUnavailableFiles } from '../../../src/platform/files';
 
 const LAST = migrations.at(-1)?.version ?? 0;
 const pad = (n: number): string => String(n).padStart(4, '0');
-const common = { desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), syncPlatform: null } as const;
+const common = { storage: LEGACY_STORAGE, desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), migrations, syncPlatform: null } as const;
 const version = (v: string): (() => Promise<AppVersionRead>) => () => Promise.resolve({ ok: true, version: v, source: 'runtime' });
 const clock = createManualClock('2026-10-09T08:00:00.000Z');
 
@@ -182,10 +183,10 @@ describe('critère 12 (QA) : mise à jour interrompue à chaque étape', () => {
     const backups = fakeBackups(db);
     // Écriture de la version refusée : le démarrage réussit quand même (jamais bloquant), la trace est dans le journal technique.
     const failing: RepositoryFactory = (executor, stamper) => {
-      const repos = createSqlRepositories(executor, stamper);
+      const repos = LEGACY_STORAGE.repositories(executor, stamper);
       return { ...repos, settings: { ...repos.settings, set: (key, value) => (key === 'app.lastLaunchedVersion' ? Promise.reject(new Error('disque plein')) : repos.settings.set(key, value)) } };
     };
-    const first = await boot(db, { v: '0.3.0', migrations: NEXT, backup: backups.factory, repositories: failing });
+    const first = await boot(db, { v: '0.3.0', migrations: NEXT, backup: backups.factory, storage: { ...LEGACY_STORAGE, repositories: failing } });
     expect(first?.launch).toBe('updated');
     expect(useAppStore.getState().dbStatus).toBe('ready');
     expect(logged().some((line) => line.includes('launch-version-unwritable (Error)'))).toBe(true);

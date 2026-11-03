@@ -4,7 +4,6 @@ import { isSyncDeviceId, type DeviceAck, type ForgottenDevice, type PublishedDev
 import { PAGE_ROWS } from '../domain/sync/limits';
 import { hlcDevice } from '../domain/sync/parse';
 import { compareAckPositions, cutoff, forgetOrder, forgottenDeleteCheck, publishedEpochs, seenDevices, withoutStaleAcks, type ForgetKnownDevice, type ForgetVerdict, type SnapshotEndRead } from '../domain/sync/retention';
-import { SYNC_TABLES } from '../domain/sync/syncTables';
 import type { DeviceId, Hlc, IsoDateTime } from '../domain/types';
 import {
   syncErrorCodeOf,
@@ -413,7 +412,7 @@ export async function prepareRejoin(deps: SyncDeps, newId: DeviceId): Promise<Re
     const cut = cutoff(self, ackers)?.hlc ?? null;
     let moved = 0;
     await guarded(deps.data, async (tx) => {
-      for (const t of SYNC_TABLES) {
+      for (const t of deps.catalogue.tables) {
         let after: string | null = null;
         for (;;) {
           const page = await tx.sync.exportRows(t, after, PAGE_ROWS);

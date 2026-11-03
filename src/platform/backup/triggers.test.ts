@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { SqlDriver } from '../../db/driver';
 import { openSqliteWasmDriver } from '../../db/drivers/sqliteWasm';
-import { migrations } from '../../db/migrations';
+import { legacyMigrations as migrations } from '../../../tests/fixtures/legacy-schema';
 import { migrate } from '../../db/migrator';
 import { openTestDb } from '../../db/repositories/sql/testSetup';
 import { asEntityId, type DeviceId } from '../../domain/types';

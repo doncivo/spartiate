@@ -1,9 +1,8 @@
 import type { ExportedRow, FieldClock, Repositories, Tombstone } from '../db/repositories';
 import { APPLY_BATCH_OPS, MAX_RECORD_PLAINTEXT_BYTES, PAGE_ROWS, SNAPSHOT_CHUNK_PLAINTEXT_BYTES, utf8Bytes, type DeviceAck, type EpochId, type SnapshotClocks, type SnapshotRecord, type SnapshotRow, type SyncField, type SyncOp, type SyncValue } from '../domain/sync/format';
-import { isNaturalId, type NaturalIdTable } from '../domain/sync/naturalIds';
 import { hlcIso, parseSnapshotRecord, snapshotRecordToText, snapshotRowToJson } from '../domain/sync/parse';
 import { isTooFarAhead } from '../domain/sync/drift';
-import { FIXED_SPACE_IDS, SYNC_TABLES, settingKeyScope, syncTable, type SyncTable } from '../domain/sync/syncTables';
+import type { SyncCatalogue, SyncTable } from '../domain/sync/syncTables';
 import type { DeviceId, Hlc } from '../domain/types';
 import { applyOpsIsolated, mergeTouched, type ApplyContext } from './apply';
 import type { SyncDeps } from './deps';
@@ -30,7 +29,7 @@ function toSnapshotRow(t: SyncTable, row: ExportedRow): SnapshotRow {
 }
 
 /** Pages d'enregistrements (texte clair) d'un instantané de la base locale. */
-export async function* snapshotPages(repos: Repositories, epoch: EpochId, covers: ReadonlyMap<DeviceId, DeviceAck>, sv: number): AsyncGenerator<readonly string[]> {
+export async function* snapshotPages(repos: Repositories, catalogue: SyncCatalogue, epoch: EpochId, covers: ReadonlyMap<DeviceId, DeviceAck>, sv: number): AsyncGenerator<readonly string[]> {
   let count = 0;
   let rows: SnapshotRow[] = [];
   let bytes = 0;
@@ -44,14 +43,14 @@ export async function* snapshotPages(repos: Repositories, epoch: EpochId, covers
     rows = [];
     bytes = 0;
   };
-  for (const t of SYNC_TABLES) {
+  for (const t of catalogue.tables) {
     let after: string | null = null;
     for (;;) {
       const exported = await repos.sync.exportRows(t, after, PAGE_ROWS);
       if (exported.length === 0) break;
       after = (exported.at(-1) as ExportedRow).id;
       for (const row of exported) {
-        if (t.name === 'settings' && settingKeyScope(row.id) !== 'shared') continue;
+        if (t.idKind === 'setting' && catalogue.settingScope(row.id) !== 'shared') continue;
         const snap = toSnapshotRow(t, row);
         const size = rowJsonBytes(snap);
         if (size > SNAPSHOT_CHUNK_PLAINTEXT_BYTES) {
@@ -210,7 +209,7 @@ export async function mergeSnapshot(
   let conflicts = 0;
   const ops: SyncOp[] = [];
   for (const [table, row, clocks] of rowsOf(snapshot.records)) {
-    const t = syncTable(table);
+    const t = deps.catalogue.table(table);
     const op = t ? rowToOp(t, row, clocks) : null;
     if (op) ops.push(op);
   }
@@ -254,8 +253,8 @@ async function applySnapshotTombstones(deps: SyncDeps, repos: Repositories, snap
       else byTable.set(tomb[0], [tomb]);
     }
   }
-  for (const t of [...SYNC_TABLES].reverse()) {
-    const items = (byTable.get(t.name) ?? []).filter(([, id]) => t.purgeable && !(t.name === 'space' && FIXED_SPACE_IDS.has(id)));
+  for (const t of [...deps.catalogue.tables].reverse()) {
+    const items = (byTable.get(t.name) ?? []).filter(([, id]) => deps.catalogue.isPurgeable(t.name, id));
     for (let i = 0; i < items.length; i += PAGE_ROWS) {
       const page = items.slice(i, i + PAGE_ROWS);
       const ids = page.map((item) => item[1]);
@@ -270,13 +269,13 @@ async function applySnapshotTombstones(deps: SyncDeps, repos: Repositories, snap
         }
         const rowClocks = clocks.get(id) ?? new Map<string, FieldClock>();
         const fieldHlcs = t.columns.map((c) => (rowClocks.get(c.name) ?? rowClocks.get('*') ?? { hlc: row.hlc }).hlc);
-        const recreated = t.idKind === 'natural' && isNaturalId(t.name as NaturalIdTable, id) && fieldHlcs.every((h) => h > deletedHlc);
+        const recreated = t.idKind === 'natural' && (t.natural?.is(id) ?? false) && fieldHlcs.every((h) => h > deletedHlc);
         if (recreated) continue;
         if (fieldHlcs.some((h) => h > deletedHlc)) deps.logger.log('apply-abandoned', { table: t.name, reason: 'purged' });
         purge.push({ id, deletedHlc });
       }
       await repos.sync.insertTombstones(absent, now);
-      const done = await purgeRows(repos, t, purge, now, deps.logger, { reattach: (table, ids) => addTouched(touched, table, ids) });
+      const done = await purgeRows(repos, deps.catalogue, t, purge, now, deps.logger, { reattach: (table, ids) => addTouched(touched, table, ids) });
       addTouched(
         touched,
         t.name,
@@ -311,11 +310,11 @@ export async function replaceFromSnapshot(deps: SyncDeps, snapshot: LoadedSnapsh
     await guarded(deps.data, async (repos) => {
       await beforeTx?.(repos);
       for (const [table, row, clocks] of page) {
-        const t = syncTable(table);
+        const t = deps.catalogue.table(table);
         const id = row.get(t?.key ?? 'id');
         const star = clocks.get('*');
         if (!t || typeof id !== 'string' || star === undefined) continue;
-        if (t.name === 'settings' && settingKeyScope(id) !== 'shared') continue;
+        if (t.idKind === 'setting' && deps.catalogue.settingScope(id) !== 'shared') continue;
         const values = new Map(t.columns.filter((c) => row.has(c.name)).map((c) => [c.name, row.get(c.name) ?? null] as const));
         let max = star;
         for (const hlc of clocks.values()) if (hlc > max) max = hlc;
@@ -334,7 +333,7 @@ export async function replaceFromSnapshot(deps: SyncDeps, snapshot: LoadedSnapsh
     });
   }
   // Lignes absentes de l'instantané : supprimées, enfants d'abord.
-  for (const t of [...SYNC_TABLES].reverse()) {
+  for (const t of [...deps.catalogue.tables].reverse()) {
     const kept = keep.get(t.name) ?? new Set<string>();
     const drop: string[] = [];
     let after: string | null = null;
@@ -344,8 +343,8 @@ export async function replaceFromSnapshot(deps: SyncDeps, snapshot: LoadedSnapsh
       after = (page.at(-1) as ExportedRow).id;
       for (const row of page) {
         if (kept.has(row.id)) continue;
-        if (t.name === 'settings') continue; // réglage jamais publié ou local : valeur locale gardée (jamais purgé, section 5.4)
-        if (t.name === 'space' && FIXED_SPACE_IDS.has(row.id)) continue;
+        if (t.idKind === 'setting') continue; // réglage jamais publié ou local : valeur locale gardée (jamais purgé, section 5.4)
+        if (deps.catalogue.isFixedId(t.name, row.id)) continue;
         drop.push(row.id);
       }
     }

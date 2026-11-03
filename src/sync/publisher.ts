@@ -1,7 +1,7 @@
 import type { ExportedRow, OutboxEntry, PublishedEntry, Repositories } from '../db/repositories';
 import { MAX_APPEND_CALL_BYTES, MAX_FILE_NUMBER, MAX_RECORD_PLAINTEXT_BYTES, SYNC_FORMAT_MAJOR, encryptedLineBytes, utf8Bytes, type DeviceAck, type EpochId, type SyncField, type SyncOp } from '../domain/sync/format';
 import { hlcDevice, journalEnvelopeBytes, journalRecordToText, opTextBytes } from '../domain/sync/parse';
-import { syncTable, tableRank, type SyncTable } from '../domain/sync/syncTables';
+import type { SyncCatalogue, SyncTable } from '../domain/sync/syncTables';
 import type { DeviceId, Hlc } from '../domain/types';
 import type { PublishRotation } from '../domain/sync/publishRotation';
 import { syncErrorCodeOf } from '../platform/sync/types';
@@ -133,6 +133,7 @@ export interface MaterializeBounds {
  */
 export async function materializeOutbox(
   repos: Repositories,
+  catalogue: SyncCatalogue,
   self: DeviceId,
   publishedMax: Hlc | null,
   limit?: number,
@@ -147,7 +148,7 @@ export async function materializeOutbox(
   const byTable = new Map<SyncTable, Map<string, OutboxEntry[]>>();
   const stale: OutboxEntry[] = [];
   for (const entry of outbox) {
-    const t = syncTable(entry.table);
+    const t = catalogue.table(entry.table);
     if (!t) {
       stale.push(entry);
       continue;
@@ -197,7 +198,7 @@ export async function materializeOutbox(
         nextReserved += 1;
         const key = rank !== undefined && rank > max ? rank : max;
         for (const entry of rowEntries) entries.push({ entry, hlc: key });
-        ops.push({ op: { t: t.name, id, at: row.updatedAt, f }, hlc: key, rank: tableRank(t.name) });
+        ops.push({ op: { t: t.name, id, at: row.updatedAt, f }, hlc: key, rank: catalogue.rank(t.name) });
         continue;
       }
       const byHlc = new Map<Hlc, Map<string, SyncField>>();
@@ -227,7 +228,7 @@ export async function materializeOutbox(
       for (const [hlc, fields] of byHlc) {
         // Ordre du catalogue à l'intérieur d'une opération (texte stable).
         const ordered = new Map(t.columns.filter((c) => fields.has(c.name)).map((c) => [c.name, fields.get(c.name) as SyncField]));
-        ops.push({ op: { t: t.name, id, at: row.updatedAt, f: ordered }, hlc, rank: tableRank(t.name) });
+        ops.push({ op: { t: t.name, id, at: row.updatedAt, f: ordered }, hlc, rank: catalogue.rank(t.name) });
       }
     }
   }
@@ -411,7 +412,7 @@ export async function publishOutbox(deps: SyncDeps, epoch: EpochId, head: Device
   // Coupure : dernier hlc réservé, puis dernier numéro de la file. La lecture se fait ensuite par instructions courtes, hors
   // transaction : l'interface lit et écrit pendant la mise en forme ; ce qu'elle écrit part au cycle suivant (voir MaterializeBounds).
   const bounds: MaterializeBounds = { cut: reserved.at(-1) as Hlc, maxSeq: await data.repos.sync.maxOutboxSeq() };
-  const material = await materializeOutbox(data.repos, deviceId, head.epoch === epoch ? head.hlc : null, undefined, reserved, slicer, bounds);
+  const material = await materializeOutbox(data.repos, deps.catalogue, deviceId, head.epoch === epoch ? head.hlc : null, undefined, reserved, slicer, bounds);
   // Entrées lues sans rien à publier : retirées par numéro (une écriture faite depuis la lecture a un nouveau numéro et reste).
   if (material.stale.length > 0) await data.transaction((repos) => repos.sync.dropOutbox(material.stale));
   if (material.ops.length === 0) return { published: 0, head, error: null };

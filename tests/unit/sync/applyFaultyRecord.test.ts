@@ -5,6 +5,7 @@ import type { Repositories } from '../../../src/db/repositories';
 import type { SyncOp } from '../../../src/domain/sync/format';
 import { applyOpsIsolated, type ApplyContext } from '../../../src/sync/apply';
 import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * TRI-24 (audit 1.0, « un enregistrement fautif bloque toute la synchro ») : une opération reçue que la base locale refuse (contrainte
@@ -107,7 +108,7 @@ describe('TRI-24 : seule une erreur de contrainte est isolée', () => {
       tombstones: () => Promise.resolve(new Map()),
     };
     const op = { t: 'task', id: '11111111-1111-4111-8111-111111111111', at: '2026-10-30T10:00:00.000Z', f: new Map() } as unknown as SyncOp;
-    const ctx = { localSv: 1, remoteSv: 1, now: '2026-10-30T10:00:00.000Z', knows: () => true, logger: { log: () => undefined } } as unknown as ApplyContext;
+    const ctx = { catalogue: LEGACY_SYNC_CATALOGUE, localSv: 1, remoteSv: 1, now: '2026-10-30T10:00:00.000Z', knows: () => true, logger: { log: () => undefined } } as unknown as ApplyContext;
     await expect(applyOpsIsolated({ sync } as unknown as Repositories, [op], ctx)).rejects.toBe(busy);
     expect(calls).toEqual(['savepoint apply_batch']);
   });

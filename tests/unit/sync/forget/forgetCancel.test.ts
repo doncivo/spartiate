@@ -7,6 +7,7 @@ import { createMemorySyncLogger, createSyncService } from '../../../../src/sync'
 import type { SyncDeps } from '../../../../src/sync/deps';
 import { cancelForgetRequest, declareForget, FORGET_META, readForgetStatus } from '../../../../src/sync/forget';
 import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, type SimDevice } from '../../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
 
 /**
  * Y-10-FIX-01 « Annuler la demande » (critères 3 à 7, 9, 12, 13) : partie moteur.
@@ -195,7 +196,7 @@ describe('façade service.cancelForgetRequest (critère 4, QA 6)', () => {
   it('plateforme sous Proxy intégral (tout accès fait échouer le test) : annulation et relecture de l’état sans un seul accès', async () => {
     const { phone } = await rateLimitedPhone();
     const touched: string[] = [];
-    const service = createSyncService({
+    const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
       data: phone.data,
       platform: forbiddenPlatform(touched),
       hlc: phone.hlc,

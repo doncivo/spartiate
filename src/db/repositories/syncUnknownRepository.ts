@@ -16,6 +16,8 @@ export interface UnknownCatalogue {
   table(name: string): SyncTable | undefined;
   column(table: string, name: string): SyncColumn | undefined;
   settingScope(key: string): SettingKeyScope;
+  isValidRowId(t: SyncTable, id: unknown): id is string;
+  rank(name: string): number;
 }
 
 export interface ReintegrateOptions {

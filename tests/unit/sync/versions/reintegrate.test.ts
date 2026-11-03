@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { SqlDriver, SqlExecutor, SqlParams } from '../../../../src/db/driver';
-import { migrations } from '../../../../src/db/migrations';
+import { legacyMigrations as migrations } from '../../../fixtures/legacy-schema';
 import { migrate } from '../../../../src/db/migrator';
 import { reintegrateUnknownFields, type UnknownCatalogue } from '../../../../src/db/repositories';
 import { openTestDb, type TestDb } from '../../../../src/db/repositories/sql/testSetup';
 import { parseReintegrationFailure, REINTEGRATION_FAILURE_META } from '../../../../src/domain/sync/compat';
-import { settingKeyScope, syncColumn, syncTable } from '../../../../src/domain/sync/syncTables';
+import { LEGACY_SYNC_CATALOGUE, settingKeyScope, syncColumn, syncTable } from '../../../fixtures/legacy-schema/catalogue';
 import type { DeviceId, Hlc, IsoDateTime, LocalDate, SpaceId, TaskId } from '../../../../src/domain/types';
 import { extendedCatalogue, NEXT_MIGRATION, TEST_COLUMN } from '../../../sim/syncVersions';
 
@@ -174,7 +174,9 @@ describe('réintégration (Y-07 critère 6)', () => {
   it('sans le catalogue étendu (app pas encore à jour) : rien ne bouge', async () => {
     await createTask(T1);
     await keep('task', T1, TEST_COLUMN, 'v', h(3_600_000));
-    const appCatalogue: UnknownCatalogue = { table: syncTable, column: syncColumn, settingScope: settingKeyScope };
+    const appCatalogue: UnknownCatalogue = { table: syncTable, column: syncColumn, settingScope: settingKeyScope,
+      isValidRowId: LEGACY_SYNC_CATALOGUE.isValidRowId,
+      rank: LEGACY_SYNC_CATALOGUE.rank };
     expect(await run(db.driver, appCatalogue)).toEqual({ reintegrated: 0, superseded: 0, remaining: 1 });
     expect(await db.driver.select(`SELECT ${TEST_COLUMN} AS x FROM task WHERE id = ?`, [T1])).toEqual([{ x: null }]);
   });

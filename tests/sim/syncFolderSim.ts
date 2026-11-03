@@ -170,15 +170,15 @@ async function deviceOf(rooms: Map<string, Room>, roomId: string, name: string, 
   return pending;
 }
 
-/** Tâches publiées par un appareil dans son dossier : nombre de créations complètes par identifiant. */
-function publishedTasks(device: SimSyncDevice): Record<string, number> {
+/** Lignes publiées par un appareil dans son dossier (profil, pesées) : nombre de créations complètes par `table|identifiant`. */
+function publishedRows(device: SimSyncDevice): Record<string, number> {
   const seen: Record<string, number> = {};
   if (!device.deviceId) return seen;
   for (const epoch of device.folder.devices.get(device.deviceId)?.epochs.values() ?? []) {
     for (const segment of epoch.segments.values()) {
       for (const line of segment.lines) {
         const record = JSON.parse(line.text) as { ops?: { t: string; id: string; f: Record<string, unknown> }[] };
-        for (const op of record.ops ?? []) if (op.t === 'task' && 'title' in op.f) seen[op.id] = (seen[op.id] ?? 0) + 1;
+        for (const op of record.ops ?? []) if ((op.t === 'profile' || op.t === 'body_weight') && 'created_at' in op.f) seen[`${op.t}|${op.id}`] = (seen[`${op.t}|${op.id}`] ?? 0) + 1;
       }
     }
   }
@@ -265,7 +265,7 @@ export async function startSyncFolderSim(port = 0): Promise<SyncFolderSim> {
         const { room, device } = JSON.parse(request.body) as { room: string; device: string };
         const target = rooms.get(room)?.devices.get(device);
         if (!target) return json(404, { ok: false });
-        return json(200, { deviceId: target.deviceId, appends: target.appends, tasks: publishedTasks(target), failing: target.failure !== null, scanBudgets: target.scanBudgets });
+        return json(200, { deviceId: target.deviceId, appends: target.appends, rows: publishedRows(target), failing: target.failure !== null, scanBudgets: target.scanBudgets });
       }
       case '/scan': {
         const parsed = JSON.parse(request.body) as { room: string; device: string; from?: string; text?: string | null };

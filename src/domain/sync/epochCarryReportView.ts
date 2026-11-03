@@ -37,6 +37,8 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   calendar_account: { label: 'label', kind: 'calendarAccount' },
   holiday: { label: 'name', kind: 'holiday' },
   settings: { label: null, kind: 'settings' },
+  profile: { label: null, kind: 'profile' },
+  body_weight: { label: 'date', kind: 'bodyWeight' },
 };
 
 export const carryReportTableEntry = (table: string): { readonly label: string | null; readonly kind: string } | undefined =>

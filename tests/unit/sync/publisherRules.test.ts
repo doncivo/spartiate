@@ -4,10 +4,12 @@ import { createSqlRepositories, type Repositories } from '../../../src/db/reposi
 import { openTestDb } from '../../../src/db/repositories/sql/testSetup';
 import { createWriteStamper, createHlcClock } from '../../../src/domain/hlc';
 import { MAX_APPEND_CALL_BYTES } from '../../../src/domain/sync/format';
-import { syncTable, type SyncTable } from '../../../src/domain/sync/syncTables';
+import { type SyncTable } from '../../../src/domain/sync/syncTables';
+import { syncTable } from '../../fixtures/legacy-schema/catalogue';
 import type { DeviceId, Hlc, LocalDate, SpaceId, TaskId } from '../../../src/domain/types';
 import { batchRecords, buildRecords, materializeOutbox, type BuiltRecord } from '../../../src/sync/publisher';
 import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * Publication (ADR 0011 sections 3.3 et 10.2 ; Y-02 critère 5, Y-05 critères 1 et 3 ; revue Y2 points 4, 5, 6 et 15) : retrait des
@@ -148,7 +150,7 @@ describe('valeurs et horloges lues ensemble (revue Y2, point 5)', () => {
     ctx = await interleaved((driver) => later((ctx as NonNullable<typeof ctx>).db, (ctx as NonNullable<typeof ctx>).task.id)(driver));
     try {
       ctx.arm();
-      const material = await materializeOutbox(ctx.repos, SELF, null);
+      const material = await materializeOutbox(ctx.repos, LEGACY_SYNC_CATALOGUE, SELF, null);
       const title = material.ops.flatMap((p) => [...p.op.f.entries()]).find(([name]) => name === 'title')?.[1];
       expect(title).toBeDefined();
       const clocks = await ctx.db.driver.select<{ field: string; hlc: string }>("SELECT field, hlc FROM sync_field_clock WHERE row_id = ? AND field = 'title'", [ctx.task.id]);

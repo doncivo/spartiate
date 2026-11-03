@@ -661,22 +661,5 @@ export function isUnknownSettingKey(value: string): boolean {
   return UNKNOWN_SETTING_KEY_RE.test(value) && !value.split('.').some((part) => FORBIDDEN_KEYS.has(part));
 }
 
-/** Ordre topologique des tables publiées (section 3.3) : départage des opérations de même hlc. */
-export const SYNC_TABLE_ORDER = [
-  'space',
-  'project',
-  'recurrence',
-  'goal',
-  'task',
-  'routine',
-  'routine_log',
-  'routine_pause',
-  'reminder',
-  'event',
-  'checklist',
-  'checklist_item',
-  'focus_session',
-  'calendar_account',
-  'holiday',
-  'settings',
-] as const;
+/** Ordre topologique des tables publiées par le catalogue de production I0 (section 3.3, D-55) : départage des opérations de même hlc. */
+export const SYNC_TABLE_ORDER = ['profile', 'body_weight'] as const;

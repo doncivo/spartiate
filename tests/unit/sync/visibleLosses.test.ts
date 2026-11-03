@@ -5,6 +5,7 @@ import type { Hlc, IsoDateTime } from '../../../src/domain/types';
 import { applyOps } from '../../../src/sync/apply';
 import { guarded } from '../../../src/sync/guarded';
 import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * TRI-06 et TRI-04 (tri des importants du 2026-10-30) : deux pertes qui ne laissaient qu'une ligne de journal. Une note de plus de 256 Kio
@@ -95,7 +96,7 @@ describe('TRI-06 : une note trop grosse pour être publiée est signalée', () =
 describe('TRI-04 : une opération en attente de son parent, abandonnée au plafond, est signalée', () => {
   it('le dépassement de 10 000 opérations mises de côté lève « received-unapplied » et survit à un redémarrage', async () => {
     const [a] = await twoDevices();
-    await guarded(a.data, (repos) => applyOps(repos, [childOfMissingProject()], { localSv: 18, remoteSv: 18, now: AT, knows: () => false, logger: a.logger }));
+    await guarded(a.data, (repos) => applyOps(repos, [childOfMissingProject()], { catalogue: LEGACY_SYNC_CATALOGUE, localSv: 18, remoteSv: 18, now: AT, knows: () => false, logger: a.logger }));
     expect(await a.driver.select("SELECT reason FROM sync_parked")).toEqual([{ reason: 'missing-parent' }]);
     await a.driver.execute(
       `${series(10_004)} INSERT INTO sync_parked (reason, table_name, row_id, hlc, op, parked_at) SELECT reason, table_name, row_id || i, hlc, op, parked_at FROM n, (SELECT * FROM sync_parked LIMIT 1)`,

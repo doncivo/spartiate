@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { closeRoom, failAfter, inspect, openSyncDetails, openSyncedPage, SYNC_SIM_URL, syncNow, syncStatusLine, type SyncedPage } from './helpers/sync';
-import { migrations } from '../../src/db/migrations';
+import { legacyMigrations as migrations } from '../fixtures/legacy-schema';
 
 const SCHEMA_VERSION = migrations.at(-1)?.version ?? 1;
 

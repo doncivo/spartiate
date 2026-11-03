@@ -1,9 +1,10 @@
-import { migrations } from '../../src/db/migrations';
+import { legacyMigrations as migrations } from '../fixtures/legacy-schema';
 import { migrate, type Migration } from '../../src/db/migrator';
 import { reintegrateUnknownFields, type ReintegrationReport, type UnknownCatalogue } from '../../src/db/repositories';
 import type { SyncField } from '../../src/domain/sync/format';
 import { journalRecordToText, parseJournalRecord } from '../../src/domain/sync/parse';
-import { settingKeyScope, syncColumn, syncTable, type SyncColumn, type SyncTable } from '../../src/domain/sync/syncTables';
+import { type SyncColumn, type SyncTable } from '../../src/domain/sync/syncTables';
+import { LEGACY_SYNC_CATALOGUE, settingKeyScope, syncColumn, syncTable } from '../fixtures/legacy-schema/catalogue';
 import type { IsoDateTime } from '../../src/domain/types';
 import type { MemorySyncFolder, MemorySyncPlatform } from '../../src/platform/sync/memory';
 import { createSyncService } from '../../src/sync';
@@ -32,6 +33,8 @@ export function extendedCatalogue(): UnknownCatalogue {
     table: (name) => (name === 'task' ? extended : syncTable(name)),
     column: (table, name) => (table === 'task' && name === TEST_COLUMN ? xColumn : syncColumn(table, name)),
     settingScope: settingKeyScope,
+    isValidRowId: LEGACY_SYNC_CATALOGUE.isValidRowId,
+    rank: LEGACY_SYNC_CATALOGUE.rank,
   };
 }
 
@@ -105,7 +108,7 @@ export function makeNewerDevice(device: SimDevice, options: { readonly sv?: numb
       }),
   };
   device.platform = platform;
-  device.service = createSyncService({
+  device.service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
     data: device.data,
     platform,
     hlc: device.hlc,

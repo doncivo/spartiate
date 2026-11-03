@@ -3,13 +3,14 @@ import type { SqlDriver, SqlParams } from '../../../src/db/driver';
 import { createDataAccess, createSqlRepositories, type DataAccess } from '../../../src/db/repositories';
 import { openTestDb, type TestDb } from '../../../src/db/repositories/sql/testSetup';
 import type { SyncField, SyncOp } from '../../../src/domain/sync/format';
-import { routineLogId } from '../../../src/domain/sync/naturalIds';
+import { routineLogId } from '../../fixtures/legacy-schema/naturalIds';
 import type { DeviceId, Hlc, IsoDateTime, LocalDate, RoutineId } from '../../../src/domain/types';
 import { applyOps, type ApplyContext } from '../../../src/sync/apply';
 import { guarded } from '../../../src/sync/guarded';
 import { createMemorySyncLogger } from '../../../src/sync/log';
 import { runRepairs } from '../../../src/sync/repair';
 import type { SyncDeps } from '../../../src/sync/deps';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * Application des opérations reçues (ADR 0011, sections 3.3, 4, 5.4, 7.2, 8 ; Y-02 critères 6 et 8, Y-09 critères 1, 4 et 5) :
@@ -25,7 +26,7 @@ const T1 = '11111111-1111-4111-8111-111111111111';
 
 let db: TestDb;
 let logger: ReturnType<typeof createMemorySyncLogger>;
-const ctx = (extra: Partial<ApplyContext> = {}): ApplyContext => ({ localSv: 18, remoteSv: 18, now: AT, knows: () => false, logger, ...extra });
+const ctx = (extra: Partial<ApplyContext> = {}): ApplyContext => ({ catalogue: LEGACY_SYNC_CATALOGUE, localSv: 18, remoteSv: 18, now: AT, knows: () => false, logger, ...extra });
 const op = (t: string, id: string, fields: Record<string, SyncField>): SyncOp => ({ t, id, at: AT, f: new Map(Object.entries(fields)) });
 const apply = (data: DataAccess, ops: SyncOp[], extra: Partial<ApplyContext> = {}) => guarded(data, (repos) => applyOps(repos, ops, ctx(extra)));
 
@@ -196,7 +197,7 @@ describe('réparations après un lot (Y-02 critère 8)', () => {
     const focus = (id: string, startedAt: string, hlc: Hlc) =>
       op('focus_session', id, { task_id: [null, hlc, null], space_id: [PRO, hlc, null], planned_min: [25, hlc, null], started_at: [startedAt, hlc, null], ended_at: [null, hlc, null], paused_sec: [0, hlc, null], paused_at: [null, hlc, null], project_id: [null, hlc, null], created_at: [AT, hlc, null], deleted_at: [null, hlc, null] });
     const result = await apply(db.data, [focus('77777777-7777-4777-8777-777777777771', '2026-10-05T07:00:00.000Z', h(3)), focus('77777777-7777-4777-8777-777777777772', '2026-10-05T07:30:00.000Z', h(4))]);
-    const deps = { data: db.data } as SyncDeps;
+    const deps = { data: db.data, catalogue: LEGACY_SYNC_CATALOGUE } as SyncDeps;
     await runRepairs(deps, new Map([['routine_pause', new Set(['66666666-6666-4666-8666-666666666666'])], ...result.touched]));
     expect(await db.driver.select('SELECT paused FROM routine')).toEqual([{ paused: 1 }]);
     expect(await db.driver.select("SELECT * FROM sync_outbox WHERE table_name = 'routine'")).toEqual([]);

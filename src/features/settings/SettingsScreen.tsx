@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { t } from '../../i18n';
+import { tBody } from '../../i18n/bodyText';
 import { Switch, useLayout } from '../../ui';
 import { useFeatureStore } from '../app/AppContainerContext';
 import { useAppStore } from '../app/appStore';
@@ -67,6 +68,9 @@ function SettingsScreenMobile() {
       >
         <span>{t('appearance.row')}</span>
         <span className="ct-settings__value">{appearanceSummary}</span>
+      </button>
+      <button type="button" className="ct-settings__row ct-settings__rowButton" onClick={() => navigate({ tab: 'more', screen: 'body' })}>
+        <span>{tBody('row')}</span>
       </button>
       <div className="ct-settings__row">
         <span>{t('settings.timeZone')}</span>

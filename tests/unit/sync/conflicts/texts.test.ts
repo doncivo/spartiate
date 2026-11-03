@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { SYNC_TABLES, syncColumn, syncTable, type SyncColumn, type SyncTable } from '../../../../src/domain/sync/syncTables';
+import { type SyncColumn, type SyncTable } from '../../../../src/domain/sync/syncTables';
+import { SYNC_TABLES as LEGACY_TABLES, syncColumn, syncTable } from '../../../fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../../../src/domain/sync/syncTables';
+
+const SYNC_TABLES = [...LEGACY_TABLES, ...SYNC_CATALOGUE.tables];
 import type { DeviceId, IsoDateTime } from '../../../../src/domain/types';
 import { translate } from '../../../../src/i18n';
 import { fr } from '../../../../src/i18n/fr';

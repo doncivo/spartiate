@@ -21,7 +21,8 @@ import {
   type EpochCarryNamedItem,
   type EpochCarryReportBody,
 } from './epochCarryReport';
-import { SYNC_TABLES, syncColumn } from './syncTables';
+import { LEGACY_SYNC_CATALOGUE, SYNC_TABLES, syncColumn } from '../../../tests/fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from './syncTables';
 import { SEED_DEVICE_ID } from '../../db/seed/defaultSpaces';
 
 /** Y-TECH-05 (critères 1 à 5, 7, 8, 11, 15) : règles pures du compte rendu du report d'époque. */
@@ -44,10 +45,11 @@ const noticeItem = (n: number): EpochCarryNoticeItem => ({ table: 'task', rowId:
 
 describe('correspondance table → libellé et type (critère 5)', () => {
   it('chaque table publiée y figure, avec une colonne de libellé du catalogue ou aucune', () => {
-    expect(missingCarryReportTables()).toEqual([]);
-    expect(Object.keys(CARRY_REPORT_TABLES).sort()).toEqual(SYNC_TABLES.map((t) => t.name).sort());
+    expect(missingCarryReportTables(LEGACY_SYNC_CATALOGUE)).toEqual([]);
+    expect(Object.keys(CARRY_REPORT_TABLES).sort()).toEqual([...SYNC_TABLES.map((t) => t.name), ...SYNC_CATALOGUE.tables.map((t) => t.name)].sort());
+    expect(missingCarryReportTables(SYNC_CATALOGUE)).toEqual([]);
     for (const t of SYNC_TABLES) {
-      const column = CARRY_REPORT_TABLES[t.name].label;
+      const column = CARRY_REPORT_TABLES[t.name]?.label ?? null;
       if (column !== null) expect(syncColumn(t.name, column), `${t.name}.${column}`).toBeDefined();
     }
   });

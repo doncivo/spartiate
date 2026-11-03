@@ -1,4 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { DeviceId, Hlc, IsoDateTime, LocalDate, SpaceId, TaskId } from '../../domain/types';
@@ -39,7 +40,7 @@ let sync: FakeSyncService;
 beforeEach(async () => {
   db = await openTestDb(SELF, NOW);
   sync = createFakeSyncService({ phase: 'idle', lastSyncAt: NOW as IsoDateTime, devices, conflictsThisWeek: 1 });
-  container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync });
+  container = createAppContainer({ catalogue: LEGACY_SYNC_CATALOGUE, clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync });
 });
 
 afterEach(async () => {

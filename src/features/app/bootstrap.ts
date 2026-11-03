@@ -9,7 +9,8 @@ import { migrate, SchemaNewerThanApp, type Migration } from '../../db/migrator';
 import { classifyLaunch, shouldRecordLaunch, type LaunchKind } from '../../domain/appUpdate';
 import { publishedAppVersion, readAppVersion, type AppVersionRead } from '../../platform/appVersion';
 import { migrations } from '../../db/migrations';
-import { createDataAccess, createSqlRepositories, reintegrateUnknownFields, type ReintegrationReport, type RepositoryFactory } from '../../db/repositories';
+import type { SyncCatalogue } from '../../domain/sync/syncTables';
+import { createDataAccess, reintegrateUnknownFields, SYNC_STORAGE, type SyncStorage, type ReintegrationReport } from '../../db/repositories';
 import { detectOs, detectRuntime, openDesktopPlatform, type DesktopPlatform } from '../../platform';
 import { openBackupService, type BackupService } from '../../platform/backup';
 import { openFileService, type FileService } from '../../platform/files';
@@ -36,6 +37,8 @@ import { createAppContainer, type AppContainer } from './container';
  * si elle échoue, rien n’est migré et dbStatus passe à « error » avec dbBackupFailed.
  */
 export interface BootstrapDatabaseOptions {
+  /** Catalogue de synchro (D-67) : I0 par défaut ; l'ancien catalogue seulement dans le banc de test. */
+  readonly catalogue?: SyncCatalogue | undefined;
   readonly clock?: Clock | undefined;
   /** Port de sauvegarde avant migration ; celui de la plateforme par défaut (aucun en navigateur de dev). */
   readonly backup?: ((db: SqlDriver) => Promise<MigrationBackup | undefined>) | undefined;
@@ -82,7 +85,7 @@ export async function bootstrapDatabase(
         },
         () => logFailure('db', 'pre-migration-list-unreadable'),
       ),
-      afterApply: (db) => reintegrateAfterMigration(db, options.clock).then(() => undefined),
+      afterApply: (db) => reintegrateAfterMigration(db, options.clock, options.catalogue).then(() => undefined),
       onSchemaRead: ({ current }) => {
         schemaVersion = current;
       },
@@ -153,10 +156,11 @@ async function readJournalMode(db: SqlDriver): Promise<string | null> {
  * connus (mise à jour de l'app) sont réintégrés sous garde. Un échec n'empêche jamais le démarrage : la page en cours est annulée (garde
  * comprise), les champs restent et sont retentés au démarrage suivant ; le journal ne porte que le nom de l'erreur, jamais une valeur.
  */
-export async function reintegrateAfterMigration(db: SqlDriver, clock: Clock = systemClock): Promise<ReintegrationReport | null> {
+export async function reintegrateAfterMigration(db: SqlDriver, clock: Clock = systemClock, catalogue?: SyncCatalogue): Promise<ReintegrationReport | null> {
   try {
     return await reintegrateUnknownFields(db, {
       now: nowIso(clock),
+      ...(catalogue ? { catalogue } : {}),
       onRowError: (name) => logFailure('sync', `réintégration d'une ligne impossible, elle reste pour le démarrage suivant (${name})`),
     });
   } catch (error) {
@@ -166,9 +170,9 @@ export async function reintegrateAfterMigration(db: SqlDriver, clock: Clock = sy
 }
 
 export interface BootstrapAppOptions {
+  /** Catalogue de synchro et repositories, ensemble (D-67) : I0 par défaut ; l'ancien schéma seulement dans le banc de test. */
+  readonly storage?: SyncStorage;
   readonly open?: () => Promise<SqlDriver>;
-  /** Fabrique de repositories ; `createSqlRepositories` par défaut, remplaçable en test. */
-  readonly repositories?: RepositoryFactory;
   readonly clock?: Clock;
   readonly ids?: IdGenerator;
   /** Intégration PC ; `openDesktopPlatform` par défaut (null hors Windows installé). */
@@ -233,6 +237,14 @@ const readOnlyStamper: WriteStamper = {
  * graine HLC, accès aux données, conteneur. Renvoie undefined en cas d'échec
  * (dbStatus = 'error'). Appelé par App.tsx ; le conteneur est fourni par AppContainerProvider.
  */
+/** Développement et e2e seulement : migrations de test ajoutées à la suite des vraies (I-06, mise à jour N vers N+1 simulée). */
+const devExtraMigrations = (): readonly Migration[] | undefined => (import.meta.env.DEV ? (globalThis as { __ctExtraMigrations?: readonly Migration[] }).__ctExtraMigrations : undefined);
+
+const withDevExtras = (): readonly Migration[] | undefined => {
+  const extra = devExtraMigrations();
+  return extra ? [...migrations, ...extra] : undefined;
+};
+
 export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<AppContainer | undefined> {
   // Prise de test des e2e (développement seulement, retirée d'un build) : simule une ouverture qui ne répond pas ou qui échoue.
   const devOpen = import.meta.env.DEV ? (globalThis as { __ctDbOpen?: () => Promise<SqlDriver> }).__ctDbOpen : undefined;
@@ -242,10 +254,11 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
   useAppStore.getState().setDbStatus('loading');
   // I-06 : version lue AVANT l'ouverture (diagnostic d'échec, synchro, « À propos ») ; ne rejette jamais.
   const appVersion = await (options.appVersion ?? readAppVersion)();
-  const driver = await bootstrapDatabase(options.open ?? devOpen, { clock: options.clock, backup: options.backup, migrations: options.migrations, appVersion: appVersion.version });
+  const driver = await bootstrapDatabase(options.open ?? devOpen, { clock: options.clock, backup: options.backup, migrations: options.migrations ?? withDevExtras(), catalogue: (options.storage ?? SYNC_STORAGE).catalogue, appVersion: appVersion.version });
   if (!driver) return undefined;
   const list = options.migrations ?? migrations;
-  const factory = options.repositories ?? createSqlRepositories;
+  const storage = options.storage ?? SYNC_STORAGE;
+  const factory = storage.repositories;
   const clock = options.clock ?? systemClock;
   const ids = options.ids ?? uuidGenerator;
   // 0.2.1 : étape en cours (module ou appel), posée avant chaque appel : diagnostic sous app.startError.
@@ -282,6 +295,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
       ? at('createSyncService', () =>
           createSyncService({
             data,
+            catalogue: storage.catalogue,
             platform: syncPlatform,
             hlc,
             clock,
@@ -304,6 +318,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
       ids,
       hlc,
       data,
+      catalogue: storage.catalogue,
       platform: { runtime: detectRuntime(), os: detectOs() },
       desktop,
       sync,

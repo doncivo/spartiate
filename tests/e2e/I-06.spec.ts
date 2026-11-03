@@ -13,11 +13,10 @@ import { APP_READY_TIMEOUT_MS } from './helpers/app';
 type Mode = 'update' | 'fail' | 'newer' | 'backup' | 'restore-fails';
 
 const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
-const TITLE = 'Tâche créée avant la mise à jour';
 
 async function installAtN(page: Page, mode: Mode): Promise<void> {
   await page.addInitScript(
-    ({ mode, title }) => {
+    ({ mode }) => {
       const g = globalThis as Record<string, unknown>;
       g['__ctAppVersion'] = '0.3.0';
       g['__ctDbOpen'] = async () => {
@@ -34,14 +33,20 @@ async function installAtN(page: Page, mode: Mode): Promise<void> {
           close: () => Promise<void>;
         };
         const db = (await drivers.openSqliteWasmDriver()) as unknown as Driver;
-        await migrator.migrate(db, migrations.slice(0, -1));
+        await migrator.migrate(db, migrations);
         const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' }).format(new Date());
         const hlc = `${String(Date.now()).padStart(15, '0')}-0000-aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa`;
-        await db.execute(
-          `INSERT INTO task (id, space_id, project_id, title, note, date, time, status, done_at, sort_order, carried_over, recurrence_id, series_index, goal_id, icon, someday, source, external_id, series_template, external_event_id, created_at, deleted_at, updated_at, device_id, hlc)
-           VALUES ('11111111-1111-4111-8111-111111111111', '00000000-0000-4000-8000-000000000001', NULL, ?, '', ?, NULL, 'todo', NULL, 1, 0, NULL, NULL, NULL, NULL, 0, 'local', NULL, NULL, NULL, '2026-10-01T08:00:00.000Z', NULL, '2026-10-01T08:00:00.000Z', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', ?)`,
-          [title, today, hlc],
-        );
+        if (mode === 'update') {
+          // Données d'avant la mise à jour (base neuve, schéma 1) : le profil et une pesée du jour, relus après la mise à jour.
+          await db.execute(
+            "INSERT INTO profile (id, sex, birth_year, height_cm, goal, experience, units, created_at, updated_at, device_id, hlc) VALUES ('profile|singleton', 'male', 1990, 181, NULL, NULL, NULL, '2026-10-05T08:00:00.000Z', '2026-10-05T08:00:00.000Z', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', ?)",
+            [hlc],
+          );
+          await db.execute(
+            "INSERT INTO body_weight (id, date, kg, source, timezone, health_uuid, measured_at, created_at, updated_at, device_id, hlc) VALUES (?, ?, 82.4, 'manual', 'Europe/Paris', NULL, NULL, '2026-10-05T08:00:00.000Z', '2026-10-05T08:00:00.000Z', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', ?)",
+            ['weight|' + today + '|manual', today, hlc],
+          );
+        }
         await db.execute('DELETE FROM sync_outbox');
         if (mode === 'newer') {
           // Base passée par une version plus récente (N+2), puis IPA plus ancienne réinstallée.
@@ -49,8 +54,8 @@ async function installAtN(page: Page, mode: Mode): Promise<void> {
           await db.execute("INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (99, 'future', '00000000', '2026-10-20T08:00:00.000Z')");
         }
         if (mode !== 'fail' && mode !== 'restore-fails') return db;
-        // Migration volontairement en échec : toute instruction de la dernière migration (0019, table locale epoch_carry_report, Y-TECH-05) est refusée. Une nouvelle migration oblige à changer ce fragment, les versions ci-dessous et le gel de scripts/ios/i06.test.ts.
-        const refuse = (sql: string): boolean => sql.includes('epoch_carry_report');
+        // Migration volontairement en échec : toute instruction de la migration de test 2 (colonne i06_note, ajoutée par __ctExtraMigrations) est refusée. Une nouvelle migration oblige à changer ce fragment, les versions ci-dessous et le gel de scripts/ios/i06.test.ts.
+        const refuse = (sql: string): boolean => sql.includes('i06_note');
         return {
           kind: db.kind,
           execute: (sql: string, params?: unknown[]) => (refuse(sql) ? Promise.reject(new Error('échec simulé de la migration')) : db.execute(sql, params)),
@@ -60,6 +65,10 @@ async function installAtN(page: Page, mode: Mode): Promise<void> {
           close: () => db.close(),
         };
       };
+      if (mode === 'fail' || mode === 'restore-fails' || mode === 'backup') {
+        // N+1 simulée : une migration de test à la suite de la migration 1 (données de N intactes).
+        g['__ctExtraMigrations'] = [{ version: 2, name: 'test_i06_additive', statements: ['ALTER TABLE profile ADD COLUMN i06_note TEXT'] }];
+      }
       if (mode === 'backup') {
         // QA : disque plein, la sauvegarde d'avant la mise à jour échoue (aucune migration lancée).
         g['__ctMigrationBackup'] = { backup: () => Promise.reject(new Error('disque plein')) };
@@ -84,7 +93,7 @@ async function installAtN(page: Page, mode: Mode): Promise<void> {
         };
       }
     },
-    { mode, title: TITLE },
+    { mode },
   );
 }
 
@@ -96,10 +105,14 @@ test.describe('I-06 — mise à jour N vers N+1 (iPhone, base préremplie, versi
     await installAtN(page, 'update');
     await page.goto('/');
     await expect(page.locator('.app-shell')).toHaveAttribute('data-db-status', 'ready', { timeout: APP_READY_TIMEOUT_MS });
-    // La tâche d'avant la mise à jour n'a plus d'écran (SPA-001b) : sa relecture revient avec profil / poids sur la base neuve.
     await expect(page.getByTestId('db-failure-detail')).toHaveCount(0);
     await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
     await expect(page.getByText('Version 0.3.0', { exact: true })).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });
+    // Données affichées après la mise à jour : le profil et la pesée d'avant sont relus.
+    await page.getByRole('button', { name: 'Profil et poids' }).click();
+    await expect(page.getByLabel('Taille (cm)')).toHaveValue('181', { timeout: APP_READY_TIMEOUT_MS });
+    await expect(page.getByLabel('Année de naissance')).toHaveValue('1990');
+    await expect(page.getByText('82,4 kg')).toBeVisible();
   });
 
   test('migration en échec : écran d’échec avec étape, versions, trois actions ; « Restaurer » confirmé appelle la restauration', async ({ page }) => {
@@ -108,10 +121,10 @@ test.describe('I-06 — mise à jour N vers N+1 (iPhone, base préremplie, versi
     await expect(page.getByRole('alert').first()).toHaveText('Impossible d’ouvrir la base de données.', { timeout: APP_READY_TIMEOUT_MS });
     await expect(page.getByText('Vos données sont intactes. Ne supprimez pas Spartiate. Envoyez le détail pour obtenir un correctif.')).toBeVisible();
     const detail = page.getByTestId('db-failure-detail');
-    await expect(detail).toContainText('Étape : migration 19');
+    await expect(detail).toContainText('Étape : migration 2');
     await expect(detail).toContainText('Version de l’app : 0.3.0');
-    await expect(detail).toContainText('Schéma de la base : 18 (dernier connu de l’app : 19)');
-    await expect(detail).toContainText('Sauvegarde d’avant la mise à jour : spartiate-pre-migration-v0018-to-v0019-');
+    await expect(detail).toContainText('Schéma de la base : 1 (dernier connu de l’app : 2)');
+    await expect(detail).toContainText('Sauvegarde d’avant la mise à jour : spartiate-pre-migration-v0001-to-v0002-');
     await expect(page.getByRole('button', { name: 'Réessayer' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Copier le détail' })).toBeVisible();
     const restore = page.getByRole('button', { name: 'Restaurer la sauvegarde d’avant la mise à jour' });
@@ -129,7 +142,7 @@ test.describe('I-06 — mise à jour N vers N+1 (iPhone, base préremplie, versi
     const readRestored = () => page.evaluate(() => (globalThis as { __ctRestored?: string[] }).__ctRestored ?? []);
     await expect.poll(async () => (await readRestored()).length).toBe(1);
     const restored = await readRestored();
-    expect(restored[0]).toMatch(/^spartiate-pre-migration-v0018-to-v0019-\d{8}T\d{6}Z\.db$/);
+    expect(restored[0]).toMatch(/^spartiate-pre-migration-v0001-to-v0002-\d{8}T\d{6}Z\.db$/);
   });
 
   test('base plus récente que l’app : consigne SideStore, données non modifiées, pas de restauration, jamais de page blanche', async ({ page }) => {

@@ -2,7 +2,7 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { DbError } from '../../../src/db/driver';
 import { EPOCH_CARRY_REPORT_DISCARD_FAILED_EVENT, EPOCH_CARRY_REPORT_FAILED_EVENT, EPOCH_CARRY_REPORT_FAILED_META, EPOCH_CARRY_REPORT_PRUNE_FAILED_EVENT, type EpochCarryReport } from '../../../src/domain/sync/epochCarryReport';
 import { EPOCH_CARRY_REPORT_READ_FAILED_EVENT } from '../../../src/domain/sync/epochCarryReportView';
-import { syncTable } from '../../../src/domain/sync/syncTables';
+import { syncTable } from '../../fixtures/legacy-schema/catalogue';
 import type { DeviceId, IsoDateTime } from '../../../src/domain/types';
 import { clearEpochCarryNoticeFailure } from '../../../src/sync/carryNoticeState';
 import { setEpochSwitchTestHooks, type SwitchStep } from '../../../src/sync/epochSwitch';

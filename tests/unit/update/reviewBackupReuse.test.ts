@@ -3,7 +3,7 @@ import { createManualClock } from '../../../src/domain/clock';
 import type { SqlDriver } from '../../../src/db/driver';
 import { openSqliteWasmDriver } from '../../../src/db/drivers/sqliteWasm';
 import { findUpdateBackup, type MigrationBackup, type MigrationBackupRequest } from '../../../src/db/migrationBackup';
-import { migrations } from '../../../src/db/migrations';
+import { legacyMigrations as migrations } from '../../fixtures/legacy-schema';
 import { migrate, type Migration } from '../../../src/db/migrator';
 import { useAppStore } from '../../../src/features/app/appStore';
 import { bootstrapDatabase } from '../../../src/features/app/bootstrap';

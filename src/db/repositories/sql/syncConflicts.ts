@@ -1,6 +1,6 @@
 import type { WriteStamper } from '../../../domain/hlc';
 import type { SyncValue } from '../../../domain/sync/format';
-import { syncColumn, syncTable, type SyncTable, type SyncTableName } from '../../../domain/sync/syncTables';
+import type { SyncCatalogue, SyncTable, TitleSource } from '../../../domain/sync/syncTables';
 import type { Hlc, IsoDateTime } from '../../../domain/types';
 import type { SqlExecutor, SqlRow } from '../../driver';
 import type { ConflictFieldState, ConflictItemInfo, ConflictLogEntry, ConflictRowState, ConflictTarget, SyncConflictRepository } from '../syncConflictRepository';
@@ -19,40 +19,6 @@ function chunks<T>(items: readonly T[]): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < items.length; i += CHUNK) out.push(items.slice(i, i + CHUNK));
   return out;
-}
-
-/** D'où vient le titre d'un élément : sa propre colonne, la ligne parente, la cible d'un rappel, ou rien (libellé du type d'élément). */
-type TitleSource =
-  | { readonly kind: 'own'; readonly column: string }
-  | { readonly kind: 'parent'; readonly column: string; readonly table: SyncTableName }
-  | { readonly kind: 'reminder' }
-  | { readonly kind: 'none' };
-
-/** Source du titre par table (colonnes contrôlées contre le catalogue par `syncConflicts.test.ts`). */
-export const CONFLICT_TITLE_SOURCES: { readonly [K in SyncTableName]: TitleSource } = {
-  space: { kind: 'own', column: 'name' },
-  project: { kind: 'own', column: 'name' },
-  recurrence: { kind: 'none' },
-  goal: { kind: 'own', column: 'title' },
-  task: { kind: 'own', column: 'title' },
-  routine: { kind: 'own', column: 'title' },
-  routine_log: { kind: 'parent', column: 'routine_id', table: 'routine' },
-  routine_pause: { kind: 'parent', column: 'routine_id', table: 'routine' },
-  reminder: { kind: 'reminder' },
-  event: { kind: 'own', column: 'title' },
-  checklist: { kind: 'own', column: 'title' },
-  checklist_item: { kind: 'own', column: 'text' },
-  focus_session: { kind: 'parent', column: 'task_id', table: 'task' },
-  calendar_account: { kind: 'own', column: 'label' },
-  holiday: { kind: 'own', column: 'name' },
-  settings: { kind: 'none' },
-};
-
-/** Colonne publiée connue du catalogue, sinon erreur (programmation : la constante ci-dessus ne correspond plus au catalogue). */
-function catalogueColumn(t: SyncTable, column: string): string {
-  const col = syncColumn(t.name, column);
-  if (!col) throw new Error(`colonne hors catalogue : ${t.name}.${column}`);
-  return col.name;
 }
 
 const hasDeletedAt = (t: SyncTable): boolean => t.columns.some((c) => c.name === 'deleted_at');
@@ -84,7 +50,13 @@ function readable(row: SqlRow): StoredConflict | null {
   }
 }
 
-export function createSyncConflictRepository(db: SqlExecutor, stamper: WriteStamper): SyncConflictRepository {
+export function createSyncConflictRepository(db: SqlExecutor, stamper: WriteStamper, catalogue: SyncCatalogue): SyncConflictRepository {
+  const catalogueColumn = (t: SyncTable, column: string): string => {
+    const col = catalogue.column(t.name, column);
+    if (!col) throw new Error(`colonne hors catalogue : ${t.name}.${column}`);
+    return col.name;
+  };
+  const titleSourceOf = (t: SyncTable): TitleSource => t.titleSource ?? { kind: 'none' };
   /** Identifiants purgés (traces) parmi ceux donnés. */
   const purged = async (t: SyncTable, ids: readonly string[]): Promise<Set<string>> => {
     const out = new Set<string>();
@@ -118,7 +90,7 @@ export function createSyncConflictRepository(db: SqlExecutor, stamper: WriteStam
 
   /** Titres de lignes d'une table (colonne de titre propre), lignes supprimées comprises. */
   const ownTitles = async (t: SyncTable, ids: readonly string[]): Promise<Map<string, string>> => {
-    const source = CONFLICT_TITLE_SOURCES[t.name];
+    const source = titleSourceOf(t);
     const out = new Map<string, string>();
     if (source.kind !== 'own' || ids.length === 0) return out;
     const lines = await readLines(t, ids, [source.column]);
@@ -146,7 +118,7 @@ export function createSyncConflictRepository(db: SqlExecutor, stamper: WriteStam
       const byTable = new Map<SyncTable, string[]>();
       for (const target of targets) byTable.set(target.table, [...(byTable.get(target.table) ?? []), target.rowId]);
       for (const [t, ids] of byTable) {
-        const source = CONFLICT_TITLE_SOURCES[t.name];
+        const source = titleSourceOf(t);
         const columns = source.kind === 'own' ? [source.column] : source.kind === 'parent' ? [source.column] : source.kind === 'reminder' ? ['target_type', 'target_id'] : [];
         const lines = await readLines(t, ids, columns);
         const states = await statesOf(t, ids, lines);
@@ -162,7 +134,7 @@ export function createSyncConflictRepository(db: SqlExecutor, stamper: WriteStam
             const parent = line.values[catalogueColumn(t, source.column)];
             if (typeof parent === 'string') parentOf.set(id, parent);
           }
-          const parentTable = syncTable(source.table);
+          const parentTable = catalogue.table(source.table);
           const parentTitles = parentTable ? await ownTitles(parentTable, [...new Set(parentOf.values())]) : new Map<string, string>();
           for (const [id, parent] of parentOf) {
             const title = parentTitles.get(parent);
@@ -172,7 +144,7 @@ export function createSyncConflictRepository(db: SqlExecutor, stamper: WriteStam
           // Cible d'un rappel : `target_type` est une valeur de la base, cherchée dans le catalogue (jamais composée telle quelle).
           const byTarget = new Map<SyncTable, Map<string, string>>();
           for (const [id, line] of lines) {
-            const targetTable = syncTable(String(line.values['target_type']));
+            const targetTable = catalogue.table(String(line.values['target_type']));
             const targetId = line.values['target_id'];
             if (!targetTable || typeof targetId !== 'string') continue;
             const map = byTarget.get(targetTable) ?? new Map<string, string>();

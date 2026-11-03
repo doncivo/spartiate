@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { tBody } from '../../i18n/bodyText';
 import { t } from '../../i18n';
 import { tSettingsRefonte, type SettingsRefonteKey } from '../../i18n/settingsRefonteText';
 import { Switch } from '../../ui';
@@ -135,6 +136,7 @@ export function SettingsScreenPc() {
         {section(
           'general',
           <>
+            <LinkRow label={tBody('row')} value="" onClick={() => navigate({ tab: 'more', screen: 'body' })} />
             <LinkRow label={tSettingsRefonte('theme')} value={themeText} onClick={openAppearance} />
             <LinkRow label={tSettingsRefonte('firstWeekday')} value={weekdayCapitalized} onClick={openAppearance} />
             <LinkRow label={tSettingsRefonte('timeFormat')} value={formatText} onClick={openAppearance} />
