@@ -90,6 +90,8 @@ Auteur : data-model + content-data ; relecture : training, sync-icloud et archit
 
 Définir le lien entre identifiants stables kebab-case de la bibliothèque JSON et références SQL : lignes de référence locales non publiées ou références logiques validées vers l'union bibliothèque/custom. Ne pas créer de clé étrangère vers une ligne absente. Documenter les exceptions UUID, la version de bibliothèque et la conservation des références historiques. Preuves : exercice embarqué/custom, suppression, ancienne bibliothèque, import/synchro de références inconnues.
 
+Document de préparation : [références d’exercices I1](./preparation-i1-references.md). La représentation physique de la référence, la forme des identifiants personnalisés et la conservation d’un libellé historique restent à décider par Ali avant l’implémentation.
+
 ## P-10 — Calculs métier, avant le ticket de chaque moteur
 
 Auteur : domain-logic avec training / nutrition / recovery ; relecture : qa-test ; Ali valide les choix fonctionnels non tranchés.
