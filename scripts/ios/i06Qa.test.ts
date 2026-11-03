@@ -1,5 +1,6 @@
 // Tests QA de I-06 (cas limites du contrôle de la source et des notes de version). Aucun fichier écrit : fonctions pures et fixtures versionnées.
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -163,5 +164,36 @@ describe('critère 3 (QA) : notes de version, cas limites', () => {
       expect(result.status, bad).toBe(1);
       expect(result.stdout).toBe('');
     }
+  });
+});
+
+describe('SPA-003 : la source est calculée sur l’IPA finale, pas sur l’IPA avant signature', () => {
+  it('critère 4 : seuls la taille et le SHA-256 de l’IPA signée entrent dans source.json', () => {
+    const unsigned = Buffer.from('ipa-avant-signature');
+    const signed = Buffer.from('ipa-finale-signee-adhoc');
+    const digest = (b: Buffer): string => createHash('sha256').update(b).digest('hex');
+    const src = buildSource({
+      template: loadTemplate(),
+      existing: null,
+      info: { CFBundleIdentifier: 'fr.spartiate.app', CFBundleShortVersionString: '0.1.0', CFBundleVersion: '0.1.0', MinimumOSVersion: '18.0' },
+      version: '0.1.0',
+      downloadURL: ipaUrlFor('0.1.0'),
+      size: signed.length,
+      sha256: digest(signed),
+      notes: 'n',
+      date: '2026-11-04T00:00:00.000Z',
+      minOSVersion: '18.0',
+    }) as Source;
+    const v = src.apps[0]!.versions[0]!;
+    expect(v.sha256).toBe(digest(signed));
+    expect(v.size).toBe(signed.length);
+    expect(v.sha256).not.toBe(digest(unsigned));
+  });
+
+  it('critère 4 : le workflow lance check-source avant toute publication', () => {
+    const wf = readFileSync(join(root, '.github/workflows/build-ios.yml'), 'utf8');
+    const check = wf.indexOf('node scripts/ios/check-source.mjs source.new.json');
+    expect(check).toBeGreaterThan(0);
+    expect(check).toBeLessThan(wf.indexOf('gh release create'));
   });
 });

@@ -2,7 +2,7 @@
 // cohérence du guide d'installation avec le workflow et les scripts. Aucun secret, aucune commande iOS.
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -10,6 +10,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { parsePlist } from './plist.mjs';
 // @ts-expect-error script .mjs sans déclaration de types
 import { checkPlistContract, validateContract } from './check-plist-contract.mjs';
+// @ts-expect-error script .mjs sans déclaration de types
+import { applyEntitlements, DURABLE_SOURCE, GENERATED_DEST, validateEntitlements } from './apply-entitlements.mjs';
 // @ts-expect-error script .mjs sans déclaration de types
 import { buildSource, ipaUrlFor, loadTemplate, minOSVersionFromConf, RELEASES_REPO, SOURCE_URL } from './make-source-json.mjs';
 
@@ -376,5 +378,81 @@ describe('cohérence du guide, du workflow et des scripts', () => {
     expect(guide.match(/^## \d+\. /gm)).toHaveLength(8);
     // 1 100 mots ≈ 5 minutes de lecture : il reste 10 minutes pour les gestes.
     expect(guide.split(/\s+/).filter(Boolean).length).toBeLessThanOrEqual(1100);
+  });
+});
+
+// SPA-003 : entitlements HealthKit durables, copie après `tauri ios init`, ordre du workflow (D-14, D-59).
+describe('SPA-003 : entitlements durables', () => {
+  const ent = (body: string): string => `<?xml version="1.0" encoding="UTF-8"?>\n<plist version="1.0"><dict>${body}</dict></plist>\n`;
+  const HK = '<key>com.apple.developer.healthkit</key>';
+
+  it('critère 2 : le fichier versionné déclare HealthKit à true et aucune autre capacité', () => {
+    const file = join(root, DURABLE_SOURCE);
+    expect(existsSync(file)).toBe(true);
+    const parsed = parsePlist(readFileSync(file, 'utf8')) as Record<string, unknown>;
+    expect(parsed).toEqual({ 'com.apple.developer.healthkit': true });
+    expect(validateEntitlements(readFileSync(file, 'utf8'))).toEqual([]);
+  });
+
+  it('critère 2 : clé absente, false, mauvais type, capacité interdite ou XML illisible sont refusés', () => {
+    expect(validateEntitlements(ent(''))).not.toEqual([]);
+    expect(validateEntitlements(ent(`${HK}<false/>`))).not.toEqual([]);
+    expect(validateEntitlements(ent(`${HK}<string>true</string>`))).not.toEqual([]);
+    expect(validateEntitlements(ent(`${HK}<true/><key>com.apple.security.application-groups</key><array/>`))).not.toEqual([]);
+    expect(validateEntitlements(ent(`${HK}<true/><key>com.apple.developer.icloud-services</key><array/>`))).not.toEqual([]);
+    expect(validateEntitlements(ent(`${HK}<true/><key>aps-environment</key><string>production</string>`))).not.toEqual([]);
+    expect(validateEntitlements('<plist><dict>')).not.toEqual([]);
+    expect(validateEntitlements(ent(`${HK}<true/>`))).toEqual([]);
+  });
+
+  function fakeRoot(withGen: boolean, withSource = true): string {
+    const r = mkdtempSync(join(tmp, 'ent-'));
+    if (withSource) {
+      mkdirSync(join(r, 'src-tauri', 'ios'), { recursive: true });
+      writeFileSync(join(r, DURABLE_SOURCE), readFileSync(join(root, DURABLE_SOURCE)));
+    }
+    if (withGen) mkdirSync(join(r, 'src-tauri', 'gen', 'apple'), { recursive: true });
+    return r;
+  }
+
+  it('critère 2 : la copie est identique octet à octet à la source', () => {
+    const r = fakeRoot(true);
+    applyEntitlements({ root: r });
+    expect(readFileSync(join(r, GENERATED_DEST)).equals(readFileSync(join(r, DURABLE_SOURCE)))).toBe(true);
+  });
+
+  it('critère 2 : dossier généré absent, source absente ou source invalide font échouer', () => {
+    expect(() => applyEntitlements({ root: fakeRoot(false) })).toThrow(/dossier/);
+    expect(() => applyEntitlements({ root: fakeRoot(true, false) })).toThrow(/source/);
+    const bad = fakeRoot(true);
+    writeFileSync(join(bad, DURABLE_SOURCE), ent(`${HK}<false/>`));
+    expect(() => applyEntitlements({ root: bad })).toThrow(/healthkit/);
+  });
+
+  it('critère 2 : en ligne de commande, échec (code 1) si le dossier généré manque, succès sinon', () => {
+    expect(runNode('apply-entitlements.mjs', ['--root', fakeRoot(false)]).status).toBe(1);
+    const ok = fakeRoot(true);
+    expect(runNode('apply-entitlements.mjs', ['--root', ok]).status).toBe(0);
+    expect(existsSync(join(ok, GENERATED_DEST))).toBe(true);
+  });
+
+  it('critère 1 et 3 : ordre du workflow init → copie → build sans signature → codesign → IPA finale → source', () => {
+    const wf = read('.github/workflows/build-ios.yml');
+    const marks = [
+      'npx tauri ios init --ci',
+      'node scripts/ios/apply-entitlements.mjs\n',
+      'npx tauri ios build --ci --no-sign --target aarch64',
+      'codesign -s - --entitlements',
+      'codesign --verify',
+      'apply-entitlements.mjs --check',
+      'node scripts/ios/make-source-json.mjs',
+    ];
+    const at = marks.map((m) => wf.indexOf(m));
+    expect(at.every((i) => i >= 0)).toBe(true);
+    expect([...at].sort((a, b) => a - b)).toEqual(at);
+  });
+
+  it('D-59 : Info.ios.plist ne déclare aucune permission Santé', () => {
+    expect(read('src-tauri/Info.ios.plist')).not.toMatch(/NSHealth/);
   });
 });
