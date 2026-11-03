@@ -120,7 +120,27 @@ export const kit = { c, hidden, bool, createdAt, deletedAt, table } as const;
 // Catalogue injectable
 // ---------------------------------------------------------------------------------------------------------------------------------
 
+/** Lignes liées à une cible qui se purgent et se rétablissent avec elle (ancien schéma : rappels d'une tâche, routine ou événement). */
+export interface CompanionRule {
+  readonly table: string;
+  readonly typeColumn: string;
+  readonly idColumn: string;
+  readonly targets: readonly string[];
+}
+
+/** Règles propres à un catalogue, en données : vides en production (I0), fournies par le banc pour l'ancien schéma. */
+export interface CatalogueRules {
+  /** Tables dont les enfants vivants sont rattachés à « aucun parent » avant la purge d'une trace reçue. */
+  readonly reattachOnPurge: readonly string[];
+  readonly companion: CompanionRule | null;
+  /** Tables dont la purge supprime aussi les événements externes liés (ancien schéma : comptes d'agenda). */
+  readonly dropExternalEventsOn: readonly string[];
+  /** Réparations après un lot appliqué (le moteur lui passe ses `SyncDeps`) ; aucune en I0. */
+  readonly repairs: ((deps: unknown, touched: ReadonlyMap<string, ReadonlySet<string>>) => Promise<void>) | null;
+}
+
 export interface SyncCatalogue {
+  readonly rules: CatalogueRules;
   /** Tables publiées, dans l'ordre topologique (section 3.3). */
   readonly tables: readonly SyncTable[];
   /** Table du catalogue pour un nom reçu (comparaison exacte), ou undefined. */
@@ -152,6 +172,7 @@ export interface CatalogueDefinition {
   readonly settingScope?: (key: string) => SettingKeyScope;
   /** Identifiants naturels admis en plus d'un UUID dans une colonne de type `id`. */
   readonly extraId?: (value: string) => boolean;
+  readonly rules?: Partial<CatalogueRules>;
 }
 
 export function createCatalogue(def: CatalogueDefinition): SyncCatalogue {
@@ -180,6 +201,7 @@ export function createCatalogue(def: CatalogueDefinition): SyncCatalogue {
   };
 
   return {
+    rules: { reattachOnPurge: def.rules?.reattachOnPurge ?? [], companion: def.rules?.companion ?? null, dropExternalEventsOn: def.rules?.dropExternalEventsOn ?? [], repairs: def.rules?.repairs ?? null },
     tables: def.tables,
     table: (name) => byName.get(name),
     column: (tableName, column) => columns.get(tableName)?.get(column),

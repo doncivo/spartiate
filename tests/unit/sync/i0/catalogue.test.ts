@@ -15,7 +15,7 @@ describe('catalogue I0 en production', () => {
     expect([...SYNC_TABLE_ORDER]).toEqual(['profile', 'body_weight']);
     expect(SYNC_CATALOGUE.tables.map((t) => t.name)).toEqual(['profile', 'body_weight']);
     expect(SYNC_CATALOGUE.table('settings')).toBeUndefined();
-    expect(SYNC_CATALOGUE.settingScope('general.locale')).toBe('unknown');
+    expect(SYNC_CATALOGUE.settingScope('general.timeFormat')).toBe('unknown');
     expect(SYNC_CATALOGUE.rank('body_weight')).toBe(1);
     expect(SYNC_CATALOGUE.rank('task')).toBe(2);
   });

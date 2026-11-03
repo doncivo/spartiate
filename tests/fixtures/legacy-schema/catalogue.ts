@@ -1,6 +1,8 @@
 import { SETTINGS_DEFINITIONS, type SettingKey } from '../../../src/domain/model/settings';
 import { createCatalogue, kit, type SettingKeyScope, type SyncCatalogue, type SyncTable, type TitleSource } from '../../../src/domain/sync/syncTables';
 import { createSqlRepositoriesFor, type SyncStorage } from '../../../src/db/repositories';
+import type { SyncDeps } from '../../../src/sync/deps';
+import { legacyRepairs } from './repairs';
 import { isNaturalId, expectedNaturalId, type NaturalIdTable } from './naturalIds';
 
 /**
@@ -219,9 +221,12 @@ const TITLE_SOURCES: Readonly<Record<string, TitleSource>> = {
 const LEGACY_TABLES: readonly SyncTable[] = BASE_TABLES.map((t) => ({ ...t, titleSource: TITLE_SOURCES[t.name] ?? { kind: 'none' } }));
 
 /** Clés de réglage de portée `shared`, triées : les seules publiées dans l'ancien schéma. */
-export const SHARED_SETTING_KEYS: readonly SettingKey[] = (Object.keys(SETTINGS_DEFINITIONS) as SettingKey[]).filter((key) => SETTINGS_DEFINITIONS[key].scope === 'shared').sort();
+/** `general.locale` n'est plus un réglage de l'app (français seul) mais reste partagé dans l'ancien schéma : le banc le garde. */
+const LEGACY_ONLY_SHARED: readonly string[] = ['general.locale'];
+export const SHARED_SETTING_KEYS: readonly string[] = [...(Object.keys(SETTINGS_DEFINITIONS) as SettingKey[]).filter((key) => SETTINGS_DEFINITIONS[key].scope === 'shared'), ...LEGACY_ONLY_SHARED].sort();
 
 export function settingKeyScope(key: string): SettingKeyScope {
+  if (LEGACY_ONLY_SHARED.includes(key)) return 'shared';
   if (!Object.prototype.hasOwnProperty.call(SETTINGS_DEFINITIONS, key)) return 'unknown';
   return SETTINGS_DEFINITIONS[key as SettingKey].scope;
 }
@@ -234,6 +239,7 @@ export const LEGACY_SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   order: LEGACY_TABLES.map((t) => t.name),
   fixedIds: { space: FIXED_SPACE_IDS },
   settingScope: settingKeyScope,
+  rules: { repairs: (deps, touched) => legacyRepairs(deps as SyncDeps, touched), dropExternalEventsOn: ['calendar_account'], reattachOnPurge: ['project'], companion: { table: 'reminder', typeColumn: 'target_type', idColumn: 'target_id', targets: ['task', 'routine', 'event'] } },
   extraId: (value) => isNaturalId('routine_log', value) || isNaturalId('holiday', value),
 });
 

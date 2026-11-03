@@ -150,8 +150,10 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
    * que les deux l'emporte (refus).
    */
   const reminderTargetRestored = async (fields: ReadonlyMap<string, SyncField>, tomb: Hlc): Promise<'restored' | 'pending' | 'no'> => {
-    const type = fields.get('target_type')?.[0];
-    const targetId = fields.get('target_id')?.[0];
+    const companion = cat.rules.companion;
+    if (!companion) return 'no';
+    const type = fields.get(companion.typeColumn)?.[0];
+    const targetId = fields.get(companion.idColumn)?.[0];
     const tt = typeof type === 'string' ? cat.table(type) : undefined;
     if (!tt || typeof targetId !== 'string') return 'no';
     const target = (await sync.readRows(tt, [targetId])).get(targetId);
@@ -313,7 +315,7 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
         restoring = true;
         clearTomb = true;
         if (complete) ctx.logger.log('apply-restored-purged', { table: t.name });
-      } else if (t.name === 'reminder' && !row.exists && complete && restoreField !== undefined && restoreField[0] === null) {
+      } else if (cat.rules.companion?.table === t.name && !row.exists && complete && restoreField !== undefined && restoreField[0] === null) {
         // Rappel vivant republié avec sa cible restaurée : accepté si la cible est revenue ici par une restauration fondée sur une
         // trace au moins aussi récente que celle du rappel (purgé avec elle) ; mis de côté tant que la cible est encore une trace.
         const verdict = await reminderTargetRestored(fields, tomb);

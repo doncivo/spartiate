@@ -18,8 +18,6 @@ export interface PurgeItem {
   readonly deletedHlc: Hlc;
 }
 
-const REMINDER_TARGETS: ReadonlySet<string> = new Set(['task', 'routine', 'event']);
-
 const maxHlc = (a: Hlc, b: Hlc | undefined): Hlc => (b !== undefined && b > a ? b : a);
 
 /** Purge `items` de la table `t` ; renvoie les lignes effectivement purgées et les rappels purgés avec elles. */
@@ -34,7 +32,7 @@ export async function purgeRows(
 ): Promise<{ readonly purged: PurgeItem[]; readonly reminders: string[] }> {
   const reminderIds: string[] = [];
   if (items.length === 0) return { purged: [], reminders: reminderIds };
-  if (options.reattach && t.name === 'project') {
+  if (options.reattach && catalogue.rules.reattachOnPurge.includes(t.name)) {
     // Décision (c) : trace de purge d'un projet reçue (instantané, report d'époque) ; les tâches vivantes encore dessous passent à
     // « Sans projet » du même espace et repartent entières (`'+'`) : rien n'est perdu, les appareils convergent.
     for (const rel of catalogue.childRelations(t.name)) {
@@ -57,8 +55,9 @@ export async function purgeRows(
   const kept = items.filter((item) => !blocked.has(item.id));
   if (kept.length === 0) return { purged: [], reminders: reminderIds };
   const ids = kept.map((item) => item.id);
-  const reminderTable = catalogue.table('reminder');
-  if (REMINDER_TARGETS.has(t.name) && reminderTable) {
+  const companion = catalogue.rules.companion;
+  const reminderTable = companion ? catalogue.table(companion.table) : undefined;
+  if (companion?.targets.includes(t.name) && reminderTable) {
     const reminders = await repos.sync.targetReminders(t.name, ids);
     if (reminders.length > 0) {
       const deletedOf = new Map(kept.map((item) => [item.id, item.deletedHlc]));
@@ -70,7 +69,7 @@ export async function purgeRows(
       await repos.sync.deleteRows(reminderTable, reminderIds);
     }
   }
-  if (t.name === 'calendar_account') await repos.sync.deleteExternalEventsOf(ids);
+  if (catalogue.rules.dropExternalEventsOn.includes(t.name)) await repos.sync.deleteExternalEventsOf(ids);
   await repos.sync.insertTombstones(
     kept.map((item) => ({ table: t.name, rowId: item.id, deletedHlc: item.deletedHlc })),
     purgedAt,

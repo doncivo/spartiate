@@ -83,7 +83,7 @@ describe('publication', () => {
 
   it('settings n’est pas publié : aucune clé de réglage dans sync_outbox, aucun déclencheur', async () => {
     const [a] = await twoDevices();
-    await a.data.repos.settings.set('general.locale', 'fr');
+    await a.data.repos.settings.set('general.timeFormat', '24h');
     await a.data.repos.settings.set('general.firstWeekday', 'monday');
     expect(await a.driver.select("SELECT 1 FROM sync_outbox WHERE table_name = 'settings'")).toEqual([]);
     expect(await a.driver.select("SELECT 1 FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_settings%'")).toEqual([]);
