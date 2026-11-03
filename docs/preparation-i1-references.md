@@ -11,6 +11,39 @@ Références : [§ 9.1 — Tables publiées](./prd/09-synchronisation-pc-iphone.
 [catalogues I1](./preparation-i1-catalogues.md). La publication des séances
 closes relève aussi de D-27.
 
+## Points d’intégration vérifiés après #20
+
+Sur la base fusionnée, la production utilise `SYNC_CATALOGUE` de
+[`src/domain/sync/syncTables.ts`](../src/domain/sync/syncTables.ts), injecté
+avec ses repositories par
+[`src/db/repositories/storage.ts`](../src/db/repositories/storage.ts) dans
+`SYNC_STORAGE`. Le moteur reçoit ce catalogue dans
+[`src/sync/service.ts`](../src/sync/service.ts) ; la publication du journal et
+les instantanés le reçoivent respectivement dans
+[`src/sync/publisher.ts`](../src/sync/publisher.ts) et
+[`src/sync/snapshot.ts`](../src/sync/snapshot.ts). Le catalogue de production
+ne contient actuellement que `profile` et `body_weight`.
+
+La migration publiée est
+[`src/db/migrations/0001_spartiate_init.ts`](../src/db/migrations/0001_spartiate_init.ts),
+enregistrée dans [`src/db/migrations/index.ts`](../src/db/migrations/index.ts).
+Elle fige `CAPTURE_TABLES_V1` et un helper local `captureTriggers` pour les
+tables I0 ; ne pas modifier cette migration. I1 ajoute ses DDL et déclencheurs
+dans la migration suivante planifiée
+`src/db/migrations/0002_training.ts`, à enregistrer dans `index.ts`. La
+production doit alors étendre `SYNC_CATALOGUE` aux tables I1 publiables
+(`exercise` personnalisé, `equipment_profile`, `routine`, `routine_day`,
+`routine_exercise`, `workout`, `workout_set`), et `naturalIds.ts` uniquement
+aux identités naturelles dont la forme est décidée. Aucun de ces changements
+I1 n’est déjà présent sur #20.
+
+D-27 exige une seule règle de publication pour les séances closes, dans les
+journaux et les instantanés : les triggers SQL capturent les mutations, puis
+les parcours pilotés par le catalogue ne publient le `workout` et ses
+`workout_set` qu’après clôture et ensemble complet. Le catalogue hérité ne
+fournissait ni filtre de ligne ni publication atomique d’agrégat ; cette
+adaptation reste à réaliser et à tester en I1-03.
+
 ## Correspondance des identifiants
 
 | Origine de l’exercice | Identité connue | Ligne dans `exercise` | Références SQL |
