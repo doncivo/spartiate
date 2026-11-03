@@ -12,7 +12,7 @@ import { DbError } from '../../../../src/db/driver';
 import { createMemorySyncPlatform } from '../../../../src/platform/sync/memory';
 import { parseReintegrationFailure, REINTEGRATION_FAILURE_META } from '../../../../src/domain/sync/compat';
 import { isTroublePhase, statusLine } from '../../../../src/features/sync/syncText';
-import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
+import { LEGACY_STORAGE } from '../../../fixtures/legacy-schema/catalogue';
 
 /**
  * Crochet de fin du migrateur et démarrage (Y-07 critère 6, D3) : `afterApply` appelé à chaque `migrate()`, même sans migration en
@@ -23,7 +23,7 @@ const A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const T1 = '11111111-1111-4111-8111-111111111111';
 const PRO = '00000000-0000-4000-8000-000000000001';
 const h = (ms: number): Hlc => `${String(1_791_187_200_000 + ms).padStart(15, '0')}-0000-${A}` as Hlc;
-const common = { catalogue: LEGACY_SYNC_CATALOGUE, desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), migrations, syncPlatform: null } as const;
+const common = { storage: LEGACY_STORAGE, desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), migrations, syncPlatform: null } as const;
 
 const m = (version: number): Migration => ({ version, name: `t${String(version)}`, statements: [`CREATE TABLE t${String(version)} (id INTEGER)`] });
 

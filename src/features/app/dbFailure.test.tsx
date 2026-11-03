@@ -12,6 +12,7 @@ import { useAppStore, type DbFailure } from './appStore';
 import { bootstrapApp, bootstrapDatabase } from './bootstrap';
 import { DbFailureDetails, formatDbFailure } from './DbFailureDetails';
 import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
+import { SYNC_STORAGE } from '../../db/repositories';
 
 const reset = () => useAppStore.setState({ dbStatus: 'idle', dbErrorDetail: null, dbBackupFailed: false, dbFailure: null });
 const failure = () => useAppStore.getState().dbFailure;
@@ -118,8 +119,11 @@ describe('0.2.1 diagnostic : démarrage après l’ouverture (app.startError)', 
   it('première étape en échec : étape posée avant l’appel', async () => {
     const result = await bootstrapApp({
       open: openSqliteWasmDriver,
-      repositories: () => {
-        throw new RangeError('fabrique indisponible');
+      storage: {
+        ...SYNC_STORAGE,
+        repositories: () => {
+          throw new RangeError('fabrique indisponible');
+        },
       },
     });
     expect(result).toBeUndefined();

@@ -32,7 +32,7 @@ export type Route =
   | { readonly tab: 'training' }
   | { readonly tab: 'nutrition' }
   | { readonly tab: 'progress' }
-  | { readonly tab: 'more'; readonly screen: 'home' | 'general' | 'desktop' | 'about' | 'appearance' | 'sync' | 'logs' };
+  | { readonly tab: 'more'; readonly screen: 'home' | 'general' | 'desktop' | 'about' | 'appearance' | 'body' | 'sync' | 'logs' };
 
 export const DEFAULT_ROUTES: { readonly [K in TabId]: Extract<Route, { tab: K }> } = {
   today: { tab: 'today' },

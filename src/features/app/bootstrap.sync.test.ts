@@ -7,11 +7,11 @@ import { createUnavailableBackup } from '../../platform/backup';
 import { createUnavailableFiles } from '../../platform/files';
 import { useAppStore } from './appStore';
 import { bootstrapApp } from './bootstrap';
-import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
+import { LEGACY_STORAGE } from '../../../tests/fixtures/legacy-schema/catalogue';
 
 /** Conteneur et démarrage (ADR 0011, section 3.2 et avenant « Amorce » point 7 ; Y-02 critère 19). */
 
-const common = { catalogue: LEGACY_SYNC_CATALOGUE, desktop: null, files: createUnavailableFiles(), migrations } as const;
+const common = { storage: LEGACY_STORAGE, desktop: null, files: createUnavailableFiles(), migrations } as const;
 
 describe('démarrage et synchro (Y-02 critère 19)', () => {
   beforeEach(() => {

@@ -275,6 +275,19 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
     const row = cache.get(key) ?? { exists: false, values: new Map(), hlc: null, clocks: new Map(), pending: new Set() };
     cache.set(key, row);
 
+    // Identité naturelle (D-65) : l'identifiant doit correspondre aux valeurs de la ligne (ex. `weight|date|source`), celles reçues recouvrant
+    // l'existant ; un champ partiel qui la contredirait est refusé comme une identité invalide (même traitement, aucune écriture).
+    if (t.natural?.is(op.id)) {
+      const effective = new Map<string, unknown>(row.values);
+      for (const [name, field] of fields) effective.set(name, field[0]);
+      const expected = t.natural.expected(effective);
+      if (expected !== null && expected !== op.id) {
+        reject(op, 'invalid-id');
+        outcomes.push('rejected');
+        continue;
+      }
+    }
+
     // Traces (section 5.4) : seule une écriture plus récente que la suppression purgée passe.
     const tomb = tombstoneCache.get(t.name)?.get(op.id);
     let clearTomb = false;

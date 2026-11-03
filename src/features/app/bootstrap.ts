@@ -9,8 +9,8 @@ import { migrate, SchemaNewerThanApp, type Migration } from '../../db/migrator';
 import { classifyLaunch, shouldRecordLaunch, type LaunchKind } from '../../domain/appUpdate';
 import { publishedAppVersion, readAppVersion, type AppVersionRead } from '../../platform/appVersion';
 import { migrations } from '../../db/migrations';
-import { SYNC_CATALOGUE, type SyncCatalogue } from '../../domain/sync/syncTables';
-import { createDataAccess, createSqlRepositoriesFor, reintegrateUnknownFields, type ReintegrationReport, type RepositoryFactory } from '../../db/repositories';
+import type { SyncCatalogue } from '../../domain/sync/syncTables';
+import { createDataAccess, reintegrateUnknownFields, SYNC_STORAGE, type SyncStorage, type ReintegrationReport } from '../../db/repositories';
 import { detectOs, detectRuntime, openDesktopPlatform, type DesktopPlatform } from '../../platform';
 import { openBackupService, type BackupService } from '../../platform/backup';
 import { openFileService, type FileService } from '../../platform/files';
@@ -170,11 +170,9 @@ export async function reintegrateAfterMigration(db: SqlDriver, clock: Clock = sy
 }
 
 export interface BootstrapAppOptions {
-  /** Catalogue de synchro (D-67) : I0 par défaut ; l'ancien catalogue seulement dans le banc de test. */
-  readonly catalogue?: SyncCatalogue;
+  /** Catalogue de synchro et repositories, ensemble (D-67) : I0 par défaut ; l'ancien schéma seulement dans le banc de test. */
+  readonly storage?: SyncStorage;
   readonly open?: () => Promise<SqlDriver>;
-  /** Fabrique de repositories ; `createSqlRepositories` par défaut, remplaçable en test. */
-  readonly repositories?: RepositoryFactory;
   readonly clock?: Clock;
   readonly ids?: IdGenerator;
   /** Intégration PC ; `openDesktopPlatform` par défaut (null hors Windows installé). */
@@ -248,10 +246,10 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
   useAppStore.getState().setDbStatus('loading');
   // I-06 : version lue AVANT l'ouverture (diagnostic d'échec, synchro, « À propos ») ; ne rejette jamais.
   const appVersion = await (options.appVersion ?? readAppVersion)();
-  const driver = await bootstrapDatabase(options.open ?? devOpen, { clock: options.clock, backup: options.backup, migrations: options.migrations, catalogue: options.catalogue, appVersion: appVersion.version });
+  const driver = await bootstrapDatabase(options.open ?? devOpen, { clock: options.clock, backup: options.backup, migrations: options.migrations, catalogue: options.storage?.catalogue, appVersion: appVersion.version });
   if (!driver) return undefined;
   const list = options.migrations ?? migrations;
-  const factory = options.repositories ?? createSqlRepositoriesFor(options.catalogue ?? SYNC_CATALOGUE);
+  const factory = (options.storage ?? SYNC_STORAGE).repositories;
   const clock = options.clock ?? systemClock;
   const ids = options.ids ?? uuidGenerator;
   // 0.2.1 : étape en cours (module ou appel), posée avant chaque appel : diagnostic sous app.startError.
@@ -288,7 +286,6 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
       ? at('createSyncService', () =>
           createSyncService({
             data,
-            ...(options.catalogue ? { catalogue: options.catalogue } : {}),
             platform: syncPlatform,
             hlc,
             clock,
@@ -311,7 +308,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
       ids,
       hlc,
       data,
-      ...(options.catalogue ? { catalogue: options.catalogue } : {}),
+      ...(options.storage ? { catalogue: options.storage.catalogue } : {}),
       platform: { runtime: detectRuntime(), os: detectOs() },
       desktop,
       sync,

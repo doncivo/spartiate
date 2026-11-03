@@ -42,8 +42,8 @@ export interface SortOrderEntry<TId extends Id> {
   readonly sortOrder: number;
 }
 
-/** `conflict` : écriture idempotente dont l'identifiant existe déjà sans que la ligne soit retrouvée (corbeille, introuvable). */
-export type RepositoryErrorCode = 'not-found' | 'conflict';
+/** `invalid` : valeur refusée par les règles du domaine (rien n'est écrit). `conflict` : écriture idempotente dont l'identifiant existe déjà sans que la ligne soit retrouvée (corbeille, introuvable). */
+export type RepositoryErrorCode = 'not-found' | 'conflict' | 'invalid';
 
 export class RepositoryError extends Error {
   override readonly name = 'RepositoryError';

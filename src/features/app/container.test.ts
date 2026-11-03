@@ -4,7 +4,7 @@ import { createManualClock } from '../../domain/clock';
 import { createHlcClock, createWriteStamper, parseHlc } from '../../domain/hlc';
 import type { DeviceId, Hlc } from '../../domain/types';
 import { openSqliteWasmDriver } from '../../db/drivers/sqliteWasm';
-import { createDataAccess, type RepositoryFactory, type Repositories } from '../../db/repositories';
+import { createDataAccess, SYNC_STORAGE, type RepositoryFactory, type Repositories } from '../../db/repositories';
 import { createPendingRepositories } from '../../../tests/fixtures/pendingRepositories';
 import { useAppStore } from './appStore';
 import { bootstrapApp } from './bootstrap';
@@ -58,7 +58,7 @@ describe('démarrage complet', () => {
     const set = vi.fn(async () => undefined);
     const container = await bootstrapApp({
       open: openSqliteWasmDriver,
-      repositories: fakeFactory(null, null, set),
+      storage: { ...SYNC_STORAGE, repositories: fakeFactory(null, null, set) },
       clock,
       ids: { next: () => DEVICE },
     });
@@ -70,7 +70,7 @@ describe('démarrage complet', () => {
   it('reprend l’appareil connu et la graine HLC', async () => {
     const seed = `00${String(Date.parse('2026-10-02T00:00:00.000Z'))}-0005-${DEVICE}` as Hlc;
     const set = vi.fn(async () => undefined);
-    const container = await bootstrapApp({ open: openSqliteWasmDriver, repositories: fakeFactory(DEVICE, seed, set), clock });
+    const container = await bootstrapApp({ open: openSqliteWasmDriver, storage: { ...SYNC_STORAGE, repositories: fakeFactory(DEVICE, seed, set) }, clock });
     // L'identité n'est pas réécrite ; seule la version de ce lancement est mémorisée (I-06 : le faux rend DEVICE pour toute clé, valeur illisible).
     expect(set).not.toHaveBeenCalledWith('device.id', expect.anything());
     expect(set.mock.calls.map((call: unknown[]) => call[0])).toEqual(['app.lastLaunchedVersion']);
@@ -79,7 +79,7 @@ describe('démarrage complet', () => {
 
   it('publie une erreur si on force les repositories en attente', async () => {
     expect(
-      await bootstrapApp({ open: openSqliteWasmDriver, repositories: createPendingRepositories }),
+      await bootstrapApp({ open: openSqliteWasmDriver, storage: { ...SYNC_STORAGE, repositories: createPendingRepositories } }),
     ).toBeUndefined();
     expect(useAppStore.getState()).toMatchObject({ dbStatus: 'error' });
     expect(useAppStore.getState().dbErrorDetail).toMatch(/settings\.get/);

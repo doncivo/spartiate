@@ -1,6 +1,6 @@
 import { SETTINGS_DEFINITIONS, type SettingKey } from '../../../src/domain/model/settings';
 import { createCatalogue, kit, type SettingKeyScope, type SyncCatalogue, type SyncTable, type TitleSource } from '../../../src/domain/sync/syncTables';
-import { createSqlRepositoriesFor } from '../../../src/db/repositories';
+import { createSqlRepositoriesFor, type SyncStorage } from '../../../src/db/repositories';
 import { isNaturalId, expectedNaturalId, type NaturalIdTable } from './naturalIds';
 
 /**
@@ -251,3 +251,6 @@ export const childRelations = LEGACY_SYNC_CATALOGUE.childRelations;
 export const tableRank = LEGACY_SYNC_CATALOGUE.rank;
 export const isPurgeable = LEGACY_SYNC_CATALOGUE.isPurgeable;
 export const isValidRowId = LEGACY_SYNC_CATALOGUE.isValidRowId;
+
+/** Stockage du banc : l'ancien catalogue et ses repositories, ensemble (`bootstrapApp({ storage })`). */
+export const LEGACY_STORAGE: SyncStorage = { catalogue: LEGACY_SYNC_CATALOGUE, repositories: createLegacyRepositories };

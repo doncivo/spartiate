@@ -4,7 +4,7 @@ import { migrate } from '../../db/migrator';
 import { legacyMigrations as migrations } from '../../../tests/fixtures/legacy-schema';
 import { useAppStore } from './appStore';
 import { bootstrapDatabase } from './bootstrap';
-import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
+import { LEGACY_STORAGE } from '../../../tests/fixtures/legacy-schema/catalogue';
 
 describe('démarrage de la base', () => {
   beforeEach(() => {
@@ -66,7 +66,7 @@ describe('I-06 (régression CI) : un seul démarrage', () => {
     let release: () => void = () => undefined;
     const held = new Promise<void>((resolve) => (release = resolve));
     const { bootstrapApp } = await import('./bootstrap');
-    const started = bootstrapApp({ catalogue: LEGACY_SYNC_CATALOGUE, open: openSqliteWasmDriver, desktop: null, migrations, syncPlatform: null, appVersion: () => held.then(() => ({ ok: true, version: '0.3.0', source: 'runtime' }) as const) });
+    const started = bootstrapApp({ storage: LEGACY_STORAGE, open: openSqliteWasmDriver, desktop: null, migrations, syncPlatform: null, appVersion: () => held.then(() => ({ ok: true, version: '0.3.0', source: 'runtime' }) as const) });
     // App.tsx ne lance `bootstrapApp` que sur « idle » : l'état doit déjà avoir changé avant toute attente.
     expect(useAppStore.getState().dbStatus).toBe('loading');
     release();

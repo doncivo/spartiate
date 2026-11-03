@@ -7,6 +7,7 @@
 export * from './common';
 export * from './dataAccess';
 export * from './observeWrites';
+export type * from './bodyRepositories';
 export type * from './spaceRepository';
 export type * from './taskRepository';
 export type * from './routineRepository';
@@ -25,6 +26,7 @@ export type * from './appleReminderLinkRepository';
 export type * from './syncConflictRepository';
 // Y-04 (fin)
 export * from './sql';
+export * from './storage';
 // Y-07 (début)
 export type * from './syncUnknownRepository';
 // Y-07 (fin)
