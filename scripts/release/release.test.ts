@@ -175,7 +175,7 @@ describe('contrat de publication (SPA-002, build-windows.yml)', () => {
     expect(publishJob).toContain('environment: releases');
     expect(publishJob).toContain('secrets.RELEASES_TOKEN');
     expect(beforePublish).not.toContain('RELEASES_TOKEN');
-    expect(wf).not.toMatch(/circletasks/i);
+    expect(wf).not.toMatch(new RegExp('circle' + 'tasks', 'i'));
   });
 
   it('publication réservée aux tags ; versions et SHA-256 concordants avant envoi ; secret absent = échec', () => {

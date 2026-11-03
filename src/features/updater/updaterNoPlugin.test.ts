@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId } from '../../domain/types';
+import type { DesktopPlatform } from '../../platform';
 import { createFakeDesktop } from '../../platform/desktop/testing';
 import { openTestDb } from '../../db/repositories/sql/testSetup';
 
@@ -24,7 +25,7 @@ const { updaterStore } = await import('./updaterStore');
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000d4');
 
 describe('updater configuré (SPA-002) et état non configuré (D-30)', () => {
-  const containerWith = async (desktop: ReturnType<typeof createFakeDesktop>) => {
+  const containerWith = async (desktop: DesktopPlatform) => {
     const db = await openTestDb(DEVICE);
     const container = createAppContainer({
       clock: db.clock,

@@ -64,7 +64,7 @@ describe('mise à jour PC (D-03)', () => {
       desktop.nextCheck = fakePendingUpdate('1.2.0', { notes: 'Nouveautés' });
       await expect(store().getState().check()).resolves.toBe('ok');
       expect(store().getState()).toMatchObject({ status: 'available', version: '1.2.0', notes: 'Nouveautés', bannerVisible: true });
-      await expect(db.data.repos.settings.get('desktop.updater')).resolves.toEqual({ lastCheckAt: '2026-10-01T08:00:00.000Z' });
+      await expect(db.data.repos.settings.get('desktop.updater')).resolves.toEqual({ lastCheckAt: '2026-10-01T08:00:00.000Z', lastFailure: null });
     });
 
     it('version égale ou inférieure : rien à afficher (critère 3)', async () => {
@@ -78,7 +78,7 @@ describe('mise à jour PC (D-03)', () => {
       await expect(store().getState().check()).resolves.toBe('failed');
       expect(store().getState()).toMatchObject({ status: 'checkFailed', bannerVisible: false });
       expect(warn).toHaveBeenCalledWith(expect.stringContaining('réseau absent'));
-      await expect(db.data.repos.settings.get('desktop.updater')).resolves.toEqual({ lastCheckAt: null });
+      await expect(db.data.repos.settings.get('desktop.updater')).resolves.toEqual({ lastCheckAt: null, lastFailure: { stage: 'check', kind: 'other' } });
     });
 
     it('« Plus tard » ferme le bandeau ; la même version est reproposée à la vérification suivante (QB-16)', async () => {
