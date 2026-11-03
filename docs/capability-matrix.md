@@ -4,7 +4,7 @@ Créée par #13 le 3 novembre 2026 ; mise à jour par chaque ticket qui produit 
 
 Sources : [chaîne de livraison (§ 5)](prd/05-chaine-de-build-installation-et-mise-a-jour.md), [capacités (§ 6)](prd/06-matrice-de-capacites-etat-initial.md), [gate I0 (§ 7)](prd/07-gate-i0-aucun-travail-i1-avant-passage.md), [hypothèses (§ 26.2)](prd/26-registre-des-decisions-et-des-hypotheses.md), [annexe B](prd/29-annexe-b-docs-capability-matrix-md-etat-initial.md).
 
-Statuts du [§ 0.3](prd/00-statut-et-conventions.md) : `CONFIRMED` exige une capture ou un log daté sur Spartiate via la chaîne réelle ; `INHERITED` est une preuve CircleTasks à rejouer ; `PROTOTYPED` atteste seulement une compilation CI ; `UNVERIFIED` reste à prouver ; `BLOCKED` porte une indisponibilité documentée ; `DEFERRED` porte un report. Aucun `CONFIRMED` ni `PROTOTYPED` n’est déclaré dans ce relevé. Les `BLOCKED` ci-dessous reproduisent les restrictions écrites dans le PRD, sans prétendre à un nouvel essai Spartiate (D-36).
+Statuts du [§ 0.3](prd/00-statut-et-conventions.md) : `CONFIRMED` exige une capture ou un log daté sur Spartiate via la chaîne réelle ; `INHERITED` est une preuve CircleTasks à rejouer ; `PROTOTYPED` atteste seulement une compilation CI ; `UNVERIFIED` reste à prouver ; `BLOCKED` porte une indisponibilité documentée ; `DEFERRED` porte un report. Aucun `CONFIRMED` ni `PROTOTYPED` n’est déclaré dans ce relevé. Depuis la fusion de #20, les scénarios e2e Y-IOS-01 et I-06 sont présents dans le dépôt (`tests/e2e/Y-IOS-01.spec.ts`, `tests/e2e/I-06.spec.ts`) ; leur présence ne vaut pas preuve native sur appareil. Les `BLOCKED` ci-dessous reproduisent les restrictions écrites dans le PRD, sans prétendre à un nouvel essai Spartiate (D-36).
 
 La colonne « Preuve attendue » n’est pas une preuve acquise. Chaque ticket ajoutera le lien exact, la date, le commit/version, l’appareil et le verdict avant tout changement de statut. Les tickets futurs I1–I6 ne sont pas encore numérotés : l’itération du PRD est conservée, sans inventer d’identifiant. Aucune action destructive ni lecture des données CircleTasks n’est autorisée par cette matrice.
 
@@ -12,7 +12,7 @@ La colonne « Preuve attendue » n’est pas une preuve acquise. Chaque ticket a
 
 | Capacité / référence PRD | Statut actuel du PRD | Preuve attendue sur Spartiate | Ticket producteur / réserve |
 | --- | --- | --- | --- |
-| Fork, renommage, purge du métier, base neuve et tests verts (§ 6) | UNVERIFIED | Identités, migration neuve et démarrage vérifiés ; suites CI vertes et recette native | SPA-000, SPA-001a, SPA-001b ; **à revérifier après 001b-base** |
+| Fork, renommage, purge du métier, base neuve et tests verts (§ 6) | UNVERIFIED | Migration `0001_spartiate_init` enregistrée dans `src/db/migrations/index.ts` et tests présents ; suite CI et recette native du démarrage restent à documenter | SPA-000, SPA-001a, SPA-001b (#20 fusionnée) |
 | Build Windows NSIS et smoke installeur (§ 6, annexe B) | INHERITED | Artefact identifié ; smoke CI installe/lance/désinstalle sur runner, données témoins conservées | SPA-002 |
 | Updater Windows signé avec la clé Spartiate (§ 5, annexe B) | UNVERIFIED (non configuré avant SPA-002, D-30) | Signature minisign Spartiate, manifeste et mise à jour par bannière ; données conservées | SPA-002, SPA-010 ; infrastructure updater INHERITED au § 6, configuration Spartiate non prouvée |
 | Build IPA non signée en CI (§ 6, annexe B) | INHERITED | Run macOS vert, IPA arm64 et identité/version/hash contrôlés | SPA-003 |
@@ -21,14 +21,14 @@ La colonne « Preuve attendue » n’est pas une preuve acquise. Chaque ticket a
 | Installation, ouverture et renouvellement SideStore (§ 6, annexe B) | INHERITED | Captures datées de l’app installée, version et expiration avant/après renouvellement | SPA-004 ; observation sept jours SPA-010 |
 | Tauri 2 / WebView sur iOS 18 (H-2) | INHERITED | Recette de l’IPA Spartiate re-signée sur iPhone, version iOS et absence de régression | SPA-004 |
 | Trois apps SideStore + CircleTasks + Spartiate (H-16) | UNVERIFIED | Capture datée de coexistence et versions ; quota constaté sans supprimer une app | SPA-004 ; recontrôle SPA-007 si extension |
-| Mise à jour SideStore N → N+1 sans perte de base ni Trousseau (H-5, I-06) | UNVERIFIED (code hérité ; preuve appareil CircleTasks ouverte) | 0.1.0 → 0.1.1 : captures, identifiants/compteurs/hash métier et usage du coffre sans réappairage | SPA-010 ; **à revérifier après 001b-base** |
+| Mise à jour SideStore N → N+1 sans perte de base ni Trousseau (H-5, I-06) | UNVERIFIED (scénario e2e rétabli ; preuve appareil ouverte) | `tests/e2e/I-06.spec.ts` et crochet de développement `__ctExtraMigrations` couvrent la migration simulée 1 → 2 ; 0.1.0 → 0.1.1 réel reste à éprouver : captures, hash métier et coffre sans réappairage | SPA-010 |
 | Date d’expiration lisible et notification associée (H-7, I-02) | INHERITED | Date effective après re-signature ; notification reçue, refus explicite et renouvellement sans doublon | SPA-004 |
 | Quota CI public et capacité macOS suffisante (H-6, § 6) | INHERITED (D-13) | Runs datés, disponibilité et consommation mesurées ; distinguer durée murale et somme des jobs | SPA-003, mesure SPA-010 |
-| Protocole de synchro iCloud chiffrée PC ↔ iPhone (§ 6, annexe B) | INHERITED | Vecteurs et deux bases : conflit, instantané, reset, oubli, reprise ; recette native dans les deux sens | SPA-008 ; **à revérifier après 001b-base** |
-| Synchro des tables profile / body_weight (§ 6, annexe B) | UNVERIFIED (catalogue et repositories adaptés, D-26) | Identités D-55, HLC, absence de settings publiés, convergence et délai < 60 s sous D-56 | SPA-001b puis SPA-008 ; **à revérifier après 001b-base** |
-| Export / import JSON profil-poids (§ 6) | UNVERIFIED | Aller-retour canonique, archive invalide refusée, import atomique et republication sur deux bases | SPA-005 ; **à revérifier après 001b-base** |
-| Parité SQLite Wasm / plugin SQL natif (H-18) | UNVERIFIED (outil identifié, D-31) | Mêmes scénarios DDL, déclencheurs, transactions, pragmas et restauration dans les tests Wasm et Rust CI ; smoke Windows | SPA-001b ; **à revérifier après 001b-base** |
-| Coquilles 440 / 1 440 px, rupture 1 024 px, zoom et texte agrandi (H-19a) | UNVERIFIED | Paires visual relues, frontières 1 024 px, Dynamic Type Très grand et absence de débordement | SPA-009 ; formulaire profil/poids **à revérifier après 001b-base** |
+| Protocole de synchro iCloud chiffrée PC ↔ iPhone (§ 6, annexe B) | INHERITED | `SYNC_CATALOGUE` I0 est injecté via `SYNC_STORAGE` ; vecteurs et deux bases (conflit, instantané, reset, oubli, reprise) et recette native dans les deux sens restent requis | SPA-008 |
+| Synchro des tables profile / body_weight (§ 6, annexe B) | UNVERIFIED (catalogue, identités et repositories présents) | `SYNC_CATALOGUE` publie `profile` / `body_weight`; `0001_spartiate_init` contient leurs déclencheurs de capture ; prouver HLC, absence de settings, convergence et délai < 60 s sous D-56 | SPA-001b puis SPA-008 |
+| Export / import JSON profil-poids (§ 6) | UNVERIFIED (non implémenté) | Aller-retour canonique, archive invalide refusée, import atomique et republication sur deux bases | SPA-005 |
+| Parité SQLite Wasm / plugin SQL natif (H-18) | UNVERIFIED | Migration 0001 et tests de migration présents ; prouver les mêmes scénarios DDL, déclencheurs, transactions, pragmas et restauration dans Wasm et Rust CI ; smoke Windows | SPA-001b |
+| Coquilles 440 / 1 440 px, rupture 1 024 px, zoom et texte agrandi (H-19a) | UNVERIFIED | Coquilles et écran « Profil et poids » présents ; paires visual relues, frontières 1 024 px, Dynamic Type Très grand et absence de débordement restent requis | SPA-009 |
 
 ## Capacités natives et Santé
 
