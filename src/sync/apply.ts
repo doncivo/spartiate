@@ -361,6 +361,12 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
           }
         }
         if (t.columns.every((col) => union.has(col.name))) {
+          // Identité naturelle (D-65) sur la ligne recomposée : chaque partie a pu passer seule, pas leur union.
+          if (t.natural?.is(op.id) && t.natural.expected(new Map([...union].map(([name, field]) => [name, field[0]]))) !== op.id) {
+            reject(op, 'invalid-id');
+            outcomes.push('rejected');
+            continue;
+          }
           fields = union;
           combined = prior.map((p) => p.id);
           if (restoring) ctx.logger.log('apply-restored-purged', { table: t.name });

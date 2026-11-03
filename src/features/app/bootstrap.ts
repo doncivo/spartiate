@@ -246,10 +246,11 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
   useAppStore.getState().setDbStatus('loading');
   // I-06 : version lue AVANT l'ouverture (diagnostic d'échec, synchro, « À propos ») ; ne rejette jamais.
   const appVersion = await (options.appVersion ?? readAppVersion)();
-  const driver = await bootstrapDatabase(options.open ?? devOpen, { clock: options.clock, backup: options.backup, migrations: options.migrations, catalogue: options.storage?.catalogue, appVersion: appVersion.version });
+  const driver = await bootstrapDatabase(options.open ?? devOpen, { clock: options.clock, backup: options.backup, migrations: options.migrations, catalogue: (options.storage ?? SYNC_STORAGE).catalogue, appVersion: appVersion.version });
   if (!driver) return undefined;
   const list = options.migrations ?? migrations;
-  const factory = (options.storage ?? SYNC_STORAGE).repositories;
+  const storage = options.storage ?? SYNC_STORAGE;
+  const factory = storage.repositories;
   const clock = options.clock ?? systemClock;
   const ids = options.ids ?? uuidGenerator;
   // 0.2.1 : étape en cours (module ou appel), posée avant chaque appel : diagnostic sous app.startError.
@@ -286,7 +287,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
       ? at('createSyncService', () =>
           createSyncService({
             data,
-            catalogue: (options.storage ?? SYNC_STORAGE).catalogue,
+            catalogue: storage.catalogue,
             platform: syncPlatform,
             hlc,
             clock,
@@ -309,7 +310,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
       ids,
       hlc,
       data,
-      ...(options.storage ? { catalogue: options.storage.catalogue } : {}),
+      catalogue: storage.catalogue,
       platform: { runtime: detectRuntime(), os: detectOs() },
       desktop,
       sync,
