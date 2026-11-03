@@ -5,6 +5,8 @@ import type { SqlDriver } from '../../driver';
 import { openSqliteWasmDriver } from '../../drivers/sqliteWasm';
 import { legacyMigrations as migrations } from '../../../../tests/fixtures/legacy-schema';
 import { migrate } from '../../migrator';
+import { migrations as baseMigrations } from '../../migrations';
+import { createSqlRepositories } from './index';
 import { createDataAccess, type DataAccess } from '../dataAccess';
 import { createLegacyRepositories } from '../../../../tests/fixtures/legacy-schema/catalogue';
 
@@ -31,5 +33,15 @@ export async function openTestDb(
   const hlc = createHlcClock({ clock, deviceId });
   const stamper = createWriteStamper(clock, hlc);
   const data = createDataAccess(driver, stamper, createLegacyRepositories);
+  return { driver, data, clock, deviceId, close: () => driver.close() };
+}
+
+/** Base de test sur la base neuve (migration 0001 réelle, catalogue de production I0) : profil et poids. */
+export async function openBaseDb(deviceId: DeviceId, startAt: string | number = '2026-10-01T08:00:00.000Z'): Promise<TestDb> {
+  const driver = await openSqliteWasmDriver();
+  await migrate(driver, baseMigrations);
+  const clock = createManualClock(startAt);
+  const hlc = createHlcClock({ clock, deviceId });
+  const data = createDataAccess(driver, createWriteStamper(clock, hlc), createSqlRepositories);
   return { driver, data, clock, deviceId, close: () => driver.close() };
 }
