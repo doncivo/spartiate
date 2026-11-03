@@ -49,6 +49,7 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFa
   // D-65 : profil et poids, implémentation chargée à la demande (hors du JavaScript de départ).
   profile: () => import('./bodyRepositories').then((m) => m.createProfileRepository(executor, stamper)),
   bodyWeights: () => import('./bodyRepositories').then((m) => m.createBodyWeightRepository(executor, stamper)),
+  exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)
   syncConflicts: createSyncConflictRepository(executor, stamper, catalogue),

@@ -150,3 +150,11 @@ describe('ExportImportRepository : import (D-57)', () => {
     expect(again.weights.map((x) => x.id)).toEqual(exported.weights.map((x) => x.id));
   });
 });
+
+describe('version de schéma du manifeste', () => {
+  it('EXPORT_SV suit la dernière migration (un sv supérieur est refusé à l’import)', async () => {
+    const { migrations } = await import('../../migrations');
+    const { EXPORT_SV } = await import('../../../domain/exportImport/archive');
+    expect(EXPORT_SV).toBe(migrations.at(-1)?.version);
+  });
+});

@@ -1,4 +1,4 @@
-import { FileExportError, type FileFailureReason, type FileService, type PickedText, type SaveRequest, type SaveResult } from './types';
+import { FileExportError, type FileFailureReason, type FileService, type PickedBytes, type PickedText, type SaveRequest, type SaveResult } from './types';
 
 export interface MemoryFiles extends FileService {
   /** Enregistrements réussis, dans l'ordre. */
@@ -9,6 +9,8 @@ export interface MemoryFiles extends FileService {
   /** Le prochain enregistrement échoue (raison du contrat, `write-failed` par défaut ; `code` : code de Rust porté par la cause). */
   failNext(reason?: FileFailureReason, code?: string): void;
   setPick(file: PickedText | null): void;
+  /** Archive binaire que le prochain `pickBytes` rend (SPA-005). */
+  setPickBytes(file: PickedBytes | null): void;
   /** Le prochain choix de fichier échoue (« too-large », « unreadable »). */
   failNextPick(reason: 'too-large' | 'unreadable'): void;
 }
@@ -23,6 +25,7 @@ export function createMemoryFiles(options: { readonly canSave?: boolean } = {}):
   let mode: 'save' | 'cancel' | 'fail' = 'save';
   let failure: { reason: FileFailureReason; code: string | undefined } = { reason: 'write-failed', code: undefined };
   let pick: PickedText | null = null;
+  let pickBytes: PickedBytes | null = null;
   let pickFailure: 'too-large' | 'unreadable' | null = null;
   const canSave = options.canSave ?? true;
   return {
@@ -37,6 +40,9 @@ export function createMemoryFiles(options: { readonly canSave?: boolean } = {}):
     },
     setPick: (file) => {
       pick = file;
+    },
+    setPickBytes: (file) => {
+      pickBytes = file;
     },
     canSave: () => canSave,
     save(request): Promise<SaveResult> {
@@ -64,6 +70,14 @@ export function createMemoryFiles(options: { readonly canSave?: boolean } = {}):
       }
       return Promise.resolve(pick);
     },
+    pickBytes() {
+      if (pickFailure) {
+        const reason = pickFailure;
+        pickFailure = null;
+        return Promise.reject(new FileExportError(reason));
+      }
+      return Promise.resolve(pickBytes);
+    },
   };
 }
 
@@ -73,5 +87,6 @@ export function createUnavailableFiles(): FileService {
     canSave: () => false,
     save: () => Promise.reject(new FileExportError('unavailable')),
     pickText: () => Promise.reject(new FileExportError('unavailable')),
+    pickBytes: () => Promise.reject(new FileExportError('unavailable')),
   };
 }

@@ -13,6 +13,7 @@ import type { RoutineLogRepository, RoutineRepository } from './routineRepositor
 import type { SettingsRepository, SyncMetaRepository } from './settingsRepository';
 import type { SyncRepository } from './syncRepository';
 import type { BodyWeightRepository, ProfileRepository } from './bodyRepositories';
+import type { ExportImportRepository } from './exportImportRepository';
 import type { ProjectRepository, SpaceRepository } from './spaceRepository';
 import type { RecurrenceRepository, TaskRepository } from './taskRepository';
 
@@ -41,6 +42,8 @@ export interface Repositories {
   /** Chargés à la demande (hors du JavaScript de départ, BUNDLE-01) : `await repos.profile()`. */
   readonly profile: () => Promise<ProfileRepository>;
   readonly bodyWeights: () => Promise<BodyWeightRepository>;
+  /** Export / import de Spartiate (SPA-005, D-57), chargé à la demande. */
+  readonly exportImport: () => Promise<ExportImportRepository>;
   /** Liens locaux aux Rappels Apple (K-05, ADR 0008 §10.2) : table non publiée, vide sur le PC. */
   readonly appleLinks: AppleReminderLinkRepository;
   /** Tables de la synchronisation (ADR 0011, lot Y2). */

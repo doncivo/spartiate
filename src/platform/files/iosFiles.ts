@@ -1,4 +1,4 @@
-import { pickTextFromInput } from './browser';
+import { pickBytesFromInput, pickTextFromInput } from './browser';
 import { DEFAULT_PICK_MAX_BYTES, FileExportError, MAX_EXPORT_BYTES, type FileService, type SaveRequest, type SaveResult } from './types';
 
 /**
@@ -57,5 +57,6 @@ export function createIosFiles(api: IosFileApi = loadIosFileApi()): FileService 
       return answer.completed ? { saved: true } : { saved: false };
     },
     pickText: (options) => pickTextFromInput(options.accept, options.maxBytes ?? DEFAULT_PICK_MAX_BYTES),
+    pickBytes: (options) => pickBytesFromInput(options.accept, options.maxBytes ?? DEFAULT_PICK_MAX_BYTES),
   };
 }
