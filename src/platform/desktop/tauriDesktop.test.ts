@@ -95,6 +95,10 @@ describe('intégration PC Tauri (plugins simulés)', () => {
     expect(calls).toEqual([`open:${LATEST_RELEASE_URL}`]);
   });
 
+  it('updater configuré (SPA-002)', () => {
+    expect(createTauriDesktop().updaterConfigured).toBe(true);
+  });
+
   it('aucune mise à jour : null', async () => {
     check.mockResolvedValue(null);
     await expect(createTauriDesktop().checkForUpdate()).resolves.toBeNull();

@@ -33,9 +33,9 @@ describe('configuration Tauri', () => {
   it('rend withGlobalTauri explicitement faux (D-47 7)', () => {
     expect(conf.app.withGlobalTauri).toBe(false);
   });
-  it('ne configure aucun updater (D-30) : ni bloc, ni clé, ni endpoint', () => {
-    expect(conf.plugins?.updater).toBeUndefined();
-    expect(JSON.stringify(conf)).not.toMatch(/pubkey|latest\.json|releases/i);
+  it('configure l’updater Spartiate (SPA-002) : seul endpoint spartiate-releases, aucune trace de CircleTasks', () => {
+    expect(conf.plugins?.updater?.endpoints).toEqual(['https://github.com/doncivo/spartiate-releases/releases/latest/download/latest.json']);
+    expect(JSON.stringify(conf).toLowerCase()).not.toContain('circletasks');
   });
   it('la configuration de smoke dérive de l’identifiant', () => {
     const smoke = json('src-tauri/tauri.smoke.conf.json');
@@ -44,14 +44,15 @@ describe('configuration Tauri', () => {
   });
 });
 
-describe('updater : tout revient en SPA-002 (D-30)', () => {
-  it('aucune permission updater dans aucune capability', () => {
+describe('updater : rétabli en SPA-002 (D-30 clos)', () => {
+  it('permissions updater dans la seule capability desktop (Windows)', () => {
     const dir = resolve(root, 'src-tauri/capabilities');
-    for (const file of readdirSync(dir).filter((name) => name.endsWith('.json'))) expect(readFileSync(resolve(dir, file), 'utf8'), file).not.toContain('updater:');
+    const holders = readdirSync(dir).filter((name) => name.endsWith('.json') && readFileSync(resolve(dir, name), 'utf8').includes('updater:'));
+    expect(holders).toEqual(['desktop.json']);
   });
-  it('le plugin updater n’est initialisé nulle part côté Rust', () => {
+  it('le plugin updater n’est initialisé que dans desktop.rs', () => {
     const result = spawnSync('git', ['grep', '-l', '-I', 'tauri_plugin_updater', '--', 'src-tauri/src'], { cwd: root, encoding: 'utf8' });
-    expect(result.stdout.trim()).toBe('');
+    expect(result.stdout.trim()).toBe('src-tauri/src/desktop.rs');
   });
 });
 

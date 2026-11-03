@@ -14,23 +14,32 @@ fn conf() -> Value {
 /// Dépôt public des versions : seule destination que la WebView peut ouvrir (opener).
 const RELEASES_SCOPE: &str = "https://github.com/doncivo/spartiate-releases/releases/*";
 
-/// D-30 (SPA-001a) : updater non configuré jusqu'à SPA-002. Ni bloc `plugins.updater`, ni clé publique, ni point d'accès, et le plugin
-/// n'est pas enregistré : sans configuration, son initialisation échouerait au démarrage. SPA-002 rétablit les trois avec la nouvelle clé.
+/// SPA-002 : updater rétabli ensemble (config, clé publique, endpoint, enregistrement Rust, permissions minimales).
 #[test]
-fn updater_is_not_configured_until_spa_002() {
-    assert!(
-        conf()["plugins"].get("updater").is_none(),
-        "plugins.updater doit être absent (D-30)"
+fn updater_is_configured_with_spartiate_key_and_endpoint() {
+    let updater = &conf()["plugins"]["updater"];
+    assert_eq!(
+        updater["endpoints"],
+        serde_json::json!([
+            "https://github.com/doncivo/spartiate-releases/releases/latest/download/latest.json"
+        ])
     );
-    for text in [CONF, WINDOWS_CONF] {
+    assert_eq!(updater["requireSignedVersion"], Value::Bool(true));
+    let pubkey = updater["pubkey"].as_str().expect("pubkey texte");
+    assert!(!pubkey.trim().is_empty(), "clé publique vide");
+    assert!(
+        DESKTOP_SOURCE.contains("tauri_plugin_updater::Builder::new().build()"),
+        "plugin updater non enregistré"
+    );
+    for permission in ["updater:allow-check", "updater:allow-download-and-install"] {
         assert!(
-            !text.contains("pubkey") && !text.contains("latest.json"),
-            "clé ou point d'accès d'updater"
+            DESKTOP_CAPABILITY.contains(permission),
+            "permission {permission} absente"
         );
     }
     assert!(
-        !DESKTOP_SOURCE.contains("tauri_plugin_updater"),
-        "plugin updater enregistré sans configuration"
+        !DESKTOP_CAPABILITY.contains("updater:default"),
+        "permissions updater trop larges"
     );
 }
 

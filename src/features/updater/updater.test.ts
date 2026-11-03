@@ -64,7 +64,7 @@ describe('mise à jour PC (D-03)', () => {
       desktop.nextCheck = fakePendingUpdate('1.2.0', { notes: 'Nouveautés' });
       await expect(store().getState().check()).resolves.toBe('ok');
       expect(store().getState()).toMatchObject({ status: 'available', version: '1.2.0', notes: 'Nouveautés', bannerVisible: true });
-      await expect(db.data.repos.settings.get('desktop.updater')).resolves.toEqual({ lastCheckAt: '2026-10-01T08:00:00.000Z' });
+      await expect(db.data.repos.settings.get('desktop.updater')).resolves.toEqual({ lastCheckAt: '2026-10-01T08:00:00.000Z', lastFailure: null });
     });
 
     it('version égale ou inférieure : rien à afficher (critère 3)', async () => {
@@ -78,7 +78,7 @@ describe('mise à jour PC (D-03)', () => {
       await expect(store().getState().check()).resolves.toBe('failed');
       expect(store().getState()).toMatchObject({ status: 'checkFailed', bannerVisible: false });
       expect(warn).toHaveBeenCalledWith(expect.stringContaining('réseau absent'));
-      await expect(db.data.repos.settings.get('desktop.updater')).resolves.toEqual({ lastCheckAt: null });
+      await expect(db.data.repos.settings.get('desktop.updater')).resolves.toEqual({ lastCheckAt: null, lastFailure: { stage: 'check', kind: 'other' } });
     });
 
     it('« Plus tard » ferme le bandeau ; la même version est reproposée à la vérification suivante (QB-16)', async () => {
@@ -113,6 +113,34 @@ describe('mise à jour PC (D-03)', () => {
       const web = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data });
       await expect(updaterStore.get(web).getState().check()).resolves.toBe('ok');
       expect(updaterStore.get(web).getState().status).toBe('idle');
+    });
+  });
+
+  describe('erreur durable (persistante jusqu’au succès)', () => {
+    const recreate = (): AppContainer =>
+      createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, desktop });
+
+    it('échec de vérification : visible après recréation du conteneur, effacé au succès', async () => {
+      desktop.nextCheck = new Error('réseau absent');
+      await store().getState().check();
+      const second = recreate();
+      await updaterStore.get(second).getState().restore();
+      expect(updaterStore.get(second).getState().status).toBe('checkFailed');
+      desktop.nextCheck = null;
+      await updaterStore.get(second).getState().check();
+      expect(updaterStore.get(second).getState().status).toBe('upToDate');
+      const third = recreate();
+      await updaterStore.get(third).getState().restore();
+      expect(updaterStore.get(third).getState().status).toBe('idle');
+    });
+
+    it('signature refusée : le type d’échec survit au redémarrage', async () => {
+      desktop.nextCheck = fakePendingUpdate('1.2.0', { install: () => Promise.reject(new UpdateInstallError('signature', 'x')) });
+      await store().getState().check();
+      await store().getState().install();
+      const second = recreate();
+      await updaterStore.get(second).getState().restore();
+      expect(updaterStore.get(second).getState()).toMatchObject({ status: 'installFailed', failure: 'signature' });
     });
   });
 

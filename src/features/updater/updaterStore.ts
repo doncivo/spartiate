@@ -30,6 +30,8 @@ export interface UpdaterState {
    * Ne rejette jamais ; sans intégration PC, ne fait rien et renvoie `ok`.
    */
   check(): Promise<'ok' | 'failed'>;
+  /** Relit l'échec durable enregistré (après redémarrage) ; sans effet si un état plus récent existe. */
+  restore(): Promise<void>;
   /** « Plus tard » : ferme le bandeau ; la même version sera reproposée à la vérification suivante. */
   later(): void;
   /** « Voir les notes ». */
@@ -54,6 +56,18 @@ export const updaterStore = defineFeatureStore<UpdaterState>((container: AppCont
     progress: null,
     failure: null,
     bannerVisible: false,
+
+    async restore() {
+      if (get().status !== 'idle') return;
+      try {
+        const failure = (await container.data.repos.settings.get('desktop.updater')).lastFailure;
+        if (!failure || get().status !== 'idle') return;
+        if (failure.stage === 'check') set({ status: 'checkFailed', bannerVisible: false });
+        else set({ status: 'installFailed', failure: failure.kind, bannerVisible: true });
+      } catch (error) {
+        logDesktopFailure('updater-restore', error);
+      }
+    },
 
     async check() {
       const desktop = container.desktop;
@@ -82,11 +96,12 @@ export const updaterStore = defineFeatureStore<UpdaterState>((container: AppCont
         } else {
           set({ status: 'upToDate', version: null, notes: null, notesOpen: false, bannerVisible: false, failure: null });
         }
-        await recordCheck(container);
+        await recordCheck(container, null);
         return 'ok';
       } catch (error) {
         logDesktopFailure('updater-check', error);
         set({ status: 'checkFailed', bannerVisible: false });
+        await recordCheck(container, { stage: 'check', kind: 'other' }, false);
         return 'failed';
       }
     },
@@ -110,15 +125,28 @@ export const updaterStore = defineFeatureStore<UpdaterState>((container: AppCont
         logDesktopFailure('updater-install', error);
         const failure: UpdateFailureKind = error instanceof UpdateInstallError ? error.kind : 'other';
         set({ status: 'installFailed', progress: null, failure, bannerVisible: true });
+        await recordCheck(container, { stage: 'install', kind: failure }, false);
       }
     },
   }));
 });
 
-/** Écrit `desktop.updater.lastCheckAt` ; un échec d'écriture est sans conséquence sur la mise à jour. */
-async function recordCheck(container: AppContainer): Promise<void> {
+/**
+ * Écrit `desktop.updater` : l'échec durable (ou son effacement au succès) et, si `stamp`, la date de vérification.
+ * Un échec d'écriture est journalisé et sans conséquence sur la mise à jour.
+ */
+async function recordCheck(
+  container: AppContainer,
+  lastFailure: { stage: 'check' | 'install'; kind: UpdateFailureKind } | null,
+  stamp = true,
+): Promise<void> {
   try {
-    await container.data.repos.settings.set('desktop.updater', { lastCheckAt: nowIso(container.clock) });
+    const settings = container.data.repos.settings;
+    const previous = await settings.get('desktop.updater');
+    await settings.set('desktop.updater', {
+      lastCheckAt: stamp ? nowIso(container.clock) : previous.lastCheckAt,
+      lastFailure,
+    });
   } catch (error) {
     logDesktopFailure('updater-last-check', error);
   }

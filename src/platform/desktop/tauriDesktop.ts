@@ -65,8 +65,8 @@ export function createTauriDesktop(): DesktopPlatform {
       return read.version;
     },
 
-    // D-30 : le bloc plugins.updater est retiré de tauri.conf.json et le plugin n'est pas enregistré côté Rust ; SPA-002 passe cette valeur à true.
-    updaterConfigured: false,
+    // SPA-002 : bloc plugins.updater, enregistrement Rust et permissions rétablis ensemble (D-30 clos).
+    updaterConfigured: true,
 
     checkForUpdate: async () => {
       const update = await check();
