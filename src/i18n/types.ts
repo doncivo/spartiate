@@ -35,4 +35,4 @@ export type TArgs<K extends MessageKey> = [ParamNames<ValueAt<Source, K>>] exten
  */
 export type PlainMessageKey = { [K in MessageKey]: TArgs<K> extends [] ? K : never }[MessageKey];
 
-export type Locale = 'fr' | 'en';
+export type Locale = 'fr';

@@ -10,7 +10,6 @@ import { defaultSyncLogger } from '../../../sync/log';
 import { createAppContainer, type AppContainer } from '../../app/container';
 import { saveFile } from '../../app/saveFile';
 import { backupStore } from '../backupStore';
-import { importStore } from '../importStore';
 import { buildLogExport } from './logExport';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000fb');
@@ -44,26 +43,6 @@ describe('I-04 critère 6 : aucune sentinelle de titre dans le journal', () => {
     const backups = createMemoryBackup({ versions: [] });
     container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, files, backups });
 
-    // Import CSV (P-07) : rejets, enregistrement du rapport et du modèle en échec, import en échec réel (contrainte SQLite).
-    const csv = ['titre;date;heure;espace;projet;note', `${SENTINEL} A;2026-10-09;;;;${SENTINEL} note`, `${SENTINEL} B;31/02/2026;;;;`, `${SENTINEL} C;;;Inconnu-${SENTINEL};;`].join('\n');
-    files.setPick({ name: `${SENTINEL}.csv`, text: csv });
-    const store = importStore.get(container);
-    await store.getState().choose();
-    files.failNext('write-failed', 'io');
-    await store.getState().downloadReport();
-    files.failNext('write-failed', 'unsafe-folder');
-    await store.getState().downloadTemplate();
-    const preview = store.getState().preview;
-    expect(preview).not.toBeNull();
-    if (!preview) return;
-    const [first] = preview.validation.valid;
-    if (!first) throw new Error('aperçu sans ligne valide');
-    store.setState({ preview: { ...preview, validation: { ...preview.validation, valid: [{ ...first, spaceId: asEntityId('00000000-0000-4000-8000-00000000dead') }] } } });
-    await store.getState().run();
-    expect(store.getState().errorKey).toBe('importCsv.errorFailed');
-    files.failNextPick('unreadable');
-    await store.getState().choose();
-
     // Export H-03 : nom proposé et contenu porteurs de la sentinelle, enregistrement en échec.
     files.failNext('write-failed', 'io');
     await saveFile(files, { suggestedName: `spartiate-${SENTINEL}.csv`, mime: 'text/csv', data: new TextEncoder().encode(`${SENTINEL};2026-10-09`) }, 'export-save');
@@ -83,13 +62,13 @@ describe('I-04 critère 6 : aucune sentinelle de titre dans le journal', () => {
 
     await journal.flush();
     const stored = JSON.stringify(transport.stored);
-    expect(transport.stored.length).toBeGreaterThanOrEqual(8);
+    expect(transport.stored.length).toBeGreaterThanOrEqual(5);
     expect(stored).not.toContain(SENTINEL);
     expect(stored).not.toContain('TITRE-SECRET');
     const read = await journal.read();
     expect(JSON.stringify(read)).not.toContain(SENTINEL);
     const exported = buildLogExport(read, { version: '0.2.0', os: 'ios', schemaVersion: 17, now: new Date('2026-10-08T08:00:00.000Z') });
     expect(exported.text).not.toContain(SENTINEL);
-    expect(read.map((entry) => entry.scope)).toEqual(expect.arrayContaining(['import-report', 'import-template', 'import-run', 'import-pick', 'export-save', 'backup-now', 'backup-restore', 'sync', 'notifications']));
+    expect(read.map((entry) => entry.scope)).toEqual(expect.arrayContaining(['export-save', 'backup-now', 'backup-restore', 'sync', 'notifications']));
   });
 });

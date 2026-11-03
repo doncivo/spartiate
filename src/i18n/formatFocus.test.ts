@@ -1,8 +1,6 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { setLocale } from './index';
+import { describe, expect, it } from 'vitest';
 import { formatFocusDuration, formatFocusSessions, formatFocusToday } from './formatFocus';
 
-afterEach(() => setLocale('fr'));
 
 describe('formatFocusDuration (F-03 critère 6)', () => {
   it.each([
@@ -33,9 +31,5 @@ describe('pied de l’écran Focus (F-03 critères 1 et 2)', () => {
   });
   it('aucune session : 0 min de concentration', () => {
     expect(formatFocusToday(0, 0)).toBe('Aujourd’hui : 0 min de concentration');
-  });
-  it('en anglais aussi', () => {
-    setLocale('en');
-    expect(formatFocusToday(75, 3)).toBe('Today: 1 h 15 of focus · 3 sessions');
   });
 });

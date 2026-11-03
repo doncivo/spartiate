@@ -2,7 +2,7 @@ import type { SyncValue } from '../../domain/sync/format';
 import { MODIFIED_MARKER } from '../../domain/sync/merge';
 import type { SyncColumn, SyncTable } from '../../domain/sync/syncTables';
 import type { DeviceId } from '../../domain/types';
-import { getLocale, t, tDynamic, type MessageKey } from '../../i18n';
+import { t, tDynamic, type MessageKey } from '../../i18n';
 import { formatDayMonth, formatTime } from '../../i18n/format';
 import type { SyncStatus } from '../../platform/sync/types';
 import type { ConflictSideView, ConflictView, RestoreRefusal, RestoreResult } from './syncConflictUseCases';
@@ -84,7 +84,7 @@ export function conflictValueText(table: SyncTable, column: SyncColumn, side: Pi
       return value === 1 ? t('sync.conflicts.values.yes') : t('sync.conflicts.values.no');
     case 'int':
     case 'real':
-      return typeof value === 'number' ? new Intl.NumberFormat(getLocale() === 'fr' ? 'fr-FR' : 'en-US').format(value) : String(value);
+      return typeof value === 'number' ? new Intl.NumberFormat('fr-FR').format(value) : String(value);
     case 'enum':
       return enumLabel(table, column, String(value));
   }
@@ -117,7 +117,7 @@ export function conflictTitle(view: Pick<ConflictView, 'title' | 'itemState' | '
  * entre guillemets, tronqué à 80 caractères ; élément disparu : « Date de « Élément supprimé » ».
  */
 export function conflictHeading(view: Pick<ConflictView, 'title' | 'itemState' | 'table'>, names: { readonly title: string; readonly field: string }): string {
-  const field = names.field.charAt(0).toLocaleUpperCase(getLocale() === 'fr' ? 'fr-FR' : 'en-US') + names.field.slice(1);
+  const field = names.field.charAt(0).toLocaleUpperCase('fr-FR') + names.field.slice(1);
   const title = view.itemState === 'live' && view.title !== null ? quoted(names.title) : names.title;
   return t('sync.conflicts.heading', { field, title });
 }

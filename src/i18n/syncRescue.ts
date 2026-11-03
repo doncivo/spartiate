@@ -1,4 +1,3 @@
-import { getLocale } from './index';
 
 /**
  * Textes des actions de secours de la synchro (Détails › AVERTISSEMENTS : « Démarrer la synchro depuis cet appareil », « Lancer une reprise
@@ -14,17 +13,8 @@ const fr = {
   fullResumeBody: 'Les données reçues sont relues depuis le dernier instantané et fusionnées avec celles de cet appareil ; rien n’est effacé. Une ligne supprimée sur cet appareil n’est pas recréée.',
 } as const;
 
-const en: Record<keyof typeof fr, string> = {
-  startHere: 'Start syncing from this device',
-  startHereTitle: 'Start syncing from this device?',
-  startHereBody: 'Only use this if your other devices are no longer available. This device becomes the starting point: the other devices will then merge their data into it.',
-  fullResume: 'Run a full resume',
-  fullResumeTitle: 'Run a full resume?',
-  fullResumeBody: 'Received data is read again from the latest snapshot and merged with this device’s data; nothing is erased. A row deleted on this device is not recreated.',
-};
-
 export type RescueTextKey = keyof typeof fr;
 
 export function rescueText(key: RescueTextKey): string {
-  return (getLocale() === 'en' ? en : fr)[key];
+  return fr[key];
 }

@@ -114,7 +114,7 @@ describe('phases en échec ou bloquées (critère 9 c)', () => {
     await start().refreshed();
     set({ phase: 'error', errorCode: 'io' });
     fireEvent.click(screen.getByRole('button', { name: 'Voir le problème de synchronisation' }));
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'settings', screen: 'sync' });
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'sync' });
   });
 
   it('restore-choice : « Voir » ouvre directement la fenêtre de choix', async () => {

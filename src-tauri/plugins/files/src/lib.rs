@@ -36,17 +36,30 @@ impl<R: Runtime> Clone for CtFiles<R> {
 impl<R: Runtime> CtFiles<R> {
     /// Appelle la commande Swift `command` avec `args` ; rend sa réponse JSON, ou le code de rejet (`failed` si Swift n'en donne pas).
     #[cfg(target_os = "ios")]
-    pub fn call(&self, command: &str, args: serde_json::Value) -> Result<serde_json::Value, String> {
+    pub fn call(
+        &self,
+        command: &str,
+        args: serde_json::Value,
+    ) -> Result<serde_json::Value, String> {
         use tauri::plugin::mobile::PluginInvokeError;
-        self.handle.run_mobile_plugin::<serde_json::Value>(command, args).map_err(|error| match error {
-            PluginInvokeError::InvokeRejected(response) => response.code.filter(|code| !code.is_empty()).unwrap_or_else(|| "failed".to_owned()),
-            _ => "failed".to_owned(),
-        })
+        self.handle
+            .run_mobile_plugin::<serde_json::Value>(command, args)
+            .map_err(|error| match error {
+                PluginInvokeError::InvokeRejected(response) => response
+                    .code
+                    .filter(|code| !code.is_empty())
+                    .unwrap_or_else(|| "failed".to_owned()),
+                _ => "failed".to_owned(),
+            })
     }
 
     /// Hors iOS (le crate n'est une dépendance que de la cible iOS) : aucun plugin, `failed`.
     #[cfg(not(target_os = "ios"))]
-    pub fn call(&self, _command: &str, _args: serde_json::Value) -> Result<serde_json::Value, String> {
+    pub fn call(
+        &self,
+        _command: &str,
+        _args: serde_json::Value,
+    ) -> Result<serde_json::Value, String> {
         Err("failed".to_owned())
     }
 }
@@ -56,11 +69,15 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("ct-files")
         .setup(|app, api| {
             #[cfg(target_os = "ios")]
-            let plugin = CtFiles { handle: api.register_ios_plugin(init_plugin_ct_files)? };
+            let plugin = CtFiles {
+                handle: api.register_ios_plugin(init_plugin_ct_files)?,
+            };
             #[cfg(not(target_os = "ios"))]
             let plugin = {
                 let _ = api;
-                CtFiles::<R> { _runtime: std::marker::PhantomData }
+                CtFiles::<R> {
+                    _runtime: std::marker::PhantomData,
+                }
             };
             app.manage(plugin);
             Ok(())

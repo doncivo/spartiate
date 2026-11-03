@@ -16,7 +16,7 @@ const source = readFileSync(resolve(import.meta.dirname, '../../../src-tauri/src
 function entriesOf(name: string): { readonly count: number; readonly entries: { readonly name: string; readonly table: string; readonly sql: string; readonly since?: number; readonly until?: number }[] } {
   const block = new RegExp(`${name}: \\[\\([^\\]]*\\); (\\d+)\\] = \\[([\\s\\S]*?)\\n\\];`).exec(source);
   expect(block, name).not.toBeNull();
-  const entries = [...(block?.[2] ?? '').matchAll(/\("([a-z_]+)", "([a-z_]+)", r##"([\s\S]*?)"##(?:, (\d+), (\d+))?\)/g)].map((match) => ({
+  const entries = [...(block?.[2] ?? '').matchAll(/\(\s*"([a-z_]+)",\s*"([a-z_]+)",\s*r##"([\s\S]*?)"##(?:,\s*(\d+),\s*(\d+))?,?\s*\)/g)].map((match) => ({
     name: match[1] ?? '',
     table: match[2] ?? '',
     sql: compact(match[3] ?? ''),

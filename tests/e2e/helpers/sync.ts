@@ -92,7 +92,7 @@ export const closeRoom = (room: string): Promise<unknown> => post('/close-room',
 export async function openSyncDetails(page: Page): Promise<void> {
   await waitForScreenLoaded(page, 'settingsscreen');
   await waitForScreenLoaded(page, 'syncdetailsscreen');
-  await page.getByRole('navigation').getByText('Réglages', { exact: true }).click();
+  await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
   const heading = page.getByRole('heading', { name: 'Synchronisation', level: 1 });
   const details = page.getByRole('button', { name: 'Détails', exact: true });
   await expect(heading.or(details)).toBeVisible();

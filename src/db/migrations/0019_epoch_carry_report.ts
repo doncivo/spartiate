@@ -9,7 +9,7 @@ import type { Migration } from '../migrator';
  * attribut « bandeau », `acknowledged_at` nul tant que « J'ai vu » n'a pas été appuyé. Aucune donnée existante n'est touchée.
  *
  * Numéro : 0019 (T-TECH-01, qui la réservait, n'a pas commencé ; elle prend la 0020). Texte court : le registre des migrations est dans
- * le JavaScript de départ (`docs/stories/Y-TECH-05.md`, mesure du bundle).
+ * le JavaScript de départ (`docs/archive/circletasks/stories/Y-TECH-05.md`, mesure du bundle).
  */
 export const migration0019EpochCarryReport: Migration = {
   version: 19,

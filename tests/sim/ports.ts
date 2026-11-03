@@ -2,14 +2,11 @@
  * Ports des serveurs de la suite e2e (Playwright). Ils sont configurables pour que deux copies de travail (agents, worktrees) lancent
  * leurs tests en même temps sans collision (EADDRINUSE) et sans qu'un test vise le serveur d'une autre copie.
  *
- * - Sans variable : valeurs historiques, inchangées (CI comprise) : Vite 1420, Google 53701, CalDAV 53702, dossier iCloud 53703.
- * - `CT_E2E_PORT_BASE=<n>` : Vite sur n, Google n+1, CalDAV n+2, dossier iCloud n+3. Prendre des bases distantes d'au moins 10 par copie
+ * - Sans variable : valeurs historiques, inchangées (CI comprise) : Vite 1420, dossier iCloud 53703.
+ * - `CT_E2E_PORT_BASE=<n>` : Vite sur n, dossier iCloud n+3. Prendre des bases distantes d'au moins 10 par copie
  *   (ex. 41000, 41010) et libres (`netstat -ano | findstr :41000`).
  *
  * Lu par playwright.config.ts (qui passe le port Vite au serveur par CT_DEV_PORT : vite.config.ts ne lit pas cette base), tests/e2e/globalSetup.ts et les helpers e2e.
- * Les simulateurs d'agendas sont lancés par `globalSetup` ; le serveur de développement les connaît par `VITE_CT_GOOGLE_SIM` et
- * `VITE_CT_CALDAV_SIM` (playwright.config.ts). Les tests qui modifient l'état d'un simulateur (révocation, erreur injectée,
- * événements) en démarrent un à eux sur un port libre (tests/e2e/helpers/calendars.ts) : deux workers ne partagent jamais un état modifiable.
  */
 function portBase(): number | null {
   const raw = process.env['CT_E2E_PORT_BASE'];
@@ -33,14 +30,11 @@ export const E2E_PREVIEW_PORT = BASE === null ? 4173 : BASE + 4;
 /** Port de la prévisualisation du build servi au projet `iphone-webkit` (WebKit) : 4174 par défaut, `CT_E2E_PORT_BASE` + 5 sinon. */
 export const E2E_WEBKIT_PORT = BASE === null ? 4174 : BASE + 5;
 
-/** Ports des simulateurs d'agendas Google et CalDAV (ADR 0008). */
-export const E2E_SIM_PORTS = BASE === null ? ({ google: 53701, caldav: 53702 } as const) : ({ google: BASE + 1, caldav: BASE + 2 } as const);
-
-/** URL de base d'un simulateur local sur son port. */
-export const simUrl = (port: number): string => `http://127.0.0.1:${String(port)}`;
-
 /**
  * Port du simulateur de dossier iCloud (Y-04, parcours 10 à deux pages ; `tests/sim/syncFolderSim.ts`), lancé par `globalSetup`.
  * Chaque test y ouvre son propre espace (`room`) : aucun état modifiable partagé entre workers.
  */
 export const E2E_SYNC_SIM_PORT = BASE === null ? 53703 : BASE + 3;
+
+/** URL de base d'un simulateur local sur son port. */
+export const simUrl = (port: number): string => `http://127.0.0.1:${String(port)}`;

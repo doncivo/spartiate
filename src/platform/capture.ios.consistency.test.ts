@@ -94,19 +94,7 @@ describe('prise de développement et démarrage', () => {
 
   it('I-05 critère 6 : liste blanche des appels de demande d’autorisation des écrans', () => {
     const callers = filesNaming(/\.requestPermissions?\b|Notification\.requestPermission|getUserMedia\(/).filter((file) => file.startsWith('src/features/'));
-    expect([...callers].sort()).toEqual([
-      'src/features/capture/Dictation.tsx',
-      'src/features/capture/scan/prepareImage.ts',
-      'src/features/reminders/requestPermission.ts',
-    ]);
-    // Dictation.tsx : la demande n'est atteinte que depuis « Continuer » (gestionnaire), jamais depuis un effet.
-    const dictation = read('src/features/capture/Dictation.tsx');
-    const request = dictation.indexOf('requestPermissions?.bind');
-    const handler = dictation.lastIndexOf('const continueExplain = useCallback', request);
-    expect(handler).toBeGreaterThan(-1);
-    expect(dictation.slice(handler, request)).not.toContain('useEffect');
-    expect(dictation.match(/requestPermissions/g)).toHaveLength(1);
-    // prepareImage.ts : la webcam du PC ne démarre qu'après un clic explicite (startWebcam appelé depuis un gestionnaire de ScanSource).
-    expect(read('src/features/capture/scan/ScanSource.tsx')).toContain('async function openWebcam');
+    // SPA-001b : la dictée, le scan d'image et les rappels sont retirés ; seule la demande d'autorisation des notifications de À propos reste.
+    expect([...callers].sort()).toEqual(['src/features/signing/requestPermission.ts']);
   });
 });

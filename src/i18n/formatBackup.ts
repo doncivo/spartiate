@@ -1,6 +1,6 @@
 import type { BackupSummary } from '../domain/backupSchedule';
 import { formatDayMonth, formatTime } from './format';
-import { getLocale, t } from './index';
+import { t } from './index';
 
 const pad2 = (n: number): string => String(n).padStart(2, '0');
 
@@ -13,7 +13,7 @@ export function formatBackupWhen(modifiedMs: number): { readonly date: string; r
 
 /** Taille d'un fichier : « 48 Ko », « 1,2 Mo ». */
 export function formatBackupSize(bytes: number): string {
-  const locale = getLocale() === 'fr' ? 'fr-FR' : 'en-US';
+  const locale = 'fr-FR';
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
   if (bytes >= 1024 * 1024) return t('backup.sizeMb', { value: number.format(bytes / (1024 * 1024)) });
   return t('backup.sizeKb', { value: number.format(Math.max(1, Math.round(bytes / 1024))) });

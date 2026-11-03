@@ -121,7 +121,7 @@ describe('zone de notification (Y-03 critères 4 et 5)', () => {
     expect(desktop.traySyncListeners).toBe(1);
     expect(desktop.trayLabels?.syncEnabled).toBe(false);
     desktop.emitTraySyncNow();
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'settings', screen: 'sync' });
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'sync' });
     expect(sync.calls).toEqual([]);
     // L'abonnement à l'état réécrit les libellés pendant `setStatus` (synchrone).
     sync.setStatus({ phase: 'idle' });

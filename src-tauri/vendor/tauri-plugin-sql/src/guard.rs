@@ -66,7 +66,11 @@ pub(crate) fn check_statement(sql: &str) -> Result<(), Error> {
     }
     for (word, call) in &words {
         let lower = word.to_ascii_lowercase();
-        if matches!(lower.as_str(), "load_extension" | "fts3_tokenizer" | "readfile" | "writefile") || (lower == "edit" && *call) {
+        if matches!(
+            lower.as_str(),
+            "load_extension" | "fts3_tokenizer" | "readfile" | "writefile"
+        ) || (lower == "edit" && *call)
+        {
             return Err(refuse("function"));
         }
         #[cfg(feature = "sqlite")]
@@ -82,7 +86,9 @@ pub(crate) fn check_statement(sql: &str) -> Result<(), Error> {
 /// Le mot `VACUUM` (casse ignorée) apparaît-il comme mot du langage SQL ? (voir [`sql_words`])
 #[cfg(test)]
 pub(crate) fn mentions_vacuum(sql: &str) -> bool {
-    sql_words(sql).iter().any(|(w, _)| w.eq_ignore_ascii_case("vacuum"))
+    sql_words(sql)
+        .iter()
+        .any(|(w, _)| w.eq_ignore_ascii_case("vacuum"))
 }
 
 /// Mots du langage SQL de `sql`, avec « suivi d'une parenthèse ouvrante » (appel de fonction). Les commentaires `--` et `/* */`, les
@@ -113,7 +119,9 @@ fn sql_words(sql: &str) -> Vec<(String, bool)> {
             i = skip_to(i + 1, &[c]);
         } else if c == '[' {
             i = skip_to(i + 1, &[']']);
-        } else if is_word(c) || ((c == ':' || c == '@') && chars.get(i + 1).is_some_and(|n| is_word(*n))) {
+        } else if is_word(c)
+            || ((c == ':' || c == '@') && chars.get(i + 1).is_some_and(|n| is_word(*n)))
+        {
             // Un paramètre nommé (`:vacuum`, `@vacuum`) garde son préfixe : ce n'est pas le mot-clé.
             let start = i;
             i += 1;
@@ -146,7 +154,13 @@ pub(crate) const REASON_VTABLE: u8 = 4;
 /// LISTE BLANCHE UNIQUE des pragmas (noms en minuscules) : lue aussi par `tests/unit/sqlPragmaScan.test.ts`, qui vérifie que le code du front
 /// (`src/**`) n'émet aucun autre pragma. Les arguments admis sont décidés dans [`pragma_allowed`].
 #[cfg(feature = "sqlite")]
-pub(crate) const PRAGMA_WHITELIST: &[&str] = &["foreign_keys", "journal_mode", "wal_checkpoint", "data_version", "quick_check"];
+pub(crate) const PRAGMA_WHITELIST: &[&str] = &[
+    "foreign_keys",
+    "journal_mode",
+    "wal_checkpoint",
+    "data_version",
+    "quick_check",
+];
 
 /// Pragmas autorisés, avec leur argument : `data_version` (lecture seule, émis par fts5), `quick_check` (lecture seule, émis par `ALTER TABLE ADD COLUMN ... CHECK`), `foreign_keys` (lecture, `ON` ou `1`), `journal_mode` (lecture ou `WAL`), `wal_checkpoint`
 /// (tout argument). Tout autre pragma est refusé, y compris en lecture : un pragma futur reste refusé tant qu'il n'est pas listé ici.
@@ -172,7 +186,15 @@ fn pragma_allowed(name: &str, arg: Option<&str>) -> bool {
 /// Fonctions SQL refusées (lecture et écriture de fichiers, chargement de code, remplacement de tokenizer).
 #[cfg(feature = "sqlite")]
 fn function_refused(name: &str) -> bool {
-    ["load_extension", "fts3_tokenizer", "readfile", "writefile", "edit"].iter().any(|f| name.eq_ignore_ascii_case(f))
+    [
+        "load_extension",
+        "fts3_tokenizer",
+        "readfile",
+        "writefile",
+        "edit",
+    ]
+    .iter()
+    .any(|f| name.eq_ignore_ascii_case(f))
 }
 
 /// Décision de l'autorisateur pour une action SQLite (`action` : code `SQLITE_*` ; `a1` et `a2` : premier et deuxième argument de
@@ -185,9 +207,13 @@ pub(crate) fn decide(action: i32, a1: Option<&str>, a2: Option<&str>) -> Option<
         // a2 : nom de la fonction. (SQLite n'appelle l'autorisateur que pour une fonction qui existe.)
         ffi::SQLITE_FUNCTION => a2.filter(|f| function_refused(f)).map(|_| REASON_FUNCTION),
         // a2 : nom du module. Seul `fts5` (index de recherche, migration 0011) est une table virtuelle légitime.
-        ffi::SQLITE_CREATE_VTABLE | ffi::SQLITE_DROP_VTABLE => (!a2.is_some_and(|m| m.eq_ignore_ascii_case("fts5"))).then_some(REASON_VTABLE),
+        ffi::SQLITE_CREATE_VTABLE | ffi::SQLITE_DROP_VTABLE => {
+            (!a2.is_some_and(|m| m.eq_ignore_ascii_case("fts5"))).then_some(REASON_VTABLE)
+        }
         // a1 : nom du pragma, a2 : son argument ou NULL.
-        ffi::SQLITE_PRAGMA => (!a1.is_some_and(|name| pragma_allowed(name, a2))).then_some(REASON_PRAGMA),
+        ffi::SQLITE_PRAGMA => {
+            (!a1.is_some_and(|name| pragma_allowed(name, a2))).then_some(REASON_PRAGMA)
+        }
         _ => None,
     }
 }
@@ -196,7 +222,9 @@ pub(crate) fn decide(action: i32, a1: Option<&str>, a2: Option<&str>) -> Option<
 #[cfg(all(test, feature = "sqlite"))]
 pub(crate) use sqlite::pending_reason;
 #[cfg(feature = "sqlite")]
-pub(crate) use sqlite::{clear_reason, forget_pool, harden_pool_options, register_pool, sqlite_error};
+pub(crate) use sqlite::{
+    clear_reason, forget_pool, harden_pool_options, register_pool, sqlite_error,
+};
 
 #[cfg(feature = "sqlite")]
 mod sqlite {
@@ -205,7 +233,7 @@ mod sqlite {
     use std::sync::{Arc, Mutex};
 
     use libsqlite3_sys as ffi;
-    use sqlx::sqlite::{SqlitePoolOptions, SqlitePool};
+    use sqlx::sqlite::{SqlitePool, SqlitePoolOptions};
 
     use super::{REASON_ATTACH, REASON_FUNCTION, REASON_PRAGMA, REASON_VTABLE, decide, refuse};
     use crate::Error;
@@ -215,7 +243,9 @@ mod sqlite {
     static POOLS: Mutex<Vec<(usize, Arc<AtomicU8>)>> = Mutex::new(Vec::new());
 
     fn pools() -> std::sync::MutexGuard<'static, Vec<(usize, Arc<AtomicU8>)>> {
-        POOLS.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
+        POOLS
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 
     fn key(pool: &SqlitePool) -> usize {
@@ -233,7 +263,10 @@ mod sqlite {
     /// Raison de refus en attente pour ce pool (0 : aucune). Tests seulement.
     #[cfg(test)]
     pub(crate) fn pending_reason(pool: &SqlitePool) -> u8 {
-        pools().iter().find(|(k, _)| *k == key(pool)).map_or(0, |(_, s)| s.load(Ordering::SeqCst))
+        pools()
+            .iter()
+            .find(|(k, _)| *k == key(pool))
+            .map_or(0, |(_, s)| s.load(Ordering::SeqCst))
     }
 
     /// Remet à zéro la raison de refus en attente, avant chaque `execute` et `select` : une raison notée par un pragma interne d'une
@@ -256,7 +289,10 @@ mod sqlite {
         if let sqlx::Error::Database(db) = &error
             && (db.code().as_deref() == Some("23") || db.message().starts_with("not authorized"))
         {
-            let state = pools().iter().find(|(k, _)| *k == key(pool)).map(|(_, s)| Arc::clone(s));
+            let state = pools()
+                .iter()
+                .find(|(k, _)| *k == key(pool))
+                .map(|(_, s)| Arc::clone(s));
             let reason = state.map_or(0, |s| s.swap(0, Ordering::SeqCst));
             return refuse(match reason {
                 REASON_ATTACH => "attach",
@@ -270,7 +306,14 @@ mod sqlite {
     }
 
     /// Fonction de rappel de SQLite. `user` est le pointeur d'un `AtomicU8` vivant tant que le processus (voir [`harden`]).
-    unsafe extern "C" fn authorizer(user: *mut c_void, action: c_int, a1: *const c_char, a2: *const c_char, _a3: *const c_char, _a4: *const c_char) -> c_int {
+    unsafe extern "C" fn authorizer(
+        user: *mut c_void,
+        action: c_int,
+        a1: *const c_char,
+        a2: *const c_char,
+        _a3: *const c_char,
+        _a4: *const c_char,
+    ) -> c_int {
         // Un panic ne doit jamais traverser la frontière FFI (comportement indéfini en `panic = "unwind"`, build de test et de développement) :
         // il est converti en refus, jamais en autorisation.
         std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
@@ -299,7 +342,10 @@ mod sqlite {
         unsafe { ffi::sqlite3_limit(db, ffi::SQLITE_LIMIT_ATTACHED, 0) };
         // Mode défensif (pas d'écriture du schéma ni de corruption volontaire) et schéma non fiable (déclencheurs et vues ne peuvent
         // appeler que des fonctions « innocuous »). SAFETY : `db` valide ; les deux réglages prennent un entier et un pointeur de retour nul.
-        for op in [ffi::SQLITE_DBCONFIG_DEFENSIVE, ffi::SQLITE_DBCONFIG_TRUSTED_SCHEMA] {
+        for op in [
+            ffi::SQLITE_DBCONFIG_DEFENSIVE,
+            ffi::SQLITE_DBCONFIG_TRUSTED_SCHEMA,
+        ] {
             let on = c_int::from(op == ffi::SQLITE_DBCONFIG_DEFENSIVE);
             // SAFETY : voir ci-dessus.
             let rc = unsafe { ffi::sqlite3_db_config(db, op, on, std::ptr::null_mut::<c_int>()) };
@@ -312,18 +358,26 @@ mod sqlite {
         let user = Arc::into_raw(Arc::clone(state)).cast_mut().cast::<c_void>();
         // SAFETY : `authorizer` a la signature attendue ; `user` reste valide (part d'`Arc` jamais rendue).
         let rc = unsafe { ffi::sqlite3_set_authorizer(db, Some(authorizer), user) };
-        if rc == ffi::SQLITE_OK { Ok(()) } else { Err(format!("sqlite3_set_authorizer a répondu {rc}")) }
+        if rc == ffi::SQLITE_OK {
+            Ok(())
+        } else {
+            Err(format!("sqlite3_set_authorizer a répondu {rc}"))
+        }
     }
 
     /// Pose les couches 2 et 3 sur chaque connexion que le pool ouvre (après les pragmas de connexion de sqlx : `journal_mode = WAL` et
     /// `foreign_keys = ON`, qui sont donc posés avant l'autorisateur).
-    pub(crate) fn harden_pool_options(options: SqlitePoolOptions, state: Arc<AtomicU8>) -> SqlitePoolOptions {
+    pub(crate) fn harden_pool_options(
+        options: SqlitePoolOptions,
+        state: Arc<AtomicU8>,
+    ) -> SqlitePoolOptions {
         options.after_connect(move |conn, _meta| {
             let state = Arc::clone(&state);
             Box::pin(async move {
                 let mut handle = conn.lock_handle().await?;
                 // SAFETY : descripteur de la connexion que `handle` verrouille (le thread de travail de sqlx n'y touche pas pendant ce temps).
-                unsafe { harden(handle.as_raw_handle().as_ptr(), &state) }.map_err(|e| sqlx::Error::Configuration(e.into()))
+                unsafe { harden(handle.as_raw_handle().as_ptr(), &state) }
+                    .map_err(|e| sqlx::Error::Configuration(e.into()))
             })
         })
     }

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { en } from './en';
 import { fr } from './fr';
 
 /** I-05 critère 9 : textes d'explication et de refus des autorisations, issus de src/i18n, en français, 3 phrases au plus. */
@@ -49,16 +48,13 @@ describe('textes des autorisations (I-05 critère 9)', () => {
     }
   });
 
-  it('chaque texte d’explication est français, tient en 3 phrases au plus, et existe en anglais', () => {
+  it('chaque texte d’explication est français, tient en 3 phrases au plus', () => {
     for (const { path, parent, key } of found) {
       for (const text of texts(parent[key])) {
         if (text.length < 40) continue; // libellés de boutons
         expect(text, path).not.toMatch(ENGLISH);
         expect(sentences(text), `${path} : ${text}`).toBeLessThanOrEqual(3);
       }
-      let english: unknown = en;
-      for (const part of path.split('.')) english = (english as Node)?.[part];
-      expect(english, `${path} en anglais`).toBeDefined();
     }
   });
 

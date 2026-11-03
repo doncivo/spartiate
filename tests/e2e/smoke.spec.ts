@@ -11,6 +11,6 @@ test('la coquille démarre avec la base de développement et affiche l’écran 
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
 
   await expect(page.getByRole('navigation')).toBeVisible();
-  // UI-REFONTE-02 (iPhone) puis UI-REFONTE-08 (PC) : plus de badge « Aujourd’hui » ; le jour en grand (h1) tient lieu d'en-tête.
-  await expect(page.locator('main h1.ct-today__day')).toBeVisible();
+  // Section courante : Aujourd’hui (neutre jusqu’à I1, aucun titre métier à attendre).
+  await expect(page.getByRole('navigation').locator('[aria-current="page"]')).toContainText('Aujourd’hui');
 });

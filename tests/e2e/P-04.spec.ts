@@ -21,7 +21,7 @@ async function openSettings(page: Page, versions: FakeVersion[] = OLDER, options
   await page.clock.setFixedTime(new Date('2026-10-05T08:00:00Z'));
   await installFakeBackups(page, versions, options);
   await openToday(page);
-  await tab(page, 'Réglages').click();
+  await tab(page, 'Plus').click();
   await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
 }
 

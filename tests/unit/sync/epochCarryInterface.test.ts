@@ -6,7 +6,7 @@ import { META } from '../../../src/sync/meta';
 
 /**
  * Y-FIX-04 (critère 16) : interface livrée à Y-TECH-05 (fiche Y-FIX-04, « Interface attendue par Y-TECH-05 »), figée : un nom ou un champ
- * renommé fait échouer ce test ; mettre alors à jour `docs/stories/Y-TECH-05.md`.
+ * renommé fait échouer ce test ; mettre alors à jour `docs/archive/circletasks/stories/Y-TECH-05.md`.
  */
 describe('interface du report d’époque vers Y-TECH-05', () => {
   it('noms d’événements, motif, clé, marque et avertissements', () => {

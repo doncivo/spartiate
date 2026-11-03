@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react';
 import { t } from '../../i18n';
 import { Button, useFocusTrap } from '../../ui';
-import { useAppContainer, useFeatureStore } from '../app/AppContainerContext';
+import { useAppContainer } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
 import { buildHelpGroups } from '../app/shortcutsHelp';
-import { quickCaptureStore } from './quickCaptureStore';
 import './ShortcutsHelp.css';
 
 /**
@@ -19,13 +18,11 @@ export function ShortcutsHelp() {
 function ShortcutsHelpDialog() {
   const container = useAppContainer();
   const closeOverlay = useNavigationStore((s) => s.closeOverlay);
-  const quickKeys = useFeatureStore(quickCaptureStore, (s) => s.keys);
-  const quickStatus = useFeatureStore(quickCaptureStore, (s) => s.status);
   const [query, setQuery] = useState('');
   // Raccourcis ayant un gestionnaire à l'ouverture : ceux de l'écran courant (la fenêtre n'en ajoute pas pour ces portées).
   const activeIds = useMemo(() => container.shortcuts.activeIds(), [container]);
   const ref = useFocusTrap<HTMLElement>({ active: true, onEscape: closeOverlay });
-  const groups = buildHelpGroups({ quickCapture: { keys: quickKeys, state: quickStatus }, activeIds, query });
+  const groups = buildHelpGroups({ activeIds, query });
 
   return (
     <div className="ct-shortcuts__backdrop">

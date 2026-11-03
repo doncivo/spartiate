@@ -124,7 +124,7 @@ describe('bundle de départ (index.html)', () => {
   // PERF-02 (ADR 0001, avenant) : chrono-node, le catalogue anglais et les écrans à la demande ne reviennent pas dans le départ par un
   // import statique oublié, un barrel ou un effet de bord ajouté (retrait de « sideEffects » dans package.json compris).
   // BUNDLE-01 : fiche de tâche (palier 1) et les six hôtes de la coquille (palier 2), blocs à la demande importés dynamiquement par lazyScreens.tsx.
-  it.each(['src/features/reminders/replanNotifications.ts', 'src/domain/chronoAbsolute.ts', 'src/i18n/en.ts', 'src/features/tasks/TaskDetail.tsx', 'src/features/settings/OnboardingHost.tsx', 'src/features/search/SearchOverlay.tsx', 'src/features/focus/FocusHost.tsx', 'src/features/shortcuts/ShortcutsHelp.tsx', 'src/features/updater/UpdateBanner.tsx', 'src/features/events/HolidayDetailHost.tsx', 'src/features/settings/SettingsScreen.tsx', 'src/features/capture/scan/ScanDialog.tsx', 'src/features/sync/RestoreChoiceDialog.tsx', 'src/db/repositories/sql/epochCarryReports.ts', 'src/features/sync/SyncDetailsCarryReport.tsx', 'src/features/sync/carryReportBannerLine.ts', 'src/sync/epochCarryReportBanner.ts', 'src/sync/epochCarryReportAck.ts', 'src/sync/orphanEpoch.ts', 'src/sync/publishRotation.ts', 'src/features/sync/SyncDetailsOwnDeletion.tsx', 'src/features/app/syncGate.ts', 'src/features/tasks/recurrenceDedup.ts', 'src/features/tasks/occurrencePlacement.ts', 'src/db/repositories/sql/occurrenceDedup.ts'])('%s est un bloc à la demande, hors du départ', (source) => {
+  it.each(['src/features/shortcuts/ShortcutsHelp.tsx', 'src/features/updater/UpdateBanner.tsx', 'src/features/settings/SettingsScreen.tsx', 'src/features/sync/RestoreChoiceDialog.tsx', 'src/db/repositories/sql/epochCarryReports.ts', 'src/features/sync/SyncDetailsCarryReport.tsx', 'src/features/sync/carryReportBannerLine.ts', 'src/sync/epochCarryReportBanner.ts', 'src/sync/epochCarryReportAck.ts', 'src/sync/orphanEpoch.ts', 'src/sync/publishRotation.ts', 'src/features/sync/SyncDetailsOwnDeletion.tsx', 'src/db/repositories/sql/occurrenceDedup.ts'])('%s est un bloc à la demande, hors du départ', (source) => {
     const start = new Set(startChunks().map((chunk) => chunk.file));
     const chunk = manifest[source];
     if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
@@ -133,14 +133,6 @@ describe('bundle de départ (index.html)', () => {
   });
 
   // Y-FIX-04 : les textes de la fenêtre de choix après restauration ne sont dans aucun bloc de départ (catalogue à part, chargé avec elle).
-  it('N-FIX-02 : catalogue des corps de notification chargé avec le bloc des rappels', () => {
-    const marker = 'Reporté · {when}';
-    for (const chunk of startChunks().filter(chunk => chunk.file.endsWith('.js'))) {
-      expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
-    }
-    expect(Object.values(manifest).some(chunk => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
-  });
-
   it('les textes de la fenêtre de choix après restauration sont hors du départ', () => {
     const marker = 'Restauration : que faire de la synchronisation ?';
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
@@ -168,7 +160,7 @@ describe('bundle de départ (index.html)', () => {
     for (const marker of markers) expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker)), marker).toBe(true);
   });
 
-  it.each(["Les fichiers de l'ancienne époque de cet appareil", 'Files from the previous epoch on this device', 'ct-sync__ownDeletion'])('Y-IOS-02-FIX-01 : « %s » hors du départ et présent dans le build', (marker) => {
+  it.each(["Les fichiers de l'ancienne époque de cet appareil", 'ct-sync__ownDeletion'])('Y-IOS-02-FIX-01 : « %s » hors du départ et présent dans le build', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
@@ -179,34 +171,6 @@ describe('bundle de départ (index.html)', () => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
-  });
-
-  it('le graphique du rapport (Recharts) est un bloc à la demande, hors du départ', () => {
-    const start = new Set(startChunks().map((chunk) => chunk.file));
-    const chart = manifest['src/features/stats/CompletionChart.tsx'];
-    if (!chart) throw new Error('bloc CompletionChart absent du manifeste');
-    expect(start.has(chart.file)).toBe(false);
-    expect(Object.values(manifest).some((chunk) => chunk.dynamicImports?.includes('src/features/stats/CompletionChart.tsx'))).toBe(true);
-  });
-
-  it.each(['ct-task-create__more', 'ct-task-detail__reminderSchedule', "Plus d'options", 'Moved by quiet hours for'])('UI-REFONTE-01 : %s reste hors du départ', (marker) => {
-    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js') || chunk.file.endsWith('.css'));
-    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
-    expect(Object.values(manifest).some((chunk) => (chunk.file.endsWith('.js') || chunk.file.endsWith('.css')) && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
-  });
-
-  // UI-REFONTE-02 : le menu « Plus d’options » d'Aujourd'hui (iPhone) et son catalogue sont un bloc à la demande, hors du départ.
-  it.each(['ct-today-menu__item', 'Monthly report'])('UI-REFONTE-02 : %s reste hors du départ', (marker) => {
-    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js') || chunk.file.endsWith('.css'));
-    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
-    expect(Object.values(manifest).some((chunk) => (chunk.file.endsWith('.js') || chunk.file.endsWith('.css')) && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
-  });
-
-  // UI-REFONTE-03 : la synthèse de la Semaine iPhone et son catalogue (`weekRefonteText`) se chargent avec l'écran Semaine, hors du départ.
-  it.each(['ct-week__summary', 'Nothing planned this week'])('UI-REFONTE-03 : %s reste hors du départ', (marker) => {
-    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js') || chunk.file.endsWith('.css'));
-    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
-    expect(Object.values(manifest).some((chunk) => (chunk.file.endsWith('.js') || chunk.file.endsWith('.css')) && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
   // Y-04 critère 12, revue 7 : le client du simulateur de dossier (`__ctSyncSim`, route `/rpc`, codage `__ctMap`) n'est installé

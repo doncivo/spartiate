@@ -1,4 +1,4 @@
-//! Y-TECH-03 (B13 de docs/audit-1.0.md), phase B : lecteur Rust du plan de pannes d'iCloud, `tests/fixtures/sync/fault-plan.json`.
+//! Y-TECH-03 (B13 de docs/archive/circletasks/audit-1.0.md), phase B : lecteur Rust du plan de pannes d'iCloud, `tests/fixtures/sync/fault-plan.json`.
 //!
 //! Un seul format, lu tel quel par les trois faux iCloud du dépôt : `memory.ts` (`src/platform/sync/faultPlan.ts`), `MemFs`
 //! (`sync_support.rs`) et `fake_bookmark` (ce dossier). La lecture est **aussi stricte** que celle de `faultPlan.ts` : champ inconnu,
@@ -38,7 +38,16 @@ impl Op {
     }
 
     fn parse(text: &str) -> Option<Op> {
-        [Op::List, Op::Read, Op::Write, Op::Rename, Op::Remove, Op::Hydrate].into_iter().find(|op| op.name() == text)
+        [
+            Op::List,
+            Op::Read,
+            Op::Write,
+            Op::Rename,
+            Op::Remove,
+            Op::Hydrate,
+        ]
+        .into_iter()
+        .find(|op| op.name() == text)
     }
 
     /// Effets que l'opération sait rejouer (même table que `effectsOf` de `faultPlan.ts`).
@@ -53,7 +62,15 @@ impl Op {
     }
 }
 
-const EFFECTS: [&str; 7] = ["error", "accept-not-propagated", "evict-after-read", "placeholder", "overwrite-before-read", "download-error", "mute"];
+const EFFECTS: [&str; 7] = [
+    "error",
+    "accept-not-propagated",
+    "evict-after-read",
+    "placeholder",
+    "overwrite-before-read",
+    "download-error",
+    "mute",
+];
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Code {
@@ -110,13 +127,30 @@ pub struct Plan {
 // --- Lecture stricte --------------------------------------------------------------------------------------------------------------
 
 const PLAN_KEYS: [&str; 4] = ["name", "about", "options", "faults"];
-const ENTRY_KEYS: [&str; 11] = ["id", "op", "file", "nth", "times", "effect", "code", "resurrectAfterCycles", "content", "partialLastLine", "about"];
+const ENTRY_KEYS: [&str; 11] = [
+    "id",
+    "op",
+    "file",
+    "nth",
+    "times",
+    "effect",
+    "code",
+    "resurrectAfterCycles",
+    "content",
+    "partialLastLine",
+    "about",
+];
 
 /// Champ qui porte une durée ou une heure (mêmes mots que `isDurationKey` de `faultPlan.ts`) ; `times` (nombre d'appels) n'en est pas un.
 fn is_duration_key(key: &str) -> bool {
     let lower = key.to_lowercase();
     key != "times"
-        && (["ms", "millis", "second", "delay", "timeout", "duration", "wait", "sleep", "date", "clock"].iter().any(|word| lower.contains(word))
+        && ([
+            "ms", "millis", "second", "delay", "timeout", "duration", "wait", "sleep", "date",
+            "clock",
+        ]
+        .iter()
+        .any(|word| lower.contains(word))
             || lower.ends_with("time")
             || lower.ends_with("at"))
 }
@@ -128,12 +162,20 @@ fn check_pattern(file: Option<&Value>, at: &str) -> Result<String, String> {
     };
     let body = file.strip_suffix('/').unwrap_or(file);
     let parts: Vec<&str> = body.split('/').collect();
-    if parts[0] != "devices" || parts.iter().any(|p| p.is_empty() || *p == "." || *p == ".." || p.contains('\\')) {
-        return Err(format!("{at} : chemin « {file} » invalide (devices/…, composants non vides)"));
+    if parts[0] != "devices"
+        || parts
+            .iter()
+            .any(|p| p.is_empty() || *p == "." || *p == ".." || p.contains('\\'))
+    {
+        return Err(format!(
+            "{at} : chemin « {file} » invalide (devices/…, composants non vides)"
+        ));
     }
     let without_ids = strip_uuids(file);
     if has_iso_stamp(&without_ids) || has_long_number(&without_ids) {
-        return Err(format!("{at} : chemin « {file} » : horodatage interdit (rang d'appel seulement)"));
+        return Err(format!(
+            "{at} : chemin « {file} » : horodatage interdit (rang d'appel seulement)"
+        ));
     }
     Ok(file.to_owned())
 }
@@ -215,55 +257,95 @@ fn rank(value: Option<&Value>) -> Option<u64> {
     value.and_then(Value::as_u64).filter(|n| *n >= 1)
 }
 
-fn parse_entry(raw: &Value, index: usize, plan: &str, seen: &mut Vec<String>) -> Result<Entry, String> {
-    let label = raw.get("id").and_then(Value::as_str).filter(|id| !id.is_empty()).map_or_else(|| format!("n° {}", index + 1), |id| format!("« {id} »"));
+fn parse_entry(
+    raw: &Value,
+    index: usize,
+    plan: &str,
+    seen: &mut Vec<String>,
+) -> Result<Entry, String> {
+    let label = raw
+        .get("id")
+        .and_then(Value::as_str)
+        .filter(|id| !id.is_empty())
+        .map_or_else(|| format!("n° {}", index + 1), |id| format!("« {id} »"));
     let at = format!("plan « {plan} », entrée {label}");
     let Some(object) = raw.as_object() else {
         return Err(format!("{at} : objet attendu"));
     };
     for key in object.keys() {
         if is_duration_key(key) {
-            return Err(format!("{at} : champ de durée « {key} » interdit (rang d'appel et cycles seulement)"));
+            return Err(format!(
+                "{at} : champ de durée « {key} » interdit (rang d'appel et cycles seulement)"
+            ));
         }
         if !ENTRY_KEYS.contains(&key.as_str()) {
             return Err(format!("{at} : champ inconnu « {key} »"));
         }
     }
-    let id = raw.get("id").and_then(Value::as_str).filter(|id| !id.is_empty()).ok_or_else(|| format!("{at} : « id » absent"))?.to_owned();
+    let id = raw
+        .get("id")
+        .and_then(Value::as_str)
+        .filter(|id| !id.is_empty())
+        .ok_or_else(|| format!("{at} : « id » absent"))?
+        .to_owned();
     if seen.contains(&id) {
         return Err(format!("{at} : « id » en double"));
     }
     seen.push(id.clone());
-    let op = raw.get("op").and_then(Value::as_str).and_then(Op::parse).ok_or_else(|| format!("{at} : opération inconnue « {} »", shown(raw.get("op"))))?;
-    let effect_name = raw.get("effect").and_then(Value::as_str).filter(|e| EFFECTS.contains(e)).ok_or_else(|| format!("{at} : effet inconnu « {} »", shown(raw.get("effect"))))?;
+    let op = raw
+        .get("op")
+        .and_then(Value::as_str)
+        .and_then(Op::parse)
+        .ok_or_else(|| format!("{at} : opération inconnue « {} »", shown(raw.get("op"))))?;
+    let effect_name = raw
+        .get("effect")
+        .and_then(Value::as_str)
+        .filter(|e| EFFECTS.contains(e))
+        .ok_or_else(|| format!("{at} : effet inconnu « {} »", shown(raw.get("effect"))))?;
     if !op.effects().contains(&effect_name) {
-        return Err(format!("{at} : effet « {effect_name} » non rejouable sur l'opération « {} »", op.name()));
+        return Err(format!(
+            "{at} : effet « {effect_name} » non rejouable sur l'opération « {} »",
+            op.name()
+        ));
     }
     if raw.get("nth").is_none() {
         return Err(format!("{at} : rang « nth » absent"));
     }
-    let nth = rank(raw.get("nth")).ok_or_else(|| format!("{at} : rang « nth » invalide (entier à partir de 1)"))?;
+    let nth = rank(raw.get("nth"))
+        .ok_or_else(|| format!("{at} : rang « nth » invalide (entier à partir de 1)"))?;
     let times = match raw.get("times").filter(|v| !v.is_null()) {
         None => Times::Count(1),
         Some(Value::String(all)) if all == "all" => Times::All,
-        other => Times::Count(rank(other).ok_or_else(|| format!("{at} : « times » invalide (entier à partir de 1 ou « all »)"))?),
+        other => Times::Count(rank(other).ok_or_else(|| {
+            format!("{at} : « times » invalide (entier à partir de 1 ou « all »)")
+        })?),
     };
     let file = check_pattern(raw.get("file"), &at)?;
     let is_dir = file.ends_with('/');
     if op == Op::List && effect_name != "placeholder" && !is_dir {
-        return Err(format!("{at} : « list » en {effect_name} désigne un dossier (chemin terminé par /)"));
+        return Err(format!(
+            "{at} : « list » en {effect_name} désigne un dossier (chemin terminé par /)"
+        ));
     }
     if (op != Op::List || effect_name == "placeholder") && is_dir {
-        return Err(format!("{at} : « {} » désigne un fichier (pas de / final)", op.name()));
+        return Err(format!(
+            "{at} : « {} » désigne un fichier (pas de / final)",
+            op.name()
+        ));
     }
     let only = |key: &str, allowed: bool| -> Result<(), String> {
         if object.contains_key(key) && !allowed {
-            return Err(format!("{at} : « {key} » sans objet pour l'effet « {effect_name} »"));
+            return Err(format!(
+                "{at} : « {key} » sans objet pour l'effet « {effect_name} »"
+            ));
         }
         Ok(())
     };
     only("code", effect_name == "error")?;
-    only("resurrectAfterCycles", effect_name == "accept-not-propagated")?;
+    only(
+        "resurrectAfterCycles",
+        effect_name == "accept-not-propagated",
+    )?;
     only("content", effect_name == "overwrite-before-read")?;
     only("partialLastLine", effect_name == "error" && op == Op::Write)?;
     let effect = match effect_name {
@@ -273,15 +355,31 @@ fn parse_entry(raw: &Value, index: usize, plan: &str, seen: &mut Vec<String>) ->
             _ => return Err(format!("{at} : « code » attendu (io ou cloud-pending)")),
         },
         "accept-not-propagated" => Effect::AcceptNotPropagated {
-            resurrect_after_cycles: raw.get("resurrectAfterCycles").and_then(Value::as_u64).ok_or_else(|| format!("{at} : « resurrectAfterCycles » attendu (entier, 0 : jamais de retour)"))?,
+            resurrect_after_cycles: raw
+                .get("resurrectAfterCycles")
+                .and_then(Value::as_u64)
+                .ok_or_else(|| {
+                    format!(
+                        "{at} : « resurrectAfterCycles » attendu (entier, 0 : jamais de retour)"
+                    )
+                })?,
         },
         "evict-after-read" => Effect::EvictAfterRead,
         "placeholder" => Effect::Placeholder,
         "overwrite-before-read" => {
-            let lines = raw.get("content").and_then(Value::as_array).map(|lines| lines.iter().map(|l| l.as_str().filter(|s| !s.contains('\n')).map(str::to_owned)).collect::<Option<Vec<_>>>());
+            let lines = raw.get("content").and_then(Value::as_array).map(|lines| {
+                lines
+                    .iter()
+                    .map(|l| l.as_str().filter(|s| !s.contains('\n')).map(str::to_owned))
+                    .collect::<Option<Vec<_>>>()
+            });
             match lines {
                 Some(Some(content)) => Effect::OverwriteBeforeRead { content },
-                _ => return Err(format!("{at} : « content » attendu (lignes complètes, sans \\n)")),
+                _ => {
+                    return Err(format!(
+                        "{at} : « content » attendu (lignes complètes, sans \\n)"
+                    ))
+                }
             }
         }
         "download-error" => Effect::DownloadError,
@@ -289,9 +387,13 @@ fn parse_entry(raw: &Value, index: usize, plan: &str, seen: &mut Vec<String>) ->
     };
     let mut partial_last_line = false;
     if let Some(value) = raw.get("partialLastLine") {
-        partial_last_line = value.as_bool().ok_or_else(|| format!("{at} : « partialLastLine » booléen attendu"))?;
+        partial_last_line = value
+            .as_bool()
+            .ok_or_else(|| format!("{at} : « partialLastLine » booléen attendu"))?;
         if !(file.ends_with(".spj") || file.ends_with('*')) {
-            return Err(format!("{at} : « partialLastLine » réservé aux segments de journal (*.spj)"));
+            return Err(format!(
+                "{at} : « partialLastLine » réservé aux segments de journal (*.spj)"
+            ));
         }
     }
     if let Some(about) = raw.get("about") {
@@ -299,7 +401,15 @@ fn parse_entry(raw: &Value, index: usize, plan: &str, seen: &mut Vec<String>) ->
             return Err(format!("{at} : « about » texte attendu"));
         }
     }
-    Ok(Entry { id, op, file, nth, times, effect, partial_last_line })
+    Ok(Entry {
+        id,
+        op,
+        file,
+        nth,
+        times,
+        effect,
+        partial_last_line,
+    })
 }
 
 /// Lecture stricte d'un plan (objet JSON de `fault-plan.json`, ou construit par un test).
@@ -307,10 +417,17 @@ pub fn parse_plan(raw: &Value) -> Result<Plan, String> {
     let Some(object) = raw.as_object() else {
         return Err("plan : objet attendu".to_owned());
     };
-    let name = object.get("name").and_then(Value::as_str).filter(|n| !n.is_empty()).ok_or("plan : « name » absent")?.to_owned();
+    let name = object
+        .get("name")
+        .and_then(Value::as_str)
+        .filter(|n| !n.is_empty())
+        .ok_or("plan : « name » absent")?
+        .to_owned();
     for key in object.keys() {
         if is_duration_key(key) {
-            return Err(format!("plan « {name} » : champ de durée « {key} » interdit"));
+            return Err(format!(
+                "plan « {name} » : champ de durée « {key} » interdit"
+            ));
         }
         if !PLAN_KEYS.contains(&key.as_str()) {
             return Err(format!("plan « {name} » : champ inconnu « {key} »"));
@@ -325,18 +442,32 @@ pub fn parse_plan(raw: &Value) -> Result<Plan, String> {
             if key != "removeLeavesPlaceholder" {
                 return Err(format!("plan « {name} » : option inconnue « {key} »"));
             }
-            remove_leaves_placeholder = value.as_bool().ok_or_else(|| format!("plan « {name} » : « removeLeavesPlaceholder » booléen attendu"))?;
+            remove_leaves_placeholder = value.as_bool().ok_or_else(|| {
+                format!("plan « {name} » : « removeLeavesPlaceholder » booléen attendu")
+            })?;
         }
     }
-    let faults = object.get("faults").and_then(Value::as_array).ok_or_else(|| format!("plan « {name} » : « faults » tableau attendu"))?;
+    let faults = object
+        .get("faults")
+        .and_then(Value::as_array)
+        .ok_or_else(|| format!("plan « {name} » : « faults » tableau attendu"))?;
     let mut seen = Vec::new();
-    let faults = faults.iter().enumerate().map(|(i, entry)| parse_entry(entry, i, &name, &mut seen)).collect::<Result<Vec<_>, _>>()?;
-    Ok(Plan { name, faults, remove_leaves_placeholder })
+    let faults = faults
+        .iter()
+        .enumerate()
+        .map(|(i, entry)| parse_entry(entry, i, &name, &mut seen))
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(Plan {
+        name,
+        faults,
+        remove_leaves_placeholder,
+    })
 }
 
 /// Lecture stricte d'un fichier de plans (`{ $comment, schema: 1, plans: [...] }`) : racine, schéma, noms de plans uniques.
 pub fn parse_file(text: &str) -> Result<Vec<Plan>, String> {
-    let root: Value = serde_json::from_str(text).map_err(|e| format!("fichier de plans : JSON invalide ({e})"))?;
+    let root: Value = serde_json::from_str(text)
+        .map_err(|e| format!("fichier de plans : JSON invalide ({e})"))?;
     let Some(object) = root.as_object() else {
         return Err("fichier de plans : objet attendu".to_owned());
     };
@@ -348,13 +479,19 @@ pub fn parse_file(text: &str) -> Result<Vec<Plan>, String> {
     if object.get("schema").and_then(Value::as_u64) != Some(1) {
         return Err("fichier de plans : « schema » 1 attendu".to_owned());
     }
-    let plans = object.get("plans").and_then(Value::as_array).ok_or("fichier de plans : « plans » tableau attendu")?;
+    let plans = object
+        .get("plans")
+        .and_then(Value::as_array)
+        .ok_or("fichier de plans : « plans » tableau attendu")?;
     let mut names: Vec<String> = Vec::new();
     let mut out = Vec::new();
     for raw in plans {
         let plan = parse_plan(raw)?;
         if names.contains(&plan.name) {
-            return Err(format!("fichier de plans : plan « {} » en double", plan.name));
+            return Err(format!(
+                "fichier de plans : plan « {} » en double",
+                plan.name
+            ));
         }
         names.push(plan.name.clone());
         out.push(plan);
@@ -369,7 +506,10 @@ pub fn reference_plans() -> Vec<Plan> {
 
 /// Un plan du dépôt, par son nom.
 pub fn reference_plan(name: &str) -> Plan {
-    reference_plans().into_iter().find(|p| p.name == name).unwrap_or_else(|| panic!("plan « {name} » absent de fault-plan.json"))
+    reference_plans()
+        .into_iter()
+        .find(|p| p.name == name)
+        .unwrap_or_else(|| panic!("plan « {name} » absent de fault-plan.json"))
 }
 
 /// Le faux `fake` ne sait pas rejouer l'effet `mute` (appel qui ne répond jamais) : un synchrone sans fil dédié bloquerait le test pour de
@@ -437,7 +577,11 @@ pub struct Armed {
 
 impl Armed {
     pub fn new(plan: Plan) -> Self {
-        Self { plan, counts: HashMap::new(), log: Vec::new() }
+        Self {
+            plan,
+            counts: HashMap::new(),
+            log: Vec::new(),
+        }
     }
 
     pub fn hit(&mut self, op: Op, path: &str) -> Option<Entry> {
@@ -455,7 +599,12 @@ impl Armed {
                 };
             if in_range && fired.is_none() {
                 fired = Some(entry.clone());
-                self.log.push(Firing { id: entry.id.clone(), op, path: path.to_owned(), call });
+                self.log.push(Firing {
+                    id: entry.id.clone(),
+                    op,
+                    path: path.to_owned(),
+                    call,
+                });
             }
         }
         fired
@@ -468,7 +617,12 @@ impl Armed {
 
     /// Entrées jamais déclenchées (une panne armée restée sans effet serait une panne ignorée en silence).
     pub fn unfired(&self) -> Vec<String> {
-        self.plan.faults.iter().filter(|e| !self.log.iter().any(|f| f.id == e.id)).map(|e| e.id.clone()).collect()
+        self.plan
+            .faults
+            .iter()
+            .filter(|e| !self.log.iter().any(|f| f.id == e.id))
+            .map(|e| e.id.clone())
+            .collect()
     }
 }
 
@@ -484,7 +638,10 @@ pub fn partial_tail(data: &[u8]) -> Vec<u8> {
 
 /// Contenu d'un `overwrite-before-read` : lignes complètes, chacune suivie de `\n`.
 pub fn overwrite_bytes(content: &[String]) -> Vec<u8> {
-    content.iter().flat_map(|line| line.bytes().chain(std::iter::once(b'\n'))).collect()
+    content
+        .iter()
+        .flat_map(|line| line.bytes().chain(std::iter::once(b'\n')))
+        .collect()
 }
 
 /// Chemin d'un fichier pour le plan (`devices/…`) et d'un dossier (`/` final).

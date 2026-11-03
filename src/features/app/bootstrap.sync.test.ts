@@ -5,13 +5,12 @@ import { migrations } from '../../db/migrations';
 import { createMemorySyncPlatform } from '../../platform/sync/memory';
 import { createUnavailableBackup } from '../../platform/backup';
 import { createUnavailableFiles } from '../../platform/files';
-import { createMemoryCalendarPlatform, PRODUCTION_ENDPOINTS } from '../../platform/calendars';
 import { useAppStore } from './appStore';
 import { bootstrapApp } from './bootstrap';
 
 /** Conteneur et démarrage (ADR 0011, section 3.2 et avenant « Amorce » point 7 ; Y-02 critère 19). */
 
-const common = { desktop: null, focusWindow: null, files: createUnavailableFiles(), calendars: createMemoryCalendarPlatform(PRODUCTION_ENDPOINTS) } as const;
+const common = { desktop: null, files: createUnavailableFiles() } as const;
 
 describe('démarrage et synchro (Y-02 critère 19)', () => {
   beforeEach(() => {

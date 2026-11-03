@@ -13,7 +13,6 @@ import { bootstrapApp, type BootstrapAppOptions } from '../../../src/features/ap
 import type { AppContainer } from '../../../src/features/app/container';
 import type { AppVersionRead } from '../../../src/platform/appVersion';
 import { createUnavailableBackup } from '../../../src/platform/backup';
-import { createMemoryCalendarPlatform, PRODUCTION_ENDPOINTS } from '../../../src/platform/calendars';
 import { createUnavailableFiles } from '../../../src/platform/files';
 
 /**
@@ -26,7 +25,7 @@ import { createUnavailableFiles } from '../../../src/platform/files';
 
 const LAST = migrations.at(-1)?.version ?? 0;
 const pad = (n: number): string => String(n).padStart(4, '0');
-const common = { desktop: null, focusWindow: null, files: createUnavailableFiles(), calendars: createMemoryCalendarPlatform(PRODUCTION_ENDPOINTS), backups: createUnavailableBackup(), syncPlatform: null } as const;
+const common = { desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), syncPlatform: null } as const;
 const version = (v: string): (() => Promise<AppVersionRead>) => () => Promise.resolve({ ok: true, version: v, source: 'runtime' });
 const clock = createManualClock('2026-10-09T08:00:00.000Z');
 

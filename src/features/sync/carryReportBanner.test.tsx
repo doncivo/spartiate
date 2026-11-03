@@ -104,7 +104,7 @@ describe('bandeau durable (critère 16)', () => {
     expect(await screen.findByText(bannerText(3))).toBeTruthy();
     expect(useAppStatusStore.getState().sources.syncTrouble?.detail).toBe('carry-report');
     fireEvent.click(screen.getByRole('button', { name: 'Voir le problème de synchronisation' }));
-    expect(useNavigationStore.getState().route).toMatchObject({ tab: 'settings', screen: 'sync' });
+    expect(useNavigationStore.getState().route).toMatchObject({ tab: 'more', screen: 'sync' });
   });
 
   it('plusieurs comptes rendus non acquittés : le nombre est la somme', async () => {

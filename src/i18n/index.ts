@@ -3,62 +3,13 @@ import type { Locale, MessageKey, Messages, TArgs } from './types';
 
 export type { Locale, MessageKey, MessageParams, Messages, PlainMessageKey } from './types';
 
-/**
- * Le français est livré avec le démarrage ; les autres langues (PERF-02 : l'anglais pèse ~21 Ko de source) sont des blocs chargés à la
- * demande par `ensureLocale`. Tant qu'un catalogue manque, les clés se lisent en français (repli de `translateRaw`).
- */
-const catalogs: Partial<Record<Locale, Messages>> = { fr };
-const loaders: Record<Exclude<Locale, 'fr'>, () => Promise<Messages>> = { en: () => import('./en').then((module) => module.en) };
-
-/** Pose un catalogue déjà chargé (tests, ou langue obtenue autrement). */
-export function registerCatalog(locale: Locale, messages: Messages): void {
-  catalogs[locale] = messages;
-}
-
-/** Journal des échecs de chargement, posé par l'application (src/i18n est autonome : il ne connaît pas src/platform). */
-export type CatalogFailureReporter = (locale: Locale, error: unknown) => void;
-let reportFailure: CatalogFailureReporter | null = null;
-
-export function setCatalogFailureReporter(reporter: CatalogFailureReporter | null): void {
-  reportFailure = reporter;
-}
-
-/** Un seul chargement en cours par langue. */
-const loading = new Map<Locale, Promise<void>>();
-
-/**
- * Charge le catalogue d'une langue s'il manque. La promesse se résout toujours : un échec est journalisé (`setCatalogFailureReporter`),
- * laisse le français et permet un nouvel essai au prochain appel.
- */
-export function ensureLocale(locale: Locale): Promise<void> {
-  if (catalogs[locale] || locale === 'fr') return Promise.resolve();
-  const running = loading.get(locale);
-  if (running) return running;
-  const load = loaders[locale]().then(
-    (messages) => {
-      catalogs[locale] = messages;
-      loading.delete(locale);
-    },
-    (error: unknown) => {
-      loading.delete(locale);
-      reportFailure?.(locale, error);
-    },
-  );
-  loading.set(locale, load);
-  return load;
-}
+/** Français seul (SPA-001b, D-64) : le catalogue est livré avec le démarrage, sans chargeur ni choix de langue. */
+const catalogs: Record<Locale, Messages> = { fr };
 
 export const DEFAULT_LOCALE: Locale = 'fr';
-let current: Locale = DEFAULT_LOCALE;
-
-export function setLocale(locale: Locale): void {
-  current = locale;
-  // Catalogue absent : chargement en arrière-plan ; les appelants qui doivent réafficher attendent `ensureLocale`.
-  if (!catalogs[locale]) void ensureLocale(locale);
-}
 
 export function getLocale(): Locale {
-  return current;
+  return DEFAULT_LOCALE;
 }
 
 function lookup(messages: Messages, key: string): string | undefined {
@@ -79,11 +30,11 @@ function interpolate(text: string, params: Record<string, string | number> | und
 }
 
 function translateRaw(locale: Locale, key: MessageKey, params: Record<string, string | number> | undefined): string {
-  const text = lookup(catalogs[locale] ?? fr, key) ?? lookup(fr, key) ?? key;
+  const text = lookup(catalogs[locale], key) ?? key;
   return interpolate(text, params);
 }
 
-/** Traduit une clé dans une langue donnée ; repli sur le français, puis sur la clé. */
+/** Traduit une clé ; repli sur la clé elle-même si elle manque. */
 export function translate<K extends MessageKey>(locale: Locale, key: K, ...args: TArgs<K>): string {
   return translateRaw(locale, key, args[0]);
 }
@@ -94,10 +45,10 @@ export function translate<K extends MessageKey>(locale: Locale, key: K, ...args:
  * visible sous la forme `{nom}`. Préférer `t()` quand la clé est un littéral.
  */
 export function tDynamic(key: MessageKey, params?: Readonly<Record<string, string | number>>): string {
-  return translateRaw(current, key, params as Record<string, string | number> | undefined);
+  return translateRaw(DEFAULT_LOCALE, key, params as Record<string, string | number> | undefined);
 }
 
 /** Traduit une clé dans la langue courante. */
 export function t<K extends MessageKey>(key: K, ...args: TArgs<K>): string {
-  return translate(current, key, ...args);
+  return translate(DEFAULT_LOCALE, key, ...args);
 }

@@ -18,8 +18,8 @@ const registered = (id: ShortcutId): string[] =>
     .filter(([, text]) => new RegExp(`register\\(\\s*'${id.replace('.', '\\.')}'|shortcut: '${id.replace('.', '\\.')}'`).test(text))
     .map(([path]) => path);
 
-/** Raccourcis dont le gestionnaire vit hors de l'application : le système (global) ou une story à venir (réservés). */
-const NOT_IN_APP: readonly ShortcutId[] = ['global.quickCapture', ...RESERVED_SHORTCUTS];
+/** Raccourcis dont le gestionnaire vit hors de l'application : une story à venir (réservés) ; aucun depuis la suppression du global. */
+const NOT_IN_APP: readonly ShortcutId[] = [...RESERVED_SHORTCUTS];
 
 describe('chaque raccourci du registre est branché (D-04 critère 1)', () => {
   const ids = Object.keys(SHORTCUTS) as ShortcutId[];
@@ -28,7 +28,7 @@ describe('chaque raccourci du registre est branché (D-04 critère 1)', () => {
     expect(registered(id), `aucun gestionnaire pour ${id}`).not.toEqual([]);
   });
 
-  it('le seul raccourci sans gestionnaire dans l’application est le global (système) ; Focus (F-01) est branché', () => {
+  it('aucun raccourci du registre n’est sans gestionnaire (hors réservés, aucun)', () => {
     const missing = ids.filter((id) => registered(id).length === 0);
     expect(missing.sort()).toEqual([...NOT_IN_APP].sort());
   });

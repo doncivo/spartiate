@@ -31,14 +31,12 @@ describe('App (coquille, T-01)', () => {
     useNavigationStore.setState(INITIAL_NAVIGATION);
   });
 
-  it('démarre la base réelle et affiche l’écran Aujourd’hui sur l’onglet Tâches', async () => {
+  it('démarre la base réelle et affiche la coquille sur la section Aujourd’hui', async () => {
     mockViewport(1440);
     render(<App />);
-    // UI-REFONTE-08 : plus de badge « Aujourd’hui » sur PC ; le jour en grand (h1) tient lieu d'en-tête.
-    await waitFor(() => expect(document.querySelector('main h1.ct-today__day')).not.toBeNull(), { timeout: 10_000 });
-    expect(useAppStore.getState().dbStatus).toBe('ready');
-    const tasksTab = screen.getByRole('button', { name: t('nav.tabs.tasks') });
-    expect(tasksTab).toHaveAttribute('aria-current', 'page');
+    await waitFor(() => expect(useAppStore.getState().dbStatus).toBe('ready'), { timeout: 10_000 });
+    const todayTab = await screen.findByRole('button', { name: t('nav.tabs.today') });
+    expect(todayTab).toHaveAttribute('aria-current', 'page');
   });
 
   it('choisit la mise en page PC à partir de 1024 px', () => {

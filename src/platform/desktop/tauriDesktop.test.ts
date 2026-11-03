@@ -46,8 +46,8 @@ vi.mock('@tauri-apps/plugin-opener', () => ({ openUrl: (u: string) => openUrl(u)
 vi.mock('@tauri-apps/plugin-updater', () => ({ check: () => check() }));
 
 const { createTauriDesktop, classifyUpdateError } = await import('./tauriDesktop');
-const { UpdateInstallError, GlobalShortcutError } = await import('./types');
-const { LATEST_RELEASE_URL, QUICK_ADD_EVENT } = await import('./releases');
+const { UpdateInstallError } = await import('./types');
+const { LATEST_RELEASE_URL } = await import('./releases');
 
 describe('intégration PC Tauri (plugins simulés)', () => {
   beforeEach(() => {
@@ -58,20 +58,9 @@ describe('intégration PC Tauri (plugins simulés)', () => {
   });
 
   it('envoie les textes du menu à la commande Rust', async () => {
-    const labels = { open: 'a', quickAdd: 'b', sync: 'c', quit: 'd', syncEnabled: false };
+    const labels = { open: 'a', sync: 'c', quit: 'd', syncEnabled: false };
     await createTauriDesktop().setTrayLabels(labels);
     expect(calls).toEqual([`invoke:set_tray_labels:${JSON.stringify({ labels })}`]);
-  });
-
-  it('écoute l’événement « ajout rapide » et renvoie le désabonnement', async () => {
-    const handler = vi.fn();
-    const stop = await createTauriDesktop().onQuickAdd(handler);
-    expect(calls).toEqual([`listen:${QUICK_ADD_EVENT}`]);
-    const registered = listen.mock.calls[0]?.[1];
-    registered?.({});
-    expect(handler).toHaveBeenCalledTimes(1);
-    stop();
-    expect(unlisten).toHaveBeenCalled();
   });
 
   it('démarrage avec Windows : lecture de l’état réel, activation, désactivation', async () => {
@@ -104,39 +93,6 @@ describe('intégration PC Tauri (plugins simulés)', () => {
     await expect(desktop.getVersion()).resolves.toBe('0.1.0');
     await desktop.openLatestRelease();
     expect(calls).toEqual([`open:${LATEST_RELEASE_URL}`]);
-  });
-
-  it('raccourci global : enregistre, retire et relit la combinaison via les commandes Rust (D-04)', async () => {
-    const shortcuts = createTauriDesktop().globalShortcuts;
-    await shortcuts.register('Ctrl+Shift+Space');
-    await shortcuts.unregister();
-    invoke.mockResolvedValueOnce('Ctrl+Alt+Space' as never);
-    await expect(shortcuts.isRegistered('Ctrl+Alt+Space')).resolves.toBe(true);
-    invoke.mockResolvedValueOnce(null as never);
-    await expect(shortcuts.isRegistered('Ctrl+Alt+Space')).resolves.toBe(false);
-    expect(calls).toEqual([
-      `invoke:set_quick_capture_shortcut:${JSON.stringify({ accelerator: 'Ctrl+Shift+Space' })}`,
-      'invoke:clear_quick_capture_shortcut:undefined',
-    ]);
-  });
-
-  it('raccourci global : traduit le code d’erreur de Rust en GlobalShortcutError', async () => {
-    const shortcuts = createTauriDesktop().globalShortcuts;
-    for (const [code, reason] of [
-      ['shortcut-in-use', 'in-use'],
-      ['shortcut-reserved', 'reserved'],
-      ['shortcut-no-modifier', 'no-modifier'],
-      ['shortcut-windows-key', 'windows-key'],
-      ['shortcut-syntax', 'syntax'],
-      ['autre', 'unavailable'],
-    ] as const) {
-      invoke.mockRejectedValueOnce({ code, message: 'détail' });
-      const error = await shortcuts.register('Ctrl+X').catch((e: unknown) => e);
-      expect(error).toBeInstanceOf(GlobalShortcutError);
-      expect((error as InstanceType<typeof GlobalShortcutError>).reason).toBe(reason);
-    }
-    invoke.mockRejectedValueOnce('texte brut');
-    await expect(shortcuts.unregister()).rejects.toMatchObject({ reason: 'unavailable' });
   });
 
   it('aucune mise à jour : null', async () => {

@@ -4,7 +4,7 @@ import { foldKeepLength, naturalDate, removeHits, type NaturalNow } from './natu
 import { parseQuickInput } from './quickInput';
 import { asLocalDate, asLocalTime } from './types';
 
-// Mardi 22 septembre 2026, 08:00 (docs/stories/Q-02.md).
+// Mardi 22 septembre 2026, 08:00 (docs/archive/circletasks/stories/Q-02.md).
 const NOW: NaturalNow = { date: asLocalDate('2026-09-22'), time: asLocalTime('08:00') };
 type First = 'monday' | 'saturday' | 'sunday';
 const parse = (text: string, now: NaturalNow = NOW, firstWeekday?: First) =>

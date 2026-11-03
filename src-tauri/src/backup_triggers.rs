@@ -6,33 +6,56 @@
 
 /// (nom, table, SQL) de chaque déclencheur, triés par nom.
 pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
-    ("search_checklist_ad", "checklist", r##"CREATE TRIGGER search_checklist_ad AFTER DELETE ON checklist BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'checklist' AND ref_id = OLD.id);
-   DELETE FROM search_index_doc WHERE type = 'checklist' AND ref_id = OLD.id; END"##),
-    ("search_checklist_ai", "checklist", r##"CREATE TRIGGER search_checklist_ai AFTER INSERT ON checklist BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'checklist' AND ref_id = NEW.id);
+    (
+        "search_checklist_ad",
+        "checklist",
+        r##"CREATE TRIGGER search_checklist_ad AFTER DELETE ON checklist BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'checklist' AND ref_id = OLD.id);
+   DELETE FROM search_index_doc WHERE type = 'checklist' AND ref_id = OLD.id; END"##,
+    ),
+    (
+        "search_checklist_ai",
+        "checklist",
+        r##"CREATE TRIGGER search_checklist_ai AFTER INSERT ON checklist BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'checklist' AND ref_id = NEW.id);
    DELETE FROM search_index_doc WHERE type = 'checklist' AND ref_id = NEW.id;
    INSERT INTO search_index_doc (type, ref_id) SELECT 'checklist', c.id FROM checklist c WHERE c.id = NEW.id AND c.deleted_at IS NULL;
    INSERT INTO search_index (rowid, type, ref_id, title, body)
      SELECT d.id, 'checklist', c.id, c.title, (SELECT COALESCE(group_concat(text, char(10)), '') FROM checklist_item WHERE checklist_id = c.id AND deleted_at IS NULL)
-     FROM checklist c JOIN search_index_doc d ON d.type = 'checklist' AND d.ref_id = c.id WHERE c.id = NEW.id AND c.deleted_at IS NULL; END"##),
-    ("search_checklist_au", "checklist", r##"CREATE TRIGGER search_checklist_au AFTER UPDATE OF title, deleted_at ON checklist BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'checklist' AND ref_id = NEW.id);
+     FROM checklist c JOIN search_index_doc d ON d.type = 'checklist' AND d.ref_id = c.id WHERE c.id = NEW.id AND c.deleted_at IS NULL; END"##,
+    ),
+    (
+        "search_checklist_au",
+        "checklist",
+        r##"CREATE TRIGGER search_checklist_au AFTER UPDATE OF title, deleted_at ON checklist BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'checklist' AND ref_id = NEW.id);
    DELETE FROM search_index_doc WHERE type = 'checklist' AND ref_id = NEW.id;
    INSERT INTO search_index_doc (type, ref_id) SELECT 'checklist', c.id FROM checklist c WHERE c.id = NEW.id AND c.deleted_at IS NULL;
    INSERT INTO search_index (rowid, type, ref_id, title, body)
      SELECT d.id, 'checklist', c.id, c.title, (SELECT COALESCE(group_concat(text, char(10)), '') FROM checklist_item WHERE checklist_id = c.id AND deleted_at IS NULL)
-     FROM checklist c JOIN search_index_doc d ON d.type = 'checklist' AND d.ref_id = c.id WHERE c.id = NEW.id AND c.deleted_at IS NULL; END"##),
-    ("search_checklist_item_ad", "checklist_item", r##"CREATE TRIGGER search_checklist_item_ad AFTER DELETE ON checklist_item BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'checklist' AND ref_id = OLD.checklist_id);
+     FROM checklist c JOIN search_index_doc d ON d.type = 'checklist' AND d.ref_id = c.id WHERE c.id = NEW.id AND c.deleted_at IS NULL; END"##,
+    ),
+    (
+        "search_checklist_item_ad",
+        "checklist_item",
+        r##"CREATE TRIGGER search_checklist_item_ad AFTER DELETE ON checklist_item BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'checklist' AND ref_id = OLD.checklist_id);
    DELETE FROM search_index_doc WHERE type = 'checklist' AND ref_id = OLD.checklist_id;
    INSERT INTO search_index_doc (type, ref_id) SELECT 'checklist', c.id FROM checklist c WHERE c.id = OLD.checklist_id AND c.deleted_at IS NULL;
    INSERT INTO search_index (rowid, type, ref_id, title, body)
      SELECT d.id, 'checklist', c.id, c.title, (SELECT COALESCE(group_concat(text, char(10)), '') FROM checklist_item WHERE checklist_id = c.id AND deleted_at IS NULL)
-     FROM checklist c JOIN search_index_doc d ON d.type = 'checklist' AND d.ref_id = c.id WHERE c.id = OLD.checklist_id AND c.deleted_at IS NULL; END"##),
-    ("search_checklist_item_ai", "checklist_item", r##"CREATE TRIGGER search_checklist_item_ai AFTER INSERT ON checklist_item BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'checklist' AND ref_id = NEW.checklist_id);
+     FROM checklist c JOIN search_index_doc d ON d.type = 'checklist' AND d.ref_id = c.id WHERE c.id = OLD.checklist_id AND c.deleted_at IS NULL; END"##,
+    ),
+    (
+        "search_checklist_item_ai",
+        "checklist_item",
+        r##"CREATE TRIGGER search_checklist_item_ai AFTER INSERT ON checklist_item BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'checklist' AND ref_id = NEW.checklist_id);
    DELETE FROM search_index_doc WHERE type = 'checklist' AND ref_id = NEW.checklist_id;
    INSERT INTO search_index_doc (type, ref_id) SELECT 'checklist', c.id FROM checklist c WHERE c.id = NEW.checklist_id AND c.deleted_at IS NULL;
    INSERT INTO search_index (rowid, type, ref_id, title, body)
      SELECT d.id, 'checklist', c.id, c.title, (SELECT COALESCE(group_concat(text, char(10)), '') FROM checklist_item WHERE checklist_id = c.id AND deleted_at IS NULL)
-     FROM checklist c JOIN search_index_doc d ON d.type = 'checklist' AND d.ref_id = c.id WHERE c.id = NEW.checklist_id AND c.deleted_at IS NULL; END"##),
-    ("search_checklist_item_au", "checklist_item", r##"CREATE TRIGGER search_checklist_item_au AFTER UPDATE OF text, deleted_at, checklist_id ON checklist_item BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'checklist' AND ref_id = NEW.checklist_id);
+     FROM checklist c JOIN search_index_doc d ON d.type = 'checklist' AND d.ref_id = c.id WHERE c.id = NEW.checklist_id AND c.deleted_at IS NULL; END"##,
+    ),
+    (
+        "search_checklist_item_au",
+        "checklist_item",
+        r##"CREATE TRIGGER search_checklist_item_au AFTER UPDATE OF text, deleted_at, checklist_id ON checklist_item BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'checklist' AND ref_id = NEW.checklist_id);
    DELETE FROM search_index_doc WHERE type = 'checklist' AND ref_id = NEW.checklist_id;
    INSERT INTO search_index_doc (type, ref_id) SELECT 'checklist', c.id FROM checklist c WHERE c.id = NEW.checklist_id AND c.deleted_at IS NULL;
    INSERT INTO search_index (rowid, type, ref_id, title, body)
@@ -42,45 +65,101 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
    INSERT INTO search_index_doc (type, ref_id) SELECT 'checklist', c.id FROM checklist c WHERE c.id = OLD.checklist_id AND c.deleted_at IS NULL;
    INSERT INTO search_index (rowid, type, ref_id, title, body)
      SELECT d.id, 'checklist', c.id, c.title, (SELECT COALESCE(group_concat(text, char(10)), '') FROM checklist_item WHERE checklist_id = c.id AND deleted_at IS NULL)
-     FROM checklist c JOIN search_index_doc d ON d.type = 'checklist' AND d.ref_id = c.id WHERE c.id = OLD.checklist_id AND c.deleted_at IS NULL; END"##),
-    ("search_event_ad", "event", r##"CREATE TRIGGER search_event_ad AFTER DELETE ON event BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'event' AND ref_id = OLD.id);
-   DELETE FROM search_index_doc WHERE type = 'event' AND ref_id = OLD.id; END"##),
-    ("search_event_ai", "event", r##"CREATE TRIGGER search_event_ai AFTER INSERT ON event BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'event' AND ref_id = NEW.id);
+     FROM checklist c JOIN search_index_doc d ON d.type = 'checklist' AND d.ref_id = c.id WHERE c.id = OLD.checklist_id AND c.deleted_at IS NULL; END"##,
+    ),
+    (
+        "search_event_ad",
+        "event",
+        r##"CREATE TRIGGER search_event_ad AFTER DELETE ON event BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'event' AND ref_id = OLD.id);
+   DELETE FROM search_index_doc WHERE type = 'event' AND ref_id = OLD.id; END"##,
+    ),
+    (
+        "search_event_ai",
+        "event",
+        r##"CREATE TRIGGER search_event_ai AFTER INSERT ON event BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'event' AND ref_id = NEW.id);
    DELETE FROM search_index_doc WHERE type = 'event' AND ref_id = NEW.id; INSERT INTO search_index_doc (type, ref_id) SELECT 'event', NEW.id WHERE NEW.deleted_at IS NULL;
-   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'event', NEW.id, NEW.title, '' WHERE NEW.deleted_at IS NULL; END"##),
-    ("search_event_au", "event", r##"CREATE TRIGGER search_event_au AFTER UPDATE OF title, deleted_at ON event BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'event' AND ref_id = NEW.id);
+   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'event', NEW.id, NEW.title, '' WHERE NEW.deleted_at IS NULL; END"##,
+    ),
+    (
+        "search_event_au",
+        "event",
+        r##"CREATE TRIGGER search_event_au AFTER UPDATE OF title, deleted_at ON event BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'event' AND ref_id = NEW.id);
    DELETE FROM search_index_doc WHERE type = 'event' AND ref_id = NEW.id; INSERT INTO search_index_doc (type, ref_id) SELECT 'event', NEW.id WHERE NEW.deleted_at IS NULL;
-   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'event', NEW.id, NEW.title, '' WHERE NEW.deleted_at IS NULL; END"##),
-    ("search_goal_ad", "goal", r##"CREATE TRIGGER search_goal_ad AFTER DELETE ON goal BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'goal' AND ref_id = OLD.id);
-   DELETE FROM search_index_doc WHERE type = 'goal' AND ref_id = OLD.id; END"##),
-    ("search_goal_ai", "goal", r##"CREATE TRIGGER search_goal_ai AFTER INSERT ON goal BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'goal' AND ref_id = NEW.id);
+   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'event', NEW.id, NEW.title, '' WHERE NEW.deleted_at IS NULL; END"##,
+    ),
+    (
+        "search_goal_ad",
+        "goal",
+        r##"CREATE TRIGGER search_goal_ad AFTER DELETE ON goal BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'goal' AND ref_id = OLD.id);
+   DELETE FROM search_index_doc WHERE type = 'goal' AND ref_id = OLD.id; END"##,
+    ),
+    (
+        "search_goal_ai",
+        "goal",
+        r##"CREATE TRIGGER search_goal_ai AFTER INSERT ON goal BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'goal' AND ref_id = NEW.id);
    DELETE FROM search_index_doc WHERE type = 'goal' AND ref_id = NEW.id; INSERT INTO search_index_doc (type, ref_id) SELECT 'goal', NEW.id WHERE NEW.deleted_at IS NULL;
-   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'goal', NEW.id, NEW.title, '' WHERE NEW.deleted_at IS NULL; END"##),
-    ("search_goal_au", "goal", r##"CREATE TRIGGER search_goal_au AFTER UPDATE OF title, deleted_at ON goal BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'goal' AND ref_id = NEW.id);
+   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'goal', NEW.id, NEW.title, '' WHERE NEW.deleted_at IS NULL; END"##,
+    ),
+    (
+        "search_goal_au",
+        "goal",
+        r##"CREATE TRIGGER search_goal_au AFTER UPDATE OF title, deleted_at ON goal BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'goal' AND ref_id = NEW.id);
    DELETE FROM search_index_doc WHERE type = 'goal' AND ref_id = NEW.id; INSERT INTO search_index_doc (type, ref_id) SELECT 'goal', NEW.id WHERE NEW.deleted_at IS NULL;
-   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'goal', NEW.id, NEW.title, '' WHERE NEW.deleted_at IS NULL; END"##),
-    ("search_routine_ad", "routine", r##"CREATE TRIGGER search_routine_ad AFTER DELETE ON routine BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'routine' AND ref_id = OLD.id);
-   DELETE FROM search_index_doc WHERE type = 'routine' AND ref_id = OLD.id; END"##),
-    ("search_routine_ai", "routine", r##"CREATE TRIGGER search_routine_ai AFTER INSERT ON routine BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'routine' AND ref_id = NEW.id);
+   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'goal', NEW.id, NEW.title, '' WHERE NEW.deleted_at IS NULL; END"##,
+    ),
+    (
+        "search_routine_ad",
+        "routine",
+        r##"CREATE TRIGGER search_routine_ad AFTER DELETE ON routine BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'routine' AND ref_id = OLD.id);
+   DELETE FROM search_index_doc WHERE type = 'routine' AND ref_id = OLD.id; END"##,
+    ),
+    (
+        "search_routine_ai",
+        "routine",
+        r##"CREATE TRIGGER search_routine_ai AFTER INSERT ON routine BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'routine' AND ref_id = NEW.id);
    DELETE FROM search_index_doc WHERE type = 'routine' AND ref_id = NEW.id; INSERT INTO search_index_doc (type, ref_id) SELECT 'routine', NEW.id WHERE NEW.deleted_at IS NULL;
-   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'routine', NEW.id, NEW.title, '' WHERE NEW.deleted_at IS NULL; END"##),
-    ("search_routine_au", "routine", r##"CREATE TRIGGER search_routine_au AFTER UPDATE OF title, deleted_at ON routine BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'routine' AND ref_id = NEW.id);
+   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'routine', NEW.id, NEW.title, '' WHERE NEW.deleted_at IS NULL; END"##,
+    ),
+    (
+        "search_routine_au",
+        "routine",
+        r##"CREATE TRIGGER search_routine_au AFTER UPDATE OF title, deleted_at ON routine BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'routine' AND ref_id = NEW.id);
    DELETE FROM search_index_doc WHERE type = 'routine' AND ref_id = NEW.id; INSERT INTO search_index_doc (type, ref_id) SELECT 'routine', NEW.id WHERE NEW.deleted_at IS NULL;
-   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'routine', NEW.id, NEW.title, '' WHERE NEW.deleted_at IS NULL; END"##),
-    ("search_task_ad", "task", r##"CREATE TRIGGER search_task_ad AFTER DELETE ON task BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'task' AND ref_id = OLD.id);
-   DELETE FROM search_index_doc WHERE type = 'task' AND ref_id = OLD.id; END"##),
-    ("search_task_ai", "task", r##"CREATE TRIGGER search_task_ai AFTER INSERT ON task BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'task' AND ref_id = NEW.id);
+   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'routine', NEW.id, NEW.title, '' WHERE NEW.deleted_at IS NULL; END"##,
+    ),
+    (
+        "search_task_ad",
+        "task",
+        r##"CREATE TRIGGER search_task_ad AFTER DELETE ON task BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'task' AND ref_id = OLD.id);
+   DELETE FROM search_index_doc WHERE type = 'task' AND ref_id = OLD.id; END"##,
+    ),
+    (
+        "search_task_ai",
+        "task",
+        r##"CREATE TRIGGER search_task_ai AFTER INSERT ON task BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'task' AND ref_id = NEW.id);
    DELETE FROM search_index_doc WHERE type = 'task' AND ref_id = NEW.id; INSERT INTO search_index_doc (type, ref_id) SELECT 'task', NEW.id WHERE NEW.deleted_at IS NULL;
-   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'task', NEW.id, NEW.title, NEW.note WHERE NEW.deleted_at IS NULL; END"##),
-    ("search_task_au", "task", r##"CREATE TRIGGER search_task_au AFTER UPDATE OF title, note, deleted_at ON task BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'task' AND ref_id = NEW.id);
+   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'task', NEW.id, NEW.title, NEW.note WHERE NEW.deleted_at IS NULL; END"##,
+    ),
+    (
+        "search_task_au",
+        "task",
+        r##"CREATE TRIGGER search_task_au AFTER UPDATE OF title, note, deleted_at ON task BEGIN DELETE FROM search_index WHERE rowid IN (SELECT id FROM search_index_doc WHERE type = 'task' AND ref_id = NEW.id);
    DELETE FROM search_index_doc WHERE type = 'task' AND ref_id = NEW.id; INSERT INTO search_index_doc (type, ref_id) SELECT 'task', NEW.id WHERE NEW.deleted_at IS NULL;
-   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'task', NEW.id, NEW.title, NEW.note WHERE NEW.deleted_at IS NULL; END"##),
-    ("sync_calendar_account_ai", "calendar_account", r##"CREATE TRIGGER sync_calendar_account_ai AFTER INSERT ON calendar_account WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+   INSERT INTO search_index (rowid, type, ref_id, title, body) SELECT last_insert_rowid(), 'task', NEW.id, NEW.title, NEW.note WHERE NEW.deleted_at IS NULL; END"##,
+    ),
+    (
+        "sync_calendar_account_ai",
+        "calendar_account",
+        r##"CREATE TRIGGER sync_calendar_account_ai AFTER INSERT ON calendar_account WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'calendar_account' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'calendar_account' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('calendar_account', NEW.id, '*');
-     END"##),
-    ("sync_calendar_account_au", "calendar_account", r##"CREATE TRIGGER sync_calendar_account_au AFTER UPDATE ON calendar_account WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_calendar_account_au",
+        "calendar_account",
+        r##"CREATE TRIGGER sync_calendar_account_au AFTER UPDATE ON calendar_account WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'calendar_account', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'calendar_account' AND row_id = NEW.id AND field = '*');
@@ -131,13 +210,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'calendar_account', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'calendar_account' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'calendar_account', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_checklist_ai", "checklist", r##"CREATE TRIGGER sync_checklist_ai AFTER INSERT ON checklist WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_checklist_ai",
+        "checklist",
+        r##"CREATE TRIGGER sync_checklist_ai AFTER INSERT ON checklist WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'checklist' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'checklist' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('checklist', NEW.id, '*');
-     END"##),
-    ("sync_checklist_au", "checklist", r##"CREATE TRIGGER sync_checklist_au AFTER UPDATE ON checklist WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_checklist_au",
+        "checklist",
+        r##"CREATE TRIGGER sync_checklist_au AFTER UPDATE ON checklist WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'checklist', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'checklist' AND row_id = NEW.id AND field = '*');
@@ -206,13 +293,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'checklist', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'checklist' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'checklist', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_checklist_item_ai", "checklist_item", r##"CREATE TRIGGER sync_checklist_item_ai AFTER INSERT ON checklist_item WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_checklist_item_ai",
+        "checklist_item",
+        r##"CREATE TRIGGER sync_checklist_item_ai AFTER INSERT ON checklist_item WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'checklist_item' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'checklist_item' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('checklist_item', NEW.id, '*');
-     END"##),
-    ("sync_checklist_item_au", "checklist_item", r##"CREATE TRIGGER sync_checklist_item_au AFTER UPDATE ON checklist_item WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_checklist_item_au",
+        "checklist_item",
+        r##"CREATE TRIGGER sync_checklist_item_au AFTER UPDATE ON checklist_item WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'checklist_item', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'checklist_item' AND row_id = NEW.id AND field = '*');
@@ -272,13 +367,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'checklist_item', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'checklist_item' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'checklist_item', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_event_ai", "event", r##"CREATE TRIGGER sync_event_ai AFTER INSERT ON event WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_event_ai",
+        "event",
+        r##"CREATE TRIGGER sync_event_ai AFTER INSERT ON event WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'event' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'event' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('event', NEW.id, '*');
-     END"##),
-    ("sync_event_au", "event", r##"CREATE TRIGGER sync_event_au AFTER UPDATE ON event WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_event_au",
+        "event",
+        r##"CREATE TRIGGER sync_event_au AFTER UPDATE ON event WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'event', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'event' AND row_id = NEW.id AND field = '*');
@@ -411,13 +514,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        DELETE FROM sync_outbox WHERE table_name = 'event' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'event', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT OR IGNORE INTO sync_outbox (table_name, row_id, field) SELECT 'reminder', r.id, '+' FROM reminder r WHERE r.target_type = 'event' AND r.target_id = NEW.id AND r.deleted_at IS NULL AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_focus_session_ai", "focus_session", r##"CREATE TRIGGER sync_focus_session_ai AFTER INSERT ON focus_session WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_focus_session_ai",
+        "focus_session",
+        r##"CREATE TRIGGER sync_focus_session_ai AFTER INSERT ON focus_session WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'focus_session' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'focus_session' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('focus_session', NEW.id, '*');
-     END"##),
-    ("sync_focus_session_au", "focus_session", r##"CREATE TRIGGER sync_focus_session_au AFTER UPDATE ON focus_session WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_focus_session_au",
+        "focus_session",
+        r##"CREATE TRIGGER sync_focus_session_au AFTER UPDATE ON focus_session WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'focus_session', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'focus_session' AND row_id = NEW.id AND field = '*');
@@ -513,13 +624,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'focus_session', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'focus_session' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'focus_session', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_goal_ai", "goal", r##"CREATE TRIGGER sync_goal_ai AFTER INSERT ON goal WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_goal_ai",
+        "goal",
+        r##"CREATE TRIGGER sync_goal_ai AFTER INSERT ON goal WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'goal' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'goal' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('goal', NEW.id, '*');
-     END"##),
-    ("sync_goal_au", "goal", r##"CREATE TRIGGER sync_goal_au AFTER UPDATE ON goal WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_goal_au",
+        "goal",
+        r##"CREATE TRIGGER sync_goal_au AFTER UPDATE ON goal WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'goal', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'goal' AND row_id = NEW.id AND field = '*');
@@ -606,13 +725,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'goal', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'goal' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'goal', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_holiday_ai", "holiday", r##"CREATE TRIGGER sync_holiday_ai AFTER INSERT ON holiday WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_holiday_ai",
+        "holiday",
+        r##"CREATE TRIGGER sync_holiday_ai AFTER INSERT ON holiday WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'holiday' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'holiday' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('holiday', NEW.id, '*');
-     END"##),
-    ("sync_holiday_au", "holiday", r##"CREATE TRIGGER sync_holiday_au AFTER UPDATE ON holiday WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_holiday_au",
+        "holiday",
+        r##"CREATE TRIGGER sync_holiday_au AFTER UPDATE ON holiday WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'holiday', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'holiday' AND row_id = NEW.id AND field = '*');
@@ -708,13 +835,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'holiday', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'holiday' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'holiday', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_project_ai", "project", r##"CREATE TRIGGER sync_project_ai AFTER INSERT ON project WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_project_ai",
+        "project",
+        r##"CREATE TRIGGER sync_project_ai AFTER INSERT ON project WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'project' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'project' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('project', NEW.id, '*');
-     END"##),
-    ("sync_project_au", "project", r##"CREATE TRIGGER sync_project_au AFTER UPDATE ON project WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_project_au",
+        "project",
+        r##"CREATE TRIGGER sync_project_au AFTER UPDATE ON project WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'project', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'project' AND row_id = NEW.id AND field = '*');
@@ -783,13 +918,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'project', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'project' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'project', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_recurrence_ai", "recurrence", r##"CREATE TRIGGER sync_recurrence_ai AFTER INSERT ON recurrence WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_recurrence_ai",
+        "recurrence",
+        r##"CREATE TRIGGER sync_recurrence_ai AFTER INSERT ON recurrence WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'recurrence' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'recurrence' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('recurrence', NEW.id, '*');
-     END"##),
-    ("sync_recurrence_au", "recurrence", r##"CREATE TRIGGER sync_recurrence_au AFTER UPDATE ON recurrence WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_recurrence_au",
+        "recurrence",
+        r##"CREATE TRIGGER sync_recurrence_au AFTER UPDATE ON recurrence WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'recurrence', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'recurrence' AND row_id = NEW.id AND field = '*');
@@ -876,13 +1019,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'recurrence', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'recurrence' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'recurrence', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_reminder_ai", "reminder", r##"CREATE TRIGGER sync_reminder_ai AFTER INSERT ON reminder WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_reminder_ai",
+        "reminder",
+        r##"CREATE TRIGGER sync_reminder_ai AFTER INSERT ON reminder WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'reminder' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'reminder' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('reminder', NEW.id, '*');
-     END"##),
-    ("sync_reminder_au", "reminder", r##"CREATE TRIGGER sync_reminder_au AFTER UPDATE ON reminder WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_reminder_au",
+        "reminder",
+        r##"CREATE TRIGGER sync_reminder_au AFTER UPDATE ON reminder WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'reminder', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'reminder' AND row_id = NEW.id AND field = '*');
@@ -951,13 +1102,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'reminder', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'reminder' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'reminder', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_routine_ai", "routine", r##"CREATE TRIGGER sync_routine_ai AFTER INSERT ON routine WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_routine_ai",
+        "routine",
+        r##"CREATE TRIGGER sync_routine_ai AFTER INSERT ON routine WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'routine' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'routine' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('routine', NEW.id, '*');
-     END"##),
-    ("sync_routine_au", "routine", r##"CREATE TRIGGER sync_routine_au AFTER UPDATE ON routine WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_routine_au",
+        "routine",
+        r##"CREATE TRIGGER sync_routine_au AFTER UPDATE ON routine WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'routine', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'routine' AND row_id = NEW.id AND field = '*');
@@ -1072,13 +1231,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        DELETE FROM sync_outbox WHERE table_name = 'routine' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT OR IGNORE INTO sync_outbox (table_name, row_id, field) SELECT 'reminder', r.id, '+' FROM reminder r WHERE r.target_type = 'routine' AND r.target_id = NEW.id AND r.deleted_at IS NULL AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_routine_log_ai", "routine_log", r##"CREATE TRIGGER sync_routine_log_ai AFTER INSERT ON routine_log WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_routine_log_ai",
+        "routine_log",
+        r##"CREATE TRIGGER sync_routine_log_ai AFTER INSERT ON routine_log WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'routine_log' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'routine_log' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('routine_log', NEW.id, '*');
-     END"##),
-    ("sync_routine_log_au", "routine_log", r##"CREATE TRIGGER sync_routine_log_au AFTER UPDATE ON routine_log WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_routine_log_au",
+        "routine_log",
+        r##"CREATE TRIGGER sync_routine_log_au AFTER UPDATE ON routine_log WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'routine_log', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'routine_log' AND row_id = NEW.id AND field = '*');
@@ -1129,13 +1296,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine_log', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'routine_log' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine_log', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_routine_pause_ai", "routine_pause", r##"CREATE TRIGGER sync_routine_pause_ai AFTER INSERT ON routine_pause WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_routine_pause_ai",
+        "routine_pause",
+        r##"CREATE TRIGGER sync_routine_pause_ai AFTER INSERT ON routine_pause WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'routine_pause' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'routine_pause' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('routine_pause', NEW.id, '*');
-     END"##),
-    ("sync_routine_pause_au", "routine_pause", r##"CREATE TRIGGER sync_routine_pause_au AFTER UPDATE ON routine_pause WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_routine_pause_au",
+        "routine_pause",
+        r##"CREATE TRIGGER sync_routine_pause_au AFTER UPDATE ON routine_pause WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'routine_pause', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'routine_pause' AND row_id = NEW.id AND field = '*');
@@ -1186,13 +1361,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine_pause', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'routine_pause' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine_pause', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_settings_ai", "settings", r##"CREATE TRIGGER sync_settings_ai AFTER INSERT ON settings WHEN NOT EXISTS (SELECT 1 FROM sync_guard) AND NEW.key IN ('appleReminders.create', 'appleReminders.lastPassAt', 'appleReminders.lists', 'appleReminders.pending', 'general.firstWeekday', 'general.locale', 'general.theme', 'general.timeFormat', 'holidays.countries', 'reminders.defaultOffsets', 'reminders.eveningRecap', 'reminders.morningRecap', 'spaces.defaultSpaceId', 'tasks.carryOverUndone', 'today.hideRoutines') BEGIN
+     END"##,
+    ),
+    (
+        "sync_settings_ai",
+        "settings",
+        r##"CREATE TRIGGER sync_settings_ai AFTER INSERT ON settings WHEN NOT EXISTS (SELECT 1 FROM sync_guard) AND NEW.key IN ('appleReminders.create', 'appleReminders.lastPassAt', 'appleReminders.lists', 'appleReminders.pending', 'general.firstWeekday', 'general.locale', 'general.theme', 'general.timeFormat', 'holidays.countries', 'reminders.defaultOffsets', 'reminders.eveningRecap', 'reminders.morningRecap', 'spaces.defaultSpaceId', 'tasks.carryOverUndone', 'today.hideRoutines') BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'settings' AND row_id = NEW.key;
        DELETE FROM sync_outbox WHERE table_name = 'settings' AND row_id = NEW.key AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('settings', NEW.key, '*');
-     END"##),
-    ("sync_settings_au", "settings", r##"CREATE TRIGGER sync_settings_au AFTER UPDATE ON settings WHEN NOT EXISTS (SELECT 1 FROM sync_guard) AND NEW.key IN ('appleReminders.create', 'appleReminders.lastPassAt', 'appleReminders.lists', 'appleReminders.pending', 'general.firstWeekday', 'general.locale', 'general.theme', 'general.timeFormat', 'holidays.countries', 'reminders.defaultOffsets', 'reminders.eveningRecap', 'reminders.morningRecap', 'spaces.defaultSpaceId', 'tasks.carryOverUndone', 'today.hideRoutines') BEGIN
+     END"##,
+    ),
+    (
+        "sync_settings_au",
+        "settings",
+        r##"CREATE TRIGGER sync_settings_au AFTER UPDATE ON settings WHEN NOT EXISTS (SELECT 1 FROM sync_guard) AND NEW.key IN ('appleReminders.create', 'appleReminders.lastPassAt', 'appleReminders.lists', 'appleReminders.pending', 'general.firstWeekday', 'general.locale', 'general.theme', 'general.timeFormat', 'holidays.countries', 'reminders.defaultOffsets', 'reminders.eveningRecap', 'reminders.morningRecap', 'spaces.defaultSpaceId', 'tasks.carryOverUndone', 'today.hideRoutines') BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'settings', NEW.key, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'settings' AND row_id = NEW.key AND field = '*');
@@ -1205,13 +1388,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
        DELETE FROM sync_outbox WHERE table_name = 'settings' AND row_id = NEW.key AND field = 'value' AND OLD.value IS NOT NEW.value;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'settings', NEW.key, 'value' WHERE OLD.value IS NOT NEW.value;
-     END"##),
-    ("sync_space_ai", "space", r##"CREATE TRIGGER sync_space_ai AFTER INSERT ON space WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_space_ai",
+        "space",
+        r##"CREATE TRIGGER sync_space_ai AFTER INSERT ON space WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'space' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'space' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('space', NEW.id, '*');
-     END"##),
-    ("sync_space_au", "space", r##"CREATE TRIGGER sync_space_au AFTER UPDATE ON space WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_space_au",
+        "space",
+        r##"CREATE TRIGGER sync_space_au AFTER UPDATE ON space WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'space', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'space' AND row_id = NEW.id AND field = '*');
@@ -1271,13 +1462,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'space', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'space' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'space', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
-    ("sync_task_ai", "task", r##"CREATE TRIGGER sync_task_ai AFTER INSERT ON task WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_task_ai",
+        "task",
+        r##"CREATE TRIGGER sync_task_ai AFTER INSERT ON task WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'task' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'task' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('task', NEW.id, '*');
-     END"##),
-    ("sync_task_au", "task", r##"CREATE TRIGGER sync_task_au AFTER UPDATE ON task WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+    ),
+    (
+        "sync_task_au",
+        "task",
+        r##"CREATE TRIGGER sync_task_au AFTER UPDATE ON task WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'task', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'task' AND row_id = NEW.id AND field = '*');
@@ -1491,7 +1690,8 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
        DELETE FROM sync_outbox WHERE table_name = 'task' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'task', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT OR IGNORE INTO sync_outbox (table_name, row_id, field) SELECT 'reminder', r.id, '+' FROM reminder r WHERE r.target_type = 'task' AND r.target_id = NEW.id AND r.deleted_at IS NULL AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##),
+     END"##,
+    ),
 ];
 
 /// Corps de déclencheurs remplacés par une migration ultérieure, valables pour une base dont la version de schéma est dans `[since, until)` :
@@ -1499,12 +1699,21 @@ pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 50] = [
 /// Apple) ; elle doit être admise, et recréée avec ces corps (jamais un corps qui cite une colonne absente de la sauvegarde). La migration 0018
 /// les remplace à l'ouverture (ADR 0008 §10.2, solde la dette « Lot P » des déclencheurs).
 pub const SUPERSEDED_TRIGGERS: [(&str, &str, &str, u32, u32); 3] = [
-    ("sync_settings_ai", "settings", r##"CREATE TRIGGER sync_settings_ai AFTER INSERT ON settings WHEN NOT EXISTS (SELECT 1 FROM sync_guard) AND NEW.key IN ('general.firstWeekday', 'general.locale', 'general.theme', 'general.timeFormat', 'holidays.countries', 'reminders.defaultOffsets', 'reminders.eveningRecap', 'reminders.morningRecap', 'spaces.defaultSpaceId', 'tasks.carryOverUndone', 'today.hideRoutines') BEGIN
+    (
+        "sync_settings_ai",
+        "settings",
+        r##"CREATE TRIGGER sync_settings_ai AFTER INSERT ON settings WHEN NOT EXISTS (SELECT 1 FROM sync_guard) AND NEW.key IN ('general.firstWeekday', 'general.locale', 'general.theme', 'general.timeFormat', 'holidays.countries', 'reminders.defaultOffsets', 'reminders.eveningRecap', 'reminders.morningRecap', 'spaces.defaultSpaceId', 'tasks.carryOverUndone', 'today.hideRoutines') BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'settings' AND row_id = NEW.key;
        DELETE FROM sync_outbox WHERE table_name = 'settings' AND row_id = NEW.key AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('settings', NEW.key, '*');
-     END"##, 15, 18),
-    ("sync_settings_au", "settings", r##"CREATE TRIGGER sync_settings_au AFTER UPDATE ON settings WHEN NOT EXISTS (SELECT 1 FROM sync_guard) AND NEW.key IN ('general.firstWeekday', 'general.locale', 'general.theme', 'general.timeFormat', 'holidays.countries', 'reminders.defaultOffsets', 'reminders.eveningRecap', 'reminders.morningRecap', 'spaces.defaultSpaceId', 'tasks.carryOverUndone', 'today.hideRoutines') BEGIN
+     END"##,
+        15,
+        18,
+    ),
+    (
+        "sync_settings_au",
+        "settings",
+        r##"CREATE TRIGGER sync_settings_au AFTER UPDATE ON settings WHEN NOT EXISTS (SELECT 1 FROM sync_guard) AND NEW.key IN ('general.firstWeekday', 'general.locale', 'general.theme', 'general.timeFormat', 'holidays.countries', 'reminders.defaultOffsets', 'reminders.eveningRecap', 'reminders.morningRecap', 'spaces.defaultSpaceId', 'tasks.carryOverUndone', 'today.hideRoutines') BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'settings', NEW.key, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'settings' AND row_id = NEW.key AND field = '*');
@@ -1517,8 +1726,14 @@ pub const SUPERSEDED_TRIGGERS: [(&str, &str, &str, u32, u32); 3] = [
        ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
        DELETE FROM sync_outbox WHERE table_name = 'settings' AND row_id = NEW.key AND field = 'value' AND OLD.value IS NOT NEW.value;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'settings', NEW.key, 'value' WHERE OLD.value IS NOT NEW.value;
-     END"##, 15, 18),
-    ("sync_task_au", "task", r##"CREATE TRIGGER sync_task_au AFTER UPDATE ON task WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     END"##,
+        15,
+        18,
+    ),
+    (
+        "sync_task_au",
+        "task",
+        r##"CREATE TRIGGER sync_task_au AFTER UPDATE ON task WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'task', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'task' AND row_id = NEW.id AND field = '*');
@@ -1714,7 +1929,10 @@ pub const SUPERSEDED_TRIGGERS: [(&str, &str, &str, u32, u32); 3] = [
        DELETE FROM sync_outbox WHERE table_name = 'task' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'task', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT OR IGNORE INTO sync_outbox (table_name, row_id, field) SELECT 'reminder', r.id, '+' FROM reminder r WHERE r.target_type = 'task' AND r.target_id = NEW.id AND r.deleted_at IS NULL AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
-     END"##, 15, 18),
+     END"##,
+        15,
+        18,
+    ),
 ];
 
 /// Version de schéma à partir de laquelle le corps de référence actuel est valable : 18 pour les trois déclencheurs remplacés par la migration 0018
@@ -1730,8 +1948,14 @@ pub fn introduced_in(name: &str) -> u32 {
 /// Corps admis pour ce déclencheur dans une base de cette version de schéma : un corps remplacé valable à cette version, sinon le corps de
 /// référence s'il existe déjà à cette version ; `None` : déclencheur inconnu ou pas encore introduit (la sauvegarde est refusée).
 pub fn trigger_body_for(name: &str, table: &str, version: u32) -> Option<&'static str> {
-    if let Some((_, _, sql, _, _)) = SUPERSEDED_TRIGGERS.iter().find(|(n, t, _, since, until)| *n == name && *t == table && version >= *since && version < *until) {
+    if let Some((_, _, sql, _, _)) = SUPERSEDED_TRIGGERS.iter().find(|(n, t, _, since, until)| {
+        *n == name && *t == table && version >= *since && version < *until
+    }) {
         return Some(sql);
     }
-    REFERENCE_TRIGGERS.iter().find(|(n, t, _)| *n == name && *t == table).filter(|_| version >= introduced_in(name)).map(|(_, _, sql)| *sql)
+    REFERENCE_TRIGGERS
+        .iter()
+        .find(|(n, t, _)| *n == name && *t == table)
+        .filter(|_| version >= introduced_in(name))
+        .map(|(_, _, sql)| *sql)
 }

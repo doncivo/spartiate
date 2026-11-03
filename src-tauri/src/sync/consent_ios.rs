@@ -29,7 +29,13 @@ impl IosConsentUi {
 
 /// Arguments de `confirm` : titre = consigne, message = explication (détail compris), libellés des deux boutons de la boîte.
 pub fn confirm_args(spec: &DialogSpec) -> Value {
-    let label = |id: i32| spec.buttons.iter().find(|(button, _)| *button == id).map(|(_, text)| text.clone()).unwrap_or_default();
+    let label = |id: i32| {
+        spec.buttons
+            .iter()
+            .find(|(button, _)| *button == id)
+            .map(|(_, text)| text.clone())
+            .unwrap_or_default()
+    };
     json!({ "title": spec.texts.instruction, "message": spec.texts.content, "confirm": label(ID_CONFIRM), "cancel": label(IDCANCEL) })
 }
 
@@ -38,7 +44,14 @@ impl ConsentUi for IosConsentUi {
         match self.transport.call("appState", json!({})) {
             Ok(value) => value.get("state").and_then(Value::as_str) == Some("active"),
             Err(code) => {
-                log::event("consent-app-state-failed", if code == "not-foreground" { "not-foreground" } else { "io" });
+                log::event(
+                    "consent-app-state-failed",
+                    if code == "not-foreground" {
+                        "not-foreground"
+                    } else {
+                        "io"
+                    },
+                );
                 false
             }
         }
@@ -48,7 +61,14 @@ impl ConsentUi for IosConsentUi {
         match self.transport.call("confirm", confirm_args(spec)) {
             Ok(value) => value.get("confirmed").and_then(Value::as_bool) == Some(true),
             Err(code) => {
-                log::event("consent-alert-failed", if code == "not-foreground" { "not-foreground" } else { "io" });
+                log::event(
+                    "consent-alert-failed",
+                    if code == "not-foreground" {
+                        "not-foreground"
+                    } else {
+                        "io"
+                    },
+                );
                 false
             }
         }

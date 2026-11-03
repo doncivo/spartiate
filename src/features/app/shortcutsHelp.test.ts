@@ -4,29 +4,17 @@ import { SHORTCUTS, type ShortcutId } from './shortcuts';
 import { RESERVED_SHORTCUTS, appShortcutUsing, buildHelpGroups, formatChord, spokenChord } from './shortcutsHelp';
 
 /**
- * Tableau « Raccourcis clavier PC » de docs/PRD.md section 5, copié à la date de livraison de P-08 (décision D3 : le test
- * fige son contenu ; le PRD reste la référence si Ali le modifie). Chaque cellule « Raccourci » est développée en ses combinaisons.
+ * Table des raccourcis clavier PC de Spartiate, figée par le test (la table a été réduite aux 5 onglets, à l'annulation, aux
+ * Réglages, à l'aide et à Échap ; les raccourcis des tâches, de la Semaine, des listes et la capture rapide ont disparu).
+ * Chaque cellule « Raccourci » est développée en ses combinaisons.
  */
 const PRD_SECTION_5: ReadonlyArray<{ readonly shortcut: string; readonly scope: string }> = [
-  { shortcut: 'Ctrl+Alt+Espace', scope: 'Global, même app réduite' },
-  { shortcut: 'Ctrl+N', scope: 'Application' },
-  { shortcut: 'Ctrl+K', scope: 'Application' },
   { shortcut: 'Alt+1', scope: 'Application' },
-  { shortcut: 'Alt+2 à Alt+6', scope: 'Application' },
-  { shortcut: 'Ctrl+← / Ctrl+→', scope: 'Semaine' },
-  { shortcut: 'Ctrl+1 / Ctrl+2 / Ctrl+3', scope: 'Application' },
-  { shortcut: 'Espace', scope: 'Listes' },
-  { shortcut: 'Entrée', scope: 'Listes' },
-  { shortcut: '↑ / ↓', scope: 'Listes' },
-  { shortcut: 'Alt+↑ / Alt+↓', scope: 'Listes' },
-  { shortcut: 'Ctrl+D', scope: 'Listes' },
-  { shortcut: 'Suppr', scope: 'Listes' },
+  { shortcut: 'Alt+2 à Alt+5', scope: 'Application' },
   { shortcut: 'Ctrl+Z', scope: 'Application' },
-  { shortcut: 'Ctrl+Maj+F', scope: 'Listes' },
   { shortcut: 'Ctrl+,', scope: 'Application' },
   { shortcut: 'Ctrl+/', scope: 'Application' },
   { shortcut: 'Échap', scope: 'Application' },
-  { shortcut: 'Ctrl+Maj+D', scope: 'Listes' },
 ];
 
 const SCOPE_LABEL: Record<string, string> = { global: 'Global', app: 'Application', list: 'Listes', week: 'Semaine' };
@@ -41,18 +29,18 @@ function expand(cell: string): string[] {
   return cell.split(' / ').map((part) => part.trim());
 }
 
-/** Raccourcis du registre absents de la section 5 : extension de S-02 (Alt+←/→ déplace une carte de la Semaine). */
-const BEYOND_PRD: readonly ShortcutId[] = ['week.moveEarlier', 'week.moveLater'];
+/** Raccourcis du registre absents de la table : aucun. */
+const BEYOND_PRD: readonly ShortcutId[] = [];
 
 describe('liste des raccourcis = PRD section 5 (P-08 critère 4)', () => {
   const ids = Object.keys(SHORTCUTS) as ShortcutId[];
   const french = (id: ShortcutId): string => formatChord(SHORTCUTS[id].keys);
 
-  it('le tableau du PRD compte 19 lignes', () => {
-    expect(PRD_SECTION_5).toHaveLength(19);
+  it('la table compte 6 lignes', () => {
+    expect(PRD_SECTION_5).toHaveLength(6);
   });
 
-  it('chaque combinaison du PRD existe dans le registre, avec sa portée et une description', () => {
+  it('chaque combinaison de la table existe dans le registre, avec sa portée et une description', () => {
     for (const row of PRD_SECTION_5) {
       for (const chord of expand(row.shortcut)) {
         const found = ids.filter((id) => french(id) === chord);
@@ -64,7 +52,7 @@ describe('liste des raccourcis = PRD section 5 (P-08 critère 4)', () => {
     }
   });
 
-  it('le registre ne contient rien d’autre que le PRD, hors l’extension nommée de la Semaine', () => {
+  it('le registre ne contient rien d’autre que la table', () => {
     const prd = new Set(PRD_SECTION_5.flatMap((row) => expand(row.shortcut)));
     const extra = ids.filter((id) => !prd.has(french(id)));
     expect(extra.sort()).toEqual([...BEYOND_PRD].sort());
@@ -90,55 +78,38 @@ describe('formatChord et spokenChord (P-08 critères 2 et 9)', () => {
 });
 
 describe('buildHelpGroups', () => {
-  const quickCapture = { keys: 'Ctrl+Alt+Space', state: 'active' } as const;
   const labels = (input: Parameters<typeof buildHelpGroups>[0]) => buildHelpGroups(input).map((g) => g.label);
+  const idsOf = (input: Parameters<typeof buildHelpGroups>[0]) => buildHelpGroups(input).flatMap((g) => g.entries).map((e) => e.id);
 
-  it('groupe par portée : Global, Application, Listes, Semaine', () => {
-    expect(labels({ quickCapture, activeIds: [] })).toEqual(['Global', 'Application', 'Listes', 'Semaine']);
+  it('groupe par portée : seul le groupe Application subsiste', () => {
+    expect(labels({ activeIds: [] })).toEqual(['Application']);
   });
 
-  it('montre la combinaison réellement configurée, « désactivé » ou « indisponible » (critère 3)', () => {
-    const entry = (state: 'active' | 'off' | 'unavailable', keys: string) =>
-      buildHelpGroups({ quickCapture: { keys, state }, activeIds: [] })[0]?.entries[0];
-    expect(entry('active', 'Ctrl+Shift+Space')).toMatchObject({ keys: 'Ctrl+Maj+Espace', note: null, dimmed: false });
-    expect(entry('unavailable', 'Ctrl+Alt+Space')).toMatchObject({ note: 'indisponible', dimmed: true });
-    expect(entry('off', 'Ctrl+Alt+Space')).toMatchObject({ note: 'désactivé', dimmed: true });
-  });
-
-  it('grise les raccourcis de la Semaine et des listes quand l’écran ne les gère pas (critère 8)', () => {
-    const find = (groups: ReturnType<typeof buildHelpGroups>, id: ShortcutId) => groups.flatMap((g) => g.entries).find((e) => e.id === id);
-    const none = buildHelpGroups({ quickCapture, activeIds: [] });
-    expect(find(none, 'week.next')).toMatchObject({ dimmed: true, note: '(dans la Semaine)' });
-    expect(find(none, 'list.complete')).toMatchObject({ dimmed: true, note: '(dans une liste)' });
-    expect(find(none, 'app.newTask')).toMatchObject({ dimmed: false, note: null });
-    const inWeek = buildHelpGroups({ quickCapture, activeIds: ['week.next', 'list.complete'] });
-    expect(find(inWeek, 'week.next')).toMatchObject({ dimmed: false, note: null });
-    expect(find(inWeek, 'list.complete')).toMatchObject({ dimmed: false, note: null });
-  });
-
-  it('Ctrl+Maj+F (Focus) est branché depuis F-01 : plus aucun raccourci réservé, plus de mention « bientôt »', () => {
+  it('aucun raccourci n’est réservé : plus de mention « bientôt », aucun n’est grisé', () => {
     expect(RESERVED_SHORTCUTS).toEqual([]);
-    const entry = buildHelpGroups({ quickCapture, activeIds: ['list.focus'] })
-      .flatMap((g) => g.entries)
-      .find((e) => e.id === 'list.focus');
-    expect(entry).toMatchObject({ keys: 'Ctrl+Maj+F', note: null, dimmed: false });
+    const entries = buildHelpGroups({ activeIds: [] }).flatMap((g) => g.entries);
+    expect(entries).toHaveLength(Object.keys(SHORTCUTS).length);
+    for (const entry of entries) expect(entry).toMatchObject({ note: null, dimmed: false });
+    expect(entries.find((e) => e.id === 'app.undo')).toMatchObject({ keys: 'Ctrl+Z' });
   });
 
   it('la recherche instantanée restreint la liste, sans tenir compte des accents ni de la casse (critère 7)', () => {
-    const groups = buildHelpGroups({ quickCapture, activeIds: [], query: 'REGLAGES' });
-    const found = groups.flatMap((g) => g.entries).map((e) => e.id);
+    const found = idsOf({ activeIds: [], query: 'REGLAGES' });
     expect(found).toContain('app.settings');
-    expect(found).toContain('app.tab.settings');
-    expect(found).not.toContain('app.newTask');
-    expect(buildHelpGroups({ quickCapture, activeIds: [], query: 'zzzz' })).toEqual([]);
-    expect(buildHelpGroups({ quickCapture, activeIds: [], query: 'ctrl+maj' }).flatMap((g) => g.entries).map((e) => e.id)).toEqual([
-      'list.focus',
-      'list.duplicate',
+    expect(found).not.toContain('app.undo');
+    expect(buildHelpGroups({ activeIds: [], query: 'zzzz' })).toEqual([]);
+    expect(idsOf({ activeIds: [], query: 'ctrl+z' })).toEqual(['app.undo']);
+    expect(idsOf({ activeIds: [], query: 'alt+' })).toEqual([
+      'app.tab.today',
+      'app.tab.training',
+      'app.tab.nutrition',
+      'app.tab.progress',
+      'app.tab.more',
     ]);
   });
 
   it('chaque entrée porte une description et des touches annoncées', () => {
-    for (const entry of buildHelpGroups({ quickCapture, activeIds: [] }).flatMap((g) => g.entries)) {
+    for (const entry of buildHelpGroups({ activeIds: [] }).flatMap((g) => g.entries)) {
       expect(entry.description).not.toBe('');
       expect(entry.spoken).not.toBe('');
     }
@@ -147,13 +118,13 @@ describe('buildHelpGroups', () => {
 
 describe('appShortcutUsing (D-04 critère 6)', () => {
   it('repère une combinaison déjà prise par l’application', () => {
-    expect(appShortcutUsing('Ctrl+N')).toBe('app.newTask');
-    expect(appShortcutUsing('Ctrl+K')).toBe('app.search');
-    expect(appShortcutUsing('Alt+3')).toBe('app.tab.routines');
+    expect(appShortcutUsing('Ctrl+Z')).toBe('app.undo');
+    expect(appShortcutUsing('Ctrl+/')).toBe('app.shortcutsHelp');
+    expect(appShortcutUsing('Alt+3')).toBe('app.tab.nutrition');
   });
 
-  it('ignore la combinaison globale elle-même et les combinaisons libres', () => {
-    expect(appShortcutUsing('Ctrl+Alt+Space')).toBeNull();
+  it('ignore les combinaisons libres', () => {
+    expect(appShortcutUsing('Ctrl+K')).toBeNull();
     expect(appShortcutUsing('Ctrl+Shift+Space')).toBeNull();
     expect(appShortcutUsing('pas une combinaison')).toBeNull();
   });

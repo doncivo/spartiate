@@ -1,10 +1,10 @@
 import { defineConfig, type PlaywrightTestConfig } from '@playwright/test';
-import { E2E_DEV_PORT, E2E_PREVIEW_PORT, E2E_SIM_PORTS, E2E_WEBKIT_PORT, simUrl } from './tests/sim/ports';
+import { E2E_DEV_PORT, E2E_PREVIEW_PORT, E2E_WEBKIT_PORT } from './tests/sim/ports';
 
 /**
- * Ports de la suite e2e (voir tests/sim/ports.ts). Par défaut : Vite 1420, simulateurs 53701 (Google), 53702 (CalDAV), 53703 (dossier iCloud).
+ * Ports de la suite e2e (voir tests/sim/ports.ts). Par défaut : Vite 1420, simulateur de dossier iCloud 53703.
  * Plusieurs copies de travail en même temps : poser une base distincte et libre par copie, par exemple
- *   CT_E2E_PORT_BASE=41000 npx playwright test --project=pc     (Vite 41000, simulateurs 41001 à 41003)
+ *   CT_E2E_PORT_BASE=41000 npx playwright test --project=pc     (Vite 41000, simulateur de dossier 41003)
  *   $env:CT_E2E_PORT_BASE=41010; npx playwright test            (PowerShell)
  * Le serveur de développement n'est JAMAIS réutilisé (reuseExistingServer: false, en local comme en CI) : si le port est déjà pris,
  * Playwright s'arrête avec « already used » au lieu de tester le serveur d'une autre copie.
@@ -15,9 +15,6 @@ const PERF_URL = `http://localhost:${String(E2E_PREVIEW_PORT)}`;
 
 const SIM_ENV_DEV = {
   CT_DEV_PORT: String(E2E_DEV_PORT),
-  VITE_CT_GOOGLE_SIM: simUrl(E2E_SIM_PORTS.google),
-  VITE_CT_CALDAV_SIM: simUrl(E2E_SIM_PORTS.caldav),
-  VITE_CT_GOOGLE_SIM_CLIENT_ID: 'sim-client.apps.googleusercontent.com',
 };
 
 /** Projet des mesures @perf : défini avec son serveur de production seulement quand `CT_E2E_PERF=1` (job perf de la CI, `npm run test:perf:e2e`). */
@@ -62,8 +59,8 @@ const WEBKIT_SERVER: NonNullable<PlaywrightTestConfig['webServer']> = {
 };
 const WEBKIT_PROJECT: NonNullable<PlaywrightTestConfig['projects']>[number] = {
   name: 'iphone-webkit',
-  // T-14 correctif : la roue au doigt (défilement, scroll-snap) se vérifie aussi dans le moteur de l'iPhone.
-  testMatch: /(IOS-titres|T-14-roue-tactile|UI-REFONTE-01)\.spec\.ts$/,
+  // SPA-001b : écrans conservés (Logs, sauvegardes, restauration interrompue) vérifiés aussi dans le moteur de l'iPhone ; les specs de titres et de roue sont retirées.
+  testMatch: /lot-f-screens\.spec\.ts$/,
   use: {
     browserName: 'webkit',
     viewport: { width: 440, height: 956 },

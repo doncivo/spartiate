@@ -3,18 +3,16 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId, type IsoDateTime } from '../../domain/types';
 import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
-import { DEFAULT_LOCALE, setLocale, t } from '../../i18n';
+import { t } from '../../i18n';
 import type { SyncPhase } from '../../platform/sync/types';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer, type AppContainer } from '../app/container';
 import { trayLabels } from '../app/desktop';
 import { BackupSheet } from '../settings/BackupSheet';
-import { trashStore } from '../tasks/trashStore';
 import { createMemoryBackup } from '../../platform/backup';
-import { applyRemoteChanges } from './remoteChanges';
 import { SyncStatusLine } from './SyncStatusLine';
 import { formatCount } from './syncText';
-import { createFakeSyncService, nextChange, type FakeSyncService } from './testKit';
+import { createFakeSyncService, type FakeSyncService } from './testKit';
 
 /**
  * QA du lot Y2, côté écran (Y-02 critère 16, Y-03 critères 7 et 8, Y-05 critère 2) : tous les états d'erreur laissent le bouton actif
@@ -36,7 +34,6 @@ beforeEach(async () => {
 
 afterEach(async () => {
   cleanup();
-  setLocale(DEFAULT_LOCALE);
   await db.close();
 });
 
@@ -105,21 +102,15 @@ describe('accessibilité du bouton (Y-03 critère 8)', () => {
 });
 
 describe('menu de la zone de notification et langue (Y-03 critères 4 et 8)', () => {
-  it('« Synchroniser maintenant » en français puis en anglais, jamais en dur', () => {
-    expect(trayLabels(null, true).sync).toBe('Synchroniser maintenant');
-    setLocale('en');
-    const english = trayLabels(null, true).sync;
-    expect(english).toBe(t('desktop.tray.sync'));
-    expect(english).not.toBe('Synchroniser maintenant');
-    expect(english.length).toBeGreaterThan(3);
+  it('« Synchroniser maintenant » vient du catalogue, pas du code', () => {
+    expect(trayLabels(true).sync).toBe('Synchroniser maintenant');
+    expect(trayLabels(true).sync).toBe(t('desktop.tray.sync'));
   });
 });
 
 describe('nombres de l’arrivée selon la langue (Ordre 4)', () => {
-  it('groupement de milliers suivant la langue courante, pas une locale en dur', () => {
+  it('groupement de milliers à la française', () => {
     expect(formatCount(1200).replace(/\s/g, ' ')).toBe('1 200');
-    setLocale('en');
-    expect(formatCount(1200)).toBe('1,200');
   });
 });
 
@@ -142,29 +133,5 @@ describe('feuille de sauvegarde (Y-02 critère 13)', () => {
     sheet(without);
     await screen.findByRole('heading', { level: 2 });
     expect(screen.queryByText(/Cet appareil est associé/)).toBeNull();
-  });
-});
-
-describe('rechargement après un lot reçu (Y-02 critère 18)', () => {
-  it('la corbeille ouverte se recharge quand une tâche est touchée : une suppression reçue y apparaît', async () => {
-    const task = await db.data.repos.tasks.create({
-      id: asEntityId('12000000-0000-4000-8000-000000000002'), spaceId: asEntityId('00000000-0000-4000-8000-000000000001'), projectId: null, title: 'Supprimée ailleurs', note: '', date: null, time: null,
-      status: 'todo', doneAt: null, sortOrder: 1, carriedOver: false, recurrenceId: null, seriesIndex: null, seriesTemplate: null, goalId: null, icon: null, someday: false, source: 'local', externalId: null, appleListId: null, appleRecurring: false, externalEventId: null,
-    });
-    const trash = trashStore.get(container);
-    await trash.getState().load('all');
-    expect(trash.getState().tasks).toEqual([]);
-    await db.data.repos.tasks.softDelete([task.id]);
-    // Attente : le changement du magasin de la corbeille lui-même (Y-TECH-02, aucun sondage).
-    const reloaded = nextChange(trash, () => trash.getState().tasks.length > 0);
-    await applyRemoteChanges(container, { tables: new Set(['task']), ids: new Map([['task', new Set([task.id])]]) });
-    await reloaded;
-    expect(trash.getState().tasks.map((x) => x.id)).toEqual([task.id]);
-  });
-
-  it('corbeille jamais ouverte : aucun chargement inutile', async () => {
-    const trash = trashStore.get(container);
-    await applyRemoteChanges(container, { tables: new Set(['task']), ids: new Map([['task', new Set(['12000000-0000-4000-8000-000000000003'])]]) });
-    expect(trash.getState().status).toBe('idle');
   });
 });
