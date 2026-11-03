@@ -33,14 +33,14 @@ describe('registre complet (D-04 critères 1 et 4)', () => {
     expect(spy).toHaveBeenCalledTimes(SHORTCUTS[id].inEditable ? 1 : 0);
   });
 
-  it('Espace, Suppr, Ctrl+D, Ctrl+Maj+D, ↑ / ↓ et Ctrl+Z ne sont jamais pris dans un champ', () => {
-    for (const id of ['list.complete', 'list.delete', 'list.postponeTomorrow', 'list.duplicate', 'list.previous', 'list.next', 'app.undo'] as const) {
+  it('Ctrl+Z n’est jamais pris dans un champ', () => {
+    for (const id of ['app.undo'] as const) {
       expect(SHORTCUTS[id].inEditable, id).toBe(false);
     }
   });
 
-  it('Ctrl+/, Ctrl+, , Échap et Alt+1..6 restent actifs dans un champ', () => {
-    for (const id of ['app.shortcutsHelp', 'app.settings', 'app.escape', 'app.tab.tasks', 'app.tab.settings', 'app.space.pro'] as const) {
+  it('Ctrl+/, Ctrl+, , Échap et Alt+1..5 restent actifs dans un champ', () => {
+    for (const id of ['app.shortcutsHelp', 'app.settings', 'app.escape', 'app.tab.today', 'app.tab.training', 'app.tab.nutrition', 'app.tab.progress', 'app.tab.more'] as const) {
       expect(SHORTCUTS[id].inEditable, id).toBe(true);
     }
   });

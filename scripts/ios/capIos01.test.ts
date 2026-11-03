@@ -22,7 +22,7 @@ const FORBIDDEN = [
 ];
 
 /** Clés d'usage de l'app (Rappels Apple : K-05, fusionné ; écart 8 de l'ADR 0015 soldé). */
-const USAGE_KEYS = ['NSCameraUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'NSFaceIDUsageDescription', 'NSRemindersFullAccessUsageDescription'];
+const USAGE_KEYS = ['NSCameraUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'NSFaceIDUsageDescription'];
 
 /** Heuristique de langue : au moins deux mots français courants et aucun mot anglais courant. */
 function looksFrench(text: string): boolean {

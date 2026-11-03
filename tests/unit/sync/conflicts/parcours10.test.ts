@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { uuidGenerator } from '../../../../src/domain/id';
 import type { TaskId } from '../../../../src/domain/types';
-import { createTaskEntities } from '../../../../src/features/app/taskEntities';
 import { createUndoStack } from '../../../../src/features/app/undo';
 import { createSyncConflictUseCases, type SyncConflictUseCases } from '../../../../src/features/sync/syncConflictUseCases';
 import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
@@ -36,7 +35,7 @@ async function twoDevices(): Promise<[SimDevice, SimDevice]> {
 }
 
 const conflictsOf = (d: SimDevice): SyncConflictUseCases =>
-  createSyncConflictUseCases({ clock: d.clock, ids: uuidGenerator, data: d.data, undo: createUndoStack(), taskEntities: createTaskEntities(), logger: d.logger });
+  createSyncConflictUseCases({ clock: d.clock, ids: uuidGenerator, data: d.data, undo: createUndoStack(), logger: d.logger });
 
 const conflictLog = (d: SimDevice) =>
   d.driver.select('SELECT table_name, row_id, field, kept_value, discarded_value, kept_device, discarded_device, kept_hlc, discarded_hlc FROM conflict_log ORDER BY id');
@@ -126,7 +125,7 @@ describe('parcours 10 : conflit hors ligne, consultation et restauration', () =>
     await iphone.cycle();
 
     const undo = createUndoStack();
-    const useCases = createSyncConflictUseCases({ clock: pc.clock, ids: uuidGenerator, data: pc.data, undo, taskEntities: createTaskEntities(), logger: pc.logger });
+    const useCases = createSyncConflictUseCases({ clock: pc.clock, ids: uuidGenerator, data: pc.data, undo, logger: pc.logger });
     const [view] = (await useCases.list(1)).items;
     pc.clock.advance(1_000);
     await useCases.restore(view?.id ?? 0);

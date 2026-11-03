@@ -12,12 +12,13 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use base64::{engine::general_purpose::STANDARD, Engine};
-use spartiate_lib::sync::bookmark::BookmarkTransport;
 use serde_json::{json, Value};
+use spartiate_lib::sync::bookmark::BookmarkTransport;
 
 use super::fault_plan::{self, Armed, Effect, Firing, Op, Plan};
 
-pub const CONTRACT: &str = include_str!("../../../../tests/fixtures/sync/folder-bookmark-contract.json");
+pub const CONTRACT: &str =
+    include_str!("../../../../tests/fixtures/sync/folder-bookmark-contract.json");
 /// Racine résolue simulée (chemin canonique d'iCloud Drive/Spartiate sur l'iPhone).
 pub const ROOT: &str = "/private/var/mobile/Library/Mobile Documents/com~apple~CloudDocs/Spartiate";
 pub const BOOKMARK: &str = "Ym9va21hcmstMQ==";
@@ -26,7 +27,12 @@ pub const FRESH_BOOKMARK: &str = "Ym9va21hcmstMg==";
 #[derive(Clone, Debug)]
 pub enum Node {
     Dir,
-    File { bytes: Vec<u8>, cloud: bool, delay_ms: u64, download_error: bool },
+    File {
+        bytes: Vec<u8>,
+        cloud: bool,
+        delay_ms: u64,
+        download_error: bool,
+    },
     Link,
 }
 
@@ -78,9 +84,25 @@ fn hit(faults: &mut Option<Armed>, op: Op, path: &str) -> Option<fault_plan::Ent
 
 /// Remplace un fichier par son substitut `.<nom>.icloud` (évincé par iOS) : même contenu, `cloud`.
 fn evict_node(nodes: &mut BTreeMap<String, Node>, real: &str) {
-    let Some(Node::File { bytes, delay_ms, download_error, .. }) = nodes.remove(real) else { return };
+    let Some(Node::File {
+        bytes,
+        delay_ms,
+        download_error,
+        ..
+    }) = nodes.remove(real)
+    else {
+        return;
+    };
     let parts: Vec<String> = real.split('/').map(str::to_owned).collect();
-    nodes.insert(placeholder_key(&parts), Node::File { bytes, cloud: true, delay_ms, download_error });
+    nodes.insert(
+        placeholder_key(&parts),
+        Node::File {
+            bytes,
+            cloud: true,
+            delay_ms,
+            download_error,
+        },
+    );
 }
 
 pub struct FakePlugin {
@@ -98,12 +120,18 @@ fn key(parts: &[String]) -> String {
 pub fn placeholder_key(path: &[String]) -> String {
     let (name, dir) = path.split_last().expect("chemin non vide");
     let stub = format!(".{name}.icloud");
-    if dir.is_empty() { stub } else { format!("{}/{stub}", key(dir)) }
+    if dir.is_empty() {
+        stub
+    } else {
+        format!("{}/{stub}", key(dir))
+    }
 }
 
 /// Nom réel d'un substitut `.<nom>.icloud` (même règle que `placeholderTarget` du Swift).
 fn placeholder_target(name: &str) -> Option<&str> {
-    name.strip_prefix('.').and_then(|rest| rest.strip_suffix(".icloud")).filter(|target| !target.is_empty())
+    name.strip_prefix('.')
+        .and_then(|rest| rest.strip_suffix(".icloud"))
+        .filter(|target| !target.is_empty())
 }
 
 fn ok(value: Value) -> Result<Value, String> {
@@ -149,31 +177,63 @@ impl FakePlugin {
 
     pub fn put(&self, parts: &[&str], bytes: &[u8]) {
         self.mkdir(&parts[..parts.len() - 1]);
-        self.state.lock().unwrap().nodes.insert(parts.join("/"), Node::File { bytes: bytes.to_vec(), cloud: false, delay_ms: 0, download_error: false });
+        self.state.lock().unwrap().nodes.insert(
+            parts.join("/"),
+            Node::File {
+                bytes: bytes.to_vec(),
+                cloud: false,
+                delay_ms: 0,
+                download_error: false,
+            },
+        );
     }
 
     /// Fichier resté dans le nuage ; `delay_ms` : durée simulée du téléchargement ; `error` : iCloud rend une erreur.
     pub fn put_cloud(&self, parts: &[&str], bytes: &[u8], delay_ms: u64, error: bool) {
         self.mkdir(&parts[..parts.len() - 1]);
-        self.state.lock().unwrap().nodes.insert(parts.join("/"), Node::File { bytes: bytes.to_vec(), cloud: true, delay_ms, download_error: error });
+        self.state.lock().unwrap().nodes.insert(
+            parts.join("/"),
+            Node::File {
+                bytes: bytes.to_vec(),
+                cloud: true,
+                delay_ms,
+                download_error: error,
+            },
+        );
     }
 
     /// Y-IOS-02-FIX-02 : fichier évincé par iOS : seul le substitut `.<nom>.icloud` reste dans le dossier (listé sous le nom réel, `cloud`).
     pub fn put_evicted(&self, parts: &[&str], bytes: &[u8]) {
         self.mkdir(&parts[..parts.len() - 1]);
         let path: Vec<String> = parts.iter().map(|p| (*p).to_owned()).collect();
-        self.state.lock().unwrap().nodes.insert(placeholder_key(&path), Node::File { bytes: bytes.to_vec(), cloud: true, delay_ms: 0, download_error: false });
+        self.state.lock().unwrap().nodes.insert(
+            placeholder_key(&path),
+            Node::File {
+                bytes: bytes.to_vec(),
+                cloud: true,
+                delay_ms: 0,
+                download_error: false,
+            },
+        );
     }
 
     /// Vrai si le substitut `.<nom>.icloud` de `parts` existe encore.
     pub fn has_placeholder(&self, parts: &[&str]) -> bool {
         let path: Vec<String> = parts.iter().map(|p| (*p).to_owned()).collect();
-        self.state.lock().unwrap().nodes.contains_key(&placeholder_key(&path))
+        self.state
+            .lock()
+            .unwrap()
+            .nodes
+            .contains_key(&placeholder_key(&path))
     }
 
     /// Vrai si l'entrée `parts` (dossier ou fichier) existe.
     pub fn exists(&self, parts: &[&str]) -> bool {
-        self.state.lock().unwrap().nodes.contains_key(&parts.join("/"))
+        self.state
+            .lock()
+            .unwrap()
+            .nodes
+            .contains_key(&parts.join("/"))
     }
 
     /// Lien symbolique (sous la racine) à la place de l'entrée `parts` (et de tout ce qu'elle contenait).
@@ -192,7 +252,14 @@ impl FakePlugin {
     }
 
     pub fn calls(&self, command: &str) -> Vec<Value> {
-        self.state.lock().unwrap().calls.iter().filter(|(c, _)| c == command).map(|(_, a)| a.clone()).collect()
+        self.state
+            .lock()
+            .unwrap()
+            .calls
+            .iter()
+            .filter(|(c, _)| c == command)
+            .map(|(_, a)| a.clone())
+            .collect()
     }
 
     pub fn with<T>(&self, f: impl FnOnce(&mut FakeState) -> T) -> T {
@@ -221,12 +288,24 @@ impl FakePlugin {
 
     /// Pannes rejouées depuis l'armement (entrée, opération, chemin, rang).
     pub fn fired(&self) -> Vec<Firing> {
-        self.state.lock().unwrap().faults.as_ref().map(Armed::fired).unwrap_or_default()
+        self.state
+            .lock()
+            .unwrap()
+            .faults
+            .as_ref()
+            .map(Armed::fired)
+            .unwrap_or_default()
     }
 
     /// Entrées du plan jamais déclenchées.
     pub fn unfired(&self) -> Vec<String> {
-        self.state.lock().unwrap().faults.as_ref().map(Armed::unfired).unwrap_or_default()
+        self.state
+            .lock()
+            .unwrap()
+            .faults
+            .as_ref()
+            .map(Armed::unfired)
+            .unwrap_or_default()
     }
 
     /// Un cycle d'iCloud (compteur explicite, jamais une durée) : chaque suppression acceptée mais non propagée se rapproche de son retour ;
@@ -236,7 +315,9 @@ impl FakePlugin {
         for pending in &mut state.back {
             pending.left -= 1;
         }
-        let (due, waiting): (Vec<_>, Vec<_>) = std::mem::take(&mut state.back).into_iter().partition(|p| p.left == 0);
+        let (due, waiting): (Vec<_>, Vec<_>) = std::mem::take(&mut state.back)
+            .into_iter()
+            .partition(|p| p.left == 0);
         state.back = waiting;
         let count = due.len();
         for back in due {
@@ -254,22 +335,54 @@ impl FakePlugin {
     fn check_input(&self, command: &str, args: &Value) {
         let spec = &self.contract["commands"][command];
         assert!(spec.is_object(), "commande hors contrat : {command}");
-        let expected: BTreeSet<&str> = spec["input"].as_array().unwrap().iter().map(|v| v.as_str().unwrap()).collect();
-        let got: BTreeSet<&str> = args.as_object().map(|o| o.keys().map(String::as_str).collect()).unwrap_or_default();
-        assert_eq!(got, expected, "champs d'entrée de {command} différents du contrat");
+        let expected: BTreeSet<&str> = spec["input"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap())
+            .collect();
+        let got: BTreeSet<&str> = args
+            .as_object()
+            .map(|o| o.keys().map(String::as_str).collect())
+            .unwrap_or_default();
+        assert_eq!(
+            got, expected,
+            "champs d'entrée de {command} différents du contrat"
+        );
     }
 
     fn check_output(&self, command: &str, out: &Result<Value, String>) {
         match out {
             Ok(value) => {
-                let got: BTreeSet<String> = value.as_object().map(|o| o.keys().cloned().collect()).unwrap_or_default();
-                let shapes = self.contract["commands"][command]["output"].as_array().unwrap();
-                let matches = shapes.iter().any(|shape| shape.as_array().unwrap().iter().map(|v| v.as_str().unwrap().to_owned()).collect::<BTreeSet<_>>() == got);
+                let got: BTreeSet<String> = value
+                    .as_object()
+                    .map(|o| o.keys().cloned().collect())
+                    .unwrap_or_default();
+                let shapes = self.contract["commands"][command]["output"]
+                    .as_array()
+                    .unwrap();
+                let matches = shapes.iter().any(|shape| {
+                    shape
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .map(|v| v.as_str().unwrap().to_owned())
+                        .collect::<BTreeSet<_>>()
+                        == got
+                });
                 assert!(matches, "réponse de {command} hors contrat : {got:?}");
             }
             Err(code) => {
-                let codes: Vec<&str> = self.contract["rejectCodes"].as_array().unwrap().iter().map(|v| v.as_str().unwrap()).collect();
-                assert!(codes.contains(&code.as_str()), "code de rejet hors contrat : {code}");
+                let codes: Vec<&str> = self.contract["rejectCodes"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|v| v.as_str().unwrap())
+                    .collect();
+                assert!(
+                    codes.contains(&code.as_str()),
+                    "code de rejet hors contrat : {code}"
+                );
             }
         }
     }
@@ -281,7 +394,12 @@ impl FakePlugin {
         let mut out = Vec::new();
         for part in list {
             let part = part.as_str().ok_or_else(|| "io".to_owned())?;
-            if part.is_empty() || part == "." || part == ".." || part.contains('/') || part.contains('\0') {
+            if part.is_empty()
+                || part == "."
+                || part == ".."
+                || part.contains('/')
+                || part.contains('\0')
+            {
                 return Err("unsafe-folder".to_owned());
             }
             out.push(part.to_owned());
@@ -322,11 +440,16 @@ impl FakePlugin {
                     state.session = true;
                     state.unreachable = false;
                     let name = state.root.rsplit('/').next().unwrap_or_default().to_owned();
-                    ok(json!({ "bookmark": BOOKMARK, "path": state.root, "name": name, "kind": state.kind }))
+                    ok(
+                        json!({ "bookmark": BOOKMARK, "path": state.root, "name": name, "kind": state.kind }),
+                    )
                 }
             },
             "resolve" => {
-                if state.invalid || state.unreachable || args["bookmark"].as_str().map_or(true, str::is_empty) {
+                if state.invalid
+                    || state.unreachable
+                    || args["bookmark"].as_str().map_or(true, str::is_empty)
+                {
                     return reject("folder-unreachable");
                 }
                 state.session = true;
@@ -337,7 +460,9 @@ impl FakePlugin {
                     Value::Null
                 };
                 let name = state.root.rsplit('/').next().unwrap_or_default().to_owned();
-                ok(json!({ "path": state.root, "name": name, "kind": state.kind, "refreshed": refreshed }))
+                ok(
+                    json!({ "path": state.root, "name": name, "kind": state.kind, "refreshed": refreshed }),
+                )
             }
             "appState" => ok(json!({ "state": state.app_state })),
             // Swift : alerte refusée hors du premier plan, aucune alerte.
@@ -353,23 +478,42 @@ impl FakePlugin {
         }
     }
 
-    fn file_command(&self, state: &mut FakeState, command: &str, args: &Value) -> Result<Value, String> {
+    fn file_command(
+        &self,
+        state: &mut FakeState,
+        command: &str,
+        args: &Value,
+    ) -> Result<Value, String> {
         match command {
             "status" => {
                 let path = Self::parts(args, "path")?;
                 let absent = json!({ "exists": false, "isDir": false, "size": null, "availability": "local" });
                 if path.is_empty() {
-                    return ok(json!({ "exists": true, "isDir": true, "size": null, "availability": "local" }));
+                    return ok(
+                        json!({ "exists": true, "isDir": true, "size": null, "availability": "local" }),
+                    );
                 }
                 if !Self::walk(state, &path[..path.len() - 1])? {
                     return ok(absent);
                 }
                 ok(match state.nodes.get(&key(&path)) {
-                    None if matches!(state.nodes.get(&placeholder_key(&path)), Some(Node::File { .. })) => json!({ "exists": true, "isDir": false, "size": null, "availability": "cloud" }),
+                    None if matches!(
+                        state.nodes.get(&placeholder_key(&path)),
+                        Some(Node::File { .. })
+                    ) =>
+                    {
+                        json!({ "exists": true, "isDir": false, "size": null, "availability": "cloud" })
+                    }
                     None => absent,
-                    Some(Node::Link) => json!({ "exists": true, "isDir": false, "size": null, "availability": "error" }),
-                    Some(Node::Dir) => json!({ "exists": true, "isDir": true, "size": null, "availability": "local" }),
-                    Some(Node::File { bytes, cloud, .. }) => json!({ "exists": true, "isDir": false, "size": bytes.len(), "availability": if *cloud { "cloud" } else { "local" } }),
+                    Some(Node::Link) => {
+                        json!({ "exists": true, "isDir": false, "size": null, "availability": "error" })
+                    }
+                    Some(Node::Dir) => {
+                        json!({ "exists": true, "isDir": true, "size": null, "availability": "local" })
+                    }
+                    Some(Node::File { bytes, cloud, .. }) => {
+                        json!({ "exists": true, "isDir": false, "size": bytes.len(), "availability": if *cloud { "cloud" } else { "local" } })
+                    }
                 })
             }
             "list" => {
@@ -378,22 +522,36 @@ impl FakePlugin {
                 if !Self::walk(state, &path)? {
                     return ok(json!({ "missing": true }));
                 }
-                let prefix = if path.is_empty() { String::new() } else { format!("{}/", key(&path)) };
+                let prefix = if path.is_empty() {
+                    String::new()
+                } else {
+                    format!("{}/", key(&path))
+                };
                 if state.faults.is_some() {
                     // Pannes du plan : le dossier (`error`), puis un appel `list` par fichier listé (`placeholder` : évincé avant d'être présenté).
-                    if let Some(Effect::Error(code)) = hit(&mut state.faults, Op::List, &format!("{}/", key(&path))).map(|entry| entry.effect) {
+                    if let Some(Effect::Error(code)) =
+                        hit(&mut state.faults, Op::List, &format!("{}/", key(&path)))
+                            .map(|entry| entry.effect)
+                    {
                         return reject(code.name());
                     }
                     let files: Vec<String> = state
                         .nodes
                         .iter()
-                        .filter(|(k, node)| matches!(node, Node::File { .. }) && k.strip_prefix(&prefix).is_some_and(|rest| !rest.is_empty() && !rest.contains('/')))
+                        .filter(|(k, node)| {
+                            matches!(node, Node::File { .. })
+                                && k.strip_prefix(&prefix)
+                                    .is_some_and(|rest| !rest.is_empty() && !rest.contains('/'))
+                        })
                         .map(|(k, _)| k.clone())
                         .collect();
                     for stored in files {
                         let name = stored.strip_prefix(&prefix).unwrap_or(&stored);
-                        let real = placeholder_target(name).map_or_else(|| stored.clone(), |target| format!("{prefix}{target}"));
-                        if let Some(Effect::Placeholder) = hit(&mut state.faults, Op::List, &real).map(|entry| entry.effect) {
+                        let real = placeholder_target(name)
+                            .map_or_else(|| stored.clone(), |target| format!("{prefix}{target}"));
+                        if let Some(Effect::Placeholder) =
+                            hit(&mut state.faults, Op::List, &real).map(|entry| entry.effect)
+                        {
                             evict_node(&mut state.nodes, &real);
                         }
                     }
@@ -401,7 +559,12 @@ impl FakePlugin {
                 let mut entries = Vec::new();
                 let mut truncated = false;
                 for (k, node) in &state.nodes {
-                    let Some(name) = k.strip_prefix(&prefix).filter(|rest| !rest.is_empty() && !rest.contains('/')) else { continue };
+                    let Some(name) = k
+                        .strip_prefix(&prefix)
+                        .filter(|rest| !rest.is_empty() && !rest.contains('/'))
+                    else {
+                        continue;
+                    };
                     if entries.len() >= max {
                         truncated = true;
                         break;
@@ -431,7 +594,13 @@ impl FakePlugin {
                 // Pannes du plan, lecture d'un fichier présent et local (une lecture par pages compte comme un seul appel `read` : celui qui
                 // commence à l'octet 0) : `error`, `overwrite-before-read` (l'autre appareil a écrit entre le listage et la lecture),
                 // `evict-after-read` (évincé quand la dernière page est lue).
-                if offset == 0 && state.faults.is_some() && matches!(state.nodes.get(&file), Some(Node::File { cloud: false, .. })) {
+                if offset == 0
+                    && state.faults.is_some()
+                    && matches!(
+                        state.nodes.get(&file),
+                        Some(Node::File { cloud: false, .. })
+                    )
+                {
                     match hit(&mut state.faults, Op::Read, &file).map(|entry| entry.effect) {
                         Some(Effect::Error(code)) => return reject(code.name()),
                         Some(Effect::OverwriteBeforeRead { content }) => {
@@ -446,7 +615,9 @@ impl FakePlugin {
                     }
                 }
                 let reply = match state.nodes.get(&file) {
-                    None if state.nodes.contains_key(&placeholder_key(&path)) => return reject("cloud-pending"),
+                    None if state.nodes.contains_key(&placeholder_key(&path)) => {
+                        return reject("cloud-pending")
+                    }
                     None => return ok(json!({ "missing": true })),
                     Some(Node::Link) | Some(Node::Dir) => return reject("unsafe-folder"),
                     Some(Node::File { cloud: true, .. }) => return reject("cloud-pending"),
@@ -458,7 +629,10 @@ impl FakePlugin {
                         let end = start.saturating_add(max).min(bytes.len());
                         let data = &bytes[start..end];
                         let eof = data.len() < max || end >= bytes.len();
-                        (json!({ "data": STANDARD.encode(data), "size": bytes.len(), "eof": eof }), eof)
+                        (
+                            json!({ "data": STANDARD.encode(data), "size": bytes.len(), "eof": eof }),
+                            eof,
+                        )
                     }
                 };
                 if reply.1 && state.evict_pending.remove(&file) {
@@ -478,11 +652,23 @@ impl FakePlugin {
                 // Panne du plan `download-error` : comptée seulement si le téléchargement est tenté.
                 let stub = placeholder_key(&path);
                 if !state.nodes.contains_key(&file) {
-                    if let Some(Node::File { bytes, download_error, delay_ms, .. }) = state.nodes.get(&stub).cloned() {
+                    if let Some(Node::File {
+                        bytes,
+                        download_error,
+                        delay_ms,
+                        ..
+                    }) = state.nodes.get(&stub).cloned()
+                    {
                         if bytes.len() as u64 > limit {
                             return reject("too-large");
                         }
-                        if download_error || matches!(hit(&mut state.faults, Op::Hydrate, &file).map(|entry| entry.effect), Some(Effect::DownloadError)) {
+                        if download_error
+                            || matches!(
+                                hit(&mut state.faults, Op::Hydrate, &file)
+                                    .map(|entry| entry.effect),
+                                Some(Effect::DownloadError)
+                            )
+                        {
                             return reject("cloud-error");
                         }
                         // Même règle de durée que pour un nœud `cloud` (revue m5) : au-delà du délai accordé, `cloud-pending` et le substitut reste.
@@ -492,12 +678,25 @@ impl FakePlugin {
                         }
                         self.clock.fetch_add(delay_ms, Ordering::SeqCst);
                         state.nodes.remove(&stub);
-                        state.nodes.insert(file, Node::File { bytes, cloud: false, delay_ms: 0, download_error: false });
+                        state.nodes.insert(
+                            file,
+                            Node::File {
+                                bytes,
+                                cloud: false,
+                                delay_ms: 0,
+                                download_error: false,
+                            },
+                        );
                         return ok(json!({}));
                     }
                 }
                 match state.nodes.get_mut(&file) {
-                    Some(Node::File { bytes, cloud, delay_ms, download_error }) => {
+                    Some(Node::File {
+                        bytes,
+                        cloud,
+                        delay_ms,
+                        download_error,
+                    }) => {
                         if bytes.len() as u64 > limit {
                             return reject("too-large");
                         }
@@ -507,7 +706,10 @@ impl FakePlugin {
                         if *download_error {
                             return reject("cloud-error");
                         }
-                        if matches!(hit(&mut state.faults, Op::Hydrate, &file).map(|entry| entry.effect), Some(Effect::DownloadError)) {
+                        if matches!(
+                            hit(&mut state.faults, Op::Hydrate, &file).map(|entry| entry.effect),
+                            Some(Effect::DownloadError)
+                        ) {
                             return reject("cloud-error");
                         }
                         if *delay_ms > timeout {
@@ -523,7 +725,9 @@ impl FakePlugin {
             }
             "append" => {
                 let path = Self::parts(args, "path")?;
-                let data = STANDARD.decode(args["data"].as_str().ok_or("io")?).map_err(|_| "io".to_owned())?;
+                let data = STANDARD
+                    .decode(args["data"].as_str().ok_or("io")?)
+                    .map_err(|_| "io".to_owned())?;
                 let create = args["createNew"].as_bool().ok_or("io")?;
                 assert!(data.len() <= 1024 * 1024, "plus de 1 Mio écrit en un appel");
                 if path.is_empty() || !Self::walk(state, &path[..path.len() - 1])? {
@@ -541,7 +745,14 @@ impl FakePlugin {
                 match (state.nodes.get_mut(&file), create) {
                     (Some(_), true) => ok(json!({ "exists": true })),
                     (None, false) => ok(json!({ "missing": true })),
-                    (Some(Node::File { bytes, cloud: false, .. }), false) => {
+                    (
+                        Some(Node::File {
+                            bytes,
+                            cloud: false,
+                            ..
+                        }),
+                        false,
+                    ) => {
                         if let Some((code, partial)) = refused(&mut state.faults) {
                             if partial {
                                 bytes.extend_from_slice(&fault_plan::partial_tail(&data));
@@ -555,28 +766,56 @@ impl FakePlugin {
                     (None, true) => {
                         if let Some((code, partial)) = refused(&mut state.faults) {
                             if partial {
-                                state.nodes.insert(file, Node::File { bytes: fault_plan::partial_tail(&data), cloud: false, delay_ms: 0, download_error: false });
+                                state.nodes.insert(
+                                    file,
+                                    Node::File {
+                                        bytes: fault_plan::partial_tail(&data),
+                                        cloud: false,
+                                        delay_ms: 0,
+                                        download_error: false,
+                                    },
+                                );
                             }
                             return reject(code.name());
                         }
-                        state.nodes.insert(file, Node::File { bytes: data, cloud: false, delay_ms: 0, download_error: false });
+                        state.nodes.insert(
+                            file,
+                            Node::File {
+                                bytes: data,
+                                cloud: false,
+                                delay_ms: 0,
+                                download_error: false,
+                            },
+                        );
                         ok(json!({}))
                     }
                 }
             }
             "writeAtomic" => {
                 let path = Self::parts(args, "path")?;
-                let data = STANDARD.decode(args["data"].as_str().ok_or("io")?).map_err(|_| "io".to_owned())?;
+                let data = STANDARD
+                    .decode(args["data"].as_str().ok_or("io")?)
+                    .map_err(|_| "io".to_owned())?;
                 if path.is_empty() || !Self::walk(state, &path[..path.len() - 1])? {
                     return reject("io");
                 }
                 if matches!(state.nodes.get(&key(&path)), Some(Node::Link | Node::Dir)) {
                     return reject("unsafe-folder");
                 }
-                if let Some(Effect::Error(code)) = hit(&mut state.faults, Op::Write, &key(&path)).map(|entry| entry.effect) {
+                if let Some(Effect::Error(code)) =
+                    hit(&mut state.faults, Op::Write, &key(&path)).map(|entry| entry.effect)
+                {
                     return reject(code.name());
                 }
-                state.nodes.insert(key(&path), Node::File { bytes: data, cloud: false, delay_ms: 0, download_error: false });
+                state.nodes.insert(
+                    key(&path),
+                    Node::File {
+                        bytes: data,
+                        cloud: false,
+                        delay_ms: 0,
+                        download_error: false,
+                    },
+                );
                 ok(json!({}))
             }
             "rename" => {
@@ -593,7 +832,9 @@ impl FakePlugin {
                 match state.nodes.get(&key(&a)) {
                     None => reject("io"),
                     Some(Node::File { .. }) => {
-                        if let Some(Effect::Error(code)) = hit(&mut state.faults, Op::Rename, &key(&b)).map(|entry| entry.effect) {
+                        if let Some(Effect::Error(code)) =
+                            hit(&mut state.faults, Op::Rename, &key(&b)).map(|entry| entry.effect)
+                        {
                             return reject(code.name());
                         }
                         let node = state.nodes.remove(&key(&a)).unwrap();
@@ -633,14 +874,25 @@ impl FakePlugin {
                     Some(Node::File { .. }) => true,
                     Some(_) => false,
                 };
-                let fault = if present { hit(&mut state.faults, Op::Remove, &file).map(|entry| entry.effect) } else { None };
+                let fault = if present {
+                    hit(&mut state.faults, Op::Remove, &file).map(|entry| entry.effect)
+                } else {
+                    None
+                };
                 if let Some(Effect::Error(code)) = &fault {
                     return reject(code.name());
                 }
                 let hold = |state: &mut FakeState, stored: String, node: Node| {
-                    if let Some(Effect::AcceptNotPropagated { resurrect_after_cycles }) = &fault {
+                    if let Some(Effect::AcceptNotPropagated {
+                        resurrect_after_cycles,
+                    }) = &fault
+                    {
                         if *resurrect_after_cycles > 0 {
-                            state.back.push(Back { key: stored, node, left: *resurrect_after_cycles });
+                            state.back.push(Back {
+                                key: stored,
+                                node,
+                                left: *resurrect_after_cycles,
+                            });
                         }
                     }
                 };
@@ -649,7 +901,14 @@ impl FakePlugin {
                     // (coordination `forDeleting`, propagée à iCloud), `removed` vrai. Ce faux ne fait que refléter ce contrat. Mode historique
                     // du plan (`removeLeavesPlaceholder`, plugin d'avant Y-IOS-02-FIX-02) : rien supprimé, le substitut reste.
                     None => match state.nodes.get(&stub) {
-                        Some(Node::File { .. }) if state.faults.as_ref().is_some_and(|armed| armed.plan.remove_leaves_placeholder) => ok(json!({ "removed": false })),
+                        Some(Node::File { .. })
+                            if state
+                                .faults
+                                .as_ref()
+                                .is_some_and(|armed| armed.plan.remove_leaves_placeholder) =>
+                        {
+                            ok(json!({ "removed": false }))
+                        }
                         Some(Node::File { .. }) => {
                             let node = state.nodes.remove(&stub).expect("substitut présent");
                             hold(state, stub, node);
@@ -691,7 +950,11 @@ impl FakePlugin {
 impl BookmarkTransport for FakePlugin {
     fn call(&self, command: &str, args: Value) -> Result<Value, String> {
         self.check_input(command, &args);
-        self.state.lock().unwrap().calls.push((command.to_owned(), args.clone()));
+        self.state
+            .lock()
+            .unwrap()
+            .calls
+            .push((command.to_owned(), args.clone()));
         let out = self.run(command, &args);
         self.check_output(command, &out);
         out

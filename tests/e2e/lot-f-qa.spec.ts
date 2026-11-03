@@ -25,7 +25,7 @@ async function openSheet(page: Page, options: Parameters<typeof installFakeBacku
   await page.clock.setFixedTime(new Date('2026-10-08T08:00:00Z'));
   await installFakeBackups(page, VERSIONS, options);
   await openToday(page);
-  await tab(page, 'Réglages').click();
+  await tab(page, 'Plus').click();
   await page.getByRole('button', { name: 'Restaurer une sauvegarde' }).click();
   const sheet = page.getByRole('dialog', { name: 'Restaurer une sauvegarde' });
   await expect(sheet).toBeVisible();
@@ -87,7 +87,7 @@ test.describe('Lot F QA — P-04-iOS : échecs de la restauration', () => {
     await page.clock.setFixedTime(new Date('2026-10-08T08:00:00Z'));
     await installFakeBackups(page, [], { directory: null, failFirstDaily: true });
     await openToday(page);
-    await tab(page, 'Réglages').click();
+    await tab(page, 'Plus').click();
     await expect(page.getByTestId('backup-summary')).toContainText('Dernière sauvegarde échouée');
     await expect(page.getByTestId('backup-summary')).toHaveClass(/danger/);
     await noHorizontalScroll(page);
@@ -100,7 +100,7 @@ test.describe('Lot F QA — FILES-IOS-01 / I-04 : échecs d’enregistrement et 
     await installFakeFiles(page);
     await installLogs(page);
     await openToday(page);
-    await tab(page, 'Réglages').click();
+    await tab(page, 'Plus').click();
     await page.getByRole('button', { name: 'Ouvrir l’écran des logs' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Logs' })).toBeVisible();
   }

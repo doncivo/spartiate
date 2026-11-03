@@ -58,7 +58,10 @@ fn find(haystack: &[u8], needle: &[u8], from: usize) -> Option<usize> {
     if needle.is_empty() || haystack.len() < needle.len() || from > haystack.len() - needle.len() {
         return None;
     }
-    haystack[from..].windows(needle.len()).position(|window| window == needle).map(|offset| offset + from)
+    haystack[from..]
+        .windows(needle.len())
+        .position(|window| window == needle)
+        .map(|offset| offset + from)
 }
 
 /// Le plist XML du profil : de `<?xml` à `</plist>` compris, UTF-8 strict.
@@ -96,7 +99,14 @@ fn days_from_civil(year: i64, month: i64, day: i64) -> i64 {
 /// `AAAA-MM-JJTHH:MM:SSZ` strict : 20 caractères, chiffres ASCII, date et heure valides, année dans la plage. Rend les secondes depuis l'époque.
 fn parse_utc(text: &str) -> Option<i64> {
     let b = text.as_bytes();
-    if b.len() != 20 || b[4] != b'-' || b[7] != b'-' || b[10] != b'T' || b[13] != b':' || b[16] != b':' || b[19] != b'Z' {
+    if b.len() != 20
+        || b[4] != b'-'
+        || b[7] != b'-'
+        || b[10] != b'T'
+        || b[13] != b':'
+        || b[16] != b':'
+        || b[19] != b'Z'
+    {
         return None;
     }
     let number = |from: usize, to: usize| -> Option<i64> {
@@ -109,7 +119,12 @@ fn parse_utc(text: &str) -> Option<i64> {
     };
     let (year, month, day) = (number(0, 4)?, number(5, 7)?, number(8, 10)?);
     let (hour, minute, second) = (number(11, 13)?, number(14, 16)?, number(17, 19)?);
-    if year < YEAR_RANGE.0 || year > YEAR_RANGE.1 || !(1..=12).contains(&month) || day < 1 || day > days_in_month(year, month) {
+    if year < YEAR_RANGE.0
+        || year > YEAR_RANGE.1
+        || !(1..=12).contains(&month)
+        || day < 1
+        || day > days_in_month(year, month)
+    {
         return None;
     }
     if hour > 23 || minute > 59 || second > 59 {
@@ -121,13 +136,19 @@ fn parse_utc(text: &str) -> Option<i64> {
 /// Valeur `<date>…</date>` de la clé `name` ; `Ok(None)` si la clé est absente ; clé dupliquée, ou valeur qui ne suit pas la clé : illisible.
 fn date_of<'a>(plist: &'a str, name: &str) -> Result<Option<&'a str>, SigningError> {
     let key = format!("<key>{name}</key>");
-    let Some(first) = plist.find(&key) else { return Ok(None) };
+    let Some(first) = plist.find(&key) else {
+        return Ok(None);
+    };
     if plist[first + key.len()..].contains(&key) {
         return Err(SigningError::ProfileUnreadable);
     }
     let after = plist[first + key.len()..].trim_start_matches([' ', '\t', '\r', '\n']);
-    let value = after.strip_prefix("<date>").ok_or(SigningError::ProfileUnreadable)?;
-    let end = value.find("</date>").ok_or(SigningError::ProfileUnreadable)?;
+    let value = after
+        .strip_prefix("<date>")
+        .ok_or(SigningError::ProfileUnreadable)?;
+    let end = value
+        .find("</date>")
+        .ok_or(SigningError::ProfileUnreadable)?;
     Ok(Some(&value[..end]))
 }
 
@@ -143,7 +164,10 @@ pub fn parse_provision(bytes: &[u8]) -> Result<SigningInfo, SigningError> {
             return Err(SigningError::ProfileUnreadable);
         }
     }
-    Ok(SigningInfo { expires_at: expires_text.to_owned(), issued_at: issued_text.map(str::to_owned) })
+    Ok(SigningInfo {
+        expires_at: expires_text.to_owned(),
+        issued_at: issued_text.map(str::to_owned),
+    })
 }
 
 /// Ouvre le profil sans suivre de lien : `O_NOFOLLOW` sur unix (un lien symbolique est refusé à l'ouverture, sans fenêtre entre un contrôle
@@ -159,7 +183,10 @@ fn open_profile(path: &Path) -> std::io::Result<std::fs::File> {
     #[cfg(not(unix))]
     {
         if std::fs::symlink_metadata(path)?.file_type().is_symlink() {
-            return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "lien symbolique"));
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "lien symbolique",
+            ));
         }
     }
     options.open(path)
@@ -169,14 +196,24 @@ fn open_profile(path: &Path) -> std::io::Result<std::fs::File> {
 /// sont contrôlés sur le descripteur déjà ouvert, pas sur le chemin.
 pub fn read_profile(dir: &Path) -> Result<SigningInfo, SigningError> {
     let path = dir.join(PROFILE_FILE);
-    let file = open_profile(&path).map_err(|error| if error.kind() == std::io::ErrorKind::NotFound { SigningError::ProfileMissing } else { SigningError::ProfileUnreadable })?;
-    let meta = file.metadata().map_err(|_| SigningError::ProfileUnreadable)?;
+    let file = open_profile(&path).map_err(|error| {
+        if error.kind() == std::io::ErrorKind::NotFound {
+            SigningError::ProfileMissing
+        } else {
+            SigningError::ProfileUnreadable
+        }
+    })?;
+    let meta = file
+        .metadata()
+        .map_err(|_| SigningError::ProfileUnreadable)?;
     if !meta.file_type().is_file() || meta.len() == 0 || meta.len() > MAX_PROFILE_BYTES {
         return Err(SigningError::ProfileUnreadable);
     }
     // Borne aussi la lecture : un fichier qui grossit après le contrôle n'est pas lu en entier.
     let mut bytes = Vec::new();
-    file.take(MAX_PROFILE_BYTES + 1).read_to_end(&mut bytes).map_err(|_| SigningError::ProfileUnreadable)?;
+    file.take(MAX_PROFILE_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|_| SigningError::ProfileUnreadable)?;
     if bytes.is_empty() || bytes.len() as u64 > MAX_PROFILE_BYTES {
         return Err(SigningError::ProfileUnreadable);
     }
@@ -189,7 +226,10 @@ pub fn read_profile(dir: &Path) -> Result<SigningInfo, SigningError> {
 #[tauri::command]
 pub async fn app_signing_info() -> Result<SigningInfo, String> {
     tauri::async_runtime::spawn_blocking(|| {
-        let dir = std::env::current_exe().ok().and_then(|exe| exe.parent().map(Path::to_path_buf)).ok_or(SigningError::ProfileUnreadable)?;
+        let dir = std::env::current_exe()
+            .ok()
+            .and_then(|exe| exe.parent().map(Path::to_path_buf))
+            .ok_or(SigningError::ProfileUnreadable)?;
         read_profile(&dir)
     })
     .await

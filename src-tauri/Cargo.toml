@@ -39,16 +39,13 @@ tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rusqlite = "0.32"
-# Agendas externes (ADR 0008) : HTTP limité aux hôtes autorisés, PKCE, analyse d'URL.
-reqwest = { version = "0.13", default-features = false, features = ["rustls"] }
 url = "2"
-sha2 = "0.10"
 rand = "0.9"
 base64 = "0.22"
 tokio = { version = "1", features = ["time", "net", "io-util"] }
 # Synchronisation (ADR 0011, Y-08) : AES-256-GCM et HKDF-SHA256 par aws-lc-rs, déjà compilée (fournisseur de rustls) ; tampons de clé effacés
 # par zeroize. Fonctionnalités limitées à celles déjà actives : aucune nouvelle entrée dans Cargo.lock.
-aws-lc-rs = { version = "1", default-features = false, features = ["aws-lc-sys", "alloc"] }
+aws-lc-rs = { version = "1", default-features = false, features = ["aws-lc-sys", "alloc", "prebuilt-nasm"] }
 zeroize = "1"
 
 # Coffre système : Gestionnaire d'identification Windows, Trousseau iOS (ADR 0008 section 3).
@@ -78,10 +75,6 @@ tauri-plugin-folder-bookmark = { path = "plugins/folder-bookmark" }
 # Vision (lecture des photos de listes) et dictée sur l'appareil (CAP-IOS-01, ADR 0015) : plugins Swift locaux, appelés par Rust seul, iPhone seulement.
 tauri-plugin-vision = { path = "plugins/vision" }
 tauri-plugin-speech = { path = "plugins/speech" }
-# Connexion Google sur iPhone (K-TECH-01, ADR 0008 §9) : session d'authentification web du système, plugin Swift local, appelé par Rust seul.
-tauri-plugin-web-auth = { path = "plugins/web-auth" }
-# Rappels Apple (K-05 à K-07, ADR 0008 §10.4) : EventKit, plugin Swift local appelé par la WebView (capability reminders-ios.json). Jamais sous cfg(desktop).
-tauri-plugin-reminders = { path = "plugins/reminders" }
 # Scan du QR d'association (ADR 0011 §23 point 2, Y-IOS-02) : API du JS seulement (aucune API Rust publique), texte passé aussitôt à
 # sync_key_import. Version exacte relue (2.5.1, revue audit), alignée sur @tauri-apps/plugin-barcode-scanner ~2.5.1 ; relire le code
 # (API Rust, permissions) à chaque montée de version.
@@ -111,7 +104,6 @@ tauri-plugin-process = "2"
 tauri-plugin-opener = "2"
 # Export (H-03) : « Enregistrer sous » système, ouvert et écrit par Rust (src/export.rs) ; la WebView n'a ni dialog ni fs.
 tauri-plugin-dialog = "2"
-tauri-plugin-global-shortcut = "2"
 
 [dev-dependencies]
 # Test de sauvegarde avec un vrai WAL (même libsqlite3-sys 0.30 que sqlx).

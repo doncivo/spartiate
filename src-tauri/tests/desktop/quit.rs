@@ -19,7 +19,10 @@ fn silent_front_does_not_block_the_exit_beyond_the_grace_period() {
     let gate = QuitGate::default();
     let receiver = gate.begin();
     let started = Instant::now();
-    assert!(!wait_for_confirmation(&receiver, Duration::from_millis(100)));
+    assert!(!wait_for_confirmation(
+        &receiver,
+        Duration::from_millis(100)
+    ));
     assert!(started.elapsed() < Duration::from_secs(2));
 }
 

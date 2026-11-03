@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { TaskId } from '../../../src/domain/types';
 import { createAppContainer } from '../../../src/features/app/container';
-import { createTrashUseCases } from '../../../src/features/tasks/trashUseCases';
+import { restoreDeleted } from './purgeKit';
 import { PRO, createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../sim/syncDevice';
 
 /**
@@ -349,7 +349,7 @@ describe('restauration hors ligne contre purge : rappels (seconde revue Y2, poin
     // Horloge partagée par A et B (twoDevices).
     a.clock.advance(29 * DAY);
     const container = createAppContainer({ clock: a.clock, hlc: a.hlc, data: a.data, sync: a.service });
-    expect((await createTrashUseCases(container).restore(t.id))?.deletedAt).toBeNull();
+    expect((await restoreDeleted(container, t.id))?.deletedAt).toBeNull();
     expect(await a.driver.select('SELECT id FROM reminder WHERE deleted_at IS NULL ORDER BY id')).toHaveLength(2);
     a.clock.advance(2 * DAY);
     await b.cycle();

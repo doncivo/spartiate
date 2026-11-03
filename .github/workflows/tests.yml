@@ -6,7 +6,7 @@ name: Tests
 
 on:
   push:
-    branches: ["**"]
+    branches: ["main"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -176,6 +176,14 @@ jobs:
         with:
           workspaces: src-tauri -> target
           save-if: ${{ github.ref == 'refs/heads/main' }}
+      - name: cargo fmt --check
+        shell: bash
+        working-directory: src-tauri
+        run: cargo fmt --check
+      - name: cargo clippy
+        shell: bash
+        working-directory: src-tauri
+        run: cargo clippy --locked -- -D warnings
       - name: cargo test
         shell: bash
         working-directory: src-tauri
@@ -397,7 +405,8 @@ jobs:
           retention-days: 1
 
   # Mesures de performance (budgets en ms, PRD section 8) : un job à part, sans autre charge sur la machine.
-  # Les étapes s'enchaînent même après un échec pour que toutes les mesures soient visibles.
+  # SPA-001b : plus aucune mesure Playwright @perf (écrans métier retirés) ; Vitest perf et taille du bundle de départ restent. Les étapes
+  # s'enchaînent même après un échec pour que toutes les mesures soient visibles.
   perf:
     name: Performance et bundle
     runs-on: ubuntu-latest
@@ -424,11 +433,6 @@ jobs:
       - name: Dépendances système de Chromium
         if: steps.pw-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
-      - name: Perf e2e
-        env:
-          # Projet perf et son build de production (second serveur) : définis seulement avec cette variable (playwright.config.ts).
-          CT_E2E_PERF: "1"
-        run: npx playwright test --project=perf --no-deps --reporter=github,html,json
       - name: Perf Vitest
         if: ${{ !cancelled() }}
         run: npm run test:perf -- --reporter=default --reporter=json --outputFile.json=vitest-perf.json

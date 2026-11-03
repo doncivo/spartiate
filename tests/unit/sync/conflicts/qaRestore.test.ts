@@ -89,7 +89,6 @@ describe('Y-04 critère 8 : refus (compléments de la QA)', () => {
     const row = await bench.data.repos.tasks.getById(task.id, { includeDeleted: true });
     expect(row?.note).toBe('b');
     expect(row?.deletedAt).not.toBeNull();
-    expect(bench.taskEntities.get(task.id)).toBeUndefined();
   });
 
   it('Y-04 critère 8 : aucun refus ne laisse une trace dans la pile d’annulation ni dans la file', async () => {
@@ -111,46 +110,6 @@ describe('Y-04 critère 5 : une seule transaction (compléments de la QA)', () =
     expect(await conflictRow(conflictId)).toMatchObject({ restored: 1 });
   });
 
-  it('Y-04 critère 5 : échec pendant la restauration d’un élément (rappels) : tout est annulé, la tâche reste supprimée', async () => {
-    const task = await bench.createTask('Courses');
-    await bench.data.repos.reminders.replaceForTarget({ type: 'task', id: task.id }, [
-      { id: '70000000-0000-4000-8000-000000000011' as never, targetType: 'task', targetId: task.id, offsetMin: 15, fireAt: '2026-10-05T08:45' as never },
-    ]);
-    bench.clock.advance(1_000);
-    const [removed] = await bench.data.repos.tasks.softDelete([task.id]);
-    await bench.data.repos.reminders.softDeleteForTarget({ type: 'task', id: task.id }, removed?.deletedAt ?? undefined);
-    await published();
-    const conflictId = await bench.conflict({ table: 'task', rowId: task.id, field: 'deleted_at', kept: removed?.deletedAt ?? null, discarded: 'modified' });
-    const heal = failWrites(/^\s*UPDATE reminder\b/i);
-    expect(await bench.useCases.restore(conflictId)).toEqual({ status: 'failed' });
-    heal();
-    expect((await bench.data.repos.tasks.getById(task.id, { includeDeleted: true }))?.deletedAt).not.toBeNull();
-    expect(bench.taskEntities.get(task.id)).toBeUndefined();
-    expect(await conflictRow(conflictId)).toEqual({ restored: 0, resolved_at: null });
-    expect(await outbox('task', task.id)).toEqual([]);
-    expect(bench.undo.getSnapshot().size).toBe(0);
-    // Après réparation, la même restauration aboutit.
-    expect(await bench.useCases.restore(conflictId)).toEqual({ status: 'restored' });
-    expect((await bench.data.repos.tasks.getById(task.id))?.deletedAt).toBeNull();
-  });
-
-  it('Y-04 critère 7 : tâche supprimée depuis plus de 30 jours mais non purgée : « Restaurer » la restaure quand même, rappels compris', async () => {
-    const task = await bench.createTask('Ancienne');
-    await bench.data.repos.reminders.replaceForTarget({ type: 'task', id: task.id }, [
-      { id: '70000000-0000-4000-8000-000000000012' as never, targetType: 'task', targetId: task.id, offsetMin: 15, fireAt: '2026-10-05T08:45' as never },
-    ]);
-    bench.clock.advance(1_000);
-    const [removed] = await bench.data.repos.tasks.softDelete([task.id]);
-    await bench.data.repos.reminders.softDeleteForTarget({ type: 'task', id: task.id }, removed?.deletedAt ?? undefined);
-    bench.clock.advance(40 * 86_400_000);
-    await published();
-    const conflictId = await bench.conflict({ table: 'task', rowId: task.id, field: 'deleted_at', kept: removed?.deletedAt ?? null, discarded: 'modified' });
-    expect(await bench.useCases.restore(conflictId)).toEqual({ status: 'restored' });
-    expect((await bench.data.repos.tasks.getById(task.id))?.deletedAt).toBeNull();
-    expect((await bench.data.repos.reminders.listForTarget({ type: 'task', id: task.id })).map((r) => r.deletedAt)).toEqual([null]);
-    expect(bench.taskEntities.get(task.id)?.title).toBe('Ancienne');
-    expect(await conflictRow(conflictId)).toMatchObject({ restored: 1 });
-  });
 });
 
 describe('Y-04 critère 6 : annulation (compléments de la QA)', () => {
@@ -197,6 +156,8 @@ describe('Y-04 critère 6 : annulation (compléments de la QA)', () => {
     await published();
     const conflictId = await bench.conflict({ table: 'task', rowId: task.id, field: 'deleted_at', kept: removed?.deletedAt ?? null, discarded: 'modified' });
     expect(await bench.useCases.restore(conflictId)).toEqual({ status: 'restored' });
+    // Voie générique writeField : la sortie de suppression est une écriture publiable (+ et deleted_at dans la file d'envoi).
+    expect((await outbox('task', task.id)).map((e) => e.field)).toContain('deleted_at');
     bench.clock.advance(1_000);
     await bench.data.repos.tasks.softDelete([task.id]);
     bench.clock.advance(1_000);

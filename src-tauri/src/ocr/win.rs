@@ -1,5 +1,6 @@
 //! Windows.Media.Ocr (Windows 10 et 11) : flux mémoire, aucun fichier.
 
+use std::sync::OnceLock;
 use windows::{
     core::HSTRING,
     Globalization::Language,
@@ -8,7 +9,6 @@ use windows::{
     Storage::Streams::{DataWriter, InMemoryRandomAccessStream},
     Win32::System::Com::CoIncrementMTAUsage,
 };
-use std::sync::OnceLock;
 
 use super::{check_dimensions, pick_french, OcrError, OcrStatus};
 
@@ -29,15 +29,25 @@ fn init_runtime() {
 }
 
 fn installed_tags() -> Vec<String> {
-    let Ok(languages) = OcrEngine::AvailableRecognizerLanguages() else { return Vec::new() };
-    languages.into_iter().filter_map(|language| language.LanguageTag().ok().map(|tag| tag.to_string())).collect()
+    let Ok(languages) = OcrEngine::AvailableRecognizerLanguages() else {
+        return Vec::new();
+    };
+    languages
+        .into_iter()
+        .filter_map(|language| language.LanguageTag().ok().map(|tag| tag.to_string()))
+        .collect()
 }
 
 pub fn status() -> OcrStatus {
     init_runtime();
     let languages = installed_tags();
     let available = pick_french(&languages).is_some();
-    OcrStatus { available, languages, reason: None, cleanup_failed: false }
+    OcrStatus {
+        available,
+        languages,
+        reason: None,
+        cleanup_failed: false,
+    }
 }
 
 fn french_engine() -> Result<OcrEngine, OcrError> {
@@ -54,11 +64,18 @@ pub fn recognize(bytes: &[u8]) -> Result<Vec<String>, OcrError> {
     let stream = InMemoryRandomAccessStream::new().map_err(engine_error)?;
     let writer = DataWriter::CreateDataWriter(&stream).map_err(engine_error)?;
     writer.WriteBytes(bytes).map_err(engine_error)?;
-    writer.StoreAsync().map_err(engine_error)?.join().map_err(engine_error)?;
+    writer
+        .StoreAsync()
+        .map_err(engine_error)?
+        .join()
+        .map_err(engine_error)?;
     writer.DetachStream().map_err(engine_error)?;
     stream.Seek(0).map_err(engine_error)?;
 
-    let decoder = BitmapDecoder::CreateAsync(&stream).map_err(engine_error)?.join().map_err(|_| OcrError::UnsupportedFormat)?;
+    let decoder = BitmapDecoder::CreateAsync(&stream)
+        .map_err(engine_error)?
+        .join()
+        .map_err(|_| OcrError::UnsupportedFormat)?;
     // Dimensions déclarées lues AVANT toute conversion : une image minuscule qui déclare des milliards de pixels (bombe de
     // décompression) est refusée sans jamais allouer le bitmap.
     let max = OcrEngine::MaxImageDimension().map_err(engine_error)?;
@@ -72,9 +89,16 @@ pub fn recognize(bytes: &[u8]) -> Result<Vec<String>, OcrError> {
         .join()
         .map_err(engine_error)?;
 
-    let result = engine.RecognizeAsync(&bitmap).map_err(engine_error)?.join().map_err(engine_error)?;
+    let result = engine
+        .RecognizeAsync(&bitmap)
+        .map_err(engine_error)?
+        .join()
+        .map_err(engine_error)?;
     let lines = result.Lines().map_err(engine_error)?;
-    let texts = lines.into_iter().filter_map(|line| line.Text().ok().map(|text| text.to_string())).collect();
+    let texts = lines
+        .into_iter()
+        .filter_map(|line| line.Text().ok().map(|text| text.to_string()))
+        .collect();
     // Flux et bitmap sont libérés à la sortie : l'image ne survit pas à l'appel.
     let _ = stream.Close();
     Ok(texts)

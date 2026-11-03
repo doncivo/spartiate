@@ -6,7 +6,6 @@ import { useAppStore } from '../../../src/features/app/appStore';
 import { bootstrapApp } from '../../../src/features/app/bootstrap';
 import { resetAppVersionMemo } from '../../../src/platform/appVersion';
 import { createUnavailableBackup } from '../../../src/platform/backup';
-import { createMemoryCalendarPlatform, PRODUCTION_ENDPOINTS } from '../../../src/platform/calendars';
 import { createUnavailableFiles } from '../../../src/platform/files';
 import { createMemorySyncPlatform } from '../../../src/platform/sync/memory';
 import type * as SyncModule from '../../../src/sync';
@@ -35,7 +34,7 @@ vi.mock('@tauri-apps/api/app', () => ({ getVersion: () => tauriGetVersion() }));
 const confVersion = (JSON.parse(readFileSync(resolve(__dirname, '..', '..', '..', 'src-tauri', 'tauri.conf.json'), 'utf8')) as { version: string }).version;
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148';
 const WINDOWS = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36';
-const common = { focusWindow: null, files: createUnavailableFiles(), calendars: createMemoryCalendarPlatform(PRODUCTION_ENDPOINTS), backups: createUnavailableBackup() } as const;
+const common = { files: createUnavailableFiles(), backups: createUnavailableBackup() } as const;
 
 beforeEach(() => {
   received.length = 0;

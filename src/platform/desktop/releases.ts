@@ -9,9 +9,6 @@ export const RELEASES_REPOSITORY_URL = 'https://github.com/doncivo/spartiate-rel
 /** Page de la dernière version, ouverte depuis « À propos ». */
 export const LATEST_RELEASE_URL = `${RELEASES_REPOSITORY_URL}/releases/latest`;
 
-/** Événement émis par Rust pour l'entrée « Ajout rapide » (src-tauri/src/desktop.rs, QUICK_ADD_EVENT). */
-export const QUICK_ADD_EVENT = 'desktop://quick-add';
-
 /** Événement émis par Rust pour l'entrée « Synchroniser maintenant » (src-tauri/src/desktop.rs, TRAY_SYNC_NOW_EVENT ; Y-03). */
 export const TRAY_SYNC_NOW_EVENT = 'tray-sync-now';
 
@@ -24,7 +21,3 @@ export const QUITTING_EVENT = 'desktop://quitting';
 /** Commande Rust de confirmation de sortie (src-tauri/src/desktop.rs, confirm_quit). */
 export const CONFIRM_QUIT_COMMAND = 'confirm_quit';
 
-/** Commandes Rust du raccourci global (src-tauri/src/shortcut.rs, D-04). */
-export const SET_QUICK_CAPTURE_COMMAND = 'set_quick_capture_shortcut';
-export const CLEAR_QUICK_CAPTURE_COMMAND = 'clear_quick_capture_shortcut';
-export const GET_QUICK_CAPTURE_COMMAND = 'get_quick_capture_shortcut';

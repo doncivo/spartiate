@@ -212,7 +212,18 @@ describe('critère 2 : identité de marque hors docs/', () => {
         const term = /circletasks/i.exec(line)?.[0];
         if (!term) return;
         const provenance = file === 'README.md' && /fork|provenance|issu|dérive|repris/i.test(line);
-        if (!provenance && classifyLine(line, term) === 'active') found.push(`${file}:${index + 1}`);
+        // FMT-01 : rustfmt déplace le commentaire `ancien-ok` sur une ligne voisine de la même instruction. Pour un fichier Rust, il couvre la
+        // ligne s’il se trouve avant la fin de l’instruction (ligne finissant par `;` ou `{`, puis la ligne de commentaire seule qui suit).
+        const marked = (): boolean => {
+          if (!file.endsWith('.rs')) return false;
+          for (let next = index; next < text.length; next += 1) {
+            const current = text[next] ?? '';
+            if (current.includes('ancien-ok:')) return true;
+            if (/[;{]\s*$/.test(current)) return /^\s*\/\/\s*ancien-ok:/.test(text[next + 1] ?? '');
+          }
+          return false;
+        };
+        if (!provenance && classifyLine(line, term) === 'active' && !marked()) found.push(`${file}:${index + 1}`);
       });
     }
     expect(found).toEqual([]);

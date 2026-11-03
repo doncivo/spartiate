@@ -95,12 +95,6 @@ jobs:
           sf=$(cargo tree --locked --target aarch64-apple-ios -e normal -i security-framework@3.7.0 --prefix none)
           echo "$sf" | grep -q '^spartiate ' || { echo "::error::security-framework 3.7.0 n'est pas une dépendance directe de l'app iOS"; exit 1; }
           echo "$ios" | grep -q '^tauri-plugin-barcode-scanner ' || { echo "::error::tauri-plugin-barcode-scanner absent de la cible iOS"; exit 1; }
-          # ADR 0008 §9 (K-TECH-01) : session d'authentification web de la connexion Google, cible iOS seulement.
-          echo "$ios" | grep -q '^tauri-plugin-web-auth ' || { echo "::error::tauri-plugin-web-auth absent de la cible iOS"; exit 1; }
-          if echo "$windows" | grep -q '^tauri-plugin-web-auth '; then echo "::error::tauri-plugin-web-auth dans la cible Windows"; exit 1; fi
-          # ADR 0008 §10.4 (K-05) : Rappels Apple (EventKit), cible iOS seulement ; le PC ne les lit jamais.
-          echo "$ios" | grep -q '^tauri-plugin-reminders ' || { echo "::error::tauri-plugin-reminders absent de la cible iOS"; exit 1; }
-          if echo "$windows" | grep -q '^tauri-plugin-reminders '; then echo "::error::tauri-plugin-reminders dans la cible Windows"; exit 1; fi
 
       # Le projet Xcode (src-tauri/gen/apple) n'est pas versionné : il est régénéré à chaque build
       # depuis tauri.conf.json et src-tauri/Info.ios.plist.
@@ -148,11 +142,7 @@ jobs:
       # Xcode « Build Rust Code » (tauri ios xcode-script), puis Products/Applications/Spartiate.app est
       # zippé en Payload/ dans gen/apple/build/arm64/Spartiate.ipa. beforeBuildCommand (npm run build)
       # compile le front, embarqué dans le binaire Rust. Pourquoi ce choix : ADR 0007, avenant POC-01.
-      # Client OAuth Google « iOS » (K-01), lu à la compilation par src-tauri/build.rs (BUILD_SECRETS).
-      # Identifiant public (non confidentiel) ; jamais le secret du client de bureau ici. Uniquement cette étape.
       - name: Compiler l'IPA sans signature
-        env:
-          CT_GOOGLE_IOS_CLIENT_ID: ${{ secrets.CT_GOOGLE_IOS_CLIENT_ID }}
         run: npx tauri ios build --ci --no-sign --target aarch64
 
       - name: Vérifier et copier Spartiate.ipa
@@ -265,11 +255,6 @@ jobs:
           path: info/Info.plist
           if-no-files-found: error
           retention-days: 30
-
-      # Les journaux Xcode peuvent répéter l'environnement du build : toute ligne CT_GOOGLE est supprimée avant l'envoi.
-      - name: Filtrer les journaux de compilation
-        if: failure()
-        run: find src-tauri/gen/apple -type f \( -name '*.log' -o -name project.yml \) -exec sed -i '' '/CT_GOOGLE/d' {} +
 
       - name: Journaux de compilation en cas d'échec
         if: failure()
