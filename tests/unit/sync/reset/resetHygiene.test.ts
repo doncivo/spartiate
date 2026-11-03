@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { SYNC_TEST_FILES } from '../syncTestFiles';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { migrations } from '../../../../src/db/migrations';
+import { legacyMigrations as migrations } from '../../../fixtures/legacy-schema';
 import { SYNC_FORMAT_MAJOR } from '../../../../src/domain/sync/format';
 import { SYNC_COMMAND_WINDOWS, SYNC_COMMANDS } from '../../../../src/platform/sync/types';
 import { authenticAnnouncements, parseResetState, resetStatusOf, RESET_REMINDER_MS, type ResetInput } from '../../../../src/sync/reset';

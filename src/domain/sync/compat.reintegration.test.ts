@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Hlc } from '../types';
 import { decideReintegration, keptFieldsOf, parseReintegrationFailure, type KeptField, type ReintegrationInput, type ReintegrationRow } from './compat';
-import { syncTable, type SyncColumn, type SyncTable } from './syncTables';
+import { type SyncColumn, type SyncTable } from './syncTables';
+import { syncTable } from '../../../tests/fixtures/legacy-schema/catalogue';
 
 /**
  * Décision de réintégration d'une ligne (Y-07 critère 6, revue point 2) : fonction pure ; le repository ne fait que lire et écrire.

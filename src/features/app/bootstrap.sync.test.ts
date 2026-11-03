@@ -1,16 +1,17 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { openSqliteWasmDriver } from '../../db/drivers/sqliteWasm';
 import { migrate } from '../../db/migrator';
-import { migrations } from '../../db/migrations';
+import { legacyMigrations as migrations } from '../../../tests/fixtures/legacy-schema';
 import { createMemorySyncPlatform } from '../../platform/sync/memory';
 import { createUnavailableBackup } from '../../platform/backup';
 import { createUnavailableFiles } from '../../platform/files';
 import { useAppStore } from './appStore';
 import { bootstrapApp } from './bootstrap';
+import { LEGACY_STORAGE } from '../../../tests/fixtures/legacy-schema/catalogue';
 
 /** Conteneur et démarrage (ADR 0011, section 3.2 et avenant « Amorce » point 7 ; Y-02 critère 19). */
 
-const common = { desktop: null, files: createUnavailableFiles() } as const;
+const common = { storage: LEGACY_STORAGE, desktop: null, files: createUnavailableFiles(), migrations } as const;
 
 describe('démarrage et synchro (Y-02 critère 19)', () => {
   beforeEach(() => {

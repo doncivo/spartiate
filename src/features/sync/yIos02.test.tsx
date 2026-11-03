@@ -18,6 +18,7 @@ import { IosPairingScreen } from './IosPairingScreen';
 import { startSyncIntegration } from './startSync';
 import { SyncSettingsSection } from './SyncSettingsSection';
 import { createFakeSyncService, nextCall, type FakeSyncService } from './testKit';
+import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
 
 const SELF = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000a1');
 const PC = '70000000-0000-4000-8000-000000000008' as DeviceId;
@@ -197,7 +198,7 @@ describe('échec de réintégration sur iPhone (ADR 0011 §23 point 6 ; Y-IOS-02
 
   async function phoneService(): Promise<{ service: ReturnType<typeof createSyncService>; container: AppContainer }> {
     const platform = createMemorySyncPlatform({ platform: 'ios', nowMs: () => db.clock.nowMs() });
-    const service = createSyncService({ data: db.data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), clock: db.clock, deviceId: SELF, devicePlatform: 'ios', sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
+    const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data: db.data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), clock: db.clock, deviceId: SELF, devicePlatform: 'ios', sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync: service, syncPlatform: platform, platform: { runtime: 'tauri', os: 'ios' } });
     return { service, container };
   }

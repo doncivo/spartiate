@@ -35,6 +35,8 @@ export const syncVersionFr = {
     calendarAccount: 'comptes d’agenda',
     holiday: 'jours fériés',
     settings: 'réglages',
+    profile: 'profil',
+    bodyWeight: 'pesées',
     other: 'autres éléments',
   },
 } as const;

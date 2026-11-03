@@ -7,6 +7,7 @@ export const SCREEN_LOADED_PREFIX = 'data-ct-loaded-';
 export type ScreenName =
   | 'settingsscreen'
   | 'appearancescreen'
+  | 'bodyscreen'
   | 'logsscreen'
   | 'recoveryfailure'
   | 'updaterestoreaction'

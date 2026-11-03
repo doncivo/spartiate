@@ -1,10 +1,11 @@
+import { LEGACY_STORAGE } from '../../fixtures/legacy-schema/catalogue';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createManualClock } from '../../../src/domain/clock';
 import type { LocalDate, ProjectId, RoutineId, SpaceId, TaskId } from '../../../src/domain/types';
 import type { SqlDriver, SqlRow } from '../../../src/db/driver';
 import { openSqliteWasmDriver } from '../../../src/db/drivers/sqliteWasm';
 import { findUpdateBackup, type MigrationBackup, type MigrationBackupRequest } from '../../../src/db/migrationBackup';
-import { migrations } from '../../../src/db/migrations';
+import { legacyMigrations as migrations } from '../../fixtures/legacy-schema';
 import type { Migration } from '../../../src/db/migrator';
 import { SPACE_PERSO_ID, SPACE_PRO_ID } from '../../../src/db/seed/defaultSpaces';
 import { useAppStore } from '../../../src/features/app/appStore';
@@ -24,7 +25,7 @@ const LAST = migrations.at(-1)?.version ?? 0;
 const pad = (n: number): string => String(n).padStart(4, '0');
 const ADDITIVE: Migration = { version: LAST + 1, name: 'test_i06_additive', statements: ['ALTER TABLE task ADD COLUMN i06_note TEXT'] };
 const NEXT = [...migrations, ADDITIVE];
-const common = { desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), syncPlatform: null } as const;
+const common = { storage: LEGACY_STORAGE, desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), migrations, syncPlatform: null } as const;
 const version = (v: string): (() => Promise<AppVersionRead>) => () => Promise.resolve({ ok: true, version: v, source: 'runtime' });
 
 /** Base qui survit aux échecs (le démarrage ferme la connexion en cas d'échec) : chaque démarrage est un nouveau processus sur le même fichier. */

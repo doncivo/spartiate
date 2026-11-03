@@ -11,6 +11,7 @@ import { setSnapshotTestHooks } from '../../../src/sync/snapshot';
 import { META, readJson } from '../../../src/sync/meta';
 import { propagate } from '../../sim/syncCloudSim';
 import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * Y-TECH-02, quatrième revue, point B (ADR 0011 §5.5, « Trou impossible à combler ») : un segment nécessaire tenu pour purgé que la
@@ -734,7 +735,7 @@ describe('septième revue, point 1 : failDefinitively sur la sortie no-eligible'
     const master = [{ deviceId: X, at: `${String(a.clock.nowMs()).padStart(15, '0')}-0000-${a.id}` as Hlc, lastAck: null }];
     const acker = { deviceId: a.id, acks: new Map([[X, { epoch, segment: 3, record: 1, hlc: null, stateSeq: 1 }]]) } as unknown as PublishedDeviceState;
     await a.data.repos.sync.setMeta(META.resume, 'true');
-    const deps = { data: a.data, platform: a.platform, hlc: a.hlc, clock: a.clock, deviceId: a.id, devicePlatform: 'windows' as const, appVersion: '0.4.0', sv: SCHEMA_VERSION, logger: a.logger };
+    const deps = { catalogue: LEGACY_SYNC_CATALOGUE, data: a.data, platform: a.platform, hlc: a.hlc, clock: a.clock, deviceId: a.id, devicePlatform: 'windows' as const, appVersion: '0.4.0', sv: SCHEMA_VERSION, logger: a.logger };
     const outcome = await resumeFromSnapshot(deps, epoch, new Map<DeviceId, PublishedDeviceState>(), ownState, () => false, { onRemoteChanges: () => undefined }, new Set(), { master, ackers: [acker], forgotten: forgetOrder(master) });
     expect(outcome).toMatchObject({ kind: 'no-eligible', uncovered: X, tried: { epoch, author: null, seq: null } });
     expect(await readJson(a.data.repos, META.resume)).toBeNull();

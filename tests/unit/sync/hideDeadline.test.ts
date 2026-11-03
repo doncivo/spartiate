@@ -3,6 +3,7 @@ import { createManualClock } from '../../../src/domain/clock';
 import type { SyncNowOptions, SyncReason } from '../../../src/platform/sync/types';
 import { createSyncService, HIDE_SYNC_DEADLINE_MS, startSyncScheduler, type DeadlineUnit } from '../../../src/sync';
 import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * Cycle borné du passage de l'iPhone en arrière-plan (ADR 0011 §22 point 6 ; Y-IOS-01 critères 9 à 11). L'échéance est comparée à
@@ -27,7 +28,7 @@ afterEach(async () => {
 /** Service de l'iPhone dont l'échéance est observée (et, pour `stopAt`, atteinte juste avant la frontière de ce rang). */
 function boundedService(device: SimDevice, stopAt: number | null, units: DeadlineUnit[]): void {
   let seen = 0;
-  device.service = createSyncService({
+  device.service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
     data: device.data,
     platform: device.platform,
     hlc: device.hlc,

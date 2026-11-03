@@ -1,3 +1,4 @@
+import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
 import { afterEach, describe, expect, it } from 'vitest';
 import { uuidGenerator } from '../../../../src/domain/id';
 import type { TaskId } from '../../../../src/domain/types';
@@ -34,7 +35,7 @@ async function twoDevices(): Promise<[SimDevice, SimDevice]> {
 }
 
 function conflictsOf(d: SimDevice, undo: UndoStack = createUndoStack()): SyncConflictUseCases {
-  return createSyncConflictUseCases({ clock: d.clock, ids: uuidGenerator, data: d.data, undo, logger: d.logger });
+  return createSyncConflictUseCases({ catalogue: LEGACY_SYNC_CATALOGUE, clock: d.clock, ids: uuidGenerator, data: d.data, undo, logger: d.logger });
 }
 
 /** Un tour complet de synchro dans les deux sens (iCloud à jour partout, chacun lit puis publie). */

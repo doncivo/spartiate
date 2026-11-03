@@ -3,9 +3,8 @@ import type { DeviceId, Hlc, IsoDateTime } from '../domain/types';
 import type { SyncField, SyncOp, SyncValue } from '../domain/sync/format';
 import { isUnknownName, isUnknownSettingKey } from '../domain/sync/format';
 import { deletedWhileModified, mergeField, modifiedWhileDeleted, type FieldConflict, type LocalField } from '../domain/sync/merge';
-import { isNaturalId, type NaturalIdTable } from '../domain/sync/naturalIds';
 import { hlcDevice } from '../domain/sync/parse';
-import { TECHNICAL_COLUMNS, isValidRowId, isValidValue, settingKeyScope, syncColumn, syncTable, type SyncTable } from '../domain/sync/syncTables';
+import { TECHNICAL_COLUMNS, type SyncCatalogue, type SyncTable } from '../domain/sync/syncTables';
 import type { SyncLogger } from './log';
 import { META, bumpLossCounter } from './meta';
 
@@ -34,6 +33,8 @@ async function readOrphanTraces(sync: Repositories['sync'], logger: SyncLogger):
 }
 
 export interface ApplyContext {
+  /** Catalogue injecté (I0 en production, ancien catalogue pour le banc de test) : tables, colonnes, identités et réglages admis. */
+  readonly catalogue: SyncCatalogue;
   /** `schema_version` local et celui de l'écrivain. */
   readonly localSv: number;
   readonly remoteSv: number;
@@ -90,6 +91,7 @@ const opText = (op: SyncOp, carry: boolean): string => {
 const maxOf = (hlcs: readonly Hlc[]): Hlc => hlcs.reduce((a, b) => (b > a ? b : a));
 
 export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx: ApplyContext): Promise<ApplyResult> {
+  const cat = ctx.catalogue;
   const sync = repos.sync;
   const touched = new Map<string, Set<string>>();
   const outcomes: OpOutcome[] = [];
@@ -101,7 +103,7 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
   // Préchargement par table : lignes, horloges, champs en attente, traces.
   const byTable = new Map<SyncTable, string[]>();
   for (const op of ops) {
-    const t = syncTable(op.t);
+    const t = cat.table(op.t);
     if (!t) continue;
     const ids = byTable.get(t);
     if (ids) ids.push(op.id);
@@ -128,11 +130,11 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
   const presentParents = new Set<string>();
   const parentIds = new Map<SyncTable, Set<string>>();
   for (const op of ops) {
-    const t = syncTable(op.t);
+    const t = cat.table(op.t);
     if (!t) continue;
     for (const parent of t.parents) {
       const value = op.f.get(parent.column)?.[0];
-      const pt = syncTable(parent.table);
+      const pt = cat.table(parent.table);
       if (typeof value !== 'string' || !pt) continue;
       const set = parentIds.get(pt) ?? new Set<string>();
       set.add(value);
@@ -148,9 +150,11 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
    * que les deux l'emporte (refus).
    */
   const reminderTargetRestored = async (fields: ReadonlyMap<string, SyncField>, tomb: Hlc): Promise<'restored' | 'pending' | 'no'> => {
-    const type = fields.get('target_type')?.[0];
-    const targetId = fields.get('target_id')?.[0];
-    const tt = typeof type === 'string' ? syncTable(type) : undefined;
+    const companion = cat.rules.companion;
+    if (!companion) return 'no';
+    const type = fields.get(companion.typeColumn)?.[0];
+    const targetId = fields.get(companion.idColumn)?.[0];
+    const tt = typeof type === 'string' ? cat.table(type) : undefined;
     if (!tt || typeof targetId !== 'string') return 'no';
     const target = (await sync.readRows(tt, [targetId])).get(targetId);
     if (target) {
@@ -174,7 +178,7 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
   };
 
   const reject = (op: SyncOp, reason: string, field?: string): void => {
-    ctx.logger.log('apply-rejected', { table: syncTable(op.t)?.name ?? 'unknown-table', reason, ...(field && syncColumn(op.t, field) ? { field } : {}) });
+    ctx.logger.log('apply-rejected', { table: cat.table(op.t)?.name ?? 'unknown-table', reason, ...(field && cat.column(op.t, field) ? { field } : {}) });
   };
 
   const keepUnknown = async (op: SyncOp, name: string, field: SyncField): Promise<boolean> => {
@@ -192,7 +196,7 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
     for (const parent of t.parents) {
       const value = values.get(parent.column);
       if (typeof value !== 'string') continue;
-      const pt = syncTable(parent.table);
+      const pt = cat.table(parent.table);
       if (!pt) continue;
       const cached = cache.get(`${pt.name}\u0000${value}`);
       if (cached?.exists) continue;
@@ -218,7 +222,7 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
 
   for (const op of ops) {
     current = op;
-    const t = syncTable(op.t);
+    const t = cat.table(op.t);
     if (!t) {
       let kept = false;
       if (isUnknownName(op.t)) for (const [name, field] of op.f) kept = (await keepUnknown(op, name, field)) || kept;
@@ -226,13 +230,13 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
       outcomes.push(kept ? 'unknown' : 'rejected');
       continue;
     }
-    if (!isValidRowId(t, op.id)) {
+    if (!cat.isValidRowId(t, op.id)) {
       reject(op, 'invalid-id');
       outcomes.push('rejected');
       continue;
     }
-    if (t.name === 'settings') {
-      const scope = settingKeyScope(op.id);
+    if (t.idKind === 'setting') {
+      const scope = cat.settingScope(op.id);
       if (scope === 'local') {
         // Un appareil ne peut pas imposer un réglage local à un autre (audit M5).
         reject(op, 'local-setting');
@@ -256,8 +260,8 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
     // Colonnes : catalogue seulement ; type et longueur contrôlés.
     let fields = new Map<string, SyncField>();
     for (const [name, field] of op.f) {
-      const col = syncColumn(t.name, name);
-      if (col && isValidValue(col, field[0])) {
+      const col = cat.column(t.name, name);
+      if (col && cat.isValidValue(col, field[0])) {
         fields.set(name, field);
         continue;
       }
@@ -272,6 +276,19 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
     const key = `${t.name}\u0000${op.id}`;
     const row = cache.get(key) ?? { exists: false, values: new Map(), hlc: null, clocks: new Map(), pending: new Set() };
     cache.set(key, row);
+
+    // Identité naturelle (D-65) : l'identifiant doit correspondre aux valeurs de la ligne (ex. `weight|date|source`), celles reçues recouvrant
+    // l'existant ; un champ partiel qui la contredirait est refusé comme une identité invalide (même traitement, aucune écriture).
+    if (t.natural?.is(op.id)) {
+      const effective = new Map<string, unknown>(row.values);
+      for (const [name, field] of fields) effective.set(name, field[0]);
+      const expected = t.natural.expected(effective);
+      if (expected !== null && expected !== op.id) {
+        reject(op, 'invalid-id');
+        outcomes.push('rejected');
+        continue;
+      }
+    }
 
     // Traces (section 5.4) : seule une écriture plus récente que la suppression purgée passe.
     const tomb = tombstoneCache.get(t.name)?.get(op.id);
@@ -298,7 +315,7 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
         restoring = true;
         clearTomb = true;
         if (complete) ctx.logger.log('apply-restored-purged', { table: t.name });
-      } else if (t.name === 'reminder' && !row.exists && complete && restoreField !== undefined && restoreField[0] === null) {
+      } else if (cat.rules.companion?.table === t.name && !row.exists && complete && restoreField !== undefined && restoreField[0] === null) {
         // Rappel vivant republié avec sa cible restaurée : accepté si la cible est revenue ici par une restauration fondée sur une
         // trace au moins aussi récente que celle du rappel (purgé avec elle) ; mis de côté tant que la cible est encore une trace.
         const verdict = await reminderTargetRestored(fields, tomb);
@@ -316,7 +333,7 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
         clearTomb = true;
       } else {
         fields = new Map([...fields].filter(([, field]) => field[1] > tomb));
-        const natural = t.idKind === 'natural' && isNaturalId(t.name as NaturalIdTable, op.id);
+        const natural = t.idKind === 'natural' && (t.natural?.is(op.id) ?? false);
         if (fields.size === 0 || row.exists || !natural) {
           if (fields.size > 0 && !row.exists) ctx.logger.log('apply-abandoned', { table: t.name, reason: 'purged' });
           outcomes.push('rejected');
@@ -340,10 +357,16 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
           for (const [name, field] of Object.entries(raw.f)) {
             const current = union.get(name);
             if (tomb !== undefined && !restoring && field[1] <= tomb) continue;
-            if (syncColumn(t.name, name) && (!current || field[1] > current[1])) union.set(name, field);
+            if (cat.column(t.name, name) && (!current || field[1] > current[1])) union.set(name, field);
           }
         }
         if (t.columns.every((col) => union.has(col.name))) {
+          // Identité naturelle (D-65) sur la ligne recomposée : chaque partie a pu passer seule, pas leur union.
+          if (t.natural?.is(op.id) && t.natural.expected(new Map([...union].map(([name, field]) => [name, field[0]]))) !== op.id) {
+            reject(op, 'invalid-id');
+            outcomes.push('rejected');
+            continue;
+          }
           fields = union;
           combined = prior.map((p) => p.id);
           if (restoring) ctx.logger.log('apply-restored-purged', { table: t.name });
@@ -355,7 +378,7 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
       // Décision (c) : parent d'une colonne facultative purgé ici (projet) : la ligne reçue est rattachée à « Sans projet » par une
       // écriture locale publiée entière (« + ») au lieu d'être abandonnée ; un événement est journalisé.
       const detached: string[] = [];
-      while (full && parents === 'purged' && purgedColumn !== null && syncColumn(t.name, purgedColumn)?.nullable) {
+      while (full && parents === 'purged' && purgedColumn !== null && cat.column(t.name, purgedColumn)?.nullable) {
         const column: string = purgedColumn;
         detached.push(column);
         values = new Map(values).set(column, null);
@@ -413,7 +436,7 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
     for (const [name, field] of fields) {
       const decision = mergeField(localFields.get(name) ?? null, field, ctx.fromSnapshot ? { fromSnapshot: true } : {});
       if (decision.apply) applied.set(name, field);
-      if (decision.conflict && syncColumn(t.name, name)?.conflictVisible) fieldConflicts.push({ field: name, conflict: decision.conflict });
+      if (decision.conflict && cat.column(t.name, name)?.conflictVisible) fieldConflicts.push({ field: name, conflict: decision.conflict });
     }
     // Suppression contre modification (section 4.2).
     const localDeleted = row.values.get('deleted_at') ?? null;
@@ -449,7 +472,7 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
     // « Sans projet » après la mise à jour (écriture locale publiée « + »), comme à l'insertion.
     const detachedOnUpdate: string[] = [];
     let updateParents = await parentsPresent(t, new Map([...applied].map(([n, f]) => [n, f[0]])));
-    while (updateParents === 'purged' && purgedColumn !== null && syncColumn(t.name, purgedColumn)?.nullable && applied.has(purgedColumn)) {
+    while (updateParents === 'purged' && purgedColumn !== null && cat.column(t.name, purgedColumn)?.nullable && applied.has(purgedColumn)) {
       const column: string = purgedColumn;
       applied.delete(column);
       detachedOnUpdate.push(column);
@@ -551,7 +574,7 @@ export async function applyOpsIsolated(repos: Repositories, ops: readonly SyncOp
       outcomes.push('rejected');
     }
   }
-  if (rejected.length > 0) await recordRejected(sync, ctx.logger, rejected);
+  if (rejected.length > 0) await recordRejected(sync, ctx.logger, ctx.catalogue, rejected);
   return { touched, conflicts, outcomes };
 }
 
@@ -560,10 +583,10 @@ const OP_SAVEPOINT = 'apply_op';
 
 const isConstraintFailure = (error: unknown): boolean => error instanceof Error && (error as { code?: unknown }).code === 'constraint';
 
-async function recordRejected(sync: Repositories['sync'], logger: SyncLogger, rejected: readonly SyncOp[]): Promise<void> {
+async function recordRejected(sync: Repositories['sync'], logger: SyncLogger, cat: SyncCatalogue, rejected: readonly SyncOp[]): Promise<void> {
   const tables = new Set<string>();
   for (const op of rejected) {
-    const table = syncTable(op.t)?.name ?? 'inconnue';
+    const table = cat.table(op.t)?.name ?? 'inconnue';
     tables.add(table);
     logger.log('apply-rejected', { table, code: 'constraint' });
   }

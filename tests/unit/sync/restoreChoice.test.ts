@@ -5,6 +5,7 @@ import type { DeviceId } from '../../../src/domain/types';
 import { applyEverywhere } from '../../../src/sync/restoreChoice';
 import type { SyncDeps } from '../../../src/sync/deps';
 import { SCHEMA_VERSION, createSimDevice, setupFirst, type SimDevice } from '../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * « Appliquer partout » (ADR 0010 règle 1, ADR 0011 section 9 ; Y-02 critère 13 ; revue Y2 point 18) : l'époque ouverte est contrôlée
@@ -36,7 +37,7 @@ describe('« Appliquer partout » : contrôle de l’époque avant les écriture
     const files = a.folder.fileNames(A_ID);
     const meta = await a.driver.select('SELECT key, value FROM sync_meta ORDER BY key');
     forced.epoch = epoch;
-    const deps: SyncDeps = { data: a.data, platform: a.platform, hlc: a.hlc, clock: a.clock, deviceId: a.id, devicePlatform: 'windows', appVersion: '0.4.0', sv: SCHEMA_VERSION, logger: a.logger };
+    const deps: SyncDeps = { catalogue: LEGACY_SYNC_CATALOGUE, data: a.data, platform: a.platform, hlc: a.hlc, clock: a.clock, deviceId: a.id, devicePlatform: 'windows', appVersion: '0.4.0', sv: SCHEMA_VERSION, logger: a.logger };
     await expect(applyEverywhere(deps)).rejects.toThrow('époque non croissante');
     expect(a.folder.fileNames(A_ID)).toEqual(files);
     expect(await a.driver.select('SELECT key, value FROM sync_meta ORDER BY key')).toEqual(meta);

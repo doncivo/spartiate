@@ -1,0 +1,94 @@
+/* Écran « Profil et poids » : sections et lignes de Reglages.html, mêmes motifs que « Apparence et formats ». */
+.ct-body-shell {
+  display: flex;
+  flex-grow: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ct-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  flex-grow: 1;
+  min-width: 0;
+  max-width: 600px;
+}
+
+.ct-body__back {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--ct-color-text);
+  cursor: pointer;
+}
+
+.ct-body__title {
+  margin: 0;
+  font-size: var(--ct-font-size-heading);
+}
+
+.ct-body__section {
+  margin: var(--ct-space-3) 0 0;
+  font-size: var(--ct-font-size-xs);
+  color: var(--ct-color-text-secondary);
+  letter-spacing: 0.08em;
+}
+
+.ct-body__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}
+
+.ct-body__label {
+  color: var(--ct-color-text);
+}
+
+.ct-body__input {
+  min-height: 44px;
+  padding: 0 var(--ct-space-2);
+  background: var(--ct-color-surface);
+  color: var(--ct-color-text);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  font: inherit;
+}
+
+.ct-body__hint {
+  margin: 0;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-body__message {
+  margin: 0;
+}
+
+.ct-body__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ct-body__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--ct-space-2);
+  min-height: 44px;
+  border-bottom: 1px solid var(--ct-color-border);
+}
+
+.ct-body__delete {
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: 0;
+  color: var(--ct-color-text-secondary);
+  cursor: pointer;
+}

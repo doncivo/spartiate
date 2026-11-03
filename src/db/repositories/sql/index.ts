@@ -1,3 +1,4 @@
+import { SYNC_CATALOGUE, type SyncCatalogue } from '../../../domain/sync/syncTables';
 import type { RepositoryFactory } from '../dataAccess';
 import { createAppleReminderLinkRepository } from './appleReminderLinks';
 import { createCalendarAccountRepository, createEventRepository, createExternalEventRepository } from './agendaRepository';
@@ -25,7 +26,7 @@ import { createRecurrenceRepository, createTaskRepository } from './taskReposito
  * agrégat, branchée sur l'exécuteur et le tampon d'écriture reçus (driver ou
  * transaction). Fabrique par défaut de `bootstrapApp`.
  */
-export const createSqlRepositories: RepositoryFactory = (executor, stamper) => ({
+export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFactory => (executor, stamper) => ({
   spaces: createSpaceRepository(executor, stamper),
   projects: createProjectRepository(executor, stamper),
   tasks: createTaskRepository(executor, stamper),
@@ -44,12 +45,15 @@ export const createSqlRepositories: RepositoryFactory = (executor, stamper) => (
   checklistItems: createChecklistItemRepository(executor, stamper),
   externalEvents: createExternalEventRepository(executor),
   calendarAccounts: createCalendarAccountRepository(executor, stamper),
-  syncMeta: createSyncMetaRepository(executor),
+  syncMeta: createSyncMetaRepository(executor, catalogue),
+  // D-65 : profil et poids, implémentation chargée à la demande (hors du JavaScript de départ).
+  profile: () => import('./bodyRepositories').then((m) => m.createProfileRepository(executor, stamper)),
+  bodyWeights: () => import('./bodyRepositories').then((m) => m.createBodyWeightRepository(executor, stamper)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)
-  syncConflicts: createSyncConflictRepository(executor, stamper),
+  syncConflicts: createSyncConflictRepository(executor, stamper, catalogue),
   // Y-04 (fin)
-  sync: createSyncRepository(executor, stamper),
+  sync: createSyncRepository(executor, stamper, catalogue),
   // Y-TECH-05 : comptes rendus du report d'époque, implémentation chargée à la demande (hors du JavaScript de départ).
   carryReports: () => import('./epochCarryReports').then((m) => m.createEpochCarryReportRepository(executor)),
   // T-TECH-01 : doublons d'occurrences de série, implémentation chargée à la demande.
@@ -57,3 +61,6 @@ export const createSqlRepositories: RepositoryFactory = (executor, stamper) => (
   // Y-07 (début)
   // Y-07 (fin)
 });
+
+/** Fabrique de production : catalogue I0 (D-67). Le banc de test injecte l'ancien catalogue par `createSqlRepositoriesFor`. */
+export const createSqlRepositories: RepositoryFactory = createSqlRepositoriesFor(SYNC_CATALOGUE);

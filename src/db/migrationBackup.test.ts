@@ -3,8 +3,8 @@ import { createManualClock } from '../domain/clock';
 import type { SqlDriver, SqlRow } from './driver';
 import { openSqliteWasmDriver } from './drivers/sqliteWasm';
 import { backupStamp, createBackupBeforeMigration, MigrationBackupError, type MigrationBackup } from './migrationBackup';
-import { migrations } from './migrations';
-import { PRO_QUIET_HOURS_JSON } from './migrations/0007_pro_quiet_hours';
+import { legacyMigrations as migrations } from '../../tests/fixtures/legacy-schema';
+import { PRO_QUIET_HOURS_JSON } from '../../tests/fixtures/legacy-schema/0007_pro_quiet_hours';
 import { migrate, type Migration } from './migrator';
 import { SPACE_PRO_ID } from './seed/defaultSpaces';
 

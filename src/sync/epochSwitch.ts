@@ -1,7 +1,7 @@
 import type { ExportedRow, Repositories } from '../db/repositories';
 import { PAGE_ROWS, parseEpochId, type DeviceAck, type EpochId, type ForgottenDevice, type PublishedDeviceState, type SyncField, type SyncOp } from '../domain/sync/format';
 import { hlcDevice } from '../domain/sync/parse';
-import { SYNC_TABLES, settingKeyScope, syncTable, tableRank, type SyncTable } from '../domain/sync/syncTables';
+import type { SyncCatalogue, SyncTable } from '../domain/sync/syncTables';
 import type { DeviceId, Hlc, IsoDateTime } from '../domain/types';
 import { coversForgotten } from '../domain/sync/retention';
 import { EPOCH_CARRY_HELD_EVENT, EPOCH_CARRY_NOTICE_META, EPOCH_CARRY_REATTACHED_EVENT, addToEpochCarryNotice, carryLabel, carryParentVerdict, countByLink, parseEpochCarryNotice, type EpochCarryNoticeItem } from '../domain/sync/epochCarryNotice';
@@ -114,8 +114,8 @@ function snapshotSource(target: EpochId, accepted: ReadonlyMap<DeviceId, Publish
 }
 
 /** Ligne de la base → opération reportée (ligne complète, champs propres choisis par `isOwn`) ; null sans champ propre. */
-function carriedOf(t: SyncTable, row: ExportedRow, isOwn: (name: string, hlc: Hlc) => boolean): CarriedOp | null {
-  if (t.name === 'settings' && settingKeyScope(row.id) !== 'shared') return null;
+function carriedOf(catalogue: SyncCatalogue, t: SyncTable, row: ExportedRow, isOwn: (name: string, hlc: Hlc) => boolean): CarriedOp | null {
+  if (t.idKind === 'setting' && catalogue.settingScope(row.id) !== 'shared') return null;
   const fallback = row.clocks.get('*') ?? { hlc: row.hlc, base: null };
   const f: Record<string, SyncField> = {};
   const own: string[] = [];
@@ -136,7 +136,7 @@ export async function queueOwnRowsForRepublish(deps: SyncDeps): Promise<number> 
   let queued = 0;
   // Idempotent (arrêt puis reprise) : une ligne déjà en file en ligne entière n'est pas ajoutée une seconde fois.
   const already = new Set((await deps.data.repos.sync.readOutbox(undefined, 0)).filter((e) => e.field === ROW_REPUBLISH_FIELD).map((e) => `${e.table}|${e.rowId}`));
-  for (const t of SYNC_TABLES) {
+  for (const t of deps.catalogue.tables) {
     let after: string | null = null;
     for (;;) {
       const rows: ExportedRow[] = await deps.data.repos.sync.exportRows(t, after, PAGE_ROWS);
@@ -145,7 +145,7 @@ export async function queueOwnRowsForRepublish(deps: SyncDeps): Promise<number> 
       // Lignes dont une horloge porte le `device_id` de cet appareil (les lignes de l'amorce, `SEED`, sont identiques partout et n'en ont pas) ;
       // les lignes supprimées (`deleted_at`) sont republiées comme telles. Une trace purgée (`sync_tombstone`) n'a aucune forme dans le
       // journal : chaque appareil purge de son côté à l'échéance (section 7), la file ne peut pas la porter.
-      const mine = rows.filter((row) => !already.has(`${t.name}|${row.id}`) && carriedOf(t, row, (_name, hlc) => hlcDevice(hlc) === deps.deviceId) !== null);
+      const mine = rows.filter((row) => !already.has(`${t.name}|${row.id}`) && carriedOf(deps.catalogue, t, row, (_name, hlc) => hlcDevice(hlc) === deps.deviceId) !== null);
       if (mine.length === 0) continue;
       await deps.data.transaction(async (repos) => {
         await repos.sync.addOutbox(mine.map((row) => ({ table: t.name, rowId: row.id, field: ROW_REPUBLISH_FIELD })));
@@ -191,7 +191,7 @@ async function materialize(deps: SyncDeps, covers: ReadonlyMap<DeviceId, DeviceA
   }
   const now = new Date(deps.clock.nowMs()).toISOString() as IsoDateTime;
   let carried = 0;
-  for (const t of SYNC_TABLES) {
+  for (const t of deps.catalogue.tables) {
     let after: string | null = null;
     for (;;) {
       const rows: ExportedRow[] = await data.repos.sync.exportRows(t, after, PAGE_ROWS);
@@ -200,7 +200,7 @@ async function materialize(deps: SyncDeps, covers: ReadonlyMap<DeviceId, DeviceA
       const ops: CarriedOp[] = [];
       for (const row of rows) {
         const pending = pendingFields.get(`${t.name}\u0000${row.id}`) ?? new Set<string>();
-        const op = carriedOf(t, row, (name, hlc) => carries(hlc) || (hlcDevice(hlc) === self && pendingHas(pending, name)));
+        const op = carriedOf(deps.catalogue, t, row, (name, hlc) => carries(hlc) || (hlcDevice(hlc) === self && pendingHas(pending, name)));
         if (op) ops.push(op);
       }
       if (ops.length > 0) {
@@ -243,7 +243,7 @@ async function carryNewer(deps: SyncDeps, repos: Repositories): Promise<void> {
   const now = new Date(deps.clock.nowMs()).toISOString() as IsoDateTime;
   const byTable = new Map<SyncTable, Map<string, Set<string>>>();
   for (const e of entries) {
-    const t = syncTable(e.table);
+    const t = deps.catalogue.table(e.table);
     if (!t) continue;
     const rows = byTable.get(t) ?? new Map<string, Set<string>>();
     rows.set(e.rowId, new Set([...(rows.get(e.rowId) ?? []), e.field]));
@@ -252,12 +252,12 @@ async function carryNewer(deps: SyncDeps, repos: Repositories): Promise<void> {
   let carried = 0;
   // Y-FIX-04 (critère 4) : parents avant enfants (ordre du catalogue), comme `materialize` : `reapply` lit `sync_parked` par identifiant
   // croissant, un parent reporté ici doit donc être parqué avant son enfant, sinon l'enfant le croirait remplacé (rattaché à tort).
-  for (const [t, rowsFields] of [...byTable].sort(([a], [b]) => tableRank(a.name) - tableRank(b.name))) {
+  for (const [t, rowsFields] of [...byTable].sort(([a], [b]) => deps.catalogue.rank(a.name) - deps.catalogue.rank(b.name))) {
     const rows = await repos.sync.readRowsWithClocks(t, [...rowsFields.keys()]);
     for (const [id, fields] of rowsFields) {
       const row = rows.get(id);
       if (!row) continue;
-      const op = carriedOf(t, row, (name, hlc) => hlcDevice(hlc) === deps.deviceId && pendingHas(fields, name));
+      const op = carriedOf(deps.catalogue, t, row, (name, hlc) => hlcDevice(hlc) === deps.deviceId && pendingHas(fields, name));
       if (!op) continue;
       await repos.sync.park('epoch-carry', t.name, id, maxOwn(op), JSON.stringify({ ...op, late: 1 }), now);
       carried += 1;
@@ -341,13 +341,13 @@ async function reapply(deps: SyncDeps, epoch: EpochId, mode: EpochCarryMode, rep
       const found: PageReport = { counts: [], restored: [], recreated: [], dropped: [] };
       for (const parked of page) {
         const op = JSON.parse(parked.op) as CarriedOp;
-        const t = syncTable(op.t);
+        const t = deps.catalogue.table(op.t);
         if (!t) continue;
         if (op.tomb !== undefined) {
           found.counts.push({ fields: [], tomb: op.tomb });
           // Ligne présente : purgée avec ses rappels, sauf si elle a encore des enfants (écartée, journalisée) ; absente : trace seule.
           if ((await repos.sync.existingIds(t, [op.id])).has(op.id)) {
-            const done = await purgeRows(repos, t, [{ id: op.id, deletedHlc: op.tomb }], now, deps.logger, { reattach: (table, ids) => ids.forEach((id) => addTouched(touched, table, id)) });
+            const done = await purgeRows(repos, deps.catalogue, t, [{ id: op.id, deletedHlc: op.tomb }], now, deps.logger, { reattach: (table, ids) => ids.forEach((id) => addTouched(touched, table, id)) });
             for (const item of done.purged) addTouched(touched, t.name, item.id);
             for (const id of done.reminders) addTouched(touched, 'reminder', id);
           } else {
@@ -362,7 +362,7 @@ async function reapply(deps: SyncDeps, epoch: EpochId, mode: EpochCarryMode, rep
         // Ligne présente : seuls ses propres champs ; ligne absente : la ligne entière, pour pouvoir la recréer.
         const fields = Object.entries(op.f).filter(([name]) => !existed || op.own.includes(name));
         const syncOp: SyncOp = { t: op.t, id: op.id, at: op.at, f: new Map(fields) };
-        await applyOps(repos, [syncOp], { localSv: deps.sv, remoteSv: deps.sv, now, knows: () => true, logger: deps.logger, carry: carryPolicy(op, reattached, held) });
+        await applyOps(repos, [syncOp], { catalogue: deps.catalogue, localSv: deps.sv, remoteSv: deps.sv, now, knows: () => true, logger: deps.logger, carry: carryPolicy(op, reattached, held) });
         if (before) await classifyRow(repos, t, op.id, before.state, found);
         // Ligne absente après l'application : mise de côté par `applyOps` (`missing-parent` ou `missing-row`, marquée), ou écartée par une
         // règle documentée et journalisée (trace plus récente, `parent-purged` d'un lien obligatoire) ; jamais perdue en silence.
@@ -634,7 +634,7 @@ export async function switchEpoch(
     // Y-11 : réinitialisation : fusion (la base locale et les écritures faites pendant le changement sont gardées par la règle de hlc).
     const result =
       options.mode === 'merge'
-        ? await mergeSnapshot(deps, loaded, { localSv: deps.sv, remoteSv: loaded.end.sv, now, knows: options.knows ?? (() => false), logger: deps.logger })
+        ? await mergeSnapshot(deps, loaded, { catalogue: deps.catalogue, localSv: deps.sv, remoteSv: loaded.end.sv, now, knows: options.knows ?? (() => false), logger: deps.logger })
         : await replaceFromSnapshot(deps, loaded, (tx) => carryNewer(deps, tx));
     if (result === 'clock-ahead') {
       // Instantané d'ouverture trop en avance (section 4.4) : rien n'a été remplacé ; l'ouvreur est signalé, le changement attend.
@@ -704,7 +704,7 @@ export async function switchEpoch(
 export async function releaseCarried(deps: SyncDeps, released: readonly { readonly id: number; readonly table: string; readonly rowId: string }[]): Promise<void> {
   await guarded(deps.data, async (repos) => {
     for (const item of released) {
-      const t = syncTable(item.table);
+      const t = deps.catalogue.table(item.table);
       if (t && (await repos.sync.existingIds(t, [item.rowId])).has(item.rowId)) await repos.sync.addOutbox([{ table: t.name, rowId: item.rowId, field: ROW_REPUBLISH_FIELD }]);
     }
     await repos.sync.removeParked(released.map((r) => r.id));

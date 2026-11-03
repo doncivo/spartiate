@@ -41,7 +41,7 @@ fn make_synced_db(
     conn.execute_batch(
         "CREATE TABLE task (id INTEGER PRIMARY KEY, title TEXT, deleted_at TEXT);
          CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY);
-         INSERT INTO schema_migrations (version) VALUES (17);
+         INSERT INTO schema_migrations (version) VALUES (1);
          CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL, device_id TEXT NOT NULL, hlc TEXT NOT NULL);
          CREATE TABLE search_index_doc (id INTEGER PRIMARY KEY, type TEXT, ref_id TEXT);
          CREATE TABLE sync_guard (id INTEGER PRIMARY KEY);

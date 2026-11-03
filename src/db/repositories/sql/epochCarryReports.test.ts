@@ -4,7 +4,7 @@ import { createHlcClock, createWriteStamper } from '../../../domain/hlc';
 import { EMPTY_CARRY_REPORT_BODY, EPOCH_CARRY_REPORT_KEEP, type EpochCarryReportBody, type EpochCarryReportHead } from '../../../domain/sync/epochCarryReport';
 import type { DeviceId, Hlc, IsoDateTime } from '../../../domain/types';
 import { openSqliteWasmDriver } from '../../drivers/sqliteWasm';
-import { migrations } from '../../migrations';
+import { legacyMigrations as migrations } from '../../../../tests/fixtures/legacy-schema';
 import { migrate } from '../../migrator';
 import { createSqlRepositories } from './index';
 

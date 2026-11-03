@@ -3,7 +3,7 @@ import type { LocalDate } from '../domain/types';
 import { asEntityId, type DeviceId } from '../domain/types';
 import type { SqlDriver } from './driver';
 import { openSqliteWasmDriver } from './drivers/sqliteWasm';
-import { migrations } from './migrations';
+import { legacyMigrations as migrations } from '../../tests/fixtures/legacy-schema';
 import { migrate } from './migrator';
 import { openTestDb, type TestDb } from './repositories/sql/testSetup';
 import { SPACE_PERSO_ID, SPACE_PRO_ID } from './seed/defaultSpaces';

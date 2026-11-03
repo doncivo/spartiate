@@ -9,6 +9,7 @@ import { openTestDb, type TestDb } from '../../../../src/db/repositories/sql/tes
 import { createMemorySyncPlatform, MemorySyncFolder, type MemorySyncPlatform } from '../../../../src/platform/sync';
 import type { SyncReason, SyncStatus } from '../../../../src/platform/sync/types';
 import { createSyncService, silentSyncLogger, startSyncScheduler } from '../../../../src/sync';
+import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
 
 /**
  * Y-IOS-02 (point de contrôle d'Ali, IPA 0.2.1) : un appareil dont le dossier contient les données chiffrées du PC et qui n'a pas la clé
@@ -72,7 +73,7 @@ function lockableData(): { readonly data: DataAccess; readonly locked: { on: boo
 }
 
 function phoneService(platform: MemorySyncPlatform, data: DataAccess = db.data) {
-  return createSyncService({ data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), clock: db.clock, deviceId: PHONE, devicePlatform: 'ios', sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
+  return createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), clock: db.clock, deviceId: PHONE, devicePlatform: 'ios', sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
 }
 
 describe('appareil sans clé : toujours « à associer » (Y-IOS-02)', () => {

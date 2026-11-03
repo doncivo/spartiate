@@ -86,8 +86,8 @@ describe('base de données : trois constantes alignées (D-32)', () => {
   it('le nom de base est unique entre les trois', () => {
     expect(new Set([sql, guard, backup]).size).toBe(1);
   });
-  it('la version de schéma reste 19 en 001a (passe à 1 en 001b)', () => {
-    expect(read('src-tauri/src/backup.rs')).toMatch(/APP_SCHEMA_VERSION[^=]*=\s*19\b/);
+  it('la version de schéma vaut 1 (base neuve, 001b)', () => {
+    expect(read('src-tauri/src/backup.rs')).toMatch(/APP_SCHEMA_VERSION[^=]*=\s*1\b/);
   });
 });
 

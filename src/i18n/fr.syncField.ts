@@ -101,4 +101,6 @@ export const syncFieldFr = {
     deleted_at: 'suppression',
   },
   settings: { value: 'valeur' },
+  profile: { sex: 'sexe', birth_year: 'année de naissance', height_cm: 'taille', goal: 'objectif', experience: 'expérience', units: 'unités', deleted_at: 'suppression' },
+  body_weight: { date: 'date', kg: 'poids', source: 'origine', timezone: 'fuseau horaire', health_uuid: 'échantillon Santé', measured_at: 'heure de mesure', deleted_at: 'suppression' },
 } as const;

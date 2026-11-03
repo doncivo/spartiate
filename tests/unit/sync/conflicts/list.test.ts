@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { CONFLICT_TITLE_SOURCES } from '../../../../src/db/repositories/sql/syncConflicts';
-import { SYNC_TABLES, syncColumn, syncTable } from '../../../../src/domain/sync/syncTables';
+import { SYNC_TABLES, syncColumn, syncTable } from '../../../fixtures/legacy-schema/catalogue';
 import { CONFLICTS_PAGE_SIZE } from '../../../../src/features/sync/syncConflictUseCases';
 import { PRO, STAMP_AT, STAMP_DEVICE, STAMP_HLC, openConflictBench, otherHlc, type ConflictBench } from './kit';
 
@@ -23,7 +22,7 @@ afterEach(async () => {
 describe('sources des titres', () => {
   it('chaque colonne de titre ou de parent est une colonne du catalogue', () => {
     for (const t of SYNC_TABLES) {
-      const source = CONFLICT_TITLE_SOURCES[t.name];
+      const source = (t.titleSource ?? { kind: 'none' as const });
       if (source.kind === 'own' || source.kind === 'parent') expect(syncColumn(t.name, source.column), `${t.name}.${source.column}`).toBeDefined();
       if (source.kind === 'parent') expect(syncTable(source.table), source.table).toBeDefined();
     }

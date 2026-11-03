@@ -12,6 +12,7 @@ import { syncErrorCodeOf, type CancelForgetOutcome, type ForgetOutcome, type Rej
 import type { DeadlineUnit } from './deadline';
 import { cancelForgetRequest, declareForget, prepareRejoin, readForgetStatus } from './forget';
 import { beginReset, dismissResetState, readResetState, readResetStatus, recordResetFailure, RESET_META } from './reset';
+import { SYNC_CATALOGUE, type SyncCatalogue } from '../domain/sync/syncTables';
 import type { SyncDeps } from './deps';
 import { runCycle, type CycleOptions, type CycleResult } from './engine';
 import { defaultSyncLogger, type SyncLogger } from './log';
@@ -33,6 +34,8 @@ export type { SyncEngineService };
 
 export interface SyncServiceOptions {
   readonly data: DataAccess;
+  /** Catalogue des tables publiées ; I0 par défaut, l'ancien catalogue seulement dans le banc de test (D-67). */
+  readonly catalogue?: SyncCatalogue;
   readonly platform: SyncPlatform;
   readonly hlc: HlcClock;
   readonly clock: Clock;
@@ -61,6 +64,7 @@ const publishRotationModule = () => import('./publishRotation');
 export function createSyncService(options: SyncServiceOptions): SyncEngineService {
   const deps: SyncDeps = {
     data: options.data,
+    catalogue: options.catalogue ?? SYNC_CATALOGUE,
     platform: options.platform,
     hlc: options.hlc,
     clock: options.clock,

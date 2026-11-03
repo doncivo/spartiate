@@ -79,8 +79,8 @@ export interface SimInspection {
   readonly appends: number;
   /** Y-IOS-01 : `hydrateBudgetMs` reçu par chaque scan (null : absent). */
   readonly scanBudgets: readonly (number | null)[];
-  /** Tâches publiées par l'appareil : nombre de créations complètes par identifiant. */
-  readonly tasks: Readonly<Record<string, number>>;
+  /** Lignes publiées par l'appareil (profil, pesées) : nombre de créations complètes par `table|identifiant`. */
+  readonly rows: Readonly<Record<string, number>>;
   readonly failing: boolean;
 }
 

@@ -302,10 +302,10 @@ describe('noms inconnus et ordre des tables (sections 3.3, 7.2, 8)', () => {
     expect(isUnknownSettingKey('a.constructor')).toBe(false);
   });
 
-  it('16 tables publiées dans l’ordre topologique', () => {
-    expect(SYNC_TABLE_ORDER).toHaveLength(16);
-    expect(SYNC_TABLE_ORDER[0]).toBe('space');
-    expect(SYNC_TABLE_ORDER.indexOf('task')).toBeLessThan(SYNC_TABLE_ORDER.indexOf('reminder'));
+  it('2 tables publiées (catalogue I0) dans l’ordre topologique', () => {
+    expect(SYNC_TABLE_ORDER).toHaveLength(2);
+    expect(SYNC_TABLE_ORDER[0]).toBe('profile');
+    expect(SYNC_TABLE_ORDER.indexOf('profile')).toBeLessThan(SYNC_TABLE_ORDER.indexOf('body_weight'));
     expect(SYNC_FORMAT_MAJOR).toBe(1);
   });
 });

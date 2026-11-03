@@ -4,6 +4,7 @@ import { openTestDb, type TestDb } from '../../../../src/db/repositories/sql/tes
 import { MemorySyncFolder, createMemorySyncPlatform, type MemorySyncPlatform } from '../../../../src/platform/sync';
 import { createSyncService, silentSyncLogger } from '../../../../src/sync';
 import { PAIRING_PHONE_ID as SELF, publishedPcFolder, type PcWorld } from '../../../fixtures/pairingWorld';
+import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
 
 /**
  * Y-IOS-02, QA du parcours d'association (demande d'Ali, 0.2.2), moteur : transitions entre les états de l'association, sur le moteur et la
@@ -24,7 +25,7 @@ afterEach(async () => {
 });
 
 function serviceOn(platform: MemorySyncPlatform, os: 'ios' | 'windows') {
-  return createSyncService({
+  return createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
     data: db.data,
     platform,
     hlc: createHlcClock({ clock: db.clock, deviceId: SELF }),

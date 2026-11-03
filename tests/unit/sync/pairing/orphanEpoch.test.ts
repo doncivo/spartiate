@@ -6,6 +6,7 @@ import { SyncPlatformError, type SyncPlatform } from '../../../../src/platform/s
 import { createSyncService } from '../../../../src/sync';
 import { hydrate, propagate } from '../../../sim/syncCloudSim';
 import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
 
 /**
  * ADR 0011 §24 (avenant Y-IOS-02, PR #24) : époque orpheline, attente de l'appareil connu, étapes de l'abandon (arrêt entre chacune),
@@ -25,7 +26,7 @@ afterEach(async () => {
 
 /** Service de l'iPhone sur une plateforme éventuellement truquée, avec ou sans échéance de cycle `hide`. */
 function iphoneService(b: SimDevice, platform: SyncPlatform, probe?: Parameters<typeof createSyncService>[0]['deadlineProbe']): void {
-  b.service = createSyncService({
+  b.service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
     data: b.data, platform, hlc: b.hlc, clock: b.clock, deviceId: b.id, sv: SCHEMA_VERSION, appVersion: '0.4.0', logger: b.logger,
     setTimeout: () => 0, clearTimeout: () => undefined, ...(probe ? { deadlineProbe: probe } : {}),
   });

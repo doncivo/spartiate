@@ -5,6 +5,7 @@ import type { EpochId, PublishedDeviceState } from '../../../src/domain/sync/for
 import type { DeviceId } from '../../../src/domain/types';
 import { maintain } from '../../../src/sync/maintenance';
 import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * Y-TECH-02, ADR 0011 §21 point 3 : anciennes époques supprimées par leur écrivain quand tous les actifs (non expirés, non oubliés)
@@ -108,7 +109,7 @@ describe('anciennes époques (ADR 0011 §21 point 3)', () => {
     const ownScan = scan.devices.find((d) => d.deviceId === a.id) ?? null;
     const epoch = ownScan?.state?.epoch as EpochId;
     expect(accepted.get(b.id)?.epoch).toBe(epoch);
-    const deps = { data: a.data, platform: a.platform, hlc: a.hlc, clock: a.clock, deviceId: a.id, devicePlatform: 'windows' as const, appVersion: '0.4.0', sv: SCHEMA_VERSION, logger: a.logger };
+    const deps = { catalogue: LEGACY_SYNC_CATALOGUE, data: a.data, platform: a.platform, hlc: a.hlc, clock: a.clock, deviceId: a.id, devicePlatform: 'windows' as const, appVersion: '0.4.0', sv: SCHEMA_VERSION, logger: a.logger };
     const input = { epoch, head: { epoch, segment: 0, record: 0, hlc: null, stateSeq: 0 }, accepted, ownScan, rows: await a.data.repos.sync.getStates() };
     await maintain(deps, { ...input, keepOldEpochs: true });
     expect(ownEpochs(a)).toBe(2);

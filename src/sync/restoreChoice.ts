@@ -111,7 +111,7 @@ export async function applyEverywhere(deps: SyncDeps): Promise<EpochId> {
 
   const maxSeq = await data.repos.sync.maxOutboxSeq();
   const endHlc = deps.hlc.now();
-  await platform.writeSnapshot({ epoch: target, seq: 1, sv: deps.sv, records: snapshotPages(data.repos, target, covers, deps.sv) });
+  await platform.writeSnapshot({ epoch: target, seq: 1, sv: deps.sv, records: snapshotPages(data.repos, deps.catalogue, target, covers, deps.sv) });
   const head: DeviceAck = { epoch: target, segment: 0, record: 0, hlc: null, stateSeq };
   await platform.writeState({
     sv: deps.sv,

@@ -7,6 +7,7 @@ import { SyncPlatformError, type FolderScan, type SyncPlatform } from '../../../
 import { createSyncService, HIDE_SYNC_DEADLINE_MS } from '../../../../src/sync';
 import { propagate } from '../../../sim/syncCloudSim';
 import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
 
 /**
  * Y-IOS-02-FIX-02 (ADR 0011 §24 point 10) : publication bloquée pour toujours par l'instantané d'une orpheline resté dans iCloud alors que
@@ -30,7 +31,7 @@ afterEach(async () => {
 
 /** Service de l'iPhone sur une plateforme truquée (même base, même horloge). */
 function withPlatform(b: SimDevice, platform: SyncPlatform): void {
-  b.service = createSyncService({
+  b.service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
     data: b.data, platform, hlc: b.hlc, clock: b.clock, deviceId: b.id, devicePlatform: b.devicePlatform, sv: SCHEMA_VERSION, appVersion: '0.3.2', logger: b.logger,
     setTimeout: () => 0, clearTimeout: () => undefined,
   });
@@ -177,7 +178,7 @@ describe('Y-IOS-02-FIX-02 : état réel de la séance (critère 16)', () => {
   it('interruption du cycle pendant la suppression : jamais comptée comme un échec, mémo gardé, reprise au cycle suivant', async () => {
     const { b } = await aliState();
     let stopped = false;
-    b.service = createSyncService({
+    b.service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
       data: b.data, platform: b.platform, hlc: b.hlc, clock: b.clock, deviceId: b.id, devicePlatform: 'ios', sv: SCHEMA_VERSION, appVersion: '0.3.2', logger: b.logger,
       setTimeout: () => 0, clearTimeout: () => undefined,
       // Échéance du cycle `hide` atteinte exactement à la suppression de l'orpheline réarmée (unité `delete-own`).

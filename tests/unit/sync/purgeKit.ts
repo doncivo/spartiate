@@ -1,3 +1,4 @@
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 import { trashCutoff } from '../../../src/domain/taskTrash';
 import type { Task } from '../../../src/domain/model';
 import type { TaskId } from '../../../src/domain/types';
@@ -16,7 +17,7 @@ export async function purgeExpired(deps: PurgeDeps): Promise<number> {
   if (!deps.sync || !deps.hlc) return deps.data.transaction((repos) => repos.tasks.purgeDeletedBefore(trashCutoff(deps.clock.nowMs())));
   const now = deps.clock.nowMs();
   const horizon = await currentPurgeHorizon(deps.data.repos, deps.hlc.deviceId, now);
-  return (await purgeDeletedRows({ data: deps.data, logger: defaultSyncLogger }, horizon, now)).count;
+  return (await purgeDeletedRows({ catalogue: LEGACY_SYNC_CATALOGUE, data: deps.data, logger: defaultSyncLogger }, horizon, now)).count;
 }
 
 /** Restaure une ligne supprimée et ses rappels (écriture tamponnée, capture réelle). */

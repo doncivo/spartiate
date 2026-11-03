@@ -17,6 +17,7 @@ import { BLOCKING_PHASE_META, startSyncIntegration, type SyncIntegration } from 
 import { syncStore } from './syncStore';
 import { statusLine } from './syncText';
 import { createFakeSyncService, type FakeSyncService } from './testKit';
+import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
 
 /**
  * Bandeaux A-09 de la synchro (critère 9, solde) : `SyncService` factice, base SQLite de test, horloge manuelle et minuterie factice
@@ -466,7 +467,7 @@ describe('« Synchro en cours » avec le vrai service : un seul seuil (revue, po
     let release: (info: SyncFolderInfo) => void = () => undefined;
     const held = new Promise<SyncFolderInfo>((resolve) => (release = resolve));
     const serviceTimers: (() => void)[] = [];
-    const service = createSyncService({
+    const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
       data: db.data,
       platform: { ...base, folder: { ...base.folder, info: () => held } },
       hlc: createHlcClock({ clock: db.clock, deviceId: SELF }),

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { routineLogId } from '../../../src/domain/sync/naturalIds';
+import { routineLogId } from '../../fixtures/legacy-schema/naturalIds';
 import type { IsoDateTime, LocalDate, RoutineId, RoutineLogId } from '../../../src/domain/types';
 import { createSimDevice, pair, PRO, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../sim/syncDevice';
 

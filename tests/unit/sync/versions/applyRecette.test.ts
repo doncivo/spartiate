@@ -9,6 +9,7 @@ import type { DeviceId, Hlc, IsoDateTime } from '../../../../src/domain/types';
 import { applyOps, type ApplyContext } from '../../../../src/sync/apply';
 import { guarded } from '../../../../src/sync/guarded';
 import { createMemorySyncLogger } from '../../../../src/sync/log';
+import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
 
 /**
  * Recette de ce que le lot Y2 a livré pour Y-07 (critères 1 à 4 ; ADR 0011 §7.2, §8, §3.3) : `apply.ts` garde ou refuse les champs,
@@ -27,7 +28,7 @@ let db: TestDb;
 let logger: ReturnType<typeof createMemorySyncLogger>;
 const op = (t: string, id: string, fields: Record<string, SyncField>): SyncOp => ({ t, id, at: AT, f: new Map(Object.entries(fields)) });
 const apply = (ops: SyncOp[], remoteSv: number, data: DataAccess = db.data) =>
-  guarded(data, (repos) => applyOps(repos, ops, { localSv: LOCAL_SV, remoteSv, now: AT, knows: () => false, logger } satisfies ApplyContext));
+  guarded(data, (repos) => applyOps(repos, ops, { catalogue: LEGACY_SYNC_CATALOGUE, localSv: LOCAL_SV, remoteSv, now: AT, knows: () => false, logger } satisfies ApplyContext));
 
 function fullTask(id: string, hlc: Hlc, extra: Record<string, SyncField> = {}): SyncOp {
   const v = (value: string | number | null): SyncField => [value, hlc, null];

@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { migrations } from '../../src/db/migrations';
+import { legacyMigrations as migrations } from '../../tests/fixtures/legacy-schema';
 import { SYNC_FORMAT_MAJOR } from '../../src/domain/sync/format';
 import { tUpdateRestore } from '../../src/i18n/appUpdateRestoreText';
 // @ts-expect-error script .mjs sans déclaration de types

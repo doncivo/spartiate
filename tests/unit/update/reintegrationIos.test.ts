@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { migrations } from '../../../src/db/migrations';
+import { legacyMigrations as migrations } from '../../fixtures/legacy-schema';
 import { migrate } from '../../../src/db/migrator';
 import { isTroublePhase, statusLine } from '../../../src/features/sync/syncText';
 import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../sim/syncDevice';

@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { DeviceId, Hlc, IsoDateTime, LocalDate, RoutineId } from '../types';
-import { SYNC_TABLE_ORDER, epochId, type DeviceAck, type PublishedDeviceState } from './format';
+import { epochId, type DeviceAck, type PublishedDeviceState } from './format';
 import { canPublish, folderEpoch, nextEpoch, openingCover, ownBounds, restoreOptions } from './epoch';
-import { expectedNaturalId, holidayId, isNaturalId, routineLogId } from './naturalIds';
+import { expectedNaturalId, holidayId, isNaturalId, routineLogId } from '../../../tests/fixtures/legacy-schema/naturalIds';
 import { focusSessionsToClose, routinePausedFrom } from './repairs';
-import { FIXED_SPACE_IDS, SHARED_SETTING_KEYS, SYNC_TABLES, childRelations, isPurgeable, isValidRowId, isValidValue, settingKeyScope, syncColumn, syncTable, tableRank } from './syncTables';
+import { isValidValue } from './syncTables';
+import { LEGACY_SYNC_CATALOGUE, FIXED_SPACE_IDS, SHARED_SETTING_KEYS, SYNC_TABLES, childRelations, isPurgeable, isValidRowId, settingKeyScope, syncColumn, syncTable, tableRank } from '../../../tests/fixtures/legacy-schema/catalogue';
 
 /** Catalogue, identifiants déterministes, époques et règle 1, réparations (ADR 0011, sections 3.3, 8, 9 ; Y-02 critères 4, 8, 9, 13 à 15). */
 
@@ -16,7 +17,7 @@ const E2 = epochId(2, B);
 
 describe('catalogue (syncTables.ts)', () => {
   it('tables dans l’ordre topologique, colonnes locales jamais publiées', () => {
-    expect(SYNC_TABLES.map((t) => t.name)).toEqual([...SYNC_TABLE_ORDER]);
+    expect(SYNC_TABLES.map((t) => t.name)).toEqual(LEGACY_SYNC_CATALOGUE.tables.map((t) => t.name));
     expect(syncColumn('task', 'discarded')).toBeUndefined();
     expect(syncColumn('routine', 'paused')).toBeUndefined();
     expect(syncColumn('calendar_account', 'token_ref')).toBeUndefined();
@@ -26,7 +27,7 @@ describe('catalogue (syncTables.ts)', () => {
     expect(syncTable('search_index')).toBeUndefined();
     expect(syncTable('external_event')).toBeUndefined();
     expect(tableRank('space')).toBe(0);
-    expect(tableRank('inconnue')).toBe(SYNC_TABLE_ORDER.length);
+    expect(tableRank('inconnue')).toBe(SYNC_TABLES.length);
     expect(childRelations('project').map((r) => `${r.table.name}.${r.column}`)).toEqual(['task.project_id']);
   });
 

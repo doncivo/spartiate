@@ -461,7 +461,7 @@ export async function openResetEpoch(
     const maxSeq = await data.repos.sync.maxOutboxSeq();
     const seq = Math.max(0, ...input.listedSnapshots) + 1;
     const endHlc = deps.hlc.now();
-    await platform.writeSnapshot({ epoch: target, seq, sv: deps.sv, records: snapshotPages(data.repos, target, input.covers, deps.sv) });
+    await platform.writeSnapshot({ epoch: target, seq, sv: deps.sv, records: snapshotPages(data.repos, deps.catalogue, target, input.covers, deps.sv) });
     const head: DeviceAck = { epoch: target, segment: 0, record: 0, hlc: null, stateSeq: 0 };
     await data.transaction(async (tx) => {
       await tx.sync.clearOutbox(maxSeq);

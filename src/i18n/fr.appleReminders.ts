@@ -27,11 +27,6 @@ export const appleRemindersFr = {
   allow: 'Autoriser l’accès aux Rappels',
   denied: 'L’accès aux Rappels est refusé. Autorisez-le dans Réglages d’iOS, Confidentialité et sécurité, Rappels.',
   restricted: 'L’accès aux Rappels est restreint sur cet iPhone.',
-  bannerAccess: 'L’accès aux Rappels est refusé',
-  bannerLoad: 'Les Rappels Apple n’ont pas pu démarrer. Rouvrez l’app pour réessayer.',
-  bannerRead: 'Les Rappels Apple n’ont pas pu être lus',
-  bannerWrite: '{count} modification(s) n’ont pas pu être envoyées vers Rappels',
-  bannerViewLabel: 'Voir l’état des Rappels Apple',
   // Listes (K-05 critère 8)
   listsCaption: 'LISTES',
   noLists: 'Aucune liste dans Rappels.',

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../../../src/domain/hlc';
 import { PAIRING_VALIDITY_MS } from '../../../../src/domain/sync/format';
-import { SYNC_TABLES } from '../../../../src/domain/sync/syncTables';
+import { SYNC_TABLES } from '../../../fixtures/legacy-schema/catalogue';
 import type { DeviceId } from '../../../../src/domain/types';
 import { createAppContainer } from '../../../../src/features/app/container';
 import { useAppStore } from '../../../../src/features/app/appStore';

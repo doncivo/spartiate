@@ -19,7 +19,7 @@ import type { DeviceId, Hlc, IsoDateTime } from '../types';
 import type { EpochCarryNotice, EpochCarryNoticeItem } from './epochCarryNotice';
 import { hlcDevice, hlcIso } from './parse';
 import { carriedWrites, carryReportTableEntry, namedCount } from './epochCarryReportView';
-import { SYNC_TABLES } from './syncTables';
+import type { SyncCatalogue } from './syncTables';
 
 // Parties lues par l'interface (module sans import d'exécution, `epochCarryReportView.ts`), réexportées ici : une seule adresse pour les règles.
 export { CARRY_REPORT_TABLES, EPOCH_CARRY_REPORT_FAILED_META, EPOCH_CARRY_REPORT_KEEP, carriedWrites, carryReportKind, namedCount, noticeAfterAcknowledge, shortRowId } from './epochCarryReportView';
@@ -122,8 +122,8 @@ export function carryReportLabel(table: string, values: ReadonlyMap<string, unkn
 }
 
 /** Tables du catalogue de synchro absentes de la correspondance (test : toujours vide). */
-export function missingCarryReportTables(): string[] {
-  return SYNC_TABLES.map((t) => t.name).filter((name) => carryReportTableEntry(name) === undefined);
+export function missingCarryReportTables(catalogue: SyncCatalogue): string[] {
+  return catalogue.tables.map((t) => t.name).filter((name) => carryReportTableEntry(name) === undefined);
 }
 
 /** État d'une ligne avant (juste après l'étape (b)) ou après l'application de son report. */

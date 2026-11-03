@@ -5,6 +5,7 @@ import { asEntityId, type DeviceId } from '../../../src/domain/types';
 import { openTestDb, type TestDb } from '../../../src/db/repositories/sql/testSetup';
 import { createMemorySyncPlatform, type SyncFolderInfo, type SyncPlatform } from '../../../src/platform/sync';
 import { createMemorySyncLogger, createSyncService } from '../../../src/sync';
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 
 /**
  * Service de synchro et bandeaux A-09 (revue, points 2 et 3) : un abonné qui lève n'empêche ni les autres abonnés ni la synchro, et
@@ -26,7 +27,7 @@ afterEach(async () => {
 function make(platform: SyncPlatform) {
   const logger = createMemorySyncLogger();
   const timers: { handler: () => void; ms: number }[] = [];
-  const service = createSyncService({
+  const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
     data: db.data,
     platform,
     hlc: createHlcClock({ clock: db.clock, deviceId: SELF }),

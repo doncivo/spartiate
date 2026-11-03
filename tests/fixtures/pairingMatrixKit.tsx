@@ -15,6 +15,7 @@ import { createFakeSyncService, type FakeSyncService } from '../../src/features/
 import { createMemorySyncPlatform, MemorySyncFolder, type MemorySyncPlatform, type SyncPlatform } from '../../src/platform/sync';
 import type { SyncStatus } from '../../src/platform/sync/types';
 import { createSyncService, silentSyncLogger } from '../../src/sync';
+import { LEGACY_SYNC_CATALOGUE } from './legacy-schema/catalogue';
 import { PAIRING_PHONE_ID as SELF, publishedPcFolder, type PcWorld } from './pairingWorld';
 import { settle } from '../setup/settle';
 
@@ -99,7 +100,7 @@ function containerFor(platform: SyncPlatform, os: Os, service: FakeSyncService |
   const hlc = createHlcClock({ clock: db.clock, deviceId: SELF });
   const sync =
     service ??
-    createSyncService({ data: access, platform, hlc, clock: db.clock, deviceId: SELF, devicePlatform: os, sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
+    createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data: access, platform, hlc, clock: db.clock, deviceId: SELF, devicePlatform: os, sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
   return createAppContainer({ clock: db.clock, hlc, data: access, sync, syncPlatform: platform, platform: { runtime: 'tauri', os } });
 }
 

@@ -42,7 +42,6 @@ export interface SettingsValues {
   /** N-04 : récapitulatif du soir (non fait). */
   'reminders.eveningRecap': { readonly enabled: boolean; readonly time: LocalTime };
   /** P-03 / ADR 0003. */
-  'general.locale': 'fr' | 'en';
   /** P-03 : premier jour de la semaine affichée (Semaine, mini-calendriers, carte de chaleur) ; partagé. Objectifs, rapport et R-07 restent au lundi. */
   'general.firstWeekday': FirstWeekday;
   /** P-03 : format d'affichage des heures (les valeurs stockées restent 'HH:mm', 24 h). */
@@ -134,7 +133,6 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'reminders.defaultOffsets': { scope: 'shared', defaultValue: [0] },
   'reminders.morningRecap': { scope: 'shared', defaultValue: { enabled: true, time: '07:30' as LocalTime } },
   'reminders.eveningRecap': { scope: 'shared', defaultValue: { enabled: true, time: '21:00' as LocalTime } },
-  'general.locale': { scope: 'shared', defaultValue: 'fr' },
   'general.firstWeekday': { scope: 'shared', defaultValue: 'monday' },
   'general.timeFormat': { scope: 'shared', defaultValue: '24h' },
   'ui.theme': { scope: 'local', defaultValue: 'system' },

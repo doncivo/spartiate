@@ -11,13 +11,13 @@ describe('I-06 A9 : les branches de laboratoire sont séparées du candidat', ()
   });
   it('afterapply : le vrai traitement précède la panne, commit 19 vérifié, injection unique', () => {
     const result = instrumentBootstrap(source, 'afterapply') as string;
-    expect(result.indexOf('await reintegrateAfterMigration(db, options.clock)')).toBeLessThan(result.indexOf('A9AfterApplyCommitted19'));
+    expect(result.indexOf('await reintegrateAfterMigration(db, options.clock, options.catalogue)')).toBeLessThan(result.indexOf('A9AfterApplyCommitted19'));
     expect(result).toContain('versions[0]?.version !== 19');
     expect(result).toContain("localStorage.setItem('ct.a9.afterapply.consumed', '1')");
   });
   it('interruption : barrière avant le vrai traitement, puis reprise sans réappliquer la migration', () => {
     const result = instrumentBootstrap(source, 'interruption') as string;
-    expect(result.indexOf('await new Promise(')).toBeLessThan(result.indexOf('await reintegrateAfterMigration(db, options.clock)'));
+    expect(result.indexOf('await new Promise(')).toBeLessThan(result.indexOf('await reintegrateAfterMigration(db, options.clock, options.catalogue)'));
     expect(result).toContain("localStorage.setItem('ct.a9.interruption', 'completed')");
   });
   it('refuse une source ambiguë ou une variante inconnue', () => {

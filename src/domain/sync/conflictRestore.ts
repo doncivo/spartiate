@@ -5,7 +5,7 @@
 
 import type { SyncValue } from './format';
 import { MODIFIED_MARKER, sameValue } from './merge';
-import { isValidValue, syncColumn, syncTable, type SyncColumn, type SyncTable } from './syncTables';
+import { isValidValue, type SyncCatalogue, type SyncColumn, type SyncTable } from './syncTables';
 
 /** État d'une ligne visée (ou d'un parent visé par une valeur). */
 export type ConflictRowState = 'live' | 'deleted' | 'missing' | 'purged';
@@ -22,17 +22,17 @@ export type RestoreDecision =
   | { readonly kind: 'element'; readonly deleted: boolean };
 
 /** Table et colonne du catalogue désignées par une ligne de journal ; null si hors catalogue ou champ masqué (critères 2 et 9). */
-export function conflictTarget(conflict: { readonly table: string; readonly field: string }): { readonly table: SyncTable; readonly column: SyncColumn } | null {
-  const table = syncTable(conflict.table);
-  const column = table ? syncColumn(table.name, conflict.field) : undefined;
+export function conflictTarget(catalogue: SyncCatalogue, conflict: { readonly table: string; readonly field: string }): { readonly table: SyncTable; readonly column: SyncColumn } | null {
+  const table = catalogue.table(conflict.table);
+  const column = table ? catalogue.column(table.name, conflict.field) : undefined;
   if (!table || !column || !column.conflictVisible) return null;
   return { table, column };
 }
 
 /** Parent désigné par une colonne (clé étrangère du catalogue). */
-export function parentTableOf(table: SyncTable, column: SyncColumn): SyncTable | undefined {
+export function parentTableOf(catalogue: SyncCatalogue, table: SyncTable, column: SyncColumn): SyncTable | undefined {
   const relation = table.parents.find((p) => p.column === column.name);
-  return relation ? syncTable(relation.table) : undefined;
+  return relation ? catalogue.table(relation.table) : undefined;
 }
 
 /** Conflit « supprimé / modifié » ou suppression contre restauration : champ `deleted_at`. */

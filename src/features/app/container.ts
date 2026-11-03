@@ -1,3 +1,4 @@
+import { SYNC_CATALOGUE, type SyncCatalogue } from '../../domain/sync/syncTables';
 import type { StoreApi } from 'zustand';
 import { systemClock, type Clock } from '../../domain/clock';
 import type { HlcClock } from '../../domain/hlc';
@@ -32,6 +33,8 @@ export interface AppContainer {
   /** Générateur HLC de l'appareil ; les écritures passent par le WriteStamper des repositories. */
   readonly hlc: HlcClock;
   readonly data: DataAccess;
+  /** Catalogue des tables publiées par la synchro (D-67) : I0 en production, ancien catalogue dans le banc de test. */
+  readonly catalogue: SyncCatalogue;
   readonly undo: UndoStack;
   readonly shortcuts: ShortcutRegistry;
   readonly platform: { readonly runtime: Runtime; readonly os: OsFamily };
@@ -78,6 +81,7 @@ export function createAppContainer(parts: AppContainerParts): AppContainer {
     ids: parts.ids ?? uuidGenerator,
     hlc: parts.hlc,
     data,
+    catalogue: parts.catalogue ?? SYNC_CATALOGUE,
     undo: parts.undo ?? createUndoStack(),
     shortcuts: parts.shortcuts ?? createShortcutRegistry(),
     platform: parts.platform ?? { runtime: 'web', os: 'other' },

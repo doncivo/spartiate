@@ -1,18 +1,18 @@
 /**
- * Catalogue des tables et colonnes publiées par la synchronisation (ADR 0011, sections 3.2, 3.3, 4.2 et 8 ; Y-02, Y-09).
+ * Catalogue des tables et colonnes publiées par la synchronisation (ADR 0011, sections 3.2, 3.3, 4.2 et 8 ; Y-02, Y-09 ; D-55, D-65, D-67).
  *
- * Seule source des noms SQL de la synchro : déclencheurs de capture (migration 0015, copie figée contrôlée par test), publication,
- * application des opérations reçues et instantanés. Un nom reçu d'un autre appareil n'entre jamais dans une requête : il est cherché
- * ici (comparaison exacte, `Map` figée) et la requête est écrite avec le nom du catalogue (audit H5).
+ * Le catalogue est une valeur injectée (`SyncCatalogue`), pas un module global : le moteur et les repositories le reçoivent. En
+ * production c'est `SYNC_CATALOGUE` (I0 : `profile` et `body_weight`) ; le banc de test (`tests/fixtures/legacy-schema/catalogue.ts`)
+ * injecte l'ancien catalogue. Un nom reçu d'un autre appareil n'entre jamais dans une requête : il est cherché ici (comparaison exacte,
+ * `Map` figée) et la requête est écrite avec le nom du catalogue (audit H5). Un catalogue étranger (table inconnue) reste donc inerte.
  *
  * Module pur : constantes, recherche et validation des valeurs. Aucune I/O.
  */
 
-import { SETTINGS_DEFINITIONS, type SettingKey } from '../model/settings';
 import { isId, isIsoDateTime, isLocalDate, isLocalDateTime, isLocalTime } from '../types';
 import { MAX_SYNC_ID_LENGTH } from './limits';
-import { isNaturalId, type NaturalIdTable } from './naturalIds';
 import { SYNC_TABLE_ORDER } from './format';
+import { expectedWeightId, isProfileId, isWeightId, PROFILE_ID } from './naturalIds';
 
 /** Types déclarés des colonnes publiées (section 3.3). */
 /** `datetime` : instant ISO 8601 UTC (`IsoDateTime`) ; `localdatetime` : date et heure locales flottantes (`LocalDateTime`, échéance d'un rappel). */
@@ -30,10 +30,28 @@ export interface SyncColumn {
   readonly conflictVisible: boolean;
 }
 
-export type SyncTableName = (typeof SYNC_TABLE_ORDER)[number];
+/** Nom d'une table du catalogue injecté (le jeu de noms dépend du catalogue). */
+export type SyncTableName = string;
 
 /** Nature des identifiants d'une table : UUID, identifiant naturel déterministe (section 8) ou clé de réglage. */
 export type SyncIdKind = 'uuid' | 'natural' | 'setting';
+
+/** D'où vient le titre d'un élément au journal des conflits : sa propre colonne, la ligne parente, la cible d'un rappel, ou rien. */
+export type TitleSource =
+  | { readonly kind: 'own'; readonly column: string }
+  | { readonly kind: 'parent'; readonly column: string; readonly table: SyncTableName }
+  | { readonly kind: 'reminder' }
+  | { readonly kind: 'none' };
+
+/** Identité naturelle d'une table (section 8) : forme bien formée et identifiant attendu pour les valeurs d'une ligne. */
+export interface NaturalIdSpec {
+  /** L'identifiant est-il exactement l'identifiant naturel bien formé de cette table ? */
+  readonly is: (id: string) => boolean;
+  /** Identifiant attendu pour une ligne de ces valeurs (cohérence d'une recréation reçue, section 5.4), ou null si les valeurs manquent. */
+  readonly expected: (row: ReadonlyMap<string, unknown>) => string | null;
+  /** Vrai : un UUID est aussi admis (ancien schéma). Faux ou absent : aucun repli UUID (D-65). */
+  readonly uuidFallback?: boolean;
+}
 
 export interface SyncTable {
   readonly name: SyncTableName;
@@ -44,18 +62,27 @@ export interface SyncTable {
   readonly columns: readonly SyncColumn[];
   /** Colonnes locales, jamais publiées (section 8). */
   readonly local: readonly string[];
-  /** Vrai si une ligne supprimée peut être purgée physiquement (section 5.4 : jamais `settings` ni les espaces fixes). */
+  /** Vrai si une ligne supprimée peut être purgée physiquement (section 5.4). */
   readonly purgeable: boolean;
   /** Clés étrangères vers une table publiée (colonne → table) : ordre d'application et mise de côté (section 3.3). */
   readonly parents: readonly { readonly column: string; readonly table: SyncTableName }[];
+  /** Identité naturelle (`idKind: 'natural'`). */
+  readonly natural?: NaturalIdSpec;
+  /** Titre au journal des conflits ; `none` par défaut. */
+  readonly titleSource?: TitleSource;
 }
+
+export type SettingKeyScope = 'shared' | 'local' | 'unknown';
 
 /** Colonnes techniques présentes sur chaque table métier, qui ne circulent pas comme champs (section 3.1). */
 export const TECHNICAL_COLUMNS = ['updated_at', 'device_id', 'hlc'] as const;
 
 const SHORT_TEXT = 4_096;
-const LONG_TEXT = 200 * 1_024;
 const JSON_TEXT = 64 * 1_024;
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Constructeurs (catalogue I0 et banc de test)
+// ---------------------------------------------------------------------------------------------------------------------------------
 
 const c = (name: string, type: SyncColumnType, nullable: boolean, extra: Partial<Omit<SyncColumn, 'name' | 'type' | 'nullable'>> = {}): SyncColumn => ({
   name,
@@ -73,7 +100,7 @@ const deletedAt = c('deleted_at', 'datetime', true);
 const table = (
   name: SyncTableName,
   columns: readonly SyncColumn[],
-  options: { local?: readonly string[]; parents?: SyncTable['parents']; idKind?: SyncIdKind; purgeable?: boolean; key?: 'id' | 'key' } = {},
+  options: { local?: readonly string[]; parents?: SyncTable['parents']; idKind?: SyncIdKind; purgeable?: boolean; key?: 'id' | 'key'; natural?: NaturalIdSpec; titleSource?: TitleSource } = {},
 ): SyncTable => ({
   name,
   key: options.key ?? 'id',
@@ -82,206 +109,116 @@ const table = (
   local: options.local ?? [],
   purgeable: options.purgeable ?? true,
   parents: options.parents ?? [],
+  ...(options.natural ? { natural: options.natural } : {}),
+  ...(options.titleSource ? { titleSource: options.titleSource } : {}),
 });
 
-/** Catalogue, dans l'ordre topologique des tables (section 3.3). */
-export const SYNC_TABLES: readonly SyncTable[] = [
-  table('space', [c('name', 'text', false), c('color', 'text', false, { max: 16 }), c('sort_order', 'real', false, hidden), c('quiet_hours', 'json', false), createdAt, deletedAt]),
-  table(
-    'project',
-    [c('space_id', 'id', false), c('name', 'text', false), c('color', 'text', false, { max: 16 }), bool('archived'), c('sort_order', 'real', false, hidden), createdAt, deletedAt],
-    { parents: [{ column: 'space_id', table: 'space' }] },
-  ),
-  table('recurrence', [
-    c('freq', 'enum', false, { values: ['daily', 'weekly', 'monthly', 'yearly'] }),
-    c('interval', 'int', false),
-    c('weekdays', 'json', false),
-    c('month_day', 'int', true),
-    c('nth_weekday', 'text', true, { max: 64 }),
-    c('until', 'text', true, { max: 64 }),
-    c('count', 'int', true),
-    createdAt,
-    deletedAt,
-  ]),
-  table(
-    'goal',
-    [
-      c('space_id', 'id', false),
-      c('week_start', 'date', false),
-      c('title', 'text', false),
-      c('icon', 'text', true, { max: 256 }),
-      bool('pinned'),
-      c('status', 'enum', false, { values: ['open', 'achieved', 'closed'] }),
-      c('carried_from_id', 'id', true),
-      createdAt,
-      deletedAt,
-    ],
-    {
-      parents: [
-        { column: 'space_id', table: 'space' },
-        { column: 'carried_from_id', table: 'goal' },
-      ],
+/** Constructeurs partagés avec le banc de test (ancien catalogue). */
+export const kit = { c, hidden, bool, createdAt, deletedAt, table } as const;
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Catalogue injectable
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+/** Lignes liées à une cible qui se purgent et se rétablissent avec elle (ancien schéma : rappels d'une tâche, routine ou événement). */
+export interface CompanionRule {
+  readonly table: string;
+  readonly typeColumn: string;
+  readonly idColumn: string;
+  readonly targets: readonly string[];
+}
+
+/** Règles propres à un catalogue, en données : vides en production (I0), fournies par le banc pour l'ancien schéma. */
+export interface CatalogueRules {
+  /** Tables dont les enfants vivants sont rattachés à « aucun parent » avant la purge d'une trace reçue. */
+  readonly reattachOnPurge: readonly string[];
+  readonly companion: CompanionRule | null;
+  /** Tables dont la purge supprime aussi les événements externes liés (ancien schéma : comptes d'agenda). */
+  readonly dropExternalEventsOn: readonly string[];
+  /** Réparations après un lot appliqué (le moteur lui passe ses `SyncDeps`) ; aucune en I0. */
+  readonly repairs: ((deps: unknown, touched: ReadonlyMap<string, ReadonlySet<string>>) => Promise<void>) | null;
+}
+
+export interface SyncCatalogue {
+  readonly rules: CatalogueRules;
+  /** Tables publiées, dans l'ordre topologique (section 3.3). */
+  readonly tables: readonly SyncTable[];
+  /** Table du catalogue pour un nom reçu (comparaison exacte), ou undefined. */
+  table(name: string): SyncTable | undefined;
+  /** Colonne publiée d'une table (comparaison exacte), ou undefined (colonne locale, technique ou inconnue). */
+  column(tableName: string, column: string): SyncColumn | undefined;
+  /** Tables dont une colonne référence cette table (enfants), pour ne jamais purger un parent encore référencé. */
+  childRelations(name: string): readonly { readonly table: SyncTable; readonly column: string }[];
+  /** Rang topologique (départage à hlc égal, section 3.3) ; au-delà des tables pour un nom inconnu. */
+  rank(name: string): number;
+  /** Une ligne de cette table et de cet identifiant peut-elle être purgée physiquement (section 5.4) ? */
+  isPurgeable(tableName: string, id: string): boolean;
+  /** Identifiant de ligne admis pour cette table. */
+  isValidRowId(t: SyncTable, id: unknown): id is string;
+  /** La valeur respecte-t-elle le type et la longueur déclarés de la colonne ? */
+  isValidValue(col: SyncColumn, value: unknown): boolean;
+  /** Portée d'une clé de réglage publiée ; `unknown` quand le catalogue ne publie aucun réglage. */
+  settingScope(key: string): SettingKeyScope;
+  /** Identifiant fixe (jamais purgé ni tracé) : espaces Pro et Perso dans l'ancien catalogue ; aucun en I0. */
+  isFixedId(tableName: string, id: string): boolean;
+}
+
+export interface CatalogueDefinition {
+  readonly tables: readonly SyncTable[];
+  /** Ordre topologique attendu : doit être exactement les noms de `tables`, dans cet ordre. */
+  readonly order: readonly string[];
+  /** Identifiants fixes par table. */
+  readonly fixedIds?: Readonly<Record<string, ReadonlySet<string>>>;
+  readonly settingScope?: (key: string) => SettingKeyScope;
+  /** Identifiants naturels admis en plus d'un UUID dans une colonne de type `id`. */
+  readonly extraId?: (value: string) => boolean;
+  readonly rules?: Partial<CatalogueRules>;
+}
+
+export function createCatalogue(def: CatalogueDefinition): SyncCatalogue {
+  const names = def.tables.map((t) => t.name);
+  if (names.length !== def.order.length || names.some((n, i) => n !== def.order[i])) throw new Error('catalogue de synchro : ordre différent des tables');
+  const byName: ReadonlyMap<string, SyncTable> = new Map(def.tables.map((t) => [t.name, t]));
+  const columns: ReadonlyMap<string, ReadonlyMap<string, SyncColumn>> = new Map(def.tables.map((t) => [t.name, new Map(t.columns.map((col) => [col.name, col]))]));
+  const children = new Map(def.tables.map((t) => [t.name, def.tables.flatMap((o) => o.parents.filter((p) => p.table === t.name).map((p) => ({ table: o, column: p.column })))]));
+  const fixed = (tableName: string, id: string): boolean => def.fixedIds?.[tableName]?.has(id) ?? false;
+
+  const isValidRowId = (t: SyncTable, id: unknown): id is string => {
+    if (typeof id !== 'string' || id.length === 0 || id.length > MAX_SYNC_ID_LENGTH) return false;
+    switch (t.idKind) {
+      case 'uuid':
+        return isId(id);
+      case 'natural':
+        return (t.natural?.is(id) ?? false) || (t.natural?.uuidFallback === true && isId(id));
+      case 'setting':
+        return /^[a-z][a-zA-Z0-9]*(\.[a-z][a-zA-Z0-9]*){1,3}$/.test(id);
+    }
+  };
+
+  const isValidColumnValue = (col: SyncColumn, value: unknown): boolean => {
+    if (col.type === 'id' && typeof value === 'string' && value.length <= MAX_SYNC_ID_LENGTH && def.extraId?.(value) === true) return true;
+    return isValidValue(col, value);
+  };
+
+  return {
+    rules: { reattachOnPurge: def.rules?.reattachOnPurge ?? [], companion: def.rules?.companion ?? null, dropExternalEventsOn: def.rules?.dropExternalEventsOn ?? [], repairs: def.rules?.repairs ?? null },
+    tables: def.tables,
+    table: (name) => byName.get(name),
+    column: (tableName, column) => columns.get(tableName)?.get(column),
+    childRelations: (name) => children.get(name) ?? [],
+    rank: (name) => {
+      const index = def.order.indexOf(name);
+      return index < 0 ? def.order.length : index;
     },
-  ),
-  table(
-    'task',
-    [
-      c('space_id', 'id', false),
-      c('project_id', 'id', true),
-      c('title', 'text', false),
-      c('note', 'text', false, { max: LONG_TEXT }),
-      c('date', 'date', true),
-      c('time', 'time', true),
-      c('status', 'enum', false, { values: ['todo', 'done'] }),
-      c('done_at', 'datetime', true, hidden),
-      c('sort_order', 'real', false, hidden),
-      bool('carried_over'),
-      c('recurrence_id', 'id', true),
-      c('series_index', 'int', true),
-      c('goal_id', 'id', true),
-      c('icon', 'text', true, { max: 256 }),
-      bool('someday'),
-      c('source', 'enum', false, { values: ['local', 'apple_reminders'] }),
-      c('external_id', 'text', true, { max: 512 }),
-      c('series_template', 'json', true, hidden),
-      c('external_event_id', 'text', true, { max: 512 }),
-      c('apple_list_id', 'text', true, { max: 512, ...hidden }),
-      bool('apple_recurring', hidden),
-      createdAt,
-      deletedAt,
-    ],
-    {
-      local: ['discarded'],
-      parents: [
-        { column: 'space_id', table: 'space' },
-        { column: 'project_id', table: 'project' },
-        { column: 'recurrence_id', table: 'recurrence' },
-        { column: 'goal_id', table: 'goal' },
-      ],
+    isPurgeable: (tableName, id) => {
+      const t = byName.get(tableName);
+      return t !== undefined && t.purgeable && !fixed(tableName, id);
     },
-  ),
-  table(
-    'routine',
-    [
-      c('space_id', 'id', false),
-      c('title', 'text', false),
-      c('icon', 'text', true, { max: 256 }),
-      c('schedule_type', 'enum', false, { values: ['daily', 'weekdays', 'x_per_week', 'every_n_days', 'every_n_weeks'] }),
-      c('weekdays', 'json', false),
-      c('times_per_week', 'int', true),
-      c('interval', 'int', true),
-      c('start_date', 'date', false),
-      c('time', 'time', true),
-      bool('archived'),
-      createdAt,
-      deletedAt,
-    ],
-    { local: ['paused'], parents: [{ column: 'space_id', table: 'space' }] },
-  ),
-  table('routine_log', [c('routine_id', 'id', false), c('date', 'date', false), c('done_at', 'datetime', false, hidden), createdAt, deletedAt], {
-    idKind: 'natural',
-    parents: [{ column: 'routine_id', table: 'routine' }],
-  }),
-  table('routine_pause', [c('routine_id', 'id', false), c('from_date', 'date', false), c('to_date', 'date', true), createdAt, deletedAt], {
-    parents: [{ column: 'routine_id', table: 'routine' }],
-  }),
-  table('reminder', [
-    c('target_type', 'enum', false, { values: ['task', 'routine', 'event'] }),
-    c('target_id', 'id', false),
-    c('offset_min', 'int', false, { values: [0, 5, 15, 30, 60, 1440, 10080] }),
-    c('fire_at', 'localdatetime', false, hidden),
-    c('delivered', 'bool', false, hidden),
-    createdAt,
-    deletedAt,
-  ]),
-  table(
-    'event',
-    [
-      c('space_id', 'id', false),
-      c('title', 'text', false),
-      c('start_date', 'date', false),
-      c('start_time', 'time', true),
-      c('end_date', 'date', false),
-      c('end_time', 'time', true),
-      bool('all_day'),
-      c('kind', 'enum', false, { values: ['event', 'birthday', 'important'] }),
-      c('repeat', 'enum', false, { values: ['once', 'monthly', 'yearly'] }),
-      bool('important'),
-      c('icon', 'text', true, { max: 256 }),
-      c('birth_year', 'int', true),
-      createdAt,
-      deletedAt,
-    ],
-    { parents: [{ column: 'space_id', table: 'space' }] },
-  ),
-  table(
-    'checklist',
-    [c('space_id', 'id', false), c('title', 'text', false), c('date', 'date', true), bool('is_template'), c('icon', 'text', true, { max: 256 }), createdAt, deletedAt],
-    { parents: [{ column: 'space_id', table: 'space' }] },
-  ),
-  table('checklist_item', [c('checklist_id', 'id', false), c('text', 'text', false), bool('checked'), c('sort_order', 'real', false, hidden), createdAt, deletedAt], {
-    parents: [{ column: 'checklist_id', table: 'checklist' }],
-  }),
-  table(
-    'focus_session',
-    [
-      c('task_id', 'id', true),
-      c('space_id', 'id', false),
-      c('planned_min', 'int', true),
-      c('started_at', 'datetime', false),
-      c('ended_at', 'datetime', true),
-      c('paused_sec', 'int', false, hidden),
-      c('paused_at', 'datetime', true, hidden),
-      c('project_id', 'id', true),
-      createdAt,
-      deletedAt,
-    ],
-    { parents: [{ column: 'space_id', table: 'space' }] },
-  ),
-  table('calendar_account', [c('provider', 'enum', false, { values: ['google', 'icloud'] }), c('label', 'text', false, { max: 512 }), c('calendars', 'json', false), createdAt, deletedAt], {
-    local: ['token_ref', 'username'],
-  }),
-  table(
-    'holiday',
-    [
-      c('country', 'enum', false, { values: ['FR', 'TN'] }),
-      c('year', 'int', false),
-      c('key', 'text', false, { max: 64 }),
-      c('date', 'date', false),
-      c('name', 'text', false, { max: 256 }),
-      c('kind', 'enum', false, { values: ['fixed', 'computed', 'lunar'] }),
-      c('source', 'enum', false, { values: ['table', 'manual'] }),
-      bool('overridden'),
-      createdAt,
-      deletedAt,
-    ],
-    { idKind: 'natural' },
-  ),
-  table('settings', [c('value', 'json', false)], { key: 'key', idKind: 'setting', purgeable: false }),
-];
-
-const BY_NAME: ReadonlyMap<string, SyncTable> = new Map(SYNC_TABLES.map((t) => [t.name, t]));
-const COLUMNS: ReadonlyMap<string, ReadonlyMap<string, SyncColumn>> = new Map(SYNC_TABLES.map((t) => [t.name, new Map(t.columns.map((col) => [col.name, col]))]));
-
-/** Table du catalogue pour un nom reçu (comparaison exacte), ou undefined. */
-export function syncTable(name: string): SyncTable | undefined {
-  return BY_NAME.get(name);
-}
-
-/** Colonne publiée d'une table du catalogue (comparaison exacte), ou undefined (colonne locale, technique ou inconnue). */
-export function syncColumn(tableName: string, column: string): SyncColumn | undefined {
-  return COLUMNS.get(tableName)?.get(column);
-}
-
-/** Tables du catalogue dont une colonne référence cette table (enfants), pour ne jamais purger un parent encore référencé. */
-export function childRelations(name: string): readonly { readonly table: SyncTable; readonly column: string }[] {
-  return SYNC_TABLES.flatMap((t) => t.parents.filter((p) => p.table === name).map((p) => ({ table: t, column: p.column })));
-}
-
-/** Rang topologique d'une table (départage à hlc égal, section 3.3). */
-export function tableRank(name: string): number {
-  const index = (SYNC_TABLE_ORDER as readonly string[]).indexOf(name);
-  return index < 0 ? SYNC_TABLE_ORDER.length : index;
+    isValidRowId,
+    isValidValue: isValidColumnValue,
+    settingScope: def.settingScope ?? (() => 'unknown'),
+    isFixedId: fixed,
+  };
 }
 
 /** Colonnes publiées d'une table, dans l'ordre du catalogue. */
@@ -290,51 +227,47 @@ export function publishedColumns(t: SyncTable): readonly string[] {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------
-// Réglages (section 8, audit M5)
+// Catalogue I0 (D-55, D-65) : profile et body_weight
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-/** Clés de réglage de portée `shared`, triées : les seules publiées (table `settings`). */
-export const SHARED_SETTING_KEYS: readonly SettingKey[] = (Object.keys(SETTINGS_DEFINITIONS) as SettingKey[]).filter((key) => SETTINGS_DEFINITIONS[key].scope === 'shared').sort();
+const PROFILE_TABLE = table(
+  'profile',
+  [
+    c('sex', 'text', true, { max: 32 }),
+    c('birth_year', 'int', true),
+    c('height_cm', 'real', true),
+    c('goal', 'text', true, { max: 32 }),
+    c('experience', 'text', true, { max: 32 }),
+    c('units', 'text', true, { max: 32 }),
+    createdAt,
+    deletedAt,
+  ],
+  { idKind: 'natural', purgeable: false, natural: { is: isProfileId, expected: () => PROFILE_ID } },
+);
 
-export type SettingKeyScope = 'shared' | 'local' | 'unknown';
+const BODY_WEIGHT_TABLE = table(
+  'body_weight',
+  [
+    c('date', 'date', false),
+    c('kg', 'real', false),
+    c('source', 'enum', false, { values: ['manual', 'health'] }),
+    c('timezone', 'text', false, { max: 64 }),
+    c('health_uuid', 'text', true, { max: 128 }),
+    c('measured_at', 'datetime', true),
+    createdAt,
+    deletedAt,
+  ],
+  { idKind: 'natural', natural: { is: isWeightId, expected: (row) => expectedWeightId(row) }, titleSource: { kind: 'own', column: 'date' } },
+);
 
-export function settingKeyScope(key: string): SettingKeyScope {
-  if (!Object.prototype.hasOwnProperty.call(SETTINGS_DEFINITIONS, key)) return 'unknown';
-  return SETTINGS_DEFINITIONS[key as SettingKey].scope;
-}
-
-// ---------------------------------------------------------------------------------------------------------------------------------
-// Espaces fixes (section 5.4) : jamais purgés ni tracés
-// ---------------------------------------------------------------------------------------------------------------------------------
-
-/** Identifiants fixes des espaces Pro et Perso (src/db/seed/defaultSpaces.ts, gravés dans la migration 0001). */
-export const FIXED_SPACE_IDS: ReadonlySet<string> = new Set(['00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000002']);
-
-/** Une ligne de cette table et de cet identifiant peut-elle être purgée physiquement (section 5.4) ? */
-export function isPurgeable(tableName: string, id: string): boolean {
-  const t = syncTable(tableName);
-  if (!t || !t.purgeable) return false;
-  return !(t.name === 'space' && FIXED_SPACE_IDS.has(id));
-}
+/** Catalogue de production (I0) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({ tables: [PROFILE_TABLE, BODY_WEIGHT_TABLE], order: SYNC_TABLE_ORDER });
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 // Validation (section 3.3 : type et longueur)
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-/** Identifiant de ligne admis pour cette table : UUID, identifiant naturel de la table, ou clé de réglage. */
-export function isValidRowId(t: SyncTable, id: unknown): id is string {
-  if (typeof id !== 'string' || id.length === 0 || id.length > MAX_SYNC_ID_LENGTH) return false;
-  switch (t.idKind) {
-    case 'uuid':
-      return isId(id);
-    case 'natural':
-      return isNaturalId(t.name as NaturalIdTable, id) || isId(id);
-    case 'setting':
-      return /^[a-z][a-zA-Z0-9]*(\.[a-z][a-zA-Z0-9]*){1,3}$/.test(id);
-  }
-}
-
-/** La valeur respecte-t-elle le type et la longueur déclarés de la colonne ? */
+/** La valeur respecte-t-elle le type et la longueur déclarés de la colonne ? (UUID seul pour une colonne `id` ; voir `SyncCatalogue.isValidValue`.) */
 export function isValidValue(col: SyncColumn, value: unknown): boolean {
   if (value === null) return col.nullable;
   switch (col.type) {
@@ -363,7 +296,7 @@ export function isValidValue(col: SyncColumn, value: unknown): boolean {
     case 'localdatetime':
       return typeof value === 'string' && isLocalDateTime(value);
     case 'id':
-      return typeof value === 'string' && value.length <= MAX_SYNC_ID_LENGTH && (isId(value) || isNaturalId('routine_log', value) || isNaturalId('holiday', value));
+      return typeof value === 'string' && value.length <= MAX_SYNC_ID_LENGTH && isId(value);
     case 'enum':
       return typeof value === 'string' && (col.values ?? []).includes(value);
   }
