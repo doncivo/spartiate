@@ -311,6 +311,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
       ids,
       hlc,
       data,
+      ...(options.catalogue ? { catalogue: options.catalogue } : {}),
       platform: { runtime: detectRuntime(), os: detectOs() },
       desktop,
       sync,

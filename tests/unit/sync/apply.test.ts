@@ -197,7 +197,7 @@ describe('réparations après un lot (Y-02 critère 8)', () => {
     const focus = (id: string, startedAt: string, hlc: Hlc) =>
       op('focus_session', id, { task_id: [null, hlc, null], space_id: [PRO, hlc, null], planned_min: [25, hlc, null], started_at: [startedAt, hlc, null], ended_at: [null, hlc, null], paused_sec: [0, hlc, null], paused_at: [null, hlc, null], project_id: [null, hlc, null], created_at: [AT, hlc, null], deleted_at: [null, hlc, null] });
     const result = await apply(db.data, [focus('77777777-7777-4777-8777-777777777771', '2026-10-05T07:00:00.000Z', h(3)), focus('77777777-7777-4777-8777-777777777772', '2026-10-05T07:30:00.000Z', h(4))]);
-    const deps = { data: db.data } as SyncDeps;
+    const deps = { data: db.data, catalogue: LEGACY_SYNC_CATALOGUE } as SyncDeps;
     await runRepairs(deps, new Map([['routine_pause', new Set(['66666666-6666-4666-8666-666666666666'])], ...result.touched]));
     expect(await db.driver.select('SELECT paused FROM routine')).toEqual([{ paused: 1 }]);
     expect(await db.driver.select("SELECT * FROM sync_outbox WHERE table_name = 'routine'")).toEqual([]);

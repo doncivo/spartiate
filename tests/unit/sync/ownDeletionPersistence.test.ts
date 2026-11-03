@@ -85,7 +85,7 @@ describe('Y-IOS-02-FIX-01 : persistance et erreurs de suppression', () => {
       return result;
     };
     let markSyncing!: () => void;
-    device.service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, ...deps, platform: device.platform, setTimeout: (handler) => { markSyncing = handler; return 0; }, clearTimeout: () => undefined });
+    device.service = createSyncService({ ...deps, platform: device.platform, setTimeout: (handler) => { markSyncing = handler; return 0; }, clearTimeout: () => undefined });
     const cycle = device.cycle();
     markSyncing();
     try {

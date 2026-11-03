@@ -6,7 +6,7 @@ import { openSqliteWasmDriver } from '../../drivers/sqliteWasm';
 import { legacyMigrations as migrations } from '../../../../tests/fixtures/legacy-schema';
 import { migrate } from '../../migrator';
 import { createDataAccess, type DataAccess } from '../dataAccess';
-import { createSqlRepositories } from './index';
+import { createLegacyRepositories } from '../../../../tests/fixtures/legacy-schema/catalogue';
 
 /**
  * Base de test : driver SQLite Wasm en mémoire, migrations de l'app appliquées,
@@ -30,6 +30,6 @@ export async function openTestDb(
   const clock = createManualClock(startAt);
   const hlc = createHlcClock({ clock, deviceId });
   const stamper = createWriteStamper(clock, hlc);
-  const data = createDataAccess(driver, stamper, createSqlRepositories);
+  const data = createDataAccess(driver, stamper, createLegacyRepositories);
   return { driver, data, clock, deviceId, close: () => driver.close() };
 }

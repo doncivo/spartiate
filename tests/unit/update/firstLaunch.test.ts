@@ -1,3 +1,4 @@
+import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createManualClock } from '../../../src/domain/clock';
 import type { LocalDate, ProjectId, RoutineId, SpaceId, TaskId } from '../../../src/domain/types';

@@ -89,7 +89,8 @@ describe('démarrage complet', () => {
     const container = await bootstrapApp({ open: openSqliteWasmDriver, clock, ids: { next: () => DEVICE } });
     expect(container).toBeDefined();
     expect(useAppStore.getState().dbStatus).toBe('ready');
-    expect(typeof (await container?.data.repos.syncMeta.maxHlc())).toBe('string');
+    // Base neuve : settings est local (hors catalogue, D-55), donc aucune source de HLC avant la première ligne publiée.
+    expect(await container?.data.repos.syncMeta.maxHlc()).toBeNull();
   });
 
   it('s’arrête si la base ne s’ouvre pas', async () => {

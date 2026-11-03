@@ -66,5 +66,7 @@ export const syncCarryReportFr = {
   kindHoliday: 'Jour férié',
   kindSpace: 'Espace',
   kindSettings: 'Réglage',
+  kindProfile: 'Profil',
+  kindBodyWeight: 'Pesée',
   kindOther: 'Autre élément',
 } as const;

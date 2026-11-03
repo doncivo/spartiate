@@ -110,7 +110,7 @@ describe('0.2.1 diagnostic : démarrage après l’ouverture (app.startError)', 
         throw new TypeError('plugin folder-bookmark absent');
       },
     } as unknown as SyncPlatform;
-    const result = await bootstrapApp({ catalogue: LEGACY_SYNC_CATALOGUE, open: openSqliteWasmDriver, desktop: null, syncPlatform: broken });
+    const result = await bootstrapApp({ open: openSqliteWasmDriver, desktop: null, syncPlatform: broken });
     expect(result).toBeUndefined();
     expect(failure()).toEqual({ phase: 'start', step: 'syncPlatform.available', errorName: 'TypeError', message: 'plugin folder-bookmark absent' });
   });
