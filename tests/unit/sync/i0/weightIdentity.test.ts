@@ -64,4 +64,32 @@ describe('identité d’une pesée reçue', () => {
     expect(result.outcomes).toEqual(['rejected']);
     expect(await db.driver.select('SELECT date FROM body_weight')).toEqual([{ date: '2026-10-05' }]);
   });
+
+  it('kg seul sur une ligne existante : appliqué (l’identité se relit sur la ligne)', async () => {
+    db = await openBaseDb(SELF);
+    await apply([op('weight|2026-10-05|manual', weightFields('2026-10-05', 'manual'))]);
+    const { result } = await apply([op('weight|2026-10-05|manual', { kg: field(81, 5) })]);
+    expect(result.outcomes).toEqual(['applied']);
+    expect(await db.driver.select('SELECT kg FROM body_weight')).toEqual([{ kg: 81 }]);
+  });
+
+  it('ligne absente, parties valides reçues séparément : mise de côté puis recomposée', async () => {
+    db = await openBaseDb(SELF);
+    const all = weightFields('2026-10-05', 'manual');
+    const left = Object.fromEntries(Object.entries(all).filter(([name]) => ['date', 'kg', 'source'].includes(name)));
+    const right = Object.fromEntries(Object.entries(all).filter(([name]) => !['date', 'kg', 'source'].includes(name)));
+    expect((await apply([op('weight|2026-10-05|manual', left)])).result.outcomes).toEqual(['parked']);
+    expect((await apply([op('weight|2026-10-05|manual', right)])).result.outcomes).toEqual(['applied']);
+    expect(await db.driver.select('SELECT date FROM body_weight')).toEqual([{ date: '2026-10-05' }]);
+  });
+
+  it('parties mises de côté dont l’union contredit l’identité : refusée proprement, aucune ligne, la transaction du lot ne casse pas', async () => {
+    db = await openBaseDb(SELF);
+    const all = weightFields('2026-10-09', 'manual');
+    const left = { date: all['date'] as SyncField };
+    const right = Object.fromEntries(Object.entries(all).filter(([name]) => name !== 'date'));
+    expect((await apply([op('weight|2026-10-05|manual', left)])).result.outcomes).toEqual(['parked']);
+    expect((await apply([op('weight|2026-10-05|manual', right)])).result.outcomes).toEqual(['rejected']);
+    expect(await db.driver.select('SELECT 1 FROM body_weight')).toEqual([]);
+  });
 });
