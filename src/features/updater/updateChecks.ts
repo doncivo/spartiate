@@ -43,6 +43,7 @@ export function startUpdateChecks(container: AppContainer, timers: UpdateTimers 
   if (!container.desktop?.updaterConfigured) return { tick: () => Promise.resolve(), dispose: () => undefined };
 
   const store = updaterStore.get(container);
+  void store.getState().restore();
   let nextCheckAt = container.clock.nowMs() + LAUNCH_CHECK_DELAY_MS;
   let running = false;
   let disposed = false;

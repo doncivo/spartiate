@@ -443,6 +443,7 @@ export const fr = {
     downloadingUnknown: 'Téléchargement de la mise à jour…',
     signatureRefused: 'Mise à jour refusée : signature invalide',
     installFailed: 'La mise à jour a échoué. L’app actuelle reste utilisable.',
+    checkFailed: 'Vérification des mises à jour impossible. Nouvelle tentative automatique.',
   },
   icons: {
     modeIcon: 'Icône',

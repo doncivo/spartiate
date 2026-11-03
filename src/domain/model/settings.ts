@@ -65,7 +65,11 @@ export interface SettingsValues {
   /** D-02 : démarrage avec Windows, réduit. */
   'desktop.launchAtStartup': boolean;
   /** D-03 : dernière vérification de mise à jour (toutes les 24 h). Pas d'« ignorer cette version » (QB-16). */
-  'desktop.updater': { readonly lastCheckAt: IsoDateTime | null };
+  'desktop.updater': {
+    readonly lastCheckAt: IsoDateTime | null;
+    /** Dernier échec durable (vérification ou installation), effacé au succès ; persiste après redémarrage. */
+    readonly lastFailure?: { readonly stage: 'check' | 'install'; readonly kind: 'signature' | 'other' } | null;
+  };
   /** D-04 : capture rapide globale (PC), combinaison en notation du registre ; local à l'appareil. */
   'shortcut.quickCapture': { readonly enabled: boolean; readonly keys: string };
   /** F-01 critère 12 : dernière durée de session choisie (minutes ; null = « Libre »), propre à l'appareil. */

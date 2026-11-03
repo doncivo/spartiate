@@ -397,7 +397,8 @@ pub fn configure(builder: tauri::Builder<Wry>) -> tauri::Builder<Wry> {
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec![MINIMIZED_ARG]),
         ))
-        // D-30 : updater non enregistré tant que SPA-002 n'a pas posé la clé et le point d'accès (sans configuration, son initialisation échoue).
+        // SPA-002 : updater enregistré avec plugins.updater (clé publique Spartiate, endpoint spartiate-releases).
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())

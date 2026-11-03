@@ -1,7 +1,7 @@
 // Tests des scripts de publication PC (D-03 critères 10 et 11). Aucun secret : paires Ed25519 jetables.
 import { createHash, generateKeyPairSync, randomBytes, sign, type KeyObject } from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -161,5 +161,29 @@ describe('verify-signature', () => {
   it('refuse si la version est absente du commentaire de confiance ou différente', () => {
     expect(verifyCli(setup(data, sigFile(data, { trusted: 'timestamp:1\tfile:x.exe' })))).toBe(1);
     expect(verifyCli(setup(data, sigFile(data)), '1.2.4')).toBe(1);
+  });
+});
+
+describe('contrat de publication (SPA-002, build-windows.yml)', () => {
+  const wf = readFileSync(resolve(dir, '..', '..', '.github', 'workflows', 'build-windows.yml'), 'utf8');
+  const cut = wf.indexOf('\n  publish:');
+  const beforePublish = wf.slice(0, cut);
+  const publishJob = wf.slice(cut);
+
+  it('cible spartiate-releases, environnement releases, jeton limité au job publish', () => {
+    expect(wf).toContain('RELEASES_REPO: doncivo/spartiate-releases');
+    expect(publishJob).toContain('environment: releases');
+    expect(publishJob).toContain('secrets.RELEASES_TOKEN');
+    expect(beforePublish).not.toContain('RELEASES_TOKEN');
+    expect(wf).not.toMatch(new RegExp('circle' + 'tasks', 'i'));
+  });
+
+  it('publication réservée aux tags ; versions et SHA-256 concordants avant envoi ; secret absent = échec', () => {
+    expect(publishJob).toContain("if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')");
+    expect(publishJob).toContain('EXPECTED_SHA256');
+    expect(publishJob).toContain('latest.json annonce');
+    expect(publishJob).toMatch(/RELEASES_TOKEN absent[^\n]*\n\s+exit 1/);
+    expect(publishJob).toContain('gh release create');
+    expect(beforePublish).not.toMatch(/gh release/);
   });
 });

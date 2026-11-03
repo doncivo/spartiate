@@ -22,6 +22,10 @@ export function UpdateBanner() {
   const later = useFeatureStore(updaterStore, (s) => s.later);
   const toggleNotes = useFeatureStore(updaterStore, (s) => s.toggleNotes);
 
+  // Échec durable sans version à proposer (vérification en échec, ou échec d'installation relu après redémarrage) : visible seul.
+  if (visible && !version && (status === 'installFailed' || status === 'checkFailed')) return <FailureNotice failure={status === 'installFailed' ? failure : null} />;
+  if (status === 'checkFailed') return <FailureNotice failure={null} />;
+
   const offered = status === 'available' || status === 'downloading' || status === 'installFailed';
   if (!visible || !offered || !version) return null;
 
@@ -66,6 +70,17 @@ export function UpdateBanner() {
           <p className="ct-update__notesBody">{notes ?? t('updater.noNotes')}</p>
         </div>
       )}
+    </section>
+  );
+}
+
+function FailureNotice({ failure }: { failure: 'signature' | 'other' | null }) {
+  const text = failure === 'signature' ? t('updater.signatureRefused') : failure === 'other' ? t('updater.installFailed') : t('updater.checkFailed');
+  return (
+    <section className="ct-update" role="region" aria-label={t('updater.bannerLabel')}>
+      <p className="ct-update__error" role="alert">
+        {text}
+      </p>
     </section>
   );
 }

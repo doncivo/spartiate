@@ -1,9 +1,11 @@
-// SPA-001a, D-30 : le plugin updater n'est pas initialisé côté Rust, donc aucun chemin d'exécution ne doit l'appeler tant que SPA-002 ne
-// l'a pas rétabli. Adaptateur Tauri réel (plugins simulés) : `check` et `downloadAndInstall` ne sont jamais appelés.
+// SPA-002 : updater rétabli. Adaptateur réel (plugins simulés) : appelle le plugin ; l'état non configuré (D-30) reste couvert par un
+// DesktopPlatform synthétique : zéro appel au plugin et zéro minuterie.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId } from '../../domain/types';
+import type { DesktopPlatform } from '../../platform';
+import { createFakeDesktop } from '../../platform/desktop/testing';
 import { openTestDb } from '../../db/repositories/sql/testSetup';
 
 const check = vi.fn(async () => null);
@@ -22,19 +24,34 @@ const { updaterStore } = await import('./updaterStore');
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000d4');
 
-describe('updater non initialisé : aucun appel au plugin (D-30)', () => {
-  it('l’adaptateur réel se déclare non configuré', () => {
-    expect(createTauriDesktop().updaterConfigured).toBe(false);
-  });
-
-  it('vérification directe et planification : le plugin n’est jamais appelé', async () => {
+describe('updater configuré (SPA-002) et état non configuré (D-30)', () => {
+  const containerWith = async (desktop: DesktopPlatform) => {
     const db = await openTestDb(DEVICE);
     const container = createAppContainer({
       clock: db.clock,
       hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }),
       data: db.data,
-      desktop: createTauriDesktop(),
+      desktop,
     });
+    return { db, container };
+  };
+
+  it('l’adaptateur réel se déclare configuré et appelle le plugin', async () => {
+    check.mockClear();
+    const desktop = createTauriDesktop();
+    expect(desktop.updaterConfigured).toBe(true);
+    const { db, container } = await containerWith(desktop);
+    await expect(updaterStore.get(container).getState().check()).resolves.toBe('ok');
+    expect(check).toHaveBeenCalledTimes(1);
+    expect(updaterStore.get(container).getState().status).toBe('upToDate');
+    await db.close();
+  });
+
+  it('non configuré (DesktopPlatform synthétique) : zéro appel et zéro minuterie', async () => {
+    check.mockClear();
+    const desktop = createFakeDesktop();
+    desktop.updaterConfigured = false;
+    const { db, container } = await containerWith(desktop);
     await expect(updaterStore.get(container).getState().check()).resolves.toBe('ok');
     expect(updaterStore.get(container).getState().status).toBe('notConfigured');
     const timers = { setTimeout: vi.fn(() => 1), clearTimeout: vi.fn(), setInterval: vi.fn(() => 2), clearInterval: vi.fn() };
@@ -43,6 +60,7 @@ describe('updater non initialisé : aucun appel au plugin (D-30)', () => {
     checks.dispose();
     expect(timers.setTimeout).not.toHaveBeenCalled();
     expect(timers.setInterval).not.toHaveBeenCalled();
+    expect(desktop.checks).toBe(0);
     expect(check).not.toHaveBeenCalled();
     await db.close();
   });
@@ -53,7 +71,5 @@ describe('updater non initialisé : aucun appel au plugin (D-30)', () => {
     const call = store.indexOf('desktop.checkForUpdate()');
     expect(guard).toBeGreaterThan(-1);
     expect(call).toBeGreaterThan(guard);
-    const adapter = readFileSync(new URL('../../platform/desktop/tauriDesktop.ts', import.meta.url), 'utf8');
-    expect(adapter).toContain('updaterConfigured: false');
   });
 });
