@@ -120,7 +120,7 @@ describe('import : validation complète avant écriture', () => {
   });
 
   it('refuse une autre application et une version de schéma future', async () => {
-    const other = await tampered((f) => f.set('manifest.json', (f.get('manifest.json') ?? '').replace('"spartiate"', '"circletasks"')));
+    const other = await tampered((f) => f.set('manifest.json', (f.get('manifest.json') ?? '').replace('"spartiate"', '"autre-app"')));
     expect(await refusal(parseExportArchive(other, opts))).toBe('wrong-app');
     const future = await tampered((f) => f.set('manifest.json', (f.get('manifest.json') ?? '').replace('"sv":1', '"sv":2')));
     expect(await refusal(parseExportArchive(future, opts))).toBe('future-version');
