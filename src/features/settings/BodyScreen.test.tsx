@@ -57,10 +57,28 @@ describe('Profil et poids (Plus)', () => {
   it('le sexe, l’objectif et l’expérience se choisissent en groupes radio', async () => {
     open();
     const sex = await screen.findByRole('radiogroup', { name: 'Sexe' });
-    expect(within(sex).getAllByRole('radio').map((r) => r.textContent)).toEqual(['Homme', 'Femme']);
+    expect(within(sex).getAllByRole('radio').map((r) => r.textContent)).toEqual(['Homme', 'Femme', 'Non renseigné']);
     fireEvent.click(within(sex).getByRole('radio', { name: 'Femme' }));
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le profil' }));
     await waitFor(async () => expect(await db.driver.select('SELECT sex FROM profile')).toEqual([{ sex: 'female' }]));
+  });
+
+  it('« Non renseigné » efface sexe, objectif et expérience : enregistrés en NULL, jamais un faux zéro', async () => {
+    open();
+    for (const group of ['Sexe', 'Objectif', 'Expérience']) {
+      const radios = within(await screen.findByRole('radiogroup', { name: group }));
+      expect(radios.getByRole('radio', { name: 'Non renseigné' })).toBeChecked();
+    }
+    fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Sexe' })).getByRole('radio', { name: 'Femme' }));
+    fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Objectif' })).getByRole('radio', { name: 'Maintien' }));
+    fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Expérience' })).getByRole('radio', { name: 'Avancé' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le profil' }));
+    await waitFor(async () => expect(await db.driver.select('SELECT sex, goal, experience FROM profile')).toEqual([{ sex: 'female', goal: 'maintain', experience: 'advanced' }]));
+    for (const group of ['Sexe', 'Objectif', 'Expérience']) {
+      fireEvent.click(within(screen.getByRole('radiogroup', { name: group })).getByRole('radio', { name: 'Non renseigné' }));
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le profil' }));
+    await waitFor(async () => expect(await db.driver.select('SELECT sex, goal, experience FROM profile')).toEqual([{ sex: null, goal: null, experience: null }]));
   });
 
   it('une pesée avec virgule est enregistrée à la date du jour et listée', async () => {
