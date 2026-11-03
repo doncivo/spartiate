@@ -1,4 +1,4 @@
-import { migrations } from '../../src/db/migrations';
+import { legacyMigrations as migrations } from '../fixtures/legacy-schema';
 import { migrate, type Migration } from '../../src/db/migrator';
 import { reintegrateUnknownFields, type ReintegrationReport, type UnknownCatalogue } from '../../src/db/repositories';
 import type { SyncField } from '../../src/domain/sync/format';

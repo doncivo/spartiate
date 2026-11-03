@@ -4,7 +4,7 @@ import { createManualClock } from '../../domain/clock';
 import type { SqlDriver } from '../../db/driver';
 import { openSqliteWasmDriver } from '../../db/drivers/sqliteWasm';
 import { findUpdateBackup, type MigrationBackup } from '../../db/migrationBackup';
-import { migrations } from '../../db/migrations';
+import { legacyMigrations as migrations } from '../../../tests/fixtures/legacy-schema';
 import { migrate, type Migration } from '../../db/migrator';
 import { t } from '../../i18n';
 import { tUpdateRestore } from '../../i18n/appUpdateRestoreText';

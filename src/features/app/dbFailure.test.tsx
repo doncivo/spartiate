@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { openSqliteWasmDriver } from '../../db/drivers/sqliteWasm';
 import { DbStepError, JournalModeError, describeError } from '../../db/errorText';
 import { migrate } from '../../db/migrator';
-import { migrations } from '../../db/migrations';
+import { legacyMigrations as migrations } from '../../../tests/fixtures/legacy-schema';
 import { t } from '../../i18n';
 import { openDatabase } from '../../platform/database';
 import type { DbEnvironment } from '../../platform/dbDiagnostics';

@@ -1,4 +1,4 @@
-import type { Migration } from '../migrator';
+import type { Migration } from '../../../src/db/migrator';
 
 /**
  * T-07 : liste des tâches terminées par période (`TaskRepository.listDone`). L'index

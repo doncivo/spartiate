@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SqlDriver } from '../../db/driver';
 import { exportSqliteWasmImage, openSqliteWasmDriver } from '../../db/drivers/sqliteWasm';
 import type { MigrationBackup } from '../../db/migrationBackup';
-import { migrations } from '../../db/migrations';
+import { legacyMigrations as migrations } from '../../../tests/fixtures/legacy-schema';
 import type { MigrateOptions, MigrateReport } from '../../db/migrator';
 import * as migrator from '../../db/migrator';
 import { createManualClock } from '../../domain/clock';

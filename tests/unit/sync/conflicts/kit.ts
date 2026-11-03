@@ -6,7 +6,7 @@ import type { SyncValue } from '../../../../src/domain/sync/format';
 import type { DeviceId, Hlc, LocalDate, SpaceId, TaskId } from '../../../../src/domain/types';
 import type { SqlDriver } from '../../../../src/db/driver';
 import { openSqliteWasmDriver } from '../../../../src/db/drivers/sqliteWasm';
-import { migrations } from '../../../../src/db/migrations';
+import { legacyMigrations as migrations } from '../../../fixtures/legacy-schema';
 import { migrate } from '../../../../src/db/migrator';
 import { createDataAccess, createSqlRepositories, type DataAccess } from '../../../../src/db/repositories';
 import { createUndoStack, type UndoStack } from '../../../../src/features/app/undo';

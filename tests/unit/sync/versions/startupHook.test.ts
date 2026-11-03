@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SqlDriver } from '../../../../src/db/driver';
 import { openSqliteWasmDriver } from '../../../../src/db/drivers/sqliteWasm';
-import { migrations } from '../../../../src/db/migrations';
+import { legacyMigrations as migrations } from '../../../fixtures/legacy-schema';
 import { migrate, type Migration, type MigrateReport } from '../../../../src/db/migrator';
 import { createUnavailableBackup } from '../../../../src/platform/backup';
 import { createUnavailableFiles } from '../../../../src/platform/files';

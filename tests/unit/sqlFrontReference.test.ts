@@ -5,7 +5,7 @@ import { createManualClock } from '../../src/domain/clock';
 import type { SqlDriver, SqlExecutor, SqlParams } from '../../src/db/driver';
 import { openSqliteWasmDriver } from '../../src/db/drivers/sqliteWasm';
 import { migrate } from '../../src/db/migrator';
-import { migrations } from '../../src/db/migrations';
+import { legacyMigrations as migrations } from '../fixtures/legacy-schema';
 
 /**
  * SEC-01 critère 11 : fichier de référence des instructions SQL que le front envoie réellement au plugin SQL pour ouvrir la base

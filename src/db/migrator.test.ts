@@ -13,7 +13,7 @@ import {
   validateMigrations,
   type Migration,
 } from './migrator';
-import { migrations as appMigrations } from './migrations';
+import { legacyMigrations as appMigrations } from '../../tests/fixtures/legacy-schema';
 
 describe('lanceur de migrations', () => {
   let db: SqlDriver;

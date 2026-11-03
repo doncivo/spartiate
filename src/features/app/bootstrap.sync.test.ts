@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { openSqliteWasmDriver } from '../../db/drivers/sqliteWasm';
 import { migrate } from '../../db/migrator';
-import { migrations } from '../../db/migrations';
+import { legacyMigrations as migrations } from '../../../tests/fixtures/legacy-schema';
 import { createMemorySyncPlatform } from '../../platform/sync/memory';
 import { createUnavailableBackup } from '../../platform/backup';
 import { createUnavailableFiles } from '../../platform/files';

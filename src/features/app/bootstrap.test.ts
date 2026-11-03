@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { openSqliteWasmDriver } from '../../db/drivers/sqliteWasm';
 import { migrate } from '../../db/migrator';
-import { migrations } from '../../db/migrations';
+import { legacyMigrations as migrations } from '../../../tests/fixtures/legacy-schema';
 import { useAppStore } from './appStore';
 import { bootstrapDatabase } from './bootstrap';
 

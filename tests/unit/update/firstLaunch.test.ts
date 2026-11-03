@@ -4,7 +4,7 @@ import type { LocalDate, ProjectId, RoutineId, SpaceId, TaskId } from '../../../
 import type { SqlDriver, SqlRow } from '../../../src/db/driver';
 import { openSqliteWasmDriver } from '../../../src/db/drivers/sqliteWasm';
 import { findUpdateBackup, type MigrationBackup, type MigrationBackupRequest } from '../../../src/db/migrationBackup';
-import { migrations } from '../../../src/db/migrations';
+import { legacyMigrations as migrations } from '../../fixtures/legacy-schema';
 import type { Migration } from '../../../src/db/migrator';
 import { SPACE_PERSO_ID, SPACE_PRO_ID } from '../../../src/db/seed/defaultSpaces';
 import { useAppStore } from '../../../src/features/app/appStore';

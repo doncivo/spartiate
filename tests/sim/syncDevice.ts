@@ -4,7 +4,7 @@ import type { Task } from '../../src/domain/model';
 import type { DeviceId, LocalDate, SpaceId, TaskId } from '../../src/domain/types';
 import type { SqlDriver } from '../../src/db/driver';
 import { exportSqliteWasmImage, openSqliteWasmDriver } from '../../src/db/drivers/sqliteWasm';
-import { migrations } from '../../src/db/migrations';
+import { legacyMigrations as migrations } from '../fixtures/legacy-schema';
 import { migrate } from '../../src/db/migrator';
 import { createDataAccess, createSqlRepositories, type DataAccess } from '../../src/db/repositories';
 import { createMemorySyncPlatform, type MemorySyncFolder, type MemorySyncPlatform } from '../../src/platform/sync/memory';

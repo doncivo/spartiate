@@ -6,7 +6,7 @@ import { SYNC_TROUBLE_ORDER, SYNC_WARNINGS } from '../../domain/syncBanners';
 import { asEntityId, type DeviceId, type IsoDateTime } from '../../domain/types';
 import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import type { SyncDeviceStatus, SyncStatus } from '../../platform/sync/types';
-import { migrations } from '../../db/migrations';
+import { legacyMigrations as migrations } from '../../../tests/fixtures/legacy-schema';
 import { createMemorySyncPlatform } from '../../platform/sync/memory';
 import { createMemorySyncLogger, createSyncService, type SyncEngineService } from '../../sync';
 import { FORGET_META } from '../../sync/forget';

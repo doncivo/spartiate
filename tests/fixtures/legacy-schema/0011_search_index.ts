@@ -1,4 +1,4 @@
-import type { Migration } from '../migrator';
+import type { Migration } from '../../../src/db/migrator';
 
 /**
  * RC-01 : index de recherche plein texte (PRD section 6, M14), table virtuelle FTS5 `search_index` locale, NON synchronisée (jamais

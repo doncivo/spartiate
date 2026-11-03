@@ -3,7 +3,7 @@ import { createHlcClock, createWriteStamper } from '../../../domain/hlc';
 import type { DeviceId } from '../../../domain/types';
 import type { SqlDriver } from '../../driver';
 import { openSqliteWasmDriver } from '../../drivers/sqliteWasm';
-import { migrations } from '../../migrations';
+import { legacyMigrations as migrations } from '../../../../tests/fixtures/legacy-schema';
 import { migrate } from '../../migrator';
 import { createDataAccess, type DataAccess } from '../dataAccess';
 import { createSqlRepositories } from './index';

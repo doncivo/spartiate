@@ -3,7 +3,7 @@ import { createManualClock } from '../../../src/domain/clock';
 import type { LocalDate, SpaceId, TaskId } from '../../../src/domain/types';
 import type { SqlDriver } from '../../../src/db/driver';
 import { openSqliteWasmDriver } from '../../../src/db/drivers/sqliteWasm';
-import { migrations } from '../../../src/db/migrations';
+import { legacyMigrations as migrations } from '../../fixtures/legacy-schema';
 import type { Migration } from '../../../src/db/migrator';
 import { SPACE_PRO_ID } from '../../../src/db/seed/defaultSpaces';
 import { useAppStore } from '../../../src/features/app/appStore';

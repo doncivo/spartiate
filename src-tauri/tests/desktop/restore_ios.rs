@@ -1496,7 +1496,7 @@ fn i06_a9_child_exits_after_committed_schema_19() {
     conn.pragma_update(None, "journal_mode", "WAL").unwrap();
     conn.pragma_update(None, "wal_autocheckpoint", 0).unwrap();
     conn.execute_batch("BEGIN IMMEDIATE").unwrap();
-    let source = include_str!("../../../src/db/migrations/0019_epoch_carry_report.ts");
+    let source = include_str!("../../../tests/fixtures/legacy-schema/0019_epoch_carry_report.ts");
     let sql = source
         .lines()
         .find(|line| {

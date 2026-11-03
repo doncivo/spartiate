@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { SqlDriver } from '../../../../src/db/driver';
-import { migrations } from '../../../../src/db/migrations';
+import { legacyMigrations as migrations } from '../../../fixtures/legacy-schema';
 import { migrate } from '../../../../src/db/migrator';
 import { reintegrateUnknownFields } from '../../../../src/db/repositories';
 import { openTestDb, type TestDb } from '../../../../src/db/repositories/sql/testSetup';
