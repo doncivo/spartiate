@@ -115,6 +115,8 @@ export function lazyScreen<P extends object>(load: Loader<P>, name?: ScreenName,
 export const SettingsScreen = lazyScreen<object>(() => import('../settings/SettingsScreen').then((m) => ({ default: m.SettingsScreen })), 'settingsscreen');
 export const AppearanceScreen = lazyScreen<object>(() => import('../settings/AppearanceScreen').then((m) => ({ default: m.AppearanceScreen })), 'appearancescreen');
 export const BodyScreen = lazyScreen<object>(() => import('../settings/BodyScreen').then((m) => ({ default: m.BodyScreen })), 'bodyscreen');
+/** SPA-005 : export et import des données de Spartiate (Plus), chargé à la demande avec ses textes. */
+export const ExportImportScreen = lazyScreen<object>(() => import('../settings/ExportImportScreen').then((m) => ({ default: m.ExportImportScreen })), 'exportimportscreen');
 /** P-04-iOS (revue I1) : texte et action de l'écran « Restauration interrompue », chargés seulement dans ce cas. */
 export const RecoveryFailureLazy = lazyScreen<{ message: string }>(() => import('./RecoveryFailure').then((m) => ({ default: m.RecoveryFailure })), 'recoveryfailure');
 /** I-06 : « Restaurer la sauvegarde d'avant la mise à jour » de l'écran d'échec du démarrage. */
