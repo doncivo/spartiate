@@ -237,6 +237,14 @@ const readOnlyStamper: WriteStamper = {
  * graine HLC, accès aux données, conteneur. Renvoie undefined en cas d'échec
  * (dbStatus = 'error'). Appelé par App.tsx ; le conteneur est fourni par AppContainerProvider.
  */
+/** Développement et e2e seulement : migrations de test ajoutées à la suite des vraies (I-06, mise à jour N vers N+1 simulée). */
+const devExtraMigrations = (): readonly Migration[] | undefined => (import.meta.env.DEV ? (globalThis as { __ctExtraMigrations?: readonly Migration[] }).__ctExtraMigrations : undefined);
+
+const withDevExtras = (): readonly Migration[] | undefined => {
+  const extra = devExtraMigrations();
+  return extra ? [...migrations, ...extra] : undefined;
+};
+
 export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<AppContainer | undefined> {
   // Prise de test des e2e (développement seulement, retirée d'un build) : simule une ouverture qui ne répond pas ou qui échoue.
   const devOpen = import.meta.env.DEV ? (globalThis as { __ctDbOpen?: () => Promise<SqlDriver> }).__ctDbOpen : undefined;
@@ -246,7 +254,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
   useAppStore.getState().setDbStatus('loading');
   // I-06 : version lue AVANT l'ouverture (diagnostic d'échec, synchro, « À propos ») ; ne rejette jamais.
   const appVersion = await (options.appVersion ?? readAppVersion)();
-  const driver = await bootstrapDatabase(options.open ?? devOpen, { clock: options.clock, backup: options.backup, migrations: options.migrations, catalogue: (options.storage ?? SYNC_STORAGE).catalogue, appVersion: appVersion.version });
+  const driver = await bootstrapDatabase(options.open ?? devOpen, { clock: options.clock, backup: options.backup, migrations: options.migrations ?? withDevExtras(), catalogue: (options.storage ?? SYNC_STORAGE).catalogue, appVersion: appVersion.version });
   if (!driver) return undefined;
   const list = options.migrations ?? migrations;
   const storage = options.storage ?? SYNC_STORAGE;

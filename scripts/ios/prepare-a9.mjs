@@ -45,15 +45,15 @@ export function instrumentBootstrap(source, mode) {
   if (mode === 'afterapply') {
     const body = afterApplyFault.toString().slice(afterApplyFault.toString().indexOf('{') + 1, -1);
     return replaceOnce(source,
-      'afterApply: (db) => reintegrateAfterMigration(db, options.clock).then(() => undefined),',
-      `afterApply: async (db, report) => {\n        await reintegrateAfterMigration(db, options.clock);\n${body}\n      },`);
+      'afterApply: (db) => reintegrateAfterMigration(db, options.clock, options.catalogue).then(() => undefined),',
+      `afterApply: async (db, report) => {\n        await reintegrateAfterMigration(db, options.clock, options.catalogue);\n${body}\n      },`);
   }
   if (mode === 'interruption') {
     const body = pauseAfterCommit.toString().slice(pauseAfterCommit.toString().indexOf('{') + 1, -1);
     // La fonction imbriquée évite qu'un return du contrôle de reprise saute le vrai afterApply.
     return replaceOnce(source,
-      'afterApply: (db) => reintegrateAfterMigration(db, options.clock).then(() => undefined),',
-      `afterApply: async (db, report) => {\n        await (async () => {\n${body}\n        })();\n        await reintegrateAfterMigration(db, options.clock);\n        localStorage.setItem('ct.a9.interruption', 'completed');\n        logFailure('db', 'A9InterruptionAfterApplyReturned');\n      },`);
+      'afterApply: (db) => reintegrateAfterMigration(db, options.clock, options.catalogue).then(() => undefined),',
+      `afterApply: async (db, report) => {\n        await (async () => {\n${body}\n        })();\n        await reintegrateAfterMigration(db, options.clock, options.catalogue);\n        localStorage.setItem('ct.a9.interruption', 'completed');\n        logFailure('db', 'A9InterruptionAfterApplyReturned');\n      },`);
   }
   throw new Error('A9 mode must be afterapply or interruption');
 }

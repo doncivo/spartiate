@@ -9,9 +9,9 @@ const layer = (name) => [`**/${name}`, `**/${name}/**`];
 
 /** Blocs chargés à la demande (PERF-02, ADR 0001 avenant) : jamais d'import statique, seulement `import()` depuis leur chargeur. */
 const ON_DEMAND_PATTERN = {
-  // Chemins relatifs courts compris : './chronoAbsolute' dans src/domain (import() n'est pas une ImportDeclaration).
+  // Chemins relatifs courts compris : './en' dans src/i18n, './chronoAbsolute' dans src/domain (import() n'est pas une ImportDeclaration).
   // BUNDLE-01 : la fiche de tâche (TaskDetail) ne s'importe que par lazyScreens.tsx (les écrans prennent `TaskDetail` de lazyScreens).
-  group: ['**/domain/chronoAbsolute', './chronoAbsolute', '**/tasks/TaskDetail', './TaskDetail'],
+  group: ['**/domain/chronoAbsolute', '**/i18n/en', './en', './chronoAbsolute', '**/tasks/TaskDetail', './TaskDetail'],
   message: 'Bloc chargé à la demande (PERF-02, BUNDLE-01) : import() depuis src/features/app/lazyScreens.tsx, src/features/capture/absoluteDatesLoader.ts ou src/i18n/index.ts seulement.',
 };
 

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { DeviceId, Hlc, IsoDateTime, LocalDate, SpaceId, TaskId } from '../../domain/types';
 import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
+import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
 import { createMemorySyncPlatform } from '../../platform/sync/memory';
 import type { SyncDeviceStatus } from '../../platform/sync/types';
 import { AppContainerProvider } from '../app/AppContainerContext';
@@ -44,7 +45,7 @@ beforeEach(async () => {
     await platform.key.create();
   }
   sync = createFakeSyncService({ phase: 'idle', lastSyncAt: '2026-10-05T15:58:00.000Z' as IsoDateTime, folderLabel: 'Spartiate', folderKind: 'icloud', devices, conflictsThisWeek: 0 });
-  container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync, syncPlatform: platform });
+  container = createAppContainer({ catalogue: LEGACY_SYNC_CATALOGUE, clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync, syncPlatform: platform });
 });
 
 afterEach(async () => {
