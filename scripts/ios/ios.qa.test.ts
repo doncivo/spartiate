@@ -10,7 +10,6 @@ import { parsePlist } from './plist.mjs';
 // @ts-expect-error script .mjs sans déclaration de types
 import { checkPlistContract } from './check-plist-contract.mjs';
 // @ts-expect-error script .mjs sans déclaration de types
-// @ts-expect-error script .mjs sans déclaration de types
 import { validateEntitlements } from './apply-entitlements.mjs';
 // @ts-expect-error script .mjs sans déclaration de types
 import { ipaUrlFor, RELEASES_REPO, SOURCE_URL } from './make-source-json.mjs';

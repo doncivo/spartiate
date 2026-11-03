@@ -1,19 +1,21 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-03 (001b-base). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-68 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques.
+État au 2026-11-04 (nuit : SPA-003, 005, 009 en PR). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-68 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques.
 
 ## Fusionné
 
 SPA-000 (#1 à #7, #9, #10 ; #8 fermée sans fusion). SPA-001a (#11). #12 (inventaire, tickets SPA-002 / 003). #14 (préparation de la base neuve, arbitrage D-65). #15 (001b-front). #16 et #18 (001b-périphérie 1/2 et 2/2). #17 (FMT-01, D-66).
 
-## Ouvert
+## Ouvert (nuit du 4 novembre, mission D-68, rien n'est fusionné ni tagué)
 
-- **001b-base** (branche spa-001b-base, PR #20 en brouillon) : lots A schéma, B synchro (catalogue injecté), C profil et poids (repositories, écran Plus › Profil et poids, nettoyage reminders), D preuves e2e (Y-IOS-01 « a publié », I-06 « données affichées ») faits ; reste CI (gh pr checks 20 --watch), puis gh pr ready 20. Fusion par Ali.
-- **#13** (tickets SPA-004 à 010 ; chemins à revérifier) attend 001b-base, à rebaser puis fusionner ensuite.
+- **001b-base** et **SPA-002** sont fusionnés (#20, #30) ; v0.1.0 Windows publiée le 4 novembre (run 41706891386).
+- **spa-003** (build iPhone : entitlements HealthKit, signature ad hoc CI, source sur l'IPA finale) : PR ouverte, CI et run macOS à lire. Tag `ios-v0.1.0` par Ali seulement, avec la vérification `git rev-parse` (AGENTS.md).
+- **spa-005** (export et import) et **spa-009** (écrans fidèles, contraste, fenêtre PC adaptée, minimum 1 024 × 700) : PR ouvertes, entrées de journal dans leur description ; captures PC et iPhone jointes à la PR de spa-009.
+- **#13** (tickets SPA-004 à 010 ; chemins à revérifier) : à rebaser.
 
 ## Ordre
 
-001b-base (migration 0001, catalogue I0, identités, adaptations de synchro, repositories, formulaire profil / poids, `APP_SCHEMA_VERSION` = 1, capture, restes « reminders ») → SPA-002 → 003 → 004 → 005 → spikes 006 / 007 → 008 → 009 → 010. P-09 / P-10 avant les modules métier.
+001b-base fait → SPA-002 fait → 003 (PR) → 004 → 005 (PR) → spikes 006 / 007 → 008 → 009 (PR) → 010. (Ancien détail : 001b-base : migration 0001, catalogue I0, identités, adaptations de synchro, repositories, formulaire profil / poids, `APP_SCHEMA_VERSION` = 1, capture, restes « reminders ») ; P-09 / P-10 avant les modules métier.
 
 ## Conteneur de données (D-54)
 

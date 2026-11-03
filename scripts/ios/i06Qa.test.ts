@@ -184,10 +184,10 @@ describe('SPA-003 : la source est calculée sur l’IPA finale, pas sur l’IPA 
       date: '2026-11-04T00:00:00.000Z',
       minOSVersion: '18.0',
     }) as Source;
-    const v = src.apps[0]!.versions[0]!;
-    expect(v.sha256).toBe(digest(signed));
-    expect(v.size).toBe(signed.length);
-    expect(v.sha256).not.toBe(digest(unsigned));
+    const v = src.apps[0]?.versions[0];
+    expect(v?.sha256).toBe(digest(signed));
+    expect(v?.size).toBe(signed.length);
+    expect(v?.sha256).not.toBe(digest(unsigned));
   });
 
   it('critère 4 : le workflow lance check-source avant toute publication', () => {
