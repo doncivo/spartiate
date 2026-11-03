@@ -85,12 +85,11 @@ describe('démarrage complet', () => {
     expect(useAppStore.getState().dbErrorDetail).toMatch(/settings\.get/);
   });
 
-  it('démarre avec les vrais repositories SQL par défaut (migrations et espaces Pro/Perso)', async () => {
+  it('démarre avec les vrais repositories SQL par défaut (schéma 1 : profil et poids, aucun espace)', async () => {
     const container = await bootstrapApp({ open: openSqliteWasmDriver, clock, ids: { next: () => DEVICE } });
     expect(container).toBeDefined();
     expect(useAppStore.getState().dbStatus).toBe('ready');
-    const spaces = await container?.data.repos.spaces.listAll();
-    expect(spaces?.map((s) => s.name)).toEqual(['Pro', 'Perso']);
+    expect(typeof (await container?.data.repos.syncMeta.maxHlc())).toBe('string');
   });
 
   it('s’arrête si la base ne s’ouvre pas', async () => {

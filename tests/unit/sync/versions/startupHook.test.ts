@@ -22,7 +22,7 @@ const A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const T1 = '11111111-1111-4111-8111-111111111111';
 const PRO = '00000000-0000-4000-8000-000000000001';
 const h = (ms: number): Hlc => `${String(1_791_187_200_000 + ms).padStart(15, '0')}-0000-${A}` as Hlc;
-const common = { desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), syncPlatform: null } as const;
+const common = { desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), migrations, syncPlatform: null } as const;
 
 const m = (version: number): Migration => ({ version, name: `t${String(version)}`, statements: [`CREATE TABLE t${String(version)} (id INTEGER)`] });
 

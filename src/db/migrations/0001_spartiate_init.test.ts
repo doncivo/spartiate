@@ -36,7 +36,7 @@ describe('migration 0001 : base neuve Spartiate (SPA-001b, D-23, D-24, D-65)', (
     expect(migration0001SpartiateInit.name).toBe('spartiate_init');
   });
 
-  it('base vide : douze tables techniques et deux tables métier, aucune table CircleTasks', async () => {
+  it('base vide : douze tables techniques et deux tables métier, aucune table ancien projet', async () => {
     const db = await freshDb();
     expect(await names(db, 'table')).toEqual(
       [
@@ -141,7 +141,7 @@ describe('migration 0001 : base neuve Spartiate (SPA-001b, D-23, D-24, D-65)', (
     await db.close();
   });
 
-  it('une base au schéma 19 (CircleTasks) est refusée sans altération (D-54)', async () => {
+  it('une base au schéma 19 (ancien projet) est refusée sans altération (D-54)', async () => {
     const db = await openSqliteWasmDriver();
     await db.execute('CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY, name TEXT NOT NULL, checksum TEXT NOT NULL, applied_at TEXT NOT NULL)');
     for (let v = 1; v <= 19; v += 1) await db.execute('INSERT INTO schema_migrations VALUES (?, ?, ?, ?)', [v, `ancienne_${String(v)}`, '00000000', AT]);
@@ -211,7 +211,7 @@ describe('migration 0001 : base neuve Spartiate (SPA-001b, D-23, D-24, D-65)', (
       const [first] = await db.select<{ seq: number }>("SELECT seq FROM sync_outbox WHERE field = 'kg'");
       await db.execute('UPDATE body_weight SET kg = ?, hlc = ? WHERE id = ?', [81, h(3), WEIGHT]);
       const [second] = await db.select<{ seq: number }>("SELECT seq FROM sync_outbox WHERE field = 'kg'");
-      expect(second!.seq).toBeGreaterThan(first!.seq);
+      expect((second as { seq: number }).seq).toBeGreaterThan((first as { seq: number }).seq);
       const kg = (await clocks(db)).find((c) => c.field === 'kg');
       expect(kg).toEqual({ row_id: WEIGHT, field: 'kg', hlc: h(3), base_hlc: h(1) });
       await db.close();
@@ -246,7 +246,7 @@ describe('migration 0001 : base neuve Spartiate (SPA-001b, D-23, D-24, D-65)', (
         }),
       ).rejects.toThrow('échec');
       expect(await db.select('SELECT * FROM sync_guard')).toEqual([]);
-      expect((await db.select<{ goal: string | null }>('SELECT goal FROM profile'))[0]!.goal).toBeNull();
+      expect((await db.select<{ goal: string | null }>('SELECT goal FROM profile'))[0]?.goal).toBeNull();
       expect(await outbox(db)).toEqual([]);
       await db.close();
     });

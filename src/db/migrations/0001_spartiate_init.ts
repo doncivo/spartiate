@@ -8,7 +8,7 @@ import type { Migration } from '../migrator';
  * quatre déclencheurs de capture. `schema_migrations` est créée par le migrateur, pas ici.
  *
  * Copie figée : le générateur de déclencheurs ne lit jamais le catalogue vivant (la somme de contrôle dépend du SQL produit). Elle
- * ne se modifie plus ; toute évolution passe par une nouvelle migration. Aucune base CircleTasks n'est lue, migrée ni purgée :
+ * ne se modifie plus ; toute évolution passe par une nouvelle migration. Aucune base de l'ancien projet n'est lue, migrée ni purgée :
  * une base au schéma 19 est refusée par le migrateur.
  */
 

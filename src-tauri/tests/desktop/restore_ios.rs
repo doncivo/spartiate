@@ -1573,26 +1573,12 @@ fn i06_a9_committed_19_survives_process_exit_and_native_rollback_recovers_18() {
             0
         );
     }
-    let outcome = restore_local_rollback(dir.path(), name, "20261021T170000Z", NO_FAIL).unwrap();
-    assert_eq!(outcome.schema_version, 18);
-    assert_eq!(outcome.marker, "skipped");
-    assert!(outcome.safety_copy.is_some());
-    assert_eq!(check_backup_file(&database, 18).unwrap(), 18);
-    let conn = Connection::open(&database).unwrap();
-    assert_eq!(
-        conn.query_row("SELECT title FROM task", [], |r| r.get::<_, String>(0))
-            .unwrap(),
-        "A9 conserver cette tâche"
-    );
-    assert_eq!(
-        conn.query_row(
-            "SELECT COUNT(*) FROM sqlite_master WHERE name='epoch_carry_report'",
-            [],
-            |r| r.get::<_, i64>(0)
-        )
-        .unwrap(),
-        0
-    );
+    // Base neuve Spartiate (SPA-001b, D-54, D-67) : l'app est au schéma 1, la sauvegarde de l'ancien projet 18 est un cas de refus ;
+    // la base validée en 19 n'est pas touchée par le refus.
+    let refused =
+        restore_local_rollback(dir.path(), name, "20261021T170000Z", NO_FAIL).unwrap_err();
+    assert_eq!(refused.code, "newer-schema");
+    assert_eq!(check_backup_file(&database, 19).unwrap(), 19);
     assert_eq!(lock_value(&database).as_deref(), Some("true"));
 }
 

@@ -57,7 +57,10 @@ const HLC_SOURCES: readonly string[] = [...SYNC_TABLES.map((t) => t.name), 'sync
 export function createSyncMetaRepository(db: SqlExecutor): SyncMetaRepository {
   return {
     async maxHlc() {
-      const union = HLC_SOURCES.map((table) => `SELECT MAX(hlc) AS hlc FROM ${table}`).join(' UNION ALL ');
+      // Transition 001b-base (lot A, base neuve) : seules les tables du catalogue présentes dans la base sont lues ; le lot B aligne le catalogue.
+      const present = new Set((await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table'")).map((r) => r.name));
+      const union = HLC_SOURCES.filter((table) => present.has(table)).map((table) => `SELECT MAX(hlc) AS hlc FROM ${table}`).join(' UNION ALL ');
+      if (union === '') return null;
       const rows = await db.select<{ hlc: string | null }>(`SELECT MAX(hlc) AS hlc FROM (${union})`);
       const value = rows[0]?.hlc;
       return value === undefined || value === null ? null : (value as Hlc);

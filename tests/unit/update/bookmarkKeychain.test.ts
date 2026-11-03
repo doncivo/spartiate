@@ -26,7 +26,7 @@ const LAST = migrations.at(-1)?.version ?? 0;
 const NEXT: Migration[] = [...migrations, { version: LAST + 1, name: 'test_i06_additive', statements: ['ALTER TABLE task ADD COLUMN i06_note TEXT'] }];
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148';
 const clock = createManualClock('2026-10-09T08:00:00.000Z');
-const common = { desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), clock } as const;
+const common = { desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup(), migrations, clock } as const;
 
 const keepOpen = (db: SqlDriver): SqlDriver => ({ kind: db.kind, execute: (s, p) => db.execute(s, p), select: (s, p) => db.select(s, p), transaction: (fn) => db.transaction(fn), close: () => Promise.resolve() });
 

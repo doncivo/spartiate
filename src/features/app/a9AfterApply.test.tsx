@@ -63,7 +63,7 @@ describe('I-06 A9 : vrai schéma 18 vers 19, faute après commit', () => {
     let db = await baseline();
     let image: Uint8Array | undefined;
     const backup: MigrationBackup = { backup: async () => { image = await exportSqliteWasmImage(db); return { name: BACKUP }; } };
-    expect(await bootstrapDatabase(() => Promise.resolve(preserveForInspection(db)), { clock, backup: () => Promise.resolve(backup), appVersion: '1.0.0' })).toBeUndefined();
+    expect(await bootstrapDatabase(() => Promise.resolve(preserveForInspection(db)), { migrations, clock, backup: () => Promise.resolve(backup), appVersion: '1.0.0' })).toBeUndefined();
     expect(await version(db)).toBe(19);
     expect(fault.completedHooks).toBe(1);
     const failure = useAppStore.getState().dbFailure;
@@ -89,7 +89,7 @@ describe('I-06 A9 : vrai schéma 18 vers 19, faute après commit', () => {
     fireEvent.click(await screen.findByRole('button', { name: tUpdateRestore('restoreConfirm') }));
     await waitFor(() => expect(restoredVersion).toBe(18));
     // Le code du callback est inchangé ; seule la panne de laboratoire a été consommée.
-    expect(await bootstrapDatabase(() => Promise.resolve(preserveForInspection(db)), { clock, backup: () => Promise.resolve(backup) })).toBeDefined();
+    expect(await bootstrapDatabase(() => Promise.resolve(preserveForInspection(db)), { migrations, clock, backup: () => Promise.resolve(backup) })).toBeDefined();
     expect(useAppStore.getState().dbStatus).toBe('ready');
     expect(await version(db)).toBe(19);
     expect(await db.select('SELECT id, title FROM task')).toEqual([{ id: CANARY, title: 'A9 conserver cette tâche' }]);
@@ -101,7 +101,7 @@ describe('I-06 A9 : vrai schéma 18 vers 19, faute après commit', () => {
     await first.execute("INSERT INTO sync_unknown (table_name, row_id, field, value, hlc, base_hlc, sv) VALUES ('task', ?, 'apple_list_id', '\"A9 après reprise\"', ?, NULL, 18)", [CANARY, `000000000000009-0000-${DEVICE}`]);
     fault.mode = 'interruption';
     // Ce processus reste suspendu dans la barrière. La preuve physique tuera le vrai processus iOS.
-    void bootstrapDatabase(() => Promise.resolve(preserveForInspection(first)), { clock });
+    void bootstrapDatabase(() => Promise.resolve(preserveForInspection(first)), { migrations, clock });
     await waitFor(() => expect(localStorage.getItem('ct.a9.interruption')).toBe('paused'));
     expect(await version(first)).toBe(19);
     expect(fault.completedHooks).toBe(0);
@@ -111,7 +111,7 @@ describe('I-06 A9 : vrai schéma 18 vers 19, faute après commit', () => {
     const restarted = await openSqliteWasmDriver({}, disk);
     drivers.push(restarted);
     const backup = vi.fn(() => Promise.reject(new Error('no migration pending, no backup needed')));
-    expect(await bootstrapDatabase(() => Promise.resolve(preserveForInspection(restarted)), { clock, backup: () => Promise.resolve({ backup }) })).toBeDefined();
+    expect(await bootstrapDatabase(() => Promise.resolve(preserveForInspection(restarted)), { migrations, clock, backup: () => Promise.resolve({ backup }) })).toBeDefined();
     expect(backup).not.toHaveBeenCalled();
     expect(fault.completedHooks).toBe(1);
     expect(localStorage.getItem('ct.a9.interruption')).toBe('completed');

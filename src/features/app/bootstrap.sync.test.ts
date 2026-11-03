@@ -10,7 +10,7 @@ import { bootstrapApp } from './bootstrap';
 
 /** Conteneur et démarrage (ADR 0011, section 3.2 et avenant « Amorce » point 7 ; Y-02 critère 19). */
 
-const common = { desktop: null, files: createUnavailableFiles() } as const;
+const common = { desktop: null, files: createUnavailableFiles(), migrations } as const;
 
 describe('démarrage et synchro (Y-02 critère 19)', () => {
   beforeEach(() => {
