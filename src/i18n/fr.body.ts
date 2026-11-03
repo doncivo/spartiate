@@ -9,6 +9,7 @@ export const bodyFr = {
   sectionProfile: 'PROFIL',
   sectionWeight: 'POIDS',
   sex: 'Sexe',
+  unset: 'Non renseigné',
   sexMale: 'Homme',
   sexFemale: 'Femme',
   birthYear: 'Année de naissance',

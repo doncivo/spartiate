@@ -29,6 +29,9 @@ const GOAL_KEY = { gain: 'goalGain', loss: 'goalLoss', maintain: 'goalMaintain' 
 const EXPERIENCE_KEY = { beginner: 'experienceBeginner', intermediate: 'experienceIntermediate', advanced: 'experienceAdvanced' } as const satisfies Record<Experience, BodyTextKey>;
 
 /** Jour local de l'appareil (pas le jour UTC) : une pesée du soir reste à la date du jour de l'utilisateur. */
+/** Option vide des groupes facultatifs : enregistrée en NULL (jamais un faux zéro). */
+const UNSET = { value: '' as const, label: tBody('unset') };
+
 const todayOf = (nowMs: number): LocalDate => {
   const d = new Date(nowMs);
   const pad = (n: number): string => String(n).padStart(2, '0');
@@ -176,7 +179,7 @@ export function BodyScreen() {
         )}
         <div className="ct-body__field">
           <span className="ct-body__label">{tBody('sex')}</span>
-          <SegmentedControl label={tBody('sex')} value={sex as Sex} disabled={waiting} onChange={setSex} options={SEXES.map((value) => ({ value, label: tBody(SEX_KEY[value]) }))} />
+          <SegmentedControl label={tBody('sex')} value={sex} disabled={waiting} onChange={setSex} options={[...SEXES.map((value) => ({ value, label: tBody(SEX_KEY[value]) })), UNSET]} />
         </div>
         <label className="ct-body__field">
           <span className="ct-body__label">{tBody('birthYear')}</span>
@@ -188,11 +191,11 @@ export function BodyScreen() {
         </label>
         <div className="ct-body__field">
           <span className="ct-body__label">{tBody('goal')}</span>
-          <SegmentedControl label={tBody('goal')} value={goal as BodyGoal} disabled={waiting} onChange={setGoal} options={GOALS.map((value) => ({ value, label: tBody(GOAL_KEY[value]) }))} />
+          <SegmentedControl label={tBody('goal')} value={goal} disabled={waiting} onChange={setGoal} options={[...GOALS.map((value) => ({ value, label: tBody(GOAL_KEY[value]) })), UNSET]} />
         </div>
         <div className="ct-body__field">
           <span className="ct-body__label">{tBody('experience')}</span>
-          <SegmentedControl label={tBody('experience')} value={experience as Experience} disabled={waiting} onChange={setExperience} options={EXPERIENCES.map((value) => ({ value, label: tBody(EXPERIENCE_KEY[value]) }))} />
+          <SegmentedControl label={tBody('experience')} value={experience} disabled={waiting} onChange={setExperience} options={[...EXPERIENCES.map((value) => ({ value, label: tBody(EXPERIENCE_KEY[value]) })), UNSET]} />
         </div>
         <p className="ct-body__hint">{tBody('profileHint')}</p>
         {profileMessage && (
