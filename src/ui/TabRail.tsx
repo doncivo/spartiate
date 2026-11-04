@@ -79,7 +79,8 @@ export function TabRail({ items, settingsItem, activeId, onSelect, className }: 
           height: size.tabHeight,
           marginRight: active ? 0 : layout === 'pc' ? 8 : 6,
           background: active ? 'var(--ct-color-tab-active-bg)' : item.colorVar ? `var(${item.colorVar})` : 'transparent',
-          color: active ? 'var(--ct-color-text)' : 'var(--ct-color-tab-text)',
+          // Onglet sans teinte (charte en SPA-009) : texte clair posé sur le fond de la barre, jamais `tab-text` (même couleur que le fond).
+          color: active ? 'var(--ct-color-text)' : item.colorVar ? 'var(--ct-color-tab-text)' : 'var(--ct-color-on-nav)',
         }}
       >
         <span className="ct-tab-rail__label">{t(item.labelKey)}</span>

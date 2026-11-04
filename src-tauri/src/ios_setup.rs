@@ -7,12 +7,19 @@
 
 use tauri::{App, Manager};
 
+/// Dossier du journal technique dans Documents (visible dans l'app Fichiers).
+const JOURNAL_DIR: &str = "Journal";
+
 /// `setup` de l'iPhone : la purge ne fait jamais échouer le démarrage (rattrapée au démarrage suivant, échec inscrit au journal).
 pub fn setup(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     let config_dir = app.path().app_config_dir().ok();
-    match &config_dir {
-        Some(dir) => crate::applog::init(dir.join(crate::applog::LOG_DIR)),
-        None => crate::applog::write("logs", "no-data-dir"),
+    // ios-demarrage : journal dans Documents/Journal (visible dans l'app Fichiers, UIFileSharingEnabled) ; repli sur le dossier de configuration.
+    match app.path().document_dir() {
+        Ok(documents) => crate::applog::init(documents.join(JOURNAL_DIR)),
+        Err(_) => match &config_dir {
+            Some(dir) => crate::applog::init(dir.join(crate::applog::LOG_DIR)),
+            None => crate::applog::write("logs", "no-data-dir"),
+        },
     }
     match app.path().app_cache_dir() {
         Ok(cache_dir) => match crate::export_ios::purge_exports(&cache_dir) {

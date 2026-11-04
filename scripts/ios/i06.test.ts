@@ -247,7 +247,7 @@ describe('critère 18 : guide, étape 7', () => {
 describe('critère 19 : non-régression (aucune clé Info.plist, plugin, capability, migration ni format nouveaux)', () => {
   it('Info.ios.plist : mêmes clés qu’avant I-06', () => {
     const keys = Object.keys(parsePlist(read('src-tauri/Info.ios.plist')) as Record<string, unknown>).sort();
-    expect(keys).toEqual(['ITSAppUsesNonExemptEncryption', 'NSCameraUsageDescription', 'NSFaceIDUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'UIRequiresFullScreen', 'UISupportedInterfaceOrientations', 'UISupportedInterfaceOrientations~ipad']);
+    expect(keys).toEqual(['ITSAppUsesNonExemptEncryption', 'LSSupportsOpeningDocumentsInPlace', 'NSCameraUsageDescription', 'NSFaceIDUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'UIFileSharingEnabled', 'UIRequiresFullScreen', 'UISupportedInterfaceOrientations', 'UISupportedInterfaceOrientations~ipad']);
   });
 
   it('plugins et capabilities : listes d’avant I-06', () => {
