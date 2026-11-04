@@ -25,7 +25,7 @@ const EMPTY: ExportData = { profile: null, weights: [], settings: {} };
 
 describe('aperçu et plan d’import', () => {
   it('base vide + archive : tout est ajouté', () => {
-    const incoming: ExportData = { profile: profile(), weights: [w('2026-10-05', 82), w('2026-10-06', 81.5)], settings: { 'ui.theme': 'dark' } };
+    const incoming: ExportData = { profile: profile(), weights: [w('2026-10-05', 82), w('2026-10-06', 81.5)], settings: { 'ui.theme': 'light' } };
     const plan = planImport(EMPTY, incoming, 'merge');
     expect(plan.counts).toEqual({ add: 4, modify: 0, delete: 0, unchanged: 0 });
     expect(plan.ops.map((o) => `${o.kind}:${o.table}`).sort()).toEqual(['add:body_weight', 'add:body_weight', 'add:profile', 'add:settings']);

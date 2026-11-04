@@ -16,7 +16,7 @@ const DATA: ExportData = {
     { id: 'weight|2026-10-04|manual', date: '2026-10-04', kg: 82.4, source: 'manual', timezone: 'Europe/Paris', healthUuid: null, measuredAt: null },
     { id: 'weight|2026-10-05|manual', date: '2026-10-05', kg: 82.1, source: 'manual', timezone: 'Europe/Paris', healthUuid: null, measuredAt: null },
   ],
-  settings: { 'ui.theme': 'dark' },
+  settings: { 'ui.theme': 'light' },
 };
 
 describe('Plus › Export et import', () => {
@@ -79,7 +79,7 @@ describe('Plus › Export et import', () => {
     expect(await screen.findByRole('status')).toHaveTextContent('Import terminé');
     expect(await db.driver.select('SELECT id FROM body_weight ORDER BY id')).toHaveLength(2);
     expect(await db.driver.select('SELECT birth_year FROM profile')).toEqual([{ birth_year: 1990 }]);
-    expect(await db.data.repos.settings.get('ui.theme')).toBe('dark');
+    expect(await db.data.repos.settings.get('ui.theme')).toBe('light');
     expect(screen.queryByRole('region', { name: 'Aperçu de l’import' })).toBeNull();
   });
 

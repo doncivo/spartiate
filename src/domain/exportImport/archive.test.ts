@@ -6,6 +6,7 @@ import {
   EXPORT_SETTING_KEYS,
   buildExportArchive,
   canonicalDataJson,
+  DEFAULT_THEME,
   canonicalHash,
   parseExportArchive,
   weightCsv,
@@ -23,7 +24,7 @@ const W2 = { id: 'weight|2026-10-06|health', date: '2026-10-06', kg: 82.1, sourc
 const DATA: ExportData = {
   profile: { id: 'profile|singleton', sex: 'male', birthYear: 1990, heightCm: 181, goal: null, experience: 'intermediate', units: 'metric' },
   weights: [W1, W2],
-  settings: { 'ui.theme': 'dark' },
+  settings: { 'ui.theme': 'light' },
 };
 const opts = { currentSv: 1, currentYear: 2026 };
 
@@ -135,5 +136,14 @@ describe('import : validation complète avant écriture', () => {
     expect(await bad((d) => { (d['settings'] as Record<string, unknown>)['sync.deviceId'] = 'x'; })).toBe('invalid-data');
     expect(await bad((d) => { d['device_id'] = 'x'; })).toBe('invalid-data');
     expect(await bad((d) => { (rows(d)[1] as Record<string, unknown>)['measured_at'] = null; })).toBe('invalid-data');
+  });
+});
+
+describe('thème par défaut (SPA-009 : « dark »)', () => {
+  it('la forme canonique omet le thème par défaut du registre et garde « system » quand il est choisi', () => {
+    expect(DEFAULT_THEME).toBe('dark');
+    const base: ExportData = { profile: null, weights: [], settings: {} };
+    expect(canonicalDataJson({ ...base, settings: { 'ui.theme': 'dark' } })).toBe(canonicalDataJson(base));
+    expect(canonicalDataJson({ ...base, settings: { 'ui.theme': 'system' } })).not.toBe(canonicalDataJson(base));
   });
 });

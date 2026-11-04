@@ -6,6 +6,7 @@
  * identité d'appareil, clés, bookmarks, tables `sync_*`, `conflict_log`, `epoch_carry_report`, journaux, `hlc`, `device_id`, `updated_at`.
  */
 
+import { SETTINGS_DEFINITIONS } from '../model/settings';
 import {
   PROFILE_ID,
   WEIGHT_MAX_KG,
@@ -30,6 +31,8 @@ export const EXPORT_SV = 1;
 export const EXPORT_SETTING_KEYS = ['ui.theme'] as const;
 export type ExportSettingKey = (typeof EXPORT_SETTING_KEYS)[number];
 const THEMES: readonly ThemeChoice[] = ['system', 'light', 'dark'];
+/** Thème par défaut : lu dans le registre des réglages (SPA-009 l'a fait passer de « system » à « dark »), jamais recopié ici. */
+export const DEFAULT_THEME: ThemeChoice = SETTINGS_DEFINITIONS['ui.theme'].defaultValue;
 
 export interface ExportProfile {
   readonly id: typeof PROFILE_ID;
@@ -97,8 +100,8 @@ export function canonicalDataJson(data: ExportData): string {
   const settings: Record<string, ThemeChoice> = {};
   for (const key of EXPORT_SETTING_KEYS) {
     const value = data.settings[key];
-    // Le thème « system » est la valeur par défaut : absent de la forme canonique (un réglage jamais touché et un réglage remis au défaut exportent pareil).
-    if (value !== undefined && value !== 'system') settings[key] = value;
+    // Le thème par défaut (`DEFAULT_THEME`) est absent de la forme canonique (un réglage jamais touché et un réglage remis au défaut exportent pareil).
+    if (value !== undefined && value !== DEFAULT_THEME) settings[key] = value;
   }
   return JSON.stringify({ body_weight: weights, profile, settings });
 }
@@ -173,7 +176,7 @@ function parseSettings(raw: unknown): ExportData['settings'] {
   const out: { 'ui.theme'?: ThemeChoice } = {};
   for (const [key, value] of Object.entries(raw)) {
     if (key !== 'ui.theme' || typeof value !== 'string' || !THEMES.includes(value as ThemeChoice)) throw new ArchiveError('invalid-data');
-    if (value !== 'system') out['ui.theme'] = value as ThemeChoice;
+    if (value !== DEFAULT_THEME) out['ui.theme'] = value as ThemeChoice;
   }
   return out;
 }
