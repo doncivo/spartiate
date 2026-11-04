@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { tBody } from '../../i18n/bodyText';
 import { tExportImport } from '../../i18n/exportImportText';
 import { t } from '../../i18n';
-import { tSettingsRefonte, type SettingsRefonteKey } from '../../i18n/settingsRefonteText';
+import { tPlus, type PlusTextKey } from '../../i18n/plusText';
+import { tSettingsRefonte } from '../../i18n/settingsRefonteText';
 import { Switch } from '../../ui';
-import { useFeatureStore } from '../app/AppContainerContext';
+import { useAppContainer, useFeatureStore } from '../app/AppContainerContext';
 import { useAppStore } from '../app/appStore';
 import { useNavigationStore } from '../app/navigation';
 import { SigningAboutRow } from '../signing/SigningAbout';
@@ -12,30 +12,34 @@ import { ShortcutsSettingsSection } from '../shortcuts';
 import { SyncSettingsSection, useSyncAvailable } from '../sync/SyncSettingsSection';
 import { AboutSection } from './AboutSection';
 import { BackupRow } from './BackupRow';
+import { LinkRow } from './LinkRow';
 import { SecuritySection } from './SecuritySection';
 import { formatAppearanceParts } from './AppearanceScreen';
 import { settingsStore } from './settingsStore';
 
-const SECTION_IDS = ['general', 'sync', 'data', 'keyboard', 'about'] as const;
-type SectionId = (typeof SECTION_IDS)[number];
-const SECTION_TITLES: Readonly<Record<SectionId, SettingsRefonteKey>> = {
-  general: 'sectionGeneral',
-  sync: 'sectionSync',
-  data: 'sectionData',
-  keyboard: 'sectionKeyboard',
-  about: 'sectionAbout',
+/** Entrées du sommaire (planche PC-Plus) : « profile » ouvre l'écran Profil et poids, les autres font défiler leur section. */
+const NAV_IDS = ['profile', 'data', 'prefs', 'keyboard', 'about'] as const;
+type NavId = (typeof NAV_IDS)[number];
+type SectionId = Exclude<NavId, 'profile'>;
+const NAV_TITLES: Readonly<Record<NavId, PlusTextKey>> = {
+  profile: 'navProfile',
+  data: 'navData',
+  prefs: 'navPreferences',
+  keyboard: 'navKeyboard',
+  about: 'navAbout',
 };
+const SECTION_IDS: readonly SectionId[] = ['data', 'prefs', 'keyboard', 'about'];
 /** Après un clic du sommaire, le défilement observé ne reprend la main qu'une fois le défilement doux terminé. */
 const PIN_MS = 800;
 
 /**
- * Réglages sur PC (UI-REFONTE-09, PC-Reglages.html) : sommaire à gauche (huit sections, section courante), colonne de réglages bornée à
- * 660 px, titres de section en minuscules (Fraunces), « Général » en lignes séparées (Thème, Début de semaine, Format de l'heure, Fuseau
- * horaire, Onglets visibles, Démarrer avec Windows), chaque ligne cliquable avec son chevron. Les lignes et sections partagées avec l'iPhone
- * sont réutilisées telles quelles ; seules les sections qui portaient leur propre titre (`SyncSettingsSection`, `ShortcutsSettingsSection`,
- * `AboutSection`) le laissent au sommaire. Règle 7 des maquettes : sur grand écran, on borne et on navigue.
+ * Plus sur PC (planche PC-Plus) : sommaire à gauche de cinq entrées (Profil et poids, Synchro et données, Préférences, Raccourcis clavier,
+ * À propos et diagnostic), colonne bornée à 660 px. « Profil et poids » ouvre son écran ; les autres entrées font défiler leur section
+ * (section courante suivie par IntersectionObserver). « Synchro et données » regroupe synchronisation iCloud, sauvegardes, export et
+ * import sous des titres en capitales, en lignes séparées. Règle 7 des maquettes : sur grand écran, on borne et on navigue.
  */
 export function SettingsScreenPc() {
+  const container = useAppContainer();
   const load = useFeatureStore(settingsStore, (s) => s.load);
   const errorKey = useFeatureStore(settingsStore, (s) => s.errorKey);
   const timeZone = useAppStore((s) => s.timeZone);
@@ -46,11 +50,11 @@ export function SettingsScreenPc() {
   const timeFormat = useFeatureStore(settingsStore, (s) => s.timeFormat);
   const theme = useFeatureStore(settingsStore, (s) => s.theme);
   const syncAvailable = useSyncAvailable();
+  const backupsAvailable = container.backups.available();
   const [themeText = '', weekdayText = '', formatText = ''] = formatAppearanceParts(theme, firstWeekday, timeFormat);
-  const weekdayCapitalized = weekdayText.charAt(0).toLocaleUpperCase() + weekdayText.slice(1);
-  const sections = SECTION_IDS.filter((id) => id !== 'sync' || syncAvailable);
+  const weekdayCapitalized = weekdayText.charAt(0).toLocaleUpperCase('fr-FR') + weekdayText.slice(1);
 
-  const [current, setCurrent] = useState<SectionId>('general');
+  const [current, setCurrent] = useState<SectionId>('data');
   const refs = useRef<Partial<Record<SectionId, HTMLElement | null>>>({});
   const pinnedUntil = useRef(0);
 
@@ -59,7 +63,6 @@ export function SettingsScreenPc() {
   }, [load]);
 
   // Sommaire : la section courante suit le défilement (première section visible), sauf juste après un clic du sommaire.
-  const sectionsKey = sections.join(',');
   useEffect(() => {
     if (typeof IntersectionObserver === 'undefined') return undefined;
     const observer = new IntersectionObserver(
@@ -73,14 +76,18 @@ export function SettingsScreenPc() {
       },
       { rootMargin: '0px 0px -55% 0px' },
     );
-    for (const id of sectionsKey.split(',') as SectionId[]) {
+    for (const id of SECTION_IDS) {
       const element = refs.current[id];
       if (element) observer.observe(element);
     }
     return () => observer.disconnect();
-  }, [sectionsKey]);
+  }, []);
 
-  function go(id: SectionId): void {
+  function go(id: NavId): void {
+    if (id === 'profile') {
+      navigate({ tab: 'more', screen: 'body' });
+      return;
+    }
     pinnedUntil.current = Date.now() + PIN_MS;
     setCurrent(id);
     refs.current[id]?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
@@ -99,12 +106,20 @@ export function SettingsScreenPc() {
         }}
       >
         <h2 id={headingId} className="ct-settings__section">
-          {tSettingsRefonte(SECTION_TITLES[id])}
+          {tPlus(NAV_TITLES[id])}
         </h2>
         {children}
       </section>
     );
   };
+
+  /** Sous-groupe de « Synchro et données » : titre en capitales discrètes, lignes en carte. */
+  const group = (key: PlusTextKey, children: ReactNode) => (
+    <div className="ct-settings__subgroup" role="group" aria-label={tPlus(key)}>
+      <h3 className="ct-settings__groupTitle">{tPlus(key)}</h3>
+      <div className="ct-settings__card">{children}</div>
+    </div>
+  );
 
   const openAppearance = () => navigate({ tab: 'more', screen: 'appearance' });
 
@@ -114,15 +129,15 @@ export function SettingsScreenPc() {
         <h1 className="ct-settings__title">{t('settings.title')}</h1>
         {/* Groupe, pas `nav` : la coquille porte déjà le seul repère de navigation (la suite e2e le vise par son rôle). */}
         <div className="ct-settings__nav" role="group" aria-label={tSettingsRefonte('summaryLabel')}>
-          {sections.map((id) => (
+          {NAV_IDS.map((id) => (
             <button
               key={id}
               type="button"
               className="ct-settings__navItem"
-              aria-current={current === id ? 'true' : undefined}
+              aria-current={id !== 'profile' && current === id ? 'true' : undefined}
               onClick={() => go(id)}
             >
-              {tSettingsRefonte(SECTION_TITLES[id])}
+              {tPlus(NAV_TITLES[id])}
             </button>
           ))}
         </div>
@@ -135,10 +150,20 @@ export function SettingsScreenPc() {
         )}
         <SigningAboutRow />
         {section(
-          'general',
+          'data',
           <>
-            <LinkRow label={tBody('row')} value="" onClick={() => navigate({ tab: 'more', screen: 'body' })} />
-            <LinkRow label={tExportImport('row')} value="" onClick={() => navigate({ tab: 'more', screen: 'exportimport' })} />
+            {syncAvailable && group('groupSync', <SyncSettingsSection heading={false} />)}
+            {backupsAvailable && group('groupBackups', <BackupRow />)}
+            {group(
+              'groupExport',
+              <LinkRow label={tExportImport('row')} hint={tPlus('exportHint')} onClick={() => navigate({ tab: 'more', screen: 'exportimport' })} />,
+            )}
+            <SecuritySection />
+          </>,
+        )}
+        {section(
+          'prefs',
+          <div className="ct-settings__card">
             <LinkRow label={tSettingsRefonte('theme')} value={themeText} onClick={openAppearance} />
             <LinkRow label={tSettingsRefonte('firstWeekday')} value={weekdayCapitalized} onClick={openAppearance} />
             <LinkRow label={tSettingsRefonte('timeFormat')} value={formatText} onClick={openAppearance} />
@@ -158,29 +183,21 @@ export function SettingsScreenPc() {
                 <Switch checked={launchAtStartup} onChange={(value) => void setLaunchAtStartup(value)} label={t('settings.launchAtStartup')} />
               </div>
             )}
-          </>,
+          </div>,
         )}
-        {syncAvailable && section('sync', <SyncSettingsSection heading={false} />)}
         {section(
-          'data',
-          <>
-            <SecuritySection />
-            <BackupRow />
-          </>,
+          'keyboard',
+          <div className="ct-settings__card">
+            <ShortcutsSettingsSection heading={false} />
+          </div>,
         )}
-        {section('keyboard', <ShortcutsSettingsSection heading={false} />)}
-        {section('about', <AboutSection heading={false} />)}
+        {section(
+          'about',
+          <div className="ct-settings__card">
+            <AboutSection heading={false} />
+          </div>,
+        )}
       </div>
     </div>
-  );
-}
-
-/** Ligne cliquable « étiquette · valeur » (chevron par la feuille de style) ; libellé accessible « étiquette : valeur ». */
-function LinkRow({ label, value, onClick }: { readonly label: string; readonly value: string; readonly onClick: () => void }) {
-  return (
-    <button type="button" className="ct-settings__row ct-settings__rowButton" aria-label={`${label} : ${value}`} onClick={onClick}>
-      <span>{label}</span>
-      <span className="ct-settings__value">{value}</span>
-    </button>
   );
 }

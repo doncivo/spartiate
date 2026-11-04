@@ -166,6 +166,10 @@ export function BodyScreen() {
     }
   }
 
+  const latest = weights[0];
+  const WEIGHTS_FOR_TREND = 14;
+  const trendText = weights.length < WEIGHTS_FOR_TREND ? tBody('weightTrendLearning', { n: weights.length, need: WEIGHTS_FOR_TREND }) : tBody('weightTrendCount', { n: weights.length });
+
   return (
     <div className="ct-body-shell" data-layout={layout}>
       <div className="ct-body">
@@ -176,73 +180,118 @@ export function BodyScreen() {
         </div>
         <h1 className="ct-body__title">{tBody('title')}</h1>
 
-        <h2 className="ct-body__section">{tBody('sectionProfile')}</h2>
-        {waiting && (
-          <p className="ct-body__hint" role="note">
-            <strong>{tBody('waitingFirstSync')}</strong> {tBody('waitingHint')}
-          </p>
-        )}
-        <div className="ct-body__field">
-          <span className="ct-body__label">{tBody('sex')}</span>
-          <SegmentedControl label={tBody('sex')} value={sex} disabled={waiting} onChange={setSex} options={[...SEXES.map((value) => ({ value, label: tBody(SEX_KEY[value]) })), UNSET]} />
-        </div>
-        <label className="ct-body__field">
-          <span className="ct-body__label">{tBody('birthYear')}</span>
-          <input className="ct-body__input" inputMode="numeric" value={birthYear} disabled={waiting} onChange={(e) => setBirthYear(e.target.value)} />
-        </label>
-        <label className="ct-body__field">
-          <span className="ct-body__label">{tBody('heightCm')}</span>
-          <input className="ct-body__input" inputMode="decimal" placeholder={`${HEIGHT_MIN_CM} – ${HEIGHT_MAX_CM}`} value={height} disabled={waiting} onChange={(e) => setHeight(e.target.value)} />
-        </label>
-        <div className="ct-body__field">
-          <span className="ct-body__label">{tBody('goal')}</span>
-          <SegmentedControl label={tBody('goal')} value={goal} disabled={waiting} onChange={setGoal} options={[...GOALS.map((value) => ({ value, label: tBody(GOAL_KEY[value]) })), UNSET]} />
-        </div>
-        <div className="ct-body__field">
-          <span className="ct-body__label">{tBody('experience')}</span>
-          <SegmentedControl label={tBody('experience')} value={experience} disabled={waiting} onChange={setExperience} options={[...EXPERIENCES.map((value) => ({ value, label: tBody(EXPERIENCE_KEY[value]) })), UNSET]} />
-        </div>
-        <p className="ct-body__hint">{tBody('profileHint')}</p>
-        {profileMessage && (
-          <p className="ct-body__message" role={profileMessage.kind === 'error' ? 'alert' : 'status'}>
-            {profileMessage.text}
-          </p>
-        )}
-        <Button disabled={waiting} onClick={() => void saveProfile()}>
-          {tBody('saveProfile')}
-        </Button>
+        <div className="ct-body__grid">
+          <section className="ct-body__card ct-body__card--weight" aria-label={tBody('sectionWeight')}>
+            <h2 className="ct-body__section">{tBody('sectionWeight')}</h2>
+            <div className="ct-body__latest">
+              <div className="ct-body__latestValue">
+                {latest ? (
+                  <>
+                    <span className="ct-body__big">{formatKg(latest.kg)}</span> <span className="ct-body__unit">{tBody('weightUnit')}</span>
+                  </>
+                ) : (
+                  <span className="ct-body__hint">{tBody('weightLatestNone')}</span>
+                )}
+              </div>
+              <div className="ct-body__trend">
+                <span className="ct-body__hint">{trendText}</span>
+                <WeightSparkline weights={weights} label={tBody('weightChart')} />
+              </div>
+            </div>
+            <div className="ct-body__entry">
+              <label className="ct-body__field">
+                <span className="ct-body__label">{tBody('weightKg')}</span>
+                <input className="ct-body__input" inputMode="decimal" value={weightText} onChange={(e) => setWeightText(e.target.value)} />
+              </label>
+              <label className="ct-body__field">
+                <span className="ct-body__label">{tBody('weightDate')}</span>
+                <input className="ct-body__input" type="date" value={weightDate} onChange={(e) => setWeightDate(e.target.value as LocalDate)} />
+              </label>
+              <Button className="ct-body__save" onClick={() => void saveWeight()}>
+                {tBody('saveWeight')}
+              </Button>
+            </div>
+            {weightMessage && (
+              <p className="ct-body__message" role={weightMessage.kind === 'error' ? 'alert' : 'status'}>
+                {weightMessage.text}
+              </p>
+            )}
+            {weights.length === 0 ? (
+              <p className="ct-body__hint">{tBody('weightEmpty')}</p>
+            ) : (
+              <ul className="ct-body__list">
+                {weights.map((weight) => (
+                  <li key={weight.id} className="ct-body__item">
+                    <span className="ct-body__itemDate">{weight.date}</span>
+                    <span className="ct-body__itemKg">{tBody('weightLine', { kg: formatKg(weight.kg) })}</span>
+                    <span className="ct-body__badge">{tBody(weight.source === 'health' ? 'weightSourceHealth' : 'weightSourceManual')}</span>
+                    <button type="button" className="ct-body__delete" aria-label={tBody('weightDelete', { date: weight.date })} onClick={() => void removeWeight(weight)}>
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
 
-        <h2 className="ct-body__section">{tBody('sectionWeight')}</h2>
-        <label className="ct-body__field">
-          <span className="ct-body__label">{tBody('weightKg')}</span>
-          <input className="ct-body__input" inputMode="decimal" value={weightText} onChange={(e) => setWeightText(e.target.value)} />
-        </label>
-        <label className="ct-body__field">
-          <span className="ct-body__label">{tBody('weightDate')}</span>
-          <input className="ct-body__input" type="date" value={weightDate} onChange={(e) => setWeightDate(e.target.value as LocalDate)} />
-        </label>
-        {weightMessage && (
-          <p className="ct-body__message" role={weightMessage.kind === 'error' ? 'alert' : 'status'}>
-            {weightMessage.text}
-          </p>
-        )}
-        <Button onClick={() => void saveWeight()}>{tBody('saveWeight')}</Button>
-        {weights.length === 0 ? (
-          <p className="ct-body__hint">{tBody('weightEmpty')}</p>
-        ) : (
-          <ul className="ct-body__list">
-            {weights.map((weight) => (
-              <li key={weight.id} className="ct-body__item">
-                <span>{weight.date}</span>
-                <span>{tBody('weightLine', { kg: formatKg(weight.kg) })}</span>
-                <button type="button" className="ct-body__delete" aria-label={tBody('weightDelete', { date: weight.date })} onClick={() => void removeWeight(weight)}>
-                  ×
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+          <section className="ct-body__card ct-body__card--profile" aria-label={tBody('sectionProfile')}>
+            <h2 className="ct-body__section">{tBody('sectionProfile')}</h2>
+            {waiting && (
+              <p className="ct-body__hint" role="note">
+                <strong>{tBody('waitingFirstSync')}</strong> {tBody('waitingHint')}
+              </p>
+            )}
+            <div className="ct-body__field">
+              <span className="ct-body__label">{tBody('sex')}</span>
+              <SegmentedControl label={tBody('sex')} value={sex} disabled={waiting} onChange={setSex} options={[...SEXES.map((value) => ({ value, label: tBody(SEX_KEY[value]) })), UNSET]} />
+            </div>
+            <label className="ct-body__field ct-body__field--row">
+              <span className="ct-body__label">{tBody('birthYear')}</span>
+              <input className="ct-body__input ct-body__input--short" inputMode="numeric" value={birthYear} disabled={waiting} onChange={(e) => setBirthYear(e.target.value)} />
+            </label>
+            <label className="ct-body__field ct-body__field--row">
+              <span className="ct-body__label">{tBody('heightCm')}</span>
+              <input className="ct-body__input ct-body__input--short" inputMode="decimal" placeholder={`${HEIGHT_MIN_CM} – ${HEIGHT_MAX_CM}`} value={height} disabled={waiting} onChange={(e) => setHeight(e.target.value)} />
+            </label>
+            <div className="ct-body__field">
+              <span className="ct-body__label">{tBody('goal')}</span>
+              <SegmentedControl label={tBody('goal')} value={goal} disabled={waiting} onChange={setGoal} columns={2} options={[...GOALS.map((value) => ({ value, label: tBody(GOAL_KEY[value]) })), UNSET]} />
+            </div>
+            <div className="ct-body__field">
+              <span className="ct-body__label">{tBody('experience')}</span>
+              <SegmentedControl label={tBody('experience')} value={experience} disabled={waiting} onChange={setExperience} columns={2} options={[...EXPERIENCES.map((value) => ({ value, label: tBody(EXPERIENCE_KEY[value]) })), UNSET]} />
+            </div>
+            <p className="ct-body__hint">{tBody('profileHint')}</p>
+            {profileMessage && (
+              <p className="ct-body__message" role={profileMessage.kind === 'error' ? 'alert' : 'status'}>
+                {profileMessage.text}
+              </p>
+            )}
+            <Button className="ct-body__save" disabled={waiting} onClick={() => void saveProfile()}>
+              {tBody('saveProfile')}
+            </Button>
+          </section>
+        </div>
       </div>
     </div>
+  );
+}
+
+/** Courbe des pesées les plus récentes (au plus 14), tracée avec les jetons de la charte ; absente sous deux pesées. */
+function WeightSparkline({ weights, label }: { readonly weights: readonly BodyWeight[]; readonly label: string }) {
+  const points = weights.slice(0, 14).reverse();
+  if (points.length < 2) return null;
+  const width = 160;
+  const height = 40;
+  const values = points.map((p) => p.kg);
+  const min = Math.min(...values);
+  const span = Math.max(...values) - min || 1;
+  const coords = points.map((p, i) => [(i / (points.length - 1)) * (width - 8) + 4, height - 6 - ((p.kg - min) / span) * (height - 12)] as const);
+  const last = coords[coords.length - 1];
+  return (
+    <svg className="ct-body__spark" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label}>
+      <polyline fill="none" stroke="var(--ct-color-bronze)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" points={coords.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')} />
+      {last ? <circle cx={last[0]} cy={last[1]} r="3.5" fill="var(--ct-color-bronze)" /> : null}
+    </svg>
   );
 }

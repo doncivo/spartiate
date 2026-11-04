@@ -92,3 +92,135 @@
   color: var(--ct-color-text-secondary);
   cursor: pointer;
 }
+
+/* Planches I0 (iPhone-ProfilPoids, PC-ProfilPoids) : deux cartes, poids en tête sur iPhone ; profil à gauche et poids à droite sur PC. */
+.ct-body__title {
+  font-family: var(--ct-font-title);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.02em;
+}
+
+.ct-body__grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+}
+
+.ct-body-shell[data-layout='pc'] .ct-body {
+  max-width: 980px;
+}
+
+.ct-body-shell[data-layout='pc'] .ct-body__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+.ct-body-shell[data-layout='pc'] .ct-body__card--profile {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.ct-body-shell[data-layout='pc'] .ct-body__card--weight {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.ct-body__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  padding: var(--ct-space-3);
+  background: var(--ct-color-surface);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-lg);
+}
+
+.ct-body__card > .ct-body__section {
+  margin: 0;
+}
+
+.ct-body__latest {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--ct-space-3);
+}
+
+.ct-body__big {
+  font-family: var(--ct-font-title);
+  font-weight: var(--ct-font-weight-semibold);
+  font-size: 36px;
+  line-height: 1.1;
+}
+
+.ct-body__unit {
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-body__trend {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--ct-space-1);
+  font-size: var(--ct-font-size-xs);
+}
+
+.ct-body__spark {
+  width: 160px;
+  height: 40px;
+}
+
+/* Saisie d'une pesée : kg, date et bouton sur une ligne quand la place le permet. */
+.ct-body__entry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ct-space-2);
+}
+
+.ct-body__entry .ct-body__field {
+  flex: 1 1 120px;
+}
+
+/* Rangée « libellé · valeur » du profil (année de naissance, taille) : filets entre les rangées, champ court à droite. */
+.ct-body__field--row {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--ct-space-2);
+  border-top: 1px solid var(--ct-color-border);
+}
+
+.ct-body__input--short {
+  width: 120px;
+  text-align: right;
+}
+
+/* Boutons « Enregistrer » : hauteur normale, jamais étirés (planches I0). */
+.ct-body .ct-body__save {
+  align-self: flex-start;
+  height: 40px;
+  padding: 0 var(--ct-space-3);
+  border-radius: var(--ct-radius-md);
+}
+
+.ct-body__item {
+  min-height: 40px;
+}
+
+.ct-body__itemDate {
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-body__itemKg {
+  flex: 1 1 auto;
+}
+
+.ct-body__badge {
+  padding: 2px 8px;
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-pill);
+  color: var(--ct-color-text-secondary);
+  font-size: var(--ct-font-size-xs);
+}

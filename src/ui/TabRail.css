@@ -128,12 +128,16 @@
 
 .ct-tab-rail[data-layout='pc'] .ct-tab-rail__label {
   flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .ct-tab-rail__hint {
   font-size: var(--ct-font-size-xs);
   color: var(--ct-color-nav-text);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap; /* « Ctrl 2 » ne passe jamais à la ligne */
+  flex: 0 0 auto;
 }
 
 .ct-tab-rail__footer {

@@ -218,7 +218,7 @@
 }
 
 /* Chevron (trait Lucide « chevron-right ») au bout de chaque ligne cliquable, colorié par le texte secondaire. */
-.ct-settings--pc .ct-settings__rowButton::after {
+.ct-settings__rowButton::after {
   content: '';
   flex-shrink: 0;
   width: 18px;
@@ -228,7 +228,7 @@
   mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 6l6 6-6 6'/></svg>") center / contain no-repeat;
 }
 
-.ct-settings--pc .ct-settings__rowButton > :first-child {
+.ct-settings__rowButton > :first-child {
   flex-grow: 1;
   min-width: 0;
 }
@@ -242,4 +242,100 @@
   font-size: var(--ct-font-size-xs);
   padding: 3px 8px;
   color: var(--ct-color-text);
+}
+
+/* Plus réorganisé (planches iPhone-Plus et PC-Plus) : groupes en cartes, lignes séparées par un filet, titres en capitales discrètes. */
+.ct-settings__card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-lg);
+  background: var(--ct-color-surface);
+  overflow: hidden;
+}
+
+.ct-settings__card > .ct-settings__row,
+.ct-settings--pc .ct-settings__card > .ct-settings__row {
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 6px 14px;
+}
+
+.ct-settings__card > .ct-settings__row:last-child {
+  border-bottom: 0;
+}
+
+.ct-settings__card > .ct-settings__hint,
+.ct-settings__card > .ct-settings__error {
+  margin: 0;
+  padding: 6px 14px;
+}
+
+.ct-settings--phone {
+  gap: 0;
+}
+
+.ct-settings--phone .ct-settings__section {
+  margin: var(--ct-space-4) 0 var(--ct-space-2) 4px;
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.1em;
+}
+
+.ct-settings__profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 80px;
+  margin-top: var(--ct-space-2);
+  padding: 14px 16px;
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-lg);
+  background: var(--ct-color-surface);
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ct-settings__avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--ct-color-bronze);
+  border-radius: 50%;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading-sm);
+  color: var(--ct-color-text);
+}
+
+.ct-settings__profileTitle {
+  font-size: var(--ct-font-size-text);
+  font-weight: var(--ct-font-weight-bold);
+}
+
+.ct-settings__subgroup + .ct-settings__subgroup {
+  margin-top: 22px;
+}
+
+.ct-settings__groupTitle {
+  margin: 0 0 8px 4px;
+  font-family: var(--ct-font-text);
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.1em;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-settings__profile > .ct-settings__avatar {
+  flex-grow: 0;
+}
+
+.ct-settings__profile > .ct-settings__stack {
+  flex-grow: 1;
+  min-width: 0;
 }
