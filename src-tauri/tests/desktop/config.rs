@@ -1356,3 +1356,16 @@ fn rel_tech_01_no_remote_debugging_in_delivered_configuration() {
     assert!(smoke.contains("\"identifier\": \"fr.spartiate.app.smoke\""));
     assert!(smoke.contains("--remote-debugging-port=9377"));
 }
+
+/// ios-demarrage : sur l'iPhone, le journal technique (déjà assaini) est écrit dans `Documents/Journal`, visible dans l'app Fichiers
+/// (Info.ios.plist : UIFileSharingEnabled) ; repli sur le dossier de configuration si Documents est introuvable.
+#[test]
+fn ios_log_lives_in_documents_with_a_fallback() {
+    let ios = include_str!("../../src/ios_setup.rs");
+    assert!(ios.contains("document_dir()"));
+    assert!(ios.contains("JOURNAL_DIR"));
+    assert!(ios.contains("app_config_dir().ok()"));
+    let documents = ios.find("document_dir()").unwrap();
+    let init = ios.find("crate::applog::init(").unwrap();
+    assert!(documents < init);
+}
