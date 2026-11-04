@@ -16,6 +16,12 @@
 	<!-- I-03 (ADR 0013 §2.1) : verrouillage par Face ID (plugin biometric). Sans cette clé, Face ID est indisponible (constat 6). -->
 	<key>NSFaceIDUsageDescription</key>
 	<string>Spartiate utilise Face ID pour garder vos tâches privées.</string>
+	<!-- ios-demarrage : le journal technique (codes et durées, sans donnée personnelle) est écrit dans Documents/Journal, visible dans l'app
+	     Fichiers (Sur mon iPhone > Spartiate) pour être partagé en cas de blocage. Aucune autre exposition de Documents. -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<key>UIRequiresFullScreen</key>
 	<true/>
 	<key>UISupportedInterfaceOrientations</key>

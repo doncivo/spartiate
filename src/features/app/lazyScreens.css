@@ -20,3 +20,17 @@
   color: var(--ct-color-text);
   text-align: center;
 }
+
+/* Section sans écran dans cette version : phrase centrée à la place de la zone vide. */
+.ct-app__pending {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ct-space-4);
+  background: var(--ct-color-bg);
+  color: var(--ct-color-text-secondary);
+  text-align: center;
+}
