@@ -32,7 +32,7 @@ export function startThemeSync(container: Pick<AppContainer, 'data'>): () => voi
     const port = await openWindowThemePort();
     if (stopped || !port) return;
     setWindowThemePort(port);
-    const choice = await createSettingsUseCases(container).loadTheme().catch(() => 'system' as const);
+    const choice = await createSettingsUseCases(container).loadTheme().catch(() => 'dark' as const);
     await applyWindowTheme(choice, port);
   })();
   return () => {

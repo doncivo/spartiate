@@ -404,9 +404,34 @@ jobs:
           if-no-files-found: ignore
           retention-days: 1
 
+  # SPA-009 critère 7 : paires app / maquette (440 × 956 et 1 440 × 900) archivées pour relecture humaine. Aucune comparaison au pixel, aucun
+  # seuil : le job ne bloque pas la fusion (hors `needs` de la suite verte) ; l'artefact est lu par Ali.
+  visual:
+    name: Captures app et maquettes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Installer Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Captures
+        run: npm run visual
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: visual-pairs
+          path: test-results/visual/
+          if-no-files-found: error
+          retention-days: 14
+
   # Mesures de performance (budgets en ms, PRD section 8) : un job à part, sans autre charge sur la machine.
-  # SPA-001b : plus aucune mesure Playwright @perf (écrans métier retirés) ; Vitest perf et taille du bundle de départ restent. Les étapes
-  # s'enchaînent même après un échec pour que toutes les mesures soient visibles.
+  # SPA-009 (D-63) : la mesure Playwright @perf du démarrage jusqu'à Aujourd'hui est rétablie (tests/e2e/perf-start.spec.ts) ; Vitest perf et taille
+  # du bundle de départ restent. Les étapes s'enchaînent même après un échec pour que toutes les mesures soient visibles.
   perf:
     name: Performance et bundle
     runs-on: ubuntu-latest
@@ -433,6 +458,9 @@ jobs:
       - name: Dépendances système de Chromium
         if: steps.pw-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
+      - name: Perf Playwright (démarrage jusqu'à Aujourd'hui)
+        if: ${{ !cancelled() }}
+        run: npm run test:perf:e2e -- --reporter=github,json
       - name: Perf Vitest
         if: ${{ !cancelled() }}
         run: npm run test:perf -- --reporter=default --reporter=json --outputFile.json=vitest-perf.json

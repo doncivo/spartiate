@@ -85,8 +85,8 @@
 }
 
 .ct-recurrence__weekday[aria-pressed='true'] {
-  border-color: var(--ct-color-text);
-  background: var(--ct-color-text);
+  border-color: var(--ct-color-accent);
+  background: var(--ct-color-accent);
   color: var(--ct-color-accent-on);
 }
 
@@ -96,7 +96,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--ct-color-accent);
+  color: var(--ct-color-bronze);
   font-family: var(--ct-font-text);
   font-size: var(--ct-font-size-sm);
   font-weight: var(--ct-font-weight-semibold);

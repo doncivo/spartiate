@@ -15,8 +15,8 @@ const fonts = readFileSync(join(here, 'fonts.css'), 'utf-8');
  * de couleur et de police utilisés par le design system.
  */
 describe('jetons de thème (T-01, critère 18)', () => {
-  it('expose le violet d’accent #3a2a66 utilisé par le bouton rond « + »', () => {
-    expect(tokens).toMatch(/--ct-color-accent:\s*#3a2a66;/i);
+  it('expose le rouge d’accent #b8322a de la charte (fond de bouton portant du texte ivoire, jamais du texte)', () => {
+    expect(tokens).toMatch(/--ct-color-accent:\s*#b8322a;/i);
   });
 
   it('déclare Fraunces pour les titres et DM Sans pour le texte courant', () => {

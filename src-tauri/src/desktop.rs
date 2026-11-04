@@ -380,7 +380,47 @@ pub fn create_main_window(app: &AppHandle) -> tauri::Result<()> {
         .find(|window| window.label == MAIN_WINDOW)
         .cloned()
         .ok_or_else(|| tauri::Error::WindowNotFound)?;
-    build_window_from_config(app, &config)
+    if app.get_webview_window(&config.label).is_some() {
+        return Ok(());
+    }
+    let mut builder = tauri::WebviewWindowBuilder::from_config(app, &config)?;
+    // SPA-009 : la fenêtre tient dans la zone de travail du moniteur courant (curseur, sinon écran principal), minimum 1 024 × 700 jamais
+    // abaissé. Zone trop petite : la configuration d'origine est gardée et la limite est consignée au journal technique.
+    if let Some(work) = current_work_area(app) {
+        match crate::window_fit::fit_window(
+            work,
+            (
+                crate::window_fit::DEFAULT_WIDTH,
+                crate::window_fit::DEFAULT_HEIGHT,
+            ),
+        ) {
+            crate::window_fit::Fit::Fits(rect) => {
+                builder = builder
+                    .inner_size(rect.width, rect.height)
+                    .position(rect.x, rect.y);
+            }
+            crate::window_fit::Fit::TooSmall { .. } => {
+                crate::applog::write("window", "work-area-too-small");
+            }
+        }
+    }
+    builder.build()?;
+    Ok(())
+}
+
+/// Zone de travail (barre des tâches exclue) du moniteur sous le curseur, sinon de l'écran principal, en pixels logiques.
+fn current_work_area(app: &AppHandle) -> Option<crate::window_fit::LogicalRect> {
+    let monitor = app
+        .cursor_position()
+        .ok()
+        .and_then(|point| app.monitor_from_point(point.x, point.y).ok().flatten())
+        .or_else(|| app.primary_monitor().ok().flatten())?;
+    let work = monitor.work_area();
+    Some(crate::window_fit::logical_work_area(
+        (work.position.x, work.position.y),
+        (work.size.width, work.size.height),
+        monitor.scale_factor(),
+    ))
 }
 
 /// Enregistre les plugins PC, la fermeture en réduction et la zone de notification.

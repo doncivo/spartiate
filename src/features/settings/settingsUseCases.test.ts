@@ -23,14 +23,14 @@ describe('cas d’usage des réglages (apparence, formats, thème)', () => {
     expect(isSharedSetting('general.timeFormat')).toBe(true);
   });
 
-  it('P-02 : thème local, système par défaut, valeur inconnue retombant sur système', async () => {
+  it('P-02 : thème local, sombre par défaut, valeur inconnue retombant sur sombre', async () => {
     const useCases = createSettingsUseCases(db);
-    expect(await useCases.loadTheme()).toBe('system');
-    await useCases.setTheme('dark');
     expect(await useCases.loadTheme()).toBe('dark');
+    await useCases.setTheme('light');
+    expect(await useCases.loadTheme()).toBe('light');
     expect(isSharedSetting('ui.theme')).toBe(false);
     await db.data.repos.settings.set('ui.theme', 'sepia' as never);
-    expect(await useCases.loadTheme()).toBe('system');
+    expect(await useCases.loadTheme()).toBe('dark');
   });
 
   it('P-03 : une valeur inconnue (version future) retombe sur le défaut', async () => {

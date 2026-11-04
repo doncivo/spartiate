@@ -47,9 +47,30 @@ interface Screen {
   readonly prepare?: (page: Page, testInfo: { project: { name: string } }) => Promise<void>;
 }
 
+/** Va sur une section par la navigation (barre basse sur iPhone, barre latérale sur PC). */
+const goTab = (name: string) => async (page: Page): Promise<void> => {
+  await page.getByRole('navigation').getByRole('button', { name }).click();
+};
+/** Plus › Profil et poids. */
+const goBody = async (page: Page): Promise<void> => {
+  await goTab('Plus')(page);
+  await page.getByRole('button', { name: /Profil et poids/ }).click();
+  await page.getByRole('heading', { name: 'Profil et poids' }).waitFor();
+};
+
+// SPA-009 critère 7 : paires app / maquette aux mêmes dimensions (440 × 956 et 1 440 × 900), relues par un humain. Sans maquette (états I0
+// qui n'en ont pas), seule la capture de l'app est écrite : le choix est consigné dans la fiche du ticket (motifs Plus / Réglages).
 const SCREENS: Screen[] = [
-  { name: 'Aujourdhui', mockup: 'iPhone-Aujourdhui.html', viewport: PHONE, date: WEDNESDAY },
-  { name: 'PC-Aujourdhui', mockup: 'PC-Aujourdhui.html', viewport: PC, date: WEDNESDAY },
+  { name: 'Aujourdhui', mockup: 'iPhone-Aujourdhui.html', viewport: PHONE, date: WEDNESDAY, dark: true },
+  { name: 'PC-Aujourdhui', mockup: 'PC-Aujourdhui.html', viewport: PC, date: WEDNESDAY, dark: true },
+  { name: 'Entrainement-indisponible', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: goTab('Entraînement') },
+  { name: 'PC-Entrainement-indisponible', viewport: PC, date: WEDNESDAY, dark: true, prepare: goTab('Entraînement') },
+  { name: 'Plus', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: goTab('Plus') },
+  { name: 'PC-Plus', viewport: PC, date: WEDNESDAY, dark: true, prepare: goTab('Plus') },
+  { name: 'Profil-poids', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: goBody },
+  { name: 'PC-Profil-poids', viewport: PC, date: WEDNESDAY, dark: true, prepare: goBody },
+  { name: 'Aujourdhui-clair', viewport: PHONE, date: WEDNESDAY, dark: false },
+  { name: 'PC-Aujourdhui-clair', viewport: PC, date: WEDNESDAY, dark: false },
 ];
 
 for (const screen of SCREENS) {

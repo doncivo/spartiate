@@ -1,14 +1,14 @@
 /**
- * Jetons CSS du design system Spartiate (PREP-04).
+ * Jetons CSS du design system Spartiate (PREP-04, SPA-009).
  *
- * Source des couleurs : PRD section 5 « Écrans et navigation › Principes d'interface »
- * et maquettes validées docs/maquettes/Main.html (clair), Main-Sombre.html (sombre),
- * PC-Aujourdhui.html. Les teintes des onglets sont identiques dans les deux thèmes ;
- * seuls le fond, le texte et quelques accents changent (voir Main-Sombre.html).
+ * Source des couleurs : charte § 18.4 du PRD (D-19) — identité laconique, sombre, rouge et bronze — et maquettes docs/maquettes/.
+ * Sombre est le défaut (réglage `ui.theme` = « dark ») ; clair disponible ; « Système » suit `prefers-color-scheme`. Le rouge
+ * (`--ct-color-accent`) n'est jamais une couleur de texte sur fond sombre (3,25:1) : fond de bouton portant du texte ivoire
+ * (`--ct-color-accent-on`, 4,8:1), liseré ou élément graphique seulement ; le bronze (`--ct-color-bronze`) porte titres de section,
+ * records et scores ; le texte sur vert est sombre (`--ct-color-ok-on`).
  *
- * Thème système par défaut : sans attribut, le thème suit `prefers-color-scheme`.
- * `document.documentElement.dataset.theme = 'light' | 'dark'` (réglages, ordre 1)
- * force un choix explicite et prend le pas sur la préférence système.
+ * Thème système par défaut des feuilles : sans attribut, le thème suit `prefers-color-scheme`.
+ * `document.documentElement.dataset.theme = 'light' | 'dark'` force un choix explicite et prend le pas sur la préférence système.
  */
 
 @import './fonts.css';
@@ -70,32 +70,32 @@
   --ct-color-tab-text: #2e2150;
 
   /* Thème clair (valeurs par défaut de :root ; voir prefers-color-scheme ci-dessous). */
-  --ct-color-bg: #ffffff;
+  --ct-color-bg: #f4f1ea;
   --ct-color-surface: #ffffff;
-  --ct-color-surface-raised: #faf9fc;
-  --ct-color-surface-input: #f3f1f6;
-  --ct-color-border: #e6e2ee;
-  --ct-color-border-strong: #d9d4e4;
-  --ct-color-text: #2e2150;
-  --ct-color-text-secondary: #5e557a;
-  --ct-color-nav-bg: #2e2150;
-  --ct-color-tab-active-bg: #ffffff;
-  --ct-color-accent: #3a2a66;
-  --ct-color-accent-on: #ffffff;
+  --ct-color-surface-raised: #ece8df;
+  --ct-color-surface-input: #ece8df;
+  --ct-color-border: #d8d2c6;
+  --ct-color-border-strong: #bdb5a5;
+  --ct-color-text: #15171c;
+  --ct-color-text-secondary: #5e584f;
+  --ct-color-nav-bg: #15171c;
+  --ct-color-tab-active-bg: #f4f1ea;
+  --ct-color-accent: #b8322a;
+  --ct-color-accent-on: #ede7dc;
   /* Texte et anneau de focus posés sur --ct-color-nav-bg (bandeau « Annuler », bouton principal des projets) : blanc dans les deux thèmes,
      car --ct-color-accent-on est conçu pour se poser sur --ct-color-accent et non sur nav-bg (UI-FIX-01, audit B11). */
   --ct-color-on-nav: #ffffff;
   /* Interrupteur (Reglages.html .sw en clair ; sombre : lavande comme --ct-edit-track, à valider sur la capture Reglages-Sombre). */
-  --ct-color-switch-on: #2e2150;
-  --ct-color-switch-on-thumb: #ffffff;
-  --ct-color-switch-off: #ddd9e4;
+  --ct-color-switch-on: #b8322a;
+  --ct-color-switch-on-thumb: #ede7dc;
+  --ct-color-switch-off: #bdb5a5;
   --ct-color-switch-off-thumb: #ffffff;
   --ct-color-space-pro: #2f6b7a;
   --ct-color-space-perso: #b5483b;
   --ct-color-goal: #3f7fc4;
   /* « Un jour » (SD-01) : icône, badge et glisser, violet #5B43A8 des maquettes UnJour.html et PC-Semaine-UnJour.html. */
   --ct-color-someday: #5b43a8;
-  --ct-color-someday-bg: #f1eef7;
+  --ct-color-someday-bg: #ece8df;
   /* Badges « Atteint » / « Non atteint » de l'objectif (Objectif.html). */
   --ct-color-achieved-bg: #e7f0ea;
   --ct-color-achieved-text: #2f6b4a;
@@ -115,19 +115,19 @@
   --ct-color-agenda-late: #b5483b;
   --ct-color-agenda-event: #1f6698;
   --ct-space-white: 0%;
-  --ct-color-event-bg: #eef4f7;
+  --ct-color-event-bg: #e6edf2;
   --ct-color-event-text: #1f6698;
   /* Semaine : événement externe (PC-Semaine.html, #E3EEF5) et événement local (anniversaire, #FBE7E4). */
-  --ct-color-event-external-bg: #e3eef5;
+  --ct-color-event-external-bg: #e6edf2;
   --ct-color-event-local-bg: #fbe7e4;
   --ct-color-event-local-text: #9e3f33;
-  --ct-color-row-selected: #f1eef7;
+  --ct-color-row-selected: #ece8df;
   --ct-color-handle: #8e87a3;
   --ct-color-select-ring: #b8b1c8;
   --ct-color-edit-knob: #f2a7a0;
-  --ct-edit-track: #2e2150;
+  --ct-edit-track: #15171c;
   --ct-edit-idle-knob: #ffffff;
-  --ct-edit-ink: #2e2150;
+  --ct-edit-ink: #15171c;
 
   /* Palette des icônes Lucide (T-03, src/ui/iconCatalog.ts) : une couleur fixe par
      icône du catalogue, reprise des traits colorés des maquettes (Ajout.html,
@@ -140,7 +140,7 @@
   --ct-color-icon-skyblue: #2a7ab8;
   --ct-color-icon-amber: #b9770e;
   /* Pastille « Tout » active (Main.html : encre ; Main-Sombre.html : lavande #C9BEE6). */
-  --ct-color-pill-all: var(--ct-color-text);
+  --ct-color-pill-all: #15171c;
 
   /* Focus (F-01, Focus.html) : l'écran de session garde son fond violet dans les deux thèmes (P-02). */
   --ct-focus-bg: #2e2150;
@@ -166,34 +166,39 @@
   --ct-swipe-danger-bg: #a1271c;
   --ct-swipe-danger-on: #ffffff;
   --ct-swipe-shadow: rgba(46, 33, 80, 0.15);
+  --ct-color-bronze: #8e6530;
+  --ct-color-ok: #5e9e6b;
+  --ct-color-ok-on: #0d0e11;
+  --ct-color-warn: #d9a441;
+  --ct-color-info: #6f8fb3;
 }
 
 /* Thème sombre, dérivé de Main-Sombre.html : appliqué automatiquement si le système
    le demande, sauf si les réglages forcent le thème clair. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --ct-color-bg: #1c1630;
-    --ct-color-surface: #1c1630;
-    --ct-color-surface-raised: #22334a;
-    --ct-color-surface-input: #2a2242;
-    --ct-color-border: #3a3155;
-    --ct-color-border-strong: #4a4066;
-    --ct-color-text: #f1eef8;
-    --ct-color-text-secondary: #b7aecd;
-    --ct-color-nav-bg: #120e20;
-    --ct-color-tab-active-bg: #1c1630;
-    --ct-color-accent: #c9bee6;
-    --ct-color-accent-on: #1c1630;
-    --ct-color-switch-on: #c9bee6;
-    --ct-color-switch-on-thumb: #1c1630;
-    --ct-color-switch-off: #6d6489;
-    --ct-color-switch-off-thumb: #f1eef8;
+    --ct-color-bg: #0d0e11;
+    --ct-color-surface: #15171c;
+    --ct-color-surface-raised: #1d2027;
+    --ct-color-surface-input: #1d2027;
+    --ct-color-border: #2a2e37;
+    --ct-color-border-strong: #3a404c;
+    --ct-color-text: #ede7dc;
+    --ct-color-text-secondary: #a39c90;
+    --ct-color-nav-bg: #15171c;
+    --ct-color-tab-active-bg: #0d0e11;
+    --ct-color-accent: #b8322a;
+    --ct-color-accent-on: #ede7dc;
+    --ct-color-switch-on: #b8322a;
+    --ct-color-switch-on-thumb: #ede7dc;
+    --ct-color-switch-off: #6a707c;
+    --ct-color-switch-off-thumb: #ede7dc;
     --ct-color-space-pro: #7fc3cf;
     --ct-color-space-perso: #f0a091;
     --ct-color-goal: #8db8ec;
     --ct-color-someday: #c9bee6;
-    --ct-color-someday-bg: #2a2242;
-    --ct-color-pill-all: #c9bee6;
+    --ct-color-someday-bg: #1d2027;
+    --ct-color-pill-all: #c28e4c;
     --ct-color-achieved-bg: #1f3a2d;
     --ct-color-achieved-text: #9fd3b4;
     --ct-color-missed-bg: #4a2420;
@@ -209,19 +214,24 @@
     --ct-color-agenda-late: #e4857a;
     --ct-color-agenda-event: #8db8ec;
     --ct-space-white: 55%;
-  --ct-color-event-bg: #22334a;
+  --ct-color-event-bg: #1d2530;
     --ct-color-event-text: #8db8ec;
-    --ct-color-event-external-bg: #22334a;
+    --ct-color-event-external-bg: #1d2530;
     --ct-color-event-local-bg: #3a2230;
     --ct-color-event-local-text: #f0a091;
-    --ct-color-row-selected: #2a2242;
+    --ct-color-row-selected: #1d2027;
     --ct-color-handle: #b7aecd;
     --ct-color-select-ring: #6a6088;
     --ct-color-edit-knob: #f2a7a0;
-    --ct-edit-track: #c9bee6;
---ct-edit-idle-knob: #1c1630;
---ct-edit-ink: #f1eef8;
+    --ct-edit-track: #c28e4c;
+--ct-edit-idle-knob: #0d0e11;
+--ct-edit-ink: #ede7dc;
 --ct-swipe-shadow: rgba(0, 0, 0, 0.7);
+  --ct-color-bronze: #c28e4c;
+  --ct-color-ok: #5e9e6b;
+  --ct-color-ok-on: #0d0e11;
+  --ct-color-warn: #d9a441;
+  --ct-color-info: #6f8fb3;
   }
 }
 
@@ -230,28 +240,28 @@
   --ct-color-warning-bg: #3a2f14;
   --ct-color-warning-border: #b8892f;
   --ct-color-warning-text: #f0c674;
-  --ct-color-bg: #1c1630;
-  --ct-color-surface: #1c1630;
-  --ct-color-surface-raised: #22334a;
-  --ct-color-surface-input: #2a2242;
-  --ct-color-border: #3a3155;
-  --ct-color-border-strong: #4a4066;
-  --ct-color-text: #f1eef8;
-  --ct-color-text-secondary: #b7aecd;
-  --ct-color-nav-bg: #120e20;
-  --ct-color-tab-active-bg: #1c1630;
-  --ct-color-accent: #c9bee6;
-  --ct-color-accent-on: #1c1630;
-  --ct-color-switch-on: #c9bee6;
-  --ct-color-switch-on-thumb: #1c1630;
-  --ct-color-switch-off: #6d6489;
-  --ct-color-switch-off-thumb: #f1eef8;
+  --ct-color-bg: #0d0e11;
+  --ct-color-surface: #15171c;
+  --ct-color-surface-raised: #1d2027;
+  --ct-color-surface-input: #1d2027;
+  --ct-color-border: #2a2e37;
+  --ct-color-border-strong: #3a404c;
+  --ct-color-text: #ede7dc;
+  --ct-color-text-secondary: #a39c90;
+  --ct-color-nav-bg: #15171c;
+  --ct-color-tab-active-bg: #0d0e11;
+  --ct-color-accent: #b8322a;
+  --ct-color-accent-on: #ede7dc;
+  --ct-color-switch-on: #b8322a;
+  --ct-color-switch-on-thumb: #ede7dc;
+  --ct-color-switch-off: #6a707c;
+  --ct-color-switch-off-thumb: #ede7dc;
   --ct-color-space-pro: #7fc3cf;
   --ct-color-space-perso: #f0a091;
   --ct-color-goal: #8db8ec;
   --ct-color-someday: #c9bee6;
-  --ct-color-someday-bg: #2a2242;
-  --ct-color-pill-all: #c9bee6;
+  --ct-color-someday-bg: #1d2027;
+  --ct-color-pill-all: #c28e4c;
   --ct-color-achieved-bg: #1f3a2d;
   --ct-color-achieved-text: #9fd3b4;
   --ct-color-missed-bg: #4a2420;
@@ -264,40 +274,45 @@
   --ct-color-agenda-late: #e4857a;
   --ct-color-agenda-event: #8db8ec;
   --ct-space-white: 55%;
-  --ct-color-event-bg: #22334a;
+  --ct-color-event-bg: #1d2530;
   --ct-color-event-text: #8db8ec;
-  --ct-color-event-external-bg: #22334a;
+  --ct-color-event-external-bg: #1d2530;
   --ct-color-event-local-bg: #3a2230;
   --ct-color-event-local-text: #f0a091;
-  --ct-color-row-selected: #2a2242;
+  --ct-color-row-selected: #1d2027;
   --ct-color-handle: #b7aecd;
   --ct-color-select-ring: #6a6088;
   --ct-color-edit-knob: #f2a7a0;
-  --ct-edit-track: #c9bee6;
-  --ct-edit-idle-knob: #1c1630;
-  --ct-edit-ink: #f1eef8;
+  --ct-edit-track: #c28e4c;
+  --ct-edit-idle-knob: #0d0e11;
+  --ct-edit-ink: #ede7dc;
   --ct-swipe-shadow: rgba(0, 0, 0, 0.7);
+  --ct-color-bronze: #c28e4c;
+  --ct-color-ok: #5e9e6b;
+  --ct-color-ok-on: #0d0e11;
+  --ct-color-warn: #d9a441;
+  --ct-color-info: #6f8fb3;
 }
 
 :root[data-theme='light'] {
   --ct-color-warning-bg: #fff8e6;
   --ct-color-warning-border: #d9a441;
   --ct-color-warning-text: #8a5a00;
-  --ct-color-bg: #ffffff;
+  --ct-color-bg: #f4f1ea;
   --ct-color-surface: #ffffff;
-  --ct-color-surface-raised: #faf9fc;
-  --ct-color-surface-input: #f3f1f6;
-  --ct-color-border: #e6e2ee;
-  --ct-color-border-strong: #d9d4e4;
-  --ct-color-text: #2e2150;
-  --ct-color-text-secondary: #5e557a;
-  --ct-color-nav-bg: #2e2150;
-  --ct-color-tab-active-bg: #ffffff;
-  --ct-color-accent: #3a2a66;
-  --ct-color-accent-on: #ffffff;
-  --ct-color-switch-on: #2e2150;
-  --ct-color-switch-on-thumb: #ffffff;
-  --ct-color-switch-off: #ddd9e4;
+  --ct-color-surface-raised: #ece8df;
+  --ct-color-surface-input: #ece8df;
+  --ct-color-border: #d8d2c6;
+  --ct-color-border-strong: #bdb5a5;
+  --ct-color-text: #15171c;
+  --ct-color-text-secondary: #5e584f;
+  --ct-color-nav-bg: #15171c;
+  --ct-color-tab-active-bg: #f4f1ea;
+  --ct-color-accent: #b8322a;
+  --ct-color-accent-on: #ede7dc;
+  --ct-color-switch-on: #b8322a;
+  --ct-color-switch-on-thumb: #ede7dc;
+  --ct-color-switch-off: #bdb5a5;
   --ct-color-switch-off-thumb: #ffffff;
   --ct-color-space-pro: #2f6b7a;
   --ct-color-space-perso: #b5483b;
@@ -314,19 +329,24 @@
   --ct-color-agenda-late: #b5483b;
   --ct-color-agenda-event: #1f6698;
   --ct-space-white: 0%;
-  --ct-color-event-bg: #eef4f7;
+  --ct-color-event-bg: #e6edf2;
   --ct-color-event-text: #1f6698;
   /* Semaine : événement externe (PC-Semaine.html, #E3EEF5) et événement local (anniversaire, #FBE7E4). */
-  --ct-color-event-external-bg: #e3eef5;
+  --ct-color-event-external-bg: #e6edf2;
   --ct-color-event-local-bg: #fbe7e4;
   --ct-color-event-local-text: #9e3f33;
-  --ct-color-row-selected: #f1eef7;
+  --ct-color-row-selected: #ece8df;
   --ct-color-handle: #8e87a3;
   --ct-color-select-ring: #b8b1c8;
   --ct-color-edit-knob: #f2a7a0;
-  --ct-edit-track: #2e2150;
+  --ct-edit-track: #15171c;
   --ct-edit-idle-knob: #ffffff;
-  --ct-edit-ink: #2e2150;
+  --ct-edit-ink: #15171c;
+  --ct-color-bronze: #8e6530;
+  --ct-color-ok: #5e9e6b;
+  --ct-color-ok-on: #0d0e11;
+  --ct-color-warn: #d9a441;
+  --ct-color-info: #6f8fb3;
 }
 
 /* Application globale (main.tsx importe ce fichier une seule fois). */
