@@ -50,6 +50,7 @@ export const fr = {
     update: appUpdateFr,
     dbStalled: 'L’ouverture est peut-être encore en cours ; si rien ne change, touchez « Réessayer ».',
     startError: 'Le démarrage de Spartiate a échoué.',
+    sectionPending: 'La section {name} n’est pas encore disponible dans cette version.',
     diag: {
       title: 'Détail technique',
       step: 'Étape : {step}',

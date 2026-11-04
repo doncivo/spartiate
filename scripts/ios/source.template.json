@@ -1,7 +1,7 @@
 {
   "name": "Spartiate",
   "subtitle": "Source SideStore de Spartiate",
-  "description": "Planificateur personnel Spartiate pour iPhone.",
+  "description": "Spartiate : musculation, nutrition et récupération sur iPhone, synchronisées avec la version PC.",
   "identifier": "fr.spartiate.source",
   "website": "https://github.com/doncivo/spartiate-releases",
   "iconURL": "https://raw.githubusercontent.com/doncivo/spartiate-releases/main/icon.png",
@@ -10,10 +10,10 @@
       "name": "Spartiate",
       "bundleIdentifier": "fr.spartiate.app",
       "developerName": "Ali Cherif",
-      "subtitle": "Planificateur personnel",
-      "localizedDescription": "Tâches, routines, événements et checklists, synchronisés avec la version PC.",
+      "subtitle": "Musculation, nutrition et récupération",
+      "localizedDescription": "Suivi de musculation, de nutrition et de récupération, synchronisé avec la version PC.",
       "iconURL": "https://raw.githubusercontent.com/doncivo/spartiate-releases/main/icon.png",
-      "tintColor": "#C2410C",
+      "tintColor": "#B8322A",
       "versions": []
     }
   ],
