@@ -54,7 +54,7 @@ const goTab = (name: string) => async (page: Page): Promise<void> => {
 /** Applique réellement le thème clair par Plus › Apparence (le thème vient du réglage de l'app, pas du système), puis revient à Aujourd'hui. */
 const goLight = async (page: Page): Promise<void> => {
   await goTab('Plus')(page);
-  await page.getByRole('button', { name: /Apparence/ }).click();
+  await page.getByRole('button', { name: /Thème/ }).first().click();
   await page.getByRole('radio', { name: 'Clair' }).click();
   await page.waitForFunction(() => document.documentElement.dataset['theme'] === 'light');
   await goTab('Aujourd’hui')(page);
