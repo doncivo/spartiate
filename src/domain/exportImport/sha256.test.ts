@@ -36,6 +36,6 @@ describe('sha256Hex : vecteurs FIPS 180-4', () => {
   it('les vecteurs de référence sont aussi ceux de crypto.subtle', async () => {
     const subtle = globalThis.crypto?.subtle;
     if (!subtle) return;
-    for (const vector of VECTORS) expect(hex(await subtle.digest('SHA-256', vector.data)), vector.name).toBe(vector.hex);
+    for (const vector of VECTORS) expect(hex(await subtle.digest('SHA-256', new Uint8Array(vector.data))), vector.name).toBe(vector.hex);
   });
 });
