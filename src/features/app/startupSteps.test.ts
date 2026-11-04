@@ -63,6 +63,19 @@ describe('suivi des étapes de démarrage', () => {
     expect(tracker.history()).toEqual([]);
   });
 
+  it('le journal technique ne reçoit que les étapes d’au moins 500 ms (minLoggedMs)', () => {
+    let clock = 0;
+    const lines: string[] = [];
+    const tracker = createStartupTracker(() => clock, (line) => lines.push(line), 500);
+    tracker.begin('rapide');
+    clock += 499;
+    tracker.begin('lente');
+    clock += 500;
+    tracker.done();
+    expect(lines).toEqual(['step lente 500 ms']);
+    expect(tracker.history()).toHaveLength(2);
+  });
+
   it('le nom écrit au journal ne contient que des caractères sûrs', () => {
     expect(stepCode('settings.get(device.id)')).toBe('settings.get-device.id-');
     expect(stepCode('/Users/ali/x y')).not.toMatch(/[/ ]/);
