@@ -66,8 +66,7 @@ jobs:
         with:
           targets: aarch64-apple-ios
 
-      # Le dossier target contient des binaires qui embarquent l'identifiant Google iOS (non confidentiel, dépôt privé) ;
-      # le cache n'est lisible que par ce dépôt. Exclure les binaires finaux casserait la compilation incrémentale.
+      # Le cache n'est lisible que par ce dépôt. Exclure les binaires finaux casserait la compilation incrémentale.
       - name: Cache cargo
         uses: actions/cache@v4
         with:
@@ -264,22 +263,6 @@ jobs:
             echo "- Notes (première ligne) : $(head -n 1 notes/notes.txt)"
             echo "- source valide"
           } >> "$GITHUB_STEP_SUMMARY"
-
-      # ADR 0008 §9.3 (K-TECH-01) : l'ID client Google de type iOS est-il compilé dans le binaire de l'IPA ? Résultat réduit à présent / absent :
-      # la valeur n'est ni affichée ni gardée. Absent : avertissement et ligne du résumé (jamais un échec : l'app affiche alors « non configuré »).
-      - name: ID client Google iOS compilé
-        run: |
-          set -euo pipefail
-          PB=/usr/libexec/PlistBuddy
-          APP="$RUNNER_TEMP/check/Payload/Spartiate.app"
-          EXE=$($PB -c "Print :CFBundleExecutable" "$APP/Info.plist")
-          if grep -aEq '[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com' "$APP/$EXE"; then
-            STATE="présent"
-          else
-            STATE="absent"
-            echo "::warning::ID client Google iOS absent de l'IPA : la connexion à Google affichera « non configuré » (secret du dépôt à renseigner)"
-          fi
-          echo "- ID client Google iOS compilé : ${STATE}" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
         with:
