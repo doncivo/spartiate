@@ -10,6 +10,8 @@ import { parsePlist } from './plist.mjs';
 // @ts-expect-error script .mjs sans déclaration de types
 import { checkPlistContract } from './check-plist-contract.mjs';
 // @ts-expect-error script .mjs sans déclaration de types
+import { validateEntitlements } from './apply-entitlements.mjs';
+// @ts-expect-error script .mjs sans déclaration de types
 import { ipaUrlFor, RELEASES_REPO, SOURCE_URL } from './make-source-json.mjs';
 
 type Ver = { version: string; size: number; sha256: string };
@@ -265,5 +267,51 @@ describe('I-01 QA : cohérence du guide après modification d’une valeur', () 
       expect(t).not.toMatch(/ghp_[A-Za-z0-9]{20,}|github_pat_|-----BEGIN [A-Z ]*PRIVATE KEY/);
     }
     expect(workflow).toMatch(/secrets\.RELEASES_TOKEN/);
+  });
+});
+
+describe('SPA-003 QA : entitlements extraits de l’IPA finale', () => {
+  const xml = (body: string): string => `<?xml version="1.0"?><plist version="1.0"><dict>${body}</dict></plist>`;
+  const HK = '<key>com.apple.developer.healthkit</key>';
+
+  it('critère 3 : --check accepte HealthKit true et refuse absent, vide, mal formé ou faux (code 1)', () => {
+    expect(node('apply-entitlements.mjs', ['--check', put('e-ok.plist', xml(`${HK}<true/>`))]).status).toBe(0);
+    expect(node('apply-entitlements.mjs', ['--check', put('e-none.plist', xml(''))]).status).toBe(1);
+    expect(node('apply-entitlements.mjs', ['--check', put('e-empty.plist', '')]).status).toBe(1);
+    expect(node('apply-entitlements.mjs', ['--check', put('e-bad.plist', '<plist><dict>')]).status).toBe(1);
+    expect(node('apply-entitlements.mjs', ['--check', put('e-false.plist', xml(`${HK}<false/>`))]).status).toBe(1);
+    expect(node('apply-entitlements.mjs', ['--check', join(tmp, 'e-missing.plist')]).status).toBe(1);
+  });
+
+  it('critère 3 : un identifiant d’équipe ou d’application dans les entitlements extraits est refusé', () => {
+    expect(validateEntitlements(xml(`${HK}<true/><key>com.apple.developer.team-identifier</key><string>ABC</string>`))).not.toEqual([]);
+    expect(validateEntitlements(xml(`${HK}<true/><key>application-identifier</key><string>ABC.fr.spartiate.app</string>`))).not.toEqual([]);
+  });
+
+  const wf = read('.github/workflows/build-ios.yml');
+
+  it('critère 3 : l’IPA reconstruite est réextraite et vérifiée, et l’IPA antérieure à la signature n’alimente rien', () => {
+    expect(wf).toMatch(/codesign --verify/);
+    expect(wf).toMatch(/codesign -d --entitlements :-/);
+    const afterSign = wf.slice(wf.indexOf('codesign -s - --entitlements'));
+    expect(afterSign).not.toContain('gen/apple/build/arm64/Spartiate.ipa');
+    expect([...wf.matchAll(/--ipa (\S+)/g)].map((m) => m[1])).toEqual(['ipa/Spartiate.ipa', 'ipa/Spartiate.ipa']);
+  });
+
+  it('critère 3 : les entitlements extraits de l’IPA finale sont conservés en artefact', () => {
+    expect(wf).toMatch(/name: Spartiate-entitlements/);
+    expect(wf).toMatch(/path: info\/entitlements\.plist/);
+  });
+
+  it('critère 5 : publication toujours limitée au tag, uniquement vers spartiate-releases', () => {
+    expect(wf).toContain('environment: releases');
+    expect(wf).not.toMatch(/latest\.json/);
+    expect(wf).toContain('REPO="doncivo/spartiate-releases"');
+  });
+
+  it('critère 6 : le guide distingue signature ad hoc de la CI et re-signature SideStore, sans promettre l’installation', () => {
+    const g = read('docs/install-iphone.md');
+    expect(g).toMatch(/ad hoc/);
+    expect(g).toMatch(/SideStore/);
   });
 });
