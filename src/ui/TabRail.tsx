@@ -77,7 +77,11 @@ export function TabRail({ items, settingsItem, activeId, onSelect, shortcutHints
       >
         <TabIcon id={item.id} />
         <span className="ct-tab-rail__label">{t(item.labelKey)}</span>
-        {hint ? <span className="ct-tab-rail__hint">{hint}</span> : null}
+        {hint ? (
+          <span className="ct-tab-rail__hint" aria-hidden="true">
+            {hint}
+          </span>
+        ) : null}
       </button>
     );
   };
