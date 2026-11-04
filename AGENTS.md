@@ -49,6 +49,7 @@ Lis d'abord `CLAUDE.md` (stack, commandes, couches, bundle de départ : il ne se
 - **Test rouge avant, vert après, pour tout ticket sans exception**, correctif ou refonte : un commit qui n'ajoute que les tests et échoue, puis un commit de code qui les fait passer ; les deux identifiants (commit ou run) vont dans la fiche. Des tests écrits dans le même commit que le code ne valent pas preuve rouge. Une fixture invalide correctement rejetée ne constitue pas, à elle seule, une preuve rouge.
 - Aucun ticket n'est « fait » sans tests verts, lint, typecheck et relecture approuvée. Une vérification native encore ouverte s'écrit dans le statut ; elle n'empêche pas « code fusionné », elle empêche « fait ». Aucun statut `CONFIRMED` depuis une lecture de code (D-36).
 - Vérifie qu'aucun secret n'est suivi par git avant chaque push.
+- **Tags (incident du 3 novembre 2026, SPA-002).** Avant tout push de tag : vérifie que le tag n'existe ni en local ni sur `origin`, et que `git rev-parse <tag>` est égal à `git rev-parse origin/main` (le tag pointe le commit fusionné). Ne lance jamais `git fetch circletasks` : il rapatrie les tags de l'ancien projet, qui déclenchent les workflows de release.
 
 ## iOS
 
