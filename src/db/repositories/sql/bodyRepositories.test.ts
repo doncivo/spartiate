@@ -65,6 +65,13 @@ describe('BodyWeightRepository', () => {
       D1,
     );
     expect(latest).toMatchObject({ id: first.id, kg: 72.1, healthUuid: 'sample-2', measuredAt: '2026-10-05T05:45:00.000Z' });
+    db.clock.advance(1_000);
+    const unchanged = await repository.saveHealth(
+      { kg: 72.1, measuredAt: '2026-10-05T05:45:00.000Z' as IsoDateTime, timezone: 'Europe/Paris', healthUuid: 'sample-2' },
+      D1,
+    );
+    expect(unchanged.updatedAt).toBe(latest.updatedAt);
+    expect(unchanged.hlc).toBe(latest.hlc);
     expect(await db.driver.select('SELECT id FROM body_weight')).toEqual([{ id: 'weight|2026-10-05|health' }]);
   });
 
