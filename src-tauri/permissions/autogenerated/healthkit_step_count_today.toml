@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-healthkit-step-count-today"
+description = "Enables the healthkit_step_count_today command without any pre-configured scope."
+commands.allow = ["healthkit_step_count_today"]
+
+[[permission]]
+identifier = "deny-healthkit-step-count-today"
+description = "Denies the healthkit_step_count_today command without any pre-configured scope."
+commands.deny = ["healthkit_step_count_today"]
