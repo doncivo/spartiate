@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { ArchiveError, EXPORT_SV, buildExportArchive, parseExportArchive, type ArchiveErrorCode, type ExportData, type ParsedArchive } from '../../domain/exportImport/archive';
+import { ArchiveError, DEFAULT_THEME, EXPORT_SV, buildExportArchive, parseExportArchive, type ArchiveErrorCode, type ExportData, type ParsedArchive } from '../../domain/exportImport/archive';
 import { planImport, type ImportMode } from '../../domain/exportImport/plan';
 import { nowIso } from '../../domain/clock';
 import { tExportImport, type ExportImportTextKey } from '../../i18n/exportImportText';
@@ -48,7 +48,7 @@ export function ExportImportScreen() {
   async function readLocal(repos: typeof data.repos): Promise<ExportData> {
     const base = await (await repos.exportImport()).readExportData();
     const theme = await repos.settings.get('ui.theme');
-    return theme === 'system' ? base : { ...base, settings: { 'ui.theme': theme } };
+    return theme === DEFAULT_THEME ? base : { ...base, settings: { 'ui.theme': theme } };
   }
 
   async function doExport(): Promise<void> {
