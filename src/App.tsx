@@ -23,6 +23,10 @@ import { isAppLocked } from './features/security/appLockStore';
 import { t } from './i18n';
 import { formatPrefsVersion, subscribeFormatPrefs } from './i18n/formatPrefs';
 import { AppShell, TabRail } from './ui';
+import { PcTopBar, SidebarSyncCard } from './features/app/ShellChrome';
+import { SHORTCUTS } from './features/app/shortcuts';
+import { todayLocal } from './domain/clock';
+import { formatDetailDate } from './i18n/format';
 import { useLayout } from './ui/useLayout';
 
 /** Raccourcis encore actifs pendant que la liste des raccourcis est ouverte (P-08). */
@@ -35,6 +39,8 @@ function requireTab(id: string): TabDefinition {
 }
 
 const MORE_ITEM = requireTab('more');
+/** « Ctrl 1 » à « Ctrl 5 » affichés à droite des onglets de la barre latérale PC (registre de raccourcis). */
+const SHORTCUT_HINTS: Readonly<Record<string, string>> = Object.fromEntries(TABS.map((tab) => [tab.id, SHORTCUTS[tab.shortcut].keys.replace('+', ' ')]));
 const RAIL_ITEMS = TABS.filter((tab) => tab.id !== MORE_ITEM.id);
 
 /**
@@ -55,7 +61,7 @@ function AppShellContent() {
   useEffect(() => startNetworkStatus(), []);
   // P-02 : barre de titre alignée sur le thème (PC).
   useEffect(() => startThemeSync(container), [container]);
-  // A-04 : Alt+1 à Alt+5 (registre de raccourcis, actifs même dans un champ de saisie).
+  // A-04 : Ctrl+1 à Ctrl+5 (registre de raccourcis, actifs même dans un champ de saisie).
   useEffect(() => registerTabShortcuts(container.shortcuts), [container]);
   // D-04 : Échap (dernier recours), Ctrl+, (Plus). P-08 : Ctrl+/ (liste des raccourcis), PC seulement.
   useLayoutEffect(() => registerEscapeFallback(container), [container]);
@@ -64,7 +70,8 @@ function AppShellContent() {
   return (
     <AppShell
       detailOverlay={false}
-      tabRail={<TabRail items={RAIL_ITEMS} settingsItem={MORE_ITEM} activeId={route.tab} onSelect={(id) => goToTab(id as TabDefinition['id'])} />}
+      tabRail={<TabRail items={RAIL_ITEMS} settingsItem={MORE_ITEM} activeId={route.tab} shortcutHints={SHORTCUT_HINTS} footer={<SidebarSyncCard />} onSelect={(id) => goToTab(id as TabDefinition['id'])} />}
+      topBar={<PcTopBar labelKey={requireTab(route.tab).labelKey} date={route.tab === 'today' ? formatDetailDate(todayLocal(container.clock)) : undefined} />}
     >
       <AppStatusBanner />
       <UpdateBanner />

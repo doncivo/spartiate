@@ -18,6 +18,8 @@ export interface AppShellProps {
   tabRail: ReactNode;
   /** Contenu de l'écran courant (Aujourd'hui, Semaine…). */
   children: ReactNode;
+  /** PC seulement : barre supérieure (titre de la section) au-dessus de la zone centrale ; ignorée sur iPhone. */
+  topBar?: ReactNode;
   /** `<DetailPanel />` ; affiché à droite sur PC seulement (≥ 1024 px), ignoré sur mobile. */
   detail?: ReactNode;
   /** Bouton d'ajout flottant (`<Fab />`), ancré en bas à droite au-dessus du contenu. */
@@ -36,14 +38,17 @@ export interface AppShellProps {
  *   <TodayScreen />
  * </AppShell>
  */
-export function AppShell({ tabRail, children, detail, fab, detailOverlay, className }: AppShellProps) {
+export function AppShell({ tabRail, children, topBar, detail, fab, detailOverlay, className }: AppShellProps) {
   const layout = useLayout();
   const [slot, setSlot] = useState<HTMLElement | null>(null);
   return (
     <div className={['ct-app-shell', className].filter(Boolean).join(' ')} data-layout={layout} data-detail-overlay={detailOverlay ? 'true' : undefined}>
       {tabRail}
       <DetailSlotContext.Provider value={layout === 'pc' ? slot : null}>
-        <main className="ct-app-shell__main">{children}</main>
+        <div className="ct-app-shell__column">
+          {layout === 'pc' ? topBar : null}
+          <main className="ct-app-shell__main">{children}</main>
+        </div>
       </DetailSlotContext.Provider>
       {layout === 'pc' ? (
         <div ref={setSlot} className="ct-app-shell__detail">

@@ -51,6 +51,14 @@ interface Screen {
 const goTab = (name: string) => async (page: Page): Promise<void> => {
   await page.getByRole('navigation').getByRole('button', { name }).click();
 };
+/** Applique réellement le thème clair par Plus › Apparence (le thème vient du réglage de l'app, pas du système), puis revient à Aujourd'hui. */
+const goLight = async (page: Page): Promise<void> => {
+  await goTab('Plus')(page);
+  await page.getByRole('button', { name: /Apparence/ }).click();
+  await page.getByRole('radio', { name: 'Clair' }).click();
+  await page.waitForFunction(() => document.documentElement.dataset['theme'] === 'light');
+  await goTab('Aujourd’hui')(page);
+};
 /** Plus › Profil et poids. */
 const goBody = async (page: Page): Promise<void> => {
   await goTab('Plus')(page);
@@ -69,8 +77,8 @@ const SCREENS: Screen[] = [
   { name: 'PC-Plus', viewport: PC, date: WEDNESDAY, dark: true, prepare: goTab('Plus') },
   { name: 'Profil-poids', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: goBody },
   { name: 'PC-Profil-poids', viewport: PC, date: WEDNESDAY, dark: true, prepare: goBody },
-  { name: 'Aujourdhui-clair', viewport: PHONE, date: WEDNESDAY, dark: false },
-  { name: 'PC-Aujourdhui-clair', viewport: PC, date: WEDNESDAY, dark: false },
+  { name: 'Aujourdhui-clair', viewport: PHONE, date: WEDNESDAY, dark: false, prepare: goLight },
+  { name: 'PC-Aujourdhui-clair', viewport: PC, date: WEDNESDAY, dark: false, prepare: goLight },
 ];
 
 for (const screen of SCREENS) {

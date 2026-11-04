@@ -70,7 +70,7 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
   it('sommaire : titre, cinq sections dans l’ordre en minuscules, section courante, un clic fait défiler la section (critères 1, 2)', async () => {
     renderScreen();
     await ready();
-    expect(screen.getByRole('heading', { level: 1, name: 'Réglages' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Plus' })).toBeInTheDocument();
     const nav = summary();
     expect(within(nav).getAllByRole('button').map((button) => button.textContent)).toEqual(SECTIONS);
     for (const name of SECTIONS) expect(within(region(name)).getByRole('heading', { level: 2, name })).toBeInTheDocument();

@@ -82,6 +82,7 @@ const EXEMPTIONS: readonly { relation: string; theme: Theme; raison: string }[] 
 
 /** Jetons de couleur qui ne servent à aucune paire texte / fond ni relation : bordures, ombres, pastels d’onglets, remplissages, accents. */
 const DECORATIFS: Readonly<Record<string, string>> = {
+  '--ct-color-nav-border': 'filet de séparation de la barre de navigation ; l’information est portée par les libellés',
   '--ct-color-event-external-bg': 'consommateur supprimé en 001b-front (événements externes) ; jeton retiré avec la charte, SPA-009',
   '--ct-color-row-selected': 'consommateur supprimé en 001b-front (listes de tâches) ; jeton retiré avec la charte, SPA-009',
   '--ct-color-warn': 'remplissage de la zone jaune de récupération (charte § 18.4) ; l’état est aussi porté par un libellé, jamais par la couleur seule',
@@ -139,6 +140,10 @@ const surface = (theme: Theme): Located => resolveToken(theme, '--ct-color-bg');
 
 /** Textes et graphiques posés sur un fond que porte une autre règle (liste explicite de jetons) : même seuil que les relations par sélecteur. */
 const TOKEN_RELATIONS: readonly (readonly [fg: string, bg: string, min: number])[] = [
+  ['--ct-color-nav-text', '--ct-color-nav-bg', 4.5],
+  ['--ct-color-nav-text', '--ct-color-nav-active', 4.5],
+  ['--ct-color-nav-accent', '--ct-color-nav-bg', 4.5],
+  ['--ct-color-ok-on', '--ct-color-nav-accent', 4.5],
   ['--ct-ios-pair-text', '--ct-ios-pair-bg', 4.5],
   ['--ct-ios-pair-muted', '--ct-ios-pair-bg', 4.5],
   ['--ct-ios-pair-muted', '--ct-ios-pair-panel', 4.5],

@@ -10,7 +10,7 @@ export function isModalOpen(root: ParentNode = document): boolean {
 }
 
 /**
- * A-04 : Alt+1 à Alt+6 activent les onglets (registre de raccourcis, ADR 0004). Portée Application : le
+ * A-04 (SPA-009) : Ctrl+1 à Ctrl+5 activent les onglets (registre de raccourcis, ADR 0004). Portée Application : le
  * raccourci fonctionne même dans un champ de saisie, sans y insérer de caractère (le registre compare
  * \`event.code\`, donc aussi sur un clavier AZERTY où Alt+1 produit « & »). « Tâches » ramène toujours à
  * Aujourd'hui du jour courant (`goToTab`, Q10), fiche détail comprise.

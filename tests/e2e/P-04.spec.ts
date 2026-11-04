@@ -22,7 +22,7 @@ async function openSettings(page: Page, versions: FakeVersion[] = OLDER, options
   await installFakeBackups(page, versions, options);
   await openToday(page);
   await tab(page, 'Plus').click();
-  await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Plus', exact: true })).toBeVisible();
 }
 
 async function openSheet(page: Page) {
