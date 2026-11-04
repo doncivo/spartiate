@@ -8,7 +8,6 @@ Tout chemin de la forme `src/…`, `src-tauri/…`, `scripts/…`, `tests/…`, 
 
 | Chemin | Ticket | Propriétaire |
 | --- | --- | --- |
-| `docs/qa/iphone.md` | SPA-004 | qa-test avec ios-mobile |
 | `src/db/migrations/0001_spartiate_init.ts` | SPA-001b | data-model |
 | `src-tauri/gen/apple/Spartiate.entitlements` | SPA-003 | ios-mobile |
 | `src-tauri/gen/apple/build/arm64/Spartiate.ipa` | SPA-003 | ci-release |

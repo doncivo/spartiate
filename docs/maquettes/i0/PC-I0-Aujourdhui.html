@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Spartiate — PC — Aujourd'hui (I0)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap">
+<style>
+:root{--bg:#0D0E11;--surface:#15171C;--surface-2:#1D2027;--line:#2A2E37;--fg:#EDE7DC;--fg-2:#A39C90;--accent:#B8322A;--accent-h:#D23B31;--bronze:#C28E4C;--bronze-2:#E0B577;--ok:#5E9E6B;--warn:#D9A441;--info:#6F8FB3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--fg);font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums}
+h1,h2,.display{font-family:Cinzel,"Times New Roman",serif;font-weight:600;letter-spacing:.02em;margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;font-weight:600;font-size:16px;border:0;cursor:pointer;color:var(--fg);background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--fg)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.bronze{background:transparent;border:1px solid var(--bronze);color:var(--bronze-2)}
+.num{font-family:Cinzel,serif;font-weight:600}
+.bronze{color:var(--bronze-2)}
+.muted{color:var(--fg-2)}
+.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg-2)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
+.pill.warn{border-color:var(--warn);color:var(--warn)}
+.pill.red{background:var(--accent);border-color:var(--accent);color:var(--fg)}
+.dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dial svg{display:block}
+.dial .v{font-family:Cinzel,serif;font-size:26px;font-weight:600;line-height:1}
+.dial .l{font-size:12px;color:var(--fg-2)}
+svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+.win{width:1440px;height:900px;background:var(--bg);display:flex;overflow:hidden}
+.side{width:220px;flex:none;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 12px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 22px}
+.brand .shield{width:30px;height:30px;border-radius:50%;background:var(--bronze);display:flex;align-items:center;justify-content:center;color:var(--accent);font-family:Cinzel,serif;font-weight:600;font-size:18px}
+.nav a{display:flex;align-items:center;gap:10px;height:40px;padding:0 10px;border-radius:8px;color:var(--fg-2);font-size:14px;font-weight:500}
+.nav a.on{background:var(--surface-2);color:var(--fg)}
+.nav a kbd{margin-left:auto;font:11px ui-monospace,monospace;color:var(--fg-2);opacity:.7}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.top{height:56px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.cols{flex:1;display:grid;grid-template-columns:660px 340px;gap:24px;padding:24px 28px;align-items:start}
+.kv{display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-top:1px solid var(--line)}
+.kv:first-of-type{border-top:0}
+.soon{display:grid;grid-template-columns:120px 1fr;gap:10px;font-size:13px;padding:10px 0;border-top:1px solid var(--line)}
+.soon:first-of-type{border-top:0}
+.soon b{font-weight:600}
+.soon span{color:var(--fg-2)}
+.wt{display:grid;grid-template-columns:90px 1fr 90px;align-items:center;font-size:14px;height:36px;border-top:1px solid var(--line)}
+.wt:first-of-type{border-top:0}
+.src{font-size:11px;color:var(--fg-2);border:1px solid var(--line);border-radius:10px;padding:2px 8px;justify-self:end}
+</style>
+</head>
+<body>
+<div class="win">
+  <aside class="side">
+    <div class="brand"><span class="shield">Λ</span><span class="display" style="font-size:17px">Spartiate</span></div>
+    <nav class="nav" style="display:flex;flex-direction:column;gap:2px">
+      <a class="on"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3v18"/></svg>Aujourd'hui<kbd>Ctrl 1</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>Entraînement<kbd>Ctrl 2</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M4 8h16l-1.5 12h-13z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>Nutrition<kbd>Ctrl 3</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M3 20h18M5 17l5-6 4 3 5-8"/></svg>Progrès<kbd>Ctrl 4</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>Plus<kbd>Ctrl 5</kbd></a>
+    </nav>
+    <div style="flex:1"></div>
+    <div class="card" style="padding:10px 12px;font-size:12px;color:var(--fg-2);display:flex;flex-direction:column;gap:4px">
+      <span style="color:var(--fg)">PC · Bureau</span>
+      <span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px"></i>Synchro iCloud il y a 2 min</span>
+      <span>iPhone vu il y a 2 min</span>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="top">
+      <div style="display:flex;align-items:baseline;gap:14px"><h1 style="font-size:22px">Aujourd'hui</h1><span class="muted" style="font-size:14px">mercredi 4 novembre 2026</span></div>
+      <span class="pill">Version 0.1.1</span>
+    </div>
+
+    <div class="cols">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <section class="card" style="padding:22px 24px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div><div class="eyebrow">Poids</div>
+              <div style="margin-top:8px"><span class="num" style="font-size:46px;line-height:1">81,4</span><span class="muted" style="font-size:16px;margin-left:8px">kg</span></div>
+              <div class="muted" style="font-size:13px;margin-top:6px">ce matin 06:50 · saisie sur l'iPhone</div></div>
+            <div style="text-align:right">
+              <div class="muted" style="font-size:12px">tendance</div>
+              <div style="font-size:14px;margin-top:4px">en apprentissage</div>
+              <div class="muted" style="font-size:12px;margin-top:2px">6 pesées sur 14 nécessaires</div>
+            </div>
+          </div>
+          <svg width="612" height="120" viewBox="0 0 612 120" style="display:block;margin-top:16px">
+            <line x1="0" y1="110" x2="612" y2="110" stroke="var(--line)"/>
+            <polyline points="20,30 120,42 220,38 320,64 420,72 520,90" fill="none" stroke="var(--bronze)" stroke-width="2"/>
+            <g fill="var(--bronze)"><circle cx="20" cy="30" r="3"/><circle cx="120" cy="42" r="3"/><circle cx="220" cy="38" r="3"/><circle cx="320" cy="64" r="3"/><circle cx="420" cy="72" r="3"/></g>
+            <circle cx="520" cy="90" r="5" fill="var(--bronze-2)"/>
+            <g fill="var(--fg-2)" font-size="11" font-family="system-ui"><text x="20" y="104" text-anchor="middle">jeu. 29</text><text x="120" y="104" text-anchor="middle">ven. 30</text><text x="220" y="104" text-anchor="middle">sam. 31</text><text x="320" y="104" text-anchor="middle">lun. 2</text><text x="420" y="104" text-anchor="middle">mar. 3</text><text x="520" y="104" text-anchor="middle">mer. 4</text></g>
+          </svg>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="btn primary">Nouvelle pesée</button>
+            <button class="btn ghost">Profil et poids</button>
+          </div>
+        </section>
+
+        <section class="card" style="padding:18px 24px 10px">
+          <div class="eyebrow" style="margin-bottom:6px">Arrive avec les prochaines versions</div>
+          <div class="soon"><b>Séance</b><span>programme Haut / Bas 4 j, charges proposées et justifiées</span></div>
+          <div class="soon"><b>Nutrition</b><span>journal, cibles, dépense mesurée, check-in hebdomadaire</span></div>
+          <div class="soon"><b>Récupération</b><span>sommeil, HRV, FC de repos et effort via Apple Santé</span></div>
+        </section>
+      </div>
+
+      <aside style="display:flex;flex-direction:column;gap:20px">
+        <section class="card" style="padding:16px 18px">
+          <div class="eyebrow" style="margin-bottom:6px">Profil</div>
+          <div class="kv"><span class="muted">Taille</span><span>178 cm</span></div>
+          <div class="kv"><span class="muted">Année de naissance</span><span>1990</span></div>
+          <div class="kv"><span class="muted">Objectif</span><span>Prise de masse</span></div>
+          <div class="kv"><span class="muted">Expérience</span><span>Intermédiaire</span></div>
+        </section>
+        <section class="card" style="padding:16px 18px">
+          <div class="eyebrow" style="margin-bottom:6px">iPhone</div>
+          <div class="kv"><span>Synchro</span><span class="muted">il y a 2 min</span></div>
+          <div class="kv"><span>Signature</span><span style="color:var(--warn)">jusqu'au 11 nov.</span></div>
+          <div class="kv"><span>Apple Santé</span><span class="muted">à autoriser sur l'iPhone</span></div>
+        </section>
+        <section class="card" style="padding:16px 18px">
+          <div class="eyebrow" style="margin-bottom:6px">Données</div>
+          <div class="kv"><span>Sauvegarde</span><span class="muted">ce matin 06:00</span></div>
+          <div class="kv"><span>Dernier export</span><span class="muted">jamais</span></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+</div>
+</body>
+</html>
