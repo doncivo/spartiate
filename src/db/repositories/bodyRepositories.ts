@@ -1,5 +1,5 @@
 import type { BodyWeight, ManualWeightInput, Profile, ProfileInput, WeightSource } from '../../domain/bodyProfile';
-import type { LocalDate } from '../../domain/types';
+import type { IsoDateTime, LocalDate } from '../../domain/types';
 
 /**
  * Profil et poids (D-65). Aucune règle métier ici (règle commune n°6) : les bornes et énumérations sont dans `domain/bodyProfile.ts`,
@@ -22,6 +22,8 @@ export interface BodyWeightRepository {
    * arrive avec le plugin healthkit.
    */
   saveManual(input: ManualWeightInput & { readonly timezone: string }, today: LocalDate): Promise<BodyWeight>;
+  /** Dernière pesée Santé du jour : conserve l'identité naturelle `weight|date|health` et l'identité de l'échantillon. */
+  saveHealth(input: { readonly kg: number; readonly measuredAt: IsoDateTime; readonly timezone: string; readonly healthUuid: string }, today: LocalDate): Promise<BodyWeight>;
   softDelete(date: LocalDate, source: WeightSource): Promise<void>;
   /** Pesées non supprimées, du jour le plus récent au plus ancien (à date égale : `measured_at` décroissant, puis origine). */
   listRecent(limit: number): Promise<BodyWeight[]>;
