@@ -72,8 +72,7 @@ Toutes compatibles iOS : soit exécutées dans la WebView (JS pur), soit outils 
 | crate tauri 2, tauri-build 2 | Runtime | MIT / Apache-2.0 | — | oui |
 | crate tauri-plugin-sql 2 (feature `sqlite`) | SQLite via sqlx, SQLite embarqué avec FTS5 et JSON1 | MIT / Apache-2.0 (SQLite : domaine public) | ~1,5 Mo natif | oui |
 | crates serde, serde_json | Sérialisation des futures commandes | MIT / Apache-2.0 | — | oui |
-| @fontsource-variable/fraunces (PREP-04) | Police des titres, fichiers locaux (`src/ui/theme/fonts.css`) | SIL OFL 1.1 | ~124 Ko woff2 (latin + latin-ext, normal) | oui (fichiers statiques) |
-| @fontsource-variable/dm-sans (PREP-04) | Police du texte courant, fichiers locaux | SIL OFL 1.1 | ~54 Ko woff2 (latin + latin-ext, normal) | oui (fichiers statiques) |
+| @fontsource/cinzel (SPA-009) | Police des titres et grands chiffres (charte § 18.4), fichiers locaux (`src/ui/theme/fonts.css`) | SIL OFL 1.1 | ~30 Ko woff2 |
 | lucide-react (PREP-04) | Icônes au trait des maquettes, `src/ui/Icon.tsx` | ISC | ~0,5 Ko par icône importée nommément (tree-shaking) | oui (JS) |
 | chrono-node 2.10 (Q-02, avenant du 2026-10-04) | Date et heure dans les phrases françaises (locale `fr` seule : `chrono-node/fr`), enveloppé dans `src/domain/chronoAbsolute.ts` (seul importateur), lu par `src/domain/naturalDate.ts` au travers du type `AbsoluteDateParser` | MIT | ~55 Ko minifié, ~15 Ko gzip (locale fr et noyau) ; **bloc à la demande** depuis PERF-02 (écart assumé à Q-02 D1, voir l'avenant « contrats du chargement à la demande » ci-dessous) | oui (JS pur, sans API navigateur ni Node) |
 | recharts 3.10 (H-02, ADR 0009) | Graphique « taux de complétion par semaine » du rapport, `src/features/stats/CompletionChart.tsx` uniquement | MIT (transitives MIT / ISC) | ~91 Ko gzip, **bloc paresseux** (`React.lazy`), hors bundle de départ | oui (JS, SVG) |

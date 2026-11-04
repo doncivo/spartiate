@@ -40,7 +40,7 @@
 
 .ct-edit-switch[data-active='true'] .ct-edit-switch__knob {
   background: var(--ct-color-edit-knob);
-  color: #2e2150;
+  color: var(--ct-color-tab-text);
 }
 
 .ct-edit-switch:focus-visible {

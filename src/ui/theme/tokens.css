@@ -15,8 +15,8 @@
 
 :root {
   /* Polices : jamais chargées depuis Internet (fichiers locaux, voir fonts.css). */
-  --ct-font-title: 'Fraunces Variable', Georgia, serif;
-  --ct-font-text: 'DM Sans Variable', system-ui, sans-serif;
+  --ct-font-title: 'Cinzel', 'Times New Roman', serif;
+  --ct-font-text: -apple-system, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
   --ct-font-weight-regular: 400;
   --ct-font-weight-medium: 500;
   --ct-font-weight-semibold: 600;
@@ -61,13 +61,13 @@
 
   /* Teintes des onglets verticaux : identiques en clair et en sombre (Main-Sombre.html). */
   --ct-color-tab-tasks: #b9c8a3;
-  --ct-color-tab-week: #c9bee6;
+  --ct-color-tab-week: #d8d2c6;
   --ct-color-tab-routines: #f2a7a0;
   --ct-color-tab-events: #9dbbc9;
   --ct-color-tab-checklists: #e8dfc0;
   --ct-color-tab-settings: #cfcfd4;
   /* Texte des onglets colorés : toujours foncé, quel que soit le thème (lisible sur pastel). */
-  --ct-color-tab-text: #2e2150;
+  --ct-color-tab-text: #15171c;
 
   /* Thème clair (valeurs par défaut de :root ; voir prefers-color-scheme ci-dessous). */
   --ct-color-bg: #f4f1ea;
@@ -79,6 +79,10 @@
   --ct-color-text: #15171c;
   --ct-color-text-secondary: #5e584f;
   --ct-color-nav-bg: #15171c;
+  --ct-color-nav-text: #a39c90; /* libellés inactifs de la barre (6,6:1 sur nav-bg) */
+  --ct-color-nav-accent: #c28e4c; /* onglet actif, marque (bronze, 6,4:1 sur nav-bg dans les deux thèmes) */
+  --ct-color-nav-active: #1d2027; /* fond de l'onglet actif et de la carte d'état */
+  --ct-color-nav-border: #2a2e37;
   --ct-color-tab-active-bg: #f4f1ea;
   --ct-color-accent: #b8322a;
   --ct-color-accent-on: #ede7dc;
@@ -143,15 +147,15 @@
   --ct-color-pill-all: #15171c;
 
   /* Focus (F-01, Focus.html) : l'écran de session garde son fond violet dans les deux thèmes (P-02). */
-  --ct-focus-bg: #2e2150;
+  --ct-focus-bg: #15171c;
   --ct-focus-track: #45386b;
   --ct-focus-arc: #f2a7a0;
   --ct-focus-arc-paused: #6e6396;
-  --ct-focus-muted: #c9bee6;
+  --ct-focus-muted: #d8d2c6;
   --ct-focus-space: #9fd0dc;
   --ct-focus-border: #6e6396;
   --ct-focus-on: #ffffff;
-  --ct-focus-ink: #2e2150;
+  --ct-focus-ink: #15171c;
   --ct-focus-launch-bg: #3a2a66;
 
   /* Gestes de ligne (A-07, Gestes.html) : couleurs des actions, identiques en clair et en sombre (chaque fond porte son texte). */
@@ -159,13 +163,13 @@
   --ct-swipe-complete-on: #ffffff;
   --ct-swipe-reopen-bg: var(--ct-color-surface-input);
   --ct-swipe-reopen-on: var(--ct-color-text);
-  --ct-swipe-soft-bg: #c9bee6;
-  --ct-swipe-soft-on: #2e2150;
+  --ct-swipe-soft-bg: #d8d2c6;
+  --ct-swipe-soft-on: #15171c;
   --ct-swipe-accent-bg: #5b43a8;
   --ct-swipe-accent-on: #ffffff;
   --ct-swipe-danger-bg: #a1271c;
   --ct-swipe-danger-on: #ffffff;
-  --ct-swipe-shadow: rgba(46, 33, 80, 0.15);
+  --ct-swipe-shadow: rgba(0, 0, 0, 0.15);
   --ct-color-bronze: #8e6530;
   --ct-color-ok: #5e9e6b;
   --ct-color-ok-on: #0d0e11;
@@ -186,6 +190,10 @@
     --ct-color-text: #ede7dc;
     --ct-color-text-secondary: #a39c90;
     --ct-color-nav-bg: #15171c;
+    --ct-color-nav-text: #a39c90; /* libellés inactifs de la barre (6,6:1 sur nav-bg) */
+    --ct-color-nav-accent: #c28e4c; /* onglet actif, marque (bronze, 6,4:1 sur nav-bg dans les deux thèmes) */
+    --ct-color-nav-active: #1d2027; /* fond de l'onglet actif et de la carte d'état */
+    --ct-color-nav-border: #2a2e37;
     --ct-color-tab-active-bg: #0d0e11;
     --ct-color-accent: #b8322a;
     --ct-color-accent-on: #ede7dc;
@@ -196,7 +204,7 @@
     --ct-color-space-pro: #7fc3cf;
     --ct-color-space-perso: #f0a091;
     --ct-color-goal: #8db8ec;
-    --ct-color-someday: #c9bee6;
+    --ct-color-someday: #c28e4c;
     --ct-color-someday-bg: #1d2027;
     --ct-color-pill-all: #c28e4c;
     --ct-color-achieved-bg: #1f3a2d;
@@ -249,6 +257,10 @@
   --ct-color-text: #ede7dc;
   --ct-color-text-secondary: #a39c90;
   --ct-color-nav-bg: #15171c;
+  --ct-color-nav-text: #a39c90; /* libellés inactifs de la barre (6,6:1 sur nav-bg) */
+  --ct-color-nav-accent: #c28e4c; /* onglet actif, marque (bronze, 6,4:1 sur nav-bg dans les deux thèmes) */
+  --ct-color-nav-active: #1d2027; /* fond de l'onglet actif et de la carte d'état */
+  --ct-color-nav-border: #2a2e37;
   --ct-color-tab-active-bg: #0d0e11;
   --ct-color-accent: #b8322a;
   --ct-color-accent-on: #ede7dc;
@@ -259,7 +271,7 @@
   --ct-color-space-pro: #7fc3cf;
   --ct-color-space-perso: #f0a091;
   --ct-color-goal: #8db8ec;
-  --ct-color-someday: #c9bee6;
+  --ct-color-someday: #c28e4c;
   --ct-color-someday-bg: #1d2027;
   --ct-color-pill-all: #c28e4c;
   --ct-color-achieved-bg: #1f3a2d;
@@ -307,6 +319,10 @@
   --ct-color-text: #15171c;
   --ct-color-text-secondary: #5e584f;
   --ct-color-nav-bg: #15171c;
+  --ct-color-nav-text: #a39c90; /* libellés inactifs de la barre (6,6:1 sur nav-bg) */
+  --ct-color-nav-accent: #c28e4c; /* onglet actif, marque (bronze, 6,4:1 sur nav-bg dans les deux thèmes) */
+  --ct-color-nav-active: #1d2027; /* fond de l'onglet actif et de la carte d'état */
+  --ct-color-nav-border: #2a2e37;
   --ct-color-tab-active-bg: #f4f1ea;
   --ct-color-accent: #b8322a;
   --ct-color-accent-on: #ede7dc;

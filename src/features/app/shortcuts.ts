@@ -35,11 +35,11 @@ const def = (keys: string, scope: ShortcutScope, inEditable: boolean, descriptio
 });
 
 export const SHORTCUTS = {
-  'app.tab.today': def('Alt+1', 'app', true, 'shortcuts.tabToday'),
-  'app.tab.training': def('Alt+2', 'app', true, 'shortcuts.tabTraining'),
-  'app.tab.nutrition': def('Alt+3', 'app', true, 'shortcuts.tabNutrition'),
-  'app.tab.progress': def('Alt+4', 'app', true, 'shortcuts.tabProgress'),
-  'app.tab.more': def('Alt+5', 'app', true, 'shortcuts.tabMore'),
+  'app.tab.today': def('Ctrl+1', 'app', true, 'shortcuts.tabToday'),
+  'app.tab.training': def('Ctrl+2', 'app', true, 'shortcuts.tabTraining'),
+  'app.tab.nutrition': def('Ctrl+3', 'app', true, 'shortcuts.tabNutrition'),
+  'app.tab.progress': def('Ctrl+4', 'app', true, 'shortcuts.tabProgress'),
+  'app.tab.more': def('Ctrl+5', 'app', true, 'shortcuts.tabMore'),
   'app.undo': def('Ctrl+Z', 'app', false, 'shortcuts.undo'),
   'app.settings': def('Ctrl+,', 'app', true, 'shortcuts.settings'),
   'app.shortcutsHelp': def('Ctrl+/', 'app', true, 'shortcuts.help'),

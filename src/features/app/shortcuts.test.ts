@@ -46,7 +46,7 @@ describe('registre', () => {
     const registry = createShortcutRegistry();
     const today = vi.fn();
     const later = vi.fn();
-    const alt1 = key({ key: '&', code: 'Digit1', altKey: true });
+    const alt1 = key({ key: '&', code: 'Digit1', ctrlKey: true });
     registry.register('app.tab.today', today);
     const off = registry.register('app.tab.today', later);
     expect(registry.handle(alt1)).toBe('app.tab.today');
@@ -65,7 +65,7 @@ describe('registre', () => {
     registry.register('app.undo', undo);
     registry.register('app.tab.today', tab);
     expect(registry.handle(key({ key: 'z', ctrlKey: true, editable: true }))).toBeNull();
-    expect(registry.handle(key({ key: '&', code: 'Digit1', altKey: true, editable: true }))).toBe('app.tab.today');
+    expect(registry.handle(key({ key: '&', code: 'Digit1', ctrlKey: true, editable: true }))).toBe('app.tab.today');
     expect(undo).not.toHaveBeenCalled();
     expect(tab).toHaveBeenCalledOnce();
   });
@@ -91,9 +91,9 @@ describe('registre', () => {
     expect(registry.handle(key({ key: '~', code: 'Digit2', ctrlKey: true, altKey: true, altGraph: true }))).toBeNull();
     // AltGr + : donne « / » sur certaines dispositions : ne doit pas ouvrir l’aide (Ctrl+/).
     expect(registry.handle(key({ key: '/', code: 'Slash', ctrlKey: true, altKey: true, altGraph: true }))).toBeNull();
-    // Alt seul (sans AltGr) reste Alt+1, que le caractère soit « & » (AZERTY) ou « 1 » (QWERTY).
-    expect(registry.handle(key({ key: '&', code: 'Digit1', altKey: true }))).toBe('app.tab.today');
-    expect(registry.handle(key({ key: '1', code: 'Digit1', altKey: true }))).toBe('app.tab.today');
+    // Ctrl seul (sans AltGr) reste Ctrl+1, que le caractère soit « & » (AZERTY) ou « 1 » (QWERTY).
+    expect(registry.handle(key({ key: '&', code: 'Digit1', ctrlKey: true }))).toBe('app.tab.today');
+    expect(registry.handle(key({ key: '1', code: 'Digit1', ctrlKey: true }))).toBe('app.tab.today');
     expect(registry.handle(key({ key: '/', ctrlKey: true }))).toBe('app.shortcutsHelp');
     expect(help).toHaveBeenCalledOnce();
   });
@@ -110,9 +110,9 @@ describe('registre', () => {
     const undo = vi.fn();
     registry.register('app.tab.progress', tab);
     registry.register('app.undo', undo);
-    // Alt+4 : « ' » (AZERTY) ou « 4 » (QWERTY), même touche physique.
-    expect(registry.handle(key({ key: "'", code: 'Digit4', altKey: true }))).toBe('app.tab.progress');
-    expect(registry.handle(key({ key: '4', code: 'Digit4', altKey: true }))).toBe('app.tab.progress');
+    // Ctrl+4 : « ' » (AZERTY) ou « 4 » (QWERTY), même touche physique.
+    expect(registry.handle(key({ key: "'", code: 'Digit4', ctrlKey: true }))).toBe('app.tab.progress');
+    expect(registry.handle(key({ key: '4', code: 'Digit4', ctrlKey: true }))).toBe('app.tab.progress');
     // Ctrl+Z : la lettre produite, quelle que soit la position de la touche (Z est sur KeyW en AZERTY).
     expect(registry.handle(key({ key: 'z', code: 'KeyZ', ctrlKey: true }))).toBe('app.undo');
     expect(registry.handle(key({ key: 'z', code: 'KeyW', ctrlKey: true }))).toBe('app.undo');

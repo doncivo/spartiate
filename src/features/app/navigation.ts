@@ -54,7 +54,7 @@ export interface NavigationState {
   readonly lastRoutes: { readonly [K in TabId]: Extract<Route, { tab: K }> };
   readonly detail: DetailTarget | null;
   readonly overlays: readonly Overlay[];
-  /** Alt+1…5 : va sur la section, à son dernier écran ; ferme la fiche détail. */
+  /** Ctrl+1…5 : va sur la section, à son dernier écran ; ferme la fiche détail. */
   goToTab(tab: TabId): void;
   navigate(route: Route): void;
   closeDetail(): void;

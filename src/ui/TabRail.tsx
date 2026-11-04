@@ -1,5 +1,6 @@
-import { useRef } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { t, type PlainMessageKey } from '../i18n';
+import { TabIcon } from './TabIcon';
 import { useLayout } from './useLayout';
 import './TabRail.css';
 
@@ -11,49 +12,45 @@ import './TabRail.css';
 export interface TabRailItem {
   readonly id: string;
   readonly labelKey: PlainMessageKey;
-  /** Variable CSS de la couleur de l'onglet (src/ui/theme/tokens.css). */
-  /** Variable CSS de la couleur de l'onglet ; absente : fond neutre (charte en SPA-009). */
+  /** Variable CSS de la couleur de l'onglet ; absente : jetons de la charte (§ 18.4). */
   readonly colorVar?: string;
 }
 
 export interface TabRailProps {
-  /** Onglets du haut, dans l'ordre d'affichage. */
+  /** Onglets, dans l'ordre d'affichage. */
   items: readonly TabRailItem[];
-  /** Onglet épinglé en bas (Réglages), séparé par un espace extensible. */
+  /** Dernier onglet (Plus), affiché à la suite des autres. */
   settingsItem: TabRailItem;
   activeId: string;
   onSelect: (id: string) => void;
+  /** PC : raccourci affiché à droite de chaque onglet (« Ctrl 1 »), par identifiant d'onglet. */
+  shortcutHints?: Readonly<Record<string, string>>;
+  /** PC : carte du bas de la barre latérale (état de la synchro). */
+  footer?: ReactNode;
   className?: string;
 }
 
-const SIZES = {
-  pc: { width: 72, tabHeight: 118 },
-  mobile: { width: 64, tabHeight: 112 },
-};
-
 /**
- * Colonne d'onglets verticaux colorés (PRD section 5, A-04), fond `--ct-color-nav-bg`.
- * L'onglet actif passe en fond clair/sombre selon le thème ; les autres gardent
- * leur teinte pastel, texte toujours foncé (`--ct-color-tab-text`).
+ * Navigation des cinq sections, selon la mise en page (rupture 1 024 px, `useLayout`) :
+ * - iPhone : barre basse, icône au-dessus d'un libellé horizontal ;
+ * - PC : barre latérale des maquettes (marque Λ Spartiate, icône et libellé horizontaux, raccourci, carte d'état en bas).
+ * Jamais de libellé vertical. L'onglet actif est en bronze (charte § 18.4).
  *
  * @example
- * <TabRail
- *   items={TABS.filter((tab) => tab.id !== 'settings')}
- *   settingsItem={TABS.find((tab) => tab.id === 'settings')!}
- *   activeId={route.tab}
- *   onSelect={goToTab}
- * />
+ * <TabRail items={RAIL_ITEMS} settingsItem={MORE_ITEM} activeId={route.tab} onSelect={goToTab} />
  */
-export function TabRail({ items, settingsItem, activeId, onSelect, className }: TabRailProps) {
+export function TabRail({ items, settingsItem, activeId, onSelect, shortcutHints, footer, className }: TabRailProps) {
   const layout = useLayout();
-  const size = SIZES[layout];
+  const pc = layout === 'pc';
   const allItems = [...items, settingsItem];
   const refs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const next = pc ? 'ArrowDown' : 'ArrowRight';
+    const previous = pc ? 'ArrowUp' : 'ArrowLeft';
     let nextIndex: number | null = null;
-    if (event.key === 'ArrowDown') nextIndex = (index + 1) % allItems.length;
-    else if (event.key === 'ArrowUp') nextIndex = (index - 1 + allItems.length) % allItems.length;
+    if (event.key === next) nextIndex = (index + 1) % allItems.length;
+    else if (event.key === previous) nextIndex = (index - 1 + allItems.length) % allItems.length;
     else if (event.key === 'Home') nextIndex = 0;
     else if (event.key === 'End') nextIndex = allItems.length - 1;
     if (nextIndex === null) return;
@@ -64,6 +61,7 @@ export function TabRail({ items, settingsItem, activeId, onSelect, className }: 
 
   const renderTab = (item: TabRailItem, index: number) => {
     const active = item.id === activeId;
+    const hint = pc ? shortcutHints?.[item.id] : undefined;
     return (
       <button
         key={item.id}
@@ -75,28 +73,27 @@ export function TabRail({ items, settingsItem, activeId, onSelect, className }: 
         onClick={() => onSelect(item.id)}
         onKeyDown={(event) => handleKeyDown(event, index)}
         className="ct-tab-rail__tab"
-        style={{
-          height: size.tabHeight,
-          marginRight: active ? 0 : layout === 'pc' ? 8 : 6,
-          background: active ? 'var(--ct-color-tab-active-bg)' : item.colorVar ? `var(${item.colorVar})` : 'transparent',
-          color: active ? 'var(--ct-color-text)' : 'var(--ct-color-tab-text)',
-        }}
+        data-active={active ? 'true' : undefined}
       >
+        <TabIcon id={item.id} />
         <span className="ct-tab-rail__label">{t(item.labelKey)}</span>
+        {hint ? <span className="ct-tab-rail__hint">{hint}</span> : null}
       </button>
     );
   };
 
   return (
-    <nav
-      aria-label={t('nav.primaryLabel')}
-      data-layout={layout}
-      className={['ct-tab-rail', className].filter(Boolean).join(' ')}
-      style={{ width: size.width }}
-    >
-      {items.map((item, index) => renderTab(item, index))}
-      <div className="ct-tab-rail__spacer" />
-      {renderTab(settingsItem, allItems.length - 1)}
+    <nav aria-label={t('nav.primaryLabel')} data-layout={layout} className={['ct-tab-rail', className].filter(Boolean).join(' ')}>
+      {pc ? (
+        <div className="ct-tab-rail__brand">
+          <span className="ct-tab-rail__mark" aria-hidden="true">
+            {'Λ'}
+          </span>
+          <span className="ct-tab-rail__name">{t('app.name')}</span>
+        </div>
+      ) : null}
+      <div className="ct-tab-rail__list">{allItems.map((item, index) => renderTab(item, index))}</div>
+      {pc ? <div className="ct-tab-rail__footer">{footer}</div> : null}
     </nav>
   );
 }
