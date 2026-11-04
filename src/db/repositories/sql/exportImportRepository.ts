@@ -24,16 +24,33 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
     return t;
   };
 
-  /** Horloge de champ : `base` suit la règle des déclencheurs de capture (que la garde neutralise pendant l'import). */
-  async function stampClocks(t: SyncTable, id: string, fields: readonly string[], hlc: string, oldHlc: string | null): Promise<void> {
-    if (oldHlc !== null && oldHlc !== hlc) {
-      await db.execute("INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) VALUES (?, ?, '*', ?, NULL) ON CONFLICT (table_name, row_id, field) DO NOTHING", [t.name, id, oldHlc]);
+  /**
+   * Bases des horloges de champ, LUES AVANT le tampon (Y-04, seconde revue, point 2 : après la prise du tampon, la première attente est une
+   * écriture). La base suit la règle des déclencheurs de capture, que la garde neutralise pendant l'import : si le champ (ou la ligne
+   * entière) attend déjà dans la file, la base existante est gardée ; sinon l'horloge actuelle du champ, celle de la ligne (« * »), ou
+   * le hlc de la ligne avant l'import.
+   */
+  async function readBases(t: SyncTable, id: string, fields: readonly string[], oldHlc: string | null): Promise<Map<string, string | null>> {
+    const bases = new Map<string, string | null>();
+    if (oldHlc === null) {
+      for (const field of fields) bases.set(field, null);
+      return bases;
     }
+    const star = (await db.select<{ hlc: string }>("SELECT hlc FROM sync_field_clock WHERE table_name = ? AND row_id = ? AND field = '*'", [t.name, id]))[0];
     for (const field of fields) {
       const queued = (await db.select('SELECT 1 FROM sync_outbox WHERE table_name = ? AND row_id = ? AND field IN (?, ?)', [t.name, id, field, '*'])).length > 0;
       const own = (await db.select<{ hlc: string; base_hlc: string | null }>('SELECT hlc, base_hlc FROM sync_field_clock WHERE table_name = ? AND row_id = ? AND field = ?', [t.name, id, field]))[0];
-      const star = (await db.select<{ hlc: string }>("SELECT hlc FROM sync_field_clock WHERE table_name = ? AND row_id = ? AND field = '*'", [t.name, id]))[0];
-      const base: string | null = queued ? (own?.base_hlc ?? null) : (own?.hlc ?? star?.hlc ?? oldHlc);
+      bases.set(field, queued ? (own?.base_hlc ?? null) : (own?.hlc ?? star?.hlc ?? oldHlc));
+    }
+    return bases;
+  }
+
+  /** Écrit les horloges de champ à l'HLC de l'importateur (écritures seules). */
+  async function writeClocks(t: SyncTable, id: string, bases: ReadonlyMap<string, string | null>, hlc: string, oldHlc: string | null): Promise<void> {
+    if (oldHlc !== null && oldHlc !== hlc) {
+      await db.execute("INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) VALUES (?, ?, '*', ?, NULL) ON CONFLICT (table_name, row_id, field) DO NOTHING", [t.name, id, oldHlc]);
+    }
+    for (const [field, base] of bases) {
       await db.execute(
         'INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) VALUES (?, ?, ?, ?, ?) ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc',
         [t.name, id, field, hlc, base],
@@ -44,11 +61,12 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
   /** Crée ou remplace une ligne (rétablit une ligne supprimée) : ligne entière remise dans la file. */
   async function upsert(t: SyncTable, id: string, values: Readonly<Record<string, SqlValue>>): Promise<void> {
     const existing = (await db.select<Row>(`SELECT id, hlc, deleted_at FROM ${t.name} WHERE id = ?`, [id]))[0];
-    const stamp = stamper.next();
     const columns = dataColumns(t);
     const params = columns.map((c) => values[c] ?? null);
+    const fields = existing ? [...columns, ...(existing.deleted_at ? ['deleted_at'] : [])] : [...columns, 'created_at', 'deleted_at'];
+    const bases = await readBases(t, id, fields, existing?.hlc ?? null);
+    const stamp = stamper.next();
     if (existing) {
-      await stampClocks(t, id, [...columns, ...(existing.deleted_at ? ['deleted_at'] : [])], stamp.hlc, existing.hlc);
       await db.execute(`UPDATE ${t.name} SET ${columns.map((c) => `${c} = ?`).join(', ')}, deleted_at = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?`, [...params, stamp.at, stamp.deviceId, stamp.hlc, id]);
     } else {
       await db.execute(
@@ -56,8 +74,8 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
         [id, ...params, stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
       );
       await db.execute('DELETE FROM sync_tombstone WHERE table_name = ? AND row_id = ?', [t.name, id]);
-      await stampClocks(t, id, [...columns, 'created_at', 'deleted_at'], stamp.hlc, null);
     }
+    await writeClocks(t, id, bases, stamp.hlc, existing?.hlc ?? null);
     await db.execute('DELETE FROM sync_outbox WHERE table_name = ? AND row_id = ?', [t.name, id]);
     await db.execute("INSERT INTO sync_outbox (table_name, row_id, field) VALUES (?, ?, '*')", [t.name, id]);
     if (existing?.deleted_at) await db.execute("INSERT INTO sync_outbox (table_name, row_id, field) VALUES (?, ?, '+')", [t.name, id]);
@@ -67,9 +85,10 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
   async function softDelete(t: SyncTable, id: string): Promise<void> {
     const existing = (await db.select<Row>(`SELECT id, hlc, deleted_at FROM ${t.name} WHERE id = ? AND deleted_at IS NULL`, [id]))[0];
     if (!existing) return;
+    const bases = await readBases(t, id, ['deleted_at'], existing.hlc);
     const stamp = stamper.next();
-    await stampClocks(t, id, ['deleted_at'], stamp.hlc, existing.hlc);
     await db.execute(`UPDATE ${t.name} SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?`, [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
+    await writeClocks(t, id, bases, stamp.hlc, existing.hlc);
     await db.execute("DELETE FROM sync_outbox WHERE table_name = ? AND row_id = ? AND field = 'deleted_at'", [t.name, id]);
     await db.execute("INSERT INTO sync_outbox (table_name, row_id, field) VALUES (?, ?, 'deleted_at')", [t.name, id]);
   }
