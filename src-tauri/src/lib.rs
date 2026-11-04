@@ -41,6 +41,8 @@ pub mod sync;
 pub mod vault;
 /// Clé de synchro au Trousseau iOS (contrat, ordre 5).
 pub mod vault_ios;
+/// Taille et position de la fenêtre PC dans la zone de travail du moniteur (SPA-009), calcul pur.
+pub mod window_fit;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

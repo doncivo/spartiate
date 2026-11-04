@@ -54,3 +54,4 @@ mod sync_tz;
 mod sync_y_tech_02;
 mod updater;
 mod window;
+mod window_fit;

@@ -139,7 +139,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'reminders.eveningRecap': { scope: 'shared', defaultValue: { enabled: true, time: '21:00' as LocalTime } },
   'general.firstWeekday': { scope: 'shared', defaultValue: 'monday' },
   'general.timeFormat': { scope: 'shared', defaultValue: '24h' },
-  'ui.theme': { scope: 'local', defaultValue: 'system' },
+  'ui.theme': { scope: 'local', defaultValue: 'dark' },
   'general.theme': { scope: 'shared', defaultValue: 'system' },
   'holidays.countries': { scope: 'shared', defaultValue: { FR: true, TN: true } },
   'general.timeZone': { scope: 'local', defaultValue: null },

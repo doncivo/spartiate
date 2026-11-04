@@ -33,7 +33,7 @@
 /* Espace sélectionné. */
 .ct-space-segmented__button[aria-pressed='true'] {
   background: var(--ct-color-surface);
-  box-shadow: 0 1px 3px rgba(46, 33, 80, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .ct-space-segmented__button:focus-visible {

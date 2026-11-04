@@ -50,6 +50,7 @@ export const fr = {
     update: appUpdateFr,
     dbStalled: 'L’ouverture est peut-être encore en cours ; si rien ne change, touchez « Réessayer ».',
     startError: 'Le démarrage de Spartiate a échoué.',
+    sectionPending: 'La section {name} n’est pas encore disponible dans cette version.',
     diag: {
       title: 'Détail technique',
       step: 'Étape : {step}',
@@ -100,6 +101,11 @@ export const fr = {
   },
   nav: {
     primaryLabel: 'Navigation principale',
+    deviceCard: {
+      label: 'État de cet appareil',
+      device: 'PC · Bureau',
+      noSync: 'Synchro iCloud : indisponible dans ce build',
+    },
     tabs: {
       today: 'Aujourd’hui',
       training: 'Entraînement',
@@ -395,7 +401,7 @@ export const fr = {
   },
   notifications: notificationsFr,
   settings: {
-    title: 'Réglages',
+    title: 'Plus',
     sectionGeneral: 'GÉNÉRAL',
     timeZone: 'Fuseau horaire',
     timeZoneAuto: '{zone} (automatique)',

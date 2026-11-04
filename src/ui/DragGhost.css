@@ -14,7 +14,7 @@
   border: 2px solid var(--ct-color-icon-purple);
   border-radius: 12px;
   background: var(--ct-color-surface);
-  box-shadow: 0 14px 32px rgba(46, 33, 80, 0.28);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
   pointer-events: none;
   transform: translate(-9999px, -9999px);
 }

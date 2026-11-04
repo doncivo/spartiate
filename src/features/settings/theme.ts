@@ -57,9 +57,9 @@ export async function applyWindowTheme(choice: ThemeChoice, port: WindowThemePor
   }
 }
 
-/** Lit un choix stocké, valeur inconnue = « Système ». */
+/** Lit un choix stocké, valeur inconnue = « Sombre » (défaut de la charte, SPA-009). */
 export function parseThemeChoice(value: unknown): ThemeChoice {
-  return value === 'light' || value === 'dark' || value === 'system' ? value : 'system';
+  return value === 'light' || value === 'dark' || value === 'system' ? value : 'dark';
 }
 
 let windowPort: WindowThemePort | null = null;

@@ -1,6 +1,7 @@
 /* Contrôle segmenté à choix unique (aspect de SpaceSegmented, Ajout.html). */
 .ct-segmented {
   display: flex;
+  flex-wrap: wrap; /* aucun libellé coupé : les choix passent à la ligne plutôt que de déborder (440 px) */
   gap: 4px;
   padding: 4px;
   background: var(--ct-color-surface-input);
@@ -8,9 +9,11 @@
 }
 
 .ct-segmented__button {
-  flex: 1 1 0;
+  flex: 1 1 auto;
+  min-width: 0;
   min-height: 44px;
-  padding: 0 var(--ct-space-4);
+  padding: 0 var(--ct-space-3);
+  white-space: nowrap;
   border: 0;
   border-radius: var(--ct-radius-sm);
   background: transparent;
@@ -23,7 +26,7 @@
 
 .ct-segmented__button[aria-checked='true'] {
   background: var(--ct-color-surface);
-  box-shadow: 0 1px 3px rgba(46, 33, 80, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .ct-segmented__button:disabled {

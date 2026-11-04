@@ -114,6 +114,8 @@ export function lazyScreen<P extends object>(load: Loader<P>, name?: ScreenName,
 /** BUNDLE-01 palier 1 : fiche de tâche, montée en permanence par Aujourd'hui, la Semaine, Objectif, Un jour, Terminées et la coquille : sans repli. */
 export const SettingsScreen = lazyScreen<object>(() => import('../settings/SettingsScreen').then((m) => ({ default: m.SettingsScreen })), 'settingsscreen');
 export const AppearanceScreen = lazyScreen<object>(() => import('../settings/AppearanceScreen').then((m) => ({ default: m.AppearanceScreen })), 'appearancescreen');
+/** SPA-009 : contenu des sections I0 (Aujourd'hui vide, sections futures), chargé à la demande avec ses textes. */
+export const SectionNotice = lazyScreen<{ readonly tab: 'today' | 'training' | 'nutrition' | 'progress' }>(() => import('./SectionNotice').then((m) => ({ default: m.SectionNotice })), 'sectionnotice');
 export const BodyScreen = lazyScreen<object>(() => import('../settings/BodyScreen').then((m) => ({ default: m.BodyScreen })), 'bodyscreen');
 /** SPA-005 : export et import des données de Spartiate (Plus), chargé à la demande avec ses textes. */
 export const ExportImportScreen = lazyScreen<object>(() => import('../settings/ExportImportScreen').then((m) => ({ default: m.ExportImportScreen })), 'exportimportscreen');

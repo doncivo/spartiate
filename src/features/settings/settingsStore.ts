@@ -82,7 +82,7 @@ function createSettingsStore(container: AppContainer) {
     },
     // --- fin M12 apparence et formats ---
     // --- M12 thème (P-02) ---
-    theme: 'system',
+    theme: 'dark',
     async setTheme(value) {
       const previous = get().theme;
       set({ theme: value, errorKey: null });

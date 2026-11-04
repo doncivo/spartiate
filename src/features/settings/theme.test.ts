@@ -53,9 +53,9 @@ describe('thème (P-02)', () => {
     expect(resolveTheme('light', 'dark')).toBe('light');
   });
 
-  it('une valeur inconnue (version future) vaut « système »', () => {
-    expect(parseThemeChoice('sepia')).toBe('system');
-    expect(parseThemeChoice(undefined)).toBe('system');
+  it('une valeur inconnue (version future) vaut « sombre » (défaut de la charte)', () => {
+    expect(parseThemeChoice('sepia')).toBe('dark');
+    expect(parseThemeChoice(undefined)).toBe('dark');
     expect(parseThemeChoice('dark')).toBe('dark');
   });
 

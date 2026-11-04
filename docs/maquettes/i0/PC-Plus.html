@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Spartiate — PC — Plus</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap">
+<style>
+:root{--bg:#0D0E11;--surface:#15171C;--surface-2:#1D2027;--line:#2A2E37;--fg:#EDE7DC;--fg-2:#A39C90;--accent:#B8322A;--accent-h:#D23B31;--bronze:#C28E4C;--bronze-2:#E0B577;--ok:#5E9E6B;--warn:#D9A441;--info:#6F8FB3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--fg);font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums}
+h1,h2,.display{font-family:Cinzel,"Times New Roman",serif;font-weight:600;letter-spacing:.02em;margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;font-weight:600;font-size:16px;border:0;cursor:pointer;color:var(--fg);background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--fg)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.bronze{background:transparent;border:1px solid var(--bronze);color:var(--bronze-2)}
+.num{font-family:Cinzel,serif;font-weight:600}
+.bronze{color:var(--bronze-2)}
+.muted{color:var(--fg-2)}
+.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg-2)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
+.pill.warn{border-color:var(--warn);color:var(--warn)}
+.pill.red{background:var(--accent);border-color:var(--accent);color:var(--fg)}
+.dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dial svg{display:block}
+.dial .v{font-family:Cinzel,serif;font-size:26px;font-weight:600;line-height:1}
+.dial .l{font-size:12px;color:var(--fg-2)}
+svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+.win{width:1440px;height:900px;background:var(--bg);display:flex;overflow:hidden}
+.side{width:220px;flex:none;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 12px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 22px}
+.brand .shield{width:30px;height:30px;border-radius:50%;background:var(--bronze);display:flex;align-items:center;justify-content:center;color:var(--accent);font-family:Cinzel,serif;font-weight:600;font-size:18px}
+.nav a{display:flex;align-items:center;gap:10px;height:40px;padding:0 10px;border-radius:8px;color:var(--fg-2);font-size:14px;font-weight:500}
+.nav a.on{background:var(--surface-2);color:var(--fg)}
+.nav a kbd{margin-left:auto;font:11px ui-monospace,monospace;color:var(--fg-2);opacity:.7}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.top{height:56px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.body{flex:1;display:flex;gap:28px;padding:24px 28px;min-height:0}
+.sub{width:220px;flex:none;display:flex;flex-direction:column;gap:2px}
+.sub a{display:flex;align-items:center;gap:10px;height:38px;padding:0 12px;border-radius:8px;color:var(--fg-2);font-size:14px}
+.sub a.on{background:var(--surface);color:var(--fg);border:1px solid var(--line)}
+.sub a .ic{width:18px;height:18px}
+.pane{width:660px;display:flex;flex-direction:column;gap:22px}
+.grp h3{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2);margin:0 4px 8px}
+.it{display:flex;align-items:center;gap:12px;min-height:52px;padding:8px 16px;border-top:1px solid var(--line);font-size:14px}
+.it:first-child{border-top:0}
+.it .d{font-size:12px;color:var(--fg-2);margin-top:2px}
+.it .v{margin-left:auto;font-size:13px;color:var(--fg-2);text-align:right}
+.it .btn{height:34px;font-size:13px;padding:0 14px;margin-left:auto}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:8px;padding:3px;margin-left:auto}
+.seg span{height:28px;padding:0 12px;display:flex;align-items:center;font-size:13px;color:var(--fg-2);border-radius:6px}
+.seg span.on{background:var(--bg);color:var(--fg);border:1px solid var(--bronze)}
+</style>
+</head>
+<body>
+<div class="win">
+  <aside class="side">
+    <div class="brand"><span class="shield">Λ</span><span class="display" style="font-size:17px">Spartiate</span></div>
+    <nav class="nav" style="display:flex;flex-direction:column;gap:2px">
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3v18"/></svg>Aujourd'hui<kbd>Ctrl 1</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>Entraînement<kbd>Ctrl 2</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M4 8h16l-1.5 12h-13z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>Nutrition<kbd>Ctrl 3</kbd></a>
+      <a><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M3 20h18M5 17l5-6 4 3 5-8"/></svg>Progrès<kbd>Ctrl 4</kbd></a>
+      <a class="on"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>Plus<kbd>Ctrl 5</kbd></a>
+    </nav>
+    <div style="flex:1"></div>
+    <div class="card" style="padding:10px 12px;font-size:12px;color:var(--fg-2);display:flex;flex-direction:column;gap:4px">
+      <span style="color:var(--fg)">PC · Bureau</span>
+      <span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px"></i>Synchro iCloud il y a 2 min</span>
+      <span>iPhone vu il y a 2 min</span>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="top">
+      <h1 style="font-size:22px">Plus</h1>
+      <span class="pill">Ctrl , · réglages</span>
+    </div>
+    <div class="body">
+      <nav class="sub">
+        <a><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>Profil et poids</a>
+        <a class="on"><svg class="ic" viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1-.5-8 6 6 0 0 1 11.6 1.5A3.5 3.5 0 0 1 17.5 18z"/></svg>Synchro et données</a>
+        <a><svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Préférences</a>
+        <a><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg>Raccourcis clavier</a>
+        <a><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>À propos et diagnostic</a>
+      </nav>
+
+      <div class="pane">
+        <div class="grp">
+          <h3>Synchronisation iCloud</h3>
+          <div class="card">
+            <div class="it"><div><div>Dossier de synchro</div><div class="d">iCloud Drive › Spartiate · chiffré de bout en bout</div></div><span class="v"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px"></span>à jour · il y a 2 min</span></div>
+            <div class="it"><div><div>iPhone 16 Pro Max</div><div class="d">appairé le 4 nov. · dernière publication il y a 2 min</div></div><button class="btn ghost">Détails</button></div>
+            <div class="it"><div><div>Appairer un appareil</div><div class="d">QR code à scanner depuis l'iPhone</div></div><button class="btn ghost">Afficher le QR</button></div>
+            <div class="it"><div><div>Clé de secours</div><div class="d">à conserver hors de cet ordinateur</div></div><button class="btn bronze">Afficher la clé</button></div>
+          </div>
+        </div>
+
+        <div class="grp">
+          <h3>Sauvegardes</h3>
+          <div class="card">
+            <div class="it"><div><div>Sauvegarde automatique</div><div class="d">chaque jour, 14 versions conservées</div></div><span class="v">ce matin 06:00</span></div>
+            <div class="it"><div><div>Restaurer une version</div><div class="d">remplace les données de ce PC</div></div><button class="btn ghost">Choisir…</button></div>
+          </div>
+        </div>
+
+        <div class="grp">
+          <h3>Export et import</h3>
+          <div class="card">
+            <div class="it"><div><div>Exporter mes données</div><div class="d">archive .zip : profil, pesées · CSV des pesées</div></div><button class="btn ghost">Exporter</button></div>
+            <div class="it"><div><div>Importer une archive</div><div class="d">aperçu avant toute écriture</div></div>
+              <span class="seg"><span class="on">Fusionner</span><span>Remplacer</span></span>
+              <button class="btn ghost" style="margin-left:10px">Choisir…</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
