@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Spartiate — iPhone — Profil et poids</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap">
+<style>
+:root{--bg:#0D0E11;--surface:#15171C;--surface-2:#1D2027;--line:#2A2E37;--fg:#EDE7DC;--fg-2:#A39C90;--accent:#B8322A;--accent-h:#D23B31;--bronze:#C28E4C;--bronze-2:#E0B577;--ok:#5E9E6B;--warn:#D9A441;--info:#6F8FB3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--fg);font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums}
+h1,h2,.display{font-family:Cinzel,"Times New Roman",serif;font-weight:600;letter-spacing:.02em;margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:10px;font-weight:600;font-size:16px;border:0;cursor:pointer;color:var(--fg);background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--fg)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.bronze{background:transparent;border:1px solid var(--bronze);color:var(--bronze-2)}
+.num{font-family:Cinzel,serif;font-weight:600}
+.bronze{color:var(--bronze-2)}
+.muted{color:var(--fg-2)}
+.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--fg-2)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
+.pill.warn{border-color:var(--warn);color:var(--warn)}
+.pill.red{background:var(--accent);border-color:var(--accent);color:var(--fg)}
+.dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dial svg{display:block}
+.dial .v{font-family:Cinzel,serif;font-size:26px;font-weight:600;line-height:1}
+.dial .l{font-size:12px;color:var(--fg-2)}
+svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+.phone{width:440px;height:956px;background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:126px;height:37px;border-radius:20px;background:#000}
+.status{height:59px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 32px 10px;font-size:15px;font-weight:600}
+.scroll{flex:1;overflow:hidden;padding:0 20px;display:flex;flex-direction:column;gap:12px}
+.navbar{display:flex;align-items:center;gap:6px;height:40px;color:var(--bronze-2);font-size:15px}
+.home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:var(--fg);opacity:.8}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.f{padding:10px 16px;border-top:1px solid var(--line)}
+.f:first-of-type{border-top:0}
+.f .l{font-size:12px;color:var(--fg-2);margin-bottom:6px}
+.seg{display:grid;gap:6px}
+.seg.c3{grid-template-columns:repeat(3,1fr)}
+.seg.c2{grid-template-columns:repeat(2,1fr)}
+.seg span{height:38px;border-radius:8px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--fg-2);text-align:center}
+.seg span.on{background:transparent;border:1.5px solid var(--bronze);color:var(--fg);font-weight:600}
+.seg span.none{font-style:italic}
+.inl{display:flex;align-items:center;justify-content:space-between;font-size:16px}
+.inl .u{color:var(--fg-2);font-size:14px;margin-left:4px}
+.wt{display:grid;grid-template-columns:62px 1fr auto;align-items:center;font-size:14px;padding:9px 0;border-top:1px solid var(--line)}
+.wt:first-of-type{border-top:0}
+.src{font-size:11px;color:var(--fg-2);border:1px solid var(--line);border-radius:10px;padding:2px 8px;justify-self:end}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="island"></div>
+  <div class="status"><span>07:51</span><span>●●●● ᯤ ▮</span></div>
+  <div class="scroll">
+    <div class="navbar"><svg class="ic" viewBox="0 0 24 24" style="width:20px;height:20px"><path d="M15 6l-6 6 6 6"/></svg>Plus</div>
+    <h1 style="font-size:30px;margin-top:-4px">Profil et poids</h1>
+
+    <section class="card" style="padding:14px 16px">
+      <div class="row">
+        <div class="eyebrow">Poids</div>
+        <span class="muted" style="font-size:12px">tendance en apprentissage · 6 / 14 pesées</span>
+      </div>
+      <div class="row" style="margin-top:6px;align-items:flex-end">
+        <div><span class="num" style="font-size:40px;line-height:1">81,4</span><span class="muted" style="font-size:15px;margin-left:6px">kg</span>
+          <div class="muted" style="font-size:12px;margin-top:4px">ce matin 06:50 · saisie</div></div>
+        <svg width="150" height="44" viewBox="0 0 150 44"><polyline points="4,10 30,14 56,13 82,22 108,26 134,32" fill="none" stroke="var(--bronze)" stroke-width="2"/><circle cx="134" cy="32" r="3.5" fill="var(--bronze-2)"/></svg>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button class="btn primary" style="flex:1">Nouvelle pesée</button>
+        <button class="btn ghost" style="flex:none;padding:0 16px">Historique</button>
+      </div>
+      <div style="margin-top:10px">
+        <div class="wt"><span class="muted">mar. 3</span><span>81,6 kg</span><span class="src">saisie</span></div>
+        <div class="wt"><span class="muted">lun. 2</span><span>81,7 kg</span><span class="src">saisie</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="f" style="padding-top:12px"><div class="eyebrow">Profil</div></div>
+      <div class="f" style="border-top:0;padding-top:0"><div class="l">Sexe</div>
+        <div class="seg c3"><span class="on">Homme</span><span>Femme</span><span class="none">Non renseigné</span></div></div>
+      <div class="f"><div class="inl"><span>Année de naissance</span><span>1990</span></div></div>
+      <div class="f"><div class="inl"><span>Taille</span><span>178<span class="u">cm</span></span></div></div>
+      <div class="f"><div class="l">Objectif</div>
+        <div class="seg c2"><span class="on">Prise de masse</span><span>Perte de poids</span><span>Maintien</span><span class="none">Non renseigné</span></div></div>
+      <div class="f"><div class="l">Expérience</div>
+        <div class="seg c2"><span>Débutant</span><span class="on">Intermédiaire</span><span>Avancé</span><span class="none">Non renseigné</span></div></div>
+      <div class="f muted" style="font-size:12px;padding-bottom:12px">Enregistré automatiquement · synchronisé avec le PC</div>
+    </section>
+  </div>
+  <div class="home"></div>
+</div>
+</body>
+</html>
