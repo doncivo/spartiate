@@ -41,3 +41,11 @@ describe('TabRail', () => {
     expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument();
   });
 });
+
+describe('TabRail : onglets lisibles sur le fond de la barre', () => {
+  it('un onglet inactif sans teinte porte la couleur de texte de la barre, jamais celle du fond de la barre', () => {
+    render(<TabRail items={items} settingsItem={settingsItem} activeId="today" onSelect={() => undefined} />);
+    const inactive = screen.getByRole('button', { name: 'Entraînement' });
+    expect(inactive.style.color).toBe('var(--ct-color-on-nav)');
+  });
+});
