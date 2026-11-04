@@ -85,10 +85,12 @@ describe('lot (d) : Rust calendriers, capture, focus, raccourci', () => {
   it('les capabilities de bureau ne citent plus de permission retirée', () => {
     expect(read('src-tauri/capabilities/desktop.json')).not.toMatch(/quick-capture|capture-setup-error|global-shortcut/);
   });
-  it('import / export : l’entrée CSV est neutralisée jusqu’à SPA-005, le transport générique reste', () => {
+  it('import / export : l’entrée CSV de l’ancien projet n’existe plus ; SPA-005 la remplace par l’archive zip Spartiate, le transport générique reste', () => {
     const imp = read('src-tauri/src/import.rs');
-    expect(imp).not.toMatch(/IMPORT_EXTENSIONS|read_import_file|DialogExt/);
-    expect(imp).toMatch(/unsupported/);
+    // SPA-005 lève la neutralisation de SPA-001b : lecture du seul fichier choisi, extension .zip uniquement, plus aucun CSV / TXT / TSV.
+    expect(imp).toMatch(/IMPORT_EXTENSIONS: \[&str; 1\] = \["zip"\]/);
+    expect(imp).toMatch(/read_import_file|DialogExt/);
+    expect(imp).not.toMatch(/"csv"|"txt"|"tsv"|unsupported/);
     expect(present('src-tauri/src/export_common.rs')).toBe(true);
     expect(read('src-tauri/src/lib.rs')).toMatch(/export::export_save_file/);
   });
