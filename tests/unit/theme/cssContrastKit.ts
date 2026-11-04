@@ -492,8 +492,12 @@ export const TOKEN_PAIRS: readonly TokenPair[] = [
   ['--ct-color-text', '--ct-color-bg'],
   ['--ct-color-text', '--ct-color-surface-input'],
   ['--ct-color-text-secondary', '--ct-color-bg'],
-  ['--ct-color-accent', '--ct-color-bg'],
   ['--ct-color-accent-on', '--ct-color-accent'],
+  // SPA-009 (charte § 18.4) : bronze (titres, records, scores) sur la surface ; texte sombre sur vert ; secondaire sur surface.
+  ['--ct-color-bronze', '--ct-color-surface'],
+  ['--ct-color-bronze', '--ct-color-bg'],
+  ['--ct-color-text-secondary', '--ct-color-surface'],
+  ['--ct-color-ok-on', '--ct-color-ok'],
   ['--ct-color-danger', '--ct-color-danger-bg'],
   ['--ct-color-achieved-text', '--ct-color-achieved-bg'],
   ['--ct-color-missed-text', '--ct-color-missed-bg'],
@@ -510,6 +514,8 @@ export const TOKEN_PAIRS: readonly TokenPair[] = [
 
 /** Éléments graphiques : 3:1 (WCAG 1.4.11). */
 export const GRAPHIC_TOKEN_PAIRS: readonly TokenPair[] = [
+  // SPA-009 : le rouge d'accent n'est jamais un texte (3,25:1 sur le fond sombre) mais reste un élément graphique lisible (3:1).
+  ['--ct-color-accent', '--ct-color-bg'],
   ['--ct-color-goal', '--ct-color-bg'],
   ['--ct-color-switch-on', '--ct-color-bg'],
   ['--ct-color-switch-on-thumb', '--ct-color-switch-on'],

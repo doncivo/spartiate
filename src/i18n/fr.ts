@@ -101,6 +101,11 @@ export const fr = {
   },
   nav: {
     primaryLabel: 'Navigation principale',
+    deviceCard: {
+      label: 'État de cet appareil',
+      device: 'PC · Bureau',
+      noSync: 'Synchro iCloud : indisponible dans ce build',
+    },
     tabs: {
       today: 'Aujourd’hui',
       training: 'Entraînement',
@@ -396,7 +401,7 @@ export const fr = {
   },
   notifications: notificationsFr,
   settings: {
-    title: 'Réglages',
+    title: 'Plus',
     sectionGeneral: 'GÉNÉRAL',
     timeZone: 'Fuseau horaire',
     timeZoneAuto: '{zone} (automatique)',

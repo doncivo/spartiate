@@ -52,7 +52,7 @@ describe('file d’envoi (Y-05 critère 1)', () => {
     await b.cycle();
     expect((await b.task(t.id))?.title).toBe('Hors ligne bis');
     expect(await b.data.repos.settings.get('general.firstWeekday')).toBe('sunday');
-    expect(await b.data.repos.settings.get('ui.theme')).toBe('system');
+    expect(await b.data.repos.settings.get('ui.theme')).toBe('dark');
   });
 });
 

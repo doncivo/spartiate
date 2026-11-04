@@ -9,7 +9,7 @@ describe('navigation (cinq sections fixes, PRD § 18.2)', () => {
   it('démarre sur Aujourd’hui et décrit les 5 sections', () => {
     expect(useNavigationStore.getState().route).toEqual({ tab: 'today' });
     expect(TABS.map((tab) => tab.id)).toEqual([...TAB_IDS]);
-    expect(TABS.map((tab) => SHORTCUTS[tab.shortcut].keys)).toEqual(['Alt+1', 'Alt+2', 'Alt+3', 'Alt+4', 'Alt+5']);
+    expect(TABS.map((tab) => SHORTCUTS[tab.shortcut].keys)).toEqual(['Ctrl+1', 'Ctrl+2', 'Ctrl+3', 'Ctrl+4', 'Ctrl+5']);
     expect(TABS.map((tab) => t(tab.labelKey))).toEqual(['Aujourd’hui', 'Entraînement', 'Nutrition', 'Progrès', 'Plus']);
   });
 

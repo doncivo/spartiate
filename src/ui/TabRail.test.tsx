@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TabRail, type TabRailItem } from './TabRail';
 
 const items: TabRailItem[] = [
@@ -42,10 +42,38 @@ describe('TabRail', () => {
   });
 });
 
-describe('TabRail : onglets lisibles sur le fond de la barre', () => {
-  it('un onglet inactif sans teinte porte la couleur de texte de la barre, jamais celle du fond de la barre', () => {
-    render(<TabRail items={items} settingsItem={settingsItem} activeId="today" onSelect={() => undefined} />);
-    const inactive = screen.getByRole('button', { name: 'Entraînement' });
-    expect(inactive.style.color).toBe('var(--ct-color-on-nav)');
+/** SPA-009 critères 1 et 3 : barre basse sous 1 024 px (icône et libellé horizontal), barre latérale des maquettes à partir de 1 024 px. */
+describe('TabRail : coquilles des maquettes', () => {
+  const hints = { today: 'Ctrl 1', training: 'Ctrl 2', more: 'Ctrl 5' };
+  const stub = (width: number): void => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: query === '(min-width: 1024px)' && width >= 1024, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+  };
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('iPhone : barre basse, une icône et un libellé par onglet, aucun raccourci ni marque ni carte', () => {
+    stub(440);
+    const { container } = render(<TabRail items={items} settingsItem={settingsItem} activeId="today" onSelect={() => undefined} shortcutHints={hints} footer={<p>{'carte'}</p>} />);
+    expect(container.querySelector('nav')).toHaveAttribute('data-layout', 'mobile');
+    expect(container.querySelectorAll('button svg')).toHaveLength(3);
+    expect(screen.queryByText('Ctrl 1')).toBeNull();
+    expect(screen.queryByText('carte')).toBeNull();
+    expect(screen.queryByText('Spartiate')).toBeNull();
+  });
+
+  it('PC : marque Λ Spartiate, raccourcis « Ctrl N » et carte du bas', () => {
+    stub(1440);
+    const { container } = render(<TabRail items={items} settingsItem={settingsItem} activeId="today" onSelect={() => undefined} shortcutHints={hints} footer={<p>{'carte'}</p>} />);
+    expect(container.querySelector('nav')).toHaveAttribute('data-layout', 'pc');
+    expect(screen.getByText('Λ')).toBeInTheDocument();
+    expect(screen.getByText('Spartiate')).toBeInTheDocument();
+    expect(screen.getByText('Ctrl 1')).toBeInTheDocument();
+    expect(screen.getByText('Ctrl 5')).toBeInTheDocument();
+    expect(screen.getByText('carte')).toBeInTheDocument();
+  });
+
+  it('jamais de libellé vertical : aucune règle writing-mode dans la feuille de style', async () => {
+    const { readFileSync } = await import('node:fs');
+    const css = readFileSync('src/ui/TabRail.css', 'utf8');
+    expect(css).not.toMatch(/writing-mode|rotate\(/);
   });
 });

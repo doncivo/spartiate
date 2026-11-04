@@ -64,6 +64,16 @@ const EXEMPTIONS: readonly { relation: string; theme: Theme; raison: string }[] 
       'contour du texte (2,61:1) à l’opacité 0,5 de la décision 9 sur la piste composée ; WCAG 1.4.11 exempte les composants inactifs ; avant revue : contour blanc, 1,17:1 ; à confirmer par Ali (question 4 de la fiche)',
   },
   {
+    relation: 'interrupteur désactivé-activé : contour du pouce creux sur la piste',
+    theme: 'light',
+    raison: 'piste rouge de la charte à l’opacité 0,5 (2,15:1) ; WCAG 1.4.11 exempte les composants inactifs ; l’état se lit aussi au curseur « interdit » et à la position du pouce ; à confirmer par Ali (SPA-009)',
+  },
+  {
+    relation: 'interrupteur désactivé-activé : contour du pouce creux sur la piste',
+    theme: 'dark',
+    raison: 'mêmes raisons en sombre (2,83:1 à l’opacité 0,5) ; composant inactif exempté par WCAG 1.4.11 ; à confirmer par Ali (SPA-009)',
+  },
+  {
     relation: 'interrupteur désactivé-éteint : contour du pouce creux sur la piste',
     theme: 'dark',
     raison: 'contour du texte (2,72:1) à l’opacité 0,5 sur la piste composée ; mêmes raisons ; à confirmer par Ali (question 4 de la fiche)',
@@ -72,8 +82,11 @@ const EXEMPTIONS: readonly { relation: string; theme: Theme; raison: string }[] 
 
 /** Jetons de couleur qui ne servent à aucune paire texte / fond ni relation : bordures, ombres, pastels d’onglets, remplissages, accents. */
 const DECORATIFS: Readonly<Record<string, string>> = {
+  '--ct-color-nav-border': 'filet de séparation de la barre de navigation ; l’information est portée par les libellés',
   '--ct-color-event-external-bg': 'consommateur supprimé en 001b-front (événements externes) ; jeton retiré avec la charte, SPA-009',
   '--ct-color-row-selected': 'consommateur supprimé en 001b-front (listes de tâches) ; jeton retiré avec la charte, SPA-009',
+  '--ct-color-warn': 'remplissage de la zone jaune de récupération (charte § 18.4) ; l’état est aussi porté par un libellé, jamais par la couleur seule',
+  '--ct-color-info': 'remplissage d’état informatif (charte § 18.4) ; l’information est portée par le libellé',
   '--ct-color-border': 'filet de séparation des lignes et cartes ; l’information est portée par le texte et l’espacement',
   '--ct-color-select-ring': 'anneau de sélection d’une pastille, redondant avec la coche',
   '--ct-color-warning-border': 'bordure de l’encadré « lecture incertaine » ; le texte de l’encadré est dans la paire warning-text / warning-bg',
@@ -127,6 +140,10 @@ const surface = (theme: Theme): Located => resolveToken(theme, '--ct-color-bg');
 
 /** Textes et graphiques posés sur un fond que porte une autre règle (liste explicite de jetons) : même seuil que les relations par sélecteur. */
 const TOKEN_RELATIONS: readonly (readonly [fg: string, bg: string, min: number])[] = [
+  ['--ct-color-nav-text', '--ct-color-nav-bg', 4.5],
+  ['--ct-color-nav-text', '--ct-color-nav-active', 4.5],
+  ['--ct-color-nav-accent', '--ct-color-nav-bg', 4.5],
+  ['--ct-color-ok-on', '--ct-color-nav-accent', 4.5],
   ['--ct-ios-pair-text', '--ct-ios-pair-bg', 4.5],
   ['--ct-ios-pair-muted', '--ct-ios-pair-bg', 4.5],
   ['--ct-ios-pair-muted', '--ct-ios-pair-panel', 4.5],
@@ -288,15 +305,15 @@ describe('exemptions', () => {
 describe('rendu clair inchangé (critère 4)', () => {
   const light = (selector: string, prop: string): string => toHex(colorOfDecl(rules, selector, prop, 'light').color);
 
-  it('bandeau « Annuler » : blanc sur #2e2150', () => {
-    expect(light('.ct-toast', 'background')).toBe('#2e2150');
+  it('bandeau « Annuler » : blanc sur #15171c (charte § 18.4)', () => {
+    expect(light('.ct-toast', 'background')).toBe('#15171c');
     expect(light('.ct-toast', 'color')).toBe('#ffffff');
   });
 
-  it('interrupteur : activé #2e2150 / #ffffff, éteint #ddd9e4 / #ffffff', () => {
-    expect(toHex(cascadeColor(rules, [TRACK, CHECKED_TRACK], 'background', 'light').color)).toBe('#2e2150');
-    expect(toHex(cascadeColor(rules, [THUMB, CHECKED_THUMB], 'background', 'light').color)).toBe('#ffffff');
-    expect(toHex(cascadeColor(rules, [TRACK], 'background', 'light').color)).toBe('#ddd9e4');
+  it('interrupteur : activé #b8322a / #ede7dc, éteint #bdb5a5 / #ffffff (charte § 18.4)', () => {
+    expect(toHex(cascadeColor(rules, [TRACK, CHECKED_TRACK], 'background', 'light').color)).toBe('#b8322a');
+    expect(toHex(cascadeColor(rules, [THUMB, CHECKED_THUMB], 'background', 'light').color)).toBe('#ede7dc');
+    expect(toHex(cascadeColor(rules, [TRACK], 'background', 'light').color)).toBe('#bdb5a5');
     expect(toHex(cascadeColor(rules, [THUMB], 'background', 'light').color)).toBe('#ffffff');
   });
 });

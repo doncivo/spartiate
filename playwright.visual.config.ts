@@ -7,5 +7,5 @@ export default defineConfig({
   testDir: 'tests/visual',
   fullyParallel: false,
   workers: 1,
-  projects: [{ name: 'visual', use: { browserName: 'chromium' } }],
+  projects: [{ name: 'visual', use: { browserName: 'chromium', locale: 'fr-FR', launchOptions: { args: ['--lang=fr-FR'] } } }],
 });
