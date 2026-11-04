@@ -12,8 +12,6 @@ pub mod backup;
 pub mod backup_triggers;
 #[cfg(desktop)]
 pub mod desktop;
-/// Taille et position de la fenêtre PC dans la zone de travail du moniteur (SPA-009), calcul pur.
-pub mod window_fit;
 #[cfg(desktop)]
 pub mod export;
 /// Règles d'export communes au PC et à l'iPhone (taille, nom, extension, type ; ADR 0009 avenant lot F A3).
@@ -43,6 +41,8 @@ pub mod sync;
 pub mod vault;
 /// Clé de synchro au Trousseau iOS (contrat, ordre 5).
 pub mod vault_ios;
+/// Taille et position de la fenêtre PC dans la zone de travail du moniteur (SPA-009), calcul pur.
+pub mod window_fit;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
