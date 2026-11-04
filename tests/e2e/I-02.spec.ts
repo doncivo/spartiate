@@ -34,7 +34,7 @@ const signing = <T>(page: Page, run: (hooks: SigningHooks) => T): Promise<T> =>
 
 async function openSettings(page: Page): Promise<void> {
   await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Plus', exact: true })).toBeVisible();
 }
 
 test.describe('I-02 — alerte avant expiration (iPhone, profil et planificateur injectés)', () => {

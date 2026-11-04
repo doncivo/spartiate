@@ -1,0 +1,28 @@
+/* Sections I0 sans fonction : état explicite, sobre (charte § 18.4 : titre en bronze, texte ivoire / secondaire). */
+.ct-section-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ct-space-3);
+  flex-grow: 1;
+  min-width: 0;
+  max-width: 560px;
+  padding: var(--ct-space-4);
+}
+
+.ct-section-notice__title {
+  margin: 0;
+  color: var(--ct-color-bronze);
+  font-size: var(--ct-font-size-heading);
+}
+
+.ct-section-notice__lead {
+  margin: 0;
+  color: var(--ct-color-text);
+  font-size: var(--ct-font-size-text-lg);
+}
+
+.ct-section-notice__hint {
+  margin: 0;
+  color: var(--ct-color-text-secondary);
+}

@@ -1,0 +1,58 @@
+/* Carte d'état de la barre latérale PC et barre supérieure (maquettes docs/maquettes/PC-*.html). */
+.ct-sidebar-card {
+  box-sizing: border-box;
+  border: 1px solid var(--ct-color-nav-border);
+  border-radius: 12px;
+  padding: 12px;
+  background: var(--ct-color-nav-active);
+  font-size: var(--ct-font-size-sm);
+}
+
+.ct-sidebar-card__device {
+  margin: 0 0 4px;
+  font-weight: var(--ct-font-weight-semibold);
+  color: var(--ct-color-on-nav);
+}
+
+.ct-sidebar-card__state {
+  margin: 0;
+  color: var(--ct-color-nav-text);
+  overflow-wrap: anywhere;
+}
+
+.ct-topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  box-sizing: border-box;
+  padding: 18px 40px;
+  border-bottom: 1px solid var(--ct-color-border);
+}
+
+.ct-topbar__title {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-weight: var(--ct-font-weight-semibold);
+  font-size: var(--ct-font-size-heading-sm);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ct-color-text);
+}
+
+.ct-topbar__date {
+  margin: 0;
+  font-size: var(--ct-font-size-text-sm);
+  color: var(--ct-color-text-secondary);
+}
+
+/* PC : le titre de la section est dans la barre supérieure ; les titres d'écran restent pour les lecteurs d'écran seulement. */
+.ct-app-shell[data-layout='pc'] .ct-section-notice__title,
+.ct-app-shell[data-layout='pc'] .ct-settings__title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

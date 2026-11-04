@@ -33,7 +33,7 @@ async function setVisibility(page: Page, state: DocumentVisibilityState): Promis
 
 async function openSettings(page: Page): Promise<void> {
   await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Plus', exact: true })).toBeVisible();
 }
 
 test.describe('I-03 — verrouillage Face ID (iPhone, biométrie injectée)', () => {
@@ -84,7 +84,7 @@ test.describe('I-03 — verrouillage Face ID (iPhone, biométrie injectée)', ()
     await expect(page.getByRole('alert')).toHaveText('Déverrouillage annulé');
     await expect(page.locator('#root')).toHaveAttribute('inert', '');
     await expect(page.locator('#root')).toHaveAttribute('aria-hidden', 'true');
-    await expect(page.getByRole('heading', { name: 'Réglages' })).toBeHidden();
+    await expect(page.getByRole('heading', { name: 'Plus', exact: true })).toBeHidden();
     await expect(page.getByRole('navigation')).toBeHidden();
 
     // Échec, puis réussite : l'écran précédent (Réglages) est retrouvé.
@@ -93,7 +93,7 @@ test.describe('I-03 — verrouillage Face ID (iPhone, biométrie injectée)', ()
     await expect(page.getByRole('alert')).toHaveText('Déverrouillage impossible (authentication-failed)');
     await unlock.click();
     await expect(page.getByRole('heading', { name: 'Spartiate est verrouillée' })).toBeHidden();
-    await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Plus', exact: true })).toBeVisible();
     await expect(page.locator('#root')).not.toHaveAttribute('inert', '');
   });
 
@@ -152,6 +152,6 @@ test.describe('I-03 — PC : aucune section, aucun verrou', () => {
       document.dispatchEvent(new Event('visibilitychange'));
     });
     await expect(page.getByRole('heading', { name: 'Spartiate est verrouillée' })).toHaveCount(0);
-    await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Plus', exact: true })).toBeVisible();
   });
 });

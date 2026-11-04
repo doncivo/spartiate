@@ -27,6 +27,13 @@
         "NSCameraUsageDescription"
       ]
     },
+    "journal": {
+      "story": "ios-demarrage",
+      "keys": [
+        "UIFileSharingEnabled",
+        "LSSupportsOpeningDocumentsInPlace"
+      ]
+    },
     "speech": {
       "story": "CAP-IOS-01",
       "usageDescriptions": [
