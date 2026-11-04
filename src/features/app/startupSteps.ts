@@ -38,7 +38,10 @@ export function stepCode(name: string): string {
   return name.replace(/[^A-Za-z0-9._-]+/g, '-').slice(0, 60) || 'etape';
 }
 
-export function createStartupTracker(now: () => number = () => performance.now(), log: (line: string) => void = (line) => logFailure('startup', line)): StartupTracker {
+/** Une étape plus rapide que ceci n'est pas écrite au journal technique (elle reste dans l'historique partagé). */
+export const LOGGED_STEP_MIN_MS = 500;
+
+export function createStartupTracker(now: () => number = () => performance.now(), log: (line: string) => void = (line) => logFailure('startup', line), minLoggedMs = 0): StartupTracker {
   let open: StartupStep | null = null;
   let closed: StepRecord[] = [];
   const listeners = new Set<() => void>();
@@ -49,7 +52,7 @@ export function createStartupTracker(now: () => number = () => performance.now()
     if (!open) return;
     const ms = Math.max(0, Math.round(now() - open.startedAt));
     closed.push({ name: open.name, ms });
-    log(`step ${stepCode(open.name)} ${String(ms)} ms`);
+    if (ms >= minLoggedMs) log(`step ${stepCode(open.name)} ${String(ms)} ms`);
     open = null;
   };
   return {
@@ -80,4 +83,4 @@ export function createStartupTracker(now: () => number = () => performance.now()
 }
 
 /** Suivi du démarrage de l'app. */
-export const startupTracker: StartupTracker = createStartupTracker();
+export const startupTracker: StartupTracker = createStartupTracker(undefined, undefined, LOGGED_STEP_MIN_MS);
