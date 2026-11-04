@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import type { DeviceId, LocalDate } from '../../../domain/types';
+import type { DeviceId, IsoDateTime, LocalDate } from '../../../domain/types';
 import { openBaseDb, type TestDb } from './testSetup';
 
 const DEVICE = '60000000-0000-4000-8000-0000000000b1' as DeviceId;
@@ -42,6 +42,50 @@ describe('ProfileRepository', () => {
 });
 
 describe('BodyWeightRepository', () => {
+  it('saveHealth enregistre le dernier échantillon de la journée avec identité, instant et provenance Santé', async () => {
+    db = await openBaseDb(DEVICE);
+    const repository = await db.data.repos.bodyWeights();
+    const first = await repository.saveHealth(
+      { kg: 72.4, measuredAt: '2026-10-05T05:30:00.000Z' as IsoDateTime, timezone: 'Europe/Paris', healthUuid: 'sample-1' },
+      D1,
+    );
+    expect(first).toMatchObject({
+      id: 'weight|2026-10-05|health',
+      date: D1,
+      kg: 72.4,
+      source: 'health',
+      timezone: 'Europe/Paris',
+      healthUuid: 'sample-1',
+      measuredAt: '2026-10-05T05:30:00.000Z',
+    });
+
+    db.clock.advance(1_000);
+    const latest = await repository.saveHealth(
+      { kg: 72.1, measuredAt: '2026-10-05T05:45:00.000Z' as IsoDateTime, timezone: 'Europe/Paris', healthUuid: 'sample-2' },
+      D1,
+    );
+    expect(latest).toMatchObject({ id: first.id, kg: 72.1, healthUuid: 'sample-2', measuredAt: '2026-10-05T05:45:00.000Z' });
+    expect(await db.driver.select('SELECT id FROM body_weight')).toEqual([{ id: 'weight|2026-10-05|health' }]);
+  });
+
+  it('saveHealth refuse un poids invalide, un fuseau invalide ou un échantillon futur sans rien écrire', async () => {
+    db = await openBaseDb(DEVICE);
+    const repository = await db.data.repos.bodyWeights();
+    await expect(repository.saveHealth(
+      { kg: 0, measuredAt: '2026-10-05T05:30:00.000Z' as IsoDateTime, timezone: 'Europe/Paris', healthUuid: 'sample-1' },
+      D1,
+    )).rejects.toThrow();
+    await expect(repository.saveHealth(
+      { kg: 72, measuredAt: '2026-10-05T05:30:00.000Z' as IsoDateTime, timezone: 'Invalid/Zone', healthUuid: 'sample-1' },
+      D1,
+    )).rejects.toThrow();
+    await expect(repository.saveHealth(
+      { kg: 72, measuredAt: '2026-10-06T05:30:00.000Z' as IsoDateTime, timezone: 'Europe/Paris', healthUuid: 'sample-1' },
+      D1,
+    )).rejects.toThrow();
+    expect(await db.driver.select('SELECT 1 FROM body_weight')).toEqual([]);
+  });
+
   it('saveManual crée weight|date|manual, measured_at NULL, puis remplace le même jour', async () => {
     db = await openBaseDb(DEVICE);
     const first = await (await db.data.repos.bodyWeights()).saveManual({ date: D1, kg: 82.4, timezone: 'Europe/Paris' }, D1);
