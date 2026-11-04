@@ -244,14 +244,14 @@ describe('critère 18 : guide, étape 7', () => {
   });
 });
 
-describe('critère 19 : non-régression (aucune clé Info.plist, plugin, capability, migration ni format nouveaux)', () => {
-  it('Info.ios.plist : mêmes clés qu’avant I-06', () => {
+describe('critère 19 : gel de non-régression après SPA-006', () => {
+  it('Info.ios.plist : seule la permission de lecture Santé de SPA-006 s’ajoute', () => {
     const keys = Object.keys(parsePlist(read('src-tauri/Info.ios.plist')) as Record<string, unknown>).sort();
-    expect(keys).toEqual(['ITSAppUsesNonExemptEncryption', 'LSSupportsOpeningDocumentsInPlace', 'NSCameraUsageDescription', 'NSFaceIDUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'UIFileSharingEnabled', 'UIRequiresFullScreen', 'UISupportedInterfaceOrientations', 'UISupportedInterfaceOrientations~ipad']);
+    expect(keys).toEqual(['ITSAppUsesNonExemptEncryption', 'LSSupportsOpeningDocumentsInPlace', 'NSCameraUsageDescription', 'NSFaceIDUsageDescription', 'NSHealthShareUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'UIFileSharingEnabled', 'UIRequiresFullScreen', 'UISupportedInterfaceOrientations', 'UISupportedInterfaceOrientations~ipad']);
   });
 
-  it('plugins et capabilities : listes d’avant I-06', () => {
-    expect(readdirSync(join(root, 'src-tauri', 'plugins')).filter((d) => d !== 'README.md').sort()).toEqual(['files', 'folder-bookmark', 'haptics', 'notification-actions', 'privacy-shield', 'speech', 'vision']);
+  it('plugins : healthkit est le seul nouveau plugin ; capabilities inchangées', () => {
+    expect(readdirSync(join(root, 'src-tauri', 'plugins')).filter((d) => d !== 'README.md').sort()).toEqual(['files', 'folder-bookmark', 'haptics', 'healthkit', 'notification-actions', 'privacy-shield', 'speech', 'vision']);
     expect(readdirSync(join(root, 'src-tauri', 'capabilities')).sort()).toEqual([
       'backups-ios.json', 'backups.json', 'biometric-ios.json', 'capture-ios.json', 'default.json', 'desktop.json', 'export-ios.json', 'export.json', 'haptics-ios.json', 'import.json', 'logs-ios.json', 'logs.json', 'notifications-ios.json', 'ocr.json', 'privacy-shield-ios.json', 'signing-ios.json', 'sync-ios.json', 'sync-pairing.json', 'sync.json',
     ]);
