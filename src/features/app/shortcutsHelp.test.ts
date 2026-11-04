@@ -9,8 +9,8 @@ import { RESERVED_SHORTCUTS, appShortcutUsing, buildHelpGroups, formatChord, spo
  * Chaque cellule « Raccourci » est développée en ses combinaisons.
  */
 const PRD_SECTION_5: ReadonlyArray<{ readonly shortcut: string; readonly scope: string }> = [
-  { shortcut: 'Alt+1', scope: 'Application' },
-  { shortcut: 'Alt+2 à Alt+5', scope: 'Application' },
+  { shortcut: 'Ctrl+1', scope: 'Application' },
+  { shortcut: 'Ctrl+2 à Ctrl+5', scope: 'Application' },
   { shortcut: 'Ctrl+Z', scope: 'Application' },
   { shortcut: 'Ctrl+,', scope: 'Application' },
   { shortcut: 'Ctrl+/', scope: 'Application' },
@@ -19,12 +19,12 @@ const PRD_SECTION_5: ReadonlyArray<{ readonly shortcut: string; readonly scope: 
 
 const SCOPE_LABEL: Record<string, string> = { global: 'Global', app: 'Application', list: 'Listes', week: 'Semaine' };
 
-/** Développe une cellule du tableau : « Alt+2 à Alt+6 » → Alt+2…Alt+6 ; « A / B » → A, B. */
+/** Développe une cellule du tableau : « Ctrl+2 à Ctrl+5 » → Ctrl+2…Ctrl+5 ; « A / B » → A, B. */
 function expand(cell: string): string[] {
-  const range = /^Alt\+(\d) à Alt\+(\d)$/.exec(cell);
+  const range = /^Ctrl\+(\d) à Ctrl\+(\d)$/.exec(cell);
   if (range) {
     const [from, to] = [Number(range[1]), Number(range[2])];
-    return Array.from({ length: to - from + 1 }, (_, i) => `Alt+${from + i}`);
+    return Array.from({ length: to - from + 1 }, (_, i) => `Ctrl+${from + i}`);
   }
   return cell.split(' / ').map((part) => part.trim());
 }
@@ -99,13 +99,13 @@ describe('buildHelpGroups', () => {
     expect(found).not.toContain('app.undo');
     expect(buildHelpGroups({ activeIds: [], query: 'zzzz' })).toEqual([]);
     expect(idsOf({ activeIds: [], query: 'ctrl+z' })).toEqual(['app.undo']);
-    expect(idsOf({ activeIds: [], query: 'alt+' })).toEqual([
+    expect(idsOf({ activeIds: [], query: 'ctrl+' })).toEqual(expect.arrayContaining([
       'app.tab.today',
       'app.tab.training',
       'app.tab.nutrition',
       'app.tab.progress',
       'app.tab.more',
-    ]);
+    ]));
   });
 
   it('chaque entrée porte une description et des touches annoncées', () => {
@@ -120,7 +120,7 @@ describe('appShortcutUsing (D-04 critère 6)', () => {
   it('repère une combinaison déjà prise par l’application', () => {
     expect(appShortcutUsing('Ctrl+Z')).toBe('app.undo');
     expect(appShortcutUsing('Ctrl+/')).toBe('app.shortcutsHelp');
-    expect(appShortcutUsing('Alt+3')).toBe('app.tab.nutrition');
+    expect(appShortcutUsing('Ctrl+3')).toBe('app.tab.nutrition');
   });
 
   it('ignore les combinaisons libres', () => {

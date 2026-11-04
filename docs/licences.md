@@ -3,28 +3,15 @@
 Toutes ces ressources sont embarquées dans l'app (fichiers locaux inclus dans `dist/` puis
 dans le bundle Tauri) : aucune n'est chargée depuis Internet au moment de l'exécution.
 
-## Fraunces
+## Cinzel
 
-- Rôle : police à empattements des titres (`--ct-font-title`), graisses 600/700, axe
-  optique `opsz` (PRD section 5).
-- Paquet : [`@fontsource-variable/fraunces`](https://www.npmjs.com/package/@fontsource-variable/fraunces).
+- Rôle : capitales romaines des titres et des grands chiffres (`--ct-font-title`), une seule graisse (600) ; charte § 18.4 du PRD.
+- Paquet : [`@fontsource/cinzel`](https://www.npmjs.com/package/@fontsource/cinzel).
 - Licence : SIL Open Font License 1.1 (OFL).
-- Copyright : 2020 The Fraunces Project Authors (github.com/undercasetype/Fraunces).
-- Fichiers embarqués : `fraunces-latin-opsz-normal.woff2`, `fraunces-latin-ext-opsz-normal.woff2`
-  (sous-ensembles latin et latin-ext seulement, style normal ; le sous-ensemble vietnamese
-  et l'italique sont exclus pour limiter la taille de l'app).
-- Texte complet de la licence : `node_modules/@fontsource-variable/fraunces/LICENSE`.
-
-## DM Sans
-
-- Rôle : police sans empattements du texte courant (`--ct-font-text`), graisses
-  400/500/600/700.
-- Paquet : [`@fontsource-variable/dm-sans`](https://www.npmjs.com/package/@fontsource-variable/dm-sans).
-- Licence : SIL Open Font License 1.1 (OFL).
-- Copyright : 2014 The DM Sans Project Authors (github.com/googlefonts/dm-fonts).
-- Fichiers embarqués : `dm-sans-latin-wght-normal.woff2`, `dm-sans-latin-ext-wght-normal.woff2`
-  (sous-ensembles latin et latin-ext seulement, style normal).
-- Texte complet de la licence : `node_modules/@fontsource-variable/dm-sans/LICENSE`.
+- Copyright : The Cinzel Project Authors (github.com/NDISCOVER/Cinzel).
+- Fichiers embarqués : `cinzel-latin-600-normal.woff2`, `cinzel-latin-ext-600-normal.woff2` (sous-ensembles latin et latin-ext seulement).
+- Texte complet de la licence : `node_modules/@fontsource/cinzel/LICENSE`.
+- Le corps de texte utilise la police du système (SF Pro, Segoe UI) : aucune police embarquée pour lui. Fraunces et DM Sans (PREP-04) sont retirées.
 
 ## Lucide
 

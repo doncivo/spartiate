@@ -279,6 +279,16 @@
       "raison": "Remplace les dix-neuf migrations CircleTasks du registre (base neuve, D-23) ; une seule migration au départ, plus courte que les dix-neuf retirées."
     },
     {
+      "fichier": "src/features/app/ShellChrome.tsx",
+      "story": "BUNDLE-01",
+      "raison": "SPA-009 : carte d'état de la barre latérale PC et barre supérieure (1,6 Ko source), montées dès le premier rendu de la coquille."
+    },
+    {
+      "fichier": "src/ui/TabIcon.tsx",
+      "story": "BUNDLE-01",
+      "raison": "SPA-009 : icônes des cinq onglets (1,0 Ko source), dans la barre de navigation visible au premier rendu."
+    },
+    {
       "fichier": "src/features/app/startupSteps.ts",
       "story": "IOS-BOOT-01",
       "raison": "Suivi des étapes de démarrage (2,8 Ko source) : doit exister avant la première étape, donc dans le départ ; bootstrap.ts et App.tsx y notent chaque étape."
@@ -287,11 +297,6 @@
       "fichier": "src/features/app/StartupWatchdog.tsx",
       "story": "IOS-BOOT-01",
       "raison": "Chien de garde de tout le démarrage (1,6 Ko source) : monté avant le premier rendu, c'est lui qui remplace l'écran blanc ; l'écran « Démarrage bloqué » et ses textes sont chargés à la demande."
-    },
-    {
-      "fichier": "src/features/app/SectionPending.tsx",
-      "story": "IOS-BOOT-01",
-      "raison": "Phrase des sections sans écran (0,5 Ko source), affichée à la place de la zone blanche dès le premier rendu des quatre sections neutres de 0.1.x."
     }
   ]
 }

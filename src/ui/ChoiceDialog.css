@@ -6,7 +6,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(46, 33, 80, 0.45);
+  background: rgba(0, 0, 0, 0.45);
   padding: max(20px, var(--ct-safe-area-top)) max(20px, var(--ct-safe-area-right)) max(20px, var(--ct-safe-area-bottom)) max(20px, var(--ct-safe-area-left));
   box-sizing: border-box;
 }

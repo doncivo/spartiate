@@ -9,20 +9,20 @@ const fonts = readFileSync(join(here, 'fonts.css'), 'utf-8');
 
 /**
  * T-01, critère 18 : le bouton rond « + » doit être #3A2A66 (maquettes Main.html)
- * et les polices Fraunces / DM Sans doivent rester les polices de référence
+ * et les polices : Cinzel (titres) et police système (texte) depuis SPA-009 (charte § 18.4)
  * (CLAUDE.md, PRD section 5). Ce test ne vérifie pas le rendu visuel complet
  * (voir checklist manuelle iPhone) mais fait échouer toute régression des jetons
  * de couleur et de police utilisés par le design system.
  */
 describe('jetons de thème (T-01, critère 18)', () => {
-  it('expose le violet d’accent #3a2a66 utilisé par le bouton rond « + »', () => {
-    expect(tokens).toMatch(/--ct-color-accent:\s*#3a2a66;/i);
+  it('expose le rouge d’accent #b8322a de la charte (fond de bouton portant du texte ivoire, jamais du texte)', () => {
+    expect(tokens).toMatch(/--ct-color-accent:\s*#b8322a;/i);
   });
 
-  it('déclare Fraunces pour les titres et DM Sans pour le texte courant', () => {
-    expect(tokens).toMatch(/--ct-font-title:\s*'Fraunces Variable'/);
-    expect(tokens).toMatch(/--ct-font-text:\s*'DM Sans Variable'/);
-    expect(fonts).toMatch(/font-family:\s*'Fraunces Variable';/);
-    expect(fonts).toMatch(/font-family:\s*'DM Sans Variable';/);
+  it('déclare Cinzel pour les titres et la police du système pour le texte courant (charte § 18.4)', () => {
+    expect(tokens).toMatch(/--ct-font-title:\s*'Cinzel'/);
+    expect(tokens).toMatch(/--ct-font-text:\s*-apple-system, 'SF Pro Text', 'Segoe UI'/);
+    expect(fonts).toMatch(/font-family:\s*'Cinzel';/);
+    expect(fonts).not.toMatch(/Fraunces|DM Sans/);
   });
 });

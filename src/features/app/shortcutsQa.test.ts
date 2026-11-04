@@ -39,7 +39,7 @@ describe('registre complet (D-04 critères 1 et 4)', () => {
     }
   });
 
-  it('Ctrl+/, Ctrl+, , Échap et Alt+1..5 restent actifs dans un champ', () => {
+  it('Ctrl+/, Ctrl+, , Échap et Ctrl+1..5 restent actifs dans un champ', () => {
     for (const id of ['app.shortcutsHelp', 'app.settings', 'app.escape', 'app.tab.today', 'app.tab.training', 'app.tab.nutrition', 'app.tab.progress', 'app.tab.more'] as const) {
       expect(SHORTCUTS[id].inEditable, id).toBe(true);
     }
