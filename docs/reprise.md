@@ -11,7 +11,7 @@ SPA-000 (#1 à #7, #9, #10 ; #8 fermée sans fusion). SPA-001a (#11). #12 (inven
 - **001b-base** et **SPA-002** sont fusionnés (#20, #30) ; v0.1.0 Windows publiée le 4 novembre (run 41706891386).
 - **spa-003** (build iPhone : entitlements HealthKit, signature ad hoc CI, source sur l'IPA finale) : PR ouverte, CI et run macOS à lire. Tag `ios-v0.1.0` par Ali seulement, avec la vérification `git rev-parse` (AGENTS.md).
 - **spa-005** (export et import) et **spa-009** (écrans fidèles, contraste, fenêtre PC adaptée, minimum 1 024 × 700) : PR ouvertes, entrées de journal dans leur description ; captures PC et iPhone jointes à la PR de spa-009.
-- **spa-006** : plugin HealthKit en lecture seule, façade et stub prêts sur branche ; H-3b reste UNVERIFIED, recette native à faire après la PR et son build iPhone.
+- **spa-006** : plugin HealthKit en lecture seule ; correctif CI cargo ajouté (manifeste Tauri et capability iOS minimale). H-3b reste UNVERIFIED, recette native à faire après la PR et son build iPhone.
 - **#13** (tickets SPA-004 à 010 ; chemins à revérifier) : à rebaser.
 
 ## Ordre

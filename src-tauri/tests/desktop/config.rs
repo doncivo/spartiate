@@ -572,6 +572,14 @@ fn healthkit_commands_are_registered_in_the_minimal_ios_capability() {
             "allow-healthkit-step-count-today",
         ]
     );
+    for (name, other) in all_capabilities() {
+        if name != "healthkit-ios.json" {
+            assert!(
+                !other.contains("allow-healthkit-"),
+                "{name} accorde HealthKit"
+            );
+        }
+    }
 }
 
 /// (2) `sync.json` : exactement les 22 permissions de `main` (18, les trois du lot Y4 et `sync_abandon_orphan_epoch`), Windows, sans les trois commandes de `pairing`.
