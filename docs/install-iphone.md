@@ -2,7 +2,7 @@
 
 Ce guide est pour l'iPhone 16 Pro Max (iOS 18 ou plus). Il ne demande ni Mac ni compte Apple Developer payant : un Apple ID gratuit suffit. L'installation de départ se fait une seule fois depuis le PC Windows ; ensuite tout se passe sur l'iPhone.
 
-Durée : 15 minutes environ, lecture comprise (iTunes et iloader déjà téléchargés). Ensuite, une mise à jour prend 2 minutes.
+Durée : 15 minutes environ, lecture comprise (iTunes et iloader déjà téléchargés). Ensuite, une mise à jour prend 2 minutes. La CI signe l'IPA ad hoc ; SideStore la re-signe.
 
 Un Apple ID gratuit limite à 3 apps installées hors App Store. SideStore en occupe une, Spartiate une autre. Les apps ainsi installées expirent au bout de 7 jours : SideStore les renouvelle (étape 8).
 

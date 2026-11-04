@@ -3,7 +3,8 @@
 # Lancement sur une branche de lot (I-01) : gh workflow run build-ios.yml --ref <branche> -f publish=false.
 # Publication seulement sur un tag ios-v* (push du tag, ou lancement manuel sur ce tag avec publish),
 # avec l'environnement releases (sans approbation manuelle, décision d'Ali du 2026-10-07) ; jamais depuis une branche, même avec publish coché.
-# L'IPA n'est pas signée : SideStore la signe sur l'iPhone avec l'Apple ID gratuit.
+# L'IPA est compilée sans signature (--no-sign), puis signée AD HOC en CI avec les entitlements HealthKit versionnés (SPA-003, D-14) ;
+# SideStore la re-signe sur l'iPhone avec l'Apple ID gratuit. La signature ad hoc ne prouve ni installation ni autorisation Santé (D-59).
 # Le tag iOS (ios-vX.Y.Z) est distinct du tag PC (vX.Y.Z) qui déclenche build-windows.yml.
 name: Build iOS
 
@@ -101,6 +102,11 @@ jobs:
       - name: Initialiser le projet iOS
         run: npx tauri ios init --ci
 
+      # SPA-003 : la source durable (src-tauri/ios/Spartiate.entitlements) est copiée dans la sortie générée ; échec si source, dossier
+      # ou égalité octet à octet font défaut. La copie générée n'est jamais la source de vérité.
+      - name: Entitlements durables
+        run: node scripts/ios/apply-entitlements.mjs
+
       # Plugins iOS (N-01, ADR 0012 avenant N1.9) : le plugin de notifications locales est compilé pour l'iPhone et JAMAIS pour le PC
       # (le PC n'envoie aucune notification de rappel). Échec explicite dans les deux sens.
       - name: Plugins iOS
@@ -145,18 +151,41 @@ jobs:
       - name: Compiler l'IPA sans signature
         run: npx tauri ios build --ci --no-sign --target aarch64
 
-      - name: Vérifier et copier Spartiate.ipa
+      - name: Copier l'IPA non signée
         run: |
           set -euo pipefail
           SRC=src-tauri/gen/apple/build/arm64/Spartiate.ipa
           test -f "$SRC" || { echo "::error::IPA absente : $SRC"; find src-tauri/gen/apple/build -maxdepth 3 || true; exit 1; }
-          rm -rf ipa && mkdir -p ipa && cp "$SRC" ipa/Spartiate.ipa
+          rm -rf "$RUNNER_TEMP/unsigned" && mkdir -p "$RUNNER_TEMP/unsigned"
+          cp "$SRC" "$RUNNER_TEMP/unsigned/Spartiate.ipa"
+
+      # SPA-003 (D-14) : signature ad hoc de l'app avec les entitlements copiés, puis IPA reconstruite. ipa/Spartiate.ipa est désormais
+      # la SEULE IPA qui alimente les contrôles, le hash, les artefacts et la publication ; l'IPA non signée n'est plus jamais lue.
+      - name: Signer ad hoc et reconstruire l'IPA
+        run: |
+          set -euo pipefail
+          UNSIGNED="$RUNNER_TEMP/unsigned/Spartiate.ipa"
+          WORK="$RUNNER_TEMP/sign"
+          rm -rf "$WORK" && mkdir -p "$WORK"
+          unzip -q "$UNSIGNED" -d "$WORK"
+          test -d "$WORK/Payload/Spartiate.app" || { echo "::error::Payload/Spartiate.app absent de l'IPA non signée"; find "$WORK" -maxdepth 3; exit 1; }
+          test -f src-tauri/gen/apple/Spartiate.entitlements || { echo "::error::entitlements générés absents"; exit 1; }
+          codesign -s - --entitlements src-tauri/gen/apple/Spartiate.entitlements --force "$WORK/Payload/Spartiate.app"
+          rm -rf ipa && mkdir -p ipa
+          (cd "$WORK" && zip -qry "$GITHUB_WORKSPACE/ipa/Spartiate.ipa" Payload)
+          test -s ipa/Spartiate.ipa || { echo "::error::IPA finale vide"; exit 1; }
+
+      - name: Vérifier l'IPA finale
+        run: |
+          set -euo pipefail
           ls -l ipa/Spartiate.ipa
           CHECK="$RUNNER_TEMP/check"
           rm -rf "$CHECK" && mkdir -p "$CHECK"
           unzip -q ipa/Spartiate.ipa -d "$CHECK"
           APP="$CHECK/Payload/Spartiate.app"
           test -d "$APP" || { echo "::error::Payload/Spartiate.app absent"; find "$CHECK" -maxdepth 3; exit 1; }
+          # SPA-003 : signature de l'app EXTRAITE de l'IPA finale (pas de l'app avant reconstruction).
+          codesign --verify --strict --verbose=2 "$APP"
           PB=/usr/libexec/PlistBuddy
           ID=$($PB -c "Print :CFBundleIdentifier" "$APP/Info.plist")
           MIN=$($PB -c "Print :MinimumOSVersion" "$APP/Info.plist")
@@ -195,8 +224,18 @@ jobs:
             echo "- Descriptions d'usage : ${USAGES:-aucune}"
             # I-02 (ADR 0013 §3.1) : information seulement. Une IPA non signée n'a pas de profil ; SideStore écrit embedded.mobileprovision
             # (profil de 7 jours) à l'installation, et la commande app_signing_info le lit sur l'appareil (contrôle A1 de la fiche I-02).
-            if [ -f "$RUNNER_TEMP/check/Payload/Spartiate.app/embedded.mobileprovision" ]; then echo "- embedded.mobileprovision : présent dans l'IPA"; else echo "- embedded.mobileprovision : absent de l'IPA (normal pour une IPA non signée ; SideStore l'écrit à l'installation, I-02)"; fi
+            echo "- Signature : ad hoc (CI, SPA-003), vérifiée par codesign sur l'app extraite de cette IPA"
+            if [ -f "$RUNNER_TEMP/check/Payload/Spartiate.app/embedded.mobileprovision" ]; then echo "- embedded.mobileprovision : présent dans l'IPA"; else echo "- embedded.mobileprovision : absent de l'IPA (normal en signature ad hoc ; SideStore l'écrit à l'installation, I-02)"; fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # SPA-003, preuve H-3a : entitlements relus depuis l'app extraite de l'IPA finale (le fichier durable et la sortie avant re-zip ne prouvent rien).
+      - name: Entitlements de l'IPA finale
+        run: |
+          set -euo pipefail
+          mkdir -p info
+          codesign -d --entitlements :- "$RUNNER_TEMP/check/Payload/Spartiate.app" > info/entitlements.plist
+          node scripts/ios/apply-entitlements.mjs --check info/entitlements.plist
+          echo "- Entitlements extraits de l'IPA finale : com.apple.developer.healthkit = true (H-3a ; ni permission ni lecture Santé, D-59)" >> "$GITHUB_STEP_SUMMARY"
 
       # I-06 (ADR 0007 avenant I-06 point 2, critère 5) : source SideStore SIMULÉE avec l'IPA de ce build et la source publiée (lue à l'URL
       # publique, aucun secret), contrôlée par check-source.mjs (build croissant, URL, sha256, taille, identifiant, champs hérités). Rien
@@ -253,6 +292,13 @@ jobs:
         with:
           name: Spartiate-info-plist
           path: info/Info.plist
+          if-no-files-found: error
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Spartiate-entitlements
+          path: info/entitlements.plist
           if-no-files-found: error
           retention-days: 30
 
