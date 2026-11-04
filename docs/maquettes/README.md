@@ -19,6 +19,17 @@ iPhone 16 Pro Max : 440 × 956 pt. PC Windows : 1440 × 900. Mode sombre (charte
 7. Sur grand écran, on borne (400–660 px de contenu) et on navigue ; on n'étire pas la mise en page du téléphone.
 8. La zone de sécurité iOS est respectée partout (îlot dynamique, indicateur d'accueil).
 
+## Planches I0 — validées le 4 novembre 2026
+
+| Fichier | Écran |
+|---|---|
+| [iPhone-I0-Aujourdhui.html](i0/iPhone-I0-Aujourdhui.html) · [aperçu](i0/iPhone-I0-Aujourdhui.png) | Aujourd'hui, première ouverture |
+| [PC-I0-Aujourdhui.html](i0/PC-I0-Aujourdhui.html) · [aperçu](i0/PC-I0-Aujourdhui.png) | Aujourd'hui, état renseigné |
+| [iPhone-Plus.html](i0/iPhone-Plus.html) · [aperçu](i0/iPhone-Plus.png) | Plus |
+| [PC-Plus.html](i0/PC-Plus.html) · [aperçu](i0/PC-Plus.png) | Plus |
+| [iPhone-ProfilPoids.html](i0/iPhone-ProfilPoids.html) · [aperçu](i0/iPhone-ProfilPoids.png) | Profil et poids |
+| [PC-ProfilPoids.html](i0/PC-ProfilPoids.html) · [aperçu](i0/PC-ProfilPoids.png) | Profil et poids |
+
 ## Planches
 | Fichier | Écran |
 |---|---|
