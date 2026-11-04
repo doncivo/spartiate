@@ -83,13 +83,14 @@ describe('Apparence et formats (P-03)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Impossible d’enregistrer ce réglage.');
   });
 
-  it('P-02 : trois choix Clair, Sombre, Système (Système par défaut) en radiogroup, changement immédiat et annoncé (critères 1, 2, 9)', async () => {
+  it('P-02 : trois choix Clair, Sombre, Système (Sombre par défaut, charte § 18.4) en radiogroup, changement immédiat et annoncé (critères 1, 2, 9)', async () => {
     renderIn(<AppearanceScreen />);
     const group = await screen.findByRole('radiogroup', { name: 'Thème de l’application' });
     expect(within(group).getAllByRole('radio').map((r) => r.textContent)).toEqual(['Clair', 'Sombre', 'Système']);
-    expect(within(group).getByRole('radio', { name: 'Système' })).toBeChecked();
-    expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
+    expect(within(group).getByRole('radio', { name: 'Sombre' })).toBeChecked();
     const started = performance.now();
+    fireEvent.click(within(group).getByRole('radio', { name: 'Clair' }));
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
     fireEvent.click(within(group).getByRole('radio', { name: 'Sombre' }));
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
     expect(performance.now() - started).toBeLessThan(100);
@@ -114,8 +115,8 @@ describe('Apparence et formats (P-03)', () => {
       data: { ...db.data, repos: { ...db.data.repos, settings: { ...db.data.repos.settings, set: () => Promise.reject(new Error('boom')) } } } as never,
     });
     renderIn(<AppearanceScreen />);
-    fireEvent.click(await screen.findByRole('radio', { name: 'Sombre' }));
-    await waitFor(() => expect(document.documentElement.hasAttribute('data-theme')).toBe(false));
+    fireEvent.click(await screen.findByRole('radio', { name: 'Clair' }));
+    await waitFor(() => expect(document.documentElement.getAttribute('data-theme')).toBe('dark'));
     expect(await screen.findByRole('alert')).toHaveTextContent('Impossible d’enregistrer ce réglage.');
   });
 
@@ -135,7 +136,7 @@ describe('Apparence et formats (P-03)', () => {
 
   it('les lignes de Réglages (PC, UI-REFONTE-09 : Thème, Début de semaine, Format de l’heure) affichent « Lundi » et « 24 h » puis « Dimanche » et « 12 h » (critère 9)', async () => {
     renderIn(<SettingsScreen />);
-    expect(await screen.findByRole('button', { name: 'Thème : Système' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Thème : Sombre' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Début de semaine : Lundi' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Format de l’heure : 24 h' })).toBeInTheDocument();
     await container.data.repos.settings.set('general.firstWeekday', 'sunday');

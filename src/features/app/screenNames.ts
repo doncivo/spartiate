@@ -8,6 +8,7 @@ export type ScreenName =
   | 'settingsscreen'
   | 'appearancescreen'
   | 'bodyscreen'
+  | 'sectionnotice'
   | 'logsscreen'
   | 'recoveryfailure'
   | 'updaterestoreaction'

@@ -108,7 +108,10 @@ fn restored_position_off_screen_is_brought_back_into_a_work_area() {
         panic!("doit être ramenée");
     };
     assert!(
-        back.x >= 0.0 && back.y >= 0.0 && back.x + back.width <= 1920.0 && back.y + back.height <= 1040.0,
+        back.x >= 0.0
+            && back.y >= 0.0
+            && back.x + back.width <= 1920.0
+            && back.y + back.height <= 1040.0,
         "{back:?}"
     );
 }
@@ -117,10 +120,7 @@ fn restored_position_off_screen_is_brought_back_into_a_work_area() {
 fn restored_position_with_a_visible_title_bar_is_left_alone() {
     let primary = area(0.0, 0.0, 1920.0, 1040.0);
     let partly = area(-400.0, 10.0, 1440.0, 900.0);
-    assert_eq!(
-        clamp_into_work_areas(partly, &[primary]),
-        Fit::Fits(partly)
-    );
+    assert_eq!(clamp_into_work_areas(partly, &[primary]), Fit::Fits(partly));
 }
 
 #[test]
@@ -130,5 +130,8 @@ fn restored_position_with_no_work_area_left_is_reported() {
         clamp_into_work_areas(lost, &[area(0.0, 0.0, 800.0, 600.0)]),
         Fit::TooSmall { .. }
     ));
-    assert!(matches!(clamp_into_work_areas(lost, &[]), Fit::TooSmall { .. }));
+    assert!(matches!(
+        clamp_into_work_areas(lost, &[]),
+        Fit::TooSmall { .. }
+    ));
 }

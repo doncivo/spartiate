@@ -91,7 +91,7 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
     await ready();
     const general = region('Général');
     expect(within(general).queryByRole('button', { name: /^Thème · semaine · heure/ })).toBeNull();
-    const rows = ['Thème : Système', 'Début de semaine : Lundi', 'Format de l’heure : 24 h'];
+    const rows = ['Thème : Sombre', 'Début de semaine : Lundi', 'Format de l’heure : 24 h'];
     for (const name of rows) {
       fireEvent.click(within(general).getByRole('button', { name }));
       expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'appearance' });
@@ -135,6 +135,6 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
     expect(screen.getByRole('button', { name: /^Thème · semaine · heure :/ })).toBeInTheDocument();
     expect(screen.getByText('Europe/Paris (automatique)')).toBeInTheDocument();
     expect(screen.queryByText('Suit celui de Windows')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Thème : Système' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Thème : Sombre' })).toBeNull();
   });
 });
