@@ -29,6 +29,7 @@ import type { SyncPlatform } from '../../platform/sync/types';
 import { createSyncService } from '../../sync';
 import { useAppStore, type DbFailure } from './appStore';
 import { createAppContainer, type AppContainer } from './container';
+import { startupTracker } from './startupSteps';
 
 /**
  * Ouvre la base du runtime courant et applique les migrations. Appelé une fois au
@@ -71,10 +72,12 @@ export async function bootstrapDatabase(
   let updateBackup: { readonly name: string } | null = null;
   const { setDbProgress } = useAppStore.getState();
   setDbProgress({ step });
+  startupTracker.begin('db.' + step);
   try {
     db = await open();
     step = 'backup';
     setDbProgress({ step });
+    startupTracker.begin('db.' + step);
     const port = await (options.backup ?? createMigrationBackup)(db);
     await migrate(db, list, {
       beforeApply: createBackupBeforeMigration(
@@ -95,6 +98,7 @@ export async function bootstrapDatabase(
         step = current.kind;
         migration = current.kind === 'migration' ? current.version : undefined;
         setDbProgress({ step, migration });
+        startupTracker.begin('db.' + step + (migration === undefined ? '' : '.' + String(migration)));
       },
     });
     setDbProgress(null);
@@ -253,6 +257,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
   // de la version ci-dessous est asynchrone : sans cette ligne, le second appel trouvait encore « idle » (régression I-06 vue en CI).
   useAppStore.getState().setDbStatus('loading');
   // I-06 : version lue AVANT l'ouverture (diagnostic d'échec, synchro, « À propos ») ; ne rejette jamais.
+  startupTracker.begin('appVersion');
   const appVersion = await (options.appVersion ?? readAppVersion)();
   const driver = await bootstrapDatabase(options.open ?? devOpen, { clock: options.clock, backup: options.backup, migrations: options.migrations ?? withDevExtras(), catalogue: (options.storage ?? SYNC_STORAGE).catalogue, appVersion: appVersion.version });
   if (!driver) return undefined;
@@ -265,6 +270,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
   let step = 'testHooks';
   const at = <T>(name: string, run: () => T): T => {
     step = name;
+    startupTracker.begin(name);
     return run();
   };
   try {
@@ -280,6 +286,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
     const launch = await at('readLaunch', () => readLaunch(boot.settings, appVersion, storedDeviceId !== null));
     // ADR 0011 section 3.2 (audit M10) : la garde de la synchro est vide au démarrage, y compris après une restauration P-04 (qui relance
     // l'app). Une ligne trouvée (base copiée à chaud) est supprimée et journalisée.
+    startupTracker.begin('sync.assertGuardEmpty');
     const strayGuards = await Promise.resolve()
       .then(() => data.repos.sync.assertGuardEmpty())
       .catch(() => 0);
@@ -337,6 +344,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
     const container = at('createAppContainer', () => createAppContainer(deps));
     // I-06 : version mémorisée à la fin d'un démarrage réussi seulement (jamais si elle est illisible) ; un échec d'écriture ne bloque rien
     // (le lancement suivant compte encore comme une mise à jour : une replanification de plus).
+    startupTracker.begin('settings.set(lastLaunchedVersion)');
     if (appVersion.ok && shouldRecordLaunch(launch.kind)) {
       await data.repos.settings.set('app.lastLaunchedVersion', appVersion.version).catch((error: unknown) => logFailure('app', `launch-version-unwritable (${errorName(error)})`));
     }

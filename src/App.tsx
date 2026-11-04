@@ -9,6 +9,9 @@ import { TABS, useNavigationStore, type TabDefinition } from './features/app/nav
 import { startDesktopIntegration } from './features/app/desktop';
 import { toKeyInput, type ShortcutId } from './features/app/shortcuts';
 import { startAppStartup, type AppStartup } from './features/app/startup';
+import { SectionPending } from './features/app/SectionPending';
+import { StartupWatchdog } from './features/app/StartupWatchdog';
+import { startupTracker } from './features/app/startupSteps';
 import { registerTabShortcuts } from './features/app/tabShortcuts';
 import { AppearanceScreen, BodyScreen, LogsScreen, RecoveryFailureLazy, preloadScreens, SettingsScreen, ShortcutsHelp, SyncDetailsScreen, UpdateBanner } from './features/app/lazyScreens';
 import { AppStatusBanner } from './features/app/AppStatusBanner';
@@ -74,7 +77,7 @@ function AppShellContent() {
       {route.tab === 'more' ? (
         route.screen === 'appearance' ? <AppearanceScreen /> : route.screen === 'body' ? <BodyScreen /> : route.screen === 'logs' ? <LogsScreen /> : route.screen === 'sync' ? <SyncDetailsScreen /> : <SettingsScreen />
       ) : (
-        <div className="ct-app__placeholder" aria-hidden="true" />
+        <SectionPending labelKey={requireTab(route.tab).labelKey} />
       )}
     </AppShell>
   );
@@ -94,12 +97,16 @@ export function App() {
     if (useAppStore.getState().dbStatus === 'idle') {
       // 0.2.1 : étape en cours après `bootstrapApp`, affichée (app.startError) si une étape rejette au lieu de laisser l'écran vide.
       let step = 'bootstrapApp';
+      startupTracker.reset();
+      startupTracker.begin(step);
       void bootstrapApp().then(async (created) => {
         if (!created) return;
         // Apparence (P-03) : premier jour et format d'heure lus avant le premier rendu.
         step = 'restoreAppearance';
+        startupTracker.begin(step);
         await restoreAppearance(created);
         step = 'bootAppLock';
+        startupTracker.begin(step);
         // I-03 : verrouillage lu avant le premier rendu de la coquille (illisible : verrouillé). Le verrou couvre l'interface seulement :
         // la suite du démarrage (report, synchro, rappels) continue normalement.
         const lock = await bootAppLock(created);
@@ -107,10 +114,12 @@ export function App() {
         // Report automatique (T-06) : premier contrôle AVANT le premier rendu d'Aujourd'hui ;
         // démarrage nettoyé si l'app est démontée avant la fin (startup.ts).
         step = 'startAppStartup';
+        startupTracker.begin(step);
         const started = startAppStartup(created);
         startup.current = started;
         await started.ready;
         step = 'setContainer';
+        startupTracker.done();
         if (!mounted.current) {
           started.dispose();
           lock.dispose();
@@ -119,6 +128,7 @@ export function App() {
         }
         setContainer(created);
       }).catch((error: unknown) => {
+        startupTracker.done();
         if (mounted.current) publishStartFailure(step, error);
       });
     }
@@ -185,6 +195,8 @@ export function App() {
     <div className="app-shell" data-layout={layout} data-db-status={dbStatus}>
       {dbStatus === 'loading' && <p role="status">{t('app.loading')}</p>}
       {dbStatus === 'loading' && <DbOpenWatchdog />}
+      {/* Tout le démarrage, pas seulement l'ouverture de la base : une étape de plus de 8 s remplace l'attente silencieuse. */}
+      {!container && dbStatus !== 'error' && <StartupWatchdog />}
       {dbStatus === 'error' && recoveryFailed && (
         // P-04-iOS (ADR 0009 avenant lot F B3) : récupération d'une restauration interrompue impossible : aucune base ouverte ; recharger la
         // page ne relance pas la récupération (elle est faite par Rust au lancement), d'où la consigne de fermer puis rouvrir l'app.
