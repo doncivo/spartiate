@@ -187,7 +187,8 @@ export function BodyScreen() {
               <div className="ct-body__latestValue">
                 {latest ? (
                   <>
-                    <span className="ct-body__big">{formatKg(latest.kg)}</span> <span className="ct-body__unit">{tBody('weightUnit')}</span>
+                    <span className="ct-body__big">{formatKg(latest.kg)}</span>
+                    <span className="ct-body__unit">{tBody('weightUnit')}</span>
                   </>
                 ) : (
                   <span className="ct-body__hint">{tBody('weightLatestNone')}</span>

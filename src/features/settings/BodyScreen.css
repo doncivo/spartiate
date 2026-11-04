@@ -224,3 +224,7 @@
   color: var(--ct-color-text-secondary);
   font-size: var(--ct-font-size-xs);
 }
+
+.ct-body__unit {
+  margin-left: var(--ct-space-1);
+}

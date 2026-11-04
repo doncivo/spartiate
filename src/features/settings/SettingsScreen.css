@@ -293,7 +293,7 @@
   border: 1px solid var(--ct-color-border);
   border-radius: var(--ct-radius-lg);
   background: var(--ct-color-surface);
-  color: inherit;
+  color: var(--ct-color-text);
   font-family: inherit;
   text-align: left;
   cursor: pointer;
