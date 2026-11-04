@@ -10,7 +10,7 @@ function rig(replies: Record<string, unknown>) {
   const invoke: HealthKitInvoker = vi.fn(async (command: string) => {
     calls.push(command);
     const reply = replies[command];
-    if (reply instanceof Error) throw reply;
+    if (reply instanceof Error || typeof reply === 'string') throw reply;
     return reply;
   });
   return { calls, healthKit: createTauriHealthKit({ invoke }) };
@@ -33,6 +33,12 @@ describe('HealthKit platform adapter (SPA-006)', () => {
 
     const failed = rig({ healthkit_authorize: new Error('native failure') });
     expect(await failed.healthKit.requestAuthorization()).toBe('error');
+
+    const explicitDenial = rig({ healthkit_authorize: 'healthkit-denied' });
+    expect(await explicitDenial.healthKit.requestAuthorization()).toBe('denied');
+
+    const falseGrant = rig({ healthkit_authorize: { permission: 'granted' } });
+    expect(await falseGrant.healthKit.requestAuthorization()).toBe('error');
   });
 
   it('returns a synthetic body-mass sample with its unit, timestamp, timezone, and provenance', async () => {
@@ -79,13 +85,13 @@ describe('HealthKit platform adapter (SPA-006)', () => {
   });
 
   it('keeps explicit denied, unavailable, and error read outcomes distinct', async () => {
-    const denied = rig({ healthkit_body_mass_today: { state: 'denied' } });
+    const denied = rig({ healthkit_body_mass_today: 'healthkit-denied' });
     const unavailable = rig({ healthkit_step_count_today: { state: 'unavailable' } });
     const failed = rig({ healthkit_step_count_today: new Error('private native message') });
 
     expect(await denied.healthKit.bodyMassToday()).toEqual({ state: 'denied' });
     expect(await unavailable.healthKit.stepCountToday()).toEqual({ state: 'unavailable' });
-    expect(await failed.healthKit.stepCountToday()).toEqual({ state: 'error' });
+    expect(await failed.healthKit.stepCountToday()).toEqual({ state: 'error', code: 'healthkit-step-count-failed' });
   });
 
   it('returns unsupported on Windows without invoking native commands', async () => {

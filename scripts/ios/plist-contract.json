@@ -40,6 +40,12 @@
         "NSMicrophoneUsageDescription",
         "NSSpeechRecognitionUsageDescription"
       ]
+    },
+    "healthkit": {
+      "story": "SPA-006",
+      "usageDescriptions": [
+        "NSHealthShareUsageDescription"
+      ]
     }
   },
   "forbiddenKeys": [
@@ -49,6 +55,7 @@
     "NSPhotoLibraryUsageDescription",
     "NSPhotoLibraryAddUsageDescription",
     "NSContactsUsageDescription",
-    "NSUserTrackingUsageDescription"
+    "NSUserTrackingUsageDescription",
+    "NSHealthUpdateUsageDescription"
   ]
 }

@@ -134,6 +134,7 @@ describe('contrat des permissions Info.plist', () => {
       'LSSupportsOpeningDocumentsInPlace absente (plugin journal, ios-demarrage)',
       'NSMicrophoneUsageDescription absente (plugin speech, CAP-IOS-01)',
       'NSSpeechRecognitionUsageDescription absente (plugin speech, CAP-IOS-01)',
+      'NSHealthShareUsageDescription absente (plugin healthkit, SPA-006)',
       'NSCameraUsageDescription : description d\'usage vide',
     ]);
   });
@@ -454,7 +455,9 @@ describe('SPA-003 : entitlements durables', () => {
     expect([...at].sort((a, b) => a - b)).toEqual(at);
   });
 
-  it('D-59 : Info.ios.plist ne déclare aucune permission Santé', () => {
-    expect(read('src-tauri/Info.ios.plist')).not.toMatch(/NSHealth/);
+  it('D-59 / SPA-006 : seule la permission de lecture Santé est déclarée', () => {
+    const plist = read('src-tauri/Info.ios.plist');
+    expect(plist).toMatch(/<key>NSHealthShareUsageDescription<\/key>/);
+    expect(plist).not.toMatch(/NSHealthUpdateUsageDescription/);
   });
 });
