@@ -1,4 +1,4 @@
-import { createBrowserFiles, pickTextFromInput } from './browser';
+import { createBrowserFiles, pickBytesFromInput, pickTextFromInput } from './browser';
 import { createTauriFiles } from './tauriFiles';
 import { createUnavailableFiles } from './memory';
 import { DEFAULT_PICK_MAX_BYTES, type FileService } from './types';
@@ -21,6 +21,7 @@ function createLazyIosFiles(): FileService {
     canSave: () => true,
     save: (request) => real().then((files) => files.save(request)),
     pickText: (options) => pickTextFromInput(options.accept, options.maxBytes ?? DEFAULT_PICK_MAX_BYTES),
+    pickBytes: (options) => pickBytesFromInput(options.accept, options.maxBytes ?? DEFAULT_PICK_MAX_BYTES),
   };
 }
 

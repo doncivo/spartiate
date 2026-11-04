@@ -52,6 +52,11 @@ export interface PickedText {
 /** Taille maximale d'un fichier choisi par défaut (2 Mo), la même que `MAX_IMPORT_BYTES` de `src-tauri/src/import.rs`. */
 export const DEFAULT_PICK_MAX_BYTES = 2 * 1024 * 1024;
 
+export interface PickedBytes {
+  readonly name: string;
+  readonly bytes: Uint8Array;
+}
+
 export interface FilePicker {
   /**
    * Fichier texte choisi par l'utilisateur (P-07) ; null s'il annule. Décodé en UTF-8 / UTF-16 / Windows-1252 (`decodeTextBytes`).
@@ -59,6 +64,11 @@ export interface FilePicker {
    * `import.rs`) ; sur iPhone et dans le navigateur, le fichier est refusé avant lecture. Dépassement : `FileExportError('too-large')`.
    */
   pickText(options: { readonly accept: readonly string[]; readonly maxBytes?: number }): Promise<PickedText | null>;
+  /**
+   * Fichier binaire choisi par l'utilisateur (archive d'export Spartiate, SPA-005) : octets intacts, aucun décodage texte. Mêmes règles
+   * que `pickText` : null s'il annule, `maxBytes` ne peut que réduire le plafond (2 Mo), dépassement = `FileExportError('too-large')`.
+   */
+  pickBytes(options: { readonly accept: readonly string[]; readonly maxBytes?: number }): Promise<PickedBytes | null>;
 }
 
 export interface FileService extends FileExporter, FilePicker {}

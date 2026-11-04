@@ -100,3 +100,29 @@ describe('Lecture d’un fichier choisi (P-07)', () => {
     await expect(files.pickText({ accept: ['.csv'] })).rejects.toMatchObject({ reason: 'too-large' });
   });
 });
+
+describe('SPA-005 : choix d’un fichier binaire (archive zip)', () => {
+  const bytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0xff, 0x00, 0xe9]);
+
+  it('PC : les octets arrivent intacts (aucun décodage texte)', async () => {
+    const files = createTauriFiles(api({ pickFile: () => Promise.resolve({ name: 'spartiate-export.zip', data: btoa(String.fromCharCode(...bytes)) }) }));
+    await expect(files.pickBytes({ accept: ['.zip'] })).resolves.toEqual({ name: 'spartiate-export.zip', bytes });
+  });
+
+  it('PC : annulation = null ; trop gros = too-large ; échec Rust = unreadable', async () => {
+    await expect(createTauriFiles(api()).pickBytes({ accept: ['.zip'] })).resolves.toBeNull();
+    const big = createTauriFiles(api({ pickFile: () => Promise.resolve({ name: 'a.zip', data: btoa(String.fromCharCode(...bytes)) }) }));
+    await expect(big.pickBytes({ accept: ['.zip'], maxBytes: 3 })).rejects.toMatchObject({ reason: 'too-large' });
+    const broken = createTauriFiles(api({ pickFile: () => Promise.reject(new Error('boom')) }));
+    await expect(broken.pickBytes({ accept: ['.zip'] })).rejects.toMatchObject({ reason: 'unreadable' });
+  });
+
+  it('faux en mémoire et plateforme sans fichiers', async () => {
+    const files = createMemoryFiles();
+    files.setPickBytes({ name: 'x.zip', bytes });
+    await expect(files.pickBytes({ accept: ['.zip'] })).resolves.toEqual({ name: 'x.zip', bytes });
+    files.failNextPick('too-large');
+    await expect(files.pickBytes({ accept: ['.zip'] })).rejects.toMatchObject({ reason: 'too-large' });
+    await expect(createUnavailableFiles().pickBytes({ accept: ['.zip'] })).rejects.toMatchObject({ reason: 'unavailable' });
+  });
+});
