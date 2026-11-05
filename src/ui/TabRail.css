@@ -56,10 +56,9 @@
 
 .ct-tab-rail[data-layout='mobile'] .ct-tab-rail__label {
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--ct-font-size-xs);
+  /* Planche : 10 px. Jamais coupé ni suivi de points de suspension (« Aujourd'hui », « Entraînement » tiennent dans 88 px). */
+  font-size: 10px;
 }
 
 .ct-tab-rail[data-layout='mobile'] .ct-tab-rail__hint {

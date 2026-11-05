@@ -17,6 +17,7 @@ import {
   type Sex,
 } from '../../domain/bodyProfile';
 import type { LocalDate } from '../../domain/types';
+import { formatDayLabel } from '../../i18n/format';
 import { formatKg, tBody, type BodyTextKey } from '../../i18n/bodyText';
 import { Button, Icon, SegmentedControl, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
@@ -223,7 +224,7 @@ export function BodyScreen() {
               <ul className="ct-body__list">
                 {weights.map((weight) => (
                   <li key={weight.id} className="ct-body__item">
-                    <span className="ct-body__itemDate">{weight.date}</span>
+                    <span className="ct-body__itemDate">{formatDayLabel(weight.date)}</span>
                     <span className="ct-body__itemKg">{tBody('weightLine', { kg: formatKg(weight.kg) })}</span>
                     <span className="ct-body__badge">{tBody(weight.source === 'health' ? 'weightSourceHealth' : 'weightSourceManual')}</span>
                     <button type="button" className="ct-body__delete" aria-label={tBody('weightDelete', { date: weight.date })} onClick={() => void removeWeight(weight)}>
@@ -250,10 +251,15 @@ export function BodyScreen() {
               <span className="ct-body__label">{tBody('birthYear')}</span>
               <input className="ct-body__input ct-body__input--short" inputMode="numeric" value={birthYear} disabled={waiting} onChange={(e) => setBirthYear(e.target.value)} />
             </label>
-            <label className="ct-body__field ct-body__field--row">
-              <span className="ct-body__label">{tBody('heightCm')}</span>
-              <input className="ct-body__input ct-body__input--short" inputMode="decimal" placeholder={`${HEIGHT_MIN_CM} – ${HEIGHT_MAX_CM}`} value={height} disabled={waiting} onChange={(e) => setHeight(e.target.value)} />
-            </label>
+            <div className="ct-body__field">
+              <label className="ct-body__field ct-body__field--row">
+                <span className="ct-body__label">{tBody('heightCm')}</span>
+                <input className="ct-body__input ct-body__input--short" inputMode="numeric" aria-describedby="ct-body-height-help" placeholder={`${HEIGHT_MIN_CM} – ${HEIGHT_MAX_CM}`} value={height} disabled={waiting} onChange={(e) => setHeight(e.target.value)} />
+              </label>
+              <span id="ct-body-height-help" className="ct-body__hint">
+                {tBody('heightHelp')}
+              </span>
+            </div>
             <div className="ct-body__field">
               <span className="ct-body__label">{tBody('goal')}</span>
               <SegmentedControl label={tBody('goal')} value={goal} disabled={waiting} onChange={setGoal} columns={2} options={[...GOALS.map((value) => ({ value, label: tBody(GOAL_KEY[value]) })), UNSET]} />
