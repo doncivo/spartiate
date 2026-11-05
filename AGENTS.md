@@ -26,7 +26,8 @@ Lis d'abord `CLAUDE.md` (stack, commandes, couches, bundle de départ : il ne se
 
 ## Périmètre d'écriture et de lecture (décision d'Ali du 2026-10-27, adaptée en SPA-001a)
 
-- Interdiction d'écrire, de modifier ou de supprimer quoi que ce soit hors de `C:\Dev\spartiate` et de ses worktrees. Fichiers temporaires dans le worktree, sous `.codex-tmp/` (ignoré par git), jamais commités.
+- Interdiction d'écrire, de modifier ou de supprimer quoi que ce soit hors de `C:\Dev\spartiate`, de ses worktrees et du clone de travail `C:\Dev\spartiate-codex`. Fichiers temporaires dans le worktree, sous `.codex-tmp/` (ignoré par git), jamais commités.
+- `C:\Dev\spartiate-codex` : clone de travail de Codex et Copilot, mêmes règles ; jamais en même temps qu’une autre session sur les mêmes fichiers.
 - Interdiction absolue de toucher aux données réelles de CircleTasks, en lecture comme en écriture, y compris pour un diagnostic : `%APPDATA%\fr.circletasks.planner` et le dossier iCloud `iCloud Drive/CircleTasks` — toujours. Si une information s'y trouve, demande à Ali de l'extraire lui-même.
 - Données réelles de Spartiate (`%APPDATA%\fr.spartiate.app`, `iCloud Drive/Spartiate`, conteneur iPhone) : conteneur de laboratoire jusqu'à la première utilisation réelle annoncée par Ali dans `docs/decisions.md` (D-38) ; ensuite interdites comme celles de CircleTasks. Fixtures synthétiques uniquement ; smoke, Rust et e2e en CI. Aucun agent ne supprime de conteneur (D-54).
 - Lire un fichier qu'Ali désigne explicitement, par exemple un export de journal iPhone déposé dans iCloud Drive, est permis. Toute autre lecture hors dépôt se demande d'abord.
