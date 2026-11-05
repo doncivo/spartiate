@@ -13,7 +13,6 @@ import { AboutSection } from './AboutSection';
 import { BackupRow } from './BackupRow';
 import { LinkRow } from './LinkRow';
 import { ProfileCard } from './ProfileCard';
-import { SecuritySection } from './SecuritySection';
 import { SettingsScreenPc } from './SettingsScreenPc';
 import { formatAppearanceParts } from './AppearanceScreen';
 import { settingsStore } from './settingsStore';
@@ -22,7 +21,7 @@ import './SettingsScreen.css';
 /**
  * Onglet « Plus » (planches docs/maquettes/i0/iPhone-Plus et PC-Plus). iPhone : titre, carte « Profil et poids », puis quatre groupes en
  * cartes sous des titres en capitales discrètes : DONNÉES (synchronisation, sauvegardes, export et import), IPHONE (signature SideStore,
- * verrouillage Face ID), PRÉFÉRENCES (thème, début de semaine et format de l'heure vers Apparence, fuseau horaire, démarrage avec Windows)
+ * le verrouillage Face ID reste masqué, D-37), PRÉFÉRENCES (thème, début de semaine et format de l'heure vers Apparence, fuseau horaire, démarrage avec Windows)
  * et À PROPOS (version, diagnostic et journal). Apple Santé et Notifications n'existent pas encore : aucune ligne pour eux. PC : voir
  * `SettingsScreenPc`.
  */
@@ -33,7 +32,8 @@ export function SettingsScreen() {
 
 function SettingsScreenMobile() {
   const container = useAppContainer();
-  const hasIphoneRows = container.signing.source.supported || container.authenticator.supported;
+  // D-37 : code conservé, entrée masquée, activation différée. SecuritySection n'est plus montée ; seule la signature reste.
+  const hasIphoneRows = container.signing.source.supported;
   const load = useFeatureStore(settingsStore, (s) => s.load);
   const errorKey = useFeatureStore(settingsStore, (s) => s.errorKey);
   const timeZone = useAppStore((s) => s.timeZone);
@@ -71,7 +71,6 @@ function SettingsScreenMobile() {
           <h2 className="ct-settings__section">{tPlus('sectionIphone')}</h2>
           <div className="ct-settings__card">
             <SigningAboutRow />
-            <SecuritySection />
           </div>
         </>
       )}
