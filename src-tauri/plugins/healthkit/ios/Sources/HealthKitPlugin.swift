@@ -135,7 +135,7 @@ class HealthKitPlugin: Plugin {
         invoke.resolve(["state": "empty"])
         return
       }
-      let sources = (statistics.sources() ?? []).map { source in
+      let sources = (statistics.sources ?? []).map { source in
         [
           "name": source.name,
           "bundleIdentifier": source.bundleIdentifier,
