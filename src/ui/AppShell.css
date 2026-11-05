@@ -42,7 +42,8 @@
   flex-direction: column;
   --ct-shell-gap: 14px;
   gap: var(--ct-shell-gap);
-  padding: 52px 20px 28px;
+  /* Haut : 4 px seulement (planches I0). La marge de l'encoche vient de la coquille mobile ; elle ne se compte pas deux fois. */
+  padding: 4px 20px 28px;
 }
 
 .ct-app-shell[data-layout='pc'] .ct-app-shell__main {

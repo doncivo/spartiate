@@ -4,9 +4,9 @@
  */
 export const signingFr = {
   alertTitle: 'Spartiate va expirer',
-  alertBody: 'Vérifiez dans SideStore que l’app a été actualisée (expiration prévue le {date} à {time})',
+  alertBody: 'Vérifie dans SideStore que l’app a été actualisée (expiration prévue le {date} à {time})',
   /** Bandeau sous 24 h : durée restante composée par `durationHours` / `durationMinutes`. */
-  bannerSoon: 'Spartiate expire dans {duration} : actualisez-la dans SideStore',
+  bannerSoon: 'Spartiate expire dans {duration} : actualise-la dans SideStore',
   durationHours: '{n} h',
   durationMinutes: '{n} min',
   about: {
@@ -17,14 +17,14 @@ export const signingFr = {
     remainingHours: 'dans {n} h',
     remainingMinutes: 'dans {n} min',
     alertAt: 'Alerte prévue le {date} à {time}',
-    alertSoon: 'Moins de 24 h restantes : actualisez Spartiate dans SideStore',
+    alertSoon: 'Moins de 24 h restantes : actualise Spartiate dans SideStore',
     unknown: 'Date d’expiration inconnue : l’alerte avant expiration est désactivée',
     unknownAt: 'Dernière lecture sans résultat à {time} ({code})',
     codeMissing: 'profil de signature absent',
     codeUnreadable: 'profil de signature illisible',
-    notificationsDenied: 'Les notifications sont refusées : vous ne serez pas prévenu',
-    notificationsUndetermined: 'Les notifications ne sont pas autorisées : vous ne serez pas prévenu',
-    alertFailed: 'L’alerte n’a pas pu être planifiée : vous ne serez peut-être pas prévenu',
+    notificationsDenied: 'Les notifications sont refusées : tu ne seras pas prévenu',
+    notificationsUndetermined: 'Les notifications ne sont pas autorisées : tu ne seras pas prévenu',
+    alertFailed: 'L’alerte n’a pas pu être planifiée : tu ne seras peut-être pas prévenu',
     allow: 'Autoriser',
     allowLabel: 'Autoriser les notifications pour l’alerte d’expiration',
     viewReminders: 'Voir',

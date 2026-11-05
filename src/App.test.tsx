@@ -89,7 +89,7 @@ describe('App (coquille, T-01)', () => {
     useAppStore.setState({ dbStatus: 'error', dbBackupFailed: true });
     render(<App />);
     expect(screen.getByRole('alert')).toHaveTextContent(t('app.dbBackupError'));
-    expect(screen.getByRole('alert')).toHaveTextContent('Vos données n’ont pas été modifiées');
+    expect(screen.getByRole('alert')).toHaveTextContent('Tes données n’ont pas été modifiées');
     useAppStore.setState({ dbBackupFailed: false });
   });
 });

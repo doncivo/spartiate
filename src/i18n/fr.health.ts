@@ -1,0 +1,36 @@
+/**
+ * Textes de l'écran « Apple Santé » (Plus, iPhone seulement), à part du catalogue principal (bundle de départ) : chargés avec l'écran.
+ * iOS ne révèle jamais si la lecture est accordée : aucun texte ne l'affirme (D-59, SPA-006).
+ */
+export const healthFr = {
+  row: 'Apple Santé',
+  rowValue: 'lecture seule',
+  title: 'Apple Santé',
+  back: 'Retour',
+  intro: 'Spartiate lit ton poids et tes pas dans Santé, en lecture seule. Rien n’est écrit dans Santé et rien ne quitte l’iPhone.',
+  checking: 'Vérification de Santé…',
+  authorize: 'Autoriser l’accès',
+  unsupported: 'Apple Santé n’est disponible que sur l’iPhone. Sur le PC, saisis ton poids à la main dans Profil et poids.',
+  unavailable: 'Santé n’est pas disponible sur cet iPhone. Tu peux saisir ton poids à la main dans Profil et poids.',
+  availabilityError: 'Impossible de joindre Santé. Réessaie ; en attendant, saisis ton poids à la main dans Profil et poids.',
+  denied: 'Accès refusé. Autorise Spartiate dans Réglages › Santé › Accès aux données et appareils, ou saisis ton poids à la main dans Profil et poids.',
+  requestError: 'La demande d’accès à Santé a échoué. Réessaie.',
+  askedNote: 'Demande terminée. iOS ne dit pas si la lecture est accordée : ce qui s’affiche ci-dessous vient de Santé, rien de plus.',
+  sectionWeight: 'POIDS DU JOUR',
+  sectionSteps: 'PAS DU JOUR',
+  weightValue: '{kg} kg',
+  weightMeta: 'Source : {source} · mesuré à {time}',
+  weightEmpty: 'Aucune pesée aujourd’hui dans Santé.',
+  stepsValue: '{count} pas',
+  stepsMeta: 'Source : {sources} · de {start} à {end}',
+  stepsEmpty: 'Aucun pas lu aujourd’hui dans Santé.',
+  emptyNote: 'Santé n’a rien rendu. iOS ne dit pas si l’accès est refusé ou s’il n’y a simplement aucune donnée.',
+  readDenied: 'Santé a refusé cette lecture.',
+  readUnavailable: 'Cette lecture n’est pas disponible pour le moment.',
+  readError: 'Lecture impossible ({code}). Réessaie.',
+  readErrorNoCode: 'Lecture impossible. Réessaie.',
+  retry: 'Réessayer',
+  useWeight: 'Utiliser cette pesée',
+  weightUsed: 'Pesée enregistrée. Ta saisie manuelle du jour est conservée.',
+  weightUsedFailed: 'La pesée n’a pas pu être enregistrée. Réessaie.',
+} as const;

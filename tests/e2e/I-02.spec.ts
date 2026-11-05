@@ -89,16 +89,16 @@ test.describe('I-02 — alerte avant expiration (iPhone, profil et planificateur
   test('moins de 24 h : aucune notification, bandeau « expire dans 16 h » (critère 6)', async ({ page }) => {
     await signing(page, (hooks) => hooks.source.expireAt('2026-10-08T23:30:00Z'));
     await resume(page);
-    await expect(page.locator('.ct-status-banner')).toContainText('Spartiate expire dans 16 h : actualisez-la dans SideStore');
+    await expect(page.locator('.ct-status-banner')).toContainText('Spartiate expire dans 16 h : actualise-la dans SideStore');
     expect(await signing(page, (hooks) => hooks.alert.scheduled.length)).toBe(0);
     await openSettings(page);
-    await expect(page.getByText('Moins de 24 h restantes : actualisez Spartiate dans SideStore')).toBeVisible();
+    await expect(page.getByText('Moins de 24 h restantes : actualise Spartiate dans SideStore')).toBeVisible();
   });
 
-  test('signature expirée : bandeau « La signature est expirée : réinstallez l’app »', async ({ page }) => {
+  test('signature expirée : bandeau « La signature est expirée : réinstalle l’app »', async ({ page }) => {
     await signing(page, (hooks) => hooks.source.expireAt('2026-10-08T06:00:00Z'));
     await resume(page);
-    await expect(page.locator('.ct-status-banner')).toContainText('La signature est expirée : réinstallez l’app');
+    await expect(page.locator('.ct-status-banner')).toContainText('La signature est expirée : réinstalle l’app');
   });
 
   test('date inconnue : dite dans À propos (critère 7)', async ({ page }) => {
@@ -110,11 +110,11 @@ test.describe('I-02 — alerte avant expiration (iPhone, profil et planificateur
     expect(await signing(page, (hooks) => hooks.alert.scheduled.length)).toBe(0);
   });
 
-  test('autorisation refusée : « Les notifications sont refusées : vous ne serez pas prévenu » dans À propos (critère 7)', { tag: '@permission-denied' }, async ({ page }) => {
+  test('autorisation refusée : « Les notifications sont refusées : tu ne seras pas prévenu » dans À propos (critère 7)', { tag: '@permission-denied' }, async ({ page }) => {
     await signing(page, (hooks) => hooks.source.expireAt('2026-10-14T07:00:00Z'));
     await resume(page);
     await openSettings(page);
-    await expect(page.getByText('Les notifications sont refusées : vous ne serez pas prévenu')).toBeVisible();
+    await expect(page.getByText('Les notifications sont refusées : tu ne seras pas prévenu')).toBeVisible();
     expect(await signing(page, (hooks) => hooks.alert.scheduled.length)).toBe(0);
   });
 });
@@ -135,7 +135,7 @@ test.describe('I-02 — 440 × 956 : À propos et bandeau sans défilement horiz
     await signing(page, (hooks) => hooks.source.expireAt('2026-10-14T07:00:00Z'));
     await resume(page);
     await openSettings(page);
-    await expect(page.getByText('Les notifications ne sont pas autorisées : vous ne serez pas prévenu')).toBeVisible();
+    await expect(page.getByText('Les notifications ne sont pas autorisées : tu ne seras pas prévenu')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Autoriser les notifications pour l’alerte d’expiration' })).toBeVisible();
     await expectFitsViewport(page, 'À propos, notifications non autorisées');
   });
@@ -154,7 +154,7 @@ test.describe('I-02 — 440 × 956 : À propos et bandeau sans défilement horiz
     await expect(page.locator('.ct-status-banner')).toContainText('expire dans 16 h');
     await expectFitsViewport(page, 'bandeau d’expiration');
     await page.getByRole('button', { name: 'Voir l’expiration de la signature dans Réglages' }).click();
-    await expect(page.getByText('Moins de 24 h restantes : actualisez Spartiate dans SideStore')).toBeVisible();
+    await expect(page.getByText('Moins de 24 h restantes : actualise Spartiate dans SideStore')).toBeVisible();
     await expectFitsViewport(page, 'À propos, moins de 24 h');
   });
 

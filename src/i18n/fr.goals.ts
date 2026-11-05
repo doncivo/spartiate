@@ -11,7 +11,7 @@ export const goalsFr = {
   titleLabel: 'Objectif de la semaine',
   titleLabelN: 'Objectif de la semaine ({number})',
   titlePlaceholder: 'Mon objectif de la semaine',
-  helpEmpty: 'Fixez ce qui compte cette semaine',
+  helpEmpty: 'Fixe ce qui compte cette semaine',
   addGoal: '+ Ajouter un objectif',
   iconButton: 'Icône de l’objectif',
   spaceLabel: 'Espace de l’objectif',

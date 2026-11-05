@@ -131,7 +131,7 @@ describe('P-04-iOS : restauration sur iPhone (mise au calme, mémo, marqueur, é
     expect(store.getState().restartNeeded).toBe(true);
     expect(JSON.parse(window.localStorage.getItem(RESTORE_RESULT_KEY) ?? '{}')).toMatchObject({ outcome: 'failed', reason: 'io', databaseClosed: true });
     announceRestoreResult();
-    expect(useNoticeStore.getState().notice?.text).toBe('La restauration n’a pas abouti : vos données sont celles d’avant. Code : io');
+    expect(useNoticeStore.getState().notice?.text).toBe('La restauration n’a pas abouti : tes données sont celles d’avant. Code : io');
     expect(window.localStorage.getItem(RESTORE_RESULT_KEY)).toBeNull();
     useNoticeStore.getState().clear();
     announceRestoreResult();

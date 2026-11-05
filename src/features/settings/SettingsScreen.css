@@ -339,3 +339,8 @@
   flex-grow: 1;
   min-width: 0;
 }
+
+/* Finitions 0.1.2 (c) : la charte réserve le rouge aux fonds de bouton ; un avertissement de texte prend le jaune des tokens. */
+.ct-settings__hint--warning {
+  color: var(--ct-color-warning-text);
+}

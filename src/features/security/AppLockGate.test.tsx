@@ -123,7 +123,7 @@ describe('écran de verrou et coquille (critères 6, 7 et 11)', () => {
     await boot(true);
     await screen.findByRole('heading', { name: 'Spartiate est verrouillée' });
     await flush();
-    expect(screen.getByRole('alert')).toHaveTextContent('Le verrouillage ne répond pas (unavailable). Vos données sont intactes.');
+    expect(screen.getByRole('alert')).toHaveTextContent('Le verrouillage ne répond pas (unavailable). Tes données sont intactes.');
     fireEvent.click(screen.getByRole('button', { name: 'Réessayer' }));
     await flush();
     expect(screen.queryByText('Courses')).toBeNull();

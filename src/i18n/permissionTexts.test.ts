@@ -64,13 +64,13 @@ describe('textes des autorisations (I-05 critère 9)', () => {
     expect(denied['speechRecognition']).toMatch(/^La reconnaissance vocale est refusée/);
     for (const text of Object.values(denied)) expect(sentences(text)).toBeLessThanOrEqual(3);
     expect(fr.capture.dictation.explain.text).toBe(
-      'Spartiate écoute votre voix pour la transformer en texte, sur l’iPhone. Rien n’est enregistré ni envoyé. iOS vous demandera deux autorisations : le micro, puis la reconnaissance vocale.',
+      'Spartiate écoute ta voix pour la transformer en texte, sur l’iPhone. Rien n’est enregistré ni envoyé. iOS te demandera deux autorisations : le micro, puis la reconnaissance vocale.',
     );
   });
 
   it('indication de la caméra du scan : la phrase de la fiche, sans dépendre d’un état', () => {
     expect(fr.scan.cameraHint.text).toBe(
-      'Pour photographier une liste, autorisez la caméra : iOS vous le demandera la première fois. Si rien ne se passe, ouvrez Réglages › Spartiate › Caméra.',
+      'Pour photographier une liste, autorise la caméra : iOS te le demandera la première fois. Si rien ne se passe, ouvre Réglages › Spartiate › Caméra.',
     );
     expect(fr.scan.cameraHint.openSettings).toBe('Ouvrir les réglages');
   });

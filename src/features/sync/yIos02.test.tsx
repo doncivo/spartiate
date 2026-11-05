@@ -87,7 +87,7 @@ describe('écran « Associer au PC » (Y-IOS-02 critère 7)', () => {
   it('dossier d’abord : choix du dossier, puis explication de la caméra et scan ; jamais de QR affiché', async () => {
     const { phone } = await pcAndPhone(false);
     renderScreen(phone);
-    expect(await screen.findByText('Choisissez d’abord le même dossier iCloud Drive / Spartiate que sur le PC.')).toBeInTheDocument();
+    expect(await screen.findByText('Choisis d’abord le même dossier iCloud Drive / Spartiate que sur le PC.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ouvrir la caméra et scanner le code d’association' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Choisir le dossier iCloud Drive / Spartiate' }));
     expect(await scanButton()).toBeInTheDocument();
@@ -151,7 +151,7 @@ describe('écran « Associer au PC » (Y-IOS-02 critère 7)', () => {
     phone.testing.setConsent(true);
     phone.testing.setScanResult(await qr());
     fireEvent.click(await scanButton());
-    expect(await screen.findByText('Trop de tentatives : réessayez dans 10 minutes')).toBeInTheDocument();
+    expect(await screen.findByText('Trop de tentatives : réessaie dans 10 minutes')).toBeInTheDocument();
     db.clock.advance(10 * 60_000);
     phone.testing.setScanResult(await qr());
     fireEvent.click(await scanButton());
@@ -203,7 +203,7 @@ describe('échec de réintégration sur iPhone (ADR 0011 §23 point 6 ; Y-IOS-02
     return { service, container };
   }
 
-  it('visible (bandeau « Mettez à jour l’app »), persistant après redémarrage, effacé à la réussite', async () => {
+  it('visible (bandeau « Mets à jour l’app »), persistant après redémarrage, effacé à la réussite', async () => {
     await db.data.repos.sync.setMeta(REINTEGRATION_FAILURE_META, JSON.stringify(failure));
     const fakeDocument = { visibilityState: 'visible', addEventListener: () => undefined, removeEventListener: () => undefined } as unknown as Document;
     const first = await phoneService();

@@ -13,41 +13,41 @@ export const syncFolderFr = {
   chooseLabel: 'Choisir le dossier de synchronisation',
   choosing: 'Choix du dossier…',
   chosen: 'Dossier choisi',
-  notIcloud: 'Ce dossier n’est pas dans iCloud Drive : vos appareils ne le partageront pas',
+  notIcloud: 'Ce dossier n’est pas dans iCloud Drive : tes appareils ne le partageront pas',
   forget: 'Oublier',
   forgetLabel: 'Oublier le dossier de synchronisation',
   forgetTitle: 'Oublier le dossier de synchro ?',
   forgetDescription:
-    'Cet appareil ne se synchronisera plus ; ses données restent sur l’appareil. La désinstallation de l’app n’efface pas la clé de synchronisation : choisissez « Oublier le dossier et la clé » avant de désinstaller.',
+    'Cet appareil ne se synchronisera plus ; ses données restent sur l’appareil. La désinstallation de l’app n’efface pas la clé de synchronisation : choisis « Oublier le dossier et la clé » avant de désinstaller.',
   forgetFolder: 'Oublier le dossier',
   forgetFolderAndKey: 'Oublier le dossier et la clé',
-  errorUnsafe: 'Ce dossier ne peut pas servir à la synchronisation : choisissez-en un autre',
+  errorUnsafe: 'Ce dossier ne peut pas servir à la synchronisation : choisis-en un autre',
   // Y-IOS-02 (audit des impasses) : erreur du dossier lié relue à la demande.
   retry: 'Réessayer',
   retryLabel: 'Relire l’état du dossier de synchronisation',
   errorUnreachable: 'Le dossier de synchro est introuvable',
-  errorUnreachableIos: 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / Spartiate',
+  errorUnreachableIos: 'Dossier iCloud Drive inaccessible : choisis de nouveau le dossier iCloud Drive / Spartiate',
   errorTooLarge: 'Le dossier de synchro est trop volumineux',
-  errorProviderStopped: 'Ouvrez iCloud pour Windows',
+  errorProviderStopped: 'Ouvre iCloud pour Windows',
   errorVault: 'Le coffre de Windows est indisponible',
-  errorVaultIos: 'Le Trousseau de l’iPhone est indisponible : déverrouillez l’iPhone, la synchro reprendra',
+  errorVaultIos: 'Le Trousseau de l’iPhone est indisponible : déverrouille l’iPhone, la synchro reprendra',
   errorDenied: 'Action annulée',
-  errorForeign: 'Ce dossier appartient à CircleTasks : Spartiate ne le lie jamais. Choisissez un autre dossier (par exemple « Spartiate » dans iCloud Drive).', // ancien-ok: nom de l'autre app dans le message de refus (ADR 0017)
-  errorRateLimited: 'Trop de tentatives : réessayez dans quelques minutes',
+  errorForeign: 'Ce dossier appartient à CircleTasks : Spartiate ne le lie jamais. Choisis un autre dossier (par exemple « Spartiate » dans iCloud Drive).', // ancien-ok: nom de l'autre app dans le message de refus (ADR 0017)
+  errorRateLimited: 'Trop de tentatives : réessaie dans quelques minutes',
   errorGeneric: 'La synchronisation a rencontré une erreur',
 } as const;
 
 export const syncKeyFr = {
-  needsPairing: 'Ce dossier contient déjà des données chiffrées : associez cet appareil',
-  mismatch: 'Ce dossier a été chiffré avec une autre clé : associez cet appareil',
+  needsPairing: 'Ce dossier contient déjà des données chiffrées : associe cet appareil',
+  mismatch: 'Ce dossier a été chiffré avec une autre clé : associe cet appareil',
   // Y-IOS-02 (ADR 0011 §23 point 9) : l'iPhone ne crée jamais de clé au choix du dossier.
-  needsPairingIos: 'Cet iPhone n’a pas la clé de chiffrement : associez-le au PC',
+  needsPairingIos: 'Cet iPhone n’a pas la clé de chiffrement : associe-le au PC',
   startNew: 'Nouvelle synchronisation',
   startNewHint: 'Seulement si aucun autre appareil ne synchronise encore dans ce dossier',
   startNewAction: 'Commencer',
   startNewLabel: 'Commencer une nouvelle synchronisation sur cet iPhone',
   startNewTitle: 'Commencer une nouvelle synchronisation sur cet iPhone ?',
   startNewDescription:
-    'Cet iPhone créera sa propre clé de chiffrement. Si votre PC synchronise déjà dans ce dossier, iCloud ne l’a peut-être pas encore téléchargé : vos appareils ne se verraient plus. Dans ce cas, annulez, attendez qu’iCloud ait téléchargé le dossier et choisissez « Associer au PC ».',
+    'Cet iPhone créera sa propre clé de chiffrement. Si ton PC synchronise déjà dans ce dossier, iCloud ne l’a peut-être pas encore téléchargé : tes appareils ne se verraient plus. Dans ce cas, annule, attends qu’iCloud ait téléchargé le dossier et choisis « Associer au PC ».',
   startNewConfirm: 'Commencer quand même',
 } as const;

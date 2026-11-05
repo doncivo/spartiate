@@ -130,7 +130,7 @@ test.describe('P-04 — sauvegarde et restauration', () => {
     await failNextBackup(page, 'restore', 'io', true);
     await dialog.getByRole('button', { name: /4 oct\. à 21:40/ }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Restaurer' }).click();
-    await expect(dialog.getByText('Redémarrez Spartiate pour retrouver vos données actuelles', { exact: false })).toBeVisible();
+    await expect(dialog.getByText('Redémarre Spartiate pour retrouver tes données actuelles', { exact: false })).toBeVisible();
     await dialog.getByRole('button', { name: 'Redémarrer' }).click();
     await expect.poll(async () => (await backupState(page)).restarts).toBe(1);
   });

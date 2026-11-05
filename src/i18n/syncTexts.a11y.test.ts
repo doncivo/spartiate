@@ -16,7 +16,7 @@ describe('textes de synchro : fenêtre pairing', () => {
     for (const [key, text] of Object.entries(frFlat)) expect(text.trim(), key).not.toBe('');
   });
 
-  it('la fenêtre est celle du PC : aucune consigne « touchez » (souris et clavier)', () => {
+  it('la fenêtre est celle du PC : aucune consigne « touche » (souris et clavier)', () => {
     for (const text of Object.values(frFlat)) expect(text).not.toMatch(/touche[zr]/i);
   });
 });

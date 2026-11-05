@@ -94,7 +94,7 @@ test('Y-11 : réinitialiser depuis le PC, le second PC doit être associé de no
   await expect(pc.page.getByRole('button', { name: 'Voir le problème de synchronisation' })).toBeVisible();
 
   // Critère 7 (D1) : la nouvelle clé de secours (K2), jamais l'ancienne.
-  await expect(pc.page.getByText('L’ancienne clé de secours ne sert plus. Affichez la nouvelle, imprimez-la, puis détruisez l’ancienne feuille.')).toBeVisible();
+  await expect(pc.page.getByText('L’ancienne clé de secours ne sert plus. Affiche la nouvelle, imprime-la, puis détruis l’ancienne feuille.')).toBeVisible();
   const newKey = await recoveryKeyShown(pc, () => pc.page.getByRole('button', { name: 'Afficher et imprimer la nouvelle clé de secours' }).click());
   expect(newKey).not.toBe(oldKey);
 

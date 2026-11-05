@@ -1144,7 +1144,7 @@ export function createMemorySyncPlatform(options: MemorySyncOptions = {}): Memor
     // Son propre state.spx en transfert (nuage, ligne incomplète) sans accusé qui borne : en attente, rien n'est retenu (revue 4 du lot
     // Y1, même règle que Rust).
     if (mine?.status === 'cloud-pending' && acks.length === 0) fail('cloud-pending');
-    // État d'une version plus récente du format : jamais réécrit (Y-07, « Mettez à jour l'app »).
+    // État d'une version plus récente du format : jamais réécrit (Y-07, « Mets à jour l'app »).
     if (mine?.status === 'newer-format') fail('newer-format');
     // Remplacé ou illisible (étranger, corrompu, rejeu, trop grand) : reconstruit sans lui, stateSeq au moins égal à l'état accepté et
     // au numéro lu en clair dans l'en-tête du fichier remplacé, pour le réécrire aussitôt (§1.4, revue B1) ; ce numéro non authentifié

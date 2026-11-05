@@ -95,7 +95,7 @@ export type SendToSomedayError = 'done' | 'already-someday' | 'recurrent';
 
 /**
  * Renvoie une tâche datée dans « Un jour » (SD-03, bouton de la fiche, balayage, notification). Une tâche terminée, déjà dans « Un
- * jour » ou récurrente est refusée (QB-11 : « Arrêtez d'abord la répétition »). `existingOrders` : ordres manuels de la liste, la
+ * jour » ou récurrente est refusée (QB-11 : « Arrête d'abord la répétition »). `existingOrders` : ordres manuels de la liste, la
  * tâche prend la tête (`somedayHeadOrder`). Les rappels ne sont pas touchés : conservés mais inactifs sans heure (QB-10).
  */
 export function sendToSomeday(

@@ -1,16 +1,16 @@
 /**
- * Textes de `sync.version` (Y-07), en français : source de vérité. Bandeau A-09 « Mettez à jour l'app », emplacement « version » de
+ * Textes de `sync.version` (Y-07), en français : source de vérité. Bandeau A-09 « Mets à jour l'app », emplacement « version » de
  * Réglages › Synchronisation › Détails et échec de réintégration (exigence d'Ali). Jamais de numéro de migration : seul le numéro
  * d'application publié par l'autre appareil (D2) ; jamais de valeur reçue ni de message d'erreur.
  */
 export const syncVersionFr = {
-  banner: 'Mettez à jour l’app : un de vos appareils utilise une version plus récente',
+  banner: 'Mets à jour l’app : un de tes appareils utilise une version plus récente',
   section: 'Version',
   newer: '{device} utilise une version plus récente de l’app',
   newerWithVersion: '{device} utilise une version plus récente de l’app ({version})',
   /** I-06 : l'autre appareil n'a pas pu lire son numéro (publié `unknown`, ou `0.0.0` des anciennes versions de l'iPhone). */
   unknownVersion: 'version inconnue',
-  readSuspended: 'Lecture de ses données suspendue : mettez à jour l’app',
+  readSuspended: 'Lecture de ses données suspendue : mets à jour l’app',
   failedLineOne: '1 élément reçu d’une version plus récente n’a pas pu être intégré',
   failedLineMany: '{count} éléments reçus d’une version plus récente n’ont pas pu être intégrés',
   failedDetail: '{count} éléments non intégrés ({kinds})',

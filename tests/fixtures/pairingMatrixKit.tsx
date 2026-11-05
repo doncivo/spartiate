@@ -52,8 +52,8 @@ export function visibleActions(): Action[] {
   return (Object.keys(ACTIONS) as Action[]).filter((key) => screen.queryAllByRole('button', { name: ACTIONS[key] }).length > 0).sort();
 }
 
-export const BANNER_NEEDS = (os: Os): string => (os === 'ios' ? 'Associez cet iPhone au PC pour synchroniser' : 'Associez cet appareil pour synchroniser');
-export const BANNER_MISMATCH = 'Ce dossier a été chiffré avec une autre clé : associez cet appareil';
+export const BANNER_NEEDS = (os: Os): string => (os === 'ios' ? 'Associe cet iPhone au PC pour synchroniser' : 'Associe cet appareil pour synchroniser');
+export const BANNER_MISMATCH = 'Ce dossier a été chiffré avec une autre clé : associe cet appareil';
 
 // --- banc ------------------------------------------------------------------------------------------------------------------------------
 

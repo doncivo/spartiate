@@ -75,11 +75,11 @@ describe('bandeau « forgotten » (critère 16) : dès le démarrage, effacé à
     await settle();
     act(() => sync.setStatus({ phase: 'forgotten', lastSyncAt: NOW as IsoDateTime }));
     await settle();
-    expect(text()).toContain('Cet appareil a été oublié : associez-le de nouveau');
+    expect(text()).toContain('Cet appareil a été oublié : associe-le de nouveau');
     expect(await db.data.repos.sync.getMeta(BLOCKING_PHASE_META)).toContain('forgotten');
     // Redémarrage : le service repart en « synchro en cours » sans rien savoir ; le bandeau vient de la base.
     await restart({ phase: 'syncing' });
-    expect(text()).toContain('Cet appareil a été oublié : associez-le de nouveau');
+    expect(text()).toContain('Cet appareil a été oublié : associe-le de nouveau');
     // Résolution (« Associer de nouveau » faite, premier cycle sans oubli) : le bandeau disparaît.
     act(() => sync.setStatus({ phase: 'idle', lastSyncAt: NOW as IsoDateTime }));
     await settle();

@@ -41,6 +41,8 @@ test.describe('I-03 — verrouillage Face ID (iPhone, biométrie injectée)', ()
     test.skip(!isPhone(testInfo), 'La biométrie injectée représente l’iPhone.');
     await page.addInitScript(() => {
       (globalThis as { __ctBiometricFake?: boolean }).__ctBiometricFake = true;
+      // D-37 : la ligne Face ID est masquée dans l'app livrée ; ce test la rend visible pour éprouver le code conservé.
+      (globalThis as { __ctShowAppLockRow?: boolean }).__ctShowAppLockRow = true;
       Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => window.__ctVisibility ?? 'visible' });
     });
     await page.clock.install({ time: NOW });

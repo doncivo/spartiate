@@ -41,7 +41,7 @@ describe('DatePicker (T-14, critère 13)', () => {
   });
 
   describe('« Un jour » indisponible (tâche récurrente, SD-03 critère 6, QB-11)', () => {
-    const hint = 'Arrêtez d’abord la répétition';
+    const hint = 'Arrête d’abord la répétition';
 
     it('iPhone : la puce est grisée avec l’aide, sans effet au toucher', () => {
       mockViewport(440);

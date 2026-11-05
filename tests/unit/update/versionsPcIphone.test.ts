@@ -55,7 +55,7 @@ describe('Y-07 entre PC et iPhone avec les numéros publiés (critère 7)', () =
     expect(await pc.driver.select('SELECT field, sv FROM sync_unknown')).toEqual([{ field: TEST_COLUMN, sv: NEXT_SV }]);
     const iphone = status.devices.find((d) => d.deviceId === PHONE_ID);
     expect(iphone).toMatchObject({ platform: 'ios', newer: 'schema', appVersion: '0.3.0' });
-    // Bandeau « Mettez à jour l'app » (startSync : `newerDevices` non vide) et ligne de Détails avec le numéro PUBLIÉ par l'iPhone.
+    // Bandeau « Mets à jour l'app » (startSync : `newerDevices` non vide) et ligne de Détails avec le numéro PUBLIÉ par l'iPhone.
     const newer = newerDevices(status.devices);
     expect(newer.map((d) => d.deviceId)).toEqual([PHONE_ID]);
     expect(newerDeviceText(newer[0] as (typeof newer)[number], status.devices)).toBe(t('sync.version.newerWithVersion', { device: t('sync.status.deviceIphone'), version: '0.3.0' }));

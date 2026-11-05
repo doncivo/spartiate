@@ -122,11 +122,11 @@ describe('feuille de sauvegarde (Y-02 critère 13)', () => {
       </AppContainerProvider>,
     );
 
-  it('dossier configuré : « Cet appareil est associé : le choix vous sera demandé à la prochaine synchro » ; sinon rien', async () => {
+  it('dossier configuré : « Cet appareil est associé : le choix te sera demandé à la prochaine synchro » ; sinon rien', async () => {
     const backups = createMemoryBackup({ versions: [], nowMs: () => db.clock.nowMs() });
     const withSync = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync, backups });
     sheet(withSync);
-    expect(await screen.findByText('Cet appareil est associé : le choix vous sera demandé à la prochaine synchro')).toBeTruthy();
+    expect(await screen.findByText('Cet appareil est associé : le choix te sera demandé à la prochaine synchro')).toBeTruthy();
     cleanup();
     sync.setStatus({ phase: 'not-configured' });
     const without = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync, backups });

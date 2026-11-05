@@ -154,7 +154,7 @@ describe('bundle de départ (index.html)', () => {
   it('l’écran du compte rendu, son bandeau et leurs textes sont hors du départ', () => {
     // `CarryReportSheet.tsx` et `fr.syncCarryReport.ts` sont importés statiquement par des blocs à la demande : ils n'ont pas d'entrée propre dans le
     // manifeste, ils sont donc suivis par leurs marqueurs (classes du composant ; textes du catalogue, y compris ceux ajoutés par la revue).
-    const markers = ['Rétablis alors que vous les aviez supprimés', 'Aucune écriture à reporter', 'Afficher 50 de plus', 'ct-carry__item', 'ct-carry__summary', 'ct-carry__overflow', 'Autres éléments : ', 'stockage plein ou illisible', 'éléments rétablis : '];
+    const markers = ['Rétablis alors que tu les avais supprimés', 'Aucune écriture à reporter', 'Afficher 50 de plus', 'ct-carry__item', 'ct-carry__summary', 'ct-carry__overflow', 'Autres éléments : ', 'stockage plein ou illisible', 'éléments rétablis : '];
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) for (const marker of markers) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), `${chunk.file} : ${marker}`).toBe(false);
     for (const marker of markers) expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker)), marker).toBe(true);

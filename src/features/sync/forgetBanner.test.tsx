@@ -83,12 +83,12 @@ describe('ordre (ADR 0011 §19, emplacements réservés à Y-10)', () => {
 });
 
 describe('appareil local oublié (critère 16)', () => {
-  it('bandeau « Cet appareil a été oublié : associez-le de nouveau », « Voir » ouvre Réglages › Synchronisation ; ligne de Réglages en rouge', async () => {
+  it('bandeau « Cet appareil a été oublié : associe-le de nouveau », « Voir » ouvre Réglages › Synchronisation ; ligne de Réglages en rouge', async () => {
     render(<AppStatusBanner />);
     start();
     await settle();
     set({ phase: 'forgotten', devices: DEVICES });
-    expect(text()).toContain('Cet appareil a été oublié : associez-le de nouveau');
+    expect(text()).toContain('Cet appareil a été oublié : associe-le de nouveau');
     expect(text()).toContain(statusLine(sync.status(), db.clock.nowMs()));
     expect(isTroublePhase(sync.status())).toBe(true);
     expect(screen.getByRole('button', { name: 'Voir le problème de synchronisation' })).toBeTruthy();
@@ -137,7 +137,7 @@ describe('échec d’un oubli et suppression en attente (critère 15 d)', () => 
     });
     await settle();
     // Après le cycle d'ouverture (dossier non configuré : liste des appareils vide), l'appareil est nommé de façon neutre.
-    expect(text()).toMatch(/^L’oubli de .+ a échoué : trop de demandes, réessayez dans 10 minutes/);
+    expect(text()).toMatch(/^L’oubli de .+ a échoué : trop de demandes, réessaie dans 10 minutes/);
     // L'action réelle : mémo effacé dans sync_meta, état relu et publié sans cycle ; le bandeau disparaît.
     const before = logger.entries.length;
     await act(async () => {
@@ -168,7 +168,7 @@ describe('échec d’un oubli et suppression en attente (critère 15 d)', () => 
     expect(text()).toContain('iPhone oublié : suppression de ses fichiers en cours');
     // Seconde revue (§18 point 11) : aucun instantané éligible : dit sur le bandeau, l'oublié nommé.
     set({ forget: { failure: null, deletions: [{ deviceId: PHONE, state: 'no-snapshot', waitingFor: null }] } });
-    expect(text()).toMatch(/^iPhone oublié : aucun instantané à jour, ouvrez un autre appareil associé/);
+    expect(text()).toMatch(/^iPhone oublié : aucun instantané à jour, ouvre un autre appareil associé/);
     // Seconde revue point 5 : dossier disparu, pas encore terminé chez Rust : finalisation en attente, nommée, jusqu'à done.
     set({ forget: { failure: null, deletions: [{ deviceId: PHONE, state: 'finalizing', waitingFor: LAPTOP }] } });
     expect(text()).toMatch(/^iPhone oublié : finalisation en attente de PC/);

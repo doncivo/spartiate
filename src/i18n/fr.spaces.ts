@@ -70,9 +70,9 @@ export const spacesFr = {
   quietDelete: 'Supprimer la plage {number}',
   quietAdd: 'Ajouter une plage',
   quietSave: 'Enregistrer',
-  quietNoDays: 'Choisissez au moins un jour pour la plage {number}.',
+  quietNoDays: 'Choisis au moins un jour pour la plage {number}.',
   quietTimeInvalid: 'Heure non comprise pour la plage {number} (exemple : 19:00).',
-  quietEmptyRange: 'Plage {number} : le début et la fin doivent différer, ou cochez « Toute la journée ».',
+  quietEmptyRange: 'Plage {number} : le début et la fin doivent différer, ou coche « Toute la journée ».',
   colors: {
     teal: 'Bleu canard',
     violet: 'Violet',

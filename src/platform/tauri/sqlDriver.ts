@@ -6,7 +6,7 @@ import { detectOs } from '../runtime';
 
 /**
  * Récupération d'une restauration interrompue impossible au démarrage de l'iPhone (P-04-iOS, ADR 0009 avenant lot F B3) : aucune base n'est
- * ouverte ni créée ; l'écran d'erreur persistant affiche le code (« Restauration interrompue : fermez puis rouvrez Spartiate »).
+ * ouverte ni créée ; l'écran d'erreur persistant affiche le code (« Restauration interrompue : ferme puis rouvre Spartiate »).
  */
 export class StartupRecoveryError extends Error {
   override readonly name = 'StartupRecoveryError';

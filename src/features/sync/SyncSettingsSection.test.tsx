@@ -80,18 +80,18 @@ describe('SyncSettingsSection (Y-01)', () => {
     expect((await platform.folder.info()).configured).toBe(false);
   });
 
-  it('dossier qui contient déjà des données chiffrées : aucune clé, « associez cet appareil » (critère 10)', async () => {
+  it('dossier qui contient déjà des données chiffrées : aucune clé, « associe cet appareil » (critère 10)', async () => {
     const platform = createMemorySyncPlatform({ folder: await folderWithData() });
     renderSection(platform);
     fireEvent.click(await screen.findByRole('button', { name: 'Choisir le dossier de synchronisation' }));
-    expect(await screen.findByText('Ce dossier contient déjà des données chiffrées : associez cet appareil')).toHaveAttribute('role', 'status');
+    expect(await screen.findByText('Ce dossier contient déjà des données chiffrées : associe cet appareil')).toHaveAttribute('role', 'status');
     expect((await platform.key.status()).present).toBe(false);
   });
 
   it('dossier hors iCloud : avertissement sous la ligne (critère 8)', async () => {
     renderSection(createMemorySyncPlatform({ folder: new MemorySyncFolder('local', 'ct-test', 'local') }));
     fireEvent.click(await screen.findByRole('button', { name: 'Choisir le dossier de synchronisation' }));
-    expect(await screen.findByTestId('sync-folder-warning')).toHaveTextContent('Ce dossier n’est pas dans iCloud Drive : vos appareils ne le partageront pas');
+    expect(await screen.findByTestId('sync-folder-warning')).toHaveTextContent('Ce dossier n’est pas dans iCloud Drive : tes appareils ne le partageront pas');
     // Libellé composé par l'interface (revue 13) : un dossier hors iCloud n'affiche que son nom.
     expect(screen.getByText('ct-test')).toBeInTheDocument();
   });
@@ -101,7 +101,7 @@ describe('SyncSettingsSection (Y-01)', () => {
     const failing: SyncPlatform = { ...platform, folder: { ...platform.folder, choose: () => Promise.reject(new SyncPlatformError('unsafe-folder')) } };
     renderSection(failing);
     fireEvent.click(await screen.findByRole('button', { name: 'Choisir le dossier de synchronisation' }));
-    expect(await screen.findByText('Ce dossier ne peut pas servir à la synchronisation : choisissez-en un autre')).toHaveAttribute('role', 'status');
+    expect(await screen.findByText('Ce dossier ne peut pas servir à la synchronisation : choisis-en un autre')).toHaveAttribute('role', 'status');
     // Revue 6 : le choix a échoué, rien n'est lié : « Choisir le dossier » reste proposé, jamais « Oublier ».
     expect(screen.getByRole('button', { name: 'Choisir le dossier de synchronisation' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Oublier le dossier de synchronisation' })).toBeNull();
@@ -184,7 +184,7 @@ describe('SyncSettingsSection branchée sur le service (Y-02 critère 16, branch
     expect(screen.getByRole('button', { name: 'Oublier le dossier de synchronisation' })).toBeInTheDocument();
   });
 
-  it('dossier qui contient déjà des données : « associez cet appareil » ; un seul cycle, qui s’arrête sur needs-pairing (bandeau A-09, Y-IOS-02)', async () => {
+  it('dossier qui contient déjà des données : « associe cet appareil » ; un seul cycle, qui s’arrête sur needs-pairing (bandeau A-09, Y-IOS-02)', async () => {
     const platform = createMemorySyncPlatform({ folder: await folderWithData() });
     const sync = createFakeSyncService({ phase: 'needs-pairing' });
     const container = createAppContainer({ clock, hlc: createHlcClock({ clock, deviceId: DEVICE }), data: {} as DataAccess, sync, syncPlatform: platform });
@@ -194,7 +194,7 @@ describe('SyncSettingsSection branchée sur le service (Y-02 critère 16, branch
       </AppContainerProvider>,
     );
     fireEvent.click(await screen.findByRole('button', { name: 'Choisir le dossier de synchronisation' }));
-    expect(await screen.findByText('Ce dossier contient déjà des données chiffrées : associez cet appareil')).toBeInTheDocument();
+    expect(await screen.findByText('Ce dossier contient déjà des données chiffrées : associe cet appareil')).toBeInTheDocument();
     expect(sync.calls).toEqual(['open']);
   });
 });

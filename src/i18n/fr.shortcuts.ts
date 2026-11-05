@@ -43,7 +43,7 @@ export const shortcutsUiFr = {
     quickCapture: 'Capture rapide',
     quickCaptureEnabled: 'Capture rapide globale',
     quickCaptureChange: 'Capture rapide : {keys}. Modifier la combinaison',
-    capturePrompt: 'Appuyez sur la nouvelle combinaison',
+    capturePrompt: 'Appuie sur la nouvelle combinaison',
     captureCancel: 'Échap pour annuler',
     reset: 'Rétablir {keys}',
     changed: 'Capture rapide : {keys}',
@@ -54,7 +54,7 @@ export const shortcutsUiFr = {
   },
   errors: {
     syntax: 'Combinaison non reconnue.',
-    noModifier: 'Ajoutez Ctrl ou Alt à la combinaison.',
+    noModifier: 'Ajoute Ctrl ou Alt à la combinaison.',
     windowsKey: 'La touche Windows est réservée au système.',
     reserved: 'Cette combinaison est réservée par Windows.',
     appConflict: 'Cette combinaison est déjà utilisée dans Spartiate.',

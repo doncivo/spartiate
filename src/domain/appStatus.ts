@@ -1,6 +1,6 @@
 /**
  * États de l'app affichés dans le bandeau (A-09). Un seul bandeau est affiché à la fois, selon une priorité fixe (critère 5 ; D1 du
- * solde du critère 9) : agenda déconnecté > problème de synchro > problème de rappels > problème de Rappels Apple > mettez à jour l'app > en attente d'iCloud > synchro en cours >
+ * solde du critère 9) : agenda déconnecté > problème de synchro > problème de rappels > problème de Rappels Apple > mets à jour l'app > en attente d'iCloud > synchro en cours >
  * hors ligne.
  *
  * Émetteurs : `offline` par la plateforme (réseau) ; `syncTrouble`, `syncing` et `waitingIcloud` par la synchro (`startSync.ts`, décision

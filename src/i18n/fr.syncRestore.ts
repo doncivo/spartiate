@@ -5,20 +5,20 @@
  */
 export const syncRestoreFr = {
   title: 'Restauration : que faire de la synchronisation ?',
-  body: 'Les modifications que cet appareil avait déjà reçues seront remplacées sur tous vos appareils',
+  body: 'Les modifications que cet appareil avait déjà reçues seront remplacées sur tous tes appareils',
   applyEverywhere: 'Appliquer cette version sur tous mes appareils',
   keepSynced: 'Garder les données synchronisées',
   bodyOnlyApply:
-    'Les modifications que cet appareil avait déjà reçues seront remplacées sur tous vos appareils. Une suppression plus récente que cette sauvegarde a déjà été effacée définitivement de vos appareils : seule la première option est possible.',
+    'Les modifications que cet appareil avait déjà reçues seront remplacées sur tous tes appareils. Une suppression plus récente que cette sauvegarde a déjà été effacée définitivement de tes appareils : seule la première option est possible.',
   later: 'Plus tard',
   resetInProgress: 'Une réinitialisation de la synchronisation est en cours : cette version ne pourra être appliquée partout qu’à sa fin.',
   resetFinish:
-    'Une réinitialisation de la synchronisation est en cours et une suppression plus récente que cette sauvegarde a déjà été effacée définitivement : terminez-la sur l’appareil qui réinitialise.',
-  failed: 'Le choix n’a pas pu être appliqué ({reason}). Rien n’a été changé : vous pouvez réessayer.',
+    'Une réinitialisation de la synchronisation est en cours et une suppression plus récente que cette sauvegarde a déjà été effacée définitivement : termine-la sur l’appareil qui réinitialise.',
+  failed: 'Le choix n’a pas pu être appliqué ({reason}). Rien n’a été changé : tu peux réessayer.',
   failedReset: 'Le choix n’a pas été appliqué : une réinitialisation de la synchronisation est en cours. Rien n’a été changé.',
   scanFailed: 'Le dossier de synchro n’a pas pu être vérifié : « Appliquer cette version sur tous mes appareils » sera proposé quand il sera joignable.',
-  provisional: 'La restauration n’a pas pu être confirmée pour l’instant : « Appliquer cette version sur tous mes appareils » n’est pas proposé. Spartiate revérifie au prochain démarrage : fermez puis rouvrez l’app.',
-  provisionalNoOption: 'La restauration n’a pas pu être confirmée pour l’instant. Spartiate revérifie au prochain démarrage : fermez puis rouvrez l’app.',
-  scanFailedNoOption: 'Le dossier de synchro n’a pas pu être vérifié : réessayez quand il sera joignable.',
-  backupWarning: 'Cet appareil est associé : le choix vous sera demandé à la prochaine synchro',
+  provisional: 'La restauration n’a pas pu être confirmée pour l’instant : « Appliquer cette version sur tous mes appareils » n’est pas proposé. Spartiate revérifie au prochain démarrage : ferme puis rouvre l’app.',
+  provisionalNoOption: 'La restauration n’a pas pu être confirmée pour l’instant. Spartiate revérifie au prochain démarrage : ferme puis rouvre l’app.',
+  scanFailedNoOption: 'Le dossier de synchro n’a pas pu être vérifié : réessaie quand il sera joignable.',
+  backupWarning: 'Cet appareil est associé : le choix te sera demandé à la prochaine synchro',
 } as const;

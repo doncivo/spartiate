@@ -58,7 +58,7 @@ describe('critère 13 : migration en échec après la mise à jour', () => {
   it('trois actions : Réessayer, Copier le détail, Restaurer ; confirmation avec « Annuler » par défaut, Annuler ne fait rien', async () => {
     const restore = vi.fn(() => Promise.resolve({ ok: true } as const));
     render(<DbFailureDetails failure={MIGRATION_FAILURE} readEnvironment={readEnvironment} canRestore restore={restore} />);
-    expect(screen.getByText('Vos données sont intactes. Ne supprimez pas Spartiate. Envoyez le détail pour obtenir un correctif.')).toBeInTheDocument();
+    expect(screen.getByText('Tes données sont intactes. Ne supprime pas Spartiate. Envoie le détail pour obtenir un correctif.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: t('app.diag.retry') })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: t('app.diag.copy') })).toBeInTheDocument();
     fireEvent.click(await screen.findByRole('button', { name: tUpdateRestore('restore') }));
@@ -145,7 +145,7 @@ describe('critère 13 : service de restauration de l’écran d’échec', () =>
     localStorage.clear();
   });
 
-  it('échec : raison P-04, aucun redémarrage ; base fermée et io : « redémarrez » ; aucun service : message et code', async () => {
+  it('échec : raison P-04, aucun redémarrage ; base fermée et io : « redémarre » ; aucun service : message et code', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const service = fakeService(() => Promise.reject(new BackupError('corrupt')));
     await expect(restoreUpdateBackup(BACKUP, clock, service)).resolves.toEqual({ ok: false, message: t('backup.errorCorrupt'), code: 'corrupt' });
@@ -160,7 +160,7 @@ describe('critère 14 : base plus récente que l’app', () => {
   it('message de consigne (iPhone : SideStore ; PC : page des versions), jamais le message brut ; pas de restauration', () => {
     vi.stubGlobal('navigator', { ...navigator, userAgent: IPHONE });
     expect(failureAlertKey(NEWER_FAILURE, false)).toBe('app.update.schemaNewer');
-    expect(t('app.update.schemaNewer')).toBe('Cette version de Spartiate est plus ancienne que vos données. Installez la dernière version depuis SideStore. Vos données ne sont pas modifiées.');
+    expect(t('app.update.schemaNewer')).toBe('Cette version de Spartiate est plus ancienne que tes données. Installe la dernière version depuis SideStore. Tes données ne sont pas modifiées.');
     vi.stubGlobal('navigator', { ...navigator, userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' });
     expect(failureAlertKey(NEWER_FAILURE, false)).toBe('app.update.schemaNewerPc');
     expect(t('app.update.schemaNewer')).not.toMatch(/inconnue de cette version/);

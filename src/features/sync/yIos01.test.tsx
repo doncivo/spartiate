@@ -22,7 +22,7 @@ import { createFakeSyncService, type FakeSyncService } from './testKit';
 const SELF = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000a1');
 const PC = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000b2');
 const NOW = '2026-10-08T08:00:00.000Z';
-const IOS_TEXT = 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / Spartiate';
+const IOS_TEXT = 'Dossier iCloud Drive inaccessible : choisis de nouveau le dossier iCloud Drive / Spartiate';
 const IPHONE_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148';
 
 const self = (platform: 'ios' | 'windows'): SyncDeviceStatus => ({ deviceId: SELF, platform, self: true, status: 'active', lastReadAt: null });
@@ -61,7 +61,7 @@ describe('textes de l’iPhone (ADR 0011 §22 point 8)', () => {
     const base = { phase: 'error', errorCode: 'folder-unreachable' } as const;
     const status = (platform: 'ios' | 'windows'): SyncStatus => ({ ...sync.status(), ...base, devices: [self(platform), other] });
     expect(statusLine(status('ios'), Date.parse(NOW))).toBe(IOS_TEXT);
-    expect(statusLine(status('windows'), Date.parse(NOW))).toBe('Dossier de synchro introuvable : vos modifications seront envoyées au retour');
+    expect(statusLine(status('windows'), Date.parse(NOW))).toBe('Dossier de synchro introuvable : tes modifications seront envoyées au retour');
     // Avant le premier cycle conclu (aucune ligne APPAREILS) : le système détecté.
     vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(IPHONE_AGENT);
     expect(statusLine({ ...sync.status(), ...base, devices: [] }, Date.parse(NOW))).toBe(IOS_TEXT);

@@ -18,7 +18,7 @@ const ASSOCIATE_PC = 'Associer cet iPhone au PC : scanner le code d’associatio
 const SCAN = 'Ouvrir la caméra et scanner le code d’association';
 const OPEN_SETTINGS = 'Ouvrir les réglages d’iOS pour autoriser la caméra';
 const RECOVERY = 'Saisir la clé de secours imprimée à la place du code';
-const BANNER = 'Associez cet iPhone au PC pour synchroniser';
+const BANNER = 'Associe cet iPhone au PC pour synchroniser';
 
 /** Budget : deux apps démarrées, une dizaine de cycles et d'écrans, une arrivée (consigne d'Ali : ni `test.slow()` ni nouvel essai). */
 const BUDGET_MS = 90_000;
@@ -67,8 +67,8 @@ test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis r�
 
   // Écran « Associer au PC », étape 1 : le dossier.
   await associate.click();
-  const dialog = page.getByRole('dialog', { name: 'Scannez le code affiché sur le PC' });
-  await expect(dialog.getByText('Choisissez d’abord le même dossier iCloud Drive / Spartiate que sur le PC.')).toBeVisible();
+  const dialog = page.getByRole('dialog', { name: 'Scanne le code affiché sur le PC' });
+  await expect(dialog.getByText('Choisis d’abord le même dossier iCloud Drive / Spartiate que sur le PC.')).toBeVisible();
   await expect(dialog.getByRole('button', { name: SCAN })).toHaveCount(0);
   await expect(dialog.getByRole('button', { name: RECOVERY })).toHaveCount(0);
   await expectFitsViewport(page, 'Associer au PC, étape dossier');
@@ -90,7 +90,7 @@ test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis r�
   // QR illisible (pas un code Spartiate) : dit, rescanner possible, aucune clé.
   await presentText(room, 'iphone', 'https://exemple.test/pas-un-code');
   await dialog.getByRole('button', { name: SCAN }).click();
-  await expect(page.getByTestId('ios-pairing-message')).toHaveText('Ce code n’est pas un code d’association Spartiate : affichez le code sur le PC et réessayez');
+  await expect(page.getByTestId('ios-pairing-message')).toHaveText('Ce code n’est pas un code d’association Spartiate : affiche le code sur le PC et réessaie');
   await expect(dialog.getByRole('button', { name: SCAN })).toBeVisible();
   await expectFitsViewport(page, 'Associer au PC, QR illisible');
 
@@ -170,7 +170,7 @@ test('Y-IOS-02 QA : fenêtre QR du PC, état d’attente, nouveau code, annulati
   const window = await openPairingWindow(pc.context, room, 'pc');
   await expect(window.getByRole('img', { name: 'QR code d’association' })).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });
   await expect(window.getByText('En attente de l’iPhone…')).toBeVisible();
-  await expect(window.getByText('Sur l’iPhone, ouvrez Réglages → Synchronisation → Associer au PC.')).toBeVisible();
+  await expect(window.getByText('Sur l’iPhone, ouvre Réglages → Synchronisation → Associer au PC.')).toBeVisible();
   await expect(window.getByRole('button', { name: 'Afficher un nouveau code (nouvelle confirmation)' })).toBeVisible();
   await expect(window.getByRole('button', { name: 'Annuler et fermer la fenêtre d’association' })).toBeVisible();
   await expectFitsViewport(window, 'Fenêtre QR du PC');

@@ -86,7 +86,7 @@ describe('Y-IOS-02 écran « Associer au PC » : un échec de scan ne laisse jam
     phone.testing.setScanResult('https://exemple.test/pas-un-code');
     open(phone);
     await scanNow();
-    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Ce code n’est pas un code d’association Spartiate : affichez le code sur le PC et réessayez');
+    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Ce code n’est pas un code d’association Spartiate : affiche le code sur le PC et réessaie');
     expect(screenActions()).toEqual(AGAIN);
     expect((await phone.key.status()).present).toBe(false);
   });
@@ -98,7 +98,7 @@ describe('Y-IOS-02 écran « Associer au PC » : un échec de scan ne laisse jam
     phone.testing.setScanResult(qr);
     open(phone);
     await scanNow();
-    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Ce code a expiré : affichez un nouveau code sur le PC');
+    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Ce code a expiré : affiche un nouveau code sur le PC');
     expect(screenActions()).toEqual(AGAIN);
     expect((await phone.key.status()).present).toBe(false);
   });
@@ -115,7 +115,7 @@ describe('Y-IOS-02 écran « Associer au PC » : un échec de scan ne laisse jam
     phone.testing.setScanResult(qrText);
     open(phone);
     await scanNow();
-    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Le dossier ne contient pas encore les données du PC : attendez qu’iCloud les apporte, puis réessayez');
+    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Le dossier ne contient pas encore les données du PC : attends qu’iCloud les apporte, puis réessaie');
     expect(screenActions()).toEqual(AGAIN);
   });
 
@@ -127,7 +127,7 @@ describe('Y-IOS-02 écran « Associer au PC » : un échec de scan ne laisse jam
     empty.testing.setScanResult(await world.qr());
     open(empty);
     await scanNow();
-    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Le dossier ne contient pas encore les données du PC : attendez qu’iCloud les apporte, puis réessayez');
+    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Le dossier ne contient pas encore les données du PC : attends qu’iCloud les apporte, puis réessaie');
     expect(screenActions()).toEqual(AGAIN);
   });
 
@@ -151,12 +151,12 @@ describe('Y-IOS-02 écran « Associer au PC » : un échec de scan ne laisse jam
     expect(screenActions()).toEqual(AGAIN);
   });
 
-  it('S07 application pas au premier plan : « Revenez dans l’application », rescanner possible', async () => {
+  it('S07 application pas au premier plan : « Reviens dans l’application », rescanner possible', async () => {
     const phone = await phoneWithFolder();
     phone.testing.setForeground(false);
     open(phone);
     await scanNow();
-    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Revenez dans l’application et réessayez');
+    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Reviens dans l’application et réessaie');
     phone.testing.setForeground(true);
     phone.testing.setScanResult(await world.qr());
     await scanNow();
@@ -173,7 +173,7 @@ describe('Y-IOS-02 écran « Associer au PC » : un échec de scan ne laisse jam
     }
     phone.testing.setScanResult(await world.qr());
     await scanNow();
-    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Trop de tentatives : réessayez dans 10 minutes');
+    expect(screen.getByTestId('ios-pairing-message')).toHaveTextContent('Trop de tentatives : réessaie dans 10 minutes');
     expect(screenActions()).toEqual(AGAIN);
     db.clock.advance(10 * 60_000 + 1);
     phone.testing.setScanResult(await world.qr());

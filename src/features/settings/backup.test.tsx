@@ -317,7 +317,7 @@ describe('Sauvegarde et restauration (P-04)', () => {
       const { user, dialog } = await openSheet();
       await user.click(await within(dialog).findByRole('button', { name: /3 oct\. à 03:12/ }));
       await user.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Restaurer' }));
-      expect(await screen.findByText('La restauration a échoué. Redémarrez Spartiate pour retrouver vos données actuelles.')).toBeInTheDocument();
+      expect(await screen.findByText('La restauration a échoué. Redémarre Spartiate pour retrouver tes données actuelles.')).toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: 'Redémarrer' }));
       expect(backups.restarts.count).toBe(1);
     });

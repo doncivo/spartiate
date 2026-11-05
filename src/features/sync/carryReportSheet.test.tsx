@@ -96,7 +96,7 @@ describe('listes nommées (critère 17 d à f)', () => {
         ],
       }),
     );
-    const restored = screen.getByRole('list', { name: 'Rétablis alors que vous les aviez supprimés : 2' });
+    const restored = screen.getByRole('list', { name: 'Rétablis alors que tu les avais supprimés : 2' });
     const [first, second] = within(restored).getAllByRole('listitem');
     expect(within(first as HTMLElement).getByText('Tâche')).toBeTruthy();
     expect(within(first as HTMLElement).getByText('À jeter')).toBeTruthy();
@@ -200,7 +200,7 @@ describe('500 lignes : pages de 50 (critère 22)', () => {
 
   it('le premier rendu ne pose que la première page, le nombre exact est annoncé ; « Afficher 50 de plus » jusqu’à la fin, puis « Autres éléments : 12 »', () => {
     open(big);
-    const list = (): HTMLElement => screen.getByRole('list', { name: 'Rétablis alors que vous les aviez supprimés : 512' });
+    const list = (): HTMLElement => screen.getByRole('list', { name: 'Rétablis alors que tu les avais supprimés : 512' });
     // Premier rendu : 50 lignes dans le DOM sur 500 gardées.
     expect(within(list()).getAllByRole('listitem')).toHaveLength(CARRY_REPORT_PAGE);
     expect(document.querySelectorAll('.ct-carry__item')).toHaveLength(CARRY_REPORT_PAGE + 1);
@@ -238,6 +238,6 @@ describe('« J’ai vu » et ordre de focus (critères 18 et 20)', () => {
 
   it('« J’ai vu » en échec : message visible', () => {
     open(report(), { seenFailed: true });
-    expect(screen.getByRole('alert').textContent).toBe('Le compte rendu n’a pas pu être marqué comme vu : réessayez');
+    expect(screen.getByRole('alert').textContent).toBe('Le compte rendu n’a pas pu être marqué comme vu : réessaie');
   });
 });

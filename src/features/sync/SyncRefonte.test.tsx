@@ -143,7 +143,7 @@ describe('UI-REFONTE-04 — Synchronisation', () => {
     await keyRead();
     const card = document.querySelector('.ct-sync__stateCard') as HTMLElement;
     expect(card).toHaveAttribute('data-tone', 'danger');
-    expect(within(card).getByTestId('sync-status-text')).toHaveTextContent('Dossier de synchro introuvable : vos modifications seront envoyées au retour');
+    expect(within(card).getByTestId('sync-status-text')).toHaveTextContent('Dossier de synchro introuvable : tes modifications seront envoyées au retour');
   });
 
   it('titres de section en bas de casse, dans l’ordre : Appareils, Conflits de cette semaine, Repartir de zéro (critère 3)', async () => {
@@ -187,7 +187,7 @@ describe('UI-REFONTE-04 — Synchronisation', () => {
     expect(self.textContent).not.toContain(String(SELF).slice(0, 8));
     expect(within(phone).getByText(String(IPHONE).slice(0, 8))).toBeInTheDocument();
     // L'aide est sous la liste.
-    const hint = screen.getByText(/^Touchez un nom pour le modifier/);
+    const hint = screen.getByText(/^Touche un nom pour le modifier/);
     expect(list.compareDocumentPosition(hint) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
@@ -227,8 +227,8 @@ describe('UI-REFONTE-04 — Synchronisation', () => {
     const card = document.querySelector('.ct-sync__resetCard') as HTMLElement;
     expect(card).not.toBeNull();
     expect(card).toHaveTextContent('Une nouvelle clé est créée.');
-    expect(card).toHaveTextContent('Vos autres appareils devront être associés de nouveau');
-    expect(card).toHaveTextContent('Vos tâches ne sont pas supprimées.');
+    expect(card).toHaveTextContent('Tes autres appareils devront être associés de nouveau');
+    expect(card).toHaveTextContent('Tes tâches ne sont pas supprimées.');
     const button = within(card).getByRole('button', { name: 'Réinitialiser la synchronisation avec une nouvelle clé' });
     expect(button).toHaveTextContent('Réinitialiser la synchronisation');
     expect(button).toHaveClass('ct-sync__resetButton');

@@ -21,7 +21,7 @@ export const syncConflictsFr = {
   quoted: '« {text} »',
   unreadableOne: '1 conflit du journal est illisible et n’est pas affiché',
   unreadableMany: '{count} conflits du journal sont illisibles et ne sont pas affichés',
-  loadFailed: 'Le journal des conflits n’a pas pu être lu. Rouvrez cet écran pour réessayer.',
+  loadFailed: 'Le journal des conflits n’a pas pu être lu. Rouvre cet écran pour réessayer.',
   /** Message « Annuler » (T-13, 5 s). */
   undoLabel: 'Valeur rétablie',
   result: {
@@ -30,7 +30,7 @@ export const syncConflictsFr = {
     rowGone: 'Cet élément n’existe plus : la valeur ne peut pas être restaurée',
     parentGone: 'L’élément lié n’existe plus : la valeur ne peut pas être restaurée',
     invalid: 'Valeur invalide : elle ne peut pas être restaurée',
-    failed: 'La restauration a échoué. Rien n’a été modifié : réessayez.',
+    failed: 'La restauration a échoué. Rien n’a été modifié : réessaie.',
   },
   values: {
     empty: '(vide)',

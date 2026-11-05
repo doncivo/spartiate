@@ -86,7 +86,7 @@ describe('action et avertissement (critère 1)', () => {
     expect(sync.resets).toBe(0);
   });
 
-  it('« Continuer » lance la réinitialisation ; issues dites (role=status) : annulée, Synchronisez d’abord (appareil nommé, « Synchroniser »), lancée', async () => {
+  it('« Continuer » lance la réinitialisation ; issues dites (role=status) : annulée, Synchronise d’abord (appareil nommé, « Synchroniser »), lancée', async () => {
     renderIn(<SyncDetailsReset />);
     await keyRead();
     const go = async (): Promise<void> => {
@@ -100,7 +100,7 @@ describe('action et avertissement (critère 1)', () => {
     expect(within(slot()).getByText('Réinitialisation annulée')).toBeTruthy();
     sync.resetOutcome = { kind: 'lagging', device: IPHONE };
     await go();
-    expect(within(slot()).getByText('Synchronisez d’abord : iPhone n’a pas encore été lu jusqu’au bout.')).toBeTruthy();
+    expect(within(slot()).getByText('Synchronise d’abord : iPhone n’a pas encore été lu jusqu’au bout.')).toBeTruthy();
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Synchroniser maintenant avant de réinitialiser' }));
     });
@@ -125,7 +125,7 @@ describe('étapes, échecs persistants, appareils à associer, rappel (critères
     expect(within(iphone as HTMLElement).getByText(/^Dernière synchronisation /)).toBeTruthy();
     expect(within(iphone as HTMLElement).getByRole('button', { name: 'Oublier iPhone' })).toBeTruthy();
     expect(within(pc as HTMLElement).getByText('Jamais synchronisé')).toBeTruthy();
-    expect(screen.getByText('L’ancienne clé de secours ne sert plus. Affichez la nouvelle, imprimez-la, puis détruisez l’ancienne feuille.')).toBeTruthy();
+    expect(screen.getByText('L’ancienne clé de secours ne sert plus. Affiche la nouvelle, imprime-la, puis détruis l’ancienne feuille.')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Afficher et imprimer la nouvelle clé de secours' })).toBeTruthy();
     // Pendant la transition, aucun nouveau lancement.
     expect(screen.queryByRole('button', { name: 'Réinitialiser la synchronisation avec une nouvelle clé' })).toBeNull();
@@ -185,7 +185,7 @@ describe('appareil à associer de nouveau (critères 8 et 18, D2)', () => {
     cleanup();
     sync.setStatus({ phase: 'reset-required', reset: state({ role: 'initiator', step: 'superseded', superseded: true, by: IPHONE }) });
     renderIn(<SyncDetailsReset />);
-    expect(within(slot()).getByText('Une réinitialisation lancée sur iPhone l’emporte : associez cet appareil avec sa nouvelle clé')).toBeTruthy();
+    expect(within(slot()).getByText('Une réinitialisation lancée sur iPhone l’emporte : associe cet appareil avec sa nouvelle clé')).toBeTruthy();
   });
 });
 
@@ -199,11 +199,11 @@ describe('textes (critère 19)', () => {
 });
 
 describe('ADR 0011 §18 points 14 à 17 (revue et décision de l’architecte)', () => {
-  it('perte face à une restauration : « interrompue par une restauration sur … : relancez-la », relance possible, « Fermer »', async () => {
+  it('perte face à une restauration : « interrompue par une restauration sur … : relance-la », relance possible, « Fermer »', async () => {
     sync.setStatus({ reset: state({ step: 'superseded', superseded: true, restore: true, by: IPHONE }) });
     renderIn(<SyncDetailsReset />);
     await keyRead();
-    expect(within(slot()).getByText('Réinitialisation interrompue par une restauration sur iPhone : relancez-la')).toBeTruthy();
+    expect(within(slot()).getByText('Réinitialisation interrompue par une restauration sur iPhone : relance-la')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Réinitialiser la synchronisation avec une nouvelle clé' })).toBeTruthy();
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Fermer le message de réinitialisation terminée' }));
@@ -211,11 +211,11 @@ describe('ADR 0011 §18 points 14 à 17 (revue et décision de l’architecte)',
     expect(sync.dismissals).toBe(1);
   });
 
-  it('perte close (gagnant oublié) : « Réinitialisation interrompue : relancez-la », plus à associer, relance possible', async () => {
+  it('perte close (gagnant oublié) : « Réinitialisation interrompue : relance-la », plus à associer, relance possible', async () => {
     sync.setStatus({ reset: state({ step: 'superseded', superseded: true, closed: true, by: null }) });
     renderIn(<SyncDetailsReset />);
     await keyRead();
-    expect(within(slot()).getByText('Réinitialisation interrompue : relancez-la')).toBeTruthy();
+    expect(within(slot()).getByText('Réinitialisation interrompue : relance-la')).toBeTruthy();
     expect(screen.queryByText('Cet appareil doit être associé de nouveau')).toBeNull();
     expect(screen.getByRole('button', { name: 'Réinitialiser la synchronisation avec une nouvelle clé' })).toBeTruthy();
   });
