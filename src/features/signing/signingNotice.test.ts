@@ -49,7 +49,7 @@ describe('I-02 : planification de l’alerte (critères 4 et 5)', () => {
     expect(r.alert.scheduled).toHaveLength(1);
     const request = r.alert.scheduled[0];
     expect(request).toMatchObject({ instant: IN_6_DAYS_ALERT, zone: 'Europe/Paris', title: 'Spartiate va expirer' });
-    expect(request?.body).toBe('Vérifiez dans SideStore que l’app a été actualisée (expiration prévue le mer. 14 oct. à 10:00)');
+    expect(request?.body).toBe('Vérifie dans SideStore que l’app a été actualisée (expiration prévue le mer. 14 oct. à 10:00)');
     expect(banner()).toBeUndefined();
     const saved = await storedSigning(r.h.container);
     expect(saved.unreadable).toBe(false);
@@ -159,7 +159,7 @@ describe('I-02 : moins de 24 h et expirée (critère 6)', () => {
     r.source.expireAt('2026-10-08T18:00:00Z');
     await replanSigning(r.h.container, 'open');
     expect(r.alert.scheduled).toHaveLength(0);
-    expect(banner()).toMatchObject({ detail: 'soon', message: 'Spartiate expire dans 10 h : actualisez-la dans SideStore' });
+    expect(banner()).toMatchObject({ detail: 'soon', message: 'Spartiate expire dans 10 h : actualise-la dans SideStore' });
     // Actualisation par SideStore : nouvelle échéance à 7 jours, bandeau retiré, alerte planifiée.
     r.source.expireAt('2026-10-15T08:00:00Z');
     await replanSigning(r.h.container, 'resume');
@@ -170,7 +170,7 @@ describe('I-02 : moins de 24 h et expirée (critère 6)', () => {
   it('sous une heure : durée en minutes', async () => {
     r.source.expireAt('2026-10-08T08:40:00Z');
     await replanSigning(r.h.container, 'open');
-    expect(banner()?.message).toBe('Spartiate expire dans 40 min : actualisez-la dans SideStore');
+    expect(banner()?.message).toBe('Spartiate expire dans 40 min : actualise-la dans SideStore');
   });
 
   it('l’alerte déjà planifiée est retirée quand l’échéance passe sous 24 h', async () => {
@@ -325,9 +325,9 @@ describe('I-02 : bandeau tenu à jour tant que l’app est ouverte (revue)', () 
   it('la durée restante suit l’heure : 10 h, puis 9 h une heure plus tard, puis « expirée »', async () => {
     r.source.expireAt('2026-10-08T18:00:00Z');
     await replanSigning(r.h.container, 'open');
-    expect(banner()?.message).toBe('Spartiate expire dans 10 h : actualisez-la dans SideStore');
+    expect(banner()?.message).toBe('Spartiate expire dans 10 h : actualise-la dans SideStore');
     tick(60);
-    expect(banner()?.message).toBe('Spartiate expire dans 9 h : actualisez-la dans SideStore');
+    expect(banner()?.message).toBe('Spartiate expire dans 9 h : actualise-la dans SideStore');
     tick(9 * 60);
     expect(banner()).toMatchObject({ detail: 'expired', message: 'La signature est expirée : réinstallez l’app' });
     // Plus de minuterie une fois expirée.

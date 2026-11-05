@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 const VOUVOIEMENT = /\b(vous|votre|vos|veuillez)\b/i;
 // Impératifs de la 2e personne du pluriel (forme vouvoyée) hérités de l'ancien projet.
 const IMPERATIFS =
-  /\b(Choisissez|Saisissez|Sélectionnez|Appuyez|Ouvrez|Autorisez|Activez|Désactivez|Vérifiez|Réessayez|Patientez|Touchez|Entrez|Indiquez|Renseignez|Connectez|Relancez|Redémarrez|Attendez|Contactez|Consultez|Essayez|Fermez|Installez|Utilisez|Terminez|Ajoutez|Retirez|Supprimez|Rouvrez|Restaurez|Recommencez|Reconnectez|Exportez|Importez|Lancez|Gardez|Conservez|Cliquez|Pensez|Notez|Parlez|Relisez|Créez|Validez|Confirmez|Annulez|Ne supprimez|Ne désinstallez)\b/;
+  /\b(Choisissez|Saisissez|Sélectionnez|Appuyez|Ouvrez|Autorisez|Activez|Désactivez|Vérifiez|Réessayez|Patientez|Touchez|Entrez|Indiquez|Renseignez|Connectez|Relancez|Redémarrez|Attendez|Contactez|Consultez|Essayez|Fermez|Installez|Utilisez|Terminez|Ajoutez|Retirez|Supprimez|Rouvrez|Restaurez|Recommencez|Reconnectez|Exportez|Importez|Lancez|Gardez|Conservez|Cliquez|Pensez|Notez|Parlez|Relisez|Créez|Validez|Confirmez|Annulez|Recommencez|Supprimez|Désinstallez|Réinitialisez|Actualisez|Rangez|Planifiez|Imprimez|Détruisez|Définissez)\b/i;
 const LITERAL = /'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g;
 
 function files(dir: string): string[] {

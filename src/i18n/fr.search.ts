@@ -12,9 +12,9 @@ export const searchFr = {
   count: '{count} résultats',
   countOne: '1 résultat',
   tooMany: 'Affinez la recherche',
-  error: 'La recherche a échoué. Réessayez.',
+  error: 'La recherche a échoué. Réessaie.',
   missing: 'Cet élément n’existe plus',
-  openError: 'Impossible d’ouvrir cet élément. Réessayez.',
+  openError: 'Impossible d’ouvrir cet élément. Réessaie.',
   listLabel: 'Résultats de la recherche',
   group: '{type} · {count}',
   groups: {

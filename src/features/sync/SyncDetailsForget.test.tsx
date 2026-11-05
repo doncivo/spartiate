@@ -59,7 +59,7 @@ describe('ligne APPAREILS (critère 1)', () => {
     const [, iphone, pc] = devicesList();
     expect(within(iphone as HTMLElement).getByText('Oubli annulé : l’appareil qui l’avait oublié a lui-même été oublié')).toBeTruthy();
     expect(within(iphone as HTMLElement).getByRole('button', { name: 'Oublier iPhone' })).toBeTruthy();
-    expect(within(pc as HTMLElement).getByRole('status').textContent).toBe('Oublié · aucun instantané à jour : ouvrez un autre appareil associé');
+    expect(within(pc as HTMLElement).getByRole('status').textContent).toBe('Oublié · aucun instantané à jour : ouvre un autre appareil associé');
   });
 
   it('seul appareil (PC seul, vérification manuelle 1) : aucun bouton, aucune ligne « Oublié »', () => {
@@ -129,7 +129,7 @@ describe('audit Y-10 (ADR 0011 §18 point 8) : identifiant, appareils jamais vus
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Continuer' }));
     });
-    expect(within(devicesList()[1] as HTMLElement).getByRole('status').textContent).toContain('réinitialisez la synchronisation');
+    expect(within(devicesList()[1] as HTMLElement).getByRole('status').textContent).toContain('réinitialise la synchronisation');
   });
 
   it('débordement de la liste maître (§18 point 5) : échec visible, sans appareil nommé', () => {
@@ -145,7 +145,7 @@ describe('boîte de l’app avant la confirmation native (critères 2, 3 et 4, D
     fireEvent.click(screen.getByRole('button', { name: 'Oublier iPhone' }));
     const dialog = screen.getByRole('alertdialog', { name: 'Oublier iPhone ?' });
     const text = dialog.textContent ?? '';
-    expect(text).toContain('ne sera plus lu au-delà d’un point commun à tous vos appareils');
+    expect(text).toContain('ne sera plus lu au-delà d’un point commun à tous tes appareils');
     expect(text).toContain('ses fichiers seront supprimés d’iCloud');
     expect(text).toContain('30 jours dans « Supprimés récemment »');
     expect(text).toContain('L’oubli ne s’annule pas');
@@ -227,7 +227,7 @@ describe('Y-10-FIX-01 : « Annuler la demande » sur un oubli en échec', () => 
     const buttons = within(failureRow()).getAllByRole('button');
     expect(buttons.map((b) => b.textContent)).toEqual(['Réessayer', 'Annuler la demande']);
     expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual(['Réessayer d’oublier iPhone', 'Annuler la demande d’oubli de iPhone']);
-    expect(failureRow().textContent).toContain('L’oubli de iPhone a échoué : trop de demandes, réessayez dans 10 minutes');
+    expect(failureRow().textContent).toContain('L’oubli de iPhone a échoué : trop de demandes, réessaie dans 10 minutes');
   });
 
   it.each(STEPS)('critère 2 : étape %s, « Annuler la demande » présent seulement à declare', (step) => {
@@ -342,7 +342,7 @@ describe('Y-10-FIX-01 : « Annuler la demande » sur un oubli en échec', () => 
       fireEvent.click(screen.getByRole('button', { name: 'Continuer' }));
     });
     const iphoneRow = (): HTMLElement => devicesList()[1] as HTMLElement;
-    expect(within(iphoneRow()).getByRole('status').textContent).toBe('L’oubli de iPhone a échoué : trop de demandes, réessayez dans 10 minutes');
+    expect(within(iphoneRow()).getByRole('status').textContent).toBe('L’oubli de iPhone a échoué : trop de demandes, réessaie dans 10 minutes');
     await act(async () => {
       fireEvent.click(cancelButton());
     });
@@ -407,12 +407,12 @@ describe('Y-10-FIX-01 : « Annuler la demande » sur un oubli en échec', () => 
 });
 
 describe('appareil oublié qui revient (critères 16 et 17, D2)', () => {
-  it('« Cet appareil a été oublié : associez-le de nouveau » ; « Associer de nouveau » : confirmation, association, dossier choisi de nouveau, relance', async () => {
+  it('« Cet appareil a été oublié : associe-le de nouveau » ; « Associer de nouveau » : confirmation, association, dossier choisi de nouveau, relance', async () => {
     sync.setStatus({ phase: 'forgotten' });
     const choose = vi.spyOn(platform.folder, 'choose');
     const relaunch = vi.fn(async () => undefined);
     renderIn(<SyncDetailsForget relaunch={relaunch} />);
-    expect(screen.getByRole('status').textContent).toContain('Cet appareil a été oublié : associez-le de nouveau');
+    expect(screen.getByRole('status').textContent).toContain('Cet appareil a été oublié : associe-le de nouveau');
     fireEvent.click(screen.getByRole('button', { name: 'Associer de nouveau cet appareil' }));
     const dialog = screen.getByRole('alertdialog', { name: 'Associer de nouveau cet appareil ?' });
     expect(dialog.textContent).toContain('Rien n’est effacé');

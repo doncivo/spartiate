@@ -125,7 +125,7 @@ describe('D6 écran « Associer au PC » : cause masquée pendant le scan', () =
     );
   }
 
-  it('Trousseau indisponible pendant l’import : le message dit de déverrouiller l’iPhone (pas « L’association a échoué : réessayez »)', async () => {
+  it('Trousseau indisponible pendant l’import : le message dit de déverrouiller l’iPhone (pas « L’association a échoué : réessaie »)', async () => {
     const phone = await world.device('ios', SELF, true);
     phone.testing.setCameraPermission('granted');
     phone.testing.setVaultAvailable(false);

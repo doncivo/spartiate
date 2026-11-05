@@ -21,7 +21,7 @@ const fr = {
   tabsCount: '{visible} sur {total}',
   launchHint: 'Spartiate s’ouvre réduit dans la zone de notification',
   allShortcuts: 'Tous les raccourcis',
-  quickCaptureTaken: '{keys} est utilisé par une autre application. Choisissez-en un autre.',
+  quickCaptureTaken: '{keys} est utilisé par une autre application. Choisis-en un autre.',
 } as const;
 export type SettingsRefonteKey = keyof typeof fr;
 

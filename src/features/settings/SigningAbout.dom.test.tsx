@@ -79,8 +79,8 @@ describe('À propos : expiration de la signature (I-02)', () => {
     source.expireAt('2026-10-08T20:00:00Z');
     await replanNotifications(h.container, 'resume');
     renderAbout();
-    expect(await screen.findByText('Moins de 24 h restantes : actualisez Spartiate dans SideStore')).toBeInTheDocument();
-    expect(screen.getByText('Spartiate expire dans 12 h : actualisez-la dans SideStore')).toBeInTheDocument();
+    expect(await screen.findByText('Moins de 24 h restantes : actualise Spartiate dans SideStore')).toBeInTheDocument();
+    expect(screen.getByText('Spartiate expire dans 12 h : actualise-la dans SideStore')).toBeInTheDocument();
   });
 
   it('signature expirée : dite en toutes lettres', async () => {
@@ -150,7 +150,7 @@ describe('À propos : expiration de la signature (I-02)', () => {
         <SigningAboutRow />
       </AppContainerProvider>,
     );
-    expect(await screen.findByText('L’alerte n’a pas pu être planifiée : vous ne serez peut-être pas prévenu')).toBeInTheDocument();
+    expect(await screen.findByText('L’alerte n’a pas pu être planifiée : tu ne seras peut-être pas prévenu')).toBeInTheDocument();
     await failing.db.close();
   });
 

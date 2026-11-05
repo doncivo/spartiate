@@ -46,7 +46,7 @@ type ForgetTroubleCode = 'forget-failed' | 'forget-pending';
 /** Y-11 : réinitialisation en cours ou en échec (tant que la transition n'est pas terminée) ; rappel des 30 jours (appareils non réassociés). */
 type ResetTroubleCode = 'reset-progress' | 'reset-reminder';
 /**
- * Y-TECH-02 : avertissements du scan (jamais un blocage) : budget de nonces de la clé au-delà du seuil d'alerte (« réinitialisez la
+ * Y-TECH-02 : avertissements du scan (jamais un blocage) : budget de nonces de la clé au-delà du seuil d'alerte (« réinitialise la
  * synchronisation »), dossier de plus de 1 Gio, plus de 16 dossiers d'appareil (les plus anciens ignorés), scan incomplet (dossier
  * encombré). Du plus urgent au moins urgent.
  */

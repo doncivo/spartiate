@@ -30,7 +30,7 @@ export const appearanceFr = {
   tabsVisibleOne: '{count} visible',
   tabsTitle: 'Onglets',
   tabsBack: 'Retour aux réglages',
-  tabsIntro: 'Glissez la poignée pour réordonner, ou utilisez les flèches haut et bas. Un onglet masqué garde sa couleur et son contenu.',
+  tabsIntro: 'Glissez la poignée pour réordonner, ou utilise les flèches haut et bas. Un onglet masqué garde sa couleur et son contenu.',
   tabsList: 'Onglets de la colonne',
   tabsHandle: 'Déplacer l’onglet {name}',
   tabsShow: 'Afficher {name}',

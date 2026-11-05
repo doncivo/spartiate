@@ -89,18 +89,18 @@ describe('bandeaux de la réinitialisation (critères 17 et 18)', () => {
     expect(text()).toContain(statusLine(sync.status(), db.clock.nowMs()));
     expect(isTroublePhase(sync.status())).toBe(true);
     set({ reset: reset({ step: 'superseded', superseded: true, by: PHONE }) });
-    expect(text()).toContain('Une réinitialisation lancée sur iPhone l’emporte : associez cet appareil avec sa nouvelle clé');
+    expect(text()).toContain('Une réinitialisation lancée sur iPhone l’emporte : associe cet appareil avec sa nouvelle clé');
   });
 
-  it('§18 points 15 et 16 : réinitialisation interrompue (restauration, ou perte close) : bandeau « relancez-la », jamais « à associer »', async () => {
+  it('§18 points 15 et 16 : réinitialisation interrompue (restauration, ou perte close) : bandeau « relance-la », jamais « à associer »', async () => {
     render(<AppStatusBanner />);
     start();
     await settle();
     set({ phase: 'idle', devices: DEVICES, reset: reset({ step: 'superseded', superseded: true, restore: true, by: PHONE }) });
-    expect(text()).toContain('Réinitialisation interrompue par une restauration sur iPhone : relancez-la');
+    expect(text()).toContain('Réinitialisation interrompue par une restauration sur iPhone : relance-la');
     expect(useAppStatusStore.getState().sources.syncTrouble?.detail).toBe('reset-progress');
     set({ reset: reset({ step: 'superseded', superseded: true, closed: true, by: null }) });
-    expect(text()).toContain('Réinitialisation interrompue : relancez-la');
+    expect(text()).toContain('Réinitialisation interrompue : relance-la');
     expect(useAppStatusStore.getState().sources.syncTrouble?.detail).toBe('reset-progress');
   });
 
@@ -158,7 +158,7 @@ describe('bandeaux de la réinitialisation (critères 17 et 18)', () => {
     start();
     await settle();
     // Avant le premier cycle, APPAREILS n'est pas encore connu : nom neutre, jamais une plateforme inventée.
-    expect(text()).toContain('Réinitialisation interrompue par une restauration sur Appareil 60000000 : relancez-la');
+    expect(text()).toContain('Réinitialisation interrompue par une restauration sur Appareil 60000000 : relance-la');
     expect(useAppStatusStore.getState().sources.syncTrouble?.detail).toBe('reset-progress');
   });
 });

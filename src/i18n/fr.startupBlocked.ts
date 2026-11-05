@@ -4,7 +4,7 @@
  */
 export const startupBlockedFr = {
   title: 'Démarrage bloqué : {step}',
-  detail: 'Cette étape dure depuis {seconds} secondes. Vos données ne sont pas touchées.',
+  detail: 'Cette étape dure depuis {seconds} secondes. Tes données ne sont pas touchées.',
   retry: 'Réessayer',
   share: 'Partager le journal',
   shared: 'Journal partagé.',

@@ -78,7 +78,7 @@ describe('I2 : retour arrière local, aucun marqueur de synchro', () => {
 });
 
 describe('I3 : relance hors de la restauration', () => {
-  it('relance impossible : restauration réussie, consigne « Relancez Spartiate » visible, action retirée', async () => {
+  it('relance impossible : restauration réussie, consigne « Relance Spartiate » visible, action retirée', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const recovery = openStartupRecovery('tauri', 'windows', api({ relaunchFails: true }));
     const outcome = await restoreUpdateBackup(BACKUP, clock, recovery);

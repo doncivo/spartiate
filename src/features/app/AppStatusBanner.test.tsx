@@ -39,7 +39,7 @@ describe('bandeau d’état de l’app (A-09)', () => {
       set('calendarDisconnected', { detail: 'Perso' });
       set('signingExpiry', { detail: 'soon' });
     });
-    expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Spartiate expire bientôt : actualisez-la dans SideStore');
+    expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Spartiate expire bientôt : actualise-la dans SideStore');
     act(() => set('signingExpiry', { detail: 'expired' }));
     expect(document.querySelector('.ct-status-banner')).toHaveTextContent('La signature est expirée : réinstallez l’app');
     act(() => set('signingExpiry', { detail: 'soon', message: 'Spartiate expire dans 5 h' }));
@@ -169,8 +169,8 @@ describe('bandeau d’état de l’app (A-09)', () => {
   it('problème de synchro : texte de la source, « Voir » qui appelle son action, role="status" (critères 9 a, 9 c, 9 h)', () => {
     const onAction = vi.fn();
     render(<AppStatusBanner />);
-    act(() => set('syncTrouble', { detail: 'key-mismatch', message: 'Ce dossier a été chiffré avec une autre clé : associez cet appareil', more: 0, onAction }));
-    expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Ce dossier a été chiffré avec une autre clé : associez cet appareil');
+    act(() => set('syncTrouble', { detail: 'key-mismatch', message: 'Ce dossier a été chiffré avec une autre clé : associe cet appareil', more: 0, onAction }));
+    expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Ce dossier a été chiffré avec une autre clé : associe cet appareil');
     expect(screen.queryByRole('alert')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Voir le problème de synchronisation' }));
     expect(onAction).toHaveBeenCalledTimes(1);
@@ -196,8 +196,8 @@ describe('bandeau d’état de l’app (A-09)', () => {
 
   it('« En attente d’iCloud » : cause de la source si elle est donnée, sinon texte générique (critère 9 e)', () => {
     render(<AppStatusBanner />);
-    act(() => set('waitingIcloud', { message: 'Ouvrez iCloud pour Windows : vos modifications seront envoyées au retour' }));
-    expect(document.querySelector('.ct-status-banner')?.textContent).toBe('Ouvrez iCloud pour Windows : vos modifications seront envoyées au retour');
+    act(() => set('waitingIcloud', { message: 'Ouvre iCloud pour Windows : tes modifications seront envoyées au retour' }));
+    expect(document.querySelector('.ct-status-banner')?.textContent).toBe('Ouvre iCloud pour Windows : tes modifications seront envoyées au retour');
     act(() => set('waitingIcloud', {}));
     expect(document.querySelector('.ct-status-banner')?.textContent).toBe('En attente d’iCloud');
   });

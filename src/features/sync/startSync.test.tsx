@@ -90,9 +90,9 @@ describe('phases en échec ou bloquées (critère 9 c)', () => {
   const cases: readonly { phase: SyncStatus['phase']; patch: Partial<SyncStatus>; text: string }[] = [
     { phase: 'error', patch: { errorCode: 'folder-unreachable' }, text: '' },
     { phase: 'error', patch: { errorCode: null }, text: 'La synchronisation a échoué : nouvel essai au prochain cycle' },
-    { phase: 'key-mismatch', patch: {}, text: 'Ce dossier a été chiffré avec une autre clé : associez cet appareil' },
-    { phase: 'clock-ahead', patch: { clockAheadDevice: PHONE, devices: [device(SELF, 'windows', 'active', true), device(PHONE, 'ios', 'clock-ahead')] }, text: 'L’horloge de iPhone est en avance : vérifiez sa date et son heure' },
-    { phase: 'needs-pairing', patch: {}, text: 'Associez cet appareil pour synchroniser' },
+    { phase: 'key-mismatch', patch: {}, text: 'Ce dossier a été chiffré avec une autre clé : associe cet appareil' },
+    { phase: 'clock-ahead', patch: { clockAheadDevice: PHONE, devices: [device(SELF, 'windows', 'active', true), device(PHONE, 'ios', 'clock-ahead')] }, text: 'L’horloge de iPhone est en avance : vérifie sa date et son heure' },
+    { phase: 'needs-pairing', patch: {}, text: 'Associe cet appareil pour synchroniser' },
     { phase: 'restore-choice', patch: {}, text: 'Un choix est à faire après la restauration' },
   ];
 
@@ -142,13 +142,13 @@ describe('phases en échec ou bloquées (critère 9 c)', () => {
     expect(banner()).toBeNull();
   });
 
-  it('update-required : couvert par « Mettez à jour l’app », jamais deux bandeaux', async () => {
+  it('update-required : couvert par « Mets à jour l’app », jamais deux bandeaux', async () => {
     renderBanner();
     await start().refreshed();
     set({ phase: 'update-required', devices: [device(SELF, 'windows', 'active', true), { ...device(PHONE, 'ios', 'newer-major'), newer: 'major' }] });
     expect(useAppStatusStore.getState().sources.syncTrouble).toBeUndefined();
     expect(document.querySelectorAll('.ct-status-banner')).toHaveLength(1);
-    expect(banner()?.textContent).toContain('Mettez à jour');
+    expect(banner()?.textContent).toContain('Mets à jour');
   });
 
   it('pendant le cycle suivant, l’échec reste affiché (pas de clignotement) ; il part quand le cycle conclut « à jour »', async () => {
@@ -209,7 +209,7 @@ describe('« En attente d’iCloud » avec cause (critère 9 e)', () => {
     renderBanner();
     await start().refreshed();
     set({ phase: 'waiting-icloud', errorCode: 'cloud-provider-stopped' });
-    expect(banner()?.textContent).toBe('Ouvrez iCloud pour Windows : vos modifications seront envoyées au retour');
+    expect(banner()?.textContent).toBe('Ouvre iCloud pour Windows : tes modifications seront envoyées au retour');
     expect(banner()?.textContent).toBe(statusLine(sync.status(), 0));
     set({ phase: 'waiting-icloud', errorCode: 'cloud-pending' });
     expect(banner()?.textContent).toBe(statusLine(sync.status(), 0));
@@ -231,7 +231,7 @@ describe('états persistés et redémarrage (critères 9 f, 9 i, 9 j)', () => {
     expect(shown?.detail).toBe('join-failed');
     // Même texte que la ligne de JoinProgress (même clé, mêmes nombres formatés ; vérifiée par SyncDetailsPairing.test.tsx).
     const n = new Intl.NumberFormat('fr-FR');
-    expect(shown?.message).toBe(`La réception de vos données s’est arrêtée à ${n.format(1200)} / ${n.format(5000)} : elle reprendra à la prochaine synchronisation`);
+    expect(shown?.message).toBe(`La réception de tes données s’est arrêtée à ${n.format(1200)} / ${n.format(5000)} : elle reprendra à la prochaine synchronisation`);
 
     // Redémarrage simulé : dispose retire l'état, un nouveau démarrage sur le même stockage le rétablit avant tout cycle.
     stop();
@@ -320,12 +320,12 @@ describe('états persistés et redémarrage (critères 9 f, 9 i, 9 j)', () => {
     expect(banner()).toBeNull();
   });
 
-  it('avant le premier cycle, tous les autres appareils d’une autre clé : « associez cet appareil »', async () => {
+  it('avant le premier cycle, tous les autres appareils d’une autre clé : « associe cet appareil »', async () => {
     await db.data.repos.sync.saveState(SELF, { isSelf: true, platform: 'windows', status: 'active' });
     await db.data.repos.sync.saveState(PHONE, { platform: 'ios', status: 'foreign', stateSeq: 3 });
     renderBanner();
     await start().refreshed();
-    expect(banner()?.textContent).toBe('Ce dossier a été chiffré avec une autre clé : associez cet appareilVoir');
+    expect(banner()?.textContent).toBe('Ce dossier a été chiffré avec une autre clé : associe cet appareilVoir');
   });
 
   it('dispose retire tous les états posés par la synchro (critère 9 j), jamais « Hors ligne »', async () => {
@@ -357,7 +357,7 @@ describe('un seul bandeau, le plus urgent (critère 9 g) ; sobriété (9 h)', ()
     set({ phase: 'clock-ahead', clockAheadDevice: PHONE, devices: [device(SELF, 'windows', 'active', true), device(PHONE, 'ios', 'clock-ahead'), device(LAPTOP, 'windows', 'corrupt')] });
     await integration?.refreshed();
     expect(document.querySelectorAll('.ct-status-banner')).toHaveLength(1);
-    expect(banner()?.textContent).toBe('L’horloge de iPhone est en avance : vérifiez sa date et son heure (+2)Voir');
+    expect(banner()?.textContent).toBe('L’horloge de iPhone est en avance : vérifie sa date et son heure (+2)Voir');
   });
 
   it('« Hors ligne » ne masque jamais un échec ; un agenda déconnecté passe devant', async () => {
@@ -438,7 +438,7 @@ describe('phase bloquante persistée : visible dès le démarrage (revue, point 
     set({ phase: 'clock-ahead', clockAheadDevice: PHONE, devices: [device(SELF, 'windows', 'active', true), device(PHONE, 'ios', 'clock-ahead')] });
     await integration?.refreshed();
     await freshProcess();
-    expect(useAppStatusStore.getState().sources.syncTrouble?.message).toBe('L’horloge de iPhone est en avance : vérifiez sa date et son heure');
+    expect(useAppStatusStore.getState().sources.syncTrouble?.message).toBe('L’horloge de iPhone est en avance : vérifie sa date et son heure');
   });
 
   it('restore-choice : le marqueur de restauration suffit, dès le démarrage ; « Voir » ouvre la fenêtre de choix', async () => {

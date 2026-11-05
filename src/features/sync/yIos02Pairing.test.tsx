@@ -36,7 +36,7 @@ const IPHONE_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) App
 const ASSOCIATE_PC = 'Associer cet iPhone au PC : scanner le code d’association';
 const RESET = 'Réinitialiser la synchronisation avec une nouvelle clé';
 const SHOW_QR = 'Associer l’iPhone : afficher le code d’association';
-const NEEDS_KEY_IOS = 'Cet iPhone n’a pas la clé de chiffrement : associez-le au PC';
+const NEEDS_KEY_IOS = 'Cet iPhone n’a pas la clé de chiffrement : associe-le au PC';
 const START_NEW = 'Commencer une nouvelle synchronisation sur cet iPhone';
 
 let db: TestDb;
@@ -103,7 +103,7 @@ const renderIn = (container: AppContainer, node: React.ReactNode) => render(<App
 const fakeDocument = { visibilityState: 'visible', addEventListener: () => undefined, removeEventListener: () => undefined } as unknown as Document;
 
 describe('iPhone sans clé : « Associer au PC » ne disparaît jamais (constat A)', () => {
-  it('choix du dossier, cycles (base occupée comprise) : ligne de Réglages et Détails proposent « Associer au PC », bandeau A-09 « associez »', async () => {
+  it('choix du dossier, cycles (base occupée comprise) : ligne de Réglages et Détails proposent « Associer au PC », bandeau A-09 « associe »', async () => {
     vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(IPHONE_AGENT);
     const phone = await folderFromPc('ios');
     const container = realContainer(phone, 'ios', lockedData());
@@ -127,16 +127,16 @@ describe('iPhone sans clé : « Associer au PC » ne disparaît jamais (constat 
     expect(screen.getByRole('button', { name: ASSOCIATE_PC })).toBeInTheDocument();
     expect(screen.getByText(NEEDS_KEY_IOS)).toBeInTheDocument();
     expect(screen.queryByText('La synchronisation a échoué : nouvel essai au prochain cycle')).toBeNull();
-    expect(useAppStatusStore.getState().sources.syncTrouble?.message).toBe('Associez cet iPhone au PC pour synchroniser');
+    expect(useAppStatusStore.getState().sources.syncTrouble?.message).toBe('Associe cet iPhone au PC pour synchroniser');
     cleanup();
 
     // Détails : « Associer au PC », ni « Synchroniser » ni « Réinitialiser » ; APPAREILS expliqué.
     renderIn(container, <SyncDetailsScreen />);
     expect(await screen.findByRole('button', { name: ASSOCIATE_PC })).toBeInTheDocument();
-    expect(screen.getByTestId('sync-status-text')).toHaveTextContent('Associez cet iPhone au PC pour synchroniser');
+    expect(screen.getByTestId('sync-status-text')).toHaveTextContent('Associe cet iPhone au PC pour synchroniser');
     expect(screen.queryByRole('button', { name: 'Synchroniser' })).toBeNull();
     expect(screen.queryByRole('button', { name: RESET })).toBeNull();
-    expect(screen.getByTestId('sync-devices-empty')).toHaveTextContent('Associez cet iPhone pour voir les autres appareils');
+    expect(screen.getByTestId('sync-devices-empty')).toHaveTextContent('Associe cet iPhone pour voir les autres appareils');
     integration.dispose();
   });
 
@@ -216,7 +216,7 @@ describe('erreurs permanentes : jamais « nouvel essai au prochain cycle » (aud
       expect(isPermanentSyncError(code), code).toBe(true);
       expect(lineFor(code), code).toContain(`code ${code}`);
     }
-    expect(lineFor('key-exhausted')).toContain('réinitialisez la synchronisation');
+    expect(lineFor('key-exhausted')).toContain('réinitialise la synchronisation');
     expect(lineFor('not-bound')).toContain('Dossier de synchro à choisir de nouveau');
     // Passagère : le nouvel essai est réel.
     expect(lineFor('state-mismatch')).toBe(GENERIC);
@@ -282,7 +282,7 @@ describe('iPhone : jamais de clé créée au choix du dossier (point 1, ADR 0011
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Commencer quand même' }));
     });
-    expect(await screen.findByTestId('sync-start-notice')).toHaveTextContent('Ce dossier contient déjà des données chiffrées : associez cet appareil');
+    expect(await screen.findByTestId('sync-start-notice')).toHaveTextContent('Ce dossier contient déjà des données chiffrées : associe cet appareil');
     expect((await phone.key.status()).present).toBe(false);
     expect(screen.getByRole('button', { name: ASSOCIATE_PC })).toBeInTheDocument();
   });
@@ -321,7 +321,7 @@ describe('clé présente mais pas celle du dossier (point 2)', () => {
     expect(container.sync?.status().phase).toBe('key-mismatch');
     renderIn(container, <SyncSettingsSection />);
     expect(await screen.findByRole('button', { name: ASSOCIATE_PC })).toBeInTheDocument();
-    expect(screen.getByTestId('sync-status-text')).toHaveTextContent('Ce dossier a été chiffré avec une autre clé : associez cet appareil');
+    expect(screen.getByTestId('sync-status-text')).toHaveTextContent('Ce dossier a été chiffré avec une autre clé : associe cet appareil');
     cleanup();
     renderIn(container, <SyncDetailsScreen />);
     expect(await screen.findByRole('button', { name: ASSOCIATE_PC })).toBeInTheDocument();
@@ -504,7 +504,7 @@ describe('erreur du dossier lié relue (audit des impasses, G)', () => {
     const sync = createFakeSyncService({ phase: 'idle' });
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), data: db.data, sync, syncPlatform: failing });
     renderIn(container, <SyncSettingsSection />);
-    expect(await screen.findByText('Ce dossier ne peut pas servir à la synchronisation : choisissez-en un autre')).toBeInTheDocument();
+    expect(await screen.findByText('Ce dossier ne peut pas servir à la synchronisation : choisis-en un autre')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Choisir le dossier de synchronisation' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Oublier le dossier de synchronisation' })).toBeInTheDocument();
   });

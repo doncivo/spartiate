@@ -72,7 +72,7 @@ describe('emplacement « version » (Y-07 critère 10)', () => {
     renderIn(<SyncDetailsVersion />);
     const region = screen.getByRole('status');
     expect(within(region).getByText('iPhone utilise une version plus récente de l’app')).toBeTruthy();
-    expect(within(region).getByText('Lecture de ses données suspendue : mettez à jour l’app')).toBeTruthy();
+    expect(within(region).getByText('Lecture de ses données suspendue : mets à jour l’app')).toBeTruthy();
   });
 
   it('plusieurs appareils plus récents : chacun nommé comme dans APPAREILS ; un appareil absent ou oublié n’y figure pas', () => {
@@ -100,20 +100,20 @@ describe('emplacement « version » (Y-07 critère 10)', () => {
 });
 
 describe('ligne de Réglages (Y-07 critère 8)', () => {
-  it('lecture suspendue : « Mettez à jour l’app pour lire les données de iPhone »', () => {
+  it('lecture suspendue : « Mets à jour l’app pour lire les données de iPhone »', () => {
     sync.setStatus({ phase: 'update-required', devices: [self, iphone({ status: 'newer-major', newer: 'major' })] });
     renderIn(<SyncStatusLine />);
-    expect(screen.getByTestId('sync-status-text').textContent).toBe('Mettez à jour l’app pour lire les données de iPhone');
+    expect(screen.getByTestId('sync-status-text').textContent).toBe('Mets à jour l’app pour lire les données de iPhone');
   });
 
   it('sans appareil identifiable : le texte général', () => {
     sync.setStatus({ phase: 'update-required', devices: [self] });
     renderIn(<SyncStatusLine />);
-    expect(screen.getByTestId('sync-status-text').textContent).toBe('Mettez à jour l’app pour lire les données de vos autres appareils');
+    expect(screen.getByTestId('sync-status-text').textContent).toBe('Mets à jour l’app pour lire les données de tes autres appareils');
   });
 });
 
-describe('bandeau A-09 « Mettez à jour l’app » (Y-07 critère 9)', () => {
+describe('bandeau A-09 « Mets à jour l’app » (Y-07 critère 9)', () => {
   const start = () => startSyncIntegration(container, { setInterval: () => 0, clearInterval: () => undefined });
 
   it('actif tant qu’un appareil actif publie une version plus récente (sv ou sm) ; retiré quand il expire, est oublié, disparaît ou quand l’app est à jour', () => {
@@ -164,12 +164,12 @@ describe('bandeau A-09 « Mettez à jour l’app » (Y-07 critère 9)', () => {
       set('offline', {});
     });
     expect(document.querySelectorAll('.ct-status-banner')).toHaveLength(1);
-    expect(document.querySelector('.ct-status-banner')?.textContent).toBe('Mettez à jour l’app : un de vos appareils utilise une version plus récente');
+    expect(document.querySelector('.ct-status-banner')?.textContent).toBe('Mets à jour l’app : un de tes appareils utilise une version plus récente');
     expect(screen.queryByRole('button')).toBeNull();
     act(() => set('calendarDisconnected', { detail: 'Perso', onAction: () => undefined }));
     expect(document.querySelector('.ct-status-banner')?.textContent).toContain('Agenda Perso déconnecté');
     act(() => set('calendarDisconnected', null));
-    expect(document.querySelector('.ct-status-banner')?.textContent).toContain('Mettez à jour l’app');
+    expect(document.querySelector('.ct-status-banner')?.textContent).toContain('Mets à jour l’app');
   });
 
   it('la phase update-required reste réservée à la lecture suspendue (D4) : un sv supérieur donne le bandeau, pas la phase', () => {

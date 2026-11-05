@@ -106,12 +106,12 @@ describe('ligne d’état de Réglages (Y-02 critère 16, Y-05 critère 2)', () 
   it('erreurs explicites, jamais de boîte bloquante', () => {
     sync.setStatus({ phase: 'error', errorCode: 'folder-unreachable' });
     renderIn(<SyncStatusLine />);
-    expect(screen.getByTestId('sync-status-text').textContent).toBe('Dossier de synchro introuvable : vos modifications seront envoyées au retour');
+    expect(screen.getByTestId('sync-status-text').textContent).toBe('Dossier de synchro introuvable : tes modifications seront envoyées au retour');
     expect(screen.queryByRole('alertdialog')).toBeNull();
     cleanup();
     sync.setStatus({ phase: 'error', errorCode: 'cloud-provider-stopped' });
     renderIn(<SyncStatusLine />);
-    expect(screen.getByTestId('sync-status-text').textContent).toBe('Ouvrez iCloud pour Windows : vos modifications seront envoyées au retour');
+    expect(screen.getByTestId('sync-status-text').textContent).toBe('Ouvre iCloud pour Windows : tes modifications seront envoyées au retour');
   });
 });
 
@@ -151,7 +151,7 @@ describe('détails (Y-02 critère 17, Y-09 critère 10)', () => {
     expect(screen.getByText('iPhone')).toBeTruthy();
     expect(screen.getByText(/^Dernière modification lue : /)).toBeTruthy();
     expect(screen.getByText('Horloge en avance')).toBeTruthy();
-    expect(screen.getByText('L’horloge de iPhone est en avance : vérifiez sa date et son heure')).toBeTruthy();
+    expect(screen.getByText('L’horloge de iPhone est en avance : vérifie sa date et son heure')).toBeTruthy();
     expect(screen.getByText('1 fichier en attente d’iCloud')).toBeTruthy();
     expect(screen.getByText('2 conflits cette semaine')).toBeTruthy();
   });
@@ -163,7 +163,7 @@ describe('choix après restauration (Y-02 critère 13, Y-09 critère 8)', () => 
     sync.setStatus({ phase: 'restore-choice' });
     renderIn(<RestoreChoiceDialog />);
     await screen.findByRole('alertdialog');
-    expect(screen.getByText('Les modifications que cet appareil avait déjà reçues seront remplacées sur tous vos appareils')).toBeTruthy();
+    expect(screen.getByText('Les modifications que cet appareil avait déjà reçues seront remplacées sur tous tes appareils')).toBeTruthy();
     const chosen = nextCall(sync, 'chooseRestoreOption');
     fireEvent.click(screen.getByRole('button', { name: 'Garder les données synchronisées' }));
     await act(async () => {
@@ -239,7 +239,7 @@ describe('branchements (Y-02 critères 17 à 19)', () => {
 
 describe('choix après restauration pendant une réinitialisation (Y-11, ADR 0011 §18 point 16 ; QA-1)', () => {
   const marker = { backup: 'x', backupTakenAt: NOW as IsoDateTime, restoredAt: NOW as IsoDateTime, schemaVersion: 17 };
-  it('« Appliquer partout » retiré : texte de la réinitialisation en cours ; règle 4 : aucune option, « terminez-la »', async () => {
+  it('« Appliquer partout » retiré : texte de la réinitialisation en cours ; règle 4 : aucune option, « termine-la »', async () => {
     sync.restore = { marker, options: ['keep-synced'], notice: 'reset-in-progress' };
     sync.setStatus({ phase: 'restore-choice' });
     renderIn(<RestoreChoiceDialog />);

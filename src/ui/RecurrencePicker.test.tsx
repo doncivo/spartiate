@@ -89,7 +89,7 @@ describe('RecurrencePicker (T-09, Ajout.html)', () => {
     expect(radio('Hebdo')).toBeDisabled();
     expect(radio('Mensuel')).toBeDisabled();
     expect(radio('Annuel')).toBeDisabled();
-    expect(screen.getByText('Choisissez une date pour répéter la tâche.')).toBeInTheDocument();
+    expect(screen.getByText('Choisis une date pour répéter la tâche.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Autre/ })).not.toBeInTheDocument();
   });
 
