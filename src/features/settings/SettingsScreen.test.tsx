@@ -8,6 +8,7 @@ import { useAppStore } from '../app/appStore';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer, type AppContainer } from '../app/container';
+import { createFakeAuthenticator, guardAuthenticator } from '../../platform/biometric';
 import { SettingsScreen } from './SettingsScreen';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-000000000007');
@@ -92,6 +93,21 @@ describe('SettingsScreen (T-06)', () => {
     expect(profile.compareDocumentPosition(data) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
     expect(screen.queryByRole('group', { name: 'Sections des réglages' })).toBeNull();
     expect(document.querySelector('.ct-settings__rule')).toBeNull();
+  });
+
+  it('finitions 0.1.2 (a) — D-37 : la ligne « Verrouillage Face ID » reste masquée même quand l’iPhone sait authentifier', async () => {
+    const withAuth = createAppContainer({
+      clock: db.clock,
+      hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }),
+      data: db.data,
+      authenticator: guardAuthenticator(createFakeAuthenticator()),
+    });
+    expect(withAuth.authenticator.supported).toBe(true);
+    renderScreen(withAuth);
+    await screen.findByRole('heading', { level: 1, name: 'Plus' });
+    expect(screen.queryByText(/Verrouillage/)).toBeNull();
+    expect(screen.queryByRole('switch')).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'IPHONE' })).toBeNull();
   });
 
   it('carte profil sans valeur saisie : texte neutre, jamais de valeur inventée ; un appui ouvre Profil et poids', async () => {
