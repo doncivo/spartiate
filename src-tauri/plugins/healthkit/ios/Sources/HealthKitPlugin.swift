@@ -11,6 +11,9 @@ private enum HealthKitCode: String {
 
 class HealthKitPlugin: Plugin {
   private let store = HKHealthStore()
+  /// Dernière erreur native de requestAuthorization (domaine, code, description : aucune donnée de santé). Le statut la rend à l'écran
+  /// « Apple Santé », qui l'affiche sous « Détail technique » et l'écrit dans le journal technique (diagnostic 0.1.3).
+  private var lastError: [String: Any]?
 
   private func reject(_ invoke: Invoke, _ code: HealthKitCode) {
     invoke.reject(code.rawValue, code: code.rawValue)
@@ -35,8 +38,23 @@ class HealthKitPlugin: Plugin {
     }
   }
 
+  private func recordAuthorizationError(_ invoke: Invoke, domain: String, code: Int, description: String) {
+    let detail: [String: Any] = ["domain": domain, "code": code, "description": String(description.prefix(200))]
+    lastError = detail
+    // Résolu (et non rejeté) : le détail natif voyage jusqu'à l'écran au lieu de se perdre dans un code générique.
+    invoke.resolve(["permission": "error", "error": detail])
+  }
+
   @objc public func status(_ invoke: Invoke) {
-    invoke.resolve(["available": HKHealthStore.isHealthDataAvailable()])
+    let usage = Bundle.main.object(forInfoDictionaryKey: "NSHealthShareUsageDescription") as? String
+    var payload: [String: Any] = [
+      "available": HKHealthStore.isHealthDataAvailable(),
+      "usageDescription": !(usage ?? "").isEmpty,
+    ]
+    if let lastError {
+      payload["lastError"] = lastError
+    }
+    invoke.resolve(payload)
   }
 
   @objc public func authorize(_ invoke: Invoke) {
@@ -49,14 +67,16 @@ class HealthKitPlugin: Plugin {
     }
 
     store.requestAuthorization(toShare: [], read: [bodyMass, stepCount]) { success, error in
-      if error != nil {
-        self.reject(invoke, .authorizationFailed)
+      if let error {
+        let native = error as NSError
+        self.recordAuthorizationError(invoke, domain: native.domain, code: native.code, description: native.localizedDescription)
         return
       }
       guard success else {
-        self.reject(invoke, .authorizationFailed)
+        self.recordAuthorizationError(invoke, domain: "spartiate", code: 0, description: "requestAuthorization a renvoyé success = false sans erreur")
         return
       }
+      self.lastError = nil
       // HealthKit does not disclose read permission in this callback.
       invoke.resolve(["permission": "unknown"])
     }

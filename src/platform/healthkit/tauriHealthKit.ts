@@ -3,9 +3,11 @@ import {
   isHealthKitBodyMass,
   isHealthKitPermission,
   isHealthKitStepCount,
+  parseHealthKitDiagnostic,
   readResult,
+  UNKNOWN_DIAGNOSTIC,
 } from './validation';
-import type { HealthKit, HealthKitAvailability, HealthKitPermission, HealthKitRead, HealthKitBodyMass, HealthKitStepCount } from './types';
+import type { HealthKit, HealthKitAvailability, HealthKitDiagnostic, HealthKitPermission, HealthKitRead, HealthKitBodyMass, HealthKitStepCount } from './types';
 
 export type HealthKitInvoker = (command: string) => Promise<unknown>;
 
@@ -58,6 +60,14 @@ export function createTauriHealthKit(options: { readonly invoke?: HealthKitInvok
         if (code === 'healthkit-denied') return 'denied';
         if (code === 'healthkit-unavailable') return 'unavailable';
         return 'error';
+      }
+    },
+
+    async diagnostic(): Promise<HealthKitDiagnostic> {
+      try {
+        return parseHealthKitDiagnostic(await invoke(STATUS_COMMAND));
+      } catch {
+        return UNKNOWN_DIAGNOSTIC;
       }
     },
 

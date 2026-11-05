@@ -100,3 +100,35 @@ for (const screen of SCREENS) {
     await context.close();
   });
 }
+
+// 0.1.3 (i) et (j), vus sur l'iPhone réel : à 440 × 956, rien ne dépasse la colonne (marge de 20 px à gauche et à droite) et la flèche de
+// retour ne chevauche pas la barre d'état. Vérifié par la géométrie des éléments, en plus de la capture « Profil-poids ».
+test('géométrie Profil et poids 440 × 956 : cartes dans la colonne, flèche sous la barre d’état', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: PHONE, locale: 'fr-FR', timezoneId: 'Europe/Paris', colorScheme: 'dark', deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+  const page = await context.newPage();
+  await page.clock.setFixedTime(WEDNESDAY);
+  await openToday(page);
+  await goBody(page);
+  await page.waitForTimeout(400);
+  const geometry = await page.evaluate(() => {
+    const boxes = Array.from(document.querySelectorAll('.ct-body__card, .ct-body__card *')).map((el) => {
+      const r = el.getBoundingClientRect();
+      return { cls: el.className.toString().slice(0, 40), left: r.left, right: r.right, width: r.width };
+    });
+    const cards = Array.from(document.querySelectorAll('.ct-body__card')).map((el) => el.getBoundingClientRect());
+    const back = document.querySelector('.ct-body__back')?.getBoundingClientRect();
+    return { boxes, cards, backTop: back?.top ?? -1, scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth };
+  });
+  const errors: string[] = [];
+  if (geometry.cards.length === 0) errors.push('aucune carte');
+  for (const card of geometry.cards) {
+    if (card.left < 19.5) errors.push(`carte trop à gauche : ${card.left}`);
+    if (card.right > PHONE.width - 19.5) errors.push(`carte déborde à droite : ${card.right}`);
+  }
+  for (const box of geometry.boxes) if (box.right > PHONE.width - 19.5 + 0.5) errors.push(`élément ${box.cls} dépasse : ${box.right}`);
+  if (geometry.scrollWidth > geometry.clientWidth) errors.push(`défilement horizontal : ${geometry.scrollWidth} > ${geometry.clientWidth}`);
+  if (geometry.backTop < 47) errors.push(`flèche dans la barre d'état : ${geometry.backTop}`);
+  await captureApp(page, 'Profil-poids-geometrie');
+  await context.close();
+  if (errors.length > 0) throw new Error(errors.join(' ; '));
+});

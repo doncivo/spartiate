@@ -6,4 +6,5 @@ export const unsupportedHealthKit: HealthKit = {
   requestAuthorization: async () => 'unsupported',
   bodyMassToday: async () => ({ state: 'unsupported' }),
   stepCountToday: async () => ({ state: 'unsupported' }),
+  diagnostic: async () => ({ available: null, usageDescription: null, error: null }),
 };

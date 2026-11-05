@@ -31,13 +31,13 @@ function fakeDocument() {
 }
 
 describe('planificateur (Y-02 critère 1)', () => {
-  it('ouverture, 4 min 59 s sans cycle, 5 min avec, masquage, rien en arrière-plan', async () => {
+  it('ouverture, 24 s sans cycle, 25 s avec (0.1.3 k : premier plan), masquage, rien en arrière-plan, cycle au retour', async () => {
     const clock = createManualClock('2026-10-05T08:00:00.000Z');
     const reasons: SyncReason[] = [];
     const doc = fakeDocument();
     const scheduler = startSyncScheduler({ syncNow: async (r) => void reasons.push(r) }, { document: doc as unknown as Document, clock, setInterval: () => 0, clearInterval: () => undefined });
     expect(reasons).toEqual(['open']);
-    clock.advance(4 * 60_000 + 59_000);
+    clock.advance(24_000);
     await scheduler.tick();
     expect(reasons).toEqual(['open']);
     clock.advance(1_000);
@@ -50,7 +50,7 @@ describe('planificateur (Y-02 critère 1)', () => {
     expect(reasons).toEqual(['open', 'timer', 'hide']);
     doc.set('visible');
     await Promise.resolve();
-    expect(reasons).toEqual(['open', 'timer', 'hide', 'timer']);
+    expect(reasons).toEqual(['open', 'timer', 'hide', 'open']);
     scheduler.dispose();
   });
 

@@ -1,5 +1,7 @@
 /* Écran « Profil et poids » : sections et lignes de Reglages.html, mêmes motifs que « Apparence et formats ». */
 .ct-body-shell {
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
   flex-grow: 1;
   min-height: 0;
@@ -12,6 +14,7 @@
   gap: var(--ct-space-2);
   flex-grow: 1;
   min-width: 0;
+  box-sizing: border-box;
   max-width: 600px;
 }
 
@@ -51,6 +54,9 @@
 }
 
 .ct-body__input {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   min-height: 44px;
   padding: 0 var(--ct-space-2);
   background: var(--ct-color-surface);
@@ -76,6 +82,7 @@
 }
 
 .ct-body__item {
+  min-width: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -101,6 +108,8 @@
 }
 
 .ct-body__grid {
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: var(--ct-space-3);
@@ -127,6 +136,9 @@
 }
 
 .ct-body__card {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: var(--ct-space-2);
@@ -141,6 +153,8 @@
 }
 
 .ct-body__latest {
+  flex-wrap: wrap;
+  min-width: 0;
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -167,6 +181,7 @@
 }
 
 .ct-body__spark {
+  max-width: 100%;
   width: 160px;
   height: 40px;
 }
@@ -194,6 +209,7 @@
 
 .ct-body__input--short {
   width: 120px;
+  max-width: 50%;
   text-align: right;
 }
 
@@ -214,6 +230,8 @@
 }
 
 .ct-body__itemKg {
+  min-width: 0;
+  overflow-wrap: anywhere;
   flex: 1 1 auto;
 }
 

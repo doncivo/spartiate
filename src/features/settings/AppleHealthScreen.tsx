@@ -4,7 +4,8 @@ import { todayLocal } from '../../domain/clock';
 import type { IsoDateTime } from '../../domain/types';
 import { formatKg } from '../../i18n/bodyText';
 import { formatHealthTime, tHealth } from '../../i18n/healthText';
-import { healthKit as platformHealthKit, type HealthKit, type HealthKitAvailability, type HealthKitBodyMass, type HealthKitRead, type HealthKitStepCount } from '../../platform/healthkit';
+import { healthKit as platformHealthKit, type HealthKit, type HealthKitAvailability, type HealthKitBodyMass, type HealthKitDiagnostic, type HealthKitRead, type HealthKitStepCount } from '../../platform/healthkit';
+import { logFailure } from '../../platform/desktop/log';
 import { Button, Icon, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
@@ -27,6 +28,7 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
   const [availability, setAvailability] = useState<HealthKitAvailability | null>(null);
   const [phase, setPhase] = useState<Phase>('idle');
   const [reads, setReads] = useState<Reads | null>(null);
+  const [diagnostic, setDiagnostic] = useState<HealthKitDiagnostic | null>(null);
   const [saved, setSaved] = useState<'ok' | 'error' | null>(null);
   const live = useRef(true);
 
@@ -51,12 +53,19 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
   async function authorize(): Promise<void> {
     setPhase('asking');
     setReads(null);
+    setDiagnostic(null);
     const permission = await healthKit.requestAuthorization();
     if (!live.current) return;
     if (permission === 'denied') return setPhase('denied');
     if (permission === 'unavailable') return setAvailability('unavailable');
     if (permission === 'unsupported') return setAvailability('unsupported');
-    if (permission === 'error') return setPhase('requestError');
+    if (permission === 'error') {
+      const detail = await healthKit.diagnostic();
+      if (!live.current) return;
+      logFailure('healthkit', { code: 'healthkit-authorization-failed', message: diagnosticLog(detail) });
+      setDiagnostic(detail);
+      return setPhase('requestError');
+    }
     // 'unknown' ou 'granted' : la lecture tranche (une demande terminée ne prouve pas l'accès).
     await read();
   }
@@ -108,6 +117,7 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
               {tHealth('requestError')}
             </p>
           )}
+          {phase === 'requestError' && diagnostic && <TechnicalDetail diagnostic={diagnostic} />}
           {phase === 'read' && <p className="ct-body__hint">{tHealth('askedNote')}</p>}
         </section>
 
@@ -136,6 +146,38 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
         )}
       </div>
     </div>
+  );
+}
+
+const yesNo = (value: boolean | null): string => (value === null ? tHealth('technicalUnknown') : value ? tHealth('technicalYes') : tHealth('technicalNo'));
+
+/** Ligne du journal technique : domaine, code, description de l'NSError, texte d'usage et disponibilité. Aucune donnée de santé. */
+function diagnosticLog(diagnostic: HealthKitDiagnostic): string {
+  const usage = diagnostic.usageDescription === null ? 'inconnu' : diagnostic.usageDescription ? 'oui' : 'non';
+  const available = diagnostic.available === null ? 'inconnu' : diagnostic.available ? 'oui' : 'non';
+  const error = diagnostic.error ? `domaine ${diagnostic.error.domain} code ${diagnostic.error.code} ${diagnostic.error.description}` : 'aucune erreur native';
+  return `${error} ; usage=${usage} ; disponible=${available}`;
+}
+
+/** « Détail technique » repliable : de quoi partager l'échec de la demande sans rien révéler de la santé. */
+function TechnicalDetail({ diagnostic }: { readonly diagnostic: HealthKitDiagnostic }) {
+  const usage = diagnostic.usageDescription === null ? tHealth('technicalUnknown') : diagnostic.usageDescription ? tHealth('technicalPresent') : tHealth('technicalAbsent');
+  return (
+    <details className="ct-body__hint">
+      <summary>{tHealth('technicalDetail')}</summary>
+      <p>{tHealth('technicalAvailable', { value: yesNo(diagnostic.available) })}</p>
+      <p>{tHealth('technicalUsage', { value: usage })}</p>
+      {diagnostic.error ? (
+        <>
+          <p>{tHealth('technicalDomain', { value: diagnostic.error.domain })}</p>
+          <p>{tHealth('technicalCode', { value: diagnostic.error.code })}</p>
+          <p>{tHealth('technicalDescription', { value: diagnostic.error.description })}</p>
+        </>
+      ) : (
+        <p>{tHealth('technicalError', { value: tHealth('technicalNone') })}</p>
+      )}
+      <p>{tHealth('technicalShare')}</p>
+    </details>
   );
 }
 
