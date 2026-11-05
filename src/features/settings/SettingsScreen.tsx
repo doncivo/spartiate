@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { t } from '../../i18n';
 import { tExportImport } from '../../i18n/exportImportText';
+import { healthFr } from '../../i18n/fr.health';
 import { tPlus } from '../../i18n/plusText';
 import { tSettingsRefonte } from '../../i18n/settingsRefonteText';
 import { Switch, useLayout } from '../../ui';
@@ -33,7 +34,8 @@ export function SettingsScreen() {
 function SettingsScreenMobile() {
   const container = useAppContainer();
   // D-37 : code conservé, entrée masquée, activation différée. SecuritySection n'est plus montée ; seule la signature reste.
-  const hasIphoneRows = container.signing.source.supported;
+  const hasHealthRow = container.platform.runtime === 'tauri' && container.platform.os === 'ios';
+  const hasIphoneRows = container.signing.source.supported || hasHealthRow;
   const load = useFeatureStore(settingsStore, (s) => s.load);
   const errorKey = useFeatureStore(settingsStore, (s) => s.errorKey);
   const timeZone = useAppStore((s) => s.timeZone);
@@ -70,6 +72,7 @@ function SettingsScreenMobile() {
         <>
           <h2 className="ct-settings__section">{tPlus('sectionIphone')}</h2>
           <div className="ct-settings__card">
+            {hasHealthRow && <LinkRow label={healthFr.row} value={healthFr.rowValue} onClick={() => navigate({ tab: 'more', screen: 'health' })} />}
             <SigningAboutRow />
           </div>
         </>
