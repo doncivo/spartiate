@@ -51,4 +51,27 @@ describe('Profil et poids : marge latérale (g)', () => {
     expect(rules).not.toMatch(/(?<!max-)width:\s*\d+px/);
     expect(rules).toMatch(/flex-grow:\s*1/);
   });
+
+  // 0.1.3 (j) : sur l'iPhone réel, les cartes débordaient du bord droit (bord coupé, texte à la ligne). Aucune largeur ne dépasse la colonne.
+  it('(j) la colonne et ses cartes peuvent rétrécir (min-width: 0) et ne dépassent jamais leur parent', () => {
+    for (const selector of ['.ct-body-shell', '.ct-body', '.ct-body__grid', '.ct-body__card']) {
+      const rules = block(body, selector);
+      expect(rules, selector).toMatch(/min-width:\s*0/);
+      expect(rules, selector).toMatch(/box-sizing:\s*border-box/);
+    }
+    expect(block(body, '.ct-body__card')).toMatch(/max-width:\s*100%/);
+  });
+
+  it('(j) champs et graphique sont bornés par la carte (aucune largeur fixe plus large que la colonne)', () => {
+    expect(block(body, '.ct-body__input')).toMatch(/min-width:\s*0/);
+    expect(block(body, '.ct-body__input')).toMatch(/max-width:\s*100%/);
+    expect(block(body, '.ct-body__input--short')).toMatch(/max-width:\s*50%/);
+    expect(block(body, '.ct-body__spark')).toMatch(/max-width:\s*100%/);
+    expect(block(body, '.ct-body__latest')).toMatch(/flex-wrap:\s*wrap/);
+  });
+
+  it('(j) le texte des lignes de l’historique passe à la ligne dans la carte au lieu de la déborder', () => {
+    expect(block(body, '.ct-body__item')).toMatch(/min-width:\s*0/);
+    expect(block(body, '.ct-body__itemKg')).toMatch(/min-width:\s*0/);
+  });
 });

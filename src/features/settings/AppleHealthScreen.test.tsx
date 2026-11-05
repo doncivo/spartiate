@@ -7,6 +7,7 @@ import type { HealthKit, HealthKitBodyMass, HealthKitRead, HealthKitStepCount } 
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer, type AppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
+import { logFailure } from '../../platform/desktop/log';
 import { AppleHealthScreen } from './AppleHealthScreen';
 import { SettingsScreen } from './SettingsScreen';
 
@@ -14,6 +15,8 @@ import { SettingsScreen } from './SettingsScreen';
  * Finitions 0.1.2 (d) : Apple Santé dans Plus (iPhone seulement), SPA-006 et D-59. Lecture seule de bodyMass et stepCount ; iOS ne dit jamais
  * si la lecture est accordée : l'écran ne l'affirme jamais. « Utiliser cette pesée » passe par saveHealth, sans écraser la saisie manuelle.
  */
+vi.mock('../../platform/desktop/log', async (importOriginal) => ({ ...(await importOriginal<Record<string, unknown>>()), logFailure: vi.fn() }));
+
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-000000000009');
 
 const MASS: HealthKitBodyMass = {
@@ -37,6 +40,7 @@ interface Plan {
   permission: Awaited<ReturnType<HealthKit['requestAuthorization']>>;
   mass: HealthKitRead<HealthKitBodyMass>;
   steps: HealthKitRead<HealthKitStepCount>;
+  diagnostic?: Awaited<ReturnType<HealthKit['diagnostic']>>;
 }
 const GRANTED: Plan = { availability: 'available', permission: 'unknown', mass: { state: 'granted', value: MASS }, steps: { state: 'granted', value: STEPS } };
 
@@ -47,6 +51,7 @@ function fakeHealthKit(plan: Plan) {
     requestAuthorization: vi.fn(async () => (calls.push('authorize'), plan.permission)),
     bodyMassToday: vi.fn(async () => (calls.push('bodyMass'), plan.mass)),
     stepCountToday: vi.fn(async () => (calls.push('steps'), plan.steps)),
+    diagnostic: vi.fn(async () => (calls.push('diagnostic'), plan.diagnostic ?? { available: true, usageDescription: true, error: null })),
   };
   return { calls, healthKit };
 }
@@ -214,10 +219,67 @@ describe('Apple Santé (finitions 0.1.2 d)', () => {
 
     it('aucune écriture dans Santé : la façade n’expose que des lectures', async () => {
       const { healthKit } = fakeHealthKit(GRANTED);
-      expect(Object.keys(healthKit).sort()).toEqual(['availability', 'bodyMassToday', 'requestAuthorization', 'stepCountToday']);
+      expect(Object.keys(healthKit).sort()).toEqual(['availability', 'bodyMassToday', 'diagnostic', 'requestAuthorization', 'stepCountToday']);
       renderHealth(healthKit);
       await authorize();
       await within(document.body).findByText('82,4 kg');
+    });
+  });
+
+  describe('détail technique (0.1.3)', () => {
+    const NATIVE = { domain: 'com.apple.healthkit', code: 4, description: 'Missing entitlement.' };
+    const FAILED: Plan = { ...GRANTED, permission: 'error', diagnostic: { available: true, usageDescription: true, error: NATIVE } };
+
+    it('demande échouée : « Détail technique » repliable, fermé au départ, avec domaine, code, description, texte d’usage et disponibilité', async () => {
+      const { healthKit } = fakeHealthKit(FAILED);
+      renderHealth(healthKit);
+      await authorize();
+      expect(await screen.findByText('La demande d’accès à Santé a échoué. Réessaie.')).toBeInTheDocument();
+      const summary = await screen.findByText('Détail technique');
+      const details = summary.closest('details') as HTMLDetailsElement;
+      expect(details).not.toBeNull();
+      expect(details.open).toBe(false);
+      expect(details).toHaveTextContent('com.apple.healthkit');
+      expect(details).toHaveTextContent('Code : 4');
+      expect(details).toHaveTextContent('Missing entitlement.');
+      expect(details).toHaveTextContent('Santé disponible : oui');
+      expect(details).toHaveTextContent('Texte d’usage Info.plist : présent');
+    });
+
+    it('texte d’usage absent ou Santé indisponible : dit « absent » / « non », jamais passé sous silence', async () => {
+      const { healthKit } = fakeHealthKit({ ...FAILED, diagnostic: { available: false, usageDescription: false, error: null } });
+      renderHealth(healthKit);
+      await authorize();
+      const details = (await screen.findByText('Détail technique')).closest('details') as HTMLDetailsElement;
+      expect(details).toHaveTextContent('Santé disponible : non');
+      expect(details).toHaveTextContent('Texte d’usage Info.plist : absent');
+      expect(details).toHaveTextContent('Erreur native : aucune');
+    });
+
+    it('le détail est écrit dans le journal technique (scope healthkit, code natif, sans donnée de santé)', async () => {
+      vi.mocked(logFailure).mockClear();
+      const { healthKit } = fakeHealthKit(FAILED);
+      renderHealth(healthKit);
+      await authorize();
+      await screen.findByText('Détail technique');
+      expect(logFailure).toHaveBeenCalledTimes(1);
+      const [scope, error] = vi.mocked(logFailure).mock.calls[0] as [string, { code: string; message: string }];
+      expect(scope).toBe('healthkit');
+      expect(error.code).toBe('healthkit-authorization-failed');
+      expect(error.message).toMatch(/com.apple.healthkit/);
+      expect(error.message).toMatch(/4/);
+      expect(error.message).toMatch(/usage=oui/);
+      expect(error.message).not.toMatch(/82|8s?432|kg/);
+    });
+
+    it('demande réussie : aucun détail technique affiché ni journalisé', async () => {
+      vi.mocked(logFailure).mockClear();
+      const { healthKit } = fakeHealthKit(GRANTED);
+      renderHealth(healthKit);
+      await authorize();
+      await screen.findByText('82,4 kg');
+      expect(screen.queryByText('Détail technique')).toBeNull();
+      expect(logFailure).not.toHaveBeenCalled();
     });
   });
 });

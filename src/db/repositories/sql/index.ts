@@ -1,4 +1,5 @@
 import { SYNC_CATALOGUE, type SyncCatalogue } from '../../../domain/sync/syncTables';
+import { signalingWrites } from '../../localWrite';
 import type { RepositoryFactory } from '../dataAccess';
 import { createAppleReminderLinkRepository } from './appleReminderLinks';
 import { createCalendarAccountRepository, createEventRepository, createExternalEventRepository } from './agendaRepository';
@@ -47,8 +48,8 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFa
   calendarAccounts: createCalendarAccountRepository(executor, stamper),
   syncMeta: createSyncMetaRepository(executor, catalogue),
   // D-65 : profil et poids, implémentation chargée à la demande (hors du JavaScript de départ).
-  profile: () => import('./bodyRepositories').then((m) => m.createProfileRepository(executor, stamper)),
-  bodyWeights: () => import('./bodyRepositories').then((m) => m.createBodyWeightRepository(executor, stamper)),
+  profile: () => import('./bodyRepositories').then((m) => signalingWrites(m.createProfileRepository(executor, stamper), ['save'])),
+  bodyWeights: () => import('./bodyRepositories').then((m) => signalingWrites(m.createBodyWeightRepository(executor, stamper), ['saveManual', 'saveHealth', 'softDelete'])),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)

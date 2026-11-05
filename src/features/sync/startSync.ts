@@ -1,4 +1,5 @@
 import type { AppStatusKind } from '../../domain/appStatus';
+import { onLocalWrite } from '../../db/localWrite';
 import { newerDevices } from '../../domain/sync/compat';
 import { isSyncErrorCode } from '../../domain/sync/format';
 import { QUIT_HANDLER_SYNC_MS, SYNCING_BANNER_DELAY_MS } from '../../domain/sync/limits';
@@ -428,7 +429,7 @@ export function startSyncIntegration(container: AppContainer, env: SyncIntegrati
   // l'écriture côté Rust (iPhone) ; marqueur présent -> mémo effacé, fenêtre de choix habituelle ; sinon bandeau persistant.
   const memo = peekMarkerFailedCode();
   if (memo !== null) markerFailures.set(container, { code: memo, refresh: () => safely(applyBanners) });
-  const scheduler = startSyncScheduler(sync, { document: env.document ?? document, clock: env.clock ?? container.clock, ...(env.setInterval ? { setInterval: env.setInterval } : {}), ...(env.clearInterval ? { clearInterval: env.clearInterval } : {}), ...hide, ...(memo !== null ? { startPaused: true } : {}) });
+  const scheduler = startSyncScheduler(sync, { document: env.document ?? document, clock: env.clock ?? container.clock, ...(env.setInterval ? { setInterval: env.setInterval } : {}), ...(env.clearInterval ? { clearInterval: env.clearInterval } : {}), localWrites: onLocalWrite, ...hide, ...(memo !== null ? { startPaused: true } : {}) });
   schedulers.set(container, scheduler);
   if (memo !== null) {
     safely(applyBanners);

@@ -348,7 +348,8 @@ export function createSyncService(options: SyncServiceOptions): SyncEngineServic
         deps.logger.log('sync-now-quiet', { reason });
         return Promise.resolve();
       }
-      deps.logger.log('sync-now', { reason });
+      // 0.1.3 k : le cycle périodique (toutes les 25 s au premier plan) n'est pas journalisé à chaque tour : il saturerait le journal de 500 entrées.
+      if (reason !== 'timer') deps.logger.log('sync-now', { reason });
       // ADR 0011 §22 point 6 : seul le cycle `hide` est borné par une échéance ; une demande non bornée attendant avec lui la retire (un
       // cycle d'ouverture, périodique ou manuel n'est jamais coupé).
       const deadlineAt = reason === 'hide' ? syncOptions.deadlineAt : undefined;

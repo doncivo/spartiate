@@ -7,6 +7,8 @@ export type {
   HealthKit,
   HealthKitAvailability,
   HealthKitBodyMass,
+  HealthKitDiagnostic,
+  HealthKitNativeError,
   HealthKitPermission,
   HealthKitRead,
   HealthKitSource,
@@ -20,6 +22,7 @@ export {
   isHealthKitBodyMass,
   isHealthKitPermission,
   isHealthKitStepCount,
+  parseHealthKitDiagnostic,
   readResult,
 } from './validation';
 
