@@ -125,7 +125,7 @@ export interface ResetView {
   readonly noticeEpoch?: EpochId | null;
   /** Perte : époque et auteur gagnants ; `restore` : le gagnant est une époque restaurée sous l'ancienne clé (§18 point 16). */
   readonly superseded: { readonly epoch: EpochId | null; readonly by: DeviceId | null; readonly restore?: boolean } | null;
-  /** Registre `superseded` clos par ce scan, son gagnant étant oublié (§18 point 15) : « Réinitialisation interrompue : relancez-la ». */
+  /** Registre `superseded` clos par ce scan, son gagnant étant oublié (§18 point 15) : « Réinitialisation interrompue : relance-la ». */
   readonly closed?: boolean | undefined;
   readonly switching: boolean;
   readonly switched: boolean;

@@ -45,7 +45,7 @@ export const syncEngineFr = {
     errorFolderTooLarge: 'Le dossier de synchro est trop volumineux',
     errorVault: 'Le coffre de Windows est indisponible : la clé de synchronisation ne peut pas être lue',
     // ADR 0011 §23 point 1 : Trousseau de l'iPhone illisible (appareil verrouillé) : jamais une clé recréée en silence.
-    errorVaultIos: 'Le Trousseau de l’iPhone est indisponible : déverrouillez l’iPhone, la synchro reprendra',
+    errorVaultIos: 'Le Trousseau de l’iPhone est indisponible : déverrouille l’iPhone, la synchro reprendra',
     errorRollback: 'Le dossier contient une version ancienne de l’état d’un appareil',
     syncNow: 'Synchroniser',
     syncing: 'Synchronisation…',

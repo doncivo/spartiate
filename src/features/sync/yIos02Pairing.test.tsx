@@ -462,7 +462,7 @@ describe('dossier à choisir de nouveau (famille folder) : « Choisir le dossier
 });
 
 describe('erreur du dossier lié relue (audit des impasses, G)', () => {
-  const VAULT = 'Le Trousseau de l’iPhone est indisponible : déverrouillez l’iPhone, la synchro reprendra';
+  const VAULT = 'Le Trousseau de l’iPhone est indisponible : déverrouille l’iPhone, la synchro reprendra';
   const RETRY = 'Relire l’état du dossier de synchronisation';
 
   it('Trousseau indisponible, puis retour au premier plan avec la clé lisible : ligne liée ; « Réessayer » relit aussi', async () => {

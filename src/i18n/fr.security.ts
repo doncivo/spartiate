@@ -9,7 +9,7 @@ export const securityFr = {
     failed: 'Déverrouillage impossible ({code})',
     noPasscode: 'Déverrouillage impossible : aucun code n’est défini sur l’iPhone',
     pluginFailed: 'Le verrouillage ne répond pas ({code}). Tes données sont intactes.',
-    settingUnreadable: 'Le réglage du verrouillage est illisible : déverrouillez pour continuer.',
+    settingUnreadable: 'Le réglage du verrouillage est illisible : déverrouille pour continuer.',
     disable: 'Désactiver le verrouillage',
     disableConfirmTitle: 'Désactiver le verrouillage ?',
     disableConfirmText: 'Les données de Spartiate seront de nouveau lisibles sans protection',

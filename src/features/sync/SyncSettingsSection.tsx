@@ -130,7 +130,7 @@ async function readView(platform: SyncPlatform): Promise<View> {
  * Section « SYNCHRONISATION » de Réglages (Reglages.html ; Y-01 critères 1, 2, 5, 10, 17 à 19 ; Y-08). Sans dossier : « Non
  * configurée » et « Choisir le dossier » (boîte système ouverte par Rust). Dossier lié : son libellé (jamais un chemin) et, en
  * sous-ligne, « Dossier choisi » (l'état « À jour · il y a 2 min » et le lien « Détails » arrivent avec Y-02), l'avertissement d'un
- * dossier hors iCloud, ou « associez cet appareil » si le dossier contient déjà des données chiffrées. « Oublier » propose d'oublier le
+ * dossier hors iCloud, ou « associe cet appareil » si le dossier contient déjà des données chiffrées. « Oublier » propose d'oublier le
  * dossier seul (la clé est gardée) ou le dossier et la clé (confirmation native de Rust). Aucun bouton « Associer » avant Y-06.
  * Absente quand la plateforme ne synchronise pas (iPhone jusqu'à l'ordre 5). Aucune clé ni aucun chemin ne passe par cet écran.
  */

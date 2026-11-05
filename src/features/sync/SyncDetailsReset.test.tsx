@@ -125,7 +125,7 @@ describe('étapes, échecs persistants, appareils à associer, rappel (critères
     expect(within(iphone as HTMLElement).getByText(/^Dernière synchronisation /)).toBeTruthy();
     expect(within(iphone as HTMLElement).getByRole('button', { name: 'Oublier iPhone' })).toBeTruthy();
     expect(within(pc as HTMLElement).getByText('Jamais synchronisé')).toBeTruthy();
-    expect(screen.getByText('L’ancienne clé de secours ne sert plus. Affichez la nouvelle, imprime-la, puis détruis l’ancienne feuille.')).toBeTruthy();
+    expect(screen.getByText('L’ancienne clé de secours ne sert plus. Affiche la nouvelle, imprime-la, puis détruis l’ancienne feuille.')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Afficher et imprimer la nouvelle clé de secours' })).toBeTruthy();
     // Pendant la transition, aucun nouveau lancement.
     expect(screen.queryByRole('button', { name: 'Réinitialiser la synchronisation avec une nouvelle clé' })).toBeNull();

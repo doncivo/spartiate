@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 const VOUVOIEMENT = /\b(vous|votre|vos|veuillez)\b/i;
 // Impératifs de la 2e personne du pluriel (forme vouvoyée) hérités de l'ancien projet.
 const IMPERATIFS =
-  /\b(Choisissez|Saisissez|Sélectionnez|Appuyez|Ouvrez|Autorisez|Activez|Désactivez|Vérifiez|Réessayez|Patientez|Touchez|Entrez|Indiquez|Renseignez|Connectez|Relancez|Redémarrez|Attendez|Contactez|Consultez|Essayez|Fermez|Installez|Utilisez|Terminez|Ajoutez|Retirez|Supprimez|Rouvrez|Restaurez|Recommencez|Reconnectez|Exportez|Importez|Lancez|Gardez|Conservez|Cliquez|Pensez|Notez|Parlez|Relisez|Créez|Validez|Confirmez|Annulez|Recommencez|Supprimez|Désinstallez|Réinitialisez|Actualisez|Rangez|Planifiez|Imprimez|Détruisez|Définissez)\b/i;
+  /\b(Choisissez|Saisissez|Sélectionnez|Appuyez|Ouvrez|Autorisez|Activez|Désactivez|Vérifiez|Réessayez|Patientez|Touchez|Entrez|Indiquez|Renseignez|Connectez|Relancez|Redémarrez|Attendez|Contactez|Consultez|Essayez|Fermez|Installez|Utilisez|Terminez|Ajoutez|Retirez|Supprimez|Rouvrez|Restaurez|Recommencez|Reconnectez|Exportez|Importez|Lancez|Gardez|Conservez|Cliquez|Pensez|Notez|Parlez|Relisez|Créez|Validez|Confirmez|Annulez|Recommencez|Supprimez|Désinstallez|Réinitialisez|Actualisez|Rangez|Planifiez|Imprimez|Détruisez|Définissez|Déverrouillez|Scannez|Affichez|Reprenez|Mettez|Revenez|Glissez|Arrêtez|Décochez|Capturez|Associez|Tapez|Séparez|Placez|Photographiez|Modifiez|Fixez|Déposez|Corrigez|Collez|Affinez)\b/i;
 const LITERAL = /'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g;
 
 function files(dir: string): string[] {
@@ -25,7 +25,8 @@ describe('tutoiement', () => {
   it('aucun texte de src ne vouvoie', () => {
     const offenders: string[] = [];
     for (const file of files(fileURLToPath(new URL('..', import.meta.url)))) {
-      const source = readFileSync(file, 'utf8');
+      // Commentaires retirés : seuls les textes affichés comptent (les commentaires de la synchro ne se touchent pas, D-26).
+      const source = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
       for (const match of source.matchAll(LITERAL)) {
         const text = match[1] ?? match[2] ?? match[3] ?? '';
         // Sans espace : clé ou identifiant, pas une phrase.

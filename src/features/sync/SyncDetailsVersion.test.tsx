@@ -19,7 +19,7 @@ import { startSyncIntegration } from './startSync';
 import { formatSyncTime } from './syncText';
 import { createFakeSyncService, type FakeSyncService } from './testKit';
 
-/** Bandeau « Mettez à jour l'app », ligne de Réglages et emplacement « version » (Y-07 critères 8 à 11 ; critère 12 : tests/unit/sync/versions/texts.test.ts). */
+/** Bandeau « Mets à jour l'app », ligne de Réglages et emplacement « version » (Y-07 critères 8 à 11 ; critère 12 : tests/unit/sync/versions/texts.test.ts). */
 
 const SELF = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000d7');
 const IPHONE = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' as DeviceId;

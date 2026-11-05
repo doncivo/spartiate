@@ -487,7 +487,7 @@ export const fr = {
     triangleAlert: 'Icône alerte',
     wrench: 'Icône outil',
     customEmojiLabel: 'Autre emoji',
-    customEmojiHint: 'Collez ou saisis un seul emoji',
+    customEmojiHint: 'Colle ou saisis un seul emoji',
     customEmojiError: 'Un seul emoji à la fois.',
     emojiLabel: 'Emoji {name}',
     emojiPhone: 'téléphone',

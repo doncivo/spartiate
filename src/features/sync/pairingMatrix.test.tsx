@@ -133,7 +133,7 @@ const SCENARIOS: Scenario[] = [
     },
     expected: {
       // PC : « Associer l’iPhone » reste offert alors que le coffre est illisible (défaut D3, pairingDefects.test.tsx).
-      ios: { settings: ['forgetFolder', 'rereadFolder'], details: ['syncNow'], banner: 'Le Trousseau de l’iPhone est indisponible : déverrouillez l’iPhone, la synchro reprendra' },
+      ios: { settings: ['forgetFolder', 'rereadFolder'], details: ['syncNow'], banner: 'Le Trousseau de l’iPhone est indisponible : déverrouille l’iPhone, la synchro reprendra' },
     },
   },
   {
@@ -146,7 +146,7 @@ const SCENARIOS: Scenario[] = [
     },
     expected: {
       // PC : « Associer l’iPhone » reste offert, coffre illisible (défaut D3, pairingDefects.test.tsx).
-      ios: { settings: ['forgetFolder', 'rereadFolder'], details: ['syncNow'], banner: 'Le Trousseau de l’iPhone est indisponible : déverrouillez l’iPhone, la synchro reprendra' },
+      ios: { settings: ['forgetFolder', 'rereadFolder'], details: ['syncNow'], banner: 'Le Trousseau de l’iPhone est indisponible : déverrouille l’iPhone, la synchro reprendra' },
     },
   },
   {

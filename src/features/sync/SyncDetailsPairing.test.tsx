@@ -85,7 +85,7 @@ describe('« Associer l’iPhone » (critère 4)', () => {
 
   it.each([
     ['refus de la boîte (consent-denied)', (p: MemorySyncPlatform) => p.testing.setConsent(false), 'Affichage annulé'],
-    ['app pas au premier plan (not-foreground)', (p: MemorySyncPlatform) => p.testing.setForeground(false), 'Revenez dans l’application et réessaie'],
+    ['app pas au premier plan (not-foreground)', (p: MemorySyncPlatform) => p.testing.setForeground(false), 'Reviens dans l’application et réessaie'],
   ])('%s : « %s », aucune fenêtre, rien de gardé', async (_case, arrange, text) => {
     arrange(platform);
     const container = await make();

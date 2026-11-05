@@ -67,7 +67,7 @@ test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis r�
 
   // Écran « Associer au PC », étape 1 : le dossier.
   await associate.click();
-  const dialog = page.getByRole('dialog', { name: 'Scannez le code affiché sur le PC' });
+  const dialog = page.getByRole('dialog', { name: 'Scanne le code affiché sur le PC' });
   await expect(dialog.getByText('Choisis d’abord le même dossier iCloud Drive / Spartiate que sur le PC.')).toBeVisible();
   await expect(dialog.getByRole('button', { name: SCAN })).toHaveCount(0);
   await expect(dialog.getByRole('button', { name: RECOVERY })).toHaveCount(0);
@@ -90,7 +90,7 @@ test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis r�
   // QR illisible (pas un code Spartiate) : dit, rescanner possible, aucune clé.
   await presentText(room, 'iphone', 'https://exemple.test/pas-un-code');
   await dialog.getByRole('button', { name: SCAN }).click();
-  await expect(page.getByTestId('ios-pairing-message')).toHaveText('Ce code n’est pas un code d’association Spartiate : affichez le code sur le PC et réessaie');
+  await expect(page.getByTestId('ios-pairing-message')).toHaveText('Ce code n’est pas un code d’association Spartiate : affiche le code sur le PC et réessaie');
   await expect(dialog.getByRole('button', { name: SCAN })).toBeVisible();
   await expectFitsViewport(page, 'Associer au PC, QR illisible');
 

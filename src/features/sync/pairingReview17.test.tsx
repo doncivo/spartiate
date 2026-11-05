@@ -17,7 +17,7 @@ const SELF = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000e1');
 const NOW = '2026-10-09T08:00:00.000Z';
 const CHOOSE = 'Choisir le dossier de synchronisation';
 const SHOW_QR = 'Associer l’iPhone : afficher le code d’association';
-const UNREADABLE = 'Clé de chiffrement illisible pour l’instant : déverrouillez l’appareil, puis réessaie';
+const UNREADABLE = 'Clé de chiffrement illisible pour l’instant : déverrouille l’appareil, puis réessaie';
 const REREAD = 'Relire la clé de chiffrement';
 
 let db: TestDb;

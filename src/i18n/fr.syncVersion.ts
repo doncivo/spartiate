@@ -1,5 +1,5 @@
 /**
- * Textes de `sync.version` (Y-07), en français : source de vérité. Bandeau A-09 « Mettez à jour l'app », emplacement « version » de
+ * Textes de `sync.version` (Y-07), en français : source de vérité. Bandeau A-09 « Mets à jour l'app », emplacement « version » de
  * Réglages › Synchronisation › Détails et échec de réintégration (exigence d'Ali). Jamais de numéro de migration : seul le numéro
  * d'application publié par l'autre appareil (D2) ; jamais de valeur reçue ni de message d'erreur.
  */

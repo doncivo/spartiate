@@ -10,11 +10,11 @@ export const scanFr = {
   // Choix de la source (PC : fichier ou webcam ; iPhone : sélecteur du système).
   source: {
     title: 'Ta liste',
-    hint: 'Photographiez ou importe une liste de tâches, une par ligne. La photo n’est ni enregistrée ni envoyée.',
+    hint: 'Photographie ou importe une liste de tâches, une par ligne. La photo n’est ni enregistrée ni envoyée.',
     importImage: 'Importer une image',
     pickPhoto: 'Prendre ou choisir une photo',
     webcam: 'Utiliser la webcam',
-    drop: 'Déposez une image ici',
+    drop: 'Dépose une image ici',
     formats: 'JPEG, PNG ou WebP, 10 Mo au plus',
     fileInput: 'Choisir une image',
     webcamPreview: 'Aperçu de la webcam',
@@ -36,7 +36,7 @@ export const scanFr = {
   },
   error: {
     title: 'La lecture a échoué',
-    hint: 'La photo n’a pas pu être lue. Reprenez la photo ou choisis une autre image.',
+    hint: 'La photo n’a pas pu être lue. Reprends la photo ou choisis une autre image.',
   },
   empty: {
     title: 'Aucune ligne reconnue',
@@ -50,7 +50,7 @@ export const scanFr = {
     detectedOne: '1 ligne détectée',
     truncated: 'Seules les {max} premières lignes sur {count} sont gardées.',
     engineTruncated: 'Le moteur de lecture n’a rendu que les 500 premières lignes de la photo, de haut en bas.',
-    instructions: 'Corrigez le texte, décochez ce qu’il ne faut pas créer, puis valide.',
+    instructions: 'Corrige le texte, décoche ce qu’il ne faut pas créer, puis valide.',
     retake: 'Reprendre la photo',
     lineLabel: 'Tâche {n}',
     create: 'Créer cette tâche',
@@ -108,9 +108,9 @@ export const scanFr = {
     cause: {
       timeout: 'La lecture a pris trop de temps. Réessaie, ou lis la photo avec le moteur intégré, plus lent.',
       busy: 'Une lecture est encore en cours. Réessaie dans un instant.',
-      unsupportedFormat: 'Ce format d’image n’est pas lu par le moteur de l’iPhone. Reprenez une photo, ou lis-la avec le moteur intégré.',
-      tooLarge: 'Cette image est trop lourde pour le moteur de l’iPhone. Reprenez une photo, ou lis-la avec le moteur intégré.',
-      dimensions: 'Cette image est trop grande pour le moteur de l’iPhone. Reprenez une photo, ou lis-la avec le moteur intégré.',
+      unsupportedFormat: 'Ce format d’image n’est pas lu par le moteur de l’iPhone. Reprends une photo, ou lis-la avec le moteur intégré.',
+      tooLarge: 'Cette image est trop lourde pour le moteur de l’iPhone. Reprends une photo, ou lis-la avec le moteur intégré.',
+      dimensions: 'Cette image est trop grande pour le moteur de l’iPhone. Reprends une photo, ou lis-la avec le moteur intégré.',
     },
   },
   code: 'Code : {code}',

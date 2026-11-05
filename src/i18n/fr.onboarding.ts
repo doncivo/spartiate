@@ -17,7 +17,7 @@ export const onboardingFr = {
   languageValue: 'Français',
   firstDay: 'Premier jour de semaine',
   firstDayLabel: 'Premier jour de la semaine',
-  spacesTitle: 'Séparez le pro et le perso',
+  spacesTitle: 'Sépare le pro et le perso',
   spacesText: 'Chaque tâche, routine ou événement appartient à un espace. Tu filtres ensuite en un geste : Pro, Perso ou Tout.',
   quietSummary: 'Silence : {summary}',
   quietNone: 'Aucune plage de silence',
