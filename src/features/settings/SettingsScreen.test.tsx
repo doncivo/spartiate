@@ -1,9 +1,9 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
-import { asEntityId, type DeviceId } from '../../domain/types';
+import { asEntityId, type DeviceId, type LocalDate } from '../../domain/types';
 import type { DataAccess } from '../../db/repositories';
-import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
+import { openBaseDb, openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { useAppStore } from '../app/appStore';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { AppContainerProvider } from '../app/AppContainerContext';
@@ -40,6 +40,14 @@ describe('SettingsScreen (T-06)', () => {
       </AppContainerProvider>,
     );
 
+  /** Base neuve (profil et pesées) : le résumé de la carte profil lit ces deux tables. */
+  async function renderOnBaseDb(seed: (base: TestDb) => Promise<void>): Promise<TestDb> {
+    const base = await openBaseDb(DEVICE);
+    await seed(base);
+    renderScreen(createAppContainer({ clock: base.clock, hlc: createHlcClock({ clock: base.clock, deviceId: DEVICE }), data: base.data }));
+    return base;
+  }
+
   beforeEach(async () => {
     mockViewport(440);
     db = await openTestDb(DEVICE);
@@ -57,7 +65,7 @@ describe('SettingsScreen (T-06)', () => {
   it('T-11 : la ligne « Fuseau horaire » affiche le fuseau courant suivi de « (automatique) » (critère 5)', () => {
     useAppStore.setState({ timeZone: 'Europe/Paris' });
     renderScreen();
-    expect(screen.getByText('GÉNÉRAL')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'PRÉFÉRENCES' })).toBeInTheDocument();
     expect(screen.getByText('Fuseau horaire')).toBeInTheDocument();
     expect(screen.getByText('Europe/Paris (automatique)')).toBeInTheDocument();
   });
@@ -72,5 +80,67 @@ describe('SettingsScreen (T-06)', () => {
   it('échec de lecture : message, pas de rejet', async () => {
     renderScreen(containerWith(failing('get')));
     expect(await screen.findByRole('alert')).toHaveTextContent('Impossible de lire les réglages.');
+  });
+  it('Plus iPhone : titre, carte profil puis DONNÉES, PRÉFÉRENCES, À PROPOS dans l’ordre (IPHONE absent sans signature ni Face ID)', async () => {
+    renderScreen();
+    expect(screen.getByRole('heading', { level: 1, name: 'Plus' })).toBeInTheDocument();
+    const titles = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
+    expect(titles).toEqual(['DONNÉES', 'PRÉFÉRENCES', 'À PROPOS']);
+    for (const old of ['GÉNÉRAL', 'DONNÉES ET SÉCURITÉ', 'SYNCHRONISATION']) expect(screen.queryByText(old)).toBeNull();
+    const profile = screen.getByRole('button', { name: /Profil et poids/ });
+    const data = screen.getByRole('heading', { name: 'DONNÉES' });
+    expect(profile.compareDocumentPosition(data) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+    expect(screen.queryByRole('group', { name: 'Sections des réglages' })).toBeNull();
+    expect(document.querySelector('.ct-settings__rule')).toBeNull();
+  });
+
+  it('carte profil sans valeur saisie : texte neutre, jamais de valeur inventée ; un appui ouvre Profil et poids', async () => {
+    renderScreen();
+    const card = screen.getByRole('button', { name: /Profil et poids/ });
+    expect(await within(card).findByText('Taille, poids et objectif')).toBeInTheDocument();
+    expect(card).not.toHaveTextContent(/kg|cm/);
+    fireEvent.click(card);
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'body' });
+  });
+
+  it('carte profil : résumé construit avec la taille, le dernier poids et l’objectif réellement saisis', async () => {
+    const base = await renderOnBaseDb(async (b) => {
+      await (await b.data.repos.profile()).save({ heightCm: 178, goal: 'gain' }, 2026);
+      await (await b.data.repos.bodyWeights()).saveManual({ date: '2026-01-10' as LocalDate, kg: 81.4, timezone: 'Europe/Paris' }, '2026-11-04' as LocalDate);
+    });
+    const card = screen.getByRole('button', { name: /Profil et poids/ });
+    expect(await within(card).findByText('178 cm · 81,4 kg le 10 janv. · prise de masse')).toBeInTheDocument();
+    cleanup();
+    await base.close();
+  });
+
+  it('carte profil : un profil sans taille ni objectif ne montre que le poids saisi', async () => {
+    const base = await renderOnBaseDb(async (b) => {
+      await (await b.data.repos.bodyWeights()).saveManual({ date: '2026-01-10' as LocalDate, kg: 80, timezone: 'Europe/Paris' }, '2026-11-04' as LocalDate);
+    });
+    const card = screen.getByRole('button', { name: /Profil et poids/ });
+    expect(await within(card).findByText('80 kg le 10 janv.')).toBeInTheDocument();
+    cleanup();
+    await base.close();
+  });
+
+  it('DONNÉES : « Export et import » mène à son écran ; PRÉFÉRENCES : thème, début de semaine, heure mènent à Apparence', async () => {
+    renderScreen();
+    const data = screen.getByRole('heading', { name: 'DONNÉES' }).nextElementSibling as HTMLElement;
+    fireEvent.click(within(data).getByRole('button', { name: 'Export et import' }));
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'exportimport' });
+    useNavigationStore.setState(INITIAL_NAVIGATION);
+    for (const name of ['Thème : Sombre', 'Début de semaine : Lundi', 'Format de l’heure : 24 h']) {
+      fireEvent.click(screen.getByRole('button', { name }));
+      expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'appearance' });
+      useNavigationStore.setState(INITIAL_NAVIGATION);
+    }
+  });
+
+  it('À PROPOS : version et « Logs » (diagnostic et journal) restent accessibles', async () => {
+    renderScreen();
+    const about = screen.getByRole('heading', { name: 'À PROPOS' }).nextElementSibling as HTMLElement;
+    expect(within(about).getByText(/^Version/)).toBeInTheDocument();
+    expect(within(about).getByRole('button', { name: 'Ouvrir l’écran des logs' })).toBeInTheDocument();
   });
 });

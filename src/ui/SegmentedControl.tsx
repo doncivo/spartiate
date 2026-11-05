@@ -12,13 +12,15 @@ export interface SegmentedControlProps<V extends string> {
   /** Nom accessible du groupe (clé i18n résolue par l'appelant). */
   readonly label: string;
   readonly disabled?: boolean;
+  /** Disposition en grille de deux colonnes (quatre choix : 2 × 2) ; sans valeur, une rangée qui passe à la ligne si besoin. */
+  readonly columns?: 2;
 }
 
 /**
  * Contrôle segmenté à choix unique (P-02, P-03 : thème, premier jour, format d'heure), aspect de `SpaceSegmented`, boutons de 44 pt.
  * Accessibilité : `radiogroup` ; flèches gauche / droite déplacent le choix, une seule tabulation pour le groupe.
  */
-export function SegmentedControl<V extends string>({ options, value, onChange, label, disabled = false }: SegmentedControlProps<V>) {
+export function SegmentedControl<V extends string>({ options, value, onChange, label, disabled = false, columns }: SegmentedControlProps<V>) {
   function onKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number): void {
     const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
     if (step === 0) return;
@@ -30,7 +32,7 @@ export function SegmentedControl<V extends string>({ options, value, onChange, l
     buttons?.[(index + step + options.length) % options.length]?.focus();
   }
   return (
-    <div className="ct-segmented" role="radiogroup" aria-label={label}>
+    <div className="ct-segmented" data-columns={columns} role="radiogroup" aria-label={label}>
       {options.map((option, index) => (
         <button
           key={option.value}
