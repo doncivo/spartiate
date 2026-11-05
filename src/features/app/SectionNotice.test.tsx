@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { DeviceId } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
@@ -26,6 +26,7 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
   });
   afterEach(async () => {
     cleanup();
+    vi.unstubAllGlobals();
     await db.close();
   });
 
@@ -41,12 +42,12 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
     expect(document.body.textContent ?? '').not.toMatch(/\d/);
   });
 
-  it('Aujourd’hui : état vide explicite et une seule action utile, qui ouvre Profil et poids', async () => {
+  it('Aujourd’hui : rend l’écran I0 (iPhone) ; sans profil, le bouton principal ouvre Profil et poids', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
     open('today');
     expect(await screen.findByRole('heading', { name: 'Aujourd’hui' })).toBeInTheDocument();
-    expect(screen.getByText(/Aucune donnée pour l’instant/)).toBeInTheDocument();
-    expect(document.body.textContent ?? '').not.toMatch(/\d/);
-    fireEvent.click(screen.getByRole('button', { name: 'Renseigner mon profil et mon poids' }));
+    expect(await screen.findByText('Trois réglages, puis on s’entraîne.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Renseigner mon profil' }));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'body' });
   });
 });
