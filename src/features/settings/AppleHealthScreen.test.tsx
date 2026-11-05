@@ -15,7 +15,7 @@ import { SettingsScreen } from './SettingsScreen';
  * Finitions 0.1.2 (d) : Apple Santé dans Plus (iPhone seulement), SPA-006 et D-59. Lecture seule de bodyMass et stepCount ; iOS ne dit jamais
  * si la lecture est accordée : l'écran ne l'affirme jamais. « Utiliser cette pesée » passe par saveHealth, sans écraser la saisie manuelle.
  */
-vi.mock('../../platform/desktop/log', () => ({ logFailure: vi.fn() }));
+vi.mock('../../platform/desktop/log', async (importOriginal) => ({ ...(await importOriginal<typeof import('../../platform/desktop/log')>()), logFailure: vi.fn() }));
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-000000000009');
 
