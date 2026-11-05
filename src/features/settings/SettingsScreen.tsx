@@ -14,6 +14,7 @@ import { AboutSection } from './AboutSection';
 import { BackupRow } from './BackupRow';
 import { LinkRow } from './LinkRow';
 import { ProfileCard } from './ProfileCard';
+import { SecuritySection } from './SecuritySection';
 import { SettingsScreenPc } from './SettingsScreenPc';
 import { formatAppearanceParts } from './AppearanceScreen';
 import { settingsStore } from './settingsStore';
@@ -33,9 +34,11 @@ export function SettingsScreen() {
 
 function SettingsScreenMobile() {
   const container = useAppContainer();
-  // D-37 : code conservé, entrée masquée, activation différée. SecuritySection n'est plus montée ; seule la signature reste.
   const hasHealthRow = container.platform.runtime === 'tauri' && container.platform.os === 'ios';
-  const hasIphoneRows = container.signing.source.supported || hasHealthRow;
+  // D-37 : code conservé, entrée masquée, activation différée. La ligne n'apparaît que si un test pose `__ctShowAppLockRow` (même procédé que
+  // `__ctBiometricFake`) ; l'app livrée ne le pose jamais.
+  const showLockRow = container.authenticator.supported && (globalThis as { __ctShowAppLockRow?: boolean }).__ctShowAppLockRow === true;
+  const hasIphoneRows = container.signing.source.supported || hasHealthRow || showLockRow;
   const load = useFeatureStore(settingsStore, (s) => s.load);
   const errorKey = useFeatureStore(settingsStore, (s) => s.errorKey);
   const timeZone = useAppStore((s) => s.timeZone);
@@ -74,6 +77,7 @@ function SettingsScreenMobile() {
           <div className="ct-settings__card">
             {hasHealthRow && <LinkRow label={healthFr.row} value={healthFr.rowValue} onClick={() => navigate({ tab: 'more', screen: 'health' })} />}
             <SigningAboutRow />
+            {showLockRow && <SecuritySection />}
           </div>
         </>
       )}

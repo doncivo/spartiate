@@ -4,7 +4,7 @@ import { closeRoom, openSyncDetails, openSyncedPage, presentQr, propagate, setCa
 
 /**
  * Y-IOS-02 critère 17 (ADR 0011 §23 points 2 et 7) : projet `iphone`, simulateur de dossier. Le PC publie une tâche ; l'iPhone a le dossier
- * du PC, sans clé (`bare`). Caméra refusée : dite sur la ligne de Réglages, bandeau persistant « associez cet appareil » ; autorisée :
+ * du PC, sans clé (`bare`). Caméra refusée : dite sur la ligne de Réglages, bandeau persistant « associe cet appareil » ; autorisée :
  * « Associer au PC » → scan simulé (texte du QR produit par le simulateur, jamais par la page) → clé reçue → tâche du PC visible. L'iPhone
  * n'affiche jamais le QR. Le refus de la confirmation de remplacement est couvert par `yIos02.test.tsx` (clé déjà présente sur l'iPhone).
  */

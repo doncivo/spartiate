@@ -89,7 +89,7 @@ test('Y-10 : oublier l’iPhone depuis le PC, suppression des fichiers en attent
 
   // Critère 16 : l'iPhone apprend son oubli : il ne lit ni ne publie plus, et le dit.
   await propagate(room);
-  await syncNow(iphone.page, /^Cet appareil a été oublié : associez-le de nouveau$/);
+  await syncNow(iphone.page, /^Cet appareil a été oublié : associe-le de nouveau$/);
   const appendsBefore = (await inspect(room, 'iphone')).appends;
   await syncNow(iphone.page, /^Cet appareil a été oublié/);
   expect((await inspect(room, 'iphone')).appends).toBe(appendsBefore);

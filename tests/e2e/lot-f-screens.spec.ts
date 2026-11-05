@@ -64,7 +64,7 @@ test.describe('Lot F — écran « Restauration interrompue » (P-04-iOS, revue 
       g.__ctDbOpen = () => Promise.reject(Object.assign(new Error('startup-recovery: recovery-conflict'), { name: 'StartupRecoveryError' }));
     });
     await page.goto('/');
-    await expect(page.getByRole('alert').filter({ hasText: 'Restauration interrompue : fermez puis rouvre Spartiate.' })).toBeVisible();
+    await expect(page.getByRole('alert').filter({ hasText: 'Restauration interrompue : ferme puis rouvre Spartiate.' })).toBeVisible();
     await expect(page.getByText(/rien n’est supprimé/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Réessayer' })).toHaveCount(0);
     await noHorizontalScroll(page);
