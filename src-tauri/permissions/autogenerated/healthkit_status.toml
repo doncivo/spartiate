@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-healthkit-status"
+description = "Enables the healthkit_status command without any pre-configured scope."
+commands.allow = ["healthkit_status"]
+
+[[permission]]
+identifier = "deny-healthkit-status"
+description = "Denies the healthkit_status command without any pre-configured scope."
+commands.deny = ["healthkit_status"]

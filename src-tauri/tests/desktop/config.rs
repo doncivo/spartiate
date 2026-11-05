@@ -536,6 +536,52 @@ fn sync_1_handlers_equal_the_build_manifest() {
     );
 }
 
+#[test]
+fn healthkit_commands_are_registered_in_the_minimal_ios_capability() {
+    let manifest = manifest_commands();
+    let commands = [
+        "healthkit_status",
+        "healthkit_authorize",
+        "healthkit_body_mass_today",
+        "healthkit_step_count_today",
+    ];
+    for command in commands {
+        assert!(manifest.contains(command), "{command} absent du manifeste");
+    }
+
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("capabilities")
+        .join("healthkit-ios.json");
+    let capability = std::fs::read_to_string(path).expect("capability HealthKit absente");
+    let capability: Value = serde_json::from_str(&capability).expect("capability HealthKit valide");
+    assert_eq!(capability["windows"], serde_json::json!(["main"]));
+    assert_eq!(capability["platforms"], serde_json::json!(["iOS"]));
+    let mut permissions = capability["permissions"]
+        .as_array()
+        .expect("permissions list")
+        .iter()
+        .map(|permission| permission.as_str().expect("permission string"))
+        .collect::<Vec<_>>();
+    permissions.sort_unstable();
+    assert_eq!(
+        permissions,
+        [
+            "allow-healthkit-authorize",
+            "allow-healthkit-body-mass-today",
+            "allow-healthkit-status",
+            "allow-healthkit-step-count-today",
+        ]
+    );
+    for (name, other) in all_capabilities() {
+        if name != "healthkit-ios.json" {
+            assert!(
+                !other.contains("allow-healthkit-"),
+                "{name} accorde HealthKit"
+            );
+        }
+    }
+}
+
 /// (2) `sync.json` : exactement les 22 permissions de `main` (18, les trois du lot Y4 et `sync_abandon_orphan_epoch`), Windows, sans les trois commandes de `pairing`.
 #[test]
 fn sync_2_main_capability_grants_exactly_twenty_one_commands() {
