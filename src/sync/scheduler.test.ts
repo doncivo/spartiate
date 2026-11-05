@@ -130,7 +130,7 @@ describe('planificateur de synchro : latence moins de 60 s (0.1.3 k)', () => {
   it('retour au premier plan : pas de rafale si la bascule se répète en quelques secondes', async () => {
     const r = rig();
     r.setVisibility('hidden');
-    await Promise.resolve();
+    await r.advance(30_000);
     r.reset();
     r.setVisibility('visible');
     r.setVisibility('hidden');

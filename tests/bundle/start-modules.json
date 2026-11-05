@@ -297,6 +297,11 @@
       "fichier": "src/features/app/StartupWatchdog.tsx",
       "story": "IOS-BOOT-01",
       "raison": "Chien de garde de tout le démarrage (1,6 Ko source) : monté avant le premier rendu, c'est lui qui remplace l'écran blanc ; l'écran « Démarrage bloqué » et ses textes sont chargés à la demande."
+    },
+    {
+      "fichier": "src/db/localWrite.ts",
+      "story": "BUNDLE-01",
+      "raison": "SPA-008 (0.1.3 k) : signal d'écriture locale (1,3 Ko source) levé par les dépôts de profil et de pesée, importé par sql/index.ts qui est dans le départ ; la synchro l'écoute pour publier en moins de 60 s."
     }
   ]
 }
