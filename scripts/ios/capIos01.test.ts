@@ -65,6 +65,9 @@ describe('contrat Info.plist de la capture sur iPhone (CAP-IOS-01, I-05)', () =>
     expect(plist['NSSpeechRecognitionUsageDescription']).toMatch(/sur l'iPhone, sans rien envoyer/);
     expect(plist['NSHealthShareUsageDescription']).toMatch(/lit votre poids et vos pas/);
     expect(plist['NSHealthShareUsageDescription']).toMatch(/Aucune autre donnée de Santé n’est consultée/);
+    expect(plist['NSHealthShareUsageDescription']).toBe(
+      'Spartiate lit ton poids et tes pas pour les afficher dans l’application. Aucune autre donnée de Santé n’est consultée.',
+    );
   });
 
   it('aucune clé superflue : ni mode d’arrière-plan, ni localisation, photothèque, contacts ou suivi', () => {
