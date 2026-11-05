@@ -7,8 +7,8 @@ import { describe, expect, it } from 'vitest';
  * santé) remontent au statut, avec la présence du texte d'usage et la disponibilité de Santé.
  */
 const swift = readFileSync(new URL('../../../src-tauri/plugins/healthkit/ios/Sources/HealthKitPlugin.swift', import.meta.url), 'utf8');
-const authorize = /func authorize[\s\S]*?\n  \}\n/.exec(swift)?.[0] ?? '';
-const status = /func status[\s\S]*?\n  \}\n/.exec(swift)?.[0] ?? '';
+const authorize = /func authorize[\s\S]*?\n {2}\}\n/.exec(swift)?.[0] ?? '';
+const status = /func status[\s\S]*?\n {2}\}\n/.exec(swift)?.[0] ?? '';
 
 describe('HealthKitPlugin.swift : diagnostic', () => {
   it('authorize garde l’erreur native (domaine, code, localizedDescription) au lieu de la perdre', () => {
