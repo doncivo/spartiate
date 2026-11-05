@@ -373,7 +373,7 @@ describe('cohérence du guide, du workflow et des scripts', () => {
     expect(guide).toContain("Spartiate vous prévient 24 h avant l'expiration ; actualisez-la alors dans SideStore.");
     expect(guide).not.toContain("à l'ordre 5");
     expect(read('src/domain/signingNotice.ts')).toContain('SIGNING_ALERT_LEAD_MS = 24 * 3_600_000');
-    expect(read('src/i18n/fr.signing.ts')).toContain('Vérifiez dans SideStore que l’app a été actualisée');
+    expect(read('src/i18n/fr.signing.ts')).toContain('Vérifie dans SideStore que l’app a été actualisée');
   });
 
   it('tient en 15 minutes : durée annoncée, 8 étapes, lecture courte', () => {

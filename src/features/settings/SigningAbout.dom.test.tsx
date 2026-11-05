@@ -88,7 +88,7 @@ describe('À propos : expiration de la signature (I-02)', () => {
     await replanNotifications(h.container, 'open');
     renderAbout();
     expect(await screen.findByText(/^Signature expirée depuis le jeu\. 8 oct\. à 09:00$/)).toBeInTheDocument();
-    expect(screen.getByText('La signature est expirée : réinstallez l’app')).toBeInTheDocument();
+    expect(screen.getByText('La signature est expirée : réinstalle l’app')).toBeInTheDocument();
   });
 
   it('profil absent ou illisible : « Date d’expiration inconnue » dans À propos, avec le code', async () => {

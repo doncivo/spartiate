@@ -119,7 +119,7 @@ test.describe('I-06 — mise à jour N vers N+1 (iPhone, base préremplie, versi
     await installAtN(page, 'fail');
     await page.goto('/');
     await expect(page.getByRole('alert').first()).toHaveText('Impossible d’ouvrir la base de données.', { timeout: APP_READY_TIMEOUT_MS });
-    await expect(page.getByText('Vos données sont intactes. Ne supprimez pas Spartiate. Envoyez le détail pour obtenir un correctif.')).toBeVisible();
+    await expect(page.getByText('Tes données sont intactes. Ne supprime pas Spartiate. Envoie le détail pour obtenir un correctif.')).toBeVisible();
     const detail = page.getByTestId('db-failure-detail');
     await expect(detail).toContainText('Étape : migration 2');
     await expect(detail).toContainText('Version de l’app : 0.3.0');
@@ -149,7 +149,7 @@ test.describe('I-06 — mise à jour N vers N+1 (iPhone, base préremplie, versi
     await installAtN(page, 'newer');
     await page.goto('/');
     await expect(page.getByRole('alert').first()).toHaveText(
-      'Cette version de Spartiate est plus ancienne que vos données. Installez la dernière version depuis SideStore. Vos données ne sont pas modifiées.',
+      'Cette version de Spartiate est plus ancienne que tes données. Installe la dernière version depuis SideStore. Tes données ne sont pas modifiées.',
       { timeout: APP_READY_TIMEOUT_MS },
     );
     await expect(page.getByText(/inconnue de cette version/)).toHaveCount(0);
@@ -162,7 +162,7 @@ test.describe('I-06 — mise à jour N vers N+1 (iPhone, base préremplie, versi
     await installAtN(page, 'backup');
     await page.goto('/');
     await expect(page.getByRole('alert').first()).toContainText('la sauvegarde de sécurité a échoué', { timeout: APP_READY_TIMEOUT_MS });
-    await expect(page.getByRole('alert').first()).toContainText('Libérez de l’espace disque');
+    await expect(page.getByRole('alert').first()).toContainText('Libère de l’espace disque');
     await expect(page.getByRole('button', { name: 'Réessayer' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Copier le détail' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Restaurer la sauvegarde d’avant la mise à jour' })).toHaveCount(0);

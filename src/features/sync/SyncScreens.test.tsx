@@ -259,7 +259,7 @@ describe('choix après restauration pendant une réinitialisation (Y-11, ADR 001
     sync.setStatus({ phase: 'restore-choice' });
     renderIn(<RestoreChoiceDialog />);
     await screen.findByRole('alertdialog');
-    expect(screen.getByText('Le choix n’a pas pu être appliqué (erreur d’écriture). Rien n’a été changé : vous pouvez réessayer.')).toBeTruthy();
+    expect(screen.getByText('Le choix n’a pas pu être appliqué (erreur d’écriture). Rien n’a été changé : tu peux réessayer.')).toBeTruthy();
     cleanup();
     sync.restore = { marker, options: ['keep-synced'], notice: 'reset-in-progress', failure: { code: 'state-mismatch', at: NOW as IsoDateTime, option: 'apply-everywhere' } };
     renderIn(<RestoreChoiceDialog />);

@@ -21,7 +21,7 @@ export const syncPairingFr = {
   openAlreadyOpen: 'La fenêtre d’association est déjà ouverte',
   importCancelled: 'Association annulée',
   openRateLimited: 'Trop de demandes : réessaie dans 10 minutes',
-  openIncomplete: 'Installation incomplète : réinstallez l’application',
+  openIncomplete: 'Installation incomplète : réinstalle l’application',
   openFailed: 'La fenêtre d’association n’a pas pu s’ouvrir',
   openNeedsNewKey: 'Cet appareil doit d’abord être associé avec la nouvelle clé',
   openCloudPending: 'Un fichier d’un autre appareil attend encore iCloud : réessaie dans un instant',

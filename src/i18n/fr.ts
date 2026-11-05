@@ -72,7 +72,7 @@ export const fr = {
       unknown: 'inconnu',
       copy: 'Copier le détail',
       copied: 'Détail copié.',
-      copyFailed: 'Copie impossible : sélectionnez le texte ci-dessus.',
+      copyFailed: 'Copie impossible : sélectionne le texte ci-dessus.',
       steps: {
         runtime: 'détection de l’app installée (isTauri() faux dans un build Tauri)',
         load: 'chargement du plugin SQL (Database.load)',
@@ -582,7 +582,7 @@ export const fr = {
     /** I-02 (ADR 0013 §3.3) : moins de 24 h avant l'expiration de la signature (texte précis composé par I-02 dans `message`). */
     signingSoon: 'Spartiate expire bientôt : actualise-la dans SideStore',
     /** I-02 : signature expirée. */
-    signingExpired: 'La signature est expirée : réinstallez l’app',
+    signingExpired: 'La signature est expirée : réinstalle l’app',
     signingViewLabel: 'Voir l’expiration de la signature dans Réglages',
   },
   today: {

@@ -110,11 +110,11 @@ test.describe('I-02 — alerte avant expiration (iPhone, profil et planificateur
     expect(await signing(page, (hooks) => hooks.alert.scheduled.length)).toBe(0);
   });
 
-  test('autorisation refusée : « Les notifications sont refusées : vous ne serez pas prévenu » dans À propos (critère 7)', { tag: '@permission-denied' }, async ({ page }) => {
+  test('autorisation refusée : « Les notifications sont refusées : tu ne serez pas prévenu » dans À propos (critère 7)', { tag: '@permission-denied' }, async ({ page }) => {
     await signing(page, (hooks) => hooks.source.expireAt('2026-10-14T07:00:00Z'));
     await resume(page);
     await openSettings(page);
-    await expect(page.getByText('Les notifications sont refusées : vous ne serez pas prévenu')).toBeVisible();
+    await expect(page.getByText('Les notifications sont refusées : tu ne serez pas prévenu')).toBeVisible();
     expect(await signing(page, (hooks) => hooks.alert.scheduled.length)).toBe(0);
   });
 });
@@ -135,7 +135,7 @@ test.describe('I-02 — 440 × 956 : À propos et bandeau sans défilement horiz
     await signing(page, (hooks) => hooks.source.expireAt('2026-10-14T07:00:00Z'));
     await resume(page);
     await openSettings(page);
-    await expect(page.getByText('Les notifications ne sont pas autorisées : vous ne serez pas prévenu')).toBeVisible();
+    await expect(page.getByText('Les notifications ne sont pas autorisées : tu ne serez pas prévenu')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Autoriser les notifications pour l’alerte d’expiration' })).toBeVisible();
     await expectFitsViewport(page, 'À propos, notifications non autorisées');
   });

@@ -101,12 +101,12 @@ describe('« Associer l’iPhone » (critère 4)', () => {
     const container = await make(failing);
     renderIn(container, <SyncDetailsPairing />);
     fireEvent.click(await screen.findByRole('button', { name: 'Associer l’iPhone : afficher le code d’association' }));
-    expect((await screen.findByTestId('sync-pairing-notice')).textContent).toBe('Installation incomplète : réinstallez l’application');
+    expect((await screen.findByTestId('sync-pairing-notice')).textContent).toBe('Installation incomplète : réinstalle l’application');
     // Redémarrage : nouveau conteneur, même base.
     cleanup();
     const restarted = await make();
     renderIn(restarted, <SyncDetailsPairing />);
-    expect((await screen.findByTestId('sync-pairing-notice')).textContent).toBe('Installation incomplète : réinstallez l’application');
+    expect((await screen.findByTestId('sync-pairing-notice')).textContent).toBe('Installation incomplète : réinstalle l’application');
     const notice = screen.getByTestId('sync-pairing-notice');
     fireEvent.click(await screen.findByRole('button', { name: 'Associer l’iPhone : afficher le code d’association' }));
     await waitForElementToBeRemoved(notice);

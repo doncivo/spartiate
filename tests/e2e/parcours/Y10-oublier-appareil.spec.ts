@@ -65,7 +65,7 @@ test('Y-10 : oublier l’iPhone depuis le PC, suppression des fichiers en attent
   // Critères 2 et 4 : explication avant tout envoi, « Annuler » par défaut ; Échap annule.
   await iphoneRow.getByRole('button', { name: 'Oublier iPhone' }).click();
   const dialog = pc.page.getByRole('alertdialog', { name: 'Oublier iPhone ?' });
-  await expect(dialog).toContainText('ne sera plus lu au-delà d’un point commun à tous vos appareils');
+  await expect(dialog).toContainText('ne sera plus lu au-delà d’un point commun à tous tes appareils');
   await expect(dialog).toContainText('30 jours dans « Supprimés récemment »');
   await expect(dialog).toContainText('L’oubli ne s’annule pas');
   await expect(dialog).toContainText('garde sa copie des données et sa clé');
@@ -93,7 +93,7 @@ test('Y-10 : oublier l’iPhone depuis le PC, suppression des fichiers en attent
   const appendsBefore = (await inspect(room, 'iphone')).appends;
   await syncNow(iphone.page, /^Cet appareil a été oublié/);
   expect((await inspect(room, 'iphone')).appends).toBe(appendsBefore);
-  await expect(iphone.page.locator('.ct-sync__forget[role="status"]')).toContainText('Cet appareil a été oublié : associez-le de nouveau');
+  await expect(iphone.page.locator('.ct-sync__forget[role="status"]')).toContainText('Cet appareil a été oublié : associe-le de nouveau');
   // Bandeau A-09 (ADR 0011 §19) depuis l'écran principal, avec « Voir ».
   await expect(iphone.page.getByRole('button', { name: 'Voir le problème de synchronisation' })).toBeVisible();
 
@@ -171,7 +171,7 @@ test('Y-10-FIX-01 : oubli en échec (trop de demandes), « Annuler la demande »
   await forgetButton.click();
   await dialog.getByRole('button', { name: 'Continuer' }).click();
   await expect(failedLine).toContainText(`L’oubli de ${target}`, { timeout: APP_READY_TIMEOUT_MS });
-  await expect(failedLine).toContainText('trop de demandes, réessayez dans 10 minutes');
+  await expect(failedLine).toContainText('trop de demandes, réessaie dans 10 minutes');
   await expect(failedLine.getByRole('button')).toHaveText(['Réessayer', 'Annuler la demande']);
   // Bandeau A-09 de l'échec, depuis l'écran principal comme dans Réglages.
   const bannerButton = page.getByRole('button', { name: 'Voir le problème de synchronisation' });
@@ -208,7 +208,7 @@ test('Y-10-FIX-01 : oubli en échec (trop de demandes), « Annuler la demande »
   // Critère 7 : le blocage de 10 minutes n'est pas levé : un nouvel oubli redonne « trop de demandes », la ligne revient avec ses deux boutons.
   await forgetButton.click();
   await dialog.getByRole('button', { name: 'Continuer' }).click();
-  await expect(failedLine).toContainText('trop de demandes, réessayez dans 10 minutes', { timeout: APP_READY_TIMEOUT_MS });
+  await expect(failedLine).toContainText('trop de demandes, réessaie dans 10 minutes', { timeout: APP_READY_TIMEOUT_MS });
   await expect(failedLine.getByRole('button')).toHaveText(['Réessayer', 'Annuler la demande']);
   await expect(forgetZone).not.toContainText('Demande annulée');
 });

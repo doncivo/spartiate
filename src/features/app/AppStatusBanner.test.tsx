@@ -41,7 +41,7 @@ describe('bandeau d’état de l’app (A-09)', () => {
     });
     expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Spartiate expire bientôt : actualise-la dans SideStore');
     act(() => set('signingExpiry', { detail: 'expired' }));
-    expect(document.querySelector('.ct-status-banner')).toHaveTextContent('La signature est expirée : réinstallez l’app');
+    expect(document.querySelector('.ct-status-banner')).toHaveTextContent('La signature est expirée : réinstalle l’app');
     act(() => set('signingExpiry', { detail: 'soon', message: 'Spartiate expire dans 5 h' }));
     expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Spartiate expire dans 5 h');
     act(() => set('signingExpiry', null));

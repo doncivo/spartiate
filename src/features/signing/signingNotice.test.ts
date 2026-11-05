@@ -185,11 +185,11 @@ describe('I-02 : moins de 24 h et expirée (critère 6)', () => {
     expect(banner()?.detail).toBe('soon');
   });
 
-  it('échéance passée : bandeau « La signature est expirée : réinstallez l’app »', async () => {
+  it('échéance passée : bandeau « La signature est expirée : réinstalle l’app »', async () => {
     r.source.expireAt('2026-10-08T07:00:00Z');
     await replanSigning(r.h.container, 'open');
     expect(r.alert.scheduled).toHaveLength(0);
-    expect(banner()).toMatchObject({ detail: 'expired', message: 'La signature est expirée : réinstallez l’app' });
+    expect(banner()).toMatchObject({ detail: 'expired', message: 'La signature est expirée : réinstalle l’app' });
   });
 
   it('le bandeau n’est pas une notification : un seul état, devant les autres bandeaux', async () => {
@@ -329,7 +329,7 @@ describe('I-02 : bandeau tenu à jour tant que l’app est ouverte (revue)', () 
     tick(60);
     expect(banner()?.message).toBe('Spartiate expire dans 9 h : actualise-la dans SideStore');
     tick(9 * 60);
-    expect(banner()).toMatchObject({ detail: 'expired', message: 'La signature est expirée : réinstallez l’app' });
+    expect(banner()).toMatchObject({ detail: 'expired', message: 'La signature est expirée : réinstalle l’app' });
     // Plus de minuterie une fois expirée.
     expect(vi.getTimerCount()).toBe(0);
   });

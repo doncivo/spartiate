@@ -106,7 +106,7 @@ describe('version de schéma plus récente (Y-07 critères 2, 7, 9, 11)', () => 
     expect(await upgradeDevice(b)).toEqual({ reintegrated: 0, superseded: 0, remaining: 0 });
   });
 
-  it('critère 9 : A absent depuis plus de 180 jours (expired) : il ne compte plus pour « Mettez à jour l’app »', async () => {
+  it('critère 9 : A absent depuis plus de 180 jours (expired) : il ne compte plus pour « Mets à jour l’app »', async () => {
     const { b } = await olderAndNewer();
     expect(newerDevices((await b.cycle()).devices)).toHaveLength(1);
     b.clock.advance(DEVICE_EXPIRY_MS + DAY);

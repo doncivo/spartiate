@@ -123,7 +123,7 @@ describe('§18 point 16 : restauration pendant une réinitialisation', () => {
     }
   });
 
-  it('règle 4 pendant une réinitialisation : aucune option, marqueur gardé, texte « terminez-la »', async () => {
+  it('règle 4 pendant une réinitialisation : aucune option, marqueur gardé, texte « termine-la »', async () => {
     const [a] = (await setupRoom(room, [B_ID])) as [SimDevice, SimDevice];
     const copy = await backupOf(a);
     expect((await a.service.resetSync()).kind).toBe('started');
