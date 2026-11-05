@@ -1,6 +1,6 @@
-// CAP-IOS-01 critère 16 et I-05 critère 8 (ADR 0015 §4.2 et §4.3) : le contrat Info.plist exige le micro, la reconnaissance vocale et la caméra
-// (élargie à la photo d'une liste), en français, non vides ; aucune clé superflue (forbiddenKeys) ; entrées négatives (clé retirée, texte vide,
-// texte anglais, clé interdite ajoutée = échec). Le contrôle de build-ios.yml lit le même contrat.
+// CAP-IOS-01 critère 16, I-05 critère 8 et SPA-006 : les descriptions d’usage caméra, voix et HealthKit sont françaises et non vides ;
+// aucune clé superflue (forbiddenKeys) ; entrées négatives (clé retirée, texte vide, texte anglais, clé interdite ajoutée = échec).
+// Le contrôle de build-ios.yml lit le même contrat.
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -19,10 +19,11 @@ const FORBIDDEN = [
   'NSPhotoLibraryAddUsageDescription',
   'NSContactsUsageDescription',
   'NSUserTrackingUsageDescription',
+  'NSHealthUpdateUsageDescription',
 ];
 
 /** Clés d'usage de l'app (Rappels Apple : K-05, fusionné ; écart 8 de l'ADR 0015 soldé). */
-const USAGE_KEYS = ['NSCameraUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'NSFaceIDUsageDescription'];
+const USAGE_KEYS = ['NSCameraUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'NSFaceIDUsageDescription', 'NSHealthShareUsageDescription'];
 
 /** Heuristique de langue : au moins deux mots français courants et aucun mot anglais courant. */
 function looksFrench(text: string): boolean {
@@ -39,6 +40,7 @@ describe('contrat Info.plist de la capture sur iPhone (CAP-IOS-01, I-05)', () =>
     const plugins = contract['plugins'] as Json;
     expect(plugins['vision']).toEqual({ story: 'CAP-IOS-01', usageDescriptions: ['NSCameraUsageDescription'] });
     expect(plugins['speech']).toEqual({ story: 'CAP-IOS-01', usageDescriptions: ['NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription'] });
+    expect(plugins['healthkit']).toEqual({ story: 'SPA-006', usageDescriptions: ['NSHealthShareUsageDescription'] });
     expect(contract['forbiddenKeys']).toEqual(FORBIDDEN);
     expect(contract['formatVersion']).toBe(1);
     expect(validateContract(contract)).toEqual([]);
@@ -61,6 +63,8 @@ describe('contrat Info.plist de la capture sur iPhone (CAP-IOS-01, I-05)', () =>
     expect(plist['NSCameraUsageDescription']).toMatch(/photographier une liste de tâches/);
     expect(plist['NSMicrophoneUsageDescription']).toMatch(/seulement pendant que vous dictez/);
     expect(plist['NSSpeechRecognitionUsageDescription']).toMatch(/sur l'iPhone, sans rien envoyer/);
+    expect(plist['NSHealthShareUsageDescription']).toMatch(/lit votre poids et vos pas/);
+    expect(plist['NSHealthShareUsageDescription']).toMatch(/Aucune autre donnée de Santé n’est consultée/);
   });
 
   it('aucune clé superflue : ni mode d’arrière-plan, ni localisation, photothèque, contacts ou suivi', () => {

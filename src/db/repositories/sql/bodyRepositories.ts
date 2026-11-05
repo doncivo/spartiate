@@ -13,7 +13,8 @@ import {
   type WeightSource,
 } from '../../../domain/bodyProfile';
 import type { WriteStamper } from '../../../domain/hlc';
-import type { IsoDateTime, LocalDate } from '../../../domain/types';
+import { isIsoDateTime, type IsoDateTime, type LocalDate } from '../../../domain/types';
+import { isValidTimeZone, utcToLocal } from '../../../domain/timeZone';
 import type { SqlExecutor, SqlRow } from '../../driver';
 import { RepositoryError } from '../common';
 import type { BodyWeightRepository, ProfileRepository } from '../bodyRepositories';
@@ -115,6 +116,42 @@ export function createBodyWeightRepository(db: SqlExecutor, stamper: WriteStampe
         await db.execute(
           "INSERT INTO body_weight (id, date, kg, source, timezone, health_uuid, measured_at, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, 'manual', ?, NULL, NULL, ?, ?, ?, ?)",
           [id, date, kg, timezone, stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
+        );
+      }
+      const row = (await db.select<WeightRow>('SELECT * FROM body_weight WHERE id = ?', [id]))[0];
+      if (!row) throw new RepositoryError('not-found', 'body_weight', id);
+      return rowToWeight(row);
+    },
+    async saveHealth(input, today) {
+      if (!isIsoDateTime(input.measuredAt) || !isValidTimeZone(input.timezone) || input.healthUuid.trim() === '') {
+        throw new RepositoryError('invalid', 'body_weight', 'health');
+      }
+      const date = utcToLocal(input.measuredAt, input.timezone).date;
+      const id = weightId(date, 'health');
+      if (validateManualWeight({ date, kg: input.kg }, today).length > 0) {
+        throw new RepositoryError('invalid', 'body_weight', id);
+      }
+      const existing = (await db.select<WeightRow>('SELECT * FROM body_weight WHERE id = ?', [id]))[0];
+      if (
+        existing &&
+        existing.deleted_at === null &&
+        existing.kg === input.kg &&
+        existing.timezone === input.timezone &&
+        existing.health_uuid === input.healthUuid &&
+        existing.measured_at === input.measuredAt
+      ) {
+        return rowToWeight(existing);
+      }
+      const stamp = stamper.next();
+      if (existing) {
+        await db.execute(
+          'UPDATE body_weight SET kg = ?, timezone = ?, health_uuid = ?, measured_at = ?, deleted_at = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?',
+          [input.kg, input.timezone, input.healthUuid, input.measuredAt, stamp.at, stamp.deviceId, stamp.hlc, id],
+        );
+      } else {
+        await db.execute(
+          "INSERT INTO body_weight (id, date, kg, source, timezone, health_uuid, measured_at, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, 'health', ?, ?, ?, ?, ?, ?, ?)",
+          [id, date, input.kg, input.timezone, input.healthUuid, input.measuredAt, stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
         );
       }
       const row = (await db.select<WeightRow>('SELECT * FROM body_weight WHERE id = ?', [id]))[0];

@@ -35,7 +35,7 @@ La colonne « Preuve attendue » n’est pas une preuve acquise. Chaque ticket a
 | Capacité / référence PRD | Statut actuel du PRD | Preuve attendue sur Spartiate | Ticket producteur / réserve |
 | --- | --- | --- | --- |
 | Entitlement HealthKit dans l’artefact signé et après SideStore (H-3a) | UNVERIFIED — risque I0 | Sortie codesign sur IPA finale et preuve après re-signature ; limites explicites si indisponible | SPA-003 ; réception appareil SPA-004/006 (D-59 précise le relais SPA-006 de l’annexe B) |
-| Autorisation Santé, lecture bodyMass et stepCount (H-3b) | UNVERIFIED — risque I0 | Captures de demande et lectures natives datées, unités/provenance, refus et résultat vide distingués | SPA-006 |
+| Autorisation Santé, lecture bodyMass et stepCount (H-3b) | UNVERIFIED — code seul, recette native requise | Captures de demande et lectures natives datées, unités/provenance ; résultat vide ne prouve pas un refus de lecture (limite HealthKit) | SPA-006 |
 | Écriture puis suppression Santé d’un échantillon créé par Spartiate (H-3c) | UNVERIFIED | Échantillon créé, relu puis supprimé ; aucune suppression d’une autre source ; preuve native | I1 pour séance, I5 pour le reste ; hors gate I0 |
 | Lecture HealthKit HRV / FC repos / sommeil / workouts (§ 6, annexe B) | UNVERIFIED (dépend H-3) | Lectures natives datées, unités, provenance, absence de données et fallback fatigue déclarée | I5 |
 | Recovery HRV disponible ou dérivable de hrvSDNN (H-20) | UNVERIFIED | Types exposés et valeur lue sur iPhone ; sinon fallback HRV SDNN nocturne documenté | I5 |

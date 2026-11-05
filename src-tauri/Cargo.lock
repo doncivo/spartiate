@@ -4331,6 +4331,7 @@ dependencies = [
  "tauri-plugin-ct-haptics",
  "tauri-plugin-dialog",
  "tauri-plugin-folder-bookmark",
+ "tauri-plugin-healthkit",
  "tauri-plugin-notification",
  "tauri-plugin-notification-actions",
  "tauri-plugin-opener",
@@ -5003,6 +5004,15 @@ dependencies = [
  "thiserror 2.0.21",
  "toml 1.1.6+spec-1.1.0",
  "url",
+]
+
+[[package]]
+name = "tauri-plugin-healthkit"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
 ]
 
 [[package]]

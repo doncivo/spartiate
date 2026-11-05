@@ -19,6 +19,9 @@ pub mod export_common;
 /// Export sur iPhone par le plugin ct-files (FILES-IOS-01) ; compilé aussi sous `test-hooks` pour les tests Windows (faux transport).
 #[cfg(any(target_os = "ios", feature = "test-hooks"))]
 pub mod export_ios;
+/// Lectures HealthKit autorisées (SPA-006) ; aucune écriture ni commande Santé sur PC.
+#[cfg(target_os = "ios")]
+mod healthkit;
 #[cfg(desktop)]
 pub mod import;
 /// Démarrage de l'iPhone (`setup`) : journal technique, purge des temporaires d'export.
@@ -115,6 +118,7 @@ pub fn run() {
         .plugin(tauri_plugin_barcode_scanner::init())
         .plugin(tauri_plugin_vision::init())
         .plugin(tauri_plugin_speech::init())
+        .plugin(tauri_plugin_healthkit::init())
         .manage(ocr::vision::VisionState::default())
         .manage(speech::SpeechState::default())
         .manage(sync::commands_ios::SyncState::default());
@@ -183,6 +187,10 @@ pub fn run() {
         speech::ios::speech_listen,
         speech::ios::speech_stop,
         speech::ios::app_settings_open,
+        healthkit::healthkit_status,
+        healthkit::healthkit_authorize,
+        healthkit::healthkit_body_mass_today,
+        healthkit::healthkit_step_count_today,
     ]);
     // N-01 : notifications locales de l'iPhone (rappels, ADR 0012 N1.1). Aucune ligne sous cfg(desktop) : le PC n'envoie aucune notification.
     #[cfg(target_os = "ios")]

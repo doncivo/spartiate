@@ -80,6 +80,11 @@ fn main() {
             "backup_restore_marker_write",
             // I-02 (ADR 0013 section 3.1) : dates du profil de signature SideStore, iPhone uniquement (capability signing-ios.json).
             "app_signing_info",
+            // HealthKit (SPA-006) : commandes de lecture et d’autorisation, iPhone uniquement (capability healthkit-ios.json).
+            "healthkit_status",
+            "healthkit_authorize",
+            "healthkit_body_mass_today",
+            "healthkit_step_count_today",
         ]),
     ))
     .expect("échec de la configuration de la compilation Tauri");

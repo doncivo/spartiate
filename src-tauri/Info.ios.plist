@@ -16,6 +16,9 @@
 	<!-- I-03 (ADR 0013 §2.1) : verrouillage par Face ID (plugin biometric). Sans cette clé, Face ID est indisponible (constat 6). -->
 	<key>NSFaceIDUsageDescription</key>
 	<string>Spartiate utilise Face ID pour garder vos tâches privées.</string>
+	<!-- SPA-006 : lectures uniquement du poids et du nombre de pas ; aucune donnée Santé n'est écrite ni envoyée. -->
+	<key>NSHealthShareUsageDescription</key>
+	<string>Spartiate lit votre poids et vos pas pour les afficher dans l’application. Aucune autre donnée de Santé n’est consultée.</string>
 	<!-- ios-demarrage : le journal technique (codes et durées, sans donnée personnelle) est écrit dans Documents/Journal, visible dans l'app
 	     Fichiers (Sur mon iPhone > Spartiate) pour être partagé en cas de blocage. Aucune autre exposition de Documents. -->
 	<key>UIFileSharingEnabled</key>
