@@ -44,7 +44,7 @@ export function openStartupRecovery(runtime: 'tauri' | 'web', os: 'windows' | 'i
       try {
         await api.rollback(name, stamp);
       } catch (error) {
-        // Base déjà fermée : un échec après l'appel demande un redémarrage pour la rouvrir (texte « redémarrez » de P-04).
+        // Base déjà fermée : un échec après l'appel demande un redémarrage pour la rouvrir (texte « redémarre » de P-04).
         throw new BackupError(reasonOf(error), { cause: error, databaseClosed: true });
       }
       // Aucun marqueur : service « sans marqueur » au sens du contrat (`undefined`).

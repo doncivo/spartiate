@@ -133,7 +133,7 @@ const SCENARIOS: Scenario[] = [
     },
     expected: {
       // PC : « Associer l’iPhone » reste offert alors que le coffre est illisible (défaut D3, pairingDefects.test.tsx).
-      ios: { settings: ['forgetFolder', 'rereadFolder'], details: ['syncNow'], banner: 'Le Trousseau de l’iPhone est indisponible : déverrouillez l’iPhone, la synchro reprendra' },
+      ios: { settings: ['forgetFolder', 'rereadFolder'], details: ['syncNow'], banner: 'Le Trousseau de l’iPhone est indisponible : déverrouille l’iPhone, la synchro reprendra' },
     },
   },
   {
@@ -146,7 +146,7 @@ const SCENARIOS: Scenario[] = [
     },
     expected: {
       // PC : « Associer l’iPhone » reste offert, coffre illisible (défaut D3, pairingDefects.test.tsx).
-      ios: { settings: ['forgetFolder', 'rereadFolder'], details: ['syncNow'], banner: 'Le Trousseau de l’iPhone est indisponible : déverrouillez l’iPhone, la synchro reprendra' },
+      ios: { settings: ['forgetFolder', 'rereadFolder'], details: ['syncNow'], banner: 'Le Trousseau de l’iPhone est indisponible : déverrouille l’iPhone, la synchro reprendra' },
     },
   },
   {
@@ -186,9 +186,9 @@ const SCENARIOS: Scenario[] = [
       return harness(failing, os, { fake: { phase: 'error', errorCode: 'folder-unreachable' } });
     },
     expected: {
-      windows: { settings: ['forgetFolder', 'rereadFolder'], details: ['reset', 'showQr', 'syncNow'], banner: 'Dossier de synchro introuvable : vos modifications seront envoyées au retour' },
+      windows: { settings: ['forgetFolder', 'rereadFolder'], details: ['reset', 'showQr', 'syncNow'], banner: 'Dossier de synchro introuvable : tes modifications seront envoyées au retour' },
       // Revue de la PR #17 : Détails (où mène le bandeau) offre aussi « Choisir le dossier » pour le signet perdu de l'iPhone.
-      ios: { settings: ['choose', 'forgetFolder', 'rereadFolder'], details: ['choose', 'reset', 'syncNow'], banner: 'Dossier iCloud Drive inaccessible : choisissez de nouveau le dossier iCloud Drive / Spartiate' },
+      ios: { settings: ['choose', 'forgetFolder', 'rereadFolder'], details: ['choose', 'reset', 'syncNow'], banner: 'Dossier iCloud Drive inaccessible : choisis de nouveau le dossier iCloud Drive / Spartiate' },
     },
   },
   {
@@ -206,7 +206,7 @@ const SCENARIOS: Scenario[] = [
     build: (os) => fakePhase(os, { phase: 'forgotten', errorCode: null }),
     expected: {
       // PC : « Associer l’iPhone » reste offert à un appareil oublié (défaut D1, pairingDefects.test.tsx).
-      ios: { settings: ['details', 'forgetFolder', 'syncNow'], details: ['rejoin', 'syncNow'], banner: 'Cet appareil a été oublié : associez-le de nouveau' },
+      ios: { settings: ['details', 'forgetFolder', 'syncNow'], details: ['rejoin', 'syncNow'], banner: 'Cet appareil a été oublié : associe-le de nouveau' },
     },
   },
   {
@@ -223,8 +223,8 @@ const SCENARIOS: Scenario[] = [
     title: 'en attente d’iCloud (cloud-pending) : aucune alarme, état normal',
     build: (os) => fakePhase(os, { phase: 'waiting-icloud', errorCode: 'cloud-pending' }),
     expected: {
-      windows: { settings: ['details', 'forgetFolder', 'showQr', 'syncNow'], details: ['reset', 'showQr', 'syncNow'], banner: 'iCloud ne répond pas : vos modifications seront envoyées au retour' },
-      ios: { settings: ['details', 'forgetFolder', 'syncNow'], details: ['reset', 'syncNow'], banner: 'iCloud ne répond pas : vos modifications seront envoyées au retour' },
+      windows: { settings: ['details', 'forgetFolder', 'showQr', 'syncNow'], details: ['reset', 'showQr', 'syncNow'], banner: 'iCloud ne répond pas : tes modifications seront envoyées au retour' },
+      ios: { settings: ['details', 'forgetFolder', 'syncNow'], details: ['reset', 'syncNow'], banner: 'iCloud ne répond pas : tes modifications seront envoyées au retour' },
     },
   },
 ];

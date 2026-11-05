@@ -206,7 +206,7 @@ export function statusLine(status: SyncStatus, nowMs: number): string {
       // Revue de la PR #14 : erreur passagère répétée : cycles espacés, jamais arrêtés ; l'heure du prochain essai est dite.
       if (status.retryAt && status.errorCode) {
         const time = formatSyncTime(status.retryAt, nowMs);
-        // QA D4 : la cause connue garde son conseil (« déverrouillez l’iPhone »…) ; sans cause propre, le texte « ralentie » seul.
+        // QA D4 : la cause connue garde son conseil (« déverrouille l’iPhone »…) ; sans cause propre, le texte « ralentie » seul.
         const cause = errorText(status.errorCode, ownPlatform(status));
         return cause === t('sync.status.errorGeneric') ? t('sync.status.errorSlowed', { time, code: status.errorCode }) : t('sync.status.errorSlowedCause', { cause, time, code: status.errorCode });
       }

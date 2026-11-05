@@ -133,7 +133,7 @@ function parseBlocking(raw: string | null): BlockingPhaseFact | null {
  *
  * Bandeaux (A-09 critère 9, décision de `syncBanners.ts`) : `syncTrouble` (phase en échec ou bloquée, état local illisible, arrivée en
  * échec, appareils `foreign` / `corrupt` / `rollback`, le plus urgent avec « (+N) » et « Voir »), « En attente d'iCloud » (avec sa
- * cause), « Synchro en cours » (au-delà du seuil compté depuis le début du cycle), « Mettez à jour l'app » (Y-07). « Hors ligne » n'est
+ * cause), « Synchro en cours » (au-delà du seuil compté depuis le début du cycle), « Mets à jour l'app » (Y-07). « Hors ligne » n'est
  * jamais retiré ici.
  *
  * États persistés : relus au démarrage, à chaque changement de phase, à la conclusion d'un cycle et sur un changement d'association.

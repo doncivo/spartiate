@@ -238,7 +238,7 @@ describe('« J’ai vu » (critère 18)', () => {
     const dialog = screen.getByRole('dialog');
     vi.spyOn(db.data, 'transaction').mockRejectedValue(new Error('ack-refused'));
     fireEvent.click(within(dialog).getByRole('button', { name: 'J’ai vu' }));
-    expect(await within(dialog).findByText('Le compte rendu n’a pas pu être marqué comme vu : réessayez')).toBeTruthy();
+    expect(await within(dialog).findByText('Le compte rendu n’a pas pu être marqué comme vu : réessaie')).toBeTruthy();
     expect(warn).toHaveBeenCalledWith('[desktop:sync] carry-report-seen-failed {"name":"Error"}');
     expect(JSON.stringify(warn.mock.calls)).not.toContain('ack-refused');
   });

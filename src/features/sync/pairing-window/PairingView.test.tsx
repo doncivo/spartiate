@@ -206,7 +206,7 @@ describe('minuteur, nouveau code, impression, fermeture (critères 6, 7, 8 et 16
     expect(document.querySelector('.ct-pair__sheet')).not.toBeNull();
     act(() => void window.dispatchEvent(new Event('afterprint')));
     expect(document.querySelector('.ct-pair__sheet')).toBeNull();
-    expect(T.window.printWarning).toContain('ne capturez pas l’aperçu d’impression');
+    expect(T.window.printWarning).toContain('ne capture pas l’aperçu d’impression');
   });
 
   it.each(['cancel', 'escape'] as const)('fermeture (%s) : état vidé, fenêtre détruite par Rust (instance effacée)', async (how) => {

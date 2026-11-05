@@ -9,8 +9,8 @@ const fr = {
   conflictsHelp: 'Deux appareils ont modifié la même chose. La version la plus récente est appliquée.',
   applied: 'Appliquée · {side}',
   resetBodyBefore: 'Une nouvelle clé est créée. ',
-  resetBodyStrong: 'Vos autres appareils devront être associés de nouveau',
-  resetBodyAfter: ' (QR code ou clé de secours) et l’historique partagé repart à zéro. Vos tâches ne sont pas supprimées.',
+  resetBodyStrong: 'Tes autres appareils devront être associés de nouveau',
+  resetBodyAfter: ' (QR code ou clé de secours) et l’historique partagé repart à zéro. Tes tâches ne sont pas supprimées.',
 } as const;
 export function tSyncRefonte(key: keyof typeof fr, params: Record<string, string> = {}): string {
   let text: string = fr[key];

@@ -322,7 +322,7 @@ pub fn set_tray_labels(app: AppHandle, labels: TrayLabels) -> Result<(), Command
 
 /// Début du texte de la boîte montrée quand la récupération d'une restauration interrompue échoue. Exception assumée à « textes dans
 /// `src/i18n` » : la boîte précède toute WebView ; ce début est celui de `backup.recoveryFailed` (vérifié par `recoveryMessage.test.ts`).
-pub const RECOVERY_FAILED_MESSAGE: &str = "Restauration interrompue : redémarrez Spartiate.";
+pub const RECOVERY_FAILED_MESSAGE: &str = "Restauration interrompue : redémarre Spartiate.";
 
 /// Texte complet de la boîte : le début, le code d'erreur et la consigne (sans chemin personnel : le dossier est désigné par `%APPDATA%`).
 pub fn recovery_failed_text(code: &str, identifier: &str) -> String {

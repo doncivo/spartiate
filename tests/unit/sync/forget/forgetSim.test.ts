@@ -162,9 +162,9 @@ describe('effets chez tous les appareils (critère 10)', () => {
     expect(await rows()).toBe(0);
   });
 
-  it('le bandeau « Mettez à jour l’app » de Y-07 disparaît pour un appareil oublié', async () => {
+  it('le bandeau « Mets à jour l’app » de Y-07 disparaît pour un appareil oublié', async () => {
     const [a, b, x] = (await setup([B_ID, X_ID])) as [SimDevice, SimDevice, SimDevice];
-    // X publie un état d'une majeure plus récente : lecture suspendue, « Mettez à jour l'app ».
+    // X publie un état d'une majeure plus récente : lecture suspendue, « Mets à jour l'app ».
     const copy = x.folder.takeState(x.id);
     const newer = copy.file as unknown as { header: { sm: number } };
     newer.header.sm = 2;

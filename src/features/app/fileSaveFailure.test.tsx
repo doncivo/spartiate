@@ -13,9 +13,9 @@ describe('FileSaveFailure', () => {
   });
 
   it.each([
-    ['too-large', /Réduisez le contenu exporté/],
-    ['unsafe-folder', /fermez puis rouvrez Spartiate/],
-    ['bad-name', /exportez les logs/],
+    ['too-large', /Réduis le contenu exporté/],
+    ['unsafe-folder', /ferme puis rouvre Spartiate/],
+    ['bad-name', /exporte les logs/],
   ])('%s : action utile, aucun « Réessayer »', (code, text) => {
     render(<FileSaveFailure message="L’export n’a pas abouti." code={code} onRetry={vi.fn()} />);
     expect(screen.getByRole('alert')).toHaveTextContent(text);

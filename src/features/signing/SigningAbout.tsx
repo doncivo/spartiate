@@ -47,7 +47,7 @@ export function SigningFailureLine({ status, zone }: { readonly status: SigningS
   if (status.failure === null) return null;
   return (
     <>
-      <span className="ct-settings__hint ct-settings__hint--danger" role="status" data-kind="signing-unknown">
+      <span className="ct-settings__hint ct-settings__hint--warning" role="status" data-kind="signing-unknown">
         {t('signing.about.unknown')}
       </span>
       <span className="ct-settings__hint">
@@ -76,8 +76,8 @@ export function SigningAboutRow() {
 
   let main: string;
   let hint: string | null = null;
-  let hintDanger = false;
-  let mainDanger = false;
+  let hintWarn = false;
+  let mainWarn = false;
   // Action utile quand l'alerte ne peut pas partir : demander l'autorisation (geste), ou ouvrir Réglages > Rappels quand iOS ne redemande plus.
   let action: 'allow' | 'view' | null = null;
   if (status.failure !== null) {
@@ -98,23 +98,23 @@ export function SigningAboutRow() {
     const { date, time } = wallText(expiresAt, zone);
     if (notice.state === 'unknown') {
       main = t('signing.about.unknown');
-      mainDanger = true;
+      mainWarn = true;
     } else if (notice.state === 'expired') {
       main = t('signing.about.expired', { date, time });
-      mainDanger = true;
+      mainWarn = true;
     } else {
       main = t('signing.about.expires', { date, time, remaining: aboutRemaining(expiresAt - nowMs) });
       if (permission === 'denied') {
         action = 'view';
         hint = t('signing.about.notificationsDenied');
-        hintDanger = true;
+        hintWarn = true;
       } else if (permission === 'undetermined') {
         action = 'allow';
         hint = t('signing.about.notificationsUndetermined');
-        hintDanger = true;
+        hintWarn = true;
       } else if (signingAlertFailure(container) !== null) {
         hint = t('signing.about.alertFailed');
-        hintDanger = true;
+        hintWarn = true;
       } else if (notice.state === 'soon') {
         hint = t('signing.about.alertSoon');
       } else {
@@ -126,9 +126,9 @@ export function SigningAboutRow() {
   return (
     <div className="ct-settings__row" data-kind="signing">
       <span className="ct-settings__stack">
-        <span className={mainDanger ? 'ct-settings__hint--danger' : undefined}>{main}</span>
+        <span className={mainWarn ? 'ct-settings__hint--warning' : undefined}>{main}</span>
         {hint !== null && (
-          <span className={hintDanger ? 'ct-settings__hint ct-settings__hint--danger' : 'ct-settings__hint'} role="status">
+          <span className={hintWarn ? 'ct-settings__hint ct-settings__hint--warning' : 'ct-settings__hint'} role="status">
             {hint}
           </span>
         )}

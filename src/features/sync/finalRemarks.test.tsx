@@ -22,7 +22,7 @@ const NOW_MS = 1_790_000_000_000;
 afterEach(() => cleanup());
 
 describe('remarques finales de Y-06', () => {
-  it('1. Réglages : not-foreground → « Revenez dans l’application et réessayez »', () => {
+  it('1. Réglages : not-foreground → « Reviens dans l’application et réessaie »', () => {
     expect(syncErrorMessageKey('not-foreground')).toBe('sync.pairing.openBackground');
   });
 

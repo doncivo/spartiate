@@ -5,12 +5,12 @@
 export const appUpdateRestoreFr = {
   restore: 'Restaurer la sauvegarde d’avant la mise à jour',
   restoreConfirmTitle: 'Restaurer la sauvegarde d’avant la mise à jour ?',
-  restoreConfirmBody: 'Vos données reviennent à leur état d’avant la mise à jour. Cette version retentera la mise à jour au prochain démarrage ; si l’erreur revient, installez la version corrigée.',
+  restoreConfirmBody: 'Tes données reviennent à leur état d’avant la mise à jour. Cette version retentera la mise à jour au prochain démarrage ; si l’erreur revient, installe la version corrigée.',
   restoreConfirm: 'Restaurer',
   restoring: 'Restauration en cours…',
-  restoreUnavailable: 'La restauration n’est pas disponible ici : copiez le détail et installez la version corrigée.',
+  restoreUnavailable: 'La restauration n’est pas disponible ici : copie le détail et installe la version corrigée.',
   /** Restauration faite, relance automatique impossible (revue I3). */
-  restartManually: 'Données restaurées. Relancez Spartiate : fermez l’app puis rouvrez-la.',
+  restartManually: 'Données restaurées. Relance Spartiate : ferme l’app puis rouvre-la.',
   /** Échec de la restauration : raison de P-04, puis le code. */
   restoreFailed: 'La restauration n’a pas abouti. {reason}',
 } as const;

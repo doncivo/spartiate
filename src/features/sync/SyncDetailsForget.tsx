@@ -27,7 +27,7 @@ function defaultRelaunch(runtime: string): Promise<void> {
 
 /**
  * Emplacement `forget` (critères 15 a, 16, 17) : échec persistant d'un oubli, d'une suppression ou d'une association (rouge,
- * `role="status"`, « Réessayer », effacé seulement à la réussite) ; appareil local oublié : « Cet appareil a été oublié : associez-le de
+ * `role="status"`, « Réessayer », effacé seulement à la réussite) ; appareil local oublié : « Cet appareil a été oublié : associe-le de
  * nouveau » et « Associer de nouveau » (confirmation, puis dossier délié, nouvel identifiant, choix du dossier, relance).
  *
  * Y-10-FIX-01 (consigne d'Ali : une action destructrice ne part jamais sans accord explicite) : échec à l'étape `declare` seulement,

@@ -17,7 +17,7 @@ const SELF = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000e1');
 const NOW = '2026-10-09T08:00:00.000Z';
 const CHOOSE = 'Choisir le dossier de synchronisation';
 const SHOW_QR = 'Associer l’iPhone : afficher le code d’association';
-const UNREADABLE = 'Clé de chiffrement illisible pour l’instant : déverrouillez l’appareil, puis réessayez';
+const UNREADABLE = 'Clé de chiffrement illisible pour l’instant : déverrouille l’appareil, puis réessaie';
 const REREAD = 'Relire la clé de chiffrement';
 
 let db: TestDb;
@@ -55,7 +55,7 @@ describe('signet perdu (folder-unreachable) : « Choisir le dossier » dans Dét
     expect(await screen.findByRole('button', { name: CHOOSE })).toBeInTheDocument();
   });
 
-  it('PC : non proposé (dossier introuvable un moment, vos modifications seront envoyées au retour)', async () => {
+  it('PC : non proposé (dossier introuvable un moment, tes modifications seront envoyées au retour)', async () => {
     show(await withKey('windows'), 'windows', { phase: 'error', errorCode: 'folder-unreachable' });
     expect(await screen.findByTestId('sync-status-text')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: CHOOSE })).toBeNull();

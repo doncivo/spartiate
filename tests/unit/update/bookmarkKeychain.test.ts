@@ -84,7 +84,7 @@ describe('signet et clé conservés par la mise à jour (critère 10)', () => {
     await db.close();
   });
 
-  it('signet périmé après la mise à jour : « choisissez de nouveau le dossier » (iPhone), la file attend sans perte, la clé reste', async () => {
+  it('signet périmé après la mise à jour : « choisis de nouveau le dossier » (iPhone), la file attend sans perte, la clé reste', async () => {
     const { db, platform, kid } = await installedAtN();
     const spies = watch(platform);
     vi.spyOn(platform.folder, 'info').mockRejectedValue(new SyncPlatformError('folder-unreachable'));

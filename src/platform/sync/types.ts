@@ -125,7 +125,7 @@ export interface ResetView {
   readonly noticeEpoch?: EpochId | null;
   /** Perte : époque et auteur gagnants ; `restore` : le gagnant est une époque restaurée sous l'ancienne clé (§18 point 16). */
   readonly superseded: { readonly epoch: EpochId | null; readonly by: DeviceId | null; readonly restore?: boolean } | null;
-  /** Registre `superseded` clos par ce scan, son gagnant étant oublié (§18 point 15) : « Réinitialisation interrompue : relancez-la ». */
+  /** Registre `superseded` clos par ce scan, son gagnant étant oublié (§18 point 15) : « Réinitialisation interrompue : relance-la ». */
   readonly closed?: boolean | undefined;
   readonly switching: boolean;
   readonly switched: boolean;
@@ -595,9 +595,9 @@ export interface SyncResetStatus {
   readonly startedAt: IsoDateTime;
   readonly resumed: boolean;
   readonly failure: ResetFailure | null;
-  /** §18 point 16 : réinitialisation perdue face à une restauration appliquée partout sur `by` (« relancez-la »). */
+  /** §18 point 16 : réinitialisation perdue face à une restauration appliquée partout sur `by` (« relance-la »). */
   readonly restore?: boolean | undefined;
-  /** §18 point 15 : perte close (gagnant oublié) : « Réinitialisation interrompue : relancez-la ». */
+  /** §18 point 15 : perte close (gagnant oublié) : « Réinitialisation interrompue : relance-la ». */
   readonly closed?: boolean | undefined;
 }
 
@@ -704,7 +704,7 @@ export interface SyncEngineService extends SyncService {
    */
   rejoin(): Promise<RejoinOutcome>;
   /**
-   * Y-11 : « Réinitialiser la synchronisation » : un cycle, précondition (« Synchronisez d'abord »), confirmation native de Rust et `K2`,
+   * Y-11 : « Réinitialiser la synchronisation » : un cycle, précondition (« Synchronise d'abord »), confirmation native de Rust et `K2`,
    * puis les cycles qui annoncent, ouvrent l'époque `n+1` et basculent si aucun autre appareil n'est attendu. Ne rejette jamais : un
    * échec est rendu et gardé dans `sync_meta.resetState` (visible dans `status().reset`).
    */
@@ -727,7 +727,7 @@ export interface RestoreContext {
   readonly options: readonly RestoreOption[];
   /**
    * Y-11 (§18 point 16) : réinitialisation en cours : « Appliquer partout » retiré (`reset-in-progress`) ; dans le cas de la règle 4, aucune
-   * option (`reset-finish` : « terminez-la sur l'appareil qui réinitialise »). Y-TECH-02 : `scan-failed` : le dossier n'a pas pu être
+   * option (`reset-finish` : « termine-la sur l'appareil qui réinitialise »). Y-TECH-02 : `scan-failed` : le dossier n'a pas pu être
    * vérifié (réinitialisation, purge plus récente) : « Appliquer partout » retiré par prudence.
    */
   readonly notice?: 'reset-in-progress' | 'reset-finish' | 'scan-failed' | 'provisional' | null;

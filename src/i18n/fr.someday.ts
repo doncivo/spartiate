@@ -16,7 +16,7 @@ export const somedayFr = {
   listLabel: 'Tâches de « Un jour »',
   panelLabel: 'Un jour',
   closePanel: 'Fermer le panneau',
-  panelHelp: 'Glissez une tâche vers un jour pour la planifier.',
+  panelHelp: 'Glisse une tâche vers un jour pour la planifier.',
   empty: 'Rien en attente : les tâches sans date arrivent ici.',
   emptySpace: 'Aucune tâche « Un jour » dans {space}.',
   loadError: 'Impossible de charger la liste « Un jour ».',
@@ -39,7 +39,7 @@ export const somedayFr = {
   dropBack: 'Remettre dans « Un jour »',
   planSelection: 'Planifier',
   planSelectionMenu: 'Planifier la sélection',
-  recurrentHint: 'Arrêtez d’abord la répétition',
+  recurrentHint: 'Arrête d’abord la répétition',
   sendError: 'Impossible de ranger cette tâche dans « Un jour ».',
   scheduleLabel: 'Aujourd’hui, demain ou une autre date',
 } as const;

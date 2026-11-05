@@ -218,14 +218,14 @@ describe('restauration à l’écran (critères 5, 6, 8 et 14)', () => {
     const real = db.driver.transaction.bind(db.driver);
     db.driver.transaction = (() => Promise.reject(new Error('base verrouillée'))) as typeof db.driver.transaction;
     fireEvent.click(within(item).getByRole('button', { name: /Rétablir/ }));
-    await within(item).findByText('La restauration a échoué. Rien n’a été modifié : réessayez.');
+    await within(item).findByText('La restauration a échoué. Rien n’a été modifié : réessaie.');
     expect(within(item).getByRole('status').getAttribute('data-trouble')).toBe('true');
     db.driver.transaction = real as typeof db.driver.transaction;
     // Une relecture du journal (nouveau cycle) ne fait pas disparaître le message.
     await act(async () => {
       sync.setStatus({ lastSyncAt: '2026-10-05T16:05:00.000Z' as IsoDateTime });
     });
-    expect(within(item).getByRole('status').textContent).toBe('La restauration a échoué. Rien n’a été modifié : réessayez.');
+    expect(within(item).getByRole('status').textContent).toBe('La restauration a échoué. Rien n’a été modifié : réessaie.');
   });
 
   it('journal illisible : dit à l’écran (jamais seulement dans le journal technique)', async () => {

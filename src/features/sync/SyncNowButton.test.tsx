@@ -73,7 +73,7 @@ describe('bouton « Synchroniser » (Y-03 critères 1, 2, 7, 8)', () => {
     renderIn(<SyncStatusLine />);
     fireEvent.click(screen.getByRole('button', { name: 'Synchroniser' }));
     sync.setStatus({ phase: 'error', errorCode: 'cloud-provider-stopped' });
-    await screen.findByText('Ouvrez iCloud pour Windows : vos modifications seront envoyées au retour');
+    await screen.findByText('Ouvre iCloud pour Windows : tes modifications seront envoyées au retour');
     expect(screen.getByRole('button', { name: 'Synchroniser' })).toHaveProperty('disabled', false);
     expect(screen.queryByRole('alertdialog')).toBeNull();
   });

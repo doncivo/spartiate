@@ -85,7 +85,7 @@ describe('« Associer l’iPhone » (critère 4)', () => {
 
   it.each([
     ['refus de la boîte (consent-denied)', (p: MemorySyncPlatform) => p.testing.setConsent(false), 'Affichage annulé'],
-    ['app pas au premier plan (not-foreground)', (p: MemorySyncPlatform) => p.testing.setForeground(false), 'Revenez dans l’application et réessayez'],
+    ['app pas au premier plan (not-foreground)', (p: MemorySyncPlatform) => p.testing.setForeground(false), 'Reviens dans l’application et réessaie'],
   ])('%s : « %s », aucune fenêtre, rien de gardé', async (_case, arrange, text) => {
     arrange(platform);
     const container = await make();
@@ -101,12 +101,12 @@ describe('« Associer l’iPhone » (critère 4)', () => {
     const container = await make(failing);
     renderIn(container, <SyncDetailsPairing />);
     fireEvent.click(await screen.findByRole('button', { name: 'Associer l’iPhone : afficher le code d’association' }));
-    expect((await screen.findByTestId('sync-pairing-notice')).textContent).toBe('Installation incomplète : réinstallez l’application');
+    expect((await screen.findByTestId('sync-pairing-notice')).textContent).toBe('Installation incomplète : réinstalle l’application');
     // Redémarrage : nouveau conteneur, même base.
     cleanup();
     const restarted = await make();
     renderIn(restarted, <SyncDetailsPairing />);
-    expect((await screen.findByTestId('sync-pairing-notice')).textContent).toBe('Installation incomplète : réinstallez l’application');
+    expect((await screen.findByTestId('sync-pairing-notice')).textContent).toBe('Installation incomplète : réinstalle l’application');
     const notice = screen.getByTestId('sync-pairing-notice');
     fireEvent.click(await screen.findByRole('button', { name: 'Associer l’iPhone : afficher le code d’association' }));
     await waitForElementToBeRemoved(notice);
@@ -116,7 +116,7 @@ describe('« Associer l’iPhone » (critère 4)', () => {
     const limited: SyncPlatform = { ...platform, key: { ...platform.key, openPairing: () => Promise.reject(new SyncPlatformError('rate-limited')) } };
     renderIn(await make(limited), <SyncDetailsPairing />);
     fireEvent.click(await screen.findByRole('button', { name: 'Associer l’iPhone : afficher le code d’association' }));
-    expect((await screen.findByTestId('sync-pairing-notice')).textContent).toBe('Trop de demandes : réessayez dans 10 minutes');
+    expect((await screen.findByTestId('sync-pairing-notice')).textContent).toBe('Trop de demandes : réessaie dans 10 minutes');
   });
 
   it('fenêtre déjà ouverte (already-open) : « La fenêtre d’association est déjà ouverte », rien de gardé, l’instance reste', async () => {
@@ -166,7 +166,7 @@ describe('aucun échec silencieux (revue, faibles)', () => {
     const getMeta = vi.spyOn(db.data.repos.sync, 'getMeta').mockRejectedValue(new Error('base occupée'));
     const container = await make();
     renderIn(container, <SyncDetailsPairing />);
-    expect((await screen.findByTestId('sync-pairing-notice')).textContent).toBe('L’état de l’association n’a pas pu être lu ou enregistré : réessayez');
+    expect((await screen.findByTestId('sync-pairing-notice')).textContent).toBe('L’état de l’association n’a pas pu être lu ou enregistré : réessaie');
     getMeta.mockRestore();
     const notice = screen.getByTestId('sync-pairing-notice');
     fireEvent.click(await screen.findByRole('button', { name: 'Associer l’iPhone : afficher le code d’association' }));
@@ -255,7 +255,7 @@ describe('ligne de Réglages, branche needsPairing (critères 10 et 12)', () => 
     const container = await make(joiner);
     startDesktopIntegration(container);
     renderIn(container, <SyncSettingsSection platform={joiner} />);
-    expect(await screen.findByText('Ce dossier contient déjà des données chiffrées : associez cet appareil')).toBeTruthy();
+    expect(await screen.findByText('Ce dossier contient déjà des données chiffrées : associe cet appareil')).toBeTruthy();
     await clickAndSettle(container, 'Associer cet appareil avec la clé de secours');
     expect(joiner.testing.pairing()?.mode).toBe('import');
     // L'import a réussi dans la fenêtre pairing (simulé : la clé est là), Rust émet sync-paired.
@@ -265,7 +265,7 @@ describe('ligne de Réglages, branche needsPairing (critères 10 et 12)', () => 
       await Promise.resolve();
     });
     // L'avis sync-paired relit l'état dans le même act (aucun minuteur) : le message est déjà retiré.
-    expect(screen.queryByText('Ce dossier contient déjà des données chiffrées : associez cet appareil')).toBeNull();
+    expect(screen.queryByText('Ce dossier contient déjà des données chiffrées : associe cet appareil')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Associer cet appareil avec la clé de secours' })).toBeNull();
     expect(sync.calls).toContain('manual');
   });
@@ -297,15 +297,15 @@ async function settleReads(reads: Promise<unknown>[]): Promise<void> {
 }
 
 describe('progression et échec de l’arrivée (critère 13, exigence d’Ali)', () => {
-  it('« Réception de vos données… 1 200 / 5 000 » pendant la reprise, puis rien', async () => {
+  it('« Réception de tes données… 1 200 / 5 000 » pendant la reprise, puis rien', async () => {
     renderIn(await make(), <JoinProgress />);
     expect(screen.queryByRole('status')).toBeNull();
     act(() => sync.setStatus({ phase: 'syncing', progress: { done: 1200, total: 5000 } }));
     // Revue point 6 : le compteur visible n'est pas une région vivante ; seuls le début et la fin sont annoncés.
-    expect(screen.getByTestId('sync-join-count').textContent).toBe('Réception de vos données… 1 200 / 5 000');
+    expect(screen.getByTestId('sync-join-count').textContent).toBe('Réception de tes données… 1 200 / 5 000');
     expect(screen.queryByRole('status')).toBeNull();
     const live = screen.getByTestId('sync-join-live');
-    expect(live.textContent).toBe('Réception de vos données…');
+    expect(live.textContent).toBe('Réception de tes données…');
     const seen: string[] = [];
     const observer = new MutationObserver(() => seen.push(live.textContent ?? ''));
     observer.observe(live, { childList: true, characterData: true, subtree: true });
@@ -366,7 +366,7 @@ describe('progression et échec de l’arrivée (critère 13, exigence d’Ali)'
   it('échec mémorisé par le moteur : affiché en rouge avec « Réessayer », après un redémarrage aussi, effacé à la réussite', async () => {
     await db.data.repos.sync.setMeta(JOIN_META, JSON.stringify({ epoch: 'e0001-x', from: SELF, seq: 1, done: 8, total: 20, failure: 'io' }));
     renderIn(await make(), <JoinProgress />);
-    expect((await screen.findByTestId('sync-join-failure')).textContent).toContain('La réception de vos données s’est arrêtée à 8 / 20 : elle reprendra à la prochaine synchronisation');
+    expect((await screen.findByTestId('sync-join-failure')).textContent).toContain('La réception de tes données s’est arrêtée à 8 / 20 : elle reprendra à la prochaine synchronisation');
     // Le bandeau join-failed annonce l'échec : le texte visible de la ligne n'est pas une seconde région vivante.
     expect(screen.queryByRole('status')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Réessayer la réception des données' }));
@@ -389,7 +389,7 @@ describe('progression et échec de l’arrivée (critère 13, exigence d’Ali)'
     await db.data.repos.sync.setMeta(JOIN_META, JSON.stringify({ epoch: 'e0001-x', from: SELF, seq: 1, done: 4, total: 20, failure: null }));
     renderIn(await make(), <JoinProgress />);
     const waiting = await screen.findByTestId('sync-join-waiting');
-    expect(waiting.textContent).toBe('Réception de vos données en attente : 4 / 20');
+    expect(waiting.textContent).toBe('Réception de tes données en attente : 4 / 20');
     expect(waiting.querySelector('.ct-settings__hint--danger')).toBeNull();
   });
 });

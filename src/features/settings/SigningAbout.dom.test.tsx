@@ -79,8 +79,8 @@ describe('À propos : expiration de la signature (I-02)', () => {
     source.expireAt('2026-10-08T20:00:00Z');
     await replanNotifications(h.container, 'resume');
     renderAbout();
-    expect(await screen.findByText('Moins de 24 h restantes : actualisez Spartiate dans SideStore')).toBeInTheDocument();
-    expect(screen.getByText('Spartiate expire dans 12 h : actualisez-la dans SideStore')).toBeInTheDocument();
+    expect(await screen.findByText('Moins de 24 h restantes : actualise Spartiate dans SideStore')).toBeInTheDocument();
+    expect(screen.getByText('Spartiate expire dans 12 h : actualise-la dans SideStore')).toBeInTheDocument();
   });
 
   it('signature expirée : dite en toutes lettres', async () => {
@@ -88,7 +88,7 @@ describe('À propos : expiration de la signature (I-02)', () => {
     await replanNotifications(h.container, 'open');
     renderAbout();
     expect(await screen.findByText(/^Signature expirée depuis le jeu\. 8 oct\. à 09:00$/)).toBeInTheDocument();
-    expect(screen.getByText('La signature est expirée : réinstallez l’app')).toBeInTheDocument();
+    expect(screen.getByText('La signature est expirée : réinstalle l’app')).toBeInTheDocument();
   });
 
   it('profil absent ou illisible : « Date d’expiration inconnue » dans À propos, avec le code', async () => {
@@ -101,12 +101,12 @@ describe('À propos : expiration de la signature (I-02)', () => {
     expect(screen.getAllByText(/profil de signature absent/)).toHaveLength(1);
   });
 
-  it('autorisation refusée : « Les notifications sont refusées : vous ne serez pas prévenu » à la place de l’alerte prévue', async () => {
+  it('autorisation refusée : « Les notifications sont refusées : tu ne seras pas prévenu » à la place de l’alerte prévue', async () => {
     source.expireAt('2026-10-14T08:00:00Z');
     h.fake.setPermission('denied');
     await replanNotifications(h.container, 'open');
     renderAbout();
-    expect(await screen.findByText('Les notifications sont refusées : vous ne serez pas prévenu')).toBeInTheDocument();
+    expect(await screen.findByText('Les notifications sont refusées : tu ne seras pas prévenu')).toBeInTheDocument();
     expect(screen.queryByText(/Alerte prévue/)).toBeNull();
     expect(screen.getByText('Expire le mer. 14 oct. à 10:00 · dans 6 jours')).toBeInTheDocument();
   });
@@ -116,7 +116,10 @@ describe('À propos : expiration de la signature (I-02)', () => {
     h.fake.setPermission('undetermined');
     await replanNotifications(h.container, 'open');
     renderAbout();
-    expect(await screen.findByText('Les notifications ne sont pas autorisées : vous ne serez pas prévenu')).toBeInTheDocument();
+    const warning = await screen.findByText('Les notifications ne sont pas autorisées : tu ne seras pas prévenu');
+    // Finitions 0.1.2 (c) : la charte réserve le rouge aux fonds de bouton ; l'avertissement prend le jaune des tokens.
+    expect(warning).toHaveClass('ct-settings__hint--warning');
+    expect(warning).not.toHaveClass('ct-settings__hint--danger');
     h.fake.setPermission('granted');
     fireEvent.click(screen.getByRole('button', { name: 'Autoriser les notifications pour l’alerte d’expiration' }));
     await waitFor(() => expect(screen.getByText('Alerte prévue le mar. 13 oct. à 10:00')).toBeInTheDocument());
@@ -147,7 +150,7 @@ describe('À propos : expiration de la signature (I-02)', () => {
         <SigningAboutRow />
       </AppContainerProvider>,
     );
-    expect(await screen.findByText('L’alerte n’a pas pu être planifiée : vous ne serez peut-être pas prévenu')).toBeInTheDocument();
+    expect(await screen.findByText('L’alerte n’a pas pu être planifiée : tu ne seras peut-être pas prévenu')).toBeInTheDocument();
     await failing.db.close();
   });
 

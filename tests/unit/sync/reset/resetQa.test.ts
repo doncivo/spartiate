@@ -59,7 +59,7 @@ describe('appareils oubliés retenus (couverture jusqu’à la coupure)', () => 
     expect(a.service.status().devices.find((d) => d.deviceId === x.id)?.status).toBe('forgotten');
   });
 
-  it('un oublié dont A n’a pas tout lu jusqu’à la coupure : « Synchronisez d’abord » nomme X, rien n’est créé', async () => {
+  it('un oublié dont A n’a pas tout lu jusqu’à la coupure : « Synchronise d’abord » nomme X, rien n’est créé', async () => {
     const [a, b, x] = (await setupRoom(room, [B_ID, X_ID])) as [SimDevice, SimDevice, SimDevice];
     await x.createTask('X1');
     await x.cycle();

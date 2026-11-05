@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { t } from '../../i18n';
 import { tExportImport } from '../../i18n/exportImportText';
+import { healthFr } from '../../i18n/fr.health';
 import { tPlus } from '../../i18n/plusText';
 import { tSettingsRefonte } from '../../i18n/settingsRefonteText';
 import { Switch, useLayout } from '../../ui';
@@ -22,7 +23,7 @@ import './SettingsScreen.css';
 /**
  * Onglet « Plus » (planches docs/maquettes/i0/iPhone-Plus et PC-Plus). iPhone : titre, carte « Profil et poids », puis quatre groupes en
  * cartes sous des titres en capitales discrètes : DONNÉES (synchronisation, sauvegardes, export et import), IPHONE (signature SideStore,
- * verrouillage Face ID), PRÉFÉRENCES (thème, début de semaine et format de l'heure vers Apparence, fuseau horaire, démarrage avec Windows)
+ * le verrouillage Face ID reste masqué, D-37), PRÉFÉRENCES (thème, début de semaine et format de l'heure vers Apparence, fuseau horaire, démarrage avec Windows)
  * et À PROPOS (version, diagnostic et journal). Apple Santé et Notifications n'existent pas encore : aucune ligne pour eux. PC : voir
  * `SettingsScreenPc`.
  */
@@ -33,7 +34,11 @@ export function SettingsScreen() {
 
 function SettingsScreenMobile() {
   const container = useAppContainer();
-  const hasIphoneRows = container.signing.source.supported || container.authenticator.supported;
+  const hasHealthRow = container.platform.runtime === 'tauri' && container.platform.os === 'ios';
+  // D-37 : code conservé, entrée masquée, activation différée. La ligne n'apparaît que si un test pose `__ctShowAppLockRow` (même procédé que
+  // `__ctBiometricFake`) ; l'app livrée ne le pose jamais.
+  const showLockRow = container.authenticator.supported && (globalThis as { __ctShowAppLockRow?: boolean }).__ctShowAppLockRow === true;
+  const hasIphoneRows = container.signing.source.supported || hasHealthRow || showLockRow;
   const load = useFeatureStore(settingsStore, (s) => s.load);
   const errorKey = useFeatureStore(settingsStore, (s) => s.errorKey);
   const timeZone = useAppStore((s) => s.timeZone);
@@ -70,8 +75,9 @@ function SettingsScreenMobile() {
         <>
           <h2 className="ct-settings__section">{tPlus('sectionIphone')}</h2>
           <div className="ct-settings__card">
+            {hasHealthRow && <LinkRow label={healthFr.row} value={healthFr.rowValue} onClick={() => navigate({ tab: 'more', screen: 'health' })} />}
             <SigningAboutRow />
-            <SecuritySection />
+            {showLockRow && <SecuritySection />}
           </div>
         </>
       )}

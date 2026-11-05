@@ -1,6 +1,6 @@
 // Y-TECH-05, critère 26 : le compte rendu du scénario 23 (restauration « Appliquer partout », troisième auteur) vu par l'interface.
 // Le vrai service de synchro de B (banc à trois appareils) alimente l'intégration (bandeau) et l'écran de détails : le bandeau est levé,
-// l'écran montre « À jeter » dans « Rétablis alors que vous les aviez supprimés », « J'ai vu » retire le bandeau, et il ne revient pas
+// l'écran montre « À jeter » dans « Rétablis alors que tu les avais supprimés », « J'ai vu » retire le bandeau, et il ne revient pas
 // après un redémarrage simulé de B.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -18,7 +18,7 @@ import { startSyncIntegration, type SyncIntegration } from './startSync';
 const NO_TIMERS = { setInterval: () => 0, clearInterval: () => undefined, setTimeout: () => 0, clearTimeout: () => undefined } as const;
 const SLOTS = { pairing: null, conflicts: null, version: null, forget: null, reset: null } as const;
 const BANNER = /Changement d.époque : éléments rétablis : 1\. Voir le compte rendu/;
-const RESTORED_TITLE = 'Rétablis alors que vous les aviez supprimés';
+const RESTORED_TITLE = 'Rétablis alors que tu les avais supprimés';
 
 let devices: SimDevice[] = [];
 let integration: SyncIntegration | null = null;

@@ -84,14 +84,14 @@ describe('D3 coffre illisible sur PC : pas de QR à afficher', () => {
 });
 
 describe('D4 erreur passagère répétée : le texte garde l’explication de la cause', () => {
-  it('iPhone verrouillé, trois cycles de suite : le bandeau dit toujours « Trousseau » et « déverrouillez l’iPhone »', async () => {
+  it('iPhone verrouillé, trois cycles de suite : le bandeau dit toujours « Trousseau » et « déverrouille l’iPhone »', async () => {
     const platform = await current().world.device('ios', SELF, true);
     await associate(platform, 'ios', await current().world.qr());
     platform.testing.setVaultAvailable(false);
     const h = await harness(platform, 'ios', { cycles: 3 });
     await observe(h);
     expect(bannerText()).toMatch(/Trousseau/);
-    expect(bannerText()).toMatch(/déverrouillez l’iPhone/);
+    expect(bannerText()).toMatch(/déverrouille l’iPhone/);
     h.integration.dispose();
   });
 });
@@ -125,7 +125,7 @@ describe('D6 écran « Associer au PC » : cause masquée pendant le scan', () =
     );
   }
 
-  it('Trousseau indisponible pendant l’import : le message dit de déverrouiller l’iPhone (pas « L’association a échoué : réessayez »)', async () => {
+  it('Trousseau indisponible pendant l’import : le message dit de déverrouiller l’iPhone (pas « L’association a échoué : réessaie »)', async () => {
     const phone = await world.device('ios', SELF, true);
     phone.testing.setCameraPermission('granted');
     phone.testing.setVaultAvailable(false);

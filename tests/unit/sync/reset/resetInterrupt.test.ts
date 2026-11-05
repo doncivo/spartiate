@@ -131,7 +131,7 @@ describe('arrêts pendant l’annonce et l’ouverture de l’époque (critère 
     expect(a.service.status().reset).toMatchObject({ step: 'done', resumed: true });
   });
 
-  it('précondition non remplie : « Synchronisez d’abord » nommant l’appareil, rien n’est créé (ni clé .next, ni registre), échec gardé jusqu’au nouvel essai', async () => {
+  it('précondition non remplie : « Synchronise d’abord » nommant l’appareil, rien n’est créé (ni clé .next, ni registre), échec gardé jusqu’au nouvel essai', async () => {
     const [a, b] = (await setupRoom(room, [B_ID])) as [SimDevice, SimDevice];
     await b.createTask('B tardive');
     await b.cycle();
