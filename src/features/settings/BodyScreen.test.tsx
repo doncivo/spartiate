@@ -111,4 +111,22 @@ describe('Profil et poids (Plus)', () => {
     open({ sync });
     expect(await screen.findByRole('button', { name: 'Enregistrer le profil' })).toBeEnabled();
   });
+  it('finitions 0.1.2 (e) : l’historique des pesées affiche « jeu. 5 nov. », jamais la date ISO', async () => {
+    await db.close();
+    db = await openBaseDb(DEVICE, '2026-11-05T08:00:00.000Z');
+    const bodyWeights = await db.data.repos.bodyWeights();
+    await bodyWeights.saveManual({ date: '2026-11-05' as never, kg: 82.4, timezone: 'Europe/Paris' }, '2026-11-05' as never);
+    open();
+    const list = await screen.findByRole('list');
+    expect(within(list).getByText('jeu. 5 nov.')).toBeInTheDocument();
+    expect(list.textContent).not.toMatch(/d{4}-d{2}-d{2}/);
+  });
+
+  it('finitions 0.1.2 (h) : Taille (cm) a le clavier numérique et l’aide « en centimètres, ex. 186 »', async () => {
+    open();
+    const height = await screen.findByLabelText('Taille (cm)');
+    expect(height).toHaveAttribute('inputmode', 'numeric');
+    expect(screen.getByText('en centimètres, ex. 186')).toBeInTheDocument();
+    expect(height).toHaveAccessibleDescription('en centimètres, ex. 186');
+  });
 });
