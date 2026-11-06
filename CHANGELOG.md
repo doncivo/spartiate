@@ -2,6 +2,13 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.2.2
+
+- Séance : « Terminer la séance » clôt la séance en une seule opération (rien n’est écrit à moitié), arrête le repos et la Live Activity, puis affiche le résumé de fin : durée, séries validées, volume (séries dégressives, partielles et chronométrées exclues du tonnage) et records. « Mettre à jour la routine ? » propose « Oui » ou « Cette fois seulement » quand la séance diffère de la routine ; la routine n’est modifiée qu’après « Oui ».
+- Journal : nouvelle section « Journal » dans l’onglet Entraînement (et depuis la carte Séance d’Aujourd’hui) : liste des séances terminées, détail par exercice (un exercice supprimé garde son nom), correction d’une série (charge, répétitions, durée, RIR, type, repérée « corrigée »), suppression d’une séance avec confirmation. La copie d’une séance passée lit ce journal.
+- Synchronisation : une séance terminée part sur l’autre appareil avec toutes ses séries, d’un seul bloc ; une séance en cours n’est jamais envoyée, ni dans les journaux, ni dans les instantanés. Corrections et suppressions se synchronisent. Migration 0004 ; une séance est limitée à 200 séries ; les séances abandonnées depuis plus de 30 jours sont effacées de l’appareil sans rien envoyer.
+- Mise à jour : mets à jour le PC et l’iPhone le même jour, et ne fais ni réinitialisation ni « Appliquer partout » depuis un appareil resté en 0.2.1 ou avant.
+
 ## 0.2.1
 
 - Séance active : démarre une séance vide, depuis un jour de routine ou en copiant une séance passée (carte « Séance » dans Aujourd’hui et dans l’onglet Entraînement). Chaque série validée est enregistrée tout de suite ; la séance se reprend à l’identique après verrouillage, fermeture forcée ou redémarrage. Ajout, retrait et annulation de séries, échauffement (jamais compté comme série de travail), exercices chronométrés, abandon avec confirmation. La clôture et le journal arrivent avec la 0.2.2.
