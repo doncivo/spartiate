@@ -103,6 +103,6 @@ export const syncEngineFr = {
     warnReceivedUnapplied: 'Des modifications reçues n’ont pas pu être appliquées (élément manquant, ou refusé par la base) : synchronise de nouveau sur l’autre appareil, ou lance une reprise complète',
     incomplete: 'Synchro incomplète : voir les avertissements',
     warnAwaitingOthers: 'En attente des fichiers des autres appareils dans iCloud',
-    warnCarryHeld: 'Éléments mis de côté : leur liste ou routine a été remplacée par une restauration',
+    warnCarryHeld: 'Éléments mis de côté : leur version a été remplacée par une restauration',
   },
 } as const;

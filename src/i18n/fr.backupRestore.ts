@@ -2,7 +2,7 @@
 export const backupRestoreFr = {
   folderIos: 'Dossier de l’app (non visible dans Fichiers)',
   errorSyncBusy: 'Une synchronisation est en cours, réessaie. Rien n’a été modifié.',
-  errorBusy: 'Une mise à jour des rappels est en cours, réessaie dans un instant. Rien n’a été modifié.',
+  errorBusy: 'Une mise à jour des notifications est en cours, réessaie dans un instant. Rien n’a été modifié.',
   errorDbOpen: 'La base n’a pas pu être fermée pour la restauration. Rien n’a été modifié : réessaie.',
   retry: 'Réessayer',
   seeSync: 'Voir la synchronisation',

@@ -313,4 +313,53 @@ describe('Apple Santé (finitions 0.1.2 d)', () => {
       expect(screen.getByRole('button', { name: 'Autoriser l’accès' })).toBeInTheDocument();
     });
   });
+
+  describe('clôture I0 (0.1.6) : plus de contradiction avec le message SideStore', () => {
+    const NO_ENTITLEMENT = { domain: 'com.apple.healthkit', code: 4, description: 'Missing com.apple.developer.healthkit entitlement.' };
+    const BLOCKED: Plan = { ...GRANTED, permission: 'error', diagnostic: { available: true, usageDescription: true, error: NO_ENTITLEMENT } };
+    const INTRO = /Spartiate lit ton poids et tes pas dans Santé/;
+
+    it('l’en-tête « Spartiate lit ton poids et tes pas… » disparaît quand l’entitlement manque', async () => {
+      const { healthKit } = fakeHealthKit(BLOCKED);
+      renderHealth(healthKit);
+      expect(await screen.findByText(INTRO)).toBeInTheDocument();
+      await authorize();
+      await screen.findByText(/n’est pas accessible avec une app installée par SideStore/);
+      expect(screen.queryByText(INTRO)).toBeNull();
+    });
+
+    it('à la réouverture de l’écran : déjà bloqué (état gardé), sans en-tête ni bouton', async () => {
+      const first = fakeHealthKit(BLOCKED);
+      const { unmount } = renderHealth(first.healthKit);
+      await authorize();
+      await screen.findByText(/n’est pas accessible avec une app installée par SideStore/);
+      unmount();
+      renderHealth(fakeHealthKit(GRANTED).healthKit);
+      expect(await screen.findByText(/n’est pas accessible avec une app installée par SideStore/)).toBeInTheDocument();
+      expect(screen.queryByText(INTRO)).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Autoriser l’accès' })).toBeNull();
+    });
+
+    it('Plus › ligne « Apple Santé » : « lecture seule » par défaut, « non disponible » une fois l’entitlement constaté absent', async () => {
+      const { unmount } = render(
+        <AppContainerProvider container={container}>
+          <SettingsScreen />
+        </AppContainerProvider>,
+      );
+      expect(await screen.findByRole('button', { name: 'Apple Santé : lecture seule' })).toBeInTheDocument();
+      unmount();
+      const { healthKit } = fakeHealthKit(BLOCKED);
+      const screenRender = renderHealth(healthKit);
+      await authorize();
+      await screen.findByText(/n’est pas accessible avec une app installée par SideStore/);
+      screenRender.unmount();
+      render(
+        <AppContainerProvider container={container}>
+          <SettingsScreen />
+        </AppContainerProvider>,
+      );
+      expect(await screen.findByRole('button', { name: 'Apple Santé : non disponible' })).toBeInTheDocument();
+      expect(screen.queryByText('lecture seule')).toBeNull();
+    });
+  });
 });

@@ -17,11 +17,14 @@ const LITERAL = /'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`
 const read = (name: string): string => readFileSync(fileURLToPath(new URL(name, import.meta.url)), 'utf8');
 const strip = (source: string): string => source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
+/** Nom de l'app d'Apple (pas un reste de CircleTasks) : fictif `apple-reminders` du journal des conflits. */
+const ALLOWED = new Set(['Rappels Apple']);
+
 function offenders(file: string, source: string): string[] {
   const found: string[] = [];
   for (const match of strip(source).matchAll(LITERAL)) {
     const text = match[1] ?? match[2] ?? match[3] ?? '';
-    if (/\s/.test(text) && BANNED.test(text)) found.push(`${file} : ${text.slice(0, 100)}`);
+    if (/\s/.test(text) && !ALLOWED.has(text) && BANNED.test(text)) found.push(`${file} : ${text.slice(0, 100)}`);
   }
   return found;
 }
