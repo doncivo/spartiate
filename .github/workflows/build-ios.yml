@@ -101,6 +101,11 @@ jobs:
       - name: Initialiser le projet iOS
         run: npx tauri ios init --ci
 
+      # 0.1.4 (8) : `tauri ios init` ne recopie pas src-tauri/icons/ios : sans cette étape l'iPhone affiche l'icône Tauri par défaut. Chaque
+      # icône listée par l'AppIcon généré est copiée ; échec si une taille manque, a de mauvaises dimensions ou si la copie diffère.
+      - name: Icônes de l'app
+        run: node scripts/ios/apply-icons.mjs
+
       # SPA-003 : la source durable (src-tauri/ios/Spartiate.entitlements) est copiée dans la sortie générée ; échec si source, dossier
       # ou égalité octet à octet font défaut. La copie générée n'est jamais la source de vérité.
       - name: Entitlements durables
@@ -203,6 +208,19 @@ jobs:
           echo "Front embarqué : /index.html et /${ASSET} présents"
           du -sh "$APP" "$APP/$EXE"
           ls "$APP"
+
+      # 0.1.4 (8) : une icône Spartiate est bien dans l'IPA finale. actool compile les icônes versionnées (celles de l'AppIcon généré) dans un
+      # dossier à part ; chaque AppIcon*.png obtenu doit se retrouver, avec le même SHA-256, dans l'app extraite de l'IPA. Une icône Tauri
+      # par défaut ou absente fait échouer le build.
+      - name: Icône de l'IPA finale
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/icons-expected"
+          rm -rf "$OUT" && mkdir -p "$OUT"
+          xcrun actool --output-format human-readable-text --notices --warnings --errors --platform iphoneos --minimum-deployment-target 18.0 --target-device iphone --app-icon AppIcon --compile "$OUT" --output-partial-info-plist "$OUT/partial.plist" src-tauri/gen/apple/Assets.xcassets
+          ls "$OUT"
+          node scripts/ios/apply-icons.mjs --compare "$OUT" "$RUNNER_TEMP/check/Payload/Spartiate.app"
+          echo "- Icône de l'IPA finale : AppIcon compilé depuis src-tauri/icons/ios, hash identique dans l'app extraite" >> "$GITHUB_STEP_SUMMARY"
 
       # Contrat des permissions (I-01) : chaque plugin déclare ses clés dans scripts/ios/plist-contract.json.
       # Le Info.plist de l'IPA est binaire : converti en XML, gardé en artefact pour source.json (appPermissions).
