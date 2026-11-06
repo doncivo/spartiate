@@ -20,6 +20,8 @@ export interface LiveActivityStartInput {
   /** Fin du compteur, ms depuis 1970 (UTC). */
   readonly endDateMs: number;
   readonly label: string;
+  /** Texte de l'état final (« Terminé »), rendu par le widget quand l'activité est périmée. */
+  readonly finishedLabel?: string;
 }
 
 export type LiveActivityStart =

@@ -63,9 +63,9 @@ test.describe('P-04 — sauvegarde et restauration', () => {
     await expect(rows).toHaveCount(4);
     await expect(rows.nth(0)).toContainText('5 oct. à 10:00');
     await expect(rows.nth(1)).toContainText('4 oct. à 21:40');
-    await expect(rows.nth(1)).toContainText('40 Ko · 1 tâche');
+    await expect(rows.nth(1)).toContainText('40 Ko');
     await expect(rows.nth(2)).toContainText('3 oct. à 03:12');
-    await expect(rows.nth(2)).toContainText('2,3 Mo · 48 tâches');
+    await expect(rows.nth(2)).toContainText('2,3 Mo');
     await expect(rows.nth(3)).toContainText('Avant mise à jour');
     await expect(dialog.getByText(/Dossier des sauvegardes : C:\\Users\\Ali/)).toBeVisible();
     await expect(dialog.getByText(/ne sont jamais synchronisées/)).toBeVisible();

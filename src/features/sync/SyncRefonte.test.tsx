@@ -228,7 +228,7 @@ describe('UI-REFONTE-04 — Synchronisation', () => {
     expect(card).not.toBeNull();
     expect(card).toHaveTextContent('Une nouvelle clé est créée.');
     expect(card).toHaveTextContent('Tes autres appareils devront être associés de nouveau');
-    expect(card).toHaveTextContent('Tes tâches ne sont pas supprimées.');
+    expect(card).toHaveTextContent('Tes données ne sont pas supprimées.');
     const button = within(card).getByRole('button', { name: 'Réinitialiser la synchronisation avec une nouvelle clé' });
     expect(button).toHaveTextContent('Réinitialiser la synchronisation');
     expect(button).toHaveClass('ct-sync__resetButton');

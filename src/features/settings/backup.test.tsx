@@ -242,13 +242,13 @@ describe('Sauvegarde et restauration (P-04)', () => {
       return { user, dialog };
     }
 
-    it('liste les versions, plus récentes d’abord, avec date, heure, taille, tâches et « Avant mise à jour »', async () => {
+    it('liste les versions, plus récentes d’abord, avec date, heure, taille et « Avant mise à jour »', async () => {
       make({ versions, directory: 'C:\\Données\\backups' });
       const { dialog } = await openSheet();
       const rows = await within(dialog).findAllByRole('button', { name: /à \d\d:\d\d/ });
       expect(rows.map((row) => row.textContent)).toEqual([
-        '4 oct. à 21:4040 Ko · 1 tâche',
-        '3 oct. à 03:122,3 Mo · 48 tâches',
+        '4 oct. à 21:4040 Ko',
+        '3 oct. à 03:122,3 Mo',
         '1 oct. à 10:0030 KoAvant mise à jour',
       ]);
       expect(within(dialog).getByText('Avant mise à jour')).toBeInTheDocument();

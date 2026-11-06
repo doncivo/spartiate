@@ -36,6 +36,6 @@ export const securityFr = {
     noPasscode: 'Aucun code n’est défini sur l’iPhone : définis-en un dans Réglages iOS › Face ID et code.',
     unsupported: 'Le verrouillage n’est pas disponible sur cet appareil ({code}).',
     saveFailed: 'Le réglage du verrouillage n’a pas pu être enregistré.',
-    shieldFailed: 'Le cache de confidentialité n’a pas pu être activé ({code}) : l’aperçu du sélecteur d’apps peut montrer tes tâches.',
+    shieldFailed: 'Le cache de confidentialité n’a pas pu être activé ({code}) : l’aperçu du sélecteur d’apps peut montrer tes données.',
   },
 } as const;

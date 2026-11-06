@@ -27,18 +27,33 @@ struct SpartiateCountdown: View {
   }
 }
 
+/// Décompte, ou état final rendu par le widget lui-même quand l'activité est périmée (staleDate = endDate) : le système la fait passer sans
+/// l'app, donc l'activité ne reste jamais figée à 0:00 si l'app est fermée.
+struct SpartiateRemaining: View {
+  let state: SpartiateTimerAttributes.ContentState
+  let isStale: Bool
+
+  var body: some View {
+    if isStale || state.endDate <= Date.now {
+      Text(state.finishedLabel)
+    } else {
+      SpartiateCountdown(endDate: state.endDate)
+    }
+  }
+}
+
 struct SpartiateTimerLiveActivity: Widget {
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: SpartiateTimerAttributes.self) { context in
       // Écran verrouillé et bannière.
       HStack(spacing: 12) {
-        Image(systemName: "timer")
+        Image(systemName: context.isStale ? "checkmark.circle" : "timer")
           .font(.title2)
         VStack(alignment: .leading, spacing: 2) {
           Text(context.state.label)
             .font(.subheadline)
             .lineLimit(1)
-          SpartiateCountdown(endDate: context.state.endDate)
+          SpartiateRemaining(state: context.state, isStale: context.isStale)
             .font(.largeTitle.weight(.semibold))
         }
         Spacer(minLength: 0)
@@ -49,11 +64,11 @@ struct SpartiateTimerLiveActivity: Widget {
     } dynamicIsland: { context in
       DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
-          Image(systemName: "timer")
+          Image(systemName: context.isStale ? "checkmark.circle" : "timer")
             .font(.title2)
         }
         DynamicIslandExpandedRegion(.trailing) {
-          SpartiateCountdown(endDate: context.state.endDate)
+          SpartiateRemaining(state: context.state, isStale: context.isStale)
             .font(.title.weight(.semibold))
         }
         DynamicIslandExpandedRegion(.bottom) {
@@ -62,12 +77,12 @@ struct SpartiateTimerLiveActivity: Widget {
             .lineLimit(1)
         }
       } compactLeading: {
-        Image(systemName: "timer")
+        Image(systemName: context.isStale ? "checkmark.circle" : "timer")
       } compactTrailing: {
-        SpartiateCountdown(endDate: context.state.endDate)
+        SpartiateRemaining(state: context.state, isStale: context.isStale)
           .frame(width: 52)
       } minimal: {
-        Image(systemName: "timer")
+        Image(systemName: context.isStale ? "checkmark.circle" : "timer")
       }
     }
   }
