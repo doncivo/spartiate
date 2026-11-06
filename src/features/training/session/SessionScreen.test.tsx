@@ -263,10 +263,10 @@ describe('saisie et validation (critère 2)', () => {
     expect(f.calls.ends).toBeGreaterThanOrEqual(1);
   });
 
-  it('aucun bouton « Terminer » tant que la clôture n’existe pas (I1-03)', async () => {
+  it('I1-03 : « Terminer la séance » est proposé dans la séance active', async () => {
     openSession();
     await startFromRoutine();
-    expect(screen.queryByRole('button', { name: /Terminer/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Terminer la séance' })).toBeInTheDocument();
   });
 });
 
