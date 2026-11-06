@@ -2,6 +2,13 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.2.1
+
+- Séance active : démarre une séance vide, depuis un jour de routine ou en copiant une séance passée (carte « Séance » dans Aujourd’hui et dans l’onglet Entraînement). Chaque série validée est enregistrée tout de suite ; la séance se reprend à l’identique après verrouillage, fermeture forcée ou redémarrage. Ajout, retrait et annulation de séries, échauffement (jamais compté comme série de travail), exercices chronométrés, abandon avec confirmation. La clôture et le journal arrivent avec la 0.2.2.
+- Minuteur de repos : il démarre seul à la validation d’une série de travail, durée réglable (« Repos par défaut »), boutons « +30 s » et « Passer ». Le temps restant est toujours recalculé depuis la date de fin enregistrée. Sur iPhone : Live Activity « Repos » (sinon minuteur dans l’app avec une phrase qui explique pourquoi) et notification « Repos terminé » sans doublon ; sur PC : minuteur dans l’app seulement.
+- Live Activity : texte clair sur le fond de la charte (plus de texte noir illisible sur l’écran verrouillé), heure de fin toujours lisible, état final « Terminé » et fin programmée de l’activité ; à constater sur l’iPhone.
+- Données : migration 0003 (séances et séries, locales tant qu’elles ne sont pas closes : rien n’est publié par la synchro).
+
 ## 0.2.0
 
 - Entraînement : l’onglet Entraînement s’ouvre sur trois sections, Routines, Bibliothèque et Matériel (chargées à la demande, le démarrage de l’app ne grossit pas).
