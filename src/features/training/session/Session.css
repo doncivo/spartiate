@@ -1,0 +1,265 @@
+/* Séance active (I1-02) : maquettes iPhone-Seance et PC-Seance, charte § 18.4. Tokens seulement, aucune couleur en dur ; cibles ≥ 44 px ;
+   chiffres tabulaires ; champs à 17 px (pas de zoom iOS sous 16 px). */
+
+.ct-session,
+.ct-session__active,
+.ct-session__start {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+}
+
+.ct-session__muted {
+  margin: 0;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-session__hint {
+  margin: 0;
+  font-size: var(--ct-font-size-sm);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-session__num {
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-session__option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}
+
+/* Carte « Séance » (Aujourd'hui, accueil de l'Entraînement) */
+.ct-session-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+}
+
+.ct-session-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}
+
+.ct-session-card__name {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-item);
+  font-weight: var(--ct-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+/* En-tête : nom, chrono, résumé, repos par défaut */
+.ct-session__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--ct-space-3);
+}
+
+.ct-session__title {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading-sm);
+  font-weight: var(--ct-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+/* Bloc d'exercice */
+.ct-session__block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  padding: var(--ct-space-3);
+  background: var(--ct-color-surface);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  min-width: 0;
+}
+
+.ct-session__block-title {
+  margin: 0;
+  font-size: var(--ct-font-size-item);
+  font-weight: var(--ct-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.ct-session__sets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+}
+
+.ct-session__set {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  padding: var(--ct-space-2);
+  border-top: 1px solid var(--ct-color-border);
+}
+
+.ct-session__set--done {
+  background: var(--ct-color-surface-raised);
+  border-radius: var(--ct-radius-sm);
+}
+
+.ct-session__set-head,
+.ct-session__set-body,
+.ct-session__set-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ct-space-2);
+}
+
+.ct-session__set-mark {
+  flex: none;
+  min-width: 28px;
+  font-weight: var(--ct-font-weight-semibold);
+  color: var(--ct-color-bronze);
+}
+
+.ct-session__set-target {
+  flex: 1 1 8rem;
+  min-width: 0;
+  font-size: var(--ct-font-size-sm);
+  color: var(--ct-color-text-secondary);
+}
+
+/* État écrit en toutes lettres ; l'icône et le liseré ne font que le doubler. */
+.ct-session__state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ct-space-1);
+  padding: 0 var(--ct-space-2);
+  min-height: 24px;
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-pill);
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-session__state--done {
+  border-color: var(--ct-color-ok);
+  color: var(--ct-color-text);
+}
+
+.ct-session__done-value {
+  font-size: var(--ct-font-size-text-lg);
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-session__fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ct-space-2);
+}
+
+.ct-session__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  min-width: 0;
+}
+
+.ct-session__field--kind {
+  flex: 1 1 9rem;
+}
+
+.ct-session__input {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 0 var(--ct-space-2);
+  background: var(--ct-color-surface-input);
+  color: var(--ct-color-text);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  font: inherit;
+  font-size: var(--ct-font-size-text-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-session__input:focus-visible,
+.ct-session__validate:focus-visible {
+  outline: 2px solid var(--ct-color-bronze);
+  outline-offset: 2px;
+}
+
+.ct-session__validate {
+  flex: 1 1 10rem;
+  min-height: 48px;
+  padding: 0 var(--ct-space-4);
+  border: 0;
+  border-radius: var(--ct-radius-md);
+  background: var(--ct-color-accent);
+  color: var(--ct-color-accent-on);
+  font: inherit;
+  font-weight: var(--ct-font-weight-semibold);
+  cursor: pointer;
+}
+
+.ct-session__validate:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Barre de repos collante (bas de l'écran, une main) */
+.ct-session__rest {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-2);
+  padding: var(--ct-space-3);
+  background: var(--ct-color-surface-raised);
+  border: 1px solid var(--ct-color-bronze);
+  border-radius: var(--ct-radius-lg);
+}
+
+.ct-session__rest-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.ct-session__rest-main .ct-training__eyebrow {
+  margin: 0;
+}
+
+.ct-session__rest-time {
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading);
+  line-height: 1;
+}
+
+.ct-session__rest-actions {
+  display: flex;
+  gap: var(--ct-space-2);
+}
+
+.ct-session__rest-notes {
+  flex: 1 0 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}
+
+.ct-session__rest-done {
+  margin: 0;
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-training-shell[data-layout='pc'] .ct-training--session {
+  max-width: 900px;
+}

@@ -1,4 +1,4 @@
-import type { SetEntry, SetKind, WorkoutSet, WorkoutSource, WorkoutWithSets } from '../../domain/training';
+import type { SetEntry, SetKind, Workout, WorkoutSet, WorkoutSource, WorkoutWithSets } from '../../domain/training';
 
 /**
  * Séance active locale (tables `workout` et `workout_set`, I1-02 ; D-27 : jamais publiée avant clôture, I1-03).
@@ -67,6 +67,8 @@ export interface WorkoutRepository {
   /** Séance inachevée (la plus récente), séries dans l'ordre ; `null` si aucune. */
   getOpen(): Promise<WorkoutWithSets | null>;
   get(id: string): Promise<WorkoutWithSets | null>;
+  /** Séances closes (`ended_at` non nul, non supprimées), de la plus récente à la plus ancienne : sources proposées pour une copie (§ 13.8). */
+  listClosed(limit?: number): Promise<readonly Workout[]>;
   /** Ajoute un exercice en fin de séance ; déjà présent : `'conflict'`. Retourne la séance. */
   addExercise(workoutId: string, input: AddExerciseInput): Promise<WorkoutWithSets>;
   /** Supprime (logiquement) toutes les séries de l'exercice ; positions renumérotées. Retourne la séance. */

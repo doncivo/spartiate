@@ -18,6 +18,18 @@ export function parseNumber(text: string): number | null {
   return Number(trimmed);
 }
 
+/** Chrono de séance : 95 000 ms → « 1:35 », 3 725 000 ms → « 1:02:05 ». */
+export function formatClock(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = String(total % 60).padStart(2, '0');
+  return h > 0 ? `${String(h)}:${String(m).padStart(2, '0')}:${s}` : `${String(m)}:${s}`;
+}
+
+/** Jour d'une séance passée : « 26 octobre » (heure locale). */
+export const formatDay = (iso: string): string => new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+
 /** Durée de repos : 150 → « 2 min 30 s », 90 → « 1 min 30 s », 120 → « 2 min », 45 → « 45 s ». */
 export function formatRest(sec: number): string {
   const m = Math.floor(sec / 60);
