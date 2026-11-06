@@ -116,6 +116,8 @@ export interface SettingsValues {
    * relues au chargement (« Réessayer l'effacement » survit à un redémarrage). Valeur BRUTE lue par `parseOrphanSecrets` ; locale.
    */
   'calendars.orphanSecrets': unknown;
+  /** SPA-007 : minuteur de test de 60 s (date de fin et libellé), pour le reprendre après une fermeture. Valeur BRUTE lue par `parseSyntheticTimer` ; locale, jamais synchronisée. */
+  'timer.synthetic': unknown;
 }
 
 export type SettingKey = keyof SettingsValues;
@@ -166,6 +168,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'notifications.signing': { scope: 'local', defaultValue: null },
   'app.lastLaunchedVersion': { scope: 'local', defaultValue: null },
   'calendars.orphanSecrets': { scope: 'local', defaultValue: null },
+  'timer.synthetic': { scope: 'local', defaultValue: null },
 };
 
 /** Valeur par défaut d'un réglage. */

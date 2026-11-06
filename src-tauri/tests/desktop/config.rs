@@ -582,6 +582,50 @@ fn healthkit_commands_are_registered_in_the_minimal_ios_capability() {
     }
 }
 
+/// SPA-007 : les trois commandes de la Live Activity sont au manifeste et accordées par la seule capability iPhone `live-activity-ios.json`.
+#[test]
+fn live_activity_commands_are_registered_in_the_minimal_ios_capability() {
+    let manifest = manifest_commands();
+    for command in [
+        "live_activity_status",
+        "live_activity_start",
+        "live_activity_end",
+    ] {
+        assert!(manifest.contains(command), "{command} absent du manifeste");
+    }
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("capabilities")
+        .join("live-activity-ios.json");
+    let capability = std::fs::read_to_string(path).expect("capability Live Activity absente");
+    let capability: Value =
+        serde_json::from_str(&capability).expect("capability Live Activity valide");
+    assert_eq!(capability["windows"], serde_json::json!(["main"]));
+    assert_eq!(capability["platforms"], serde_json::json!(["iOS"]));
+    let mut permissions = capability["permissions"]
+        .as_array()
+        .expect("permissions list")
+        .iter()
+        .map(|permission| permission.as_str().expect("permission string"))
+        .collect::<Vec<_>>();
+    permissions.sort_unstable();
+    assert_eq!(
+        permissions,
+        [
+            "allow-live-activity-end",
+            "allow-live-activity-start",
+            "allow-live-activity-status",
+        ]
+    );
+    for (name, other) in all_capabilities() {
+        if name != "live-activity-ios.json" {
+            assert!(
+                !other.contains("allow-live-activity-"),
+                "{name} accorde la Live Activity"
+            );
+        }
+    }
+}
+
 /// (2) `sync.json` : exactement les 22 permissions de `main` (18, les trois du lot Y4 et `sync_abandon_orphan_epoch`), Windows, sans les trois commandes de `pairing`.
 #[test]
 fn sync_2_main_capability_grants_exactly_twenty_one_commands() {

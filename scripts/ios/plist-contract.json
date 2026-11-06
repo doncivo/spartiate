@@ -41,6 +41,12 @@
         "NSSpeechRecognitionUsageDescription"
       ]
     },
+    "live-activity": {
+      "story": "SPA-007",
+      "keys": [
+        "NSSupportsLiveActivities"
+      ]
+    },
     "healthkit": {
       "story": "SPA-006",
       "usageDescriptions": [

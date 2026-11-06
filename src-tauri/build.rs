@@ -85,6 +85,10 @@ fn main() {
             "healthkit_authorize",
             "healthkit_body_mass_today",
             "healthkit_step_count_today",
+            // Live Activity du compteur (SPA-007) : iPhone uniquement (capability live-activity-ios.json).
+            "live_activity_status",
+            "live_activity_start",
+            "live_activity_end",
         ]),
     ))
     .expect("échec de la configuration de la compilation Tauri");

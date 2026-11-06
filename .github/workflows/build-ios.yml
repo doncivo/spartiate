@@ -111,6 +111,11 @@ jobs:
       - name: Entitlements durables
         run: node scripts/ios/apply-entitlements.mjs
 
+      # SPA-007 (H-4) : une seule cible d'extension SpartiateLiveActivity (WidgetKit) est ajoutée à project.yml (idempotent), embarquée dans
+      # l'app, puis le projet est régénéré par XcodeGen et contrôlé. Ni App Group, ni push, ni mode de fond, ni entitlement pour l'extension.
+      - name: Extension Live Activity
+        run: node scripts/ios/inject-live-activity.mjs
+
       # Plugins iOS (N-01, ADR 0012 avenant N1.9) : le plugin de notifications locales est compilé pour l'iPhone et JAMAIS pour le PC
       # (le PC n'envoie aucune notification de rappel). Échec explicite dans les deux sens.
       - name: Plugins iOS
@@ -174,6 +179,9 @@ jobs:
           unzip -q "$UNSIGNED" -d "$WORK"
           test -d "$WORK/Payload/Spartiate.app" || { echo "::error::Payload/Spartiate.app absent de l'IPA non signée"; find "$WORK" -maxdepth 3; exit 1; }
           test -f src-tauri/gen/apple/Spartiate.entitlements || { echo "::error::entitlements générés absents"; exit 1; }
+          # SPA-007 : l'extension d'abord (signature ad hoc, SANS entitlements : ni App Group, ni push), puis l'app avec ses entitlements actuels.
+          test -d "$WORK/Payload/Spartiate.app/PlugIns/SpartiateLiveActivity.appex" || { echo "::error::PlugIns/SpartiateLiveActivity.appex absent de l'IPA non signée"; find "$WORK/Payload/Spartiate.app" -maxdepth 2; exit 1; }
+          codesign -s - --force "$WORK/Payload/Spartiate.app/PlugIns/SpartiateLiveActivity.appex"
           codesign -s - --entitlements src-tauri/gen/apple/Spartiate.entitlements --force "$WORK/Payload/Spartiate.app"
           rm -rf ipa && mkdir -p ipa
           (cd "$WORK" && zip -qry "$GITHUB_WORKSPACE/ipa/Spartiate.ipa" Payload)
@@ -222,6 +230,37 @@ jobs:
           /usr/libexec/PlistBuddy -c "Print :CFBundleIcons" "$APP/Info.plist" | grep -q AppIcon || { echo "::error::Info.plist sans CFBundleIcons / AppIcon"; exit 1; }
           mkdir -p icon && cp "$APP/AppIcon60x60@2x.png" icon/AppIcon60x60@2x.png
           echo "- Icône de l'IPA finale : AppIcon60x60@2x.png, Assets.car et CFBundleIcons/AppIcon présents (copie source contrôlée au hash avant le build)" >> "$GITHUB_STEP_SUMMARY"
+
+      # SPA-007 (H-4) : l'extension est dans l'IPA finale, les DEUX signatures sont vérifiées en mode strict sur les octets de cette IPA, et le plist de
+      # l'extension est relu (point d'extension WidgetKit, identifiant de l'app + .LiveActivity, aucun App Group, push ni mode de fond).
+      - name: Extension Live Activity de l'IPA finale
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/check/Payload/Spartiate.app"
+          test -d "$APP/PlugIns/SpartiateLiveActivity.appex" || { echo "::error::PlugIns/SpartiateLiveActivity.appex absent de l'IPA finale"; ls "$APP"; exit 1; }
+          codesign --verify --strict --verbose=2 "$APP/PlugIns/SpartiateLiveActivity.appex"
+          codesign --verify --strict --verbose=2 "$APP"
+          EXT="$APP/PlugIns/SpartiateLiveActivity.appex"
+          PB=/usr/libexec/PlistBuddy
+          POINT=$($PB -c "Print :NSExtension:NSExtensionPointIdentifier" "$EXT/Info.plist")
+          EXTID=$($PB -c "Print :CFBundleIdentifier" "$EXT/Info.plist")
+          EXTVER=$($PB -c "Print :CFBundleShortVersionString" "$EXT/Info.plist")
+          [ "$POINT" = "com.apple.widgetkit-extension" ] || { echo "::error::point d'extension inattendu : $POINT"; exit 1; }
+          [ "$EXTID" = "fr.spartiate.app.LiveActivity" ] || { echo "::error::identifiant de l'extension inattendu : $EXTID"; exit 1; }
+          # L'extension doit porter les MÊMES versions que l'app (sinon l'installation est refusée : CFBundleVersion différent).
+          APPVER=$($PB -c "Print :CFBundleShortVersionString" "$APP/Info.plist")
+          APPBUILD=$($PB -c "Print :CFBundleVersion" "$APP/Info.plist")
+          EXTBUILD=$($PB -c "Print :CFBundleVersion" "$EXT/Info.plist")
+          [ "$APPVER" = "$EXTVER" ] || { echo "::error::version courte différente : app $APPVER, extension $EXTVER"; exit 1; }
+          [ "$APPBUILD" = "$EXTBUILD" ] || { echo "::error::CFBundleVersion différent : app $APPBUILD, extension $EXTBUILD"; exit 1; }
+          plutil -convert xml1 -o "$RUNNER_TEMP/extension-info.plist" "$EXT/Info.plist"
+          if grep -Eq 'UIBackgroundModes|application-groups|aps-environment' "$RUNNER_TEMP/extension-info.plist"; then echo "::error::l'extension déclare un mode de fond, un App Group ou un push"; exit 1; fi
+          codesign -d --entitlements :- "$EXT" > "$RUNNER_TEMP/extension-entitlements.plist" 2>/dev/null || true
+          if grep -Eq 'application-groups|aps-environment|com.apple.developer.healthkit' "$RUNNER_TEMP/extension-entitlements.plist"; then echo "::error::l'extension porte un entitlement interdit"; exit 1; fi
+          {
+            echo "- Extension Live Activity de l'IPA finale : PlugIns/SpartiateLiveActivity.appex présente, ${EXTID} v${EXTVER}, point d'extension ${POINT}"
+            echo "- Signatures (codesign --verify --strict) : app et extension vérifiées sur l'IPA finale ; extension sans entitlements, sans App Group, push ni mode de fond"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # Contrat des permissions (I-01) : chaque plugin déclare ses clés dans scripts/ios/plist-contract.json.
       # Le Info.plist de l'IPA est binaire : converti en XML, gardé en artefact pour source.json (appPermissions).

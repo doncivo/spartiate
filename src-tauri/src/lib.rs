@@ -27,6 +27,9 @@ pub mod import;
 /// Démarrage de l'iPhone (`setup`) : journal technique, purge des temporaires d'export.
 #[cfg(target_os = "ios")]
 mod ios_setup;
+/// Live Activity du compteur de 60 s (SPA-007) ; iPhone seulement, aucune commande sur PC.
+#[cfg(target_os = "ios")]
+mod live_activity;
 /// Appel des plugins Swift avec délai (ADR 0015 §3.1) ; compilé partout, testé avec un faux.
 pub mod mobile_call;
 /// OCR : Windows.Media.Ocr sur PC, Vision sur iPhone (CAP-IOS-01, ADR 0015).
@@ -119,6 +122,7 @@ pub fn run() {
         .plugin(tauri_plugin_vision::init())
         .plugin(tauri_plugin_speech::init())
         .plugin(tauri_plugin_healthkit::init())
+        .plugin(tauri_plugin_live_activity::init())
         .manage(ocr::vision::VisionState::default())
         .manage(speech::SpeechState::default())
         .manage(sync::commands_ios::SyncState::default());
@@ -191,6 +195,9 @@ pub fn run() {
         healthkit::healthkit_authorize,
         healthkit::healthkit_body_mass_today,
         healthkit::healthkit_step_count_today,
+        live_activity::live_activity_status,
+        live_activity::live_activity_start,
+        live_activity::live_activity_end,
     ]);
     // N-01 : notifications locales de l'iPhone (rappels, ADR 0012 N1.1). Aucune ligne sous cfg(desktop) : le PC n'envoie aucune notification.
     #[cfg(target_os = "ios")]
