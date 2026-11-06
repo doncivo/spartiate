@@ -284,6 +284,11 @@
       "raison": "Migration I1 (exercices personnalisés, matériel, routines ; 7,3 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. Les écrans, textes et contenu de l'entraînement restent hors du départ."
     },
     {
+      "fichier": "src/db/migrations/0003_workout.ts",
+      "story": "I1-02",
+      "raison": "Migration I1-02 (séances et séries, locales ; 3,4 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. L'écran de séance, ses textes et le minuteur restent hors du départ."
+    },
+    {
       "fichier": "src/features/app/ShellChrome.tsx",
       "story": "BUNDLE-01",
       "raison": "SPA-009 : carte d'état de la barre latérale PC et barre supérieure (1,6 Ko source), montées dès le premier rendu de la coquille."

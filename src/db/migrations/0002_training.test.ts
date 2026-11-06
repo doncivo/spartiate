@@ -54,17 +54,17 @@ const insertEquipment = (db: SqlDriver, id = EQUIP, hlc = h(1)): Promise<unknown
 const outbox = (db: SqlDriver) => db.select<{ table_name: string; row_id: string; field: string }>('SELECT table_name, row_id, field FROM sync_outbox ORDER BY seq');
 
 describe('migration 0002 : training (I1-01, D-71, P-09)', () => {
-  it('registre : 0001 puis 0002 (version 2, training) ; 0001 inchangée', () => {
-    expect(migrations).toEqual([migration0001SpartiateInit, migration0002Training]);
+  it('registre : 0001 puis 0002 (version 2, training) en tête ; 0001 inchangée', () => {
+    expect(migrations.slice(0, 2)).toEqual([migration0001SpartiateInit, migration0002Training]);
     expect(migration0002Training.version).toBe(2);
     expect(migration0002Training.name).toBe('training');
   });
 
-  it('base vide : cinq tables ajoutées, ni workout ni workout_set (migration 0003)', async () => {
+  it('base vide : cinq tables ajoutées par 0002 (workout et workout_set viennent de la 0003)', async () => {
     const db = await freshDb();
     const tables = await names(db, 'table');
     for (const t of ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise']) expect(tables).toContain(t);
-    for (const t of ['workout', 'workout_set', 'mesocycle', 'recommendation_decision']) expect(tables).not.toContain(t);
+    for (const t of ['mesocycle', 'recommendation_decision']) expect(tables).not.toContain(t);
     await db.close();
   });
 
@@ -133,7 +133,7 @@ describe('migration 0002 : training (I1-01, D-71, P-09)', () => {
       [AT, AT, DEV, h(1)],
     );
     const before = await db.select('SELECT * FROM sync_outbox ORDER BY seq');
-    const report = await migrate(db, migrations);
+    const report = await migrate(db, [migration0001SpartiateInit, migration0002Training]);
     expect(report.applied).toEqual([2]);
     expect(await db.select('SELECT sex FROM profile')).toEqual([{ sex: 'male' }]);
     expect(await db.select('SELECT kg FROM body_weight')).toEqual([{ kg: 82.4 }]);
