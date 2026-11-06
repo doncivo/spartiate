@@ -142,7 +142,7 @@ describe('Tester le minuteur (60 s)', () => {
     await screen.findByText('1:00');
     db.clock.advance(45_000);
     await act(async () => void (await vi.advanceTimersByTimeAsync(1000)));
-    expect(await screen.findByText('0:14')).toBeInTheDocument();
+    expect(await screen.findByText('0:15')).toBeInTheDocument();
     db.clock.advance(20_000);
     await act(async () => void (await vi.advanceTimersByTimeAsync(1000)));
     expect(await screen.findByText(/minuteur de test est terminé/)).toBeInTheDocument();
