@@ -16,9 +16,11 @@ const AT = '2026-11-02T17:00:00.000Z';
 const W = '5e1a0c2d-0000-4000-8000-000000000001';
 const S = '5e1a0c2d-0000-4000-8000-000000000011';
 
+const UP_TO_3 = migrations.slice(0, 3);
+
 async function freshDb(): Promise<SqlDriver> {
   const db = await openSqliteWasmDriver();
-  await migrate(db, migrations);
+  await migrate(db, UP_TO_3);
   return db;
 }
 
@@ -46,7 +48,7 @@ const insertSet = (db: SqlDriver, id = S, workoutId = W, over: Record<string, un
 
 describe('migration 0003 : workout (I1-02, D-27, D-71)', () => {
   it('registre : 0001, 0002 puis 0003 (version 3, workout) ; 0001 et 0002 inchangées', () => {
-    expect(migrations).toEqual([migration0001SpartiateInit, migration0002Training, migration0003Workout]);
+    expect(UP_TO_3).toEqual([migration0001SpartiateInit, migration0002Training, migration0003Workout]);
     expect(migration0003Workout.version).toBe(3);
     expect(migration0003Workout.name).toBe('workout');
   });
@@ -111,7 +113,7 @@ describe('migration 0003 : workout (I1-02, D-27, D-71)', () => {
     await db.execute("INSERT INTO routine (id, name, mode, created_at, updated_at, device_id, hlc) VALUES ('5e1a0c2d-0000-4000-8000-0000000000a1', 'Haut / Bas', 'programme', ?, ?, ?, ?)", [AT, AT, DEV, h(1)]);
     await db.execute("INSERT INTO body_weight (id, date, kg, source, timezone, created_at, updated_at, device_id, hlc) VALUES ('weight|2026-11-01|manual', '2026-11-01', 82.4, 'manual', 'Europe/Paris', ?, ?, ?, ?)", [AT, AT, DEV, h(1)]);
     const outboxBefore = await db.select('SELECT * FROM sync_outbox ORDER BY seq');
-    const report = await migrate(db, migrations);
+    const report = await migrate(db, UP_TO_3);
     expect(report.applied).toEqual([3]);
     expect(await db.select('SELECT name FROM routine')).toEqual([{ name: 'Haut / Bas' }]);
     expect(await db.select('SELECT kg FROM body_weight')).toEqual([{ kg: 82.4 }]);
@@ -175,9 +177,9 @@ describe('migration 0003 : workout (I1-02, D-27, D-71)', () => {
     await db.close();
   });
 
-  it('D-27 : workout et workout_set ne sont pas dans le catalogue de synchro (I1-03 les ajoutera avec des déclencheurs gardés)', () => {
-    expect(SYNC_CATALOGUE.table('workout')).toBeUndefined();
-    expect(SYNC_CATALOGUE.table('workout_set')).toBeUndefined();
+  it('D-27 : workout et workout_set entrent au catalogue de synchro avec la 0004 (I1-03, déclencheurs gardés), pas avec la 0003', () => {
+    expect(SYNC_CATALOGUE.table('workout')?.publishWhen).toEqual({ notNull: 'ended_at' });
+    expect(SYNC_CATALOGUE.table('workout_set')?.publishWhen).toEqual({ parent: 'workout_id' });
   });
 
   it('plans : séance ouverte et séries par séance sans balayage de table', async () => {
@@ -193,7 +195,7 @@ describe('migration 0003 : workout (I1-02, D-27, D-71)', () => {
 
   it('relance sans effet', async () => {
     const db = await freshDb();
-    expect((await migrate(db, migrations)).applied).toEqual([]);
+    expect((await migrate(db, UP_TO_3)).applied).toEqual([]);
     await db.close();
   });
 });
