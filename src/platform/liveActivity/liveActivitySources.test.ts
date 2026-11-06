@@ -45,6 +45,14 @@ describe('plugin Swift live-activity', () => {
     expect(swift).not.toMatch(/pushToken|pushType:\s*\.token|UserDefaults\(suiteName|application-groups|BGTask/);
   });
 
+  it('clôture I0 : staleDate = date de fin, et toute activité échue est fermée à l’ouverture de l’app (aucune orpheline)', () => {
+    expect(swift).toMatch(/ActivityContent\(state:\s*state,\s*staleDate:\s*endDate\)/);
+    expect(swift).toMatch(/UIApplication\.didBecomeActiveNotification/);
+    expect(swift).toMatch(/func endExpired/);
+    expect(swift).toMatch(/endDate\s*<=\s*Date\(\)/);
+    expect(swift).toMatch(/finishedLabel/);
+  });
+
   it('copie du fichier d’attributs identique à la source durable de l’extension', () => {
     expect(read('src-tauri/plugins/live-activity/ios/Sources/SpartiateTimerAttributes.swift')).toBe(read('src-tauri/ios/LiveActivity/SpartiateTimerAttributes.swift'));
   });

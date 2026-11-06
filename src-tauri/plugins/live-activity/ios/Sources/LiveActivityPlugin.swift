@@ -13,6 +13,7 @@
 import ActivityKit
 import Foundation
 import Tauri
+import UIKit
 import WebKit
 
 private enum LiveActivityCode: String {
@@ -23,9 +24,29 @@ private enum LiveActivityCode: String {
 private struct StartArgs: Decodable {
   let endDateMs: Double
   let label: String
+  let finishedLabel: String?
 }
 
 class LiveActivityPlugin: Plugin {
+  private var observer: NSObjectProtocol?
+
+  /// À chaque ouverture de l'app, toute activité échue est fermée sans délai (clôture I0) : aucune activité orpheline, même si l'échéance est
+  /// passée app fermée (le widget a alors rendu l'état final seul).
+  override func load(webview: WKWebView) {
+    endExpired()
+    observer = NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+      self?.endExpired()
+    }
+  }
+
+  func endExpired() {
+    Task {
+      for activity in Activity<SpartiateTimerAttributes>.activities where activity.content.state.endDate <= Date() {
+        await activity.end(nil, dismissalPolicy: .immediate)
+      }
+    }
+  }
+
   /// Dernière erreur native d'ActivityKit (domaine, code, description tronquée à 200).
   private var lastError: [String: Any]?
 
@@ -62,6 +83,7 @@ class LiveActivityPlugin: Plugin {
     }
     let endDate = Date(timeIntervalSince1970: args.endDateMs / 1000)
     let label = String(args.label.prefix(80))
+    let finishedLabel = String((args.finishedLabel ?? "Terminé").prefix(40))
     Task {
       var kept = false
       for activity in Activity<SpartiateTimerAttributes>.activities {
@@ -76,7 +98,7 @@ class LiveActivityPlugin: Plugin {
         return
       }
       do {
-        let state = SpartiateTimerAttributes.ContentState(endDate: endDate, label: label)
+        let state = SpartiateTimerAttributes.ContentState(endDate: endDate, label: label, finishedLabel: finishedLabel)
         let content = ActivityContent(state: state, staleDate: endDate)
         _ = try Activity<SpartiateTimerAttributes>.request(attributes: SpartiateTimerAttributes(), content: content, pushType: nil)
         self.lastError = nil

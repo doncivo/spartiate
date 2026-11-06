@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { t } from '../../i18n';
 import { tExportImport } from '../../i18n/exportImportText';
 import { healthFr } from '../../i18n/fr.health';
@@ -38,6 +38,7 @@ function SettingsScreenMobile() {
   // D-37 : code conservé, entrée masquée, activation différée. La ligne n'apparaît que si un test pose `__ctShowAppLockRow` (même procédé que
   // `__ctBiometricFake`) ; l'app livrée ne le pose jamais.
   const showLockRow = container.authenticator.supported && (globalThis as { __ctShowAppLockRow?: boolean }).__ctShowAppLockRow === true;
+  const [healthBlocked, setHealthBlocked] = useState(false);
   const hasIphoneRows = container.signing.source.supported || hasHealthRow || showLockRow;
   const load = useFeatureStore(settingsStore, (s) => s.load);
   const errorKey = useFeatureStore(settingsStore, (s) => s.errorKey);
@@ -55,6 +56,20 @@ function SettingsScreenMobile() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!hasHealthRow) return undefined;
+    let live = true;
+    void container.data.repos.settings.get('healthkit.entitlementMissing').then(
+      (value) => {
+        if (live) setHealthBlocked(value === true);
+      },
+      () => undefined,
+    );
+    return () => {
+      live = false;
+    };
+  }, [container, hasHealthRow]);
 
   return (
     <div className="ct-settings ct-settings--phone">
@@ -75,7 +90,7 @@ function SettingsScreenMobile() {
         <>
           <h2 className="ct-settings__section">{tPlus('sectionIphone')}</h2>
           <div className="ct-settings__card">
-            {hasHealthRow && <LinkRow label={healthFr.row} value={healthFr.rowValue} onClick={() => navigate({ tab: 'more', screen: 'health' })} />}
+            {hasHealthRow && <LinkRow label={healthFr.row} value={healthBlocked ? healthFr.rowValueUnavailable : healthFr.rowValue} onClick={() => navigate({ tab: 'more', screen: 'health' })} />}
             <SigningAboutRow />
             {showLockRow && <SecuritySection />}
           </div>

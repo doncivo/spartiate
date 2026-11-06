@@ -43,7 +43,7 @@ function rig(options: RigOptions = {}) {
     cancel: async () => void log.push('cancel-notification'),
   };
   const liveCalls: string[] = [];
-  const liveStarts: { endDateMs: number; label: string }[] = [];
+  const liveStarts: { endDateMs: number; label: string; finishedLabel?: string }[] = [];
   const liveActivity: LiveActivity = {
     isAvailable: async () => {
       liveCalls.push('isAvailable');
@@ -68,6 +68,7 @@ function rig(options: RigOptions = {}) {
       notifier,
       os: options.os ?? 'ios',
       label: 'Minuteur de test',
+      finishedLabel: 'Terminé',
       notification: { title: 'Minuteur terminé', body: 'Les 60 secondes sont écoulées.' },
     });
   return { clock, make, notifier, log, scheduled, liveCalls, liveStarts, saved: () => saved as SyntheticTimerState | null };
@@ -79,7 +80,7 @@ describe('démarrage', () => {
     const report = await r.make().start();
     expect(r.saved()).toEqual({ endMs: NOW + 60_000, label: 'Minuteur de test' });
     expect(r.scheduled).toEqual([{ endMs: NOW + 60_000, title: 'Minuteur terminé' }]);
-    expect(r.liveStarts).toEqual([{ endDateMs: NOW + 60_000, label: 'Minuteur de test' }]);
+    expect(r.liveStarts).toEqual([{ endDateMs: NOW + 60_000, label: 'Minuteur de test', finishedLabel: 'Terminé' }]);
     expect(report).toMatchObject({ notification: 'scheduled', live: 'started' });
   });
 

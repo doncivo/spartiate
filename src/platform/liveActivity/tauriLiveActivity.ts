@@ -50,7 +50,7 @@ export function createTauriLiveActivity(options: { readonly invoke?: LiveActivit
 
     async start(input: LiveActivityStartInput): Promise<LiveActivityStart> {
       try {
-        const result = await invoke(START_COMMAND, { endDateMs: input.endDateMs, label: input.label });
+        const result = await invoke(START_COMMAND, { endDateMs: input.endDateMs, label: input.label, ...(input.finishedLabel === undefined ? {} : { finishedLabel: input.finishedLabel }) });
         if (typeof result === 'object' && result !== null && (result as { started?: unknown }).started === true) return { started: true };
         return { started: false, reason: 'failed', error: nativeErrorOf((result as { error?: unknown } | null)?.error) };
       } catch (error) {

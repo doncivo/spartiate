@@ -12,7 +12,7 @@ export const appearanceFr = {
   monday: 'Lundi',
   saturday: 'Samedi',
   sunday: 'Dimanche',
-  weekHint: 'Les objectifs, le rapport et les routines « toutes les N semaines » restent sur des semaines du lundi.',
+  weekHint: 'Ce réglage change le premier jour de la semaine affichée.',
   sectionLanguage: 'LANGUE',
   language: 'Langue',
   languageValue: 'Français',

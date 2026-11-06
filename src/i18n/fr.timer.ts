@@ -16,6 +16,8 @@ export const timerFr = {
   notificationDenied: 'Les notifications sont refusées pour Spartiate : aucune notification ne sonnera. Autorise-les dans Réglages › Notifications › Spartiate.',
   notificationFailed: 'La notification n’a pas pu être programmée : aucune notification ne sonnera.',
   pcOnly: 'Sur PC, le minuteur reste dans l’app : aucune notification système.',
+  /** État final affiché par la Live Activity elle-même à l'échéance. */
+  liveFinished: 'Terminé',
   liveStarted: 'La Live Activity est affichée sur l’écran verrouillé et dans la Dynamic Island.',
   liveUnavailable: 'La Live Activity n’est pas disponible : le minuteur reste dans l’app.',
   liveReasonDisabled: 'Les Live Activities sont désactivées pour Spartiate, ou absentes de cette installation (Réglages › Spartiate › Live Activities).',
