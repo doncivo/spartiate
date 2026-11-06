@@ -62,3 +62,33 @@ describe('app : NSSupportsLiveActivities (SPA-007 lot A)', () => {
     expect(contract.forbiddenKeys).toContain('UIBackgroundModes');
   });
 });
+
+describe('signature et IPA finale (SPA-007 lot C)', () => {
+  const wf = read('.github/workflows/build-ios.yml');
+
+  it('ordre : extension signée d’abord, puis l’app avec ses entitlements, puis IPA reconstruite', () => {
+    const appex = 'codesign -s - --force "$WORK/Payload/Spartiate.app/PlugIns/SpartiateLiveActivity.appex"';
+    const app = 'codesign -s - --entitlements src-tauri/gen/apple/Spartiate.entitlements --force "$WORK/Payload/Spartiate.app"';
+    const zip = 'zip -qry "$GITHUB_WORKSPACE/ipa/Spartiate.ipa" Payload';
+    const at = [appex, app, zip].map((m) => wf.indexOf(m));
+    expect(at.every((i) => i >= 0), JSON.stringify([appex, app, zip].filter((_, i) => at[i] < 0))).toBe(true);
+    expect([...at].sort((a, b) => a - b)).toEqual(at);
+  });
+
+  it('l’extension est signée sans entitlements', () => {
+    const line = wf.split('\n').find((l) => l.includes('PlugIns/SpartiateLiveActivity.appex') && l.includes('codesign -s -')) ?? '';
+    expect(line).not.toMatch(/--entitlements/);
+  });
+
+  it('contrôles sur l’IPA finale : appex présent, deux signatures strictes, plist de l’extension relu, résumé du run', () => {
+    expect(wf).toMatch(/test -d "\$APP\/PlugIns\/SpartiateLiveActivity\.appex"/);
+    expect(wf).toMatch(/codesign --verify --strict --verbose=2 "\$APP\/PlugIns\/SpartiateLiveActivity\.appex"/);
+    expect(wf).toMatch(/codesign --verify --strict --verbose=2 "\$APP"/);
+    expect(wf).toMatch(/NSExtensionPointIdentifier/);
+    expect(wf).toMatch(/com\.apple\.widgetkit-extension/);
+    expect(wf).toMatch(/fr\.spartiate\.app\.LiveActivity/);
+    expect(wf).toMatch(/Extension Live Activity de l'IPA finale/);
+    // Aucun entitlement dans l'extension : la sortie de codesign -d --entitlements n'est pas exigée, mais l'absence d'App Group et de push l'est.
+    expect(wf).toMatch(/application-groups/);
+  });
+});
