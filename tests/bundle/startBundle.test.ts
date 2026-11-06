@@ -181,6 +181,20 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // I1-02 : séance active, minuteur de repos et carte « Séance » d'Aujourd'hui (bloc à la demande) : aucun octet dans le départ.
+  it('I1-02 : la carte « Séance » d’Aujourd’hui est un bloc à la demande, hors du départ', () => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest['src/features/training/session/TodaySessionCard.tsx'];
+    if (!chunk) throw new Error('bloc src/features/training/session/TodaySessionCard.tsx absent du manifeste');
+    expect(start.has(chunk.file)).toBe(false);
+  });
+
+  it.each(['Reprendre la séance', 'Valider la série', 'Repos par défaut', 'Passe à la série suivante.'])('I1-02 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   // Y-FIX-02 (revue I1) : causes nommées de `publish-blocked` (catalogue `syncPublishCause`, chargé avec Détails) : aucun bloc de départ ne les porte.
   it.each(['Première publication interrompue', 'Fichier inconnu dans le dossier'])('le texte de cause « %s » est hors du départ', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
