@@ -60,13 +60,14 @@ export function TimerTestRow({ os, notifier, liveActivity }: Props) {
 
   useEffect(() => {
     live.current = true;
-    void resume();
+    const first = setTimeout(() => void resume(), 0);
     const onVisible = (): void => {
       if (document.visibilityState === 'visible') void resume();
     };
     document.addEventListener('visibilitychange', onVisible);
     return () => {
       live.current = false;
+      clearTimeout(first);
       document.removeEventListener('visibilitychange', onVisible);
     };
   }, [resume]);
