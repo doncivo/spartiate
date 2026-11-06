@@ -98,6 +98,7 @@ interface JsonExercise {
   readonly bodyweightFraction: number | null;
   readonly defaultRepRange: readonly number[] | null;
   readonly defaultDurationSec: number | null;
+  readonly defaultDistanceM: number | null;
   readonly defaultRestSec: number;
   readonly alternatives: readonly string[];
   readonly instructions: { readonly setup: string; readonly execution: string; readonly mistakes: readonly string[] };
@@ -139,7 +140,8 @@ function toRange(min: number | null, max: number | null, step: number | null): S
 }
 
 export function toEmbeddedExercise(json: JsonExercise): EmbeddedExercise {
-  const duration = json.defaultDurationSec ?? 30;
+  // Exercice chronométré : plage en secondes ; exercice de distance : en mètres (aucune valeur inventée au-delà du JSON).
+  const duration = json.defaultDurationSec ?? json.defaultDistanceM ?? 1;
   const [min, max] = json.defaultRepRange ?? [duration, duration];
   const media = json.media && (json.media.images.length > 0 || json.media.video !== null) && json.media.license !== null && json.media.source !== null ? { images: json.media.images, video: json.media.video, license: json.media.license, source: json.media.source } : null;
   return {
