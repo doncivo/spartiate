@@ -5,3 +5,4 @@ export * from './equipment';
 export * from './routineRules';
 export * from './session';
 export * from './restDefault';
+export * from './closure';

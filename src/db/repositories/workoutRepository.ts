@@ -1,7 +1,8 @@
-import type { SetEntry, SetKind, Workout, WorkoutSet, WorkoutSource, WorkoutWithSets } from '../../domain/training';
+import type { RoutineDiff, SetEntry, SetKind, Workout, WorkoutSet, WorkoutSource, WorkoutSummary, WorkoutWithSets } from '../../domain/training';
 
 /**
- * Séance active locale (tables `workout` et `workout_set`, I1-02 ; D-27 : jamais publiée avant clôture, I1-03).
+ * Séance locale puis close (tables `workout` et `workout_set`, I1-02 / I1-03 ; D-27 : une séance ouverte n'est jamais publiée ; la
+ * clôture la rend publiable avec toutes ses séries, d'un bloc).
  *
  * - Une seule séance ouverte (`ended_at` nul, non supprimée) : `start` en présence d'une autre lève `'conflict'`.
  * - Références logiques (aucune clé étrangère) : routine, jour, exercice (`exerciseName` fige le nom, D-71).
@@ -91,4 +92,50 @@ export interface WorkoutRepository {
   getRest(): Promise<RestTimer | null>;
   /** Abandon d'une séance ouverte : suppression logique de la séance et de ses séries. Séance close : `'invalid'`. */
   discard(id: string): Promise<void>;
+
+  // --- I1-03 : clôture, journal, correction, suppression (D-27, § 13.5, § 13.8) -------------------------------------------------------
+
+  /**
+   * Clôt la séance (à appeler dans `DataAccess.transaction` : tout ou rien). Les séries supprimées pendant la séance (jamais publiées) sont
+   * effacées, chaque série restante reçoit le tampon de la clôture, puis `ended_at` est posé avec ce même tampon : le déclencheur met la
+   * séance et toutes ses séries en file ensemble (un seul hlc, publication atomique). Repos en cours effacé. Déjà close : rien n'est écrit
+   * (`alreadyClosed`, rejeu idempotent). Absente ou supprimée : `'not-found'` ; aucune série validée : `'invalid'` (abandonner la séance).
+   */
+  close(workoutId: string): Promise<ClosedWorkout>;
+  /** Séance close non supprimée, séries dans l'ordre ; `null` sinon (ouverte, supprimée, absente). */
+  getClosed(id: string): Promise<WorkoutWithSets | null>;
+  /** Résumé § 13.5 (durée, séries, tonnage hors échauffement / drop / partielles / chrono, records contre les séances closes antérieures). */
+  summary(workoutId: string): Promise<WorkoutSummary>;
+  /**
+   * Corrige une série d'une séance close (charge, répétitions, durée, RIR, type) : écriture champ par champ (déclencheurs : une entrée de
+   * file et une horloge par champ modifié), `corrected_at` daté (correction tracée, § 13.8). Rien de modifié : rien n'est écrit. Séance
+   * ouverte : `'invalid'` (utiliser `updateSet`) ; saisie hors règles : `'invalid'`. Aucune autre table n'est touchée (une future
+   * `recommendation_decision` reste en place).
+   */
+  correctSet(setId: string, patch: SetCorrection): Promise<WorkoutSet>;
+  /** Suppression logique d'une séance close et de ses séries, même tampon (à appeler dans `DataAccess.transaction`). Ouverte : `'invalid'`. */
+  deleteClosed(id: string): Promise<void>;
+  /**
+   * « Mettre à jour la routine ? » → « Oui » (§ 13.8) : applique au jour de routine d'origine les écarts de `routineDiff` (lignes retirées
+   * supprimées logiquement, nombre de séries mis à jour, exercices ajoutés en fin de jour). Jamais appelé automatiquement ; « Cette fois
+   * seulement » n'appelle rien. Séance close seulement (`'invalid'` sinon) ; routine ou jour disparu : aucun écart, rien n'est écrit. À appeler
+   * dans `DataAccess.transaction`. Renvoie les écarts appliqués.
+   */
+  applyRoutineUpdate(workoutId: string): Promise<RoutineDiff>;
+  /** Écarts de la séance avec son jour de routine (lecture seule, pour poser la question). */
+  routineChanges(workoutId: string): Promise<RoutineDiff>;
+}
+
+/** Correction d'une série d'une séance close ; les champs omis gardent leur valeur. */
+export interface SetCorrection extends SetEntryInput {
+  readonly setKind?: SetKind;
+}
+
+export interface ClosedWorkout {
+  readonly workout: WorkoutWithSets;
+  readonly summary: WorkoutSummary;
+  /** Écarts avec la routine d'origine (`hasChanges` : poser « Mettre à jour la routine ? »). */
+  readonly routineDiff: RoutineDiff;
+  /** Vrai si la séance était déjà close (rejeu : rien n'a été écrit). */
+  readonly alreadyClosed: boolean;
 }
