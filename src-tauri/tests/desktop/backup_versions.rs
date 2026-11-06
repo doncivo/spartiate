@@ -41,6 +41,12 @@ fn make_db(path: &Path, version: u32, bodies_version: u32) {
         "focus_session",
         "calendar_account",
         "holiday",
+        "profile",
+        "body_weight",
+        "exercise",
+        "equipment_profile",
+        "routine_day",
+        "routine_exercise",
         "search_index_doc",
     ] {
         conn.execute_batch(&format!(

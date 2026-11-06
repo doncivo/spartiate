@@ -6,6 +6,7 @@ import { openSqliteWasmDriver } from '../../db/drivers/sqliteWasm';
 import { legacyMigrations as migrations } from '../../../tests/fixtures/legacy-schema';
 import { migrate } from '../../db/migrator';
 import { openTestDb } from '../../db/repositories/sql/testSetup';
+import { migrations as appMigrations } from '../../db/migrations';
 import { asEntityId, type DeviceId } from '../../domain/types';
 
 const compact = (sql: string): string => sql.split(/\s+/).filter(Boolean).join(' ');
@@ -35,15 +36,24 @@ const triggersOf = async (db: SqlDriver) =>
  * migration ultérieure avec leur intervalle de versions (ADR 0008 §10.2) : ils doivent être ceux d'une base arrêtée à la version précédente.
  */
 describe('Déclencheurs de référence d’une sauvegarde (P-04)', () => {
-  it('la référence de Rust est identique à sqlite_master après les migrations de l’app, et il n’y a aucune vue', async () => {
+  it('la référence de Rust est la chaîne de l’ancien projet (sauf les noms repris par Spartiate) plus les déclencheurs réels de 0001 et 0002, sans aucune vue', async () => {
     const { count, entries } = entriesOf('REFERENCE_TRIGGERS');
     expect(entries).toHaveLength(count);
     const db = await openTestDb(asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000b9'));
+    const live = await openSqliteWasmDriver();
     try {
-      const actual = await triggersOf(db.driver);
-      expect(entries.map(({ name, table, sql }) => ({ name, table, sql }))).toEqual(actual);
+      await migrate(live, appMigrations);
+      const spartiate = await triggersOf(live);
+      // 14 déclencheurs de capture : profile, body_weight (0001) ; exercise, equipment_profile, routine, routine_day, routine_exercise (0002).
+      expect(spartiate).toHaveLength(14);
+      const taken = new Set(spartiate.map((row) => row.name));
+      const legacy = (await triggersOf(db.driver)).filter((row) => !taken.has(row.name));
+      const expected = [...legacy, ...spartiate].sort((x, y) => (x.name < y.name ? -1 : x.name > y.name ? 1 : 0));
+      expect(entries.map(({ name, table, sql }) => ({ name, table, sql }))).toEqual(expected);
       expect(await db.driver.select("SELECT name FROM sqlite_master WHERE type = 'view'")).toEqual([]);
+      expect(await live.select("SELECT name FROM sqlite_master WHERE type = 'view'")).toEqual([]);
     } finally {
+      await live.close();
       await db.close();
     }
   });
