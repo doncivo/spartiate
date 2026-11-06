@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { RoutineInput } from '../../../domain/training';
@@ -67,7 +67,7 @@ const openSession = (f = fakes(), os: 'ios' | 'other' = 'ios') => {
   );
 };
 const one = async <T,>(sql: string, params: unknown[] = []): Promise<T> => {
-  const [row] = await db.driver.select<T & Record<string, unknown>>(sql, params);
+  const [row] = await db.driver.select<T & Record<string, string | number | null>>(sql, params as (string | number | null)[]);
   if (!row) throw new Error(`aucune ligne : ${sql}`);
   return row;
 };
@@ -87,8 +87,8 @@ async function validateNext(exercise: string, load: string, reps: string): Promi
   fireEvent.click(within(set).getByRole('button', { name: 'Valider la série' }));
   await within(set).findByText('Validée');
 }
+// La routine est créée avant le montage (beforeEach) : les jours proposés sont lus au montage.
 const startFromRoutine = async () => {
-  await (await db.data.repos.trainingRoutines()).create(ROUTINE);
   fireEvent.click(await screen.findByRole('button', { name: /^Démarrer « Haut A »/ }));
   await screen.findByRole('heading', { level: 2, name: 'Haut A' });
 };
@@ -97,6 +97,7 @@ const restTimer = () => screen.findByRole('timer', { name: 'Repos restant' });
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
   db = await openBaseDb(DEVICE, '2026-11-09T17:00:00.000Z');
+  await (await db.data.repos.trainingRoutines()).create(ROUTINE);
 });
 afterEach(async () => {
   cleanup();
@@ -107,7 +108,7 @@ describe('démarrer une séance (critère 1)', () => {
   it('sans séance ouverte : séance vide, routine ou copie ; sans historique, la copie dit pourquoi', async () => {
     openSession();
     expect(await screen.findByRole('button', { name: 'Séance vide' })).toBeInTheDocument();
-    expect(screen.getByText(/Aucune séance terminée pour l’instant/)).toBeInTheDocument();
+    expect(await screen.findByText(/Aucune séance terminée pour l’instant/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Copier/ })).toBeNull();
   });
 
@@ -140,7 +141,7 @@ describe('démarrer une séance (critère 1)', () => {
     expect(within(work).getByLabelText('Charge (kg)')).toHaveValue('60');
     expect(within(work).getByLabelText('Répétitions')).toHaveValue('8');
     expect(await one('SELECT source, copied_from_workout_id FROM workout WHERE ended_at IS NULL')).toEqual({ source: 'copy', copied_from_workout_id: PAST_WORKOUT_ID });
-    expect(await count('SELECT COUNT(*) AS n FROM routine')).toBe(0);
+    expect(await count('SELECT COUNT(*) AS n FROM routine')).toBe(1);
   });
 
   it('séance ouverte : l’onglet Entraînement et Aujourd’hui proposent « Reprendre la séance »', async () => {
@@ -218,9 +219,9 @@ describe('saisie et validation (critère 2)', () => {
     await startFromRoutine();
     const region = await screen.findByRole('region', { name: 'Rowing à la barre' });
     fireEvent.click(within(region).getByRole('button', { name: 'Ajouter une série' }));
-    expect(await within(region).findAllByRole('group', { name: /^Série/ })).toHaveLength(3);
+    await waitFor(() => expect(within(region).getAllByRole('group', { name: /^Série/ })).toHaveLength(3));
     fireEvent.click(within((await setGroups('Rowing à la barre'))[2] as HTMLElement).getByRole('button', { name: 'Retirer la série' }));
-    await act(async () => undefined);
+    await waitFor(() => expect(within(region).getAllByRole('group', { name: /^Série/ })).toHaveLength(2));
     expect(await count('SELECT COUNT(*) AS n FROM workout_set WHERE deleted_at IS NULL')).toBe(5);
     fireEvent.click(screen.getByRole('button', { name: 'Ajouter un exercice' }));
     const picker = await screen.findByRole('region', { name: 'Ajouter un exercice à la séance' });
@@ -231,7 +232,7 @@ describe('saisie et validation (critère 2)', () => {
     expect(await count("SELECT COUNT(*) AS n FROM workout_set WHERE exercise_id = 'hammer-curl' AND deleted_at IS NULL")).toBe(3);
     fireEvent.click(within(screen.getByRole('region', { name: 'Curl marteau' })).getByRole('button', { name: 'Retirer l’exercice' }));
     fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Retirer' }));
-    await act(async () => undefined);
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Curl marteau' })).toBeNull());
     expect(await count("SELECT COUNT(*) AS n FROM workout_set WHERE exercise_id = 'hammer-curl' AND deleted_at IS NULL")).toBe(0);
   });
 
@@ -309,8 +310,7 @@ describe('minuteur de repos (critère 4)', () => {
     openSession();
     fireEvent.click(await screen.findByRole('button', { name: 'Séance vide' }));
     fireEvent.change(await screen.findByLabelText('Repos par défaut'), { target: { value: '60' } });
-    await act(async () => undefined);
-    expect(await db.data.repos.settings.get('training.restSeconds')).toBe(60);
+    await waitFor(async () => expect(await db.data.repos.settings.get('training.restSeconds')).toBe(60));
     fireEvent.click(screen.getByRole('button', { name: 'Ajouter un exercice' }));
     const picker = await screen.findByRole('region', { name: 'Ajouter un exercice à la séance' });
     fireEvent.change(within(picker).getByLabelText('Rechercher un exercice'), { target: { value: 'curl marteau' } });
@@ -329,8 +329,7 @@ describe('minuteur de repos (critère 4)', () => {
     expect(await screen.findByText('3:00')).toBeInTheDocument();
     expect(await one('SELECT rest_timer_end_at FROM workout')).toEqual({ rest_timer_end_at: '2026-11-09T17:03:00.000Z' });
     fireEvent.click(screen.getByRole('button', { name: 'Passer' }));
-    await act(async () => undefined);
-    expect(screen.queryByRole('timer', { name: 'Repos restant' })).toBeNull();
+    await waitFor(() => expect(screen.queryByRole('timer', { name: 'Repos restant' })).toBeNull());
     expect(await one('SELECT rest_timer_end_at FROM workout')).toEqual({ rest_timer_end_at: null });
     expect(f.calls.ends).toBeGreaterThanOrEqual(1);
     expect(f.calls.cancel).toBeGreaterThanOrEqual(1);

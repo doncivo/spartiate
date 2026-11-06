@@ -9,6 +9,7 @@ export type ScreenName =
   | 'appearancescreen'
   | 'bodyscreen'
   | 'trainingscreen'
+  | 'todaysessioncard'
   | 'applehealthscreen'
   | 'exportimportscreen'
   | 'sectionnotice'

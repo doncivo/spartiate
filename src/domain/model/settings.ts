@@ -122,6 +122,8 @@ export interface SettingsValues {
   'healthkit.entitlementMissing': boolean;
   /** I1-01 (§ 14.3) : identifiant du profil de matériel actif sur cet appareil ; préférence locale, jamais publiée (les profils le sont). */
   'training.activeEquipmentProfile': string | null;
+  /** I1-02 : « Repos par défaut » de l'écran de séance (secondes, 1 à 3600) quand la routine n'en fixe pas ; null = repos de l'exercice. Local. */
+  'training.restSeconds': number | null;
 }
 
 export type SettingKey = keyof SettingsValues;
@@ -175,6 +177,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'timer.synthetic': { scope: 'local', defaultValue: null },
   'healthkit.entitlementMissing': { scope: 'local', defaultValue: false },
   'training.activeEquipmentProfile': { scope: 'local', defaultValue: null },
+  'training.restSeconds': { scope: 'local', defaultValue: null },
 };
 
 /** Valeur par défaut d'un réglage. */

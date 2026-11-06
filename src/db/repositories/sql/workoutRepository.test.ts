@@ -117,6 +117,19 @@ describe('WorkoutRepository : démarrage', () => {
     await expect(repo.start({ source: 'copy', copyFromId: PAST_WORKOUT_ID })).rejects.toMatchObject({ code: 'invalid' });
     expect(await db.driver.select('SELECT id FROM workout WHERE ended_at IS NULL')).toEqual([]);
   });
+
+  it('listClosed : séances closes seulement, la plus récente d’abord ; séance ouverte et supprimée exclues', async () => {
+    await setup();
+    const repo = await open();
+    expect(await repo.listClosed()).toEqual([]);
+    await seedPastWorkout(db.driver);
+    await seedPastWorkout(db.driver, { ...PAST, id: W2, name: 'Bas A', sets: [], endedAt: '2026-10-28T18:00:00.000Z' as typeof PAST.endedAt });
+    await repo.start({ source: 'empty', id: W1 });
+    expect((await repo.listClosed()).map((w) => w.name)).toEqual(['Bas A', 'Haut A']);
+    expect((await repo.listClosed(1)).map((w) => w.id)).toEqual([W2]);
+    await db.driver.execute("UPDATE workout SET deleted_at = '2026-10-30T00:00:00.000Z' WHERE id = ?", [W2]);
+    expect((await repo.listClosed()).map((w) => w.id)).toEqual([PAST_WORKOUT_ID]);
+  });
 });
 
 describe('WorkoutRepository : séries', () => {
