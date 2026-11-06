@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { tTraining } from '../../i18n/trainingText';
 import { Button, SegmentedControl, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
@@ -10,10 +11,14 @@ import { TodaySessionCard } from './session/TodaySessionCard';
 import { useTrainingData } from './trainingState';
 import './TrainingScreen.css';
 
+/** Journal des séances (I1-03) : bloc à la demande, chargé à l'ouverture de la section. */
+const HistoryView = lazy(() => import('./history/HistoryView').then((m) => ({ default: m.HistoryView })));
+
 /**
  * Onglet Entraînement (I1-01) : accueil à trois sections, Routines (par défaut), Bibliothèque et Matériel, comme la barre de sections des
  * maquettes iPhone-Routine et PC-Materiel. Chargé à la demande avec ses textes et le contenu embarqué. I1-02 : carte « Séance » en tête
- * (commencer, ou reprendre la séance ouverte) et écran de séance active (`screen: 'session'`).
+ * (commencer, ou reprendre la séance ouverte) et écran de séance active (`screen: 'session'`). I1-03 : section « Journal » (séances closes,
+ * détail, correction, suppression), chargée à la demande.
  */
 export function TrainingScreen({ session }: { readonly session?: SessionPlatform } = {}) {
   const container = useAppContainer();
@@ -64,6 +69,7 @@ export function TrainingScreen({ session }: { readonly session?: SessionPlatform
             { value: 'routines', label: tTraining('sectionRoutines') },
             { value: 'library', label: tTraining('sectionLibrary') },
             { value: 'equipment', label: tTraining('sectionEquipment') },
+            { value: 'history', label: tTraining('sectionHistory') },
           ]}
         />
         {state.status === 'loading' ? (
@@ -79,6 +85,16 @@ export function TrainingScreen({ session }: { readonly session?: SessionPlatform
           </div>
         ) : current === 'library' ? (
           <LibraryView data={state.data} access={container.data} ids={container.ids} reload={reload} />
+        ) : current === 'history' ? (
+          <Suspense
+            fallback={
+              <p className="ct-training__muted" role="status">
+                {tTraining('loading')}
+              </p>
+            }
+          >
+            <HistoryView data={state.data} access={container.data} />
+          </Suspense>
         ) : current === 'equipment' ? (
           <EquipmentView data={state.data} access={container.data} ids={container.ids} reload={reload} />
         ) : (
