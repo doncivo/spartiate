@@ -15,6 +15,8 @@ export const healthFr = {
   availabilityError: 'Impossible de joindre Santé. Réessaie ; en attendant, saisis ton poids à la main dans Profil et poids.',
   denied: 'Accès refusé. Autorise Spartiate dans Réglages › Santé › Accès aux données et appareils, ou saisis ton poids à la main dans Profil et poids.',
   requestError: 'La demande d’accès à Santé a échoué. Réessaie.',
+  /** 0.1.4 (6) : compte Apple gratuit, SideStore retire la capacité HealthKit ; le chemin passe par Raccourcis (ticket séparé). */
+  sideStoreBlocked: 'Apple Santé n’est pas accessible avec une app installée par SideStore (compte Apple gratuit). L’import passera par l’app Raccourcis dans une prochaine version.',
   technicalDetail: 'Détail technique',
   technicalAvailable: 'Santé disponible : {value}',
   technicalUsage: 'Texte d’usage Info.plist : {value}',
