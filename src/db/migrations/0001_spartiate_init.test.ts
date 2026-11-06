@@ -165,9 +165,10 @@ describe('migration 0001 : base neuve Spartiate (SPA-001b, D-23, D-24, D-65)', (
     await db.close();
   });
 
-  it('APP_SCHEMA_VERSION vaut 1 côté Rust', () => {
+  it('APP_SCHEMA_VERSION côté Rust vaut la plus haute version du registre', () => {
     const rust = readFileSync('src-tauri/src/backup.rs', 'utf8');
-    expect(rust).toMatch(/APP_SCHEMA_VERSION:\s*u32\s*=\s*1;|APP_SCHEMA_VERSION:\s*i64\s*=\s*1;|APP_SCHEMA_VERSION[^=]*=\s*1\s*;/);
+    const highest = Math.max(...registry.map((m) => m.version));
+    expect(rust).toMatch(new RegExp(`APP_SCHEMA_VERSION:\\s*u32\\s*=\\s*${String(highest)};`));
   });
 
   it('la copie figée de capture porte exactement les colonnes publiées de profile et body_weight', () => {

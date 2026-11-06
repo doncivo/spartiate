@@ -1,5 +1,6 @@
 import type { SqlDriver } from '../../../src/db/driver';
 import type { Workout, WorkoutSet, WorkoutWithSets } from '../../../src/domain/training';
+import type { DeviceId, Hlc, IsoDateTime } from '../../../src/domain/types';
 
 /**
  * Fixtures synthétiques I1-02 (D-38 : aucune donnée réelle) : séance interrompue après cinq séries validées, repos en cours au moment du
@@ -10,14 +11,15 @@ const u = (n: number): string => `5e1a0c2d-0000-4000-8000-${String(n).padStart(1
 export const DEVICE = '0f8fad5b-d9cb-469f-a165-70867728950e';
 const h = (ms: number): string => `${String(ms).padStart(15, '0')}-0000-${DEVICE}`;
 
-export const T0 = '2026-11-02T17:00:00.000Z';
+export const T0 = '2026-11-02T17:00:00.000Z' as IsoDateTime;
+const iso = (value: string): IsoDateTime => value as IsoDateTime;
 export const T0_MS = Date.parse(T0);
 
 export const WORKOUT_ID = u(1);
 export const PAST_WORKOUT_ID = u(2);
 export const SET_IDS = [u(11), u(12), u(13), u(14), u(15), u(16), u(17)] as const;
 
-const meta = { createdAt: T0, updatedAt: T0, deletedAt: null, deviceId: DEVICE, hlc: h(1) } as never;
+const meta = { createdAt: T0, updatedAt: T0, deletedAt: null, deviceId: DEVICE as DeviceId, hlc: h(1) as Hlc };
 
 export const workoutRow = (over: Partial<Workout> = {}): Workout => ({
   id: WORKOUT_ID,
@@ -31,7 +33,7 @@ export const workoutRow = (over: Partial<Workout> = {}): Workout => ({
   restTimerEndAt: null,
   restTimerSeconds: 0,
   notes: '',
-  ...(meta as object),
+  ...meta,
   ...over,
 });
 
@@ -52,13 +54,13 @@ export const setRow = (index: number, over: Partial<WorkoutSet> = {}): WorkoutSe
   rir: null,
   done: false,
   doneAt: null,
-  ...(meta as object),
+  ...meta,
   ...over,
 });
 
 /** Cinq séries validées (3 développé couché, 2 rowing), la sixième et la septième non faites. Le repos de 150 s a commencé à T0 + 10 min. */
 export const REST_STARTED_AT_MS = T0_MS + 10 * 60_000;
-export const REST_END_AT = new Date(REST_STARTED_AT_MS + 150_000).toISOString();
+export const REST_END_AT = new Date(REST_STARTED_AT_MS + 150_000).toISOString() as IsoDateTime;
 
 export const INTERRUPTED: WorkoutWithSets = {
   ...workoutRow({ restTimerEndAt: REST_END_AT, restTimerSeconds: 150 }),
@@ -75,12 +77,12 @@ export const INTERRUPTED: WorkoutWithSets = {
 
 /** Séance passée close : un échauffement validé, deux séries de travail validées, une série non faite (jamais copiée). */
 export const PAST: WorkoutWithSets = {
-  ...workoutRow({ id: PAST_WORKOUT_ID, name: 'Haut A', endedAt: '2026-10-26T18:10:00.000Z', startedAt: '2026-10-26T17:00:00.000Z' }),
+  ...workoutRow({ id: PAST_WORKOUT_ID, name: 'Haut A', endedAt: iso('2026-10-26T18:10:00.000Z'), startedAt: iso('2026-10-26T17:00:00.000Z') }),
   sets: [
-    setRow(0, { workoutId: PAST_WORKOUT_ID, id: u(21), position: 0, setKind: 'warmup', done: true, reps: 8, loadKg: 40, doneAt: '2026-10-26T17:05:00.000Z' }),
-    setRow(1, { workoutId: PAST_WORKOUT_ID, id: u(22), position: 1, done: true, reps: 8, loadKg: 60, rir: 2, doneAt: '2026-10-26T17:10:00.000Z' }),
-    setRow(2, { workoutId: PAST_WORKOUT_ID, id: u(23), position: 2, done: true, reps: 7, loadKg: 62.5, rir: 1, doneAt: '2026-10-26T17:15:00.000Z' }),
-    setRow(3, { workoutId: PAST_WORKOUT_ID, id: u(24), position: 3, exerciseId: 'plank', exerciseName: 'Planche', setKind: 'timed', done: true, durationSec: 45, doneAt: '2026-10-26T17:30:00.000Z' }),
+    setRow(0, { workoutId: PAST_WORKOUT_ID, id: u(21), position: 0, setKind: 'warmup', done: true, reps: 8, loadKg: 40, doneAt: iso('2026-10-26T17:05:00.000Z') }),
+    setRow(1, { workoutId: PAST_WORKOUT_ID, id: u(22), position: 1, done: true, reps: 8, loadKg: 60, rir: 2, doneAt: iso('2026-10-26T17:10:00.000Z') }),
+    setRow(2, { workoutId: PAST_WORKOUT_ID, id: u(23), position: 2, done: true, reps: 7, loadKg: 62.5, rir: 1, doneAt: iso('2026-10-26T17:15:00.000Z') }),
+    setRow(3, { workoutId: PAST_WORKOUT_ID, id: u(24), position: 3, exerciseId: 'plank', exerciseName: 'Planche', setKind: 'timed', done: true, durationSec: 45, doneAt: iso('2026-10-26T17:30:00.000Z') }),
     setRow(4, { workoutId: PAST_WORKOUT_ID, id: u(25), position: 4, exerciseId: 'plank', exerciseName: 'Planche', setKind: 'timed' }),
   ],
 };
