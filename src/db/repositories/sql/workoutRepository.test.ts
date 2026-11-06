@@ -16,6 +16,10 @@ const D1 = u(2);
 const D2 = u(3);
 const W1 = u(100);
 const W2 = u(101);
+const must = <T>(value: T | null | undefined): T => {
+  if (value === null || value === undefined) throw new Error('valeur attendue');
+  return value;
+};
 let db: TestDb;
 afterEach(async () => db.close());
 
@@ -120,16 +124,16 @@ describe('WorkoutRepository : séries', () => {
     await setup();
     const repo = await open();
     await repo.start({ source: 'empty', id: W1 });
-    let w = await repo.addExercise(W1, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé', sets: 2, targetRepsMin: 6, targetRepsMax: 10 });
-    w = await repo.addExercise(W1, { exerciseId: 'row-barbell', exerciseName: 'Rowing' });
+    await repo.addExercise(W1, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé', sets: 2, targetRepsMin: 6, targetRepsMax: 10 });
+    let w = await repo.addExercise(W1, { exerciseId: 'row-barbell', exerciseName: 'Rowing' });
     expect(w.sets.map((s) => [s.exerciseId, s.position])).toEqual([['bench-press-barbell', 0], ['bench-press-barbell', 1], ['row-barbell', 2]]);
     await expect(repo.addExercise(W1, { exerciseId: 'row-barbell', exerciseName: 'Rowing' })).rejects.toMatchObject({ code: 'conflict' });
     const added = await repo.addSet(W1, 'bench-press-barbell');
     expect(added).toMatchObject({ exerciseId: 'bench-press-barbell', setKind: 'work', targetRepsMin: 6, targetRepsMax: 10, done: false, position: 2 });
-    w = (await repo.getOpen())!;
+    w = must(await repo.getOpen());
     expect(w.sets.map((s) => [s.exerciseId, s.position])).toEqual([['bench-press-barbell', 0], ['bench-press-barbell', 1], ['bench-press-barbell', 2], ['row-barbell', 3]]);
-    await repo.removeSet(w.sets[1]!.id);
-    w = (await repo.getOpen())!;
+    await repo.removeSet(must(w.sets[1]).id);
+    w = must(await repo.getOpen());
     expect(w.sets.map((s) => s.position)).toEqual([0, 1, 2]);
     w = await repo.removeExercise(W1, 'bench-press-barbell');
     expect(w.sets.map((s) => [s.exerciseId, s.position])).toEqual([['row-barbell', 0]]);
@@ -142,14 +146,14 @@ describe('WorkoutRepository : séries', () => {
     const repo = await open();
     await repo.start({ source: 'empty', id: W1 });
     const w = await repo.addExercise(W1, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé', sets: 2 });
-    const id = w.sets[0]!.id;
+    const id = must(w.sets[0]).id;
     db.clock.advance(65_000);
     const done = await db.data.transaction(async (repos) => (await repos.workouts()).validateSet(id, { reps: 8, loadKg: 60, rir: 2 }));
     expect(done).toMatchObject({ id, done: true, reps: 8, loadKg: 60, rir: 2, setKind: 'work', doneAt: '2026-10-01T08:01:05.000Z' });
     const row = (await db.driver.select<{ done: number; reps: number; load_kg: number; set_kind: string }>('SELECT done, reps, load_kg, set_kind FROM workout_set WHERE id = ?', [id]))[0];
     expect(row).toEqual({ done: 1, reps: 8, load_kg: 60, set_kind: 'work' });
     expect(await db.driver.select('SELECT * FROM sync_outbox')).toEqual([]);
-    expect((await repo.getOpen())!.sets[1]).toMatchObject({ done: false, reps: null });
+    expect(must(await repo.getOpen()).sets[1]).toMatchObject({ done: false, reps: null });
   });
 
   it('validateSet : saisie invalide refusée sans rien écrire ; série inachevée ou d’échauffement jamais travail réussi par défaut', async () => {
@@ -158,14 +162,14 @@ describe('WorkoutRepository : séries', () => {
     await repo.start({ source: 'empty', id: W1 });
     const w = await repo.addExercise(W1, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé', sets: 2 });
     const [a, b] = w.sets;
-    await expect(repo.validateSet(a!.id, { reps: 0, loadKg: 60 })).rejects.toMatchObject({ code: 'invalid' });
-    await expect(repo.validateSet(a!.id, { reps: 8, rir: 9 })).rejects.toMatchObject({ code: 'invalid' });
-    await expect(repo.validateSet(a!.id, {})).rejects.toMatchObject({ code: 'invalid' });
-    expect((await repo.getOpen())!.sets.every((s) => !s.done && s.reps === null)).toBe(true);
-    await repo.updateSet(b!.id, { setKind: 'warmup' });
-    const warm = await repo.validateSet(b!.id, { reps: 8, loadKg: 40 });
+    await expect(repo.validateSet(must(a).id, { reps: 0, loadKg: 60 })).rejects.toMatchObject({ code: 'invalid' });
+    await expect(repo.validateSet(must(a).id, { reps: 8, rir: 9 })).rejects.toMatchObject({ code: 'invalid' });
+    await expect(repo.validateSet(must(a).id, {})).rejects.toMatchObject({ code: 'invalid' });
+    expect(must(await repo.getOpen()).sets.every((s) => !s.done && s.reps === null)).toBe(true);
+    await repo.updateSet(must(b).id, { setKind: 'warmup' });
+    const warm = await repo.validateSet(must(b).id, { reps: 8, loadKg: 40 });
     expect(warm).toMatchObject({ setKind: 'warmup', done: true });
-    const done = await repo.updateSet(a!.id, { reps: 8, loadKg: 60 });
+    const done = await repo.updateSet(must(a).id, { reps: 8, loadKg: 60 });
     expect(done).toMatchObject({ done: false, reps: 8, loadKg: 60, doneAt: null });
     const state = resumeState(await repo.getOpen(), Date.parse('2026-10-01T08:00:00.000Z'));
     expect(state?.summary).toEqual({ validated: 1, planned: 2, validatedWork: 0, plannedWork: 1 });
@@ -176,10 +180,10 @@ describe('WorkoutRepository : séries', () => {
     const repo = await open();
     await repo.start({ source: 'empty', id: W1 });
     const [a] = (await repo.addExercise(W1, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé' })).sets;
-    await repo.updateSet(a!.id, { loadKg: 60 });
-    const s = await repo.validateSet(a!.id, { reps: 8 });
+    await repo.updateSet(must(a).id, { loadKg: 60 });
+    const s = await repo.validateSet(must(a).id, { reps: 8 });
     expect(s).toMatchObject({ reps: 8, loadKg: 60, done: true });
-    const undone = await repo.unvalidateSet(a!.id);
+    const undone = await repo.unvalidateSet(must(a).id);
     expect(undone).toMatchObject({ done: false, doneAt: null, reps: 8, loadKg: 60 });
   });
 
@@ -187,7 +191,7 @@ describe('WorkoutRepository : séries', () => {
     await setup();
     await seedPastWorkout(db.driver);
     const repo = await open();
-    await expect(repo.validateSet(PAST.sets[1]!.id, { reps: 5, loadKg: 10 })).rejects.toMatchObject({ code: 'invalid' });
+    await expect(repo.validateSet(must(PAST.sets[1]).id, { reps: 5, loadKg: 10 })).rejects.toMatchObject({ code: 'invalid' });
     await expect(repo.addSet(PAST_WORKOUT_ID, 'bench-press-barbell')).rejects.toMatchObject({ code: 'invalid' });
     await expect(repo.discard(PAST_WORKOUT_ID)).rejects.toMatchObject({ code: 'invalid' });
   });
@@ -208,7 +212,7 @@ describe('WorkoutRepository : reprise après cinq séries (critère 3)', () => {
     ];
     for (const [i, e] of entries.entries()) {
       db.clock.advance(120_000);
-      await db.data.transaction(async (repos) => (await repos.workouts()).validateSet(started.sets[i]!.id, e));
+      await db.data.transaction(async (repos) => (await repos.workouts()).validateSet(must(started.sets[i]).id, e));
     }
     const before = await repo.getOpen();
     // Redémarrage : nouvelle horloge, nouveaux repositories, même fichier de base.
@@ -216,10 +220,10 @@ describe('WorkoutRepository : reprise après cinq séries (critère 3)', () => {
     const reopened = createDataAccess(db.driver, createWriteStamper(clock, createHlcClock({ clock, deviceId: DEVICE })), createSqlRepositories);
     const after = await (await reopened.repos.workouts()).getOpen();
     expect(after).toEqual(before);
-    expect(after!.sets).toHaveLength(5);
-    expect(new Set(after!.sets.map((s) => s.id)).size).toBe(5);
-    expect(after!.sets.map((s) => s.position)).toEqual([0, 1, 2, 3, 4]);
-    expect(after!.sets.map((s) => [s.reps, s.loadKg, s.rir, s.done])).toEqual(entries.map((e) => [e.reps, e.loadKg, e.rir, true]));
+    expect(must(after).sets).toHaveLength(5);
+    expect(new Set(must(after).sets.map((s) => s.id)).size).toBe(5);
+    expect(must(after).sets.map((s) => s.position)).toEqual([0, 1, 2, 3, 4]);
+    expect(must(after).sets.map((s) => [s.reps, s.loadKg, s.rir, s.done])).toEqual(entries.map((e) => [e.reps, e.loadKg, e.rir, true]));
     expect(resumeState(after, clock.nowMs())?.summary).toEqual({ validated: 5, planned: 5, validatedWork: 5, plannedWork: 5 });
     expect(await db.driver.select('SELECT COUNT(*) AS n FROM workout')).toEqual([{ n: 1 }]);
     expect(await db.driver.select('SELECT COUNT(*) AS n FROM workout_set')).toEqual([{ n: 5 }]);
@@ -240,9 +244,9 @@ describe('WorkoutRepository : repos (critère 4)', () => {
     const reopened = createDataAccess(db.driver, createWriteStamper(clock, createHlcClock({ clock, deviceId: DEVICE })), createSqlRepositories);
     const persisted = await (await reopened.repos.workouts()).getRest();
     expect(persisted).toEqual(rest);
-    expect(restRemainingMs(persisted!.endAt, clock.nowMs())).toBe(110_000);
+    expect(restRemainingMs(must(persisted).endAt, clock.nowMs())).toBe(110_000);
     clock.set('2026-10-01T08:10:00.000Z');
-    expect(restRemainingMs((await (await reopened.repos.workouts()).getRest())!.endAt, clock.nowMs())).toBe(0);
+    expect(restRemainingMs(must(await (await reopened.repos.workouts()).getRest()).endAt, clock.nowMs())).toBe(0);
   });
 
   it('extendRest : +30 s sur l’échéance en cours, ou depuis maintenant si elle est passée ; skipRest efface l’échéance', async () => {
@@ -253,7 +257,7 @@ describe('WorkoutRepository : repos (critère 4)', () => {
     db.clock.advance(10_000);
     const extended = await repo.extendRest();
     expect(extended.endAt).toBe('2026-10-01T08:02:00.000Z');
-    expect((await repo.getRest())!.endAt).toBe('2026-10-01T08:02:00.000Z');
+    expect(must(await repo.getRest()).endAt).toBe('2026-10-01T08:02:00.000Z');
     db.clock.advance(600_000);
     expect((await repo.extendRest(30)).endAt).toBe('2026-10-01T08:10:40.000Z');
     await repo.skipRest();
@@ -297,11 +301,11 @@ describe('séance ouverte : jamais publiée (D-27)', () => {
     const repo = await open();
     await repo.start({ source: 'empty', id: W1 });
     const w = await repo.addExercise(W1, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé', sets: 2 });
-    await repo.validateSet(w.sets[0]!.id, { reps: 8, loadKg: 60 });
+    await repo.validateSet(must(w.sets[0]).id, { reps: 8, loadKg: 60 });
     await repo.startRest({ seconds: 90 });
     await repo.extendRest();
     await repo.skipRest();
-    await repo.removeSet(w.sets[1]!.id);
+    await repo.removeSet(must(w.sets[1]).id);
     await repo.discard(W1);
     for (const t of ['sync_outbox', 'sync_field_clock', 'sync_tombstone']) expect(await db.driver.select(`SELECT * FROM ${t}`), t).toEqual([]);
   });
