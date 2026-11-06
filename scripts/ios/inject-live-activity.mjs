@@ -128,7 +128,7 @@ function main(argv) {
   if (changed) writeFileSync(spec, text);
   console.log(changed ? `Cible ${EXTENSION_TARGET} ajoutée à project.yml` : `Cible ${EXTENSION_TARGET} déjà présente : project.yml inchangé`);
   if (argv.includes('--no-generate')) return;
-  const generated = spawnSync('xcodegen', ['generate', '--spec', 'project.yml'], { cwd: apple, stdio: 'inherit' });
+  const generated = spawnSync('xcodegen', ['generate', '--no-env', '--spec', 'project.yml'], { cwd: apple, stdio: 'inherit' });
   if (generated.status !== 0) throw new Error('xcodegen generate a échoué');
   const project = readdirSync(apple).find((name) => name.endsWith('.xcodeproj'));
   if (!project) throw new Error('projet .xcodeproj absent après xcodegen generate');

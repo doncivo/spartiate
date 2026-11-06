@@ -90,5 +90,7 @@ describe('signature et IPA finale (SPA-007 lot C)', () => {
     expect(wf).toMatch(/Extension Live Activity de l'IPA finale/);
     // Aucun entitlement dans l'extension : la sortie de codesign -d --entitlements n'est pas exigée, mais l'absence d'App Group et de push l'est.
     expect(wf).toMatch(/application-groups/);
+    // Mêmes versions pour l'app et l'extension (CFBundleVersion différent = installation refusée).
+    expect(wf).toMatch(/CFBundleVersion différent/);
   });
 });
