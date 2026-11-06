@@ -52,6 +52,12 @@ describe('JSON d’un profil de matériel', () => {
     }
   });
 
+  it('valeurs « à vérifier en salle » conservées ; liste vide omise ; mauvais type refusé', () => {
+    expect(parseInventory({ ...GYM_PROFILE.inventory, toVerify: ['kettlebells', 'barbell:Barre EZ'] })).toEqual({ ...GYM_PROFILE.inventory, toVerify: ['kettlebells', 'barbell:Barre EZ'] });
+    expect(parseInventory({ ...GYM_PROFILE.inventory, toVerify: [] })).toEqual(GYM_PROFILE.inventory);
+    expect(parseInventory({ toVerify: [1] })).toBeNull();
+  });
+
   it('incréments : kg strictement positifs par type', () => {
     expect(parseIncrements({ barbell: 2.5, dumbbell: 2 })).toEqual({ barbell: 2.5, dumbbell: 2 });
     expect(parseIncrements({})).toEqual({});

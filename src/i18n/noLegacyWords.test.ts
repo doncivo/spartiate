@@ -12,7 +12,9 @@ import { describe, expect, it } from 'vitest';
  * du banc de test de synchro legacy (D-67 : `fr.syncField`, `fr.syncVersion`, `fr.syncCarryReport`) et les sections de `fr.ts` qui ne servent
  * qu'à eux. La liste ne peut que se réduire.
  */
-const BANNED = /\b(tâches?|rappels?|focus|routines?|checklists?)\b/i;
+// I1-01 : « routine » redevient un mot légitime avec l'entraînement (routines de séances, PRD § 14) ; il quitte la liste. Tâches, rappels,
+// Focus et checklists restent des restes de l'ancien projet.
+const BANNED = /\b(tâches?|rappels?|focus|checklists?)\b/i;
 const LITERAL = /'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g;
 const read = (name: string): string => readFileSync(fileURLToPath(new URL(name, import.meta.url)), 'utf8');
 const strip = (source: string): string => source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
@@ -31,6 +33,7 @@ function offenders(file: string, source: string): string[] {
 
 /** Catalogues vivants : textes des écrans livrés (Aujourd'hui, Profil et poids, Plus, Synchronisation, Apple Santé, minuteur, journal…). */
 const LIVE_CATALOGS = [
+  'fr.training.ts',
   'fr.body.ts',
   'fr.health.ts',
   'fr.today.ts',
