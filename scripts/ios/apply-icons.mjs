@@ -1,4 +1,4 @@
-/* global process, console */
+/* global process, console, Buffer */
 // 0.1.4 (8) : icône de l'app iPhone.
 // `tauri ios init` ne recopie pas `src-tauri/icons/ios` : l'iPhone affichait l'icône Tauri par défaut. Après l'init :
 // - sans option : copie chaque icône listée par l'AppIcon du projet généré depuis `src-tauri/icons/ios` ; échec si un fichier manque, si
