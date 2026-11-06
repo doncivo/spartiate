@@ -146,7 +146,7 @@ describe('« Terminer la séance »', () => {
     expect(within(summary).getByRole('heading', { level: 2, name: 'Haut A terminée' })).toBeInTheDocument();
     expect(within(summary).getByText('Durée').nextElementSibling).toHaveTextContent('30:00');
     expect(within(summary).getByText('Séries').nextElementSibling).toHaveTextContent('4');
-    expect(within(summary).getByText('Volume (kg)').nextElementSibling).toHaveTextContent(/^1 417,5$/);
+    expect(within(summary).getByText('Volume (kg)').nextElementSibling).toHaveTextContent(/^1\s417,5$/);
     expect(within(summary).getByText(/Hors échauffement, séries dégressives, partielles et chronométrées/)).toBeInTheDocument();
     expect(within(summary).queryByText('Mettre à jour la routine ?')).toBeNull();
     expect(await one('SELECT ended_at, rest_timer_end_at FROM workout')).toEqual({ ended_at: '2026-11-09T17:30:00.000Z', rest_timer_end_at: null });
