@@ -95,6 +95,7 @@ describe('prise de développement et démarrage', () => {
   it('I-05 critère 6 : liste blanche des appels de demande d’autorisation des écrans', () => {
     const callers = filesNaming(/\.requestPermissions?\b|Notification\.requestPermission|getUserMedia\(/).filter((file) => file.startsWith('src/features/'));
     // SPA-001b : la dictée, le scan d'image et les rappels sont retirés ; seule la demande d'autorisation des notifications de À propos reste.
-    expect([...callers].sort()).toEqual(['src/features/signing/requestPermission.ts']);
+    // SPA-007 : le minuteur de test (À propos) demande la même autorisation, au geste « Lancer » seulement, jamais à l'ouverture de l'écran.
+    expect([...callers].sort()).toEqual(['src/features/settings/syntheticTimer.ts', 'src/features/signing/requestPermission.ts']);
   });
 });
