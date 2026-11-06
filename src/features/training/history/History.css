@@ -1,0 +1,19 @@
+/* Journal des séances (I1-03) : tokens seulement, aucune couleur en dur ; cibles ≥ 44 px ; texte agrandi sans débordement. */
+
+.ct-history,
+.ct-history__detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+}
+
+.ct-history .ct-training__row-meta {
+  overflow-wrap: anywhere;
+}
+
+/* « corrigée » : écrit en toutes lettres, le liseré ne fait que le doubler. */
+.ct-history__corrected {
+  border-color: var(--ct-color-bronze);
+  color: var(--ct-color-text);
+}
