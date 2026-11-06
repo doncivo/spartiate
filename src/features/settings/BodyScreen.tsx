@@ -254,11 +254,8 @@ export function BodyScreen() {
             <div className="ct-body__field">
               <label className="ct-body__field ct-body__field--row">
                 <span className="ct-body__label">{tBody('heightCm')}</span>
-                <input className="ct-body__input ct-body__input--short" inputMode="numeric" aria-describedby="ct-body-height-help" placeholder={`${HEIGHT_MIN_CM} – ${HEIGHT_MAX_CM}`} value={height} disabled={waiting} onChange={(e) => setHeight(e.target.value)} />
+                <input className="ct-body__input ct-body__input--short" inputMode="numeric" placeholder={`${HEIGHT_MIN_CM} – ${HEIGHT_MAX_CM}`} value={height} disabled={waiting} onChange={(e) => setHeight(e.target.value)} />
               </label>
-              <span id="ct-body-height-help" className="ct-body__hint">
-                {tBody('heightHelp')}
-              </span>
             </div>
             <div className="ct-body__field">
               <span className="ct-body__label">{tBody('goal')}</span>
