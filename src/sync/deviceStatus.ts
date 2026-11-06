@@ -11,6 +11,20 @@ import { defaultSyncLogger } from './log';
 import { META } from './meta';
 
 /**
+ * Dernière modification d'un autre appareil lue ici (0.1.4 point 4). Le champ ack_hlc suit les enregistrements de journal lus ; après une reprise
+ * depuis un instantané ou un changement d'époque, les données de l'autre appareil sont appliquées et le curseur est à sa tête, mais
+ * ack_hlc reste vide jusqu'à sa prochaine écriture (« Jamais lu » à tort). Un curseur arrivé à la tête annoncée vaut lecture jusqu'au
+ * hlc de cette tête ; le plus récent des deux l'emporte. Même règle pour tous les appareils, quelle que soit la plateforme.
+ */
+function lastReadOf(row: SyncStateRow): IsoDateTime | null {
+  const usable = (hlc: SyncStateRow['ackHlc']): hlc is NonNullable<SyncStateRow['ackHlc']> => hlc !== null && parseHlc(hlc).ms > 0;
+  const atHead = row.headHlc !== null && (row.cursorSegment > row.headSegment || (row.cursorSegment === row.headSegment && row.cursorRecord >= row.headRecord));
+  const candidates = [row.ackHlc, atHead ? row.headHlc : null].filter(usable);
+  if (candidates.length === 0) return null;
+  return hlcIso(candidates.reduce((a, b) => (parseHlc(a).ms >= parseHlc(b).ms ? a : b)));
+}
+
+/**
  * Appareils affichés (APPAREILS) d'après `sync_state` : une seule règle pour le moteur (fin de cycle) et les bandeaux A-09 (avant le
  * premier cycle, `startSync.ts`) (revue A-09, point 5). Retenus : soi, les appareils dont un état a été accepté (ce cycle ou avant).
  *
@@ -35,7 +49,7 @@ export function storedDeviceStatuses(
         deviceId: row.deviceId as DeviceId,
         platform: row.platform === 'ios' ? ('ios' as const) : ('windows' as const),
         self: isSelf,
-        lastReadAt: isSelf ? row.lastSyncAt : row.ackHlc && parseHlc(row.ackHlc).ms > 0 ? hlcIso(row.ackHlc) : null,
+        lastReadAt: isSelf ? row.lastSyncAt : lastReadOf(row),
         status,
         // N-07 (ADR 0012 avenant N1.6) : dernière synchro PUBLIÉE par l'autre appareil (`lastSyncHlc` du dernier état accepté, rafraîchi toutes les
         // 30 minutes au plus). `lastReadAt` n'en tient pas lieu : pour un autre appareil c'est l'heure de sa dernière ÉCRITURE lue.
