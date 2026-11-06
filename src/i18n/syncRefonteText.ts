@@ -10,7 +10,7 @@ const fr = {
   applied: 'Appliquée · {side}',
   resetBodyBefore: 'Une nouvelle clé est créée. ',
   resetBodyStrong: 'Tes autres appareils devront être associés de nouveau',
-  resetBodyAfter: ' (QR code ou clé de secours) et l’historique partagé repart à zéro. Tes tâches ne sont pas supprimées.',
+  resetBodyAfter: ' (QR code ou clé de secours) et l’historique partagé repart à zéro. Tes données ne sont pas supprimées.',
 } as const;
 export function tSyncRefonte(key: keyof typeof fr, params: Record<string, string> = {}): string {
   let text: string = fr[key];

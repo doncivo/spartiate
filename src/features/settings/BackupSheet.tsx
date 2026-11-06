@@ -69,7 +69,7 @@ function VersionRow({ version, context, disabled, onChoose }: { version: BackupV
   const when = formatBackupWhen(version.modifiedMs);
   const size = formatBackupSize(version.size);
   const details =
-    version.tasks === null ? t('backup.versionDetailsUnknown', { size }) : version.tasks === 1 ? t('backup.versionDetailsOne', { size }) : t('backup.versionDetails', { size, tasks: version.tasks });
+    version.tasks === null ? t('backup.versionDetailsUnknown', { size }) : version.tasks === 1 ? t('backup.versionDetailsOne', { size }) : t('backup.versionDetails', { size });
   const tag = version.kind === 'pre-migration' ? t('backup.kindPreMigration') : version.kind === 'pre-restore' ? t('backup.kindPreRestore') : null;
   const title = t('backup.versionLabel', { date: when.date, time: when.time });
   // Y-TECH-04 (partie C) : appareil, époque et « autre époque » ; rien quand le service ne fournit pas l'origine.

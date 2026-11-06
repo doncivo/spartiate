@@ -28,7 +28,7 @@ export const signingFr = {
     allow: 'Autoriser',
     allowLabel: 'Autoriser les notifications pour l’alerte d’expiration',
     viewReminders: 'Voir',
-    viewRemindersLabel: 'Voir les réglages des rappels pour autoriser les notifications',
+    viewRemindersLabel: 'Voir les réglages pour autoriser les notifications',
     reading: 'Lecture de la date d’expiration…',
   },
 } as const;
