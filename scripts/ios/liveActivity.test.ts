@@ -1,0 +1,64 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { parsePlist } from './plist.mjs';
+
+/**
+ * SPA-007, lot A : sources durables de l'extension Live Activity (compteur de 60 s). Aucun App Group, aucun push, aucun mode d'arrière-plan,
+ * aucun nouvel entitlement : Live Activities n'a besoin d'aucune capacité restreinte (le compte Apple gratuit n'en donne pas).
+ */
+const root = resolve(__dirname, '..', '..');
+const DIR = 'src-tauri/ios/LiveActivity';
+const read = (path: string): string => readFileSync(join(root, path), 'utf8');
+
+describe('sources durables de l’extension (SPA-007 lot A)', () => {
+  it('les trois fichiers existent', () => {
+    for (const name of ['SpartiateTimerAttributes.swift', 'SpartiateLiveActivity.swift', 'Info.plist']) expect(existsSync(join(root, DIR, name)), name).toBe(true);
+  });
+
+  it('attributs : ActivityAttributes avec ContentState { endDate: Date; label: String }', () => {
+    const src = read(`${DIR}/SpartiateTimerAttributes.swift`);
+    expect(src).toMatch(/struct SpartiateTimerAttributes:\s*ActivityAttributes/);
+    expect(src).toMatch(/struct ContentState:\s*Codable,\s*Hashable/);
+    expect(src).toMatch(/var endDate:\s*Date/);
+    expect(src).toMatch(/var label:\s*String/);
+  });
+
+  it('widget : écran verrouillé et Dynamic Island compacte, minimale, étendue, décompte par Text(timerInterval:)', () => {
+    const src = read(`${DIR}/SpartiateLiveActivity.swift`);
+    expect(src).toMatch(/ActivityConfiguration\(for:\s*SpartiateTimerAttributes\.self\)/);
+    for (const part of ['compactLeading', 'compactTrailing', 'minimal', 'DynamicIslandExpandedRegion']) expect(src, part).toContain(part);
+    expect(src).toMatch(/Text\(timerInterval:[^)]*countsDown:\s*true\)/);
+    expect(src).toMatch(/@main/);
+    // Le décompte avance seul : aucune minuterie ni mise à jour poussée.
+    expect(src).not.toMatch(/Timer\.scheduledTimer|URLSession|pushType|\.update\(/);
+  });
+
+  it('Info.plist de l’extension : point d’extension WidgetKit, aucun mode d’arrière-plan ni groupe', () => {
+    const plist = parsePlist(read(`${DIR}/Info.plist`)) as Record<string, unknown>;
+    expect((plist['NSExtension'] as Record<string, string>)['NSExtensionPointIdentifier']).toBe('com.apple.widgetkit-extension');
+    expect(plist['CFBundlePackageType']).toBe('XPC!');
+    expect(JSON.stringify(plist)).not.toMatch(/UIBackgroundModes|application-groups|aps-environment/);
+  });
+
+  it('aucun nouvel entitlement, App Group, push ni mode de fond dans les sources', () => {
+    const all = ['SpartiateTimerAttributes.swift', 'SpartiateLiveActivity.swift', 'Info.plist'].map((n) => read(`${DIR}/${n}`)).join('\n');
+    expect(all).not.toMatch(/application-groups|group\.|aps-environment|UIBackgroundModes|pushToken|pushType/);
+    expect(existsSync(join(root, DIR, 'SpartiateLiveActivity.entitlements'))).toBe(false);
+    const entitlements = parsePlist(read('src-tauri/ios/Spartiate.entitlements')) as Record<string, unknown>;
+    expect(Object.keys(entitlements)).toEqual(['com.apple.developer.healthkit']);
+  });
+});
+
+describe('app : NSSupportsLiveActivities (SPA-007 lot A)', () => {
+  it('Info.ios.plist déclare NSSupportsLiveActivities = true', () => {
+    const plist = parsePlist(read('src-tauri/Info.ios.plist')) as Record<string, unknown>;
+    expect(plist['NSSupportsLiveActivities']).toBe(true);
+  });
+
+  it('le contrat des permissions porte la clé (plugin live-activity, story SPA-007) et interdit toujours UIBackgroundModes', () => {
+    const contract = JSON.parse(read('scripts/ios/plist-contract.json')) as { plugins: Record<string, unknown>; forbiddenKeys: string[] };
+    expect(contract.plugins['live-activity']).toEqual({ story: 'SPA-007', keys: ['NSSupportsLiveActivities'] });
+    expect(contract.forbiddenKeys).toContain('UIBackgroundModes');
+  });
+});
