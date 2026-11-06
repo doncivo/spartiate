@@ -4,7 +4,7 @@ import { todayLocal } from '../../domain/clock';
 import type { IsoDateTime } from '../../domain/types';
 import { formatKg } from '../../i18n/bodyText';
 import { formatHealthTime, tHealth } from '../../i18n/healthText';
-import { healthKit as platformHealthKit, type HealthKit, type HealthKitAvailability, type HealthKitBodyMass, type HealthKitDiagnostic, type HealthKitRead, type HealthKitStepCount } from '../../platform/healthkit';
+import { healthKit as platformHealthKit, type HealthKit, type HealthKitAvailability, type HealthKitBodyMass, type HealthKitDiagnostic, type HealthKitRead, type HealthKitStepCount, isMissingHealthKitEntitlement } from '../../platform/healthkit';
 import { logFailure } from '../../platform/desktop/log';
 import { Button, Icon, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
@@ -81,7 +81,9 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
   }
 
   const anyEmpty = reads !== null && (reads.mass.state === 'empty' || reads.steps.state === 'empty');
-  const canAsk = availability === 'available' && phase !== 'asking';
+  // 0.1.4 (6) : entitlement absent (compte Apple gratuit) : définitif, le bouton n'a plus d'objet.
+  const blocked = phase === 'requestError' && diagnostic !== null && isMissingHealthKitEntitlement(diagnostic.error);
+  const canAsk = availability === 'available' && phase !== 'asking' && !blocked;
 
   return (
     <div className="ct-body-shell" data-layout={layout}>
@@ -114,7 +116,7 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
           )}
           {phase === 'requestError' && (
             <p className="ct-body__message" role="alert">
-              {tHealth('requestError')}
+              {tHealth(blocked ? 'sideStoreBlocked' : 'requestError')}
             </p>
           )}
           {phase === 'requestError' && diagnostic && <TechnicalDetail diagnostic={diagnostic} />}

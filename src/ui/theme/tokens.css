@@ -423,3 +423,16 @@ h6 {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * 0.1.4 (1) : iOS zoome toute la page quand on touche un champ dont le texte fait moins de 16 px, et elle reste zoomée. 16 px au moins pour les
+ * champs de saisie sur iOS seulement (`-webkit-touch-callout` n'existe que dans WebKit iOS) ; `!important` parce que les styles de composant
+ * (une classe) fixent leur propre taille. Le zoom de l'utilisateur n'est jamais bloqué (index.html : pas de maximum-scale).
+ */
+@supports (-webkit-touch-callout: none) {
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em) !important;
+  }
+}

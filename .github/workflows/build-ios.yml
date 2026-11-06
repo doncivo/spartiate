@@ -101,6 +101,11 @@ jobs:
       - name: Initialiser le projet iOS
         run: npx tauri ios init --ci
 
+      # 0.1.4 (8) : `tauri ios init` ne recopie pas src-tauri/icons/ios : sans cette étape l'iPhone affiche l'icône Tauri par défaut. Chaque
+      # icône listée par l'AppIcon généré est copiée ; échec si une taille manque, a de mauvaises dimensions ou si la copie diffère.
+      - name: Icônes de l'app
+        run: node scripts/ios/apply-icons.mjs
+
       # SPA-003 : la source durable (src-tauri/ios/Spartiate.entitlements) est copiée dans la sortie générée ; échec si source, dossier
       # ou égalité octet à octet font défaut. La copie générée n'est jamais la source de vérité.
       - name: Entitlements durables
@@ -204,6 +209,20 @@ jobs:
           du -sh "$APP" "$APP/$EXE"
           ls "$APP"
 
+      # 0.1.4 (8) : l'IPA finale porte bien une icône d'app. La copie source -> AppIcon.appiconset est déjà contrôlée octet pour octet
+      # (apply-icons.mjs, étape « Icônes de l'app ») ; ici : AppIcon60x60@2x.png et Assets.car présents, Info.plist déclarant CFBundleIcons
+      # avec AppIcon. Les octets compilés ne se comparent pas à ceux d'une compilation lancée à part (options différentes). L'icône est gardée en
+      # artefact pour un contrôle visuel.
+      - name: Icône de l'IPA finale
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/check/Payload/Spartiate.app"
+          test -s "$APP/AppIcon60x60@2x.png" || { echo "::error::AppIcon60x60@2x.png absent de l'IPA"; ls "$APP"; exit 1; }
+          test -s "$APP/Assets.car" || { echo "::error::Assets.car absent de l'IPA"; exit 1; }
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIcons" "$APP/Info.plist" | grep -q AppIcon || { echo "::error::Info.plist sans CFBundleIcons / AppIcon"; exit 1; }
+          mkdir -p icon && cp "$APP/AppIcon60x60@2x.png" icon/AppIcon60x60@2x.png
+          echo "- Icône de l'IPA finale : AppIcon60x60@2x.png, Assets.car et CFBundleIcons/AppIcon présents (copie source contrôlée au hash avant le build)" >> "$GITHUB_STEP_SUMMARY"
+
       # Contrat des permissions (I-01) : chaque plugin déclare ses clés dans scripts/ios/plist-contract.json.
       # Le Info.plist de l'IPA est binaire : converti en XML, gardé en artefact pour source.json (appPermissions).
       - name: Contrat des permissions Info.plist
@@ -275,6 +294,13 @@ jobs:
         with:
           name: Spartiate-info-plist
           path: info/Info.plist
+          if-no-files-found: error
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Spartiate-app-icon
+          path: icon/AppIcon60x60@2x.png
           if-no-files-found: error
           retention-days: 30
 

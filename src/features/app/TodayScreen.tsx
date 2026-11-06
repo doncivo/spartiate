@@ -6,6 +6,7 @@ import { formatDetailDate, formatStamp } from '../../i18n/format';
 import { formatKg, tBody, type BodyTextKey } from '../../i18n/bodyText';
 import { formatTodayEyebrow, tToday, type TodayTextKey } from '../../i18n/todayText';
 import { Button, useLayout } from '../../ui';
+import { useSyncedData } from '../sync/remoteChanges';
 import { statusLine } from '../sync/syncText';
 import { useAppContainer } from './AppContainerContext';
 import { useNavigationStore, type Route } from './navigation';
@@ -169,6 +170,8 @@ export function TodayScreen() {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [failed, setFailed] = useState(false);
   const { repos } = container.data;
+  // 0.1.4 (2) : un lot reçu de l'autre appareil (profil, pesée) relit l'écran sans changer d'onglet.
+  const synced = useSyncedData(['profile', 'body_weight']);
 
   useEffect(() => {
     let live = true;
@@ -194,7 +197,7 @@ export function TodayScreen() {
     return () => {
       live = false;
     };
-  }, [repos, backups]);
+  }, [repos, backups, synced]);
 
   const nowMs = container.clock.nowMs();
   const today = todayLocal(container.clock);
