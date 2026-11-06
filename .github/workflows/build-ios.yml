@@ -209,18 +209,19 @@ jobs:
           du -sh "$APP" "$APP/$EXE"
           ls "$APP"
 
-      # 0.1.4 (8) : une icône Spartiate est bien dans l'IPA finale. actool compile les icônes versionnées (celles de l'AppIcon généré) dans un
-      # dossier à part ; chaque AppIcon*.png obtenu doit se retrouver, avec le même SHA-256, dans l'app extraite de l'IPA. Une icône Tauri
-      # par défaut ou absente fait échouer le build.
+      # 0.1.4 (8) : l'IPA finale porte bien une icône d'app. La copie source -> AppIcon.appiconset est déjà contrôlée octet pour octet
+      # (apply-icons.mjs, étape « Icônes de l'app ») ; ici : AppIcon60x60@2x.png et Assets.car présents, Info.plist déclarant CFBundleIcons
+      # avec AppIcon. Les octets compilés ne se comparent pas à ceux d'une compilation lancée à part (options différentes). L'icône est gardée en
+      # artefact pour un contrôle visuel.
       - name: Icône de l'IPA finale
         run: |
           set -euo pipefail
-          OUT="$RUNNER_TEMP/icons-expected"
-          rm -rf "$OUT" && mkdir -p "$OUT"
-          xcrun actool --output-format human-readable-text --notices --warnings --errors --platform iphoneos --minimum-deployment-target 18.0 --target-device iphone --app-icon AppIcon --compile "$OUT" --output-partial-info-plist "$OUT/partial.plist" src-tauri/gen/apple/Assets.xcassets
-          ls "$OUT"
-          node scripts/ios/apply-icons.mjs --compare "$OUT" "$RUNNER_TEMP/check/Payload/Spartiate.app"
-          echo "- Icône de l'IPA finale : AppIcon compilé depuis src-tauri/icons/ios, hash identique dans l'app extraite" >> "$GITHUB_STEP_SUMMARY"
+          APP="$RUNNER_TEMP/check/Payload/Spartiate.app"
+          test -s "$APP/AppIcon60x60@2x.png" || { echo "::error::AppIcon60x60@2x.png absent de l'IPA"; ls "$APP"; exit 1; }
+          test -s "$APP/Assets.car" || { echo "::error::Assets.car absent de l'IPA"; exit 1; }
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIcons" "$APP/Info.plist" | grep -q AppIcon || { echo "::error::Info.plist sans CFBundleIcons / AppIcon"; exit 1; }
+          mkdir -p info && cp "$APP/AppIcon60x60@2x.png" info/AppIcon60x60@2x.png
+          echo "- Icône de l'IPA finale : AppIcon60x60@2x.png, Assets.car et CFBundleIcons/AppIcon présents (copie source contrôlée au hash avant le build)" >> "$GITHUB_STEP_SUMMARY"
 
       # Contrat des permissions (I-01) : chaque plugin déclare ses clés dans scripts/ios/plist-contract.json.
       # Le Info.plist de l'IPA est binaire : converti en XML, gardé en artefact pour source.json (appPermissions).
@@ -293,6 +294,13 @@ jobs:
         with:
           name: Spartiate-info-plist
           path: info/Info.plist
+          if-no-files-found: error
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Spartiate-app-icon
+          path: info/AppIcon60x60@2x.png
           if-no-files-found: error
           retention-days: 30
 
