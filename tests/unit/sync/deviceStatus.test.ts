@@ -56,3 +56,32 @@ describe('storedDeviceStatuses', () => {
     expect(storedDeviceStatuses([row(PHONE, { stateSeq: 1, status: 'lost' })], { self: SELF })[0]?.status).toBe('corrupt');
   });
 });
+
+/**
+ * 0.1.4 (4) : « PC : Jamais lu » sur l'iPhone alors que les modifications du PC lui étaient parvenues. `lastReadAt` d'un autre appareil
+ * ne venait que de `ack_hlc` (dernier enregistrement de journal lu) ; après une reprise depuis un instantané ou un changement d'époque,
+ * les données de l'autre appareil sont appliquées, le curseur est à sa tête, mais `ack_hlc` reste vide jusqu'à son prochain écrit.
+ * Règle : un curseur arrivé à la tête annoncée de l'appareil vaut lecture jusqu'au hlc de cette tête. Même règle dans les deux sens.
+ */
+describe('dernière modification lue d’un autre appareil (0.1.4 point 4)', () => {
+  const HLC_HEAD = '001793905560000-0000-60000000-0000-4000-8000-0000000000c3' as never;
+  const base = { stateSeq: 3, epoch: 'e1', headSegment: 2, headRecord: 5, headHlc: HLC_HEAD };
+
+  for (const [name, platform] of [['iPhone qui regarde le PC', 'windows'], ['PC qui regarde l’iPhone', 'ios']] as const) {
+    it(`${name} : curseur à la tête, accusé vide : l’heure de la tête, pas « jamais lu »`, () => {
+      const [, other] = storedDeviceStatuses([row(SELF, { isSelf: true }), row(PHONE, { ...base, platform, cursorSegment: 2, cursorRecord: 5, ackHlc: null })], { self: SELF });
+      expect(other?.lastReadAt).not.toBeNull();
+    });
+
+    it(`${name} : curseur avant la tête, accusé vide : toujours « jamais lu »`, () => {
+      const [, other] = storedDeviceStatuses([row(SELF, { isSelf: true }), row(PHONE, { ...base, platform, cursorSegment: 1, cursorRecord: 2, ackHlc: null })], { self: SELF });
+      expect(other?.lastReadAt).toBeNull();
+    });
+
+    it(`${name} : un accusé plus récent que la tête prime`, () => {
+      const ack = '001793959260000-0000-60000000-0000-4000-8000-0000000000c3' as never;
+      const [, other] = storedDeviceStatuses([row(SELF, { isSelf: true }), row(PHONE, { ...base, platform, cursorSegment: 2, cursorRecord: 5, ackHlc: ack })], { self: SELF });
+      expect(other?.lastReadAt).toBe('2026-11-06T10:01:00.000Z');
+    });
+  }
+});
