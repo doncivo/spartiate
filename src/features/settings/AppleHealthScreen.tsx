@@ -30,17 +30,26 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
   const [reads, setReads] = useState<Reads | null>(null);
   const [diagnostic, setDiagnostic] = useState<HealthKitDiagnostic | null>(null);
   const [saved, setSaved] = useState<'ok' | 'error' | null>(null);
+  const [knownBlocked, setKnownBlocked] = useState(false);
   const live = useRef(true);
+  const settings = container.data.repos.settings;
 
   useEffect(() => {
     live.current = true;
+    // État gardé d'une demande passée : l'écran ne contredit pas le message SideStore à la réouverture.
+    void settings.get('healthkit.entitlementMissing').then(
+      (value) => {
+        if (live.current) setKnownBlocked(value === true);
+      },
+      () => undefined,
+    );
     void healthKit.availability().then((value) => {
       if (live.current) setAvailability(value);
     });
     return () => {
       live.current = false;
     };
-  }, [healthKit]);
+  }, [healthKit, settings]);
 
   async function read(): Promise<void> {
     setSaved(null);
@@ -63,6 +72,10 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
       const detail = await healthKit.diagnostic();
       if (!live.current) return;
       logFailure('healthkit', { code: 'healthkit-authorization-failed', message: diagnosticLog(detail) });
+      if (isMissingHealthKitEntitlement(detail.error)) {
+        setKnownBlocked(true);
+        void settings.set('healthkit.entitlementMissing', true).catch(() => undefined);
+      }
       setDiagnostic(detail);
       return setPhase('requestError');
     }
@@ -82,7 +95,7 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
 
   const anyEmpty = reads !== null && (reads.mass.state === 'empty' || reads.steps.state === 'empty');
   // 0.1.4 (6) : entitlement absent (compte Apple gratuit) : définitif, le bouton n'a plus d'objet.
-  const blocked = phase === 'requestError' && diagnostic !== null && isMissingHealthKitEntitlement(diagnostic.error);
+  const blocked = knownBlocked || (phase === 'requestError' && diagnostic !== null && isMissingHealthKitEntitlement(diagnostic.error));
   const canAsk = availability === 'available' && phase !== 'asking' && !blocked;
 
   return (
@@ -95,7 +108,7 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
         </div>
         <h1 className="ct-body__title">{tHealth('title')}</h1>
         <section className="ct-body__card" aria-label={tHealth('title')}>
-          <p className="ct-body__hint">{tHealth('intro')}</p>
+          {!blocked && <p className="ct-body__hint">{tHealth('intro')}</p>}
           {availability === null && <p className="ct-body__hint">{tHealth('checking')}</p>}
           {availability === 'unsupported' && <p className="ct-body__hint">{tHealth('unsupported')}</p>}
           {availability === 'unavailable' && <p className="ct-body__hint">{tHealth('unavailable')}</p>}
@@ -114,7 +127,7 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
               {tHealth('denied')}
             </p>
           )}
-          {phase === 'requestError' && (
+          {(phase === 'requestError' || blocked) && (
             <p className="ct-body__message" role="alert">
               {tHealth(blocked ? 'sideStoreBlocked' : 'requestError')}
             </p>

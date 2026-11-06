@@ -5,6 +5,8 @@
 export const healthFr = {
   row: 'Apple Santé',
   rowValue: 'lecture seule',
+  /** Valeur de la ligne de Plus quand Santé n'est pas accessible (entitlement absent, compte Apple gratuit). */
+  rowValueUnavailable: 'non disponible',
   title: 'Apple Santé',
   back: 'Retour',
   intro: 'Spartiate lit ton poids et tes pas dans Santé, en lecture seule. Rien n’est écrit dans Santé et rien ne quitte l’iPhone.',

@@ -38,6 +38,12 @@ describe('Live Activity : adaptateur iPhone', () => {
     expect(calls[0]).toEqual({ command: 'live_activity_start', args: { endDateMs: 1_800_000_060_000, label: 'Minuteur de test' } });
   });
 
+  it('clôture I0 : le libellé de l’état final (« Terminé ») part avec la date de fin', async () => {
+    const { liveActivity, calls } = rig({ live_activity_start: { started: true } });
+    await liveActivity.start({ endDateMs: 1_800_000_060_000, label: 'Minuteur de test', finishedLabel: 'Terminé' });
+    expect(calls[0]?.args).toEqual({ endDateMs: 1_800_000_060_000, label: 'Minuteur de test', finishedLabel: 'Terminé' });
+  });
+
   it('start : l’erreur native d’ActivityKit remonte en clair (domaine, code, description)', async () => {
     const native = { domain: 'com.apple.ActivityKit.ActivityInput', code: 4, description: 'Target does not include NSSupportsLiveActivities plist key' };
     const { liveActivity } = rig({ live_activity_start: { started: false, error: native } });

@@ -118,6 +118,8 @@ export interface SettingsValues {
   'calendars.orphanSecrets': unknown;
   /** SPA-007 : minuteur de test de 60 s (date de fin et libellé), pour le reprendre après une fermeture. Valeur BRUTE lue par `parseSyntheticTimer` ; locale, jamais synchronisée. */
   'timer.synthetic': unknown;
+  /** Clôture I0 : Santé a répondu « entitlement manquant » (compte Apple gratuit, D-69) ; l'écran Apple Santé et la ligne de Plus le disent sans attendre une nouvelle demande. Locale. */
+  'healthkit.entitlementMissing': boolean;
 }
 
 export type SettingKey = keyof SettingsValues;
@@ -169,6 +171,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'app.lastLaunchedVersion': { scope: 'local', defaultValue: null },
   'calendars.orphanSecrets': { scope: 'local', defaultValue: null },
   'timer.synthetic': { scope: 'local', defaultValue: null },
+  'healthkit.entitlementMissing': { scope: 'local', defaultValue: false },
 };
 
 /** Valeur par défaut d'un réglage. */
