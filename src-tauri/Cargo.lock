@@ -4332,6 +4332,7 @@ dependencies = [
  "tauri-plugin-dialog",
  "tauri-plugin-folder-bookmark",
  "tauri-plugin-healthkit",
+ "tauri-plugin-live-activity",
  "tauri-plugin-notification",
  "tauri-plugin-notification-actions",
  "tauri-plugin-opener",
@@ -5008,6 +5009,15 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-healthkit"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+]
+
+[[package]]
+name = "tauri-plugin-live-activity"
 version = "0.1.0"
 dependencies = [
  "serde_json",
