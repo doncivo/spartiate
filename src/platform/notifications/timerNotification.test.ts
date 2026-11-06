@@ -40,6 +40,26 @@ describe('notification du minuteur (iPhone)', () => {
     expect(r.shown[0]?.schedule.at.repeating).toBe(false);
   });
 
+  it('clôture I0 : sonne à la seconde de l’échéance, jamais avant (arrondi à la seconde SUPÉRIEURE, pas à la minute)', async () => {
+    const r = bridgeRig();
+    await r.notifier.schedule({ endMs: Date.parse('2026-11-06T09:01:23.400Z'), title: 't', body: 'b' });
+    expect(r.shown[0]?.schedule.at.date).toBe('2026-11-06T10:01:24.000Z');
+    await r.notifier.schedule({ endMs: Date.parse('2026-11-06T09:01:59.001Z'), title: 't', body: 'b' });
+    expect(r.shown[1]?.schedule.at.date).toBe('2026-11-06T10:02:00.000Z');
+    await r.notifier.schedule({ endMs: Date.parse('2026-11-06T09:01:00.000Z'), title: 't', body: 'b' });
+    expect(r.shown[2]?.schedule.at.date).toBe('2026-11-06T10:01:00.000Z');
+  });
+
+  it('la reprise redonne exactement la même date et le même identifiant (pas de doublon)', async () => {
+    const r = bridgeRig();
+    const input = { endMs: Date.parse('2026-11-06T09:01:23.400Z'), title: 't', body: 'b' };
+    await r.notifier.schedule(input);
+    await r.notifier.schedule(input);
+    expect(r.shown[0]?.schedule.at.date).toBe(r.shown[1]?.schedule.at.date);
+    expect(new Set(r.shown.map((p) => p.id))).toEqual(new Set([TIMER_NOTIFICATION_ID]));
+    expect(r.calls).toEqual(['cancel', 'show', 'cancel', 'show']);
+  });
+
   it('une échéance à moins de 5 s n’est pas transmise (iOS la refuserait) : faux, dit', async () => {
     const r = bridgeRig({}, Date.parse('2026-11-06T09:01:20.000Z'));
     expect(await r.notifier.schedule({ endMs: Date.parse('2026-11-06T09:01:23.000Z'), title: 't', body: 'b' })).toBe(false);
