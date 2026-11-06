@@ -63,6 +63,15 @@ export interface ExerciseBase {
 /** Exercice de la bibliothèque embarquée (JSON, non stocké, non publié). */
 export interface EmbeddedExercise extends ExerciseBase {
   readonly origin: 'embedded';
+  /** Groupe d'affichage du JSON (`chest`, `back`…) ; facultatif pour les jeux de test. */
+  readonly group?: string;
+  /**
+   * Groupes d'alternatives du JSON (content/README.md) : compatible si, pour chaque groupe, au moins un matériel est utilisable. Le matériel
+   * facultatif (« lest éventuel ») figure dans `equipment` mais dans aucun groupe. Absent : tout `equipment` est requis.
+   */
+  readonly equipmentGroups?: readonly (readonly string[])[];
+  /** Identifiants d'exercices de remplacement (références logiques, P-09). */
+  readonly alternatives?: readonly string[];
 }
 
 /** Exercice personnalisé : ligne `exercise` (`is_custom = 1`), publiée. */
@@ -121,6 +130,11 @@ export interface EquipmentInventory {
   readonly kettlebellsKg: readonly number[];
   readonly machines: readonly MachineSpec[];
   readonly cables: readonly StackRange[];
+  /**
+   * Valeurs « à vérifier en salle » (profil embarqué dupliqué) : clés `dumbbells`, `kettlebells`, `machines`, `cables`, `plates` ou
+   * `barbell:<type>`. Absent : rien à vérifier.
+   */
+  readonly toVerify?: readonly string[];
 }
 
 /** Colonne `increments` : pas de charge en kg par type (`barbell`, `dumbbell`, `kettlebell`, `machine`, `cable`…). */

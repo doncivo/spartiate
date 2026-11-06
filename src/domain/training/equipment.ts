@@ -31,15 +31,25 @@ export function usableEquipment(profile: { readonly inventory: EquipmentInventor
   return usable;
 }
 
-/** Un exercice est compatible si tout son matériel est utilisable (aucun matériel : toujours compatible). */
-export function isExerciseCompatible(exercise: { readonly equipment: readonly string[] }, profile: { readonly inventory: EquipmentInventory } | null): boolean {
+/** Matériel d'un exercice, avec ses groupes d'alternatives éventuels (exercice embarqué, content/README.md). */
+export interface ExerciseEquipmentNeeds {
+  readonly equipment: readonly string[];
+  readonly equipmentGroups?: readonly (readonly string[])[];
+}
+
+/**
+ * Un exercice est compatible si tout son matériel est utilisable (aucun matériel : toujours compatible). Avec des groupes d'alternatives
+ * (exercice embarqué), il suffit d'un matériel utilisable par groupe ; le matériel facultatif, hors de tout groupe, n'est pas exigé.
+ */
+export function isExerciseCompatible(exercise: ExerciseEquipmentNeeds, profile: { readonly inventory: EquipmentInventory } | null): boolean {
   if (profile === null) return true;
   const usable = usableEquipment(profile);
+  if (exercise.equipmentGroups !== undefined) return exercise.equipmentGroups.every((group) => group.some((id) => usable.has(id)));
   return exercise.equipment.every((id) => usable.has(id));
 }
 
 /** Exercices proposables avec ce profil, dans l'ordre reçu ; sans profil (`null`), aucun filtre. */
-export function filterCompatibleExercises<T extends { readonly equipment: readonly string[] }>(exercises: readonly T[], profile: { readonly inventory: EquipmentInventory } | null): T[] {
+export function filterCompatibleExercises<T extends ExerciseEquipmentNeeds>(exercises: readonly T[], profile: { readonly inventory: EquipmentInventory } | null): T[] {
   return profile === null ? [...exercises] : exercises.filter((e) => isExerciseCompatible(e, profile));
 }
 

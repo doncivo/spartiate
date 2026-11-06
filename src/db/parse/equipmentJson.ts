@@ -55,9 +55,11 @@ export function parseInventory(value: unknown): EquipmentInventory | null {
   const kettlebells = field<number[]>('kettlebellsKg', [], (v) => list(v, (k) => (positive(k) ? k : null)));
   const machines = field<MachineSpec[]>('machines', [], (v) => list(v, machine));
   const cables = field<StackRange[]>('cables', [], (v) => list(v, range));
+  // I1-01 (interface) : valeurs « à vérifier en salle » d'un profil embarqué dupliqué ; clés courtes, liste bornée.
+  const toVerify = field<string[]>('toVerify', [], (v) => list(v, (k) => (typeof k === 'string' && k.length > 0 && k.length <= 80 ? k : null)));
   const dumbbellsBad = value['dumbbells'] !== undefined && value['dumbbells'] !== null && dumbbells === null;
-  if (available === null || forced === null || forbidden === null || bodyweight === null || barbells === null || plates === null || dumbbellsBad || kettlebells === null || machines === null || cables === null) return null;
-  return { available, forced, forbidden, bodyweight, barbells, platesPerSideKg: plates, dumbbells, kettlebellsKg: kettlebells, machines, cables };
+  if (available === null || forced === null || forbidden === null || bodyweight === null || barbells === null || plates === null || dumbbellsBad || kettlebells === null || machines === null || cables === null || toVerify === null) return null;
+  return { available, forced, forbidden, bodyweight, barbells, platesPerSideKg: plates, dumbbells, kettlebellsKg: kettlebells, machines, cables, ...(toVerify.length > 0 ? { toVerify } : {}) };
 }
 
 export function parseIncrements(value: unknown): EquipmentIncrements | null {
