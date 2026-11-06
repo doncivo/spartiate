@@ -282,4 +282,35 @@ describe('Apple Santé (finitions 0.1.2 d)', () => {
       expect(logFailure).not.toHaveBeenCalled();
     });
   });
+
+  describe('compte Apple gratuit : entitlement absent (0.1.4 point 6)', () => {
+    const NO_ENTITLEMENT = { domain: 'com.apple.healthkit', code: 4, description: 'Missing com.apple.developer.healthkit entitlement.' };
+    const BLOCKED: Plan = { ...GRANTED, permission: 'error', diagnostic: { available: true, usageDescription: true, error: NO_ENTITLEMENT } };
+    const MESSAGE = 'Apple Santé n’est pas accessible avec une app installée par SideStore (compte Apple gratuit). L’import passera par l’app Raccourcis dans une prochaine version.';
+
+    it('remplace « La demande d’accès à Santé a échoué » par le message SideStore et masque « Autoriser l’accès »', async () => {
+      const { healthKit } = fakeHealthKit(BLOCKED);
+      renderHealth(healthKit);
+      await authorize();
+      expect(await screen.findByText(MESSAGE)).toBeInTheDocument();
+      expect(screen.queryByText('La demande d’accès à Santé a échoué. Réessaie.')).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Autoriser l’accès' })).toBeNull();
+    });
+
+    it('garde le « Détail technique »', async () => {
+      const { healthKit } = fakeHealthKit(BLOCKED);
+      renderHealth(healthKit);
+      await authorize();
+      const details = (await screen.findByText('Détail technique')).closest('details') as HTMLDetailsElement;
+      expect(details).toHaveTextContent('Missing com.apple.developer.healthkit entitlement.');
+    });
+
+    it('une autre erreur native garde le message générique et le bouton', async () => {
+      const { healthKit } = fakeHealthKit({ ...BLOCKED, diagnostic: { available: true, usageDescription: true, error: { domain: 'x', code: 9, description: 'Autre' } } });
+      renderHealth(healthKit);
+      await authorize();
+      expect(await screen.findByText('La demande d’accès à Santé a échoué. Réessaie.')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Autoriser l’accès' })).toBeInTheDocument();
+    });
+  });
 });

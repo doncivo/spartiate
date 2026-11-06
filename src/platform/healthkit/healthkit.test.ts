@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   createTauriHealthKit,
+  isMissingHealthKitEntitlement,
   unsupportedHealthKit,
   type HealthKitInvoker,
 } from './index';
@@ -143,5 +144,18 @@ describe('HealthKit diagnostic natif (0.1.3)', () => {
   it('la réponse de authorize qui porte l’erreur native reste une erreur de demande', async () => {
     const failed = rig({ healthkit_authorize: { permission: 'error', error: NATIVE } });
     expect(await failed.healthKit.requestAuthorization()).toBe('error');
+  });
+});
+
+describe('entitlement HealthKit absent : compte Apple gratuit (0.1.4 point 6)', () => {
+  it('reconnaît « Missing com.apple.developer.healthkit entitlement » (code 4 de Santé, capture du 6 nov.)', () => {
+    expect(isMissingHealthKitEntitlement({ domain: 'com.apple.healthkit', code: 4, description: 'Missing com.apple.developer.healthkit entitlement.' })).toBe(true);
+    expect(isMissingHealthKitEntitlement({ domain: 'com.apple.healthkit', code: 4, description: 'MISSING COM.APPLE.DEVELOPER.HEALTHKIT ENTITLEMENT' })).toBe(true);
+  });
+
+  it('ne confond pas avec un refus de l’utilisateur ni avec une absence d’erreur', () => {
+    expect(isMissingHealthKitEntitlement({ domain: 'com.apple.healthkit', code: 5, description: 'Authorization not determined' })).toBe(false);
+    expect(isMissingHealthKitEntitlement({ domain: 'com.apple.healthkit', code: 4, description: 'Authorization denied' })).toBe(false);
+    expect(isMissingHealthKitEntitlement(null)).toBe(false);
   });
 });
