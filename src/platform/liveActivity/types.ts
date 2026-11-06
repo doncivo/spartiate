@@ -19,6 +19,7 @@ export type LiveActivityAvailability =
 export interface LiveActivityStartInput {
   /** Fin du compteur, ms depuis 1970 (UTC). */
   readonly endDateMs: number;
+  /** Titre court de l'activité (texte de l'i18n) : « Repos » entre deux séries (I1-02), libellé du minuteur de test sinon. 80 caractères au plus. */
   readonly label: string;
   /** Texte de l'état final (« Terminé »), rendu par le widget quand l'activité est périmée. */
   readonly finishedLabel?: string;
