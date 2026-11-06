@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId } from '../../domain/types';
@@ -76,19 +76,19 @@ describe('écrans ouverts relus après un lot reçu', () => {
 
   it('Profil et poids : le profil reçu remplit les champs non modifiés, jamais ceux que tu es en train de saisir', async () => {
     wrap(<BodyScreen />);
-    const birth = (await screen.findByLabelText('Année de naissance')) as HTMLInputElement;
+    await screen.findByLabelText('Année de naissance');
     const height = screen.getByLabelText('Taille (cm)') as HTMLInputElement;
     const profile = await db.data.repos.profile();
     await profile.save({ birthYear: 1990, heightCm: 186 }, 2026);
     await act(async () => void (await applyRemoteChanges(container, change('profile'))));
-    await waitFor(() => expect(birth.value).toBe('1990'));
+    await screen.findByDisplayValue('1990');
     expect(height.value).toBe('186');
     // Saisie en cours sur la taille : un second lot ne l'écrase pas ; l'année, non touchée, suit.
     const { fireEvent } = await import('@testing-library/react');
     fireEvent.change(height, { target: { value: '19' } });
     await profile.save({ birthYear: 1991, heightCm: 187 }, 2026);
     await act(async () => void (await applyRemoteChanges(container, change('profile'))));
-    await waitFor(() => expect(birth.value).toBe('1991'));
+    await screen.findByDisplayValue('1991');
     expect(height.value).toBe('19');
   });
 
