@@ -88,18 +88,18 @@ describe('Y-TECH-04 partie C : appareil, date et époque sur chaque ligne de res
   it('chaque ligne lit l’appareil, la date et l’heure réelles en 24 h, et l’époque', async () => {
     const list = await open(versions(), { currentEpoch: `e0002-${OWN}` });
     await waitFor(() => expect(row(list, /^7 oct\./).textContent).toContain('Cet appareil'));
-    expect(row(list, /^7 oct\./).textContent).toBe('7 oct. à 18:05Cet appareilépoque 2, ouverte par cet appareil40 Ko · 3 tâches');
-    expect(row(list, /^6 oct\./).textContent).toBe('6 oct. à 07:30iPhoneépoque 1, ouverte par iPhoneautre époque40 Ko · 3 tâches');
-    expect(row(list, /^5 oct\./).textContent).toBe('5 oct. à 22:10PC 56d4 (oublié)époque 1, ouverte par PC 56d4 (oublié)autre époque40 Ko · 3 tâches');
-    expect(row(list, /^4 oct\./).textContent).toBe('4 oct. à 03:12Appareil 9f8e7d6cépoque 3autre époque40 Ko · 3 tâches');
-    expect(row(list, /^3 oct\./).textContent).toBe('3 oct. à 03:12Appareil inconnu40 Ko · 3 tâches');
+    expect(row(list, /^7 oct\./).textContent).toBe('7 oct. à 18:05Cet appareilépoque 2, ouverte par cet appareil40 Ko');
+    expect(row(list, /^6 oct\./).textContent).toBe('6 oct. à 07:30iPhoneépoque 1, ouverte par iPhoneautre époque40 Ko');
+    expect(row(list, /^5 oct\./).textContent).toBe('5 oct. à 22:10PC 56d4 (oublié)époque 1, ouverte par PC 56d4 (oublié)autre époque40 Ko');
+    expect(row(list, /^4 oct\./).textContent).toBe('4 oct. à 03:12Appareil 9f8e7d6cépoque 3autre époque40 Ko');
+    expect(row(list, /^3 oct\./).textContent).toBe('3 oct. à 03:12Appareil inconnu40 Ko');
     expect(list.textContent).not.toContain(PHONE);
     expect(list.textContent).not.toContain(NEVER_SEEN);
   });
 
   it('le nom accessible de la ligne lit la date, l’appareil et l’époque', async () => {
     const list = await open(versions(), { currentEpoch: `e0002-${OWN}` });
-    await waitFor(() => expect(row(list, /^6 oct\./)).toHaveAccessibleName('6 oct. à 07:30, iPhone, époque 1, ouverte par iPhone, autre époque, 40 Ko · 3 tâches'));
+    await waitFor(() => expect(row(list, /^6 oct\./)).toHaveAccessibleName('6 oct. à 07:30, iPhone, époque 1, ouverte par iPhone, autre époque, 40 Ko'));
   });
 
   it('époque courante inconnue : aucune mention « autre époque » (pas de fausse alerte)', async () => {
@@ -111,12 +111,12 @@ describe('Y-TECH-04 partie C : appareil, date et époque sur chaque ligne de res
   it('identité propre lue dans les réglages quand la synchro n’est pas configurée', async () => {
     const list = await open([entry('20261007', '2026-10-07T18:05:00', { deviceId: OWN, platform: 'windows', epoch: null })], { devices: [] });
     await waitFor(() => expect(row(list, /^7 oct\./).textContent).toContain('Cet appareil'));
-    expect(row(list, /^7 oct\./).textContent).toBe('7 oct. à 18:05Cet appareil40 Ko · 3 tâches');
+    expect(row(list, /^7 oct\./).textContent).toBe('7 oct. à 18:05Cet appareil40 Ko');
   });
 
   it('sauvegarde sans les champs d’origine (service qui ne les fournit pas) : ligne inchangée', async () => {
     const list = await open([entry('20261007', '2026-10-07T18:05:00', {})]);
-    expect(row(list, /^7 oct\./).textContent).toBe('7 oct. à 18:0540 Ko · 3 tâches');
+    expect(row(list, /^7 oct\./).textContent).toBe('7 oct. à 18:0540 Ko');
   });
 
   it('la restauration depuis la ligne reste inchangée : confirmation, puis restauration de ce fichier', async () => {
