@@ -53,6 +53,18 @@ describe('plugin Swift live-activity', () => {
     expect(swift).toMatch(/finishedLabel/);
   });
 
+  it('I1-02 : à l’échéance, si l’app tourne encore, l’activité est terminée avec son contenu final (« Terminé » redessiné), sans push', () => {
+    expect(swift).toMatch(/private var finishTask: Task<Void, Never>\?/);
+    expect(swift).toMatch(/Task\.sleep\(for:/);
+    expect(swift).toMatch(/func finish\(/);
+    // Contenu final sans date de péremption, gardé quelques minutes sur l'écran verrouillé puis retiré par le système.
+    expect(swift).toMatch(/activity\.end\(ActivityContent\(state:\s*activity\.content\.state,\s*staleDate:\s*nil\),\s*dismissalPolicy:\s*\.after\(/);
+    // Un nouveau départ ou un arrêt annule la fin programmée précédente (jamais une ancienne échéance appliquée à un nouveau repos).
+    expect((swift.match(/finishTask\?\.cancel\(\)/g) ?? []).length).toBeGreaterThanOrEqual(2);
+    // Aucune fin anticipée au démarrage : une activité terminée quitte la Dynamic Island.
+    expect(swift).not.toMatch(/request\([^)]*\)[\s\S]{0,80}\.end\(/);
+  });
+
   it('copie du fichier d’attributs identique à la source durable de l’extension', () => {
     expect(read('src-tauri/plugins/live-activity/ios/Sources/SpartiateTimerAttributes.swift')).toBe(read('src-tauri/ios/LiveActivity/SpartiateTimerAttributes.swift'));
   });
