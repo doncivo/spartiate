@@ -22,5 +22,6 @@ export const timerFr = {
   liveReasonUnknown: 'Le système n’a pas dit pourquoi.',
   liveFailed: 'La Live Activity n’a pas pu démarrer : le minuteur reste dans l’app.',
   nativeError: 'Détail technique : {domain}, code {code}, {description}',
+  failed: 'Le minuteur n’a pas pu être lu ou enregistré. Réessaie.',
   stopFailed: 'La Live Activity ne s’est pas fermée : rouvre l’app ou ferme-la depuis l’écran verrouillé.',
 } as const;
