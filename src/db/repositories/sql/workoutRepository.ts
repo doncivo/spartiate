@@ -248,6 +248,12 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
 
     get: load,
 
+    async listClosed(limit = 10) {
+      const n = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 100) : 10;
+      const rows = await db.select<WorkoutRow>('SELECT * FROM workout WHERE ended_at IS NOT NULL AND deleted_at IS NULL ORDER BY ended_at DESC, id LIMIT ?', [n]);
+      return rows.map(rowToWorkout);
+    },
+
     async addExercise(workoutId, input) {
       await requireOpen(workoutId);
       const count = input.sets ?? 1;

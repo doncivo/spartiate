@@ -26,8 +26,8 @@ export const TABS: readonly TabDefinition[] = [
   { id: 'more', labelKey: 'nav.tabs.more', shortcut: 'app.tab.more' },
 ];
 
-/** I1-01 : sections de l'Entraînement ; absent = Routines. */
-export type TrainingScreenId = 'routines' | 'library' | 'equipment';
+/** I1-01 : sections de l'Entraînement ; absent = Routines. I1-02 : `session` = séance active (ou ses options de départ). */
+export type TrainingScreenId = 'routines' | 'library' | 'equipment' | 'session';
 
 /** Écrans internes de chaque section. Ajouter un écran = ajouter un membre ici. */
 export type Route =
