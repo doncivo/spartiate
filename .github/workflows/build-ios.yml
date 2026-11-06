@@ -247,6 +247,12 @@ jobs:
           EXTVER=$($PB -c "Print :CFBundleShortVersionString" "$EXT/Info.plist")
           [ "$POINT" = "com.apple.widgetkit-extension" ] || { echo "::error::point d'extension inattendu : $POINT"; exit 1; }
           [ "$EXTID" = "fr.spartiate.app.LiveActivity" ] || { echo "::error::identifiant de l'extension inattendu : $EXTID"; exit 1; }
+          # L'extension doit porter les MÊMES versions que l'app (sinon l'installation est refusée : CFBundleVersion différent).
+          APPVER=$($PB -c "Print :CFBundleShortVersionString" "$APP/Info.plist")
+          APPBUILD=$($PB -c "Print :CFBundleVersion" "$APP/Info.plist")
+          EXTBUILD=$($PB -c "Print :CFBundleVersion" "$EXT/Info.plist")
+          [ "$APPVER" = "$EXTVER" ] || { echo "::error::version courte différente : app $APPVER, extension $EXTVER"; exit 1; }
+          [ "$APPBUILD" = "$EXTBUILD" ] || { echo "::error::CFBundleVersion différent : app $APPBUILD, extension $EXTBUILD"; exit 1; }
           plutil -convert xml1 -o "$RUNNER_TEMP/extension-info.plist" "$EXT/Info.plist"
           if grep -Eq 'UIBackgroundModes|application-groups|aps-environment' "$RUNNER_TEMP/extension-info.plist"; then echo "::error::l'extension déclare un mode de fond, un App Group ou un push"; exit 1; fi
           codesign -d --entitlements :- "$EXT" > "$RUNNER_TEMP/extension-entitlements.plist" 2>/dev/null || true
