@@ -2,6 +2,15 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.2.0
+
+- Entraînement : l’onglet Entraînement s’ouvre sur trois sections, Routines, Bibliothèque et Matériel (chargées à la demande, le démarrage de l’app ne grossit pas).
+- Bibliothèque : 150 exercices (recherche en français ou par alias anglais, filtre par groupe musculaire, bascule « compatibles avec mon matériel », fiche avec muscles, matériel, consignes, repos et alternatives, sans image) et exercices personnalisés (création, modification, suppression ; un exercice supprimé reste affiché par son nom dans les routines et l’historique).
+- Matériel : profil « Fitness Park Antony » utilisé par défaut, trois autres profils de départ, duplication d’un profil pour le modifier ; le profil actif reste propre à l’appareil.
+- Routines : les 4 programmes de départ (Haut / Bas 4 j, Full Body 3 j, PPL 6 j, Maison haltères 3 j) s’ajoutent en une fois et se modifient (jours, exercices, séries, plages de répétitions, repos, RIR, ordre) ; un exercice incompatible avec le matériel actif est signalé sans bloquer.
+- Données : migration 0002 (exercices personnalisés, profils de matériel, routines) ; ces tables se synchronisent entre le PC et l’iPhone, les exercices embarqués restent hors de la base. Les sauvegardes du PC acceptent le schéma 2. Le contenu des exercices et des programmes est à relire par Ali (docs/i1-01-contenu-a-relire.md).
+- Mise à jour : mets à jour le PC et l’iPhone le même jour, sans restauration ni nouvel appairage entre les deux.
+
 ## 0.1.6
 
 - Apple Santé : quand l’entitlement manque (compte Apple gratuit), la phrase « Spartiate lit ton poids et tes pas… » ne s’affiche plus, l’état est gardé à la réouverture de l’écran, et la ligne d’Apple Santé dans Plus dit « non disponible » au lieu de « lecture seule ».
