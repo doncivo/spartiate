@@ -1,5 +1,6 @@
-//! I1-01 : la version 2 du schéma (migration 0002, bibliothèque, matériel et routines) est admise par la vérification des sauvegardes ;
-//! la version 3, inconnue de cette app, est refusée. Les déclencheurs de capture des cinq nouvelles tables sont ceux de la référence.
+//! I1-01 / I1-02 : les versions 2 (migration 0002, bibliothèque, matériel et routines) et 3 (migration 0003, séance locale `workout` /
+//! `workout_set`, sans déclencheur de capture : D-27) sont admises par la vérification des sauvegardes ; la version 4, inconnue de cette
+//! app, est refusée. Les déclencheurs de capture des cinq tables de la version 2 sont ceux de la référence.
 
 use std::path::Path;
 
@@ -52,8 +53,29 @@ fn error_code(path: &Path) -> &'static str {
 }
 
 #[test]
-fn i1_01_the_app_schema_version_is_2() {
-    assert_eq!(APP_SCHEMA_VERSION, 2);
+fn i1_02_the_app_schema_version_is_3() {
+    assert_eq!(APP_SCHEMA_VERSION, 3);
+}
+
+#[test]
+fn i1_02_a_version_3_backup_is_accepted_and_adds_no_reference_trigger() {
+    let dir = scratch();
+    let path = dir.path().join("v3.db");
+    make_db(&path, 3, &TABLES);
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(
+            "CREATE TABLE workout (id TEXT PRIMARY KEY); CREATE TABLE workout_set (id TEXT PRIMARY KEY);",
+        )
+        .unwrap();
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 3);
+    for table in ["workout", "workout_set"] {
+        for suffix in ["ai", "au"] {
+            let name = format!("sync_{table}_{suffix}");
+            assert_eq!(trigger_body_for(&name, table, 3), None, "{name}");
+            assert!(!REFERENCE_TRIGGERS.iter().any(|(n, _, _)| *n == name));
+        }
+    }
 }
 
 #[test]
@@ -98,13 +120,13 @@ fn i1_01_every_published_table_has_its_two_capture_triggers_in_the_reference() {
 }
 
 #[test]
-fn i1_01_a_version_3_backup_is_refused_as_newer_schema() {
+fn i1_02_a_version_4_backup_is_refused_as_newer_schema() {
     let dir = scratch();
-    let path = dir.path().join("v3.db");
-    make_db(&path, 2, &TABLES);
+    let path = dir.path().join("v4.db");
+    make_db(&path, 3, &TABLES);
     Connection::open(&path)
         .unwrap()
-        .execute("INSERT INTO schema_migrations (version) VALUES (3)", [])
+        .execute("INSERT INTO schema_migrations (version) VALUES (4)", [])
         .unwrap();
     assert_eq!(error_code(&path), "newer-schema");
 }
