@@ -134,7 +134,7 @@ describe('migration 0002 : training (I1-01, D-71, P-09)', () => {
     );
     const before = await db.select('SELECT * FROM sync_outbox ORDER BY seq');
     const report = await migrate(db, migrations);
-    expect(report.applied.map((m) => m.version)).toEqual([2]);
+    expect(report.applied).toEqual([2]);
     expect(await db.select('SELECT sex FROM profile')).toEqual([{ sex: 'male' }]);
     expect(await db.select('SELECT kg FROM body_weight')).toEqual([{ kg: 82.4 }]);
     expect(await db.select('SELECT * FROM sync_outbox ORDER BY seq')).toEqual(before);

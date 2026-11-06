@@ -14,6 +14,9 @@ import type { SettingsRepository, SyncMetaRepository } from './settingsRepositor
 import type { SyncRepository } from './syncRepository';
 import type { BodyWeightRepository, ProfileRepository } from './bodyRepositories';
 import type { ExportImportRepository } from './exportImportRepository';
+import type { EquipmentProfileRepository } from './equipmentProfileRepository';
+import type { ExerciseRepository } from './exerciseRepository';
+import type { TrainingRoutineRepository } from './trainingRoutineRepository';
 import type { ProjectRepository, SpaceRepository } from './spaceRepository';
 import type { RecurrenceRepository, TaskRepository } from './taskRepository';
 
@@ -42,6 +45,13 @@ export interface Repositories {
   /** Chargés à la demande (hors du JavaScript de départ, BUNDLE-01) : `await repos.profile()`. */
   readonly profile: () => Promise<ProfileRepository>;
   readonly bodyWeights: () => Promise<BodyWeightRepository>;
+  /**
+   * I1-01 : exercices personnalisés, profils de matériel et routines d'entraînement, chargés à la demande (hors du JavaScript de départ).
+   * `trainingRoutines` est distinct de `routines` (ancien modèle de calendrier).
+   */
+  readonly exercises: () => Promise<ExerciseRepository>;
+  readonly equipmentProfiles: () => Promise<EquipmentProfileRepository>;
+  readonly trainingRoutines: () => Promise<TrainingRoutineRepository>;
   /** Export / import de Spartiate (SPA-005, D-57), chargé à la demande. */
   readonly exportImport: () => Promise<ExportImportRepository>;
   /** Liens locaux aux Rappels Apple (K-05, ADR 0008 §10.2) : table non publiée, vide sur le PC. */

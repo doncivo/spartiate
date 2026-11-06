@@ -68,5 +68,9 @@ export const syncCarryReportFr = {
   kindSettings: 'Réglage',
   kindProfile: 'Profil',
   kindBodyWeight: 'Pesée',
+  kindExercise: 'Exercice',
+  kindEquipmentProfile: 'Profil de matériel',
+  kindRoutineDay: 'Jour de routine',
+  kindRoutineExercise: 'Exercice de routine',
   kindOther: 'Autre élément',
 } as const;
