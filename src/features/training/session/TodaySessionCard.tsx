@@ -9,7 +9,8 @@ import './Session.css';
 /**
  * Carte « Séance » (I1-02, § 13.1) d'Aujourd'hui et de l'accueil de l'Entraînement : une séance ouverte (locale) est proposée par
  * « Reprendre la séance » après une fermeture forcée ou un redémarrage ; sinon « Commencer une séance ». Chargée à la demande depuis
- * Aujourd'hui (bloc à part) : rien de l'écran de séance n'est tiré ici. Lecture impossible : rien n'est affiché (l'onglet le dit).
+ * Aujourd'hui (bloc à part) : rien de l'écran de séance n'est tiré ici. Lecture impossible : rien n'est affiché (l'onglet le dit). I1-03 :
+ * lien vers le journal des séances (section de l'Entraînement, chargée à la demande).
  */
 type Load = { readonly status: 'loading' | 'failed' } | { readonly status: 'ready'; readonly open: WorkoutWithSets | null };
 
@@ -49,6 +50,9 @@ export function TodaySessionCard() {
       ) : null}
       <Button fullWidth variant={open ? 'primary' : 'secondary'} onClick={() => navigate({ tab: 'training', screen: 'session' })}>
         {tTraining(open ? 'sessionResume' : 'sessionStart')}
+      </Button>
+      <Button fullWidth variant="secondary" onClick={() => navigate({ tab: 'training', screen: 'history' })}>
+        {tTraining('todayJournal')}
       </Button>
     </section>
   );

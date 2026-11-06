@@ -1,0 +1,117 @@
+/* Résumé de fin de séance et chiffres du journal (I1-03) : maquette iPhone-Resume, charte § 18.4. Tokens seulement, aucune couleur en dur ;
+   chiffres tabulaires ; le texte agrandi passe à la ligne au lieu de déborder. */
+
+.ct-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+}
+
+.ct-summary__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--ct-space-2);
+}
+
+.ct-summary__pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 var(--ct-space-2);
+  border: 1px solid var(--ct-color-bronze);
+  border-radius: var(--ct-radius-pill);
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  color: var(--ct-color-text);
+}
+
+.ct-summary__kpis {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: var(--ct-space-3) var(--ct-space-2);
+  background: var(--ct-color-surface);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+}
+
+.ct-summary__kpi {
+  flex: 1 1 6rem;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: var(--ct-space-1);
+  min-width: 0;
+  text-align: center;
+}
+
+.ct-summary__kpi dt {
+  font-size: var(--ct-font-size-xs);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-summary__kpi dd {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading-sm);
+  font-weight: var(--ct-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.ct-summary__volume {
+  color: var(--ct-color-bronze);
+}
+
+.ct-summary__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  padding: var(--ct-space-3);
+  background: var(--ct-color-surface);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  min-width: 0;
+}
+
+.ct-summary__card--question {
+  border-color: var(--ct-color-bronze);
+  background: var(--ct-color-surface-raised);
+}
+
+.ct-summary__question {
+  margin: 0;
+  font-size: var(--ct-font-size-item);
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-summary__records,
+.ct-summary__changes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.ct-summary__record,
+.ct-summary__changes li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--ct-space-1) var(--ct-space-2);
+  padding: var(--ct-space-1) 0;
+  border-top: 1px solid var(--ct-color-border);
+  overflow-wrap: anywhere;
+}
+
+.ct-summary__record:first-child,
+.ct-summary__changes li:first-child {
+  border-top: 0;
+}
+
+.ct-summary__record-name {
+  font-weight: var(--ct-font-weight-semibold);
+}

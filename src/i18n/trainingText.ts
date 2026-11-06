@@ -30,6 +30,17 @@ export function formatClock(ms: number): string {
 /** Jour d'une séance passée : « 26 octobre » (heure locale). */
 export const formatDay = (iso: string): string => new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
 
+/**
+ * Volume en kg, à la française : séparateur de milliers fine insécable, virgule décimale, au dixième (1417.5 → « 1 417,5 », 1000 → « 1 000 »).
+ */
+export function formatVolume(kg: number): string {
+  const tenths = Math.round(kg * 10);
+  const whole = Math.trunc(tenths / 10);
+  const decimal = Math.abs(tenths % 10);
+  const grouped = String(Math.abs(whole)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return `${tenths < 0 ? '-' : ''}${grouped}${decimal === 0 ? '' : `,${String(decimal)}`}`;
+}
+
 /** Durée de repos : 150 → « 2 min 30 s », 90 → « 1 min 30 s », 120 → « 2 min », 45 → « 45 s ». */
 export function formatRest(sec: number): string {
   const m = Math.floor(sec / 60);

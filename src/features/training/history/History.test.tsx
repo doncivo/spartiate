@@ -136,7 +136,7 @@ describe('détail d’une séance close', () => {
     const queued = await db.driver.select<{ field: string }>("SELECT field FROM sync_outbox WHERE table_name = 'workout_set' AND row_id = ?", [PAST.sets[1]?.id ?? '']);
     expect(queued.map((q) => q.field)).toEqual(expect.arrayContaining(['load_kg', 'reps']));
     // 62,5 × 9 + 62,5 × 7 = 1 000 kg (échauffement et planche exclus).
-    expect(within(detail).getByText('Volume (kg)').nextElementSibling).toHaveTextContent(/^1 000$/);
+    expect(within(detail).getByText('Volume (kg)').nextElementSibling).toHaveTextContent(/^1\s000$/);
   });
 
   it('correction hors règles : refusée sans rien écrire', async () => {
