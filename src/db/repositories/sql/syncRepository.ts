@@ -41,6 +41,22 @@ const marks = (n: number): string => Array.from({ length: n }, () => '?').join('
 const keyOf = (t: SyncTable): string => t.key;
 const columnsOf = (t: SyncTable): string[] => t.columns.map((c) => c.name);
 
+/**
+ * Condition SQL « ligne publiable » (`SyncTable.publishWhen`, D-27) sur l'alias `alias`, ou null (toutes les lignes). Noms tirés du
+ * catalogue seulement ; la règle `parent` remonte la chaîne (validée finie par `createCatalogue`).
+ */
+function publishableSql(catalogue: SyncCatalogue, t: SyncTable, alias: string): string | null {
+  const rule = t.publishWhen;
+  if (!rule) return null;
+  if ('notNull' in rule) return `${alias}.${rule.notNull} IS NOT NULL`;
+  const parent = t.parents.find((p) => p.column === rule.parent);
+  const pt = parent ? catalogue.table(parent.table) : undefined;
+  if (!parent || !pt) return '0';
+  const inner = `${alias}_p`;
+  const nested = publishableSql(catalogue, pt, inner);
+  return `EXISTS (SELECT 1 FROM ${pt.name} ${inner} WHERE ${inner}.${keyOf(pt)} = ${alias}.${parent.column}${nested === null ? '' : ` AND ${nested}`})`;
+}
+
 const STATE_COLUMNS: readonly (readonly [keyof SyncStatePatch, string])[] = [
   ['isSelf', 'is_self'],
   ['platform', 'platform'],
@@ -97,6 +113,11 @@ function rowToState(row: SqlRow): SyncStateRow {
 }
 
 export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, catalogue: SyncCatalogue): SyncRepository {
+  /** ` AND <condition>` des lignes publiables de `t` (alias `p`), vide sans règle. */
+  const andPublishable = (t: SyncTable): string => {
+    const sql = publishableSql(catalogue, t, 'p');
+    return sql === null ? '' : ` AND ${sql}`;
+  };
   const readRows = async (t: SyncTable, ids: readonly string[]): Promise<Map<string, StoredRow>> => {
     const out = new Map<string, StoredRow>();
     const cols = columnsOf(t);
@@ -263,7 +284,7 @@ export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, cat
     async readRowsWithClocks(t, ids) {
       const out = new Map<string, ExportedRow>();
       for (const part of chunks([...new Set(ids)])) {
-        const rows = await db.select(`SELECT p.${keyOf(t)} AS row_key, p.hlc, p.updated_at, ${columnsOf(t).map((col) => `p.${col}`).join(', ')}, ${clocksColumn(t, 'p')} FROM ${t.name} p WHERE p.${keyOf(t)} IN (${marks(part.length)})`, part);
+        const rows = await db.select(`SELECT p.${keyOf(t)} AS row_key, p.hlc, p.updated_at, ${columnsOf(t).map((col) => `p.${col}`).join(', ')}, ${clocksColumn(t, 'p')} FROM ${t.name} p WHERE p.${keyOf(t)} IN (${marks(part.length)})${andPublishable(t)}`, part);
         for (const row of rows) out.set(String(row['row_key']), toExported(t, row));
       }
       return out;
@@ -308,7 +329,7 @@ export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, cat
     async exportRows(t, afterId, limit) {
       const rows = await db.select(
         `SELECT p.${keyOf(t)} AS row_key, p.hlc, p.updated_at, ${columnsOf(t).map((col) => `p.${col}`).join(', ')}, ${clocksColumn(t, 'p')}
-         FROM ${t.name} p ${afterId === null ? '' : `WHERE p.${keyOf(t)} > ?`} ORDER BY p.${keyOf(t)} LIMIT ?`,
+         FROM ${t.name} p WHERE 1 = 1${afterId === null ? '' : ` AND p.${keyOf(t)} > ?`}${andPublishable(t)} ORDER BY p.${keyOf(t)} LIMIT ?`,
         afterId === null ? [limit] : [afterId, limit],
       );
       return rows.map((row) => toExported(t, row));
@@ -329,7 +350,7 @@ export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, cat
                          (SELECT hlc FROM sync_field_clock WHERE table_name = ? AND row_id = p.${keyOf(t)} AND field = '*'),
                          p.hlc) AS deleted_hlc
          FROM ${t.name} p
-         WHERE p.deleted_at IS NOT NULL AND p.deleted_at < ? ${afterId === null ? '' : `AND p.${keyOf(t)} > ?`} ${children.map((c) => `AND ${c}`).join(' ')}
+         WHERE p.deleted_at IS NOT NULL AND p.deleted_at < ? ${afterId === null ? '' : `AND p.${keyOf(t)} > ?`} ${children.map((c) => `AND ${c}`).join(' ')}${andPublishable(t)}
          ORDER BY p.${keyOf(t)} LIMIT ?`,
         afterId === null ? [t.name, t.name, before, limit] : [t.name, t.name, before, afterId, limit],
       );

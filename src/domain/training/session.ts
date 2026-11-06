@@ -67,6 +67,8 @@ export interface WorkoutSet extends RowMeta {
   readonly rir: number | null;
   readonly done: boolean;
   readonly doneAt: IsoDateTime | null;
+  /** Dernière correction d'une série d'une séance close (§ 13.8, I1-03) ; absent ou null : jamais corrigée. */
+  readonly correctedAt?: IsoDateTime | null;
 }
 
 export interface WorkoutWithSets extends Workout {

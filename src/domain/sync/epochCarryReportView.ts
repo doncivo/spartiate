@@ -45,6 +45,9 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   equipment_profile: { label: 'name', kind: 'equipmentProfile' },
   routine_day: { label: 'name', kind: 'routineDay' },
   routine_exercise: { label: 'exercise_name', kind: 'routineExercise' },
+  // I1-03 : séances closes et leurs séries.
+  workout: { label: 'name', kind: 'workout' },
+  workout_set: { label: 'exercise_name', kind: 'workoutSet' },
 };
 
 export const carryReportTableEntry = (table: string): { readonly label: string | null; readonly kind: string } | undefined =>
