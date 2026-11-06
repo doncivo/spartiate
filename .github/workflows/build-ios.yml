@@ -111,6 +111,11 @@ jobs:
       - name: Entitlements durables
         run: node scripts/ios/apply-entitlements.mjs
 
+      # SPA-007 (H-4) : une seule cible d'extension SpartiateLiveActivity (WidgetKit) est ajoutée à project.yml (idempotent), embarquée dans
+      # l'app, puis le projet est régénéré par XcodeGen et contrôlé. Ni App Group, ni push, ni mode de fond, ni entitlement pour l'extension.
+      - name: Extension Live Activity
+        run: node scripts/ios/inject-live-activity.mjs
+
       # Plugins iOS (N-01, ADR 0012 avenant N1.9) : le plugin de notifications locales est compilé pour l'iPhone et JAMAIS pour le PC
       # (le PC n'envoie aucune notification de rappel). Échec explicite dans les deux sens.
       - name: Plugins iOS
