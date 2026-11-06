@@ -50,6 +50,13 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFa
   // D-65 : profil et poids, implémentation chargée à la demande (hors du JavaScript de départ).
   profile: () => import('./bodyRepositories').then((m) => signalingWrites(m.createProfileRepository(executor, stamper), ['save'])),
   bodyWeights: () => import('./bodyRepositories').then((m) => signalingWrites(m.createBodyWeightRepository(executor, stamper), ['saveManual', 'saveHealth', 'softDelete'])),
+  // I1-01 : bibliothèque (exercices personnalisés), matériel et routines d'entraînement, à la demande. Chaque écriture lève le signal de synchro.
+  exercises: () => import('./exerciseRepository').then((m) => signalingWrites(m.createExerciseRepository(executor, stamper), ['create', 'update', 'softDelete', 'restore'])),
+  equipmentProfiles: () => import('./equipmentProfileRepository').then((m) => signalingWrites(m.createEquipmentProfileRepository(executor, stamper), ['create', 'update', 'softDelete'])),
+  trainingRoutines: () =>
+    import('./trainingRoutineRepository').then((m) =>
+      signalingWrites(m.createTrainingRoutineRepository(executor, stamper), ['create', 'update', 'softDelete', 'addDay', 'updateDay', 'removeDay', 'addExercise', 'updateExercise', 'removeExercise']),
+    ),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)

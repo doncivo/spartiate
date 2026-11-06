@@ -661,5 +661,9 @@ export function isUnknownSettingKey(value: string): boolean {
   return UNKNOWN_SETTING_KEY_RE.test(value) && !value.split('.').some((part) => FORBIDDEN_KEYS.has(part));
 }
 
-/** Ordre topologique des tables publiées par le catalogue de production I0 (section 3.3, D-55) : départage des opérations de même hlc. */
-export const SYNC_TABLE_ORDER = ['profile', 'body_weight'] as const;
+/**
+ * Ordre topologique des tables publiées par le catalogue de production (section 3.3, D-55, I1-01) : départage des opérations de même hlc.
+ * Parents avant enfants : `routine` < `routine_day` < `routine_exercise` ; `exercise` et `equipment_profile` n'ont aucun parent
+ * (`routine_exercise.exercise_id` est une référence logique, P-09).
+ */
+export const SYNC_TABLE_ORDER = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise'] as const;

@@ -45,10 +45,11 @@ describe('TrainingRoutineRepository (routine, jours, lignes)', () => {
   it('create invalide : rien n’est écrit si la transaction échoue (série nulle, plage inversée, collision)', async () => {
     db = await openBaseDb(DEVICE);
     const bad = tree();
-    const badLine = bad.days[0]?.exercises[1];
-    if (!badLine) throw new Error('fixture');
-    await expect(db.data.transaction(async (repos) => (await repos.trainingRoutines()).create({ ...bad, days: [{ ...bad.days[0]!, exercises: [{ ...badLine, sets: 0 }] }] }))).rejects.toMatchObject({ code: 'invalid' });
-    await expect(db.data.transaction(async (repos) => (await repos.trainingRoutines()).create({ ...bad, days: [{ ...bad.days[0]!, exercises: [{ ...badLine, repMin: 12, repMax: 8 }] }] }))).rejects.toMatchObject({ code: 'invalid' });
+    const badDay = bad.days[0];
+    const badLine = badDay?.exercises[1];
+    if (!badDay || !badLine) throw new Error('fixture');
+    await expect(db.data.transaction(async (repos) => (await repos.trainingRoutines()).create({ ...bad, days: [{ ...badDay, exercises: [{ ...badLine, sets: 0 }] }] }))).rejects.toMatchObject({ code: 'invalid' });
+    await expect(db.data.transaction(async (repos) => (await repos.trainingRoutines()).create({ ...bad, days: [{ ...badDay, exercises: [{ ...badLine, repMin: 12, repMax: 8 }] }] }))).rejects.toMatchObject({ code: 'invalid' });
     expect(await db.driver.select('SELECT 1 FROM routine')).toEqual([]);
     await db.data.transaction(async (repos) => (await repos.trainingRoutines()).create(tree()));
     await expect(db.data.transaction(async (repos) => (await repos.trainingRoutines()).create({ ...tree(), name: 'Doublon' }))).rejects.toMatchObject({ code: 'conflict' });

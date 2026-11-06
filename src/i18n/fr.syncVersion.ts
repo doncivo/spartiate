@@ -37,6 +37,10 @@ export const syncVersionFr = {
     settings: 'réglages',
     profile: 'profil',
     bodyWeight: 'pesées',
+    exercise: 'exercices',
+    equipmentProfile: 'profils de matériel',
+    routineDay: 'jours de routine',
+    routineExercise: 'exercices de routine',
     other: 'autres éléments',
   },
 } as const;
