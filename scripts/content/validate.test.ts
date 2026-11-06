@@ -9,6 +9,7 @@ import { PERIODIZATION, isExerciseCompatible, validateContent, validateContentDi
 const ROOT = resolve(__dirname, '..', '..');
 const CONTENT = resolve(ROOT, 'content');
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Json = Record<string, any>;
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
 
@@ -330,13 +331,13 @@ describe('contenu embarqué réel', () => {
 
   it('limite « Maison haltères » à haltères, banc, élastiques (et poids du corps)', () => {
     const profiles = load('equipment-profiles', 'profiles.json').profiles as Json[];
-    const maison = profiles.find((p) => p.id === 'maison-halteres')!;
+    const maison = profiles.find((p) => p.id === 'maison-halteres') as Json;
     const allowed = new Set(['dumbbell', 'bench', 'flat-bench', 'incline-bench', 'resistance-band', 'bodyweight', 'floor', 'wall']);
     for (const id of maison.equipment) expect(allowed.has(id)).toBe(true);
     const prog = load('programs', 'maison-halteres-3j.json');
     expect(prog.compatibleProfileIds).toEqual(['maison-halteres']);
     const lib = new Map((load('exercises', 'exercises.json').exercises as Json[]).map((x) => [x.id, x]));
-    for (const d of prog.days) for (const e of d.exercises) for (const g of lib.get(e.exerciseId)!.equipmentGroups as string[][]) expect(g.some((id) => allowed.has(id))).toBe(true);
+    for (const d of prog.days) for (const e of d.exercises) for (const g of (lib.get(e.exerciseId) as Json).equipmentGroups as string[][]) expect(g.some((id) => allowed.has(id))).toBe(true);
   });
 
   it('définit « Fitness Park Antony » comme profil par défaut de type salle, avec les trois préréglages', () => {

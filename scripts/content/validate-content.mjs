@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* global process, console */
 // Validation du contenu embarqué de Spartiate (I1-01) : Node, aucune dépendance.
 // Usage : node scripts/content/validate-content.mjs [dossier-content]   (défaut : content/)
 // Sortie : lignes `::error::` et code 1 à la moindre erreur ; aucun avertissement toléré.
