@@ -148,4 +148,19 @@ describe('Tester le minuteur (60 s)', () => {
     expect(await screen.findByText(/minuteur de test est terminé/)).toBeInTheDocument();
     expect(f.live.ends).toBeGreaterThanOrEqual(1);
   });
+
+  it('réglage illisible ou non enregistrable : dit, jamais une erreur non gérée', async () => {
+    const f = fakes();
+    const failing = { ...db.data, repos: { ...db.data.repos, settings: { ...db.data.repos.settings, get: () => Promise.reject(new Error('boom')), set: () => Promise.reject(new Error('boom')) } } } as typeof db.data;
+    const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: failing });
+    render(
+      <AppContainerProvider container={container}>
+        <TimerTestRow os="ios" {...f} />
+      </AppContainerProvider>,
+    );
+    expect(await screen.findByText(/minuteur n’a pas pu être lu ou enregistré/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Lancer' }));
+    expect(await screen.findAllByText(/minuteur n’a pas pu être lu ou enregistré/)).not.toHaveLength(0);
+    expect(screen.queryByRole('button', { name: 'Arrêter' })).toBeNull();
+  });
 });
