@@ -27,6 +27,18 @@ describe('Entraînement : navigation et chargement à la demande', () => {
     expect(document.documentElement.getAttribute('data-ct-loaded-trainingscreen')).toBe('true');
   });
 
+  it('I1-03 : journal et résumé de fin sont chargés à la demande (import dynamique, aucun import statique)', () => {
+    expect(source('./TrainingScreen.tsx')).toContain("import('./history/HistoryView')");
+    expect(source('./session/SessionScreen.tsx')).toContain("import('./WorkoutSummary')");
+    for (const [file, target] of [
+      ['./TrainingScreen.tsx', 'history/HistoryView'],
+      ['./session/SessionScreen.tsx', 'WorkoutSummary'],
+      ['./session/ActiveSession.tsx', 'WorkoutSummary'],
+      ['./session/TodaySessionCard.tsx', 'history/'],
+    ] as const)
+      expect(source(file), file).not.toMatch(new RegExp(`from '[^']*${target}`));
+  });
+
   it('le contenu embarqué et le catalogue de textes ne sont importés que par des modules de la feature', () => {
     expect(source('./content.ts')).toMatch(/import\('\.\.\/\.\.\/\.\.\/content\/exercises\/exercises\.json'\)/);
     expect(source('../../i18n/trainingText.ts')).toContain("from './fr.training'");
