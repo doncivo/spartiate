@@ -19,6 +19,9 @@
 	<!-- SPA-006 : lectures uniquement du poids et du nombre de pas ; aucune donnée Santé n'est écrite ni envoyée. -->
 	<key>NSHealthShareUsageDescription</key>
 	<string>Spartiate lit ton poids et tes pas pour les afficher dans l’application. Aucune autre donnée de Santé n’est consultée.</string>
+	<!-- SPA-007 : Live Activity du compteur (extension SpartiateLiveActivity). Aucun entitlement restreint, aucun App Group, aucun push. -->
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<!-- ios-demarrage : le journal technique (codes et durées, sans donnée personnelle) est écrit dans Documents/Journal, visible dans l'app
 	     Fichiers (Sur mon iPhone > Spartiate) pour être partagé en cas de blocage. Aucune autre exposition de Documents. -->
 	<key>UIFileSharingEnabled</key>

@@ -245,9 +245,9 @@ describe('critère 18 : guide, étape 7', () => {
 });
 
 describe('critère 19 : gel de non-régression après SPA-006', () => {
-  it('Info.ios.plist : seule la permission de lecture Santé de SPA-006 s’ajoute', () => {
+  it('Info.ios.plist : la permission de lecture Santé (SPA-006) et NSSupportsLiveActivities (SPA-007) s’ajoutent', () => {
     const keys = Object.keys(parsePlist(read('src-tauri/Info.ios.plist')) as Record<string, unknown>).sort();
-    expect(keys).toEqual(['ITSAppUsesNonExemptEncryption', 'LSSupportsOpeningDocumentsInPlace', 'NSCameraUsageDescription', 'NSFaceIDUsageDescription', 'NSHealthShareUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'UIFileSharingEnabled', 'UIRequiresFullScreen', 'UISupportedInterfaceOrientations', 'UISupportedInterfaceOrientations~ipad']);
+    expect(keys).toEqual(['ITSAppUsesNonExemptEncryption', 'LSSupportsOpeningDocumentsInPlace', 'NSCameraUsageDescription', 'NSFaceIDUsageDescription', 'NSHealthShareUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'NSSupportsLiveActivities', 'UIFileSharingEnabled', 'UIRequiresFullScreen', 'UISupportedInterfaceOrientations', 'UISupportedInterfaceOrientations~ipad']);
   });
 
   it('plugins et capabilities : HealthKit est le seul nouvel ajout', () => {

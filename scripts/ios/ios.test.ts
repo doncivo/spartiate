@@ -134,6 +134,7 @@ describe('contrat des permissions Info.plist', () => {
       'LSSupportsOpeningDocumentsInPlace absente (plugin journal, ios-demarrage)',
       'NSMicrophoneUsageDescription absente (plugin speech, CAP-IOS-01)',
       'NSSpeechRecognitionUsageDescription absente (plugin speech, CAP-IOS-01)',
+      'NSSupportsLiveActivities absente (plugin live-activity, SPA-007)',
       'NSHealthShareUsageDescription absente (plugin healthkit, SPA-006)',
       'NSCameraUsageDescription : description d\'usage vide',
     ]);
