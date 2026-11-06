@@ -14,7 +14,6 @@ export const bodyFr = {
   sexFemale: 'Femme',
   birthYear: 'Année de naissance',
   heightCm: 'Taille (cm)',
-  heightHelp: 'en centimètres, ex. 186',
   goal: 'Objectif',
   goalGain: 'Prise de masse',
   goalLoss: 'Perte de poids',
