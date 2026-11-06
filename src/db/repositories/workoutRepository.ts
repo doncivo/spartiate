@@ -96,7 +96,7 @@ export interface WorkoutRepository {
   // --- I1-03 : clôture, journal, correction, suppression (D-27, § 13.5, § 13.8) -------------------------------------------------------
 
   /**
-   * Clôt la séance (à appeler dans `DataAccess.transaction` : tout ou rien). Les séries supprimées pendant la séance (jamais publiées) sont
+   * Clôt la séance, tout ou rien (hors transaction elle ouvre la sienne ; dans `DataAccess.transaction` elle s’y inscrit). Les séries supprimées pendant la séance (jamais publiées) sont
    * effacées, chaque série restante reçoit le tampon de la clôture, puis `ended_at` est posé avec ce même tampon : le déclencheur met la
    * séance et toutes ses séries en file ensemble (un seul hlc, publication atomique). Repos en cours effacé. Déjà close : rien n'est écrit
    * (`alreadyClosed`, rejeu idempotent). Absente ou supprimée : `'not-found'` ; aucune série validée : `'invalid'` (abandonner la séance).
@@ -113,13 +113,13 @@ export interface WorkoutRepository {
    * `recommendation_decision` reste en place).
    */
   correctSet(setId: string, patch: SetCorrection): Promise<WorkoutSet>;
-  /** Suppression logique d'une séance close et de ses séries, même tampon (à appeler dans `DataAccess.transaction`). Ouverte : `'invalid'`. */
+  /** Suppression logique d'une séance close et de ses séries, même tampon, tout ou rien (transaction propre si appelée hors transaction). Ouverte : `'invalid'`. */
   deleteClosed(id: string): Promise<void>;
   /**
    * « Mettre à jour la routine ? » → « Oui » (§ 13.8) : applique au jour de routine d'origine les écarts de `routineDiff` (lignes retirées
    * supprimées logiquement, nombre de séries mis à jour, exercices ajoutés en fin de jour). Jamais appelé automatiquement ; « Cette fois
-   * seulement » n'appelle rien. Séance close seulement (`'invalid'` sinon) ; routine ou jour disparu : aucun écart, rien n'est écrit. À appeler
-   * dans `DataAccess.transaction`. Renvoie les écarts appliqués.
+   * seulement » n'appelle rien. Séance close seulement (`'invalid'` sinon) ; routine ou jour disparu : aucun écart, rien n'est écrit. Tout ou rien :
+   * hors transaction, il ouvre la sienne. Renvoie les écarts appliqués.
    */
   applyRoutineUpdate(workoutId: string): Promise<RoutineDiff>;
   /** Écarts de la séance avec son jour de routine (lecture seule, pour poser la question). */
