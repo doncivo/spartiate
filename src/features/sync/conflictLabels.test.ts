@@ -11,9 +11,13 @@ describe('UI-FIX-02 : champ modifié nommé en langage utilisateur', () => {
 
 /** 0.1.4 (3) : le journal des conflits parle français, sans clé technique ni anglais, pour chaque table du catalogue publié. */
 describe('libellés des conflits du catalogue publié (0.1.4 point 3)', () => {
-  const profile = SYNC_CATALOGUE.table('profile')!;
-  const weight = SYNC_CATALOGUE.table('body_weight')!;
-  const col = (table: typeof profile, name: string) => SYNC_CATALOGUE.column(table.name, name)!;
+  const need = <T,>(value: T | undefined): T => {
+    if (value === undefined) throw new Error('absent du catalogue');
+    return value;
+  };
+  const profile = need(SYNC_CATALOGUE.table('profile'));
+  const weight = need(SYNC_CATALOGUE.table('body_weight'));
+  const col = (table: typeof profile, name: string) => need(SYNC_CATALOGUE.column(table.name, name));
   const live = { itemState: 'live' as const };
   const side = (value: SyncValue) => ({ value, ref: null });
 
