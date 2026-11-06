@@ -1,0 +1,406 @@
+/* Entraînement (I1-01) : charte § 18.4, maquettes iPhone-Routine, iPhone-Fiche, PC-Materiel, PC-Routine. Tokens seulement, aucune couleur en dur. */
+.ct-training-shell {
+  min-width: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-grow: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ct-training {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  flex-grow: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  max-width: 640px;
+}
+
+.ct-training-shell[data-layout='pc'] .ct-training {
+  max-width: 1100px;
+}
+
+.ct-training__title {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.02em;
+}
+
+.ct-training__heading {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading-sm);
+  font-weight: var(--ct-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.ct-training__subheading {
+  margin: var(--ct-space-2) 0 var(--ct-space-1);
+  font-size: var(--ct-font-size-text);
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-training__eyebrow {
+  margin: 0 0 var(--ct-space-2);
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-training__muted {
+  margin: 0;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-training__num {
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-training__list-block,
+.ct-training__library,
+.ct-training__routines,
+.ct-training__editor,
+.ct-training__picker,
+.ct-training__form,
+.ct-training__detail,
+.ct-training__main,
+.ct-training__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  min-width: 0;
+}
+
+.ct-training__editor[hidden] {
+  display: none;
+}
+
+.ct-training__filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+}
+
+.ct-training-shell[data-layout='pc'] .ct-training__filters {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.ct-training__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  min-width: 0;
+  flex: 1 1 200px;
+}
+
+.ct-training__field--small {
+  flex: 1 1 90px;
+}
+
+.ct-training__label {
+  color: var(--ct-color-text);
+  font-size: var(--ct-font-size-sm);
+}
+
+.ct-training__input {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 0 var(--ct-space-2);
+  background: var(--ct-color-surface-input);
+  color: var(--ct-color-text);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  font: inherit;
+}
+
+.ct-training__switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-2);
+  min-height: 44px;
+  flex: 1 1 260px;
+}
+
+.ct-training__rows,
+.ct-training__cards,
+.ct-training__lines,
+.ct-training__plain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ct-training__cards {
+  display: grid;
+  gap: var(--ct-space-2);
+}
+
+.ct-training-shell[data-layout='pc'] .ct-training__cards {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ct-training__row {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--ct-space-2);
+  background: transparent;
+  color: var(--ct-color-text);
+  border: 0;
+  border-bottom: 1px solid var(--ct-color-border);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ct-training__row[aria-current='true'] {
+  background: var(--ct-color-row-selected);
+}
+
+.ct-training__row-name {
+  font-weight: var(--ct-font-weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.ct-training__row-meta {
+  font-size: var(--ct-font-size-sm);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-training__row:focus-visible,
+.ct-training__back:focus-visible,
+.ct-training__link:focus-visible,
+.ct-training__icon-button:focus-visible {
+  outline: 2px solid var(--ct-color-select-ring);
+  outline-offset: 2px;
+}
+
+.ct-training__back {
+  align-self: flex-start;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ct-space-1);
+  padding: 0 var(--ct-space-1);
+  background: transparent;
+  border: 0;
+  color: var(--ct-color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.ct-training__link {
+  min-height: 44px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--ct-color-bronze);
+  font: inherit;
+  text-decoration: underline;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ct-training__card {
+  padding: var(--ct-space-3);
+  background: var(--ct-color-surface);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-lg);
+  min-width: 0;
+}
+
+.ct-training__card p {
+  margin: 0 0 var(--ct-space-1);
+}
+
+.ct-training__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+
+.ct-training__fact {
+  padding: var(--ct-space-1) var(--ct-space-2);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-pill);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-training__badge {
+  display: inline-block;
+  margin-left: var(--ct-space-1);
+  padding: 0 var(--ct-space-2);
+  border: 1px solid var(--ct-color-bronze);
+  border-radius: var(--ct-radius-pill);
+  color: var(--ct-color-text);
+  font-size: var(--ct-font-size-xs);
+}
+
+.ct-training__badge--warn {
+  border-color: var(--ct-color-warn);
+}
+
+.ct-training__note,
+.ct-training__warn {
+  margin: 0;
+}
+
+.ct-training__warn::before {
+  content: '⚠ ';
+}
+
+.ct-training__error,
+.ct-training__error-block {
+  margin: 0;
+  color: var(--ct-color-danger);
+}
+
+.ct-training__message {
+  margin: 0;
+}
+
+.ct-training__empty {
+  margin: var(--ct-space-3) 0;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-training__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+
+.ct-training__actions--sticky {
+  position: sticky;
+  bottom: 0;
+  padding: var(--ct-space-2) 0;
+  background: var(--ct-color-bg);
+}
+
+.ct-training__grid2,
+.ct-training__grid3 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+
+.ct-training__fieldset,
+.ct-training__day {
+  margin: 0;
+  padding: var(--ct-space-3);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-lg);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+}
+
+.ct-training__checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--ct-space-1);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.ct-training__check {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: var(--ct-space-2);
+}
+
+.ct-training__check input {
+  width: 22px;
+  height: 22px;
+}
+
+.ct-training__line {
+  padding: var(--ct-space-2) 0;
+  border-bottom: 1px solid var(--ct-color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}
+
+.ct-training__line-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-2);
+}
+
+.ct-training__line-tools {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.ct-training__line-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+
+.ct-training__icon-button {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: var(--ct-color-text);
+  cursor: pointer;
+}
+
+.ct-training__icon-button:disabled {
+  color: var(--ct-color-text-secondary);
+  cursor: default;
+}
+
+.ct-training__verify {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-2);
+}
+
+.ct-training__equipment,
+.ct-training__inventory {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+}
+
+.ct-training-shell[data-layout='pc'] .ct-training__equipment {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  align-items: start;
+}
+
+.ct-training-shell[data-layout='pc'] .ct-training__inventory {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ct-training-shell[data-layout='pc'] .ct-training__card--wide {
+  grid-column: 1 / -1;
+}

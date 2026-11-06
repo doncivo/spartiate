@@ -68,3 +68,15 @@ describe('validation d’un profil de matériel', () => {
     expect(codes({ name: 'x', kind: 'maison', inventory: HOME_PROFILE.inventory, increments: { dumbbell: 0 } })).toContain('increment');
   });
 });
+
+describe('groupes d’alternatives (exercice embarqué, content/README.md)', () => {
+  it('un matériel par groupe suffit ; le matériel facultatif hors groupe n’est pas exigé', () => {
+    const dips = { equipment: ['parallel-bars', 'dip-belt'], equipmentGroups: [['parallel-bars']] };
+    const withBars = { ...HOME_PROFILE, inventory: { ...HOME_PROFILE.inventory, available: ['parallel-bars'] } };
+    expect(isExerciseCompatible(dips, withBars)).toBe(true);
+    expect(isExerciseCompatible(dips, HOME_PROFILE)).toBe(false);
+    const press = { equipment: ['flat-bench', 'incline-bench', 'dumbbell'], equipmentGroups: [['dumbbell'], ['flat-bench', 'incline-bench']] };
+    expect(isExerciseCompatible(press, HOME_PROFILE)).toBe(true);
+    expect(isExerciseCompatible({ equipment: press.equipment }, HOME_PROFILE)).toBe(false);
+  });
+});
