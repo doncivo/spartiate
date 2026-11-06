@@ -2,6 +2,8 @@ import { uuidGenerator, type IdGenerator } from '../../../domain/id';
 import type { WriteStamper } from '../../../domain/hlc';
 import {
   SETS_MAX,
+  ABANDONED_WORKOUT_KEEP_MS,
+  WORKOUT_SETS_MAX,
   SET_KINDS,
   WORKOUT_SOURCES,
   extendRestEnd,
@@ -26,7 +28,7 @@ import {
   type WorkoutWithSets,
 } from '../../../domain/training';
 import type { IsoDateTime } from '../../../domain/types';
-import type { SqlExecutor, SqlRow } from '../../driver';
+import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
 import { RepositoryError } from '../common';
 import type { RestTimer, WorkoutRepository } from '../workoutRepository';
 import { readSyncMeta, type SyncRow } from './sqlHelpers';
@@ -114,6 +116,13 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
   const invalid = (entity: string, id: string): never => {
     throw new RepositoryError('invalid', entity, id);
   };
+  /**
+   * Relecture sync-icloud I1-03 (B1) : appelé sur le driver (hors `DataAccess.transaction`), une écriture multiple qui doit être atomique
+   * ouvre elle-même sa transaction et s'y exécute (repository de la transaction) ; appelé dans une transaction (`tx` sans `transaction`),
+   * null : l'appelant écrit directement. Aucun cycle de synchro ne peut donc s'intercaler entre ses instructions.
+   */
+  const atomic = <T>(work: (inTx: WorkoutRepository) => Promise<T>): Promise<T> | null =>
+    typeof (db as Partial<SqlDriver>).transaction === 'function' ? (db as SqlDriver).transaction((tx) => work(createWorkoutRepository(tx, stamper, ids))) : null;
 
   const rawWorkout = async (id: string): Promise<WorkoutRow | undefined> => (await db.select<WorkoutRow>('SELECT * FROM workout WHERE id = ? AND deleted_at IS NULL', [id]))[0];
   const rawSets = (workoutId: string): Promise<SetRow[]> =>
@@ -150,6 +159,9 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
   };
 
   const insertSet = async (workoutId: string, id: string, position: number, plan: PlannedSet): Promise<void> => {
+    const live = Number((await db.select<{ n: number }>('SELECT COUNT(*) AS n FROM workout_set WHERE workout_id = ? AND deleted_at IS NULL', [workoutId]))[0]?.n ?? 0);
+    // Borne de l'agrégat publié d'un bloc (WORKOUT_SETS_MAX) : refus clair, rien n'est écrit pour cette série.
+    if (live >= WORKOUT_SETS_MAX) invalid('workout_set', workoutId);
     const stamp = stamper.next();
     await db.execute(
       `INSERT INTO workout_set (id, workout_id, exercise_id, exercise_name, position, set_kind, target_reps_min, target_reps_max, target_load_kg, target_rest_sec,
@@ -268,6 +280,10 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
 
   return {
     async start(input) {
+      // Séances ouvertes abandonnées depuis plus de 30 jours : jamais publiées (aucune file, aucune trace), effacées physiquement.
+      const cut = new Date(Date.parse(stamper.next().at) - ABANDONED_WORKOUT_KEEP_MS).toISOString();
+      await db.execute('DELETE FROM workout_set WHERE workout_id IN (SELECT id FROM workout WHERE ended_at IS NULL AND deleted_at IS NOT NULL AND deleted_at < ?)', [cut]);
+      await db.execute('DELETE FROM workout WHERE ended_at IS NULL AND deleted_at IS NOT NULL AND deleted_at < ?', [cut]);
       if (!(WORKOUT_SOURCES as readonly string[]).includes(input.source)) invalid('workout', input.id ?? 'start');
       if (await rawOpen()) throw new RepositoryError('conflict', 'workout', input.id ?? 'open');
       const id = input.id ?? ids.next();
@@ -460,6 +476,8 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     // --- I1-03 -----------------------------------------------------------------------------------------------------------------------
 
     async close(workoutId) {
+      const outer = atomic((r) => r.close(workoutId));
+      if (outer) return outer;
       const row = await rawWorkout(workoutId);
       if (!row) throw new RepositoryError('not-found', 'workout', workoutId);
       if (row.ended_at === null) {
@@ -521,6 +539,8 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     },
 
     async deleteClosed(id) {
+      const outer = atomic((r) => r.deleteClosed(id));
+      if (outer) return outer;
       await requireClosed(id);
       const stamp = stamper.next();
       await db.execute('UPDATE workout_set SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE workout_id = ? AND deleted_at IS NULL', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
@@ -532,6 +552,8 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     },
 
     async applyRoutineUpdate(workoutId) {
+      const outer = atomic((r) => r.applyRoutineUpdate(workoutId));
+      if (outer) return outer;
       await requireClosed(workoutId);
       const workout = await loadOrThrow(workoutId);
       const day = await dayOf(workout);
