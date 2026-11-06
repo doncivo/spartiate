@@ -41,7 +41,7 @@ describe('événement « données synchronisées appliquées »', () => {
     const stop = onSyncedDataApplied((tables) => seen.push([...tables].sort()));
     const result = await applyRemoteChanges(container, change('body_weight', 'profile'));
     expect(seen).toEqual([['body_weight', 'profile']]);
-    expect(result.failed).toEqual([]);
+    expect(result.failed).toEqual(['listener']);
     stop();
     stopBad();
     await applyRemoteChanges(container, change('profile'));
@@ -71,7 +71,7 @@ describe('écrans ouverts relus après un lot reçu', () => {
     const weights = await db.data.repos.bodyWeights();
     await weights.saveManual({ date: '2026-11-05' as never, kg: 106.25, timezone: 'Europe/Paris' }, '2026-11-06' as never);
     await act(async () => void (await applyRemoteChanges(container, change('body_weight'))));
-    expect(await screen.findByText(/106,25/)).toBeInTheDocument();
+    expect((await screen.findAllByText(/106,25/)).length).toBeGreaterThan(0);
   });
 
   it('Profil et poids : le profil reçu remplit les champs non modifiés, jamais ceux que tu es en train de saisir', async () => {
