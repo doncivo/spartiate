@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-06 (clôture I0, version 0.1.6). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-70 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Dossier de sortie I0 : docs/gate-i0.md.
+État au 2026-11-06 (I0 clos, GO I1 accordé par Ali, version publiée 0.1.6). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-71 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Dossier de sortie I0 : docs/gate-i0.md.
 
 ## Fusionné (tout est dans main)
 
@@ -8,18 +8,21 @@
 - Livraison : SPA-002 (Windows, updater signé), SPA-003 (IPA ad hoc, entitlements), ios-demarrage et ios-identite (journal visible, source SideStore propre).
 - Produit I0 : SPA-005 (export / import), SPA-009 (écrans fidèles aux planches), SPA-006 (Apple Santé en lecture, diagnostic natif en 0.1.3), SPA-007 (Live Activity, minuteur de test).
 - Versions publiées : 0.1.0 à 0.1.5 (PC `vX.Y.Z`, iPhone `ios-vX.Y.Z`). #44 à #50 : finitions 0.1.2, diagnostic 0.1.3, correctifs d'essai 0.1.4 (zoom iOS, écrans relus après synchro, conflits en français, « Jamais lu », copies iCloud, icône), SPA-007 0.1.5.
-- Cette PR (cloture-i0, 0.1.6) : finitions Apple Santé et textes sans reste de l'ancien projet, Live Activity « Terminé » à l'échéance, notification à la seconde, preuves d'Ali dans la matrice, gate-i0.md.
+- #51 (0.1.6) : finitions Apple Santé, textes sans reste de l'ancien projet, Live Activity « Terminé » à l'échéance, notification à la seconde, preuves d'Ali dans la matrice, gate-i0.md. Puis le report du go (D-71).
 
 ## Décisions récentes
 
 - D-69 : accès direct HealthKit BLOCKED (compte Apple gratuit, SideStore retire l'entitlement) ; l'import passera par l'app Raccourcis, ticket séparé.
 - D-70 : l'agent fusionne (`gh pr merge --squash`) et publie (tags `vX.Y.Z` et `ios-vX.Y.Z` sur origin/main après contrôle d'absence), puis suit les builds jusqu'à spartiate-releases. Ali installe et fait les constats sur appareil.
 
+## Go I1 (D-71, 2026-11-06)
+
+Essais 4 et 8 CONFIRMED, H-4 CONFIRMED (docs/gate-i0.md). Choix techniques validés : références logiques aux exercices sans clé étrangère ; UUID pour les exercices personnalisés, collision refusée ; nom de l'exercice figé dans l'historique. Médias (H-9) : aucune image ni vidéo sans licence vérifiée, fallback sans image. Deux défauts de la Live Activity à corriger en **I1-02** : texte noir sur fond sombre (texte clair et fond de la charte), activité figée à 0:00 au lieu de « Terminé ».
+
 ## Prochaines étapes
 
-1. **Go I0** : décision écrite d'Ali après les trois preuves restantes (export puis import ; journaux exportés sur les deux appareils ; Dynamic Island et heure de la notification). Aucun travail I1 avant.
-2. **I1-01** (docs/I1-01.md), puis la suite de l'itération I1.
-3. **Ticket Raccourcis** (D-69) : import du poids et des pas par l'app Raccourcis.
+1. **I1-01** (docs/I1-01.md), puis I1-02 (avec les deux défauts ci-dessus), I1-03.
+2. **Ticket Raccourcis** (D-69) : import du poids et des pas par l'app Raccourcis.
 
 ## Rappels
 
