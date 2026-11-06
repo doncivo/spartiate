@@ -3,6 +3,7 @@ import { MODIFIED_MARKER } from '../../domain/sync/merge';
 import type { SyncColumn, SyncTable } from '../../domain/sync/syncTables';
 import type { DeviceId } from '../../domain/types';
 import { t, tDynamic, type MessageKey } from '../../i18n';
+import { tBody } from '../../i18n/bodyText';
 import { formatDayMonth, formatTime } from '../../i18n/format';
 import type { SyncStatus } from '../../platform/sync/types';
 import type { ConflictSideView, ConflictView, RestoreRefusal, RestoreResult } from './syncConflictUseCases';
@@ -41,10 +42,21 @@ const ENUM_LABELS: Readonly<Record<string, Readonly<Record<string, MessageKey>>>
   'holiday.country': { FR: 'events.holidayCountry.FR', TN: 'events.holidayCountry.TN' },
 };
 
+/** Profil (0.1.4) : mêmes libellés que l'écran Profil et poids. */
+const BODY_ENUMS: Readonly<Record<string, Readonly<Record<string, Parameters<typeof tBody>[0]>>>> = {
+  'profile.sex': { male: 'sexMale', female: 'sexFemale' },
+  'profile.goal': { gain: 'goalGain', loss: 'goalLoss', maintain: 'goalMaintain' },
+  'profile.experience': { beginner: 'experienceBeginner', intermediate: 'experienceIntermediate', advanced: 'experienceAdvanced' },
+};
+
 const has = (record: object, key: string): boolean => Object.prototype.hasOwnProperty.call(record, key);
 
 function enumLabel(table: SyncTable, column: SyncColumn, value: string): string {
   const id = `${table.name}.${column.name}`;
+  if (id === 'profile.units') return value === 'metric' ? t('sync.conflicts.values.unitsMetric') : value;
+  if (id === 'body_weight.source') return value === 'health' ? t('sync.conflicts.values.sourceHealth') : value === 'manual' ? t('sync.conflicts.values.sourceManual') : value;
+  const body = has(BODY_ENUMS, id) ? BODY_ENUMS[id] : undefined;
+  if (body && has(body, value)) return tBody(body[value] as Parameters<typeof tBody>[0]);
   const labels = has(ENUM_LABELS, id) ? ENUM_LABELS[id] : undefined;
   const key = labels && has(labels, value) ? labels[value] : undefined;
   return key ? tDynamic(key) : value;
@@ -66,6 +78,13 @@ export function conflictValueText(table: SyncTable, column: SyncColumn, side: Pi
     return value === MODIFIED_MARKER ? t('sync.conflicts.values.modified') : t('sync.conflicts.values.deleted');
   }
   if (value === null) return column.name === 'project_id' ? t('sync.conflicts.values.noProject') : t('sync.conflicts.values.empty');
+  const own = `${table.name}.${column.name}`;
+  if (typeof value === 'string' && (has(BODY_ENUMS, own) || own === 'profile.units')) return enumLabel(table, column, value);
+  if (typeof value === 'number') {
+    if (own === 'body_weight.kg') return t('sync.conflicts.values.kg', { value: new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(value) });
+    if (own === 'profile.height_cm') return t('sync.conflicts.values.cm', { value: new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(value) });
+    if (own === 'profile.birth_year') return String(value);
+  }
   switch (column.type) {
     case 'text':
     case 'json':
@@ -104,9 +123,14 @@ export function conflictSideMeta(side: Pick<ConflictSideView, 'device' | 'at'>, 
 }
 
 /** Titre de l'élément lu au moment de l'affichage ; supprimé ou purgé : « Élément supprimé » ; sans titre propre : type d'élément. */
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+
 export function conflictTitle(view: Pick<ConflictView, 'title' | 'itemState' | 'table'>): string {
   if (view.itemState !== 'live') return t('sync.conflicts.deletedItem');
+  if (view.table.name === 'body_weight' && view.title !== null && DAY.test(view.title)) return t('sync.conflicts.weightHeading', { date: formatDayMonth(view.title) });
   if (view.title !== null) return view.title;
+  if (view.table.name === 'profile') return t('sync.conflicts.kinds.profile');
+  if (view.table.name === 'body_weight') return t('sync.conflicts.weightGone');
   if (view.table.name === 'recurrence') return t('sync.conflicts.kinds.recurrence');
   if (view.table.name === 'settings') return t('sync.conflicts.kinds.settings');
   return t('sync.conflicts.kinds.other');
@@ -117,6 +141,12 @@ export function conflictTitle(view: Pick<ConflictView, 'title' | 'itemState' | '
  * entre guillemets, tronqué à 80 caractères ; élément disparu : « Date de « Élément supprimé » ».
  */
 export function conflictHeading(view: Pick<ConflictView, 'title' | 'itemState' | 'table'>, names: { readonly title: string; readonly field: string }): string {
+  if (view.table.name === 'profile') return t('sync.conflicts.profileHeading', { field: names.field });
+  if (view.table.name === 'body_weight') {
+    if (view.itemState !== 'live' || view.title === null || !DAY.test(view.title)) return t('sync.conflicts.weightGone');
+    const date = formatDayMonth(view.title);
+    return names.field === fieldLabel(view.table, { name: 'kg' }) ? t('sync.conflicts.weightHeading', { date }) : t('sync.conflicts.weightHeadingField', { date, field: names.field });
+  }
   const field = names.field.charAt(0).toLocaleUpperCase('fr-FR') + names.field.slice(1);
   const title = view.itemState === 'live' && view.title !== null ? quoted(names.title) : names.title;
   return t('sync.conflicts.heading', { field, title });

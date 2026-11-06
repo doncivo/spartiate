@@ -42,9 +42,21 @@ export const syncConflictsFr = {
     todo: 'à faire',
     done: 'terminée',
     noProject: 'Sans projet',
+    /** Profil et poids (0.1.4) : libellés lisibles des valeurs qui ne sont pas déjà dans l'écran Profil et poids. */
+    sourceManual: 'Saisie à la main',
+    sourceHealth: 'Apple Santé',
+    unitsMetric: 'Métrique',
+    kg: '{value} kg',
+    cm: '{value} cm',
   },
+  /** Titres des conflits du profil et des pesées (0.1.4) : aucun « Élément de … » ni date brute. */
+  profileHeading: 'Profil : {field}',
+  weightHeading: 'Pesée du {date}',
+  weightHeadingField: 'Pesée du {date} : {field}',
+  weightGone: 'Pesée supprimée',
   /** Élément sans titre propre (répétition, réglage) ou dont la ligne visée n'a plus de titre. */
   kinds: {
+    profile: 'Profil',
     recurrence: 'Répétition',
     settings: 'Réglage',
     other: 'Élément',
