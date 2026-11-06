@@ -11,13 +11,13 @@ import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue
 const UUID = '11111111-1111-4111-8111-111111111111';
 
 describe('catalogue I0 en production', () => {
-  it('SYNC_TABLE_ORDER = profile, body_weight ; settings n’est pas publié', () => {
-    expect([...SYNC_TABLE_ORDER]).toEqual(['profile', 'body_weight']);
-    expect(SYNC_CATALOGUE.tables.map((t) => t.name)).toEqual(['profile', 'body_weight']);
+  it('SYNC_TABLE_ORDER commence par profile, body_weight (I0) puis les tables I1-01 ; settings n’est pas publié', () => {
+    expect([...SYNC_TABLE_ORDER].slice(0, 2)).toEqual(['profile', 'body_weight']);
+    expect(SYNC_CATALOGUE.tables.map((t) => t.name)).toEqual([...SYNC_TABLE_ORDER]);
     expect(SYNC_CATALOGUE.table('settings')).toBeUndefined();
     expect(SYNC_CATALOGUE.settingScope('general.timeFormat')).toBe('unknown');
     expect(SYNC_CATALOGUE.rank('body_weight')).toBe(1);
-    expect(SYNC_CATALOGUE.rank('task')).toBe(2);
+    expect(SYNC_CATALOGUE.rank('task')).toBe(SYNC_TABLE_ORDER.length);
   });
 
   it('identités naturelles : profile|singleton et weight|date|source, aucun repli UUID', () => {
