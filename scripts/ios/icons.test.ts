@@ -88,5 +88,9 @@ describe('icônes de l’app iPhone (0.1.4 point 8)', () => {
     expect(wf).toMatch(/Assets.car/);
     expect(wf).toMatch(/CFBundleIcons/);
     expect(wf).toMatch(/name: Spartiate-app-icon/);
+    // L'étape suivante vide info/ (rm -rf info) : l'icône extraite doit être gardée hors de info/ pour l'artefact (run 42202642561).
+    expect(wf).toMatch(/cp "\$APP\/AppIcon60x60@2x.png" icon\/AppIcon60x60@2x.png/);
+    expect(wf).toMatch(/path: icon\/AppIcon60x60@2x.png/);
+    expect(wf).not.toMatch(/info\/AppIcon60x60@2x.png/);
   });
 });
