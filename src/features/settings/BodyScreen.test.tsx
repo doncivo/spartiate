@@ -122,11 +122,11 @@ describe('Profil et poids (Plus)', () => {
     expect(list.textContent).not.toMatch(/d{4}-d{2}-d{2}/);
   });
 
-  it('finitions 0.1.2 (h) : Taille (cm) a le clavier numérique et l’aide « en centimètres, ex. 186 »', async () => {
+  it('0.1.4 (7) : Taille (cm) garde le clavier numérique, sans aide « en centimètres, ex. 186 » : le libellé suffit', async () => {
     open();
     const height = await screen.findByLabelText('Taille (cm)');
     expect(height).toHaveAttribute('inputmode', 'numeric');
-    expect(screen.getByText('en centimètres, ex. 186')).toBeInTheDocument();
-    expect(height).toHaveAccessibleDescription('en centimètres, ex. 186');
+    expect(screen.queryByText(/en centimètres/)).toBeNull();
+    expect(height).not.toHaveAttribute('aria-describedby');
   });
 });
