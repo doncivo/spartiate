@@ -116,6 +116,8 @@ export const SettingsScreen = lazyScreen<object>(() => import('../settings/Setti
 export const AppearanceScreen = lazyScreen<object>(() => import('../settings/AppearanceScreen').then((m) => ({ default: m.AppearanceScreen })), 'appearancescreen');
 /** SPA-009 : contenu des sections I0 (Aujourd'hui vide, sections futures), chargé à la demande avec ses textes. */
 export const SectionNotice = lazyScreen<{ readonly tab: 'today' | 'training' | 'nutrition' | 'progress' }>(() => import('./SectionNotice').then((m) => ({ default: m.SectionNotice })), 'sectionnotice');
+/** I1-01 : Entraînement (routines, bibliothèque, matériel), chargé à la demande avec ses textes et le contenu embarqué. */
+export const TrainingScreen = lazyScreen<object>(() => import('../training/TrainingScreen').then((m) => ({ default: m.TrainingScreen })), 'trainingscreen');
 export const BodyScreen = lazyScreen<object>(() => import('../settings/BodyScreen').then((m) => ({ default: m.BodyScreen })), 'bodyscreen');
 /** Finitions 0.1.2 : Apple Santé (Plus, iPhone seulement), chargé à la demande avec ses textes et la façade HealthKit. */
 export const AppleHealthScreen = lazyScreen<object>(() => import('../settings/AppleHealthScreen').then((m) => ({ default: m.AppleHealthScreen })), 'applehealthscreen');
