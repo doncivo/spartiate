@@ -174,7 +174,7 @@ export interface SyncRepository {
   readRows(table: SyncTable, ids: readonly string[]): Promise<Map<string, StoredRow>>;
   /** Y-02 : horloges de champ des lignes. */
   readClocks(table: SyncTable, ids: readonly string[]): Promise<Map<string, Map<string, FieldClock>>>;
-  /** Y-05 : lignes et leurs horloges lues par une seule instruction (valeurs et horloges cohérentes, publication). */
+  /** Y-05 : lignes et leurs horloges lues par une seule instruction (valeurs et horloges cohérentes, publication). I1-03 : lignes publiables seulement (`publishWhen`, D-27). */
   readRowsWithClocks(table: SyncTable, ids: readonly string[]): Promise<Map<string, ExportedRow>>;
   /** Y-02 : champs en attente de publication (`'*'` compris). */
   pendingFields(table: SyncTable, ids: readonly string[]): Promise<Map<string, Set<string>>>;
@@ -185,11 +185,11 @@ export interface SyncRepository {
   /** Remplace les valeurs publiées et les horloges d'une ligne (remplacement par un instantané, section 9.1 (b)). */
   writeClocks(table: SyncTable, id: string, clocks: readonly { readonly field: string; readonly hlc: Hlc; readonly base: Hlc | null }[]): Promise<void>;
   replaceClocks(table: SyncTable, id: string, clocks: readonly { readonly field: string; readonly hlc: Hlc; readonly base: Hlc | null }[]): Promise<void>;
-  /** Y-02 : page de lignes par identifiant croissant, avec leurs horloges lues par la même instruction (instantané, report d'époque, section 9.1 (a)). */
+  /** Y-02 : page de lignes par identifiant croissant, avec leurs horloges lues par la même instruction (instantané, report d'époque, section 9.1 (a)). I1-03 : lignes publiables seulement (`publishWhen`, D-27). */
   exportRows(table: SyncTable, afterId: string | null, limit: number): Promise<ExportedRow[]>;
   /** Y-09 : supprime physiquement des lignes, leurs horloges, leurs entrées de file (sous garde ; aucune trace écrite ici). */
   deleteRows(table: SyncTable, ids: readonly string[]): Promise<void>;
-  /** Y-09 : lignes supprimées avant `before` et sans enfant (clés du catalogue), avec l'horloge de `deleted_at`, par identifiant croissant après `afterId`. */
+  /** Y-09 : lignes supprimées avant `before` et sans enfant (clés du catalogue), avec l'horloge de `deleted_at`, par identifiant croissant après `afterId`. I1-03 : lignes publiables seulement (une ligne locale n'est jamais purgée ni tracée). */
   deletedRows(table: SyncTable, before: IsoDateTime, limit: number, afterId?: string | null): Promise<DeletedRow[]>;
   /** Y-09 : identifiants, parmi ceux donnés, qui ont encore au moins une ligne enfant (clés du catalogue) : jamais purgés. */
   withChildren(table: SyncTable, ids: readonly string[]): Promise<Set<string>>;

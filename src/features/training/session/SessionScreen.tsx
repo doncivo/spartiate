@@ -1,18 +1,23 @@
 import { ArrowLeft } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { parseRestSetting, type WorkoutWithSets } from '../../../domain/training';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
+import type { ClosedWorkout } from '../../../db/repositories/workoutRepository';
 import { tTraining } from '../../../i18n/trainingText';
 import { liveActivity as platformLiveActivity, type LiveActivity } from '../../../platform/liveActivity';
 import { systemNotificationClock } from '../../../platform/notifications/notificationClock';
 import { openTimerNotifier, type TimerNotifier } from '../../../platform/notifications/timerNotification';
 import { Button, Icon } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
+import { useNavigationStore } from '../../app/navigation';
 import type { TrainingData } from '../trainingState';
 import { ActiveSession } from './ActiveSession';
 import { createRestTimer } from './restTimer';
 import { StartSession } from './StartSession';
 import './Session.css';
+
+/** Résumé de fin (I1-03) : bloc à la demande, chargé à la clôture seulement. */
+const WorkoutSummary = lazy(() => import('./WorkoutSummary').then((m) => ({ default: m.WorkoutSummary })));
 
 /** Surcharges de test de la plateforme du minuteur ; par défaut les adaptateurs réels (iPhone) ou vides (PC, navigateur). */
 export interface SessionPlatform {
@@ -21,7 +26,10 @@ export interface SessionPlatform {
   readonly liveActivity?: LiveActivity;
 }
 
-type Load = { readonly status: 'loading' } | { readonly status: 'error' } | { readonly status: 'ready'; readonly workout: WorkoutWithSets | null; readonly restSetting: number | null };
+type Load =
+  | { readonly status: 'loading' }
+  | { readonly status: 'error' }
+  | { readonly status: 'ready'; readonly workout: WorkoutWithSets | null; readonly restSetting: number | null; readonly closed?: ClosedWorkout | null };
 
 async function read(access: DataAccess): Promise<{ workout: WorkoutWithSets | null; restSetting: number | null }> {
   const [workouts, raw] = await Promise.all([access.repos.workouts(), access.repos.settings.get('training.restSeconds')]);
@@ -30,7 +38,8 @@ async function read(access: DataAccess): Promise<{ workout: WorkoutWithSets | nu
 
 /**
  * Séance (I1-02) : la séance ouverte si elle existe (reprise exacte après fermeture forcée ou redémarrage : tout est relu de SQLite), sinon
- * les options de départ. Le minuteur de repos est construit ici avec les adaptateurs de la plateforme.
+ * les options de départ. Le minuteur de repos est construit ici avec les adaptateurs de la plateforme. I1-03 : après la clôture, le résumé
+ * de fin (chargé à la demande) ; « Fermer le résumé » revient aux options de départ, où la séance close peut être copiée.
  */
 export function SessionScreen({ data, platform, onExit }: { readonly data: TrainingData; readonly platform?: SessionPlatform; readonly onExit: () => void }) {
   const container = useAppContainer();
@@ -38,6 +47,7 @@ export function SessionScreen({ data, platform, onExit }: { readonly data: Train
   const os = platform?.os ?? (container.platform.os === 'ios' ? 'ios' : 'other');
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
+  const navigate = useNavigationStore((s) => s.navigate);
 
   const timer = useMemo(
     () =>
@@ -98,6 +108,21 @@ export function SessionScreen({ data, platform, onExit }: { readonly data: Train
             {tTraining('retry')}
           </Button>
         </div>
+      ) : load.closed ? (
+        <Suspense
+          fallback={
+            <p className="ct-training__muted" role="status">
+              {tTraining('loading')}
+            </p>
+          }
+        >
+          <WorkoutSummary
+            access={access}
+            closed={load.closed}
+            onClose={() => setLoad((now) => (now.status === 'ready' ? { ...now, workout: null, closed: null } : now))}
+            onJournal={() => navigate({ tab: 'training', screen: 'history' })}
+          />
+        </Suspense>
       ) : load.workout === null ? (
         <StartSession access={access} onStarted={(workout) => setLoad((now) => (now.status === 'ready' ? { ...now, workout } : now))} />
       ) : (
@@ -113,6 +138,7 @@ export function SessionScreen({ data, platform, onExit }: { readonly data: Train
           haptics={container.haptics}
           onWorkout={(workout) => setLoad((now) => (now.status === 'ready' ? { ...now, workout } : now))}
           onRestSetting={setRestSetting}
+          onClosed={(closed) => setLoad((now) => (now.status === 'ready' ? { ...now, workout: null, closed } : now))}
         />
       )}
     </div>

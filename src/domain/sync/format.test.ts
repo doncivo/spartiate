@@ -303,7 +303,8 @@ describe('noms inconnus et ordre des tables (sections 3.3, 7.2, 8)', () => {
   });
 
   it('7 tables publiées (catalogue I0 + I1-01) dans l’ordre topologique : parent avant enfant', () => {
-    expect(SYNC_TABLE_ORDER).toHaveLength(7);
+    expect(SYNC_TABLE_ORDER).toHaveLength(9);
+    expect(SYNC_TABLE_ORDER.indexOf('workout')).toBeLessThan(SYNC_TABLE_ORDER.indexOf('workout_set'));
     expect(SYNC_TABLE_ORDER[0]).toBe('profile');
     expect(SYNC_TABLE_ORDER.indexOf('profile')).toBeLessThan(SYNC_TABLE_ORDER.indexOf('body_weight'));
     expect(SYNC_TABLE_ORDER.indexOf('routine')).toBeLessThan(SYNC_TABLE_ORDER.indexOf('routine_day'));

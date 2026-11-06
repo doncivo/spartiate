@@ -664,6 +664,7 @@ export function isUnknownSettingKey(value: string): boolean {
 /**
  * Ordre topologique des tables publiées par le catalogue de production (section 3.3, D-55, I1-01) : départage des opérations de même hlc.
  * Parents avant enfants : `routine` < `routine_day` < `routine_exercise` ; `exercise` et `equipment_profile` n'ont aucun parent
- * (`routine_exercise.exercise_id` est une référence logique, P-09).
+ * (`routine_exercise.exercise_id` est une référence logique, P-09). I1-03 : `workout` < `workout_set` (séance close, D-27) ;
+ * `workout_set.exercise_id` est aussi une référence logique.
  */
-export const SYNC_TABLE_ORDER = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise'] as const;
+export const SYNC_TABLE_ORDER = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set'] as const;

@@ -148,6 +148,8 @@ const KIND_KEYS = {
   equipment_profile: 'sync.version.kinds.equipmentProfile',
   routine_day: 'sync.version.kinds.routineDay',
   routine_exercise: 'sync.version.kinds.routineExercise',
+  workout: 'sync.version.kinds.workout',
+  workout_set: 'sync.version.kinds.workoutSet',
 } as const;
 
 /** Types d'éléments d'un échec (« tâches, événements »), d'après les tables du catalogue. */

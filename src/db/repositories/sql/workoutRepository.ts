@@ -2,6 +2,8 @@ import { uuidGenerator, type IdGenerator } from '../../../domain/id';
 import type { WriteStamper } from '../../../domain/hlc';
 import {
   SETS_MAX,
+  ABANDONED_WORKOUT_KEEP_MS,
+  WORKOUT_SETS_MAX,
   SET_KINDS,
   WORKOUT_SOURCES,
   extendRestEnd,
@@ -9,10 +11,14 @@ import {
   planFromPastWorkout,
   planFromRoutineDay,
   restEndAt,
+  routineDiff,
+  summarizeWorkout,
   validateSetBounds,
   validateSetEntry,
   REST_EXTEND_SEC,
   type PlannedSet,
+  type RoutineDay,
+  type RoutineDiff,
   type RoutineExerciseSpec,
   type SetEntry,
   type SetKind,
@@ -22,10 +28,11 @@ import {
   type WorkoutWithSets,
 } from '../../../domain/training';
 import type { IsoDateTime } from '../../../domain/types';
-import type { SqlExecutor, SqlRow } from '../../driver';
+import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
 import { RepositoryError } from '../common';
 import type { RestTimer, WorkoutRepository } from '../workoutRepository';
 import { readSyncMeta, type SyncRow } from './sqlHelpers';
+import { createTrainingRoutineRepository } from './trainingRoutineRepository';
 
 interface WorkoutRow extends SqlRow, SyncRow {
   readonly routine_id: string | null;
@@ -55,6 +62,7 @@ interface SetRow extends SqlRow, SyncRow {
   readonly rir: number | null;
   readonly done: number;
   readonly done_at: string | null;
+  readonly corrected_at: string | null;
 }
 interface RoutineLineRow extends SqlRow {
   readonly exercise_id: string;
@@ -98,6 +106,7 @@ const rowToSet = (row: SetRow): WorkoutSet => ({
   rir: row.rir,
   done: row.done === 1,
   doneAt: row.done_at as IsoDateTime | null,
+  correctedAt: (row.corrected_at ?? null) as IsoDateTime | null,
   ...readSyncMeta(row),
 });
 
@@ -107,6 +116,13 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
   const invalid = (entity: string, id: string): never => {
     throw new RepositoryError('invalid', entity, id);
   };
+  /**
+   * Relecture sync-icloud I1-03 (B1) : appelé sur le driver (hors `DataAccess.transaction`), une écriture multiple qui doit être atomique
+   * ouvre elle-même sa transaction et s'y exécute (repository de la transaction) ; appelé dans une transaction (`tx` sans `transaction`),
+   * null : l'appelant écrit directement. Aucun cycle de synchro ne peut donc s'intercaler entre ses instructions.
+   */
+  const atomic = <T>(work: (inTx: WorkoutRepository) => Promise<T>): Promise<T> | null =>
+    typeof (db as Partial<SqlDriver>).transaction === 'function' ? (db as SqlDriver).transaction((tx) => work(createWorkoutRepository(tx, stamper, ids))) : null;
 
   const rawWorkout = async (id: string): Promise<WorkoutRow | undefined> => (await db.select<WorkoutRow>('SELECT * FROM workout WHERE id = ? AND deleted_at IS NULL', [id]))[0];
   const rawSets = (workoutId: string): Promise<SetRow[]> =>
@@ -143,6 +159,9 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
   };
 
   const insertSet = async (workoutId: string, id: string, position: number, plan: PlannedSet): Promise<void> => {
+    const live = Number((await db.select<{ n: number }>('SELECT COUNT(*) AS n FROM workout_set WHERE workout_id = ? AND deleted_at IS NULL', [workoutId]))[0]?.n ?? 0);
+    // Borne de l'agrégat publié d'un bloc (WORKOUT_SETS_MAX) : refus clair, rien n'est écrit pour cette série.
+    if (live >= WORKOUT_SETS_MAX) invalid('workout_set', workoutId);
     const stamp = stamper.next();
     await db.execute(
       `INSERT INTO workout_set (id, workout_id, exercise_id, exercise_name, position, set_kind, target_reps_min, target_reps_max, target_load_kg, target_rest_sec,
@@ -219,6 +238,39 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     return { plan, name: input.name ?? source.name, routineId: null, dayId: null, copyFromId: input.copyFromId };
   };
 
+  /** Séance close non supprimée : absente `not-found`, ouverte `invalid`. */
+  const requireClosed = async (id: string): Promise<WorkoutRow> => {
+    const row = await rawWorkout(id);
+    if (!row) throw new RepositoryError('not-found', 'workout', id);
+    if (row.ended_at === null) invalid('workout', id);
+    return row;
+  };
+  /** Séries de travail validées des séances closes antérieures à `workout`, pour ses exercices (records). */
+  const historyFor = async (workout: WorkoutWithSets): Promise<WorkoutSet[]> => {
+    const exercises = [...new Set(workout.sets.map((s) => s.exerciseId))];
+    if (exercises.length === 0) return [];
+    const before = workout.endedAt ?? workout.startedAt;
+    const out: WorkoutSet[] = [];
+    for (let i = 0; i < exercises.length; i += 400) {
+      const part = exercises.slice(i, i + 400);
+      const rows = await db.select<SetRow>(
+        `SELECT s.* FROM workout_set s JOIN workout w ON w.id = s.workout_id
+         WHERE w.ended_at IS NOT NULL AND w.deleted_at IS NULL AND w.id <> ? AND w.ended_at < ? AND s.deleted_at IS NULL AND s.done = 1 AND s.set_kind = 'work'
+           AND s.exercise_id IN (${part.map(() => '?').join(', ')})`,
+        [workout.id, before, ...part],
+      );
+      out.push(...rows.map(rowToSet));
+    }
+    return out;
+  };
+  /** Jour de routine d'origine (non supprimé), ou null. */
+  const dayOf = async (workout: WorkoutWithSets): Promise<RoutineDay | null> => {
+    if (workout.routineId === null || workout.routineDayId === null) return null;
+    const tree = await createTrainingRoutineRepository(db, stamper).get(workout.routineId);
+    return tree?.days.find((d) => d.id === workout.routineDayId) ?? null;
+  };
+  const diffFor = async (workout: WorkoutWithSets): Promise<RoutineDiff> => routineDiff(workout, await dayOf(workout));
+
   const mergedEntry = (row: SetRow, patch: Partial<SetEntry>): SetEntry => ({
     reps: patch.reps === undefined ? row.reps : patch.reps,
     loadKg: patch.loadKg === undefined ? row.load_kg : patch.loadKg,
@@ -228,6 +280,10 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
 
   return {
     async start(input) {
+      // Séances ouvertes abandonnées depuis plus de 30 jours : jamais publiées (aucune file, aucune trace), effacées physiquement.
+      const cut = new Date(Date.parse(stamper.next().at) - ABANDONED_WORKOUT_KEEP_MS).toISOString();
+      await db.execute('DELETE FROM workout_set WHERE workout_id IN (SELECT id FROM workout WHERE ended_at IS NULL AND deleted_at IS NOT NULL AND deleted_at < ?)', [cut]);
+      await db.execute('DELETE FROM workout WHERE ended_at IS NULL AND deleted_at IS NOT NULL AND deleted_at < ?', [cut]);
       if (!(WORKOUT_SOURCES as readonly string[]).includes(input.source)) invalid('workout', input.id ?? 'start');
       if (await rawOpen()) throw new RepositoryError('conflict', 'workout', input.id ?? 'open');
       const id = input.id ?? ids.next();
@@ -414,5 +470,118 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       const stamp = stamper.next();
       await db.execute('UPDATE workout SET rest_timer_end_at = NULL, deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
     },
+
+    // --- I1-03 -----------------------------------------------------------------------------------------------------------------------
+
+    async close(workoutId) {
+      const outer = atomic((r) => r.close(workoutId));
+      if (outer) return outer;
+      const row = await rawWorkout(workoutId);
+      if (!row) throw new RepositoryError('not-found', 'workout', workoutId);
+      if (row.ended_at === null) {
+        const sets = await rawSets(workoutId);
+        if (!sets.some((s) => s.done === 1)) invalid('workout', workoutId);
+        // Un seul tampon pour tout l'agrégat (un hlc : un groupe jamais coupé, ni à l'écriture ni à la lecture).
+        const stamp = stamper.next();
+        // Séance encore ouverte : ces écritures ne sont pas capturées (déclencheurs gardés). Les séries retirées pendant la séance, jamais
+        // publiées, disparaissent ; les autres prennent le tampon de la clôture (leurs anciens hlc peuvent être sous la tête déjà publiée).
+        await db.execute('DELETE FROM workout_set WHERE workout_id = ? AND deleted_at IS NOT NULL', [workoutId]);
+        await db.execute('UPDATE workout_set SET updated_at = ?, device_id = ?, hlc = ? WHERE workout_id = ?', [stamp.at, stamp.deviceId, stamp.hlc, workoutId]);
+        // Clôture : le déclencheur `sync_workout_au` met en file la séance et toutes ses séries (« * »), dans cette instruction.
+        await db.execute('UPDATE workout SET ended_at = ?, rest_timer_end_at = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ? AND ended_at IS NULL', [
+          stamp.at,
+          stamp.at,
+          stamp.deviceId,
+          stamp.hlc,
+          workoutId,
+        ]);
+      }
+      const workout = await loadOrThrow(workoutId);
+      return { workout, summary: summarizeWorkout(workout, await historyFor(workout)), routineDiff: await diffFor(workout), alreadyClosed: row.ended_at !== null };
+    },
+
+    getClosed: async (id) => {
+      const w = await load(id);
+      return w && w.endedAt !== null ? w : null;
+    },
+
+    async summary(workoutId) {
+      const workout = await loadOrThrow(workoutId);
+      return summarizeWorkout(workout, await historyFor(workout));
+    },
+
+    async correctSet(setId, patch) {
+      const row = (await db.select<SetRow>('SELECT * FROM workout_set WHERE id = ? AND deleted_at IS NULL', [setId]))[0];
+      if (!row) throw new RepositoryError('not-found', 'workout_set', setId);
+      await requireClosed(row.workout_id);
+      const kind = patch.setKind ?? (row.set_kind as SetKind);
+      if (!(SET_KINDS as readonly string[]).includes(kind)) invalid('workout_set', setId);
+      const entry = mergedEntry(row, patch);
+      if ((row.done === 1 ? validateSetEntry(entry, kind) : validateSetBounds(entry)).length > 0) invalid('workout_set', setId);
+      const unchanged = kind === row.set_kind && entry.reps === row.reps && entry.loadKg === row.load_kg && entry.durationSec === row.duration_sec && entry.rir === row.rir;
+      if (unchanged) return rowToSet(row);
+      const stamp = stamper.next();
+      await db.execute('UPDATE workout_set SET set_kind = ?, reps = ?, load_kg = ?, duration_sec = ?, rir = ?, corrected_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [
+        kind,
+        entry.reps,
+        entry.loadKg,
+        entry.durationSec,
+        entry.rir,
+        stamp.at,
+        stamp.at,
+        stamp.deviceId,
+        stamp.hlc,
+        setId,
+      ]);
+      return requireSetRow(setId);
+    },
+
+    async deleteClosed(id) {
+      const outer = atomic((r) => r.deleteClosed(id));
+      if (outer) return outer;
+      await requireClosed(id);
+      const stamp = stamper.next();
+      await db.execute('UPDATE workout_set SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE workout_id = ? AND deleted_at IS NULL', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
+      await db.execute('UPDATE workout SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
+    },
+
+    async routineChanges(workoutId) {
+      return diffFor(await loadOrThrow(workoutId));
+    },
+
+    async applyRoutineUpdate(workoutId) {
+      const outer = atomic((r) => r.applyRoutineUpdate(workoutId));
+      if (outer) return outer;
+      await requireClosed(workoutId);
+      const workout = await loadOrThrow(workoutId);
+      const day = await dayOf(workout);
+      const diff = routineDiff(workout, day);
+      if (!day || !diff.hasChanges) return diff;
+      const routines = createTrainingRoutineRepository(db, stamper);
+      for (const line of diff.removed) await routines.removeExercise(line.lineId);
+      for (const change of diff.setsChanged) await routines.updateExercise(change.lineId, { sets: Math.min(change.to, SETS_MAX) });
+      let position = Math.max(-1, ...day.exercises.map((l) => l.position));
+      for (const added of diff.added) {
+        position += 1;
+        const repMin = added.repMin ?? DEFAULT_REP_MIN;
+        await routines.addExercise(day.id, {
+          id: ids.next(),
+          exerciseId: added.exerciseId,
+          exerciseName: added.exerciseName,
+          sets: Math.min(added.sets, SETS_MAX),
+          repMin,
+          repMax: Math.max(repMin, added.repMax ?? DEFAULT_REP_MAX),
+          rir: null,
+          restSec: added.restSec ?? DEFAULT_REST_SEC,
+          position,
+        });
+      }
+      return diff;
+    },
   };
 }
+
+/** Cibles d'une ligne ajoutée à la routine quand la séance n'en avait pas (fourchette et repos usuels de la bibliothèque). */
+const DEFAULT_REP_MIN = 8;
+const DEFAULT_REP_MAX = 12;
+const DEFAULT_REST_SEC = 120;

@@ -14,7 +14,8 @@ import {
   type WorkoutWithSets,
 } from '../../../domain/training';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
-import type { WorkoutRepository } from '../../../db/repositories/workoutRepository';
+import { RepositoryError } from '../../../db/repositories/common';
+import type { ClosedWorkout, WorkoutRepository } from '../../../db/repositories/workoutRepository';
 import type { Haptics } from '../../../platform/haptics';
 import { formatClock, formatRest, tTraining } from '../../../i18n/trainingText';
 import { Button, ConfirmDialog } from '../../../ui';
@@ -26,8 +27,10 @@ import { SetRow } from './SetRow';
 /**
  * Écran de séance active (§ 13.2–13.4 ; maquettes iPhone-Seance, PC-Seance ; I1-02). Chaque écriture passe par le repository dans une
  * transaction, puis la séance est relue (la base fait foi). Le repos démarre seul à la validation d'une série hors échauffement ; son temps
- * restant est recalculé depuis la date de fin persistée à chaque seconde d'affichage et à chaque retour au premier plan. Aucune clôture ici
- * (I1-03) : la séance reste ouverte et locale.
+ * restant est recalculé depuis la date de fin persistée à chaque seconde d'affichage et à chaque retour au premier plan. I1-03 : « Terminer
+ * la séance » clôt la séance d'un bloc (`close` dans une transaction : la séance et toutes ses séries deviennent publiables ensemble), arrête
+ * le repos, la notification et la Live Activity, puis passe au résumé. Refus sans série de travail validée ; confirmation si des séries
+ * prévues restent à faire ; un double appui ne clôt qu'une fois (et un rejeu côté repository renvoie `alreadyClosed` sans rien écrire).
  */
 
 const SESSION_SETS_ON_ADD = 3;
@@ -48,19 +51,25 @@ export interface ActiveSessionProps {
   readonly haptics: Haptics;
   readonly onWorkout: (workout: WorkoutWithSets | null) => void;
   readonly onRestSetting: (seconds: number | null) => void;
+  /** Séance close (I1-03) : résumé à afficher. */
+  readonly onClosed: (closed: ClosedWorkout) => void;
 }
 
 const isTimedExercise = (exercise: Exercise | undefined, set: WorkoutSet): boolean => set.setKind === 'timed' || exercise?.metric === 'time';
 
-export function ActiveSession({ data, access, workout, restSetting, os, timer, clock, haptics, onWorkout, onRestSetting }: ActiveSessionProps) {
+export function ActiveSession({ data, access, workout, restSetting, os, timer, clock, haptics, onWorkout, onRestSetting, onClosed }: ActiveSessionProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
-  const [confirm, setConfirm] = useState<{ readonly kind: 'abandon' } | { readonly kind: 'exercise'; readonly block: ExerciseBlock } | null>(null);
+  const [confirm, setConfirm] = useState<
+    { readonly kind: 'abandon' } | { readonly kind: 'finish'; readonly pending: number } | { readonly kind: 'exercise'; readonly block: ExerciseBlock } | null
+  >(null);
   const [rest, setRest] = useState<RestView | null>(null);
   const [restDone, setRestDone] = useState(false);
   const [now, setNow] = useState(() => clock.nowMs());
   const live = useRef(true);
+  // Garde du double appui : un second « Terminer » arrivé avant le nouveau rendu ne relance pas la clôture.
+  const closing = useRef(false);
   const pickerHeading = useRef<HTMLHeadingElement>(null);
 
   const exerciseOf = useCallback(
@@ -191,6 +200,40 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     } catch {
       if (live.current) {
         setError(tTraining('sessionWriteError'));
+        setBusy(false);
+      }
+    }
+  }
+
+  /** « Terminer la séance » : refus sans série de travail validée, confirmation si des séries prévues restent à faire. */
+  function askFinish(): void {
+    setError(null);
+    const current = workout.sets.filter((s) => s.deletedAt === null);
+    if (!current.some((s) => s.done && s.setKind !== 'warmup')) {
+      setError(tTraining('sessionFinishNone'));
+      return;
+    }
+    const pending = current.filter((s) => !s.done).length;
+    if (pending > 0) setConfirm({ kind: 'finish', pending });
+    else void finish();
+  }
+
+  async function finish(): Promise<void> {
+    setConfirm(null);
+    if (closing.current) return;
+    closing.current = true;
+    setError(null);
+    setBusy(true);
+    try {
+      const closed = await access.transaction(async (repos) => (await repos.workouts()).close(workout.id));
+      // Séance close (repos effacé en base) : minuteur, notification et Live Activity s'arrêtent ; un échec ici ne la rouvre pas.
+      await timer.stop().catch(() => undefined);
+      haptics.notification('success');
+      if (live.current) onClosed(closed);
+    } catch (e) {
+      closing.current = false;
+      if (live.current) {
+        setError(tTraining(e instanceof RepositoryError && e.code === 'invalid' ? 'sessionFinishNone' : 'sessionFinishError'));
         setBusy(false);
       }
     }
@@ -343,6 +386,9 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
           {tTraining('sessionAbandon')}
         </Button>
       </div>
+      <Button fullWidth disabled={busy} onClick={askFinish}>
+        {tTraining('sessionFinish')}
+      </Button>
 
       {(rest !== null || restDone) && (
         <div className="ct-session__rest" role="region" aria-label={tTraining('restEyebrow')}>
@@ -377,6 +423,16 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
           confirmLabel={tTraining('sessionAbandonConfirm')}
           onCancel={() => setConfirm(null)}
           onConfirm={() => void abandon()}
+        />
+      )}
+      {confirm?.kind === 'finish' && (
+        <ConfirmDialog
+          title={tTraining('sessionFinishTitle')}
+          description={confirm.pending === 1 ? tTraining('sessionFinishPendingOne') : tTraining('sessionFinishPending', { n: confirm.pending })}
+          confirmLabel={tTraining('sessionFinishConfirm')}
+          cancelLabel={tTraining('sessionFinishContinue')}
+          onCancel={() => setConfirm(null)}
+          onConfirm={() => void finish()}
         />
       )}
       {confirm?.kind === 'exercise' && (
