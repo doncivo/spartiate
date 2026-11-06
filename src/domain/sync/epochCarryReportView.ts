@@ -39,6 +39,12 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   settings: { label: null, kind: 'settings' },
   profile: { label: null, kind: 'profile' },
   body_weight: { label: 'date', kind: 'bodyWeight' },
+  // I1-01 : `routine` (ancien et nouveau schéma) partage son entrée ci-dessus (`title` de l'ancien schéma ; la routine d'entraînement a `name`,
+  // son libellé retombe sur l'identifiant abrégé tant que cette table n'a pas deux entrées).
+  exercise: { label: 'name_fr', kind: 'exercise' },
+  equipment_profile: { label: 'name', kind: 'equipmentProfile' },
+  routine_day: { label: 'name', kind: 'routineDay' },
+  routine_exercise: { label: 'exercise_name', kind: 'routineExercise' },
 };
 
 export const carryReportTableEntry = (table: string): { readonly label: string | null; readonly kind: string } | undefined =>

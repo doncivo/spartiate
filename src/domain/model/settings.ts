@@ -120,6 +120,8 @@ export interface SettingsValues {
   'timer.synthetic': unknown;
   /** Clôture I0 : Santé a répondu « entitlement manquant » (compte Apple gratuit, D-69) ; l'écran Apple Santé et la ligne de Plus le disent sans attendre une nouvelle demande. Locale. */
   'healthkit.entitlementMissing': boolean;
+  /** I1-01 (§ 14.3) : identifiant du profil de matériel actif sur cet appareil ; préférence locale, jamais publiée (les profils le sont). */
+  'training.activeEquipmentProfile': string | null;
 }
 
 export type SettingKey = keyof SettingsValues;
@@ -172,6 +174,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'calendars.orphanSecrets': { scope: 'local', defaultValue: null },
   'timer.synthetic': { scope: 'local', defaultValue: null },
   'healthkit.entitlementMissing': { scope: 'local', defaultValue: false },
+  'training.activeEquipmentProfile': { scope: 'local', defaultValue: null },
 };
 
 /** Valeur par défaut d'un réglage. */

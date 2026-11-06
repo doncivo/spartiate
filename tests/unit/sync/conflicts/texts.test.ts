@@ -39,7 +39,8 @@ describe('libellés des champs (critère 2)', () => {
     expect(hidden.every((key) => lookup(fr, key) === undefined)).toBe(true);
     for (const t of SYNC_TABLES) for (const c of t.columns) if (HIDDEN.includes(c.name)) expect(c.conflictVisible, `${t.name}.${c.name}`).toBe(false);
     // Aucun libellé en trop (colonne disparue du catalogue).
-    expect(leaves(fr.sync.field, 'sync.field.').sort()).toEqual([...visible].sort());
+    // `routine` : même nom de table dans l'ancien schéma et le catalogue I1-01, libellés communs (`deleted_at`) comptés une fois.
+    expect(leaves(fr.sync.field, 'sync.field.').sort()).toEqual([...new Set(visible)].sort());
   });
 
   it('sections sync.conflicts et sync.field : aucun texte français vide', () => {
