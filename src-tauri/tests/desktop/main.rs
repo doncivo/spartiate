@@ -29,6 +29,7 @@ mod signing;
 mod speech;
 mod sql_closed;
 mod support;
+mod training_schema;
 mod sync_bookmark;
 mod sync_closed_segments;
 mod sync_crypto;
