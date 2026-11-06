@@ -43,7 +43,13 @@ export async function* snapshotPages(repos: Repositories, catalogue: SyncCatalog
     rows = [];
     bytes = 0;
   };
+  // I1-03 (relecture sync-icloud) : l'export n'est pas une transaction ; une ligne parente écrite ou devenue publiable après la page de sa
+  // table (séance close pendant l'export) n'y figure pas. Ses enfants sont alors écartés : l'instantané ne porte jamais d'enfant sans son
+  // parent, et ces lignes, encore dans la file d'envoi (numéro postérieur à la coupure prise avant l'instantané), partent par le journal.
+  const exportedIds = new Map<string, Set<string>>();
   for (const t of catalogue.tables) {
+    const tracked = catalogue.childRelations(t.name).length > 0 ? new Set<string>() : null;
+    if (tracked) exportedIds.set(t.name, tracked);
     let after: string | null = null;
     for (;;) {
       const exported = await repos.sync.exportRows(t, after, PAGE_ROWS);
@@ -51,6 +57,8 @@ export async function* snapshotPages(repos: Repositories, catalogue: SyncCatalog
       after = (exported.at(-1) as ExportedRow).id;
       for (const row of exported) {
         if (t.idKind === 'setting' && catalogue.settingScope(row.id) !== 'shared') continue;
+        if (t.parents.some((p) => typeof row.values.get(p.column) === 'string' && exportedIds.get(p.table)?.has(row.values.get(p.column) as string) === false)) continue;
+        tracked?.add(row.id);
         const snap = toSnapshotRow(t, row);
         const size = rowJsonBytes(snap);
         if (size > SNAPSHOT_CHUNK_PLAINTEXT_BYTES) {
@@ -301,6 +309,16 @@ async function keepSnapshotUnknown(repos: Repositories, snapshot: LoadedSnapshot
  * par l'instantané d'un appareil en schéma 4 ne recevait jamais les séances closes qu'il contenait. D'une version égale ou plus ancienne :
  * rien n'est gardé (elle ne peut pas connaître ce que la version locale ignore).
  */
+/** Une clé parente (catalogue) de ces valeurs vise-t-elle une ligne absente de la base ? */
+async function hasMissingParent(catalogue: SyncCatalogue, repos: Repositories, t: SyncTable, values: ReadonlyMap<string, SyncValue>): Promise<boolean> {
+  for (const p of t.parents) {
+    const value = values.get(p.column);
+    const pt = catalogue.table(p.table);
+    if (typeof value === 'string' && pt && !(await repos.sync.existingIds(pt, [value])).has(value)) return true;
+  }
+  return false;
+}
+
 async function keepUnknownTableRows(deps: SyncDeps, repos: Repositories, snapshot: LoadedSnapshot): Promise<void> {
   if (snapshot.end.sv <= deps.sv) return;
   for (const [table, row, clocks] of rowsOf(snapshot.records)) {
@@ -342,6 +360,17 @@ export async function replaceFromSnapshot(deps: SyncDeps, snapshot: LoadedSnapsh
         let max = star;
         for (const hlc of clocks.values()) if (hlc > max) max = hlc;
         const meta = { hlc: max, updatedAt: hlcIso(max), deviceId: max.slice(21) };
+        // I1-03 (relecture sync-icloud) : parent absent (instantané d'une version antérieure pris pendant une écriture) : la ligne est mise
+        // de côté (`missing-parent`, rejouée quand le parent arrive par le journal) au lieu d'échouer sur la clé étrangère à chaque cycle.
+        const missingParent = await hasMissingParent(deps.catalogue, repos, t, values);
+        if (missingParent) {
+          const op = rowToOp(t, row, clocks);
+          const old = await repos.sync.parkedForRow('missing-parent', t.name, id);
+          if (old.length > 0) await repos.sync.removeParked(old.map((p) => p.id));
+          if (op) await repos.sync.park('missing-parent', t.name, id, max, JSON.stringify({ t: op.t, id: op.id, at: op.at, f: Object.fromEntries(op.f) }), hlcIso(deps.hlc.now()));
+          deps.logger.log('replace-parked', { table: t.name, reason: 'missing-parent' });
+          continue;
+        }
         const exists = (await repos.sync.existingIds(t, [id])).has(id);
         if (exists) await repos.sync.updateRow(t, id, values, meta);
         else await repos.sync.insertRow(t, id, values, meta);
