@@ -45,6 +45,20 @@ describe('sources durables de l’extension (SPA-007 lot A)', () => {
     expect(src).not.toMatch(/Timer.scheduledTimer|URLSession|pushType/);
   });
 
+  it('I1-02 : état final lisible sans rafraîchissement (heure de fin permanente), option retenue écrite dans le widget', () => {
+    const src = read(`${DIR}/SpartiateLiveActivity.swift`);
+    // Le texte « Terminé » vient de l'i18n (finishedLabel), jamais en dur.
+    expect(src).toMatch(/Text\(state\.finishedLabel\)/);
+    expect(src).not.toMatch(/"Terminé"|"Repos"/);
+    // Heure de fin rendue en permanence (lisible même si la vue n'est jamais redessinée après l'échéance).
+    expect(src).toMatch(/Text\(endDate,\s*style:\s*\.time\)/);
+    expect(src).toMatch(/SpartiateEndTime\(endDate:\s*context\.state\.endDate\)/);
+    // Option retenue et limite documentées ; aucun `end` anticipé (il retirerait l'activité de la Dynamic Island).
+    expect(src).toMatch(/Option retenue/);
+    expect(src).toMatch(/Dynamic Island/);
+    expect(src).not.toMatch(/\.end\(/);
+  });
+
   it('Info.plist de l’extension : point d’extension WidgetKit, aucun mode d’arrière-plan ni groupe', () => {
     const plist = parsePlist(read(`${DIR}/Info.plist`)) as Record<string, unknown>;
     expect((plist['NSExtension'] as Record<string, string>)['NSExtensionPointIdentifier']).toBe('com.apple.widgetkit-extension');
@@ -58,6 +72,81 @@ describe('sources durables de l’extension (SPA-007 lot A)', () => {
     expect(existsSync(join(root, DIR, 'SpartiateLiveActivity.entitlements'))).toBe(false);
     const entitlements = parsePlist(read('src-tauri/ios/Spartiate.entitlements')) as Record<string, unknown>;
     expect(Object.keys(entitlements)).toEqual(['com.apple.developer.healthkit']);
+  });
+});
+
+/** Luminance relative WCAG 2.x d'une couleur « RRGGBB ». */
+function luminance(hex: string): number {
+  const channel = (i: number): number => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+}
+
+function contrast(a: string, b: string): number {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+describe('I1-02 : couleurs de la charte et texte clair forcé sur chaque présentation', () => {
+  const src = read(`${DIR}/SpartiateLiveActivity.swift`);
+  const tokens = read('src/ui/theme/tokens.css');
+  const rootBlock = tokens.slice(tokens.indexOf(':root'), tokens.indexOf('}', tokens.indexOf(':root')));
+
+  /** Couleur Swift `static let <nom> = Color(spartiateHex: 0xRRGGBB) // --ct-color-…` et le token cité. */
+  function swiftColor(name: string): { hex: string; token: string } {
+    const match = src.match(new RegExp(`static let ${name} = Color\\(spartiateHex: 0x([0-9A-Fa-f]{6})\\)\\s*//\\s*(--ct-color-[a-z-]+)`));
+    expect(match, name).not.toBeNull();
+    return { hex: (match as RegExpMatchArray)[1].toLowerCase(), token: (match as RegExpMatchArray)[2] };
+  }
+
+  function tokenValue(token: string): string {
+    const match = rootBlock.match(new RegExp(`${token}:\\s*#([0-9a-fA-F]{6})`));
+    expect(match, token).not.toBeNull();
+    return (match as RegExpMatchArray)[1].toLowerCase();
+  }
+
+  it('chaque couleur du widget reprend la valeur du token cité (tokens.css, :root)', () => {
+    for (const name of ['fond', 'texte', 'texteSecondaire', 'bronze']) {
+      const { hex, token } = swiftColor(name);
+      expect(hex, `${name} = ${token}`).toBe(tokenValue(token));
+    }
+  });
+
+  it('le fond est sombre et chaque couleur de texte ou d’icône a un contraste AA (≥ 4,5:1) sur lui', () => {
+    const fond = swiftColor('fond').hex;
+    expect(luminance(fond)).toBeLessThan(0.05);
+    for (const name of ['texte', 'texteSecondaire', 'bronze']) expect(contrast(swiftColor(name).hex, fond), name).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('le fond opaque de la charte remplace le noir translucide ; l’apparence ne suit pas le mode clair / sombre du téléphone', () => {
+    expect(src).toMatch(/\.activityBackgroundTint\(SpartiateCharte\.fond\)/);
+    expect(src).toMatch(/\.activitySystemActionForegroundColor\(SpartiateCharte\.texte\)/);
+    expect(src).not.toMatch(/Color\.black|Color\.white|\.primary|\.secondary\b/);
+    expect(src).toMatch(/\.keylineTint\(SpartiateCharte\.bronze\)/);
+    expect((src.match(/\.environment\(\\\.colorScheme,\s*\.dark\)/g) ?? []).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('écran verrouillé, Dynamic Island étendue (3 régions), compacte (2) et minimale : couleur claire forcée dans chacune', () => {
+    const between = (from: string, to: string): string => {
+      const start = src.indexOf(from);
+      const end = src.indexOf(to, start + from.length);
+      expect(start, from).toBeGreaterThanOrEqual(0);
+      expect(end, to).toBeGreaterThan(start);
+      return src.slice(start, end);
+    };
+    const parts: Record<string, string> = {
+      'écran verrouillé': between('struct SpartiateLockScreenView', '\nstruct '),
+      'étendue, début': between('DynamicIslandExpandedRegion(.leading)', 'DynamicIslandExpandedRegion(.trailing)'),
+      'étendue, fin': between('DynamicIslandExpandedRegion(.trailing)', 'DynamicIslandExpandedRegion(.bottom)'),
+      'étendue, bas': between('DynamicIslandExpandedRegion(.bottom)', '} compactLeading:'),
+      'compacte, début': between('} compactLeading:', '} compactTrailing:'),
+      'compacte, fin': between('} compactTrailing:', '} minimal:'),
+      minimale: between('} minimal:', '.keylineTint'),
+    };
+    for (const [name, part] of Object.entries(parts)) expect(part, name).toMatch(/\.foregroundStyle\(SpartiateCharte\.(texte|texteSecondaire|bronze)\)/);
+    expect(src).toMatch(/ActivityConfiguration\(for:\s*SpartiateTimerAttributes\.self\)\s*\{\s*context in\s*SpartiateLockScreenView\(context:\s*context\)/);
   });
 });
 
