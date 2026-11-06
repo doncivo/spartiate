@@ -1,6 +1,6 @@
-//! I1-01 / I1-02 : les versions 2 (migration 0002, bibliothèque, matériel et routines) et 3 (migration 0003, séance locale `workout` /
-//! `workout_set`, sans déclencheur de capture : D-27) sont admises par la vérification des sauvegardes ; la version 4, inconnue de cette
-//! app, est refusée. Les déclencheurs de capture des cinq tables de la version 2 sont ceux de la référence.
+//! I1-01 / I1-02 / I1-03 : les versions 2 (migration 0002, bibliothèque, matériel et routines), 3 (migration 0003, séance locale `workout` /
+//! `workout_set`, sans déclencheur de capture : D-27) et 4 (migration 0004, déclencheurs gardés des séances closes) sont admises par la
+//! vérification des sauvegardes ; la version 5, inconnue de cette app, est refusée. Les déclencheurs de capture sont ceux de la référence.
 
 use std::path::Path;
 
@@ -53,12 +53,12 @@ fn error_code(path: &Path) -> &'static str {
 }
 
 #[test]
-fn i1_02_the_app_schema_version_is_3() {
-    assert_eq!(APP_SCHEMA_VERSION, 3);
+fn i1_03_the_app_schema_version_is_4() {
+    assert_eq!(APP_SCHEMA_VERSION, 4);
 }
 
 #[test]
-fn i1_02_a_version_3_backup_is_accepted_and_adds_no_reference_trigger() {
+fn i1_02_a_version_3_backup_is_accepted_and_has_no_workout_trigger() {
     let dir = scratch();
     let path = dir.path().join("v3.db");
     make_db(&path, 3, &TABLES);
@@ -73,9 +73,36 @@ fn i1_02_a_version_3_backup_is_accepted_and_adds_no_reference_trigger() {
         for suffix in ["ai", "au"] {
             let name = format!("sync_{table}_{suffix}");
             assert_eq!(trigger_body_for(&name, table, 3), None, "{name}");
-            assert!(!REFERENCE_TRIGGERS.iter().any(|(n, _, _)| *n == name));
         }
     }
+}
+
+#[test]
+fn i1_03_a_version_4_backup_with_the_guarded_workout_triggers_is_accepted() {
+    let dir = scratch();
+    let path = dir.path().join("v4.db");
+    make_db(&path, 4, &TABLES);
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(
+            "CREATE TABLE workout (id TEXT PRIMARY KEY, ended_at TEXT); CREATE TABLE workout_set (id TEXT PRIMARY KEY, workout_id TEXT);",
+        )
+        .unwrap();
+    for table in ["workout", "workout_set"] {
+        for suffix in ["ai", "au"] {
+            let name = format!("sync_{table}_{suffix}");
+            let sql = trigger_body_for(&name, table, 4).unwrap_or_else(|| panic!("{name}"));
+            // Gardé : une séance ouverte n'est jamais capturée (D-27).
+            assert!(sql.contains("ended_at"), "{name}");
+            let count = REFERENCE_TRIGGERS
+                .iter()
+                .filter(|(n, t, _)| *n == name && *t == table)
+                .count();
+            assert_eq!(count, 1, "{name}");
+            Connection::open(&path).unwrap().execute_batch(sql).unwrap();
+        }
+    }
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 4);
 }
 
 #[test]
@@ -120,13 +147,13 @@ fn i1_01_every_published_table_has_its_two_capture_triggers_in_the_reference() {
 }
 
 #[test]
-fn i1_02_a_version_4_backup_is_refused_as_newer_schema() {
+fn i1_03_a_version_5_backup_is_refused_as_newer_schema() {
     let dir = scratch();
-    let path = dir.path().join("v4.db");
+    let path = dir.path().join("v5.db");
     make_db(&path, 3, &TABLES);
     Connection::open(&path)
         .unwrap()
-        .execute("INSERT INTO schema_migrations (version) VALUES (4)", [])
+        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5);")
         .unwrap();
     assert_eq!(error_code(&path), "newer-schema");
 }

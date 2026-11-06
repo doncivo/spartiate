@@ -18,9 +18,11 @@ const DAY = '4d3c2b1a-0000-4000-8000-0000000000b1';
 const LINE = '4d3c2b1a-0000-4000-8000-0000000000c1';
 const EQUIP = '4d3c2b1a-0000-4000-8000-0000000000d1';
 
+const UP_TO_2 = migrations.slice(0, 2);
+
 async function freshDb(): Promise<SqlDriver> {
   const db = await openSqliteWasmDriver();
-  await migrate(db, migrations);
+  await migrate(db, UP_TO_2);
   return db;
 }
 
@@ -295,7 +297,7 @@ describe('migration 0002 : training (I1-01, D-71, P-09)', () => {
 
   it('relance sans effet', async () => {
     const db = await freshDb();
-    expect((await migrate(db, migrations)).applied).toEqual([]);
+    expect((await migrate(db, UP_TO_2)).applied).toEqual([]);
     await db.close();
   });
 });
