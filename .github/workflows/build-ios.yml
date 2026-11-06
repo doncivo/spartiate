@@ -220,7 +220,7 @@ jobs:
           test -s "$APP/AppIcon60x60@2x.png" || { echo "::error::AppIcon60x60@2x.png absent de l'IPA"; ls "$APP"; exit 1; }
           test -s "$APP/Assets.car" || { echo "::error::Assets.car absent de l'IPA"; exit 1; }
           /usr/libexec/PlistBuddy -c "Print :CFBundleIcons" "$APP/Info.plist" | grep -q AppIcon || { echo "::error::Info.plist sans CFBundleIcons / AppIcon"; exit 1; }
-          mkdir -p info && cp "$APP/AppIcon60x60@2x.png" info/AppIcon60x60@2x.png
+          mkdir -p icon && cp "$APP/AppIcon60x60@2x.png" icon/AppIcon60x60@2x.png
           echo "- Icône de l'IPA finale : AppIcon60x60@2x.png, Assets.car et CFBundleIcons/AppIcon présents (copie source contrôlée au hash avant le build)" >> "$GITHUB_STEP_SUMMARY"
 
       # Contrat des permissions (I-01) : chaque plugin déclare ses clés dans scripts/ios/plist-contract.json.
@@ -300,7 +300,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Spartiate-app-icon
-          path: info/AppIcon60x60@2x.png
+          path: icon/AppIcon60x60@2x.png
           if-no-files-found: error
           retention-days: 30
 
