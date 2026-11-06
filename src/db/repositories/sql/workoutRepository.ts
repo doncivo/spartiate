@@ -163,9 +163,12 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       await db.execute('UPDATE workout_set SET position = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [index, stamp.at, stamp.deviceId, stamp.hlc, row.id]);
     }
   };
-  const writeRest = async (id: string, endAt: string | null, seconds: number): Promise<void> => {
+  /** Le tampon sert aussi d'horloge : l'échéance se calcule depuis lui, puis l'écriture suit sans attente entre les deux. */
+  const writeRest = async (id: string, compute: (nowMs: number) => { endAt: string | null; seconds: number }): Promise<{ endAt: string | null; seconds: number }> => {
     const stamp = stamper.next();
+    const { endAt, seconds } = compute(Date.parse(stamp.at));
     await db.execute('UPDATE workout SET rest_timer_end_at = ?, rest_timer_seconds = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [endAt, seconds, stamp.at, stamp.deviceId, stamp.hlc, id]);
+    return { endAt, seconds };
   };
   const toRest = (row: WorkoutRow): RestTimer | null =>
     row.rest_timer_end_at === null ? null : { workoutId: row.id, endAt: row.rest_timer_end_at, seconds: row.rest_timer_seconds };
@@ -174,7 +177,6 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     if (!row) throw new RepositoryError('not-found', 'workout', 'open');
     return row;
   };
-  const nowMs = (): number => Date.parse(stamper.next().at);
 
   const planFor = async (input: Parameters<WorkoutRepository['start']>[0]): Promise<{ plan: PlannedSet[]; name: string; routineId: string | null; dayId: string | null; copyFromId: string | null }> => {
     const entity = 'workout';
@@ -381,26 +383,24 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     async startRest({ seconds }) {
       const row = await requireOpenRow();
       if (!isRestSeconds(seconds)) invalid('workout', row.id);
-      const endAt = restEndAt(nowMs(), seconds);
-      await writeRest(row.id, endAt, seconds);
-      return { workoutId: row.id, endAt, seconds };
+      const written = await writeRest(row.id, (now) => ({ endAt: restEndAt(now, seconds), seconds }));
+      return { workoutId: row.id, endAt: written.endAt ?? '', seconds };
     },
 
     async extendRest(addSeconds = REST_EXTEND_SEC) {
       const row = await requireOpenRow();
       if (!isRestSeconds(addSeconds)) invalid('workout', row.id);
-      const now = nowMs();
-      const running = row.rest_timer_end_at !== null && Date.parse(row.rest_timer_end_at) > now;
-      const endAt = extendRestEnd(row.rest_timer_end_at, now, addSeconds);
-      const seconds = running ? row.rest_timer_seconds + addSeconds : addSeconds;
-      await writeRest(row.id, endAt, seconds);
-      return { workoutId: row.id, endAt, seconds };
+      const written = await writeRest(row.id, (now) => {
+        const running = row.rest_timer_end_at !== null && Date.parse(row.rest_timer_end_at) > now;
+        return { endAt: extendRestEnd(row.rest_timer_end_at, now, addSeconds), seconds: running ? row.rest_timer_seconds + addSeconds : addSeconds };
+      });
+      return { workoutId: row.id, endAt: written.endAt ?? '', seconds: written.seconds };
     },
 
     async skipRest() {
       const row = await rawOpen();
       if (!row || row.rest_timer_end_at === null) return;
-      await writeRest(row.id, null, row.rest_timer_seconds);
+      await writeRest(row.id, () => ({ endAt: null, seconds: row.rest_timer_seconds }));
     },
 
     getRest: async () => {
