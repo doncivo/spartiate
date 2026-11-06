@@ -114,6 +114,7 @@ export function ExerciseList({ data, mode, onSelect }: ExerciseListProps) {
 function repText(exercise: Exercise): string {
   const [min, max] = exercise.defaultRepRange;
   if (exercise.metric === 'time') return min === max ? tTraining('durationSame', { min }) : tTraining('durationRange', { min, max });
+  if (exercise.metric === 'distance') return min === max ? tTraining('distanceSame', { min }) : tTraining('distanceRange', { min, max });
   return min === max ? tTraining('repRangeSame', { min }) : tTraining('repRange', { min, max });
 }
 

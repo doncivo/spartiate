@@ -41,6 +41,8 @@ export const trainingFr = {
   repRangeSame: '{min} répétitions',
   durationRange: '{min} à {max} s',
   durationSame: '{min} s',
+  distanceRange: '{min} à {max} m',
+  distanceSame: '{min} m',
   rest: '{time} de repos',
   minutes: '{m} min',
   minutesSeconds: '{m} min {s} s',
