@@ -44,12 +44,21 @@ export function TimerTestRow({ os, notifier, liveActivity }: Props) {
   const [report, setReport] = useState<TimerStartReport | null>(null);
   const [finished, setFinished] = useState(false);
   const [stopFailed, setStopFailed] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [now, setNow] = useState(() => container.clock.nowMs());
   const live = useRef(true);
 
   const resume = useCallback(async () => {
-    const result = await timer.resume();
+    let result;
+    try {
+      result = await timer.resume();
+    } catch {
+      // Réglage illisible : dit, jamais une erreur non gérée.
+      if (live.current) setFailed(true);
+      return;
+    }
     if (!live.current) return;
+    setFailed(false);
     setNow(container.clock.nowMs());
     setState(result.state);
     if (result.phase === 'finished') {
@@ -86,16 +95,30 @@ export function TimerTestRow({ os, notifier, liveActivity }: Props) {
   async function start(): Promise<void> {
     setFinished(false);
     setStopFailed(false);
-    const result = await timer.start();
+    let result;
+    try {
+      result = await timer.start();
+    } catch {
+      if (live.current) setFailed(true);
+      return;
+    }
     if (!live.current) return;
+    setFailed(false);
     setNow(container.clock.nowMs());
     setState(result.state);
     setReport(result);
   }
 
   async function stop(): Promise<void> {
-    const result = await timer.stop();
+    let result;
+    try {
+      result = await timer.stop();
+    } catch {
+      if (live.current) setFailed(true);
+      return;
+    }
     if (!live.current) return;
+    setFailed(false);
     setState(null);
     setReport(null);
     setFinished(false);
@@ -119,6 +142,11 @@ export function TimerTestRow({ os, notifier, liveActivity }: Props) {
           </span>
         )}
         {running && report && <Explanation report={report} os={platformOs} />}
+        {failed && (
+          <span className="ct-settings__hint ct-settings__hint--danger" role="alert">
+            {tTimer('failed')}
+          </span>
+        )}
         {stopFailed && (
           <span className="ct-settings__hint ct-settings__hint--danger" role="alert">
             {tTimer('stopFailed')}
