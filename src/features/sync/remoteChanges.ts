@@ -1,13 +1,48 @@
+import { useEffect, useState } from 'react';
 import type { RemoteChanges } from '../../platform/sync/types';
 import { defaultSyncLogger, type SyncLogger } from '../../sync';
 import type { AppContainer } from '../app/container';
 
 /**
- * Après chaque lot appliqué par la synchro (ADR 0011 section 8 ; Y-02 critère 18) : les écrans qui affichent des lignes reçues rechargent
- * leur liste. SPA-001b : les anciens écrans (tâches, routines, événements, checklists, espaces) sont retirés ; en I0 aucun écran
- * n'affiche encore profil ou pesée. Le crochet reste, avec son contrat (une relecture en échec est journalisée par code et rendue dans
- * `failed`), pour que les écrans de I1 s'y branchent sans toucher au moteur de synchro.
+ * Après chaque lot appliqué par la synchro (ADR 0011 section 8 ; Y-02 critère 18) : les écrans qui affichent des lignes reçues relisent
+ * leurs données. 0.1.4 (2) : l'événement « données synchronisées appliquées » porte les tables touchées ; Profil et poids et Aujourd'hui
+ * s'y abonnent (`useSyncedData`) et se rechargent sans changer d'onglet. Une relecture ou un abonné en échec est journalisé par code et
+ * rendu dans `failed` (contrat inchangé pour `startSync`).
  */
-export function applyRemoteChanges(_container: AppContainer, _change: RemoteChanges, _logger: SyncLogger = defaultSyncLogger): Promise<{ readonly failed: readonly string[] }> {
-  return Promise.resolve({ failed: [] });
+type Listener = (tables: ReadonlySet<string>) => void;
+const listeners = new Set<Listener>();
+
+/** S'abonne aux lots appliqués ; rend la fonction de désabonnement. */
+export function onSyncedDataApplied(listener: Listener): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function applyRemoteChanges(_container: AppContainer, change: RemoteChanges, logger: SyncLogger = defaultSyncLogger): Promise<{ readonly failed: readonly string[] }> {
+  const failed: string[] = [];
+  for (const listener of [...listeners]) {
+    try {
+      listener(change.tables);
+    } catch {
+      logger.log('remote-reload-failed', { code: 'listener' });
+      failed.push('listener');
+    }
+  }
+  return Promise.resolve({ failed });
+}
+
+/**
+ * Compteur qui change chaque fois qu'un lot appliqué touche l'une des `tables` : à mettre dans les dépendances de l'effet de lecture de
+ * l'écran. Un lot sans rapport ne change rien.
+ */
+export function useSyncedData(tables: readonly string[]): number {
+  const [version, setVersion] = useState(0);
+  const key = tables.join('|');
+  useEffect(() => {
+    const wanted = key.split('|');
+    return onSyncedDataApplied((touched) => {
+      if (wanted.some((table) => touched.has(table))) setVersion((v) => v + 1);
+    });
+  }, [key]);
+  return version;
 }
