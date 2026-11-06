@@ -26,10 +26,13 @@ export const TABS: readonly TabDefinition[] = [
   { id: 'more', labelKey: 'nav.tabs.more', shortcut: 'app.tab.more' },
 ];
 
+/** I1-01 : sections de l'Entraînement ; absent = Routines. */
+export type TrainingScreenId = 'routines' | 'library' | 'equipment';
+
 /** Écrans internes de chaque section. Ajouter un écran = ajouter un membre ici. */
 export type Route =
   | { readonly tab: 'today' }
-  | { readonly tab: 'training' }
+  | { readonly tab: 'training'; readonly screen?: TrainingScreenId }
   | { readonly tab: 'nutrition' }
   | { readonly tab: 'progress' }
   | { readonly tab: 'more'; readonly screen: 'home' | 'general' | 'desktop' | 'about' | 'appearance' | 'body' | 'health' | 'exportimport' | 'sync' | 'logs' };

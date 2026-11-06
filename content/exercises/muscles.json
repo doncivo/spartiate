@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "muscles": [
+    {
+      "id": "chest",
+      "nameFr": "Pectoraux",
+      "group": "Torse"
+    },
+    {
+      "id": "lats",
+      "nameFr": "Grand dorsal",
+      "group": "Dos"
+    },
+    {
+      "id": "middle-traps",
+      "nameFr": "Trapèzes moyens",
+      "group": "Dos"
+    },
+    {
+      "id": "upper-traps",
+      "nameFr": "Trapèzes supérieurs",
+      "group": "Dos"
+    },
+    {
+      "id": "trapezius",
+      "nameFr": "Trapèzes",
+      "group": "Dos"
+    },
+    {
+      "id": "erector-spinae",
+      "nameFr": "Érecteurs du rachis",
+      "group": "Dos"
+    },
+    {
+      "id": "lower-back",
+      "nameFr": "Lombaires",
+      "group": "Dos"
+    },
+    {
+      "id": "front-delts",
+      "nameFr": "Deltoïdes antérieurs",
+      "group": "Épaules"
+    },
+    {
+      "id": "middle-delts",
+      "nameFr": "Deltoïdes moyens",
+      "group": "Épaules"
+    },
+    {
+      "id": "rear-delts",
+      "nameFr": "Deltoïdes postérieurs",
+      "group": "Épaules"
+    },
+    {
+      "id": "deltoids",
+      "nameFr": "Deltoïdes",
+      "group": "Épaules"
+    },
+    {
+      "id": "rotator-cuff",
+      "nameFr": "Coiffe des rotateurs",
+      "group": "Épaules"
+    },
+    {
+      "id": "shoulders",
+      "nameFr": "Épaules",
+      "group": "Épaules"
+    },
+    {
+      "id": "biceps",
+      "nameFr": "Biceps",
+      "group": "Bras"
+    },
+    {
+      "id": "triceps",
+      "nameFr": "Triceps",
+      "group": "Bras"
+    },
+    {
+      "id": "brachialis",
+      "nameFr": "Brachial",
+      "group": "Bras"
+    },
+    {
+      "id": "brachioradialis",
+      "nameFr": "Brachio-radial",
+      "group": "Bras"
+    },
+    {
+      "id": "forearms",
+      "nameFr": "Avant-bras",
+      "group": "Bras"
+    },
+    {
+      "id": "forearm-flexors",
+      "nameFr": "Fléchisseurs de l’avant-bras",
+      "group": "Bras"
+    },
+    {
+      "id": "quads",
+      "nameFr": "Quadriceps",
+      "group": "Jambes"
+    },
+    {
+      "id": "hamstrings",
+      "nameFr": "Ischio-jambiers",
+      "group": "Jambes"
+    },
+    {
+      "id": "glutes",
+      "nameFr": "Fessiers",
+      "group": "Jambes"
+    },
+    {
+      "id": "gluteus-medius",
+      "nameFr": "Moyen fessier",
+      "group": "Jambes"
+    },
+    {
+      "id": "gluteus-minimus",
+      "nameFr": "Petit fessier",
+      "group": "Jambes"
+    },
+    {
+      "id": "adductors",
+      "nameFr": "Adducteurs",
+      "group": "Jambes"
+    },
+    {
+      "id": "calves",
+      "nameFr": "Mollets",
+      "group": "Jambes"
+    },
+    {
+      "id": "gastrocnemius",
+      "nameFr": "Gastrocnémien",
+      "group": "Jambes"
+    },
+    {
+      "id": "soleus",
+      "nameFr": "Soléaire",
+      "group": "Jambes"
+    },
+    {
+      "id": "tibialis-anterior",
+      "nameFr": "Tibial antérieur",
+      "group": "Jambes"
+    },
+    {
+      "id": "toe-extensors",
+      "nameFr": "Extenseurs des orteils",
+      "group": "Jambes"
+    },
+    {
+      "id": "abs",
+      "nameFr": "Sangle abdominale",
+      "group": "Tronc"
+    },
+    {
+      "id": "obliques",
+      "nameFr": "Obliques",
+      "group": "Tronc"
+    },
+    {
+      "id": "quadratus-lumborum",
+      "nameFr": "Carré des lombes",
+      "group": "Tronc"
+    },
+    {
+      "id": "hip-flexors",
+      "nameFr": "Fléchisseurs de hanche",
+      "group": "Tronc"
+    }
+  ]
+}

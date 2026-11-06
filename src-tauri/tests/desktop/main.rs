@@ -52,6 +52,7 @@ mod sync_store;
 mod sync_support;
 mod sync_tz;
 mod sync_y_tech_02;
+mod training_schema;
 mod updater;
 mod window;
 mod window_fit;
