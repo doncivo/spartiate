@@ -21,6 +21,13 @@ export const DURATION_MAX_SEC = 36_000;
 export const REST_TIMER_MAX_SEC = 3600;
 /** Prolongation d'un repos par « +30 s ». */
 export const REST_EXTEND_SEC = 30;
+/**
+ * Séries d'une séance, au plus (I1-03) : la séance close et toutes ses séries partent en un groupe de même hlc, qui doit tenir dans un
+ * appel d’ajout au journal (1 Mio chiffré, ADR 0011) ; 200 séries en occupent moins du tiers (test de la borne).
+ */
+export const WORKOUT_SETS_MAX = 200;
+/** Séance ouverte abandonnée (supprimée logiquement, jamais publiée) effacée physiquement au démarrage d'une séance après ce délai. */
+export const ABANDONED_WORKOUT_KEEP_MS = 30 * 86_400_000;
 
 interface RowMeta {
   readonly createdAt: IsoDateTime;
