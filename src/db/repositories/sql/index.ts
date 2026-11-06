@@ -57,8 +57,10 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFa
     import('./trainingRoutineRepository').then((m) =>
       signalingWrites(m.createTrainingRoutineRepository(executor, stamper), ['create', 'update', 'softDelete', 'addDay', 'updateDay', 'removeDay', 'addExercise', 'updateExercise', 'removeExercise']),
     ),
-  // I1-02 : séance active locale, à la demande. Pas de signal de synchro : une séance ouverte n'est jamais publiée (D-27).
-  workouts: () => import('./workoutRepository').then((m) => m.createWorkoutRepository(executor, stamper)),
+  // I1-02 / I1-03 : séance, à la demande. Signal de synchro seulement pour ce qui devient publiable (clôture, correction, suppression d'une
+  // séance close, mise à jour de la routine) : une séance ouverte n'est jamais publiée (D-27).
+  workouts: () =>
+    import('./workoutRepository').then((m) => signalingWrites(m.createWorkoutRepository(executor, stamper), ['close', 'correctSet', 'deleteClosed', 'applyRoutineUpdate'])),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)
