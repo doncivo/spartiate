@@ -1,5 +1,6 @@
 import { parseSyntheticTimer, SYNTHETIC_TIMER_MS, timerPhase, timerRemainingMs, type SyntheticTimerState, type TimerPhase } from '../../domain/syntheticTimer';
 import type { LiveActivity, LiveActivityNativeError, LiveActivityReason } from '../../platform/liveActivity';
+import type { TimerNotifier, TimerNotifierPermission } from '../../platform/notifications/timerNotification';
 
 /**
  * Contrôleur du minuteur synthétique de 60 s (SPA-007). Sans React : l'écran n'en est que l'affichage.
@@ -10,18 +11,7 @@ import type { LiveActivity, LiveActivityNativeError, LiveActivityReason } from '
  * - sur PC : minuteur dans l'app seulement, aucune notification système.
  */
 
-export type TimerNotifierPermission = 'granted' | 'denied' | 'undetermined' | 'unavailable';
-
-/** Notification de l'échéance (adaptateur iOS dans `platform/notifications/timerNotification.ts`, vide ailleurs). */
-export interface TimerNotifier {
-  permission(): Promise<TimerNotifierPermission>;
-  requestPermission(): Promise<TimerNotifierPermission>;
-  /** Vrai si la notification du minuteur est encore en attente dans iOS. */
-  isPending(): Promise<boolean>;
-  /** Programme (ou remplace) la notification à `endMs` ; faux = échec. */
-  schedule(input: { readonly endMs: number; readonly title: string; readonly body: string }): Promise<boolean>;
-  cancel(): Promise<void>;
-}
+export type { TimerNotifier, TimerNotifierPermission };
 
 export interface TimerStore {
   read(): Promise<unknown>;
