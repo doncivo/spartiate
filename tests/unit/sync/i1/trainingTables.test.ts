@@ -19,11 +19,11 @@ afterEach(async () => {
 });
 
 describe('catalogue de production étendu', () => {
-  it('ordre topologique : profile, body_weight, exercise, equipment_profile, routine, routine_day, routine_exercise', () => {
-    const expected = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise'];
+  it('ordre topologique : profile, body_weight, exercise, equipment_profile, routine, routine_day, routine_exercise, puis workout, workout_set (I1-03)', () => {
+    const expected = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set'];
     expect([...SYNC_TABLE_ORDER]).toEqual(expected);
     expect(SYNC_CATALOGUE.tables.map((t) => t.name)).toEqual(expected);
-    expect(SYNC_CATALOGUE.table('workout')).toBeUndefined();
+    expect(SYNC_CATALOGUE.table('recommendation_decision')).toBeUndefined();
     expect(SYNC_CATALOGUE.table('settings')).toBeUndefined();
   });
 
