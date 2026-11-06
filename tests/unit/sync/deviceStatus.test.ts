@@ -85,3 +85,23 @@ describe('dernière modification lue d’un autre appareil (0.1.4 point 4)', () 
     });
   }
 });
+
+/** Relecture sync-icloud (0.1.4 point 4) : la règle « curseur à la tête » ne vaut que dans la même époque et sur un état sain. */
+describe('dernière modification lue : garde d’époque et de statut (0.1.4 point 4)', () => {
+  const head = '001793000000000-0000-60000000-0000-4000-8000-0000000000c3' as never;
+  const at = (patch: Partial<SyncStateRow>) => storedDeviceStatuses([row(SELF, { isSelf: true }), row(PHONE, { stateSeq: 3, headSegment: 1, headRecord: 3, headHlc: head, cursorSegment: 4, cursorRecord: 200, ackHlc: null, ...patch })], { self: SELF })[1]?.lastReadAt;
+
+  it('curseur (4,200) en e1, tête (1,3) en e2 : jamais lu', () => {
+    expect(at({ epoch: 'e1', stateEpoch: 'e2' })).toBeNull();
+  });
+  it('même époque : lu jusqu’à la tête', () => {
+    expect(at({ epoch: 'e1', stateEpoch: 'e1' })).not.toBeNull();
+  });
+  it('appareil corrompu ou en retour arrière : jamais lu', () => {
+    expect(at({ epoch: 'e1', stateEpoch: 'e1', status: 'corrupt' })).toBeNull();
+    expect(at({ epoch: 'e1', stateEpoch: 'e1', status: 'rollback' })).toBeNull();
+  });
+  it('tête (0,0) : rien n’a été publié, jamais lu', () => {
+    expect(at({ epoch: 'e1', stateEpoch: 'e1', headSegment: 0, headRecord: 0, cursorSegment: 0, cursorRecord: 0 })).toBeNull();
+  });
+});
