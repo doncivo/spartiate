@@ -18,7 +18,9 @@ import { META } from './meta';
  */
 function lastReadOf(row: SyncStateRow): IsoDateTime | null {
   const usable = (hlc: SyncStateRow['ackHlc']): hlc is NonNullable<SyncStateRow['ackHlc']> => hlc !== null && parseHlc(hlc).ms > 0;
-  const atHead = row.headHlc !== null && (row.cursorSegment > row.headSegment || (row.cursorSegment === row.headSegment && row.cursorRecord >= row.headRecord));
+  const sound = row.status !== 'corrupt' && row.status !== 'rollback' && row.status !== 'clock-ahead';
+  const sameEpoch = row.epoch !== null && row.epoch === row.stateEpoch;
+  const atHead = sound && sameEpoch && row.headHlc !== null && row.headSegment > 0 && (row.cursorSegment > row.headSegment || (row.cursorSegment === row.headSegment && row.cursorRecord >= row.headRecord));
   const candidates = [row.ackHlc, atHead ? row.headHlc : null].filter(usable);
   if (candidates.length === 0) return null;
   return hlcIso(candidates.reduce((a, b) => (parseHlc(a).ms >= parseHlc(b).ms ? a : b)));
