@@ -1,5 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
+import { migrations } from '../../src/db/migrations/index';
 import { APP_READY_TIMEOUT_MS } from './helpers/app';
+
+/** Schéma courant de l'app (plus haute migration) : la migration de test vient juste après, quel que soit le nombre de migrations de l'app. */
+const BASE = Math.max(...migrations.map((m) => m.version));
 
 /**
  * I-06 — Je mets à jour l'app iPhone depuis SideStore (critère 17).
@@ -16,7 +20,7 @@ const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleW
 
 async function installAtN(page: Page, mode: Mode): Promise<void> {
   await page.addInitScript(
-    ({ mode }) => {
+    ({ mode, base }) => {
       const g = globalThis as Record<string, unknown>;
       g['__ctAppVersion'] = '0.3.0';
       g['__ctDbOpen'] = async () => {
@@ -67,7 +71,7 @@ async function installAtN(page: Page, mode: Mode): Promise<void> {
       };
       if (mode === 'fail' || mode === 'restore-fails' || mode === 'backup') {
         // N+1 simulée : une migration de test à la suite de la migration 1 (données de N intactes).
-        g['__ctExtraMigrations'] = [{ version: 2, name: 'test_i06_additive', statements: ['ALTER TABLE profile ADD COLUMN i06_note TEXT'] }];
+        g['__ctExtraMigrations'] = [{ version: base + 1, name: 'test_i06_additive', statements: ['ALTER TABLE profile ADD COLUMN i06_note TEXT'] }];
       }
       if (mode === 'backup') {
         // QA : disque plein, la sauvegarde d'avant la mise à jour échoue (aucune migration lancée).
@@ -93,7 +97,7 @@ async function installAtN(page: Page, mode: Mode): Promise<void> {
         };
       }
     },
-    { mode },
+    { mode, base: BASE },
   );
 }
 
@@ -120,11 +124,12 @@ test.describe('I-06 — mise à jour N vers N+1 (iPhone, base préremplie, versi
     await page.goto('/');
     await expect(page.getByRole('alert').first()).toHaveText('Impossible d’ouvrir la base de données.', { timeout: APP_READY_TIMEOUT_MS });
     await expect(page.getByText('Tes données sont intactes. Ne supprime pas Spartiate. Envoie le détail pour obtenir un correctif.')).toBeVisible();
+    const pad = (n: number): string => String(n).padStart(4, '0');
     const detail = page.getByTestId('db-failure-detail');
-    await expect(detail).toContainText('Étape : migration 2');
+    await expect(detail).toContainText(`Étape : migration ${String(BASE + 1)}`);
     await expect(detail).toContainText('Version de l’app : 0.3.0');
-    await expect(detail).toContainText('Schéma de la base : 1 (dernier connu de l’app : 2)');
-    await expect(detail).toContainText('Sauvegarde d’avant la mise à jour : spartiate-pre-migration-v0001-to-v0002-');
+    await expect(detail).toContainText(`Schéma de la base : ${String(BASE)} (dernier connu de l’app : ${String(BASE + 1)})`);
+    await expect(detail).toContainText(`Sauvegarde d’avant la mise à jour : spartiate-pre-migration-v${pad(BASE)}-to-v${pad(BASE + 1)}-`);
     await expect(page.getByRole('button', { name: 'Réessayer' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Copier le détail' })).toBeVisible();
     const restore = page.getByRole('button', { name: 'Restaurer la sauvegarde d’avant la mise à jour' });
@@ -142,7 +147,7 @@ test.describe('I-06 — mise à jour N vers N+1 (iPhone, base préremplie, versi
     const readRestored = () => page.evaluate(() => (globalThis as { __ctRestored?: string[] }).__ctRestored ?? []);
     await expect.poll(async () => (await readRestored()).length).toBe(1);
     const restored = await readRestored();
-    expect(restored[0]).toMatch(/^spartiate-pre-migration-v0001-to-v0002-\d{8}T\d{6}Z\.db$/);
+    expect(restored[0]).toMatch(new RegExp(`^spartiate-pre-migration-v${pad(BASE)}-to-v${pad(BASE + 1)}-\\d{8}T\\d{6}Z\\.db$`));
   });
 
   test('base plus récente que l’app : consigne SideStore, données non modifiées, pas de restauration, jamais de page blanche', async ({ page }) => {
