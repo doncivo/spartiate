@@ -35,6 +35,7 @@ export function TimerTestRow({ os, notifier, liveActivity }: Props) {
         notifier: notifier ?? openTimerNotifier(container.platform.runtime, container.platform.os, systemNotificationClock),
         os: platformOs,
         label: tTimer('label'),
+        finishedLabel: tTimer('liveFinished'),
         notification: { title: tTimer('notificationTitle'), body: tTimer('notificationBody') },
       }),
     [container, liveActivity, notifier, platformOs],

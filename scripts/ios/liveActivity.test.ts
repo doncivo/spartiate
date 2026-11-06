@@ -36,12 +36,12 @@ describe('sources durables de l’extension (SPA-007 lot A)', () => {
 
   it('clôture I0 : à l’échéance le widget rend lui-même « Terminé » (état périmé), sans app ni mise à jour', () => {
     const attributes = read(`${DIR}/SpartiateTimerAttributes.swift`);
-    expect(attributes).toMatch(/var finishedLabel:s*String/);
+    expect(attributes).toMatch(/var finishedLabel:\s*String/);
     const src = read(`${DIR}/SpartiateLiveActivity.swift`);
-    expect(src).toMatch(/context.isStale/);
+    expect(src).toMatch(/context\.isStale/);
     expect(src).toMatch(/finishedLabel/);
     // Écran verrouillé, Dynamic Island étendue / compacte / minimale : toutes les présentations tiennent compte de l'état final.
-    expect((src.match(/context.isStale/g) ?? []).length).toBeGreaterThanOrEqual(4);
+    expect((src.match(/context\.isStale/g) ?? []).length).toBeGreaterThanOrEqual(4);
     expect(src).not.toMatch(/Timer.scheduledTimer|URLSession|pushType/);
   });
 

@@ -24,10 +24,14 @@ export interface TimerNotifier {
 
 const UNAVAILABLE_MESSAGE = /window is not defined|__TAURI|reading 'invoke'|not allowed|plugin .*not found|command .*not found|not registered|unknown command|no such plugin/i;
 
-/** Heure murale locale avec les secondes de l'instant (`YYYY-MM-DDTHH:mm:ss.000Z`, `Z` littéral, constat 7 de l'ADR 0012). */
+/**
+ * Heure murale locale à la seconde SUPÉRIEURE de l'instant (`YYYY-MM-DDTHH:mm:ss.000Z`, `Z` littéral, constat 7 de l'ADR 0012) : la
+ * notification ne sonne jamais avant l'échéance, et jamais jusqu'à 59 s plus tôt (le plan des rappels, lui, est à la minute).
+ */
 function dateWithSeconds(endMs: number, zone: string | null): string {
-  const seconds = Math.floor((endMs % 60_000) / 1000);
-  return pluginDate(endMs, zone).replace(':00.000Z', `:${String(seconds).padStart(2, '0')}.000Z`);
+  const whole = Math.ceil(endMs / 1000) * 1000;
+  const seconds = Math.floor((whole % 60_000) / 1000);
+  return pluginDate(whole, zone).replace(':00.000Z', `:${String(seconds).padStart(2, '0')}.000Z`);
 }
 
 export function createIosTimerNotifier(deps: { readonly bridge: IosNotificationBridge; readonly clock: NotificationClock }): TimerNotifier {

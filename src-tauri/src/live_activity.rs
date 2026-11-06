@@ -48,6 +48,7 @@ pub async fn live_activity_start<R: Runtime>(
     app: AppHandle<R>,
     end_date_ms: f64,
     label: String,
+    finished_label: Option<String>,
 ) -> Result<Value, String> {
     if !end_date_ms.is_finite() || end_date_ms <= 0.0 || label.trim().is_empty() {
         return Err("liveactivity-bad-args".to_owned());
@@ -56,7 +57,7 @@ pub async fn live_activity_start<R: Runtime>(
     call(
         app,
         "start",
-        json!({ "endDateMs": end_date_ms, "label": label }),
+        json!({ "endDateMs": end_date_ms, "label": label, "finishedLabel": finished_label.map(|text| text.chars().take(40).collect::<String>()) }),
         START_DEADLINE,
     )
     .await

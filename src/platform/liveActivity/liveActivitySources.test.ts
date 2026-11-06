@@ -46,10 +46,10 @@ describe('plugin Swift live-activity', () => {
   });
 
   it('clôture I0 : staleDate = date de fin, et toute activité échue est fermée à l’ouverture de l’app (aucune orpheline)', () => {
-    expect(swift).toMatch(/ActivityContent(state:s*state,s*staleDate:s*endDate)/);
-    expect(swift).toMatch(/UIApplication.didBecomeActiveNotification/);
+    expect(swift).toMatch(/ActivityContent\(state:\s*state,\s*staleDate:\s*endDate\)/);
+    expect(swift).toMatch(/UIApplication\.didBecomeActiveNotification/);
     expect(swift).toMatch(/func endExpired/);
-    expect(swift).toMatch(/endDates*<=s*Date()/);
+    expect(swift).toMatch(/endDate\s*<=\s*Date\(\)/);
     expect(swift).toMatch(/finishedLabel/);
   });
 
