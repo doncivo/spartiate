@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Clôture I0 (0.1.6) : Spartiate n'a ni tâche, ni rappel, ni Focus, ni routine, ni checklist (restes de CircleTasks). Aucun texte AFFICHÉ par
+ * Clôture I0 (0.1.6) : Spartiate n'a ni tâche, ni rappel, ni Focus, ni routine, ni checklist (restes de l’ancien projet). Aucun texte AFFICHÉ par
  * les écrans livrés ne doit les nommer : « Tes tâches ne sont pas supprimées » (Repartir de zéro) était faux. Le test lit les littéraux des
  * catalogues vivants (commentaires retirés, comme `tutoiement.test.ts`).
  *
@@ -17,7 +17,7 @@ const LITERAL = /'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`
 const read = (name: string): string => readFileSync(fileURLToPath(new URL(name, import.meta.url)), 'utf8');
 const strip = (source: string): string => source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
-/** Nom de l'app d'Apple (pas un reste de CircleTasks) : fictif `apple-reminders` du journal des conflits. */
+/** Nom de l'app d'Apple (pas un reste de l’ancien projet) : fictif `apple-reminders` du journal des conflits. */
 const ALLOWED = new Set(['Rappels Apple']);
 
 function offenders(file: string, source: string): string[] {
@@ -74,7 +74,7 @@ function sectionsOfFr(): Map<string, string> {
   return sections;
 }
 
-describe('plus aucun reste de CircleTasks dans les textes affichés (0.1.6)', () => {
+describe('plus aucun reste de l’ancien projet dans les textes affichés (0.1.6)', () => {
   it.each(LIVE_CATALOGS)('%s', (file) => {
     expect(offenders(file, read(`./${file}`))).toEqual([]);
   });
