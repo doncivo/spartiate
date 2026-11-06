@@ -18,12 +18,25 @@ import { addOwnStateMark, decideSegmentGap, type ResumeTried, type SnapshotRef, 
 import { publishOutbox, readInflight } from './publisher';
 import type { LocalBound } from '../domain/sync/firstPublication';
 import { storedDeviceStatuses } from './deviceStatus';
+import type { SyncLogger } from './log';
 import { readDevice } from './reader';
 import { loadSnapshot, mergeSnapshot, snapshotPages } from './snapshot';
 import { allowedSwitchTarget, clearResetFailure, evaluateReset, noticeToPublish, openResetEpoch, recordResetFailure, republishWithoutNotice, resetActive, resetLagging, type ResetDirective } from './reset';
 import type { CycleFacts } from './status';
 import { createCycleDeadline, isCycleInterrupted, type DeadlineUnit } from './deadline';
 import { scanWarnings, type SyncStatusWarning } from '../domain/syncBanners';
+
+/**
+ * 0.1.4 (5) : copies de conflit d'iCloud (« state 2.spx »), `*.tmp` et noms étrangers : ignorés à la lecture, jamais supprimés. Signalés dans le
+ * journal technique une seule fois par valeur du compteur (le cycle tourne toutes les 25 s : jamais une ligne par cycle). Ni nom ni chemin.
+ */
+const extraFilesReported = new WeakMap<object, number>();
+function reportExtraFiles(logger: SyncLogger, ignored: number): void {
+  const before = extraFilesReported.get(logger) ?? 0;
+  if (ignored === before) return;
+  extraFilesReported.set(logger, ignored);
+  if (ignored > 0) logger.log('folder-extra-files', { count: ignored });
+}
 
 /**
  * Cycle de synchronisation (ADR 0011, section 10.2 ; Y-02 critère 3) : 0 préconditions, 1 `scan({ keep })`, 2 règle 1, 3 époque,
@@ -244,6 +257,7 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
   }
   seen.warnings = scanWarnings(scan);
   if (seen.warnings.length > 0) logger.log('scan-warnings', { codes: seen.warnings.join(',') });
+  reportExtraFiles(logger, scan.ignored);
   await repos.sync.saveState(self, { isSelf: true, platform: deps.devicePlatform, appVersion: deps.appVersion, status: 'active' });
   const accepted = await acceptStates(deps, scan, known, forgetOrder(scan.forgotten.entries), segmentGaps);
   const ownScan = scan.devices.find((d) => d.deviceId === self) ?? null;

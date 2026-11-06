@@ -263,6 +263,15 @@ pub mod log {
     #[cfg(not(any(debug_assertions, feature = "test-hooks")))]
     #[inline]
     pub fn event(event: &'static str, _detail: &str) {
+        // 0.1.4 (5) : les entrées ignorées (copies de conflit d'iCloud « state 2.spx », fichiers étrangers) sont signalées une seule fois par
+        // session, pas à chaque cycle (un cycle toutes les 25 s au premier plan saturerait le journal).
+        if event == "ignored-entry" {
+            static REPORTED: std::sync::atomic::AtomicBool =
+                std::sync::atomic::AtomicBool::new(false);
+            if REPORTED.swap(true, std::sync::atomic::Ordering::Relaxed) {
+                return;
+            }
+        }
         crate::applog::write("sync-rust", event);
     }
 

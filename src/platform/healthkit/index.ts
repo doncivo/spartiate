@@ -22,6 +22,7 @@ export {
   isHealthKitBodyMass,
   isHealthKitPermission,
   isHealthKitStepCount,
+  isMissingHealthKitEntitlement,
   parseHealthKitDiagnostic,
   readResult,
 } from './validation';

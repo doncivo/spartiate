@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   EXPERIENCES,
   GOALS,
@@ -23,6 +23,7 @@ import { Button, Icon, SegmentedControl, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useAppStore } from '../app/appStore';
 import { useNavigationStore } from '../app/navigation';
+import { useSyncedData } from '../sync/remoteChanges';
 import './BodyScreen.css';
 
 const SEX_KEY = { male: 'sexMale', female: 'sexFemale' } as const satisfies Record<Sex, BodyTextKey>;
@@ -74,6 +75,10 @@ export function BodyScreen() {
     return !status || status.phase === 'not-configured' || status.lastSyncAt !== null;
   });
 
+  // 0.1.4 (2) : un lot reçu de l'autre appareil relit le profil et les pesées sans changer d'onglet. Un champ que tu as modifié n'est jamais
+  // écrasé : seuls les champs encore égaux à la dernière valeur lue suivent.
+  const synced = useSyncedData(['profile', 'body_weight']);
+  const loadedProfile = useRef({ sex: '', goal: '', experience: '', birthYear: '', height: '' });
   useEffect(() => {
     let live = true;
     void (async () => {
@@ -84,11 +89,14 @@ export function BodyScreen() {
         setWeights(recent);
         if (profile) {
           setHasProfile(true);
-          setSex(profile.sex ?? '');
-          setGoal(profile.goal ?? '');
-          setExperience(profile.experience ?? '');
-          setBirthYear(profile.birthYear === null ? '' : String(profile.birthYear));
-          setHeight(profile.heightCm === null ? '' : formatKg(profile.heightCm));
+          const next = { sex: profile.sex ?? '', goal: profile.goal ?? '', experience: profile.experience ?? '', birthYear: profile.birthYear === null ? '' : String(profile.birthYear), height: profile.heightCm === null ? '' : formatKg(profile.heightCm) };
+          const base = loadedProfile.current;
+          loadedProfile.current = next;
+          setSex((now) => (now === base.sex ? (next.sex as Sex | '') : now));
+          setGoal((now) => (now === base.goal ? (next.goal as BodyGoal | '') : now));
+          setExperience((now) => (now === base.experience ? (next.experience as Experience | '') : now));
+          setBirthYear((now) => (now === base.birthYear ? next.birthYear : now));
+          setHeight((now) => (now === base.height ? next.height : now));
         }
       } catch {
         // Base fermée avant la fin de la lecture (écran quitté) : rien à afficher ; sinon le message d'échec reste visible.
@@ -98,7 +106,7 @@ export function BodyScreen() {
     return () => {
       live = false;
     };
-  }, [repos]);
+  }, [repos, synced]);
 
   useEffect(() => {
     const sync = container.sync;
@@ -127,6 +135,8 @@ export function BodyScreen() {
     }
     try {
       await (await repos.profile()).save(input, year);
+      // Ce qui vient d'être enregistré est la nouvelle valeur de référence : une réception ultérieure peut le remplacer.
+      loadedProfile.current = { sex, goal, experience, birthYear, height };
       setHasProfile(true);
       setProfileMessage({ kind: 'ok', text: tBody('profileSaved') });
     } catch {
@@ -254,11 +264,8 @@ export function BodyScreen() {
             <div className="ct-body__field">
               <label className="ct-body__field ct-body__field--row">
                 <span className="ct-body__label">{tBody('heightCm')}</span>
-                <input className="ct-body__input ct-body__input--short" inputMode="numeric" aria-describedby="ct-body-height-help" placeholder={`${HEIGHT_MIN_CM} – ${HEIGHT_MAX_CM}`} value={height} disabled={waiting} onChange={(e) => setHeight(e.target.value)} />
+                <input className="ct-body__input ct-body__input--short" inputMode="numeric" placeholder={`${HEIGHT_MIN_CM} – ${HEIGHT_MAX_CM}`} value={height} disabled={waiting} onChange={(e) => setHeight(e.target.value)} />
               </label>
-              <span id="ct-body-height-help" className="ct-body__hint">
-                {tBody('heightHelp')}
-              </span>
             </div>
             <div className="ct-body__field">
               <span className="ct-body__label">{tBody('goal')}</span>

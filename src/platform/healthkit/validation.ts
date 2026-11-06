@@ -95,3 +95,12 @@ export function parseHealthKitDiagnostic(value: unknown): HealthKitDiagnostic {
 }
 
 export const UNKNOWN_DIAGNOSTIC: HealthKitDiagnostic = { available: null, usageDescription: null, error: null };
+
+/**
+ * 0.1.4 (6) : Santé répond « Missing com.apple.developer.healthkit entitlement » (code 4) quand l'app n'a pas la capacité HealthKit : SideStore
+ * la retire avec un compte Apple gratuit. Détection par le nom de l'entitlement dans la description native, jamais par le seul code 4
+ * (qui est aussi un refus de l'utilisateur).
+ */
+export function isMissingHealthKitEntitlement(error: HealthKitNativeError | null): boolean {
+  return error !== null && error.description.toLowerCase().includes('com.apple.developer.healthkit');
+}
