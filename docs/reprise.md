@@ -1,40 +1,31 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-04 (nuit : SPA-003, 005, 009 en PR). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-68 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques.
+État au 2026-11-06 (clôture I0, version 0.1.6). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-70 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Dossier de sortie I0 : docs/gate-i0.md.
 
-## Fusionné
+## Fusionné (tout est dans main)
 
-SPA-000 (#1 à #7, #9, #10 ; #8 fermée sans fusion). SPA-001a (#11). #12 (inventaire, tickets SPA-002 / 003). #14 (préparation de la base neuve, arbitrage D-65). #15 (001b-front). #16 et #18 (001b-périphérie 1/2 et 2/2). #17 (FMT-01, D-66).
+- Base : SPA-000 (#1 à #10), SPA-001a (#11), préparation et arbitrages (#12 à #14, D-65), 001b (front #15, périphérie #16 #18, base #20), FMT-01 (#17, D-66).
+- Livraison : SPA-002 (Windows, updater signé), SPA-003 (IPA ad hoc, entitlements), ios-demarrage et ios-identite (journal visible, source SideStore propre).
+- Produit I0 : SPA-005 (export / import), SPA-009 (écrans fidèles aux planches), SPA-006 (Apple Santé en lecture, diagnostic natif en 0.1.3), SPA-007 (Live Activity, minuteur de test).
+- Versions publiées : 0.1.0 à 0.1.5 (PC `vX.Y.Z`, iPhone `ios-vX.Y.Z`). #44 à #50 : finitions 0.1.2, diagnostic 0.1.3, correctifs d'essai 0.1.4 (zoom iOS, écrans relus après synchro, conflits en français, « Jamais lu », copies iCloud, icône), SPA-007 0.1.5.
+- Cette PR (cloture-i0, 0.1.6) : finitions Apple Santé et textes sans reste de l'ancien projet, Live Activity « Terminé » à l'échéance, notification à la seconde, preuves d'Ali dans la matrice, gate-i0.md.
 
-## Ouvert (nuit du 4 novembre, mission D-68, rien n'est fusionné ni tagué)
+## Décisions récentes
 
-- **001b-base** et **SPA-002** sont fusionnés (#20, #30) ; v0.1.0 Windows publiée le 4 novembre (run 41706891386).
-- **spa-003** (build iPhone : entitlements HealthKit, signature ad hoc CI, source sur l'IPA finale) : PR ouverte, CI et run macOS à lire. Tag `ios-v0.1.0` par Ali seulement, avec la vérification `git rev-parse` (AGENTS.md).
-- **spa-005** (export et import) et **spa-009** (écrans fidèles, contraste, fenêtre PC adaptée, minimum 1 024 × 700) : PR ouvertes, entrées de journal dans leur description ; captures PC et iPhone jointes à la PR de spa-009.
-- **spa-006** : plugin HealthKit en lecture seule ; manifest/capability iOS réparés pour cargo, test de gel I-06 actualisé après CI rouge. H-3b reste UNVERIFIED ; recette native après PR/build iPhone.
-- **#13** (tickets SPA-004 à 010 ; chemins à revérifier) : à rebaser.
+- D-69 : accès direct HealthKit BLOCKED (compte Apple gratuit, SideStore retire l'entitlement) ; l'import passera par l'app Raccourcis, ticket séparé.
+- D-70 : l'agent fusionne (`gh pr merge --squash`) et publie (tags `vX.Y.Z` et `ios-vX.Y.Z` sur origin/main après contrôle d'absence), puis suit les builds jusqu'à spartiate-releases. Ali installe et fait les constats sur appareil.
 
-## Ordre
+## Prochaines étapes
 
-001b-base fait → SPA-002 fait → 003 (PR) → 004 → 005 (PR) → spikes 006 / 007 → 008 → 009 (PR) → 010. (Ancien détail : 001b-base : migration 0001, catalogue I0, identités, adaptations de synchro, repositories, formulaire profil / poids, `APP_SCHEMA_VERSION` = 1, capture, restes « reminders ») ; P-09 / P-10 avant les modules métier.
+1. **Go I0** : décision écrite d'Ali après les trois preuves restantes (export puis import ; journaux exportés sur les deux appareils ; Dynamic Island et heure de la notification). Aucun travail I1 avant.
+2. **I1-01** (docs/I1-01.md), puis la suite de l'itération I1.
+3. **Ticket Raccourcis** (D-69) : import du poids et des pas par l'app Raccourcis.
 
-## Conteneur de données (D-54)
+## Rappels
 
-%APPDATA%\fr.spartiate.app est absent (vérifié par Ali le 3 novembre). Ne pas lancer `tauri dev` avant la fin de 001b-base : il le recréerait.
-
-## Preuves suspendues à rétablir
-
-- Y-IOS-01 « a publié » et I-06 « données affichées après mise à jour » : réécrits sur profil / poids (tests/e2e), à confirmer par la CI de #20.
-- Action « Voir » après refus des notifications : SPA-004.
-- Étape e2e de performance au démarrage (`@perf`, retirée par D-63) : SPA-009 / 010.
-
-## Notes
-
-- SPA-009 : fenêtre PC initiale adaptée à l'écran, minimum 1 024 × 700.
-- D-60 : Rust local autorisé pour synchro, garde et coffre (`-j 2`) ; e2e et smoke jamais en local.
-- CI instable les 2 et 3 novembre (journal) : à surveiller.
-- Secrets : RELEASES_TOKEN avant la première publication Windows (SPA-002) ; nouvelle paire minisign Spartiate en SPA-002 (ne pas réutiliser celle de CircleTasks), clé privée et mot de passe dans TAURI_SIGNING_PRIVATE_KEY / _PASSWORD ; updater non enregistré avant. Jamais de valeur dans le dépôt.
-- Fournisseur IA et plafond : Ali avant I4. Médias : Ali avant I1. Coexistence CircleTasks : preuve en SPA-004. Première utilisation réelle annoncée par Ali : fin du laboratoire (D-38).
-- PR obligatoire, pas de push main ni force ; aucune surveillance de CI en boucle ; aucun CONFIRMED depuis une lecture de code.
-
-- Écarts ouverts de 001b-base (détail : docs/spa-001b-inventaire.md) : méthodes SQL de l'ancien schéma encore dans SyncRepository (rappels, pauses, Focus) ; kit de conflits sur le banc legacy ; saveHealth (iPhone seul) avec healthkit ; pas d'option vide pour sexe / objectif / expérience.
+- Données réelles interdites (voir CLAUDE.md) ; jamais `git fetch circletasks` ; pas de `push --force`, de `reset --hard`, de `rm -rf`, de push sur main ; aucun tag supprimé ou repoussé.
+- Suite complète en CI seulement ; en local, des tests ciblés (`--maxWorkers=1`, pas de commandes lourdes en parallèle : le système a déjà tué des processus pour manque de mémoire). Une compilation iPhone (`build-ios.yml`, `-f publish=false`) par lot qui touche Swift ou l'extension.
+- Preuve native : aucun `CONFIRMED` sans constat d'Ali (D-36) ; H-3a et H-3b BLOCKED, H-4 partiel (voir la matrice).
+- Bundle de départ : 358 400 octets gzip, liste blanche `tests/bundle/start-modules.json`.
+- Secrets : RELEASES_TOKEN, TAURI_SIGNING_PRIVATE_KEY et son mot de passe (noms seulement). Fournisseur IA et plafond : Ali avant I4 ; médias : Ali avant I1.
+- Écarts connus : méthodes SQL de l'ancien schéma encore dans `SyncRepository` (banc de test legacy, D-67) ; catalogues de textes hérités (`fr.ts` et autres) à purger avec le banc legacy, le test `src/i18n/noLegacyWords.test.ts` ne couvre que les textes vivants ; la copie de conflit iCloud `state 2.spx` est ignorée et signalée, sa cause reste une hypothèse.

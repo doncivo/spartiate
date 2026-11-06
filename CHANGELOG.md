@@ -2,6 +2,14 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.1.6
+
+- Apple Santé : quand l’entitlement manque (compte Apple gratuit), la phrase « Spartiate lit ton poids et tes pas… » ne s’affiche plus, l’état est gardé à la réouverture de l’écran, et la ligne d’Apple Santé dans Plus dit « non disponible » au lieu de « lecture seule ».
+- Textes : « Repartir de zéro » dit « Tes données ne sont pas supprimées ». Les restes de l’ancien projet (tâches, rappels, routines…) sont retirés des textes affichés, et un test les interdit dans les catalogues des écrans livrés.
+- Live Activity : à l’échéance, l’activité n’est plus figée à 0:00 si l’app est fermée : le widget affiche lui-même « Terminé » (date de fin = péremption) et l’activité est fermée dès l’ouverture de l’app, sans activité orpheline.
+- Minuteur de test : la notification de fin sonne à la seconde de l’échéance (arrondie à la seconde supérieure, jamais jusqu’à 59 s plus tôt), avec le même identifiant à la reprise.
+- Documentation : preuves d’Ali du 2026-11-06 reportées dans la matrice des capacités, dossier go / no-go d’I0 (docs/gate-i0.md), mémoire de reprise réécrite.
+
 ## 0.1.5
 
 - Live Activity (SPA-007, H-4) : un compteur de test de 60 s dans Plus › À propos (« Tester le minuteur (60 s) »). Sur iPhone il s’affiche sur l’écran verrouillé et dans la Dynamic Island (extension WidgetKit SpartiateLiveActivity, décompte avancé par le système, aucun push, aucun App Group, aucun mode d’arrière-plan, aucun nouvel entitlement). Si la Live Activity est indisponible, le minuteur reste dans l’app avec une notification à l’échéance et une phrase qui explique pourquoi.
