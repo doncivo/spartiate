@@ -1,0 +1,350 @@
+{
+  "schemaVersion": 1,
+  "equipment": [
+    {
+      "id": "barbell",
+      "nameFr": "Barre droite",
+      "family": "barre"
+    },
+    {
+      "id": "ez-bar",
+      "nameFr": "Barre EZ",
+      "family": "barre"
+    },
+    {
+      "id": "trap-bar",
+      "nameFr": "Barre hexagonale",
+      "family": "barre"
+    },
+    {
+      "id": "low-bar",
+      "nameFr": "Barre basse",
+      "family": "barre"
+    },
+    {
+      "id": "pull-up-bar",
+      "nameFr": "Barre de traction",
+      "family": "barre"
+    },
+    {
+      "id": "parallel-bars",
+      "nameFr": "Barres parallèles",
+      "family": "barre"
+    },
+    {
+      "id": "weight-plate",
+      "nameFr": "Disque de poids",
+      "family": "disque"
+    },
+    {
+      "id": "dumbbell",
+      "nameFr": "Haltère",
+      "family": "haltère"
+    },
+    {
+      "id": "kettlebell",
+      "nameFr": "Kettlebell",
+      "family": "kettlebell"
+    },
+    {
+      "id": "machine",
+      "nameFr": "Machine (générique)",
+      "family": "machine"
+    },
+    {
+      "id": "seated-machine",
+      "nameFr": "Machine assise (générique)",
+      "family": "machine"
+    },
+    {
+      "id": "assisted-pull-up-machine",
+      "nameFr": "Machine de traction assistée",
+      "family": "machine"
+    },
+    {
+      "id": "chest-supported-row-machine",
+      "nameFr": "Machine de rowing avec appui poitrine",
+      "family": "machine"
+    },
+    {
+      "id": "chest-press-machine",
+      "nameFr": "Machine convergente de développé pectoral",
+      "family": "machine"
+    },
+    {
+      "id": "incline-chest-press-machine",
+      "nameFr": "Machine de développé pectoral incliné",
+      "family": "machine"
+    },
+    {
+      "id": "pec-deck",
+      "nameFr": "Machine pec-deck",
+      "family": "machine"
+    },
+    {
+      "id": "reverse-pec-deck",
+      "nameFr": "Machine pec-deck inversée",
+      "family": "machine"
+    },
+    {
+      "id": "shoulder-press-machine",
+      "nameFr": "Machine de développé épaules",
+      "family": "machine"
+    },
+    {
+      "id": "preacher-curl-machine",
+      "nameFr": "Machine à pupitre pour curl",
+      "family": "machine"
+    },
+    {
+      "id": "triceps-machine",
+      "nameFr": "Machine triceps",
+      "family": "machine"
+    },
+    {
+      "id": "hack-squat-machine",
+      "nameFr": "Machine hack squat",
+      "family": "machine"
+    },
+    {
+      "id": "smith-machine",
+      "nameFr": "Machine Smith",
+      "family": "machine"
+    },
+    {
+      "id": "pendulum-squat-machine",
+      "nameFr": "Machine pendulaire",
+      "family": "machine"
+    },
+    {
+      "id": "leg-press-machine",
+      "nameFr": "Presse à cuisses",
+      "family": "machine"
+    },
+    {
+      "id": "leg-extension-machine",
+      "nameFr": "Machine d'extension des jambes",
+      "family": "machine"
+    },
+    {
+      "id": "leg-curl-machine",
+      "nameFr": "Machine leg curl",
+      "family": "machine"
+    },
+    {
+      "id": "seated-leg-curl-machine",
+      "nameFr": "Machine leg curl assis",
+      "family": "machine"
+    },
+    {
+      "id": "lying-leg-curl-machine",
+      "nameFr": "Machine leg curl couché",
+      "family": "machine"
+    },
+    {
+      "id": "hip-thrust-machine",
+      "nameFr": "Machine hip thrust",
+      "family": "machine"
+    },
+    {
+      "id": "glute-kickback-machine",
+      "nameFr": "Machine fessiers",
+      "family": "machine"
+    },
+    {
+      "id": "hip-abduction-machine",
+      "nameFr": "Machine abducteurs",
+      "family": "machine"
+    },
+    {
+      "id": "standing-calf-machine",
+      "nameFr": "Machine mollets debout",
+      "family": "machine"
+    },
+    {
+      "id": "seated-calf-machine",
+      "nameFr": "Machine mollets assis",
+      "family": "machine"
+    },
+    {
+      "id": "tibialis-machine",
+      "nameFr": "Machine tibiale",
+      "family": "machine"
+    },
+    {
+      "id": "ab-crunch-machine",
+      "nameFr": "Machine abdominale",
+      "family": "machine"
+    },
+    {
+      "id": "captain-chair",
+      "nameFr": "Chaise romaine",
+      "family": "machine"
+    },
+    {
+      "id": "low-pulley",
+      "nameFr": "Poulie basse",
+      "family": "poulie"
+    },
+    {
+      "id": "high-pulley",
+      "nameFr": "Poulie haute",
+      "family": "poulie"
+    },
+    {
+      "id": "cable-machine",
+      "nameFr": "Poulie(s), installation générique",
+      "family": "poulie"
+    },
+    {
+      "id": "bench",
+      "nameFr": "Banc (générique)",
+      "family": "banc"
+    },
+    {
+      "id": "flat-bench",
+      "nameFr": "Banc plat",
+      "family": "banc"
+    },
+    {
+      "id": "incline-bench",
+      "nameFr": "Banc incliné",
+      "family": "banc"
+    },
+    {
+      "id": "back-extension-bench",
+      "nameFr": "Banc à lombaires",
+      "family": "banc"
+    },
+    {
+      "id": "preacher-bench",
+      "nameFr": "Pupitre",
+      "family": "banc"
+    },
+    {
+      "id": "rack",
+      "nameFr": "Rack",
+      "family": "rack"
+    },
+    {
+      "id": "bodyweight",
+      "nameFr": "Poids du corps",
+      "family": "poids du corps"
+    },
+    {
+      "id": "cable-handle",
+      "nameFr": "Poignée de poulie",
+      "family": "accessoire"
+    },
+    {
+      "id": "neutral-grip-handle",
+      "nameFr": "Poignée neutre",
+      "family": "accessoire"
+    },
+    {
+      "id": "close-grip-handle",
+      "nameFr": "Poignée serrée",
+      "family": "accessoire"
+    },
+    {
+      "id": "straight-bar-attachment",
+      "nameFr": "Barre droite pour poulie",
+      "family": "accessoire"
+    },
+    {
+      "id": "rope-attachment",
+      "nameFr": "Corde pour poulie",
+      "family": "accessoire"
+    },
+    {
+      "id": "ankle-strap",
+      "nameFr": "Sangle de cheville",
+      "family": "accessoire"
+    },
+    {
+      "id": "resistance-strap",
+      "nameFr": "Sangle résistante",
+      "family": "accessoire"
+    },
+    {
+      "id": "suspension-straps",
+      "nameFr": "Sangles de suspension",
+      "family": "accessoire"
+    },
+    {
+      "id": "resistance-band",
+      "nameFr": "Bande élastique ou résistante",
+      "family": "accessoire"
+    },
+    {
+      "id": "landmine-attachment",
+      "nameFr": "Ancrage landmine",
+      "family": "accessoire"
+    },
+    {
+      "id": "loading-belt",
+      "nameFr": "Ceinture ou dispositif de lest",
+      "family": "accessoire"
+    },
+    {
+      "id": "ankle-anchor",
+      "nameFr": "Support d'ancrage pour chevilles",
+      "family": "accessoire"
+    },
+    {
+      "id": "support",
+      "nameFr": "Support (générique)",
+      "family": "accessoire"
+    },
+    {
+      "id": "plyo-box",
+      "nameFr": "Caisse ou box",
+      "family": "accessoire"
+    },
+    {
+      "id": "step",
+      "nameFr": "Marche",
+      "family": "accessoire"
+    },
+    {
+      "id": "heel-wedge",
+      "nameFr": "Cale",
+      "family": "accessoire"
+    },
+    {
+      "id": "mat",
+      "nameFr": "Tapis",
+      "family": "accessoire"
+    },
+    {
+      "id": "ab-wheel",
+      "nameFr": "Roue abdominale",
+      "family": "accessoire"
+    },
+    {
+      "id": "sliders",
+      "nameFr": "Disques glisseurs ou patins",
+      "family": "accessoire"
+    },
+    {
+      "id": "towel",
+      "nameFr": "Serviettes",
+      "family": "accessoire"
+    },
+    {
+      "id": "wall",
+      "nameFr": "Mur",
+      "family": "accessoire"
+    },
+    {
+      "id": "floor",
+      "nameFr": "Sol",
+      "family": "accessoire"
+    },
+    {
+      "id": "anchor-point",
+      "nameFr": "Point d'ancrage",
+      "family": "accessoire"
+    }
+  ]
+}

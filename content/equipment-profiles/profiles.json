@@ -1,0 +1,388 @@
+{
+  "schemaVersion": 1,
+  "defaultProfileId": "fitness-park-antony",
+  "profiles": [
+    {
+      "id": "fitness-park-antony",
+      "name": "Fitness Park Antony",
+      "kind": "salle",
+      "isPreset": false,
+      "schemaVersion": 1,
+      "equipment": [
+        "barbell",
+        "ez-bar",
+        "trap-bar",
+        "pull-up-bar",
+        "parallel-bars",
+        "weight-plate",
+        "dumbbell",
+        "kettlebell",
+        "machine",
+        "seated-machine",
+        "assisted-pull-up-machine",
+        "chest-supported-row-machine",
+        "chest-press-machine",
+        "incline-chest-press-machine",
+        "pec-deck",
+        "reverse-pec-deck",
+        "shoulder-press-machine",
+        "preacher-curl-machine",
+        "triceps-machine",
+        "hack-squat-machine",
+        "smith-machine",
+        "pendulum-squat-machine",
+        "leg-press-machine",
+        "leg-extension-machine",
+        "leg-curl-machine",
+        "seated-leg-curl-machine",
+        "lying-leg-curl-machine",
+        "hip-thrust-machine",
+        "glute-kickback-machine",
+        "hip-abduction-machine",
+        "standing-calf-machine",
+        "seated-calf-machine",
+        "tibialis-machine",
+        "ab-crunch-machine",
+        "captain-chair",
+        "low-pulley",
+        "high-pulley",
+        "cable-machine",
+        "bench",
+        "flat-bench",
+        "incline-bench",
+        "back-extension-bench",
+        "rack",
+        "bodyweight",
+        "cable-handle",
+        "neutral-grip-handle",
+        "close-grip-handle",
+        "straight-bar-attachment",
+        "rope-attachment",
+        "ankle-strap",
+        "mat",
+        "wall",
+        "floor"
+      ],
+      "inventory": {
+        "barbells": [
+          {
+            "equipmentId": "barbell",
+            "label": "Barre olympique",
+            "weightKg": 20,
+            "weightKgMax": null,
+            "toVerify": false
+          },
+          {
+            "equipmentId": "barbell",
+            "label": "Petite barre droite",
+            "weightKg": 8,
+            "weightKgMax": 13,
+            "toVerify": true
+          },
+          {
+            "equipmentId": "ez-bar",
+            "label": "Barre EZ",
+            "weightKg": 8.5,
+            "weightKgMax": null,
+            "toVerify": true
+          },
+          {
+            "equipmentId": "trap-bar",
+            "label": "Barre hexagonale",
+            "weightKg": 18,
+            "weightKgMax": 24,
+            "toVerify": true
+          },
+          {
+            "equipmentId": "smith-machine",
+            "label": "Barre guidée Smith",
+            "weightKg": null,
+            "weightKgMax": null,
+            "toVerify": true
+          }
+        ],
+        "platesPerSideKg": [
+          1.25,
+          2.5,
+          5,
+          10,
+          15,
+          20,
+          25,
+          30
+        ],
+        "dumbbells": {
+          "minKg": 2,
+          "maxKg": 50,
+          "stepKg": 2,
+          "extraPairsKg": [
+            9
+          ]
+        },
+        "kettlebells": {
+          "minKg": 4,
+          "maxKg": 34,
+          "stepKg": null,
+          "toVerify": true
+        },
+        "machines": {
+          "stackMinKg": null,
+          "stackMaxKg": null,
+          "stepKg": null,
+          "perMachineToVerify": true
+        },
+        "cables": {
+          "stackMinKg": null,
+          "stackMaxKg": null,
+          "stepKg": null,
+          "perMachineToVerify": true
+        },
+        "benches": [
+          "flat-bench",
+          "incline-bench",
+          "bench",
+          "back-extension-bench"
+        ],
+        "racks": [
+          "rack",
+          "pull-up-bar",
+          "parallel-bars"
+        ],
+        "bodyweight": true
+      },
+      "increments": {
+        "barbell": 2.5,
+        "dumbbell": 2,
+        "kettlebell": null,
+        "machine": null,
+        "cable": null
+      },
+      "forced": [],
+      "forbidden": []
+    },
+    {
+      "id": "salle-commerciale",
+      "name": "Salle commerciale",
+      "kind": "salle",
+      "isPreset": true,
+      "schemaVersion": 1,
+      "equipment": [
+        "barbell",
+        "ez-bar",
+        "trap-bar",
+        "pull-up-bar",
+        "parallel-bars",
+        "weight-plate",
+        "dumbbell",
+        "kettlebell",
+        "machine",
+        "seated-machine",
+        "assisted-pull-up-machine",
+        "chest-supported-row-machine",
+        "chest-press-machine",
+        "incline-chest-press-machine",
+        "pec-deck",
+        "reverse-pec-deck",
+        "shoulder-press-machine",
+        "preacher-curl-machine",
+        "triceps-machine",
+        "hack-squat-machine",
+        "smith-machine",
+        "pendulum-squat-machine",
+        "leg-press-machine",
+        "leg-extension-machine",
+        "leg-curl-machine",
+        "seated-leg-curl-machine",
+        "lying-leg-curl-machine",
+        "hip-thrust-machine",
+        "glute-kickback-machine",
+        "hip-abduction-machine",
+        "standing-calf-machine",
+        "seated-calf-machine",
+        "tibialis-machine",
+        "ab-crunch-machine",
+        "captain-chair",
+        "low-pulley",
+        "high-pulley",
+        "cable-machine",
+        "bench",
+        "flat-bench",
+        "incline-bench",
+        "back-extension-bench",
+        "preacher-bench",
+        "rack",
+        "bodyweight",
+        "cable-handle",
+        "neutral-grip-handle",
+        "close-grip-handle",
+        "straight-bar-attachment",
+        "rope-attachment",
+        "ankle-strap",
+        "resistance-band",
+        "landmine-attachment",
+        "loading-belt",
+        "plyo-box",
+        "step",
+        "mat",
+        "ab-wheel",
+        "wall",
+        "floor",
+        "anchor-point"
+      ],
+      "inventory": {
+        "barbells": [
+          {
+            "equipmentId": "barbell",
+            "label": "Barre olympique droite",
+            "weightKg": 20,
+            "weightKgMax": null,
+            "toVerify": true
+          },
+          {
+            "equipmentId": "ez-bar",
+            "label": "Barre EZ",
+            "weightKg": 10,
+            "weightKgMax": null,
+            "toVerify": true
+          },
+          {
+            "equipmentId": "trap-bar",
+            "label": "Barre hexagonale",
+            "weightKg": 25,
+            "weightKgMax": null,
+            "toVerify": true
+          }
+        ],
+        "platesPerSideKg": [
+          1.25,
+          2.5,
+          5,
+          10,
+          15,
+          20,
+          25
+        ],
+        "dumbbells": {
+          "minKg": 2,
+          "maxKg": 40,
+          "stepKg": 2,
+          "extraPairsKg": []
+        },
+        "kettlebells": {
+          "minKg": 4,
+          "maxKg": 32,
+          "stepKg": 4,
+          "toVerify": true
+        },
+        "machines": {
+          "stackMinKg": 5,
+          "stackMaxKg": 100,
+          "stepKg": 5,
+          "perMachineToVerify": true
+        },
+        "cables": {
+          "stackMinKg": 2.5,
+          "stackMaxKg": 100,
+          "stepKg": 2.5,
+          "perMachineToVerify": true
+        },
+        "benches": [
+          "flat-bench",
+          "incline-bench",
+          "bench"
+        ],
+        "racks": [
+          "rack"
+        ],
+        "bodyweight": true
+      },
+      "increments": {
+        "barbell": 2.5,
+        "dumbbell": 2,
+        "kettlebell": 4,
+        "machine": 5,
+        "cable": 2.5
+      },
+      "forced": [],
+      "forbidden": []
+    },
+    {
+      "id": "maison-halteres",
+      "name": "Maison haltères",
+      "kind": "maison",
+      "isPreset": true,
+      "schemaVersion": 1,
+      "equipment": [
+        "dumbbell",
+        "bench",
+        "flat-bench",
+        "incline-bench",
+        "bodyweight",
+        "resistance-band",
+        "wall",
+        "floor"
+      ],
+      "inventory": {
+        "barbells": [],
+        "platesPerSideKg": null,
+        "dumbbells": {
+          "minKg": 2,
+          "maxKg": 30,
+          "stepKg": 2,
+          "extraPairsKg": []
+        },
+        "kettlebells": null,
+        "machines": null,
+        "cables": null,
+        "benches": [
+          "bench",
+          "flat-bench",
+          "incline-bench"
+        ],
+        "racks": [],
+        "bodyweight": true
+      },
+      "increments": {
+        "barbell": null,
+        "dumbbell": 2,
+        "kettlebell": null,
+        "machine": null,
+        "cable": null
+      },
+      "forced": [],
+      "forbidden": []
+    },
+    {
+      "id": "poids-de-corps",
+      "name": "Poids de corps",
+      "kind": "voyage",
+      "isPreset": true,
+      "schemaVersion": 1,
+      "equipment": [
+        "bodyweight",
+        "wall",
+        "floor"
+      ],
+      "inventory": {
+        "barbells": [],
+        "platesPerSideKg": null,
+        "dumbbells": null,
+        "kettlebells": null,
+        "machines": null,
+        "cables": null,
+        "benches": [],
+        "racks": [],
+        "bodyweight": true
+      },
+      "increments": {
+        "barbell": null,
+        "dumbbell": null,
+        "kettlebell": null,
+        "machine": null,
+        "cable": null
+      },
+      "forced": [],
+      "forbidden": []
+    }
+  ]
+}

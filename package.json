@@ -18,6 +18,7 @@
     "test:watch": "vitest",
     "test:perf": "vitest run --config vitest.perf.config.ts",
     "test:perf:e2e": "node scripts/e2e-perf.mjs",
+    "validate:content": "node scripts/content/validate-content.mjs content/",
     "test:bundle": "vitest run --config vitest.bundle.config.ts",
     "test:nsis": "vitest run --config vitest.nsis.config.ts",
     "e2e": "playwright test",
