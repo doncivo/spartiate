@@ -65,7 +65,7 @@ describe('storedDeviceStatuses', () => {
  */
 describe('dernière modification lue d’un autre appareil (0.1.4 point 4)', () => {
   const HLC_HEAD = '001793905560000-0000-60000000-0000-4000-8000-0000000000c3' as never;
-  const base = { stateSeq: 3, epoch: 'e1', headSegment: 2, headRecord: 5, headHlc: HLC_HEAD };
+  const base = { stateSeq: 3, epoch: 'e1', stateEpoch: 'e1', headSegment: 2, headRecord: 5, headHlc: HLC_HEAD };
 
   for (const [name, platform] of [['iPhone qui regarde le PC', 'windows'], ['PC qui regarde l’iPhone', 'ios']] as const) {
     it(`${name} : curseur à la tête, accusé vide : l’heure de la tête, pas « jamais lu »`, () => {
