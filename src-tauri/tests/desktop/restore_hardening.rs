@@ -351,8 +351,8 @@ fn p04_a_trapped_database_is_refused() {
         .unwrap();
     assert_eq!(check_backup_file(&known, 9).unwrap(), 4);
     assert_eq!(normalize_sql("a  b\n c"), "a b c");
-    // 18 déclencheurs de recherche (0011) + 32 de capture de la synchro (0015, deux par table publiée).
-    assert_eq!(REFERENCE_TRIGGERS.len(), 50);
+    // 18 déclencheurs de recherche (0011) + 30 de capture de l'ancien projet (0015, sans `routine`) + 14 de capture de Spartiate (0001 : 4, 0002 : 10).
+    assert_eq!(REFERENCE_TRIGGERS.len(), 62);
 }
 
 #[test]

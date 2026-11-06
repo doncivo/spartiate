@@ -166,6 +166,21 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // I1-01 (critère 6) : écrans de l'entraînement (bibliothèque, matériel, routines), leurs textes et le contenu embarqué (150 exercices,
+  // programmes, profils) : blocs à la demande, aucun octet dans le départ.
+  it('l’écran Entraînement est un bloc à la demande, hors du départ', () => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest['src/features/training/TrainingScreen.tsx'];
+    if (!chunk) throw new Error('bloc src/features/training/TrainingScreen.tsx absent du manifeste');
+    expect(start.has(chunk.file)).toBe(false);
+  });
+
+  it.each(['Ajouter un programme de départ', 'Compatibles avec mon matériel', 'Développé couché à la barre', 'fitness-park-antony', 'Full Body 3 j'])('I1-01 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   // Y-FIX-02 (revue I1) : causes nommées de `publish-blocked` (catalogue `syncPublishCause`, chargé avec Détails) : aucun bloc de départ ne les porte.
   it.each(['Première publication interrompue', 'Fichier inconnu dans le dossier'])('le texte de cause « %s » est hors du départ', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));

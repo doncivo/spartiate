@@ -302,10 +302,12 @@ describe('noms inconnus et ordre des tables (sections 3.3, 7.2, 8)', () => {
     expect(isUnknownSettingKey('a.constructor')).toBe(false);
   });
 
-  it('2 tables publiées (catalogue I0) dans l’ordre topologique', () => {
-    expect(SYNC_TABLE_ORDER).toHaveLength(2);
+  it('7 tables publiées (catalogue I0 + I1-01) dans l’ordre topologique : parent avant enfant', () => {
+    expect(SYNC_TABLE_ORDER).toHaveLength(7);
     expect(SYNC_TABLE_ORDER[0]).toBe('profile');
     expect(SYNC_TABLE_ORDER.indexOf('profile')).toBeLessThan(SYNC_TABLE_ORDER.indexOf('body_weight'));
+    expect(SYNC_TABLE_ORDER.indexOf('routine')).toBeLessThan(SYNC_TABLE_ORDER.indexOf('routine_day'));
+    expect(SYNC_TABLE_ORDER.indexOf('routine_day')).toBeLessThan(SYNC_TABLE_ORDER.indexOf('routine_exercise'));
     expect(SYNC_FORMAT_MAJOR).toBe(1);
   });
 });

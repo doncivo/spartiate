@@ -279,6 +279,11 @@
       "raison": "Remplace les dix-neuf migrations CircleTasks du registre (base neuve, D-23) ; une seule migration au départ, plus courte que les dix-neuf retirées."
     },
     {
+      "fichier": "src/db/migrations/0002_training.ts",
+      "story": "I1-01",
+      "raison": "Migration I1 (exercices personnalisés, matériel, routines ; 7,3 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. Les écrans, textes et contenu de l'entraînement restent hors du départ."
+    },
+    {
       "fichier": "src/features/app/ShellChrome.tsx",
       "story": "BUNDLE-01",
       "raison": "SPA-009 : carte d'état de la barre latérale PC et barre supérieure (1,6 Ko source), montées dès le premier rendu de la coquille."

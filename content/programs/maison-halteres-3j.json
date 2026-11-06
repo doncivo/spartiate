@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 1,
+  "id": "maison-halteres-3j",
+  "name": "Maison haltères 3 j",
+  "mode": "Programme",
+  "split": "full-body",
+  "audienceFr": "Déplacement, maison",
+  "compatibleProfileIds": [
+    "maison-halteres"
+  ],
+  "mesocycleWeeks": 5,
+  "periodization": [
+    {
+      "week": 1,
+      "workingSets": 2,
+      "rirMin": 3,
+      "rirMax": 3,
+      "loadFactor": null,
+      "note": "Introduction, charges de départ"
+    },
+    {
+      "week": 2,
+      "workingSets": 3,
+      "rirMin": 2,
+      "rirMax": 2,
+      "loadFactor": null,
+      "note": "Valeurs de la semaine de référence"
+    },
+    {
+      "week": 3,
+      "workingSets": 3,
+      "rirMin": 1,
+      "rirMax": 1,
+      "loadFactor": null,
+      "note": "Montée en charge"
+    },
+    {
+      "week": 4,
+      "workingSets": 4,
+      "rirMin": 0,
+      "rirMax": 1,
+      "loadFactor": null,
+      "note": "Pic ; aucune hausse > 10 %"
+    },
+    {
+      "week": 5,
+      "workingSets": 2,
+      "rirMin": 5,
+      "rirMax": null,
+      "loadFactor": 0.8,
+      "note": "Deload planifié, 1RM et Strength Score gelés"
+    }
+  ],
+  "days": [
+    {
+      "dayOrder": 1,
+      "name": "Maison A",
+      "weekday": 1,
+      "exercises": [
+        {
+          "position": 1,
+          "exerciseId": "goblet-squat",
+          "sets": 3,
+          "repMin": 8,
+          "repMax": 12,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 120,
+          "rir": null
+        },
+        {
+          "position": 2,
+          "exerciseId": "bench-press-dumbbell",
+          "sets": 3,
+          "repMin": 8,
+          "repMax": 12,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 120,
+          "rir": null
+        },
+        {
+          "position": 3,
+          "exerciseId": "row-dumbbell-one-arm",
+          "sets": 3,
+          "repMin": 8,
+          "repMax": 12,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 120,
+          "rir": null
+        },
+        {
+          "position": 4,
+          "exerciseId": "lateral-raise-dumbbell",
+          "sets": 3,
+          "repMin": 12,
+          "repMax": 15,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 60,
+          "rir": null
+        },
+        {
+          "position": 5,
+          "exerciseId": "curl-dumbbell",
+          "sets": 2,
+          "repMin": 8,
+          "repMax": 12,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 90,
+          "rir": null
+        },
+        {
+          "position": 6,
+          "exerciseId": "pallof-press",
+          "sets": 2,
+          "repMin": 8,
+          "repMax": 12,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 60,
+          "rir": null
+        }
+      ]
+    },
+    {
+      "dayOrder": 2,
+      "name": "Maison B",
+      "weekday": 3,
+      "exercises": [
+        {
+          "position": 1,
+          "exerciseId": "romanian-deadlift-dumbbell",
+          "sets": 3,
+          "repMin": 8,
+          "repMax": 12,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 120,
+          "rir": null
+        },
+        {
+          "position": 2,
+          "exerciseId": "incline-press-dumbbell",
+          "sets": 3,
+          "repMin": 8,
+          "repMax": 12,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 120,
+          "rir": null
+        },
+        {
+          "position": 3,
+          "exerciseId": "chest-supported-row-dumbbell",
+          "sets": 3,
+          "repMin": 8,
+          "repMax": 12,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 120,
+          "rir": null
+        },
+        {
+          "position": 4,
+          "exerciseId": "overhead-press-dumbbell",
+          "sets": 3,
+          "repMin": 8,
+          "repMax": 12,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 120,
+          "rir": null
+        },
+        {
+          "position": 5,
+          "exerciseId": "hammer-curl",
+          "sets": 2,
+          "repMin": 8,
+          "repMax": 12,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 90,
+          "rir": null
+        },
+        {
+          "position": 6,
+          "exerciseId": "glute-bridge",
+          "sets": 3,
+          "repMin": 10,
+          "repMax": 15,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 120,
+          "rir": null
+        }
+      ]
+    },
+    {
+      "dayOrder": 3,
+      "name": "Maison C",
+      "weekday": 5,
+      "exercises": [
+        {
+          "position": 1,
+          "exerciseId": "split-squat-dumbbell",
+          "sets": 3,
+          "repMin": 8,
+          "repMax": 12,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 120,
+          "rir": null
+        },
+        {
+          "position": 2,
+          "exerciseId": "squeeze-press-dumbbell",
+          "sets": 3,
+          "repMin": 8,
+          "repMax": 12,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 120,
+          "rir": null
+        },
+        {
+          "position": 3,
+          "exerciseId": "reverse-fly-dumbbell",
+          "sets": 3,
+          "repMin": 12,
+          "repMax": 15,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 60,
+          "rir": null
+        },
+        {
+          "position": 4,
+          "exerciseId": "overhead-triceps-extension-dumbbell",
+          "sets": 2,
+          "repMin": 10,
+          "repMax": 15,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 60,
+          "rir": null
+        },
+        {
+          "position": 5,
+          "exerciseId": "curl-incline-dumbbell",
+          "sets": 2,
+          "repMin": 10,
+          "repMax": 15,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 60,
+          "rir": null
+        },
+        {
+          "position": 6,
+          "exerciseId": "band-lateral-walk",
+          "sets": 2,
+          "repMin": 10,
+          "repMax": 15,
+          "durationSec": null,
+          "distanceM": null,
+          "restSec": 60,
+          "rir": null
+        }
+      ]
+    }
+  ]
+}

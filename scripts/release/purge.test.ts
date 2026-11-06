@@ -33,7 +33,8 @@ describe('point de composition minimal', () => {
   it('la navigation a les cinq sections du PRD § 18.2', () => {
     const nav = read('src/features/app/navigation.ts');
     expect(nav).toMatch(/TAB_IDS = \['today', 'training', 'nutrition', 'progress', 'more'\] as const/);
-    expect(nav).not.toMatch(/'routines'|'checklists'|'events'|'week'|'tasks'/);
+    // I1 : les routines d'entraînement sont légitimes (écran « Routines » de l'onglet Entraînement) ; les autres restes de l'ancien projet restent interdits.
+    expect(nav).not.toMatch(/'checklists'|'events'|'week'|'tasks'/);
   });
   it('le conteneur ne porte plus de port métier', () => {
     const container = read('src/features/app/container.ts');

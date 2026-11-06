@@ -12,7 +12,7 @@ import { startAppStartup, type AppStartup } from './features/app/startup';
 import { StartupWatchdog } from './features/app/StartupWatchdog';
 import { startupTracker } from './features/app/startupSteps';
 import { registerTabShortcuts } from './features/app/tabShortcuts';
-import { AppearanceScreen, AppleHealthScreen, BodyScreen, ExportImportScreen, LogsScreen, SectionNotice, RecoveryFailureLazy, preloadScreens, SettingsScreen, ShortcutsHelp, SyncDetailsScreen, UpdateBanner } from './features/app/lazyScreens';
+import { AppearanceScreen, AppleHealthScreen, BodyScreen, ExportImportScreen, LogsScreen, SectionNotice, RecoveryFailureLazy, preloadScreens, SettingsScreen, ShortcutsHelp, SyncDetailsScreen, TrainingScreen, UpdateBanner } from './features/app/lazyScreens';
 import { AppStatusBanner } from './features/app/AppStatusBanner';
 import { startNetworkStatus } from './features/app/appStatus';
 import { restoreAppearance, startThemeSync } from './features/settings';
@@ -82,6 +82,8 @@ function AppShellContent() {
       {layout === 'pc' && <ShortcutsHelp />}
       {route.tab === 'more' ? (
         route.screen === 'appearance' ? <AppearanceScreen /> : route.screen === 'body' ? <BodyScreen /> : route.screen === 'health' ? <AppleHealthScreen /> : route.screen === 'exportimport' ? <ExportImportScreen /> : route.screen === 'logs' ? <LogsScreen /> : route.screen === 'sync' ? <SyncDetailsScreen /> : <SettingsScreen />
+      ) : route.tab === 'training' ? (
+        <TrainingScreen />
       ) : (
         <SectionNotice tab={route.tab} />
       )}

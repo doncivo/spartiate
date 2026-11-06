@@ -4,7 +4,10 @@ import type { SqlDriver } from '../driver';
 import { openSqliteWasmDriver } from '../drivers/sqliteWasm';
 import { MigrationError, migrate, migrationChecksum, readAppliedMigrations } from '../migrator';
 import { CAPTURE_TABLES_V1, migration0001SpartiateInit } from './0001_spartiate_init';
-import { migrations } from './index';
+import { migrations as registry } from './index';
+
+/** Cette suite pose la migration 0001 seule (publiée, immuable) ; le registre complet est testé par 0002_training.test.ts. */
+const migrations = [migration0001SpartiateInit] as const;
 
 const DEV = '0f8fad5b-d9cb-469f-a165-70867728950e';
 const h = (ms: number): string => `${String(ms).padStart(15, '0')}-0000-${DEV}`;
@@ -30,8 +33,8 @@ const outbox = (db: SqlDriver) => db.select<{ table_name: string; row_id: string
 const clocks = (db: SqlDriver) => db.select<{ row_id: string; field: string; hlc: string; base_hlc: string | null }>('SELECT row_id, field, hlc, base_hlc FROM sync_field_clock ORDER BY row_id, field');
 
 describe('migration 0001 : base neuve Spartiate (SPA-001b, D-23, D-24, D-65)', () => {
-  it('registre réinitialisé : une seule migration, version 1, spartiate_init', () => {
-    expect(migrations).toEqual([migration0001SpartiateInit]);
+  it('registre réinitialisé : la première migration est 0001, version 1, spartiate_init', () => {
+    expect(registry[0]).toBe(migration0001SpartiateInit);
     expect(migration0001SpartiateInit.version).toBe(1);
     expect(migration0001SpartiateInit.name).toBe('spartiate_init');
   });
@@ -162,9 +165,11 @@ describe('migration 0001 : base neuve Spartiate (SPA-001b, D-23, D-24, D-65)', (
     await db.close();
   });
 
-  it('APP_SCHEMA_VERSION vaut 1 côté Rust', () => {
+  it('APP_SCHEMA_VERSION côté Rust vaut la plus haute migration enregistrée', async () => {
+    const { migrations } = await import('./index');
+    const last = Math.max(...migrations.map((m) => m.version));
     const rust = readFileSync('src-tauri/src/backup.rs', 'utf8');
-    expect(rust).toMatch(/APP_SCHEMA_VERSION:\s*u32\s*=\s*1;|APP_SCHEMA_VERSION:\s*i64\s*=\s*1;|APP_SCHEMA_VERSION[^=]*=\s*1\s*;/);
+    expect(rust).toMatch(new RegExp(`APP_SCHEMA_VERSION:\\s*u32\\s*=\\s*${String(last)};`));
   });
 
   it('la copie figée de capture porte exactement les colonnes publiées de profile et body_weight', () => {

@@ -46,7 +46,8 @@ const noticeItem = (n: number): EpochCarryNoticeItem => ({ table: 'task', rowId:
 describe('correspondance table → libellé et type (critère 5)', () => {
   it('chaque table publiée y figure, avec une colonne de libellé du catalogue ou aucune', () => {
     expect(missingCarryReportTables(LEGACY_SYNC_CATALOGUE)).toEqual([]);
-    expect(Object.keys(CARRY_REPORT_TABLES).sort()).toEqual([...SYNC_TABLES.map((t) => t.name), ...SYNC_CATALOGUE.tables.map((t) => t.name)].sort());
+    // `routine` existe dans l'ancien schéma et dans le catalogue I1-01 (même nom de table) : une seule entrée.
+    expect(Object.keys(CARRY_REPORT_TABLES).sort()).toEqual([...new Set([...SYNC_TABLES.map((t) => t.name), ...SYNC_CATALOGUE.tables.map((t) => t.name)])].sort());
     expect(missingCarryReportTables(SYNC_CATALOGUE)).toEqual([]);
     for (const t of SYNC_TABLES) {
       const column = CARRY_REPORT_TABLES[t.name]?.label ?? null;

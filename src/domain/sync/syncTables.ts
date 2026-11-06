@@ -260,8 +260,84 @@ const BODY_WEIGHT_TABLE = table(
   { idKind: 'natural', natural: { is: isWeightId, expected: (row) => expectedWeightId(row) }, titleSource: { kind: 'own', column: 'date' } },
 );
 
-/** Catalogue de production (I0) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
-export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({ tables: [PROFILE_TABLE, BODY_WEIGHT_TABLE], order: SYNC_TABLE_ORDER });
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Catalogue I1-01 (D-25, D-71, P-09) : exercices personnalisés, profils de matériel, routines
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+const ID_MAX = 128;
+const uuidId = (name: string, nullable = false): SyncColumn => c(name, 'id', nullable);
+
+/**
+ * `exercise` : exercices PERSONNALISÉS seulement (identifiant UUID, D-71) ; les exercices embarqués n'ont aucune ligne et ne sont jamais
+ * publiés. `is_custom` est une colonne locale (toujours 1), absente des journaux et des déclencheurs.
+ */
+const EXERCISE_TABLE = table(
+  'exercise',
+  [
+    c('name_fr', 'text', false, { max: 120 }),
+    c('aliases_en', 'json', false),
+    c('muscles', 'json', false),
+    c('equipment', 'json', false),
+    c('pattern', 'enum', false, { values: ['push-horizontal', 'push-vertical', 'pull-horizontal', 'pull-vertical', 'hinge', 'squat', 'lunge', 'carry', 'core', 'isolation'] }),
+    c('kind', 'enum', false, { values: ['compound', 'isolation'] }),
+    c('metric', 'enum', false, { values: ['load-reps', 'bodyweight-reps', 'time', 'distance'] }),
+    c('bodyweight_fraction', 'real', true),
+    c('default_rep_min', 'int', false),
+    c('default_rep_max', 'int', false),
+    c('default_rest_sec', 'int', false),
+    c('instructions', 'json', false),
+    c('media', 'json', true),
+    c('strength_standard_key', 'text', true, { max: 64 }),
+    c('schema_version', 'int', false, hidden),
+    createdAt,
+    deletedAt,
+  ],
+  { local: ['is_custom'], titleSource: { kind: 'own', column: 'name_fr' } },
+);
+
+/** `equipment_profile` : le profil ACTIF n'est pas une colonne, c'est un réglage local de l'appareil (§ 14.3). */
+const EQUIPMENT_PROFILE_TABLE = table(
+  'equipment_profile',
+  [c('name', 'text', false, { max: 80 }), c('kind', 'enum', false, { values: ['salle', 'maison', 'voyage'] }), c('inventory', 'json', false), c('increments', 'json', false), createdAt, deletedAt],
+  { titleSource: { kind: 'own', column: 'name' } },
+);
+
+const ROUTINE_TABLE = table('routine', [c('name', 'text', false, { max: 120 }), c('mode', 'enum', false, { values: ['libre', 'programme'] }), createdAt, deletedAt], { titleSource: { kind: 'own', column: 'name' } });
+
+const ROUTINE_DAY_TABLE = table(
+  'routine_day',
+  [uuidId('routine_id'), c('name', 'text', false, { max: 120 }), c('day_order', 'int', false), createdAt, deletedAt],
+  { parents: [{ column: 'routine_id', table: 'routine' }], titleSource: { kind: 'own', column: 'name' } },
+);
+
+/**
+ * `routine_exercise.exercise_id` est une référence LOGIQUE (P-09) : type `text` (identifiant du JSON embarqué ou UUID d'un exercice
+ * personnalisé), absent de `parents` : une ligne reçue avant son exercice, ou visant un exercice supprimé ou inconnu de cette version,
+ * est importée telle quelle. `exercise_name` en fige le nom (D-71).
+ */
+const ROUTINE_EXERCISE_TABLE = table(
+  'routine_exercise',
+  [
+    uuidId('routine_day_id'),
+    c('exercise_id', 'text', false, { max: ID_MAX }),
+    c('exercise_name', 'text', false, { max: 120 }),
+    c('sets', 'int', false),
+    c('rep_min', 'int', false),
+    c('rep_max', 'int', false),
+    c('rir', 'int', true),
+    c('rest_sec', 'int', false),
+    c('position', 'int', false),
+    createdAt,
+    deletedAt,
+  ],
+  { parents: [{ column: 'routine_day_id', table: 'routine_day' }], titleSource: { kind: 'own', column: 'exercise_name' } },
+);
+
+/** Catalogue de production (I0 + I1-01) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
+  tables: [PROFILE_TABLE, BODY_WEIGHT_TABLE, EXERCISE_TABLE, EQUIPMENT_PROFILE_TABLE, ROUTINE_TABLE, ROUTINE_DAY_TABLE, ROUTINE_EXERCISE_TABLE],
+  order: SYNC_TABLE_ORDER,
+});
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 // Validation (section 3.3 : type et longueur)

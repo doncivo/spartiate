@@ -8,6 +8,7 @@ export type ScreenName =
   | 'settingsscreen'
   | 'appearancescreen'
   | 'bodyscreen'
+  | 'trainingscreen'
   | 'applehealthscreen'
   | 'exportimportscreen'
   | 'sectionnotice'
