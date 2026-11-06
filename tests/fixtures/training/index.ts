@@ -108,6 +108,8 @@ export const FORBIDDEN_PROFILE = profile('11111111-0000-4000-8000-000000000004',
   forbidden: ['rack'],
 });
 
+export * from './workout';
+
 /** Forme d'un programme de départ de § 12.5 : Haut A (réduit), valeurs de la semaine 2. */
 export const PROGRAM_ROUTINE: RoutineSpec = {
   name: 'Haut / Bas 4 j',

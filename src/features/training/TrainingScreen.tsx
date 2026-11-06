@@ -5,14 +5,17 @@ import { useNavigationStore, type TrainingScreenId } from '../app/navigation';
 import { EquipmentView } from './EquipmentView';
 import { LibraryView } from './LibraryView';
 import { RoutinesView } from './RoutinesView';
+import { SessionScreen, type SessionPlatform } from './session/SessionScreen';
+import { TodaySessionCard } from './session/TodaySessionCard';
 import { useTrainingData } from './trainingState';
 import './TrainingScreen.css';
 
 /**
  * Onglet Entraînement (I1-01) : accueil à trois sections, Routines (par défaut), Bibliothèque et Matériel, comme la barre de sections des
- * maquettes iPhone-Routine et PC-Materiel. Chargé à la demande avec ses textes et le contenu embarqué ; la séance active arrive en I1-02.
+ * maquettes iPhone-Routine et PC-Materiel. Chargé à la demande avec ses textes et le contenu embarqué. I1-02 : carte « Séance » en tête
+ * (commencer, ou reprendre la séance ouverte) et écran de séance active (`screen: 'session'`).
  */
-export function TrainingScreen() {
+export function TrainingScreen({ session }: { readonly session?: SessionPlatform } = {}) {
   const container = useAppContainer();
   const layout = useLayout();
   const route = useNavigationStore((s) => s.route);
@@ -20,12 +23,39 @@ export function TrainingScreen() {
   const current: TrainingScreenId = route.tab === 'training' ? (route.screen ?? 'routines') : 'routines';
   const { state, reload } = useTrainingData(container.data);
 
+  if (current === 'session') {
+    return (
+      <div className="ct-training-shell" data-layout={layout}>
+        <section className="ct-training ct-training--session" aria-labelledby="ct-training-title">
+          <h1 id="ct-training-title" className="ct-training__eyebrow">
+            {tTraining('sessionEyebrow')}
+          </h1>
+          {state.status === 'ready' ? (
+            <SessionScreen data={state.data} {...(session ? { platform: session } : {})} onExit={() => navigate({ tab: 'training' })} />
+          ) : state.status === 'error' ? (
+            <div role="alert" className="ct-training__error-block">
+              <p>{tTraining('loadError')}</p>
+              <Button variant="secondary" onClick={() => void reload()}>
+                {tTraining('retry')}
+              </Button>
+            </div>
+          ) : (
+            <p className="ct-training__muted" role="status">
+              {tTraining('loading')}
+            </p>
+          )}
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="ct-training-shell" data-layout={layout}>
       <section className="ct-training" aria-labelledby="ct-training-title">
         <h1 id="ct-training-title" className="ct-training__title">
           {tTraining('title')}
         </h1>
+        <TodaySessionCard />
         <SegmentedControl
           label={tTraining('sectionsLabel')}
           value={current}

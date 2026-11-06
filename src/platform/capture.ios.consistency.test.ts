@@ -96,6 +96,7 @@ describe('prise de développement et démarrage', () => {
     const callers = filesNaming(/\.requestPermissions?\b|Notification\.requestPermission|getUserMedia\(/).filter((file) => file.startsWith('src/features/'));
     // SPA-001b : la dictée, le scan d'image et les rappels sont retirés ; seule la demande d'autorisation des notifications de À propos reste.
     // SPA-007 : le minuteur de test (À propos) demande la même autorisation, au geste « Lancer » seulement, jamais à l'ouverture de l'écran.
-    expect([...callers].sort()).toEqual(['src/features/settings/syntheticTimer.ts', 'src/features/signing/requestPermission.ts']);
+    // I1-02 : le minuteur de repos de la séance demande la même autorisation, au geste de validation d'une série, jamais à l'ouverture de l'écran.
+    expect([...callers].sort()).toEqual(['src/features/settings/syntheticTimer.ts', 'src/features/signing/requestPermission.ts', 'src/features/training/session/restTimer.ts']);
   });
 });
