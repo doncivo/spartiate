@@ -25,6 +25,8 @@ export interface SyntheticTimerDeps {
   readonly notifier: TimerNotifier;
   readonly os: 'ios' | 'other';
   readonly label: string;
+  /** Texte de l'état final de la Live Activity. */
+  readonly finishedLabel: string;
   readonly notification: { readonly title: string; readonly body: string };
 }
 
@@ -75,7 +77,7 @@ export function createSyntheticTimer(deps: SyntheticTimerDeps): SyntheticTimer {
     if (os !== 'ios') return { live: 'unsupported' };
     const availability = await liveActivity.isAvailable();
     if (!availability.available) return { live: 'unavailable', liveReason: availability.reason, liveError: availability.error };
-    const started = await liveActivity.start({ endDateMs: state.endMs, label: state.label });
+    const started = await liveActivity.start({ endDateMs: state.endMs, label: state.label, finishedLabel: deps.finishedLabel });
     return started.started ? { live: 'started' } : { live: 'failed', liveReason: started.reason, liveError: started.error };
   }
 

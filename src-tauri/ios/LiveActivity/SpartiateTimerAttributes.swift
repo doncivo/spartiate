@@ -10,10 +10,13 @@ public struct SpartiateTimerAttributes: ActivityAttributes {
     /// Fin du compteur. Le décompte à l'écran est calculé depuis cette date par le système (Text(timerInterval:)), sans mise à jour.
     public var endDate: Date
     public var label: String
+    /// Texte de l'état final, rendu par le widget lui-même quand l'activité est périmée (staleDate = endDate), app fermée comprise.
+    public var finishedLabel: String
 
-    public init(endDate: Date, label: String) {
+    public init(endDate: Date, label: String, finishedLabel: String) {
       self.endDate = endDate
       self.label = label
+      self.finishedLabel = finishedLabel
     }
   }
 
