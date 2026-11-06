@@ -7,6 +7,10 @@ import { duplicateEmbeddedProfile, loadTrainingContent, programToRoutine } from 
 /** I1-01 (interface) : chargeur du contenu embarqué (import dynamique, mis en cache) et conversions vers le domaine. */
 
 const ids = createUuidGenerator();
+const must = <T,>(value: T | undefined): T => {
+  if (value === undefined) throw new Error('valeur absente');
+  return value;
+};
 
 describe('contenu embarqué de l’entraînement', () => {
   it('150 exercices, 4 programmes, 4 profils ; profil par défaut Fitness Park Antony ; chargé une seule fois', async () => {
@@ -28,8 +32,8 @@ describe('contenu embarqué de l’entraînement', () => {
       expect(validateRoutine(routine), program.id).toEqual([]);
       for (const day of routine.days) for (const line of day.exercises) expect(line.exerciseName, line.exerciseId).toBe(content.catalog.get(line.exerciseId)?.nameFr);
     }
-    const fullBody = programToRoutine(content.programs[0]!, content.catalog, ids);
-    const plank = fullBody.days[0]!.exercises.find((l) => l.exerciseId === 'plank');
+    const fullBody = programToRoutine(must(content.programs[0]), content.catalog, ids);
+    const plank = must(fullBody.days[0]).exercises.find((l) => l.exerciseId === 'plank');
     expect(plank).toMatchObject({ repMin: 30, repMax: 30, exerciseName: 'Planche' });
   });
 
@@ -41,15 +45,15 @@ describe('contenu embarqué de l’entraînement', () => {
       expect(parseInventory(copy.inventory), profile.id).toEqual(copy.inventory);
       expect(parseIncrements(copy.increments), profile.id).toEqual(copy.increments);
     }
-    const antony = content.profiles[0]!;
+    const antony = must(content.profiles[0]);
     expect(antony.inventory.toVerify).toEqual(expect.arrayContaining(['kettlebells', 'barbell:Barre EZ']));
     expect(antony.increments).toEqual({ barbell: 2.5, dumbbell: 2 });
   });
 
   it('compatibilité : les groupes d’alternatives du JSON ; poids de corps sans barre', async () => {
     const content = await loadTrainingContent();
-    const body = content.profiles.find((p) => p.id === 'poids-de-corps')!;
-    const antony = content.profiles.find((p) => p.id === 'fitness-park-antony')!;
+    const body = must(content.profiles.find((p) => p.id === 'poids-de-corps'));
+    const antony = must(content.profiles.find((p) => p.id === 'fitness-park-antony'));
     const forBody = filterCompatibleExercises(content.catalog.list(), body).map((e) => e.id);
     expect(forBody).toContain('push-up');
     expect(forBody).not.toContain('bench-press-barbell');
@@ -60,9 +64,9 @@ describe('contenu embarqué de l’entraînement', () => {
 
   it('les programmes de la salle sont entièrement compatibles avec Fitness Park Antony', async () => {
     const content = await loadTrainingContent();
-    const antony = content.profiles[0]!;
+    const antony = must(content.profiles[0]);
     for (const program of content.programs.filter((p) => p.compatibleProfileIds.includes('fitness-park-antony'))) {
-      for (const day of program.days) for (const line of day.exercises) expect(filterCompatibleExercises([content.catalog.get(line.exerciseId)!], antony), `${program.id} ${line.exerciseId}`).toHaveLength(1);
+      for (const day of program.days) for (const line of day.exercises) expect(filterCompatibleExercises([must(content.catalog.get(line.exerciseId))], antony), `${program.id} ${line.exerciseId}`).toHaveLength(1);
     }
   });
 });

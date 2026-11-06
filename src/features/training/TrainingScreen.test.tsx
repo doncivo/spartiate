@@ -56,7 +56,7 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
       expect(screen.getByRole('button', { name: /^Curl aux haltères/ })).toBeInTheDocument();
       expect(screen.getByText('9 exercices')).toBeInTheDocument();
       fireEvent.click(toggle);
-      expect(screen.getByRole('button', { name: /^Curl au pupitre/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Curl au pupitre' })).toBeInTheDocument();
       expect(screen.getByText('10 exercices')).toBeInTheDocument();
     });
 
@@ -152,7 +152,7 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
       fireEvent.click(within(day).getByRole('button', { name: 'Ajouter un exercice' }));
       const picker = await screen.findByRole('region', { name: 'Ajouter un exercice à « Full Body A »' });
       fireEvent.change(within(picker).getByLabelText('Rechercher un exercice'), { target: { value: 'curl' } });
-      expect(within(picker).queryByRole('button', { name: /^Curl au pupitre$/ })).toBeNull();
+      expect(within(picker).queryByRole('button', { name: 'Curl au pupitre' })).toBeNull();
       fireEvent.click(within(picker).getByRole('button', { name: /^Curl marteau$/ }));
       expect(within(day).getByRole('group', { name: 'Curl marteau' })).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la routine' }));
