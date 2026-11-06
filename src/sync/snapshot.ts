@@ -1,5 +1,5 @@
 import type { ExportedRow, FieldClock, Repositories, Tombstone } from '../db/repositories';
-import { APPLY_BATCH_OPS, MAX_RECORD_PLAINTEXT_BYTES, PAGE_ROWS, SNAPSHOT_CHUNK_PLAINTEXT_BYTES, utf8Bytes, type DeviceAck, type EpochId, type SnapshotClocks, type SnapshotRecord, type SnapshotRow, type SyncField, type SyncOp, type SyncValue } from '../domain/sync/format';
+import { APPLY_BATCH_OPS, isUnknownName, MAX_RECORD_PLAINTEXT_BYTES, PAGE_ROWS, SNAPSHOT_CHUNK_PLAINTEXT_BYTES, utf8Bytes, type DeviceAck, type EpochId, type SnapshotClocks, type SnapshotRecord, type SnapshotRow, type SyncField, type SyncOp, type SyncValue } from '../domain/sync/format';
 import { hlcIso, parseSnapshotRecord, snapshotRecordToText, snapshotRowToJson } from '../domain/sync/parse';
 import { isTooFarAhead } from '../domain/sync/drift';
 import type { SyncCatalogue, SyncTable } from '../domain/sync/syncTables';
@@ -225,6 +225,7 @@ export async function mergeSnapshot(
   await guarded(deps.data, async (repos) => {
     await applySnapshotTombstones(deps, repos, snapshot, touched, false);
     await keepSnapshotUnknown(repos, snapshot);
+    await keepUnknownTableRows(deps, repos, snapshot);
     await finalize?.(repos);
   });
   return { touched, conflicts };
@@ -290,6 +291,28 @@ async function keepSnapshotUnknown(repos: Repositories, snapshot: LoadedSnapshot
   for (const record of snapshot.records) {
     if (record.k !== 'snap-unknown') continue;
     for (const f of record.fields) await repos.sync.putUnknown({ table: f.t, rowId: f.id, field: f.field, value: f.value, hlc: f.hlc, base: f.base, sv: f.sv });
+  }
+}
+
+/**
+ * I1-03 (ADR 0011 §7.2) : ligne d'une table que ce schéma ne connaît pas encore, reçue d'un instantané d'un schéma plus récent
+ * (`snap-end.sv` > sv local, même majeure) : ses champs sont gardés dans `sync_unknown` (hlc de chaque champ, base inconnue), comme ceux
+ * d'un journal (`apply.ts`), puis réintégrés après la mise à jour. Avant, l'instantané les ignorait : un appareil en schéma 3 qui rejoignait
+ * par l'instantané d'un appareil en schéma 4 ne recevait jamais les séances closes qu'il contenait. D'une version égale ou plus ancienne :
+ * rien n'est gardé (elle ne peut pas connaître ce que la version locale ignore).
+ */
+async function keepUnknownTableRows(deps: SyncDeps, repos: Repositories, snapshot: LoadedSnapshot): Promise<void> {
+  if (snapshot.end.sv <= deps.sv) return;
+  for (const [table, row, clocks] of rowsOf(snapshot.records)) {
+    if (deps.catalogue.table(table) || !isUnknownName(table)) continue;
+    const key = typeof row.get('id') === 'string' ? 'id' : typeof row.get('key') === 'string' ? 'key' : null;
+    const star = clocks.get('*');
+    if (key === null || star === undefined) continue;
+    const id = row.get(key) as string;
+    for (const [field, value] of row) {
+      if (field === key || !isUnknownName(field)) continue;
+      await repos.sync.putUnknown({ table, rowId: id, field, value, hlc: clocks.get(field) ?? star, base: null, sv: snapshot.end.sv });
+    }
   }
 }
 
@@ -367,6 +390,7 @@ export async function replaceFromSnapshot(deps: SyncDeps, snapshot: LoadedSnapsh
     await repos.sync.clearUnknown();
     await applySnapshotTombstones(deps, repos, snapshot, touched, true);
     await keepSnapshotUnknown(repos, snapshot);
+    await keepUnknownTableRows(deps, repos, snapshot);
   });
   return { touched, conflicts: 0 };
 }

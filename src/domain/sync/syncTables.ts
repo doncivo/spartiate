@@ -70,7 +70,19 @@ export interface SyncTable {
   readonly natural?: NaturalIdSpec;
   /** Titre au journal des conflits ; `none` par défaut. */
   readonly titleSource?: TitleSource;
+  /**
+   * Lignes publiables (D-27) : absent, toutes les lignes ; sinon seules celles qui remplissent la règle. Une ligne non publiable n'est ni
+   * exportée (instantané, report d'époque, rattachement), ni publiée depuis la file, ni purgée, ni supprimée par un remplacement : elle
+   * reste locale. Règle déclarative du catalogue (jamais une valeur reçue), traduite en SQL par le repository de synchro.
+   */
+  readonly publishWhen?: PublishRule;
 }
+
+/**
+ * `notNull` : la colonne de la ligne est renseignée (séance close : `ended_at`) ; `parent` : la ligne parente désignée par cette colonne
+ * de `parents` existe et est elle-même publiable (série d'une séance close).
+ */
+export type PublishRule = { readonly notNull: string } | { readonly parent: string };
 
 export type SettingKeyScope = 'shared' | 'local' | 'unknown';
 
@@ -100,7 +112,7 @@ const deletedAt = c('deleted_at', 'datetime', true);
 const table = (
   name: SyncTableName,
   columns: readonly SyncColumn[],
-  options: { local?: readonly string[]; parents?: SyncTable['parents']; idKind?: SyncIdKind; purgeable?: boolean; key?: 'id' | 'key'; natural?: NaturalIdSpec; titleSource?: TitleSource } = {},
+  options: { local?: readonly string[]; parents?: SyncTable['parents']; idKind?: SyncIdKind; purgeable?: boolean; key?: 'id' | 'key'; natural?: NaturalIdSpec; titleSource?: TitleSource; publishWhen?: PublishRule } = {},
 ): SyncTable => ({
   name,
   key: options.key ?? 'id',
@@ -111,6 +123,7 @@ const table = (
   parents: options.parents ?? [],
   ...(options.natural ? { natural: options.natural } : {}),
   ...(options.titleSource ? { titleSource: options.titleSource } : {}),
+  ...(options.publishWhen ? { publishWhen: options.publishWhen } : {}),
 });
 
 /** Constructeurs partagés avec le banc de test (ancien catalogue). */
@@ -179,6 +192,7 @@ export function createCatalogue(def: CatalogueDefinition): SyncCatalogue {
   const names = def.tables.map((t) => t.name);
   if (names.length !== def.order.length || names.some((n, i) => n !== def.order[i])) throw new Error('catalogue de synchro : ordre différent des tables');
   const byName: ReadonlyMap<string, SyncTable> = new Map(def.tables.map((t) => [t.name, t]));
+  for (const t of def.tables) if (!isValidPublishRule(t, def.tables)) throw new Error(`catalogue de synchro : règle de publication invalide (${t.name})`);
   const columns: ReadonlyMap<string, ReadonlyMap<string, SyncColumn>> = new Map(def.tables.map((t) => [t.name, new Map(t.columns.map((col) => [col.name, col]))]));
   const children = new Map(def.tables.map((t) => [t.name, def.tables.flatMap((o) => o.parents.filter((p) => p.table === t.name).map((p) => ({ table: o, column: p.column })))]));
   const fixed = (tableName: string, id: string): boolean => def.fixedIds?.[tableName]?.has(id) ?? false;
@@ -219,6 +233,19 @@ export function createCatalogue(def: CatalogueDefinition): SyncCatalogue {
     settingScope: def.settingScope ?? (() => 'unknown'),
     isFixedId: fixed,
   };
+}
+
+/**
+ * Règle de publication bien formée : colonne publiée nullable (`notNull`), ou colonne de `parents` vers une table du catalogue placée
+ * avant elle (`parent`) : la chaîne des parents se termine toujours.
+ */
+function isValidPublishRule(t: SyncTable, tables: readonly SyncTable[]): boolean {
+  const rule = t.publishWhen;
+  if (!rule) return true;
+  if ('notNull' in rule) return t.columns.some((col) => col.name === rule.notNull && col.nullable);
+  const parent = t.parents.find((p) => p.column === rule.parent);
+  const index = tables.findIndex((o) => o.name === parent?.table);
+  return parent !== undefined && index >= 0 && index < tables.indexOf(t);
 }
 
 /** Colonnes publiées d'une table, dans l'ordre du catalogue. */
@@ -333,9 +360,63 @@ const ROUTINE_EXERCISE_TABLE = table(
   { parents: [{ column: 'routine_day_id', table: 'routine_day' }], titleSource: { kind: 'own', column: 'exercise_name' } },
 );
 
-/** Catalogue de production (I0 + I1-01) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Catalogue I1-03 (D-27, § 9.1) : séances closes et leurs séries
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+/**
+ * `workout` : publiée seulement close (`ended_at` renseigné, D-27). `routine_id`, `routine_day_id` et `copied_from_workout_id` sont des
+ * références logiques (routine ou séance supprimée, purgée ou jamais publiée) : hors de `parents`. Le repos en cours est local.
+ */
+const WORKOUT_TABLE = table(
+  'workout',
+  [
+    uuidId('routine_id', true),
+    uuidId('routine_day_id', true),
+    c('name', 'text', false, { max: 120 }),
+    c('started_at', 'datetime', false),
+    c('ended_at', 'datetime', true),
+    c('source', 'enum', false, { values: ['empty', 'routine', 'copy'] }),
+    uuidId('copied_from_workout_id', true),
+    c('notes', 'text', false),
+    createdAt,
+    deletedAt,
+  ],
+  { local: ['rest_timer_end_at', 'rest_timer_seconds'], publishWhen: { notNull: 'ended_at' }, titleSource: { kind: 'own', column: 'name' } },
+);
+
+/**
+ * `workout_set` : publiée avec sa séance close (`publishWhen` : parent publiable). `exercise_id` est une référence LOGIQUE (P-09, comme
+ * `routine_exercise`) : type `text`, hors de `parents` ; `exercise_name` en fige le nom (D-71).
+ */
+const WORKOUT_SET_TABLE = table(
+  'workout_set',
+  [
+    uuidId('workout_id'),
+    c('exercise_id', 'text', false, { max: ID_MAX }),
+    c('exercise_name', 'text', false, { max: 120 }),
+    c('position', 'int', false),
+    c('set_kind', 'enum', false, { values: ['warmup', 'work', 'drop', 'partial', 'timed'] }),
+    c('target_reps_min', 'int', true),
+    c('target_reps_max', 'int', true),
+    c('target_load_kg', 'real', true),
+    c('target_rest_sec', 'int', true),
+    c('reps', 'int', true),
+    c('load_kg', 'real', true),
+    c('duration_sec', 'int', true),
+    c('rir', 'int', true),
+    bool('done'),
+    c('done_at', 'datetime', true, hidden),
+    c('corrected_at', 'datetime', true, hidden),
+    createdAt,
+    deletedAt,
+  ],
+  { parents: [{ column: 'workout_id', table: 'workout' }], publishWhen: { parent: 'workout_id' }, titleSource: { kind: 'own', column: 'exercise_name' } },
+);
+
+/** Catalogue de production (I0 + I1-01 + I1-03) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
-  tables: [PROFILE_TABLE, BODY_WEIGHT_TABLE, EXERCISE_TABLE, EQUIPMENT_PROFILE_TABLE, ROUTINE_TABLE, ROUTINE_DAY_TABLE, ROUTINE_EXERCISE_TABLE],
+  tables: [PROFILE_TABLE, BODY_WEIGHT_TABLE, EXERCISE_TABLE, EQUIPMENT_PROFILE_TABLE, ROUTINE_TABLE, ROUTINE_DAY_TABLE, ROUTINE_EXERCISE_TABLE, WORKOUT_TABLE, WORKOUT_SET_TABLE],
   order: SYNC_TABLE_ORDER,
 });
 

@@ -41,6 +41,8 @@ export const syncVersionFr = {
     equipmentProfile: 'profils de matériel',
     routineDay: 'jours de routine',
     routineExercise: 'exercices de routine',
+    workout: 'séances',
+    workoutSet: 'séries de séance',
     other: 'autres éléments',
   },
 } as const;
