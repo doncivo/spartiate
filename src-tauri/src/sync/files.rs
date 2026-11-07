@@ -1253,9 +1253,18 @@ mod io_event_tests {
 
     #[test]
     fn statuts_nt_connus() {
-        assert_eq!(io_event_for_status(0xC000_0043_u32 as i32), "io-sharing-violation");
-        assert_eq!(io_event_for_status(0xC000_0022_u32 as i32), "io-access-denied");
-        assert_eq!(io_event_for_status(0xC000_0056_u32 as i32), "io-delete-pending");
+        assert_eq!(
+            io_event_for_status(0xC000_0043_u32 as i32),
+            "io-sharing-violation"
+        );
+        assert_eq!(
+            io_event_for_status(0xC000_0022_u32 as i32),
+            "io-access-denied"
+        );
+        assert_eq!(
+            io_event_for_status(0xC000_0056_u32 as i32),
+            "io-delete-pending"
+        );
         assert_eq!(io_event_for_status(0xC000_0001_u32 as i32), "io-other");
         assert_eq!(io_event_for_status(0), "io-other");
     }
@@ -1271,8 +1280,17 @@ mod io_event_tests {
     #[cfg(windows)]
     #[test]
     fn codes_windows_bruts() {
-        assert_eq!(io_event_for_error(&std::io::Error::from_raw_os_error(32)), "io-sharing-violation");
-        assert_eq!(io_event_for_error(&std::io::Error::from_raw_os_error(5)), "io-access-denied");
-        assert_eq!(io_event_for_error(&std::io::Error::from_raw_os_error(303)), "io-delete-pending");
+        assert_eq!(
+            io_event_for_error(&std::io::Error::from_raw_os_error(32)),
+            "io-sharing-violation"
+        );
+        assert_eq!(
+            io_event_for_error(&std::io::Error::from_raw_os_error(5)),
+            "io-access-denied"
+        );
+        assert_eq!(
+            io_event_for_error(&std::io::Error::from_raw_os_error(303)),
+            "io-delete-pending"
+        );
     }
 }
