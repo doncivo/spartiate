@@ -10,14 +10,6 @@ import { Icon } from '../../../ui';
  * état écrit en toutes lettres (« À faire », « Validée ») et non par la couleur seule. Pavé numérique, police ≥ 16 px (pas de zoom iOS).
  */
 
-const KIND_TEXT: Record<SetKind, TrainingTextKey> = {
-  work: 'kindWork',
-  warmup: 'kindWarmup',
-  drop: 'kindDrop',
-  partial: 'kindPartial',
-  timed: 'kindTimed',
-};
-
 interface Draft {
   readonly load: string;
   readonly reps: string;
