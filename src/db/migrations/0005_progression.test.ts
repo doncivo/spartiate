@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { SYNC_CATALOGUE } from '../../domain/sync/syncTables';
 import type { SqlDriver } from '../driver';
 import { openSqliteWasmDriver } from '../drivers/sqliteWasm';
 import { migrate, migrationChecksum, readAppliedMigrations } from '../migrator';
 import { migration0005Progression } from './0005_progression';
 import { migrations } from './index';
 
-/** I2-01 : migration 0005 (progression_profile, recommendation_decision), tables locales en 0.3.0, sans capture de synchro. */
+/** I2-01 : migration 0005 (progression_profile, recommendation_decision), tables locales en 0.3.0, sans capture de synchro (publiées par la 0006). */
 
 const DEV = '0f8fad5b-d9cb-469f-a165-70867728950e';
 const HLC = `000000000000001-0000-${DEV}`;
@@ -14,9 +13,11 @@ const AT = '2026-11-07T18:00:00.000Z';
 const W = '5e1a0c2d-0000-4000-8000-000000000001';
 const D = '5e1a0c2d-0000-4000-8000-0000000000d1';
 
+/** Base arrêtée à la 0005 (0.3.0) : la 0006 ajoute la publication. */
+const V5 = migrations.slice(0, 5);
 async function freshDb(): Promise<SqlDriver> {
   const db = await openSqliteWasmDriver();
-  await migrate(db, migrations);
+  await migrate(db, V5);
   return db;
 }
 
@@ -43,9 +44,9 @@ const technical = async (db: SqlDriver): Promise<unknown[]> => [
 ];
 
 describe('migration 0005 : progression (I2-01)', () => {
-  it('registre : 0001 à 0005 ; version 5, nom progression', () => {
-    expect(migrations.map((m) => m.version)).toEqual([1, 2, 3, 4, 5]);
-    expect(migrations.at(-1)).toBe(migration0005Progression);
+  it('registre : 0005 suit 0001 à 0004 (0006 ensuite, PR 2/2) ; version 5, nom progression', () => {
+    expect(V5.map((m) => m.version)).toEqual([1, 2, 3, 4, 5]);
+    expect(migrations[4]).toBe(migration0005Progression);
     expect(migration0005Progression.name).toBe('progression');
   });
 
@@ -53,7 +54,7 @@ describe('migration 0005 : progression (I2-01)', () => {
     const db = await openSqliteWasmDriver();
     await migrate(db, migrations.slice(0, 4));
     await db.execute(`INSERT INTO workout (id, name, started_at, ended_at, source, created_at, updated_at, device_id, hlc) VALUES (?, 'Haut A', ?, NULL, 'empty', ?, ?, ?, ?)`, [W, AT, AT, AT, DEV, HLC]);
-    const report = await migrate(db, migrations);
+    const report = await migrate(db, V5);
     expect(report.applied).toEqual([5]);
     expect(await db.select('SELECT id FROM workout')).toEqual([{ id: W }]);
     expect(await technical(db)).toEqual([]);
@@ -90,15 +91,13 @@ describe('migration 0005 : progression (I2-01)', () => {
     await db.close();
   });
 
-  it('tables locales en 0.3.0 : aucun déclencheur, aucune écriture dans les tables de synchro, absentes du catalogue', async () => {
+  it('tables locales en 0.3.0 : aucun déclencheur, aucune écriture dans les tables de synchro (catalogue de la 0.3.1 : migration 0006)', async () => {
     const db = await freshDb();
     expect(await db.select("SELECT name FROM sqlite_master WHERE type = 'trigger' AND tbl_name IN ('progression_profile', 'recommendation_decision')")).toEqual([]);
     await insertProfile(db);
     await insertDecision(db);
     await db.execute("UPDATE progression_profile SET confidence = 0.7, deleted_at = ? WHERE id = 'progression|bench-press-barbell'", [AT]);
     expect(await technical(db)).toEqual([]);
-    expect(SYNC_CATALOGUE.table('progression_profile')).toBeUndefined();
-    expect(SYNC_CATALOGUE.table('recommendation_decision')).toBeUndefined();
     await db.close();
   });
 });
