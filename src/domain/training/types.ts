@@ -246,6 +246,11 @@ export interface ExerciseSession {
   /** Null : non saisie (ignorable) ; lue sur les séries de l'exercice dans la séance (`workout_set.difficulty`). */
   readonly difficulty: Difficulty | null;
   readonly sets: readonly HistorySet[];
+  /**
+   * Séance de deload (I2-02, D-72 point 9) : visible dans l'historique, exclue des statistiques (estimation, confiance, fatigue,
+   * stagnation) ; elle compte comme travail du muscle (inactivité). Absent : séance ordinaire.
+   */
+  readonly deload?: boolean;
 }
 
 /** Cible de la routine ou de la séance : nombre de séries, plage de répétitions, RIR. */
@@ -280,6 +285,21 @@ export interface ProgressionExercise {
   readonly metric: ExerciseMetric;
   /** Matériel de l'exercice, dans l'ordre des données : le premier qui fournit une grille de charges l'emporte. */
   readonly equipment: readonly string[];
+  /** `isolation` : exercice secondaire (une série retirée si Recovery est bas, § 11.3) ; absent : principal. */
+  readonly kind?: ExerciseKind;
+}
+
+/**
+ * Récupération vue par le moteur (§ 11.3, § 16.1 ; I2-02). Entrée nullable : I2 ne lit pas HealthKit, aucune source réelle avant I5.
+ * Un champ nul n'est jamais remplacé par une valeur inventée ; un snapshot absent ou entièrement nul ne module rien.
+ */
+export interface RecoverySnapshot {
+  /** Score Recovery 0 à 100. */
+  readonly recovery: number | null;
+  /** Sommeil de la nuit, en heures. */
+  readonly sleepHours: number | null;
+  /** Écart de la FC de repos à la baseline, en fraction (+0,08 = +8 %). */
+  readonly restingHrDelta: number | null;
 }
 
 export interface PrescribeInput {
@@ -294,8 +314,13 @@ export interface PrescribeInput {
   readonly config: ProgressionConfig;
   /** Instant de calcul, injecté (aucune lecture d'horloge dans le moteur). */
   readonly now: IsoDateTime;
-  // Point d'extension I2-02 (fatigue, inactivité, stagnation, deload, Recovery) : contexte supplémentaire ici, appliqué par l'étape
-  // `applyConstraints` de prescribe.ts, qui ne peut que maintenir ou réduire.
+  // Contexte des contraintes I2-02 (constraints.ts), qui ne peuvent que maintenir ou réduire : tous facultatifs.
+  /** Null ou absent : aucune modulation Recovery (I2 : aucune source réelle). */
+  readonly recovery?: RecoverySnapshot | null;
+  /** Deload manuel demandé par Ali pour cette séance. */
+  readonly deload?: boolean;
+  /** Dernier travail du muscle principal, tous exercices confondus ; absent : dernière séance de cet exercice. */
+  readonly muscleLastWorkedAt?: IsoDateTime | null;
 }
 
 /** Codes de raison, dans l'ordre normatif du § 11.2 (voir `REASON_ORDER`). */
@@ -311,6 +336,11 @@ export type ReasonCode =
   | 'hard-blocks-increase'
   | 'easy-confirms'
   | 'easy-recalibration'
+  | 'fatigue-drop'
+  | 'stall'
+  | 'inactivity-discount'
+  | 'deload'
+  | 'recovery-low'
   | 'increment-unknown'
   | 'equipment-max'
   | 'snap-extra-rep'
@@ -318,7 +348,31 @@ export type ReasonCode =
   | 'unsupported-metric';
 
 /** Raison principale : une phrase par proposition (texte en PR 2/2, `src/i18n`). */
-export type PrescriptionHeadline = 'to-enter' | 'decision' | 'increase' | 'rep-ladder' | 'recalibration' | 'hold-hard' | 'extra-rep' | 'unsupported';
+export type PrescriptionHeadline =
+  | 'to-enter'
+  | 'decision'
+  | 'increase'
+  | 'rep-ladder'
+  | 'recalibration'
+  | 'hold-hard'
+  | 'extra-rep'
+  | 'unsupported'
+  | 'fatigue'
+  | 'inactivity'
+  | 'deload'
+  | 'recovery-low';
+
+/**
+ * Choix facultatif présenté avec la proposition (I2-02, D-72 points 7 et 8), jamais appliqué d'office : Ali le choisit ou l'ignore.
+ * `stall-variant` et `stall-range` sont des pistes sans valeur (charge et répétitions nulles).
+ */
+export type ProposalOptionKind = 'fatigue-load' | 'fatigue-reps' | 'stall-variant' | 'stall-range' | 'stall-mini-deload';
+
+export interface ProposalOption {
+  readonly kind: ProposalOptionKind;
+  readonly loadKg: number | null;
+  readonly reps: readonly number[] | null;
+}
 
 export interface PrescribedSet {
   readonly reps: number;
@@ -350,6 +404,14 @@ export interface Prescription {
   readonly confidence: number;
   /** Recalibrage « Facile » appliqué : l'appelant met à jour `progression_profile`. */
   readonly recalibration: { readonly at: IsoDateTime; readonly estimated1rmKg: number } | null;
+  /** Choix facultatifs (fatigue, stagnation), dans l'ordre de `PROPOSAL_OPTION_ORDER` ; vide sans contrainte. */
+  readonly options: readonly ProposalOption[];
+  /** Deload appliqué : les séries retenues pour cette séance sont exclues des statistiques. */
+  readonly deload: boolean;
+  /** RIR cible (au moins `deloadRirAtLeast` en deload) ; null sans cible. */
+  readonly rirTarget: number | null;
+  /** Décote d'inactivité appliquée (0 à `detrainFloor`). */
+  readonly inactivityCut: number;
   readonly engineVersion: number;
   readonly activeConfig: ProgressionConfig;
 }

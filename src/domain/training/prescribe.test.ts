@@ -246,8 +246,9 @@ describe('validation de l’historique', () => {
   it('confiance < 0,4 : prescription provisoire (une séance de 2 séries à 40 jours)', () => {
     const p = prescribe(input({ history: [session(40, 60, [10, 10])], target: target(8, 10, 2) }));
     expect(p.confidence).toBeLessThan(0.4);
-    expect(p.reasons).toEqual(['history-reference', 'provisional', 'top-reached']);
-    expect(p.loadKg).toBe(62.5);
+    // I2-02 (D-72 point 10) : 40 jours sans le muscle → (40 − 14) / 7 = 3 semaines, −3 % ; 60 × 0,97 = 58,2 → 57,5 kg, progression suspendue.
+    expect(p.reasons).toEqual(['history-reference', 'provisional', 'inactivity-discount']);
+    expect(p.loadKg).toBe(57.5);
   });
 });
 
@@ -277,7 +278,7 @@ describe('déterminisme, version, explication (critère 9)', () => {
   it('version du moteur et configuration active jointes', () => {
     const p = prescribe(input({ history }));
     expect(p.engineVersion).toBe(ENGINE_VERSION);
-    expect(ENGINE_VERSION).toBe(1);
+    expect(ENGINE_VERSION).toBe(2); // I2-02 : contraintes (fatigue, stagnation, inactivité, deload, Recovery)
     expect(p.activeConfig).toEqual(DEFAULT_PROGRESSION_CONFIG);
   });
 
