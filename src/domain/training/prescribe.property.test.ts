@@ -4,7 +4,10 @@ import { BENCH, CURL, LEG_PRESS, daysAgo, input } from '../../../tests/fixtures/
 import { DEFAULT_PROGRESSION_CONFIG as CFG } from './config';
 import { epley } from './estimate1rm';
 import { prescribe } from './prescribe';
-import type { Difficulty, ExerciseSession, PrescribeInput } from './types';
+import type { Difficulty, ExerciseSession, PrescribeInput, ReasonCode } from './types';
+
+/** Raisons de réduction ou de maintien (I2-02) ; `stall` ne réduit rien (choix seulement). */
+const CONSTRAINTS: ReadonlySet<ReasonCode> = new Set(['fatigue-drop', 'inactivity-discount', 'deload', 'recovery-low']);
 
 /** I2-01 (§ 11.2 invariant, § 11.6 propriétés) : déterminisme, plafond, aucune baisse sans contrainte, reps jamais converties en charge. */
 
@@ -57,11 +60,26 @@ describe('propriétés du moteur', () => {
     );
   });
 
+  it('contraintes (I2-02) : jamais de bonus ; charge ≤ référence, séries ≤ cible, choix ≤ proposition ; aucun choix appliqué d’office', () => {
+    fc.assert(
+      fc.property(arbInput, fc.option(fc.integer({ min: 0, max: 100 }), { nil: null }), fc.boolean(), (x, recovery, deload) => {
+        const p = prescribe({ ...x, recovery: recovery === null ? null : { recovery, sleepHours: null, restingHrDelta: null }, deload });
+        if (p.reference === null || p.loadKg === null) return;
+        if (!p.reasons.some((r) => CONSTRAINTS.has(r))) return;
+        expect(p.loadKg).toBeLessThanOrEqual(p.reference.loadKg);
+        expect(p.sets.length).toBeLessThanOrEqual(x.target.sets);
+        expect(p.sets.length).toBeGreaterThanOrEqual(1);
+        for (const o of p.options ?? []) if (o.loadKg !== null) expect(o.loadKg).toBeLessThanOrEqual(p.loadKg);
+      }),
+    );
+  });
+
   it('sans contrainte (I2-02), la charge ne baisse jamais sous la référence ; l’échelle de reps garde la charge', () => {
     fc.assert(
       fc.property(arbInput, (x) => {
         const p = prescribe(x);
         if (p.reference === null || p.loadKg === null) return;
+        if (p.reasons.some((r) => CONSTRAINTS.has(r))) return;
         expect(p.loadKg).toBeGreaterThanOrEqual(p.reference.loadKg);
         if (p.headline === 'rep-ladder' || p.headline === 'hold-hard' || p.headline === 'extra-rep') expect(p.loadKg).toBe(p.reference.loadKg);
         expect(p.sets).toHaveLength(x.target.sets);
