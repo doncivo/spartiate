@@ -23,12 +23,8 @@ export type ExplanationKey =
   | 'inactivity'
   | 'deload'
   | 'recoveryLow'
-<<<<<<< ours
-  | 'recoveryLowSet';
-=======
-
+  | 'recoveryLowSet'
   | 'outlierHold';
->>>>>>> theirs
 
 export interface Explanation {
   readonly key: ExplanationKey;
