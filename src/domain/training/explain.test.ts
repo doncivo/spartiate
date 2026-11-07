@@ -42,7 +42,8 @@ describe('explainPrescription', () => {
   });
 
   it('recalibrage « Facile » : hausse et raison dites', () => {
-    const p = prescribe(input({ history: [session(3, 60, [10, 10, 10], { difficulty: 'easy' })] }));
+    // Sous le haut de la fourchette : au haut, le cran l'emporte (relecture de la PR #60, I2).
+    const p = prescribe(input({ history: [session(3, 60, [8, 8, 8], { difficulty: 'easy' })] }));
     expect(p.headline).toBe('recalibration');
     expect(explainPrescription(p)).toEqual({ key: 'recalibration', params: { delta: p.deltaKg ?? 0 } });
   });

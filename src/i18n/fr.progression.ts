@@ -26,6 +26,7 @@ export const progressionFr = {
   explainExtraRep: 'Même charge, une répétition de plus sur la série {set}.',
   explainExtraRepCapped: 'Même charge, une répétition de plus sur la série {set} : hausse plafonnée à +10 %.',
   explainExtraRepMax: 'Même charge, une répétition de plus sur la série {set} : charge maximale du matériel.',
+  explainOutlierHold: '{load} kg, bien au-dessus de tes séances précédentes : même charge, une répétition de plus sur la série {set}. Vérifie ta saisie ; la progression reprendra après une seconde séance à cette charge.',
   accept: 'Accepter',
   modify: 'Modifier',
   refuse: 'Refuser',
