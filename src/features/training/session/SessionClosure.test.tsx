@@ -318,6 +318,6 @@ describe('0.2.4 point 6 : « Mettre à jour la routine ? » reproposée si l’a
     await db.data.transaction(async (r) => (await r.workouts()).deleteClosed(id));
     await reopen();
     await startOptions();
-    expect(await db.data.repos.settings.get('training.routineUpdateAsk' as never)).toBeNull();
+    expect(await db.data.repos.settings.get('training.routineUpdateAsk')).toBeNull();
   });
 });
