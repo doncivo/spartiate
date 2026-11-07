@@ -208,13 +208,19 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
       for (const decision of latest.values()) {
         const kept = recalibrationKept(decision.prescription, decision.loadKg);
         if (kept === null || !isProgressionExerciseId(decision.exerciseId)) continue;
-        await repository.saveProfile({
-          exerciseId: decision.exerciseId,
-          estimated1rmKg: kept.estimated1rmKg,
-          confidence: decision.prescription.confidence,
-          lastEasyRecalibrationAt: kept.at,
-          engineVersion: decision.prescription.engineVersion,
-        });
+        // Une séance se clôture toujours (re-relecture sync-icloud) : une prescription stockée invalide (valeur hors bornes) saute cet
+        // exercice, profil non écrit, sans rien lever ; aucun journal dans cette couche (aucune donnée corporelle ne doit y partir).
+        try {
+          await repository.saveProfile({
+            exerciseId: decision.exerciseId,
+            estimated1rmKg: kept.estimated1rmKg,
+            confidence: decision.prescription.confidence,
+            lastEasyRecalibrationAt: kept.at,
+            engineVersion: decision.prescription.engineVersion,
+          });
+        } catch (e) {
+          if (!(e instanceof RepositoryError && e.code === 'invalid')) throw e;
+        }
       }
     },
   };
