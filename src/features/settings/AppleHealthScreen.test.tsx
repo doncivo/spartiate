@@ -8,6 +8,7 @@ import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer, type AppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { logFailure } from '../../platform/desktop/log';
+import type { MemoryFiles } from '../../platform/files';
 import { AppleHealthScreen } from './AppleHealthScreen';
 import { SettingsScreen } from './SettingsScreen';
 
@@ -286,7 +287,7 @@ describe('Apple Santé (finitions 0.1.2 d)', () => {
   describe('compte Apple gratuit : entitlement absent (0.1.4 point 6)', () => {
     const NO_ENTITLEMENT = { domain: 'com.apple.healthkit', code: 4, description: 'Missing com.apple.developer.healthkit entitlement.' };
     const BLOCKED: Plan = { ...GRANTED, permission: 'error', diagnostic: { available: true, usageDescription: true, error: NO_ENTITLEMENT } };
-    const MESSAGE = 'Apple Santé n’est pas accessible avec une app installée par SideStore (compte Apple gratuit). L’import passera par l’app Raccourcis dans une prochaine version.';
+    const MESSAGE = 'Apple Santé n’est pas accessible avec une app installée par SideStore (compte Apple gratuit). Tes pesées passent par l’app Raccourcis : importe son fichier ci-dessous.';
 
     it('remplace « La demande d’accès à Santé a échoué » par le message SideStore et masque « Autoriser l’accès »', async () => {
       const { healthKit } = fakeHealthKit(BLOCKED);
@@ -380,7 +381,7 @@ describe('D-69 : import des pesées depuis l’app Raccourcis', () => {
     await db.close();
   });
 
-  async function blockedScreen(files: ReturnType<typeof import('../../platform/files').createMemoryFiles>) {
+  async function blockedScreen(files: MemoryFiles) {
     container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, platform: { runtime: 'tauri', os: 'ios' }, files });
     await db.data.repos.settings.set('healthkit.entitlementMissing', true);
     const { healthKit } = fakeHealthKit({ ...GRANTED, permission: 'error', diagnostic: { available: true, usageDescription: true, error: NO_ENTITLEMENT } });
