@@ -189,3 +189,18 @@ describe('accessibilité (critère 15)', () => {
     for (const name of ['Facile', 'Juste', 'Dur']) expect(within(group).getByRole('button', { name })).toHaveAttribute('type', 'button');
   });
 });
+
+describe('revue : la saisie d’Ali l’emporte (critère 12)', () => {
+  it('une charge tapée mais pas encore validée n’est jamais écrasée par « Accepter »', async () => {
+    await seedPast();
+    await seedCurrent();
+    openSession();
+    await proposal();
+    const [first] = within(await block()).getAllByLabelText('Charge (kg)');
+    if (!first) throw new Error('champ');
+    fireEvent.change(first, { target: { value: '55' } });
+    fireEvent.click(await within(await proposal()).findByRole('button', { name: 'Accepter' }));
+    await within(await proposal()).findByText('Proposition acceptée.');
+    expect(await loadInputs()).toEqual(['55', '62,5', '62,5']);
+  });
+});

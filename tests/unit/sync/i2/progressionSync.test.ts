@@ -132,6 +132,27 @@ describe('deux appareils en 0.3.1', () => {
   });
 });
 
+describe('instantané (qa-test)', () => {
+  it('nouvel appareil associé après coup : profil, décision et difficulté reçus par l’instantané', async () => {
+    const a = await createSimDevice(A_ID, { name: 'PC', schema: 'i0' });
+    devices = [a];
+    await profile(a, 0.5);
+    await decide(a);
+    await closedWorkout(a, W1, 'hard');
+    await setupFirst(a);
+    await a.cycle();
+    const b = await createSimDevice(B_ID, { name: 'iPhone', schema: 'i0', clock: createManualClock(a.clock.nowMs()) });
+    devices.push(b);
+    await pair(a, b);
+    await b.cycle();
+    const r = await b.data.repos.progression();
+    expect(await r.getProfile('bench-press-barbell')).toMatchObject({ id: P, confidence: 0.5 });
+    expect(await r.lastDecision('bench-press-barbell')).toMatchObject({ id: D1, loadKg: 57.5 });
+    expect((await r.history('bench-press-barbell')).map((x) => x.difficulty)).toEqual(['hard']);
+    expect(await b.driver.select('SELECT 1 FROM sync_unknown')).toEqual([]);
+  });
+});
+
 describe('appareil resté en 0.3.0 (schéma 5, ADR 0011 §7.2)', () => {
   it('profil, décision et difficulté reçus : gardés dans sync_unknown, séance close lisible ; réintégrés après la migration 0006', async () => {
     const [a, b] = await twoDevices('v5');
