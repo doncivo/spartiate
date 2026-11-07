@@ -43,6 +43,10 @@ describe('JSON d’un profil de matériel', () => {
   it('inventaire de la fixture : relu à l’identique ; clés inconnues ignorées', () => {
     expect(parseInventory(GYM_PROFILE.inventory)).toEqual(GYM_PROFILE.inventory);
     expect(parseInventory({ ...GYM_PROFILE.inventory, futur: 1 })).toEqual(GYM_PROFILE.inventory);
+    // I2-01 : le matériel d'une barre est conservé ; absent, il reste absent (profil d'avant la 0.3.0) ; mal formé, l'inventaire est refusé.
+    const linked = { ...GYM_PROFILE.inventory, barbells: [{ type: 'Barre EZ', weightKg: 8.5, equipmentId: 'ez-bar' }, { type: 'Ancienne', weightKg: 20 }] };
+    expect(parseInventory(linked)).toEqual(linked);
+    expect(parseInventory({ ...GYM_PROFILE.inventory, barbells: [{ type: 'Barre', weightKg: 20, equipmentId: 'Barre EZ' }] })).toBeNull();
   });
 
   it('inventaire partiel (version plus ancienne) : valeurs vides par défaut ; valeurs de mauvais type refusées', () => {
