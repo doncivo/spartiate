@@ -71,6 +71,15 @@ const rowToDecision = (row: DecisionRow): RecommendationDecisionRecord => ({
   ...readSyncMeta(row),
 });
 
+/** Prescription stockée d'un deload (I2-02) ; JSON illisible : pas un deload (la séance reste comptée, jamais d'échec). */
+function isDeloadPrescription(json: string): boolean {
+  try {
+    return (JSON.parse(json) as { deload?: unknown } | null)?.deload === true;
+  } catch {
+    return false;
+  }
+}
+
 const validExerciseId = (id: string): boolean => id.length >= 1 && id.length <= EXERCISE_ID_MAX;
 const finiteOrNull = (n: number | null, ok: (x: number) => boolean): boolean => n === null || (Number.isFinite(n) && ok(n));
 
@@ -105,7 +114,21 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
         // Difficulté de l'exercice dans la séance (0006) : portée par ses séries ; la série renseignée de plus haute position l'emporte.
         if (isDifficulty(row.difficulty)) current.difficulty = row.difficulty;
       }
-      return sessions.map((s): ExerciseSession => ({ workoutId: s.workoutId, endedAt: s.endedAt, difficulty: s.difficulty, sets: s.sets }));
+      // Deload (I2-02) : la dernière décision de l'exercice dans la séance a retenu une valeur (acceptée ou modifiée) sur une proposition de
+      // deload. Aucune colonne nouvelle : le marqueur est lu dans la prescription tracée (publiée avec la séance, D-27).
+      const deloads = new Set<string>();
+      if (sessions.length > 0) {
+        const decided = await db.select<{ workout_id: string; prescription: string; chosen_load_kg: number | null } & SqlRow>(
+          `SELECT workout_id, prescription, chosen_load_kg FROM recommendation_decision
+           WHERE exercise_id = ? AND deleted_at IS NULL AND workout_id IN (${sessions.map(() => '?').join(', ')})
+           ORDER BY workout_id, decided_at, id`,
+          [exerciseId, ...sessions.map((s) => s.workoutId)],
+        );
+        const latest = new Map<string, { prescription: string; chosen_load_kg: number | null }>();
+        for (const row of decided) latest.set(row.workout_id, row);
+        for (const [workoutId, row] of latest) if (row.chosen_load_kg !== null && isDeloadPrescription(row.prescription)) deloads.add(workoutId);
+      }
+      return sessions.map((s): ExerciseSession => ({ workoutId: s.workoutId, endedAt: s.endedAt, difficulty: s.difficulty, sets: s.sets, ...(deloads.has(s.workoutId) ? { deload: true } : {}) }));
     },
 
     async getProfile(exerciseId) {
