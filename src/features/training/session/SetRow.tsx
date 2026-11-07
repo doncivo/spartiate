@@ -18,6 +18,7 @@ interface Draft {
 }
 
 const text = (n: number | null): string => (n === null ? '' : formatNumber(n));
+const sameDraft = (x: Draft, y: Draft): boolean => x.load === y.load && x.reps === y.reps && x.duration === y.duration && x.rir === y.rir;
 
 function initialDraft(set: WorkoutSet, timed: boolean): Draft {
   const entry = defaultEntry(set);
@@ -68,6 +69,15 @@ export interface SetRowProps {
 export function SetRow({ set, number, timed, source, busy, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
   const [draft, setDraft] = useState<Draft>(() => initialDraft(set, timed));
   const [issue, setIssue] = useState<string | null>(null);
+  // I2-01 : une proposition acceptée écrit charge et répétitions dans une série à faire ; la saisie repart des valeurs enregistrées (la ligne
+  // n'est pas remontée : le focus reste où il est), SAUF si Ali a déjà tapé quelque chose dans cette ligne : sa saisie l'emporte toujours.
+  const stored = [set.loadKg, set.reps, set.durationSec, set.rir].map(String).join('|');
+  const [synced, setSynced] = useState<{ readonly key: string; readonly draft: Draft }>(() => ({ key: stored, draft: draft }));
+  if (synced.key !== stored) {
+    const next = initialDraft(set, timed);
+    setSynced({ key: stored, draft: next });
+    if (!set.done && sameDraft(draft, synced.draft)) setDraft(next);
+  }
   const warmup = set.setKind === 'warmup';
   const target = targetText(set, timed, source);
   const label = warmup ? tTraining('sessionWarmupSet') : tTraining('sessionSet', { n: number });

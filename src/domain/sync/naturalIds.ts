@@ -37,3 +37,28 @@ export function expectedWeightId(row: ReadonlyMap<string, unknown>): string | nu
   const source = row.get('source');
   return typeof date === 'string' && (source === 'manual' || source === 'health') ? `weight|${date}|${source}` : null;
 }
+
+/**
+ * I2-01 (PR 2/2) : `progression_profile`, un profil par exercice, `progression|<exercice>` (identifiant embarqué en kebab-case ou UUID d'un
+ * exercice personnalisé, sans `|`), au plus `PROGRESSION_EXERCISE_ID_MAX` caractères : `progression|` + 116 = 128 = `MAX_SYNC_ID_LENGTH`
+ * (relecture sync-icloud R1).
+ */
+export const PROGRESSION_EXERCISE_ID_MAX = 116;
+const PROGRESSION_RE = /^progression\|([^|]{1,116})$/;
+
+/** Identifiant d'exercice admis dans un profil publiable. */
+export const isProgressionExerciseId = (exerciseId: string): boolean => exerciseId.length >= 1 && exerciseId.length <= PROGRESSION_EXERCISE_ID_MAX && !exerciseId.includes('|');
+
+export function progressionId(exerciseId: string): string {
+  return `progression|${exerciseId}`;
+}
+
+export function isProgressionId(id: string): boolean {
+  return PROGRESSION_RE.test(id);
+}
+
+/** Identifiant attendu d'un profil de ces valeurs, ou null si `exercise_id` manque ou est mal formé. */
+export function expectedProgressionId(row: ReadonlyMap<string, unknown>): string | null {
+  const exercise = row.get('exercise_id');
+  return typeof exercise === 'string' && isProgressionExerciseId(exercise) ? progressionId(exercise) : null;
+}

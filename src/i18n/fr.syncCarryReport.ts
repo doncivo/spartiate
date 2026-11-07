@@ -74,5 +74,7 @@ export const syncCarryReportFr = {
   kindRoutineExercise: 'Exercice de routine',
   kindWorkout: 'Séance',
   kindWorkoutSet: 'Série de séance',
+  kindProgressionProfile: 'Profil de progression',
+  kindRecommendationDecision: 'Décision sur une proposition',
   kindOther: 'Autre élément',
 } as const;
