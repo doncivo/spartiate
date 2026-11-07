@@ -61,7 +61,7 @@ describe('migration 0006 : progression_sync (I2-01, PR 2/2)', () => {
     expect(migration0006ProgressionSync.name).toBe('progression_sync');
   });
 
-  it('0005 → 0006 : difficulté nulle sur les séries existantes ; lignes de progression écrites en 0.3.0 mises en file en ligne entière ; séance ouverte jamais capturée', async () => {
+  it('0005 → 0006 : difficulté nulle sur les séries existantes ; profils écrits en 0.3.0 mis en file ; décision d’une séance ouverte jamais capturée', async () => {
     const db = await openSqliteWasmDriver();
     await migrate(db, migrations.slice(0, 5));
     await insertWorkout(db);
@@ -72,12 +72,28 @@ describe('migration 0006 : progression_sync (I2-01, PR 2/2)', () => {
     const report = await migrate(db, migrations);
     expect(report.applied).toEqual([6]);
     expect(await db.select('SELECT difficulty FROM workout_set')).toEqual([{ difficulty: null }]);
-    expect(await outbox(db)).toEqual([
-      { table_name: 'progression_profile', row_id: P, field: '*' },
-      { table_name: 'recommendation_decision', row_id: D, field: '*' },
-    ]);
+    expect(await outbox(db)).toEqual([{ table_name: 'progression_profile', row_id: P, field: '*' }]);
     expect(await db.select('PRAGMA foreign_key_check')).toEqual([]);
     expect((await readAppliedMigrations(db)).at(-1)).toMatchObject({ version: 6, name: 'progression_sync', checksum: migrationChecksum(migration0006ProgressionSync) });
+    await db.close();
+  });
+
+  it('revue #61 (D-27) : décision prise dans une séance ouverte jamais capturée ; part en ligne entière avec la clôture ; séance abandonnée : jamais', async () => {
+    const db = await freshDb();
+    await insertWorkout(db);
+    await insertSet(db);
+    await insertDecision(db);
+    await db.execute('UPDATE recommendation_decision SET chosen_load_kg = 60, hlc = ? WHERE id = ?', [h(2), D]);
+    expect(await technical(db)).toEqual([]);
+    await db.execute('UPDATE workout SET deleted_at = ?, hlc = ? WHERE id = ?', [END, h(3), W]);
+    expect(await technical(db)).toEqual([]);
+    await db.execute('UPDATE workout SET deleted_at = NULL, hlc = ? WHERE id = ?', [h(4), W]);
+    await db.execute('UPDATE workout SET ended_at = ?, hlc = ? WHERE id = ?', [END, h(5), W]);
+    expect(await outbox(db)).toEqual([
+      { table_name: 'workout', row_id: W, field: '*' },
+      { table_name: 'workout_set', row_id: S1, field: '*' },
+      { table_name: 'recommendation_decision', row_id: D, field: '*' },
+    ]);
     await db.close();
   });
 
@@ -99,13 +115,19 @@ describe('migration 0006 : progression_sync (I2-01, PR 2/2)', () => {
     expect(publishedColumns(table('workout_set'))).toContain('difficulty');
     const db = await freshDb();
     const names = (await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger' ORDER BY name")).map((r) => r.name);
-    expect(names).toHaveLength(23);
-    for (const n of ['sync_progression_profile_ai', 'sync_progression_profile_au', 'sync_recommendation_decision_ai', 'sync_recommendation_decision_au', 'sync_workout_set_difficulty_au']) expect(names).toContain(n);
+    expect(names).toHaveLength(24);
+    for (const n of ['sync_progression_profile_ai', 'sync_progression_profile_au', 'sync_recommendation_decision_ai', 'sync_recommendation_decision_au', 'sync_workout_set_difficulty_au', 'sync_workout_close_decisions_au'])
+      expect(names).toContain(n);
+    // Revue de la #61 (D-27) : une décision suit sa séance, comme une série (parent, publiable seulement close).
+    expect(table('recommendation_decision').parents).toEqual([{ column: 'workout_id', table: 'workout' }]);
+    expect(table('recommendation_decision').publishWhen).toEqual({ parent: 'workout_id' });
     await db.close();
   });
 
-  it('progression_profile et recommendation_decision : insertion en ligne entière, modification champ par champ avec base_hlc, restauration « + »', async () => {
+  it('progression_profile et recommendation_decision (séance close) : insertion en ligne entière, modification champ par champ avec base_hlc, restauration « + »', async () => {
     const db = await freshDb();
+    await insertWorkout(db, END);
+    await db.execute('DELETE FROM sync_outbox');
     await insertProfile(db);
     await insertDecision(db);
     expect(await outbox(db)).toEqual([
