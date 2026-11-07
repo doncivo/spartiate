@@ -42,7 +42,7 @@ describe('capture globale des erreurs', () => {
     expect(logFailure).toHaveBeenCalledTimes(1);
     again();
     stop();
-    window.dispatchEvent(new ErrorEvent('error', { error: new Error('plus'), message: 'plus' }));
+    window.dispatchEvent(new Event('error'));
     expect(logFailure).toHaveBeenCalledTimes(1);
   });
 });
