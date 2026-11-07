@@ -43,6 +43,8 @@ export const syncVersionFr = {
     routineExercise: 'exercices de routine',
     workout: 'séances',
     workoutSet: 'séries de séance',
+    progressionProfile: 'profils de progression',
+    recommendationDecision: 'décisions sur les propositions',
     other: 'autres éléments',
   },
 } as const;

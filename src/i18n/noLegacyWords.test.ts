@@ -34,6 +34,7 @@ function offenders(file: string, source: string): string[] {
 /** Catalogues vivants : textes des écrans livrés (Aujourd'hui, Profil et poids, Plus, Synchronisation, Apple Santé, minuteur, journal…). */
 const LIVE_CATALOGS = [
   'fr.training.ts',
+  'fr.progression.ts',
   'fr.body.ts',
   'fr.health.ts',
   'fr.today.ts',

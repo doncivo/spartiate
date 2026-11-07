@@ -150,6 +150,8 @@ const KIND_KEYS = {
   routine_exercise: 'sync.version.kinds.routineExercise',
   workout: 'sync.version.kinds.workout',
   workout_set: 'sync.version.kinds.workoutSet',
+  progression_profile: 'sync.version.kinds.progressionProfile',
+  recommendation_decision: 'sync.version.kinds.recommendationDecision',
 } as const;
 
 /** Types d'éléments d'un échec (« tâches, événements »), d'après les tables du catalogue. */

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { formatTimerRemaining } from '../../../domain/syntheticTimer';
 import {
   REST_CHOICES_SEC,
@@ -34,6 +34,9 @@ import { SetRow } from './SetRow';
  */
 
 const SESSION_SETS_ON_ADD = 3;
+
+/** I2-01 (PR 2/2) : prescription et ressenti par exercice, bloc à la demande (moteur, repository et textes chargés avec lui). */
+const ExerciseProgression = lazy(() => import('./ExerciseProgression').then((m) => ({ default: m.ExerciseProgression })));
 
 interface RestView {
   readonly endAt: string;
@@ -148,6 +151,12 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     }
   }
 
+  /** Relit la séance après une écriture faite par un bloc de l'exercice (prescription acceptée, ressenti). */
+  const reload = useCallback(async (): Promise<void> => {
+    const fresh = await (await access.repos.workouts()).get(workout.id);
+    if (live.current) onWorkout(fresh);
+  }, [access, workout.id, onWorkout]);
+
   async function startRest(seconds: number): Promise<void> {
     try {
       const report = await timer.start(seconds);
@@ -229,6 +238,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         const result = await (await repos.workouts()).close(workout.id);
         // 0.2.4 point 6 : la question de routine attend sa réponse même si l'app est fermée pendant le résumé (même transaction que la clôture).
         if (!result.alreadyClosed) await repos.settings.set('training.routineUpdateAsk', result.routineDiff.hasChanges ? workout.id : null);
+        // I2-01 (relecture de la #61, point B) : recalibrage « Facile » consigné à la clôture seulement, dans la même transaction.
+        if (!result.alreadyClosed) await (await repos.progression()).applyClosedWorkout(workout.id);
         return result;
       });
       // Séance close (repos effacé en base) : minuteur, notification et Live Activity s'arrêtent ; un échec ici ne la rouvre pas.
@@ -359,6 +370,9 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                     : tTraining('sessionExerciseMeta', { n: work, rest: formatRest(restSec) })}
               </p>
             </div>
+            <Suspense fallback={null}>
+              <ExerciseProgression access={access} workout={workout} exerciseId={block.exerciseId} sets={block.sets} exercise={exercise} equipment={data.active} clock={clock} onChanged={reload} />
+            </Suspense>
             <ol className="ct-session__sets">
               {block.sets.map((set) => {
                 if (set.setKind !== 'warmup') rank += 1;

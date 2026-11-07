@@ -16,6 +16,8 @@ import {
   validateSetBounds,
   validateSetEntry,
   REST_EXTEND_SEC,
+  DIFFICULTIES,
+  type Difficulty,
   type PlannedSet,
   type RoutineDay,
   type RoutineDiff,
@@ -63,6 +65,8 @@ interface SetRow extends SqlRow, SyncRow {
   readonly done: number;
   readonly done_at: string | null;
   readonly corrected_at: string | null;
+  /** Absente d'une base antérieure à la migration 0006 (jamais en production : le migrateur passe avant). */
+  readonly difficulty?: string | null;
 }
 interface RoutineLineRow extends SqlRow {
   readonly exercise_id: string;
@@ -107,6 +111,7 @@ const rowToSet = (row: SetRow): WorkoutSet => ({
   done: row.done === 1,
   doneAt: row.done_at as IsoDateTime | null,
   correctedAt: (row.corrected_at ?? null) as IsoDateTime | null,
+  difficulty: (row.difficulty ?? null) as Difficulty | null,
   ...readSyncMeta(row),
 });
 
@@ -355,6 +360,18 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       return loadOrThrow(workoutId);
     },
 
+    async setDifficulty(workoutId, exerciseId, difficulty) {
+      await requireOpen(workoutId);
+      if (difficulty !== null && !(DIFFICULTIES as readonly string[]).includes(difficulty)) invalid('workout_set', workoutId);
+      const rows = (await rawSets(workoutId)).filter((s) => s.exercise_id === exerciseId);
+      if (rows.length === 0) invalid('workout_set', exerciseId);
+      for (const row of rows) {
+        if ((row.difficulty ?? null) === difficulty) continue;
+        const stamp = stamper.next();
+        await db.execute('UPDATE workout_set SET difficulty = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [difficulty, stamp.at, stamp.deviceId, stamp.hlc, row.id]);
+      }
+    },
+
     async addSet(workoutId, exerciseId, options) {
       await requireOpen(workoutId);
       const kind = options?.setKind ?? 'work';
@@ -467,6 +484,8 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     async discard(id) {
       await requireOpen(id);
       for (const row of await rawSets(id)) await markSetDeleted(row.id);
+      // I2-01 (relecture de la #61, D-27) : les décisions de la séance abandonnée, jamais publiées (déclencheurs gardés), disparaissent.
+      await db.execute('DELETE FROM recommendation_decision WHERE workout_id = ?', [id]);
       const stamp = stamper.next();
       await db.execute('UPDATE workout SET rest_timer_end_at = NULL, deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
     },
@@ -487,6 +506,8 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
         // publiées, disparaissent ; les autres prennent le tampon de la clôture (leurs anciens hlc peuvent être sous la tête déjà publiée).
         await db.execute('DELETE FROM workout_set WHERE workout_id = ? AND deleted_at IS NOT NULL', [workoutId]);
         await db.execute('UPDATE workout_set SET updated_at = ?, device_id = ?, hlc = ? WHERE workout_id = ?', [stamp.at, stamp.deviceId, stamp.hlc, workoutId]);
+        // I2-01 : les décisions prises pendant la séance suivent l'agrégat (même tampon ; mises en file par `sync_workout_close_decisions_au`).
+        await db.execute('UPDATE recommendation_decision SET updated_at = ?, device_id = ?, hlc = ? WHERE workout_id = ?', [stamp.at, stamp.deviceId, stamp.hlc, workoutId]);
         // Clôture : le déclencheur `sync_workout_au` met en file la séance et toutes ses séries (« * »), dans cette instruction.
         await db.execute('UPDATE workout SET ended_at = ?, rest_timer_end_at = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ? AND ended_at IS NULL', [
           stamp.at,
@@ -518,15 +539,19 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       if (!(SET_KINDS as readonly string[]).includes(kind)) invalid('workout_set', setId);
       const entry = mergedEntry(row, patch);
       if ((row.done === 1 ? validateSetEntry(entry, kind) : validateSetBounds(entry)).length > 0) invalid('workout_set', setId);
-      const unchanged = kind === row.set_kind && entry.reps === row.reps && entry.loadKg === row.load_kg && entry.durationSec === row.duration_sec && entry.rir === row.rir;
+      const difficulty = patch.difficulty === undefined ? (row.difficulty ?? null) : patch.difficulty;
+      if (difficulty !== null && !(DIFFICULTIES as readonly string[]).includes(difficulty)) invalid('workout_set', setId);
+      const unchanged =
+        kind === row.set_kind && entry.reps === row.reps && entry.loadKg === row.load_kg && entry.durationSec === row.duration_sec && entry.rir === row.rir && difficulty === (row.difficulty ?? null);
       if (unchanged) return rowToSet(row);
       const stamp = stamper.next();
-      await db.execute('UPDATE workout_set SET set_kind = ?, reps = ?, load_kg = ?, duration_sec = ?, rir = ?, corrected_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [
+      await db.execute('UPDATE workout_set SET set_kind = ?, reps = ?, load_kg = ?, duration_sec = ?, rir = ?, difficulty = ?, corrected_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [
         kind,
         entry.reps,
         entry.loadKg,
         entry.durationSec,
         entry.rir,
+        difficulty,
         stamp.at,
         stamp.at,
         stamp.deviceId,
@@ -542,6 +567,8 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       await requireClosed(id);
       const stamp = stamper.next();
       await db.execute('UPDATE workout_set SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE workout_id = ? AND deleted_at IS NULL', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
+      // I2-01 : décisions de la séance supprimées avec elle (enfants publiés, comme les séries).
+      await db.execute('UPDATE recommendation_decision SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE workout_id = ? AND deleted_at IS NULL', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
       await db.execute('UPDATE workout SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
     },
 

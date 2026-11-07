@@ -165,5 +165,20 @@ export const syncFieldFr = {
     rir: 'répétitions en réserve',
     done: 'validée',
     deleted_at: 'suppression',
+    difficulty: 'difficulté',
+  },
+  // I2-01 : profil de progression et décisions d'Ali (seuls les champs visibles au journal des conflits).
+  progression_profile: {
+    exercise_id: 'exercice',
+    deleted_at: 'suppression',
+  },
+  recommendation_decision: {
+    exercise_id: 'exercice',
+    workout_id: 'séance',
+    workout_set_id: 'série',
+    accepted: 'acceptée',
+    chosen_load_kg: 'charge retenue',
+    chosen_reps: 'répétitions retenues',
+    deleted_at: 'suppression',
   },
 } as const;

@@ -36,7 +36,7 @@ const triggersOf = async (db: SqlDriver) =>
  * migration ultérieure avec leur intervalle de versions (ADR 0008 §10.2) : ils doivent être ceux d'une base arrêtée à la version précédente.
  */
 describe('Déclencheurs de référence d’une sauvegarde (P-04)', () => {
-  it('la référence de Rust est la chaîne de l’ancien projet (sauf les noms repris par Spartiate) plus les déclencheurs réels de 0001, 0002 et 0004, sans aucune vue', async () => {
+  it('la référence de Rust est la chaîne de l’ancien projet (sauf les noms repris par Spartiate) plus les déclencheurs réels de 0001, 0002, 0004 et 0006, sans aucune vue', async () => {
     const { count, entries } = entriesOf('REFERENCE_TRIGGERS');
     expect(entries).toHaveLength(count);
     const db = await openTestDb(asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000b9'));
@@ -44,9 +44,10 @@ describe('Déclencheurs de référence d’une sauvegarde (P-04)', () => {
     try {
       await migrate(live, appMigrations);
       const spartiate = await triggersOf(live);
-      // 18 déclencheurs de capture : profile, body_weight (0001) ; exercise, equipment_profile, routine, routine_day, routine_exercise (0002) ;
-      // workout, workout_set, gardés : séance close seulement (0004, I1-03).
-      expect(spartiate).toHaveLength(18);
+      // 24 déclencheurs de capture : profile, body_weight (0001) ; exercise, equipment_profile, routine, routine_day, routine_exercise (0002) ;
+      // workout, workout_set, gardés : séance close seulement (0004, I1-03) ; progression_profile, recommendation_decision et la difficulté des
+      // séries d'une séance close, décisions mises en file à la clôture (0006, I2-01).
+      expect(spartiate).toHaveLength(24);
       const taken = new Set(spartiate.map((row) => row.name));
       const legacy = (await triggersOf(db.driver)).filter((row) => !taken.has(row.name));
       const expected = [...legacy, ...spartiate].sort((x, y) => (x.name < y.name ? -1 : x.name > y.name ? 1 : 0));
