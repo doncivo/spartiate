@@ -69,11 +69,8 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   inactivity: 'explainInactivity',
   deload: 'explainDeload',
   recoveryLow: 'explainRecoveryLow',
-<<<<<<< ours
   recoveryLowSet: 'explainRecoveryLowSet',
-=======
   outlierHold: 'explainOutlierHold',
->>>>>>> theirs
 };
 const OPTION_KEYS: Readonly<Record<OptionKey, ProgressionTextKey>> = {
   optionFatigueLoad: 'optionFatigueLoad',
