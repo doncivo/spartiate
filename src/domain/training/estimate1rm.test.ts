@@ -106,7 +106,7 @@ describe('analyse de l’historique', () => {
   });
 
   it('aucun historique, ou séance sans série de travail : aucune estimation', () => {
-    expect(analyzeHistory([], CFG)).toEqual({ estimates: [], latest: null });
+    expect(analyzeHistory([], CFG)).toEqual({ estimates: [], latest: null, latestRaw: null });
     const warmupOnly = { ...session(3, 0, []), sets: [set(40, 8, { setKind: 'warmup' })] };
     expect(analyzeHistory([warmupOnly], CFG).estimates).toEqual([]);
   });

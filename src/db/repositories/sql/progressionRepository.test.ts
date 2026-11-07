@@ -207,7 +207,8 @@ describe('ProgressionRepository : décisions', () => {
 
   it('revue #61 (B) : recalibrage « Facile » consigné à la clôture seulement, si la charge retenue est au moins la charge recalée', async () => {
     db = await openBaseDb(DEVICE);
-    const easy = prescribe(input({ history: [session(3, 60, [10, 10, 10], { difficulty: 'easy' })] }));
+    // Sous le haut de la fourchette : au haut, le cran l'emporte sur le recalibrage (relecture de la PR #60, I2).
+    const easy = prescribe(input({ history: [session(3, 60, [8, 8, 8], { difficulty: 'easy' })] }));
     expect(easy.recalibration).not.toBeNull();
     const w = await db.data.repos.workouts();
     const r = await repo();

@@ -33,7 +33,13 @@ function list<T>(value: unknown, item: (v: unknown) => T | null): T[] | null {
   return out;
 }
 
-const range = (v: unknown): StackRange | null => (isRecord(v) && positive(v['minKg']) && positive(v['maxKg']) && positive(v['stepKg']) ? { minKg: v['minKg'], maxKg: v['maxKg'], stepKg: v['stepKg'] } : null);
+const range = (v: unknown): StackRange | null => {
+  if (!(isRecord(v) && positive(v['minKg']) && positive(v['maxKg']) && positive(v['stepKg']))) return null;
+  const base = { minKg: v['minKg'], maxKg: v['maxKg'], stepKg: v['stepKg'] };
+  // Charges isolées en plus de la plage (paire de 9 kg) : liste de nombres > 0, au plus 16 ; sinon ignorée (jamais un profil refusé).
+  const extra = v['extraKg'];
+  return Array.isArray(extra) && extra.length > 0 && extra.length <= 16 && extra.every(positive) ? { ...base, extraKg: extra as number[] } : base;
+};
 const barbell = (v: unknown): BarbellSpec | null => {
   if (!(isRecord(v) && typeof v['type'] === 'string' && v['type'].length <= 64 && positive(v['weightKg']))) return null;
   const equipmentId = v['equipmentId'];

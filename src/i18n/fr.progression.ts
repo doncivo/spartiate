@@ -26,6 +26,7 @@ export const progressionFr = {
   explainExtraRep: 'Même charge, une répétition de plus sur la série {set}.',
   explainExtraRepCapped: 'Même charge, une répétition de plus sur la série {set} : hausse plafonnée à +10 %.',
   explainExtraRepMax: 'Même charge, une répétition de plus sur la série {set} : charge maximale du matériel.',
+  explainOutlierHold: '{load} kg, bien au-dessus de tes séances précédentes : même charge, une répétition de plus sur la série {set}. Vérifie ta saisie ; la progression reprendra après une seconde séance à cette charge.',
   // Contraintes (I2-02) : maintien ou réduction, jamais imposés.
   explainFatigue: 'Même charge, mêmes répétitions : plus de 20 % de répétitions en moins qu’à la dernière séance à cette charge.',
   explainInactivity: '−{cut} % : reprise après une pause de 3 semaines ou plus sur ce muscle.',
