@@ -272,6 +272,16 @@ pub mod log {
                 return;
             }
         }
+        // Relecture D-26 (0.2.4) : les causes d'erreur d'E/S (`io-*`) sont signalées une fois par session et par cause, pas à chaque cycle.
+        if event.starts_with("io-") {
+            static SEEN: std::sync::Mutex<Vec<&'static str>> = std::sync::Mutex::new(Vec::new());
+            if let Ok(mut seen) = SEEN.lock() {
+                if seen.contains(&event) {
+                    return;
+                }
+                seen.push(event);
+            }
+        }
         crate::applog::write("sync-rust", event);
     }
 

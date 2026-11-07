@@ -156,6 +156,9 @@ export async function runCycle(baseDeps: SyncDeps, hooks: CycleHooks, options: C
     result = await cycleSteps(deps, hooks, options, seen);
   } catch (error) {
     reportCycle(deps, seen, startedAt, null);
+    // Écrit une fois : le chemin « état illisible » rapporte encore le résultat plus bas.
+    delete seen.received;
+    delete seen.published;
     // ADR 0011 §22 point 6 : arrêt à l'échéance, entre deux unités : la file garde ce qui n'est pas publié, `lastSyncAt` n'avance pas,
     // aucune phase d'erreur ; le cycle d'ouverture suivant reprend (journal du code seulement).
     if (isCycleInterrupted(error)) {
@@ -1221,17 +1224,25 @@ interface CycleSeen {
 /** Nombre de fichiers attendus d'iCloud au dernier cycle terminé, par accès aux données (un service = un appareil). */
 const lastPendingFiles = new WeakMap<object, number>();
 
+/** Tables et nombres (`table:n`, triées), coupées à 200 caractères avec `+n` : le journal masque tout détail de plus de 300 caractères. */
+export function describeTables(counts: ReadonlyMap<string, number>): string {
+  const parts = [...counts].sort(([a], [b]) => (a < b ? -1 : 1)).map(([table, n]) => `${table}:${String(n)}`);
+  let text = '';
+  for (const [i, part] of parts.entries()) {
+    const next = text === '' ? part : `${text},${part}`;
+    if (next.length > 190) return `${text},+${String(parts.length - i)}`;
+    text = next;
+  }
+  return text;
+}
+
 /** 0.2.4 point 1 : ce que le cycle a fait, journalisé seulement s'il a fait quelque chose (jamais à chaque cycle vide). */
 function reportCycle(deps: SyncDeps, seen: CycleSeen, startedAt: number, result: CycleResult | null): void {
   const ms = Math.max(0, deps.clock.nowMs() - startedAt);
   for (const [source, tables] of seen.received ?? []) {
-    const detail = [...tables]
-      .sort(([a], [b]) => (a < b ? -1 : 1))
-      .map(([table, ids]) => `${table}:${String(ids.size)}`)
-      .join(',');
-    deps.logger.log('received', { from: source, tables: detail, ms });
+    deps.logger.log('received', { from: source, tables: describeTables(new Map([...tables].map(([table, ids]) => [table, ids.size]))), ms });
   }
-  if (seen.published && seen.published.count > 0) deps.logger.log('published', { count: seen.published.count, tables: [...seen.published.tables].sort().join(',') });
+  if (seen.published && seen.published.count > 0) deps.logger.log('published', { count: seen.published.count, tables: describeTables(new Map([...seen.published.tables].map((t) => [t, 0]))).replace(/:0/g, '') });
   if (result?.outcome !== 'done') return;
   const files = result.pendingFiles.length;
   const before = lastPendingFiles.get(deps.data) ?? 0;
