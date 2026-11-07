@@ -58,6 +58,12 @@ describe('explainPrescription', () => {
     expect(explainPrescription(p)).toEqual({ key: 'decision', params: { load: 57.5 } });
   });
 
+  it('revue #61 (C) : décision sans charge retenue : « à saisir » (aucune phrase de décision sans valeur)', () => {
+    const p = prescribe(input({ history: three(60, [10, 10, 10]), lastDecision: { decidedAt: '2026-11-06T10:00:00.000Z' as never, accepted: false, loadKg: null, reps: [8, 8, 8] } }));
+    expect(p.headline).toBe('decision');
+    expect(explainPrescription(p)).toEqual({ key: 'toEnter', params: {} });
+  });
+
   it('même entrée : même phrase (déterminisme)', () => {
     const make = () => explainPrescription(prescribe(input({ history: three(60, [10, 10, 10]), equipment: FITNESS_PARK_ANTONY })));
     expect(make()).toEqual(make());

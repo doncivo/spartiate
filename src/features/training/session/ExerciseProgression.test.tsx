@@ -204,3 +204,44 @@ describe('revue : la saisie d’Ali l’emporte (critère 12)', () => {
     expect(await loadInputs()).toEqual(['55', '62,5', '62,5']);
   });
 });
+
+describe('revue #61 (B) : recalibrage « Facile » consigné à la clôture', () => {
+  /** Séance passée jugée Facile (confiance faible) : la proposition est un recalibrage +5 %. */
+  async function seedEasyPast(): Promise<void> {
+    const r = await db.data.repos.workouts();
+    await r.start({ source: 'empty', id: PAST, name: 'Haut A' });
+    const w = await r.addExercise(PAST, { exerciseId: 'bench-press-barbell', exerciseName: BENCH, sets: 3, targetRepsMin: 8, targetRepsMax: 10 });
+    for (const s of w.sets) await r.validateSet(s.id, { reps: 10, loadKg: 60 });
+    await r.setDifficulty(PAST, 'bench-press-barbell', 'easy');
+    await db.data.transaction(async (repos) => (await repos.workouts()).close(PAST));
+    db.clock.advance(3 * 86_400_000);
+  }
+  const profiles = () => db.driver.select<{ last_easy_recalibration_at: string | null }>('SELECT last_easy_recalibration_at FROM progression_profile');
+
+  it('Accepter n’écrit aucun profil ; séance abandonnée : délai non consommé', async () => {
+    await seedEasyPast();
+    await seedCurrent();
+    openSession();
+    fireEvent.click(await within(await proposal()).findByRole('button', { name: 'Accepter' }));
+    await within(await proposal()).findByText('Proposition acceptée.');
+    expect(await profiles()).toEqual([]);
+    await db.data.transaction(async (repos) => (await repos.workouts()).discard(CURRENT));
+    expect(await profiles()).toEqual([]);
+  });
+
+  it('Accepter puis « Terminer la séance » : délai consommé, estimation recalée', async () => {
+    await seedEasyPast();
+    await seedCurrent();
+    openSession();
+    fireEvent.click(await within(await proposal()).findByRole('button', { name: 'Accepter' }));
+    await within(await proposal()).findByText('Proposition acceptée.');
+    for (let i = 0; i < 3; i += 1) {
+      const button = (await within(await block()).findAllByRole('button', { name: 'Valider la série' }))[0];
+      if (!button) throw new Error('série');
+      fireEvent.click(button);
+      await waitFor(async () => expect(within(await block()).queryAllByRole('button', { name: 'Valider la série' })).toHaveLength(2 - i));
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Terminer la séance' }));
+    await waitFor(async () => expect((await profiles())[0]?.last_easy_recalibration_at).not.toBeNull());
+  });
+});

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { HISTORY_SESSIONS_LOADED } from '../../../domain/training/config';
 import { prescribe } from '../../../domain/training/prescribe';
 import type { DeviceId } from '../../../domain/types';
-import { input } from '../../../../tests/fixtures/training/progression';
+import { input, session } from '../../../../tests/fixtures/training/progression';
 import { openBaseDb, type TestDb } from './testSetup';
 
 /** I2-01 : ProgressionRepository (historique des séances closes et difficulté, profil recalculable, décisions tracées ; publiés en 0.3.1). */
@@ -158,8 +158,9 @@ describe('ProgressionRepository : profil', () => {
 });
 
 describe('ProgressionRepository : décisions', () => {
-  it('acceptation puis modification tracées ; la dernière (date, puis identifiant) sert de référence ; capturées (0.3.1)', async () => {
+  it('acceptation puis modification tracées ; la dernière (date, puis identifiant) d’une séance CLOSE sert de référence ; capturées (0.3.1)', async () => {
     db = await openBaseDb(DEVICE);
+    await workout(u(1), day(1));
     const r = await repo();
     expect(await r.lastDecision('bench-press-barbell')).toBeNull();
     const prescription = prescribe(input());
@@ -167,7 +168,7 @@ describe('ProgressionRepository : décisions', () => {
     expect(accepted).toMatchObject({ id: u(900), accepted: true, loadKg: null, reps: [8, 8, 8], engineVersion: 1, workoutId: u(1), workoutSetId: null, decidedAt: '2026-10-01T08:00:00.000Z' });
     expect(accepted.prescription).toEqual(prescription);
     db.clock.advance(1000);
-    const manual = await r.recordDecision({ exerciseId: 'bench-press-barbell', workoutId: null, workoutSetId: null, prescription, accepted: false, chosenLoadKg: 57.5, chosenReps: [8, 8, 8] });
+    const manual = await r.recordDecision({ exerciseId: 'bench-press-barbell', workoutId: u(1), workoutSetId: null, prescription, accepted: false, chosenLoadKg: 57.5, chosenReps: [8, 8, 8] });
     expect(manual.id).toMatch(/^[0-9a-f-]{36}$/);
     const last = await r.lastDecision('bench-press-barbell');
     expect(last).toEqual(manual);
@@ -178,6 +179,63 @@ describe('ProgressionRepository : décisions', () => {
       { table_name: 'recommendation_decision', field: '*' },
       { table_name: 'recommendation_decision', field: '*' },
     ]);
+  });
+
+  it('revue #61 (D-27) : décision d’une séance ouverte, supprimée ou sans séance : jamais référence ni capturée ; decisionFor la rend pour sa séance ; discard l’efface', async () => {
+    db = await openBaseDb(DEVICE);
+    await workout(u(1), day(1));
+    await workout(u(2), day(2), day(3));
+    const r = await repo();
+    const prescription = prescribe(input());
+    const base = { exerciseId: 'bench-press-barbell', prescription, accepted: false, chosenLoadKg: 60, chosenReps: [8] };
+    await r.recordDecision({ ...base, id: u(901), workoutId: u(1) });
+    db.clock.advance(1000);
+    await r.recordDecision({ ...base, id: u(902), workoutId: u(2) });
+    await r.recordDecision({ ...base, id: u(903), workoutId: null });
+    const w = await db.data.repos.workouts();
+    await w.start({ source: 'empty', id: u(3), name: 'Ouverte' });
+    await w.addExercise(u(3), { exerciseId: 'bench-press-barbell', exerciseName: 'Développé', sets: 1 });
+    await r.recordDecision({ ...base, id: u(904), workoutId: u(3) });
+    expect((await r.lastDecision('bench-press-barbell'))?.id).toBe(u(901));
+    expect((await r.decisionFor(u(3), 'bench-press-barbell'))?.id).toBe(u(904));
+    expect(await r.decisionFor(u(3), 'row-barbell')).toBeNull();
+    expect((await db.driver.select<{ row_id: string }>("SELECT row_id FROM sync_outbox WHERE table_name = 'recommendation_decision'")).map((x) => x.row_id)).toEqual([u(901)]);
+    await w.discard(u(3));
+    expect(await r.decisionFor(u(3), 'bench-press-barbell')).toBeNull();
+    expect(await db.driver.select('SELECT id FROM recommendation_decision WHERE workout_id = ?', [u(3)])).toEqual([]);
+  });
+
+  it('revue #61 (B) : recalibrage « Facile » consigné à la clôture seulement, si la charge retenue est au moins la charge recalée', async () => {
+    db = await openBaseDb(DEVICE);
+    const easy = prescribe(input({ history: [session(3, 60, [10, 10, 10], { difficulty: 'easy' })] }));
+    expect(easy.recalibration).not.toBeNull();
+    const w = await db.data.repos.workouts();
+    const r = await repo();
+    for (const [id, chosen] of [[u(10), easy.loadKg], [u(11), (easy.loadKg ?? 0) - 2.5]] as const) {
+      await w.start({ source: 'empty', id, name: 'Séance' });
+      const opened = await w.addExercise(id, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé', sets: 1 });
+      await r.recordDecision({ exerciseId: 'bench-press-barbell', workoutId: id, prescription: easy, accepted: chosen === easy.loadKg, chosenLoadKg: chosen, chosenReps: [8] });
+      // Séance ouverte : rien n'est consigné ; une séance ouverte refuse la consignation.
+      await expect(r.applyClosedWorkout(id)).rejects.toMatchObject({ code: 'invalid' });
+      expect(await r.getProfile('bench-press-barbell')).toBeNull();
+      for (const s of opened.sets) await w.validateSet(s.id, { reps: 8, loadKg: chosen ?? 0 });
+      await db.data.transaction(async (repos) => (await repos.workouts()).close(id));
+      await r.applyClosedWorkout(id);
+      if (id === u(10)) {
+        expect(await r.getProfile('bench-press-barbell')).toMatchObject({ lastEasyRecalibrationAt: easy.recalibration?.at, estimated1rmKg: easy.recalibration?.estimated1rmKg });
+        await db.driver.execute('DELETE FROM progression_profile');
+      } else expect(await r.getProfile('bench-press-barbell')).toBeNull();
+      db.clock.advance(1000);
+    }
+  });
+
+  it('relecture sync-icloud R1 : identifiant d’exercice d’un profil borné à 116 caractères (progression|… ≤ 128)', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    const ok = { estimated1rmKg: 80, confidence: 0.5, lastEasyRecalibrationAt: null, engineVersion: 1 };
+    await r.saveProfile({ ...ok, exerciseId: 'x'.repeat(116) });
+    await expect(r.saveProfile({ ...ok, exerciseId: 'x'.repeat(117) })).rejects.toMatchObject({ code: 'invalid' });
+    await expect(r.saveProfile({ ...ok, exerciseId: 'a|b' })).rejects.toMatchObject({ code: 'invalid' });
   });
 
   it('PR 2/2 : refus tracé sans valeur (accepted = 0, charge nulle, aucune répétition) ; des répétitions sans charge restent admises', async () => {
