@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BENCH, CURL, LEG_PRESS, PLANK, daysAgo, input, session, target } from '../../../tests/fixtures/training/progression';
+import { CURL, LEG_PRESS, PLANK, daysAgo, input, session, target } from '../../../tests/fixtures/training/progression';
 import { DEFAULT_PROGRESSION_CONFIG as CFG, PROPOSAL_OPTION_ORDER, REASON_ORDER } from './config';
 import { deloadSetCount, inactivityCut, isLowRecovery, isStalled, progressed, repsDrop } from './constraints';
 import { analyzeHistory } from './estimate1rm';
@@ -238,7 +238,7 @@ describe('récupération (§ 11.3 ; I2 consomme un snapshot nullable)', () => {
 
   it('snapshot absent ou nul : aucune modulation, aucun score inventé', () => {
     const none = prescribe(input({ history: hist }));
-    for (const recovery of [null, undefined, { recovery: null, sleepHours: null, restingHrDelta: null }]) {
+    for (const recovery of [null, { recovery: null, sleepHours: null, restingHrDelta: null }]) {
       const p = prescribe(input({ history: hist, recovery }));
       expect(p).toEqual(none);
       expect(p.reasons).not.toContain('recovery-low');

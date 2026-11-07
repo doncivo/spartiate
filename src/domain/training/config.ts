@@ -5,7 +5,7 @@ import type { PrescriptionHeadline, ProposalOptionKind, ReasonCode } from './typ
  * prescription incrémente `ENGINE_VERSION` (la version est jointe à chaque prescription et à chaque décision tracée).
  */
 
-export const ENGINE_VERSION = 1;
+export const ENGINE_VERSION = 2;
 
 export interface ProgressionConfig {
   /** Au-delà, une série pèse `lowQualityWeight` dans l'estimation (§ 11.3). */
