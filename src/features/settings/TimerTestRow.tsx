@@ -131,7 +131,7 @@ export function TimerTestRow({ os, notifier, liveActivity }: Props) {
     <div className="ct-settings__row">
       <span className="ct-settings__stack">
         <span>{tTimer('row')}</span>
-        {!running && !finished && <span className="ct-settings__hint">{tTimer('rowHint')}</span>}
+        {!running && !finished && <span className="ct-settings__hint">{tTimer(platformOs === 'ios' ? 'rowHint' : 'rowHintPc')}</span>}
         {running && (
           <span className="ct-settings__hint" role="timer" aria-live="off">
             {formatTimerRemaining(timerRemainingMs(state, now))}
