@@ -1,4 +1,5 @@
 import { detectOs, detectRuntime } from '../../platform';
+import { installGlobalErrorCapture } from './globalErrors';
 import { currentLogJournal, installLogJournal, logFailure } from '../../platform/desktop/log';
 
 /** Code du dernier échec d'installation du journal (bloc à la demande illisible), ou null. */
@@ -18,6 +19,8 @@ export function startLogJournal(windowLabel: 'main' | 'focus'): Promise<void> {
     ({ openLogJournal }) => {
       installError = null;
       if (!currentLogJournal()) installLogJournal(openLogJournal(detectRuntime(), detectOs(), windowLabel));
+      // 0.2.4 point 2 : erreurs non gérées de la fenêtre dans le journal (scope `app`), dès que le journal existe.
+      installGlobalErrorCapture(window);
     },
     (error: unknown) => {
       installError = 'load-failed';
