@@ -319,7 +319,7 @@ export interface PrescribeInput {
   readonly recovery?: RecoverySnapshot | null;
   /** Deload manuel demandé par Ali pour cette séance. */
   readonly deload?: boolean;
-  /** Dernier travail du muscle principal, tous exercices confondus ; absent : dernière séance de cet exercice. */
+  /** Dernier travail du muscle principal, tous exercices confondus ; absent ou nul : dernière séance de cet exercice (la plus récente des deux l'emporte). */
   readonly muscleLastWorkedAt?: IsoDateTime | null;
 }
 

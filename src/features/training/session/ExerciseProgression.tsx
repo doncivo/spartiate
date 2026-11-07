@@ -62,6 +62,10 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   extraRep: 'explainExtraRep',
   extraRepCapped: 'explainExtraRepCapped',
   extraRepMax: 'explainExtraRepMax',
+  fatigue: 'explainFatigue',
+  inactivity: 'explainInactivity',
+  deload: 'explainDeload',
+  recoveryLow: 'explainRecoveryLow',
 };
 const BAND_KEYS = { low: 'bandLow', medium: 'bandMedium', high: 'bandHigh' } as const;
 const DIFFICULTY_KEYS: Readonly<Record<Difficulty, ProgressionTextKey>> = { easy: 'easy', ok: 'ok', hard: 'hard' };
