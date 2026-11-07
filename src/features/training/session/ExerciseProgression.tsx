@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { DEFAULT_PROGRESSION_CONFIG } from '../../../domain/training/config';
-import { confidenceBand, confidencePercent, explainPrescription, type ExplanationKey } from '../../../domain/training/explain';
+import { confidenceBand, confidencePercent, constraintAlerts, explainOption, explainPrescription, type ExplanationKey, type OptionKey } from '../../../domain/training/explain';
 import { prescribe } from '../../../domain/training/prescribe';
 import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type Prescription, type ProgressionEquipment, type RepTarget } from '../../../domain/training/types';
 import type { WorkoutSet, WorkoutWithSets } from '../../../domain/training/session';
@@ -21,6 +21,9 @@ import './Progression.css';
  *   « Modifier » applique ses valeurs, « Refuser » ne remplit rien ; chaque choix est tracé dans `recommendation_decision` (une décision
  *   pour cette séance remplace les boutons par son état). La décision d'une séance précédente, postérieure à sa dernière séance close, est
  *   la référence du moteur (critère 8) ; un refus n'en est pas une.
+ * - Contraintes (I2-02) : alertes en texte et choix facultatifs (fatigue : −5 % ou −2 reps ; stagnation : variante, autre plage, mini-deload).
+ *   Un choix ne remplit les séries qu'au geste d'Ali, tracé comme une modification ; « Accepter » garde la proposition, « Refuser » ne
+ *   remplit rien. Deload manuel demandé par Ali (bascule) : la proposition allégée, une fois retenue, sort la séance des statistiques.
  * - Ressenti Facile / Juste / Dur : écrit sur les séries de l'exercice (`setDifficulty`), un second appui l'efface ; état dit en texte et par
  *   `aria-pressed`, jamais par la couleur seule.
  */
@@ -62,6 +65,19 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   extraRep: 'explainExtraRep',
   extraRepCapped: 'explainExtraRepCapped',
   extraRepMax: 'explainExtraRepMax',
+  fatigue: 'explainFatigue',
+  inactivity: 'explainInactivity',
+  deload: 'explainDeload',
+  recoveryLow: 'explainRecoveryLow',
+  recoveryLowSet: 'explainRecoveryLowSet',
+  outlierHold: 'explainOutlierHold',
+};
+const OPTION_KEYS: Readonly<Record<OptionKey, ProgressionTextKey>> = {
+  optionFatigueLoad: 'optionFatigueLoad',
+  optionFatigueReps: 'optionFatigueReps',
+  optionStallVariant: 'optionStallVariant',
+  optionStallRange: 'optionStallRange',
+  optionStallMiniDeload: 'optionStallMiniDeload',
 };
 const BAND_KEYS = { low: 'bandLow', medium: 'bandMedium', high: 'bandHigh' } as const;
 const DIFFICULTY_KEYS: Readonly<Record<Difficulty, ProgressionTextKey>> = { easy: 'easy', ok: 'ok', hard: 'hard' };
@@ -93,6 +109,8 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<{ readonly load: string; readonly reps: string } | null>(null);
+  /** Deload manuel demandé pour cette séance (I2-02) : rien n'est écrit avant une décision. */
+  const [deload, setDeload] = useState(false);
   const live = useRef(true);
   const editLoad = useRef<HTMLInputElement>(null);
   const stateLine = useRef<HTMLParagraphElement>(null);
@@ -131,7 +149,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     // cette séance, l'historique l'emporte (critère 8 : la séance faite fait foi).
     const reference = d !== null && d.loadKg !== null ? { decidedAt: d.decidedAt, accepted: d.accepted, loadKg: d.loadKg, reps: d.reps } : null;
     return prescribe({
-      exercise: { id: exerciseId, metric: exercise?.metric ?? 'load-reps', equipment: exercise?.equipment ?? [] },
+      exercise: { id: exerciseId, metric: exercise?.metric ?? 'load-reps', equipment: exercise?.equipment ?? [], ...(exercise === undefined ? {} : { kind: exercise.kind }) },
       history: load.history,
       lastDecision: reference,
       profile: load.profile,
@@ -139,9 +157,12 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
       target,
       config: DEFAULT_PROGRESSION_CONFIG,
       now: new Date(clock.nowMs()).toISOString() as IsoDateTime,
+      // I2 : aucune source Recovery (I5) ; le snapshot reste nul, aucune modulation.
+      recovery: null,
+      deload,
     });
     // L'instant de calcul est celui du chargement : la proposition ne change pas pendant la séance.
-  }, [load, exerciseId, exercise, equipment, target]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [load, exerciseId, exercise, equipment, target, deload]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (ownDecision !== null && decided.current) {
@@ -175,9 +196,10 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
           if (chosen === null) return;
           const workouts = await repos.workouts();
           const work = sets.filter((s) => s.setKind !== 'warmup');
-          for (const [i, s] of work.entries()) {
+          // Autant de séries que proposées (deload, Recovery bas : moins de séries) ; les autres restent vides, à Ali de décider.
+          for (const [i, s] of work.slice(0, chosen.reps.length).entries()) {
             if (s.done || s.reps !== null || s.loadKg !== null) continue;
-            await workouts.updateSet(s.id, { loadKg: chosen.loadKg, reps: chosen.reps[i] ?? chosen.reps.at(-1) ?? null });
+            await workouts.updateSet(s.id, { loadKg: chosen.loadKg, reps: chosen.reps[i] ?? null });
           }
         });
         setEditing(null);
@@ -214,7 +236,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
       setError(tProgression('editInvalid'));
       return;
     }
-    void decide(false, { loadKg, reps: Array.from({ length: target.sets }, () => reps) });
+    void decide(false, { loadKg, reps: Array.from({ length: Math.max(1, prescription?.sets.length ?? target.sets) }, () => reps) });
   }
   const onEditKey = (event: KeyboardEvent<HTMLInputElement>): void => {
     if (event.key === 'Enter') {
@@ -237,11 +259,20 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     const sentence = tProgression(EXPLAIN_KEYS[explanation.key], params);
     const value = p.status === 'unsupported' ? tProgression('noProposal') : p.loadKg === null ? tProgression('toEnter') : tProgression('value', { load: kg(p.loadKg), reps: repsText(p.sets.map((s) => s.reps)) });
     const proposed = p.status === 'prescribed' && p.loadKg !== null;
+    const alerts = constraintAlerts(p);
+    const options = p.options ?? [];
     return (
       <>
         <p className="ct-progression__value ct-session__num">{value}</p>
         <p className="ct-progression__sentence">{sentence}</p>
         {proposed ? <p className="ct-progression__muted">{tProgression('confidence', { percent: confidencePercent(p.confidence), band: tProgression(BAND_KEYS[confidenceBand(p.confidence)]) })}</p> : null}
+        {proposed && alerts.length > 0 ? (
+          <ul className="ct-progression__alerts" aria-label={tProgression('alertsLabel')}>
+            {alerts.map((a) => (
+              <li key={a.key}>{tProgression(a.key, a.params)}</li>
+            ))}
+          </ul>
+        ) : null}
         {ownDecision !== null ? (
           <p ref={stateLine} tabIndex={-1} className="ct-progression__state" role="status">
             {ownDecision.loadKg === null
@@ -264,7 +295,38 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
               </Button>
             </div>
             <p className="ct-progression__muted">{tProgression('decisionHint')}</p>
+            {options.length > 0 ? (
+              <div className="ct-progression__options" role="group" aria-label={tProgression('optionsTitle')}>
+                <span className="ct-training__label">{tProgression('optionsTitle')}</span>
+                {options.map((o) => {
+                  const e = explainOption(o, p.activeConfig);
+                  const chosen = o.loadKg !== null && o.reps !== null ? { loadKg: o.loadKg, reps: o.reps } : null;
+                  const text = tProgression(OPTION_KEYS[e.key], { ...e.params, value: chosen === null ? '' : tProgression('value', { load: kg(chosen.loadKg), reps: repsText(chosen.reps) }) });
+                  return (
+                    <div key={o.kind} className="ct-progression__option">
+                      <p className="ct-progression__sentence">{text}</p>
+                      {chosen !== null ? (
+                        <Button variant="secondary" disabled={busy} ariaLabel={tProgression('chooseLabel', { option: text })} onClick={() => void decide(false, chosen)}>
+                          {tProgression('choose')}
+                        </Button>
+                      ) : null}
+                    </div>
+                  );
+                })}
+                <p className="ct-progression__hint">{tProgression('optionsHint')}</p>
+              </div>
+            ) : null}
           </>
+        ) : null}
+        {ownDecision === null && editing === null && p.status === 'prescribed' && p.reference !== null ? (
+          <div className="ct-progression__deload">
+            <Button variant="secondary" pressed={deload} disabled={busy} onClick={() => setDeload((on) => !on)}>
+              {tProgression('deloadToggle')}
+            </Button>
+            <p className="ct-progression__muted" aria-live="polite">
+              {tProgression(deload ? 'deloadOn' : 'deloadOff')}
+            </p>
+          </div>
         ) : null}
         {editing !== null && ownDecision === null ? (
           <div className="ct-progression__edit">

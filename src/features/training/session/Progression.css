@@ -96,3 +96,33 @@
   cursor: default;
   opacity: 0.6;
 }
+
+/* Contraintes (I2-02) : alertes en texte (jamais par la couleur seule), choix facultatifs, bascule de deload (bouton natif, ≥ 44 px). */
+.ct-progression__alerts {
+  margin: 0;
+  padding-inline-start: var(--ct-space-3);
+  color: var(--ct-color-text);
+  overflow-wrap: anywhere;
+}
+
+.ct-progression__options,
+.ct-progression__deload {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  padding-top: var(--ct-space-2);
+  border-top: 1px solid var(--ct-color-border);
+  min-width: 0;
+}
+
+.ct-progression__option {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ct-space-2);
+  min-width: 0;
+}
+
+.ct-progression__option > .ct-progression__sentence {
+  flex: 1 1 12rem;
+}

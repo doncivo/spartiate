@@ -37,7 +37,9 @@ export function confidenceOf(estimates: readonly SessionEstimate[], now: IsoDate
   const window = estimates.slice(0, config.recencyWeights.length);
   const latest = window[0];
   if (latest === undefined) return 0;
-  const days = Math.max(0, (Date.parse(now) - Date.parse(latest.endedAt)) / DAY_MS);
+  // Relecture de la PR #60 (I3) : une date illisible ne rend jamais NaN ; la récence vaut alors 0 (séance considérée comme ancienne).
+  const elapsed = (Date.parse(now) - Date.parse(latest.endedAt)) / DAY_MS;
+  const days = Number.isFinite(elapsed) ? Math.max(0, elapsed) : Number.POSITIVE_INFINITY;
   return confidenceScore(
     {
       validSets: window.reduce((n, e) => n + e.validSets, 0),
