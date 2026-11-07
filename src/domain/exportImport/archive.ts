@@ -2,7 +2,8 @@
  * Export / import de Spartiate (SPA-005, D-57) : format de l'archive, forme canonique de `data.json`, validation complète avant écriture.
  * Pur : aucune lecture de base, aucun fichier. L'export est une sauvegarde de contenu, distincte du filtre de publication de la synchro.
  *
- * Contenu I0 : `profile`, `body_weight` (lignes non supprimées) et la liste blanche de `settings` (`EXPORT_SETTING_KEYS`). Exclus :
+ * Contenu : `profile`, `body_weight` (lignes non supprimées), la liste blanche de `settings` (`EXPORT_SETTING_KEYS`) et, depuis la 0.2.3,
+ * les tables d'entraînement (`TRAINING_EXPORT_TABLES`, séances closes seulement). Exclus :
  * identité d'appareil, clés, bookmarks, tables `sync_*`, `conflict_log`, `epoch_carry_report`, journaux, `hlc`, `device_id`, `updated_at`.
  */
 
@@ -20,6 +21,7 @@ import {
 } from '../bodyProfile';
 import type { ThemeChoice } from '../model/settings';
 import { isIsoDateTime, isLocalDate } from '../types';
+import { SYNC_CATALOGUE, type SyncTable } from '../../domain/sync/syncTables';
 import { sha256Hex } from './sha256';
 import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
@@ -54,11 +56,47 @@ export interface ExportWeight {
   readonly measuredAt: string | null;
 }
 
+/**
+ * Tables d'entraînement exportées (0.2.3, point 4) : exercices personnalisés, profils de matériel, routines, séances CLOSES et leurs
+ * séries, dans l'ordre du catalogue (parents d'abord). Les colonnes sont celles publiées par la synchro, sans `created_at` ni
+ * `deleted_at` ; la validation est celle du catalogue (type et longueur). Une séance ouverte n'est jamais exportée (D-27).
+ */
+export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set'] as const;
+export type TrainingTable = (typeof TRAINING_EXPORT_TABLES)[number];
+export type TrainingValue = string | number | null;
+
+export interface TrainingRow {
+  readonly id: string;
+  /** Colonnes publiées hors `created_at` / `deleted_at`, nom SQL → valeur stockée. */
+  readonly values: Readonly<Record<string, TrainingValue>>;
+}
+
+export type TrainingExport = Readonly<Partial<Record<TrainingTable, readonly TrainingRow[]>>>;
+
 export interface ExportData {
   readonly profile: ExportProfile | null;
   readonly weights: readonly ExportWeight[];
   readonly settings: { readonly 'ui.theme'?: ThemeChoice };
+  /** Absent ou vide : archive sans données d'entraînement (archives antérieures à la 0.2.3 comprises). */
+  readonly training?: TrainingExport;
 }
+
+/** Table du catalogue d'une table exportée (toujours présente : vérifié par un test). */
+export function trainingTable(name: TrainingTable): SyncTable {
+  const t = SYNC_CATALOGUE.table(name);
+  if (!t) throw new Error(`table d'export inconnue du catalogue : ${name}`);
+  return t;
+}
+
+/** Colonnes exportées d'une table d'entraînement : colonnes publiées sans `created_at` ni `deleted_at`. */
+export function trainingColumns(name: TrainingTable): string[] {
+  return trainingTable(name)
+    .columns.map((c) => c.name)
+    .filter((n) => n !== 'created_at' && n !== 'deleted_at');
+}
+
+/** Lignes d'une table dans l'archive (vide si absente). */
+export const trainingRows = (data: ExportData, name: TrainingTable): readonly TrainingRow[] => data.training?.[name] ?? [];
 
 export interface Manifest {
   readonly app: string;
@@ -103,7 +141,15 @@ export function canonicalDataJson(data: ExportData): string {
     // Le thème par défaut (`DEFAULT_THEME`) est absent de la forme canonique (un réglage jamais touché et un réglage remis au défaut exportent pareil).
     if (value !== undefined && value !== DEFAULT_THEME) settings[key] = value;
   }
-  return JSON.stringify({ body_weight: weights, profile, settings });
+  const training: Record<string, Record<string, TrainingValue>[]> = {};
+  for (const name of TRAINING_EXPORT_TABLES) {
+    const rows = [...trainingRows(data, name)].sort(byId);
+    if (rows.length === 0) continue;
+    const columns = [...trainingColumns(name), 'id'].sort();
+    training[name] = rows.map((r) => Object.fromEntries(columns.map((col) => [col, col === 'id' ? r.id : (r.values[col] ?? null)])));
+  }
+  // Sans données d'entraînement, la clé est absente : mêmes octets qu'une archive 0.2.2 (équivalence et hash inchangés).
+  return Object.keys(training).length === 0 ? JSON.stringify({ body_weight: weights, profile, settings }) : JSON.stringify({ body_weight: weights, profile, settings, training });
 }
 
 const encode = (text: string): Uint8Array => new TextEncoder().encode(text);
@@ -181,6 +227,48 @@ function parseSettings(raw: unknown): ExportData['settings'] {
   return out;
 }
 
+/**
+ * Données d'entraînement de l'archive : tables connues seulement, lignes uniques, colonnes exactes, valeurs conformes au catalogue,
+ * et chaque ligne enfant rattachée à un parent présent dans l'archive (une archive est toujours produite entière).
+ */
+function parseTraining(raw: unknown): TrainingExport {
+  if (!isObject(raw)) throw new ArchiveError('invalid-data');
+  const out: Partial<Record<TrainingTable, TrainingRow[]>> = {};
+  const idsByTable = new Map<string, Set<string>>();
+  for (const key of Object.keys(raw)) if (!(TRAINING_EXPORT_TABLES as readonly string[]).includes(key)) throw new ArchiveError('invalid-data');
+  for (const name of TRAINING_EXPORT_TABLES) {
+    const list = raw[name];
+    if (list === undefined) continue;
+    if (!Array.isArray(list)) throw new ArchiveError('invalid-data');
+    const t = trainingTable(name);
+    const columns = trainingColumns(name);
+    const seen = new Set<string>();
+    const rows = list.map((item): TrainingRow => {
+      if (!isObject(item) || !exactKeys(item, [...columns, 'id'])) throw new ArchiveError('invalid-data');
+      const id = item['id'];
+      if (!SYNC_CATALOGUE.isValidRowId(t, id) || seen.has(id)) throw new ArchiveError('invalid-data');
+      const values: Record<string, TrainingValue> = {};
+      for (const col of t.columns) {
+        if (!columns.includes(col.name)) continue;
+        const value = item[col.name];
+        if (!SYNC_CATALOGUE.isValidValue(col, value)) throw new ArchiveError('invalid-data');
+        values[col.name] = value as TrainingValue;
+      }
+      for (const parent of t.parents) {
+        const parentId = values[parent.column];
+        if (parentId !== null && !idsByTable.get(parent.table)?.has(String(parentId))) throw new ArchiveError('invalid-data');
+      }
+      seen.add(id);
+      return { id, values };
+    });
+    // Une séance exportée est close (D-27) : une séance ouverte dans une archive est refusée.
+    if (name === 'workout' && rows.some((r) => r.values['ended_at'] === null)) throw new ArchiveError('invalid-data');
+    idsByTable.set(name, seen);
+    out[name] = rows;
+  }
+  return out;
+}
+
 export interface ParsedArchive {
   readonly manifest: Manifest;
   readonly data: ExportData;
@@ -224,8 +312,9 @@ export function parseExportArchive(bytes: Uint8Array, options: { readonly curren
     } catch {
       throw new ArchiveError('invalid-data');
     }
-    if (!isObject(raw) || !exactKeys(raw, ['body_weight', 'profile', 'settings'])) throw new ArchiveError('invalid-data');
-    const data: ExportData = { profile: parseProfile(raw['profile'], options.currentYear), weights: parseWeights(raw['body_weight']), settings: parseSettings(raw['settings']) };
+    if (!isObject(raw) || !(exactKeys(raw, ['body_weight', 'profile', 'settings']) || exactKeys(raw, ['body_weight', 'profile', 'settings', 'training']))) throw new ArchiveError('invalid-data');
+    const base = { profile: parseProfile(raw['profile'], options.currentYear), weights: parseWeights(raw['body_weight']), settings: parseSettings(raw['settings']) };
+    const data: ExportData = 'training' in raw ? { ...base, training: parseTraining(raw['training']) } : base;
     return { manifest, data, dataSha256 };
   });
 }

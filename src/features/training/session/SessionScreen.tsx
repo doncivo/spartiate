@@ -55,7 +55,7 @@ export function SessionScreen({ data, platform, onExit }: { readonly data: Train
         clock: container.clock,
         store: () => access.repos.workouts(),
         liveActivity: platform?.liveActivity ?? platformLiveActivity,
-        notifier: platform?.notifier ?? openTimerNotifier(container.platform.runtime, container.platform.os, systemNotificationClock),
+        notifier: platform?.notifier ?? openTimerNotifier(container.platform.runtime, container.platform.os, systemNotificationClock, 'rest'),
         os,
         texts: {
           label: tTraining('restLiveLabel'),

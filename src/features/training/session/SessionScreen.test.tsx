@@ -200,6 +200,19 @@ describe('saisie et validation (critère 2)', () => {
     expect(await count('SELECT COUNT(*) AS n FROM workout_set WHERE done = 1')).toBe(0);
   });
 
+  it('type de série : « Normale » par défaut, autres types au choix, aide d’une ligne', async () => {
+    openSession();
+    await startFromRoutine();
+    const set = await firstOpenSet('Développé couché à la barre');
+    const select = within(set).getByLabelText('Type de série') as HTMLSelectElement;
+    expect(select.value).toBe('work');
+    expect([...select.options].map((o) => o.textContent)).toEqual(['Normale', 'Échauffement', 'Dégressive', 'Partielle']);
+    expect(within(set).queryByText('Travail')).toBeNull();
+    expect(within(set).getByText(/Normale : comptée dans le volume et les records/)).toBeInTheDocument();
+    fireEvent.change(select, { target: { value: 'drop' } });
+    expect(await one('SELECT set_kind FROM workout_set WHERE position = 0')).toEqual({ set_kind: 'drop' });
+  });
+
   it('échauffement : type changé en base, validé sans lancer de repos', async () => {
     const f = fakes();
     openSession(f);
