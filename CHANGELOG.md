@@ -7,6 +7,7 @@ Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGEL
 - Moteur de charges (I2), en coulisse : l’app sait maintenant calculer la prochaine charge et les prochaines répétitions de chaque exercice à partir de tes séances terminées, mais ne l’affiche pas encore (ce sera la 0.3.1). Rien ne change à l’écran.
 - Règles validées le 7 nov. : jamais de charge inventée (un exercice jamais fait reste « à saisir ») ; une répétition de plus sur une seule série tant que le haut de la plage n’est pas atteint partout (8-7-6 → 8-8-6 → 8-8-7 → 8-8-8), puis un cran de matériel ; hausse plafonnée à +10 % ; arrondi à la charge disponible juste en dessous, avec une répétition de plus si l’écart dépasse 3 % ; « Dur » bloque la hausse ; ta valeur l’emporte toujours. Les arrondis suivent ton profil de matériel (par défaut Fitness Park Antony).
 - Mise à jour de la base (version 5) : deux tables vides ajoutées pour le suivi par exercice et tes choix (accepté ou modifié). Elles restent sur l’appareil pour l’instant ; leur synchro arrive avec l’affichage.
+- Mise à jour : mets à jour le PC et l’iPhone le même jour. Une app restée en 0.2.x affiche « version plus récente » et refuse une sauvegarde ou un export fait en 0.3.0, même si rien n’y est illisible pour elle.
 
 ## 0.2.4
 
