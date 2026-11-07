@@ -78,6 +78,17 @@ export interface SyncStateRow {
   readonly status: string;
 }
 
+/** Tables publiées dont l'export des journaux compte les lignes non supprimées (0.2.4 point 3) ; `workout` : séances closes seulement. */
+export const SYNC_REPORT_TABLES = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set'] as const;
+
+/** Compteurs seulement (jamais le contenu d'une ligne) : bilan de l'export des journaux. */
+export interface SyncDiagnostics {
+  readonly outbox: number;
+  readonly unknown: number;
+  readonly conflicts: number;
+  readonly rows: Readonly<Record<(typeof SYNC_REPORT_TABLES)[number], number>>;
+}
+
 export type SyncStatePatch = Partial<Omit<SyncStateRow, 'deviceId'>>;
 
 export interface ConflictEntry {
@@ -154,6 +165,8 @@ export interface SyncRepository {
   /** Y-05 : entrées de la file, par numéro croissant (numéro strictement supérieur à `afterSeq`, 0 par défaut). */
   readOutbox(limit?: number, afterSeq?: number): Promise<OutboxEntry[]>;
   outboxCount(): Promise<number>;
+  /** 0.2.4 point 3 : compteurs du bilan de l'export des journaux. */
+  diagnostics(): Promise<SyncDiagnostics>;
   /** Y-02 : retire les entrées publiées (même numéro) ; base des champs modifiés depuis = hlc publié. */
   clearPublished(entries: readonly PublishedEntry[]): Promise<void>;
   /**

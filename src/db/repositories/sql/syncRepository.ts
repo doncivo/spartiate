@@ -20,6 +20,7 @@ import type {
   Tombstone,
   UnknownField,
 } from '../syncRepository';
+import { SYNC_REPORT_TABLES } from '../syncRepository';
 
 /**
  * Implémentation SQL de `SyncRepository` (ADR 0011 ; Y-02, Y-05, Y-09). Les noms de tables et de colonnes sont ceux du catalogue
@@ -402,6 +403,18 @@ export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, cat
     },
 
     // --- état -----------------------------------------------------------------------------------------------------------------------
+    async diagnostics() {
+      const count = async (sql: string): Promise<number> => Number((await db.select<{ n: number }>(sql))[0]?.n ?? 0);
+      const rows = {} as Record<(typeof SYNC_REPORT_TABLES)[number], number>;
+      // Noms de tables fixes (liste ci-dessus) : jamais une valeur venue de l'extérieur.
+      for (const table of SYNC_REPORT_TABLES) rows[table] = await count(`SELECT COUNT(*) AS n FROM ${table} WHERE deleted_at IS NULL${table === 'workout' ? ' AND ended_at IS NOT NULL' : ''}`);
+      return {
+        outbox: await count('SELECT COUNT(*) AS n FROM sync_outbox'),
+        unknown: await count('SELECT COUNT(*) AS n FROM sync_unknown'),
+        conflicts: await count('SELECT COUNT(*) AS n FROM conflict_log'),
+        rows,
+      };
+    },
     async getStates() {
       return (await db.select('SELECT * FROM sync_state ORDER BY device_id')).map(rowToState);
     },
