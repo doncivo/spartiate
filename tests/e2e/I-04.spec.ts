@@ -74,7 +74,9 @@ test.describe('I-04 — écran Logs', () => {
     expect(file.mime).toBe('text/plain');
     const text = textOf(file);
     expect(text).toContain('Ce fichier ne contient ni titres ni notes.');
-    expect(text).toContain('Entrées : 601');
+    // 600 entrées du faux + la synchro d'ouverture ; l'iPhone note en plus « startup step db.load » quand cette étape de démarrage est lente
+    // (entrée de session légitime, présente selon le temps mesuré) : 601 sur PC, 601 ou 602 sur iPhone, jamais 500 (plafond de lecture : 2 000).
+    expect(text).toMatch(/Entrées : 60[12]\r?\n/);
     expect(text).toContain(' sync-rust code-598');
     expect(text).not.toContain(SENTINEL);
   });
