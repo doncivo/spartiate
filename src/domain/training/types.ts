@@ -1,4 +1,6 @@
 import type { DeviceId, Hlc, IsoDateTime } from '../types';
+import type { ProgressionConfig } from './config';
+import type { SetKind } from './session';
 
 /**
  * Types de la bibliothèque d'exercices, des profils de matériel et des routines (PRD § 14, § 20.2 ; D-71, P-09). Module pur.
@@ -213,4 +215,138 @@ export interface Routine extends RowMeta {
 }
 export interface RoutineTree extends Routine {
   readonly days: readonly RoutineDay[];
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------------
+// Moteur de prescription (§ 11, I2-01 ; D-72). Contrats purs, versionnés par `ENGINE_VERSION` (config.ts).
+// -----------------------------------------------------------------------------------------------------------------------------------
+
+/** Ressenti de fin d'exercice (§ 13.2 : Facile / Juste / Dur, ignorable). */
+export type Difficulty = 'easy' | 'ok' | 'hard';
+
+/** Série d'historique vue par le moteur : sous-ensemble d'une `WorkoutSet` d'une séance close. */
+export interface HistorySet {
+  readonly position: number;
+  readonly setKind: SetKind;
+  readonly done: boolean;
+  readonly reps: number | null;
+  readonly loadKg: number | null;
+  readonly rir: number | null;
+  /** Charge aberrante confirmée par Ali (§ 11.5) ; absent : non confirmée. */
+  readonly confirmed?: boolean;
+}
+
+/** Séance close, réduite aux séries d'UN exercice. */
+export interface ExerciseSession {
+  readonly workoutId: string;
+  readonly endedAt: IsoDateTime;
+  /** Null : non saisie (aucun stockage avant la PR 2/2 d'I2-01). */
+  readonly difficulty: Difficulty | null;
+  readonly sets: readonly HistorySet[];
+}
+
+/** Cible de la routine ou de la séance : nombre de séries, plage de répétitions, RIR. */
+export interface RepTarget {
+  readonly sets: number;
+  readonly repMin: number;
+  readonly repMax: number;
+  readonly rir: number | null;
+}
+
+/** État recalculable par exercice (table `progression_profile`). */
+export interface ProgressionProfileState {
+  readonly estimated1rmKg: number | null;
+  readonly confidence: number | null;
+  readonly lastEasyRecalibrationAt: IsoDateTime | null;
+}
+
+/** Dernière décision d'Ali sur une prescription (table `recommendation_decision`) : valeur effective, acceptée telle quelle ou modifiée. */
+export interface DecisionReference {
+  readonly decidedAt: IsoDateTime;
+  readonly accepted: boolean;
+  readonly loadKg: number | null;
+  readonly reps: readonly number[];
+}
+
+/** Matériel vu par le moteur : inventaire et incréments d'un profil (le profil actif est choisi par l'appelant ; défaut : Fitness Park Antony). */
+export type ProgressionEquipment = Pick<EquipmentProfileInput, 'inventory' | 'increments'>;
+
+/** Exercice vu par le moteur. */
+export interface ProgressionExercise {
+  readonly id: string;
+  readonly metric: ExerciseMetric;
+  /** Matériel de l'exercice, dans l'ordre des données : le premier qui fournit une grille de charges l'emporte. */
+  readonly equipment: readonly string[];
+}
+
+export interface PrescribeInput {
+  readonly exercise: ProgressionExercise;
+  /** Séances closes de cet exercice, dans n'importe quel ordre (le moteur trie). */
+  readonly history: readonly ExerciseSession[];
+  readonly lastDecision: DecisionReference | null;
+  readonly profile: ProgressionProfileState | null;
+  /** Null : aucun profil de matériel (pas d'arrondi connu). */
+  readonly equipment: ProgressionEquipment | null;
+  readonly target: RepTarget;
+  readonly config: ProgressionConfig;
+  /** Instant de calcul, injecté (aucune lecture d'horloge dans le moteur). */
+  readonly now: IsoDateTime;
+  // Point d'extension I2-02 (fatigue, inactivité, stagnation, deload, Recovery) : contexte supplémentaire ici, appliqué par l'étape
+  // `applyConstraints` de prescribe.ts, qui ne peut que maintenir ou réduire.
+}
+
+/** Codes de raison, dans l'ordre normatif du § 11.2 (voir `REASON_ORDER`). */
+export type ReasonCode =
+  | 'partial-session-ignored'
+  | 'outlier-excluded'
+  | 'no-history'
+  | 'decision-reference'
+  | 'history-reference'
+  | 'provisional'
+  | 'top-reached'
+  | 'rep-ladder'
+  | 'hard-blocks-increase'
+  | 'easy-confirms'
+  | 'easy-recalibration'
+  | 'increment-unknown'
+  | 'equipment-max'
+  | 'snap-extra-rep'
+  | 'gain-capped'
+  | 'unsupported-metric';
+
+/** Raison principale : une phrase par proposition (texte en PR 2/2, `src/i18n`). */
+export type PrescriptionHeadline = 'to-enter' | 'decision' | 'increase' | 'rep-ladder' | 'recalibration' | 'hold-hard' | 'extra-rep' | 'unsupported';
+
+export interface PrescribedSet {
+  readonly reps: number;
+  /** Null : « à saisir ». */
+  readonly loadKg: number | null;
+}
+
+/** Performance de référence (dernière séance valide) : charge, reps par série (complétées à `target.sets`), meilleure série Epley. */
+export interface PrescriptionReference {
+  readonly loadKg: number;
+  readonly reps: readonly number[];
+  readonly e1rmKg: number;
+}
+
+export interface Prescription {
+  /** `to-enter` : aucune charge (Ali saisit) ; `unsupported` : métrique hors moteur (poids de corps, durée, distance). */
+  readonly status: 'prescribed' | 'to-enter' | 'unsupported';
+  readonly headline: PrescriptionHeadline;
+  readonly reasons: readonly ReasonCode[];
+  readonly sets: readonly PrescribedSet[];
+  readonly loadKg: number | null;
+  /** Écart à la charge de référence ; null sans référence. */
+  readonly deltaKg: number | null;
+  readonly reference: PrescriptionReference | null;
+  /** Série qui gagne une répétition (échelle), sinon null. */
+  readonly ladderSetIndex: number | null;
+  readonly estimated1rmKg: number | null;
+  /** 0 à 1. */
+  readonly confidence: number;
+  /** Recalibrage « Facile » appliqué : l'appelant met à jour `progression_profile`. */
+  readonly recalibration: { readonly at: IsoDateTime; readonly estimated1rmKg: number } | null;
+  readonly engineVersion: number;
+  readonly activeConfig: ProgressionConfig;
 }
