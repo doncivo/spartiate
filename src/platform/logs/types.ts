@@ -44,7 +44,7 @@ export interface LogJournal {
   record(scope: string, error: unknown): void;
   /** Écrit le tampon (lots de 100) ; ne rejette jamais (un lot refusé reste au tampon). */
   flush(): Promise<void>;
-  /** Les `max` dernières entrées (500 au plus), plus récente en dernier ; en cas d'échec de lecture, celles de la session. */
+  /** Les `max` dernières entrées (2 000 au plus), plus récente en dernier ; en cas d'échec de lecture, celles de la session. */
   read(max?: number): Promise<readonly LogEntry[]>;
   /** Efface le journal (après confirmation de l'écran). Rejette `{ code }` en cas d'échec. */
   clear(): Promise<void>;
@@ -61,4 +61,6 @@ export const LOG_BATCH_SIZE = 100;
 /** Période du vidage du tampon. */
 export const LOG_FLUSH_MS = 2_000;
 /** Entrées lues au plus. */
-export const LOG_READ_MAX = 500;
+export const LOG_READ_MAX = 2000;
+/** Entrées affichées par l'écran Logs (l'export lit jusqu'à `LOG_READ_MAX`). */
+export const LOG_VIEW_MAX = 500;

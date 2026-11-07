@@ -5,7 +5,7 @@ import { t } from '../../../i18n';
 import { formatDayMonth, formatTime } from '../../../i18n/format';
 import { tLogs } from '../../../i18n/logsText';
 import { publishedAppVersion, UNKNOWN_APP_VERSION } from '../../../platform/appVersion';
-import { categoryOf, type LogCategory, type LogEntry, type LogJournal } from '../../../platform/logs';
+import { categoryOf, LOG_VIEW_MAX, type LogCategory, type LogEntry, type LogJournal } from '../../../platform/logs';
 import { Button, ConfirmDialog, Icon, useLayout } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { FileSaveFailure } from '../../app/FileSaveFailure';
@@ -73,7 +73,7 @@ export function LogsScreen({ journal: injected, version }: LogsScreenProps = {})
   useEffect(() => {
     if (!journal) return undefined;
     let active = true;
-    void journal.read().then((list) => {
+    void journal.read(LOG_VIEW_MAX).then((list) => {
       if (active) setEntries(list);
     });
     return () => {
