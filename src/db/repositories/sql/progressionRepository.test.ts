@@ -5,7 +5,7 @@ import type { DeviceId } from '../../../domain/types';
 import { input } from '../../../../tests/fixtures/training/progression';
 import { openBaseDb, type TestDb } from './testSetup';
 
-/** I2-01 : ProgressionRepository (historique des séances closes, profil recalculable, décisions tracées ; tables locales en 0.3.0). */
+/** I2-01 : ProgressionRepository (historique des séances closes et difficulté, profil recalculable, décisions tracées ; publiés en 0.3.1). */
 
 const DEVICE = '60000000-0000-4000-8000-0000000000f5' as DeviceId;
 const HLC = `000000000000001-0000-${DEVICE}`;
@@ -27,11 +27,19 @@ async function workout(id: string, endedAt: string | null, deletedAt: string | n
     HLC,
   ]);
 }
-async function workSet(id: string, workoutId: string, position: number, exerciseId: string, loadKg: number | null, reps: number | null, over: { done?: number; kind?: string; rir?: number | null; deletedAt?: string | null } = {}): Promise<void> {
+async function workSet(
+  id: string,
+  workoutId: string,
+  position: number,
+  exerciseId: string,
+  loadKg: number | null,
+  reps: number | null,
+  over: { done?: number; kind?: string; rir?: number | null; deletedAt?: string | null; difficulty?: string | null } = {},
+): Promise<void> {
   await db.driver.execute(
-    `INSERT INTO workout_set (id, workout_id, exercise_id, exercise_name, position, set_kind, reps, load_kg, rir, done, deleted_at, created_at, updated_at, device_id, hlc)
-     VALUES (?, ?, ?, 'Nom figé', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, workoutId, exerciseId, position, over.kind ?? 'work', reps, loadKg, over.rir ?? null, over.done ?? 1, over.deletedAt ?? null, day(0), day(0), DEVICE, HLC],
+    `INSERT INTO workout_set (id, workout_id, exercise_id, exercise_name, position, set_kind, reps, load_kg, rir, done, deleted_at, difficulty, created_at, updated_at, device_id, hlc)
+     VALUES (?, ?, ?, 'Nom figé', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, workoutId, exerciseId, position, over.kind ?? 'work', reps, loadKg, over.rir ?? null, over.done ?? 1, over.deletedAt ?? null, over.difficulty ?? null, day(0), day(0), DEVICE, HLC],
   );
 }
 const repo = () => db.data.repos.progression();
@@ -86,6 +94,33 @@ describe('ProgressionRepository.history', () => {
     expect(await r.history('curl-dumbbell', 0)).toEqual([]);
   });
 
+  it('PR 2/2 : difficulté de la séance lue sur ses séries (série la plus haute renseignée ; séries supprimées ignorées) ; aucune : null', async () => {
+    db = await openBaseDb(DEVICE);
+    await workout(u(1), day(1));
+    await workSet(u(10), u(1), 0, 'bench-press-barbell', 60, 10, { difficulty: 'easy' });
+    await workSet(u(11), u(1), 1, 'bench-press-barbell', 60, 10, { difficulty: 'hard' });
+    await workSet(u(12), u(1), 2, 'bench-press-barbell', 60, 10);
+    await workSet(u(13), u(1), 3, 'bench-press-barbell', 60, 10, { difficulty: 'ok', deletedAt: day(1) });
+    await workout(u(2), day(2));
+    await workSet(u(20), u(2), 0, 'bench-press-barbell', 60, 10);
+    await workSet(u(21), u(2), 1, 'row-barbell', 50, 10, { difficulty: 'easy' });
+    const history = await (await repo()).history('bench-press-barbell');
+    expect(history.map((s) => [s.workoutId, s.difficulty])).toEqual([
+      [u(2), null],
+      [u(1), 'hard'],
+    ]);
+  });
+
+  it('PR 2/2 : « Dur » lu de la base bloque la hausse de charge', async () => {
+    db = await openBaseDb(DEVICE);
+    await workout(u(1), day(1));
+    for (let i = 0; i < 3; i += 1) await workSet(u(10 + i), u(1), i, 'bench-press-barbell', 60, 10, { difficulty: 'hard' });
+    const history = await (await repo()).history('bench-press-barbell');
+    const p = prescribe(input({ history, now: day(3) as never }));
+    expect(p.loadKg).toBe(60);
+    expect(p.reasons).toContain('hard-blocks-increase');
+  });
+
   it('l’historique chargé alimente le moteur : 60 × 10-10-10 → 62,5 kg', async () => {
     db = await openBaseDb(DEVICE);
     await workout(u(1), day(1));
@@ -96,7 +131,7 @@ describe('ProgressionRepository.history', () => {
 });
 
 describe('ProgressionRepository : profil', () => {
-  it('absent : null ; enregistré puis remplacé, une seule ligne progression|<exercice>, aucune capture de synchro', async () => {
+  it('absent : null ; enregistré puis remplacé, une seule ligne progression|<exercice>, capturée pour la synchro (0.3.1)', async () => {
     db = await openBaseDb(DEVICE);
     const r = await repo();
     expect(await r.getProfile('bench-press-barbell')).toBeNull();
@@ -108,7 +143,7 @@ describe('ProgressionRepository : profil', () => {
     expect(second.updatedAt > first.updatedAt).toBe(true);
     expect(await r.getProfile('bench-press-barbell')).toEqual(second);
     expect(await db.driver.select('SELECT COUNT(*) AS n FROM progression_profile')).toEqual([{ n: 1 }]);
-    expect(await db.driver.select('SELECT * FROM sync_outbox')).toEqual([]);
+    expect(await db.driver.select("SELECT DISTINCT table_name, row_id FROM sync_outbox WHERE field = '*'")).toEqual([{ table_name: 'progression_profile', row_id: 'progression|bench-press-barbell' }]);
   });
 
   it('valeurs hors bornes refusées (invalid), rien n’est écrit', async () => {
@@ -123,7 +158,7 @@ describe('ProgressionRepository : profil', () => {
 });
 
 describe('ProgressionRepository : décisions', () => {
-  it('acceptation puis modification tracées ; la dernière (date, puis identifiant) sert de référence ; aucune capture', async () => {
+  it('acceptation puis modification tracées ; la dernière (date, puis identifiant) sert de référence ; capturées (0.3.1)', async () => {
     db = await openBaseDb(DEVICE);
     const r = await repo();
     expect(await r.lastDecision('bench-press-barbell')).toBeNull();
@@ -139,7 +174,18 @@ describe('ProgressionRepository : décisions', () => {
     expect(last).toMatchObject({ accepted: false, loadKg: 57.5, decidedAt: '2026-10-01T08:00:01.000Z' });
     expect(await r.lastDecision('row-barbell')).toBeNull();
     expect(await db.driver.select('SELECT COUNT(*) AS n FROM recommendation_decision')).toEqual([{ n: 2 }]);
-    expect(await db.driver.select('SELECT * FROM sync_outbox')).toEqual([]);
+    expect(await db.driver.select("SELECT table_name, field FROM sync_outbox WHERE table_name = 'recommendation_decision'")).toEqual([
+      { table_name: 'recommendation_decision', field: '*' },
+      { table_name: 'recommendation_decision', field: '*' },
+    ]);
+  });
+
+  it('PR 2/2 : refus tracé sans valeur (accepted = 0, charge nulle, aucune répétition) ; des répétitions sans charge restent admises', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    const refused = await r.recordDecision({ exerciseId: 'bench-press-barbell', workoutId: u(1), prescription: prescribe(input()), accepted: false, chosenLoadKg: null, chosenReps: [] });
+    expect(refused).toMatchObject({ accepted: false, loadKg: null, reps: [] });
+    await expect(r.recordDecision({ exerciseId: 'bench-press-barbell', workoutId: u(1), prescription: prescribe(input()), accepted: true, chosenLoadKg: null, chosenReps: [] })).rejects.toMatchObject({ code: 'invalid' });
   });
 
   it('saisie invalide refusée : reps non entières ou vides, charge négative, exercice vide', async () => {

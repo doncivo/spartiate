@@ -61,13 +61,15 @@ describe('migration 0004 : workout_sync (I1-03, D-27)', () => {
   });
 
   it('copie figée de capture = colonnes publiées du catalogue ; colonnes locales du repos absentes des déclencheurs', async () => {
-    for (const [table, columns] of CAPTURE_TABLES_V4) expect([...columns], table).toEqual([...publishedColumns(SYNC_CATALOGUE.table(table) ?? (() => { throw new Error(table); })())]);
+    // La 0006 (I2-01) ajoute `workout_set.difficulty`, capturée par son propre déclencheur : la copie de la 0004 reste le reste du catalogue.
+    for (const [table, columns] of CAPTURE_TABLES_V4) expect([...columns], table).toEqual([...publishedColumns(SYNC_CATALOGUE.table(table) ?? (() => { throw new Error(table); })())].filter((c) => c !== 'difficulty'));
     const db = await freshDb();
     const triggers = await db.select<{ name: string; sql: string }>("SELECT name, sql FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_workout%' ORDER BY name");
-    expect(triggers.map((t) => t.name)).toEqual(['sync_workout_ai', 'sync_workout_au', 'sync_workout_set_ai', 'sync_workout_set_au']);
+    expect(triggers.map((t) => t.name)).toEqual(['sync_workout_ai', 'sync_workout_au', 'sync_workout_set_ai', 'sync_workout_set_au', 'sync_workout_set_difficulty_au']);
     expect(triggers.some((t) => /rest_timer/.test(t.sql))).toBe(false);
     expect(triggers.every((t) => /ended_at/.test(t.sql))).toBe(true);
-    expect((await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger'")).length).toBe(18);
+    // 18 en version 4 ; 23 avec la 0006 (I2-01 : deux tables de progression et la difficulté).
+    expect((await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger'")).length).toBe(23);
     await db.close();
   });
 
