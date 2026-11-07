@@ -440,8 +440,9 @@ const PROGRESSION_PROFILE_TABLE = table(
 );
 
 /**
- * `recommendation_decision` : trace d'une prescription présentée et de la valeur retenue (§ 11.2 point 9, § 11.5). UUID ; `workout_id` et
- * `workout_set_id` sont des références logiques (la séance ouverte où la décision a été prise reste locale, D-27) : hors de `parents`.
+ * `recommendation_decision` : trace d'une prescription présentée et de la valeur retenue (§ 11.2 point 9, § 11.5). UUID. Elle suit sa séance
+ * comme une série (relecture de la #61, D-27) : `workout_id` est un parent, publiable seulement close (`publishWhen`), mise en file à la
+ * clôture ; une séance abandonnée n'en publie aucune. `workout_set_id` est une référence logique.
  */
 const RECOMMENDATION_DECISION_TABLE = table(
   'recommendation_decision',
@@ -459,6 +460,7 @@ const RECOMMENDATION_DECISION_TABLE = table(
     createdAt,
     deletedAt,
   ],
+  { parents: [{ column: 'workout_id', table: 'workout' }], publishWhen: { parent: 'workout_id' }, titleSource: { kind: 'none' } },
 );
 
 /** Catalogue de production (I0 + I1-01 + I1-03 + I2-01) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */

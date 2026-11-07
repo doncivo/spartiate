@@ -18,7 +18,6 @@ export const progressionFr = {
   explainToEnter: 'Aucune séance de référence : saisis la charge, la proposition viendra ensuite.',
   explainUnsupported: 'Pas de charge proposée pour ce type d’exercice : saisis tes valeurs.',
   explainDecision: 'Ta dernière décision : {load} kg, reprise telle quelle.',
-  explainDecisionToEnter: 'Ta dernière décision : charge à saisir.',
   explainIncrease: '+{delta} kg : {sets} × {reps} atteint la dernière fois.',
   explainIncreaseUnknownStep: '+{delta} kg (cran supposé, matériel à vérifier) : {sets} × {reps} atteint la dernière fois.',
   explainRepLadder: 'Même charge, une répétition de plus sur la série {set}.',

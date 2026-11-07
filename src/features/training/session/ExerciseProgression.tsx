@@ -41,7 +41,10 @@ export interface ExerciseProgressionProps {
 
 interface Loaded {
   readonly history: readonly ExerciseSession[];
-  readonly decision: RecommendationDecisionRecord | null;
+  /** Référence du moteur : dernière décision d'une séance CLOSE (jamais d'une séance ouverte ou abandonnée, D-27). */
+  readonly reference: RecommendationDecisionRecord | null;
+  /** Décision prise dans cette séance (état affiché à la place des boutons). */
+  readonly own: RecommendationDecisionRecord | null;
   readonly profile: ProgressionProfileRecord | null;
 }
 
@@ -51,7 +54,6 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   toEnter: 'explainToEnter',
   unsupported: 'explainUnsupported',
   decision: 'explainDecision',
-  decisionToEnter: 'explainDecisionToEnter',
   increase: 'explainIncrease',
   increaseUnknownStep: 'explainIncreaseUnknownStep',
   repLadder: 'explainRepLadder',
@@ -102,8 +104,8 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     void (async () => {
       try {
         const repo = await access.repos.progression();
-        const [history, decision, profile] = await Promise.all([repo.history(exerciseId), repo.lastDecision(exerciseId), repo.getProfile(exerciseId)]);
-        if (live.current) setLoad({ status: 'ready', history, decision, profile });
+        const [history, reference, own, profile] = await Promise.all([repo.history(exerciseId), repo.lastDecision(exerciseId), repo.decisionFor(workout.id, exerciseId), repo.getProfile(exerciseId)]);
+        if (live.current) setLoad({ status: 'ready', history, reference, own, profile });
       } catch {
         if (live.current) setLoad({ status: 'error' });
       }
@@ -111,7 +113,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     return () => {
       live.current = false;
     };
-  }, [access, exerciseId, attempt]);
+  }, [access, exerciseId, workout.id, attempt]);
 
   useEffect(() => {
     if (editing !== null) editLoad.current?.focus();
@@ -120,13 +122,14 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
   // La séance se redessine chaque seconde (chrono) : la cible n'est recalculée, et le moteur rappelé, que si ses valeurs changent.
   const computed = targetOf(sets, exercise);
   const target = useMemo(() => computed, [computed.sets, computed.repMin, computed.repMax]); // eslint-disable-line react-hooks/exhaustive-deps
-  const ownDecision = load.status === 'ready' && load.decision !== null && load.decision.workoutId === workout.id ? load.decision : null;
+  const ownDecision = load.status === 'ready' ? load.own : null;
 
   const prescription = useMemo((): Prescription | null => {
     if (load.status !== 'ready') return null;
-    const d = load.decision;
-    // Référence du moteur : décision d'une AUTRE séance avec une valeur retenue (un refus ne fixe rien).
-    const reference = d !== null && d.workoutId !== workout.id && d.loadKg !== null ? { decidedAt: d.decidedAt, accepted: d.accepted, loadKg: d.loadKg, reps: d.reps } : null;
+    const d = load.reference;
+    // Référence du moteur : décision d'une séance close avec une valeur retenue (un refus ne fixe rien) ; en pratique antérieure à la fin de
+    // cette séance, l'historique l'emporte (critère 8 : la séance faite fait foi).
+    const reference = d !== null && d.loadKg !== null ? { decidedAt: d.decidedAt, accepted: d.accepted, loadKg: d.loadKg, reps: d.reps } : null;
     return prescribe({
       exercise: { id: exerciseId, metric: exercise?.metric ?? 'load-reps', equipment: exercise?.equipment ?? [] },
       history: load.history,
@@ -138,7 +141,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
       now: new Date(clock.nowMs()).toISOString() as IsoDateTime,
     });
     // L'instant de calcul est celui du chargement : la proposition ne change pas pendant la séance.
-  }, [load, workout.id, exerciseId, exercise, equipment, target]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [load, exerciseId, exercise, equipment, target]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (ownDecision !== null && decided.current) {
@@ -149,7 +152,10 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
 
   const difficulty = sets.map((s) => s.difficulty ?? null).find((d): d is Difficulty => d !== null) ?? null;
 
-  /** Décision tracée puis séries à faire encore vides remplies (même transaction) ; le profil garde l'estimation du moteur. */
+  /**
+   * Décision tracée puis séries à faire encore vides remplies (même transaction). Rien n'est publié ni consigné au profil avant la clôture :
+   * la décision suit la séance (D-27), le recalibrage est consigné par `applyClosedWorkout` à la clôture.
+   */
   const decide = useCallback(
     async (accepted: boolean, chosen: { readonly loadKg: number; readonly reps: readonly number[] } | null): Promise<void> => {
       if (prescription === null || load.status !== 'ready') return;
@@ -173,16 +179,6 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
             if (s.done || s.reps !== null || s.loadKg !== null) continue;
             await workouts.updateSet(s.id, { loadKg: chosen.loadKg, reps: chosen.reps[i] ?? chosen.reps.at(-1) ?? null });
           }
-          if (prescription.estimated1rmKg !== null) {
-            const recal = accepted && prescription.recalibration !== null ? prescription.recalibration : null;
-            await progression.saveProfile({
-              exerciseId,
-              estimated1rmKg: recal?.estimated1rmKg ?? prescription.estimated1rmKg,
-              confidence: prescription.confidence,
-              lastEasyRecalibrationAt: recal?.at ?? load.profile?.lastEasyRecalibrationAt ?? null,
-              engineVersion: prescription.engineVersion,
-            });
-          }
         });
         setEditing(null);
         decided.current = true;
@@ -194,7 +190,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         if (live.current) setBusy(false);
       }
     },
-    [access, exerciseId, workout.id, prescription, load, sets, onChanged],
+    [access, exerciseId, workout.id, prescription, load.status, sets, onChanged],
   );
 
   async function chooseDifficulty(value: Difficulty): Promise<void> {

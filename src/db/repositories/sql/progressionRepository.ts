@@ -2,7 +2,8 @@ import { uuidGenerator, type IdGenerator } from '../../../domain/id';
 import type { WriteStamper } from '../../../domain/hlc';
 import { HISTORY_SESSIONS_LOADED } from '../../../domain/training/config';
 import type { SetKind } from '../../../domain/training/session';
-import { progressionId } from '../../../domain/sync/naturalIds';
+import { isProgressionExerciseId, progressionId } from '../../../domain/sync/naturalIds';
+import { recalibrationKept } from '../../../domain/training/decision';
 import { DIFFICULTIES, type Difficulty, type ExerciseSession, type HistorySet, type Prescription } from '../../../domain/training/types';
 import { isIsoDateTime, type IsoDateTime } from '../../../domain/types';
 import type { SqlExecutor, SqlRow } from '../../driver';
@@ -80,7 +81,7 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
   const selectProfile = async (exerciseId: string): Promise<ProfileRow | undefined> =>
     (await db.select<ProfileRow>('SELECT * FROM progression_profile WHERE id = ?', [progressionProfileId(exerciseId)]))[0];
 
-  return {
+  const repository: ProgressionRepository = {
     async history(exerciseId, limit = HISTORY_SESSIONS_LOADED) {
       const rows = await db.select<HistoryRow>(
         `WITH recent AS (
@@ -115,7 +116,7 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
     async saveProfile(input: ProgressionProfileInput) {
       const id = progressionProfileId(input.exerciseId);
       const ok =
-        validExerciseId(input.exerciseId) &&
+        isProgressionExerciseId(input.exerciseId) &&
         finiteOrNull(input.estimated1rmKg, (x) => x > 0) &&
         finiteOrNull(input.confidence, (x) => x >= 0 && x <= 1) &&
         (input.lastEasyRecalibrationAt === null || isIsoDateTime(input.lastEasyRecalibrationAt)) &&
@@ -175,8 +176,47 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
     },
 
     async lastDecision(exerciseId) {
-      const row = (await db.select<DecisionRow>('SELECT * FROM recommendation_decision WHERE exercise_id = ? AND deleted_at IS NULL ORDER BY decided_at DESC, id DESC LIMIT 1', [exerciseId]))[0];
+      // Revue de la #61 (D-27) : seulement une décision d'une séance CLOSE et non supprimée ; jamais d'une séance ouverte ou abandonnée.
+      const row = (
+        await db.select<DecisionRow>(
+          `SELECT d.* FROM recommendation_decision d JOIN workout w ON w.id = d.workout_id
+           WHERE d.exercise_id = ? AND d.deleted_at IS NULL AND w.ended_at IS NOT NULL AND w.deleted_at IS NULL
+           ORDER BY d.decided_at DESC, d.id DESC LIMIT 1`,
+          [exerciseId],
+        )
+      )[0];
       return row ? rowToDecision(row) : null;
     },
+
+    async decisionFor(workoutId, exerciseId) {
+      const row = (
+        await db.select<DecisionRow>('SELECT * FROM recommendation_decision WHERE workout_id = ? AND exercise_id = ? AND deleted_at IS NULL ORDER BY decided_at DESC, id DESC LIMIT 1', [
+          workoutId,
+          exerciseId,
+        ])
+      )[0];
+      return row ? rowToDecision(row) : null;
+    },
+
+    async applyClosedWorkout(workoutId) {
+      const workout = (await db.select<{ ended_at: string | null; deleted_at: string | null } & SqlRow>('SELECT ended_at, deleted_at FROM workout WHERE id = ?', [workoutId]))[0];
+      if (!workout || workout.deleted_at !== null) throw new RepositoryError('not-found', 'workout', workoutId);
+      if (workout.ended_at === null) invalid('workout', workoutId);
+      const rows = await db.select<DecisionRow>('SELECT * FROM recommendation_decision WHERE workout_id = ? AND deleted_at IS NULL ORDER BY exercise_id, decided_at DESC, id DESC', [workoutId]);
+      const latest = new Map<string, RecommendationDecisionRecord>();
+      for (const row of rows) if (!latest.has(row.exercise_id)) latest.set(row.exercise_id, rowToDecision(row));
+      for (const decision of latest.values()) {
+        const kept = recalibrationKept(decision.prescription, decision.loadKg);
+        if (kept === null || !isProgressionExerciseId(decision.exerciseId)) continue;
+        await repository.saveProfile({
+          exerciseId: decision.exerciseId,
+          estimated1rmKg: kept.estimated1rmKg,
+          confidence: decision.prescription.confidence,
+          lastEasyRecalibrationAt: kept.at,
+          engineVersion: decision.prescription.engineVersion,
+        });
+      }
+    },
   };
+  return repository;
 }

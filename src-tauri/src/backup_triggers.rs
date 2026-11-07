@@ -5,7 +5,7 @@
 //! à régénérer avec ce test si la migration 0011 change (jamais, une migration publiée ne se modifie plus) ou si un déclencheur est ajouté.
 
 /// (nom, table, SQL) de chaque déclencheur, triés par nom.
-pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 71] = [
+pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 72] = [
     (
         "search_checklist_ad",
         "checklist",
@@ -1448,7 +1448,7 @@ INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'progression_profile'
         "sync_recommendation_decision_ai",
         "recommendation_decision",
         r##"CREATE TRIGGER sync_recommendation_decision_ai AFTER INSERT ON recommendation_decision
-     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) AND (SELECT ended_at FROM workout WHERE id = NEW.workout_id) IS NOT NULL BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'recommendation_decision' AND row_id = NEW.id;
        DELETE FROM sync_outbox WHERE table_name = 'recommendation_decision' AND row_id = NEW.id AND field = '*';
        INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('recommendation_decision', NEW.id, '*');
@@ -1458,7 +1458,7 @@ INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'progression_profile'
         "sync_recommendation_decision_au",
         "recommendation_decision",
         r##"CREATE TRIGGER sync_recommendation_decision_au AFTER UPDATE ON recommendation_decision
-     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) AND (SELECT ended_at FROM workout WHERE id = NEW.workout_id) IS NOT NULL BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT 'recommendation_decision', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'recommendation_decision' AND row_id = NEW.id AND field = '*');
@@ -2584,6 +2584,17 @@ INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'workout', NEW.id, 'd
      END"##,
     ),
     (
+        "sync_workout_close_decisions_au",
+        "workout",
+        r##"CREATE TRIGGER sync_workout_close_decisions_au AFTER UPDATE OF ended_at ON workout
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) AND OLD.ended_at IS NULL AND NEW.ended_at IS NOT NULL BEGIN
+       DELETE FROM sync_field_clock WHERE table_name = 'recommendation_decision' AND row_id IN (SELECT id FROM recommendation_decision WHERE workout_id = NEW.id);
+       DELETE FROM sync_tombstone WHERE table_name = 'recommendation_decision' AND row_id IN (SELECT id FROM recommendation_decision WHERE workout_id = NEW.id);
+       DELETE FROM sync_outbox WHERE table_name = 'recommendation_decision' AND row_id IN (SELECT id FROM recommendation_decision WHERE workout_id = NEW.id);
+       INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'recommendation_decision', id, '*' FROM recommendation_decision WHERE workout_id = NEW.id ORDER BY decided_at, id;
+     END"##,
+    ),
+    (
         "sync_workout_set_ai",
         "workout_set",
         r##"CREATE TRIGGER sync_workout_set_ai AFTER INSERT ON workout_set
@@ -3054,7 +3065,8 @@ pub fn introduced_in(name: &str) -> u32 {
         | "sync_progression_profile_au"
         | "sync_recommendation_decision_ai"
         | "sync_recommendation_decision_au"
-        | "sync_workout_set_difficulty_au" => 6,
+        | "sync_workout_set_difficulty_au"
+        | "sync_workout_close_decisions_au" => 6,
         _ => 1,
     }
 }
