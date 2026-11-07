@@ -1,5 +1,5 @@
 import { PROFILE_ID, WEIGHT_MAX_KG, validateProfile, weightId } from '../../../domain/bodyProfile';
-import type { ExportData, ExportProfile, ExportWeight } from '../../../domain/exportImport/archive';
+import { TRAINING_EXPORT_TABLES, trainingColumns, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable, type TrainingValue } from '../../../domain/exportImport/archive';
 import type { ImportPlan } from '../../../domain/exportImport/plan';
 import type { WriteStamper } from '../../../domain/hlc';
 import type { SyncCatalogue, SyncTable } from '../../../domain/sync/syncTables';
@@ -100,6 +100,40 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
     x.timezone.length === 0 ||
     (x.source === 'health' && x.measuredAt === null);
 
+  /** Condition SQL « ligne exportable » : non supprimée et publiable (D-27 : séance close, série d'une séance close). */
+  const exportableSql = (t: SyncTable, alias: string): string => {
+    const parts = [`${alias}.deleted_at IS NULL`];
+    const rule = t.publishWhen;
+    if (rule && 'notNull' in rule) parts.push(`${alias}.${rule.notNull} IS NOT NULL`);
+    if (rule && 'parent' in rule) {
+      const parent = t.parents.find((p) => p.column === rule.parent);
+      const pt = parent ? catalogue.table(parent.table) : undefined;
+      if (!parent || !pt) return '0';
+      const inner = `${alias}_p`;
+      parts.push(`EXISTS (SELECT 1 FROM ${pt.name} ${inner} WHERE ${inner}.id = ${alias}.${parent.column} AND ${exportableSql(pt, inner)})`);
+    }
+    return parts.join(' AND ');
+  };
+
+  /** Lignes d'entraînement exportables ; un enfant dont le parent n'est pas exporté est écarté (archive cohérente). */
+  async function readTraining(): Promise<Partial<Record<TrainingTable, TrainingRow[]>>> {
+    const out: Partial<Record<TrainingTable, TrainingRow[]>> = {};
+    const exported = new Map<string, Set<string>>();
+    for (const name of TRAINING_EXPORT_TABLES) {
+      const t = tableOf(name);
+      const columns = trainingColumns(name);
+      const rows = await db.select<SqlRow>(`SELECT p.id, ${columns.map((c) => `p.${c}`).join(', ')} FROM ${t.name} p WHERE ${exportableSql(t, 'p')} ORDER BY p.id`);
+      const kept: TrainingRow[] = [];
+      for (const r of rows) {
+        if (t.parents.some((p) => r[p.column] !== null && r[p.column] !== undefined && !exported.get(p.table)?.has(String(r[p.column])))) continue;
+        kept.push({ id: String(r['id']), values: Object.fromEntries(columns.map((c) => [c, (r[c] ?? null) as TrainingValue])) });
+      }
+      exported.set(name, new Set(kept.map((r) => r.id)));
+      if (kept.length > 0) out[name] = kept;
+    }
+    return out;
+  }
+
   return {
     async readExportData() {
       const profile = (await db.select<SqlRow>('SELECT * FROM profile WHERE id = ? AND deleted_at IS NULL', [PROFILE_ID]))[0];
@@ -129,14 +163,24 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
         ),
         settings: {},
       };
-      return exported;
+      // Sans ligne d'entraînement, la clé est absente : même forme qu'avant la 0.2.3 (et même archive canonique).
+      const training = await readTraining();
+      return Object.keys(training).length > 0 ? { ...exported, training } : exported;
     },
 
     async applyImport(plan: ImportPlan, currentYear: number) {
-      const { profile, deleteProfile, weights, deleteWeightIds } = plan.writes;
+      const { profile, deleteProfile, weights, deleteWeightIds, training, deleteTraining } = plan.writes;
       if (profile && validateProfile(profile, currentYear).length > 0) throw new RepositoryError('invalid', 'profile', PROFILE_ID);
       for (const x of weights) if (invalidWeight(x)) throw new RepositoryError('invalid', 'body_weight', x.id);
-      if (!profile && !deleteProfile && weights.length === 0 && deleteWeightIds.length === 0) return;
+      for (const { table, row } of training) {
+        const t = tableOf(table);
+        if (!catalogue.isValidRowId(t, row.id)) throw new RepositoryError('invalid', table, row.id);
+        for (const col of t.columns) {
+          if (col.name === 'created_at' || col.name === 'deleted_at') continue;
+          if (!catalogue.isValidValue(col, row.values[col.name] ?? null)) throw new RepositoryError('invalid', table, row.id);
+        }
+      }
+      if (!profile && !deleteProfile && weights.length === 0 && deleteWeightIds.length === 0 && training.length === 0 && deleteTraining.length === 0) return;
       await db.execute('INSERT OR IGNORE INTO sync_guard (id) VALUES (1)');
       try {
         if (profile) {
@@ -148,6 +192,9 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
           await upsert(bodyWeight, x.id, { date: x.date, kg: x.kg, source: x.source, timezone: x.timezone, health_uuid: x.healthUuid, measured_at: x.measuredAt });
         }
         for (const id of deleteWeightIds) await softDelete(bodyWeight, id);
+        // Entraînement : parents d'abord à l'écriture, enfants d'abord à la suppression (ordre déjà donné par le plan).
+        for (const { table, row } of training) await upsert(tableOf(table), row.id, row.values);
+        for (const { table, id } of deleteTraining) await softDelete(tableOf(table), id);
       } finally {
         await db.execute('DELETE FROM sync_guard');
       }
