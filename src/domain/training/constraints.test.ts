@@ -100,7 +100,7 @@ describe('fatigue : baisse de répétitions à charge égale (D-72 point 7)', ()
   it('séries inégales : 30 → 23 répétitions (23,3 %) déclenche ; 30 → 24 (20 %) non', () => {
     const fired = prescribe(input({ history: [session(6, 100, [10, 10, 10]), session(3, 100, [8, 8, 7])] }));
     expect(fired.headline).toBe('fatigue');
-    expect(fired.options[1]).toEqual({ kind: 'fatigue-reps', loadKg: 100, reps: [6, 6, 5] });
+    expect(fired.options?.[1]).toEqual({ kind: 'fatigue-reps', loadKg: 100, reps: [6, 6, 5] });
     const held = prescribe(input({ history: [session(6, 100, [10, 10, 10]), session(3, 100, [8, 8, 8])] }));
     expect(held.reasons).not.toContain('fatigue-drop');
   });
@@ -148,7 +148,7 @@ describe('stagnation (D-72 point 8)', () => {
     const p = prescribe(input({ history: top }));
     expect(p.headline).toBe('increase');
     expect(p.loadKg).toBe(102.5);
-    expect(p.options.at(-1)).toEqual({ kind: 'stall-mini-deload', loadKg: 90, reps: [10, 10, 10] });
+    expect(p.options?.at(-1)).toEqual({ kind: 'stall-mini-deload', loadKg: 90, reps: [10, 10, 10] });
   });
 });
 
@@ -355,7 +355,7 @@ describe('combinaisons, décisions et stabilité', () => {
       expect(p.loadKg).not.toBeNull();
       expect(p.loadKg ?? Infinity).toBeLessThanOrEqual(p.reference?.loadKg ?? 0);
       expect(p.sets.length).toBeLessThanOrEqual(x.target.sets);
-      for (const o of p.options) if (o.loadKg !== null) expect(o.loadKg).toBeLessThanOrEqual(p.loadKg ?? 0);
+      for (const o of p.options ?? []) if (o.loadKg !== null) expect(o.loadKg).toBeLessThanOrEqual(p.loadKg ?? 0);
     }
   });
 
@@ -366,9 +366,9 @@ describe('combinaisons, décisions et stabilité', () => {
     expect(b).toEqual(a);
     const ranks = a.reasons.map((r) => REASON_ORDER.indexOf(r));
     expect([...ranks].sort((x, y) => x - y)).toEqual(ranks);
-    const order = a.options.map((o) => PROPOSAL_OPTION_ORDER.indexOf(o.kind));
+    const order = (a.options ?? []).map((o) => PROPOSAL_OPTION_ORDER.indexOf(o.kind));
     expect([...order].sort((x, y) => x - y)).toEqual(order);
-    expect(a.options.map((o) => o.kind)).toEqual(['fatigue-load', 'fatigue-reps', 'stall-variant', 'stall-range', 'stall-mini-deload']);
+    expect((a.options ?? []).map((o) => o.kind)).toEqual(['fatigue-load', 'fatigue-reps', 'stall-variant', 'stall-range', 'stall-mini-deload']);
   });
 
   it('aucune mutation de l’entrée (historique gelé en profondeur)', () => {

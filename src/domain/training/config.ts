@@ -128,6 +128,7 @@ export const REASON_ORDER: readonly ReasonCode[] = [
   'inactivity-discount',
   'deload',
   'recovery-low',
+  'recovery-set-removed',
   'increment-unknown',
   'equipment-max',
   'snap-extra-rep',

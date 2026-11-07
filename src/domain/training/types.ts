@@ -341,6 +341,7 @@ export type ReasonCode =
   | 'inactivity-discount'
   | 'deload'
   | 'recovery-low'
+  | 'recovery-set-removed'
   | 'increment-unknown'
   | 'equipment-max'
   | 'snap-extra-rep'
@@ -404,14 +405,16 @@ export interface Prescription {
   readonly confidence: number;
   /** Recalibrage « Facile » appliqué : l'appelant met à jour `progression_profile`. */
   readonly recalibration: { readonly at: IsoDateTime; readonly estimated1rmKg: number } | null;
+  // Champs I2-02 (moteur 2) : toujours rendus par `prescribe`, facultatifs pour une prescription tracée par la 0.3.1 (moteur 1), à lire
+  // avec un repli (`?? []`, `?? false`, `?? 0`).
   /** Choix facultatifs (fatigue, stagnation), dans l'ordre de `PROPOSAL_OPTION_ORDER` ; vide sans contrainte. */
-  readonly options: readonly ProposalOption[];
+  readonly options?: readonly ProposalOption[];
   /** Deload appliqué : les séries retenues pour cette séance sont exclues des statistiques. */
-  readonly deload: boolean;
+  readonly deload?: boolean;
   /** RIR cible (au moins `deloadRirAtLeast` en deload) ; null sans cible. */
-  readonly rirTarget: number | null;
+  readonly rirTarget?: number | null;
   /** Décote d'inactivité appliquée (0 à `detrainFloor`). */
-  readonly inactivityCut: number;
+  readonly inactivityCut?: number;
   readonly engineVersion: number;
   readonly activeConfig: ProgressionConfig;
 }
