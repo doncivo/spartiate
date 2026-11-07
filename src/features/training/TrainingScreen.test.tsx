@@ -157,6 +157,8 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
       expect(within(day).getByRole('group', { name: 'Curl marteau' })).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la routine' }));
       expect(await screen.findByRole('status')).toHaveTextContent('Routine enregistrée');
+      expect(screen.queryByLabelText('Nom de la routine')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Nouvelle routine' })).toBeInTheDocument();
       const lines = await db.driver.select<{ exercise_id: string; sets: number; rir: number | null; position: number }>(
         "SELECT e.exercise_id, e.sets, e.rir, e.position FROM routine_exercise e JOIN routine_day d ON d.id = e.routine_day_id WHERE d.name = 'Full Body A' AND d.day_order = 1 AND e.deleted_at IS NULL ORDER BY e.position",
       );
@@ -187,6 +189,8 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
       expect(within(within(day).getByRole('group', { name: 'Presse à cuisses' })).getByText('Matériel absent du profil actif')).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la routine' }));
       expect(await screen.findByRole('status')).toHaveTextContent('Routine enregistrée');
+      expect(screen.queryByLabelText('Nom de la routine')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Nouvelle routine' })).toBeInTheDocument();
     });
   });
 
