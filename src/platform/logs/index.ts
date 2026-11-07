@@ -6,7 +6,7 @@ import type { LogJournal, LogTransport } from './types';
 export { createLogJournal, type LogJournalEnv } from './buffer';
 export { createMemoryLogTransport, type MemoryLogTransport } from './memory';
 export { codeAndDetailOf, LOG_MASK, normalizeScope, sanitizeLogDetail } from './sanitize';
-export { categoryOf, LOG_BATCH_SIZE, LOG_BUFFER_SIZE, LOG_FLUSH_MS, LOG_READ_MAX, type LogCategory, type LogEntry, type LogJournal, type LogStatus, type LogTransport } from './types';
+export { categoryOf, LOG_BATCH_SIZE, LOG_BUFFER_SIZE, LOG_FLUSH_MS, LOG_READ_MAX, LOG_VIEW_MAX, type LogCategory, type LogEntry, type LogJournal, type LogStatus, type LogTransport } from './types';
 
 /**
  * Journal de la fenêtre courante (ADR 0014 §3) : seule la fenêtre `main` de l'app installée (PC et iPhone) écrit dans le fichier ; les
