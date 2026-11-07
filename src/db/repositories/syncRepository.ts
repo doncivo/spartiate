@@ -79,14 +79,14 @@ export interface SyncStateRow {
 }
 
 /** Tables publiées dont l'export des journaux compte les lignes non supprimées (0.2.4 point 3) ; `workout` : séances closes seulement. */
-export const SYNC_REPORT_TABLES = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set'] as const;
+export type SyncReportTable = 'profile' | 'body_weight' | 'exercise' | 'equipment_profile' | 'routine' | 'routine_day' | 'routine_exercise' | 'workout' | 'workout_set';
 
 /** Compteurs seulement (jamais le contenu d'une ligne) : bilan de l'export des journaux. */
 export interface SyncDiagnostics {
   readonly outbox: number;
   readonly unknown: number;
   readonly conflicts: number;
-  readonly rows: Readonly<Record<(typeof SYNC_REPORT_TABLES)[number], number>>;
+  readonly rows: Readonly<Record<SyncReportTable, number>>;
 }
 
 export type SyncStatePatch = Partial<Omit<SyncStateRow, 'deviceId'>>;

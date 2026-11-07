@@ -14,13 +14,13 @@ import type {
   ParkedOp,
   StoredConflict,
   StoredRow,
+  SyncReportTable,
   SyncRepository,
   SyncStatePatch,
   SyncStateRow,
   Tombstone,
   UnknownField,
 } from '../syncRepository';
-import { SYNC_REPORT_TABLES } from '../syncRepository';
 
 /**
  * Implémentation SQL de `SyncRepository` (ADR 0011 ; Y-02, Y-05, Y-09). Les noms de tables et de colonnes sont ceux du catalogue
@@ -112,6 +112,9 @@ function rowToState(row: SqlRow): SyncStateRow {
     status: String(row['status']),
   };
 }
+
+/** Tables publiées comptées par le bilan de l'export des journaux (noms fixes, jamais une valeur venue de l'extérieur). */
+const REPORT_TABLES: readonly SyncReportTable[] = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set'];
 
 export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, catalogue: SyncCatalogue): SyncRepository {
   /** ` AND <condition>` des lignes publiables de `t` (alias `p`), vide sans règle. */
@@ -405,9 +408,9 @@ export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, cat
     // --- état -----------------------------------------------------------------------------------------------------------------------
     async diagnostics() {
       const count = async (sql: string): Promise<number> => Number((await db.select<{ n: number }>(sql))[0]?.n ?? 0);
-      const rows = {} as Record<(typeof SYNC_REPORT_TABLES)[number], number>;
+      const rows = {} as Record<SyncReportTable, number>;
       // Noms de tables fixes (liste ci-dessus) : jamais une valeur venue de l'extérieur.
-      for (const table of SYNC_REPORT_TABLES) rows[table] = await count(`SELECT COUNT(*) AS n FROM ${table} WHERE deleted_at IS NULL${table === 'workout' ? ' AND ended_at IS NOT NULL' : ''}`);
+      for (const table of REPORT_TABLES) rows[table] = await count(`SELECT COUNT(*) AS n FROM ${table} WHERE deleted_at IS NULL${table === 'workout' ? ' AND ended_at IS NOT NULL' : ''}`);
       return {
         outbox: await count('SELECT COUNT(*) AS n FROM sync_outbox'),
         unknown: await count('SELECT COUNT(*) AS n FROM sync_unknown'),
