@@ -74,9 +74,14 @@ test.describe('I-04 — écran Logs', () => {
     expect(file.mime).toBe('text/plain');
     const text = textOf(file);
     expect(text).toContain('Ce fichier ne contient ni titres ni notes.');
-    // 600 entrées du faux + la synchro d'ouverture ; l'iPhone note en plus « startup step db.load » quand cette étape de démarrage est lente
-    // (entrée de session légitime, présente selon le temps mesuré) : 601 sur PC, 601 ou 602 sur iPhone, jamais 500 (plafond de lecture : 2 000).
-    expect(text).toMatch(/Entrées : 60[12]\r?\n/);
+    // 600 entrées injectées, plus les entrées de session de l'app (synchro d'ouverture, étapes de démarrage lentes du scope startup, en nombre
+    // variable selon le temps mesuré) : aucun nombre fixe. Les 600 sont toutes présentes et « Entrées : N » égale le nombre réel de lignes.
+    const total = Number(/Entrées : (\d+)/.exec(text)?.[1]);
+    const lines = text.split(/\r?\n/).filter((line) => /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} /.test(line));
+    expect(total).toBe(lines.length);
+    expect(total).toBeGreaterThanOrEqual(600);
+    expect(total).toBeLessThanOrEqual(2000);
+    for (let n = 0; n < 600; n += 1) expect(text).toContain(` code-${String(n)}`);
     expect(text).toContain(' sync-rust code-598');
     expect(text).not.toContain(SENTINEL);
   });
