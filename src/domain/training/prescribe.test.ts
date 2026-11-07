@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BENCH, CURL, LEG_PRESS, NOW, PLANK, STACK_GYM, daysAgo, input, session, set, target } from '../../../tests/fixtures/training/progression';
+import { CURL, LEG_PRESS, NOW, PLANK, STACK_GYM, daysAgo, input, session, set, target } from '../../../tests/fixtures/training/progression';
 import { DEFAULT_PROGRESSION_CONFIG, ENGINE_VERSION, PRESCRIPTION_HEADLINES, REASON_ORDER } from './config';
 import { positionMultiplier, prescribe, primaryMuscle } from './prescribe';
 import type { ExerciseSession, Prescription } from './types';
@@ -388,6 +388,5 @@ describe('aucune lecture d’horloge : `now` est un argument', () => {
     const later = prescribe(input({ history: [session(3, 60, [10, 10, 10])], now: new Date(Date.parse(NOW) + 100 * 86_400_000).toISOString() as typeof NOW }));
     expect(later.confidence).toBeCloseTo(0.2, 10);
     expect(later.reasons).toContain('provisional');
-    expect(BENCH.id).toBe('bench-press-barbell');
   });
 });
