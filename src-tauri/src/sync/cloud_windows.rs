@@ -97,12 +97,35 @@ fn hresult_error(hresult: i32) -> FsError {
     status_error(hresult).unwrap_or(FsError::CloudError)
 }
 
-/// Erreur d'entrée-sortie (lecture qui déclenche le rappel, écriture) vers l'erreur de fichier.
+/// Erreur d'entrée-sortie (lecture qui déclenche le rappel, écriture) vers l'erreur de fichier. 0.2.5 : quand elle retombe sur `Io`, la
+/// cause est journalisée par un événement fixe (fichier verrouillé, accès refusé, suppression en attente, autre), comme pour les statuts NT ;
+/// avant, un fichier verrouillé par iCloud restait muet (« write-state-failed io » du 7 novembre).
 pub fn io_error(error: &std::io::Error) -> FsError {
-    match error.raw_os_error() {
-        Some(code) => win32_error(code as u32).unwrap_or(FsError::Io),
-        None => FsError::Io,
+    match error
+        .raw_os_error()
+        .and_then(|code| win32_error(code as u32))
+    {
+        Some(cloud) => cloud,
+        None => {
+            super::log::event(super::files::io_event_for_error(error), "");
+            FsError::Io
+        }
     }
+}
+
+/// Même règle pour une erreur de l'API Windows (`GetFileInformationByHandle`, `SetFileInformationByHandle`…) : code Win32 du HRESULT
+/// `0x8007xxxx` classé comme une erreur `std::io` ; tout autre HRESULT est journalisé `io-other`.
+pub fn win_io(error: &windows::core::Error) -> FsError {
+    let value = error.code().0 as u32;
+    let event = if value & 0xFFFF_0000 == 0x8007_0000 {
+        super::files::io_event_for_error(&std::io::Error::from_raw_os_error(
+            (value & 0xFFFF) as i32,
+        ))
+    } else {
+        "io-other"
+    };
+    super::log::event(event, "");
+    FsError::Io
 }
 
 /// Hydrate le fichier entier sur le handle contrôlé. Un échec qui n'est pas une erreur cloud laisse la lecture ordinaire tenter le
@@ -172,31 +195,55 @@ mod io_event_tests {
     #[test]
     fn io_error_signale_la_cause() {
         let capture = log::capture();
-        assert_eq!(io_error(&std::io::Error::from_raw_os_error(32)), FsError::Io);
+        assert_eq!(
+            io_error(&std::io::Error::from_raw_os_error(32)),
+            FsError::Io
+        );
         assert_eq!(io_error(&std::io::Error::from_raw_os_error(5)), FsError::Io);
         let lines = capture.lines();
-        assert!(lines.iter().any(|l| l.starts_with("sync:io-sharing-violation")), "{lines:?}");
-        assert!(lines.iter().any(|l| l.starts_with("sync:io-access-denied")), "{lines:?}");
+        assert!(
+            lines
+                .iter()
+                .any(|l| l.starts_with("sync:io-sharing-violation")),
+            "{lines:?}"
+        );
+        assert!(
+            lines.iter().any(|l| l.starts_with("sync:io-access-denied")),
+            "{lines:?}"
+        );
     }
 
     /// Les erreurs `windows::core::Error` converties en `Io` (informations de fichier, suppression) portent aussi leur cause.
     #[test]
     fn win_io_signale_la_cause() {
         let capture = log::capture();
-        let locked = windows::core::Error::from_hresult(windows::core::HRESULT(0x8007_0020_u32 as i32));
+        let locked =
+            windows::core::Error::from_hresult(windows::core::HRESULT(0x8007_0020_u32 as i32));
         assert_eq!(win_io(&locked), FsError::Io);
-        let other = windows::core::Error::from_hresult(windows::core::HRESULT(0x8000_4005_u32 as i32));
+        let other =
+            windows::core::Error::from_hresult(windows::core::HRESULT(0x8000_4005_u32 as i32));
         assert_eq!(win_io(&other), FsError::Io);
         let lines = capture.lines();
-        assert!(lines.iter().any(|l| l.starts_with("sync:io-sharing-violation")), "{lines:?}");
-        assert!(lines.iter().any(|l| l.starts_with("sync:io-other")), "{lines:?}");
+        assert!(
+            lines
+                .iter()
+                .any(|l| l.starts_with("sync:io-sharing-violation")),
+            "{lines:?}"
+        );
+        assert!(
+            lines.iter().any(|l| l.starts_with("sync:io-other")),
+            "{lines:?}"
+        );
     }
 
     /// Une erreur cloud reconnue garde sa catégorie, sans événement d'E/S.
     #[test]
     fn erreur_cloud_inchangee() {
         let capture = log::capture();
-        assert_eq!(io_error(&std::io::Error::from_raw_os_error(121)), FsError::CloudPending);
+        assert_eq!(
+            io_error(&std::io::Error::from_raw_os_error(121)),
+            FsError::CloudPending
+        );
         assert!(!capture.lines().iter().any(|l| l.starts_with("sync:io-")));
     }
 }
