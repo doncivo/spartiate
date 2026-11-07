@@ -93,6 +93,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
   const [editing, setEditing] = useState<{ readonly load: string; readonly reps: string } | null>(null);
   const live = useRef(true);
   const editLoad = useRef<HTMLInputElement>(null);
+  const stateLine = useRef<HTMLParagraphElement>(null);
+  /** Vrai après un choix fait ici : le focus passe à l'état de la décision (les boutons disparaissent, le clavier n'est pas perdu). */
+  const decided = useRef(false);
 
   useEffect(() => {
     live.current = true;
@@ -135,6 +138,13 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     // L'instant de calcul est celui du chargement : la proposition ne change pas pendant la séance.
   }, [load, workout.id, exerciseId, exercise, equipment, target]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (ownDecision !== null && decided.current) {
+      decided.current = false;
+      stateLine.current?.focus();
+    }
+  }, [ownDecision]);
+
   const difficulty = sets.map((s) => s.difficulty ?? null).find((d): d is Difficulty => d !== null) ?? null;
 
   /** Décision tracée puis séries à faire encore vides remplies (même transaction) ; le profil garde l'estimation du moteur. */
@@ -173,6 +183,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
           }
         });
         setEditing(null);
+        decided.current = true;
         await onChanged();
         if (live.current) setAttempt((n) => n + 1);
       } catch {
@@ -234,7 +245,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         <p className="ct-progression__sentence">{sentence}</p>
         {proposed ? <p className="ct-progression__muted">{tProgression('confidence', { percent: confidencePercent(p.confidence), band: tProgression(BAND_KEYS[confidenceBand(p.confidence)]) })}</p> : null}
         {ownDecision !== null ? (
-          <p className="ct-progression__state" role="status">
+          <p ref={stateLine} tabIndex={-1} className="ct-progression__state" role="status">
             {ownDecision.loadKg === null
               ? tProgression('refused')
               : ownDecision.accepted
