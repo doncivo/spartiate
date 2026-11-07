@@ -23,6 +23,7 @@ function rig(pending: () => number) {
     clearInterval: () => undefined,
   });
   const advance = async (ms: number): Promise<void> => {
+    for (let i = 0; i < 6; i += 1) await Promise.resolve();
     const end = now + ms;
     while (now < end) {
       now = Math.min(end, now + SYNC_POLL_MS);

@@ -31,6 +31,14 @@ export const SYNC_FOREGROUND_INTERVAL_MS = 25_000;
 export const LOCAL_WRITE_DEBOUNCE_MS = 3_000;
 export const LOCAL_WRITE_MAX_WAIT_MS = 10_000;
 
+/**
+ * 0.2.4 point 5 : un fichier iCloud pas encore téléchargé (`pendingFiles` non vide après un cycle) relance un cycle `PENDING_RETRY_MS` plus
+ * tard au lieu d'attendre l'échéance normale ; au plus `PENDING_RETRY_MAX` essais rapprochés d'affilée, puis le rythme normal (le compteur
+ * repart quand plus aucun fichier n'est attendu).
+ */
+export const PENDING_RETRY_MS = 10_000;
+export const PENDING_RETRY_MAX = 3;
+
 /** Retour au premier plan : pas de nouveau cycle si le précédent date de moins de 5 s (bascules répétées). */
 export const RETURN_MIN_GAP_MS = 5_000;
 
@@ -92,14 +100,31 @@ export function startSyncScheduler(service: Pick<SyncService, 'syncNow'> & Parti
   /** Écritures locales en attente de publication : instants de la première et de la dernière (ms), null : aucune. */
   let dirtyFirst: number | null = null;
   let dirtyLast = 0;
+  /** Échéance du prochain cycle rapproché (fichiers iCloud attendus), null : aucune ; nombre d'essais rapprochés faits depuis la dernière arrivée. */
+  let pendingRetryAt: number | null = null;
+  let pendingRetries = 0;
   const visible = (): boolean => env.document.visibilityState !== 'hidden';
 
   const run = (reason: SyncReason, options?: SyncNowOptions): Promise<void> => {
     if (disposed || paused) return Promise.resolve();
     lastStart = env.clock.nowMs();
     dirtyFirst = null;
-    return (options ? service.syncNow(reason, options) : service.syncNow(reason)).catch(() => undefined);
+    pendingRetryAt = null;
+    return (options ? service.syncNow(reason, options) : service.syncNow(reason)).catch(() => undefined).then(planPendingRetry);
   };
+
+  /** Après un cycle : fichiers attendus d'iCloud -> un cycle rapproché (borné) ; plus aucun -> compteur remis à zéro. */
+  function planPendingRetry(): void {
+    if (disposed) return;
+    const waiting = ((service.status?.() as { pendingFiles?: readonly unknown[] } | undefined)?.pendingFiles?.length ?? 0) > 0;
+    if (!waiting) {
+      pendingRetries = 0;
+      return;
+    }
+    if (pendingRetries >= PENDING_RETRY_MAX) return;
+    pendingRetries += 1;
+    pendingRetryAt = env.clock.nowMs() + PENDING_RETRY_MS;
+  }
 
   const waitsForPairing = (): boolean => WAITS_FOR_PAIRING.has(service.status?.().phase ?? '');
 
@@ -124,7 +149,8 @@ export function startSyncScheduler(service: Pick<SyncService, 'syncNow'> & Parti
     const periodic = retryAt === null ? now - lastStart >= SYNC_FOREGROUND_INTERVAL_MS : now >= retryAt;
     // Écriture locale : regroupée (3 s après la dernière, 10 s au plus après la première) ; une erreur espacée (`retryAt`) garde son rythme.
     const written = retryAt === null && dirtyFirst !== null && (now - dirtyLast >= LOCAL_WRITE_DEBOUNCE_MS || now - dirtyFirst >= LOCAL_WRITE_MAX_WAIT_MS);
-    if (periodic || written) await run('timer');
+    const quick = retryAt === null && pendingRetryAt !== null && now >= pendingRetryAt;
+    if (periodic || written || quick) await run('timer');
   };
 
   const bounded = env.hideDeadlineMs;

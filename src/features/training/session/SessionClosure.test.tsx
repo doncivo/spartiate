@@ -242,3 +242,82 @@ describe('après la clôture', () => {
     expect(await count('SELECT COUNT(*) AS n FROM workout WHERE ended_at IS NULL AND source = ?', ['copy'])).toBe(1);
   });
 });
+
+describe('0.2.4 point 6 : « Mettre à jour la routine ? » reproposée si l’app a été fermée pendant le résumé', () => {
+  const question = () => screen.findByRole('group', { name: 'Mettre à jour la routine ?' });
+  async function closeWithoutRowing(): Promise<void> {
+    openSession();
+    await startFromRoutine();
+    fireEvent.click(within(await screen.findByRole('region', { name: ROW })).getByRole('button', { name: 'Retirer l’exercice' }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Retirer' }));
+    await waitFor(() => expect(screen.queryByRole('region', { name: ROW })).toBeNull());
+    for (const reps of ['8', '8', '7']) await validateNext(BENCH, '60', reps);
+    fireEvent.click(screen.getByRole('button', { name: 'Terminer la séance' }));
+    await question();
+  }
+  /** Fermeture de l’app : l’écran est démonté sans réponse, puis rouvert sur la même base. */
+  async function reopen(): Promise<void> {
+    cleanup();
+    useNavigationStore.setState(INITIAL_NAVIGATION);
+    openSession();
+  }
+  const startOptions = () => screen.findByRole('button', { name: /^Démarrer « Haut A »/ });
+
+  it('fermée sans réponse : à la réouverture, le résumé et la question reviennent ; la routine n’a pas changé', async () => {
+    const before = await routineLines();
+    await closeWithoutRowing();
+    await reopen();
+    const summary = await summaryRegion();
+    expect(within(summary).getByRole('group', { name: 'Mettre à jour la routine ?' })).toHaveTextContent(`${ROW} : retiré`);
+    expect(await routineLines()).toEqual(before);
+  });
+
+  it('« Oui » : la question ne revient plus et la routine est à jour', async () => {
+    await closeWithoutRowing();
+    fireEvent.click(within(await question()).getByRole('button', { name: 'Oui' }));
+    await screen.findByText('Routine mise à jour.');
+    await reopen();
+    await startOptions();
+    expect(screen.queryByRole('group', { name: 'Mettre à jour la routine ?' })).toBeNull();
+  });
+
+  it('« Cette fois seulement » : la question ne revient plus', async () => {
+    await closeWithoutRowing();
+    fireEvent.click(within(await question()).getByRole('button', { name: 'Cette fois seulement' }));
+    await screen.findByText('La routine reste inchangée.');
+    await reopen();
+    await startOptions();
+    expect(screen.queryByRole('group', { name: 'Mettre à jour la routine ?' })).toBeNull();
+  });
+
+  it('« Fermer le résumé » est une réponse : la question ne revient pas', async () => {
+    await closeWithoutRowing();
+    fireEvent.click(screen.getByRole('button', { name: 'Fermer le résumé' }));
+    await startOptions();
+    await reopen();
+    await startOptions();
+    expect(screen.queryByRole('group', { name: 'Mettre à jour la routine ?' })).toBeNull();
+  });
+
+  it('séance sans écart avec la routine : rien à reproposer', async () => {
+    openSession();
+    await startFromRoutine();
+    for (const reps of ['8', '8', '7']) await validateNext(BENCH, '60', reps);
+    await validateNext(ROW, '50', '10');
+    await validateNext(ROW, '50', '9');
+    fireEvent.click(screen.getByRole('button', { name: 'Terminer la séance' }));
+    await summaryRegion();
+    await reopen();
+    await startOptions();
+    expect(screen.queryByRole('region', { name: 'Résumé de la séance' })).toBeNull();
+  });
+
+  it('séance supprimée du journal avant la réouverture : le marqueur est ignoré et effacé', async () => {
+    await closeWithoutRowing();
+    const id = (await one<{ id: string }>('SELECT id FROM workout')).id;
+    await db.data.transaction(async (r) => (await r.workouts()).deleteClosed(id));
+    await reopen();
+    await startOptions();
+    expect(await db.data.repos.settings.get('training.routineUpdateAsk' as never)).toBeNull();
+  });
+});
