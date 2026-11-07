@@ -185,6 +185,13 @@ describe('inactivité (D-72 point 10)', () => {
     expect(p.sets.map((s) => s.reps)).toEqual([8, 8, 8]);
   });
 
+  it('une séance close sans aucune série faite n’est pas un travail du muscle : la décote court depuis la dernière série faite', () => {
+    const empty = session(2, 100, [], { sets: [0, 1, 2].map((position) => ({ position, setKind: 'work', done: false, reps: null, loadKg: null, rir: null })) });
+    const p = prescribe(input({ exercise: LEG_PRESS, history: [session(28, 100, [8, 8, 8]), empty] }));
+    expect(p.inactivityCut).toBeCloseTo(0.02, 12);
+    expect(p.loadKg).toBe(98);
+  });
+
   it('le muscle travaillé par un autre exercice : pas de décote ; donnée absente : dernière séance de l’exercice', () => {
     const p = prescribe(input({ exercise: LEG_PRESS, history: [session(30, 100, [8, 8, 8])], muscleLastWorkedAt: daysAgo(5) }));
     expect(p.reasons).not.toContain('inactivity-discount');
