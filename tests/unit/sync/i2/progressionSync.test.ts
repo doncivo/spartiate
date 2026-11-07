@@ -178,6 +178,21 @@ describe('revue #61 (D-27) : décision d’une séance ouverte ou abandonnée', 
   });
 });
 
+describe('suppression (re-relecture sync-icloud)', () => {
+  it('suppression d’une séance close : deleted_at propagé à ses décisions sur l’autre appareil', async () => {
+    const [a, b] = await twoDevices();
+    await closedWorkout(a, W1, 'ok');
+    await roundTrip();
+    expect(await b.driver.select('SELECT deleted_at FROM recommendation_decision WHERE id = ?', [D1])).toEqual([{ deleted_at: null }]);
+    a.clock.advance(1_000);
+    await (await a.data.repos.workouts()).deleteClosed(W1);
+    await roundTrip();
+    const [row] = await b.driver.select<{ deleted_at: string | null }>('SELECT deleted_at FROM recommendation_decision WHERE id = ?', [D1]);
+    expect(row?.deleted_at ?? null).not.toBeNull();
+    expect((await (await b.data.repos.progression()).lastDecision('bench-press-barbell'))).toBeNull();
+  });
+});
+
 describe('instantané (qa-test)', () => {
   it('nouvel appareil associé après coup : profil, décision et difficulté reçus par l’instantané', async () => {
     const a = await createSimDevice(A_ID, { name: 'PC', schema: 'i0' });
