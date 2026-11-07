@@ -101,3 +101,18 @@ describe('notification du minuteur (PC et web)', () => {
     await expect(notifier.cancel()).resolves.toBeUndefined();
   });
 });
+
+describe('0.2.3 (point 5) : repos de séance et minuteur de test ne partagent plus leur notification', () => {
+  it('identifiants distincts et réservés hors plan ; programmer le repos n’annule pas le minuteur de test', async () => {
+    const { REST_NOTIFICATION_ID } = await import('../../domain/syntheticTimer');
+    expect(REST_NOTIFICATION_ID).not.toBe(TIMER_NOTIFICATION_ID);
+    expect(REST_NOTIFICATION_ID).toBeLessThan(65_536);
+    const r = bridgeRig();
+    const rest = createIosTimerNotifier({ bridge: r.bridge, clock: { nowMs: () => Date.parse('2026-11-06T09:00:00.000Z'), zone: () => 'Europe/Paris' }, kind: 'rest' });
+    await rest.schedule({ endMs: Date.parse('2026-11-06T09:02:00.000Z'), title: 'Repos terminé', body: 'b' });
+    expect(r.bridge.cancel).toHaveBeenCalledWith([REST_NOTIFICATION_ID]);
+    expect(r.bridge.cancel).not.toHaveBeenCalledWith([TIMER_NOTIFICATION_ID]);
+    expect(r.shown[0]?.id).toBe(REST_NOTIFICATION_ID);
+    expect(r.shown[0]?.extra['sid']).toBe('timer:rest');
+  });
+});
