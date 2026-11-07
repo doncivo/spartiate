@@ -1,5 +1,5 @@
 import { pluginDate } from '../../domain/notificationInstant';
-import { TIMER_NOTIFICATION_ID } from '../../domain/syntheticTimer';
+import { REST_NOTIFICATION_ID, TIMER_NOTIFICATION_ID } from '../../domain/syntheticTimer';
 import type { OsFamily, Runtime } from '../runtime';
 import { SEND_MARGIN_MS, type IosNotificationBridge } from './tauriNotifications';
 import type { NotificationClock } from './notificationClock';
@@ -34,8 +34,14 @@ function dateWithSeconds(endMs: number, zone: string | null): string {
   return pluginDate(whole, zone).replace(':00.000Z', `:${String(seconds).padStart(2, '0')}.000Z`);
 }
 
-export function createIosTimerNotifier(deps: { readonly bridge: IosNotificationBridge; readonly clock: NotificationClock }): TimerNotifier {
+/** `test` : minuteur de test de Diagnostic (SPA-007) ; `rest` : repos de la séance active (I1-02). Chacun son identifiant fixe. */
+export type TimerKind = 'test' | 'rest';
+const TIMER_IDS: Readonly<Record<TimerKind, number>> = { test: TIMER_NOTIFICATION_ID, rest: REST_NOTIFICATION_ID };
+
+export function createIosTimerNotifier(deps: { readonly bridge: IosNotificationBridge; readonly clock: NotificationClock; readonly kind?: TimerKind }): TimerNotifier {
   const { bridge, clock } = deps;
+  const kind = deps.kind ?? 'test';
+  const ID = TIMER_IDS[kind];
   const permissionOf = async (read: () => Promise<'granted' | 'denied' | 'undetermined'>) => {
     try {
       return await read();
@@ -48,7 +54,7 @@ export function createIosTimerNotifier(deps: { readonly bridge: IosNotificationB
     requestPermission: () => permissionOf(() => bridge.requestPermission()),
     async isPending() {
       try {
-        return (await bridge.pending()).some((item) => item.id === TIMER_NOTIFICATION_ID);
+        return (await bridge.pending()).some((item) => item.id === ID);
       } catch {
         return false;
       }
@@ -56,13 +62,13 @@ export function createIosTimerNotifier(deps: { readonly bridge: IosNotificationB
     async schedule({ endMs, title, body }) {
       if (endMs - clock.nowMs() < SEND_MARGIN_MS) return false;
       try {
-        await bridge.cancel([TIMER_NOTIFICATION_ID]);
+        await bridge.cancel([ID]);
         await bridge.show({
-          id: TIMER_NOTIFICATION_ID,
+          id: ID,
           title,
           body,
           sound: 'default',
-          extra: { sid: 'timer:test', at: String(endMs) },
+          extra: { sid: `timer:${kind}`, at: String(endMs) },
           schedule: { at: { date: dateWithSeconds(endMs, clock.zone()), repeating: false, allowWhileIdle: false } },
         });
         return true;
@@ -71,7 +77,7 @@ export function createIosTimerNotifier(deps: { readonly bridge: IosNotificationB
       }
     },
     async cancel() {
-      await bridge.cancel([TIMER_NOTIFICATION_ID]);
+      await bridge.cancel([ID]);
     },
   };
 }
@@ -88,11 +94,11 @@ export function createUnavailableTimerNotifier(): TimerNotifier {
 }
 
 /** Adaptateur réel pour (`tauri`, `ios`) seulement, chargé à la demande ; le vide partout ailleurs. */
-export function openTimerNotifier(runtime: Runtime, os: OsFamily, clock: NotificationClock): TimerNotifier {
+export function openTimerNotifier(runtime: Runtime, os: OsFamily, clock: NotificationClock, kind: TimerKind = 'test'): TimerNotifier {
   if (runtime !== 'tauri' || os !== 'ios') return createUnavailableTimerNotifier();
   let loaded: Promise<TimerNotifier> | null = null;
   const load = (): Promise<TimerNotifier> =>
-    (loaded ??= import('./tauriNotifications').then(({ createIosNotificationBridge }) => createIosTimerNotifier({ bridge: createIosNotificationBridge(), clock })));
+    (loaded ??= import('./tauriNotifications').then(({ createIosNotificationBridge }) => createIosTimerNotifier({ bridge: createIosNotificationBridge(), clock, kind })));
   return {
     permission: async () => (await load()).permission(),
     requestPermission: async () => (await load()).requestPermission(),
