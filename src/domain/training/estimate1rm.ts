@@ -56,7 +56,16 @@ export interface HistoryAnalysis {
   readonly estimates: readonly SessionEstimate[];
   /** Séance la plus récente ayant au moins une série de travail : ignorée (moins de 50 % faites) ou séries aberrantes écartées. */
   readonly latest: { readonly workoutId: string; readonly partial: boolean; readonly outliers: number } | null;
+  /**
+   * Séance la plus récente non partielle, avec TOUTES ses séries éligibles (aberrantes comprises) : référence de la prochaine
+   * prescription quand ses séries ont été écartées du 1RM (relecture de la PR #60, B1 : une charge de calibration prudente suivie d'une
+   * vraie charge ne doit jamais renvoyer à l'ancienne charge). Null sans séance éligible.
+   */
+  readonly latestRaw: SessionEstimate | null;
 }
+
+/** Facteur sous lequel une séance ultérieure « répète » une série aberrante (e1RM ≥ 90 % du sien) et la confirme. */
+const REPEAT_CONFIRMS_FROM = 0.9;
 
 /** Ordre chronologique stable : fin de séance, puis identifiant. */
 const chronological = (a: ExerciseSession, b: ExerciseSession): number => (a.endedAt < b.endedAt ? -1 : a.endedAt > b.endedAt ? 1 : a.workoutId < b.workoutId ? -1 : a.workoutId > b.workoutId ? 1 : 0);
@@ -64,7 +73,16 @@ const chronological = (a: ExerciseSession, b: ExerciseSession): number => (a.end
 export function analyzeHistory(history: readonly ExerciseSession[], config: ProgressionConfig): HistoryAnalysis {
   const valid: SessionEstimate[] = [];
   let latest: HistoryAnalysis['latest'] = null;
-  for (const session of [...history].sort(chronological)) {
+  let latestRaw: SessionEstimate | null = null;
+  const ordered = [...history].sort(chronological);
+  // Meilleur e1RM éligible de chaque séance : une série aberrante est confirmée si une séance ULTÉRIEURE l'atteint à 90 % (B1). Sans
+  // cela, `confirmed` n'étant jamais renseigné, un vrai progrès > 150 % restait écarté pour toujours.
+  const bestOf = ordered.map((session) => {
+    const values = session.sets.filter((s) => s.setKind === 'work' && isEligibleSet(s)).map((s) => epley(s.loadKg as number, s.reps as number));
+    return values.length > 0 ? Math.max(...values) : 0;
+  });
+  const repeatedLater = (index: number, e1rm: number): boolean => bestOf.slice(index + 1).some((b) => b >= REPEAT_CONFIRMS_FROM * e1rm);
+  for (const [index, session] of ordered.entries()) {
     // Deload (I2-02, § 11.3) : visible dans l'historique brut, exclu des statistiques.
     if (session.deload === true) continue;
     const work = session.sets.filter((s) => s.setKind === 'work');
@@ -75,8 +93,13 @@ export function analyzeHistory(history: readonly ExerciseSession[], config: Prog
       continue;
     }
     const current = current1rmFromSessions(valid, config);
-    const kept = eligible.filter((s) => s.confirmed === true || current === null || epley(s.loadKg, s.reps) <= config.outlierRatio * current);
+    const kept = eligible.filter((s) => s.confirmed === true || current === null || epley(s.loadKg, s.reps) <= config.outlierRatio * current || repeatedLater(index, epley(s.loadKg, s.reps)));
     latest = { workoutId: session.workoutId, partial: false, outliers: eligible.length - kept.length };
+    if (eligible.length > 0) {
+      const all = [...eligible].sort((a, b) => a.position - b.position);
+      const top = all.reduce((t, s) => (epley(s.loadKg, s.reps) > epley(t.loadKg, t.reps) ? s : t));
+      latestRaw = { workoutId: session.workoutId, endedAt: session.endedAt, difficulty: session.difficulty, e1rmKg: epley(top.loadKg, top.reps), quality: 1, validSets: all.length, sets: all };
+    }
     if (kept.length === 0) continue;
     const sets = [...kept].sort((a, b) => a.position - b.position);
     // Meilleure série : e1RM maximal, la première par position à égalité.
@@ -91,5 +114,5 @@ export function analyzeHistory(history: readonly ExerciseSession[], config: Prog
       sets,
     });
   }
-  return { estimates: valid, latest };
+  return { estimates: valid, latest, latestRaw };
 }
