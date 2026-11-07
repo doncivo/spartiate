@@ -124,6 +124,8 @@ export interface SettingsValues {
   'training.activeEquipmentProfile': string | null;
   /** I1-02 : « Repos par défaut » de l'écran de séance (secondes, 1 à 3600) quand la routine n'en fixe pas ; null = repos de l'exercice. Local. */
   'training.restSeconds': number | null;
+  /** 0.2.4 point 6 : séance close dont la question « Mettre à jour la routine ? » attend encore une réponse (app fermée pendant le résumé) ; effacée à la réponse. Local. */
+  'training.routineUpdateAsk': string | null;
 }
 
 export type SettingKey = keyof SettingsValues;
@@ -178,6 +180,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'healthkit.entitlementMissing': { scope: 'local', defaultValue: false },
   'training.activeEquipmentProfile': { scope: 'local', defaultValue: null },
   'training.restSeconds': { scope: 'local', defaultValue: null },
+  'training.routineUpdateAsk': { scope: 'local', defaultValue: null },
 };
 
 /** Valeur par défaut d'un réglage. */

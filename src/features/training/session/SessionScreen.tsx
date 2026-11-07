@@ -31,9 +31,19 @@ type Load =
   | { readonly status: 'error' }
   | { readonly status: 'ready'; readonly workout: WorkoutWithSets | null; readonly restSetting: number | null; readonly closed?: ClosedWorkout | null };
 
-async function read(access: DataAccess): Promise<{ workout: WorkoutWithSets | null; restSetting: number | null }> {
-  const [workouts, raw] = await Promise.all([access.repos.workouts(), access.repos.settings.get('training.restSeconds')]);
-  return { workout: await workouts.getOpen(), restSetting: parseRestSetting(raw) };
+async function read(access: DataAccess): Promise<{ workout: WorkoutWithSets | null; restSetting: number | null; closed?: ClosedWorkout }> {
+  const [workouts, raw, ask] = await Promise.all([access.repos.workouts(), access.repos.settings.get('training.restSeconds'), access.repos.settings.get('training.routineUpdateAsk')]);
+  const workout = await workouts.getOpen();
+  const base = { workout, restSetting: parseRestSetting(raw) };
+  if (ask === null || workout !== null) return base;
+  // 0.2.4 point 6 : l'app a été fermée pendant le résumé sans répondre : la séance close et sa question reviennent (si elles existent encore).
+  const closed = await workouts.getClosed(ask);
+  const diff = closed === null ? null : await workouts.routineChanges(ask);
+  if (closed === null || diff === null || !diff.hasChanges) {
+    await access.repos.settings.set('training.routineUpdateAsk', null);
+    return base;
+  }
+  return { ...base, closed: { workout: closed, summary: await workouts.summary(ask), routineDiff: diff, alreadyClosed: true } };
 }
 
 /**
