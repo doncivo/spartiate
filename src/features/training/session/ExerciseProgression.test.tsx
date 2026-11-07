@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { DeviceId } from '../../../domain/types';
@@ -162,5 +162,30 @@ describe('ressenti de fin d’exercice (critère 13)', () => {
     fireEvent.click(again);
     expect(await within(await within(await block()).findByRole('group', { name: 'Ressenti de l’exercice' })).findByText('Non renseigné')).toBeInTheDocument();
     expect(await one<{ n: number }>("SELECT COUNT(*) AS n FROM workout_set WHERE difficulty IS NOT NULL")).toEqual({ n: 0 });
+  });
+});
+
+describe('accessibilité (critère 15)', () => {
+  it('clavier : après « Accepter », le focus passe à l’état de la décision ; « Modifier » place le focus sur la charge, Échap annule', async () => {
+    await seedPast();
+    await seedCurrent();
+    openSession();
+    fireEvent.click(await within(await proposal()).findByRole('button', { name: 'Modifier' }));
+    const field = within(await proposal()).getByLabelText('Charge proposée (kg)');
+    expect(document.activeElement).toBe(field);
+    fireEvent.keyDown(field, { key: 'Escape' });
+    fireEvent.click(await within(await proposal()).findByRole('button', { name: 'Accepter' }));
+    const state = await within(await proposal()).findByText('Proposition acceptée.');
+    await waitFor(() => expect(document.activeElement).toBe(state));
+  });
+
+  it('cibles : les trois choix de ressenti et les boutons de décision sont des boutons natifs (clavier, Entrée et Espace)', async () => {
+    await seedPast();
+    await seedCurrent();
+    openSession();
+    const p = await proposal();
+    for (const name of ['Accepter', 'Modifier', 'Refuser']) expect((await within(p).findByRole('button', { name })).tagName).toBe('BUTTON');
+    const group = within(await block()).getByRole('group', { name: 'Ressenti de l’exercice' });
+    for (const name of ['Facile', 'Juste', 'Dur']) expect(within(group).getByRole('button', { name })).toHaveAttribute('type', 'button');
   });
 });
