@@ -229,6 +229,22 @@ describe('ProgressionRepository : décisions', () => {
     }
   });
 
+  it('re-relecture sync-icloud : prescription stockée invalide (confiance hors bornes) → la séance se clôture quand même, profil non écrit', async () => {
+    db = await openBaseDb(DEVICE);
+    const easy = prescribe(input({ history: [session(3, 60, [10, 10, 10], { difficulty: 'easy' })] }));
+    const w = await db.data.repos.workouts();
+    await w.start({ source: 'empty', id: u(20), name: 'Séance' });
+    const opened = await w.addExercise(u(20), { exerciseId: 'bench-press-barbell', exerciseName: 'Développé', sets: 1 });
+    await (await repo()).recordDecision({ exerciseId: 'bench-press-barbell', workoutId: u(20), prescription: { ...easy, confidence: 1.5 }, accepted: true, chosenLoadKg: easy.loadKg, chosenReps: [8] });
+    for (const s of opened.sets) await w.validateSet(s.id, { reps: 8, loadKg: 60 });
+    await db.data.transaction(async (repos) => {
+      await (await repos.workouts()).close(u(20));
+      await (await repos.progression()).applyClosedWorkout(u(20));
+    });
+    expect(await db.driver.select('SELECT ended_at IS NOT NULL AS closed FROM workout WHERE id = ?', [u(20)])).toEqual([{ closed: 1 }]);
+    expect(await (await repo()).getProfile('bench-press-barbell')).toBeNull();
+  });
+
   it('relecture sync-icloud R1 : identifiant d’exercice d’un profil borné à 116 caractères (progression|… ≤ 128)', async () => {
     db = await openBaseDb(DEVICE);
     const r = await repo();
