@@ -240,6 +240,8 @@ export const trainingFr = {
   sessionRemoveSet: 'Retirer la série',
   sessionExerciseMeta: '{n} séries · repos {rest}',
   sessionExerciseMetaOne: '1 série · repos {rest}',
+  sessionExerciseMetaNoRest: '{n} séries',
+  sessionExerciseMetaOneNoRest: '1 série',
   sessionSet: 'Série {n}',
   sessionWarmupSet: 'Série d’échauffement',
   sessionWarmupMark: 'É',

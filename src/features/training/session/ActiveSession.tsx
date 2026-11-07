@@ -344,7 +344,14 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
             <div className="ct-session__block-head">
               <h3 className="ct-session__block-title">{block.exerciseName}</h3>
               <p className="ct-session__muted">
-                {work === 1 ? tTraining('sessionExerciseMetaOne', { rest: formatRest(restSec ?? 0) }) : tTraining('sessionExerciseMeta', { n: work, rest: formatRest(restSec ?? 0) })}
+                {/* 0.2.3 : un repos nul ou absent n'affiche plus « repos 0 s ». */}
+                {!restSec
+                  ? work === 1
+                    ? tTraining('sessionExerciseMetaOneNoRest')
+                    : tTraining('sessionExerciseMetaNoRest', { n: work })
+                  : work === 1
+                    ? tTraining('sessionExerciseMetaOne', { rest: formatRest(restSec) })
+                    : tTraining('sessionExerciseMeta', { n: work, rest: formatRest(restSec) })}
               </p>
             </div>
             <ol className="ct-session__sets">

@@ -170,7 +170,7 @@ describe('0.2.3 : texte de la ligne selon l’appareil', () => {
     const f = fakes();
     open({ os: 'other', notifier: f.notifier, liveActivity: f.liveActivity });
     const hint = await screen.findByText(/minuteur dans l’app/i);
-    expect(hint.textContent).toMatch(/sur l’iPhone/);
+    expect(hint.textContent).toMatch(/sur l’iPhone/i);
   });
   it('iPhone : la ligne décrit la Live Activity', async () => {
     const f = fakes();
