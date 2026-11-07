@@ -144,13 +144,18 @@ describe('validation de l’archive d’entraînement', () => {
       { name: 'manifest.json', data: new TextEncoder().encode(JSON.stringify(manifest)) },
     ]);
   }
+  const first = (rows: Record<string, unknown>[] | undefined): Record<string, unknown> => {
+    const row = rows?.[0];
+    if (!row) throw new Error('ligne attendue');
+    return row;
+  };
   const training = (d: Record<string, unknown>) => d['training'] as Record<string, Record<string, unknown>[]>;
 
   it('refuse une table inconnue, une série orpheline, une séance ouverte, une valeur hors catalogue', async () => {
     const parse = (bytes: Uint8Array) => parseExportArchive(bytes, { currentSv: 4, currentYear: 2026 });
     await expect(parse(await tampered((d) => (training(d)['inconnue'] = [])))).rejects.toMatchObject({ code: 'invalid-data' });
     await expect(parse(await tampered((d) => delete training(d)['workout']))).rejects.toMatchObject({ code: 'invalid-data' });
-    await expect(parse(await tampered((d) => ((training(d)['workout'] as Record<string, unknown>[])[0]!['ended_at'] = null)))).rejects.toMatchObject({ code: 'invalid-data' });
-    await expect(parse(await tampered((d) => ((training(d)['workout_set'] as Record<string, unknown>[])[0]!['set_kind'] = 'autre')))).rejects.toMatchObject({ code: 'invalid-data' });
+    await expect(parse(await tampered((d) => (first(training(d)['workout'])['ended_at'] = null)))).rejects.toMatchObject({ code: 'invalid-data' });
+    await expect(parse(await tampered((d) => (first(training(d)['workout_set'])['set_kind'] = 'autre')))).rejects.toMatchObject({ code: 'invalid-data' });
   });
 });
