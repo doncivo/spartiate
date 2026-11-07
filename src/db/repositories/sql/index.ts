@@ -61,6 +61,8 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFa
   // séance close, mise à jour de la routine) : une séance ouverte n'est jamais publiée (D-27).
   workouts: () =>
     import('./workoutRepository').then((m) => signalingWrites(m.createWorkoutRepository(executor, stamper), ['close', 'correctSet', 'deleteClosed', 'applyRoutineUpdate'])),
+  // I2-01 : moteur de prescription, à la demande. Tables locales en 0.3.0 (aucune capture) : pas de signal de synchro.
+  progression: () => import('./progressionRepository').then((m) => m.createProgressionRepository(executor, stamper)),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)

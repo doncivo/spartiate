@@ -1,6 +1,7 @@
 //! I1-01 / I1-02 / I1-03 : les versions 2 (migration 0002, bibliothèque, matériel et routines), 3 (migration 0003, séance locale `workout` /
 //! `workout_set`, sans déclencheur de capture : D-27) et 4 (migration 0004, déclencheurs gardés des séances closes) sont admises par la
-//! vérification des sauvegardes ; la version 5, inconnue de cette app, est refusée. Les déclencheurs de capture sont ceux de la référence.
+//! vérification des sauvegardes, comme la 5 (I2-01, migration 0005 : `progression_profile` et `recommendation_decision`, locales, sans
+//! déclencheur) ; la version 6, inconnue de cette app, est refusée. Les déclencheurs de capture sont ceux de la référence.
 
 use std::path::Path;
 
@@ -53,8 +54,8 @@ fn error_code(path: &Path) -> &'static str {
 }
 
 #[test]
-fn i1_03_the_app_schema_version_is_4() {
-    assert_eq!(APP_SCHEMA_VERSION, 4);
+fn i2_01_the_app_schema_version_is_5() {
+    assert_eq!(APP_SCHEMA_VERSION, 5);
 }
 
 #[test]
@@ -147,13 +148,40 @@ fn i1_01_every_published_table_has_its_two_capture_triggers_in_the_reference() {
 }
 
 #[test]
-fn i1_03_a_version_5_backup_is_refused_as_newer_schema() {
+fn i2_01_a_version_5_backup_with_the_local_progression_tables_is_accepted_and_adds_no_trigger() {
     let dir = scratch();
     let path = dir.path().join("v5.db");
+    make_db(&path, 5, &TABLES);
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(
+            "CREATE TABLE workout (id TEXT PRIMARY KEY, ended_at TEXT); CREATE TABLE workout_set (id TEXT PRIMARY KEY, workout_id TEXT); CREATE TABLE progression_profile (id TEXT PRIMARY KEY); CREATE TABLE recommendation_decision (id TEXT PRIMARY KEY);",
+        )
+        .unwrap();
+    for table in ["workout", "workout_set"] {
+        for suffix in ["ai", "au"] {
+            let name = format!("sync_{table}_{suffix}");
+            let sql = trigger_body_for(&name, table, 5).unwrap_or_else(|| panic!("{name}"));
+            Connection::open(&path).unwrap().execute_batch(sql).unwrap();
+        }
+    }
+    for table in ["progression_profile", "recommendation_decision"] {
+        for suffix in ["ai", "au"] {
+            let name = format!("sync_{table}_{suffix}");
+            assert_eq!(trigger_body_for(&name, table, 5), None, "{name}");
+        }
+    }
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 5);
+}
+
+#[test]
+fn i2_01_a_version_6_backup_is_refused_as_newer_schema() {
+    let dir = scratch();
+    let path = dir.path().join("v6.db");
     make_db(&path, 3, &TABLES);
     Connection::open(&path)
         .unwrap()
-        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5);")
+        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5); INSERT INTO schema_migrations (version) VALUES (6);")
         .unwrap();
     assert_eq!(error_code(&path), "newer-schema");
 }

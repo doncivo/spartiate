@@ -294,6 +294,11 @@
       "raison": "Migration I1-03 (déclencheurs gardés de la publication des séances closes, 7 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. Le journal, le résumé et la clôture restent hors du départ."
     },
     {
+      "fichier": "src/db/migrations/0005_progression.ts",
+      "story": "I2-01",
+      "raison": "Migration I2-01 (tables locales progression_profile et recommendation_decision, 3 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. Le moteur de prescription et son repository restent hors du départ (import à la demande)."
+    },
+    {
       "fichier": "src/features/app/ShellChrome.tsx",
       "story": "BUNDLE-01",
       "raison": "SPA-009 : carte d'état de la barre latérale PC et barre supérieure (1,6 Ko source), montées dès le premier rendu de la coquille."

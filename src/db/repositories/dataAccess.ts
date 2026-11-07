@@ -18,6 +18,7 @@ import type { EquipmentProfileRepository } from './equipmentProfileRepository';
 import type { ExerciseRepository } from './exerciseRepository';
 import type { TrainingRoutineRepository } from './trainingRoutineRepository';
 import type { WorkoutRepository } from './workoutRepository';
+import type { ProgressionRepository } from './progressionRepository';
 import type { ProjectRepository, SpaceRepository } from './spaceRepository';
 import type { RecurrenceRepository, TaskRepository } from './taskRepository';
 
@@ -55,6 +56,8 @@ export interface Repositories {
   readonly trainingRoutines: () => Promise<TrainingRoutineRepository>;
   /** I1-02 : séance active locale (jamais publiée avant clôture, D-27), chargée à la demande : `await repos.workouts()`. */
   readonly workouts: () => Promise<WorkoutRepository>;
+  /** I2-01 : historique d'un exercice, profil de progression et décisions (tables locales en 0.3.0), chargé à la demande. */
+  readonly progression: () => Promise<ProgressionRepository>;
   /** Export / import de Spartiate (SPA-005, D-57), chargé à la demande. */
   readonly exportImport: () => Promise<ExportImportRepository>;
   /** Liens locaux aux Rappels Apple (K-05, ADR 0008 §10.2) : table non publiée, vide sur le PC. */
