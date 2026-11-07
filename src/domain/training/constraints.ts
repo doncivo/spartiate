@@ -130,12 +130,13 @@ export function reducedTarget(
   reference: Performance,
   kind: ExerciseKind | undefined,
   config: ProgressionConfig,
-): { readonly targetKg: number; readonly reps: readonly number[] } {
+): { readonly targetKg: number; readonly reps: readonly number[]; readonly recoverySetRemoved: boolean } {
   let sets = reference.reps.length;
   if (c.deload) sets = deloadSetCount(sets);
+  const beforeRecovery = sets;
   if (c.lowRecovery && kind === 'isolation') sets = Math.max(1, sets - 1);
   const factor = (1 - c.inactivityCut) * (c.deload ? config.deloadLoad : 1) * (c.lowRecovery ? config.lowRecoveryLoad : 1);
-  return { targetKg: reference.loadKg * factor, reps: reference.reps.slice(0, sets) };
+  return { targetKg: reference.loadKg * factor, reps: reference.reps.slice(0, sets), recoverySetRemoved: sets < beforeRecovery };
 }
 
 /**

@@ -128,6 +128,27 @@ describe('deload manuel (D-72 point 9)', () => {
     expect(await decisions()).toEqual([]);
   });
 
+  it('deload puis « Modifier » à la charge pleine (100 kg × 8) : la séance n’est PAS exclue des statistiques', async () => {
+    openSession();
+    fireEvent.click(within(await proposal()).getByRole('button', { name: 'Deload pour cette séance' }));
+    await within(await proposal()).findByText('80 kg × 8');
+    fireEvent.click(within(await proposal()).getByRole('button', { name: 'Modifier' }));
+    const p = await proposal();
+    fireEvent.change(within(p).getByLabelText('Charge proposée (kg)'), { target: { value: '100' } });
+    fireEvent.change(within(p).getByLabelText('Répétitions proposées'), { target: { value: '8' } });
+    fireEvent.click(within(p).getByRole('button', { name: 'Enregistrer' }));
+    expect(await within(await proposal()).findByText('Valeurs retenues : 100 kg × 8.')).toBeInTheDocument();
+    const r = await db.data.repos.workouts();
+    for (const set of (await r.get(CURRENT))?.sets ?? []) if (set.loadKg !== null) await r.validateSet(set.id, { reps: 8, loadKg: 100 });
+    cleanup();
+    await db.data.transaction(async (repos) => (await repos.workouts()).close(CURRENT));
+    const history = await (await db.data.repos.progression()).history(BENCH_ID);
+    expect(history.map((s) => [s.workoutId, s.deload === true])).toEqual([
+      [CURRENT, false],
+      [u(1), false],
+    ]);
+  });
+
   it('accepté puis séance close : la séance de deload reste dans l’historique, marquée, et sort des statistiques du moteur', async () => {
     openSession();
     fireEvent.click(within(await proposal()).getByRole('button', { name: 'Deload pour cette séance' }));

@@ -100,7 +100,7 @@ describe('fatigue : baisse de répétitions à charge égale (D-72 point 7)', ()
   it('séries inégales : 30 → 23 répétitions (23,3 %) déclenche ; 30 → 24 (20 %) non', () => {
     const fired = prescribe(input({ history: [session(6, 100, [10, 10, 10]), session(3, 100, [8, 8, 7])] }));
     expect(fired.headline).toBe('fatigue');
-    expect(fired.options[1]).toEqual({ kind: 'fatigue-reps', loadKg: 100, reps: [6, 6, 5] });
+    expect(fired.options?.[1]).toEqual({ kind: 'fatigue-reps', loadKg: 100, reps: [6, 6, 5] });
     const held = prescribe(input({ history: [session(6, 100, [10, 10, 10]), session(3, 100, [8, 8, 8])] }));
     expect(held.reasons).not.toContain('fatigue-drop');
   });
@@ -148,7 +148,7 @@ describe('stagnation (D-72 point 8)', () => {
     const p = prescribe(input({ history: top }));
     expect(p.headline).toBe('increase');
     expect(p.loadKg).toBe(102.5);
-    expect(p.options.at(-1)).toEqual({ kind: 'stall-mini-deload', loadKg: 90, reps: [10, 10, 10] });
+    expect(p.options?.at(-1)).toEqual({ kind: 'stall-mini-deload', loadKg: 90, reps: [10, 10, 10] });
   });
 });
 
@@ -252,6 +252,28 @@ describe('récupération (§ 11.3 ; I2 consomme un snapshot nullable)', () => {
     }
   });
 
+  it('snapshot explicitement `undefined` (donnée non fournie) : identique à l’absence', () => {
+    const none = prescribe(input({ history: hist }));
+    const x = { ...input({ history: hist }), recovery: undefined } as unknown as PrescribeInput;
+    expect(prescribe(x)).toEqual(none);
+  });
+
+  it('phrase et alerte Recovery : pourcentage tiré de lowRecoveryLoad ; la série retirée d’un exercice d’isolation est dite', () => {
+    const main = prescribe(input({ history: hist, recovery: SNAP(0), config: { ...CFG, lowRecoveryLoad: 0.9 } }));
+    expect(main.loadKg).toBe(90);
+    expect(explainPrescription(main)).toEqual({ key: 'recoveryLow', params: { cut: 10 } });
+    const iso = prescribe(input({ exercise: ISO_CURL, history: [session(3, 40, [10, 10, 10])], target: target(8, 12), recovery: SNAP(0) }));
+    expect(iso.reasons).toContain('recovery-set-removed');
+    expect(explainPrescription(iso)).toEqual({ key: 'recoveryLowSet', params: { cut: 5 } });
+    const deload = prescribe(input({ exercise: ISO_CURL, history: [session(3, 40, [10, 10, 10, 10])], target: target(8, 12, 4), recovery: SNAP(0), deload: true }));
+    expect(deload.sets).toHaveLength(1); // 4 → 2 (deload) → 1 (Recovery)
+    expect(constraintAlerts(deload)).toEqual([{ key: 'alertRecoveryLowSet', params: { cut: 5 } }]);
+    // Une seule série : rien à retirer, l'alerte ne le prétend pas.
+    const single = prescribe(input({ exercise: ISO_CURL, history: [session(3, 40, [10])], target: target(8, 12, 1), recovery: SNAP(0) }));
+    expect(single.reasons).not.toContain('recovery-set-removed');
+    expect(explainPrescription(single).key).toBe('recoveryLow');
+  });
+
   it('Recovery 33 sur un exercice principal : charge × 0,95 (95 kg), séries inchangées', () => {
     const p = prescribe(input({ history: hist, recovery: SNAP(33) }));
     expect(p.headline).toBe('recovery-low');
@@ -333,7 +355,7 @@ describe('combinaisons, décisions et stabilité', () => {
       expect(p.loadKg).not.toBeNull();
       expect(p.loadKg ?? Infinity).toBeLessThanOrEqual(p.reference?.loadKg ?? 0);
       expect(p.sets.length).toBeLessThanOrEqual(x.target.sets);
-      for (const o of p.options) if (o.loadKg !== null) expect(o.loadKg).toBeLessThanOrEqual(p.loadKg ?? 0);
+      for (const o of p.options ?? []) if (o.loadKg !== null) expect(o.loadKg).toBeLessThanOrEqual(p.loadKg ?? 0);
     }
   });
 
@@ -344,9 +366,9 @@ describe('combinaisons, décisions et stabilité', () => {
     expect(b).toEqual(a);
     const ranks = a.reasons.map((r) => REASON_ORDER.indexOf(r));
     expect([...ranks].sort((x, y) => x - y)).toEqual(ranks);
-    const order = a.options.map((o) => PROPOSAL_OPTION_ORDER.indexOf(o.kind));
+    const order = (a.options ?? []).map((o) => PROPOSAL_OPTION_ORDER.indexOf(o.kind));
     expect([...order].sort((x, y) => x - y)).toEqual(order);
-    expect(a.options.map((o) => o.kind)).toEqual(['fatigue-load', 'fatigue-reps', 'stall-variant', 'stall-range', 'stall-mini-deload']);
+    expect((a.options ?? []).map((o) => o.kind)).toEqual(['fatigue-load', 'fatigue-reps', 'stall-variant', 'stall-range', 'stall-mini-deload']);
   });
 
   it('aucune mutation de l’entrée (historique gelé en profondeur)', () => {
@@ -377,7 +399,7 @@ describe('explication : une phrase par proposition et par choix', () => {
   it('phrase principale de chaque contrainte', () => {
     expect(explainPrescription(prescribe(input({ history: [session(6, 100, [10, 10, 10]), session(3, 100, [7, 7, 7])] })))).toEqual({ key: 'fatigue', params: {} });
     expect(explainPrescription(prescribe(input({ exercise: LEG_PRESS, history: [session(28, 100, [8, 8, 8])] })))).toEqual({ key: 'inactivity', params: { cut: 2 } });
-    expect(explainPrescription(prescribe(input({ history: [session(3, 100, [8, 8, 8])], recovery: SNAP(0) })))).toEqual({ key: 'recoveryLow', params: {} });
+    expect(explainPrescription(prescribe(input({ history: [session(3, 100, [8, 8, 8])], recovery: SNAP(0) })))).toEqual({ key: 'recoveryLow', params: { cut: 5 } });
   });
 
   it('chaque choix a sa phrase ; la stagnation s’annonce en alerte', () => {

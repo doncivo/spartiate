@@ -69,7 +69,7 @@ describe('propriétés du moteur', () => {
         expect(p.loadKg).toBeLessThanOrEqual(p.reference.loadKg);
         expect(p.sets.length).toBeLessThanOrEqual(x.target.sets);
         expect(p.sets.length).toBeGreaterThanOrEqual(1);
-        for (const o of p.options) if (o.loadKg !== null) expect(o.loadKg).toBeLessThanOrEqual(p.loadKg);
+        for (const o of p.options ?? []) if (o.loadKg !== null) expect(o.loadKg).toBeLessThanOrEqual(p.loadKg);
       }),
     );
   });
