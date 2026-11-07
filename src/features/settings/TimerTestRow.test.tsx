@@ -164,3 +164,17 @@ describe('Tester le minuteur (60 s)', () => {
     expect(screen.queryByRole('button', { name: 'Arrêter' })).toBeNull();
   });
 });
+
+describe('0.2.3 : texte de la ligne selon l’appareil', () => {
+  it('PC : ne promet ni Live Activity ni Dynamic Island sur cet appareil', async () => {
+    const f = fakes();
+    open({ os: 'other', notifier: f.notifier, liveActivity: f.liveActivity });
+    const hint = await screen.findByText(/minuteur dans l’app/i);
+    expect(hint.textContent).toMatch(/sur l’iPhone/);
+  });
+  it('iPhone : la ligne décrit la Live Activity', async () => {
+    const f = fakes();
+    open({ os: 'ios', notifier: f.notifier, liveActivity: f.liveActivity });
+    expect(await screen.findByText(/Dynamic Island/)).toBeTruthy();
+  });
+});
