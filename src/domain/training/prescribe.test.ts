@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CURL, LEG_PRESS, NOW, PLANK, STACK_GYM, daysAgo, input, session, set, target } from '../../../tests/fixtures/training/progression';
+import { CURL, CURL_EZ, DEADLIFT_TRAP, KETTLEBELL_GYM, LEG_PRESS, NOW, PLANK, STACK_GYM, SWING, daysAgo, input, session, set, target } from '../../../tests/fixtures/training/progression';
 import { DEFAULT_PROGRESSION_CONFIG, ENGINE_VERSION, PRESCRIPTION_HEADLINES, REASON_ORDER } from './config';
 import { positionMultiplier, prescribe, primaryMuscle } from './prescribe';
 import type { ExerciseSession, Prescription } from './types';
@@ -337,21 +337,45 @@ describe('cas limites (passe qa-test)', () => {
     expect(p.reasons).toEqual(['history-reference', 'top-reached']);
   });
 
-  it('kettlebell au maximum du profil (34 kg) : pas de hausse ; décision sans reps : reps au bas de la plage', () => {
-    const kb = { id: 'swing-kettlebell', metric: 'load-reps', equipment: ['kettlebell'] } as const;
-    const p = prescribe(input({ exercise: kb, history: [session(3, 34, [10, 10, 10])] }));
+  it('kettlebell au maximum d’une liste vérifiée (34 kg) : pas de hausse ; décision sans reps : reps au bas de la plage', () => {
+    const p = prescribe(input({ exercise: SWING, equipment: KETTLEBELL_GYM, history: [session(3, 34, [10, 10, 10])] }));
     expect(p.loadKg).toBe(34);
     expect(p.reasons).toContain('equipment-max');
     const d = prescribe(input({ lastDecision: { decidedAt: NOW, accepted: false, loadKg: 20, reps: [] } }));
     expect(d.sets).toEqual([{ reps: 8, loadKg: 20 }, { reps: 8, loadKg: 20 }, { reps: 8, loadKg: 20 }]);
   });
 
-  it('kettlebell sous le maximum : cran vers la charge suivante de la liste (4 → 34 kg plafonné) ', () => {
-    const kb = { id: 'swing-kettlebell', metric: 'load-reps', equipment: ['kettlebell'] } as const;
-    const p = prescribe(input({ exercise: kb, history: [session(3, 4, [10, 10, 10])] }));
+  // Liste vérifiée (KETTLEBELL_GYM) : avec Fitness Park Antony, les kettlebells sont à pas inconnu (test suivant), d’où le profil explicite.
+  it('kettlebell sous le maximum d’une liste vérifiée : cran vers la charge suivante (4 → 34 kg plafonné)', () => {
+    const p = prescribe(input({ exercise: SWING, equipment: KETTLEBELL_GYM, history: [session(3, 4, [10, 10, 10])] }));
     expect(p.loadKg).toBe(4);
     expect(reps(p)).toEqual([11, 10, 10]);
     expect(p.reasons).toEqual(['history-reference', 'top-reached', 'gain-capped']);
+  });
+
+  it('kettlebells à pas inconnu (Fitness Park Antony) : cran supposé, signalé increment-unknown, jamais 34 kg après 16 kg', () => {
+    const p = prescribe(input({ exercise: SWING, history: [session(3, 16, [10, 10, 10])] }));
+    expect(p.loadKg).toBe(18.5);
+    expect(p.reasons).toEqual(['history-reference', 'top-reached', 'increment-unknown']);
+  });
+
+  it('barre EZ (8,5 kg) : 21 kg = 8,5 + 2 × 6,25 au haut de la plage → 23,5 kg, jamais 22,5 kg', () => {
+    const p = prescribe(input({ exercise: CURL_EZ, history: [session(3, 21, [12, 12, 12])], target: target(8, 12) }));
+    expect(p.loadKg).toBe(23.5);
+    expect(p.loadKg).not.toBe(22.5);
+    expect(p.reasons).toEqual(['history-reference', 'top-reached']);
+  });
+
+  it('barre hexagonale (18 kg) : 63 kg × 8-8-8 en 6-8 → 65,5 kg', () => {
+    const p = prescribe(input({ exercise: DEADLIFT_TRAP, history: [session(3, 63, [8, 8, 8])], target: target(6, 8) }));
+    expect(p.loadKg).toBe(65.5);
+  });
+
+  it('barre non reliée à un matériel : aucune grille, cran supposé signalé', () => {
+    const unlinked = { inventory: { ...KETTLEBELL_GYM.inventory, barbells: [{ type: 'Barre', weightKg: 20 }] }, increments: KETTLEBELL_GYM.increments };
+    const p = prescribe(input({ equipment: unlinked, history: [session(3, 60, [10, 10, 10])] }));
+    expect(p.loadKg).toBe(62.5);
+    expect(p.reasons).toEqual(['history-reference', 'top-reached', 'increment-unknown']);
   });
 
   it('paire d’haltères hors grille (9 kg) : la référence reste disponible, recalibrage +5 % → 9 kg et une rep de plus', () => {

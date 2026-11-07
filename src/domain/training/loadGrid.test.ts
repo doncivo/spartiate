@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { BENCH, CURL, FITNESS_PARK_ANTONY, LEG_PRESS, STACK_GYM } from '../../../tests/fixtures/training/progression';
+import { BENCH, CURL, CURL_EZ, DEADLIFT_TRAP, FITNESS_PARK_ANTONY, KETTLEBELL_GYM, LEG_PRESS, STACK_GYM, SWING } from '../../../tests/fixtures/training/progression';
 import { DEFAULT_PROGRESSION_CONFIG as CFG } from './config';
 import { loadGrid, nextLoadAbove, snapDown, snapToEquipment } from './loadGrid';
 import type { ProgressionEquipment } from './types';
@@ -38,7 +38,29 @@ describe('charges disponibles d’un exercice (profil par défaut Fitness Park A
   it('poulie sans plage déclarée, ou aucun profil : aucune grille ; kettlebells : la liste du profil', () => {
     expect(loadGrid(['high-pulley'], FITNESS_PARK_ANTONY)).toBeNull();
     expect(loadGrid(BENCH.equipment, null)).toBeNull();
-    expect(loadGrid(['kettlebell'], FITNESS_PARK_ANTONY)).toEqual({ source: 'kettlebell', loads: [4, 34] });
+    expect(loadGrid(['kettlebell'], KETTLEBELL_GYM)).toEqual({ source: 'kettlebell', loads: [4, 34] });
+  });
+
+  it('chaque barre est reliée à son matériel : barre EZ 8,5 kg, barre hexagonale 18 kg, barre droite = première barre « barbell »', () => {
+    const ez = loadGrid(CURL_EZ.equipment, FITNESS_PARK_ANTONY);
+    expect(ez?.source).toBe('barbell');
+    expect(ez?.loads.slice(0, 4)).toEqual([8.5, 11, 13.5, 16]);
+    expect(ez?.loads).toContain(21);
+    expect(ez?.loads).not.toContain(22.5);
+    expect(loadGrid(DEADLIFT_TRAP.equipment, FITNESS_PARK_ANTONY)?.loads.slice(0, 3)).toEqual([18, 20.5, 23]);
+    expect(loadGrid(BENCH.equipment, FITNESS_PARK_ANTONY)?.loads[0]).toBe(20);
+  });
+
+  it('barre absente du profil ou non reliée à un matériel : aucune grille', () => {
+    const unlinked: ProgressionEquipment = { inventory: { ...FITNESS_PARK_ANTONY.inventory, barbells: [{ type: 'Barre olympique', weightKg: 20 }] }, increments: FITNESS_PARK_ANTONY.increments };
+    expect(loadGrid(BENCH.equipment, unlinked)).toBeNull();
+    const noEz: ProgressionEquipment = { inventory: { ...FITNESS_PARK_ANTONY.inventory, barbells: [{ type: 'Barre olympique', weightKg: 20, equipmentId: 'barbell' }] }, increments: FITNESS_PARK_ANTONY.increments };
+    expect(loadGrid(CURL_EZ.equipment, noEz)).toBeNull();
+  });
+
+  it('kettlebells à pas inconnu (« à vérifier ») : aucune grille, pas de [4, 34] trompeuse', () => {
+    expect(loadGrid(SWING.equipment, FITNESS_PARK_ANTONY)).toBeNull();
+    expect(loadGrid(SWING.equipment, KETTLEBELL_GYM)?.loads).toEqual([4, 34]);
   });
 
   it('le premier matériel de l’exercice qui fournit une grille l’emporte', () => {
@@ -52,6 +74,7 @@ describe('charges disponibles d’un exercice (profil par défaut Fitness Park A
       increments: {},
     };
     expect(loadGrid(['barbell'], plates)?.loads).toEqual([20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70]);
+    expect(loadGrid(['barbell'], { inventory: { ...plates.inventory, barbells: [] }, increments: {} })).toBeNull();
     expect(loadGrid(['barbell'], { inventory: { ...plates.inventory, platesPerSideKg: [] }, increments: {} })).toBeNull();
   });
 });

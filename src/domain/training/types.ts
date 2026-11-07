@@ -98,6 +98,8 @@ export type CustomExerciseInput = Omit<ExerciseBase, 'schemaVersion'>;
 export interface BarbellSpec {
   readonly type: string;
   readonly weightKg: number;
+  /** Matériel du catalogue fermé que cette barre réalise (`barbell`, `ez-bar`, `trap-bar`…) ; absent : barre non reliée, aucune grille de charges (I2-01). */
+  readonly equipmentId?: string;
 }
 export interface PlateSpec {
   readonly weightKg: number;

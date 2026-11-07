@@ -19,17 +19,24 @@ export const FITNESS_PARK_ANTONY: ProgressionEquipment = {
     forbidden: [],
     bodyweight: true,
     barbells: [
-      { type: 'Barre olympique', weightKg: 20 },
-      { type: 'Petite barre droite', weightKg: 8 },
+      { type: 'Barre olympique', weightKg: 20, equipmentId: 'barbell' },
+      { type: 'Petite barre droite', weightKg: 8, equipmentId: 'barbell' },
+      { type: 'Barre EZ', weightKg: 8.5, equipmentId: 'ez-bar' },
+      { type: 'Barre hexagonale', weightKg: 18, equipmentId: 'trap-bar' },
     ],
     platesPerSideKg: [1.25, 2.5, 5, 10, 15, 20, 25, 30].map((weightKg) => ({ weightKg, count: 1 })),
     dumbbells: { minKg: 2, maxKg: 50, stepKg: 2 },
     kettlebellsKg: [4, 34],
     machines: [],
     cables: [],
+    // Kettlebells 4 à 34 kg, pas inconnu (« à vérifier » dans le profil embarqué).
+    toVerify: ['kettlebells'],
   },
   increments: { barbell: 2.5, dumbbell: 2 },
 };
+
+/** Salle aux kettlebells vérifiées (4 et 34 kg seulement). */
+export const KETTLEBELL_GYM: ProgressionEquipment = { inventory: { ...FITNESS_PARK_ANTONY.inventory, toVerify: [] }, increments: FITNESS_PARK_ANTONY.increments };
 
 /** Salle avec une machine à charges guidées par pas de 5 kg (vecteur « stack 5 kg » du § 11.6). */
 export const STACK_GYM: ProgressionEquipment = {
@@ -40,6 +47,9 @@ export const STACK_GYM: ProgressionEquipment = {
 export const BENCH = { id: 'bench-press-barbell', metric: 'load-reps', equipment: ['barbell', 'flat-bench'] } as const;
 export const CURL = { id: 'curl-dumbbell', metric: 'load-reps', equipment: ['dumbbell'] } as const;
 export const LEG_PRESS = { id: 'leg-press', metric: 'load-reps', equipment: ['leg-press-machine'] } as const;
+export const CURL_EZ = { id: 'curl-ez-bar', metric: 'load-reps', equipment: ['ez-bar'] } as const;
+export const DEADLIFT_TRAP = { id: 'deadlift-trap-bar', metric: 'load-reps', equipment: ['trap-bar'] } as const;
+export const SWING = { id: 'swing-kettlebell', metric: 'load-reps', equipment: ['kettlebell'] } as const;
 export const PLANK = { id: 'plank', metric: 'time', equipment: [] } as const;
 
 /** Série de travail validée. */
