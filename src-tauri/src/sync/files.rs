@@ -1211,3 +1211,34 @@ mod imp {
         }
     }
 }
+
+#[cfg(test)]
+mod io_event_tests {
+    //! 0.2.4 point 2 : la cause d'une erreur d'E/S donne un nom d'événement fixe (jamais de chemin ni de message).
+    use super::{io_event_for_error, io_event_for_status};
+
+    #[test]
+    fn statuts_nt_connus() {
+        assert_eq!(io_event_for_status(0xC000_0043_u32 as i32), "io-sharing-violation");
+        assert_eq!(io_event_for_status(0xC000_0022_u32 as i32), "io-access-denied");
+        assert_eq!(io_event_for_status(0xC000_0056_u32 as i32), "io-delete-pending");
+        assert_eq!(io_event_for_status(0xC000_0001_u32 as i32), "io-other");
+        assert_eq!(io_event_for_status(0), "io-other");
+    }
+
+    #[test]
+    fn erreurs_std_par_genre() {
+        let denied = std::io::Error::from(std::io::ErrorKind::PermissionDenied);
+        assert_eq!(io_event_for_error(&denied), "io-access-denied");
+        let other = std::io::Error::from(std::io::ErrorKind::InvalidData);
+        assert_eq!(io_event_for_error(&other), "io-other");
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn codes_windows_bruts() {
+        assert_eq!(io_event_for_error(&std::io::Error::from_raw_os_error(32)), "io-sharing-violation");
+        assert_eq!(io_event_for_error(&std::io::Error::from_raw_os_error(5)), "io-access-denied");
+        assert_eq!(io_event_for_error(&std::io::Error::from_raw_os_error(303)), "io-delete-pending");
+    }
+}
