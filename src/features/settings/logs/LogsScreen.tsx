@@ -99,7 +99,7 @@ export function LogsScreen({ journal: injected, version }: LogsScreenProps = {})
       // 0.2.4 point 3 : bilan de synchro en tête (compteurs seulement) ; une lecture en échec n'empêche jamais l'export.
       const report: SyncReport | SyncReportUnavailable = await readSyncReport(container.data.repos).catch((error: unknown): SyncReportUnavailable => {
         const code = typeof error === 'object' && error !== null ? (error as { code?: unknown }).code : undefined;
-        return { unavailable: typeof code === 'string' ? code : 'io' };
+        return { unavailable: typeof code === 'string' && /^[a-z0-9-]+$/i.test(code) ? code : 'io' };
       });
       const file = buildLogExport(all, { version: appVersion, os: container.platform.os, schemaVersion: migrations.at(-1)?.version ?? 0, now: new Date(container.clock.nowMs()), report });
       const outcome = await saveFile(container.files, { suggestedName: file.name, mime: 'text/plain', data: new TextEncoder().encode(file.text) }, 'logs-export');

@@ -410,7 +410,11 @@ export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, cat
       const count = async (sql: string): Promise<number> => Number((await db.select<{ n: number }>(sql))[0]?.n ?? 0);
       const rows = {} as Record<SyncReportTable, number>;
       // Noms de tables fixes (liste ci-dessus) : jamais une valeur venue de l'extérieur.
-      for (const table of REPORT_TABLES) rows[table] = await count(`SELECT COUNT(*) AS n FROM ${table} WHERE deleted_at IS NULL${table === 'workout' ? ' AND ended_at IS NOT NULL' : ''}`);
+      for (const table of REPORT_TABLES) {
+        // Séances closes seulement : les séries comptées sont celles de séances closes (une séance ouverte reste locale).
+        if (table === 'workout_set') rows[table] = await count('SELECT COUNT(*) AS n FROM workout_set s JOIN workout w ON w.id = s.workout_id WHERE s.deleted_at IS NULL AND w.deleted_at IS NULL AND w.ended_at IS NOT NULL');
+        else rows[table] = await count(`SELECT COUNT(*) AS n FROM ${table} WHERE deleted_at IS NULL${table === 'workout' ? ' AND ended_at IS NOT NULL' : ''}`);
+      }
       return {
         outbox: await count('SELECT COUNT(*) AS n FROM sync_outbox'),
         unknown: await count('SELECT COUNT(*) AS n FROM sync_unknown'),

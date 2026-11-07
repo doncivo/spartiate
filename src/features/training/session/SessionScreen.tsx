@@ -40,7 +40,7 @@ async function read(access: DataAccess): Promise<{ workout: WorkoutWithSets | nu
   const closed = await workouts.getClosed(ask);
   const diff = closed === null ? null : await workouts.routineChanges(ask);
   if (closed === null || diff === null || !diff.hasChanges) {
-    await access.repos.settings.set('training.routineUpdateAsk', null);
+    await access.repos.settings.set('training.routineUpdateAsk', null).catch(() => undefined);
     return base;
   }
   return { ...base, closed: { workout: closed, summary: await workouts.summary(ask), routineDiff: diff, alreadyClosed: true } };
