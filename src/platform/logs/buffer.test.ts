@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createLogJournal } from './buffer';
 import { createMemoryLogTransport } from './memory';
-import { LOG_BATCH_SIZE, LOG_BUFFER_SIZE, LOG_FLUSH_MS } from './types';
+import { LOG_BATCH_SIZE, LOG_BUFFER_SIZE, LOG_FLUSH_MS, LOG_READ_MAX, LOG_VIEW_MAX } from './types';
 
 /** Document et fenêtre minimaux : visibilité pilotée par le test. */
 function fakeEnv() {
@@ -120,6 +120,20 @@ describe('I-04 : tampon et vidage du journal (ADR 0014 §3)', () => {
     expect(journal.persistent).toBe(false);
     expect((await journal.read()).map((entry) => entry.code)).toEqual(['x']);
     expect(journal.status()).toEqual({ writeError: null, readError: null });
+    journal.dispose();
+  });
+});
+
+describe('0.2.4 point 4 : lecture jusqu’à 2 000 entrées', () => {
+  it('LOG_READ_MAX vaut 2 000 ; le transport rend les plus récentes, l’écran en demande 500', async () => {
+    expect(LOG_READ_MAX).toBe(2000);
+    expect(LOG_VIEW_MAX).toBe(500);
+    const transport = createMemoryLogTransport(Array.from({ length: 2500 }, (_, i) => ({ at: '2026-10-08T07:00:00.000Z', scope: 'sync', code: `e${String(i)}`, detail: '' })));
+    const journal = createLogJournal(transport, { document: null, window: null });
+    const all = await journal.read();
+    expect(all).toHaveLength(2000);
+    expect(all.at(-1)?.code).toBe('e2499');
+    expect(await journal.read(LOG_VIEW_MAX)).toHaveLength(500);
     journal.dispose();
   });
 });
