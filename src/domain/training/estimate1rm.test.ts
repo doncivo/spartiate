@@ -27,9 +27,9 @@ describe('poids d’une série (0,25 au-delà de 15 reps ou sous 60 % du 1RM cou
 });
 
 describe('1RM courant : moyenne pondérée des trois dernières séances (1 / 0,6 / 0,3)', () => {
-  it('100, 110, 120 du plus récent au plus ancien : 105,263…', () => {
+  it('100, 110, 120 du plus récent au plus ancien : (100 + 66 + 36) / 1,9 = 106,315… (la préparation P-10 écrivait 105,263 : erreur d’arithmétique)', () => {
     const v = current1rmFromSessions([{ e1rmKg: 100, quality: 1 }, { e1rmKg: 110, quality: 1 }, { e1rmKg: 120, quality: 1 }], CFG);
-    expect(v).toBeCloseTo(105.2632, 4);
+    expect(v).toBeCloseTo(106.3158, 4);
   });
 
   it('une séance pondérée 0,25 garde son poids réduit : (100 + 110×0,6×0,25 + 120×0,3) / 1,45 = 105,172…', () => {
@@ -39,7 +39,7 @@ describe('1RM courant : moyenne pondérée des trois dernières séances (1 / 0,
 
   it('la quatrième séance est ignorée ; une seule séance vaut sa valeur ; aucune séance : null', () => {
     const three = [{ e1rmKg: 100, quality: 1 }, { e1rmKg: 110, quality: 1 }, { e1rmKg: 120, quality: 1 }];
-    expect(current1rmFromSessions([...three, { e1rmKg: 300, quality: 1 }], CFG)).toBeCloseTo(105.2632, 4);
+    expect(current1rmFromSessions([...three, { e1rmKg: 300, quality: 1 }], CFG)).toBeCloseTo(106.3158, 4);
     expect(current1rmFromSessions([{ e1rmKg: 90, quality: 0.25 }], CFG)).toBe(90);
     expect(current1rmFromSessions([], CFG)).toBeNull();
   });
