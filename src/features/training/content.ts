@@ -120,7 +120,7 @@ interface JsonProfile {
   readonly kind: string;
   readonly equipment: readonly string[];
   readonly inventory: {
-    readonly barbells: readonly { readonly label: string; readonly weightKg: number | null; readonly toVerify: boolean }[];
+    readonly barbells: readonly { readonly equipmentId: string; readonly label: string; readonly weightKg: number | null; readonly toVerify: boolean }[];
     readonly platesPerSideKg: readonly number[] | null;
     readonly dumbbells: JsonRange | null;
     readonly kettlebells: JsonRange | null;
@@ -177,7 +177,7 @@ export function toEmbeddedProfile(json: JsonProfile): EmbeddedProfile {
   const toVerify: string[] = [];
   const barbells = inv.barbells.flatMap((b) => {
     if (b.toVerify || b.weightKg === null) toVerify.push(`barbell:${b.label}`);
-    return positive(b.weightKg) ? [{ type: b.label, weightKg: b.weightKg }] : [];
+    return positive(b.weightKg) ? [{ type: b.label, weightKg: b.weightKg, equipmentId: b.equipmentId }] : [];
   });
   const plates = (inv.platesPerSideKg ?? []).filter(positive).map((weightKg) => ({ weightKg, count: 1 }));
   if (plates.length > 0) toVerify.push('plates');

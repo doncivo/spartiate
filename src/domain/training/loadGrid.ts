@@ -6,7 +6,8 @@ import type { ProgressionEquipment, StackRange } from './types';
  *
  * Arrondi : charge disponible juste en dessous de la cible ; si l'écart rapporté à cette charge dépasse strictement 3 %, une répétition
  * de plus par série. Une grille vient du premier matériel de l'exercice qui en fournit une (barre, haltères, kettlebells, machine ou
- * poulie déclarée) ; un matériel sans palier connu n'en a pas (`null`).
+ * poulie déclarée) ; un matériel sans palier connu n'en a pas (`null`) : barre non reliée à ce matériel (`BarbellSpec.equipmentId`),
+ * kettlebells « à vérifier », machine ou poulie sans plage.
  */
 
 export type LoadSource = 'barbell' | 'dumbbell' | 'kettlebell' | 'machine' | 'cable';
@@ -38,9 +39,10 @@ function stepped(min: number, max: number, step: number): number[] {
 
 const fromRange = (r: StackRange): number[] => stepped(r.minKg, r.maxKg, r.stepKg);
 
-function barbellLoads(profile: ProgressionEquipment): number[] {
+/** Barre reliée au matériel de l'exercice (première déclarée pour ce matériel) ; aucune barre reliée : aucune grille. */
+function barbellLoads(profile: ProgressionEquipment, equipmentId: string): number[] {
   const inv = profile.inventory;
-  const bar = inv.barbells[0];
+  const bar = inv.barbells.find((b) => b.equipmentId === equipmentId);
   if (bar === undefined) return [];
   const smallestPlate = Math.min(...inv.platesPerSideKg.map((p) => p.weightKg));
   const step = profile.increments.barbell ?? (Number.isFinite(smallestPlate) ? 2 * smallestPlate : Number.NaN);
@@ -54,9 +56,10 @@ export function loadGrid(equipment: readonly string[], profile: ProgressionEquip
   const inv = profile.inventory;
   for (const id of equipment) {
     let grid: LoadGrid | null = null;
-    if (BARBELL_IDS.has(id)) grid = { source: 'barbell', loads: barbellLoads(profile) };
+    if (BARBELL_IDS.has(id)) grid = { source: 'barbell', loads: barbellLoads(profile, id) };
     else if (id === 'dumbbell' && inv.dumbbells !== null) grid = { source: 'dumbbell', loads: fromRange(inv.dumbbells) };
-    else if (id === 'kettlebell') grid = { source: 'kettlebell', loads: [...new Set(inv.kettlebellsKg.filter((k) => k > 0))].sort((a, b) => a - b) };
+    // Kettlebells « à vérifier » (pas inconnu : seules les bornes sont connues) : aucune grille plutôt qu'une liste trompeuse.
+    else if (id === 'kettlebell' && !(inv.toVerify ?? []).includes('kettlebells')) grid = { source: 'kettlebell', loads: [...new Set(inv.kettlebellsKg.filter((k) => k > 0))].sort((a, b) => a - b) };
     else if (CABLE_IDS.has(id) && inv.cables[0] !== undefined) grid = { source: 'cable', loads: fromRange(inv.cables[0]) };
     else {
       const machine = inv.machines.find((m) => m.equipmentId === id);
