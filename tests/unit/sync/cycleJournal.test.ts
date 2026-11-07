@@ -95,3 +95,14 @@ describe('journal de synchro : étape des échecs', () => {
     expect(failed.at(-1)?.detail).toMatchObject({ code: 'io', stage: 'scan' });
   });
 });
+
+describe('journal de synchro : détail borné (relecture D-26, point 4)', () => {
+  it('une liste de tables trop longue est coupée avec « +n » avant les 300 caractères du journal', async () => {
+    const { describeTables } = await import('../../../src/sync/engine');
+    const many = new Map(Array.from({ length: 40 }, (_, i) => [`table_numero_${String(i)}`, 12] as [string, number]));
+    const text = describeTables(many);
+    expect(text.length).toBeLessThanOrEqual(200);
+    expect(text).toMatch(/,\+\d+$/);
+    expect(describeTables(new Map([['workout', 1], ['workout_set', 3]]))).toBe('workout:1,workout_set:3');
+  });
+});
