@@ -117,7 +117,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     if (editing !== null) editLoad.current?.focus();
   }, [editing !== null]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const target = useMemo(() => targetOf(sets, exercise), [sets, exercise]);
+  // La séance se redessine chaque seconde (chrono) : la cible n'est recalculée, et le moteur rappelé, que si ses valeurs changent.
+  const computed = targetOf(sets, exercise);
+  const target = useMemo(() => computed, [computed.sets, computed.repMin, computed.repMax]); // eslint-disable-line react-hooks/exhaustive-deps
   const ownDecision = load.status === 'ready' && load.decision !== null && load.decision.workoutId === workout.id ? load.decision : null;
 
   const prescription = useMemo((): Prescription | null => {
