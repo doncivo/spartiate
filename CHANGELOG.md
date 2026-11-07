@@ -2,6 +2,16 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.3.2
+
+- Séance : la **Proposition** tient compte de ta forme du moment, toujours pour maintenir ou alléger, jamais pour ajouter. Une phrase dit pourquoi, et les autres signaux s’affichent en texte juste en dessous.
+- **Fatigue** : si tu as fait plus de 20 % de répétitions en moins qu’à la dernière séance à la même charge (20 % pile ne compte pas), la proposition garde ta charge et tes répétitions, sans hausse. Deux **choix facultatifs** s’affichent : « −5 % de charge » ou « 2 répétitions de moins par série ». Aucun n’est appliqué tout seul : « Choisir » remplit les séries à faire, « Accepter » garde la proposition, « Refuser » ne remplit rien.
+- **3 séances sans progrès** : trois pistes facultatives : essayer une variante de l’exercice, changer de plage de répétitions dans la routine, ou un mini-deload à −10 % (le seul des trois qu’on peut choisir d’un geste).
+- **Pause** : à partir de 3 semaines sans travailler l’exercice, la charge baisse de 1 % par semaine au-delà de 2 semaines, jusqu’à −10 % au plus. Une séance manquée n’est pas comptée comme un recul. Pour l’instant la pause se mesure sur l’exercice lui-même, pas encore sur le muscle travaillé par d’autres exercices.
+- **Deload pour cette séance** (bouton facultatif sous la proposition) : moitié des séries arrondie en dessous (au moins une), charge × 0,8, au moins 4 répétitions en réserve. Une fois retenue, la séance reste dans ton historique, mais ne compte pas pour les propositions suivantes.
+- Récupération (Recovery, sommeil, FC de repos) : le moteur sait la prendre en compte (−5 % de charge et une série de moins sur un exercice d’isolation si elle est basse), mais rien ne l’alimente encore. Elle arrivera avec Apple Santé (I5) ; d’ici là, aucune valeur n’est inventée.
+- Ta saisie l’emporte toujours, et chaque choix est enregistré avec la séance (accepté, modifié, choix facultatif ou refus). Pas de mise à jour de la base ; mets quand même à jour le PC et l’iPhone le même jour : un appareil resté en 0.3.1 compterait une séance de deload comme une séance normale. PC : bannière de mise à jour dans l’app ; iPhone : SideStore.
+
 ## 0.3.1
 
 - Séance : chaque exercice affiche maintenant une **Proposition** — charge et répétitions pour chaque série (ex. « 62,5 kg × 8 · 8 · 8 »), une phrase qui dit pourquoi (ex. « +2,5 kg : 3 × 10 atteint la dernière fois. ») et la confiance (« Confiance 50 % (moyenne) »). Un exercice jamais fait affiche « À saisir » : aucune charge n’est inventée. Les exercices au poids du corps ou chronométrés n’ont pas de proposition.
