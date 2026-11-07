@@ -181,7 +181,7 @@ describe('ProgressionRepository : décisions', () => {
     ]);
   });
 
-  it('revue #61 (D-27) : décision d’une séance ouverte, supprimée ou sans séance : jamais référence ni capturée ; decisionFor la rend pour sa séance ; discard l’efface', async () => {
+  it('revue #61 (D-27) : décision d’une séance ouverte, supprimée ou sans séance : jamais référence ; ouverte ou sans séance : jamais capturée ; decisionFor la rend pour sa séance ; discard l’efface', async () => {
     db = await openBaseDb(DEVICE);
     await workout(u(1), day(1));
     await workout(u(2), day(2), day(3));
@@ -199,7 +199,7 @@ describe('ProgressionRepository : décisions', () => {
     expect((await r.lastDecision('bench-press-barbell'))?.id).toBe(u(901));
     expect((await r.decisionFor(u(3), 'bench-press-barbell'))?.id).toBe(u(904));
     expect(await r.decisionFor(u(3), 'row-barbell')).toBeNull();
-    expect((await db.driver.select<{ row_id: string }>("SELECT row_id FROM sync_outbox WHERE table_name = 'recommendation_decision'")).map((x) => x.row_id)).toEqual([u(901)]);
+    expect((await db.driver.select<{ row_id: string }>("SELECT row_id FROM sync_outbox WHERE table_name = 'recommendation_decision'")).map((x) => x.row_id).sort()).toEqual([u(901), u(902)]);
     await w.discard(u(3));
     expect(await r.decisionFor(u(3), 'bench-press-barbell')).toBeNull();
     expect(await db.driver.select('SELECT id FROM recommendation_decision WHERE workout_id = ?', [u(3)])).toEqual([]);

@@ -81,9 +81,10 @@ const profile = async (d: SimDevice, confidence: number) =>
   (await d.data.repos.progression()).saveProfile({ exerciseId: 'bench-press-barbell', estimated1rmKg: 80, confidence, lastEasyRecalibrationAt: null, engineVersion: 1 });
 
 describe('catalogue de production : tables de progression (I2-01)', () => {
-  it('ordre : … workout, workout_set, puis progression_profile, recommendation_decision ; aucun parent (références logiques)', () => {
+  it('ordre : … workout, workout_set, puis progression_profile (sans parent), recommendation_decision (enfant de sa séance, revue #61)', () => {
     expect(SYNC_TABLE_ORDER.slice(-3)).toEqual(['workout_set', 'progression_profile', 'recommendation_decision']);
-    for (const name of ['progression_profile', 'recommendation_decision']) expect(SYNC_CATALOGUE.table(name)?.parents, name).toEqual([]);
+    expect(SYNC_CATALOGUE.table('progression_profile')?.parents).toEqual([]);
+    expect(SYNC_CATALOGUE.table('recommendation_decision')?.parents).toEqual([{ column: 'workout_id', table: 'workout' }]);
   });
 
   it('progression_profile : identité naturelle progression|<exercice>, sans repli UUID ; identifiant attendu tiré de exercise_id', () => {

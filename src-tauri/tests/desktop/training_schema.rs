@@ -202,7 +202,14 @@ fn i2_01_a_version_6_backup_with_the_published_progression_tables_is_accepted() 
         )
         .unwrap();
     for (table, names) in [
-        ("workout", &["sync_workout_ai", "sync_workout_au"][..]),
+        (
+            "workout",
+            &[
+                "sync_workout_ai",
+                "sync_workout_au",
+                "sync_workout_close_decisions_au",
+            ][..],
+        ),
         (
             "workout_set",
             &[
@@ -233,6 +240,7 @@ fn i2_01_the_version_6_triggers_do_not_exist_before_version_6() {
         ("sync_recommendation_decision_ai", "recommendation_decision"),
         ("sync_recommendation_decision_au", "recommendation_decision"),
         ("sync_workout_set_difficulty_au", "workout_set"),
+        ("sync_workout_close_decisions_au", "workout"),
     ] {
         assert_eq!(trigger_body_for(name, table, 5), None, "{name}");
         assert!(trigger_body_for(name, table, 6).is_some(), "{name}");

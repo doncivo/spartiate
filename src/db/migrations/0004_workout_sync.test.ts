@@ -65,11 +65,11 @@ describe('migration 0004 : workout_sync (I1-03, D-27)', () => {
     for (const [table, columns] of CAPTURE_TABLES_V4) expect([...columns], table).toEqual([...publishedColumns(SYNC_CATALOGUE.table(table) ?? (() => { throw new Error(table); })())].filter((c) => c !== 'difficulty'));
     const db = await freshDb();
     const triggers = await db.select<{ name: string; sql: string }>("SELECT name, sql FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_workout%' ORDER BY name");
-    expect(triggers.map((t) => t.name)).toEqual(['sync_workout_ai', 'sync_workout_au', 'sync_workout_set_ai', 'sync_workout_set_au', 'sync_workout_set_difficulty_au']);
+    expect(triggers.map((t) => t.name)).toEqual(['sync_workout_ai', 'sync_workout_au', 'sync_workout_close_decisions_au', 'sync_workout_set_ai', 'sync_workout_set_au', 'sync_workout_set_difficulty_au']);
     expect(triggers.some((t) => /rest_timer/.test(t.sql))).toBe(false);
     expect(triggers.every((t) => /ended_at/.test(t.sql))).toBe(true);
-    // 18 en version 4 ; 23 avec la 0006 (I2-01 : deux tables de progression et la difficulté).
-    expect((await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger'")).length).toBe(23);
+    // 18 en version 4 ; 24 avec la 0006 (I2-01 : deux tables de progression, la difficulté, les décisions à la clôture).
+    expect((await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger'")).length).toBe(24);
     await db.close();
   });
 

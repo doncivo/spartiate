@@ -89,10 +89,11 @@ describe('migration 0006 : progression_sync (I2-01, PR 2/2)', () => {
     expect(await technical(db)).toEqual([]);
     await db.execute('UPDATE workout SET deleted_at = NULL, hlc = ? WHERE id = ?', [h(4), W]);
     await db.execute('UPDATE workout SET ended_at = ?, hlc = ? WHERE id = ?', [END, h(5), W]);
-    expect(await outbox(db)).toEqual([
+    // Ordre de la file sans importance (rang du catalogue à la publication) : comparé trié.
+    expect([...(await outbox(db))].sort((x, y) => (x.table_name < y.table_name ? -1 : 1))).toEqual([
+      { table_name: 'recommendation_decision', row_id: D, field: '*' },
       { table_name: 'workout', row_id: W, field: '*' },
       { table_name: 'workout_set', row_id: S1, field: '*' },
-      { table_name: 'recommendation_decision', row_id: D, field: '*' },
     ]);
     await db.close();
   });

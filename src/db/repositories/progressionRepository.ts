@@ -66,6 +66,13 @@ export interface ProgressionRepository {
   getProfile(exerciseId: string): Promise<ProgressionProfileRecord | null>;
   saveProfile(input: ProgressionProfileInput): Promise<ProgressionProfileRecord>;
   recordDecision(input: RecordDecisionInput): Promise<RecommendationDecisionRecord>;
-  /** Dernière décision non supprimée (date de décision, puis identifiant), ou null. */
+  /** Dernière décision non supprimée d'une séance CLOSE non supprimée (date, puis identifiant), ou null : jamais d'une séance ouverte ou abandonnée. */
   lastDecision(exerciseId: string): Promise<RecommendationDecisionRecord | null>;
+  /** Dernière décision de cet exercice dans cette séance (ouverte comprise), ou null : état affiché dans la séance en cours. */
+  decisionFor(workoutId: string, exerciseId: string): Promise<RecommendationDecisionRecord | null>;
+  /**
+   * Après la clôture (même transaction) : recalibrage « Facile » consigné dans le profil si la charge retenue est au moins la charge recalée
+   * (`recalibrationKept`). Séance absente ou supprimée : `'not-found'` ; ouverte : `'invalid'`.
+   */
+  applyClosedWorkout(workoutId: string): Promise<void>;
 }

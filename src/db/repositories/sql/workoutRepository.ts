@@ -484,6 +484,8 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     async discard(id) {
       await requireOpen(id);
       for (const row of await rawSets(id)) await markSetDeleted(row.id);
+      // I2-01 (relecture de la #61, D-27) : les décisions de la séance abandonnée, jamais publiées (déclencheurs gardés), disparaissent.
+      await db.execute('DELETE FROM recommendation_decision WHERE workout_id = ?', [id]);
       const stamp = stamper.next();
       await db.execute('UPDATE workout SET rest_timer_end_at = NULL, deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
     },
@@ -504,6 +506,8 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
         // publiées, disparaissent ; les autres prennent le tampon de la clôture (leurs anciens hlc peuvent être sous la tête déjà publiée).
         await db.execute('DELETE FROM workout_set WHERE workout_id = ? AND deleted_at IS NOT NULL', [workoutId]);
         await db.execute('UPDATE workout_set SET updated_at = ?, device_id = ?, hlc = ? WHERE workout_id = ?', [stamp.at, stamp.deviceId, stamp.hlc, workoutId]);
+        // I2-01 : les décisions prises pendant la séance suivent l'agrégat (même tampon ; mises en file par `sync_workout_close_decisions_au`).
+        await db.execute('UPDATE recommendation_decision SET updated_at = ?, device_id = ?, hlc = ? WHERE workout_id = ?', [stamp.at, stamp.deviceId, stamp.hlc, workoutId]);
         // Clôture : le déclencheur `sync_workout_au` met en file la séance et toutes ses séries (« * »), dans cette instruction.
         await db.execute('UPDATE workout SET ended_at = ?, rest_timer_end_at = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ? AND ended_at IS NULL', [
           stamp.at,
@@ -563,6 +567,8 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       await requireClosed(id);
       const stamp = stamper.next();
       await db.execute('UPDATE workout_set SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE workout_id = ? AND deleted_at IS NULL', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
+      // I2-01 : décisions de la séance supprimées avec elle (enfants publiés, comme les séries).
+      await db.execute('UPDATE recommendation_decision SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE workout_id = ? AND deleted_at IS NULL', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
       await db.execute('UPDATE workout SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
     },
 

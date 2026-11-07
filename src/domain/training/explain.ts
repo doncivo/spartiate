@@ -10,7 +10,6 @@ export type ExplanationKey =
   | 'toEnter'
   | 'unsupported'
   | 'decision'
-  | 'decisionToEnter'
   | 'increase'
   | 'increaseUnknownStep'
   | 'repLadder'
@@ -46,7 +45,8 @@ export function explainPrescription(p: Prescription): Explanation {
     case 'unsupported':
       return { key: 'unsupported', params: {} };
     case 'decision':
-      return p.loadKg === null ? { key: 'decisionToEnter', params: {} } : { key: 'decision', params: { load: p.loadKg } };
+      // Une décision sans charge retenue ne fixe rien : « à saisir » (relecture de la #61, point C).
+      return p.loadKg === null ? { key: 'toEnter', params: {} } : { key: 'decision', params: { load: p.loadKg } };
     case 'increase': {
       const reps = p.reference?.reps ?? [];
       const params = { delta: p.deltaKg ?? 0, sets: reps.length, reps: reps.length > 0 ? Math.min(...reps) : 0 };
