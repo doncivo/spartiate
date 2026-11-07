@@ -69,6 +69,7 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   inactivity: 'explainInactivity',
   deload: 'explainDeload',
   recoveryLow: 'explainRecoveryLow',
+  recoveryLowSet: 'explainRecoveryLowSet',
 };
 const OPTION_KEYS: Readonly<Record<OptionKey, ProgressionTextKey>> = {
   optionFatigueLoad: 'optionFatigueLoad',
@@ -258,6 +259,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     const value = p.status === 'unsupported' ? tProgression('noProposal') : p.loadKg === null ? tProgression('toEnter') : tProgression('value', { load: kg(p.loadKg), reps: repsText(p.sets.map((s) => s.reps)) });
     const proposed = p.status === 'prescribed' && p.loadKg !== null;
     const alerts = constraintAlerts(p);
+    const options = p.options ?? [];
     return (
       <>
         <p className="ct-progression__value ct-session__num">{value}</p>
@@ -292,10 +294,10 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
               </Button>
             </div>
             <p className="ct-progression__muted">{tProgression('decisionHint')}</p>
-            {p.options.length > 0 ? (
+            {options.length > 0 ? (
               <div className="ct-progression__options" role="group" aria-label={tProgression('optionsTitle')}>
                 <span className="ct-training__label">{tProgression('optionsTitle')}</span>
-                {p.options.map((o) => {
+                {options.map((o) => {
                   const e = explainOption(o, p.activeConfig);
                   const chosen = o.loadKg !== null && o.reps !== null ? { loadKg: o.loadKg, reps: o.reps } : null;
                   const text = tProgression(OPTION_KEYS[e.key], { ...e.params, value: chosen === null ? '' : tProgression('value', { load: kg(chosen.loadKg), reps: repsText(chosen.reps) }) });

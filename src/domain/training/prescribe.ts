@@ -179,6 +179,7 @@ export function prescribe(input: PrescribeInput): Prescription {
   if (reduces(constraints)) {
     // Maintien de la référence (aucun cran, échelle ni recalibrage), puis réductions ; arrondi au matériel, jamais au-dessus de la référence.
     const reduced = reducedTarget(constraints, refPerformance, input.exercise.kind, config);
+    if (reduced.recoverySetRemoved) reasons.add('recovery-set-removed');
     const snapped = reduced.targetKg < refLoad - EPS ? snapToEquipment(reduced.targetKg, reduced.reps, available, config) : { loadKg: refLoad, reps: reduced.reps, extraRep: false };
     if (snapped.extraRep) reasons.add('snap-extra-rep');
     const loadKg = roundKg(Math.min(snapped.loadKg, refLoad));
