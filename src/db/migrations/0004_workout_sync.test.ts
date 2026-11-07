@@ -37,9 +37,9 @@ const technical = async (db: SqlDriver): Promise<unknown[]> => [
 ];
 
 describe('migration 0004 : workout_sync (I1-03, D-27)', () => {
-  it('registre : 0001 à 0004 ; version 4, nom workout_sync', () => {
-    expect(migrations.map((m) => m.version)).toEqual([1, 2, 3, 4]);
-    expect(migrations.at(-1)).toBe(migration0004WorkoutSync);
+  it('registre : 0004 suit 0001 à 0003 (0005 ensuite, I2-01) ; version 4, nom workout_sync', () => {
+    expect(migrations.slice(0, 4).map((m) => m.version)).toEqual([1, 2, 3, 4]);
+    expect(migrations[3]).toBe(migration0004WorkoutSync);
     expect(migration0004WorkoutSync.name).toBe('workout_sync');
   });
 
@@ -50,7 +50,7 @@ describe('migration 0004 : workout_sync (I1-03, D-27)', () => {
     await insertSet(db, S1, 0);
     await insertWorkout(db, '5e1a0c2d-0000-4000-8000-000000000002', END);
     expect(await db.select('PRAGMA foreign_keys')).toEqual([{ foreign_keys: 1 }]);
-    const report = await migrate(db, migrations);
+    const report = await migrate(db, migrations.slice(0, 4));
     expect(report.applied).toEqual([4]);
     expect(await db.select('SELECT id FROM workout ORDER BY id')).toHaveLength(2);
     expect(await db.select('SELECT corrected_at FROM workout_set')).toEqual([{ corrected_at: null }]);
