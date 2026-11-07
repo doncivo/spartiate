@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-06 (I0 clos, GO I1 accordé par Ali, version publiée 0.1.6). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-71 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Dossier de sortie I0 : docs/gate-i0.md.
+État au 2026-11-07 (I1 clos, version publiée 0.2.4, I2 en cours). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-72 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Dossier de sortie I0 : docs/gate-i0.md.
 
 ## Fusionné (tout est dans main)
 
@@ -15,14 +15,17 @@
 - D-69 : accès direct HealthKit BLOCKED (compte Apple gratuit, SideStore retire l'entitlement) ; l'import passera par l'app Raccourcis, ticket séparé.
 - D-70 : l'agent fusionne (`gh pr merge --squash`) et publie (tags `vX.Y.Z` et `ios-vX.Y.Z` sur origin/main après contrôle d'absence), puis suit les builds jusqu'à spartiate-releases. Ali installe et fait les constats sur appareil.
 
-## Go I1 (D-71, 2026-11-06)
+## Où on en est (2026-11-07)
 
-Essais 4 et 8 CONFIRMED, H-4 CONFIRMED (docs/gate-i0.md). Choix techniques validés : références logiques aux exercices sans clé étrangère ; UUID pour les exercices personnalisés, collision refusée ; nom de l'exercice figé dans l'historique. Médias (H-9) : aucune image ni vidéo sans licence vérifiée, fallback sans image. Deux défauts de la Live Activity à corriger en **I1-02** : texte noir sur fond sombre (texte clair et fond de la charte), activité figée à 0:00 au lieu de « Terminé ».
+- I1 livré : 0.2.0 à 0.2.2 (I1-01/02/03), 0.2.3 (retours d'essai), 0.2.4 (#57 : journaux enrichis received/published/cloud-pending, étape des échecs, io-* Rust, relance rapide des fichiers iCloud en attente, marqueur de mise à jour de routine). PC et iPhone publiés.
+- D-72 : « I2 : OK » d'Ali. Pas de table de standards ; 1RM Epley sur la meilleure série puis moyenne pondérée des 3 dernières séances ; confiance 100 % jusqu'à 14 j, nulle à 60 j ; progression à double palier ; snap au matériel ; baisse de reps = deux propositions refusables ; 3 séances sans progrès = trois choix ; deload, reprise après arrêt, échauffement : voir D-72.
+- **Première utilisation réelle : lundi 2026-11-09** (D-38) : plus aucun accès aux données réelles ni à iCloud Drive/Spartiate.
 
 ## Prochaines étapes
 
-1. **I1-01** (docs/I1-01.md), puis I1-02 (avec les deux défauts ci-dessus), I1-03.
-2. **Ticket Raccourcis** (D-69) : import du poids et des pas par l'app Raccourcis.
+1. **I2-01** (docs/I2-01.md, migration 0005), puis I2-02 (contraintes), I2-03 (échauffement). Versions 0.3.x selon le découpage.
+2. **Ticket Raccourcis** (D-69).
+3. Après le lundi 9 : journal exporté d'Ali (Plus → Logs → Exporter) pour mesurer le délai iCloud.
 
 ## Rappels
 
