@@ -37,7 +37,10 @@ function stepped(min: number, max: number, step: number): number[] {
   return loads;
 }
 
-const fromRange = (r: StackRange): number[] => stepped(r.minKg, r.maxKg, r.stepKg);
+const fromRange = (r: StackRange): number[] => {
+  const extra = (r.extraKg ?? []).filter((kg) => Number.isFinite(kg) && kg > 0);
+  return [...new Set([...stepped(r.minKg, r.maxKg, r.stepKg), ...extra])].sort((a, b) => a - b);
+};
 
 /** Barre reliée au matériel de l'exercice (première déclarée pour ce matériel) ; aucune barre reliée : aucune grille. */
 function barbellLoads(profile: ProgressionEquipment, equipmentId: string): number[] {
