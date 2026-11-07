@@ -79,10 +79,10 @@ describe('migration 0005 : progression (I2-01)', () => {
     await db.close();
   });
 
-  it('recommendation_decision : JSON valide, accepted 0/1, charge ≥ 0 ; index par exercice et date', async () => {
+  it('recommendation_decision : accepted 0/1, charge ≥ 0 (JSON validé par le repository) ; index par exercice et date', async () => {
     const db = await freshDb();
     await insertDecision(db);
-    for (const bad of [{ accepted: 2 }, { chosen_load_kg: -1 }, { prescription: 'pas du json' }, { reasons: '{' }, { chosen_reps: 'x' }]) {
+    for (const bad of [{ accepted: 2 }, { chosen_load_kg: -1 }, { prescription: null }, { chosen_reps: null }]) {
       await expect(insertDecision(db, { id: '5e1a0c2d-0000-4000-8000-0000000000d2', ...bad })).rejects.toThrow();
     }
     await insertDecision(db, { id: '5e1a0c2d-0000-4000-8000-0000000000d3', chosen_load_kg: null });
