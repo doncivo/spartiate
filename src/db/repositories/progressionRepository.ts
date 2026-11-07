@@ -9,7 +9,7 @@ import type { DeviceId, Hlc, IsoDateTime } from '../../domain/types';
  * - `history` : séances CLOSES non supprimées ayant au moins une série non supprimée de l'exercice, de la plus récente à la plus
  *   ancienne (fin, puis identifiant), au plus `limit` séances (défaut `HISTORY_SESSIONS_LOADED`) ; difficulté lue sur les séries
  *   de l'exercice (`workout_set.difficulty`, 0006), null si aucune ; `deload` vrai si la dernière décision de l'exercice dans la séance a
- *   retenu une valeur sur une proposition de deload (I2-02 : marqueur lu dans la prescription tracée, aucune colonne nouvelle).
+ *   retenu une proposition de deload (acceptée, ou charge retenue au plus celle du deload) (I2-02 : marqueur lu dans la prescription tracée, aucune colonne nouvelle).
  * - `saveProfile` : un profil par exercice, identifiant naturel `progression|<exerciseId>` (une seule ligne même écrite par deux
  *   appareils) ; écriture = remplacement des valeurs, restaure un profil supprimé.
  * - `recordDecision` : trace de l'acceptation ou de la modification d'une prescription (§ 11.2 point 9, § 11.5) ; jamais modifiée.

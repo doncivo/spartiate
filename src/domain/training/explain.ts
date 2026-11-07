@@ -23,8 +23,12 @@ export type ExplanationKey =
   | 'inactivity'
   | 'deload'
   | 'recoveryLow'
+<<<<<<< ours
+  | 'recoveryLowSet';
+=======
 
   | 'outlierHold';
+>>>>>>> theirs
 
 export interface Explanation {
   readonly key: ExplanationKey;
@@ -74,21 +78,23 @@ export function explainPrescription(p: Prescription): Explanation {
     case 'fatigue':
       return { key: 'fatigue', params: {} };
     case 'inactivity':
-      return { key: 'inactivity', params: { cut: percent(p.inactivityCut) } };
+      return { key: 'inactivity', params: { cut: percent(p.inactivityCut ?? 0) } };
     case 'deload':
       return { key: 'deload', params: { sets: p.sets.length, rir: p.rirTarget ?? 0 } };
     case 'recovery-low':
-      return { key: 'recoveryLow', params: {} };
+      return { key: p.reasons.includes('recovery-set-removed') ? 'recoveryLowSet' : 'recoveryLow', params: { cut: recoveryCut(p) } };
   }
 }
 
 const percent = (fraction: number): number => Math.round(fraction * 100);
+/** Baisse de charge Recovery en %, tirée de la configuration active (`lowRecoveryLoad`). */
+const recoveryCut = (p: Prescription): number => percent(1 - p.activeConfig.lowRecoveryLoad);
 
 // -----------------------------------------------------------------------------------------------------------------------------------
 // Contraintes (I2-02) : une alerte par contrainte active hors raison principale, une phrase par choix facultatif.
 // -----------------------------------------------------------------------------------------------------------------------------------
 
-export type ConstraintAlertKey = 'alertFatigue' | 'alertStall' | 'alertInactivity' | 'alertDeload' | 'alertRecoveryLow';
+export type ConstraintAlertKey = 'alertFatigue' | 'alertStall' | 'alertInactivity' | 'alertDeload' | 'alertRecoveryLow' | 'alertRecoveryLowSet';
 export type OptionKey = 'optionFatigueLoad' | 'optionFatigueReps' | 'optionStallVariant' | 'optionStallRange' | 'optionStallMiniDeload';
 
 /** Contraintes dans l'ordre de `REASON_ORDER`, avec la raison principale qu'elles portent quand elles réduisent. */
@@ -102,10 +108,12 @@ const ALERTS: readonly { readonly reason: ReasonCode; readonly headline: Prescri
 
 /** Alertes des contraintes actives autres que la raison principale (déjà dite par la phrase), dans l'ordre normatif. */
 export function constraintAlerts(p: Prescription): { readonly key: ConstraintAlertKey; readonly params: Readonly<Record<string, number>> }[] {
-  return ALERTS.filter((a) => p.reasons.includes(a.reason) && a.headline !== p.headline).map((a) => ({
-    key: a.key,
-    params: a.key === 'alertStall' ? { sessions: p.activeConfig.stallSessions } : a.key === 'alertInactivity' ? { cut: percent(p.inactivityCut) } : {},
-  }));
+  return ALERTS.filter((a) => p.reasons.includes(a.reason) && a.headline !== p.headline).map((a) => {
+    if (a.key === 'alertStall') return { key: a.key, params: { sessions: p.activeConfig.stallSessions } };
+    if (a.key === 'alertInactivity') return { key: a.key, params: { cut: percent(p.inactivityCut ?? 0) } };
+    if (a.key === 'alertRecoveryLow') return { key: p.reasons.includes('recovery-set-removed') ? 'alertRecoveryLowSet' : a.key, params: { cut: recoveryCut(p) } };
+    return { key: a.key, params: {} };
+  });
 }
 
 export function explainOption(o: ProposalOption, config: ProgressionConfig): { readonly key: OptionKey; readonly params: Readonly<Record<string, number>> } {
