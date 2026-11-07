@@ -8,6 +8,7 @@ import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../../app/navigation';
 import { TodaySessionCard } from '../session/TodaySessionCard';
+import { applyRemoteChanges } from '../../sync/remoteChanges';
 import { TrainingScreen } from '../TrainingScreen';
 
 /**
@@ -180,5 +181,29 @@ describe('détail d’une séance close', () => {
     expect(await screen.findByText(/Aucune séance terminée pour l’instant/)).toBeInTheDocument();
     expect(await one('SELECT deleted_at IS NOT NULL AS gone FROM workout WHERE id = ?', [PAST_WORKOUT_ID])).toEqual({ gone: 1 });
     expect(await one('SELECT COUNT(*) AS n FROM workout_set WHERE workout_id = ? AND deleted_at IS NULL', [PAST_WORKOUT_ID])).toEqual({ n: 0 });
+  });
+});
+
+describe('0.2.4 point 5 : le Journal se relit dès qu’un lot touche workout ou workout_set, même déjà affiché', () => {
+  const batch = (...tables: string[]) => ({ tables: new Set(tables), ids: new Map<string, ReadonlySet<string>>() });
+
+  it('séance close arrivée par la synchro (workout) : elle apparaît sans quitter l’écran', async () => {
+    openJournal();
+    expect(await screen.findByText(/Aucune séance terminée pour l’instant/)).toBeInTheDocument();
+    await closeLegs();
+    await act(async () => void (await applyRemoteChanges(container(), batch('workout'))));
+    expect(await screen.findByRole('list', { name: 'Séances terminées' })).toBeInTheDocument();
+    expect(screen.getByText('Jambes')).toBeInTheDocument();
+  });
+
+  it('lot qui ne touche que workout_set : la liste se relit aussi ; un lot sans rapport ne relit rien', async () => {
+    await seedPastWorkout(db.driver);
+    openJournal();
+    await screen.findByRole('list', { name: 'Séances terminées' });
+    await closeLegs();
+    await act(async () => void (await applyRemoteChanges(container(), batch('body_weight'))));
+    expect(within(screen.getByRole('list', { name: 'Séances terminées' })).getAllByRole('listitem')).toHaveLength(1);
+    await act(async () => void (await applyRemoteChanges(container(), batch('workout_set'))));
+    await waitFor(() => expect(within(screen.getByRole('list', { name: 'Séances terminées' })).getAllByRole('listitem')).toHaveLength(2));
   });
 });

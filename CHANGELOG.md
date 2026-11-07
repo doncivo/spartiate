@@ -2,6 +2,13 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.2.4
+
+- Journal technique plus parlant : la synchro note ce qui se passe (lignes reçues et appareil d’origine, enregistrements publiés, fichiers que l’iCloud n’a pas encore téléchargés), seulement quand il se passe quelque chose. Les échecs disent l’étape où ils sont survenus ; sur PC, une erreur de fichier dit si le fichier est verrouillé, refusé ou en cours de suppression. Les erreurs imprévues de l’app sont notées aussi. Aucun titre, aucune note, aucune valeur : des codes, des compteurs et des noms de tables.
+- Plus → Logs → Exporter : le fichier commence par un bilan (version, appareils connus et leur dernière synchro, entrées en attente d’envoi, lignes mises de côté, conflits, nombre de lignes par table). Le fichier garde jusqu’à 2 000 entrées au lieu de 500.
+- Synchro plus réactive : quand un fichier d’iCloud n’est pas encore là, un nouveau passage a lieu 10 secondes plus tard (trois fois au plus), au lieu d’attendre. Le Journal d’entraînement du PC se relit dès qu’une séance arrive, même s’il est déjà ouvert.
+- Séance : si tu fermes l’app pendant le résumé de fin, « Mettre à jour la routine ? » t’est reproposée à la réouverture.
+
 ## 0.2.3
 
 - Export / import : l’archive contient maintenant tes routines, tes exercices personnalisés, tes profils de matériel et tes séances terminées avec leurs séries, en plus du profil et des pesées. Une séance en cours n’est jamais exportée. « Remplacer » ne supprime tes séances que si l’archive contient des données d’entraînement (une archive d’avant la 0.2.3 n’en supprime aucune).

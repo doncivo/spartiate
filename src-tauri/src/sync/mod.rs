@@ -261,6 +261,15 @@ pub mod log {
     /// Production (ADR 0014, « Conséquences », qui modifie l'ADR 0011 §2.3) : le seul `event` (identifiant fixe) est inscrit au journal
     /// technique, jamais `detail`.
     #[cfg(not(any(debug_assertions, feature = "test-hooks")))]
+    static IO_SHARING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+    #[cfg(not(any(debug_assertions, feature = "test-hooks")))]
+    static IO_DENIED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+    #[cfg(not(any(debug_assertions, feature = "test-hooks")))]
+    static IO_PENDING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+    #[cfg(not(any(debug_assertions, feature = "test-hooks")))]
+    static IO_OTHER: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+    #[cfg(not(any(debug_assertions, feature = "test-hooks")))]
     #[inline]
     pub fn event(event: &'static str, _detail: &str) {
         // 0.1.4 (5) : les entrées ignorées (copies de conflit d'iCloud « state 2.spx », fichiers étrangers) sont signalées une seule fois par
@@ -269,6 +278,19 @@ pub mod log {
             static REPORTED: std::sync::atomic::AtomicBool =
                 std::sync::atomic::AtomicBool::new(false);
             if REPORTED.swap(true, std::sync::atomic::Ordering::Relaxed) {
+                return;
+            }
+        }
+        // Relecture D-26 (0.2.4) : les causes d'erreur d'E/S (`io-*`) sont signalées une fois par session et par cause, pas à chaque cycle.
+        let once = match event {
+            "io-sharing-violation" => Some(&IO_SHARING),
+            "io-access-denied" => Some(&IO_DENIED),
+            "io-delete-pending" => Some(&IO_PENDING),
+            "io-other" => Some(&IO_OTHER),
+            _ => None,
+        };
+        if let Some(flag) = once {
+            if flag.swap(true, std::sync::atomic::Ordering::Relaxed) {
                 return;
             }
         }

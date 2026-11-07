@@ -151,9 +151,14 @@ export async function runCycle(baseDeps: SyncDeps, hooks: CycleHooks, options: C
   const deadline = options.deadlineAt === undefined ? undefined : createCycleDeadline(baseDeps.clock, options.deadlineAt, options.deadlineProbe);
   const deps: SyncDeps = deadline ? { ...baseDeps, deadline } : baseDeps;
   let result: CycleResult;
+  const startedAt = deps.clock.nowMs();
   try {
     result = await cycleSteps(deps, hooks, options, seen);
   } catch (error) {
+    reportCycle(deps, seen, startedAt, null);
+    // Écrit une fois : le chemin « état illisible » rapporte encore le résultat plus bas.
+    delete seen.received;
+    delete seen.published;
     // ADR 0011 §22 point 6 : arrêt à l'échéance, entre deux unités : la file garde ce qui n'est pas publié, `lastSyncAt` n'avance pas,
     // aucune phase d'erreur ; le cycle d'ouverture suivant reprend (journal du code seulement).
     if (isCycleInterrupted(error)) {
@@ -162,16 +167,31 @@ export async function runCycle(baseDeps: SyncDeps, hooks: CycleHooks, options: C
     }
     // Lecture hors des étapes gardées : seule l'illisibilité est convertie ici ; toute autre erreur remonte au service (code réel).
     if (!isSyncStateUnreadable(error)) throw error;
-    deps.logger.log('cycle-failed', { code: 'io', unreadable: true });
+    deps.logger.log('cycle-failed', { code: 'io', unreadable: true, stage: seen.stage ?? 'none' });
     result = { ...EMPTY, outcome: 'failed', errorCode: 'io', stateUnreadable: true };
   }
+  reportCycle(deps, seen, startedAt, result);
   const withWarnings = seen.warnings ? { ...result, warnings: [...new Set(seen.warnings)] } : result;
   // Cinquième revue, points 2 et 5 : valeur locale illisible relue vide et réécrite pendant ce cycle : visible pour ce cycle seulement.
   return seen.unreadable ? { ...withWarnings, stateUnreadable: true } : withWarnings;
 }
 
-async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptions, seen: CycleSeen): Promise<CycleResult> {
+async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleOptions, seen: CycleSeen): Promise<CycleResult> {
   const { platform, data, deviceId: self, logger } = deps;
+  /** Lignes reçues, comptées par source (8 premiers caractères de l'appareil) puis par table avant d'être transmises à l'interface. */
+  const track =
+    (source: string) =>
+    (touched: ReadonlyMap<string, ReadonlySet<string>>): void => {
+      const bySource = ((seen.received ??= new Map()).get(source) ?? new Map<string, Set<string>>());
+      seen.received.set(source, bySource);
+      for (const [table, ids] of touched) {
+        const set = bySource.get(table) ?? new Set<string>();
+        for (const id of ids) set.add(id);
+        bySource.set(table, set);
+      }
+      baseHooks.onRemoteChanges(touched);
+    };
+  const hooks: CycleHooks = { ...baseHooks, onRemoteChanges: track('other') };
   const repos = data.repos;
   let worked = false;
   const work = (): void => {
@@ -179,7 +199,7 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
     worked = true;
   };
   const fail = (code: SyncErrorCode, extra: Partial<CycleResult> = {}): CycleResult => {
-    logger.log('cycle-failed', { code });
+    logger.log('cycle-failed', { code, stage: seen.stage ?? 'none' });
     return { ...EMPTY, ...extra, outcome: 'failed', errorCode: code, worked };
   };
   /** Échec d'une étape : code réel, et `stateUnreadable` pour une valeur stockée illisible ; un arrêt à l'échéance n'est pas un échec. */
@@ -187,6 +207,8 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
     if (isCycleInterrupted(error)) throw error;
     return fail(syncErrorCodeOf(error), isSyncStateUnreadable(error) ? { ...extra, stateUnreadable: true } : extra);
   };
+
+  seen.stage = 'preconditions';
 
   // 0. Préconditions.
   if (!platform.available()) return { ...EMPTY, outcome: 'not-configured' };
@@ -236,6 +258,8 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
   } catch (error) {
     return failWith(error, { folderLabel, folderKind });
   }
+
+  seen.stage = 'scan';
 
   // 1. scan.
   // Cinquième revue, point 2 : trous et instantané essayé lus avant les lignes connues (une valeur illisible remet les lignes `corrupt`
@@ -297,6 +321,8 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
     return failWith(error, { folderLabel, folderKind });
   }
   const directive = resetDirective;
+
+  seen.stage = 'own-bounds';
 
   // 2. Règle 1 : bornes de sa propre publication.
   const acksOnSelf = [...accepted.values()].map((s) => s.acks.get(self)).filter((a): a is DeviceAck => a !== undefined);
@@ -382,6 +408,7 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
   if (ownState?.head.hlc) deps.hlc.receive(ownState.head.hlc);
 
   try {
+    seen.stage = 'epoch';
     // 3. Époque.
     // Y-10 (seconde revue, point 1) : un appareil oublié ne fixe ni l'époque du dossier, ni la date du dernier instantané, ni la source d'un
     // changement d'époque (son état reste accepté pour les curseurs et la coupure).
@@ -655,6 +682,8 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
       });
     }
 
+    seen.stage = 'read';
+
     // 4. Lecture (avec reprise depuis l'instantané si demandée ou nécessaire, une fois par cycle).
     const knows = await knowsFrom(repos, logger);
     /** Repères de ses états publiés, lus au premier segment absent du cycle (quatrième revue, point D). */
@@ -883,7 +912,7 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
           cursor,
           ackHlc: row?.epoch === readEpoch ? row.ackHlc : null,
           knows,
-          onBatch: hooks.onRemoteChanges,
+          onBatch: track(String(target.id).slice(0, 8)),
           ...(target.limit ? { limit: target.limit } : {}),
         });
         if (outcome.status !== 'complete') allRead = false;
@@ -980,12 +1009,19 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
     );
     if (carryRaised) seen.warnings = [...(seen.warnings ?? []), 'carry-report'];
 
+    seen.stage = 'publish';
+
     // 5. Publication.
     if (publishAllowed) {
       const before = await repos.sync.outboxCount();
       if (before > 0) {
         const result = await publishOutbox(deps, currentEpoch, head, bounds.maxSegment);
-        if (result.published > 0) work();
+        if (result.published > 0) {
+          work();
+          seen.published ??= { count: 0, tables: new Set() };
+          seen.published.count += result.published;
+          for (const table of result.tables ?? []) seen.published.tables.add(table);
+        }
         head = result.head;
         publishError ??= result.error;
       }
@@ -996,6 +1032,8 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
 
     // TRI-06 : (après la publication, pour le même cycle) des modifications locales trop grosses n'ont jamais été publiées : visible jusqu'à la reprise complète (jamais muet).
     if ((await repos.sync.getMeta(META.publishDropped)) !== null) seen.warnings = [...(seen.warnings ?? []), 'publish-dropped'];
+
+    seen.stage = 'state';
 
     // 6. État publié (réécrit s'il a changé, ou s'il a été remplacé par un tiers). Y-11 : l'annonce de l'appareil qui réinitialise est
     // toujours publiée (forcée) tant que l'époque visée n'est pas ouverte.
@@ -1033,6 +1071,8 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
     // Trous restants après la lecture (aucun instantané éligible) : attente visible, aucun instantané écrit (§18 point 11).
     const gapsAfter = await gaps();
     await setSnapshotWait(deps, gapsAfter[0] ?? noEligible);
+
+    seen.stage = 'maintenance';
 
     // 7. Entretien : instantané si dû, purges, plafonds.
     if (publishAllowed && allRead && publishError === null) {
@@ -1103,6 +1143,8 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
       await runForgetDeletions(deps, { view: forgetView, scan, accepted, ownPublished, ownSnapshot });
     }
 
+    seen.stage = 'finish';
+
     // 8. Heure de dernière synchro (jamais après l'échéance d'un cycle borné : le cycle n'est pas complet).
     deps.deadline?.check('finish');
     const lastSyncAt = iso(deps.clock.nowMs());
@@ -1118,7 +1160,7 @@ async function cycleSteps(deps: SyncDeps, hooks: CycleHooks, options: CycleOptio
   } catch (error) {
     if (isCycleInterrupted(error)) throw error;
     const code = syncErrorCodeOf(error);
-    logger.log('cycle-error', { code });
+    logger.log('cycle-error', { code, stage: seen.stage ?? 'none' });
     // Y-11 : un échec pendant une réinitialisation est gardé avec son étape (jamais seulement journalisé).
     if (directive.kind === 'initiator' || directive.kind === 'joined') {
       const step = directive.kind === 'joined' ? 'joined' : directive.view.stage === 'opened' ? 'waiting-devices' : 'snapshot';
@@ -1171,6 +1213,42 @@ export async function clearSegmentGap(
 interface CycleSeen {
   warnings?: SyncStatusWarning[];
   unreadable?: boolean;
+  /** Étape en cours (0.2.4 point 2) : nom fixe du repère « // N. » de `cycleSteps`, joint à `cycle-failed` et `cycle-error`. */
+  stage?: string;
+  /** 0.2.4 point 1 : lignes reçues par source puis par table (identifiants distincts) ; seulement des noms et des compteurs au journal. */
+  received?: Map<string, Map<string, Set<string>>>;
+  /** 0.2.4 point 1 : enregistrements publiés pendant le cycle et leurs tables. */
+  published?: { count: number; tables: Set<string> };
+}
+
+/** Nombre de fichiers attendus d'iCloud au dernier cycle terminé, par accès aux données (un service = un appareil). */
+const lastPendingFiles = new WeakMap<object, number>();
+
+/** Tables et nombres (`table:n`, triées), coupées à 200 caractères avec `+n` : le journal masque tout détail de plus de 300 caractères. */
+export function describeTables(counts: ReadonlyMap<string, number>): string {
+  const parts = [...counts].sort(([a], [b]) => (a < b ? -1 : 1)).map(([table, n]) => `${table}:${String(n)}`);
+  let text = '';
+  for (const [i, part] of parts.entries()) {
+    const next = text === '' ? part : `${text},${part}`;
+    if (next.length > 190) return `${text},+${String(parts.length - i)}`;
+    text = next;
+  }
+  return text;
+}
+
+/** 0.2.4 point 1 : ce que le cycle a fait, journalisé seulement s'il a fait quelque chose (jamais à chaque cycle vide). */
+function reportCycle(deps: SyncDeps, seen: CycleSeen, startedAt: number, result: CycleResult | null): void {
+  const ms = Math.max(0, deps.clock.nowMs() - startedAt);
+  for (const [source, tables] of seen.received ?? []) {
+    deps.logger.log('received', { from: source, tables: describeTables(new Map([...tables].map(([table, ids]) => [table, ids.size]))), ms });
+  }
+  if (seen.published && seen.published.count > 0) deps.logger.log('published', { count: seen.published.count, tables: describeTables(new Map([...seen.published.tables].map((t) => [t, 0]))).replace(/:0/g, '') });
+  if (result?.outcome !== 'done') return;
+  const files = result.pendingFiles.length;
+  const before = lastPendingFiles.get(deps.data) ?? 0;
+  lastPendingFiles.set(deps.data, files);
+  if (files > 0 && files !== before) deps.logger.log('cloud-pending', { files });
+  else if (files === 0 && before > 0) deps.logger.log('cloud-ready', {});
 }
 
 /**

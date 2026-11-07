@@ -504,3 +504,25 @@ fn i04_qa_paths_urls_and_tokens_in_a_detail_never_reach_the_file() {
     }
     assert_eq!(text.lines().count(), nasty.len());
 }
+
+/// 0.2.4 point 4 : la lecture pour l'export rend jusqu'à 2 000 entrées (500 auparavant), les plus récentes ; le plafond disque est inchangé.
+#[test]
+fn lecture_jusqu_a_2000_entrees_les_plus_recentes() {
+    let dir = tempfile::tempdir().unwrap();
+    let logs = dir.path().join("logs");
+    fs::create_dir_all(&logs).unwrap();
+    let mut text = String::new();
+    for i in 0..2100 {
+        text.push_str(&format!(
+            "{{\"at\":\"2026-10-07T09:00:00Z\",\"scope\":\"sync\",\"code\":\"e{i}\",\"detail\":\"\"}}\n"
+        ));
+    }
+    assert!(text.len() < MAX_FILE_BYTES as usize);
+    fs::write(logs.join(CURRENT_FILE), text).unwrap();
+    assert_eq!(spartiate_lib::applog::MAX_READ_ENTRIES, 2000);
+    let all = read_entries(&logs, 5000).unwrap();
+    assert_eq!(all.len(), 2000);
+    assert_eq!(all[0].code, "e100");
+    assert_eq!(all[1999].code, "e2099");
+    assert_eq!(read_entries(&logs, 500).unwrap().len(), 500);
+}
