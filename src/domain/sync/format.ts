@@ -666,5 +666,6 @@ export function isUnknownSettingKey(value: string): boolean {
  * Parents avant enfants : `routine` < `routine_day` < `routine_exercise` ; `exercise` et `equipment_profile` n'ont aucun parent
  * (`routine_exercise.exercise_id` est une référence logique, P-09). I1-03 : `workout` < `workout_set` (séance close, D-27) ;
  * `workout_set.exercise_id` est aussi une référence logique.
+ * I2-01 : `progression_profile` et `recommendation_decision` à la fin, sans parent (références logiques à l'exercice et à la séance).
  */
-export const SYNC_TABLE_ORDER = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set'] as const;
+export const SYNC_TABLE_ORDER = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision'] as const;

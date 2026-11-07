@@ -2,14 +2,15 @@ import { uuidGenerator, type IdGenerator } from '../../../domain/id';
 import type { WriteStamper } from '../../../domain/hlc';
 import { HISTORY_SESSIONS_LOADED } from '../../../domain/training/config';
 import type { SetKind } from '../../../domain/training/session';
-import type { ExerciseSession, HistorySet, Prescription } from '../../../domain/training/types';
+import { progressionId } from '../../../domain/sync/naturalIds';
+import { DIFFICULTIES, type Difficulty, type ExerciseSession, type HistorySet, type Prescription } from '../../../domain/training/types';
 import { isIsoDateTime, type IsoDateTime } from '../../../domain/types';
 import type { SqlExecutor, SqlRow } from '../../driver';
 import { RepositoryError } from '../common';
 import type { ProgressionProfileInput, ProgressionProfileRecord, ProgressionRepository, RecommendationDecisionRecord, RecordDecisionInput } from '../progressionRepository';
 import { readSyncMeta, type SyncRow } from './sqlHelpers';
 
-/** Implémentation SQL de `ProgressionRepository` (I2-01, migration 0005). Tables locales : aucune capture de synchro en 0.3.0. */
+/** Implémentation SQL de `ProgressionRepository` (I2-01, migrations 0005 et 0006 : tables publiées, captures par déclencheurs). */
 
 interface HistoryRow extends SqlRow {
   readonly workout_id: string;
@@ -20,6 +21,7 @@ interface HistoryRow extends SqlRow {
   readonly reps: number | null;
   readonly load_kg: number | null;
   readonly rir: number | null;
+  readonly difficulty: string | null;
 }
 interface ProfileRow extends SqlRow, SyncRow {
   readonly exercise_id: string;
@@ -42,7 +44,8 @@ interface DecisionRow extends SqlRow, SyncRow {
 
 const EXERCISE_ID_MAX = 128;
 /** Identifiant naturel du profil d'un exercice (une ligne par exercice, quel que soit l'appareil). */
-export const progressionProfileId = (exerciseId: string): string => `progression|${exerciseId}`;
+export const progressionProfileId = progressionId;
+const isDifficulty = (v: string | null): v is Difficulty => v !== null && (DIFFICULTIES as readonly string[]).includes(v);
 
 const rowToProfile = (row: ProfileRow): ProgressionProfileRecord => ({
   id: row.id,
@@ -85,22 +88,23 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
            WHERE w.ended_at IS NOT NULL AND w.deleted_at IS NULL
              AND EXISTS (SELECT 1 FROM workout_set s WHERE s.workout_id = w.id AND s.exercise_id = ? AND s.deleted_at IS NULL)
            ORDER BY w.ended_at DESC, w.id DESC LIMIT ?)
-         SELECT r.id AS workout_id, r.ended_at, s.position, s.set_kind, s.done, s.reps, s.load_kg, s.rir
+         SELECT r.id AS workout_id, r.ended_at, s.position, s.set_kind, s.done, s.reps, s.load_kg, s.rir, s.difficulty
          FROM recent r JOIN workout_set s ON s.workout_id = r.id AND s.exercise_id = ? AND s.deleted_at IS NULL
          ORDER BY r.ended_at DESC, r.id DESC, s.position, s.id`,
         [exerciseId, Math.max(0, Math.floor(limit)), exerciseId],
       );
-      const sessions: { workoutId: string; endedAt: IsoDateTime; sets: HistorySet[] }[] = [];
+      const sessions: { workoutId: string; endedAt: IsoDateTime; difficulty: Difficulty | null; sets: HistorySet[] }[] = [];
       for (const row of rows) {
         let current = sessions[sessions.length - 1];
         if (current?.workoutId !== row.workout_id) {
-          current = { workoutId: row.workout_id, endedAt: row.ended_at as IsoDateTime, sets: [] };
+          current = { workoutId: row.workout_id, endedAt: row.ended_at as IsoDateTime, difficulty: null, sets: [] };
           sessions.push(current);
         }
         current.sets.push({ position: row.position, setKind: row.set_kind as SetKind, done: row.done === 1, reps: row.reps, loadKg: row.load_kg, rir: row.rir });
+        // Difficulté de l'exercice dans la séance (0006) : portée par ses séries ; la série renseignée de plus haute position l'emporte.
+        if (isDifficulty(row.difficulty)) current.difficulty = row.difficulty;
       }
-      // La difficulté (Facile / Juste / Dur) n'est pas encore stockée : PR 2/2.
-      return sessions.map((s): ExerciseSession => ({ workoutId: s.workoutId, endedAt: s.endedAt, difficulty: null, sets: s.sets }));
+      return sessions.map((s): ExerciseSession => ({ workoutId: s.workoutId, endedAt: s.endedAt, difficulty: s.difficulty, sets: s.sets }));
     },
 
     async getProfile(exerciseId) {
@@ -137,7 +141,8 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
       const ok =
         validExerciseId(input.exerciseId) &&
         finiteOrNull(input.chosenLoadKg, (x) => x >= 0) &&
-        input.chosenReps.length > 0 &&
+        // Refus (PR 2/2) : rien retenu, ni charge ni répétitions ; sinon au moins une série.
+        (input.chosenReps.length > 0 || (!input.accepted && input.chosenLoadKg === null)) &&
         input.chosenReps.every((r) => Number.isInteger(r) && r >= 1) &&
         Number.isInteger(input.prescription.engineVersion) &&
         input.prescription.engineVersion >= 1;

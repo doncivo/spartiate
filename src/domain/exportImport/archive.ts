@@ -59,9 +59,15 @@ export interface ExportWeight {
 /**
  * Tables d'entraînement exportées (0.2.3, point 4) : exercices personnalisés, profils de matériel, routines, séances CLOSES et leurs
  * séries, dans l'ordre du catalogue (parents d'abord). Les colonnes sont celles publiées par la synchro, sans `created_at` ni
- * `deleted_at` ; la validation est celle du catalogue (type et longueur). Une séance ouverte n'est jamais exportée (D-27).
+ * `deleted_at` ; la validation est celle du catalogue (type et longueur). Une séance ouverte n'est jamais exportée (D-27). I2-01 (0.3.1) :
+ * profil de progression et décisions d'Ali, difficulté des séries.
  */
-export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set'] as const;
+export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision'] as const;
+/**
+ * Colonnes ajoutées après la première version exportée de leur table : absentes d'une archive plus ancienne (0.3.0 : `workout_set` sans
+ * `difficulty`), lues comme nulles. Toute autre colonne manquante reste refusée.
+ */
+const LATER_COLUMNS: Readonly<Partial<Record<string, readonly string[]>>> = { workout_set: ['difficulty'] };
 export type TrainingTable = (typeof TRAINING_EXPORT_TABLES)[number];
 export type TrainingValue = string | number | null;
 
@@ -244,13 +250,15 @@ function parseTraining(raw: unknown): TrainingExport {
     const columns = trainingColumns(name);
     const seen = new Set<string>();
     const rows = list.map((item): TrainingRow => {
-      if (!isObject(item) || !exactKeys(item, [...columns, 'id'])) throw new ArchiveError('invalid-data');
+      if (!isObject(item)) throw new ArchiveError('invalid-data');
+      const later = (LATER_COLUMNS[name] ?? []).filter((col) => !Object.prototype.hasOwnProperty.call(item, col));
+      if (!exactKeys(item, [...columns.filter((col) => !later.includes(col)), 'id'])) throw new ArchiveError('invalid-data');
       const id = item['id'];
       if (!SYNC_CATALOGUE.isValidRowId(t, id) || seen.has(id)) throw new ArchiveError('invalid-data');
       const values: Record<string, TrainingValue> = {};
       for (const col of t.columns) {
         if (!columns.includes(col.name)) continue;
-        const value = item[col.name];
+        const value = later.includes(col.name) ? null : item[col.name];
         if (!SYNC_CATALOGUE.isValidValue(col, value)) throw new ArchiveError('invalid-data');
         values[col.name] = value as TrainingValue;
       }

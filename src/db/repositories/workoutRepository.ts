@@ -1,4 +1,4 @@
-import type { RoutineDiff, SetEntry, SetKind, Workout, WorkoutSet, WorkoutSource, WorkoutSummary, WorkoutWithSets } from '../../domain/training';
+import type { Difficulty, RoutineDiff, SetEntry, SetKind, Workout, WorkoutSet, WorkoutSource, WorkoutSummary, WorkoutWithSets } from '../../domain/training';
 
 /**
  * Séance locale puis close (tables `workout` et `workout_set`, I1-02 / I1-03 ; D-27 : une séance ouverte n'est jamais publiée ; la
@@ -83,6 +83,11 @@ export interface WorkoutRepository {
   /** Remet la série à faire (saisie conservée). */
   unvalidateSet(setId: string): Promise<WorkoutSet>;
   removeSet(setId: string): Promise<void>;
+  /**
+   * I2-01 : difficulté Facile / Juste / Dur (§ 13.2) de l'exercice dans la séance OUVERTE, écrite sur toutes ses séries (null : effacée).
+   * Séance absente : `'not-found'` ; close, exercice absent de la séance ou valeur hors liste : `'invalid'`.
+   */
+  setDifficulty(workoutId: string, exerciseId: string, difficulty: Difficulty | null): Promise<void>;
   /** Démarre un repos de la séance ouverte (`seconds` entier de 1 à 3600) : persiste la date de fin. */
   startRest(input: { readonly seconds: number }): Promise<RestTimer>;
   /** Prolonge le repos (défaut +30 s), depuis l'échéance si elle est future, sinon depuis maintenant. */
@@ -129,6 +134,8 @@ export interface WorkoutRepository {
 /** Correction d'une série d'une séance close ; les champs omis gardent leur valeur. */
 export interface SetCorrection extends SetEntryInput {
   readonly setKind?: SetKind;
+  /** I2-01 : difficulté de la série corrigée (publiée avec la séance close). */
+  readonly difficulty?: Difficulty | null;
 }
 
 export interface ClosedWorkout {

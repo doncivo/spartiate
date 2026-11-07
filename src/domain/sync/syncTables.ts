@@ -12,7 +12,7 @@
 import { isId, isIsoDateTime, isLocalDate, isLocalDateTime, isLocalTime } from '../types';
 import { MAX_SYNC_ID_LENGTH } from './limits';
 import { SYNC_TABLE_ORDER } from './format';
-import { expectedWeightId, isProfileId, isWeightId, PROFILE_ID } from './naturalIds';
+import { expectedProgressionId, expectedWeightId, isProfileId, isProgressionId, isWeightId, PROFILE_ID } from './naturalIds';
 
 /** Types déclarés des colonnes publiées (section 3.3). */
 /** `datetime` : instant ISO 8601 UTC (`IsoDateTime`) ; `localdatetime` : date et heure locales flottantes (`LocalDateTime`, échéance d'un rappel). */
@@ -410,13 +410,72 @@ const WORKOUT_SET_TABLE = table(
     c('corrected_at', 'datetime', true, hidden),
     createdAt,
     deletedAt,
+    // I2-01 (migration 0006) : Facile / Juste / Dur de l'exercice dans la séance, publié avec la séance close.
+    c('difficulty', 'enum', true, { values: ['easy', 'ok', 'hard'] }),
   ],
   { parents: [{ column: 'workout_id', table: 'workout' }], publishWhen: { parent: 'workout_id' }, titleSource: { kind: 'own', column: 'exercise_name' } },
 );
 
-/** Catalogue de production (I0 + I1-01 + I1-03) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Catalogue I2-01 (D-72, migration 0006) : profil de progression et décisions d'Ali
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+/**
+ * `progression_profile` : état RECALCULABLE par exercice, identité naturelle `progression|<exercice>` (une ligne par exercice, même écrite
+ * par deux appareils : la fusion par champ garde la plus récente). `exercise_id` est une référence logique (P-09). Champs masqués du journal
+ * des conflits : ce sont des estimations, recalculées à chaque séance.
+ */
+const PROGRESSION_PROFILE_TABLE = table(
+  'progression_profile',
+  [
+    c('exercise_id', 'text', false, { max: ID_MAX }),
+    c('estimated_1rm_kg', 'real', true, hidden),
+    c('confidence', 'real', true, hidden),
+    c('last_easy_recalibration_at', 'datetime', true, hidden),
+    c('engine_version', 'int', false, hidden),
+    createdAt,
+    deletedAt,
+  ],
+  { idKind: 'natural', natural: { is: isProgressionId, expected: (row) => expectedProgressionId(row) } },
+);
+
+/**
+ * `recommendation_decision` : trace d'une prescription présentée et de la valeur retenue (§ 11.2 point 9, § 11.5). UUID ; `workout_id` et
+ * `workout_set_id` sont des références logiques (la séance ouverte où la décision a été prise reste locale, D-27) : hors de `parents`.
+ */
+const RECOMMENDATION_DECISION_TABLE = table(
+  'recommendation_decision',
+  [
+    c('exercise_id', 'text', false, { max: ID_MAX }),
+    uuidId('workout_id', true),
+    uuidId('workout_set_id', true),
+    c('engine_version', 'int', false, hidden),
+    c('prescription', 'json', false, hidden),
+    c('reasons', 'json', false, hidden),
+    bool('accepted'),
+    c('chosen_load_kg', 'real', true),
+    c('chosen_reps', 'json', false),
+    c('decided_at', 'datetime', false, hidden),
+    createdAt,
+    deletedAt,
+  ],
+);
+
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
-  tables: [PROFILE_TABLE, BODY_WEIGHT_TABLE, EXERCISE_TABLE, EQUIPMENT_PROFILE_TABLE, ROUTINE_TABLE, ROUTINE_DAY_TABLE, ROUTINE_EXERCISE_TABLE, WORKOUT_TABLE, WORKOUT_SET_TABLE],
+  tables: [
+    PROFILE_TABLE,
+    BODY_WEIGHT_TABLE,
+    EXERCISE_TABLE,
+    EQUIPMENT_PROFILE_TABLE,
+    ROUTINE_TABLE,
+    ROUTINE_DAY_TABLE,
+    ROUTINE_EXERCISE_TABLE,
+    WORKOUT_TABLE,
+    WORKOUT_SET_TABLE,
+    PROGRESSION_PROFILE_TABLE,
+    RECOMMENDATION_DECISION_TABLE,
+  ],
   order: SYNC_TABLE_ORDER,
 });
 
