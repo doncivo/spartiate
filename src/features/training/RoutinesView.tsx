@@ -171,7 +171,8 @@ interface EditorProps {
   readonly ids: IdGenerator;
   readonly tree: RoutineTree;
   readonly initialMessage: string | null;
-  readonly onClose: () => void;
+  /** Retour à la liste ; `message` : confirmation courte affichée sur la liste. */
+  readonly onClose: (message?: string) => void;
   readonly onChanged: () => Promise<void>;
 }
 
@@ -259,7 +260,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
         setDraft(toDraft(fresh));
       }
       await onChanged();
-      setMessage(tTraining('routineSaved'));
+      onClose(tTraining('routineSaved'));
     } catch {
       setError(tTraining('saveError'));
     } finally {
@@ -285,7 +286,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
         </section>
       )}
       <div className="ct-training__editor" hidden={pickingDay !== null}>
-        <button type="button" className="ct-training__back" onClick={onClose}>
+        <button type="button" className="ct-training__back" onClick={() => onClose()}>
           <Icon icon={ArrowLeft} size={20} />
           <span>{tTraining('backToRoutines')}</span>
         </button>
@@ -470,6 +471,7 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
     readonly message: string | null;
   } | null>(null);
   const [programs, setPrograms] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = async (): Promise<void> => {
@@ -492,7 +494,10 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
 
   const openTree = async (id: string, message: string | null): Promise<void> => {
     const tree = await (await access.repos.trainingRoutines()).get(id);
-    if (tree) setOpen({ tree, message });
+    if (tree) {
+      setNotice(null);
+      setOpen({ tree, message });
+    }
   };
 
   const create = async (input: Parameters<typeof programToRoutine>[0] | null): Promise<void> => {
@@ -531,7 +536,10 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
         ids={ids}
         tree={open.tree}
         initialMessage={open.message}
-        onClose={() => setOpen(null)}
+        onClose={(message) => {
+          setOpen(null);
+          setNotice(message ?? null);
+        }}
         onChanged={async () => {
           await refresh();
           await reload();
@@ -548,6 +556,11 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
           {tTraining('addProgram')}
         </Button>
       </div>
+      {notice && (
+        <p className="ct-training__message" role="status">
+          {notice}
+        </p>
+      )}
       {error && (
         <p className="ct-training__error" role="alert">
           {error}
