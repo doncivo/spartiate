@@ -152,10 +152,11 @@ export function SetRow({ set, number, timed, source, busy, onValidate, onUnvalid
           <div className="ct-session__set-actions">
             <label className="ct-session__field ct-session__field--kind">
               <span className="ct-training__label">{tTraining('sessionSetKind')}</span>
-              <select className="ct-session__input" value={set.setKind} disabled={busy} onChange={(e) => onKind(e.target.value as SetKind)}>
+              <select className="ct-session__input" aria-describedby={`${set.id}-kind-help`} value={set.setKind} disabled={busy} onChange={(e) => onKind(e.target.value as SetKind)}>
                 <option value={timed && set.setKind === 'timed' ? 'timed' : 'work'}>{tTraining(timed && set.setKind === 'timed' ? 'kindTimed' : 'kindWork')}</option>
                 <option value="warmup">{tTraining('kindWarmup')}</option>
-                {set.setKind === 'drop' || set.setKind === 'partial' ? <option value={set.setKind}>{tTraining(KIND_TEXT[set.setKind])}</option> : null}
+                <option value="drop">{tTraining('kindDrop')}</option>
+                <option value="partial">{tTraining('kindPartial')}</option>
               </select>
             </label>
             <button type="button" className="ct-training__icon-button" aria-label={tTraining('sessionRemoveSet')} disabled={busy} onClick={onRemove}>
@@ -165,6 +166,9 @@ export function SetRow({ set, number, timed, source, busy, onValidate, onUnvalid
               {tTraining('sessionValidate')}
             </button>
           </div>
+          <p id={`${set.id}-kind-help`} className="ct-training__muted">
+            {tTraining('sessionKindHelp')}
+          </p>
           {issue && (
             <p className="ct-training__error" role="alert">
               {issue}
