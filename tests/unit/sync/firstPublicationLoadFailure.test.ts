@@ -77,7 +77,7 @@ describe('bloc orphanEpoch impossible à charger (revue M3)', () => {
     expect(s.errorCode).toBe('io');
     expect(statusLine(s, b.clock.nowMs())).not.toContain('À jour');
     expect(b.folder.fileNames(b.id)).not.toContain('state.spx');
-    expect(b.logger.entries.slice(before).filter((e) => e.event === 'cycle-failed').map((e) => e.detail)).toEqual([{ code: 'io' }]);
+    expect(b.logger.entries.slice(before).filter((e) => e.event === 'cycle-failed').map((e) => e.detail)).toEqual([{ code: 'io', stage: 'epoch' }]);
   });
 
   it('reprise d’inflight (arrêt P1) : cycle en échec io, intention et file gardées', async () => {
