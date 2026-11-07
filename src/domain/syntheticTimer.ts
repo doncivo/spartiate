@@ -7,6 +7,8 @@
 export const SYNTHETIC_TIMER_MS = 60_000;
 /** Notification de l'échéance : identifiant réservé hors plan (1 à 65 535 ; 1 = fin de session Focus), le même à chaque reprise (aucun doublon). */
 export const TIMER_NOTIFICATION_ID = 7;
+/** Notification de fin du repos de la séance active (0.2.3) : identifiant réservé distinct, lancer l'un n'annule plus l'autre. */
+export const REST_NOTIFICATION_ID = 8;
 export const TIMER_LABEL_MAX = 80;
 const MAX_END_MS = 4_102_444_800_000; // 2100-01-01
 

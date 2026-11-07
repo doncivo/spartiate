@@ -5,6 +5,7 @@
 export const timerFr = {
   row: 'Tester le minuteur (60 s)',
   rowHint: 'Éprouve la Live Activity (écran verrouillé, Dynamic Island) et la notification de fin.',
+  rowHintPc: 'Minuteur dans l’app. Sur l’iPhone, il s’affiche aussi sur l’écran verrouillé et dans la Dynamic Island.',
   start: 'Lancer',
   stop: 'Arrêter',
   remaining: 'Il reste {time}',

@@ -2,6 +2,14 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.2.3
+
+- Export / import : l’archive contient maintenant tes routines, tes exercices personnalisés, tes profils de matériel et tes séances terminées avec leurs séries, en plus du profil et des pesées. Une séance en cours n’est jamais exportée. « Remplacer » ne supprime tes séances que si l’archive contient des données d’entraînement (une archive d’avant la 0.2.3 n’en supprime aucune).
+- Routines : « Enregistrer la routine » revient à la liste avec une confirmation courte.
+- Séance : types de série renommés (« Normale » par défaut, Échauffement, Dégressive, Partielle), avec une aide d’une ligne ; un repos nul n’affiche plus « repos 0 s ».
+- Notifications : la fin du repos et le minuteur de test ont chacun leur notification (lancer l’un n’annule plus l’autre).
+- PC : la ligne « Tester le minuteur » ne parle plus de Live Activity ni de Dynamic Island.
+
 ## 0.2.2
 
 - Séance : « Terminer la séance » clôt la séance en une seule opération (rien n’est écrit à moitié), arrête le repos et la Live Activity, puis affiche le résumé de fin : durée, séries validées, volume (séries dégressives, partielles et chronométrées exclues du tonnage) et records. « Mettre à jour la routine ? » propose « Oui » ou « Cette fois seulement » quand la séance diffère de la routine ; la routine n’est modifiée qu’après « Oui ».

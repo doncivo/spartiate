@@ -7,10 +7,10 @@
  * - « remplacer » : l'archive devient l'état ; toute ligne locale absente est supprimée logiquement (jamais de tombstone).
  */
 
-import type { ExportData, ExportProfile, ExportWeight } from './archive';
+import { TRAINING_EXPORT_TABLES, trainingColumns, trainingRows, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable } from './archive';
 
 export type ImportMode = 'merge' | 'replace';
-export type ImportTable = 'profile' | 'body_weight' | 'settings';
+export type ImportTable = 'profile' | 'body_weight' | 'settings' | TrainingTable;
 
 export interface ImportOp {
   readonly kind: 'add' | 'modify' | 'delete';
@@ -32,6 +32,10 @@ export interface ImportWrites {
   readonly weights: readonly ExportWeight[];
   readonly deleteWeightIds: readonly string[];
   readonly settings: ExportData['settings'];
+  /** Lignes d'entraînement à créer ou remplacer, dans l'ordre du catalogue (parents d'abord). */
+  readonly training: readonly { readonly table: TrainingTable; readonly row: TrainingRow }[];
+  /** Lignes d'entraînement locales absentes de l'archive (« remplacer »), enfants d'abord. */
+  readonly deleteTraining: readonly { readonly table: TrainingTable; readonly id: string }[];
 }
 
 export interface ImportPlan {
@@ -117,11 +121,39 @@ export function planImport(local: ExportData, incoming: ExportData, mode: Import
     }
   }
 
+  // entraînement (0.2.3) : identité = identifiant de ligne ; « fusionner » ajoute ou remplace, « remplacer » supprime aussi l'absent.
+  // Une archive sans entraînement (antérieure à la 0.2.3) ne supprime jamais rien côté entraînement, même en « remplacer ».
+  const trainingWrites: { table: TrainingTable; row: TrainingRow }[] = [];
+  const deleteTraining: { table: TrainingTable; id: string }[] = [];
+  const hasTraining = incoming.training !== undefined;
+  for (const table of TRAINING_EXPORT_TABLES) {
+    const columns = trainingColumns(table);
+    const localRows = new Map(trainingRows(local, table).map((r) => [r.id, r] as const));
+    for (const row of [...trainingRows(incoming, table)].sort((a, b) => (a.id < b.id ? -1 : 1))) {
+      const existing = localRows.get(row.id);
+      if (existing && columns.every((col) => (existing.values[col] ?? null) === (row.values[col] ?? null))) unchanged += 1;
+      else {
+        trainingWrites.push({ table, row });
+        ops.push({ kind: existing ? 'modify' : 'add', table, id: row.id });
+      }
+    }
+  }
+  if (mode === 'replace' && hasTraining) {
+    for (const table of [...TRAINING_EXPORT_TABLES].reverse()) {
+      const incomingIds = new Set(trainingRows(incoming, table).map((r) => r.id));
+      for (const row of [...trainingRows(local, table)].sort((a, b) => (a.id < b.id ? -1 : 1))) {
+        if (incomingIds.has(row.id)) continue;
+        deleteTraining.push({ table, id: row.id });
+        ops.push({ kind: 'delete', table, id: row.id });
+      }
+    }
+  }
+
   const count = (kind: ImportOp['kind']): number => ops.filter((o) => o.kind === kind).length;
   return {
     mode,
     ops,
     counts: { add: count('add'), modify: count('modify'), delete: count('delete'), unchanged },
-    writes: { profile: profileWrite, deleteProfile, weights: weightWrites, deleteWeightIds, settings: settingsWrite },
+    writes: { profile: profileWrite, deleteProfile, weights: weightWrites, deleteWeightIds, settings: settingsWrite, training: trainingWrites, deleteTraining },
   };
 }
