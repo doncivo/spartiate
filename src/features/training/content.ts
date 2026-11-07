@@ -113,6 +113,7 @@ interface JsonRange {
   readonly stepKg: number | null;
   readonly toVerify?: boolean;
   readonly perMachineToVerify?: boolean;
+  readonly extraPairsKg?: readonly number[];
 }
 interface JsonProfile {
   readonly id: string;
@@ -181,7 +182,10 @@ export function toEmbeddedProfile(json: JsonProfile): EmbeddedProfile {
   });
   const plates = (inv.platesPerSideKg ?? []).filter(positive).map((weightKg) => ({ weightKg, count: 1 }));
   if (plates.length > 0) toVerify.push('plates');
-  const dumbbells = inv.dumbbells ? toRange(inv.dumbbells.minKg, inv.dumbbells.maxKg, inv.dumbbells.stepKg) : null;
+  const dumbbellRange = inv.dumbbells ? toRange(inv.dumbbells.minKg, inv.dumbbells.maxKg, inv.dumbbells.stepKg) : null;
+  // Paires en plus de la plage (9 kg à Antony), ignorées avant la relecture de la PR #60 (M1).
+  const extraPairs = (inv.dumbbells?.extraPairsKg ?? []).filter(positive);
+  const dumbbells = dumbbellRange && extraPairs.length > 0 ? { ...dumbbellRange, extraKg: extraPairs } : dumbbellRange;
   if (inv.dumbbells?.toVerify === true) toVerify.push('dumbbells');
   let kettlebellsKg: number[] = [];
   if (inv.kettlebells) {
