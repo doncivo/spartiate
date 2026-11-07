@@ -9,7 +9,7 @@ import type { Difficulty, ExerciseSession, HistorySet } from './types';
  * - 1RM courant = moyenne pondérée des trois dernières séances valides (1 / 0,6 / 0,3), chaque séance gardant le poids 0,25 de sa
  *   meilleure série si elle dépasse 15 reps ou reste sous 60 % du 1RM courant d'avant elle.
  * - Exclus des statistiques (gardés dans l'historique brut) : échauffements, drops, partielles, chronométrées, séries non faites, séries
- *   aberrantes non confirmées (> 150 % du 1RM courant), séances à moins de 50 % de séries faites.
+ *   aberrantes non confirmées (> 150 % du 1RM courant), séances à moins de 50 % de séries faites, séances de deload (I2-02).
  */
 
 export const epley = (loadKg: number, reps: number): number => loadKg * (1 + reps / 30);
@@ -65,6 +65,8 @@ export function analyzeHistory(history: readonly ExerciseSession[], config: Prog
   const valid: SessionEstimate[] = [];
   let latest: HistoryAnalysis['latest'] = null;
   for (const session of [...history].sort(chronological)) {
+    // Deload (I2-02, § 11.3) : visible dans l'historique brut, exclu des statistiques.
+    if (session.deload === true) continue;
     const work = session.sets.filter((s) => s.setKind === 'work');
     if (work.length === 0) continue;
     const eligible = work.filter(isEligibleSet) as (HistorySet & { loadKg: number; reps: number })[];

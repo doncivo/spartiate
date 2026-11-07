@@ -1,6 +1,7 @@
 import { ENGINE_VERSION, REASON_ORDER, type ProgressionConfig } from './config';
 import { confidenceOf } from './confidence';
 import { analyzeHistory, current1rmFromSessions, epley, type SessionEstimate } from './estimate1rm';
+import { activeConstraints, proposalOptions, reducedTarget, reduces, type ActiveConstraints } from './constraints';
 import { loadGrid, nextLoadAbove, roundKg, snapToEquipment } from './loadGrid';
 import type { MuscleWeight, PrescribeInput, PrescribedSet, Prescription, PrescriptionHeadline, PrescriptionReference, ReasonCode } from './types';
 
@@ -12,12 +13,16 @@ import type { MuscleWeight, PrescribeInput, PrescribedSet, Prescription, Prescri
  * séance (rendue telle quelle : son entrée l'emporte), sinon dernière séance valide, sinon « à saisir » (aucune table de standards,
  * D-72 point 1) ; 4. double progression : haut de plage partout → un cran, sinon +1 rep sur une seule série (8-7-6 → 8-8-6 → 8-8-7 →
  * 8-8-8) ; 5. difficulté : Dur / RIR ≤ 1 bloque la hausse de charge, Facile / RIR ≥ 4 confirme le cran, Facile avec confiance < 60 %
- * recalibre de +5 % (30 jours glissants) à la place du cran ; 6. contraintes (I2-02, point d'extension `applyConstraints`) ; 7. arrondi
+ * recalibre de +5 % (30 jours glissants) à la place du cran ; 6. contraintes (I2-02, constraints.ts) : fatigue, inactivité, deload ou
+ * Recovery bas suspendent la progression (maintien de la référence) et réduisent dans cet ordre (facteurs multipliés, un seul arrondi) ;
+ * fatigue et stagnation ajoutent des choix facultatifs, jamais appliqués ; une décision d'Ali, « à saisir » et une métrique hors moteur
+ * ne sont pas modulées ; 7. arrondi
  * au matériel puis plafond +10 % du 1RM implicite (`max(1RM courant, 1RM de la dernière séance)`) ; 8. raisons dans l'ordre
  * `REASON_ORDER` et raison principale unique (`headline`) ; 9. rien n'est imposé : l'appelant présente, Ali accepte ou modifie.
  */
 
 const DAY_MS = 86_400_000;
+const EPS = 1e-9;
 
 /** Premier muscle de poids maximal dans l'ordre des données (D-72 point 5) ; null sans muscle. */
 export function primaryMuscle(muscles: readonly MuscleWeight[]): string | null {
@@ -62,16 +67,29 @@ function referenceOf(last: SessionEstimate, sets: number, repMin: number): { ref
   return { reference: { loadKg, reps, e1rmKg: last.e1rmKg }, complete: atLoad.length >= sets };
 }
 
-/** Étape 6 (I2-02 : fatigue, inactivité, stagnation, deload, Recovery) : maintien ou réduction seulement. Aucune règle en I2-01. */
-function applyConstraints(draft: Draft, _input: PrescribeInput): Draft {
-  return draft;
+/** Raisons des contraintes actives, dans l'ordre de `REASON_ORDER`. */
+function addConstraintReasons(c: ActiveConstraints, reasons: Set<ReasonCode>): void {
+  if (c.fatigue) reasons.add('fatigue-drop');
+  if (c.stall) reasons.add('stall');
+  if (c.inactivityCut > 0) reasons.add('inactivity-discount');
+  if (c.deload) reasons.add('deload');
+  if (c.lowRecovery) reasons.add('recovery-low');
 }
+
+/** Raison principale d'une proposition réduite : deload, puis inactivité, puis Recovery, puis fatigue (les autres sont des alertes). */
+const reducedHeadline = (c: ActiveConstraints): PrescriptionHeadline => (c.deload ? 'deload' : c.inactivityCut > 0 ? 'inactivity' : c.lowRecovery ? 'recovery-low' : 'fatigue');
+
+type Defaulted = 'options' | 'deload' | 'rirTarget' | 'inactivityCut';
 
 export function prescribe(input: PrescribeInput): Prescription {
   const { config, target } = input;
   const reasons = new Set<ReasonCode>();
   const base = { engineVersion: ENGINE_VERSION, activeConfig: config };
-  const finish = (p: Omit<Prescription, 'reasons' | 'engineVersion' | 'activeConfig'>): Prescription => ({
+  const finish = (p: Omit<Prescription, 'reasons' | 'engineVersion' | 'activeConfig' | Defaulted> & Partial<Pick<Prescription, Defaulted>>): Prescription => ({
+    options: [],
+    deload: false,
+    rirTarget: target.rir,
+    inactivityCut: 0,
     ...p,
     reasons: REASON_ORDER.filter((code) => reasons.has(code)),
     ...base,
@@ -143,6 +161,46 @@ export function prescribe(input: PrescribeInput): Prescription {
   const grid = loadGrid(input.exercise.equipment, input.equipment);
   // La charge de la référence est disponible par définition (Ali l'a soulevée), même hors grille (paire d'haltères en plus).
   const available = grid === null ? null : [...new Set([...grid.loads, refLoad])].sort((a, b) => a - b);
+  // 6. Contraintes (I2-02) : évaluées sur l'historique validé. Dernier travail du muscle : le plus récent entre la donnée de l'appelant
+  // (tous exercices) et la dernière séance de cet exercice avec au moins une série faite (deload ou séance ignorée compris : le muscle a
+  // travaillé ; une séance sans aucune série faite ne compte pas).
+  const muscle = input.muscleLastWorkedAt ?? null;
+  const worked = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || s.endedAt > max) ? s.endedAt : max), null);
+  const constraints = activeConstraints({
+    estimates,
+    lastWorkedAt: muscle !== null && (worked === null || muscle > worked) ? muscle : worked,
+    now: input.now,
+    deload: input.deload === true,
+    recovery: input.recovery,
+    config,
+  });
+  addConstraintReasons(constraints, reasons);
+  const refPerformance = { loadKg: refLoad, reps: reference.reps };
+  if (reduces(constraints)) {
+    // Maintien de la référence (aucun cran, échelle ni recalibrage), puis réductions ; arrondi au matériel, jamais au-dessus de la référence.
+    const reduced = reducedTarget(constraints, refPerformance, input.exercise.kind, config);
+    if (reduced.recoverySetRemoved) reasons.add('recovery-set-removed');
+    const snapped = reduced.targetKg < refLoad - EPS ? snapToEquipment(reduced.targetKg, reduced.reps, available, config) : { loadKg: refLoad, reps: reduced.reps, extraRep: false };
+    if (snapped.extraRep) reasons.add('snap-extra-rep');
+    const loadKg = roundKg(Math.min(snapped.loadKg, refLoad));
+    return finish({
+      status: 'prescribed',
+      headline: reducedHeadline(constraints),
+      sets: snapped.reps.map((reps) => ({ reps, loadKg })),
+      loadKg,
+      deltaKg: roundKg(loadKg - refLoad),
+      reference,
+      ladderSetIndex: null,
+      estimated1rmKg: current,
+      confidence,
+      recalibration: null,
+      options: proposalOptions(constraints, { loadKg, reps: snapped.reps }, available, config),
+      deload: constraints.deload,
+      rirTarget: constraints.deload ? Math.max(target.rir ?? 0, config.deloadRirAtLeast) : target.rir,
+      inactivityCut: constraints.inactivityCut,
+    });
+  }
+
   const hold = (headline: PrescriptionHeadline, reps: readonly number[], ladder: number | null): Draft => ({ headline, loadKg: refLoad, reps, ladderSetIndex: ladder, recalibration: null });
   const extraRep = (): Draft => {
     const index = ladderIndex(reference.reps, target.repMax);
@@ -182,9 +240,6 @@ export function prescribe(input: PrescribeInput): Prescription {
     draft = hold('rep-ladder', plusOne(reference.reps, index), index);
   }
 
-  // 6. Contraintes (I2-02), qui ne peuvent que maintenir ou réduire.
-  draft = applyConstraints(draft, input);
-
   // 7. Arrondi au matériel, puis plafond du 1RM implicite.
   if (increase !== null) {
     const cap = Math.max(current, reference.e1rmKg) * (1 + config.maxGainPerSession);
@@ -215,5 +270,7 @@ export function prescribe(input: PrescribeInput): Prescription {
     estimated1rmKg: current,
     confidence,
     recalibration: draft.recalibration,
+    // Stagnation seule : la proposition reste celle de la double progression, les trois choix partent de la référence.
+    options: proposalOptions(constraints, refPerformance, available, config),
   });
 }
