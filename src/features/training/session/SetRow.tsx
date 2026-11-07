@@ -68,6 +68,14 @@ export interface SetRowProps {
 export function SetRow({ set, number, timed, source, busy, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
   const [draft, setDraft] = useState<Draft>(() => initialDraft(set, timed));
   const [issue, setIssue] = useState<string | null>(null);
+  // I2-01 : une proposition acceptée écrit charge et répétitions dans une série à faire ; la saisie repart des valeurs enregistrées (la ligne
+  // n'est pas remontée : le focus reste où il est).
+  const stored = [set.loadKg, set.reps, set.durationSec, set.rir].map(String).join('|');
+  const [seen, setSeen] = useState(stored);
+  if (seen !== stored) {
+    setSeen(stored);
+    if (!set.done) setDraft(initialDraft(set, timed));
+  }
   const warmup = set.setKind === 'warmup';
   const target = targetText(set, timed, source);
   const label = warmup ? tTraining('sessionWarmupSet') : tTraining('sessionSet', { n: number });
