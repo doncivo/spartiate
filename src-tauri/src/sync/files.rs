@@ -320,6 +320,36 @@ pub fn delete_forgotten_device_files(
     Ok(out)
 }
 
+/// 0.2.4 point 2 : événement fixe selon la cause d'un statut NT d'E/S (fichier verrouillé, accès refusé, suppression en attente). Ce sont des
+/// noms statiques : la production n'écrit que le nom (`log::event`), jamais un chemin ni un message.
+#[allow(dead_code)]
+pub(crate) fn io_event_for_status(status: i32) -> &'static str {
+    match status as u32 {
+        0xC000_0043 => "io-sharing-violation",
+        0xC000_0022 => "io-access-denied",
+        0xC000_0056 => "io-delete-pending",
+        _ => "io-other",
+    }
+}
+
+/// Même classement pour une erreur de `std::io` (codes Windows 32, 5 et 303 sur Windows ; refus de permission ailleurs).
+#[allow(dead_code)]
+pub(crate) fn io_event_for_error(error: &std::io::Error) -> &'static str {
+    if cfg!(windows) {
+        match error.raw_os_error() {
+            Some(32) => return "io-sharing-violation",
+            Some(5) => return "io-access-denied",
+            Some(303) => return "io-delete-pending",
+            _ => {}
+        }
+    }
+    if error.kind() == std::io::ErrorKind::PermissionDenied {
+        "io-access-denied"
+    } else {
+        "io-other"
+    }
+}
+
 #[cfg(windows)]
 mod imp {
     use std::fs::File;
@@ -379,7 +409,10 @@ mod imp {
             STATUS_OBJECT_NAME_NOT_FOUND | STATUS_OBJECT_PATH_NOT_FOUND => FsError::NotFound,
             STATUS_OBJECT_NAME_COLLISION => FsError::Exists,
             STATUS_NOT_A_DIRECTORY | STATUS_FILE_IS_A_DIRECTORY => FsError::Unsafe,
-            code => cloud_windows::status_error(code).unwrap_or(FsError::Io),
+            code => cloud_windows::status_error(code).unwrap_or_else(|| {
+                super::super::log::event(super::io_event_for_status(code), "");
+                FsError::Io
+            }),
         }
     }
 
@@ -1052,6 +1085,7 @@ mod imp {
         if error.kind() == std::io::ErrorKind::NotFound {
             FsError::NotFound
         } else {
+            super::super::log::event(super::io_event_for_error(error), "");
             FsError::Io
         }
     }
