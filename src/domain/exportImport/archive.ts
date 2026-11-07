@@ -21,7 +21,7 @@ import {
 } from '../bodyProfile';
 import type { ThemeChoice } from '../model/settings';
 import { isIsoDateTime, isLocalDate } from '../types';
-import { SYNC_CATALOGUE, type SyncTable } from '../sync/syncTables';
+import { SYNC_CATALOGUE, type SyncTable } from '../../domain/sync/syncTables';
 import { sha256Hex } from './sha256';
 import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
