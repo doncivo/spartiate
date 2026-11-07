@@ -12,6 +12,7 @@ import { FileSaveFailure } from '../../app/FileSaveFailure';
 import { useNavigationStore } from '../../app/navigation';
 import { saveFile } from '../../app/saveFile';
 import { buildLogExport } from './logExport';
+import { readSyncReport, type SyncReport, type SyncReportUnavailable } from './syncReport';
 import { useLogJournal, useLogStatus } from './useLogJournal';
 import './LogsScreen.css';
 
@@ -95,7 +96,12 @@ export function LogsScreen({ journal: injected, version }: LogsScreenProps = {})
       // I-06 : version lue au démarrage (platform/appVersion.ts), PC et iPhone ; illisible : « unknown ».
       const readVersion = version ?? (() => Promise.resolve(publishedAppVersion(container.appVersion)));
       const appVersion = await readVersion().catch(() => UNKNOWN_APP_VERSION);
-      const file = buildLogExport(all, { version: appVersion, os: container.platform.os, schemaVersion: migrations.at(-1)?.version ?? 0, now: new Date(container.clock.nowMs()) });
+      // 0.2.4 point 3 : bilan de synchro en tête (compteurs seulement) ; une lecture en échec n'empêche jamais l'export.
+      const report: SyncReport | SyncReportUnavailable = await readSyncReport(container.data.repos).catch((error: unknown): SyncReportUnavailable => {
+        const code = typeof error === 'object' && error !== null ? (error as { code?: unknown }).code : undefined;
+        return { unavailable: typeof code === 'string' ? code : 'io' };
+      });
+      const file = buildLogExport(all, { version: appVersion, os: container.platform.os, schemaVersion: migrations.at(-1)?.version ?? 0, now: new Date(container.clock.nowMs()), report });
       const outcome = await saveFile(container.files, { suggestedName: file.name, mime: 'text/plain', data: new TextEncoder().encode(file.text) }, 'logs-export');
       if (outcome.status === 'saved') setExported(true);
       if (outcome.status === 'failed') setExportFailure({ code: outcome.code, tooLarge: outcome.tooLarge });
