@@ -34,7 +34,13 @@ function list<T>(value: unknown, item: (v: unknown) => T | null): T[] | null {
 }
 
 const range = (v: unknown): StackRange | null => (isRecord(v) && positive(v['minKg']) && positive(v['maxKg']) && positive(v['stepKg']) ? { minKg: v['minKg'], maxKg: v['maxKg'], stepKg: v['stepKg'] } : null);
-const barbell = (v: unknown): BarbellSpec | null => (isRecord(v) && typeof v['type'] === 'string' && v['type'].length <= 64 && positive(v['weightKg']) ? { type: v['type'], weightKg: v['weightKg'] } : null);
+const barbell = (v: unknown): BarbellSpec | null => {
+  if (!(isRecord(v) && typeof v['type'] === 'string' && v['type'].length <= 64 && positive(v['weightKg']))) return null;
+  const equipmentId = v['equipmentId'];
+  // I2-01 : matériel de la barre, facultatif (profil d'avant la 0.3.0) ; présent, il doit être un identifiant du catalogue.
+  if (equipmentId === undefined) return { type: v['type'], weightKg: v['weightKg'] };
+  return typeof equipmentId === 'string' && ID_RE.test(equipmentId) ? { type: v['type'], weightKg: v['weightKg'], equipmentId } : null;
+};
 const plate = (v: unknown): PlateSpec | null =>
   isRecord(v) && positive(v['weightKg']) && typeof v['count'] === 'number' && Number.isInteger(v['count']) && v['count'] >= 1 && v['count'] <= 100 ? { weightKg: v['weightKg'], count: v['count'] } : null;
 const machine = (v: unknown): MachineSpec | null =>

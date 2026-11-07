@@ -48,6 +48,8 @@ describe('contenu embarqué de l’entraînement', () => {
     const antony = must(content.profiles[0]);
     expect(antony.inventory.toVerify).toEqual(expect.arrayContaining(['kettlebells', 'barbell:Barre EZ']));
     expect(antony.increments).toEqual({ barbell: 2.5, dumbbell: 2 });
+    // I2-01 : chaque barre est reliée à son matériel (grille de charges du moteur) ; la barre guidée sans poids n'est pas retenue.
+    expect(antony.inventory.barbells.map((b) => [b.equipmentId, b.weightKg])).toEqual([['barbell', 20], ['barbell', 8], ['ez-bar', 8.5], ['trap-bar', 18]]);
   });
 
   it('compatibilité : les groupes d’alternatives du JSON ; poids de corps sans barre', async () => {
