@@ -303,6 +303,72 @@ describe('déterminisme, version, explication (critère 9)', () => {
   });
 });
 
+describe('cas limites (passe qa-test)', () => {
+  it('Juste explicite au haut de la plage : cran sans « Facile confirme »', () => {
+    const p = prescribe(input({ history: [session(3, 60, [10, 10, 10], { difficulty: 'ok' })] }));
+    expect(p.loadKg).toBe(62.5);
+    expect(p.reasons).toEqual(['history-reference', 'top-reached']);
+  });
+
+  it('reps fixes (5 × 5) : toutes à 5 → cran ; RIR absent sur certaines séries, 4 sur les autres → Facile confirme', () => {
+    const s = session(3, 100, [5, 5, 5, 5, 5]);
+    const p = prescribe(input({ history: [{ ...s, sets: s.sets.map((x, i) => ({ ...x, rir: i % 2 === 0 ? null : 4 })) }], target: target(5, 5, 5) }));
+    expect(p.loadKg).toBe(102.5);
+    expect(reps(p)).toEqual([5, 5, 5, 5, 5]);
+    expect(p.reasons).toEqual(['history-reference', 'top-reached', 'easy-confirms']);
+  });
+
+  it('plus de séries faites que prévues : les premières comptent (4 × 10 pour 3 prévues → cran)', () => {
+    const p = prescribe(input({ history: [session(3, 60, [10, 10, 10, 10])] }));
+    expect(p.loadKg).toBe(62.5);
+    expect(p.sets).toHaveLength(3);
+  });
+
+  it('séries de travail avec 0 rep ou sans charge : non exploitables, « à saisir »', () => {
+    const s: ExerciseSession = { ...session(3, 60, []), sets: [set(60, 0, { position: 0 }), set(null, 10, { position: 1 })] };
+    const p = prescribe(input({ history: [s] }));
+    expect(p.status).toBe('to-enter');
+    expect(p.reasons).toEqual(['partial-session-ignored', 'no-history']);
+  });
+
+  it('séance ignorée plus ancienne que la dernière séance valide : aucune raison de validation', () => {
+    const partial = { ...session(9, 60, []), sets: [set(60, 10, { position: 0 }), set(60, null, { position: 1, done: false }), set(60, null, { position: 2, done: false })] };
+    const p = prescribe(input({ history: [partial, session(3, 60, [10, 10, 10])] }));
+    expect(p.reasons).toEqual(['history-reference', 'top-reached']);
+  });
+
+  it('kettlebell au maximum du profil (34 kg) : pas de hausse ; décision sans reps : reps au bas de la plage', () => {
+    const kb = { id: 'swing-kettlebell', metric: 'load-reps', equipment: ['kettlebell'] } as const;
+    const p = prescribe(input({ exercise: kb, history: [session(3, 34, [10, 10, 10])] }));
+    expect(p.loadKg).toBe(34);
+    expect(p.reasons).toContain('equipment-max');
+    const d = prescribe(input({ lastDecision: { decidedAt: NOW, accepted: false, loadKg: 20, reps: [] } }));
+    expect(d.sets).toEqual([{ reps: 8, loadKg: 20 }, { reps: 8, loadKg: 20 }, { reps: 8, loadKg: 20 }]);
+  });
+
+  it('kettlebell sous le maximum : cran vers la charge suivante de la liste (4 → 34 kg plafonné) ', () => {
+    const kb = { id: 'swing-kettlebell', metric: 'load-reps', equipment: ['kettlebell'] } as const;
+    const p = prescribe(input({ exercise: kb, history: [session(3, 4, [10, 10, 10])] }));
+    expect(p.loadKg).toBe(4);
+    expect(reps(p)).toEqual([11, 10, 10]);
+    expect(p.reasons).toEqual(['history-reference', 'top-reached', 'gain-capped']);
+  });
+
+  it('paire d’haltères hors grille (9 kg) : la référence reste disponible, recalibrage +5 % → 9 kg et une rep de plus', () => {
+    const p = prescribe(input({ exercise: CURL, history: [session(3, 9, [10, 10, 10], { difficulty: 'easy' })], target: target(8, 12) }));
+    expect(p.loadKg).toBe(9);
+    expect(reps(p)).toEqual([11, 11, 11]);
+    expect(p.reasons).toEqual(['history-reference', 'easy-recalibration', 'snap-extra-rep']);
+  });
+
+  it('séances terminées au même instant : départage stable par identifiant', () => {
+    const a = { ...session(3, 60, [10, 10, 10]), workoutId: 'w-a' };
+    const b = { ...session(3, 50, [10, 10, 10]), workoutId: 'w-b' };
+    expect(prescribe(input({ history: [a, b] })).reference?.loadKg).toBe(50);
+    expect(prescribe(input({ history: [b, a] })).reference?.loadKg).toBe(50);
+  });
+});
+
 describe('muscle principal et position (D-72 point 5 ; appliqués par la génération, I3)', () => {
   it('muscle principal : premier muscle de poids maximal dans l’ordre des données', () => {
     expect(primaryMuscle([{ id: 'chest', weight: 1 }, { id: 'triceps', weight: 0.5 }])).toBe('chest');

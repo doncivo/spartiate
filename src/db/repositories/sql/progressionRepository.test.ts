@@ -83,6 +83,7 @@ describe('ProgressionRepository.history', () => {
     expect(all.at(-1)?.workoutId).toBe(u(101));
     expect((await r.history('curl-dumbbell', 2)).map((s) => s.workoutId)).toEqual([u(100 + HISTORY_SESSIONS_LOADED), u(99 + HISTORY_SESSIONS_LOADED)]);
     expect(await r.history('inconnu')).toEqual([]);
+    expect(await r.history('curl-dumbbell', 0)).toEqual([]);
   });
 
   it('l’historique chargé alimente le moteur : 60 × 10-10-10 → 62,5 kg', async () => {

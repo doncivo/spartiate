@@ -191,18 +191,15 @@ export function prescribe(input: PrescribeInput): Prescription {
     const fits = (loadKg: number, reps: readonly number[]): boolean => epley(loadKg, Math.max(...reps)) <= cap + 1e-9;
     const snapped = snapToEquipment(increase.targetKg, increase.reps, available, config);
     const snappedLoad = Math.max(snapped.loadKg, refLoad);
-    if (snappedLoad > refLoad && fits(snappedLoad, snapped.reps)) {
+    // Aucune charge de la grille n'existe entre la référence et le cran suivant ; +5 % tombé sur la référence (sous le cran suivant)
+    // garde la charge, avec une répétition de plus par série si l'écart dépasse 3 %.
+    if (fits(snappedLoad, snapped.reps)) {
       if (snapped.extraRep) reasons.add('snap-extra-rep');
       draft = { ...draft, loadKg: snappedLoad, reps: snapped.reps };
-    } else if (snappedLoad <= refLoad && draft.headline === 'recalibration' && fits(refLoad, snapped.reps)) {
-      // +5 % tombe sous le cran suivant : même charge, une répétition de plus par série si l'écart dépasse 3 %.
-      if (snapped.extraRep) reasons.add('snap-extra-rep');
-      draft = { ...draft, loadKg: refLoad, reps: snapped.reps };
     } else {
-      const below = (available ?? []).filter((kg) => kg > refLoad && kg < snappedLoad && fits(kg, increase.reps));
-      const capped = below.length > 0 ? Math.max(...below) : null;
+      // Au-delà du garde-fou : la charge inférieure (la référence), et l'échelle de répétitions continue au-delà du haut de plage.
       reasons.add('gain-capped');
-      draft = capped !== null ? { ...draft, loadKg: capped, reps: increase.reps } : extraRep();
+      draft = extraRep();
     }
   }
 
