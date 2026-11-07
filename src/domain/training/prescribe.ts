@@ -53,9 +53,15 @@ function ladderIndex(reps: readonly number[], repMax: number): number {
 
 const plusOne = (reps: readonly number[], index: number): number[] => reps.map((r, i) => (i === index ? r + 1 : r));
 
-/** Référence : charge maximale de la dernière séance valide, reps des séries faites à cette charge, complétées à `sets`. */
+/**
+ * Référence : charge la plus fréquente des séries de la dernière séance (à égalité, la plus lourde), reps des séries faites à cette charge,
+ * complétées à `sets`. Relecture de la PR #60 (I1) : un top set isolé ou une faute de frappe sur une série ne fixe plus la charge de toutes
+ * les séries.
+ */
 function referenceOf(last: SessionEstimate, sets: number, repMin: number): { reference: PrescriptionReference; complete: boolean } {
-  const loadKg = Math.max(...last.sets.map((s) => s.loadKg));
+  const counts = new Map<number, number>();
+  for (const s of last.sets) counts.set(s.loadKg, (counts.get(s.loadKg) ?? 0) + 1);
+  const loadKg = [...counts.entries()].reduce((best, [load, count]) => (count > best[1] || (count === best[1] && load > best[0]) ? [load, count] : best), [-Infinity, 0])[0];
   const atLoad = last.sets.filter((s) => s.loadKg === loadKg).map((s) => s.reps);
   const fill = Math.min(atLoad[atLoad.length - 1] ?? repMin, repMin);
   const reps = Array.from({ length: sets }, (_, i) => atLoad[i] ?? fill);
@@ -109,7 +115,11 @@ export function prescribe(input: PrescribeInput): Prescription {
       recalibration: null,
     });
   }
-  const last = estimates[0];
+  // B1 : si les séries de la dernière séance ont été écartées comme aberrantes (non encore confirmées), elle reste la référence de charge
+  // (c'est ce qu'Ali a réellement soulevé) ; le 1RM courant, lui, attend la confirmation par une séance suivante.
+  const raw = analysis.latestRaw;
+  const outlierReference = raw !== null && analysis.latest?.partial !== true && (analysis.latest?.outliers ?? 0) > 0 && raw.workoutId !== estimates[0]?.workoutId;
+  const last = outlierReference ? raw : estimates[0];
   if (last === undefined || current === null) {
     reasons.add('no-history');
     return finish({
@@ -136,9 +146,11 @@ export function prescribe(input: PrescribeInput): Prescription {
   const hard = last.difficulty === 'hard' || (minRir !== null && minRir <= config.hardRirAtMost);
   const easy = last.difficulty === 'easy' || (minRir !== null && minRir >= config.easyRirAtLeast);
   const lastRecal = input.profile?.lastEasyRecalibrationAt ?? null;
-  const recalAllowed =
-    !hard && last.difficulty === 'easy' && confidence < config.easyRecalibrationBelow && (lastRecal === null || (Date.parse(input.now) - Date.parse(lastRecal)) / DAY_MS >= config.easyRecalibrationCooldownDays);
+  // Relecture de la PR #60 (I2) : au haut de la fourchette, le cran l'emporte sur le recalibrage « Facile » (sinon +0 kg et +1 rep hors
+  // fourchette, moins ambitieux que sans « Facile »).
   const topReached = complete && reference.reps.every((r) => r >= target.repMax);
+  const recalAllowed =
+    !topReached && !hard && last.difficulty === 'easy' && confidence < config.easyRecalibrationBelow && (lastRecal === null || (Date.parse(input.now) - Date.parse(lastRecal)) / DAY_MS >= config.easyRecalibrationCooldownDays);
 
   const grid = loadGrid(input.exercise.equipment, input.equipment);
   // La charge de la référence est disponible par définition (Ali l'a soulevée), même hors grille (paire d'haltères en plus).
@@ -152,7 +164,13 @@ export function prescribe(input: PrescribeInput): Prescription {
   let draft: Draft;
   /** Hausse à arrondir et plafonner (étape 7). */
   let increase: { readonly targetKg: number; readonly reps: readonly number[] } | null = null;
-  if (recalAllowed) {
+  if (outlierReference) {
+    // B1 : charge très au-dessus de l'historique, pas encore confirmée par une seconde séance : même charge, une répétition de plus,
+    // jamais de hausse (une faute de frappe ne s'amplifie pas) ; l'explication le dit et invite à vérifier.
+    reasons.add('rep-ladder');
+    const index = ladderIndex(reference.reps, target.repMax);
+    draft = hold('rep-ladder', plusOne(reference.reps, index), index);
+  } else if (recalAllowed) {
     reasons.add('easy-recalibration');
     increase = { targetKg: refLoad * (1 + config.easyRecalibrationGain), reps: reference.reps };
     draft = { headline: 'recalibration', loadKg: refLoad, reps: reference.reps, ladderSetIndex: null, recalibration: { at: input.now, estimated1rmKg: current * (1 + config.easyRecalibrationGain) } };

@@ -12,7 +12,9 @@ import type { ExerciseSession, PrescribeInput } from './types';
  */
 
 const profiles = JSON.parse(readFileSync(new URL('../../../content/equipment-profiles/profiles.json', import.meta.url), 'utf8')) as { profiles: Parameters<typeof toEmbeddedProfile>[0][] };
-const ANTONY = toEmbeddedProfile(profiles.profiles[0]!);
+const antonyJson = profiles.profiles[0];
+if (antonyJson === undefined) throw new Error('profil Antony absent');
+const ANTONY = toEmbeddedProfile(antonyJson);
 const NOW = '2026-11-09T18:00:00.000Z';
 const ago = (days: number): string => new Date(Date.parse(NOW) - days * 86_400_000).toISOString();
 let n = 0;

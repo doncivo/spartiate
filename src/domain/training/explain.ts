@@ -17,7 +17,8 @@ export type ExplanationKey =
   | 'holdHard'
   | 'extraRep'
   | 'extraRepCapped'
-  | 'extraRepMax';
+  | 'extraRepMax'
+  | 'outlierHold';
 
 export interface Explanation {
   readonly key: ExplanationKey;
@@ -53,6 +54,8 @@ export function explainPrescription(p: Prescription): Explanation {
       return { key: p.reasons.includes('increment-unknown') ? 'increaseUnknownStep' : 'increase', params };
     }
     case 'rep-ladder':
+      // B1 : la dernière séance dépasse nettement l'historique sans confirmation : on le dit, avec la charge, pour qu'Ali vérifie.
+      if (p.reasons.includes('outlier-excluded') && p.loadKg !== null) return { key: 'outlierHold', params: { load: p.loadKg, set } };
       return { key: 'repLadder', params: { set } };
     case 'recalibration':
       return { key: 'recalibration', params: { delta: p.deltaKg ?? 0 } };
