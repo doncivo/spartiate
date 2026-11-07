@@ -43,7 +43,7 @@ async function openLogs(page: Page): Promise<void> {
 }
 
 test.describe('I-04 — écran Logs', () => {
-  test('critère 11 : 500 entrées au plus, défilement, filtres, export lu (aucune sentinelle), annulation sans message', async ({ page }) => {
+  test('critère 11 : 500 entrées au plus à l’écran (export jusqu’à 2 000), défilement, filtres, export lu (aucune sentinelle), annulation sans message', async ({ page }) => {
     await openLogs(page);
     const log = page.getByRole('log');
     await expect(log.getByRole('listitem')).toHaveCount(500);
@@ -74,7 +74,9 @@ test.describe('I-04 — écran Logs', () => {
     expect(file.mime).toBe('text/plain');
     const text = textOf(file);
     expect(text).toContain('Ce fichier ne contient ni titres ni notes.');
-    expect(text).toContain('Entrées : 500');
+    // 600 entrées du faux + la synchro d'ouverture ; l'iPhone note en plus « startup step db.load » quand cette étape de démarrage est lente
+    // (entrée de session légitime, présente selon le temps mesuré) : 601 sur PC, 601 ou 602 sur iPhone, jamais 500 (plafond de lecture : 2 000).
+    expect(text).toMatch(/Entrées : 60[12]\r?\n/);
     expect(text).toContain(' sync-rust code-598');
     expect(text).not.toContain(SENTINEL);
   });

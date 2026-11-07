@@ -33,7 +33,7 @@ pub const MAX_LINE_BYTES: usize = 4 * 1024;
 /// Entrées par appel de `log_append`.
 pub const MAX_APPEND_ENTRIES: usize = 100;
 /// Entrées rendues par `log_read` au plus.
-pub const MAX_READ_ENTRIES: usize = 500;
+pub const MAX_READ_ENTRIES: usize = 2000;
 /// Entrées internes gardées en mémoire avant `init`.
 pub const MAX_PENDING: usize = 100;
 /// Entrées d'un même couple (`scope`, `code`) par minute.
@@ -828,7 +828,7 @@ pub async fn log_append(
     .map_err(|_| fail("io"))?
 }
 
-/// Les `max` dernières entrées (1 à 500) et le dernier échec d'écriture.
+/// Les `max` dernières entrées (1 à 2 000) et le dernier échec d'écriture.
 #[tauri::command]
 pub async fn log_read(app: tauri::AppHandle, max: usize) -> Result<ReadOutcome, LogError> {
     let dir = logs_dir(&app)?;

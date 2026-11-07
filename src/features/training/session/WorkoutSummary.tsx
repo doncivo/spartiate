@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { logFailure } from '../../../platform/desktop/log';
 import type { RoutineDiff } from '../../../domain/training';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { ClosedWorkout } from '../../../db/repositories/workoutRepository';
@@ -45,11 +46,18 @@ export function WorkoutSummary({ access, closed, onClose, onJournal }: WorkoutSu
     };
   }, []);
 
+  /** La question a sa réponse (Oui, Cette fois seulement ou fermeture du résumé) : elle ne sera plus reproposée. Un échec est journalisé. */
+  function settle(): void {
+    if (!routineDiff.hasChanges) return;
+    void access.repos.settings.set('training.routineUpdateAsk', null).catch((error: unknown) => logFailure('training', error));
+  }
+
   async function updateRoutine(): Promise<void> {
     setError(null);
     setStep('busy');
     try {
       await access.transaction(async (repos) => (await repos.workouts()).applyRoutineUpdate(workout.id));
+      settle();
       if (live.current) setStep('updated');
     } catch {
       if (live.current) {
@@ -107,7 +115,10 @@ export function WorkoutSummary({ access, closed, onClose, onJournal }: WorkoutSu
             <Button disabled={step === 'busy'} onClick={() => void updateRoutine()}>
               {tTraining('routineYes')}
             </Button>
-            <Button variant="secondary" disabled={step === 'busy'} onClick={() => setStep('kept')}>
+            <Button variant="secondary" disabled={step === 'busy'} onClick={() => {
+                settle();
+                setStep('kept');
+              }}>
               {tTraining('routineThisTime')}
             </Button>
           </div>
@@ -125,10 +136,23 @@ export function WorkoutSummary({ access, closed, onClose, onJournal }: WorkoutSu
       ) : null}
 
       <div className="ct-training__actions">
-        <Button variant="secondary" onClick={onJournal}>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            settle();
+            onJournal();
+          }}
+        >
           {tTraining('summaryJournal')}
         </Button>
-        <Button onClick={onClose}>{tTraining('summaryClose')}</Button>
+        <Button
+          onClick={() => {
+            settle();
+            onClose();
+          }}
+        >
+          {tTraining('summaryClose')}
+        </Button>
       </div>
     </section>
   );

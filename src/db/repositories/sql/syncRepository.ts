@@ -14,6 +14,7 @@ import type {
   ParkedOp,
   StoredConflict,
   StoredRow,
+  SyncReportTable,
   SyncRepository,
   SyncStatePatch,
   SyncStateRow,
@@ -111,6 +112,9 @@ function rowToState(row: SqlRow): SyncStateRow {
     status: String(row['status']),
   };
 }
+
+/** Tables publiées comptées par le bilan de l'export des journaux (noms fixes, jamais une valeur venue de l'extérieur). */
+const REPORT_TABLES: readonly SyncReportTable[] = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set'];
 
 export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, catalogue: SyncCatalogue): SyncRepository {
   /** ` AND <condition>` des lignes publiables de `t` (alias `p`), vide sans règle. */
@@ -402,6 +406,22 @@ export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, cat
     },
 
     // --- état -----------------------------------------------------------------------------------------------------------------------
+    async diagnostics() {
+      const count = async (sql: string): Promise<number> => Number((await db.select<{ n: number }>(sql))[0]?.n ?? 0);
+      const rows = {} as Record<SyncReportTable, number>;
+      // Noms de tables fixes (liste ci-dessus) : jamais une valeur venue de l'extérieur.
+      for (const table of REPORT_TABLES) {
+        // Séances closes seulement : les séries comptées sont celles de séances closes (une séance ouverte reste locale).
+        if (table === 'workout_set') rows[table] = await count('SELECT COUNT(*) AS n FROM workout_set s JOIN workout w ON w.id = s.workout_id WHERE s.deleted_at IS NULL AND w.deleted_at IS NULL AND w.ended_at IS NOT NULL');
+        else rows[table] = await count(`SELECT COUNT(*) AS n FROM ${table} WHERE deleted_at IS NULL${table === 'workout' ? ' AND ended_at IS NOT NULL' : ''}`);
+      }
+      return {
+        outbox: await count('SELECT COUNT(*) AS n FROM sync_outbox'),
+        unknown: await count('SELECT COUNT(*) AS n FROM sync_unknown'),
+        conflicts: await count('SELECT COUNT(*) AS n FROM conflict_log'),
+        rows,
+      };
+    },
     async getStates() {
       return (await db.select('SELECT * FROM sync_state ORDER BY device_id')).map(rowToState);
     },

@@ -1,5 +1,6 @@
 import { tLogs } from '../../../i18n/logsText';
 import type { LogEntry } from '../../../platform/logs';
+import type { SyncReport, SyncReportUnavailable } from './syncReport';
 
 export interface LogExportMeta {
   readonly version: string;
@@ -7,6 +8,35 @@ export interface LogExportMeta {
   readonly schemaVersion: number;
   /** Instant de l'export (horloge injectée). */
   readonly now: Date;
+  /** Bilan de synchro placé avant les entrées (0.2.4 point 3) : compteurs seulement ; absent : aucun bilan. */
+  readonly report?: SyncReport | SyncReportUnavailable;
+}
+
+/** Lignes du bilan : appareils connus, file d'envoi, lignes mises de côté, conflits, lignes par table. Jamais de contenu. */
+function reportLines(report: SyncReport | SyncReportUnavailable): string[] {
+  if ('unavailable' in report) return [tLogs('reportUnavailable', { code: report.unavailable }), ''];
+  const unknown = tLogs('reportUnknownValue');
+  const devices = report.devices.map((d) =>
+    tLogs('reportDevice', {
+      id: d.id,
+      self: d.self ? tLogs('reportSelf') : '',
+      platform: d.platform ?? unknown,
+      version: d.appVersion ?? unknown,
+      status: d.status,
+      lastSync: d.lastSyncAt ?? unknown,
+      lastSeen: d.lastSeen ?? unknown,
+      cursor: d.cursor,
+    }),
+  );
+  return [
+    tLogs('reportTitle'),
+    ...(devices.length > 0 ? devices : [tLogs('reportNoDevice')]),
+    tLogs('reportOutbox', { count: report.outbox }),
+    tLogs('reportParked', { count: report.unknown }),
+    tLogs('reportConflicts', { count: report.conflicts }),
+    tLogs('reportRows', { rows: Object.entries(report.rows).map(([table, n]) => `${table}: ${String(n)}`).join(', ') }),
+    '',
+  ];
 }
 
 const pad = (value: number): string => String(value).padStart(2, '0');
@@ -57,6 +87,7 @@ export function buildLogExport(entries: readonly LogEntry[], meta: LogExportMeta
     tLogs('fileCount', { count: entries.length }),
     tLogs('filePrivacy'),
     '',
+    ...(meta.report ? reportLines(meta.report) : []),
   ];
   const lines = [...header, ...entries.map(logExportLine)];
   return { name: logExportName(meta.now), text: `${lines.join('\r\n')}\r\n` };

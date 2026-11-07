@@ -381,6 +381,8 @@ export interface Inflight {
 
 export interface PublishResult {
   readonly published: number;
+  /** Tables des opérations publiées (journal : noms seulement). */
+  readonly tables?: readonly string[];
   readonly head: DeviceAck;
   readonly error: string | null;
 }
@@ -416,6 +418,7 @@ export async function publishOutbox(deps: SyncDeps, epoch: EpochId, head: Device
   // Entrées lues sans rien à publier : retirées par numéro (une écriture faite depuis la lecture a un nouveau numéro et reste).
   if (material.stale.length > 0) await data.transaction((repos) => repos.sync.dropOutbox(material.stale));
   if (material.ops.length === 0) return { published: 0, head, error: null };
+  const tablesOut = [...new Set(material.ops.map((pending) => pending.op.t))].sort();
   // TRI-06 : une opération trop grosse n'est jamais publiée : compteur persistant (table seulement) et avertissement `publish-dropped`.
   const tooLarge = new Set<string>();
   let tooLargeCount = 0;
@@ -494,7 +497,7 @@ export async function publishOutbox(deps: SyncDeps, epoch: EpochId, head: Device
           if (maxSegment >= MAX_FILE_NUMBER) {
             await writeJson(data.repos, META.publishRotation, { epoch, segment, code: 'folder-too-large', maxHlc });
             logger.log('publish-failed', { code: 'folder-too-large' });
-            return { published, head: current, error: 'folder-too-large' };
+            return { published, tables: tablesOut, head: current, error: 'folder-too-large' };
           }
           segment = maxSegment + 1;
           expect = 0;
@@ -510,7 +513,7 @@ export async function publishOutbox(deps: SyncDeps, epoch: EpochId, head: Device
           if (rotation !== null && maxSegment >= MAX_FILE_NUMBER) {
             await writeJson(data.repos, META.publishRotation, { epoch, segment, code: 'folder-too-large', maxHlc });
             logger.log('publish-failed', { code: 'folder-too-large' });
-            return { published, head: current, error: 'folder-too-large' };
+            return { published, tables: tablesOut, head: current, error: 'folder-too-large' };
           }
           segment = maxSegment + 1;
           expect = 0;
@@ -522,11 +525,11 @@ export async function publishOutbox(deps: SyncDeps, epoch: EpochId, head: Device
         }
         if (rotation !== null || rotatedForCloud) await writeJson(data.repos, META.publishRotation, { epoch, segment, code, maxHlc });
         logger.log('publish-failed', { code });
-        return { published, head: current, error: code };
+        return { published, tables: tablesOut, head: current, error: code };
       }
     }
   }
-  return { published, head: current, error: null };
+  return { published, tables: tablesOut, head: current, error: null };
 }
 
 /** Lecture de la tête mémorisée et de l'intention d'ajout. */
