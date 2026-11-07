@@ -162,11 +162,13 @@ export function prescribe(input: PrescribeInput): Prescription {
   // La charge de la référence est disponible par définition (Ali l'a soulevée), même hors grille (paire d'haltères en plus).
   const available = grid === null ? null : [...new Set([...grid.loads, refLoad])].sort((a, b) => a - b);
   // 6. Contraintes (I2-02) : évaluées sur l'historique validé. Dernier travail du muscle : le plus récent entre la donnée de l'appelant
-  // (tous exercices) et la dernière séance de cet exercice (deload ou séance ignorée compris : le muscle a travaillé).
+  // (tous exercices) et la dernière séance de cet exercice avec au moins une série faite (deload ou séance ignorée compris : le muscle a
+  // travaillé ; une séance sans aucune série faite ne compte pas).
   const muscle = input.muscleLastWorkedAt ?? null;
+  const worked = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || s.endedAt > max) ? s.endedAt : max), null);
   const constraints = activeConstraints({
     estimates,
-    lastWorkedAt: muscle !== null && (latestEnd === null || muscle > latestEnd) ? muscle : latestEnd,
+    lastWorkedAt: muscle !== null && (worked === null || muscle > worked) ? muscle : worked,
     now: input.now,
     deload: input.deload === true,
     recovery: input.recovery,
