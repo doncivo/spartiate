@@ -114,7 +114,7 @@ function rowToState(row: SqlRow): SyncStateRow {
 }
 
 /** Tables publiées comptées par le bilan de l'export des journaux (noms fixes, jamais une valeur venue de l'extérieur). */
-const REPORT_TABLES: readonly SyncReportTable[] = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set'];
+const REPORT_TABLES: readonly SyncReportTable[] = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision'];
 
 export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, catalogue: SyncCatalogue): SyncRepository {
   /** ` AND <condition>` des lignes publiables de `t` (alias `p`), vide sans règle. */

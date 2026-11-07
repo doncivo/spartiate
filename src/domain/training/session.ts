@@ -1,6 +1,6 @@
 import type { DeviceId, Hlc, IsoDateTime } from '../types';
 import { REPS_MAX, RIR_MAX } from './routineRules';
-import type { RoutineExerciseSpec } from './types';
+import type { Difficulty, RoutineExerciseSpec } from './types';
 
 /**
  * Séance active (PRD § 13.1–13.4, 13.7–13.8 ; I1-02, D-27, D-71). Module pur, sans horloge ni stockage : le temps est toujours un argument.
@@ -76,6 +76,8 @@ export interface WorkoutSet extends RowMeta {
   readonly doneAt: IsoDateTime | null;
   /** Dernière correction d'une série d'une séance close (§ 13.8, I1-03) ; absent ou null : jamais corrigée. */
   readonly correctedAt?: IsoDateTime | null;
+  /** I2-01 : difficulté Facile / Juste / Dur de l'exercice dans la séance, portée par chacune de ses séries ; absent ou null : non saisie. */
+  readonly difficulty?: Difficulty | null;
 }
 
 export interface WorkoutWithSets extends Workout {

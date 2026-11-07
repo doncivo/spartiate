@@ -48,6 +48,9 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   // I1-03 : séances closes et leurs séries.
   workout: { label: 'name', kind: 'workout' },
   workout_set: { label: 'exercise_name', kind: 'workoutSet' },
+  // I2-01 : profil de progression et décisions (libellé : l'exercice, identifiant embarqué ou personnalisé).
+  progression_profile: { label: 'exercise_id', kind: 'progressionProfile' },
+  recommendation_decision: { label: 'exercise_id', kind: 'recommendationDecision' },
 };
 
 export const carryReportTableEntry = (table: string): { readonly label: string | null; readonly kind: string } | undefined =>

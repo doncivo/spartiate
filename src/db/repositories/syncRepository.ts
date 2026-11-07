@@ -79,7 +79,18 @@ export interface SyncStateRow {
 }
 
 /** Tables publiées dont l'export des journaux compte les lignes non supprimées (0.2.4 point 3) ; `workout` : séances closes seulement. */
-export type SyncReportTable = 'profile' | 'body_weight' | 'exercise' | 'equipment_profile' | 'routine' | 'routine_day' | 'routine_exercise' | 'workout' | 'workout_set';
+export type SyncReportTable =
+  | 'profile'
+  | 'body_weight'
+  | 'exercise'
+  | 'equipment_profile'
+  | 'routine'
+  | 'routine_day'
+  | 'routine_exercise'
+  | 'workout'
+  | 'workout_set'
+  | 'progression_profile'
+  | 'recommendation_decision';
 
 /** Compteurs seulement (jamais le contenu d'une ligne) : bilan de l'export des journaux. */
 export interface SyncDiagnostics {

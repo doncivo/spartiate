@@ -223,8 +223,9 @@ export interface RoutineTree extends Routine {
 // Moteur de prescription (§ 11, I2-01 ; D-72). Contrats purs, versionnés par `ENGINE_VERSION` (config.ts).
 // -----------------------------------------------------------------------------------------------------------------------------------
 
-/** Ressenti de fin d'exercice (§ 13.2 : Facile / Juste / Dur, ignorable). */
-export type Difficulty = 'easy' | 'ok' | 'hard';
+/** Ressenti de fin d'exercice (§ 13.2 : Facile / Juste / Dur, ignorable) ; colonne `workout_set.difficulty` (migration 0006). */
+export const DIFFICULTIES = ['easy', 'ok', 'hard'] as const;
+export type Difficulty = (typeof DIFFICULTIES)[number];
 
 /** Série d'historique vue par le moteur : sous-ensemble d'une `WorkoutSet` d'une séance close. */
 export interface HistorySet {
@@ -242,7 +243,7 @@ export interface HistorySet {
 export interface ExerciseSession {
   readonly workoutId: string;
   readonly endedAt: IsoDateTime;
-  /** Null : non saisie (aucun stockage avant la PR 2/2 d'I2-01). */
+  /** Null : non saisie (ignorable) ; lue sur les séries de l'exercice dans la séance (`workout_set.difficulty`). */
   readonly difficulty: Difficulty | null;
   readonly sets: readonly HistorySet[];
 }
