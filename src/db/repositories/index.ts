@@ -36,3 +36,6 @@ export type * from './epochCarryReportRepository';
 export type * from './occurrenceDedupRepository';
 export type * from './progressionRepository';
 export type * from './mesocycleRepository';
+export type * from './foodRepository';
+export type * from './mealEntryRepository';
+export type * from './nutritionTargetRepository';

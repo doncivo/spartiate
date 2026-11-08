@@ -494,7 +494,86 @@ const MESOCYCLE_TABLE = table(
   { titleSource: { kind: 'none' } },
 );
 
-/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Catalogue I4-02 (D-74, migration 0008) : fiches alimentaires, portions, journal et cibles
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+const MEAL_SOURCES = ['custom', 'ciqual', 'off', 'estimate', 'manual'] as const;
+
+/**
+ * `food` : fiches STOCKÉES (UUID) : fiche personnelle et cache Open Food Facts (§ 9.1). Ciqual n'a aucune ligne (contenu embarqué).
+ * Valeurs pour 100 g nulles = inconnues (jamais 0). `fetched_at` (cache OFF, 90 jours) est publié et masqué du journal des conflits.
+ */
+const FOOD_TABLE = table(
+  'food',
+  [
+    c('source', 'enum', false, { values: ['custom', 'off'] }),
+    c('barcode', 'text', true, { max: 14 }),
+    c('name', 'text', false, { max: 120 }),
+    c('brand', 'text', true, { max: 120 }),
+    c('kcal', 'real', true),
+    c('protein_g', 'real', true),
+    c('fat_g', 'real', true),
+    c('carb_g', 'real', true),
+    c('fiber_g', 'real', true),
+    c('fetched_at', 'datetime', true, hidden),
+    createdAt,
+    deletedAt,
+  ],
+  { titleSource: { kind: 'own', column: 'name' } },
+);
+
+/** `food_portion` : portions d'une fiche stockée ; `food_id` est un parent publié (une portion reçue avant sa fiche est mise de côté). */
+const FOOD_PORTION_TABLE = table(
+  'food_portion',
+  [uuidId('food_id'), c('label', 'text', false, { max: 80 }), c('grams', 'real', false), c('position', 'int', false), createdAt, deletedAt],
+  { parents: [{ column: 'food_id', table: 'food' }], titleSource: { kind: 'own', column: 'label' } },
+);
+
+/**
+ * `meal_entry` : journal alimentaire. `food_id` est une référence LOGIQUE (`ciqual:<code>` ou UUID de fiche, fiche supprimée ou pas encore
+ * reçue : l'entrée reste lisible grâce à `food_name`), de type `text`, hors de `parents`. Kcal et macros : instantané, nuls = inconnus.
+ */
+const MEAL_ENTRY_TABLE = table(
+  'meal_entry',
+  [
+    c('date', 'date', false),
+    c('time', 'time', false),
+    c('food_id', 'text', true, { max: ID_MAX }),
+    c('food_name', 'text', false, { max: 200 }),
+    c('source', 'enum', false, { values: MEAL_SOURCES }),
+    c('grams', 'real', true),
+    c('kcal', 'real', true),
+    c('protein_g', 'real', true),
+    c('fat_g', 'real', true),
+    c('carb_g', 'real', true),
+    c('method', 'enum', false, { values: ['search', 'scan', 'photo', 'quickadd'] }),
+    c('confidence', 'real', true),
+    createdAt,
+    deletedAt,
+  ],
+  { titleSource: { kind: 'own', column: 'food_name' } },
+);
+
+/** `nutrition_target` : une ligne par décision d'Ali ou du moteur, jamais modifiée (D-74) ; `engine_version` masquée du journal des conflits. */
+const NUTRITION_TARGET_TABLE = table(
+  'nutrition_target',
+  [
+    c('week_start', 'date', false),
+    c('kcal', 'real', false),
+    c('protein_g', 'real', false),
+    c('fat_g', 'real', false),
+    c('carb_g', 'real', false),
+    c('source', 'enum', false, { values: ['auto', 'manual'] }),
+    bool('accepted'),
+    c('engine_version', 'int', true, hidden),
+    createdAt,
+    deletedAt,
+  ],
+  { titleSource: { kind: 'none' } },
+);
+
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   tables: [
     PROFILE_TABLE,
@@ -509,6 +588,10 @@ export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
     PROGRESSION_PROFILE_TABLE,
     RECOMMENDATION_DECISION_TABLE,
     MESOCYCLE_TABLE,
+    FOOD_TABLE,
+    FOOD_PORTION_TABLE,
+    MEAL_ENTRY_TABLE,
+    NUTRITION_TARGET_TABLE,
   ],
   order: SYNC_TABLE_ORDER,
 });

@@ -124,7 +124,7 @@ describe('migration 0008 : nutrition (I4-02)', () => {
       { time: '7:05' },
       { date: '2026-11-8' },
       { food_name: '' },
-      { food_name: 'x'.repeat(121) },
+      { food_name: 'x'.repeat(201) },
     ];
     for (const [i, over] of bad.entries()) await expect(insert(db, 'meal_entry', entry({ id: uuid(i), ...over })), JSON.stringify(over)).rejects.toThrow();
     await insert(db, 'meal_entry', entry({ food_id: 'ciqual:1000', source: 'ciqual' })); // aucune fiche stockée requise

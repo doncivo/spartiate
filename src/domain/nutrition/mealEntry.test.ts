@@ -55,9 +55,10 @@ describe('validateMealEntry : date, heure, nom, valeurs', () => {
     expect(validateMealEntry(entry({ time: '24:00' as LocalTime }))).toContain('time-invalid');
     expect(validateMealEntry(entry({ time: '7:05' as LocalTime }))).toContain('time-invalid');
   });
-  it('nom figé obligatoire, 120 caractères au plus', () => {
+  it('nom figé obligatoire, 200 caractères au plus (des noms Ciqual dépassent 120)', () => {
     expect(validateMealEntry(entry({ foodName: ' ' }))).toContain('name-empty');
-    expect(validateMealEntry(entry({ foodName: 'x'.repeat(121) }))).toContain('name-too-long');
+    expect(validateMealEntry(entry({ foodName: 'x'.repeat(201) }))).toContain('name-too-long');
+    expect(validateMealEntry(entry({ foodName: 'x'.repeat(200) }))).toEqual([]);
   });
   it('valeurs négatives ou non finies', () => {
     expect(validateMealEntry(entry({ kcal: -1 }))).toContain('value-invalid');

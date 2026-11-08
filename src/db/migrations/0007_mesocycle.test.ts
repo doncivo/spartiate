@@ -50,9 +50,9 @@ const insert = (db: SqlDriver, over: Record<string, unknown> = {}): Promise<unkn
 const outbox = (db: SqlDriver) => db.select<{ table_name: string; row_id: string; field: string }>('SELECT table_name, row_id, field FROM sync_outbox ORDER BY seq');
 
 describe('migration 0007 : mesocycle (I3-02)', () => {
-  it('registre : 0001 à 0007 ; version 7, nom mesocycle', () => {
-    expect(migrations.map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7]);
-    expect(migrations.at(-1)).toBe(migration0007Mesocycle);
+  it('registre : 0001 à 0007 en tête (la 0008 de nutrition suit) ; version 7, nom mesocycle', () => {
+    expect(migrations.slice(0, 7).map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(migrations[6]).toBe(migration0007Mesocycle);
     expect(migration0007Mesocycle.name).toBe('mesocycle');
   });
 
