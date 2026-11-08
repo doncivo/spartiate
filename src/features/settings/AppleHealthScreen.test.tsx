@@ -8,6 +8,7 @@ import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer, type AppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { logFailure } from '../../platform/desktop/log';
+import type { MemoryFiles } from '../../platform/files';
 import { AppleHealthScreen } from './AppleHealthScreen';
 import { SettingsScreen } from './SettingsScreen';
 
@@ -286,7 +287,7 @@ describe('Apple Santé (finitions 0.1.2 d)', () => {
   describe('compte Apple gratuit : entitlement absent (0.1.4 point 6)', () => {
     const NO_ENTITLEMENT = { domain: 'com.apple.healthkit', code: 4, description: 'Missing com.apple.developer.healthkit entitlement.' };
     const BLOCKED: Plan = { ...GRANTED, permission: 'error', diagnostic: { available: true, usageDescription: true, error: NO_ENTITLEMENT } };
-    const MESSAGE = 'Apple Santé n’est pas accessible avec une app installée par SideStore (compte Apple gratuit). L’import passera par l’app Raccourcis dans une prochaine version.';
+    const MESSAGE = 'Apple Santé n’est pas accessible avec une app installée par SideStore (compte Apple gratuit). Tes pesées passent par l’app Raccourcis : importe son fichier ci-dessous.';
 
     it('remplace « La demande d’accès à Santé a échoué » par le message SideStore et masque « Autoriser l’accès »', async () => {
       const { healthKit } = fakeHealthKit(BLOCKED);
@@ -361,5 +362,54 @@ describe('Apple Santé (finitions 0.1.2 d)', () => {
       expect(await screen.findByRole('button', { name: 'Apple Santé : non disponible' })).toBeInTheDocument();
       expect(screen.queryByText('lecture seule')).toBeNull();
     });
+  });
+});
+
+describe('D-69 : import des pesées depuis l’app Raccourcis', () => {
+  let db: TestDb;
+  let container: AppContainer;
+  const NO_ENTITLEMENT = { domain: 'com.apple.healthkit', code: 4, description: 'Missing com.apple.developer.healthkit entitlement.' };
+
+  beforeEach(async () => {
+    mockViewport(440);
+    db = await openBaseDb(DEVICE);
+  });
+  afterEach(async () => {
+    cleanup();
+    vi.unstubAllGlobals();
+    useNavigationStore.setState(INITIAL_NAVIGATION);
+    await db.close();
+  });
+
+  async function blockedScreen(files: MemoryFiles) {
+    container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, platform: { runtime: 'tauri', os: 'ios' }, files });
+    await db.data.repos.settings.set('healthkit.entitlementMissing', true);
+    const { healthKit } = fakeHealthKit({ ...GRANTED, permission: 'error', diagnostic: { available: true, usageDescription: true, error: NO_ENTITLEMENT } });
+    render(
+      <AppContainerProvider container={container}>
+        <AppleHealthScreen healthKit={healthKit} />
+      </AppContainerProvider>,
+    );
+    return screen.findByRole('button', { name: 'Importer le fichier du raccourci' });
+  }
+
+  it('compte gratuit : le bouton d’import remplace « Autoriser » ; les pesées du fichier sont enregistrées comme pesées Santé', async () => {
+    const { createMemoryFiles } = await import('../../platform/files');
+    const files = createMemoryFiles();
+    const day = new Date(db.clock.nowMs()).toISOString().slice(0, 10);
+    files.setPick({ name: 'spartiate-poids.csv', text: `date;kg\n${day}T00:10:00Z;81,4\n` });
+    fireEvent.click(await blockedScreen(files));
+    expect(await screen.findByText(/1 pesée importée/)).toBeInTheDocument();
+    const recent = await (await db.data.repos.bodyWeights()).listRecent(5);
+    expect(recent.map((w) => [w.kg, w.source])).toEqual([[81.4, 'health']]);
+  });
+
+  it('fichier sans pesée lisible : message, rien n’est écrit', async () => {
+    const { createMemoryFiles } = await import('../../platform/files');
+    const files = createMemoryFiles();
+    files.setPick({ name: 'vide.csv', text: 'n’importe quoi' });
+    fireEvent.click(await blockedScreen(files));
+    expect(await screen.findByText(/Aucune pesée lisible/)).toBeInTheDocument();
+    expect(await (await db.data.repos.bodyWeights()).listRecent(5)).toEqual([]);
   });
 });
