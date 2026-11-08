@@ -14,8 +14,8 @@ import './NutritionScreen.css';
  * Onglet Nutrition (I4-03, § 15.2–15.5, § 18.1–18.6) : Journal (par défaut), Dashboard, Stratégie et Check-in, comme la barre de sections
  * des maquettes iPhone-Journal / iPhone-Dashboard / iPhone-CheckIn et PC-Journal. Bloc à la demande, avec son catalogue de textes.
  *
- * Périmètre sans IA ni réseau : recherche locale (fiches personnelles, Ciqual, cache), Quick Add, corrections ; le scan du code-barres,
- * Open Food Facts et la photo ne sont pas offerts (l'écran le dit). Le moteur d'I4-01 propose, Ali décide : aucune cible ne change sans son geste.
+ * Périmètre : recherche locale (fiches personnelles, Ciqual, cache), Quick Add, corrections ; Open Food Facts (« Chercher en ligne », code-barres saisi ou scanné sur iPhone, I4-05) sur geste d'Ali seulement ; la photo
+ * IA reste hors périmètre. Le moteur d'I4-01 propose, Ali décide : aucune cible ne change sans son geste.
  */
 export function NutritionScreen() {
   const container = useAppContainer();

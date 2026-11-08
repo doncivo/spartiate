@@ -1,6 +1,6 @@
 [package]
 name = "spartiate"
-version = "0.7.1"
+version = "0.8.0"
 description = "Spartiate : planificateur personnel (PC Windows et iPhone)"
 authors = ["Ali Cherif"]
 edition = "2021"
@@ -47,6 +47,11 @@ tokio = { version = "1", features = ["time", "net", "io-util"] }
 # par zeroize. Fonctionnalités limitées à celles déjà actives : aucune nouvelle entrée dans Cargo.lock.
 aws-lc-rs = { version = "1", default-features = false, features = ["aws-lc-sys", "alloc", "prebuilt-nasm"] }
 zeroize = "1"
+# Open Food Facts (I4-05, D-77) : client HTTPS côté Rust seul (src/off.rs). Version EXACTE, la même que celle déjà dans Cargo.lock (tirée par
+# tauri et tauri-plugin-updater) ; sans fonctionnalité par défaut : seulement `rustls-no-provider` (le fournisseur aws-lc-rs est installé par off.rs) ; ni OpenSSL ni native-tls.
+reqwest = { version = "=0.13.5", default-features = false, features = ["rustls-no-provider"] }
+# Fournisseur cryptographique de reqwest (rustls-no-provider) : aws-lc-rs, installé par off.rs ; même rustls 0.23.46 que celui déjà dans Cargo.lock.
+rustls = { version = "0.23", default-features = false, features = ["aws_lc_rs", "std", "tls12"] }
 
 # Coffre système : Gestionnaire d'identification Windows, Trousseau iOS (ADR 0008 section 3).
 [target.'cfg(windows)'.dependencies]
