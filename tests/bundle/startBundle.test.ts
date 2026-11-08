@@ -243,6 +243,19 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // I4-02 : catalogue Ciqual (content/food/ciqual.json, 537 Ko) et son chargeur : jamais dans le départ, import dynamique seulement.
+  it.each(['10.57745/RDMHWY', 'Licence Ouverte Etalab 2.0', 'catalogue Ciqual illisible'])('I4-02 : « %s » (catalogue Ciqual et chargeur) hors du départ', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+  });
+
+  it('I4-02 : aucun module de content/food ni le chargeur Ciqual dans le graphe du départ', () => {
+    const startFiles = new Set(startChunks().map((chunk) => chunk.file));
+    for (const [source, chunk] of Object.entries(manifest)) {
+      if (startFiles.has(chunk.file)) expect(/content\/food\/|ciqualCatalogue/.test(source), source).toBe(false);
+    }
+  });
+
   // I3-02 : section Cycle (composant, catalogue fr.trainingCycle, règles du mésocycle, repository) : bloc à la demande importé par l'onglet.
   it('I3-02 : src/features/training/cycle/CycleView.tsx est un bloc à la demande, hors du départ', () => {
     const source = 'src/features/training/cycle/CycleView.tsx';

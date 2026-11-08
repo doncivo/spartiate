@@ -84,3 +84,24 @@ Ajoutées en dépendances directes **sans nouvelle entrée dans `Cargo.lock`** (
 - Paquet : [`qrcode-generator`](https://www.npmjs.com/package/qrcode-generator) **2.0.4** (version exacte), licence **MIT** (copyright Kazuhiko Arase), sans aucune dépendance.
 - Usage : dessin du QR code d'association dans la seule fenêtre `pairing` (`src/features/sync/pairing-window/PairingView.tsx`), chargé à la demande ; absent du bundle principal et du bundle `capture` (contrôlé par `npm run test:bundle`, `tests/bundle/pairingBundle.test.ts`).
 - Avis de licence : en tête de `node_modules/qrcode-generator/dist/qrcode.d.ts` et de `dist/qrcode.mjs` (le paquet ne fournit pas de fichier `LICENSE` séparé). « QR Code » est une marque déposée de DENSO WAVE INCORPORATED.
+
+# Licence — table Ciqual de l'Anses (I4-02, H-11)
+
+- Donnée : **Table de composition nutritionnelle des aliments Ciqual 2025** (3 484 aliments), publiée par l'Anses (Observatoire des aliments) sur Recherche Data Gouv, **DOI 10.57745/RDMHWY**, version 1.0 du 2025-11-19 (fichiers du 2025-11-03). Licence indiquée par l'entrepôt : **Licence Ouverte Etalab 2.0** (SPDX `etalab-2.0`), qui autorise la réutilisation, y compris commerciale, sous réserve de mentionner la source et la date de la dernière mise à jour.
+- Édition retenue : la 2025, car la notice data.gouv.fr de l'édition 2020 indique que la version de Recherche Data Gouv « annule et remplace » celle-ci.
+- Fichiers sources (XML, français), téléchargés depuis `https://entrepot.recherche.data.gouv.fr/api/access/datafile/<id>` puis vérifiés par MD5 contre les sommes publiées par l'entrepôt (le générateur refuse toute autre somme) :
+  - `alim_2025_11_03.xml` (id 666252) : `8e1171d63cee4b6010cfce25dd29243d`
+  - `alim_grp_2025_11_03.xml` (id 666250) : `c31aeea90349c3aab86f98ef5f4f10da`
+  - `compo_2025_11_03.xml` (id 666249, 69 Mo) : `2da725585946434df320d8041631998b`
+  - `const_2025_11_03.xml` (id 666246) : `d8f2f25fdacb887bc993a6eeaf80f203`
+- Génération : `node scripts/content/build-ciqual.mjs <dossier-des-xml>` écrit `content/food/ciqual.json` (déterministe, un aliment par ligne) ; `node scripts/content/build-ciqual.mjs --check` le valide. Les XML ne sont pas versionnés.
+- Contenu retenu par aliment : code, nom français, groupe, énergie (kcal, constituant 328, règlement UE 1169/2011), protéines (25003, N x 6,25), lipides (40000), glucides (31000), fibres (34100), pour 100 g. Une valeur absente (« - »), « traces » ou « < x » devient `null` (inconnue) : elle n'est jamais remplacée par zéro. Le code de groupe 00 (« aliment moyen ») n'a pas de nom dans la table : `group` vaut `null`.
+- Décomptes à la génération (valeurs `null`) : absentes `{kcal 143, protéines 29, lipides 20, glucides 70, fibres 70}` ; « traces » `{2, 4, 15, 134, 45}` ; « < x » `{0, 0, 166, 8, 130}`.
+- Attribution affichée par l'app (écran à venir, I4-03) : « Source : Anses, Table de composition nutritionnelle des aliments Ciqual 2025 (Licence Ouverte Etalab 2.0). » Elle est portée par le champ `source.attribution` du fichier.
+- Chargement : à la demande (import dynamique), jamais dans le paquet de départ (`src/features/nutrition/catalogue/ciqualCatalogue.ts`).
+- **H-11 reste UNVERIFIED** (D-36) : la licence est lue dans les métadonnées de l'entrepôt, aucun constat d'Ali ; pas de CONFIRMED depuis une lecture.
+
+# Licence — Open Food Facts (I4-02 : cache seulement, H-12)
+
+- Données : base **Open Food Facts**, licence **ODbL 1.0** (base de données) ; contenus des fiches sous licence Database Contents License ; images CC BY-SA (non utilisées). Attribution requise : « Open Food Facts, contributeurs d'Open Food Facts, ODbL » avec lien vers `https://world.openfoodfacts.org`.
+- Cette étape n'embarque aucune donnée OFF et n'appelle pas l'API (client Rust : ticket suivant, desktop-tauri). Elle ne fournit que le dépôt local validé des produits (`food.source = 'off'`, cache de 90 jours). Les fiches OFF mises en cache restent des données dérivées sous ODbL : l'attribution sera affichée avec la provenance « OFF » (I4-03). **H-12 reste UNVERIFIED** (aucun appel réalisé).
