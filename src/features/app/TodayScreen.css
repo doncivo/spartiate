@@ -29,6 +29,9 @@
 }
 
 .ct-today__card {
+  /* Marge intérieure de toute carte d'Aujourd'hui, celle de « Poids » ; les cartes à lignes la resserrent plus bas (0.7.1 point 3). */
+  padding: var(--ct-space-5) var(--ct-space-6);
+  box-sizing: border-box;
   background: var(--ct-color-surface);
   border: 1px solid var(--ct-color-border);
   border-radius: var(--ct-radius-md);

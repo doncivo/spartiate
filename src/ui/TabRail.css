@@ -47,7 +47,7 @@
 .ct-tab-rail[data-layout='mobile'] .ct-tab-rail__tab {
   flex: 1 1 0;
   min-width: 0;
-  min-height: 56px;
+  min-height: var(--ct-tab-bar-height);
   flex-direction: column;
   justify-content: center;
   gap: 4px;

@@ -32,9 +32,10 @@ export interface NumberFieldProps {
   readonly invalid?: boolean;
   readonly autoFocus?: boolean;
   readonly describedBy?: string;
+  readonly onFocus?: () => void;
 }
 
-export function NumberField({ label, value, onChange, step = 'any', invalid = false, autoFocus = false, describedBy }: NumberFieldProps) {
+export function NumberField({ label, value, onChange, step = 'any', invalid = false, autoFocus = false, describedBy, onFocus }: NumberFieldProps) {
   return (
     <label className="ct-nutrition__field">
       <span className="ct-nutrition__field-label">{label}</span>
@@ -48,19 +49,28 @@ export function NumberField({ label, value, onChange, step = 'any', invalid = fa
         autoFocus={autoFocus}
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy}
+        onFocus={onFocus}
         onChange={(event) => onChange(event.target.value)}
       />
     </label>
   );
 }
 
-export function TimeField({ value, onChange, invalid = false }: { readonly value: string; readonly onChange: (value: string) => void; readonly invalid?: boolean }) {
+export function TimeField({ value, onChange, invalid = false, onFocus }: { readonly value: string; readonly onChange: (value: string) => void; readonly invalid?: boolean; readonly onFocus?: () => void }) {
   return (
     <label className="ct-nutrition__field">
       <span className="ct-nutrition__field-label">{tNutrition('timeLabel')}</span>
-      <input className="ct-nutrition__input" type="time" value={value} aria-invalid={invalid || undefined} onChange={(event) => onChange(event.target.value)} />
+      <input className="ct-nutrition__input" type="time" value={value} aria-invalid={invalid || undefined} onFocus={onFocus} onChange={(event) => onChange(event.target.value)} />
     </label>
   );
+}
+
+/**
+ * 0.7.1 point 2 : au focus d'un champ (clavier numérique qui s'ouvre), le bas de la fiche reste atteignable : on ramène les boutons d'action dans
+ * la zone visible, après l'animation du clavier. Sans effet là où `scrollIntoView` n'existe pas (tests).
+ */
+export function revealAfterKeyboard(target: HTMLElement | null): void {
+  window.setTimeout(() => target?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }), 320);
 }
 
 /** Heure locale « HH:mm » de l'horloge de l'app (24 h). */

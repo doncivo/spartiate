@@ -54,6 +54,7 @@
 
   /* Zone tactile minimale (PRD 5 : ≥ 44 points) et marges de sécurité iOS. */
   --ct-hit-target-min: 44px;
+  --ct-tab-bar-height: 56px;
   --ct-safe-area-top: env(safe-area-inset-top, 0px);
   /* iPhone : barre d'état de la planche (59 px). Plancher quand env() ne rend rien ; compté par max(), jamais en plus de la safe area. */
   --ct-status-bar-floor: 59px;

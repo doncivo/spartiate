@@ -7,7 +7,7 @@ import type { PortionRecord } from '../../../db/repositories/foodRepository';
 import { formatInt, formatTenth, orDash, tNutrition } from '../../../i18n/nutritionText';
 import { Button, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
-import { MacroLine, NumberField, parseNumber, ProvenanceBadge, TimeField } from '../shared';
+import { MacroLine, NumberField, parseNumber, ProvenanceBadge, revealAfterKeyboard, TimeField } from '../shared';
 import { entryFromFood } from '../useCases';
 import { searchCatalogue, type CatalogueSearchResult } from './catalogueSearch';
 import { CustomFoodForm } from './CustomFoodForm';
@@ -247,6 +247,8 @@ function QuantityStep({ food, initialGrams, date, defaultTime, onBack, onSaved, 
   const [portions, setPortions] = useState<readonly PortionRecord[]>([]);
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const actionsRef = useRef<HTMLDivElement>(null);
+  const reveal = (): void => revealAfterKeyboard(actionsRef.current);
 
   useEffect(() => {
     if (food.provenance === 'ciqual') return;
@@ -284,7 +286,7 @@ function QuantityStep({ food, initialGrams, date, defaultTime, onBack, onSaved, 
 
   return (
     <form
-      className="ct-nutrition__form"
+      className="ct-nutrition__panel ct-nutrition__form"
       onSubmit={(event) => {
         event.preventDefault();
         void save();
@@ -307,8 +309,8 @@ function QuantityStep({ food, initialGrams, date, defaultTime, onBack, onSaved, 
         </div>
       ) : null}
       <div className="ct-nutrition__row">
-        <NumberField label={tNutrition('quantityLabel')} value={grams} onChange={setGrams} invalid={!valid && grams !== ''} autoFocus />
-        <TimeField value={time} onChange={setTime} />
+        <NumberField label={tNutrition('quantityLabel')} value={grams} onChange={setGrams} invalid={!valid && grams !== ''} autoFocus onFocus={reveal} />
+        <TimeField value={time} onChange={setTime} onFocus={reveal} />
       </div>
       <p className="ct-nutrition__muted">{tNutrition('quantityHint')}</p>
       <div className="ct-nutrition__totals" aria-label={tNutrition('totalsLabel')}>
@@ -325,7 +327,7 @@ function QuantityStep({ food, initialGrams, date, defaultTime, onBack, onSaved, 
           {tNutrition('writeError')}
         </p>
       ) : null}
-      <div className="ct-nutrition__actions">
+      <div className="ct-nutrition__actions" ref={actionsRef}>
         <Button type="submit" disabled={!valid || busy}>
           {tNutrition('addToJournal')}
         </Button>

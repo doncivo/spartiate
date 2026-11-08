@@ -48,3 +48,19 @@
 .ct-segmented[data-columns='2'] .ct-segmented__button {
   white-space: normal;
 }
+
+/* Une ligne, défilement horizontal (0.7.1 point 4) : aucun libellé coupé ni renvoyé seul à la ligne ; la barre de défilement est masquée. */
+.ct-segmented[data-scroll='true'] {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.ct-segmented[data-scroll='true']::-webkit-scrollbar {
+  display: none;
+}
+
+.ct-segmented[data-scroll='true'] .ct-segmented__button {
+  flex: 1 0 auto;
+}

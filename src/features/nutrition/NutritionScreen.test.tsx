@@ -333,7 +333,19 @@ describe('I4-03 : Stratégie et cibles (critère 6, D-74)', () => {
 });
 
 describe('I4-03 : Check-in hebdomadaire (critère 6)', () => {
+  it('0.7.1 point 8 : aucune donnée avant la fin de la semaine analysée : « Premier check-in », pas un check-in suspendu sur une semaine vide', async () => {
+    await (await db.data.repos.bodyWeights()).saveManual({ date: TODAY, kg: 104, timezone: 'Europe/Paris' }, TODAY);
+    open('checkin');
+    const r = await region();
+    expect(await within(r).findByText('Premier check-in : lundi 16 novembre')).toBeInTheDocument();
+    expect(within(r).getByText(/Il analysera la semaine du 9 novembre au 15 novembre/)).toBeInTheDocument();
+    expect(within(r).getByText(/au moins 4 jours complets et 2 pesées/)).toBeInTheDocument();
+    expect(within(r).getByText(/Pour l’instant : Aucun jour complet sur 7 · 1 pesée/)).toBeInTheDocument();
+    expect(within(r).queryByText('Check-in suspendu')).toBeNull();
+  });
+
   it('données insuffisantes : suspendu, aucune cible proposée, aucune action d’acceptation', async () => {
+    await (await db.data.repos.bodyWeights()).saveManual({ date: d(-3), kg: 104, timezone: 'Europe/Paris' }, TODAY);
     open('checkin');
     const r = await region();
     expect(await within(r).findByText('Check-in suspendu')).toBeInTheDocument();
