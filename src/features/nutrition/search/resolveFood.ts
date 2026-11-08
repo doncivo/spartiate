@@ -6,14 +6,15 @@ import { toSearchable } from './catalogueSearch';
 
 /**
  * Retrouve l'aliment d'une référence de journal (`ciqual:<code>` ou UUID de fiche) pour recalculer une prise : `null` si la fiche a été
- * supprimée ou si Ciqual est illisible. L'entrée de journal garde son instantané dans tous les cas.
+ * supprimée ou la référence inconnue ; une lecture impossible (Ciqual illisible, base) LÈVE l'erreur. L'entrée de journal garde son instantané dans tous les cas.
  */
 export async function resolveFood(foods: FoodRepository, id: string): Promise<SearchableFood | null> {
   const ref = parseFoodId(id);
   if (ref === null) return null;
   if (ref.kind === 'ciqual') {
-    const catalogue = await loadCiqual().catch(() => null);
-    const found = catalogue?.foods.find((f) => f.code === ref.code);
+    // Un catalogue illisible est une ERREUR (exception propagée), pas « aliment absent » : l'appelant ne doit pas effacer de favori.
+    const catalogue = await loadCiqual();
+    const found = catalogue.foods.find((f) => f.code === ref.code);
     return found ? { ref: id, provenance: 'ciqual', name: found.nameFr, brand: null, barcode: null, per100g: found.per100g } : null;
   }
   const record = await foods.get(ref.id);

@@ -65,7 +65,7 @@ describe('I4-06 : favoris, résolution', () => {
     const out = await resolveFavorites([cq('1'), custom(ID1), cq('3')], async (ref) => (ref === 'ciqual:1' ? { ref } : null));
     expect(out.foods).toEqual([{ ref: 'ciqual:1' }]);
     expect(out.kept).toEqual([cq('1')]);
-    expect(out.changed).toBe(true);
+    expect(out.gone).toEqual([ID1, 'ciqual:3']);
   });
 
   it('une résolution en échec (lecture impossible) n’affiche pas le favori mais ne l’efface pas', async () => {
@@ -75,12 +75,12 @@ describe('I4-06 : favoris, résolution', () => {
     });
     expect(out.foods).toEqual([{ ref: 'ciqual:1' }]);
     expect(out.kept).toEqual([cq('1'), custom(ID1)]);
-    expect(out.changed).toBe(false);
+    expect(out.gone).toEqual([]);
   });
 
-  it('tout résolu : liste inchangée, changed faux', async () => {
+  it('tout résolu : liste inchangée, rien de disparu', async () => {
     const out = await resolveFavorites([cq('1')], async (ref) => ({ ref }));
     expect(out.kept).toEqual([cq('1')]);
-    expect(out.changed).toBe(false);
+    expect(out.gone).toEqual([]);
   });
 });
