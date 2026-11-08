@@ -2,6 +2,11 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.4.0
+
+- **Séance proposée** (Entraînement → Nouvelle séance → Séance proposée) : l’app compose une séance à partir de ta routine, avec trois modes. **Guidé** : l’app propose tout ; **Libre** : tu choisis les exercices, elle propose les charges (rien n’est remplacé sans toi, un remplaçant est seulement suggéré) ; **Maison** : comme Guidé, limité au matériel maison. Tu peux régler le temps disponible (« J’ai 35 min »), les priorités et les douleurs ; le matériel et les douleurs sont toujours respectés, un mouvement sans remplaçant compatible est simplement omis.
+- Rien n’est écrit avant « Commencer cette séance », et ta routine n’est jamais modifiée. Le style (droites, pyramide, inversée) est une consigne d’ordre, non enregistrée. Ce sont des réglages par défaut proposés cette nuit (D-73) : ils sont révisables, dis-moi ce que tu veux changer. Pas de mise à jour de la base.
+
 ## 0.3.4
 
 - Séance : **échauffement**. Sous la proposition d’un exercice, quand tu l’acceptes ou la modifies, l’app ajoute une rampe de séries d’échauffement légères (40 % × 8, 60 % × 5, 80 % × 2 de la charge de travail), calées sur les charges que ton matériel permet vraiment (paire d’haltères de 9 kg comprise). Une rampe par groupe de mouvement, sur le premier exercice composé ; rien n’est ajouté après un refus, pour un exercice « à saisir », ou si tu as déjà commencé l’exercice. Une rampe ne passe jamais avant une série que tu as déjà validée. Pas de mise à jour de la base.
