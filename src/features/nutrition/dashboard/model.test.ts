@@ -34,7 +34,7 @@ function snapshot(daysLogged: number, weighEvery = 2): NutritionSnapshot {
   };
 }
 
-describe('dashboardModel', () => {
+describe('I4-03 : dashboardModel', () => {
   it('7 barres, dont les jours non complets ne portent pas de valeur chiffrée « complète »', () => {
     const m = dashboardModel(snapshot(4));
     expect(m.bars).toHaveLength(7);

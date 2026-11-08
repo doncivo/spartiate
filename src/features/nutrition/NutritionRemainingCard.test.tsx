@@ -6,7 +6,7 @@ import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
-import { quickAddDraft, saveManualTarget } from '../nutrition/useCases';
+import { quickAddDraft, saveManualTarget } from './useCases';
 import { NutritionRemainingCard } from './NutritionRemainingCard';
 
 /**
@@ -34,7 +34,7 @@ afterEach(async () => {
   await db.close();
 });
 
-describe('NutritionRemainingCard', () => {
+describe('I4-03 : NutritionRemainingCard', () => {
   it('sans cible : l’état est dit et mène à la stratégie, aucun chiffre', async () => {
     mount();
     expect(await screen.findByText('Aucune cible définie')).toBeInTheDocument();

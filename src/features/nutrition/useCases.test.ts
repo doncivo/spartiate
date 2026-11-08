@@ -32,7 +32,7 @@ const food = (over: Partial<SearchableFood> = {}): SearchableFood => ({
   ...over,
 });
 
-describe('loadNutritionSnapshot', () => {
+describe('I4-03 : loadNutritionSnapshot', () => {
   it('base vide : aucune cible, aucune dépense, jours « unknown » (jamais zéro), préférences par défaut', async () => {
     const s = await loadNutritionSnapshot(db.data, TODAY);
     expect(s.today).toBe(TODAY);
@@ -60,7 +60,7 @@ describe('loadNutritionSnapshot', () => {
   });
 });
 
-describe('entryFromFood et quickAddDraft', () => {
+describe('I4-03 : entryFromFood et quickAddDraft', () => {
   it('aliment Ciqual : méthode search, provenance conservée, totaux au dixième', () => {
     const draft = entryFromFood(food(), 120, { date: TODAY, time: t('07:10') });
     expect(draft).toMatchObject({ method: 'search', source: 'ciqual', foodId: 'ciqual:13013', foodName: 'Banane', grams: 120, kcal: 108, proteinG: 1.2, confidence: null });
@@ -96,7 +96,7 @@ const decide = (p: Proposal, decision: Parameters<typeof recordCheckInDecision>[
   recordCheckInDecision(db.data, { proposal: p, weekStart: WEEK, weightKg: 81, currentTarget: p.previousTarget, decision, lowFloorConfirmed });
 const rows = async () => (await db.data.repos.nutritionTargets()).list();
 
-describe('recordCheckInDecision : le moteur propose, Ali décide', () => {
+describe('I4-03 : recordCheckInDecision : le moteur propose, Ali décide', () => {
   it('accepter : cible de la proposition enregistrée (auto, acceptée, version du moteur)', async () => {
     const r = await decide(proposal(2700), { action: 'accept' });
     expect(r.record).toMatchObject({ source: 'auto', accepted: true, engineVersion: 1, weekStart: WEEK, target: { kcal: 2700 } });
@@ -148,7 +148,7 @@ describe('recordCheckInDecision : le moteur propose, Ali décide', () => {
   });
 });
 
-describe('saveManualTarget : cible fixée par Ali (style manuel ou première cible)', () => {
+describe('I4-03 : saveManualTarget : cible fixée par Ali (style manuel ou première cible)', () => {
   it('enregistre une ligne manuelle acceptée, sans version de moteur', async () => {
     const record = await saveManualTarget(db.data, { weekStart: WEEK, target: { kcal: 2500, proteinG: 160, fatG: 70, carbG: 300 }, lowFloorConfirmed: false });
     expect(record).toMatchObject({ source: 'manual', accepted: true, engineVersion: null });
