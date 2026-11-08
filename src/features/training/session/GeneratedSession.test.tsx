@@ -133,6 +133,18 @@ describe('séance proposée (I3-01)', () => {
     expect(await count('SELECT COUNT(*) AS n FROM routine_exercise WHERE deleted_at IS NULL')).toBe(5);
   });
 
+  it('revue : le style choisi est dit comme une consigne d’exécution, et l’écran dit qu’il n’est pas enregistré dans la séance', async () => {
+    open();
+    const region = await proposal();
+    const style = within(region).getByRole('radiogroup', { name: 'Style' });
+    expect(within(region).getByText('Même charge et mêmes répétitions à chaque série.')).toBeInTheDocument();
+    fireEvent.click(within(style).getByRole('radio', { name: 'Pyramide' }));
+    expect(within(region).getByText('Fais les séries de la plus légère à la plus lourde ; séries et plages inchangées.')).toBeInTheDocument();
+    fireEvent.click(within(style).getByRole('radio', { name: 'Inversée' }));
+    expect(within(region).getByText('Commence par la série la plus lourde ; séries et plages inchangées.')).toBeInTheDocument();
+    expect(within(region).getByText('Le style n’est pas enregistré dans la séance : c’est une consigne pour toi.')).toBeInTheDocument();
+  });
+
   it('« Fermer » revient aux options de départ sans rien écrire', async () => {
     open();
     const region = await proposal();
