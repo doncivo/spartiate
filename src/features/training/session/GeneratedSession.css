@@ -1,0 +1,109 @@
+/* Séance proposée (I3-01) : bloc à la demande ; jetons de la charte uniquement (§ 18.4), cibles ≥ 44 pt. */
+
+.ct-generated {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+  padding: var(--ct-space-3);
+  background: var(--ct-color-surface);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-lg);
+}
+
+.ct-generated__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-2);
+}
+
+.ct-generated__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ct-generated__field > legend,
+.ct-generated__label {
+  padding: 0;
+  margin: 0 0 var(--ct-space-1);
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-generated__toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+
+.ct-generated__toggle {
+  min-height: var(--ct-hit-target-min);
+  min-width: var(--ct-hit-target-min);
+  padding: 0 var(--ct-space-2);
+  background: var(--ct-color-surface-input);
+  color: var(--ct-color-text);
+  border: 1px solid var(--ct-color-border-strong);
+  border-radius: var(--ct-radius-md);
+  font: inherit;
+  cursor: pointer;
+}
+
+.ct-generated__toggle[aria-pressed='true'] {
+  background: var(--ct-color-accent);
+  color: var(--ct-color-accent-on);
+  border-color: var(--ct-color-accent);
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-generated__toggle:focus-visible {
+  outline: 2px solid var(--ct-color-bronze);
+  outline-offset: 2px;
+}
+
+.ct-generated__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ct-generated__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  padding: var(--ct-space-2) 0;
+  border-bottom: 1px solid var(--ct-color-border);
+}
+
+.ct-generated__name {
+  margin: 0;
+  font-size: var(--ct-font-size-item);
+  font-weight: var(--ct-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.ct-generated__sets,
+.ct-generated__duration {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-generated__note {
+  margin: 0;
+  font-size: var(--ct-font-size-sm);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-generated__issue {
+  margin: 0;
+  color: var(--ct-color-danger);
+}

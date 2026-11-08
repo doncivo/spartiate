@@ -134,7 +134,7 @@ export function SessionScreen({ data, platform, onExit }: { readonly data: Train
           />
         </Suspense>
       ) : load.workout === null ? (
-        <StartSession access={access} onStarted={(workout) => setLoad((now) => (now.status === 'ready' ? { ...now, workout } : now))} />
+        <StartSession access={access} data={data} onStarted={(workout) => setLoad((now) => (now.status === 'ready' ? { ...now, workout } : now))} />
       ) : (
         <ActiveSession
           key={load.workout.id}

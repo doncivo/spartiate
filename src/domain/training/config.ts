@@ -166,3 +166,79 @@ export const WARMUP_STEPS: readonly WarmupStep[] = Object.freeze([Object.freeze(
 
 /** Ordre stable des choix facultatifs : fatigue (charge, puis répétitions), puis stagnation (variante, plage, mini-deload). */
 export const PROPOSAL_OPTION_ORDER: readonly ProposalOptionKind[] = ['fatigue-load', 'fatigue-reps', 'stall-variant', 'stall-range', 'stall-mini-deload'];
+
+// -----------------------------------------------------------------------------------------------------------------------------------
+// Génération de séance et mésocycle (PRD § 12.1–12.2 ; I3-01 ; D-73). Sans effet sur une prescription : `ENGINE_VERSION` inchangé.
+// -----------------------------------------------------------------------------------------------------------------------------------
+
+/** Version des règles de génération ; incrémentée à tout changement d'une constante ci-dessous qui change une séance proposée. */
+export const GENERATION_VERSION = 1;
+
+export interface GenerationConfig {
+  /** Temps de travail estimé par série (§ 12.1) ; le repos compte entre séries consécutives seulement (D-73 point 4). */
+  readonly secondsPerSet: number;
+  /** Budget respecté si la durée estimée reste dans ± cette fraction (§ 12.4) ; aucune réduction tant que ≤ budget × (1 + tolérance). */
+  readonly budgetTolerance: number;
+  /** Balanced : part des emplacements récurrents, arrondie au-dessus (D-73 point 5), et période de rotation en semaines (§ 12.1). */
+  readonly balancedRecurringShare: number;
+  readonly balancedRotationWeeks: number;
+  /** Plages de répétitions d'un exercice remplacé par un autre type (§ 12.1 point 4). */
+  readonly compoundRepRange: readonly [number, number];
+  readonly isolationRepRange: readonly [number, number];
+  /** Jours par semaine admis par split (§ 12.1 point 1), bornes incluses. */
+  readonly splitDays: Readonly<Record<'full-body' | 'upper-lower' | 'ppl' | 'custom', readonly [number, number]>>;
+  /** Groupes musculaires (groupes d'affichage du contenu) de chaque jour de split (D-73, choix prudent consigné dans docs/I3-01.md). */
+  readonly splitGroups: Readonly<Record<'full-body' | 'upper' | 'lower' | 'push' | 'pull' | 'legs', readonly string[]>>;
+  /** Budget accepté, en minutes. */
+  readonly budgetMinMinutes: number;
+  readonly budgetMaxMinutes: number;
+  // Mésocycle (I3-02, § 12.2 ; D-73 point 3) : fournis à I3-02, non appliqués par I3-01.
+  readonly mesoWeeks: number;
+  readonly mesoWeeksRange: readonly [number, number];
+  /** Option illimitée : blocs roulants de cette longueur, deload en fin de bloc. */
+  readonly unlimitedBlockWeeks: number;
+  readonly setsPerWeekIncrement: number;
+  /** RIR par défaut, de `rirStart` à `rirEnd` ; jamais 0 par défaut (seul un programme explicite le demande). */
+  readonly rirStart: number;
+  readonly rirEnd: number;
+  /** Priorité musculaire : au plus ± cette quantité de séries hebdomadaires (§ 12.2), bornée par la plage de la routine. */
+  readonly prioritySetDelta: number;
+  /** Arrêt au-delà duquel une semaine allégée est proposée (§ 12.6). */
+  readonly lightWeekAfterDays: number;
+}
+
+const ALL_GROUPS = Object.freeze(['chest', 'back', 'shoulders', 'biceps', 'triceps', 'forearms', 'quadriceps', 'hamstrings', 'glutes', 'calves', 'abs']);
+const LOWER_GROUPS = Object.freeze(['quadriceps', 'hamstrings', 'glutes', 'calves', 'abs']);
+
+export const DEFAULT_GENERATION_CONFIG: GenerationConfig = Object.freeze({
+  secondsPerSet: 45,
+  budgetTolerance: 0.1,
+  balancedRecurringShare: 0.7,
+  balancedRotationWeeks: 4,
+  compoundRepRange: Object.freeze([5, 10] as const),
+  isolationRepRange: Object.freeze([8, 15] as const),
+  splitDays: Object.freeze({
+    'full-body': Object.freeze([1, 3] as const),
+    'upper-lower': Object.freeze([4, 4] as const),
+    ppl: Object.freeze([5, 6] as const),
+    custom: Object.freeze([1, 7] as const),
+  }),
+  splitGroups: Object.freeze({
+    'full-body': ALL_GROUPS,
+    upper: Object.freeze(['chest', 'back', 'shoulders', 'biceps', 'triceps', 'forearms']),
+    lower: LOWER_GROUPS,
+    push: Object.freeze(['chest', 'shoulders', 'triceps']),
+    pull: Object.freeze(['back', 'biceps', 'forearms', 'shoulders']),
+    legs: LOWER_GROUPS,
+  }),
+  budgetMinMinutes: 10,
+  budgetMaxMinutes: 240,
+  mesoWeeks: 5,
+  mesoWeeksRange: Object.freeze([4, 7] as const),
+  unlimitedBlockWeeks: 5,
+  setsPerWeekIncrement: 1,
+  rirStart: 3,
+  rirEnd: 1,
+  prioritySetDelta: 1,
+  lightWeekAfterDays: 21,
+});

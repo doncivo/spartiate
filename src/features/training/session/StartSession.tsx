@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import type { RoutineTree, Workout, WorkoutWithSets } from '../../../domain/training';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { StartWorkoutInput } from '../../../db/repositories/workoutRepository';
 import { formatDay, tTraining } from '../../../i18n/trainingText';
 import { Button } from '../../../ui';
+import type { TrainingData } from '../trainingState';
+
+/** Séance proposée (I3-01) : bloc à la demande, chargé avec son catalogue de textes à l'appui sur « Proposer une séance ». */
+const GeneratedSession = lazy(() => import('./GeneratedSession').then((m) => ({ default: m.GeneratedSession })));
 
 /**
  * Options de départ d'une séance (I1-02, critère 1, § 13.1 et § 13.8) : séance vide, jour d'une routine, copie d'une séance close. Sans
@@ -17,10 +21,11 @@ interface Sources {
   readonly closed: readonly Workout[];
 }
 
-export function StartSession({ access, onStarted }: { readonly access: DataAccess; readonly onStarted: (workout: WorkoutWithSets) => void }) {
+export function StartSession({ access, data, onStarted }: { readonly access: DataAccess; readonly data?: TrainingData; readonly onStarted: (workout: WorkoutWithSets) => void }) {
   const [sources, setSources] = useState<Sources | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [proposing, setProposing] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -95,6 +100,28 @@ export function StartSession({ access, onStarted }: { readonly access: DataAcces
                   </li>
                 ))}
               </ul>
+            )}
+            {data && days.length > 0 && (
+              <div className="ct-session__option">
+                {proposing ? (
+                  <Suspense
+                    fallback={
+                      <p className="ct-training__muted" role="status">
+                        {tTraining('loading')}
+                      </p>
+                    }
+                  >
+                    <GeneratedSession access={access} data={data} routines={sources.routines} onStarted={onStarted} onClose={() => setProposing(false)} />
+                  </Suspense>
+                ) : (
+                  <>
+                    <Button variant="secondary" fullWidth disabled={busy} onClick={() => setProposing(true)}>
+                      {tTraining('sessionPropose')}
+                    </Button>
+                    <p className="ct-session__muted">{tTraining('sessionProposeHint')}</p>
+                  </>
+                )}
+              </div>
             )}
           </section>
           <section aria-labelledby="ct-session-copy">
