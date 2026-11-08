@@ -1,5 +1,4 @@
--- Schéma réel d'une base Spartiate de version 8 (migrations TypeScript 0001 à 0008 rejouées) : tables puis déclencheurs, tels que stockés dans sqlite_master.
--- Aucune table search_index_doc, aucun déclencheur search_*. Gardé à jour par src/db/migrations/spartiateSchemaFixture.test.ts.
+-- Généré par src/db/migrations/spartiateSchemaFixture.test.ts (UPDATE_SPARTIATE_FIXTURES=1) ; ne pas modifier à la main.
 CREATE TABLE body_weight (
       id TEXT PRIMARY KEY NOT NULL,
       date TEXT NOT NULL,
@@ -365,6 +364,30 @@ CREATE TABLE workout_set (
       hlc TEXT NOT NULL, corrected_at TEXT, difficulty TEXT CHECK (difficulty IS NULL OR difficulty IN ('easy', 'ok', 'hard')),
       CHECK (target_reps_max IS NULL OR target_reps_min IS NULL OR target_reps_max >= target_reps_min)
     );
+CREATE INDEX idx_body_weight_date ON body_weight(date);
+CREATE INDEX idx_conflict_log_detected_at ON conflict_log(detected_at);
+CREATE INDEX idx_conflict_log_row ON conflict_log(table_name, row_id, field);
+CREATE INDEX idx_food_barcode ON food(barcode) WHERE barcode IS NOT NULL;
+CREATE INDEX idx_food_name ON food(name COLLATE NOCASE);
+CREATE INDEX idx_food_portion_food ON food_portion(food_id, position);
+CREATE INDEX idx_meal_entry_date ON meal_entry(date, time);
+CREATE INDEX idx_meal_entry_food ON meal_entry(food_id, date) WHERE food_id IS NOT NULL;
+CREATE INDEX idx_mesocycle_status ON mesocycle(status, start_date);
+CREATE INDEX idx_nutrition_target_week ON nutrition_target(week_start);
+CREATE INDEX idx_recommendation_decision_exercise ON recommendation_decision(exercise_id, decided_at);
+CREATE INDEX idx_routine_day_routine ON routine_day(routine_id, day_order);
+CREATE INDEX idx_routine_exercise_day ON routine_exercise(routine_day_id, position);
+CREATE INDEX idx_routine_exercise_exercise ON routine_exercise(exercise_id);
+CREATE INDEX idx_settings_hlc ON settings(hlc);
+CREATE INDEX idx_sync_field_clock_hlc ON sync_field_clock(hlc);
+CREATE INDEX idx_sync_parked_reason ON sync_parked(reason, id);
+CREATE INDEX idx_sync_parked_row ON sync_parked(reason, table_name, row_id);
+CREATE INDEX idx_sync_tombstone_hlc ON sync_tombstone(deleted_hlc);
+CREATE INDEX idx_workout_ended ON workout(ended_at) WHERE ended_at IS NOT NULL;
+CREATE INDEX idx_workout_open ON workout(started_at) WHERE ended_at IS NULL AND deleted_at IS NULL;
+CREATE INDEX idx_workout_set_exercise ON workout_set(exercise_id, created_at);
+CREATE INDEX idx_workout_set_workout ON workout_set(workout_id, position, id);
+CREATE INDEX idx_workout_started ON workout(started_at);
 CREATE TRIGGER sync_body_weight_ai AFTER INSERT ON body_weight
      WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
        DELETE FROM sync_tombstone WHERE table_name = 'body_weight' AND row_id = NEW.id;
