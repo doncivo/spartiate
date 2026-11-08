@@ -76,22 +76,27 @@ export interface ResolvedFavorites<F> {
   readonly foods: readonly F[];
   /** Liste à conserver à la prochaine écriture : sans les aliments disparus ; un échec de lecture ne retire rien. */
   readonly kept: readonly Favorite[];
-  readonly changed: boolean;
+  /** Références des aliments disparus (absents, pas en échec de lecture). */
+  readonly gone: readonly string[];
 }
 
 /** Retrouve les aliments des favoris ; un aliment disparu (résolu à `null`) sort sans erreur, une résolution en échec n'efface pas le favori. */
 export async function resolveFavorites<F>(list: readonly Favorite[], resolve: (ref: string) => Promise<F | null>): Promise<ResolvedFavorites<F>> {
   const foods: F[] = [];
   const kept: Favorite[] = [];
+  const gone: string[] = [];
   for (const item of list) {
     try {
       const food = await resolve(item.ref);
-      if (food === null) continue;
+      if (food === null) {
+        gone.push(item.ref);
+        continue;
+      }
       foods.push(food);
       kept.push(item);
     } catch {
       kept.push(item);
     }
   }
-  return { foods, kept, changed: kept.length !== list.length };
+  return { foods, kept, gone };
 }

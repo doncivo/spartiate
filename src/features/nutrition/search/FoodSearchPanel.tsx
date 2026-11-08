@@ -59,7 +59,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   const [found, setFound] = useState<{ readonly query: string; readonly result: CatalogueSearchResult } | null>(null);
   const [recents, setRecents] = useState<readonly RecentFood[] | null>(null);
   // Favoris (D-79) : liste conservée (sans les aliments disparus) et aliments retrouvés, dans le même ordre.
-  const [favorites, setFavorites] = useState<{ readonly kept: readonly Favorite[]; readonly foods: readonly SearchableFood[] }>({ kept: [], foods: [] });
+  const [favorites, setFavorites] = useState<{ readonly status: 'loading' | 'ready' | 'failed'; readonly kept: readonly Favorite[]; readonly foods: readonly SearchableFood[]; readonly gone: readonly string[] }>({ status: 'loading', kept: [], foods: [], gone: [] });
   const [selection, setSelection] = useState<Selection | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [creating, setCreating] = useState<{ readonly name: string; readonly barcode?: string } | null>(null);
@@ -196,26 +196,46 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   useEffect(() => {
     let live = true;
     void (async () => {
-      const list = await loadFavorites(data.repos.settings);
-      if (list.length === 0) return;
+      const read = await loadFavorites(data.repos.settings);
+      if (!read.ok) {
+        if (live) setFavorites((c) => ({ ...c, status: 'failed' }));
+        return;
+      }
+      if (read.list.length === 0) {
+        if (live) setFavorites({ status: 'ready', kept: [], foods: [], gone: [] });
+        return;
+      }
       const foods = await data.repos.foods();
-      const resolved = await resolveFavorites(list, (ref) => resolveFood(foods, ref));
-      if (live) setFavorites({ kept: resolved.kept, foods: resolved.foods });
-    })().catch(() => undefined);
+      const resolved = await resolveFavorites(read.list, (ref) => resolveFood(foods, ref));
+      if (live) setFavorites({ status: 'ready', kept: resolved.kept, foods: resolved.foods, gone: resolved.gone });
+    })().catch(() => {
+      if (live) setFavorites((c) => ({ ...c, status: 'failed' }));
+    });
     return () => {
       live = false;
     };
   }, [data]);
 
-  /** Ajoute ou retire un favori ; `false` si l'écriture locale échoue (rien n'est alors changé à l'écran). */
+  /**
+   * Ajoute ou retire un favori ; `false` si rien n'a été écrit. La liste est RELUE avant d'écrire (jamais écrasée depuis un état d'écran) ;
+   * une lecture en échec n'écrit rien et désactive l'étoile (D-79 point 3).
+   */
   async function onToggleFavorite(food: SearchableFood): Promise<boolean> {
-    const nextKept = toggleFavorite(favorites.kept, { source: food.provenance, ref: food.ref });
+    if (favorites.status !== 'ready') return false;
+    const read = await loadFavorites(data.repos.settings);
+    if (!read.ok) {
+      setFavorites((current) => ({ ...current, status: 'failed' }));
+      return false;
+    }
+    const base = read.list.filter((f) => !favorites.gone.includes(f.ref));
+    const nextKept = toggleFavorite(base, { source: food.provenance, ref: food.ref });
     try {
       await saveFavorites(data.repos.settings, nextKept);
     } catch {
       return false;
     }
     setFavorites((current) => ({
+      ...current,
       kept: nextKept,
       foods: isFavorite(nextKept, food.ref) ? [food, ...current.foods.filter((f) => f.ref !== food.ref)] : current.foods.filter((f) => f.ref !== food.ref),
     }));
@@ -287,6 +307,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
           food={selection.food}
           staleCause={selection.staleCause}
           favorite={isFavorite(favorites.kept, selection.food.ref)}
+          favoritesStatus={favorites.status}
           onToggleFavorite={onToggleFavorite}
           initialGrams={selection.grams}
           date={date}
@@ -577,6 +598,7 @@ interface QuantityStepProps {
   readonly food: SearchableFood;
   readonly staleCause?: string | undefined;
   readonly favorite: boolean;
+  readonly favoritesStatus: 'loading' | 'ready' | 'failed';
   readonly onToggleFavorite: (food: SearchableFood) => Promise<boolean>;
   readonly initialGrams: string;
   readonly date: LocalDate;
@@ -587,7 +609,7 @@ interface QuantityStepProps {
 }
 
 /** Quantité d'une prise : grammes ou portions de la fiche, heure, totaux recalculés ; enregistrement après confirmation seulement. */
-function QuantityStep({ food, staleCause, favorite, onToggleFavorite, initialGrams, date, defaultTime, onBack, onSaved, onClose }: QuantityStepProps) {
+function QuantityStep({ food, staleCause, favorite, favoritesStatus, onToggleFavorite, initialGrams, date, defaultTime, onBack, onSaved, onClose }: QuantityStepProps) {
   const { data } = useAppContainer();
   const [grams, setGrams] = useState(initialGrams);
   const [time, setTime] = useState(defaultTime);
@@ -657,13 +679,13 @@ function QuantityStep({ food, staleCause, favorite, onToggleFavorite, initialGra
         <span className="ct-nutrition__muted ct-nutrition__num">
           {food.per100g.kcal === null ? tNutrition('per100gUnknown') : tNutrition('per100g', { kcal: formatInt(food.per100g.kcal) })}
         </span>
-        <Button variant="secondary" pressed={favorite} ariaLabel={tNutrition(favorite ? 'favoriteRemove' : 'favoriteAdd')} className="ct-nutrition__star" onClick={() => void toggleFavorite()}>
+        <Button variant="secondary" pressed={favorite} disabled={favoritesStatus !== 'ready'} ariaBusy={favoritesStatus === 'loading'} ariaLabel={tNutrition('favoriteToggle')} className="ct-nutrition__star" onClick={() => void toggleFavorite()}>
           <span aria-hidden="true">{favorite ? '★' : '☆'}</span>
         </Button>
       </div>
-      {favoriteFailed ? (
+      {favoritesStatus === 'failed' || favoriteFailed ? (
         <p role="alert" className="ct-nutrition__warning">
-          {tNutrition('writeError')}
+          {tNutrition(favoritesStatus === 'failed' ? 'favoritesReadError' : 'writeError')}
         </p>
       ) : null}
       {food.provenance === 'off' ? (
