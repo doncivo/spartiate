@@ -35,6 +35,7 @@ function offenders(file: string, source: string): string[] {
 const LIVE_CATALOGS = [
   'fr.training.ts',
   'fr.progression.ts',
+  'fr.trainingGeneration.ts',
   'fr.body.ts',
   'fr.health.ts',
   'fr.today.ts',
