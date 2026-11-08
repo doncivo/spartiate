@@ -216,7 +216,7 @@ fn k05_4_reset_triggers_recreates_the_bodies_of_the_backup_version_and_never_a_c
     }
 }
 
-/// 0.8.2 (relecture sync-icloud rattrapée de #75 et #79) : une base Spartiate n'a AUCUNE table `search_index_doc` (reste de l'ancien projet,
+/// 0.8.1 (relecture sync-icloud rattrapée de #75 et #79) : une base Spartiate n'a AUCUNE table `search_index_doc` (reste de l'ancien projet,
 /// aucune migration 0001 à 0008 ne la crée). La restauration d'une sauvegarde ne doit pas laisser la base sans déclencheur de capture de
 /// synchro : sans eux, un repas ou une séance saisis ensuite n'entrent jamais dans `sync_outbox`.
 #[test]
