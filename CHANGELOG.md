@@ -2,6 +2,11 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.6.0
+
+- Nutrition, en coulisse (I4) : l’app sait maintenant calculer tendance de poids, dépense et cibles (activité déclarée sédentaire / légère / modérée / active, dépense mesurée après 28 jours de données), et garde en mémoire le catalogue d’aliments (table Ciqual de l’Anses, 3 484 aliments, chargée à la demande), le journal des repas et les cibles. **Rien n’est encore affiché** : l’écran Nutrition arrive ensuite. Réglages par défaut proposés cette nuit (D-74), révisables : jours hauts / bas désactivés.
+- Mise à jour de la base (version 8) : quatre tables ajoutées, qui passent d’un appareil à l’autre. **Mets à jour le PC et l’iPhone le même jour** : un appareil resté en 0.5.0 garde de côté ce qui vient de la 0.6.0 (rien n’est perdu), mais refuse une sauvegarde ou un export fait en 0.6.0. PC : bannière de mise à jour dans l’app ; iPhone : SideStore.
+
 ## 0.5.0
 
 - **Cycle** (Entraînement → section Cycle) : un mésocycle de 5 semaines par défaut (4 à 7 au choix), dernière semaine en deload ; l’option « illimité » enchaîne des blocs de 5 semaines avec un deload à la fin de chaque bloc. Séries −1 / 0 / 0 / +1 et RIR 3 / 2 / 1 / 1 sur les semaines de travail : jamais de RIR 0. « Proposer une séance » suit la semaine du cycle ; en semaine de deload, l’option « Deload » est cochée d’office dans la proposition (tu peux la décocher).
