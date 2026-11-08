@@ -81,24 +81,21 @@ const sameSet = (a: readonly string[], b: readonly string[]): boolean => {
 
 /**
  * I2-04 : paires d'haltères en plus de la plage (`extraKg`, 9 kg à Antony) rattrapées À LA LECTURE pour une copie d'un profil embarqué
- * faite avant la 0.3.0 (le champ n'existait pas). Copie reconnue par son nom (commence par le nom embarqué, « (copie) ») ou par une liste de
- * matériel identique ; seules les paires que la plage actuelle encadre sont ajoutées, et seulement si `extraKg` est absent (une valeur
+ * faite avant la 0.3.0 (le champ n'existait pas). Copie reconnue par son nom (commence par le nom embarqué, « (copie) »), sinon par une liste
+ * de matériel identique à celle d'un seul profil embarqué ; seules les paires que la plage actuelle encadre sont ajoutées, et seulement si `extraKg` est absent (une valeur
  * présente, même vide, est celle d'Ali). Rien d'autre n'est touché ; sans rattrapage, le même objet est rendu. Aucune écriture.
  */
 export function backfillDumbbellExtras<T extends { readonly name: string; readonly inventory: EquipmentInventory }>(profile: T, embedded: readonly DumbbellExtrasSource[]): T {
   const dumbbells = profile.inventory.dumbbells;
   if (dumbbells === null || dumbbells.extraKg !== undefined) return profile;
   const name = normalizeName(profile.name);
-  for (const source of embedded) {
-    const extras = source.inventory.dumbbells?.extraKg ?? [];
-    if (extras.length === 0) continue;
-    const prefix = normalizeName(source.name);
-    if (!(prefix.length > 0 && name.startsWith(prefix)) && !sameSet(profile.inventory.available, source.inventory.available)) continue;
-    const kept = extras.filter((kg) => Number.isFinite(kg) && kg >= dumbbells.minKg && kg <= dumbbells.maxKg);
-    if (kept.length === 0) return profile;
-    return { ...profile, inventory: { ...profile.inventory, dumbbells: { ...dumbbells, extraKg: kept } } };
-  }
-  return profile;
+  // Le nom désigne la source (le plus long préfixe : le plus précis) ; à défaut, une seule source de même liste de matériel.
+  const byName = embedded.filter((s) => normalizeName(s.name).length > 0 && name.startsWith(normalizeName(s.name))).sort((a, b) => b.name.length - a.name.length);
+  const byEquipment = embedded.filter((s) => sameSet(profile.inventory.available, s.inventory.available));
+  const source = byName[0] ?? (byEquipment.length === 1 ? byEquipment[0] : undefined);
+  const extras = source?.inventory.dumbbells?.extraKg ?? [];
+  const kept = extras.filter((kg) => Number.isFinite(kg) && kg >= dumbbells.minKg && kg <= dumbbells.maxKg);
+  return kept.length === 0 ? profile : { ...profile, inventory: { ...profile.inventory, dumbbells: { ...dumbbells, extraKg: kept } } };
 }
 
 const positive = (n: number): boolean => Number.isFinite(n) && n > 0;
