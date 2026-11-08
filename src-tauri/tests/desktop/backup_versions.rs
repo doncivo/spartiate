@@ -68,7 +68,10 @@ fn make_db(path: &Path, version: u32, bodies_version: u32) {
             // Les déclencheurs de recherche citent des tables d'index absentes de cette base minimale : seuls ceux de capture comptent ici.
             continue;
         }
-        let sql = trigger_body_for(name, table, bodies_version).unwrap();
+        // Pas de corps à cette version (ex. `sync_task_au` en version 8 : une base Spartiate n'a ni `task` ni ses déclencheurs) : rien à poser.
+        let Some(sql) = trigger_body_for(name, table, bodies_version) else {
+            continue;
+        };
         conn.execute_batch(sql).unwrap();
     }
 }
