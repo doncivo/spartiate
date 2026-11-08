@@ -255,3 +255,50 @@ fn restore_recreates_sync_capture_triggers_even_without_search_index_doc() {
         "aucun déclencheur de recherche sans table d'index"
     );
 }
+
+/// Base Spartiate RÉELLE de version 8 : schéma rejoué depuis les migrations TypeScript (fixture `spartiate-v8-schema.sql`, tenue à jour par
+/// `src/db/migrations/spartiateSchemaFixture.test.ts`). Aucune table `search_index_doc`, aucun déclencheur `search_*`.
+fn make_real_spartiate_db(path: &Path) {
+    let conn = Connection::open(path).unwrap();
+    conn.execute_batch(include_str!("../fixtures/spartiate-v8-schema.sql"))
+        .unwrap();
+    for v in 1..=8 {
+        conn.execute(
+            "INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?1, 'n', 'c', 'now')",
+            [v],
+        )
+        .unwrap();
+    }
+}
+
+fn trigger_names(path: &Path) -> Vec<String> {
+    let conn = Connection::open(path).unwrap();
+    let mut statement = conn
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'trigger' ORDER BY name")
+        .unwrap();
+    let names = statement
+        .query_map([], |r| r.get::<_, String>(0))
+        .unwrap()
+        .collect::<Result<_, _>>()
+        .unwrap();
+    names
+}
+
+#[test]
+fn a_real_spartiate_v8_backup_is_admitted_and_reset_triggers_restores_exactly_its_triggers() {
+    let dir = scratch();
+    let path = dir.path().join("reelle.db");
+    make_real_spartiate_db(&path);
+    let before = trigger_names(&path);
+    assert_eq!(before.len(), 34, "{before:?}");
+    assert!(!before.iter().any(|n| n.starts_with("search_")));
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 8);
+    // Un déclencheur étranger est retiré, tous ceux de l'app reviennent, aucun de recherche n'apparaît.
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch("CREATE TRIGGER evil AFTER INSERT ON food BEGIN SELECT 1; END;")
+        .unwrap();
+    reset_triggers(&path).unwrap();
+    assert_eq!(trigger_names(&path), before);
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 8);
+}
