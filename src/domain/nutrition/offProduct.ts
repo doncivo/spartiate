@@ -28,7 +28,15 @@ const KJ_PER_KCAL = 4.184;
 /** Nombre fini et positif ou nul ; tout le reste (texte, NaN, négatif, infini) : `null`. */
 const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null);
 
-const clean = (text: string | undefined, max: number): string => (text ?? '').replace(/\s+/g, ' ').trim().slice(0, max).trimEnd();
+/** Compacte les espaces et tronque par caractères entiers, sans dépasser `max` unités UTF-16 (comme le validateur) : jamais une paire coupée. */
+const clean = (text: string | undefined, max: number): string => {
+  let out = '';
+  for (const ch of (text ?? '').replace(/\s+/g, ' ').trim()) {
+    if (out.length + ch.length > max) break;
+    out += ch;
+  }
+  return out.trimEnd();
+};
 
 /** Convertit la fiche ; refuse (motif typé, traduit côté i18n) une fiche sans énergie NI macros, sans nom, à code invalide ou invraisemblable. */
 export function offProductToDraft(product: OffRawProduct, now: IsoDateTime): OffConversion {

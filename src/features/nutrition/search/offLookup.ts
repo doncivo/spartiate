@@ -19,7 +19,7 @@ export interface OffDeps {
 }
 
 export interface OffFailure {
-  readonly kind: OffErrorKind | 'unavailable';
+  readonly kind: OffErrorKind | 'unavailable' | 'write-failed';
   readonly status?: number;
   readonly retryAfterSeconds?: number;
 }
@@ -85,7 +85,7 @@ export async function resolveBarcode(deps: OffDeps, input: string): Promise<Barc
     const food = await deps.foods.cacheOff(converted.draft);
     return { kind: 'found', food, via: 'network', missing: converted.missing };
   } catch {
-    return staleOrFail({ kind: 'bad-response' });
+    return staleOrFail({ kind: 'write-failed' });
   }
 }
 
@@ -119,7 +119,7 @@ export async function searchOnline(deps: OffDeps, query: string): Promise<Online
     return failure.kind === 'invalid-input' ? { kind: 'invalid-query' } : { kind: 'failed', failure };
   }
   const items: OnlineItem[] = [];
-  let refused = 0;
+  let refused = response.skipped ?? 0;
   for (const raw of response.products) {
     const converted = offProductToDraft(raw, deps.now);
     if (!converted.ok) refused += 1;

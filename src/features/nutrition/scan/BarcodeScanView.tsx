@@ -53,7 +53,7 @@ export function BarcodeScanView({ load, onOutcome }: BarcodeScanViewProps) {
     <div className="ct-nutrition-scan" role="dialog" aria-modal="true" aria-label={tNutrition('scanButton')}>
       <p className="ct-nutrition-scan__aim">{tNutrition('scanAim')}</p>
       <div className="ct-nutrition-scan__frame" aria-hidden="true" />
-      <button type="button" className="ct-nutrition-scan__cancel" aria-label={tNutrition('scanCancelLabel')} onClick={() => void scanRef.current?.cancel()}>
+      <button type="button" autoFocus className="ct-nutrition-scan__cancel" aria-label={tNutrition('scanCancelLabel')} onClick={() => void scanRef.current?.cancel()}>
         {tNutrition('scanCancel')}
       </button>
     </div>,
