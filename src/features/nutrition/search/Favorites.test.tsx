@@ -50,15 +50,15 @@ describe('I4-06 : favoris', () => {
     mount();
     await openSearch();
     await pickSkyr();
-    const star = await screen.findByRole('button', { name: 'Ajouter aux favoris' });
+    const star = await screen.findByRole('button', { name: 'Favori' });
     expect(star).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(star);
-    const pressed = await screen.findByRole('button', { name: 'Retirer des favoris' });
-    expect(pressed).toHaveAttribute('aria-pressed', 'true');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Favori' })).toHaveAttribute('aria-pressed', 'true'));
+    const pressed = screen.getByRole('button', { name: 'Favori' });
     await waitFor(async () => expect(await db.data.repos.settings.get('nutrition.favorites')).toEqual({ v: 1, items: [{ source: 'custom', ref: id }] }));
     fireEvent.click(pressed);
     await waitFor(async () => expect(await db.data.repos.settings.get('nutrition.favorites')).toEqual({ v: 1, items: [] }));
-    expect(screen.getByRole('button', { name: 'Ajouter aux favoris' })).toHaveAttribute('aria-pressed', 'false');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Favori' })).toHaveAttribute('aria-pressed', 'false'));
   });
 
   it('requête vide : « Favoris » en tête, avant « Récents », avec provenance ; le choix ouvre la quantité', async () => {
@@ -74,7 +74,7 @@ describe('I4-06 : favoris', () => {
     expect(within(hit).getByText('Perso')).toBeInTheDocument();
     fireEvent.click(hit);
     expect(await screen.findByLabelText('Quantité (g)')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Retirer des favoris' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Favori' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('pas de section Favoris quand la requête n’est pas vide', async () => {
@@ -97,8 +97,58 @@ describe('I4-06 : favoris', () => {
     expect(screen.queryByRole('heading', { name: 'Favoris' })).toBeNull();
     expect(screen.queryByRole('alert')).toBeNull();
     await pickSkyr();
-    fireEvent.click(await screen.findByRole('button', { name: 'Ajouter aux favoris' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Favori' }));
     await waitFor(async () => expect(await db.data.repos.settings.get('nutrition.favorites')).toEqual({ v: 1, items: [{ source: 'custom', ref: id }] }));
+  });
+
+  it('étoile inactive tant que la liste n’est pas lue ; l’écriture garde les favoris déjà en base', async () => {
+    const a = await seedSkyr();
+    const other = await (await db.data.repos.foods()).create({ source: 'custom', barcode: null, name: 'Riz maison', brand: null, per100g: { kcal: 130, proteinG: 3, fatG: 0.3, carbG: 28, fiberG: null }, fetchedAt: null });
+    await db.data.repos.settings.set('nutrition.favorites', { v: 1, items: [{ source: 'custom', ref: a }] });
+    const foods = await db.data.repos.foods();
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const slow = { ...foods, get: async (id: string) => { await gate; return foods.get(id); } };
+    (db.data.repos as { foods: () => Promise<typeof foods> }).foods = async () => slow;
+    mount();
+    await openSearch();
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Nom de l’aliment' }), { target: { value: 'riz' } });
+    fireEvent.click(await screen.findByRole('button', { name: /Riz maison/ }));
+    const star = await screen.findByRole('button', { name: 'Favori' });
+    expect(star).toBeDisabled();
+    fireEvent.click(star);
+    expect(await db.data.repos.settings.get('nutrition.favorites')).toEqual({ v: 1, items: [{ source: 'custom', ref: a }] });
+    release();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Favori' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Favori' }));
+    await waitFor(async () => expect(await db.data.repos.settings.get('nutrition.favorites')).toEqual({ v: 1, items: [{ source: 'custom', ref: other.id }, { source: 'custom', ref: a }] }));
+  });
+
+  it('lecture du réglage en échec : étoile inactive avec message, rien n’est écrit', async () => {
+    await seedSkyr();
+    const settings = db.data.repos.settings;
+    let writes = 0;
+    (db.data.repos as { settings: typeof settings }).settings = {
+      ...settings,
+      get: async (key) => {
+        if (key === 'nutrition.favorites') throw new Error('lecture impossible');
+        return settings.get(key);
+      },
+      set: async (key, value) => {
+        writes += 1;
+        return settings.set(key, value);
+      },
+    };
+    mount();
+    await openSearch();
+    await pickSkyr();
+    const star = await screen.findByRole('button', { name: 'Favori' });
+    expect(star).toBeDisabled();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Impossible de lire tes favoris');
+    fireEvent.click(star);
+    expect(writes).toBe(0);
   });
 
   it('valeur corrompue : recherche utilisable, aucune section, aucune erreur', async () => {
