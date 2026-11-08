@@ -92,6 +92,23 @@ export const nutritionFr = {
   searchResults: 'Résultats',
   searchHintKeys: '↑ ↓ pour choisir, Entrée pour sélectionner, Échap pour fermer.',
 
+  // Fiche perso
+  createFood: 'Créer une fiche perso',
+  customTitle: 'Nouvelle fiche perso',
+  customIntro: 'Valeurs pour 100 g, comme sur l’emballage. Un champ vide reste inconnu, jamais 0.',
+  foodNameLabel: 'Nom de la fiche',
+  kcal100: 'Calories pour 100 g (kcal)',
+  protein100: 'Protéines pour 100 g (g)',
+  fat100: 'Lipides pour 100 g (g)',
+  carb100: 'Glucides pour 100 g (g)',
+  portionNameField: 'Portion (facultatif) : nom',
+  portionGramsField: 'Portion : grammes',
+  createFoodSubmit: 'Créer la fiche',
+  nameRequired: 'Indique un nom.',
+  nutrientRequired: 'Renseigne au moins une valeur nutritive.',
+  foodInvalid: 'Une valeur n’est pas valide : 0 à 100 g pour 100 g, énergie jusqu’à 900 kcal.',
+  portionInvalid: 'La portion n’est pas valide : un nom et des grammes (de 1 à 5 000).',
+
   // Quantité
   quantityLabel: 'Quantité (g)',
   portionsLabel: 'Portions',
