@@ -106,7 +106,7 @@ describe('séance proposée (I3-01)', () => {
     open();
     let region = await proposal();
     let list = within(region).getByRole('list', { name: 'Exercices proposés' });
-    expect(within(list).getAllByText('2 × 6–10 · repos 2 min 30 s')).toHaveLength(2);
+    expect(within(list).getAllByText('2 × 6–10 · repos 2 min 30 s · RIR 3')).toHaveLength(2);
     expect(within(region).getByText('Cycle : semaine 1 sur 5, une série de moins que la routine par exercice, 3 répétitions en réserve.')).toBeInTheDocument();
     cleanup();
     const paused = pauseProgram(spec, '2026-11-09' as LocalDate);
