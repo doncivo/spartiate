@@ -64,6 +64,7 @@ export function TrainingScreen({ session }: { readonly session?: SessionPlatform
         </h1>
         <TodaySessionCard />
         <SegmentedControl
+          scrollable
           label={tTraining('sectionsLabel')}
           value={current}
           onChange={(screen) => navigate({ tab: 'training', screen })}

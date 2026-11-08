@@ -64,6 +64,9 @@ describe('Aujourd’hui (I0) : planches iPhone et PC, valeurs réelles seulement
       expect(within(steps[1] as HTMLElement).getByText('Première pesée')).toBeInTheDocument();
       expect(within(steps[2] as HTMLElement).getByText('Relier le PC')).toBeInTheDocument();
       expect(screen.getByText('Arrive ensuite')).toBeInTheDocument();
+      expect(screen.queryByText('programme Haut / Bas, charges proposées')).toBeNull();
+      expect(screen.queryByText('journal, cibles, dépense mesurée')).toBeNull();
+      expect(screen.getByText('sommeil, HRV, effort via Apple Santé')).toBeInTheDocument();
       expect(screen.getByText('Synchro non configurée')).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: 'Renseigner mon profil' }));
       expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'body' });

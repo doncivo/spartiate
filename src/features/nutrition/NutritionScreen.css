@@ -18,6 +18,11 @@
   max-width: 660px;
 }
 
+/* iPhone (0.7.1 point 2) : le bas de la fiche reste atteignable au-dessus de la barre d'onglets et de la zone de sécurité. */
+.ct-nutrition-shell[data-layout='mobile'] {
+  padding-bottom: calc(var(--ct-tab-bar-height) + var(--ct-safe-area-bottom));
+}
+
 .ct-nutrition-shell[data-layout='pc'] .ct-nutrition {
   max-width: 900px;
 }
@@ -105,14 +110,13 @@
   gap: var(--ct-space-2);
 }
 
+/* Champs côte à côte : ils se partagent la largeur de la carte (minmax(0, 1fr)), jamais plus larges qu'elle (0.7.1 point 1). */
 .ct-nutrition__row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: var(--ct-space-2);
-}
-
-.ct-nutrition__row > .ct-nutrition__field {
-  flex: 1 1 120px;
+  min-width: 0;
 }
 
 .ct-nutrition__field {
@@ -135,6 +139,8 @@
   box-sizing: border-box;
   min-height: var(--ct-hit-target-min);
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   padding: 0 var(--ct-space-3);
   font: inherit;
   font-variant-numeric: tabular-nums;

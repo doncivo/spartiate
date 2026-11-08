@@ -33,6 +33,7 @@ export function NutritionScreen() {
           {tNutrition('title')}
         </h1>
         <SegmentedControl
+          scrollable
           label={tNutrition('sectionsLabel')}
           value={current}
           onChange={(screen) => navigate({ tab: 'nutrition', screen })}

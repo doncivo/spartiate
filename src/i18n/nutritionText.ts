@@ -1,3 +1,4 @@
+import { formatDayMonth as formatDayMonthFr, frFirst } from './format';
 import { nutritionFr } from './fr.nutrition';
 
 /** Textes de l'onglet Nutrition (I4-03) ; importé seulement par les blocs à la demande de Nutrition et de la carte d'Aujourd'hui. */
@@ -29,10 +30,10 @@ const toUtc = (date: string): Date => {
 };
 
 /** « lun. 9 nov. » */
-export const formatDayShort = (date: string): string => new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(toUtc(date));
+export const formatDayShort = (date: string): string => frFirst(new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(toUtc(date)));
 /** « lundi 9 novembre » */
-export const formatDayLong = (date: string): string => new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(toUtc(date));
+export const formatDayLong = (date: string): string => frFirst(new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(toUtc(date)));
 /** « 9 novembre » */
-export const formatDayMonth = (date: string): string => new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(toUtc(date));
+export const formatDayMonth = (date: string): string => formatDayMonthFr(date, 'long');
 
 export const weekdayNames = (): readonly string[] => nutritionFr.weekdays.split('|');

@@ -3,6 +3,9 @@ import { weekdayOrder } from '../domain/week';
 import { getFirstWeekday, getTimeFormat } from './formatPrefs';
 import { t } from './index';
 
+/** Français : le premier du mois s'écrit « 1er » (« 1er novembre », « lun. 1er nov. », « 1er – 7 nov. »), jamais « 1 novembre ». */
+export const frFirst = (text: string): string => text.replace(/(^|\s)1(?=$|\s\p{L}|\s–)/u, (_m, lead: string) => `${lead}1er`);
+
 /** P-03 : heure 'HH:mm' dans le format choisi (24 h : « 09:00 » ; 12 h : « 9:00 AM »). Seul point d'affichage d'une heure. */
 export function formatTime(time: string): string {
   return formatDomainTime(time, getTimeFormat());
@@ -26,7 +29,7 @@ export function formatDayLabel(isoDate: string): string {
     formatter = new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
     dayLabelFormatters.set(locale, formatter);
   }
-  return formatter.format(date);
+  return frFirst(formatter.format(date));
 }
 
 const MONTH_LABEL_OPTIONS = { month: 'long', year: 'numeric', timeZone: 'UTC' } as const;
@@ -43,7 +46,7 @@ function utcDate(isoDate: string): Date {
 export function formatDonePeriodLabel(kind: 'day' | 'week' | 'month', from: string, to: string): string {
   const locale = 'fr-FR';
   const fmt = (options: Intl.DateTimeFormatOptions, date: string) =>
-    new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' }).format(utcDate(date));
+    frFirst(new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' }).format(utcDate(date)));
   if (kind === 'month') return new Intl.DateTimeFormat(locale, MONTH_LABEL_OPTIONS).format(utcDate(from));
   if (kind === 'day') return fmt({ day: 'numeric', month: 'short' }, from);
   const sameMonth = from.slice(0, 7) === to.slice(0, 7);
@@ -57,7 +60,7 @@ const capitalize = (text: string): string => text.charAt(0).toUpperCase() + text
 
 /** Jour complet pour le bandeau « Compris : » (« vendredi 25 sept. »), selon la langue courante. */
 export function formatDayFull(isoDate: string): string {
-  return new Intl.DateTimeFormat(intlLocale(), { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(utcDate(isoDate));
+  return frFirst(new Intl.DateTimeFormat(intlLocale(), { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(utcDate(isoDate)));
 }
 
 /** Libellé d'un jour de la roue iPhone (« Jeu. 24 sept. »), première lettre en majuscule. */
@@ -79,7 +82,7 @@ export function weekdayInitials(): string[] {
 
 /** Nom accessible d'une case du calendrier (« 25 septembre »). */
 export function formatDayAria(isoDate: string): string {
-  return new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(utcDate(isoDate));
+  return frFirst(new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(utcDate(isoDate)));
 }
 
 /** Noms complets des jours dans l'ordre de la semaine réglée (« lundi »…), pour les en-têtes de colonne du calendrier. */
@@ -114,7 +117,7 @@ export function formatWeekdayName(isoDate: string): string {
 /** Date de la fiche détail (« Mer. 23 sept. 2026 », sans l'année si `withYear` est faux), première lettre en majuscule. */
 export function formatDetailDate(isoDate: string, withYear = true): string {
   return capitalize(
-    new Intl.DateTimeFormat(intlLocale(), { weekday: 'short', day: 'numeric', month: 'short', ...(withYear ? { year: 'numeric' as const } : {}), timeZone: 'UTC' }).format(utcDate(isoDate)),
+    frFirst(new Intl.DateTimeFormat(intlLocale(), { weekday: 'short', day: 'numeric', month: 'short', ...(withYear ? { year: 'numeric' as const } : {}), timeZone: 'UTC' }).format(utcDate(isoDate))),
   );
 }
 
@@ -132,7 +135,7 @@ export function formatStamp(isoInstant: string, nowMs: number): string {
   const time = formatTime(`${pad2(then.getHours())}:${pad2(then.getMinutes())}`);
   if (days === 0) return t('detail.stampToday', { time });
   if (days === 1) return t('detail.stampYesterday', { time });
-  const date = new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'short', ...(then.getFullYear() === now.getFullYear() ? {} : { year: 'numeric' }) }).format(then);
+  const date = frFirst(new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'short', ...(then.getFullYear() === now.getFullYear() ? {} : { year: 'numeric' }) }).format(then));
   return t('detail.stampOn', { date, time });
 }
 
@@ -144,7 +147,7 @@ export function formatStamp(isoInstant: string, nowMs: number): string {
 export function formatWeekRange(from: string, to: string, style: 'long' | 'short'): string {
   const locale = intlLocale();
   const fmt = (options: Intl.DateTimeFormatOptions, date: string): string =>
-    new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' }).format(utcDate(date));
+    frFirst(new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' }).format(utcDate(date)));
   const month = style === 'long' ? 'long' : 'short';
   if (from.slice(0, 7) === to.slice(0, 7)) {
     return `${fmt({ day: 'numeric' }, from)} – ${fmt({ day: 'numeric', month, ...(style === 'long' ? { year: 'numeric' as const } : {}) }, to)}`;
@@ -167,12 +170,12 @@ export function formatDropDayLabel(isoDate: string): string {
   return `${weekday.toLocaleLowerCase(intlLocale())} ${day}`;
 }
 
-/** Jour et mois courts sans jour de semaine (« 23 sept. »), selon la langue courante ; date civile, sans effet de fuseau. */
-export function formatDayMonth(isoDate: string): string {
+/** Jour et mois sans jour de semaine (« 23 sept. » ; `long` : « 23 septembre » ; « 1er » le premier du mois), selon la langue courante ; date civile, sans effet de fuseau. */
+export function formatDayMonth(isoDate: string, style: 'short' | 'long' = 'short'): string {
   const [year, month, day] = isoDate.split('-').map(Number);
   const date = new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, day ?? 1));
   const locale = 'fr-FR';
-  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(date);
+  return frFirst(new Intl.DateTimeFormat(locale, { day: 'numeric', month: style === 'long' ? 'long' : 'short', timeZone: 'UTC' }).format(date));
 }
 
 /** Jour, mois court et année (« 12 mars 2028 »), selon la langue courante ; date civile, sans effet de fuseau. */
@@ -180,5 +183,5 @@ export function formatDayMonthYear(isoDate: string): string {
   const [year, month, day] = isoDate.split('-').map(Number);
   const date = new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, day ?? 1));
   const locale = 'fr-FR';
-  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(date);
+  return frFirst(new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(date));
 }

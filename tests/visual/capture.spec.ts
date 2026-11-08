@@ -68,6 +68,36 @@ const goBody = async (page: Page): Promise<void> => {
 
 // SPA-009 critère 7 : paires app / maquette aux mêmes dimensions (440 × 956 et 1 440 × 900), relues par un humain. Sans maquette (états I0
 // qui n'en ont pas), seule la capture de l'app est écrite : le choix est consigné dans la fiche du ticket (motifs Plus / Réglages).
+/** 0.7.1 : dimanche 8 novembre 2026 (le cas d'Ali : 3 pesées, check-in le lundi), pesées posées dans la base en mémoire du navigateur de test. */
+const SUNDAY = new Date('2026-11-08T11:00:00Z');
+const seedWeights = async (page: Page): Promise<void> => {
+  await page.evaluate(async () => {
+    const stamp = '2026-11-08T10:00:00.000Z';
+    for (const [date, kg] of [['2026-11-03', 105.0], ['2026-11-05', 104.5], ['2026-11-06', 104.0]] as const) {
+      await window.__ctTest?.execute(
+        "INSERT INTO body_weight (id, date, kg, source, timezone, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, 'manual', 'Europe/Paris', ?, ?, '0f8fad5b-d9cb-469f-a165-70867728950e', ?)",
+        [`weight|${date}|manual`, date, kg, stamp, stamp, '001794218400000-0000-0f8fad5b-d9cb-469f-a165-70867728950e'],
+      );
+    }
+  });
+};
+const goNutrition = (section?: string) => async (page: Page): Promise<void> => {
+  await seedWeights(page);
+  await goTab('Nutrition')(page);
+  if (section) await page.getByRole('radio', { name: section, exact: true }).click();
+};
+const goTraining = (section?: string) => async (page: Page): Promise<void> => {
+  await goTab('Entraînement')(page);
+  if (section) await page.getByRole('radio', { name: section, exact: true }).click();
+};
+const openAddSheet = async (page: Page): Promise<void> => {
+  await goNutrition()(page);
+  await page.getByRole('button', { name: 'Rechercher un aliment' }).click();
+  await page.getByLabel('Nom de l’aliment').fill('banane');
+  await page.locator('[data-hit]').first().click();
+  await page.getByLabel('Quantité (g)').waitFor();
+};
+
 const SCREENS: Screen[] = [
   { name: 'Aujourdhui', mockup: 'iPhone-Aujourdhui.html', viewport: PHONE, date: WEDNESDAY, dark: true },
   { name: 'PC-Aujourdhui', mockup: 'PC-Aujourdhui.html', viewport: PC, date: WEDNESDAY, dark: true },
@@ -77,6 +107,12 @@ const SCREENS: Screen[] = [
   { name: 'PC-Plus', viewport: PC, date: WEDNESDAY, dark: true, prepare: goTab('Plus') },
   { name: 'Profil-poids', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: goBody },
   { name: 'PC-Profil-poids', viewport: PC, date: WEDNESDAY, dark: true, prepare: goBody },
+  { name: 'Aujourdhui-0-7-1', viewport: PHONE, date: SUNDAY, dark: true, prepare: seedWeights },
+  { name: 'Entrainement-routines', viewport: PHONE, date: SUNDAY, dark: true, prepare: goTraining() },
+  { name: 'Entrainement-bibliotheque', viewport: PHONE, date: SUNDAY, dark: true, prepare: goTraining('Bibliothèque') },
+  { name: 'Nutrition-journal-fiche', viewport: PHONE, date: SUNDAY, dark: true, prepare: openAddSheet },
+  { name: 'Nutrition-dashboard', viewport: PHONE, date: SUNDAY, dark: true, prepare: goNutrition('Dashboard') },
+  { name: 'Nutrition-checkin', viewport: PHONE, date: SUNDAY, dark: true, prepare: goNutrition('Check-in') },
   { name: 'Aujourdhui-clair', viewport: PHONE, date: WEDNESDAY, dark: false, prepare: goLight },
   { name: 'PC-Aujourdhui-clair', viewport: PC, date: WEDNESDAY, dark: false, prepare: goLight },
 ];

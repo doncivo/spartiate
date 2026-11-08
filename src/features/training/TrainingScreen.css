@@ -93,11 +93,19 @@
   align-items: flex-end;
 }
 
+/* Dans une colonne (iPhone : filtres, formulaires), un champ prend sa hauteur de contenu. Un flex-basis de 200 px y fixait 200 px de HAUTEUR par champ
+   (0.7.1 point 5) : la base de 200 px n'a de sens que dans une rangée, donc seulement là. */
 .ct-training__field {
   display: flex;
   flex-direction: column;
   gap: var(--ct-space-1);
   min-width: 0;
+  flex: 0 0 auto;
+}
+
+.ct-training-shell[data-layout='pc'] .ct-training__filters > .ct-training__field,
+.ct-training__grid2 > .ct-training__field,
+.ct-training__grid3 > .ct-training__field {
   flex: 1 1 200px;
 }
 

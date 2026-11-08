@@ -2,6 +2,7 @@ import { Check, ChevronRight } from 'lucide-react';
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { todayLocal } from '../../domain/clock';
 import type { BodyWeight, Profile } from '../../domain/bodyProfile';
+import { isTrendLearning } from '../../domain/nutrition/trendLearning';
 import { formatDetailDate, formatStamp } from '../../i18n/format';
 import { formatKg, tBody, type BodyTextKey } from '../../i18n/bodyText';
 import { formatTodayEyebrow, tToday, type TodayTextKey } from '../../i18n/todayText';
@@ -16,7 +17,6 @@ import './TodayScreen.css';
 const GOAL_KEY = { gain: 'goalGain', loss: 'goalLoss', maintain: 'goalMaintain' } as const satisfies Record<string, BodyTextKey>;
 const EXPERIENCE_KEY = { beginner: 'experienceBeginner', intermediate: 'experienceIntermediate', advanced: 'experienceAdvanced' } as const satisfies Record<string, BodyTextKey>;
 
-const WEIGHTS_NEEDED = 14;
 const CHART_POINTS = 6;
 const subscribeNone = (): (() => void) => () => undefined;
 
@@ -84,8 +84,8 @@ function WeightCard({ weights, nowMs, showActions }: { readonly weights: readonl
         {last ? (
           <div className="ct-today__trend">
             <p className="ct-today__muted">{tToday('trendLabel')}</p>
-            <p className="ct-today__text">{tToday(count < WEIGHTS_NEEDED ? 'trendLearning' : 'trendNotComputed')}</p>
-            {count < WEIGHTS_NEEDED ? <p className="ct-today__muted">{count === 1 ? tToday('weightsCountOne') : tToday('weightsCount', { n: count })}</p> : null}
+            <p className="ct-today__text">{tToday(isTrendLearning(count) ? 'trendLearning' : 'trendNotComputed')}</p>
+            {isTrendLearning(count) ? <p className="ct-today__muted">{count === 1 ? tToday('weightsCountOne') : tToday('weightsCount', { n: count })}</p> : null}
           </div>
         ) : null}
       </div>
@@ -103,17 +103,8 @@ function WeightCard({ weights, nowMs, showActions }: { readonly weights: readonl
 }
 
 function NextCard({ pc }: { readonly pc: boolean }) {
-  const rows: readonly (readonly [TodayTextKey, TodayTextKey])[] = pc
-    ? [
-        ['nextSession', 'nextSessionTextPc'],
-        ['nextNutrition', 'nextNutritionTextPc'],
-        ['nextRecovery', 'nextRecoveryTextPc'],
-      ]
-    : [
-        ['nextSession', 'nextSessionText'],
-        ['nextNutrition', 'nextNutritionText'],
-        ['nextRecovery', 'nextRecoveryText'],
-      ];
+  // Séance et Nutrition sont livrées (0.7.0) : seule la Récupération reste à venir.
+  const rows: readonly (readonly [TodayTextKey, TodayTextKey])[] = [['nextRecovery', pc ? 'nextRecoveryTextPc' : 'nextRecoveryText']];
   return (
     <section className="ct-today__card ct-today__next" aria-labelledby="ct-today-next">
       <h2 id="ct-today-next" className="ct-today__eyebrow">

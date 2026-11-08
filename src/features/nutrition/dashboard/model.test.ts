@@ -3,11 +3,11 @@ import { addDays } from '../../../domain/localDate';
 import { aggregateDays } from '../../../domain/nutrition/dayTotals';
 import { estimateTdee } from '../../../domain/nutrition/tdee';
 import { DEFAULT_NUTRITION_PREFS } from '../../../domain/nutrition/prefs';
-import type { MealEntryInput, WeighIn } from '../../../domain/nutrition/types';
+import type { MealEntryInput, TrendPoint, WeighIn } from '../../../domain/nutrition/types';
 import { computeTrend } from '../../../domain/nutrition/weightTrend';
 import type { LocalDate } from '../../../domain/types';
 import type { NutritionSnapshot } from '../useCases';
-import { dashboardModel } from './model';
+import { dashboardModel, trendScale } from './model';
 
 /** I4-03 critère 5 : modèle du dashboard, pur ; les graphiques tiennent dans le budget de 300 ms. */
 const TODAY = '2026-11-09' as LocalDate;
@@ -61,5 +61,40 @@ describe('I4-03 : dashboardModel', () => {
     const start = performance.now();
     for (let i = 0; i < 20; i += 1) dashboardModel(s);
     expect((performance.now() - start) / 20).toBeLessThan(300);
+  });
+});
+
+describe('0.7.1 points 6 et 7 : tendance en apprentissage et échelle du graphique', () => {
+  const pt = (date: string, kg: number, trend: number): TrendPoint => ({ date: date as LocalDate, kg, trend, outlier: false });
+
+  it('point 6 : moins de 14 pesées → en apprentissage, dernière pesée en grand ; 14 pesées → tendance', () => {
+    const few = snapshot(4, 20); // 3 pesées sur 60 jours
+    const m = dashboardModel(few);
+    expect(m.weighInCount).toBeLessThan(14);
+    expect(m.learning).toBe(true);
+    expect(m.lastWeighIn).not.toBeNull();
+    expect(dashboardModel(snapshot(4, 2)).learning).toBe(false);
+  });
+
+  it('point 7 : moins de 7 jours de données → axe de 7 jours finissant à la date de fin, pas de 28 jours vides', () => {
+    const end = '2026-11-08' as LocalDate;
+    const s = trendScale([pt('2026-11-04', 105, 105.2), pt('2026-11-06', 104, 105.9)], end);
+    expect(s.spanDays).toBe(7);
+    expect(s.startDate).toBe('2026-11-02');
+  });
+
+  it('point 7 : l’axe s’étend avec les données, plafonné à 28 jours', () => {
+    const end = '2026-11-08' as LocalDate;
+    expect(trendScale([pt('2026-10-20', 100, 100)], end).spanDays).toBe(20);
+    expect(trendScale([pt('2026-08-01', 100, 100)], end).spanDays).toBe(28);
+  });
+
+  it('point 7 : l’échelle des Y englobe pesées et tendance avec une marge d’au moins 0,5 kg', () => {
+    const s = trendScale([pt('2026-11-04', 105, 105.2), pt('2026-11-06', 104, 105.9)], '2026-11-08' as LocalDate);
+    expect(s.min).toBeLessThanOrEqual(103.5);
+    expect(s.max).toBeGreaterThanOrEqual(106.4);
+    const flat = trendScale([pt('2026-11-06', 80, 80)], '2026-11-08' as LocalDate);
+    expect(flat.min).toBe(79.5);
+    expect(flat.max).toBe(80.5);
   });
 });
