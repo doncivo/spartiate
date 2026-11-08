@@ -2,6 +2,13 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.5.0
+
+- **Cycle** (Entraînement → section Cycle) : un mésocycle de 5 semaines par défaut (4 à 7 au choix), dernière semaine en deload ; l’option « illimité » enchaîne des blocs de 5 semaines avec un deload à la fin de chaque bloc. Séries −1 / 0 / 0 / +1 et RIR 3 / 2 / 1 / 1 sur les semaines de travail : jamais de RIR 0. « Proposer une séance » suit la semaine du cycle ; en semaine de deload, l’option « Deload » est cochée d’office dans la proposition (tu peux la décocher).
+- Deload anticipé : l’app peut te le proposer, jamais l’imposer. **Pause** : le cycle se fige et se décale d’autant, sans jours manqués ni notifications ; après plus de 21 jours d’arrêt, une semaine allégée est proposée à la reprise. Bilan de fin de cycle : répéter, régénérer, changer ou terminer.
+- Ce sont des réglages par défaut (D-73), révisables : dis-moi ce que tu veux changer.
+- **Mise à jour de la base (version 7)** : une table de cycle est ajoutée et passe d’un appareil à l’autre. **Mets à jour le PC et l’iPhone le même jour** : un appareil resté en 0.4.0 garde de côté le cycle reçu (rien n’est perdu, tout revient après sa mise à jour), mais refuse une sauvegarde ou un export fait en 0.5.0. PC : bannière de mise à jour dans l’app ; iPhone : SideStore.
+
 ## 0.4.0
 
 - **Séance proposée** (Entraînement → Nouvelle séance → Séance proposée) : l’app compose une séance à partir de ta routine, avec trois modes. **Guidé** : l’app propose tout ; **Libre** : tu choisis les exercices, elle propose les charges (rien n’est remplacé sans toi, un remplaçant est seulement suggéré) ; **Maison** : comme Guidé, limité au matériel maison. Tu peux régler le temps disponible (« J’ai 35 min »), les priorités et les douleurs ; le matériel et les douleurs sont toujours respectés, un mouvement sans remplaçant compatible est simplement omis.
