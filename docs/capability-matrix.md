@@ -68,7 +68,7 @@ La colonne « Preuve attendue » n’est pas une preuve acquise. Chaque ticket a
 | Reproduction des algorithmes publiés par Gravl (H-1) | UNVERIFIED | Vecteurs comparés aux exemples publiés et limites documentées | I2 |
 | Bibliothèque de 150 exercices et quatre programmes suffisants (H-8) | UNVERIFIED | Relecture d’Ali sur ses routines et programmes | I1 |
 | Médias d’exercices sous licence compatible (H-9) | UNVERIFIED | Sources et licences vérifiées ; fallback sans image | I1 |
-| Licence Ciqual permettant l’embarquement (H-11) | UNVERIFIED (très probable) | Licence lue et note d’attribution dans docs/licences.md | I4 |
+| Licence Ciqual permettant l’embarquement (H-11) | UNVERIFIED (très probable) | Licence lue et note d’attribution dans docs/licences.md. I4-02 : édition Ciqual 2025 embarquée, licence « etalab 2.0 » lue dans les métadonnées de l’entrepôt (DOI 10.57745/RDMHWY) et consignée dans docs/licences.md ; reste UNVERIFIED tant qu’Ali n’a pas constaté (D-36) | I4 |
 | API Open Food Facts accessible sans clé (H-12, § 6) | UNVERIFIED | Appel de test sur l’usage prévu, résultat et limites ; fallback Ciqual + manuel | I4 |
 | Appels API IA via Rust (annexe B, § 6) | UNVERIFIED (fournisseur Q-2, H-14) | Contrat fournisseur, requête synthétique, erreurs et plafond éprouvés ; aucune donnée corporelle envoyée | I4 |
 | Fournisseur IA, coût mensuel et plafond acceptables (H-14) | UNVERIFIED | Décision d’Ali Q-2 et contrôle du plafond configurable | Avant I4, ticket IA I4 |

@@ -91,7 +91,11 @@ export type SyncReportTable =
   | 'workout_set'
   | 'progression_profile'
   | 'recommendation_decision'
-  | 'mesocycle';
+  | 'mesocycle'
+  | 'food'
+  | 'food_portion'
+  | 'meal_entry'
+  | 'nutrition_target';
 
 /** Compteurs seulement (jamais le contenu d'une ligne) : bilan de l'export des journaux. */
 export interface SyncDiagnostics {

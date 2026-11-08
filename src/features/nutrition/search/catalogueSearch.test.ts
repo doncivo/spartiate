@@ -17,7 +17,10 @@ const F1 = '7c4d3c2b-0000-4000-8000-000000000001';
 const F2 = '7c4d3c2b-0000-4000-8000-000000000002';
 const NOW = '2026-11-08T12:00:00.000Z' as IsoDateTime;
 let db: TestDb;
-afterEach(async () => db.close());
+afterEach(async () => {
+  await (db as TestDb | undefined)?.close();
+  db = undefined as unknown as TestDb;
+});
 
 const per = { kcal: 120, proteinG: 10, fatG: 5, carbG: 8, fiberG: 2 };
 const custom = (name: string, over: Partial<FoodDraft> = {}): FoodDraft => ({ source: 'custom', barcode: null, name, brand: null, per100g: per, fetchedAt: null, ...over });

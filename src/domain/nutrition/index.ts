@@ -5,3 +5,8 @@ export * from './dayTotals';
 export * from './tdee';
 export * from './types';
 export * from './weightTrend';
+export * from './ciqual';
+export * from './food';
+export * from './foodSearch';
+export * from './mealEntry';
+export * from './targetRecord';

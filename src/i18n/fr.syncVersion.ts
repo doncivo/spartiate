@@ -46,6 +46,10 @@ export const syncVersionFr = {
     progressionProfile: 'profils de progression',
     recommendationDecision: 'décisions sur les propositions',
     mesocycle: 'cycles d’entraînement',
+    food: 'fiches alimentaires',
+    foodPortion: 'portions de fiches',
+    mealEntry: 'entrées du journal',
+    nutritionTarget: 'cibles nutritionnelles',
     other: 'autres éléments',
   },
 } as const;

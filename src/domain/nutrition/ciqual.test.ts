@@ -13,6 +13,9 @@ const raw = (): Record<string, unknown> => ({
   ],
 });
 
+/** Premier aliment du JSON synthétique, modifiable par les cas de refus. */
+const first = (d: Record<string, unknown>): Record<string, unknown> => (d['foods'] as Record<string, unknown>[])[0] as Record<string, unknown>;
+
 describe('parseCiqualCatalogue', () => {
   it('contenu valide : aliments, groupes et source conservés ; null reste null', () => {
     const c = parseCiqualCatalogue(raw());
@@ -30,10 +33,10 @@ describe('parseCiqualCatalogue', () => {
       mutate(d);
       return parseCiqualCatalogue(d);
     };
-    expect(bad((d) => ((d['foods'] as Record<string, unknown>[])[0]!['code'] = 'abc'))).toBeNull();
-    expect(bad((d) => ((d['foods'] as Record<string, unknown>[])[0]!['kcal'] = -1))).toBeNull();
-    expect(bad((d) => ((d['foods'] as Record<string, unknown>[])[0]!['kcal'] = '50'))).toBeNull();
-    expect(bad((d) => ((d['foods'] as Record<string, unknown>[])[0]!['nameFr'] = ''))).toBeNull();
+    expect(bad((d) => (first(d)['code'] = 'abc'))).toBeNull();
+    expect(bad((d) => (first(d)['kcal'] = -1))).toBeNull();
+    expect(bad((d) => (first(d)['kcal'] = '50'))).toBeNull();
+    expect(bad((d) => (first(d)['nameFr'] = ''))).toBeNull();
     expect(bad((d) => (d['foods'] as unknown[]).push((d['foods'] as unknown[])[0]))).toBeNull();
     expect(bad((d) => delete d['source'])).toBeNull();
   });

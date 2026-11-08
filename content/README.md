@@ -11,7 +11,10 @@ Données uniquement, aucune logique métier. Le contenu est généré avec Claud
 | `exercises/equipment.json` | Liste fermée des 69 matériels `{ id, nameFr, family }` |
 | `exercises/media/` | Réservé aux médias sous licence vérifiée (vide) ; tout média exige `license` et `source` |
 | `equipment-profiles/profiles.json` | `{ schemaVersion: 1, defaultProfileId, profiles: [4] }` : Fitness Park Antony (défaut) et trois préréglages |
+| `food/ciqual.json` | `{ schemaVersion: 1, source, groups, foods: [3 484 aliments Ciqual 2025] }` : énergie, protéines, lipides, glucides et fibres pour 100 g (`null` = inconnue, jamais 0), généré par `scripts/content/build-ciqual.mjs` depuis les XML officiels de l'Anses (Licence Ouverte Etalab 2.0, voir `docs/licences.md`), chargé à la demande |
 | `programs/*.json` | Un fichier par programme de départ (PRD § 12.5) : `haut-bas-4j`, `full-body-3j`, `ppl-6j`, `maison-halteres-3j` |
+
+Les fichiers XML bruts de Ciqual (70 Mo) ne sont pas versionnés ; `node scripts/content/build-ciqual.mjs --check` valide `food/ciqual.json` sans eux (les tests de `scripts/content/ciqual.test.ts` aussi).
 
 ## Identifiants
 

@@ -309,6 +309,11 @@
       "raison": "Migration I3-02 (table mesocycle publiée et ses deux déclencheurs de capture, 5 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. La section Cycle, son catalogue fr.trainingCycle, les règles du mésocycle et le repository restent hors du départ (import à la demande)."
     },
     {
+      "fichier": "src/db/migrations/0008_nutrition.ts",
+      "story": "I4-02",
+      "raison": "Migration I4-02 (tables food, food_portion, meal_entry et nutrition_target publiées et leurs huit déclencheurs de capture, 9 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. Les règles de nutrition, les repositories, la recherche et le catalogue Ciqual (content/food/ciqual.json, 537 Ko) restent hors du départ (import à la demande)."
+    },
+    {
       "fichier": "src/features/app/ShellChrome.tsx",
       "story": "BUNDLE-01",
       "raison": "SPA-009 : carte d'état de la barre latérale PC et barre supérieure (1,6 Ko source), montées dès le premier rendu de la coquille."
