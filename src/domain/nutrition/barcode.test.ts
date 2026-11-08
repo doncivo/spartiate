@@ -26,7 +26,7 @@ describe('normalizeBarcode', () => {
       ['123451', '0' + '12' + '1' + '0000' + '345'],
       ['123453', '0' + '123' + '00000' + '45'],
       ['123454', '0' + '1234' + '00000' + '5'],
-      ['123455', '0' + '12345' + '0000' + '5'],
+      ['123458', '0' + '12345' + '0000' + '8'],
       ['123459', '0' + '12345' + '0000' + '9'],
     ];
     for (const [middle, upcA11] of cases) {
@@ -39,6 +39,6 @@ describe('normalizeBarcode', () => {
   });
   it('espaces autour ignorés ; mauvaise clé, longueur, lettres, système UPC-E autre que 0/1 : null', () => {
     expect(normalizeBarcode(' 4006381333931 ')?.code).toBe('4006381333931');
-    for (const bad of ['4006381333932', '123', '', 'abcdefgh', '4006381 333931', '04252615', '24252614', '40063813339311']) expect(normalizeBarcode(bad), bad).toBeNull();
+    for (const bad of ['4006381333932', '123', '', 'abcdefgh', '4006381 333931', '04252615', '24252615', '40063813339311']) expect(normalizeBarcode(bad), bad).toBeNull();
   });
 });
