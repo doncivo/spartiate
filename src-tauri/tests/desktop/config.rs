@@ -1249,6 +1249,46 @@ fn i04_9_log_capabilities_are_exact_and_only_for_the_main_window() {
     }
 }
 
+/// I4-05 (D-77) : `off.json` accorde exactement `allow-off-product` et `allow-off-search` à la fenêtre `main`, PC et iPhone ; aucune autre
+/// capability ne les porte ; les deux commandes sont aux deux gestionnaires et au manifeste.
+#[test]
+fn i4_05_off_capability_is_exact_and_only_for_the_main_window() {
+    let text = include_str!("../../capabilities/off.json");
+    let capability: Value = serde_json::from_str(text).expect("capability valide");
+    assert_eq!(capability["identifier"], "off");
+    assert_eq!(capability["windows"], serde_json::json!(["main"]));
+    assert_eq!(
+        capability["platforms"],
+        serde_json::json!(["windows", "iOS"])
+    );
+    assert!(capability.get("webviews").is_none());
+    let mut granted = permissions_of(text);
+    granted.sort();
+    assert_eq!(granted, ["allow-off-product", "allow-off-search"]);
+    for (name, other) in all_capabilities() {
+        if name != "off.json" {
+            assert!(
+                !permissions_of(&other).iter().any(|p| p.contains("-off-")),
+                "{name} accorde une commande Open Food Facts"
+            );
+        }
+    }
+    let manifest = manifest_commands();
+    let ios = ios_handler_commands();
+    for command in ["off_product", "off_search"] {
+        assert!(manifest.contains(command), "{command} absent du manifeste");
+        assert!(
+            ios.contains(command),
+            "{command} absent du gestionnaire iOS"
+        );
+        assert!(LIB_SOURCE.contains(&format!("off::{command}")), "{command}");
+        assert!(
+            LIB_SOURCE.matches(&format!("off::{command}")).count() == 2,
+            "{command} : un exemplaire par gestionnaire (PC et iPhone)"
+        );
+    }
+}
+
 /// I-04 critère 9 (ADR 0014, « Conséquences ») : le seul `eprintln!` du code Rust est dans `applog.rs` ; le journal est initialisé au début
 /// du `setup` PC (avant la récupération) et iPhone (avant la purge).
 #[test]
