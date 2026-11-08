@@ -289,7 +289,11 @@ fn i3_02_a_version_7_backup_with_the_published_mesocycle_table_is_accepted() {
     make_tables(
         &path,
         7,
-        &["progression_profile", "recommendation_decision", "mesocycle"],
+        &[
+            "progression_profile",
+            "recommendation_decision",
+            "mesocycle",
+        ],
     );
     assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 7);
 }
