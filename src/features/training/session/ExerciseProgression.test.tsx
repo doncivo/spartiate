@@ -57,7 +57,9 @@ async function seedCurrent(): Promise<void> {
 }
 const block = async () => screen.findByRole('region', { name: BENCH });
 const proposal = async () => within(await block()).findByRole('group', { name: 'Proposition' });
-const loadInputs = async () => within(await block()).getAllByLabelText('Charge (kg)').map((i) => (i as HTMLInputElement).value);
+/** I2-03 : séries de TRAVAIL seulement (« Série n ») ; les rampes d'échauffement sont vérifiées dans ExerciseWarmup.test.tsx. */
+const workRows = async () => within(await block()).getAllByRole('group', { name: /^Série \d+$/ });
+const loadInputs = async () => (await workRows()).map((g) => (within(g).getByLabelText('Charge (kg)') as HTMLInputElement).value);
 const decisions = () => db.driver.select<{ accepted: number; chosen_load_kg: number | null; chosen_reps: string; workout_id: string }>('SELECT accepted, chosen_load_kg, chosen_reps, workout_id FROM recommendation_decision ORDER BY decided_at');
 
 beforeEach(async () => {
@@ -236,10 +238,11 @@ describe('revue #61 (B) : recalibrage « Facile » consigné à la clôture', ()
     fireEvent.click(await within(await proposal()).findByRole('button', { name: 'Accepter' }));
     await within(await proposal()).findByText('Proposition acceptée.');
     for (let i = 0; i < 3; i += 1) {
-      const button = (await within(await block()).findAllByRole('button', { name: 'Valider la série' }))[0];
+      const workButtons = async () => (await workRows()).flatMap((g) => within(g).queryAllByRole('button', { name: 'Valider la série' }));
+      const button = (await workButtons())[0];
       if (!button) throw new Error('série');
       fireEvent.click(button);
-      await waitFor(async () => expect(within(await block()).queryAllByRole('button', { name: 'Valider la série' })).toHaveLength(2 - i));
+      await waitFor(async () => expect(await workButtons()).toHaveLength(2 - i));
     }
     fireEvent.click(screen.getByRole('button', { name: 'Terminer la séance' }));
     await waitFor(async () => expect((await profiles())[0]?.last_easy_recalibration_at).not.toBeNull());
