@@ -51,7 +51,8 @@ async function seedCurrent(): Promise<void> {
 }
 const block = async () => screen.findByRole('region', { name: BENCH });
 const proposal = async () => within(await block()).findByRole('group', { name: 'Proposition' });
-const loadInputs = async () => within(await block()).getAllByLabelText('Charge (kg)').map((i) => (i as HTMLInputElement).value);
+/** I2-03 : séries de TRAVAIL seulement (« Série n ») ; les rampes d'échauffement sont vérifiées dans ExerciseWarmup.test.tsx. */
+const loadInputs = async () => within(await block()).getAllByRole('group', { name: /^Série \d+$/ }).map((g) => (within(g).getByLabelText('Charge (kg)') as HTMLInputElement).value);
 const decisions = () =>
   db.driver.select<{ accepted: number; chosen_load_kg: number | null; chosen_reps: string; prescription: string }>('SELECT accepted, chosen_load_kg, chosen_reps, prescription FROM recommendation_decision ORDER BY decided_at');
 
