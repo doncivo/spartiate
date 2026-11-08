@@ -33,6 +33,9 @@ export const progressionFr = {
   explainDeload: 'Deload : moitié des séries ({sets}), charge allégée, au moins {rir} répétitions en réserve ; hors statistiques.',
   explainRecoveryLow: 'Charge réduite de {cut} % : récupération basse aujourd’hui.',
   explainRecoveryLowSet: 'Charge réduite de {cut} % et une série de moins (exercice d’isolation) : récupération basse aujourd’hui.',
+  // Précisions ajoutées à la phrase (I2-04), information seulement.
+  notePartialIgnored: 'Ta dernière séance (moins de la moitié des séries faites) n’est pas prise en compte.',
+  noteGridToVerify: 'Charges calculées sur du matériel à vérifier en salle (profil de matériel).',
   alertFatigue: 'Fatigue : plus de 20 % de répétitions en moins qu’à la dernière séance à cette charge.',
   alertStall: '{sessions} séances sans progrès : trois pistes ci-dessous, aucune n’est imposée.',
   alertInactivity: 'Pause de 3 semaines ou plus : charge réduite de {cut} %.',
