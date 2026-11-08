@@ -83,6 +83,14 @@ describe('0.7.1 points 6 et 7 : tendance en apprentissage et échelle du graphiq
     expect(s.startDate).toBe('2026-11-02');
   });
 
+  it('point 7 : une pesée du jour de fin reste dans le cadre (x ≤ largeur − marge)', () => {
+    const end = '2026-11-08' as LocalDate;
+    const s = trendScale([pt('2026-11-03', 105, 105), pt('2026-11-08', 104, 104.8)], end);
+    expect(s.startDate).toBe('2026-11-02');
+    expect(s.spanDays).toBe(7);
+    expect(Math.round((Date.parse('2026-11-08T00:00:00Z') - Date.parse(`${s.startDate}T00:00:00Z`)) / 86_400_000)).toBe(s.spanDays - 1);
+  });
+
   it('point 7 : l’axe s’étend avec les données, plafonné à 28 jours', () => {
     const end = '2026-11-08' as LocalDate;
     expect(trendScale([pt('2026-10-20', 100, 100)], end).spanDays).toBe(20);

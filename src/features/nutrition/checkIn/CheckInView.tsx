@@ -159,7 +159,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
     </>
   );
 
-  if (first.first) {
+  if (first.first && prefs.style !== 'manual') {
     return (
       <section className="ct-nutrition__card ct-nutrition__checkin" aria-label={tNutrition('checkInTitle')}>
         <h2 className="ct-nutrition__subtitle">{tNutrition('checkInTitle')}</h2>

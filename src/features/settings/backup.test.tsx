@@ -249,7 +249,7 @@ describe('Sauvegarde et restauration (P-04)', () => {
       expect(rows.map((row) => row.textContent)).toEqual([
         '4 oct. à 21:4040 Ko',
         '3 oct. à 03:122,3 Mo',
-        '1 oct. à 10:0030 KoAvant mise à jour',
+        '1er oct. à 10:0030 KoAvant mise à jour',
       ]);
       expect(within(dialog).getByText('Avant mise à jour')).toBeInTheDocument();
       expect(within(dialog).getByText('Dossier des sauvegardes : C:\\Données\\backups')).toBeInTheDocument();

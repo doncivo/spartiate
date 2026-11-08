@@ -88,8 +88,8 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
                 <p className="ct-nutrition__muted ct-nutrition__num">{model.slope === null ? tNutrition('trendNoSlope') : tNutrition('trendSlope', { n: formatKgDelta(model.slope) })}</p>
               </>
             )}
-            <TrendChart points={model.trendPoints} endDate={snapshot.reference} />
-            {model.lastWeighIn && !model.learning ? <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('trendLast', { kg: formatTenth(model.lastWeighIn.kg), date: formatDayShort(model.lastWeighIn.date) })}</p> : null}
+            <TrendChart points={model.trendPoints} endDate={snapshot.today} />
+            {model.lastWeighIn ? <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('trendLast', { kg: formatTenth(model.lastWeighIn.kg), date: formatDayShort(model.lastWeighIn.date) })}</p> : null}
             {model.trendPoints.some((p) => p.outlier) ? <p className="ct-nutrition__muted">{tNutrition('trendOutlier')}</p> : null}
           </>
         )}
