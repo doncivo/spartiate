@@ -179,6 +179,25 @@ describe('premier exercice composé du pattern seulement (critères 2 et 5)', ()
   });
 });
 
+describe('revue : aucun échauffement après coup', () => {
+  it('une série de travail déjà validée : ni annonce ni rampe à l’acceptation (aucune série insérée avant du travail fait)', async () => {
+    await seedPast([[BENCH, 60]]);
+    await seedCurrent([BENCH]);
+    openSession();
+    await within(await proposal(BENCH)).findByText(PREVIEW_62_5);
+    const [first] = await rows(BENCH);
+    if (!first) throw new Error('série');
+    fireEvent.change(within(first).getByLabelText('Charge (kg)'), { target: { value: '60' } });
+    fireEvent.change(within(first).getByLabelText('Répétitions'), { target: { value: '8' } });
+    fireEvent.click(within(first).getByRole('button', { name: 'Valider la série' }));
+    await waitFor(async () => expect((await stored(BENCH.exerciseId))[0]?.done).toBe(1));
+    await waitFor(async () => expect(within(await proposal(BENCH)).queryByText(/^Échauffement ajouté/)).toBeNull());
+    fireEvent.click(within(await proposal(BENCH)).getByRole('button', { name: 'Accepter' }));
+    await within(await proposal(BENCH)).findByText('Proposition acceptée.');
+    expect((await stored(BENCH.exerciseId)).map((s) => s.set_kind)).toEqual(['work', 'work', 'work']);
+  });
+});
+
 describe('clavier et ignorable (critère 4)', () => {
   it('Entrée dans une série d’échauffement la valide aux valeurs pré-remplies, sans repos ; elle reste un échauffement', async () => {
     await seedPast([[BENCH, 60]]);
