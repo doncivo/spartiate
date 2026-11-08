@@ -58,6 +58,7 @@ export function dashboardModel(snapshot: NutritionSnapshot): DashboardModel {
   const { reference, days, weighIns, trend, tdee } = snapshot;
   const target = snapshot.target?.target ?? null;
   const weekStart = addDays(reference, -6);
+  // Tendance, pesées et axe du graphique vont jusqu'à AUJOURD'HUI (comme la carte Poids d'Aujourd'hui, 0.7.1) ; pente, balance et dépense restent à la veille (`reference`).
   const { today } = snapshot;
   const trendStart = addDays(today, -(TREND_WINDOW_DAYS - 1));
   const known = weighIns.filter((w) => w.date <= today);
