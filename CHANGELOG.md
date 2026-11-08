@@ -2,6 +2,13 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.8.0
+
+- **Open Food Facts et scan de code-barres** (Nutrition → Journal → Rechercher un aliment). **Scanner** (iPhone) lit EAN-13, EAN-8 et UPC ; un champ **Code-barres** permet de saisir le code à la main (PC et iPhone). **Chercher en ligne** interroge Open Food Facts, seulement quand tu appuies dessus (jamais à la frappe).
+- Ce qui part sur le réseau : seulement le code-barres ou le texte cherché, en HTTPS, sans aucun identifiant ni donnée personnelle. Recherche en ligne limitée à 10 par minute. Une fiche choisie est gardée 90 jours dans l’appareil : le même scan se relit sans réseau.
+- Cas dégradés en français : hors ligne ou délai dépassé (la recherche Ciqual reste là), produit inconnu (fiche perso pré-remplie avec le code), fiche incomplète (valeurs manquantes inconnues, jamais 0), refus de la caméra (chemin Réglages). Chaque fiche issue d’Open Food Facts porte la mention « Open Food Facts » (licence ODbL, voir docs/licences.md).
+- Pas encore : recettes, favoris, photo de repas (IA). Réglages par défaut proposés cette nuit (D-77, D-78), révisables. **Pas de mise à jour de la base** (reste en version 8).
+
 ## 0.7.1
 
 Correctifs de mise en page et de cohérence, vus sur l’iPhone en 0.7.0. Pas de mise à jour de la base.
