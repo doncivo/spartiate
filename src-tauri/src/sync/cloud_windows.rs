@@ -189,11 +189,16 @@ mod io_event_tests {
     use super::{io_error, win_io};
     use crate::sync::files::FsError;
     use crate::sync::log;
+    use std::sync::Mutex;
+
+    /// La capture reçoit les événements de tous les fils : les tests de ce module s'exécutent l'un après l'autre.
+    static SERIE: Mutex<()> = Mutex::new(());
 
     /// 0.2.5 : une erreur d'E/S ordinaire (lecture, écriture, `sync_all`, fichier verrouillé par iCloud) n'est plus muette : elle porte
     /// un événement fixe selon sa cause, comme les statuts NT (0.2.4).
     #[test]
     fn io_error_signale_la_cause() {
+        let _serie = SERIE.lock().unwrap_or_else(|e| e.into_inner());
         let capture = log::capture();
         assert_eq!(
             io_error(&std::io::Error::from_raw_os_error(32)),
@@ -216,6 +221,7 @@ mod io_event_tests {
     /// Les erreurs `windows::core::Error` converties en `Io` (informations de fichier, suppression) portent aussi leur cause.
     #[test]
     fn win_io_signale_la_cause() {
+        let _serie = SERIE.lock().unwrap_or_else(|e| e.into_inner());
         let capture = log::capture();
         let locked =
             windows::core::Error::from_hresult(windows::core::HRESULT(0x8007_0020_u32 as i32));
@@ -239,6 +245,7 @@ mod io_event_tests {
     /// Une erreur cloud reconnue garde sa catégorie, sans événement d'E/S.
     #[test]
     fn erreur_cloud_inchangee() {
+        let _serie = SERIE.lock().unwrap_or_else(|e| e.into_inner());
         let capture = log::capture();
         assert_eq!(
             io_error(&std::io::Error::from_raw_os_error(121)),
