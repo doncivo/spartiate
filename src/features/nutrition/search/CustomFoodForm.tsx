@@ -9,6 +9,8 @@ import { toSearchable } from './catalogueSearch';
 
 export interface CustomFoodFormProps {
   readonly initialName: string;
+  /** Code-barres normalisé d'un produit inconnu d'Open Food Facts (I4-05) : affiché, non modifiable, enregistré avec la fiche. */
+  readonly initialBarcode?: string;
   readonly onCreated: (food: SearchableFood) => void;
   readonly onCancel: () => void;
 }
@@ -17,7 +19,7 @@ export interface CustomFoodFormProps {
  * Fiche personnelle (I4-03, § 15.3) : nom, valeurs pour 100 g (vides = inconnues, jamais 0) et une portion facultative. Provenance « Perso ».
  * La fiche et sa portion sont écrites ensemble ; rien n'est écrit si l'une d'elles est invalide.
  */
-export function CustomFoodForm({ initialName, onCreated, onCancel }: CustomFoodFormProps) {
+export function CustomFoodForm({ initialName, initialBarcode, onCreated, onCancel }: CustomFoodFormProps) {
   const { data } = useAppContainer();
   const [name, setName] = useState(initialName);
   const [kcal, setKcal] = useState('');
@@ -38,7 +40,7 @@ export function CustomFoodForm({ initialName, onCreated, onCancel }: CustomFoodF
     if (values.every((v) => v === null)) return setError(tNutrition('nutrientRequired'));
     const draft: FoodDraft = {
       source: 'custom',
-      barcode: null,
+      barcode: initialBarcode ?? null,
       name: name.trim(),
       brand: null,
       per100g: { kcal: energy ?? null, proteinG: p ?? null, fatG: f ?? null, carbG: c ?? null, fiberG: null },
@@ -86,6 +88,12 @@ export function CustomFoodForm({ initialName, onCreated, onCancel }: CustomFoodF
         <span className="ct-nutrition__field-label">{tNutrition('foodNameLabel')}</span>
         <input className="ct-nutrition__input" type="text" maxLength={120} autoFocus value={name} onChange={(event) => setName(event.target.value)} />
       </label>
+      {initialBarcode ? (
+        <label className="ct-nutrition__field">
+          <span className="ct-nutrition__field-label">{tNutrition('barcodeFieldOfForm')}</span>
+          <input className="ct-nutrition__input ct-nutrition__num" type="text" readOnly value={initialBarcode} />
+        </label>
+      ) : null}
       <div className="ct-nutrition__row">
         <NumberField label={tNutrition('kcal100')} value={kcal} onChange={setKcal} />
         <NumberField label={tNutrition('protein100')} value={protein} onChange={setProtein} />
