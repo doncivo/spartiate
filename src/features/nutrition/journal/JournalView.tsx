@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { addDays } from '../../../domain/localDate';
+import type { LocalDate } from '../../../domain/types';
 import { aggregateDay, effectiveTarget, remainingForDay, toMealEntryInput, type DayTotals } from '../../../domain/nutrition';
 import type { MealEntryRecord } from '../../../db/repositories/mealEntryRepository';
 import { formatTime } from '../../../i18n/format';
@@ -55,7 +56,9 @@ export function JournalView({ snapshot, onChanged }: JournalViewProps) {
   const { data } = container;
   const navigate = useNavigationStore((s) => s.navigate);
   const [date, setDate] = useState(snapshot.today);
-  const [entries, setEntries] = useState<readonly MealEntryRecord[] | null>(null);
+  // Entrées lues AVEC leur date : changer de jour ne montre jamais les entrées (ni leurs actions) d'un autre jour.
+  const [loaded, setLoaded] = useState<{ readonly date: LocalDate; readonly list: readonly MealEntryRecord[] } | null>(null);
+  const entries = loaded !== null && loaded.date === date ? loaded.list : null;
   const [version, setVersion] = useState(0);
   const [mode, setMode] = useState<Mode>({ kind: 'idle' });
   const [toDelete, setToDelete] = useState<MealEntryRecord | null>(null);
@@ -67,7 +70,10 @@ export function JournalView({ snapshot, onChanged }: JournalViewProps) {
     void (async () => {
       try {
         const list = await (await data.repos.mealEntries()).listByDate(date);
-        if (live) setEntries(list);
+        if (live) {
+          setLoaded({ date, list });
+          setError(null);
+        }
       } catch {
         if (live) setError(tNutrition('loadError'));
       }
@@ -86,7 +92,8 @@ export function JournalView({ snapshot, onChanged }: JournalViewProps) {
 
   const day = useMemo(() => aggregateDay(date, (entries ?? []).map(toMealEntryInput)), [date, entries]);
   const target = effectiveTarget(snapshot.targets, date)?.target ?? null;
-  const remaining = remainingForDay(target, day);
+  // Tant que le journal du jour n'est pas lu (chargement, échec), aucun restant n'est affiché : « — », jamais la cible entière.
+  const remaining = entries === null ? (target === null ? null : { kcal: null, proteinG: null, fatG: null, carbG: null }) : remainingForDay(target, day);
   const defaultTime = isToday ? nowTime(container.clock.nowMs()) : '12:00';
 
   async function confirmDelete(): Promise<void> {

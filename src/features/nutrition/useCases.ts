@@ -21,6 +21,7 @@ import {
   type TrendPoint,
   type WeighIn,
 } from '../../domain/nutrition';
+import { tNutrition } from '../../i18n/nutritionText';
 import type { SearchableFood } from '../../domain/nutrition/foodSearch';
 import type { LocalDate, LocalTime } from '../../domain/types';
 import type { DataAccess } from '../../db/repositories/dataAccess';
@@ -120,8 +121,6 @@ export function entryFromFood(food: SearchableFood, grams: number, at: { readonl
   };
 }
 
-export const QUICK_ADD_DEFAULT_NAME = 'Ajout rapide';
-
 export interface QuickAddInput {
   readonly date: LocalDate;
   readonly time: LocalTime;
@@ -139,7 +138,7 @@ export function quickAddDraft(input: QuickAddInput): MealEntryDraft {
     date: input.date,
     time: input.time,
     foodId: null,
-    foodName: name === '' ? QUICK_ADD_DEFAULT_NAME : name.slice(0, 200),
+    foodName: name === '' ? tNutrition('addQuick') : name.slice(0, 200),
     source: 'manual',
     grams: null,
     kcal: input.kcal,

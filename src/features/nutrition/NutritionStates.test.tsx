@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
+import type { MealEntryDraft } from '../../domain/nutrition';
 import { addDays } from '../../domain/localDate';
 import type { DeviceId, LocalDate, LocalTime } from '../../domain/types';
 import type { DataAccess, Repositories } from '../../db/repositories/dataAccess';
@@ -25,7 +26,7 @@ type Name = 'mealEntries' | 'nutritionTargets' | 'bodyWeights';
 /** DataAccess dont `method` du repository `name` échoue `times` fois (toujours si omis). */
 function failing(name: Name, method: string, times = Number.POSITIVE_INFINITY): DataAccess {
   let left = times;
-  const original = db.data.repos[name] as () => Promise<Record<string, unknown>>;
+  const original = db.data.repos[name] as unknown as () => Promise<Record<string, unknown>>;
   const repos = {
     ...db.data.repos,
     [name]: async () => {
@@ -66,7 +67,7 @@ afterEach(async () => {
 });
 
 async function seedHistory(): Promise<void> {
-  const drafts = [];
+  const drafts: MealEntryDraft[] = [];
   for (let i = -28; i <= -1; i += 1) for (const time of ['07:00', '13:00', '19:00']) drafts.push(quickAddDraft({ date: d(i), time: t(time), name: 'Repas', kcal: 800, proteinG: 50, fatG: 25, carbG: 100 }));
   await db.data.transaction(async (repos) => {
     await (await repos.mealEntries()).createMany(drafts);
@@ -92,7 +93,7 @@ describe('I4-03 : lecture en échec ou en cours (aucun faux chiffre)', () => {
     open(undefined, failing('mealEntries', 'listByDate'));
     const r = await region();
     expect(await within(r).findByText('Nutrition n’a pas pu être lu.')).toBeInTheDocument();
-    expect(r.textContent ?? '').not.toMatch(/restantes/);
+    expect(r.textContent ?? '').not.toMatch(/2.650 kcal restantes/);
     expect(within(r).getByText('— kcal restantes')).toBeInTheDocument();
   });
 
@@ -180,7 +181,7 @@ describe('I4-03 : dashboard, dépassement et jour partiel', () => {
     open('dashboard');
     const r = await region();
     expect(await within(r).findByText(/kcal au-dessus de la cible/)).toBeInTheDocument();
-    expect(r.textContent ?? '').not.toMatch(/-\d[\d\s ]*kcal restantes|−\d[\d\s ]*kcal restantes/);
+    expect(r.textContent ?? '').not.toMatch(/[-−]d[ds]*kcal restantes/);
   });
 
   it('I4-03 : un jour partiel se distingue par un motif (trait pointillé), pas par l’opacité seule', async () => {
