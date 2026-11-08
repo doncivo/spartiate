@@ -702,8 +702,8 @@ pub fn normalize_sql(sql: &str) -> String {
 
 /// Supprime tous les déclencheurs du fichier puis recrée ceux de l'app depuis leur référence (pour les tables présentes). Appelée sur le fichier
 /// préparé d'une restauration, après sa vérification et AVANT l'échange : la base mise en place ne porte que des déclencheurs de l'app, et un
-/// échec ne laisse aucun état à moitié restauré. Sans table `search_index_doc` (schéma antérieur à la migration 0011), aucun déclencheur n'est créé :
-/// la migration le fera à l'ouverture.
+/// échec ne laisse aucun état à moitié restauré. Les déclencheurs `search_*` ne sont créés qu'avec la table `search_index_doc` ; ceux de capture
+/// `sync_*` le sont toujours (tables et version permettant).
 pub fn reset_triggers(path: &Path) -> Result<(), BackupError> {
     let conn = rusqlite::Connection::open(path).map_err(sql_err)?;
     conn.pragma_update(None, "trusted_schema", "OFF")
@@ -753,11 +753,12 @@ pub fn reset_triggers(path: &Path) -> Result<(), BackupError> {
         .map(|n| n == 1)
         .map_err(sql_err)
     };
-    // Déclencheurs de capture de la synchro (`sync_*`, migration 0015) : seulement si leurs tables existent (une sauvegarde plus ancienne
-    // les recevra par la migration à l'ouverture ; les créer ici ferait échouer cette migration).
+    // Déclencheurs de capture de la synchro (`sync_*`, créés par les migrations Spartiate 0001 à 0008) : seulement si leurs tables existent et si la
+    // version de la sauvegarde les porte (`introduced_in`) : une sauvegarde plus ancienne les recevra par la migration à l'ouverture ; les créer ici
+    // ferait échouer cette migration (« trigger already exists »).
     let has_sync = has_table("sync_guard")?;
-    // Corps valables à la version de la sauvegarde (une sauvegarde de version 17 reçoit les corps de la migration 0015, jamais un corps qui
-    // cite une colonne absente d'elle ; la migration 0018 les remplace à l'ouverture). Sans table de versions : corps actuels.
+    // Corps valables à la version de la sauvegarde (héritage de l'ancien projet : une sauvegarde de version 17 reçoit les corps de la migration 0015, jamais un
+    // corps qui cite une colonne absente d'elle ; les trois déclencheurs concernés n'existent pas dans une base Spartiate). Sans table de versions : corps actuels.
     let version = if has_table("schema_migrations")? {
         tx.query_row("SELECT MAX(version) FROM schema_migrations", [], |r| {
             r.get::<_, Option<u32>>(0)
@@ -768,17 +769,21 @@ pub fn reset_triggers(path: &Path) -> Result<(), BackupError> {
     } else {
         APP_SCHEMA_VERSION
     };
-    if has_table("search_index_doc")? {
-        for (name, table, _) in REFERENCE_TRIGGERS {
-            if name.starts_with("sync_") && !has_sync {
-                continue;
-            }
-            let Some(sql) = trigger_body_for(name, table, version) else {
-                continue;
-            };
-            if has_table(table)? {
-                tx.execute_batch(sql).map_err(sql_err)?;
-            }
+    // Déclencheurs de recherche (`search_*`) : seulement avec leur table d'index. Une base Spartiate n'en a pas (aucune migration 0001 à 0008 ne la
+    // crée) : ses déclencheurs de capture `sync_*` sont recréés quand même, sinon plus aucune écriture n'entrerait dans `sync_outbox`.
+    let has_search = has_table("search_index_doc")?;
+    for (name, table, _) in REFERENCE_TRIGGERS {
+        if name.starts_with("sync_") && !has_sync {
+            continue;
+        }
+        if name.starts_with("search_") && !has_search {
+            continue;
+        }
+        let Some(sql) = trigger_body_for(name, table, version) else {
+            continue;
+        };
+        if has_table(table)? {
+            tx.execute_batch(sql).map_err(sql_err)?;
         }
     }
     tx.commit().map_err(sql_err)
