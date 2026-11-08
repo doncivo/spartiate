@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-07 (I1 clos, version publiée 0.2.4, I2 en cours). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-72 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Dossier de sortie I0 : docs/gate-i0.md.
+État au 2026-11-08 (matin) : I1, I2 et I3 livrés, version publiée 0.5.0, I4 commencé. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-74 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Dossier de sortie I0 : docs/gate-i0.md.
 
 ## Fusionné (tout est dans main)
 
@@ -15,17 +15,19 @@
 - D-69 : accès direct HealthKit BLOCKED (compte Apple gratuit, SideStore retire l'entitlement) ; l'import passera par l'app Raccourcis, ticket séparé.
 - D-70 : l'agent fusionne (`gh pr merge --squash`) et publie (tags `vX.Y.Z` et `ios-vX.Y.Z` sur origin/main après contrôle d'absence), puis suit les builds jusqu'à spartiate-releases. Ali installe et fait les constats sur appareil.
 
-## Où on en est (2026-11-07)
+## Où on en est (2026-11-08)
 
-- I1 livré : 0.2.0 à 0.2.2 (I1-01/02/03), 0.2.3 (retours d'essai), 0.2.4 (#57 : journaux enrichis received/published/cloud-pending, étape des échecs, io-* Rust, relance rapide des fichiers iCloud en attente, marqueur de mise à jour de routine). PC et iPhone publiés.
-- D-72 : « I2 : OK » d'Ali. Pas de table de standards ; 1RM Epley sur la meilleure série puis moyenne pondérée des 3 dernières séances ; confiance 100 % jusqu'à 14 j, nulle à 60 j ; progression à double palier ; snap au matériel ; baisse de reps = deux propositions refusables ; 3 séances sans progrès = trois choix ; deload, reprise après arrêt, échauffement : voir D-72.
+- Publiées cette nuit (PC `vX.Y.Z` et iPhone `ios-vX.Y.Z`) : 0.3.2 (I2-02 garde-fous, correctifs du moteur #66, pesées Raccourcis D-69 #65, cause des erreurs d’E/S Windows #62), 0.3.3 (I2-04 : paire de 9 kg rattrapée à la lecture, phrases), 0.3.4 (I2-03 échauffement), 0.4.0 (I3-01 séance proposée), 0.5.0 (I3-02 cycle, migration 0007 `mesocycle`, schéma 7).
+- D-73 (I3) et D-74 (I4) : décisions par défaut, **révisables par Ali** (à confirmer). H-21 (format du fichier Raccourcis) UNVERIFIED, noté dans decisions.md (le chapitre 26 du PRD est figé par prd-split.test.ts).
+- I4 sans IA : I4-01 fusionné (domaine nutrition pur, pas de version : rien ne change à l’écran). I4-02 (catalogue, journal persistant, migration 0008) en cours ou en revue : voir `gh pr list`. Restent I4-03 (écrans) ; I4-04 (photo IA) exclu.
+- PURGE-I18N (#74) : modules de textes orphelins supprimés ; clés mortes à l’intérieur de fr.ts gardées (tDynamic).
 - **Première utilisation réelle : lundi 2026-11-09** (D-38) : plus aucun accès aux données réelles ni à iCloud Drive/Spartiate.
 
 ## Prochaines étapes
 
-1. **I2-01** (docs/I2-01.md, migration 0005), puis I2-02 (contraintes), I2-03 (échauffement). Versions 0.3.x selon le découpage.
-2. **Ticket Raccourcis** (D-69).
-3. Après le lundi 9 : journal exporté d'Ali (Plus → Logs → Exporter) pour mesurer le délai iCloud.
+1. Ali : constats sur l’iPhone (échauffement, Séance proposée, Cycle, import des pesées), confirmer ou réviser D-73 et D-74.
+2. Terminer I4 hors IA (I4-02, I4-03) ; relectures Codex (D-53) des PR de la nuit.
+3. Après le lundi 9 : journal exporté d’Ali (Plus → Logs → Exporter) pour mesurer le délai iCloud.
 
 ## Rappels
 
