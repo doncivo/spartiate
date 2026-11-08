@@ -53,24 +53,50 @@ function barbellLoads(profile: ProgressionEquipment, equipmentId: string): numbe
   return stepped(bar.weightKg, platesKg > 0 ? bar.weightKg + platesKg : 1000, step);
 }
 
-/** Grille de charges de l'exercice avec ce profil ; null sans profil ou sans matériel à palier connu. */
-export function loadGrid(equipment: readonly string[], profile: ProgressionEquipment | null): LoadGrid | null {
-  if (profile === null) return null;
+/** Grille et clé « à vérifier » (`inventory.toVerify`) du matériel qui la fournit. */
+function selectGrid(equipment: readonly string[], profile: ProgressionEquipment): { readonly grid: LoadGrid; readonly verifyKey: string | null } | null {
   const inv = profile.inventory;
   for (const id of equipment) {
     let grid: LoadGrid | null = null;
-    if (BARBELL_IDS.has(id)) grid = { source: 'barbell', loads: barbellLoads(profile, id) };
-    else if (id === 'dumbbell' && inv.dumbbells !== null) grid = { source: 'dumbbell', loads: fromRange(inv.dumbbells) };
+    let verifyKey: string | null = null;
+    if (BARBELL_IDS.has(id)) {
+      grid = { source: 'barbell', loads: barbellLoads(profile, id) };
+      const bar = inv.barbells.find((b) => b.equipmentId === id);
+      verifyKey = bar === undefined ? null : `barbell:${bar.type}`;
+    } else if (id === 'dumbbell' && inv.dumbbells !== null) {
+      grid = { source: 'dumbbell', loads: fromRange(inv.dumbbells) };
+      verifyKey = 'dumbbells';
+    }
     // Kettlebells « à vérifier » (pas inconnu : seules les bornes sont connues) : aucune grille plutôt qu'une liste trompeuse.
     else if (id === 'kettlebell' && !(inv.toVerify ?? []).includes('kettlebells')) grid = { source: 'kettlebell', loads: [...new Set(inv.kettlebellsKg.filter((k) => k > 0))].sort((a, b) => a - b) };
-    else if (CABLE_IDS.has(id) && inv.cables[0] !== undefined) grid = { source: 'cable', loads: fromRange(inv.cables[0]) };
-    else {
+    else if (CABLE_IDS.has(id) && inv.cables[0] !== undefined) {
+      grid = { source: 'cable', loads: fromRange(inv.cables[0]) };
+      verifyKey = 'cables';
+    } else {
       const machine = inv.machines.find((m) => m.equipmentId === id);
-      if (machine) grid = { source: 'machine', loads: stepped(machine.stackMinKg, machine.stackMaxKg, machine.stepKg) };
+      if (machine) {
+        grid = { source: 'machine', loads: stepped(machine.stackMinKg, machine.stackMaxKg, machine.stepKg) };
+        verifyKey = 'machines';
+      }
     }
-    if (grid !== null && grid.loads.length > 0) return grid;
+    if (grid !== null && grid.loads.length > 0) return { grid, verifyKey };
   }
   return null;
+}
+
+/** Grille de charges de l'exercice avec ce profil ; null sans profil ou sans matériel à palier connu. */
+export function loadGrid(equipment: readonly string[], profile: ProgressionEquipment | null): LoadGrid | null {
+  return profile === null ? null : (selectGrid(equipment, profile)?.grid ?? null);
+}
+
+/**
+ * I2-04 : la grille de l'exercice repose sur du matériel marqué « à vérifier » dans le profil (barre EZ, hexagonale…, haltères, machines ou
+ * poulies). Les disques (`plates`, nombre par masse inconnu) ne sont pas signalés : ils ne changent pas le pas de la grille. Sans grille : false.
+ */
+export function gridToVerify(equipment: readonly string[], profile: ProgressionEquipment | null): boolean {
+  if (profile === null) return false;
+  const key = selectGrid(equipment, profile)?.verifyKey ?? null;
+  return key !== null && (profile.inventory.toVerify ?? []).includes(key);
 }
 
 /** Plus grande charge ≤ cible ; sous le minimum, le minimum. Grille vide : la cible. */

@@ -67,6 +67,40 @@ export function incompatibleRoutineLines<T extends Pick<RoutineExerciseSpec, 'ex
   });
 }
 
+/** Profil embarqué vu par le rattrapage : nom et inventaire seulement. */
+export interface DumbbellExtrasSource {
+  readonly name: string;
+  readonly inventory: Pick<EquipmentInventory, 'available' | 'dumbbells'>;
+}
+
+const normalizeName = (text: string): string => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
+const sameSet = (a: readonly string[], b: readonly string[]): boolean => {
+  const set = new Set(a);
+  return set.size === new Set(b).size && b.every((id) => set.has(id));
+};
+
+/**
+ * I2-04 : paires d'haltères en plus de la plage (`extraKg`, 9 kg à Antony) rattrapées À LA LECTURE pour une copie d'un profil embarqué
+ * faite avant la 0.3.0 (le champ n'existait pas). Copie reconnue par son nom (commence par le nom embarqué, « (copie) ») ou par une liste de
+ * matériel identique ; seules les paires que la plage actuelle encadre sont ajoutées, et seulement si `extraKg` est absent (une valeur
+ * présente, même vide, est celle d'Ali). Rien d'autre n'est touché ; sans rattrapage, le même objet est rendu. Aucune écriture.
+ */
+export function backfillDumbbellExtras<T extends { readonly name: string; readonly inventory: EquipmentInventory }>(profile: T, embedded: readonly DumbbellExtrasSource[]): T {
+  const dumbbells = profile.inventory.dumbbells;
+  if (dumbbells === null || dumbbells.extraKg !== undefined) return profile;
+  const name = normalizeName(profile.name);
+  for (const source of embedded) {
+    const extras = source.inventory.dumbbells?.extraKg ?? [];
+    if (extras.length === 0) continue;
+    const prefix = normalizeName(source.name);
+    if (!(prefix.length > 0 && name.startsWith(prefix)) && !sameSet(profile.inventory.available, source.inventory.available)) continue;
+    const kept = extras.filter((kg) => Number.isFinite(kg) && kg >= dumbbells.minKg && kg <= dumbbells.maxKg);
+    if (kept.length === 0) return profile;
+    return { ...profile, inventory: { ...profile.inventory, dumbbells: { ...dumbbells, extraKg: kept } } };
+  }
+  return profile;
+}
+
 const positive = (n: number): boolean => Number.isFinite(n) && n > 0;
 const range = (r: StackRange): boolean => positive(r.minKg) && positive(r.maxKg) && positive(r.stepKg) && r.minKg <= r.maxKg;
 const ids = (list: readonly string[]): boolean => list.every((id) => EQUIPMENT_ID_RE.test(id));
