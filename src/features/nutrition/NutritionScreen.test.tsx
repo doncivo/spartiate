@@ -63,13 +63,13 @@ async function seedHistory(): Promise<void> {
 }
 
 describe('I4-03 : Journal : états de la journée, sans faux zéro (critère 1)', () => {
-  it('journée sans entrée : « Rien de saisi », aucune cible, aucun chiffre à zéro, scan annoncé comme plus tard', async () => {
+  it('journée sans entrée : « Rien de saisi », aucune cible, aucun chiffre à zéro, aucun scan annoncé « plus tard »', async () => {
     open();
     const r = await region();
     expect(await within(r).findByText('Rien de saisi aujourd’hui')).toBeInTheDocument();
     expect(within(r).getByText('Une journée sans entrée n’est pas comptée comme zéro.')).toBeInTheDocument();
     expect(within(r).getByText('Aucune cible définie')).toBeInTheDocument();
-    expect(within(r).getByText('Scan du code-barres : disponible plus tard.')).toBeInTheDocument();
+    expect(within(r).queryByText(/disponible plus tard/)).toBeNull();
     expect(within(r).queryByRole('button', { name: 'Scanner' })).toBeNull();
     expect(r.textContent ?? '').not.toMatch(/(^|\D)0 kcal/);
   });

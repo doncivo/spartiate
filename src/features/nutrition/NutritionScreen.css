@@ -403,3 +403,50 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
 }
+
+/* Scan du code-barres (I4-05, iPhone) : la caméra du plugin est derrière la WebView rendue transparente ; seuls le cadre et « Annuler » restent. */
+html.ct-scanning-food,
+html.ct-scanning-food body {
+  background: transparent !important;
+}
+
+html.ct-scanning-food body > *:not(.ct-nutrition-scan) {
+  visibility: hidden;
+}
+
+.ct-nutrition-scan {
+  position: fixed;
+  inset: var(--ct-safe-area-top) var(--ct-safe-area-right) var(--ct-safe-area-bottom) var(--ct-safe-area-left);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ct-space-4) var(--ct-space-3);
+  color: var(--ct-color-text);
+}
+
+.ct-nutrition-scan__aim {
+  margin: 0;
+  padding: var(--ct-space-2) var(--ct-space-3);
+  background: var(--ct-color-surface);
+  border-radius: var(--ct-radius-lg);
+}
+
+.ct-nutrition-scan__frame {
+  width: 78%;
+  aspect-ratio: 3 / 2;
+  border: 3px solid var(--ct-color-accent);
+  border-radius: var(--ct-radius-lg);
+}
+
+.ct-nutrition-scan__cancel {
+  min-width: 44px;
+  min-height: 44px;
+  width: 100%;
+  font: inherit;
+  color: var(--ct-color-text);
+  background: var(--ct-color-surface);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-lg);
+}
