@@ -51,6 +51,8 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   // I2-01 : profil de progression et décisions (libellé : l'exercice, identifiant embarqué ou personnalisé).
   progression_profile: { label: 'exercise_id', kind: 'progressionProfile' },
   recommendation_decision: { label: 'exercise_id', kind: 'recommendationDecision' },
+  // I3-02 : cycle d'entraînement (libellé : date de début).
+  mesocycle: { label: 'start_date', kind: 'mesocycle' },
 };
 
 export const carryReportTableEntry = (table: string): { readonly label: string | null; readonly kind: string } | undefined =>

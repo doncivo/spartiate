@@ -43,6 +43,8 @@ const cycles = () => db.driver.select<{ routine_id: string; weeks: number; unlim
 async function startCycle(weeks = '5 semaines'): Promise<HTMLElement> {
   open();
   const r = await region();
+  // Routines triées par nom (Full Body, puis Haut / Bas) : le programme suivi est choisi explicitement.
+  fireEvent.click(within(r).getByRole('radio', { name: 'Haut / Bas' }));
   fireEvent.click(within(r).getByRole('radio', { name: weeks }));
   fireEvent.click(within(r).getByRole('button', { name: 'Commencer le cycle' }));
   await within(r).findByText(/^Semaine 1/);

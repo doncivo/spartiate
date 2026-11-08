@@ -181,4 +181,17 @@ export const syncFieldFr = {
     chosen_reps: 'répétitions retenues',
     deleted_at: 'suppression',
   },
+  // I3-02 : cycle d'entraînement (champs visibles au journal des conflits).
+  mesocycle: {
+    routine_id: 'programme suivi',
+    start_date: 'début',
+    weeks: 'durée',
+    unlimited: 'illimité',
+    deload_week: 'deload anticipé',
+    pauses: 'pauses',
+    status: 'état',
+    outcome: 'issue du bilan',
+    ended_on: 'fin',
+    deleted_at: 'suppression',
+  },
 } as const;

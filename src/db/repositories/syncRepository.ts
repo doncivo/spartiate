@@ -90,7 +90,8 @@ export type SyncReportTable =
   | 'workout'
   | 'workout_set'
   | 'progression_profile'
-  | 'recommendation_decision';
+  | 'recommendation_decision'
+  | 'mesocycle';
 
 /** Compteurs seulement (jamais le contenu d'une ligne) : bilan de l'export des journaux. */
 export interface SyncDiagnostics {

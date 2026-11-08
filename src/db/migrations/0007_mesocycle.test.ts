@@ -45,7 +45,7 @@ const insert = (db: SqlDriver, over: Record<string, unknown> = {}): Promise<unkn
     ...over,
   };
   const cols = Object.keys(row);
-  return db.execute(`INSERT INTO mesocycle (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`, cols.map((c) => row[c]));
+  return db.execute(`INSERT INTO mesocycle (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`, cols.map((c) => row[c] as string | number | null));
 };
 const outbox = (db: SqlDriver) => db.select<{ table_name: string; row_id: string; field: string }>('SELECT table_name, row_id, field FROM sync_outbox ORDER BY seq');
 
