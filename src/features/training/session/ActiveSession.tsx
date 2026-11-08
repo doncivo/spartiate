@@ -13,6 +13,7 @@ import {
   type WorkoutSet,
   type WorkoutWithSets,
 } from '../../../domain/training';
+import { warmupExerciseIds } from '../../../domain/training/warmup';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import { RepositoryError } from '../../../db/repositories/common';
 import type { ClosedWorkout, WorkoutRepository } from '../../../db/repositories/workoutRepository';
@@ -279,6 +280,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   // Rendu
   // ---------------------------------------------------------------------------------------------------------------------------------
   const blocks = groupByExercise(workout.sets);
+  // I2-03 (§ 13.8) : rampe d'échauffement pour le premier exercice composé de chaque pattern, dans l'ordre de la séance.
+  const warmupIds = warmupExerciseIds(blocks.map((b) => ({ exerciseId: b.exerciseId, exercise: exerciseOf(b.exerciseId) })));
   const summary = summarizeSets(workout.sets);
   const remaining = rest ? restRemainingMs(rest.endAt, now) : 0;
   const startedMs = Date.parse(workout.startedAt);
@@ -351,7 +354,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
 
       {blocks.map((block) => {
         const exercise = exerciseOf(block.exerciseId);
-        const first = block.sets[0];
+        // Repos affiché : celui de la première série de travail (une rampe d'échauffement n'a pas de repos programmé).
+        const first = block.sets.find((s) => s.setKind !== 'warmup') ?? block.sets[0];
         const restSec = first ? restSecondsFor({ setKind: 'work', targetRestSec: first.targetRestSec }, restSetting, exercise?.defaultRestSec ?? null) : null;
         const work = block.sets.filter((s) => s.setKind !== 'warmup').length;
         let rank = 0;
@@ -371,7 +375,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
               </p>
             </div>
             <Suspense fallback={null}>
-              <ExerciseProgression access={access} workout={workout} exerciseId={block.exerciseId} sets={block.sets} exercise={exercise} equipment={data.active} clock={clock} onChanged={reload} />
+              <ExerciseProgression access={access} workout={workout} exerciseId={block.exerciseId} sets={block.sets} exercise={exercise} equipment={data.active} clock={clock} onChanged={reload} warmup={warmupIds.has(block.exerciseId)} />
             </Suspense>
             <ol className="ct-session__sets">
               {block.sets.map((set) => {

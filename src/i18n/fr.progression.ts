@@ -68,6 +68,11 @@ export const progressionFr = {
   accepted: 'Proposition acceptée.',
   refused: 'Proposition refusée : tu saisis toi-même.',
   modified: 'Valeurs retenues : {load} kg × {reps}.',
+  // I2-03 (§ 13.8) : rampe d'échauffement annoncée avant la décision, insérée avec la charge retenue.
+  warmupPreview: 'Échauffement ajouté en acceptant : {ramp}.',
+  warmupStep: '{load} kg × {reps}',
+  warmupJoin: ' · ',
+  warmupHint: 'Séries facultatives, hors statistiques ; recalculées sur ta charge si tu la modifies.',
   difficultyTitle: 'Ressenti de l’exercice',
   difficultyHint: 'Facultatif ; un second appui efface le choix.',
   difficultyNone: 'Non renseigné',
