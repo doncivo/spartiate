@@ -409,3 +409,55 @@ async fn technical_logs_hold_event_names_and_status_but_never_the_barcode_or_the
     assert!(!raw.contains(BARCODE) && !raw.contains(secret_text) && !raw.contains("30176204"));
     assert!(off.iter().all(|e| e.detail.is_empty()));
 }
+
+fn port_of(base: &str) -> u16 {
+    base.rsplit(':').next().unwrap().parse().unwrap()
+}
+
+#[tokio::test]
+async fn a_redirect_to_another_host_is_not_followed() {
+    let mock = start_mock(|request| {
+        let port = request.headers["host"]
+            .rsplit(':')
+            .next()
+            .unwrap()
+            .to_owned();
+        crate::support::http_mock::redirect(&format!("http://localhost:{port}/ailleurs"))
+    });
+    let error = client_for(&mock.base).product(BARCODE).await.unwrap_err();
+    assert_eq!(error, OffError::Http { status: 302 });
+    assert_eq!(mock.requests().len(), 1);
+}
+
+#[tokio::test]
+async fn a_redirect_to_another_port_of_the_same_host_is_not_followed() {
+    let other = start_mock(|_| reply(200, &product_body()));
+    let target = format!("{}/x", other.base);
+    let mock = start_mock(move |_| crate::support::http_mock::redirect(&target));
+    assert_ne!(port_of(&mock.base), port_of(&other.base));
+    let error = client_for(&mock.base).product(BARCODE).await.unwrap_err();
+    assert_eq!(error, OffError::Http { status: 302 });
+    assert_eq!(mock.requests().len(), 1);
+    assert!(other.requests().is_empty());
+}
+
+#[tokio::test]
+async fn more_than_two_same_host_redirects_are_refused() {
+    let mock = start_mock(|_| crate::support::http_mock::redirect("/encore"));
+    let error = client_for(&mock.base).product(BARCODE).await.unwrap_err();
+    assert_eq!(error, OffError::Http { status: 302 });
+    assert_eq!(mock.requests().len(), 3, "requête initiale et deux sauts");
+}
+
+#[tokio::test]
+async fn a_client_refusing_the_scheme_reports_tls_and_the_wire_form_is_stable() {
+    let mock = start_mock(|_| reply(200, &product_body()));
+    let config = Config::for_tests(&mock.base, Duration::from_secs(5), 64 * 1024).with_https_only();
+    let error = OffClient::new(config).product(BARCODE).await.unwrap_err();
+    assert_eq!(error, OffError::Tls);
+    assert!(mock.requests().is_empty());
+    assert_eq!(
+        serde_json::to_value(OffError::Tls).unwrap(),
+        json!({"kind": "tls"})
+    );
+}
