@@ -12,3 +12,4 @@ export * from './mealEntry';
 export * from './targetRecord';
 export * from './journal';
 export * from './prefs';
+export * from './trendLearning';

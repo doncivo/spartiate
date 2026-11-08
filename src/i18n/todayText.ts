@@ -1,3 +1,4 @@
+import { frFirst } from './format';
 import { todayFr } from './fr.today';
 
 /** Textes de l'écran Aujourd'hui, à part du catalogue principal ; importé seulement par des modules chargés à la demande. */
@@ -11,5 +12,5 @@ export function tToday(key: TodayTextKey, params?: Readonly<Record<string, strin
 /** Date de la planche iPhone (« mercredi 4 novembre ») pour un jour civil `AAAA-MM-JJ`. */
 export function formatTodayEyebrow(isoDate: string): string {
   const [y, m, d] = isoDate.split('-').map(Number) as [number, number, number];
-  return new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(y, m - 1, d)));
+  return frFirst(new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(y, m - 1, d))));
 }

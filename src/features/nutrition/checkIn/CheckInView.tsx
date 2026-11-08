@@ -14,11 +14,12 @@ import {
   type Target,
 } from '../../../domain/nutrition';
 import { addDays } from '../../../domain/localDate';
-import { formatDayMonth, formatInt, formatSigned, tNutrition, type NutritionTextKey } from '../../../i18n/nutritionText';
+import { formatDayLong, formatDayMonth, formatInt, formatSigned, tNutrition, type NutritionTextKey } from '../../../i18n/nutritionText';
 import { Button } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { TargetForm, type TargetSaveResult } from '../strategy/TargetForm';
+import { firstCheckIn } from './firstCheckIn';
 import { recordCheckInDecision, tdeeAt, type NutritionSnapshot } from '../useCases';
 
 const REASON_KEY: Readonly<Record<CheckInReason, NutritionTextKey | null>> = {
@@ -96,6 +97,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const first = useMemo(() => firstCheckIn(snapshot.today, prefs.checkInWeekday, snapshot.days, snapshot.weighIns), [snapshot.today, prefs.checkInWeekday, snapshot.days, snapshot.weighIns]);
   const tdee = useMemo(() => tdeeAt(snapshot, period.weekEnd), [snapshot, period.weekEnd]);
   // Cible en vigueur pendant la semaine analysée : une décision prise pour la semaine suivante ne change pas la proposition relancée.
   const current = effectiveTarget(targets, period.weekEnd)?.target ?? null;
@@ -156,6 +158,18 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
       </p>
     </>
   );
+
+  if (first.first && prefs.style !== 'manual') {
+    return (
+      <section className="ct-nutrition__card ct-nutrition__checkin" aria-label={tNutrition('checkInTitle')}>
+        <h2 className="ct-nutrition__subtitle">{tNutrition('checkInTitle')}</h2>
+        <p className="ct-nutrition__big">{tNutrition('checkInFirstTitle', { date: formatDayLong(first.date) })}</p>
+        <p>{tNutrition('checkInFirstLead', { from: formatDayMonth(first.weekStart), to: formatDayMonth(first.weekEnd) })}</p>
+        <p>{tNutrition('checkInFirstNeed', { days: first.needDays, weighIns: first.needWeighIns })}</p>
+        <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('checkInFirstSoFar', { days: daysText(first.coverage.completeDays), weighIns: weighInsText(first.coverage.weighInDays) })}</p>
+      </section>
+    );
+  }
 
   if (result.status === 'manual') {
     return (
