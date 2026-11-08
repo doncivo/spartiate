@@ -305,3 +305,36 @@ fn a_real_spartiate_v8_backup_is_admitted_and_reset_triggers_restores_exactly_it
     assert_eq!(trigger_names(&path), before);
     assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 8);
 }
+
+/// Restauration puis migration : une sauvegarde Spartiate de version 7 (migrations 0001 à 0007 rejouées) passe par `reset_triggers`, puis la
+/// migration 0008 s'applique à l'ouverture. Elle ne doit pas échouer sur « trigger already exists » (`reset_triggers` ne recrée jamais un
+/// déclencheur d'une version supérieure) et la base finit avec les 34 déclencheurs `sync_*` de la version 8.
+#[test]
+fn a_restored_v7_backup_then_migration_0008_ends_with_the_34_sync_triggers() {
+    let dir = scratch();
+    let path = dir.path().join("v7.db");
+    {
+        let conn = Connection::open(&path).unwrap();
+        conn.execute_batch(include_str!("../fixtures/spartiate-v7-schema.sql"))
+            .unwrap();
+        for v in 1..=7 {
+            conn.execute(
+                "INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?1, 'n', 'c', 'now')",
+                [v],
+            )
+            .unwrap();
+        }
+    }
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 7);
+    let before = trigger_names(&path);
+    assert_eq!(before.len(), 26, "{before:?}");
+    reset_triggers(&path).unwrap();
+    assert_eq!(trigger_names(&path), before);
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(include_str!("../fixtures/spartiate-0008-statements.sql"))
+        .unwrap();
+    let after = trigger_names(&path);
+    assert_eq!(after.len(), 34, "{after:?}");
+    assert!(after.iter().all(|n| n.starts_with("sync_")));
+}

@@ -753,11 +753,12 @@ pub fn reset_triggers(path: &Path) -> Result<(), BackupError> {
         .map(|n| n == 1)
         .map_err(sql_err)
     };
-    // Déclencheurs de capture de la synchro (`sync_*`, migration 0015) : seulement si leurs tables existent (une sauvegarde plus ancienne
-    // les recevra par la migration à l'ouverture ; les créer ici ferait échouer cette migration).
+    // Déclencheurs de capture de la synchro (`sync_*`, créés par les migrations Spartiate 0001 à 0008) : seulement si leurs tables existent et si la
+    // version de la sauvegarde les porte (`introduced_in`) : une sauvegarde plus ancienne les recevra par la migration à l'ouverture ; les créer ici
+    // ferait échouer cette migration (« trigger already exists »).
     let has_sync = has_table("sync_guard")?;
-    // Corps valables à la version de la sauvegarde (une sauvegarde de version 17 reçoit les corps de la migration 0015, jamais un corps qui
-    // cite une colonne absente d'elle ; la migration 0018 les remplace à l'ouverture). Sans table de versions : corps actuels.
+    // Corps valables à la version de la sauvegarde (héritage de l'ancien projet : une sauvegarde de version 17 reçoit les corps de la migration 0015, jamais un
+    // corps qui cite une colonne absente d'elle ; les trois déclencheurs concernés n'existent pas dans une base Spartiate). Sans table de versions : corps actuels.
     let version = if has_table("schema_migrations")? {
         tx.query_row("SELECT MAX(version) FROM schema_migrations", [], |r| {
             r.get::<_, Option<u32>>(0)
