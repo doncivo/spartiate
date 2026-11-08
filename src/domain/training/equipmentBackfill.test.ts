@@ -48,6 +48,11 @@ describe('backfillDumbbellExtras (I2-04, paire de 9 kg)', () => {
     expect(backfillDumbbellExtras(stored, EMBEDDED)).toBe(stored);
   });
 
+  it('revue : nom d’un autre profil embarqué (« Maison haltères (copie) ») avec le matériel d’Antony : le nom l’emporte, rien d’ajouté', () => {
+    const stored = copy({ name: 'Maison haltères (copie)' });
+    expect(backfillDumbbellExtras(stored, EMBEDDED)).toBe(stored);
+  });
+
   it('extraKg déjà présent (même vide ou différent) : jamais remplacé', () => {
     const stored = copy({}, { dumbbells: { minKg: 2, maxKg: 50, stepKg: 2, extraKg: [11] } });
     expect(backfillDumbbellExtras(stored, EMBEDDED)).toBe(stored);
