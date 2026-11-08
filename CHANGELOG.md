@@ -2,6 +2,10 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.3.4
+
+- Séance : **échauffement**. Sous la proposition d’un exercice, quand tu l’acceptes ou la modifies, l’app ajoute une rampe de séries d’échauffement légères (40 % × 8, 60 % × 5, 80 % × 2 de la charge de travail), calées sur les charges que ton matériel permet vraiment (paire d’haltères de 9 kg comprise). Une rampe par groupe de mouvement, sur le premier exercice composé ; rien n’est ajouté après un refus, pour un exercice « à saisir », ou si tu as déjà commencé l’exercice. Une rampe ne passe jamais avant une série que tu as déjà validée. Pas de mise à jour de la base.
+
 ## 0.3.3
 
 - Séance : la phrase de la Proposition te prévient quand les charges reposent sur du matériel marqué « à vérifier » dans ton profil (barre EZ, machine…), et quand ta dernière séance, avec moins de la moitié des séries faites, n’est pas prise en compte. La proposition elle-même ne change pas.
