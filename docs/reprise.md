@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-08 (matin) : I1, I2 et I3 livrés, version publiée 0.7.0, I4 hors IA livré. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-74 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Dossier de sortie I0 : docs/gate-i0.md.
+État au 2026-11-09 (nuit) : I1, I2 et I3 livrés, version publiée 0.8.0, I4 hors IA livré, OFF et scan inclus. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-78 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Dossier de sortie I0 : docs/gate-i0.md.
 
 ## Fusionné (tout est dans main)
 
@@ -19,14 +19,14 @@
 
 - Publiées cette nuit (PC `vX.Y.Z` et iPhone `ios-vX.Y.Z`) : 0.3.2 (I2-02 garde-fous, correctifs du moteur #66, pesées Raccourcis D-69 #65, cause des erreurs d’E/S Windows #62), 0.3.3 (I2-04 : paire de 9 kg rattrapée à la lecture, phrases), 0.3.4 (I2-03 échauffement), 0.4.0 (I3-01 séance proposée), 0.5.0 (I3-02 cycle, migration 0007 `mesocycle`, schéma 7), 0.6.0 (I4-01 moteur nutrition, I4-02 catalogue Ciqual et journal, migration 0008, schéma 8), 0.7.0 (I4-03 onglet Nutrition).
 - D-73 (I3) et D-74 (I4) : décisions par défaut, **révisables par Ali** (à confirmer). H-21 (format du fichier Raccourcis) UNVERIFIED, noté dans decisions.md (le chapitre 26 du PRD est figé par prd-split.test.ts).
-- I4 sans IA livré (D-74, D-76 par défaut, révisables) : moteur, catalogue Ciqual, journal, dashboard, stratégie, check-in. Exclus : Open Food Facts/réseau, scan code-barres, recettes, favoris, photo IA (I4-04). Le test de perf de démarrage est proche du seuil (1592 ms contre 1500 une fois, vert au second passage) : à surveiller.
+- I4 sans IA livré (D-74, D-76 par défaut, révisables) : moteur, catalogue Ciqual, journal, dashboard, stratégie, check-in. 0.8.0 (I4-05, D-77, D-78) : Open Food Facts (client Rust, HTTPS rustls, cache 90 jours, sans migration) et scan iPhone ; H-12 et le scan restent UNVERIFIED, check-list de constat dans la matrice. Exclus : recettes, favoris, photo IA (I4-04). Le test de perf de démarrage est proche du seuil (1592 ms contre 1500 une fois, vert au second passage) : à surveiller.
 - PURGE-I18N (#74) : modules de textes orphelins supprimés ; clés mortes à l’intérieur de fr.ts gardées (tDynamic).
 - **Première utilisation réelle : lundi 2026-11-09** (D-38) : plus aucun accès aux données réelles ni à iCloud Drive/Spartiate.
 
 ## Prochaines étapes
 
 1. Ali : constats sur l’iPhone (échauffement, Séance proposée, Cycle, import des pesées), confirmer ou réviser D-73 et D-74.
-2. Terminer I4 hors IA (I4-02, I4-03) ; relectures Codex (D-53) des PR de la nuit.
+2. Constats OFF et scan (matrice : produit de marque, « skyr » en ligne, mode avion, code inconnu) ; relectures Codex (D-53) des PR de la nuit.
 3. Après le lundi 9 : journal exporté d’Ali (Plus → Logs → Exporter) pour mesurer le délai iCloud.
 
 ## Rappels
