@@ -215,3 +215,43 @@ fn k05_4_reset_triggers_recreates_the_bodies_of_the_backup_version_and_never_a_c
         );
     }
 }
+
+/// 0.8.2 (relecture sync-icloud rattrapée de #75 et #79) : une base Spartiate n'a AUCUNE table `search_index_doc` (reste de l'ancien projet,
+/// aucune migration 0001 à 0008 ne la crée). La restauration d'une sauvegarde ne doit pas laisser la base sans déclencheur de capture de
+/// synchro : sans eux, un repas ou une séance saisis ensuite n'entrent jamais dans `sync_outbox`.
+#[test]
+fn restore_recreates_sync_capture_triggers_even_without_search_index_doc() {
+    let dir = scratch();
+    let path = dir.path().join("spartiate.db");
+    make_db(&path, APP_SCHEMA_VERSION, APP_SCHEMA_VERSION);
+    {
+        let conn = Connection::open(&path).unwrap();
+        conn.execute_batch("DROP TABLE search_index_doc;").unwrap();
+    }
+    reset_triggers(&path).unwrap();
+    let conn = Connection::open(&path).unwrap();
+    let names: Vec<String> = conn
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'trigger'")
+        .unwrap()
+        .query_map([], |r| r.get::<_, String>(0))
+        .unwrap()
+        .collect::<Result<_, _>>()
+        .unwrap();
+    for expected in [
+        "sync_meal_entry_ai",
+        "sync_meal_entry_au",
+        "sync_mesocycle_ai",
+        "sync_food_ai",
+        "sync_nutrition_target_ai",
+        "sync_workout_ai",
+    ] {
+        assert!(
+            names.iter().any(|n| n == expected),
+            "déclencheur {expected} absent après la restauration : {names:?}"
+        );
+    }
+    assert!(
+        !names.iter().any(|n| n.starts_with("search_")),
+        "aucun déclencheur de recherche sans table d'index"
+    );
+}
