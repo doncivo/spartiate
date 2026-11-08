@@ -236,6 +236,70 @@ describe('I4-05 : champ Code-barres (saisie manuelle)', () => {
   });
 });
 
+describe('I4-05 : courses et doubles appuis', () => {
+  it('résultat tardif d’un code : ne remplace pas la fiche perso que Ali est en train de créer', async () => {
+    await mount();
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    setOffClient({ product: async () => { await gate; return { found: true, products: [skyr()] }; }, search: off.client.search });
+    await openSearch();
+    type('zzzqq');
+    await screen.findByRole('button', { name: 'Créer une fiche perso' });
+    enterCode(CODE);
+    fireEvent.click(screen.getByRole('button', { name: 'Créer une fiche perso' }));
+    await screen.findByLabelText('Nom de la fiche');
+    release();
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 60));
+    });
+    expect(screen.getByLabelText('Nom de la fiche')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Annuler' }));
+    await screen.findByLabelText('Code-barres');
+    expect(screen.queryByLabelText('Quantité (g)')).toBeNull();
+  });
+
+  it('double appui sur un résultat en ligne : une seule écriture du cache', async () => {
+    await mount();
+    const foods = await db.data.repos.foods();
+    let writes = 0;
+    const counting = { ...foods, cacheOff: (draft: FoodDraft, options?: { readonly id?: string }) => {
+      writes += 1;
+      return foods.cacheOff(draft, options);
+    } };
+    (db.data.repos as { foods: () => Promise<typeof foods> }).foods = async () => counting;
+    await openSearch();
+    type('skyr');
+    fireEvent.click(await screen.findByRole('button', { name: 'Chercher en ligne' }));
+    const row = await screen.findByRole('button', { name: /Skyr nature/ });
+    fireEvent.click(row);
+    fireEvent.click(row);
+    expect(await screen.findByLabelText('Quantité (g)')).toBeInTheDocument();
+    expect(writes).toBe(1);
+  });
+
+  it('tous les produits refusés : « Produits ignorés » seul, sans « ne connaît aucun produit »', async () => {
+    await mount(undefined, [skyr({ nutriments: {} })]);
+    await openSearch();
+    type('skyr');
+    fireEvent.click(await screen.findByRole('button', { name: 'Chercher en ligne' }));
+    expect(await screen.findByText(/Produits ignorés/)).toBeInTheDocument();
+    expect(screen.queryByText(/ne connaît aucun produit/)).toBeNull();
+  });
+
+  it('écriture du cache en échec lors d’un code : message d’écriture local, pas « réponse illisible »', async () => {
+    await mount();
+    const foods = await db.data.repos.foods();
+    const failing = { ...foods, cacheOff: () => Promise.reject(new Error('disque')) };
+    (db.data.repos as { foods: () => Promise<typeof foods> }).foods = async () => failing;
+    await openSearch();
+    enterCode(CODE);
+    expect(await screen.findByText(/L’enregistrement a échoué/)).toBeInTheDocument();
+    expect(screen.queryByText(/illisible/)).toBeNull();
+  });
+});
+
 describe('I4-05 : scan (iPhone seulement)', () => {
   it('PC et navigateur : aucun bouton « Scanner »', async () => {
     await mount({ runtime: 'tauri', os: 'windows' });

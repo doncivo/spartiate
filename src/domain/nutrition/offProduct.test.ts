@@ -100,6 +100,12 @@ describe('offProductToDraft : textes', () => {
     const spaced = offProductToDraft(raw({ product_name: 'Skyr   \n nature' }), NOW);
     expect(spaced.ok && spaced.draft.name).toBe('Skyr nature');
   });
+  it('troncature par caractères : jamais au milieu d’une paire de substitution', () => {
+    const r = offProductToDraft(raw({ product_name: `a${'😀'.repeat(300)}` }), NOW);
+    // Le validateur compte en unités UTF-16 (120 au plus) : « a » et 59 émojis, jamais une paire coupée en deux.
+    expect(r.ok && r.draft.name).toBe(`a${'😀'.repeat(59)}`);
+    expect(r.ok && validateFoodDraft(r.draft)).toEqual([]);
+  });
   it('marque vide : null ; code UPC-A d’OFF normalisé en 13 chiffres', () => {
     const r = offProductToDraft(raw({ code: '036000291452', brands: undefined }), NOW);
     expect(r.ok && r.draft.brand).toBeNull();

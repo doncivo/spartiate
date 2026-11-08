@@ -67,6 +67,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   const [scanNotice, setScanNotice] = useState<ScanNotice | null>(null);
   const request = useRef(0);
   const lookupTicket = useRef(0);
+  const picking = useRef(false);
   const onlineTicket = useRef(0);
   const { runtime, os } = container.platform;
   const scannerLoader = useMemo(() => resolveBarcodeScanner(runtime, os), [runtime, os]);
@@ -128,13 +129,24 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
     if (ticket === onlineTicket.current) setOnline({ query: text, status: 'done', result });
   }
 
+  /** Tout choix fait par un geste d'Ali prime sur la recherche d'un code encore en vol : son résultat tardif est ignoré. */
+  function supersedeLookup(): void {
+    lookupTicket.current += 1;
+    setLookup((current) => (current?.status === 'busy' ? null : current));
+  }
+
   async function pickOnline(item: OnlineItem): Promise<void> {
+    if (picking.current) return;
+    picking.current = true;
+    supersedeLookup();
     try {
       const record = await chooseOnline(await data.repos.foods(), item.draft);
       setNotice(null);
       setSelection({ food: toSearchable(record), grams: '100' });
     } catch {
       setNotice(tNutrition('writeError'));
+    } finally {
+      picking.current = false;
     }
   }
 
@@ -216,6 +228,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
       return;
     }
     setNotice(null);
+    supersedeLookup();
     setSelection({ food, grams: String(recent.lastGrams) });
   }
 
@@ -225,6 +238,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
         initialName={creating.name}
         {...(creating.barcode === undefined ? {} : { initialBarcode: creating.barcode })}
         onCreated={(food) => {
+          supersedeLookup();
           setCreating(null);
           setLookup(null);
           setSelection({ food, grams: '100' });
@@ -331,7 +345,10 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
         <div role="alert" className="ct-nutrition__warning">
           <p>{lookup.text}</p>
           {lookup.createCode ? (
-            <Button variant="secondary" onClick={() => setCreating({ name: '', barcode: lookup.createCode as string })}>
+            <Button variant="secondary" onClick={() => {
+                supersedeLookup();
+                setCreating({ name: '', barcode: lookup.createCode as string });
+              }}>
               {tNutrition('barcodeCreate')}
             </Button>
           ) : null}
@@ -402,7 +419,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
             <ul className="ct-nutrition__list">
               {visible.map((hit) => (
                 <li key={hit.ref}>
-                  <button type="button" data-hit className="ct-nutrition__hit" onClick={() => { setNotice(null); setSelection({ food: hit, grams: '100' }); }}>
+                  <button type="button" data-hit className="ct-nutrition__hit" onClick={() => { setNotice(null); supersedeLookup(); setSelection({ food: hit, grams: '100' }); }}>
                     <span className="ct-nutrition__hit-name">
                       {hit.name}
                       {hit.brand ? <span className="ct-nutrition__muted"> · {hit.brand}</span> : null}
@@ -419,7 +436,13 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
             </ul>
           )}
           <div className="ct-nutrition__actions">
-            <Button variant="secondary" onClick={() => setCreating({ name: query.trim() })}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                supersedeLookup();
+                setCreating({ name: query.trim() });
+              }}
+            >
               {tNutrition('createFood')}
             </Button>
             <Button variant="secondary" disabled={onlineView?.status === 'busy'} onClick={() => void runOnlineSearch()}>
@@ -468,11 +491,11 @@ function OnlineResults({ query, result, onPick }: OnlineResultsProps) {
         {tNutrition('onlineResults')}
       </h2>
       {result.items.length === 0 ? (
-        <p>{tNutrition('onlineEmpty', { query })}</p>
+        result.refused > 0 ? null : <p>{tNutrition('onlineEmpty', { query })}</p>
       ) : (
         <ul className="ct-nutrition__list">
-          {result.items.map((item) => (
-            <li key={item.draft.barcode}>
+          {result.items.map((item, index) => (
+            <li key={`${item.draft.barcode}-${index}`}>
               <button type="button" data-hit className="ct-nutrition__hit" onClick={() => onPick(item)}>
                 <span className="ct-nutrition__hit-name">
                   {item.draft.name}
