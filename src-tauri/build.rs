@@ -74,6 +74,9 @@ fn main() {
             "log_append",
             "log_read",
             "log_clear",
+            // Open Food Facts (I4-05, D-77) : PC et iPhone, capability off.json.
+            "off_product",
+            "off_search",
             // P-04-iOS (ADR 0009 avenant lot F B3) : issue de la récupération au démarrage (iPhone).
             "backup_startup_status",
             "backup_set_aside_conflicts",
