@@ -63,6 +63,10 @@ describe('parseOffError', () => {
     expect(parseOffError({ kind: 'http', status: 'x' }).status).toBeUndefined();
     expect(parseOffError({ kind: 'offline', message: 'secret' }).message).not.toContain('secret');
   });
+
+  it('0.8.0 : l’erreur « tls » du client Rust (connexion sécurisée impossible) est reconnue, pas rabattue sur bad-response', () => {
+    expect(parseOffError({ kind: 'tls' }).kind).toBe('tls');
+  });
 });
 
 describe('createTauriOff', () => {
