@@ -3,7 +3,7 @@ import { uuidGenerator, type IdGenerator } from '../../../domain/id';
 import type { EntrySource } from '../../../domain/nutrition/food';
 import { validateMealEntry, type EntryMethod, type MealEntryDraft } from '../../../domain/nutrition/mealEntry';
 import { isId, type LocalDate, type LocalTime } from '../../../domain/types';
-import type { SqlExecutor, SqlRow } from '../../driver';
+import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
 import { RepositoryError } from '../common';
 import type { MealEntryRecord, MealEntryRepository, RecentFood } from '../mealEntryRepository';
 import { readSyncMeta, type SyncRow } from './sqlHelpers';
@@ -43,6 +43,8 @@ const toRecord = (row: EntryRow): MealEntryRecord => ({
 const ORDER = 'ORDER BY date, time, created_at, id';
 
 export function createMealEntryRepository(db: SqlExecutor, stamper: WriteStamper, ids: IdGenerator = uuidGenerator): MealEntryRepository {
+  const atomic = <T>(work: (inTx: MealEntryRepository) => Promise<T>): Promise<T> | null =>
+    typeof (db as Partial<SqlDriver>).transaction === 'function' ? (db as SqlDriver).transaction((tx) => work(createMealEntryRepository(tx, stamper, ids))) : null;
   const read = async (id: string): Promise<EntryRow | undefined> => (await db.select<EntryRow>('SELECT * FROM meal_entry WHERE id = ?', [id]))[0];
   const live = async (id: string): Promise<EntryRow> => {
     const row = await read(id);
@@ -84,6 +86,9 @@ export function createMealEntryRepository(db: SqlExecutor, stamper: WriteStamper
     },
 
     async createMany(drafts) {
+      // Appelé sur le driver, ouvre sa propre transaction ; dans `DataAccess.transaction`, écrit directement (motif `atomic` du workoutRepository).
+      const outer = atomic((r) => r.createMany(drafts));
+      if (outer) return outer;
       // Tout est validé avant la première écriture : une entrée invalide n'en écrit aucune.
       const planned: { id: string; clean: MealEntryDraft }[] = [];
       for (const draft of drafts) {
