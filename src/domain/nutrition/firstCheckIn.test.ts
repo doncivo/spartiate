@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { aggregateDays } from '../../../domain/nutrition/dayTotals';
-import type { MealEntryInput, WeighIn } from '../../../domain/nutrition/types';
-import type { LocalDate } from '../../../domain/types';
+import { aggregateDays } from './dayTotals';
+import type { MealEntryInput, WeighIn } from './types';
+import type { LocalDate } from '../types';
 import { firstCheckIn } from './firstCheckIn';
 
 const SUNDAY = '2026-11-08' as LocalDate; // check-in le lundi (ISO 1) : dernier jour passé = lundi 2 novembre, semaine du 26 octobre au 1er novembre
