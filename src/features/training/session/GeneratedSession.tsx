@@ -41,6 +41,8 @@ const ISSUE_KEY: Readonly<Record<GenerationIssueCode, TrainingGenerationTextKey>
   'budget-invalid': 'issueBudget',
 };
 const MODE_HINT = { guide: 'modeHintGuide', libre: 'modeHintLibre', maison: 'modeHintMaison' } as const;
+/** Le style n'a pas de colonne dans la séance (I3-01) : il est dit comme une consigne d'exécution, jamais présenté comme appliqué. */
+const STYLE_HINT = { straight: 'styleHintStraight', pyramid: 'styleHintPyramid', reverse: 'styleHintReverse' } as const satisfies Record<SetStyle, TrainingGenerationTextKey>;
 
 const toggle = <T,>(list: readonly T[], value: T): T[] => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 const minutes = (sec: number): number => Math.round(sec / 60);
@@ -180,7 +182,8 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
                 { value: 'reverse', label: tGeneration('styleReverse') },
               ]}
             />
-            <p className="ct-generated__note">{tGeneration('styleHint')}</p>
+            <p className="ct-generated__note">{tGeneration(STYLE_HINT[settings.style])}</p>
+            <p className="ct-generated__note">{tGeneration('styleNotSaved')}</p>
           </div>
           <SegmentedControl<string>
             label={tGeneration('budgetLabel')}
