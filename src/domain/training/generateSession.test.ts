@@ -26,6 +26,10 @@ import type { RoutineDaySpec } from './types';
  */
 
 const ids = (s: GeneratedSession): string[] => s.exercises.map((e) => e.exerciseId);
+const must = <T,>(value: T | undefined): T => {
+  if (value === undefined) throw new Error('valeur absente');
+  return value;
+};
 const byId = new Map(GEN_LIBRARY.map((e) => [e.id, e]));
 const keyOf = (id: string): string => {
   const e = byId.get(id);
@@ -112,7 +116,7 @@ describe('critère 1 : muscles du split en vigueur, aucun exercice incompatible'
   });
 
   it('exercice inconnu de la bibliothèque (personnalisé supprimé) : omis, nom figé conservé', () => {
-    const day: RoutineDaySpec = { name: 'X', dayOrder: 1, exercises: [{ ...UPPER_A.exercises[0]!, exerciseId: 'disparu', exerciseName: 'Mon exercice', position: 0 }, { ...UPPER_A.exercises[1]!, position: 1 }] };
+    const day: RoutineDaySpec = { name: 'X', dayOrder: 1, exercises: [{ ...must(UPPER_A.exercises[0]), exerciseId: 'disparu', exerciseName: 'Mon exercice', position: 0 }, { ...must(UPPER_A.exercises[1]), position: 1 }] };
     const s = generateSession(input({}, { split: 'full-body', days: [day] }));
     expect(ids(s)).toEqual(['row-barbell']);
     expect(s.omitted).toEqual([{ exerciseId: 'disparu', exerciseName: 'Mon exercice', sourcePosition: 0, reason: 'unknown-exercise', suggestionId: null }]);
@@ -405,7 +409,7 @@ describe('critère 7 : déterministe, horloge injectée, moins d’une seconde',
   it('bibliothèque de 150 exercices : une génération < 1 s, et 200 générations < 1 s', () => {
     const library = [...GEN_LIBRARY];
     for (let i = library.length; i < 150; i++) {
-      const base = GEN_LIBRARY[i % GEN_LIBRARY.length]!;
+      const base = must(GEN_LIBRARY[i % GEN_LIBRARY.length]);
       library.push({ ...base, id: `${base.id}-v${String(i)}`, nameFr: `${base.nameFr} ${String(i)}`, alternatives: [] });
     }
     const big = { exercises: library, groupOfMuscle: input().library.groupOfMuscle };

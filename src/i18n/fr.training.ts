@@ -215,6 +215,8 @@ export const trainingFr = {
   sessionStartDay: 'Démarrer « {day} »',
   sessionStartDayMeta: '{routine} · {n} exercices',
   sessionStartDayMetaOne: '{routine} · 1 exercice',
+  sessionPropose: 'Proposer une séance',
+  sessionProposeHint: 'L’app propose la séance d’un jour selon ton matériel, tes douleurs et ton temps ; la routine n’est pas modifiée.',
   sessionCopy: 'Copier une séance passée',
   sessionCopyHint: 'Reprend les exercices et les dernières charges, sans créer de routine.',
   sessionNoHistory: 'Aucune séance terminée pour l’instant : la copie sera possible après ta première séance close.',
