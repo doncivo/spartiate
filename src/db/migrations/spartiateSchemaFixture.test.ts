@@ -25,7 +25,11 @@ async function schemaUpTo(version: number): Promise<string> {
   return rows.map((r) => `${r.sql};`).join('\n');
 }
 
-const m0008 = (): string => `${migrations.find((m) => m.version === 8)!.statements.map((s) => `${s};`).join('\n')}`;
+const m0008 = (): string => {
+  const migration = migrations.find((m) => m.version === 8);
+  if (migration === undefined) throw new Error('migration 0008 introuvable');
+  return migration.statements.map((s) => `${s};`).join('\n');
+};
 
 const cases: [string, () => Promise<string>][] = [
   ['spartiate-v8-schema.sql', () => schemaUpTo(8)],
