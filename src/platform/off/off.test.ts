@@ -36,7 +36,6 @@ describe('parseOffResponse', () => {
     ['products non liste', { found: true, products: {} }],
     ['produit non objet', { found: true, products: [3] }],
     ['code absent', { found: true, products: [{ nutriments: {} }] }],
-    ['code non chiffres', { found: true, products: [{ code: 'abc', nutriments: {} }] }],
     ['nutriments non objet', { found: true, products: [{ code: '4006381333931', nutriments: 5 }] }],
     ['trop de produits', { found: true, products: Array.from({ length: 101 }, () => product) }],
   ])('réponse invalide (%s) : OffError bad-response', (_name, raw) => {
@@ -46,6 +45,17 @@ describe('parseOffResponse', () => {
     } catch (error) {
       expect((error as OffError).kind).toBe('bad-response');
     }
+  });
+});
+
+describe('parseOffResponse : produit à code illisible', () => {
+  it('un produit dont le code n’est pas numérique est écarté et compté, sans faire tomber la réponse', () => {
+    const r = parseOffResponse({ found: true, products: [{ ...product, code: 'abc' }, product, { ...product, code: '12' }] });
+    expect(r.products).toHaveLength(1);
+    expect(r.skipped).toBe(2);
+  });
+  it('aucun produit écarté : skipped vaut 0', () => {
+    expect(parseOffResponse({ found: true, products: [product] }).skipped).toBe(0);
   });
 });
 
