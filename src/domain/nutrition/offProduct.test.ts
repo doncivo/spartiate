@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { IsoDateTime } from '../types';
 import { FOOD_BRAND_MAX, FOOD_NAME_MAX, validateFoodDraft } from './food';
-import { offCacheDecision, offProductToDraft, type OffRawProduct } from './offProduct';
+import { missingNutrients, offCacheDecision, offProductToDraft, type OffRawProduct } from './offProduct';
 
 /** I4-05 : fiche Open Food Facts brute -> brouillon de fiche `off`. Valeurs synthétiques ; une valeur absente ou illisible est `null`, jamais 0. */
 const NOW = '2026-11-09T09:00:00.000Z' as IsoDateTime;
@@ -104,6 +104,13 @@ describe('offProductToDraft : textes', () => {
     const r = offProductToDraft(raw({ code: '036000291452', brands: undefined }), NOW);
     expect(r.ok && r.draft.brand).toBeNull();
     expect(r.ok && r.draft.barcode).toBe('0036000291452');
+  });
+});
+
+describe('missingNutrients', () => {
+  it('liste ce qui est inconnu, dans l’ordre kcal, protéines, lipides, glucides, fibres ; un zéro réel n’est pas manquant', () => {
+    expect(missingNutrients({ kcal: null, proteinG: 0, fatG: null, carbG: 3, fiberG: null })).toEqual(['kcal', 'fatG', 'fiberG']);
+    expect(missingNutrients({ kcal: 1, proteinG: 1, fatG: 1, carbG: 1, fiberG: 0 })).toEqual([]);
   });
 });
 
