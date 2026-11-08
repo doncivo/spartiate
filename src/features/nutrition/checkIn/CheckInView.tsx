@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   checkInPeriod,
+  firstCheckIn,
   effectiveTarget,
   proposeCheckIn,
   resolveCheckIn,
@@ -19,7 +20,6 @@ import { Button } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { TargetForm, type TargetSaveResult } from '../strategy/TargetForm';
-import { firstCheckIn } from './firstCheckIn';
 import { recordCheckInDecision, tdeeAt, type NutritionSnapshot } from '../useCases';
 
 const REASON_KEY: Readonly<Record<CheckInReason, NutritionTextKey | null>> = {
