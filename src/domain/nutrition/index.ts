@@ -10,3 +10,5 @@ export * from './food';
 export * from './foodSearch';
 export * from './mealEntry';
 export * from './targetRecord';
+export * from './journal';
+export * from './prefs';
