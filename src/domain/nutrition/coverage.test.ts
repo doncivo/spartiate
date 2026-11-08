@@ -14,7 +14,7 @@ const daysFrom = (pattern: boolean[]): DayTotals[] =>
   pattern.map((c, i) => (c ? completeDay(at(i), 2400) : partialDay(at(i), 900)));
 const weigh = (...idx: number[]): WeighIn[] => idx.map((i) => ({ date: at(i), kg: 80 }));
 
-describe('coverageOfWindow (§ 15.2)', () => {
+describe('I4-01 : coverageOfWindow (§ 15.2)', () => {
   it('4 jours complets et 2 pesées sur 7 jours : suffisant', () => {
     const c = coverageOfWindow(daysFrom([true, true, true, true, false, false, false]), weigh(0, 3), at(6));
     expect(c).toMatchObject({ completeDays: 4, weighInDays: 2, windowDays: 7, sufficient: true });
@@ -49,7 +49,7 @@ describe('coverageOfWindow (§ 15.2)', () => {
   });
 });
 
-describe('twoWeekCoverage', () => {
+describe('I4-01 : twoWeekCoverage', () => {
   const full = Array<boolean>(14).fill(true);
 
   it('les deux semaines suffisantes : ajustement possible', () => {
@@ -70,7 +70,7 @@ describe('twoWeekCoverage', () => {
   });
 });
 
-describe('sufficientDataDays (D-74 point 4)', () => {
+describe('I4-01 : sufficientDataDays (D-74 point 4)', () => {
   it('compte les jours dont la fenêtre de 7 jours est suffisante', () => {
     const days = daysFrom(Array<boolean>(10).fill(true));
     const weighIns = weigh(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);

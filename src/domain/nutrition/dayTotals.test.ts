@@ -15,7 +15,7 @@ const e = (time: string, kcal: number | null, over: Partial<MealEntryInput> = {}
   ...over,
 });
 
-describe('aggregateDay : complétude (§ 15.2)', () => {
+describe('I4-01 : aggregateDay : complétude (§ 15.2)', () => {
   it('3 entrées sur 9 h : jour complet inféré, 1 800 kcal', () => {
     const t = aggregateDay(day, [e('08:00', 500), e('12:00', 700), e('17:00', 600)]);
     expect(t.state).toBe('complete');
@@ -70,7 +70,7 @@ describe('aggregateDay : complétude (§ 15.2)', () => {
   });
 });
 
-describe('aggregateDay : déclaration prioritaire (D-74)', () => {
+describe('I4-01 : aggregateDay : déclaration prioritaire (D-74)', () => {
   it('déclaré complet avec une seule entrée : complete, origine declared', () => {
     const t = aggregateDay(day, [e('08:00', 800)], 'complete');
     expect(t.state).toBe('complete');
@@ -99,7 +99,7 @@ describe('aggregateDay : déclaration prioritaire (D-74)', () => {
   });
 });
 
-describe('aggregateDay : valeurs inconnues', () => {
+describe('I4-01 : aggregateDay : valeurs inconnues', () => {
   it('une entrée sans énergie rend le total inconnu et le jour inutilisable pour le TDEE', () => {
     const t = aggregateDay(day, [e('08:00', 500), e('12:00', null), e('17:00', 600)]);
     expect(t.state).toBe('complete');
@@ -125,7 +125,7 @@ describe('aggregateDay : valeurs inconnues', () => {
   });
 });
 
-describe('aggregateDays', () => {
+describe('I4-01 : aggregateDays', () => {
   it('produit un jour par date de la plage, inclusive, y compris les jours sans entrée', () => {
     const entries = [e('08:00', 500)];
     const list = aggregateDays('2026-09-07' as LocalDate, '2026-09-09' as LocalDate, entries, {
