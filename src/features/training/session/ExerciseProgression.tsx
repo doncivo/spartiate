@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent }
 import { DEFAULT_PROGRESSION_CONFIG } from '../../../domain/training/config';
 import { confidenceBand, confidencePercent, constraintAlerts, explainOption, explainPrescription, explanationNotes, type ExplanationKey, type OptionKey } from '../../../domain/training/explain';
 import { prescribe } from '../../../domain/training/prescribe';
+import { warmupForExercise, type WarmupSet } from '../../../domain/training/warmup';
 import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type Prescription, type ProgressionEquipment, type RepTarget } from '../../../domain/training/types';
 import type { WorkoutSet, WorkoutWithSets } from '../../../domain/training/session';
 import type { IsoDateTime } from '../../../domain/types';
@@ -24,6 +25,9 @@ import './Progression.css';
  * - Contraintes (I2-02) : alertes en texte et choix facultatifs (fatigue : −5 % ou −2 reps ; stagnation : variante, autre plage, mini-deload).
  *   Un choix ne remplit les séries qu'au geste d'Ali, tracé comme une modification ; « Accepter » garde la proposition, « Refuser » ne
  *   remplit rien. Deload manuel demandé par Ali (bascule) : la proposition allégée, une fois retenue, sort la séance des statistiques.
+ * - Échauffement (I2-03, § 13.8) : pour le premier exercice composé de son pattern (`warmup`), la rampe est annoncée sous la proposition
+ *   et insérée avant la première série de travail dans la même transaction que la décision, sur la charge retenue (Accepter, Modifier ou
+ *   un choix) ; jamais après un refus, jamais si l'exercice a déjà une série d'échauffement, jamais sans grille de charges connue.
  * - Ressenti Facile / Juste / Dur : écrit sur les séries de l'exercice (`setDifficulty`), un second appui l'efface ; état dit en texte et par
  *   `aria-pressed`, jamais par la couleur seule.
  */
@@ -37,6 +41,8 @@ export interface ExerciseProgressionProps {
   readonly exercise: Exercise | undefined;
   /** Profil de matériel actif de cet appareil. */
   readonly equipment: ProgressionEquipment | null;
+  /** I2-03 : premier exercice composé de son pattern dans la séance (rampe d'échauffement prévue). */
+  readonly warmup?: boolean;
   readonly clock: { nowMs(): number };
   /** Séance relue après une écriture (la base fait foi). */
   readonly onChanged: () => Promise<void>;
@@ -103,7 +109,10 @@ function targetOf(sets: readonly WorkoutSet[], exercise: Exercise | undefined): 
   return { sets: Math.max(1, work.length), repMin, repMax: Math.max(repMin, repMax), rir: null };
 }
 
-export function ExerciseProgression({ access, workout, exerciseId, sets, exercise, equipment, clock, onChanged }: ExerciseProgressionProps) {
+/** Rampe : « 25 kg × 8 · 37,5 kg × 5 · 50 kg × 2 ». */
+const rampText = (ramp: readonly WarmupSet[]): string => ramp.map((s) => tProgression('warmupStep', { load: kg(s.loadKg), reps: s.reps })).join(tProgression('warmupJoin'));
+
+export function ExerciseProgression({ access, workout, exerciseId, sets, exercise, equipment, clock, onChanged, warmup = false }: ExerciseProgressionProps) {
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -172,6 +181,12 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
   }, [ownDecision]);
 
   const difficulty = sets.map((s) => s.difficulty ?? null).find((d): d is Difficulty => d !== null) ?? null;
+  /** Rampe d'échauffement pour une charge retenue ; vide hors premier composé du pattern ou si l'exercice en a déjà une. */
+  const hasWarmup = sets.some((s) => s.setKind === 'warmup');
+  const rampFor = useCallback(
+    (loadKg: number): WarmupSet[] => (warmup && !hasWarmup && exercise !== undefined ? warmupForExercise(exercise, loadKg, equipment) : []),
+    [warmup, hasWarmup, exercise, equipment],
+  );
 
   /**
    * Décision tracée puis séries à faire encore vides remplies (même transaction). Rien n'est publié ni consigné au profil avant la clôture :
@@ -201,6 +216,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
             if (s.done || s.reps !== null || s.loadKg !== null) continue;
             await workouts.updateSet(s.id, { loadKg: chosen.loadKg, reps: chosen.reps[i] ?? null });
           }
+          // I2-03 : rampe sur la charge retenue, avant la première série de travail (rien si l'exercice en a déjà une).
+          const ramp = rampFor(chosen.loadKg);
+          if (ramp.length > 0) await workouts.addWarmupSets(workout.id, exerciseId, ramp);
         });
         setEditing(null);
         decided.current = true;
@@ -212,7 +230,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         if (live.current) setBusy(false);
       }
     },
-    [access, exerciseId, workout.id, prescription, load.status, sets, onChanged],
+    [access, exerciseId, workout.id, prescription, load.status, sets, onChanged, rampFor],
   );
 
   async function chooseDifficulty(value: Difficulty): Promise<void> {
@@ -262,6 +280,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     const value = p.status === 'unsupported' ? tProgression('noProposal') : p.loadKg === null ? tProgression('toEnter') : tProgression('value', { load: kg(p.loadKg), reps: repsText(p.sets.map((s) => s.reps)) });
     const proposed = p.status === 'prescribed' && p.loadKg !== null;
     const alerts = constraintAlerts(p);
+    const ramp = proposed && ownDecision === null && p.loadKg !== null ? rampFor(p.loadKg) : [];
     const options = p.options ?? [];
     return (
       <>
@@ -296,6 +315,12 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
                 {tProgression('refuse')}
               </Button>
             </div>
+            {ramp.length > 0 ? (
+              <div className="ct-progression__warmup">
+                <p className="ct-progression__sentence ct-session__num">{tProgression('warmupPreview', { ramp: rampText(ramp) })}</p>
+                <p className="ct-progression__hint">{tProgression('warmupHint')}</p>
+              </div>
+            ) : null}
             <p className="ct-progression__muted">{tProgression('decisionHint')}</p>
             {options.length > 0 ? (
               <div className="ct-progression__options" role="group" aria-label={tProgression('optionsTitle')}>

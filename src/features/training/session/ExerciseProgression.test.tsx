@@ -105,7 +105,9 @@ describe('décision d’Ali (critère 12)', () => {
     fireEvent.click(await within(p).findByRole('button', { name: 'Accepter' }));
     expect(await within(await proposal()).findByText('Proposition acceptée.')).toBeInTheDocument();
     expect(await loadInputs()).toEqual(['62,5', '62,5', '62,5']);
-    expect(within(await block()).getAllByLabelText('Répétitions').map((i) => (i as HTMLInputElement).value)).toEqual(['8', '8', '8']);
+    // I2-03 : les séries de travail ; la rampe d'échauffement insérée avant elles est vérifiée dans ExerciseWarmup.test.tsx.
+    expect((await workRows()).map((g) => (within(g).getByLabelText('Répétitions') as HTMLInputElement).value)).toEqual(['8', '8', '8']);
+    expect(within(await block()).getAllByRole('group', { name: 'Série d’échauffement' })).toHaveLength(3);
     expect(await decisions()).toEqual([{ accepted: 1, chosen_load_kg: 62.5, chosen_reps: '[8,8,8]', workout_id: CURRENT }]);
     expect(within(await proposal()).queryByRole('button', { name: 'Accepter' })).toBeNull();
   });

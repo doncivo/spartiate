@@ -401,6 +401,43 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       return rowToSet((await db.select<SetRow>('SELECT * FROM workout_set WHERE id = ?', [id]))[0] as SetRow);
     },
 
+    async addWarmupSets(workoutId, exerciseId, ramp) {
+      await requireOpen(workoutId);
+      for (const step of ramp) {
+        const entry = { reps: step.reps, loadKg: step.loadKg, durationSec: null, rir: null };
+        if (validateSetBounds(entry).length > 0) invalid('workout_set', workoutId);
+      }
+      const rows = await rawSets(workoutId);
+      const firstIndex = rows.findIndex((s) => s.exercise_id === exerciseId);
+      const first = rows[firstIndex];
+      if (!first) throw new RepositoryError('not-found', 'workout_set', exerciseId);
+      // Jamais en double : une série d'échauffement déjà présente (rampe insérée, séance copiée, choix d'Ali) l'emporte.
+      if (ramp.length === 0 || rows.some((s) => s.exercise_id === exerciseId && s.set_kind === 'warmup')) return [];
+      // Décale la première série de l'exercice et les suivantes, puis insère la rampe à leur place.
+      for (const row of rows.slice(firstIndex)) {
+        const stamp = stamper.next();
+        await db.execute('UPDATE workout_set SET position = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [row.position + ramp.length, stamp.at, stamp.deviceId, stamp.hlc, row.id]);
+      }
+      const created: string[] = [];
+      for (const [i, step] of ramp.entries()) {
+        const id = ids.next();
+        await insertSet(workoutId, id, first.position + i, {
+          exerciseId,
+          exerciseName: first.exercise_name,
+          setKind: 'warmup',
+          targetRepsMin: step.reps,
+          targetRepsMax: step.reps,
+          targetLoadKg: step.loadKg,
+          targetRestSec: null,
+        });
+        created.push(id);
+      }
+      await renumber(workoutId);
+      const out: WorkoutSet[] = [];
+      for (const id of created) out.push(await requireSetRow(id));
+      return out;
+    },
+
     async updateSet(setId, patch) {
       const row = await requireSet(setId);
       const kind = patch.setKind ?? (row.set_kind as SetKind);

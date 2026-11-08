@@ -126,14 +126,14 @@ describe('snap au matériel (critère 3)', () => {
     expect(warmupRamp(100, null)).toEqual([]);
     expect(warmupRamp(100, [])).toEqual([]);
     expect(warmupForExercise(LEG_PRESS, 100, FITNESS_PARK_ANTONY)).toEqual([]);
-    expect(warmupForExercise({ id: 'lat-pulldown', metric: 'load-reps', equipment: ['high-pulley'] }, 60, FITNESS_PARK_ANTONY)).toEqual([]);
+    expect(warmupForExercise({ metric: 'load-reps', equipment: ['high-pulley'] }, 60, FITNESS_PARK_ANTONY)).toEqual([]);
     expect(warmupForExercise(SWING, 24, FITNESS_PARK_ANTONY)).toEqual([]);
     expect(warmupForExercise(BENCH, 100, null)).toEqual([]);
   });
 
   it('exercice hors charge × répétitions (poids du corps, chrono) : aucune rampe', () => {
     expect(warmupForExercise(PUSH_UP, 100, FITNESS_PARK_ANTONY)).toEqual([]);
-    expect(warmupForExercise({ id: 'plank', metric: 'time', equipment: [] }, 60, FITNESS_PARK_ANTONY)).toEqual([]);
+    expect(warmupForExercise({ metric: 'time', equipment: [] }, 60, FITNESS_PARK_ANTONY)).toEqual([]);
   });
 
   it('warmupForExercise prend la grille du matériel de l’exercice (barre olympique d’Antony)', () => {

@@ -98,9 +98,17 @@ describe('WorkoutRepository.addWarmupSets', () => {
 
   it('clôture : rampes publiées avec la séance, restées `warmup` ; hors tonnage, records et écarts de routine ; vues comme échauffement par le moteur', async () => {
     db = await openBaseDb(DEVICE);
+    // Séance précédente identique au travail (50 kg × 8) : sans rampe comptée, aucun record possible.
+    const r = await db.data.repos.workouts();
+    await r.start({ source: 'empty', id: u(2), name: 'Avant' });
+    await r.addExercise(u(2), { exerciseId: 'row-barbell', exerciseName: 'Rowing', sets: 2 });
+    await r.addExercise(u(2), { exerciseId: 'bench-press-barbell', exerciseName: 'Développé couché', sets: 3 });
+    for (const s of (await r.get(u(2)))?.sets ?? []) await r.validateSet(s.id, { reps: 8, loadKg: 50 });
+    await db.data.transaction(async (repos) => (await repos.workouts()).close(u(2)));
+    await db.driver.execute('DELETE FROM sync_outbox');
+    db.clock.advance(86_400_000);
     await openWithTwoExercises();
     await db.data.transaction(async (repos) => (await repos.workouts()).addWarmupSets(W, 'bench-press-barbell', RAMP));
-    const r = await db.data.repos.workouts();
     for (const s of (await r.get(W))?.sets ?? []) {
       // Saisie pré-remplie depuis les cibles, comme le fait la ligne de série (`defaultEntry`).
       if (s.setKind === 'warmup') await r.validateSet(s.id, { reps: s.targetRepsMin, loadKg: s.targetLoadKg });
@@ -109,8 +117,8 @@ describe('WorkoutRepository.addWarmupSets', () => {
     const closed = await db.data.transaction(async (repos) => (await repos.workouts()).close(W));
     // 5 séries de travail × 8 × 50 kg = 2000 kg ; les rampes (40 × 8, 60 × 5, 80 × 2 = 780 kg) n'y sont pas.
     expect(closed.summary).toMatchObject({ validatedSets: 8, validatedWorkSets: 5, plannedSets: 8, tonnageKg: 2000 });
-    // La rampe à 80 kg dépasse le travail à 50 kg : jamais un record.
-    expect(closed.summary.records.filter((rec) => rec.value >= 80)).toEqual([]);
+    // La rampe à 80 kg dépasse le travail à 50 kg de la séance précédente : jamais un record.
+    expect(closed.summary.records).toEqual([]);
     expect(closed.routineDiff.hasChanges).toBe(false);
     expect(await db.driver.select("SELECT COUNT(*) AS n FROM sync_outbox WHERE table_name = 'workout_set'")).toEqual([{ n: 8 }]);
     const history = await (await db.data.repos.progression()).history('bench-press-barbell');
