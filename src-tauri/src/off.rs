@@ -81,6 +81,13 @@ impl Config {
         }
     }
 
+    /// Tests seulement : exige HTTPS comme en production (une base `http://` est alors refusée).
+    #[cfg(any(test, feature = "test-hooks"))]
+    pub fn with_https_only(mut self) -> Self {
+        self.https_only = true;
+        self
+    }
+
     pub fn base(&self) -> &Url {
         &self.base
     }
@@ -117,6 +124,8 @@ pub enum OffError {
         status: u16,
     },
     BadResponse,
+    /// Client HTTP ou TLS impossible à construire, ou schéma refusé : aucun texte dynamique.
+    Tls,
     InvalidInput,
 }
 
@@ -231,9 +240,11 @@ fn user_agent() -> String {
 fn redirect_policy() -> reqwest::redirect::Policy {
     reqwest::redirect::Policy::custom(|attempt| {
         let same_origin = attempt.previous().last().is_some_and(|last| {
-            last.host_str() == attempt.url().host_str() && last.scheme() == attempt.url().scheme()
+            last.host_str() == attempt.url().host_str()
+                && last.scheme() == attempt.url().scheme()
+                && last.port_or_known_default() == attempt.url().port_or_known_default()
         });
-        if same_origin && attempt.previous().len() < 2 {
+        if same_origin && attempt.previous().len() < 3 {
             attempt.follow()
         } else {
             attempt.stop()
@@ -320,7 +331,7 @@ impl OffClient {
 
     /// GET borné. `Ok(None)` : produit inconnu (404, seulement si `not_found_ok`). `Ok(Some(corps))` : réponse 2xx.
     async fn fetch(&self, url: Url, not_found_ok: bool) -> Result<Option<Vec<u8>>, OffError> {
-        let http = self.http.as_ref().ok_or(OffError::Offline)?;
+        let http = self.http.as_ref().ok_or(OffError::Tls)?;
         let mut response = http.get(url).send().await.map_err(map_send_error)?;
         let status = response.status();
         if status.as_u16() == 429 {
@@ -368,6 +379,8 @@ impl OffClient {
 fn map_send_error(error: reqwest::Error) -> OffError {
     if error.is_timeout() {
         OffError::Timeout
+    } else if error.is_builder() {
+        OffError::Tls
     } else {
         OffError::Offline
     }
@@ -380,6 +393,7 @@ fn log_failure(result: &Result<OffResult, OffError>) {
         Err(OffError::Offline) => crate::applog::write("off", "offline"),
         Err(OffError::Timeout) => crate::applog::write("off", "timeout"),
         Err(OffError::BadResponse) => crate::applog::write("off", "bad-response"),
+        Err(OffError::Tls) => crate::applog::write("off", "tls"),
         Err(OffError::RateLimited { .. }) => crate::applog::write_count("off", "rate-limited", 429),
         Err(OffError::Http { status }) => {
             crate::applog::write_count("off", "http", u32::from(*status));
