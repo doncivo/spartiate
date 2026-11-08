@@ -17,6 +17,7 @@ mod logic;
 mod notification_actions;
 mod ocr;
 mod ocr_vision;
+mod off;
 mod quit;
 mod restore;
 mod restore_hardening;
