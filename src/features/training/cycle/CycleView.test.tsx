@@ -173,6 +173,17 @@ describe('section Cycle (I3-02)', () => {
     ]);
   });
 
+  it('revue : un geste refusé par le domaine (horloge revenue avant la pause) est dit, jamais un bouton sans effet', async () => {
+    let r = await startCycle();
+    r = await later(5);
+    fireEvent.click(within(r).getByRole('button', { name: 'Mettre le programme en pause' }));
+    await within(r).findByRole('button', { name: 'Reprendre le programme' });
+    r = await later(-3);
+    fireEvent.click(within(r).getByRole('button', { name: 'Mettre le programme en pause' }));
+    expect(await within(r).findByRole('alert')).toHaveTextContent('Le cycle n’a pas pu être enregistré. Rien n’a changé.');
+    expect(JSON.parse((await cycles())[0]?.pauses ?? '[]')).toEqual([{ from: '2026-11-14', to: null, lightWeek: false }]);
+  });
+
   it('terminer le cycle en cours : bilan, puis « Terminer sans suite » : plus de cycle, rien d’effacé', async () => {
     const r = await startCycle();
     fireEvent.click(within(r).getByRole('button', { name: 'Terminer le cycle' }));

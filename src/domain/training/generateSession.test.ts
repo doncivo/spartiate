@@ -370,6 +370,9 @@ describe('critère 5 : budget temps (45 s par série + repos entre séries), ± 
     expect(deload.exercises.every((e) => e.rir === 4)).toBe(true);
     // Sans semaine : routine, aucun deload.
     expect(generateSession(input()).deload).toBe(false);
+    // Revue : en Libre, Ali choisit ses exercices et leur volume suit la semaine ; aucune série de priorité ajoutée.
+    const libre = generateSession(input({ week: { workingSets: null, rir: 1, setsOffset: 1, deload: false, priorityBonus: 1 } }, { mode: 'libre', priorities: ['chest'] }));
+    expect(sets(libre)).toEqual([4, 4, 4, 4, 4, 3, 3]);
   });
 });
 
