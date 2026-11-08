@@ -75,6 +75,20 @@ describe('BodyWeightRepository', () => {
     expect(await db.driver.select('SELECT id FROM body_weight')).toEqual([{ id: 'weight|2026-10-05|health' }]);
   });
 
+  it('saveHealth en import : une pesée supprimée reste supprimée et un échantillon plus ancien ne remplace pas le plus récent', async () => {
+    db = await openBaseDb(DEVICE);
+    const repository = await db.data.repos.bodyWeights();
+    const at = (iso: string) => iso as IsoDateTime;
+    await repository.saveHealth({ kg: 72.1, measuredAt: at('2026-10-05T05:45:00.000Z'), timezone: 'Europe/Paris', healthUuid: 'b' }, D1, { fromImport: true });
+    await repository.saveHealth({ kg: 99, measuredAt: at('2026-10-05T05:30:00.000Z'), timezone: 'Europe/Paris', healthUuid: 'a' }, D1, { fromImport: true });
+    expect(await db.driver.select('SELECT kg FROM body_weight')).toEqual([{ kg: 72.1 }]);
+    await repository.softDelete(D1, 'health');
+    await repository.saveHealth({ kg: 72.1, measuredAt: at('2026-10-05T05:45:00.000Z'), timezone: 'Europe/Paris', healthUuid: 'b' }, D1, { fromImport: true });
+    expect(await db.driver.select('SELECT deleted_at IS NOT NULL AS gone FROM body_weight')).toEqual([{ gone: 1 }]);
+    await repository.saveHealth({ kg: 72.1, measuredAt: at('2026-10-05T05:45:00.000Z'), timezone: 'Europe/Paris', healthUuid: 'b' }, D1);
+    expect(await db.driver.select('SELECT deleted_at IS NOT NULL AS gone FROM body_weight')).toEqual([{ gone: 0 }]);
+  });
+
   it('saveHealth refuse un poids invalide, un fuseau invalide ou un échantillon futur sans rien écrire', async () => {
     db = await openBaseDb(DEVICE);
     const repository = await db.data.repos.bodyWeights();

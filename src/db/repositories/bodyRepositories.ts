@@ -23,7 +23,7 @@ export interface BodyWeightRepository {
    */
   saveManual(input: ManualWeightInput & { readonly timezone: string }, today: LocalDate): Promise<BodyWeight>;
   /** Dernière pesée Santé du jour : conserve l'identité naturelle `weight|date|health` et l'identité de l'échantillon. */
-  saveHealth(input: { readonly kg: number; readonly measuredAt: IsoDateTime; readonly timezone: string; readonly healthUuid: string }, today: LocalDate): Promise<BodyWeight>;
+  saveHealth(input: { readonly kg: number; readonly measuredAt: IsoDateTime; readonly timezone: string; readonly healthUuid: string }, today: LocalDate, options?: { readonly fromImport?: boolean }): Promise<BodyWeight>;
   softDelete(date: LocalDate, source: WeightSource): Promise<void>;
   /** Pesées non supprimées, du jour le plus récent au plus ancien (à date égale : `measured_at` décroissant, puis origine). */
   listRecent(limit: number): Promise<BodyWeight[]>;
