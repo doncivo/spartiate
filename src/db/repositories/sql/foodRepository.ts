@@ -2,7 +2,7 @@ import type { WriteStamper } from '../../../domain/hlc';
 import { uuidGenerator, type IdGenerator } from '../../../domain/id';
 import { isValidBarcode, offCacheState, validateFoodDraft, validatePortion, type FoodDraft, type FoodSource, type OffCacheState } from '../../../domain/nutrition/food';
 import { isId, isIsoDateTime, type IsoDateTime } from '../../../domain/types';
-import type { SqlExecutor, SqlRow } from '../../driver';
+import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
 import { RepositoryError } from '../common';
 import type { FoodPatch, FoodRecord, FoodRepository, PortionInput, PortionRecord } from '../foodRepository';
 import { readSyncMeta, type SyncRow } from './sqlHelpers';
@@ -48,6 +48,8 @@ const fetchedMs = (row: FoodRow): number => (row.fetched_at !== null && isIsoDat
 const newestFirst = (a: FoodRow, b: FoodRow): number => (fetchedMs(a) === fetchedMs(b) ? (a.id < b.id ? -1 : a.id > b.id ? 1 : 0) : fetchedMs(b) - fetchedMs(a));
 
 export function createFoodRepository(db: SqlExecutor, stamper: WriteStamper, ids: IdGenerator = uuidGenerator): FoodRepository {
+  const atomic = <T>(work: (inTx: FoodRepository) => Promise<T>): Promise<T> | null =>
+    typeof (db as Partial<SqlDriver>).transaction === 'function' ? (db as SqlDriver).transaction((tx) => work(createFoodRepository(tx, stamper, ids))) : null;
   const readFood = async (id: string): Promise<FoodRow | undefined> => (await db.select<FoodRow>('SELECT * FROM food WHERE id = ?', [id]))[0];
   const liveFood = async (id: string): Promise<FoodRow> => {
     const row = await readFood(id);
@@ -134,6 +136,9 @@ export function createFoodRepository(db: SqlExecutor, stamper: WriteStamper, ids
     },
 
     async softDelete(id) {
+      // Fiche et portions : sur le driver, une seule transaction ; dans `DataAccess.transaction`, écrit directement.
+      const outer = atomic((r) => r.softDelete(id));
+      if (outer) return outer;
       await liveFood(id);
       const stamp = stamper.next();
       await db.execute('UPDATE food_portion SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE food_id = ? AND deleted_at IS NULL', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);

@@ -21,7 +21,7 @@ export interface SearchableFood {
 export function normalizeText(text: string): string {
   return text
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(new RegExp('[\\u0300-\\u036f]', 'g'), '')
     .toLowerCase()
     .replace(/œ/g, 'oe')
     .replace(/æ/g, 'ae')
@@ -61,5 +61,7 @@ export function searchFoods(query: string, foods: readonly SearchableFood[], opt
       (a.name < b.name ? -1 : a.name > b.name ? 1 : 0) ||
       (a.food.ref < b.food.ref ? -1 : a.food.ref > b.food.ref ? 1 : 0),
   );
-  return hits.slice(0, options.limit ?? 50).map((h) => h.food);
+  const requested = options.limit ?? 50;
+  const limit = Number.isNaN(requested) ? 0 : Math.max(0, Math.floor(requested));
+  return hits.slice(0, limit).map((h) => h.food);
 }
