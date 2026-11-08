@@ -188,7 +188,7 @@ export type CheckInDecision =
 export type CheckInWarning = 'below-floor' | 'protein-out-of-range' | 'fat-below-min' | 'beyond-weekly-delta';
 
 export interface CheckInOutcome {
-  readonly action: CheckInAction | 'rejected';
+  readonly action: CheckInAction | 'rejected' | 'confirmation-required';
   /** Cible à enregistrer ; `null` si la décision est rejetée ou s'il n'y a pas de cible. */
   readonly target: Target | null;
   /** `nutrition_target.source` : `accepted` (proposition telle quelle) ou `manual` (modifiée par Ali) ; `null` si rien n'est enregistré. */
@@ -204,11 +204,16 @@ const validTarget = (t: Target): boolean =>
   t.kcal > 0 &&
   [t.proteinG, t.fatG, t.carbG].every((g) => Number.isFinite(g) && g >= 0);
 
-/** Applique la décision d'Ali : il a le dernier mot, ses valeurs hors règles sont conservées et signalées, jamais corrigées. */
+/**
+ * Applique la décision d'Ali : il a le dernier mot, ses valeurs hors règles sont conservées et signalées, jamais corrigées, SAUF le
+ * plancher du § 15.2 : sous 800 kcal rejeté, sous 1 200 kcal « confirmation requise » tant que `lowFloorConfirmed` n'est pas donné.
+ */
 export function resolveCheckIn(input: {
   readonly proposal: Proposal;
   readonly currentTarget: Target | null;
   readonly weightKg: number;
+  /** Ali a confirmé explicitement une cible sous 1 200 kcal (§ 15.2). */
+  readonly lowFloorConfirmed: boolean;
   readonly decision: CheckInDecision;
 }): CheckInOutcome {
   const { proposal, currentTarget, decision } = input;
@@ -219,10 +224,13 @@ export function resolveCheckIn(input: {
   if (decision.action === 'refuse') {
     return { action: 'refuse', target: currentTarget, source: null, retryable: true, proposedTarget, warnings: [] };
   }
-  if (!validTarget(decision.target)) {
+  if (!validTarget(decision.target) || decision.target.kcal < NUTRITION_CONFIG.confirmedFloorKcal) {
     return { action: 'rejected', target: null, source: null, retryable: true, proposedTarget, warnings: [] };
   }
   const t = decision.target;
+  if (t.kcal < NUTRITION_CONFIG.floorKcal && !input.lowFloorConfirmed) {
+    return { action: 'confirmation-required', target: null, source: null, retryable: true, proposedTarget, warnings: ['below-floor'] };
+  }
   const { min, max } = proteinRange(input.weightKg);
   const warnings: CheckInWarning[] = [];
   if (t.kcal < NUTRITION_CONFIG.floorKcal) warnings.push('below-floor');
