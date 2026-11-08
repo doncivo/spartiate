@@ -2,6 +2,12 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.8.1
+
+- **Favoris** (Nutrition → Rechercher un aliment) : une étoile sur la fiche d’un aliment (Ciqual, Open Food Facts ou perso) l’ajoute aux favoris, qui s’affichent en tête de la recherche, avant les récents. **Les favoris restent sur l’appareil où tu les as posés** (ni synchro, ni export) : réglage par défaut proposé cette nuit (D-79), révisable. Un favori dont l’aliment n’existe plus disparaît sans message.
+- **Restauration d’une sauvegarde** : correctif de fond. Les déclencheurs qui alimentent la synchro (repas, séances, cycle…) sont recréés après une restauration ; sans eux, ce que tu saisissais ensuite ne partait pas vers l’autre appareil.
+- Ménage : règle du premier check-in déplacée dans le domaine, mesure de démarrage conservée par la CI. Pas de mise à jour de la base (reste en version 8).
+
 ## 0.8.0
 
 - **Open Food Facts et scan de code-barres** (Nutrition → Journal → Rechercher un aliment). **Scanner** (iPhone) lit EAN-13, EAN-8 et UPC ; un champ **Code-barres** permet de saisir le code à la main (PC et iPhone). **Chercher en ligne** interroge Open Food Facts, seulement quand tu appuies dessus (jamais à la frappe).
