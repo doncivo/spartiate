@@ -6,8 +6,11 @@ import { formatKg } from '../../i18n/bodyText';
 import { formatHealthTime, tHealth } from '../../i18n/healthText';
 import { healthKit as platformHealthKit, type HealthKit, type HealthKitAvailability, type HealthKitBodyMass, type HealthKitDiagnostic, type HealthKitRead, type HealthKitStepCount, isMissingHealthKitEntitlement } from '../../platform/healthkit';
 import { logFailure } from '../../platform/desktop/log';
+import { parseShortcutWeights } from '../../domain/health/shortcutWeights';
+import { detectTimeZone } from '../../platform/timeZone';
 import { Button, Icon, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
+import { RepositoryError } from '../../db/repositories/common';
 import { useNavigationStore } from '../app/navigation';
 import './BodyScreen.css';
 
@@ -136,6 +139,8 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
           {phase === 'read' && <p className="ct-body__hint">{tHealth('askedNote')}</p>}
         </section>
 
+        {blocked && <ShortcutImport />}
+
         {reads && (
           <>
             <section className="ct-body__card" aria-label={tHealth('sectionWeight')}>
@@ -161,6 +166,65 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * D-69 : import du fichier écrit par le raccourci « Spartiate — poids » (Santé → Raccourcis → iCloud Drive). Une pesée par jour, la plus
+ * récente, enregistrée par `saveHealth` (identité `health`, idempotente) : un même fichier réimporté ne change rien, la saisie manuelle du
+ * jour est conservée. Rien n'est envoyé ailleurs.
+ */
+function ShortcutImport() {
+  const container = useAppContainer();
+  const [state, setState] = useState<{ readonly kind: 'idle' | 'busy' } | { readonly kind: 'done' | 'empty' | 'error'; readonly text: string }>({ kind: 'idle' });
+
+  async function importFile(): Promise<void> {
+    setState({ kind: 'busy' });
+    try {
+      const picked = await container.files.pickText({ accept: ['.csv', '.txt', 'text/csv', 'text/plain'], maxBytes: 512 * 1024 });
+      if (picked === null) return setState({ kind: 'idle' });
+      const today = todayLocal(container.clock);
+      const parsed = parseShortcutWeights(picked.text, today);
+      if (parsed.weights.length === 0) return setState({ kind: 'empty', text: tHealth('shortcutEmpty', { count: parsed.rejected }) });
+      const timezone = detectTimeZone() ?? 'Europe/Paris';
+      // Une ligne refusée par le dépôt (jour recalculé dans le fuseau de l'appareil, donc futur) ne fait pas échouer le fichier : comptée.
+      let refused = 0;
+      await container.data.transaction(async (repos) => {
+        const weights = await repos.bodyWeights();
+        for (const w of parsed.weights) {
+          try {
+            await weights.saveHealth({ kg: w.kg, measuredAt: w.measuredAt as IsoDateTime, timezone, healthUuid: `raccourcis:${w.measuredAt}` }, today, { fromImport: true });
+          } catch (error) {
+            if (!(error instanceof RepositoryError)) throw error;
+            refused += 1;
+          }
+        }
+      });
+      const imported = parsed.weights.length - refused;
+      const totalRejected = parsed.rejected + refused;
+      const rejected = totalRejected > 0 ? tHealth('shortcutRejected', { count: totalRejected }) : '';
+      if (imported === 0) return setState({ kind: 'empty', text: tHealth('shortcutEmpty', { count: totalRejected }) });
+      const done = imported === 1 ? tHealth('shortcutDoneOne', { rejected }) : tHealth('shortcutDoneMany', { count: imported, rejected });
+      setState({ kind: 'done', text: done + (parsed.truncated ? tHealth('shortcutTruncated') : '') });
+    } catch (error) {
+      logFailure('healthkit', { code: 'shortcut-import-failed', message: error instanceof Error ? error.name : 'inconnu' });
+      setState({ kind: 'error', text: tHealth('shortcutFailed') });
+    }
+  }
+
+  return (
+    <section className="ct-body__card" aria-label={tHealth('shortcutTitle')}>
+      <h2 className="ct-body__section">{tHealth('shortcutTitle')}</h2>
+      <p className="ct-body__hint">{tHealth('shortcutHint')}</p>
+      <Button className="ct-body__save" disabled={state.kind === 'busy'} onClick={() => void importFile()}>
+        {state.kind === 'busy' ? tHealth('shortcutImporting') : tHealth('shortcutImport')}
+      </Button>
+      {'text' in state && (
+        <p className="ct-body__message" role={state.kind === 'done' ? 'status' : 'alert'}>
+          {state.text}
+        </p>
+      )}
+    </section>
   );
 }
 
