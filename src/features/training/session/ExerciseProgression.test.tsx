@@ -57,7 +57,9 @@ async function seedCurrent(): Promise<void> {
 }
 const block = async () => screen.findByRole('region', { name: BENCH });
 const proposal = async () => within(await block()).findByRole('group', { name: 'Proposition' });
-const loadInputs = async () => within(await block()).getAllByLabelText('Charge (kg)').map((i) => (i as HTMLInputElement).value);
+/** I2-03 : séries de TRAVAIL seulement (« Série n ») ; les rampes d'échauffement sont vérifiées dans ExerciseWarmup.test.tsx. */
+const workRows = async () => within(await block()).getAllByRole('group', { name: /^Série \d+$/ });
+const loadInputs = async () => (await workRows()).map((g) => (within(g).getByLabelText('Charge (kg)') as HTMLInputElement).value);
 const decisions = () => db.driver.select<{ accepted: number; chosen_load_kg: number | null; chosen_reps: string; workout_id: string }>('SELECT accepted, chosen_load_kg, chosen_reps, workout_id FROM recommendation_decision ORDER BY decided_at');
 
 beforeEach(async () => {
@@ -103,7 +105,9 @@ describe('décision d’Ali (critère 12)', () => {
     fireEvent.click(await within(p).findByRole('button', { name: 'Accepter' }));
     expect(await within(await proposal()).findByText('Proposition acceptée.')).toBeInTheDocument();
     expect(await loadInputs()).toEqual(['62,5', '62,5', '62,5']);
-    expect(within(await block()).getAllByLabelText('Répétitions').map((i) => (i as HTMLInputElement).value)).toEqual(['8', '8', '8']);
+    // I2-03 : les séries de travail ; la rampe d'échauffement insérée avant elles est vérifiée dans ExerciseWarmup.test.tsx.
+    expect((await workRows()).map((g) => (within(g).getByLabelText('Répétitions') as HTMLInputElement).value)).toEqual(['8', '8', '8']);
+    expect(within(await block()).getAllByRole('group', { name: 'Série d’échauffement' })).toHaveLength(3);
     expect(await decisions()).toEqual([{ accepted: 1, chosen_load_kg: 62.5, chosen_reps: '[8,8,8]', workout_id: CURRENT }]);
     expect(within(await proposal()).queryByRole('button', { name: 'Accepter' })).toBeNull();
   });
@@ -236,10 +240,11 @@ describe('revue #61 (B) : recalibrage « Facile » consigné à la clôture', ()
     fireEvent.click(await within(await proposal()).findByRole('button', { name: 'Accepter' }));
     await within(await proposal()).findByText('Proposition acceptée.');
     for (let i = 0; i < 3; i += 1) {
-      const button = (await within(await block()).findAllByRole('button', { name: 'Valider la série' }))[0];
+      const workButtons = async () => (await workRows()).flatMap((g) => within(g).queryAllByRole('button', { name: 'Valider la série' }));
+      const button = (await workButtons())[0];
       if (!button) throw new Error('série');
       fireEvent.click(button);
-      await waitFor(async () => expect(within(await block()).queryAllByRole('button', { name: 'Valider la série' })).toHaveLength(2 - i));
+      await waitFor(async () => expect(await workButtons()).toHaveLength(2 - i));
     }
     fireEvent.click(screen.getByRole('button', { name: 'Terminer la séance' }));
     await waitFor(async () => expect((await profiles())[0]?.last_easy_recalibration_at).not.toBeNull());

@@ -44,6 +44,12 @@ export interface AddSetOptions {
   readonly setKind?: SetKind;
 }
 
+/** Série d'une rampe d'échauffement (I2-03) : charge et répétitions cibles. */
+export interface WarmupStepInput {
+  readonly loadKg: number;
+  readonly reps: number;
+}
+
 /** Saisie fournie à la validation : les champs omis gardent leur valeur actuelle (jamais la cible). */
 export type SetEntryInput = Partial<SetEntry>;
 
@@ -76,6 +82,13 @@ export interface WorkoutRepository {
   removeExercise(workoutId: string, exerciseId: string): Promise<WorkoutWithSets>;
   /** Ajoute une série après la dernière de l'exercice (qui doit déjà figurer dans la séance). */
   addSet(workoutId: string, exerciseId: string, options?: AddSetOptions): Promise<WorkoutSet>;
+  /**
+   * I2-03 (§ 13.8) : rampe d'échauffement insérée avant la première série de l'exercice dans la séance OUVERTE, en séries `warmup` à faire
+   * (cibles : charge, répétitions min = max ; aucune saisie ; aucun repos programmé). L'exercice a déjà une série d'échauffement, ou rampe
+   * vide : rien n'est écrit, `[]`. Séance absente ou exercice absent : `'not-found'` ; close ou valeur hors bornes : `'invalid'`. Plusieurs
+   * écritures : à appeler dans `DataAccess.transaction`.
+   */
+  addWarmupSets(workoutId: string, exerciseId: string, ramp: readonly WarmupStepInput[]): Promise<readonly WorkoutSet[]>;
   /** Corrige la saisie ou le type d'une série sans changer `done`. */
   updateSet(setId: string, patch: SetPatch): Promise<WorkoutSet>;
   /** Valide la série : écrit `done = 1` et `done_at` avec la saisie fusionnée ; refusée (`'invalid'`) si la saisie ne passe pas `validateSetEntry`. */
