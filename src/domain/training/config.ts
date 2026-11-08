@@ -152,6 +152,18 @@ export const PRESCRIPTION_HEADLINES: readonly PrescriptionHeadline[] = [
   'recovery-low',
 ];
 
+/** Étape d'une rampe d'échauffement : fraction de la charge de travail et répétitions (arrondies en dessous à l'usage). */
+export interface WarmupStep {
+  readonly ratio: number;
+  readonly reps: number;
+}
+
+/**
+ * Rampe d'échauffement (PRD § 13.8 ; I2-03 ; D-72 point 11) : 40 % × 8, 60 % × 5, 80 % × 2 de la charge de travail. Hors moteur de
+ * prescription (aucune proposition de travail n'en dépend) : la modifier ne change pas `ENGINE_VERSION`.
+ */
+export const WARMUP_STEPS: readonly WarmupStep[] = Object.freeze([Object.freeze({ ratio: 0.4, reps: 8 }), Object.freeze({ ratio: 0.6, reps: 5 }), Object.freeze({ ratio: 0.8, reps: 2 })]);
+
 /** Ordre stable des choix facultatifs : fatigue (charge, puis répétitions), puis stagnation (variante, plage, mini-deload). */
 export const PROPOSAL_OPTION_ORDER: readonly ProposalOptionKind[] = ['fatigue-load', 'fatigue-reps', 'stall-variant', 'stall-range', 'stall-mini-deload'];
 
