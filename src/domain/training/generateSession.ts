@@ -96,6 +96,7 @@ export function generateSession(input: GenerateSessionInput): GeneratedSession {
     rotationPeriod: 0,
     estimatedSec: 0,
     budgetSec: null,
+    deload: false,
     generationVersion: GENERATION_VERSION,
   });
 
@@ -200,8 +201,17 @@ export function generateSession(input: GenerateSessionInput): GeneratedSession {
   }
 
   // 6. Volume de la semaine (I3-02) ou de la routine.
+  // I3-02 : écart de séries par ligne (`setsOffset`) et une série de priorité au premier exercice de chaque groupe prioritaire (D-73 point 8).
   const weekSets = input.week?.workingSets ?? null;
-  for (const slot of slots) slot.sets = Math.min(SETS_MAX, Math.max(1, Math.round(weekSets ?? slot.line.sets)));
+  const offset = input.week?.setsOffset ?? 0;
+  const bonus = Math.min(Math.max(0, input.week?.priorityBonus ?? 0), config.prioritySetDelta);
+  const bonusGroups = new Set<string>();
+  for (const slot of slots) {
+    const group = groupOf(slot.chosen);
+    const first = bonus > 0 && group !== null && priorities.has(group) && !bonusGroups.has(group);
+    if (first) bonusGroups.add(group);
+    slot.sets = Math.min(SETS_MAX, Math.max(1, Math.round(weekSets ?? slot.line.sets + offset) + (first ? bonus : 0)));
+  }
   const rirOf = (slot: Slot): number | null => input.week?.rir ?? slot.line.rir;
   const estimate = (slot: Slot): number => estimateExerciseSec(slot.sets, slot.line.restSec, config);
   const total = (): number => slots.reduce((sum, s) => sum + estimate(s), 0);
@@ -285,6 +295,7 @@ export function generateSession(input: GenerateSessionInput): GeneratedSession {
     rotationPeriod: period,
     estimatedSec: exercises.reduce((sum, e) => sum + e.estimatedSec, 0),
     budgetSec,
+    deload: input.week?.deload === true,
     generationVersion: GENERATION_VERSION,
   };
 }

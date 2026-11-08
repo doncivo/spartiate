@@ -10,6 +10,7 @@ import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { ProgressionProfileRecord, RecommendationDecisionRecord } from '../../../db/repositories/progressionRepository';
 import { tProgression, type ProgressionTextKey } from '../../../i18n/progressionText';
 import { Button } from '../../../ui';
+import { loadCurrentCycle, localDayOf } from '../cycle/currentCycle';
 import './Progression.css';
 
 /**
@@ -25,6 +26,7 @@ import './Progression.css';
  * - Contraintes (I2-02) : alertes en texte et choix facultatifs (fatigue : −5 % ou −2 reps ; stagnation : variante, autre plage, mini-deload).
  *   Un choix ne remplit les séries qu'au geste d'Ali, tracé comme une modification ; « Accepter » garde la proposition, « Refuser » ne
  *   remplit rien. Deload manuel demandé par Ali (bascule) : la proposition allégée, une fois retenue, sort la séance des statistiques.
+ *   I3-02 : séance commencée en semaine de deload du cycle suivi : la bascule est activée par défaut (dit en texte), désactivable.
  * - Échauffement (I2-03, § 13.8) : pour le premier exercice composé de son pattern (`warmup`), la rampe est annoncée sous la proposition
  *   et insérée avant la première série de travail dans la même transaction que la décision, sur la charge retenue (Accepter, Modifier ou
  *   un choix) ; jamais après un refus, jamais si l'exercice a déjà une série d'échauffement, jamais sans grille de charges connue.
@@ -55,6 +57,8 @@ interface Loaded {
   /** Décision prise dans cette séance (état affiché à la place des boutons). */
   readonly own: RecommendationDecisionRecord | null;
   readonly profile: ProgressionProfileRecord | null;
+  /** I3-02 : la séance a commencé en semaine de deload du cycle suivi. */
+  readonly cycleDeload: boolean;
 }
 
 type Load = { readonly status: 'loading' } | { readonly status: 'error' } | ({ readonly status: 'ready' } & Loaded);
@@ -120,6 +124,8 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
   const [editing, setEditing] = useState<{ readonly load: string; readonly reps: string } | null>(null);
   /** Deload manuel demandé pour cette séance (I2-02) : rien n'est écrit avant une décision. */
   const [deload, setDeload] = useState(false);
+  /** I3-02 : deload du cycle déjà proposé (le choix d'Ali n'est plus écrasé aux rechargements). */
+  const cyclePreset = useRef(false);
   const live = useRef(true);
   const editLoad = useRef<HTMLInputElement>(null);
   const stateLine = useRef<HTMLParagraphElement>(null);
@@ -131,8 +137,21 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     void (async () => {
       try {
         const repo = await access.repos.progression();
-        const [history, reference, own, profile] = await Promise.all([repo.history(exerciseId), repo.lastDecision(exerciseId), repo.decisionFor(workout.id, exerciseId), repo.getProfile(exerciseId)]);
-        if (live.current) setLoad({ status: 'ready', history, reference, own, profile });
+        const [history, reference, own, profile, cycle] = await Promise.all([
+          repo.history(exerciseId),
+          repo.lastDecision(exerciseId),
+          repo.decisionFor(workout.id, exerciseId),
+          repo.getProfile(exerciseId),
+          loadCurrentCycle(access, localDayOf(Date.parse(workout.startedAt))),
+        ]);
+        const cycleDeload = cycle !== null && cycle.state.phase === 'active' && cycle.state.kind === 'deload';
+        if (!live.current) return;
+        // I3-02 : en semaine de deload du cycle, le deload est proposé par défaut (une fois, au premier chargement ; désactivable).
+        if (cycleDeload && !cyclePreset.current) {
+          cyclePreset.current = true;
+          setDeload(true);
+        }
+        setLoad({ status: 'ready', history, reference, own, profile, cycleDeload });
       } catch {
         if (live.current) setLoad({ status: 'error' });
       }
@@ -140,7 +159,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     return () => {
       live.current = false;
     };
-  }, [access, exerciseId, workout.id, attempt]);
+  }, [access, exerciseId, workout.id, workout.startedAt, attempt]);
 
   useEffect(() => {
     if (editing !== null) editLoad.current?.focus();
@@ -356,6 +375,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
             <p className="ct-progression__muted" aria-live="polite">
               {tProgression(deload ? 'deloadOn' : 'deloadOff')}
             </p>
+            {load.status === 'ready' && load.cycleDeload ? <p className="ct-progression__muted">{tProgression('cycleDeloadNote')}</p> : null}
           </div>
         ) : null}
         {editing !== null && ownDecision === null ? (

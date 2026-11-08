@@ -45,6 +45,7 @@ export const syncVersionFr = {
     workoutSet: 'séries de séance',
     progressionProfile: 'profils de progression',
     recommendationDecision: 'décisions sur les propositions',
+    mesocycle: 'cycles d’entraînement',
     other: 'autres éléments',
   },
 } as const;

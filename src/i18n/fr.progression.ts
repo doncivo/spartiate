@@ -53,6 +53,7 @@ export const progressionFr = {
   chooseLabel: 'Choisir : {option}',
   optionsHint: 'Facultatif : « Accepter » garde la proposition, « Refuser » ne remplit rien.',
   deloadToggle: 'Deload pour cette séance',
+  cycleDeloadNote: 'Semaine de deload du cycle : le deload est proposé par défaut, à accepter ou non.',
   deloadOn: 'Deload demandé : proposition allégée, séries hors statistiques une fois retenues.',
   deloadOff: 'Pas de deload pour cette séance.',
   accept: 'Accepter',

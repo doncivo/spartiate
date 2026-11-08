@@ -69,7 +69,7 @@ describe('migration 0006 : progression_sync (I2-01, PR 2/2)', () => {
     await insertProfile(db);
     await insertDecision(db);
     expect(await technical(db)).toEqual([]);
-    const report = await migrate(db, migrations);
+    const report = await migrate(db, migrations.slice(0, 6));
     expect(report.applied).toEqual([6]);
     expect(await db.select('SELECT difficulty FROM workout_set')).toEqual([{ difficulty: null }]);
     expect(await outbox(db)).toEqual([{ table_name: 'progression_profile', row_id: P, field: '*' }]);

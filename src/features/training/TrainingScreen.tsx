@@ -13,12 +13,14 @@ import './TrainingScreen.css';
 
 /** Journal des séances (I1-03) : bloc à la demande, chargé à l'ouverture de la section. */
 const HistoryView = lazy(() => import('./history/HistoryView').then((m) => ({ default: m.HistoryView })));
+/** Cycle d'entraînement (I3-02) : bloc à la demande, chargé à l'ouverture de la section, avec son catalogue de textes. */
+const CycleView = lazy(() => import('./cycle/CycleView').then((m) => ({ default: m.CycleView })));
 
 /**
  * Onglet Entraînement (I1-01) : accueil à trois sections, Routines (par défaut), Bibliothèque et Matériel, comme la barre de sections des
  * maquettes iPhone-Routine et PC-Materiel. Chargé à la demande avec ses textes et le contenu embarqué. I1-02 : carte « Séance » en tête
  * (commencer, ou reprendre la séance ouverte) et écran de séance active (`screen: 'session'`). I1-03 : section « Journal » (séances closes,
- * détail, correction, suppression), chargée à la demande.
+ * détail, correction, suppression), chargée à la demande. I3-02 : section « Cycle » (mésocycle, pause, bilan), chargée à la demande.
  */
 export function TrainingScreen({ session }: { readonly session?: SessionPlatform } = {}) {
   const container = useAppContainer();
@@ -70,6 +72,7 @@ export function TrainingScreen({ session }: { readonly session?: SessionPlatform
             { value: 'library', label: tTraining('sectionLibrary') },
             { value: 'equipment', label: tTraining('sectionEquipment') },
             { value: 'history', label: tTraining('sectionHistory') },
+            { value: 'cycle', label: tTraining('sectionCycle') },
           ]}
         />
         {state.status === 'loading' ? (
@@ -94,6 +97,16 @@ export function TrainingScreen({ session }: { readonly session?: SessionPlatform
             }
           >
             <HistoryView data={state.data} access={container.data} />
+          </Suspense>
+        ) : current === 'cycle' ? (
+          <Suspense
+            fallback={
+              <p className="ct-training__muted" role="status">
+                {tTraining('loading')}
+              </p>
+            }
+          >
+            <CycleView access={container.data} />
           </Suspense>
         ) : current === 'equipment' ? (
           <EquipmentView data={state.data} access={container.data} ids={container.ids} reload={reload} />

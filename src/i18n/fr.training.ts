@@ -333,6 +333,8 @@ export const trainingFr = {
 
   // Journal des séances (I1-03)
   sectionHistory: 'Journal',
+  /** I3-02 : section Cycle (mésocycle), chargée à la demande. */
+  sectionCycle: 'Cycle',
   historyTitle: 'Séances terminées',
   historyEmpty: 'Aucune séance terminée pour l’instant. Termine une séance pour la retrouver ici, avec ses séries et son volume.',
   historyOpen: 'Ouvrir « {name} »',

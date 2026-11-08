@@ -5,7 +5,7 @@
 //! à régénérer avec ce test si la migration 0011 change (jamais, une migration publiée ne se modifie plus) ou si un déclencheur est ajouté.
 
 /// (nom, table, SQL) de chaque déclencheur, triés par nom.
-pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 72] = [
+pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 74] = [
     (
         "search_checklist_ad",
         "checklist",
@@ -1180,6 +1180,154 @@ INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'exercise', NEW.id, '
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'holiday', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'holiday' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'holiday', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
+     END"##,
+    ),
+    (
+        "sync_mesocycle_ai",
+        "mesocycle",
+        r##"CREATE TRIGGER sync_mesocycle_ai AFTER INSERT ON mesocycle
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+       DELETE FROM sync_tombstone WHERE table_name = 'mesocycle' AND row_id = NEW.id;
+       DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*';
+       INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('mesocycle', NEW.id, '*');
+     END"##,
+    ),
+    (
+        "sync_mesocycle_au",
+        "mesocycle",
+        r##"CREATE TRIGGER sync_mesocycle_au AFTER UPDATE ON mesocycle
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+         SELECT 'mesocycle', NEW.id, '*', OLD.hlc, NULL
+         WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*');
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'routine_id', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('routine_id', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'routine_id')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'routine_id'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.routine_id IS NOT NEW.routine_id
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'routine_id' AND OLD.routine_id IS NOT NEW.routine_id;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'routine_id' WHERE OLD.routine_id IS NOT NEW.routine_id;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'start_date', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('start_date', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'start_date')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'start_date'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.start_date IS NOT NEW.start_date
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'start_date' AND OLD.start_date IS NOT NEW.start_date;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'start_date' WHERE OLD.start_date IS NOT NEW.start_date;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'weeks', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('weeks', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'weeks')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'weeks'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.weeks IS NOT NEW.weeks
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'weeks' AND OLD.weeks IS NOT NEW.weeks;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'weeks' WHERE OLD.weeks IS NOT NEW.weeks;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'unlimited', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('unlimited', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'unlimited')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'unlimited'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.unlimited IS NOT NEW.unlimited
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'unlimited' AND OLD.unlimited IS NOT NEW.unlimited;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'unlimited' WHERE OLD.unlimited IS NOT NEW.unlimited;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'deload_week', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('deload_week', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'deload_week')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'deload_week'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.deload_week IS NOT NEW.deload_week
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'deload_week' AND OLD.deload_week IS NOT NEW.deload_week;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'deload_week' WHERE OLD.deload_week IS NOT NEW.deload_week;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'block_origin_week', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('block_origin_week', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'block_origin_week')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'block_origin_week'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.block_origin_week IS NOT NEW.block_origin_week
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'block_origin_week' AND OLD.block_origin_week IS NOT NEW.block_origin_week;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'block_origin_week' WHERE OLD.block_origin_week IS NOT NEW.block_origin_week;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'block_origin_index', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('block_origin_index', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'block_origin_index')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'block_origin_index'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.block_origin_index IS NOT NEW.block_origin_index
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'block_origin_index' AND OLD.block_origin_index IS NOT NEW.block_origin_index;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'block_origin_index' WHERE OLD.block_origin_index IS NOT NEW.block_origin_index;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'rotation_index', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('rotation_index', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'rotation_index')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'rotation_index'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.rotation_index IS NOT NEW.rotation_index
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'rotation_index' AND OLD.rotation_index IS NOT NEW.rotation_index;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'rotation_index' WHERE OLD.rotation_index IS NOT NEW.rotation_index;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'pauses', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('pauses', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'pauses')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'pauses'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.pauses IS NOT NEW.pauses
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'pauses' AND OLD.pauses IS NOT NEW.pauses;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'pauses' WHERE OLD.pauses IS NOT NEW.pauses;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'status', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('status', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'status')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'status'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.status IS NOT NEW.status
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'status' AND OLD.status IS NOT NEW.status;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'status' WHERE OLD.status IS NOT NEW.status;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'outcome', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('outcome', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'outcome')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'outcome'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.outcome IS NOT NEW.outcome
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'outcome' AND OLD.outcome IS NOT NEW.outcome;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'outcome' WHERE OLD.outcome IS NOT NEW.outcome;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'ended_on', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('ended_on', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'ended_on')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'ended_on'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.ended_on IS NOT NEW.ended_on
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'ended_on' AND OLD.ended_on IS NOT NEW.ended_on;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'ended_on' WHERE OLD.ended_on IS NOT NEW.ended_on;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'created_at', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('created_at', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'created_at')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'created_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.created_at IS NOT NEW.created_at
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'created_at' AND OLD.created_at IS NOT NEW.created_at;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'created_at' WHERE OLD.created_at IS NOT NEW.created_at;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'deleted_at', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('deleted_at', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'deleted_at')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'deleted_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.deleted_at IS NOT NEW.deleted_at
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'deleted_at' AND OLD.deleted_at IS NOT NEW.deleted_at;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
+       DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
+       INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
      END"##,
     ),
     (
@@ -3067,6 +3215,8 @@ pub fn introduced_in(name: &str) -> u32 {
         | "sync_recommendation_decision_au"
         | "sync_workout_set_difficulty_au"
         | "sync_workout_close_decisions_au" => 6,
+        // I3-02 (migration 0007) : publication des cycles d'entraînement ; une base de version 6 ou moins n'en a aucun.
+        "sync_mesocycle_ai" | "sync_mesocycle_au" => 7,
         _ => 1,
     }
 }
