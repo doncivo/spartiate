@@ -70,6 +70,14 @@ describe('MesocycleRepository (I3-02)', () => {
     expect(await db.driver.select('SELECT * FROM mesocycle')).toEqual(before);
   });
 
+  it('revue : routine suivie non UUID refusée (la synchro la refuserait à la réception : divergence entre appareils)', async () => {
+    db = await openBaseDb(DEVICE);
+    await expect(db.data.transaction(async (repos) => (await repos.mesocycles()).start(spec('haut-bas'), { id: M1 }))).rejects.toMatchObject({ code: 'invalid' });
+    await db.data.transaction(async (repos) => (await repos.mesocycles()).start(spec(), { id: M1 }));
+    await expect((await repo()).save(M1, { ...spec(), routineId: 'haut-bas' })).rejects.toMatchObject({ code: 'invalid' });
+    expect(await db.driver.select('SELECT routine_id FROM mesocycle')).toEqual([{ routine_id: ROUTINE_ID }]);
+  });
+
   it('deux cycles actifs (créés hors ligne sur deux appareils) : le plus récent est suivi, le nombre est dit', async () => {
     db = await openBaseDb(DEVICE);
     await db.data.transaction(async (repos) => (await repos.mesocycles()).start(spec(), { id: M1 }));
