@@ -9,9 +9,8 @@ import type { Sex } from '../bodyProfile';
 import type { LocalDate } from '../types';
 import { coverageOfWindow, sufficientDataDays } from './coverage';
 import { ACTIVITY_FACTORS, NUTRITION_CONFIG, NUTRITION_ENGINE_VERSION, type ActivityLevel } from './config';
-import type { Coverage, DayTotals, WeighIn } from './types';
+import type { Coverage, DayTotals, TrendPoint, WeighIn } from './types';
 import { computeTrend, trendAt } from './weightTrend';
-import type { TrendPoint } from './types';
 
 export interface TdeeProfile {
   readonly sex: Sex | null;
@@ -27,7 +26,10 @@ export type TdeeReason =
   | 'no-trend-at-start'
   | 'no-trend-at-end';
 
-export function mifflinStJeor(p: { sex: Sex; weightKg: number; heightCm: number; age: number }): number {
+/** `null` si le poids, la taille ou l'âge n'est pas un nombre fini positif (jamais NaN). */
+export function mifflinStJeor(p: { sex: Sex; weightKg: number; heightCm: number; age: number }): number | null {
+  if (![p.weightKg, p.heightCm].every((v) => Number.isFinite(v) && v > 0)) return null;
+  if (!Number.isFinite(p.age) || p.age < 0) return null;
   return 10 * p.weightKg + 6.25 * p.heightCm - 5 * p.age + (p.sex === 'male' ? 5 : -161);
 }
 
@@ -54,6 +56,7 @@ export function formulaTdee(input: {
   }
   const age = Number(input.onDate.slice(0, 4)) - profile.birthYear;
   const bmr = mifflinStJeor({ sex: profile.sex, weightKg: input.weightKg, heightCm: profile.heightCm, age });
+  if (bmr === null) return { value: null, reasons: ['profile-incomplete'] };
   return { value: bmr * ACTIVITY_FACTORS[input.activity], reasons };
 }
 
@@ -117,7 +120,11 @@ export function blendTdee(input: {
   const { formula, measured } = input;
   if (formula === null && measured === null) return { value: null, basis: 'none', weightMeasured: 0 };
   if (measured === null) return { value: formula, basis: 'formula', weightMeasured: 0 };
-  if (formula === null) return { value: measured, basis: 'measured', weightMeasured: 1 };
+  if (formula === null) {
+    // D-74 b : sans formule, la mesure ne prend le relais qu'après 28 jours de données suffisantes.
+    if (measuredWeight(input.sufficientDays) < 1) return { value: null, basis: 'none', weightMeasured: 0 };
+    return { value: measured, basis: 'measured', weightMeasured: 1 };
+  }
   const w = measuredWeight(input.sufficientDays);
   if (w === 0) return { value: formula, basis: 'formula', weightMeasured: 0 };
   if (w === 1) return { value: measured, basis: 'measured', weightMeasured: 1 };
