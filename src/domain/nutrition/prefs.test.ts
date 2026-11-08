@@ -3,7 +3,7 @@ import type { LocalDate } from '../types';
 import { checkInPeriod, DEFAULT_NUTRITION_PREFS, parseNutritionPrefs } from './prefs';
 
 /** I4-03 : préférences de nutrition (D-74 : maintien, lundi, activité déclarée) et période du check-in. */
-describe('parseNutritionPrefs', () => {
+describe('I4-03 : parseNutritionPrefs', () => {
   it('défauts D-74 : maintien, lundi, activité non déclarée', () => {
     expect(DEFAULT_NUTRITION_PREFS).toMatchObject({ activity: null, goal: { kind: 'maintain' }, checkInWeekday: 1 });
     expect(parseNutritionPrefs(null)).toEqual(DEFAULT_NUTRITION_PREFS);
@@ -22,7 +22,7 @@ describe('parseNutritionPrefs', () => {
   });
 });
 
-describe('checkInPeriod : semaine couverte par un check-in', () => {
+describe('I4-03 : checkInPeriod : semaine couverte par un check-in', () => {
   const d = (s: string): LocalDate => s as LocalDate;
   it('le jour même : la semaine se termine la veille, la nouvelle cible commence ce jour', () => {
     expect(checkInPeriod(d('2026-11-09'), 1)).toEqual({ checkInDate: '2026-11-09', weekEnd: '2026-11-08' });

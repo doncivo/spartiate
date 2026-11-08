@@ -14,7 +14,7 @@ const entry = (date: LocalDate, time: string, kcal: number | null, p: number | n
 const completeDay = (date: LocalDate, kcal: number): DayTotals =>
   aggregateDay(date, [entry(date, '07:00', kcal / 3), entry(date, '13:00', kcal / 3), entry(date, '19:00', kcal / 3)]);
 
-describe('remainingForDay : cibles restantes', () => {
+describe('I4-03 : remainingForDay : cibles restantes', () => {
   it('sans cible : null (rien n’est inventé)', () => {
     expect(remainingForDay(null, aggregateDay(D(9), []))).toBeNull();
   });
@@ -37,7 +37,7 @@ describe('remainingForDay : cibles restantes', () => {
   });
 });
 
-describe('weeklyBalance : balance 7 jours', () => {
+describe('I4-03 : weeklyBalance : balance 7 jours', () => {
   const days = (kcals: readonly (number | null)[]): DayTotals[] => kcals.map((k, i) => (k === null ? aggregateDay(D(3 + i), []) : completeDay(D(3 + i), k)));
   it('moyenne des seuls jours complets moins la cible ; jours absents exclus, jamais comptés à 0', () => {
     const b = weeklyBalance(days([2400, null, 2300, 2500, null, 2600, 2400]), [{ date: D(5), kg: 81 }, { date: D(8), kg: 81 }], TARGET, D(9));
@@ -62,7 +62,7 @@ describe('weeklyBalance : balance 7 jours', () => {
   });
 });
 
-describe('weeklyTrendSlope : pente de la tendance de poids', () => {
+describe('I4-03 : weeklyTrendSlope : pente de la tendance de poids', () => {
   it('kg par semaine entre la tendance à la date et 7 jours avant', () => {
     const points = computeTrend([{ date: D(1), kg: 82 }, { date: D(2), kg: 82 }, { date: D(9), kg: 81 }]);
     const slope = weeklyTrendSlope(points, D(9));
@@ -77,7 +77,7 @@ describe('weeklyTrendSlope : pente de la tendance de poids', () => {
   });
 });
 
-describe('tdeeConfidence : confiance affichée', () => {
+describe('I4-03 : tdeeConfidence : confiance affichée', () => {
   const profile = { sex: 'male' as const, birthYear: 1990, heightCm: 180 };
   it('sans formule ni mesure : none', () => {
     const e = estimateTdee({ endDate: D(9), days: [], weighIns: [], profile: null, activity: null, previousSmoothed: null });
@@ -90,7 +90,7 @@ describe('tdeeConfidence : confiance affichée', () => {
   });
 });
 
-describe('rescaleEntry : correction des grammes d’une entrée', () => {
+describe('I4-03 : rescaleEntry : correction des grammes d’une entrée', () => {
   const base = { grams: 100, kcal: 200, proteinG: 10, fatG: 5, carbG: 30 };
   it('proportionnel, au dixième', () => {
     expect(rescaleEntry(base, 150)).toEqual({ grams: 150, kcal: 300, proteinG: 15, fatG: 7.5, carbG: 45 });

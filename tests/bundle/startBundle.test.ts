@@ -273,7 +273,7 @@ describe('bundle de départ (index.html)', () => {
   });
 
   // I4-03 : onglet Nutrition (écrans, catalogue fr.nutrition, domaine) et carte « nutrition restante » d'Aujourd'hui : blocs à la demande.
-  it.each(['src/features/nutrition/NutritionScreen.tsx', 'src/features/today/NutritionRemainingCard.tsx'])('I4-03 : %s est un bloc à la demande, hors du départ', (source) => {
+  it.each(['src/features/nutrition/NutritionScreen.tsx', 'src/features/nutrition/NutritionRemainingCard.tsx'])('I4-03 : %s est un bloc à la demande, hors du départ', (source) => {
     const start = new Set(startChunks().map((chunk) => chunk.file));
     const chunk = manifest[source];
     if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);

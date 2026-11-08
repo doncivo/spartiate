@@ -38,7 +38,7 @@ async function openCreate(query: string): Promise<void> {
   fireEvent.click(await screen.findByRole('button', { name: 'Créer une fiche perso' }));
 }
 
-describe('Créer une fiche perso', () => {
+describe('I4-03 : Créer une fiche perso', () => {
   it('nom prérempli, valeurs vides inconnues, portion facultative ; la fiche est ensuite proposée à la quantité', async () => {
     await openCreate('zzzqqq');
     expect(await screen.findByLabelText('Nom de la fiche')).toHaveValue('zzzqqq');

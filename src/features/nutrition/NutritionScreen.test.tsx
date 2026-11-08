@@ -62,7 +62,7 @@ async function seedHistory(): Promise<void> {
   await saveManualTarget(db.data, { weekStart: d(-14), target: { kcal: 2400, proteinG: 170, fatG: 75, carbG: 261 }, lowFloorConfirmed: false });
 }
 
-describe('Journal : états de la journée, sans faux zéro (critère 1)', () => {
+describe('I4-03 : Journal : états de la journée, sans faux zéro (critère 1)', () => {
   it('journée sans entrée : « Rien de saisi », aucune cible, aucun chiffre à zéro, scan annoncé comme plus tard', async () => {
     open();
     const r = await region();
@@ -114,7 +114,7 @@ describe('Journal : états de la journée, sans faux zéro (critère 1)', () => 
   });
 });
 
-describe('Recherche locale (critère 2) : récents, Perso, Ciqual ; grammes ou portions ; correction avant enregistrement', () => {
+describe('I4-03 : Recherche locale (critère 2) : récents, Perso, Ciqual ; grammes ou portions ; correction avant enregistrement', () => {
   async function seedPersonalFood(): Promise<string> {
     const foods = await db.data.repos.foods();
     const record = await foods.create({ source: 'custom', barcode: null, name: 'Skyr maison', brand: null, per100g: { kcal: 60, proteinG: 11, fatG: 0.2, carbG: 4, fiberG: null }, fetchedAt: null });
@@ -192,7 +192,7 @@ describe('Recherche locale (critère 2) : récents, Perso, Ciqual ; grammes ou p
   });
 });
 
-describe('Quick Add (critère 3)', () => {
+describe('I4-03 : Quick Add (critère 3)', () => {
   it('macros saisies, enregistrement seulement après « Ajouter », champs vides = inconnus (null)', async () => {
     open();
     const r = await region();
@@ -218,7 +218,7 @@ describe('Quick Add (critère 3)', () => {
   });
 });
 
-describe('Correction et suppression d’une entrée', () => {
+describe('I4-03 : Correction et suppression d’une entrée', () => {
   it('corriger les grammes recalcule les totaux ; la provenance est conservée', async () => {
     const foods = await db.data.repos.foods();
     const food = await foods.create({ source: 'custom', barcode: null, name: 'Riz maison', brand: null, per100g: { kcal: 130, proteinG: 2.7, fatG: 0.3, carbG: 28, fiberG: null }, fetchedAt: null });
@@ -256,7 +256,7 @@ describe('Correction et suppression d’une entrée', () => {
   });
 });
 
-describe('Dashboard (critère 5)', () => {
+describe('I4-03 : Dashboard (critère 5)', () => {
   it('sans données : valeurs « — » avec la cause, confiance « aucune », pas de faux zéro', async () => {
     open('dashboard');
     const r = await region();
@@ -289,7 +289,7 @@ describe('Dashboard (critère 5)', () => {
   });
 });
 
-describe('Stratégie et cibles (critère 6, D-74)', () => {
+describe('I4-03 : Stratégie et cibles (critère 6, D-74)', () => {
   it('valeurs par défaut D-74 : collaboratif, maintien, lundi, activité non déclarée', async () => {
     open('strategy');
     const r = await region();
@@ -332,7 +332,7 @@ describe('Stratégie et cibles (critère 6, D-74)', () => {
   });
 });
 
-describe('Check-in hebdomadaire (critère 6)', () => {
+describe('I4-03 : Check-in hebdomadaire (critère 6)', () => {
   it('données insuffisantes : suspendu, aucune cible proposée, aucune action d’acceptation', async () => {
     open('checkin');
     const r = await region();
@@ -394,7 +394,7 @@ describe('Check-in hebdomadaire (critère 6)', () => {
   });
 });
 
-describe('Navigation et clavier PC', () => {
+describe('I4-03 : Navigation et clavier PC', () => {
   it('les quatre sections sont des boutons radio, flèches pour passer de l’une à l’autre', async () => {
     open();
     const r = await region();
