@@ -46,8 +46,8 @@ describe('Déclencheurs de référence d’une sauvegarde (P-04)', () => {
       const spartiate = await triggersOf(live);
       // 24 déclencheurs de capture : profile, body_weight (0001) ; exercise, equipment_profile, routine, routine_day, routine_exercise (0002) ;
       // workout, workout_set, gardés : séance close seulement (0004, I1-03) ; progression_profile, recommendation_decision et la difficulté des
-      // séries d'une séance close, décisions mises en file à la clôture (0006, I2-01).
-      expect(spartiate).toHaveLength(24);
+      // séries d'une séance close, décisions mises en file à la clôture (0006, I2-01) ; mesocycle (0007, I3-02).
+      expect(spartiate).toHaveLength(26);
       const taken = new Set(spartiate.map((row) => row.name));
       const legacy = (await triggersOf(db.driver)).filter((row) => !taken.has(row.name));
       const expected = [...legacy, ...spartiate].sort((x, y) => (x.name < y.name ? -1 : x.name > y.name ? 1 : 0));

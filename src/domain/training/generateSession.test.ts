@@ -352,6 +352,25 @@ describe('critère 5 : budget temps (45 s par série + repos entre séries), ± 
     expect(generateSession(input({ week: { workingSets: 0, rir: null } })).exercises[0]?.sets).toBe(1);
     expect(generateSession(input({ week: { workingSets: null, rir: 1 } })).exercises[0]).toMatchObject({ sets: 3, rir: 1 });
   });
+
+  it('I3-02 : semaine du cycle par ligne (écart de séries), priorité +1 sur le premier exercice du groupe, deload signalé sans réduire', () => {
+    const sets = (s: GeneratedSession): number[] => s.exercises.map((e) => e.sets);
+    // Haut A : 3, 3, 3, 3, 3, 2, 2 séries. Semaine 1 : −1 par ligne (au moins une), RIR 3.
+    const w1 = generateSession(input({ week: { workingSets: null, rir: 3, setsOffset: -1, deload: false, priorityBonus: 1 } }));
+    expect(sets(w1)).toEqual([2, 2, 2, 2, 2, 1, 1]);
+    expect(w1.exercises.every((e) => e.rir === 3)).toBe(true);
+    expect(w1.deload).toBe(false);
+    // Semaine 4 : +1 ; pectoraux prioritaires : +1 sur le premier exercice de pectoraux seulement (développé couché), pas sur l'incliné.
+    const w4 = generateSession(input({ week: { workingSets: null, rir: 1, setsOffset: 1, deload: false, priorityBonus: 1 } }, { priorities: ['chest'] }));
+    expect(sets(w4)).toEqual([5, 4, 4, 4, 4, 3, 3]);
+    // Deload : volume de la routine (la proposition de chaque exercice divise par deux, D-72), RIR 4, aucune priorité.
+    const deload = generateSession(input({ week: { workingSets: null, rir: 4, setsOffset: 0, deload: true, priorityBonus: 0 } }, { priorities: ['chest'] }));
+    expect(sets(deload)).toEqual([3, 3, 3, 3, 3, 2, 2]);
+    expect(deload.deload).toBe(true);
+    expect(deload.exercises.every((e) => e.rir === 4)).toBe(true);
+    // Sans semaine : routine, aucun deload.
+    expect(generateSession(input()).deload).toBe(false);
+  });
 });
 
 describe('critère 6 : styles droites / pyramide / inversée, aucune donnée modifiée', () => {
