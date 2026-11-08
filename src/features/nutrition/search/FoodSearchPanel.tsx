@@ -131,10 +131,13 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
 
   /** Tout choix fait par un geste d'Ali prime sur la recherche d'un code encore en vol : son résultat tardif est ignoré. */
   function supersedeLookup(): void {
-    // CORRECTION RETIRÉE TEMPORAIREMENT (preuve I4-06)
+    lookupTicket.current += 1;
+    setLookup((current) => (current?.status === 'busy' ? null : current));
   }
 
   async function pickOnline(item: OnlineItem): Promise<void> {
+    if (picking.current) return;
+    picking.current = true;
     supersedeLookup();
     try {
       const record = await chooseOnline(await data.repos.foods(), item.draft);
