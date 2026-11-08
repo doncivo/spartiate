@@ -82,7 +82,7 @@ const profile = async (d: SimDevice, confidence: number) =>
 
 describe('catalogue de production : tables de progression (I2-01)', () => {
   it('ordre : … workout, workout_set, puis progression_profile (sans parent), recommendation_decision (enfant de sa séance, revue #61)', () => {
-    expect(SYNC_TABLE_ORDER.slice(-3)).toEqual(['workout_set', 'progression_profile', 'recommendation_decision']);
+    expect(SYNC_TABLE_ORDER.slice(8, 11)).toEqual(['workout_set', 'progression_profile', 'recommendation_decision']);
     expect(SYNC_CATALOGUE.table('progression_profile')?.parents).toEqual([]);
     expect(SYNC_CATALOGUE.table('recommendation_decision')?.parents).toEqual([{ column: 'workout_id', table: 'workout' }]);
   });

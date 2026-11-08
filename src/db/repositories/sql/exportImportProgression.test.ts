@@ -44,7 +44,7 @@ const read = async (db: TestDb): Promise<ExportData> => (await db.data.repos.exp
 
 describe('export / import de la progression (0.3.1)', () => {
   it('tables exportées : … workout_set, progression_profile, recommendation_decision', () => {
-    expect(TRAINING_EXPORT_TABLES.slice(-3)).toEqual(['workout_set', 'progression_profile', 'recommendation_decision']);
+    expect(TRAINING_EXPORT_TABLES.slice(6, 9)).toEqual(['workout_set', 'progression_profile', 'recommendation_decision']);
   });
 
   it('aller-retour : profil, décision et difficulté identiques (hash canonique), publiés comme toute écriture', async () => {
