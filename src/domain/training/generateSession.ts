@@ -204,7 +204,8 @@ export function generateSession(input: GenerateSessionInput): GeneratedSession {
   // I3-02 : écart de séries par ligne (`setsOffset`) et une série de priorité au premier exercice de chaque groupe prioritaire (D-73 point 8).
   const weekSets = input.week?.workingSets ?? null;
   const offset = input.week?.setsOffset ?? 0;
-  const bonus = Math.min(Math.max(0, input.week?.priorityBonus ?? 0), config.prioritySetDelta);
+  // Libre : exercices et volume d'Ali, aucune série de priorité ajoutée (revue I3-02).
+  const bonus = rules.reorders ? Math.min(Math.max(0, input.week?.priorityBonus ?? 0), config.prioritySetDelta) : 0;
   const bonusGroups = new Set<string>();
   for (const slot of slots) {
     const group = groupOf(slot.chosen);

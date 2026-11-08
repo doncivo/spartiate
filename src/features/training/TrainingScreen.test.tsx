@@ -41,7 +41,7 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
   it('accueil : sections Routines, Bibliothèque, Matériel et Journal (I1-03)', async () => {
     open();
     const nav = await screen.findByRole('radiogroup', { name: 'Sections de l’entraînement' });
-    expect(within(nav).getAllByRole('radio').map((r) => r.textContent)).toEqual(['Routines', 'Bibliothèque', 'Matériel', 'Journal']);
+    expect(within(nav).getAllByRole('radio').map((r) => r.textContent)).toEqual(['Routines', 'Bibliothèque', 'Matériel', 'Journal', 'Cycle']);
     fireEvent.click(within(nav).getByRole('radio', { name: 'Bibliothèque' }));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'training', screen: 'library' });
   });

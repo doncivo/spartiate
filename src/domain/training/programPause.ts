@@ -22,10 +22,6 @@ const utc = (date: LocalDate): number => {
 };
 /** Jours de `from` à `to` (négatif si `to` précède `from`). */
 export const daysBetween = (from: LocalDate, to: LocalDate): number => Math.round((utc(to) - utc(from)) / DAY_MS);
-export const addLocalDays = (date: LocalDate, days: number): LocalDate => {
-  const t = new Date(utc(date) + days * DAY_MS);
-  return `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, '0')}-${String(t.getUTCDate()).padStart(2, '0')}` as LocalDate;
-};
 const clamp = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
 
 /** Pause en cours (la dernière, sans fin), sinon `null`. */

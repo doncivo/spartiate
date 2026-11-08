@@ -88,7 +88,8 @@ export function createMesocycleRepository(db: SqlExecutor, stamper: WriteStamper
     return toRecord(row);
   };
   const check = (spec: MesocycleSpec, id: string): void => {
-    if (!validateMesocycleSpec(spec, DEFAULT_GENERATION_CONFIG)) throw new RepositoryError('invalid', 'mesocycle', id);
+    // La routine suivie est publiée en colonne `id` : un identifiant non UUID serait refusé à la réception (divergence entre appareils).
+    if (!isId(spec.routineId) || !validateMesocycleSpec(spec, DEFAULT_GENERATION_CONFIG)) throw new RepositoryError('invalid', 'mesocycle', id);
   };
 
   return {

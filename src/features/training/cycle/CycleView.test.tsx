@@ -123,9 +123,9 @@ describe('section Cycle (I3-02)', () => {
   it('pause puis reprise après 30 jours : semaine allégée proposée, acceptée ; le cycle reprend à la même semaine', async () => {
     let r = await startCycle();
     fireEvent.click(within(r).getByRole('button', { name: 'Mettre le programme en pause' }));
-    expect(await within(r).findByText('Programme en pause depuis le 9 novembre : jours non comptés, aucune séance manquée, aucun rappel.')).toBeInTheDocument();
+    expect(await within(r).findByText('Programme en pause depuis le 9 novembre : jours non comptés, aucune séance manquée, aucune notification.')).toBeInTheDocument();
     r = await later(30);
-    expect(within(r).getByText('Programme en pause depuis le 9 novembre : jours non comptés, aucune séance manquée, aucun rappel.')).toBeInTheDocument();
+    expect(within(r).getByText('Programme en pause depuis le 9 novembre : jours non comptés, aucune séance manquée, aucune notification.')).toBeInTheDocument();
     fireEvent.click(within(r).getByRole('button', { name: 'Reprendre le programme' }));
     expect(within(r).getByText('Pause de 30 jours : une semaine allégée est proposée (séries et répétitions en réserve de la semaine 1), les charges tiennent compte de l’arrêt.')).toBeInTheDocument();
     fireEvent.click(within(r).getByRole('button', { name: 'Reprendre avec une semaine allégée' }));
@@ -174,8 +174,8 @@ describe('section Cycle (I3-02)', () => {
   });
 
   it('revue : un geste refusé par le domaine (horloge revenue avant la pause) est dit, jamais un bouton sans effet', async () => {
-    let r = await startCycle();
-    r = await later(5);
+    await startCycle();
+    let r = await later(5);
     fireEvent.click(within(r).getByRole('button', { name: 'Mettre le programme en pause' }));
     await within(r).findByRole('button', { name: 'Reprendre le programme' });
     r = await later(-3);
