@@ -82,6 +82,20 @@ export function explainPrescription(p: Prescription): Explanation {
   }
 }
 
+export type ExplanationNoteKey = 'notePartialIgnored' | 'noteGridToVerify';
+
+/**
+ * I2-04 : précisions ajoutées à la phrase, dans cet ordre : dernière séance ignorée (moins de 50 % des séries faites), puis grille de charges
+ * tirée d'un matériel « à vérifier ». Information seulement. Aucune note pour une décision d'Ali (reprise telle quelle) ni hors moteur.
+ */
+export function explanationNotes(p: Prescription): { readonly key: ExplanationNoteKey; readonly params: Readonly<Record<string, number>> }[] {
+  if (p.headline === 'decision' || p.headline === 'unsupported') return [];
+  const notes: { readonly key: ExplanationNoteKey; readonly params: Readonly<Record<string, number>> }[] = [];
+  if (p.reasons.includes('partial-session-ignored')) notes.push({ key: 'notePartialIgnored', params: {} });
+  if (p.reasons.includes('grid-to-verify')) notes.push({ key: 'noteGridToVerify', params: {} });
+  return notes;
+}
+
 const percent = (fraction: number): number => Math.round(fraction * 100);
 /** Baisse de charge Recovery en %, tirée de la configuration active (`lowRecoveryLoad`). */
 const recoveryCut = (p: Prescription): number => percent(1 - p.activeConfig.lowRecoveryLoad);

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { allExercises, type CustomExercise, type EquipmentProfile, type Exercise } from '../../domain/training';
+import { allExercises, backfillDumbbellExtras, type CustomExercise, type EquipmentProfile, type Exercise } from '../../domain/training';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { useSyncedData } from '../sync/remoteChanges';
 import { loadTrainingContent, type EmbeddedProfile, type TrainingContent } from './content';
@@ -36,7 +36,8 @@ export async function readTrainingData(data: DataAccess): Promise<TrainingData> 
   const [content, exercisesRepo, profilesRepo] = await Promise.all([loadTrainingContent(), data.repos.exercises(), data.repos.equipmentProfiles()]);
   const [allCustoms, personalRows, storedId] = await Promise.all([exercisesRepo.list({ includeDeleted: true }), profilesRepo.list(), data.repos.settings.get('training.activeEquipmentProfile')]);
   const customs = allCustoms.filter((c) => c.deletedAt === null);
-  const personal = personalRows.map((p): PersonalProfile => ({ ...p, origin: 'personal' }));
+  // I2-04 : copie d'un profil embarqué faite avant la 0.3.0 (paire de 9 kg absente) complétée à la lecture, jamais réécrite en base.
+  const personal = personalRows.map((p): PersonalProfile => ({ ...backfillDumbbellExtras(p, content.profiles), origin: 'personal' }));
   return {
     content,
     customs,

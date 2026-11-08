@@ -30,13 +30,14 @@ describe('readTrainingData : rattrapage de la paire de 9 kg', () => {
     const oldInventory: EquipmentInventory = { ...antony.inventory, dumbbells: oldRange };
     await (await db.data.repos.equipmentProfiles()).create({ id: ID, name: 'Fitness Park Antony (copie)', kind: antony.kind, inventory: oldInventory, increments: antony.increments });
     await db.data.repos.settings.set('training.activeEquipmentProfile', ID);
-    const before = await db.driver.select<Record<string, unknown>>('SELECT * FROM equipment_profile WHERE id = ?', [ID]);
-    expect(JSON.parse(String(before[0]?.['inventory'])).dumbbells.extraKg).toBeUndefined();
+    const row = () => db.driver.select<{ inventory: string; updated_at: string; hlc: string; name: string }>('SELECT inventory, updated_at, hlc, name FROM equipment_profile WHERE id = ?', [ID]);
+    const before = await row();
+    expect((JSON.parse(before[0]?.inventory ?? '{}') as EquipmentInventory).dumbbells?.extraKg).toBeUndefined();
 
     const data = await readTrainingData(db.data);
     expect(data.personal[0]?.inventory.dumbbells).toEqual({ minKg: 2, maxKg: 50, stepKg: 2, extraKg: [9] });
     expect(data.active.id).toBe(ID);
     expect(data.active.inventory.dumbbells?.extraKg).toEqual([9]);
-    expect(await db.driver.select('SELECT * FROM equipment_profile WHERE id = ?', [ID])).toEqual(before);
+    expect(await row()).toEqual(before);
   });
 });
