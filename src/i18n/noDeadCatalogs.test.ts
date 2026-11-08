@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * PURGE-I18N (D-67) : chaque module de textes de `src/i18n` doit être atteignable depuis du code vivant (hors tests) situé hors de
- * `src/i18n`. Un catalogue ou un formateur que plus aucun écran n'importe (restes de CircleTasks : tâches, Focus, événements,
+ * `src/i18n`. Un catalogue ou un formateur que plus aucun écran n'importe (restes de l'ancien projet : tâches, Focus, événements,
  * rappels, statistiques) échoue ici. Le banc legacy (`tests/fixtures/legacy-schema/`) n'importe rien de `src/` (D-67), il ne
  * justifie donc la présence d'aucun texte.
  */
