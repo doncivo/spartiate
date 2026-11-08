@@ -93,7 +93,7 @@ function expectInvariants(reviews: WeekReview[], start: Target): void {
   }
 }
 
-describe('8 semaines : couverture complète', () => {
+describe('I4-01 : 8 semaines : couverture complète', () => {
   const reviews = replay(completeCoverage(), base);
 
   it('chaque semaine produit une proposition bornée', () => {
@@ -114,7 +114,7 @@ describe('8 semaines : couverture complète', () => {
   });
 });
 
-describe('8 semaines : couverture partielle', () => {
+describe('I4-01 : 8 semaines : couverture partielle', () => {
   const scenario = partialCoverage();
   const reviews = replay(scenario, base);
 
@@ -132,7 +132,7 @@ describe('8 semaines : couverture partielle', () => {
   });
 });
 
-describe('8 semaines : pesée aberrante', () => {
+describe('I4-01 : 8 semaines : pesée aberrante', () => {
   const scenario = outlierWeighIn();
   const trend = computeTrend(scenario.weighIns);
 
@@ -150,7 +150,7 @@ describe('8 semaines : pesée aberrante', () => {
   });
 });
 
-describe("8 semaines : changement d'objectif", () => {
+describe("I4-01 : 8 semaines : changement d'objectif", () => {
   const goal = (weekEnd: number): Goal => (weekEnd < 34 ? { kind: 'loss', weeklyRateKg: 0.5 } : { kind: 'gain', weeklyRateKg: 0.25 });
   const reviews = replay(goalChange(), { ...base, goal });
 
@@ -167,7 +167,7 @@ describe("8 semaines : changement d'objectif", () => {
   });
 });
 
-describe('8 semaines : plancher', () => {
+describe('I4-01 : 8 semaines : plancher', () => {
   const run: Run = {
     goal: () => ({ kind: 'loss', weeklyRateKg: 0.5 }),
     start: { kcal: 1300, proteinG: 100, fatG: 40, carbG: 135 },

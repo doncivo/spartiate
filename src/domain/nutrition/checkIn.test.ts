@@ -35,7 +35,7 @@ function input(over: Partial<CheckInInput> = {}): CheckInInput {
   };
 }
 
-describe('proposeCheckIn : fiabilité (§ 15.2)', () => {
+describe('I4-01 : proposeCheckIn : fiabilité (§ 15.2)', () => {
   it('couverture insuffisante : suspendu, aucune proposition', () => {
     const days = fullDays().map((d, i) => (i % 7 < 4 ? partialDay(d.date, 900) : d));
     const r = proposeCheckIn(input({ days }));
@@ -67,7 +67,7 @@ describe('proposeCheckIn : fiabilité (§ 15.2)', () => {
   });
 });
 
-describe('proposeCheckIn : amplitude et objectif', () => {
+describe('I4-01 : proposeCheckIn : amplitude et objectif', () => {
   it('maintien : la cible rejoint la dépense dans la borne', () => {
     const r = proposeCheckIn(input({ currentTarget: target(2500, 140, 70), tdee: 2600 }));
     expect(r.status).toBe('proposal');
@@ -119,7 +119,7 @@ describe('proposeCheckIn : amplitude et objectif', () => {
   });
 });
 
-describe('proposeCheckIn : plancher et alertes', () => {
+describe('I4-01 : proposeCheckIn : plancher et alertes', () => {
   const floorInput = (over: Partial<CheckInInput> = {}) =>
     input({
       tdee: 1500,
@@ -179,7 +179,7 @@ describe('proposeCheckIn : plancher et alertes', () => {
   });
 });
 
-describe('proposeCheckIn : macros', () => {
+describe('I4-01 : proposeCheckIn : macros', () => {
   it('protéines dans 1,6–2,2 g/kg : inchangées, glucides = reste', () => {
     const t = proposeCheckIn(input({ currentTarget: target(2500, 140, 72) })).proposal?.target;
     expect(t?.proteinG).toBe(140);
@@ -212,7 +212,7 @@ describe('proposeCheckIn : macros', () => {
   });
 });
 
-describe('proposeCheckIn : première cible', () => {
+describe('I4-01 : proposeCheckIn : première cible', () => {
   it('sans cible : proposition initiale depuis la dépense, sans couverture exigée', () => {
     const r = proposeCheckIn(input({ currentTarget: null, days: [], weighIns: [], weightKg: 70 }));
     expect(r.status).toBe('proposal');
@@ -226,7 +226,7 @@ describe('proposeCheckIn : première cible', () => {
   });
 });
 
-describe('proposeCheckIn : styles (§ 15.2)', () => {
+describe('I4-01 : proposeCheckIn : styles (§ 15.2)', () => {
   it('Guidé : accepter / personnaliser / refuser, sans alternative', () => {
     const p = proposeCheckIn(input({ style: 'guided' })).proposal;
     expect(p?.options).toEqual(['accept', 'customize', 'refuse']);
@@ -253,13 +253,13 @@ describe('proposeCheckIn : styles (§ 15.2)', () => {
   });
 });
 
-describe('resolveCheckIn : accepter / personnaliser / refuser (Ali a le dernier mot)', () => {
+describe('I4-01 : resolveCheckIn : accepter / personnaliser / refuser (Ali a le dernier mot)', () => {
   const proposal = () => {
     const p = proposeCheckIn(input()).proposal;
     if (!p) throw new Error('proposition attendue');
     return p;
   };
-  const base = { weightKg: 80, currentTarget: target(2500, 140, 70) };
+  const base = { weightKg: 80, currentTarget: target(2500, 140, 70), lowFloorConfirmed: false };
 
   it('accepter : cible proposée, source accepted', () => {
     const p = proposal();
@@ -277,14 +277,46 @@ describe('resolveCheckIn : accepter / personnaliser / refuser (Ali a le dernier 
     expect(o.proposedTarget).toEqual(p.target);
   });
 
-  it('personnaliser hors règles : appliqué quand même, avec avertissements', () => {
+  it('personnaliser hors règles mais au-dessus de 1 200 : appliqué, avec avertissements', () => {
     const o = resolveCheckIn({
       ...base,
       proposal: proposal(),
-      decision: { action: 'customize', target: target(1000, 100, 30) },
+      decision: { action: 'customize', target: target(1300, 100, 30) },
     });
+    expect(o.action).toBe('customize');
+    expect(o.target?.kcal).toBe(1300);
+    expect(o.warnings).toEqual(expect.arrayContaining(['protein-out-of-range', 'fat-below-min', 'beyond-weekly-delta']));
+  });
+
+  it('personnaliser sous 1 200 sans confirmation : confirmation requise, rien d\'appliqué', () => {
+    const o = resolveCheckIn({ ...base, proposal: proposal(), decision: { action: 'customize', target: target(1000, 140, 40) } });
+    expect(o.action).toBe('confirmation-required');
+    expect(o.target).toBeNull();
+    expect(o.source).toBeNull();
+    expect(o.retryable).toBe(true);
+  });
+
+  it('personnaliser sous 1 200 avec confirmation : appliqué, signalé', () => {
+    const o = resolveCheckIn({
+      ...base,
+      lowFloorConfirmed: true,
+      proposal: proposal(),
+      decision: { action: 'customize', target: target(1000, 140, 40) },
+    });
+    expect(o).toMatchObject({ action: 'customize', source: 'manual' });
     expect(o.target?.kcal).toBe(1000);
-    expect(o.warnings).toEqual(expect.arrayContaining(['below-floor', 'protein-out-of-range', 'fat-below-min', 'beyond-weekly-delta']));
+    expect(o.warnings).toContain('below-floor');
+  });
+
+  it('personnaliser sous 800 kcal : rejeté même confirmé', () => {
+    const o = resolveCheckIn({
+      ...base,
+      lowFloorConfirmed: true,
+      proposal: proposal(),
+      decision: { action: 'customize', target: target(799, 100, 20) },
+    });
+    expect(o.action).toBe('rejected');
+    expect(o.target).toBeNull();
   });
 
   it('personnaliser avec une valeur invalide : rejeté, rien d\'appliqué', () => {

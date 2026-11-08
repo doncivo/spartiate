@@ -24,7 +24,7 @@ import type { DayTotals, WeighIn } from './types';
 const d0 = '2026-09-07' as LocalDate;
 const at = (i: number) => addDays(d0, i);
 
-describe('facteurs d\'activité déclarés (D-74 a)', () => {
+describe('I4-01 : facteurs d\'activité déclarés (D-74 a)', () => {
   it('constantes nommées et table', () => {
     expect(ACTIVITY_FACTOR_SEDENTARY).toBe(1.2);
     expect(ACTIVITY_FACTOR_LIGHT).toBe(1.375);
@@ -34,7 +34,19 @@ describe('facteurs d\'activité déclarés (D-74 a)', () => {
   });
 });
 
-describe('Mifflin-St Jeor', () => {
+describe('I4-01 : Mifflin-St Jeor', () => {
+  it('taille invalide (0, négative, NaN) : null, jamais NaN', () => {
+    for (const bad of [0, -5, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(mifflinStJeor({ sex: 'male', weightKg: bad, heightCm: 180, age: 30 })).toBeNull();
+      expect(mifflinStJeor({ sex: 'male', weightKg: 80, heightCm: bad, age: 30 })).toBeNull();
+    }
+    expect(mifflinStJeor({ sex: 'male', weightKg: 80, heightCm: 180, age: Number.NaN })).toBeNull();
+    expect(mifflinStJeor({ sex: 'male', weightKg: 80, heightCm: 180, age: -1 })).toBeNull();
+  });
+  it('année de naissance absurde : formule null', () => {
+    const r = formulaTdee({ profile: { sex: 'male', birthYear: Number.NaN, heightCm: 180 }, activity: 'light', weightKg: 80, onDate: d0 });
+    expect(r.value).toBeNull();
+  });
   it('homme 80 kg, 180 cm, 30 ans : 1 780', () => {
     expect(mifflinStJeor({ sex: 'male', weightKg: 80, heightCm: 180, age: 30 })).toBe(1780);
   });
@@ -43,7 +55,7 @@ describe('Mifflin-St Jeor', () => {
   });
 });
 
-describe('formulaTdee', () => {
+describe('I4-01 : formulaTdee', () => {
   const profile = { sex: 'male', birthYear: 1996, heightCm: 180 } as const;
   it('métabolisme × facteur déclaré : 1 780 × 1,55 = 2 759', () => {
     const r = formulaTdee({ profile, activity: 'moderate', weightKg: 80, onDate: d0 });
@@ -74,7 +86,7 @@ describe('formulaTdee', () => {
   });
 });
 
-describe('measuredTdee : TDEE = moyenne(kcal) - (ΔT / N) × 7 700 (§ 15.1)', () => {
+describe('I4-01 : measuredTdee : TDEE = moyenne(kcal) - (ΔT / N) × 7 700 (§ 15.1)', () => {
   const end = at(30);
   const start = addDays(end, -21);
   /** 12 jours complets à 2 400 kcal dans la fenêtre (4 par semaine) ; le reste partiel ou inconnu. */
@@ -132,7 +144,7 @@ describe('measuredTdee : TDEE = moyenne(kcal) - (ΔT / N) × 7 700 (§ 15.1)', (
   });
 });
 
-describe('smoothTdee : EMA demi-vie 7 j', () => {
+describe('I4-01 : smoothTdee : EMA demi-vie 7 j', () => {
   it('lissé précédent 2 500, brut 2 620, pas de 7 jours : 2 560', () => {
     expect(smoothTdee({ previous: 2500, raw: 2620, stepDays: 7 })).toBeCloseTo(2560, 10);
   });
@@ -144,7 +156,7 @@ describe('smoothTdee : EMA demi-vie 7 j', () => {
   });
 });
 
-describe('measuredWeight et blendTdee : transition sur 28 jours (D-74 point 4)', () => {
+describe('I4-01 : measuredWeight et blendTdee : transition sur 28 jours (D-74 point 4)', () => {
   it('pondération linéaire bornée', () => {
     expect(measuredWeight(0)).toBe(0);
     expect(measuredWeight(14)).toBe(0.5);
@@ -182,8 +194,13 @@ describe('measuredWeight et blendTdee : transition sur 28 jours (D-74 point 4)',
     expect(r.basis).toBe('formula');
     expect(r.weightMeasured).toBe(0);
   });
-  it('formule absente : la mesure seule', () => {
-    const r = blendTdee({ formula: null, measured: 2620, sufficientDays: 5 });
+  it('formule absente avant 28 jours : null, la mesure n\'est pas retenue seule (D-74 b)', () => {
+    const r = blendTdee({ formula: null, measured: 2620, sufficientDays: 27 });
+    expect(r.value).toBeNull();
+    expect(r.basis).toBe('none');
+  });
+  it('formule absente à 28 jours : la mesure seule', () => {
+    const r = blendTdee({ formula: null, measured: 2620, sufficientDays: 28 });
     expect(r.value).toBe(2620);
     expect(r.basis).toBe('measured');
   });
@@ -194,7 +211,7 @@ describe('measuredWeight et blendTdee : transition sur 28 jours (D-74 point 4)',
   });
 });
 
-describe('estimateTdee : assemblage traçable', () => {
+describe('I4-01 : estimateTdee : assemblage traçable', () => {
   const profile = { sex: 'male', birthYear: 1996, heightCm: 180 } as const;
   const end = at(40);
   const days: DayTotals[] = [];

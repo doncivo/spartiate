@@ -7,7 +7,7 @@ import { computeTrend, trendAt } from './weightTrend';
 const d0 = '2026-09-07' as LocalDate;
 const w = (offset: number, kg: number) => ({ date: addDays(d0, offset), kg });
 
-describe('computeTrend : EMA demi-vie 14 j (§ 15.1)', () => {
+describe('I4-01 : computeTrend : EMA demi-vie 14 j (§ 15.1)', () => {
   it('aucune pesée : aucune tendance, jamais zéro', () => {
     expect(computeTrend([])).toEqual([]);
     expect(trendAt([], d0)).toBeNull();
@@ -71,7 +71,7 @@ describe('computeTrend : EMA demi-vie 14 j (§ 15.1)', () => {
   });
 });
 
-describe('trendAt', () => {
+describe('I4-01 : trendAt', () => {
   const pts = computeTrend([w(0, 80), w(14, 79.2)]);
   it('avant la première pesée : null', () => {
     expect(trendAt(pts, addDays(d0, -1))).toBeNull();
