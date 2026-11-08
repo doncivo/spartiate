@@ -1,7 +1,9 @@
-import { addDays } from '../../../domain/localDate';
-import { checkInPeriod, coverageOfWindow, NUTRITION_CONFIG } from '../../../domain/nutrition';
-import type { Coverage, DayTotals, WeighIn } from '../../../domain/nutrition';
-import type { LocalDate, Weekday } from '../../../domain/types';
+import { addDays } from '../localDate';
+import type { LocalDate, Weekday } from '../types';
+import { NUTRITION_CONFIG } from './config';
+import { coverageOfWindow } from './coverage';
+import { checkInPeriod } from './prefs';
+import type { Coverage, DayTotals, WeighIn } from './types';
 
 export type FirstCheckIn =
   | { readonly first: false }

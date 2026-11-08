@@ -15,3 +15,4 @@ export * from './prefs';
 export * from './trendLearning';
 export * from './barcode';
 export * from './offProduct';
+export * from './firstCheckIn';
