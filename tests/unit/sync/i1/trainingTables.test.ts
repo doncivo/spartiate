@@ -19,8 +19,8 @@ afterEach(async () => {
 });
 
 describe('catalogue de production étendu', () => {
-  it('ordre topologique : profile, body_weight, exercise, equipment_profile, routine, routine_day, routine_exercise, puis workout, workout_set (I1-03), puis progression_profile, recommendation_decision (I2-01), puis mesocycle (I3-02)', () => {
-    const expected = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle'];
+  it('ordre topologique : profile, body_weight, exercise, equipment_profile, routine, routine_day, routine_exercise, puis workout, workout_set (I1-03), puis progression_profile, recommendation_decision (I2-01), puis mesocycle (I3-02), puis food, food_portion, meal_entry, nutrition_target (I4-02)', () => {
+    const expected = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target'];
     expect([...SYNC_TABLE_ORDER]).toEqual(expected);
     expect(SYNC_CATALOGUE.tables.map((t) => t.name)).toEqual(expected);
     expect(SYNC_CATALOGUE.table('settings')).toBeUndefined();

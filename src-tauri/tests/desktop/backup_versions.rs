@@ -52,6 +52,10 @@ fn make_db(path: &Path, version: u32, bodies_version: u32) {
         "progression_profile",
         "recommendation_decision",
         "mesocycle",
+        "food",
+        "food_portion",
+        "meal_entry",
+        "nutrition_target",
         "search_index_doc",
     ] {
         conn.execute_batch(&format!(
