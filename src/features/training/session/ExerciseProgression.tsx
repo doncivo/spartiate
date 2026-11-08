@@ -181,8 +181,11 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
   }, [ownDecision]);
 
   const difficulty = sets.map((s) => s.difficulty ?? null).find((d): d is Difficulty => d !== null) ?? null;
-  /** Rampe d'échauffement pour une charge retenue ; vide hors premier composé du pattern ou si l'exercice en a déjà une. */
-  const hasWarmup = sets.some((s) => s.setKind === 'warmup');
+  /**
+   * Rampe d'échauffement pour une charge retenue ; vide hors premier composé du pattern, si l'exercice en a déjà une, ou si une de ses séries
+   * est déjà validée (jamais d'échauffement inséré avant du travail fait).
+   */
+  const hasWarmup = sets.some((s) => s.setKind === 'warmup' || s.done);
   const rampFor = useCallback(
     (loadKg: number): WarmupSet[] => (warmup && !hasWarmup && exercise !== undefined ? warmupForExercise(exercise, loadKg, equipment) : []),
     [warmup, hasWarmup, exercise, equipment],
