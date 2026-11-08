@@ -181,7 +181,7 @@ describe('I4-03 : dashboard, dépassement et jour partiel', () => {
     open('dashboard');
     const r = await region();
     expect(await within(r).findByText(/kcal au-dessus de la cible/)).toBeInTheDocument();
-    expect(r.textContent ?? '').not.toMatch(/[-−]d[ds]*kcal restantes/);
+    expect(r.textContent ?? '').not.toMatch(/[-−]\d[\d\s]*kcal restantes/);
   });
 
   it('I4-03 : un jour partiel se distingue par un motif (trait pointillé), pas par l’opacité seule', async () => {
