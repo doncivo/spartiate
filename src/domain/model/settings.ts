@@ -128,6 +128,8 @@ export interface SettingsValues {
   'training.routineUpdateAsk': string | null;
   /** I4-03 : préférences de nutrition (style du check-in, objectif, activité déclarée, jour). Valeur BRUTE lue par `parseNutritionPrefs` ; locale, jamais synchronisée. */
   'nutrition.prefs': unknown;
+  /** I4-06 : favoris de la recherche d'aliments, valeur BRUTE lue par `parseFavorites` ({ v: 1, items }) ; locale, jamais synchronisée (D-79). */
+  'nutrition.favorites': unknown;
 }
 
 export type SettingKey = keyof SettingsValues;
@@ -184,6 +186,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'training.restSeconds': { scope: 'local', defaultValue: null },
   'training.routineUpdateAsk': { scope: 'local', defaultValue: null },
   'nutrition.prefs': { scope: 'local', defaultValue: null },
+  'nutrition.favorites': { scope: 'local', defaultValue: null },
 };
 
 /** Valeur par défaut d'un réglage. */

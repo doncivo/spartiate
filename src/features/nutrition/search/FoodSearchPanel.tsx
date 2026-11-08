@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { computeTotals, validateMealEntry, type SearchProvenance } from '../../../domain/nutrition';
+import { computeTotals, isFavorite, resolveFavorites, toggleFavorite, validateMealEntry, type Favorite, type SearchProvenance } from '../../../domain/nutrition';
 import type { SearchableFood } from '../../../domain/nutrition/foodSearch';
 import { missingNutrients } from '../../../domain/nutrition/offProduct';
 import type { IsoDateTime, LocalDate, LocalTime } from '../../../domain/types';
@@ -17,6 +17,7 @@ import { searchCatalogue, toSearchable, type CatalogueSearchResult } from './cat
 import { CustomFoodForm } from './CustomFoodForm';
 import { chooseOnline, resolveBarcode, searchOnline, type OffDeps, type OffFailure, type OnlineItem, type OnlineSearch } from './offLookup';
 import { missingList, offFailureCause, offFailureMessage, offRefusalMessage } from './offMessages';
+import { loadFavorites, saveFavorites } from './favoritesStore';
 import { resolveFood } from './resolveFood';
 
 /** Écran de visée du scan (iPhone) : bloc à la demande, jamais dans le départ. */
@@ -57,6 +58,8 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   const [filter, setFilter] = useState<Filter>('all');
   const [found, setFound] = useState<{ readonly query: string; readonly result: CatalogueSearchResult } | null>(null);
   const [recents, setRecents] = useState<readonly RecentFood[] | null>(null);
+  // Favoris (D-79) : liste conservée (sans les aliments disparus) et aliments retrouvés, dans le même ordre.
+  const [favorites, setFavorites] = useState<{ readonly status: 'loading' | 'ready' | 'failed'; readonly kept: readonly Favorite[]; readonly foods: readonly SearchableFood[]; readonly gone: readonly string[] }>({ status: 'loading', kept: [], foods: [], gone: [] });
   const [selection, setSelection] = useState<Selection | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [creating, setCreating] = useState<{ readonly name: string; readonly barcode?: string } | null>(null);
@@ -191,6 +194,55 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   }, [data]);
 
   useEffect(() => {
+    let live = true;
+    void (async () => {
+      const read = await loadFavorites(data.repos.settings);
+      if (!read.ok) {
+        if (live) setFavorites((c) => ({ ...c, status: 'failed' }));
+        return;
+      }
+      if (read.list.length === 0) {
+        if (live) setFavorites({ status: 'ready', kept: [], foods: [], gone: [] });
+        return;
+      }
+      const foods = await data.repos.foods();
+      const resolved = await resolveFavorites(read.list, (ref) => resolveFood(foods, ref));
+      if (live) setFavorites({ status: 'ready', kept: resolved.kept, foods: resolved.foods, gone: resolved.gone });
+    })().catch(() => {
+      if (live) setFavorites((c) => ({ ...c, status: 'failed' }));
+    });
+    return () => {
+      live = false;
+    };
+  }, [data]);
+
+  /**
+   * Ajoute ou retire un favori ; `false` si rien n'a été écrit. La liste est RELUE avant d'écrire (jamais écrasée depuis un état d'écran) ;
+   * une lecture en échec n'écrit rien et désactive l'étoile (D-79 point 3).
+   */
+  async function onToggleFavorite(food: SearchableFood): Promise<boolean> {
+    if (favorites.status !== 'ready') return false;
+    const read = await loadFavorites(data.repos.settings);
+    if (!read.ok) {
+      setFavorites((current) => ({ ...current, status: 'failed' }));
+      return false;
+    }
+    const base = read.list.filter((f) => !favorites.gone.includes(f.ref));
+    const nextKept = toggleFavorite(base, { source: food.provenance, ref: food.ref });
+    try {
+      await saveFavorites(data.repos.settings, nextKept);
+    } catch {
+      return false;
+    }
+    setFavorites((current) => ({
+      ...current,
+      kept: nextKept,
+      foods: isFavorite(nextKept, food.ref) ? [food, ...current.foods.filter((f) => f.ref !== food.ref)] : current.foods.filter((f) => f.ref !== food.ref),
+    }));
+    return true;
+  }
+
+  useEffect(() => {
     const ticket = (request.current += 1);
     if (query.trim() === '') return;
     void (async () => {
@@ -254,6 +306,9 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
         <QuantityStep
           food={selection.food}
           staleCause={selection.staleCause}
+          favorite={isFavorite(favorites.kept, selection.food.ref)}
+          favoritesStatus={favorites.status}
+          onToggleFavorite={onToggleFavorite}
           initialGrams={selection.grams}
           date={date}
           defaultTime={defaultTime}
@@ -381,6 +436,29 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
         <p role="alert" className="ct-nutrition__warning">
           {notice}
         </p>
+      ) : null}
+      {query.trim() === '' && favorites.foods.length > 0 ? (
+        <section aria-labelledby="ct-nutrition-favorites">
+          <h2 id="ct-nutrition-favorites" className="ct-nutrition__subtitle">
+            {tNutrition('favorites')}
+          </h2>
+          <ul className="ct-nutrition__list">
+            {favorites.foods.map((food) => (
+              <li key={food.ref}>
+                <button type="button" data-hit className="ct-nutrition__hit" onClick={() => { setNotice(null); supersedeLookup(); setSelection({ food, grams: '100' }); }}>
+                  <span className="ct-nutrition__hit-name">
+                    {food.name}
+                    {food.brand ? <span className="ct-nutrition__muted"> · {food.brand}</span> : null}
+                  </span>
+                  <ProvenanceBadge source={food.provenance} />
+                  <span className="ct-nutrition__muted ct-nutrition__num">
+                    {food.per100g.kcal === null ? tNutrition('per100gUnknown') : tNutrition('per100g', { kcal: formatInt(food.per100g.kcal) })}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
       {query.trim() === '' ? (
         <section aria-labelledby="ct-nutrition-recents">
@@ -519,6 +597,9 @@ function OnlineResults({ query, result, onPick }: OnlineResultsProps) {
 interface QuantityStepProps {
   readonly food: SearchableFood;
   readonly staleCause?: string | undefined;
+  readonly favorite: boolean;
+  readonly favoritesStatus: 'loading' | 'ready' | 'failed';
+  readonly onToggleFavorite: (food: SearchableFood) => Promise<boolean>;
   readonly initialGrams: string;
   readonly date: LocalDate;
   readonly defaultTime: string;
@@ -528,13 +609,15 @@ interface QuantityStepProps {
 }
 
 /** Quantité d'une prise : grammes ou portions de la fiche, heure, totaux recalculés ; enregistrement après confirmation seulement. */
-function QuantityStep({ food, staleCause, initialGrams, date, defaultTime, onBack, onSaved, onClose }: QuantityStepProps) {
+function QuantityStep({ food, staleCause, favorite, favoritesStatus, onToggleFavorite, initialGrams, date, defaultTime, onBack, onSaved, onClose }: QuantityStepProps) {
   const { data } = useAppContainer();
   const [grams, setGrams] = useState(initialGrams);
   const [time, setTime] = useState(defaultTime);
   const [portions, setPortions] = useState<readonly PortionRecord[]>([]);
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [favoriteFailed, setFavoriteFailed] = useState(false);
+  const togglingFavorite = useRef(false);
   const actionsRef = useRef<HTMLDivElement>(null);
   const reveal = (): void => revealAfterKeyboard(actionsRef.current);
 
@@ -572,6 +655,16 @@ function QuantityStep({ food, staleCause, initialGrams, date, defaultTime, onBac
     }
   }
 
+  async function toggleFavorite(): Promise<void> {
+    if (togglingFavorite.current) return;
+    togglingFavorite.current = true;
+    try {
+      setFavoriteFailed(!(await onToggleFavorite(food)));
+    } finally {
+      togglingFavorite.current = false;
+    }
+  }
+
   return (
     <form
       className="ct-nutrition__panel ct-nutrition__form"
@@ -586,7 +679,15 @@ function QuantityStep({ food, staleCause, initialGrams, date, defaultTime, onBac
         <span className="ct-nutrition__muted ct-nutrition__num">
           {food.per100g.kcal === null ? tNutrition('per100gUnknown') : tNutrition('per100g', { kcal: formatInt(food.per100g.kcal) })}
         </span>
+        <Button variant="secondary" pressed={favorite} disabled={favoritesStatus !== 'ready'} ariaBusy={favoritesStatus === 'loading'} ariaLabel={tNutrition('favoriteToggle')} className="ct-nutrition__star" onClick={() => void toggleFavorite()}>
+          <span aria-hidden="true">{favorite ? '★' : '☆'}</span>
+        </Button>
       </div>
+      {favoritesStatus === 'failed' || favoriteFailed ? (
+        <p role="alert" className="ct-nutrition__warning">
+          {tNutrition(favoritesStatus === 'failed' ? 'favoritesReadError' : 'writeError')}
+        </p>
+      ) : null}
       {food.provenance === 'off' ? (
         <>
           <p className="ct-nutrition__muted">{tNutrition('offAttribution')}</p>

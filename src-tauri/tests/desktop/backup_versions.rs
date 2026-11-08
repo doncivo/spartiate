@@ -68,7 +68,10 @@ fn make_db(path: &Path, version: u32, bodies_version: u32) {
             // Les déclencheurs de recherche citent des tables d'index absentes de cette base minimale : seuls ceux de capture comptent ici.
             continue;
         }
-        let sql = trigger_body_for(name, table, bodies_version).unwrap();
+        // Pas de corps à cette version (ex. `sync_task_au` en version 8 : une base Spartiate n'a ni `task` ni ses déclencheurs) : rien à poser.
+        let Some(sql) = trigger_body_for(name, table, bodies_version) else {
+            continue;
+        };
         conn.execute_batch(sql).unwrap();
     }
 }
@@ -214,4 +217,124 @@ fn k05_4_reset_triggers_recreates_the_bodies_of_the_backup_version_and_never_a_c
             "newer-schema"
         );
     }
+}
+
+/// 0.8.1 (relecture sync-icloud rattrapée de #75 et #79) : une base Spartiate n'a AUCUNE table `search_index_doc` (reste de l'ancien projet,
+/// aucune migration 0001 à 0008 ne la crée). La restauration d'une sauvegarde ne doit pas laisser la base sans déclencheur de capture de
+/// synchro : sans eux, un repas ou une séance saisis ensuite n'entrent jamais dans `sync_outbox`.
+#[test]
+fn restore_recreates_sync_capture_triggers_even_without_search_index_doc() {
+    let dir = scratch();
+    let path = dir.path().join("spartiate.db");
+    make_db(&path, APP_SCHEMA_VERSION, APP_SCHEMA_VERSION);
+    {
+        let conn = Connection::open(&path).unwrap();
+        conn.execute_batch("DROP TABLE search_index_doc;").unwrap();
+    }
+    reset_triggers(&path).unwrap();
+    let conn = Connection::open(&path).unwrap();
+    let names: Vec<String> = conn
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'trigger'")
+        .unwrap()
+        .query_map([], |r| r.get::<_, String>(0))
+        .unwrap()
+        .collect::<Result<_, _>>()
+        .unwrap();
+    for expected in [
+        "sync_meal_entry_ai",
+        "sync_meal_entry_au",
+        "sync_mesocycle_ai",
+        "sync_food_ai",
+        "sync_nutrition_target_ai",
+        "sync_workout_ai",
+    ] {
+        assert!(
+            names.iter().any(|n| n == expected),
+            "déclencheur {expected} absent après la restauration : {names:?}"
+        );
+    }
+    assert!(
+        !names.iter().any(|n| n.starts_with("search_")),
+        "aucun déclencheur de recherche sans table d'index"
+    );
+}
+
+/// Base Spartiate RÉELLE de version 8 : schéma rejoué depuis les migrations TypeScript (fixture `spartiate-v8-schema.sql`, tenue à jour par
+/// `src/db/migrations/spartiateSchemaFixture.test.ts`). Aucune table `search_index_doc`, aucun déclencheur `search_*`.
+fn make_real_spartiate_db(path: &Path) {
+    let conn = Connection::open(path).unwrap();
+    conn.execute_batch(include_str!("../fixtures/spartiate-v8-schema.sql"))
+        .unwrap();
+    for v in 1..=8 {
+        conn.execute(
+            "INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?1, 'n', 'c', 'now')",
+            [v],
+        )
+        .unwrap();
+    }
+}
+
+fn trigger_names(path: &Path) -> Vec<String> {
+    let conn = Connection::open(path).unwrap();
+    let mut statement = conn
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'trigger' ORDER BY name")
+        .unwrap();
+    let names = statement
+        .query_map([], |r| r.get::<_, String>(0))
+        .unwrap()
+        .collect::<Result<_, _>>()
+        .unwrap();
+    names
+}
+
+#[test]
+fn a_real_spartiate_v8_backup_is_admitted_and_reset_triggers_restores_exactly_its_triggers() {
+    let dir = scratch();
+    let path = dir.path().join("reelle.db");
+    make_real_spartiate_db(&path);
+    let before = trigger_names(&path);
+    assert_eq!(before.len(), 34, "{before:?}");
+    assert!(!before.iter().any(|n| n.starts_with("search_")));
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 8);
+    // Un déclencheur étranger est retiré, tous ceux de l'app reviennent, aucun de recherche n'apparaît.
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch("CREATE TRIGGER evil AFTER INSERT ON food BEGIN SELECT 1; END;")
+        .unwrap();
+    reset_triggers(&path).unwrap();
+    assert_eq!(trigger_names(&path), before);
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 8);
+}
+
+/// Restauration puis migration : une sauvegarde Spartiate de version 7 (migrations 0001 à 0007 rejouées) passe par `reset_triggers`, puis la
+/// migration 0008 s'applique à l'ouverture. Elle ne doit pas échouer sur « trigger already exists » (`reset_triggers` ne recrée jamais un
+/// déclencheur d'une version supérieure) et la base finit avec les 34 déclencheurs `sync_*` de la version 8.
+#[test]
+fn a_restored_v7_backup_then_migration_0008_ends_with_the_34_sync_triggers() {
+    let dir = scratch();
+    let path = dir.path().join("v7.db");
+    {
+        let conn = Connection::open(&path).unwrap();
+        conn.execute_batch(include_str!("../fixtures/spartiate-v7-schema.sql"))
+            .unwrap();
+        for v in 1..=7 {
+            conn.execute(
+                "INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?1, 'n', 'c', 'now')",
+                [v],
+            )
+            .unwrap();
+        }
+    }
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 7);
+    let before = trigger_names(&path);
+    assert_eq!(before.len(), 26, "{before:?}");
+    reset_triggers(&path).unwrap();
+    assert_eq!(trigger_names(&path), before);
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(include_str!("../fixtures/spartiate-0008-statements.sql"))
+        .unwrap();
+    let after = trigger_names(&path);
+    assert_eq!(after.len(), 34, "{after:?}");
+    assert!(after.iter().all(|n| n.starts_with("sync_")));
 }

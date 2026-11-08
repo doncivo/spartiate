@@ -486,6 +486,15 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+      # I4-06 (point 1.4) : la mesure de démarrage (annotation du test) n'était téléversée qu'en cas d'échec ; on la garde aussi quand tout passe, pour
+      # chiffrer la dispersion des runners en ms. Aucun seuil ni test modifié.
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: perf-mesures
+          path: playwright-report.json
+          if-no-files-found: ignore
+          retention-days: 14
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: ${{ !cancelled() }}
         with:
