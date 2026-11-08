@@ -19,6 +19,8 @@ export function offFailureMessage(failure: OffFailure): string {
       return tNutrition('offUnavailable');
     case 'bad-response':
       return tNutrition('offBadResponse');
+    case 'tls':
+      return tNutrition('offTls');
   }
 }
 

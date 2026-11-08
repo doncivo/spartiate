@@ -128,6 +128,7 @@ export const nutritionFr = {
   scanFailed: 'Le scan n’a pas abouti. Réessaie, ou tape le code à la main.',
   scanUnreadable: 'Ce code n’est pas un code-barres alimentaire reconnu (EAN-13, EAN-8, UPC-E). Réessaie, ou tape le code à la main.',
   offOffline: 'Pas de connexion : Open Food Facts est injoignable. La recherche locale reste utilisable (tes fiches, Ciqual, produits déjà en cache).',
+  offTls: 'Connexion sécurisée impossible sur cet appareil : Open Food Facts n’est pas joignable. La recherche locale reste utilisable ; si cela dure, exporte les logs depuis Plus.',
   offTimeout: 'Open Food Facts met trop de temps à répondre. Réessaie dans un instant ; la recherche locale reste utilisable.',
   offRateLimited: 'Trop de requêtes vers Open Food Facts : réessaie dans {s} s.',
   offRateLimitedNoDelay: 'Trop de requêtes vers Open Food Facts : réessaie dans un instant.',

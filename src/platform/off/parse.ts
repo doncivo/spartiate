@@ -6,7 +6,7 @@ import type { OffRawProduct } from '../../domain/nutrition/offProduct';
  * à la main : aucune confiance dans la forme reçue, aucun texte libre de l'erreur n'est propagé.
  */
 
-export const OFF_ERROR_KINDS = ['offline', 'timeout', 'rate-limited', 'http', 'bad-response', 'invalid-input'] as const;
+export const OFF_ERROR_KINDS = ['offline', 'timeout', 'rate-limited', 'http', 'bad-response', 'tls', 'invalid-input'] as const;
 export type OffErrorKind = (typeof OFF_ERROR_KINDS)[number];
 
 export class OffError extends Error {
