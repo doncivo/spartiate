@@ -81,6 +81,19 @@ export async function loadNutritionSnapshot(access: DataAccess, today: LocalDate
   return { today, reference, days, weighIns, trend: computeTrend(weighIns), tdee, prefs, profile, target: effective, targets: decisions };
 }
 
+/** Dépense estimée à une autre date de fin (le check-in analyse la semaine qui précède son jour, pas la veille d'aujourd'hui). */
+export function tdeeAt(snapshot: NutritionSnapshot, endDate: LocalDate): TdeeEstimate {
+  const { profile, prefs } = snapshot;
+  return estimateTdee({
+    endDate,
+    days: snapshot.days,
+    weighIns: snapshot.weighIns,
+    profile: profile === null ? null : { sex: profile.sex, birthYear: profile.birthYear, heightCm: profile.heightCm },
+    activity: prefs.activity,
+    previousSmoothed: null,
+  });
+}
+
 export async function saveNutritionPrefs(access: DataAccess, prefs: NutritionPrefs): Promise<void> {
   await access.repos.settings.set('nutrition.prefs', prefs);
 }

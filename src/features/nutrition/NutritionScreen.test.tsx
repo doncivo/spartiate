@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
+import type { MealEntryDraft } from '../../domain/nutrition';
 import { addDays } from '../../domain/localDate';
 import type { DeviceId, LocalDate, LocalTime } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
@@ -29,7 +30,8 @@ const open = (screenId?: 'journal' | 'dashboard' | 'strategy' | 'checkin') => {
   );
 };
 const region = () => screen.findByRole('region', { name: 'Nutrition' });
-const fr = (n: number): string => n.toLocaleString('fr-FR');
+/** Le texte du DOM est normalisé par Testing Library (espaces fines insécables comprises) : même normalisation côté attendu. */
+const fr = (n: number): string => n.toLocaleString('fr-FR').replace(/[\u202f\u00a0]/g, ' ');
 
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
@@ -46,7 +48,7 @@ async function seedQuick(date: LocalDate, time: string, kcal: number, name = 'Re
 
 /** 28 jours complets (3 entrées sur 12 h, 2 400 kcal), une pesée tous les deux jours, profil et activité déclarés, cible en vigueur. */
 async function seedHistory(): Promise<void> {
-  const drafts = [];
+  const drafts: MealEntryDraft[] = [];
   for (let i = -28; i <= -1; i += 1) {
     for (const time of ['07:00', '13:00', '19:00']) drafts.push(quickAddDraft({ date: d(i), time: time as LocalTime, name: 'Repas', kcal: 800, proteinG: 50, fatG: 25, carbG: 100 }));
   }

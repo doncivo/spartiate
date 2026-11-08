@@ -1,0 +1,397 @@
+/* Nutrition (I4-03) : charte § 18.4, maquettes iPhone-Journal / iPhone-Dashboard / iPhone-CheckIn et PC-Journal. Jetons seulement, aucune couleur en dur ; cibles ≥ 44 pt ; chiffres tabulaires. */
+.ct-nutrition-shell {
+  min-width: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-grow: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ct-nutrition {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  flex-grow: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  max-width: 660px;
+}
+
+.ct-nutrition-shell[data-layout='pc'] .ct-nutrition {
+  max-width: 900px;
+}
+
+.ct-nutrition__title {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.02em;
+}
+
+.ct-nutrition__subtitle {
+  margin: 0;
+  font-size: var(--ct-font-size-text);
+  font-weight: var(--ct-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.ct-nutrition__eyebrow {
+  margin: 0 0 var(--ct-space-2);
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ct-color-bronze);
+}
+
+.ct-nutrition__muted {
+  margin: 0;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-nutrition__num {
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-nutrition__big {
+  margin: 0;
+  font-size: var(--ct-font-size-heading-sm);
+  font-weight: var(--ct-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-nutrition p {
+  margin: 0;
+}
+
+.ct-nutrition__error,
+.ct-nutrition__journal,
+.ct-nutrition__dashboard,
+.ct-nutrition__strategy,
+.ct-nutrition__form,
+.ct-nutrition__add,
+.ct-nutrition__done {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+}
+
+.ct-nutrition__card,
+.ct-nutrition__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  min-width: 0;
+  padding: var(--ct-space-3);
+  background: var(--ct-color-surface);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-lg);
+}
+
+.ct-nutrition__warning {
+  padding: var(--ct-space-2);
+  color: var(--ct-color-warning-text);
+  background: var(--ct-color-warning-bg);
+  border: 1px solid var(--ct-color-warning-border);
+  border-radius: var(--ct-radius-md);
+}
+
+.ct-nutrition__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+
+.ct-nutrition__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+
+.ct-nutrition__row > .ct-nutrition__field {
+  flex: 1 1 120px;
+}
+
+.ct-nutrition__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  min-width: 0;
+}
+
+.ct-nutrition__field--grow {
+  flex: 1 1 auto;
+}
+
+.ct-nutrition__field-label {
+  font-size: var(--ct-font-size-sm);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-nutrition__input {
+  box-sizing: border-box;
+  min-height: var(--ct-hit-target-min);
+  width: 100%;
+  padding: 0 var(--ct-space-3);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: var(--ct-color-text);
+  background: var(--ct-color-surface-input);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+}
+
+.ct-nutrition__input[aria-invalid='true'] {
+  border-color: var(--ct-color-warning-border);
+}
+
+.ct-nutrition__check {
+  display: flex;
+  align-items: center;
+  gap: var(--ct-space-2);
+  min-height: var(--ct-hit-target-min);
+}
+
+.ct-nutrition__check input {
+  width: var(--ct-hit-target-min);
+  height: 24px;
+}
+
+.ct-nutrition__panel-head {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--ct-space-2);
+}
+
+.ct-nutrition__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ct-nutrition__hit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ct-space-2);
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--ct-hit-target-min);
+  padding: var(--ct-space-2) var(--ct-space-3);
+  font: inherit;
+  text-align: left;
+  color: var(--ct-color-text);
+  background: var(--ct-color-surface-input);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  cursor: pointer;
+}
+
+.ct-nutrition__hit:focus-visible {
+  outline: 2px solid var(--ct-color-bronze);
+  outline-offset: 2px;
+}
+
+.ct-nutrition__hit-name {
+  flex: 1 1 8rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ct-nutrition__badge {
+  padding: 2px var(--ct-space-2);
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  white-space: nowrap;
+  color: var(--ct-color-text);
+  background: var(--ct-color-surface-raised);
+  border: 1px solid var(--ct-color-border-strong);
+  border-radius: var(--ct-radius-pill);
+}
+
+.ct-nutrition__badge--estimate {
+  color: var(--ct-color-warning-text);
+  background: var(--ct-color-warning-bg);
+  border-color: var(--ct-color-warning-border);
+}
+
+.ct-nutrition__food-head,
+.ct-nutrition__daynav,
+.ct-nutrition__totals {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ct-space-2);
+}
+
+.ct-nutrition__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+
+.ct-nutrition__day {
+  flex: 1 1 auto;
+  text-align: center;
+  font-weight: var(--ct-font-weight-semibold);
+  text-transform: capitalize;
+}
+
+.ct-nutrition__coverage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  padding: var(--ct-space-3);
+  background: var(--ct-color-surface-raised);
+  border: 1px dashed var(--ct-color-border-strong);
+  border-radius: var(--ct-radius-md);
+}
+
+.ct-nutrition__coverage-title {
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-nutrition__macros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ct-space-2);
+  margin: 0;
+}
+
+.ct-nutrition__macro dt {
+  font-size: var(--ct-font-size-sm);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-nutrition__macro dd {
+  margin: 0;
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-nutrition__macroline {
+  white-space: nowrap;
+}
+
+.ct-nutrition__entries {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--ct-color-surface);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-lg);
+}
+
+.ct-nutrition__entry {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'time main kcal'
+    'actions actions actions';
+  align-items: start;
+  gap: var(--ct-space-2) var(--ct-space-3);
+  padding: var(--ct-space-3);
+  border-bottom: 1px solid var(--ct-color-border);
+}
+
+.ct-nutrition__entry:last-child {
+  border-bottom: 0;
+}
+
+.ct-nutrition__time {
+  grid-area: time;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-nutrition__entry-main {
+  grid-area: main;
+  min-width: 0;
+}
+
+.ct-nutrition__entry-name {
+  overflow-wrap: anywhere;
+}
+
+.ct-nutrition__entry-kcal {
+  grid-area: kcal;
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-nutrition__entry-actions {
+  grid-area: actions;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+
+.ct-nutrition-shell[data-layout='pc'] .ct-nutrition__entry {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-areas: 'time main kcal actions';
+  align-items: center;
+}
+
+.ct-nutrition__chart {
+  width: 100%;
+  height: auto;
+  max-height: 160px;
+}
+
+.ct-nutrition__chart-base {
+  stroke: var(--ct-color-border-strong);
+  stroke-width: 1;
+}
+
+.ct-nutrition__chart-target {
+  stroke: var(--ct-color-text-secondary);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.ct-nutrition__bar--complete {
+  fill: var(--ct-color-bronze);
+}
+
+.ct-nutrition__bar--partial {
+  fill: var(--ct-color-bronze);
+  fill-opacity: 0.35;
+}
+
+.ct-nutrition__bar--unknown {
+  fill: var(--ct-color-border-strong);
+}
+
+.ct-nutrition__dot {
+  fill: var(--ct-color-text-secondary);
+}
+
+.ct-nutrition__dot--outlier {
+  fill: none;
+  stroke: var(--ct-color-text-secondary);
+}
+
+.ct-nutrition__trend-line {
+  fill: none;
+  stroke: var(--ct-color-bronze);
+  stroke-width: 2;
+}
+
+.ct-nutrition__trend-end {
+  fill: var(--ct-color-bronze);
+}
+
+.ct-nutrition__confidence {
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-nutrition-shell[data-layout='pc'] .ct-nutrition__dashboard {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}

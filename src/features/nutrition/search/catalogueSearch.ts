@@ -28,7 +28,7 @@ export interface CatalogueSearchResult {
   readonly staleOff: readonly string[];
 }
 
-const toSearchable = (food: FoodRecord): SearchableFood => ({
+export const toSearchable = (food: FoodRecord): SearchableFood => ({
   ref: food.id,
   provenance: food.source === 'off' ? 'off' : 'custom',
   name: food.name,
