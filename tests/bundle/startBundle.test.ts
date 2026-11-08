@@ -272,6 +272,28 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // I4-03 : onglet Nutrition (écrans, catalogue fr.nutrition, domaine) et carte « nutrition restante » d'Aujourd'hui : blocs à la demande.
+  it.each(['src/features/nutrition/NutritionScreen.tsx', 'src/features/today/NutritionRemainingCard.tsx'])('I4-03 : %s est un bloc à la demande, hors du départ', (source) => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest[source];
+    if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
+  });
+
+  it.each(['Rien de saisi aujourd’hui', 'Check-in suspendu', 'Aucune cible définie', 'Balance 7 jours', 'Scan du code-barres : disponible plus tard.'])('I4-03 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
+  it('I4-03 : aucun module du domaine ni des écrans de nutrition dans le graphe du départ', () => {
+    const startFiles = new Set(startChunks().map((chunk) => chunk.file));
+    for (const [source, chunk] of Object.entries(manifest)) {
+      if (startFiles.has(chunk.file)) expect(/src\/(domain|features)\/nutrition\/|features\/today\/Nutrition/.test(source), source).toBe(false);
+    }
+  });
+
   // Y-FIX-02 (revue I1) : causes nommées de `publish-blocked` (catalogue `syncPublishCause`, chargé avec Détails) : aucun bloc de départ ne les porte.
   it.each(['Première publication interrompue', 'Fichier inconnu dans le dossier'])('le texte de cause « %s » est hors du départ', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
