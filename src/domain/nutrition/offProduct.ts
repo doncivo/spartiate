@@ -52,8 +52,12 @@ export function offProductToDraft(product: OffRawProduct, now: IsoDateTime): Off
 
   const draft: FoodDraft = { source: 'off', barcode: barcode.code, name, brand: firstBrand === '' ? null : firstBrand, per100g, fetchedAt: now };
   if (validateFoodDraft(draft).length > 0) return { ok: false, reason: 'implausible' };
-  const missing = (['kcal', 'proteinG', 'fatG', 'carbG', 'fiberG'] as const).filter((key) => per100g[key] === null);
-  return { ok: true, draft, missing };
+  return { ok: true, draft, missing: missingNutrients(per100g) };
+}
+
+/** Valeurs inconnues (`null`) d'une fiche, dans l'ordre kcal, protéines, lipides, glucides, fibres ; un zéro réel n'est pas manquant. */
+export function missingNutrients(p: Per100g): OffMissing[] {
+  return (['kcal', 'proteinG', 'fatG', 'carbG', 'fiberG'] as const).filter((key) => p[key] === null);
 }
 
 export type OffCacheDecision = 'use-cache' | 'refresh';

@@ -1,24 +1,42 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { computeTotals, validateMealEntry, type SearchProvenance } from '../../../domain/nutrition';
 import type { SearchableFood } from '../../../domain/nutrition/foodSearch';
+import { missingNutrients } from '../../../domain/nutrition/offProduct';
 import type { IsoDateTime, LocalDate, LocalTime } from '../../../domain/types';
 import type { RecentFood } from '../../../db/repositories/mealEntryRepository';
 import type { PortionRecord } from '../../../db/repositories/foodRepository';
 import { formatInt, formatTenth, orDash, tNutrition } from '../../../i18n/nutritionText';
+import { resolveBarcodeScanner } from '../../../platform/barcode';
 import { Button, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
+import { canOpenAppSettings, openAppSettingsAction } from '../../security/systemSettingsAction';
+import type { ScanOutcome } from '../scan/scanBarcode';
 import { MacroLine, NumberField, parseNumber, ProvenanceBadge, revealAfterKeyboard, TimeField } from '../shared';
 import { entryFromFood } from '../useCases';
-import { searchCatalogue, type CatalogueSearchResult } from './catalogueSearch';
+import { searchCatalogue, toSearchable, type CatalogueSearchResult } from './catalogueSearch';
 import { CustomFoodForm } from './CustomFoodForm';
+import { chooseOnline, resolveBarcode, searchOnline, type OffDeps, type OffFailure, type OnlineItem, type OnlineSearch } from './offLookup';
+import { missingList, offFailureCause, offFailureMessage, offRefusalMessage } from './offMessages';
 import { resolveFood } from './resolveFood';
+
+/** Écran de visée du scan (iPhone) : bloc à la demande, jamais dans le départ. */
+const BarcodeScanView = lazy(() => import('../scan/BarcodeScanView').then((m) => ({ default: m.BarcodeScanView })));
 
 type Filter = 'all' | SearchProvenance;
 
 interface Selection {
   readonly food: SearchableFood;
   readonly grams: string;
+  /** Fiche Open Food Facts périmée proposée faute de réseau : cause dite. */
+  readonly staleCause?: string;
 }
+
+/** Résultat d'une saisie ou d'un scan de code, rendu sous le champ. */
+type LookupState = { readonly status: 'busy' } | { readonly status: 'message'; readonly text: string; readonly createCode?: string };
+
+type ScanNotice = { readonly kind: 'denied' | 'settings-failed' | 'failed' | 'unreadable' };
+
+type OnlineState = { readonly query: string; readonly status: 'busy' } | { readonly query: string; readonly status: 'done'; readonly result: OnlineSearch };
 
 export interface FoodSearchPanelProps {
   readonly date: LocalDate;
@@ -41,8 +59,108 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   const [recents, setRecents] = useState<readonly RecentFood[] | null>(null);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState<{ readonly name: string; readonly barcode?: string } | null>(null);
+  const [code, setCode] = useState('');
+  const [lookup, setLookup] = useState<LookupState | null>(null);
+  const [online, setOnline] = useState<OnlineState | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [scanNotice, setScanNotice] = useState<ScanNotice | null>(null);
   const request = useRef(0);
+  const lookupTicket = useRef(0);
+  const onlineTicket = useRef(0);
+  const { runtime, os } = container.platform;
+  const scannerLoader = useMemo(() => resolveBarcodeScanner(runtime, os), [runtime, os]);
+
+  const offDeps = async (): Promise<OffDeps> => ({
+    foods: await data.repos.foods(),
+    // Client Open Food Facts : chargé à la demande, au premier geste d'Ali (jamais au montage).
+    client: async () => (await import('../../../platform/off')).resolveOffClient(runtime),
+    now: new Date(container.clock.nowMs()).toISOString() as IsoDateTime,
+  });
+
+  /** Saisie ou scan d'un code : cache d'abord, réseau seulement si la fiche manque ou a plus de 90 jours. */
+  async function lookupCode(input: string): Promise<void> {
+    const ticket = (lookupTicket.current += 1);
+    setNotice(null);
+    setScanNotice(null);
+    setLookup({ status: 'busy' });
+    let state: LookupState | null;
+    let chosen: Selection | null = null;
+    try {
+      const result = await resolveBarcode(await offDeps(), input);
+      switch (result.kind) {
+        case 'invalid-code':
+          state = { status: 'message', text: tNutrition('barcodeInvalid') };
+          break;
+        case 'found':
+          state = null;
+          chosen = { food: toSearchable(result.food), grams: '100', ...(result.via === 'stale' && result.refreshFailure ? { staleCause: offFailureCause(result.refreshFailure) } : {}) };
+          break;
+        case 'not-found':
+          state = { status: 'message', text: tNutrition('barcodeNotFound', { code: result.code }), createCode: result.code };
+          break;
+        case 'refused':
+          state = { status: 'message', text: offRefusalMessage(result.reason), createCode: result.code };
+          break;
+        case 'failed':
+          state = { status: 'message', text: offFailureMessage(result.failure) };
+          break;
+      }
+    } catch {
+      state = { status: 'message', text: offFailureMessage({ kind: 'bad-response' } satisfies OffFailure) };
+    }
+    if (ticket !== lookupTicket.current) return;
+    setLookup(state);
+    if (chosen) setSelection(chosen);
+  }
+
+  /** « Chercher en ligne » : un seul appel, sur ce geste. N'écrit rien avant le choix d'une fiche. */
+  async function runOnlineSearch(): Promise<void> {
+    const text = query.trim();
+    const ticket = (onlineTicket.current += 1);
+    setOnline({ query: text, status: 'busy' });
+    let result: OnlineSearch;
+    try {
+      result = await searchOnline(await offDeps(), text);
+    } catch {
+      result = { kind: 'failed', failure: { kind: 'bad-response' } };
+    }
+    if (ticket === onlineTicket.current) setOnline({ query: text, status: 'done', result });
+  }
+
+  async function pickOnline(item: OnlineItem): Promise<void> {
+    try {
+      const record = await chooseOnline(await data.repos.foods(), item.draft);
+      setNotice(null);
+      setSelection({ food: toSearchable(record), grams: '100' });
+    } catch {
+      setNotice(tNutrition('writeError'));
+    }
+  }
+
+  function onScanOutcome(outcome: ScanOutcome): void {
+    setScanning(false);
+    switch (outcome.kind) {
+      case 'scanned':
+        setCode(outcome.barcode.code);
+        void lookupCode(outcome.barcode.code);
+        return;
+      case 'cancelled':
+        return;
+      case 'camera-denied':
+        setScanNotice({ kind: 'denied' });
+        return;
+      case 'unreadable':
+        setScanNotice({ kind: 'unreadable' });
+        return;
+      case 'failed':
+        setScanNotice({ kind: 'failed' });
+    }
+  }
+
+  async function openSettings(): Promise<void> {
+    setScanNotice((await openAppSettingsAction()) === null ? { kind: 'denied' } : { kind: 'settings-failed' });
+  }
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -104,12 +222,14 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   if (creating) {
     return (
       <CustomFoodForm
-        initialName={query.trim()}
+        initialName={creating.name}
+        {...(creating.barcode === undefined ? {} : { initialBarcode: creating.barcode })}
         onCreated={(food) => {
-          setCreating(false);
+          setCreating(null);
+          setLookup(null);
           setSelection({ food, grams: '100' });
         }}
-        onCancel={() => setCreating(false)}
+        onCancel={() => setCreating(null)}
       />
     );
   }
@@ -119,6 +239,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
       <div className="ct-nutrition__panel" onKeyDown={closeOnEscape}>
         <QuantityStep
           food={selection.food}
+          staleCause={selection.staleCause}
           initialGrams={selection.grams}
           date={date}
           defaultTime={defaultTime}
@@ -133,6 +254,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   // Un résultat n'est montré que pour la requête qui l'a produit (jamais celui d'une frappe précédente).
   const result = found !== null && found.query === query ? found.result : null;
   const visible = (result?.hits ?? []).filter((hit) => filter === 'all' || hit.provenance === filter);
+  const onlineView = online !== null && online.query === query.trim() ? online : null;
   return (
     <div className="ct-nutrition__panel" ref={root} onKeyDown={(event) => { closeOnEscape(event); moveFocus(event); }}>
       <div className="ct-nutrition__panel-head">
@@ -163,6 +285,81 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
         ]}
       />
       <p className="ct-nutrition__muted">{tNutrition('searchHintKeys')}</p>
+      <form
+        className="ct-nutrition__panel-head"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (code.trim() !== '') void lookupCode(code);
+        }}
+      >
+        <label className="ct-nutrition__field ct-nutrition__field--grow">
+          <span className="ct-nutrition__field-label">{tNutrition('barcodeLabel')}</span>
+          <input
+            className="ct-nutrition__input ct-nutrition__num"
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            value={code}
+            aria-describedby="ct-nutrition-barcode-hint"
+            onChange={(event) => setCode(event.target.value)}
+          />
+        </label>
+        <Button type="submit" variant="secondary" disabled={code.trim() === '' || lookup?.status === 'busy'}>
+          {tNutrition('barcodeSubmit')}
+        </Button>
+        {scannerLoader ? (
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setScanNotice(null);
+              setLookup(null);
+              setScanning(true);
+            }}
+          >
+            {tNutrition('scanButton')}
+          </Button>
+        ) : null}
+      </form>
+      <p id="ct-nutrition-barcode-hint" className="ct-nutrition__muted">
+        {tNutrition('barcodeHint')}
+      </p>
+      {lookup?.status === 'busy' ? (
+        <p role="status" className="ct-nutrition__muted">
+          {tNutrition('barcodeBusy')}
+        </p>
+      ) : lookup?.status === 'message' ? (
+        <div role="alert" className="ct-nutrition__warning">
+          <p>{lookup.text}</p>
+          {lookup.createCode ? (
+            <Button variant="secondary" onClick={() => setCreating({ name: '', barcode: lookup.createCode as string })}>
+              {tNutrition('barcodeCreate')}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+      {scanNotice ? (
+        <div role="alert" className="ct-nutrition__warning">
+          <p>
+            {scanNotice.kind === 'denied'
+              ? tNutrition('scanDenied')
+              : scanNotice.kind === 'settings-failed'
+                ? tNutrition('scanSettingsFailed')
+                : scanNotice.kind === 'unreadable'
+                  ? tNutrition('scanUnreadable')
+                  : tNutrition('scanFailed')}
+          </p>
+          {scanNotice.kind === 'denied' && canOpenAppSettings() ? (
+            <Button variant="secondary" onClick={() => void openSettings()}>
+              {tNutrition('scanOpenSettings')}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+      {scanning && scannerLoader ? (
+        <Suspense fallback={null}>
+          <BarcodeScanView load={scannerLoader} onOutcome={onScanOutcome} />
+        </Suspense>
+      ) : null}
       {notice ? (
         <p role="alert" className="ct-nutrition__warning">
           {notice}
@@ -214,23 +411,91 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
                     <span className="ct-nutrition__muted ct-nutrition__num">
                       {hit.per100g.kcal === null ? tNutrition('per100gUnknown') : tNutrition('per100g', { kcal: formatInt(hit.per100g.kcal) })}
                     </span>
+                    {hit.provenance === 'off' ? <span className="ct-nutrition__muted">{tNutrition('offAttributionShort')}</span> : null}
                     {result.staleOff.includes(hit.ref) ? <span className="ct-nutrition__muted">{tNutrition('staleOff')}</span> : null}
                   </button>
                 </li>
               ))}
             </ul>
           )}
-          <Button variant="secondary" onClick={() => setCreating(true)}>
-            {tNutrition('createFood')}
-          </Button>
+          <div className="ct-nutrition__actions">
+            <Button variant="secondary" onClick={() => setCreating({ name: query.trim() })}>
+              {tNutrition('createFood')}
+            </Button>
+            <Button variant="secondary" disabled={onlineView?.status === 'busy'} onClick={() => void runOnlineSearch()}>
+              {tNutrition('searchOnline')}
+            </Button>
+          </div>
+          <p className="ct-nutrition__muted">{tNutrition('searchOnlineHint')}</p>
+          {onlineView?.status === 'busy' ? (
+            <p role="status" className="ct-nutrition__muted">
+              {tNutrition('searchOnlineBusy')}
+            </p>
+          ) : onlineView?.status === 'done' ? (
+            <OnlineResults query={onlineView.query} result={onlineView.result} onPick={(item) => void pickOnline(item)} />
+          ) : null}
         </section>
       )}
     </div>
   );
 }
 
+interface OnlineResultsProps {
+  readonly query: string;
+  readonly result: OnlineSearch;
+  readonly onPick: (item: OnlineItem) => void;
+}
+
+/** Résultats d'une recherche en ligne : provenance Open Food Facts et attribution sur chaque ligne ; rien n'est enregistré avant le choix. */
+function OnlineResults({ query, result, onPick }: OnlineResultsProps) {
+  if (result.kind === 'failed') {
+    return (
+      <p role="alert" className="ct-nutrition__warning">
+        {offFailureMessage(result.failure)}
+      </p>
+    );
+  }
+  if (result.kind === 'invalid-query') {
+    return (
+      <p role="alert" className="ct-nutrition__warning">
+        {offFailureMessage({ kind: 'invalid-input' })}
+      </p>
+    );
+  }
+  return (
+    <section aria-labelledby="ct-nutrition-online">
+      <h2 id="ct-nutrition-online" className="ct-nutrition__subtitle">
+        {tNutrition('onlineResults')}
+      </h2>
+      {result.items.length === 0 ? (
+        <p>{tNutrition('onlineEmpty', { query })}</p>
+      ) : (
+        <ul className="ct-nutrition__list">
+          {result.items.map((item) => (
+            <li key={item.draft.barcode}>
+              <button type="button" data-hit className="ct-nutrition__hit" onClick={() => onPick(item)}>
+                <span className="ct-nutrition__hit-name">
+                  {item.draft.name}
+                  {item.draft.brand ? <span className="ct-nutrition__muted"> · {item.draft.brand}</span> : null}
+                </span>
+                <ProvenanceBadge source="off" />
+                <span className="ct-nutrition__muted ct-nutrition__num">
+                  {item.draft.per100g.kcal === null ? tNutrition('per100gUnknown') : tNutrition('per100g', { kcal: formatInt(item.draft.per100g.kcal) })}
+                </span>
+                <span className="ct-nutrition__muted">{tNutrition('offAttributionShort')}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {result.refused > 0 ? <p className="ct-nutrition__muted">{tNutrition('onlineRefused', { n: result.refused })}</p> : null}
+    </section>
+  );
+}
+
 interface QuantityStepProps {
   readonly food: SearchableFood;
+  readonly staleCause?: string | undefined;
   readonly initialGrams: string;
   readonly date: LocalDate;
   readonly defaultTime: string;
@@ -240,7 +505,7 @@ interface QuantityStepProps {
 }
 
 /** Quantité d'une prise : grammes ou portions de la fiche, heure, totaux recalculés ; enregistrement après confirmation seulement. */
-function QuantityStep({ food, initialGrams, date, defaultTime, onBack, onSaved, onClose }: QuantityStepProps) {
+function QuantityStep({ food, staleCause, initialGrams, date, defaultTime, onBack, onSaved, onClose }: QuantityStepProps) {
   const { data } = useAppContainer();
   const [grams, setGrams] = useState(initialGrams);
   const [time, setTime] = useState(defaultTime);
@@ -299,6 +564,19 @@ function QuantityStep({ food, initialGrams, date, defaultTime, onBack, onSaved, 
           {food.per100g.kcal === null ? tNutrition('per100gUnknown') : tNutrition('per100g', { kcal: formatInt(food.per100g.kcal) })}
         </span>
       </div>
+      {food.provenance === 'off' ? (
+        <>
+          <p className="ct-nutrition__muted">{tNutrition('offAttribution')}</p>
+          {missingNutrients(food.per100g).length > 0 ? (
+            <p className="ct-nutrition__muted">{tNutrition('offMissing', { list: missingList(missingNutrients(food.per100g)) })}</p>
+          ) : null}
+          {staleCause ? (
+            <p role="status" className="ct-nutrition__warning">
+              {tNutrition('offStaleFiche', { cause: staleCause })}
+            </p>
+          ) : null}
+        </>
+      ) : null}
       {portions.length > 0 ? (
         <div className="ct-nutrition__chips" role="group" aria-label={tNutrition('portionsLabel')}>
           {portions.map((portion) => (
