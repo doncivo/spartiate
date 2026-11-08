@@ -3,6 +3,8 @@ import type { MealEntryDraft } from '../../../domain/nutrition/mealEntry';
 import { aggregateDay } from '../../../domain/nutrition/dayTotals';
 import { toMealEntryInput } from '../../../domain/nutrition/mealEntry';
 import type { DeviceId, LocalDate, LocalTime } from '../../../domain/types';
+import { createHlcClock, createWriteStamper } from '../../../domain/hlc';
+import { createMealEntryRepository } from './mealEntryRepository';
 import { openBaseDb, type TestDb } from './testSetup';
 
 /**
@@ -153,5 +155,17 @@ describe('MealEntryRepository : lecture du journal', () => {
       [OTHER, 100, 'ciqual'],
     ]);
     expect(await r.recentFoods(1)).toHaveLength(1);
+  });
+});
+
+describe('MealEntryRepository : atomicité hors DataAccess.transaction (revue)', () => {
+  it('createMany sur le driver : la 2e insertion échoue côté SQL (identifiant répété), rien ne reste écrit ni en file', async () => {
+    db = await openBaseDb(DEVICE);
+    const stamper = createWriteStamper(db.clock, createHlcClock({ clock: db.clock, deviceId: DEVICE }));
+    const same = { next: () => E(1) as never };
+    const r = createMealEntryRepository(db.driver, stamper, same);
+    await expect(r.createMany([draft(), draft({ time: '19:00' as LocalTime })])).rejects.toThrow();
+    expect(await db.driver.select('SELECT * FROM meal_entry')).toEqual([]);
+    expect(await outbox()).toEqual([]);
   });
 });
