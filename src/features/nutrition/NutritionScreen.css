@@ -361,6 +361,8 @@
 .ct-nutrition__bar--partial {
   fill: var(--ct-color-bronze);
   fill-opacity: 0.35;
+  stroke: var(--ct-color-bronze);
+  stroke-width: 1.5;
 }
 
 .ct-nutrition__bar--unknown {

@@ -40,7 +40,9 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
         {remainingToday === null || remainingToday.kcal === null ? (
           <p>{target === null ? tNutrition('noTarget') : tNutrition('unknown')}</p>
         ) : (
-          <p className="ct-nutrition__big ct-nutrition__num">{tNutrition('remainingKcal', { n: formatInt(remainingToday.kcal) })}</p>
+          <p className="ct-nutrition__big ct-nutrition__num">
+            {remainingToday.kcal < 0 ? tNutrition('overKcal', { n: formatInt(-remainingToday.kcal) }) : tNutrition('remainingKcal', { n: formatInt(remainingToday.kcal) })}
+          </p>
         )}
         {today && today.entryCount === 0 ? <p className="ct-nutrition__muted">{tNutrition('emptyToday')}</p> : null}
       </section>

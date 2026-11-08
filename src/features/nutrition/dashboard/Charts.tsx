@@ -31,7 +31,8 @@ export function BarsChart({ bars, targetKcal }: { readonly bars: readonly DayBar
           const x = PAD + i * slot + slot * 0.15;
           const width = slot * 0.7;
           if (bar.kcal === null || bar.state === 'unknown') return <rect key={bar.date} className="ct-nutrition__bar ct-nutrition__bar--unknown" x={x} y={H - PAD - 3} width={width} height={3} />;
-          return <rect key={bar.date} className={`ct-nutrition__bar ct-nutrition__bar--${bar.state}`} x={x} y={y(bar.kcal)} width={width} height={H - PAD - y(bar.kcal)} />;
+          // Jour partiel : contour pointillé en plus du remplissage clair (le motif porte la différence, pas l'opacité seule).
+          return <rect key={bar.date} className={`ct-nutrition__bar ct-nutrition__bar--${bar.state}`} x={x} y={y(bar.kcal)} width={width} height={H - PAD - y(bar.kcal)} {...(bar.state === 'partial' ? { strokeDasharray: '3 2' } : {})} />;
         })}
       </svg>
       <ul className="ct-visually-hidden">
