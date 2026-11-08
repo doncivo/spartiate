@@ -4,6 +4,7 @@ import { tTraining } from '../../../i18n/trainingText';
 import { Button } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
+import '../../app/TodayScreen.css';
 import './Session.css';
 
 /**

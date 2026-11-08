@@ -77,10 +77,19 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
           <p>{tNutrition('trendEmpty')}</p>
         ) : (
           <>
-            <p className="ct-nutrition__big ct-nutrition__num">{tNutrition('trendValue', { n: formatTenth(model.trendNow) })}</p>
-            <p className="ct-nutrition__muted ct-nutrition__num">{model.slope === null ? tNutrition('trendNoSlope') : tNutrition('trendSlope', { n: formatKgDelta(model.slope) })}</p>
+            {model.learning && model.lastWeighIn ? (
+              <>
+                <p className="ct-nutrition__big ct-nutrition__num">{tNutrition('trendValue', { n: formatTenth(model.lastWeighIn.kg) })}</p>
+                <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('trendLearning', { count: model.weighInCount === 1 ? tNutrition('trendLearningCountOne') : tNutrition('trendLearningCount', { n: model.weighInCount }) })}</p>
+              </>
+            ) : (
+              <>
+                <p className="ct-nutrition__big ct-nutrition__num">{tNutrition('trendValue', { n: formatTenth(model.trendNow) })}</p>
+                <p className="ct-nutrition__muted ct-nutrition__num">{model.slope === null ? tNutrition('trendNoSlope') : tNutrition('trendSlope', { n: formatKgDelta(model.slope) })}</p>
+              </>
+            )}
             <TrendChart points={model.trendPoints} endDate={snapshot.reference} />
-            {model.lastWeighIn ? <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('trendLast', { kg: formatTenth(model.lastWeighIn.kg), date: formatDayShort(model.lastWeighIn.date) })}</p> : null}
+            {model.lastWeighIn && !model.learning ? <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('trendLast', { kg: formatTenth(model.lastWeighIn.kg), date: formatDayShort(model.lastWeighIn.date) })}</p> : null}
             {model.trendPoints.some((p) => p.outlier) ? <p className="ct-nutrition__muted">{tNutrition('trendOutlier')}</p> : null}
           </>
         )}

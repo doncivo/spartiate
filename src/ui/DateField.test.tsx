@@ -132,9 +132,9 @@ describe('DateField (T-14, PC)', () => {
     fireEvent.keyDown(today, { key: 'ArrowRight' });
     expect(screen.getByRole('button', { name: '24 septembre' })).toHaveFocus();
     fireEvent.keyDown(screen.getByRole('button', { name: '24 septembre' }), { key: 'ArrowDown' });
-    expect(screen.getByRole('button', { name: '1 octobre' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: '1er octobre' })).toHaveFocus();
     expect(screen.getByText('Octobre 2026')).toBeInTheDocument();
-    fireEvent.keyDown(screen.getByRole('button', { name: '1 octobre' }), { key: 'ArrowLeft' });
+    fireEvent.keyDown(screen.getByRole('button', { name: '1er octobre' }), { key: 'ArrowLeft' });
     expect(screen.getByRole('button', { name: '30 septembre' })).toHaveFocus();
   });
 

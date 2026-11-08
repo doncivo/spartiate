@@ -1,3 +1,4 @@
+import { frFirst } from './format';
 import type { Routine } from '../domain/model';
 import type { StreakUnit } from '../domain/routineStreaks';
 import type { Weekday } from '../domain/types';
@@ -73,7 +74,7 @@ export function formatNextOccurrences(dates: readonly string[]): string {
       const date = utc(iso);
       const next = dates[index + 1];
       const endsMonth = next === undefined || next.slice(0, 7) !== iso.slice(0, 7);
-      return `${weekday.format(date)} ${String(date.getUTCDate())}${endsMonth ? ` ${month.format(date)}` : ''}`;
+      return `${weekday.format(date)} ${frFirst(String(date.getUTCDate()))}${endsMonth ? ` ${month.format(date)}` : ''}`;
     })
     .join(', ');
 }

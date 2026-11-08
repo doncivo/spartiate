@@ -2,6 +2,20 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.7.1
+
+Correctifs de mise en page et de cohérence, vus sur l’iPhone en 0.7.0. Pas de mise à jour de la base.
+
+- **Nutrition, fiche d’ajout d’un aliment** : plus aucun débordement à droite (Quantité et Heure se partagent la largeur de la carte), marge intérieure comme les autres cartes ; le bas de la fiche (« Choisir un autre aliment », « Annuler ») reste atteignable au-dessus de la barre d’onglets et du clavier.
+- **Cartes sans marge** : « Séance » et « Nutrition » d’Aujourd’hui et « Séance » d’Entraînement ont la marge intérieure de la carte « Poids » (une seule cause corrigée).
+- **Onglets** d’Entraînement (Routines, Bibliothèque, Matériel, Journal, Cycle) et de Nutrition : une seule ligne, qui défile si besoin ; l’onglet actif reste visible.
+- **Bibliothèque** : filtres compacts les uns sous les autres, la liste se voit sans défiler.
+- **Poids de tendance** : une seule règle pour Aujourd’hui et le Dashboard. Tant que la tendance apprend (moins de 14 pesées), le Dashboard montre la dernière pesée et « en apprentissage », pas un chiffre de tendance.
+- **Graphique de tendance** : avec peu de données, l’axe couvre au moins 7 jours finissant aujourd’hui ; l’échelle englobe toutes les pesées avec une marge.
+- **Check-in** : avant la première donnée saisie, l’écran dit « Premier check-in : lundi 9 novembre » avec ce qu’il faut d’ici là, au lieu d’un check-in suspendu sur une semaine vide. La règle de décision ne change pas.
+- **Dates** : « 1er novembre » au lieu de « 1 novembre », partout.
+- **Aujourd’hui, « Arrive ensuite »** : ne garde que la Récupération (Séance et Nutrition sont livrées).
+
 ## 0.7.0
 
 - **Nutrition** (nouvel onglet) : Journal du jour (couverture et incertitude sans faux zéro, provenance de chaque aliment, ajout, correction, suppression avec confirmation), recherche locale (récents, tes fiches, table Ciqual ; grammes ou portions), Ajout rapide de macros, tableau de bord (tendance du poids, balance sur 7 jours, dépense, confiance), Stratégie et cibles, et check-in hebdomadaire (accepter, personnaliser ou refuser, relançable ; jamais sous 1 200 kcal sans ta confirmation, jamais sous 800). Sur Aujourd’hui, une carte montre les cibles restantes.

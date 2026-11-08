@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import './SegmentedControl.css';
 
 export interface SegmentedOption<V extends string> {
@@ -14,13 +15,20 @@ export interface SegmentedControlProps<V extends string> {
   readonly disabled?: boolean;
   /** Disposition en grille de deux colonnes (quatre choix : 2 × 2) ; sans valeur, une rangée qui passe à la ligne si besoin. */
   readonly columns?: 2;
+  /** Une seule ligne qui défile horizontalement (comme une barre d'onglets iOS), choix actif toujours visible ; pour cinq choix ou plus à 440 px. */
+  readonly scrollable?: boolean;
 }
 
 /**
  * Contrôle segmenté à choix unique (P-02, P-03 : thème, premier jour, format d'heure), aspect de `SpaceSegmented`, boutons de 44 pt.
  * Accessibilité : `radiogroup` ; flèches gauche / droite déplacent le choix, une seule tabulation pour le groupe.
  */
-export function SegmentedControl<V extends string>({ options, value, onChange, label, disabled = false, columns }: SegmentedControlProps<V>) {
+export function SegmentedControl<V extends string>({ options, value, onChange, label, disabled = false, columns, scrollable = false }: SegmentedControlProps<V>) {
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!scrollable) return;
+    root.current?.querySelector<HTMLElement>('[aria-checked="true"]')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  }, [scrollable, value]);
   function onKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number): void {
     const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
     if (step === 0) return;
@@ -32,7 +40,7 @@ export function SegmentedControl<V extends string>({ options, value, onChange, l
     buttons?.[(index + step + options.length) % options.length]?.focus();
   }
   return (
-    <div className="ct-segmented" data-columns={columns} role="radiogroup" aria-label={label}>
+    <div className="ct-segmented" ref={root} data-columns={columns} data-scroll={scrollable || undefined} role="radiogroup" aria-label={label}>
       {options.map((option, index) => (
         <button
           key={option.value}
