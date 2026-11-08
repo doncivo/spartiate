@@ -212,3 +212,16 @@ describe('FoodRepository : code-barres et cache Open Food Facts (aucun appel ré
     expect(await r.expireOffCache(NOW)).toBe(0);
   });
 });
+
+describe('FoodRepository : atomicité hors DataAccess.transaction (revue)', () => {
+  it('softDelete sur le driver : la suppression de la fiche échoue côté SQL, les portions ne sont pas supprimées', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    await r.create(custom(), { id: F1 });
+    await r.addPortion(F1, { label: '1 tranche', grams: 30 }, { id: P1 });
+    await db.driver.execute("CREATE TRIGGER zz_refuse BEFORE UPDATE OF deleted_at ON food BEGIN SELECT RAISE(ABORT, 'refus'); END");
+    await expect(r.softDelete(F1)).rejects.toThrow();
+    expect((await db.driver.select<{ deleted_at: string | null }>('SELECT deleted_at FROM food_portion WHERE id = ?', [P1]))[0]?.deleted_at).toBeNull();
+    expect((await r.listPortions(F1)).map((p) => p.id)).toEqual([P1]);
+  });
+});

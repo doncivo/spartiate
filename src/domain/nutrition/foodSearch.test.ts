@@ -65,6 +65,12 @@ describe('searchFoods', () => {
     expect(searchFoods('pomme', catalogue, { limit: 2 })).toHaveLength(2);
     expect(searchFoods('pomme', catalogue)).toEqual(searchFoods('pomme', [...catalogue].reverse()));
   });
+  it("limite invalide (négative, NaN, non entière, infinie) : bornée comme recentFoods, jamais d'exception", () => {
+    expect(searchFoods('pomme', catalogue, { limit: -3 })).toEqual([]);
+    expect(searchFoods('pomme', catalogue, { limit: Number.NaN })).toEqual([]);
+    expect(searchFoods('pomme', catalogue, { limit: 2.9 })).toHaveLength(2);
+    expect(searchFoods('pomme', catalogue, { limit: Number.POSITIVE_INFINITY })).toHaveLength(4);
+  });
   it('requête de caractères spéciaux : aucune erreur, aucun résultat', () => {
     expect(searchFoods('(.*', catalogue)).toEqual([]);
     expect(searchFoods('\\', catalogue)).toEqual([]);
