@@ -11,6 +11,7 @@ export * from './foodSearch';
 export * from './mealEntry';
 export * from './targetRecord';
 export * from './journal';
+export * from './favorites';
 export * from './prefs';
 export * from './trendLearning';
 export * from './barcode';
