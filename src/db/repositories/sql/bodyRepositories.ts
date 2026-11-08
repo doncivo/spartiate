@@ -122,7 +122,7 @@ export function createBodyWeightRepository(db: SqlExecutor, stamper: WriteStampe
       if (!row) throw new RepositoryError('not-found', 'body_weight', id);
       return rowToWeight(row);
     },
-    async saveHealth(input, today) {
+    async saveHealth(input, today, options) {
       if (!isIsoDateTime(input.measuredAt) || !isValidTimeZone(input.timezone) || input.healthUuid.trim() === '') {
         throw new RepositoryError('invalid', 'body_weight', 'health');
       }
@@ -140,6 +140,11 @@ export function createBodyWeightRepository(db: SqlExecutor, stamper: WriteStampe
         existing.health_uuid === input.healthUuid &&
         existing.measured_at === input.measuredAt
       ) {
+        return rowToWeight(existing);
+      }
+      // Import de fichier (D-69) : le fichier couvre 30 jours et se réimporte ; une pesée supprimée par Ali reste supprimée et un échantillon
+      // plus ancien que celui déjà enregistré ne le remplace pas.
+      if (options?.fromImport === true && existing && (existing.deleted_at !== null || (existing.measured_at !== null && existing.measured_at > input.measuredAt))) {
         return rowToWeight(existing);
       }
       const stamp = stamper.next();

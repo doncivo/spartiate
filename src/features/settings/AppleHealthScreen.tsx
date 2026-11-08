@@ -10,6 +10,7 @@ import { parseShortcutWeights } from '../../domain/health/shortcutWeights';
 import { detectTimeZone } from '../../platform/timeZone';
 import { Button, Icon, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
+import { RepositoryError } from '../../db/repositories/common';
 import { useNavigationStore } from '../app/navigation';
 import './BodyScreen.css';
 
@@ -186,12 +187,24 @@ function ShortcutImport() {
       const parsed = parseShortcutWeights(picked.text, today);
       if (parsed.weights.length === 0) return setState({ kind: 'empty', text: tHealth('shortcutEmpty', { count: parsed.rejected }) });
       const timezone = detectTimeZone() ?? 'Europe/Paris';
+      // Une ligne refusée par le dépôt (jour recalculé dans le fuseau de l'appareil, donc futur) ne fait pas échouer le fichier : comptée.
+      let refused = 0;
       await container.data.transaction(async (repos) => {
         const weights = await repos.bodyWeights();
-        for (const w of parsed.weights) await weights.saveHealth({ kg: w.kg, measuredAt: w.measuredAt as IsoDateTime, timezone, healthUuid: `raccourcis:${w.measuredAt}` }, today);
+        for (const w of parsed.weights) {
+          try {
+            await weights.saveHealth({ kg: w.kg, measuredAt: w.measuredAt as IsoDateTime, timezone, healthUuid: `raccourcis:${w.measuredAt}` }, today, { fromImport: true });
+          } catch (error) {
+            if (!(error instanceof RepositoryError)) throw error;
+            refused += 1;
+          }
+        }
       });
-      const rejected = parsed.rejected > 0 ? tHealth('shortcutRejected', { count: parsed.rejected }) : '';
-      const done = parsed.weights.length === 1 ? tHealth('shortcutDoneOne', { rejected }) : tHealth('shortcutDoneMany', { count: parsed.weights.length, rejected });
+      const imported = parsed.weights.length - refused;
+      const totalRejected = parsed.rejected + refused;
+      const rejected = totalRejected > 0 ? tHealth('shortcutRejected', { count: totalRejected }) : '';
+      if (imported === 0) return setState({ kind: 'empty', text: tHealth('shortcutEmpty', { count: totalRejected }) });
+      const done = imported === 1 ? tHealth('shortcutDoneOne', { rejected }) : tHealth('shortcutDoneMany', { count: imported, rejected });
       setState({ kind: 'done', text: done + (parsed.truncated ? tHealth('shortcutTruncated') : '') });
     } catch (error) {
       logFailure('healthkit', { code: 'shortcut-import-failed', message: error instanceof Error ? error.name : 'inconnu' });
