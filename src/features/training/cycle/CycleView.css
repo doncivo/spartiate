@@ -1,0 +1,67 @@
+/* Section Cycle (I3-02) : bloc à la demande ; jetons de la charte uniquement (§ 18.4), cibles ≥ 44 pt par les boutons de l'UI. */
+
+.ct-cycle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+  padding: var(--ct-space-3);
+  background: var(--ct-color-surface);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-lg);
+}
+
+.ct-cycle__form,
+.ct-cycle__review,
+.ct-cycle__confirm,
+.ct-cycle__choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  min-width: 0;
+}
+
+.ct-cycle__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+
+.ct-cycle__subtitle {
+  margin: 0;
+  font-size: var(--ct-font-size-sm);
+  font-weight: var(--ct-font-weight-semibold);
+  color: var(--ct-color-text);
+}
+
+.ct-cycle__week {
+  margin: 0;
+  font-weight: var(--ct-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--ct-color-text);
+}
+
+.ct-cycle__status {
+  margin: 0;
+  color: var(--ct-color-text);
+}
+
+.ct-cycle__note {
+  margin: 0;
+  font-size: var(--ct-font-size-sm);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-cycle__warning {
+  margin: 0;
+  padding: var(--ct-space-2);
+  color: var(--ct-color-warning-text);
+  background: var(--ct-color-warning-bg);
+  border: 1px solid var(--ct-color-warning-border);
+  border-radius: var(--ct-radius-md);
+}
+
+.ct-cycle__error {
+  margin: 0;
+  color: var(--ct-color-danger);
+}

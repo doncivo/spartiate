@@ -36,6 +36,7 @@ const LIVE_CATALOGS = [
   'fr.training.ts',
   'fr.progression.ts',
   'fr.trainingGeneration.ts',
+  'fr.trainingCycle.ts',
   'fr.body.ts',
   'fr.health.ts',
   'fr.today.ts',

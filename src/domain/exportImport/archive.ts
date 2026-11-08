@@ -28,7 +28,7 @@ import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
 export const EXPORT_APP = 'spartiate';
 /** Version de schéma écrite au manifeste et maximale acceptée à l'import : celle de la dernière migration (vérifiée par un test). */
-export const EXPORT_SV = 6;
+export const EXPORT_SV = 7;
 /** Réglages exportés (D-57 : unités, jour de check-in, thème). Les unités sont dans `profile` ; le jour de check-in n'existe pas encore (nutrition). */
 export const EXPORT_SETTING_KEYS = ['ui.theme'] as const;
 export type ExportSettingKey = (typeof EXPORT_SETTING_KEYS)[number];
@@ -60,9 +60,9 @@ export interface ExportWeight {
  * Tables d'entraînement exportées (0.2.3, point 4) : exercices personnalisés, profils de matériel, routines, séances CLOSES et leurs
  * séries, dans l'ordre du catalogue (parents d'abord). Les colonnes sont celles publiées par la synchro, sans `created_at` ni
  * `deleted_at` ; la validation est celle du catalogue (type et longueur). Une séance ouverte n'est jamais exportée (D-27). I2-01 (0.3.1) :
- * profil de progression et décisions d'Ali, difficulté des séries.
+ * profil de progression et décisions d'Ali, difficulté des séries. I3-02 (schéma 7) : cycles d'entraînement.
  */
-export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision'] as const;
+export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle'] as const;
 /**
  * Colonnes ajoutées après la première version exportée de leur table : absentes d'une archive plus ancienne (0.3.0 : `workout_set` sans
  * `difficulty`), lues comme nulles. Toute autre colonne manquante reste refusée.

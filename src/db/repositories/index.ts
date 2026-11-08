@@ -35,3 +35,4 @@ export type * from './epochCarryReportRepository';
 // (fin Y-TECH-05)
 export type * from './occurrenceDedupRepository';
 export type * from './progressionRepository';
+export type * from './mesocycleRepository';

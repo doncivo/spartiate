@@ -1,8 +1,8 @@
 //! I1-01 / I1-02 / I1-03 : les versions 2 (migration 0002, bibliothèque, matériel et routines), 3 (migration 0003, séance locale `workout` /
 //! `workout_set`, sans déclencheur de capture : D-27) et 4 (migration 0004, déclencheurs gardés des séances closes) sont admises par la
 //! vérification des sauvegardes, comme la 5 (I2-01, migration 0005 : `progression_profile` et `recommendation_decision`, locales, sans
-//! déclencheur) et la 6 (I2-01 PR 2/2, migration 0006 : captures des deux tables de progression et de `workout_set.difficulty`) ; la
-//! version 7, inconnue de cette app, est refusée. Les déclencheurs de capture sont ceux de la référence.
+//! déclencheur), la 6 (I2-01 PR 2/2, migration 0006 : captures des deux tables de progression et de `workout_set.difficulty`) et la 7
+//! (I3-02, migration 0007 : captures de `mesocycle`) ; la version 8, inconnue de cette app, est refusée. Les déclencheurs de capture sont ceux de la référence.
 
 use std::path::Path;
 
@@ -70,8 +70,8 @@ fn error_code(path: &Path) -> &'static str {
 }
 
 #[test]
-fn i2_01_the_app_schema_version_is_6() {
-    assert_eq!(APP_SCHEMA_VERSION, 6);
+fn i3_02_the_app_schema_version_is_7() {
+    assert_eq!(APP_SCHEMA_VERSION, 7);
 }
 
 #[test]
@@ -253,13 +253,67 @@ fn i2_01_the_version_6_triggers_do_not_exist_before_version_6() {
 }
 
 #[test]
-fn i2_01_a_version_7_backup_is_refused_as_newer_schema() {
+fn i3_02_a_version_7_backup_with_the_published_mesocycle_table_is_accepted() {
     let dir = scratch();
     let path = dir.path().join("v7.db");
+    make_db(&path, 7, &TABLES);
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(
+            "CREATE TABLE workout (id TEXT PRIMARY KEY, ended_at TEXT); CREATE TABLE workout_set (id TEXT PRIMARY KEY, workout_id TEXT, difficulty TEXT);",
+        )
+        .unwrap();
+    for (table, names) in [
+        (
+            "workout",
+            &[
+                "sync_workout_ai",
+                "sync_workout_au",
+                "sync_workout_close_decisions_au",
+            ][..],
+        ),
+        (
+            "workout_set",
+            &[
+                "sync_workout_set_ai",
+                "sync_workout_set_au",
+                "sync_workout_set_difficulty_au",
+            ][..],
+        ),
+    ] {
+        for name in names {
+            let sql = trigger_body_for(name, table, 7).unwrap_or_else(|| panic!("{name}"));
+            Connection::open(&path).unwrap().execute_batch(sql).unwrap();
+        }
+    }
+    make_tables(
+        &path,
+        7,
+        &[
+            "progression_profile",
+            "recommendation_decision",
+            "mesocycle",
+        ],
+    );
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 7);
+}
+
+#[test]
+fn i3_02_the_mesocycle_triggers_do_not_exist_before_version_7() {
+    for name in ["sync_mesocycle_ai", "sync_mesocycle_au"] {
+        assert_eq!(trigger_body_for(name, "mesocycle", 6), None, "{name}");
+        assert!(trigger_body_for(name, "mesocycle", 7).is_some(), "{name}");
+    }
+}
+
+#[test]
+fn i3_02_a_version_8_backup_is_refused_as_newer_schema() {
+    let dir = scratch();
+    let path = dir.path().join("v8.db");
     make_db(&path, 3, &TABLES);
     Connection::open(&path)
         .unwrap()
-        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5); INSERT INTO schema_migrations (version) VALUES (6); INSERT INTO schema_migrations (version) VALUES (7);")
+        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5); INSERT INTO schema_migrations (version) VALUES (6); INSERT INTO schema_migrations (version) VALUES (7); INSERT INTO schema_migrations (version) VALUES (8);")
         .unwrap();
     assert_eq!(error_code(&path), "newer-schema");
 }

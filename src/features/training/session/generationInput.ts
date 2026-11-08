@@ -4,6 +4,7 @@ import {
   type ExercisePattern,
   type GeneratedSession,
   type GenerateSessionInput,
+  type GenerationWeek,
   type RoutineDaySpec,
   type SetStyle,
   type SplitKind,
@@ -57,7 +58,13 @@ export interface GenerationData {
   readonly content: Pick<TrainingContent, 'groupOfMuscle'>;
 }
 
-export function buildGenerationInput(data: GenerationData, source: GenerationSource, dayIndex: number, settings: GenerationSettings, now: IsoDateTime): GenerateSessionInput {
+/** I3-02 : semaine du cycle suivi pour cette routine (`generationWeekOf`) et rotation Varied ; absent : la routine telle quelle. */
+export interface GenerationCycle {
+  readonly week: GenerationWeek | null;
+  readonly mesocycleIndex: number | null;
+}
+
+export function buildGenerationInput(data: GenerationData, source: GenerationSource, dayIndex: number, settings: GenerationSettings, now: IsoDateTime, cycle: GenerationCycle | null = null): GenerateSessionInput {
   return {
     day: dayIndex,
     program: {
@@ -77,8 +84,8 @@ export function buildGenerationInput(data: GenerationData, source: GenerationSou
     profile: null,
     recovery: null,
     timeBudgetMin: settings.budgetMin,
-    week: null,
-    mesocycleIndex: null,
+    week: cycle?.week ?? null,
+    mesocycleIndex: cycle?.mesocycleIndex ?? null,
     config: DEFAULT_GENERATION_CONFIG,
     now,
   };
