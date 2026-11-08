@@ -4,6 +4,9 @@ Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGEL
 
 ## 0.3.2
 
+- Correctifs du moteur après relecture à froid : une charge très au-dessus de ton historique (faute de frappe possible) n’est jamais augmentée tant qu’une seconde séance ne la confirme pas, et la phrase te demande de vérifier ta saisie ; la charge de référence est celle de la majorité de tes séries, plus un seul top set ; au haut de la fourchette, un « Facile » ne remplace plus le cran de matériel.
+- **Apple Santé, pesées via Raccourcis** (Plus → Apple Santé → Importer) : tu importes le fichier écrit par le raccourci « Spartiate — poids » (guide : docs/guide-raccourcis-sante.md). Une pesée par jour, la plus récente ; une pesée que tu as supprimée ne revient pas à l’import suivant ; ta saisie manuelle du jour est conservée. Le format réel du fichier reste à confirmer sur ton iPhone (hypothèse H-21).
+- PC : les erreurs de fichier iCloud verrouillé qui restaient muettes dans le journal portent maintenant leur cause (fichier utilisé, accès refusé, suppression en attente, autre), sans chemin ni contenu.
 - Séance : la **Proposition** tient compte de ta forme du moment, toujours pour maintenir ou alléger, jamais pour ajouter. Une phrase dit pourquoi, et les autres signaux s’affichent en texte juste en dessous.
 - **Fatigue** : si tu as fait plus de 20 % de répétitions en moins qu’à la dernière séance à la même charge (20 % pile ne compte pas), la proposition garde ta charge et tes répétitions, sans hausse. Deux **choix facultatifs** s’affichent : « −5 % de charge » ou « 2 répétitions de moins par série ». Aucun n’est appliqué tout seul : « Choisir » remplit les séries à faire, « Accepter » garde la proposition, « Refuser » ne remplit rien.
 - **3 séances sans progrès** : trois pistes facultatives : essayer une variante de l’exercice, changer de plage de répétitions dans la routine, ou un mini-deload à −10 % (le seul des trois qu’on peut choisir d’un geste).
