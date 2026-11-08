@@ -480,7 +480,7 @@ mod imp {
                 std::mem::size_of::<FILE_ATTRIBUTE_TAG_INFO>() as u32,
             )
         }
-        .map_err(|_| FsError::Io)?;
+        .map_err(|e| cloud_windows::win_io(&e))?;
         Ok((info.FileAttributes, info.ReparseTag))
     }
 
@@ -496,7 +496,8 @@ mod imp {
     fn by_handle(handle: &OwnedHandle) -> Result<BY_HANDLE_FILE_INFORMATION, FsError> {
         let mut info = BY_HANDLE_FILE_INFORMATION::default();
         // SAFETY: structure de sortie possédée.
-        unsafe { GetFileInformationByHandle(raw(handle), &mut info) }.map_err(|_| FsError::Io)?;
+        unsafe { GetFileInformationByHandle(raw(handle), &mut info) }
+            .map_err(|e| cloud_windows::win_io(&e))?;
         Ok(info)
     }
 
@@ -680,7 +681,7 @@ mod imp {
                     std::mem::size_of::<FILE_DISPOSITION_INFO>() as u32,
                 )
             }
-            .map_err(|_| FsError::Io)
+            .map_err(|e| cloud_windows::win_io(&e))
         }
 
         fn remaining_budget(&self) -> std::time::Duration {
