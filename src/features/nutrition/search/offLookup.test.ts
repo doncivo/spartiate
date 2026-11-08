@@ -162,6 +162,42 @@ describe('resolveBarcode : cas dégradés', () => {
   });
 });
 
+describe('resolveBarcode : réponses incohérentes et écriture du cache', () => {
+  it('OFF renvoie un autre code valide que celui demandé : not-found, rien écrit', async () => {
+    const { deps, foods } = await setup({
+      client: {
+        product: async () => ({ found: true, products: [rawSkyr({ code: '96385074' })] }),
+        search: async () => ({ found: false, products: [] }),
+      },
+      calls: [],
+      failWith: null,
+    });
+    expect(await resolveBarcode(deps, CODE)).toEqual({ kind: 'not-found', code: CODE });
+    expect(await foods.list()).toEqual([]);
+  });
+
+  it('échec d’écriture du cache : nature dédiée write-failed (pas « réponse illisible »)', async () => {
+    const { deps, foods } = await setup(createFakeOff({ products: [rawSkyr()] }));
+    const failing = { ...foods, findByBarcode: foods.findByBarcode.bind(foods), cacheOff: () => Promise.reject(new Error('disque')) } as typeof foods;
+    expect(await resolveBarcode({ ...deps, foods: failing }, CODE)).toEqual({ kind: 'failed', code: CODE, failure: { kind: 'write-failed' } });
+  });
+});
+
+describe('searchOnline : codes et produits écartés', () => {
+  it('un produit au code à clé invalide est refusé (compté), les autres restent', async () => {
+    const { deps } = await setup(createFakeOff({ products: [rawSkyr(), rawSkyr({ code: '4006381333932', product_name: 'Faux' })] }));
+    const r = await searchOnline(deps, 'skyr');
+    expect(r.kind === 'ok' && r.items.map((i) => i.draft.name)).toEqual(['Skyr nature']);
+    expect(r.kind === 'ok' && r.refused).toBe(1);
+  });
+
+  it('produits écartés par la façade (skipped) ajoutés au compte des refusés', async () => {
+    const { deps } = await setup({ client: { product: async () => ({ found: false, products: [] }), search: async () => ({ found: true, products: [rawSkyr()], skipped: 2 }) }, calls: [], failWith: null });
+    const r = await searchOnline(deps, 'skyr');
+    expect(r.kind === 'ok' && r.refused).toBe(2);
+  });
+});
+
 describe('searchOnline : seulement sur appel explicite', () => {
   it('convertit les produits utilisables, compte les refusés, n’écrit rien', async () => {
     const { deps, foods, fake } = await setup(
