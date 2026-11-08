@@ -191,8 +191,6 @@ export function JournalView({ snapshot, onChanged }: JournalViewProps) {
               {tNutrition('addQuick')}
             </Button>
           </div>
-          <p className="ct-nutrition__muted">{tNutrition('scanLater')}</p>
-          <p className="ct-nutrition__muted">{tNutrition('scanLaterHint')}</p>
         </div>
       )}
 
