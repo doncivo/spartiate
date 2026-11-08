@@ -2,6 +2,11 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.3.3
+
+- Séance : la phrase de la Proposition te prévient quand les charges reposent sur du matériel marqué « à vérifier » dans ton profil (barre EZ, machine…), et quand ta dernière séance, avec moins de la moitié des séries faites, n’est pas prise en compte. La proposition elle-même ne change pas.
+- Profil de matériel Fitness Park Antony copié avant la 0.3.0 : la paire d’haltères de 9 kg est de nouveau proposée, sans rien modifier dans ton profil. Pas de mise à jour de la base.
+
 ## 0.3.2
 
 - Correctifs du moteur après relecture à froid : une charge très au-dessus de ton historique (faute de frappe possible) n’est jamais augmentée tant qu’une seconde séance ne la confirme pas, et la phrase te demande de vérifier ta saisie ; la charge de référence est celle de la majorité de tes séries, plus un seul top set ; au haut de la fourchette, un « Facile » ne remplace plus le cran de matériel.
