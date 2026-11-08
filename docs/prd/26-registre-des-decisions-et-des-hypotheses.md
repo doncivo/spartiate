@@ -80,7 +80,6 @@ Les renvois « H-3 » du texte désignent la famille H-3a, H-3b, H-3c (D-59).
 | H-18 | Le driver `@sqlite.org/sqlite-wasm` des tests reproduit fidèlement le plugin SQL natif vendored : parité DDL, déclencheurs, transactions, pragmas, restauration | UNVERIFIED (outil identifié, D-31) | Tests natifs CI (`cargo test -p tauri-plugin-sql`, `--test desktop`) couvrant les mêmes scénarios que `migrator.test.ts` ; smoke Windows |
 | H-19a | Deux largeurs (440 / 1 440 px, rupture unique 1 024 px, `PC_MIN_WIDTH_PX` de `src/ui/useLayout.ts`) couvrent tous les usages, y compris zoom et texte agrandi, sans débordement autour de 1 024 px | UNVERIFIED | Scénarios `visual` Spartiate aux deux largeurs plus relecture à 1 024 px et en Dynamic Type « Très grand » (SPA-009) |
 | H-19b | Ciqual fournit les 8 micronutriments épinglés pour la majorité des aliments génériques | UNVERIFIED | Comptage des colonnes Ciqual au chargement (I6) |
-| H-20 | Le raccourci « Spartiate — poids » écrit un fichier CSV lisible par l'import (Valeur et Unité en locale française, décalage `ZZZZZ`) | UNVERIFIED | Constat d'Ali sur l'iPhone avec le guide docs/guide-raccourcis-sante.md ; export du fichier réel (D-69) |
 | H-20 | « Recovery HRV » de l'Apple Watch est lisible comme un type HealthKit (ou dérivable de `hrvSDNN`) | UNVERIFIED | Lecture des types exposés par `healthkit_read_quantity` sur l'iPhone (I5) ; fallback : HRV SDNN nocturne seule |
 
 Règle : aucune hypothèse ne passe `CONFIRMED` sans preuve archivée (log CI, capture, vecteur) référencée dans `docs/capability-matrix.md`.
