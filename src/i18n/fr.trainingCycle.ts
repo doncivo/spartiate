@@ -42,7 +42,7 @@ export const trainingCycleFr = {
   anticipateConfirm: 'Confirmer le deload',
   cancel: 'Annuler',
   pause: 'Mettre le programme en pause',
-  paused: 'Programme en pause depuis le {date} : jours non comptés, aucune séance manquée, aucun rappel.',
+  paused: 'Programme en pause depuis le {date} : jours non comptés, aucune séance manquée, aucune notification.',
   pauseHint: 'Le profil « Maison haltères » peut servir pendant la pause : le programme principal ne change pas.',
   resume: 'Reprendre le programme',
   lightProposal:

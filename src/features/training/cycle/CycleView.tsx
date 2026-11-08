@@ -89,9 +89,12 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
     };
   }, [fetchCycle, apply]);
 
-  /** Écriture puis relecture (la base fait foi) ; `null` : rien à écrire. */
+  /** Écriture puis relecture (la base fait foi) ; `null` : geste refusé par le domaine, dit comme une erreur (jamais un bouton sans effet). */
   async function write(work: ((repos: DataAccess['repos']) => Promise<void>) | null): Promise<void> {
-    if (work === null) return;
+    if (work === null) {
+      setError(true);
+      return;
+    }
     setBusy(true);
     setError(false);
     try {
