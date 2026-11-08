@@ -2,7 +2,7 @@ import { ENGINE_VERSION, REASON_ORDER, type ProgressionConfig } from './config';
 import { confidenceOf } from './confidence';
 import { analyzeHistory, current1rmFromSessions, epley, type SessionEstimate } from './estimate1rm';
 import { activeConstraints, proposalOptions, reducedTarget, reduces, type ActiveConstraints } from './constraints';
-import { loadGrid, nextLoadAbove, roundKg, snapToEquipment } from './loadGrid';
+import { gridToVerify, loadGrid, nextLoadAbove, roundKg, snapToEquipment } from './loadGrid';
 import type { MuscleWeight, PrescribeInput, PrescribedSet, Prescription, PrescriptionHeadline, PrescriptionReference, ReasonCode } from './types';
 
 /**
@@ -171,6 +171,8 @@ export function prescribe(input: PrescribeInput): Prescription {
     !topReached && !hard && last.difficulty === 'easy' && confidence < config.easyRecalibrationBelow && (lastRecal === null || (Date.parse(input.now) - Date.parse(lastRecal)) / DAY_MS >= config.easyRecalibrationCooldownDays);
 
   const grid = loadGrid(input.exercise.equipment, input.equipment);
+  // I2-04 : grille tirée d'un matériel « à vérifier » du profil : dit dans la phrase, la proposition est inchangée.
+  if (gridToVerify(input.exercise.equipment, input.equipment)) reasons.add('grid-to-verify');
   // La charge de la référence est disponible par définition (Ali l'a soulevée), même hors grille (paire d'haltères en plus).
   const available = grid === null ? null : [...new Set([...grid.loads, refLoad])].sort((a, b) => a - b);
   // 6. Contraintes (I2-02) : évaluées sur l'historique validé. Dernier travail du muscle : le plus récent entre la donnée de l'appelant

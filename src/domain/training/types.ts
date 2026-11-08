@@ -345,6 +345,8 @@ export type ReasonCode =
   | 'recovery-low'
   | 'recovery-set-removed'
   | 'increment-unknown'
+  // I2-04 : grille de charges tirée d'un matériel « à vérifier » du profil (information, rien n'est bloqué).
+  | 'grid-to-verify'
   | 'equipment-max'
   | 'snap-extra-rep'
   | 'gain-capped'

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { DEFAULT_PROGRESSION_CONFIG } from '../../../domain/training/config';
-import { confidenceBand, confidencePercent, constraintAlerts, explainOption, explainPrescription, type ExplanationKey, type OptionKey } from '../../../domain/training/explain';
+import { confidenceBand, confidencePercent, constraintAlerts, explainOption, explainPrescription, explanationNotes, type ExplanationKey, type OptionKey } from '../../../domain/training/explain';
 import { prescribe } from '../../../domain/training/prescribe';
 import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type Prescription, type ProgressionEquipment, type RepTarget } from '../../../domain/training/types';
 import type { WorkoutSet, WorkoutWithSets } from '../../../domain/training/session';
@@ -256,7 +256,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     const explanation = explainPrescription(p);
     const params: Record<string, string | number> = { ...explanation.params };
     for (const key of ['load', 'delta'] as const) if (typeof params[key] === 'number') params[key] = kg(params[key]);
-    const sentence = tProgression(EXPLAIN_KEYS[explanation.key], params);
+    // I2-04 : précisions (séance partielle ignorée, matériel à vérifier) dans la même phrase, lues d'un trait.
+    const notes = explanationNotes(p).map((n) => tProgression(n.key, n.params));
+    const sentence = [tProgression(EXPLAIN_KEYS[explanation.key], params), ...notes].join(' ');
     const value = p.status === 'unsupported' ? tProgression('noProposal') : p.loadKg === null ? tProgression('toEnter') : tProgression('value', { load: kg(p.loadKg), reps: repsText(p.sets.map((s) => s.reps)) });
     const proposed = p.status === 'prescribed' && p.loadKg !== null;
     const alerts = constraintAlerts(p);
