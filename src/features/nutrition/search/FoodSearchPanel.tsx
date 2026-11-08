@@ -10,6 +10,7 @@ import { useAppContainer } from '../../app/AppContainerContext';
 import { MacroLine, NumberField, parseNumber, ProvenanceBadge, TimeField } from '../shared';
 import { entryFromFood } from '../useCases';
 import { searchCatalogue, type CatalogueSearchResult } from './catalogueSearch';
+import { CustomFoodForm } from './CustomFoodForm';
 import { resolveFood } from './resolveFood';
 
 type Filter = 'all' | SearchProvenance;
@@ -40,6 +41,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   const [recents, setRecents] = useState<readonly RecentFood[] | null>(null);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
   const request = useRef(0);
   const root = useRef<HTMLDivElement>(null);
 
@@ -97,6 +99,19 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
     }
     setNotice(null);
     setSelection({ food, grams: String(recent.lastGrams) });
+  }
+
+  if (creating) {
+    return (
+      <CustomFoodForm
+        initialName={query.trim()}
+        onCreated={(food) => {
+          setCreating(false);
+          setSelection({ food, grams: '100' });
+        }}
+        onCancel={() => setCreating(false)}
+      />
+    );
   }
 
   if (selection) {
@@ -205,6 +220,9 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
               ))}
             </ul>
           )}
+          <Button variant="secondary" onClick={() => setCreating(true)}>
+            {tNutrition('createFood')}
+          </Button>
         </section>
       )}
     </div>
