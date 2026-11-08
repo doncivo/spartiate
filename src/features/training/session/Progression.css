@@ -106,6 +106,14 @@
 }
 
 .ct-progression__options,
+/* I2-03 : rampe d'échauffement annoncée avant la décision. */
+.ct-progression__warmup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  min-width: 0;
+}
+
 .ct-progression__deload {
   display: flex;
   flex-direction: column;
