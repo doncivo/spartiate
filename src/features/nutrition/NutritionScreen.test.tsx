@@ -46,13 +46,12 @@ async function seedQuick(date: LocalDate, time: string, kcal: number, name = 'Re
 
 /** 28 jours complets (3 entrées sur 12 h, 2 400 kcal), une pesée tous les deux jours, profil et activité déclarés, cible en vigueur. */
 async function seedHistory(): Promise<void> {
-  const entries = await db.data.repos.mealEntries();
   const drafts = [];
   for (let i = -28; i <= -1; i += 1) {
     for (const time of ['07:00', '13:00', '19:00']) drafts.push(quickAddDraft({ date: d(i), time: time as LocalTime, name: 'Repas', kcal: 800, proteinG: 50, fatG: 25, carbG: 100 }));
   }
-  await db.data.transaction(async () => {
-    await entries.createMany(drafts);
+  await db.data.transaction(async (repos) => {
+    await (await repos.mealEntries()).createMany(drafts);
   });
   const weights = await db.data.repos.bodyWeights();
   for (let i = -28; i <= -1; i += 2) await weights.saveManual({ date: d(i), kg: 80, timezone: 'Europe/Paris' }, TODAY);
