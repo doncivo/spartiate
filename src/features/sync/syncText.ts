@@ -153,6 +153,10 @@ const KIND_KEYS = {
   progression_profile: 'sync.version.kinds.progressionProfile',
   recommendation_decision: 'sync.version.kinds.recommendationDecision',
   mesocycle: 'sync.version.kinds.mesocycle',
+  food: 'sync.version.kinds.food',
+  food_portion: 'sync.version.kinds.foodPortion',
+  meal_entry: 'sync.version.kinds.mealEntry',
+  nutrition_target: 'sync.version.kinds.nutritionTarget',
 } as const;
 
 /** Types d'éléments d'un échec (« tâches, événements »), d'après les tables du catalogue. */

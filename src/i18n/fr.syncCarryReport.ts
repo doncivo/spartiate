@@ -77,5 +77,9 @@ export const syncCarryReportFr = {
   kindProgressionProfile: 'Profil de progression',
   kindRecommendationDecision: 'Décision sur une proposition',
   kindMesocycle: 'Cycle d’entraînement',
+  kindFood: 'Fiche alimentaire',
+  kindFoodPortion: 'Portion d’une fiche',
+  kindMealEntry: 'Entrée du journal',
+  kindNutritionTarget: 'Cible nutritionnelle',
   kindOther: 'Autre élément',
 } as const;

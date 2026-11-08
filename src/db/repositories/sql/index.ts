@@ -65,6 +65,13 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFa
   progression: () => import('./progressionRepository').then((m) => m.createProgressionRepository(executor, stamper)),
   // I3-02 : cycles d'entraînement, à la demande ; chaque écriture est publiable et lève le signal de synchro.
   mesocycles: () => import('./mesocycleRepository').then((m) => signalingWrites(m.createMesocycleRepository(executor, stamper), ['start', 'save'])),
+  // I4-02 : fiches, journal et cibles de nutrition, à la demande ; chaque écriture est publiable et lève le signal de synchro.
+  foods: () =>
+    import('./foodRepository').then((m) =>
+      signalingWrites(m.createFoodRepository(executor, stamper), ['create', 'update', 'softDelete', 'cacheOff', 'expireOffCache', 'addPortion', 'updatePortion', 'removePortion']),
+    ),
+  mealEntries: () => import('./mealEntryRepository').then((m) => signalingWrites(m.createMealEntryRepository(executor, stamper), ['create', 'createMany', 'update', 'softDelete'])),
+  nutritionTargets: () => import('./nutritionTargetRepository').then((m) => signalingWrites(m.createNutritionTargetRepository(executor, stamper), ['record'])),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)

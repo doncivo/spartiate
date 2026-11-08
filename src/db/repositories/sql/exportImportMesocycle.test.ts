@@ -26,9 +26,9 @@ const open = async (device: DeviceId): Promise<TestDb> => {
 const read = async (db: TestDb): Promise<ExportData> => (await db.data.repos.exportImport()).readExportData();
 
 describe('export / import du mésocycle (I3-02)', () => {
-  it('table exportée en dernier ; schéma 7', () => {
-    expect(TRAINING_EXPORT_TABLES.at(-1)).toBe('mesocycle');
-    expect(EXPORT_SV).toBe(7);
+  it('table exportée avant les quatre tables de nutrition (I4-02) ; schéma 7 puis 8', () => {
+    expect(TRAINING_EXPORT_TABLES.at(-5)).toBe('mesocycle');
+    expect(EXPORT_SV).toBe(8);
   });
 
   it('aller-retour : cycle en pause identique (hash canonique), publié comme toute écriture', async () => {

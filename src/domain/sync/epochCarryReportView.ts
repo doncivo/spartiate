@@ -53,6 +53,11 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   recommendation_decision: { label: 'exercise_id', kind: 'recommendationDecision' },
   // I3-02 : cycle d'entraînement (libellé : date de début).
   mesocycle: { label: 'start_date', kind: 'mesocycle' },
+  // I4-02 : nutrition (libellés : nom de la fiche, de la portion ou de l'entrée ; la cible porte sa semaine).
+  food: { label: 'name', kind: 'food' },
+  food_portion: { label: 'label', kind: 'foodPortion' },
+  meal_entry: { label: 'food_name', kind: 'mealEntry' },
+  nutrition_target: { label: 'week_start', kind: 'nutritionTarget' },
 };
 
 export const carryReportTableEntry = (table: string): { readonly label: string | null; readonly kind: string } | undefined =>
