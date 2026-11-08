@@ -2,6 +2,12 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.7.0
+
+- **Nutrition** (nouvel onglet) : Journal du jour (couverture et incertitude sans faux zéro, provenance de chaque aliment, ajout, correction, suppression avec confirmation), recherche locale (récents, tes fiches, table Ciqual ; grammes ou portions), Ajout rapide de macros, tableau de bord (tendance du poids, balance sur 7 jours, dépense, confiance), Stratégie et cibles, et check-in hebdomadaire (accepter, personnaliser ou refuser, relançable ; jamais sous 1 200 kcal sans ta confirmation, jamais sous 800). Sur Aujourd’hui, une carte montre les cibles restantes.
+- Pas encore : scan de code-barres, Open Food Facts, recettes, favoris, photo de repas (IA) — rien n’est envoyé nulle part. Réglages par défaut proposés cette nuit (D-74, D-76), révisables : activité déclarée puis dépense mesurée après 28 jours, jours hauts / bas désactivés.
+- Pas de mise à jour de la base (reste en version 8).
+
 ## 0.6.0
 
 - Nutrition, en coulisse (I4) : l’app sait maintenant calculer tendance de poids, dépense et cibles (activité déclarée sédentaire / légère / modérée / active, dépense mesurée après 28 jours de données), et garde en mémoire le catalogue d’aliments (table Ciqual de l’Anses, 3 484 aliments, chargée à la demande), le journal des repas et les cibles. **Rien n’est encore affiché** : l’écran Nutrition arrive ensuite. Réglages par défaut proposés cette nuit (D-74), révisables : jours hauts / bas désactivés.
