@@ -253,7 +253,7 @@ describe('critère 19 : gel de non-régression après SPA-006', () => {
   it('plugins et capabilities : HealthKit (SPA-006) et live-activity (SPA-007) s’ajoutent', () => {
     expect(readdirSync(join(root, 'src-tauri', 'plugins')).filter((d) => d !== 'README.md').sort()).toEqual(['files', 'folder-bookmark', 'haptics', 'healthkit', 'live-activity', 'notification-actions', 'privacy-shield', 'speech', 'vision']);
     expect(readdirSync(join(root, 'src-tauri', 'capabilities')).sort()).toEqual([
-      'backups-ios.json', 'backups.json', 'biometric-ios.json', 'capture-ios.json', 'default.json', 'desktop.json', 'export-ios.json', 'export.json', 'haptics-ios.json', 'healthkit-ios.json', 'import.json', 'live-activity-ios.json', 'logs-ios.json', 'logs.json', 'notifications-ios.json', 'ocr.json', 'privacy-shield-ios.json', 'signing-ios.json', 'sync-ios.json', 'sync-pairing.json', 'sync.json',
+      'backups-ios.json', 'backups.json', 'biometric-ios.json', 'capture-ios.json', 'default.json', 'desktop.json', 'export-ios.json', 'export.json', 'haptics-ios.json', 'healthkit-ios.json', 'import.json', 'live-activity-ios.json', 'logs-ios.json', 'logs.json', 'notifications-ios.json', 'ocr.json', 'off.json', 'privacy-shield-ios.json', 'signing-ios.json', 'sync-ios.json', 'sync-pairing.json', 'sync.json',
     ]);
     // `getVersion` est couvert par core:default (aucune permission ajoutée).
     expect(read('src-tauri/capabilities/default.json')).toContain('"core:default"');
