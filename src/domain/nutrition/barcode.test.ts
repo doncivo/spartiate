@@ -15,7 +15,7 @@ describe('normalizeBarcode', () => {
   it('UPC-E (8 chiffres) : développé en UPC-A pour vérifier la clé, puis code sur 13 chiffres', () => {
     expect(normalizeBarcode('04252614')).toEqual({ code: '0042100005264', kind: 'upce' });
   });
-  it('UPC-E : chaque règle d’expansion (dernier chiffre du corps 0-2, 3, 4, 5-9)', () => {
+  it('UPC-E : chaque règle d’expansion (dernier chiffre du corps 0-2, 3, 4)', () => {
     const check = (upca11: string): string => {
       let s = 0;
       [...upca11].forEach((v, i) => (s += Number(v) * (i % 2 === 0 ? 3 : 1)));
@@ -26,13 +26,14 @@ describe('normalizeBarcode', () => {
       ['123451', '0' + '12' + '1' + '0000' + '345'],
       ['123453', '0' + '123' + '00000' + '45'],
       ['123454', '0' + '1234' + '00000' + '5'],
-      ['123458', '0' + '12345' + '0000' + '8'],
-      ['123459', '0' + '12345' + '0000' + '9'],
     ];
     for (const [middle, upcA11] of cases) {
       const upce = `0${middle}${check(upcA11)}`;
       expect(normalizeBarcode(upce), upce).toEqual({ code: `0${upcA11}${check(upcA11)}`, kind: 'upce' });
     }
+  });
+  it('ambiguïté inhérente : un UPC-E dont le dernier chiffre du corps est 5 à 9 est toujours aussi un EAN-8 valide (mêmes poids) ; lu comme EAN-8', () => {
+    expect(normalizeBarcode('01234589')).toEqual({ code: '01234589', kind: 'ean8' });
   });
   it('un code à 8 chiffres valide en EAN-8 reste un EAN-8 même s’il commence par 0', () => {
     expect(normalizeBarcode('00000000')).toEqual({ code: '00000000', kind: 'ean8' });
