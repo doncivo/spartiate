@@ -206,7 +206,13 @@ async fn search_returns_at_most_twenty_filtered_products() {
 /// Confidentialité : la requête ne porte que l'URL de base, le code ou la requête, `fields` et le User-Agent.
 #[tokio::test]
 async fn the_request_carries_nothing_but_the_url_the_fields_and_the_user_agent() {
-    let mock = start_mock(|_| reply(200, &product_body()));
+    let mock = start_mock(|request| {
+        if request.target.starts_with("/cgi/") {
+            reply(200, r#"{"count":0,"products":[]}"#)
+        } else {
+            reply(200, &product_body())
+        }
+    });
     let client = client_for(&mock.base);
     client.product(BARCODE).await.unwrap();
     client.search("pâtes & riz").await.unwrap();
@@ -291,7 +297,7 @@ fn rate_window_admits_ten_searches_per_minute_with_an_injected_clock() {
     assert_eq!(window.admit(60_999), Err(1));
     // La plus ancienne (t = 1 000) est sortie à 61 000 : une place se libère.
     assert_eq!(window.admit(61_000), Ok(()));
-    assert!(window.admit(61_001).is_err());
+    assert_eq!(window.admit(61_000), Err(1));
 }
 
 #[tokio::test]
