@@ -236,6 +236,12 @@
   gap: var(--ct-space-2);
 }
 
+.ct-nutrition__star {
+  min-width: var(--ct-hit-target-min);
+  min-height: var(--ct-hit-target-min);
+  font-size: var(--ct-font-size-lg, 1.25rem);
+}
+
 .ct-nutrition__chips {
   display: flex;
   flex-wrap: wrap;
