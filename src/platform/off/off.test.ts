@@ -26,7 +26,7 @@ describe('parseOffResponse', () => {
     expect(r.products[0]?.brands).toHaveLength(500);
   });
   it('found false et liste vide : valide', () => {
-    expect(parseOffResponse({ found: false, products: [] })).toEqual({ found: false, products: [] });
+    expect(parseOffResponse({ found: false, products: [] })).toEqual({ found: false, products: [], skipped: 0 });
   });
   it.each([
     ['null', null],

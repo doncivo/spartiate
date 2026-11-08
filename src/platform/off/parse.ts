@@ -25,6 +25,8 @@ export class OffError extends Error {
 export interface OffResponse {
   readonly found: boolean;
   readonly products: readonly OffRawProduct[];
+  /** Produits écartés par la façade (code illisible) ; absent = 0. */
+  readonly skipped?: number;
 }
 
 export interface OffClient {
@@ -60,16 +62,23 @@ const bad = (): OffError => new OffError('bad-response');
 export function parseOffResponse(raw: unknown): OffResponse {
   if (!isRecord(raw) || typeof raw['found'] !== 'boolean' || !Array.isArray(raw['products'])) throw bad();
   if (raw['products'].length > PRODUCTS_MAX) throw bad();
-  const products = raw['products'].map((item: unknown): OffRawProduct => {
-    if (!isRecord(item) || typeof item['code'] !== 'string' || !/^[0-9]{6,14}$/.test(item['code']) || !isRecord(item['nutriments'])) throw bad();
+  const products: OffRawProduct[] = [];
+  let skipped = 0;
+  for (const item of raw['products'] as unknown[]) {
+    if (!isRecord(item) || typeof item['code'] !== 'string' || !isRecord(item['nutriments'])) throw bad();
+    // Un code hors 6 à 14 chiffres écarte ce seul produit (compté), jamais toute la réponse.
+    if (!/^[0-9]{6,14}$/.test(item['code'])) {
+      skipped += 1;
+      continue;
+    }
     const nutriments: Record<string, number> = {};
     for (const key of NUTRIMENT_KEYS) {
       const value = item['nutriments'][key];
       if (typeof value === 'number' && Number.isFinite(value)) nutriments[key] = value;
     }
-    return { code: item['code'], product_name: text(item['product_name']), brands: text(item['brands']), quantity: text(item['quantity']), nutriments };
-  });
-  return { found: raw['found'], products };
+    products.push({ code: item['code'], product_name: text(item['product_name']), brands: text(item['brands']), quantity: text(item['quantity']), nutriments });
+  }
+  return { found: raw['found'], products, skipped };
 }
 
 /** Rejet de `invoke` -> `OffError` ; une forme inconnue devient `bad-response`, sans reprendre de texte. */

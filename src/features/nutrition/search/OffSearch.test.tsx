@@ -264,11 +264,11 @@ describe('I4-05 : courses et doubles appuis', () => {
     await mount();
     const foods = await db.data.repos.foods();
     let writes = 0;
-    const original = foods.cacheOff.bind(foods);
-    foods.cacheOff = (draft, options) => {
+    const counting = { ...foods, cacheOff: (draft: FoodDraft, options?: { readonly id?: string }) => {
       writes += 1;
-      return original(draft, options);
-    };
+      return foods.cacheOff(draft, options);
+    } };
+    (db.data.repos as { foods: () => Promise<typeof foods> }).foods = async () => counting;
     await openSearch();
     type('skyr');
     fireEvent.click(await screen.findByRole('button', { name: 'Chercher en ligne' }));
@@ -291,10 +291,11 @@ describe('I4-05 : courses et doubles appuis', () => {
   it('écriture du cache en échec lors d’un code : message d’écriture local, pas « réponse illisible »', async () => {
     await mount();
     const foods = await db.data.repos.foods();
-    foods.cacheOff = () => Promise.reject(new Error('disque'));
+    const failing = { ...foods, cacheOff: () => Promise.reject(new Error('disque')) };
+    (db.data.repos as { foods: () => Promise<typeof foods> }).foods = async () => failing;
     await openSearch();
     enterCode(CODE);
-    expect(await screen.findByText(/enregistrer|écriture/i)).toBeInTheDocument();
+    expect(await screen.findByText(/L’enregistrement a échoué/)).toBeInTheDocument();
     expect(screen.queryByText(/illisible/)).toBeNull();
   });
 });
