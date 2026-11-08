@@ -35,6 +35,7 @@ pub mod mobile_call;
 /// OCR : Windows.Media.Ocr sur PC, Vision sur iPhone (CAP-IOS-01, ADR 0015).
 #[cfg(any(desktop, target_os = "ios"))]
 pub mod ocr;
+pub mod off;
 /// Expiration de la signature SideStore (I-02, ADR 0013 section 3) : analyse compilée partout, commande iOS seulement.
 pub mod signing;
 /// Dictée sur l'appareil et Réglages iOS (CAP-IOS-01, ADR 0015 §2) ; la logique est testée sous Windows, les commandes sont iOS.
@@ -106,6 +107,9 @@ pub fn run() {
             applog::log_append,
             applog::log_read,
             applog::log_clear,
+            // Open Food Facts (I4-05, D-77) : capability off.json (fenêtre main).
+            off::off_product,
+            off::off_search,
         ]);
     // PC : plugin SQL après les plugins PC (l'instance unique reste le premier) (la fenêtre principale n'est créée qu'après la récupération, `desktop.rs`) ; marqueur de restauration
     // en attente (P-04-iOS critère 12, PC compris).
@@ -181,6 +185,9 @@ pub fn run() {
         applog::log_append,
         applog::log_read,
         applog::log_clear,
+        // Open Food Facts (I4-05, D-77) : capability off.json (fenêtre main).
+        off::off_product,
+        off::off_search,
         // I-02 (ADR 0013 section 3.1) : dates du profil de signature (lecture de embedded.mobileprovision), iOS seulement.
         signing::app_signing_info,
         // CAP-IOS-01 (ADR 0015) : Vision derrière les commandes OCR du PC, dictée sur l'appareil, Réglages iOS. Rust seul appelle les plugins.

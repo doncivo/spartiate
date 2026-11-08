@@ -1,0 +1,8 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "off",
+  "description": "Open Food Facts (I4-05, D-77), PC et iPhone : fenêtre principale seulement. Deux commandes Rust (off_product, off_search) ; la requête HTTPS est émise par Rust, jamais par la WebView.",
+  "windows": ["main"],
+  "platforms": ["windows", "iOS"],
+  "permissions": ["allow-off-product", "allow-off-search"]
+}

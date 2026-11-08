@@ -79,9 +79,11 @@ describe('lot (d) : Rust calendriers, capture, focus, raccourci', () => {
   it('build.rs ne déclare plus les commandes retirées ni les secrets CT_GOOGLE_*', () => {
     expect(read('src-tauri/build.rs')).not.toMatch(/calendar_|quick_capture|focus_window|CT_GOOGLE|capture_setup_error/);
   });
-  it('Cargo.toml ne tire plus le raccourci global ni le client HTTP des agendas', () => {
+  it('Cargo.toml ne tire plus le raccourci global ni le client HTTP des agendas ; reqwest n’y revient que pour Open Food Facts (I4-05, D-77), version exacte, sans OpenSSL', () => {
     const cargo = read('src-tauri/Cargo.toml');
-    expect(cargo).not.toMatch(/global-shortcut|reqwest|CT_GOOGLE/);
+    expect(cargo).not.toMatch(/global-shortcut|CT_GOOGLE/);
+    expect(cargo).toMatch(/^reqwest = \{ version = "=\d+\.\d+\.\d+", default-features = false, features = \["rustls-no-provider"\] \}$/m);
+    expect(cargo).not.toMatch(/^(native-tls|openssl[\w-]*) *=/m);
   });
   it('les capabilities de bureau ne citent plus de permission retirée', () => {
     expect(read('src-tauri/capabilities/desktop.json')).not.toMatch(/quick-capture|capture-setup-error|global-shortcut/);
