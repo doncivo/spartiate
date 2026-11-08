@@ -29,11 +29,14 @@ export const TABS: readonly TabDefinition[] = [
 /** I1-01 : sections de l'Entraînement ; absent = Routines. I1-02 : `session` = séance active (ou ses options de départ). */
 export type TrainingScreenId = 'routines' | 'library' | 'equipment' | 'history' | 'cycle' | 'session';
 
+/** I4-03 : sections de Nutrition ; absent = Journal. */
+export type NutritionScreenId = 'journal' | 'dashboard' | 'strategy' | 'checkin';
+
 /** Écrans internes de chaque section. Ajouter un écran = ajouter un membre ici. */
 export type Route =
   | { readonly tab: 'today' }
   | { readonly tab: 'training'; readonly screen?: TrainingScreenId }
-  | { readonly tab: 'nutrition' }
+  | { readonly tab: 'nutrition'; readonly screen?: NutritionScreenId }
   | { readonly tab: 'progress' }
   | { readonly tab: 'more'; readonly screen: 'home' | 'general' | 'desktop' | 'about' | 'appearance' | 'body' | 'health' | 'exportimport' | 'sync' | 'logs' };
 
