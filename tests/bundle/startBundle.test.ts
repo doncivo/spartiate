@@ -299,7 +299,7 @@ describe('bundle de départ (index.html)', () => {
   it('I4-03 : aucun module du domaine ni des écrans de nutrition dans le graphe du départ', () => {
     const startFiles = new Set(startChunks().map((chunk) => chunk.file));
     for (const [source, chunk] of Object.entries(manifest)) {
-      if (startFiles.has(chunk.file)) expect(/src\/(domain|features)\/nutrition\/|features\/today\/Nutrition/.test(source), source).toBe(false);
+      if (startFiles.has(chunk.file)) expect(/src\/(domain|features)\/nutrition\/|features\/today\/Nutrition|src\/platform\/(off|barcode)\//.test(source), source).toBe(false);
     }
   });
 
