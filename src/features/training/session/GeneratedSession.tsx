@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { generationWeekOf } from '../../../domain/training/mesocycle';
 import { generateSession } from '../../../domain/training/generateSession';
 import {
   EXERCISE_PATTERNS,
@@ -19,6 +20,7 @@ import { tGeneration, type TrainingGenerationTextKey } from '../../../i18n/train
 import { formatRest, tTraining } from '../../../i18n/trainingText';
 import { Button, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
+import { loadCurrentCycle, localDayOf, type CurrentCycle } from '../cycle/currentCycle';
 import { groupLabel, PATTERN_KEY } from '../labels';
 import type { TrainingData } from '../trainingState';
 import { buildGenerationInput, defaultGenerationSettings, defaultSplitFor, startGeneratedSession, type GenerationSettings } from './generationInput';
@@ -71,11 +73,42 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
   const [settings, setSettings] = useState<GenerationSettings>(() => defaultGenerationSettings(entry?.days.length ?? 1));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  /** I3-02 : cycle suivi au jour de la proposition ; `undefined` pendant la lecture, une erreur de lecture est dite. */
+  const [cycle, setCycle] = useState<CurrentCycle | null | undefined | 'error'>(undefined);
+  useEffect(() => {
+    let alive = true;
+    loadCurrentCycle(access, localDayOf(Date.parse(now))).then(
+      (c) => {
+        if (alive) setCycle(c);
+      },
+      () => {
+        if (alive) setCycle('error');
+      },
+    );
+    return () => {
+      alive = false;
+    };
+  }, [access, now]);
+  const followed = cycle !== undefined && cycle !== null && cycle !== 'error' && entry !== undefined && cycle.record.routineId === entry.routine.id ? cycle : null;
+  const cycleInput = followed !== null && followed.state.phase === 'active' ? { week: generationWeekOf(followed.state), mesocycleIndex: followed.state.mesocycleIndex } : null;
 
   const session = useMemo(
-    () => (entry ? generateSession(buildGenerationInput(data, { days: entry.days, startedAt: entry.routine.createdAt }, entry.index, settings, now)) : null),
-    [entry, data, settings, now],
+    () => (entry ? generateSession(buildGenerationInput(data, { days: entry.days, startedAt: entry.routine.createdAt }, entry.index, settings, now, cycleInput)) : null),
+    // La semaine ne change que si le cycle change (lu une fois à l'ouverture).
+    [entry, data, settings, now, cycle], // eslint-disable-line react-hooks/exhaustive-deps
   );
+  const cycleLine = ((): string | null => {
+    if (cycle === 'error') return tGeneration('cycleError');
+    if (followed === null) return null;
+    const s = followed.state;
+    if (s.phase === 'paused') return tGeneration('cyclePaused');
+    if (s.phase !== 'active' || s.plan === null) return tGeneration('cycleInactive');
+    if (s.plan.deload) return tGeneration('cycleDeload');
+    const week = s.totalWeeks === null ? tGeneration('cycleBlockWeek', { week: s.blockWeek, block: s.blockIndex + 1 }) : tGeneration('cycleWeekOf', { week: s.week, total: s.totalWeeks });
+    const sets = tGeneration(s.plan.setsOffset < 0 ? 'cycleSetsMinus' : s.plan.setsOffset > 0 ? 'cycleSetsPlus' : 'cycleSetsSame');
+    const rir = s.plan.rir === 1 ? tGeneration('cycleRirOne') : tGeneration('cycleRirMany', { rir: s.plan.rir });
+    return tGeneration(s.kind === 'light' ? 'cycleLight' : 'cycleWork', { week, sets, rir });
+  })();
   const set = (patch: Partial<GenerationSettings>): void => setSettings((s) => ({ ...s, ...patch }));
   const chooseDay = (id: string): void => {
     const next = entries.find((e) => e.day.id === id);
@@ -100,6 +133,15 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
   const sourceName = (id: string): string => entry?.day.exercises.find((l) => l.exerciseId === id)?.exerciseName ?? id;
   const nameOf = (id: string): string => data.exercises.find((e) => e.id === id)?.nameFr ?? id;
 
+  // I3-02 : aucune proposition avant la lecture du cycle (jamais les séries de la routine présentées à la place de celles de la semaine).
+  if (cycle === undefined) {
+    return (
+      <p className="ct-session__muted" role="status">
+        {tGeneration('loading')}
+      </p>
+    );
+  }
+
   return (
     <section className="ct-generated" aria-labelledby="ct-generated-title">
       <div className="ct-generated__head">
@@ -120,6 +162,11 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
             onChange={chooseDay}
             options={entries.map((e) => ({ value: e.day.id, label: routines.length > 1 ? tGeneration('dayWithRoutine', { day: e.day.name, routine: e.routine.name }) : e.day.name }))}
           />
+          {cycleLine !== null && (
+            <p className="ct-generated__note" role={cycle === 'error' ? 'alert' : undefined}>
+              {cycleLine}
+            </p>
+          )}
           <div className="ct-generated__field">
             <SegmentedControl
               label={tGeneration('modeLabel')}

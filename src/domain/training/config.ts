@@ -172,7 +172,7 @@ export const PROPOSAL_OPTION_ORDER: readonly ProposalOptionKind[] = ['fatigue-lo
 // -----------------------------------------------------------------------------------------------------------------------------------
 
 /** Version des règles de génération ; incrémentée à tout changement d'une constante ci-dessous qui change une séance proposée. */
-export const GENERATION_VERSION = 1;
+export const GENERATION_VERSION = 2;
 
 export interface GenerationConfig {
   /** Temps de travail estimé par série (§ 12.1) ; le repos compte entre séries consécutives seulement (D-73 point 4). */
@@ -192,7 +192,7 @@ export interface GenerationConfig {
   /** Budget accepté, en minutes. */
   readonly budgetMinMinutes: number;
   readonly budgetMaxMinutes: number;
-  // Mésocycle (I3-02, § 12.2 ; D-73 point 3) : fournis à I3-02, non appliqués par I3-01.
+  // Mésocycle (I3-02, § 12.2 ; D-73 point 3) : appliqués par mesocycle.ts et programPause.ts.
   readonly mesoWeeks: number;
   readonly mesoWeeksRange: readonly [number, number];
   /** Option illimitée : blocs roulants de cette longueur, deload en fin de bloc. */
@@ -205,6 +205,13 @@ export interface GenerationConfig {
   readonly prioritySetDelta: number;
   /** Arrêt au-delà duquel une semaine allégée est proposée (§ 12.6). */
   readonly lightWeekAfterDays: number;
+  // I3-02 (§ 12.2, § 12.5 ; D-73 points 3, 8, 9 ; choix prudents consignés dans docs/I3-02.md).
+  /** Écart de séries d'une ligne sur les semaines de travail, de la première à la dernière ; la ligne de la routine vaut la semaine 2 du § 12.5. */
+  readonly mesoSetsOffsetRange: readonly [number, number];
+  /** RIR affiché en semaine de deload : celui du deload I2 (`deloadRirAtLeast`, D-72 point 9). */
+  readonly deloadWeekRir: number;
+  /** Durée de la semaine allégée insérée à la reprise (jours). */
+  readonly lightWeekDays: number;
 }
 
 const ALL_GROUPS = Object.freeze(['chest', 'back', 'shoulders', 'biceps', 'triceps', 'forearms', 'quadriceps', 'hamstrings', 'glutes', 'calves', 'abs']);
@@ -241,4 +248,7 @@ export const DEFAULT_GENERATION_CONFIG: GenerationConfig = Object.freeze({
   rirEnd: 1,
   prioritySetDelta: 1,
   lightWeekAfterDays: 21,
+  mesoSetsOffsetRange: Object.freeze([-1, 1] as const),
+  deloadWeekRir: 4,
+  lightWeekDays: 7,
 });

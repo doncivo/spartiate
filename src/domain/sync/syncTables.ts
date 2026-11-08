@@ -463,7 +463,38 @@ const RECOMMENDATION_DECISION_TABLE = table(
   { parents: [{ column: 'workout_id', table: 'workout' }], publishWhen: { parent: 'workout_id' }, titleSource: { kind: 'none' } },
 );
 
-/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Catalogue I3-02 (D-73, migration 0007) : cycles d'entraînement
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+/**
+ * `mesocycle` : un cycle d'entraînement, UUID (deux cycles créés hors ligne sur deux appareils restent deux lignes ; le plus récent est
+ * suivi, l'écran le dit). `routine_id` est une référence LOGIQUE (routine supprimée ou pas encore reçue : le cycle reste lisible), hors de
+ * `parents`. `pauses` : JSON `[{ from, to, lightWeek }]`, validé par le domaine à la lecture (ligne illisible signalée, jamais suivie en
+ * silence). Aucune séance ouverte en jeu : toutes les lignes sont publiables (D-27 inchangé).
+ */
+const MESOCYCLE_TABLE = table(
+  'mesocycle',
+  [
+    uuidId('routine_id'),
+    c('start_date', 'date', false),
+    c('weeks', 'int', false, { values: [4, 5, 6, 7] }),
+    bool('unlimited'),
+    c('deload_week', 'int', true),
+    c('block_origin_week', 'int', false, hidden),
+    c('block_origin_index', 'int', false, hidden),
+    c('rotation_index', 'int', false, hidden),
+    c('pauses', 'json', false),
+    c('status', 'enum', false, { values: ['active', 'completed'] }),
+    c('outcome', 'enum', true, { values: ['repeat', 'regenerate', 'change', 'stopped'] }),
+    c('ended_on', 'date', true),
+    createdAt,
+    deletedAt,
+  ],
+  { titleSource: { kind: 'none' } },
+);
+
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   tables: [
     PROFILE_TABLE,
@@ -477,6 +508,7 @@ export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
     WORKOUT_SET_TABLE,
     PROGRESSION_PROFILE_TABLE,
     RECOMMENDATION_DECISION_TABLE,
+    MESOCYCLE_TABLE,
   ],
   order: SYNC_TABLE_ORDER,
 });

@@ -304,6 +304,11 @@
       "raison": "Migration I2-01 PR 2/2 (difficulté des séries, déclencheurs de capture des tables de progression, 5,8 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. Le composant de prescription, son catalogue fr.progression, le moteur et le repository restent hors du départ (import à la demande)."
     },
     {
+      "fichier": "src/db/migrations/0007_mesocycle.ts",
+      "story": "I3-02",
+      "raison": "Migration I3-02 (table mesocycle publiée et ses deux déclencheurs de capture, 5 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. La section Cycle, son catalogue fr.trainingCycle, les règles du mésocycle et le repository restent hors du départ (import à la demande)."
+    },
+    {
       "fichier": "src/features/app/ShellChrome.tsx",
       "story": "BUNDLE-01",
       "raison": "SPA-009 : carte d'état de la barre latérale PC et barre supérieure (1,6 Ko source), montées dès le premier rendu de la coquille."

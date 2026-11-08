@@ -56,8 +56,8 @@ const technical = async (db: SqlDriver): Promise<unknown[]> => [
 
 describe('migration 0006 : progression_sync (I2-01, PR 2/2)', () => {
   it('registre : 0001 à 0006 ; version 6, nom progression_sync', () => {
-    expect(migrations.map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6]);
-    expect(migrations.at(-1)).toBe(migration0006ProgressionSync);
+    expect(migrations.map((m) => m.version).slice(0, 6)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(migrations[5]).toBe(migration0006ProgressionSync);
     expect(migration0006ProgressionSync.name).toBe('progression_sync');
   });
 
@@ -69,7 +69,7 @@ describe('migration 0006 : progression_sync (I2-01, PR 2/2)', () => {
     await insertProfile(db);
     await insertDecision(db);
     expect(await technical(db)).toEqual([]);
-    const report = await migrate(db, migrations);
+    const report = await migrate(db, migrations.slice(0, 6));
     expect(report.applied).toEqual([6]);
     expect(await db.select('SELECT difficulty FROM workout_set')).toEqual([{ difficulty: null }]);
     expect(await outbox(db)).toEqual([{ table_name: 'progression_profile', row_id: P, field: '*' }]);
@@ -114,7 +114,9 @@ describe('migration 0006 : progression_sync (I2-01, PR 2/2)', () => {
     const v4Set = CAPTURE_TABLES_V4[1][1];
     expect(publishedColumns(table('workout_set')).filter((c) => c !== 'difficulty')).toEqual([...v4Set]);
     expect(publishedColumns(table('workout_set'))).toContain('difficulty');
-    const db = await freshDb();
+    // Base arrêtée à la 0006 (I3-02 ajoute ensuite les deux déclencheurs de mesocycle).
+    const db = await openSqliteWasmDriver();
+    await migrate(db, migrations.slice(0, 6));
     const names = (await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger' ORDER BY name")).map((r) => r.name);
     expect(names).toHaveLength(24);
     for (const n of ['sync_progression_profile_ai', 'sync_progression_profile_au', 'sync_recommendation_decision_ai', 'sync_recommendation_decision_au', 'sync_workout_set_difficulty_au', 'sync_workout_close_decisions_au'])

@@ -62,6 +62,13 @@ export interface GenerationEquipment {
 export interface GenerationWeek {
   readonly workingSets: number | null;
   readonly rir: number | null;
+  /**
+   * I3-02 (`generationWeekOf`) : écart à la ligne de la routine quand `workingSets` est nul ; deload (volume de la routine, réduit par la
+   * proposition de chaque exercice, D-72 point 9) ; séries de priorité ajoutées au premier exercice de chaque groupe prioritaire.
+   */
+  readonly setsOffset?: number;
+  readonly deload?: boolean;
+  readonly priorityBonus?: number;
 }
 
 export interface GenerateSessionInput {
@@ -151,5 +158,7 @@ export interface GeneratedSession {
   readonly rotationPeriod: number;
   readonly estimatedSec: number;
   readonly budgetSec: number | null;
+  /** Semaine de deload du cycle (I3-02) : la proposition de chaque exercice applique le deload. */
+  readonly deload: boolean;
   readonly generationVersion: number;
 }

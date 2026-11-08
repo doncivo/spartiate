@@ -3,7 +3,10 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { RoutineInput } from '../../../domain/training';
-import type { DeviceId } from '../../../domain/types';
+import { DEFAULT_GENERATION_CONFIG } from '../../../domain/training/config';
+import { createMesocycleSpec } from '../../../domain/training/mesocycle';
+import { pauseProgram } from '../../../domain/training/programPause';
+import type { DeviceId, LocalDate } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
@@ -93,6 +96,27 @@ describe('séance proposée (I3-01)', () => {
     expect(within(list).getAllByText('3 × 6–10 · repos 2 min 30 s')).toHaveLength(2);
     expect(within(region).getByText('Durée estimée : 24 min')).toBeInTheDocument();
     expect(within(region).getByText(/Importé : indisponible pour l’instant/)).toBeInTheDocument();
+    expect(await count('SELECT COUNT(*) AS n FROM workout')).toBe(0);
+  });
+
+  it('I3-02 : cycle de cette routine en semaine 1 : une série de moins par exercice, RIR 3, dit ; en pause ou autre routine : routine telle quelle', async () => {
+    const spec = createMesocycleSpec({ routineId: ROUTINE.id, startDate: '2026-11-09' as LocalDate, weeks: 5 }, DEFAULT_GENERATION_CONFIG);
+    if (spec === null) throw new Error('spec');
+    await db.data.transaction(async (repos) => (await repos.mesocycles()).start(spec, { id: u(90) }));
+    open();
+    let region = await proposal();
+    let list = within(region).getByRole('list', { name: 'Exercices proposés' });
+    expect(within(list).getAllByText('2 × 6–10 · repos 2 min 30 s · RIR 3')).toHaveLength(2);
+    expect(within(region).getByText('Cycle : semaine 1 sur 5, une série de moins que la routine par exercice, 3 répétitions en réserve.')).toBeInTheDocument();
+    cleanup();
+    const paused = pauseProgram(spec, '2026-11-09' as LocalDate);
+    if (paused === null) throw new Error('pause');
+    await (await db.data.repos.mesocycles()).save(u(90), paused);
+    open();
+    region = await proposal();
+    list = within(region).getByRole('list', { name: 'Exercices proposés' });
+    expect(within(list).getAllByText('3 × 6–10 · repos 2 min 30 s')).toHaveLength(2);
+    expect(within(region).getByText('Programme en pause : séance proposée selon la routine, sans le cycle.')).toBeInTheDocument();
     expect(await count('SELECT COUNT(*) AS n FROM workout')).toBe(0);
   });
 

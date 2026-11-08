@@ -63,6 +63,8 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFa
     import('./workoutRepository').then((m) => signalingWrites(m.createWorkoutRepository(executor, stamper), ['close', 'correctSet', 'deleteClosed', 'applyRoutineUpdate'])),
   // I2-01 : moteur de prescription, à la demande. Tables locales en 0.3.0 (aucune capture) : pas de signal de synchro.
   progression: () => import('./progressionRepository').then((m) => m.createProgressionRepository(executor, stamper)),
+  // I3-02 : cycles d'entraînement, à la demande ; chaque écriture est publiable et lève le signal de synchro.
+  mesocycles: () => import('./mesocycleRepository').then((m) => signalingWrites(m.createMesocycleRepository(executor, stamper), ['start', 'save'])),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)

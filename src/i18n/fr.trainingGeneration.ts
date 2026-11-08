@@ -82,4 +82,18 @@ export const trainingGenerationFr = {
   starting: 'Création de la séance…',
   startError: 'La séance n’a pas pu être créée ; rien n’a été enregistré. Réessaie.',
   startHint: 'Rien n’est enregistré avant ce bouton. La séance n’est pas liée à la routine, qui reste telle quelle.',
+  // I3-02 : semaine du cycle suivi pour cette routine.
+  cycleWork: 'Cycle : {week}, {sets}, {rir}.',
+  cycleLight: 'Cycle : {week}, semaine allégée, {sets}, {rir}.',
+  cycleDeload: 'Cycle : semaine de deload ; la proposition de chaque exercice divise les séries par deux et allège la charge.',
+  cyclePaused: 'Programme en pause : séance proposée selon la routine, sans le cycle.',
+  cycleInactive: 'Cycle terminé ou pas encore commencé : séance proposée selon la routine (bilan dans la section Cycle).',
+  cycleError: 'Le cycle n’a pas pu être lu : séance proposée selon la routine.',
+  cycleWeekOf: 'semaine {week} sur {total}',
+  cycleBlockWeek: 'semaine {week} du bloc {block}',
+  cycleSetsMinus: 'une série de moins que la routine par exercice',
+  cycleSetsSame: 'les séries de la routine',
+  cycleSetsPlus: 'une série de plus que la routine par exercice',
+  cycleRirOne: '1 répétition en réserve',
+  cycleRirMany: '{rir} répétitions en réserve',
 } as const;

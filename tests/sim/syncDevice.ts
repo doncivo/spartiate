@@ -60,7 +60,7 @@ let counter = 0;
  * 17 migrations (la moitié du coût d'un test à deux appareils).
  */
 /** `legacy` : ancien schéma et ancien catalogue (banc de test, D-67) ; `i0` : migration 0001 réelle et catalogue de production. */
-export type SimSchema = 'legacy' | 'i0' | 'v3' | 'v5';
+export type SimSchema = 'legacy' | 'i0' | 'v3' | 'v5' | 'v6';
 
 /**
  * I1-03 : `v3` : base et catalogue d'une app arrêtée à la migration 0003 (séance locale, ni `workout` ni `workout_set` publiées), `sv` = 3 :
@@ -75,8 +75,10 @@ export const V5_CATALOGUE = createCatalogue({
   tables: SYNC_CATALOGUE.tables.slice(0, 9).map((t) => (t.name === 'workout_set' ? { ...t, columns: t.columns.filter((c) => c.name !== 'difficulty') } : t)),
   order: SYNC_TABLE_ORDER.slice(0, 9),
 });
-const SCHEMA_CATALOGUES = { v3: V3_CATALOGUE, v5: V5_CATALOGUE } as const;
-const schemaMigrations = (schema: SimSchema) => (schema === 'i0' ? i0Migrations : schema === 'v3' ? i0Migrations.slice(0, 3) : schema === 'v5' ? i0Migrations.slice(0, 5) : legacyMigrationList);
+/** I3-02 : `v6` : base et catalogue sans mésocycle (migration 0006), `sv` = 6 : appareil pas encore mis à jour qui reçoit des cycles. */
+export const V6_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 11), order: SYNC_TABLE_ORDER.slice(0, 11) });
+const SCHEMA_CATALOGUES = { v3: V3_CATALOGUE, v5: V5_CATALOGUE, v6: V6_CATALOGUE } as const;
+const schemaMigrations = (schema: SimSchema) => (schema === 'i0' ? i0Migrations : schema === 'v3' ? i0Migrations.slice(0, 3) : schema === 'v5' ? i0Migrations.slice(0, 5) : schema === 'v6' ? i0Migrations.slice(0, 6) : legacyMigrationList);
 const migratedImages: Partial<Record<SimSchema, Promise<Uint8Array>>> = {};
 function migratedDatabaseImage(schema: SimSchema = 'legacy'): Promise<Uint8Array> {
   const migrations = schemaMigrations(schema);
