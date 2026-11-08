@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { createUuidGenerator } from '../../../domain/id';
-import { allExercises, generateSession } from '../../../domain/training';
+import { allExercises } from '../../../domain/training';
+import { generateSession } from '../../../domain/training/generateSession';
 import type { IsoDateTime } from '../../../domain/types';
 import { loadTrainingContent, programToRoutine } from '../content';
 import { buildGenerationInput, defaultGenerationSettings, defaultSplitFor } from './generationInput';
