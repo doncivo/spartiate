@@ -1,0 +1,83 @@
+/**
+ * Constantes du moteur de récupération (PRD § 16.1 et § 16.3). Aucune n'est écrite en dur dans une fonction.
+ * Les valeurs marquées « proposition » ne figurent pas au PRD : elles attendent la décision d'Ali (docs/I5-01.md, section Domaine).
+ */
+
+/** Ressenti de fin d'exercice → facteur de charge (§ 16.3 « facteur 0,8 / 1 / 1,2 » ; clés = `Difficulty` du moteur de séance). */
+export type RecoveryDifficulty = 'easy' | 'ok' | 'hard';
+
+export const RECOVERY_CONFIG = {
+  /** § 16.3 Baseline. */
+  baselineDays: 14,
+  minNights: 7,
+  outlierSigma: 2.5,
+  /** Proposition : durée de sommeil minimale pour qu'une nuit compte comme « valide » (le PRD ne la fixe pas). */
+  validNightMinAsleepMinutes: 180,
+
+  /** § 16.3 Recovery. */
+  hrvWeight: 0.7,
+  rhrWeight: 0.3,
+  zClamp: 2,
+  scoreCenter: 50,
+  scoreScale: 25,
+  sleepFactorMin: 0.8,
+  sleepFactorMax: 1.0,
+
+  /** § 16.3 Zone cible : seuils inclusifs sur le score arrondi. */
+  zones: {
+    high: { from: 66, target: [6, 8] },
+    mid: { from: 34, target: [4, 6] },
+    low: { from: 0, target: [0, 3] },
+  },
+
+  /** § 16.3 Exertion. `cardioWeights` : poids des zones 1 à 5, INUTILISÉS (D-88 : la partie cardio vaut zéro, pas de zones FC fiables). */
+  exertion: {
+    k: 300,
+    tonnageUnit: 1000,
+    difficultyFactor: { easy: 0.8, ok: 1, hard: 1.2 } as Readonly<Record<RecoveryDifficulty, number>>,
+    cardioWeights: [1, 2, 3, 4, 5] as readonly number[],
+    cardioCounted: false,
+    max: 10,
+  },
+
+  /** § 16.3 Sommeil. `debtDays` et la définition de la dette : proposition (le PRD donne « dette (7 j, plafond 3 h) »). */
+  sleep: {
+    baseSleepHours: 7.5,
+    exertionBaseline: 5,
+    hoursPerExertionPoint: 0.2,
+    debtDays: 7,
+    debtCapHours: 3,
+    regularityDays: 7,
+    regularityMinNights: 3,
+    /** Un segment « Endormi » séparé d'un autre de plus de 3 h est une autre nuit (proposition). */
+    nightGapMinutes: 180,
+  },
+
+  /** § 16.7 Heure de coucher cible : médiane de l'heure de lever sur 14 j. */
+  bedtime: { wakeDays: 14, minWakeNights: 7 },
+
+  /** § 16.1 Niveau B : seuil absolu de sommeil court, proposition (les seuils du niveau B sont à décider par Ali). */
+  levelB: { shortSleepHours: 6 },
+
+  /** § 16.3 Par muscle : 48 / 72 / 96 h par classe de récupération. Approximation, dite telle quelle. */
+  recoveryHours: { small: 48, medium: 72, large: 96 },
+  /** Proposition : classe par groupe du catalogue (content/exercises/muscles.json). */
+  groupRecoveryClass: {
+    Bras: 'small',
+    Épaules: 'small',
+    Tronc: 'small',
+    Torse: 'medium',
+    Dos: 'medium',
+    Jambes: 'large',
+  } as Readonly<Record<string, 'small' | 'medium' | 'large'>>,
+  muscle: {
+    /** Proposition : « séries × difficulté » règle la durée : 6 séries effectives = durée nominale, bornée à [0,5 ; 1,5]. */
+    referenceEffectiveSets: 6,
+    minScale: 0.5,
+    maxScale: 1.5,
+    /** Un muscle sans séance dans cette fenêtre n'a pas de ligne (inconnu ≠ 100 %). */
+    lookbackHours: 240,
+  },
+} as const;
+
+export type RecoveryClass = keyof typeof RECOVERY_CONFIG.recoveryHours;
