@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { computeTotals, isFavorite, resolveFavorites, toggleFavorite, validateMealEntry, type Favorite, type SearchProvenance } from '../../../domain/nutrition';
+import { computeTotals, isFavorite, parseRecipeFoodId, resolveFavorites, toggleFavorite, validateMealEntry, type Favorite, type Recipe, type RecipeSearchable, type SearchProvenance } from '../../../domain/nutrition';
 import type { SearchableFood } from '../../../domain/nutrition/foodSearch';
 import { missingNutrients } from '../../../domain/nutrition/offProduct';
 import type { IsoDateTime, LocalDate, LocalTime } from '../../../domain/types';
@@ -23,7 +23,13 @@ import { resolveFood } from './resolveFood';
 /** Écran de visée du scan (iPhone) : bloc à la demande, jamais dans le départ. */
 const BarcodeScanView = lazy(() => import('../scan/BarcodeScanView').then((m) => ({ default: m.BarcodeScanView })));
 
-type Filter = 'all' | SearchProvenance;
+/** Recettes (I4-07) : résultats, étape « portions ou grammes » et leur catalogue de textes sont des blocs à la demande. */
+const RecipeHits = lazy(() => import('../recipes/RecipeHits').then((m) => ({ default: m.RecipeHits })));
+const RecipeQuantityStep = lazy(() => import('../recipes/RecipeQuantityStep').then((m) => ({ default: m.RecipeQuantityStep })));
+
+type Filter = 'all' | 'recipe' | SearchProvenance;
+
+type RecipeSearchState = { readonly query: string; readonly hits: readonly RecipeSearchable[]; readonly failed: boolean };
 
 interface Selection {
   readonly food: SearchableFood;
@@ -61,6 +67,8 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   // Favoris (D-79) : liste conservée (sans les aliments disparus) et aliments retrouvés, dans le même ordre.
   const [favorites, setFavorites] = useState<{ readonly status: 'loading' | 'ready' | 'failed'; readonly kept: readonly Favorite[]; readonly foods: readonly SearchableFood[]; readonly gone: readonly string[] }>({ status: 'loading', kept: [], foods: [], gone: [] });
   const [selection, setSelection] = useState<Selection | null>(null);
+  const [recipeSearch, setRecipeSearch] = useState<RecipeSearchState | null>(null);
+  const [recipeSelection, setRecipeSelection] = useState<Recipe | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [creating, setCreating] = useState<{ readonly name: string; readonly barcode?: string } | null>(null);
   const [code, setCode] = useState('');
@@ -255,6 +263,40 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
     })();
   }, [query, data, container]);
 
+  // Recettes (D-80) : lues à la demande, seulement quand elles peuvent figurer dans les résultats (filtre « Tout » ou « Mes recettes »).
+  useEffect(() => {
+    if (!(filter === 'all' || filter === 'recipe') || (query.trim() === '' && filter !== 'recipe')) return;
+    let live = true;
+    void (async () => {
+      try {
+        const { findRecipes } = await import('../recipes/recipeSearch');
+        const hits = await findRecipes(data, query);
+        if (live) setRecipeSearch({ query, hits, failed: false });
+      } catch {
+        if (live) setRecipeSearch({ query, hits: [], failed: true });
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, [query, filter, data]);
+
+  async function pickRecipe(ref: string): Promise<void> {
+    try {
+      const { loadRecipeByRef } = await import('../recipes/recipeSearch');
+      const recipe = await loadRecipeByRef(data, ref);
+      if (recipe === null) {
+        setNotice(tNutrition('foodGone'));
+        return;
+      }
+      setNotice(null);
+      supersedeLookup();
+      setRecipeSelection(recipe);
+    } catch {
+      setNotice(tNutrition('loadError'));
+    }
+  }
+
   const closeOnEscape = (event: KeyboardEvent): void => {
     if (event.key === 'Escape') {
       event.stopPropagation();
@@ -274,6 +316,8 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   };
 
   async function pickRecent(recent: RecentFood): Promise<void> {
+    // Un récent issu d'une recette (`recipe:<id>`) rouvre l'étape « portions ou grammes » de la recette.
+    if (parseRecipeFoodId(recent.foodId) !== null) return pickRecipe(recent.foodId);
     const food = await resolveFood(await data.repos.foods(), recent.foodId).catch(() => null);
     if (food === null) {
       setNotice(tNutrition('foodGone'));
@@ -300,6 +344,22 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
     );
   }
 
+  if (recipeSelection) {
+    return (
+      <div className="ct-nutrition__panel" onKeyDown={closeOnEscape}>
+        <Suspense
+          fallback={
+            <p role="status" className="ct-nutrition__muted">
+              {tNutrition('loading')}
+            </p>
+          }
+        >
+          <RecipeQuantityStep recipe={recipeSelection} date={date} defaultTime={defaultTime} onBack={() => setRecipeSelection(null)} onSaved={onSaved} />
+        </Suspense>
+      </div>
+    );
+  }
+
   if (selection) {
     return (
       <div className="ct-nutrition__panel" onKeyDown={closeOnEscape}>
@@ -323,6 +383,9 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   // Un résultat n'est montré que pour la requête qui l'a produit (jamais celui d'une frappe précédente).
   const result = found !== null && found.query === query ? found.result : null;
   const visible = (result?.hits ?? []).filter((hit) => filter === 'all' || hit.provenance === filter);
+  // Recettes : seulement celles de la requête affichée ; masquées par les filtres Perso / Ciqual / OFF.
+  const recipeView = recipeSearch !== null && recipeSearch.query === query && (filter === 'all' || filter === 'recipe') ? recipeSearch : null;
+  const recipeCount = recipeView?.hits.length ?? 0;
   const onlineView = online !== null && online.query === query.trim() ? online : null;
   return (
     <div className="ct-nutrition__panel" ref={root} onKeyDown={(event) => { closeOnEscape(event); moveFocus(event); }}>
@@ -351,6 +414,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
           { value: 'custom', label: tNutrition('filterCustom') },
           { value: 'ciqual', label: tNutrition('filterCiqual') },
           { value: 'off', label: tNutrition('filterOff') },
+          { value: 'recipe', label: tNutrition('filterRecipe') },
         ]}
       />
       <p className="ct-nutrition__muted">{tNutrition('searchHintKeys')}</p>
@@ -460,7 +524,13 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
           </ul>
         </section>
       ) : null}
-      {query.trim() === '' ? (
+      {query.trim() === '' && filter === 'recipe' ? (
+        <section aria-label={tNutrition('searchResults')}>
+          <Suspense fallback={null}>
+            <RecipeHits hits={recipeView?.hits ?? []} failed={recipeView?.failed ?? false} onPick={(ref) => void pickRecipe(ref)} />
+          </Suspense>
+        </section>
+      ) : query.trim() === '' ? (
         <section aria-labelledby="ct-nutrition-recents">
           <h2 id="ct-nutrition-recents" className="ct-nutrition__subtitle">
             {tNutrition('recents')}
@@ -488,7 +558,12 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
               {tNutrition('ciqualUnavailable')}
             </p>
           ) : null}
-          {visible.length === 0 ? (
+          {recipeView !== null && (recipeView.hits.length > 0 || recipeView.failed) ? (
+            <Suspense fallback={null}>
+              <RecipeHits hits={recipeView.hits} failed={recipeView.failed} onPick={(ref) => void pickRecipe(ref)} />
+            </Suspense>
+          ) : null}
+          {visible.length === 0 && recipeCount > 0 ? null : visible.length === 0 ? (
             <>
               <p>{tNutrition('noResult')}</p>
               <p className="ct-nutrition__muted">{tNutrition('noResultHint')}</p>

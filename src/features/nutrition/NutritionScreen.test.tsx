@@ -407,11 +407,11 @@ describe('I4-03 : Check-in hebdomadaire (critère 6)', () => {
 });
 
 describe('I4-03 : Navigation et clavier PC', () => {
-  it('les quatre sections sont des boutons radio, flèches pour passer de l’une à l’autre', async () => {
+  it('les cinq sections sont des boutons radio, flèches pour passer de l’une à l’autre', async () => {
     open();
     const r = await region();
     const group = await within(r).findByRole('radiogroup', { name: 'Sections de Nutrition' });
-    expect(within(group).getAllByRole('radio').map((x) => x.textContent)).toEqual(['Journal', 'Dashboard', 'Stratégie', 'Check-in']);
+    expect(within(group).getAllByRole('radio').map((x) => x.textContent)).toEqual(['Journal', 'Dashboard', 'Stratégie', 'Check-in', 'Recettes']);
     fireEvent.keyDown(within(group).getByRole('radio', { name: 'Journal' }), { key: 'ArrowRight' });
     expect(await within(r).findByRole('heading', { name: 'Balance 7 jours' })).toBeInTheDocument();
   });
