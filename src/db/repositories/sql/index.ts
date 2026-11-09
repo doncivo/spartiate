@@ -75,6 +75,9 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFa
   // I4-07 : journée déclarée et recettes, à la demande ; chaque écriture est publiable et lève le signal de synchro.
   dayCompleteness: () => import('./dayCompletenessRepository').then((m) => signalingWrites(m.createDayCompletenessRepository(executor, stamper), ['declare', 'clear'])),
   recipes: () => import('./recipeRepository').then((m) => signalingWrites(m.createRecipeRepository(executor, stamper), ['create', 'update', 'softDelete'])),
+  // I5-01 : récupération, à la demande. Le résumé et les muscles sont publiables (signal de synchro) ; les échantillons importés sont locaux (aucun signal).
+  recovery: () => import('./recoveryRepository').then((m) => signalingWrites(m.createRecoveryRepository(executor, stamper), ['saveDay', 'deleteDay'])),
+  recoverySamples: () => import('./recoverySampleRepository').then((m) => m.createRecoverySampleRepository(executor)),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)

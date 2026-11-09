@@ -28,6 +28,11 @@ const output = (day: LocalDate = D(9), over: Partial<RecoveryDayOutput['summary'
     { day, muscleId: 'quads', group: 'Jambes', percent: 40, hours: 96, lastWorkedAt: '2026-11-08T18:00:00.000Z', readyAt: '2026-11-12T18:00:00.000Z' },
   ],
 });
+const at = <T>(items: readonly T[], i: number): T => {
+  const item = items[i];
+  if (item === undefined) throw new Error('fixture');
+  return item;
+};
 const abstention = (day: LocalDate = D(10)): RecoveryDayOutput => ({
   summary: {
     ...output(day).summary, level: 'A', recovery: null, abstainReason: 'baseline_incomplete', quality: 'insufficient', sleepMinutes: null, sleepScore: null, bedtimeSigmaMinutes: null,
@@ -83,11 +88,11 @@ describe('RecoveryRepository', () => {
     await clearOutbox();
     db.clock.advance(60_000);
     const changed = output(D(9), { recovery: 80 });
-    await (await repo()).saveDay({ summary: changed.summary, muscles: [{ ...changed.muscles[1]!, percent: 55 }] });
+    await (await repo()).saveDay({ summary: changed.summary, muscles: [{ ...at(changed.muscles, 1), percent: 55 }] });
     expect(await outbox()).toEqual([
       { row_id: 'recovery|2026-11-09', field: 'recovery' },
-      { row_id: 'muscle|2026-11-09|lats', field: 'deleted_at' },
       { row_id: 'muscle|2026-11-09|quads', field: 'percent' },
+      { row_id: 'muscle|2026-11-09|lats', field: 'deleted_at' },
     ]);
     expect((await (await repo()).listMuscles(D(9))).map((m) => [m.muscleId, m.percent])).toEqual([['quads', 55]]);
     expect(await db.driver.select('SELECT COUNT(*) AS n FROM muscle_recovery')).toEqual([{ n: 2 }]);
@@ -134,9 +139,9 @@ describe('RecoveryRepository', () => {
       output(D(9), { recovery: null }), // sans raison
       output(D(9), { recovery: 101 }),
       output(D(9), { level: 'Z' as 'A' }),
-      { ...output(), muscles: [{ ...output(D(10)).muscles[0]! }] }, // muscle d'un autre jour
-      { ...output(), muscles: [output().muscles[0]!, output().muscles[0]!] }, // muscle répété
-      { ...output(), muscles: [{ ...output().muscles[0]!, percent: 40.5 }] },
+      { ...output(), muscles: [at(output(D(10)).muscles, 0)] }, // muscle d'un autre jour
+      { ...output(), muscles: [at(output().muscles, 0), at(output().muscles, 0)] }, // muscle répété
+      { ...output(), muscles: [{ ...at(output().muscles, 0), percent: 40.5 }] },
       output(D(9), { day: '2026-13-01' as LocalDate }),
     ];
     for (const [i, b] of bad.entries()) await expect(r.saveDay(b), String(i)).rejects.toMatchObject({ code: 'invalid' });

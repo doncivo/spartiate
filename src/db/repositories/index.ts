@@ -41,3 +41,5 @@ export type * from './mealEntryRepository';
 export type * from './nutritionTargetRepository';
 export type * from './dayCompletenessRepository';
 export type * from './recipeRepository';
+export type * from './recoveryRepository';
+export type * from './recoverySampleRepository';
