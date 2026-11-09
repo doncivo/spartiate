@@ -44,8 +44,14 @@ async function seed(cycleStart: string): Promise<void> {
   const spec = createMesocycleSpec({ routineId: u(50), startDate: cycleStart as LocalDate, weeks: 5 }, DEFAULT_GENERATION_CONFIG);
   if (spec === null) throw new Error('spec');
   await db.data.transaction(async (repos) => (await repos.mesocycles()).start(spec, { id: u(60) }));
-  await r.start({ source: 'empty', id: CURRENT, name: 'Haut B' });
-  await r.addExercise(CURRENT, { exerciseId: BENCH_ID, exerciseName: BENCH, sets: 3, targetRepsMin: 8, targetRepsMax: 10 });
+  // I4-08 point 5 : séance démarrée depuis la routine du cycle (le deload n'est jamais pré-activé sur une séance libre ni une autre routine).
+  await (await db.data.repos.trainingRoutines()).create({
+    id: u(50),
+    name: 'Haut',
+    mode: 'programme',
+    days: [{ id: u(51), name: 'Haut B', dayOrder: 1, exercises: [{ id: u(52), exerciseId: BENCH_ID, exerciseName: BENCH, sets: 3, repMin: 8, repMax: 10, rir: null, restSec: 150, position: 0 }] }],
+  });
+  await r.start({ source: 'routine', id: CURRENT, routineId: u(50), dayId: u(51) });
 }
 const proposal = async () => within(await screen.findByRole('region', { name: BENCH })).findByRole('group', { name: 'Proposition' });
 
