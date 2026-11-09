@@ -1,5 +1,5 @@
 import { PROFILE_ID, WEIGHT_MAX_KG, validateProfile, weightId } from '../../../domain/bodyProfile';
-import { TRAINING_EXPORT_TABLES, trainingColumns, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable, type TrainingValue } from '../../../domain/exportImport/archive';
+import { ARCHIVE_EXTRA_COLUMNS, TRAINING_EXPORT_TABLES, trainingColumns, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable, type TrainingValue } from '../../../domain/exportImport/archive';
 import type { ImportPlan } from '../../../domain/exportImport/plan';
 import type { WriteStamper } from '../../../domain/hlc';
 import type { SyncCatalogue, SyncTable } from '../../../domain/sync/syncTables';
@@ -79,7 +79,7 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
    * Crée ou remplace une ligne (rétablit une ligne supprimée) : ligne entière remise dans la file. REV-01 constat 1 : une ligne que la
    * synchro ne publie pas encore (séance ouverte et ses séries, D-27) est écrite SANS horloge ni file ; la clôture la mettra en file.
    */
-  async function upsert(t: SyncTable, id: string, values: Readonly<Record<string, SqlValue>>): Promise<void> {
+  async function upsert(t: SyncTable, id: string, values: Readonly<Record<string, SqlValue>>, createdAt: string | null = null): Promise<void> {
     const existing = (await db.select<Row>(`SELECT id, hlc, deleted_at FROM ${t.name} WHERE id = ?`, [id]))[0];
     const columns = dataColumns(t);
     const params = columns.map((c) => values[c] ?? null);
@@ -91,7 +91,7 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
     } else {
       await db.execute(
         `INSERT INTO ${t.name} (id, ${columns.join(', ')}, created_at, updated_at, device_id, hlc) VALUES (?, ${columns.map(() => '?').join(', ')}, ?, ?, ?, ?)`,
-        [id, ...params, stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
+        [id, ...params, createdAt ?? stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
       );
       await db.execute('DELETE FROM sync_tombstone WHERE table_name = ? AND row_id = ?', [t.name, id]);
     }
@@ -143,11 +143,12 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
     for (const name of TRAINING_EXPORT_TABLES) {
       const t = tableOf(name);
       const columns = trainingColumns(name);
-      const rows = await db.select<SqlRow>(`SELECT p.id, ${columns.map((c) => `p.${c}`).join(', ')} FROM ${t.name} p WHERE ${exportableSql(t, 'p')} ORDER BY p.id`);
+      const extras = ARCHIVE_EXTRA_COLUMNS[name] ?? [];
+      const rows = await db.select<SqlRow>(`SELECT p.id, ${columns.map((c) => `p.${c}`).join(', ')}${extras.length > 0 ? ', p.created_at AS decided_at' : ''} FROM ${t.name} p WHERE ${exportableSql(t, 'p')} ORDER BY p.id`);
       const kept: TrainingRow[] = [];
       for (const r of rows) {
         if (t.parents.some((p) => r[p.column] !== null && r[p.column] !== undefined && !exported.get(p.table)?.has(String(r[p.column])))) continue;
-        kept.push({ id: String(r['id']), values: Object.fromEntries(columns.map((c) => [c, (r[c] ?? null) as TrainingValue])) });
+        kept.push({ id: String(r['id']), values: Object.fromEntries([...columns, ...extras].map((c) => [c, (r[c] ?? null) as TrainingValue])) });
       }
       exported.set(name, new Set(kept.map((r) => r.id)));
       if (kept.length > 0) out[name] = kept;
@@ -214,7 +215,11 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
         }
         for (const id of deleteWeightIds) await softDelete(bodyWeight, id);
         // Entraînement : parents d'abord à l'écriture, enfants d'abord à la suppression (ordre déjà donné par le plan).
-        for (const { table, row } of training) await upsert(tableOf(table), row.id, row.values);
+        for (const { table, row } of training) {
+          // REV-01 constat 3 : la décision garde son instant d'origine (`decided_at`) ; les lignes arrivent dans l'ordre des décisions (plan).
+          const decidedAt = ARCHIVE_EXTRA_COLUMNS[table]?.includes('decided_at') ? row.values['decided_at'] : null;
+          await upsert(tableOf(table), row.id, row.values, typeof decidedAt === 'string' ? decidedAt : null);
+        }
         for (const { table, id } of deleteTraining) await softDelete(tableOf(table), id);
       } finally {
         await db.execute('DELETE FROM sync_guard');
