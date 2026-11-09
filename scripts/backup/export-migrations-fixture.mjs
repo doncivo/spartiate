@@ -1,3 +1,4 @@
+/* global process */
 // I5-01 point 1.1 : régénère `src-tauri/tests/fixtures/spartiate-migrations.json` (instructions des migrations TypeScript et déclencheurs
 // d'une base migrée à chaque version), lue par le test Rust de la restauration (`src-tauri/tests/desktop/backup_versions.rs`).
 // Les migrations sont en TypeScript : la génération passe par le test de cohérence, lancé avec UPDATE_BACKUP_MIGRATIONS_FIXTURE=1.
