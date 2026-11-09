@@ -77,6 +77,7 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   extraRepMax: 'explainExtraRepMax',
   fatigue: 'explainFatigue',
   inactivity: 'explainInactivity',
+  inactivityHeld: 'explainInactivityHeld',
   deload: 'explainDeload',
   recoveryLow: 'explainRecoveryLow',
   recoveryLowSet: 'explainRecoveryLowSet',
@@ -295,7 +296,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     const p = prescription;
     const explanation = explainPrescription(p);
     const params: Record<string, string | number> = { ...explanation.params };
-    for (const key of ['load', 'delta'] as const) if (typeof params[key] === 'number') params[key] = kg(params[key]);
+    for (const key of ['load', 'delta', 'cut'] as const) if (typeof params[key] === 'number') params[key] = kg(params[key]);
     // I2-04 : précisions (séance partielle ignorée, matériel à vérifier) dans la même phrase, lues d'un trait.
     const notes = explanationNotes(p).map((n) => tProgression(n.key, n.params));
     const sentence = [tProgression(EXPLAIN_KEYS[explanation.key], params), ...notes].join(' ');

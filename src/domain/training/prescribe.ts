@@ -2,7 +2,7 @@ import { ENGINE_VERSION, REASON_ORDER, type ProgressionConfig } from './config';
 import { confidenceOf } from './confidence';
 import { analyzeHistory, current1rmFromSessions, epley, type SessionEstimate } from './estimate1rm';
 import { activeConstraints, proposalOptions, reducedTarget, reduces, type ActiveConstraints } from './constraints';
-import { gridToVerify, loadGrid, nextLoadAbove, roundKg, snapToEquipment } from './loadGrid';
+import { gridToVerify, loadGrid, nextLoadAbove, roundKg, snapDiscount, snapToEquipment } from './loadGrid';
 import type { MuscleWeight, PrescribeInput, PrescribedSet, Prescription, PrescriptionHeadline, PrescriptionReference, ReasonCode } from './types';
 
 /**
@@ -194,7 +194,14 @@ export function prescribe(input: PrescribeInput): Prescription {
     // Maintien de la référence (aucun cran, échelle ni recalibrage), puis réductions ; arrondi au matériel, jamais au-dessus de la référence.
     const reduced = reducedTarget(constraints, refPerformance, input.exercise.kind, config);
     if (reduced.recoverySetRemoved) reasons.add('recovery-set-removed');
-    const snapped = reduced.targetKg < refLoad - EPS ? snapToEquipment(reduced.targetKg, reduced.reps, available, config) : { loadKg: refLoad, reps: reduced.reps, extraRep: false };
+    // I4-08 : décote d'inactivité seule sur une grille connue : arrondie au cran (maintien sous le demi-cran), jamais un cran entier dit « −1 % ».
+    const discountOnly = constraints.inactivityCut > 0 && !constraints.deload && !constraints.lowRecovery;
+    const snapped =
+      reduced.targetKg >= refLoad - EPS
+        ? { loadKg: refLoad, reps: reduced.reps, extraRep: false }
+        : discountOnly && available !== null
+          ? snapDiscount(refLoad, reduced.targetKg, reduced.reps, available, config)
+          : snapToEquipment(reduced.targetKg, reduced.reps, available, config);
     if (snapped.extraRep) reasons.add('snap-extra-rep');
     const loadKg = roundKg(Math.min(snapped.loadKg, refLoad));
     return finish({
