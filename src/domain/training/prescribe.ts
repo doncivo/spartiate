@@ -233,7 +233,7 @@ export function prescribe(input: PrescribeInput): Prescription {
     reasons.add('position-discount');
     return { loadKg: lowered, reps: snapped.reps, cut: 1 - positionFactor };
   };
-  const positionFields = (cut: number): { readonly positionRank: number; readonly positionCut: number } => ({ positionRank: rank, positionCut: cut });
+  const positionFields = (cut: number): { readonly positionRank: number; readonly positionCut: number; readonly positionBasisKg: number } => ({ positionRank: rank, positionCut: cut, positionBasisKg: body === null ? refLoad : body.baseKg + body.sign * refLoad });
   if (reduces(constraints)) {
     // Maintien de la référence (aucun cran, échelle ni recalibrage), puis réductions ; arrondi au matériel, jamais au-dessus de la référence.
     const reduced = reducedTarget(constraints, refPerformance, input.exercise.kind, config);
@@ -340,7 +340,9 @@ export function prescribe(input: PrescribeInput): Prescription {
   const pos = positioned(roundKg(draft.loadKg), draft.reps);
   const loadKg = pos.loadKg;
   // Au plus la référence à cause de la position (la hausse est absorbée) : la raison principale est la position (la phrase ne dit pas « +x kg »).
-  const headline: PrescriptionHeadline = pos.cut > 0 && loadKg <= refLoad + EPS ? 'position' : draft.headline;
+  // Assistée : la décote fait MONTER l'assistance (la charge totale baisse) ; la position est alors la raison dès qu'elle s'applique.
+  const absorbed = body !== null && body.sign < 0 ? loadKg >= refLoad - EPS : loadKg <= refLoad + EPS;
+  const headline: PrescriptionHeadline = pos.cut > 0 && absorbed ? 'position' : draft.headline;
   return finish({
     ...(pos.cut > 0 ? positionFields(pos.cut) : {}),
     status: 'prescribed',

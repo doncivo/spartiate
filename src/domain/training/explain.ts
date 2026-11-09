@@ -88,8 +88,8 @@ export function explainPrescription(p: Prescription): Explanation {
     case 'position':
     {
       // L'écart dit est celui de la charge appliquée (arrondie au matériel), jamais la décote théorique (comme l'inactivité, I4-08).
-      const ref = p.reference?.loadKg ?? 0;
-      const delta = -(p.deltaKg ?? 0);
+      const ref = p.positionBasisKg ?? p.reference?.loadKg ?? 0;
+      const delta = Math.abs(p.deltaKg ?? 0);
       const rank = p.positionRank ?? 1;
       if (!(delta > 0) || !(ref > 0)) return { key: 'positionHeld', params: { rank } };
       return { key: 'position', params: { delta: Math.round(delta * 100) / 100, rank, cut: Math.round((delta / ref) * 1000) / 10 } };
