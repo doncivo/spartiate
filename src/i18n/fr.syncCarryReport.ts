@@ -81,5 +81,8 @@ export const syncCarryReportFr = {
   kindFoodPortion: 'Portion d’une fiche',
   kindMealEntry: 'Entrée du journal',
   kindNutritionTarget: 'Cible nutritionnelle',
+  kindDayCompleteness: 'Journée déclarée complète ou incomplète',
+  kindRecipe: 'Recette',
+  kindRecipeIngredient: 'Ingrédient de recette',
   kindOther: 'Autre élément',
 } as const;

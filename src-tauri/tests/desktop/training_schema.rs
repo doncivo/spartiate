@@ -2,8 +2,9 @@
 //! `workout_set`, sans déclencheur de capture : D-27) et 4 (migration 0004, déclencheurs gardés des séances closes) sont admises par la
 //! vérification des sauvegardes, comme la 5 (I2-01, migration 0005 : `progression_profile` et `recommendation_decision`, locales, sans
 //! déclencheur), la 6 (I2-01 PR 2/2, migration 0006 : captures des deux tables de progression et de `workout_set.difficulty`) et la 7
-//! (I3-02, migration 0007 : captures de `mesocycle`) et la 8 (I4-02, migration 0008 : captures de `food`, `food_portion`, `meal_entry` et
-//! `nutrition_target`) ; la version 9, inconnue de cette app, est refusée. Les déclencheurs de capture sont ceux de la référence.
+//! (I3-02, migration 0007 : captures de `mesocycle`), la 8 (I4-02, migration 0008 : captures de `food`, `food_portion`, `meal_entry` et
+//! `nutrition_target`) et la 9 (I4-07, migration 0009 : captures de `day_completeness`, `recipe` et `recipe_ingredient`) ; la version 10, inconnue
+//! de cette app, est refusée. Les déclencheurs de capture sont ceux de la référence.
 
 use std::path::Path;
 
@@ -71,8 +72,8 @@ fn error_code(path: &Path) -> &'static str {
 }
 
 #[test]
-fn i4_02_the_app_schema_version_is_8() {
-    assert_eq!(APP_SCHEMA_VERSION, 8);
+fn i4_07_the_app_schema_version_is_9() {
+    assert_eq!(APP_SCHEMA_VERSION, 9);
 }
 
 #[test]
@@ -369,13 +370,87 @@ fn i4_02_the_nutrition_triggers_do_not_exist_before_version_8() {
 }
 
 #[test]
-fn i4_02_a_version_9_backup_is_refused_as_newer_schema() {
+fn i4_07_the_recipe_and_day_triggers_do_not_exist_before_version_9() {
+    for table in ["day_completeness", "recipe", "recipe_ingredient"] {
+        for suffix in ["ai", "au"] {
+            let name = format!("sync_{table}_{suffix}");
+            assert_eq!(trigger_body_for(&name, table, 8), None, "{name}");
+            assert!(trigger_body_for(&name, table, 9).is_some(), "{name}");
+        }
+    }
+}
+
+#[test]
+fn i4_07_a_version_9_backup_with_the_recipe_tables_is_accepted_and_a_tampered_one_is_refused() {
     let dir = scratch();
     let path = dir.path().join("v9.db");
+    make_db(&path, 9, &TABLES);
+    make_tables(
+        &path,
+        9,
+        &["day_completeness", "recipe", "recipe_ingredient"],
+    );
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(
+            "CREATE TABLE workout (id TEXT PRIMARY KEY, ended_at TEXT); CREATE TABLE workout_set (id TEXT PRIMARY KEY, workout_id TEXT, difficulty TEXT);",
+        )
+        .unwrap();
+    for (table, names) in [
+        (
+            "workout",
+            &[
+                "sync_workout_ai",
+                "sync_workout_au",
+                "sync_workout_close_decisions_au",
+            ][..],
+        ),
+        (
+            "workout_set",
+            &[
+                "sync_workout_set_ai",
+                "sync_workout_set_au",
+                "sync_workout_set_difficulty_au",
+            ][..],
+        ),
+    ] {
+        for name in names {
+            let sql = trigger_body_for(name, table, 9).unwrap_or_else(|| panic!("{name}"));
+            Connection::open(&path).unwrap().execute_batch(sql).unwrap();
+        }
+    }
+    make_tables(
+        &path,
+        9,
+        &[
+            "progression_profile",
+            "recommendation_decision",
+            "mesocycle",
+            "food",
+            "food_portion",
+            "meal_entry",
+            "nutrition_target",
+        ],
+    );
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 9);
+    // Un corps modifié d'un déclencheur de recette est refusé.
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(
+            "DROP TRIGGER sync_recipe_au; CREATE TRIGGER sync_recipe_au AFTER UPDATE ON recipe BEGIN SELECT 1; END;",
+        )
+        .unwrap();
+    assert!(check_backup_file(&path, APP_SCHEMA_VERSION).is_err());
+}
+
+#[test]
+fn i4_07_a_version_10_backup_is_refused_as_newer_schema() {
+    let dir = scratch();
+    let path = dir.path().join("v10.db");
     make_db(&path, 3, &TABLES);
     Connection::open(&path)
         .unwrap()
-        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5); INSERT INTO schema_migrations (version) VALUES (6); INSERT INTO schema_migrations (version) VALUES (7); INSERT INTO schema_migrations (version) VALUES (8); INSERT INTO schema_migrations (version) VALUES (9);")
+        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5); INSERT INTO schema_migrations (version) VALUES (6); INSERT INTO schema_migrations (version) VALUES (7); INSERT INTO schema_migrations (version) VALUES (8); INSERT INTO schema_migrations (version) VALUES (9); INSERT INTO schema_migrations (version) VALUES (10);")
         .unwrap();
     assert_eq!(error_code(&path), "newer-schema");
 }

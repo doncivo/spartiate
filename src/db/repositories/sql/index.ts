@@ -72,6 +72,9 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFa
     ),
   mealEntries: () => import('./mealEntryRepository').then((m) => signalingWrites(m.createMealEntryRepository(executor, stamper), ['create', 'createMany', 'update', 'softDelete'])),
   nutritionTargets: () => import('./nutritionTargetRepository').then((m) => signalingWrites(m.createNutritionTargetRepository(executor, stamper), ['record'])),
+  // I4-07 : journée déclarée et recettes, à la demande ; chaque écriture est publiable et lève le signal de synchro.
+  dayCompleteness: () => import('./dayCompletenessRepository').then((m) => signalingWrites(m.createDayCompletenessRepository(executor, stamper), ['declare', 'clear'])),
+  recipes: () => import('./recipeRepository').then((m) => signalingWrites(m.createRecipeRepository(executor, stamper), ['create', 'update', 'softDelete'])),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)

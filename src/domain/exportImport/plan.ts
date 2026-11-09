@@ -7,7 +7,7 @@
  * - « remplacer » : l'archive devient l'état ; toute ligne locale absente est supprimée logiquement (jamais de tombstone).
  */
 
-import { TRAINING_EXPORT_TABLES, trainingColumns, trainingRows, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable } from './archive';
+import { TABLE_SINCE_SV, TRAINING_EXPORT_TABLES, trainingColumns, trainingRows, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable } from './archive';
 
 export type ImportMode = 'merge' | 'replace';
 export type ImportTable = 'profile' | 'body_weight' | 'settings' | TrainingTable;
@@ -140,6 +140,8 @@ export function planImport(local: ExportData, incoming: ExportData, mode: Import
   }
   if (mode === 'replace' && hasTraining) {
     for (const table of [...TRAINING_EXPORT_TABLES].reverse()) {
+      // Archive d'un schéma antérieur à la table : l'absence de ses clés n'est pas une donnée (I4-07), rien n'est supprimé.
+      if (incoming.archiveSv !== undefined && incoming.archiveSv < (TABLE_SINCE_SV[table] ?? 0)) continue;
       const incomingIds = new Set(trainingRows(incoming, table).map((r) => r.id));
       for (const row of [...trainingRows(local, table)].sort((a, b) => (a.id < b.id ? -1 : 1))) {
         if (incomingIds.has(row.id)) continue;

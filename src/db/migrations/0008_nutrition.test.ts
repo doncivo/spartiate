@@ -44,9 +44,9 @@ const outbox = (db: SqlDriver) => db.select<{ table_name: string; row_id: string
 const uuid = (n: number): string => `7c2b1d3e-0000-4000-8000-0000000001${String(n).padStart(2, '0')}`;
 
 describe('migration 0008 : nutrition (I4-02)', () => {
-  it('registre : 0001 à 0008 ; version 8, nom nutrition', () => {
-    expect(migrations.map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
-    expect(migrations.at(-1)).toBe(migration0008Nutrition);
+  it('registre : 0001 à 0008 en tête (la 0009 des recettes suit) ; version 8, nom nutrition', () => {
+    expect(migrations.slice(0, 8).map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(migrations[7]).toBe(migration0008Nutrition);
     expect(migration0008Nutrition.name).toBe('nutrition');
   });
 

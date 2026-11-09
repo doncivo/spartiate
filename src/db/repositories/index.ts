@@ -39,3 +39,5 @@ export type * from './mesocycleRepository';
 export type * from './foodRepository';
 export type * from './mealEntryRepository';
 export type * from './nutritionTargetRepository';
+export type * from './dayCompletenessRepository';
+export type * from './recipeRepository';
