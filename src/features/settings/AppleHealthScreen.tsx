@@ -8,7 +8,9 @@ import { healthKit as platformHealthKit, type HealthKit, type HealthKitAvailabil
 import { logFailure } from '../../platform/desktop/log';
 import { parseShortcutWeights } from '../../domain/health/shortcutWeights';
 import { detectTimeZone } from '../../platform/timeZone';
+import type { ShortcutFilesReader } from '../../platform/shortcutFiles';
 import { Button, Icon, useLayout } from '../../ui';
+import { RecoveryImportSection } from './RecoveryImportSection';
 import { useAppContainer } from '../app/AppContainerContext';
 import { RepositoryError } from '../../db/repositories/common';
 import { useNavigationStore } from '../app/navigation';
@@ -24,7 +26,7 @@ const READ_FAILURE = (code: string | undefined): string => (code ? tHealth('read
  * Santé. iOS ne dit jamais si la lecture est accordée : une demande terminée est « terminée », un résultat vide n'est ni un zéro ni la
  * preuve d'un refus. « Utiliser cette pesée » enregistre la lecture par `saveHealth` (identité `health`), sans toucher à la saisie manuelle.
  */
-export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly healthKit?: HealthKit }) {
+export function AppleHealthScreen({ healthKit = platformHealthKit, shortcutReader }: { readonly healthKit?: HealthKit; readonly shortcutReader?: ShortcutFilesReader }) {
   const container = useAppContainer();
   const layout = useLayout();
   const navigate = useNavigationStore((s) => s.navigate);
@@ -140,6 +142,8 @@ export function AppleHealthScreen({ healthKit = platformHealthKit }: { readonly 
         </section>
 
         {blocked && <ShortcutImport />}
+
+        <RecoveryImportSection {...(shortcutReader ? { reader: shortcutReader } : {})} />
 
         {reads && (
           <>
