@@ -290,7 +290,7 @@ describe('libellés de synchro', () => {
     await roundTrip();
     for (const d of [a, b]) {
       const map = await (await d.data.repos.dayCompleteness()).listBetween(DAY, DAY2);
-      expect([...map.entries()].map(([k, v]) => [k, v.state]), d.name).toEqual([
+      expect([...map.entries()], d.name).toEqual([
         [DAY, 'complete'],
         [DAY2, 'incomplete'],
       ]);
