@@ -215,7 +215,21 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
         }
         for (const id of deleteWeightIds) await softDelete(bodyWeight, id);
         // Entraînement : parents d'abord à l'écriture, enfants d'abord à la suppression (ordre déjà donné par le plan).
+        // REV-01 constat 1 : une séance close ici, même supprimée (absente de la lecture d'export), n'est jamais rouverte par l'archive ; ses séries non plus.
+        const reopened = new Set<string>();
         for (const { table, row } of training) {
+          if (table !== 'workout' || row.values['ended_at'] !== null) continue;
+          const here = (await db.select<{ ended_at: string | null }>('SELECT ended_at FROM workout WHERE id = ?', [row.id]))[0];
+          if (here && here.ended_at !== null) reopened.add(row.id);
+        }
+        const ofWorkout = (table: TrainingTable, row: TrainingRow): string | null => {
+          if (table === 'workout') return row.id;
+          const column = tableOf(table).parents.find((x) => x.table === 'workout')?.column;
+          return column === undefined ? null : String(row.values[column] ?? '');
+        };
+        for (const { table, row } of training) {
+          const owner = ofWorkout(table, row);
+          if (owner !== null && reopened.has(owner)) continue;
           // REV-01 constat 3 : la décision garde son instant d'origine (`decided_at`) ; les lignes arrivent dans l'ordre des décisions (plan).
           const decidedAt = ARCHIVE_EXTRA_COLUMNS[table]?.includes('decided_at') ? row.values['decided_at'] : null;
           await upsert(tableOf(table), row.id, row.values, typeof decidedAt === 'string' ? decidedAt : null);
