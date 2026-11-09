@@ -62,6 +62,9 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   day_completeness: { label: 'date', kind: 'dayCompleteness' },
   recipe: { label: 'name', kind: 'recipe' },
   recipe_ingredient: { label: 'name', kind: 'recipeIngredient' },
+  // I5-01 : résumés de récupération (libellé : la date ; le muscle pour une ligne de muscle).
+  recovery_day: { label: 'date', kind: 'recoveryDay' },
+  muscle_recovery: { label: 'muscle_id', kind: 'muscleRecovery' },
 };
 
 export const carryReportTableEntry = (table: string): { readonly label: string | null; readonly kind: string } | undefined =>

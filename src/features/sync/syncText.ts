@@ -160,6 +160,8 @@ const KIND_KEYS = {
   day_completeness: 'sync.version.kinds.dayCompleteness',
   recipe: 'sync.version.kinds.recipe',
   recipe_ingredient: 'sync.version.kinds.recipeIngredient',
+  recovery_day: 'sync.version.kinds.recoveryDay',
+  muscle_recovery: 'sync.version.kinds.muscleRecovery',
 } as const;
 
 /** Types d'éléments d'un échec (« tâches, événements »), d'après les tables du catalogue. */

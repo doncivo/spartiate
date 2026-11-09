@@ -10,7 +10,7 @@ import { classifyLaunch, shouldRecordLaunch, type LaunchKind } from '../../domai
 import { publishedAppVersion, readAppVersion, type AppVersionRead } from '../../platform/appVersion';
 import { migrations } from '../../db/migrations';
 import type { SyncCatalogue } from '../../domain/sync/syncTables';
-import { createDataAccess, reintegrateUnknownFields, SYNC_STORAGE, type SyncStorage, type ReintegrationReport } from '../../db/repositories';
+import { createDataAccess, createStorage, reintegrateUnknownFields, SYNC_STORAGE, type SyncStorage, type ReintegrationReport } from '../../db/repositories';
 import { detectOs, detectRuntime, openDesktopPlatform, type DesktopPlatform } from '../../platform';
 import { openBackupService, type BackupService } from '../../platform/backup';
 import { openFileService, type FileService } from '../../platform/files';
@@ -262,7 +262,8 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
   const driver = await bootstrapDatabase(options.open ?? devOpen, { clock: options.clock, backup: options.backup, migrations: options.migrations ?? withDevExtras(), catalogue: (options.storage ?? SYNC_STORAGE).catalogue, appVersion: appVersion.version });
   if (!driver) return undefined;
   const list = options.migrations ?? migrations;
-  const storage = options.storage ?? SYNC_STORAGE;
+  // I5-01 (§ 9.1) : l'iPhone seul écrit les résumés de récupération ; le PC les lit (écriture locale écartée, événement fixe sans valeur).
+  const storage = options.storage ?? createStorage(SYNC_STORAGE.catalogue, { recoveryWriter: detectOs() === 'ios', onIgnoredWrite: (event) => logFailure('recovery', event) });
   const factory = storage.repositories;
   const clock = options.clock ?? systemClock;
   const ids = options.ids ?? uuidGenerator;

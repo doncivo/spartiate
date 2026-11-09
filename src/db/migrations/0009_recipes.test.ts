@@ -40,8 +40,8 @@ const outbox = (db: SqlDriver) => db.select<{ table_name: string; row_id: string
 
 describe('migration 0009 : recettes et journée complète (I4-07)', () => {
   it('registre : 0001 à 0009 ; version 9, nom recipes', () => {
-    expect(migrations.map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    expect(migrations.at(-1)).toBe(migration0009Recipes);
+    expect(migrations.slice(0, 9).map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(migrations[8]).toBe(migration0009Recipes);
     expect(migration0009Recipes.name).toBe('recipes');
   });
 
@@ -50,7 +50,7 @@ describe('migration 0009 : recettes et journée complète (I4-07)', () => {
     await migrate(db, migrations.slice(0, 8));
     await db.execute('DELETE FROM sync_outbox');
     const before = await db.select<{ name: string; sql: string }>("SELECT name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY name");
-    await migrate(db, migrations);
+    await migrate(db, migrations.slice(0, 9));
     const after = await db.select<{ name: string; sql: string }>("SELECT name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY name");
     const beforeNames = new Set(before.map((r) => r.name));
     for (const row of before) expect(after.find((r) => r.name === row.name), row.name).toEqual(row);
@@ -160,7 +160,7 @@ describe('migration 0009 : recettes et journée complète (I4-07)', () => {
     const db = await freshDb();
     const names = (await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger' AND (name LIKE 'sync_day_completeness_%' OR name LIKE 'sync_recipe%') ORDER BY name")).map((r) => r.name);
     expect(names).toEqual(['sync_day_completeness_ai', 'sync_day_completeness_au', 'sync_recipe_ai', 'sync_recipe_au', 'sync_recipe_ingredient_ai', 'sync_recipe_ingredient_au']);
-    expect(await db.select("SELECT 1 FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_%'")).toHaveLength(40);
+    expect(await db.select("SELECT 1 FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_%'")).toHaveLength(44); // 40 avec la 0009, 44 avec la 0010 (I5-01)
     await db.close();
   });
 

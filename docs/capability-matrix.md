@@ -75,5 +75,7 @@ La colonne « Preuve attendue » n’est pas une preuve acquise. Chaque ticket a
 | Recharts : trois ans de séries en < 300 ms (H-15) | UNVERIFIED | Mesure test:perf sur fixture synthétique de trois ans, chemin réel des graphiques | I2 |
 | Couverture des huit micronutriments épinglés par Ciqual (H-19b) | UNVERIFIED | Comptage des colonnes et de la couverture des aliments génériques au chargement | I6 |
 | Format réel du fichier du raccourci Santé : valeur, unité, décalage (H-21, registre dans docs/decisions.md : le chapitre 26 du PRD est figé par prd-split.test.ts) | UNVERIFIED | Fichier réel écrit par Raccourcis, importé par Plus → Apple Santé | Après D-69, constat d'Ali |
+| Formats réels des fichiers hrv.csv, fc-repos.csv, sommeil.csv, pas.csv écrits par le raccourci « Spartiate — récupération » (H-22 à H-25, registre dans docs/decisions.md) | UNVERIFIED | Fichiers réels écrits par Raccourcis, importés par Plus → Apple Santé → Raccourcis, lignes rejetées par raison | I5-01, constat d'Ali |
+| Marque-page de sécurité du dossier iCloud Drive/Spartiate-sante sans geste, pour la lecture à l'ouverture (H-26) | UNVERIFIED | Plugin Swift à écrire (docs/I5-01.md), constat sur iPhone | Après I5-01 |
 
 Les qualifications du PRD restent conservées même si un lot de code est déjà fusionné. En particulier, l’annexe B distingue l’updater signé Spartiate du mécanisme hérité ; D-59 distingue H-3a / H-3b / H-3c et leurs tickets. Les mentions conditionnelles « si CONFIRMED » des écrans métier ne constituent jamais un statut acquis.
