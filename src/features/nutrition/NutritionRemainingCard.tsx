@@ -19,16 +19,17 @@ export function NutritionRemainingCard() {
   const { data } = container;
   const navigate = useNavigationStore((s) => s.navigate);
   const [load, setLoad] = useState<Load>({ status: 'loading' });
-  const synced = useSyncedData(['meal_entry', 'nutrition_target']);
+  const synced = useSyncedData(['meal_entry', 'nutrition_target', 'day_completeness']);
 
   useEffect(() => {
     let live = true;
     void (async () => {
       try {
         const today = todayLocal(container.clock);
-        const [entries, targets] = await Promise.all([data.repos.mealEntries(), data.repos.nutritionTargets()]);
-        const [list, effective] = await Promise.all([entries.listByDate(today), targets.effective(today)]);
-        const day = aggregateDay(today, list.map(toMealEntryInput));
+        const [entries, targets, completeness] = await Promise.all([data.repos.mealEntries(), data.repos.nutritionTargets(), data.repos.dayCompleteness()]);
+        const [list, effective, declared] = await Promise.all([entries.listByDate(today), targets.effective(today), completeness.get(today)]);
+        // La déclaration d'Ali prime sur la déduction (D-81) : même état que le Journal.
+        const day = aggregateDay(today, list.map(toMealEntryInput), declared?.state);
         const target = effective?.target ?? null;
         if (live) setLoad({ status: 'ready', day, target, remaining: remainingForDay(target, day) });
       } catch {
@@ -55,7 +56,7 @@ export function NutritionRemainingCard() {
       ) : (
         <>
           <p className="ct-today__text">{remaining.kcal < 0 ? tNutrition('overKcal', { n: formatInt(-remaining.kcal) }) : tNutrition('remainingKcal', { n: formatInt(remaining.kcal) })}</p>
-          <p className="ct-today__muted">{day.entryCount === 0 ? tNutrition('emptyToday') : tNutrition(day.state === 'complete' ? 'dayCompleteInferred' : 'dayPartial')}</p>
+          <p className="ct-today__muted">{day.entryCount === 0 ? tNutrition('emptyToday') : tNutrition(day.state === 'complete' ? (day.origin === 'declared' ? 'dayCompleteDeclared' : 'dayCompleteInferred') : 'dayPartial')}</p>
         </>
       )}
       {target === null ? (

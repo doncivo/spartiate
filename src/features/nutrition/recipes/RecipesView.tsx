@@ -145,7 +145,7 @@ export function RecipesView({ today, onChanged }: RecipesViewProps) {
           {state.list.map((recipe) => {
             const kcal = recipePerServing(recipe).kcal;
             return (
-              <li key={recipe.id} className="ct-recipe__item" aria-label={recipe.name}>
+              <li key={recipe.id} className="ct-recipe__item">
                 <div className="ct-recipe__item-main">
                   <p className="ct-nutrition__entry-name">{recipe.name}</p>
                   <p className="ct-nutrition__muted ct-nutrition__num">
