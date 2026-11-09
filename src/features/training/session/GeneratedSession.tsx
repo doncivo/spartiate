@@ -122,7 +122,7 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
     setBusy(true);
     setError(false);
     try {
-      onStarted(await startGeneratedSession(access, session));
+      onStarted(await startGeneratedSession(access, session, entry?.routine.id ?? null));
     } catch {
       setError(true);
       setBusy(false);

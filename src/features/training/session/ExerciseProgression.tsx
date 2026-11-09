@@ -12,6 +12,7 @@ import { logFailure } from '../../../platform/desktop/log';
 import { tProgression, type ProgressionTextKey } from '../../../i18n/progressionText';
 import { Button } from '../../../ui';
 import { loadCurrentCycle, localDayOf } from '../cycle/currentCycle';
+import { parseSessionLink, sessionRoutineId } from '../cycle/sessionLink';
 import './Progression.css';
 
 /**
@@ -27,7 +28,8 @@ import './Progression.css';
  * - Contraintes (I2-02) : alertes en texte et choix facultatifs (fatigue : −5 % ou −2 reps ; stagnation : variante, autre plage, mini-deload).
  *   Un choix ne remplit les séries qu'au geste d'Ali, tracé comme une modification ; « Accepter » garde la proposition, « Refuser » ne
  *   remplit rien. Deload manuel demandé par Ali (bascule) : la proposition allégée, une fois retenue, sort la séance des statistiques.
- *   I3-02 : séance commencée en semaine de deload du cycle suivi : la bascule est activée par défaut (dit en texte), désactivable.
+ *   I3-02 : séance commencée en semaine de deload du cycle suivi : la bascule est activée par défaut (dit en texte), désactivable ;
+ *   I4-08 : seulement si la séance est issue de la routine du cycle (démarrée ou proposée depuis elle), jamais libre ni d'une autre routine.
  * - Échauffement (I2-03, § 13.8) : pour le premier exercice composé de son pattern (`warmup`), la rampe est annoncée sous la proposition
  *   et insérée avant la première série de travail dans la même transaction que la décision, sur la charge retenue (Accepter, Modifier ou
  *   un choix) ; jamais après un refus, jamais si l'exercice a déjà une série d'échauffement, jamais sans grille de charges connue.
@@ -141,15 +143,20 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     void (async () => {
       try {
         const repo = await access.repos.progression();
-        const [history, reference, own, profile, cycle] = await Promise.all([
+        const [history, reference, own, profile, cycle, rawLink] = await Promise.all([
           repo.history(exerciseId),
           // I4-08 : décision illisible ignorée par le repository, journalisée par son nom d'événement fixe (jamais son contenu).
           repo.lastDecision(exerciseId, reportUnreadable),
           repo.decisionFor(workout.id, exerciseId, reportUnreadable),
           repo.getProfile(exerciseId),
           loadCurrentCycle(access, localDayOf(Date.parse(workout.startedAt))),
+          // Lien local d'une séance proposée (I4-08) : illisible ou d'une autre séance, il ne vaut rien.
+          access.repos.settings.get('training.cycleSession').catch(() => null),
         ]);
-        const cycleDeload = cycle !== null && cycle.state.phase === 'active' && cycle.state.kind === 'deload';
+        const link = parseSessionLink(rawLink);
+        // I4-08 point 5 : le deload du cycle ne vaut que pour une séance issue de la routine du cycle (démarrée ou proposée depuis elle).
+        const ofCycle = cycle !== null && sessionRoutineId(workout, link) === cycle.record.routineId;
+        const cycleDeload = ofCycle && cycle.state.phase === 'active' && cycle.state.kind === 'deload';
         if (!live.current) return;
         // I3-02 : en semaine de deload du cycle, le deload est proposé par défaut (une fois, au premier chargement ; désactivable).
         if (cycleDeload && !cyclePreset.current) {

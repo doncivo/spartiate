@@ -14,6 +14,7 @@ import {
 import type { IsoDateTime } from '../../../domain/types';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { TrainingContent } from '../content';
+import type { SessionLink } from '../cycle/sessionLink';
 import type { AnyProfile } from '../trainingState';
 
 /**
@@ -96,10 +97,17 @@ export function buildGenerationInput(data: GenerationData, source: GenerationSou
  * rien n'est écrit). Séance non liée à la routine : celle-ci n'est ni lue ni modifiée à la clôture. Un exercice présent deux fois dans la
  * routine reçoit ses séries supplémentaires à la suite (le repository refuse un second ajout du même exercice).
  */
-export async function startGeneratedSession(access: DataAccess, session: GeneratedSession): Promise<WorkoutWithSets> {
+export async function startGeneratedSession(access: DataAccess, session: GeneratedSession, routineId: string | null = null): Promise<WorkoutWithSets> {
   return access.transaction(async (repos) => {
     const workouts = await repos.workouts();
     const workout = await workouts.start({ source: 'empty', name: session.dayName });
+    // I4-08 : lien local avec la routine source et RIR cible par exercice (sessionLink.ts), dans la même transaction que la séance.
+    if (routineId !== null) {
+      const rir: Record<string, number | null> = {};
+      for (const e of session.exercises) if (!(e.exerciseId in rir)) rir[e.exerciseId] = e.rir;
+      const link: SessionLink = { v: 1, workoutId: workout.id, routineId, rir };
+      await repos.settings.set('training.cycleSession', link);
+    }
     const added = new Set<string>();
     for (const e of session.exercises) {
       if (added.has(e.exerciseId)) {
