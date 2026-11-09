@@ -448,6 +448,8 @@ export interface Prescription {
   /** Rang de position pris en compte et décote de position appliquée (0 à 1 ; 0 sans décote). */
   readonly positionRank?: number;
   readonly positionCut?: number;
+  /** DEP-01 : charge sur laquelle la décote est dite (charge totale corps ± saisie si le poids de corps est connu, sinon la charge de référence). */
+  readonly positionBasisKg?: number;
   readonly engineVersion: number;
   readonly activeConfig: ProgressionConfig;
 }

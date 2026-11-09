@@ -186,6 +186,7 @@ describe('restauration depuis l’écran d’échec : chaque raison d’échec d
   // Exhaustif à la compilation : une raison ajoutée à BackupFailureReason (par exemple par une fusion de main) manque ici, et au typage.
   const REASONS = {
     corrupt: true,
+    'wal-page-size': true,
     'newer-schema': true,
     'not-found': true,
     io: true,

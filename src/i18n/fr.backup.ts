@@ -42,6 +42,7 @@ export const backupFr = {
   busy: 'Restauration en cours…',
   done: 'Restauration terminée, redémarrage',
   errorCorrupt: 'Cette sauvegarde est illisible. Rien n’a été modifié.',
+  errorWalPageSize: 'Ce fichier de base est refusé : son journal voisin (-wal) ne correspond pas à lui. Rien n’a été modifié.',
   errorNewer: 'Cette sauvegarde vient d’une version plus récente de Spartiate. Rien n’a été modifié.',
   errorNotFound: 'Cette sauvegarde n’existe plus. Rien n’a été modifié.',
   errorIo: 'La restauration a échoué. Tes données actuelles sont intactes.',
