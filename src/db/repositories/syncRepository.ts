@@ -95,7 +95,10 @@ export type SyncReportTable =
   | 'food'
   | 'food_portion'
   | 'meal_entry'
-  | 'nutrition_target';
+  | 'nutrition_target'
+  | 'day_completeness'
+  | 'recipe'
+  | 'recipe_ingredient';
 
 /** Compteurs seulement (jamais le contenu d'une ligne) : bilan de l'export des journaux. */
 export interface SyncDiagnostics {

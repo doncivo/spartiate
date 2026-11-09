@@ -3,7 +3,13 @@ import { createManualClock } from '../../../../src/domain/clock';
 import { epochId, SYNC_TABLE_ORDER, type DeviceAck } from '../../../../src/domain/sync/format';
 import { SYNC_CATALOGUE } from '../../../../src/domain/sync/syncTables';
 import type { RecipeDraft } from '../../../../src/domain/nutrition/recipeTypes';
-import type { DeviceId, IsoDateTime, LocalDate } from '../../../../src/domain/types';
+import type { SyncField, SyncOp } from '../../../../src/domain/sync/format';
+import type { DeviceId, Hlc, IsoDateTime, LocalDate } from '../../../../src/domain/types';
+import { applyOps, type ApplyContext } from '../../../../src/sync/apply';
+import { guarded } from '../../../../src/sync/guarded';
+import { createMemorySyncLogger } from '../../../../src/sync/log';
+import { retryParked } from '../../../../src/sync/maintenance';
+import type { SyncDeps } from '../../../../src/sync/deps';
 import { migrate } from '../../../../src/db/migrator';
 import { migrations } from '../../../../src/db/migrations';
 import { reintegrateUnknownFields } from '../../../../src/db/repositories';
@@ -255,23 +261,70 @@ describe('(c) conflit sur un MÊME champ', () => {
 });
 
 describe('(d) ordre : ingrédient avant sa recette', () => {
-  it('ingrédient reçu seul : mis de côté (missing-parent) ; la recette arrive ensuite : rejoué, aucune perte', async () => {
-    const [a, b] = await twoDevices();
-    await seed(a);
-    // La recette n'est pas encore publiée : seuls ses ingrédients partent d'abord.
-    const held = await a.driver.select<{ row_id: string; field: string }>("SELECT row_id, field FROM sync_outbox WHERE table_name = 'recipe'");
-    expect(held.length).toBeGreaterThan(0);
-    await a.driver.execute("DELETE FROM sync_outbox WHERE table_name = 'recipe'");
-    await roundTrip();
+  const HLC = (ms: number): Hlc => `${String(1_794_000_000_000 + ms).padStart(15, '0')}-0000-${A_ID}` as Hlc;
+  const AT = '2026-11-09T08:00:00.000Z' as IsoDateTime;
+  const field = (value: SyncField[0], hlc: Hlc): SyncField => [value, hlc, null];
+  const recipeOp = (hlc: Hlc): SyncOp => ({
+    t: 'recipe',
+    id: R1,
+    at: AT,
+    f: new Map<string, SyncField>([['name', field('Poulet-riz reçu', hlc)], ['servings', field(4, hlc)], ['cooked_weight_g', field(null, hlc)], ['created_at', field(AT, hlc)], ['deleted_at', field(null, hlc)]]),
+  });
+  const ingredientOp = (id: string, position: number, name: string, hlc: Hlc): SyncOp => ({
+    t: 'recipe_ingredient',
+    id,
+    at: AT,
+    f: new Map<string, SyncField>([
+      ['recipe_id', field(R1, hlc)],
+      ['position', field(position, hlc)],
+      ['name', field(name, hlc)],
+      ['source', field('custom', hlc)],
+      ['food_ref', field(null, hlc)],
+      ['grams', field(200, hlc)],
+      ['kcal_100g', field(100, hlc)],
+      ['protein_100g', field(null, hlc)],
+      ['fat_100g', field(null, hlc)],
+      ['carb_100g', field(null, hlc)],
+      ['fiber_100g', field(null, hlc)],
+      ['created_at', field(AT, hlc)],
+      ['deleted_at', field(null, hlc)],
+    ]),
+  });
+  const I1 = '7e4d3c2b-0000-4000-8000-0000000000a1';
+  const I2 = '7e4d3c2b-0000-4000-8000-0000000000a2';
+  const ctx = (logger: ReturnType<typeof createMemorySyncLogger>, noPark = false): ApplyContext => ({ catalogue: SYNC_CATALOGUE, localSv: 9, remoteSv: 9, now: AT, knows: () => true, logger, ...(noPark ? { noPark } : {}) });
+
+  it('ingrédients reçus seuls : mis de côté (missing-parent), rien d’écrit ; la recette arrive ensuite : ils sont rejoués, sync_parked vidé', async () => {
+    const [, b] = await twoDevices();
+    const logger = createMemorySyncLogger();
+    await guarded(b.data, (repos) => applyOps(repos, [ingredientOp(I1, 0, 'Riz reçu', HLC(2)), ingredientOp(I2, 1, 'Poulet reçu', HLC(2))], ctx(logger)));
     expect(await count(b, 'recipe_ingredient')).toBe(0);
-    expect((await b.driver.select<{ reason: string; table_name: string }>('SELECT reason, table_name FROM sync_parked ORDER BY id')).map((p) => [p.reason, p.table_name])).toEqual([
-      ['missing-parent', 'recipe_ingredient'],
-      ['missing-parent', 'recipe_ingredient'],
+    expect((await b.driver.select<{ reason: string; table_name: string; row_id: string }>('SELECT reason, table_name, row_id FROM sync_parked ORDER BY id')).map((p) => [p.reason, p.table_name, p.row_id])).toEqual([
+      ['missing-parent', 'recipe_ingredient', I1],
+      ['missing-parent', 'recipe_ingredient', I2],
     ]);
-    for (const h of held) await a.driver.execute("INSERT OR IGNORE INTO sync_outbox (table_name, row_id, field) VALUES ('recipe', ?, ?)", [h.row_id, h.field]);
-    await roundTrip();
-    await roundTrip();
-    expect((await (await b.data.repos.recipes()).get(R1))?.ingredients).toHaveLength(2);
+    await guarded(b.data, (repos) => applyOps(repos, [recipeOp(HLC(2))], ctx(logger)));
+    expect(await count(b, 'recipe')).toBe(1);
+    expect(await count(b, 'recipe_ingredient')).toBe(0); // la mise de côté attend le passage de reprise du moteur
+    await retryParked({ catalogue: SYNC_CATALOGUE, data: b.data, clock: b.clock, sv: 9, logger } as unknown as SyncDeps, { carryHeld: 0, released: [] });
+    expect(await b.driver.select('SELECT 1 FROM sync_parked')).toEqual([]);
+    expect((await (await b.data.repos.recipes()).get(R1))?.ingredients.map((i) => [i.id, i.position, i.name])).toEqual([
+      [I1, 0, 'Riz reçu'],
+      [I2, 1, 'Poulet reçu'],
+    ]);
+    // rien n'a été mis en file par l'application de ce qui vient d'un autre appareil
+    expect(await b.driver.select('SELECT 1 FROM sync_outbox')).toEqual([]);
+  });
+
+  it('un ingrédient dont la recette arrive supprimée : rejoué sans erreur, la recette reste supprimée', async () => {
+    const [, b] = await twoDevices();
+    const logger = createMemorySyncLogger();
+    await guarded(b.data, (repos) => applyOps(repos, [ingredientOp(I1, 0, 'Riz reçu', HLC(2))], ctx(logger)));
+    const base = recipeOp(HLC(3));
+    const gone: SyncOp = { ...base, f: new Map([...base.f, ['deleted_at', field(AT, HLC(3))]]) };
+    await guarded(b.data, (repos) => applyOps(repos, [gone], ctx(logger)));
+    await retryParked({ catalogue: SYNC_CATALOGUE, data: b.data, clock: b.clock, sv: 9, logger } as unknown as SyncDeps, { carryHeld: 0, released: [] });
+    expect(await (await b.data.repos.recipes()).get(R1)).toBeNull();
     expect(await b.driver.select('SELECT 1 FROM sync_parked')).toEqual([]);
   });
 });

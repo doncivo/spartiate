@@ -58,6 +58,10 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   food_portion: { label: 'label', kind: 'foodPortion' },
   meal_entry: { label: 'food_name', kind: 'mealEntry' },
   nutrition_target: { label: 'week_start', kind: 'nutritionTarget' },
+  // I4-07 : journée déclarée (libellé : la date), recettes et ingrédients (libellé : le nom).
+  day_completeness: { label: 'date', kind: 'dayCompleteness' },
+  recipe: { label: 'name', kind: 'recipe' },
+  recipe_ingredient: { label: 'name', kind: 'recipeIngredient' },
 };
 
 export const carryReportTableEntry = (table: string): { readonly label: string | null; readonly kind: string } | undefined =>
