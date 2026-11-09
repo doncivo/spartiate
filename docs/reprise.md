@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-09 (nuit) : I1, I2 et I3 livrés, version publiée 0.8.0, I4 hors IA livré, OFF et scan inclus. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-78 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Dossier de sortie I0 : docs/gate-i0.md.
+État au 2026-11-09 (nuit) : I1 à I3 livrés, I4 hors IA livré (OFF et scan, favoris, recettes, journée déclarée), version publiée 0.9.0 (schéma 9). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-81 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Dossier de sortie I0 : docs/gate-i0.md.
 
 ## Fusionné (tout est dans main)
 
@@ -17,15 +17,14 @@
 
 ## Où on en est (2026-11-08)
 
-- Publiées cette nuit (PC `vX.Y.Z` et iPhone `ios-vX.Y.Z`) : 0.3.2 (I2-02 garde-fous, correctifs du moteur #66, pesées Raccourcis D-69 #65, cause des erreurs d’E/S Windows #62), 0.3.3 (I2-04 : paire de 9 kg rattrapée à la lecture, phrases), 0.3.4 (I2-03 échauffement), 0.4.0 (I3-01 séance proposée), 0.5.0 (I3-02 cycle, migration 0007 `mesocycle`, schéma 7), 0.6.0 (I4-01 moteur nutrition, I4-02 catalogue Ciqual et journal, migration 0008, schéma 8), 0.7.0 (I4-03 onglet Nutrition).
+- Publiées les nuits du 7 au 9 nov. : 0.3.2 à 0.7.0 (I2, I3, I4-01 à I4-03), 0.7.1 (correctifs iPhone), 0.8.0, 0.8.1, 0.9.0 (PC `vX.Y.Z` et iPhone `ios-vX.Y.Z`).
 - D-73 (I3) et D-74 (I4) : décisions par défaut, **révisables par Ali** (à confirmer). H-21 (format du fichier Raccourcis) UNVERIFIED, noté dans decisions.md (le chapitre 26 du PRD est figé par prd-split.test.ts).
-- I4 sans IA livré (D-74, D-76 par défaut, révisables) : moteur, catalogue Ciqual, journal, dashboard, stratégie, check-in. 0.8.0 (I4-05, D-77, D-78) : Open Food Facts (client Rust, HTTPS rustls, cache 90 jours, sans migration) et scan iPhone ; H-12 et le scan restent UNVERIFIED, check-list de constat dans la matrice. Exclus : recettes, favoris, photo IA (I4-04). Le test de perf de démarrage est proche du seuil (1592 ms contre 1500 une fois, vert au second passage) : à surveiller.
-- PURGE-I18N (#74) : modules de textes orphelins supprimés ; clés mortes à l’intérieur de fr.ts gardées (tDynamic).
+- I4 sans IA livré (D-74, D-76 par défaut, révisables) : moteur, catalogue Ciqual, journal, dashboard, stratégie, check-in. 0.8.0 (I4-05, D-77, D-78) : Open Food Facts et scan iPhone, H-12 et le scan restent UNVERIFIED (check-list dans la matrice). 0.8.1 (I4-06, D-79) : favoris locaux (non synchronisés), correctif de la restauration des déclencheurs de synchro, relectures de la nuit consignées dans docs/I4-06.md. 0.9.0 (I4-07, D-80, D-81, migration 0009) : recettes et journée complète déclarée, synchronisées. Exclus : photo IA (I4-04), I5. Le test de perf de démarrage est proche du seuil (1592 ms contre 1500 une fois, vert au second passage) : à surveiller.
 - **Première utilisation réelle : lundi 2026-11-09** (D-38) : plus aucun accès aux données réelles ni à iCloud Drive/Spartiate.
 
 ## Prochaines étapes
 
-1. Ali : constats sur l’iPhone (échauffement, Séance proposée, Cycle, import des pesées), confirmer ou réviser D-73 et D-74.
+1. Ali : installer 0.9.0 sur PC et iPhone le même jour (schéma 9) ; constats iPhone (échauffement, Séance proposée, Cycle, pesées, OFF et scan, recettes, journée déclarée) ; confirmer ou réviser D-73, D-74, D-79 à D-81.
 2. Constats OFF et scan (matrice : produit de marque, « skyr » en ligne, mode avion, code inconnu) ; relectures Codex (D-53) des PR de la nuit.
 3. Après le lundi 9 : journal exporté d’Ali (Plus → Logs → Exporter) pour mesurer le délai iCloud.
 
