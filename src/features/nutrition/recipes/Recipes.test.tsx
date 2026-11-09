@@ -153,6 +153,23 @@ describe('I4-07 : Recettes (section de Nutrition)', () => {
     expect((await (await db.data.repos.recipes()).list())[0]?.ingredients[1]?.grams).toBe(50);
   });
 
+  it('modifier une recette repasse l’identifiant des ingrédients conservés (même ligne, retrait = suppression logique, ajout = ligne neuve)', async () => {
+    await seedFoods();
+    const created = await (await db.data.repos.recipes()).create(draft());
+    open();
+    const r = await region();
+    fireEvent.click(await within(r).findByRole('button', { name: 'Modifier Bol de riz' }));
+    fireEvent.change(await within(r).findByLabelText('Grammes de Riz test'), { target: { value: '300' } });
+    fireEvent.click(within(r).getByRole('button', { name: 'Retirer Sauce test' }));
+    await addIngredient(r, 'sauce test', /Sauce test/, '20');
+    fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la recette' }));
+    await waitFor(async () => expect((await (await db.data.repos.recipes()).get(created.id))?.ingredients[0]?.grams).toBe(300));
+    const after = await (await db.data.repos.recipes()).get(created.id);
+    expect(after?.ingredients[0]?.id).toBe(created.ingredients[0]?.id);
+    expect(after?.ingredients).toHaveLength(2);
+    expect(after?.ingredients[1]?.id).not.toBe(created.ingredients[1]?.id);
+  });
+
   it('retirer un ingrédient : la liste et les totaux suivent', async () => {
     await (await db.data.repos.recipes()).create(draft());
     open();
