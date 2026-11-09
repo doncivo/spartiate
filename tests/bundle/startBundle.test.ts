@@ -124,7 +124,7 @@ describe('bundle de départ (index.html)', () => {
   // PERF-02 (ADR 0001, avenant) : chrono-node, le catalogue anglais et les écrans à la demande ne reviennent pas dans le départ par un
   // import statique oublié, un barrel ou un effet de bord ajouté (retrait de « sideEffects » dans package.json compris).
   // BUNDLE-01 : fiche de tâche (palier 1) et les six hôtes de la coquille (palier 2), blocs à la demande importés dynamiquement par lazyScreens.tsx.
-  it.each(['src/features/shortcuts/ShortcutsHelp.tsx', 'src/features/updater/UpdateBanner.tsx', 'src/features/settings/SettingsScreen.tsx', 'src/features/sync/RestoreChoiceDialog.tsx', 'src/db/repositories/sql/epochCarryReports.ts', 'src/features/sync/SyncDetailsCarryReport.tsx', 'src/features/sync/carryReportBannerLine.ts', 'src/sync/epochCarryReportBanner.ts', 'src/sync/epochCarryReportAck.ts', 'src/sync/orphanEpoch.ts', 'src/sync/publishRotation.ts', 'src/features/sync/SyncDetailsOwnDeletion.tsx', 'src/db/repositories/sql/occurrenceDedup.ts'])('%s est un bloc à la demande, hors du départ', (source) => {
+  it.each(['src/features/shortcuts/ShortcutsHelp.tsx', 'src/features/updater/UpdateBanner.tsx', 'src/features/settings/SettingsScreen.tsx', 'src/features/sync/RestoreChoiceDialog.tsx', 'src/db/repositories/sql/epochCarryReports.ts', 'src/features/sync/SyncDetailsCarryReport.tsx', 'src/features/sync/carryReportBannerLine.ts', 'src/sync/epochCarryReportBanner.ts', 'src/sync/epochCarryReportAck.ts', 'src/sync/orphanEpoch.ts', 'src/sync/publishRotation.ts', 'src/features/sync/SyncDetailsOwnDeletion.tsx', 'src/db/repositories/sql/occurrenceDedup.ts', 'src/features/settings/recoveryImport/index.ts'])('%s est un bloc à la demande, hors du départ', (source) => {
     const start = new Set(startChunks().map((chunk) => chunk.file));
     const chunk = manifest[source];
     if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
@@ -267,6 +267,13 @@ describe('bundle de départ (index.html)', () => {
   });
 
   it.each(['Mettre le programme en pause', 'Anticiper le deload', 'Semaine de deload du cycle', 'cycleSetsMinus'])('I3-02 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
+  // I5-01 point 1.7 : section « Raccourcis » (écran Apple Santé, catalogue fr.health) et import à l'ouverture : hors du départ, présents dans le build.
+  it.each(['Récupération depuis Raccourcis', 'Fichier absent : rien n’a été lu pour ce type.', 'date sans fuseau horaire', 'recovery-import-file-absent'])('I5-01 : « %s » hors du départ et présent dans le build', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
