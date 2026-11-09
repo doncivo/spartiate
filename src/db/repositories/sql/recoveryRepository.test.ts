@@ -167,4 +167,14 @@ describe('RecoveryRepository', () => {
     const plan = await db.driver.select<{ detail: string }>("EXPLAIN QUERY PLAN SELECT * FROM recovery_day WHERE date >= '2026-11-01' AND date <= '2026-11-30' AND deleted_at IS NULL ORDER BY date");
     expect(plan.map((p) => p.detail).join(' ')).toMatch(/USING (COVERING )?INDEX/);
   });
+
+  it('correction de revue 4 : « measure_missing_sleep » s’écrit (sans migration, rangée sous « baseline_incomplete ») et le rejeu est idempotent', async () => {
+    db = await openBaseDb(DEVICE);
+    const sleepless = { ...abstention(D(11)), summary: { ...abstention(D(11)).summary, abstainReason: 'measure_missing_sleep' as const } };
+    must(await (await repo()).saveDay(sleepless));
+    expect((await (await repo()).getDay(D(11)))?.summary.abstainReason).toBe('baseline_incomplete');
+    await clearOutbox();
+    await (await repo()).saveDay(sleepless);
+    expect(await outbox()).toEqual([]);
+  });
 });
