@@ -45,5 +45,9 @@ export interface RecipeDraft {
   readonly name: string;
   readonly servings: number;
   readonly cookedWeightG: number | null;
-  readonly ingredients: readonly Omit<RecipeIngredient, 'id' | 'position'>[];
+  /**
+   * `id` : identifiant d'un ingrédient DÉJÀ enregistré (à repasser tel quel à la modification : la ligne est conservée, seul son rang change) ;
+   * absent pour un ingrédient nouveau. Un identifiant inconnu ou répété est traité comme un ingrédient nouveau.
+   */
+  readonly ingredients: readonly (Omit<RecipeIngredient, 'id' | 'position'> & { readonly id?: string })[];
 }

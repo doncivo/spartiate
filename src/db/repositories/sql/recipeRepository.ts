@@ -166,13 +166,16 @@ export function createRecipeRepository(db: SqlExecutor, stamper: WriteStamper, i
       const clean = normalized(draft);
       if (clean === null) throw new RepositoryError('invalid', 'recipe', id);
       const existing = await liveIngredients(id);
+      const byId = new Map(existing.map((row) => [row.id, row] as const));
+      const kept = new Set<string>();
       let changed = row.name !== clean.name || row.servings !== clean.servings || row.cooked_weight_g !== clean.cookedWeightG;
       const stamp = stamper.next();
-      const count = Math.max(existing.length, clean.ingredients.length);
-      for (let position = 0; position < count; position += 1) {
-        const next = clean.ingredients[position];
-        const old = existing[position];
-        if (next && old) {
+      // Réutilisation PAR IDENTIFIANT : un ingrédient conservé garde sa ligne (et donc sa fusion champ par champ avec l'autre appareil) ;
+      // un identifiant inconnu ou déjà utilisé dans ce brouillon est un ingrédient nouveau ; les lignes non reprises sont supprimées.
+      for (const [position, next] of clean.ingredients.entries()) {
+        const old = next.id !== undefined && !kept.has(next.id) ? byId.get(next.id) : undefined;
+        if (old) {
+          kept.add(old.id);
           if (sameIngredient(old, next, position)) continue;
           changed = true;
           await db.execute(
@@ -180,13 +183,15 @@ export function createRecipeRepository(db: SqlExecutor, stamper: WriteStamper, i
                updated_at = ?, device_id = ?, hlc = ? WHERE id = ?`,
             [...ingredientValues(next, position), stamp.at, stamp.deviceId, stamp.hlc, old.id],
           );
-        } else if (next) {
+        } else {
           changed = true;
           await insertIngredient(id, next, position, stamp);
-        } else if (old) {
-          changed = true;
-          await db.execute('UPDATE recipe_ingredient SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, old.id]);
         }
+      }
+      for (const old of existing) {
+        if (kept.has(old.id)) continue;
+        changed = true;
+        await db.execute('UPDATE recipe_ingredient SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, old.id]);
       }
       if (changed) {
         await db.execute('UPDATE recipe SET name = ?, servings = ?, cooked_weight_g = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [
