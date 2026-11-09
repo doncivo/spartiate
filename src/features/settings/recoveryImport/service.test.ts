@@ -96,7 +96,7 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     expect((await samples.listWindow('pas', '2026-11-01T00:00:00.000Z', NOW)).map((s) => s.value)).toEqual([7000]);
   });
 
-  it('recalcule aujourd’hui et, parmi les jours récents qui ont des données et manquent, 30 jours au plus ; puis seulement aujourd’hui', async () => {
+  it('recalcule aujourd’hui et, parmi les jours récents qui ont des données et manquent, 30 jours au plus ; puis aujourd’hui et la veille', async () => {
     const nights = Array.from({ length: 40 }, (_, k) => {
       const day = new Date(Date.parse('2026-11-08T12:00:00Z') - k * 86_400_000).toISOString().slice(0, 10);
       const before = new Date(Date.parse(day + 'T12:00:00Z') - 86_400_000).toISOString().slice(0, 10);
@@ -109,7 +109,7 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     const recovery = await db.data.repos.recovery();
     expect((await recovery.listDays('2026-10-01' as LocalDate, '2026-11-08' as LocalDate)).length).toBe(30);
     expect(await recovery.getDay('2026-11-08' as LocalDate)).not.toBeNull();
-    expect((await service.run('manual')).recomputedDays).toBe(1);
+    expect((await service.run('manual')).recomputedDays).toBe(2);
   });
 
   it('jours sans aucune donnée : seul aujourd’hui est écrit', async () => {
@@ -240,4 +240,30 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     const samples = await db.data.repos.recoverySamples();
     expect((await samples.listWindow('fc-repos', '2026-11-01T00:00:00.000Z', NOW)).map((s) => s.value)).toEqual([55]);
   });
+
+  const CHEST_WORKOUT = (endedAt: string): RecoveryWorkout => ({
+    endedAt,
+    sets: Array.from({ length: 6 }, () => ({ kg: 100, reps: 10, difficulty: 'ok' as const, isWarmup: false, completed: true, muscles: [{ id: 'chest', weight: 1 }] })),
+  });
+
+  it('correction de revue 2 : import à 7 h, séance à 18 h, import le lendemain : Exertion et muscles du jour J corrigés', async () => {
+    await build(reader(async () => ALL_OK()), { clock: createManualClock('2026-11-08T08:00:00.000Z') }).run('manual');
+    const recovery = await db.data.repos.recovery();
+    expect((await recovery.getDay('2026-11-08' as LocalDate))?.summary.exertion).toBe(0);
+    workouts = [CHEST_WORKOUT('2026-11-08T17:00:00.000Z')];
+    await build(reader(async () => ALL_OK()), { clock: createManualClock('2026-11-09T08:00:00.000Z') }).run('manual');
+    expect((await recovery.getDay('2026-11-08' as LocalDate))?.summary.exertion).toBeGreaterThan(0);
+    expect((await recovery.listMuscles('2026-11-08' as LocalDate)).map((m) => m.muscleId)).toEqual(['chest']);
+  });
+
+  it('correction de revue 2 : un jour passé plus ancien que la veille est recalculé si une séance est plus récente que son résumé', async () => {
+    await build(reader(async () => ALL_OK()), { clock: createManualClock('2026-11-08T08:00:00.000Z') }).run('manual');
+    workouts = [CHEST_WORKOUT('2026-11-08T17:00:00.000Z')];
+    await build(reader(async () => ALL_OK()), { clock: createManualClock('2026-11-10T08:00:00.000Z') }).run('manual');
+    const recovery = await db.data.repos.recovery();
+    expect((await recovery.getDay('2026-11-08' as LocalDate))?.summary.exertion).toBeGreaterThan(0);
+    const again = await build(reader(async () => ALL_OK()), { clock: createManualClock('2026-11-10T09:00:00.000Z') }).run('manual');
+    expect(again.recomputedDays).toBe(2);
+  });
+
 });
