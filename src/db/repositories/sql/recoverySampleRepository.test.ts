@@ -133,4 +133,15 @@ describe('RecoverySampleRepository', () => {
     expect(await plan("SELECT * FROM recovery_sample WHERE type = 'hrv' AND end_at >= '2026-11-01' AND start_at <= '2026-11-30' ORDER BY start_at")).toMatch(/USING (COVERING )?INDEX/);
     expect(await plan("DELETE FROM recovery_sample WHERE end_at < '2026-07-01'")).toMatch(/USING (COVERING )?INDEX/);
   });
+
+  it('correction de revue 1 : upsertTotals remplace une valeur différente sur la même clé, compte ajoutés / déjà connus / mis à jour', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    const total = (d: number, v: number): RecoverySampleInput => steps(day(d, 12), day(d, 12), v);
+    expect(await r.upsertTotals([total(7, 4000), total(8, 100)], T1)).toEqual({ added: 2, duplicates: 0, updated: 0 });
+    expect(await r.upsertTotals([total(7, 9000), total(8, 100), total(9, 5)], '2026-11-10T08:00:00.000Z')).toEqual({ added: 1, duplicates: 1, updated: 1 });
+    const rows = await r.listWindow('pas', day(1), day(30));
+    expect(rows.map((s) => [s.value, s.importedAt])).toEqual([[9000, '2026-11-10T08:00:00.000Z'], [100, T1], [5, '2026-11-10T08:00:00.000Z']]);
+    await expect(r.upsertTotals([hrv(day(7), 50)], T1)).rejects.toThrow();
+  });
 });
