@@ -53,6 +53,16 @@ describe('I4-03 : NutritionRemainingCard', () => {
     expect(useNavigationStore.getState().route).toEqual({ tab: 'nutrition', screen: 'journal' });
   });
 
+  it('journée déclarée incomplète avec trois prises sur 8 h : « partielle » sur la carte, comme dans le Journal (I4-07)', async () => {
+    await saveManualTarget(db.data, { weekStart: '2026-11-01' as LocalDate, target: { kcal: 2400, proteinG: 170, fatG: 75, carbG: 261 }, lowFloorConfirmed: false });
+    const repo = await db.data.repos.mealEntries();
+    for (const time of ['07:00', '11:00', '15:00']) await repo.create(quickAddDraft({ date: TODAY, time: time as LocalTime, name: 'Prise', kcal: 500, proteinG: 30, fatG: 10, carbG: 60 }));
+    await (await db.data.repos.dayCompleteness()).declare(TODAY, 'incomplete');
+    mount();
+    expect(await screen.findByText('Journée partielle')).toBeInTheDocument();
+    expect(screen.queryByText('Journée complète (déduite)')).toBeNull();
+  });
+
   it('journée sans entrée avec cible : cible entière restante et « rien de saisi » (pas de zéro)', async () => {
     await saveManualTarget(db.data, { weekStart: '2026-11-01' as LocalDate, target: { kcal: 2400, proteinG: 170, fatG: 75, carbG: 261 }, lowFloorConfirmed: false });
     mount();

@@ -159,3 +159,40 @@ describe('I4-03 : saveManualTarget : cible fixée par Ali (style manuel ou premi
     expect(await rows()).toEqual([]);
   });
 });
+
+describe('I4-07 : loadNutritionSnapshot et journée déclarée (D-81)', () => {
+  const YESTERDAY = '2026-11-08' as LocalDate;
+  const seedTwoMeals = async (): Promise<void> => {
+    const repo = await db.data.repos.mealEntries();
+    await repo.create(quickAddDraft({ date: YESTERDAY, time: t('13:00'), name: '', kcal: 900, proteinG: 40, fatG: 30, carbG: 100 }));
+    await repo.create(quickAddDraft({ date: YESTERDAY, time: t('20:30'), name: '', kcal: 1000, proteinG: 50, fatG: 30, carbG: 110 }));
+  };
+
+  it('sans déclaration : deux prises en 7 h 30 restent une journée partielle déduite', async () => {
+    await seedTwoMeals();
+    const day = (await loadNutritionSnapshot(db.data, TODAY)).days.find((d) => d.date === YESTERDAY);
+    expect(day).toMatchObject({ state: 'partial', origin: 'inferred', usableForTdee: false });
+  });
+
+  it('déclarée complète : la journée est complète (origine déclarée) et utilisable pour la dépense', async () => {
+    await seedTwoMeals();
+    await (await db.data.repos.dayCompleteness()).declare(YESTERDAY, 'complete');
+    const day = (await loadNutritionSnapshot(db.data, TODAY)).days.find((d) => d.date === YESTERDAY);
+    expect(day).toMatchObject({ state: 'complete', origin: 'declared', usableForTdee: true, kcal: 1900 });
+  });
+
+  it('déclarée incomplète : une journée de trois prises sur 12 h devient partielle', async () => {
+    const repo = await db.data.repos.mealEntries();
+    for (const time of ['07:00', '13:00', '19:00']) await repo.create(quickAddDraft({ date: YESTERDAY, time: t(time), name: '', kcal: 700, proteinG: 30, fatG: 20, carbG: 80 }));
+    await (await db.data.repos.dayCompleteness()).declare(YESTERDAY, 'incomplete');
+    const day = (await loadNutritionSnapshot(db.data, TODAY)).days.find((d) => d.date === YESTERDAY);
+    expect(day).toMatchObject({ state: 'partial', origin: 'declared', usableForTdee: false });
+  });
+
+  it('déclarée complète sans aucune entrée : reste inconnue, jamais zéro', async () => {
+    await (await db.data.repos.dayCompleteness()).declare(YESTERDAY, 'complete');
+    const day = (await loadNutritionSnapshot(db.data, TODAY)).days.find((d) => d.date === YESTERDAY);
+    expect(day).toMatchObject({ state: 'unknown', kcal: null, usableForTdee: false });
+    expect(day?.reasons).toContain('declared-without-entries');
+  });
+});

@@ -12,7 +12,7 @@ export type NutritionLoad = { readonly status: 'loading' } | { readonly status: 
  */
 export function useNutritionData(data: DataAccess, today: LocalDate): { readonly state: NutritionLoad; readonly reload: () => Promise<void> } {
   const [state, setState] = useState<NutritionLoad>({ status: 'loading' });
-  const synced = useSyncedData(['meal_entry', 'nutrition_target', 'body_weight', 'profile', 'food']);
+  const synced = useSyncedData(['meal_entry', 'nutrition_target', 'body_weight', 'profile', 'food', 'day_completeness']);
   const reload = useCallback(async (): Promise<void> => {
     try {
       setState({ status: 'ready', snapshot: await loadNutritionSnapshot(data, today) });
