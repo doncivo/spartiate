@@ -78,3 +78,7 @@ Charges proposées plus basses au 2ᵉ (−7 %) et 3ᵉ (−12 %) exercice d'un 
 ## Reste
 
 DEP-01 (SQLite ≥ 0.39, revue au 30 novembre, D-84). Constat 5 (second profil de salle). `pull-up-assisted` et dips du catalogue hors moteur (métrique). Compatibilité d'archive : une archive 0.9.3 contenant une séance ouverte est refusée par une app antérieure (mettre les deux appareils à jour).
+
+## CI
+
+Premier passage sur la PR #91 : plusieurs jobs « abandoned » (runners perdus, aucun échec de test) ; un rejeu unique des jobs en échec, puis nouveau push pour une suite complète.
