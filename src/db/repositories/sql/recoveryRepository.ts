@@ -87,7 +87,12 @@ const toMuscle = (row: MuscleRow): MuscleRecoveryRecord => ({
 
 const LEVELS: readonly string[] = ['A', 'B', 'C'];
 const QUALITIES: readonly string[] = ['good', 'partial', 'insufficient'];
-const REASONS: readonly string[] = ['measure_missing_hrv', 'measure_missing_rhr', 'baseline_incomplete', 'zero_variance'];
+const REASONS: readonly string[] = ['measure_missing_hrv', 'measure_missing_rhr', 'measure_missing_sleep', 'baseline_incomplete', 'zero_variance'];
+/**
+ * Raison rangée en base. Le CHECK de `abstain_reason` (migration 0010) et l'énumération publiée du catalogue de synchro n'ont pas
+ * `measure_missing_sleep` : sans migration, elle est rangée sous `baseline_incomplete` (« données insuffisantes »). À élargir avec le CHECK.
+ */
+const storedReason = (r: RecoveryDaySummary['abstainReason']): RecoveryDaySummary['abstainReason'] => (r === 'measure_missing_sleep' ? 'baseline_incomplete' : r);
 
 const finite = (v: number | null): boolean => v === null || Number.isFinite(v);
 const isInt = (v: number | null, min: number, max: number): boolean => v === null || (Number.isInteger(v) && v >= min && v <= max);
@@ -127,7 +132,7 @@ function sameDay(row: DayRow, s: RecoveryDaySummary): boolean {
     current.engineVersion === RECOVERY_ENGINE_VERSION &&
     c.level === s.level &&
     c.recovery === s.recovery &&
-    c.abstainReason === s.abstainReason &&
+    c.abstainReason === storedReason(s.abstainReason) &&
     c.quality === s.quality &&
     c.exertion === s.exertion &&
     c.exertionPrevDay === s.exertionPrevDay &&
@@ -170,7 +175,7 @@ export function createRecoveryRepository(db: SqlExecutor, stamper: WriteStamper,
     if (!existing || !sameDay(existing, s)) {
       const stamp = stamper.next();
       const values = [
-        s.level, s.recovery, s.abstainReason, s.quality, s.exertion, s.exertionPrevDay, s.sleepMinutes, s.sleepNeedMinutes, s.sleepScore, s.bedtimeSigmaMinutes,
+        s.level, s.recovery, storedReason(s.abstainReason), s.quality, s.exertion, s.exertionPrevDay, s.sleepMinutes, s.sleepNeedMinutes, s.sleepScore, s.bedtimeSigmaMinutes,
         s.targetZone?.from ?? null, s.targetZone?.to ?? null, s.hrvMs, s.restingHr, s.learningNights, encodeContributors(s.contributors), encodeExplanationKeys(s.explanationKeys),
         s.computedAt, RECOVERY_ENGINE_VERSION,
       ];

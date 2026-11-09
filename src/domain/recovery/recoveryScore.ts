@@ -5,7 +5,7 @@ import type { AbstainReason, NightRecord, TargetZone } from './types';
 export interface RecoveryScoreInput {
   readonly today: string;
   readonly nights: readonly NightRecord[];
-  /** Durée dormie / besoin de la nuit ; null si le sommeil est inconnu (facteur neutre, jamais une pénalité inventée). */
+  /** Durée dormie / besoin de la nuit ; null (ou ≤ 0) si la durée de sommeil est inconnue : pas de score (§ 16.1, niveau C), jamais un facteur neutre inventé. */
   readonly sleepRatio: number | null;
 }
 
@@ -23,7 +23,7 @@ export interface RecoveryScoreResult {
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
 
-/** Recovery 0–100 (§ 16.3), ou null avec une raison : mesure absente, < `minNights` nuits, σ = 0. */
+/** Recovery 0–100 (§ 16.3), ou null avec une raison : mesure ou durée de sommeil absente, < `minNights` nuits, σ = 0. */
 export function recoveryScore(input: RecoveryScoreInput): RecoveryScoreResult {
   const cfg = RECOVERY_CONFIG;
   const hrv = buildBaseline(input.nights, input.today, 'hrvMs');
@@ -39,6 +39,7 @@ export function recoveryScore(input: RecoveryScoreInput): RecoveryScoreResult {
   const tonight = input.nights.find((n) => n.day === input.today);
   if (tonight === undefined || tonight.hrvMs === null) return abstain('measure_missing_hrv');
   if (tonight.restingHr === null) return abstain('measure_missing_rhr');
+  if (input.sleepRatio === null || !(input.sleepRatio > 0)) return abstain('measure_missing_sleep');
   if (hrv.stats.used < cfg.minNights || rhr.stats.used < cfg.minNights) return abstain('baseline_incomplete');
   const { mean: muH, sd: sdH } = hrv.stats;
   const { mean: muR, sd: sdR } = rhr.stats;
