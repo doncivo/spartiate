@@ -155,6 +155,21 @@ export function parseFoodId(id: string): FoodRef | null {
   return isId(id) ? { kind: 'stored', id } : null;
 }
 
+/**
+ * I4-07 (D-80) : référence d'une recette dans le journal, `recipe:<UUID>` (43 caractères, la colonne admet 128). Distincte de `FoodRef` : `parseFoodId`
+ * ne la lit pas (les écrans existants la traitent comme un aliment inconnu, sans exception).
+ */
+export const RECIPE_FOOD_PREFIX = 'recipe:';
+
+export const recipeFoodId = (recipeId: string): string => `${RECIPE_FOOD_PREFIX}${recipeId}`;
+
+/** Identifiant de la recette citée, ou `null` si ce n'est pas exactement `recipe:` suivi d'un UUID. */
+export function parseRecipeFoodId(id: string): string | null {
+  if (!id.startsWith(RECIPE_FOOD_PREFIX)) return null;
+  const rest = id.slice(RECIPE_FOOD_PREFIX.length);
+  return isId(rest) ? rest : null;
+}
+
 export type OffCacheState = 'fresh' | 'expired' | 'invalid';
 
 /**
