@@ -87,7 +87,33 @@ function isRetainedDeload(row: { readonly prescription: string; readonly accepte
   }
 }
 
-const validExerciseId = (id: string): boolean => id.length >= 1 && id.length <= EXERCISE_ID_MAX;
+/**
+ * I4-08 : décision qui a retenu un choix de fatigue (« −5 % » ou « −2 reps ») : modification dont la charge et les répétitions sont exactement
+ * celles d'un choix `fatigue-load` ou `fatigue-reps` de la prescription tracée. Acceptation, refus, autre valeur ou JSON illisible : non.
+ */
+function isRetainedFatigueChoice(row: { readonly prescription: string; readonly accepted: number; readonly chosen_load_kg: number | null; readonly chosen_reps: string }): boolean {
+  if (row.accepted === 1 || row.chosen_load_kg === null) return false;
+  try {
+    const p = JSON.parse(row.prescription) as { options?: unknown } | null;
+    const reps = JSON.parse(row.chosen_reps) as unknown;
+    if (!Array.isArray(p?.options) || !Array.isArray(reps)) return false;
+    return p.options.some((o: unknown) => {
+      const option = o as { kind?: unknown; loadKg?: unknown; reps?: unknown } | null;
+      return (
+        (option?.kind === 'fatigue-load' || option?.kind === 'fatigue-reps') &&
+        typeof option.loadKg === 'number' &&
+        Math.abs(option.loadKg - (row.chosen_load_kg ?? NaN)) <= 1e-9 &&
+        Array.isArray(option.reps) &&
+        option.reps.length === reps.length &&
+        option.reps.every((r, i) => r === reps[i])
+      );
+    });
+  } catch {
+    return false;
+  }
+}
+
+const validExerciseId =(id: string): boolean => id.length >= 1 && id.length <= EXERCISE_ID_MAX;
 const finiteOrNull = (n: number | null, ok: (x: number) => boolean): boolean => n === null || (Number.isFinite(n) && ok(n));
 
 export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamper, ids: IdGenerator = uuidGenerator): ProgressionRepository {
@@ -123,19 +149,34 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
       }
       // Deload (I2-02) : la dernière décision de l'exercice dans la séance a retenu une proposition de deload (acceptée, ou valeur retenue au
       // plus à sa charge). Aucune colonne nouvelle : le marqueur est lu dans la prescription tracée (publiée avec la séance, D-27).
+      // I4-08 : même lecture pour le choix de fatigue retenu (`fatigueChoice`), aucune colonne nouvelle.
       const deloads = new Set<string>();
+      const fatigueChoices = new Set<string>();
       if (sessions.length > 0) {
-        const decided = await db.select<{ workout_id: string; prescription: string; accepted: number; chosen_load_kg: number | null } & SqlRow>(
-          `SELECT workout_id, prescription, accepted, chosen_load_kg FROM recommendation_decision
+        type Decided = { prescription: string; accepted: number; chosen_load_kg: number | null; chosen_reps: string };
+        const decided = await db.select<{ workout_id: string } & Decided & SqlRow>(
+          `SELECT workout_id, prescription, accepted, chosen_load_kg, chosen_reps FROM recommendation_decision
            WHERE exercise_id = ? AND deleted_at IS NULL AND workout_id IN (${sessions.map(() => '?').join(', ')})
            ORDER BY workout_id, decided_at, id`,
           [exerciseId, ...sessions.map((s) => s.workoutId)],
         );
-        const latest = new Map<string, { prescription: string; accepted: number; chosen_load_kg: number | null }>();
+        const latest = new Map<string, Decided>();
         for (const row of decided) latest.set(row.workout_id, row);
-        for (const [workoutId, row] of latest) if (isRetainedDeload(row)) deloads.add(workoutId);
+        for (const [workoutId, row] of latest) {
+          if (isRetainedDeload(row)) deloads.add(workoutId);
+          else if (isRetainedFatigueChoice(row)) fatigueChoices.add(workoutId);
+        }
       }
-      return sessions.map((s): ExerciseSession => ({ workoutId: s.workoutId, endedAt: s.endedAt, difficulty: s.difficulty, sets: s.sets, ...(deloads.has(s.workoutId) ? { deload: true } : {}) }));
+      return sessions.map(
+        (s): ExerciseSession => ({
+          workoutId: s.workoutId,
+          endedAt: s.endedAt,
+          difficulty: s.difficulty,
+          sets: s.sets,
+          ...(deloads.has(s.workoutId) ? { deload: true } : {}),
+          ...(fatigueChoices.has(s.workoutId) ? { fatigueChoice: true } : {}),
+        }),
+      );
     },
 
     async getProfile(exerciseId) {

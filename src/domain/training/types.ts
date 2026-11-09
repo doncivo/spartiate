@@ -253,6 +253,11 @@ export interface ExerciseSession {
    * stagnation) ; elle compte comme travail du muscle (inactivité). Absent : séance ordinaire.
    */
   readonly deload?: boolean;
+  /**
+   * I4-08 : la décision tracée de la séance a retenu un choix de fatigue (« −5 % » ou « −2 reps ») : la baisse était voulue. La séance reste
+   * dans les statistiques, mais n'entre jamais dans la comparaison de fatigue (ni comme dernière séance, ni comme base). Absent : non.
+   */
+  readonly fatigueChoice?: boolean;
 }
 
 /** Cible de la routine ou de la séance : nombre de séries, plage de répétitions, RIR. */
