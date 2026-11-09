@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { isExerciseCompatible } from '../../domain/training';
+import { isExerciseCompatible, usableEquipment } from '../../domain/training';
 import { loadTrainingContent } from './content';
 import { normalizeSearch } from './trainingState';
 
@@ -18,7 +18,7 @@ const NEW_IDS = [
   'hip-adduction-machine', 'hip-adduction-cable', 'copenhagen-plank', 'calf-raise-smith', 'crunch', 'decline-crunch', 'lying-leg-raise',
   'hanging-knee-raise', 'cable-woodchopper', 'russian-twist',
 ];
-const ORIGINAL = JSON.parse(readFileSync('docs/content02-originaux.json', 'utf8')) as { ids: string[]; names: Record<string, string> };
+const ORIGINAL = JSON.parse(readFileSync('src/features/training/content02.originals.json', 'utf8')) as { ids: string[]; names: Record<string, string> };
 
 const search = (list: readonly { nameFr: string; aliasesEn: readonly string[] }[], query: string) => {
   const q = normalizeSearch(query);
@@ -56,8 +56,9 @@ describe('CONTENT-02 : catalogue étendu', () => {
   it('compatibilité avec le profil Fitness Park Antony : un matériel absent du profil exclut l’exercice, sans modifier le profil', async () => {
     const content = await loadTrainingContent();
     const antony = content.profiles.find((p) => p.id === 'fitness-park-antony');
-    const available = new Set(antony?.equipment ?? []);
-    const compatible = (id: string) => isExerciseCompatible(content.catalog.get(id) as never, available);
+    if (antony === undefined) throw new Error('profil Antony absent');
+    const available = usableEquipment(antony);
+    const compatible = (id: string) => isExerciseCompatible(content.catalog.get(id) as never, antony);
     for (const id of ['triceps-pushdown-supinated', 'curl-ez-bar', 'bench-press-smith', 'rack-pull', 'crunch', 'pull-up-weighted']) expect(compatible(id), id).toBe(true);
     for (const id of ['bench-press-decline-barbell', 'dip-machine', 'belt-squat', 'hip-adduction-machine', 'lat-pulldown-machine']) expect(compatible(id), id).toBe(false);
     expect(available.has('decline-bench')).toBe(false);

@@ -7,6 +7,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+/** Minimum, pas un compte exact : le catalogue s'étend (CONTENT-02, D-83) ; les 150 exercices d'origine ne sont jamais retirés. */
 export const EXPECTED_EXERCISES = 150;
 export const EXPECTED_PROGRAMS = 4;
 
@@ -87,8 +88,8 @@ export function validateContent(c, opts = {}) {
   if (!list) {
     err('exercises.json', 'forme attendue { schemaVersion: 1, exercises: [] }');
   } else {
-    if (expectedExercises !== null && list.length !== expectedExercises) {
-      err('exercises.json', `${expectedExercises} exercices attendus, ${list.length} trouvés`);
+    if (expectedExercises !== null && list.length < expectedExercises) {
+      err('exercises.json', `au moins ${expectedExercises} exercices attendus, ${list.length} trouvés`);
     }
     list.forEach((x, i) => {
       const w = `exercises.json[${i}]${isObj(x) && typeof x.id === 'string' ? ` (${x.id})` : ''}`;

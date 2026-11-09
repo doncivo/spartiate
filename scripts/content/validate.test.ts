@@ -257,7 +257,7 @@ describe('validateContent : jeu minimal', () => {
 
   it('applique les comptages attendus par défaut (150 exercices, 4 programmes)', () => {
     const out = run(bundle(), {}).join('\n');
-    expect(out).toMatch(/150 exercices attendus, 3 trouvés/);
+    expect(out).toMatch(/au moins 150 exercices attendus, 3 trouvés/);
     expect(out).toMatch(/4 programmes attendus, 1 trouvés/);
   });
 
@@ -277,8 +277,9 @@ describe('contenu embarqué réel', () => {
     expect(real.errors).toEqual([]);
   });
 
-  it('compte 150 exercices et 4 programmes', () => {
-    expect(real.stats).toMatchObject({ exercises: 150, programs: 4, profiles: 4 });
+  it('compte au moins 150 exercices (extension CONTENT-02, D-83) et 4 programmes', () => {
+    expect(real.stats['exercises']).toBeGreaterThanOrEqual(150);
+    expect(real.stats).toMatchObject({ programs: 4, profiles: 4 });
   });
 
   it('n’embarque aucun média (H-9, D-71)', () => {
@@ -355,7 +356,7 @@ describe('contenu embarqué réel', () => {
 describe('CLI validate-content.mjs', () => {
   it('sort avec le code 0 sur le contenu réel', () => {
     const r = spawnSync(process.execPath, [resolve(ROOT, 'scripts', 'content', 'validate-content.mjs'), CONTENT], { encoding: 'utf8' });
-    expect(r.stdout).toMatch(/OK \(150 exercices, 4 programmes/);
+    expect(r.stdout).toMatch(/OK \((\d+) exercices, 4 programmes/);
     expect(r.status).toBe(0);
   });
 

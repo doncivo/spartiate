@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-09 : I1 à I3 livrés, I4 hors IA livré (OFF et scan, favoris, recettes, journée déclarée), version publiée 0.9.1 (schéma 9, correctifs du moteur I4-08, D-82). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-81 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques. Dossier de sortie I0 : docs/gate-i0.md.
+État au 2026-11-09 : I1 à I3 livrés, I4 hors IA livré (OFF et scan, favoris, recettes, journée déclarée), version publiée 0.9.2 (schéma 9 ; 0.9.1 correctifs du moteur D-82 ; 0.9.2 onglets PC et catalogue de 196 exercices, D-83). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-83 dans docs/decisions.md ; les décisions approuvées priment sur les textes historiques.
 
 ## Fusionné (tout est dans main)
 
