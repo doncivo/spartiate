@@ -6,9 +6,9 @@ Données uniquement, aucune logique métier. Le contenu est généré avec Claud
 
 | Chemin | Contenu |
 | --- | --- |
-| `exercises/exercises.json` | `{ schemaVersion: 1, exercises: [150 exercices] }` (PRD § 14.1), dans l'ordre des groupes de la préparation |
+| `exercises/exercises.json` | `{ schemaVersion: 1, exercises: [196 exercices] }` (PRD § 14.1), 150 d’origine dans l’ordre des groupes de la préparation, puis les ajouts de CONTENT-02 en fin de fichier |
 | `exercises/muscles.json` | Liste fermée des 34 muscles `{ id, nameFr, group }` |
-| `exercises/equipment.json` | Liste fermée des 69 matériels `{ id, nameFr, family }` |
+| `exercises/equipment.json` | Liste fermée des 76 matériels `{ id, nameFr, family }` |
 | `exercises/media/` | Réservé aux médias sous licence vérifiée (vide) ; tout média exige `license` et `source` |
 | `equipment-profiles/profiles.json` | `{ schemaVersion: 1, defaultProfileId, profiles: [4] }` : Fitness Park Antony (défaut) et trois préréglages |
 | `food/ciqual.json` | `{ schemaVersion: 1, source, groups, foods: [3 484 aliments Ciqual 2025] }` : énergie, protéines, lipides, glucides et fibres pour 100 g (`null` = inconnue, jamais 0), généré par `scripts/content/build-ciqual.mjs` depuis les XML officiels de l'Anses (Licence Ouverte Etalab 2.0, voir `docs/licences.md`), chargé à la demande |
@@ -32,4 +32,4 @@ node scripts/content/validate-content.mjs content/
 npx vitest run --coverage.enabled=false --maxWorkers=1 --project node scripts/content
 ```
 
-Le validateur (Node, sans dépendance) sort en code 1 avec des lignes `::error::` sur : identifiant dupliqué, référence inconnue (muscle, matériel, alternative, exercice de programme, profil), champ manquant, valeur hors liste, média sans licence ou fichier absent, somme des poids des muscles principaux < 1, périodisation différente de D-20, exercice incompatible avec le profil du programme, comptage ≠ 150 exercices / 4 programmes.
+Le validateur (Node, sans dépendance) sort en code 1 avec des lignes `::error::` sur : identifiant dupliqué, référence inconnue (muscle, matériel, alternative, exercice de programme, profil), champ manquant, valeur hors liste, média sans licence ou fichier absent, somme des poids des muscles principaux < 1, périodisation différente de D-20, exercice incompatible avec le profil du programme, moins de 150 exercices (minimum, D-83)  ou ≠ 4 programmes.

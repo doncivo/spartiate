@@ -2,6 +2,13 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.9.2
+
+Onglets de l’Entraînement et de la Nutrition, et bibliothèque plus complète. **Pas de mise à jour de la base** (reste en version 9).
+
+- **Onglets écrasés sur le PC** : sur Entraînement, les onglets Routines, Bibliothèque, Matériel, Journal et Cycle se réduisaient à une bande de quelques pixels quand l’écran était long (Bibliothèque). Ils gardent maintenant leur hauteur (44 px au moins), sur le PC comme sur l’iPhone.
+- **Bibliothèque** : 46 exercices de plus (196 au total), dont l’extension triceps prise supination à la poulie ; la recherche sans accent et le filtre « Compatibles avec mon matériel » les prennent en compte. « Rowing T-bar » et « Barre au front à la barre EZ » retrouvent les exercices existants par leur nom anglais.
+
 ## 0.9.1
 
 Correctifs du moteur, avant ta première séance réelle. **Pas de mise à jour de la base** (reste en version 9).

@@ -52,6 +52,8 @@
 /* Une ligne, défilement horizontal (0.7.1 point 4) : aucun libellé coupé ni renvoyé seul à la ligne ; la barre de défilement est masquée. */
 .ct-segmented[data-scroll='true'] {
   flex-wrap: nowrap;
+  flex-shrink: 0; /* FIX-092 : dans une colonne flex, un overflow autre que visible ramène la hauteur minimale automatique à 0 et la bande s'écrasait */
+  min-height: calc(44px + 8px); /* un bouton (44 px) plus le padding de 4 px de chaque côté */
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scrollbar-width: none;

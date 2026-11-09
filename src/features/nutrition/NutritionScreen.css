@@ -457,3 +457,8 @@ html.ct-scanning-food body > *:not(.ct-nutrition-scan) {
   border: 1px solid var(--ct-color-border);
   border-radius: var(--ct-radius-lg);
 }
+
+/* FIX-092 : même garde que l'Entraînement pour la colonne de la Nutrition. */
+.ct-nutrition > * {
+  flex-shrink: 0;
+}

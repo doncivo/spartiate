@@ -113,6 +113,9 @@ const SCREENS: Screen[] = [
   { name: 'Nutrition-journal-fiche', viewport: PHONE, date: SUNDAY, dark: true, prepare: openAddSheet },
   { name: 'Nutrition-dashboard', viewport: PHONE, date: SUNDAY, dark: true, prepare: goNutrition('Dashboard') },
   { name: 'Nutrition-checkin', viewport: PHONE, date: SUNDAY, dark: true, prepare: goNutrition('Check-in') },
+  { name: 'PC-Entrainement-bibliotheque', viewport: PC, date: SUNDAY, dark: true, prepare: goTraining('Bibliothèque') },
+  { name: 'PC-Entrainement-bibliotheque-clair', viewport: PC, date: SUNDAY, dark: false, prepare: async (page) => { await goLight(page); await goTraining('Bibliothèque')(page); } },
+  { name: 'PC-Nutrition-journal-clair', viewport: PC, date: SUNDAY, dark: false, prepare: async (page) => { await goLight(page); await goNutrition()(page); } },
   { name: 'Aujourdhui-clair', viewport: PHONE, date: WEDNESDAY, dark: false, prepare: goLight },
   { name: 'PC-Aujourdhui-clair', viewport: PC, date: WEDNESDAY, dark: false, prepare: goLight },
 ];
