@@ -9,5 +9,7 @@ import type { Prescription } from './types';
 export function recalibrationKept(prescription: Prescription, chosenLoadKg: number | null): { readonly at: IsoDateTime; readonly estimated1rmKg: number } | null {
   const recal = prescription.recalibration;
   if (recal === null || chosenLoadKg === null || prescription.loadKg === null) return null;
+  // I4-08 : une prescription tracée par la 0.9.0 pouvait recaler sans hausse de charge (+0 kg) : rien n'est consigné.
+  if (prescription.reference !== null && prescription.loadKg <= prescription.reference.loadKg + 1e-9) return null;
   return chosenLoadKg >= prescription.loadKg ? recal : null;
 }
