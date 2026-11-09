@@ -2,6 +2,13 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.9.4
+
+**Pas de mise à jour de la base** (reste en version 9) ; aucune donnée saisie n'est modifiée.
+
+- **Charges** : pour les exercices lestés (traction, dips, pompe lestés) la décote de position (2ᵉ exercice −7 %, 3ᵉ −12 %) se calcule sur la charge totale, poids de corps compris, comme le 1RM ; le lest affiché en est déduit. En traction assistée, l'assistance augmente. Sans pesée connue : comme avant.
+- **Restauration** : un fichier de base dont le journal `-wal` voisin annonce une autre taille de page est refusé, avec un message en français. Réduit un risque connu du moteur de base embarqué (D-84, DEP-01) ; le moteur lui-même ne change pas.
+
 ## 0.9.3
 
 Correctifs de la relecture du 9 novembre, et prise en compte du poids de ton corps. **Pas de mise à jour de la base** (reste en version 9) ; aucune donnée saisie n'est modifiée ni perdue.

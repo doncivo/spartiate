@@ -200,14 +200,40 @@ export function prescribe(input: PrescribeInput): Prescription {
   const lastRank = Math.max(1, Math.floor(input.lastPositionRank ?? rank));
   const positionFactor = Math.min(1, positionMultiplier(rank, config) / positionMultiplier(lastRank, config));
   const positioned = (loadKg: number, repsList: readonly number[]): { readonly loadKg: number; readonly reps: readonly number[]; readonly cut: number } => {
-    if (positionFactor >= 1 - EPS || !(loadKg > 0)) return { loadKg, reps: repsList, cut: 0 };
+    if (positionFactor >= 1 - EPS) return { loadKg, reps: repsList, cut: 0 };
+    if (body !== null) {
+      // DEP-01 : exercice lesté ou assisté, poids de corps connu : décote sur la charge TOTALE (corps × fraction ± charge saisie), comme le 1RM ;
+      // la charge saisie est ensuite déduite de ce total (lest : arrondi vers le bas, jamais négatif ; assistance : arrondi vers le haut).
+      const total = body.baseKg + body.sign * loadKg;
+      if (!(total > 0) || (body.sign > 0 && !(loadKg > 0))) return { loadKg, reps: repsList, cut: 0 };
+      const wanted = Math.max(0, (total * positionFactor - body.baseKg) / body.sign);
+      let next: number;
+      let nextReps: readonly number[] = repsList;
+      if (body.sign > 0) {
+        if (wanted <= EPS) next = 0;
+        else {
+          const snapped = snapToEquipment(wanted, repsList, available, config);
+          next = roundKg(Math.min(snapped.loadKg, loadKg));
+          nextReps = snapped.reps;
+        }
+        if (next >= loadKg - EPS) return { loadKg, reps: repsList, cut: 0 };
+      } else {
+        const unit = config.unknownGridRoundingKg;
+        const up = available === null ? Math.ceil(wanted / unit - EPS) * unit : Math.min(...available.filter((kg) => kg >= wanted - EPS), ...(available.length > 0 ? [Math.max(...available)] : [wanted]));
+        next = roundKg(Math.max(up, loadKg));
+        if (next <= loadKg + EPS) return { loadKg, reps: repsList, cut: 0 };
+      }
+      reasons.add('position-discount');
+      return { loadKg: next, reps: nextReps, cut: 1 - positionFactor };
+    }
+    if (!(loadKg > 0)) return { loadKg, reps: repsList, cut: 0 };
     const snapped = snapToEquipment(loadKg * positionFactor, repsList, available, config);
     const lowered = roundKg(Math.min(snapped.loadKg, loadKg));
     if (lowered >= loadKg - EPS) return { loadKg, reps: repsList, cut: 0 };
     reasons.add('position-discount');
     return { loadKg: lowered, reps: snapped.reps, cut: 1 - positionFactor };
   };
-  const positionFields = (cut: number): { readonly positionRank: number; readonly positionCut: number } => ({ positionRank: rank, positionCut: cut });
+  const positionFields = (cut: number): { readonly positionRank: number; readonly positionCut: number; readonly positionBasisKg: number } => ({ positionRank: rank, positionCut: cut, positionBasisKg: body === null ? refLoad : body.baseKg + body.sign * refLoad });
   if (reduces(constraints)) {
     // Maintien de la référence (aucun cran, échelle ni recalibrage), puis réductions ; arrondi au matériel, jamais au-dessus de la référence.
     const reduced = reducedTarget(constraints, refPerformance, input.exercise.kind, config);
@@ -314,7 +340,9 @@ export function prescribe(input: PrescribeInput): Prescription {
   const pos = positioned(roundKg(draft.loadKg), draft.reps);
   const loadKg = pos.loadKg;
   // Au plus la référence à cause de la position (la hausse est absorbée) : la raison principale est la position (la phrase ne dit pas « +x kg »).
-  const headline: PrescriptionHeadline = pos.cut > 0 && loadKg <= refLoad + EPS ? 'position' : draft.headline;
+  // Assistée : la décote fait MONTER l'assistance (la charge totale baisse) ; la position est alors la raison dès qu'elle s'applique.
+  const absorbed = body !== null && body.sign < 0 ? loadKg >= refLoad - EPS : loadKg <= refLoad + EPS;
+  const headline: PrescriptionHeadline = pos.cut > 0 && absorbed ? 'position' : draft.headline;
   return finish({
     ...(pos.cut > 0 ? positionFields(pos.cut) : {}),
     status: 'prescribed',
