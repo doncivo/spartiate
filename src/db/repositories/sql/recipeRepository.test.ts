@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import type { RecipeDraft } from '../../../domain/nutrition/recipeTypes';
+import type { RecipeDraft, RecipeIngredient } from '../../../domain/nutrition/recipeTypes';
 import type { DeviceId, LocalDate, LocalTime } from '../../../domain/types';
 import { openBaseDb, type TestDb } from './testSetup';
 
@@ -24,6 +24,11 @@ const outbox = (table: string) => db.driver.select<{ row_id: string; field: stri
 /** Panne SQL simulée, après la validation : tout ingrédient nommé « Boom » est refusé par la base (insertion et modification). */
 const boom = async (): Promise<void> => {
   for (const when of ['INSERT', 'UPDATE']) await db.driver.execute(`CREATE TRIGGER boom_${when.toLowerCase()} BEFORE ${when} ON recipe_ingredient WHEN NEW.name = 'Boom' BEGIN SELECT RAISE(ABORT, 'panne simulée'); END`);
+};
+/** Ingrédient d'une recette lue, repassé au brouillon AVEC son identifiant (les écrans font de même : l'identifiant garde la ligne). */
+const keep = (i: RecipeIngredient | undefined, over: Record<string, unknown> = {}) => {
+  if (!i) throw new Error('ingrédient absent');
+  return { id: i.id, name: i.name, source: i.source, foodRef: i.foodRef, grams: i.grams, per100g: i.per100g, ...over } as RecipeDraft['ingredients'][number];
 };
 const live = async (): Promise<number> => Number((await db.driver.select<{ n: number }>('SELECT COUNT(*) AS n FROM recipe_ingredient WHERE deleted_at IS NULL'))[0]?.n);
 
@@ -112,7 +117,7 @@ describe('RecipeRepository : modification', () => {
     const created = await (await repo()).create(draft(), { id: R(1) });
     await db.driver.execute('DELETE FROM sync_outbox');
     db.clock.advance(1_000);
-    const updated = await (await repo()).update(R(1), draft({ servings: 6, ingredients: [rice, { ...chicken, grams: 450 }] }));
+    const updated = await (await repo()).update(R(1), draft({ servings: 6, ingredients: [keep(created.ingredients[0]), keep(created.ingredients[1], { grams: 450 })] }));
     expect(updated.servings).toBe(6);
     expect(updated.ingredients.map((i) => [i.name, i.grams])).toEqual([
       ['Riz synthétique', 300],
@@ -125,14 +130,14 @@ describe('RecipeRepository : modification', () => {
 
   it('update : un ingrédient retiré est supprimé logiquement, un ajouté est créé', async () => {
     db = await openBaseDb(DEVICE);
-    await (await repo()).create(draft({ ingredients: [rice, chicken, oil] }), { id: R(1) });
+    const created = await (await repo()).create(draft({ ingredients: [rice, chicken, oil] }), { id: R(1) });
     db.clock.advance(1_000);
-    const r = await (await repo()).update(R(1), draft({ ingredients: [rice] }));
+    const r = await (await repo()).update(R(1), draft({ ingredients: [keep(created.ingredients[0])] }));
     expect(r.ingredients.map((i) => i.name)).toEqual(['Riz synthétique']);
     expect(await live()).toBe(1);
     expect(await db.driver.select('SELECT COUNT(*) AS n FROM recipe_ingredient')).toEqual([{ n: 3 }]); // les retirés restent, supprimés logiquement
     db.clock.advance(1_000);
-    const back = await (await repo()).update(R(1), draft({ ingredients: [rice, oil, chicken] }));
+    const back = await (await repo()).update(R(1), draft({ ingredients: [keep(r.ingredients[0]), oil, chicken] }));
     expect(back.ingredients.map((i) => [i.position, i.name])).toEqual([
       [0, 'Riz synthétique'],
       [1, 'Huile synthétique'],
@@ -158,18 +163,46 @@ describe('RecipeRepository : modification', () => {
     const created = await (await repo()).create(draft(), { id: R(1) });
     await db.driver.execute('DELETE FROM sync_outbox');
     db.clock.advance(1_000);
-    const same = await (await repo()).update(R(1), draft());
+    const same = await (await repo()).update(R(1), draft({ ingredients: created.ingredients.map((i) => keep(i)) }));
     expect(same).toEqual(created);
     expect(await outbox('recipe')).toEqual([]);
     expect(await outbox('recipe_ingredient')).toEqual([]);
   });
 
+  it('update PAR IDENTIFIANT : retirer l’ingrédient du milieu ne touche que sa ligne (supprimée) et la position des suivants ; aucun contenu recopié', async () => {
+    db = await openBaseDb(DEVICE);
+    const created = await (await repo()).create(draft({ ingredients: [rice, chicken, oil] }), { id: R(1) });
+    await db.driver.execute('DELETE FROM sync_outbox');
+    db.clock.advance(1_000);
+    const [a, b, c] = created.ingredients;
+    const r = await (await repo()).update(R(1), draft({ ingredients: [keep(a), keep(c)] }));
+    expect(r.ingredients.map((i) => [i.id, i.position, i.name, i.foodRef, i.per100g.kcal])).toEqual([
+      [a?.id, 0, 'Riz synthétique', null, 130],
+      [c?.id, 1, 'Huile synthétique', '4006381333931', 900],
+    ]);
+    const fields = (await outbox('recipe_ingredient')).map((o) => [o.row_id, o.field]).sort();
+    expect(fields).toEqual([[b?.id, 'deleted_at'], [c?.id, 'position']].sort());
+  });
+
+  it('update : un identifiant inconnu ou répété est créé comme un nouvel ingrédient (jamais une ligne reprise)', async () => {
+    db = await openBaseDb(DEVICE);
+    const created = await (await repo()).create(draft(), { id: R(1) });
+    db.clock.advance(1_000);
+    const first = keep(created.ingredients[0]);
+    const r = await (await repo()).update(R(1), draft({ ingredients: [first, { ...first }, { ...oil, id: R(9) } as RecipeDraft['ingredients'][number]] }));
+    expect(r.ingredients).toHaveLength(3);
+    expect(new Set(r.ingredients.map((i) => i.id)).size).toBe(3);
+    expect(r.ingredients[0]?.id).toBe(first.id);
+    expect(r.ingredients.some((i) => i.id === R(9))).toBe(false);
+    expect(created.ingredients[1] === undefined || (await live()) === 3).toBe(true);
+  });
+
   it('atomique : une modification refusée par la base ne laisse aucun ingrédient à moitié remplacé', async () => {
     db = await openBaseDb(DEVICE);
-    await (await repo()).create(draft(), { id: R(1) });
+    const created = await (await repo()).create(draft(), { id: R(1) });
     await boom();
     db.clock.advance(1_000);
-    await expect((await repo()).update(R(1), draft({ servings: 6, ingredients: [{ ...rice, grams: 100 }, { ...chicken, name: 'Boom' }] }))).rejects.toThrow();
+    await expect((await repo()).update(R(1), draft({ servings: 6, ingredients: [keep(created.ingredients[0], { grams: 100 }), keep(created.ingredients[1], { name: 'Boom' })] }))).rejects.toThrow();
     const r = await (await repo()).get(R(1));
     expect(r?.servings).toBe(4);
     expect(r?.ingredients.map((i) => i.grams)).toEqual([300, 500]);

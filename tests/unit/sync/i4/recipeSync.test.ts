@@ -329,6 +329,87 @@ describe('(d) ordre : ingrédient avant sa recette', () => {
   });
 });
 
+describe('(e) concurrence entre appareils, sans ligne hybride (relecture sync-icloud)', () => {
+  const OIL = { name: 'Huile synthétique', source: 'off', foodRef: '4006381333931', grams: 15, per100g: { kcal: 900, proteinG: 0, fatG: 100, carbG: 0, fiberG: null } } as const;
+  const asDraft = (i: { id: string; name: string; source: 'custom' | 'ciqual' | 'off'; foodRef: string | null; grams: number; per100g: RecipeDraft['ingredients'][number]['per100g'] }, over: Partial<RecipeDraft['ingredients'][number]> = {}): RecipeDraft['ingredients'][number] => ({
+    id: i.id, name: i.name, source: i.source, foodRef: i.foodRef, grams: i.grams, per100g: i.per100g, ...over,
+  });
+  const threeIngredients = (d: SimDevice) => d.data.transaction(async (repos) => (await repos.recipes()).create(draft({ ingredients: [...draft().ingredients, OIL] }), { id: R1 }));
+
+  it('un appareil retire l’ingrédient n°1 pendant que l’autre corrige le n°2 : les deux convergent, aucune ligne hybride', async () => {
+    const [a, b] = await twoDevices();
+    const created = await threeIngredients(a);
+    await roundTrip();
+    const [first, second, third] = created.ingredients;
+    if (!first || !second || !third) throw new Error('ingrédients');
+    // iPhone : retire le n°1 (poulet) ; PC (hors ligne) : corrige les grammes du n°2 (huile)
+    b.clock.advance(2_000);
+    await (await b.data.repos.recipes()).update(R1, draft({ ingredients: [asDraft(first), asDraft(third)] }));
+    await (await a.data.repos.recipes()).update(R1, draft({ ingredients: [asDraft(first), asDraft(second), asDraft(third, { grams: 40 })] }));
+    await roundTrip();
+    await roundTrip();
+    for (const d of [a, b]) {
+      const r = await (await d.data.repos.recipes()).get(R1);
+      expect(r?.ingredients.map((i) => [i.id, i.position, i.name, i.foodRef, i.grams, i.per100g.kcal]), d.name).toEqual([
+        [first.id, 0, 'Riz synthétique', null, 300, 130],
+        [third.id, 1, 'Huile synthétique', '4006381333931', 40, 900],
+      ]);
+    }
+  });
+
+  it('effacement d’une journée concurrent d’une redéclaration : les deux appareils convergent sur le même état', async () => {
+    const [a, b] = await twoDevices();
+    await (await a.data.repos.dayCompleteness()).declare(DAY, 'complete');
+    await roundTrip();
+    await (await b.data.repos.dayCompleteness()).clear(DAY);
+    a.clock.advance(3_000);
+    await (await a.data.repos.dayCompleteness()).declare(DAY, 'incomplete');
+    await roundTrip();
+    await roundTrip();
+    const [x, y] = await Promise.all([a, b].map(async (d) => (await d.driver.select('SELECT state, deleted_at IS NOT NULL AS gone FROM day_completeness'))));
+    expect(x).toEqual(y);
+    expect(await count(a, 'day_completeness')).toBe(1);
+    expect(await a.driver.select('SELECT 1 FROM sync_unknown')).toEqual([]);
+  });
+
+  it('recette supprimée concurrente d’un ingrédient ajouté : convergence, la recette reste supprimée des deux côtés', async () => {
+    const [a, b] = await twoDevices();
+    const created = await seed(a);
+    await roundTrip();
+    await b.data.transaction(async (repos) => (await repos.recipes()).softDelete(R1));
+    a.clock.advance(3_000);
+    await (await a.data.repos.recipes()).update(R1, draft({ ingredients: [...created.ingredients.map((i) => asDraft(i)), OIL] }));
+    await roundTrip();
+    await roundTrip();
+    for (const d of [a, b]) {
+      expect(await (await d.data.repos.recipes()).get(R1), d.name).toBeNull();
+      expect(await (await d.data.repos.recipes()).list(), d.name).toEqual([]);
+    }
+    expect(await count(a, 'recipe_ingredient')).toBe(await count(b, 'recipe_ingredient'));
+    expect(await b.driver.select('SELECT 1 FROM sync_parked')).toEqual([]);
+  });
+
+  it('appareil en schéma 8 associé après coup (instantané du PC) : recettes et déclarations gardées dans sync_unknown, réintégrées après la mise à jour', async () => {
+    const a = await createSimDevice(A_ID, { name: 'PC', schema: 'i0' });
+    devices = [a];
+    await seed(a);
+    await (await a.data.repos.dayCompleteness()).declare(DAY, 'complete');
+    await setupFirst(a);
+    await a.cycle();
+    const b = await createSimDevice(B_ID, { name: 'iPhone', schema: 'v8', clock: createManualClock(a.clock.nowMs()) });
+    devices.push(b);
+    await pair(a, b);
+    await b.cycle();
+    expect((await b.driver.select<{ table_name: string }>('SELECT DISTINCT table_name FROM sync_unknown ORDER BY table_name')).map((r) => r.table_name)).toEqual(['day_completeness', 'recipe', 'recipe_ingredient']);
+    await migrate(b.driver, migrations);
+    await reintegrateUnknownFields(b.driver, { catalogue: SYNC_CATALOGUE, now: new Date(b.clock.nowMs()).toISOString() as IsoDateTime });
+    expect(await b.driver.select('SELECT 1 FROM sync_unknown')).toEqual([]);
+    expect(await count(b, 'recipe')).toBe(1);
+    expect(await count(b, 'recipe_ingredient')).toBe(2);
+    expect(await count(b, 'day_completeness')).toBe(1);
+  });
+});
+
 describe('libellés de synchro', () => {
   it('report d’époque : un libellé par table', () => {
     expect(carryKindText('day_completeness')).toBe('Journée déclarée complète ou incomplète');
