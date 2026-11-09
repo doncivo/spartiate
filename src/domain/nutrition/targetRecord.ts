@@ -4,7 +4,7 @@
  * trace. La cible en vigueur est la dernière ligne acceptée dont la semaine a commencé.
  */
 
-import { isLocalDate, type IsoDateTime, type LocalDate } from '../types';
+import { isLocalDate, type Hlc, type IsoDateTime, type LocalDate } from '../types';
 import { NUTRITION_CONFIG } from './config';
 import type { Target } from './types';
 
@@ -55,14 +55,21 @@ export interface TargetRecord {
   readonly source: TargetSource;
   readonly accepted: boolean;
   readonly createdAt: IsoDateTime;
+  /** Ordre causal de la décision (colonne `hlc`, lecture seule) : horloge d'appareil non fiable, HLC si. */
+  readonly hlc: Hlc;
 }
 
-/** Dernière cible acceptée dont la semaine a commencé le `date` ou avant ; départage : semaine, création, identifiant. `null` sinon. */
-export function effectiveTarget<T extends Pick<TargetRecord, 'id' | 'weekStart' | 'accepted' | 'createdAt'>>(records: readonly T[], date: LocalDate): T | null {
+/**
+ * Cible en vigueur à `date` (D-82) : parmi les lignes ACCEPTÉES dont la semaine a commencé le `date` ou avant (`weekStart <= date`, une
+ * semaine postérieure n'est jamais retenue), la DERNIÈRE DÉCISION par HLC gagne (chaînes comparées, format à largeurs fixes ; l'UUID de
+ * l'appareil départage deux HLC égaux jusque-là). `weekStart` ne départage donc plus : une acceptation du lundi décidée après une cible
+ * manuelle du mardi s'applique, et une manuelle du jour plus ancienne (HLC) qu'une acceptation d'une semaine antérieure lui cède.
+ */
+export function effectiveTarget<T extends Pick<TargetRecord, 'id' | 'weekStart' | 'accepted' | 'hlc'>>(records: readonly T[], date: LocalDate): T | null {
   let best: T | null = null;
   for (const r of records) {
     if (!r.accepted || r.weekStart > date) continue;
-    if (best === null || r.weekStart > best.weekStart || (r.weekStart === best.weekStart && (r.createdAt > best.createdAt || (r.createdAt === best.createdAt && r.id > best.id)))) best = r;
+    if (best === null || r.hlc > best.hlc || (r.hlc === best.hlc && r.id > best.id)) best = r;
   }
   return best;
 }
