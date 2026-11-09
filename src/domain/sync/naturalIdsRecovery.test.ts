@@ -53,6 +53,6 @@ describe('identifiant naturel muscle_recovery', () => {
     expect(expectedMuscleRecoveryId(new Map([['date', '2026-11-09']]))).toBeNull();
     expect(expectedMuscleRecoveryId(new Map([['date', '2026-11-09'], ['muscle_id', 'a|b']]))).toBeNull();
     expect(expectedMuscleRecoveryId(new Map([['date', '2026-02-30'], ['muscle_id', 'quadriceps']]))).toBeNull();
-    expect(expectedMuscleRecoveryId(new Map([['date', '2026-11-09'], ['muscle_id', 3]]))).toBeNull();
+    expect(expectedMuscleRecoveryId(new Map<string, unknown>([['date', '2026-11-09'], ['muscle_id', 3]]))).toBeNull();
   });
 });

@@ -11,8 +11,11 @@ import type { DeviceId, Hlc, IsoDateTime, LocalDate } from '../../domain/types';
  *   (`computedAt`) seul ne compte pas comme un changement (un recalcul à chaque ouverture ne doit pas republier). Les muscles du jour sont
  *   REMPLACÉS : les lignes non reprises sont supprimées logiquement, une ligne revenue est restaurée.
  * - Version du moteur : `RECOVERY_ENGINE_VERSION`, écrite avec chaque résumé.
- * - Entrée invalide (date, niveau, valeur sans raison d'abstention, muscle d'un autre jour ou répété, pourcentage non entier) :
- *   `RepositoryError('invalid')`, rien n'est écrit. JSON illisible en base : `'invalid'` à la lecture.
+ * - Entrée invalide (date, niveau, valeur sans raison d'abstention, muscle d'un autre jour ou répété, pourcentage non entier, instant hors
+ *   ISO 8601) : `RepositoryError('invalid')`, rien n'est écrit. JSON illisible en base : `'invalid'` à la lecture.
+ * - « L'iPhone écrit, le PC lit » (§ 9.1, sync-icloud) : sur un appareil LECTEUR (`RepositoryOptions.recoveryWriter` absent ou faux), `saveDay`
+ *   rend `null` et `deleteDay` ne fait rien ; aucune ligne, aucune file de synchro, un événement fixe `recovery-write-ignored` (sans valeur).
+ *   Une entrée invalide reste refusée. Les lignes REÇUES de l'iPhone sont écrites par le moteur de synchro, hors de ce dépôt.
  */
 
 /** Version du moteur de récupération écrite avec chaque résumé (`config.ts`, § 16.3) ; à incrémenter quand une formule change. */
@@ -47,14 +50,14 @@ export interface SavedRecoveryDay {
 }
 
 export interface RecoveryRepository {
-  /** Écrit (ou met à jour) le résumé du jour et remplace ses muscles, en une transaction. Idempotent. */
-  saveDay(output: RecoveryDayOutput): Promise<SavedRecoveryDay>;
+  /** Écrit (ou met à jour) le résumé du jour et remplace ses muscles, en une transaction. Idempotent. `null` : appareil lecteur, rien écrit. */
+  saveDay(output: RecoveryDayOutput): Promise<SavedRecoveryDay | null>;
   /** Résumé vivant du jour, ou `null`. */
   getDay(date: LocalDate): Promise<RecoveryDayRecord | null>;
   /** Résumés vivants de la plage (bornes incluses), du plus ancien au plus récent. */
   listDays(from: LocalDate, to: LocalDate): Promise<readonly RecoveryDayRecord[]>;
   /** Muscles vivants du jour, par identifiant de muscle. */
   listMuscles(date: LocalDate): Promise<readonly MuscleRecoveryRecord[]>;
-  /** Suppression logique du résumé du jour et de ses muscles. Jour sans ligne vivante : aucune écriture. */
+  /** Suppression logique du résumé du jour et de ses muscles. Jour sans ligne vivante, ou appareil lecteur : aucune écriture. */
   deleteDay(date: LocalDate): Promise<void>;
 }

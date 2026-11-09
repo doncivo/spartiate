@@ -28,6 +28,11 @@ const output = (day: LocalDate = D(9), over: Partial<RecoveryDayOutput['summary'
     { day, muscleId: 'quads', group: 'Jambes', percent: 40, hours: 96, lastWorkedAt: '2026-11-08T18:00:00.000Z', readyAt: '2026-11-12T18:00:00.000Z' },
   ],
 });
+/** I5-01 : la base de test écrit (comme l’iPhone) ; `null` serait un appareil lecteur. */
+const must = <T>(value: T | null): T => {
+  if (value === null) throw new Error("écriture écartée (lecteur)");
+  return value;
+};
 const at = <T>(items: readonly T[], i: number): T => {
   const item = items[i];
   if (item === undefined) throw new Error('fixture');
@@ -44,7 +49,7 @@ const abstention = (day: LocalDate = D(10)): RecoveryDayOutput => ({
 describe('RecoveryRepository', () => {
   it('saveDay : une ligne par jour et par muscle, relues telles quelles, mises en file en ligne entière', async () => {
     db = await openBaseDb(DEVICE);
-    const saved = await (await repo()).saveDay(output());
+    const saved = must(await (await repo()).saveDay(output()));
     expect(saved.day).toMatchObject({ id: 'recovery|2026-11-09', summary: output().summary, engineVersion: 1, deletedAt: null, deviceId: DEVICE });
     expect(saved.muscles.map((m) => [m.id, m.muscleId, m.percent])).toEqual([['muscle|2026-11-09|lats', 'lats', 30], ['muscle|2026-11-09|quads', 'quads', 40]]);
     expect(await (await repo()).getDay(D(9))).toEqual(saved.day);
@@ -59,7 +64,7 @@ describe('RecoveryRepository', () => {
   it('saveDay accepte la sortie réelle du moteur (summarizeRecoveryDay), nuits inconnues comprises', async () => {
     db = await openBaseDb(DEVICE);
     const out = summarizeRecoveryDay({ today: '2026-11-09', now: NOW, timeZone: 'Europe/Paris', nights: [], workouts: [] });
-    const saved = await (await repo()).saveDay(out);
+    const saved = must(await (await repo()).saveDay(out));
     expect(saved.day.summary).toEqual(out.summary);
     expect(saved.day.summary.recovery).toBeNull();
     expect(saved.muscles).toEqual([]);
@@ -67,7 +72,7 @@ describe('RecoveryRepository', () => {
 
   it('abstention : recovery NULL avec sa raison, mesures inconnues NULL (jamais 0)', async () => {
     db = await openBaseDb(DEVICE);
-    const saved = await (await repo()).saveDay(abstention());
+    const saved = must(await (await repo()).saveDay(abstention()));
     expect(saved.day.summary).toMatchObject({ recovery: null, abstainReason: 'baseline_incomplete', sleepMinutes: null, hrvMs: null, restingHr: null, targetZone: null });
     expect(await db.driver.select('SELECT recovery, hrv_ms, sleep_minutes, target_zone_from FROM recovery_day')).toEqual([{ recovery: null, hrv_ms: null, sleep_minutes: null, target_zone_from: null }]);
   });

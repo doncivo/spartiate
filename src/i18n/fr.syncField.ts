@@ -256,4 +256,7 @@ export const syncFieldFr = {
     fiber_100g: 'fibres pour 100 g',
     deleted_at: 'suppression',
   },
+  // I5-01 : résumés de récupération, estimations masquées du journal des conflits (aucune valeur corporelle) ; seule la suppression y figure.
+  recovery_day: { deleted_at: 'suppression' },
+  muscle_recovery: { deleted_at: 'suppression' },
 } as const;

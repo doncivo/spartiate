@@ -41,18 +41,19 @@ afterEach(async () => {
   devices = [];
 });
 
-/** iPhone (écrivain) d'abord, puis le PC (lecteur) associé. */
-async function iphoneAndPc(schemaPc: SimSchema = 'i0'): Promise<[SimDevice, SimDevice]> {
-  const a = await createSimDevice(IPHONE, { name: 'iPhone', schema: 'i0', devicePlatform: 'ios' });
-  const b = await createSimDevice(PC, { name: 'PC', schema: schemaPc, clock: createManualClock(a.clock.nowMs()) });
-  devices = [a, b];
-  await setupFirst(a);
-  await a.cycle();
-  await pair(a, b);
-  await b.cycle();
+/** Le PC (lecteur) crée le dossier et montre la clé (fenêtre `pairing`, PC seulement) ; l'iPhone (écrivain) s'y associe. Rend [iPhone, PC]. */
+async function iphoneAndPc(schemaPc: SimSchema = 'i0', beforePair: (iphone: SimDevice) => Promise<void> = async () => undefined): Promise<[SimDevice, SimDevice]> {
+  const pc = await createSimDevice(PC, { name: 'PC', schema: schemaPc });
+  const iphone = await createSimDevice(IPHONE, { name: 'iPhone', schema: 'i0', devicePlatform: 'ios', clock: createManualClock(pc.clock.nowMs()) });
+  devices = [iphone, pc];
+  await setupFirst(pc);
+  await pc.cycle();
+  await beforePair(iphone);
+  await pair(pc, iphone);
+  await iphone.cycle();
   syncFolders(devices);
-  await a.cycle();
-  return [a, b];
+  await pc.cycle();
+  return [iphone, pc];
 }
 async function roundTrip(list: readonly SimDevice[] = devices): Promise<void> {
   for (let i = 0; i < 2; i += 1) {
@@ -306,45 +307,39 @@ describe('(d) vecteurs d’application de recovery_day et muscle_recovery', () =
   });
 
   it('deux iPhone écrivent le même jour hors ligne : convergence sur l’écriture la plus récente, journal des conflits sans valeur corporelle', async () => {
-    const a = await createSimDevice(IPHONE, { name: 'iPhone', schema: 'i0', devicePlatform: 'ios' });
+    const [a, pc] = await iphoneAndPc();
     const b = await createSimDevice(IPHONE2, { name: 'iPhone 2', schema: 'i0', devicePlatform: 'ios', clock: createManualClock(a.clock.nowMs()) });
-    devices.push(a, b);
-    await setupFirst(a);
-    await a.cycle();
-    await pair(a, b);
+    devices.push(b);
+    await pair(pc, b);
     await b.cycle();
-    syncFolders([a, b]);
-    await a.cycle();
+    syncFolders(devices);
+    await roundTrip();
     await (await a.data.repos.recovery()).saveDay(output(DAY, { recovery: 40, hrvMs: 50.11 }));
     b.clock.advance(3_000);
     await (await b.data.repos.recovery()).saveDay(output(DAY, { recovery: 80, hrvMs: 70.22 }));
-    await roundTrip([a, b]);
-    await roundTrip([a, b]);
-    for (const d of [a, b]) {
+    await roundTrip();
+    await roundTrip();
+    for (const d of [a, b, pc]) {
       expect((await (await d.data.repos.recovery()).getDay(DAY))?.summary, d.name).toMatchObject({ recovery: 80, hrvMs: 70.22 });
       expect(await count(d, 'recovery_day'), d.name).toBe(1);
     }
     const logs = async (d: SimDevice) => JSON.stringify(await d.driver.select("SELECT * FROM conflict_log WHERE table_name IN ('recovery_day', 'muscle_recovery')"));
     expect(await logs(a)).toBe(await logs(b));
-    for (const d of [a, b]) for (const v of ['50.11', '70.22', String(RHR)]) expect(await logs(d), `${d.name} ${v}`).not.toContain(v);
+    expect(await logs(pc)).toBe(await logs(a));
+    for (const d of [a, b, pc]) for (const v of ['50.11', '70.22', String(RHR)]) expect(await logs(d), `${d.name} ${v}`).not.toContain(v);
   });
 });
 
 describe('(e) instantané et PC associé après coup', () => {
   it('les deux tables sont dans l’instantané de l’iPhone et reçues par le PC', async () => {
-    const a = await createSimDevice(IPHONE, { name: 'iPhone', schema: 'i0', devicePlatform: 'ios' });
-    devices = [a];
-    await (await a.data.repos.recovery()).saveDay(output());
-    await setupFirst(a);
-    await a.cycle();
+    const [a, b] = await iphoneAndPc('i0', async (iphone) => {
+      await (await iphone.data.repos.recovery()).saveDay(output());
+    });
     const pages: string[] = [];
     for await (const page of snapshotPages(a.data.repos, SYNC_CATALOGUE, epochId(1, a.id), new Map<DeviceId, DeviceAck>(), 10)) pages.push(...page);
     const text = pages.join(' ');
     for (const id of ['recovery|2026-11-09', 'muscle|2026-11-09|lats', 'muscle|2026-11-09|quads']) expect(text, id).toContain(id);
-    const b = await createSimDevice(PC, { name: 'PC', schema: 'i0', clock: createManualClock(a.clock.nowMs()) });
-    devices.push(b);
-    await pair(a, b);
-    await b.cycle();
+    await roundTrip();
     expect((await (await b.data.repos.recovery()).getDay(DAY))?.summary).toEqual(output().summary);
     expect(await (await b.data.repos.recovery()).listMuscles(DAY)).toHaveLength(2);
     expect(await b.driver.select('SELECT 1 FROM sync_unknown')).toEqual([]);

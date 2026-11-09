@@ -5,6 +5,8 @@
  * - « fusionner » : identités D-55 (`profile|singleton`, `weight|date|source`) ; ce qui est absent de l'archive reste ; une valeur NULL
  *   du profil de l'archive n'efface jamais une valeur locale ;
  * - « remplacer » : l'archive devient l'état ; toute ligne locale absente est supprimée logiquement (jamais de tombstone).
+ * - I5-01 : tables en lecture seule sur cet appareil (`local.readOnlyTables`, résumés de récupération sur le PC) : jamais écrites ni
+ *   supprimées, dans aucun mode ; leurs lignes de l'archive sont comptées dans `skippedReadOnly` (elles reviennent de l'iPhone par la synchro).
  */
 
 import { TABLE_SINCE_SV, TRAINING_EXPORT_TABLES, trainingColumns, trainingRows, trainingTable, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable } from './archive';
@@ -43,6 +45,8 @@ export interface ImportPlan {
   readonly ops: readonly ImportOp[];
   readonly counts: ImportCounts;
   readonly writes: ImportWrites;
+  /** Lignes de l'archive écartées parce que leur table est en lecture seule sur cet appareil (I5-01) ; 0 ailleurs. */
+  readonly skippedReadOnly: number;
 }
 
 /** Première version de schéma dont l'exporteur écrit l'entraînement (0.2.3 écrivait le schéma 4 sans toujours la clé ; 0.3.0 = schéma 5). */
@@ -195,7 +199,13 @@ export function planImport(local: ExportData, incoming: ExportData, mode: Import
     return column !== null && open.skip.has(String(row.values[column]));
   };
   const hasTraining = incoming.training !== undefined || (incoming.archiveSv !== undefined && incoming.archiveSv >= TRAINING_ALWAYS_SINCE_SV);
+  const readOnly = new Set<TrainingTable>(local.readOnlyTables ?? []);
+  let skippedReadOnly = 0;
   for (const table of TRAINING_EXPORT_TABLES) {
+    if (readOnly.has(table)) {
+      skippedReadOnly += trainingRows(incoming, table).length;
+      continue;
+    }
     const columns = trainingColumns(table);
     const localRows = new Map(trainingRows(local, table).map((r) => [r.id, r] as const));
     // REV-01 constat 3 : les décisions de cible s'écrivent dans l'ordre où elles ont été prises (l'HLC réattribué suit cet ordre) ; une
@@ -219,6 +229,7 @@ export function planImport(local: ExportData, incoming: ExportData, mode: Import
   }
   if (mode === 'replace' && hasTraining) {
     for (const table of [...TRAINING_EXPORT_TABLES].reverse()) {
+      if (readOnly.has(table)) continue;
       // Archive d'un schéma antérieur à la table : l'absence de ses clés n'est pas une donnée (I4-07), rien n'est supprimé.
       if (incoming.archiveSv !== undefined && incoming.archiveSv < (TABLE_SINCE_SV[table] ?? 0)) continue;
       const incomingIds = new Set(trainingRows(incoming, table).map((r) => r.id));
@@ -240,5 +251,6 @@ export function planImport(local: ExportData, incoming: ExportData, mode: Import
     ops,
     counts: { add: count('add'), modify: count('modify'), delete: count('delete'), unchanged },
     writes: { profile: profileWrite, deleteProfile, weights: weightWrites, deleteWeightIds, settings: settingsWrite, training: trainingWrites, deleteTraining },
+    skippedReadOnly,
   };
 }
