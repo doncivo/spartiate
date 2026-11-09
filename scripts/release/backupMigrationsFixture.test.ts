@@ -41,7 +41,7 @@ async function build(): Promise<string> {
       await db.close();
     }
   }
-  bodies.sort((x, y) => (x.name < y.name ? -1 : x.name > y.name ? 1 : x.versions[0]! - y.versions[0]!));
+  bodies.sort((x, y) => (x.name < y.name ? -1 : x.name > y.name ? 1 : (x.versions[0] ?? 0) - (y.versions[0] ?? 0)));
   const body = {
     note: NOTE,
     migrations: migrations.map((m) => ({ version: m.version, name: m.name, statements: m.statements })),

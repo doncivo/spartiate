@@ -467,7 +467,10 @@ fn i5_01_the_recovery_triggers_do_not_exist_before_version_10_and_the_local_tabl
     // recovery_sample et recovery_import_state sont locales : aucun déclencheur de capture n'est admis dessus, à aucune version.
     for table in ["recovery_sample", "recovery_import_state"] {
         for suffix in ["ai", "au"] {
-            assert_eq!(trigger_body_for(&format!("sync_{table}_{suffix}"), table, 10), None);
+            assert_eq!(
+                trigger_body_for(&format!("sync_{table}_{suffix}"), table, 10),
+                None
+            );
         }
     }
 }
