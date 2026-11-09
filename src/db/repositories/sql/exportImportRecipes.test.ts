@@ -137,3 +137,44 @@ describe('export / import des recettes et de la journée déclarée (I4-07)', ()
     expect(await target.driver.select('SELECT * FROM day_completeness')).toEqual([]);
   });
 });
+
+describe('bornes validées à la lecture de l’archive (invalid-data à l’aperçu, jamais un échec de CHECK à l’application)', () => {
+  type Training = NonNullable<ExportData['training']>;
+  const lines = async (mutate: (training: Training) => Training): Promise<unknown> => {
+    const db = await open(A);
+    await seed(db);
+    const data = await read(db);
+    const archive = await buildExportArchive({ ...data, training: mutate(data.training ?? {}) }, { date: '2026-11-09T10:00:00.000Z', sv: 9 });
+    return parseExportArchive(archive.bytes, { currentSv: EXPORT_SV, currentYear: 2026 }).catch((e: unknown) => e);
+  };
+  const withValues = (table: 'recipe' | 'recipe_ingredient' | 'day_completeness', over: Record<string, string | number | null>, id?: string) => (t: Training): Training => ({
+    ...t,
+    [table]: (t[table] ?? []).map((r) => ({ id: id ?? r.id, values: { ...r.values, ...over } })),
+  });
+  it.each([
+    ['recipe', { servings: 0 }],
+    ['recipe', { servings: 101 }],
+    ['recipe', { servings: 2.5 }],
+    ['recipe', { cooked_weight_g: 0 }],
+    ['recipe', { cooked_weight_g: 20_001 }],
+    ['recipe', { name: '' }],
+    ['recipe_ingredient', { grams: 0 }],
+    ['recipe_ingredient', { grams: 10_001 }],
+    ['recipe_ingredient', { position: -1 }],
+    ['recipe_ingredient', { kcal_100g: 901 }],
+    ['recipe_ingredient', { protein_100g: -1 }],
+    ['recipe_ingredient', { carb_100g: 100.5 }],
+    ['recipe_ingredient', { name: '' }],
+    ['recipe_ingredient', { food_ref: '' }],
+  ] as const)('%s %j : refusée en invalid-data', async (table, over) => {
+    expect(await lines(withValues(table, over))).toMatchObject({ code: 'invalid-data' });
+  });
+  it('déclaration dont l’identifiant ne correspond pas à la date : refusée en invalid-data', async () => {
+    expect(await lines(withValues('day_completeness', {}, 'day|2026-11-10'))).toMatchObject({ code: 'invalid-data' });
+  });
+  it('valeurs aux bornes : acceptées', async () => {
+    const ok = await lines(withValues('recipe', { servings: 100, cooked_weight_g: 20_000 }));
+    expect(ok).not.toBeInstanceOf(Error);
+    expect(ok).toHaveProperty('data');
+  });
+});
