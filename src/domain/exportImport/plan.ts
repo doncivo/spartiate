@@ -45,6 +45,9 @@ export interface ImportPlan {
   readonly writes: ImportWrites;
 }
 
+/** Première version de schéma dont l'exporteur écrit l'entraînement (0.2.3 écrivait le schéma 4 sans toujours la clé ; 0.3.0 = schéma 5). */
+const TRAINING_ALWAYS_SINCE_SV = 5;
+
 const PROFILE_FIELDS = ['sex', 'birthYear', 'heightCm', 'goal', 'experience', 'units'] as const;
 const WEIGHT_FIELDS = ['date', 'kg', 'source', 'timezone', 'healthUuid', 'measuredAt'] as const;
 
@@ -125,7 +128,9 @@ export function planImport(local: ExportData, incoming: ExportData, mode: Import
   // Une archive sans entraînement (antérieure à la 0.2.3) ne supprime jamais rien côté entraînement, même en « remplacer ».
   const trainingWrites: { table: TrainingTable; row: TrainingRow }[] = [];
   const deleteTraining: { table: TrainingTable; id: string }[] = [];
-  const hasTraining = incoming.training !== undefined;
+  // REV-01 constat 2 : une archive écrite à partir du schéma 5 (après l'export de l'entraînement, 0.2.3) sans clé `training` dit que ces
+  // tables sont vides ; seule une archive plus ancienne (schéma ≤ 4) ou sans version lue ne dit rien.
+  const hasTraining = incoming.training !== undefined || (incoming.archiveSv !== undefined && incoming.archiveSv >= TRAINING_ALWAYS_SINCE_SV);
   for (const table of TRAINING_EXPORT_TABLES) {
     const columns = trainingColumns(table);
     const localRows = new Map(trainingRows(local, table).map((r) => [r.id, r] as const));
