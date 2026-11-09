@@ -126,6 +126,11 @@ export interface SettingsValues {
   'training.restSeconds': number | null;
   /** 0.2.4 point 6 : séance close dont la question « Mettre à jour la routine ? » attend encore une réponse (app fermée pendant le résumé) ; effacée à la réponse. Local. */
   'training.routineUpdateAsk': string | null;
+  /**
+   * I4-08 : séance proposée en cours, sa routine source et le RIR cible par exercice (valeur BRUTE lue par `parseSessionLink`,
+   * src/features/training/cycle/sessionLink.ts) ; écrite avec la séance, ne vaut que pour elle. Locale, jamais synchronisée.
+   */
+  'training.cycleSession': unknown;
   /** I4-03 : préférences de nutrition (style du check-in, objectif, activité déclarée, jour). Valeur BRUTE lue par `parseNutritionPrefs` ; locale, jamais synchronisée. */
   'nutrition.prefs': unknown;
   /** I4-06 : favoris de la recherche d'aliments, valeur BRUTE lue par `parseFavorites` ({ v: 1, items }) ; locale, jamais synchronisée (D-79). */
@@ -185,6 +190,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'training.activeEquipmentProfile': { scope: 'local', defaultValue: null },
   'training.restSeconds': { scope: 'local', defaultValue: null },
   'training.routineUpdateAsk': { scope: 'local', defaultValue: null },
+  'training.cycleSession': { scope: 'local', defaultValue: null },
   'nutrition.prefs': { scope: 'local', defaultValue: null },
   'nutrition.favorites': { scope: 'local', defaultValue: null },
 };
