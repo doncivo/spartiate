@@ -101,5 +101,4 @@ export const recipesFr = {
   back: 'Retour',
   added: 'Ajouté au journal : {name}.',
   recipeGone: 'Cette recette n’existe plus.',
-  loadingRecipe: 'Chargement de la recette…',
 } as const;
