@@ -11701,7 +11701,7 @@
         "good-morning"
       ],
       "instructions": {
-        "setup": "Barre posée sur les supports du rack à hauteur de genou environ, pieds à la largeur des hanches, prise à la largeur des épaules, dos plat, barre contre les tibias.",
+        "setup": "Barre posée sur les supports du rack juste au-dessus des genoux, pieds à la largeur des hanches, prise à la largeur des épaules, dos plat, barre au contact du bas des cuisses.",
         "execution": "Pousse dans le sol et verrouille les hanches debout en gardant la barre contre le corps, serre les omoplates en haut, puis redescends la barre sur les supports sous contrôle.",
         "mistakes": [
           "Arrondir le bas du dos.",
@@ -11940,27 +11940,29 @@
       ],
       "muscles": [
         {
-          "id": "rear-delts",
+          "id": "middle-delts",
           "weight": 1,
           "role": "primary"
-        },
-        {
-          "id": "middle-delts",
-          "weight": 0.5,
-          "role": "secondary"
         },
         {
           "id": "trapezius",
           "weight": 0.5,
           "role": "secondary"
+        },
+        {
+          "id": "rear-delts",
+          "weight": 0.5,
+          "role": "secondary"
         }
       ],
       "equipment": [
+        "cable-machine",
         "low-pulley",
         "cable-handle"
       ],
       "equipmentGroups": [
         [
+          "cable-machine",
           "low-pulley"
         ],
         [
@@ -12236,7 +12238,7 @@
         "smith-squat"
       ],
       "instructions": {
-        "setup": "Barre guidée à hauteur d’épaule posée sur les trapèzes, un pied devant sous la barre et l’autre derrière, pointe posée, buste droit.",
+        "setup": "Barre guidée à hauteur d’épaule posée sur les trapèzes, un pied devant sous la barre et l’autre derrière, pointe posée, buste droit. Règle les butées de sécurité de la barre juste sous le point le plus bas du mouvement.",
         "execution": "Descends en pliant les deux genoux jusqu’à frôler le sol avec le genou arrière, puis pousse dans le pied avant pour remonter. Même nombre de répétitions de chaque côté.",
         "mistakes": [
           "Placer le pied avant trop près de la barre.",
@@ -12621,7 +12623,7 @@
         "calf-raise-dumbbell"
       ],
       "instructions": {
-        "setup": "Barre guidée à hauteur d’épaule sur les trapèzes, avant-pieds sur un step, une cale ou un disque stable, talons dans le vide, genoux presque tendus.",
+        "setup": "Barre guidée à hauteur d’épaule sur les trapèzes, avant-pieds sur un step, une cale ou un disque stable, talons dans le vide, genoux presque tendus. Règle les butées de sécurité de la barre juste sous le point le plus bas du mouvement.",
         "execution": "Monte sur la pointe des pieds au maximum, marque une pause d’une seconde en haut, puis descends lentement les talons sous le niveau de la cale pour étirer les mollets.",
         "mistakes": [
           "Plier les genoux pour aider la montée.",
