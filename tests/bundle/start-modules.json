@@ -319,6 +319,11 @@
       "raison": "Migration I4-07 (tables day_completeness, recipe et recipe_ingredient publiées et leurs six déclencheurs de capture, 7 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 et 0008. Les écrans de recettes (RecipesView, RecipeHits, RecipeQuantityStep), leur catalogue fr.recipes, les règles et les repositories restent hors du départ (import à la demande)."
     },
     {
+      "fichier": "src/db/migrations/0010_recovery.ts",
+      "story": "I5-01",
+      "raison": "Migration I5-01 (tables recovery_day et muscle_recovery publiées avec leurs déclencheurs de capture, recovery_sample et recovery_import_state locales, 10 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0009. Le moteur de récupération, l'import des fichiers Raccourcis, l'écran et leurs textes restent hors du départ (import à la demande)."
+    },
+    {
       "fichier": "src/features/app/ShellChrome.tsx",
       "story": "BUNDLE-01",
       "raison": "SPA-009 : carte d'état de la barre latérale PC et barre supérieure (1,6 Ko source), montées dès le premier rendu de la coquille."

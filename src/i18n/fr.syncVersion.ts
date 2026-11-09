@@ -53,6 +53,8 @@ export const syncVersionFr = {
     dayCompleteness: 'déclarations de journée',
     recipe: 'recettes',
     recipeIngredient: 'ingrédients de recettes',
+    recoveryDay: 'résumés de récupération',
+    muscleRecovery: 'récupérations par muscle',
     other: 'autres éléments',
   },
 } as const;

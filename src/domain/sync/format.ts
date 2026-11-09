@@ -670,5 +670,6 @@ export function isUnknownSettingKey(value: string): boolean {
  * I3-02 : `mesocycle` en dernier, sans parent (référence logique à la routine).
  * I4-02 : `food` < `food_portion` (parent), puis `meal_entry` (référence logique à l'aliment) et `nutrition_target`, sans parent.
  * I4-07 : `day_completeness` (sans parent), puis `recipe` < `recipe_ingredient` (parent d'abord).
+ * I5-01 : `recovery_day` puis `muscle_recovery`, sans parent (lien logique par la date).
  */
-export const SYNC_TABLE_ORDER = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient'] as const;
+export const SYNC_TABLE_ORDER = ['profile', 'body_weight', 'exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient', 'recovery_day', 'muscle_recovery'] as const;

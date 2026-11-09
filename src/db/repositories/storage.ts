@@ -1,5 +1,5 @@
 import { SYNC_CATALOGUE, type SyncCatalogue } from '../../domain/sync/syncTables';
-import type { RepositoryFactory } from './dataAccess';
+import type { RepositoryFactory, RepositoryOptions } from './dataAccess';
 import { createSqlRepositoriesFor } from './sql';
 
 /**
@@ -12,6 +12,7 @@ export interface SyncStorage {
   readonly repositories: RepositoryFactory;
 }
 
-export const createStorage = (catalogue: SyncCatalogue): SyncStorage => ({ catalogue, repositories: createSqlRepositoriesFor(catalogue) });
+/** `options` : règles propres à l'appareil (I5-01 : l'iPhone seul écrit les résumés de récupération ; lecteur par défaut). */
+export const createStorage = (catalogue: SyncCatalogue, options: RepositoryOptions = {}): SyncStorage => ({ catalogue, repositories: createSqlRepositoriesFor(catalogue, options) });
 
 export const SYNC_STORAGE: SyncStorage = createStorage(SYNC_CATALOGUE);

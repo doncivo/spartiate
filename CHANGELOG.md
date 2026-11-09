@@ -2,6 +2,14 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.10.0
+
+**Schéma 10 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** La mise à jour ajoute des tables (additif) ; aucune donnée saisie n'est modifiée.
+
+- **Récupération (I5-01)** : l'iPhone importe les fichiers de l'app Raccourcis (variabilité cardiaque, fréquence cardiaque au repos, sommeil, pas), calcule la récupération (estimation, pas un avis médical) et publie des résumés quotidiens vers le PC. Plus → Apple Santé → Raccourcis : « Importer maintenant » (choix des fichiers), dernière date par type, lignes lues et refusées par raison, sans aucune valeur. Guide : un seul raccourci « Spartiate — récupération ». Les cadrans arrivent en 0.11.0.
+- **Sauvegarde / export** : les résumés de récupération sont dans l'archive (les échantillons importés non) ; sur le PC, l'import ne les écrit pas.
+- **Restauration** : référentiel des déclencheurs prouvé identique à une base migrée à chaque version.
+
 ## 0.9.4
 
 **Pas de mise à jour de la base** (reste en version 9) ; aucune donnée saisie n'est modifiée.

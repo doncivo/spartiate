@@ -25,6 +25,8 @@ import type { MealEntryRepository } from './mealEntryRepository';
 import type { NutritionTargetRepository } from './nutritionTargetRepository';
 import type { DayCompletenessRepository } from './dayCompletenessRepository';
 import type { RecipeRepository } from './recipeRepository';
+import type { RecoveryRepository } from './recoveryRepository';
+import type { RecoverySampleRepository } from './recoverySampleRepository';
 import type { ProjectRepository, SpaceRepository } from './spaceRepository';
 import type { RecurrenceRepository, TaskRepository } from './taskRepository';
 
@@ -76,6 +78,10 @@ export interface Repositories {
   readonly dayCompleteness: () => Promise<DayCompletenessRepository>;
   /** I4-07 : recettes et leurs ingrédients (publiés), chargés à la demande. */
   readonly recipes: () => Promise<RecipeRepository>;
+  /** I5-01 : résumés de récupération du jour et par muscle (publiés, iPhone vers PC), chargés à la demande. */
+  readonly recovery: () => Promise<RecoveryRepository>;
+  /** I5-01 : échantillons importés des fichiers Raccourcis et état du dernier import (LOCAUX, jamais publiés), chargés à la demande. */
+  readonly recoverySamples: () => Promise<RecoverySampleRepository>;
   /** Export / import de Spartiate (SPA-005, D-57), chargé à la demande. */
   readonly exportImport: () => Promise<ExportImportRepository>;
   /** Liens locaux aux Rappels Apple (K-05, ADR 0008 §10.2) : table non publiée, vide sur le PC. */
@@ -89,6 +95,24 @@ export interface Repositories {
  * Appelée une fois pour le driver, puis une fois par transaction avec le `tx` reçu.
  */
 export type RepositoryFactory = (executor: SqlExecutor, stamper: WriteStamper) => Repositories;
+
+/** Événement fixe d'une écriture locale écartée par un appareil lecteur : jamais une valeur, un identifiant de ligne ni une date. */
+export type IgnoredWriteEvent = 'recovery-write-ignored';
+
+/**
+ * Règles propres à l'appareil, fixées à la création des repositories par la couche qui connaît la plateforme (`bootstrapApp`), jamais lues
+ * d'une valeur reçue (I5-01, § 9.1, § 16.4).
+ */
+export interface RepositoryOptions {
+  /**
+   * Vrai sur l'iPhone seul : il écrit `recovery_day` et `muscle_recovery` ; le PC les lit (reçues par la synchro) et ne les écrit jamais.
+   * Absent ou faux : LECTEUR (valeur sûre, un oubli de câblage ne fait jamais écrire le PC). Sur un lecteur, `saveDay` et `deleteDay`
+   * n'écrivent rien et l'import d'archive n'écrit ni ne supprime ces tables.
+   */
+  readonly recoveryWriter?: boolean;
+  /** Écriture locale écartée par un lecteur (journal technique de l'appareil). */
+  readonly onIgnoredWrite?: (event: IgnoredWriteEvent) => void;
+}
 
 /**
  * Point d'entrée unique des features vers la base (via le conteneur, ADR 0004).

@@ -42,7 +42,7 @@ pub const PRE_RESTORE_PREFIX: &str = "spartiate-pre-restore-";
 pub const KEEP_PRE_RESTORE_BACKUPS: usize = 3;
 /// Version de schéma de cette app (plus haute migration de `src/db/migrations`). Une sauvegarde plus récente est refusée. Constante côté Rust :
 /// la WebView ne fournit jamais cette valeur ; un test (`restore_hardening.rs`) la compare aux fichiers de migration.
-pub const APP_SCHEMA_VERSION: u32 = 9;
+pub const APP_SCHEMA_VERSION: u32 = 10;
 /// Plafond de taille d'une base à vérifier ou à restaurer (512 Mo) : au-delà, la sauvegarde est refusée (`corrupt`).
 pub const MAX_BACKUP_BYTES: u64 = 512 * 1024 * 1024;
 /// Attente maximale d'un verrou pendant une sauvegarde quotidienne : la base n'est jamais bloquée plus de 2 s (P-04 critère 1).
@@ -753,9 +753,10 @@ pub fn reset_triggers(path: &Path) -> Result<(), BackupError> {
         .map(|n| n == 1)
         .map_err(sql_err)
     };
-    // Déclencheurs de capture de la synchro (`sync_*`, créés par les migrations Spartiate 0001 à 0008) : seulement si leurs tables existent et si la
-    // version de la sauvegarde les porte (`introduced_in`) : une sauvegarde plus ancienne les recevra par la migration à l'ouverture ; les créer ici
-    // ferait échouer cette migration (« trigger already exists »).
+    // Déclencheurs de capture de la synchro (`sync_*`, créés par les migrations Spartiate) : seulement si leurs tables existent et si la version de
+    // la sauvegarde les porte (`SPARTIATE_TRIGGERS_BY_VERSION`) : une sauvegarde plus ancienne les recevra par la migration à l'ouverture ; les créer
+    // ici ferait échouer cette migration (« trigger already exists »). Un déclencheur hérité de l'ancien projet n'est jamais recréé sur une table
+    // Spartiate (`SPARTIATE_TABLES`, I5-01 point 1.1). Garde : `backup_versions.rs` (`i5_01_*`), ensemble recréé = base migrée à chaque version.
     let has_sync = has_table("sync_guard")?;
     // Corps valables à la version de la sauvegarde (héritage de l'ancien projet : une sauvegarde de version 17 reçoit les corps de la migration 0015, jamais un
     // corps qui cite une colonne absente d'elle ; les trois déclencheurs concernés n'existent pas dans une base Spartiate). Sans table de versions : corps actuels.

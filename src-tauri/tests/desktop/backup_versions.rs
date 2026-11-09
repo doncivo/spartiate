@@ -7,7 +7,8 @@ use std::path::Path;
 use rusqlite::Connection;
 use spartiate_lib::backup::{check_backup_file, normalize_sql, reset_triggers, APP_SCHEMA_VERSION};
 use spartiate_lib::backup_triggers::{
-    introduced_in, trigger_body_for, REFERENCE_TRIGGERS, SUPERSEDED_TRIGGERS,
+    introduced_in, trigger_body_for, REFERENCE_TRIGGERS, SPARTIATE_TABLES,
+    SPARTIATE_TRIGGERS_BY_VERSION, SUPERSEDED_TRIGGERS,
 };
 
 const REPLACED: [&str; 3] = ["sync_settings_ai", "sync_settings_au", "sync_task_au"];
@@ -59,6 +60,8 @@ fn make_db(path: &Path, version: u32, bodies_version: u32) {
         "day_completeness",
         "recipe",
         "recipe_ingredient",
+        "recovery_day",
+        "muscle_recovery",
         "search_index_doc",
     ] {
         conn.execute_batch(&format!(
@@ -93,7 +96,7 @@ fn k05_4_the_three_replaced_triggers_have_a_superseded_body_valid_from_15_to_17(
         assert_eq!((since, until), (15, 18));
         assert_eq!(
             introduced_in(name),
-            18,
+            Some(18),
             "le corps actuel de {name} date de la version 18"
         );
         let current = REFERENCE_TRIGGERS
@@ -110,17 +113,34 @@ fn k05_4_the_three_replaced_triggers_have_a_superseded_body_valid_from_15_to_17(
             current.contains("apple_") || name.starts_with("sync_settings"),
             "{name}"
         );
+        if table == "settings" {
+            // I5-01 point 1.1 : `settings` est une table Spartiate ; les déclencheurs hérités n'y sont admis à aucune version.
+            for version in [15, 17, 18, 99] {
+                assert_eq!(
+                    trigger_body_for(name, table, version),
+                    None,
+                    "{name}@{version}"
+                );
+            }
+            continue;
+        }
         assert_eq!(trigger_body_for(name, table, 17), Some(sql));
         assert_eq!(trigger_body_for(name, table, 15), Some(sql));
         assert_eq!(trigger_body_for(name, table, 18), Some(current));
         assert_eq!(trigger_body_for(name, table, 99), Some(current));
     }
-    // Les autres déclencheurs ont le même corps à toute version.
+    // Les autres déclencheurs ont le même corps à toute version, sauf les hérités sur une table Spartiate (jamais admis).
     for (name, table, sql) in REFERENCE_TRIGGERS {
-        if !REPLACED.contains(&name) {
-            assert_eq!(trigger_body_for(name, table, 17), Some(sql));
-            assert_eq!(trigger_body_for(name, table, 18), Some(sql));
+        if REPLACED.contains(&name) {
+            continue;
         }
+        let expected = if name.starts_with("search_routine_") {
+            None
+        } else {
+            Some(sql)
+        };
+        assert_eq!(trigger_body_for(name, table, 17), expected, "{name}");
+        assert_eq!(trigger_body_for(name, table, 18), expected, "{name}");
     }
     assert_eq!(
         trigger_body_for("sync_task_au", "settings", 17),
@@ -185,6 +205,18 @@ fn k05_4_reset_triggers_recreates_the_bodies_of_the_backup_version_and_never_a_c
         reset_triggers(&path).unwrap();
         let conn = Connection::open(&path).unwrap();
         for name in REPLACED {
+            if name.starts_with("sync_settings_") {
+                // I5-01 point 1.1 : jamais recréés sur la table Spartiate `settings`.
+                let count: u64 = conn
+                    .query_row(
+                        "SELECT COUNT(*) FROM sqlite_master WHERE name = ?1",
+                        [name],
+                        |r| r.get(0),
+                    )
+                    .unwrap();
+                assert_eq!(count, 0, "{name} en version {version}");
+                continue;
+            }
             let sql: String = conn
                 .query_row(
                     "SELECT sql FROM sqlite_master WHERE type = 'trigger' AND name = ?1",
@@ -395,4 +427,302 @@ fn a_restored_v8_backup_then_migration_0009_ends_with_the_40_sync_triggers() {
     let after = trigger_names(&path);
     assert_eq!(after.len(), 40, "{after:?}");
     assert!(after.iter().all(|n| n.starts_with("sync_")));
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------
+// I5-01 point 1.1 (relecture sync-icloud, suite du point 9 d'I4-08) : référentiel des déclencheurs = base neuve migrée, à chaque version.
+// Fixture `spartiate-migrations.json` : instructions des migrations TypeScript et déclencheurs d'une base migrée par le vrai migrateur à chaque
+// version, tenue à jour par `scripts/release/backupMigrationsFixture.test.ts` (régénération : `node scripts/backup/export-migrations-fixture.mjs`).
+// ---------------------------------------------------------------------------------------------------------------------------------------------
+
+fn migrations_fixture() -> serde_json::Value {
+    serde_json::from_str(include_str!("../fixtures/spartiate-migrations.json")).unwrap()
+}
+
+/// Versions de schéma décrites par la fixture (1 à la dernière migration TypeScript), dans l'ordre.
+fn fixture_versions(fixture: &serde_json::Value) -> Vec<u32> {
+    fixture["versions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v["version"].as_u64().unwrap() as u32)
+        .collect()
+}
+
+/// Tables d'une base migrée à cette version (fixture).
+fn fixture_tables(fixture: &serde_json::Value, version: u32) -> Vec<String> {
+    fixture["versions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|v| v["version"].as_u64() == Some(version as u64))
+        .unwrap()["tables"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|t| t.as_str().unwrap().to_owned())
+        .collect()
+}
+
+/// Déclencheurs (nom, table, corps compacté) d'une base migrée par les migrations TypeScript à cette version (fixture), triés par nom.
+fn fixture_triggers(fixture: &serde_json::Value, version: u32) -> Vec<(String, String, String)> {
+    let mut out: Vec<(String, String, String)> = fixture["triggers"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|t| {
+            t["versions"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|v| v.as_u64() == Some(version as u64))
+        })
+        .map(|t| {
+            (
+                t["name"].as_str().unwrap().to_owned(),
+                t["table"].as_str().unwrap().to_owned(),
+                normalize_sql(t["sql"].as_str().unwrap()),
+            )
+        })
+        .collect();
+    out.sort();
+    out
+}
+
+/// Base neuve migrée jusqu'à `version` : table de suivi du migrateur, puis instructions de chaque migration rejouées dans sa transaction.
+fn make_migrated_db(path: &Path, fixture: &serde_json::Value, version: u32) {
+    let mut conn = Connection::open(path).unwrap();
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER PRIMARY KEY, name TEXT NOT NULL, checksum TEXT NOT NULL, applied_at TEXT NOT NULL)",
+    )
+    .unwrap();
+    for migration in fixture["migrations"].as_array().unwrap() {
+        let v = migration["version"].as_u64().unwrap() as u32;
+        if v > version {
+            break;
+        }
+        let tx = conn.transaction().unwrap();
+        for statement in migration["statements"].as_array().unwrap() {
+            tx.execute_batch(statement.as_str().unwrap())
+                .unwrap_or_else(|e| panic!("migration {v} : {e}"));
+        }
+        tx.execute(
+            "INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?1, ?2, 'c', 'now')",
+            rusqlite::params![v, migration["name"].as_str().unwrap()],
+        )
+        .unwrap();
+        tx.commit().unwrap();
+    }
+}
+
+/// Déclencheurs (nom, table, corps compacté) présents dans le fichier, triés par nom.
+fn triggers_of(path: &Path) -> Vec<(String, String, String)> {
+    let conn = Connection::open(path).unwrap();
+    let mut statement = conn
+        .prepare(
+            "SELECT name, tbl_name, sql FROM sqlite_master WHERE type = 'trigger' ORDER BY name",
+        )
+        .unwrap();
+    let rows = statement
+        .query_map([], |r| {
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, String>(1)?,
+                normalize_sql(&r.get::<_, String>(2)?),
+            ))
+        })
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    rows
+}
+
+#[test]
+fn i5_01_the_migrations_fixture_covers_every_schema_version_up_to_the_app_one() {
+    let fixture = migrations_fixture();
+    // Une version de schéma sans entrée (migration 0010 ajoutée sans régénérer la fixture, ou APP_SCHEMA_VERSION oubliée) échoue ici.
+    assert_eq!(
+        fixture_versions(&fixture),
+        (1..=APP_SCHEMA_VERSION).collect::<Vec<_>>(),
+        "fixture périmée ou APP_SCHEMA_VERSION non alignée : node scripts/backup/export-migrations-fixture.mjs"
+    );
+}
+
+/// Pour chaque version de 1 à la courante : la base rejouée côté Rust porte exactement les déclencheurs de la base migrée par TypeScript ;
+/// chacun est connu du référentiel avec ce corps à cette version (sinon la sauvegarde serait refusée) ; et `reset_triggers` recrée exactement
+/// cet ensemble (noms et corps), ni plus (une migration suivante échouerait sur « trigger already exists »), ni moins (capture perdue).
+#[test]
+fn i5_01_for_every_schema_version_reset_triggers_recreates_exactly_the_triggers_of_a_migrated_base()
+{
+    let fixture = migrations_fixture();
+    let dir = scratch();
+    for version in fixture_versions(&fixture) {
+        let path = dir.path().join(format!("migree-{version}.db"));
+        make_migrated_db(&path, &fixture, version);
+        let migrated = triggers_of(&path);
+        assert_eq!(
+            migrated,
+            fixture_triggers(&fixture, version),
+            "version {version} : la base rejouée diffère de la base migrée par TypeScript"
+        );
+        for (name, table, sql) in &migrated {
+            let known = trigger_body_for(name, table, version).unwrap_or_else(|| {
+                panic!("version {version} : déclencheur {name} (table {table}) de la base migrée absent du référentiel (backup_triggers.rs)")
+            });
+            assert_eq!(
+                &normalize_sql(known),
+                sql,
+                "version {version} : corps de {name} différent du référentiel"
+            );
+        }
+        assert_eq!(
+            check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(),
+            version
+        );
+        reset_triggers(&path).unwrap();
+        assert_eq!(
+            triggers_of(&path),
+            migrated,
+            "version {version} : la restauration ne recrée pas exactement l'ensemble migré"
+        );
+        // Même résultat avec un déclencheur étranger posé avant (il disparaît).
+        Connection::open(&path)
+            .unwrap()
+            .execute_batch("CREATE TRIGGER evil AFTER INSERT ON profile BEGIN SELECT 1; END;")
+            .unwrap();
+        reset_triggers(&path).unwrap();
+        assert_eq!(triggers_of(&path), migrated, "version {version}");
+    }
+}
+
+/// Déclarations du référentiel : une entrée par version de 1 à `APP_SCHEMA_VERSION` (même vide), et à chaque version exactement les
+/// déclencheurs qu'une base migrée gagne à cette version ; tables Spartiate = tables d'une base migrée (toutes versions). C'est la garde de la
+/// migration 0010 : `recovery_day`, `muscle_recovery` et leurs déclencheurs de capture devront être déclarés.
+#[test]
+fn i5_01_every_schema_version_declares_exactly_the_triggers_it_introduces_and_every_table() {
+    let fixture = migrations_fixture();
+    let versions = fixture_versions(&fixture);
+    assert_eq!(
+        SPARTIATE_TRIGGERS_BY_VERSION
+            .iter()
+            .map(|(v, _)| *v)
+            .collect::<Vec<_>>(),
+        versions,
+        "une version de schéma sans entrée dans SPARTIATE_TRIGGERS_BY_VERSION (backup_triggers.rs)"
+    );
+    let mut previous: Vec<String> = Vec::new();
+    for version in versions {
+        let now: Vec<String> = fixture_triggers(&fixture, version)
+            .into_iter()
+            .map(|(n, ..)| n)
+            .collect();
+        let mut introduced: Vec<String> = now
+            .iter()
+            .filter(|n| !previous.contains(n))
+            .cloned()
+            .collect();
+        introduced.sort();
+        let mut declared: Vec<String> = SPARTIATE_TRIGGERS_BY_VERSION
+            .iter()
+            .find(|(v, _)| *v == version)
+            .unwrap()
+            .1
+            .iter()
+            .map(|n| (*n).to_owned())
+            .collect();
+        declared.sort();
+        assert_eq!(declared, introduced, "version {version}");
+        for name in &declared {
+            assert_eq!(introduced_in(name), Some(version), "{name}");
+            assert!(
+                REFERENCE_TRIGGERS.iter().any(|(n, _, _)| n == name),
+                "{name} absent de REFERENCE_TRIGGERS"
+            );
+        }
+        previous = now;
+    }
+    let mut tables: Vec<String> = Vec::new();
+    for version in fixture_versions(&fixture) {
+        for table in fixture_tables(&fixture, version) {
+            if !tables.contains(&table) {
+                tables.push(table);
+            }
+        }
+    }
+    tables.sort();
+    let mut declared: Vec<String> = SPARTIATE_TABLES.iter().map(|t| (*t).to_owned()).collect();
+    declared.sort();
+    assert_eq!(
+        declared, tables,
+        "SPARTIATE_TABLES (backup_triggers.rs) différent des tables d'une base migrée"
+    );
+    assert_eq!(
+        introduced_in("evil"),
+        None,
+        "nom inconnu : aucune version par défaut"
+    );
+}
+
+/// Point 9 (1) : aucun déclencheur hérité de l'ancien projet (nom qu'aucune migration Spartiate ne crée) n'est admis ni recréé sur une table
+/// d'une base Spartiate, à aucune version de schéma : `sync_settings_*` (valables à partir de la version 15 dans l'ancien projet) sur
+/// `settings`, `search_routine_*` sur `routine`.
+#[test]
+fn i5_01_no_legacy_trigger_is_admitted_on_a_spartiate_table_at_any_version() {
+    let fixture = migrations_fixture();
+    let tables = fixture_tables(&fixture, APP_SCHEMA_VERSION);
+    let spartiate_names: Vec<String> = fixture["triggers"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|t| t["name"].as_str().unwrap().to_owned())
+        .collect();
+    let legacy = REFERENCE_TRIGGERS
+        .iter()
+        .map(|(n, t, _)| (*n, *t))
+        .chain(SUPERSEDED_TRIGGERS.iter().map(|(n, t, ..)| (*n, *t)))
+        .filter(|(n, t)| !spartiate_names.iter().any(|s| s == n) && tables.iter().any(|x| x == t));
+    let mut offending = Vec::new();
+    for (name, table) in legacy {
+        if let Some(version) = (1..=99).find(|v| trigger_body_for(name, table, *v).is_some()) {
+            offending.push(format!("{name}@{version}"));
+        }
+    }
+    assert!(
+        offending.is_empty(),
+        "déclencheurs hérités admis sur une table Spartiate : {offending:?}"
+    );
+}
+
+/// Point 9 (1), par la restauration : une base Spartiate dont la table de versions annonce 15 à 30 (et une table `search_index_doc`
+/// fabriquée) ne reçoit ni `sync_settings_*` ni `search_routine_*` de `reset_triggers`.
+#[test]
+fn i5_01_reset_triggers_never_puts_legacy_triggers_on_settings_or_routine() {
+    let fixture = migrations_fixture();
+    let dir = scratch();
+    for announced in [15u32, 17, 18, 30] {
+        let path = dir.path().join(format!("annoncee-{announced}.db"));
+        make_migrated_db(&path, &fixture, APP_SCHEMA_VERSION);
+        {
+            let conn = Connection::open(&path).unwrap();
+            for v in (APP_SCHEMA_VERSION + 1)..=announced {
+                conn.execute(
+                    "INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?1, 'n', 'c', 'now')",
+                    [v],
+                )
+                .unwrap();
+            }
+            conn.execute_batch(
+                "CREATE TABLE search_index_doc (id INTEGER PRIMARY KEY, type TEXT, ref_id TEXT);",
+            )
+            .unwrap();
+        }
+        reset_triggers(&path).unwrap();
+        let names = trigger_names(&path);
+        assert!(
+            !names
+                .iter()
+                .any(|n| n.starts_with("sync_settings_") || n.starts_with("search_routine_")),
+            "version annoncée {announced} : {names:?}"
+        );
+    }
 }

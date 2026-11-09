@@ -84,5 +84,7 @@ export const syncCarryReportFr = {
   kindDayCompleteness: 'Journée déclarée complète ou incomplète',
   kindRecipe: 'Recette',
   kindRecipeIngredient: 'Ingrédient de recette',
+  kindRecoveryDay: 'Résumé de récupération du jour',
+  kindMuscleRecovery: 'Récupération d’un muscle',
   kindOther: 'Autre élément',
 } as const;

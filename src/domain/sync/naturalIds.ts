@@ -83,3 +83,46 @@ export function expectedDayCompletenessId(row: ReadonlyMap<string, unknown>): st
   const date = row.get('date');
   return typeof date === 'string' && isLocalDate(date) ? `day|${date}` : null;
 }
+
+/**
+ * I5-01 (§ 16.4, § 20.2) : résumés de récupération, écrits par l'iPhone seul. `recovery_day` : une ligne par date locale,
+ * `recovery|AAAA-MM-JJ` ; `muscle_recovery` : une par date et muscle, `muscle|AAAA-MM-JJ|<muscle>` (muscle de 1 à 64 caractères, sans `|`).
+ * Aucun repli UUID : un recalcul du même jour écrit la même ligne. Les CHECK SQL de la migration 0010 portent les mêmes formes.
+ */
+const RECOVERY_DAY_RE = /^recovery\|(\d{4}-\d{2}-\d{2})$/;
+export const MUSCLE_RECOVERY_MUSCLE_ID_MAX = 64;
+const MUSCLE_RECOVERY_RE = /^muscle\|(\d{4}-\d{2}-\d{2})\|([^|]{1,64})$/;
+
+export function recoveryDayId(date: LocalDate): string {
+  return `recovery|${date}`;
+}
+
+export function isRecoveryDayId(id: string): boolean {
+  const m = RECOVERY_DAY_RE.exec(id);
+  return m !== null && m[1] !== undefined && isLocalDate(m[1]);
+}
+
+/** Identifiant attendu d'un résumé de ces valeurs, ou null si `date` manque ou est mal formée. */
+export function expectedRecoveryDayId(row: ReadonlyMap<string, unknown>): string | null {
+  const date = row.get('date');
+  return typeof date === 'string' && isLocalDate(date) ? recoveryDayId(date) : null;
+}
+
+/** Identifiant de muscle admis dans une ligne publiable. */
+export const isMuscleRecoveryMuscleId = (muscleId: string): boolean => muscleId.length >= 1 && muscleId.length <= MUSCLE_RECOVERY_MUSCLE_ID_MAX && !muscleId.includes('|');
+
+export function muscleRecoveryId(date: LocalDate, muscleId: string): string {
+  return `muscle|${date}|${muscleId}`;
+}
+
+export function isMuscleRecoveryId(id: string): boolean {
+  const m = MUSCLE_RECOVERY_RE.exec(id);
+  return m !== null && m[1] !== undefined && isLocalDate(m[1]);
+}
+
+/** Identifiant attendu d'une ligne de muscle de ces valeurs, ou null si `date` ou `muscle_id` manquent ou sont mal formés. */
+export function expectedMuscleRecoveryId(row: ReadonlyMap<string, unknown>): string | null {
+  const date = row.get('date');
+  const muscle = row.get('muscle_id');
+  return typeof date === 'string' && isLocalDate(date) && typeof muscle === 'string' && isMuscleRecoveryMuscleId(muscle) ? muscleRecoveryId(date, muscle) : null;
+}

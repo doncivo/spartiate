@@ -12,7 +12,21 @@
 import { isId, isIsoDateTime, isLocalDate, isLocalDateTime, isLocalTime } from '../types';
 import { MAX_SYNC_ID_LENGTH } from './limits';
 import { SYNC_TABLE_ORDER } from './format';
-import { expectedDayCompletenessId, expectedProgressionId, expectedWeightId, isDayCompletenessId, isProfileId, isProgressionId, isWeightId, PROFILE_ID } from './naturalIds';
+import {
+  expectedDayCompletenessId,
+  expectedMuscleRecoveryId,
+  expectedProgressionId,
+  expectedRecoveryDayId,
+  expectedWeightId,
+  isDayCompletenessId,
+  isMuscleRecoveryId,
+  isProfileId,
+  isProgressionId,
+  isRecoveryDayId,
+  isWeightId,
+  MUSCLE_RECOVERY_MUSCLE_ID_MAX,
+  PROFILE_ID,
+} from './naturalIds';
 
 /** Types déclarés des colonnes publiées (section 3.3). */
 /** `datetime` : instant ISO 8601 UTC (`IsoDateTime`) ; `localdatetime` : date et heure locales flottantes (`LocalDateTime`, échéance d'un rappel). */
@@ -620,7 +634,65 @@ const RECIPE_INGREDIENT_TABLE = table(
   { parents: [{ column: 'recipe_id', table: 'recipe' }], titleSource: { kind: 'own', column: 'name' } },
 );
 
-/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Catalogue I5-01 (§ 9.1, § 16.4, § 20.2, migration 0010) : résumés de récupération, écrits par l'iPhone seul
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+/**
+ * `recovery_day` : résumé du jour calculé par l'iPhone (D-69), lu par le PC sans recalcul. Identifiant naturel `recovery|AAAA-MM-JJ` (un
+ * recalcul du même jour écrit la même ligne ; fusion par champ, dernière écriture HLC gagne). « L'iPhone écrit, le PC lit » n'est pas une règle
+ * du catalogue (une ligne REÇUE s'applique partout) : le dépôt d'un appareil lecteur n'écrit jamais ces tables (`RepositoryOptions`).
+ * Toutes les colonnes sont des estimations recalculées ou des mesures du jour (`hrv_ms`, `resting_hr`) : masquées du journal des conflits,
+ * aucune valeur corporelle n'y entre ; seule la suppression y est visible. Les échantillons (`recovery_sample`) et l'état d'import
+ * (`recovery_import_state`) sont LOCAUX : absents du catalogue, jamais publiés.
+ */
+const RECOVERY_DAY_TABLE = table(
+  'recovery_day',
+  [
+    c('date', 'date', false, hidden),
+    c('level', 'enum', false, { values: ['A', 'B', 'C'], ...hidden }),
+    c('recovery', 'int', true, hidden),
+    c('abstain_reason', 'enum', true, { values: ['measure_missing_hrv', 'measure_missing_rhr', 'baseline_incomplete', 'zero_variance'], ...hidden }),
+    c('quality', 'enum', false, { values: ['good', 'partial', 'insufficient'], ...hidden }),
+    c('exertion', 'real', false, hidden),
+    c('exertion_prev_day', 'real', false, hidden),
+    c('sleep_minutes', 'real', true, hidden),
+    c('sleep_need_minutes', 'real', false, hidden),
+    c('sleep_score', 'int', true, hidden),
+    c('bedtime_sigma_minutes', 'real', true, hidden),
+    c('target_zone_from', 'real', true, hidden),
+    c('target_zone_to', 'real', true, hidden),
+    c('hrv_ms', 'real', true, hidden),
+    c('resting_hr', 'real', true, hidden),
+    c('learning_nights', 'int', false, hidden),
+    c('contributors', 'json', false, hidden),
+    c('explanation_keys', 'json', false, hidden),
+    c('computed_at', 'datetime', false, hidden),
+    c('engine_version', 'int', false, hidden),
+    createdAt,
+    deletedAt,
+  ],
+  { idKind: 'natural', natural: { is: isRecoveryDayId, expected: (row) => expectedRecoveryDayId(row) }, titleSource: { kind: 'own', column: 'date' } },
+);
+
+/** `muscle_recovery` : récupération estimée d'un muscle pour un jour, `muscle|AAAA-MM-JJ|<muscle>` ; aucune clé étrangère (lien logique au jour). */
+const MUSCLE_RECOVERY_TABLE = table(
+  'muscle_recovery',
+  [
+    c('date', 'date', false, hidden),
+    c('muscle_id', 'text', false, { max: MUSCLE_RECOVERY_MUSCLE_ID_MAX, ...hidden }),
+    c('muscle_group', 'text', false, { max: 64, ...hidden }),
+    c('percent', 'int', false, hidden),
+    c('hours', 'real', false, hidden),
+    c('last_worked_at', 'datetime', false, hidden),
+    c('ready_at', 'datetime', false, hidden),
+    createdAt,
+    deletedAt,
+  ],
+  { idKind: 'natural', natural: { is: isMuscleRecoveryId, expected: (row) => expectedMuscleRecoveryId(row) }, titleSource: { kind: 'own', column: 'muscle_id' } },
+);
+
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   tables: [
     PROFILE_TABLE,
@@ -642,6 +714,8 @@ export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
     DAY_COMPLETENESS_TABLE,
     RECIPE_TABLE,
     RECIPE_INGREDIENT_TABLE,
+    RECOVERY_DAY_TABLE,
+    MUSCLE_RECOVERY_TABLE,
   ],
   order: SYNC_TABLE_ORDER,
 });

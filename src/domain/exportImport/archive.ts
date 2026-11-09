@@ -29,7 +29,7 @@ import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
 export const EXPORT_APP = 'spartiate';
 /** Version de schéma écrite au manifeste et maximale acceptée à l'import : celle de la dernière migration (vérifiée par un test). */
-export const EXPORT_SV = 9;
+export const EXPORT_SV = 10;
 /** Réglages exportés (D-57 : unités, jour de check-in, thème). Les unités sont dans `profile` ; le jour de check-in n'existe pas encore (nutrition). */
 export const EXPORT_SETTING_KEYS = ['ui.theme'] as const;
 export type ExportSettingKey = (typeof EXPORT_SETTING_KEYS)[number];
@@ -62,8 +62,10 @@ export interface ExportWeight {
  * séries, dans l'ordre du catalogue (parents d'abord). Les colonnes sont celles publiées par la synchro, sans `created_at` ni
  * `deleted_at` ; la validation est celle du catalogue (type et longueur). Une séance ouverte n'est jamais exportée (D-27). I2-01 (0.3.1) :
  * profil de progression et décisions d'Ali, difficulté des séries. I3-02 (schéma 7) : cycles d'entraînement. I4-02 (schéma 8) : fiches alimentaires, portions, journal et cibles de nutrition (valeurs inconnues conservées nulles). I4-07 (schéma 9) : journée déclarée, recettes et ingrédients (une archive plus ancienne, sans ces clés, n'en supprime jamais, même en « remplacer »).
+ * I5-01 (schéma 10) : RÉSUMÉS de récupération (`recovery_day`, `muscle_recovery`) ; les échantillons importés (`recovery_sample`) et l'état
+ * d'import (`recovery_import_state`) ne sont jamais exportés : ils se relisent depuis les fichiers Raccourcis.
  */
-export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient'] as const;
+export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient', 'recovery_day', 'muscle_recovery'] as const;
 /**
  * Colonnes ajoutées après la première version exportée de leur table : absentes d'une archive plus ancienne (0.3.0 : `workout_set` sans
  * `difficulty`), lues comme nulles. Toute autre colonne manquante reste refusée.
@@ -92,7 +94,15 @@ export const TABLE_SINCE_SV: Readonly<Partial<Record<TrainingTable, number>>> = 
   day_completeness: 9,
   recipe: 9,
   recipe_ingredient: 9,
+  recovery_day: 10,
+  muscle_recovery: 10,
 };
+
+/**
+ * Tables écrites par l'iPhone seul (I5-01, § 9.1) : sur un appareil lecteur (PC), la lecture locale les marque `readOnlyTables` et l'import ne
+ * les écrit ni ne les supprime (elles lui reviennent de l'iPhone par la synchro).
+ */
+export const IPHONE_WRITTEN_TABLES = ['recovery_day', 'muscle_recovery'] as const satisfies readonly TrainingTable[];
 export type TrainingValue = string | number | null;
 
 export interface TrainingRow {
@@ -111,6 +121,11 @@ export interface ExportData {
   readonly training?: TrainingExport;
   /** Version de schéma du manifeste d'une archive LUE (absente d'une lecture de la base) : voir `TABLE_SINCE_SV`. Hors de la forme canonique. */
   readonly archiveSv?: number;
+  /**
+   * Lecture de la base d'un appareil LECTEUR seulement (I5-01) : tables que cet appareil n'écrit jamais (`IPHONE_WRITTEN_TABLES` sur le PC) ;
+   * le plan d'import n'y écrit ni n'y supprime rien. Hors de la forme canonique, jamais lu d'une archive.
+   */
+  readonly readOnlyTables?: readonly TrainingTable[];
 }
 
 /** Table du catalogue d'une table exportée (toujours présente : vérifié par un test). */
@@ -263,7 +278,46 @@ const numberIn = (v: TrainingValue | undefined, min: number, max: number, minOpe
 const nullableIn = (v: TrainingValue | undefined, min: number, max: number): boolean => v === null || numberIn(v, min, max);
 const textLength = (v: TrainingValue | undefined, min: number, max: number): boolean => typeof v === 'string' && v.length >= min && v.length <= max;
 
-/** Bornes propres aux tables de recettes et de journée déclarée (celles des CHECK de la migration 0009) ; les autres tables : catalogue seul. */
+const nullableIntIn = (v: TrainingValue | undefined, min: number, max: number): boolean => v === null || (Number.isInteger(v) && numberIn(v, min, max));
+const intIn = (v: TrainingValue | undefined, min: number, max: number): boolean => Number.isInteger(v) && numberIn(v, min, max);
+const nullablePositive = (v: TrainingValue | undefined, max: number): boolean => v === null || numberIn(v, 0, max, true);
+const jsonArray = (v: TrainingValue | undefined): boolean => {
+  if (typeof v !== 'string') return false;
+  try {
+    return Array.isArray(JSON.parse(v));
+  } catch {
+    return false;
+  }
+};
+
+/** I5-01 : bornes des CHECK de la migration 0010 pour un résumé du jour. */
+function recoveryDayBoundsOk(id: string, v: Readonly<Record<string, TrainingValue>>): boolean {
+  const zoneFrom = v['target_zone_from'];
+  const zoneTo = v['target_zone_to'];
+  return (
+    id === `recovery|${String(v['date'])}` &&
+    nullableIntIn(v['recovery'], 0, 100) &&
+    (v['recovery'] === null) === (v['abstain_reason'] !== null) &&
+    numberIn(v['exertion'], 0, 1000) &&
+    numberIn(v['exertion_prev_day'], 0, 1000) &&
+    nullableIn(v['sleep_minutes'], 0, 1440) &&
+    numberIn(v['sleep_need_minutes'], 0, 1440, true) &&
+    nullableIntIn(v['sleep_score'], 0, 100) &&
+    nullableIn(v['bedtime_sigma_minutes'], 0, 1440) &&
+    nullableIn(zoneFrom, 0, 1000) &&
+    nullableIn(zoneTo, 0, 1000) &&
+    (zoneFrom === null) === (zoneTo === null) &&
+    (zoneFrom === null || (zoneFrom as number) <= (zoneTo as number)) &&
+    nullablePositive(v['hrv_ms'], 1000) &&
+    nullablePositive(v['resting_hr'], 300) &&
+    intIn(v['learning_nights'], 0, 365) &&
+    jsonArray(v['contributors']) &&
+    jsonArray(v['explanation_keys']) &&
+    intIn(v['engine_version'], 1, Number.MAX_SAFE_INTEGER)
+  );
+}
+
+/** Bornes propres aux tables de recettes, de journée déclarée (CHECK de la migration 0009) et de récupération (0010) ; les autres tables : catalogue seul. */
 function rowBoundsOk(table: TrainingTable, id: string, v: Readonly<Record<string, TrainingValue>>): boolean {
   switch (table) {
     case 'day_completeness':
@@ -279,6 +333,16 @@ function rowBoundsOk(table: TrainingTable, id: string, v: Readonly<Record<string
         numberIn(v['grams'], 0, RECIPE_INGREDIENT_GRAMS_MAX, true) &&
         nullableIn(v['kcal_100g'], 0, 900) &&
         ['protein_100g', 'fat_100g', 'carb_100g', 'fiber_100g'].every((c) => nullableIn(v[c], 0, 100))
+      );
+    case 'recovery_day':
+      return recoveryDayBoundsOk(id, v);
+    case 'muscle_recovery':
+      return (
+        id === `muscle|${String(v['date'])}|${String(v['muscle_id'])}` &&
+        textLength(v['muscle_id'], 1, 64) &&
+        textLength(v['muscle_group'], 1, 64) &&
+        intIn(v['percent'], 0, 100) &&
+        numberIn(v['hours'], 0, 1000, true)
       );
     default:
       return true;
@@ -321,7 +385,7 @@ function parseTraining(raw: unknown): TrainingExport {
         if (value !== null && !(typeof value === 'string' && isIsoDateTime(value))) throw new ArchiveError('invalid-data');
         values[col] = value;
       }
-      // Bornes des CHECK de la migration 0009 : une valeur hors bornes est refusée à l'aperçu, jamais par un échec SQL à l'application (I4-07).
+      // Bornes des CHECK des migrations 0009 et 0010 : une valeur hors bornes est refusée à l'aperçu, jamais par un échec SQL à l'application (I4-07).
       if (!rowBoundsOk(name, id, values)) throw new ArchiveError('invalid-data');
       for (const parent of t.parents) {
         const parentId = values[parent.column];

@@ -4,7 +4,7 @@ import { planImport } from './plan';
 
 /**
  * I4-07 : `TABLE_SINCE_SV` fige qu'un « remplacer » d'une archive plus ancienne que la table ne supprime JAMAIS ses lignes locales (progressions
- * et décisions : schéma 6, cycles : 7, nutrition : 8, recettes et journée déclarée : 9). Une archive qui connaît la table, elle, la vide.
+ * et décisions : schéma 6, cycles : 7, nutrition : 8, recettes et journée déclarée : 9, résumés de récupération : 10). Une archive qui connaît la table, elle, la vide.
  */
 const row = (id: string) => ({ id, values: {} });
 const local = (): ExportData => ({
@@ -17,7 +17,7 @@ const archive = (sv: number): ExportData => ({ profile: null, weights: [], setti
 const deleted = (sv: number): TrainingTable[] => planImport(local(), archive(sv), 'replace').writes.deleteTraining.map((d) => d.table);
 
 describe('« remplacer » d’une archive ancienne : les tables plus récentes que l’archive sont épargnées', () => {
-  it.each([4, 5, 6, 7, 8, 9])('archive de schéma %i : seules les tables connues à cette version sont vidées', (sv) => {
+  it.each([4, 5, 6, 7, 8, 9, 10])('archive de schéma %i : seules les tables connues à cette version sont vidées', (sv) => {
     const dropped = new Set(deleted(sv));
     for (const table of TRAINING_EXPORT_TABLES) {
       if (table === 'exercise') continue; // présente dans l'archive, identique

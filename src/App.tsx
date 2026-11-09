@@ -28,6 +28,7 @@ import { AppShell, TabRail } from './ui';
 import { PcTopBar, SidebarSyncCard } from './features/app/ShellChrome';
 import { SHORTCUTS } from './features/app/shortcuts';
 import { todayLocal } from './domain/clock';
+import { logFailure } from './platform/desktop/log';
 import { formatDetailDate } from './i18n/format';
 import { useLayout } from './ui/useLayout';
 
@@ -173,6 +174,23 @@ export function App() {
         stop = module.startSigningIntegration(container).dispose;
       },
       () => publishStartFailure('signing', new Error('chargement impossible')),
+    );
+    return () => {
+      cancelled = true;
+      stop?.();
+    };
+  }, [container]);
+
+  // I5-01 (D-69) : import des fichiers Raccourcis à l'ouverture (iPhone seulement, tâche différée chargée à la demande, jamais avant Aujourd'hui).
+  useEffect(() => {
+    if (container?.platform.runtime !== 'tauri' || container.platform.os !== 'ios') return undefined;
+    let stop: (() => void) | undefined;
+    let cancelled = false;
+    void import('./features/settings/recoveryImport').then(
+      (module) => {
+        if (!cancelled) stop = module.startRecoveryImportOnOpen(container).dispose;
+      },
+      (error: unknown) => logFailure('recovery-import', error),
     );
     return () => {
       cancelled = true;
