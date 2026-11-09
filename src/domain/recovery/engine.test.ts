@@ -31,10 +31,10 @@ function thirty(today: Partial<NightRecord> = {}, patch: (n: NightRecord, i: num
 const set = (over: Partial<RecoverySet> = {}): RecoverySet => ({ kg: 100, reps: 10, difficulty: 'ok', isWarmup: false, completed: true, muscles: [{ id: 'chest', weight: 1 }], ...over });
 
 describe('baselineStats : moyenne, σ échantillon, valeurs aberrantes > 2,5 σ exclues', () => {
-  it('14 valeurs alternées 48 / 52 : μ 50, σ 2,0754', () => {
+  it('14 valeurs alternées 48 / 52 : μ 50, σ 2,0755', () => {
     const s = baselineStats([...Array(7).fill(48), ...Array(7).fill(52)] as number[]);
     expect(s.mean).toBeCloseTo(50, 10);
-    expect(s.sd).toBeCloseTo(2.0754, 4);
+    expect(s.sd).toBeCloseTo(2.0755, 4);
     expect(s.excluded).toBe(0);
   });
 
@@ -212,7 +212,7 @@ describe('sleepNeed (§ 16.3)', () => {
 describe('bedtimeRegularity et heure de coucher cible', () => {
   it('σ du coucher sur 7 jours ; 23 h et 1 h = 2 h d’écart, pas 22 h (minuit franchi)', () => {
     expect(bedtimeRegularity([1380, 1380, 1380])).toBe(0);
-    expect(bedtimeRegularity([1380, 60])).toBeCloseTo(84.85, 1);
+    expect(bedtimeRegularity([1380, 60, 1380])).toBeCloseTo(69.28, 1);
   });
   it('moins de 3 couchers : null', () => {
     expect(bedtimeRegularity([1380, 1380])).toBeNull();
@@ -271,7 +271,11 @@ describe('muscleRecovery (§ 16.3, approximation)', () => {
 
   it('chaque muscle du catalogue a un groupe connu de la config', () => {
     const catalogue = JSON.parse(readFileSync(new URL('../../../content/exercises/muscles.json', import.meta.url), 'utf8')) as { muscles: { id: string; group: string }[] };
-    for (const m of catalogue.muscles) expect(Object.keys(RECOVERY_CONFIG.groupRecoveryClass)).toContain(m.group);
+    for (const m of catalogue.muscles) {
+      expect(Object.keys(RECOVERY_CONFIG.groupRecoveryClass)).toContain(m.group);
+      expect(RECOVERY_CONFIG.muscleGroups[m.id]).toBe(m.group);
+    }
+    expect(Object.keys(RECOVERY_CONFIG.muscleGroups)).toHaveLength(catalogue.muscles.length);
   });
 });
 
@@ -297,7 +301,7 @@ describe('summarizeRecoveryDay : résumé du jour (§ 16.4)', () => {
 
   it('nuit courte de 4 h avec baseline : sommeil sous le seuil absolu signalé, facteur appliqué', () => {
     const { summary } = summarizeRecoveryDay({ ...base, nights: thirty({ hrvMs: 54, restingHr: 53, asleepMinutes: 240 }) });
-    expect(summary.recovery).toBe(Math.round(98.18 * (240 / 450 < 0.8 ? 0.8 : 1)));
+    expect(summary.recovery).toBe(Math.round(98.18 * 0.8));
     expect(summary.explanationKeys).toContain('sleep_short');
   });
 
