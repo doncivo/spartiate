@@ -7,12 +7,13 @@ import { migration0005Progression } from './0005_progression';
 import { migration0006ProgressionSync } from './0006_progression_sync';
 import { migration0007Mesocycle } from './0007_mesocycle';
 import { migration0008Nutrition } from './0008_nutrition';
+import { migration0009Recipes } from './0009_recipes';
 
 /**
  * Registre ordonné des migrations de l'app. Ajouter chaque nouveau fichier
  * `NNNN_titre.ts` ici, à la fin, sans jamais modifier une entrée publiée.
  * Base neuve Spartiate (SPA-001b, D-23) : 0001 (I0) puis une migration par
  * itération (0002 : bibliothèque, matériel et routines, I1-01 ; 0003 : séance
- * active locale, I1-02 ; 0004 : publication des séances closes, I1-03 ; 0005 : profil de progression et décisions, locales, I2-01 ; 0006 : difficulté et publication de la progression, I2-01 PR 2/2 ; 0007 : mésocycle publié, I3-02 ; 0008 : fiches, portions, journal et cibles de nutrition publiés, I4-02) ; aucune des dix-neuf migrations CircleTasks n'est reprise.
+ * active locale, I1-02 ; 0004 : publication des séances closes, I1-03 ; 0005 : profil de progression et décisions, locales, I2-01 ; 0006 : difficulté et publication de la progression, I2-01 PR 2/2 ; 0007 : mésocycle publié, I3-02 ; 0008 : fiches, portions, journal et cibles de nutrition publiés, I4-02 ; 0009 : journée déclarée, recettes et ingrédients publiés, I4-07) ; aucune des dix-neuf migrations CircleTasks n'est reprise.
  */
-export const migrations: readonly Migration[] = [migration0001SpartiateInit, migration0002Training, migration0003Workout, migration0004WorkoutSync, migration0005Progression, migration0006ProgressionSync, migration0007Mesocycle, migration0008Nutrition];
+export const migrations: readonly Migration[] = [migration0001SpartiateInit, migration0002Training, migration0003Workout, migration0004WorkoutSync, migration0005Progression, migration0006ProgressionSync, migration0007Mesocycle, migration0008Nutrition, migration0009Recipes];

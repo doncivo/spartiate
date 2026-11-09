@@ -28,7 +28,7 @@ import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
 export const EXPORT_APP = 'spartiate';
 /** Version de schéma écrite au manifeste et maximale acceptée à l'import : celle de la dernière migration (vérifiée par un test). */
-export const EXPORT_SV = 8;
+export const EXPORT_SV = 9;
 /** Réglages exportés (D-57 : unités, jour de check-in, thème). Les unités sont dans `profile` ; le jour de check-in n'existe pas encore (nutrition). */
 export const EXPORT_SETTING_KEYS = ['ui.theme'] as const;
 export type ExportSettingKey = (typeof EXPORT_SETTING_KEYS)[number];
@@ -60,15 +60,32 @@ export interface ExportWeight {
  * Tables d'entraînement exportées (0.2.3, point 4) : exercices personnalisés, profils de matériel, routines, séances CLOSES et leurs
  * séries, dans l'ordre du catalogue (parents d'abord). Les colonnes sont celles publiées par la synchro, sans `created_at` ni
  * `deleted_at` ; la validation est celle du catalogue (type et longueur). Une séance ouverte n'est jamais exportée (D-27). I2-01 (0.3.1) :
- * profil de progression et décisions d'Ali, difficulté des séries. I3-02 (schéma 7) : cycles d'entraînement. I4-02 (schéma 8) : fiches alimentaires, portions, journal et cibles de nutrition (valeurs inconnues conservées nulles).
+ * profil de progression et décisions d'Ali, difficulté des séries. I3-02 (schéma 7) : cycles d'entraînement. I4-02 (schéma 8) : fiches alimentaires, portions, journal et cibles de nutrition (valeurs inconnues conservées nulles). I4-07 (schéma 9) : journée déclarée, recettes et ingrédients (une archive plus ancienne, sans ces clés, n'en supprime jamais, même en « remplacer »).
  */
-export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target'] as const;
+export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient'] as const;
 /**
  * Colonnes ajoutées après la première version exportée de leur table : absentes d'une archive plus ancienne (0.3.0 : `workout_set` sans
  * `difficulty`), lues comme nulles. Toute autre colonne manquante reste refusée.
  */
 const LATER_COLUMNS: Readonly<Partial<Record<string, readonly string[]>>> = { workout_set: ['difficulty'] };
 export type TrainingTable = (typeof TRAINING_EXPORT_TABLES)[number];
+/**
+ * Version de schéma à partir de laquelle une table existe dans une archive (I4-07) : une archive plus ancienne, sans ses clés, n'a pas vu ces
+ * tables ; l'importer en « remplacer » ne doit donc jamais en supprimer les lignes locales. Une archive récente sans ligne de la table, elle,
+ * dit que la table est vide : « remplacer » la vide.
+ */
+export const TABLE_SINCE_SV: Readonly<Partial<Record<TrainingTable, number>>> = {
+  progression_profile: 6,
+  recommendation_decision: 6,
+  mesocycle: 7,
+  food: 8,
+  food_portion: 8,
+  meal_entry: 8,
+  nutrition_target: 8,
+  day_completeness: 9,
+  recipe: 9,
+  recipe_ingredient: 9,
+};
 export type TrainingValue = string | number | null;
 
 export interface TrainingRow {
@@ -85,6 +102,8 @@ export interface ExportData {
   readonly settings: { readonly 'ui.theme'?: ThemeChoice };
   /** Absent ou vide : archive sans données d'entraînement (archives antérieures à la 0.2.3 comprises). */
   readonly training?: TrainingExport;
+  /** Version de schéma du manifeste d'une archive LUE (absente d'une lecture de la base) : voir `TABLE_SINCE_SV`. Hors de la forme canonique. */
+  readonly archiveSv?: number;
 }
 
 /** Table du catalogue d'une table exportée (toujours présente : vérifié par un test). */
@@ -322,7 +341,8 @@ export function parseExportArchive(bytes: Uint8Array, options: { readonly curren
     }
     if (!isObject(raw) || !(exactKeys(raw, ['body_weight', 'profile', 'settings']) || exactKeys(raw, ['body_weight', 'profile', 'settings', 'training']))) throw new ArchiveError('invalid-data');
     const base = { profile: parseProfile(raw['profile'], options.currentYear), weights: parseWeights(raw['body_weight']), settings: parseSettings(raw['settings']) };
-    const data: ExportData = 'training' in raw ? { ...base, training: parseTraining(raw['training']) } : base;
+    const read: ExportData = 'training' in raw ? { ...base, training: parseTraining(raw['training']) } : base;
+    const data: ExportData = { ...read, archiveSv: manifest.sv };
     return { manifest, data, dataSha256 };
   });
 }

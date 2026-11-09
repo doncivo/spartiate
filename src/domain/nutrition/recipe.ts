@@ -5,8 +5,8 @@
  * valeur non arrondie et ne touche pas à un inconnu.
  */
 
-import { isId, type LocalDate, type LocalTime } from '../types';
-import { ENTRY_NAME_MAX, FOOD_GRAMS_MAX, KCAL_PER_100G_MAX, type Per100g } from './food';
+import { type LocalDate, type LocalTime } from '../types';
+import { ENTRY_NAME_MAX, FOOD_GRAMS_MAX, KCAL_PER_100G_MAX, recipeFoodId, type Per100g } from './food';
 import { normalizeText, type SearchableFood } from './foodSearch';
 import type { MealEntryDraft } from './mealEntry';
 import {
@@ -149,16 +149,6 @@ export function ingredientFromFood(food: SearchableFood, grams: number): DraftIn
     grams,
     per100g: { ...food.per100g },
   };
-}
-
-/** Identifiant de journal d'une recette : `recipe:<uuid>` (`meal_entry.food_id`). */
-export const recipeFoodId = (recipeId: string): string => `recipe:${recipeId}`;
-
-/** Id de la recette si `foodId` est de la forme `recipe:<uuid>`, sinon `null`. */
-export function parseRecipeFoodId(foodId: string): string | null {
-  if (!foodId.startsWith('recipe:')) return null;
-  const id = foodId.slice('recipe:'.length);
-  return isId(id) ? id : null;
 }
 
 export type RecipeQuantity = { readonly kind: 'servings'; readonly n: number } | { readonly kind: 'grams'; readonly g: number };

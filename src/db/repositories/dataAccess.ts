@@ -23,6 +23,8 @@ import type { MesocycleRepository } from './mesocycleRepository';
 import type { FoodRepository } from './foodRepository';
 import type { MealEntryRepository } from './mealEntryRepository';
 import type { NutritionTargetRepository } from './nutritionTargetRepository';
+import type { DayCompletenessRepository } from './dayCompletenessRepository';
+import type { RecipeRepository } from './recipeRepository';
 import type { ProjectRepository, SpaceRepository } from './spaceRepository';
 import type { RecurrenceRepository, TaskRepository } from './taskRepository';
 
@@ -70,6 +72,10 @@ export interface Repositories {
   readonly mealEntries: () => Promise<MealEntryRepository>;
   /** I4-02 : cibles nutritionnelles (publiées, une ligne par décision), chargées à la demande. */
   readonly nutritionTargets: () => Promise<NutritionTargetRepository>;
+  /** I4-07 : journée déclarée complète ou incomplète (publiée, une ligne par date), chargée à la demande. */
+  readonly dayCompleteness: () => Promise<DayCompletenessRepository>;
+  /** I4-07 : recettes et leurs ingrédients (publiés), chargés à la demande. */
+  readonly recipes: () => Promise<RecipeRepository>;
   /** Export / import de Spartiate (SPA-005, D-57), chargé à la demande. */
   readonly exportImport: () => Promise<ExportImportRepository>;
   /** Liens locaux aux Rappels Apple (K-05, ADR 0008 §10.2) : table non publiée, vide sur le PC. */

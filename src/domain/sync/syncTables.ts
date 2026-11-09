@@ -12,7 +12,7 @@
 import { isId, isIsoDateTime, isLocalDate, isLocalDateTime, isLocalTime } from '../types';
 import { MAX_SYNC_ID_LENGTH } from './limits';
 import { SYNC_TABLE_ORDER } from './format';
-import { expectedProgressionId, expectedWeightId, isProfileId, isProgressionId, isWeightId, PROFILE_ID } from './naturalIds';
+import { expectedDayCompletenessId, expectedProgressionId, expectedWeightId, isDayCompletenessId, isProfileId, isProgressionId, isWeightId, PROFILE_ID } from './naturalIds';
 
 /** Types déclarés des colonnes publiées (section 3.3). */
 /** `datetime` : instant ISO 8601 UTC (`IsoDateTime`) ; `localdatetime` : date et heure locales flottantes (`LocalDateTime`, échéance d'un rappel). */
@@ -573,7 +573,54 @@ const NUTRITION_TARGET_TABLE = table(
   { titleSource: { kind: 'none' } },
 );
 
-/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Catalogue I4-07 (D-80, D-81, migration 0009) : journée déclarée, recettes et ingrédients
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+/**
+ * `day_completeness` : « journée complète » ou « incomplète » déclarée par Ali pour une date locale (D-74 point 2). Identifiant naturel
+ * `day|AAAA-MM-JJ` (une ligne par jour sur les deux appareils). RÈGLE DE CONFLIT : fusion champ par champ par HLC, dernière écriture gagne
+ * (règle par défaut, aucune règle propre) ; deux déclarations différentes du même jour convergent sur la plus récente, l'autre reste au
+ * journal des conflits. « Non déclarée » = ligne absente ou `deleted_at` renseigné.
+ */
+const DAY_COMPLETENESS_TABLE = table(
+  'day_completeness',
+  [c('date', 'date', false), c('state', 'enum', false, { values: ['complete', 'incomplete'] }), createdAt, deletedAt],
+  { idKind: 'natural', natural: { is: isDayCompletenessId, expected: (row) => expectedDayCompletenessId(row) }, titleSource: { kind: 'own', column: 'date' } },
+);
+
+/** `recipe` : recette personnelle. Les ingrédients sont des lignes `recipe_ingredient` ; une prise est une `meal_entry` ordinaire (`food_id` = `recipe:<UUID>`). */
+const RECIPE_TABLE = table(
+  'recipe',
+  [c('name', 'text', false, { max: 120 }), c('servings', 'int', false), c('cooked_weight_g', 'real', true), createdAt, deletedAt],
+  { titleSource: { kind: 'own', column: 'name' } },
+);
+
+/**
+ * `recipe_ingredient` : ingrédient d'une recette, `recipe_id` est un parent publié (un ingrédient reçu avant sa recette est mis de côté puis
+ * rejoué). Valeurs pour 100 g nulles = inconnues (jamais 0) ; `food_ref` est une référence d'information, jamais une clé.
+ */
+const RECIPE_INGREDIENT_TABLE = table(
+  'recipe_ingredient',
+  [
+    uuidId('recipe_id'),
+    c('position', 'int', false),
+    c('name', 'text', false, { max: 120 }),
+    c('source', 'enum', false, { values: ['custom', 'ciqual', 'off'] }),
+    c('food_ref', 'text', true, { max: ID_MAX }),
+    c('grams', 'real', false),
+    c('kcal_100g', 'real', true),
+    c('protein_100g', 'real', true),
+    c('fat_100g', 'real', true),
+    c('carb_100g', 'real', true),
+    c('fiber_100g', 'real', true),
+    createdAt,
+    deletedAt,
+  ],
+  { parents: [{ column: 'recipe_id', table: 'recipe' }], titleSource: { kind: 'own', column: 'name' } },
+);
+
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   tables: [
     PROFILE_TABLE,
@@ -592,6 +639,9 @@ export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
     FOOD_PORTION_TABLE,
     MEAL_ENTRY_TABLE,
     NUTRITION_TARGET_TABLE,
+    DAY_COMPLETENESS_TABLE,
+    RECIPE_TABLE,
+    RECIPE_INGREDIENT_TABLE,
   ],
   order: SYNC_TABLE_ORDER,
 });

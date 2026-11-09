@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 
 import type { LocalDate, LocalTime } from '../types';
 import { validateMealEntry } from './mealEntry';
-import { entryFromRecipe, parseRecipeFoodId, recipeAsSearchable, recipeFoodId, searchRecipes } from './recipe';
+import { parseRecipeFoodId, recipeFoodId } from './food';
+import { entryFromRecipe, recipeAsSearchable, searchRecipes } from './recipe';
 import type { Recipe, RecipeIngredient } from './recipeTypes';
 
 const ID = '11111111-1111-4111-8111-111111111111';

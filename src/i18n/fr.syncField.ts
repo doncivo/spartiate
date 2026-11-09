@@ -239,4 +239,21 @@ export const syncFieldFr = {
     accepted: 'acceptée',
     deleted_at: 'suppression',
   },
+  // I4-07 : journée déclarée, recettes et ingrédients (champs visibles au journal des conflits).
+  day_completeness: { date: 'date', state: 'déclaration de la journée', deleted_at: 'suppression' },
+  recipe: { name: 'nom', servings: 'portions', cooked_weight_g: 'poids cuit', deleted_at: 'suppression' },
+  recipe_ingredient: {
+    recipe_id: 'recette',
+    position: 'ordre',
+    name: 'nom',
+    source: 'provenance',
+    food_ref: 'référence',
+    grams: 'grammes',
+    kcal_100g: 'énergie pour 100 g',
+    protein_100g: 'protéines pour 100 g',
+    fat_100g: 'lipides pour 100 g',
+    carb_100g: 'glucides pour 100 g',
+    fiber_100g: 'fibres pour 100 g',
+    deleted_at: 'suppression',
+  },
 } as const;
