@@ -129,6 +129,7 @@ export const REASON_ORDER: readonly ReasonCode[] = [
   'deload',
   'recovery-low',
   'recovery-set-removed',
+  'position-discount',
   'increment-unknown',
   'grid-to-verify',
   'equipment-max',
@@ -150,6 +151,7 @@ export const PRESCRIPTION_HEADLINES: readonly PrescriptionHeadline[] = [
   'inactivity',
   'deload',
   'recovery-low',
+  'position',
 ];
 
 /** Étape d'une rampe d'échauffement : fraction de la charge de travail et répétitions (arrondies en dessous à l'usage). */

@@ -31,7 +31,7 @@ export function primaryMuscle(muscles: readonly MuscleWeight[]): string | null {
   return best?.id ?? null;
 }
 
-/** Multiplicateur de la n-ième position (1 = premier exercice du muscle principal), dernier palier au-delà ; appliqué en I3. */
+/** Multiplicateur de la n-ième position (1 = premier exercice du muscle principal), dernier palier au-delà ; appliqué par `prescribe` (REV-01 constat 6). */
 export function positionMultiplier(rank: number, config: ProgressionConfig): number {
   const table = config.positionDiscount;
   if (!(rank >= 1)) return table[0] ?? 1;
@@ -190,6 +190,19 @@ export function prescribe(input: PrescribeInput): Prescription {
   });
   addConstraintReasons(constraints, reasons);
   const refPerformance = { loadKg: refLoad, reps: reference.reps };
+  // REV-01 constat 6 (§ 11.3) : décote de position, jamais une hausse ; le rang de la séance de référence est déjà dans sa charge.
+  const rank = Math.max(1, Math.floor(input.positionRank ?? 1));
+  const lastRank = Math.max(1, Math.floor(input.lastPositionRank ?? rank));
+  const positionFactor = Math.min(1, positionMultiplier(rank, config) / positionMultiplier(lastRank, config));
+  const positioned = (loadKg: number, repsList: readonly number[]): { readonly loadKg: number; readonly reps: readonly number[]; readonly cut: number } => {
+    if (positionFactor >= 1 - EPS || !(loadKg > 0)) return { loadKg, reps: repsList, cut: 0 };
+    const snapped = snapToEquipment(loadKg * positionFactor, repsList, available, config);
+    const lowered = roundKg(Math.min(snapped.loadKg, loadKg));
+    if (lowered >= loadKg - EPS) return { loadKg, reps: repsList, cut: 0 };
+    reasons.add('position-discount');
+    return { loadKg: lowered, reps: snapped.reps, cut: 1 - positionFactor };
+  };
+  const positionFields = (cut: number): { readonly positionRank: number; readonly positionCut: number } => ({ positionRank: rank, positionCut: cut });
   if (reduces(constraints)) {
     // Maintien de la référence (aucun cran, échelle ni recalibrage), puis réductions ; arrondi au matériel, jamais au-dessus de la référence.
     const reduced = reducedTarget(constraints, refPerformance, input.exercise.kind, config);
@@ -203,11 +216,14 @@ export function prescribe(input: PrescribeInput): Prescription {
           ? snapDiscount(refLoad, reduced.targetKg, reduced.reps, available, config)
           : snapToEquipment(reduced.targetKg, reduced.reps, available, config);
     if (snapped.extraRep) reasons.add('snap-extra-rep');
-    const loadKg = roundKg(Math.min(snapped.loadKg, refLoad));
+    const keptKg = roundKg(Math.min(snapped.loadKg, refLoad));
+    const pos = positioned(keptKg, snapped.reps);
+    const loadKg = pos.loadKg;
     return finish({
+      ...(pos.cut > 0 ? positionFields(pos.cut) : {}),
       status: 'prescribed',
       headline: reducedHeadline(constraints),
-      sets: snapped.reps.map((reps) => ({ reps, loadKg })),
+      sets: pos.reps.map((reps) => ({ reps, loadKg })),
       loadKg,
       deltaKg: roundKg(loadKg - refLoad),
       reference,
@@ -215,7 +231,7 @@ export function prescribe(input: PrescribeInput): Prescription {
       estimated1rmKg: current,
       confidence,
       recalibration: null,
-      options: proposalOptions(constraints, { loadKg, reps: snapped.reps }, available, config),
+      options: proposalOptions(constraints, { loadKg, reps: pos.reps }, available, config),
       deload: constraints.deload,
       rirTarget: constraints.deload ? Math.max(target.rir ?? 0, config.deloadRirAtLeast) : target.rir,
       inactivityCut: constraints.inactivityCut,
@@ -290,19 +306,23 @@ export function prescribe(input: PrescribeInput): Prescription {
     }
   }
 
-  const loadKg = roundKg(draft.loadKg);
+  const pos = positioned(roundKg(draft.loadKg), draft.reps);
+  const loadKg = pos.loadKg;
+  // Sous la référence à cause de la position : la raison principale est la position (la phrase ne dit pas « +x kg »).
+  const headline: PrescriptionHeadline = pos.cut > 0 && loadKg < refLoad - EPS ? 'position' : draft.headline;
   return finish({
+    ...(pos.cut > 0 ? positionFields(pos.cut) : {}),
     status: 'prescribed',
-    headline: draft.headline,
-    sets: draft.reps.map((reps) => ({ reps, loadKg })),
+    headline,
+    sets: pos.reps.map((reps) => ({ reps, loadKg })),
     loadKg,
     deltaKg: roundKg(loadKg - refLoad),
     reference,
-    ladderSetIndex: draft.ladderSetIndex,
+    ladderSetIndex: headline === 'position' ? null : draft.ladderSetIndex,
     estimated1rmKg: current,
     confidence,
-    recalibration: draft.recalibration,
+    recalibration: headline === 'position' ? null : draft.recalibration,
     // Stagnation seule : la proposition reste celle de la double progression, les trois choix partent de la référence.
-    options: proposalOptions(constraints, refPerformance, available, config),
+    options: proposalOptions(constraints, pos.cut > 0 ? { loadKg, reps: pos.reps } : refPerformance, available, config),
   });
 }
