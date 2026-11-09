@@ -25,7 +25,8 @@ export type ExplanationKey =
   | 'deload'
   | 'recoveryLow'
   | 'recoveryLowSet'
-  | 'outlierHold';
+  | 'outlierHold'
+  | 'position';
 
 export interface Explanation {
   readonly key: ExplanationKey;
@@ -83,12 +84,14 @@ export function explainPrescription(p: Prescription): Explanation {
     }
     case 'deload':
       return { key: 'deload', params: { sets: p.sets.length, rir: p.rirTarget ?? 0 } };
+    case 'position':
+      return { key: 'position', params: { delta: Math.round(-(p.deltaKg ?? 0) * 100) / 100, rank: p.positionRank ?? 1, cut: percent(p.positionCut ?? 0) } };
     case 'recovery-low':
       return { key: p.reasons.includes('recovery-set-removed') ? 'recoveryLowSet' : 'recoveryLow', params: { cut: recoveryCut(p) } };
   }
 }
 
-export type ExplanationNoteKey = 'notePartialIgnored' | 'noteGridToVerify';
+export type ExplanationNoteKey = 'notePartialIgnored' | 'noteGridToVerify' | 'notePosition';
 
 /**
  * I2-04 : précisions ajoutées à la phrase, dans cet ordre : dernière séance ignorée (moins de 50 % des séries faites), puis grille de charges
@@ -99,6 +102,8 @@ export function explanationNotes(p: Prescription): { readonly key: ExplanationNo
   const notes: { readonly key: ExplanationNoteKey; readonly params: Readonly<Record<string, number>> }[] = [];
   if (p.reasons.includes('partial-session-ignored')) notes.push({ key: 'notePartialIgnored', params: {} });
   if (p.reasons.includes('grid-to-verify')) notes.push({ key: 'noteGridToVerify', params: {} });
+  // Position (REV-01 constat 6) : dite en note quand la raison principale est autre (la charge reste au-dessus de la référence).
+  if (p.reasons.includes('position-discount') && p.headline !== 'position') notes.push({ key: 'notePosition', params: { rank: p.positionRank ?? 1, cut: percent(p.positionCut ?? 0) } });
   return notes;
 }
 

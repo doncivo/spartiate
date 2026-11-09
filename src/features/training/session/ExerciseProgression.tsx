@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent }
 import { DEFAULT_PROGRESSION_CONFIG } from '../../../domain/training/config';
 import { confidenceBand, confidencePercent, constraintAlerts, explainOption, explainPrescription, explanationNotes, type ExplanationKey, type OptionKey } from '../../../domain/training/explain';
 import { prescribe } from '../../../domain/training/prescribe';
+import { positionRanks } from '../../../domain/training/positionRank';
 import { warmupForExercise, type WarmupSet } from '../../../domain/training/warmup';
-import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type Prescription, type ProgressionEquipment, type RepTarget } from '../../../domain/training/types';
+import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type MuscleWeight, type Prescription, type ProgressionEquipment, type RepTarget } from '../../../domain/training/types';
 import type { WorkoutSet, WorkoutWithSets } from '../../../domain/training/session';
 import type { IsoDateTime } from '../../../domain/types';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
@@ -48,6 +49,10 @@ export interface ExerciseProgressionProps {
   readonly equipment: ProgressionEquipment | null;
   /** I2-03 : premier exercice composé de son pattern dans la séance (rampe d'échauffement prévue). */
   readonly warmup?: boolean;
+  /** REV-01 constat 6 : rang de l'exercice parmi ceux du même muscle principal dans cette séance (1 = premier). */
+  readonly positionRank?: number;
+  /** Muscles d'un exercice du catalogue, pour retrouver le rang qu'il avait dans la séance de référence. */
+  readonly musclesOf?: (exerciseId: string) => readonly MuscleWeight[];
   readonly clock: { nowMs(): number };
   /** Séance relue après une écriture (la base fait foi). */
   readonly onChanged: () => Promise<void>;
@@ -64,6 +69,8 @@ interface Loaded {
   readonly cycleDeload: boolean;
   /** I4-08 point 4 : RIR cible de la séance proposée pour cet exercice (semaine du cycle) ; null : aucun. */
   readonly targetRir: number | null;
+  /** Rang de l'exercice dans la séance de référence (celle dont vient la charge) ; null : inconnu, aucune décote de position. */
+  readonly lastPositionRank: number | null;
 }
 
 type Load = { readonly status: 'loading' } | { readonly status: 'error' } | ({ readonly status: 'ready' } & Loaded);
@@ -87,6 +94,7 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   recoveryLow: 'explainRecoveryLow',
   recoveryLowSet: 'explainRecoveryLowSet',
   outlierHold: 'explainOutlierHold',
+  position: 'explainPosition',
 };
 const OPTION_KEYS: Readonly<Record<OptionKey, ProgressionTextKey>> = {
   optionFatigueLoad: 'optionFatigueLoad',
@@ -121,10 +129,27 @@ function targetOf(sets: readonly WorkoutSet[], exercise: Exercise | undefined, r
   return { sets: Math.max(1, work.length), repMin, repMax: Math.max(repMin, repMax), rir };
 }
 
+/**
+ * Rang qu'avait l'exercice dans sa dernière séance close (celle qui fixe la charge de référence), parmi les exercices du même muscle
+ * principal. Null si la séance ou le catalogue des muscles est illisible : aucune décote (jamais de double compte, jamais de faux rang).
+ */
+async function referencePositionRank(access: DataAccess, history: readonly { readonly workoutId: string; readonly endedAt: string }[], exerciseId: string, musclesOf: ((id: string) => readonly MuscleWeight[]) | undefined): Promise<number | null> {
+  if (musclesOf === undefined) return null;
+  const latest = history.reduce<{ readonly workoutId: string; readonly endedAt: string } | null>((best, s) => (best === null || s.endedAt > best.endedAt ? s : best), null);
+  if (latest === null) return null;
+  try {
+    const closed = await (await access.repos.workouts()).getClosed(latest.workoutId);
+    if (closed === null) return null;
+    return positionRanks(closed.sets.map((s) => ({ exerciseId: s.exerciseId, muscles: musclesOf(s.exerciseId) }))).get(exerciseId) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** Rampe : « 25 kg × 8 · 37,5 kg × 5 · 50 kg × 2 ». */
 const rampText = (ramp: readonly WarmupSet[]): string => ramp.map((s) => tProgression('warmupStep', { load: kg(s.loadKg), reps: s.reps })).join(tProgression('warmupJoin'));
 
-export function ExerciseProgression({ access, workout, exerciseId, sets, exercise, equipment, clock, onChanged, warmup = false }: ExerciseProgressionProps) {
+export function ExerciseProgression({ access, workout, exerciseId, sets, exercise, equipment, clock, onChanged, warmup = false, positionRank = 1, musclesOf }: ExerciseProgressionProps) {
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -165,7 +190,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
           cyclePreset.current = true;
           setDeload(true);
         }
-        setLoad({ status: 'ready', history, reference, own, profile, cycleDeload, targetRir: linkedRir({ id: workout.id }, link, exerciseId) });
+        const lastPositionRank = await referencePositionRank(access, history, exerciseId, musclesOf);
+        if (!live.current) return;
+        setLoad({ status: 'ready', history, reference, own, profile, cycleDeload, targetRir: linkedRir({ id: workout.id }, link, exerciseId), lastPositionRank });
       } catch {
         if (live.current) setLoad({ status: 'error' });
       }
@@ -202,9 +229,12 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
       // I2 : aucune source Recovery (I5) ; le snapshot reste nul, aucune modulation.
       recovery: null,
       deload,
+      // REV-01 constat 6 : décote de position (§ 11.3) ; inconnue → aucun effet.
+      positionRank,
+      ...(load.lastPositionRank === null ? {} : { lastPositionRank: load.lastPositionRank }),
     });
     // L'instant de calcul est celui du chargement : la proposition ne change pas pendant la séance.
-  }, [load, exerciseId, exercise, equipment, target, deload]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [load, exerciseId, exercise, equipment, target, deload, positionRank]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (ownDecision !== null && decided.current) {
