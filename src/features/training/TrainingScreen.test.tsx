@@ -54,10 +54,10 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
       fireEvent.change(screen.getByLabelText('Groupe musculaire'), { target: { value: 'biceps' } });
       expect(screen.queryByRole('button', { name: /Curl au pupitre$/ })).toBeNull();
       expect(screen.getByRole('button', { name: /^Curl aux haltères/ })).toBeInTheDocument();
-      expect(screen.getByText('9 exercices')).toBeInTheDocument();
+      expect(screen.getByText('14 exercices')).toBeInTheDocument();
       fireEvent.click(toggle);
       expect(screen.getByRole('button', { name: 'Curl au pupitre' })).toBeInTheDocument();
-      expect(screen.getByText('10 exercices')).toBeInTheDocument();
+      expect(screen.getByText('16 exercices')).toBeInTheDocument();
     });
 
     it('recherche par nom français sans accents et par alias anglais', async () => {

@@ -345,6 +345,41 @@
       "id": "anchor-point",
       "nameFr": "Point d'ancrage",
       "family": "accessoire"
+    },
+    {
+      "id": "decline-bench",
+      "nameFr": "Banc décliné",
+      "family": "banc"
+    },
+    {
+      "id": "dip-machine",
+      "nameFr": "Machine à dips",
+      "family": "machine"
+    },
+    {
+      "id": "decline-chest-press-machine",
+      "nameFr": "Machine de développé pectoral décliné",
+      "family": "machine"
+    },
+    {
+      "id": "lat-pulldown-machine",
+      "nameFr": "Machine de tirage vertical",
+      "family": "machine"
+    },
+    {
+      "id": "belt-squat-machine",
+      "nameFr": "Machine belt squat",
+      "family": "machine"
+    },
+    {
+      "id": "reverse-hyper-machine",
+      "nameFr": "Machine d’hyperextension inversée",
+      "family": "machine"
+    },
+    {
+      "id": "hip-adduction-machine",
+      "nameFr": "Machine d’adduction de hanche",
+      "family": "machine"
     }
   ]
 }
