@@ -1650,7 +1650,9 @@
       "nameFr": "Rowing à la landmine",
       "group": "back",
       "aliasesEn": [
-        "row t bar"
+        "row t bar",
+        "t-bar row",
+        "t bar row"
       ],
       "muscles": [
         {
@@ -4669,7 +4671,9 @@
       "nameFr": "Barre au front",
       "group": "triceps",
       "aliasesEn": [
-        "skull crusher"
+        "skull crusher",
+        "ez bar skull crusher",
+        "lying triceps extension ez bar"
       ],
       "muscles": [
         {
@@ -9932,6 +9936,3104 @@
           "Se pencher d’un côté en marchant.",
           "Hausser les épaules vers les oreilles.",
           "Raccourcir ou précipiter les pas."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "triceps-pushdown-supinated",
+      "nameFr": "Extension triceps prise supination à la poulie",
+      "group": "triceps",
+      "aliasesEn": [
+        "reverse grip triceps pushdown",
+        "supinated triceps pushdown"
+      ],
+      "muscles": [
+        {
+          "id": "triceps",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "forearms",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "high-pulley",
+        "straight-bar-attachment"
+      ],
+      "equipmentGroups": [
+        [
+          "high-pulley"
+        ],
+        [
+          "straight-bar-attachment"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 75,
+      "alternatives": [
+        "triceps-pushdown-cable",
+        "triceps-pushdown-rope"
+      ],
+      "instructions": {
+        "setup": "Poulie haute avec la barre droite. Saisis la barre en supination (paumes vers le haut), mains à la largeur des épaules, coudes collés aux côtes, buste légèrement penché.",
+        "execution": "Pousse la barre vers le bas jusqu’à l’extension complète des coudes sans les décoller du corps, marque une courte pause, puis remonte lentement jusqu’à la hauteur de la poitrine.",
+        "mistakes": [
+          "Décoller les coudes du corps et laisser les épaules compenser.",
+          "Utiliser le poids du corps pour pousser au lieu de contrôler la remontée.",
+          "Prendre une charge qui fait plier les poignets."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "triceps-pushdown-one-arm",
+      "nameFr": "Extension triceps unilatérale à la poulie",
+      "group": "triceps",
+      "aliasesEn": [
+        "single arm triceps pushdown",
+        "one arm cable pushdown"
+      ],
+      "muscles": [
+        {
+          "id": "triceps",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "forearms",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "high-pulley",
+        "cable-handle"
+      ],
+      "equipmentGroups": [
+        [
+          "high-pulley"
+        ],
+        [
+          "cable-handle"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": true,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "triceps-pushdown-rope",
+        "triceps-pushdown-cable"
+      ],
+      "instructions": {
+        "setup": "Poulie haute avec une poignée simple. Place-toi face à la poulie, coude collé au côté, avant-bras à l’horizontale, l’autre main sur la poulie ou sur la hanche.",
+        "execution": "Étends le coude vers le bas jusqu’à ce que le bras soit tendu, marque une courte pause, puis reviens lentement. Fais toutes les répétitions d’un côté, puis de l’autre.",
+        "mistakes": [
+          "Laisser le coude s’écarter ou avancer pendant la poussée.",
+          "Tourner le buste pour aider la poussée.",
+          "Relâcher la charge en haut au lieu de contrôler la remontée."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "triceps-kickback-cable",
+      "nameFr": "Kickback à la poulie",
+      "group": "triceps",
+      "aliasesEn": [
+        "cable triceps kickback",
+        "triceps cable kickback"
+      ],
+      "muscles": [
+        {
+          "id": "triceps",
+          "weight": 1,
+          "role": "primary"
+        }
+      ],
+      "equipment": [
+        "low-pulley",
+        "cable-handle"
+      ],
+      "equipmentGroups": [
+        [
+          "low-pulley"
+        ],
+        [
+          "cable-handle"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": true,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        12,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "triceps-kickback",
+        "triceps-pushdown-one-arm"
+      ],
+      "instructions": {
+        "setup": "Poulie basse avec une poignée simple. Penche le buste vers l’avant, dos plat, un appui de la main libre sur un support, le coude de travail collé au corps et plié à 90°.",
+        "execution": "Étends le coude vers l’arrière jusqu’à ce que le bras soit aligné avec le buste, marque une pause contractée, puis reviens lentement à 90°. Même nombre de répétitions de chaque côté.",
+        "mistakes": [
+          "Balancer le bras au lieu de garder le coude fixe.",
+          "Arrondir le dos ou se redresser pendant la série.",
+          "Prendre une charge trop lourde qui raccourcit l’amplitude."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "skull-crusher-dumbbell",
+      "nameFr": "Barre au front aux haltères",
+      "group": "triceps",
+      "aliasesEn": [
+        "dumbbell skull crusher",
+        "lying dumbbell triceps extension"
+      ],
+      "muscles": [
+        {
+          "id": "triceps",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "forearms",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "dumbbell",
+        "flat-bench"
+      ],
+      "equipmentGroups": [
+        [
+          "dumbbell"
+        ],
+        [
+          "flat-bench"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 90,
+      "alternatives": [
+        "skull-crusher",
+        "overhead-triceps-extension-dumbbell"
+      ],
+      "instructions": {
+        "setup": "Allonge-toi sur un banc plat avec un haltère dans chaque main, paumes face à face, bras tendus à la verticale au-dessus des épaules.",
+        "execution": "Plie les coudes pour descendre les haltères de chaque côté de la tête, coudes fixes et pointés vers le plafond, puis étends les bras sans verrouiller brutalement.",
+        "mistakes": [
+          "Écarter les coudes et transformer le mouvement en développé.",
+          "Descendre trop vite sans contrôle près du crâne.",
+          "Laisser les poignets plier sous la charge."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "overhead-triceps-extension-ez-bar",
+      "nameFr": "Extension triceps au-dessus de la tête à la barre EZ",
+      "group": "triceps",
+      "aliasesEn": [
+        "overhead triceps extension ez bar",
+        "french press ez bar"
+      ],
+      "muscles": [
+        {
+          "id": "triceps",
+          "weight": 1,
+          "role": "primary"
+        }
+      ],
+      "equipment": [
+        "ez-bar"
+      ],
+      "equipmentGroups": [
+        [
+          "ez-bar"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 90,
+      "alternatives": [
+        "overhead-triceps-extension-dumbbell",
+        "skull-crusher"
+      ],
+      "instructions": {
+        "setup": "Debout ou assis, barre EZ tenue aux creux de la courbure, bras tendus au-dessus de la tête, coudes proches des oreilles, abdominaux serrés.",
+        "execution": "Plie les coudes pour descendre la barre derrière la tête sans bouger les bras, puis étends les coudes pour revenir en haut en contrôlant le mouvement.",
+        "mistakes": [
+          "Cambrer le bas du dos pour relancer la charge.",
+          "Écarter largement les coudes.",
+          "Descendre trop bas avec une charge qui gêne les épaules."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "overhead-triceps-extension-dumbbell-one-arm",
+      "nameFr": "Extension triceps au-dessus de la tête unilatérale à l’haltère",
+      "group": "triceps",
+      "aliasesEn": [
+        "single arm overhead triceps extension",
+        "one arm dumbbell triceps extension"
+      ],
+      "muscles": [
+        {
+          "id": "triceps",
+          "weight": 1,
+          "role": "primary"
+        }
+      ],
+      "equipment": [
+        "dumbbell"
+      ],
+      "equipmentGroups": [
+        [
+          "dumbbell"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": true,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "overhead-triceps-extension-dumbbell",
+        "triceps-kickback"
+      ],
+      "instructions": {
+        "setup": "Debout ou assis, un haltère tenu à une main, bras tendu au-dessus de la tête, coude près de l’oreille. L’autre main soutient le coude si besoin.",
+        "execution": "Plie le coude pour descendre l’haltère derrière la tête, puis étends le bras vers le haut sans écarter le coude. Même nombre de répétitions de chaque côté.",
+        "mistakes": [
+          "Laisser le coude partir sur le côté.",
+          "Se pencher en arrière pour aider la poussée.",
+          "Prendre un haltère trop lourd pour la descente."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "dip-machine",
+      "nameFr": "Dips à la machine",
+      "group": "triceps",
+      "aliasesEn": [
+        "machine dip",
+        "seated dip machine"
+      ],
+      "muscles": [
+        {
+          "id": "triceps",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "chest",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "front-delts",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "dip-machine"
+      ],
+      "equipmentGroups": [
+        [
+          "dip-machine"
+        ]
+      ],
+      "pattern": "push-vertical",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 120,
+      "alternatives": [
+        "dips",
+        "triceps-extension-machine"
+      ],
+      "instructions": {
+        "setup": "Règle le siège pour que les poignées soient à hauteur du bas de la poitrine, dos calé, épaules basses, pieds posés.",
+        "execution": "Pousse les poignées vers le bas jusqu’à l’extension des coudes, sans hausser les épaules, puis remonte lentement jusqu’à un angle confortable pour les épaules.",
+        "mistakes": [
+          "Hausser les épaules vers les oreilles.",
+          "Descendre au-delà de l’amplitude confortable pour l’épaule.",
+          "Décoller le dos du dossier."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "curl-ez-bar",
+      "nameFr": "Curl à la barre EZ",
+      "group": "biceps",
+      "aliasesEn": [
+        "ez bar curl",
+        "curl ez bar"
+      ],
+      "muscles": [
+        {
+          "id": "biceps",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "brachialis",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "forearms",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "ez-bar"
+      ],
+      "equipmentGroups": [
+        [
+          "ez-bar"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 90,
+      "alternatives": [
+        "curl-barbell",
+        "curl-dumbbell"
+      ],
+      "instructions": {
+        "setup": "Debout, barre EZ tenue sur les courbures, mains à la largeur des épaules, coudes le long du corps, abdominaux serrés.",
+        "execution": "Monte la barre en pliant les coudes sans les avancer, marque une pause contractée en haut, puis redescends lentement jusqu’à l’extension complète.",
+        "mistakes": [
+          "Balancer le buste pour relancer la barre.",
+          "Avancer les coudes pendant la montée.",
+          "Raccourcir l’amplitude en bas."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "concentration-curl",
+      "nameFr": "Curl concentré",
+      "group": "biceps",
+      "aliasesEn": [
+        "concentration curl",
+        "seated concentration curl"
+      ],
+      "muscles": [
+        {
+          "id": "biceps",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "brachialis",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "dumbbell",
+        "bench"
+      ],
+      "equipmentGroups": [
+        [
+          "dumbbell"
+        ],
+        [
+          "bench"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": true,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "curl-dumbbell",
+        "curl-incline-dumbbell"
+      ],
+      "instructions": {
+        "setup": "Assis au bord d’un banc, jambes écartées, un haltère tenu à une main, l’arrière du bras appuyé contre l’intérieur de la cuisse, bras tendu.",
+        "execution": "Plie le coude pour monter l’haltère vers l’épaule sans bouger le bras, marque une pause contractée, puis redescends lentement. Même nombre de répétitions de chaque côté.",
+        "mistakes": [
+          "Se servir du dos ou de l’épaule pour monter l’haltère.",
+          "Décoller le bras de la cuisse.",
+          "Lâcher la descente sans contrôle."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "spider-curl",
+      "nameFr": "Curl araignée",
+      "group": "biceps",
+      "aliasesEn": [
+        "spider curl",
+        "prone incline curl"
+      ],
+      "muscles": [
+        {
+          "id": "biceps",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "brachialis",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "dumbbell",
+        "incline-bench"
+      ],
+      "equipmentGroups": [
+        [
+          "dumbbell"
+        ],
+        [
+          "incline-bench"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "curl-incline-dumbbell",
+        "preacher-curl"
+      ],
+      "instructions": {
+        "setup": "Allonge-toi à plat ventre sur un banc incliné, poitrine contre le dossier, un haltère dans chaque main, bras pendants à la verticale.",
+        "execution": "Plie les coudes pour monter les haltères vers les épaules en gardant les bras verticaux, marque une pause contractée, puis redescends jusqu’à l’extension complète.",
+        "mistakes": [
+          "Balancer les bras vers l’avant.",
+          "Décoller la poitrine du dossier.",
+          "Raccourcir la descente pour garder la tension facile."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "curl-behind-body-cable",
+      "nameFr": "Curl derrière le corps à la poulie",
+      "group": "biceps",
+      "aliasesEn": [
+        "behind the body cable curl",
+        "cable curl behind back"
+      ],
+      "muscles": [
+        {
+          "id": "biceps",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "brachialis",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "low-pulley",
+        "cable-handle"
+      ],
+      "equipmentGroups": [
+        [
+          "low-pulley"
+        ],
+        [
+          "cable-handle"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": true,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "curl-cable",
+        "curl-incline-dumbbell"
+      ],
+      "instructions": {
+        "setup": "Poulie basse avec une poignée simple. Place-toi dos à la poulie, un pas en avant, le bras de travail tendu derrière le corps, le coude légèrement en arrière.",
+        "execution": "Plie le coude pour amener la poignée vers l’épaule en gardant le bras en arrière du buste, marque une pause contractée, puis redescends lentement. Même nombre de répétitions de chaque côté.",
+        "mistakes": [
+          "Avancer le coude pour raccourcir l’étirement.",
+          "Se pencher en avant pour aider la montée.",
+          "Prendre une charge qui empêche de contrôler la descente."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "zottman-curl",
+      "nameFr": "Curl Zottman",
+      "group": "biceps",
+      "aliasesEn": [
+        "zottman curl"
+      ],
+      "muscles": [
+        {
+          "id": "biceps",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "brachialis",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "brachioradialis",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "forearms",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "dumbbell"
+      ],
+      "equipmentGroups": [
+        [
+          "dumbbell"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 75,
+      "alternatives": [
+        "curl-dumbbell",
+        "hammer-curl"
+      ],
+      "instructions": {
+        "setup": "Debout, un haltère dans chaque main, bras le long du corps, paumes vers l’avant, coudes collés aux côtes.",
+        "execution": "Monte les haltères en supination, fais pivoter les poignets en haut pour amener les paumes vers le bas, redescends lentement dans cette position, puis retourne les paumes avant la répétition suivante.",
+        "mistakes": [
+          "Balancer le buste pour monter les haltères.",
+          "Faire pivoter les poignets trop vite en bas.",
+          "Écarter les coudes du corps."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "hammer-curl-preacher",
+      "nameFr": "Curl marteau au pupitre",
+      "group": "biceps",
+      "aliasesEn": [
+        "preacher hammer curl",
+        "hammer preacher curl"
+      ],
+      "muscles": [
+        {
+          "id": "brachialis",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "biceps",
+          "weight": 0.8,
+          "role": "secondary"
+        },
+        {
+          "id": "brachioradialis",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "preacher-bench",
+        "dumbbell"
+      ],
+      "equipmentGroups": [
+        [
+          "preacher-bench"
+        ],
+        [
+          "dumbbell"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "hammer-curl",
+        "preacher-curl"
+      ],
+      "instructions": {
+        "setup": "Assieds-toi au pupitre, aisselles calées sur le haut du coussin, un haltère dans chaque main en prise neutre (paumes face à face), bras tendus.",
+        "execution": "Plie les coudes pour monter les haltères en gardant la prise neutre, marque une courte pause, puis redescends lentement jusqu’à l’extension sans te laisser tomber.",
+        "mistakes": [
+          "Décoller les aisselles du coussin.",
+          "Lâcher la descente en fin d’amplitude.",
+          "Tourner les poignets pendant le mouvement."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "bench-press-decline-barbell",
+      "nameFr": "Développé décliné à la barre",
+      "group": "chest",
+      "aliasesEn": [
+        "decline bench press barbell",
+        "decline barbell press"
+      ],
+      "muscles": [
+        {
+          "id": "chest",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "triceps",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "front-delts",
+          "weight": 0.2,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "barbell",
+        "decline-bench"
+      ],
+      "equipmentGroups": [
+        [
+          "barbell"
+        ],
+        [
+          "decline-bench"
+        ]
+      ],
+      "pattern": "push-horizontal",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        6,
+        10
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 150,
+      "alternatives": [
+        "bench-press-barbell",
+        "chest-press-machine"
+      ],
+      "instructions": {
+        "setup": "Allonge-toi sur le banc décliné, pieds calés, omoplates serrées. Saisis la barre un peu plus large que les épaules, avec un partenaire ou des butées de sécurité.",
+        "execution": "Décroche la barre, descends-la de façon contrôlée vers le bas de la poitrine, puis repousse sans rebond en gardant les poignets alignés.",
+        "mistakes": [
+          "Rebondir sur la poitrine.",
+          "Descendre la barre trop haut, vers le cou.",
+          "Réaliser la série sans butées ni partenaire."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "bench-press-decline-dumbbell",
+      "nameFr": "Développé décliné aux haltères",
+      "group": "chest",
+      "aliasesEn": [
+        "decline dumbbell press",
+        "decline bench press dumbbell"
+      ],
+      "muscles": [
+        {
+          "id": "chest",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "triceps",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "front-delts",
+          "weight": 0.2,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "dumbbell",
+        "decline-bench"
+      ],
+      "equipmentGroups": [
+        [
+          "dumbbell"
+        ],
+        [
+          "decline-bench"
+        ]
+      ],
+      "pattern": "push-horizontal",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 120,
+      "alternatives": [
+        "bench-press-dumbbell",
+        "incline-press-dumbbell"
+      ],
+      "instructions": {
+        "setup": "Allonge-toi sur le banc décliné, pieds calés, un haltère dans chaque main à hauteur de poitrine, omoplates serrées.",
+        "execution": "Pousse les haltères vers le haut en les rapprochant légèrement, puis redescends lentement jusqu’à un étirement confortable de la poitrine.",
+        "mistakes": [
+          "Laisser les haltères partir trop loin sur les côtés.",
+          "Taper les haltères l’un contre l’autre en haut.",
+          "Cambrer fortement le dos."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "bench-press-smith",
+      "nameFr": "Développé couché à la Smith",
+      "group": "chest",
+      "aliasesEn": [
+        "smith machine bench press",
+        "smith bench press"
+      ],
+      "muscles": [
+        {
+          "id": "chest",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "triceps",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "front-delts",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "smith-machine",
+        "flat-bench"
+      ],
+      "equipmentGroups": [
+        [
+          "smith-machine"
+        ],
+        [
+          "flat-bench"
+        ]
+      ],
+      "pattern": "push-horizontal",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        6,
+        10
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 120,
+      "alternatives": [
+        "bench-press-barbell",
+        "bench-press-dumbbell"
+      ],
+      "instructions": {
+        "setup": "Place un banc plat sous la barre guidée, barre au niveau du bas de la poitrine. Règle les butées de sécurité et serre les omoplates.",
+        "execution": "Décroche la barre, descends-la sous contrôle jusqu’au bas de la poitrine, puis repousse en gardant les poignets alignés sur la barre.",
+        "mistakes": [
+          "Placer le banc trop avancé ou trop reculé par rapport à la barre.",
+          "Oublier de régler les butées.",
+          "Rebondir sur la poitrine."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "incline-press-smith",
+      "nameFr": "Développé incliné à la Smith",
+      "group": "chest",
+      "aliasesEn": [
+        "smith machine incline press",
+        "smith incline bench press"
+      ],
+      "muscles": [
+        {
+          "id": "chest",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "front-delts",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "triceps",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "smith-machine",
+        "incline-bench"
+      ],
+      "equipmentGroups": [
+        [
+          "smith-machine"
+        ],
+        [
+          "incline-bench"
+        ]
+      ],
+      "pattern": "push-horizontal",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        6,
+        10
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 120,
+      "alternatives": [
+        "incline-press-barbell",
+        "incline-press-dumbbell"
+      ],
+      "instructions": {
+        "setup": "Place un banc incliné (30° environ) sous la barre guidée, barre au niveau du haut de la poitrine. Règle les butées de sécurité.",
+        "execution": "Décroche la barre, descends-la sous contrôle vers le haut de la poitrine, puis repousse sans verrouiller brutalement les coudes.",
+        "mistakes": [
+          "Choisir une inclinaison trop forte qui transfère l’effort aux épaules.",
+          "Rebondir en bas du mouvement.",
+          "Décoller les fesses du banc."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "fly-flat-dumbbell",
+      "nameFr": "Écarté couché aux haltères",
+      "group": "chest",
+      "aliasesEn": [
+        "dumbbell fly",
+        "flat dumbbell fly"
+      ],
+      "muscles": [
+        {
+          "id": "chest",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "front-delts",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "dumbbell",
+        "flat-bench"
+      ],
+      "equipmentGroups": [
+        [
+          "dumbbell"
+        ],
+        [
+          "flat-bench"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 75,
+      "alternatives": [
+        "cable-fly",
+        "pec-deck"
+      ],
+      "instructions": {
+        "setup": "Allonge-toi sur un banc plat avec un haltère dans chaque main, bras tendus au-dessus de la poitrine, paumes face à face, coudes très légèrement fléchis.",
+        "execution": "Ouvre les bras en arc de cercle jusqu’à sentir un étirement de la poitrine, puis ramène les haltères au-dessus de toi comme pour enlacer un arbre, en gardant les coudes fléchis.",
+        "mistakes": [
+          "Descendre trop bas et solliciter l’épaule.",
+          "Plier et étendre les coudes comme dans un développé.",
+          "Choisir des haltères trop lourds."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "fly-incline-dumbbell",
+      "nameFr": "Écarté incliné aux haltères",
+      "group": "chest",
+      "aliasesEn": [
+        "incline dumbbell fly",
+        "incline fly"
+      ],
+      "muscles": [
+        {
+          "id": "chest",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "front-delts",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "dumbbell",
+        "incline-bench"
+      ],
+      "equipmentGroups": [
+        [
+          "dumbbell"
+        ],
+        [
+          "incline-bench"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 75,
+      "alternatives": [
+        "cable-fly-low",
+        "pec-deck"
+      ],
+      "instructions": {
+        "setup": "Allonge-toi sur un banc incliné à 30° environ, un haltère dans chaque main, bras tendus au-dessus de la poitrine, coudes très légèrement fléchis.",
+        "execution": "Ouvre les bras en arc de cercle jusqu’à l’étirement de la poitrine, puis ramène les haltères au-dessus du haut de la poitrine sans changer l’angle des coudes.",
+        "mistakes": [
+          "Descendre trop bas et solliciter l’épaule.",
+          "Transformer le mouvement en développé.",
+          "Régler le banc trop incliné."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "decline-chest-press-machine",
+      "nameFr": "Presse pectorale déclinée",
+      "group": "chest",
+      "aliasesEn": [
+        "decline chest press machine",
+        "decline press machine"
+      ],
+      "muscles": [
+        {
+          "id": "chest",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "triceps",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "front-delts",
+          "weight": 0.2,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "decline-chest-press-machine"
+      ],
+      "equipmentGroups": [
+        [
+          "decline-chest-press-machine"
+        ]
+      ],
+      "pattern": "push-horizontal",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 120,
+      "alternatives": [
+        "chest-press-machine",
+        "incline-press-machine"
+      ],
+      "instructions": {
+        "setup": "Règle le siège pour que les poignées soient à hauteur du bas de la poitrine, dos calé contre le dossier, omoplates serrées, pieds posés.",
+        "execution": "Pousse les poignées vers l’avant jusqu’à l’extension presque complète, puis reviens lentement en gardant la tension sur la poitrine.",
+        "mistakes": [
+          "Décoller le dos du dossier.",
+          "Verrouiller brutalement les coudes en fin de poussée.",
+          "Laisser la charge revenir sans contrôle."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "row-barbell-supinated",
+      "nameFr": "Rowing à la barre prise supination",
+      "group": "back",
+      "aliasesEn": [
+        "underhand barbell row",
+        "supinated barbell row",
+        "reverse grip barbell row"
+      ],
+      "muscles": [
+        {
+          "id": "lats",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "middle-traps",
+          "weight": 0.8,
+          "role": "secondary"
+        },
+        {
+          "id": "biceps",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "lower-back",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "barbell"
+      ],
+      "equipmentGroups": [
+        [
+          "barbell"
+        ]
+      ],
+      "pattern": "pull-horizontal",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        6,
+        10
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 150,
+      "alternatives": [
+        "row-barbell",
+        "seated-row-cable"
+      ],
+      "instructions": {
+        "setup": "Debout, barre tenue en supination, mains à la largeur des épaules, hanches reculées, buste penché à 45° environ, dos plat, genoux légèrement fléchis.",
+        "execution": "Tire la barre vers le bas du ventre en serrant les omoplates et en gardant les coudes proches du corps, marque une courte pause, puis redescends lentement.",
+        "mistakes": [
+          "Arrondir le dos ou se redresser pour relancer la barre.",
+          "Tirer avec les bras sans engager le dos.",
+          "Utiliser un élan des hanches."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "lat-pulldown-one-arm",
+      "nameFr": "Tirage vertical unilatéral à la poulie",
+      "group": "back",
+      "aliasesEn": [
+        "single arm lat pulldown",
+        "one arm lat pulldown"
+      ],
+      "muscles": [
+        {
+          "id": "lats",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "biceps",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "middle-traps",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "high-pulley",
+        "cable-handle"
+      ],
+      "equipmentGroups": [
+        [
+          "high-pulley"
+        ],
+        [
+          "cable-handle"
+        ]
+      ],
+      "pattern": "pull-vertical",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": true,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 90,
+      "alternatives": [
+        "lat-pulldown",
+        "lat-pulldown-neutral"
+      ],
+      "instructions": {
+        "setup": "Poulie haute avec une poignée simple. Assieds-toi face à la poulie, cuisses calées si possible, bras tendu vers le haut, épaule basse.",
+        "execution": "Tire la poignée vers le côté de la poitrine en menant avec le coude, marque une pause contractée, puis remonte lentement jusqu’à l’étirement complet. Même nombre de répétitions de chaque côté.",
+        "mistakes": [
+          "Tourner le buste pour aider la traction.",
+          "Hausser l’épaule en haut du mouvement.",
+          "Lâcher la remontée sans contrôle."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "lat-pulldown-machine",
+      "nameFr": "Tirage vertical à la machine",
+      "group": "back",
+      "aliasesEn": [
+        "lat pulldown machine",
+        "machine lat pulldown"
+      ],
+      "muscles": [
+        {
+          "id": "lats",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "biceps",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "middle-traps",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "lat-pulldown-machine"
+      ],
+      "equipmentGroups": [
+        [
+          "lat-pulldown-machine"
+        ]
+      ],
+      "pattern": "pull-vertical",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 90,
+      "alternatives": [
+        "lat-pulldown",
+        "lat-pulldown-neutral"
+      ],
+      "instructions": {
+        "setup": "Règle le siège et le coussin de cuisses pour que tu sois calé quand les bras sont tendus, poignées saisies à la largeur adaptée à la machine.",
+        "execution": "Tire les poignées vers le haut de la poitrine en menant avec les coudes, marque une courte pause, puis remonte lentement jusqu’à l’étirement complet.",
+        "mistakes": [
+          "Se pencher loin en arrière pour relancer la charge.",
+          "Tirer avec les bras en laissant les épaules monter.",
+          "Raccourcir la remontée."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "seated-row-wide-grip",
+      "nameFr": "Tirage assis prise large",
+      "group": "back",
+      "aliasesEn": [
+        "wide grip seated row",
+        "seated cable row wide grip"
+      ],
+      "muscles": [
+        {
+          "id": "lats",
+          "weight": 0.8,
+          "role": "primary"
+        },
+        {
+          "id": "middle-traps",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "rear-delts",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "biceps",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "low-pulley",
+        "straight-bar-attachment"
+      ],
+      "equipmentGroups": [
+        [
+          "low-pulley"
+        ],
+        [
+          "straight-bar-attachment"
+        ]
+      ],
+      "pattern": "pull-horizontal",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 90,
+      "alternatives": [
+        "seated-row-cable",
+        "chest-supported-row-machine"
+      ],
+      "instructions": {
+        "setup": "Poulie basse avec la barre droite, assis, pieds calés, genoux légèrement fléchis, dos droit, bras tendus, mains écartées plus que les épaules.",
+        "execution": "Tire la barre vers le bas de la poitrine en écartant les coudes et en serrant les omoplates, marque une courte pause, puis reviens lentement bras tendus.",
+        "mistakes": [
+          "Se balancer d’avant en arrière.",
+          "Hausser les épaules pendant la traction.",
+          "Arrondir le dos à l’étirement."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "pull-up-weighted",
+      "nameFr": "Traction lestée",
+      "group": "back",
+      "aliasesEn": [
+        "weighted pull up",
+        "weighted pull-up"
+      ],
+      "muscles": [
+        {
+          "id": "lats",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "biceps",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "middle-traps",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "pull-up-bar",
+        "loading-belt",
+        "dumbbell"
+      ],
+      "equipmentGroups": [
+        [
+          "pull-up-bar"
+        ],
+        [
+          "loading-belt",
+          "dumbbell"
+        ]
+      ],
+      "pattern": "pull-vertical",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        5,
+        8
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 150,
+      "alternatives": [
+        "pull-up",
+        "lat-pulldown"
+      ],
+      "instructions": {
+        "setup": "Barre de traction, lest fixé à la ceinture (ou haltère tenu entre les pieds), prise en pronation un peu plus large que les épaules, bras tendus.",
+        "execution": "Monte jusqu’à passer le menton au-dessus de la barre en menant avec les coudes, puis redescends lentement jusqu’aux bras tendus. Maîtrise d’abord la traction au poids du corps.",
+        "mistakes": [
+          "Balancer le corps pour relancer le lest.",
+          "Raccourcir l’amplitude en bas.",
+          "Ajouter un lest trop lourd pour contrôler la descente."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "rack-pull",
+      "nameFr": "Rack pull",
+      "group": "back",
+      "aliasesEn": [
+        "rack pull",
+        "block pull"
+      ],
+      "muscles": [
+        {
+          "id": "erector-spinae",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "upper-traps",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "glutes",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "hamstrings",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "forearms",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "barbell",
+        "rack"
+      ],
+      "equipmentGroups": [
+        [
+          "barbell"
+        ],
+        [
+          "rack"
+        ]
+      ],
+      "pattern": "hinge",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        4,
+        8
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 180,
+      "alternatives": [
+        "deadlift-barbell",
+        "good-morning"
+      ],
+      "instructions": {
+        "setup": "Barre posée sur les supports du rack juste au-dessus des genoux, pieds à la largeur des hanches, prise à la largeur des épaules, dos plat, barre au contact du bas des cuisses.",
+        "execution": "Pousse dans le sol et verrouille les hanches debout en gardant la barre contre le corps, serre les omoplates en haut, puis redescends la barre sur les supports sous contrôle.",
+        "mistakes": [
+          "Arrondir le bas du dos.",
+          "Tirer avec les bras au lieu de pousser avec les jambes et les hanches.",
+          "Se pencher en arrière en haut du mouvement."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "overhead-press-smith",
+      "nameFr": "Développé militaire à la Smith",
+      "group": "shoulders",
+      "aliasesEn": [
+        "smith machine overhead press",
+        "smith shoulder press"
+      ],
+      "muscles": [
+        {
+          "id": "front-delts",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "middle-delts",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "triceps",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "smith-machine"
+      ],
+      "equipmentGroups": [
+        [
+          "smith-machine"
+        ]
+      ],
+      "pattern": "push-vertical",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 120,
+      "alternatives": [
+        "overhead-press-barbell",
+        "overhead-press-dumbbell"
+      ],
+      "instructions": {
+        "setup": "Debout (ou assis sur un banc réglé à la verticale) sous la barre guidée, barre à hauteur des clavicules, prise un peu plus large que les épaules, abdominaux serrés.",
+        "execution": "Décroche la barre, pousse-la à la verticale au-dessus de la tête en finissant les bras tendus, puis redescends lentement jusqu’au haut de la poitrine.",
+        "mistakes": [
+          "Cambrer fortement le dos.",
+          "Placer les pieds ou le banc trop loin de l’axe de la barre.",
+          "Oublier les butées de sécurité."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "overhead-press-seated-barbell",
+      "nameFr": "Développé épaules assis à la barre",
+      "group": "shoulders",
+      "aliasesEn": [
+        "seated barbell overhead press",
+        "seated barbell shoulder press"
+      ],
+      "muscles": [
+        {
+          "id": "front-delts",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "middle-delts",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "triceps",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "barbell",
+        "rack",
+        "bench"
+      ],
+      "equipmentGroups": [
+        [
+          "barbell"
+        ],
+        [
+          "rack"
+        ],
+        [
+          "bench"
+        ]
+      ],
+      "pattern": "push-vertical",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        6,
+        10
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 150,
+      "alternatives": [
+        "overhead-press-barbell",
+        "overhead-press-dumbbell"
+      ],
+      "instructions": {
+        "setup": "Assis sur un banc réglé à la verticale dans un rack, barre à hauteur des clavicules, prise un peu plus large que les épaules, dos calé, pieds ancrés.",
+        "execution": "Décroche la barre, pousse-la au-dessus de la tête en passant le visage, finis les bras tendus, puis redescends lentement jusqu’au haut de la poitrine.",
+        "mistakes": [
+          "Cambrer et décoller le dos du dossier.",
+          "Descendre la barre sans contrôle.",
+          "Pousser la tête trop en avant."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "external-rotation-cable",
+      "nameFr": "Rotation externe à la poulie",
+      "group": "shoulders",
+      "aliasesEn": [
+        "cable external rotation",
+        "cable shoulder external rotation"
+      ],
+      "muscles": [
+        {
+          "id": "rotator-cuff",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "rear-delts",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "cable-machine",
+        "low-pulley",
+        "high-pulley",
+        "cable-handle"
+      ],
+      "equipmentGroups": [
+        [
+          "cable-machine",
+          "low-pulley",
+          "high-pulley"
+        ],
+        [
+          "cable-handle"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": true,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        12,
+        20
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 45,
+      "alternatives": [
+        "face-pull",
+        "reverse-fly-cable"
+      ],
+      "instructions": {
+        "setup": "Poulie réglée à hauteur du coude avec une poignée simple. Place-toi de côté, coude plié à 90° collé au flanc (une serviette roulée entre le coude et le corps aide), avant-bras vers la poulie.",
+        "execution": "Fais pivoter l’avant-bras vers l’extérieur en gardant le coude collé, marque une courte pause, puis reviens lentement. Charge légère. Même nombre de répétitions de chaque côté.",
+        "mistakes": [
+          "Prendre une charge trop lourde pour une petite coiffe.",
+          "Décoller le coude du flanc.",
+          "Tourner le buste pour aider."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "y-raise-cable",
+      "nameFr": "Élévation en Y à la poulie",
+      "group": "shoulders",
+      "aliasesEn": [
+        "cable y raise",
+        "y raise cable"
+      ],
+      "muscles": [
+        {
+          "id": "middle-delts",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "trapezius",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "rear-delts",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "cable-machine",
+        "low-pulley",
+        "cable-handle"
+      ],
+      "equipmentGroups": [
+        [
+          "cable-machine",
+          "low-pulley"
+        ],
+        [
+          "cable-handle"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        12,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "reverse-fly-cable",
+        "lateral-raise-cable"
+      ],
+      "instructions": {
+        "setup": "Poulies basses avec une poignée dans chaque main (câbles croisés ou parallèles), debout, buste légèrement penché, bras le long du corps.",
+        "execution": "Monte les bras en formant un Y au-dessus de la tête, pouces vers le haut, jusqu’à hauteur des oreilles, marque une pause, puis redescends lentement. Charge légère.",
+        "mistakes": [
+          "Hausser les épaules vers les oreilles.",
+          "Balancer le buste pour monter les bras.",
+          "Prendre une charge qui empêche de contrôler la descente."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "lateral-raise-dumbbell-one-arm",
+      "nameFr": "Élévation latérale unilatérale à l’haltère",
+      "group": "shoulders",
+      "aliasesEn": [
+        "single arm dumbbell lateral raise",
+        "one arm lateral raise"
+      ],
+      "muscles": [
+        {
+          "id": "middle-delts",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "upper-traps",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "dumbbell"
+      ],
+      "equipmentGroups": [
+        [
+          "dumbbell"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": true,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        12,
+        20
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 45,
+      "alternatives": [
+        "lateral-raise-dumbbell",
+        "lateral-raise-cable"
+      ],
+      "instructions": {
+        "setup": "Debout, un haltère dans une main, bras le long du corps, l’autre main posée sur un support pour stabiliser le buste, coude légèrement fléchi.",
+        "execution": "Monte le bras sur le côté jusqu’à hauteur d’épaule, coude légèrement plus haut que la main, marque une courte pause, puis redescends lentement. Même nombre de répétitions de chaque côté.",
+        "mistakes": [
+          "Balancer le buste pour monter l’haltère.",
+          "Monter au-dessus de l’épaule en haussant le trapèze.",
+          "Prendre un haltère trop lourd."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "belt-squat",
+      "nameFr": "Belt squat",
+      "group": "quadriceps",
+      "aliasesEn": [
+        "belt squat"
+      ],
+      "muscles": [
+        {
+          "id": "quads",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "glutes",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "adductors",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "belt-squat-machine"
+      ],
+      "equipmentGroups": [
+        [
+          "belt-squat-machine"
+        ]
+      ],
+      "pattern": "squat",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 120,
+      "alternatives": [
+        "leg-press",
+        "hack-squat"
+      ],
+      "instructions": {
+        "setup": "Machine belt squat : ceinture fixée à la taille, pieds sur les plateformes à la largeur des épaules, mains sur les poignées, buste droit.",
+        "execution": "Fléchis les genoux et les hanches en descendant vers le bas, genoux dans l’axe des pieds, puis pousse dans les pieds pour remonter sans verrouiller brutalement les genoux.",
+        "mistakes": [
+          "Pencher le buste vers l’avant.",
+          "Laisser les genoux rentrer vers l’intérieur.",
+          "Raccourcir l’amplitude."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "leg-extension-one-leg",
+      "nameFr": "Extension des jambes unilatérale",
+      "group": "quadriceps",
+      "aliasesEn": [
+        "single leg extension",
+        "one leg extension machine"
+      ],
+      "muscles": [
+        {
+          "id": "quads",
+          "weight": 1,
+          "role": "primary"
+        }
+      ],
+      "equipment": [
+        "leg-extension-machine"
+      ],
+      "equipmentGroups": [
+        [
+          "leg-extension-machine"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": true,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "leg-extension-machine",
+        "sissy-squat"
+      ],
+      "instructions": {
+        "setup": "Machine d’extension des jambes : règle le dossier et le rouleau sur le bas du tibia, une seule jambe sous le rouleau, mains sur les poignées.",
+        "execution": "Étends la jambe jusqu’à l’extension presque complète, marque une pause contractée, puis redescends lentement. Même nombre de répétitions de chaque jambe.",
+        "mistakes": [
+          "Balancer la jambe pour relancer la charge.",
+          "Décoller les fesses du siège.",
+          "Verrouiller brutalement le genou en haut."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "lunge-smith",
+      "nameFr": "Fente à la Smith",
+      "group": "quadriceps",
+      "aliasesEn": [
+        "smith machine lunge",
+        "smith split squat"
+      ],
+      "muscles": [
+        {
+          "id": "quads",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "glutes",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "hamstrings",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "smith-machine"
+      ],
+      "equipmentGroups": [
+        [
+          "smith-machine"
+        ]
+      ],
+      "pattern": "lunge",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": true,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 120,
+      "alternatives": [
+        "split-squat-dumbbell",
+        "smith-squat"
+      ],
+      "instructions": {
+        "setup": "Barre guidée à hauteur d’épaule posée sur les trapèzes, un pied devant sous la barre et l’autre derrière, pointe posée, buste droit. Règle les butées de sécurité de la barre juste sous le point le plus bas du mouvement.",
+        "execution": "Descends en pliant les deux genoux jusqu’à frôler le sol avec le genou arrière, puis pousse dans le pied avant pour remonter. Même nombre de répétitions de chaque côté.",
+        "mistakes": [
+          "Placer le pied avant trop près de la barre.",
+          "Pencher le buste vers l’avant.",
+          "Laisser le genou avant rentrer vers l’intérieur."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "stiff-leg-deadlift",
+      "nameFr": "Soulevé de terre jambes tendues",
+      "group": "hamstrings",
+      "aliasesEn": [
+        "stiff leg deadlift",
+        "straight leg deadlift"
+      ],
+      "muscles": [
+        {
+          "id": "hamstrings",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "glutes",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "erector-spinae",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "barbell",
+        "dumbbell"
+      ],
+      "equipmentGroups": [
+        [
+          "barbell",
+          "dumbbell"
+        ]
+      ],
+      "pattern": "hinge",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 120,
+      "alternatives": [
+        "romanian-deadlift-barbell",
+        "romanian-deadlift-dumbbell"
+      ],
+      "instructions": {
+        "setup": "Debout, barre ou haltères devant les cuisses, pieds à la largeur des hanches, jambes presque tendues (genoux très légèrement déverrouillés), dos plat.",
+        "execution": "Penche le buste vers l’avant en repoussant les hanches vers l’arrière, jambes quasi tendues, descends jusqu’à sentir l’étirement des ischio-jambiers, puis remonte en poussant les hanches vers l’avant.",
+        "mistakes": [
+          "Arrondir le dos.",
+          "Plier franchement les genoux et transformer le mouvement en roumain.",
+          "Descendre au-delà de la souplesse disponible."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "reverse-hyperextension",
+      "nameFr": "Hyperextension inversée",
+      "group": "glutes",
+      "aliasesEn": [
+        "reverse hyperextension",
+        "reverse hyper"
+      ],
+      "muscles": [
+        {
+          "id": "glutes",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "hamstrings",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "erector-spinae",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "reverse-hyper-machine"
+      ],
+      "equipmentGroups": [
+        [
+          "reverse-hyper-machine"
+        ]
+      ],
+      "pattern": "hinge",
+      "kind": "compound",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 75,
+      "alternatives": [
+        "back-extension",
+        "hip-thrust-machine"
+      ],
+      "instructions": {
+        "setup": "Machine d’hyperextension inversée : allonge-toi à plat ventre sur le coussin, hanches au bord, mains sur les poignées, jambes pendantes sous le levier.",
+        "execution": "Monte les jambes jusqu’à l’alignement avec le buste en contractant les fessiers, marque une pause, puis redescends lentement sans balancer.",
+        "mistakes": [
+          "Se servir de l’élan du levier.",
+          "Monter les jambes au-dessus du buste en cambrant le bas du dos.",
+          "Descendre trop vite."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "hip-adduction-machine",
+      "nameFr": "Adduction de hanche à la machine",
+      "group": "glutes",
+      "aliasesEn": [
+        "hip adduction machine",
+        "adductor machine"
+      ],
+      "muscles": [
+        {
+          "id": "adductors",
+          "weight": 1,
+          "role": "primary"
+        }
+      ],
+      "equipment": [
+        "hip-adduction-machine"
+      ],
+      "equipmentGroups": [
+        [
+          "hip-adduction-machine"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        12,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "hip-adduction-cable",
+        "copenhagen-plank"
+      ],
+      "instructions": {
+        "setup": "Machine d’adduction : règle l’écartement de départ des coussins à un niveau confortable, assieds-toi dos calé, genoux contre les coussins.",
+        "execution": "Rapproche les jambes jusqu’à ce que les coussins se touchent presque, marque une pause contractée, puis rouvre lentement sans laisser les plaques claquer.",
+        "mistakes": [
+          "Partir d’un écartement trop grand pour ta souplesse.",
+          "Laisser les coussins se rouvrir d’un coup.",
+          "Décoller le dos du dossier."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "hip-adduction-cable",
+      "nameFr": "Adduction de hanche à la poulie",
+      "group": "glutes",
+      "aliasesEn": [
+        "cable hip adduction",
+        "cable adductor"
+      ],
+      "muscles": [
+        {
+          "id": "adductors",
+          "weight": 1,
+          "role": "primary"
+        }
+      ],
+      "equipment": [
+        "low-pulley",
+        "ankle-strap"
+      ],
+      "equipmentGroups": [
+        [
+          "low-pulley"
+        ],
+        [
+          "ankle-strap"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": true,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        12,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "hip-adduction-machine",
+        "copenhagen-plank"
+      ],
+      "instructions": {
+        "setup": "Poulie basse avec sangle de cheville fixée à la cheville la plus proche de la poulie. Tiens-toi de côté, une main sur un support, jambe de travail légèrement écartée.",
+        "execution": "Ramène la jambe vers l’intérieur en la croisant devant la jambe d’appui, marque une pause, puis reviens lentement. Même nombre de répétitions de chaque côté.",
+        "mistakes": [
+          "Pencher le buste pour compenser.",
+          "Balancer la jambe avec de l’élan.",
+          "Prendre une charge qui fait tourner le bassin."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "copenhagen-plank",
+      "nameFr": "Planche Copenhague",
+      "group": "glutes",
+      "aliasesEn": [
+        "copenhagen plank",
+        "copenhagen adduction"
+      ],
+      "muscles": [
+        {
+          "id": "adductors",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "obliques",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "bench",
+        "mat"
+      ],
+      "equipmentGroups": [
+        [
+          "bench"
+        ],
+        [
+          "mat"
+        ]
+      ],
+      "pattern": "core",
+      "kind": "isolation",
+      "metric": "time",
+      "unilateral": true,
+      "bodyweightFraction": null,
+      "defaultRepRange": null,
+      "defaultDurationSec": 20,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "side-plank",
+        "hip-adduction-cable"
+      ],
+      "instructions": {
+        "setup": "En appui sur l’avant-bras au sol, la jambe du dessus posée à l’intérieur du genou ou de la cheville sur un banc, la jambe du dessous libre.",
+        "execution": "Soulève le bassin pour aligner tête, hanches et pieds, tiens la position en contractant les adducteurs de la jambe sur le banc, puis repose-toi. Même durée de chaque côté.",
+        "mistakes": [
+          "Laisser le bassin s’affaisser.",
+          "Tourner le buste vers le sol.",
+          "Viser une durée trop longue au début : commence avec le genou en appui."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "calf-raise-smith",
+      "nameFr": "Mollets à la Smith",
+      "group": "calves",
+      "aliasesEn": [
+        "smith machine calf raise",
+        "smith calf raise"
+      ],
+      "muscles": [
+        {
+          "id": "gastrocnemius",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "soleus",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "smith-machine",
+        "step",
+        "weight-plate"
+      ],
+      "equipmentGroups": [
+        [
+          "smith-machine"
+        ],
+        [
+          "step",
+          "weight-plate"
+        ]
+      ],
+      "pattern": "isolation",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "calf-raise-standing",
+        "calf-raise-dumbbell"
+      ],
+      "instructions": {
+        "setup": "Barre guidée à hauteur d’épaule sur les trapèzes, avant-pieds sur un step, une cale ou un disque stable, talons dans le vide, genoux presque tendus. Règle les butées de sécurité de la barre juste sous le point le plus bas du mouvement.",
+        "execution": "Monte sur la pointe des pieds au maximum, marque une pause d’une seconde en haut, puis descends lentement les talons sous le niveau de la cale pour étirer les mollets.",
+        "mistakes": [
+          "Plier les genoux pour aider la montée.",
+          "Rebondir en bas.",
+          "Raccourcir l’amplitude."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "crunch",
+      "nameFr": "Crunch",
+      "group": "abs",
+      "aliasesEn": [
+        "crunch",
+        "floor crunch"
+      ],
+      "muscles": [
+        {
+          "id": "abs",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "obliques",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "bodyweight",
+        "mat"
+      ],
+      "equipmentGroups": [
+        [
+          "bodyweight"
+        ],
+        [
+          "mat"
+        ]
+      ],
+      "pattern": "core",
+      "kind": "isolation",
+      "metric": "bodyweight-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        12,
+        20
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 45,
+      "alternatives": [
+        "reverse-crunch",
+        "cable-crunch"
+      ],
+      "instructions": {
+        "setup": "Allongé sur le dos sur un tapis, genoux fléchis, pieds à plat, mains croisées sur la poitrine ou légèrement derrière les oreilles.",
+        "execution": "Enroule le haut du dos pour décoller les omoplates du sol en rapprochant les côtes du bassin, marque une pause contractée, puis redescends lentement.",
+        "mistakes": [
+          "Tirer sur la nuque avec les mains.",
+          "Monter le buste en entier comme pour un relevé de buste.",
+          "Retenir sa respiration."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "decline-crunch",
+      "nameFr": "Crunch décliné",
+      "group": "abs",
+      "aliasesEn": [
+        "decline crunch",
+        "decline sit up"
+      ],
+      "muscles": [
+        {
+          "id": "abs",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "hip-flexors",
+          "weight": 0.3,
+          "role": "secondary"
+        },
+        {
+          "id": "obliques",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "decline-bench"
+      ],
+      "equipmentGroups": [
+        [
+          "decline-bench"
+        ]
+      ],
+      "pattern": "core",
+      "kind": "isolation",
+      "metric": "bodyweight-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "crunch",
+        "cable-crunch"
+      ],
+      "instructions": {
+        "setup": "Allongé sur le banc décliné, pieds calés sous les rouleaux, genoux fléchis, mains croisées sur la poitrine ou derrière les oreilles.",
+        "execution": "Enroule le buste vers les genoux en contractant les abdominaux, marque une pause en haut, puis redescends lentement sans te laisser tomber sur le banc.",
+        "mistakes": [
+          "Tirer sur la nuque.",
+          "Se laisser tomber en arrière en fin de série.",
+          "Monter avec les hanches plutôt que les abdominaux."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "lying-leg-raise",
+      "nameFr": "Relevé de jambes allongé",
+      "group": "abs",
+      "aliasesEn": [
+        "lying leg raise",
+        "flat leg raise"
+      ],
+      "muscles": [
+        {
+          "id": "abs",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "hip-flexors",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "bodyweight",
+        "mat"
+      ],
+      "equipmentGroups": [
+        [
+          "bodyweight"
+        ],
+        [
+          "mat"
+        ]
+      ],
+      "pattern": "core",
+      "kind": "isolation",
+      "metric": "bodyweight-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "reverse-crunch",
+        "dead-bug"
+      ],
+      "instructions": {
+        "setup": "Allongé sur le dos sur un tapis, bas du dos plaqué au sol, mains sous les fessiers ou le long du corps, jambes tendues.",
+        "execution": "Monte les jambes jusqu’à la verticale en gardant le bas du dos au sol, puis redescends lentement sans toucher le sol.",
+        "mistakes": [
+          "Cambrer le bas du dos en descendant.",
+          "Balancer les jambes avec de l’élan.",
+          "Plier fortement les genoux pour faciliter."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "hanging-knee-raise",
+      "nameFr": "Relevé de genoux suspendu",
+      "group": "abs",
+      "aliasesEn": [
+        "hanging knee raise"
+      ],
+      "muscles": [
+        {
+          "id": "abs",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "hip-flexors",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "forearms",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "pull-up-bar"
+      ],
+      "equipmentGroups": [
+        [
+          "pull-up-bar"
+        ]
+      ],
+      "pattern": "core",
+      "kind": "isolation",
+      "metric": "bodyweight-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "hanging-leg-raise",
+        "captain-chair-knee-raise"
+      ],
+      "instructions": {
+        "setup": "Suspendu à la barre de traction, épaules actives, jambes pendantes, abdominaux légèrement contractés, sans balancer.",
+        "execution": "Monte les genoux vers la poitrine en enroulant le bassin, marque une pause, puis redescends lentement sans te balancer.",
+        "mistakes": [
+          "Se balancer pour relancer le mouvement.",
+          "Monter seulement les cuisses sans enrouler le bassin.",
+          "Lâcher les épaules en bas."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "cable-woodchopper",
+      "nameFr": "Rotation à la poulie (woodchopper)",
+      "group": "abs",
+      "aliasesEn": [
+        "cable woodchopper",
+        "woodchop"
+      ],
+      "muscles": [
+        {
+          "id": "obliques",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "abs",
+          "weight": 0.5,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "cable-machine",
+        "high-pulley",
+        "low-pulley",
+        "cable-handle"
+      ],
+      "equipmentGroups": [
+        [
+          "cable-machine",
+          "high-pulley",
+          "low-pulley"
+        ],
+        [
+          "cable-handle"
+        ]
+      ],
+      "pattern": "core",
+      "kind": "isolation",
+      "metric": "load-reps",
+      "unilateral": true,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        10,
+        15
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 60,
+      "alternatives": [
+        "pallof-press",
+        "side-plank"
+      ],
+      "instructions": {
+        "setup": "Poulie haute avec une poignée, debout de côté, pieds à la largeur des épaules, poignée tenue à deux mains au-dessus de l’épaule proche de la poulie.",
+        "execution": "Tire la poignée en diagonale vers la hanche opposée en faisant pivoter le tronc et en gardant les bras presque tendus, puis reviens lentement. Même nombre de répétitions de chaque côté.",
+        "mistakes": [
+          "Tirer avec les bras sans pivoter le tronc.",
+          "Cambrer le bas du dos.",
+          "Prendre une charge qui empêche de contrôler le retour."
+        ]
+      },
+      "media": {
+        "images": [],
+        "video": null,
+        "license": null,
+        "source": null
+      },
+      "strengthStandardKey": null,
+      "schemaVersion": 1
+    },
+    {
+      "id": "russian-twist",
+      "nameFr": "Russian twist",
+      "group": "abs",
+      "aliasesEn": [
+        "russian twist"
+      ],
+      "muscles": [
+        {
+          "id": "obliques",
+          "weight": 1,
+          "role": "primary"
+        },
+        {
+          "id": "abs",
+          "weight": 0.5,
+          "role": "secondary"
+        },
+        {
+          "id": "hip-flexors",
+          "weight": 0.3,
+          "role": "secondary"
+        }
+      ],
+      "equipment": [
+        "bodyweight",
+        "mat"
+      ],
+      "equipmentGroups": [
+        [
+          "bodyweight"
+        ],
+        [
+          "mat"
+        ]
+      ],
+      "pattern": "core",
+      "kind": "isolation",
+      "metric": "bodyweight-reps",
+      "unilateral": false,
+      "bodyweightFraction": null,
+      "defaultRepRange": [
+        12,
+        20
+      ],
+      "defaultDurationSec": null,
+      "defaultDistanceM": null,
+      "defaultRestSec": 45,
+      "alternatives": [
+        "side-plank",
+        "pallof-press"
+      ],
+      "instructions": {
+        "setup": "Assis sur un tapis, genoux fléchis, buste incliné en arrière à 45° environ, dos droit, mains jointes devant la poitrine (un disque ou un haltère léger en option).",
+        "execution": "Fais pivoter le tronc de gauche à droite en menant avec les épaules, marque une courte pause de chaque côté, en gardant le buste incliné et le dos droit.",
+        "mistakes": [
+          "Arrondir le dos.",
+          "Bouger seulement les bras sans pivoter le tronc.",
+          "Aller trop vite avec une charge trop lourde."
         ]
       },
       "media": {

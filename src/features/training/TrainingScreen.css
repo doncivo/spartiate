@@ -412,3 +412,8 @@
 .ct-training-shell[data-layout='pc'] .ct-training__card--wide {
   grid-column: 1 / -1;
 }
+
+/* FIX-092 : aucun enfant direct de la colonne ne rétrécit (un enfant à overflow autre que visible tomberait à une hauteur minimale de 0). */
+.ct-training > * {
+  flex-shrink: 0;
+}
