@@ -94,7 +94,7 @@ describe('REV-01 constat 1 : l’export contient la séance ouverte', () => {
     const imported = await repo.getClosed(W_OPEN);
     expect(imported).not.toBeNull();
     const lastDone = Math.max(...(imported?.sets ?? []).map((s) => (s.doneAt ? Date.parse(s.doneAt) : 0)));
-    expect(Date.parse(imported?.workout.endedAt ?? '')).toBe(lastDone);
+    expect(Date.parse(imported?.endedAt ?? '')).toBe(lastDone);
     expect(await queuedRows(target, 'workout')).toContain(W_OPEN);
   });
 
