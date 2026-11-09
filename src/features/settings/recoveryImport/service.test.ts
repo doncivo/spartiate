@@ -266,4 +266,14 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     expect(again.recomputedDays).toBe(2);
   });
 
+  it('correction de revue 5 : le jour passé est calculé à la fin du jour LOCAL ; une séance finie à 0 h 30 (Paris) le lendemain n’entre pas dans ses muscles', async () => {
+    workouts = [CHEST_WORKOUT('2026-11-08T23:30:00.000Z')];
+    const sleepOnly = '2026-11-07T23:00:00+01:00;2026-11-08T07:00:00+01:00;Endormi\n';
+    await build(reader(async () => [ok('sommeil.csv', sleepOnly)]), { clock: createManualClock('2026-11-10T10:00:00.000Z') }).run('manual');
+    const recovery = await db.data.repos.recovery();
+    expect(await recovery.getDay('2026-11-08' as LocalDate)).not.toBeNull();
+    expect(await recovery.listMuscles('2026-11-08' as LocalDate)).toEqual([]);
+    expect((await recovery.listMuscles('2026-11-09' as LocalDate)).map((m) => m.muscleId)).toEqual(['chest']);
+    expect((await recovery.getDay('2026-11-08' as LocalDate))?.summary.computedAt).toBe('2026-11-08T22:59:59.999Z');
+  });
 });
