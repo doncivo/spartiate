@@ -215,7 +215,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     return () => {
       live.current = false;
     };
-  }, [access, exerciseId, workout.id, workout.routineId, workout.startedAt, attempt]);
+  }, [access, exerciseId, workout.id, workout.routineId, workout.startedAt, attempt]); // eslint-disable-line react-hooks/exhaustive-deps -- musclesOf change à chaque rendu ; le rang de référence et le poids de corps se relisent au rechargement
 
   useEffect(() => {
     if (editing !== null) editLoad.current?.focus();
