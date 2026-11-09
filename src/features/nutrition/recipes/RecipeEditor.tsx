@@ -11,6 +11,8 @@ import './Recipes.css';
 interface Row {
   readonly key: number;
   readonly ingredient: DraftIngredient;
+  /** Identifiant de l'ingrédient déjà enregistré, repassé tel quel à la modification (D-80, § 7 : même ligne) ; absent pour un ingrédient neuf. */
+  readonly id?: string;
   /** Grammes en cours de saisie (texte) : corrigeables, validés à l'enregistrement. */
   readonly grams: string;
 }
@@ -40,7 +42,7 @@ export function RecipeEditor({ recipe, onSaved, onCancel }: RecipeEditorProps) {
   const [name, setName] = useState(recipe?.name ?? '');
   const [servings, setServings] = useState(String(recipe?.servings ?? 1));
   const [cooked, setCooked] = useState(text(recipe?.cookedWeightG ?? null));
-  const [rows, setRows] = useState<readonly Row[]>(() => (recipe?.ingredients ?? []).map((i, key) => ({ key, ingredient: { name: i.name, source: i.source, foodRef: i.foodRef, grams: i.grams, per100g: i.per100g }, grams: String(i.grams) })));
+  const [rows, setRows] = useState<readonly Row[]>(() => (recipe?.ingredients ?? []).map((i, key) => ({ key, id: i.id, ingredient: { name: i.name, source: i.source, foodRef: i.foodRef, grams: i.grams, per100g: i.per100g }, grams: String(i.grams) })));
   const [picking, setPicking] = useState(false);
   const [attempted, setAttempted] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -50,7 +52,7 @@ export function RecipeEditor({ recipe, onSaved, onCancel }: RecipeEditorProps) {
     name,
     servings: numberOrNaN(servings),
     cookedWeightG: cooked.trim() === '' ? null : numberOrNaN(cooked),
-    ingredients: rows.map((r) => ({ ...r.ingredient, grams: numberOrNaN(r.grams) })),
+    ingredients: rows.map((r) => ({ ...r.ingredient, ...(r.id === undefined ? {} : { id: r.id }), grams: numberOrNaN(r.grams) })),
   };
   const problems = validateRecipeDraft(draft);
   const names = rows.map((r) => r.ingredient.name);
