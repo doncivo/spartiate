@@ -105,6 +105,18 @@ export const floorCase = (): Scenario =>
   });
 
 /**
+ * Trois semaines sans pesée (I4-08 point 7) : tous les jours loggés complets à 2 400 kcal, une pesée un jour sur deux jusqu'au jour 34
+ * (poids stable à 80 kg), puis plus aucune : à la fin du jour 55, la dernière pesée a 21 jours.
+ */
+export const threeWeeksWithoutWeighIn = (): Scenario =>
+  build({
+    name: 'trois semaines sans pesée',
+    logged: () => true,
+    kcal: () => 2400,
+    weight: (i) => (i <= 34 && i % 2 === 0 ? 80 : null),
+  });
+
+/**
  * Saisie en deux fois (I4-07) : petit-déjeuner et déjeuner saisis à 13:00, dîner à 20:30 (7,5 h d'amplitude) chaque jour. Déduit « partiel »
  * (moins de 8 h) ; devient complet quand Ali déclare la journée complète.
  */

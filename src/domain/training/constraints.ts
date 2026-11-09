@@ -9,6 +9,7 @@ import type { ExerciseKind, ProposalOption, RecoverySnapshot } from './types';
  *
  * - Fatigue : la dernière séance valide comparée à la dernière séance valide antérieure faite à la MÊME charge (charge maximale de chaque
  *   séance) ; baisse des répétitions, sur les séries communes, strictement au-delà de 20 % → maintien et deux choix (−5 % ou −2 reps).
+ *   I4-08 : une séance où l'un de ces choix a été retenu (`fatigueChoice`) n'est jamais comparée ni base de comparaison.
  * - Stagnation : 3 séances valides de suite sans progrès sur la précédente (4 séances valides) → trois choix (variante, autre plage,
  *   mini-deload −10 %). Une séance ignorée (moins de 50 % faite) ou un jour sans séance n'est ni un progrès ni une régression.
  * - Inactivité : à partir de 14 jours sans le muscle, −1 % par semaine complète au-delà du seuil (première décote à J21), plancher −10 %.
@@ -52,9 +53,12 @@ export function progressed(latest: Performance, previous: Performance): boolean 
 /** Fatigue : la dernière séance comparée à la dernière séance antérieure à même charge (`estimates` de la plus récente à la plus ancienne). */
 export function isFatigued(estimates: readonly SessionEstimate[], config: ProgressionConfig): boolean {
   const [last, ...earlier] = estimates;
-  if (last === undefined) return false;
+  // I4-08 : une séance où Ali a retenu un choix de fatigue (−5 % ou −2 reps) a baissé volontairement : ni comparée, ni base de comparaison.
+  if (last === undefined || last.fatigueChoice === true) return false;
   const latest = performanceOf(last);
-  const comparable = earlier.map(performanceOf).find((p) => Math.abs(p.loadKg - latest.loadKg) <= EPS);
+  const comparable = earlier
+    .filter((e) => e.fatigueChoice !== true)
+    .map(performanceOf).find((p) => Math.abs(p.loadKg - latest.loadKg) <= EPS);
   return comparable !== undefined && repsDrop(comparable.reps, latest.reps) > config.fatigueDrop + EPS;
 }
 

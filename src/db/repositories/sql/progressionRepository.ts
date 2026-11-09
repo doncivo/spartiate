@@ -8,7 +8,15 @@ import { DIFFICULTIES, type Difficulty, type ExerciseSession, type HistorySet, t
 import { isIsoDateTime, type IsoDateTime } from '../../../domain/types';
 import type { SqlExecutor, SqlRow } from '../../driver';
 import { RepositoryError } from '../common';
-import type { ProgressionProfileInput, ProgressionProfileRecord, ProgressionRepository, RecommendationDecisionRecord, RecordDecisionInput } from '../progressionRepository';
+import {
+  DECISION_UNREADABLE,
+  type DecisionReadReporter,
+  type ProgressionProfileInput,
+  type ProgressionProfileRecord,
+  type ProgressionRepository,
+  type RecommendationDecisionRecord,
+  type RecordDecisionInput,
+} from '../progressionRepository';
 import { readSyncMeta, type SyncRow } from './sqlHelpers';
 
 /** Implémentation SQL de `ProgressionRepository` (I2-01, migrations 0005 et 0006 : tables publiées, captures par déclencheurs). */
@@ -44,6 +52,8 @@ interface DecisionRow extends SqlRow, SyncRow {
 }
 
 const EXERCISE_ID_MAX = 128;
+/** I4-08 : décisions lues au plus pour trouver la plus récente lisible (borne de la lecture ; au-delà, aucune référence). */
+const DECISIONS_SCANNED = 20;
 /** Identifiant naturel du profil d'un exercice (une ligne par exercice, quel que soit l'appareil). */
 export const progressionProfileId = progressionId;
 const isDifficulty = (v: string | null): v is Difficulty => v !== null && (DIFFICULTIES as readonly string[]).includes(v);
@@ -57,19 +67,52 @@ const rowToProfile = (row: ProfileRow): ProgressionProfileRecord => ({
   engineVersion: row.engine_version,
   ...readSyncMeta(row),
 });
-const rowToDecision = (row: DecisionRow): RecommendationDecisionRecord => ({
-  id: row.id,
-  exerciseId: row.exercise_id,
-  workoutId: row.workout_id,
-  workoutSetId: row.workout_set_id,
-  engineVersion: row.engine_version,
-  prescription: JSON.parse(row.prescription) as Prescription,
-  accepted: row.accepted === 1,
-  loadKg: row.chosen_load_kg,
-  reps: JSON.parse(row.chosen_reps) as number[],
-  decidedAt: row.decided_at as IsoDateTime,
-  ...readSyncMeta(row),
-});
+const parseOrNull = (text: string): unknown => {
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return undefined;
+  }
+};
+/** Forme minimale d'une prescription tracée relue par l'app (moteur 1 et suivants). */
+const isPrescriptionShape = (v: unknown): v is Prescription => {
+  const p = v as Partial<Record<keyof Prescription, unknown>> | null;
+  return typeof v === 'object' && p !== null && !Array.isArray(v) && typeof p.engineVersion === 'number' && typeof p.status === 'string' && Array.isArray(p.sets) && Array.isArray(p.reasons);
+};
+
+/**
+ * I4-08 : décision lue, ou null si son JSON est illisible (prescription ou répétitions retenues altérées, autre version) : la ligne est
+ * ignorée, jamais une exception (l'écran de séance ne tombe pas). Le rapporteur reçoit un nom d'événement fixe, jamais le contenu.
+ */
+function rowToDecision(row: DecisionRow, report?: DecisionReadReporter): RecommendationDecisionRecord | null {
+  const prescription = parseOrNull(row.prescription);
+  const reps = parseOrNull(row.chosen_reps);
+  if (!isPrescriptionShape(prescription) || !Array.isArray(reps) || !reps.every((r) => typeof r === 'number' && Number.isFinite(r))) {
+    report?.(DECISION_UNREADABLE);
+    return null;
+  }
+  return {
+    id: row.id,
+    exerciseId: row.exercise_id,
+    workoutId: row.workout_id,
+    workoutSetId: row.workout_set_id,
+    engineVersion: row.engine_version,
+    prescription,
+    accepted: row.accepted === 1,
+    loadKg: row.chosen_load_kg,
+    reps: reps as number[],
+    decidedAt: row.decided_at as IsoDateTime,
+    ...readSyncMeta(row),
+  };
+}
+/** Première décision lisible des lignes (déjà ordonnées), ou null. */
+const firstReadable = (rows: readonly DecisionRow[], report?: DecisionReadReporter): RecommendationDecisionRecord | null => {
+  for (const row of rows) {
+    const decision = rowToDecision(row, report);
+    if (decision !== null) return decision;
+  }
+  return null;
+};
 
 /**
  * Décision retenue sur une proposition de deload (I2-02) : acceptée telle quelle, ou valeur retenue au plus à la charge du deload (un
@@ -85,6 +128,39 @@ function isRetainedDeload(row: { readonly prescription: string; readonly accepte
   } catch {
     return false;
   }
+}
+
+/**
+ * I4-08 : décision qui a retenu un choix de fatigue (« −5 % » ou « −2 reps ») : modification dont la charge et les répétitions sont exactement
+ * celles d'un choix `fatigue-load` ou `fatigue-reps` de la prescription tracée. Acceptation, refus, autre valeur ou JSON illisible : non.
+ */
+function isRetainedFatigueChoice(row: { readonly prescription: string; readonly accepted: number; readonly chosen_load_kg: number | null; readonly chosen_reps: string }): boolean {
+  if (row.accepted === 1 || row.chosen_load_kg === null) return false;
+  try {
+    const p = JSON.parse(row.prescription) as { options?: unknown } | null;
+    const reps = JSON.parse(row.chosen_reps) as unknown;
+    if (!Array.isArray(p?.options) || !Array.isArray(reps)) return false;
+    return p.options.some((o: unknown) => {
+      const option = o as { kind?: unknown; loadKg?: unknown; reps?: unknown } | null;
+      return (
+        (option?.kind === 'fatigue-load' || option?.kind === 'fatigue-reps') &&
+        typeof option.loadKg === 'number' &&
+        Math.abs(option.loadKg - (row.chosen_load_kg ?? NaN)) <= 1e-9 &&
+        Array.isArray(option.reps) &&
+        option.reps.length === reps.length &&
+        option.reps.every((r, i) => r === reps[i])
+      );
+    });
+  } catch {
+    return false;
+  }
+}
+
+/** I4-08 : RIR cible de la prescription tracée (`rirTarget`, entier 0 à 10), ou null (absent, illisible, prescription 0.3.1). */
+function targetRirOf(prescription: string): number | null {
+  const p = parseOrNull(prescription) as { rirTarget?: unknown } | null | undefined;
+  const rir = typeof p === 'object' && p !== null ? p.rirTarget : null;
+  return typeof rir === 'number' && Number.isInteger(rir) && rir >= 0 && rir <= 10 ? rir : null;
 }
 
 const validExerciseId = (id: string): boolean => id.length >= 1 && id.length <= EXERCISE_ID_MAX;
@@ -123,19 +199,38 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
       }
       // Deload (I2-02) : la dernière décision de l'exercice dans la séance a retenu une proposition de deload (acceptée, ou valeur retenue au
       // plus à sa charge). Aucune colonne nouvelle : le marqueur est lu dans la prescription tracée (publiée avec la séance, D-27).
+      // I4-08 : même lecture pour le choix de fatigue retenu (`fatigueChoice`), aucune colonne nouvelle.
       const deloads = new Set<string>();
+      const fatigueChoices = new Set<string>();
+      const targetRirs = new Map<string, number>();
       if (sessions.length > 0) {
-        const decided = await db.select<{ workout_id: string; prescription: string; accepted: number; chosen_load_kg: number | null } & SqlRow>(
-          `SELECT workout_id, prescription, accepted, chosen_load_kg FROM recommendation_decision
+        type Decided = { prescription: string; accepted: number; chosen_load_kg: number | null; chosen_reps: string };
+        const decided = await db.select<{ workout_id: string } & Decided & SqlRow>(
+          `SELECT workout_id, prescription, accepted, chosen_load_kg, chosen_reps FROM recommendation_decision
            WHERE exercise_id = ? AND deleted_at IS NULL AND workout_id IN (${sessions.map(() => '?').join(', ')})
            ORDER BY workout_id, decided_at, id`,
           [exerciseId, ...sessions.map((s) => s.workoutId)],
         );
-        const latest = new Map<string, { prescription: string; accepted: number; chosen_load_kg: number | null }>();
+        const latest = new Map<string, Decided>();
         for (const row of decided) latest.set(row.workout_id, row);
-        for (const [workoutId, row] of latest) if (isRetainedDeload(row)) deloads.add(workoutId);
+        for (const [workoutId, row] of latest) {
+          if (isRetainedDeload(row)) deloads.add(workoutId);
+          else if (isRetainedFatigueChoice(row)) fatigueChoices.add(workoutId);
+          const rir = targetRirOf(row.prescription);
+          if (rir !== null) targetRirs.set(workoutId, rir);
+        }
       }
-      return sessions.map((s): ExerciseSession => ({ workoutId: s.workoutId, endedAt: s.endedAt, difficulty: s.difficulty, sets: s.sets, ...(deloads.has(s.workoutId) ? { deload: true } : {}) }));
+      return sessions.map(
+        (s): ExerciseSession => ({
+          workoutId: s.workoutId,
+          endedAt: s.endedAt,
+          difficulty: s.difficulty,
+          sets: s.sets,
+          ...(deloads.has(s.workoutId) ? { deload: true } : {}),
+          ...(fatigueChoices.has(s.workoutId) ? { fatigueChoice: true } : {}),
+          ...((rir) => (rir === undefined ? {} : { targetRir: rir }))(targetRirs.get(s.workoutId)),
+        }),
+      );
     },
 
     async getProfile(exerciseId) {
@@ -201,41 +296,42 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
         ],
       );
       const row = (await db.select<DecisionRow>('SELECT * FROM recommendation_decision WHERE id = ?', [id]))[0];
-      if (!row) throw new RepositoryError('not-found', 'recommendation_decision', id);
-      return rowToDecision(row);
+      const written = row ? rowToDecision(row) : null;
+      if (!written) throw new RepositoryError('not-found', 'recommendation_decision', id);
+      return written;
     },
 
-    async lastDecision(exerciseId) {
+    async lastDecision(exerciseId, report) {
       // Revue de la #61 (D-27) : seulement une décision d'une séance CLOSE et non supprimée ; jamais d'une séance ouverte ou abandonnée.
-      const row = (
-        await db.select<DecisionRow>(
-          `SELECT d.* FROM recommendation_decision d JOIN workout w ON w.id = d.workout_id
-           WHERE d.exercise_id = ? AND d.deleted_at IS NULL AND w.ended_at IS NOT NULL AND w.deleted_at IS NULL
-           ORDER BY d.decided_at DESC, d.id DESC LIMIT 1`,
-          [exerciseId],
-        )
-      )[0];
-      return row ? rowToDecision(row) : null;
+      // I4-08 : une décision illisible est sautée (la plus récente lisible sert), jamais une exception.
+      const rows = await db.select<DecisionRow>(
+        `SELECT d.* FROM recommendation_decision d JOIN workout w ON w.id = d.workout_id
+         WHERE d.exercise_id = ? AND d.deleted_at IS NULL AND w.ended_at IS NOT NULL AND w.deleted_at IS NULL
+         ORDER BY d.decided_at DESC, d.id DESC LIMIT ?`,
+        [exerciseId, DECISIONS_SCANNED],
+      );
+      return firstReadable(rows, report);
     },
 
-    async decisionFor(workoutId, exerciseId) {
-      const row = (
-        await db.select<DecisionRow>('SELECT * FROM recommendation_decision WHERE workout_id = ? AND exercise_id = ? AND deleted_at IS NULL ORDER BY decided_at DESC, id DESC LIMIT 1', [
-          workoutId,
-          exerciseId,
-        ])
-      )[0];
-      return row ? rowToDecision(row) : null;
+    async decisionFor(workoutId, exerciseId, report) {
+      const rows = await db.select<DecisionRow>('SELECT * FROM recommendation_decision WHERE workout_id = ? AND exercise_id = ? AND deleted_at IS NULL ORDER BY decided_at DESC, id DESC LIMIT ?', [
+        workoutId,
+        exerciseId,
+        DECISIONS_SCANNED,
+      ]);
+      return firstReadable(rows, report);
     },
 
-    async applyClosedWorkout(workoutId) {
+    async applyClosedWorkout(workoutId, report) {
       const workout = (await db.select<{ ended_at: string | null; deleted_at: string | null } & SqlRow>('SELECT ended_at, deleted_at FROM workout WHERE id = ?', [workoutId]))[0];
       if (!workout || workout.deleted_at !== null) throw new RepositoryError('not-found', 'workout', workoutId);
       if (workout.ended_at === null) invalid('workout', workoutId);
       const rows = await db.select<DecisionRow>('SELECT * FROM recommendation_decision WHERE workout_id = ? AND deleted_at IS NULL ORDER BY exercise_id, decided_at DESC, id DESC', [workoutId]);
-      const latest = new Map<string, RecommendationDecisionRecord>();
-      for (const row of rows) if (!latest.has(row.exercise_id)) latest.set(row.exercise_id, rowToDecision(row));
+      // I4-08 : dernière décision illisible : exercice sauté (jamais une décision plus ancienne, qu'Ali a pu remplacer).
+      const latest = new Map<string, RecommendationDecisionRecord | null>();
+      for (const row of rows) if (!latest.has(row.exercise_id)) latest.set(row.exercise_id, rowToDecision(row, report));
       for (const decision of latest.values()) {
+        if (decision === null) continue;
         const kept = recalibrationKept(decision.prescription, decision.loadKg);
         if (kept === null || !isProgressionExerciseId(decision.exerciseId)) continue;
         // Une séance se clôture toujours (re-relecture sync-icloud) : une prescription stockée invalide (valeur hors bornes) saute cet

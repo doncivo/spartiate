@@ -49,6 +49,8 @@ export interface SessionEstimate {
   readonly validSets: number;
   /** Séries retenues (éligibles, non aberrantes), par position. */
   readonly sets: readonly (HistorySet & { readonly loadKg: number; readonly reps: number })[];
+  /** I4-08 : choix de fatigue retenu pour cette séance (`ExerciseSession.fatigueChoice`) ; absent : non. */
+  readonly fatigueChoice?: boolean;
 }
 
 export interface HistoryAnalysis {
@@ -69,6 +71,8 @@ const REPEAT_CONFIRMS_FROM = 0.9;
 
 /** Ordre chronologique stable : fin de séance, puis identifiant. */
 const chronological = (a: ExerciseSession, b: ExerciseSession): number => (a.endedAt < b.endedAt ? -1 : a.endedAt > b.endedAt ? 1 : a.workoutId < b.workoutId ? -1 : a.workoutId > b.workoutId ? 1 : 0);
+
+const fatigueMark = (session: ExerciseSession): { readonly fatigueChoice?: true } => (session.fatigueChoice === true ? { fatigueChoice: true } : {});
 
 export function analyzeHistory(history: readonly ExerciseSession[], config: ProgressionConfig): HistoryAnalysis {
   const valid: SessionEstimate[] = [];
@@ -98,7 +102,7 @@ export function analyzeHistory(history: readonly ExerciseSession[], config: Prog
     if (eligible.length > 0) {
       const all = [...eligible].sort((a, b) => a.position - b.position);
       const top = all.reduce((t, s) => (epley(s.loadKg, s.reps) > epley(t.loadKg, t.reps) ? s : t));
-      latestRaw = { workoutId: session.workoutId, endedAt: session.endedAt, difficulty: session.difficulty, e1rmKg: epley(top.loadKg, top.reps), quality: 1, validSets: all.length, sets: all };
+      latestRaw = { workoutId: session.workoutId, endedAt: session.endedAt, difficulty: session.difficulty, e1rmKg: epley(top.loadKg, top.reps), quality: 1, validSets: all.length, sets: all, ...fatigueMark(session) };
     }
     if (kept.length === 0) continue;
     const sets = [...kept].sort((a, b) => a.position - b.position);
@@ -112,6 +116,7 @@ export function analyzeHistory(history: readonly ExerciseSession[], config: Prog
       quality: setWeight(best, current, config),
       validSets: sets.length,
       sets,
+      ...fatigueMark(session),
     });
   }
   return { estimates: valid, latest, latestRaw };

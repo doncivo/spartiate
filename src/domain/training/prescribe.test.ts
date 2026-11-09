@@ -174,11 +174,12 @@ describe('difficulté (critère 7)', () => {
     expect(p.recalibration?.estimated1rmKg).toBeCloseTo(79.8, 10);
   });
 
-  it('recalibrage sur haltères : 10 × 1,05 = 10,5 → 10 kg (écart 5 % > 3 %) et une répétition de plus par série', () => {
+  it('recalibrage sur haltères : 10 × 1,05 = 10,5 → 10 kg, charge inchangée → pas de recalibrage, échelle de répétitions (I4-08 ; avant : 11-11-11 « +0 kg »)', () => {
     const p = prescribe(input({ exercise: CURL, history: [session(3, 10, [10, 10, 10], { difficulty: 'easy' })], target: target(8, 12) }));
     expect(p.loadKg).toBe(10);
-    expect(reps(p)).toEqual([11, 11, 11]);
-    expect(p.reasons).toEqual(['history-reference', 'easy-recalibration', 'snap-extra-rep']);
+    expect(reps(p)).toEqual([11, 10, 10]);
+    expect(p.reasons).toEqual(['history-reference', 'rep-ladder']);
+    expect(p.recalibration).toBeNull();
   });
 
   it('une fois par exercice et par 30 jours : recalibrage il y a 10 jours → échelle de répétitions ; il y a 30 jours → recalibrage', () => {
@@ -381,11 +382,11 @@ describe('cas limites (passe qa-test)', () => {
     expect(p.reasons).toEqual(['history-reference', 'top-reached', 'increment-unknown']);
   });
 
-  it('paire d’haltères hors grille (9 kg) : la référence reste disponible, recalibrage +5 % → 9 kg et une rep de plus', () => {
+  it('paire d’haltères hors grille (9 kg) : la référence reste disponible ; +5 % → 9 kg, charge inchangée → échelle de répétitions (I4-08)', () => {
     const p = prescribe(input({ exercise: CURL, history: [session(3, 9, [10, 10, 10], { difficulty: 'easy' })], target: target(8, 12) }));
     expect(p.loadKg).toBe(9);
-    expect(reps(p)).toEqual([11, 11, 11]);
-    expect(p.reasons).toEqual(['history-reference', 'easy-recalibration', 'snap-extra-rep']);
+    expect(reps(p)).toEqual([11, 10, 10]);
+    expect(p.reasons).toEqual(['history-reference', 'rep-ladder']);
   });
 
   it('séances terminées au même instant : départage stable par identifiant', () => {
