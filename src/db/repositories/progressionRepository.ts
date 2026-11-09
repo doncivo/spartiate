@@ -63,18 +63,27 @@ export interface RecommendationDecisionRecord extends DecisionReference {
   readonly hlc: Hlc;
 }
 
+/** I4-08 : nom d'événement FIXE d'une décision tracée illisible (JSON altéré, autre version) ; jamais son contenu ni une valeur. */
+export const DECISION_UNREADABLE = 'progression-decision-unreadable';
+export type DecisionReadEvent = typeof DECISION_UNREADABLE;
+/** Rapporteur facultatif des lectures (journal technique côté écran : `logFailure('training', event)`). */
+export type DecisionReadReporter = (event: DecisionReadEvent) => void;
+
 export interface ProgressionRepository {
   history(exerciseId: string, limit?: number): Promise<ExerciseSession[]>;
   getProfile(exerciseId: string): Promise<ProgressionProfileRecord | null>;
   saveProfile(input: ProgressionProfileInput): Promise<ProgressionProfileRecord>;
   recordDecision(input: RecordDecisionInput): Promise<RecommendationDecisionRecord>;
-  /** Dernière décision non supprimée d'une séance CLOSE non supprimée (date, puis identifiant), ou null : jamais d'une séance ouverte ou abandonnée. */
-  lastDecision(exerciseId: string): Promise<RecommendationDecisionRecord | null>;
-  /** Dernière décision de cet exercice dans cette séance (ouverte comprise), ou null : état affiché dans la séance en cours. */
-  decisionFor(workoutId: string, exerciseId: string): Promise<RecommendationDecisionRecord | null>;
+  /**
+   * Dernière décision non supprimée d'une séance CLOSE non supprimée (date, puis identifiant), ou null : jamais d'une séance ouverte ou
+   * abandonnée. I4-08 : une décision illisible est ignorée (la plus récente lisible sert) et signalée à `report`.
+   */
+  lastDecision(exerciseId: string, report?: DecisionReadReporter): Promise<RecommendationDecisionRecord | null>;
+  /** Dernière décision lisible de cet exercice dans cette séance (ouverte comprise), ou null : état affiché dans la séance en cours. */
+  decisionFor(workoutId: string, exerciseId: string, report?: DecisionReadReporter): Promise<RecommendationDecisionRecord | null>;
   /**
    * Après la clôture (même transaction) : recalibrage « Facile » consigné dans le profil si la charge retenue est au moins la charge recalée
-   * (`recalibrationKept`). Séance absente ou supprimée : `'not-found'` ; ouverte : `'invalid'`.
+   * (`recalibrationKept`). Séance absente ou supprimée : `'not-found'` ; ouverte : `'invalid'`. Dernière décision illisible : exercice sauté.
    */
-  applyClosedWorkout(workoutId: string): Promise<void>;
+  applyClosedWorkout(workoutId: string, report?: DecisionReadReporter): Promise<void>;
 }
