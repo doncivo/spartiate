@@ -789,6 +789,42 @@ pub fn reset_triggers(path: &Path) -> Result<(), BackupError> {
     tx.commit().map_err(sql_err)
 }
 
+/// DEP-01 (D-84, RUSTSEC-2026-0459) : garde-fou posé AVANT toute ouverture. Un `-wal` voisin dont la taille de page (octets 8 à 11 de son en-tête,
+/// grand-boutiste) diffère de celle de la base (octets 16 et 17, 1 = 65 536) est le montage de l'avis : le fichier est refusé, un événement de nom
+/// fixe est journalisé. Une sauvegarde de l'app n'a pas de `-wal` ; un `-wal` absent, trop court ou sans la bonne signature ne change rien ici.
+fn refuse_foreign_wal(path: &Path) -> Result<(), BackupError> {
+    use std::io::Read;
+    let Ok(mut wal) = fs::File::open(sidecar(path, "-wal")) else {
+        return Ok(());
+    };
+    let mut wal_head = [0u8; 12];
+    if wal.read_exact(&mut wal_head).is_err() {
+        return Ok(());
+    }
+    let magic = u32::from_be_bytes([wal_head[0], wal_head[1], wal_head[2], wal_head[3]]);
+    if magic != 0x377f_0682 && magic != 0x377f_0683 {
+        return Ok(());
+    }
+    let wal_page = u32::from_be_bytes([wal_head[8], wal_head[9], wal_head[10], wal_head[11]]);
+    let mut db_head = [0u8; 18];
+    let Ok(mut db) = fs::File::open(path) else {
+        return Ok(());
+    };
+    if db.read_exact(&mut db_head).is_err() {
+        return Ok(());
+    }
+    let raw = u16::from_be_bytes([db_head[16], db_head[17]]);
+    let db_page = if raw == 1 { 65_536 } else { u32::from(raw) };
+    if wal_page != db_page {
+        crate::applog::write("backup", "wal-page-size-mismatch");
+        return Err(BackupError::new(
+            "wal-page-size",
+            "le journal -wal voisin annonce une autre taille de page que la base",
+        ));
+    }
+    Ok(())
+}
+
 /// Vérifie un fichier de sauvegarde (P-04 critères 6 et 7) : base SQLite lisible, `PRAGMA integrity_check` = ok, table
 /// `schema_migrations` non vide, version <= `app_version`. Renvoie la version de schéma. Codes : `corrupt`, `newer-schema`.
 pub fn check_backup_file(path: &Path, app_version: u32) -> Result<u32, BackupError> {
@@ -799,6 +835,7 @@ pub fn check_backup_file(path: &Path, app_version: u32) -> Result<u32, BackupErr
     if fs::metadata(path).map_err(io_err)?.len() > MAX_BACKUP_BYTES {
         return Err(corrupt("sauvegarde de plus de 512 Mo".into()));
     }
+    refuse_foreign_wal(path)?;
     let conn = open_read_only(path).map_err(|e| corrupt(e.to_string()))?;
     let mut statement = conn
         .prepare("PRAGMA integrity_check")

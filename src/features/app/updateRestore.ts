@@ -24,6 +24,7 @@ export type UpdateRestoreOutcome =
 /** Exhaustif à la compilation (revue B1) : une raison ajoutée à `BackupFailureReason` sans texte casse le typage. */
 const REASON_KEYS = {
   corrupt: 'backup.errorCorrupt',
+  'wal-page-size': 'backup.errorWalPageSize',
   'newer-schema': 'backup.errorNewer',
   'not-found': 'backup.errorNotFound',
   io: 'backup.errorIo',
