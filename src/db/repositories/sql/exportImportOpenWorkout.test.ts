@@ -135,3 +135,35 @@ describe('REV-01 constat 1 : l’export contient la séance ouverte', () => {
     expect((await (await db.data.repos.workouts()).getOpen())?.sets).toHaveLength(2);
   });
 });
+
+describe('REV-01 constat 1 : suites de la relecture sync-icloud', () => {
+  it('(a) séance ouverte de même identifiant ici et dans l’archive : la série validée après l’export n’est pas écrasée, en fusion et en remplacement', async () => {
+    for (const mode of ['merge', 'replace'] as const) {
+      const db = await seeded(A);
+      const archive = await viaArchive(await read(db));
+      const w = await (await db.data.repos.workouts()).getOpen();
+      const todo = w?.sets.find((s) => !s.done);
+      if (!todo) throw new Error('série à faire attendue');
+      db.clock.advance(5_000);
+      await (await db.data.repos.workouts()).validateSet(todo.id, { reps: 9, loadKg: 72 });
+      await importInto(db, archive, mode);
+      const after = (await (await db.data.repos.workouts()).getOpen())?.sets.find((s) => s.id === todo.id);
+      expect(after).toMatchObject({ done: true, reps: 9, loadKg: 72 });
+    }
+  });
+
+  it('(c) séance close puis supprimée ici, ouverte dans l’archive : jamais rouverte, rien en file', async () => {
+    const source = await seeded(A);
+    const archive = await viaArchive(await read(source));
+    const target = await open(B);
+    await importInto(target, archive, 'merge');
+    await target.data.transaction(async (repos) => (await repos.workouts()).close(W_OPEN));
+    await target.driver.execute('UPDATE workout SET deleted_at = ? WHERE id = ?', ['2026-11-10T10:00:00.000Z', W_OPEN]);
+    await target.driver.execute('DELETE FROM sync_outbox');
+    await importInto(target, archive, 'merge');
+    const row = (await target.driver.select<{ ended_at: string | null; deleted_at: string | null }>('SELECT ended_at, deleted_at FROM workout WHERE id = ?', [W_OPEN]))[0];
+    expect(row?.ended_at).not.toBeNull();
+    expect(row?.deleted_at).not.toBeNull();
+    expect((await queuedRows(target, 'workout')).includes(W_OPEN)).toBe(false);
+  });
+});
