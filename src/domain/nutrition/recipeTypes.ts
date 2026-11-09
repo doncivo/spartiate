@@ -8,6 +8,8 @@ import type { IsoDateTime } from '../types';
 import type { Per100g } from './food';
 
 export const RECIPE_NAME_MAX = 120;
+/** Borne UNIQUE du nom d'un ingrédient (REV-01 constat 7) : instantané depuis un aliment, validation du domaine, dépôt et archive. = CHECK de la table (sans migration). */
+export const RECIPE_INGREDIENT_NAME_MAX = 120;
 export const RECIPE_SERVINGS_MAX = 100;
 export const RECIPE_COOKED_WEIGHT_MAX_G = 20_000;
 export const RECIPE_INGREDIENT_MAX = 60;

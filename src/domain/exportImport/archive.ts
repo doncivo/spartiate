@@ -23,7 +23,7 @@ import type { ThemeChoice } from '../model/settings';
 import { isIsoDateTime, isLocalDate } from '../types';
 import { SYNC_CATALOGUE, type SyncTable } from '../../domain/sync/syncTables';
 import { sha256Hex } from './sha256';
-import { RECIPE_COOKED_WEIGHT_MAX_G, RECIPE_INGREDIENT_GRAMS_MAX, RECIPE_NAME_MAX, RECIPE_SERVINGS_MAX } from '../nutrition/recipeTypes';
+import { RECIPE_COOKED_WEIGHT_MAX_G, RECIPE_INGREDIENT_GRAMS_MAX, RECIPE_INGREDIENT_NAME_MAX, RECIPE_NAME_MAX, RECIPE_SERVINGS_MAX } from '../nutrition/recipeTypes';
 import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
 
@@ -70,6 +70,12 @@ export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine
  */
 const LATER_COLUMNS: Readonly<Partial<Record<string, readonly string[]>>> = { workout_set: ['difficulty'] };
 export type TrainingTable = (typeof TRAINING_EXPORT_TABLES)[number];
+/**
+ * Clés propres à l'archive, hors catalogue de synchro (REV-01 constat 3) : `decided_at` = instant de création de la décision de cible
+ * (`created_at`), la seule trace de leur ordre sans migration (l'ordre causal est le HLC, réattribué à l'import). Facultative à la lecture
+ * (archive plus ancienne : lue comme nulle) ; toujours écrite à l'export.
+ */
+export const ARCHIVE_EXTRA_COLUMNS: Readonly<Partial<Record<TrainingTable, readonly string[]>>> = { nutrition_target: ['decided_at'] };
 /**
  * Version de schéma à partir de laquelle une table existe dans une archive (I4-07) : une archive plus ancienne, sans ses clés, n'a pas vu ces
  * tables ; l'importer en « remplacer » ne doit donc jamais en supprimer les lignes locales. Une archive récente sans ligne de la table, elle,
@@ -171,7 +177,7 @@ export function canonicalDataJson(data: ExportData): string {
   for (const name of TRAINING_EXPORT_TABLES) {
     const rows = [...trainingRows(data, name)].sort(byId);
     if (rows.length === 0) continue;
-    const columns = [...trainingColumns(name), 'id'].sort();
+    const columns = [...trainingColumns(name), ...(ARCHIVE_EXTRA_COLUMNS[name] ?? []), 'id'].sort();
     training[name] = rows.map((r) => Object.fromEntries(columns.map((col) => [col, col === 'id' ? r.id : (r.values[col] ?? null)])));
   }
   // Sans données d'entraînement, la clé est absente : mêmes octets qu'une archive 0.2.2 (équivalence et hash inchangés).
@@ -268,7 +274,7 @@ function rowBoundsOk(table: TrainingTable, id: string, v: Readonly<Record<string
       return (
         Number.isInteger(v['position']) &&
         numberIn(v['position'], 0, Number.MAX_SAFE_INTEGER) &&
-        textLength(v['name'], 1, RECIPE_NAME_MAX) &&
+        textLength(v['name'], 1, RECIPE_INGREDIENT_NAME_MAX) &&
         (v['food_ref'] === null || textLength(v['food_ref'], 1, 128)) &&
         numberIn(v['grams'], 0, RECIPE_INGREDIENT_GRAMS_MAX, true) &&
         nullableIn(v['kcal_100g'], 0, 900) &&
@@ -298,7 +304,9 @@ function parseTraining(raw: unknown): TrainingExport {
     const rows = list.map((item): TrainingRow => {
       if (!isObject(item)) throw new ArchiveError('invalid-data');
       const later = (LATER_COLUMNS[name] ?? []).filter((col) => !Object.prototype.hasOwnProperty.call(item, col));
-      if (!exactKeys(item, [...columns.filter((col) => !later.includes(col)), 'id'])) throw new ArchiveError('invalid-data');
+      const extras = ARCHIVE_EXTRA_COLUMNS[name] ?? [];
+      const presentExtras = extras.filter((col) => Object.prototype.hasOwnProperty.call(item, col));
+      if (!exactKeys(item, [...columns.filter((col) => !later.includes(col)), ...presentExtras, 'id'])) throw new ArchiveError('invalid-data');
       const id = item['id'];
       if (!SYNC_CATALOGUE.isValidRowId(t, id) || seen.has(id)) throw new ArchiveError('invalid-data');
       const values: Record<string, TrainingValue> = {};
@@ -307,6 +315,11 @@ function parseTraining(raw: unknown): TrainingExport {
         const value = later.includes(col.name) ? null : item[col.name];
         if (!SYNC_CATALOGUE.isValidValue(col, value)) throw new ArchiveError('invalid-data');
         values[col.name] = value as TrainingValue;
+      }
+      for (const col of extras) {
+        const value = presentExtras.includes(col) ? item[col] : null;
+        if (value !== null && !(typeof value === 'string' && isIsoDateTime(value))) throw new ArchiveError('invalid-data');
+        values[col] = value;
       }
       // Bornes des CHECK de la migration 0009 : une valeur hors bornes est refusée à l'aperçu, jamais par un échec SQL à l'application (I4-07).
       if (!rowBoundsOk(name, id, values)) throw new ArchiveError('invalid-data');
@@ -317,8 +330,7 @@ function parseTraining(raw: unknown): TrainingExport {
       seen.add(id);
       return { id, values };
     });
-    // Une séance exportée est close (D-27) : une séance ouverte dans une archive est refusée.
-    if (name === 'workout' && rows.some((r) => r.values['ended_at'] === null)) throw new ArchiveError('invalid-data');
+    // REV-01 constat 1 (D-57) : une séance ouverte (ended_at nul) est une donnée de la sauvegarde ; elle n'est jamais publiée avant sa clôture (D-27).
     idsByTable.set(name, seen);
     out[name] = rows;
   }

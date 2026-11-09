@@ -25,7 +25,9 @@ export type ExplanationKey =
   | 'deload'
   | 'recoveryLow'
   | 'recoveryLowSet'
-  | 'outlierHold';
+  | 'outlierHold'
+  | 'position'
+  | 'positionHeld';
 
 export interface Explanation {
   readonly key: ExplanationKey;
@@ -83,12 +85,21 @@ export function explainPrescription(p: Prescription): Explanation {
     }
     case 'deload':
       return { key: 'deload', params: { sets: p.sets.length, rir: p.rirTarget ?? 0 } };
+    case 'position':
+    {
+      // L'écart dit est celui de la charge appliquée (arrondie au matériel), jamais la décote théorique (comme l'inactivité, I4-08).
+      const ref = p.reference?.loadKg ?? 0;
+      const delta = -(p.deltaKg ?? 0);
+      const rank = p.positionRank ?? 1;
+      if (!(delta > 0) || !(ref > 0)) return { key: 'positionHeld', params: { rank } };
+      return { key: 'position', params: { delta: Math.round(delta * 100) / 100, rank, cut: Math.round((delta / ref) * 1000) / 10 } };
+    }
     case 'recovery-low':
       return { key: p.reasons.includes('recovery-set-removed') ? 'recoveryLowSet' : 'recoveryLow', params: { cut: recoveryCut(p) } };
   }
 }
 
-export type ExplanationNoteKey = 'notePartialIgnored' | 'noteGridToVerify';
+export type ExplanationNoteKey = 'notePartialIgnored' | 'noteGridToVerify' | 'notePosition' | 'noteBodyweightUnknown';
 
 /**
  * I2-04 : précisions ajoutées à la phrase, dans cet ordre : dernière séance ignorée (moins de 50 % des séries faites), puis grille de charges
@@ -99,6 +110,10 @@ export function explanationNotes(p: Prescription): { readonly key: ExplanationNo
   const notes: { readonly key: ExplanationNoteKey; readonly params: Readonly<Record<string, number>> }[] = [];
   if (p.reasons.includes('partial-session-ignored')) notes.push({ key: 'notePartialIgnored', params: {} });
   if (p.reasons.includes('grid-to-verify')) notes.push({ key: 'noteGridToVerify', params: {} });
+  // Poids du corps inconnu (REV-01) : le 1RM et les écarts sont calculés sur le seul lest, ce que la phrase dit.
+  if (p.reasons.includes('bodyweight-unknown')) notes.push({ key: 'noteBodyweightUnknown', params: {} });
+  // Position (REV-01 constat 6) : dite en note quand la raison principale est autre (la charge reste au-dessus de la référence).
+  if (p.reasons.includes('position-discount') && p.headline !== 'position') notes.push({ key: 'notePosition', params: { rank: p.positionRank ?? 1, cut: percent(p.positionCut ?? 0) } });
   return notes;
 }
 

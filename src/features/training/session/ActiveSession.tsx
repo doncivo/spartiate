@@ -13,6 +13,7 @@ import {
   type WorkoutSet,
   type WorkoutWithSets,
 } from '../../../domain/training';
+import { positionRanks } from '../../../domain/training/positionRank';
 import { warmupExerciseIds } from '../../../domain/training/warmup';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import { RepositoryError } from '../../../db/repositories/common';
@@ -282,6 +283,9 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   // ---------------------------------------------------------------------------------------------------------------------------------
   const blocks = groupByExercise(workout.sets);
   // I2-03 (§ 13.8) : rampe d'échauffement pour le premier exercice composé de chaque pattern, dans l'ordre de la séance.
+  // REV-01 constat 6 : rang de position de chaque exercice parmi ceux du même muscle principal (§ 11.3).
+  const musclesOf = (id: string) => exerciseOf(id)?.muscles ?? [];
+  const positionRankOf = positionRanks(blocks.map((b) => ({ exerciseId: b.exerciseId, muscles: musclesOf(b.exerciseId) })));
   const warmupIds = warmupExerciseIds(blocks.map((b) => ({ exerciseId: b.exerciseId, exercise: exerciseOf(b.exerciseId) })));
   const summary = summarizeSets(workout.sets);
   const remaining = rest ? restRemainingMs(rest.endAt, now) : 0;
@@ -376,7 +380,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
               </p>
             </div>
             <Suspense fallback={null}>
-              <ExerciseProgression access={access} workout={workout} exerciseId={block.exerciseId} sets={block.sets} exercise={exercise} equipment={data.active} clock={clock} onChanged={reload} warmup={warmupIds.has(block.exerciseId)} />
+              <ExerciseProgression access={access} workout={workout} exerciseId={block.exerciseId} sets={block.sets} exercise={exercise} equipment={data.active} clock={clock} onChanged={reload} warmup={warmupIds.has(block.exerciseId)} positionRank={positionRankOf.get(block.exerciseId) ?? 1} musclesOf={musclesOf} />
             </Suspense>
             <ol className="ct-session__sets">
               {block.sets.map((set) => {

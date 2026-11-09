@@ -2,8 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent }
 import { DEFAULT_PROGRESSION_CONFIG } from '../../../domain/training/config';
 import { confidenceBand, confidencePercent, constraintAlerts, explainOption, explainPrescription, explanationNotes, type ExplanationKey, type OptionKey } from '../../../domain/training/explain';
 import { prescribe } from '../../../domain/training/prescribe';
+import { currentBodyweightKg } from '../../../domain/training/bodyweight';
+import { analyzeHistory } from '../../../domain/training/estimate1rm';
+import { positionRanks } from '../../../domain/training/positionRank';
 import { warmupForExercise, type WarmupSet } from '../../../domain/training/warmup';
-import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type Prescription, type ProgressionEquipment, type RepTarget } from '../../../domain/training/types';
+import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type MuscleWeight, type Prescription, type ProgressionEquipment, type RepTarget } from '../../../domain/training/types';
 import type { WorkoutSet, WorkoutWithSets } from '../../../domain/training/session';
 import type { IsoDateTime } from '../../../domain/types';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
@@ -48,6 +51,10 @@ export interface ExerciseProgressionProps {
   readonly equipment: ProgressionEquipment | null;
   /** I2-03 : premier exercice composé de son pattern dans la séance (rampe d'échauffement prévue). */
   readonly warmup?: boolean;
+  /** REV-01 constat 6 : rang de l'exercice parmi ceux du même muscle principal dans cette séance (1 = premier). */
+  readonly positionRank?: number;
+  /** Muscles d'un exercice du catalogue, pour retrouver le rang qu'il avait dans la séance de référence. */
+  readonly musclesOf?: (exerciseId: string) => readonly MuscleWeight[];
   readonly clock: { nowMs(): number };
   /** Séance relue après une écriture (la base fait foi). */
   readonly onChanged: () => Promise<void>;
@@ -64,6 +71,10 @@ interface Loaded {
   readonly cycleDeload: boolean;
   /** I4-08 point 4 : RIR cible de la séance proposée pour cet exercice (semaine du cycle) ; null : aucun. */
   readonly targetRir: number | null;
+  /** Rang de l'exercice dans la séance de référence (celle dont vient la charge) ; null : inconnu, aucune décote de position. */
+  readonly lastPositionRank: number | null;
+  /** Poids de corps (tendance, sinon dernière pesée) pour un exercice lesté ou assisté ; null : inconnu ou sans objet. */
+  readonly bodyweightKg: number | null;
 }
 
 type Load = { readonly status: 'loading' } | { readonly status: 'error' } | ({ readonly status: 'ready' } & Loaded);
@@ -87,6 +98,8 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   recoveryLow: 'explainRecoveryLow',
   recoveryLowSet: 'explainRecoveryLowSet',
   outlierHold: 'explainOutlierHold',
+  position: 'explainPosition',
+  positionHeld: 'explainPositionHeld',
 };
 const OPTION_KEYS: Readonly<Record<OptionKey, ProgressionTextKey>> = {
   optionFatigueLoad: 'optionFatigueLoad',
@@ -121,10 +134,40 @@ function targetOf(sets: readonly WorkoutSet[], exercise: Exercise | undefined, r
   return { sets: Math.max(1, work.length), repMin, repMax: Math.max(repMin, repMax), rir };
 }
 
+/**
+ * Rang qu'avait l'exercice dans sa dernière séance close (celle qui fixe la charge de référence), parmi les exercices du même muscle
+ * principal. Null si la séance ou le catalogue des muscles est illisible : aucune décote (jamais de double compte, jamais de faux rang).
+ */
+async function referencePositionRank(access: DataAccess, history: readonly ExerciseSession[], exerciseId: string, musclesOf: ((id: string) => readonly MuscleWeight[]) | undefined): Promise<number | null> {
+  if (musclesOf === undefined) return null;
+  // La séance de référence est celle dont `prescribe` tire la charge : la plus récente VALIDE (ni déload ni partielle), pas la plus récente.
+  const latest = analyzeHistory(history, DEFAULT_PROGRESSION_CONFIG).estimates[0] ?? null;
+  if (latest === null) return null;
+  try {
+    const closed = await (await access.repos.workouts()).getClosed(latest.workoutId);
+    if (closed === null) return null;
+    return positionRanks(closed.sets.map((s) => ({ exerciseId: s.exerciseId, muscles: musclesOf(s.exerciseId) }))).get(exerciseId) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Poids de corps actuel (tendance des pesées récentes) ; null si illisible ou sans pesée. */
+async function bodyweightNow(access: DataAccess): Promise<number | null> {
+  try {
+    const recent = await (await access.repos.bodyWeights()).listRecent(400);
+    return currentBodyweightKg(recent.map((w) => ({ date: w.date, kg: w.kg })));
+  } catch {
+    return null;
+  }
+}
+
 /** Rampe : « 25 kg × 8 · 37,5 kg × 5 · 50 kg × 2 ». */
 const rampText = (ramp: readonly WarmupSet[]): string => ramp.map((s) => tProgression('warmupStep', { load: kg(s.loadKg), reps: s.reps })).join(tProgression('warmupJoin'));
 
-export function ExerciseProgression({ access, workout, exerciseId, sets, exercise, equipment, clock, onChanged, warmup = false }: ExerciseProgressionProps) {
+export function ExerciseProgression({ access, workout, exerciseId, sets, exercise, equipment, clock, onChanged, warmup = false, positionRank: liveRank = 1, musclesOf }: ExerciseProgressionProps) {
+  // La proposition ne change pas pendant la séance : le rang est celui du premier rendu (retirer un exercice ne la fait pas remonter).
+  const [positionRank] = useState(liveRank);
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -165,7 +208,11 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
           cyclePreset.current = true;
           setDeload(true);
         }
-        setLoad({ status: 'ready', history, reference, own, profile, cycleDeload, targetRir: linkedRir({ id: workout.id }, link, exerciseId) });
+        const lastPositionRank = await referencePositionRank(access, history, exerciseId, musclesOf);
+        if (!live.current) return;
+        const bodyweightKg = exercise?.bodyweightFraction ? await bodyweightNow(access) : null;
+        if (!live.current) return;
+        setLoad({ status: 'ready', history, reference, own, profile, cycleDeload, targetRir: linkedRir({ id: workout.id }, link, exerciseId), lastPositionRank, bodyweightKg });
       } catch {
         if (live.current) setLoad({ status: 'error' });
       }
@@ -173,7 +220,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     return () => {
       live.current = false;
     };
-  }, [access, exerciseId, workout.id, workout.routineId, workout.startedAt, attempt]);
+  }, [access, exerciseId, workout.id, workout.routineId, workout.startedAt, attempt]); // eslint-disable-line react-hooks/exhaustive-deps -- musclesOf change à chaque rendu ; le rang de référence et le poids de corps se relisent au rechargement
 
   useEffect(() => {
     if (editing !== null) editLoad.current?.focus();
@@ -191,7 +238,13 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     // cette séance, l'historique l'emporte (critère 8 : la séance faite fait foi).
     const reference = d !== null && d.loadKg !== null ? { decidedAt: d.decidedAt, accepted: d.accepted, loadKg: d.loadKg, reps: d.reps } : null;
     return prescribe({
-      exercise: { id: exerciseId, metric: exercise?.metric ?? 'load-reps', equipment: exercise?.equipment ?? [], ...(exercise === undefined ? {} : { kind: exercise.kind }) },
+      exercise: {
+        id: exerciseId,
+        metric: exercise?.metric ?? 'load-reps',
+        equipment: exercise?.equipment ?? [],
+        ...(exercise === undefined ? {} : { kind: exercise.kind, bodyweightFraction: exercise.bodyweightFraction }),
+        ...(exercise?.equipment.includes('assisted-pull-up-machine') === true ? { assisted: true } : {}),
+      },
       history: load.history,
       lastDecision: reference,
       profile: load.profile,
@@ -202,9 +255,14 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
       // I2 : aucune source Recovery (I5) ; le snapshot reste nul, aucune modulation.
       recovery: null,
       deload,
+      // REV-01 constat 6 : décote de position (§ 11.3) ; inconnue → aucun effet.
+      positionRank,
+      ...(load.lastPositionRank === null ? {} : { lastPositionRank: load.lastPositionRank }),
+      // REV-01 : poids de corps pour 1RM et écarts des exercices lestés ou assistés.
+      bodyweightKg: load.bodyweightKg,
     });
     // L'instant de calcul est celui du chargement : la proposition ne change pas pendant la séance.
-  }, [load, exerciseId, exercise, equipment, target, deload]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [load, exerciseId, exercise, equipment, target, deload, positionRank]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (ownDecision !== null && decided.current) {

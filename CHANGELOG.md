@@ -2,6 +2,19 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.9.3
+
+Correctifs de la relecture du 9 novembre, et prise en compte du poids de ton corps. **Pas de mise à jour de la base** (reste en version 9) ; aucune donnée saisie n'est modifiée ni perdue.
+
+- **Sauvegarde (Export)** : l'archive contient maintenant ta séance en cours et ses séries. À l'import, elle reste en cours et n'est publiée qu'à sa clôture ; si une autre séance est déjà en cours ici, la tienne est gardée et l'importée est close à sa dernière série validée.
+- **« Remplacer »** avec une archive récente dont les tables sont vides vide bien ces tables ; une archive plus ancienne ne supprime toujours rien.
+- **Cible nutritionnelle** : l'ordre de tes décisions est conservé dans l'archive ; la cible en vigueur est la même après export puis import, en remplacement comme en fusion.
+- **Nutrition** : si une relecture échoue, les dernières valeurs restent affichées avec « peut-être périmées », un message et « Réessayer ».
+- **Charges** : le 2ᵉ exercice d'un même muscle dans la séance est proposé 7 % plus bas (3ᵉ : 12 %), la phrase le dit ; une décote déjà comprise dans ta dernière séance n'est pas comptée deux fois.
+- **Poids du corps** : pour les tractions et pompes lestées, le 1RM estimé et les écarts de charge comptent ton poids de corps (dernière tendance de poids) ; la charge saisie reste le lest. Sans pesée, comportement d'avant, avec une phrase qui le dit.
+- **Recettes** : un ingrédient copié d'un aliment au nom très long est rogné à 120 caractères au lieu de bloquer l'enregistrement.
+- **Pesées Raccourcis** : une pesée est rangée au jour local de l'appareil, pour le dédoublonnage comme pour l'enregistrement (deux pesées de jours différents ne sont plus fusionnées).
+
 ## 0.9.2
 
 Onglets de l’Entraînement et de la Nutrition, et bibliothèque plus complète. **Pas de mise à jour de la base** (reste en version 9).

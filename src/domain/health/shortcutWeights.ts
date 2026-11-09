@@ -1,4 +1,5 @@
 import { WEIGHT_MAX_KG } from '../bodyProfile';
+import { utcToLocal } from '../timeZone';
 
 /**
  * Pesées exportées de Santé par l'app Raccourcis (D-69 : HealthKit inaccessible avec un compte Apple gratuit). Module pur.
@@ -8,7 +9,8 @@ import { WEIGHT_MAX_KG } from '../bodyProfile';
  * - date : ISO 8601 avec fuseau (`2026-11-08T06:50:00+01:00` ou `…Z`) ; sans fuseau, la ligne est refusée (heure ambiguë) ;
  * - valeur : décimale à virgule ou à point, unité collée tolérée (`81,4 kg`) ;
  * - unité : `kg` (défaut) ou `lb` (convertie, arrondie au centième).
- * Une pesée par jour civil de la date écrite (le décalage du fichier) : la plus récente, comme `saveHealth`. Lignes refusées comptées,
+ * Une pesée par JOUR LOCAL DE L'APPAREIL (fuseau `timeZone`, celui que `saveHealth` utilise pour enregistrer : une seule notion de jour,
+ * REV-01 constat 9) : la plus récente, comme `saveHealth`. Le décalage écrit dans le fichier ne sert qu'à situer l'instant. Lignes refusées comptées,
  * jamais d'exception : un fichier abîmé n'importe que ce qu'il a de lisible.
  */
 
@@ -32,7 +34,7 @@ const MIN_KG = 20;
 const ISO_WITH_ZONE = /^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?(Z|[+-]\d{2}:?\d{2})$/;
 const VALUE = /^(\d{1,3}(?:[.,]\d{1,3})?)\s*(kg|lb)?$/i;
 
-export function parseShortcutWeights(text: string, today: string): ShortcutWeights {
+export function parseShortcutWeights(text: string, today: string, timeZone: string): ShortcutWeights {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l !== '');
   const truncated = lines.length > MAX_LINES;
   const byDay = new Map<string, ShortcutWeight & { readonly at: number }>();
@@ -40,7 +42,7 @@ export function parseShortcutWeights(text: string, today: string): ShortcutWeigh
   for (const [index, line] of lines.slice(0, MAX_LINES).entries()) {
     const cells = line.split(/[;\t]/).map((c) => c.trim());
     if (index === 0 && cells[0] !== undefined && /^date$/i.test(cells[0])) continue;
-    const parsed = parseLine(cells, today);
+    const parsed = parseLine(cells, today, timeZone);
     if (parsed === null) {
       rejected += 1;
       continue;
@@ -52,14 +54,15 @@ export function parseShortcutWeights(text: string, today: string): ShortcutWeigh
   return { weights, rejected, truncated };
 }
 
-function parseLine(cells: readonly string[], today: string): { readonly day: string; readonly at: number; readonly kg: number } | null {
+function parseLine(cells: readonly string[], today: string, timeZone: string): { readonly day: string; readonly at: number; readonly kg: number } | null {
   if (cells.length < 2 || cells.length > 3) return null;
   const [date = '', raw = '', unitCell] = cells;
   const iso = ISO_WITH_ZONE.exec(date);
   if (iso === null) return null;
-  const day = iso[1] ?? '';
   const at = Date.parse(date);
-  if (!Number.isFinite(at) || day > today) return null;
+  if (!Number.isFinite(at)) return null;
+  const day = utcToLocal(new Date(at).toISOString(), timeZone).date;
+  if (day > today) return null;
   const value = VALUE.exec(raw);
   if (value === null) return null;
   const unit = (unitCell ?? value[2] ?? 'kg').toLowerCase();

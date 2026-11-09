@@ -213,6 +213,20 @@ describe('saisie et validation (critère 2)', () => {
     expect(await one('SELECT set_kind FROM workout_set WHERE position = 0')).toEqual({ set_kind: 'drop' });
   });
 
+  it('REV-01 constat 10 (non-régression de la 0.2.3) : Dégressive et Partielle se choisissent depuis une série normale et s’enregistrent', async () => {
+    openSession();
+    await startFromRoutine();
+    const set = await firstOpenSet('Développé couché à la barre');
+    const select = within(set).getByLabelText('Type de série') as HTMLSelectElement;
+    expect(select.value).toBe('work');
+    fireEvent.change(select, { target: { value: 'drop' } });
+    expect(await one('SELECT set_kind FROM workout_set WHERE position = 0')).toEqual({ set_kind: 'drop' });
+    fireEvent.change(within(await firstOpenSet('Développé couché à la barre')).getByLabelText('Type de série'), { target: { value: 'partial' } });
+    expect(await one('SELECT set_kind FROM workout_set WHERE position = 0')).toEqual({ set_kind: 'partial' });
+    fireEvent.change(within(await firstOpenSet('Développé couché à la barre')).getByLabelText('Type de série'), { target: { value: 'work' } });
+    expect(await one('SELECT set_kind FROM workout_set WHERE position = 0')).toEqual({ set_kind: 'work' });
+  });
+
   it('échauffement : type changé en base, validé sans lancer de repos', async () => {
     const f = fakes();
     openSession(f);

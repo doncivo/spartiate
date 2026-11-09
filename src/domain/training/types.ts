@@ -299,6 +299,10 @@ export interface ProgressionExercise {
   readonly equipment: readonly string[];
   /** `isolation` : exercice secondaire (une série retirée si Recovery est bas, § 11.3) ; absent : principal. */
   readonly kind?: ExerciseKind;
+  /** Fraction du poids de corps portée (]0, 1], `bodyweightFraction` du catalogue) : exercice lesté ou assisté ; absent ou nul : charge ordinaire. */
+  readonly bodyweightFraction?: number | null;
+  /** Exercice assisté : la charge saisie est l'assistance, retranchée du poids de corps porté. */
+  readonly assisted?: boolean;
 }
 
 /**
@@ -333,6 +337,15 @@ export interface PrescribeInput {
   readonly deload?: boolean;
   /** Dernier travail du muscle principal, tous exercices confondus ; absent ou nul : dernière séance de cet exercice (la plus récente des deux l'emporte). */
   readonly muscleLastWorkedAt?: IsoDateTime | null;
+  /**
+   * Rang de l'exercice parmi ceux du même muscle principal dans la séance (1 = premier ; REV-01 constat 6, § 11.3), et rang qu'il avait dans
+   * la séance de référence (celle dont la charge vient). La décote de position appliquée est `m(rang) / m(rang de référence)`, jamais une
+   * hausse : une décote déjà reflétée dans l'historique n'est pas comptée deux fois. Absents : rang 1, aucun effet.
+   */
+  readonly positionRank?: number;
+  readonly lastPositionRank?: number;
+  /** Poids de corps en kg (dernière tendance, sinon dernière pesée) ; null ou absent : inconnu (REV-01, exercices au poids du corps). */
+  readonly bodyweightKg?: number | null;
 }
 
 /** Codes de raison, dans l'ordre normatif du § 11.2 (voir `REASON_ORDER`). */
@@ -351,6 +364,8 @@ export type ReasonCode =
   | 'fatigue-drop'
   | 'stall'
   | 'inactivity-discount'
+  | 'position-discount'
+  | 'bodyweight-unknown'
   | 'deload'
   | 'recovery-low'
   | 'recovery-set-removed'
@@ -375,7 +390,8 @@ export type PrescriptionHeadline =
   | 'fatigue'
   | 'inactivity'
   | 'deload'
-  | 'recovery-low';
+  | 'recovery-low'
+  | 'position';
 
 /**
  * Choix facultatif présenté avec la proposition (I2-02, D-72 points 7 et 8), jamais appliqué d'office : Ali le choisit ou l'ignore.
@@ -429,6 +445,9 @@ export interface Prescription {
   readonly rirTarget?: number | null;
   /** Décote d'inactivité appliquée (0 à `detrainFloor`). */
   readonly inactivityCut?: number;
+  /** Rang de position pris en compte et décote de position appliquée (0 à 1 ; 0 sans décote). */
+  readonly positionRank?: number;
+  readonly positionCut?: number;
   readonly engineVersion: number;
   readonly activeConfig: ProgressionConfig;
 }

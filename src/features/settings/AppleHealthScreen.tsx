@@ -184,9 +184,9 @@ function ShortcutImport() {
       const picked = await container.files.pickText({ accept: ['.csv', '.txt', 'text/csv', 'text/plain'], maxBytes: 512 * 1024 });
       if (picked === null) return setState({ kind: 'idle' });
       const today = todayLocal(container.clock);
-      const parsed = parseShortcutWeights(picked.text, today);
-      if (parsed.weights.length === 0) return setState({ kind: 'empty', text: tHealth('shortcutEmpty', { count: parsed.rejected }) });
       const timezone = detectTimeZone() ?? 'Europe/Paris';
+      const parsed = parseShortcutWeights(picked.text, today, timezone);
+      if (parsed.weights.length === 0) return setState({ kind: 'empty', text: tHealth('shortcutEmpty', { count: parsed.rejected }) });
       // Une ligne refusée par le dépôt (jour recalculé dans le fuseau de l'appareil, donc futur) ne fait pas échouer le fichier : comptée.
       let refused = 0;
       await container.data.transaction(async (repos) => {
