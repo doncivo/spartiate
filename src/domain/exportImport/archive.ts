@@ -23,6 +23,7 @@ import type { ThemeChoice } from '../model/settings';
 import { isIsoDateTime, isLocalDate } from '../types';
 import { SYNC_CATALOGUE, type SyncTable } from '../../domain/sync/syncTables';
 import { sha256Hex } from './sha256';
+import { RECIPE_COOKED_WEIGHT_MAX_G, RECIPE_INGREDIENT_GRAMS_MAX, RECIPE_NAME_MAX, RECIPE_SERVINGS_MAX } from '../nutrition/recipeTypes';
 import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
 
@@ -252,6 +253,32 @@ function parseSettings(raw: unknown): ExportData['settings'] {
   return out;
 }
 
+const numberIn = (v: TrainingValue | undefined, min: number, max: number, minOpen = false): boolean => typeof v === 'number' && Number.isFinite(v) && (minOpen ? v > min : v >= min) && v <= max;
+const nullableIn = (v: TrainingValue | undefined, min: number, max: number): boolean => v === null || numberIn(v, min, max);
+const textLength = (v: TrainingValue | undefined, min: number, max: number): boolean => typeof v === 'string' && v.length >= min && v.length <= max;
+
+/** Bornes propres aux tables de recettes et de journée déclarée (celles des CHECK de la migration 0009) ; les autres tables : catalogue seul. */
+function rowBoundsOk(table: TrainingTable, id: string, v: Readonly<Record<string, TrainingValue>>): boolean {
+  switch (table) {
+    case 'day_completeness':
+      return id === `day|${String(v['date'])}`;
+    case 'recipe':
+      return textLength(v['name'], 1, RECIPE_NAME_MAX) && Number.isInteger(v['servings']) && numberIn(v['servings'], 1, RECIPE_SERVINGS_MAX) && (v['cooked_weight_g'] === null || numberIn(v['cooked_weight_g'], 0, RECIPE_COOKED_WEIGHT_MAX_G, true));
+    case 'recipe_ingredient':
+      return (
+        Number.isInteger(v['position']) &&
+        numberIn(v['position'], 0, Number.MAX_SAFE_INTEGER) &&
+        textLength(v['name'], 1, RECIPE_NAME_MAX) &&
+        (v['food_ref'] === null || textLength(v['food_ref'], 1, 128)) &&
+        numberIn(v['grams'], 0, RECIPE_INGREDIENT_GRAMS_MAX, true) &&
+        nullableIn(v['kcal_100g'], 0, 900) &&
+        ['protein_100g', 'fat_100g', 'carb_100g', 'fiber_100g'].every((c) => nullableIn(v[c], 0, 100))
+      );
+    default:
+      return true;
+  }
+}
+
 /**
  * Données d'entraînement de l'archive : tables connues seulement, lignes uniques, colonnes exactes, valeurs conformes au catalogue,
  * et chaque ligne enfant rattachée à un parent présent dans l'archive (une archive est toujours produite entière).
@@ -281,6 +308,8 @@ function parseTraining(raw: unknown): TrainingExport {
         if (!SYNC_CATALOGUE.isValidValue(col, value)) throw new ArchiveError('invalid-data');
         values[col.name] = value as TrainingValue;
       }
+      // Bornes des CHECK de la migration 0009 : une valeur hors bornes est refusée à l'aperçu, jamais par un échec SQL à l'application (I4-07).
+      if (!rowBoundsOk(name, id, values)) throw new ArchiveError('invalid-data');
       for (const parent of t.parents) {
         const parentId = values[parent.column];
         if (parentId !== null && !idsByTable.get(parent.table)?.has(String(parentId))) throw new ArchiveError('invalid-data');

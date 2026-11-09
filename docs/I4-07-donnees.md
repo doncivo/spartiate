@@ -30,8 +30,7 @@ Colonnes communes : `created_at`, `updated_at`, `deleted_at`, `device_id`, `hlc`
 Migration 0009 purement additive : aucune donnée à migrer, aucune perte possible.
 
 Positions : le rang n'est pas unique en SQL (deux appareils peuvent insérer le même rang hors ligne) ; la lecture trie par rang, création, id.
-`RecipeRepository.update` réutilise la ligne de même rang (seuls les champs modifiés sont écrits donc publiés), crée les rangs en trop et supprime
-logiquement les rangs retirés.
+`RecipeRepository.update` réutilise les lignes PAR IDENTIFIANT (voir § 7) : jamais par rang.
 
 ## 3. Périmètre de synchro (relecture D-26)
 
@@ -102,3 +101,34 @@ rogné, portions entières 1..100, poids cuit NULL ou ]0 ; 20 000], 1 à 60 ingr
 - Les CHECK de la base sont plus stricts que le catalogue de synchro (bornes numériques) : une opération reçue hors bornes est rejetée et journalisée
   (`received-unapplied`), comme pour `meal_entry` (remarque de I4-06). Non traité ici : le catalogue n'exprime pas de bornes numériques.
 - Champs liés fusionnés séparément (`grams` et valeurs pour 100 g d'un ingrédient ; `servings` et `cooked_weight_g`) : une cohérence entre eux n'est pas imposée.
+
+## 7. Complément après la relecture sync-icloud
+
+**Ingrédients modifiés par identifiant (correction du point 1).** `RecipeDraft.ingredients[].id` est facultatif (`recipeTypes.ts`, compatible : un
+brouillon sans `id` reste valide). **Les écrans doivent repasser l'`id` de chaque ingrédient déjà enregistré** (celui lu dans `Recipe.ingredients`) à
+`update` : la ligne est conservée et seuls les champs modifiés, rang compris, sont écrits et publiés. Sans `id` (ou `id` inconnu ou répété) :
+ingrédient nouveau ; ingrédient non repris : supprimé logiquement. Avant, la réutilisation par rang recopiait le contenu de chaque ligne suivante dans
+la précédente : un retrait concurrent d'une correction donnait un ingrédient hybride. Test : `recipeSync.test.ts` (e), les deux appareils convergent.
+
+**Archive : bornes validées à l'aperçu.** `parseExportArchive` refuse en `invalid-data` une recette ou un ingrédient hors des bornes des CHECK
+(portions, poids cuit, grammes, rang, nom, `food_ref`, valeurs pour 100 g) et une déclaration dont l'identifiant n'est pas `day|date` ; plus aucun échec de
+CHECK à l'application. Test figé : un « remplacer » d'archive de schéma 4 à 7 ne supprime pas les tables que l'archive ne pouvait pas connaître
+(`TABLE_SINCE_SV`, `planSince.test.ts`).
+
+**Purge.** `withChildren` / `deletedRows` (`purge.ts`, `syncRepository.ts`) comptent TOUTE ligne enfant, vivante ou supprimée : une recette supprimée n'est purgée
+qu'une fois ses ingrédients purgés (la suppression logique les marque au même instant, ils partent d'abord). Un ingrédient VIVANT sous une recette
+supprimée (ajout concurrent, test (e)) bloque la purge de la recette (`purge-skipped`, `live-children`) : la trace de suppression reste, la recette n'est
+jamais purgée tant qu'il existe ; invisible à l'écran (la recette est supprimée), sans conséquence fonctionnelle, non corrigé cette nuit.
+
+**Comportement exact du schéma 8 (appareil non encore mis à jour).**
+- La lecture continue (`sm` = 1). Les lignes `recipe`, `recipe_ingredient` et `day_completeness` vont dans `sync_unknown` champ par champ, avec leurs HLC ;
+  ni erreur ni `sync_parked`.
+- Une prise de recette (`meal_entry`, `food_id` = `recipe:<UUID>`) y est LISIBLE (nom et instantané figés), mais ni modifiable ni copiable : `update` et
+  `createMany` revalident l'entrée et `parseFoodId` du schéma 8 refuse la référence `recipe:` (`food-id-invalid`). Sa suppression reste possible.
+  Un « récent » `recipe:` n'est pas résolu par `resolveFood` (rend `null`).
+- Après la mise à jour : `migrate()` crée les tables, puis `reintegrateUnknownFields` les réintègre au démarrage, parents d'abord (test (e), appareil
+  associé après coup par instantané du PC).
+- Un appareil en schéma 9 qui ADOPTE un instantané d'un appareil resté en 8 (remplacement) ne reçoit aucune recette ni déclaration : les lignes locales
+  absentes de l'instantané sont supprimées par le remplacement (règle commune à toute table) ; elles reviennent par les journaux de l'appareil en 9
+  s'ils existent encore, sinon seulement après la mise à jour de l'autre appareil (`snapshot.ts` 388-422, `bootstrap.ts` 165 : réintégration au
+  démarrage suivant). Cas lu dans le code, non couvert par un test.

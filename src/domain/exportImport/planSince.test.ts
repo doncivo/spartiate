@@ -11,7 +11,7 @@ const local = (): ExportData => ({
   profile: null,
   weights: [],
   settings: {},
-  training: Object.fromEntries(TRAINING_EXPORT_TABLES.map((t) => [t, [row(`local-${t}`)]])) as ExportData['training'],
+  training: Object.fromEntries(TRAINING_EXPORT_TABLES.map((t) => [t, [row(`local-${t}`)]])) as NonNullable<ExportData['training']>,
 });
 const archive = (sv: number): ExportData => ({ profile: null, weights: [], settings: {}, training: { exercise: [row('local-exercise')] }, archiveSv: sv });
 const deleted = (sv: number): TrainingTable[] => planImport(local(), archive(sv), 'replace').writes.deleteTraining.map((d) => d.table);
