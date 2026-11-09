@@ -16,6 +16,7 @@ import { tRestore } from '../../i18n/syncRestoreText';
 
 const ERROR_KEYS: Record<Exclude<BackupFailureReason, 'sync-busy' | 'busy' | 'db-open'>, PlainMessageKey> = {
   corrupt: 'backup.errorCorrupt',
+  'wal-page-size': 'backup.errorWalPageSize',
   'newer-schema': 'backup.errorNewer',
   'not-found': 'backup.errorNotFound',
   io: 'backup.errorIo',
