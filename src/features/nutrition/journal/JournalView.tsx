@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { addDays } from '../../../domain/localDate';
 import type { LocalDate } from '../../../domain/types';
-import { aggregateDay, effectiveTarget, remainingForDay, toMealEntryInput, type DayTotals } from '../../../domain/nutrition';
+import { aggregateDay, effectiveTarget, remainingForDay, toMealEntryInput, type DayDeclaration, type DayTotals } from '../../../domain/nutrition';
 import type { MealEntryRecord } from '../../../db/repositories/mealEntryRepository';
 import { formatTime } from '../../../i18n/format';
 import { formatDayLong, formatInt, formatTenth, orDash, tNutrition } from '../../../i18n/nutritionText';
-import { Button, ConfirmDialog } from '../../../ui';
+import { Button, ConfirmDialog, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { QuickAddForm } from '../quickAdd/QuickAddForm';
@@ -14,6 +14,8 @@ import { MacroLine, nowTime, ProvenanceBadge } from '../shared';
 import type { NutritionSnapshot } from '../useCases';
 import { EntryEditor } from './EntryEditor';
 
+type DeclarationChoice = 'none' | DayDeclaration;
+
 type Mode = { readonly kind: 'idle' } | { readonly kind: 'search' } | { readonly kind: 'quick' } | { readonly kind: 'edit'; readonly entry: MealEntryRecord };
 
 export interface JournalViewProps {
@@ -21,25 +23,31 @@ export interface JournalViewProps {
   readonly onChanged: () => Promise<void>;
 }
 
+/** Couverture du jour : dit si l'état est DÉCLARÉ par Ali ou DÉDUIT (D-81) ; une journée sans entrée reste inconnue, même déclarée complète. */
 function CoverageNote({ day, isToday }: { readonly day: DayTotals; readonly isToday: boolean }) {
   if (day.entryCount === 0) {
     return (
       <div className="ct-nutrition__coverage" role="status">
         <p className="ct-nutrition__coverage-title">{tNutrition(isToday ? 'emptyToday' : 'emptyOtherDay')}</p>
         <p className="ct-nutrition__muted">{tNutrition('emptyHint')}</p>
+        {day.reasons.includes('declared-without-entries') ? <p className="ct-nutrition__muted">{tNutrition('dayDeclaredWithoutEntries')}</p> : null}
       </div>
     );
   }
   const unknownValues = day.reasons.includes('unknown-values');
+  const declared = day.origin === 'declared';
+  const title = declared ? (day.state === 'complete' ? 'dayCompleteDeclared' : 'dayIncompleteDeclared') : day.state === 'complete' ? 'dayCompleteInferred' : 'dayPartial';
   return (
     <div className="ct-nutrition__coverage" role="status">
-      <p className="ct-nutrition__coverage-title">{tNutrition(day.state === 'complete' ? 'dayCompleteInferred' : 'dayPartial')}</p>
+      <p className="ct-nutrition__coverage-title">{tNutrition(title)}</p>
       <p className="ct-nutrition__muted">
-        {day.state === 'complete'
-          ? tNutrition('dayCompleteDetail')
-          : day.entryCount === 1
-            ? tNutrition('dayPartialOne')
-            : tNutrition('dayPartialDetail', { count: day.entryCount, hours: formatTenth(day.spanHours ?? 0) })}
+        {declared
+          ? tNutrition(day.state === 'complete' ? 'dayCompleteDeclaredDetail' : 'dayIncompleteDeclaredDetail')
+          : day.state === 'complete'
+            ? tNutrition('dayCompleteDetail')
+            : day.entryCount === 1
+              ? tNutrition('dayPartialOne')
+              : tNutrition('dayPartialDetail', { count: day.entryCount, hours: formatTenth(day.spanHours ?? 0) })}
       </p>
       {unknownValues ? <p className="ct-nutrition__muted">{tNutrition('dayUnknownValues')}</p> : null}
     </div>
@@ -57,12 +65,13 @@ export function JournalView({ snapshot, onChanged }: JournalViewProps) {
   const navigate = useNavigationStore((s) => s.navigate);
   const [date, setDate] = useState(snapshot.today);
   // Entrées lues AVEC leur date : changer de jour ne montre jamais les entrées (ni leurs actions) d'un autre jour.
-  const [loaded, setLoaded] = useState<{ readonly date: LocalDate; readonly list: readonly MealEntryRecord[] } | null>(null);
+  const [loaded, setLoaded] = useState<{ readonly date: LocalDate; readonly list: readonly MealEntryRecord[]; readonly declaration: DayDeclaration | null } | null>(null);
   const entries = loaded !== null && loaded.date === date ? loaded.list : null;
   const [version, setVersion] = useState(0);
   const [mode, setMode] = useState<Mode>({ kind: 'idle' });
   const [toDelete, setToDelete] = useState<MealEntryRecord | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [declBusy, setDeclBusy] = useState(false);
   const isToday = date === snapshot.today;
 
   useEffect(() => {
@@ -70,8 +79,9 @@ export function JournalView({ snapshot, onChanged }: JournalViewProps) {
     void (async () => {
       try {
         const list = await (await data.repos.mealEntries()).listByDate(date);
+        const declaration = (await (await data.repos.dayCompleteness()).get(date))?.state ?? null;
         if (live) {
-          setLoaded({ date, list });
+          setLoaded({ date, list, declaration });
           setError(null);
         }
       } catch {
@@ -90,11 +100,30 @@ export function JournalView({ snapshot, onChanged }: JournalViewProps) {
     await onChanged();
   }, [onChanged]);
 
-  const day = useMemo(() => aggregateDay(date, (entries ?? []).map(toMealEntryInput)), [date, entries]);
+  const declaration = loaded !== null && loaded.date === date ? loaded.declaration : null;
+  const day = useMemo(() => aggregateDay(date, (entries ?? []).map(toMealEntryInput), declaration ?? undefined), [date, entries, declaration]);
   const target = effectiveTarget(snapshot.targets, date)?.target ?? null;
   // Tant que le journal du jour n'est pas lu (chargement, échec), aucun restant n'est affiché : « — », jamais la cible entière.
   const remaining = entries === null ? (target === null ? null : { kcal: null, proteinG: null, fatG: null, carbG: null }) : remainingForDay(target, day);
   const defaultTime = isToday ? nowTime(container.clock.nowMs()) : '12:00';
+
+  /** Déclare (complète / incomplète) ou efface (« Non déclarée ») la journée affichée ; la relecture du snapshot met à jour dashboard et dépense. */
+  async function chooseDeclaration(next: DeclarationChoice): Promise<void> {
+    if (declBusy) return;
+    setDeclBusy(true);
+    try {
+      const repo = await data.repos.dayCompleteness();
+      if (next === 'none') await repo.clear(date);
+      else await repo.declare(date, next);
+      setError(null);
+      setVersion((v) => v + 1);
+      await onChanged();
+    } catch {
+      setError(tNutrition('dayDeclError'));
+    } finally {
+      setDeclBusy(false);
+    }
+  }
 
   async function confirmDelete(): Promise<void> {
     const entry = toDelete;
@@ -168,7 +197,23 @@ export function JournalView({ snapshot, onChanged }: JournalViewProps) {
           </p>
         )
       ) : (
-        <CoverageNote day={day} isToday={isToday} />
+        <>
+          <CoverageNote day={day} isToday={isToday} />
+          <div className="ct-nutrition__declaration">
+            <SegmentedControl<DeclarationChoice>
+              label={tNutrition('dayDeclLabel')}
+              value={declaration ?? 'none'}
+              disabled={declBusy}
+              onChange={(next) => void chooseDeclaration(next)}
+              options={[
+                { value: 'none', label: tNutrition('dayDeclNone') },
+                { value: 'complete', label: tNutrition('dayDeclComplete') },
+                { value: 'incomplete', label: tNutrition('dayDeclIncomplete') },
+              ]}
+            />
+            <p className="ct-nutrition__muted">{tNutrition('dayDeclHint')}</p>
+          </div>
+        </>
       )}
 
       {error ? (

@@ -56,6 +56,9 @@ fn make_db(path: &Path, version: u32, bodies_version: u32) {
         "food_portion",
         "meal_entry",
         "nutrition_target",
+        "day_completeness",
+        "recipe",
+        "recipe_ingredient",
         "search_index_doc",
     ] {
         conn.execute_batch(&format!(
@@ -220,7 +223,7 @@ fn k05_4_reset_triggers_recreates_the_bodies_of_the_backup_version_and_never_a_c
 }
 
 /// 0.8.1 (relecture sync-icloud rattrapée de #75 et #79) : une base Spartiate n'a AUCUNE table `search_index_doc` (reste de l'ancien projet,
-/// aucune migration 0001 à 0008 ne la crée). La restauration d'une sauvegarde ne doit pas laisser la base sans déclencheur de capture de
+/// aucune migration 0001 à 0009 ne la crée). La restauration d'une sauvegarde ne doit pas laisser la base sans déclencheur de capture de
 /// synchro : sans eux, un repas ou une séance saisis ensuite n'entrent jamais dans `sync_outbox`.
 #[test]
 fn restore_recreates_sync_capture_triggers_even_without_search_index_doc() {
@@ -246,6 +249,8 @@ fn restore_recreates_sync_capture_triggers_even_without_search_index_doc() {
         "sync_mesocycle_ai",
         "sync_food_ai",
         "sync_nutrition_target_ai",
+        "sync_recipe_ingredient_ai",
+        "sync_day_completeness_au",
         "sync_workout_ai",
     ] {
         assert!(
@@ -336,5 +341,58 @@ fn a_restored_v7_backup_then_migration_0008_ends_with_the_34_sync_triggers() {
         .unwrap();
     let after = trigger_names(&path);
     assert_eq!(after.len(), 34, "{after:?}");
+    assert!(after.iter().all(|n| n.starts_with("sync_")));
+}
+
+/// Base Spartiate RÉELLE de version 9 (I4-07) : schéma rejoué depuis les migrations TypeScript (fixture `spartiate-v9-schema.sql`).
+fn make_real_spartiate_v9_db(path: &Path) {
+    let conn = Connection::open(path).unwrap();
+    conn.execute_batch(include_str!("../fixtures/spartiate-v9-schema.sql"))
+        .unwrap();
+    for v in 1..=9 {
+        conn.execute(
+            "INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?1, 'n', 'c', 'now')",
+            [v],
+        )
+        .unwrap();
+    }
+}
+
+#[test]
+fn a_real_spartiate_v9_backup_is_admitted_and_reset_triggers_restores_exactly_its_40_triggers() {
+    let dir = scratch();
+    let path = dir.path().join("reelle9.db");
+    make_real_spartiate_v9_db(&path);
+    let before = trigger_names(&path);
+    assert_eq!(before.len(), 40, "{before:?}");
+    assert!(!before.iter().any(|n| n.starts_with("search_")));
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 9);
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch("CREATE TRIGGER evil AFTER INSERT ON recipe BEGIN SELECT 1; END;")
+        .unwrap();
+    reset_triggers(&path).unwrap();
+    assert_eq!(trigger_names(&path), before);
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 9);
+}
+
+/// Restauration puis migration : une sauvegarde Spartiate de version 8 passe par `reset_triggers`, puis la migration 0009 s'applique à
+/// l'ouverture sans échouer sur « trigger already exists » ; la base finit avec les 40 déclencheurs `sync_*` de la version 9.
+#[test]
+fn a_restored_v8_backup_then_migration_0009_ends_with_the_40_sync_triggers() {
+    let dir = scratch();
+    let path = dir.path().join("v8.db");
+    make_real_spartiate_db(&path);
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 8);
+    let before = trigger_names(&path);
+    assert_eq!(before.len(), 34, "{before:?}");
+    reset_triggers(&path).unwrap();
+    assert_eq!(trigger_names(&path), before);
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(include_str!("../fixtures/spartiate-0009-statements.sql"))
+        .unwrap();
+    let after = trigger_names(&path);
+    assert_eq!(after.len(), 40, "{after:?}");
     assert!(after.iter().all(|n| n.starts_with("sync_")));
 }

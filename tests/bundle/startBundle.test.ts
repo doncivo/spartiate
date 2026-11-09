@@ -281,14 +281,14 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
   });
 
-  it.each(['Rien de saisi aujourd’hui', 'Check-in suspendu', 'Aucune cible définie', 'Balance 7 jours', 'Chercher en ligne', 'Place le code-barres dans le cadre.'])('I4-03 / I4-05 : « %s » hors du départ et présent dans le build', (marker) => {
+  it.each(['Rien de saisi aujourd’hui', 'Check-in suspendu', 'Aucune cible définie', 'Balance 7 jours', 'Chercher en ligne', 'Place le code-barres dans le cadre.', 'Aucune recette. Crée la première.', 'Les repas déjà enregistrés dans le journal ne changent pas.'])('I4-03 / I4-05 / I4-07 : « %s » hors du départ et présent dans le build', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
   // I4-05 : écran de scan et client Open Food Facts (front) : blocs à la demande, hors du départ, importés dynamiquement.
-  it.each(['src/features/nutrition/scan/BarcodeScanView.tsx', 'src/platform/off/index.ts'])('I4-05 : %s est un bloc à la demande, hors du départ', (source) => {
+  it.each(['src/features/nutrition/scan/BarcodeScanView.tsx', 'src/platform/off/index.ts', 'src/features/nutrition/recipes/RecipesView.tsx', 'src/features/nutrition/recipes/RecipeHits.tsx', 'src/features/nutrition/recipes/RecipeQuantityStep.tsx'])('I4-05 / I4-07 : %s est un bloc à la demande, hors du départ', (source) => {
     const start = new Set(startChunks().map((chunk) => chunk.file));
     const chunk = manifest[source];
     if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);

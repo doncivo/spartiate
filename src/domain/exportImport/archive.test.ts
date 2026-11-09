@@ -94,14 +94,15 @@ describe('export : contenu et liste blanche', () => {
 
   it('sans donnée : archive valide, profil null', async () => {
     const empty: ExportData = { profile: null, weights: [], settings: {} };
-    expect((await parseExportArchive(await archiveOf(empty), opts)).data).toEqual(empty);
+    // `archiveSv` (I4-07) : version de schéma du manifeste, portée par les données lues.
+    expect((await parseExportArchive(await archiveOf(empty), opts)).data).toEqual({ ...empty, archiveSv: 1 });
   });
 });
 
 describe('import : validation complète avant écriture', () => {
   it('aller-retour : mêmes données, même hash canonique', async () => {
     const parsed = await parseExportArchive(await archiveOf(), opts);
-    expect(parsed.data).toEqual(DATA);
+    expect(parsed.data).toEqual({ ...DATA, archiveSv: 1 });
     expect(parsed.manifest).toMatchObject({ app: 'spartiate', sv: 1, date: DATE });
     expect(await canonicalHash(parsed.data)).toBe(await canonicalHash(DATA));
   });

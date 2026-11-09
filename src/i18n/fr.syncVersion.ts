@@ -50,6 +50,9 @@ export const syncVersionFr = {
     foodPortion: 'portions de fiches',
     mealEntry: 'entrées du journal',
     nutritionTarget: 'cibles nutritionnelles',
+    dayCompleteness: 'déclarations de journée',
+    recipe: 'recettes',
+    recipeIngredient: 'ingrédients de recettes',
     other: 'autres éléments',
   },
 } as const;

@@ -5,7 +5,7 @@
  */
 
 import { isLocalDate, isLocalTime, type LocalDate, type LocalTime } from '../types';
-import { ENTRY_NAME_MAX, ENTRY_SOURCES, FOOD_GRAMS_MAX, KCAL_PER_100G_MAX, parseFoodId, type EntrySource } from './food';
+import { ENTRY_NAME_MAX, ENTRY_SOURCES, FOOD_GRAMS_MAX, KCAL_PER_100G_MAX, parseFoodId, parseRecipeFoodId, type EntrySource } from './food';
 import type { MealEntryInput } from './types';
 
 export const ENTRY_METHODS = ['search', 'scan', 'photo', 'quickadd'] as const;
@@ -84,7 +84,10 @@ export function validateMealEntry(draft: MealEntryDraft): MealEntryIssue[] {
 
   // Aliment : obligatoire en recherche et en scan, absent en Quick Add, facultatif pour une estimation ; cohérent avec la provenance.
   const ref = draft.foodId === null ? null : parseFoodId(draft.foodId);
-  if (draft.foodId !== null && ref === null) add('food-id-invalid');
+  // I4-07 (D-80) : une prise de recette cite `recipe:<UUID>` et n'a pas d'autre provenance que `custom`.
+  const recipeRef = draft.foodId === null ? null : parseRecipeFoodId(draft.foodId);
+  if (draft.foodId !== null && ref === null && recipeRef === null) add('food-id-invalid');
+  if (recipeRef !== null && sourceOk && draft.source !== 'custom') add('source-food-mismatch');
   if (methodOk) {
     if ((draft.method === 'search' || draft.method === 'scan') && draft.foodId === null) add('food-required');
     if (draft.method === 'quickadd' && draft.foodId !== null) add('food-id-invalid');

@@ -157,6 +157,9 @@ const KIND_KEYS = {
   food_portion: 'sync.version.kinds.foodPortion',
   meal_entry: 'sync.version.kinds.mealEntry',
   nutrition_target: 'sync.version.kinds.nutritionTarget',
+  day_completeness: 'sync.version.kinds.dayCompleteness',
+  recipe: 'sync.version.kinds.recipe',
+  recipe_ingredient: 'sync.version.kinds.recipeIngredient',
 } as const;
 
 /** Types d'éléments d'un échec (« tâches, événements »), d'après les tables du catalogue. */
