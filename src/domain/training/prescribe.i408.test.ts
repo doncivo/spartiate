@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { prescribe } from './prescribe';
 import { explainPrescription } from './explain';
 import { progressionFr } from '../../i18n/fr.progression';
-import { CURL, input, session, target } from '../../../tests/fixtures/training/progression';
+import { recalibrationKept } from './decision';
+import type { Prescription, ProgressionEquipment } from './types';
+import { CURL, FITNESS_PARK_ANTONY, input, session, target } from '../../../tests/fixtures/training/progression';
 
 /** I4-08 (0.9.1) : défauts du moteur relevés par relecture à froid avant la première séance réelle (docs/I4-06.md § 1.5). */
 
@@ -76,5 +78,40 @@ describe('I4-08 point 2 : décote d’inactivité arrondie au cran du matériel,
     expect(texts.explainInactivityHeld).toMatch(/^Charge maintenue/);
     expect(texts.explainInactivity).toContain('{delta} kg');
     expect(texts.explainInactivity).toContain('{cut} %');
+  });
+});
+
+describe('I4-08 point 3 : recalibrage « Facile » sans effet sur la charge = pas de recalibrage', () => {
+  const capped = (maxKg: number): ProgressionEquipment => ({
+    inventory: { ...FITNESS_PARK_ANTONY.inventory, dumbbells: { minKg: 2, maxKg, stepKg: 2 }, toVerify: [] },
+    increments: FITNESS_PARK_ANTONY.increments,
+  });
+  const easyCurl = (maxKg: number) =>
+    prescribe(input({ exercise: CURL, equipment: capped(maxKg), history: [session(2, 20, [8, 8, 8], { difficulty: 'easy' })], target: target(8, 12) }));
+
+  for (const maxKg of [20, 40]) {
+    it(`haltères 2 à ${String(maxKg)} kg, 20 kg Facile : +5 % (21 kg) retombe sur 20 kg → échelle de répétitions, ni « +0 kg » ni 1RM relevé`, () => {
+      const p = easyCurl(maxKg);
+      expect(p.loadKg).toBe(20);
+      expect(p.reasons).not.toContain('easy-recalibration');
+      expect(p.recalibration).toBeNull();
+      expect(p.headline).toBe('rep-ladder');
+      expect(p.sets.map((s) => s.reps)).toEqual([9, 8, 8]);
+      expect(explainPrescription(p).key).not.toBe('recalibration');
+    });
+  }
+
+  it('barre, 60 kg Facile : +5 % (63 kg) → 62,5 kg, le recalibrage reste (témoin)', () => {
+    const p = prescribe(input({ history: [session(2, 60, [8, 8, 8], { difficulty: 'easy' })] }));
+    expect(p.headline).toBe('recalibration');
+    expect(p.loadKg).toBe(62.5);
+    expect(p.recalibration).not.toBeNull();
+  });
+
+  it('clôture : une prescription tracée « recalibrage » sans hausse de charge (moteur 0.9.0) ne relève pas le 1RM ni ne démarre le délai de 30 jours', () => {
+    const p = prescribe(input({ history: [session(2, 60, [8, 8, 8], { difficulty: 'easy' })] }));
+    const flat: Prescription = { ...p, loadKg: 60, deltaKg: 0, sets: p.sets.map((s) => ({ ...s, loadKg: 60 })) };
+    expect(recalibrationKept(flat, 60)).toBeNull();
+    expect(recalibrationKept(p, 62.5)).toEqual(p.recalibration);
   });
 });
