@@ -24,7 +24,20 @@ export type TdeeReason =
   | 'no-weight'
   | 'insufficient-complete-days'
   | 'no-trend-at-start'
-  | 'no-trend-at-end';
+  | 'no-trend-at-end'
+  | 'no-recent-weigh-in-at-start'
+  | 'no-recent-weigh-in-at-end';
+
+const dayCount = (a: LocalDate, b: LocalDate): number => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86_400_000);
+
+function lastPointOnOrBefore(points: readonly TrendPoint[], date: LocalDate): TrendPoint | null {
+  let last: TrendPoint | null = null;
+  for (const p of points) {
+    if (p.date > date) break;
+    last = p;
+  }
+  return last;
+}
 
 /** `null` si le poids, la taille ou l'âge n'est pas un nombre fini positif (jamais NaN). */
 export function mifflinStJeor(p: { sex: Sex; weightKg: number; heightCm: number; age: number }): number | null {
@@ -83,12 +96,23 @@ export function measuredTdee(input: {
   }
   const completeDays = used.size;
   const meanKcal = completeDays === 0 ? null : [...used.values()].reduce((a, b) => a + b, 0) / completeDays;
-  const tStart = trendAt(input.trend, startDate);
-  const tEnd = trendAt(input.trend, input.endDate);
   const reasons: TdeeReason[] = [];
   if (completeDays < NUTRITION_CONFIG.minCompleteDaysInTdeeWindow) reasons.push('insufficient-complete-days');
-  if (tStart === null) reasons.push('no-trend-at-start');
-  if (tEnd === null) reasons.push('no-trend-at-end');
+  // D-82 : la tendance « reportée » d'une vieille pesée donnerait une variation nulle (fausse mesure) ; chaque bout exige une pesée récente.
+  const edge = (date: LocalDate, missing: TdeeReason, stale: TdeeReason): number | null => {
+    const last = lastPointOnOrBefore(input.trend, date);
+    if (last === null) {
+      reasons.push(missing);
+      return null;
+    }
+    if (dayCount(last.date, date) > NUTRITION_CONFIG.maxWeighInAgeDays) {
+      reasons.push(stale);
+      return null;
+    }
+    return last.trend;
+  };
+  const tStart = edge(startDate, 'no-trend-at-start', 'no-recent-weigh-in-at-start');
+  const tEnd = edge(input.endDate, 'no-trend-at-end', 'no-recent-weigh-in-at-end');
   if (reasons.length > 0 || meanKcal === null || tStart === null || tEnd === null) {
     return { value: null, meanKcal, completeDays, deltaKg: tStart !== null && tEnd !== null ? tEnd - tStart : null, reasons };
   }
@@ -150,8 +174,6 @@ export interface TdeeEstimate {
   readonly coverage: Coverage;
   readonly reasons: readonly TdeeReason[];
 }
-
-const dayCount = (a: LocalDate, b: LocalDate): number => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86_400_000);
 
 export function estimateTdee(input: {
   readonly endDate: LocalDate;
