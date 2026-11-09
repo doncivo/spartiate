@@ -59,3 +59,45 @@ describe('I4-08 point 1 : séance dont la décision a retenu un choix de fatigue
     for (const c of cases) expect([c.n, history.find((s) => s.workoutId === u(c.n))?.fatigueChoice === true]).toEqual([c.n, c.marked]);
   });
 });
+
+describe('I4-08 point 6 : décision illisible ignorée et journalisée par un nom fixe', () => {
+  async function corrupt(id: string, workoutId: string, decidedAt: string, prescription: string, chosenReps: string): Promise<void> {
+    await db.driver.execute(
+      `INSERT INTO recommendation_decision (id, exercise_id, workout_id, workout_set_id, engine_version, prescription, reasons, accepted, chosen_load_kg, chosen_reps,
+         decided_at, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, NULL, 3, ?, '[]', 0, 61, ?, ?, ?, ?, ?, ?)`,
+      [id, EX, workoutId, prescription, chosenReps, decidedAt, decidedAt, decidedAt, DEVICE, HLC],
+    );
+  }
+
+  it('lastDecision, decisionFor, history et applyClosedWorkout : la ligne illisible est sautée (la précédente lisible sert), rien ne lève ; événement fixe sans contenu', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    await closedWorkout(1, day(1), 60, [8, 8, 8]);
+    const readable = await r.recordDecision({ exerciseId: EX, workoutId: u(1), prescription: prescribe(input()), accepted: false, chosenLoadKg: 60, chosenReps: [8, 8, 8] });
+    await closedWorkout(2, day(2), 60, [8, 8, 8]);
+    await corrupt(u(902), u(2), day(3), '{"loadKg": 61, tronqué', '[8,8,8]');
+    await closedWorkout(3, day(4), 60, [8, 8, 8]);
+    await corrupt(u(903), u(3), day(5), JSON.stringify(prescribe(input())), 'pas du JSON');
+    const events: string[] = [];
+    const report = (event: string): void => {
+      events.push(event);
+    };
+    expect((await r.lastDecision(EX, report))?.id).toBe(readable.id);
+    expect(await r.decisionFor(u(2), EX, report)).toBeNull();
+    expect(await r.decisionFor(u(3), EX, report)).toBeNull();
+    expect((await r.decisionFor(u(1), EX, report))?.id).toBe(readable.id);
+    expect((await r.history(EX)).map((s) => s.workoutId)).toEqual([u(3), u(2), u(1)]);
+    await expect(r.applyClosedWorkout(u(2))).resolves.toBeUndefined();
+    expect(events.length).toBeGreaterThan(0);
+    expect(new Set(events)).toEqual(new Set(['progression-decision-unreadable']));
+  });
+
+  it('sans rapporteur : la lecture ignore la ligne sans lever', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    await closedWorkout(1, day(1), 60, [8, 8, 8]);
+    await corrupt(u(901), u(1), day(2), 'null', '[8]');
+    expect(await r.lastDecision(EX)).toBeNull();
+    expect(await r.decisionFor(u(1), EX)).toBeNull();
+  });
+});
