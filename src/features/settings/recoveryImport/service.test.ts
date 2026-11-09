@@ -219,4 +219,25 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     const text = JSON.stringify(logs);
     for (const secret of ['48,5', '48.5', '4000', '7000', 'Profond', '2026-11', 'bpm', ';']) expect(text).not.toContain(secret);
   });
+
+  it('correction de revue 1 : réimport du jour avec un total de pas plus grand : le total est remplacé, compté « mis à jour »', async () => {
+    const service = build(reader(async () => [ok('pas.csv', PAS)]));
+    await service.run('manual');
+    const bigger = `${PAS}2026-11-07T21:00:00+01:00;2500;pas\n`;
+    const second = await build(reader(async () => [ok('pas.csv', bigger)])).run('manual');
+    const outcome = second.files.find((f) => f.type === 'pas');
+    expect(outcome).toMatchObject({ state: 'imported', read: 1, added: 0, duplicates: 0, updated: 1 });
+    const samples = await db.data.repos.recoverySamples();
+    expect((await samples.listWindow('pas', '2026-11-01T00:00:00.000Z', NOW)).map((s) => s.value)).toEqual([9500]);
+    const third = await build(reader(async () => [ok('pas.csv', bigger)])).run('manual');
+    expect(third.files.find((f) => f.type === 'pas')).toMatchObject({ added: 0, duplicates: 1, updated: 0 });
+  });
+
+  it('correction de revue 1 : les autres types gardent « première valeur gagnante »', async () => {
+    await build(reader(async () => [ok('fc-repos.csv', FC)])).run('manual');
+    const other = await build(reader(async () => [ok('fc-repos.csv', '2026-11-08T07:00:00+01:00;70;bpm\n')])).run('manual');
+    expect(other.files.find((f) => f.type === 'fc-repos')).toMatchObject({ added: 0, duplicates: 1, updated: 0 });
+    const samples = await db.data.repos.recoverySamples();
+    expect((await samples.listWindow('fc-repos', '2026-11-01T00:00:00.000Z', NOW)).map((s) => s.value)).toEqual([55]);
+  });
 });
