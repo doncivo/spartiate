@@ -200,7 +200,33 @@ export function prescribe(input: PrescribeInput): Prescription {
   const lastRank = Math.max(1, Math.floor(input.lastPositionRank ?? rank));
   const positionFactor = Math.min(1, positionMultiplier(rank, config) / positionMultiplier(lastRank, config));
   const positioned = (loadKg: number, repsList: readonly number[]): { readonly loadKg: number; readonly reps: readonly number[]; readonly cut: number } => {
-    if (positionFactor >= 1 - EPS || !(loadKg > 0)) return { loadKg, reps: repsList, cut: 0 };
+    if (positionFactor >= 1 - EPS) return { loadKg, reps: repsList, cut: 0 };
+    if (body !== null) {
+      // DEP-01 : exercice lesté ou assisté, poids de corps connu : décote sur la charge TOTALE (corps × fraction ± charge saisie), comme le 1RM ;
+      // la charge saisie est ensuite déduite de ce total (lest : arrondi vers le bas, jamais négatif ; assistance : arrondi vers le haut).
+      const total = body.baseKg + body.sign * loadKg;
+      if (!(total > 0) || (body.sign > 0 && !(loadKg > 0))) return { loadKg, reps: repsList, cut: 0 };
+      const wanted = Math.max(0, (total * positionFactor - body.baseKg) / body.sign);
+      let next: number;
+      let nextReps: readonly number[] = repsList;
+      if (body.sign > 0) {
+        if (wanted <= EPS) next = 0;
+        else {
+          const snapped = snapToEquipment(wanted, repsList, available, config);
+          next = roundKg(Math.min(snapped.loadKg, loadKg));
+          nextReps = snapped.reps;
+        }
+        if (next >= loadKg - EPS) return { loadKg, reps: repsList, cut: 0 };
+      } else {
+        const unit = config.unknownGridRoundingKg;
+        const up = available === null ? Math.ceil(wanted / unit - EPS) * unit : Math.min(...available.filter((kg) => kg >= wanted - EPS), ...(available.length > 0 ? [Math.max(...available)] : [wanted]));
+        next = roundKg(Math.max(up, loadKg));
+        if (next <= loadKg + EPS) return { loadKg, reps: repsList, cut: 0 };
+      }
+      reasons.add('position-discount');
+      return { loadKg: next, reps: nextReps, cut: 1 - positionFactor };
+    }
+    if (!(loadKg > 0)) return { loadKg, reps: repsList, cut: 0 };
     const snapped = snapToEquipment(loadKg * positionFactor, repsList, available, config);
     const lowered = roundKg(Math.min(snapped.loadKg, loadKg));
     if (lowered >= loadKg - EPS) return { loadKg, reps: repsList, cut: 0 };
