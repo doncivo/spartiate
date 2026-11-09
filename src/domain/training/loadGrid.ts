@@ -113,6 +113,27 @@ export function nextLoadAbove(loadKg: number, loads: readonly number[]): number 
   return best;
 }
 
+/**
+ * I4-08 : décote d'inactivité seule, arrondie au cran du matériel (`loads` contient la référence). Cran = écart entre la référence et la
+ * charge disponible juste en dessous. Décote < demi-cran : la charge reste la référence. Sinon : la charge disponible la plus proche de la
+ * cible, sous la référence (à égalité, la plus basse) : un cran pour une petite décote, jamais un cran entier annoncé comme « −1 % ». Écart
+ * à la cible > tolérance quand la charge est en dessous : +1 rep par série (même règle que `snapToEquipment`).
+ */
+export function snapDiscount(referenceKg: number, targetKg: number, reps: readonly number[], loads: readonly number[], config: ProgressionConfig): SnapResult {
+  const below = loads.filter((kg) => kg < referenceKg - EPS);
+  const keep: SnapResult = { loadKg: referenceKg, reps: [...reps], extraRep: false };
+  if (below.length === 0) return keep;
+  const step = referenceKg - Math.max(...below);
+  if (referenceKg - targetKg < step / 2 - EPS) return keep;
+  const loadKg = below.reduce((best, kg) => {
+    const d = Math.abs(kg - targetKg);
+    const bestD = Math.abs(best - targetKg);
+    return d < bestD - EPS || (Math.abs(d - bestD) <= EPS && kg < best) ? kg : best;
+  });
+  const extraRep = loadKg > 0 && loadKg < targetKg - EPS && (targetKg - loadKg) / loadKg > config.snapTolerance + EPS;
+  return { loadKg, reps: extraRep ? reps.map((r) => r + 1) : [...reps], extraRep };
+}
+
 export interface SnapResult {
   readonly loadKg: number;
   readonly reps: readonly number[];

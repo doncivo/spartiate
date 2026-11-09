@@ -9,7 +9,11 @@ import {
   ACTIVITY_FACTOR_MODERATE,
   ACTIVITY_FACTOR_SEDENTARY,
   ACTIVITY_FACTORS,
+  NUTRITION_CONFIG,
 } from './config';
+import { aggregateDays } from './dayTotals';
+import { tdeeConfidence } from './journal';
+import { DAYS, START, date as fxDate, threeWeeksWithoutWeighIn, completeCoverage } from '../../../tests/fixtures/nutrition/eightWeeks';
 import {
   blendTdee,
   estimateTdee,
@@ -255,5 +259,66 @@ describe('I4-01 : estimateTdee : assemblage traçable', () => {
     const r = estimateTdee({ endDate: end, days: [], weighIns: [{ date: end, kg: 80 }], profile, activity: 'light', previousSmoothed: null });
     expect(r.basis).toBe('formula');
     expect(r.value).toBeCloseTo(1780 * 1.375, 6);
+  });
+});
+
+describe('I4-08 point 7 : pas de dépense mesurée sans pesée récente (D-82)', () => {
+  const profile = { sex: 'male', birthYear: 1996, heightCm: 180 } as const;
+  const run = (s: { entries: Parameters<typeof aggregateDays>[2]; weighIns: WeighIn[] }, endIndex: number, withProfile = true) => {
+    const endDate = fxDate(endIndex);
+    return estimateTdee({
+      endDate,
+      days: aggregateDays(START, endDate, s.entries, {}),
+      weighIns: s.weighIns.filter((w) => w.date <= endDate),
+      profile: withProfile ? profile : null,
+      activity: withProfile ? 'moderate' : null,
+      previousSmoothed: null,
+    });
+  };
+
+  it('avec pesée récente aux deux bouts : dépense mesurée', () => {
+    const r = run(completeCoverage(), DAYS - 1);
+    expect(r.measuredRaw).not.toBeNull();
+    expect(r.basis).toBe('measured');
+    expect(r.reasons).not.toContain('no-recent-weigh-in-at-end');
+    expect(r.reasons).not.toContain('no-recent-weigh-in-at-start');
+  });
+
+  it('trois semaines sans pesée : plus de mesure, retour à la formule, cause typée', () => {
+    const r = run(threeWeeksWithoutWeighIn(), DAYS - 1);
+    expect(r.measuredRaw).toBeNull();
+    expect(r.deltaKg).toBeNull();
+    expect(r.basis).toBe('formula');
+    expect(r.value).toBe(r.formula);
+    expect(r.reasons).toContain('no-recent-weigh-in-at-end');
+    expect(tdeeConfidence(r)).toBe('low');
+  });
+
+  it('sans formule : dépense non estimée, confiance aucune, jamais la moyenne des apports', () => {
+    const r = run(threeWeeksWithoutWeighIn(), DAYS - 1, false);
+    expect(r.value).toBeNull();
+    expect(r.basis).toBe('none');
+    expect(tdeeConfidence(r)).toBe('none');
+  });
+
+  it('seuil nommé : 7 jours d’âge acceptés, 8 refusés', () => {
+    expect(NUTRITION_CONFIG.maxWeighInAgeDays).toBe(7);
+    const end = at(40);
+    const days: DayTotals[] = [];
+    for (let i = 0; i <= 40; i += 1) days.push(completeDay(at(i), 2400));
+    const startDate = addDays(end, -21);
+    expect(measuredTdee({ days, trend: [point(startDate, 80), point(addDays(end, -7), 80)], endDate: end }).value).not.toBeNull();
+    const ko = measuredTdee({ days, trend: [point(startDate, 80), point(addDays(end, -8), 80)], endDate: end });
+    expect(ko.value).toBeNull();
+    expect(ko.reasons).toContain('no-recent-weigh-in-at-end');
+  });
+
+  it('pesée ancienne au début de la fenêtre : cause « au début »', () => {
+    const end = at(40);
+    const days: DayTotals[] = [];
+    for (let i = 0; i <= 40; i += 1) days.push(completeDay(at(i), 2400));
+    const r = measuredTdee({ days, trend: [point(addDays(end, -40), 80), point(end, 80)], endDate: end });
+    expect(r.value).toBeNull();
+    expect(r.reasons).toContain('no-recent-weigh-in-at-start');
   });
 });

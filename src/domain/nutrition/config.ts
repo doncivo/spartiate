@@ -46,6 +46,8 @@ export const NUTRITION_CONFIG = {
   kcalPerKg: 7700,
   /** Jours complets minimum dans la fenêtre de 21 jours : minLoggedDays / 7 de la fenêtre (12). */
   minCompleteDaysInTdeeWindow: 12,
+  /** D-82 : âge maximal (jours entre la dernière pesée et chaque bout de la fenêtre) pour que la dépense mesurée soit calculée. */
+  maxWeighInAgeDays: 7,
   /** § 15.1 : durée de la transition formule → mesure ; D-74 point 4 : pondération linéaire. */
   blendDays: 28,
   /** § 15.2 : jour complet inféré. */

@@ -247,6 +247,7 @@ export const nutritionFr = {
   tdeeTitle: 'Dépense estimée',
   tdeeValue: '{n} kcal / j',
   tdeeNone: 'Dépense non estimée : renseigne ton profil et ton niveau d’activité.',
+  tdeeWeighInNeeded: 'Pèse-toi pour que la dépense mesurée reprenne.',
   tdeeBasisFormula: 'Estimation par formule (Mifflin-St Jeor × activité déclarée).',
   tdeeBasisBlend: 'Transition de la formule vers la mesure : {pct} % mesuré.',
   tdeeBasisMeasured: 'Dépense mesurée à partir de tes apports et de ta tendance de poids.',

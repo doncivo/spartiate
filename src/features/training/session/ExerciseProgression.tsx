@@ -7,10 +7,12 @@ import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, typ
 import type { WorkoutSet, WorkoutWithSets } from '../../../domain/training/session';
 import type { IsoDateTime } from '../../../domain/types';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
-import type { ProgressionProfileRecord, RecommendationDecisionRecord } from '../../../db/repositories/progressionRepository';
+import type { DecisionReadEvent, ProgressionProfileRecord, RecommendationDecisionRecord } from '../../../db/repositories/progressionRepository';
+import { logFailure } from '../../../platform/desktop/log';
 import { tProgression, type ProgressionTextKey } from '../../../i18n/progressionText';
 import { Button } from '../../../ui';
 import { loadCurrentCycle, localDayOf } from '../cycle/currentCycle';
+import { linkedRir, parseSessionLink, sessionRoutineId } from '../cycle/sessionLink';
 import './Progression.css';
 
 /**
@@ -26,7 +28,8 @@ import './Progression.css';
  * - Contraintes (I2-02) : alertes en texte et choix facultatifs (fatigue : −5 % ou −2 reps ; stagnation : variante, autre plage, mini-deload).
  *   Un choix ne remplit les séries qu'au geste d'Ali, tracé comme une modification ; « Accepter » garde la proposition, « Refuser » ne
  *   remplit rien. Deload manuel demandé par Ali (bascule) : la proposition allégée, une fois retenue, sort la séance des statistiques.
- *   I3-02 : séance commencée en semaine de deload du cycle suivi : la bascule est activée par défaut (dit en texte), désactivable.
+ *   I3-02 : séance commencée en semaine de deload du cycle suivi : la bascule est activée par défaut (dit en texte), désactivable ;
+ *   I4-08 : seulement si la séance est issue de la routine du cycle (démarrée ou proposée depuis elle), jamais libre ni d'une autre routine.
  * - Échauffement (I2-03, § 13.8) : pour le premier exercice composé de son pattern (`warmup`), la rampe est annoncée sous la proposition
  *   et insérée avant la première série de travail dans la même transaction que la décision, sur la charge retenue (Accepter, Modifier ou
  *   un choix) ; jamais après un refus, jamais si l'exercice a déjà une série d'échauffement, jamais sans grille de charges connue.
@@ -59,6 +62,8 @@ interface Loaded {
   readonly profile: ProgressionProfileRecord | null;
   /** I3-02 : la séance a commencé en semaine de deload du cycle suivi. */
   readonly cycleDeload: boolean;
+  /** I4-08 point 4 : RIR cible de la séance proposée pour cet exercice (semaine du cycle) ; null : aucun. */
+  readonly targetRir: number | null;
 }
 
 type Load = { readonly status: 'loading' } | { readonly status: 'error' } | ({ readonly status: 'ready' } & Loaded);
@@ -77,6 +82,7 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   extraRepMax: 'explainExtraRepMax',
   fatigue: 'explainFatigue',
   inactivity: 'explainInactivity',
+  inactivityHeld: 'explainInactivityHeld',
   deload: 'explainDeload',
   recoveryLow: 'explainRecoveryLow',
   recoveryLowSet: 'explainRecoveryLowSet',
@@ -92,6 +98,8 @@ const OPTION_KEYS: Readonly<Record<OptionKey, ProgressionTextKey>> = {
 const BAND_KEYS = { low: 'bandLow', medium: 'bandMedium', high: 'bandHigh' } as const;
 const DIFFICULTY_KEYS: Readonly<Record<Difficulty, ProgressionTextKey>> = { easy: 'easy', ok: 'ok', hard: 'hard' };
 
+const reportUnreadable = (event: DecisionReadEvent): void => logFailure('training', event);
+
 /** Nombre à la française : 62.5 → « 62,5 ». */
 const kg = (n: number): string => String(n).replace('.', ',');
 const parse = (text: string): number | null => {
@@ -104,13 +112,13 @@ const repsText = (reps: readonly number[]): string => reps.join(tProgression('re
 const chosenRepsText = (reps: readonly number[]): string => (reps.length > 0 && reps.every((r) => r === reps[0]) ? String(reps[0]) : repsText(reps));
 
 /** Cible de la séance : nombre de séries de travail, plage de la première (sinon celle de l'exercice). */
-function targetOf(sets: readonly WorkoutSet[], exercise: Exercise | undefined): RepTarget {
+function targetOf(sets: readonly WorkoutSet[], exercise: Exercise | undefined, rir: number | null): RepTarget {
   const work = sets.filter((s) => s.setKind !== 'warmup');
   const first = work[0];
   const [defMin, defMax] = exercise?.defaultRepRange ?? [8, 12];
   const repMin = first?.targetRepsMin ?? defMin;
   const repMax = first?.targetRepsMax ?? Math.max(repMin, defMax);
-  return { sets: Math.max(1, work.length), repMin, repMax: Math.max(repMin, repMax), rir: null };
+  return { sets: Math.max(1, work.length), repMin, repMax: Math.max(repMin, repMax), rir };
 }
 
 /** Rampe : « 25 kg × 8 · 37,5 kg × 5 · 50 kg × 2 ». */
@@ -137,21 +145,27 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     void (async () => {
       try {
         const repo = await access.repos.progression();
-        const [history, reference, own, profile, cycle] = await Promise.all([
+        const [history, reference, own, profile, cycle, rawLink] = await Promise.all([
           repo.history(exerciseId),
-          repo.lastDecision(exerciseId),
-          repo.decisionFor(workout.id, exerciseId),
+          // I4-08 : décision illisible ignorée par le repository, journalisée par son nom d'événement fixe (jamais son contenu).
+          repo.lastDecision(exerciseId, reportUnreadable),
+          repo.decisionFor(workout.id, exerciseId, reportUnreadable),
           repo.getProfile(exerciseId),
           loadCurrentCycle(access, localDayOf(Date.parse(workout.startedAt))),
+          // Lien local d'une séance proposée (I4-08) : illisible ou d'une autre séance, il ne vaut rien.
+          access.repos.settings.get('training.cycleSession').catch(() => null),
         ]);
-        const cycleDeload = cycle !== null && cycle.state.phase === 'active' && cycle.state.kind === 'deload';
+        const link = parseSessionLink(rawLink);
+        // I4-08 point 5 : le deload du cycle ne vaut que pour une séance issue de la routine du cycle (démarrée ou proposée depuis elle).
+        const ofCycle = cycle !== null && sessionRoutineId({ id: workout.id, routineId: workout.routineId }, link) === cycle.record.routineId;
+        const cycleDeload = ofCycle && cycle.state.phase === 'active' && cycle.state.kind === 'deload';
         if (!live.current) return;
         // I3-02 : en semaine de deload du cycle, le deload est proposé par défaut (une fois, au premier chargement ; désactivable).
         if (cycleDeload && !cyclePreset.current) {
           cyclePreset.current = true;
           setDeload(true);
         }
-        setLoad({ status: 'ready', history, reference, own, profile, cycleDeload });
+        setLoad({ status: 'ready', history, reference, own, profile, cycleDeload, targetRir: linkedRir({ id: workout.id }, link, exerciseId) });
       } catch {
         if (live.current) setLoad({ status: 'error' });
       }
@@ -159,15 +173,15 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     return () => {
       live.current = false;
     };
-  }, [access, exerciseId, workout.id, workout.startedAt, attempt]);
+  }, [access, exerciseId, workout.id, workout.routineId, workout.startedAt, attempt]);
 
   useEffect(() => {
     if (editing !== null) editLoad.current?.focus();
   }, [editing !== null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // La séance se redessine chaque seconde (chrono) : la cible n'est recalculée, et le moteur rappelé, que si ses valeurs changent.
-  const computed = targetOf(sets, exercise);
-  const target = useMemo(() => computed, [computed.sets, computed.repMin, computed.repMax]); // eslint-disable-line react-hooks/exhaustive-deps
+  const computed = targetOf(sets, exercise, load.status === 'ready' ? load.targetRir : null);
+  const target = useMemo(() => computed, [computed.sets, computed.repMin, computed.repMax, computed.rir]); // eslint-disable-line react-hooks/exhaustive-deps
   const ownDecision = load.status === 'ready' ? load.own : null;
 
   const prescription = useMemo((): Prescription | null => {
@@ -295,7 +309,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     const p = prescription;
     const explanation = explainPrescription(p);
     const params: Record<string, string | number> = { ...explanation.params };
-    for (const key of ['load', 'delta'] as const) if (typeof params[key] === 'number') params[key] = kg(params[key]);
+    for (const key of ['load', 'delta', 'cut'] as const) if (typeof params[key] === 'number') params[key] = kg(params[key]);
     // I2-04 : précisions (séance partielle ignorée, matériel à vérifier) dans la même phrase, lues d'un trait.
     const notes = explanationNotes(p).map((n) => tProgression(n.key, n.params));
     const sentence = [tProgression(EXPLAIN_KEYS[explanation.key], params), ...notes].join(' ');
@@ -308,6 +322,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
       <>
         <p className="ct-progression__value ct-session__num">{value}</p>
         <p className="ct-progression__sentence">{sentence}</p>
+        {p.status !== 'unsupported' && p.deload !== true && typeof p.rirTarget === 'number' ? (
+          <p className="ct-progression__muted">{p.rirTarget === 1 ? tProgression('rirTargetOne') : tProgression('rirTargetMany', { rir: p.rirTarget })}</p>
+        ) : null}
         {proposed ? <p className="ct-progression__muted">{tProgression('confidence', { percent: confidencePercent(p.confidence), band: tProgression(BAND_KEYS[confidenceBand(p.confidence)]) })}</p> : null}
         {proposed && alerts.length > 0 ? (
           <ul className="ct-progression__alerts" aria-label={tProgression('alertsLabel')}>

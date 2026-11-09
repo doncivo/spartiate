@@ -21,6 +21,7 @@ export type ExplanationKey =
   | 'extraRepMax'
   | 'fatigue'
   | 'inactivity'
+  | 'inactivityHeld'
   | 'deload'
   | 'recoveryLow'
   | 'recoveryLowSet'
@@ -73,8 +74,13 @@ export function explainPrescription(p: Prescription): Explanation {
       return { key: 'extraRep', params: { set } };
     case 'fatigue':
       return { key: 'fatigue', params: {} };
-    case 'inactivity':
-      return { key: 'inactivity', params: { cut: percent(p.inactivityCut ?? 0) } };
+    case 'inactivity': {
+      // I4-08 : l'écart dit est celui de la charge appliquée (arrondie au matériel), jamais la décote théorique ; aucun écart : charge maintenue.
+      const ref = p.reference?.loadKg ?? 0;
+      const delta = -(p.deltaKg ?? 0);
+      if (!(delta > 0) || !(ref > 0)) return { key: 'inactivityHeld', params: { cut: percent(p.inactivityCut ?? 0) } };
+      return { key: 'inactivity', params: { delta: Math.round(delta * 100) / 100, cut: Math.round((delta / ref) * 1000) / 10 } };
+    }
     case 'deload':
       return { key: 'deload', params: { sets: p.sets.length, rir: p.rirTarget ?? 0 } };
     case 'recovery-low':

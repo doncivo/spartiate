@@ -11,6 +11,9 @@ export const progressionFr = {
   value: '{load} kg × {reps}',
   repsJoin: ' · ',
   confidence: 'Confiance {percent} % ({band})',
+  // I4-08 : RIR cible de la séance proposée (semaine du cycle).
+  rirTargetOne: 'Objectif : 1 répétition en réserve.',
+  rirTargetMany: 'Objectif : {rir} répétitions en réserve.',
   bandLow: 'faible',
   bandMedium: 'moyenne',
   bandHigh: 'bonne',
@@ -29,7 +32,8 @@ export const progressionFr = {
   explainOutlierHold: '{load} kg, bien au-dessus de tes séances précédentes : même charge, une répétition de plus sur la série {set}. Vérifie ta saisie ; la progression reprendra après une seconde séance à cette charge.',
   // Contraintes (I2-02) : maintien ou réduction, jamais imposés.
   explainFatigue: 'Même charge, mêmes répétitions : plus de 20 % de répétitions en moins qu’à la dernière séance à cette charge.',
-  explainInactivity: '−{cut} % : reprise après une pause de 3 semaines ou plus sur ce muscle.',
+  explainInactivity: '−{delta} kg (−{cut} %) : reprise après une pause de 3 semaines ou plus sur ce muscle.',
+  explainInactivityHeld: 'Charge maintenue : reprise après une pause de 3 semaines ou plus, mais la décote (−{cut} %) fait moins d’un demi-cran de ton matériel.',
   explainDeload: 'Deload : moitié des séries ({sets}), charge allégée, au moins {rir} répétitions en réserve ; hors statistiques.',
   explainRecoveryLow: 'Charge réduite de {cut} % : récupération basse aujourd’hui.',
   explainRecoveryLowSet: 'Charge réduite de {cut} % et une série de moins (exercice d’isolation) : récupération basse aujourd’hui.',

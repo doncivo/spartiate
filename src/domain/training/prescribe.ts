@@ -2,7 +2,7 @@ import { ENGINE_VERSION, REASON_ORDER, type ProgressionConfig } from './config';
 import { confidenceOf } from './confidence';
 import { analyzeHistory, current1rmFromSessions, epley, type SessionEstimate } from './estimate1rm';
 import { activeConstraints, proposalOptions, reducedTarget, reduces, type ActiveConstraints } from './constraints';
-import { gridToVerify, loadGrid, nextLoadAbove, roundKg, snapToEquipment } from './loadGrid';
+import { gridToVerify, loadGrid, nextLoadAbove, roundKg, snapDiscount, snapToEquipment } from './loadGrid';
 import type { MuscleWeight, PrescribeInput, PrescribedSet, Prescription, PrescriptionHeadline, PrescriptionReference, ReasonCode } from './types';
 
 /**
@@ -13,7 +13,7 @@ import type { MuscleWeight, PrescribeInput, PrescribedSet, Prescription, Prescri
  * séance (rendue telle quelle : son entrée l'emporte), sinon dernière séance valide, sinon « à saisir » (aucune table de standards,
  * D-72 point 1) ; 4. double progression : haut de plage partout → un cran, sinon +1 rep sur une seule série (8-7-6 → 8-8-6 → 8-8-7 →
  * 8-8-8) ; 5. difficulté : Dur / RIR ≤ 1 bloque la hausse de charge, Facile / RIR ≥ 4 confirme le cran, Facile avec confiance < 60 %
- * recalibre de +5 % (30 jours glissants) à la place du cran ; 6. contraintes (I2-02, constraints.ts) : fatigue, inactivité, deload ou
+ * recalibre de +5 % (30 jours glissants) à la place du cran, seulement si la charge arrondie monte (I4-08 : sinon échelle de répétitions) ; 6. contraintes (I2-02, constraints.ts) : fatigue, inactivité, deload ou
  * Recovery bas suspendent la progression (maintien de la référence) et réduisent dans cet ordre (facteurs multipliés, un seul arrondi) ;
  * fatigue et stagnation ajoutent des choix facultatifs, jamais appliqués ; une décision d'Ali, « à saisir » et une métrique hors moteur
  * ne sont pas modulées ; 7. arrondi
@@ -194,7 +194,14 @@ export function prescribe(input: PrescribeInput): Prescription {
     // Maintien de la référence (aucun cran, échelle ni recalibrage), puis réductions ; arrondi au matériel, jamais au-dessus de la référence.
     const reduced = reducedTarget(constraints, refPerformance, input.exercise.kind, config);
     if (reduced.recoverySetRemoved) reasons.add('recovery-set-removed');
-    const snapped = reduced.targetKg < refLoad - EPS ? snapToEquipment(reduced.targetKg, reduced.reps, available, config) : { loadKg: refLoad, reps: reduced.reps, extraRep: false };
+    // I4-08 : décote d'inactivité seule sur une grille connue : arrondie au cran (maintien sous le demi-cran), jamais un cran entier dit « −1 % ».
+    const discountOnly = constraints.inactivityCut > 0 && !constraints.deload && !constraints.lowRecovery;
+    const snapped =
+      reduced.targetKg >= refLoad - EPS
+        ? { loadKg: refLoad, reps: reduced.reps, extraRep: false }
+        : discountOnly && available !== null
+          ? snapDiscount(refLoad, reduced.targetKg, reduced.reps, available, config)
+          : snapToEquipment(reduced.targetKg, reduced.reps, available, config);
     if (snapped.extraRep) reasons.add('snap-extra-rep');
     const loadKg = roundKg(Math.min(snapped.loadKg, refLoad));
     return finish({
@@ -266,9 +273,14 @@ export function prescribe(input: PrescribeInput): Prescription {
     const fits = (loadKg: number, reps: readonly number[]): boolean => epley(loadKg, Math.max(...reps)) <= cap + 1e-9;
     const snapped = snapToEquipment(increase.targetKg, increase.reps, available, config);
     const snappedLoad = Math.max(snapped.loadKg, refLoad);
-    // Aucune charge de la grille n'existe entre la référence et le cran suivant ; +5 % tombé sur la référence (sous le cran suivant)
-    // garde la charge, avec une répétition de plus par série si l'écart dépasse 3 %.
-    if (fits(snappedLoad, snapped.reps)) {
+    if (draft.recalibration !== null && snappedLoad <= refLoad + EPS) {
+      // I4-08 : +5 % retombé sur la référence (aucune charge de la grille entre la référence et +5 %, ou maximum du matériel) : aucun
+      // recalibrage (ni « +0 kg », ni 1RM relevé, ni délai de 30 jours consommé) ; la double progression ordinaire s'applique.
+      reasons.delete('easy-recalibration');
+      reasons.add('rep-ladder');
+      const index = ladderIndex(reference.reps, target.repMax);
+      draft = hold('rep-ladder', plusOne(reference.reps, index), index);
+    } else if (fits(snappedLoad, snapped.reps)) {
       if (snapped.extraRep) reasons.add('snap-extra-rep');
       draft = { ...draft, loadKg: snappedLoad, reps: snapped.reps };
     } else {
