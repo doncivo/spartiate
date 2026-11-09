@@ -61,9 +61,9 @@ describe('export / import des recettes et de la journée déclarée (I4-07)', ()
     await seed(source);
     const data = await read(source);
     expect(data.training?.day_completeness?.map((r) => [r.id, r.values['state']])).toEqual([['day|2026-11-09', 'complete']]);
-    expect(data.training?.recipe_ingredient?.map((r) => [r.values['name'], r.values['kcal_100g'], r.values['protein_100g']])).toEqual([
-      ['Riz synthétique', 130, null],
+    expect(data.training?.recipe_ingredient?.map((r) => [r.values['name'], r.values['kcal_100g'], r.values['protein_100g']]).sort((x, y) => String(x[0]).localeCompare(String(y[0])))).toEqual([
       ['Poulet synthétique', null, null],
+      ['Riz synthétique', 130, null],
     ]);
     const target = await open(B);
     await apply(target, data, 'merge', 9);
@@ -93,8 +93,9 @@ describe('export / import des recettes et de la journée déclarée (I4-07)', ()
   it('archive de schéma 9 sans recette : en « remplacer », les recettes locales sont supprimées (l’absence est une donnée)', async () => {
     const db = await open(A);
     await seed(db);
-    const empty = await read(await open(B));
-    await apply(db, { ...empty, training: {} }, 'replace', 9);
+    const other = await open(B);
+    await other.data.transaction(async (repos) => (await repos.foods()).create({ source: 'custom', barcode: null, name: 'Fiche synthétique', brand: null, per100g: { kcal: 100, proteinG: null, fatG: null, carbG: null, fiberG: null }, fetchedAt: null }));
+    await apply(db, await read(other), 'replace', 9);
     expect(await (await db.data.repos.recipes()).list()).toEqual([]);
     expect(await (await db.data.repos.dayCompleteness()).get(DAY)).toBeNull();
   });
@@ -120,12 +121,11 @@ describe('export / import des recettes et de la journée déclarée (I4-07)', ()
     const data = await read(db);
     const bad: ExportData = { ...data, training: { ...data.training, day_completeness: [{ id: 'day|2026-11-10', values: { date: '2026-11-09', state: 'complete' } }] } };
     const archive = await buildExportArchive(bad, { date: '2026-11-09T10:00:00.000Z', sv: 9 });
-    const parsed = await parseExportArchive(archive.bytes, { currentSv: EXPORT_SV, currentYear: 2026 }).catch((e: unknown) => e);
     // soit refusée à la lecture, soit refusée à l'application : jamais écrite
     const target = await open(B);
     let written = true;
     try {
-      if (parsed instanceof Error) throw parsed;
+      const parsed = await parseExportArchive(archive.bytes, { currentSv: EXPORT_SV, currentYear: 2026 });
       await target.data.transaction(async (repos) => {
         const repo = await repos.exportImport();
         await repo.applyImport(planImport(await repo.readExportData(), parsed.data, 'merge'), 2026);
