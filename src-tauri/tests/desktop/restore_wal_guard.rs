@@ -37,7 +37,11 @@ fn dep01_a_wal_with_another_page_size_refuses_the_file_and_logs_a_fixed_event() 
     let dir = scratch();
     let db = dir.path().join("spartiate-daily-20261109.db");
     make_db(&db);
-    fs::write(dir.path().join("spartiate-daily-20261109.db-wal"), wal_header(8192)).unwrap();
+    fs::write(
+        dir.path().join("spartiate-daily-20261109.db-wal"),
+        wal_header(8192),
+    )
+    .unwrap();
     let error = check_backup_file(&db, APP_SCHEMA_VERSION).unwrap_err();
     assert_eq!(error.code, "wal-page-size");
     let entries = spartiate_lib::applog::read_entries(logs.path(), 50).unwrap();
@@ -54,7 +58,11 @@ fn dep01_a_wal_with_the_same_page_size_does_not_block_the_check() {
     let dir = scratch();
     let db = dir.path().join("spartiate-daily-20261109.db");
     make_db(&db);
-    fs::write(dir.path().join("spartiate-daily-20261109.db-wal"), wal_header(4096)).unwrap();
+    fs::write(
+        dir.path().join("spartiate-daily-20261109.db-wal"),
+        wal_header(4096),
+    )
+    .unwrap();
     assert_ne!(
         check_backup_file(&db, APP_SCHEMA_VERSION)
             .err()
