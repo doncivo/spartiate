@@ -2,6 +2,14 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.9.0
+
+**Schéma 9 : mets à jour le PC et l’iPhone le même jour, avant toute saisie.** Un appareil resté en 0.8.x garde de côté les recettes et les déclarations reçues (rien n’est perdu, tout revient après sa mise à jour), lit la prise d’une recette mais ne peut ni la modifier ni la copier, seulement la supprimer. PC : bannière de mise à jour dans l’app ; iPhone : SideStore.
+
+- **Journée complète déclarée** (Nutrition → Journal) : pour le jour affiché, « Non déclarée » (l’app déduit : au moins 3 prises sur 8 h), « Complète » ou « Incomplète ». Ta déclaration prime sur la déduction ; le Dashboard, la couverture, la dépense mesurée et le check-in l’utilisent. Un jour sans prise reste « inconnu », jamais zéro, même déclaré complet. Elle passe d’un appareil à l’autre ; en cas de désaccord, la dernière écriture gagne.
+- **Recettes** (Nutrition → Recettes) : un nom, des ingrédients (tes fiches, Ciqual ou Open Food Facts, en grammes), un poids cuit facultatif et un nombre de portions. Un nutriment inconnu dans un ingrédient rend le total de ce nutriment inconnu (« — »), jamais une somme partielle. Ajout au journal par portions ou par grammes ; la prise garde un instantané : modifier la recette ensuite ne change pas le passé. Suppression avec confirmation. Les recettes apparaissent dans la recherche, avec le badge « Recette ». Elles passent d’un appareil à l’autre.
+- Archive d’export : les nouvelles tables y entrent ; une archive plus ancienne s’importe sans rien supprimer de ce côté. Réglages par défaut proposés cette nuit (D-80, D-81), révisables.
+
 ## 0.8.1
 
 - **Favoris** (Nutrition → Rechercher un aliment) : une étoile sur la fiche d’un aliment (Ciqual, Open Food Facts ou perso) l’ajoute aux favoris, qui s’affichent en tête de la recherche, avant les récents. **Les favoris restent sur l’appareil où tu les as posés** (ni synchro, ni export) : réglage par défaut proposé cette nuit (D-79), révisable. Un favori dont l’aliment n’existe plus disparaît sans message.
