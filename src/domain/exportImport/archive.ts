@@ -317,8 +317,7 @@ function parseTraining(raw: unknown): TrainingExport {
       seen.add(id);
       return { id, values };
     });
-    // Une séance exportée est close (D-27) : une séance ouverte dans une archive est refusée.
-    if (name === 'workout' && rows.some((r) => r.values['ended_at'] === null)) throw new ArchiveError('invalid-data');
+    // REV-01 constat 1 (D-57) : une séance ouverte (ended_at nul) est une donnée de la sauvegarde ; elle n'est jamais publiée avant sa clôture (D-27).
     idsByTable.set(name, seen);
     out[name] = rows;
   }

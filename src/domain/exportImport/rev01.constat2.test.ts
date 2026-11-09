@@ -4,7 +4,7 @@ import { planImport } from './plan';
 
 /** REV-01, constat 2 : une archive du schéma courant dont les tables sont vides n'a pas de clé `training` ; « Remplacer » doit tout de même les vider. */
 const EMPTY: ExportData = { profile: null, weights: [], settings: {} };
-const row = (table: 'recipe' | 'workout', id: string): TrainingRow => ({ id, values: Object.fromEntries(trainingColumns(table).map((c) => [c, null])) });
+const row = (table: 'recipe' | 'workout', id: string): TrainingRow => ({ id, values: { ...Object.fromEntries(trainingColumns(table).map((c) => [c, null])), ...(table === 'workout' ? { ended_at: '2026-11-01T10:00:00.000Z' } : {}) } });
 const withLocal = (): ExportData => ({ ...EMPTY, training: { recipe: [row('recipe', 'recipe|1')], workout: [row('workout', 'w1')] } });
 
 async function produced(sv: number): Promise<ExportData> {

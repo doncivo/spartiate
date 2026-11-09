@@ -58,7 +58,27 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
     }
   }
 
-  /** Crée ou remplace une ligne (rétablit une ligne supprimée) : ligne entière remise dans la file. */
+  /** Condition SQL « ligne publiable » du catalogue (D-27 : séance close, série d'une séance close), ou null si toute ligne l'est. */
+  const publishSql = (t: SyncTable, alias: string): string | null => {
+    const rule = t.publishWhen;
+    if (!rule) return null;
+    if ('notNull' in rule) return `${alias}.${rule.notNull} IS NOT NULL`;
+    const parent = t.parents.find((p) => p.column === rule.parent);
+    const pt = parent ? catalogue.table(parent.table) : undefined;
+    if (!parent || !pt) return '0';
+    const inner = `${alias}_p`;
+    const nested = publishSql(pt, inner);
+    return `EXISTS (SELECT 1 FROM ${pt.name} ${inner} WHERE ${inner}.id = ${alias}.${parent.column}${nested === null ? '' : ` AND ${nested}`})`;
+  };
+  const isPublishable = async (t: SyncTable, id: string): Promise<boolean> => {
+    const cond = publishSql(t, 'x');
+    return cond === null || (await db.select(`SELECT 1 FROM ${t.name} x WHERE x.id = ? AND ${cond}`, [id])).length > 0;
+  };
+
+  /**
+   * Crée ou remplace une ligne (rétablit une ligne supprimée) : ligne entière remise dans la file. REV-01 constat 1 : une ligne que la
+   * synchro ne publie pas encore (séance ouverte et ses séries, D-27) est écrite SANS horloge ni file ; la clôture la mettra en file.
+   */
   async function upsert(t: SyncTable, id: string, values: Readonly<Record<string, SqlValue>>): Promise<void> {
     const existing = (await db.select<Row>(`SELECT id, hlc, deleted_at FROM ${t.name} WHERE id = ?`, [id]))[0];
     const columns = dataColumns(t);
@@ -75,6 +95,7 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
       );
       await db.execute('DELETE FROM sync_tombstone WHERE table_name = ? AND row_id = ?', [t.name, id]);
     }
+    if (!(await isPublishable(t, id))) return;
     await writeClocks(t, id, bases, stamp.hlc, existing?.hlc ?? null);
     await db.execute('DELETE FROM sync_outbox WHERE table_name = ? AND row_id = ?', [t.name, id]);
     await db.execute("INSERT INTO sync_outbox (table_name, row_id, field) VALUES (?, ?, '*')", [t.name, id]);
@@ -100,11 +121,11 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
     x.timezone.length === 0 ||
     (x.source === 'health' && x.measuredAt === null);
 
-  /** Condition SQL « ligne exportable » : non supprimée et publiable (D-27 : séance close, série d'une séance close). */
+  /** Condition SQL « ligne exportable » : non supprimée, parent exportable (la séance ouverte est exportée, D-57 ; elle n'est pas publiée, D-27). */
   const exportableSql = (t: SyncTable, alias: string): string => {
     const parts = [`${alias}.deleted_at IS NULL`];
     const rule = t.publishWhen;
-    if (rule && 'notNull' in rule) parts.push(`${alias}.${rule.notNull} IS NOT NULL`);
+    // REV-01 constat 1 : la sauvegarde contient aussi les séances ouvertes (D-57) ; seule la règle « parent présent » est gardée.
     if (rule && 'parent' in rule) {
       const parent = t.parents.find((p) => p.column === rule.parent);
       const pt = parent ? catalogue.table(parent.table) : undefined;
