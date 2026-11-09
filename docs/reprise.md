@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-10 : I1 à I3 livrés, I4 hors IA livré (OFF et scan, favoris, recettes, journée déclarée), version publiée 0.10.0 (schéma 10 ; 0.9.1 correctifs du moteur D-82 ; 0.9.2 onglets PC et catalogue de 196 exercices, D-83 ; 0.9.3 relecture Codex REV-01, D-85, D-86 ; 0.9.4 garde -wal et décote sur charge totale, D-87 ; 0.10.0 import Raccourcis et moteur de récupération, D-88 à D-90). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-90 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.) ; les décisions approuvées priment sur les textes historiques.
+État au 2026-11-10 : I1 à I3 livrés, I4 hors IA livré (OFF et scan, favoris, recettes, journée déclarée), version publiée 0.10.0 (schéma 10 ; 0.9.1 correctifs du moteur D-82 ; 0.9.2 onglets PC et catalogue de 196 exercices, D-83 ; 0.9.3 relecture Codex REV-01, D-85, D-86 ; 0.9.4 garde -wal et décote sur charge totale, D-87 ; 0.10.0 import Raccourcis et moteur de récupération, D-88 à D-92). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-90 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.) ; les décisions approuvées priment sur les textes historiques.
 
 ## Fusionné (tout est dans main)
 
@@ -24,7 +24,7 @@
 ## Prochaines étapes
 
 1. Ali : installer 0.10.0 sur PC et iPhone le même jour (schéma 10), créer le raccourci « Spartiate — récupération » (docs/guide-raccourcis-sante.md), premier import, constat des formats H-22 à H-26 ; puis I5-02 (cadrans, séance, coucher, 0.11.0).
-2. Confirmer ou réviser D-73, D-74, D-79 à D-81 et D-88 à D-90.
+2. Confirmer ou réviser D-73, D-74, D-79 à D-81 et D-88 à D-92.
 
 ## Rappels
 
