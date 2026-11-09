@@ -194,7 +194,7 @@ describe('migration 0009 : recettes et journée complète (I4-07)', () => {
 
   it('recréation d’un identifiant supprimé : la tombstone est retirée (insertion)', async () => {
     const db = await freshDb();
-    await db.execute("INSERT INTO sync_tombstone (table_name, row_id, hlc, deleted_at) VALUES ('day_completeness', 'day|2026-11-09', ?, ?)", [h(2), AT]);
+    await db.execute("INSERT INTO sync_tombstone (table_name, row_id, deleted_hlc, purged_at) VALUES ('day_completeness', 'day|2026-11-09', ?, ?)", [h(2), AT]);
     await insert(db, 'day_completeness', day());
     expect(await db.select("SELECT 1 FROM sync_tombstone WHERE table_name = 'day_completeness'")).toEqual([]);
     await db.close();

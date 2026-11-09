@@ -302,8 +302,10 @@ describe('noms inconnus et ordre des tables (sections 3.3, 7.2, 8)', () => {
     expect(isUnknownSettingKey('a.constructor')).toBe(false);
   });
 
-  it('16 tables publiées (catalogue I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02) dans l’ordre topologique : parent avant enfant', () => {
-    expect(SYNC_TABLE_ORDER).toHaveLength(16);
+  it('19 tables publiées (catalogue I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07) dans l’ordre topologique : parent avant enfant', () => {
+    expect(SYNC_TABLE_ORDER).toHaveLength(19);
+    expect(SYNC_TABLE_ORDER.indexOf('food')).toBeLessThan(SYNC_TABLE_ORDER.indexOf('food_portion'));
+    expect(SYNC_TABLE_ORDER.indexOf('recipe')).toBeLessThan(SYNC_TABLE_ORDER.indexOf('recipe_ingredient'));
     expect(SYNC_TABLE_ORDER.indexOf('workout')).toBeLessThan(SYNC_TABLE_ORDER.indexOf('workout_set'));
     expect(SYNC_TABLE_ORDER[0]).toBe('profile');
     expect(SYNC_TABLE_ORDER.indexOf('profile')).toBeLessThan(SYNC_TABLE_ORDER.indexOf('body_weight'));

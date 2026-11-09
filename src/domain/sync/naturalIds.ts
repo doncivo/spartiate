@@ -62,3 +62,24 @@ export function expectedProgressionId(row: ReadonlyMap<string, unknown>): string
   const exercise = row.get('exercise_id');
   return typeof exercise === 'string' && isProgressionExerciseId(exercise) ? progressionId(exercise) : null;
 }
+
+/**
+ * I4-07 : `day_completeness`, une déclaration par date locale, `day|AAAA-MM-JJ` (D-81). Aucun repli UUID : deux appareils qui déclarent le
+ * même jour écrivent la même ligne. Le CHECK SQL de la migration 0009 porte la même forme.
+ */
+const DAY_COMPLETENESS_RE = /^day\|(\d{4}-\d{2}-\d{2})$/;
+
+export function dayCompletenessId(date: LocalDate): string {
+  return `day|${date}`;
+}
+
+export function isDayCompletenessId(id: string): boolean {
+  const m = DAY_COMPLETENESS_RE.exec(id);
+  return m !== null && m[1] !== undefined && isLocalDate(m[1]);
+}
+
+/** Identifiant attendu d'une déclaration de ces valeurs, ou null si `date` manque ou est mal formée. */
+export function expectedDayCompletenessId(row: ReadonlyMap<string, unknown>): string | null {
+  const date = row.get('date');
+  return typeof date === 'string' && isLocalDate(date) ? `day|${date}` : null;
+}
