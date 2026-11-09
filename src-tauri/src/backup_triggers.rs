@@ -3919,65 +3919,173 @@ pub const SUPERSEDED_TRIGGERS: [(&str, &str, &str, u32, u32); 3] = [
     ),
 ];
 
-/// Version de schéma à partir de laquelle le corps de référence actuel est valable : 18 pour les trois déclencheurs remplacés par la migration 0018
-/// (`sync_task_au`, `sync_settings_ai`, `sync_settings_au`), 1 pour les autres (leur corps n'a jamais changé ; une sauvegarde plus ancienne peut
-/// en avoir moins, jamais de différent).
-pub fn introduced_in(name: &str) -> u32 {
-    match name {
-        "sync_task_au" | "sync_settings_ai" | "sync_settings_au" => 18,
-        // I1-01 (migration 0002) : bibliothèque, matériel et routines ; une base de version 1 n'en a aucun.
-        "sync_exercise_ai"
-        | "sync_exercise_au"
-        | "sync_equipment_profile_ai"
-        | "sync_equipment_profile_au"
-        | "sync_routine_ai"
-        | "sync_routine_au"
-        | "sync_routine_day_ai"
-        | "sync_routine_day_au"
-        | "sync_routine_exercise_ai"
-        | "sync_routine_exercise_au" => 2,
-        // I1-03 (migration 0004) : capture des séances closes ; une base de version 3 ou moins n'en a aucun.
-        "sync_workout_ai" | "sync_workout_au" | "sync_workout_set_ai" | "sync_workout_set_au" => 4,
-        // I2-01 (migration 0006) : publication de la progression et capture de la difficulté ; une base de version 5 ou moins n'en a aucun.
-        "sync_progression_profile_ai"
-        | "sync_progression_profile_au"
-        | "sync_recommendation_decision_ai"
-        | "sync_recommendation_decision_au"
-        | "sync_workout_set_difficulty_au"
-        | "sync_workout_close_decisions_au" => 6,
-        // I3-02 (migration 0007) : publication des cycles d'entraînement ; une base de version 6 ou moins n'en a aucun.
-        "sync_mesocycle_ai" | "sync_mesocycle_au" => 7,
-        // I4-02 (migration 0008) : publication des fiches, portions, entrées de journal et cibles de nutrition ; une base de version 7 ou moins n'en a aucun.
-        "sync_food_ai"
-        | "sync_food_au"
-        | "sync_food_portion_ai"
-        | "sync_food_portion_au"
-        | "sync_meal_entry_ai"
-        | "sync_meal_entry_au"
-        | "sync_nutrition_target_ai"
-        | "sync_nutrition_target_au" => 8,
-        // I4-07 (migration 0009) : publication de la journée déclarée, des recettes et de leurs ingrédients ; une base de version 8 ou moins n'en a aucun.
-        "sync_day_completeness_ai"
-        | "sync_day_completeness_au"
-        | "sync_recipe_ai"
-        | "sync_recipe_au"
-        | "sync_recipe_ingredient_ai"
-        | "sync_recipe_ingredient_au" => 9,
-        _ => 1,
+/// I5-01 point 1.1 : déclencheurs créés par les migrations Spartiate, rangés par la version de schéma qui les introduit. UNE entrée par version
+/// de 1 à `APP_SCHEMA_VERSION`, même vide (migration sans déclencheur) : une version sans entrée, ou un déclencheur d'une base migrée absent
+/// d'ici, fait échouer `backup_versions.rs` (`i5_01_*`, comparaison avec `tests/fixtures/spartiate-migrations.json`). Jamais de version
+/// par défaut : un oubli ferait recréer à la restauration un déclencheur qu'une migration suivante créerait encore (« trigger already exists »).
+pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 9] = [
+    // SPA-001b (migration 0001) : profil et poids.
+    (
+        1,
+        &[
+            "sync_body_weight_ai",
+            "sync_body_weight_au",
+            "sync_profile_ai",
+            "sync_profile_au",
+        ],
+    ),
+    // I1-01 (migration 0002) : bibliothèque, matériel et routines.
+    (
+        2,
+        &[
+            "sync_equipment_profile_ai",
+            "sync_equipment_profile_au",
+            "sync_exercise_ai",
+            "sync_exercise_au",
+            "sync_routine_ai",
+            "sync_routine_au",
+            "sync_routine_day_ai",
+            "sync_routine_day_au",
+            "sync_routine_exercise_ai",
+            "sync_routine_exercise_au",
+        ],
+    ),
+    // I1-02 (migration 0003) : séance active locale, aucun déclencheur.
+    (3, &[]),
+    // I1-03 (migration 0004) : capture des séances closes.
+    (
+        4,
+        &[
+            "sync_workout_ai",
+            "sync_workout_au",
+            "sync_workout_set_ai",
+            "sync_workout_set_au",
+        ],
+    ),
+    // I2-01 (migration 0005) : profil de progression et décisions locales, aucun déclencheur.
+    (5, &[]),
+    // I2-01 (migration 0006) : publication de la progression et capture de la difficulté.
+    (
+        6,
+        &[
+            "sync_progression_profile_ai",
+            "sync_progression_profile_au",
+            "sync_recommendation_decision_ai",
+            "sync_recommendation_decision_au",
+            "sync_workout_close_decisions_au",
+            "sync_workout_set_difficulty_au",
+        ],
+    ),
+    // I3-02 (migration 0007) : publication des cycles d'entraînement.
+    (7, &["sync_mesocycle_ai", "sync_mesocycle_au"]),
+    // I4-02 (migration 0008) : fiches, portions, entrées de journal et cibles de nutrition.
+    (
+        8,
+        &[
+            "sync_food_ai",
+            "sync_food_au",
+            "sync_food_portion_ai",
+            "sync_food_portion_au",
+            "sync_meal_entry_ai",
+            "sync_meal_entry_au",
+            "sync_nutrition_target_ai",
+            "sync_nutrition_target_au",
+        ],
+    ),
+    // I4-07 (migration 0009) : journée déclarée, recettes et ingrédients.
+    (
+        9,
+        &[
+            "sync_day_completeness_ai",
+            "sync_day_completeness_au",
+            "sync_recipe_ai",
+            "sync_recipe_au",
+            "sync_recipe_ingredient_ai",
+            "sync_recipe_ingredient_au",
+        ],
+    ),
+];
+
+/// I5-01 point 1.1 : tables créées par les migrations Spartiate (toutes versions). Un déclencheur hérité de l'ancien projet (nom absent de
+/// `SPARTIATE_TRIGGERS_BY_VERSION`) n'est jamais admis ni recréé sur l'une d'elles, à aucune version : `sync_settings_*` (valables à partir de la
+/// version 15 dans l'ancien projet) ne reviennent pas sur `settings`, ni `search_routine_*` sur `routine`. Tenue égale aux tables d'une base
+/// migrée par `backup_versions.rs` (une table nouvelle, `recovery_day` par exemple, doit être ajoutée ici).
+pub const SPARTIATE_TABLES: [&str; 31] = [
+    "body_weight",
+    "conflict_log",
+    "day_completeness",
+    "epoch_carry_report",
+    "equipment_profile",
+    "exercise",
+    "food",
+    "food_portion",
+    "meal_entry",
+    "mesocycle",
+    "nutrition_target",
+    "profile",
+    "progression_profile",
+    "recipe",
+    "recipe_ingredient",
+    "recommendation_decision",
+    "routine",
+    "routine_day",
+    "routine_exercise",
+    "schema_migrations",
+    "settings",
+    "sync_field_clock",
+    "sync_guard",
+    "sync_meta",
+    "sync_outbox",
+    "sync_parked",
+    "sync_state",
+    "sync_tombstone",
+    "sync_unknown",
+    "workout",
+    "workout_set",
+];
+
+/// Version de schéma à partir de laquelle le corps de référence actuel est valable. Déclencheur Spartiate : sa version déclarée dans
+/// `SPARTIATE_TRIGGERS_BY_VERSION`. Déclencheur hérité de l'ancien projet (présent dans `REFERENCE_TRIGGERS`, absent des déclarations
+/// Spartiate) : 18 pour les trois remplacés par sa migration 0018, 1 pour les autres. `None` : nom inconnu (la sauvegarde est refusée).
+pub fn introduced_in(name: &str) -> Option<u32> {
+    if let Some((version, _)) = SPARTIATE_TRIGGERS_BY_VERSION
+        .iter()
+        .find(|(_, names)| names.contains(&name))
+    {
+        return Some(*version);
     }
+    if !REFERENCE_TRIGGERS.iter().any(|(n, _, _)| *n == name) {
+        return None;
+    }
+    Some(match name {
+        "sync_task_au" | "sync_settings_ai" | "sync_settings_au" => 18,
+        _ => 1,
+    })
+}
+
+/// Déclencheur hérité de l'ancien projet (aucune migration Spartiate ne le crée).
+fn is_legacy(name: &str) -> bool {
+    !SPARTIATE_TRIGGERS_BY_VERSION
+        .iter()
+        .any(|(_, names)| names.contains(&name))
 }
 
 /// Corps admis pour ce déclencheur dans une base de cette version de schéma : un corps remplacé valable à cette version, sinon le corps de
-/// référence s'il existe déjà à cette version ; `None` : déclencheur inconnu ou pas encore introduit (la sauvegarde est refusée).
+/// référence s'il existe déjà à cette version ; `None` : déclencheur inconnu, pas encore introduit, ou hérité de l'ancien projet sur une table
+/// Spartiate (la sauvegarde est refusée, la restauration ne le recrée pas).
 pub fn trigger_body_for(name: &str, table: &str, version: u32) -> Option<&'static str> {
+    if is_legacy(name) && SPARTIATE_TABLES.contains(&table) {
+        return None;
+    }
     if let Some((_, _, sql, _, _)) = SUPERSEDED_TRIGGERS.iter().find(|(n, t, _, since, until)| {
         *n == name && *t == table && version >= *since && version < *until
     }) {
         return Some(sql);
     }
+    let since = introduced_in(name)?;
     REFERENCE_TRIGGERS
         .iter()
         .find(|(n, t, _)| *n == name && *t == table)
-        .filter(|_| version >= introduced_in(name))
+        .filter(|_| version >= since)
         .map(|(_, _, sql)| *sql)
 }
