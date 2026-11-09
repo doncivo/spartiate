@@ -73,3 +73,27 @@ describe('REV-01 constat 6 : application dans la prescription', () => {
     expect(none.reasons).not.toContain('position-discount');
   });
 });
+
+describe('REV-01 constat 6 : suites de la relecture à froid', () => {
+  it('hausse absorbée par la décote (charge = référence) : la phrase dit « maintenue », jamais « +0 kg »', () => {
+    const history = [session(3, 24, [10, 10, 10])];
+    const p = prescribe(input({ exercise: { id: 'curl-dumbbell', metric: 'load-reps', equipment: ['dumbbell'] }, history, target: target(8, 10), positionRank: 2, lastPositionRank: 1 }));
+    expect(p.loadKg).toBe(24);
+    expect(p.reasons).toContain('position-discount');
+    expect(p.headline).toBe('position');
+    expect(explainPrescription(p).key).toBe('positionHeld');
+  });
+
+  it('le pourcentage dit est l’écart réel de la charge appliquée, pas la décote théorique', () => {
+    const p = prescribe(input({ history: hist(), target: target(8, 10), positionRank: 2, lastPositionRank: 1 }));
+    const e = explainPrescription(p);
+    expect(e.key).toBe('position');
+    const delta = 60 - (p.loadKg ?? 0);
+    expect(e.params['cut']).toBe(Math.round((delta / 60) * 1000) / 10);
+  });
+
+  it('poids de corps inconnu mais aucun historique (« à saisir ») : aucune note sur un 1RM', () => {
+    const p = prescribe(input({ exercise: { id: 'pull-up-weighted', metric: 'load-reps', equipment: ['pull-up-bar'], bodyweightFraction: 1 }, history: [], bodyweightKg: null }));
+    expect(p.reasons).not.toContain('bodyweight-unknown');
+  });
+});
