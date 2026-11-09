@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent }
 import { DEFAULT_PROGRESSION_CONFIG } from '../../../domain/training/config';
 import { confidenceBand, confidencePercent, constraintAlerts, explainOption, explainPrescription, explanationNotes, type ExplanationKey, type OptionKey } from '../../../domain/training/explain';
 import { prescribe } from '../../../domain/training/prescribe';
+import { currentBodyweightKg } from '../../../domain/training/bodyweight';
 import { positionRanks } from '../../../domain/training/positionRank';
 import { warmupForExercise, type WarmupSet } from '../../../domain/training/warmup';
 import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type MuscleWeight, type Prescription, type ProgressionEquipment, type RepTarget } from '../../../domain/training/types';
@@ -71,6 +72,8 @@ interface Loaded {
   readonly targetRir: number | null;
   /** Rang de l'exercice dans la séance de référence (celle dont vient la charge) ; null : inconnu, aucune décote de position. */
   readonly lastPositionRank: number | null;
+  /** Poids de corps (tendance, sinon dernière pesée) pour un exercice lesté ou assisté ; null : inconnu ou sans objet. */
+  readonly bodyweightKg: number | null;
 }
 
 type Load = { readonly status: 'loading' } | { readonly status: 'error' } | ({ readonly status: 'ready' } & Loaded);
@@ -146,6 +149,16 @@ async function referencePositionRank(access: DataAccess, history: readonly { rea
   }
 }
 
+/** Poids de corps actuel (tendance des pesées récentes) ; null si illisible ou sans pesée. */
+async function bodyweightNow(access: DataAccess): Promise<number | null> {
+  try {
+    const recent = await (await access.repos.bodyWeights()).listRecent(400);
+    return currentBodyweightKg(recent.map((w) => ({ date: w.date, kg: w.kg })));
+  } catch {
+    return null;
+  }
+}
+
 /** Rampe : « 25 kg × 8 · 37,5 kg × 5 · 50 kg × 2 ». */
 const rampText = (ramp: readonly WarmupSet[]): string => ramp.map((s) => tProgression('warmupStep', { load: kg(s.loadKg), reps: s.reps })).join(tProgression('warmupJoin'));
 
@@ -192,7 +205,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         }
         const lastPositionRank = await referencePositionRank(access, history, exerciseId, musclesOf);
         if (!live.current) return;
-        setLoad({ status: 'ready', history, reference, own, profile, cycleDeload, targetRir: linkedRir({ id: workout.id }, link, exerciseId), lastPositionRank });
+        const bodyweightKg = exercise?.bodyweightFraction ? await bodyweightNow(access) : null;
+        if (!live.current) return;
+        setLoad({ status: 'ready', history, reference, own, profile, cycleDeload, targetRir: linkedRir({ id: workout.id }, link, exerciseId), lastPositionRank, bodyweightKg });
       } catch {
         if (live.current) setLoad({ status: 'error' });
       }
@@ -218,7 +233,13 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     // cette séance, l'historique l'emporte (critère 8 : la séance faite fait foi).
     const reference = d !== null && d.loadKg !== null ? { decidedAt: d.decidedAt, accepted: d.accepted, loadKg: d.loadKg, reps: d.reps } : null;
     return prescribe({
-      exercise: { id: exerciseId, metric: exercise?.metric ?? 'load-reps', equipment: exercise?.equipment ?? [], ...(exercise === undefined ? {} : { kind: exercise.kind }) },
+      exercise: {
+        id: exerciseId,
+        metric: exercise?.metric ?? 'load-reps',
+        equipment: exercise?.equipment ?? [],
+        ...(exercise === undefined ? {} : { kind: exercise.kind, bodyweightFraction: exercise.bodyweightFraction }),
+        ...(exercise?.equipment.includes('assisted-pull-up-machine') === true ? { assisted: true } : {}),
+      },
       history: load.history,
       lastDecision: reference,
       profile: load.profile,
@@ -232,6 +253,8 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
       // REV-01 constat 6 : décote de position (§ 11.3) ; inconnue → aucun effet.
       positionRank,
       ...(load.lastPositionRank === null ? {} : { lastPositionRank: load.lastPositionRank }),
+      // REV-01 : poids de corps pour 1RM et écarts des exercices lestés ou assistés.
+      bodyweightKg: load.bodyweightKg,
     });
     // L'instant de calcul est celui du chargement : la proposition ne change pas pendant la séance.
   }, [load, exerciseId, exercise, equipment, target, deload, positionRank]); // eslint-disable-line react-hooks/exhaustive-deps

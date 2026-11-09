@@ -91,7 +91,7 @@ export function explainPrescription(p: Prescription): Explanation {
   }
 }
 
-export type ExplanationNoteKey = 'notePartialIgnored' | 'noteGridToVerify' | 'notePosition';
+export type ExplanationNoteKey = 'notePartialIgnored' | 'noteGridToVerify' | 'notePosition' | 'noteBodyweightUnknown';
 
 /**
  * I2-04 : précisions ajoutées à la phrase, dans cet ordre : dernière séance ignorée (moins de 50 % des séries faites), puis grille de charges
@@ -102,6 +102,8 @@ export function explanationNotes(p: Prescription): { readonly key: ExplanationNo
   const notes: { readonly key: ExplanationNoteKey; readonly params: Readonly<Record<string, number>> }[] = [];
   if (p.reasons.includes('partial-session-ignored')) notes.push({ key: 'notePartialIgnored', params: {} });
   if (p.reasons.includes('grid-to-verify')) notes.push({ key: 'noteGridToVerify', params: {} });
+  // Poids du corps inconnu (REV-01) : le 1RM et les écarts sont calculés sur le seul lest, ce que la phrase dit.
+  if (p.reasons.includes('bodyweight-unknown')) notes.push({ key: 'noteBodyweightUnknown', params: {} });
   // Position (REV-01 constat 6) : dite en note quand la raison principale est autre (la charge reste au-dessus de la référence).
   if (p.reasons.includes('position-discount') && p.headline !== 'position') notes.push({ key: 'notePosition', params: { rank: p.positionRank ?? 1, cut: percent(p.positionCut ?? 0) } });
   return notes;

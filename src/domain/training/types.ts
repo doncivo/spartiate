@@ -299,6 +299,10 @@ export interface ProgressionExercise {
   readonly equipment: readonly string[];
   /** `isolation` : exercice secondaire (une série retirée si Recovery est bas, § 11.3) ; absent : principal. */
   readonly kind?: ExerciseKind;
+  /** Fraction du poids de corps portée (]0, 1], `bodyweightFraction` du catalogue) : exercice lesté ou assisté ; absent ou nul : charge ordinaire. */
+  readonly bodyweightFraction?: number | null;
+  /** Exercice assisté : la charge saisie est l'assistance, retranchée du poids de corps porté. */
+  readonly assisted?: boolean;
 }
 
 /**
@@ -340,6 +344,8 @@ export interface PrescribeInput {
    */
   readonly positionRank?: number;
   readonly lastPositionRank?: number;
+  /** Poids de corps en kg (dernière tendance, sinon dernière pesée) ; null ou absent : inconnu (REV-01, exercices au poids du corps). */
+  readonly bodyweightKg?: number | null;
 }
 
 /** Codes de raison, dans l'ordre normatif du § 11.2 (voir `REASON_ORDER`). */
@@ -359,6 +365,7 @@ export type ReasonCode =
   | 'stall'
   | 'inactivity-discount'
   | 'position-discount'
+  | 'bodyweight-unknown'
   | 'deload'
   | 'recovery-low'
   | 'recovery-set-removed'

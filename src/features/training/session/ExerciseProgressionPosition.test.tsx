@@ -59,3 +59,21 @@ describe('REV-01 constat 6 : position dans la séance active', () => {
     expect(await within(incline).findByText(/2ᵉ exercice de ce muscle/)).toBeInTheDocument();
   });
 });
+
+describe('REV-01 (point 7 de 0.9.2) : poids de corps dans la séance active', () => {
+  it('traction lestée : avec une pesée, le plafond +10 % se calcule sur la charge totale ; sans pesée, la phrase le dit', async () => {
+    await past(u(11), 'pull-up-weighted', 'Traction lestée', 10);
+    const r = await db.data.repos.workouts();
+    await r.start({ source: 'empty', id: u(13), name: 'Dos' });
+    await r.addExercise(u(13), { exerciseId: 'pull-up-weighted', exerciseName: 'Traction lestée', sets: 3, targetRepsMin: 8, targetRepsMax: 10 });
+    act(() => useNavigationStore.getState().navigate({ tab: 'training', screen: 'session' } as Route));
+    const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data });
+    render(
+      <AppContainerProvider container={container}>
+        <TrainingScreen session={{ os: 'other', notifier, liveActivity }} />
+      </AppContainerProvider>,
+    );
+    const group = await within(await screen.findByRole('region', { name: 'Traction lestée' })).findByRole('group', { name: 'Proposition' });
+    expect(await within(group).findByText(/Poids de corps inconnu/)).toBeInTheDocument();
+  });
+});

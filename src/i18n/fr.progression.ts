@@ -40,6 +40,7 @@ export const progressionFr = {
   explainRecoveryLowSet: 'Charge réduite de {cut} % et une série de moins (exercice d’isolation) : récupération basse aujourd’hui.',
   // Précisions ajoutées à la phrase (I2-04), information seulement.
   notePartialIgnored: 'Ta dernière séance (moins de la moitié des séries faites) n’est pas prise en compte.',
+  noteBodyweightUnknown: 'Poids de corps inconnu : le 1RM et les écarts de charge sont calculés sur le lest seul. Enregistre une pesée pour compter le poids de ton corps.',
   notePosition: 'Charge réduite de {cut} % : {rank}ᵉ exercice de ce muscle dans la séance.',
   noteGridToVerify: 'Charges calculées sur du matériel à vérifier en salle (profil de matériel).',
   alertFatigue: 'Fatigue : plus de 20 % de répétitions en moins qu’à la dernière séance à cette charge.',
