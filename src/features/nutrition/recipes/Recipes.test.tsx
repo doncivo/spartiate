@@ -114,7 +114,7 @@ describe('I4-07 : Recettes (section de Nutrition)', () => {
     fireEvent.change(await within(r).findByLabelText('Nombre de portions'), { target: { value: '4' } });
     fireEvent.change(within(r).getByLabelText('Grammes de Riz test'), { target: { value: '400' } });
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la recette' }));
-    expect(await within(r).findByText('4 portions')).toBeInTheDocument();
+    await waitFor(() => expect(within(r).getByRole('listitem', { name: /Bol de riz/ })).toHaveTextContent('4 portions'));
     const after = (await entries())[0];
     expect(after).toMatchObject({ kcal: 155, grams: 125, foodName: 'Bol de riz' });
     expect((await (await db.data.repos.recipes()).list())[0]).toMatchObject({ servings: 4 });
@@ -229,7 +229,7 @@ describe('I4-07 : recettes dans la recherche du Journal', () => {
     fireEvent.change(await screen.findByRole('searchbox', { name: 'Nom de l’aliment' }), { target: { value: 'riz' } });
     await screen.findByRole('button', { name: /Riz au curry/ });
     expect(screen.getByRole('button', { name: /Riz test/ })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('radio', { name: 'Recettes' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Mes recettes' }));
     expect(screen.queryByRole('button', { name: /Riz test/ })).toBeNull();
     expect(screen.getByRole('button', { name: /Riz au curry/ })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('radio', { name: 'Perso' }));
@@ -242,7 +242,7 @@ describe('I4-07 : recettes dans la recherche du Journal', () => {
     open('journal');
     const r = await region();
     fireEvent.click(await within(r).findByRole('button', { name: 'Rechercher un aliment' }));
-    fireEvent.click(await screen.findByRole('button', { name: /Bol de riz/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /^Bol de riz/ }));
     expect(await screen.findByLabelText('Nombre de portions')).toBeInTheDocument();
   });
 });

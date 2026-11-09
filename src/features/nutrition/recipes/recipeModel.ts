@@ -57,14 +57,16 @@ const show = (value: number | null): string => (value === null ? tRecipes('unkno
 /** Lignes du tableau des valeurs : recette entière et par portion. */
 export function totalsRows(recipe: Pick<Recipe, 'ingredients' | 'servings'>): TotalsRow[] {
   const total: RecipeTotals = recipeTotals(recipe);
-  const serving: RecipeTotals = recipePerServing(recipe);
+  // Nombre de portions invalide en cours de saisie : la valeur par portion est inconnue (« — »), jamais un NaN ni un faux chiffre.
+  const servingsValid = Number.isInteger(recipe.servings) && recipe.servings >= 1;
+  const serving: RecipeTotals | null = servingsValid ? recipePerServing(recipe) : null;
   return ROWS.map(([key, label]) => {
     const unknown = unknownIngredients(recipe.ingredients, key);
     return {
       key,
       label: tRecipes(label),
       total: show(total[key]),
-      perServing: show(serving[key]),
+      perServing: show(serving === null ? null : serving[key]),
       unknownIn: unknown.length === 0 ? null : tRecipes('unknownIn', { list: unknown.join(', ') }),
     };
   });

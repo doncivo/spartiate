@@ -99,6 +99,7 @@ export const recipesFr = {
   oneServingGrams: 'Une portion pèse environ {n} g.',
   addToJournal: 'Ajouter au journal',
   back: 'Retour',
+  added: 'Ajouté au journal : {name}.',
   recipeGone: 'Cette recette n’existe plus.',
   loadingRecipe: 'Chargement de la recette…',
 } as const;

@@ -30,7 +30,7 @@ export const TABS: readonly TabDefinition[] = [
 export type TrainingScreenId = 'routines' | 'library' | 'equipment' | 'history' | 'cycle' | 'session';
 
 /** I4-03 : sections de Nutrition ; absent = Journal. */
-export type NutritionScreenId = 'journal' | 'dashboard' | 'strategy' | 'checkin';
+export type NutritionScreenId = 'journal' | 'dashboard' | 'strategy' | 'checkin' | 'recipes';
 
 /** Écrans internes de chaque section. Ajouter un écran = ajouter un membre ici. */
 export type Route =
