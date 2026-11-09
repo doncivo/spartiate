@@ -2,7 +2,7 @@
 
 Avec le compte Apple gratuit, Spartiate ne peut pas lire Apple Santé directement (entitlement HealthKit retiré par SideStore).
 L’app **Raccourcis** d’Apple, elle, peut lire Santé : un raccourci écrit des fichiers dans iCloud Drive, et Spartiate les lit.
-Rien ne quitte ton iPhone ni ton iCloud. Le PC ne reçoit que des résumés quotidiens (prévu, chapitre 16 du PRD ; pas encore livré).
+Aucune donnée n’est envoyée à un service tiers : les fichiers restent dans ton iCloud Drive, et les résumés quotidiens (HRV et FC au repos comprises) passent par ta synchro chiffrée vers le PC. Le PC ne reçoit que des résumés quotidiens (prévu, chapitre 16 du PRD ; pas encore livré).
 
 Ce guide contient deux parties :
 

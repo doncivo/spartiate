@@ -9,7 +9,7 @@ export const healthFr = {
   rowValueUnavailable: 'non disponible',
   title: 'Apple Santé',
   back: 'Retour',
-  intro: 'Spartiate lit ton poids et tes pas dans Santé, en lecture seule. Rien n’est écrit dans Santé et rien ne quitte l’iPhone.',
+  intro: 'Spartiate lit ton poids et tes pas dans Santé, en lecture seule. Rien n’est écrit dans Santé. Aucune donnée n’est envoyée à un service tiers ; les résumés passent par ta synchro chiffrée.',
   checking: 'Vérification de Santé…',
   authorize: 'Autoriser l’accès',
   unsupported: 'Apple Santé n’est disponible que sur l’iPhone. Sur le PC, saisis ton poids à la main dans Profil et poids.',
@@ -32,7 +32,7 @@ export const healthFr = {
   /** Section « Raccourcis » (récupération, I5-01 points 1.3 et 1.7). */
   recTitle: 'Récupération depuis Raccourcis',
   recPcOnly: 'Les fichiers Raccourcis sont lus sur l’iPhone ; le PC reçoit les résumés par la synchro.',
-  recHint: 'Le raccourci « Spartiate — récupération » écrit hrv.csv, fc-repos.csv, sommeil.csv et pas.csv dans iCloud Drive › Spartiate-sante. Rien ne quitte l’iPhone.',
+  recHint: 'Le raccourci « Spartiate — récupération » écrit hrv.csv, fc-repos.csv, sommeil.csv et pas.csv dans iCloud Drive › Spartiate-sante. Aucune donnée n’est envoyée à un service tiers ; les résumés passent par ta synchro chiffrée.',
   recPickHint: 'Sur iPhone, iOS demande de choisir les fichiers : ouvre iCloud Drive › Spartiate-sante et sélectionne les quatre fichiers d’un coup (iOS télécharge ceux qui sont encore dans iCloud).',
   recGuide: 'Pas de raccourci ? Le guide « Santé par Raccourcis » est dans le dépôt de Spartiate : docs/guide-raccourcis-sante.md.',
   recImportNow: 'Importer maintenant',
