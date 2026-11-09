@@ -29,6 +29,8 @@ export const progressionFr = {
   explainExtraRep: 'Même charge, une répétition de plus sur la série {set}.',
   explainExtraRepCapped: 'Même charge, une répétition de plus sur la série {set} : hausse plafonnée à +10 %.',
   explainExtraRepMax: 'Même charge, une répétition de plus sur la série {set} : charge maximale du matériel.',
+  explainPosition: '−{delta} kg (−{cut} %) : {rank}ᵉ exercice de ce muscle dans la séance, la charge est plus basse que pour un premier exercice.',
+  explainPositionHeld: 'Même charge : {rank}ᵉ exercice de ce muscle dans la séance, la hausse est absorbée par la décote de position.',
   explainOutlierHold: '{load} kg, bien au-dessus de tes séances précédentes : même charge, une répétition de plus sur la série {set}. Vérifie ta saisie ; la progression reprendra après une seconde séance à cette charge.',
   // Contraintes (I2-02) : maintien ou réduction, jamais imposés.
   explainFatigue: 'Même charge, mêmes répétitions : plus de 20 % de répétitions en moins qu’à la dernière séance à cette charge.',
@@ -39,6 +41,8 @@ export const progressionFr = {
   explainRecoveryLowSet: 'Charge réduite de {cut} % et une série de moins (exercice d’isolation) : récupération basse aujourd’hui.',
   // Précisions ajoutées à la phrase (I2-04), information seulement.
   notePartialIgnored: 'Ta dernière séance (moins de la moitié des séries faites) n’est pas prise en compte.',
+  noteBodyweightUnknown: 'Poids de corps inconnu : le 1RM et les écarts de charge sont calculés sur le lest seul. Enregistre une pesée pour compter le poids de ton corps.',
+  notePosition: 'Charge réduite de {cut} % : {rank}ᵉ exercice de ce muscle dans la séance.',
   noteGridToVerify: 'Charges calculées sur du matériel à vérifier en salle (profil de matériel).',
   alertFatigue: 'Fatigue : plus de 20 % de répétitions en moins qu’à la dernière séance à cette charge.',
   alertStall: '{sessions} séances sans progrès : trois pistes ci-dessous, aucune n’est imposée.',

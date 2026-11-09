@@ -14,6 +14,7 @@ export const nutritionFr = {
   loading: 'Chargement de Nutrition…',
   loadError: 'Nutrition n’a pas pu être lu.',
   retry: 'Réessayer',
+  staleError: 'Ces valeurs sont peut-être périmées : la relecture de Nutrition a échoué.',
   writeError: 'L’enregistrement a échoué. Rien n’a changé.',
   unknown: '—',
   cancel: 'Annuler',

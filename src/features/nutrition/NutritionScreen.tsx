@@ -49,6 +49,14 @@ export function NutritionScreen() {
             { value: 'recipes', label: tNutrition('sectionRecipes') },
           ]}
         />
+        {state.status === 'ready' && state.stale ? (
+          <div role="alert" className="ct-nutrition__error">
+            <p>{tNutrition('staleError')}</p>
+            <Button variant="secondary" onClick={() => void reload()}>
+              {tNutrition('retry')}
+            </Button>
+          </div>
+        ) : null}
         {state.status === 'loading' ? (
           <p className="ct-nutrition__muted" role="status">
             {tNutrition('loading')}

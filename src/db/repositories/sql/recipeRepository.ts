@@ -5,6 +5,7 @@ import {
   RECIPE_COOKED_WEIGHT_MAX_G,
   RECIPE_INGREDIENT_GRAMS_MAX,
   RECIPE_INGREDIENT_MAX,
+  RECIPE_INGREDIENT_NAME_MAX,
   RECIPE_NAME_MAX,
   RECIPE_SERVINGS_MAX,
   type IngredientSource,
@@ -77,7 +78,7 @@ function normalized(draft: RecipeDraft): RecipeDraft | null {
   const ingredients: IngredientDraft[] = [];
   for (const ingredient of draft.ingredients) {
     const ingredientName = ingredient.name.trim();
-    if (ingredientName.length < 1 || ingredientName.length > RECIPE_NAME_MAX) return null;
+    if (ingredientName.length < 1 || ingredientName.length > RECIPE_INGREDIENT_NAME_MAX) return null;
     if (!SOURCES.includes(ingredient.source)) return null;
     if (ingredient.foodRef !== null && (ingredient.foodRef.length < 1 || ingredient.foodRef.length > FOOD_REF_MAX)) return null;
     if (!Number.isFinite(ingredient.grams) || ingredient.grams <= 0 || ingredient.grams > RECIPE_INGREDIENT_GRAMS_MAX) return null;

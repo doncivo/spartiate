@@ -71,15 +71,14 @@ describe('export des tables d’entraînement (0.2.3)', () => {
     for (const name of TRAINING_EXPORT_TABLES) expect(trainingTable(name).name).toBe(name);
   });
 
-  it('exporte la routine et la séance close avec ses séries ; jamais la séance ouverte ni ses séries', async () => {
+  it('exporte la routine, la séance close et la séance ouverte avec leurs séries (REV-01 constat 1, D-57)', async () => {
     const data = await read(await seeded(A));
     expect(data.training?.routine?.map((r) => r.id)).toEqual([R]);
     expect(data.training?.routine_day?.map((r) => r.id)).toEqual([D1]);
     expect(data.training?.routine_exercise).toHaveLength(1);
-    expect(data.training?.workout?.map((r) => r.id)).toEqual([W_CLOSED]);
-    expect(data.training?.workout_set).toHaveLength(2);
-    expect(data.training?.workout_set?.every((s) => s.values['workout_id'] === W_CLOSED)).toBe(true);
-    expect(JSON.stringify(data)).not.toContain(W_OPEN);
+    expect(data.training?.workout?.map((r) => r.id).sort()).toEqual([W_CLOSED, W_OPEN].sort());
+    expect(data.training?.workout?.find((r) => r.id === W_OPEN)?.values['ended_at']).toBeNull();
+    expect(data.training?.workout_set).toHaveLength(3);
     expect(JSON.stringify(data)).not.toMatch(/"hlc"|device_id|updated_at|rest_timer/);
   });
 
@@ -151,11 +150,10 @@ describe('validation de l’archive d’entraînement', () => {
   };
   const training = (d: Record<string, unknown>) => d['training'] as Record<string, Record<string, unknown>[]>;
 
-  it('refuse une table inconnue, une série orpheline, une séance ouverte, une valeur hors catalogue', async () => {
+  it('refuse une table inconnue, une série orpheline, une valeur hors catalogue (une séance ouverte est acceptée, REV-01)', async () => {
     const parse = (bytes: Uint8Array) => parseExportArchive(bytes, { currentSv: 4, currentYear: 2026 });
     await expect(parse(await tampered((d) => (training(d)['inconnue'] = [])))).rejects.toMatchObject({ code: 'invalid-data' });
     await expect(parse(await tampered((d) => delete training(d)['workout']))).rejects.toMatchObject({ code: 'invalid-data' });
-    await expect(parse(await tampered((d) => (first(training(d)['workout'])['ended_at'] = null)))).rejects.toMatchObject({ code: 'invalid-data' });
     await expect(parse(await tampered((d) => (first(training(d)['workout_set'])['set_kind'] = 'autre')))).rejects.toMatchObject({ code: 'invalid-data' });
   });
 });

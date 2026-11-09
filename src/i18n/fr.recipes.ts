@@ -66,6 +66,7 @@ export const recipesFr = {
   problemIngredientsEmpty: 'Ajoute au moins un ingrédient.',
   problemIngredientsMany: 'Une recette compte 60 ingrédients au plus.',
   problemIngredientName: '{name} : l’ingrédient n’a pas de nom.',
+  problemIngredientNameTooLong: '{name} : le nom de l’ingrédient est trop long (120 caractères au plus).',
   problemIngredientSource: '{name} : la provenance de l’ingrédient n’est pas valide.',
   problemIngredientGrams: '{name} : indique des grammes supérieurs à 0 et au plus 10 000.',
   problemIngredientValue: '{name} : une valeur pour 100 g est hors limites.',
