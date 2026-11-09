@@ -14,7 +14,7 @@ import { useNutritionData } from './useNutritionData';
 /** REV-01 constat 4 : un échec de relecture après un premier succès garde les valeurs mais dit qu'elles sont peut-être périmées. */
 const logged = vi.hoisted(() => ({ calls: [] as unknown[][] }));
 vi.mock('../../platform/desktop/log', async (importOriginal) => {
-  const original = await importOriginal<typeof import('../../platform/desktop/log')>();
+  const original = await importOriginal<Record<string, unknown>>();
   return { ...original, logFailure: (...args: unknown[]) => void logged.calls.push(args), logDesktopFailure: (...args: unknown[]) => void logged.calls.push(args) };
 });
 
