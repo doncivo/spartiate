@@ -17,6 +17,7 @@ import { warmupExerciseIds } from '../../../domain/training/warmup';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import { RepositoryError } from '../../../db/repositories/common';
 import type { ClosedWorkout, WorkoutRepository } from '../../../db/repositories/workoutRepository';
+import { logFailure } from '../../../platform/desktop/log';
 import type { Haptics } from '../../../platform/haptics';
 import { formatClock, formatRest, tTraining } from '../../../i18n/trainingText';
 import { Button, ConfirmDialog } from '../../../ui';
@@ -240,7 +241,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         // 0.2.4 point 6 : la question de routine attend sa réponse même si l'app est fermée pendant le résumé (même transaction que la clôture).
         if (!result.alreadyClosed) await repos.settings.set('training.routineUpdateAsk', result.routineDiff.hasChanges ? workout.id : null);
         // I2-01 (relecture de la #61, point B) : recalibrage « Facile » consigné à la clôture seulement, dans la même transaction.
-        if (!result.alreadyClosed) await (await repos.progression()).applyClosedWorkout(workout.id);
+        if (!result.alreadyClosed) await (await repos.progression()).applyClosedWorkout(workout.id, (event) => logFailure('training', event));
         return result;
       });
       // Séance close (repos effacé en base) : minuteur, notification et Live Activity s'arrêtent ; un échec ici ne la rouvre pas.
