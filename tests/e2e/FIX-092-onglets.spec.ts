@@ -17,7 +17,8 @@ async function expectTabsUsable(page: Page, names: readonly string[]): Promise<v
     await expect(radio).toBeVisible();
     const box = await radio.boundingBox();
     expect(box?.height ?? 0, `onglet « ${name} » : hauteur`).toBeGreaterThanOrEqual(44);
-    // Le centre de l'onglet reçoit bien le clic (pas rogné par la bande).
+    // Le centre de l'onglet reçoit bien le clic (pas rogné par la bande). Sur 440 px la bande défile : l'onglet est d'abord amené dans la vue.
+    await radio.scrollIntoViewIfNeeded();
     const hit = await radio.evaluate((el) => {
       const r = el.getBoundingClientRect();
       const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
