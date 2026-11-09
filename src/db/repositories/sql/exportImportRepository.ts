@@ -1,11 +1,13 @@
 import { PROFILE_ID, WEIGHT_MAX_KG, validateProfile, weightId } from '../../../domain/bodyProfile';
-import { ARCHIVE_EXTRA_COLUMNS, TRAINING_EXPORT_TABLES, trainingColumns, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable, type TrainingValue } from '../../../domain/exportImport/archive';
+import { ARCHIVE_EXTRA_COLUMNS, IPHONE_WRITTEN_TABLES, TRAINING_EXPORT_TABLES, trainingColumns, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable, type TrainingValue } from '../../../domain/exportImport/archive';
 import type { ImportPlan } from '../../../domain/exportImport/plan';
 import type { WriteStamper } from '../../../domain/hlc';
 import type { SyncCatalogue, SyncTable } from '../../../domain/sync/syncTables';
 import { isLocalDate } from '../../../domain/types';
 import type { SqlExecutor, SqlRow, SqlValue } from '../../driver';
+import { parseContributors, parseExplanationKeys } from '../../parse/recoveryJson';
 import { RepositoryError } from '../common';
+import type { RepositoryOptions } from '../dataAccess';
 import type { ExportImportRepository } from '../exportImportRepository';
 
 interface Row extends SqlRow {
@@ -17,7 +19,14 @@ interface Row extends SqlRow {
 /** Colonnes publiées d'une table sans `created_at` ni `deleted_at` (écrites à part). */
 const dataColumns = (t: SyncTable): string[] => t.columns.map((c) => c.name).filter((n) => n !== 'created_at' && n !== 'deleted_at');
 
-export function createExportImportRepository(db: SqlExecutor, stamper: WriteStamper, catalogue: SyncCatalogue): ExportImportRepository {
+/**
+ * I5-01 (sync-icloud) : sur un appareil LECTEUR des résumés de récupération (PC, `options.recoveryWriter` absent ou faux), l'export les porte
+ * (sauvegarde complète des lignes reçues), mais l'import ne les écrit ni ne les supprime jamais : la lecture locale les marque
+ * `readOnlyTables` (le plan les écarte et les compte) et `applyImport` écarte encore toute écriture d'un plan construit sans cette marque
+ * (événement fixe `recovery-write-ignored`, sans valeur). Ils reviennent de l'iPhone par la synchro, avec leurs horloges d'origine.
+ */
+export function createExportImportRepository(db: SqlExecutor, stamper: WriteStamper, catalogue: SyncCatalogue, options: RepositoryOptions = {}): ExportImportRepository {
+  const readOnly: ReadonlySet<string> = new Set(options.recoveryWriter === true ? [] : IPHONE_WRITTEN_TABLES);
   const tableOf = (name: string): SyncTable => {
     const t = catalogue.table(name);
     if (!t) throw new RepositoryError('invalid', name, '');
@@ -187,11 +196,21 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
       };
       // Sans ligne d'entraînement, la clé est absente : même forme qu'avant la 0.2.3 (et même archive canonique).
       const training = await readTraining();
-      return Object.keys(training).length > 0 ? { ...exported, training } : exported;
+      const withTraining: ExportData = Object.keys(training).length > 0 ? { ...exported, training } : exported;
+      return readOnly.size > 0 ? { ...withTraining, readOnlyTables: IPHONE_WRITTEN_TABLES.filter((t) => readOnly.has(t)) } : withTraining;
     },
 
     async applyImport(plan: ImportPlan, currentYear: number) {
-      const { profile, deleteProfile, weights, deleteWeightIds, training, deleteTraining } = plan.writes;
+      const { profile, deleteProfile, weights, deleteWeightIds } = plan.writes;
+      const training = plan.writes.training.filter((w) => !readOnly.has(w.table));
+      const deleteTraining = plan.writes.deleteTraining.filter((d) => !readOnly.has(d.table));
+      if (training.length !== plan.writes.training.length || deleteTraining.length !== plan.writes.deleteTraining.length) {
+        try {
+          options.onIgnoredWrite?.('recovery-write-ignored');
+        } catch {
+          // Un journal défaillant ne change jamais l'issue.
+        }
+      }
       if (profile && validateProfile(profile, currentYear).length > 0) throw new RepositoryError('invalid', 'profile', PROFILE_ID);
       for (const x of weights) if (invalidWeight(x)) throw new RepositoryError('invalid', 'body_weight', x.id);
       for (const { table, row } of training) {
@@ -200,6 +219,14 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
         for (const col of t.columns) {
           if (col.name === 'created_at' || col.name === 'deleted_at') continue;
           if (!catalogue.isValidValue(col, row.values[col.name] ?? null)) throw new RepositoryError('invalid', table, row.id);
+        }
+        // I5-01 : un résumé dont le JSON serait refusé à la lecture par le dépôt de récupération n'est jamais écrit.
+        if (table === 'recovery_day') {
+          const contributors = row.values['contributors'];
+          const keys = row.values['explanation_keys'];
+          if (parseContributors(typeof contributors === 'string' ? contributors : null) === null || parseExplanationKeys(typeof keys === 'string' ? keys : null) === null) {
+            throw new RepositoryError('invalid', table, row.id);
+          }
         }
       }
       if (!profile && !deleteProfile && weights.length === 0 && deleteWeightIds.length === 0 && training.length === 0 && deleteTraining.length === 0) return;

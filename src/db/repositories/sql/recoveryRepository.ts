@@ -1,9 +1,11 @@
 import type { WriteStamper } from '../../../domain/hlc';
 import type { Contributor, MuscleRecoveryRow, RecoveryDayOutput, RecoveryDaySummary, RecoveryExplanationKey } from '../../../domain/recovery';
-import { isLocalDate, type LocalDate } from '../../../domain/types';
+import { muscleRecoveryId, recoveryDayId } from '../../../domain/sync/naturalIds';
+import { isIsoDateTime, isLocalDate, type LocalDate } from '../../../domain/types';
 import { encodeContributors, encodeExplanationKeys, parseContributors, parseExplanationKeys } from '../../parse/recoveryJson';
 import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
 import { RepositoryError } from '../common';
+import type { RepositoryOptions } from '../dataAccess';
 import { RECOVERY_ENGINE_VERSION, type MuscleRecoveryRecord, type RecoveryDayRecord, type RecoveryRepository, type SavedRecoveryDay } from '../recoveryRepository';
 import { readSyncMeta, type SyncRow } from './sqlHelpers';
 
@@ -40,8 +42,9 @@ interface MuscleRow extends SqlRow, SyncRow {
   readonly ready_at: string;
 }
 
-const dayId = (date: string): string => `recovery|${date}`;
-const muscleId = (date: string, muscle: string): string => `muscle|${date}|${muscle}`;
+// Identifiants naturels : `src/domain/sync/naturalIds.ts` (propriété sync-icloud, mêmes formes que les CHECK de la 0010).
+const dayId = (date: string): string => recoveryDayId(date as LocalDate);
+const muscleId = (date: string, muscle: string): string => muscleRecoveryId(date as LocalDate, muscle);
 
 const toDay = (row: DayRow): RecoveryDayRecord => {
   const contributors = parseContributors(row.contributors);
@@ -101,11 +104,13 @@ function validate(output: RecoveryDayOutput): void {
   if (!isInt(s.recovery, 0, 100) || !isInt(s.sleepScore, 0, 100) || !isInt(s.learningNights, 0, 365)) fail();
   if (![s.exertion, s.exertionPrevDay, s.sleepMinutes, s.sleepNeedMinutes, s.bedtimeSigmaMinutes, s.hrvMs, s.restingHr].every(finite)) fail();
   if (s.targetZone !== null && !(Number.isFinite(s.targetZone.from) && Number.isFinite(s.targetZone.to) && s.targetZone.from <= s.targetZone.to)) fail();
-  if (typeof s.computedAt !== 'string' || s.computedAt.length === 0) fail();
+  // Instants publiés en `datetime` (catalogue de synchro) : une valeur que le PC refuserait n'est jamais écrite ici.
+  if (typeof s.computedAt !== 'string' || !isIsoDateTime(s.computedAt)) fail();
   const seen = new Set<string>();
   for (const m of output.muscles) {
     if (m.day !== s.day || m.muscleId.length === 0 || m.muscleId.includes('|') || seen.has(m.muscleId)) fail();
-    if (m.group.length === 0 || !isInt(m.percent, 0, 100) || !Number.isFinite(m.hours) || m.hours <= 0 || m.lastWorkedAt.length === 0 || m.readyAt.length === 0) fail();
+    if (m.muscleId.length > 64 || m.group.length === 0 || m.group.length > 64 || !isInt(m.percent, 0, 100) || !Number.isFinite(m.hours) || m.hours <= 0) fail();
+    if (!isIsoDateTime(m.lastWorkedAt) || !isIsoDateTime(m.readyAt)) fail();
     seen.add(m.muscleId);
   }
 }
@@ -143,9 +148,18 @@ function sameDay(row: DayRow, s: RecoveryDaySummary): boolean {
 const sameMuscle = (row: MuscleRow, m: MuscleRecoveryRow): boolean =>
   row.deleted_at === null && row.muscle_group === m.group && row.percent === m.percent && row.hours === m.hours && row.last_worked_at === m.lastWorkedAt && row.ready_at === m.readyAt;
 
-export function createRecoveryRepository(db: SqlExecutor, stamper: WriteStamper): RecoveryRepository {
+export function createRecoveryRepository(db: SqlExecutor, stamper: WriteStamper, options: RepositoryOptions = {}): RecoveryRepository {
+  const writer = options.recoveryWriter === true;
+  /** Lecteur (PC) : écriture locale écartée, événement fixe sans valeur (jamais une date, un identifiant ni une mesure). */
+  const ignore = (): void => {
+    try {
+      options.onIgnoredWrite?.('recovery-write-ignored');
+    } catch {
+      // Un journal défaillant ne change jamais l'issue : rien n'est écrit.
+    }
+  };
   const atomic = <T>(work: (inTx: RecoveryRepository) => Promise<T>): Promise<T> | null =>
-    typeof (db as Partial<SqlDriver>).transaction === 'function' ? (db as SqlDriver).transaction((tx) => work(createRecoveryRepository(tx, stamper))) : null;
+    typeof (db as Partial<SqlDriver>).transaction === 'function' ? (db as SqlDriver).transaction((tx) => work(createRecoveryRepository(tx, stamper, options))) : null;
   const readDay = async (id: string): Promise<DayRow | undefined> => (await db.select<DayRow>('SELECT * FROM recovery_day WHERE id = ?', [id]))[0];
   const liveMuscles = (date: string): Promise<MuscleRow[]> => db.select<MuscleRow>('SELECT * FROM muscle_recovery WHERE date = ? AND deleted_at IS NULL ORDER BY muscle_id', [date]);
 
@@ -210,7 +224,11 @@ export function createRecoveryRepository(db: SqlExecutor, stamper: WriteStamper)
   return {
     async saveDay(output) {
       validate(output);
-      return (await atomic((inTx) => inTx.saveDay(output))) ?? saveInTx(output);
+      if (!writer) {
+        ignore();
+        return null;
+      }
+      return atomic((inTx) => inTx.saveDay(output)) ?? saveInTx(output);
     },
 
     async getDay(date) {
@@ -230,6 +248,10 @@ export function createRecoveryRepository(db: SqlExecutor, stamper: WriteStamper)
 
     async deleteDay(date) {
       if (!isLocalDate(date)) throw new RepositoryError('invalid', 'recovery_day', String(date));
+      if (!writer) {
+        ignore();
+        return;
+      }
       const work = async (): Promise<void> => {
         const row = await readDay(dayId(date));
         if (row && row.deleted_at === null) {

@@ -46,10 +46,10 @@ const read = async (db: TestDb): Promise<ExportData> => (await db.data.repos.exp
 const seed = async (db: TestDb): Promise<void> => {
   await (await db.data.repos.recovery()).saveDay(output());
   await (await db.data.repos.recoverySamples()).insertMany(
-    [{ type: 'hrv', startAt: '2026-11-09T03:12:00.000+01:00', endAt: '2026-11-09T03:12:00.000+01:00', value: 77.77, stage: null, source: 'hrv.csv' }],
+    [{ type: 'hrv', startAt: '2026-11-09T02:12:00.000Z', endAt: '2026-11-09T02:12:00.000Z', value: 77.77, stage: null, source: 'hrv.csv' }],
     '2026-11-09T07:00:00.000Z',
   );
-  await (await db.data.repos.recoverySamples()).recordImport({ type: 'hrv', importedAt: '2026-11-09T07:00:00.000Z', newestSampleAt: '2026-11-09T03:12:00.000+01:00', added: 1, duplicates: 0, rejected: 0 });
+  await (await db.data.repos.recoverySamples()).recordImport({ type: 'hrv', importedAt: '2026-11-09T07:00:00.000Z', newestSampleAt: '2026-11-09T02:12:00.000Z', added: 1, duplicates: 0, rejected: 0 });
 };
 const parse = async (data: ExportData, sv: number) => {
   const archive = await buildExportArchive(data, { date: '2026-11-09T10:00:00.000Z', sv });

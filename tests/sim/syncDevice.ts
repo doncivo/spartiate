@@ -6,7 +6,7 @@ import type { SqlDriver } from '../../src/db/driver';
 import { exportSqliteWasmImage, openSqliteWasmDriver } from '../../src/db/drivers/sqliteWasm';
 import { legacyMigrations as legacyMigrationList } from '../fixtures/legacy-schema';
 import { migrate } from '../../src/db/migrator';
-import { createDataAccess, createSqlRepositories, createStorage, type DataAccess } from '../../src/db/repositories';
+import { createDataAccess, createSqlRepositoriesFor, createStorage, type DataAccess } from '../../src/db/repositories';
 import { migrations as i0Migrations } from '../../src/db/migrations';
 import { SYNC_CATALOGUE, createCatalogue } from '../../src/domain/sync/syncTables';
 import { SYNC_TABLE_ORDER } from '../../src/domain/sync/format';
@@ -60,7 +60,7 @@ let counter = 0;
  * 17 migrations (la moitié du coût d'un test à deux appareils).
  */
 /** `legacy` : ancien schéma et ancien catalogue (banc de test, D-67) ; `i0` : migration 0001 réelle et catalogue de production. */
-export type SimSchema = 'legacy' | 'i0' | 'v3' | 'v5' | 'v6' | 'v7' | 'v8';
+export type SimSchema = 'legacy' | 'i0' | 'v3' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9';
 
 /**
  * I1-03 : `v3` : base et catalogue d'une app arrêtée à la migration 0003 (séance locale, ni `workout` ni `workout_set` publiées), `sv` = 3 :
@@ -81,8 +81,10 @@ export const V6_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slic
 export const V7_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 12), order: SYNC_TABLE_ORDER.slice(0, 12) });
 /** I4-07 : `v8` : base et catalogue sans recettes ni journée complète (migration 0008), `sv` = 8 : appareil pas encore mis à jour qui reçoit `recipe`, `recipe_ingredient` et `day_completeness`. */
 export const V8_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 16), order: SYNC_TABLE_ORDER.slice(0, 16) });
-const SCHEMA_CATALOGUES = { v3: V3_CATALOGUE, v5: V5_CATALOGUE, v6: V6_CATALOGUE, v7: V7_CATALOGUE, v8: V8_CATALOGUE } as const;
-const schemaMigrations = (schema: SimSchema) => (schema === 'i0' ? i0Migrations : schema === 'v3' ? i0Migrations.slice(0, 3) : schema === 'v5' ? i0Migrations.slice(0, 5) : schema === 'v6' ? i0Migrations.slice(0, 6) : schema === 'v7' ? i0Migrations.slice(0, 7) : schema === 'v8' ? i0Migrations.slice(0, 8) : legacyMigrationList);
+/** I5-01 : `v9` : base et catalogue sans résumés de récupération (migration 0009), `sv` = 9 : PC pas encore mis à jour qui reçoit `recovery_day` et `muscle_recovery`. */
+export const V9_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 19), order: SYNC_TABLE_ORDER.slice(0, 19) });
+const SCHEMA_CATALOGUES = { v3: V3_CATALOGUE, v5: V5_CATALOGUE, v6: V6_CATALOGUE, v7: V7_CATALOGUE, v8: V8_CATALOGUE, v9: V9_CATALOGUE } as const;
+const schemaMigrations = (schema: SimSchema) => (schema === 'i0' ? i0Migrations : schema === 'v3' ? i0Migrations.slice(0, 3) : schema === 'v5' ? i0Migrations.slice(0, 5) : schema === 'v6' ? i0Migrations.slice(0, 6) : schema === 'v7' ? i0Migrations.slice(0, 7) : schema === 'v8' ? i0Migrations.slice(0, 8) : schema === 'v9' ? i0Migrations.slice(0, 9) : legacyMigrationList);
 const migratedImages: Partial<Record<SimSchema, Promise<Uint8Array>>> = {};
 function migratedDatabaseImage(schema: SimSchema = 'legacy'): Promise<Uint8Array> {
   const migrations = schemaMigrations(schema);
@@ -118,7 +120,9 @@ export async function createSimDevice(id: string, options: { readonly name?: str
   const changes: RemoteChanges[] = [];
   let hlc = createHlcClock({ clock, deviceId });
   const stamper = { next: () => createWriteStamper(clock, hlc).next() };
-  const data = createDataAccess(driver, stamper, schema === 'i0' ? createSqlRepositories : schema === 'legacy' ? createLegacyRepositories : createStorage(SCHEMA_CATALOGUES[schema]).repositories);
+  // I5-01 : l'iPhone simulé écrit les résumés de récupération, le PC simulé les lit seulement (comme `bootstrapApp`).
+  const repositoryOptions = { recoveryWriter: options.devicePlatform === 'ios' };
+  const data = createDataAccess(driver, stamper, schema === 'i0' ? createSqlRepositoriesFor(SYNC_CATALOGUE, repositoryOptions) : schema === 'legacy' ? createLegacyRepositories : createStorage(SCHEMA_CATALOGUES[schema], repositoryOptions).repositories);
   await data.repos.settings.set('device.id', deviceId);
 
   const makePlatform = (): MemorySyncPlatform => createMemorySyncPlatform({ folder, nowMs: () => clock.nowMs(), ...(options.devicePlatform ? { platform: options.devicePlatform } : {}) });

@@ -1,6 +1,6 @@
 import { SYNC_CATALOGUE, type SyncCatalogue } from '../../../domain/sync/syncTables';
 import { signalingWrites } from '../../localWrite';
-import type { RepositoryFactory } from '../dataAccess';
+import type { RepositoryFactory, RepositoryOptions } from '../dataAccess';
 import { createAppleReminderLinkRepository } from './appleReminderLinks';
 import { createCalendarAccountRepository, createEventRepository, createExternalEventRepository } from './agendaRepository';
 import { createChecklistItemRepository, createChecklistRepository } from './checklistRepository';
@@ -27,7 +27,7 @@ import { createRecurrenceRepository, createTaskRepository } from './taskReposito
  * agrégat, branchée sur l'exécuteur et le tampon d'écriture reçus (driver ou
  * transaction). Fabrique par défaut de `bootstrapApp`.
  */
-export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFactory => (executor, stamper) => ({
+export const createSqlRepositoriesFor = (catalogue: SyncCatalogue, options: RepositoryOptions = {}): RepositoryFactory => (executor, stamper) => ({
   spaces: createSpaceRepository(executor, stamper),
   projects: createProjectRepository(executor, stamper),
   tasks: createTaskRepository(executor, stamper),
@@ -76,9 +76,14 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFa
   dayCompleteness: () => import('./dayCompletenessRepository').then((m) => signalingWrites(m.createDayCompletenessRepository(executor, stamper), ['declare', 'clear'])),
   recipes: () => import('./recipeRepository').then((m) => signalingWrites(m.createRecipeRepository(executor, stamper), ['create', 'update', 'softDelete'])),
   // I5-01 : récupération, à la demande. Le résumé et les muscles sont publiables (signal de synchro) ; les échantillons importés sont locaux (aucun signal).
-  recovery: () => import('./recoveryRepository').then((m) => signalingWrites(m.createRecoveryRepository(executor, stamper), ['saveDay', 'deleteDay'])),
+  // L'iPhone seul les écrit (`options.recoveryWriter`) ; sur un lecteur (PC), les écritures sont écartées, sans signal.
+  recovery: () =>
+    import('./recoveryRepository').then((m) => {
+      const repository = m.createRecoveryRepository(executor, stamper, options);
+      return options.recoveryWriter === true ? signalingWrites(repository, ['saveDay', 'deleteDay']) : repository;
+    }),
   recoverySamples: () => import('./recoverySampleRepository').then((m) => m.createRecoverySampleRepository(executor)),
-  exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue)),
+  exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue, options)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)
   syncConflicts: createSyncConflictRepository(executor, stamper, catalogue),
@@ -92,5 +97,5 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue): RepositoryFa
   // Y-07 (fin)
 });
 
-/** Fabrique de production : catalogue I0 (D-67). Le banc de test injecte l'ancien catalogue par `createSqlRepositoriesFor`. */
+/** Fabrique par défaut : catalogue de production (D-67), appareil LECTEUR des résumés de récupération (`bootstrapApp` déclare l'iPhone écrivain). */
 export const createSqlRepositories: RepositoryFactory = createSqlRepositoriesFor(SYNC_CATALOGUE);

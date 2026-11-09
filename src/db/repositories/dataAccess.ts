@@ -96,6 +96,24 @@ export interface Repositories {
  */
 export type RepositoryFactory = (executor: SqlExecutor, stamper: WriteStamper) => Repositories;
 
+/** Événement fixe d'une écriture locale écartée par un appareil lecteur : jamais une valeur, un identifiant de ligne ni une date. */
+export type IgnoredWriteEvent = 'recovery-write-ignored';
+
+/**
+ * Règles propres à l'appareil, fixées à la création des repositories par la couche qui connaît la plateforme (`bootstrapApp`), jamais lues
+ * d'une valeur reçue (I5-01, § 9.1, § 16.4).
+ */
+export interface RepositoryOptions {
+  /**
+   * Vrai sur l'iPhone seul : il écrit `recovery_day` et `muscle_recovery` ; le PC les lit (reçues par la synchro) et ne les écrit jamais.
+   * Absent ou faux : LECTEUR (valeur sûre, un oubli de câblage ne fait jamais écrire le PC). Sur un lecteur, `saveDay` et `deleteDay`
+   * n'écrivent rien et l'import d'archive n'écrit ni ne supprime ces tables.
+   */
+  readonly recoveryWriter?: boolean;
+  /** Écriture locale écartée par un lecteur (journal technique de l'appareil). */
+  readonly onIgnoredWrite?: (event: IgnoredWriteEvent) => void;
+}
+
 /**
  * Point d'entrée unique des features vers la base (via le conteneur, ADR 0004).
  * - `repos` : lectures et écritures simples ;

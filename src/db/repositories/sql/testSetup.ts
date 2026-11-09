@@ -6,8 +6,9 @@ import { openSqliteWasmDriver } from '../../drivers/sqliteWasm';
 import { legacyMigrations as migrations } from '../../../../tests/fixtures/legacy-schema';
 import { migrate } from '../../migrator';
 import { migrations as baseMigrations } from '../../migrations';
-import { createSqlRepositories } from './index';
-import { createDataAccess, type DataAccess } from '../dataAccess';
+import { createSqlRepositoriesFor } from './index';
+import { createDataAccess, type DataAccess, type RepositoryFactory, type RepositoryOptions } from '../dataAccess';
+import { SYNC_CATALOGUE } from '../../../domain/sync/syncTables';
 import { createLegacyRepositories } from '../../../../tests/fixtures/legacy-schema/catalogue';
 
 /**
@@ -36,12 +37,16 @@ export async function openTestDb(
   return { driver, data, clock, deviceId, close: () => driver.close() };
 }
 
-/** Base de test sur la base neuve (migration 0001 réelle, catalogue de production I0) : profil et poids. */
-export async function openBaseDb(deviceId: DeviceId, startAt: string | number = '2026-10-01T08:00:00.000Z'): Promise<TestDb> {
+/**
+ * Base de test sur la base neuve (migrations réelles, catalogue de production). Par défaut l'appareil de test ÉCRIT les résumés de récupération
+ * (comme l'iPhone) ; `{ recoveryWriter: false }` simule le PC lecteur (I5-01) ; `factory` remplace la fabrique (stockage de production).
+ */
+export async function openBaseDb(deviceId: DeviceId, startAt: string | number = '2026-10-01T08:00:00.000Z', options: RepositoryOptions & { readonly factory?: RepositoryFactory } = {}): Promise<TestDb> {
   const driver = await openSqliteWasmDriver();
   await migrate(driver, baseMigrations);
   const clock = createManualClock(startAt);
   const hlc = createHlcClock({ clock, deviceId });
-  const data = createDataAccess(driver, createWriteStamper(clock, hlc), createSqlRepositories);
+  const { factory, ...repositoryOptions } = options;
+  const data = createDataAccess(driver, createWriteStamper(clock, hlc), factory ?? createSqlRepositoriesFor(SYNC_CATALOGUE, { recoveryWriter: true, ...repositoryOptions }));
   return { driver, data, clock, deviceId, close: () => driver.close() };
 }

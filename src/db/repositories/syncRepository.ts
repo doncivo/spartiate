@@ -98,7 +98,9 @@ export type SyncReportTable =
   | 'nutrition_target'
   | 'day_completeness'
   | 'recipe'
-  | 'recipe_ingredient';
+  | 'recipe_ingredient'
+  | 'recovery_day'
+  | 'muscle_recovery';
 
 /** Compteurs seulement (jamais le contenu d'une ligne) : bilan de l'export des journaux. */
 export interface SyncDiagnostics {
