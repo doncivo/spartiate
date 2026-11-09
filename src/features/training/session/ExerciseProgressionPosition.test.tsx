@@ -77,3 +77,54 @@ describe('REV-01 (point 7 de 0.9.2) : poids de corps dans la séance active', ()
     expect(await within(group).findByText(/Poids de corps inconnu/)).toBeInTheDocument();
   });
 });
+
+describe('REV-01 constat 6 : suites de la relecture à froid (séance active)', () => {
+  it('la séance de référence est celle dont vient la charge : une séance partielle plus récente (exercice seul, rang 1) ne fait pas compter la décote deux fois', async () => {
+    const r = await db.data.repos.workouts();
+    // Séance de référence : développé couché puis incliné (rang 2), toutes séries faites, incliné à 24 kg.
+    await r.start({ source: 'empty', id: u(21), name: 'Haut A' });
+    for (const [exerciseId, name, kg] of [['bench-press-barbell', BENCH, 60], ['incline-press-dumbbell', INCLINE, 24]] as const) {
+      const w = await r.addExercise(u(21), { exerciseId, exerciseName: name, sets: 3, targetRepsMin: 8, targetRepsMax: 10 });
+      for (const s of w.sets.filter((x) => x.exerciseId === exerciseId)) await r.validateSet(s.id, { reps: 10, loadKg: kg });
+    }
+    await db.data.transaction(async (repos) => (await repos.workouts()).close(u(21)));
+    db.clock.advance(86_400_000);
+    // Séance plus récente, partielle (aucune série faite sauf une) : incliné seul (rang 1). Elle est ignorée par le moteur.
+    await r.start({ source: 'empty', id: u(22), name: 'Libre' });
+    const partial = await r.addExercise(u(22), { exerciseId: 'incline-press-dumbbell', exerciseName: INCLINE, sets: 3, targetRepsMin: 8, targetRepsMax: 10 });
+    const first = partial.sets[0];
+    if (!first) throw new Error('série attendue');
+    await r.validateSet(first.id, { reps: 10, loadKg: 24 });
+    await db.data.transaction(async (repos) => (await repos.workouts()).close(u(22)));
+    db.clock.advance(86_400_000);
+    await r.start({ source: 'empty', id: u(23), name: 'Haut B' });
+    await r.addExercise(u(23), { exerciseId: 'bench-press-barbell', exerciseName: BENCH, sets: 3, targetRepsMin: 8, targetRepsMax: 10 });
+    await r.addExercise(u(23), { exerciseId: 'incline-press-dumbbell', exerciseName: INCLINE, sets: 3, targetRepsMin: 8, targetRepsMax: 10 });
+    act(() => useNavigationStore.getState().navigate({ tab: 'training', screen: 'session' } as Route));
+    render(
+      <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data })}>
+        <TrainingScreen session={{ os: 'other', notifier, liveActivity }} />
+      </AppContainerProvider>,
+    );
+    const incline = await within(await screen.findByRole('region', { name: INCLINE })).findByRole('group', { name: 'Proposition' });
+    await within(incline).findByText(/kg ×/);
+    expect(within(incline).queryByText(/ᵉ exercice de ce muscle/)).toBeNull();
+  });
+
+  it('traction lestée avec une pesée enregistrée : le plafond +10 % se calcule sur la charge totale, le lest monte', async () => {
+    await (await db.data.repos.bodyWeights()).saveManual({ date: '2026-11-04' as never, kg: 80, timezone: 'Europe/Paris' }, '2026-11-04' as never);
+    await past(u(31), 'pull-up-weighted', 'Traction lestée', 10);
+    const r = await db.data.repos.workouts();
+    await r.start({ source: 'empty', id: u(33), name: 'Dos' });
+    await r.addExercise(u(33), { exerciseId: 'pull-up-weighted', exerciseName: 'Traction lestée', sets: 3, targetRepsMin: 8, targetRepsMax: 10 });
+    act(() => useNavigationStore.getState().navigate({ tab: 'training', screen: 'session' } as Route));
+    render(
+      <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data })}>
+        <TrainingScreen session={{ os: 'other', notifier, liveActivity }} />
+      </AppContainerProvider>,
+    );
+    const group = await within(await screen.findByRole('region', { name: 'Traction lestée' })).findByRole('group', { name: 'Proposition' });
+    expect(await within(group).findByText(/^12 kg ×/)).toBeInTheDocument();
+    expect(within(group).queryByText(/Poids de corps inconnu/)).toBeNull();
+  });
+});
