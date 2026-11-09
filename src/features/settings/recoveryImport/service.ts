@@ -51,6 +51,8 @@ export interface FileOutcome {
   readonly read: number;
   readonly added: number;
   readonly duplicates: number;
+  /** Totaux de pas dont la valeur a été remplacée (0 pour les autres types). */
+  readonly updated: number;
   readonly rejectedTotal: number;
   /** Par raison ; null quand rien n'a été analysé. */
   readonly rejected: ShortcutRejections | null;
@@ -107,7 +109,7 @@ function parseFile(type: RecoverySampleType, text: string, today: string, tz: st
     return { report: r, inputs: r.samples.map((s) => point(s.measuredAt, s.value)) };
   }
   if (type === 'pas') {
-    // Un total par jour local, daté à midi UTC de ce jour (clé d'unicité du dépôt : un total déjà connu n'est pas remplacé).
+    // Un total par jour local, daté à midi UTC de ce jour (clé d'unicité du dépôt : un total plus récent remplace le précédent, `upsertTotals`).
     const r = parseShortcutSteps(text, today, tz);
     return { report: r, inputs: r.days.map((d) => point(`${d.day}T12:00:00.000Z`, d.steps)) };
   }
@@ -124,16 +126,17 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
   async function importFile(samples: RecoverySampleRepository, type: RecoverySampleType, text: string, today: string, at: string, index: number): Promise<FileOutcome> {
     try {
       const { report, inputs } = parseFile(type, text, today, deps.timeZone);
-      const inserted = await samples.insertMany(inputs, at);
+      const inserted = type === 'pas' ? await samples.upsertTotals(inputs, at) : { ...(await samples.insertMany(inputs, at)), updated: 0 };
       const duplicates = inserted.duplicates + report.duplicates;
       const newest = inputs.reduce<string | null>((max, s) => (max === null || s.endAt > max ? s.endAt : max), null);
-      await samples.recordImport({ type, importedAt: at, newestSampleAt: newest, added: inserted.added, duplicates, rejected: report.rejectedTotal });
+      await samples.recordImport({ type, importedAt: at, newestSampleAt: newest, added: inserted.added + inserted.updated, duplicates, rejected: report.rejectedTotal });
       const outcome: FileOutcome = {
         type,
         state: 'imported',
         read: inputs.length + report.duplicates,
         added: inserted.added,
         duplicates,
+        updated: inserted.updated,
         rejectedTotal: report.rejectedTotal,
         rejected: report.rejected,
         truncated: report.truncated,
@@ -142,7 +145,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       return outcome;
     } catch {
       deps.log('recovery-import-file-failed', { type_index: index });
-      return { type, state: 'failed', read: 0, added: 0, duplicates: 0, rejectedTotal: 0, rejected: null, truncated: false };
+      return { type, state: 'failed', read: 0, added: 0, duplicates: 0, updated: 0, rejectedTotal: 0, rejected: null, truncated: false };
     }
   }
 
@@ -199,7 +202,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
         continue;
       }
       deps.log(read.state === 'absent' ? 'recovery-import-file-absent' : 'recovery-import-file-unreadable', { type_index: index });
-      files.push({ type, state: read.state, read: 0, added: 0, duplicates: 0, rejectedTotal: 0, rejected: null, truncated: false });
+      files.push({ type, state: read.state, read: 0, added: 0, duplicates: 0, updated: 0, rejectedTotal: 0, rejected: null, truncated: false });
     }
     let recomputedDays = 0;
     let recomputeFailed = false;

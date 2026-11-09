@@ -151,9 +151,9 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
   it('une écriture qui échoue pour un fichier est isolée et journalisée par un nom fixe', async () => {
     const samples = await db.data.repos.recoverySamples();
     const failing: RecoverySampleRepository = {
-      insertMany: async (lot, at) => {
-        if (lot[0]?.type === 'pas') throw new Error('boom 4000');
-        return samples.insertMany(lot, at);
+      insertMany: (...args) => samples.insertMany(...args),
+      upsertTotals: async () => {
+        throw new Error('boom 4000');
       },
       listWindow: (...args) => samples.listWindow(...args),
       purgeOlderThan: (...args) => samples.purgeOlderThan(...args),

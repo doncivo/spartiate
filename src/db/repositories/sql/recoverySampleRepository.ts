@@ -84,7 +84,32 @@ export function createRecoverySampleRepository(db: SqlExecutor): RecoverySampleR
     return { added, duplicates: samples.length - added };
   };
 
+  const upsertAll = async (samples: readonly RecoverySampleInput[], importedAt: string) => {
+    let added = 0;
+    let updated = 0;
+    let duplicates = 0;
+    for (const s of samples) {
+      const existing = (await db.select<SampleRow>("SELECT * FROM recovery_sample WHERE type = 'pas' AND start_at = ? AND end_at = ? AND stage IS NULL", [s.startAt, s.endAt]))[0];
+      if (!existing) {
+        await db.execute('INSERT INTO recovery_sample (type, start_at, end_at, value, stage, source, imported_at) VALUES (?, ?, ?, ?, ?, ?, ?)', [s.type, s.startAt, s.endAt, s.value, null, s.source, importedAt]);
+        added += 1;
+      } else if (existing.value !== s.value) {
+        await db.execute('UPDATE recovery_sample SET value = ?, source = ?, imported_at = ? WHERE id = ?', [s.value, s.source, importedAt, existing.id]);
+        updated += 1;
+      } else {
+        duplicates += 1;
+      }
+    }
+    return { added, duplicates, updated };
+  };
+
   return {
+    async upsertTotals(samples, importedAt) {
+      if (!isIsoDateTime(importedAt) || !samples.every((s) => s.type === 'pas' && validSample(s))) throw new RepositoryError('invalid', 'recovery_sample', String(samples.length));
+      if (samples.length === 0) return { added: 0, duplicates: 0, updated: 0 };
+      return (await atomic((inTx) => inTx.upsertTotals(samples, importedAt))) ?? upsertAll(samples, importedAt);
+    },
+
     async insertMany(samples, importedAt) {
       if (!isIsoDateTime(importedAt) || !samples.every(validSample)) throw new RepositoryError('invalid', 'recovery_sample', String(samples.length));
       if (samples.length === 0) return { added: 0, duplicates: 0 };

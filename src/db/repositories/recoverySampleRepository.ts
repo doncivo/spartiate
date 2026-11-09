@@ -47,9 +47,19 @@ export interface InsertSamplesResult {
   readonly duplicates: number;
 }
 
+export interface UpsertTotalsResult extends InsertSamplesResult {
+  /** Lignes dont la valeur différait et a été remplacée. */
+  readonly updated: number;
+}
+
 export interface RecoverySampleRepository {
   /** Insère le lot en ignorant les doublons ; `importedAt` est l'instant de l'import (fourni par l'appelant). */
   insertMany(samples: readonly RecoverySampleInput[], importedAt: string): Promise<InsertSamplesResult>;
+  /**
+   * Totaux de pas (type `pas` seulement, sinon `RepositoryError('invalid')`) : sur la même clé, une valeur différente REMPLACE la précédente
+   * (le total du jour grandit pendant la journée) ; une valeur identique est un doublon. Tout ou rien.
+   */
+  upsertTotals(samples: readonly RecoverySampleInput[], importedAt: string): Promise<UpsertTotalsResult>;
   /** Échantillons d'un type qui chevauchent la fenêtre (bornes incluses), du plus ancien au plus récent. */
   listWindow(type: RecoverySampleType, from: string, to: string): Promise<readonly RecoverySample[]>;
   /** Supprime les échantillons terminés avant `now` moins `days` jours (120 par défaut) ; rend le nombre supprimé. */
