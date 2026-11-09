@@ -53,7 +53,7 @@ export function summarizeRecoveryDay(input: RecoveryDayInput): RecoveryDayOutput
   const regularityFrom = shiftDay(input.today, -(cfg.sleep.regularityDays - 1));
   const bedtimes = nights.filter((n) => n.day >= regularityFrom && n.bedtimeMinutes !== null).map((n) => n.bedtimeMinutes as number);
 
-  const level: RecoveryLevel = score.score !== null ? 'C' : sleepMinutes !== null || tonight?.restingHr != null ? 'B' : 'A';
+  const level: RecoveryLevel = score.score !== null ? 'C' : sleepMinutes !== null && tonight?.restingHr != null ? 'B' : 'A';
   const quality: RecoveryQuality =
     score.score === null ? 'insufficient' : sleepMinutes !== null && score.baselineNights >= cfg.baselineDays ? 'good' : 'partial';
 

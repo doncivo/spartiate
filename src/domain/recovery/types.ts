@@ -19,7 +19,7 @@ export interface NightRecord {
 export type RecoveryLevel = 'A' | 'B' | 'C';
 export type RecoveryQuality = 'good' | 'partial' | 'insufficient';
 /** Raison pour laquelle `recovery` vaut null (§ 16.3 : mesure absente, < 7 nuits, σ = 0). */
-export type AbstainReason = 'measure_missing_hrv' | 'measure_missing_rhr' | 'baseline_incomplete' | 'zero_variance';
+export type AbstainReason = 'measure_missing_hrv' | 'measure_missing_rhr' | 'measure_missing_sleep' | 'baseline_incomplete' | 'zero_variance';
 /** Clés d'explication : des codes, les phrases vivent dans src/i18n. Aucune ne porte de diagnostic. */
 export type RecoveryExplanationKey =
   | 'exertion_cardio_not_counted'
