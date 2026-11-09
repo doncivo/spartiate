@@ -16,6 +16,7 @@ const PROBLEM_KEY: Readonly<Record<RecipeProblemCode, RecipesTextKey>> = {
   'ingredients-empty': 'problemIngredientsEmpty',
   'ingredients-too-many': 'problemIngredientsMany',
   'ingredient-name-empty': 'problemIngredientName',
+  'ingredient-name-too-long': 'problemIngredientNameTooLong',
   'ingredient-source-invalid': 'problemIngredientSource',
   'ingredient-grams-invalid': 'problemIngredientGrams',
   'ingredient-value-invalid': 'problemIngredientValue',

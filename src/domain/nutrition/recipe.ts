@@ -13,6 +13,7 @@ import {
   RECIPE_COOKED_WEIGHT_MAX_G,
   RECIPE_INGREDIENT_GRAMS_MAX,
   RECIPE_INGREDIENT_MAX,
+  RECIPE_INGREDIENT_NAME_MAX,
   RECIPE_NAME_MAX,
   RECIPE_SERVINGS_MAX,
   type IngredientSource,
@@ -30,6 +31,7 @@ export type RecipeProblemCode =
   | 'ingredients-empty'
   | 'ingredients-too-many'
   | 'ingredient-name-empty'
+  | 'ingredient-name-too-long'
   | 'ingredient-source-invalid'
   | 'ingredient-grams-invalid'
   | 'ingredient-value-invalid';
@@ -92,6 +94,7 @@ export function validateRecipeDraft(draft: RecipeDraft): RecipeProblem[] {
   else if (draft.ingredients.length > RECIPE_INGREDIENT_MAX) add('ingredients-too-many');
   draft.ingredients.forEach((ing, index) => {
     if (ing.name.trim().length === 0) add('ingredient-name-empty', index);
+    else if (ing.name.trim().length > RECIPE_INGREDIENT_NAME_MAX) add('ingredient-name-too-long', index);
     if (!INGREDIENT_SOURCES.includes(ing.source)) add('ingredient-source-invalid', index);
     if (!Number.isFinite(ing.grams) || ing.grams <= 0 || ing.grams > RECIPE_INGREDIENT_GRAMS_MAX) add('ingredient-grams-invalid', index);
     if (valuesInvalid(ing.per100g)) add('ingredient-value-invalid', index);
@@ -143,7 +146,7 @@ export function recipeWeightG(recipe: Pick<Recipe, 'ingredients' | 'cookedWeight
 export function ingredientFromFood(food: SearchableFood, grams: number): DraftIngredient | null {
   if (!Number.isFinite(grams) || grams <= 0 || grams > RECIPE_INGREDIENT_GRAMS_MAX) return null;
   return {
-    name: food.name.slice(0, ENTRY_NAME_MAX),
+    name: food.name.slice(0, RECIPE_INGREDIENT_NAME_MAX),
     source: food.provenance,
     foodRef: food.ref,
     grams,

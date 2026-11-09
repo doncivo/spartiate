@@ -23,7 +23,7 @@ import type { ThemeChoice } from '../model/settings';
 import { isIsoDateTime, isLocalDate } from '../types';
 import { SYNC_CATALOGUE, type SyncTable } from '../../domain/sync/syncTables';
 import { sha256Hex } from './sha256';
-import { RECIPE_COOKED_WEIGHT_MAX_G, RECIPE_INGREDIENT_GRAMS_MAX, RECIPE_NAME_MAX, RECIPE_SERVINGS_MAX } from '../nutrition/recipeTypes';
+import { RECIPE_COOKED_WEIGHT_MAX_G, RECIPE_INGREDIENT_GRAMS_MAX, RECIPE_INGREDIENT_NAME_MAX, RECIPE_NAME_MAX, RECIPE_SERVINGS_MAX } from '../nutrition/recipeTypes';
 import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
 
@@ -274,7 +274,7 @@ function rowBoundsOk(table: TrainingTable, id: string, v: Readonly<Record<string
       return (
         Number.isInteger(v['position']) &&
         numberIn(v['position'], 0, Number.MAX_SAFE_INTEGER) &&
-        textLength(v['name'], 1, RECIPE_NAME_MAX) &&
+        textLength(v['name'], 1, RECIPE_INGREDIENT_NAME_MAX) &&
         (v['food_ref'] === null || textLength(v['food_ref'], 1, 128)) &&
         numberIn(v['grams'], 0, RECIPE_INGREDIENT_GRAMS_MAX, true) &&
         nullableIn(v['kcal_100g'], 0, 900) &&
