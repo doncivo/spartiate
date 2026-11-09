@@ -60,6 +60,8 @@ fn make_db(path: &Path, version: u32, bodies_version: u32) {
         "day_completeness",
         "recipe",
         "recipe_ingredient",
+        "recovery_day",
+        "muscle_recovery",
         "search_index_doc",
     ] {
         conn.execute_batch(&format!(
