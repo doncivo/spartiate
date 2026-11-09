@@ -20,7 +20,7 @@ const NEW_IDS = [
 ];
 const ORIGINAL = JSON.parse(readFileSync('src/features/training/content02.originals.json', 'utf8')) as { ids: string[]; names: Record<string, string> };
 
-const search = (list: readonly { nameFr: string; aliasesEn: readonly string[] }[], query: string) => {
+const search = (list: readonly { id: string; nameFr: string; aliasesEn: readonly string[] }[], query: string) => {
   const q = normalizeSearch(query);
   return list.filter((e) => normalizeSearch(e.nameFr).includes(q) || e.aliasesEn.some((a) => normalizeSearch(a).includes(q)));
 };
