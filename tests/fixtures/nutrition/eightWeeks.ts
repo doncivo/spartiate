@@ -103,3 +103,24 @@ export const floorCase = (): Scenario =>
     kcal: () => 1500,
     weight: (i) => (i % 2 === 0 ? 60 : null),
   });
+
+/**
+ * Saisie en deux fois (I4-07) : petit-déjeuner et déjeuner saisis à 13:00, dîner à 20:30 (7,5 h d'amplitude) chaque jour. Déduit « partiel »
+ * (moins de 8 h) ; devient complet quand Ali déclare la journée complète.
+ */
+export const twoSittings = (): Scenario => {
+  const entries: MealEntryInput[] = [];
+  const weighIns: WeighIn[] = [];
+  const parts: [string, number][] = [
+    ['13:00', 0.25],
+    ['13:00', 0.4],
+    ['20:30', 0.35],
+  ];
+  for (let i = 0; i < DAYS; i += 1) {
+    for (const [time, share] of parts) {
+      entries.push({ date: date(i), time: time as LocalTime, kcal: 2400 * share, proteinG: 30, fatG: 20, carbG: 60 });
+    }
+    if (i % 7 === 0 || i % 7 === 2 || i % 7 === 4) weighIns.push({ date: date(i), kg: Math.round((80 - 0.07 * i) * 100) / 100 });
+  }
+  return { name: 'saisie en deux fois', entries, weighIns };
+};
