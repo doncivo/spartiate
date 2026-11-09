@@ -130,6 +130,7 @@ export const REASON_ORDER: readonly ReasonCode[] = [
   'recovery-low',
   'recovery-set-removed',
   'position-discount',
+  'bodyweight-unknown',
   'increment-unknown',
   'grid-to-verify',
   'equipment-max',

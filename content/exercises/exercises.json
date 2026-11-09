@@ -599,7 +599,7 @@
       "kind": "compound",
       "metric": "load-reps",
       "unilateral": false,
-      "bodyweightFraction": null,
+      "bodyweightFraction": 0.64,
       "defaultRepRange": [
         6,
         10
@@ -11607,7 +11607,7 @@
       "kind": "compound",
       "metric": "load-reps",
       "unilateral": false,
-      "bodyweightFraction": null,
+      "bodyweightFraction": 1,
       "defaultRepRange": [
         5,
         8

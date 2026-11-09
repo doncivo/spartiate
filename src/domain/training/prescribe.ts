@@ -1,6 +1,6 @@
 import { ENGINE_VERSION, REASON_ORDER, type ProgressionConfig } from './config';
 import { confidenceOf } from './confidence';
-import { analyzeHistory, current1rmFromSessions, epley, type SessionEstimate } from './estimate1rm';
+import { analyzeHistory, current1rmFromSessions, epley, totalLoad, type BodyLoad, type SessionEstimate } from './estimate1rm';
 import { activeConstraints, proposalOptions, reducedTarget, reduces, type ActiveConstraints } from './constraints';
 import { gridToVerify, loadGrid, nextLoadAbove, roundKg, snapDiscount, snapToEquipment } from './loadGrid';
 import type { MuscleWeight, PrescribeInput, PrescribedSet, Prescription, PrescriptionHeadline, PrescriptionReference, ReasonCode } from './types';
@@ -107,7 +107,12 @@ export function prescribe(input: PrescribeInput): Prescription {
   }
 
   // 1. Validation.
-  const analysis = analyzeHistory(input.history, config);
+  // REV-01 : exercice au poids du corps lesté ou assisté → 1RM et plafond sur la charge totale ; poids de corps inconnu → comportement d'avant.
+  const fraction = input.exercise.bodyweightFraction ?? null;
+  const bodyKg = input.bodyweightKg ?? null;
+  const body: BodyLoad | null = fraction !== null && fraction > 0 && bodyKg !== null && bodyKg > 0 ? { baseKg: bodyKg * fraction, sign: input.exercise.assisted === true ? -1 : 1 } : null;
+  if (fraction !== null && fraction > 0 && body === null) reasons.add('bodyweight-unknown');
+  const analysis = analyzeHistory(input.history, config, body);
   if (analysis.latest?.partial === true) reasons.add('partial-session-ignored');
   if ((analysis.latest?.outliers ?? 0) > 0) reasons.add('outlier-excluded');
   const estimates = analysis.estimates;
@@ -286,7 +291,7 @@ export function prescribe(input: PrescribeInput): Prescription {
   // 7. Arrondi au matériel, puis plafond du 1RM implicite.
   if (increase !== null) {
     const cap = Math.max(current, reference.e1rmKg) * (1 + config.maxGainPerSession);
-    const fits = (loadKg: number, reps: readonly number[]): boolean => epley(loadKg, Math.max(...reps)) <= cap + 1e-9;
+    const fits = (loadKg: number, reps: readonly number[]): boolean => epley(totalLoad(loadKg, body), Math.max(...reps)) <= cap + 1e-9;
     const snapped = snapToEquipment(increase.targetKg, increase.reps, available, config);
     const snappedLoad = Math.max(snapped.loadKg, refLoad);
     if (draft.recalibration !== null && snappedLoad <= refLoad + EPS) {

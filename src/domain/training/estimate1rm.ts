@@ -14,15 +14,36 @@ import type { Difficulty, ExerciseSession, HistorySet } from './types';
 
 export const epley = (loadKg: number, reps: number): number => loadKg * (1 + reps / 30);
 
-/** Série de travail validée, reps entières ≥ 1 et charge finie > 0. */
-export function isEligibleSet(set: HistorySet): boolean {
-  return set.done && set.setKind === 'work' && set.reps !== null && Number.isInteger(set.reps) && set.reps >= 1 && set.loadKg !== null && Number.isFinite(set.loadKg) && set.loadKg > 0;
+/**
+ * Exercice au poids du corps lesté ou assisté (REV-01, `bodyweightFraction`) : charge TOTALE = `baseKg` (poids de corps × fraction) + lest
+ * (`sign` 1) ou − assistance (`sign` −1). La charge saisie et affichée reste le lest (ou l'assistance) ; seuls le 1RM estimé et les écarts
+ * de charge se calculent sur le total. Null : exercice ordinaire, ou poids de corps inconnu (comportement d'avant).
+ */
+export interface BodyLoad {
+  readonly baseKg: number;
+  readonly sign: 1 | -1;
+}
+
+/** Charge totale d'une série ; la charge saisie elle-même sans `body`. */
+export const totalLoad = (loadKg: number, body: BodyLoad | null | undefined): number => (body == null ? loadKg : body.baseKg + body.sign * loadKg);
+
+/**
+ * Série de travail validée, reps entières ≥ 1 et charge finie > 0. Avec un poids de corps connu, un lest nul ou absent compte (traction au
+ * poids du corps) tant que la charge totale est positive.
+ */
+export function isEligibleSet(set: HistorySet, body: BodyLoad | null = null): boolean {
+  if (!(set.done && set.setKind === 'work' && set.reps !== null && Number.isInteger(set.reps) && set.reps >= 1)) return false;
+  if (body !== null) {
+    const entered = set.loadKg ?? 0;
+    return Number.isFinite(entered) && entered >= 0 && totalLoad(entered, body) > 0;
+  }
+  return set.loadKg !== null && Number.isFinite(set.loadKg) && set.loadKg > 0;
 }
 
 /** Poids d'une série : `lowQualityWeight` au-delà de `maxRepsForEstimate` reps ou sous `lowLoadRatio` du 1RM courant, sinon 1. */
-export function setWeight(set: { readonly loadKg: number; readonly reps: number }, current1rmKg: number | null, config: ProgressionConfig): number {
+export function setWeight(set: { readonly loadKg: number; readonly reps: number }, current1rmKg: number | null, config: ProgressionConfig, body: BodyLoad | null = null): number {
   const tooManyReps = set.reps > config.maxRepsForEstimate;
-  const tooLight = current1rmKg !== null && set.loadKg < config.lowLoadRatio * current1rmKg;
+  const tooLight = current1rmKg !== null && totalLoad(set.loadKg, body) < config.lowLoadRatio * current1rmKg;
   return tooManyReps || tooLight ? config.lowQualityWeight : 1;
 }
 
@@ -74,7 +95,9 @@ const chronological = (a: ExerciseSession, b: ExerciseSession): number => (a.end
 
 const fatigueMark = (session: ExerciseSession): { readonly fatigueChoice?: true } => (session.fatigueChoice === true ? { fatigueChoice: true } : {});
 
-export function analyzeHistory(history: readonly ExerciseSession[], config: ProgressionConfig): HistoryAnalysis {
+export function analyzeHistory(history: readonly ExerciseSession[], config: ProgressionConfig, body: BodyLoad | null = null): HistoryAnalysis {
+  const e1rm = (s: { readonly loadKg: number; readonly reps: number }): number => epley(totalLoad(s.loadKg, body), s.reps);
+  const eligibleSet = (s: HistorySet): boolean => isEligibleSet(s, body);
   const valid: SessionEstimate[] = [];
   let latest: HistoryAnalysis['latest'] = null;
   let latestRaw: SessionEstimate | null = null;
@@ -82,7 +105,7 @@ export function analyzeHistory(history: readonly ExerciseSession[], config: Prog
   // Meilleur e1RM éligible de chaque séance : une série aberrante est confirmée si une séance ULTÉRIEURE l'atteint à 90 % (B1). Sans
   // cela, `confirmed` n'étant jamais renseigné, un vrai progrès > 150 % restait écarté pour toujours.
   const bestOf = ordered.map((session) => {
-    const values = session.sets.filter((s) => s.setKind === 'work' && isEligibleSet(s)).map((s) => epley(s.loadKg as number, s.reps as number));
+    const values = session.sets.filter((s) => s.setKind === 'work' && eligibleSet(s)).map((s) => e1rm({ loadKg: s.loadKg ?? 0, reps: s.reps as number }));
     return values.length > 0 ? Math.max(...values) : 0;
   });
   const repeatedLater = (index: number, e1rm: number): boolean => bestOf.slice(index + 1).some((b) => b >= REPEAT_CONFIRMS_FROM * e1rm);
@@ -91,29 +114,30 @@ export function analyzeHistory(history: readonly ExerciseSession[], config: Prog
     if (session.deload === true) continue;
     const work = session.sets.filter((s) => s.setKind === 'work');
     if (work.length === 0) continue;
-    const eligible = work.filter(isEligibleSet) as (HistorySet & { loadKg: number; reps: number })[];
+    // Lest nul ou absent d'une série éligible (poids de corps connu) : lu comme 0.
+    const eligible = work.filter(eligibleSet).map((s) => ({ ...s, loadKg: s.loadKg ?? 0 })) as (HistorySet & { loadKg: number; reps: number })[];
     if (eligible.length < config.minCompletedFraction * work.length) {
       latest = { workoutId: session.workoutId, partial: true, outliers: 0 };
       continue;
     }
     const current = current1rmFromSessions(valid, config);
-    const kept = eligible.filter((s) => s.confirmed === true || current === null || epley(s.loadKg, s.reps) <= config.outlierRatio * current || repeatedLater(index, epley(s.loadKg, s.reps)));
+    const kept = eligible.filter((s) => s.confirmed === true || current === null || e1rm(s) <= config.outlierRatio * current || repeatedLater(index, e1rm(s)));
     latest = { workoutId: session.workoutId, partial: false, outliers: eligible.length - kept.length };
     if (eligible.length > 0) {
       const all = [...eligible].sort((a, b) => a.position - b.position);
-      const top = all.reduce((t, s) => (epley(s.loadKg, s.reps) > epley(t.loadKg, t.reps) ? s : t));
-      latestRaw = { workoutId: session.workoutId, endedAt: session.endedAt, difficulty: session.difficulty, e1rmKg: epley(top.loadKg, top.reps), quality: 1, validSets: all.length, sets: all, ...fatigueMark(session) };
+      const top = all.reduce((t, s) => (e1rm(s) > e1rm(t) ? s : t));
+      latestRaw = { workoutId: session.workoutId, endedAt: session.endedAt, difficulty: session.difficulty, e1rmKg: e1rm(top), quality: 1, validSets: all.length, sets: all, ...fatigueMark(session) };
     }
     if (kept.length === 0) continue;
     const sets = [...kept].sort((a, b) => a.position - b.position);
     // Meilleure série : e1RM maximal, la première par position à égalité.
-    const best = sets.reduce((top, s) => (epley(s.loadKg, s.reps) > epley(top.loadKg, top.reps) ? s : top));
+    const best = sets.reduce((top, s) => (e1rm(s) > e1rm(top) ? s : top));
     valid.unshift({
       workoutId: session.workoutId,
       endedAt: session.endedAt,
       difficulty: session.difficulty,
-      e1rmKg: epley(best.loadKg, best.reps),
-      quality: setWeight(best, current, config),
+      e1rmKg: e1rm(best),
+      quality: setWeight(best, current, config, body),
       validSets: sets.length,
       sets,
       ...fatigueMark(session),
