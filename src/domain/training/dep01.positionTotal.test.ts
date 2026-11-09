@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { daysAgo, input, set, target } from '../../../tests/fixtures/training/progression';
+import { explainPrescription } from './explain';
 import { prescribe } from './prescribe';
 import type { ExerciseSession, ProgressionExercise } from './types';
 
@@ -70,5 +71,25 @@ describe('DEP-01 : décote de position sur la charge totale', () => {
     const first = run(bar, 60, 80, 1);
     const second = run(bar, 60, 80, 2);
     expect(second.loadKg ?? 0).toBeLessThan(first.loadKg ?? 0);
+  });
+});
+
+describe('DEP-01 : phrase de la décote sur la charge totale (relecture)', () => {
+  it('lest : l’écart dit est sur la charge totale (≈ −7 %), pas sur le lest (≈ −37 %)', () => {
+    const second = run(exercise('pull-up-weighted', 1), 20, 80, 2);
+    const e = explainPrescription(second);
+    expect(e.key).toBe('position');
+    expect(Number(e.params.cut)).toBeGreaterThan(5);
+    expect(Number(e.params.cut)).toBeLessThan(9);
+  });
+
+  it('assistée : la raison principale est la position et la phrase dit l’assistance en plus, jamais « Même charge »', () => {
+    const ex = exercise('pull-up-assisted', 1, { assisted: true, equipment: ['assisted-machine'] });
+    const second = run(ex, 30, 80, 2);
+    expect(second.headline).toBe('position');
+    const e = explainPrescription(second);
+    expect(e.key).toBe('position');
+    expect(Number(e.params.delta)).toBeGreaterThan(0);
+    expect(Number(e.params.cut)).toBeLessThan(9);
   });
 });
