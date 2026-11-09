@@ -1,0 +1,94 @@
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createHlcClock } from '../../domain/hlc';
+import { asEntityId, type DeviceId } from '../../domain/types';
+import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
+import type { HealthKit } from '../../platform/healthkit';
+import type { ShortcutFileRead, ShortcutFilesReader } from '../../platform/shortcutFiles';
+import { AppContainerProvider } from '../app/AppContainerContext';
+import { createAppContainer, type AppContainer } from '../app/container';
+import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
+import { AppleHealthScreen } from './AppleHealthScreen';
+
+vi.mock('../../platform/desktop/log', async (importOriginal) => ({ ...(await importOriginal<Record<string, unknown>>()), logFailure: vi.fn() }));
+
+const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-000000000012');
+const healthKit: HealthKit = {
+  availability: vi.fn(async () => 'available' as const),
+  requestAuthorization: vi.fn(async () => 'unknown' as const),
+  bodyMassToday: vi.fn(async () => ({ state: 'empty' as const })),
+  stepCountToday: vi.fn(async () => ({ state: 'empty' as const })),
+  diagnostic: vi.fn(async () => ({ available: true, usageDescription: true, error: null })),
+};
+
+const HRV = '2026-10-01T03:12:00+01:00;48,5;ms\n2026-10-01T03:20:00;50\nabc;1\n';
+const reads = (hrv: ShortcutFileRead): ShortcutFileRead[] => [
+  hrv,
+  { name: 'fc-repos.csv', state: 'absent' },
+  { name: 'sommeil.csv', state: 'absent' },
+  { name: 'pas.csv', state: 'absent' },
+];
+const pickerReader = (plan: () => ShortcutFileRead[] | null): ShortcutFilesReader => ({ kind: 'picker', automatic: false, read: async () => plan() });
+
+describe('Apple Santé : section « Raccourcis » (I5-01 point 1.7)', () => {
+  let db: TestDb;
+  let container: AppContainer;
+  const build = (platform: AppContainer['platform']): AppContainer =>
+    createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, platform });
+  const renderScreen = (reader: ShortcutFilesReader) =>
+    render(
+      <AppContainerProvider container={container}>
+        <AppleHealthScreen healthKit={healthKit} shortcutReader={reader} />
+      </AppContainerProvider>,
+    );
+
+  beforeEach(async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+    db = await openBaseDb(DEVICE, '2026-10-01T10:00:00.000Z');
+    container = build({ runtime: 'tauri', os: 'ios' });
+  });
+  afterEach(async () => {
+    cleanup();
+    vi.unstubAllGlobals();
+    useNavigationStore.setState(INITIAL_NAVIGATION);
+    await db.close();
+  });
+
+  const section = async () => within(await screen.findByRole('region', { name: 'Récupération depuis Raccourcis' }));
+
+  it('jamais importé : chaque type l’annonce, bouton « Importer maintenant », mention du guide du dépôt', async () => {
+    renderScreen(pickerReader(() => null));
+    const s = await section();
+    expect(await s.findAllByText('Jamais importé.')).toHaveLength(4);
+    expect(s.getByRole('button', { name: 'Importer maintenant' })).toBeEnabled();
+    expect(s.getByText(/docs\/guide-raccourcis-sante\.md/)).toBeInTheDocument();
+  });
+
+  it('importé : date du dernier import par type, comptes et rejets PAR RAISON sans aucune valeur ; absent clairement dit', async () => {
+    renderScreen(pickerReader(() => reads({ name: 'hrv.csv', state: 'ok', text: HRV })));
+    const s = await section();
+    fireEvent.click(await s.findByRole('button', { name: 'Importer maintenant' }));
+    await waitFor(() => expect(s.getByText(/Dernier import : 01\/10\/2026 à 1\d:00\./)).toBeInTheDocument());
+    expect(s.getByText('1 ajoutées · 0 déjà connues · 2 refusées.')).toBeInTheDocument();
+    expect(s.getByText('date sans fuseau horaire : 1')).toBeInTheDocument();
+    expect(s.getByText('date illisible : 1')).toBeInTheDocument();
+    expect(s.getAllByText('Fichier absent : rien n’a été lu pour ce type.')).toHaveLength(3);
+    expect(screen.queryByText(/48/)).toBeNull();
+  });
+
+  it('sélecteur annulé : message sobre, rien d’importé', async () => {
+    renderScreen(pickerReader(() => null));
+    const s = await section();
+    fireEvent.click(await s.findByRole('button', { name: 'Importer maintenant' }));
+    expect(await s.findByText('Aucun fichier choisi.')).toBeInTheDocument();
+    expect(s.getAllByText('Jamais importé.')).toHaveLength(4);
+  });
+
+  it('PC : seule la phrase « lus sur l’iPhone », aucun bouton', async () => {
+    container = build({ runtime: 'tauri', os: 'windows' });
+    renderScreen({ kind: 'unsupported', automatic: false, read: async () => null });
+    const s = await section();
+    expect(s.getByText('Les fichiers Raccourcis sont lus sur l’iPhone ; le PC reçoit les résumés par la synchro.')).toBeInTheDocument();
+    expect(s.queryByRole('button')).toBeNull();
+  });
+});
