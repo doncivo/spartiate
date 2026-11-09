@@ -2,6 +2,17 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.9.1
+
+Correctifs du moteur, avant ta première séance réelle. **Pas de mise à jour de la base** (reste en version 9).
+
+- **Fatigue** : après avoir choisi « −2 reps », la séance suivante n’est plus comparée à celle d’avant la décote ; la progression reprend normalement.
+- **Reprise après inactivité** : la phrase annonce l’écart réel (« −2 kg (−10 %) »), jamais un « −1 % » pour un passage de 20 à 18 kg ; une décote de moins d’un demi-cran de matériel donne « Charge maintenue ».
+- **Recalibrage « Facile »** : plus de « +0 kg » ni de 1RM relevé quand la charge ne bouge pas.
+- **Cycle** : le RIR de la semaine, affiché sur la séance proposée, est enregistré avec elle ; le deload du cycle ne s’active que sur une séance issue de la routine du cycle (ni séance libre, ni autre routine).
+- Une décision de progression illisible est ignorée (et journalisée) au lieu de faire échouer l’écran de séance.
+- **Dépense mesurée** : sans pesée récente (moins de 7 jours) aux deux bouts de la fenêtre, elle n’est plus calculée : retour à la formule déclarée et « Pèse-toi pour que la dépense mesurée reprenne ». Une cible acceptée au check-in s’applique même après une cible fixée à la main plus tôt dans la semaine (départage par horloge de synchro). Réglages par défaut proposés (D-82), révisables.
+
 ## 0.9.0
 
 **Schéma 9 : mets à jour le PC et l’iPhone le même jour, avant toute saisie.** Un appareil resté en 0.8.x garde de côté les recettes et les déclarations reçues (rien n’est perdu, tout revient après sa mise à jour), lit la prise d’une recette mais ne peut ni la modifier ni la copier, seulement la supprimer. PC : bannière de mise à jour dans l’app ; iPhone : SideStore.
