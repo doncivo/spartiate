@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { Proposal } from '../../domain/nutrition';
+import { effectiveTarget, type Proposal } from '../../domain/nutrition';
 import type { SearchableFood } from '../../domain/nutrition/foodSearch';
 import type { DeviceId, LocalDate, LocalTime } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
@@ -194,5 +194,48 @@ describe('I4-07 : loadNutritionSnapshot et journée déclarée (D-81)', () => {
     const day = (await loadNutritionSnapshot(db.data, TODAY)).days.find((d) => d.date === YESTERDAY);
     expect(day).toMatchObject({ state: 'unknown', kcal: null, usableForTdee: false });
     expect(day?.reasons).toContain('declared-without-entries');
+  });
+});
+
+describe('I4-08 point 8 : cible en vigueur (HLC), cohérente entre Journal, Aujourd’hui et Dashboard', () => {
+  const MON = '2026-11-09' as LocalDate;
+  const TUE = '2026-11-10' as LocalDate;
+  const WED = '2026-11-11' as LocalDate;
+
+  it('cible fixée le mardi, check-in du lundi accepté le mercredi : l’acceptation s’applique dès sa semaine, partout pareil', async () => {
+    db.clock.advance(24 * 3_600_000);
+    const manual = await saveManualTarget(db.data, { weekStart: TUE, target: { kcal: 2500, proteinG: 150, fatG: 70, carbG: 300 }, lowFloorConfirmed: false });
+    expect(typeof manual).toBe('object');
+    db.clock.advance(24 * 3_600_000);
+    const p = proposal(2300);
+    await recordCheckInDecision(db.data, { proposal: p, weekStart: MON, weightKg: 81, currentTarget: p.previousTarget, decision: { action: 'accept' }, lowFloorConfirmed: false });
+    const repo = await db.data.repos.nutritionTargets();
+    for (const day of [MON, TUE, WED]) {
+      const snapshot = await loadNutritionSnapshot(db.data, day);
+      expect(snapshot.target?.target.kcal).toBe(2300);
+      expect(effectiveTarget(snapshot.targets, day)?.id).toBe(snapshot.target?.id);
+      expect((await repo.effective(day))?.id).toBe(snapshot.target?.id);
+    }
+  });
+
+  it('deux appareils : created_at trompeur (horloge en avance), HLC juste : la décision la plus récente gagne', async () => {
+    const hlc = (ms: number, dev: string) => `${String(ms).padStart(15, '0')}-0000-${dev}`;
+    const A = '60000000-0000-4000-8000-0000000000a1';
+    const B = '60000000-0000-4000-8000-0000000000b2';
+    const insert = (id: string, kcal: number, createdAt: string, h: string, dev: string) =>
+      db.driver.execute(
+        `INSERT INTO nutrition_target (id, week_start, kcal, protein_g, fat_g, carb_g, source, accepted, engine_version, created_at, updated_at, device_id, hlc) VALUES (?, '2026-11-09', ?, 150, 70, 300, 'manual', 1, NULL, ?, ?, ?, ?)`,
+        [id, kcal, createdAt, createdAt, dev, h],
+      );
+    await insert('7f3c2b1a-0000-4000-8000-0000000000c1', 2600, '2026-12-31T08:00:00.000Z', hlc(Date.parse('2026-11-10T08:00:00.000Z'), B), B);
+    await insert('7f3c2b1a-0000-4000-8000-0000000000c2', 2200, '2026-11-01T08:00:00.000Z', hlc(Date.parse('2026-11-11T08:00:00.000Z'), A), A);
+    const snapshot = await loadNutritionSnapshot(db.data, WED);
+    expect(snapshot.target?.target.kcal).toBe(2200);
+    expect(effectiveTarget(snapshot.targets, WED)?.target.kcal).toBe(2200);
+  });
+
+  it('cible dont la semaine n’a pas commencé : jamais retenue', async () => {
+    await saveManualTarget(db.data, { weekStart: '2026-11-16' as LocalDate, target: { kcal: 2900, proteinG: 150, fatG: 70, carbG: 300 }, lowFloorConfirmed: false });
+    expect((await loadNutritionSnapshot(db.data, WED)).target).toBeNull();
   });
 });
