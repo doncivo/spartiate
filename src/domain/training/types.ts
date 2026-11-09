@@ -258,6 +258,11 @@ export interface ExerciseSession {
    * dans les statistiques, mais n'entre jamais dans la comparaison de fatigue (ni comme dernière séance, ni comme base). Absent : non.
    */
   readonly fatigueChoice?: boolean;
+  /**
+   * I4-08 : RIR cible présenté pour cet exercice dans la séance (semaine du cycle d'une séance proposée), lu dans la prescription tracée de la
+   * dernière décision ; absent : aucun. Information : le moteur ne le prend jamais pour un RIR réalisé.
+   */
+  readonly targetRir?: number;
 }
 
 /** Cible de la routine ou de la séance : nombre de séries, plage de répétitions, RIR. */

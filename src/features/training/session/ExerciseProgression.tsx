@@ -12,7 +12,7 @@ import { logFailure } from '../../../platform/desktop/log';
 import { tProgression, type ProgressionTextKey } from '../../../i18n/progressionText';
 import { Button } from '../../../ui';
 import { loadCurrentCycle, localDayOf } from '../cycle/currentCycle';
-import { parseSessionLink, sessionRoutineId } from '../cycle/sessionLink';
+import { linkedRir, parseSessionLink, sessionRoutineId } from '../cycle/sessionLink';
 import './Progression.css';
 
 /**
@@ -62,6 +62,8 @@ interface Loaded {
   readonly profile: ProgressionProfileRecord | null;
   /** I3-02 : la séance a commencé en semaine de deload du cycle suivi. */
   readonly cycleDeload: boolean;
+  /** I4-08 point 4 : RIR cible de la séance proposée pour cet exercice (semaine du cycle) ; null : aucun. */
+  readonly targetRir: number | null;
 }
 
 type Load = { readonly status: 'loading' } | { readonly status: 'error' } | ({ readonly status: 'ready' } & Loaded);
@@ -110,13 +112,13 @@ const repsText = (reps: readonly number[]): string => reps.join(tProgression('re
 const chosenRepsText = (reps: readonly number[]): string => (reps.length > 0 && reps.every((r) => r === reps[0]) ? String(reps[0]) : repsText(reps));
 
 /** Cible de la séance : nombre de séries de travail, plage de la première (sinon celle de l'exercice). */
-function targetOf(sets: readonly WorkoutSet[], exercise: Exercise | undefined): RepTarget {
+function targetOf(sets: readonly WorkoutSet[], exercise: Exercise | undefined, rir: number | null): RepTarget {
   const work = sets.filter((s) => s.setKind !== 'warmup');
   const first = work[0];
   const [defMin, defMax] = exercise?.defaultRepRange ?? [8, 12];
   const repMin = first?.targetRepsMin ?? defMin;
   const repMax = first?.targetRepsMax ?? Math.max(repMin, defMax);
-  return { sets: Math.max(1, work.length), repMin, repMax: Math.max(repMin, repMax), rir: null };
+  return { sets: Math.max(1, work.length), repMin, repMax: Math.max(repMin, repMax), rir };
 }
 
 /** Rampe : « 25 kg × 8 · 37,5 kg × 5 · 50 kg × 2 ». */
@@ -155,7 +157,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         ]);
         const link = parseSessionLink(rawLink);
         // I4-08 point 5 : le deload du cycle ne vaut que pour une séance issue de la routine du cycle (démarrée ou proposée depuis elle).
-        const ofCycle = cycle !== null && sessionRoutineId(workout, link) === cycle.record.routineId;
+        const ofCycle = cycle !== null && sessionRoutineId({ id: workout.id, routineId: workout.routineId }, link) === cycle.record.routineId;
         const cycleDeload = ofCycle && cycle.state.phase === 'active' && cycle.state.kind === 'deload';
         if (!live.current) return;
         // I3-02 : en semaine de deload du cycle, le deload est proposé par défaut (une fois, au premier chargement ; désactivable).
@@ -163,7 +165,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
           cyclePreset.current = true;
           setDeload(true);
         }
-        setLoad({ status: 'ready', history, reference, own, profile, cycleDeload });
+        setLoad({ status: 'ready', history, reference, own, profile, cycleDeload, targetRir: linkedRir({ id: workout.id }, link, exerciseId) });
       } catch {
         if (live.current) setLoad({ status: 'error' });
       }
@@ -171,15 +173,15 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     return () => {
       live.current = false;
     };
-  }, [access, exerciseId, workout.id, workout.startedAt, attempt]);
+  }, [access, exerciseId, workout.id, workout.routineId, workout.startedAt, attempt]);
 
   useEffect(() => {
     if (editing !== null) editLoad.current?.focus();
   }, [editing !== null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // La séance se redessine chaque seconde (chrono) : la cible n'est recalculée, et le moteur rappelé, que si ses valeurs changent.
-  const computed = targetOf(sets, exercise);
-  const target = useMemo(() => computed, [computed.sets, computed.repMin, computed.repMax]); // eslint-disable-line react-hooks/exhaustive-deps
+  const computed = targetOf(sets, exercise, load.status === 'ready' ? load.targetRir : null);
+  const target = useMemo(() => computed, [computed.sets, computed.repMin, computed.repMax, computed.rir]); // eslint-disable-line react-hooks/exhaustive-deps
   const ownDecision = load.status === 'ready' ? load.own : null;
 
   const prescription = useMemo((): Prescription | null => {
@@ -320,6 +322,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
       <>
         <p className="ct-progression__value ct-session__num">{value}</p>
         <p className="ct-progression__sentence">{sentence}</p>
+        {p.status !== 'unsupported' && p.deload !== true && typeof p.rirTarget === 'number' ? (
+          <p className="ct-progression__muted">{p.rirTarget === 1 ? tProgression('rirTargetOne') : tProgression('rirTargetMany', { rir: p.rirTarget })}</p>
+        ) : null}
         {proposed ? <p className="ct-progression__muted">{tProgression('confidence', { percent: confidencePercent(p.confidence), band: tProgression(BAND_KEYS[confidenceBand(p.confidence)]) })}</p> : null}
         {proposed && alerts.length > 0 ? (
           <ul className="ct-progression__alerts" aria-label={tProgression('alertsLabel')}>
