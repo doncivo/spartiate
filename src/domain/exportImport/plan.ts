@@ -193,8 +193,14 @@ export function planImport(local: ExportData, incoming: ExportData, mode: Import
   for (const table of TRAINING_EXPORT_TABLES) {
     const columns = trainingColumns(table);
     const localRows = new Map(trainingRows(local, table).map((r) => [r.id, r] as const));
-    for (const incomingRow of [...trainingRows(incoming, table)].sort((a, b) => (a.id < b.id ? -1 : 1))) {
+    // REV-01 constat 3 : les décisions de cible s'écrivent dans l'ordre où elles ont été prises (l'HLC réattribué suit cet ordre) ; une
+    // décision ACCEPTÉE plus ancienne que la dernière décision locale n'est pas réintroduite (elle prendrait le pas par son HLC neuf).
+    const decidedAt = (r: TrainingRow): string => (typeof r.values['decided_at'] === 'string' ? r.values['decided_at'] : '');
+    const newestLocalDecision = table === 'nutrition_target' ? [...localRows.values()].map(decidedAt).sort().pop() ?? '' : '';
+    const ordered = [...trainingRows(incoming, table)].sort((a, b) => (table === 'nutrition_target' && decidedAt(a) !== decidedAt(b) ? (decidedAt(a) < decidedAt(b) ? -1 : 1) : a.id < b.id ? -1 : 1));
+    for (const incomingRow of ordered) {
       if (skipRow(table, incomingRow)) continue;
+      if (mode === 'merge' && table === 'nutrition_target' && !localRows.has(incomingRow.id) && incomingRow.values['accepted'] === 1 && decidedAt(incomingRow) !== '' && decidedAt(incomingRow) < newestLocalDecision) continue;
       const row = table === 'workout' && open.closeAt.has(incomingRow.id) ? { ...incomingRow, values: { ...incomingRow.values, ended_at: open.closeAt.get(incomingRow.id) ?? null } } : incomingRow;
       const existing = localRows.get(row.id);
       if (existing && columns.every((col) => (existing.values[col] ?? null) === (row.values[col] ?? null))) unchanged += 1;
