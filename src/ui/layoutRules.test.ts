@@ -39,3 +39,11 @@ describe('0.7.1 : règles de mise en page', () => {
     expect(block).toContain('overflow-x: auto');
   });
 });
+
+describe('FIX-092 : contrôle segmenté défilant dans une colonne flex', () => {
+  it('ne rétrécit jamais (flex-shrink: 0) : un overflow autre que visible ramène sa hauteur minimale automatique à 0', () => {
+    const block = rule(css('src/ui/SegmentedControl.css'), ".ct-segmented[data-scroll='true']");
+    expect(block).toContain('flex-shrink: 0');
+    expect(block).toContain('min-height: calc(44px + 8px)'); // un bouton (44 px) plus le padding de 4 px de chaque côté
+  });
+});
