@@ -179,9 +179,9 @@ describe('inactivité (D-72 point 10)', () => {
     expect(at(200).loadKg).toBe(90);
   });
 
-  it('barre : 100 × 0,99 = 99 → charge disponible juste en dessous, 97,5 kg (écart 1,5 % ≤ 3 % : pas de répétition ajoutée)', () => {
+  it('barre : 100 × 0,99 = 99, décote de 1 kg sous le demi-cran (1,25 kg) → charge maintenue à 100 kg (I4-08 ; avant : 97,5 kg)', () => {
     const p = prescribe(input({ history: [session(21, 100, [8, 8, 8])] }));
-    expect(p.loadKg).toBe(97.5);
+    expect(p.loadKg).toBe(100);
     expect(p.sets.map((s) => s.reps)).toEqual([8, 8, 8]);
   });
 
@@ -398,7 +398,7 @@ describe('combinaisons, décisions et stabilité', () => {
 describe('explication : une phrase par proposition et par choix', () => {
   it('phrase principale de chaque contrainte', () => {
     expect(explainPrescription(prescribe(input({ history: [session(6, 100, [10, 10, 10]), session(3, 100, [7, 7, 7])] })))).toEqual({ key: 'fatigue', params: {} });
-    expect(explainPrescription(prescribe(input({ exercise: LEG_PRESS, history: [session(28, 100, [8, 8, 8])] })))).toEqual({ key: 'inactivity', params: { cut: 2 } });
+    expect(explainPrescription(prescribe(input({ exercise: LEG_PRESS, history: [session(28, 100, [8, 8, 8])] })))).toEqual({ key: 'inactivity', params: { delta: 2, cut: 2 } });
     expect(explainPrescription(prescribe(input({ history: [session(3, 100, [8, 8, 8])], recovery: SNAP(0) })))).toEqual({ key: 'recoveryLow', params: { cut: 5 } });
   });
 

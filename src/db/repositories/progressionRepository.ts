@@ -9,7 +9,8 @@ import type { DeviceId, Hlc, IsoDateTime } from '../../domain/types';
  * - `history` : séances CLOSES non supprimées ayant au moins une série non supprimée de l'exercice, de la plus récente à la plus
  *   ancienne (fin, puis identifiant), au plus `limit` séances (défaut `HISTORY_SESSIONS_LOADED`) ; difficulté lue sur les séries
  *   de l'exercice (`workout_set.difficulty`, 0006), null si aucune ; `deload` vrai si la dernière décision de l'exercice dans la séance a
- *   retenu une proposition de deload (acceptée, ou charge retenue au plus celle du deload) (I2-02 : marqueur lu dans la prescription tracée, aucune colonne nouvelle).
+ *   retenu une proposition de deload (acceptée, ou charge retenue au plus celle du deload) (I2-02 : marqueur lu dans la prescription tracée, aucune colonne nouvelle) ; sinon `fatigueChoice` vrai si elle a
+ *   retenu exactement un choix de fatigue (« −5 % » ou « −2 reps ») de la prescription tracée (I4-08).
  * - `saveProfile` : un profil par exercice, identifiant naturel `progression|<exerciseId>` (une seule ligne même écrite par deux
  *   appareils) ; écriture = remplacement des valeurs, restaure un profil supprimé.
  * - `recordDecision` : trace de l'acceptation ou de la modification d'une prescription (§ 11.2 point 9, § 11.5) ; jamais modifiée.
@@ -62,18 +63,27 @@ export interface RecommendationDecisionRecord extends DecisionReference {
   readonly hlc: Hlc;
 }
 
+/** I4-08 : nom d'événement FIXE d'une décision tracée illisible (JSON altéré, autre version) ; jamais son contenu ni une valeur. */
+export const DECISION_UNREADABLE = 'progression-decision-unreadable';
+export type DecisionReadEvent = typeof DECISION_UNREADABLE;
+/** Rapporteur facultatif des lectures (journal technique côté écran : `logFailure('training', event)`). */
+export type DecisionReadReporter = (event: DecisionReadEvent) => void;
+
 export interface ProgressionRepository {
   history(exerciseId: string, limit?: number): Promise<ExerciseSession[]>;
   getProfile(exerciseId: string): Promise<ProgressionProfileRecord | null>;
   saveProfile(input: ProgressionProfileInput): Promise<ProgressionProfileRecord>;
   recordDecision(input: RecordDecisionInput): Promise<RecommendationDecisionRecord>;
-  /** Dernière décision non supprimée d'une séance CLOSE non supprimée (date, puis identifiant), ou null : jamais d'une séance ouverte ou abandonnée. */
-  lastDecision(exerciseId: string): Promise<RecommendationDecisionRecord | null>;
-  /** Dernière décision de cet exercice dans cette séance (ouverte comprise), ou null : état affiché dans la séance en cours. */
-  decisionFor(workoutId: string, exerciseId: string): Promise<RecommendationDecisionRecord | null>;
+  /**
+   * Dernière décision non supprimée d'une séance CLOSE non supprimée (date, puis identifiant), ou null : jamais d'une séance ouverte ou
+   * abandonnée. I4-08 : une décision illisible est ignorée (la plus récente lisible sert) et signalée à `report`.
+   */
+  lastDecision(exerciseId: string, report?: DecisionReadReporter): Promise<RecommendationDecisionRecord | null>;
+  /** Dernière décision lisible de cet exercice dans cette séance (ouverte comprise), ou null : état affiché dans la séance en cours. */
+  decisionFor(workoutId: string, exerciseId: string, report?: DecisionReadReporter): Promise<RecommendationDecisionRecord | null>;
   /**
    * Après la clôture (même transaction) : recalibrage « Facile » consigné dans le profil si la charge retenue est au moins la charge recalée
-   * (`recalibrationKept`). Séance absente ou supprimée : `'not-found'` ; ouverte : `'invalid'`.
+   * (`recalibrationKept`). Séance absente ou supprimée : `'not-found'` ; ouverte : `'invalid'`. Dernière décision illisible : exercice sauté.
    */
-  applyClosedWorkout(workoutId: string): Promise<void>;
+  applyClosedWorkout(workoutId: string, report?: DecisionReadReporter): Promise<void>;
 }
