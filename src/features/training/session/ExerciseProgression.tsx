@@ -7,7 +7,8 @@ import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, typ
 import type { WorkoutSet, WorkoutWithSets } from '../../../domain/training/session';
 import type { IsoDateTime } from '../../../domain/types';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
-import type { ProgressionProfileRecord, RecommendationDecisionRecord } from '../../../db/repositories/progressionRepository';
+import type { DecisionReadEvent, ProgressionProfileRecord, RecommendationDecisionRecord } from '../../../db/repositories/progressionRepository';
+import { logFailure } from '../../../platform/desktop/log';
 import { tProgression, type ProgressionTextKey } from '../../../i18n/progressionText';
 import { Button } from '../../../ui';
 import { loadCurrentCycle, localDayOf } from '../cycle/currentCycle';
@@ -93,6 +94,8 @@ const OPTION_KEYS: Readonly<Record<OptionKey, ProgressionTextKey>> = {
 const BAND_KEYS = { low: 'bandLow', medium: 'bandMedium', high: 'bandHigh' } as const;
 const DIFFICULTY_KEYS: Readonly<Record<Difficulty, ProgressionTextKey>> = { easy: 'easy', ok: 'ok', hard: 'hard' };
 
+const reportUnreadable = (event: DecisionReadEvent): void => logFailure('training', event);
+
 /** Nombre à la française : 62.5 → « 62,5 ». */
 const kg = (n: number): string => String(n).replace('.', ',');
 const parse = (text: string): number | null => {
@@ -140,8 +143,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         const repo = await access.repos.progression();
         const [history, reference, own, profile, cycle] = await Promise.all([
           repo.history(exerciseId),
-          repo.lastDecision(exerciseId),
-          repo.decisionFor(workout.id, exerciseId),
+          // I4-08 : décision illisible ignorée par le repository, journalisée par son nom d'événement fixe (jamais son contenu).
+          repo.lastDecision(exerciseId, reportUnreadable),
+          repo.decisionFor(workout.id, exerciseId, reportUnreadable),
           repo.getProfile(exerciseId),
           loadCurrentCycle(access, localDayOf(Date.parse(workout.startedAt))),
         ]);
