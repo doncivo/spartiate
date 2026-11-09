@@ -122,6 +122,7 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
             {tdee.formula !== null && tdee.basis !== 'formula' ? <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('tdeeFormula', { n: formatInt(tdee.formula) })}</p> : null}
           </>
         )}
+        {tdee.reasons.includes('no-recent-weigh-in-at-start') || tdee.reasons.includes('no-recent-weigh-in-at-end') ? <p className="ct-nutrition__muted">{tNutrition('tdeeWeighInNeeded')}</p> : null}
         <p className="ct-nutrition__confidence">{tNutrition(CONFIDENCE_KEY[model.confidence])}</p>
       </section>
 
