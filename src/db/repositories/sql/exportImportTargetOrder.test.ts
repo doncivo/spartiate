@@ -78,3 +78,20 @@ describe('REV-01 constat 3 : ordre des décisions de cible', () => {
     expect((await (await target.data.repos.nutritionTargets()).list()).length).toBe(2);
   });
 });
+
+describe('REV-01 constat 3 : suite de la relecture sync-icloud', () => {
+  it('(d) « Remplacer » : une ancienne décision absente ici, avec une décision récente commune, ne change pas la cible en vigueur', async () => {
+    const OLD = '7b5e4d3c-0000-4000-8000-0000000000a0';
+    const source = await open(A);
+    source.clock.advance(1_000);
+    await source.data.transaction(async (repos) => (await repos.nutritionTargets()).record(draft(2600, 'auto'), { id: OLD }));
+    source.clock.advance(60_000);
+    await source.data.transaction(async (repos) => (await repos.nutritionTargets()).record(draft(2200, 'manual'), { id: SECOND }));
+    const archive = await viaArchive(await read(source));
+    // Ici : seule la décision récente existe (même identifiant, même instant) ; l'ancienne est absente.
+    const target = await open(B);
+    await importInto(target, { ...archive, training: { ...archive.training, nutrition_target: (archive.training?.nutrition_target ?? []).filter((r) => r.id === SECOND) } }, 'merge');
+    await importInto(target, archive, 'replace');
+    expect(await effectiveId(target)).toBe(SECOND);
+  });
+});
