@@ -135,6 +135,13 @@ describe('recoveryScore (§ 16.3)', () => {
     expect(recoveryScore({ today: TODAY, nights: thirty().slice(0, 29), sleepRatio: 1 }).reason).toBe('measure_missing_hrv');
   });
 
+  it('correction de revue 4 : sans durée de sommeil valide, pas de score (jamais un facteur neutre) → « measure_missing_sleep »', () => {
+    const r = recoveryScore({ today: TODAY, nights: thirty({ hrvMs: 54, restingHr: 53 }), sleepRatio: null });
+    expect(r).toMatchObject({ score: null, reason: 'measure_missing_sleep' });
+    expect(recoveryScore({ today: TODAY, nights: thirty({ hrvMs: 54, restingHr: 53 }), sleepRatio: 0 }).reason).toBe('measure_missing_sleep');
+    expect(recoveryScore({ today: TODAY, nights: thirty({ restingHr: null }), sleepRatio: null }).reason).toBe('measure_missing_rhr');
+  });
+
   it('valeur aberrante dans la baseline : exclue, le score reste celui de la baseline propre', () => {
     const nights = thirty({ hrvMs: 54, restingHr: 53 }, (n, i) => (i === 20 ? { ...n, hrvMs: 90 } : n));
     const r = recoveryScore({ today: TODAY, nights, sleepRatio: 1 });
@@ -309,6 +316,19 @@ describe('summarizeRecoveryDay : résumé du jour (§ 16.4)', () => {
     const { summary } = summarizeRecoveryDay({ ...base, nights: thirty().slice(-8) });
     expect(summary.recovery).not.toBeNull();
     expect(summary.quality).toBe('partial');
+  });
+
+  it('correction de revue 4 : niveau C sans sommeil → recovery null « measure_missing_sleep », niveau A (B exige sommeil ET FC repos)', () => {
+    const { summary } = summarizeRecoveryDay({ ...base, nights: thirty({ hrvMs: 54, restingHr: 53, asleepMinutes: null }) });
+    expect(summary).toMatchObject({ level: 'A', recovery: null, abstainReason: 'measure_missing_sleep', quality: 'insufficient', targetZone: null, sleepMinutes: null });
+    expect(summary.contributors).toEqual([]);
+  });
+
+  it('correction de revue 4 : niveau B = sommeil ET FC repos ; l’un sans l’autre reste niveau A', () => {
+    const only = (over: Partial<NightRecord>) => summarizeRecoveryDay({ ...base, nights: [night(29, { hrvMs: null, ...over })] }).summary.level;
+    expect(only({ asleepMinutes: 420, restingHr: 55 })).toBe('B');
+    expect(only({ asleepMinutes: 420, restingHr: null })).toBe('A');
+    expect(only({ asleepMinutes: null, restingHr: 55 })).toBe('A');
   });
 
   it('aucune donnée du tout : niveau A, rien d’inventé', () => {
