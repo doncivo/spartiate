@@ -17,3 +17,5 @@ export * from './trendLearning';
 export * from './barcode';
 export * from './offProduct';
 export * from './firstCheckIn';
+export * from './recipeTypes';
+export * from './recipe';

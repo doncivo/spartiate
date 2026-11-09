@@ -5,8 +5,10 @@
  * valeur non arrondie et ne touche pas à un inconnu.
  */
 
-import { ENTRY_NAME_MAX, KCAL_PER_100G_MAX, type Per100g } from './food';
-import type { SearchableFood } from './foodSearch';
+import { isId, type LocalDate, type LocalTime } from '../types';
+import { ENTRY_NAME_MAX, FOOD_GRAMS_MAX, KCAL_PER_100G_MAX, type Per100g } from './food';
+import { normalizeText, type SearchableFood } from './foodSearch';
+import type { MealEntryDraft } from './mealEntry';
 import {
   RECIPE_COOKED_WEIGHT_MAX_G,
   RECIPE_INGREDIENT_GRAMS_MAX,
@@ -147,4 +149,89 @@ export function ingredientFromFood(food: SearchableFood, grams: number): DraftIn
     grams,
     per100g: { ...food.per100g },
   };
+}
+
+/** Identifiant de journal d'une recette : `recipe:<uuid>` (`meal_entry.food_id`). */
+export const recipeFoodId = (recipeId: string): string => `recipe:${recipeId}`;
+
+/** Id de la recette si `foodId` est de la forme `recipe:<uuid>`, sinon `null`. */
+export function parseRecipeFoodId(foodId: string): string | null {
+  if (!foodId.startsWith('recipe:')) return null;
+  const id = foodId.slice('recipe:'.length);
+  return isId(id) ? id : null;
+}
+
+export type RecipeQuantity = { readonly kind: 'servings'; readonly n: number } | { readonly kind: 'grams'; readonly g: number };
+
+/**
+ * Brouillon d'entrée de journal pour une quantité de recette : INSTANTANÉ (valeurs figées, comme `entryFromFood`), méthode « search »,
+ * provenance « custom », `food_id` `recipe:<id>`. Grammes = poids correspondant (portions × poids / portions). Un nutriment inconnu
+ * reste `null`. `null` si la quantité est invalide, si la recette n'a pas de poids ou si la prise dépasse 10 000 g.
+ */
+export function entryFromRecipe(
+  recipe: Recipe,
+  quantity: RecipeQuantity,
+  at: { readonly date: LocalDate; readonly time: LocalTime },
+): MealEntryDraft | null {
+  const weight = recipeWeightG(recipe);
+  if (!(weight > 0) || !Number.isInteger(recipe.servings) || recipe.servings < 1) return null;
+  const amount = quantity.kind === 'servings' ? quantity.n : quantity.g;
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+  const fraction = quantity.kind === 'servings' ? amount / recipe.servings : amount / weight;
+  const grams = tenth(fraction * weight);
+  if (!(grams > 0) || grams > FOOD_GRAMS_MAX) return null;
+  const raw = rawTotals(recipe.ingredients);
+  const of = (v: number | null): number | null => (v === null ? null : tenth(v * fraction));
+  return {
+    date: at.date,
+    time: at.time,
+    foodId: recipeFoodId(recipe.id),
+    foodName: recipe.name.slice(0, ENTRY_NAME_MAX),
+    source: 'custom',
+    grams,
+    kcal: of(raw.kcal),
+    proteinG: of(raw.proteinG),
+    fatG: of(raw.fatG),
+    carbG: of(raw.carbG),
+    method: 'search',
+    confidence: null,
+  };
+}
+
+/** Recette vue par la recherche : badge de provenance « recette » (`provenance: 'recipe'`), énergie d'une portion. */
+export interface RecipeSearchable {
+  readonly ref: string;
+  readonly provenance: 'recipe';
+  readonly name: string;
+  readonly kcalPerServing: number | null;
+  readonly servings: number;
+  /** Poids d'une portion en grammes. */
+  readonly servingGrams: number;
+}
+
+export function recipeAsSearchable(recipe: Recipe): RecipeSearchable {
+  return {
+    ref: recipeFoodId(recipe.id),
+    provenance: 'recipe',
+    name: recipe.name,
+    kcalPerServing: recipePerServing(recipe).kcal,
+    servings: recipe.servings,
+    servingGrams: tenth(recipeWeightG(recipe) / recipe.servings),
+  };
+}
+
+/** Recherche dans les recettes : tous les mots (casse et accents ignorés), début de nom d'abord, puis nom ; plafonnée (50 par défaut). */
+export function searchRecipes(query: string, recipes: readonly RecipeSearchable[], options: { readonly limit?: number } = {}): RecipeSearchable[] {
+  const q = normalizeText(query);
+  if (q.length === 0) return [];
+  const words = q.split(' ');
+  const hits: { r: RecipeSearchable; name: string; rank: number }[] = [];
+  for (const r of recipes) {
+    const name = normalizeText(r.name);
+    if (words.every((w) => name.includes(w))) hits.push({ r, name, rank: name.startsWith(q) ? 0 : 1 });
+  }
+  hits.sort((a, b) => a.rank - b.rank || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0) || (a.r.ref < b.r.ref ? -1 : a.r.ref > b.r.ref ? 1 : 0));
+  const requested = options.limit ?? 50;
+  const limit = Number.isNaN(requested) ? 0 : Math.max(0, Math.floor(requested));
+  return hits.slice(0, limit).map((h) => h.r);
 }
