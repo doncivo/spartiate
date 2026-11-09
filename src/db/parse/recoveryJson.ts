@@ -3,7 +3,7 @@ import { decodeJson } from './jsonText';
 
 /**
  * Validation à la main des JSON de `recovery_day` (ADR 0008) : contributeurs et clés d'explication. Valeur typée ou `null` (texte illisible,
- * mauvais type, clé inconnue). Jamais d'exception, jamais de valeur devinée.
+ * mauvais type ; une clé d'explication inconnue, écrite par un iPhone plus récent, est ignorée). Jamais d'exception, jamais de valeur devinée.
  */
 
 const MAX_LIST = 32;
@@ -39,7 +39,8 @@ export function parseExplanationKeys(text: string | null): RecoveryExplanationKe
   if (!Array.isArray(value) || value.length > MAX_LIST) return null;
   const out: RecoveryExplanationKey[] = [];
   for (const item of value as unknown[]) {
-    if (typeof item !== 'string' || !(EXPLANATION_KEYS as readonly string[]).includes(item)) return null;
+    if (typeof item !== 'string') return null;
+    if (!(EXPLANATION_KEYS as readonly string[]).includes(item)) continue;
     if (!out.includes(item as RecoveryExplanationKey)) out.push(item as RecoveryExplanationKey);
   }
   return out;
