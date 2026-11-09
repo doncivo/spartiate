@@ -55,18 +55,26 @@ export interface NutritionSnapshot {
 
 export async function loadNutritionSnapshot(access: DataAccess, today: LocalDate): Promise<NutritionSnapshot> {
   const from = addDays(today, -(SNAPSHOT_DAYS - 1));
-  const [entries, bodyWeights, profiles, targets] = await Promise.all([access.repos.mealEntries(), access.repos.bodyWeights(), access.repos.profile(), access.repos.nutritionTargets()]);
+  const [entries, bodyWeights, profiles, targets, completeness] = await Promise.all([
+    access.repos.mealEntries(),
+    access.repos.bodyWeights(),
+    access.repos.profile(),
+    access.repos.nutritionTargets(),
+    access.repos.dayCompleteness(),
+  ]);
   const settings = access.repos.settings;
-  const [records, weights, profile, decisions, effective, rawPrefs] = await Promise.all([
+  const [records, weights, profile, decisions, effective, rawPrefs, declared] = await Promise.all([
     entries.listBetween(from, today),
     bodyWeights.listRecent(400),
     profiles.get(),
     targets.list(),
     targets.effective(today),
     settings.get('nutrition.prefs'),
+    completeness.listBetween(from, today),
   ]);
   const prefs = parseNutritionPrefs(rawPrefs);
-  const days = aggregateDays(from, today, records.map(toMealEntryInput), {});
+  // Déclarations d'Ali (D-81) : elles priment sur la déduction ; couverture, dépense, dashboard et check-in les utilisent.
+  const days = aggregateDays(from, today, records.map(toMealEntryInput), Object.fromEntries(declared));
   const weighIns: WeighIn[] = [...weights]
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.measuredAt ?? '') < (b.measuredAt ?? '') ? -1 : 1))
     .map((w) => ({ date: w.date, kg: w.kg }));

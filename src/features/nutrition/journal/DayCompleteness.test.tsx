@@ -86,7 +86,7 @@ describe('I4-07 : Journée complète (déclaration)', () => {
     open();
     const r = await region();
     expect(await within(r).findByText('Rien de saisi aujourd’hui')).toBeInTheDocument();
-    expect(within(r).getByText(/déclarée complète mais sans entrée/)).toBeInTheDocument();
+    expect(within(r).getByText(/Déclarée complète mais sans entrée/)).toBeInTheDocument();
     expect(within(r).getByRole('radio', { name: 'Complète' })).toHaveAttribute('aria-checked', 'true');
     expect(r.textContent ?? '').not.toMatch(/(^|\D)0 kcal/);
   });
