@@ -87,24 +87,34 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     const hrv = result.files.find((f) => f.type === 'hrv');
     expect(hrv?.state).toBe('imported');
     expect(hrv?.rejected?.no_timezone).toBe(1);
-    expect(hrv?.rejectedTotal).toBe(1);
+    expect(hrv?.rejectedTotal).toBe(7);
     expect(hrv?.added).toBe(2);
     const samples = await db.data.repos.recoverySamples();
     const states = await samples.listImportStates();
     expect(states.map((s) => s.type)).toEqual(['fc-repos', 'hrv', 'pas', 'sommeil']);
-    expect(states.find((s) => s.type === 'hrv')).toMatchObject({ importedAt: NOW, rejected: 1 });
+    expect(states.find((s) => s.type === 'hrv')).toMatchObject({ importedAt: NOW, rejected: 7 });
     expect((await samples.listWindow('pas', '2026-11-01T00:00:00.000Z', NOW)).map((s) => s.value)).toEqual([7000]);
   });
 
-  it('recalcule aujourd’hui et les jours récents manquants (30 au plus), puis seulement aujourd’hui au second import', async () => {
-    const service = build(reader(async () => ALL_OK()));
+  it('recalcule aujourd’hui et, parmi les jours récents qui ont des données et manquent, 30 jours au plus ; puis seulement aujourd’hui', async () => {
+    const nights = Array.from({ length: 40 }, (_, k) => {
+      const day = new Date(Date.parse('2026-11-08T12:00:00Z') - k * 86_400_000).toISOString().slice(0, 10);
+      const before = new Date(Date.parse(day + 'T12:00:00Z') - 86_400_000).toISOString().slice(0, 10);
+      return before + 'T23:00:00+01:00;' + day + 'T07:00:00+01:00;Endormi';
+    }).join('\n');
+    const reads = (): ShortcutFileRead[] => [ok('sommeil.csv', nights)];
+    const service = build(reader(async () => reads()));
     const first = await service.run('manual');
     expect(first.recomputedDays).toBe(30);
     const recovery = await db.data.repos.recovery();
     expect((await recovery.listDays('2026-10-01' as LocalDate, '2026-11-08' as LocalDate)).length).toBe(30);
     expect(await recovery.getDay('2026-11-08' as LocalDate)).not.toBeNull();
-    const second = await service.run('manual');
-    expect(second.recomputedDays).toBe(1);
+    expect((await service.run('manual')).recomputedDays).toBe(1);
+  });
+
+  it('jours sans aucune donnée : seul aujourd’hui est écrit', async () => {
+    const first = await build(reader(async () => [ok('pas.csv', PAS)])).run('manual');
+    expect(first.recomputedDays).toBe(1);
   });
 
   it('muscles : une séance close récente alimente muscle_recovery', async () => {
