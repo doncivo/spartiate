@@ -13,7 +13,7 @@ import {
   type ShortcutRejections,
   type SleepStage,
 } from '../../../domain/recovery';
-import { utcToLocal } from '../../../domain/timeZone';
+import { localToUtcMs, utcToLocal } from '../../../domain/timeZone';
 import type { LocalDate } from '../../../domain/types';
 import type { RecoveryRepository } from '../../../db/repositories/recoveryRepository';
 import type { RecoverySampleInput, RecoverySampleRepository, RecoverySampleType } from '../../../db/repositories/recoverySampleRepository';
@@ -166,14 +166,31 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
 
     const recovery = await deps.recovery();
     const oldest = shiftDay(today, -(RECOMPUTE_DAYS - 1));
-    const known = new Set((await recovery.listDays(oldest as LocalDate, today as LocalDate)).map((d) => d.summary.day));
-    const days = [today];
-    for (let k = 1; k < RECOMPUTE_DAYS; k += 1) {
+    const computedAt = new Map((await recovery.listDays(oldest as LocalDate, today as LocalDate)).map((d) => [d.summary.day, d.summary.computedAt] as const));
+    // Jours dont une mesure a été écrite par CET import (ajoutée ou remplacée) : sommeil = jour du réveil, hrv / fc-repos = jour de la mesure.
+    const touched = new Set<string>();
+    for (const [rows, useEnd] of [[sleep, true], [hrv, false], [rhr, false]] as const) {
+      for (const r of rows) if (r.importedAt === now) touched.add(utcToLocal(useEnd ? r.endAt : r.startAt, tz).date);
+    }
+    const dayEndMs = (day: string): number => localToUtcMs(shiftDay(day, 1) as LocalDate, '00:00', tz) - 1;
+    const stale = (day: string, at: string): boolean => {
+      if (touched.has(day) && Date.parse(now) > Date.parse(at)) return true;
+      const end = dayEndMs(day);
+      return workouts.some((w) => {
+        const ended = Date.parse(w.endedAt);
+        return ended > Date.parse(at) && ended <= end;
+      });
+    };
+    // Aujourd'hui et la veille : toujours. Un autre jour passé (29 au plus) : absent avec des données, ou périmé (séance close / mesure plus récente que son résumé).
+    const days = [today, shiftDay(today, -1)];
+    for (let k = 2; k < RECOMPUTE_DAYS; k += 1) {
       const day = shiftDay(today, -k);
-      if (dataDays.has(day) && !known.has(day)) days.push(day);
+      const at = computedAt.get(day);
+      const wanted = at === undefined ? dataDays.has(day) : stale(day, at);
+      if (wanted) days.push(day);
     }
     for (const day of days) {
-      const output = summarizeRecoveryDay({ today: day, now: day === today ? now : `${day}T23:59:59.999Z`, timeZone: tz, nights: records, workouts });
+      const output = summarizeRecoveryDay({ today: day, now: day === today ? now : new Date(dayEndMs(day)).toISOString(), timeZone: tz, nights: records, workouts });
       await recovery.saveDay(output);
     }
     return days.length;

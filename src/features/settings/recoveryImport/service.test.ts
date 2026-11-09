@@ -109,12 +109,12 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     const recovery = await db.data.repos.recovery();
     expect((await recovery.listDays('2026-10-01' as LocalDate, '2026-11-08' as LocalDate)).length).toBe(30);
     expect(await recovery.getDay('2026-11-08' as LocalDate)).not.toBeNull();
-    expect((await service.run('manual')).recomputedDays).toBe(2);
+    expect((await build(reader(async () => reads()), { clock: createManualClock('2026-11-08T11:00:00.000Z') }).run('manual')).recomputedDays).toBe(2);
   });
 
-  it('jours sans aucune donnée : seul aujourd’hui est écrit', async () => {
+  it('jours sans aucune donnée : seuls aujourd’hui et la veille sont écrits', async () => {
     const first = await build(reader(async () => [ok('pas.csv', PAS)])).run('manual');
-    expect(first.recomputedDays).toBe(1);
+    expect(first.recomputedDays).toBe(2);
   });
 
   it('muscles : une séance close récente alimente muscle_recovery', async () => {
