@@ -141,6 +141,16 @@ describe('critère 2 : composés puis isolations, priorités, un exercice par pa
     expect(s.warnings).toEqual(['duplicate-in-routine']);
   });
 
+  it('D-86 (décision d’Ali du 9 novembre, confirme D-73) : en Guidé, la séance FINALE garde chaque ligne de la routine, doublon de pattern ou de muscle compris, avec avertissement', () => {
+    const routine = ids(generateSession(input({}, { mode: 'libre' })));
+    const final = generateSession(input({}, { mode: 'guide' }));
+    // Rien n'est retiré : toutes les lignes utilisables de la routine sont dans la séance finale.
+    for (const id of routine) expect(ids(final)).toContain(id);
+    expect(ids(final)).toEqual(expect.arrayContaining(['bench-barbell', 'incline-dumbbell']));
+    expect(final.exercises.filter((e) => e.origin === 'routine').every((e) => e.warnings.length === 0 || e.warnings.every((w) => w === 'duplicate-in-routine' || w === 'off-split-in-routine'))).toBe(true);
+    expect(final.exercises.find((e) => e.exerciseId === 'incline-dumbbell')?.warnings).toEqual(['duplicate-in-routine']);
+  });
+
   it('pattern douloureux : exclu ; substitution même muscle principal, autre pattern, plage d’isolation ; sans substitut : omis', () => {
     const s = generateSession(input({}, { painfulPatterns: ['push-horizontal'] }));
     expect(ids(s)).toEqual(['row-barbell', 'lat-pulldown', 'chest-fly-cable', 'lateral-raise-dumbbell', 'curl-barbell', 'pushdown-cable']);
