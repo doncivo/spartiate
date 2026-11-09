@@ -94,7 +94,7 @@ describe('I4-07 : Recettes (section de Nutrition)', () => {
     expect(await (await db.data.repos.recipes()).list()).toHaveLength(0);
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la recette' }));
 
-    const item = await within(r).findByRole('listitem', { name: /Bol de riz/ });
+    const item = (await within(r).findByText('Bol de riz', { selector: 'p' })).closest('li') as HTMLElement;
     expect(item).toHaveTextContent('2 portions');
     expect(item).toHaveTextContent('155 kcal / portion');
     const saved = (await (await db.data.repos.recipes()).list())[0];
@@ -114,7 +114,7 @@ describe('I4-07 : Recettes (section de Nutrition)', () => {
     fireEvent.change(await within(r).findByLabelText('Nombre de portions'), { target: { value: '4' } });
     fireEvent.change(within(r).getByLabelText('Grammes de Riz test'), { target: { value: '400' } });
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la recette' }));
-    await waitFor(() => expect(within(r).getByRole('listitem', { name: /Bol de riz/ })).toHaveTextContent('4 portions'));
+    await waitFor(() => expect(within(r).getByText('Bol de riz', { selector: 'p' }).closest('li')).toHaveTextContent('4 portions'));
     const after = (await entries())[0];
     expect(after).toMatchObject({ kcal: 155, grams: 125, foodName: 'Bol de riz' });
     expect((await (await db.data.repos.recipes()).list())[0]).toMatchObject({ servings: 4 });
@@ -213,7 +213,7 @@ describe('I4-07 : Recettes (section de Nutrition)', () => {
     await (await db.data.repos.recipes()).create(draft({ ingredients: [{ name: 'Sauce inconnue', source: 'custom', foodRef: null, grams: 50, per100g: { kcal: null, proteinG: 1, fatG: null, carbG: null, fiberG: null } }] }));
     open();
     const r = await region();
-    expect(await within(r).findByRole('listitem', { name: /Bol de riz/ })).toHaveTextContent('— kcal / portion');
+    expect((await within(r).findByText('Bol de riz', { selector: 'p' })).closest('li')).toHaveTextContent('— kcal / portion');
   });
 });
 

@@ -50,7 +50,7 @@ export const nutritionFr = {
   dayCompleteInferred: 'Journée complète (déduite)',
   dayCompleteDetail: 'Trois entrées au moins réparties sur 8 h : elle compte dans la dépense estimée.',
   dayCompleteDeclared: 'Journée complète (déclarée)',
-  dayCompleteDeclaredDetail: 'Tu l’as déclarée complète : elle compte dans la dépense estimée, même avec moins de trois prises.',
+  dayCompleteDeclaredDetail: 'Tu l’as déclarée complète : elle compte dans la dépense estimée quand les calories sont connues, même avec moins de trois prises.',
   dayIncompleteDeclared: 'Journée incomplète (déclarée)',
   dayIncompleteDeclaredDetail: 'Tu l’as déclarée incomplète : elle ne compte pas dans la dépense estimée.',
   dayDeclaredWithoutEntries: 'Déclarée complète mais sans entrée : la journée reste inconnue, jamais comptée comme zéro.',

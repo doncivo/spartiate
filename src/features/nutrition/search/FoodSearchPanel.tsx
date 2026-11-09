@@ -286,7 +286,9 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
       const { loadRecipeByRef } = await import('../recipes/recipeSearch');
       const recipe = await loadRecipeByRef(data, ref);
       if (recipe === null) {
-        setNotice(tNutrition('foodGone'));
+        // Texte du catalogue des recettes : chargé à la demande, avec les écrans de recettes.
+        const { tRecipes } = await import('../../../i18n/recipesText');
+        setNotice(tRecipes('recipeGone'));
         return;
       }
       setNotice(null);
