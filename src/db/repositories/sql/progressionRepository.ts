@@ -156,7 +156,14 @@ function isRetainedFatigueChoice(row: { readonly prescription: string; readonly 
   }
 }
 
-const validExerciseId =(id: string): boolean => id.length >= 1 && id.length <= EXERCISE_ID_MAX;
+/** I4-08 : RIR cible de la prescription tracée (`rirTarget`, entier 0 à 10), ou null (absent, illisible, prescription 0.3.1). */
+function targetRirOf(prescription: string): number | null {
+  const p = parseOrNull(prescription) as { rirTarget?: unknown } | null | undefined;
+  const rir = typeof p === 'object' && p !== null ? p.rirTarget : null;
+  return typeof rir === 'number' && Number.isInteger(rir) && rir >= 0 && rir <= 10 ? rir : null;
+}
+
+const validExerciseId = (id: string): boolean => id.length >= 1 && id.length <= EXERCISE_ID_MAX;
 const finiteOrNull = (n: number | null, ok: (x: number) => boolean): boolean => n === null || (Number.isFinite(n) && ok(n));
 
 export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamper, ids: IdGenerator = uuidGenerator): ProgressionRepository {
@@ -195,6 +202,7 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
       // I4-08 : même lecture pour le choix de fatigue retenu (`fatigueChoice`), aucune colonne nouvelle.
       const deloads = new Set<string>();
       const fatigueChoices = new Set<string>();
+      const targetRirs = new Map<string, number>();
       if (sessions.length > 0) {
         type Decided = { prescription: string; accepted: number; chosen_load_kg: number | null; chosen_reps: string };
         const decided = await db.select<{ workout_id: string } & Decided & SqlRow>(
@@ -208,6 +216,8 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
         for (const [workoutId, row] of latest) {
           if (isRetainedDeload(row)) deloads.add(workoutId);
           else if (isRetainedFatigueChoice(row)) fatigueChoices.add(workoutId);
+          const rir = targetRirOf(row.prescription);
+          if (rir !== null) targetRirs.set(workoutId, rir);
         }
       }
       return sessions.map(
@@ -218,6 +228,7 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
           sets: s.sets,
           ...(deloads.has(s.workoutId) ? { deload: true } : {}),
           ...(fatigueChoices.has(s.workoutId) ? { fatigueChoice: true } : {}),
+          ...((rir) => (rir === undefined ? {} : { targetRir: rir }))(targetRirs.get(s.workoutId)),
         }),
       );
     },
