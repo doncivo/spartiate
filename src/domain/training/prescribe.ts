@@ -111,7 +111,7 @@ export function prescribe(input: PrescribeInput): Prescription {
   const fraction = input.exercise.bodyweightFraction ?? null;
   const bodyKg = input.bodyweightKg ?? null;
   const body: BodyLoad | null = fraction !== null && fraction > 0 && bodyKg !== null && bodyKg > 0 ? { baseKg: bodyKg * fraction, sign: input.exercise.assisted === true ? -1 : 1 } : null;
-  if (fraction !== null && fraction > 0 && body === null) reasons.add('bodyweight-unknown');
+  if (fraction !== null && fraction > 0 && body === null && input.history.length > 0) reasons.add('bodyweight-unknown');
   const analysis = analyzeHistory(input.history, config, body);
   if (analysis.latest?.partial === true) reasons.add('partial-session-ignored');
   if ((analysis.latest?.outliers ?? 0) > 0) reasons.add('outlier-excluded');
@@ -313,8 +313,8 @@ export function prescribe(input: PrescribeInput): Prescription {
 
   const pos = positioned(roundKg(draft.loadKg), draft.reps);
   const loadKg = pos.loadKg;
-  // Sous la référence à cause de la position : la raison principale est la position (la phrase ne dit pas « +x kg »).
-  const headline: PrescriptionHeadline = pos.cut > 0 && loadKg < refLoad - EPS ? 'position' : draft.headline;
+  // Au plus la référence à cause de la position (la hausse est absorbée) : la raison principale est la position (la phrase ne dit pas « +x kg »).
+  const headline: PrescriptionHeadline = pos.cut > 0 && loadKg <= refLoad + EPS ? 'position' : draft.headline;
   return finish({
     ...(pos.cut > 0 ? positionFields(pos.cut) : {}),
     status: 'prescribed',

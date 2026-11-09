@@ -63,7 +63,17 @@ Charges proposées plus basses au 2ᵉ (−7 %) et 3ᵉ (−12 %) exercice d'un 
 
 ## Relectures
 
-(à compléter à la clôture : sync-icloud, code-reviewer.)
+**sync-icloud (D-26, périmètre export / import, lecture seule)** : 2 bloquants et 3 mineurs relevés, tous traités avec un test rouge avant correctif.
+- Bloquant 1 et 2 : une séance ouverte ici de même identifiant qu'une séance de l'archive était écrasée (série validée après l'export remise à faire ; séance close sans les séries saisies ici, divergence de synchro). Corrigé : une séance ouverte ici n'est jamais écrite par l'archive, ni ses séries (`plan.ts`, `localOpenIds`).
+- Mineur 3 : une séance close puis supprimée ici n'était pas vue comme close et pouvait être rouverte. Corrigé dans `applyImport` (lecture de `ended_at` y compris sur les lignes supprimées).
+- Mineur 4 : en « Remplacer », une décision de cible ancienne absente ici prenait le pas. Corrigé (règle appliquée aussi en remplacement, sur les décisions locales conservées). Limite : une archive antérieure à 0.9.3 n'a pas `decided_at` et n'est pas concernée par la règle.
+- Mineur 5 (aperçu : décisions écartées et séances mises de côté non comptées) : **non traité**, consigné ; aucune perte de donnée.
+- Tests demandés non écrits : (b) archive close sur séance ouverte avec série locale en plus (cas désormais ignoré par la règle 1), (e) file des `recommendation_decision` à la clôture, (f) file des séries d'une séance importée close, (g) double import sans effet sur `sync_outbox` ; le comportement est couvert par la lecture du code de l'agent (déclencheurs `sync_workout_au`, `sync_workout_close_decisions_au`) et le test d'aller-retour, à ajouter si Ali le demande.
+- Verdict après corrections : aucun bloquant connu.
+
+**code-reviewer (à froid)** : à corriger, aucun bloquant ; 4 points importants et 7 mineurs.
+- Corrigés avec test rouge avant : la phrase « +0 kg » quand la décote absorbe la hausse (titre « position », phrase « Même charge… ») ; le pourcentage dit est l'écart réel de la charge appliquée ; la séance de référence du rang est celle dont vient la charge (séance partielle plus récente ignorée, plus de double décote) ; test d'intégration avec une pesée enregistrée ; « poids de corps inconnu » n'est plus dit sans historique ; le rang est figé pendant la séance (retirer un exercice ne fait pas remonter la proposition).
+- Choix consignés, non modifiés : (5) la décote de position s'applique à la charge saisie (le lest), pas à la charge totale — presque nulle sur la traction lestée ; à trancher par Ali ; (6) en deload, la décote de position s'ajoute à celle du deload (note affichée) ; (9) `dips` et `pull-up-assisted` du catalogue gardent une fraction nulle (métrique hors moteur) : la branche assistée est testée en domaine seulement ; (10) renommage du test : `pull-up` et `pull-up-weighted` restent deux exercices ; (11) le poids de corps actuel est appliqué à tout l'historique (pas celui du jour de chaque séance).
 
 ## Reste
 

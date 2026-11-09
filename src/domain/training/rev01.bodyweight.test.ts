@@ -60,7 +60,7 @@ describe('REV-01 : 1RM estimé sur la charge totale', () => {
     expect(without.reasons).toContain('gain-capped');
   });
 
-  it('passage de la traction au poids du corps (lest nul) à la traction lestée : un seul fil de progression, 1RM sur la charge totale', () => {
+  it('même exercice, du lest nul (poids du corps seul) au lest : 1RM sur la charge totale (dans le catalogue, pull-up et pull-up-weighted restent deux exercices)', () => {
     const history = [sessionOf(7, 0, [12, 12, 12]), sessionOf(3, 10, [8, 8, 8])];
     const p = run(exercise('pull-up-weighted', 1), history, 80);
     // 80 × 1,4 = 112 (corps seul, 12 reps), 90 × (1 + 8/30) = 114 (lestée) ; moyenne pondérée par récence 1 / 0,6.

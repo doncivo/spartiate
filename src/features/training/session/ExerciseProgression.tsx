@@ -3,6 +3,7 @@ import { DEFAULT_PROGRESSION_CONFIG } from '../../../domain/training/config';
 import { confidenceBand, confidencePercent, constraintAlerts, explainOption, explainPrescription, explanationNotes, type ExplanationKey, type OptionKey } from '../../../domain/training/explain';
 import { prescribe } from '../../../domain/training/prescribe';
 import { currentBodyweightKg } from '../../../domain/training/bodyweight';
+import { analyzeHistory } from '../../../domain/training/estimate1rm';
 import { positionRanks } from '../../../domain/training/positionRank';
 import { warmupForExercise, type WarmupSet } from '../../../domain/training/warmup';
 import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type MuscleWeight, type Prescription, type ProgressionEquipment, type RepTarget } from '../../../domain/training/types';
@@ -98,6 +99,7 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   recoveryLowSet: 'explainRecoveryLowSet',
   outlierHold: 'explainOutlierHold',
   position: 'explainPosition',
+  positionHeld: 'explainPositionHeld',
 };
 const OPTION_KEYS: Readonly<Record<OptionKey, ProgressionTextKey>> = {
   optionFatigueLoad: 'optionFatigueLoad',
@@ -136,9 +138,10 @@ function targetOf(sets: readonly WorkoutSet[], exercise: Exercise | undefined, r
  * Rang qu'avait l'exercice dans sa dernière séance close (celle qui fixe la charge de référence), parmi les exercices du même muscle
  * principal. Null si la séance ou le catalogue des muscles est illisible : aucune décote (jamais de double compte, jamais de faux rang).
  */
-async function referencePositionRank(access: DataAccess, history: readonly { readonly workoutId: string; readonly endedAt: string }[], exerciseId: string, musclesOf: ((id: string) => readonly MuscleWeight[]) | undefined): Promise<number | null> {
+async function referencePositionRank(access: DataAccess, history: readonly ExerciseSession[], exerciseId: string, musclesOf: ((id: string) => readonly MuscleWeight[]) | undefined): Promise<number | null> {
   if (musclesOf === undefined) return null;
-  const latest = history.reduce<{ readonly workoutId: string; readonly endedAt: string } | null>((best, s) => (best === null || s.endedAt > best.endedAt ? s : best), null);
+  // La séance de référence est celle dont `prescribe` tire la charge : la plus récente VALIDE (ni déload ni partielle), pas la plus récente.
+  const latest = analyzeHistory(history, DEFAULT_PROGRESSION_CONFIG).estimates[0] ?? null;
   if (latest === null) return null;
   try {
     const closed = await (await access.repos.workouts()).getClosed(latest.workoutId);
@@ -162,7 +165,9 @@ async function bodyweightNow(access: DataAccess): Promise<number | null> {
 /** Rampe : « 25 kg × 8 · 37,5 kg × 5 · 50 kg × 2 ». */
 const rampText = (ramp: readonly WarmupSet[]): string => ramp.map((s) => tProgression('warmupStep', { load: kg(s.loadKg), reps: s.reps })).join(tProgression('warmupJoin'));
 
-export function ExerciseProgression({ access, workout, exerciseId, sets, exercise, equipment, clock, onChanged, warmup = false, positionRank = 1, musclesOf }: ExerciseProgressionProps) {
+export function ExerciseProgression({ access, workout, exerciseId, sets, exercise, equipment, clock, onChanged, warmup = false, positionRank: liveRank = 1, musclesOf }: ExerciseProgressionProps) {
+  // La proposition ne change pas pendant la séance : le rang est celui du premier rendu (retirer un exercice ne la fait pas remonter).
+  const [positionRank] = useState(liveRank);
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState(false);
