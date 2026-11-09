@@ -9,11 +9,21 @@ import { openToday } from './helpers/today';
 const nav = (page: Page, name: string) => page.getByRole('navigation').getByRole('button', { name, exact: true });
 
 async function expectTabsUsable(page: Page, names: readonly string[]): Promise<void> {
+  // La bande elle-même (radiogroup) garde sa hauteur : un bouton de 44 px rogné par une bande écrasée reste « visible » pour Playwright.
+  const strip = await page.locator('.ct-segmented[data-scroll="true"]').first().boundingBox();
+  expect(strip?.height ?? 0, 'hauteur de la bande d’onglets').toBeGreaterThanOrEqual(52);
   for (const name of names) {
     const radio = page.getByRole('radio', { name, exact: true });
     await expect(radio).toBeVisible();
     const box = await radio.boundingBox();
     expect(box?.height ?? 0, `onglet « ${name} » : hauteur`).toBeGreaterThanOrEqual(44);
+    // Le centre de l'onglet reçoit bien le clic (pas rogné par la bande).
+    const hit = await radio.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return top === el || el.contains(top);
+    });
+    expect(hit, `onglet « ${name} » : atteignable au centre`).toBe(true);
   }
 }
 
@@ -28,6 +38,9 @@ test('Entraînement : chaque onglet est visible (≥ 44 px), même avec la Bibli
   await expectTabsUsable(page, names);
   await page.getByRole('radio', { name: 'Bibliothèque', exact: true }).click();
   await expect(page.getByText('Compatibles avec mon matériel').first()).toBeVisible();
+  // Condition de reproduction : le contenu dépasse la coquille (sinon rien ne comprime la bande et le test ne prouverait rien).
+  const overflow = await page.locator('.ct-training-shell').evaluate((el) => el.scrollHeight > el.clientHeight);
+  expect(overflow, 'Bibliothèque plus haute que la fenêtre').toBe(true);
   await expectTabsUsable(page, names); // contenu long : c'est ici que la bande s'écrasait
   await page.getByRole('radio', { name: 'Cycle', exact: true }).click();
   await expect(page.getByRole('radio', { name: 'Cycle', exact: true })).toHaveAttribute('aria-checked', 'true');

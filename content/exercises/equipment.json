@@ -373,12 +373,12 @@
     },
     {
       "id": "reverse-hyper-machine",
-      "nameFr": "Machine d’hyperextension inversée",
+      "nameFr": "Machine d'hyperextension inversée",
       "family": "machine"
     },
     {
       "id": "hip-adduction-machine",
-      "nameFr": "Machine d’adduction de hanche",
+      "nameFr": "Machine d'adduction de hanche",
       "family": "machine"
     }
   ]

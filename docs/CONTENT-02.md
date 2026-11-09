@@ -33,3 +33,9 @@ Aucun : les 48 lignes de la liste sont couvertes (46 créés, 2 alias). Variante
 - training : catalogue, recherche, filtre de compatibilité, génération de séance (le moteur lit le catalogue, pas de nombre figé).
 - qa-test : tests ci-dessus rouges puis verts.
 - code-reviewer : voir fin de document.
+
+## Relecture à froid (code-reviewer) : corrections
+- Butées de sécurité ajoutées aux fiches « Fente à la Smith » et « Mollets à la Smith » ; « Rack pull » : barre juste au-dessus des genoux, au contact du bas des cuisses (et non des tibias).
+- « Élévation en Y à la poulie » : deltoïde moyen principal, trapèzes et deltoïde postérieur secondaires, câble `cable-machine` ou `low-pulley`.
+- `content/README.md` mis à jour (196 exercices, 76 matériels, minimum 150) ; apostrophes des nouveaux matériels alignées.
+- Ouvert : `pull-up-weighted` est en charge + répétitions sans fraction du poids du corps (charge enregistrée = lest seul) ; à confirmer par Ali si l'e1RM doit inclure le poids du corps.
