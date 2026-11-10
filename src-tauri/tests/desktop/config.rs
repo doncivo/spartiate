@@ -1510,7 +1510,9 @@ fn health_files_read_is_registered_in_its_own_ios_capability() {
     assert!(!SYNC_COMMANDS.contains(&"health_files_read"));
     let mut found = false;
     for (name, text) in all_capabilities() {
-        let granted = permissions_of(&text).iter().any(|p| p.contains("health-files"));
+        let granted = permissions_of(&text)
+            .iter()
+            .any(|p| p.contains("health-files"));
         if name == "health-files-ios.json" {
             found = true;
             let capability: Value = serde_json::from_str(&text).expect("capability valide");

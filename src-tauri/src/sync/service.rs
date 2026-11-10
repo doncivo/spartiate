@@ -30,7 +30,6 @@ use super::folder::{
     FOLDER_FILE, // ancien-ok: garde de séparation ADR 0017
 };
 use super::forget::covers_forgotten;
-use super::health::{self, DevicesOnly, HealthFileRead, HEALTH_HYDRATE_BUDGET};
 use super::forget::{
     cited_devices, completed_forgotten, declaration_author, forget_dialog_detail, forget_order,
     forgotten_delete_check, learn_declarations, local_offset_minutes, next_declaration_hlc,
@@ -39,6 +38,7 @@ use super::forget::{
     FORGET_DECLARE_LIMIT, FORGOTTEN_FILE, MAX_FORGOTTEN_DELETE_ENTRIES, MAX_FORGOTTEN_ENTRIES,
     SYNC_NEXT_KEY_ACCOUNT,
 };
+use super::health::{self, DevicesOnly, HealthFileRead, HEALTH_HYDRATE_BUDGET};
 use super::limits::{DEVICE_EXPIRY_MS, MAX_SCAN_ENTRIES_PER_FOLDER, MAX_STATE_FILE_BYTES};
 use super::limits::{NONCE_MAX_RECORDS, NONCE_WARN_RECORDS, PAIRING_CLOCK_TOLERANCE_MS};
 use super::marker::{self, RestoreMarker};

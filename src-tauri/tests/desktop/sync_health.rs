@@ -27,7 +27,10 @@ use crate::sync_support::{device, epoch, hlc, Device, MemFs, SharedFs, DEV_A, NO
 const FILES: [(&str, &[u8]); 4] = [
     ("hrv.csv", b"2026-11-08T06:41:03+01:00;42\n"),
     ("fc-repos.csv", b"2026-11-08T07:02:00+01:00;54\n"),
-    ("sommeil.csv", b"2026-11-07T23:10:00+01:00;2026-11-08T00:05:00+01:00;Profond\n"),
+    (
+        "sommeil.csv",
+        b"2026-11-07T23:10:00+01:00;2026-11-08T00:05:00+01:00;Profond\n",
+    ),
     ("pas.csv", b"2026-11-08T18:12:00+01:00;1250\n"),
 ];
 
@@ -126,8 +129,14 @@ fn devices_only_refuses_every_operation_outside_devices() {
     // Lectures et listes : la synchro n'a aucune raison de lire `sante/` (condition 3).
     assert_eq!(guard.read(&file, 1024, true), Err(FsError::Unsafe));
     assert_eq!(guard.read_head(&file, 16), Err(FsError::Unsafe));
-    assert_eq!(guard.read_from(&file, 0, 16, true).map(|_| ()), Err(FsError::Unsafe));
-    assert!(matches!(guard.list(&[HEALTH_DIR], 10), Err(FsError::Unsafe)));
+    assert_eq!(
+        guard.read_from(&file, 0, 16, true).map(|_| ()),
+        Err(FsError::Unsafe)
+    );
+    assert!(matches!(
+        guard.list(&[HEALTH_DIR], 10),
+        Err(FsError::Unsafe)
+    ));
     assert!(matches!(guard.list(&[], 10), Err(FsError::Unsafe)));
     // Un chemin vide et la racine elle-même : jamais d'écriture ni de suppression à la racine.
     assert_eq!(guard.write_atomic(&["state.spx"], b"x"), unsafe_);
@@ -146,7 +155,10 @@ fn devices_only_lets_the_sync_own_paths_through() {
     guard.create_dir(&["devices", DEV_A]).unwrap();
     guard.write_atomic(&state, b"abc").unwrap();
     assert_eq!(guard.read(&state, 1024, true).unwrap(), b"abc");
-    assert_eq!(guard.list(&["devices", DEV_A], 10).unwrap().entries.len(), 1);
+    assert_eq!(
+        guard.list(&["devices", DEV_A], 10).unwrap().entries.len(),
+        1
+    );
     assert!(guard.remove_file(&state).unwrap());
     guard.start_cycle().unwrap();
     guard.check_root().unwrap();
@@ -199,7 +211,12 @@ fn reader_returns_the_four_files_and_never_writes() {
     let log = fs.read_log.lock().unwrap().clone();
     assert_eq!(
         log,
-        ["sante/hrv.csv", "sante/fc-repos.csv", "sante/sommeil.csv", "sante/pas.csv"]
+        [
+            "sante/hrv.csv",
+            "sante/fc-repos.csv",
+            "sante/sommeil.csv",
+            "sante/pas.csv"
+        ]
     );
 }
 
@@ -219,11 +236,18 @@ fn reader_refuses_every_name_outside_the_four_files_before_any_access() {
         "devices",
         "hrv.csv\0",
     ] {
-        let err = read_health_files(&SharedFs(fs.clone()), &["hrv.csv".to_owned(), bad.to_owned()])
-            .expect_err(bad);
+        let err = read_health_files(
+            &SharedFs(fs.clone()),
+            &["hrv.csv".to_owned(), bad.to_owned()],
+        )
+        .expect_err(bad);
         assert_eq!(err.code, SyncCode::BadName, "{bad}");
     }
-    assert_eq!(fs.reads.load(Ordering::SeqCst), 0, "aucun accès avant la validation");
+    assert_eq!(
+        fs.reads.load(Ordering::SeqCst),
+        0,
+        "aucun accès avant la validation"
+    );
 }
 
 #[test]
@@ -232,14 +256,19 @@ fn reader_reports_absent_unreadable_and_cloud_files_by_state() {
     // Dossier `sante/` absent : tous « absent », jamais une erreur.
     let all: Vec<String> = HEALTH_FILES.iter().map(|n| (*n).to_owned()).collect();
     let reads = read_health_files(&SharedFs(fs.clone()), &all).unwrap();
-    assert!(reads.iter().all(|r| r.state == "absent" && r.bytes.is_none()));
+    assert!(reads
+        .iter()
+        .all(|r| r.state == "absent" && r.bytes.is_none()));
 
     // Fichier dans le nuage : téléchargement forcé (hydratation demandée), puis lu.
     fs.put(&[HEALTH_DIR, "hrv.csv"], FILES[0].1);
     fs.set_availability(&[HEALTH_DIR, "hrv.csv"], Availability::Cloud);
     let reads = read_health_files(&SharedFs(fs.clone()), &["hrv.csv".to_owned()]).unwrap();
     assert_eq!(reads[0].state, "ok");
-    assert!(fs.hydrations.load(Ordering::SeqCst) >= 1, "téléchargement forcé avant lecture");
+    assert!(
+        fs.hydrations.load(Ordering::SeqCst) >= 1,
+        "téléchargement forcé avant lecture"
+    );
 
     // Fichier trop gros : « illisible », sans lecture du contenu.
     fs.put(&[HEALTH_DIR, "pas.csv"], b"1");
@@ -267,7 +296,10 @@ fn core_reads_the_health_folder_through_its_own_access_and_keeps_the_sync_untouc
 #[test]
 fn core_without_a_linked_folder_refuses_the_health_read() {
     let (d, _fs) = device();
-    let err = d.core.read_health_files(&["hrv.csv".to_owned()]).expect_err("dossier absent");
+    let err = d
+        .core
+        .read_health_files(&["hrv.csv".to_owned()])
+        .expect_err("dossier absent");
     assert_eq!(err.code, SyncCode::NotConfigured);
 }
 
@@ -287,7 +319,8 @@ fn bookmark_reads_only_through_status_download_and_read_from() {
         Arc::new(Mutex::new(None)),
         Arc::new(move || now.load(Ordering::SeqCst)),
     );
-    fs.start_cycle_within(std::time::Duration::from_secs(30)).unwrap();
+    fs.start_cycle_within(std::time::Duration::from_secs(30))
+        .unwrap();
     let names: Vec<String> = HEALTH_FILES.iter().map(|n| (*n).to_owned()).collect();
     let reads = read_health_files(&fs, &names).unwrap();
     let states: Vec<&str> = reads.iter().map(|r| r.state).collect();
@@ -329,7 +362,10 @@ fn only_the_health_module_names_the_health_folder() {
     ] {
         assert!(!source.contains("\"sante\""), "{name} nomme sante/");
         assert!(!source.contains("HEALTH_DIR"), "{name} nomme HEALTH_DIR");
-        assert!(!source.contains("health::"), "{name} utilise le module health");
+        assert!(
+            !source.contains("health::"),
+            "{name} utilise le module health"
+        );
     }
 }
 
@@ -354,14 +390,26 @@ fn reader_accepts_at_most_four_distinct_names() {
     let fs = MemFs::new();
     seed_health(&fs);
     let dup = vec!["hrv.csv".to_owned(), "hrv.csv".to_owned()];
-    assert_eq!(read_health_files(&SharedFs(fs.clone()), &dup).expect_err("doublon").code, SyncCode::BadName);
+    assert_eq!(
+        read_health_files(&SharedFs(fs.clone()), &dup)
+            .expect_err("doublon")
+            .code,
+        SyncCode::BadName
+    );
     let many = vec!["hrv.csv".to_owned(); 5];
-    assert_eq!(read_health_files(&SharedFs(fs.clone()), &many).expect_err("trop").code, SyncCode::BadName);
+    assert_eq!(
+        read_health_files(&SharedFs(fs.clone()), &many)
+            .expect_err("trop")
+            .code,
+        SyncCode::BadName
+    );
     assert_eq!(fs.reads.load(Ordering::SeqCst), 0);
 }
 
 #[test]
 fn health_download_budget_stays_under_the_plugin_call_deadline() {
     // A1 : un téléchargement de sante/ occupe la file du plugin ; il doit finir avant l'échéance d'un appel de synchro (20 s).
-    assert!(spartiate_lib::sync::health::HEALTH_HYDRATE_BUDGET < std::time::Duration::from_secs(20));
+    assert!(
+        spartiate_lib::sync::health::HEALTH_HYDRATE_BUDGET < std::time::Duration::from_secs(20)
+    );
 }
