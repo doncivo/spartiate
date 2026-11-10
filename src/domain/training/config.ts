@@ -107,6 +107,12 @@ export const DEFAULT_PROGRESSION_CONFIG: ProgressionConfig = Object.freeze({
   lowRecoveryLoad: 0.95,
 });
 
+/**
+ * I5-02 point 2.2 (§ 16.1 niveau A, § 16.3 « par muscle ») : repère du Recovery Split. Un muscle sous `spareBelowPercent` est « à ménager »
+ * et seul signalé par la suggestion prudente ; au-delà, « prêt ». Proposition (le PRD ne fixe pas le seuil), à confirmer par Ali.
+ */
+export const RECOVERY_SPLIT_CONFIG = Object.freeze({ spareBelowPercent: 50 });
+
 /** Séances closes chargées par exercice pour le moteur (fenêtre d'estimation et séances ignorées ou aberrantes comprises). */
 export const HISTORY_SESSIONS_LOADED = 12;
 
@@ -129,6 +135,7 @@ export const REASON_ORDER: readonly ReasonCode[] = [
   'deload',
   'recovery-low',
   'recovery-set-removed',
+  'recovery-red-day',
   'position-discount',
   'bodyweight-unknown',
   'increment-unknown',

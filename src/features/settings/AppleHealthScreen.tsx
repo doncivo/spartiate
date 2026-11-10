@@ -11,6 +11,7 @@ import { detectTimeZone } from '../../platform/timeZone';
 import type { ShortcutFilesReader } from '../../platform/shortcutFiles';
 import { Button, Icon, useLayout } from '../../ui';
 import { RecoveryImportSection } from './RecoveryImportSection';
+import { RecoveryNotificationsSection } from './RecoveryNotificationsSection';
 import { useAppContainer } from '../app/AppContainerContext';
 import { RepositoryError } from '../../db/repositories/common';
 import { useNavigationStore } from '../app/navigation';
@@ -144,6 +145,8 @@ export function AppleHealthScreen({ healthKit = platformHealthKit, shortcutReade
         {blocked && <ShortcutImport />}
 
         <RecoveryImportSection {...(shortcutReader ? { reader: shortcutReader } : {})} />
+
+        <RecoveryNotificationsSection />
 
         {reads && (
           <>

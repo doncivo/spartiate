@@ -39,7 +39,11 @@ export const progressionFr = {
   explainDeload: 'Deload : moitié des séries ({sets}), charge allégée, au moins {rir} répétitions en réserve ; hors statistiques.',
   explainRecoveryLow: 'Charge réduite de {cut} % : récupération basse aujourd’hui.',
   explainRecoveryLowSet: 'Charge réduite de {cut} % et une série de moins (exercice d’isolation) : récupération basse aujourd’hui.',
+  // I5-02 point 2.2 : journée rouge acceptée au lancement (§ 16.7), sans diagnostic.
+  explainRedDay: 'Journée rouge : aucune hausse aujourd’hui, charge réduite de {delta} kg (−{cut} %) ; estimation, pas un avis médical.',
+  explainRedDayHeld: 'Journée rouge : charges maintenues ; estimation, pas un avis médical.',
   // Précisions ajoutées à la phrase (I2-04), information seulement.
+  noteRedDaySet: 'Une série de moins (exercice d’isolation).',
   notePartialIgnored: 'Ta dernière séance (moins de la moitié des séries faites) n’est pas prise en compte.',
   noteBodyweightUnknown: 'Poids de corps inconnu : le 1RM et les écarts de charge sont calculés sur le lest seul. Enregistre une pesée pour compter le poids de ton corps.',
   notePosition: 'Charge réduite de {cut} % : {rank}ᵉ exercice de ce muscle dans la séance.',
@@ -50,6 +54,8 @@ export const progressionFr = {
   alertDeload: 'Deload : séries réduites de moitié, hors statistiques.',
   alertRecoveryLow: 'Récupération basse : charge réduite de {cut} %.',
   alertRecoveryLowSet: 'Récupération basse : charge réduite de {cut} % et une série de moins (exercice d’isolation).',
+  alertRedDay: 'Journée rouge acceptée : aucune hausse aujourd’hui ; estimation, pas un avis médical.',
+  alertRedDaySet: 'Journée rouge acceptée : aucune hausse aujourd’hui et une série de moins (exercice d’isolation) ; estimation, pas un avis médical.',
   alertsLabel: 'Alertes',
   optionsTitle: 'Choix facultatifs',
   optionFatigueLoad: '−{cut} % de charge : {value}.',

@@ -8,3 +8,5 @@ export * from './recoveryScore';
 export * from './shortcutFiles';
 export * from './sleepNeed';
 export * from './types';
+export * from './bedtimeProposal';
+export * from './notificationPrefs';

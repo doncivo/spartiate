@@ -63,10 +63,10 @@ describe('Aujourd’hui (I0) : planches iPhone et PC, valeurs réelles seulement
       expect(within(steps[0] as HTMLElement).getByText('Profil')).toBeInTheDocument();
       expect(within(steps[1] as HTMLElement).getByText('Première pesée')).toBeInTheDocument();
       expect(within(steps[2] as HTMLElement).getByText('Relier le PC')).toBeInTheDocument();
-      expect(screen.getByText('Arrive ensuite')).toBeInTheDocument();
       expect(screen.queryByText('programme Haut / Bas, charges proposées')).toBeNull();
       expect(screen.queryByText('journal, cibles, dépense mesurée')).toBeNull();
-      expect(screen.getByText('sommeil, HRV, effort via Apple Santé')).toBeInTheDocument();
+      expect(screen.queryByText('Arrive ensuite')).toBeNull();
+      expect(await screen.findByText('Aucun résumé de récupération reçu de l’iPhone.')).toBeInTheDocument();
       expect(screen.getByText('Synchro non configurée')).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: 'Renseigner mon profil' }));
       expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'body' });
@@ -99,7 +99,8 @@ describe('Aujourd’hui (I0) : planches iPhone et PC, valeurs réelles seulement
       open();
       expect(await screen.findByText('Aucune pesée pour l’instant.')).toBeInTheDocument();
       expect(screen.queryByText('Trois réglages, puis on s’entraîne.')).toBeNull();
-      expect(screen.getByText('Arrive avec les prochaines versions')).toBeInTheDocument();
+      expect(screen.queryByText('Arrive avec les prochaines versions')).toBeNull();
+      expect(await screen.findByText('Aucun résumé de récupération reçu de l’iPhone.')).toBeInTheDocument();
       const profile = screen.getByRole('region', { name: 'Profil' });
       expect(within(profile).getAllByText('—')).toHaveLength(4);
       expect(screen.getByText('non configurée')).toBeInTheDocument();

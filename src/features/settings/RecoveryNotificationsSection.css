@@ -1,0 +1,35 @@
+/* Section « Sommeil et rappels » (I5-02 point 2.3) : jetons du thème uniquement. */
+.ct-recnotif__proposal,
+.ct-recnotif__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-2);
+  min-height: 44px;
+}
+
+.ct-recnotif__row {
+  border-top: 1px solid var(--ct-color-border);
+}
+
+.ct-recnotif__stack {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-recnotif__label {
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-recnotif__time {
+  font-size: var(--ct-font-size-text);
+  font-weight: var(--ct-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--ct-color-text);
+}
+
+.ct-recnotif__message {
+  color: var(--ct-color-danger);
+}
