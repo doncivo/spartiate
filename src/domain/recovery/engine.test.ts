@@ -192,13 +192,6 @@ describe('dayExertion : musculation seule, cardio à zéro (D-88)', () => {
     expect(STRENGTH_SCALE).toBe(20);
   });
 
-  it('12 t donnent plus de 5 : le supplément de besoin de sommeil joue le lendemain', () => {
-    const sets = Array.from({ length: 12 }, () => set({ kg: 100, reps: 10, difficulty: 'ok' }));
-    const { summary } = summarizeRecoveryDay({ ...base, nights: thirty(), workouts: [{ endedAt: '2026-11-07T17:00:00.000Z', sets }] });
-    expect(summary.exertionPrevDay).toBeGreaterThan(5);
-    expect(summary.sleepNeedMinutes).toBeGreaterThan(450);
-  });
-
   it('l’explication dit que le cardio n’est pas compté (clé dédiée), même sans séance', () => {
     expect(dayExertion([workout([set()])], '2026-11-07', TZ).explanationKeys).toContain('exertion_cardio_not_counted');
     const none = dayExertion([], '2026-11-07', TZ);
@@ -368,6 +361,13 @@ describe('summarizeRecoveryDay : résumé du jour (§ 16.4)', () => {
     expect(summary.exertionPrevDay).toBeCloseTo(10 * (1 - Math.exp(-(6 * STRENGTH_SCALE) / 300)), 2);
     expect(summary.sleepNeedMinutes).toBe(450);
     expect(muscles[0]).toMatchObject({ day: TODAY, muscleId: 'chest' });
+  });
+
+  it('12 t donnent plus de 5 : le supplément de besoin de sommeil joue le lendemain', () => {
+    const sets = Array.from({ length: 12 }, () => set({ kg: 100, reps: 10, difficulty: 'ok' }));
+    const { summary } = summarizeRecoveryDay({ ...base, nights: thirty(), workouts: [{ endedAt: '2026-11-07T17:00:00.000Z', sets }] });
+    expect(summary.exertionPrevDay).toBeGreaterThan(5);
+    expect(summary.sleepNeedMinutes).toBeGreaterThan(450);
   });
 
   it('nuits postérieures au jour ignorées', () => {
