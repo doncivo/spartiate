@@ -135,6 +135,10 @@ export interface SettingsValues {
   'nutrition.prefs': unknown;
   /** I4-06 : favoris de la recherche d'aliments, valeur BRUTE lue par `parseFavorites` ({ v: 1, items }) ; locale, jamais synchronisée (D-79). */
   'nutrition.favorites': unknown;
+  /** I5-02 (point 2.3) : notifications de récupération (coucher, matin), désactivées par défaut. Valeur BRUTE lue par `parseRecoveryNotificationPrefs` ; locale, jamais synchronisée. */
+  'recovery.notificationPrefs': unknown;
+  /** I5-02 (point 2.3) : dernière heure de coucher proposée (calculée à l'import). Valeur BRUTE lue par `parseBedtimeProposalSetting` ; locale, jamais synchronisée. */
+  'recovery.bedtimeProposal': unknown;
 }
 
 export type SettingKey = keyof SettingsValues;
@@ -193,6 +197,8 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'training.cycleSession': { scope: 'local', defaultValue: null },
   'nutrition.prefs': { scope: 'local', defaultValue: null },
   'nutrition.favorites': { scope: 'local', defaultValue: null },
+  'recovery.notificationPrefs': { scope: 'local', defaultValue: null },
+  'recovery.bedtimeProposal': { scope: 'local', defaultValue: null },
 };
 
 /** Valeur par défaut d'un réglage. */
