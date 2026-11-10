@@ -10,7 +10,7 @@
 //!   `devices/` est refusée (`Unsafe`) sans toucher au dossier. La synchro ne peut donc ni écrire, ni renommer, ni supprimer, ni lire,
 //!   ni lister `sante/`, et rien de `sante/` n'entre dans un journal ni n'est chiffré ;
 //! - `read_health_report` a son propre accès au dossier (`SyncCore::read_health_files`) : lecture seule, quatre noms (casse et accents du
-//!   dossier ignorés), aucune écriture ; il liste la racine et `sante/` pour décrire le dossier (comptes seulement, I5-04). Un fichier absent ou le dossier absent donne l'état « absent », jamais une erreur.
+//!   dossier, casse des noms de fichiers ignorés), aucune écriture ; il liste la racine et `sante/` pour décrire le dossier (comptes seulement, I5-04). Un fichier absent ou le dossier absent donne l'état « absent », jamais une erreur.
 
 use std::time::Duration;
 
@@ -51,8 +51,10 @@ pub struct HealthFileRead {
 pub struct HealthFolder {
     /// La racine liée a pu être listée.
     pub root_listed: bool,
-    /// Un dossier `sante` (casse et accents ignorés) existe sous la racine.
+    /// Un dossier `sante` (casse et accents ignorés) existe sous la racine : faux seulement s'il est absent (listage `NotFound`).
     pub sante_present: bool,
+    /// Ses entrées ont pu être listées (faux : dossier présent mais illisible pour l'instant, ou absent).
+    pub sante_listed: bool,
     /// Le dossier `devices` de la synchro existe sous la même racine (la racine liée est bien celle de la synchro).
     pub devices_present: bool,
     pub root_entries: u32,
@@ -122,17 +124,29 @@ pub fn read_health_report(fs: &dyn SyncFs, names: &[String]) -> SyncResult<Healt
     let listed = match fs.list(&[dir.as_str()], 256) {
         Ok(listing) => {
             folder.sante_present = true;
+            folder.sante_listed = true;
             folder.sante_entries = listing.entries.len() as u32;
             listing.entries
         }
-        Err(_) => Vec::new(),
+        // Illisible pour l'instant (nuage, coordination) : le dossier existe peut-être ; la lecture directe décide.
+        Err(FsError::NotFound) => Vec::new(),
+        Err(_) => {
+            folder.sante_present = true;
+            Vec::new()
+        }
     };
     let files = names
         .iter()
         .map(|name| {
+            // Le nom exact d'abord, puis une variante de casse (volume sensible à la casse : `hrv.csv` et `HRV.csv` peuvent coexister).
             let entry = listed
                 .iter()
-                .find(|e| !e.is_dir && e.name.eq_ignore_ascii_case(name));
+                .find(|e| !e.is_dir && e.name == *name)
+                .or_else(|| {
+                    listed
+                        .iter()
+                        .find(|e| !e.is_dir && e.name.eq_ignore_ascii_case(name))
+                });
             let actual = entry.map_or(name.as_str(), |e| e.name.as_str());
             let known = entry.map(|e| e.size).filter(|s| *s > 0);
             let (state, size, bytes) =

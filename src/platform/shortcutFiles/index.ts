@@ -40,6 +40,8 @@ export type ShortcutFileRead =
 export interface ShortcutFolderProbe {
   readonly rootListed: boolean;
   readonly santePresent: boolean;
+  /** Les entrées de `sante` ont pu être listées (faux : présent mais illisible pour l'instant, ou absent). */
+  readonly santeListed: boolean;
   /** `devices` existe sous la même racine : la racine liée est bien celle de la synchro. */
   readonly devicesPresent: boolean;
   readonly rootEntries: number;
@@ -136,7 +138,7 @@ function probeOf(raw: unknown): ShortcutFolderProbe | null {
   const folder = typeof raw === 'object' && raw !== null ? (raw as { folder?: unknown }).folder : undefined;
   if (typeof folder !== 'object' || folder === null) return null;
   const f = folder as Record<string, unknown>;
-  return { rootListed: f.rootListed === true, santePresent: f.santePresent === true, devicesPresent: f.devicesPresent === true, rootEntries: count(f.rootEntries), santeEntries: count(f.santeEntries) };
+  return { rootListed: f.rootListed === true, santePresent: f.santePresent === true, santeListed: f.santeListed === true, devicesPresent: f.devicesPresent === true, rootEntries: count(f.rootEntries), santeEntries: count(f.santeEntries) };
 }
 
 export function createFolderShortcutFiles(invoke: FolderInvoker = tauriInvoker): ShortcutFilesReader {

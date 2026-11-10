@@ -451,10 +451,10 @@ describe('statuts journalisés et diagnostic du dossier sante (I5-04 points 1 et
     ];
     const r = {
       ...reader(async () => reads, { kind: 'folder', automatic: true }),
-      probe: () => ({ rootListed: true, santePresent: true, devicesPresent: true, rootEntries: 3, santeEntries: 2 }),
+      probe: () => ({ rootListed: true, santePresent: true, santeListed: true, devicesPresent: true, rootEntries: 3, santeEntries: 2 }),
     };
     await build(r).run('manual');
-    expect(logs.find((l) => l.event === 'recovery-import-diag-folder')?.counts).toEqual({ root_listed: 1, sante_present: 1, devices_present: 1, root_entries: 3, sante_entries: 2 });
+    expect(logs.find((l) => l.event === 'recovery-import-diag-folder')?.counts).toEqual({ root_listed: 1, sante_present: 1, sante_listed: 1, devices_present: 1, root_entries: 3, sante_entries: 2 });
     const files = logs.filter((l) => l.event === 'recovery-import-diag-file').map((l) => l.counts);
     // état : 0 absent, 1 présent, 2 à télécharger, 3 illisible
     expect(files).toEqual([

@@ -245,6 +245,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       deps.log('recovery-import-diag-folder', {
         root_listed: probe.rootListed ? 1 : 0,
         sante_present: probe.santePresent ? 1 : 0,
+        sante_listed: probe.santeListed ? 1 : 0,
         devices_present: probe.devicesPresent ? 1 : 0,
         root_entries: probe.rootEntries,
         sante_entries: probe.santeEntries,

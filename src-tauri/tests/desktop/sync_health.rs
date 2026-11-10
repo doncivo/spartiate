@@ -539,3 +539,97 @@ fn report_separates_to_download_from_unreadable() {
     assert_eq!(report.files[0].bytes, None);
     assert_ne!(report.files[3].state, "absent");
 }
+
+// --- Relecture sync-icloud I5-04 : A1 (dossier présent mais non listable ≠ absent), S1 (nom exact d'abord) ----------------------------
+
+/// Dossier dont le listage de `sante/` échoue (nuage, coordination) : tout le reste passe.
+struct SanteListFails(SharedFs);
+
+impl SyncFs for SanteListFails {
+    fn check_root(&self) -> Result<(), FsError> {
+        self.0.check_root()
+    }
+    fn start_cycle(&self) -> Result<(), FsError> {
+        self.0.start_cycle()
+    }
+    fn start_cycle_within(&self, budget: std::time::Duration) -> Result<(), FsError> {
+        self.0.start_cycle_within(budget)
+    }
+    fn read_head(&self, file: &[&str], max: usize) -> Result<Vec<u8>, FsError> {
+        self.0.read_head(file, max)
+    }
+    fn list(
+        &self,
+        dir: &[&str],
+        max: usize,
+    ) -> Result<spartiate_lib::sync::files::Listing, FsError> {
+        if dir
+            .first()
+            .is_some_and(|d| d.eq_ignore_ascii_case(HEALTH_DIR))
+        {
+            return Err(FsError::CloudPending);
+        }
+        self.0.list(dir, max)
+    }
+    fn read(&self, file: &[&str], limit: u64, hydrate: bool) -> Result<Vec<u8>, FsError> {
+        self.0.read(file, limit, hydrate)
+    }
+    fn read_from(
+        &self,
+        file: &[&str],
+        offset: u64,
+        max: usize,
+        hydrate: bool,
+    ) -> Result<spartiate_lib::sync::files::Chunk, FsError> {
+        self.0.read_from(file, offset, max, hydrate)
+    }
+    fn append(&self, file: &[&str], bytes: &[u8], mode: AppendMode) -> Result<(), FsError> {
+        self.0.append(file, bytes, mode)
+    }
+    fn write_atomic(&self, file: &[&str], bytes: &[u8]) -> Result<(), FsError> {
+        self.0.write_atomic(file, bytes)
+    }
+    fn rename(&self, dir: &[&str], from: &str, to: &str) -> Result<(), FsError> {
+        self.0.rename(dir, from, to)
+    }
+    fn create_dir(&self, dir: &[&str]) -> Result<(), FsError> {
+        self.0.create_dir(dir)
+    }
+    fn remove_file(&self, file: &[&str]) -> Result<bool, FsError> {
+        self.0.remove_file(file)
+    }
+    fn remove_empty_dir(&self, dir: &[&str]) -> Result<(), FsError> {
+        self.0.remove_empty_dir(dir)
+    }
+    fn pin(&self, file: &[&str]) -> Result<(), FsError> {
+        self.0.pin(file)
+    }
+}
+
+#[test]
+fn a_health_folder_that_cannot_be_listed_is_present_but_not_listed() {
+    let fs = MemFs::new();
+    fs.put(&["devices", DEV_A, "state.spx"], b"x");
+    fs.put(&[HEALTH_DIR, "hrv.csv"], FILES[0].1);
+    let report = report_of(&SanteListFails(SharedFs(fs.clone())));
+    assert!(
+        report.folder.sante_present,
+        "présent : seul son listage échoue"
+    );
+    assert!(!report.folder.sante_listed);
+    assert_eq!(report.folder.sante_entries, 0);
+    // La lecture directe du fichier reste tentée : « sante » par défaut.
+    assert_eq!(report.files[0].state, "ok");
+}
+
+#[test]
+fn an_exact_file_name_wins_over_a_case_variant() {
+    let fs = MemFs::new();
+    fs.put(&[HEALTH_DIR, "HRV.csv"], b"2026-11-01T06:00:00+01:00;1\n");
+    fs.put(&[HEALTH_DIR, "hrv.csv"], FILES[0].1);
+    let report = report_of(&SharedFs(fs.clone()));
+    assert_eq!(
+        report.files[0].bytes.as_deref(),
+        Some(STANDARD.encode(FILES[0].1).as_str())
+    );
+}

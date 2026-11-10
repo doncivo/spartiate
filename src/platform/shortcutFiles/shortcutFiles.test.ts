@@ -53,7 +53,7 @@ describe('lecture des fichiers Raccourcis (I5-01 point 1.3)', () => {
 const b64 = (text: string): string => btoa(String.fromCharCode(...new TextEncoder().encode(text)));
 
 const folder = (files: unknown[], extra: Record<string, unknown> = {}) => ({
-  folder: { rootListed: true, santePresent: true, devicesPresent: true, rootEntries: 2, santeEntries: files.length, ...extra },
+  folder: { rootListed: true, santePresent: true, santeListed: true, devicesPresent: true, rootEntries: 2, santeEntries: files.length, ...extra },
   files,
 });
 
@@ -82,10 +82,10 @@ describe('lecteur de dossier iCloud Drive › Spartiate › sante (I5-03, I5-04,
   });
 
   it('la sonde du dernier appel donne le dossier atteint, sante présent et les comptes', async () => {
-    const reader = createFolderShortcutFiles(async () => folder([{ name: 'hrv.csv', state: 'absent' }], { santePresent: false, santeEntries: 0, rootEntries: 5 }));
+    const reader = createFolderShortcutFiles(async () => folder([{ name: 'hrv.csv', state: 'absent' }], { santePresent: false, santeListed: false, santeEntries: 0, rootEntries: 5 }));
     expect(reader.probe?.()).toBeNull();
     await reader.read(SHORTCUT_FILE_NAMES);
-    expect(reader.probe?.()).toEqual({ rootListed: true, santePresent: false, devicesPresent: true, rootEntries: 5, santeEntries: 0 });
+    expect(reader.probe?.()).toEqual({ rootListed: true, santePresent: false, santeListed: false, devicesPresent: true, rootEntries: 5, santeEntries: 0 });
   });
 
   it('réponse incomplète, état inconnu ou octets invalides : « unreadable » pour ce fichier, les autres sont lus', async () => {

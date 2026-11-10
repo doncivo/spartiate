@@ -24,9 +24,11 @@ export function importStatusMessage(result: ImportRunResult): string {
       const added = imported.reduce((sum, f) => sum + f.added, 0);
       const read =
         imported.length === 0
-          ? result.files.some((f) => f.state === 'unreadable' || f.state === 'failed')
-            ? tHealth('recDoneUnreadable')
-            : tHealth('recDoneNone')
+          ? result.files.some((f) => f.state === 'failed')
+            ? tHealth('recDoneFailed')
+            : result.files.some((f) => f.state === 'unreadable')
+              ? tHealth('recDoneUnreadable')
+              : tHealth('recDoneNone')
           : imported.length === 1
             ? tHealth('recDoneRead1', { added })
             : tHealth('recDoneReadN', { files: imported.length, added });
