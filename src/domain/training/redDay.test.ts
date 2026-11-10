@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CURL, input, session, target } from '../../../tests/fixtures/training/progression';
+import { CURL, daysAgo, input, session, target } from '../../../tests/fixtures/training/progression';
 import { DEFAULT_PROGRESSION_CONFIG as CFG, RECOVERY_SPLIT_CONFIG, REASON_ORDER } from './config';
 import { constraintAlerts, explainPrescription, explanationNotes } from './explain';
 import { prescribe } from './prescribe';
@@ -99,7 +99,7 @@ describe('journée rouge acceptée : prescription', () => {
   });
 
   it('décision d’Ali : jamais modulée', () => {
-    const decided = { decidedAt: '2026-11-07T17:00:00.000Z', accepted: false, loadKg: 110, reps: [8, 8, 8] } as const;
+    const decided = { decidedAt: daysAgo(1), accepted: false, loadKg: 110, reps: [8, 8, 8] };
     const p = prescribe(input({ history: top, lastDecision: decided, recovery: redDaySnapshot(20, 'accepted', CFG) }));
     expect(p.loadKg).toBe(110);
     expect(p.reasons).not.toContain('recovery-red-day');

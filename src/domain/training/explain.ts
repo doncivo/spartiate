@@ -25,6 +25,8 @@ export type ExplanationKey =
   | 'deload'
   | 'recoveryLow'
   | 'recoveryLowSet'
+  | 'redDay'
+  | 'redDayHeld'
   | 'outlierHold'
   | 'position'
   | 'positionHeld';
@@ -95,11 +97,18 @@ export function explainPrescription(p: Prescription): Explanation {
       return { key: 'position', params: { delta: Math.round(delta * 100) / 100, rank, cut: Math.round((delta / ref) * 1000) / 10 } };
     }
     case 'recovery-low':
+      if (p.reasons.includes('recovery-red-day')) {
+        // I5-02 point 2.2 : journée rouge acceptée ; l'écart dit est celui de la charge appliquée (arrondie au matériel), comme l'inactivité.
+        const ref = p.reference?.loadKg ?? 0;
+        const delta = -(p.deltaKg ?? 0);
+        if (!(delta > 0) || !(ref > 0)) return { key: 'redDayHeld', params: {} };
+        return { key: 'redDay', params: { delta: Math.round(delta * 100) / 100, cut: Math.round((delta / ref) * 1000) / 10 } };
+      }
       return { key: p.reasons.includes('recovery-set-removed') ? 'recoveryLowSet' : 'recoveryLow', params: { cut: recoveryCut(p) } };
   }
 }
 
-export type ExplanationNoteKey = 'notePartialIgnored' | 'noteGridToVerify' | 'notePosition' | 'noteBodyweightUnknown';
+export type ExplanationNoteKey = 'notePartialIgnored' | 'noteGridToVerify' | 'notePosition' | 'noteBodyweightUnknown' | 'noteRedDaySet';
 
 /**
  * I2-04 : précisions ajoutées à la phrase, dans cet ordre : dernière séance ignorée (moins de 50 % des séries faites), puis grille de charges
@@ -113,6 +122,8 @@ export function explanationNotes(p: Prescription): { readonly key: ExplanationNo
   // Poids du corps inconnu (REV-01) : le 1RM et les écarts sont calculés sur le seul lest, ce que la phrase dit.
   if (p.reasons.includes('bodyweight-unknown')) notes.push({ key: 'noteBodyweightUnknown', params: {} });
   // Position (REV-01 constat 6) : dite en note quand la raison principale est autre (la charge reste au-dessus de la référence).
+  // I5-02 point 2.2 : journée rouge en raison principale, série retirée d'un exercice d'isolation (la phrase dit la charge).
+  if (p.headline === 'recovery-low' && p.reasons.includes('recovery-red-day') && p.reasons.includes('recovery-set-removed')) notes.push({ key: 'noteRedDaySet', params: {} });
   if (p.reasons.includes('position-discount') && p.headline !== 'position') notes.push({ key: 'notePosition', params: { rank: p.positionRank ?? 1, cut: percent(p.positionCut ?? 0) } });
   return notes;
 }
@@ -125,7 +136,7 @@ const recoveryCut = (p: Prescription): number => percent(1 - p.activeConfig.lowR
 // Contraintes (I2-02) : une alerte par contrainte active hors raison principale, une phrase par choix facultatif.
 // -----------------------------------------------------------------------------------------------------------------------------------
 
-export type ConstraintAlertKey = 'alertFatigue' | 'alertStall' | 'alertInactivity' | 'alertDeload' | 'alertRecoveryLow' | 'alertRecoveryLowSet';
+export type ConstraintAlertKey = 'alertFatigue' | 'alertStall' | 'alertInactivity' | 'alertDeload' | 'alertRecoveryLow' | 'alertRecoveryLowSet' | 'alertRedDay' | 'alertRedDaySet';
 export type OptionKey = 'optionFatigueLoad' | 'optionFatigueReps' | 'optionStallVariant' | 'optionStallRange' | 'optionStallMiniDeload';
 
 /** Contraintes dans l'ordre de `REASON_ORDER`, avec la raison principale qu'elles portent quand elles réduisent. */
@@ -142,6 +153,7 @@ export function constraintAlerts(p: Prescription): { readonly key: ConstraintAle
   return ALERTS.filter((a) => p.reasons.includes(a.reason) && a.headline !== p.headline).map((a) => {
     if (a.key === 'alertStall') return { key: a.key, params: { sessions: p.activeConfig.stallSessions } };
     if (a.key === 'alertInactivity') return { key: a.key, params: { cut: percent(p.inactivityCut ?? 0) } };
+    if (a.key === 'alertRecoveryLow' && p.reasons.includes('recovery-red-day')) return { key: p.reasons.includes('recovery-set-removed') ? 'alertRedDaySet' : 'alertRedDay', params: {} };
     if (a.key === 'alertRecoveryLow') return { key: p.reasons.includes('recovery-set-removed') ? 'alertRecoveryLowSet' : a.key, params: { cut: recoveryCut(p) } };
     return { key: a.key, params: {} };
   });

@@ -194,6 +194,8 @@ export function prescribe(input: PrescribeInput): Prescription {
     config,
   });
   addConstraintReasons(constraints, reasons);
+  // I5-02 point 2.2 : Recovery basse issue d'une journée rouge acceptée par Ali (§ 16.7) ; même contrainte, la phrase le dit.
+  if (constraints.lowRecovery && input.recovery?.redDay === true) reasons.add('recovery-red-day');
   const refPerformance = { loadKg: refLoad, reps: reference.reps };
   // REV-01 constat 6 (§ 11.3) : décote de position, jamais une hausse ; le rang de la séance de référence est déjà dans sa charge.
   const rank = Math.max(1, Math.floor(input.positionRank ?? 1));
