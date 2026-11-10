@@ -40,6 +40,7 @@ mod sync_folder;
 mod sync_forget;
 mod sync_forget_qa;
 mod sync_fs_conformance;
+mod sync_health;
 mod sync_ios_y02;
 mod sync_key;
 mod sync_pairing;
