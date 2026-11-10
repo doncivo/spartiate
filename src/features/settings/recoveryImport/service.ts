@@ -8,6 +8,7 @@ import {
   shiftDay,
   summarizeRecoveryDay,
   toNightRecords,
+  type NightRecord,
   type RecoveryWorkout,
   type ShortcutParseReport,
   type ShortcutRejections,
@@ -38,6 +39,7 @@ export const IMPORT_LOG_EVENTS = [
   'recovery-import-recompute-failed',
   'recovery-import-purge',
   'recovery-import-purge-failed',
+  'recovery-import-after-failed',
 ] as const;
 export type ImportLogEvent = (typeof IMPORT_LOG_EVENTS)[number];
 export type ImportLog = (event: ImportLogEvent, counts: Readonly<Record<string, number>>) => void;
@@ -78,6 +80,8 @@ export interface ShortcutImportDeps {
   /** Fuseau IANA de l'appareil. */
   readonly timeZone: string;
   readonly log: ImportLog;
+  /** I5-02 (point 2.3) : appelé après un recalcul réussi (heure de coucher proposée, replanification des notifications) ; un échec est sans effet sur l'import. */
+  readonly afterRecompute?: (info: { readonly today: string; readonly nights: readonly NightRecord[]; readonly exertionToday: number }) => Promise<unknown>;
 }
 
 export interface ShortcutImportService {
@@ -189,9 +193,16 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       const wanted = at === undefined ? dataDays.has(day) : stale(day, at);
       if (wanted) days.push(day);
     }
+    let exertionToday = 0;
     for (const day of days) {
       const output = summarizeRecoveryDay({ today: day, now: day === today ? now : new Date(dayEndMs(day)).toISOString(), timeZone: tz, nights: records, workouts });
       await recovery.saveDay(output);
+      if (day === today) exertionToday = output.summary.exertion;
+    }
+    try {
+      await deps.afterRecompute?.({ today, nights: records, exertionToday });
+    } catch {
+      deps.log('recovery-import-after-failed', {});
     }
     return days.length;
   }
