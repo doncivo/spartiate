@@ -113,6 +113,43 @@ describe('Apple Santé : section « Raccourcis » (I5-01 point 1.7)', () => {
     await waitFor(() => expect(s.getAllByText('Fichier absent : rien n’a été lu pour ce type.')).toHaveLength(4));
   });
 
+  it('I5-04 : dossier lu, aucun fichier trouvé : l’appui le dit près du bouton, à chaque appui', async () => {
+    renderScreen(folderReader(() => reads({ name: 'hrv.csv', state: 'absent' })), pickerReader(() => null));
+    const s = await section();
+    const button = await s.findByRole('button', { name: 'Importer maintenant' });
+    fireEvent.click(button);
+    expect(await s.findByText(/Aucun des quatre fichiers n’a été trouvé dans iCloud Drive › Spartiate › sante/)).toBeInTheDocument();
+    fireEvent.click(button);
+    expect(await s.findByRole('status')).toHaveTextContent(/Aucun des quatre fichiers/);
+  });
+
+  it('I5-04 : lecteur non pris en charge sur l’iPhone : phrase « unsupported » au lieu du silence', async () => {
+    renderScreen({ kind: 'unsupported', automatic: false, read: async () => null });
+    const s = await section();
+    fireEvent.click(await s.findByRole('button', { name: 'Importer maintenant' }));
+    expect(await s.findByRole('status')).toHaveTextContent(/iPhone/);
+  });
+
+  it('I5-04 : un import réussi annonce les fichiers lus et les lignes ajoutées', async () => {
+    renderScreen(folderReader(() => reads({ name: 'hrv.csv', state: 'ok', text: HRV })), pickerReader(() => null));
+    const s = await section();
+    fireEvent.click(await s.findByRole('button', { name: 'Importer maintenant' }));
+    expect(await s.findByRole('status')).toHaveTextContent(/1 fichier lu/);
+  });
+
+  it('I5-04 : « Importer maintenant » n’est jamais soumis à l’intervalle de 30 minutes', async () => {
+    const folder = folderReader(() => reads({ name: 'hrv.csv', state: 'ok', text: HRV }));
+    const read = vi.spyOn(folder, 'read');
+    renderScreen(folder, pickerReader(() => null));
+    const s = await section();
+    const button = await s.findByRole('button', { name: 'Importer maintenant' });
+    fireEvent.click(button);
+    await waitFor(() => expect(read).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    await waitFor(() => expect(read).toHaveBeenCalledTimes(2));
+  });
+
   it('PC : seule la phrase « lus sur l’iPhone », aucun bouton', async () => {
     container = build({ runtime: 'tauri', os: 'windows' });
     renderScreen({ kind: 'unsupported', automatic: false, read: async () => null });
