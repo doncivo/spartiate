@@ -346,3 +346,22 @@ fn the_sync_core_wraps_its_folder_in_devices_only_and_has_one_health_entry_point
     assert!(COMMANDS_IOS_RS.contains("health_files_read"));
     assert!(!COMMANDS_IOS_RS.contains("write_health"));
 }
+
+// --- Relecture sync-icloud (D-26) : A1, R1, R3 --------------------------------------------------------------------------------------
+
+#[test]
+fn reader_accepts_at_most_four_distinct_names() {
+    let fs = MemFs::new();
+    seed_health(&fs);
+    let dup = vec!["hrv.csv".to_owned(), "hrv.csv".to_owned()];
+    assert_eq!(read_health_files(&SharedFs(fs.clone()), &dup).expect_err("doublon").code, SyncCode::BadName);
+    let many = vec!["hrv.csv".to_owned(); 5];
+    assert_eq!(read_health_files(&SharedFs(fs.clone()), &many).expect_err("trop").code, SyncCode::BadName);
+    assert_eq!(fs.reads.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn health_download_budget_stays_under_the_plugin_call_deadline() {
+    // A1 : un téléchargement de sante/ occupe la file du plugin ; il doit finir avant l'échéance d'un appel de synchro (20 s).
+    assert!(spartiate_lib::sync::health::HEALTH_HYDRATE_BUDGET < std::time::Duration::from_secs(20));
+}
