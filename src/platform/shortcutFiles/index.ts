@@ -2,21 +2,33 @@ import { decodeTextBytes } from '../../domain/textEncoding';
 import type { OsFamily, Runtime } from '../runtime';
 
 /**
- * Lecture des fichiers écrits par l'app Raccourcis dans iCloud Drive › Spartiate-sante (D-69, I5-01 point 1.3) : `hrv.csv`,
+ * Lecture des fichiers écrits par l'app Raccourcis dans iCloud Drive › Spartiate › sante (D-69, D-90, I5-03 point 1) : `hrv.csv`,
  * `fc-repos.csv`, `sommeil.csv`, `pas.csv`. Façade seule : le service d'import (`features/settings/recoveryImport`) ne connaît que ce contrat.
  *
  * Trois lecteurs possibles :
  * - `unsupported` (PC, navigateur) : ne lit rien, l'écran dit « iPhone seulement » ;
- * - `picker` (iPhone, livré) : sélecteur de fichiers du système (`<input type="file" multiple>`, aucun code Swift). iOS fournit alors lui-même
- *   une copie locale du fichier iCloud (téléchargement forcé par le sélecteur) ; il exige un geste de l'utilisateur, donc `automatic` est
- *   faux : l'ouverture de l'app ne lit rien ;
- * - `folder` (H-26, NON LIVRÉ) : lecteur automatique par marque-page de sécurité du dossier Spartiate-sante (plugin Swift à écrire). Contrat :
- *   `automatic: true`, téléchargement forcé de chaque fichier iCloud avant lecture (coordination de fichier), « absent » si le dossier ou le
- *   fichier manque, jamais un chemin dans la WebView.
+ * - `folder` (iPhone, I5-03, H-26 UNVERIFIED jusqu'au constat d'Ali) : lecteur automatique. Il appelle la commande Rust `health_files_read`, qui
+ *   lit `sante/` par le marque-page de sécurité déjà obtenu pour la synchro (aucun nouveau Swift) : téléchargement forcé de chaque fichier iCloud
+ *   avant lecture, « absent » si le dossier ou le fichier manque, jamais un chemin dans la WebView. Dossier de synchro non lié ou injoignable :
+ *   `ShortcutFolderError`. Lecture seule : la commande n'écrit, ne renomme ni ne supprime rien, et la synchro ne voit jamais `sante/` ;
+ * - `picker` (iPhone, secours) : sélecteur de fichiers du système (`<input type="file" multiple>`). iOS fournit alors lui-même une copie locale du
+ *   fichier iCloud ; il exige un geste de l'utilisateur, donc `automatic` est faux.
  */
 
 export const SHORTCUT_FILE_NAMES = ['hrv.csv', 'fc-repos.csv', 'sommeil.csv', 'pas.csv'] as const;
 export type ShortcutFileName = (typeof SHORTCUT_FILE_NAMES)[number];
+
+/** Dossier de synchro non lié (`not-configured`), injoignable (`unreachable`) ou lecture en échec (`failed`) ; jamais un chemin ni le texte de l'erreur. */
+export type ShortcutFolderErrorCode = 'not-configured' | 'unreachable' | 'failed';
+
+export class ShortcutFolderError extends Error {
+  readonly code: ShortcutFolderErrorCode;
+  constructor(code: ShortcutFolderErrorCode) {
+    super(`shortcut-folder:${code}`);
+    this.name = 'ShortcutFolderError';
+    this.code = code;
+  }
+}
 
 export type ShortcutFileRead =
   | { readonly name: ShortcutFileName; readonly state: 'ok'; readonly text: string }
@@ -82,6 +94,68 @@ export function createPickerShortcutFiles(pick: () => Promise<readonly File[] | 
   };
 }
 
+/** Appel de la commande Rust (injectable pour les tests) ; `invoke` de Tauri chargé à la demande. */
+export type FolderInvoker = (command: 'health_files_read', args: { readonly names: readonly string[] }) => Promise<unknown>;
+
+const tauriInvoker: FolderInvoker = async (command, args) => {
+  const { invoke } = await import('@tauri-apps/api/core');
+  return invoke(command, { names: [...args.names] });
+};
+
+function folderErrorCode(error: unknown): ShortcutFolderErrorCode {
+  const code = typeof error === 'object' && error !== null ? (error as { code?: unknown }).code : undefined;
+  if (code === 'not-configured') return 'not-configured';
+  if (code === 'folder-unreachable' || code === 'unsafe-folder' || code === 'not-local' || code === 'cloud-pending' || code === 'cloud-provider-stopped' || code === 'cloud-error') return 'unreachable';
+  return 'failed';
+}
+
+function decodeBase64(value: string): Uint8Array {
+  const binary = atob(value);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+export function createFolderShortcutFiles(invoke: FolderInvoker = tauriInvoker): ShortcutFilesReader {
+  return {
+    kind: 'folder',
+    automatic: true,
+    async read(names) {
+      const wanted = names.filter((name) => (SHORTCUT_FILE_NAMES as readonly string[]).includes(name));
+      let raw: unknown;
+      try {
+        raw = await invoke('health_files_read', { names: wanted });
+      } catch (error) {
+        throw new ShortcutFolderError(folderErrorCode(error));
+      }
+      const byName = new Map<string, { state?: unknown; bytes?: unknown }>();
+      if (Array.isArray(raw)) {
+        for (const entry of raw as { name?: unknown; state?: unknown; bytes?: unknown }[]) {
+          if (typeof entry === 'object' && entry !== null && typeof entry.name === 'string') byName.set(entry.name, entry);
+        }
+      }
+      return wanted.map((name): ShortcutFileRead => {
+        const entry = byName.get(name);
+        if (entry?.state === 'absent') return { name, state: 'absent' };
+        if (entry?.state === 'ok' && typeof entry.bytes === 'string') {
+          try {
+            return { name, state: 'ok', text: decodeTextBytes(decodeBase64(entry.bytes)) };
+          } catch {
+            return { name, state: 'unreadable' };
+          }
+        }
+        return { name, state: 'unreadable' };
+      });
+    },
+  };
+}
+
+/** Lecteur principal : dossier automatique sur iPhone, rien ailleurs. */
 export function openShortcutFiles(runtime: Runtime, os: OsFamily): ShortcutFilesReader {
+  return runtime === 'tauri' && os === 'ios' ? createFolderShortcutFiles() : createUnsupportedShortcutFiles();
+}
+
+/** Secours : sélecteur de fichiers du système, iPhone seulement. */
+export function openShortcutPicker(runtime: Runtime, os: OsFamily): ShortcutFilesReader {
   return runtime === 'tauri' && os === 'ios' ? createPickerShortcutFiles() : createUnsupportedShortcutFiles();
 }

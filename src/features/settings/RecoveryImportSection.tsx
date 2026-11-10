@@ -29,9 +29,9 @@ function lastImportText(state: RecoveryImportState): string {
  * (par raison pour le dernier import de la session ; le total seul est gardé en base), « Importer maintenant ». PC : une phrase. Aucune valeur de
  * santé n'est affichée, seulement des comptes.
  */
-export function RecoveryImportSection({ reader }: { readonly reader?: ShortcutFilesReader }) {
+export function RecoveryImportSection({ reader, fallback }: { readonly reader?: ShortcutFilesReader; readonly fallback?: ShortcutFilesReader }) {
   const container = useAppContainer();
-  const service = useMemo(() => shortcutImportFor(container, reader), [container, reader]);
+  const service = useMemo(() => shortcutImportFor(container, reader, fallback), [container, reader, fallback]);
   const [states, setStates] = useState<readonly RecoveryImportState[]>([]);
   const [run, setRun] = useState<ImportRunResult | null>(service.lastRun());
   const [message, setMessage] = useState<string | null>(null);
@@ -63,14 +63,16 @@ export function RecoveryImportSection({ reader }: { readonly reader?: ShortcutFi
     };
   }, [pc, container]);
 
-  async function importNow(): Promise<void> {
+  /** « Importer maintenant » relit le dossier sante ; « Choisir les fichiers » ouvre le sélecteur, en secours (D-90). */
+  async function importNow(trigger: 'manual' | 'pick'): Promise<void> {
     setBusy(true);
     setMessage(null);
-    const result = await service.run('manual').catch(() => null);
+    const result = await service.run(trigger).catch(() => null);
     if (!live.current) return;
     setBusy(false);
     if (result === null) return setMessage(tHealth('shortcutFailed'));
     if (result.status === 'busy') return setMessage(tHealth('recBusy'));
+    if (result.status === 'folder-unavailable') return setMessage(tHealth('recFolderUnavailable'));
     if (result.status === 'cancelled') return setMessage(tHealth('recCancelled'));
     if (result.status === 'done') {
       setRun(result);
@@ -91,8 +93,11 @@ export function RecoveryImportSection({ reader }: { readonly reader?: ShortcutFi
           {TYPES.map(({ type, label }) => (
             <TypeRow key={type} label={tHealth(label)} state={states.find((s) => s.type === type) ?? null} outcome={run?.files.find((f) => f.type === type) ?? null} />
           ))}
-          <Button className="ct-body__save" disabled={busy} onClick={() => void importNow()}>
+          <Button className="ct-body__save" disabled={busy} onClick={() => void importNow('manual')}>
             {busy ? tHealth('recImporting') : tHealth('recImportNow')}
+          </Button>
+          <Button className="ct-body__save" disabled={busy} onClick={() => void importNow('pick')}>
+            {tHealth('recPickFiles')}
           </Button>
           {message !== null && (
             <p className="ct-body__message" role="status">
