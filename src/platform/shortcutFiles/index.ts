@@ -30,10 +30,21 @@ export class ShortcutFolderError extends Error {
   }
 }
 
+/** `size` : taille en octets quand elle est connue ; `cloud` : fichier présent mais pas encore téléchargé (diagnostic, I5-04). */
 export type ShortcutFileRead =
-  | { readonly name: ShortcutFileName; readonly state: 'ok'; readonly text: string }
+  | { readonly name: ShortcutFileName; readonly state: 'ok'; readonly text: string; readonly size?: number }
   | { readonly name: ShortcutFileName; readonly state: 'absent' }
-  | { readonly name: ShortcutFileName; readonly state: 'unreadable' };
+  | { readonly name: ShortcutFileName; readonly state: 'unreadable'; readonly cloud?: true; readonly size?: number };
+
+/** Diagnostic du dossier lu au dernier appel (I5-04) : booléens et comptes seulement, jamais un nom ni un chemin. */
+export interface ShortcutFolderProbe {
+  readonly rootListed: boolean;
+  readonly santePresent: boolean;
+  /** `devices` existe sous la même racine : la racine liée est bien celle de la synchro. */
+  readonly devicesPresent: boolean;
+  readonly rootEntries: number;
+  readonly santeEntries: number;
+}
 
 export interface ShortcutFilesReader {
   readonly kind: 'unsupported' | 'picker' | 'folder';
@@ -41,6 +52,8 @@ export interface ShortcutFilesReader {
   readonly automatic: boolean;
   /** Un résultat par nom demandé, dans l'ordre ; `null` : l'utilisateur a annulé (ou lecteur non pris en charge). Ne rejette pas pour un fichier seul. */
   read(names: readonly ShortcutFileName[]): Promise<readonly ShortcutFileRead[] | null>;
+  /** Diagnostic du dossier au dernier `read` (lecteur de dossier seulement) ; `null` avant la première lecture. */
+  probe?(): ShortcutFolderProbe | null;
 }
 
 /** Taille maximale d'un fichier lu (2 Mio : 10 000 lignes en tiennent largement). */
@@ -116,10 +129,22 @@ function decodeBase64(value: string): Uint8Array {
   return bytes;
 }
 
+const count = (value: unknown): number => (typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : 0);
+const sizeOf = (value: unknown): { readonly size: number } | Record<string, never> => (typeof value === 'number' && Number.isInteger(value) && value >= 0 ? { size: value } : {});
+
+function probeOf(raw: unknown): ShortcutFolderProbe | null {
+  const folder = typeof raw === 'object' && raw !== null ? (raw as { folder?: unknown }).folder : undefined;
+  if (typeof folder !== 'object' || folder === null) return null;
+  const f = folder as Record<string, unknown>;
+  return { rootListed: f.rootListed === true, santePresent: f.santePresent === true, devicesPresent: f.devicesPresent === true, rootEntries: count(f.rootEntries), santeEntries: count(f.santeEntries) };
+}
+
 export function createFolderShortcutFiles(invoke: FolderInvoker = tauriInvoker): ShortcutFilesReader {
+  let last: ShortcutFolderProbe | null = null;
   return {
     kind: 'folder',
     automatic: true,
+    probe: () => last,
     async read(names) {
       const wanted = names.filter((name) => (SHORTCUT_FILE_NAMES as readonly string[]).includes(name));
       let raw: unknown;
@@ -128,23 +153,26 @@ export function createFolderShortcutFiles(invoke: FolderInvoker = tauriInvoker):
       } catch (error) {
         throw new ShortcutFolderError(folderErrorCode(error));
       }
-      const byName = new Map<string, { state?: unknown; bytes?: unknown }>();
-      if (Array.isArray(raw)) {
-        for (const entry of raw as { name?: unknown; state?: unknown; bytes?: unknown }[]) {
+      last = probeOf(raw);
+      const list = typeof raw === 'object' && raw !== null ? (raw as { files?: unknown }).files : undefined;
+      const byName = new Map<string, { state?: unknown; bytes?: unknown; size?: unknown }>();
+      if (Array.isArray(list)) {
+        for (const entry of list as { name?: unknown; state?: unknown; bytes?: unknown; size?: unknown }[]) {
           if (typeof entry === 'object' && entry !== null && typeof entry.name === 'string') byName.set(entry.name, entry);
         }
       }
       return wanted.map((name): ShortcutFileRead => {
         const entry = byName.get(name);
         if (entry?.state === 'absent') return { name, state: 'absent' };
+        if (entry?.state === 'cloud') return { name, state: 'unreadable', cloud: true, ...sizeOf(entry.size) };
         if (entry?.state === 'ok' && typeof entry.bytes === 'string') {
           try {
-            return { name, state: 'ok', text: decodeTextBytes(decodeBase64(entry.bytes)) };
+            return { name, state: 'ok', text: decodeTextBytes(decodeBase64(entry.bytes)), ...sizeOf(entry.size) };
           } catch {
             return { name, state: 'unreadable' };
           }
         }
-        return { name, state: 'unreadable' };
+        return { name, state: 'unreadable', ...(entry?.state === 'unreadable' ? sizeOf(entry.size) : {}) };
       });
     },
   };

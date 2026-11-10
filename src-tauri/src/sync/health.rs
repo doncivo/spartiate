@@ -9,8 +9,8 @@
 //! - `DevicesOnly` enveloppe le dossier de la synchro (`Bound.fs`) : toute opération, lecture comprise, sur un chemin hors de
 //!   `devices/` est refusée (`Unsafe`) sans toucher au dossier. La synchro ne peut donc ni écrire, ni renommer, ni supprimer, ni lire,
 //!   ni lister `sante/`, et rien de `sante/` n'entre dans un journal ni n'est chiffré ;
-//! - `read_health_files` a son propre accès au dossier (`SyncCore::read_health_files`) : lecture seule, quatre noms exacts, aucune
-//!   écriture, aucune liste. Un fichier absent ou le dossier absent donne l'état « absent », jamais une erreur.
+//! - `read_health_report` a son propre accès au dossier (`SyncCore::read_health_files`) : lecture seule, quatre noms (casse et accents du
+//!   dossier ignorés), aucune écriture ; il liste la racine et `sante/` pour décrire le dossier (comptes seulement, I5-04). Un fichier absent ou le dossier absent donne l'état « absent », jamais une erreur.
 
 use std::time::Duration;
 
@@ -31,19 +31,59 @@ pub const MAX_HEALTH_FILE_BYTES: u64 = 2 * 1024 * 1024;
 /// l'échéance d'un appel de synchro (20 s, `BOOKMARK_CALL_DEADLINE_MS`), sinon un cycle en cours rendrait `cloud-pending` (relecture D-26).
 pub const HEALTH_HYDRATE_BUDGET: Duration = Duration::from_secs(15);
 
-/// Un fichier lu : état `ok` (octets en base64, décodés en texte par l'import), `absent` ou `unreadable` (trop gros, nuage injoignable,
-/// lien, erreur d'accès). Jamais un chemin, jamais le texte d'une erreur.
+/// Un fichier lu : état `ok` (octets en base64, décodés en texte par l'import), `absent`, `cloud` (présent mais pas encore téléchargé :
+/// budget épuisé ou transfert en cours) ou `unreadable` (trop gros, lien, erreur d'accès). `size` : taille en octets quand elle est connue.
+/// Jamais un chemin, jamais le texte d'une erreur.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HealthFileRead {
     pub name: String,
     pub state: &'static str,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub size: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub bytes: Option<String>,
 }
 
-/// Lit les fichiers demandés, dans l'ordre. Un nom hors des quatre, un doublon ou plus de quatre noms : `bad-name` AVANT tout accès.
+/// Diagnostic du dossier (I5-04 point 2) : seulement des booléens et des comptes, jamais un nom ni un chemin.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HealthFolder {
+    /// La racine liée a pu être listée.
+    pub root_listed: bool,
+    /// Un dossier `sante` (casse et accents ignorés) existe sous la racine.
+    pub sante_present: bool,
+    /// Le dossier `devices` de la synchro existe sous la même racine (la racine liée est bien celle de la synchro).
+    pub devices_present: bool,
+    pub root_entries: u32,
+    pub sante_entries: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct HealthReport {
+    pub folder: HealthFolder,
+    pub files: Vec<HealthFileRead>,
+}
+
+/// Nom sans casse ni accent (« Santé », « SANTE », « sante » + accent combinant) : le raccourci n'écrit pas toujours exactement `sante`.
+fn fold(name: &str) -> String {
+    name.chars()
+        .filter(|c| !matches!(c, '̀'..='̂'))
+        .map(|c| match c {
+            'é' | 'è' | 'ê' | 'É' | 'È' | 'Ê' => 'e',
+            c => c.to_ascii_lowercase(),
+        })
+        .collect()
+}
+
+/// Lit les fichiers demandés, dans l'ordre (voir `read_health_report`).
 pub fn read_health_files(fs: &dyn SyncFs, names: &[String]) -> SyncResult<Vec<HealthFileRead>> {
+    read_health_report(fs, names).map(|report| report.files)
+}
+
+/// Lit les fichiers demandés, dans l'ordre, et décrit le dossier. Un nom hors des quatre, un doublon ou plus de quatre noms : `bad-name` AVANT
+/// tout accès. Lecture seule : une liste de la racine et de `sante/` (comptes et noms résolus, jamais renvoyés), puis une lecture par nom.
+pub fn read_health_report(fs: &dyn SyncFs, names: &[String]) -> SyncResult<HealthReport> {
     let distinct = names
         .iter()
         .collect::<std::collections::BTreeSet<_>>()
@@ -55,28 +95,62 @@ pub fn read_health_files(fs: &dyn SyncFs, names: &[String]) -> SyncResult<Vec<He
     {
         return fail(SyncCode::BadName);
     }
-    Ok(names
+    let mut folder = HealthFolder::default();
+    // Racine : le dossier `sante` sous son vrai nom, et la présence de `devices`.
+    let mut dir = HEALTH_DIR.to_owned();
+    if let Ok(listing) = fs.list(&[], 256) {
+        folder.root_listed = true;
+        folder.root_entries = listing.entries.len() as u32;
+        folder.devices_present = listing
+            .entries
+            .iter()
+            .any(|e| e.is_dir && e.name == DEVICES_DIR);
+        let mut found = listing
+            .entries
+            .iter()
+            .filter(|e| e.is_dir && fold(&e.name) == HEALTH_DIR);
+        let first = found.next();
+        let exact = listing
+            .entries
+            .iter()
+            .find(|e| e.is_dir && e.name == HEALTH_DIR);
+        if let Some(entry) = exact.or(first) {
+            dir = entry.name.clone();
+        }
+    }
+    // `sante` : ses entrées, pour retrouver les vrais noms et les tailles.
+    let listed = match fs.list(&[dir.as_str()], 256) {
+        Ok(listing) => {
+            folder.sante_present = true;
+            folder.sante_entries = listing.entries.len() as u32;
+            listing.entries
+        }
+        Err(_) => Vec::new(),
+    };
+    let files = names
         .iter()
-        .map(
-            |name| match fs.read(&[HEALTH_DIR, name], MAX_HEALTH_FILE_BYTES, true) {
-                Ok(bytes) => HealthFileRead {
-                    name: name.clone(),
-                    state: "ok",
-                    bytes: Some(STANDARD.encode(bytes)),
-                },
-                Err(FsError::NotFound) => HealthFileRead {
-                    name: name.clone(),
-                    state: "absent",
-                    bytes: None,
-                },
-                Err(_) => HealthFileRead {
-                    name: name.clone(),
-                    state: "unreadable",
-                    bytes: None,
-                },
-            },
-        )
-        .collect())
+        .map(|name| {
+            let entry = listed
+                .iter()
+                .find(|e| !e.is_dir && e.name.eq_ignore_ascii_case(name));
+            let actual = entry.map_or(name.as_str(), |e| e.name.as_str());
+            let known = entry.map(|e| e.size).filter(|s| *s > 0);
+            let (state, size, bytes) =
+                match fs.read(&[dir.as_str(), actual], MAX_HEALTH_FILE_BYTES, true) {
+                    Ok(bytes) => ("ok", Some(bytes.len() as u64), Some(STANDARD.encode(bytes))),
+                    Err(FsError::NotFound) => ("absent", None, None),
+                    Err(FsError::CloudPending) => ("cloud", known, None),
+                    Err(_) => ("unreadable", known, None),
+                };
+            HealthFileRead {
+                name: name.clone(),
+                state,
+                size,
+                bytes,
+            }
+        })
+        .collect();
+    Ok(HealthReport { folder, files })
 }
 
 /// Enveloppe du dossier de la synchro : seuls les chemins sous `devices/` passent, toute autre opération est refusée (`Unsafe`) sans

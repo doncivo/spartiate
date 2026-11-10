@@ -52,7 +52,7 @@ fn health_files(fs: &MemFs) -> Vec<(String, Vec<u8>)> {
 
 fn state(ep: &str, seq: u64) -> serde_json::Value {
     json!({
-        "deviceId": DEV_A, "platform": "windows", "appVersion": "0.11.1", "sm": 1, "sv": 14, "epoch": ep, "stateSeq": seq,
+        "deviceId": DEV_A, "platform": "windows", "appVersion": "0.11.2", "sm": 1, "sv": 14, "epoch": ep, "stateSeq": seq,
         "head": { "epoch": ep, "segment": 0, "record": 0, "hlc": null, "stateSeq": seq },
         "acks": {}, "snapshot": null, "purgeHorizon": null, "lastSyncHlc": hlc(seq * 1_000, DEV_A), "forgotten": [], "reset": null
     })
@@ -376,8 +376,8 @@ fn the_sync_core_wraps_its_folder_in_devices_only_and_has_one_health_entry_point
     let wraps = SERVICE_RS.matches("DevicesOnly::new(").count();
     let bounds = SERVICE_RS.matches("Bound {").count() - 1; // la définition de la structure
     assert_eq!(wraps, bounds, "chaque Bound enveloppe son fs");
-    // Une seule entrée de lecture de sante/, hors des commandes sync_* : `read_health_files`.
-    assert_eq!(SERVICE_RS.matches("health::read_health_files(").count(), 1);
+    // Une seule entrée de lecture de sante/, hors des commandes sync_* : `read_health_report`.
+    assert_eq!(SERVICE_RS.matches("health::read_health_report(").count(), 1);
     // La commande iPhone n'est pas une commande de synchro (liste figée à 22) et n'écrit pas.
     assert!(COMMANDS_IOS_RS.contains("health_files_read"));
     assert!(!COMMANDS_IOS_RS.contains("write_health"));
@@ -432,7 +432,7 @@ fn lab_hrv() -> Vec<u8> {
     text.into_bytes()
 }
 
-fn bookmark_over(plugin: &FakePlugin, clock: &Arc<AtomicU64>) -> BookmarkFs {
+fn bookmark_over(plugin: &Arc<FakePlugin>, clock: &Arc<AtomicU64>) -> BookmarkFs {
     let now = clock.clone();
     BookmarkFs::new(
         Arc::new(SharedPlugin(plugin.clone())),
@@ -513,10 +513,15 @@ fn reader_never_follows_a_listed_name_outside_the_four_files() {
     fs.put(&[HEALTH_DIR, "state.spx"], b"x");
     let report = report_of(&SharedFs(fs.clone()));
     assert!(report.files.iter().all(|f| f.state == "absent"));
-    assert!(fs.read_log.lock().unwrap().iter().all(|p| p == "sante/hrv.csv"
-        || p == "sante/fc-repos.csv"
-        || p == "sante/sommeil.csv"
-        || p == "sante/pas.csv"));
+    assert!(fs
+        .read_log
+        .lock()
+        .unwrap()
+        .iter()
+        .all(|p| p == "sante/hrv.csv"
+            || p == "sante/fc-repos.csv"
+            || p == "sante/sommeil.csv"
+            || p == "sante/pas.csv"));
 }
 
 #[test]

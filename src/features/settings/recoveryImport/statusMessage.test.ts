@@ -47,6 +47,6 @@ describe('phrase de chaque statut d’import (I5-04 point 1)', () => {
 
   it('done avec import et recalcul : la phrase du recalcul s’ajoute', () => {
     expect(importStatusMessage({ ...base, files: [file('imported', 1), ...four('absent').slice(1)], recomputedDays: 3 })).toMatch(/3 jours/);
-    expect(importStatusMessage({ ...base, files: [file('imported', 1)], recomputeFailed: true })).toMatch(/recalcul/i);
+    expect(importStatusMessage({ ...base, files: [file('imported', 1)], recomputeFailed: true })).toMatch(/calcul/i);
   });
 });

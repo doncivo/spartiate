@@ -49,12 +49,15 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
       ...overrides,
     });
 
-  it('lecteur non pris en charge (PC) : « unsupported », aucune lecture, aucun journal', async () => {
+  it('lecteur non pris en charge (PC) : « unsupported », aucune lecture ; journal du seul geste manuel, pas de l’ouverture', async () => {
     const r = reader(async () => ALL_OK(), { kind: 'unsupported', automatic: false });
-    const result = await build(r).run('manual');
+    const service = build(r);
+    expect((await service.run('open')).status).toBe('unsupported');
+    expect(logs).toEqual([]);
+    const result = await service.run('manual');
     expect(result.status).toBe('unsupported');
     expect(r.read).not.toHaveBeenCalled();
-    expect(logs).toEqual([]);
+    expect(logs.map((l) => l.event)).toEqual(['recovery-import-unsupported']);
   });
 
   it('à l’ouverture, un lecteur non automatique ne lit rien (« needs-pick »)', async () => {
