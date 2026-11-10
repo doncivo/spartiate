@@ -93,18 +93,20 @@ describe('bandeau « journée rouge » (§ 16.7)', () => {
     const view = openSession(os);
     const b = await banner();
     expect(within(b).getByText(BANNER)).toBeInTheDocument();
+    // D-93 révisée : la phrase dit le maintien, jamais une baisse automatique.
+    expect(within(b).getByText(/aucune baisse automatique/)).toBeInTheDocument();
     // Proposition habituelle tant qu'Ali n'a rien choisi.
     expect(await within(await proposal()).findByText('102,5 kg × 8 · 8 · 8')).toBeInTheDocument();
     fireEvent.click(within(b).getByRole('button', { name: 'Accepter le maintien' }));
-    expect(await within(await proposal()).findByText('95 kg × 10 · 10 · 10')).toBeInTheDocument();
-    expect(within(await proposal()).getByText('Journée rouge : aucune hausse aujourd’hui, charge réduite de 5 kg (−5 %) ; estimation, pas un avis médical.')).toBeInTheDocument();
+    expect(await within(await proposal()).findByText('100 kg × 10 · 10 · 10')).toBeInTheDocument();
+    expect(within(await proposal()).getByText('Journée rouge : charges maintenues, aucune hausse ni baisse automatique ; estimation, pas un avis médical.')).toBeInTheDocument();
     expect(await within(await banner()).findByText('Journée rouge : maintien des charges accepté pour cette séance.')).toBeInTheDocument();
     expect(within(await banner()).queryByRole('button', { name: 'Accepter le maintien' })).toBeNull();
     // Reprise (fermeture puis réouverture) : le choix vaut pour cette séance, sans nouvelle question.
     view.unmount();
     openSession(os);
     expect(await within(await banner()).findByText('Journée rouge : maintien des charges accepté pour cette séance.')).toBeInTheDocument();
-    expect(await within(await proposal()).findByText('95 kg × 10 · 10 · 10')).toBeInTheDocument();
+    expect(await within(await proposal()).findByText('100 kg × 10 · 10 · 10')).toBeInTheDocument();
   });
 
   it('ignorer : proposition inchangée, choix dit et gardé', async () => {
