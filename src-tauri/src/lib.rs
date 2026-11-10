@@ -171,6 +171,7 @@ pub fn run() {
         sync::commands_ios::sync_key_import,
         sync::commands_ios::sync_device_forget,
         sync::commands_ios::sync_reset_key,
+        sync::commands_ios::health_files_read,
         // FILES-IOS-01 (ADR 0009 avenant lot F A3) : même commande et même permission qu'au PC, temporaire remis au plugin ct-files.
         export_ios::export_save_file,
         // P-04-iOS (ADR 0009 avenant lot F B1) : sauvegarde et restauration sur iPhone ; `reveal_backups_folder` reste PC.

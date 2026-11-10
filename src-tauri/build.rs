@@ -70,6 +70,8 @@ fn main() {
             "sync_device_forget",
             "sync_forgotten_delete",
             "sync_reset_key",
+            // I5-03 (D-90, H-26) : lecture seule de sante/ (fichiers du raccourci Santé), iPhone uniquement (capability health-files-ios.json).
+            "health_files_read",
             // Journal technique persistant (I-04, ADR 0014 §2) : PC et iPhone, capabilities logs.json et logs-ios.json.
             "log_append",
             "log_read",

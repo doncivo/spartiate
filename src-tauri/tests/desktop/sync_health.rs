@@ -19,7 +19,6 @@ use spartiate_lib::sync::files::{AppendMode, Availability, FsError, SyncFs};
 use spartiate_lib::sync::health::{
     read_health_files, DevicesOnly, HEALTH_DIR, HEALTH_FILES, MAX_HEALTH_FILE_BYTES,
 };
-use spartiate_lib::sync::service::AppendRequest;
 use spartiate_lib::sync::SyncCode;
 
 use crate::support::fake_bookmark::{FakePlugin, SharedPlugin, BOOKMARK, ROOT};
@@ -56,7 +55,7 @@ fn state(ep: &str, seq: u64) -> serde_json::Value {
     })
 }
 
-/// Un cycle complet de publication : instantané, segment, état, scan.
+/// Un cycle de publication : instantané, état, scan.
 fn full_cycle(d: &Device) -> spartiate_lib::sync::store::FolderScan {
     let ep = epoch(1, DEV_A);
     let handle = d.core.snapshot_begin(&ep, 1, 14).unwrap();
@@ -64,16 +63,6 @@ fn full_cycle(d: &Device) -> spartiate_lib::sync::store::FolderScan {
         .snapshot_append(handle, &["{\"k\":\"snap-rows\"}".to_owned()])
         .unwrap();
     d.core.snapshot_commit(handle).unwrap();
-    d.core
-        .append_journal(&AppendRequest {
-            epoch: ep.clone(),
-            segment: 1,
-            expect_records: 0,
-            sv: 14,
-            max_hlc: hlc(100, DEV_A),
-            records: vec!["{}".to_owned()],
-        })
-        .unwrap();
     d.core.write_state(14, state(&ep, 1)).unwrap();
     d.core.scan(&[]).unwrap()
 }

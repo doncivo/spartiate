@@ -18,6 +18,7 @@ use super::bookmark::{
 };
 use super::consent::ConsentUi;
 use super::consent_ios::IosConsentUi;
+use super::health::HealthFileRead;
 use super::marker::RestoreMarker;
 use super::service::{
     system_clock, AppendRequest, FolderInfo, KeyImportResult, KeyStatus, SyncCore,
@@ -459,6 +460,20 @@ pub async fn sync_device_forget<R: Runtime>(
     require_main(&window)?;
     let core = state.core(&app)?;
     blocking(move || core.device_forget(&device_id, OWNER)).await
+}
+
+/// I5-03 (D-90, H-26) : fichiers du raccourci Santé dans `sante/` du dossier lié, LECTURE SEULE, quatre noms exacts (`hrv.csv`, `fc-repos.csv`,
+/// `sommeil.csv`, `pas.csv`), téléchargement forcé avant lecture. Pas une commande de synchro : rien n'est publié, chiffré ni écrit.
+#[tauri::command]
+pub async fn health_files_read<R: Runtime>(
+    app: AppHandle<R>,
+    window: WebviewWindow<R>,
+    state: State<'_, SyncState>,
+    names: Vec<String>,
+) -> SyncResult<Vec<HealthFileRead>> {
+    require_main(&window)?;
+    let core = state.core(&app)?;
+    blocking(move || core.read_health_files(&names)).await
 }
 
 /// Y-11 : réinitialisation avec une nouvelle clé, après la confirmation native de l'iPhone ; seul le `kid` est rendu.

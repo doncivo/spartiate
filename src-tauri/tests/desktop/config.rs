@@ -1499,3 +1499,30 @@ fn ios_log_lives_in_documents_with_a_fallback() {
     let init = ios.find("crate::applog::init(").unwrap();
     assert!(documents < init);
 }
+
+/// I5-03 (D-90, H-26) : `health_files_read` (lecture seule de `sante/`) est au manifeste, déclarée sur iPhone seulement, et accordée par la
+/// seule capability `health-files-ios.json` (fenêtre `main`) ; ce n'est pas une commande de synchro (`sync-*` reste réservé à la synchro).
+#[test]
+fn health_files_read_is_registered_in_its_own_ios_capability() {
+    assert!(manifest_commands().contains("health_files_read"));
+    let ios = include_str!("../../src/lib.rs");
+    assert!(ios.contains("sync::commands_ios::health_files_read"));
+    assert!(!SYNC_COMMANDS.contains(&"health_files_read"));
+    let mut found = false;
+    for (name, text) in all_capabilities() {
+        let granted = permissions_of(&text).iter().any(|p| p.contains("health-files"));
+        if name == "health-files-ios.json" {
+            found = true;
+            let capability: Value = serde_json::from_str(&text).expect("capability valide");
+            assert_eq!(capability["windows"], serde_json::json!(["main"]));
+            assert_eq!(capability["platforms"], serde_json::json!(["iOS"]));
+            assert_eq!(
+                permissions_of(&text),
+                vec!["allow-health-files-read".to_owned()]
+            );
+        } else {
+            assert!(!granted, "{name} accorde la lecture de sante/");
+        }
+    }
+    assert!(found, "capability health-files-ios.json absente");
+}
