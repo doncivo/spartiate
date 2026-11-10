@@ -18,7 +18,7 @@ import { localToUtcMs, utcToLocal } from '../../../domain/timeZone';
 import type { LocalDate } from '../../../domain/types';
 import type { RecoveryRepository } from '../../../db/repositories/recoveryRepository';
 import type { RecoverySampleInput, RecoverySampleRepository, RecoverySampleType } from '../../../db/repositories/recoverySampleRepository';
-import { SHORTCUT_FILE_NAMES, type ShortcutFileName, type ShortcutFilesReader } from '../../../platform/shortcutFiles';
+import { SHORTCUT_FILE_NAMES, ShortcutFolderError, type ShortcutFileName, type ShortcutFilesReader } from '../../../platform/shortcutFiles';
 
 /**
  * Import des fichiers Raccourcis et recalcul de la récupération (I5-01 points 1.3 et 1.6, D-69). Sans E/S directe : lecteur de fichiers, dépôts,
@@ -31,6 +31,7 @@ import { SHORTCUT_FILE_NAMES, type ShortcutFileName, type ShortcutFilesReader } 
 export const IMPORT_LOG_EVENTS = [
   'recovery-import-start',
   'recovery-import-cancelled',
+  'recovery-import-folder-unavailable',
   'recovery-import-file',
   'recovery-import-file-absent',
   'recovery-import-file-unreadable',
@@ -44,7 +45,11 @@ export const IMPORT_LOG_EVENTS = [
 export type ImportLogEvent = (typeof IMPORT_LOG_EVENTS)[number];
 export type ImportLog = (event: ImportLogEvent, counts: Readonly<Record<string, number>>) => void;
 
-export type ImportTrigger = 'open' | 'manual';
+/** `open` : ouverture de l'app et retour au premier plan (dossier, au plus une fois par `AUTO_IMPORT_INTERVAL_MS`) ; `manual` : « Importer maintenant » (dossier) ; `pick` : sélecteur de fichiers, en secours. */
+export type ImportTrigger = 'open' | 'manual' | 'pick';
+
+/** I5-03 (D-90) : lecture automatique au plus une fois toutes les 30 minutes (en mémoire pour la session, et d'après le dernier import gardé en base). */
+export const AUTO_IMPORT_INTERVAL_MS = 30 * 60 * 1000;
 
 export interface FileOutcome {
   readonly type: RecoverySampleType;
@@ -62,7 +67,8 @@ export interface FileOutcome {
 }
 
 export interface ImportRunResult {
-  readonly status: 'unsupported' | 'needs-pick' | 'busy' | 'cancelled' | 'done';
+  /** `throttled` : lecture automatique déjà faite il y a moins de 30 minutes ; `folder-unavailable` : dossier de synchro non lié ou injoignable (D-90). */
+  readonly status: 'unsupported' | 'needs-pick' | 'busy' | 'throttled' | 'folder-unavailable' | 'cancelled' | 'done';
   readonly files: readonly FileOutcome[];
   readonly recomputedDays: number;
   readonly recomputeFailed: boolean;
@@ -71,7 +77,10 @@ export interface ImportRunResult {
 }
 
 export interface ShortcutImportDeps {
+  /** Lecteur principal : le dossier sante sur iPhone (automatique), rien sur PC. */
   readonly reader: ShortcutFilesReader;
+  /** Secours : le sélecteur de fichiers (`run('pick')`) ; absent : le lecteur principal. */
+  readonly fallback?: ShortcutFilesReader;
   readonly samples: () => Promise<RecoverySampleRepository>;
   readonly recovery: () => Promise<RecoveryRepository>;
   /** Séances closes depuis cet instant (ISO UTC), dans la forme attendue par le moteur. */
@@ -124,6 +133,8 @@ function parseFile(type: RecoverySampleType, text: string, today: string, tz: st
 export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutImportService {
   let running = false;
   let last: ImportRunResult | null = null;
+  /** Dernière tentative de cette session (ms), lecture automatique ou non : une tentative sans fichier compte aussi. */
+  let lastAttemptMs: number | null = null;
 
   const nowIso = (): string => new Date(deps.clock.nowMs()).toISOString();
 
@@ -207,12 +218,28 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     return days.length;
   }
 
-  async function execute(): Promise<ImportRunResult> {
+  /** Une lecture automatique a-t-elle eu lieu il y a moins de 30 minutes (cette session, ou dernier import gardé en base) ? */
+  async function attemptedRecently(): Promise<boolean> {
+    const now = deps.clock.nowMs();
+    if (lastAttemptMs !== null && now - lastAttemptMs < AUTO_IMPORT_INTERVAL_MS) return true;
+    try {
+      const states = await (await deps.samples()).listImportStates();
+      return states.some((state) => now - Date.parse(state.importedAt) < AUTO_IMPORT_INTERVAL_MS);
+    } catch {
+      return false;
+    }
+  }
+
+  async function execute(source: ShortcutFilesReader): Promise<ImportRunResult> {
     deps.log('recovery-import-start', {});
     let reads: Awaited<ReturnType<ShortcutFilesReader['read']>>;
     try {
-      reads = await deps.reader.read(SHORTCUT_FILE_NAMES);
-    } catch {
+      reads = await source.read(SHORTCUT_FILE_NAMES);
+    } catch (error) {
+      if (error instanceof ShortcutFolderError) {
+        deps.log('recovery-import-folder-unavailable', {});
+        return { status: 'folder-unavailable', files: [], recomputedDays: 0, recomputeFailed: false, at: null };
+      }
       reads = null;
     }
     if (reads === null) {
@@ -261,7 +288,9 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       if (running) return { ...none, status: 'busy' };
       running = true;
       try {
-        const result = await execute();
+        if (trigger === 'open' && (await attemptedRecently())) return { ...none, status: 'throttled' };
+        lastAttemptMs = deps.clock.nowMs();
+        const result = await execute(trigger === 'pick' ? (deps.fallback ?? deps.reader) : deps.reader);
         if (result.status === 'done') last = result;
         return result;
       } finally {

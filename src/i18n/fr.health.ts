@@ -20,7 +20,7 @@ export const healthFr = {
   /** 0.1.4 (6) : compte Apple gratuit, SideStore retire la capacité HealthKit ; le chemin passe par Raccourcis (ticket séparé). */
   sideStoreBlocked: 'Apple Santé n’est pas accessible avec une app installée par SideStore (compte Apple gratuit). Tes pesées passent par l’app Raccourcis : importe son fichier ci-dessous.',
   shortcutTitle: 'Pesées depuis Raccourcis',
-  shortcutHint: 'Le raccourci « Spartiate — poids » enregistre tes pesées de Santé dans un fichier (iCloud Drive › Spartiate-sante › poids.csv). Importe-le ici quand tu veux : une pesée par jour, la plus récente, sans toucher à tes saisies manuelles.',
+  shortcutHint: 'Le raccourci « Spartiate — poids » enregistre tes pesées de Santé dans un fichier (iCloud Drive › Spartiate › sante › poids.csv). Importe-le ici quand tu veux : une pesée par jour, la plus récente, sans toucher à tes saisies manuelles.',
   shortcutImport: 'Importer le fichier du raccourci',
   shortcutImporting: 'Import en cours…',
   shortcutDoneOne: '1 pesée importée{rejected}.',
@@ -32,8 +32,10 @@ export const healthFr = {
   /** Section « Raccourcis » (récupération, I5-01 points 1.3 et 1.7). */
   recTitle: 'Récupération depuis Raccourcis',
   recPcOnly: 'Les fichiers Raccourcis sont lus sur l’iPhone ; le PC reçoit les résumés par la synchro.',
-  recHint: 'Le raccourci « Spartiate — récupération » écrit hrv.csv, fc-repos.csv, sommeil.csv et pas.csv dans iCloud Drive › Spartiate-sante. Aucune donnée n’est envoyée à un service tiers ; les résumés passent par ta synchro chiffrée.',
-  recPickHint: 'Sur iPhone, iOS demande de choisir les fichiers : ouvre iCloud Drive › Spartiate-sante et sélectionne les quatre fichiers d’un coup (iOS télécharge ceux qui sont encore dans iCloud).',
+  recHint: 'Le raccourci « Spartiate — récupération » écrit hrv.csv, fc-repos.csv, sommeil.csv et pas.csv dans iCloud Drive › Spartiate › sante. Spartiate les lit seul à l’ouverture (au plus toutes les 30 minutes) et quand tu touches « Importer maintenant ». Aucune donnée n’est envoyée à un service tiers ; les résumés passent par ta synchro chiffrée.',
+  recPickHint: 'Si le dossier n’est pas lu, « Choisir les fichiers » ouvre le sélecteur d’iOS : sélectionne les quatre fichiers du dossier sante d’un coup (iOS télécharge ceux qui sont encore dans iCloud).',
+  recPickFiles: 'Choisir les fichiers',
+  recFolderUnavailable: 'Le dossier iCloud Drive › Spartiate n’a pas pu être lu : vérifie qu’il est lié dans Plus › Appareils et synchro, ou choisis les fichiers à la main.',
   recGuide: 'Pas de raccourci ? Le guide « Santé par Raccourcis » est dans le dépôt de Spartiate : docs/guide-raccourcis-sante.md.',
   recImportNow: 'Importer maintenant',
   recImporting: 'Import en cours…',

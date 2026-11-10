@@ -27,7 +27,15 @@ const READ_FAILURE = (code: string | undefined): string => (code ? tHealth('read
  * Santé. iOS ne dit jamais si la lecture est accordée : une demande terminée est « terminée », un résultat vide n'est ni un zéro ni la
  * preuve d'un refus. « Utiliser cette pesée » enregistre la lecture par `saveHealth` (identité `health`), sans toucher à la saisie manuelle.
  */
-export function AppleHealthScreen({ healthKit = platformHealthKit, shortcutReader }: { readonly healthKit?: HealthKit; readonly shortcutReader?: ShortcutFilesReader }) {
+export function AppleHealthScreen({
+  healthKit = platformHealthKit,
+  shortcutReader,
+  shortcutFallback,
+}: {
+  readonly healthKit?: HealthKit;
+  readonly shortcutReader?: ShortcutFilesReader;
+  readonly shortcutFallback?: ShortcutFilesReader;
+}) {
   const container = useAppContainer();
   const layout = useLayout();
   const navigate = useNavigationStore((s) => s.navigate);
@@ -144,7 +152,7 @@ export function AppleHealthScreen({ healthKit = platformHealthKit, shortcutReade
 
         {blocked && <ShortcutImport />}
 
-        <RecoveryImportSection {...(shortcutReader ? { reader: shortcutReader } : {})} />
+        <RecoveryImportSection {...(shortcutReader ? { reader: shortcutReader } : {})} {...(shortcutFallback ? { fallback: shortcutFallback } : {})} />
 
         <RecoveryNotificationsSection />
 

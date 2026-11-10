@@ -2,6 +2,14 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.11.1
+
+Import automatique des fichiers Raccourcis et réglages de la récupération. **Pas de mise à jour de la base** (reste en version 10) ; aucune donnée saisie n'est modifiée.
+
+- **Import automatique** : le raccourci « Spartiate — récupération » écrit désormais dans `iCloud Drive › Spartiate › sante` (**nouveau chemin : change le sous-chemin de l'action « Enregistrer le fichier »**, guide mis à jour). Spartiate lit ces quatre fichiers tout seul à l'ouverture et au retour au premier plan (au plus une fois toutes les 30 minutes) ; « Importer maintenant » relit le dossier ; « Choisir les fichiers » reste en secours. Lecture seule : la synchro ne regarde jamais ce dossier. À constater sur ton iPhone (H-26).
+- **Exertion** : une séance lourde compte enfin. Échelle de la musculation de 20 : 6 t → 3,3 ; 12 t → 5,5 ; 20 t → 7,4 (choix prudent, révisable). La zone cible et le supplément de sommeil jouent à partir d'environ 12 t.
+- **Journée rouge** : accepter le bandeau maintient les charges (aucune hausse, jamais de baisse automatique) ; ignorer garde la proposition normale.
+
 ## 0.11.0
 
 Les écrans de la récupération. **Pas de mise à jour de la base** (reste en version 10) ; aucune donnée saisie n'est modifiée.

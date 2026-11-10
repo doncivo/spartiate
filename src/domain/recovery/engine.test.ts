@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { baselineStats, buildBaseline } from './baseline';
-import { RECOVERY_CONFIG } from './config';
+import { RECOVERY_CONFIG, STRENGTH_SCALE } from './config';
 import { summarizeRecoveryDay } from './daySummary';
 import { dayExertion } from './exertion';
 import { muscleRecovery } from './muscleRecovery';
@@ -169,13 +169,27 @@ describe('targetZone (§ 16.3)', () => {
 describe('dayExertion : musculation seule, cardio à zéro (D-88)', () => {
   const workout = (sets: RecoverySet[], endedAt = '2026-11-07T17:00:00.000Z'): RecoveryWorkout => ({ endedAt, sets });
 
-  it('tonnage/1000 × facteur de difficulté, puis 10 × (1 − e^(−x/300))', () => {
+  it('points muscu = tonnes × facteur de difficulté × échelle, puis 10 × (1 − e^(−points/300))', () => {
     const sets = [set({ difficulty: 'easy' }), set({ difficulty: 'ok' }), set({ difficulty: 'hard' }), set({ difficulty: null })];
     const x = (1000 * 0.8 + 1000 + 1000 * 1.2 + 1000) / 1000;
     const e = dayExertion([workout(sets)], '2026-11-07', TZ);
-    expect(e.muscuLoad).toBeCloseTo(x, 10);
-    expect(e.value).toBeCloseTo(10 * (1 - Math.exp(-x / 300)), 2);
+    expect(e.muscuLoad).toBeCloseTo(x * STRENGTH_SCALE, 10);
+    expect(e.value).toBeCloseTo(10 * (1 - Math.exp(-(x * STRENGTH_SCALE) / 300)), 2);
     expect(e.cardioLoad).toBe(0);
+  });
+
+  // D-88 révisée : une séance lourde doit atteindre la zone cible et le supplément de sommeil (> 5). Échelle de départ : 20.
+  it.each([
+    [6, 3.3, 'séance légère'],
+    [12, 5.51, 'séance normale : environ 5,5'],
+    [20, 7.36, 'très grosse séance : 7,4, environ 7,5'],
+  ])('%i t à difficulté normale → Exertion %f (%s)', (tonnes, expected) => {
+    const sets = Array.from({ length: tonnes }, () => set({ kg: 100, reps: 10, difficulty: 'ok' }));
+    expect(dayExertion([workout(sets)], '2026-11-07', TZ).value).toBeCloseTo(expected, 2);
+  });
+
+  it('l’échelle de départ vaut 20 (choix prudent, révisable par Ali)', () => {
+    expect(STRENGTH_SCALE).toBe(20);
   });
 
   it('l’explication dit que le cardio n’est pas compté (clé dédiée), même sans séance', () => {
@@ -344,9 +358,16 @@ describe('summarizeRecoveryDay : résumé du jour (§ 16.4)', () => {
       nights: thirty(),
       workouts: [{ endedAt: '2026-11-07T17:00:00.000Z', sets }],
     });
-    expect(summary.exertionPrevDay).toBeCloseTo(10 * (1 - Math.exp(-6 / 300)), 2);
+    expect(summary.exertionPrevDay).toBeCloseTo(10 * (1 - Math.exp(-(6 * STRENGTH_SCALE) / 300)), 2);
     expect(summary.sleepNeedMinutes).toBe(450);
     expect(muscles[0]).toMatchObject({ day: TODAY, muscleId: 'chest' });
+  });
+
+  it('12 t donnent plus de 5 : le supplément de besoin de sommeil joue le lendemain', () => {
+    const sets = Array.from({ length: 12 }, () => set({ kg: 100, reps: 10, difficulty: 'ok' }));
+    const { summary } = summarizeRecoveryDay({ ...base, nights: thirty(), workouts: [{ endedAt: '2026-11-07T17:00:00.000Z', sets }] });
+    expect(summary.exertionPrevDay).toBeGreaterThan(5);
+    expect(summary.sleepNeedMinutes).toBeGreaterThan(450);
   });
 
   it('nuits postérieures au jour ignorées', () => {

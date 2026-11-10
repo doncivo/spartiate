@@ -15,6 +15,8 @@ import type { ExerciseKind, ProposalOption, RecoverySnapshot } from './types';
  * - Inactivité : à partir de 14 jours sans le muscle, −1 % par semaine complète au-delà du seuil (première décote à J21), plancher −10 %.
  * - Deload manuel : séries ÷ 2 arrondi en dessous (au moins une), charge × 0,8, RIR cible ≥ 4 ; la séance retenue sort des statistiques.
  * - Récupération : Recovery ≤ 33, sommeil < 6 h ou FC repos > +8 % → charge × 0,95 et une série de moins sur un exercice secondaire.
+ *   Exception, journée rouge acceptée par Ali (`redDay`, D-93 révisée, § 16.7 plus spécifique que § 11.3) : MAINTIEN de la charge et des séries
+ *   de référence, aucune hausse, jamais de baisse automatique.
  *   Snapshot absent ou champ nul : aucune modulation, aucune valeur inventée.
  */
 
@@ -103,6 +105,8 @@ export interface ActiveConstraints {
   readonly inactivityCut: number;
   readonly deload: boolean;
   readonly lowRecovery: boolean;
+  /** Journée rouge acceptée : la récupération basse maintient la référence au lieu de la réduire (D-93 révisée). */
+  readonly redDayHold: boolean;
 }
 
 export interface ConstraintContext {
@@ -122,6 +126,7 @@ export function activeConstraints(ctx: ConstraintContext): ActiveConstraints {
     inactivityCut: ctx.lastWorkedAt === null ? 0 : inactivityCut(daysBetween(ctx.lastWorkedAt, ctx.now), config),
     deload: ctx.deload,
     lowRecovery: isLowRecovery(ctx.recovery, config),
+    redDayHold: ctx.recovery?.redDay === true && isLowRecovery(ctx.recovery, config),
   };
 }
 
@@ -138,8 +143,9 @@ export function reducedTarget(
   let sets = reference.reps.length;
   if (c.deload) sets = deloadSetCount(sets);
   const beforeRecovery = sets;
-  if (c.lowRecovery && kind === 'isolation') sets = Math.max(1, sets - 1);
-  const factor = (1 - c.inactivityCut) * (c.deload ? config.deloadLoad : 1) * (c.lowRecovery ? config.lowRecoveryLoad : 1);
+  const recoveryCuts = c.lowRecovery && !c.redDayHold;
+  if (recoveryCuts && kind === 'isolation') sets = Math.max(1, sets - 1);
+  const factor = (1 - c.inactivityCut) * (c.deload ? config.deloadLoad : 1) * (recoveryCuts ? config.lowRecoveryLoad : 1);
   return { targetKg: reference.loadKg * factor, reps: reference.reps.slice(0, sets), recoverySetRemoved: sets < beforeRecovery };
 }
 
