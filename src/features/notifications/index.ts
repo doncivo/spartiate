@@ -19,7 +19,11 @@ export function recoveryNotificationsFor(container: AppContainer): RecoveryNotif
     clock: container.notificationClock,
     settings: container.data.repos.settings,
     todayScore: async (day: LocalDate) => (await (await container.data.repos.recovery()).getDay(day))?.summary.recovery ?? null,
-    log: (code, data) => logFailure('notifications', `${code} ${JSON.stringify(data ?? {})}`),
+    // Journal des échecs seulement : un succès (`-planned`) n'y est pas rangé ; jamais de valeur corporelle.
+    log: (code, data) => {
+      if (code.endsWith('-planned')) return;
+      logFailure('notifications', `${code} ${JSON.stringify(data ?? {})}`);
+    },
   });
   services.set(container, service);
   return service;

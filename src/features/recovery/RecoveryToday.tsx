@@ -36,8 +36,8 @@ const shift = (day: string, delta: number): LocalDate => new Date(Date.parse(`${
 async function read(container: AppContainer, today: LocalDate): Promise<Ready> {
   const { repos } = container.data;
   const phone = container.platform.os === 'ios';
-  const days = await (await repos.recovery()).listDays(shift(today, -7), today);
-  const record = days.length > 0 ? (days[days.length - 1] as RecoveryDayRecord) : null;
+  // Dernier résumé sans borne basse : un résumé ancien reste affiché, avec son avis périmé.
+  const record = await (await repos.recovery()).latestDay();
   if (!phone) return { status: 'ready', record, phone, importedAt: null, steps: null, hasImport: false };
   const samples = await repos.recoverySamples();
   const states = await samples.listImportStates();
@@ -89,7 +89,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
     );
   }
 
-  const stale = stalenessOf(phone ? load.importedAt : s.computedAt, nowMs);
+  const stale = stalenessOf(phone ? (load.importedAt ?? s.computedAt) : s.computedAt, nowMs);
   const recovery = recoveryDial(s);
   const exertion = exertionDial(s);
   const sleep = sleepDial(s);
