@@ -97,6 +97,8 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   deload: 'explainDeload',
   recoveryLow: 'explainRecoveryLow',
   recoveryLowSet: 'explainRecoveryLowSet',
+  redDay: 'explainRedDay',
+  redDayHeld: 'explainRedDayHeld',
   outlierHold: 'explainOutlierHold',
   position: 'explainPosition',
   positionHeld: 'explainPositionHeld',
