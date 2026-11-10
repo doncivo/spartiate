@@ -25,6 +25,7 @@ import { Button, ConfirmDialog } from '../../../ui';
 import { ExerciseList } from '../LibraryView';
 import type { TrainingData } from '../trainingState';
 import type { RestReport, RestTimerController } from './restTimer';
+import type { RedDayState } from './redDayState';
 import { SetRow } from './SetRow';
 
 /**
@@ -40,6 +41,9 @@ const SESSION_SETS_ON_ADD = 3;
 
 /** I2-01 (PR 2/2) : prescription et ressenti par exercice, bloc à la demande (moteur, repository et textes chargés avec lui). */
 const ExerciseProgression = lazy(() => import('./ExerciseProgression').then((m) => ({ default: m.ExerciseProgression })));
+/** I5-02 point 2.2 : bandeau « journée rouge » et Recovery Split, blocs à la demande (lectures, domaine et textes chargés avec eux). */
+const RedDayBanner = lazy(() => import('./RecoverySession').then((m) => ({ default: m.RedDayBanner })));
+const RecoverySplitView = lazy(() => import('./RecoverySession').then((m) => ({ default: m.RecoverySplitView })));
 
 interface RestView {
   readonly endAt: string;
@@ -77,6 +81,29 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   // Garde du double appui : un second « Terminer » arrivé avant le nouveau rendu ne relance pas la clôture.
   const closing = useRef(false);
   const pickerHeading = useRef<HTMLHeadingElement>(null);
+  /**
+   * I5-02 point 2.2 : journée rouge de cette séance, lue au lancement (et à la reprise) ; null pendant la lecture : la proposition attend,
+   * jamais une valeur montrée puis changée sans geste. Lecture impossible : aucune offre, aucune modulation.
+   */
+  const [redDayOf, setRedDayOf] = useState<{ readonly workoutId: string; readonly state: RedDayState } | null>(null);
+  const redDay = redDayOf !== null && redDayOf.workoutId === workout.id ? redDayOf.state : null;
+  const setRedDay = useCallback((state: RedDayState) => setRedDayOf({ workoutId: workout.id, state }), [workout.id]);
+  useEffect(() => {
+    let alive = true;
+    import('./redDayState')
+      .then((m) => m.loadRedDay(access, { id: workout.id, startedAt: workout.startedAt }).catch(() => m.NO_RED_DAY))
+      .then(
+        (state) => {
+          if (alive) setRedDay(state);
+        },
+        () => {
+          if (alive) setRedDay({ recovery: null, offer: false, choice: null, snapshot: null });
+        },
+      );
+    return () => {
+      alive = false;
+    };
+  }, [access, workout.id, workout.startedAt, setRedDay]);
 
   const exerciseOf = useCallback(
     (id: string): Exercise | undefined => data.content.catalog.get(id) ?? data.allCustoms.find((c) => c.id === id),
@@ -285,6 +312,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   // I2-03 (§ 13.8) : rampe d'échauffement pour le premier exercice composé de chaque pattern, dans l'ordre de la séance.
   // REV-01 constat 6 : rang de position de chaque exercice parmi ceux du même muscle principal (§ 11.3).
   const musclesOf = (id: string) => exerciseOf(id)?.muscles ?? [];
+  const muscleNameOf = (id: string): string => data.content.muscles.find((m) => m.id === id)?.nameFr ?? id;
   const positionRankOf = positionRanks(blocks.map((b) => ({ exerciseId: b.exerciseId, muscles: musclesOf(b.exerciseId) })));
   const warmupIds = warmupExerciseIds(blocks.map((b) => ({ exerciseId: b.exerciseId, exercise: exerciseOf(b.exerciseId) })));
   const summary = summarizeSets(workout.sets);
@@ -355,6 +383,17 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         </p>
       )}
 
+      {redDay !== null && redDay.offer && (
+        <Suspense fallback={null}>
+          <RedDayBanner access={access} workoutId={workout.id} state={redDay} onState={setRedDay} />
+        </Suspense>
+      )}
+      {blocks.length > 0 && (
+        <Suspense fallback={null}>
+          <RecoverySplitView access={access} atMs={startedMs} exercises={blocks.map((b) => ({ muscles: musclesOf(b.exerciseId) }))} muscleName={muscleNameOf} />
+        </Suspense>
+      )}
+
       {blocks.length === 0 && <p className="ct-session__muted">{tTraining('sessionNoExercise')}</p>}
 
       {blocks.map((block) => {
@@ -380,7 +419,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
               </p>
             </div>
             <Suspense fallback={null}>
-              <ExerciseProgression access={access} workout={workout} exerciseId={block.exerciseId} sets={block.sets} exercise={exercise} equipment={data.active} clock={clock} onChanged={reload} warmup={warmupIds.has(block.exerciseId)} positionRank={positionRankOf.get(block.exerciseId) ?? 1} musclesOf={musclesOf} />
+              <ExerciseProgression access={access} workout={workout} exerciseId={block.exerciseId} sets={block.sets} exercise={exercise} equipment={data.active} clock={clock} onChanged={reload} warmup={warmupIds.has(block.exerciseId)} positionRank={positionRankOf.get(block.exerciseId) ?? 1} musclesOf={musclesOf} recovery={redDay === null ? 'loading' : redDay.snapshot} />
             </Suspense>
             <ol className="ct-session__sets">
               {block.sets.map((set) => {

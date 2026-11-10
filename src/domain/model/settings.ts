@@ -131,6 +131,8 @@ export interface SettingsValues {
    * src/features/training/cycle/sessionLink.ts) ; écrite avec la séance, ne vaut que pour elle. Locale, jamais synchronisée.
    */
   'training.cycleSession': unknown;
+  /** I5-02 point 2.2 : choix d'Ali devant la journée rouge de la séance en cours (valeur BRUTE lue par `parseRedDayChoice`, src/features/training/session/redDayState.ts) ; ne vaut que pour cette séance. Locale, jamais synchronisée. */
+  'training.redDay': unknown;
   /** I4-03 : préférences de nutrition (style du check-in, objectif, activité déclarée, jour). Valeur BRUTE lue par `parseNutritionPrefs` ; locale, jamais synchronisée. */
   'nutrition.prefs': unknown;
   /** I4-06 : favoris de la recherche d'aliments, valeur BRUTE lue par `parseFavorites` ({ v: 1, items }) ; locale, jamais synchronisée (D-79). */
@@ -195,6 +197,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'training.restSeconds': { scope: 'local', defaultValue: null },
   'training.routineUpdateAsk': { scope: 'local', defaultValue: null },
   'training.cycleSession': { scope: 'local', defaultValue: null },
+  'training.redDay': { scope: 'local', defaultValue: null },
   'nutrition.prefs': { scope: 'local', defaultValue: null },
   'nutrition.favorites': { scope: 'local', defaultValue: null },
   'recovery.notificationPrefs': { scope: 'local', defaultValue: null },

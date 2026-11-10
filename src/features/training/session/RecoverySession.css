@@ -1,0 +1,49 @@
+/* Récupération en séance (I5-02 point 2.2) : bandeau « journée rouge » et Recovery Split, bloc à la demande. Tokens seulement, aucune couleur
+   en dur ; cibles ≥ 44 px (boutons du système) ; l'état est dit en texte, la couleur ne fait que doubler. */
+
+.ct-recovery-session {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  padding: var(--ct-space-2);
+  background: var(--ct-color-surface-raised);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  min-width: 0;
+}
+
+.ct-recovery-session--red {
+  background: var(--ct-color-warning-bg);
+  border-color: var(--ct-color-warning-border);
+}
+
+.ct-recovery-session__title,
+.ct-recovery-session__state {
+  margin: 0;
+  font-weight: var(--ct-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.ct-recovery-session__text,
+.ct-recovery-session__list {
+  margin: 0;
+  color: var(--ct-color-text);
+  overflow-wrap: anywhere;
+}
+
+.ct-recovery-session__list {
+  padding-left: var(--ct-space-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-recovery-session__hint {
+  margin: 0;
+  font-size: var(--ct-font-size-sm);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-recovery-session__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
