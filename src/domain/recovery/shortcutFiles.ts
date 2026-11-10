@@ -51,7 +51,8 @@ const STEPS_MAX_PER_LINE = 100_000;
 
 const ISO_WITH_ZONE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?(Z|[+-]\d{2}:?\d{2})$/;
 const ISO_NO_ZONE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?$/;
-const VALUE = /^(\d{1,7}(?:[.,]\d{1,3})?)\s*([A-Za-z/]+)?$/;
+/** Jusqu'à 15 décimales, point ou virgule : Santé écrit par exemple 33,7171717171717 (I5-04). */
+const VALUE = /^(\d{1,7}(?:[.,]\d{1,15})?)\s*([A-Za-z/]+)?$/;
 const HEADER = /^(date|d[eé]but|start)/i;
 
 type Fail = { readonly fail: ShortcutRejectReason };
@@ -119,7 +120,7 @@ function parseSamples(
   text: string,
   today: string,
   timeZone: string,
-  spec: { readonly units: readonly string[]; readonly range: readonly [number, number] },
+  spec: { readonly units: readonly string[]; readonly range: readonly [number, number]; /** Arrondi au dixième (HRV, FC au repos). */ readonly tenth?: boolean },
 ): ShortcutSamples {
   const { rows, truncated } = readRows(text);
   const counter = new Counter();
@@ -140,17 +141,18 @@ function parseSamples(
       counter.add(num.fail);
       continue;
     }
-    if (num.value < spec.range[0] || num.value > spec.range[1]) {
+    const value = spec.tenth === true ? Math.round(num.value * 10) / 10 : num.value;
+    if (value < spec.range[0] || value > spec.range[1]) {
       counter.add('out_of_range');
       continue;
     }
-    const key = `${instant.at}|${num.value}`;
+    const key = `${instant.at}|${value}`;
     if (seen.has(key)) {
       counter.duplicates += 1;
       continue;
     }
     seen.add(key);
-    samples.push({ measuredAt: new Date(instant.at).toISOString(), day: instant.day, value: num.value, at: instant.at });
+    samples.push({ measuredAt: new Date(instant.at).toISOString(), day: instant.day, value, at: instant.at });
   }
   samples.sort((a, b) => a.at - b.at);
   return { ...counter.report(truncated), samples: samples.map(({ measuredAt, day, value }) => ({ measuredAt, day, value })) };
@@ -158,7 +160,7 @@ function parseSamples(
 
 /** `hrv.csv` : SDNN en ms. */
 export function parseShortcutHrv(text: string, today: string, timeZone: string): ShortcutSamples {
-  return parseSamples(text, today, timeZone, { units: ['ms'], range: HRV_RANGE });
+  return parseSamples(text, today, timeZone, { units: ['ms'], range: HRV_RANGE, tenth: true });
 }
 
 export interface ShortcutRestingHr extends ShortcutSamples {
@@ -168,7 +170,7 @@ export interface ShortcutRestingHr extends ShortcutSamples {
 
 /** `fc-repos.csv` : bpm. */
 export function parseShortcutRestingHr(text: string, today: string, timeZone: string): ShortcutRestingHr {
-  const r = parseSamples(text, today, timeZone, { units: ['bpm', 'count/min'], range: RHR_RANGE });
+  const r = parseSamples(text, today, timeZone, { units: ['bpm', 'count/min'], range: RHR_RANGE, tenth: true });
   const byDay = new Map<string, number>();
   for (const s of r.samples) byDay.set(s.day, s.value);
   return { ...r, latestByDay: [...byDay.entries()].map(([day, value]) => ({ day, value })) };

@@ -49,12 +49,15 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
       ...overrides,
     });
 
-  it('lecteur non pris en charge (PC) : « unsupported », aucune lecture, aucun journal', async () => {
+  it('lecteur non pris en charge (PC) : « unsupported », aucune lecture ; journal du seul geste manuel, pas de l’ouverture', async () => {
     const r = reader(async () => ALL_OK(), { kind: 'unsupported', automatic: false });
-    const result = await build(r).run('manual');
+    const service = build(r);
+    expect((await service.run('open')).status).toBe('unsupported');
+    expect(logs).toEqual([]);
+    const result = await service.run('manual');
     expect(result.status).toBe('unsupported');
     expect(r.read).not.toHaveBeenCalled();
-    expect(logs).toEqual([]);
+    expect(logs.map((l) => l.event)).toEqual(['recovery-import-unsupported']);
   });
 
   it('à l’ouverture, un lecteur non automatique ne lit rien (« needs-pick »)', async () => {
@@ -374,5 +377,98 @@ describe('lecture automatique du dossier sante (I5-03 point 1, D-90, H-26)', () 
     const p = picker(async () => ALL_OK());
     expect((await build(p).run('open')).status).toBe('needs-pick');
     expect(p.read).not.toHaveBeenCalled();
+  });
+});
+
+describe('statuts journalisés et diagnostic du dossier sante (I5-04 points 1 et 2)', () => {
+  let db: TestDb;
+  let logs: { event: ImportLogEvent; counts: Record<string, number> }[];
+  let clock: ManualClock;
+  beforeEach(async () => {
+    db = await openBaseDb(DEVICE);
+    logs = [];
+    clock = createManualClock(NOW);
+  });
+  afterEach(async () => {
+    await db.close();
+  });
+  const build = (r: ShortcutFilesReader) =>
+    createShortcutImportService({
+      reader: r,
+      samples: () => db.data.repos.recoverySamples(),
+      recovery: () => db.data.repos.recovery(),
+      workouts: async () => [],
+      clock,
+      timeZone: TZ,
+      log: (event, counts) => logs.push({ event, counts }),
+    });
+  const events = (): ImportLogEvent[] => logs.map((l) => l.event);
+
+  it('chaque statut hors « done » est journalisé sous un nom fixe de la liste', async () => {
+    expect((await build(reader(async () => ALL_OK(), { kind: 'unsupported', automatic: false })).run('manual')).status).toBe('unsupported');
+    expect(events()).toContain('recovery-import-unsupported');
+    logs.length = 0;
+    expect((await build(reader(async () => ALL_OK(), { kind: 'picker', automatic: false })).run('open')).status).toBe('needs-pick');
+    expect(events()).toContain('recovery-import-needs-pick');
+    logs.length = 0;
+    const open = build(reader(async () => ABSENT(), { kind: 'folder', automatic: true }));
+    await open.run('open');
+    logs.length = 0;
+    expect((await open.run('open')).status).toBe('throttled');
+    expect(events()).toContain('recovery-import-throttled');
+    logs.length = 0;
+    let release: () => void = () => undefined;
+    const slow = build(
+      reader(
+        () =>
+          new Promise((resolve) => {
+            release = () => resolve(ABSENT());
+          }),
+        { kind: 'folder', automatic: true },
+      ),
+    );
+    const first = slow.run('manual');
+    expect((await slow.run('manual')).status).toBe('busy');
+    expect(events()).toContain('recovery-import-busy');
+    release();
+    await first;
+    for (const name of ['recovery-import-unsupported', 'recovery-import-needs-pick', 'recovery-import-throttled', 'recovery-import-busy', 'recovery-import-done', 'recovery-import-diag-folder', 'recovery-import-diag-file']) {
+      expect(IMPORT_LOG_EVENTS).toContain(name);
+    }
+  });
+
+  it('une lecture manuelle qui finit est journalisée « done » avec ses comptes', async () => {
+    await build(reader(async () => ABSENT(), { kind: 'folder', automatic: true })).run('manual');
+    expect(logs.find((l) => l.event === 'recovery-import-done')?.counts).toEqual({ files: 4, imported: 0, absent: 4, unreadable: 0, failed: 0 });
+  });
+
+  it('le diagnostic du dossier est journalisé : dossier atteint, sante présent, un événement par fichier (état et taille), comptes seulement', async () => {
+    const reads: ShortcutFileRead[] = [
+      { name: 'hrv.csv', state: 'ok', text: fixture('hrv.csv'), size: 15360 },
+      { name: 'fc-repos.csv', state: 'absent' },
+      { name: 'sommeil.csv', state: 'unreadable', cloud: true, size: 2048 },
+      { name: 'pas.csv', state: 'unreadable', size: 9 },
+    ];
+    const r = {
+      ...reader(async () => reads, { kind: 'folder', automatic: true }),
+      probe: () => ({ rootListed: true, santePresent: true, santeListed: true, devicesPresent: true, rootEntries: 3, santeEntries: 2 }),
+    };
+    await build(r).run('manual');
+    expect(logs.find((l) => l.event === 'recovery-import-diag-folder')?.counts).toEqual({ root_listed: 1, sante_present: 1, sante_listed: 1, devices_present: 1, root_entries: 3, sante_entries: 2 });
+    const files = logs.filter((l) => l.event === 'recovery-import-diag-file').map((l) => l.counts);
+    // état : 0 absent, 1 présent, 2 à télécharger, 3 illisible
+    expect(files).toEqual([
+      { type_index: 0, state: 1, size: 15360 },
+      { type_index: 1, state: 0, size: 0 },
+      { type_index: 2, state: 2, size: 2048 },
+      { type_index: 3, state: 3, size: 9 },
+    ]);
+    expect(JSON.stringify(logs)).not.toMatch(/48,5|hrv\.csv|2026-/);
+  });
+
+  it('sans sonde : pas d’événement de dossier, les fichiers sont diagnostiqués quand même', async () => {
+    await build(reader(async () => ABSENT(), { kind: 'folder', automatic: true })).run('manual');
+    expect(events()).not.toContain('recovery-import-diag-folder');
+    expect(events().filter((e) => e === 'recovery-import-diag-file')).toHaveLength(4);
   });
 });

@@ -2,6 +2,14 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.11.2
+
+Correctif de l'import Raccourcis (constat du 10 nov. sur l'iPhone). **Pas de mise à jour de la base** (reste en version 10) ; aucune donnée saisie n'est modifiée.
+
+- **Plus jamais de silence** : chaque appui sur « Importer maintenant » ou « Choisir les fichiers » affiche une phrase près du bouton (fichiers lus et lignes ajoutées, aucun fichier trouvé dans iCloud Drive › Spartiate › sante, dossier non lié, lecture déjà faite…) et laisse une trace dans Plus › Logs. « Importer maintenant » n'est jamais freiné par l'intervalle de 30 minutes.
+- **Diagnostic du dossier sante** : Plus › Logs note, sans aucune valeur, si le dossier lié est atteint, si `sante` et `devices` y sont, et pour chaque fichier son état (absent, présent, à télécharger, illisible) et sa taille. La lecture retrouve aussi `sante` et les quatre fichiers sous une autre casse ou un accent (« Santé », « HRV.csv »).
+- **Valeurs à nombreuses décimales** : le raccourci écrit des valeurs comme 33,7171717171717 ; elles sont lues (jusqu'à 15 décimales, point ou virgule). HRV et FC au repos sont arrondies au dixième, les pesées au centième.
+
 ## 0.11.1
 
 Import automatique des fichiers Raccourcis et réglages de la récupération. **Pas de mise à jour de la base** (reste en version 10) ; aucune donnée saisie n'est modifiée.

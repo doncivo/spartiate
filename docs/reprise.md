@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-10 : I1 à I3 livrés, I4 hors IA livré (OFF et scan, favoris, recettes, journée déclarée), version publiée 0.11.1 (schéma 10 ; 0.9.1 correctifs du moteur D-82 ; 0.9.2 onglets PC et catalogue de 196 exercices, D-83 ; 0.9.3 relecture Codex REV-01, D-85, D-86 ; 0.9.4 garde -wal et décote sur charge totale, D-87 ; 0.10.0 import Raccourcis et moteur de récupération, D-88 à D-93 ; 0.11.0 écrans de récupération, D-93 ; 0.11.1 lecture auto du dossier sante, D-88 et D-93 révisées). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-90 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.) ; les décisions approuvées priment sur les textes historiques.
+État au 2026-11-10 : I1 à I3 livrés, I4 hors IA livré (OFF et scan, favoris, recettes, journée déclarée), version publiée 0.11.2 (schéma 10 ; 0.9.1 correctifs du moteur D-82 ; 0.9.2 onglets PC et catalogue de 196 exercices, D-83 ; 0.9.3 relecture Codex REV-01, D-85, D-86 ; 0.9.4 garde -wal et décote sur charge totale, D-87 ; 0.10.0 import Raccourcis et moteur de récupération, D-88 à D-93 ; 0.11.0 écrans de récupération, D-93 ; 0.11.1 lecture auto du dossier sante, D-88 et D-93 révisées). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-90 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.) ; les décisions approuvées priment sur les textes historiques.
 
 ## Fusionné (tout est dans main)
 
@@ -23,7 +23,7 @@
 
 ## Prochaines étapes
 
-1. Ali : installer 0.11.1 (PC et iPhone, schéma 10), **changer le sous-chemin du raccourci** « Spartiate — récupération » en `Spartiate/sante/…` (docs/guide-raccourcis-sante.md), puis constat de la lecture automatique sans geste (H-26 UNVERIFIED), des formats H-22 à H-25, des cadrans le lendemain matin, du bandeau « journée rouge » (maintien) et des notifications (désactivées par défaut).
+1. Ali : installer 0.11.2 (PC et iPhone, schéma 10), appuyer sur « Importer maintenant », lire la phrase affichée, puis Plus › Logs : événements `recovery-import-diag-folder` et `recovery-import-diag-file` (docs/I5-04.md, lecture du diagnostic). Cause du « fichier absent » non prouvée ; H-26 reste UNVERIFIED. Sous-chemin du raccourci : `Spartiate/sante/…`.
 2. Confirmer ou réviser D-73, D-74, D-79 à D-81 et D-88 à D-93 (échelle d'Exertion 20, journée rouge = maintien).
 
 ## Rappels

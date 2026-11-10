@@ -52,14 +52,21 @@ describe('lecture des fichiers Raccourcis (I5-01 point 1.3)', () => {
 
 const b64 = (text: string): string => btoa(String.fromCharCode(...new TextEncoder().encode(text)));
 
-describe('lecteur de dossier iCloud Drive › Spartiate › sante (I5-03, D-90, H-26)', () => {
-  it('un seul appel health_files_read avec les quatre noms ; ok / absent / illisible dans l’ordre demandé', async () => {
-    const invoke = vi.fn(async () => [
-      { name: 'hrv.csv', state: 'ok', bytes: b64('2026-11-08T06:41:03+01:00;42\n') },
-      { name: 'fc-repos.csv', state: 'absent' },
-      { name: 'sommeil.csv', state: 'unreadable' },
-      { name: 'pas.csv', state: 'ok', bytes: b64('') },
-    ]);
+const folder = (files: unknown[], extra: Record<string, unknown> = {}) => ({
+  folder: { rootListed: true, santePresent: true, santeListed: true, devicesPresent: true, rootEntries: 2, santeEntries: files.length, ...extra },
+  files,
+});
+
+describe('lecteur de dossier iCloud Drive › Spartiate › sante (I5-03, I5-04, D-90, H-26)', () => {
+  it('un seul appel health_files_read avec les quatre noms ; ok / absent / illisible / à télécharger dans l’ordre demandé, avec la taille', async () => {
+    const invoke = vi.fn(async () =>
+      folder([
+        { name: 'hrv.csv', state: 'ok', size: 29, bytes: b64('2026-11-08T06:41:03+01:00;42\n') },
+        { name: 'fc-repos.csv', state: 'absent' },
+        { name: 'sommeil.csv', state: 'cloud', size: 4096 },
+        { name: 'pas.csv', state: 'unreadable', size: 7 },
+      ]),
+    );
     const reader = createFolderShortcutFiles(invoke);
     expect(reader.kind).toBe('folder');
     expect(reader.automatic).toBe(true);
@@ -67,19 +74,28 @@ describe('lecteur de dossier iCloud Drive › Spartiate › sante (I5-03, D-90, 
     expect(invoke).toHaveBeenCalledTimes(1);
     expect(invoke).toHaveBeenCalledWith('health_files_read', { names: [...SHORTCUT_FILE_NAMES] });
     expect(reads).toEqual([
-      { name: 'hrv.csv', state: 'ok', text: '2026-11-08T06:41:03+01:00;42\n' },
+      { name: 'hrv.csv', state: 'ok', text: '2026-11-08T06:41:03+01:00;42\n', size: 29 },
       { name: 'fc-repos.csv', state: 'absent' },
-      { name: 'sommeil.csv', state: 'unreadable' },
-      { name: 'pas.csv', state: 'ok', text: '' },
+      { name: 'sommeil.csv', state: 'unreadable', cloud: true, size: 4096 },
+      { name: 'pas.csv', state: 'unreadable', size: 7 },
     ]);
   });
 
+  it('la sonde du dernier appel donne le dossier atteint, sante présent et les comptes', async () => {
+    const reader = createFolderShortcutFiles(async () => folder([{ name: 'hrv.csv', state: 'absent' }], { santePresent: false, santeListed: false, santeEntries: 0, rootEntries: 5 }));
+    expect(reader.probe?.()).toBeNull();
+    await reader.read(SHORTCUT_FILE_NAMES);
+    expect(reader.probe?.()).toEqual({ rootListed: true, santePresent: false, santeListed: false, devicesPresent: true, rootEntries: 5, santeEntries: 0 });
+  });
+
   it('réponse incomplète, état inconnu ou octets invalides : « unreadable » pour ce fichier, les autres sont lus', async () => {
-    const invoke = vi.fn(async () => [
-      { name: 'hrv.csv', state: 'ok', bytes: '%%%pas-du-base64%%%' },
-      { name: 'sommeil.csv', state: 'bizarre' },
-      { name: 'autre.csv', state: 'ok', bytes: b64('x') },
-    ]);
+    const invoke = vi.fn(async () =>
+      folder([
+        { name: 'hrv.csv', state: 'ok', bytes: '%%%pas-du-base64%%%' },
+        { name: 'sommeil.csv', state: 'bizarre' },
+        { name: 'autre.csv', state: 'ok', bytes: b64('x') },
+      ]),
+    );
     const reads = await createFolderShortcutFiles(invoke).read(SHORTCUT_FILE_NAMES);
     expect(reads?.map((r) => [r.name, r.state])).toEqual([
       ['hrv.csv', 'unreadable'],
@@ -106,7 +122,7 @@ describe('lecteur de dossier iCloud Drive › Spartiate › sante (I5-03, D-90, 
   });
 
   it('ne demande que des noms de la liste fermée', async () => {
-    const invoke = vi.fn(async () => []);
+    const invoke = vi.fn(async () => folder([]));
     await createFolderShortcutFiles(invoke).read(['hrv.csv', 'state.spx' as never]);
     expect(invoke).toHaveBeenCalledWith('health_files_read', { names: ['hrv.csv'] });
   });

@@ -18,7 +18,7 @@ use super::bookmark::{
 };
 use super::consent::ConsentUi;
 use super::consent_ios::IosConsentUi;
-use super::health::HealthFileRead;
+use super::health::HealthReport;
 use super::marker::RestoreMarker;
 use super::service::{
     system_clock, AppendRequest, FolderInfo, KeyImportResult, KeyStatus, SyncCore,
@@ -470,7 +470,7 @@ pub async fn health_files_read<R: Runtime>(
     window: WebviewWindow<R>,
     state: State<'_, SyncState>,
     names: Vec<String>,
-) -> SyncResult<Vec<HealthFileRead>> {
+) -> SyncResult<HealthReport> {
     require_main(&window)?;
     let core = state.core(&app)?;
     blocking(move || core.read_health_files(&names)).await
