@@ -110,6 +110,18 @@ describe('journée rouge acceptée : prescription', () => {
     expect(explainPrescription(p)).toEqual({ key: 'recoveryLow', params: { cut: 5 } });
   });
 
+  it('journée rouge acceptée + décote d’inactivité : jamais plus bas que sans journée rouge (pas de baisse due à l’acceptation)', () => {
+    const old = [session(22, 100, [10, 10, 10])];
+    const ignored = prescribe(input({ history: old, recovery: redDaySnapshot(20, 'ignored', CFG) }));
+    const accepted = prescribe(input({ history: old, recovery: redDaySnapshot(20, 'accepted', CFG) }));
+    expect(accepted.loadKg ?? 0).toBeGreaterThanOrEqual(ignored.loadKg ?? 0);
+  });
+
+  it('redDayHold n’existe que pour une journée rouge : un signal bas sans indicateur garde × 0,95', () => {
+    const p = prescribe(input({ history: top, recovery: { recovery: 0, sleepHours: null, restingHrDelta: null } }));
+    expect(p.loadKg).toBe(95);
+  });
+
   it('décision d’Ali : jamais modulée', () => {
     const decided = { decidedAt: daysAgo(1), accepted: false, loadKg: 110, reps: [8, 8, 8] };
     const p = prescribe(input({ history: top, lastDecision: decided, recovery: redDaySnapshot(20, 'accepted', CFG) }));
