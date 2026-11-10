@@ -56,6 +56,8 @@ export interface RecoveryRepository {
   getDay(date: LocalDate): Promise<RecoveryDayRecord | null>;
   /** Résumés vivants de la plage (bornes incluses), du plus ancien au plus récent. */
   listDays(from: LocalDate, to: LocalDate): Promise<readonly RecoveryDayRecord[]>;
+  /** Résumé vivant le plus récent, sans borne basse ; `null` : aucune ligne. */
+  latestDay(): Promise<RecoveryDayRecord | null>;
   /** Muscles vivants du jour, par identifiant de muscle. */
   listMuscles(date: LocalDate): Promise<readonly MuscleRecoveryRecord[]>;
   /** Suppression logique du résumé du jour et de ses muscles. Jour sans ligne vivante, ou appareil lecteur : aucune écriture. */
