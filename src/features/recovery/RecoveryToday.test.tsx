@@ -101,6 +101,20 @@ describe('états', () => {
     expect(screen.getByText(/Résumé du/)).toBeInTheDocument();
   });
 
+  it('PC : un résumé vieux de 20 jours est affiché, avec la date et l’avis périmé (jamais « aucun résumé »)', async () => {
+    await save(summary({ day: '2026-10-21', computedAt: '2026-10-21T07:00:00.000Z' }));
+    mount('other');
+    expect(await screen.findByText(/Dernier résumé reçu il y a 20 jours/)).toBeInTheDocument();
+    expect(screen.getByText(/Résumé du/)).toBeInTheDocument();
+    expect(screen.queryByText('Aucun résumé de récupération reçu de l’iPhone.')).toBeNull();
+  });
+
+  it('iPhone : résumé sans état d’import (historique restauré) : l’ancienneté vient de son instant de calcul', async () => {
+    await save(summary({ day: '2026-11-04', computedAt: '2026-11-04T07:00:00.000Z' }));
+    mount();
+    expect(await screen.findByText(/Dernier import il y a 6 jours/)).toBeInTheDocument();
+  });
+
   it('import ancien sur iPhone : le dit', async () => {
     await save(summary({ day: '2026-11-06', computedAt: '2026-11-06T07:00:00.000Z' }));
     await (await db.data.repos.recoverySamples()).recordImport({ type: 'hrv', importedAt: '2026-11-06T07:00:00.000Z', newestSampleAt: null, added: 1, duplicates: 0, rejected: 0 });
