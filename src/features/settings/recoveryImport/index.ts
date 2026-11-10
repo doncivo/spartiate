@@ -56,6 +56,8 @@ export function shortcutImportFor(container: AppContainer, reader?: ShortcutFile
     clock: container.clock,
     timeZone: detectTimeZone() ?? 'Europe/Paris',
     log: importLog,
+    // I5-02 (point 2.3) : heure de coucher proposée et replanification des notifications, chargées à la demande (hors du départ).
+    afterRecompute: (info) => import('../../notifications').then((m) => m.recoveryNotificationsFor(container).afterImport(info)),
   });
   services.set(container, service);
   return service;
