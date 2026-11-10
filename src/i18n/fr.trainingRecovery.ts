@@ -6,7 +6,7 @@ export const trainingRecoveryFr = {
   redDayRegion: 'Journée rouge',
   redDayTitle: 'Journée rouge : maintien des charges proposé',
   redDayHint:
-    'Recovery {score} aujourd’hui. Accepter : aucune hausse de charge pendant cette séance (le moteur peut alléger un peu et retirer une série aux exercices d’isolation). Ignorer : propositions habituelles. Estimation, pas un avis médical.',
+    'Recovery {score} aujourd’hui. Accepter : les charges sont maintenues pendant cette séance, aucune hausse et aucune baisse automatique. Ignorer : propositions habituelles. Estimation, pas un avis médical.',
   redDayAccept: 'Accepter le maintien',
   redDayIgnore: 'Ignorer',
   redDayAccepted: 'Journée rouge : maintien des charges accepté pour cette séance.',
