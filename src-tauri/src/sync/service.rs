@@ -3785,9 +3785,10 @@ impl SyncCore {
             (checked, record)
         };
         let fs = self.backend.open_record(&checked, &record);
-        fs.start_cycle_within(HEALTH_HYDRATE_BUDGET)
-            .map_err(|e| SyncError::new(e.code()))?;
-        let result = health::read_health_files(fs.as_ref(), names);
+        let result = match fs.start_cycle_within(HEALTH_HYDRATE_BUDGET) {
+            Ok(()) => health::read_health_files(fs.as_ref(), names),
+            Err(e) => Err(SyncError::new(e.code())),
+        };
         let mut inner = self.lock();
         self.persist_refreshed(&mut inner);
         result

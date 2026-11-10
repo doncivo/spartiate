@@ -27,8 +27,9 @@ pub const HEALTH_DIR: &str = "sante";
 pub const HEALTH_FILES: [&str; 4] = ["hrv.csv", "fc-repos.csv", "sommeil.csv", "pas.csv"];
 /// Taille maximale d'un fichier lu (2 Mio : même borne que le sélecteur de fichiers, `SHORTCUT_FILE_MAX_BYTES`).
 pub const MAX_HEALTH_FILE_BYTES: u64 = 2 * 1024 * 1024;
-/// Budget de téléchargement d'une lecture (les quatre fichiers ensemble) : court, la lecture est une tâche de fond.
-pub const HEALTH_HYDRATE_BUDGET: Duration = Duration::from_secs(45);
+/// Budget de téléchargement d'une lecture (les quatre fichiers ensemble). Un `download` occupe la file série du plugin : il doit finir avant
+/// l'échéance d'un appel de synchro (20 s, `BOOKMARK_CALL_DEADLINE_MS`), sinon un cycle en cours rendrait `cloud-pending` (relecture D-26).
+pub const HEALTH_HYDRATE_BUDGET: Duration = Duration::from_secs(15);
 
 /// Un fichier lu : état `ok` (octets en base64, décodés en texte par l'import), `absent` ou `unreadable` (trop gros, nuage injoignable,
 /// lien, erreur d'accès). Jamais un chemin, jamais le texte d'une erreur.
@@ -41,9 +42,13 @@ pub struct HealthFileRead {
     pub bytes: Option<String>,
 }
 
-/// Lit les fichiers demandés, dans l'ordre. Un nom hors des quatre est refusé (`bad-name`) AVANT tout accès.
+/// Lit les fichiers demandés, dans l'ordre. Un nom hors des quatre, un doublon ou plus de quatre noms : `bad-name` AVANT tout accès.
 pub fn read_health_files(fs: &dyn SyncFs, names: &[String]) -> SyncResult<Vec<HealthFileRead>> {
-    if names.iter().any(|n| !HEALTH_FILES.contains(&n.as_str())) {
+    let distinct = names.iter().collect::<std::collections::BTreeSet<_>>().len() == names.len();
+    if names.len() > HEALTH_FILES.len()
+        || !distinct
+        || names.iter().any(|n| !HEALTH_FILES.contains(&n.as_str()))
+    {
         return fail(SyncCode::BadName);
     }
     Ok(names
@@ -82,7 +87,7 @@ impl DevicesOnly {
     }
 }
 
-/// Le chemin est strictement sous `devices/` (au moins un composant de plus : `devices` seul est listé, jamais écrit).
+/// Le premier composant est `devices` (le dossier `devices` lui-même est accepté : il n'est jamais `sante`).
 fn under_devices(path: &[&str]) -> bool {
     path.first() == Some(&DEVICES_DIR)
 }

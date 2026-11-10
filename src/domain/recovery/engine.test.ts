@@ -182,7 +182,7 @@ describe('dayExertion : musculation seule, cardio à zéro (D-88)', () => {
   it.each([
     [6, 3.3, 'séance légère'],
     [12, 5.51, 'séance normale : environ 5,5'],
-    [20, 7.36, 'très grosse séance : environ 7,5'],
+    [20, 7.36, 'très grosse séance : 7,4, environ 7,5'],
   ])('%i t à difficulté normale → Exertion %f (%s)', (tonnes, expected) => {
     const sets = Array.from({ length: tonnes }, () => set({ kg: 100, reps: 10, difficulty: 'ok' }));
     expect(dayExertion([workout(sets)], '2026-11-07', TZ).value).toBeCloseTo(expected, 2);

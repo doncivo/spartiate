@@ -4,11 +4,13 @@ Avec le compte Apple gratuit, Spartiate ne peut pas lire Apple Santé directemen
 L’app **Raccourcis** d’Apple, elle, peut lire Santé : un raccourci écrit des fichiers dans iCloud Drive, et Spartiate les lit.
 Aucune donnée n’est envoyée à un service tiers : les fichiers restent dans ton iCloud Drive, et les résumés quotidiens (HRV et FC au repos comprises) passent par ta synchro chiffrée vers le PC. Le PC ne reçoit que des résumés quotidiens (prévu, chapitre 16 du PRD ; pas encore livré).
 
+> **Nouveau chemin (version 0.11.1).** Les fichiers se déposent dans `iCloud Drive › Spartiate › sante` (et non plus dans un dossier voisin `Spartiate-sante`) : Spartiate les lit alors tout seul, par l’accès que la synchro a déjà au dossier `Spartiate`. Si tu as déjà créé tes raccourcis, change seulement le sous-chemin de l’action **Enregistrer le fichier** (voir A.1 et B.1) ; l’ancien dossier `Spartiate-sante` peut être supprimé. Pour que la lecture automatique marche, le dossier `Spartiate` doit être lié dans Spartiate (Plus › Appareils et synchro).
+
 Ce guide contient deux parties :
 
 - **Partie A — pesées** (raccourci « Spartiate — poids ») : fonctionne aujourd’hui.
-- **Partie B — récupération** (raccourci « Spartiate — récupération ») : le raccourci est décrit ici ; la lecture de ses fichiers
-  par Spartiate n’est pas encore livrée (voir la section B.4).
+- **Partie B — récupération** (raccourci « Spartiate — récupération ») : le raccourci est décrit ici ; Spartiate lit ses fichiers
+  tout seul (voir la section B.4).
 
 Durée : 5 minutes pour la partie A, 15 minutes pour la partie B, une seule fois.
 
@@ -35,15 +37,16 @@ l’ordre (barre de recherche « Rechercher des actions ») :
 4. **Enregistrer le fichier**
    - Fichier : *Texte combiné*
    - Désactive **Demander où enregistrer**
-   - Destination : **iCloud Drive** · sous-chemin : `Spartiate-sante/poids.csv`
+   - Destination : **iCloud Drive** · sous-chemin : `Spartiate/sante/poids.csv`
    - Active **Remplacer si le fichier existe**
+   - Si Raccourcis ne crée pas le sous-dossier `sante`, crée-le d’abord dans Fichiers (iCloud Drive › Spartiate).
 
-Touche ▶︎ une fois : Raccourcis demande l’accès à Santé (Poids) → **Autoriser**. Le fichier `iCloud Drive › Spartiate-sante ›
+Touche ▶︎ une fois : Raccourcis demande l’accès à Santé (Poids) → **Autoriser**. Le fichier `iCloud Drive › Spartiate › sante ›
 poids.csv` apparaît dans l’app Fichiers.
 
 Exemple de contenu : `2026-11-08T06:50:12+01:00;81,4;kg`
 
-N’utilise pas le dossier `iCloud Drive › Spartiate` : il est réservé à la synchronisation.
+Dans `iCloud Drive › Spartiate`, seul le sous-dossier `sante` est pour ces raccourcis. Ne touche à rien d’autre : le dossier `devices` et son contenu appartiennent à la synchro.
 
 ### A.2 Le lancer chaque matin (facultatif)
 
@@ -52,7 +55,7 @@ Raccourcis → onglet **Automatisation** → **+** → **Heure de la journée** 
 
 ### A.3 Importer dans Spartiate
 
-Spartiate → **Plus** → **Apple Santé** → **Importer le fichier du raccourci** → choisis `Spartiate-sante/poids.csv`.
+Spartiate → **Plus** → **Apple Santé** → **Importer le fichier du raccourci** → choisis `Spartiate/sante/poids.csv`.
 
 - Une pesée par jour est gardée : la plus récente.
 - Elles apparaissent avec l’origine « Santé » ; ta saisie manuelle du jour n’est jamais remplacée.
@@ -63,7 +66,7 @@ Spartiate → **Plus** → **Apple Santé** → **Importer le fichier du raccour
 
 ## Partie B — Récupération (sommeil, HRV, FC de repos, pas)
 
-Le raccourci « Spartiate — récupération » écrit quatre fichiers, chacun dans `iCloud Drive › Spartiate-sante` :
+Le raccourci « Spartiate — récupération » écrit quatre fichiers, chacun dans `iCloud Drive › Spartiate › sante` :
 
 | Fichier | Contenu d’une ligne | Exemple |
 | --- | --- | --- |
@@ -95,15 +98,15 @@ Pour chaque bloc :
 4. **Enregistrer le fichier**
    - Fichier : *Texte combiné*
    - Désactive **Demander où enregistrer**
-   - Destination : **iCloud Drive** · sous-chemin : le nom du fichier du bloc, dans `Spartiate-sante/` (ex. `Spartiate-sante/hrv.csv`)
+   - Destination : **iCloud Drive** · sous-chemin : le nom du fichier du bloc, dans `Spartiate/sante/` (ex. `Spartiate/sante/hrv.csv`)
    - Active **Remplacer si le fichier existe**
 
 | Bloc | Type Santé (nom à vérifier) | Sous-chemin du fichier |
 | --- | --- | --- |
-| 1 | Variabilité de la fréquence cardiaque | `Spartiate-sante/hrv.csv` |
-| 2 | Fréquence cardiaque au repos | `Spartiate-sante/fc-repos.csv` |
-| 3 | Analyse du sommeil | `Spartiate-sante/sommeil.csv` |
-| 4 | Pas | `Spartiate-sante/pas.csv` |
+| 1 | Variabilité de la fréquence cardiaque | `Spartiate/sante/hrv.csv` |
+| 2 | Fréquence cardiaque au repos | `Spartiate/sante/fc-repos.csv` |
+| 3 | Analyse du sommeil | `Spartiate/sante/sommeil.csv` |
+| 4 | Pas | `Spartiate/sante/pas.csv` |
 
 **Blocs 1, 2 et 4 (HRV, FC de repos, pas) — à l’intérieur de la boucle :**
 
@@ -134,7 +137,7 @@ Le texte produit ressemble à : `2026-11-07T23:10:00+01:00;2026-11-08T00:05:00+0
 ### B.2 Premier essai
 
 1. Touche ▶︎ une fois. Raccourcis demande l’accès à chaque type Santé : **Autoriser** pour chacun.
-2. Ouvre Fichiers → iCloud Drive → Spartiate-sante. Les quatre fichiers doivent apparaître.
+2. Ouvre Fichiers → iCloud Drive → Spartiate → sante. Les quatre fichiers doivent apparaître.
 3. Ouvre `sommeil.csv` et vérifie qu’une ligne ressemble à l’exemple ci-dessus.
 4. iOS ne dit pas si un accès est refusé. Si un fichier est vide alors que tu as des données, vérifie Réglages › Santé › Accès aux
    données et appareils, puis relance le raccourci (nom du réglage à vérifier).
@@ -144,17 +147,19 @@ Le texte produit ressemble à : `2026-11-07T23:10:00+01:00;2026-11-08T00:05:00+0
 Raccourcis → onglet **Automatisation** → **+** → **Heure de la journée** → 07:30, **Quotidiennement** → **Exécuter immédiatement**
 (sans demander) → choisis « Spartiate — récupération ».
 
-### B.4 Lire ces fichiers dans Spartiate (non encore livré)
+### B.4 Lecture dans Spartiate (automatique)
 
-Ce qui suit est **prévu**. À la date de ce guide, Spartiate ne lit pas encore les quatre fichiers de récupération : ne compte pas sur
-un score ou un diagnostic à partir de ces fichiers tant que ce paragraphe n’a pas été retiré.
+Spartiate lit les quatre fichiers du dossier `iCloud Drive › Spartiate › sante` **sans que tu fasses rien** :
 
-- **Premier import, prévu** : Plus → Apple Santé → « Importer maintenant » (libellé à confirmer). Spartiate doit aussi importer ces
-  fichiers à l’ouverture de l’app (à confirmer).
-- **Écran de diagnostic, prévu** : pour chaque type, la date de la dernière mesure lue, le nombre de lignes lues et le nombre de
-  lignes rejetées, avec la raison du rejet (noms de codes, par exemple `no_timezone`, `bad_value`, `unknown_stage`). Il n’affiche
-  jamais une valeur de mesure.
-- **Fichier absent, prévu** : l’écran doit l’afficher comme un état (« absent »), pas comme une erreur (à confirmer à la livraison).
+- à l’ouverture de l’app et à chaque retour au premier plan, **au plus une fois toutes les 30 minutes** ;
+- quand tu touches Plus → Apple Santé → **Importer maintenant** (relit le dossier tout de suite) ;
+- **Choisir les fichiers** (même écran) reste le secours : le sélecteur d’iOS, si le dossier n’est pas lu.
+
+Chaque fichier encore dans iCloud est téléchargé avant la lecture. La lecture ne modifie, ne renomme et ne supprime rien dans `sante`, et la synchro ne regarde jamais ce dossier : les fichiers ne sont ni publiés, ni chiffrés dans la synchro.
+
+Cette lecture automatique n’est pas encore constatée sur ton iPhone (hypothèse H-26 : à confirmer). Si Spartiate dit que le dossier n’a pas pu être lu, lie le dossier `Spartiate` dans Plus → Appareils et synchro, ou utilise **Choisir les fichiers**.
+
+L’écran Apple Santé montre, pour chaque type, la date du dernier import, le nombre de lignes ajoutées, déjà connues et refusées (avec la raison du refus : nombre de colonnes, date sans fuseau, stade inconnu…), sans jamais afficher une valeur de mesure. Un fichier absent est dit « absent », ce n’est pas une erreur.
 
 ---
 
