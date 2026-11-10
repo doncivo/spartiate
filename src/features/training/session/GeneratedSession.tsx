@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { generationWeekOf } from '../../../domain/training/mesocycle';
 import { generateSession } from '../../../domain/training/generateSession';
 import {
@@ -32,6 +32,9 @@ import './GeneratedSession.css';
  * changement par `generateSession`, sans aucune écriture. « Commencer cette séance » crée la séance (une transaction) ; la routine reste telle
  * quelle. L'instant de la proposition est figé à l'ouverture (même proposition tant que le bloc reste ouvert).
  */
+
+/** I5-02 point 2.2 : Recovery Split de la proposition, bloc à la demande (lecture, domaine et textes chargés avec lui). */
+const RecoverySplitView = lazy(() => import('./RecoverySession').then((m) => ({ default: m.RecoverySplitView })));
 
 const BUDGETS = [null, 20, 30, 35, 45, 60, 75, 90] as const;
 const ISSUE_KEY: Readonly<Record<GenerationIssueCode, TrainingGenerationTextKey>> = {
@@ -132,6 +135,8 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
   const guided = settings.mode !== 'libre';
   const sourceName = (id: string): string => entry?.day.exercises.find((l) => l.exerciseId === id)?.exerciseName ?? id;
   const nameOf = (id: string): string => data.exercises.find((e) => e.id === id)?.nameFr ?? id;
+  const musclesOf = (id: string) => data.exercises.find((e) => e.id === id)?.muscles ?? [];
+  const muscleNameOf = (id: string): string => data.content.muscles.find((m) => m.id === id)?.nameFr ?? id;
 
   // I3-02 : aucune proposition avant la lecture du cycle (jamais les séries de la routine présentées à la place de celles de la semaine).
   if (cycle === undefined) {
@@ -254,6 +259,11 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
             onToggle={(p) => set({ painfulPatterns: toggle(settings.painfulPatterns, p) })}
           />
           <Proposal session={session} entryDays={entry.days.length} sourceName={sourceName} nameOf={nameOf} />
+          {session.status === 'ready' && session.exercises.length > 0 && (
+            <Suspense fallback={null}>
+              <RecoverySplitView access={access} atMs={Date.parse(now)} exercises={session.exercises.map((e) => ({ muscles: musclesOf(e.exerciseId) }))} muscleName={muscleNameOf} />
+            </Suspense>
+          )}
           {error && (
             <p className="ct-training__error" role="alert">
               {tGeneration('startError')}

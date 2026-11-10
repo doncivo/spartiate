@@ -6,7 +6,7 @@ import { currentBodyweightKg } from '../../../domain/training/bodyweight';
 import { analyzeHistory } from '../../../domain/training/estimate1rm';
 import { positionRanks } from '../../../domain/training/positionRank';
 import { warmupForExercise, type WarmupSet } from '../../../domain/training/warmup';
-import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type MuscleWeight, type Prescription, type ProgressionEquipment, type RepTarget } from '../../../domain/training/types';
+import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type MuscleWeight, type Prescription, type ProgressionEquipment, type RecoverySnapshot, type RepTarget } from '../../../domain/training/types';
 import type { WorkoutSet, WorkoutWithSets } from '../../../domain/training/session';
 import type { IsoDateTime } from '../../../domain/types';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
@@ -55,6 +55,11 @@ export interface ExerciseProgressionProps {
   readonly positionRank?: number;
   /** Muscles d'un exercice du catalogue, pour retrouver le rang qu'il avait dans la séance de référence. */
   readonly musclesOf?: (exerciseId: string) => readonly MuscleWeight[];
+  /**
+   * I5-02 point 2.2 : récupération vue par le moteur, issue d'une journée rouge ACCEPTÉE par Ali (sinon null : aucune modulation) ;
+   * `'loading'` : choix encore en lecture, la proposition attend. Absent : null.
+   */
+  readonly recovery?: RecoverySnapshot | null | 'loading';
   readonly clock: { nowMs(): number };
   /** Séance relue après une écriture (la base fait foi). */
   readonly onChanged: () => Promise<void>;
@@ -167,7 +172,7 @@ async function bodyweightNow(access: DataAccess): Promise<number | null> {
 /** Rampe : « 25 kg × 8 · 37,5 kg × 5 · 50 kg × 2 ». */
 const rampText = (ramp: readonly WarmupSet[]): string => ramp.map((s) => tProgression('warmupStep', { load: kg(s.loadKg), reps: s.reps })).join(tProgression('warmupJoin'));
 
-export function ExerciseProgression({ access, workout, exerciseId, sets, exercise, equipment, clock, onChanged, warmup = false, positionRank: liveRank = 1, musclesOf }: ExerciseProgressionProps) {
+export function ExerciseProgression({ access, workout, exerciseId, sets, exercise, equipment, clock, onChanged, warmup = false, positionRank: liveRank = 1, musclesOf, recovery = null }: ExerciseProgressionProps) {
   // La proposition ne change pas pendant la séance : le rang est celui du premier rendu (retirer un exercice ne la fait pas remonter).
   const [positionRank] = useState(liveRank);
   const [load, setLoad] = useState<Load>({ status: 'loading' });
@@ -234,7 +239,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
   const ownDecision = load.status === 'ready' ? load.own : null;
 
   const prescription = useMemo((): Prescription | null => {
-    if (load.status !== 'ready') return null;
+    if (load.status !== 'ready' || recovery === 'loading') return null;
     const d = load.reference;
     // Référence du moteur : décision d'une séance close avec une valeur retenue (un refus ne fixe rien) ; en pratique antérieure à la fin de
     // cette séance, l'historique l'emporte (critère 8 : la séance faite fait foi).
@@ -254,8 +259,8 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
       target,
       config: DEFAULT_PROGRESSION_CONFIG,
       now: new Date(clock.nowMs()).toISOString() as IsoDateTime,
-      // I2 : aucune source Recovery (I5) ; le snapshot reste nul, aucune modulation.
-      recovery: null,
+      // I5-02 point 2.2 : Recovery du jour seulement si Ali a accepté la journée rouge ; ignorée ou absente : aucune modulation.
+      recovery,
       deload,
       // REV-01 constat 6 : décote de position (§ 11.3) ; inconnue → aucun effet.
       positionRank,
@@ -264,7 +269,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
       bodyweightKg: load.bodyweightKg,
     });
     // L'instant de calcul est celui du chargement : la proposition ne change pas pendant la séance.
-  }, [load, exerciseId, exercise, equipment, target, deload, positionRank]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [load, exerciseId, exercise, equipment, target, deload, positionRank, recovery]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (ownDecision !== null && decided.current) {
@@ -364,7 +369,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
   };
 
   const proposalBody = (() => {
-    if (load.status === 'loading') return <p className="ct-progression__muted" role="status">{tProgression('loading')}</p>;
+    if (load.status === 'loading' || recovery === 'loading') return <p className="ct-progression__muted" role="status">{tProgression('loading')}</p>;
     if (load.status === 'error' || prescription === null) return <p className="ct-progression__muted">{tProgression('loadError')}</p>;
     const p = prescription;
     const explanation = explainPrescription(p);
