@@ -6,8 +6,8 @@ import type { RecoverySnapshot } from './types';
  *
  * - Offre : Recovery du jour (lue dans `recovery_day`, même valeur sur l'iPhone et le PC) finie, dans [0, 100] et ≤ `lowRecovery` (33).
  *   Recovery nulle (abstention), absente ou illisible : aucune offre, jamais de faux positif.
- * - Choix d'Ali, jamais imposé : `accepted` alimente la contrainte Recovery existante du moteur (maintien de la référence ou réduction,
- *   jamais une hausse ; `constraints.ts`) avec la seule Recovery du jour ; `ignored` ou aucun choix : aucun snapshot, prescription inchangée.
+ * - Choix d'Ali, jamais imposé : `accepted` alimente la contrainte Recovery existante du moteur (MAINTIEN de la référence seul, D-93 révisée,
+ *   jamais une hausse ni une baisse due à l'acceptation ; `constraints.ts`, `redDayHold`) avec la seule Recovery du jour ; `ignored` ou aucun choix : aucun snapshot, prescription inchangée.
  */
 
 export type RedDayChoice = 'accepted' | 'ignored';

@@ -52,7 +52,7 @@ export const progressionFr = {
   alertDeload: 'Deload : séries réduites de moitié, hors statistiques.',
   alertRecoveryLow: 'Récupération basse : charge réduite de {cut} %.',
   alertRecoveryLowSet: 'Récupération basse : charge réduite de {cut} % et une série de moins (exercice d’isolation).',
-  alertRedDay: 'Journée rouge acceptée : charges maintenues, aucune hausse aujourd’hui ; estimation, pas un avis médical.',
+  alertRedDay: 'Journée rouge acceptée : aucune hausse aujourd’hui ; estimation, pas un avis médical.',
   alertsLabel: 'Alertes',
   optionsTitle: 'Choix facultatifs',
   optionFatigueLoad: '−{cut} % de charge : {value}.',
