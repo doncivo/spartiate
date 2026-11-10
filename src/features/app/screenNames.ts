@@ -12,6 +12,7 @@ export type ScreenName =
   | 'todaysessioncard'
   | 'nutritionscreen'
   | 'nutritionremainingcard'
+  | 'recoverytoday'
   | 'applehealthscreen'
   | 'exportimportscreen'
   | 'sectionnotice'

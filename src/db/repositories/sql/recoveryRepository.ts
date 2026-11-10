@@ -247,6 +247,11 @@ export function createRecoveryRepository(db: SqlExecutor, stamper: WriteStamper,
       return rows.map(toDay);
     },
 
+    async latestDay() {
+      const rows = await db.select<DayRow>('SELECT * FROM recovery_day WHERE deleted_at IS NULL ORDER BY date DESC LIMIT 1', []);
+      return rows[0] ? toDay(rows[0]) : null;
+    },
+
     async listMuscles(date) {
       return (await liveMuscles(date)).map(toMuscle);
     },

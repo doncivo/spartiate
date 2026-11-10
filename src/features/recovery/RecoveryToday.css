@@ -1,0 +1,115 @@
+/* Cadrans de récupération d'Aujourd'hui (I5-02 point 2.1) : jetons de tokens.css seulement, aucune couleur en dur. */
+.ct-recovery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+}
+
+.ct-recovery__dials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  gap: var(--ct-space-4);
+}
+
+.ct-recovery__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ct-space-1);
+  text-align: center;
+  min-width: 0;
+}
+
+.ct-recovery__cell p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ct-recovery__dial {
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+
+.ct-recovery__ring {
+  width: 100%;
+  height: 100%;
+}
+
+.ct-recovery__track,
+.ct-recovery__arc {
+  fill: none;
+  stroke-width: 8;
+}
+
+.ct-recovery__track {
+  stroke: var(--ct-color-border);
+}
+
+.ct-recovery__arc {
+  stroke: var(--ct-color-bronze);
+  stroke-linecap: round;
+}
+
+.ct-recovery__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-text-lg);
+  font-weight: var(--ct-font-weight-semibold);
+  color: var(--ct-color-text);
+}
+
+.ct-recovery__name {
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-recovery__notice {
+  margin: 0;
+  padding: var(--ct-space-2) var(--ct-space-3);
+  border: 1px solid var(--ct-color-warning-border);
+  border-radius: var(--ct-radius-sm);
+  font-size: var(--ct-font-size-text-sm);
+  color: var(--ct-color-text);
+}
+
+.ct-recovery__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+}
+
+.ct-recovery__list li {
+  min-height: var(--ct-hit-target-min);
+  display: flex;
+  align-items: center;
+  gap: var(--ct-space-2);
+}
+
+.ct-recovery__mark {
+  color: var(--ct-color-bronze);
+  font-size: var(--ct-font-size-xs);
+}
+
+.ct-recovery__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ct-recovery__disclaimer {
+  font-style: italic;
+}

@@ -316,6 +316,8 @@ export interface RecoverySnapshot {
   readonly sleepHours: number | null;
   /** Écart de la FC de repos à la baseline, en fraction (+0,08 = +8 %). */
   readonly restingHrDelta: number | null;
+  /** I5-02 point 2.2 : snapshot issu d'une journée rouge ACCEPTÉE par Ali au lancement (§ 16.7) ; la phrase le dit. Absent : autre source. */
+  readonly redDay?: boolean;
 }
 
 export interface PrescribeInput {
@@ -369,6 +371,8 @@ export type ReasonCode =
   | 'deload'
   | 'recovery-low'
   | 'recovery-set-removed'
+  // I5-02 point 2.2 : la récupération basse vient d'une journée rouge acceptée par Ali au lancement de la séance (§ 16.7).
+  | 'recovery-red-day'
   | 'increment-unknown'
   // I2-04 : grille de charges tirée d'un matériel « à vérifier » du profil (information, rien n'est bloqué).
   | 'grid-to-verify'

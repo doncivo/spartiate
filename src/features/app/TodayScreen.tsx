@@ -10,7 +10,7 @@ import { Button, useLayout } from '../../ui';
 import { useSyncedData } from '../sync/remoteChanges';
 import { statusLine } from '../sync/syncText';
 import { useAppContainer } from './AppContainerContext';
-import { NutritionRemainingCard, TodaySessionCard } from './lazyScreens';
+import { NutritionRemainingCard, RecoveryToday, TodaySessionCard } from './lazyScreens';
 import { useNavigationStore, type Route } from './navigation';
 import './TodayScreen.css';
 
@@ -98,26 +98,6 @@ function WeightCard({ weights, nowMs, showActions }: { readonly weights: readonl
           </Button>
         </div>
       ) : null}
-    </section>
-  );
-}
-
-function NextCard({ pc }: { readonly pc: boolean }) {
-  // Séance et Nutrition sont livrées (0.7.0) : seule la Récupération reste à venir.
-  const rows: readonly (readonly [TodayTextKey, TodayTextKey])[] = [['nextRecovery', pc ? 'nextRecoveryTextPc' : 'nextRecoveryText']];
-  return (
-    <section className="ct-today__card ct-today__next" aria-labelledby="ct-today-next">
-      <h2 id="ct-today-next" className="ct-today__eyebrow">
-        {tToday(pc ? 'nextEyebrowPc' : 'nextEyebrow')}
-      </h2>
-      <dl className="ct-today__rows">
-        {rows.map(([name, text]) => (
-          <div key={name} className="ct-today__row">
-            <dt>{tToday(name)}</dt>
-            <dd className="ct-today__muted">{tToday(text)}</dd>
-          </div>
-        ))}
-      </dl>
     </section>
   );
 }
@@ -225,7 +205,7 @@ export function TodayScreen() {
             <TodaySessionCard />
             <NutritionRemainingCard />
             <WeightCard weights={weights} nowMs={nowMs} showActions />
-            <NextCard pc />
+            <RecoveryToday />
           </div>
           <aside className="ct-today__col">
             <KeyValueCard
@@ -310,7 +290,7 @@ export function TodayScreen() {
       <TodaySessionCard />
       <NutritionRemainingCard />
       {weights.length > 0 ? <WeightCard weights={weights} nowMs={nowMs} showActions={false} /> : null}
-      <NextCard pc={false} />
+      <RecoveryToday />
       <p className="ct-today__footer">{syncText ?? tToday('syncNotConfigured')}</p>
     </section>
   );

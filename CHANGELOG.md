@@ -2,6 +2,14 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.11.0
+
+Les écrans de la récupération. **Pas de mise à jour de la base** (reste en version 10) ; aucune donnée saisie n'est modifiée.
+
+- **Aujourd'hui** : cadrans Recovery, Exertion et Sommeil (valeur, ou « en apprentissage J+x/14 », qualité, contributeurs, « estimation, pas un avis médical »), tuile Pas (iPhone). La carte « Arrive ensuite » disparaît. Même affichage sur le PC, à partir des résumés reçus.
+- **Séance** : si ta Recovery est ≤ 33 au lancement, bandeau « Journée rouge : maintien des charges proposé » (Accepter ou Ignorer ; jamais imposé, la phrase de la proposition le dit). Récupération par muscle visible sur la séance proposée et la séance active.
+- **Sommeil** : heure de coucher proposée (besoin de sommeil moins ton heure de lever habituelle). Notifications du coucher (30 min avant) et du matin (une par jour, texte sans chiffre), **désactivées par défaut**, iPhone seulement : Plus → Apple Santé.
+
 ## 0.10.0
 
 **Schéma 10 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** La mise à jour ajoute des tables (additif) ; aucune donnée saisie n'est modifiée.
