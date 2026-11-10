@@ -167,8 +167,8 @@ describe('tuile Pas', () => {
     await samples.recordImport({ type: 'pas', importedAt: '2026-11-10T08:00:00.000Z', newestSampleAt: '2026-11-10T12:00:00.000Z', added: 2, duplicates: 0, rejected: 0 });
     mount();
     const tile = await screen.findByRole('region', { name: 'Pas' });
-    expect(within(tile).getByText(/8[\s  ]000/)).toBeInTheDocument();
-    expect(within(tile).getByText(/7[\s  ]000/)).toBeInTheDocument();
+    expect(within(tile).getByText(/8\s000/)).toBeInTheDocument();
+    expect(within(tile).getByText(/7\s000/)).toBeInTheDocument();
     expect(within(tile).getByText('Moyenne sur 2 jours connus (sur 7)')).toBeInTheDocument();
   });
 

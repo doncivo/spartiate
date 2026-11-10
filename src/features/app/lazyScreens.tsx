@@ -127,6 +127,8 @@ export const TodaySessionCard = lazyScreen<object>(() => import('../training/ses
 export const NutritionScreen = lazyScreen<object>(() => import('../nutrition/NutritionScreen').then((m) => ({ default: m.NutritionScreen })), 'nutritionscreen');
 /** I4-03 : carte « Nutrition » (cibles restantes) d'Aujourd'hui, bloc à part chargé quand Aujourd'hui la rend (jamais dans le départ). */
 export const NutritionRemainingCard = lazyScreen<object>(() => import('../nutrition/NutritionRemainingCard').then((m) => ({ default: m.NutritionRemainingCard })), 'nutritionremainingcard', { onDemand: true });
+/** I5-02 point 2.1 : cadrans Recovery, Exertion, Sommeil et tuile Pas d'Aujourd'hui, bloc à part chargé avec son catalogue de textes (jamais dans le départ). */
+export const RecoveryToday = lazyScreen<object>(() => import('../recovery/RecoveryToday').then((m) => ({ default: m.RecoveryToday })), 'recoverytoday', { onDemand: true });
 export const BodyScreen =lazyScreen<object>(() => import('../settings/BodyScreen').then((m) => ({ default: m.BodyScreen })), 'bodyscreen');
 /** Finitions 0.1.2 : Apple Santé (Plus, iPhone seulement), chargé à la demande avec ses textes et la façade HealthKit. */
 export const AppleHealthScreen = lazyScreen<object>(() => import('../settings/AppleHealthScreen').then((m) => ({ default: m.AppleHealthScreen })), 'applehealthscreen');
