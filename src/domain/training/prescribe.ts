@@ -241,7 +241,7 @@ export function prescribe(input: PrescribeInput): Prescription {
     const reduced = reducedTarget(constraints, refPerformance, input.exercise.kind, config);
     if (reduced.recoverySetRemoved) reasons.add('recovery-set-removed');
     // I4-08 : décote d'inactivité seule sur une grille connue : arrondie au cran (maintien sous le demi-cran), jamais un cran entier dit « −1 % ».
-    const discountOnly = constraints.inactivityCut > 0 && !constraints.deload && !constraints.lowRecovery;
+    const discountOnly = constraints.inactivityCut > 0 && !constraints.deload && !(constraints.lowRecovery && !constraints.redDayHold);
     const snapped =
       reduced.targetKg >= refLoad - EPS
         ? { loadKg: refLoad, reps: reduced.reps, extraRep: false }

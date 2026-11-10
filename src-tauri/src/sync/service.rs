@@ -38,6 +38,7 @@ use super::forget::{
     FORGET_DECLARE_LIMIT, FORGOTTEN_FILE, MAX_FORGOTTEN_DELETE_ENTRIES, MAX_FORGOTTEN_ENTRIES,
     SYNC_NEXT_KEY_ACCOUNT,
 };
+use super::health::{self, DevicesOnly, HealthFileRead, HEALTH_HYDRATE_BUDGET};
 use super::limits::{DEVICE_EXPIRY_MS, MAX_SCAN_ENTRIES_PER_FOLDER, MAX_STATE_FILE_BYTES};
 use super::limits::{NONCE_MAX_RECORDS, NONCE_WARN_RECORDS, PAIRING_CLOCK_TOLERANCE_MS};
 use super::marker::{self, RestoreMarker};
@@ -468,7 +469,7 @@ impl SyncCore {
             let folder_id = checked.folder_id();
             inner.folder = Some(Bound {
                 checked,
-                fs,
+                fs: Box::new(DevicesOnly::new(fs)),
                 folder_id,
             });
         }
@@ -637,7 +638,7 @@ impl SyncCore {
         inner.record = Some(record);
         inner.folder = Some(Bound {
             checked,
-            fs,
+            fs: Box::new(DevicesOnly::new(fs)),
             folder_id,
         });
         log::event("folder-bound", "ok");
@@ -3763,6 +3764,34 @@ impl SyncCore {
 
     pub fn clear_restore_marker(&self) -> SyncResult<()> {
         marker::clear(&self.options.base_dir)
+    }
+
+    /// I5-03 (D-90, H-26) : lit les fichiers du raccourci dans `sante/` du dossier lié, en LECTURE SEULE, par un accès au dossier distinct de
+    /// celui de la synchro (`Bound.fs` est un `DevicesOnly` : la synchro ne voit jamais `sante/`). Cycle d'hydratation propre : il ne touche pas
+    /// au budget d'un cycle de synchro en cours, et le verrou du service est relâché avant toute lecture. Ne publie, ne chiffre ni n'écrit rien.
+    pub fn read_health_files(&self, names: &[String]) -> SyncResult<Vec<HealthFileRead>> {
+        let (checked, record) = {
+            let mut inner = self.lock();
+            self.require_folder(&mut inner)?;
+            let record = inner
+                .record
+                .clone()
+                .ok_or(SyncError::new(SyncCode::NotConfigured))?;
+            let checked = inner
+                .folder
+                .as_ref()
+                .map(|bound| bound.checked.clone())
+                .ok_or(SyncError::new(SyncCode::NotConfigured))?;
+            (checked, record)
+        };
+        let fs = self.backend.open_record(&checked, &record);
+        let result = match fs.start_cycle_within(HEALTH_HYDRATE_BUDGET) {
+            Ok(()) => health::read_health_files(fs.as_ref(), names),
+            Err(e) => Err(SyncError::new(e.code())),
+        };
+        let mut inner = self.lock();
+        self.persist_refreshed(&mut inner);
+        result
     }
 }
 

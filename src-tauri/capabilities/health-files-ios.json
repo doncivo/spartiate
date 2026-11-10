@@ -1,0 +1,10 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "health-files-ios",
+  "description": "iPhone uniquement : lecture seule des quatre fichiers du raccourci Santé dans iCloud Drive/Spartiate/sante (I5-03, D-90, H-26). Une commande, health_files_read, qui passe par le marque-page de la synchro ; aucune écriture, aucun chemin dans la WebView.",
+  "windows": ["main"],
+  "platforms": ["iOS"],
+  "permissions": [
+    "allow-health-files-read"
+  ]
+}

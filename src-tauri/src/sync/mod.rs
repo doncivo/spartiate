@@ -34,6 +34,8 @@ pub mod crypto;
 pub mod files;
 pub mod folder;
 pub mod forget;
+/// I5-03 (D-90, H-26) : lecture du dossier `sante/` du raccourci (lecture seule) et enveloppe `DevicesOnly` de la synchro.
+pub mod health;
 pub mod limits;
 pub mod marker;
 pub mod names;

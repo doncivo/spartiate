@@ -1,5 +1,5 @@
 import { logFailure } from '../../../platform/desktop/log';
-import { openShortcutFiles, type ShortcutFilesReader } from '../../../platform/shortcutFiles';
+import { openShortcutFiles, openShortcutPicker, type ShortcutFilesReader } from '../../../platform/shortcutFiles';
 import { detectTimeZone } from '../../../platform/timeZone';
 import type { RecoverySet, RecoveryWorkout } from '../../../domain/recovery';
 import { resolveExercise } from '../../../domain/training';
@@ -45,11 +45,13 @@ export async function loadRecoveryWorkouts(container: AppContainer, sinceIso: st
 const services = new WeakMap<AppContainer, ShortcutImportService>();
 
 /** Service d'import du conteneur (un seul par conteneur : « un import à la fois » vaut pour l'écran comme pour l'ouverture). */
-export function shortcutImportFor(container: AppContainer, reader?: ShortcutFilesReader): ShortcutImportService {
+export function shortcutImportFor(container: AppContainer, reader?: ShortcutFilesReader, fallback?: ShortcutFilesReader): ShortcutImportService {
   const existing = services.get(container);
-  if (existing !== undefined && reader === undefined) return existing;
+  if (existing !== undefined && reader === undefined && fallback === undefined) return existing;
+  const { runtime, os } = container.platform;
   const service = createShortcutImportService({
-    reader: reader ?? openShortcutFiles(container.platform.runtime, container.platform.os),
+    reader: reader ?? openShortcutFiles(runtime, os),
+    fallback: fallback ?? openShortcutPicker(runtime, os),
     samples: () => container.data.repos.recoverySamples(),
     recovery: () => container.data.repos.recovery(),
     workouts: (since) => loadRecoveryWorkouts(container, since),
@@ -64,19 +66,30 @@ export function shortcutImportFor(container: AppContainer, reader?: ShortcutFile
 }
 
 /**
- * Déclenchement à l'ouverture (une fois par ouverture, après le premier rendu, en tâche différée). Lit seulement si le lecteur est automatique
- * (dossier Spartiate-sante, H-26) ; le lecteur à sélecteur a besoin d'un geste : rien ne s'ouvre seul. Ne rejette jamais.
+ * Déclenchements automatiques (I5-03, D-90) : à l'ouverture de l'app (après le premier rendu, tâche différée de 3 s) et à chaque retour au
+ * premier plan. Chacun appelle `run('open')` ; la limite de 30 minutes est tenue par le service (« throttled »). Lit seulement si le lecteur
+ * est automatique (dossier sante) ; le sélecteur a besoin d'un geste. Ne rejette jamais.
  */
-export function startRecoveryImportOnOpen(container: AppContainer): { readonly dispose: () => void } {
+export function startRecoveryImportOnOpen(
+  container: AppContainer,
+  options: { readonly service?: Pick<ShortcutImportService, 'run'>; readonly delayMs?: number } = {},
+): { readonly dispose: () => void } {
   let cancelled = false;
-  const timer = window.setTimeout(() => {
+  const trigger = (): void => {
     if (cancelled) return;
-    void shortcutImportFor(container).run('open').catch((error: unknown) => logFailure('recovery-import', error));
-  }, 3000);
+    const service = options.service ?? shortcutImportFor(container);
+    void service.run('open').catch((error: unknown) => logFailure('recovery-import', error));
+  };
+  const timer = window.setTimeout(trigger, options.delayMs ?? 3000);
+  const onVisible = (): void => {
+    if (document.visibilityState === 'visible') trigger();
+  };
+  document.addEventListener('visibilitychange', onVisible);
   return {
     dispose: () => {
       cancelled = true;
       window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisible);
     },
   };
 }

@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createManualClock } from '../../../domain/clock';
+import { createManualClock, type ManualClock } from '../../../domain/clock';
 import type { RecoveryWorkout } from '../../../domain/recovery';
 import { asEntityId, type DeviceId, type LocalDate } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
 import type { RecoverySampleRepository } from '../../../db/repositories/recoverySampleRepository';
-import type { ShortcutFileRead, ShortcutFilesReader } from '../../../platform/shortcutFiles';
-import { createShortcutImportService, IMPORT_LOG_EVENTS, type ImportLogEvent, type ShortcutImportDeps } from './service';
+import { ShortcutFolderError, type ShortcutFileRead, type ShortcutFilesReader } from '../../../platform/shortcutFiles';
+import { AUTO_IMPORT_INTERVAL_MS, createShortcutImportService, IMPORT_LOG_EVENTS, type ImportLogEvent, type ShortcutImportDeps } from './service';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-000000000011');
 const NOW = '2026-11-08T10:00:00.000Z';
@@ -275,5 +275,104 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     expect(await recovery.listMuscles('2026-11-08' as LocalDate)).toEqual([]);
     expect((await recovery.listMuscles('2026-11-09' as LocalDate)).map((m) => m.muscleId)).toEqual(['chest']);
     expect((await recovery.getDay('2026-11-08' as LocalDate))?.summary.computedAt).toBe('2026-11-08T22:59:59.999Z');
+  });
+});
+
+describe('lecture automatique du dossier sante (I5-03 point 1, D-90, H-26)', () => {
+  let db: TestDb;
+  let logs: { event: ImportLogEvent; counts: Record<string, number> }[];
+  let clock: ManualClock;
+  const folder = (reads: () => Promise<readonly ShortcutFileRead[] | null>) => reader(reads, { kind: 'folder', automatic: true });
+  const picker = (reads: () => Promise<readonly ShortcutFileRead[] | null>) => reader(reads, { kind: 'picker', automatic: false });
+
+  beforeEach(async () => {
+    db = await openBaseDb(DEVICE);
+    logs = [];
+    clock = createManualClock(NOW);
+  });
+  afterEach(async () => {
+    await db.close();
+  });
+
+  const build = (r: ShortcutFilesReader, fallback?: ShortcutFilesReader) =>
+    createShortcutImportService({
+      reader: r,
+      ...(fallback === undefined ? {} : { fallback }),
+      samples: () => db.data.repos.recoverySamples(),
+      recovery: () => db.data.repos.recovery(),
+      workouts: async () => [],
+      clock,
+      timeZone: TZ,
+      log: (event, counts) => logs.push({ event, counts }),
+    });
+
+  it('l’intervalle automatique est de 30 minutes', () => {
+    expect(AUTO_IMPORT_INTERVAL_MS).toBe(30 * 60 * 1000);
+  });
+
+  it('à l’ouverture : lecture du dossier sans geste ; un second déclenchement dans les 30 minutes ne lit rien (« throttled »)', async () => {
+    const r = folder(async () => ALL_OK());
+    const service = build(r);
+    expect((await service.run('open')).status).toBe('done');
+    expect(r.read).toHaveBeenCalledTimes(1);
+    clock.advance(AUTO_IMPORT_INTERVAL_MS - 1);
+    expect((await service.run('open')).status).toBe('throttled');
+    expect(r.read).toHaveBeenCalledTimes(1);
+    clock.advance(1);
+    expect((await service.run('open')).status).toBe('done');
+    expect(r.read).toHaveBeenCalledTimes(2);
+  });
+
+  it('la limite vaut aussi après une réouverture de l’app : dernier import gardé en base, moins de 30 minutes', async () => {
+    await build(folder(async () => ALL_OK())).run('open');
+    clock.advance(10 * 60 * 1000);
+    const again = folder(async () => ALL_OK());
+    expect((await build(again).run('open')).status).toBe('throttled');
+    expect(again.read).not.toHaveBeenCalled();
+  });
+
+  it('une tentative sans fichier (dossier vide) compte aussi pour la limite', async () => {
+    const r = folder(async () => ABSENT());
+    const service = build(r);
+    expect((await service.run('open')).status).toBe('done');
+    expect((await service.run('open')).status).toBe('throttled');
+    expect(r.read).toHaveBeenCalledTimes(1);
+  });
+
+  it('« Importer maintenant » relit le dossier à tout moment, sans limite', async () => {
+    const r = folder(async () => ALL_OK());
+    const service = build(r);
+    await service.run('open');
+    expect((await service.run('manual')).status).toBe('done');
+    expect((await service.run('manual')).status).toBe('done');
+    expect(r.read).toHaveBeenCalledTimes(3);
+  });
+
+  it('le sélecteur reste en secours : « pick » lit le sélecteur, jamais le dossier ; annulation = « cancelled »', async () => {
+    const f = folder(async () => ABSENT());
+    const p = picker(async () => ALL_OK());
+    const service = build(f, p);
+    expect((await service.run('pick')).status).toBe('done');
+    expect(p.read).toHaveBeenCalledTimes(1);
+    expect(f.read).not.toHaveBeenCalled();
+    const cancelled = picker(async () => null);
+    expect((await build(f, cancelled).run('pick')).status).toBe('cancelled');
+  });
+
+  it('dossier de synchro non lié ou injoignable : « folder-unavailable », journal à nom fixe, rien d’écrit', async () => {
+    const r = folder(async () => {
+      throw new ShortcutFolderError('not-configured');
+    });
+    const result = await build(r).run('manual');
+    expect(result.status).toBe('folder-unavailable');
+    expect(logs.map((l) => l.event)).toContain('recovery-import-folder-unavailable');
+    expect(IMPORT_LOG_EVENTS).toContain('recovery-import-folder-unavailable');
+    expect(await (await db.data.repos.recoverySamples()).listImportStates()).toEqual([]);
+  });
+
+  it('un lecteur de sélecteur reste manuel : « open » ne lit rien (« needs-pick »)', async () => {
+    const p = picker(async () => ALL_OK());
+    expect((await build(p).run('open')).status).toBe('needs-pick');
+    expect(p.read).not.toHaveBeenCalled();
   });
 });

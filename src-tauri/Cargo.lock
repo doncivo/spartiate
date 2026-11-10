@@ -4312,7 +4312,7 @@ dependencies = [
 
 [[package]]
 name = "spartiate"
-version = "0.11.0"
+version = "0.11.1"
 dependencies = [
  "aws-lc-rs",
  "base64 0.22.1",

@@ -41,15 +41,17 @@ describe('journée rouge : offre au lancement', () => {
 describe('journée rouge acceptée : prescription', () => {
   const top = [session(3, 100, [10, 10, 10])];
 
-  it('haut de plage atteint : aucune hausse ; contrainte existante (× 0,95), dite « journée rouge » avec l’écart appliqué', () => {
+  // D-93 révisée (I5-03) : § 16.7 (« maintien ») l'emporte sur § 11.3 (× 0,95) pour la journée rouge ; jamais une baisse automatique.
+  it('haut de plage atteint : aucune hausse, charge de référence maintenue, dite « charges maintenues »', () => {
     const normal = prescribe(input({ history: top }));
     expect(normal.loadKg).toBe(102.5);
     const p = prescribe(input({ history: top, recovery: redDaySnapshot(20, 'accepted', CFG) }));
-    expect(p.loadKg).toBe(95);
+    expect(p.loadKg).toBe(100);
+    expect(p.sets.every((x) => x.loadKg === 100)).toBe(true);
     expect(p.headline).toBe('recovery-low');
     expect(p.reasons).toContain('recovery-low');
     expect(p.reasons).toContain('recovery-red-day');
-    expect(explainPrescription(p)).toEqual({ key: 'redDay', params: { delta: 5, cut: 5 } });
+    expect(explainPrescription(p)).toEqual({ key: 'redDayHeld', params: {} });
     expect(explanationNotes(p)).toEqual([]);
     expect(constraintAlerts(p)).toEqual([]);
   });
@@ -60,18 +62,28 @@ describe('journée rouge acceptée : prescription', () => {
     expect(prescribe(input({ history: top, recovery: redDaySnapshot(null, 'accepted', CFG) }))).toEqual(none);
   });
 
-  it('réduction arrondie à la référence : « charges maintenues »', () => {
-    const p = prescribe(input({ history: top, recovery: redDaySnapshot(20, 'accepted', CFG), config: { ...CFG, lowRecoveryLoad: 1 } }));
+  it('le facteur de récupération basse (× 0,95) n’agit jamais sur une journée rouge acceptée', () => {
+    const p = prescribe(input({ history: top, recovery: redDaySnapshot(20, 'accepted', CFG), config: { ...CFG, lowRecoveryLoad: 0.5 } }));
     expect(p.loadKg).toBe(100);
     expect(explainPrescription(p)).toEqual({ key: 'redDayHeld', params: {} });
   });
 
-  it('exercice d’isolation : une série de moins, dite en note', () => {
+  it('maintien exact : la charge de référence, ni plus ni moins, quelles que soient les charges et répétitions', () => {
+    for (const load of [20, 47.5, 60, 100, 142.5]) {
+      for (const reps of [[8, 8, 8], [10, 10, 10], [6, 5, 5]]) {
+        const p = prescribe(input({ history: [session(3, load, reps)], recovery: redDaySnapshot(33, 'accepted', CFG) }));
+        expect(p.loadKg).toBe(load);
+      }
+    }
+  });
+
+  it('exercice d’isolation : maintien complet, aucune série retirée', () => {
     const p = prescribe(input({ exercise: ISO_CURL, history: [session(3, 40, [10, 10, 10])], target: target(8, 12), recovery: redDaySnapshot(10, 'accepted', CFG) }));
-    expect(p.sets).toHaveLength(2);
-    expect(p.loadKg).toBe(38);
-    expect(explainPrescription(p)).toEqual({ key: 'redDay', params: { delta: 2, cut: 5 } });
-    expect(explanationNotes(p)).toEqual([{ key: 'noteRedDaySet', params: {} }]);
+    expect(p.sets).toHaveLength(3);
+    expect(p.loadKg).toBe(40);
+    expect(p.reasons).not.toContain('recovery-set-removed');
+    expect(explainPrescription(p)).toEqual({ key: 'redDayHeld', params: {} });
+    expect(explanationNotes(p)).toEqual([]);
   });
 
   it('deload en raison principale : la journée rouge est une alerte', () => {
@@ -96,6 +108,18 @@ describe('journée rouge acceptée : prescription', () => {
     const p = prescribe(input({ history: top, recovery: { recovery: 0, sleepHours: null, restingHrDelta: null } }));
     expect(p.reasons).not.toContain('recovery-red-day');
     expect(explainPrescription(p)).toEqual({ key: 'recoveryLow', params: { cut: 5 } });
+  });
+
+  it('journée rouge acceptée + décote d’inactivité : jamais plus bas que sans journée rouge (pas de baisse due à l’acceptation)', () => {
+    const old = [session(22, 100, [10, 10, 10])];
+    const ignored = prescribe(input({ history: old, recovery: redDaySnapshot(20, 'ignored', CFG) }));
+    const accepted = prescribe(input({ history: old, recovery: redDaySnapshot(20, 'accepted', CFG) }));
+    expect(accepted.loadKg ?? 0).toBeGreaterThanOrEqual(ignored.loadKg ?? 0);
+  });
+
+  it('redDayHold n’existe que pour une journée rouge : un signal bas sans indicateur garde × 0,95', () => {
+    const p = prescribe(input({ history: top, recovery: { recovery: 0, sleepHours: null, restingHrDelta: null } }));
+    expect(p.loadKg).toBe(95);
   });
 
   it('décision d’Ali : jamais modulée', () => {

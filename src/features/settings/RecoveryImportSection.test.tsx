@@ -4,7 +4,7 @@ import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import type { HealthKit } from '../../platform/healthkit';
-import type { ShortcutFileRead, ShortcutFilesReader } from '../../platform/shortcutFiles';
+import { ShortcutFolderError, type ShortcutFileRead, type ShortcutFilesReader } from '../../platform/shortcutFiles';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer, type AppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
@@ -29,16 +29,17 @@ const reads = (hrv: ShortcutFileRead): ShortcutFileRead[] => [
   { name: 'pas.csv', state: 'absent' },
 ];
 const pickerReader = (plan: () => ShortcutFileRead[] | null): ShortcutFilesReader => ({ kind: 'picker', automatic: false, read: async () => plan() });
+const folderReader = (plan: () => ShortcutFileRead[] | null): ShortcutFilesReader => ({ kind: 'folder', automatic: true, read: async () => plan() });
 
 describe('Apple Santé : section « Raccourcis » (I5-01 point 1.7)', () => {
   let db: TestDb;
   let container: AppContainer;
   const build = (platform: AppContainer['platform']): AppContainer =>
     createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, platform });
-  const renderScreen = (reader: ShortcutFilesReader) =>
+  const renderScreen = (reader: ShortcutFilesReader, fallback?: ShortcutFilesReader) =>
     render(
       <AppContainerProvider container={container}>
-        <AppleHealthScreen healthKit={healthKit} shortcutReader={reader} />
+        <AppleHealthScreen healthKit={healthKit} shortcutReader={reader} {...(fallback ? { shortcutFallback: fallback } : {})} />
       </AppContainerProvider>,
     );
 
@@ -56,16 +57,19 @@ describe('Apple Santé : section « Raccourcis » (I5-01 point 1.7)', () => {
 
   const section = async () => within(await screen.findByRole('region', { name: 'Récupération depuis Raccourcis' }));
 
-  it('jamais importé : chaque type l’annonce, bouton « Importer maintenant », mention du guide du dépôt', async () => {
-    renderScreen(pickerReader(() => null));
+  it('jamais importé : chaque type l’annonce, boutons « Importer maintenant » et « Choisir les fichiers », chemin iCloud Drive › Spartiate › sante', async () => {
+    renderScreen(folderReader(() => null), pickerReader(() => null));
     const s = await section();
     expect(await s.findAllByText('Jamais importé.')).toHaveLength(4);
     expect(s.getByRole('button', { name: 'Importer maintenant' })).toBeEnabled();
+    expect(s.getByRole('button', { name: 'Choisir les fichiers' })).toBeEnabled();
+    expect(s.getByText(/iCloud Drive › Spartiate › sante/)).toBeInTheDocument();
+    expect(screen.queryByText(/Spartiate-sante/)).toBeNull();
     expect(s.getByText(/docs\/guide-raccourcis-sante\.md/)).toBeInTheDocument();
   });
 
   it('importé : date du dernier import par type, comptes et rejets PAR RAISON sans aucune valeur ; absent clairement dit', async () => {
-    renderScreen(pickerReader(() => reads({ name: 'hrv.csv', state: 'ok', text: HRV })));
+    renderScreen(folderReader(() => reads({ name: 'hrv.csv', state: 'ok', text: HRV })), pickerReader(() => null));
     const s = await section();
     fireEvent.click(await s.findByRole('button', { name: 'Importer maintenant' }));
     await waitFor(() => expect(s.getByText(/Dernier import : 01\/10\/2026 à 1\d:00\./)).toBeInTheDocument());
@@ -76,12 +80,37 @@ describe('Apple Santé : section « Raccourcis » (I5-01 point 1.7)', () => {
     expect(screen.queryByText(/48/)).toBeNull();
   });
 
-  it('sélecteur annulé : message sobre, rien d’importé', async () => {
-    renderScreen(pickerReader(() => null));
+  it('secours : « Choisir les fichiers » ouvre le sélecteur, jamais le dossier ; annulé : message sobre, rien d’importé', async () => {
+    const folder = folderReader(() => reads({ name: 'hrv.csv', state: 'ok', text: HRV }));
+    const readFolder = vi.spyOn(folder, 'read');
+    renderScreen(folder, pickerReader(() => null));
     const s = await section();
-    fireEvent.click(await s.findByRole('button', { name: 'Importer maintenant' }));
+    fireEvent.click(await s.findByRole('button', { name: 'Choisir les fichiers' }));
     expect(await s.findByText('Aucun fichier choisi.')).toBeInTheDocument();
     expect(s.getAllByText('Jamais importé.')).toHaveLength(4);
+    expect(readFolder).not.toHaveBeenCalled();
+  });
+
+  it('dossier de synchro non lié : phrase claire (lier le dossier ou choisir les fichiers), pas de faux « importé »', async () => {
+    const folder: ShortcutFilesReader = {
+      kind: 'folder',
+      automatic: true,
+      read: async () => {
+        throw new ShortcutFolderError('not-configured');
+      },
+    };
+    renderScreen(folder, pickerReader(() => null));
+    const s = await section();
+    fireEvent.click(await s.findByRole('button', { name: 'Importer maintenant' }));
+    expect(await s.findByText(/Plus › Appareils et synchro/)).toBeInTheDocument();
+    expect(s.getAllByText('Jamais importé.')).toHaveLength(4);
+  });
+
+  it('dossier lu mais vide : chaque type « fichier absent », la consigne dit où le raccourci doit écrire', async () => {
+    renderScreen(folderReader(() => reads({ name: 'hrv.csv', state: 'absent' })), pickerReader(() => null));
+    const s = await section();
+    fireEvent.click(await s.findByRole('button', { name: 'Importer maintenant' }));
+    await waitFor(() => expect(s.getAllByText('Fichier absent : rien n’a été lu pour ce type.')).toHaveLength(4));
   });
 
   it('PC : seule la phrase « lus sur l’iPhone », aucun bouton', async () => {

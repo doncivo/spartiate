@@ -6,6 +6,13 @@
 /** Ressenti de fin d'exercice → facteur de charge (§ 16.3 « facteur 0,8 / 1 / 1,2 » ; clés = `Difficulty` du moteur de séance). */
 export type RecoveryDifficulty = 'easy' | 'ok' | 'hard';
 
+/**
+ * Échelle de la musculation dans l'Exertion (D-88 révisée, I5-03) : points muscu = tonnage en tonnes × facteur de difficulté × échelle.
+ * Avec k = 300 et sans échelle, 12 t donnaient 0,4 sur 10 : la zone cible et le supplément de sommeil ne jouaient jamais. 20 donne
+ * 12 t ≈ 5,5, 6 t ≈ 3,3, 20 t ≈ 7,4 (6 t ≈ 3,3). Choix prudent de l'agent, révisable par Ali ; la formule du PRD § 16.3 (k, 10 × (1 − e^(−x/k))) est gardée.
+ */
+export const STRENGTH_SCALE = 20;
+
 export const RECOVERY_CONFIG = {
   /** § 16.3 Baseline. */
   baselineDays: 14,
