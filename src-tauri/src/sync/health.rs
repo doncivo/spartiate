@@ -44,7 +44,11 @@ pub struct HealthFileRead {
 
 /// Lit les fichiers demandés, dans l'ordre. Un nom hors des quatre, un doublon ou plus de quatre noms : `bad-name` AVANT tout accès.
 pub fn read_health_files(fs: &dyn SyncFs, names: &[String]) -> SyncResult<Vec<HealthFileRead>> {
-    let distinct = names.iter().collect::<std::collections::BTreeSet<_>>().len() == names.len();
+    let distinct = names
+        .iter()
+        .collect::<std::collections::BTreeSet<_>>()
+        .len()
+        == names.len();
     if names.len() > HEALTH_FILES.len()
         || !distinct
         || names.iter().any(|n| !HEALTH_FILES.contains(&n.as_str()))
