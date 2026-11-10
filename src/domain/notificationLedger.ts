@@ -5,8 +5,8 @@ import { NUMERIC_ID_MAX, NUMERIC_ID_MIN } from './notificationId';
  * sans titre ni texte. La vérité reste `get_pending` : un registre perdu ou illisible fait seulement tout replanifier une fois.
  */
 
-export type LedgerKind = 'task' | 'routine' | 'event' | 'recap' | 'snooze';
-const LEDGER_KINDS: readonly string[] = ['task', 'routine', 'event', 'recap', 'snooze'];
+export type LedgerKind = 'task' | 'routine' | 'event' | 'recap' | 'snooze' | 'bedtime' | 'morning';
+const LEDGER_KINDS: readonly string[] = ['task', 'routine', 'event', 'recap', 'snooze', 'bedtime', 'morning'];
 
 export interface LedgerEntry {
   /** Identifiant numérique du plugin (plage du plan). */
