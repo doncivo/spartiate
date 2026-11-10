@@ -98,6 +98,7 @@ describe('prise de développement et démarrage', () => {
     // SPA-007 : le minuteur de test (À propos) demande la même autorisation, au geste « Lancer » seulement, jamais à l'ouverture de l'écran.
     // I1-02 : le minuteur de repos de la séance demande la même autorisation, au geste de validation d'une série, jamais à l'ouverture de l'écran.
     // I4-05 : le scan d'un code-barres alimentaire demande l'autorisation de la caméra au geste « Scanner » seulement, jamais à l'ouverture de l'écran.
-    expect([...callers].sort()).toEqual(['src/features/nutrition/scan/scanBarcode.ts', 'src/features/settings/syntheticTimer.ts', 'src/features/signing/requestPermission.ts', 'src/features/training/session/restTimer.ts']);
+    // I5-02 : les notifications de coucher et du matin demandent l'autorisation au geste d'un interrupteur (Plus → Apple Santé) seulement, jamais à l'ouverture, jamais après un refus.
+    expect([...callers].sort()).toEqual(['src/features/notifications/recoveryNotifications.ts', 'src/features/nutrition/scan/scanBarcode.ts', 'src/features/settings/syntheticTimer.ts', 'src/features/signing/requestPermission.ts', 'src/features/training/session/restTimer.ts']);
   });
 });
