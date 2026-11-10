@@ -1,11 +1,11 @@
-import { RECOVERY_CONFIG } from './config';
+import { RECOVERY_CONFIG, STRENGTH_SCALE } from './config';
 import type { RecoveryExplanationKey, RecoveryWorkout } from './types';
 import { utcToLocal } from '../timeZone';
 
 export interface DayExertion {
   /** 0 à 10, arrondie au centième. */
   readonly value: number;
-  /** `tonnage / 1000 × facteur de difficulté`, somme des séries comptées. */
+  /** Points muscu : `tonnage en tonnes × facteur de difficulté × STRENGTH_SCALE`, somme des séries comptées (D-88 révisée). */
   readonly muscuLoad: number;
   /** Toujours 0 : pas de zones FC fiables (D-88). */
   readonly cardioLoad: 0;
@@ -13,7 +13,7 @@ export interface DayExertion {
 }
 
 /**
- * Exertion d'un jour local (§ 16.3), MUSCULATION SEULE : `10 × (1 − e^(−(cardio + muscu) / k))` avec cardio = 0 (D-88),
+ * Exertion d'un jour local (§ 16.3), MUSCULATION SEULE : `10 × (1 − e^(−(cardio + muscu) / k))` avec cardio = 0 et muscu mis à l'échelle (D-88 révisée),
  * et l'explication le dit (`exertion_cardio_not_counted`). Séries comptées : terminées, hors échauffement, charge et répétitions connues.
  * Un jour sans séance vaut 0 : c'est une absence de charge constatée (les séances sont locales), pas une mesure manquante.
  */
@@ -27,7 +27,7 @@ export function dayExertion(workouts: readonly RecoveryWorkout[], day: string, t
       load += s.kg * s.reps * cfg.difficultyFactor[s.difficulty ?? 'ok'];
     }
   }
-  const muscuLoad = load / cfg.tonnageUnit;
+  const muscuLoad = (load / cfg.tonnageUnit) * STRENGTH_SCALE;
   const value = Math.round(cfg.max * (1 - Math.exp(-muscuLoad / cfg.k)) * 100) / 100;
   return { value, muscuLoad, cardioLoad: 0, explanationKeys: ['exertion_cardio_not_counted'] };
 }
