@@ -51,7 +51,7 @@ describe('bedtimeProposal', () => {
     const short = nights(7, { asleepMinutes: 390 });
     expect(bedtimeProposal({ nights: short, today: TODAY, exertionToday: 5 }).needMinutes).toBe(450 + 180);
   });
-  it('coucher après minuit : lever 6 h 30, besoin 7 h 30 + 8 h de besoin fictif → 22 h ; besoin plus grand que le lever → la veille au soir', () => {
+  it('lever 5 h 00, besoin 7 h 30 → 21 h 30', () => {
     const r = bedtimeProposal({ nights: nights(7, { wakeMinutes: 300 }), today: TODAY, exertionToday: 5 });
     expect(r.time).toBe('21:30');
   });

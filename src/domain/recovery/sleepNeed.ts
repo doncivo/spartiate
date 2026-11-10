@@ -45,8 +45,8 @@ export function bedtimeTarget(input: {
   readonly wakeMinutes: readonly number[];
 }): { readonly time: string | null; readonly reason: 'wake_history_incomplete' | null } {
   const cfg = RECOVERY_CONFIG.bedtime;
-  const wakes = input.wakeMinutes.slice(-cfg.wakeDays);
-  if (wakes.length < cfg.minWakeNights) return { time: null, reason: 'wake_history_incomplete' };
+  const wakes = input.wakeMinutes.filter((m) => Number.isFinite(m)).slice(-cfg.wakeDays);
+  if (wakes.length < cfg.minWakeNights || !Number.isFinite(input.needMinutes)) return { time: null, reason: 'wake_history_incomplete' };
   const target = Math.round((((median(wakes) - input.needMinutes) % DAY) + DAY) % DAY) % DAY;
   const hh = String(Math.floor(target / 60)).padStart(2, '0');
   const mm = String(target % 60).padStart(2, '0');
