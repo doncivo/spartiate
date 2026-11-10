@@ -32,7 +32,8 @@ export const MAX_LINES = 1000;
 const LB_TO_KG = 0.45359237;
 const MIN_KG = 20;
 const ISO_WITH_ZONE = /^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?(Z|[+-]\d{2}:?\d{2})$/;
-const VALUE = /^(\d{1,3}(?:[.,]\d{1,3})?)\s*(kg|lb)?$/i;
+/** Jusqu'à 15 décimales, point ou virgule (I5-04) ; le poids est arrondi au centième. */
+const VALUE = /^(\d{1,3}(?:[.,]\d{1,15})?)\s*(kg|lb)?$/i;
 
 export function parseShortcutWeights(text: string, today: string, timeZone: string): ShortcutWeights {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l !== '');
@@ -68,7 +69,7 @@ function parseLine(cells: readonly string[], today: string, timeZone: string): {
   const unit = (unitCell ?? value[2] ?? 'kg').toLowerCase();
   if (unit !== 'kg' && unit !== 'lb') return null;
   const number = Number((value[1] ?? '').replace(',', '.'));
-  const kg = unit === 'lb' ? Math.round(number * LB_TO_KG * 100) / 100 : number;
+  const kg = Math.round((unit === 'lb' ? number * LB_TO_KG : number) * 100) / 100;
   if (!(Number.isFinite(kg) && kg >= MIN_KG && kg <= WEIGHT_MAX_KG)) return null;
   return { day, at, kg };
 }

@@ -180,3 +180,40 @@ describe('buildSleepNights', () => {
     expect(buildSleepNights([], TZ)).toEqual({ nights: [], ignoredGroups: 0 });
   });
 });
+
+describe('valeurs à nombreuses décimales (I5-04 point 3)', () => {
+  const hrv = (value: string, unit = ';ms'): string => `2026-11-08T03:12:00Z;${value}${unit}\n`;
+  const values = (text: string): number[] => parseShortcutHrv(text, TODAY, TZ).samples.map((s) => s.value);
+
+  it('HRV : jusqu’à 15 décimales, point ou virgule, arrondi au dixième', () => {
+    expect(values(hrv('33,7171717171717'))).toEqual([33.7]);
+    expect(values(hrv('33.7171717171717'))).toEqual([33.7]);
+    expect(values(hrv('48,56'))).toEqual([48.6]);
+    expect(values(hrv('41.123456789012345'))).toEqual([41.1]);
+    expect(values(hrv('52'))).toEqual([52]);
+  });
+
+  it('HRV : 16 décimales ou plus restent refusées (bad_value)', () => {
+    const r = parseShortcutHrv(hrv('33,1234567890123456'), TODAY, TZ);
+    expect(r.samples).toEqual([]);
+    expect(r.rejected.bad_value).toBe(1);
+  });
+
+  it('FC au repos : arrondie au dixième, pas à l’entier', () => {
+    expect(parseShortcutRestingHr('2026-11-08T07:00:00Z;54,2828282828283;bpm\n', TODAY, TZ).samples.map((s) => s.value)).toEqual([54.3]);
+    expect(parseShortcutRestingHr('2026-11-08T07:00:00Z;54.25 bpm\n', TODAY, TZ).samples.map((s) => s.value)).toEqual([54.3]);
+    expect(parseShortcutRestingHr('2026-11-08T07:00:00Z;54.2828282828283\n', TODAY, TZ).latestByDay).toEqual([{ day: '2026-11-08', value: 54.3 }]);
+  });
+
+  it('la plage est contrôlée sur la valeur arrondie ; deux mesures égales après arrondi sont un doublon', () => {
+    expect(parseShortcutHrv(hrv('4,96'), TODAY, TZ).rejected.out_of_range).toBe(0);
+    const twice = parseShortcutHrv(hrv('33,71') + hrv('33,69'), TODAY, TZ);
+    expect(twice.samples).toHaveLength(1);
+    expect(twice.duplicates).toBe(1);
+  });
+
+  it('pas : les décimales sont tolérées, le total reste entier', () => {
+    const r = parseShortcutSteps('2026-11-07T10:00:00+01:00;4000,4444444444444;pas\n2026-11-07T15:00:00+01:00;3000.5555555555;pas\n', TODAY, TZ);
+    expect(r.days).toEqual([{ day: '2026-11-07', steps: 7001 }]);
+  });
+});

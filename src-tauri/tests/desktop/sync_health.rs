@@ -52,7 +52,7 @@ fn health_files(fs: &MemFs) -> Vec<(String, Vec<u8>)> {
 
 fn state(ep: &str, seq: u64) -> serde_json::Value {
     json!({
-        "deviceId": DEV_A, "platform": "windows", "appVersion": "0.11.1", "sm": 1, "sv": 14, "epoch": ep, "stateSeq": seq,
+        "deviceId": DEV_A, "platform": "windows", "appVersion": "0.11.2", "sm": 1, "sv": 14, "epoch": ep, "stateSeq": seq,
         "head": { "epoch": ep, "segment": 0, "record": 0, "hlc": null, "stateSeq": seq },
         "acks": {}, "snapshot": null, "purgeHorizon": null, "lastSyncHlc": hlc(seq * 1_000, DEV_A), "forgotten": [], "reset": null
     })
@@ -286,7 +286,7 @@ fn core_reads_the_health_folder_through_its_own_access_and_keeps_the_sync_untouc
     let before = health_files(&fs);
     let names: Vec<String> = HEALTH_FILES.iter().map(|n| (*n).to_owned()).collect();
     let reads = d.core.read_health_files(&names).unwrap();
-    assert_eq!(reads.iter().filter(|r| r.state == "ok").count(), 4);
+    assert_eq!(reads.files.iter().filter(|r| r.state == "ok").count(), 4);
     assert_eq!(health_files(&fs), before);
     assert_eq!(fs.writes.load(Ordering::SeqCst), 0);
     // La synchro continue normalement après une lecture de `sante/`.
@@ -376,8 +376,8 @@ fn the_sync_core_wraps_its_folder_in_devices_only_and_has_one_health_entry_point
     let wraps = SERVICE_RS.matches("DevicesOnly::new(").count();
     let bounds = SERVICE_RS.matches("Bound {").count() - 1; // la définition de la structure
     assert_eq!(wraps, bounds, "chaque Bound enveloppe son fs");
-    // Une seule entrée de lecture de sante/, hors des commandes sync_* : `read_health_files`.
-    assert_eq!(SERVICE_RS.matches("health::read_health_files(").count(), 1);
+    // Une seule entrée de lecture de sante/, hors des commandes sync_* : `read_health_report`.
+    assert_eq!(SERVICE_RS.matches("health::read_health_report(").count(), 1);
     // La commande iPhone n'est pas une commande de synchro (liste figée à 22) et n'écrit pas.
     assert!(COMMANDS_IOS_RS.contains("health_files_read"));
     assert!(!COMMANDS_IOS_RS.contains("write_health"));
@@ -411,5 +411,225 @@ fn health_download_budget_stays_under_the_plugin_call_deadline() {
     // A1 : un téléchargement de sante/ occupe la file du plugin ; il doit finir avant l'échéance d'un appel de synchro (20 s).
     assert!(
         spartiate_lib::sync::health::HEALTH_HYDRATE_BUDGET < std::time::Duration::from_secs(20)
+    );
+}
+
+// --- I5-04 point 2 : fichier présent mais lu « absent » (constat d'Ali, 0.11.1) ------------------------------------------------------
+// Dossier de laboratoire : racine liée avec `devices/` et `sante/hrv.csv` de la taille du fichier d'Ali (338 lignes, environ 15 ko).
+// Aucune donnée réelle (D-38) : lignes synthétiques.
+
+use spartiate_lib::sync::health::{read_health_report, HealthReport};
+
+fn lab_hrv() -> Vec<u8> {
+    let mut text = String::new();
+    for i in 0..338 {
+        text.push_str(&format!(
+            "2026-10-{:02}T06:{:02}:00+01:00;33,7171717171717;ms\n",
+            1 + i % 28,
+            i % 60
+        ));
+    }
+    text.into_bytes()
+}
+
+fn bookmark_over(plugin: &Arc<FakePlugin>, clock: &Arc<AtomicU64>) -> BookmarkFs {
+    let now = clock.clone();
+    BookmarkFs::new(
+        Arc::new(SharedPlugin(plugin.clone())),
+        ROOT.to_owned(),
+        BOOKMARK.to_owned(),
+        Arc::new(Mutex::new(None)),
+        Arc::new(move || now.load(Ordering::SeqCst)),
+    )
+}
+
+fn all_names() -> Vec<String> {
+    HEALTH_FILES.iter().map(|n| (*n).to_owned()).collect()
+}
+
+fn report_of(fs: &dyn SyncFs) -> HealthReport {
+    read_health_report(fs, &all_names()).unwrap()
+}
+
+#[test]
+fn lab_folder_with_hrv_file_reads_it_present_with_its_size() {
+    let clock = Arc::new(AtomicU64::new(NOW));
+    let plugin = FakePlugin::new(clock.clone());
+    plugin.mkdir(&["devices", DEV_A]);
+    let bytes = lab_hrv();
+    plugin.put(&[HEALTH_DIR, "hrv.csv"], &bytes);
+    let fs = bookmark_over(&plugin, &clock);
+    fs.start_cycle_within(std::time::Duration::from_secs(15))
+        .unwrap();
+    let report = report_of(&fs);
+    assert!(report.folder.root_listed);
+    assert!(report.folder.sante_present);
+    assert!(report.folder.devices_present);
+    assert_eq!(report.files[0].state, "ok");
+    assert_eq!(report.files[0].size, Some(bytes.len() as u64));
+    assert!(bytes.len() > 14_000 && bytes.len() < 30_000);
+    assert_eq!(report.files[1].state, "absent");
+    assert_eq!(report.files[1].size, None);
+}
+
+#[test]
+fn report_tells_a_missing_health_folder_from_a_missing_file() {
+    let fs = MemFs::new();
+    fs.put(&["devices", DEV_A, "state.spx"], b"x");
+    let report = report_of(&SharedFs(fs.clone()));
+    assert!(report.folder.root_listed);
+    assert!(!report.folder.sante_present);
+    assert!(report.folder.devices_present);
+    assert!(report.files.iter().all(|f| f.state == "absent"));
+
+    // Dossier présent, fichier absent : la différence se lit dans le rapport.
+    fs.put(&[HEALTH_DIR, "autre.txt"], b"x");
+    let report = report_of(&SharedFs(fs.clone()));
+    assert!(report.folder.sante_present);
+    assert_eq!(report.folder.sante_entries, 1);
+    assert!(report.files.iter().all(|f| f.state == "absent"));
+}
+
+#[test]
+fn reader_finds_the_folder_and_files_under_another_case_or_accent() {
+    // Le raccourci peut écrire « Sante », « santé » (NFC ou NFD) ou « HRV.csv » : même dossier, mêmes quatre fichiers.
+    for dir in ["Sante", "SANTE", "sant\u{e9}", "sante\u{301}"] {
+        let fs = MemFs::new();
+        fs.put(&[dir, "HRV.csv"], FILES[0].1);
+        fs.put(&[dir, "Pas.CSV"], FILES[3].1);
+        let report = report_of(&SharedFs(fs.clone()));
+        assert!(report.folder.sante_present, "{dir}");
+        let states: Vec<&str> = report.files.iter().map(|f| f.state).collect();
+        assert_eq!(states, ["ok", "absent", "absent", "ok"], "{dir}");
+        assert_eq!(fs.writes.load(Ordering::SeqCst), 0);
+    }
+}
+
+#[test]
+fn reader_never_follows_a_listed_name_outside_the_four_files() {
+    let fs = MemFs::new();
+    fs.put(&[HEALTH_DIR, "hrv.csv.tmp"], b"x");
+    fs.put(&[HEALTH_DIR, "hrv.csv.bak"], b"x");
+    fs.put(&[HEALTH_DIR, "state.spx"], b"x");
+    let report = report_of(&SharedFs(fs.clone()));
+    assert!(report.files.iter().all(|f| f.state == "absent"));
+    assert!(fs
+        .read_log
+        .lock()
+        .unwrap()
+        .iter()
+        .all(|p| p == "sante/hrv.csv"
+            || p == "sante/fc-repos.csv"
+            || p == "sante/sommeil.csv"
+            || p == "sante/pas.csv"));
+}
+
+#[test]
+fn report_separates_to_download_from_unreadable() {
+    let clock = Arc::new(AtomicU64::new(NOW));
+    let plugin = FakePlugin::new(clock.clone());
+    plugin.put_cloud(&[HEALTH_DIR, "hrv.csv"], &lab_hrv(), 10, false);
+    plugin.put_cloud(&[HEALTH_DIR, "pas.csv"], FILES[3].1, 10, true);
+    let fs = bookmark_over(&plugin, &clock);
+    // Budget nul : le téléchargement ne peut pas partir, le fichier reste « à télécharger » (jamais « absent »).
+    fs.start_cycle_within(std::time::Duration::from_millis(0))
+        .unwrap();
+    let report = report_of(&fs);
+    assert_eq!(report.files[0].state, "cloud");
+    assert_eq!(report.files[0].bytes, None);
+    assert_ne!(report.files[3].state, "absent");
+}
+
+// --- Relecture sync-icloud I5-04 : A1 (dossier présent mais non listable ≠ absent), S1 (nom exact d'abord) ----------------------------
+
+/// Dossier dont le listage de `sante/` échoue (nuage, coordination) : tout le reste passe.
+struct SanteListFails(SharedFs);
+
+impl SyncFs for SanteListFails {
+    fn check_root(&self) -> Result<(), FsError> {
+        self.0.check_root()
+    }
+    fn start_cycle(&self) -> Result<(), FsError> {
+        self.0.start_cycle()
+    }
+    fn start_cycle_within(&self, budget: std::time::Duration) -> Result<(), FsError> {
+        self.0.start_cycle_within(budget)
+    }
+    fn read_head(&self, file: &[&str], max: usize) -> Result<Vec<u8>, FsError> {
+        self.0.read_head(file, max)
+    }
+    fn list(
+        &self,
+        dir: &[&str],
+        max: usize,
+    ) -> Result<spartiate_lib::sync::files::Listing, FsError> {
+        if dir
+            .first()
+            .is_some_and(|d| d.eq_ignore_ascii_case(HEALTH_DIR))
+        {
+            return Err(FsError::CloudPending);
+        }
+        self.0.list(dir, max)
+    }
+    fn read(&self, file: &[&str], limit: u64, hydrate: bool) -> Result<Vec<u8>, FsError> {
+        self.0.read(file, limit, hydrate)
+    }
+    fn read_from(
+        &self,
+        file: &[&str],
+        offset: u64,
+        max: usize,
+        hydrate: bool,
+    ) -> Result<spartiate_lib::sync::files::Chunk, FsError> {
+        self.0.read_from(file, offset, max, hydrate)
+    }
+    fn append(&self, file: &[&str], bytes: &[u8], mode: AppendMode) -> Result<(), FsError> {
+        self.0.append(file, bytes, mode)
+    }
+    fn write_atomic(&self, file: &[&str], bytes: &[u8]) -> Result<(), FsError> {
+        self.0.write_atomic(file, bytes)
+    }
+    fn rename(&self, dir: &[&str], from: &str, to: &str) -> Result<(), FsError> {
+        self.0.rename(dir, from, to)
+    }
+    fn create_dir(&self, dir: &[&str]) -> Result<(), FsError> {
+        self.0.create_dir(dir)
+    }
+    fn remove_file(&self, file: &[&str]) -> Result<bool, FsError> {
+        self.0.remove_file(file)
+    }
+    fn remove_empty_dir(&self, dir: &[&str]) -> Result<(), FsError> {
+        self.0.remove_empty_dir(dir)
+    }
+    fn pin(&self, file: &[&str]) -> Result<(), FsError> {
+        self.0.pin(file)
+    }
+}
+
+#[test]
+fn a_health_folder_that_cannot_be_listed_is_present_but_not_listed() {
+    let fs = MemFs::new();
+    fs.put(&["devices", DEV_A, "state.spx"], b"x");
+    fs.put(&[HEALTH_DIR, "hrv.csv"], FILES[0].1);
+    let report = report_of(&SanteListFails(SharedFs(fs.clone())));
+    assert!(
+        report.folder.sante_present,
+        "présent : seul son listage échoue"
+    );
+    assert!(!report.folder.sante_listed);
+    assert_eq!(report.folder.sante_entries, 0);
+    // La lecture directe du fichier reste tentée : « sante » par défaut.
+    assert_eq!(report.files[0].state, "ok");
+}
+
+#[test]
+fn an_exact_file_name_wins_over_a_case_variant() {
+    let fs = MemFs::new();
+    fs.put(&[HEALTH_DIR, "HRV.csv"], b"2026-11-01T06:00:00+01:00;1\n");
+    fs.put(&[HEALTH_DIR, "hrv.csv"], FILES[0].1);
+    let report = report_of(&SharedFs(fs.clone()));
+    assert_eq!(
+        report.files[0].bytes.as_deref(),
+        Some(STANDARD.encode(FILES[0].1).as_str())
     );
 }

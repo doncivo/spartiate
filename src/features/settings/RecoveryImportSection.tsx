@@ -7,7 +7,8 @@ import type { ShortcutFilesReader } from '../../platform/shortcutFiles';
 import { detectTimeZone } from '../../platform/timeZone';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
-import { shortcutImportFor, type FileOutcome, type ImportRunResult } from './recoveryImport';
+import { importLog, shortcutImportFor, type FileOutcome, type ImportRunResult } from './recoveryImport';
+import { importStatusMessage } from './recoveryImport/statusMessage';
 
 const TYPES: readonly { readonly type: RecoverySampleType; readonly label: HealthTextKey }[] = [
   { type: 'hrv', label: 'recTypeHrv' },
@@ -37,6 +38,7 @@ export function RecoveryImportSection({ reader, fallback }: { readonly reader?: 
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const live = useRef(true);
+  const messageRef = useRef<HTMLParagraphElement>(null);
   const pc = container.platform.os !== 'ios' || container.platform.runtime !== 'tauri';
 
   const refresh = useCallback(async () => {
@@ -63,6 +65,11 @@ export function RecoveryImportSection({ reader, fallback }: { readonly reader?: 
     };
   }, [pc, container]);
 
+  // Le message est près du bouton : on le ramène dans la vue (au-dessus de la barre d'onglets) à chaque nouvelle phrase.
+  useEffect(() => {
+    if (message !== null) messageRef.current?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+  }, [message, run]);
+
   /** « Importer maintenant » relit le dossier sante ; « Choisir les fichiers » ouvre le sélecteur, en secours (D-90). */
   async function importNow(trigger: 'manual' | 'pick'): Promise<void> {
     setBusy(true);
@@ -70,15 +77,15 @@ export function RecoveryImportSection({ reader, fallback }: { readonly reader?: 
     const result = await service.run(trigger).catch(() => null);
     if (!live.current) return;
     setBusy(false);
-    if (result === null) return setMessage(tHealth('shortcutFailed'));
-    if (result.status === 'busy') return setMessage(tHealth('recBusy'));
-    if (result.status === 'folder-unavailable') return setMessage(tHealth('recFolderUnavailable'));
-    if (result.status === 'cancelled') return setMessage(tHealth('recCancelled'));
+    if (result === null) {
+      importLog('recovery-import-run-failed', {});
+      return setMessage(tHealth('shortcutFailed'));
+    }
     if (result.status === 'done') {
       setRun(result);
-      setMessage(result.recomputeFailed ? tHealth('recRecomputeFailed') : result.recomputedDays > 0 ? tHealth('recRecomputed', { days: result.recomputedDays }) : null);
       await refresh();
     }
+    setMessage(importStatusMessage(result));
   }
 
   return (
@@ -100,7 +107,7 @@ export function RecoveryImportSection({ reader, fallback }: { readonly reader?: 
             {tHealth('recPickFiles')}
           </Button>
           {message !== null && (
-            <p className="ct-body__message" role="status">
+            <p ref={messageRef} className="ct-body__message" role="status">
               {message}
             </p>
           )}

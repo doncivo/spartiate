@@ -35,3 +35,21 @@ describe('parseShortcutWeights', () => {
     expect(r.truncated).toBe(true);
   });
 });
+
+describe('pesées à nombreuses décimales (I5-04 point 3, défaut relevé en I4-06)', () => {
+  const kg = (value: string): number[] => parseShortcutWeights(`2026-11-08T06:50:00+01:00;${value}`, TODAY, 'Europe/Paris').weights.map((w) => w.kg);
+
+  it('accepte jusqu’à 15 décimales, point ou virgule, arrondi au centième', () => {
+    expect(kg('81,4285714285714')).toEqual([81.43]);
+    expect(kg('81.4285714285714 kg')).toEqual([81.43]);
+    expect(kg('80,123456789012345')).toEqual([80.12]);
+    expect(kg('81,4')).toEqual([81.4]);
+  });
+
+  it('refuse 16 décimales ou plus ; les livres à décimales se convertissent', () => {
+    const r = parseShortcutWeights('2026-11-08T06:50:00Z;81,1234567890123456', TODAY, 'Europe/Paris');
+    expect(r.weights).toEqual([]);
+    expect(r.rejected).toBe(1);
+    expect(parseShortcutWeights('2026-11-08T06:50:00Z;180,2222222222222;lb', TODAY, 'Europe/Paris').weights).toEqual([{ measuredAt: '2026-11-08T06:50:00.000Z', kg: 81.75 }]);
+  });
+});

@@ -18,7 +18,7 @@ import { localToUtcMs, utcToLocal } from '../../../domain/timeZone';
 import type { LocalDate } from '../../../domain/types';
 import type { RecoveryRepository } from '../../../db/repositories/recoveryRepository';
 import type { RecoverySampleInput, RecoverySampleRepository, RecoverySampleType } from '../../../db/repositories/recoverySampleRepository';
-import { SHORTCUT_FILE_NAMES, ShortcutFolderError, type ShortcutFileName, type ShortcutFilesReader } from '../../../platform/shortcutFiles';
+import { SHORTCUT_FILE_NAMES, ShortcutFolderError, type ShortcutFileName, type ShortcutFileRead, type ShortcutFilesReader } from '../../../platform/shortcutFiles';
 
 /**
  * Import des fichiers Raccourcis et recalcul de la récupération (I5-01 points 1.3 et 1.6, D-69). Sans E/S directe : lecteur de fichiers, dépôts,
@@ -32,6 +32,14 @@ export const IMPORT_LOG_EVENTS = [
   'recovery-import-start',
   'recovery-import-cancelled',
   'recovery-import-folder-unavailable',
+  'recovery-import-unsupported',
+  'recovery-import-needs-pick',
+  'recovery-import-busy',
+  'recovery-import-throttled',
+  'recovery-import-done',
+  'recovery-import-run-failed',
+  'recovery-import-diag-folder',
+  'recovery-import-diag-file',
   'recovery-import-file',
   'recovery-import-file-absent',
   'recovery-import-file-unreadable',
@@ -230,6 +238,25 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     }
   }
 
+  /** Diagnostic (I5-04 point 2) : dossier atteint, sante présent, puis par fichier l'état (0 absent, 1 présent, 2 à télécharger, 3 illisible) et la taille en octets. Comptes seulement. */
+  function diagnose(source: ShortcutFilesReader, reads: readonly ShortcutFileRead[]): void {
+    const probe = source.probe?.() ?? null;
+    if (probe !== null) {
+      deps.log('recovery-import-diag-folder', {
+        root_listed: probe.rootListed ? 1 : 0,
+        sante_present: probe.santePresent ? 1 : 0,
+        sante_listed: probe.santeListed ? 1 : 0,
+        devices_present: probe.devicesPresent ? 1 : 0,
+        root_entries: probe.rootEntries,
+        sante_entries: probe.santeEntries,
+      });
+    }
+    for (const [index, read] of reads.entries()) {
+      const state = read.state === 'ok' ? 1 : read.state === 'absent' ? 0 : read.cloud === true ? 2 : 3;
+      deps.log('recovery-import-diag-file', { type_index: index, state, size: read.state === 'absent' ? 0 : (read.size ?? 0) });
+    }
+  }
+
   async function execute(source: ShortcutFilesReader): Promise<ImportRunResult> {
     deps.log('recovery-import-start', {});
     let reads: Awaited<ReturnType<ShortcutFilesReader['read']>>;
@@ -246,6 +273,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       deps.log('recovery-import-cancelled', {});
       return { status: 'cancelled', files: [], recomputedDays: 0, recomputeFailed: false, at: null };
     }
+    diagnose(source, reads);
     const at = nowIso();
     const today = utcToLocal(at, deps.timeZone).date;
     const samples = await deps.samples();
@@ -276,6 +304,8 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
         deps.log('recovery-import-recompute-failed', {});
       }
     }
+    const count = (state: FileOutcome['state']): number => files.filter((f) => f.state === state).length;
+    deps.log('recovery-import-done', { files: files.length, imported: count('imported'), absent: count('absent'), unreadable: count('unreadable'), failed: count('failed') });
     return { status: 'done', files, recomputedDays, recomputeFailed, at };
   }
 
@@ -283,12 +313,25 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     lastRun: () => last,
     async run(trigger) {
       const none: ImportRunResult = { status: 'unsupported', files: [], recomputedDays: 0, recomputeFailed: false, at: null };
-      if (deps.reader.kind === 'unsupported') return none;
-      if (trigger === 'open' && !deps.reader.automatic) return { ...none, status: 'needs-pick' };
-      if (running) return { ...none, status: 'busy' };
+      if (deps.reader.kind === 'unsupported') {
+        // Journal seulement pour un geste de l'utilisateur : le PC lance « open » à chaque ouverture, sans rien à dire.
+        if (trigger !== 'open') deps.log('recovery-import-unsupported', {});
+        return none;
+      }
+      if (trigger === 'open' && !deps.reader.automatic) {
+        deps.log('recovery-import-needs-pick', {});
+        return { ...none, status: 'needs-pick' };
+      }
+      if (running) {
+        deps.log('recovery-import-busy', {});
+        return { ...none, status: 'busy' };
+      }
       running = true;
       try {
-        if (trigger === 'open' && (await attemptedRecently())) return { ...none, status: 'throttled' };
+        if (trigger === 'open' && (await attemptedRecently())) {
+          deps.log('recovery-import-throttled', {});
+          return { ...none, status: 'throttled' };
+        }
         lastAttemptMs = deps.clock.nowMs();
         const result = await execute(trigger === 'pick' ? (deps.fallback ?? deps.reader) : deps.reader);
         if (result.status === 'done') last = result;
