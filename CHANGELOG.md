@@ -2,6 +2,10 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.11.5
+
+Correctif de test seulement (FIX-0115) : le test d’onglets Entraînement et Nutrition de la CI attendait mal l’affichage des onglets. Aucun changement de l’application ni de la base (reste en version 10).
+
 ## 0.11.4
 
 Correctif du sommeil et du dossier sante (constat du 11 nov.). **Pas de mise à jour de la base** (reste en version 10).
