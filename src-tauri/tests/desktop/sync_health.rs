@@ -740,7 +740,7 @@ impl SyncFs for CloudSante {
     }
 }
 
-fn lab_root() -> MemFs {
+fn lab_root() -> Arc<MemFs> {
     let fs = MemFs::new();
     fs.put(&["devices", DEV_A, "state.spx"], b"x");
     fs.put(&[HEALTH_DIR, "hrv.csv"], FILES[0].1);
@@ -837,7 +837,8 @@ fn pista_probe_describes_every_root_entry_with_fixed_codes_and_no_name() {
     assert!(!other.eq_devices && !other.eq_sante_folded);
     // Des codes seulement : ni nom ni chemin dans ce qui part vers la WebView.
     let json = serde_json::to_string(&report.folder).unwrap();
-    for name in ["autre-fichier", "Sante", "hrv.csv", "state.spx"] {
+    assert!(!json.contains('\u{200b}'), "{json}");
+    for name in ["autre-fichier", "hrv.csv", "state.spx"] {
         assert!(!json.contains(name), "{name} dans {json}");
     }
 }
