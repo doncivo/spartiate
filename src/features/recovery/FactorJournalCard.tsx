@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FACTOR_CODES, type FactorCode } from '../../domain/recovery';
 import type { FactorEntry } from '../../db/repositories';
 import { formatDetailDate } from '../../i18n/format';
@@ -20,11 +20,10 @@ const FACTOR_TEXT = {
  * Journal de facteurs de la veille (I6-01 point B, § 16.7) : huit cases et « Rien de particulier » (distinct de « non renseigné »). Cases en
  * texte, 44 pt (`ct-factors__option`), l'état est dit aussi en toutes lettres (jamais la couleur seule). Contrôlé : l'état affiché est celui
  * enregistré ; l'état affiché suit les tapes tout de suite (plusieurs cases de suite ne se perdent pas) et revient à l'état enregistré à chaque
- * relecture ; `onChange(null)` efface la saisie.
+ * relecture (l’hôte remonte la carte par `key` quand l’enregistré change ou qu’une écriture échoue) ; `onChange(null)` efface la saisie.
  */
 export function FactorJournalCard({ day, entry: saved, failed, onChange }: { readonly day: string; readonly entry: FactorEntry | null; readonly failed: boolean; readonly onChange: (next: FactorEntry | null) => void }) {
   const [entry, setEntry] = useState<FactorEntry | null>(saved);
-  useEffect(() => setEntry(saved), [saved]);
   const change = (next: FactorEntry | null): void => {
     setEntry(next);
     onChange(next);
