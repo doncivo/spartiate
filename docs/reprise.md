@@ -1,13 +1,13 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-10 : I1 à I3 livrés, I4 hors IA livré (OFF et scan, favoris, recettes, journée déclarée), version publiée 0.11.2 (schéma 10 ; 0.9.1 correctifs du moteur D-82 ; 0.9.2 onglets PC et catalogue de 196 exercices, D-83 ; 0.9.3 relecture Codex REV-01, D-85, D-86 ; 0.9.4 garde -wal et décote sur charge totale, D-87 ; 0.10.0 import Raccourcis et moteur de récupération, D-88 à D-93 ; 0.11.0 écrans de récupération, D-93 ; 0.11.1 lecture auto du dossier sante, D-88 et D-93 révisées ; 0.11.3 dossier sante non matérialisé téléchargé, journal unique, D-94 ; D-38 révisée le 11/11/2026 : utilisation réelle reportée). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-90 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.) ; les décisions approuvées priment sur les textes historiques.
+État au 2026-11-11 : I1 à I3 livrés, I4 hors IA livré, I5 livré ; version publiée 0.11.4 (schéma 10). **I6-01 (0.12.0, schéma 11, migration 0011 `recovery_factor`) : branche `I6-01-recuperation`, PR ouverte ; restent la passe 4 (sync-icloud) et la passe 5 (code-reviewer), puis fusion et tags par l'agent principal (docs/I6-01.md, D-95 à D-98).** Historique des versions : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-98 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.) ; les décisions approuvées priment sur les textes historiques.
 
 ## Fusionné (tout est dans main)
 
 - Base : SPA-000 (#1 à #10), SPA-001a (#11), préparation et arbitrages (#12 à #14, D-65), 001b (front #15, périphérie #16 #18, base #20), FMT-01 (#17, D-66).
 - Livraison : SPA-002 (Windows, updater signé), SPA-003 (IPA ad hoc, entitlements), ios-demarrage et ios-identite (journal visible, source SideStore propre).
 - Produit I0 : SPA-005 (export / import), SPA-009 (écrans fidèles aux planches), SPA-006 (Apple Santé en lecture, diagnostic natif en 0.1.3), SPA-007 (Live Activity, minuteur de test).
-- Versions publiées : 0.1.0 à 0.1.6 puis 0.2.0 à 0.9.4 (PC `vX.Y.Z`, iPhone `ios-vX.Y.Z`) ; 0.10.0 : I5-01 (Raccourcis, récupération).
+- Versions publiées : 0.1.0 à 0.11.4 (PC `vX.Y.Z`, iPhone `ios-vX.Y.Z`).
 
 ## Décisions récentes
 
@@ -23,7 +23,7 @@
 
 ## Prochaines étapes
 
-1. Ali : installer 0.11.4 (PC et iPhone) : le sommeil recalculé (dette et besoin) et la lecture du dossier `sante` (H-26 CONFIRMED). Lot suivant : I6-01 (récupération), I6-02 (corps), I6-03 (entraînement), I3-07 (onboarding) ; D-94 et suivantes à confirmer.
+1. Ali : installer 0.11.4 puis 0.12.0 (PC et iPhone le même jour, schéma 11, avant toute saisie). Lot suivant : I6-02 (corps), I6-03 (entraînement), I3-07 (onboarding) ; D-94 à D-98 à confirmer.
 2. Confirmer ou réviser D-73, D-74, D-79 à D-81 et D-88 à D-93 (échelle d'Exertion 20, journée rouge = maintien).
 
 ## Rappels
