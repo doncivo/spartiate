@@ -168,6 +168,33 @@ export async function buildSyncVectors(rustSealed: SyncVectors['rustSealed'] = [
       },
       full: true,
     },
+    // I6-01 (§ 16.7) : journal d'un appareil en schéma 11, journal de facteurs d'un jour (valeurs synthétiques), lu par Vitest et cargo test.
+    {
+      name: 'journal-ops-recovery-factor',
+      place: journal(6, 0),
+      sm: 1,
+      sv: 11,
+      plaintext: {
+        json: JSON.stringify({
+          k: 'ops',
+          sv: 11,
+          ops: [
+            {
+              t: 'recovery_factor',
+              id: 'recovery_factor|2026-11-09',
+              at: '2026-11-10T07:00:00.000Z',
+              f: Object.fromEntries(
+                Object.entries({ date: '2026-11-09', factors: '["alcohol","stress"]', none: 0, created_at: '2026-11-10T07:00:00.000Z', deleted_at: null }).map(([name, value]) => [
+                  name,
+                  [value, '001794100000000-0000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60', null],
+                ]),
+              ),
+            },
+          ],
+        }),
+      },
+      full: true,
+    },
   ];
   const records: RecordVector[] = [];
   for (const [i, spec] of specs.entries()) {
