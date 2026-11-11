@@ -304,7 +304,7 @@ function unionMinutes(intervals: readonly (readonly [number, number])[]): number
   return Math.round(total / 60_000);
 }
 
-/** Regroupe les segments en nuits : un trou de plus de `nightGapMinutes` ouvre un autre groupe ; une nuit par jour de réveil (la plus longue). */
+/** Regroupe les segments en nuits : un trou d'au moins `episodeGapMinutes` ouvre un autre épisode ; une nuit par jour de réveil (l'épisode dormi le plus long), les autres épisodes sont des siestes ignorées. */
 export function buildSleepNights(
   segments: readonly SleepSegment[],
   timeZone: string,
@@ -314,10 +314,10 @@ export function buildSleepNights(
     .sort((a, b) => a.s - b.s);
   const groups: (typeof items)[] = [];
   let groupEnd = -Infinity;
-  const gap = RECOVERY_CONFIG.sleep.nightGapMinutes * 60_000;
+  const gap = RECOVERY_CONFIG.sleep.episodeGapMinutes * 60_000;
   for (const item of items) {
     const current = groups[groups.length - 1];
-    if (current === undefined || item.s - groupEnd > gap) {
+    if (current === undefined || item.s - groupEnd >= gap) {
       groups.push([item]);
       groupEnd = item.e;
     } else {

@@ -1,5 +1,6 @@
 import type { ShortcutSample, SleepNight } from './shortcutFiles';
 import type { NightRecord } from './types';
+import { RECOVERY_CONFIG } from './config';
 import { utcToLocal } from '../timeZone';
 
 function clockMinutes(iso: string, timeZone: string): number {
@@ -25,14 +26,16 @@ export function toNightRecords(input: {
       const t = Date.parse(s.measuredAt);
       return t >= from && t <= to;
     });
+    const valid = n.asleepMinutes !== null && n.asleepMinutes >= RECOVERY_CONFIG.validNightMinAsleepMinutes;
     const hrvMs = inNight.length === 0 ? null : Math.round((inNight.reduce((s, x) => s + x.value, 0) / inNight.length) * 10) / 10;
     return {
       day: n.day,
       hrvMs,
       restingHr: input.restingHrByDay.find((r) => r.day === n.day)?.value ?? null,
       asleepMinutes: n.asleepMinutes,
-      bedtimeMinutes: clockMinutes(n.bedAt, input.timeZone),
-      wakeMinutes: clockMinutes(n.wakeAt, input.timeZone),
+      // Un épisode sous 180 min dormies (sieste, nuit tronquée) n'est jamais une référence de coucher ni de lever (I5-05).
+      bedtimeMinutes: valid ? clockMinutes(n.bedAt, input.timeZone) : null,
+      wakeMinutes: valid ? clockMinutes(n.wakeAt, input.timeZone) : null,
     };
   });
 }

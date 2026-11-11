@@ -44,7 +44,7 @@ describe('nuits et siestes (I5-05)', () => {
     const week: readonly [number, string, string, number][] = [
       [2, '01:00', '09:00', 450],
       [3, '02:30', '10:30', 445],
-      [4, '04:00', '11:30', 460],
+      [4, '04:00', '11:30', 450],
       [5, '03:00', '11:00', 440],
       [6, '01:30', '09:30', 455],
       [7, '03:30', '11:00', 430],
@@ -61,7 +61,7 @@ describe('nuits et siestes (I5-05)', () => {
     // Trois siestes (jeudi 5, samedi 7, dimanche 8), 3 h après le lever (donc à plus de 60 min de la nuit), 45 à 90 min.
     lines.push(seg(iso(5, '15:00'), iso(5, '16:30')), seg(iso(7, '15:00'), iso(7, '15:45')), seg(iso(8, '14:30'), iso(8, '15:30')));
     const { nights } = buildSleepNights(segmentsOf(lines), TZ);
-    expect(nights.map((n) => n.asleepMinutes)).toEqual([450, 445, 460, 440, 455, 430, 456]);
+    expect(nights.map((n) => n.asleepMinutes)).toEqual([450, 445, 450, 440, 455, 430, 456]);
     const records = toNightRecords({ nights, hrv: [], restingHrByDay: [], timeZone: TZ });
     const out = summarizeRecoveryDay({ today, now: '2026-11-08T12:00:00.000Z', timeZone: TZ, nights: records, workouts: [] });
     expect(out.summary.sleepNeedMinutes).toBeLessThanOrEqual(7 * 60 + 30 + 60);

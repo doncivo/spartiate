@@ -9,6 +9,7 @@ Correctif de la lecture automatique du dossier sante (constat du 11 nov. sur l'i
 - **Dossier sante reconnu** : un dossier iCloud encore « dans le nuage » (présenté comme un fichier) est maintenant téléchargé puis lu ; les noms à espace ou caractère invisible sont acceptés. Un dossier pas encore téléchargé est dit « à télécharger », jamais « absent ». Cause exacte non prouvée sans l'appareil (docs/I5-05.md).
 - **Diagnostic** : Plus › Logs décrit chaque entrée du dossier lié par des codes (dossier, nuage, égal à devices, égal à sante), sans aucun nom ; la taille d'un fichier lu par « Choisir les fichiers » est la vraie.
 - **Journal exporté complet** : sur l'iPhone, l'export de Logs contient les événements de l'app et ceux de la synchro (ils étaient écrits dans deux dossiers différents).
+- **Sommeil** : une nuit est le plus long épisode (segments séparés de moins de 60 min) qui se termine le jour du réveil ; les siestes ne comptent plus comme des nuits (dette, baseline, régularité, heure de lever).
 - **Phrase d'état** : après un import réussi, « Non trouvé à la lecture du dossier de HH:MM » remplace « Fichier absent » au-dessus des comptes.
 
 ## 0.11.2

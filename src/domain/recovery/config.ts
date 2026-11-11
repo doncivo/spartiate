@@ -56,8 +56,12 @@ export const RECOVERY_CONFIG = {
     debtCapHours: 3,
     regularityDays: 7,
     regularityMinNights: 3,
-    /** Un segment « Endormi » séparé d'un autre de plus de 3 h est une autre nuit (proposition). */
-    nightGapMinutes: 180,
+    /**
+     * I5-05 : un épisode de sommeil regroupe les segments séparés de MOINS de 60 min (un réveil court ne coupe pas la nuit). La nuit est le
+     * plus long épisode qui se termine le jour du réveil ; les autres épisodes (siestes) ne comptent ni pour la dette, ni pour la baseline, ni
+     * pour la régularité du coucher, ni pour l'heure de lever. Choix prudent de l'agent, révisable par Ali (D-94).
+     */
+    episodeGapMinutes: 60,
   },
 
   /** § 16.7 Heure de coucher cible : médiane de l'heure de lever sur 14 j. */
