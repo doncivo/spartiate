@@ -52,3 +52,33 @@ export function bedtimeTarget(input: {
   const mm = String(target % 60).padStart(2, '0');
   return { time: `${hh}:${mm}`, reason: null };
 }
+
+export interface SleepDebtDiagnostic {
+  /** Nuits comptées dans la dette (sur `debtDays` jours, hors aujourd'hui). */
+  readonly retained: number;
+  /** Nuits de la fenêtre sans sommeil mesuré. */
+  readonly excludedNoAsleep: number;
+  /** Nuits de la fenêtre sous `validNightMinAsleepMinutes` : jamais une dette. */
+  readonly excludedShort: number;
+  /** Dette de sommeil (plafonnée) arrondie à l'heure. */
+  readonly debtHours: number;
+}
+
+/** Jour local de `today` décalé de `days` (aaaa-mm-jj, calendrier grégorien sans fuseau). */
+function dayShift(today: string, days: number): string {
+  return new Date(Date.parse(`${today}T12:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+}
+
+/**
+ * Diagnostic de la dette (FIX-0115) : mêmes nuits que `summarizeRecoveryDay` (fenêtre de `debtDays` jours avant `today`, nuits valides seules),
+ * avec le décompte des nuits écartées par raison. Des nombres seulement : le journal ne reçoit ni durée de nuit ni date.
+ */
+export function sleepDebtDiagnostic(nights: readonly { readonly day: string; readonly asleepMinutes: number | null }[], today: string): SleepDebtDiagnostic {
+  const cfg = RECOVERY_CONFIG;
+  const from = dayShift(today, -cfg.sleep.debtDays);
+  const window = nights.filter((n) => n.day >= from && n.day < today);
+  const valid = window.flatMap((n) => (n.asleepMinutes !== null && n.asleepMinutes >= cfg.validNightMinAsleepMinutes ? [n.asleepMinutes] : []));
+  const noAsleep = window.filter((n) => n.asleepMinutes === null).length;
+  const debt = sleepNeed({ exertionPrevDay: 0, previousAsleepMinutes: valid }).debtMinutes;
+  return { retained: valid.length, excludedNoAsleep: noAsleep, excludedShort: window.length - valid.length - noAsleep, debtHours: Math.round(debt / 60) };
+}
