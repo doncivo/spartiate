@@ -1005,7 +1005,7 @@ fn i506_the_listing_error_is_named_by_a_fixed_code() {
     let fs = MemFs::new();
     fs.put(&["devices", DEV_A, "state.spx"], b"x");
     fs.put(&[HEALTH_DIR, "hrv.csv"], FILES[0].1);
-    // Nuage : « cloud » ; nom refusé par la garde de chemin : « unsafe-name » ; dossier absent : « » ; lecture normale : « ».
+    // Nuage : « cloud » ; nom refusé par la garde de chemin : « unsafe-name » ; dossier absent : « not-found » ; lecture normale : « ».
     let cloud = report_of(&SanteListFails(SharedFs(fs.clone())));
     assert_eq!(cloud.folder.sante_list_error, "cloud");
     let guarded = report_of(&DevicesOnly::new(Box::new(SharedFs(fs.clone()))));

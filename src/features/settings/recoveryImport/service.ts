@@ -103,9 +103,9 @@ export interface ShortcutImportDeps {
   /** Fuseau IANA de l'appareil. */
   readonly timeZone: string;
   readonly log: ImportLog;
-  /** I5-02 (point 2.3) : appelé après un recalcul réussi (heure de coucher proposée, replanification des notifications) ; un échec est sans effet sur l'import. */
   /** I5-06 : version de la règle du sommeil des résumés déjà calculés (réglage local) ; absente : pas de recalcul forcé. */
   readonly rules?: { readonly get: () => Promise<number | null>; readonly set: (version: number) => Promise<void> };
+  /** I5-02 (point 2.3) : appelé après un recalcul réussi (heure de coucher proposée, replanification des notifications) ; un échec est sans effet sur l'import. */
   readonly afterRecompute?: (info: { readonly today: string; readonly nights: readonly NightRecord[]; readonly exertionToday: number }) => Promise<unknown>;
 }
 

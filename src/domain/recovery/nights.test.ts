@@ -111,7 +111,7 @@ describe('segments « Au lit » (I5-06)', () => {
     expect(nights).toEqual([]);
   });
 
-  it('un bloc « Au lit » après la nuit ne change ni le réveil, ni le temps endormi de la nuit', () => {
+  it('un bloc « Au lit » après la nuit ne change pas le temps endormi ; le réveil inclut le temps au lit qui suit', () => {
     const { nights } = buildSleepNights(segs([line(iso(5, '02:00'), iso(5, '09:30'), 'Endormi'), line(iso(5, '10:00'), iso(5, '10:40'), 'Au lit'), line(iso(5, '15:00'), iso(5, '16:30'), 'Au lit')]), TZ);
     expect(nights).toHaveLength(1);
     expect(nights[0]?.asleepMinutes).toBe(450);
