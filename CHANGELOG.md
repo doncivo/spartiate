@@ -2,6 +2,14 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.11.4
+
+Correctif du sommeil et du dossier sante (constat du 11 nov.). **Pas de mise à jour de la base** (reste en version 10).
+
+- **Sommeil** : les blocs « Au lit » de l’après-midi ne comptent plus ni comme du sommeil ni comme des nuits ; la dette et le besoin ne sont plus gonflés. Les résumés des 30 derniers jours sont recalculés une fois, à l’import suivant.
+- **Dossier sante** : un dossier dont le nom a une espace ou un caractère invisible est lu ; si le nom est refusé, l’écran dit « illisible (nom du dossier) » et le journal en donne la raison en code.
+- **Guide** : taper « sante » à la main, sans les suggestions du clavier.
+
 ## 0.11.3
 
 Correctif de la lecture automatique du dossier sante (constat du 11 nov. sur l'iPhone). **Pas de mise à jour de la base** (reste en version 10) ; aucune donnée saisie n'est modifiée.
