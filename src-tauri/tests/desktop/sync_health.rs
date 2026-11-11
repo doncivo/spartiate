@@ -866,3 +866,72 @@ fn pista_the_sync_filter_never_applies_to_the_health_read() {
     assert!(!report.folder.root_listed, "le filtre refuse la racine");
     assert!(report.files.iter().all(|f| f.state != "ok"));
 }
+
+// --- I5-05 (analyse de Codex) : parent `sante` non matérialisé, bout en bout par `BookmarkFs` et le faux du plugin -------------------
+
+#[test]
+fn bookmark_cloud_parent_is_materialized_within_the_budget_then_read() {
+    let clock = Arc::new(AtomicU64::new(NOW));
+    let plugin = FakePlugin::new(clock.clone());
+    plugin.mkdir(&["devices", DEV_A]);
+    let bytes = lab_hrv();
+    plugin.put_cloud_dir(
+        &[HEALTH_DIR],
+        &[("hrv.csv", bytes.as_slice()), ("pas.csv", FILES[3].1)],
+        2_000,
+    );
+    let fs = bookmark_over(&plugin, &clock);
+    fs.start_cycle_within(std::time::Duration::from_secs(15))
+        .unwrap();
+    let report = report_of(&fs);
+    assert!(report.folder.sante_hydrated);
+    assert!(report.folder.sante_present && report.folder.sante_listed);
+    let states: Vec<&str> = report.files.iter().map(|f| f.state).collect();
+    assert_eq!(states, ["ok", "absent", "absent", "ok"]);
+    assert_eq!(report.files[0].size, Some(bytes.len() as u64));
+    // Un seul téléchargement du dossier, aucune écriture.
+    assert_eq!(
+        plugin.calls("download").len(),
+        1,
+        "le dossier seul : ses fichiers sont déjà locaux"
+    );
+    for command in ["append", "writeAtomic", "rename", "remove", "createDir"] {
+        assert!(plugin.calls(command).is_empty(), "{command}");
+    }
+}
+
+#[test]
+fn bookmark_cloud_parent_over_the_budget_is_to_download_never_absent() {
+    let clock = Arc::new(AtomicU64::new(NOW));
+    let plugin = FakePlugin::new(clock.clone());
+    plugin.mkdir(&["devices", DEV_A]);
+    plugin.put_cloud_dir(&[HEALTH_DIR], &[("hrv.csv", FILES[0].1)], 60_000);
+    let fs = bookmark_over(&plugin, &clock);
+    fs.start_cycle_within(std::time::Duration::from_secs(15))
+        .unwrap();
+    let report = report_of(&fs);
+    assert!(report.folder.sante_hydrated);
+    assert!(report.folder.sante_present);
+    assert!(!report.folder.sante_listed);
+    assert!(report.files.iter().all(|f| f.state == "cloud"));
+    // La lecture suivante, une fois le dossier arrivé, aboutit.
+    let plugin2 = FakePlugin::new(clock.clone());
+    plugin2.mkdir(&["devices", DEV_A]);
+    plugin2.put_cloud_dir(&[HEALTH_DIR], &[("hrv.csv", FILES[0].1)], 1_000);
+    let fs2 = bookmark_over(&plugin2, &clock);
+    fs2.start_cycle_within(std::time::Duration::from_secs(15))
+        .unwrap();
+    assert_eq!(report_of(&fs2).files[0].state, "ok");
+}
+
+#[test]
+fn an_exact_folder_wins_over_a_cloud_placeholder_without_any_download() {
+    // Relecture sync-icloud S5 : le dossier exact et un substitut de même nom normalisé coexistent : le dossier gagne, aucun téléchargement.
+    let fs = lab_root();
+    fs.put(&["Sante\u{200b}"], b"x");
+    let cloud = CloudSante::new(SharedFs(fs.clone()), "Sante\u{200b}");
+    let report = report_of(&cloud);
+    assert!(!report.folder.sante_hydrated);
+    assert_eq!(cloud.hydrate_calls.load(Ordering::SeqCst), 0);
+    assert_eq!(report.files[0].state, "ok");
+}

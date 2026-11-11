@@ -111,7 +111,7 @@ export interface ShortcutImportService {
 }
 
 const TYPE_OF: Readonly<Record<ShortcutFileName, RecoverySampleType>> = { 'hrv.csv': 'hrv', 'fc-repos.csv': 'fc-repos', 'sommeil.csv': 'sommeil', 'pas.csv': 'pas' };
-const MAX_DIAG_ENTRIES = 10;
+const MAX_DIAG_ENTRIES = 5;
 const RECOMPUTE_DAYS = 30;
 const SAMPLE_WINDOW_DAYS = 60;
 const WORKOUT_WINDOW_DAYS = 45;
@@ -255,7 +255,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
         sante_entries: probe.santeEntries,
         sante_hydrated: probe.santeHydrated ? 1 : 0,
       });
-      // Une entrée de la racine par événement, en codes (disponibilité : 0 locale, 1 nuage, 2 erreur) ; 10 au plus (limite de débit du journal).
+      // Une entrée de la racine par événement, en codes (disponibilité : 0 locale, 1 nuage, 2 erreur) ; 5 au plus : deux appuis dans la même minute tiennent sous la limite de 10 par minute du journal.
       for (const [index, entry] of probe.rootProbe.slice(0, MAX_DIAG_ENTRIES).entries()) {
         deps.log('recovery-import-diag-entry', {
           index,

@@ -495,14 +495,14 @@ describe('statuts journalisés et diagnostic du dossier sante (I5-04 points 1 et
     expect(IMPORT_LOG_EVENTS).toContain('recovery-import-diag-entry');
   });
 
-  it('I5-05 : au plus 10 entrées de la racine journalisées (limite de débit du journal)', async () => {
+  it('I5-05 : au plus 5 entrées de la racine journalisées (limite de débit du journal)', async () => {
     const entry = { isDir: true, availability: 'local' as const, eqDevices: false, eqSanteExact: false, eqSanteFolded: false };
     const r = {
       ...reader(async () => ABSENT(), { kind: 'folder', automatic: true }),
       probe: () => ({ rootListed: true, santePresent: false, santeListed: false, devicesPresent: false, rootEntries: 16, santeEntries: 0, santeHydrated: false, rootProbe: Array.from({ length: 16 }, () => entry) }),
     };
     await build(r).run('manual');
-    expect(events().filter((e) => e === 'recovery-import-diag-entry')).toHaveLength(10);
+    expect(events().filter((e) => e === 'recovery-import-diag-entry')).toHaveLength(5);
   });
 
   it('I5-05 : un fichier lu par le sélecteur journalise sa vraie taille', async () => {

@@ -88,7 +88,7 @@ describe('Apple Santé : section « Raccourcis » (I5-01 point 1.7)', () => {
     // Le sélecteur n'a pas fourni les trois autres types : dit pour ce qu'il est, pas « fichier absent ».
     expect(s.getAllByText(/Absent des fichiers choisis à \d{2}:\d{2}\./)).toHaveLength(3);
     fireEvent.click(await s.findByRole('button', { name: 'Importer maintenant' }));
-    await waitFor(() => expect(s.getByText(/Non trouvé à la lecture automatique de \d{2}:\d{2}\./)).toBeInTheDocument());
+    await waitFor(() => expect(s.getByText(/Non trouvé à la lecture du dossier de \d{2}:\d{2}\./)).toBeInTheDocument());
     // Jamais « Fichier absent » au-dessus de comptes d'un import réussi ; les types sans import précédent gardent la phrase d'origine.
     expect(s.getAllByText('Fichier absent : rien n’a été lu pour ce type.')).toHaveLength(3);
     expect(s.getByText('1 ajoutées · 0 déjà connues · 2 refusées.')).toBeInTheDocument();

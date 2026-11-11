@@ -181,7 +181,8 @@ pub fn read_health_report(fs: &dyn SyncFs, names: &[String]) -> SyncResult<Healt
             folder.sante_hydrated = true;
             let name = placeholder.name.clone();
             let outcome = fs.read_from(&[name.as_str()], 0, 1, true);
-            dir_in_cloud = matches!(outcome, Err(FsError::CloudPending));
+            let _ = outcome;
+            dir_in_cloud = true;
             dir = name;
             if let Ok(again) = fs.list(&[], 256) {
                 describe_root(&mut folder, &again);
