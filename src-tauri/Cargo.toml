@@ -1,6 +1,6 @@
 [package]
 name = "spartiate"
-version = "0.11.4"
+version = "0.12.0"
 description = "Spartiate : planificateur personnel (PC Windows et iPhone)"
 authors = ["Ali Cherif"]
 edition = "2021"
