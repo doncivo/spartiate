@@ -6,6 +6,7 @@ import type { SyncCatalogue, SyncTable } from '../../../domain/sync/syncTables';
 import { isLocalDate } from '../../../domain/types';
 import type { SqlExecutor, SqlRow, SqlValue } from '../../driver';
 import { parseContributors, parseExplanationKeys } from '../../parse/recoveryJson';
+import { parseFactors } from '../../parse/recoveryFactorJson';
 import { RepositoryError } from '../common';
 import type { RepositoryOptions } from '../dataAccess';
 import type { ExportImportRepository } from '../exportImportRepository';
@@ -227,6 +228,11 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
           if (parseContributors(typeof contributors === 'string' ? contributors : null) === null || parseExplanationKeys(typeof keys === 'string' ? keys : null) === null) {
             throw new RepositoryError('invalid', table, row.id);
           }
+        }
+        // I6-01 : un journal dont le JSON de facteurs serait refusé à la lecture par le dépôt de facteurs n'est jamais écrit.
+        if (table === 'recovery_factor') {
+          const factors = row.values['factors'];
+          if (parseFactors(typeof factors === 'string' ? factors : null) === null) throw new RepositoryError('invalid', table, row.id);
         }
       }
       if (!profile && !deleteProfile && weights.length === 0 && deleteWeightIds.length === 0 && training.length === 0 && deleteTraining.length === 0) return;
