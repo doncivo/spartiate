@@ -55,6 +55,7 @@ export const syncVersionFr = {
     recipeIngredient: 'ingrédients de recettes',
     recoveryDay: 'résumés de récupération',
     muscleRecovery: 'récupérations par muscle',
+    recoveryFactor: 'journaux de facteurs',
     other: 'autres éléments',
   },
 } as const;
