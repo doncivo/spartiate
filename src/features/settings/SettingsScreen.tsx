@@ -17,6 +17,7 @@ import { ProfileCard } from './ProfileCard';
 import { SecuritySection } from './SecuritySection';
 import { SettingsScreenPc } from './SettingsScreenPc';
 import { formatAppearanceParts } from './AppearanceScreen';
+import { utcToLocal } from '../../domain/timeZone';
 import { settingsStore } from './settingsStore';
 import './SettingsScreen.css';
 
@@ -27,6 +28,11 @@ import './SettingsScreen.css';
  * et À PROPOS (version, diagnostic et journal). Apple Santé et Notifications n'existent pas encore : aucune ligne pour eux. PC : voir
  * `SettingsScreenPc`.
  */
+/** `HH:MM` en 24 h dans le fuseau de l'app (celui de l'appareil tant qu'il n'est pas connu). */
+function formatLocalTime(isoUtc: string, timeZone: string | null): string {
+  return utcToLocal(isoUtc, timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone).time.slice(0, 5);
+}
+
 export function SettingsScreen() {
   const layout = useLayout();
   return layout === 'pc' ? <SettingsScreenPc /> : <SettingsScreenMobile />;
@@ -39,10 +45,13 @@ function SettingsScreenMobile() {
   // `__ctBiometricFake`) ; l'app livrée ne le pose jamais.
   const showLockRow = container.authenticator.supported && (globalThis as { __ctShowAppLockRow?: boolean }).__ctShowAppLockRow === true;
   const [healthBlocked, setHealthBlocked] = useState(false);
+  /** Dernier import Raccourcis (le plus récent des fichiers lus), affiché quand Santé n'est pas accessible. */
+  const [lastShortcutImport, setLastShortcutImport] = useState<string | null>(null);
   const hasIphoneRows = container.signing.source.supported || hasHealthRow || showLockRow;
   const load = useFeatureStore(settingsStore, (s) => s.load);
   const errorKey = useFeatureStore(settingsStore, (s) => s.errorKey);
   const timeZone = useAppStore((s) => s.timeZone);
+  const shortcutsValue = lastShortcutImport === null ? healthFr.rowValueViaShortcuts : healthFr.rowValueViaShortcutsAt.replace('{time}', formatLocalTime(lastShortcutImport, timeZone));
   const launchAtStartup = useFeatureStore(settingsStore, (s) => s.launchAtStartup);
   const setLaunchAtStartup = useFeatureStore(settingsStore, (s) => s.setLaunchAtStartup);
   const navigate = useNavigationStore((s) => s.navigate);
@@ -63,6 +72,13 @@ function SettingsScreenMobile() {
     void container.data.repos.settings.get('healthkit.entitlementMissing').then(
       (value) => {
         if (live) setHealthBlocked(value === true);
+      },
+      () => undefined,
+    );
+    void container.data.repos.recoverySamples().then((samples) => samples.listImportStates()).then(
+      (states) => {
+        const latest = states.reduce<string | null>((max, state) => (max === null || state.importedAt > max ? state.importedAt : max), null);
+        if (live) setLastShortcutImport(latest);
       },
       () => undefined,
     );
@@ -90,7 +106,7 @@ function SettingsScreenMobile() {
         <>
           <h2 className="ct-settings__section">{tPlus('sectionIphone')}</h2>
           <div className="ct-settings__card">
-            {hasHealthRow && <LinkRow label={healthFr.row} value={healthBlocked ? healthFr.rowValueUnavailable : healthFr.rowValue} onClick={() => navigate({ tab: 'more', screen: 'health' })} />}
+            {hasHealthRow && <LinkRow label={healthFr.row} value={healthBlocked ? shortcutsValue : healthFr.rowValue} onClick={() => navigate({ tab: 'more', screen: 'health' })} />}
             <SigningAboutRow />
             {showLockRow && <SecuritySection />}
           </div>
