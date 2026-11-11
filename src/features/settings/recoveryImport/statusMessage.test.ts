@@ -50,3 +50,16 @@ describe('phrase de chaque statut d’import (I5-04 point 1)', () => {
     expect(importStatusMessage({ ...base, files: [file('imported', 1)], recomputeFailed: true })).toMatch(/calcul/i);
   });
 });
+
+describe('I5-06 : illisible dit pourquoi', () => {
+  it('fichiers illisibles et nom du dossier refusé : « illisible (nom du dossier) » et la consigne de retaper sante', () => {
+    const message = importStatusMessage({ ...base, files: four('unreadable'), folderIssue: 'unsafe-name' });
+    expect(message).toMatch(/illisible \(nom du dossier\)/);
+    expect(message).toMatch(/sante/);
+  });
+
+  it('fichiers illisibles sans raison de nom : phrase d’origine (encore dans iCloud, ou illisibles)', () => {
+    expect(importStatusMessage({ ...base, files: four('unreadable') })).toMatch(/encore dans iCloud/);
+    expect(importStatusMessage({ ...base, files: four('unreadable'), folderIssue: 'cloud' })).toMatch(/encore dans iCloud/);
+  });
+});
