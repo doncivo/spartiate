@@ -27,8 +27,8 @@ const read = async (db: TestDb): Promise<ExportData> => (await db.data.repos.exp
 
 describe('export / import du mésocycle (I3-02)', () => {
   it('table exportée avant les quatre tables de nutrition (I4-02), les trois de I4-07 et les deux de I5-01 ; schéma 7 puis suivants', () => {
-    expect(TRAINING_EXPORT_TABLES.at(-10)).toBe('mesocycle');
-    expect(EXPORT_SV).toBe(10);
+    expect(TRAINING_EXPORT_TABLES.at(-11)).toBe('mesocycle');
+    expect(EXPORT_SV).toBe(11);
   });
 
   it('aller-retour : cycle en pause identique (hash canonique), publié comme toute écriture', async () => {

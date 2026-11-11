@@ -8,7 +8,7 @@ import { openBaseDb, type TestDb } from './testSetup';
 /**
  * I5-01 (D-57, § 16.4) : l'archive porte les RÉSUMÉS de récupération (`recovery_day`, `muscle_recovery`, schéma 10), jamais les échantillons
  * importés ni l'état d'import (ils se relisent depuis les fichiers Raccourcis). Une archive de schéma 9 s'importe sans rien supprimer de ces
- * tables, même en « remplacer » ; une archive de schéma 11 est refusée. Politique du PC (lecteur, l'iPhone seul écrit ces tables) : son
+ * tables, même en « remplacer » ; une archive de schéma 12 est refusée. Politique du PC (lecteur, l'iPhone seul écrit ces tables) : son
  * import n'écrit ni ne supprime jamais ces tables (elles lui reviennent de l'iPhone par la synchro), le plan le dit (`skippedReadOnly`).
  */
 
@@ -71,10 +71,10 @@ const recoveryCount = async (db: TestDb): Promise<[number, number]> => [
 
 describe('export / import des résumés de récupération (I5-01)', () => {
   it('deux tables exportées en dernier, schéma 10 ; échantillons et état d’import jamais exportés', () => {
-    expect(TRAINING_EXPORT_TABLES.slice(-2)).toEqual(['recovery_day', 'muscle_recovery']);
+    expect(TRAINING_EXPORT_TABLES.slice(-3)).toEqual(['recovery_day', 'muscle_recovery', 'recovery_factor']);
     expect(TABLE_SINCE_SV.recovery_day).toBe(10);
     expect(TABLE_SINCE_SV.muscle_recovery).toBe(10);
-    expect(EXPORT_SV).toBe(10);
+    expect(EXPORT_SV).toBe(11);
     for (const t of ['recovery_sample', 'recovery_import_state']) expect((TRAINING_EXPORT_TABLES as readonly string[]).includes(t), t).toBe(false);
   });
 
@@ -87,7 +87,7 @@ describe('export / import des résumés de récupération (I5-01)', () => {
     const json = canonicalDataJson(data);
     for (const absent of ['recovery_sample', 'recovery_import_state', '77.77', 'hrv.csv']) expect(json, absent).not.toContain(absent);
     const target = await openWriter(OTHER);
-    await apply(target, data, 'merge', 10);
+    await apply(target, data, 'merge', 11);
     expect(await canonicalHash(await read(target))).toBe(await canonicalHash(data));
     expect((await (await target.data.repos.recovery()).getDay(DAY))?.summary).toEqual(output().summary);
     expect(await target.driver.select('SELECT 1 FROM recovery_sample')).toEqual([]);
@@ -115,9 +115,9 @@ describe('export / import des résumés de récupération (I5-01)', () => {
     expect(await db.driver.select('SELECT COUNT(*) AS n FROM recovery_sample')).toEqual([{ n: 1 }]); // les échantillons ne sont pas des données d'archive
   });
 
-  it('archive de schéma 11 : refusée (future-version)', async () => {
+  it('archive de schéma 12 : refusée (future-version)', async () => {
     const db = await openWriter(IPHONE);
-    await expect(parse(await read(db), 11)).rejects.toMatchObject({ code: 'future-version' });
+    await expect(parse(await read(db), 12)).rejects.toMatchObject({ code: 'future-version' });
   });
 });
 
