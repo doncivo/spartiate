@@ -175,6 +175,20 @@ describe('journal de facteurs de la veille (B)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Enregistrement impossible');
     expect(screen.getByRole('checkbox', { name: 'Alcool' })).not.toBeChecked();
   });
+
+  it('I6-01 relecture : un échec suivi d’une saisie enchaînée, puis une saisie réussie : l’alerte disparaît (compteur jamais négatif)', async () => {
+    mount();
+    const alcohol = await screen.findByRole('checkbox', { name: 'Alcool' });
+    const stress = screen.getByRole('checkbox', { name: 'Stress' });
+    vi.spyOn(db.data.repos, 'recoveryFactors').mockRejectedValueOnce(new Error('boom'));
+    fireEvent.click(alcohol);
+    fireEvent.click(stress);
+    expect(await screen.findByRole('alert')).toHaveTextContent('Enregistrement impossible');
+    // Une saisie suivante, réussie : la file est vide, l'écran relit et l'alerte disparaît.
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'Courbatures' }));
+    await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
+    expect(screen.getByRole('checkbox', { name: 'Courbatures' })).toBeChecked();
+  });
 });
 
 describe('Progrès › Récupération : écart de Recovery avec / sans facteur (B)', () => {
