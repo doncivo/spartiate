@@ -28,7 +28,8 @@ describe('lecture des fichiers Raccourcis (I5-01 point 1.3)', () => {
     const reader = createPickerShortcutFiles(pick);
     const reads = await reader.read(SHORTCUT_FILE_NAMES);
     expect(reads).toEqual([
-      { name: 'hrv.csv', state: 'ok', text: 'a;1' },
+      // I5-05 point 5 : la vraie taille du fichier choisi (octets), jamais 0.
+      { name: 'hrv.csv', state: 'ok', text: 'a;1', size: 3 },
       { name: 'fc-repos.csv', state: 'absent' },
       { name: 'sommeil.csv', state: 'absent' },
       { name: 'pas.csv', state: 'absent' },
@@ -85,7 +86,25 @@ describe('lecteur de dossier iCloud Drive › Spartiate › sante (I5-03, I5-04,
     const reader = createFolderShortcutFiles(async () => folder([{ name: 'hrv.csv', state: 'absent' }], { santePresent: false, santeListed: false, santeEntries: 0, rootEntries: 5 }));
     expect(reader.probe?.()).toBeNull();
     await reader.read(SHORTCUT_FILE_NAMES);
-    expect(reader.probe?.()).toEqual({ rootListed: true, santePresent: false, santeListed: false, devicesPresent: true, rootEntries: 5, santeEntries: 0 });
+    expect(reader.probe?.()).toEqual({ rootListed: true, santePresent: false, santeListed: false, devicesPresent: true, rootEntries: 5, santeEntries: 0, santeHydrated: false, rootProbe: [] });
+  });
+
+  it('I5-05 : la sonde rend, par entrée de la racine, des codes fixes (dossier, disponibilité, égal devices, égal sante exact et normalisé), sans nom', async () => {
+    const rootProbe = [
+      { isDir: true, availability: 'local', eqDevices: true, eqSanteExact: false, eqSanteFolded: false },
+      { isDir: false, availability: 'cloud', eqDevices: false, eqSanteExact: true, eqSanteFolded: true },
+      { isDir: false, availability: 'bogus', eqDevices: 'oui', name: 'secret.csv' },
+    ];
+    const reader = createFolderShortcutFiles(async () => folder([{ name: 'hrv.csv', state: 'absent' }], { santeHydrated: true, rootProbe }));
+    await reader.read(SHORTCUT_FILE_NAMES);
+    const probe = reader.probe?.();
+    expect(probe?.santeHydrated).toBe(true);
+    expect(probe?.rootProbe).toEqual([
+      { isDir: true, availability: 'local', eqDevices: true, eqSanteExact: false, eqSanteFolded: false },
+      { isDir: false, availability: 'cloud', eqDevices: false, eqSanteExact: true, eqSanteFolded: true },
+      { isDir: false, availability: 'error', eqDevices: false, eqSanteExact: false, eqSanteFolded: false },
+    ]);
+    expect(JSON.stringify(probe)).not.toContain('secret');
   });
 
   it('réponse incomplète, état inconnu ou octets invalides : « unreadable » pour ce fichier, les autres sont lus', async () => {

@@ -80,6 +80,35 @@ describe('Apple Santé : section « Raccourcis » (I5-01 point 1.7)', () => {
     expect(screen.queryByText(/48/)).toBeNull();
   });
 
+  it('I5-05 point 4 : après un import par le sélecteur, une lecture automatique sans fichier ne contredit pas les comptes : « non trouvé à la lecture automatique de HH:MM »', async () => {
+    renderScreen(folderReader(() => reads({ name: 'hrv.csv', state: 'absent' })), pickerReader(() => reads({ name: 'hrv.csv', state: 'ok', text: HRV })));
+    const s = await section();
+    fireEvent.click(await s.findByRole('button', { name: 'Choisir les fichiers' }));
+    await waitFor(() => expect(s.getByText('1 ajoutées · 0 déjà connues · 2 refusées.')).toBeInTheDocument());
+    // Le sélecteur n'a pas fourni les trois autres types : dit pour ce qu'il est, pas « fichier absent ».
+    expect(s.getAllByText(/Absent des fichiers choisis à \d{2}:\d{2}\./)).toHaveLength(3);
+    fireEvent.click(await s.findByRole('button', { name: 'Importer maintenant' }));
+    await waitFor(() => expect(s.getByText(/Non trouvé à la lecture automatique de \d{2}:\d{2}\./)).toBeInTheDocument());
+    // Jamais « Fichier absent » au-dessus de comptes d'un import réussi ; les types sans import précédent gardent la phrase d'origine.
+    expect(s.getAllByText('Fichier absent : rien n’a été lu pour ce type.')).toHaveLength(3);
+    expect(s.getByText('1 ajoutées · 0 déjà connues · 2 refusées.')).toBeInTheDocument();
+  });
+
+  it('I5-05 point 4 : une lecture qui a abouti pour ce type efface toute phrase d’absence', async () => {
+    let ok = false;
+    renderScreen(
+      folderReader(() => reads(ok ? { name: 'hrv.csv', state: 'ok', text: HRV } : { name: 'hrv.csv', state: 'absent' })),
+      pickerReader(() => null),
+    );
+    const s = await section();
+    fireEvent.click(await s.findByRole('button', { name: 'Importer maintenant' }));
+    await waitFor(() => expect(s.getAllByText('Fichier absent : rien n’a été lu pour ce type.')).toHaveLength(4));
+    ok = true;
+    fireEvent.click(await s.findByRole('button', { name: 'Importer maintenant' }));
+    await waitFor(() => expect(s.getByText('1 ajoutées · 0 déjà connues · 2 refusées.')).toBeInTheDocument());
+    expect(s.getAllByText('Fichier absent : rien n’a été lu pour ce type.')).toHaveLength(3);
+  });
+
   it('secours : « Choisir les fichiers » ouvre le sélecteur, jamais le dossier ; annulé : message sobre, rien d’importé', async () => {
     const folder = folderReader(() => reads({ name: 'hrv.csv', state: 'ok', text: HRV }));
     const readFolder = vi.spyOn(folder, 'read');
