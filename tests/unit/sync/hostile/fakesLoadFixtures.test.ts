@@ -42,6 +42,8 @@ const NOT_FAKES: Readonly<Record<string, string>> = {
   VirtualSnapshot: 'instantané virtuel de lecture en flux (sync_bookmark.rs), list/read hors de son test « unreachable »',
   SanteListFails:
     'enveloppe de SharedFs (sync_health.rs, I5-04) : le listage de sante/ échoue (nuage), tout le reste est délégué à MemFs ; aucun comportement de fichier propre',
+  CloudSante:
+    'enveloppe de SharedFs (sync_health.rs, I5-05) : une seule entrée `sante` est listée comme substitut iCloud « dans le nuage » jusqu'à son téléchargement, tout le reste est délégué à MemFs ; le vrai comportement des substituts est rejoué sur fake_bookmark (put_cloud_dir)',
   Never: 'transport jamais appelé (sync_bookmark.rs), garde du faux',
   FirstCallRouted:
     'aiguillage de test (sync_bookmark.rs, Y-IOS-05, revue I2) : envoie la première commande désignée à un DeadlineTransport à échéance nulle et les autres à un second, tous deux sur MutedTransport ; aucun comportement de fichier propre',
