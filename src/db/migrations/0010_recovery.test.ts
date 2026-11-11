@@ -18,7 +18,7 @@ const BASE = 10;
 
 async function freshDb(): Promise<SqlDriver> {
   const db = await openSqliteWasmDriver();
-  await migrate(db, migrations);
+  await migrate(db, migrations.slice(0, BASE));
   return db;
 }
 type Row = Record<string, string | number | null>;
@@ -41,8 +41,8 @@ const tableNames = async (db: SqlDriver) => (await db.select<{ name: string }>("
 
 describe('migration 0010 : récupération (I5-01 point 1.5)', () => {
   it('registre : 0001 à 0010 ; version 10, nom recovery', () => {
-    expect(migrations.map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-    expect(migrations.at(-1)).toBe(migration0010Recovery);
+    expect(migrations.slice(0, 10).map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(migrations[9]).toBe(migration0010Recovery);
     expect(migration0010Recovery.name).toBe('recovery');
   });
 
@@ -51,7 +51,7 @@ describe('migration 0010 : récupération (I5-01 point 1.5)', () => {
     await migrate(db, migrations.slice(0, BASE - 1));
     await db.execute('DELETE FROM sync_outbox');
     const before = await db.select<{ name: string; sql: string }>("SELECT name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY name");
-    await migrate(db, migrations);
+    await migrate(db, migrations.slice(0, BASE));
     const after = await db.select<{ name: string; sql: string }>("SELECT name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY name");
     const beforeNames = new Set(before.map((r) => r.name));
     for (const row of before) expect(after.find((r) => r.name === row.name), row.name).toEqual(row);
@@ -262,7 +262,7 @@ describe('migration 0010 : récupération (I5-01 point 1.5)', () => {
     await db.execute('UPDATE recovery_day SET recovery = 10, hlc = ? WHERE id = ?', [h(2), 'recovery|2026-11-09']);
     expect(await outbox(db)).toEqual([]);
     expect(await db.select('SELECT * FROM sync_field_clock')).toEqual([]);
-    expect((await migrate(db, migrations)).applied).toEqual([]);
+    expect((await migrate(db, migrations.slice(0, BASE))).applied).toEqual([]);
     await db.close();
   });
 });
