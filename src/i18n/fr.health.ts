@@ -47,6 +47,8 @@ export const healthFr = {
   recLast: 'Dernier import : {date} à {time}.',
   recCounts: '{added} ajoutées · {duplicates} déjà connues · {rejected} refusées.',
   recAbsent: 'Fichier absent : rien n’a été lu pour ce type.',
+  recAbsentAuto: 'Non trouvé à la lecture automatique de {time}. Le dernier import reste valable.',
+  recAbsentPick: 'Absent des fichiers choisis à {time}.',
   recUnreadable: 'Fichier illisible : rien n’a été lu pour ce type.',
   recFailed: 'Import impossible pour ce type. Réessaie ; le détail est dans le journal technique (Plus › Logs).',
   recRejectedBy: 'Lignes refusées (cette session) :',
