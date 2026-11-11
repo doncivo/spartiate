@@ -935,3 +935,79 @@ fn an_exact_folder_wins_over_a_cloud_placeholder_without_any_download() {
     assert_eq!(cloud.hydrate_calls.load(Ordering::SeqCst), 0);
     assert_eq!(report.files[0].state, "ok");
 }
+
+// --- I5-06 : constat d'Ali (0.11.3) : `is_dir=1 avail=0 eq_sante_exact=0 eq_sante_folded=1`, puis `sante_listed=0` et quatre fichiers illisibles.
+// Cause : le dossier trouvé par nom normalisé (espace final) était refusé par la garde de chemin de `BookmarkFs` (règles Windows : point ou espace
+// final interdits), donc `Unsafe`. La lecture seule d'un nom LISTÉ par le plugin doit le passer tel quel. H-26 est CONFIRMED depuis le renommage à la main.
+
+#[test]
+fn i506_a_folder_found_by_normalized_name_is_listed_and_read_under_its_real_name() {
+    for dir in ["sante", "Sante", "sante ", " sante", "sante\u{200b}", "sante\u{a0}"] {
+        let clock = Arc::new(AtomicU64::new(NOW));
+        let plugin = FakePlugin::new(clock.clone());
+        plugin.mkdir(&["devices", DEV_A]);
+        plugin.put(&[dir, "hrv.csv"], FILES[0].1);
+        plugin.put(&[dir, "pas.csv"], FILES[3].1);
+        let fs = bookmark_over(&plugin, &clock);
+        fs.start_cycle_within(std::time::Duration::from_secs(15))
+            .unwrap();
+        let report = report_of(&fs);
+        assert!(report.folder.sante_listed, "{dir:?}");
+        assert_eq!(report.folder.sante_list_error, "", "{dir:?}");
+        let states: Vec<&str> = report.files.iter().map(|f| f.state).collect();
+        assert_eq!(states, ["ok", "absent", "absent", "ok"], "{dir:?}");
+        for command in ["append", "writeAtomic", "rename", "remove", "createDir"] {
+            assert!(plugin.calls(command).is_empty(), "{command}");
+        }
+    }
+}
+
+#[test]
+fn i506_the_read_guard_still_refuses_separators_dots_and_controls() {
+    for bad in ["a/b", "..", ".", "a\b", "a\u{0}b", "a\nb", ""] {
+        let clock = Arc::new(AtomicU64::new(NOW));
+        let plugin = FakePlugin::new(clock.clone());
+        let fs = bookmark_over(&plugin, &clock);
+        fs.start_cycle_within(std::time::Duration::from_secs(15))
+            .unwrap();
+        assert_eq!(
+            fs.list(&[bad], 10).map(|_| ()),
+            Err(FsError::Unsafe),
+            "{bad:?}"
+        );
+        assert_eq!(
+            fs.read(&["sante", bad], 10, false).map(|_| ()),
+            Err(FsError::Unsafe),
+            "{bad:?}"
+        );
+    }
+    // Les écritures gardent la règle stricte (jamais un nom à espace final).
+    let clock = Arc::new(AtomicU64::new(NOW));
+    let plugin = FakePlugin::new(clock.clone());
+    let fs = bookmark_over(&plugin, &clock);
+    fs.start_cycle_within(std::time::Duration::from_secs(15))
+        .unwrap();
+    assert_eq!(
+        fs.write_atomic(&["sante ", "x"], b"x"),
+        Err(FsError::Unsafe)
+    );
+}
+
+#[test]
+fn i506_the_listing_error_is_named_by_a_fixed_code() {
+    let fs = MemFs::new();
+    fs.put(&["devices", DEV_A, "state.spx"], b"x");
+    fs.put(&[HEALTH_DIR, "hrv.csv"], FILES[0].1);
+    // Nuage : « cloud » ; nom refusé par la garde de chemin : « unsafe-name » ; dossier absent : « » ; lecture normale : « ».
+    let cloud = report_of(&SanteListFails(SharedFs(fs.clone())));
+    assert_eq!(cloud.folder.sante_list_error, "cloud");
+    let guarded = report_of(&DevicesOnly::new(Box::new(SharedFs(fs.clone()))));
+    assert_eq!(guarded.folder.sante_list_error, "unsafe-name");
+    let ok = report_of(&SharedFs(fs.clone()));
+    assert_eq!(ok.folder.sante_list_error, "");
+    let none = MemFs::new();
+    assert_eq!(
+        report_of(&SharedFs(none)).folder.sante_list_error,
+        "not-found"
+    );
+}
