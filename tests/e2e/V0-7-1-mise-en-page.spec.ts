@@ -72,8 +72,13 @@ test('Point 4 : onglets d’Entraînement et de Nutrition sur une seule ligne, o
   for (const name of names) tops.push((await page.getByRole('radio', { name, exact: true }).boundingBox())?.y ?? Number.NaN);
   expect(tops.every(Number.isFinite), 'tous les onglets mesurés').toBe(true);
   expect(Math.max(...tops) - Math.min(...tops), 'une seule ligne').toBeLessThan(2);
+  // FIX-0115 : des onglets sont cachés à droite à l'ouverture, le fondu le dit ; une fois défilé, il passe à gauche.
+  const group = page.getByRole('radiogroup', { name: 'Sections de l’entraînement' });
+  await expect(group).toHaveAttribute('data-fade-end', 'true');
   await page.getByRole('radio', { name: 'Cycle', exact: true }).click();
   await expect(page.getByRole('radio', { name: 'Cycle', exact: true })).toBeInViewport();
+  await expect(group).toHaveAttribute('data-fade-start', 'true');
+  await expect(group).not.toHaveAttribute('data-fade-end', 'true');
 
   await tab(page, 'Nutrition').click();
   const nutritionTops: number[] = [];
