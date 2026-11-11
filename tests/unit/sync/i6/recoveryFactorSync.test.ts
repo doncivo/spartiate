@@ -84,6 +84,28 @@ describe('(b) même jour saisi sur deux appareils hors ligne', () => {
   });
 });
 
+describe('(b2) édition concurrente d’une ligne déjà synchronisée (relecture sync-icloud I6-01, A1)', () => {
+  it('« rien de particulier » d’un côté, un facteur de plus de l’autre : même état final valide des deux côtés, aucune ligne refusée', async () => {
+    const [pc, iphone] = await pcAndIphone();
+    await (await factors(pc)).save(DAY, { factors: ['alcohol'], none: false });
+    await roundTrip();
+    expect(await rows(iphone)).toEqual(await rows(pc));
+    // Hors ligne : l'iPhone ajoute un facteur (hlc le plus élevé), le PC coche « rien de particulier » (deux champs changent).
+    pc.clock.advance(2_000);
+    await (await factors(pc)).save(DAY, { factors: [], none: true });
+    iphone.clock.advance(9_000);
+    await (await factors(iphone)).save(DAY, { factors: ['alcohol', 'stress'], none: false });
+    await roundTrip();
+    const a = await rows(pc);
+    expect(a).toEqual(await rows(iphone));
+    expect(a).toHaveLength(1);
+    // Facteurs non vides : « rien de particulier » est ignoré à la lecture, jamais une contradiction.
+    const read = await (await factors(pc)).get(DAY);
+    expect(read?.factors.length === 0 || read?.none === false).toBe(true);
+    for (const d of [pc, iphone]) expect(await d.driver.select('SELECT 1 FROM sync_unknown')).toEqual([]);
+  });
+});
+
 describe('(c) « rien de particulier », suppression et restauration', () => {
   it('suivis sur l’autre appareil, « non renseigné » distinct de « rien de particulier »', async () => {
     const [pc, iphone] = await pcAndIphone();
