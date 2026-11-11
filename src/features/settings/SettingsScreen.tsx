@@ -21,6 +21,11 @@ import { utcToLocal } from '../../domain/timeZone';
 import { settingsStore } from './settingsStore';
 import './SettingsScreen.css';
 
+/** `HH:MM` en 24 h dans le fuseau de l'app (celui de l'appareil tant qu'il n'est pas connu). */
+function formatLocalTime(isoUtc: string, timeZone: string | null): string {
+  return utcToLocal(isoUtc, timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone).time.slice(0, 5);
+}
+
 /**
  * Onglet « Plus » (planches docs/maquettes/i0/iPhone-Plus et PC-Plus). iPhone : titre, carte « Profil et poids », puis quatre groupes en
  * cartes sous des titres en capitales discrètes : DONNÉES (synchronisation, sauvegardes, export et import), IPHONE (signature SideStore,
@@ -28,11 +33,6 @@ import './SettingsScreen.css';
  * et À PROPOS (version, diagnostic et journal). Apple Santé et Notifications n'existent pas encore : aucune ligne pour eux. PC : voir
  * `SettingsScreenPc`.
  */
-/** `HH:MM` en 24 h dans le fuseau de l'app (celui de l'appareil tant qu'il n'est pas connu). */
-function formatLocalTime(isoUtc: string, timeZone: string | null): string {
-  return utcToLocal(isoUtc, timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone).time.slice(0, 5);
-}
-
 export function SettingsScreen() {
   const layout = useLayout();
   return layout === 'pc' ? <SettingsScreenPc /> : <SettingsScreenMobile />;
