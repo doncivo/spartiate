@@ -48,11 +48,15 @@ export interface ShortcutFolderProbe {
   readonly santeEntries: number;
   /** I5-05 : `sante` était un substitut iCloud (listé comme un fichier dans le nuage) et son téléchargement a été demandé. */
   readonly santeHydrated: boolean;
+  /** I5-06 : raison, en code fixe, de l'échec de liste de `sante` : vide, `not-found`, `unsafe-name` (nom refusé par la garde de chemin), `cloud`, `io`. */
+  readonly santeListError: ShortcutSanteListError;
   /** I5-05 : une entrée de la racine liée, par ordre de listage, en codes fixes (jamais un nom). */
   readonly rootProbe: readonly ShortcutRootEntryProbe[];
 }
 
 /** Une entrée de la racine liée : dossier ou non, disponibilité, égalités de nom (`devices`, `sante` exact, `sante` normalisé). */
+export type ShortcutSanteListError = '' | 'not-found' | 'unsafe-name' | 'cloud' | 'io';
+
 export interface ShortcutRootEntryProbe {
   readonly isDir: boolean;
   readonly availability: 'local' | 'cloud' | 'error';
@@ -148,6 +152,8 @@ function decodeBase64(value: string): Uint8Array {
 const count = (value: unknown): number => (typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : 0);
 const sizeOf = (value: unknown): { readonly size: number } | Record<string, never> => (typeof value === 'number' && Number.isInteger(value) && value >= 0 ? { size: value } : {});
 
+const listErrorOf = (value: unknown): ShortcutSanteListError => (value === undefined || value === '' ? '' : value === 'not-found' || value === 'unsafe-name' || value === 'cloud' ? value : 'io');
+
 function probeOf(raw: unknown): ShortcutFolderProbe | null {
   const folder = typeof raw === 'object' && raw !== null ? (raw as { folder?: unknown }).folder : undefined;
   if (typeof folder !== 'object' || folder === null) return null;
@@ -168,6 +174,7 @@ function probeOf(raw: unknown): ShortcutFolderProbe | null {
     rootEntries: count(f.rootEntries),
     santeEntries: count(f.santeEntries),
     santeHydrated: f.santeHydrated === true,
+    santeListError: listErrorOf(f.santeListError),
     rootProbe,
   };
 }

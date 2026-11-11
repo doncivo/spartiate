@@ -98,3 +98,46 @@ describe('nuits et siestes (I5-05)', () => {
     expect(records[0]).toMatchObject({ asleepMinutes: 60, bedtimeMinutes: null, wakeMinutes: null });
   });
 });
+
+/** I5-06 : les blocs « Au lit » de l’après-midi (constat d’Ali) ne sont jamais des nuits ni du temps endormi. */
+describe('segments « Au lit » (I5-06)', () => {
+  const iso = (day: number, hhmm: string): string => `2026-11-${String(day).padStart(2, '0')}T${hhmm}:00+01:00`;
+  const line = (a: string, b: string, stage: string): string => `${a};${b};${stage}`;
+  const today = '2026-11-08';
+  const segs = (lines: readonly string[]) => parseShortcutSleep(lines.join('\n'), today, TZ).segments;
+
+  it('un bloc « Au lit » seul l’après-midi n’est pas une nuit : aucune nuit, jamais du temps endormi', () => {
+    const { nights } = buildSleepNights(segs([line(iso(5, '14:00'), iso(5, '16:00'), 'Au lit')]), TZ);
+    expect(nights).toEqual([]);
+  });
+
+  it('un bloc « Au lit » après la nuit ne change pas le temps endormi ; le réveil inclut le temps au lit qui suit', () => {
+    const { nights } = buildSleepNights(segs([line(iso(5, '02:00'), iso(5, '09:30'), 'Endormi'), line(iso(5, '10:00'), iso(5, '10:40'), 'Au lit'), line(iso(5, '15:00'), iso(5, '16:30'), 'Au lit')]), TZ);
+    expect(nights).toHaveLength(1);
+    expect(nights[0]?.asleepMinutes).toBe(450);
+    expect(nights[0]?.wakeAt).toBe(new Date(iso(5, '10:40')).toISOString());
+  });
+
+  it('semaine type avec trois blocs « Au lit » l’après-midi : sept nuits, dette proche de 0, besoin proche de 7 h 30', () => {
+    const week: readonly [number, string, number][] = [[2, '01:00', 450], [3, '02:30', 445], [4, '04:00', 450], [5, '03:00', 440], [6, '01:30', 455], [7, '03:30', 430], [8, '02:00', 456]];
+    const lines: string[] = [];
+    for (const [day, bed, asleep] of week) {
+      const [bh = 0, bm = 0] = bed.split(':').map(Number);
+      const end = bh * 60 + bm + asleep;
+      lines.push(line(iso(day, bed), iso(day, `${String(Math.floor(end / 60)).padStart(2, '0')}:${String(end % 60).padStart(2, '0')}`), 'Endormi'));
+    }
+    lines.push(line(iso(5, '14:00'), iso(5, '16:00'), 'Au lit'), line(iso(7, '13:30'), iso(7, '15:00'), 'Au lit'), line(iso(8, '14:00'), iso(8, '15:30'), 'Au lit'));
+    const { nights } = buildSleepNights(segs(lines), TZ);
+    expect(nights).toHaveLength(7);
+    const records = toNightRecords({ nights, hrv: [], restingHrByDay: [], timeZone: TZ });
+    const out = summarizeRecoveryDay({ today, now: '2026-11-08T12:00:00.000Z', timeZone: TZ, nights: records, workouts: [] });
+    expect(out.summary.sleepNeedMinutes).toBeGreaterThanOrEqual(450);
+    expect(out.summary.sleepNeedMinutes).toBeLessThanOrEqual(450 + 60);
+  });
+
+  it('une nuit coupée par un réveil de 30 min reste une seule nuit', () => {
+    const { nights } = buildSleepNights(segs([line(iso(8, '00:00'), iso(8, '03:00'), 'Endormi'), line(iso(8, '03:30'), iso(8, '07:30'), 'Endormi')]), TZ);
+    expect(nights).toHaveLength(1);
+    expect(nights[0]?.asleepMinutes).toBe(420);
+  });
+});

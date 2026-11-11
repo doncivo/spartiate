@@ -86,7 +86,7 @@ describe('lecteur de dossier iCloud Drive › Spartiate › sante (I5-03, I5-04,
     const reader = createFolderShortcutFiles(async () => folder([{ name: 'hrv.csv', state: 'absent' }], { santePresent: false, santeListed: false, santeEntries: 0, rootEntries: 5 }));
     expect(reader.probe?.()).toBeNull();
     await reader.read(SHORTCUT_FILE_NAMES);
-    expect(reader.probe?.()).toEqual({ rootListed: true, santePresent: false, santeListed: false, devicesPresent: true, rootEntries: 5, santeEntries: 0, santeHydrated: false, rootProbe: [] });
+    expect(reader.probe?.()).toEqual({ rootListed: true, santePresent: false, santeListed: false, devicesPresent: true, rootEntries: 5, santeEntries: 0, santeHydrated: false, santeListError: '', rootProbe: [] });
   });
 
   it('I5-05 : la sonde rend, par entrée de la racine, des codes fixes (dossier, disponibilité, égal devices, égal sante exact et normalisé), sans nom', async () => {
@@ -144,5 +144,15 @@ describe('lecteur de dossier iCloud Drive › Spartiate › sante (I5-03, I5-04,
     const invoke = vi.fn(async () => folder([]));
     await createFolderShortcutFiles(invoke).read(['hrv.csv', 'state.spx' as never]);
     expect(invoke).toHaveBeenCalledWith('health_files_read', { names: ['hrv.csv'] });
+  });
+});
+
+describe('I5-06 : raison de l’échec de liste de sante', () => {
+  it('la sonde reprend le code fixe ; un code inconnu devient « io »', async () => {
+    for (const [raw, expected] of [['unsafe-name', 'unsafe-name'], ['cloud', 'cloud'], ['not-found', 'not-found'], ['', ''], ['/Users/x/sante', 'io'], [undefined, '']] as const) {
+      const reader = createFolderShortcutFiles(async () => folder([{ name: 'hrv.csv', state: 'absent' }], { santeListError: raw }));
+      await reader.read(SHORTCUT_FILE_NAMES);
+      expect(reader.probe?.()?.santeListError).toBe(expected);
+    }
   });
 });

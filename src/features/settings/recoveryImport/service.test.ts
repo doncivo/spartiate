@@ -6,7 +6,7 @@ import { asEntityId, type DeviceId, type LocalDate } from '../../../domain/types
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
 import type { RecoverySampleRepository } from '../../../db/repositories/recoverySampleRepository';
 import { ShortcutFolderError, type ShortcutFileRead, type ShortcutFilesReader } from '../../../platform/shortcutFiles';
-import { AUTO_IMPORT_INTERVAL_MS, createShortcutImportService, IMPORT_LOG_EVENTS, type ImportLogEvent, type ShortcutImportDeps } from './service';
+import { AUTO_IMPORT_INTERVAL_MS, createShortcutImportService, IMPORT_LOG_EVENTS, SLEEP_RULES_VERSION, type ImportLogEvent, type ShortcutImportDeps } from './service';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-000000000011');
 const NOW = '2026-11-08T10:00:00.000Z';
@@ -113,6 +113,34 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     expect((await recovery.listDays('2026-10-01' as LocalDate, '2026-11-08' as LocalDate)).length).toBe(30);
     expect(await recovery.getDay('2026-11-08' as LocalDate)).not.toBeNull();
     expect((await build(reader(async () => reads()), { clock: createManualClock('2026-11-08T11:00:00.000Z') }).run('manual')).recomputedDays).toBe(2);
+  });
+
+  it('I5-06 : après un changement de règle du sommeil, les 30 jours sont recalculés une fois, sans action d’Ali', async () => {
+    const nights = Array.from({ length: 30 }, (_, k) => {
+      const day = new Date(Date.parse('2026-11-08T12:00:00Z') - k * 86_400_000).toISOString().slice(0, 10);
+      const before = new Date(Date.parse(day + 'T12:00:00Z') - 86_400_000).toISOString().slice(0, 10);
+      return before + 'T23:00:00+01:00;' + day + 'T07:00:00+01:00;Endormi';
+    }).join('\n');
+    const reads = (): ShortcutFileRead[] => [ok('sommeil.csv', nights)];
+    // Les jours sont déjà calculés avec l'ancienne règle (version absente).
+    await build(reader(async () => reads())).run('manual');
+    let stored: number | null = null;
+    const rules = { get: async () => stored, set: async (version: number) => void (stored = version) };
+    const later = { clock: createManualClock('2026-11-08T11:00:00.000Z'), rules };
+    const first = await build(reader(async () => reads()), later).run('manual');
+    expect(first.recomputedDays).toBe(30);
+    expect(stored).toBe(SLEEP_RULES_VERSION);
+    expect(logs.some((l) => l.event === 'recovery-import-rules-recompute')).toBe(true);
+    // Une seule fois : la version est à jour, retour aux deux jours.
+    const second = await build(reader(async () => reads()), { clock: createManualClock('2026-11-08T11:30:00.000Z'), rules }).run('manual');
+    expect(second.recomputedDays).toBe(2);
+  });
+
+  it('I5-06 : un échec de lecture de la version ne bloque pas l’import (recalcul habituel)', async () => {
+    const rules = { get: async (): Promise<number | null> => Promise.reject(new Error('boom')), set: async () => undefined };
+    const result = await build(reader(async () => [ok('pas.csv', PAS)]), { rules }).run('manual');
+    expect(result.status).toBe('done');
+    expect(result.recomputedDays).toBe(2);
   });
 
   it('jours sans aucune donnée : seuls aujourd’hui et la veille sont écrits', async () => {
@@ -451,10 +479,10 @@ describe('statuts journalisés et diagnostic du dossier sante (I5-04 points 1 et
     ];
     const r = {
       ...reader(async () => reads, { kind: 'folder', automatic: true }),
-      probe: () => ({ rootListed: true, santePresent: true, santeListed: true, devicesPresent: true, rootEntries: 3, santeEntries: 2, santeHydrated: false, rootProbe: [] }),
+      probe: () => ({ rootListed: true, santePresent: true, santeListed: true, devicesPresent: true, rootEntries: 3, santeEntries: 2, santeHydrated: false, santeListError: '' as const, rootProbe: [] }),
     };
     await build(r).run('manual');
-    expect(logs.find((l) => l.event === 'recovery-import-diag-folder')?.counts).toEqual({ root_listed: 1, sante_present: 1, sante_listed: 1, devices_present: 1, root_entries: 3, sante_entries: 2, sante_hydrated: 0 });
+    expect(logs.find((l) => l.event === 'recovery-import-diag-folder')?.counts).toEqual({ root_listed: 1, sante_present: 1, sante_listed: 1, devices_present: 1, root_entries: 3, sante_entries: 2, sante_hydrated: 0, sante_list_err: 0 });
     const files = logs.filter((l) => l.event === 'recovery-import-diag-file').map((l) => l.counts);
     // état : 0 absent, 1 présent, 2 à télécharger, 3 illisible
     expect(files).toEqual([
@@ -477,6 +505,7 @@ describe('statuts journalisés et diagnostic du dossier sante (I5-04 points 1 et
         rootEntries: 3,
         santeEntries: 0,
         santeHydrated: true,
+        santeListError: '' as const,
         rootProbe: [
           { isDir: true, availability: 'local' as const, eqDevices: true, eqSanteExact: false, eqSanteFolded: false },
           { isDir: false, availability: 'cloud' as const, eqDevices: false, eqSanteExact: true, eqSanteFolded: true },
@@ -485,7 +514,7 @@ describe('statuts journalisés et diagnostic du dossier sante (I5-04 points 1 et
       }),
     };
     await build(r).run('manual');
-    expect(logs.find((l) => l.event === 'recovery-import-diag-folder')?.counts).toEqual({ root_listed: 1, sante_present: 0, sante_listed: 0, devices_present: 1, root_entries: 3, sante_entries: 0, sante_hydrated: 1 });
+    expect(logs.find((l) => l.event === 'recovery-import-diag-folder')?.counts).toEqual({ root_listed: 1, sante_present: 0, sante_listed: 0, devices_present: 1, root_entries: 3, sante_entries: 0, sante_hydrated: 1, sante_list_err: 0 });
     // disponibilité : 0 locale, 1 nuage, 2 erreur
     expect(logs.filter((l) => l.event === 'recovery-import-diag-entry').map((l) => l.counts)).toEqual([
       { index: 0, is_dir: 1, avail: 0, eq_devices: 1, eq_sante_exact: 0, eq_sante_folded: 0 },
@@ -499,7 +528,7 @@ describe('statuts journalisés et diagnostic du dossier sante (I5-04 points 1 et
     const entry = { isDir: true, availability: 'local' as const, eqDevices: false, eqSanteExact: false, eqSanteFolded: false };
     const r = {
       ...reader(async () => ABSENT(), { kind: 'folder', automatic: true }),
-      probe: () => ({ rootListed: true, santePresent: false, santeListed: false, devicesPresent: false, rootEntries: 16, santeEntries: 0, santeHydrated: false, rootProbe: Array.from({ length: 16 }, () => entry) }),
+      probe: () => ({ rootListed: true, santePresent: false, santeListed: false, devicesPresent: false, rootEntries: 16, santeEntries: 0, santeHydrated: false, santeListError: '' as const, rootProbe: Array.from({ length: 16 }, () => entry) }),
     };
     await build(r).run('manual');
     expect(events().filter((e) => e === 'recovery-import-diag-entry')).toHaveLength(5);
@@ -515,5 +544,25 @@ describe('statuts journalisés et diagnostic du dossier sante (I5-04 points 1 et
     await build(reader(async () => ABSENT(), { kind: 'folder', automatic: true })).run('manual');
     expect(events()).not.toContain('recovery-import-diag-folder');
     expect(events().filter((e) => e === 'recovery-import-diag-file')).toHaveLength(4);
+  });
+});
+
+describe('I5-06 : raison de l’échec de lecture du dossier', () => {
+  it('le journal porte sante_list_err en code (0 aucune, 1 absent, 2 nom refusé, 3 nuage, 4 autre) et le résultat porte la raison', async () => {
+    const db = await openBaseDb(DEVICE);
+    try {
+      const logs: { event: ImportLogEvent; counts: Record<string, number> }[] = [];
+      const unreadable: ShortcutFileRead[] = (['hrv.csv', 'fc-repos.csv', 'sommeil.csv', 'pas.csv'] as const).map((name) => ({ name, state: 'unreadable' }) as ShortcutFileRead);
+      const r = {
+        ...reader(async () => unreadable, { kind: 'folder', automatic: true }),
+        probe: () => ({ rootListed: true, santePresent: true, santeListed: false, devicesPresent: true, rootEntries: 4, santeEntries: 0, santeHydrated: false, santeListError: 'unsafe-name' as const, rootProbe: [] }),
+      };
+      const service = createShortcutImportService({ reader: r, samples: () => db.data.repos.recoverySamples(), recovery: () => db.data.repos.recovery(), workouts: async () => [], clock: createManualClock(NOW), timeZone: TZ, log: (event, counts) => logs.push({ event, counts }) });
+      const result = await service.run('manual');
+      expect(logs.find((l) => l.event === 'recovery-import-diag-folder')?.counts).toMatchObject({ sante_list_err: 2 });
+      expect(result.folderIssue).toBe('unsafe-name');
+    } finally {
+      await db.close();
+    }
   });
 });

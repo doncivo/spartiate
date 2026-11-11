@@ -58,6 +58,14 @@ export function shortcutImportFor(container: AppContainer, reader?: ShortcutFile
     clock: container.clock,
     timeZone: detectTimeZone() ?? 'Europe/Paris',
     log: importLog,
+    // I5-06 : version de la règle du sommeil des résumés (réglage local) ; une version plus ancienne recalcule une fois les 30 jours.
+    rules: {
+      get: async () => {
+        const value = await container.data.repos.settings.get('recovery.sleepRulesVersion');
+        return typeof value === 'number' ? value : null;
+      },
+      set: (version) => container.data.repos.settings.set('recovery.sleepRulesVersion', version),
+    },
     // I5-02 (point 2.3) : heure de coucher proposée et replanification des notifications, chargées à la demande (hors du départ).
     afterRecompute: (info) => import('../../notifications').then((m) => m.recoveryNotificationsFor(container).afterImport(info)),
   });

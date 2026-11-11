@@ -62,6 +62,7 @@ export const healthFr = {
   recThrottled: 'Une lecture a déjà eu lieu il y a moins de 30 minutes ; « Importer maintenant » relit tout de suite.',
   recDoneNone: 'Aucun des quatre fichiers n’a été trouvé dans iCloud Drive › Spartiate › sante. Vérifie que le raccourci y écrit, puis réessaie.',
   recDoneUnreadable: 'Les fichiers trouvés n’ont pas pu être lus (encore dans iCloud, ou illisibles). Réessaie dans un instant.',
+  recDoneUnreadableName: 'Dossier sante illisible (nom du dossier) : iOS refuse son nom. Renomme-le dans Fichiers en tapant « sante » à la main, sans les suggestions du clavier, puis réessaie.',
   recDoneFailed: 'L’enregistrement des fichiers lus a échoué. Réessaie ; le détail est dans Plus › Logs.',
   recDoneRead1: '1 fichier lu · lignes ajoutées : {added}.',
   recDoneReadN: '{files} fichiers lus · lignes ajoutées : {added}.',

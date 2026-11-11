@@ -61,6 +61,8 @@ pub struct HealthFolder {
     pub sante_entries: u32,
     /// I5-05 : `sante` était listé comme un substitut iCloud (fichier « dans le nuage ») et son téléchargement a été demandé.
     pub sante_hydrated: bool,
+    /// I5-06 : raison, en code fixe, pour laquelle `sante` n'a pas pu être listé : vide (listé), `not-found`, `unsafe-name` (nom refusé par la garde de chemin), `cloud`, `io`.
+    pub sante_list_error: &'static str,
     /// I5-05 : une entrée de la racine, par ordre de listage (16 au plus), décrite par des codes fixes, jamais par son nom.
     pub root_probe: Vec<RootEntryProbe>,
 }
@@ -205,10 +207,16 @@ pub fn read_health_report(fs: &dyn SyncFs, names: &[String]) -> SyncResult<Healt
         Err(FsError::NotFound) => {
             // Dossier iCloud encore dans le nuage (budget épuisé) : présent, pas encore listable.
             folder.sante_present = dir_in_cloud;
+            folder.sante_list_error = if dir_in_cloud { "cloud" } else { "not-found" };
             Vec::new()
         }
-        Err(_) => {
+        Err(error) => {
             folder.sante_present = true;
+            folder.sante_list_error = match error {
+                FsError::Unsafe => "unsafe-name",
+                FsError::CloudPending => "cloud",
+                _ => "io",
+            };
             Vec::new()
         }
     };

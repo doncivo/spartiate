@@ -963,3 +963,30 @@ fn b1_an_absurd_clear_header_number_is_ignored() {
         .write_state(14, state(DEV_A, &ep, 6, 1, 2, Some(hlc(200, DEV_A))))
         .unwrap();
 }
+
+#[test]
+fn i506_listed_components_pass_names_given_by_the_system_but_never_a_path() {
+    use spartiate_lib::sync::files::is_listed_component;
+    // Acceptés (lecture seule d'un nom déjà listé) : espace final ou initial, insécable, invisible, majuscules, accents.
+    for good in [
+        "sante",
+        "Sante",
+        "sante ",
+        " sante",
+        "sante\u{a0}",
+        "sante\u{200b}",
+        "sant\u{e9}",
+        "a.",
+        "hrv.csv",
+    ] {
+        assert!(is_listed_component(good), "{good:?}");
+    }
+    // Refusés : vide, points, séparateurs, flux, contrôles (dont DEL), plus de 255 caractères.
+    for bad in [
+        "", ".", "..", "a/b", "a\\b", "a:b", "a\u{0}b", "a\nb", "a\u{7f}b",
+    ] {
+        assert!(!is_listed_component(bad), "{bad:?}");
+    }
+    assert!(!is_listed_component(&"a".repeat(256)));
+    assert!(is_listed_component(&"a".repeat(255)));
+}
