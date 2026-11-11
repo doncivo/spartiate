@@ -76,8 +76,8 @@ describe('factorAnalysis', () => {
   it('le facteur du jour J se compare à la Recovery de J+1, pas de J', () => {
     const j = journal(30, (i) => (i % 5 === 0 ? ['alcohol'] : []));
     // La Recovery du jour J (même jour) est mauvaise, celle de J+1 est bonne : aucun écart attendu.
-    const sameDay = Array.from({ length: 30 }, (_, i) => ({ day: at(i), recovery: i % 5 === 0 ? 30 : 70 }));
-    const nextDay = Array.from({ length: 30 }, (_, i) => ({ day: at(i + 1), recovery: 70 }));
+    const sameDay = Array.from({ length: 31 }, (_, i) => ({ day: at(i), recovery: i % 5 === 0 ? 30 : 70 }));
+    const nextDay = Array.from({ length: 31 }, (_, i) => ({ day: at(i + 1), recovery: 70 }));
     expect(factorAnalysis(j, nextDay).associations[0]?.difference).toBe(0);
     expect(factorAnalysis(j, sameDay).associations[0]?.difference).toBeGreaterThan(0);
   });
