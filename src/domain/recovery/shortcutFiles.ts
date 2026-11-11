@@ -329,6 +329,11 @@ export function buildSleepNights(
   let ignoredGroups = 0;
   for (const group of groups) {
     const asleep = group.filter((i) => i.stage !== 'in_bed' && i.stage !== 'awake').map((i) => [i.s, i.e] as const);
+    // I5-06 : un épisode sans aucun temps endormi (blocs « Au lit » ou « Éveillé » seuls) n'est jamais une nuit.
+    if (asleep.length === 0) {
+      ignoredGroups += 1;
+      continue;
+    }
     const inBed = group.filter((i) => i.stage === 'in_bed').map((i) => [i.s, i.e] as const);
     const bed = asleep.length > 0 ? Math.min(...asleep.map((i) => i[0])) : inBed.length > 0 ? Math.min(...inBed.map((i) => i[0])) : Math.min(...group.map((i) => i.s));
     const wake = Math.max(...group.map((i) => i.e));

@@ -27,7 +27,7 @@ export function importStatusMessage(result: ImportRunResult): string {
           ? result.files.some((f) => f.state === 'failed')
             ? tHealth('recDoneFailed')
             : result.files.some((f) => f.state === 'unreadable')
-              ? tHealth('recDoneUnreadable')
+              ? tHealth(result.folderIssue === 'unsafe-name' ? 'recDoneUnreadableName' : 'recDoneUnreadable')
               : tHealth('recDoneNone')
           : imported.length === 1
             ? tHealth('recDoneRead1', { added })

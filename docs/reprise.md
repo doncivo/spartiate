@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-10 : I1 à I3 livrés, I4 hors IA livré (OFF et scan, favoris, recettes, journée déclarée), version publiée 0.11.2 (schéma 10 ; 0.9.1 correctifs du moteur D-82 ; 0.9.2 onglets PC et catalogue de 196 exercices, D-83 ; 0.9.3 relecture Codex REV-01, D-85, D-86 ; 0.9.4 garde -wal et décote sur charge totale, D-87 ; 0.10.0 import Raccourcis et moteur de récupération, D-88 à D-93 ; 0.11.0 écrans de récupération, D-93 ; 0.11.1 lecture auto du dossier sante, D-88 et D-93 révisées ; 0.11.3 dossier sante non matérialisé téléchargé, journal unique, D-94). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-90 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.) ; les décisions approuvées priment sur les textes historiques.
+État au 2026-11-10 : I1 à I3 livrés, I4 hors IA livré (OFF et scan, favoris, recettes, journée déclarée), version publiée 0.11.2 (schéma 10 ; 0.9.1 correctifs du moteur D-82 ; 0.9.2 onglets PC et catalogue de 196 exercices, D-83 ; 0.9.3 relecture Codex REV-01, D-85, D-86 ; 0.9.4 garde -wal et décote sur charge totale, D-87 ; 0.10.0 import Raccourcis et moteur de récupération, D-88 à D-93 ; 0.11.0 écrans de récupération, D-93 ; 0.11.1 lecture auto du dossier sante, D-88 et D-93 révisées ; 0.11.3 dossier sante non matérialisé téléchargé, journal unique, D-94 ; D-38 révisée le 11/11/2026 : utilisation réelle reportée). Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-90 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.) ; les décisions approuvées priment sur les textes historiques.
 
 ## Fusionné (tout est dans main)
 
@@ -23,7 +23,7 @@
 
 ## Prochaines étapes
 
-1. Ali : installer 0.11.3 (PC et iPhone), « Importer maintenant », puis Plus › Logs (ou le fichier Journal/spartiate.log de Fichiers, maintenant complet) : `recovery-import-diag-folder` (`sante_hydrated`) et `recovery-import-diag-entry` par entrée de la racine (docs/I5-05.md, lecture du journal). Cause non prouvée : substitut iCloud du dossier sante ; H-26 reste UNVERIFIED. Si « à télécharger » persiste : correction Swift de `download` à prévoir.
+1. Ali : installer 0.11.4 (PC et iPhone) : le sommeil recalculé (dette et besoin) et la lecture du dossier `sante` (H-26 CONFIRMED). Lot suivant : I6-01 (récupération), I6-02 (corps), I6-03 (entraînement), I3-07 (onboarding) ; D-94 et suivantes à confirmer.
 2. Confirmer ou réviser D-73, D-74, D-79 à D-81 et D-88 à D-93 (échelle d'Exertion 20, journée rouge = maintien).
 
 ## Rappels
