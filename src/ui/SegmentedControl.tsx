@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import './SegmentedControl.css';
 
 export interface SegmentedOption<V extends string> {
@@ -25,10 +25,25 @@ export interface SegmentedControlProps<V extends string> {
  */
 export function SegmentedControl<V extends string>({ options, value, onChange, label, disabled = false, columns, scrollable = false }: SegmentedControlProps<V>) {
   const root = useRef<HTMLDivElement>(null);
+  const [fade, setFade] = useState({ start: false, end: false });
+  /** FIX-0115 : fondu sur un bord tant qu'il reste des choix cachés de ce côté (1 px de tolérance pour les arrondis). */
+  const measureFade = useCallback((): void => {
+    const el = root.current;
+    if (!scrollable || !el) return;
+    const start = el.scrollLeft > 1;
+    const end = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
+    setFade((old) => (old.start === start && old.end === end ? old : { start, end }));
+  }, [scrollable]);
   useEffect(() => {
     if (!scrollable) return;
     root.current?.querySelector<HTMLElement>('[aria-checked="true"]')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
-  }, [scrollable, value]);
+    measureFade();
+  }, [scrollable, value, measureFade]);
+  useEffect(() => {
+    if (!scrollable) return;
+    window.addEventListener('resize', measureFade);
+    return () => window.removeEventListener('resize', measureFade);
+  }, [scrollable, measureFade]);
   function onKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number): void {
     const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
     if (step === 0) return;
@@ -40,7 +55,7 @@ export function SegmentedControl<V extends string>({ options, value, onChange, l
     buttons?.[(index + step + options.length) % options.length]?.focus();
   }
   return (
-    <div className="ct-segmented" ref={root} data-columns={columns} data-scroll={scrollable || undefined} role="radiogroup" aria-label={label}>
+    <div className="ct-segmented" ref={root} data-columns={columns} data-scroll={scrollable || undefined} data-fade-start={fade.start || undefined} data-fade-end={fade.end || undefined} onScroll={scrollable ? measureFade : undefined} role="radiogroup" aria-label={label}>
       {options.map((option, index) => (
         <button
           key={option.value}
