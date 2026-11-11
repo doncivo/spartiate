@@ -161,6 +161,20 @@ pub const HYDRATE_CYCLE_BUDGET: Duration =
 
 pub use imp::StdFs;
 
+/// Composant d'un nom LISTÉ par le plugin, pour les lectures seules (`list`, `read`, `read_from`, `read_head`) : un nom que le système de
+/// fichiers a déjà donné (espace final, caractère invisible) est relu tel quel (I5-06, constat d'Ali : dossier `sante ` refusé par les règles
+/// Windows de `is_safe_component`). Reste refusé : vide, `.`, `..`, séparateur, `:`-flux, caractère de contrôle, plus de 255 caractères.
+/// Les écritures gardent `is_safe_component`.
+pub fn is_listed_component(name: &str) -> bool {
+    !name.is_empty()
+        && name.chars().count() <= 255
+        && name != "."
+        && name != ".."
+        && !name
+            .chars()
+            .any(|c| c.is_control() || matches!(c, '\\' | '/' | ':'))
+}
+
 /// Composant de chemin sûr (défense en profondeur, revue 19) : non vide, 255 caractères au plus, ni `.` ni `..`, aucun séparateur, ni
 /// `:` (flux NTFS, lecteur), ni caractère interdit par Windows ou de contrôle, ni point ou espace final (Windows les retire), ni nom de
 /// périphérique réservé (`CON`, `NUL`, `COM1`, `LPT1`…, avec ou sans extension).

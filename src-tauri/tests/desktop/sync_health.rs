@@ -942,7 +942,14 @@ fn an_exact_folder_wins_over_a_cloud_placeholder_without_any_download() {
 
 #[test]
 fn i506_a_folder_found_by_normalized_name_is_listed_and_read_under_its_real_name() {
-    for dir in ["sante", "Sante", "sante ", " sante", "sante\u{200b}", "sante\u{a0}"] {
+    for dir in [
+        "sante",
+        "Sante",
+        "sante ",
+        " sante",
+        "sante\u{200b}",
+        "sante\u{a0}",
+    ] {
         let clock = Arc::new(AtomicU64::new(NOW));
         let plugin = FakePlugin::new(clock.clone());
         plugin.mkdir(&["devices", DEV_A]);
@@ -964,7 +971,7 @@ fn i506_a_folder_found_by_normalized_name_is_listed_and_read_under_its_real_name
 
 #[test]
 fn i506_the_read_guard_still_refuses_separators_dots_and_controls() {
-    for bad in ["a/b", "..", ".", "a\b", "a\u{0}b", "a\nb", ""] {
+    for bad in ["a/b", "..", ".", "a\\b", "a\u{0}b", "a\nb", ""] {
         let clock = Arc::new(AtomicU64::new(NOW));
         let plugin = FakePlugin::new(clock.clone());
         let fs = bookmark_over(&plugin, &clock);

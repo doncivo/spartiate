@@ -26,7 +26,8 @@ use base64::{engine::general_purpose::STANDARD, Engine};
 use serde_json::{json, Value};
 
 use super::files::{
-    is_safe_component, AppendMode, Availability, Chunk, FsEntry, FsError, Listing, SyncFs,
+    is_listed_component, is_safe_component, AppendMode, Availability, Chunk, FsEntry, FsError,
+    Listing, SyncFs,
 };
 use super::folder::{CheckedFolder, FolderKind, FolderRecord};
 use super::limits::{
@@ -112,6 +113,22 @@ fn components(parts: &[&str], allow_root: bool) -> Result<Value, FsError> {
         return Err(FsError::Unsafe);
     }
     if parts.iter().any(|p| !is_safe_component(p)) {
+        return Err(FsError::Unsafe);
+    }
+    Ok(Value::Array(
+        parts
+            .iter()
+            .map(|p| Value::String((*p).to_owned()))
+            .collect(),
+    ))
+}
+
+/// Comme `components`, pour les lectures seules : un nom listé par le plugin passe tel quel (`is_listed_component`, I5-06).
+fn components_listed(parts: &[&str], allow_root: bool) -> Result<Value, FsError> {
+    if parts.is_empty() && !allow_root {
+        return Err(FsError::Unsafe);
+    }
+    if parts.iter().any(|p| !is_listed_component(p)) {
         return Err(FsError::Unsafe);
     }
     Ok(Value::Array(
@@ -280,12 +297,12 @@ impl SyncFs for BookmarkFs {
     }
 
     fn read_head(&self, file: &[&str], max: usize) -> Result<Vec<u8>, FsError> {
-        let path = components(file, false)?;
+        let path = components_listed(file, false)?;
         Ok(self.read_block(&path, 0, max, NO_LIMIT)?.bytes)
     }
 
     fn list(&self, dir: &[&str], max: usize) -> Result<Listing, FsError> {
-        let path = components(dir, true)?;
+        let path = components_listed(dir, true)?;
         let out = self.call("list", json!({ "path": path, "max": max }))?;
         if flag(&out, "missing") {
             return Err(FsError::NotFound);
@@ -319,7 +336,7 @@ impl SyncFs for BookmarkFs {
     }
 
     fn read(&self, file: &[&str], limit: u64, hydrate: bool) -> Result<Vec<u8>, FsError> {
-        let path = components(file, false)?;
+        let path = components_listed(file, false)?;
         let status = self.call("status", json!({ "path": path }))?;
         if !flag(&status, "exists") {
             return Err(FsError::NotFound);
@@ -367,7 +384,7 @@ impl SyncFs for BookmarkFs {
         max: usize,
         hydrate: bool,
     ) -> Result<Chunk, FsError> {
-        let path = components(file, false)?;
+        let path = components_listed(file, false)?;
         match self.read_block(&path, offset, max, NO_LIMIT) {
             Err(FsError::CloudPending) if hydrate => {
                 self.download(&path, NO_LIMIT)?;
