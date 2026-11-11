@@ -223,6 +223,8 @@ export function RecoveryToday() {
   const [attempt, setAttempt] = useState(0);
   const synced = useSyncedData(['recovery_day', 'recovery_factor']);
   const [factorFailed, setFactorFailed] = useState(false);
+  /** Remonte la carte du journal après un échec d'écriture : la case revient à l'état enregistré. */
+  const [resetEpoch, setResetEpoch] = useState(0);
   const queue = useRef<Promise<void>>(Promise.resolve());
   const pending = useRef(0);
   const today = todayLocal(container.clock);
@@ -277,6 +279,7 @@ export function RecoveryToday() {
         else await repo.save(day, next);
       } catch {
         setFactorFailed(true);
+        setResetEpoch((n) => n + 1);
         pending.current = 0;
         setAttempt((n) => n + 1);
         return;
@@ -292,7 +295,7 @@ export function RecoveryToday() {
     <>
       {load.unusual !== null ? <UnusualValuesCard values={load.unusual} /> : null}
       <Cards load={load} today={today} nowMs={container.clock.nowMs()} />
-      <FactorJournalCard key={attempt} day={load.factorDay} entry={load.factor} failed={factorFailed} onChange={saveFactor} />
+      <FactorJournalCard key={`${String(resetEpoch)}:${load.factor?.hlc ?? ''}`} day={load.factorDay} entry={load.factor} failed={factorFailed} onChange={saveFactor} />
     </>
   );
 }
