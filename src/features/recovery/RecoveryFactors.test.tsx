@@ -169,8 +169,9 @@ describe('journal de facteurs de la veille (B)', () => {
 
   it('un échec d’écriture est annoncé, la case revient à son état enregistré', async () => {
     mount();
-    vi.spyOn(db.data.repos, 'recoveryFactors').mockRejectedValue(new Error('boom'));
-    fireEvent.click(await screen.findByRole('checkbox', { name: 'Alcool' }));
+    const box = await screen.findByRole('checkbox', { name: 'Alcool' });
+    vi.spyOn(db.data.repos, 'recoveryFactors').mockRejectedValueOnce(new Error('boom'));
+    fireEvent.click(box);
     expect(await screen.findByRole('alert')).toHaveTextContent('Enregistrement impossible');
     expect(screen.getByRole('checkbox', { name: 'Alcool' })).not.toBeChecked();
   });

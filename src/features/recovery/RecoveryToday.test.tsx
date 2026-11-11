@@ -44,6 +44,16 @@ const save = async (s: RecoveryDaySummary): Promise<void> => {
   const output: RecoveryDayOutput = { summary: s, muscles: [] };
   await (await db.data.repos.recovery()).saveDay(output);
 };
+/**
+ * Texte de l'écran SANS le journal de facteurs de la veille (I6-01) : ses libellés sont des cases à cocher choisies par Ali (PRD § 16.7 : « Caféine
+ * après 16 h », « Maladie »), pas un texte de l'app sur son état ; les gardes « aucun chiffre sans donnée » et « aucun mot de diagnostic » portent
+ * sur les cadrans et les avis de récupération, qu'elles continuent de couvrir en entier.
+ */
+const textWithoutJournal = (): string => {
+  const clone = document.body.cloneNode(true) as HTMLElement;
+  clone.querySelectorAll('.ct-factors').forEach((node) => node.remove());
+  return clone.textContent ?? '';
+};
 const mount = (os: 'ios' | 'other' = 'ios') =>
   render(
     <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, platform: { runtime: 'web', os } })}>
@@ -72,7 +82,7 @@ describe('états', () => {
     expect(await screen.findByText('Aucune donnée de récupération importée pour l’instant.')).toBeInTheDocument();
     expect(screen.getByText(/Plus → Apple Santé → Raccourcis/)).toBeInTheDocument();
     expect(screen.queryByRole('alert')).toBeNull();
-    expect(document.body.textContent ?? '').not.toMatch(/\d/);
+    expect(textWithoutJournal()).not.toMatch(/\d/);
     fireEvent.click(screen.getByRole('button', { name: 'Ouvrir Apple Santé' }));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'health' });
   });
@@ -168,7 +178,7 @@ describe('cadrans', () => {
     await save(summary({ explanationKeys: ['sleep_short', 'sleep_debt', 'baseline_outliers_excluded', 'level_b_absolute_thresholds', 'exertion_cardio_not_counted'] }));
     mount('other');
     await screen.findByRole('img', { name: /Recovery/ });
-    expect(document.body.textContent ?? '').not.toMatch(/diagnostic|maladie|malade|pathologi|surentra|danger|alerte/i);
+    expect(textWithoutJournal()).not.toMatch(/diagnostic|maladie|malade|pathologi|surentra|danger|alerte/i);
   });
 });
 

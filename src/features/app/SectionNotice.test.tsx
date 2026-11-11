@@ -42,6 +42,12 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
     expect(document.body.textContent ?? '').not.toMatch(/\d/);
   });
 
+  it('progress : la section Récupération (journal de facteurs, I6-01) est chargée à la demande sous l’explication', async () => {
+    open('progress');
+    expect(await screen.findByRole('region', { name: 'Récupération : ce qui change ta Recovery' })).toBeInTheDocument();
+    expect(screen.getByText(/Aucun jour renseigné/)).toBeInTheDocument();
+  });
+
   it('Aujourd’hui : rend l’écran I0 (iPhone) ; sans profil, le bouton principal ouvre Profil et poids', async () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
     open('today');

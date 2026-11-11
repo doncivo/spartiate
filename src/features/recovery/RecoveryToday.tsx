@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactElement } from 'react';
+import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { todayLocal } from '../../domain/clock';
 import { unusualValues, type RecoveryExplanationKey, type UnusualValues } from '../../domain/recovery';
 import type { LocalDate } from '../../domain/types';
@@ -223,6 +223,8 @@ export function RecoveryToday() {
   const [attempt, setAttempt] = useState(0);
   const synced = useSyncedData(['recovery_day', 'recovery_factor']);
   const [factorFailed, setFactorFailed] = useState(false);
+  const queue = useRef<Promise<void>>(Promise.resolve());
+  const pending = useRef(0);
   const today = todayLocal(container.clock);
 
   useEffect(() => {
@@ -264,24 +266,33 @@ export function RecoveryToday() {
       </section>
     );
   }
+  /** Saisies enchaînées dans l'ordre des tapes ; la relecture n'a lieu qu'une fois la file vidée (l'écran suit les tapes d'ici là). */
   const saveFactor = (next: FactorEntry | null): void => {
-    void (async () => {
+    const day = load.factorDay;
+    pending.current += 1;
+    queue.current = queue.current.then(async () => {
       try {
         const repo = await container.data.repos.recoveryFactors();
-        if (next === null) await repo.clear(load.factorDay);
-        else await repo.save(load.factorDay, next);
-        setFactorFailed(false);
-        setAttempt((n) => n + 1);
+        if (next === null) await repo.clear(day);
+        else await repo.save(day, next);
       } catch {
         setFactorFailed(true);
+        pending.current = 0;
+        setAttempt((n) => n + 1);
+        return;
       }
-    })();
+      pending.current -= 1;
+      if (pending.current === 0) {
+        setFactorFailed(false);
+        setAttempt((n) => n + 1);
+      }
+    });
   };
   return (
     <>
       {load.unusual !== null ? <UnusualValuesCard values={load.unusual} /> : null}
       <Cards load={load} today={today} nowMs={container.clock.nowMs()} />
-      <FactorJournalCard day={load.factorDay} entry={load.factor} failed={factorFailed} onChange={saveFactor} />
+      <FactorJournalCard key={attempt} day={load.factorDay} entry={load.factor} failed={factorFailed} onChange={saveFactor} />
     </>
   );
 }
