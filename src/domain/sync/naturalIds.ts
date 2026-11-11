@@ -89,6 +89,7 @@ export function expectedDayCompletenessId(row: ReadonlyMap<string, unknown>): st
  * `recovery|AAAA-MM-JJ` ; `muscle_recovery` : une par date et muscle, `muscle|AAAA-MM-JJ|<muscle>` (muscle de 1 à 64 caractères, sans `|`).
  * Aucun repli UUID : un recalcul du même jour écrit la même ligne. Les CHECK SQL de la migration 0010 portent les mêmes formes.
  */
+const RECOVERY_FACTOR_RE = /^recovery_factor\|(\d{4}-\d{2}-\d{2})$/;
 const RECOVERY_DAY_RE = /^recovery\|(\d{4}-\d{2}-\d{2})$/;
 export const MUSCLE_RECOVERY_MUSCLE_ID_MAX = 64;
 const MUSCLE_RECOVERY_RE = /^muscle\|(\d{4}-\d{2}-\d{2})\|([^|]{1,64})$/;
@@ -125,4 +126,23 @@ export function expectedMuscleRecoveryId(row: ReadonlyMap<string, unknown>): str
   const date = row.get('date');
   const muscle = row.get('muscle_id');
   return typeof date === 'string' && isLocalDate(date) && typeof muscle === 'string' && isMuscleRecoveryMuscleId(muscle) ? muscleRecoveryId(date, muscle) : null;
+}
+
+/**
+ * I6-01 (§ 16.7, § 20.2) : journal de facteurs, une ligne par date locale (la veille du matin de saisie), `recovery_factor|AAAA-MM-JJ`. Aucun repli
+ * UUID : les deux appareils qui saisissent le même jour écrivent la même ligne. Le CHECK SQL de la migration 0011 porte la même forme.
+ */
+export function recoveryFactorId(date: LocalDate): string {
+  return `recovery_factor|${date}`;
+}
+
+export function isRecoveryFactorId(id: string): boolean {
+  const m = RECOVERY_FACTOR_RE.exec(id);
+  return m !== null && m[1] !== undefined && isLocalDate(m[1]);
+}
+
+/** Identifiant attendu d'une ligne de ces valeurs, ou null si `date` manque ou est mal formée. */
+export function expectedRecoveryFactorId(row: ReadonlyMap<string, unknown>): string | null {
+  const date = row.get('date');
+  return typeof date === 'string' && isLocalDate(date) ? recoveryFactorId(date) : null;
 }

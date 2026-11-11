@@ -17,12 +17,14 @@ import {
   expectedMuscleRecoveryId,
   expectedProgressionId,
   expectedRecoveryDayId,
+  expectedRecoveryFactorId,
   expectedWeightId,
   isDayCompletenessId,
   isMuscleRecoveryId,
   isProfileId,
   isProgressionId,
   isRecoveryDayId,
+  isRecoveryFactorId,
   isWeightId,
   MUSCLE_RECOVERY_MUSCLE_ID_MAX,
   PROFILE_ID,
@@ -692,7 +694,19 @@ const MUSCLE_RECOVERY_TABLE = table(
   { idKind: 'natural', natural: { is: isMuscleRecoveryId, expected: (row) => expectedMuscleRecoveryId(row) }, titleSource: { kind: 'own', column: 'muscle_id' } },
 );
 
-/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+/**
+ * Catalogue I6-01 (§ 16.7, § 20.2, migration 0011, schéma 11) : `recovery_factor`, journal de facteurs, écrit par les DEUX appareils. Identifiant naturel
+ * `recovery_factor|AAAA-MM-JJ` (la veille du matin de saisie). Fusion champ par champ par HLC, dernière écriture gagne : deux saisies différentes du même
+ * jour convergent sur la plus récente. Les facteurs (alcool, stress, maladie...) sont des habitudes de vie : masqués du journal des conflits, seule la
+ * suppression y est visible. « Rien de particulier » (`none` = 1, tableau vide) est distinct d'un jour non renseigné (ligne absente ou supprimée).
+ */
+const RECOVERY_FACTOR_TABLE = table(
+  'recovery_factor',
+  [c('date', 'date', false, hidden), c('factors', 'json', false, hidden), bool('none', hidden), createdAt, deletedAt],
+  { idKind: 'natural', natural: { is: isRecoveryFactorId, expected: (row) => expectedRecoveryFactorId(row) }, titleSource: { kind: 'own', column: 'date' } },
+);
+
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   tables: [
     PROFILE_TABLE,
@@ -716,6 +730,7 @@ export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
     RECIPE_INGREDIENT_TABLE,
     RECOVERY_DAY_TABLE,
     MUSCLE_RECOVERY_TABLE,
+    RECOVERY_FACTOR_TABLE,
   ],
   order: SYNC_TABLE_ORDER,
 });

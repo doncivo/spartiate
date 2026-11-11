@@ -259,4 +259,6 @@ export const syncFieldFr = {
   // I5-01 : résumés de récupération, estimations masquées du journal des conflits (aucune valeur corporelle) ; seule la suppression y figure.
   recovery_day: { deleted_at: 'suppression' },
   muscle_recovery: { deleted_at: 'suppression' },
+  // I6-01 : journal de facteurs, habitudes de vie masquées du journal des conflits ; seule la suppression y figure.
+  recovery_factor: { deleted_at: 'suppression' },
 } as const;

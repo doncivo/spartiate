@@ -100,7 +100,8 @@ export type SyncReportTable =
   | 'recipe'
   | 'recipe_ingredient'
   | 'recovery_day'
-  | 'muscle_recovery';
+  | 'muscle_recovery'
+  | 'recovery_factor';
 
 /** Compteurs seulement (jamais le contenu d'une ligne) : bilan de l'export des journaux. */
 export interface SyncDiagnostics {
