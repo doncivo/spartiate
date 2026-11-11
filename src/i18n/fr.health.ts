@@ -5,8 +5,9 @@
 export const healthFr = {
   row: 'Apple Santé',
   rowValue: 'lecture seule',
-  /** Valeur de la ligne de Plus quand Santé n'est pas accessible (entitlement absent, compte Apple gratuit). */
-  rowValueUnavailable: 'non disponible',
+  /** Ligne de Plus quand Santé n'est pas accessible (entitlement absent, compte Apple gratuit) : les données arrivent par Raccourcis (FIX-0115). */
+  rowValueViaShortcuts: 'via Raccourcis',
+  rowValueViaShortcutsAt: 'via Raccourcis · dernier import {time}',
   title: 'Apple Santé',
   back: 'Retour',
   intro: 'Spartiate lit ton poids et tes pas dans Santé, en lecture seule. Rien n’est écrit dans Santé. Aucune donnée n’est envoyée à un service tiers ; les résumés passent par ta synchro chiffrée.',
