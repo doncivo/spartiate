@@ -18,7 +18,7 @@ import { localToUtcMs, utcToLocal } from '../../../domain/timeZone';
 import type { LocalDate } from '../../../domain/types';
 import type { RecoveryRepository } from '../../../db/repositories/recoveryRepository';
 import type { RecoverySampleInput, RecoverySampleRepository, RecoverySampleType } from '../../../db/repositories/recoverySampleRepository';
-import { SHORTCUT_FILE_NAMES, ShortcutFolderError, type ShortcutFileName, type ShortcutFileRead, type ShortcutFilesReader } from '../../../platform/shortcutFiles';
+import { SHORTCUT_FILE_NAMES, ShortcutFolderError, type ShortcutFileName, type ShortcutFileRead, type ShortcutFilesReader, type ShortcutSanteListError } from '../../../platform/shortcutFiles';
 
 /**
  * Import des fichiers Raccourcis et recalcul de la récupération (I5-01 points 1.3 et 1.6, D-69). Sans E/S directe : lecteur de fichiers, dépôts,
@@ -40,6 +40,7 @@ export const IMPORT_LOG_EVENTS = [
   'recovery-import-run-failed',
   'recovery-import-diag-folder',
   'recovery-import-diag-entry',
+  'recovery-import-rules-recompute',
   'recovery-import-diag-file',
   'recovery-import-file',
   'recovery-import-file-absent',
@@ -85,6 +86,8 @@ export interface ImportRunResult {
   readonly at: string | null;
   /** I5-05 : ce qui a lancé la lecture (dossier ou sélecteur), pour dire d'où vient « absent » ; absent des résultats sans lecture. */
   readonly trigger?: ImportTrigger;
+  /** I5-06 : raison de l'échec de liste du dossier sante (lecture automatique), pour la phrase « illisible ». */
+  readonly folderIssue?: Exclude<ShortcutSanteListError, ''>;
 }
 
 export interface ShortcutImportDeps {
@@ -101,6 +104,8 @@ export interface ShortcutImportDeps {
   readonly timeZone: string;
   readonly log: ImportLog;
   /** I5-02 (point 2.3) : appelé après un recalcul réussi (heure de coucher proposée, replanification des notifications) ; un échec est sans effet sur l'import. */
+  /** I5-06 : version de la règle du sommeil des résumés déjà calculés (réglage local) ; absente : pas de recalcul forcé. */
+  readonly rules?: { readonly get: () => Promise<number | null>; readonly set: (version: number) => Promise<void> };
   readonly afterRecompute?: (info: { readonly today: string; readonly nights: readonly NightRecord[]; readonly exertionToday: number }) => Promise<unknown>;
 }
 
@@ -112,6 +117,10 @@ export interface ShortcutImportService {
 
 const TYPE_OF: Readonly<Record<ShortcutFileName, RecoverySampleType>> = { 'hrv.csv': 'hrv', 'fc-repos.csv': 'fc-repos', 'sommeil.csv': 'sommeil', 'pas.csv': 'pas' };
 const MAX_DIAG_ENTRIES = 5;
+const LIST_ERR_CODE: Readonly<Record<ShortcutSanteListError, number>> = { '': 0, 'not-found': 1, 'unsafe-name': 2, cloud: 3, io: 4 };
+
+/** Version de la règle du sommeil (I5-06 : nuit = plus long épisode, siestes et blocs « Au lit » ignorés). Un changement recalcule une fois les 30 derniers jours. */
+export const SLEEP_RULES_VERSION = 2;
 const RECOMPUTE_DAYS = 30;
 const SAMPLE_WINDOW_DAYS = 60;
 const WORKOUT_WINDOW_DAYS = 45;
@@ -176,7 +185,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     }
   }
 
-  async function recompute(samples: RecoverySampleRepository, today: string, now: string): Promise<number> {
+  async function recompute(samples: RecoverySampleRepository, today: string, now: string, force: boolean): Promise<number> {
     const tz = deps.timeZone;
     const from = new Date(Date.parse(now) - SAMPLE_WINDOW_DAYS * DAY_MS).toISOString();
     const [sleep, hrv, rhr] = await Promise.all([samples.listWindow('sommeil', from, now), samples.listWindow('hrv', from, now), samples.listWindow('fc-repos', from, now)]);
@@ -213,7 +222,8 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     for (let k = 2; k < RECOMPUTE_DAYS; k += 1) {
       const day = shiftDay(today, -k);
       const at = computedAt.get(day);
-      const wanted = at === undefined ? dataDays.has(day) : stale(day, at);
+      // `force` (règle du sommeil changée, I5-06) : tout jour déjà calculé ou ayant des données est recalculé.
+      const wanted = force ? at !== undefined || dataDays.has(day) : at === undefined ? dataDays.has(day) : stale(day, at);
       if (wanted) days.push(day);
     }
     let exertionToday = 0;
@@ -228,6 +238,26 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       deps.log('recovery-import-after-failed', {});
     }
     return days.length;
+  }
+
+  /** La règle du sommeil des résumés déjà calculés est-elle plus ancienne que la courante ? Une lecture en échec ne bloque jamais l'import. */
+  async function rulesOutdated(): Promise<boolean> {
+    if (deps.rules === undefined) return false;
+    try {
+      const stored = await deps.rules.get();
+      return stored === null || stored < SLEEP_RULES_VERSION;
+    } catch {
+      return false;
+    }
+  }
+
+  async function markRulesCurrent(): Promise<void> {
+    try {
+      await deps.rules?.set(SLEEP_RULES_VERSION);
+      deps.log('recovery-import-rules-recompute', { version: SLEEP_RULES_VERSION });
+    } catch {
+      /* la version n'est pas notée : le recalcul sera refait à l'import suivant */
+    }
   }
 
   /** Une lecture automatique a-t-elle eu lieu il y a moins de 30 minutes (cette session, ou dernier import gardé en base) ? */
@@ -254,6 +284,8 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
         root_entries: probe.rootEntries,
         sante_entries: probe.santeEntries,
         sante_hydrated: probe.santeHydrated ? 1 : 0,
+        // 0 aucune, 1 absent, 2 nom refusé par la garde de chemin, 3 nuage, 4 autre.
+        sante_list_err: LIST_ERR_CODE[probe.santeListError],
       });
       // Une entrée de la racine par événement, en codes (disponibilité : 0 locale, 1 nuage, 2 erreur) ; 5 au plus : deux appuis dans la même minute tiennent sous la limite de 10 par minute du journal.
       for (const [index, entry] of probe.rootProbe.slice(0, MAX_DIAG_ENTRIES).entries()) {
@@ -313,7 +345,9 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
         deps.log('recovery-import-purge-failed', {});
       }
       try {
-        recomputedDays = await recompute(samples, today, at);
+        const force = await rulesOutdated();
+        recomputedDays = await recompute(samples, today, at, force);
+        if (force) await markRulesCurrent();
         deps.log('recovery-import-recompute', { days: recomputedDays });
       } catch {
         recomputeFailed = true;
@@ -322,7 +356,8 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     }
     const count = (state: FileOutcome['state']): number => files.filter((f) => f.state === state).length;
     deps.log('recovery-import-done', { files: files.length, imported: count('imported'), absent: count('absent'), unreadable: count('unreadable'), failed: count('failed') });
-    return { status: 'done', files, recomputedDays, recomputeFailed, at };
+    const issue = source.probe?.()?.santeListError ?? '';
+    return { status: 'done', files, recomputedDays, recomputeFailed, at, ...(issue === '' ? {} : { folderIssue: issue }) };
   }
 
   return {

@@ -163,11 +163,11 @@ describe('buildSleepNights', () => {
     expect(ignoredGroups).toBe(1);
   });
 
-  it('sans aucun segment endormi (« Au lit » seul) la durée de sommeil reste null, jamais 0', () => {
+  it('sans aucun segment endormi (« Au lit » seul) : aucune nuit, jamais une durée de 0 (I5-06)', () => {
     const { segments } = parseShortcutSleep('2026-11-07T23:00:00+01:00;2026-11-08T06:00:00+01:00;Au lit', TODAY, TZ);
-    const { nights } = buildSleepNights(segments, TZ);
-    expect(nights[0]?.asleepMinutes).toBeNull();
-    expect(nights[0]?.inBedMinutes).toBe(420);
+    const { nights, ignoredGroups } = buildSleepNights(segments, TZ);
+    expect(nights).toEqual([]);
+    expect(ignoredGroups).toBe(1);
   });
 
   it('changement d’heure (nuit du 24 au 25 octobre 2026, Paris, 3 h → 2 h) : durée réelle 8 h, jour du réveil', () => {
