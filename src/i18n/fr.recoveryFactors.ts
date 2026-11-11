@@ -12,7 +12,7 @@ export const recoveryFactorsFr = {
   unusualDisclaimer: 'Estimation à partir de tes données, pas un avis médical.',
 
   journalLegend: 'Hier ({date}) : qu’est-ce qui a compté ?',
-  journalHint: 'Facultatif, modifiable toute la journée. Ces cases restent sur tes appareils et nulle part ailleurs.',
+  journalHint: 'Facultatif, modifiable toute la journée. Ces cases ne sont envoyées à aucun service ; elles passent d’un appareil à l’autre par ta synchro chiffrée.',
   statusUnset: 'Non renseigné',
   statusNone: 'Rien de particulier noté',
   statusSome: 'Noté : {list}',

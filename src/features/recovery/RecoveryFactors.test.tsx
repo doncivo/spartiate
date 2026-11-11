@@ -215,7 +215,7 @@ describe('Progrès › Récupération : écart de Recovery avec / sans facteur (
   it('30 jours et 5 occurrences : écart moyen avec / sans, avec n, et la mention « association observée, pas une cause »', async () => {
     await seed(35, 4, -12);
     mountProgress();
-    const item = await screen.findByRole('listitem', { name: /Alcool/ });
+    const item = (await screen.findByText('Alcool', { selector: 'strong' })).closest('li') as HTMLElement;
     expect(item).toHaveTextContent(/9 jours avec/);
     expect(item).toHaveTextContent(/26 jours sans/);
     expect(item).toHaveTextContent(/58/);

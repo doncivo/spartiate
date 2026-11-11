@@ -153,7 +153,6 @@ export function RecoveryProgress() {
               return (
                 <li
                   key={a.factor}
-                  aria-label={tRecoveryFactors(FACTOR_TEXT[a.factor])}
                   className="ct-today__text"
                 >
                   <strong>{tRecoveryFactors(FACTOR_TEXT[a.factor])}</strong>

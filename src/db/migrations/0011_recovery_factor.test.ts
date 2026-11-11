@@ -58,7 +58,7 @@ describe('migration 0011 : journal de facteurs (I6-01, schéma 11)', () => {
     await db.close();
   });
 
-  it('identifiant « recovery_factor| » + date, une ligne par date, tableau JSON de huit éléments au plus, « rien de particulier » sans facteur', async () => {
+  it('identifiant « recovery_factor| » + date, une ligne par date, tableau JSON de 32 éléments au plus ; la cohérence « rien de particulier » / facteurs est tranchée à la lecture (relecture D-26, A1)', async () => {
     const db = await freshDb();
     const bad: Row[] = [
       { id: 'recovery_factor|2026-11-10' },
@@ -68,16 +68,14 @@ describe('migration 0011 : journal de facteurs (I6-01, schéma 11)', () => {
       { factors: 'pas du json' },
       { factors: '{"a":1}' },
       { factors: null },
-      { factors: '["a","b","c","d","e","f","g","h","i"]' },
+      { factors: JSON.stringify(Array.from({ length: 33 }, (_, i) => 'f' + String(i))) },
       { none: 2 },
       { none: null },
-      { none: '1' },
-      { none: 1 }, // « rien de particulier » ET des facteurs : incohérent
       { device_id: null },
       { hlc: null },
       { created_at: null },
     ];
-    for (const over of bad) await expect(insert(db, factor(over)), JSON.stringify(over)).rejects.toThrow();
+    for (const over of bad) await expect(insert(db, factor(over)), JSON.stringify(over).slice(0, 80)).rejects.toThrow();
     await insert(db, factor());
     await expect(insert(db, factor({ id: 'recovery_factor|2026-11-09' }))).rejects.toThrow();
     await insert(db, factor({ id: 'recovery_factor|2026-11-10', date: '2026-11-10', factors: '[]', none: 1 }));

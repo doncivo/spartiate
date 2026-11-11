@@ -227,6 +227,7 @@ export function RecoveryToday() {
   const [resetEpoch, setResetEpoch] = useState(0);
   const queue = useRef<Promise<void>>(Promise.resolve());
   const pending = useRef(0);
+  const batchFailed = useRef(false);
   const today = todayLocal(container.clock);
 
   useEffect(() => {
@@ -278,15 +279,15 @@ export function RecoveryToday() {
         if (next === null) await repo.clear(day);
         else await repo.save(day, next);
       } catch {
-        setFactorFailed(true);
-        setResetEpoch((n) => n + 1);
-        pending.current = 0;
-        setAttempt((n) => n + 1);
-        return;
+        // Le compteur n'est jamais remis à zéro : les saisies déjà en file se décomptent toutes (il ne devient jamais négatif).
+        batchFailed.current = true;
       }
       pending.current -= 1;
       if (pending.current === 0) {
-        setFactorFailed(false);
+        // File vidée : l'alerte reflète le lot qui vient de finir (un échec dans le lot), puis l'écran relit l'état enregistré.
+        setFactorFailed(batchFailed.current);
+        if (batchFailed.current) setResetEpoch((n) => n + 1);
+        batchFailed.current = false;
         setAttempt((n) => n + 1);
       }
     });
