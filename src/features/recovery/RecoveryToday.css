@@ -113,3 +113,45 @@
 .ct-recovery__disclaimer {
   font-style: italic;
 }
+
+/* Journal de facteurs (I6-01) : cases d'au moins 44 pt, libellés en texte ; carte « valeurs inhabituelles » : bordure d'alerte, jamais la couleur seule. */
+.ct-factors {
+  margin: 0;
+  min-width: 0;
+}
+
+.ct-factors__group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--ct-space-1) var(--ct-space-3);
+}
+
+.ct-factors__option {
+  min-height: var(--ct-hit-target-min);
+  display: flex;
+  align-items: center;
+  gap: var(--ct-space-2);
+  font-size: var(--ct-font-size-text-sm);
+  color: var(--ct-color-text);
+  cursor: pointer;
+}
+
+.ct-factors__option input {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  accent-color: var(--ct-color-bronze);
+}
+
+.ct-unusual {
+  border: 1px solid var(--ct-color-warning-border);
+}
+
+.ct-progress-factors__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+}

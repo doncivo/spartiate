@@ -85,7 +85,7 @@ describe('carte « valeurs inhabituelles, repos conseillé » (A)', () => {
     for (const os of ['ios', 'other'] as const) {
       const view = mount(os);
       const card = await screen.findByRole('region', { name: CARD });
-      expect(within(card).getByText(/VFC basse/i)).toBeInTheDocument();
+      expect(within(card).getByText(/HRV basse/i)).toBeInTheDocument();
       expect(card.textContent ?? '').toMatch(/pas un avis médical/i);
       expect(card.textContent ?? '').not.toMatch(/maladie|malade|infection|diagnostic :/i);
       view.unmount();
