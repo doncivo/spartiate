@@ -46,6 +46,19 @@ export interface ShortcutFolderProbe {
   readonly devicesPresent: boolean;
   readonly rootEntries: number;
   readonly santeEntries: number;
+  /** I5-05 : `sante` était un substitut iCloud (listé comme un fichier dans le nuage) et son téléchargement a été demandé. */
+  readonly santeHydrated: boolean;
+  /** I5-05 : une entrée de la racine liée, par ordre de listage, en codes fixes (jamais un nom). */
+  readonly rootProbe: readonly ShortcutRootEntryProbe[];
+}
+
+/** Une entrée de la racine liée : dossier ou non, disponibilité, égalités de nom (`devices`, `sante` exact, `sante` normalisé). */
+export interface ShortcutRootEntryProbe {
+  readonly isDir: boolean;
+  readonly availability: 'local' | 'cloud' | 'error';
+  readonly eqDevices: boolean;
+  readonly eqSanteExact: boolean;
+  readonly eqSanteFolded: boolean;
 }
 
 export interface ShortcutFilesReader {
@@ -99,7 +112,8 @@ export function createPickerShortcutFiles(pick: () => Promise<readonly File[] | 
           continue;
         }
         try {
-          reads.push({ name, state: 'ok', text: decodeTextBytes(new Uint8Array(await file.arrayBuffer())) });
+          // I5-05 point 5 : la taille réelle du fichier choisi, pour le diagnostic (jamais 0).
+          reads.push({ name, state: 'ok', text: decodeTextBytes(new Uint8Array(await file.arrayBuffer())), size: file.size });
         } catch {
           reads.push({ name, state: 'unreadable' });
         }
@@ -138,7 +152,24 @@ function probeOf(raw: unknown): ShortcutFolderProbe | null {
   const folder = typeof raw === 'object' && raw !== null ? (raw as { folder?: unknown }).folder : undefined;
   if (typeof folder !== 'object' || folder === null) return null;
   const f = folder as Record<string, unknown>;
-  return { rootListed: f.rootListed === true, santePresent: f.santePresent === true, santeListed: f.santeListed === true, devicesPresent: f.devicesPresent === true, rootEntries: count(f.rootEntries), santeEntries: count(f.santeEntries) };
+  const entries = Array.isArray(f.rootProbe) ? (f.rootProbe as unknown[]) : [];
+  const rootProbe = entries.flatMap((raw): ShortcutRootEntryProbe[] => {
+    if (typeof raw !== 'object' || raw === null) return [];
+    const e = raw as Record<string, unknown>;
+    // Que des codes : tout autre champ (un nom, par exemple) est ignoré.
+    const availability = e.availability === 'local' || e.availability === 'cloud' ? e.availability : 'error';
+    return [{ isDir: e.isDir === true, availability, eqDevices: e.eqDevices === true, eqSanteExact: e.eqSanteExact === true, eqSanteFolded: e.eqSanteFolded === true }];
+  });
+  return {
+    rootListed: f.rootListed === true,
+    santePresent: f.santePresent === true,
+    santeListed: f.santeListed === true,
+    devicesPresent: f.devicesPresent === true,
+    rootEntries: count(f.rootEntries),
+    santeEntries: count(f.santeEntries),
+    santeHydrated: f.santeHydrated === true,
+    rootProbe,
+  };
 }
 
 export function createFolderShortcutFiles(invoke: FolderInvoker = tauriInvoker): ShortcutFilesReader {

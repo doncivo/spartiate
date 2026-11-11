@@ -42,7 +42,7 @@ export function summarizeRecoveryDay(input: RecoveryDayInput): RecoveryDayOutput
   const exertionToday = dayExertion(input.workouts, input.today, input.timeZone);
   const exertionPrev = dayExertion(input.workouts, shiftDay(input.today, -1), input.timeZone);
   const debtFrom = shiftDay(input.today, -cfg.sleep.debtDays);
-  const previousAsleep = nights.filter((n) => n.day >= debtFrom && n.day < input.today && n.asleepMinutes !== null).map((n) => n.asleepMinutes as number);
+  const previousAsleep = nights.filter((n) => n.day >= debtFrom && n.day < input.today && n.asleepMinutes !== null && n.asleepMinutes >= cfg.validNightMinAsleepMinutes).map((n) => n.asleepMinutes as number);
   const need = sleepNeed({ exertionPrevDay: exertionPrev.value, previousAsleepMinutes: previousAsleep });
 
   const sleepMinutes = tonight?.asleepMinutes ?? null;

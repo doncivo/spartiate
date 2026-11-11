@@ -98,7 +98,7 @@ export function RecoveryImportSection({ reader, fallback }: { readonly reader?: 
           <p className="ct-body__hint">{tHealth('recHint')}</p>
           <p className="ct-body__hint">{tHealth('recPickHint')}</p>
           {TYPES.map(({ type, label }) => (
-            <TypeRow key={type} label={tHealth(label)} state={states.find((s) => s.type === type) ?? null} outcome={run?.files.find((f) => f.type === type) ?? null} />
+            <TypeRow key={type} label={tHealth(label)} state={states.find((s) => s.type === type) ?? null} outcome={run?.files.find((f) => f.type === type) ?? null} run={run} />
           ))}
           <Button className="ct-body__save" disabled={busy} onClick={() => void importNow('manual')}>
             {busy ? tHealth('recImporting') : tHealth('recImportNow')}
@@ -118,7 +118,18 @@ export function RecoveryImportSection({ reader, fallback }: { readonly reader?: 
   );
 }
 
-function TypeRow({ label, state, outcome }: { readonly label: string; readonly state: RecoveryImportState | null; readonly outcome: FileOutcome | null }) {
+/**
+ * Phrase d'absence d'un type (I5-05 point 4) : celle d'origine tant que rien n'a jamais été importé pour ce type ; sinon l'heure et l'origine de la
+ * lecture qui n'a rien trouvé, sans contredire les comptes du dernier import réussi affichés dessous.
+ */
+function absentText(state: RecoveryImportState | null, run: ImportRunResult | null): string {
+  const time = run?.at ? utcToLocal(run.at, detectTimeZone() ?? 'Europe/Paris').time : null;
+  if (time !== null && run?.trigger === 'pick') return tHealth('recAbsentPick', { time });
+  if (time !== null && state !== null) return tHealth('recAbsentAuto', { time });
+  return tHealth('recAbsent');
+}
+
+function TypeRow({ label, state, outcome, run }: { readonly label: string; readonly state: RecoveryImportState | null; readonly outcome: FileOutcome | null; readonly run: ImportRunResult | null }) {
   const imported = outcome?.state === 'imported' ? outcome : null;
   const counts = imported ?? state;
   const rejectedTotal = imported ? imported.rejectedTotal : (state?.rejected ?? 0);
@@ -127,7 +138,7 @@ function TypeRow({ label, state, outcome }: { readonly label: string; readonly s
     <div className="ct-body__hint">
       <strong>{label}</strong>
       <p>{state === null ? tHealth('recNever') : lastImportText(state)}</p>
-      {outcome?.state === 'absent' && <p>{tHealth('recAbsent')}</p>}
+      {outcome?.state === 'absent' && <p>{absentText(state, run)}</p>}
       {outcome?.state === 'unreadable' && <p>{tHealth('recUnreadable')}</p>}
       {outcome?.state === 'failed' && (
         <p role="alert">{tHealth('recFailed')}</p>

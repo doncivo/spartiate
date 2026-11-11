@@ -34,7 +34,9 @@ l’ordre (barre de recherche « Rechercher des actions ») :
    2. **Texte**, avec exactement : *Date formatée* `;` *Élément de répétition › Valeur* `;` *Élément de répétition › Unité*
       (trois variables séparées par un point-virgule, sans espace)
 3. Après **Fin de la répétition** : **Combiner le texte** · *Résultats de la répétition* · avec **Nouvelles lignes**
-4. **Enregistrer le fichier**
+4. **Définir le nom** (entre Combiner et Enregistrer)
+   - Nom : le nom complet du fichier du bloc (ici `poids.csv`) ; active **Ne pas inclure d’extension de fichier** : sans cela Raccourcis ajoute `.txt` (`hrv.csv.txt`) et Spartiate ne trouve pas le fichier
+5. **Enregistrer le fichier**
    - Fichier : *Texte combiné*
    - Désactive **Demander où enregistrer**
    - Destination : **iCloud Drive** · sous-chemin : `Spartiate/sante/poids.csv`
@@ -81,6 +83,8 @@ Règles communes :
 - Pas d’en-tête, pas de colonne d’unité : deux colonnes pour HRV, FC de repos et pas ; trois pour le sommeil.
 - Un fichier vide est normal s’il n’y a aucune donnée sur 30 jours : ce n’est pas une erreur.
 
+**Réglage iOS à faire une fois (parties A et B)** : Réglages › Raccourcis › Avancé › active **Autoriser le partage de grandes quantités de données** (nom à vérifier sur ton iPhone). À faire avant le premier essai : les fichiers de 30 jours (HRV, pas) sont volumineux.
+
 ### B.1 Créer le raccourci « Spartiate — récupération »
 
 Dans **Raccourcis** → onglet **Raccourcis** → **+** → nomme-le « Spartiate — récupération ». Le raccourci contient **quatre blocs
@@ -95,7 +99,9 @@ Pour chaque bloc :
    - Trier par : **Date de début** · Ordre : **Plus ancien en premier**
 2. **Répéter avec chaque** (élément : *Échantillons Santé*). À l’intérieur de la boucle : voir le détail par bloc ci-dessous.
 3. Après **Fin de la répétition** : **Combiner le texte** · *Résultats de la répétition* · avec **Nouvelles lignes**
-4. **Enregistrer le fichier**
+4. **Définir le nom** (entre Combiner et Enregistrer)
+   - Nom : le nom complet du fichier du bloc (ex. `hrv.csv`) ; active **Ne pas inclure d’extension de fichier** : sans cela Raccourcis ajoute `.txt` (`hrv.csv.txt`) et Spartiate ne trouve pas le fichier
+5. **Enregistrer le fichier**
    - Fichier : *Texte combiné*
    - Désactive **Demander où enregistrer**
    - Destination : **iCloud Drive** · sous-chemin : le nom du fichier du bloc, dans `Spartiate/sante/` (ex. `Spartiate/sante/hrv.csv`)
@@ -105,8 +111,13 @@ Pour chaque bloc :
 | --- | --- | --- |
 | 1 | Variabilité de la fréquence cardiaque | `Spartiate/sante/hrv.csv` |
 | 2 | Fréquence cardiaque au repos | `Spartiate/sante/fc-repos.csv` |
-| 3 | Analyse du sommeil | `Spartiate/sante/sommeil.csv` |
+| 3 | Sommeil | `Spartiate/sante/sommeil.csv` |
 | 4 | Pas | `Spartiate/sante/pas.csv` |
+
+**Réglages propres à chaque type (nom des options à vérifier sur ton iPhone) :**
+
+- **Sommeil** (bloc 3) : choisis le type **Sommeil** (et non un autre type voisin).
+- **Pas** (bloc 4) : dans **Rechercher des échantillons Santé**, règle **Grouper par : Jour** (un total par jour) ; dans **Enregistrer le fichier**, laisse **Fichier manquant** désactivé.
 
 **Blocs 1, 2 et 4 (HRV, FC de repos, pas) — à l’intérieur de la boucle :**
 

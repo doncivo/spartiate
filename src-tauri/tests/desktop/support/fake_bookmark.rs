@@ -67,6 +67,8 @@ pub struct FakeState {
     pub faults: Option<Armed>,
     /// Évictions décidées à la lecture (début du fichier), exécutées à la fin du fichier.
     pub evict_pending: BTreeSet<String>,
+    /// I5-05 : dossiers iCloud non matérialisés (clé du dossier, contenu et durée du téléchargement) : seul le substitut `.<nom>.icloud` est listé.
+    pub cloud_dirs: BTreeMap<String, (Vec<(String, Vec<u8>)>, u64)>,
     /// Suppressions acceptées mais non propagées : le nœud revient sous sa clé après `left` appels de `advance_cycle`.
     pub back: Vec<Back>,
 }
@@ -159,6 +161,7 @@ impl FakePlugin {
                 calls: Vec::new(),
                 faults: None,
                 evict_pending: BTreeSet::new(),
+                cloud_dirs: BTreeMap::new(),
                 back: Vec::new(),
             }),
             clock,
@@ -214,6 +217,33 @@ impl FakePlugin {
                 delay_ms: 0,
                 download_error: false,
             },
+        );
+    }
+
+    /// I5-05 : dossier resté dans le nuage : seul le substitut `.<nom>.icloud` est listé (sous le nom réel, `isDir` faux, `cloud`) ; `download`
+    /// le matérialise avec ses fichiers, après `delay_ms` (au-delà du délai accordé : `cloud-pending`, le substitut reste).
+    pub fn put_cloud_dir(&self, parts: &[&str], children: &[(&str, &[u8])], delay_ms: u64) {
+        self.mkdir(&parts[..parts.len() - 1]);
+        let path: Vec<String> = parts.iter().map(|p| (*p).to_owned()).collect();
+        let mut state = self.state.lock().unwrap();
+        state.nodes.insert(
+            placeholder_key(&path),
+            Node::File {
+                bytes: Vec::new(),
+                cloud: true,
+                delay_ms,
+                download_error: false,
+            },
+        );
+        state.cloud_dirs.insert(
+            parts.join("/"),
+            (
+                children
+                    .iter()
+                    .map(|(n, b)| ((*n).to_owned(), b.to_vec()))
+                    .collect(),
+                delay_ms,
+            ),
         );
     }
 
@@ -651,6 +681,30 @@ impl FakePlugin {
                 // Y-TECH-03 : fichier évincé (seul le substitut `.<nom>.icloud` reste) : télécharger le rend sous son vrai nom, local.
                 // Panne du plan `download-error` : comptée seulement si le téléchargement est tenté.
                 let stub = placeholder_key(&path);
+                if !state.nodes.contains_key(&file) && state.cloud_dirs.contains_key(&file) {
+                    // I5-05 : dossier iCloud non matérialisé : le téléchargement le rend local avec son contenu.
+                    let delay = state.cloud_dirs[&file].1;
+                    if delay > timeout {
+                        self.clock.fetch_add(timeout, Ordering::SeqCst);
+                        return reject("cloud-pending");
+                    }
+                    self.clock.fetch_add(delay, Ordering::SeqCst);
+                    let (children, _) = state.cloud_dirs.remove(&file).unwrap_or_default();
+                    state.nodes.remove(&stub);
+                    state.nodes.insert(file.clone(), Node::Dir);
+                    for (name, bytes) in children {
+                        state.nodes.insert(
+                            format!("{file}/{name}"),
+                            Node::File {
+                                bytes,
+                                cloud: false,
+                                delay_ms: 0,
+                                download_error: false,
+                            },
+                        );
+                    }
+                    return ok(json!({}));
+                }
                 if !state.nodes.contains_key(&file) {
                     if let Some(Node::File {
                         bytes,

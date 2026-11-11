@@ -39,6 +39,7 @@ export const IMPORT_LOG_EVENTS = [
   'recovery-import-done',
   'recovery-import-run-failed',
   'recovery-import-diag-folder',
+  'recovery-import-diag-entry',
   'recovery-import-diag-file',
   'recovery-import-file',
   'recovery-import-file-absent',
@@ -82,6 +83,8 @@ export interface ImportRunResult {
   readonly recomputeFailed: boolean;
   /** Instant de fin du lancement (ISO UTC), pour l'écran. */
   readonly at: string | null;
+  /** I5-05 : ce qui a lancé la lecture (dossier ou sélecteur), pour dire d'où vient « absent » ; absent des résultats sans lecture. */
+  readonly trigger?: ImportTrigger;
 }
 
 export interface ShortcutImportDeps {
@@ -108,6 +111,7 @@ export interface ShortcutImportService {
 }
 
 const TYPE_OF: Readonly<Record<ShortcutFileName, RecoverySampleType>> = { 'hrv.csv': 'hrv', 'fc-repos.csv': 'fc-repos', 'sommeil.csv': 'sommeil', 'pas.csv': 'pas' };
+const MAX_DIAG_ENTRIES = 5;
 const RECOMPUTE_DAYS = 30;
 const SAMPLE_WINDOW_DAYS = 60;
 const WORKOUT_WINDOW_DAYS = 45;
@@ -249,7 +253,19 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
         devices_present: probe.devicesPresent ? 1 : 0,
         root_entries: probe.rootEntries,
         sante_entries: probe.santeEntries,
+        sante_hydrated: probe.santeHydrated ? 1 : 0,
       });
+      // Une entrée de la racine par événement, en codes (disponibilité : 0 locale, 1 nuage, 2 erreur) ; 5 au plus : deux appuis dans la même minute tiennent sous la limite de 10 par minute du journal.
+      for (const [index, entry] of probe.rootProbe.slice(0, MAX_DIAG_ENTRIES).entries()) {
+        deps.log('recovery-import-diag-entry', {
+          index,
+          is_dir: entry.isDir ? 1 : 0,
+          avail: entry.availability === 'local' ? 0 : entry.availability === 'cloud' ? 1 : 2,
+          eq_devices: entry.eqDevices ? 1 : 0,
+          eq_sante_exact: entry.eqSanteExact ? 1 : 0,
+          eq_sante_folded: entry.eqSanteFolded ? 1 : 0,
+        });
+      }
     }
     for (const [index, read] of reads.entries()) {
       const state = read.state === 'ok' ? 1 : read.state === 'absent' ? 0 : read.cloud === true ? 2 : 3;
@@ -333,7 +349,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
           return { ...none, status: 'throttled' };
         }
         lastAttemptMs = deps.clock.nowMs();
-        const result = await execute(trigger === 'pick' ? (deps.fallback ?? deps.reader) : deps.reader);
+        const result: ImportRunResult = { ...(await execute(trigger === 'pick' ? (deps.fallback ?? deps.reader) : deps.reader)), trigger };
         if (result.status === 'done') last = result;
         return result;
       } finally {
