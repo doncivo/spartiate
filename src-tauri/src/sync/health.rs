@@ -17,7 +17,7 @@ use std::time::Duration;
 use base64::{engine::general_purpose::STANDARD, Engine};
 use serde::Serialize;
 
-use super::files::{AppendMode, Chunk, FsError, Listing, SyncFs};
+use super::files::{AppendMode, Availability, Chunk, FsEntry, FsError, Listing, SyncFs};
 use super::names::DEVICES_DIR;
 use super::{fail, SyncCode, SyncResult};
 
@@ -59,7 +59,29 @@ pub struct HealthFolder {
     pub devices_present: bool,
     pub root_entries: u32,
     pub sante_entries: u32,
+    /// I5-05 : `sante` était listé comme un substitut iCloud (fichier « dans le nuage ») et son téléchargement a été demandé.
+    pub sante_hydrated: bool,
+    /// I5-05 : une entrée de la racine, par ordre de listage (16 au plus), décrite par des codes fixes, jamais par son nom.
+    pub root_probe: Vec<RootEntryProbe>,
 }
+
+/// Une entrée de la racine liée vue par la sonde (I5-05) : des codes fixes seulement, aucun nom ni chemin.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RootEntryProbe {
+    pub is_dir: bool,
+    /// `local`, `cloud` (substitut iCloud, pas encore téléchargé) ou `error` (lien, état illisible).
+    pub availability: &'static str,
+    /// Nom égal à `devices`.
+    pub eq_devices: bool,
+    /// Nom égal à `sante`, octet pour octet.
+    pub eq_sante_exact: bool,
+    /// Nom égal à `sante` une fois normalisé (casse, accents, espaces et caractères invisibles ignorés).
+    pub eq_sante_folded: bool,
+}
+
+/// Entrées décrites au plus (la racine d'une synchro en compte quelques-unes).
+const MAX_PROBED_ENTRIES: usize = 16;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct HealthReport {
@@ -67,15 +89,62 @@ pub struct HealthReport {
     pub files: Vec<HealthFileRead>,
 }
 
-/// Nom sans casse ni accent (« Santé », « SANTE », « sante » + accent combinant) : le raccourci n'écrit pas toujours exactement `sante`.
+/// Nom normalisé : seuls les lettres et chiffres comptent, sans casse ni accent (« Santé », « SANTE », `sante` + accent combinant, espace,
+/// espace insécable, caractère invisible) : le raccourci n'écrit pas toujours exactement `sante`.
 fn fold(name: &str) -> String {
     name.chars()
-        .filter(|c| !matches!(c, '̀'..='̂'))
-        .map(|c| match c {
-            'é' | 'è' | 'ê' | 'É' | 'È' | 'Ê' => 'e',
-            c => c.to_ascii_lowercase(),
+        .filter_map(|c| match c {
+            '\u{300}'..='\u{36f}' => None,
+            'é' | 'è' | 'ê' | 'ë' | 'É' | 'È' | 'Ê' | 'Ë' => Some('e'),
+            c if c.is_ascii_alphanumeric() => Some(c.to_ascii_lowercase()),
+            _ => None,
         })
         .collect()
+}
+
+/// Décrit la racine (comptes, `devices`, une sonde par entrée).
+fn describe_root(folder: &mut HealthFolder, listing: &Listing) {
+    folder.root_listed = true;
+    folder.root_entries = listing.entries.len() as u32;
+    folder.devices_present = listing
+        .entries
+        .iter()
+        .any(|e| e.is_dir && e.name == DEVICES_DIR);
+    folder.root_probe = listing
+        .entries
+        .iter()
+        .take(MAX_PROBED_ENTRIES)
+        .map(|e| RootEntryProbe {
+            is_dir: e.is_dir,
+            availability: e.availability.as_str(),
+            eq_devices: e.name == DEVICES_DIR,
+            eq_sante_exact: e.name == HEALTH_DIR,
+            eq_sante_folded: fold(&e.name) == HEALTH_DIR,
+        })
+        .collect();
+}
+
+/// Le dossier `sante` de la racine, sous son vrai nom : le nom exact d'abord, puis une variante.
+fn health_dir_entry(listing: &Listing) -> Option<&FsEntry> {
+    let exact = listing
+        .entries
+        .iter()
+        .find(|e| e.is_dir && e.name == HEALTH_DIR);
+    exact.or_else(|| {
+        listing
+            .entries
+            .iter()
+            .find(|e| e.is_dir && fold(&e.name) == HEALTH_DIR)
+    })
+}
+
+/// Une entrée `sante` listée comme un fichier « dans le nuage » : le substitut d'un dossier iCloud pas encore téléchargé. Un vrai fichier local
+/// nommé `sante`, ou un lien, n'en est pas un.
+fn health_placeholder(listing: &Listing) -> Option<&FsEntry> {
+    listing
+        .entries
+        .iter()
+        .find(|e| !e.is_dir && e.availability == Availability::Cloud && fold(&e.name) == HEALTH_DIR)
 }
 
 /// Lit les fichiers demandés, dans l'ordre (voir `read_health_report`).
@@ -100,24 +169,28 @@ pub fn read_health_report(fs: &dyn SyncFs, names: &[String]) -> SyncResult<Healt
     let mut folder = HealthFolder::default();
     // Racine : le dossier `sante` sous son vrai nom, et la présence de `devices`.
     let mut dir = HEALTH_DIR.to_owned();
+    // Dossier iCloud non matérialisé (substitut listé comme un fichier `cloud`) dont le téléchargement n'a pas abouti dans le budget.
+    let mut dir_in_cloud = false;
     if let Ok(listing) = fs.list(&[], 256) {
-        folder.root_listed = true;
-        folder.root_entries = listing.entries.len() as u32;
-        folder.devices_present = listing
-            .entries
-            .iter()
-            .any(|e| e.is_dir && e.name == DEVICES_DIR);
-        let mut found = listing
-            .entries
-            .iter()
-            .filter(|e| e.is_dir && fold(&e.name) == HEALTH_DIR);
-        let first = found.next();
-        let exact = listing
-            .entries
-            .iter()
-            .find(|e| e.is_dir && e.name == HEALTH_DIR);
-        if let Some(entry) = exact.or(first) {
+        describe_root(&mut folder, &listing);
+        if let Some(entry) = health_dir_entry(&listing) {
             dir = entry.name.clone();
+        } else if let Some(placeholder) = health_placeholder(&listing) {
+            // I5-05 : le téléchargement d'un dossier passe par la même commande que celui d'un fichier (`readFrom` avec hydratation) ; la
+            // lecture qui suit échoue sur un dossier, sans importance : seul l'effet compte (le dossier devient local).
+            folder.sante_hydrated = true;
+            let name = placeholder.name.clone();
+            let outcome = fs.read_from(&[name.as_str()], 0, 1, true);
+            let _ = outcome;
+            dir_in_cloud = true;
+            dir = name;
+            if let Ok(again) = fs.list(&[], 256) {
+                describe_root(&mut folder, &again);
+                if let Some(entry) = health_dir_entry(&again) {
+                    dir_in_cloud = false;
+                    dir = entry.name.clone();
+                }
+            }
         }
     }
     // `sante` : ses entrées, pour retrouver les vrais noms et les tailles.
@@ -129,7 +202,11 @@ pub fn read_health_report(fs: &dyn SyncFs, names: &[String]) -> SyncResult<Healt
             listing.entries
         }
         // Illisible pour l'instant (nuage, coordination) : le dossier existe peut-être ; la lecture directe décide.
-        Err(FsError::NotFound) => Vec::new(),
+        Err(FsError::NotFound) => {
+            // Dossier iCloud encore dans le nuage (budget épuisé) : présent, pas encore listable.
+            folder.sante_present = dir_in_cloud;
+            Vec::new()
+        }
         Err(_) => {
             folder.sante_present = true;
             Vec::new()
@@ -149,6 +226,15 @@ pub fn read_health_report(fs: &dyn SyncFs, names: &[String]) -> SyncResult<Healt
                 });
             let actual = entry.map_or(name.as_str(), |e| e.name.as_str());
             let known = entry.map(|e| e.size).filter(|s| *s > 0);
+            if dir_in_cloud {
+                // Dossier pas encore téléchargé : « à télécharger », jamais « absent ».
+                return HealthFileRead {
+                    name: name.clone(),
+                    state: "cloud",
+                    size: None,
+                    bytes: None,
+                };
+            }
             let (state, size, bytes) =
                 match fs.read(&[dir.as_str(), actual], MAX_HEALTH_FILE_BYTES, true) {
                     Ok(bytes) => ("ok", Some(bytes.len() as u64), Some(STANDARD.encode(bytes))),

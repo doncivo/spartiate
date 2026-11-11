@@ -633,3 +633,305 @@ fn an_exact_file_name_wins_over_a_case_variant() {
         Some(STANDARD.encode(FILES[0].1).as_str())
     );
 }
+
+// --- I5-05 : « sante » présent dans Fichiers mais non reconnu par la lecture (constat d'Ali, 0.11.2) -------------------------------
+// Journal d'Ali : `root_listed=1 sante_present=0 sante_listed=0 devices_present=1 root_entries=4`, et la synchro voit une entrée en plus de
+// `devices` à la racine. Cause la plus plausible (non prouvée sans l'appareil) : l'entrée est listée comme un FICHIER dans le nuage
+// (substitut `.sante.icloud`, listé sous le nom `sante`, `is_dir` faux, `cloud`) ; la lecture ne cherchait que des dossiers. Pistes :
+// nom (invisible, espace, normalisation), entrée-fichier / placeholder, filtre de la synchro (`DevicesOnly`), autre racine.
+
+use spartiate_lib::sync::files::{Chunk, FsEntry, Listing};
+
+/// Racine dont `sante` est, tant que personne ne l'a téléchargé, un substitut iCloud : listé comme un fichier `cloud`, absent dessous.
+/// `read_from` avec `hydrate` sur ce nom le télécharge (même contrat que le plugin : `download` puis relecture, qui échoue sur un dossier).
+struct CloudSante {
+    inner: SharedFs,
+    dir_name: &'static str,
+    hydrated: std::sync::atomic::AtomicBool,
+    hydrate_calls: AtomicU64,
+}
+
+impl CloudSante {
+    fn new(inner: SharedFs, dir_name: &'static str) -> Self {
+        Self {
+            inner,
+            dir_name,
+            hydrated: std::sync::atomic::AtomicBool::new(false),
+            hydrate_calls: AtomicU64::new(0),
+        }
+    }
+    fn pending(&self, path: &[&str]) -> bool {
+        !self.hydrated.load(Ordering::SeqCst) && path.first() == Some(&self.dir_name)
+    }
+}
+
+impl SyncFs for CloudSante {
+    fn check_root(&self) -> Result<(), FsError> {
+        self.inner.check_root()
+    }
+    fn start_cycle(&self) -> Result<(), FsError> {
+        self.inner.start_cycle()
+    }
+    fn start_cycle_within(&self, budget: std::time::Duration) -> Result<(), FsError> {
+        self.inner.start_cycle_within(budget)
+    }
+    fn read_head(&self, file: &[&str], max: usize) -> Result<Vec<u8>, FsError> {
+        self.inner.read_head(file, max)
+    }
+    fn list(&self, dir: &[&str], max: usize) -> Result<Listing, FsError> {
+        if self.pending(dir) {
+            return Err(FsError::NotFound);
+        }
+        let mut listing = self.inner.list(dir, max)?;
+        if dir.is_empty() && !self.hydrated.load(Ordering::SeqCst) {
+            for entry in &mut listing.entries {
+                if entry.name == self.dir_name {
+                    *entry = FsEntry {
+                        name: entry.name.clone(),
+                        is_dir: false,
+                        size: 0,
+                        availability: Availability::Cloud,
+                    };
+                }
+            }
+        }
+        Ok(listing)
+    }
+    fn read(&self, file: &[&str], limit: u64, hydrate: bool) -> Result<Vec<u8>, FsError> {
+        if self.pending(file) {
+            return Err(FsError::NotFound);
+        }
+        self.inner.read(file, limit, hydrate)
+    }
+    fn read_from(
+        &self,
+        file: &[&str],
+        offset: u64,
+        max: usize,
+        hydrate: bool,
+    ) -> Result<Chunk, FsError> {
+        if file == [self.dir_name] && hydrate && !self.hydrated.load(Ordering::SeqCst) {
+            self.hydrate_calls.fetch_add(1, Ordering::SeqCst);
+            self.hydrated.store(true, Ordering::SeqCst);
+            return Err(FsError::Unsafe);
+        }
+        self.inner.read_from(file, offset, max, hydrate)
+    }
+    fn append(&self, file: &[&str], bytes: &[u8], mode: AppendMode) -> Result<(), FsError> {
+        self.inner.append(file, bytes, mode)
+    }
+    fn write_atomic(&self, file: &[&str], bytes: &[u8]) -> Result<(), FsError> {
+        self.inner.write_atomic(file, bytes)
+    }
+    fn rename(&self, dir: &[&str], from: &str, to: &str) -> Result<(), FsError> {
+        self.inner.rename(dir, from, to)
+    }
+    fn create_dir(&self, dir: &[&str]) -> Result<(), FsError> {
+        self.inner.create_dir(dir)
+    }
+    fn remove_file(&self, file: &[&str]) -> Result<bool, FsError> {
+        self.inner.remove_file(file)
+    }
+    fn remove_empty_dir(&self, dir: &[&str]) -> Result<(), FsError> {
+        self.inner.remove_empty_dir(dir)
+    }
+    fn pin(&self, file: &[&str]) -> Result<(), FsError> {
+        self.inner.pin(file)
+    }
+}
+
+fn lab_root() -> Arc<MemFs> {
+    let fs = MemFs::new();
+    fs.put(&["devices", DEV_A, "state.spx"], b"x");
+    fs.put(&[HEALTH_DIR, "hrv.csv"], FILES[0].1);
+    fs.put(&[HEALTH_DIR, "pas.csv"], FILES[3].1);
+    fs
+}
+
+#[test]
+fn pista_cloud_placeholder_folder_is_downloaded_then_read() {
+    // Piste « entrée vue comme fichier, dossier iCloud non matérialisé » : le dossier est téléchargé, la racine relue, les fichiers lus.
+    let fs = lab_root();
+    let cloud = CloudSante::new(SharedFs(fs.clone()), HEALTH_DIR);
+    let report = report_of(&cloud);
+    assert!(report.folder.root_listed);
+    assert!(
+        report.folder.sante_present,
+        "le dossier est reconnu après téléchargement"
+    );
+    assert!(report.folder.sante_listed);
+    assert!(report.folder.sante_hydrated);
+    assert_eq!(cloud.hydrate_calls.load(Ordering::SeqCst), 1);
+    let states: Vec<&str> = report.files.iter().map(|f| f.state).collect();
+    assert_eq!(states, ["ok", "absent", "absent", "ok"]);
+    // Lecture seule, toujours : rien n'est écrit, renommé ni supprimé.
+    assert_eq!(fs.writes.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn pista_cloud_placeholder_folder_under_another_case_is_also_downloaded() {
+    let fs = MemFs::new();
+    fs.put(&["devices", DEV_A, "state.spx"], b"x");
+    fs.put(&["Sante", "HRV.csv"], FILES[0].1);
+    let cloud = CloudSante::new(SharedFs(fs.clone()), "Sante");
+    let report = report_of(&cloud);
+    assert!(report.folder.sante_hydrated);
+    assert_eq!(report.files[0].state, "ok");
+}
+
+#[test]
+fn pista_a_local_plain_file_named_sante_is_never_downloaded_nor_taken_for_the_folder() {
+    // Un vrai fichier local nommé `sante` n'est pas un dossier : aucun téléchargement, état « absent », jamais une écriture.
+    let fs = MemFs::new();
+    fs.put(&["devices", DEV_A, "state.spx"], b"x");
+    fs.put(&["sante"], b"un fichier");
+    let report = report_of(&SharedFs(fs.clone()));
+    assert!(!report.folder.sante_present);
+    assert!(!report.folder.sante_hydrated);
+    assert!(report.files.iter().all(|f| f.state == "absent"));
+    assert_eq!(fs.writes.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn pista_invisible_or_odd_characters_in_the_folder_name_are_ignored() {
+    // Piste « comparaison de nom » : espace, espace insécable, caractère de largeur nulle, marque d'ordre, normalisation.
+    for dir in [
+        " sante",
+        "sante ",
+        "sante\u{a0}",
+        "sante\u{200b}",
+        "\u{feff}sante",
+        "sante\u{200e}",
+        "SANT\u{c9}",
+        "sante\u{301}",
+        "sant\u{e9}",
+    ] {
+        let fs = MemFs::new();
+        fs.put(&["devices", DEV_A, "state.spx"], b"x");
+        fs.put(&[dir, "hrv.csv"], FILES[0].1);
+        let report = report_of(&SharedFs(fs.clone()));
+        assert!(report.folder.sante_present, "{dir:?}");
+        assert_eq!(report.files[0].state, "ok", "{dir:?}");
+        assert_eq!(fs.writes.load(Ordering::SeqCst), 0);
+    }
+}
+
+#[test]
+fn pista_probe_describes_every_root_entry_with_fixed_codes_and_no_name() {
+    let fs = MemFs::new();
+    fs.put(&["devices", DEV_A, "state.spx"], b"x");
+    fs.put(&["Sante\u{200b}", "hrv.csv"], FILES[0].1);
+    fs.put(&["autre-fichier.txt"], b"x");
+    let report = report_of(&SharedFs(fs.clone()));
+    let probe = &report.folder.root_probe;
+    assert_eq!(probe.len(), 3);
+    assert_eq!(probe.iter().filter(|e| e.eq_devices).count(), 1);
+    assert_eq!(probe.iter().filter(|e| e.eq_sante_exact).count(), 0);
+    assert_eq!(probe.iter().filter(|e| e.eq_sante_folded).count(), 1);
+    let sante = probe.iter().find(|e| e.eq_sante_folded).unwrap();
+    assert!(sante.is_dir);
+    assert_eq!(sante.availability, "local");
+    let devices = probe.iter().find(|e| e.eq_devices).unwrap();
+    assert!(devices.is_dir && !devices.eq_sante_folded);
+    let other = probe.iter().find(|e| !e.is_dir).unwrap();
+    assert!(!other.eq_devices && !other.eq_sante_folded);
+    // Des codes seulement : ni nom ni chemin dans ce qui part vers la WebView.
+    let json = serde_json::to_string(&report.folder).unwrap();
+    assert!(!json.contains('\u{200b}'), "{json}");
+    for name in ["autre-fichier", "hrv.csv", "state.spx"] {
+        assert!(!json.contains(name), "{name} dans {json}");
+    }
+}
+
+#[test]
+fn pista_probe_after_download_describes_sante_as_a_local_folder() {
+    let fs = lab_root();
+    let report = report_of(&CloudSante::new(SharedFs(fs), HEALTH_DIR));
+    let sante = report
+        .folder
+        .root_probe
+        .iter()
+        .find(|e| e.eq_sante_exact)
+        .unwrap();
+    assert!(sante.is_dir);
+}
+
+#[test]
+fn pista_the_sync_filter_never_applies_to_the_health_read() {
+    // Piste « filtre de la synchro appliqué par erreur » : `DevicesOnly` refuse tout hors de `devices/` ; si la lecture passait par lui, la
+    // racine ne serait pas listable. La lecture passe par son propre accès (voir `core_reads_the_health_folder_through_its_own_access…`).
+    let fs = lab_root();
+    let guard = DevicesOnly::new(Box::new(SharedFs(fs.clone())));
+    let report = report_of(&guard);
+    assert!(!report.folder.root_listed, "le filtre refuse la racine");
+    assert!(report.files.iter().all(|f| f.state != "ok"));
+}
+
+// --- I5-05 (analyse de Codex) : parent `sante` non matérialisé, bout en bout par `BookmarkFs` et le faux du plugin -------------------
+
+#[test]
+fn bookmark_cloud_parent_is_materialized_within_the_budget_then_read() {
+    let clock = Arc::new(AtomicU64::new(NOW));
+    let plugin = FakePlugin::new(clock.clone());
+    plugin.mkdir(&["devices", DEV_A]);
+    let bytes = lab_hrv();
+    plugin.put_cloud_dir(
+        &[HEALTH_DIR],
+        &[("hrv.csv", bytes.as_slice()), ("pas.csv", FILES[3].1)],
+        2_000,
+    );
+    let fs = bookmark_over(&plugin, &clock);
+    fs.start_cycle_within(std::time::Duration::from_secs(15))
+        .unwrap();
+    let report = report_of(&fs);
+    assert!(report.folder.sante_hydrated);
+    assert!(report.folder.sante_present && report.folder.sante_listed);
+    let states: Vec<&str> = report.files.iter().map(|f| f.state).collect();
+    assert_eq!(states, ["ok", "absent", "absent", "ok"]);
+    assert_eq!(report.files[0].size, Some(bytes.len() as u64));
+    // Un seul téléchargement du dossier, aucune écriture.
+    assert_eq!(
+        plugin.calls("download").len(),
+        1,
+        "le dossier seul : ses fichiers sont déjà locaux"
+    );
+    for command in ["append", "writeAtomic", "rename", "remove", "createDir"] {
+        assert!(plugin.calls(command).is_empty(), "{command}");
+    }
+}
+
+#[test]
+fn bookmark_cloud_parent_over_the_budget_is_to_download_never_absent() {
+    let clock = Arc::new(AtomicU64::new(NOW));
+    let plugin = FakePlugin::new(clock.clone());
+    plugin.mkdir(&["devices", DEV_A]);
+    plugin.put_cloud_dir(&[HEALTH_DIR], &[("hrv.csv", FILES[0].1)], 60_000);
+    let fs = bookmark_over(&plugin, &clock);
+    fs.start_cycle_within(std::time::Duration::from_secs(15))
+        .unwrap();
+    let report = report_of(&fs);
+    assert!(report.folder.sante_hydrated);
+    assert!(report.folder.sante_present);
+    assert!(!report.folder.sante_listed);
+    assert!(report.files.iter().all(|f| f.state == "cloud"));
+    // La lecture suivante, une fois le dossier arrivé, aboutit.
+    let plugin2 = FakePlugin::new(clock.clone());
+    plugin2.mkdir(&["devices", DEV_A]);
+    plugin2.put_cloud_dir(&[HEALTH_DIR], &[("hrv.csv", FILES[0].1)], 1_000);
+    let fs2 = bookmark_over(&plugin2, &clock);
+    fs2.start_cycle_within(std::time::Duration::from_secs(15))
+        .unwrap();
+    assert_eq!(report_of(&fs2).files[0].state, "ok");
+}
+
+#[test]
+fn an_exact_folder_wins_over_a_cloud_placeholder_without_any_download() {
+    // Relecture sync-icloud S5 : le dossier exact et un substitut de même nom normalisé coexistent : le dossier gagne, aucun téléchargement.
+    let fs = lab_root();
+    fs.put(&["Sante\u{200b}"], b"x");
+    let cloud = CloudSante::new(SharedFs(fs.clone()), "Sante\u{200b}");
+    let report = report_of(&cloud);
+    assert!(!report.folder.sante_hydrated);
+    assert_eq!(cloud.hydrate_calls.load(Ordering::SeqCst), 0);
+    assert_eq!(report.files[0].state, "ok");
+}

@@ -451,10 +451,10 @@ describe('statuts journalisés et diagnostic du dossier sante (I5-04 points 1 et
     ];
     const r = {
       ...reader(async () => reads, { kind: 'folder', automatic: true }),
-      probe: () => ({ rootListed: true, santePresent: true, santeListed: true, devicesPresent: true, rootEntries: 3, santeEntries: 2 }),
+      probe: () => ({ rootListed: true, santePresent: true, santeListed: true, devicesPresent: true, rootEntries: 3, santeEntries: 2, santeHydrated: false, rootProbe: [] }),
     };
     await build(r).run('manual');
-    expect(logs.find((l) => l.event === 'recovery-import-diag-folder')?.counts).toEqual({ root_listed: 1, sante_present: 1, sante_listed: 1, devices_present: 1, root_entries: 3, sante_entries: 2 });
+    expect(logs.find((l) => l.event === 'recovery-import-diag-folder')?.counts).toEqual({ root_listed: 1, sante_present: 1, sante_listed: 1, devices_present: 1, root_entries: 3, sante_entries: 2, sante_hydrated: 0 });
     const files = logs.filter((l) => l.event === 'recovery-import-diag-file').map((l) => l.counts);
     // état : 0 absent, 1 présent, 2 à télécharger, 3 illisible
     expect(files).toEqual([
@@ -464,6 +464,51 @@ describe('statuts journalisés et diagnostic du dossier sante (I5-04 points 1 et
       { type_index: 3, state: 3, size: 9 },
     ]);
     expect(JSON.stringify(logs)).not.toMatch(/48,5|hrv\.csv|2026-/);
+  });
+
+  it('I5-05 : la sonde journalise sante_hydrated et un événement par entrée de la racine, en codes fixes sans aucun nom', async () => {
+    const r = {
+      ...reader(async () => ABSENT(), { kind: 'folder', automatic: true }),
+      probe: () => ({
+        rootListed: true,
+        santePresent: false,
+        santeListed: false,
+        devicesPresent: true,
+        rootEntries: 3,
+        santeEntries: 0,
+        santeHydrated: true,
+        rootProbe: [
+          { isDir: true, availability: 'local' as const, eqDevices: true, eqSanteExact: false, eqSanteFolded: false },
+          { isDir: false, availability: 'cloud' as const, eqDevices: false, eqSanteExact: true, eqSanteFolded: true },
+          { isDir: false, availability: 'error' as const, eqDevices: false, eqSanteExact: false, eqSanteFolded: true },
+        ],
+      }),
+    };
+    await build(r).run('manual');
+    expect(logs.find((l) => l.event === 'recovery-import-diag-folder')?.counts).toEqual({ root_listed: 1, sante_present: 0, sante_listed: 0, devices_present: 1, root_entries: 3, sante_entries: 0, sante_hydrated: 1 });
+    // disponibilité : 0 locale, 1 nuage, 2 erreur
+    expect(logs.filter((l) => l.event === 'recovery-import-diag-entry').map((l) => l.counts)).toEqual([
+      { index: 0, is_dir: 1, avail: 0, eq_devices: 1, eq_sante_exact: 0, eq_sante_folded: 0 },
+      { index: 1, is_dir: 0, avail: 1, eq_devices: 0, eq_sante_exact: 1, eq_sante_folded: 1 },
+      { index: 2, is_dir: 0, avail: 2, eq_devices: 0, eq_sante_exact: 0, eq_sante_folded: 1 },
+    ]);
+    expect(IMPORT_LOG_EVENTS).toContain('recovery-import-diag-entry');
+  });
+
+  it('I5-05 : au plus 5 entrées de la racine journalisées (limite de débit du journal)', async () => {
+    const entry = { isDir: true, availability: 'local' as const, eqDevices: false, eqSanteExact: false, eqSanteFolded: false };
+    const r = {
+      ...reader(async () => ABSENT(), { kind: 'folder', automatic: true }),
+      probe: () => ({ rootListed: true, santePresent: false, santeListed: false, devicesPresent: false, rootEntries: 16, santeEntries: 0, santeHydrated: false, rootProbe: Array.from({ length: 16 }, () => entry) }),
+    };
+    await build(r).run('manual');
+    expect(events().filter((e) => e === 'recovery-import-diag-entry')).toHaveLength(5);
+  });
+
+  it('I5-05 : un fichier lu par le sélecteur journalise sa vraie taille', async () => {
+    const reads: ShortcutFileRead[] = [{ name: 'hrv.csv', state: 'ok', text: fixture('hrv.csv'), size: 15360 }, ...ABSENT().slice(1)];
+    await build(reader(async () => reads, { kind: 'picker', automatic: false })).run('pick');
+    expect(logs.filter((l) => l.event === 'recovery-import-diag-file')[0]?.counts).toEqual({ type_index: 0, state: 1, size: 15360 });
   });
 
   it('sans sonde : pas d’événement de dossier, les fichiers sont diagnostiqués quand même', async () => {

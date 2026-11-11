@@ -419,6 +419,41 @@ fn i04_internal_writes_wait_in_memory_until_init_then_are_written() {
     );
 }
 
+// --- I5-05 point 3 : un seul dossier de journal (Rust et WebView) ---
+
+#[test]
+fn i5_05_the_webview_journal_uses_the_directory_given_to_init() {
+    // Constat d'Ali (0.11.2) : sur iPhone, `init` écrit dans Documents/Journal (visible dans Fichiers) mais `log_append`, `log_read` et
+    // `log_clear` visaient `<config>/logs` : deux journaux, celui de Fichiers sans les événements de l'app.
+    let _log_dir = crate::support::applog_dir_lock();
+    let fallback = Path::new("repli-config/logs").to_path_buf();
+    assert_eq!(
+        spartiate_lib::applog::journal_dir(fallback.clone()),
+        fallback
+    );
+    let dir = tempfile::tempdir().unwrap();
+    let logs = dir.path().join("Journal");
+    init(logs.clone());
+    assert_eq!(spartiate_lib::applog::journal_dir(fallback), logs);
+    // Une écriture interne et une entrée de la WebView aboutissent dans le même fichier.
+    write("sync-rust", "cycle-start");
+    let mut rates = RateTable::new();
+    append_in(
+        &spartiate_lib::applog::journal_dir(Path::new("x").to_path_buf()),
+        &mut rates,
+        &[entry("recovery-import", "recovery-import-start", "")],
+        NOW,
+    )
+    .unwrap();
+    let codes: Vec<String> = read_entries(&logs, 100)
+        .unwrap()
+        .into_iter()
+        .map(|e| format!("{} {}", e.scope, e.code))
+        .collect();
+    assert!(codes.contains(&"sync-rust cycle-start".to_owned()));
+    assert!(codes.contains(&"recovery-import recovery-import-start".to_owned()));
+}
+
 // --- QA du lot F : lots de lignes maximales, chemins et jetons jamais écrits, journal de 2 × 256 Kio jamais dépassé ---
 
 #[test]

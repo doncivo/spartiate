@@ -797,11 +797,17 @@ pub fn clear_in(dir: &Path, now: u64) -> Result<(), LogError> {
     append_lines(dir, &[line_of(&entry)]).map(|_| ())
 }
 
+/// Dossier du journal : celui fixé par `init` (iPhone : `Documents/Journal`, visible dans Fichiers), sinon `fallback`. Un seul dossier pour
+/// les écritures internes de Rust et pour `log_append`, `log_read`, `log_clear` : le fichier exporté contient les deux journaux (I5-05).
+pub fn journal_dir(fallback: PathBuf) -> PathBuf {
+    state().dir.clone().unwrap_or(fallback)
+}
+
 fn logs_dir<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> Result<PathBuf, LogError> {
     use tauri::Manager;
     app.path()
         .app_config_dir()
-        .map(|dir| dir.join(LOG_DIR))
+        .map(|dir| journal_dir(dir.join(LOG_DIR)))
         .map_err(|_| fail("io"))
 }
 
