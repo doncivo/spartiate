@@ -6,6 +6,7 @@ import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import type { HealthKit, HealthKitBodyMass, HealthKitRead, HealthKitStepCount } from '../../platform/healthkit';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer, type AppContainer } from '../app/container';
+import { useAppStore } from '../app/appStore';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { logFailure } from '../../platform/desktop/log';
 import type { MemoryFiles } from '../../platform/files';
@@ -341,7 +342,7 @@ describe('Apple Santé (finitions 0.1.2 d)', () => {
       expect(screen.queryByRole('button', { name: 'Autoriser l’accès' })).toBeNull();
     });
 
-    it('Plus › ligne « Apple Santé » : « lecture seule » par défaut, « non disponible » une fois l’entitlement constaté absent', async () => {
+    it('Plus › ligne « Apple Santé » : « lecture seule » par défaut, « via Raccourcis » une fois l’entitlement constaté absent (FIX-0115)', async () => {
       const { unmount } = render(
         <AppContainerProvider container={container}>
           <SettingsScreen />
@@ -359,8 +360,23 @@ describe('Apple Santé (finitions 0.1.2 d)', () => {
           <SettingsScreen />
         </AppContainerProvider>,
       );
-      expect(await screen.findByRole('button', { name: 'Apple Santé : non disponible' })).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: 'Apple Santé : via Raccourcis' })).toBeInTheDocument();
       expect(screen.queryByText('lecture seule')).toBeNull();
+      expect(screen.queryByText('non disponible')).toBeNull();
+    });
+
+    it('FIX-0115 : entitlement absent et un import Raccourcis fait : « via Raccourcis · dernier import HH:MM » (24 h, fuseau de l’app)', async () => {
+      useAppStore.setState({ timeZone: 'Europe/Paris' });
+      await container.data.repos.settings.set('healthkit.entitlementMissing', true);
+      const samples = await container.data.repos.recoverySamples();
+      await samples.recordImport({ type: 'sommeil', importedAt: '2026-11-11T07:15:00.000Z', newestSampleAt: null, added: 0, duplicates: 0, rejected: 0 });
+      await samples.recordImport({ type: 'hrv', importedAt: '2026-11-11T07:10:00.000Z', newestSampleAt: null, added: 0, duplicates: 0, rejected: 0 });
+      render(
+        <AppContainerProvider container={container}>
+          <SettingsScreen />
+        </AppContainerProvider>,
+      );
+      expect(await screen.findByRole('button', { name: 'Apple Santé : via Raccourcis · dernier import 08:15' })).toBeInTheDocument();
     });
   });
 });
