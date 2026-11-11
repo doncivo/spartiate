@@ -65,7 +65,7 @@ export const migration0011RecoveryFactor: Migration = {
     `CREATE TABLE recovery_factor (
       id TEXT PRIMARY KEY NOT NULL,
       date TEXT NOT NULL CHECK (date GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'),
-      factors TEXT NOT NULL CHECK (json_valid(factors) AND json_type(factors) = 'array' AND json_array_length(factors) <= 8),
+      factors TEXT NOT NULL CHECK (json_valid(factors) AND json_type(factors) = 'array' AND json_array_length(factors) <= 32),
       none INTEGER NOT NULL CHECK (typeof(none) = 'integer' AND none IN (0, 1)),
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
@@ -73,8 +73,7 @@ export const migration0011RecoveryFactor: Migration = {
       device_id TEXT NOT NULL,
       hlc TEXT NOT NULL,
       UNIQUE (date),
-      CHECK (id = 'recovery_factor|' || date),
-      CHECK (none = 0 OR json_array_length(factors) = 0)
+      CHECK (id = 'recovery_factor|' || date)
     )`,
     ...captureTriggers(FACTOR, FACTOR_COLUMNS),
   ],

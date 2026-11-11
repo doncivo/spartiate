@@ -17,7 +17,7 @@ interface FactorRow extends SqlRow, SyncRow {
 const toRecord = (row: FactorRow): RecoveryFactorRecord => {
   const factors = parseFactors(row.factors);
   if (factors === null) throw new RepositoryError('invalid', 'recovery_factor', row.id);
-  return { id: row.id, day: row.date as LocalDate, factors, none: row.none === 1, ...readSyncMeta(row) };
+  return { id: row.id, day: row.date as LocalDate, factors, none: row.none === 1 && factors.length === 0, ...readSyncMeta(row) };
 };
 
 /** Contrôles du dépôt (les CHECK de la base restent le dernier recours) : rien n'est écrit si l'entrée est refusée. */
