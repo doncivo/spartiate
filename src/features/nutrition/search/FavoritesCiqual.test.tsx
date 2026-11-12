@@ -14,7 +14,7 @@ vi.mock('../catalogue/ciqualCatalogue', () => ({
   },
 }));
 
-/** I4-06 : un catalogue Ciqual illisible n'est pas « aliment disparu » : les favoris Ciqual sont conservés (D-79 point 3). */
+/** I4-06 : un catalogue Ciqual illisible n'est pas « aliment disparu » : les favoris Ciqual sont conservés (D-79 point 3) ; FIX-0181 : favoris publiés (table food_favorite, D-171), repris du réglage local. */
 const DEVICE = '60000000-0000-4000-8000-0000000000a8' as DeviceId;
 let db: TestDb;
 beforeEach(async () => {
@@ -43,7 +43,7 @@ describe('I4-06 : favoris Ciqual et catalogue en échec', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Favori' })).toBeEnabled());
     fireEvent.click(screen.getByRole('button', { name: 'Favori' }));
     await waitFor(async () =>
-      expect(await db.data.repos.settings.get('nutrition.favorites')).toEqual({ v: 1, items: [{ source: 'custom', ref: record.id }, { source: 'ciqual', ref: 'ciqual:20' }] }),
+      expect(await (await db.data.repos.foodFavorites()).list()).toEqual([{ source: 'custom', ref: record.id }, { source: 'ciqual', ref: 'ciqual:20' }]),
     );
   });
 });

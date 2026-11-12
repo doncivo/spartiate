@@ -8,7 +8,11 @@ import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../../app/navigation';
 import { NutritionScreen } from '../NutritionScreen';
 
-/** I4-06 : favoris de la recherche (D-79), stockage local dans `settings`, base SQLite réelle (wasm). */
+/**
+ * I4-06 : favoris de la recherche ; FIX-0181 (D-171, D-79 révisée par Ali le 12/11) : favoris PUBLIÉS (table `food_favorite`), les favoris locaux
+ * d'avant (réglage `nutrition.favorites`) repris une fois à la première lecture, puis le réglage vidé. Base SQLite réelle (wasm).
+ */
+const favoriteList = async () => (await db.data.repos.foodFavorites()).list();
 const DEVICE = '60000000-0000-4000-8000-0000000000a7' as DeviceId;
 const GONE_ID = '20000000-0000-4000-8000-000000000009';
 let db: TestDb;
@@ -45,7 +49,7 @@ async function pickSkyr(): Promise<void> {
 }
 
 describe('I4-06 : favoris', () => {
-  it('étoile de la fiche : nom accessible, aria-pressed, valeur locale { v: 1, items }', async () => {
+  it('étoile de la fiche : nom accessible, aria-pressed, favori écrit dans la table publiée (jamais dans le réglage local)', async () => {
     const id = await seedSkyr();
     mount();
     await openSearch();
@@ -55,10 +59,22 @@ describe('I4-06 : favoris', () => {
     fireEvent.click(star);
     await waitFor(() => expect(screen.getByRole('button', { name: 'Favori' })).toHaveAttribute('aria-pressed', 'true'));
     const pressed = screen.getByRole('button', { name: 'Favori' });
-    await waitFor(async () => expect(await db.data.repos.settings.get('nutrition.favorites')).toEqual({ v: 1, items: [{ source: 'custom', ref: id }] }));
+    await waitFor(async () => expect(await favoriteList()).toEqual([{ source: 'custom', ref: id }]));
+    expect(await db.driver.select("SELECT row_id, field FROM sync_outbox WHERE table_name = 'food_favorite'")).toEqual([{ row_id: `favorite|${id}`, field: '*' }]);
     fireEvent.click(pressed);
-    await waitFor(async () => expect(await db.data.repos.settings.get('nutrition.favorites')).toEqual({ v: 1, items: [] }));
+    await waitFor(async () => expect(await favoriteList()).toEqual([]));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Favori' })).toHaveAttribute('aria-pressed', 'false'));
+    expect(await db.data.repos.settings.get('nutrition.favorites')).toBeNull();
+  });
+
+  it('reprise : les favoris locaux d’avant sont repris une fois à l’ouverture, dans leur ordre, puis le réglage est vidé', async () => {
+    const id = await seedSkyr();
+    await db.data.repos.settings.set('nutrition.favorites', { v: 1, items: [{ source: 'ciqual', ref: 'ciqual:20' }, { source: 'custom', ref: id }] });
+    mount();
+    await openSearch();
+    await screen.findByRole('heading', { name: 'Favoris' });
+    await waitFor(async () => expect(await db.data.repos.settings.get('nutrition.favorites')).toBeNull());
+    expect(await favoriteList()).toEqual([{ source: 'ciqual', ref: 'ciqual:20' }, { source: 'custom', ref: id }]);
   });
 
   it('requête vide : « Favoris » en tête, avant « Récents », avec provenance ; le choix ouvre la quantité', async () => {
@@ -88,7 +104,8 @@ describe('I4-06 : favoris', () => {
     expect(screen.queryByRole('heading', { name: 'Favoris' })).toBeNull();
   });
 
-  it('aliment disparu : le favori n’apparaît pas, aucune erreur, nettoyé à l’écriture suivante', async () => {
+  // FIX-0181 (D-171) : un favori publié n'est plus effacé quand son aliment manque ici (il peut arriver plus tard par la synchro) : il est masqué.
+  it('aliment introuvable : le favori n’apparaît pas, aucune erreur, jamais effacé automatiquement', async () => {
     const id = await seedSkyr();
     await db.data.repos.settings.set('nutrition.favorites', { v: 1, items: [{ source: 'custom', ref: GONE_ID }, { source: 'ciqual', ref: 'ciqual:99999999' }] });
     mount();
@@ -98,7 +115,7 @@ describe('I4-06 : favoris', () => {
     expect(screen.queryByRole('alert')).toBeNull();
     await pickSkyr();
     fireEvent.click(await screen.findByRole('button', { name: 'Favori' }));
-    await waitFor(async () => expect(await db.data.repos.settings.get('nutrition.favorites')).toEqual({ v: 1, items: [{ source: 'custom', ref: id }] }));
+    await waitFor(async () => expect(await favoriteList()).toEqual([{ source: 'custom', ref: id }, { source: 'custom', ref: GONE_ID }, { source: 'ciqual', ref: 'ciqual:99999999' }]));
   });
 
   it('étoile inactive tant que la liste n’est pas lue ; l’écriture garde les favoris déjà en base', async () => {
@@ -119,11 +136,11 @@ describe('I4-06 : favoris', () => {
     const star = await screen.findByRole('button', { name: 'Favori' });
     expect(star).toBeDisabled();
     fireEvent.click(star);
-    expect(await db.data.repos.settings.get('nutrition.favorites')).toEqual({ v: 1, items: [{ source: 'custom', ref: a }] });
+    expect(await favoriteList()).toEqual([{ source: 'custom', ref: a }]);
     release();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Favori' })).toBeEnabled());
     fireEvent.click(screen.getByRole('button', { name: 'Favori' }));
-    await waitFor(async () => expect(await db.data.repos.settings.get('nutrition.favorites')).toEqual({ v: 1, items: [{ source: 'custom', ref: other.id }, { source: 'custom', ref: a }] }));
+    await waitFor(async () => expect(await favoriteList()).toEqual([{ source: 'custom', ref: other.id }, { source: 'custom', ref: a }]));
   });
 
   it('lecture du réglage en échec : étoile inactive avec message, rien n’est écrit', async () => {
@@ -149,6 +166,7 @@ describe('I4-06 : favoris', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Impossible de lire tes favoris');
     fireEvent.click(star);
     expect(writes).toBe(0);
+    expect(await favoriteList()).toEqual([]);
   });
 
   it('valeur corrompue : recherche utilisable, aucune section, aucune erreur', async () => {
