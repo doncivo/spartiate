@@ -52,6 +52,15 @@ export function recoveryScore(input: RecoveryScoreInput): RecoveryScoreResult {
   return { score, reason: null, raw, zHrv, zRhr, ...common };
 }
 
+/**
+ * Seuil des valeurs inhabituelles (§ 16.7 ; FIX-0172, décision d'Ali du 12/11/2026, D-134, révise D-95) : un z ORIENTÉ (positif = favorable)
+ * est inhabituel s'il est STRICTEMENT au-delà de `unusualSigma` du côté défavorable, jugé sur la valeur NON arrondie ; −2 exactement ne l'est pas.
+ * Partagé par `summarizeRecoveryDay` (qui décide et publie) et `unusualValues` (qui lit la décision).
+ */
+export function beyondUnusualSigma(z: number): boolean {
+  return Number.isFinite(z) && z < -RECOVERY_CONFIG.unusualSigma;
+}
+
 /** Zone d'Exertion cible (§ 16.3) ; null si pas de score. */
 export function targetZone(score: number | null): TargetZone | null {
   if (score === null) return null;

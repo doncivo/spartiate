@@ -11,8 +11,8 @@ import { utcToLocal } from '../timeZone';
  * - `pas.csv`        `date;valeur[;unité]`  CHOIX : un échantillon de Santé par ligne (`Rechercher des échantillons Santé`, type Pas),
  *                    sommés par jour local de l'appareil. Un fichier « total par jour » (une ligne par jour) est le cas particulier
  *                    à un échantillon par jour et donne le même résultat ; les deux ne se mélangent pas dans un même fichier ;
- * - `sommeil.csv`    `début;fin;stade`  stades de Raccourcis en français (Au lit, Endormi, Éveillé, Paradoxal, Profond, Principal)
- *                    ou en anglais (In Bed, Asleep, Awake, REM, Deep, Core), casse et accents indifférents.
+ * - `sommeil.csv`    `début;fin;stade`  stades de Raccourcis en français (Au lit, Endormi, Endormi (non précisé), Éveillé, Paradoxal, Profond, Principal ou Essentiel)
+ *                    ou en anglais (In Bed, Asleep, Asleep (Unspecified), Awake, REM, Deep, Core), casse, accents et parenthèses indifférents (D-132).
  * Dates : ISO 8601 AVEC fuseau (`yyyy-MM-dd'T'HH:mm:ssZZZZZ`) ; une ligne sans fuseau est refusée (heure ambiguë). Valeurs : virgule
  * ou point décimal. Une ligne illisible est refusée et comptée PAR RAISON (`ShortcutRejectReason`), jamais par sa valeur, jamais devinée.
  * Le jour d'un échantillon est son jour LOCAL de l'appareil (`timeZone`, REV-01 constat 9) ; le jour d'une nuit est le jour du RÉVEIL.
@@ -200,14 +200,17 @@ export type SleepStage = (typeof SLEEP_STAGES)[number];
 const STAGE_LABELS: Readonly<Record<string, SleepStage>> = {
   'au lit': 'in_bed', 'dans le lit': 'in_bed', 'in bed': 'in_bed', inbed: 'in_bed',
   endormi: 'asleep', asleep: 'asleep',
+  // FIX-0172 (D-132) : « Endormi (non précisé) » / « Asleep (Unspecified) », écrit quand la source ne donne pas de stade.
+  'endormi non precise': 'asleep', 'asleep unspecified': 'asleep', unspecified: 'asleep', 'non precise': 'asleep',
   eveille: 'awake', reveille: 'awake', awake: 'awake',
-  paradoxal: 'rem', 'sommeil paradoxal': 'rem', rem: 'rem',
-  profond: 'deep', 'sommeil profond': 'deep', deep: 'deep',
-  principal: 'core', 'sommeil principal': 'core', core: 'core',
+  paradoxal: 'rem', 'sommeil paradoxal': 'rem', rem: 'rem', 'rem sleep': 'rem', 'asleep rem': 'rem',
+  profond: 'deep', 'sommeil profond': 'deep', deep: 'deep', 'deep sleep': 'deep', 'asleep deep': 'deep',
+  principal: 'core', 'sommeil principal': 'core', core: 'core', essentiel: 'core', 'sommeil essentiel': 'core', 'core sleep': 'core', 'asleep core': 'core',
 };
 
+/** Libellé normalisé : sans accents ni casse, parenthèses retirées, espaces réduits (« Endormi (non précisé) » → « endormi non precise »). */
 function parseStage(label: string): SleepStage | null {
-  const key = label.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const key = label.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim();
   return Object.prototype.hasOwnProperty.call(STAGE_LABELS, key) ? (STAGE_LABELS[key] ?? null) : null;
 }
 
@@ -278,9 +281,9 @@ export function parseShortcutSleep(text: string, today: string, timeZone: string
 export interface SleepNight {
   /** Jour local du RÉVEIL. */
   readonly day: string;
-  /** Début du premier segment endormi (à défaut, du premier segment « Au lit »). */
+  /** Début du premier segment endormi de l'épisode (D-131). */
   readonly bedAt: string;
-  /** Fin du dernier segment. */
+  /** Fin du dernier segment endormi de l'épisode (D-131 : jamais la fin d'un bloc « Au lit »). */
   readonly wakeAt: string;
   /** Union des segments endormis (Endormi, Paradoxal, Profond, Principal) ; null s'il n'y en a aucun, jamais 0. */
   readonly asleepMinutes: number | null;
@@ -304,17 +307,17 @@ function unionMinutes(intervals: readonly (readonly [number, number])[]): number
   return Math.round(total / 60_000);
 }
 
-/** Regroupe les segments en nuits : un trou d'au moins `episodeGapMinutes` ouvre un autre épisode ; une nuit par jour de réveil (l'épisode dormi le plus long), les autres épisodes sont des siestes ignorées. */
-export function buildSleepNights(
-  segments: readonly SleepSegment[],
-  timeZone: string,
-): { readonly nights: readonly SleepNight[]; readonly ignoredGroups: number } {
-  const items = segments
-    .map((s) => ({ s: Date.parse(s.start), e: Date.parse(s.end), stage: s.stage }))
-    .sort((a, b) => a.s - b.s);
-  const groups: (typeof items)[] = [];
+type Interval = readonly [number, number];
+interface Item {
+  readonly s: number;
+  readonly e: number;
+  readonly stage: SleepStage;
+}
+
+/** Regroupe des segments triés par début : un trou d'au moins `gap` ms ouvre un autre groupe. */
+function clusters<T extends { readonly s: number; readonly e: number }>(items: readonly T[], gap: number): T[][] {
+  const groups: T[][] = [];
   let groupEnd = -Infinity;
-  const gap = RECOVERY_CONFIG.sleep.episodeGapMinutes * 60_000;
   for (const item of items) {
     const current = groups[groups.length - 1];
     if (current === undefined || item.s - groupEnd >= gap) {
@@ -325,18 +328,38 @@ export function buildSleepNights(
       groupEnd = Math.max(groupEnd, item.e);
     }
   }
+  return groups;
+}
+
+const isAsleep = (stage: SleepStage): boolean => stage !== 'in_bed' && stage !== 'awake';
+
+/**
+ * Regroupe les segments en nuits. FIX-0172 (constat 7, D-131) : « Au lit » n'entre jamais dans le regroupement ; un épisode réunit les
+ * segments endormis (Endormi, Principal, Profond, Paradoxal) et les éveils mesurés entre eux (« Éveillé »), séparés de MOINS de
+ * `episodeGapMinutes` ; ses bornes (coucher, réveil) et sa durée viennent des seuls segments endormis. « Au lit » est une information
+ * secondaire (`inBedMinutes` : sa part comprise dans l'épisode élargi de `episodeGapMinutes` de chaque côté) et ne relie jamais deux
+ * épisodes. Une nuit par jour de réveil (l'épisode dormi le plus long), les autres épisodes sont des siestes ignorées et comptées ; un groupe
+ * sans temps endormi (« Éveillé » seul) ou un bloc « Au lit » qui ne touche aucun épisode est compté ignoré lui aussi (jamais une nuit, I5-06).
+ */
+export function buildSleepNights(
+  segments: readonly SleepSegment[],
+  timeZone: string,
+): { readonly nights: readonly SleepNight[]; readonly ignoredGroups: number } {
+  const items: Item[] = segments.map((s) => ({ s: Date.parse(s.start), e: Date.parse(s.end), stage: s.stage })).sort((a, b) => a.s - b.s);
+  const gap = RECOVERY_CONFIG.sleep.episodeGapMinutes * 60_000;
+  const groups = clusters(items.filter((i) => i.stage !== 'in_bed'), gap);
+  const episodes = groups.map((group) => group.filter((i) => isAsleep(i.stage)).map((i) => [i.s, i.e] as Interval)).filter((asleep) => asleep.length > 0);
+  const windows = episodes.map((asleep) => [Math.min(...asleep.map((i) => i[0])) - gap, Math.max(...asleep.map((i) => i[1])) + gap] as Interval);
+  const touches = (i: { readonly s: number; readonly e: number }): boolean => windows.some(([from, to]) => i.s < to && i.e > from);
+  const inBedAll = items.filter((i) => i.stage === 'in_bed');
+  // I5-06 : un groupe sans aucun temps endormi n'est jamais une nuit.
+  let ignoredGroups = groups.length - episodes.length + clusters(inBedAll, gap).filter((group) => !group.some(touches)).length;
   const best = new Map<string, SleepNight>();
-  let ignoredGroups = 0;
-  for (const group of groups) {
-    const asleep = group.filter((i) => i.stage !== 'in_bed' && i.stage !== 'awake').map((i) => [i.s, i.e] as const);
-    // I5-06 : un épisode sans aucun temps endormi (blocs « Au lit » ou « Éveillé » seuls) n'est jamais une nuit.
-    if (asleep.length === 0) {
-      ignoredGroups += 1;
-      continue;
-    }
-    const inBed = group.filter((i) => i.stage === 'in_bed').map((i) => [i.s, i.e] as const);
-    const bed = asleep.length > 0 ? Math.min(...asleep.map((i) => i[0])) : inBed.length > 0 ? Math.min(...inBed.map((i) => i[0])) : Math.min(...group.map((i) => i.s));
-    const wake = Math.max(...group.map((i) => i.e));
+  for (const [index, asleep] of episodes.entries()) {
+    const [from, to] = windows[index] ?? [0, 0];
+    const bed = Math.min(...asleep.map((i) => i[0]));
+    const wake = Math.max(...asleep.map((i) => i[1]));
+    const inBed = inBedAll.flatMap((i) => (i.s < to && i.e > from ? [[Math.max(i.s, from), Math.min(i.e, to)] as Interval] : []));
     const night: SleepNight = {
       day: utcToLocal(new Date(wake).toISOString(), timeZone).date,
       bedAt: new Date(bed).toISOString(),

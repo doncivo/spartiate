@@ -204,6 +204,20 @@ describe('(b) iPhone → PC', () => {
     await repo.saveDay(output(DAY, { computedAt: '2026-11-09T08:00:00.000Z' }));
     expect(await recoveryOutbox(iphone)).toEqual([]);
   });
+
+  it('FIX-0172 (D-134) : la décision « inhabituel » publiée par l’iPhone arrive telle quelle sur le PC, sans recalcul ; un changement de drapeau seul est republié', async () => {
+    const [iphone, pc] = await iphoneAndPc();
+    const repo = await iphone.data.repos.recovery();
+    const flagged = (unusual: boolean) => output(DAY, { contributors: [{ key: 'hrv', value: -2, weight: 0.7, unusual }, { key: 'resting_hr', value: 0.1, weight: 0.3, unusual: false }] });
+    await repo.saveDay(flagged(true));
+    await roundTrip();
+    expect((await (await pc.data.repos.recovery()).getDay(DAY))?.summary.contributors).toEqual(flagged(true).summary.contributors);
+    await repo.saveDay(flagged(false));
+    await roundTrip();
+    expect((await (await pc.data.repos.recovery()).getDay(DAY))?.summary.contributors).toEqual(flagged(false).summary.contributors);
+    expect(await recoveryOutbox(pc)).toEqual([]);
+    expect(await pc.driver.select('SELECT 1 FROM sync_unknown')).toEqual([]);
+  });
 });
 
 describe('(c) l’iPhone écrit, le PC lit', () => {

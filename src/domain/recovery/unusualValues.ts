@@ -1,13 +1,16 @@
 import { RECOVERY_CONFIG } from './config';
 import { shiftDay } from './daySummary';
-import type { RecoveryDaySummary } from './types';
+import type { Contributor, RecoveryDaySummary } from './types';
+import { beyondUnusualSigma } from './recoveryScore';
 
 /**
  * Valeurs inhabituelles (§ 16.7, I6-01 point A, D-95). Fonction pure : elle lit les résumés `recovery_day` du jour le plus récent et de la veille.
  *
- * - Une nuit est « inhabituelle » si la FC de repos est à au moins 2 σ AU-DESSUS de sa base ou la HRV à au moins 2 σ EN DESSOUS. Les
- *   contributeurs du résumé portent des z-scores ORIENTÉS (positif = favorable, voir `recoveryScore`) : les deux cas valent donc `z <= -2`.
- *   Borne INCLUSIVE (« au moins 2 σ ») : choix prudent consigné en D-95 ; le z du résumé est arrondi à 0,01.
+ * - Une nuit est « inhabituelle » si la FC de repos est AU-DELÀ de 2 σ au-dessus de sa base ou la HRV au-delà de 2 σ en dessous. Les
+ *   contributeurs du résumé portent des z-scores ORIENTÉS (positif = favorable, voir `recoveryScore`) : les deux cas valent `z < -2`.
+ *   FIX-0172 (décision d'Ali du 12/11/2026, D-134, révise D-95) : seuil STRICT, jugé au calcul du résumé sur le z NON arrondi ; la décision
+ *   est publiée (`Contributor.unusual`) et lue telle quelle ici, sur l'iPhone comme sur le PC (aucune autre règle à la lecture). Un résumé
+ *   d'une version précédente, sans décision publiée, est jugé au seuil strict sur la valeur gardée (arrondie à 0,01).
  * - La carte demande deux jours CONSÉCUTIFS (le plus récent et sa veille), chacun avec une nuit valide (niveau C, score présent, sommeil au
  *   moins égal au seuil de nuit valide) et les deux contributeurs. Baseline incomplète, contributeur absent, niveau sans score, jours non
  *   consécutifs : jamais de carte. Un jour est inhabituel dès que l'une OU l'autre des deux mesures l'est (choix consigné en D-95).
@@ -16,7 +19,10 @@ import type { RecoveryDaySummary } from './types';
  */
 
 /** Seuil en écarts-types (§ 16.7). */
-export const UNUSUAL_SIGMA = 2;
+export const UNUSUAL_SIGMA = RECOVERY_CONFIG.unusualSigma;
+
+/** Décision publiée si présente, sinon (résumé ancien) seuil strict sur la valeur gardée. */
+const isUnusual = (c: Contributor): boolean => (typeof c.unusual === 'boolean' ? c.unusual : beyondUnusualSigma(c.value));
 
 export type UnusualReason = 'hrv_low' | 'resting_hr_high';
 
@@ -37,8 +43,8 @@ function reasonsOf(row: UnusualDayInput): readonly UnusualReason[] | null {
   const rhr = row.contributors.find((c) => c.key === 'resting_hr');
   if (hrv === undefined || rhr === undefined || !Number.isFinite(hrv.value) || !Number.isFinite(rhr.value)) return null;
   const reasons: UnusualReason[] = [];
-  if (hrv.value <= -UNUSUAL_SIGMA) reasons.push('hrv_low');
-  if (rhr.value <= -UNUSUAL_SIGMA) reasons.push('resting_hr_high');
+  if (isUnusual(hrv)) reasons.push('hrv_low');
+  if (isUnusual(rhr)) reasons.push('resting_hr_high');
   return reasons;
 }
 
