@@ -38,8 +38,9 @@ tauri = { version = "2", features = ["tray-icon", "image-png"] }
 tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-# DEP-01 (D-160) : 0.41, même libsqlite3-sys 0.39 que sqlx-sqlite (copie vendored) et le plugin SQL.
-rusqlite = "0.41"
+# DEP-01 (D-160) : 0.41, même libsqlite3-sys 0.39 que sqlx-sqlite (copie vendored) et le plugin SQL. `fallible_uint` : lecture et écriture
+# de u64 comme en 0.32 (conversion vérifiée, erreur hors bornes), devenues optionnelles en 0.33.
+rusqlite = { version = "0.41", features = ["fallible_uint"] }
 url = "2"
 rand = "0.9"
 base64 = "0.22"
