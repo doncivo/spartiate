@@ -5,7 +5,7 @@ import type { DeviceId } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from './AppContainerContext';
 import { createAppContainer } from './container';
-import { BodyProgress, RecoveryProgress } from './lazyScreens';
+import { BodyProgress, NutritionRemainingCard, RecoveryProgress, RecoveryToday, TodaySessionCard } from './lazyScreens';
 import { INITIAL_NAVIGATION, useNavigationStore } from './navigation';
 import { SectionNotice } from './SectionNotice';
 
@@ -59,6 +59,8 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
   });
 
   it('Aujourd’hui : rend l’écran I0 (iPhone) ; sans profil, le bouton principal ouvre Profil et poids', async () => {
+    // I6-02 (CI 43206818645) : l'import à froid des cartes d'Aujourd'hui dépassait la seconde de `findBy` sur un runner chargé ; il est fait avant l'attente (aucun délai allongé).
+    await Promise.all([RecoveryToday.preload(), TodaySessionCard.preload(), NutritionRemainingCard.preload()]);
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
     open('today');
     expect(await screen.findByRole('heading', { name: 'Aujourd’hui' })).toBeInTheDocument();
