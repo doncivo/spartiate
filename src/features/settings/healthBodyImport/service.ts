@@ -10,6 +10,7 @@ import type { BodyWeightRepository } from '../../../db/repositories/bodyReposito
 import type { MeasurementRepository } from '../../../db/repositories/bodyProgressRepository';
 import type { MealEntryRecord, MealEntryRepository } from '../../../db/repositories/mealEntryRepository';
 import { RepositoryError } from '../../../db/repositories/common';
+import { DbError } from '../../../db/driver';
 import { ShortcutFolderError, type ShortcutFileRead, type ShortcutFilesReader } from '../../../platform/shortcutFiles';
 
 /**
@@ -75,6 +76,8 @@ export interface NutritionOutcome {
   readonly skippedJournal: number;
   readonly skippedDeleted: number;
   readonly skippedNoEnergy: number;
+  /** Jours plus anciens que la fenêtre de rapprochement avec le journal : jamais écrits (le journal n'y est pas lu). */
+  readonly skippedOld: number;
 }
 
 export interface BodyImportResult {
@@ -120,12 +123,15 @@ export interface HealthBodyImportService {
   lastRun(): BodyImportResult | null;
 }
 
-const EMPTY_NUTRITION: NutritionOutcome = { created: 0, updated: 0, unchanged: 0, superseded: 0, skippedJournal: 0, skippedDeleted: 0, skippedNoEnergy: 0 };
+const EMPTY_NUTRITION: NutritionOutcome = { created: 0, updated: 0, unchanged: 0, superseded: 0, skippedJournal: 0, skippedDeleted: 0, skippedNoEnergy: 0, skippedOld: 0 };
 const MEASURE_KIND: Readonly<Partial<Record<BodyMetric, HealthMetricKind>>> = { body_fat: 'health_body_fat_pct', lean_mass: 'health_lean_mass_kg', waist: 'health_waist_cm', height: 'health_height_cm' };
 
 const isBodyFileName = (name: string): name is BodyFileName => (BODY_FILE_NAMES as readonly string[]).includes(name);
 
 const blank = (name: BodyFileName, state: BodyFileOutcome['state']): BodyFileOutcome => ({ name, metric: BODY_METRIC_OF[name], state, read: 0, added: 0, updated: 0, unchanged: 0, skippedDeleted: 0, duplicates: 0, rejectedTotal: 0, rejected: null, truncated: false });
+
+/** Une valeur refusée par le dépôt ou par une contrainte de la base : comptée comme refusée, elle ne fait jamais échouer tout l'import. */
+const isRefusal = (error: unknown): boolean => error instanceof RepositoryError || (error instanceof DbError && error.code === 'constraint');
 
 interface Counts {
   added: number;
@@ -168,7 +174,7 @@ export function createHealthBodyImportService(deps: BodyImportDeps): HealthBodyI
         else if (previous.kg !== after.kg || previous.measuredAt !== after.measuredAt) counts.updated += 1;
         else counts.unchanged += 1;
       } catch (error) {
-        if (!(error instanceof RepositoryError)) throw error;
+        if (!isRefusal(error)) throw error;
         counts.refused += 1;
       }
     }
@@ -189,7 +195,7 @@ export function createHealthBodyImportService(deps: BodyImportDeps): HealthBodyI
         counts.updated += 1;
       }
     } catch (error) {
-      if (!(error instanceof RepositoryError)) throw error;
+      if (!isRefusal(error)) throw error;
       counts.refused += 1;
     }
   }
@@ -201,9 +207,11 @@ export function createHealthBodyImportService(deps: BodyImportDeps): HealthBodyI
     const carb = value('carb');
     const fat = value('fat');
     const fiber = value('fiber');
-    const imported = new Set<string>([...energy.keys(), ...protein.keys(), ...carb.keys(), ...fat.keys(), ...fiber.keys()]);
-
     const from = addDays(today, -RECONCILE_DAYS);
+    const all = new Set<string>([...energy.keys(), ...protein.keys(), ...carb.keys(), ...fat.keys(), ...fiber.keys()]);
+    // Le journal n'est lu que sur la fenêtre : un jour plus ancien est ignoré et compté (sinon une entrée de plus à chaque import).
+    const imported = new Set<string>([...all].filter((d) => d >= from));
+    const skippedOld = all.size - imported.size;
     const entries = await repos.meals.listBetween(from, today, { includeDeleted: true });
     const byDay = new Map<string, { meals: boolean; live: MealEntryRecord | null; deleted: boolean }>();
     for (const entry of entries) {
@@ -218,10 +226,19 @@ export function createHealthBodyImportService(deps: BodyImportDeps): HealthBodyI
     const days = new Set<string>(imported);
     for (const [day, slot] of byDay) if (slot.live !== null && slot.meals) days.add(day);
 
-    const out = { ...EMPTY_NUTRITION } as { -readonly [K in keyof NutritionOutcome]: NutritionOutcome[K] };
+    const out = { ...EMPTY_NUTRITION, skippedOld } as { -readonly [K in keyof NutritionOutcome]: NutritionOutcome[K] };
+    // Un fichier non lu cette fois (absent, encore dans iCloud) ne remet pas à zéro la valeur déjà importée : on garde celle de l'entrée.
+    const read = (metric: BodyMetric): boolean => parsedByMetric.has(metric);
     for (const day of [...days].sort()) {
       const slot = byDay.get(day) ?? { meals: false, live: null, deleted: false };
-      const totals = { kcal: energy.get(day) ?? null, proteinG: protein.get(day) ?? null, fatG: fat.get(day) ?? null, carbG: carb.get(day) ?? null, fiberG: fiber.get(day) ?? null };
+      const kept = slot.live;
+      const totals = {
+        kcal: energy.get(day) ?? null,
+        proteinG: read('protein') ? (protein.get(day) ?? null) : (kept?.proteinG ?? null),
+        fatG: read('fat') ? (fat.get(day) ?? null) : (kept?.fatG ?? null),
+        carbG: read('carb') ? (carb.get(day) ?? null) : (kept?.carbG ?? null),
+        fiberG: fiber.get(day) ?? null,
+      };
       const plan = planRenphoDay({
         day: day as LocalDate,
         totals,
@@ -252,8 +269,10 @@ export function createHealthBodyImportService(deps: BodyImportDeps): HealthBodyI
           break;
       }
       // Fibres : liées à l'entrée du jour ; retirées dès que le journal a des repas (même si l'entrée Renpho a déjà été supprimée par la saisie).
-      if (slot.meals) await repos.measurements.remove(day as LocalDate, 'health_fiber_g');
-      else if (plan.fiber === 'save' && totals.fiberG !== null) await applyMeasure(repos.measurements, day as LocalDate, 'health_fiber_g', totals.fiberG, { added: 0, updated: 0, unchanged: 0, skippedDeleted: 0, refused: 0 });
+      const gone = slot.meals || (plan.action === 'skip' && plan.reason === 'deleted');
+      if (gone) await repos.measurements.remove(day as LocalDate, 'health_fiber_g');
+      // 0 g de fibres : rien à enregistrer (la table des mesures exige une valeur positive).
+      else if (plan.fiber === 'save' && totals.fiberG !== null && totals.fiberG > 0) await applyMeasure(repos.measurements, day as LocalDate, 'health_fiber_g', totals.fiberG, { added: 0, updated: 0, unchanged: 0, skippedDeleted: 0, refused: 0 });
     }
     return out;
   }
@@ -316,7 +335,7 @@ export function createHealthBodyImportService(deps: BodyImportDeps): HealthBodyI
           const base = outcomes.get(name);
           if (base !== undefined) outcomes.set(name, { ...base, added: c.added, updated: c.updated, unchanged: c.unchanged, skippedDeleted: c.skippedDeleted, rejectedTotal: base.rejectedTotal + c.refused });
         }
-        deps.log('body-import-nutrition', { created: nutrition.created, updated: nutrition.updated, unchanged: nutrition.unchanged, superseded: nutrition.superseded, skipped_journal: nutrition.skippedJournal, skipped_deleted: nutrition.skippedDeleted, skipped_no_energy: nutrition.skippedNoEnergy });
+        deps.log('body-import-nutrition', { created: nutrition.created, updated: nutrition.updated, unchanged: nutrition.unchanged, superseded: nutrition.superseded, skipped_journal: nutrition.skippedJournal, skipped_deleted: nutrition.skippedDeleted, skipped_no_energy: nutrition.skippedNoEnergy, skipped_old: nutrition.skippedOld });
       } catch {
         // Rien n'a été écrit (transaction annulée) : l'écran le dit, l'import suivant réessaie.
         deps.log('body-import-failed', {});

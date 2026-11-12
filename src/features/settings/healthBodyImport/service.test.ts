@@ -202,6 +202,12 @@ describe('import Renpho via Santé et Raccourcis (I6-04)', () => {
     const result = await failing.run('manual');
     expect(result.status).toBe('failed');
     expect(await (await db.data.repos.bodyWeights()).listRecent(5)).toEqual([]);
+    // L'échec est gardé (dit à la réouverture), ne compte pas pour la limite de 30 minutes, et le prochain succès l'efface.
+    expect(stored).toMatchObject({ failed: true });
+    const ok = reader(async () => files({}));
+    expect((await build(ok).run('open')).status).toBe('done');
+    expect(ok.read).toHaveBeenCalledTimes(1);
+    expect(stored).not.toHaveProperty('failed');
   });
 
   it('journal technique : événements fixes et comptes entiers seulement, aucune valeur corporelle ; aucun appel réseau', async () => {
@@ -216,6 +222,24 @@ describe('import Renpho via Santé et Raccourcis (I6-04)', () => {
     expect(JSON.stringify(logs)).not.toMatch(/81|2300|18\.5/);
     expect(fetchSpy).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
+  });
+
+  it('revue I6-04 : 0 g de fibres n’échoue pas l’import ; jour hors fenêtre ignoré et compté, jamais dupliqué ; fichier de protéines non lu : protéines gardées ; deux échantillons identiques comptent tous deux', async () => {
+    const zero = await run({ ...NUTRITION, 'fibres.csv': '2026-11-08T08:00:00+01:00;0;g\n' });
+    expect(zero.status).toBe('done');
+    expect(await (await db.data.repos.measurements()).list('health_fiber_g')).toEqual([]);
+    const old = { 'energie.csv': '2026-08-01T08:00:00+02:00;2000;kcal\n' };
+    const first = await run(old);
+    const second = await run(old);
+    expect(first.nutrition).toMatchObject({ created: 0, skippedOld: 1 });
+    expect(second.nutrition.created).toBe(0);
+    expect((await meals()).filter((e) => e.date === '2026-08-01')).toEqual([]);
+    const { 'proteines.csv': _unread, ...withoutProtein } = NUTRITION;
+    await run(withoutProtein, {});
+    expect((await meals())[0]).toMatchObject({ proteinG: 150, kcal: 2300 });
+    const eggs = await run({ 'proteines.csv': '2026-11-07T08:00:00+01:00;6;g\n2026-11-07T08:00:00+01:00;6;g\n', 'energie.csv': '2026-11-07T08:00:00+01:00;100;kcal\n' });
+    expect(eggs.nutrition.created).toBe(1);
+    expect((await meals()).find((e) => e.date === D7)?.proteinG).toBe(12);
   });
 
   it('le dernier import est gardé (comptes seulement, jamais une valeur) pour l’écran', async () => {

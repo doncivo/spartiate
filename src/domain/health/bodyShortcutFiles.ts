@@ -138,12 +138,15 @@ export function parseBodyFile(name: BodyFileName, text: string, today: string, t
       counter.add('out_of_range');
       continue;
     }
-    const key = `${instant.at}|${round(value, 6)}`;
-    if (seen.has(key)) {
-      counter.duplicates += 1;
-      continue;
+    // Doublon d'export : seulement pour une valeur par jour ; dans une somme, deux échantillons identiques (deux œufs au même instant) comptent tous les deux.
+    if (spec.mode === 'latest') {
+      const key = `${instant.at}|${round(value, 6)}`;
+      if (seen.has(key)) {
+        counter.duplicates += 1;
+        continue;
+      }
+      seen.add(key);
     }
-    seen.add(key);
     const current = byDay.get(instant.day);
     if (spec.mode === 'sum') byDay.set(instant.day, { value: (current?.value ?? 0) + value, at: Math.max(current?.at ?? 0, instant.at) });
     else if (current === undefined || instant.at >= current.at) byDay.set(instant.day, { value, at: instant.at });
