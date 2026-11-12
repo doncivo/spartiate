@@ -37,6 +37,9 @@ interface LineRow extends SqlRow, SyncRow {
   readonly rir: number | null;
   readonly rest_sec: number;
   readonly position: number;
+  // I6-03b (migration 0014) : absentes d'une base plus ancienne (lecture tolérante).
+  readonly circuit_id?: string | null;
+  readonly circuit_rest_sec?: number | null;
 }
 
 const rowToRoutine = (row: RoutineRow): Routine => ({ id: row.id, name: row.name, mode: row.mode as RoutineMode, ...readSyncMeta(row) });
@@ -51,6 +54,8 @@ const rowToLine = (row: LineRow): RoutineExercise => ({
   rir: row.rir,
   restSec: row.rest_sec,
   position: row.position,
+  circuitId: row.circuit_id ?? null,
+  circuitRestSec: row.circuit_rest_sec ?? null,
   ...readSyncMeta(row),
 });
 const rowToDay = (row: DayRow, lines: readonly LineRow[]): RoutineDay => ({
@@ -109,10 +114,28 @@ export function createTrainingRoutineRepository(db: SqlExecutor, stamper: WriteS
   };
   const insertLine = async (dayId: string, line: RoutineExerciseInput): Promise<void> => {
     const stamp = stamper.next();
+    // Les colonnes de groupe (0014) ne sont écrites que pour une ligne de groupe : une ligne libre s'écrit comme avant.
+    const grouped = line.circuitId !== undefined && line.circuitId !== null;
     await db.execute(
-      `INSERT INTO routine_exercise (id, routine_day_id, exercise_id, exercise_name, sets, rep_min, rep_max, rir, rest_sec, position, created_at, updated_at, device_id, hlc)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [line.id, dayId, line.exerciseId, line.exerciseName.trim(), line.sets, line.repMin, line.repMax, line.rir, line.restSec, line.position, stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
+      `INSERT INTO routine_exercise (id, routine_day_id, exercise_id, exercise_name, sets, rep_min, rep_max, rir, rest_sec, position${grouped ? ', circuit_id, circuit_rest_sec' : ''}, created_at, updated_at, device_id, hlc)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?${grouped ? ', ?, ?' : ''}, ?, ?, ?, ?)`,
+      [
+        line.id,
+        dayId,
+        line.exerciseId,
+        line.exerciseName.trim(),
+        line.sets,
+        line.repMin,
+        line.repMax,
+        line.rir,
+        line.restSec,
+        line.position,
+        ...(grouped ? [line.circuitId as string, line.circuitRestSec ?? null] : []),
+        stamp.at,
+        stamp.at,
+        stamp.deviceId,
+        stamp.hlc,
+      ],
     );
   };
   const markDeleted = async (table: 'routine' | 'routine_day' | 'routine_exercise', id: string): Promise<void> => {
@@ -224,12 +247,30 @@ export function createTrainingRoutineRepository(db: SqlExecutor, stamper: WriteS
         rir: patch.rir === undefined ? current.rir : patch.rir,
         restSec: patch.restSec ?? current.restSec,
         position: patch.position ?? current.position,
+        circuitId: patch.circuitId === undefined ? (current.circuitId ?? null) : patch.circuitId,
+        circuitRestSec: patch.circuitRestSec === undefined ? (current.circuitRestSec ?? null) : patch.circuitRestSec,
       };
       if (validateRoutineLine(next).length > 0) invalid('routine_exercise', id);
+      // I6-03b : les colonnes de groupe ne sont écrites que si le patch les nomme (capturées par `sync_routine_exercise_circuit_au`, 0014).
+      const circuit = patch.circuitId !== undefined || patch.circuitRestSec !== undefined;
       const stamp = stamper.next();
       await db.execute(
-        `UPDATE routine_exercise SET exercise_id = ?, exercise_name = ?, sets = ?, rep_min = ?, rep_max = ?, rir = ?, rest_sec = ?, position = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?`,
-        [next.exerciseId, next.exerciseName.trim(), next.sets, next.repMin, next.repMax, next.rir, next.restSec, next.position, stamp.at, stamp.deviceId, stamp.hlc, id],
+        `UPDATE routine_exercise SET exercise_id = ?, exercise_name = ?, sets = ?, rep_min = ?, rep_max = ?, rir = ?, rest_sec = ?, position = ?${circuit ? ', circuit_id = ?, circuit_rest_sec = ?' : ''}, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?`,
+        [
+          next.exerciseId,
+          next.exerciseName.trim(),
+          next.sets,
+          next.repMin,
+          next.repMax,
+          next.rir,
+          next.restSec,
+          next.position,
+          ...(circuit ? [next.circuitId ?? null, next.circuitRestSec ?? null] : []),
+          stamp.at,
+          stamp.deviceId,
+          stamp.hlc,
+          id,
+        ],
       );
       return rowToLine(await liveLine(id));
     },

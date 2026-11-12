@@ -33,8 +33,8 @@ const insertSet = (db: SqlDriver, circuitId: string | null, rest: number | null)
   );
 
 describe('migration 0013 : workout_circuit (I6-03)', () => {
-  it('registre : treizième et dernière, version 13, nom workout_circuit', () => {
-    expect(migrations.map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
+  it('registre : 0001 à 0013 ; version 13, nom workout_circuit', () => {
+    expect(migrations.slice(0, 13).map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
     expect(migrations[12]).toBe(migration0013WorkoutCircuit);
     expect(migration0013WorkoutCircuit.name).toBe('workout_circuit');
   });

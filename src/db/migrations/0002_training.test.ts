@@ -211,7 +211,8 @@ describe('migration 0002 : training (I1-01, D-71, P-09)', () => {
     for (const [table, columns] of CAPTURE_TABLES_V2) {
       const t = SYNC_CATALOGUE.table(table);
       expect(t, table).toBeDefined();
-      if (t) expect([...columns]).toEqual([...publishedColumns(t)]);
+      // La 0014 (I6-03b) ajoute les colonnes de groupe de `routine_exercise`, capturées par leur propre déclencheur : la copie de la 0002 reste le reste du catalogue.
+      if (t) expect([...columns]).toEqual([...publishedColumns(t)].filter((c) => table !== 'routine_exercise' || (c !== 'circuit_id' && c !== 'circuit_rest_sec')));
     }
     expect(CAPTURE_TABLES_V2.map(([t]) => t)).toEqual(['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise']);
   });

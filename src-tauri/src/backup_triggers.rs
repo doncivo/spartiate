@@ -5,7 +5,7 @@
 //! à régénérer avec ce test si la migration 0011 change (jamais, une migration publiée ne se modifie plus) ou si un déclencheur est ajouté.
 
 /// (nom, table, SQL) de chaque déclencheur, triés par nom.
-pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 98] = [
+pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 99] = [
     (
         "search_checklist_ad",
         "checklist",
@@ -2933,6 +2933,34 @@ INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine_exercise', N
      END"##,
     ),
     (
+        "sync_routine_exercise_circuit_au",
+        "routine_exercise",
+        r##"CREATE TRIGGER sync_routine_exercise_circuit_au AFTER UPDATE OF circuit_id, circuit_rest_sec ON routine_exercise
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+         SELECT 'routine_exercise', NEW.id, '*', OLD.hlc, NULL
+         WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = '*');
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'routine_exercise', NEW.id, 'circuit_id', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field IN ('circuit_id', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_id')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_id'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.circuit_id IS NOT NEW.circuit_id
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_id' AND OLD.circuit_id IS NOT NEW.circuit_id;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine_exercise', NEW.id, 'circuit_id' WHERE OLD.circuit_id IS NOT NEW.circuit_id;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'routine_exercise', NEW.id, 'circuit_rest_sec', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field IN ('circuit_rest_sec', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_rest_sec')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_rest_sec'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.circuit_rest_sec IS NOT NEW.circuit_rest_sec
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_rest_sec' AND OLD.circuit_rest_sec IS NOT NEW.circuit_rest_sec;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine_exercise', NEW.id, 'circuit_rest_sec' WHERE OLD.circuit_rest_sec IS NOT NEW.circuit_rest_sec;
+     END"##,
+    ),
+    (
         "sync_routine_log_ai",
         "routine_log",
         r##"CREATE TRIGGER sync_routine_log_ai AFTER INSERT ON routine_log WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
@@ -3973,7 +4001,7 @@ pub const SUPERSEDED_TRIGGERS: [(&str, &str, &str, u32, u32); 3] = [
 /// de 1 à `APP_SCHEMA_VERSION`, même vide (migration sans déclencheur) : une version sans entrée, ou un déclencheur d'une base migrée absent
 /// d'ici, fait échouer `backup_versions.rs` (`i5_01_*`, comparaison avec `tests/fixtures/spartiate-migrations.json`). Jamais de version
 /// par défaut : un oubli ferait recréer à la restauration un déclencheur qu'une migration suivante créerait encore (« trigger already exists »).
-pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 13] = [
+pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 14] = [
     // SPA-001b (migration 0001) : profil et poids.
     (
         1,
@@ -4078,6 +4106,9 @@ pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 13] = [
     ),
     // I6-03 (migration 0013) : colonnes `circuit_id` et `circuit_rest_sec` de `workout_set`, publiées avec la séance close ; AUCUN déclencheur (écrites sur une séance ouverte seulement, D-27).
     (13, &[]),
+    // I6-03b (migration 0014) : colonnes `circuit_id` et `circuit_rest_sec` de `routine_exercise`, publiées ; capture propre des deux colonnes
+    // (`AFTER UPDATE OF`), le corps de `sync_routine_exercise_au` (0002) n'est pas remplacé.
+    (14, &["sync_routine_exercise_circuit_au"]),
 ];
 
 /// I5-01 point 1.1 : tables créées par les migrations Spartiate (toutes versions). Un déclencheur hérité de l'ancien projet (nom absent de
