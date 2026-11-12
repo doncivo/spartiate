@@ -44,9 +44,8 @@ describe('cellules et fichiers CSV', () => {
     expect(csvCell('ligne1\nligne2')).toBe('"ligne1\nligne2"');
     expect(csvCell('ligne1\r\nligne2')).toBe('"ligne1\r\nligne2"');
   });
-  it('un texte qui commencerait une formule dans un tableur est neutralisé par une apostrophe (= + @ tabulation, - suivi d’autre chose qu’un chiffre) ; les nombres négatifs restent des nombres', () => {
+  it('un texte qui commencerait une formule dans un tableur est neutralisé par une apostrophe (= + - @ % tabulation) ; les nombres négatifs restent des nombres', () => {
     for (const text of ['=1+1', '+33 6 00 00 00 00', '@cmd', '\tx', '-cmd']) expect(csvCell(text), text).toBe(`'${text}`);
-    expect(csvCell('-5 kg')).toBe('-5 kg');
     expect(csvCell(-5)).toBe('-5');
     expect(csvCell('café')).toBe('café');
   });

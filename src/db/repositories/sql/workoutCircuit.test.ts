@@ -111,6 +111,32 @@ describe('WorkoutRepository.ungroupCircuit et retraits', () => {
   });
 });
 
+describe('revue I6-03 : groupes multiples et échauffements', () => {
+  it('B1 : défaire un groupe ne casse pas l’alternance d’un autre groupe', async () => {
+    await open();
+    const r = await db.data.repos.workouts();
+    await r.addExercise(W, { exerciseId: 'overhead-press-barbell', exerciseName: 'Développé militaire', sets: 2 });
+    await r.addExercise(W, { exerciseId: 'lateral-raise-dumbbell', exerciseName: 'Élévations latérales', sets: 2 });
+    const first = await group({ exerciseIds: ['bench-press-barbell', 'row-barbell'], rounds: 2, restBetweenSec: 0, restRoundSec: null });
+    await group({ exerciseIds: ['overhead-press-barbell', 'lateral-raise-dumbbell'], rounds: 2, restBetweenSec: 0, restRoundSec: null });
+    await r.ungroupCircuit(W, first.sets[0]?.circuitId as string);
+    expect((await sets()).map((s) => s.exerciseId)).toEqual([
+      'bench-press-barbell', 'bench-press-barbell', 'row-barbell', 'row-barbell', 'plank',
+      'overhead-press-barbell', 'lateral-raise-dumbbell', 'overhead-press-barbell', 'lateral-raise-dumbbell',
+    ]);
+  });
+
+  it('I2 : un échauffement sur le 2e exercice ne change pas l’ordre du tour après un ajout de série', async () => {
+    await open();
+    const r = await db.data.repos.workouts();
+    await group({ exerciseIds: ['bench-press-barbell', 'row-barbell'], rounds: 2, restBetweenSec: 0, restRoundSec: null });
+    await db.data.transaction(async (repos) => (await repos.workouts()).addWarmupSets(W, 'row-barbell', [{ loadKg: 20, reps: 8 }]));
+    await db.data.transaction(async (repos) => (await repos.workouts()).addSet(W, 'bench-press-barbell'));
+    const work = (await r.get(W))?.sets.filter((s) => s.setKind !== 'warmup' && s.circuitId).map((s) => s.exerciseId);
+    expect(work).toEqual(['bench-press-barbell', 'row-barbell', 'bench-press-barbell', 'row-barbell', 'bench-press-barbell']);
+  });
+});
+
 describe('clôture et rejeu', () => {
   async function closeCircuit(): Promise<string> {
     await open();
