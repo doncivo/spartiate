@@ -68,7 +68,7 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
     try {
       expect(await screen.findByText('Aujourd’hui', { selector: 'h1' })).toBeInTheDocument();
     } catch (error) {
-      throw new Error(`En-tête d’Aujourd’hui absent ; page : ${document.body.innerHTML.slice(0, 1500)} ; cause : ${String(error)}`);
+      throw new Error(`En-tête d’Aujourd’hui absent ; page : ${document.body.innerHTML.slice(0, 1500)} `, { cause: error });
     }
     expect(await screen.findByText('Trois réglages, puis on s’entraîne.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Renseigner mon profil' }));
