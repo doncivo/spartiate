@@ -94,3 +94,38 @@ export function photoTargetSize(width: number, height: number): { readonly width
   const scale = Math.min(1, PHOTO_MAX_EDGE_PX / Math.max(width, height));
   return { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) };
 }
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Mesures importées de Santé (I6-04, D-113) : même table `measurement`, genres propres à la source, aucune migration.
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Genres écrits seulement par l'import des fichiers Renpho / Santé : le préfixe `health_` est la SOURCE dans la clé stable (date, genre, source),
+ * si bien qu'une mesure manuelle de la même zone n'est jamais remplacée. Le SQL ne fixe que le format du genre (`[a-z_]`, 32 caractères au plus).
+ * Unités : pourcentage, kilogrammes, centimètres, grammes (dans le nom). Jamais affichés comme des zones saisies (`MEASUREMENT_KINDS`).
+ */
+export const HEALTH_METRIC_KINDS = ['health_body_fat_pct', 'health_lean_mass_kg', 'health_waist_cm', 'health_height_cm', 'health_fiber_g'] as const;
+export type HealthMetricKind = (typeof HEALTH_METRIC_KINDS)[number];
+
+/** Bornes de plausibilité de chaque genre importé (incluses) ; mêmes valeurs que `BODY_BOUNDS` de l'import, fibres par jour comprises. */
+export const HEALTH_METRIC_BOUNDS: Readonly<Record<HealthMetricKind, { readonly min: number; readonly max: number }>> = {
+  health_body_fat_pct: bounds(3, 60),
+  health_lean_mass_kg: bounds(15, 200),
+  health_waist_cm: bounds(40, 200),
+  health_height_cm: bounds(100, 250),
+  health_fiber_g: bounds(0, 300),
+};
+
+export const isHealthMetricKind = (value: string): value is HealthMetricKind => (HEALTH_METRIC_KINDS as readonly string[]).includes(value);
+
+/** Genre de mesure stocké : une zone saisie ou un genre importé de Santé. */
+export type StoredMeasurementKind = MeasurementKind | HealthMetricKind;
+export const isStoredMeasurementKind = (value: string): value is StoredMeasurementKind => isMeasurementKind(value) || isHealthMetricKind(value);
+
+/** Bornes d'un genre stocké (zone ou importé). */
+export const storedMeasurementBounds = (kind: StoredMeasurementKind): { readonly min: number; readonly max: number } => (isMeasurementKind(kind) ? MEASUREMENT_BOUNDS_CM[kind] : HEALTH_METRIC_BOUNDS[kind]);
+
+export const isStoredMeasurementValue = (kind: StoredMeasurementKind, value: number): boolean => {
+  const { min, max } = storedMeasurementBounds(kind);
+  return Number.isFinite(value) && value >= min && value <= max;
+};

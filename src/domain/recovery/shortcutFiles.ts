@@ -55,10 +55,10 @@ const ISO_NO_ZONE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?$/;
 const VALUE = /^(\d{1,7}(?:[.,]\d{1,15})?)\s*([A-Za-z/]+)?$/;
 const HEADER = /^(date|d[eé]but|start)/i;
 
-type Fail = { readonly fail: ShortcutRejectReason };
-const isFail = <T extends object>(r: T | Fail): r is Fail => 'fail' in r;
+export type Fail = { readonly fail: ShortcutRejectReason };
+export const isFail = <T extends object>(r: T | Fail): r is Fail => 'fail' in r;
 
-class Counter {
+export class Counter {
   private readonly counts: Record<ShortcutRejectReason, number> = {
     bad_column_count: 0, bad_date: 0, no_timezone: 0, future: 0, bad_value: 0, out_of_range: 0, bad_unit: 0, unknown_stage: 0, end_before_start: 0,
   };
@@ -73,7 +73,7 @@ class Counter {
   }
 }
 
-function readRows(text: string): { readonly rows: readonly (readonly string[])[]; readonly truncated: boolean } {
+export function readRows(text: string): { readonly rows: readonly (readonly string[])[]; readonly truncated: boolean } {
   const lines = (text.charCodeAt(0) === 0xfeff ? text.slice(1) : text).split(/\r?\n/).map((l) => l.trim()).filter((l) => l !== '');
   const truncated = lines.length > MAX_LINES;
   const rows = lines.slice(0, MAX_LINES).map((l) => l.split(/[;\t]/).map((c) => c.trim()));
@@ -82,7 +82,7 @@ function readRows(text: string): { readonly rows: readonly (readonly string[])[]
   return { rows, truncated };
 }
 
-function parseInstant(cell: string, today: string, timeZone: string): { readonly at: number; readonly day: string } | Fail {
+export function parseInstant(cell: string, today: string, timeZone: string): { readonly at: number; readonly day: string } | Fail {
   if (!ISO_WITH_ZONE.test(cell)) return { fail: ISO_NO_ZONE.test(cell) ? 'no_timezone' : 'bad_date' };
   const at = Date.parse(cell);
   if (!Number.isFinite(at)) return { fail: 'bad_date' };

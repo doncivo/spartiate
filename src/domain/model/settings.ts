@@ -142,6 +142,8 @@ export interface SettingsValues {
   'recovery.bedtimeProposal': unknown;
   /** I5-06 : version de la règle du sommeil avec laquelle les résumés des 30 derniers jours ont été calculés (null : jamais). Locale, jamais synchronisée. */
   'recovery.sleepRulesVersion': unknown;
+  /** I6-04 (D-113) : résumé du dernier import Renpho / Santé (date, comptes par fichier et pour la nutrition, jamais une valeur). Valeur BRUTE lue par `parseBodyImportSummary` ; locale, jamais synchronisée. */
+  'healthBody.lastImport': unknown;
 }
 
 export type SettingKey = keyof SettingsValues;
@@ -204,6 +206,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'recovery.notificationPrefs': { scope: 'local', defaultValue: null },
   'recovery.bedtimeProposal': { scope: 'local', defaultValue: null },
   'recovery.sleepRulesVersion': { scope: 'local', defaultValue: null },
+  'healthBody.lastImport': { scope: 'local', defaultValue: null },
 };
 
 /** Valeur par défaut d'un réglage. */

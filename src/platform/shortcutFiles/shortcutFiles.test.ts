@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createFolderShortcutFiles, createPickerShortcutFiles, createUnsupportedShortcutFiles, openShortcutFiles, openShortcutPicker, SHORTCUT_FILE_NAMES, ShortcutFolderError } from './index';
+import { ALL_SHORTCUT_FILE_NAMES, createFolderShortcutFiles, createPickerShortcutFiles, createUnsupportedShortcutFiles, openShortcutFiles, openShortcutPicker, SHORTCUT_FILE_NAMES, ShortcutFolderError } from './index';
 
 const file = (name: string, text: string): File => new File([text], name, { type: 'text/csv' });
 
@@ -138,6 +138,18 @@ describe('lecteur de dossier iCloud Drive › Spartiate › sante (I5-03, I5-04,
       .read(SHORTCUT_FILE_NAMES)
       .catch((e: unknown) => e);
     expect((other as ShortcutFolderError).code).toBe('failed');
+  });
+
+  it('I6-04 : les dix fichiers Renpho passent aussi (liste blanche étendue à quatorze noms), un nom voisin non', async () => {
+    const invoke = vi.fn(async () => folder([{ name: 'poids.csv', state: 'ok', size: 3, bytes: b64('a;1') }, { name: 'fibres.csv', state: 'absent' }]));
+    const reads = await createFolderShortcutFiles(invoke).read(['poids.csv', 'fibres.csv', 'poids.csv.txt' as never, 'Poids.csv' as never]);
+    expect(invoke).toHaveBeenCalledWith('health_files_read', { names: ['poids.csv', 'fibres.csv'] });
+    expect(reads).toEqual([
+      { name: 'poids.csv', state: 'ok', text: 'a;1', size: 3 },
+      { name: 'fibres.csv', state: 'absent' },
+    ]);
+    expect(ALL_SHORTCUT_FILE_NAMES).toHaveLength(14);
+    expect(new Set(ALL_SHORTCUT_FILE_NAMES).size).toBe(14);
   });
 
   it('ne demande que des noms de la liste fermée', async () => {

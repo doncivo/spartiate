@@ -1,4 +1,4 @@
-import { isMeasurementKind, isMeasurementValue, looksLikeJpeg, photoFileName, PHOTO_MAX_BYTES, type MeasurementKind } from '../../../domain/bodyProgress';
+import { isMeasurementKind, isStoredMeasurementKind, isStoredMeasurementValue, looksLikeJpeg, photoFileName, PHOTO_MAX_BYTES, type StoredMeasurementKind } from '../../../domain/bodyProgress';
 import type { WriteStamper } from '../../../domain/hlc';
 import { uuidGenerator, type IdGenerator } from '../../../domain/id';
 import { measurementId } from '../../../domain/sync/naturalIds';
@@ -18,7 +18,7 @@ interface PhotoRow extends SqlRow, SyncRow {
   readonly file_name: string;
 }
 
-const toMeasurement = (row: MeasurementRow): MeasurementRecord => ({ id: row.id, day: row.date as LocalDate, kind: row.kind as MeasurementKind, value: row.value, ...readSyncMeta(row) });
+const toMeasurement = (row: MeasurementRow): MeasurementRecord => ({ id: row.id, day: row.date as LocalDate, kind: row.kind as StoredMeasurementKind, value: row.value, ...readSyncMeta(row) });
 const toPhoto = (row: PhotoRow): ProgressPhotoRecord => ({ id: row.id, day: row.date as LocalDate, fileName: row.file_name, ...readSyncMeta(row) });
 
 const BASE64_CHUNK = 0x8000;
@@ -44,7 +44,7 @@ export function createMeasurementRepository(db: SqlExecutor, stamper: WriteStamp
 
   return {
     async save(day, kind, value) {
-      if (!isLocalDate(day) || !isMeasurementKind(kind) || !isMeasurementValue(kind, value)) invalid(String(day));
+      if (!isLocalDate(day) || !isStoredMeasurementKind(kind) || !isStoredMeasurementValue(kind, value)) invalid(String(day));
       const id = measurementId(day, kind);
       const row = await read(id);
       if (row && row.deleted_at === null && row.value === value) return toMeasurement(row);
@@ -60,7 +60,7 @@ export function createMeasurementRepository(db: SqlExecutor, stamper: WriteStamp
     },
 
     async remove(day, kind) {
-      if (!isLocalDate(day) || !isMeasurementKind(kind)) return;
+      if (!isLocalDate(day) || !isStoredMeasurementKind(kind)) return;
       const id = measurementId(day, kind);
       const row = await read(id);
       if (!row || row.deleted_at !== null) return;
@@ -68,12 +68,18 @@ export function createMeasurementRepository(db: SqlExecutor, stamper: WriteStamp
       await db.execute('UPDATE measurement SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
     },
 
+    async find(day, kind) {
+      if (!isLocalDate(day) || !isStoredMeasurementKind(kind)) return null;
+      const row = await read(measurementId(day, kind));
+      return row ? toMeasurement(row) : null;
+    },
+
     async list(kind) {
       const rows =
         kind === undefined
           ? await db.select<MeasurementRow>('SELECT * FROM measurement WHERE deleted_at IS NULL ORDER BY date, kind')
           : await db.select<MeasurementRow>('SELECT * FROM measurement WHERE kind = ? AND deleted_at IS NULL ORDER BY date', [kind]);
-      return rows.filter((row) => isMeasurementKind(row.kind)).map(toMeasurement);
+      return rows.filter((row) => (kind === undefined ? isMeasurementKind(row.kind) : isStoredMeasurementKind(row.kind))).map(toMeasurement);
     },
   };
 }

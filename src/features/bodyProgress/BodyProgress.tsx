@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { MEASUREMENT_BOUNDS_CM, MEASUREMENT_KINDS, measurementChange, validateMeasurement, type MeasurementIssue, type MeasurementKind } from '../../domain/bodyProgress';
+import { HEALTH_METRIC_KINDS, MEASUREMENT_BOUNDS_CM, MEASUREMENT_KINDS, measurementChange, validateMeasurement, type HealthMetricKind, type MeasurementIssue, type MeasurementKind } from '../../domain/bodyProgress';
 import { todayLocal } from '../../domain/clock';
 import type { LocalDate } from '../../domain/types';
 import type { MeasurementRecord, ProgressPhotoRecord } from '../../db/repositories';
@@ -39,13 +39,16 @@ const ISSUE_TEXT: Record<Exclude<MeasurementIssue, 'range'>, BodyProgressTextKey
   future: 'errorFuture',
 };
 
+/** Genres importés de Santé : texte du nom et de l'unité (dans le nom du genre : `_pct`, `_kg`, `_cm`, `_g`). */
+const HEALTH_UNIT = { health_body_fat_pct: 'healthUnit_pct', health_lean_mass_kg: 'healthUnit_kg', health_waist_cm: 'healthUnit_cm', health_height_cm: 'healthUnit_cm', health_fiber_g: 'healthUnit_g' } as const satisfies Record<HealthMetricKind, BodyProgressTextKey>;
+
 /** Au plus deux photos côte à côte. */
 const COMPARE_MAX = 2;
 
 type Load =
   | { readonly status: 'loading' }
   | { readonly status: 'failed' }
-  | { readonly status: 'ready'; readonly measures: readonly MeasurementRecord[]; readonly photos: readonly ProgressPhotoRecord[]; readonly local: ReadonlySet<string> };
+  | { readonly status: 'ready'; readonly measures: readonly MeasurementRecord[]; readonly health: readonly MeasurementRecord[]; readonly photos: readonly ProgressPhotoRecord[]; readonly local: ReadonlySet<string> };
 
 export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto?: () => Promise<Uint8Array | null> }) {
   const container = useAppContainer();
@@ -72,9 +75,12 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
       const photoRepo = await repos.progressPhotos();
       // Fichier local d'une fiche supprimée par l'autre appareil : effacé avant l'affichage (jamais de fichier sans fiche vivante).
       await photoRepo.purgeOrphanFiles();
-      const measures = await (await repos.measurements()).list();
+      const measureRepo = await repos.measurements();
+      const measures = await measureRepo.list();
+      // Dernière valeur de chaque genre importé de Santé (I6-04), en lecture seule.
+      const health = (await Promise.all(HEALTH_METRIC_KINDS.map((k) => measureRepo.list(k)))).flatMap((rows) => rows.slice(-1));
       const photos = await photoRepo.list();
-      return { status: 'ready', measures, photos, local: await photoRepo.localFileIds() } as const;
+      return { status: 'ready', measures, health, photos, local: await photoRepo.localFileIds() } as const;
     })().then(
       (result) => {
         if (live) setLoad(result);
@@ -169,7 +175,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
     );
   }
 
-  const { measures, photos, local } = load;
+  const { measures, health, photos, local } = load;
   const ofKind = measures.filter((m) => m.kind === kind);
   const change = measurementChange(ofKind.map((m) => ({ date: m.day, value: m.value })));
   const compared = compare.map((id) => photos.find((p) => p.id === id)).filter((p): p is ProgressPhotoRecord => p !== undefined);
@@ -237,6 +243,22 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
           </>
         )}
       </section>
+
+      {health.length > 0 && (
+        <section className="ct-today__card ct-bodyprogress__card" aria-labelledby="ct-bodyprogress-health">
+          <h3 id="ct-bodyprogress-health" className="ct-bodyprogress__heading">
+            {tBodyProgress('healthTitle')}
+          </h3>
+          <p className="ct-today__muted">{tBodyProgress('healthHint')}</p>
+          <ul className="ct-bodyprogress__list">
+            {health.map((m) => (
+              <li key={m.id} className="ct-bodyprogress__item">
+                {tBodyProgress('healthLine', { label: tBodyProgress(`health_${m.kind}` as BodyProgressTextKey), value: formatCm(m.value), unit: tBodyProgress(HEALTH_UNIT[m.kind as HealthMetricKind]), date: formatDayMonthYear(m.day) })}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="ct-today__card ct-bodyprogress__card" aria-labelledby="ct-bodyprogress-photos">
         <h3 id="ct-bodyprogress-photos" className="ct-bodyprogress__heading">
