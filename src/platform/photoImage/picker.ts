@@ -6,7 +6,7 @@ import { PHOTO_MAX_BYTES, photoTargetSize } from '../../domain/bodyProgress/meas
  * (côté le plus grand borné) et recodée en JPEG par un canevas, ce qui retire aussi les métadonnées d'origine (position GPS comprise).
  *
  * Rend les octets du JPEG réduit, `null` si l'utilisateur annule ; rejette si l'image est illisible ou ne tient pas dans `PHOTO_MAX_BYTES`.
- * Non vérifié sur appareil (H-23) : le comportement du sélecteur de WKWebView sous SideStore reste à constater par Ali.
+ * Non vérifié sur appareil (H-27) : le comportement du sélecteur de WKWebView sous SideStore reste à constater par Ali.
  */
 
 const QUALITIES = [0.82, 0.7, 0.55] as const;

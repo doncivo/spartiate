@@ -131,8 +131,11 @@ describe('ProgressPhotoRepository', () => {
     await db.driver.execute("UPDATE progress_photo SET deleted_at = '2026-11-12T09:00:00.000Z' WHERE id = ?", [gone.id]);
     await db.driver.execute('DELETE FROM sync_guard');
     await db.driver.execute("INSERT INTO progress_photo_file (photo_id, mime, data, saved_at) VALUES ('sans-fiche', 'image/jpeg', 'AAAA', '2026-11-12T09:00:00.000Z')");
-    expect(await repo.purgeOrphanFiles()).toBe(2);
-    expect(await repo.localFileIds()).toEqual(new Set([kept.id]));
+    // Un fichier sans fiche du tout (ajout en cours) n'est jamais purgé : seule une fiche supprimée désigne un orphelin.
+    expect(await repo.purgeOrphanFiles()).toBe(1);
+    expect((await repo.localFileIds()).has('sans-fiche')).toBe(true);
+    expect((await repo.localFileIds()).has(gone.id)).toBe(false);
+    expect((await repo.localFileIds()).has(kept.id)).toBe(true);
     expect(await repo.purgeOrphanFiles()).toBe(0);
   });
 
