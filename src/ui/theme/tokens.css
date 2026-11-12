@@ -131,10 +131,8 @@
   --ct-color-row-selected: #ece8df;
   --ct-color-handle: #8e87a3;
   --ct-color-select-ring: #b8b1c8;
-  --ct-color-edit-knob: #f2a7a0;
   --ct-edit-track: #15171c;
   --ct-edit-idle-knob: #ffffff;
-  --ct-edit-ink: #15171c;
 
   /* Palette des icônes Lucide (T-03, src/ui/iconCatalog.ts) : une couleur fixe par
      icône du catalogue, reprise des traits colorés des maquettes (Ajout.html,
@@ -161,17 +159,7 @@
   --ct-focus-ink: #15171c;
   --ct-focus-launch-bg: #3a2a66;
 
-  /* Gestes de ligne (A-07, Gestes.html) : couleurs des actions, identiques en clair et en sombre (chaque fond porte son texte). */
-  --ct-swipe-complete-bg: #3e7c5a;
-  --ct-swipe-complete-on: #ffffff;
-  --ct-swipe-reopen-bg: var(--ct-color-surface-input);
-  --ct-swipe-reopen-on: var(--ct-color-text);
-  --ct-swipe-soft-bg: #d8d2c6;
-  --ct-swipe-soft-on: #15171c;
-  --ct-swipe-accent-bg: #5b43a8;
-  --ct-swipe-accent-on: #ffffff;
-  --ct-swipe-danger-bg: #a1271c;
-  --ct-swipe-danger-on: #ffffff;
+  /* Ombre portée des gestes de ligne (A-07). */
   --ct-swipe-shadow: rgba(0, 0, 0, 0.15);
   --ct-color-bronze: #8e6530;
   --ct-color-ok: #5e9e6b;
@@ -233,10 +221,8 @@
     --ct-color-row-selected: #1d2027;
     --ct-color-handle: #b7aecd;
     --ct-color-select-ring: #6a6088;
-    --ct-color-edit-knob: #f2a7a0;
     --ct-edit-track: #c28e4c;
 --ct-edit-idle-knob: #0d0e11;
---ct-edit-ink: #ede7dc;
 --ct-swipe-shadow: rgba(0, 0, 0, 0.7);
   --ct-color-bronze: #c28e4c;
   --ct-color-ok: #5e9e6b;
@@ -297,10 +283,8 @@
   --ct-color-row-selected: #1d2027;
   --ct-color-handle: #b7aecd;
   --ct-color-select-ring: #6a6088;
-  --ct-color-edit-knob: #f2a7a0;
   --ct-edit-track: #c28e4c;
   --ct-edit-idle-knob: #0d0e11;
-  --ct-edit-ink: #ede7dc;
   --ct-swipe-shadow: rgba(0, 0, 0, 0.7);
   --ct-color-bronze: #c28e4c;
   --ct-color-ok: #5e9e6b;
@@ -357,10 +341,8 @@
   --ct-color-row-selected: #ece8df;
   --ct-color-handle: #8e87a3;
   --ct-color-select-ring: #b8b1c8;
-  --ct-color-edit-knob: #f2a7a0;
   --ct-edit-track: #15171c;
   --ct-edit-idle-knob: #ffffff;
-  --ct-edit-ink: #15171c;
   --ct-color-bronze: #8e6530;
   --ct-color-ok: #5e9e6b;
   --ct-color-ok-on: #0d0e11;
