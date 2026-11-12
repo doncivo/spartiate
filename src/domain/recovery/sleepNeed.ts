@@ -77,6 +77,10 @@ export interface SleepDebtDiagnostic {
   readonly excludedNoAsleep: number;
   /** Nuits de la fenêtre sous `validNightMinAsleepMinutes` : jamais une dette. */
   readonly excludedShort: number;
+  /** FIX-0172 (D-133) : nuits retenues sous 7 h 30 (qui ajoutent à la dette). */
+  readonly short: number;
+  /** Nuits retenues au-dessus de 7 h 30 (qui en retirent au plus 1 h chacune, D-130). */
+  readonly long: number;
 }
 
 /**
@@ -86,5 +90,12 @@ export interface SleepDebtDiagnostic {
 export function sleepDebtDiagnostic(nights: readonly { readonly day: string; readonly asleepMinutes: number | null }[], today: string): SleepDebtDiagnostic {
   const { window, valid } = debtNights(nights, today);
   const noAsleep = window.filter((n) => n.asleepMinutes === null).length;
-  return { retained: valid.length, excludedNoAsleep: noAsleep, excludedShort: window.length - valid.length - noAsleep };
+  const base = Math.round(RECOVERY_CONFIG.sleep.baseSleepHours * 60);
+  return {
+    retained: valid.length,
+    excludedNoAsleep: noAsleep,
+    excludedShort: window.length - valid.length - noAsleep,
+    short: valid.filter((m) => m < base).length,
+    long: valid.filter((m) => m > base).length,
+  };
 }
