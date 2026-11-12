@@ -42,7 +42,7 @@ describe('Brouillon persisté (§ 10.1 : « Brouillon persisté »)', () => {
   });
 
   it('relit un brouillon enregistré à l’identique (aller-retour JSON)', () => {
-    const d = draft({ step: 'availability', sex: 'male', birthYear: 1996, heightCm: 180, weightKg: 80.5, activity: 'moderate', goal: 'muscle', weeklyRatePct: 0.25, experience: 'intermediate', sessionsPerWeek: 4, durationMin: 60, days: [1, 3, 4, 6], priorities: ['chest'], avoided: ['calves'], painfulPatterns: ['squat'], skipped: ['equipment'] });
+    const d = draft({ step: 'availability', sex: 'male', birthYear: 1996, heightCm: 180, weightKg: 80.5, activity: 'moderate', goal: 'muscle', weeklyRatePct: 0.25, experience: 'intermediate', sessionsPerWeek: 4, durationMin: 60, days: [1, 3, 4, 6], priorities: ['chest'], avoided: ['calves'], painfulPatterns: ['squat'], skipped: ['equipment'], expenditureKcal: 2750 });
     expect(parseDraft(JSON.parse(JSON.stringify(d)) as unknown)).toEqual(d);
   });
 
@@ -99,8 +99,17 @@ describe('Validation par écran', () => {
     expect(codes('priorities', draft({ priorities: ['chest'], avoided: ['chest'] }))).toEqual(['priority-avoided-overlap']);
   });
 
+  it('résultat : la dépense de départ modifiée par Ali reste plausible (800 à 6 000 kcal par jour)', () => {
+    expect(emptyDraft().expenditureKcal).toBeNull();
+    expect(codes('result', draft({}))).toEqual([]);
+    expect(codes('result', draft({ expenditureKcal: 800 }))).toEqual([]);
+    expect(codes('result', draft({ expenditureKcal: 6000 }))).toEqual([]);
+    expect(codes('result', draft({ expenditureKcal: 799 }))).toEqual(['expenditure-range']);
+    expect(codes('result', draft({ expenditureKcal: 6001 }))).toEqual(['expenditure-range']);
+  });
+
   it('les autres écrans n’ont pas de règle bloquante', () => {
-    for (const step of ['experience', 'equipment', 'split', 'result'] as const) expect(codes(step, draft({}))).toEqual([]);
+    for (const step of ['experience', 'equipment', 'split'] as const) expect(codes(step, draft({}))).toEqual([]);
   });
 });
 
