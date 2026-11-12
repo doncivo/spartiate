@@ -117,6 +117,12 @@ export function createProgressPhotoRepository(db: SqlExecutor, stamper: WriteSta
       return new Set(rows.map((row) => row.photo_id));
     },
 
+    async purgeOrphanFiles() {
+      const orphans = await db.select<SqlRow & { photo_id: string }>('SELECT photo_id FROM progress_photo_file WHERE photo_id NOT IN (SELECT id FROM progress_photo WHERE deleted_at IS NULL)');
+      for (const row of orphans) await db.execute('DELETE FROM progress_photo_file WHERE photo_id = ?', [row.photo_id]);
+      return orphans.length;
+    },
+
     async remove(id) {
       await db.execute('DELETE FROM progress_photo_file WHERE photo_id = ?', [id]);
       const row = await read(id);

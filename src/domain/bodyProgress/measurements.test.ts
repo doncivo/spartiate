@@ -9,6 +9,8 @@ import {
   measurementChange,
   PHOTO_FILE_NAME_MAX,
   photoFileName,
+  photoTargetSize,
+  PHOTO_MAX_EDGE_PX,
   validateMeasurement,
 } from './measurements';
 
@@ -81,5 +83,19 @@ describe('nom de fichier de photo', () => {
   });
   it('refuse un chemin, un point-point, un nom vide ou trop long', () => {
     for (const bad of ['', '../a.jpg', 'a/b.jpg', 'a' + String.fromCharCode(92) + 'b.jpg', '..', 'a.exe', 'x'.repeat(PHOTO_FILE_NAME_MAX + 1) + '.jpg', 'a b.jpg']) expect(isPhotoFileName(bad), bad).toBe(false);
+  });
+});
+
+describe('photoTargetSize (réduction avant enregistrement)', () => {
+  it('garde une image déjà petite telle quelle', () => {
+    expect(photoTargetSize(800, 600)).toEqual({ width: 800, height: 600 });
+  });
+  it('réduit le plus grand côté à la taille maximale, proportions gardées, arrondi à l’entier', () => {
+    expect(photoTargetSize(4032, 3024)).toEqual({ width: PHOTO_MAX_EDGE_PX, height: 1200 });
+    expect(photoTargetSize(3024, 4032)).toEqual({ width: 1200, height: PHOTO_MAX_EDGE_PX });
+  });
+  it('jamais une dimension nulle, dimensions invalides refusées (null)', () => {
+    expect(photoTargetSize(100000, 10)).toEqual({ width: PHOTO_MAX_EDGE_PX, height: 1 });
+    for (const [w, h] of [[0, 10], [10, 0], [-1, 5], [Number.NaN, 5], [5, Number.POSITIVE_INFINITY]] as const) expect(photoTargetSize(w, h), String(w) + 'x' + String(h)).toBeNull();
   });
 });

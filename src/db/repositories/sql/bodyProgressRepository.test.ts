@@ -143,6 +143,8 @@ describe('ProgressPhotoRepository', () => {
     bytes[0] = 0xff;
     bytes[1] = 0xd8;
     const p = await repo.add(D(9), bytes);
-    expect(await repo.readFile(p.id)).toEqual(bytes);
+    const back = await repo.readFile(p.id);
+    // Comparaison octet par octet : `toEqual` sur 1,2 million d'éléments est lent à lui seul.
+    expect(back !== null && Buffer.from(back).equals(Buffer.from(bytes))).toBe(true);
   });
 });

@@ -195,6 +195,59 @@ export async function buildSyncVectors(rustSealed: SyncVectors['rustSealed'] = [
       },
       full: true,
     },
+    // I6-02 (§ 17.1) : journaux d'un appareil en schéma 12, une mensuration et la fiche d'une photo (valeurs synthétiques, aucun contenu d'image), lus par Vitest et cargo test.
+    {
+      name: 'journal-ops-measurement',
+      place: journal(7, 0),
+      sm: 1,
+      sv: 12,
+      plaintext: {
+        json: JSON.stringify({
+          k: 'ops',
+          sv: 12,
+          ops: [
+            {
+              t: 'measurement',
+              id: 'measurement|2026-11-09|waist',
+              at: '2026-11-12T07:00:00.000Z',
+              f: Object.fromEntries(
+                Object.entries({ date: '2026-11-09', kind: 'waist', value: 82.5, created_at: '2026-11-12T07:00:00.000Z', deleted_at: null }).map(([name, value]) => [
+                  name,
+                  [value, '001794200000000-0000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60', null],
+                ]),
+              ),
+            },
+          ],
+        }),
+      },
+      full: true,
+    },
+    {
+      name: 'journal-ops-progress-photo',
+      place: journal(8, 0),
+      sm: 1,
+      sv: 12,
+      plaintext: {
+        json: JSON.stringify({
+          k: 'ops',
+          sv: 12,
+          ops: [
+            {
+              t: 'progress_photo',
+              id: '7d3c2e4f-0000-4000-8000-000000000001',
+              at: '2026-11-12T07:00:00.000Z',
+              f: Object.fromEntries(
+                Object.entries({ date: '2026-11-09', file_name: '7d3c2e4f-0000-4000-8000-000000000001.jpg', created_at: '2026-11-12T07:00:00.000Z', deleted_at: null }).map(([name, value]) => [
+                  name,
+                  [value, '001794200000000-0000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60', null],
+                ]),
+              ),
+            },
+          ],
+        }),
+      },
+      full: true,
+    },
   ];
   const records: RecordVector[] = [];
   for (const [i, spec] of specs.entries()) {

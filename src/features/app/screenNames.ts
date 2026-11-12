@@ -14,6 +14,7 @@ export type ScreenName =
   | 'nutritionremainingcard'
   | 'recoverytoday'
   | 'recoveryprogress'
+  | 'bodyprogress'
   | 'applehealthscreen'
   | 'exportimportscreen'
   | 'sectionnotice'

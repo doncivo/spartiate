@@ -87,3 +87,10 @@ export const isPhotoFileName = (name: string): boolean => name.length <= PHOTO_F
 
 /** Un fichier est-il un JPEG (marque de début 0xFF 0xD8) ? Seule vérification faite : l'image est produite par l'app (réduite, recodée en JPEG). */
 export const looksLikeJpeg = (bytes: Uint8Array): boolean => bytes.length >= 4 && bytes[0] === 0xff && bytes[1] === 0xd8;
+
+/** Taille d'une photo après réduction : le plus grand côté ne dépasse pas `PHOTO_MAX_EDGE_PX`, proportions gardées ; `null` si une dimension est invalide. */
+export function photoTargetSize(width: number, height: number): { readonly width: number; readonly height: number } | null {
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+  const scale = Math.min(1, PHOTO_MAX_EDGE_PX / Math.max(width, height));
+  return { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) };
+}
