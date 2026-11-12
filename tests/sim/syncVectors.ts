@@ -294,6 +294,44 @@ export async function buildSyncVectors(rustSealed: SyncVectors['rustSealed'] = [
       },
       full: true,
     },
+    // I6-03b (§ 13.8) : journal d'un appareil en schéma 14, une ligne de routine dans un superset (valeurs synthétiques), lu par Vitest et cargo test.
+    {
+      name: 'journal-ops-routine-exercise-circuit',
+      place: journal(10, 0),
+      sm: 1,
+      sv: 14,
+      plaintext: {
+        json: JSON.stringify({
+          k: 'ops',
+          sv: 14,
+          ops: [
+            {
+              t: 'routine_exercise',
+              id: '7d3c2e4f-0000-4000-8000-0000000000b1',
+              at: '2026-11-12T20:00:00.000Z',
+              f: Object.fromEntries(
+                Object.entries({
+                  routine_day_id: '7d3c2e4f-0000-4000-8000-0000000000b0',
+                  exercise_id: 'bench-press-barbell',
+                  exercise_name: 'Développé couché à la barre',
+                  sets: 3,
+                  rep_min: 8,
+                  rep_max: 10,
+                  rir: 2,
+                  rest_sec: 90,
+                  position: 0,
+                  created_at: '2026-11-12T20:00:00.000Z',
+                  deleted_at: null,
+                  circuit_id: '7d3c2e4f-0000-4000-8000-0000000000b9',
+                  circuit_rest_sec: 15,
+                }).map(([name, value]) => [name, [value, '001794210000000-0000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60', null]]),
+              ),
+            },
+          ],
+        }),
+      },
+      full: true,
+    },
   ];
   const records: RecordVector[] = [];
   for (const [i, spec] of specs.entries()) {

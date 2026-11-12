@@ -176,6 +176,13 @@ export interface RoutineExerciseSpec {
   readonly rir: number | null;
   readonly restSec: number;
   readonly position: number;
+  /**
+   * I6-03b (migration 0014) : groupe (superset, triset, circuit) de la ligne dans son jour ; absent ou null : ligne libre. Les routines générées et les
+   * programmes de départ n'en portent jamais (saisie dans l'éditeur seulement).
+   */
+  readonly circuitId?: string | null;
+  /** I6-03b : repos entre deux exercices du groupe (secondes, 0 = aucun) ; null hors groupe. Le repos de fin de tour est `restSec`. */
+  readonly circuitRestSec?: number | null;
 }
 
 export interface RoutineDaySpec {

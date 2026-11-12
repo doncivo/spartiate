@@ -30,7 +30,7 @@ import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
 export const EXPORT_APP = 'spartiate';
 /** Version de schéma écrite au manifeste et maximale acceptée à l'import : celle de la dernière migration (vérifiée par un test). */
-export const EXPORT_SV = 13;
+export const EXPORT_SV = 14;
 /** Réglages exportés (D-57 : unités, jour de check-in, thème). Les unités sont dans `profile` ; le jour de check-in n'existe pas encore (nutrition). */
 export const EXPORT_SETTING_KEYS = ['ui.theme'] as const;
 export type ExportSettingKey = (typeof EXPORT_SETTING_KEYS)[number];
@@ -69,10 +69,10 @@ export interface ExportWeight {
 export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient', 'recovery_day', 'muscle_recovery', 'recovery_factor', 'measurement', 'progress_photo'] as const;
 /**
  * Colonnes ajoutées après la première version exportée de leur table : absentes d'une archive plus ancienne (0.3.0 : `workout_set` sans
- * `difficulty` ; schéma 12 : sans `circuit_id` ni `circuit_rest_sec`), lues comme nulles et notées `absent` (FIX-0171 : la valeur locale d'une
+ * `difficulty` ; schéma 12 : sans `circuit_id` ni `circuit_rest_sec` ; schéma 13 : `routine_exercise` sans ces deux colonnes, I6-03b), lues comme nulles et notées `absent` (FIX-0171 : la valeur locale d'une
  * ligne existante est gardée à l'import). Toute autre colonne manquante reste refusée.
  */
-const LATER_COLUMNS: Readonly<Partial<Record<string, readonly string[]>>> = { workout_set: ['difficulty', 'circuit_id', 'circuit_rest_sec'] };
+const LATER_COLUMNS: Readonly<Partial<Record<string, readonly string[]>>> = { workout_set: ['difficulty', 'circuit_id', 'circuit_rest_sec'], routine_exercise: ['circuit_id', 'circuit_rest_sec'] };
 export type TrainingTable = (typeof TRAINING_EXPORT_TABLES)[number];
 /**
  * Clés propres à l'archive, hors catalogue de synchro (REV-01 constat 3) : `decided_at` = instant de création de la décision de cible
@@ -372,7 +372,8 @@ function rowBoundsOk(table: TrainingTable, id: string, v: Readonly<Record<string
     case 'measurement':
       return measurementBoundsOk(id, v);
     case 'workout_set':
-      // CHECK de la migration 0013 : identifiant de groupe de 1 à 64 caractères, repos de 0 à 3 600 s.
+    case 'routine_exercise':
+      // CHECK des migrations 0013 (séries) et 0014 (lignes de routine, I6-03b) : identifiant de groupe de 1 à 64 caractères, repos de 0 à 3 600 s.
       return (v['circuit_id'] === null || textLength(v['circuit_id'], 1, 64)) && (v['circuit_rest_sec'] === null || (Number.isInteger(v['circuit_rest_sec']) && numberIn(v['circuit_rest_sec'], 0, 3600)));
     case 'progress_photo':
       return typeof v['file_name'] === 'string' && isPhotoFileName(v['file_name']);

@@ -151,7 +151,7 @@ Jours d’une routine (`routine_id` renvoie à `routine.csv`).
 
 ### `csv/routine_exercise.csv`
 
-Lignes d’exercice d’un jour de routine (`routine_day_id` renvoie à `routine_day.csv`).
+Lignes d’exercice d’un jour de routine (`routine_day_id` renvoie à `routine_day.csv`). Les lignes d’un même groupe (superset, triset, circuit ; schéma 14) portent le même `circuit_id` ; la séance démarrée depuis ce jour alterne leurs séries tour par tour.
 
 | Colonne | Type | Unité | NULL possible | Remarque |
 | --- | --- | --- | --- | --- |
@@ -163,8 +163,10 @@ Lignes d’exercice d’un jour de routine (`routine_day_id` renvoie à `routine
 | `rep_min` | int | — | non |  |
 | `rep_max` | int | — | non |  |
 | `rir` | int | — | oui |  |
-| `rest_sec` | int | s | non |  |
+| `rest_sec` | int | s | non | repos après la série ; dans un groupe, repos de fin de tour |
 | `position` | int | — | non |  |
+| `circuit_id` | text | — | oui | identifiant du groupe (superset, triset, circuit) ; vide hors groupe |
+| `circuit_rest_sec` | int | s | oui | repos entre deux exercices d’un même tour ; 0 = aucun ; vide hors groupe |
 
 ### `csv/workout.csv`
 
