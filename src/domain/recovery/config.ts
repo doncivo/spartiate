@@ -47,13 +47,17 @@ export const RECOVERY_CONFIG = {
     max: 10,
   },
 
-  /** § 16.3 Sommeil. `debtDays` et la définition de la dette : proposition (le PRD donne « dette (7 j, plafond 3 h) »). */
+  /**
+   * § 16.3 Sommeil. Dette à compensation partielle (décision d'Ali du 12/11/2026, D-130) : sur les nuits valides connues des `debtDays` jours
+   * avant aujourd'hui, une nuit courte ajoute 7 h 30 − dormi, une nuit longue retire au plus `surplusCreditCapMinutes` ; somme bornée à [0, `debtCapHours`].
+   */
   sleep: {
     baseSleepHours: 7.5,
     exertionBaseline: 5,
     hoursPerExertionPoint: 0.2,
     debtDays: 7,
     debtCapHours: 3,
+    surplusCreditCapMinutes: 60,
     regularityDays: 7,
     regularityMinNights: 3,
     /**

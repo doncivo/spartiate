@@ -208,6 +208,14 @@
       "old": "Tokens de couleur dans src/ui/tokens.css",
       "new": "Tokens de couleur dans src/ui/theme/tokens.css",
       "why": "Le fichier réel des tokens est src/ui/theme/tokens.css."
+    },
+    {
+      "id": "v16-dette-compensation",
+      "decision": "D-130",
+      "section": "16",
+      "old": "dette (7 j, plafond 3 h) ;",
+      "new": "dette (7 j, plafond 3 h ; compensation partielle, D-130 : nuit courte + (7 h 30 − dormi), nuit longue − min(dormi − 7 h 30, 1 h), somme bornée à [0, 3 h]) ;",
+      "why": "Décision d’Ali du 12 novembre 2026 (FIX-0172) : une nuit longue rembourse au plus 1 h de dette."
     }
   ]
 }
