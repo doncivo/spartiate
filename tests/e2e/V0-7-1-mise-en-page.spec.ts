@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { isPhone, openToday } from './helpers/today';
 
 /**
@@ -63,15 +63,20 @@ test('Point 2 : les boutons de la fiche d’ajout restent atteignables au-dessus
   expect((box?.y ?? 0) + (box?.height ?? 0), 'bas du bouton au-dessus de la barre d’onglets').toBeLessThanOrEqual((rail?.y ?? 0) + 0.5);
 });
 
+/** Écart vertical maximal entre les onglets d'un groupe, lu en une seule évaluation (même image). */
+const rowSpread = (group: Locator): Promise<number> =>
+  group.getByRole('radio').evaluateAll((els) => {
+    const tops = els.map((el) => el.getBoundingClientRect().top);
+    return Math.max(...tops) - Math.min(...tops);
+  });
+
 test('Point 4 : onglets d’Entraînement et de Nutrition sur une seule ligne, onglet actif visible', async ({ page }) => {
   await tab(page, 'Entraînement').click();
   const names = ['Routines', 'Bibliothèque', 'Matériel', 'Journal', 'Cycle'];
-  const tops: number[] = [];
-  // FIX-0115 : une boîte nulle (onglet pas encore affiché) valait -1 et faisait lire un écart de 182 px ; on attend chaque onglet avant de le mesurer.
-  for (const name of names) await expect(page.getByRole('radio', { name, exact: true })).toBeVisible();
-  for (const name of names) tops.push((await page.getByRole('radio', { name, exact: true }).boundingBox())?.y ?? Number.NaN);
-  expect(tops.every(Number.isFinite), 'tous les onglets mesurés').toBe(true);
-  expect(Math.max(...tops) - Math.min(...tops), 'une seule ligne').toBeLessThan(2);
+  // FIX-0115 : les onglets sont lus dans la même image (une seule évaluation) ; une mesure onglet par onglet pouvait croiser un décalage de mise en page (CI du 12/11 : 182 px d'écart) et n'est plus utilisée. Le seuil (< 2 px) est inchangé ; la lecture est refaite jusqu'à la stabilité de la page.
+  const trainingGroup = page.getByRole('radiogroup', { name: 'Sections de l’entraînement' });
+  for (const name of names) await expect(trainingGroup.getByRole('radio', { name, exact: true })).toBeVisible();
+  await expect.poll(() => rowSpread(trainingGroup), 'une seule ligne').toBeLessThan(2);
   // FIX-0115 : des onglets sont cachés à droite à l'ouverture, le fondu le dit ; une fois défilé, il passe à gauche.
   const group = page.getByRole('radiogroup', { name: 'Sections de l’entraînement' });
   await expect(group).toHaveAttribute('data-fade-end', 'true');
@@ -81,12 +86,9 @@ test('Point 4 : onglets d’Entraînement et de Nutrition sur une seule ligne, o
   await expect(group).not.toHaveAttribute('data-fade-end', 'true');
 
   await tab(page, 'Nutrition').click();
-  const nutritionTops: number[] = [];
-  const nutritionNames = ['Journal', 'Dashboard', 'Stratégie', 'Check-in'];
-  for (const name of nutritionNames) await expect(page.getByRole('radio', { name, exact: true })).toBeVisible();
-  for (const name of nutritionNames) nutritionTops.push((await page.getByRole('radio', { name, exact: true }).boundingBox())?.y ?? Number.NaN);
-  expect(nutritionTops.every(Number.isFinite), 'tous les onglets mesurés').toBe(true);
-  expect(Math.max(...nutritionTops) - Math.min(...nutritionTops), 'une seule ligne').toBeLessThan(2);
+  const nutritionGroup = page.getByRole('radiogroup', { name: 'Sections de Nutrition' });
+  for (const name of ['Journal', 'Dashboard', 'Stratégie', 'Check-in']) await expect(nutritionGroup.getByRole('radio', { name, exact: true })).toBeVisible();
+  await expect.poll(() => rowSpread(nutritionGroup), 'une seule ligne').toBeLessThan(2);
 });
 
 test('Point 5 : filtres de la Bibliothèque compacts, interrupteur visible sans défiler', async ({ page }) => {
