@@ -144,6 +144,8 @@ export interface SettingsValues {
   'recovery.sleepRulesVersion': unknown;
   /** I6-04 (D-113) : résumé du dernier import Renpho / Santé (date, comptes par fichier et pour la nutrition, jamais une valeur). Valeur BRUTE lue par `parseBodyImportSummary` ; locale, jamais synchronisée. */
   'healthBody.lastImport': unknown;
+  /** FIX-0171 (D-121) : fiches de photos masquées sur cet appareil (« Masquer sur cet appareil »). Valeur BRUTE lue par `parseHiddenPhotoIds` ; locale, jamais synchronisée ni exportée. */
+  'bodyProgress.hiddenPhotos': unknown;
 }
 
 export type SettingKey = keyof SettingsValues;
@@ -207,6 +209,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'recovery.bedtimeProposal': { scope: 'local', defaultValue: null },
   'recovery.sleepRulesVersion': { scope: 'local', defaultValue: null },
   'healthBody.lastImport': { scope: 'local', defaultValue: null },
+  'bodyProgress.hiddenPhotos': { scope: 'local', defaultValue: null },
 };
 
 /** Valeur par défaut d'un réglage. */

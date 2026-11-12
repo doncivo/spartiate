@@ -75,6 +75,16 @@ export const bodyProgressFr = {
   photoDeleteCost: 'Le fichier et la fiche sont supprimés, sans retour possible.',
   photoDeleteCancel: 'Annuler',
   photoDeleted: 'Photo supprimée.',
+  /** FIX-0171 (D-121) : seul l'appareil qui a le fichier supprime ; ailleurs, la fiche se masque localement. */
+  photoDeleteFailed: 'Suppression impossible : la photo est intacte. Réessaie.',
+  photoDeleteLocalCost: 'Le fichier est effacé de cet appareil, sans retour possible.',
+  photoDeletedElsewhere: 'Supprimée sur un autre appareil ou par un import : la photo reste ici jusqu’à ce que tu la supprimes.',
+  photoHide: 'Masquer la photo du {date} sur cet appareil',
+  photoHideHint: 'Seul l’appareil qui a la photo peut la supprimer. Masquer ne change rien sur tes autres appareils.',
+  photoHidden: 'Fiche masquée sur cet appareil.',
+  photosShowHidden: 'Réafficher les photos masquées ({count})',
+  /** FIX-0171 (constat 5) : bouclier de confidentialité des vues photo. */
+  shieldFailed: 'Protection des photos indisponible : elles peuvent rester visibles dans l’aperçu du sélecteur d’apps.',
   compareTitle: 'Côte à côte',
   comparePick: 'Coche deux photos pour les voir côte à côte.',
   compareMissing: 'Image absente de cet appareil',
