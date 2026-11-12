@@ -6,8 +6,8 @@
 export const recoveryFactorsFr = {
   unusualTitle: 'Valeurs inhabituelles : repos conseillé',
   unusualLead: 'Deux nuits de suite, une de tes mesures s’écarte nettement de ta base personnelle :',
-  unusualHrvLow: 'HRV basse (au moins 2 σ sous ta base).',
-  unusualRhrHigh: 'Fréquence cardiaque au repos élevée (au moins 2 σ au-dessus de ta base).',
+  unusualHrvLow: 'HRV basse (plus de 2 σ sous ta base).',
+  unusualRhrHigh: 'Fréquence cardiaque au repos élevée (plus de 2 σ au-dessus de ta base).',
   unusualAdvice: 'Un repos est conseillé aujourd’hui : allège ta journée si tu le peux.',
   unusualDisclaimer: 'Estimation à partir de tes données, pas un avis médical.',
 

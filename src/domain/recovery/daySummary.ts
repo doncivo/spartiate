@@ -1,7 +1,7 @@
 import { RECOVERY_CONFIG } from './config';
 import { dayExertion } from './exertion';
 import { muscleRecovery } from './muscleRecovery';
-import { recoveryScore, targetZone } from './recoveryScore';
+import { beyondUnusualSigma, recoveryScore, targetZone } from './recoveryScore';
 import { bedtimeRegularity, debtNights, sleepNeed } from './sleepNeed';
 import type { Contributor, MuscleRecoveryRow, NightRecord, RecoveryDaySummary, RecoveryExplanationKey, RecoveryLevel, RecoveryQuality, RecoveryWorkout } from './types';
 
@@ -60,8 +60,9 @@ export function summarizeRecoveryDay(input: RecoveryDayInput): RecoveryDayOutput
     score.score === null || score.zHrv === null || score.zRhr === null
       ? []
       : [
-          { key: 'hrv', value: round2(score.zHrv), weight: cfg.hrvWeight },
-          { key: 'resting_hr', value: round2(score.zRhr), weight: cfg.rhrWeight },
+          // FIX-0172 (D-134) : la décision « inhabituel » est prise ici, sur le z non arrondi, et publiée avec le résumé.
+          { key: 'hrv', value: round2(score.zHrv), weight: cfg.hrvWeight, unusual: beyondUnusualSigma(score.zHrv) },
+          { key: 'resting_hr', value: round2(score.zRhr), weight: cfg.rhrWeight, unusual: beyondUnusualSigma(score.zRhr) },
           { key: 'sleep', value: score.sleepFactor, weight: null },
         ];
 

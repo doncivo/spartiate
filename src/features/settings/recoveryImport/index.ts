@@ -4,7 +4,7 @@ import { detectTimeZone } from '../../../platform/timeZone';
 import type { RecoverySet, RecoveryWorkout } from '../../../domain/recovery';
 import { resolveExercise } from '../../../domain/training';
 import type { AppContainer } from '../../app/container';
-import { createShortcutImportService, type ImportLog, type ShortcutImportService } from './service';
+import { createShortcutImportService, REREAD_DELAY_MS, shouldReread, type ImportLog, type ShortcutImportService } from './service';
 import { healthBodyImportFor, type HealthBodyImportService } from '../healthBodyImport';
 
 export * from './service';
@@ -79,16 +79,54 @@ export function shortcutImportFor(container: AppContainer, reader?: ShortcutFile
  * premier plan. Chacun appelle `run('open')` ; la limite de 30 minutes est tenue par le service (« throttled »). Lit seulement si le lecteur
  * est automatique (dossier sante) ; le sélecteur a besoin d'un geste. Ne rejette jamais. I6-04 : l'import Renpho / Santé (`healthBodyImportFor`, même dossier,
  * mêmes déclenchements, sa propre limite de 30 minutes) part juste après, et son échec ne gêne pas l'import de la récupération.
+ *
+ * FIX-0172 (D-135) : l'automatisation « Lorsque Spartiate est ouverte » lance le raccourci qui réécrit les fichiers pendant que l'app démarre. Si
+ * la lecture d'ouverture n'a rien apporté de nouveau (`shouldReread`), UNE relecture (`run('reread')`, sans la limite des 30 minutes) est programmée
+ * `REREAD_DELAY_MS` plus tard. Son résultat n'en programme jamais d'autre ; le passage en arrière-plan ou `dispose` annule le minuteur.
+ * Journal `recovery-import-reread` : `ok=1` (relecture faite) ou `skipped=1` (annulée, ou dossier non lu).
  */
 export function startRecoveryImportOnOpen(
   container: AppContainer,
-  options: { readonly service?: Pick<ShortcutImportService, 'run'>; readonly bodyService?: Pick<HealthBodyImportService, 'run'>; readonly delayMs?: number } = {},
+  options: {
+    readonly service?: Pick<ShortcutImportService, 'run'>;
+    readonly bodyService?: Pick<HealthBodyImportService, 'run'>;
+    readonly delayMs?: number;
+    readonly log?: ImportLog;
+  } = {},
 ): { readonly dispose: () => void } {
   let cancelled = false;
+  let reread: number | null = null;
+  const log = options.log ?? importLog;
+  const cancelReread = (): void => {
+    if (reread === null) return;
+    window.clearTimeout(reread);
+    reread = null;
+    log('recovery-import-reread', { skipped: 1 });
+  };
+  const scheduleReread = (service: Pick<ShortcutImportService, 'run'>): void => {
+    if (cancelled || reread !== null || document.visibilityState !== 'visible') return;
+    reread = window.setTimeout(() => {
+      reread = null;
+      if (cancelled) return;
+      void service.run('reread').then(
+        (result) => log('recovery-import-reread', result.status === 'done' ? { ok: 1 } : { skipped: 1 }),
+        (error: unknown) => {
+          log('recovery-import-reread', { skipped: 1 });
+          logFailure('recovery-import', error);
+        },
+      );
+    }, REREAD_DELAY_MS);
+  };
   const trigger = (): void => {
     if (cancelled) return;
+    cancelReread();
     const service = options.service ?? shortcutImportFor(container);
-    void service.run('open').catch((error: unknown) => logFailure('recovery-import', error));
+    void service
+      .run('open')
+      .then((result) => {
+        if (shouldReread(result)) scheduleReread(service);
+      })
+      .catch((error: unknown) => logFailure('recovery-import', error));
     // Un service de récupération injecté (tests) ne lance l'import Renpho que si son service est injecté aussi.
     const body = options.bodyService ?? (options.service === undefined ? healthBodyImportFor(container) : undefined);
     if (body !== undefined) void body.run('open').catch((error: unknown) => logFailure('health-body-import', error));
@@ -96,12 +134,14 @@ export function startRecoveryImportOnOpen(
   const timer = window.setTimeout(trigger, options.delayMs ?? 3000);
   const onVisible = (): void => {
     if (document.visibilityState === 'visible') trigger();
+    else cancelReread();
   };
   document.addEventListener('visibilitychange', onVisible);
   return {
     dispose: () => {
       cancelled = true;
       window.clearTimeout(timer);
+      cancelReread();
       document.removeEventListener('visibilitychange', onVisible);
     },
   };

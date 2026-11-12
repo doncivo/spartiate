@@ -47,13 +47,17 @@ export const RECOVERY_CONFIG = {
     max: 10,
   },
 
-  /** § 16.3 Sommeil. `debtDays` et la définition de la dette : proposition (le PRD donne « dette (7 j, plafond 3 h) »). */
+  /**
+   * § 16.3 Sommeil. Dette à compensation partielle (décision d'Ali du 12/11/2026, D-130) : sur les nuits valides connues des `debtDays` jours
+   * avant aujourd'hui, une nuit courte ajoute 7 h 30 − dormi, une nuit longue retire au plus `surplusCreditCapMinutes` ; somme bornée à [0, `debtCapHours`].
+   */
   sleep: {
     baseSleepHours: 7.5,
     exertionBaseline: 5,
     hoursPerExertionPoint: 0.2,
     debtDays: 7,
     debtCapHours: 3,
+    surplusCreditCapMinutes: 60,
     regularityDays: 7,
     regularityMinNights: 3,
     /**
@@ -63,6 +67,9 @@ export const RECOVERY_CONFIG = {
      */
     episodeGapMinutes: 60,
   },
+
+  /** § 16.7 Valeurs inhabituelles : z au-delà de 2 σ, seuil STRICT sur le z non arrondi (décision d'Ali du 12/11/2026, D-134, révise D-95). */
+  unusualSigma: 2,
 
   /** § 16.7 Heure de coucher cible : médiane de l'heure de lever sur 14 j. */
   bedtime: { wakeDays: 14, minWakeNights: 7 },

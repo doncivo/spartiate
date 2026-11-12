@@ -228,6 +228,42 @@ describe('sleepNeed (§ 16.3)', () => {
     expect(n.needMinutes).toBe(630);
     expect(sleepNeed({ exertionPrevDay: 0, previousAsleepMinutes: [420, 420] }).debtMinutes).toBe(60);
   });
+
+  // FIX-0172 (décision d'Ali du 12/11/2026, D-130) : compensation partielle. Nuit courte : + (7 h 30 − dormi) ; nuit longue : − min(dormi − 7 h 30, 1 h).
+  it('compensation partielle : constante nommée de 60 min pour le crédit d’une nuit longue', () => {
+    expect(RECOVERY_CONFIG.sleep.surplusCreditCapMinutes).toBe(60);
+  });
+
+  it('7 nuits irrégulières à 7 h 28 de moyenne : dette nette de 24 min (déficits 164, crédits 140), besoin 7 h 54', () => {
+    const nights = [370, 520, 400, 500, 430, 480, 436];
+    expect(nights.reduce((s, m) => s + m, 0) / nights.length).toBe(448);
+    const n = sleepNeed({ exertionPrevDay: 0, previousAsleepMinutes: nights });
+    expect(n.debtMinutes).toBe(24);
+    expect(n.needMinutes).toBe(474);
+  });
+
+  it('nuits toutes courtes : la dette s’arrête au plafond de 3 h', () => {
+    expect(sleepNeed({ exertionPrevDay: 0, previousAsleepMinutes: Array(7).fill(300) as number[] }).debtMinutes).toBe(180);
+  });
+
+  it('une nuit de 11 h ne rembourse qu’1 h : 6 h puis 11 h laissent 30 min de dette', () => {
+    expect(sleepNeed({ exertionPrevDay: 0, previousAsleepMinutes: [360, 660] }).debtMinutes).toBe(30);
+    expect(sleepNeed({ exertionPrevDay: 0, previousAsleepMinutes: [660, 360] }).debtMinutes).toBe(30);
+  });
+
+  it('les nuits longues seules ne donnent jamais une dette négative', () => {
+    const n = sleepNeed({ exertionPrevDay: 0, previousAsleepMinutes: [600, 600, 600] });
+    expect(n.debtMinutes).toBe(0);
+    expect(n.needMinutes).toBe(450);
+  });
+
+  it('une nuit absente n’ajoute rien : trois nuits de 7 h 10 et une nuit inconnue donnent 60 min', () => {
+    const known = summarizeRecoveryDay({
+      today: TODAY, now: NOW, timeZone: TZ, workouts: [],
+      nights: [night(25, { asleepMinutes: 430 }), night(26, { asleepMinutes: null }), night(27, { asleepMinutes: 430 }), night(28, { asleepMinutes: 430 })],
+    });
+    expect(known.summary.sleepNeedMinutes).toBe(450 + 60);
+  });
 });
 
 describe('bedtimeRegularity et heure de coucher cible', () => {

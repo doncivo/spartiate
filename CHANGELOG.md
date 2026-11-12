@@ -2,6 +2,16 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.17.2
+
+**Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment ; installe pourtant les deux le même jour, pour que le PC affiche les valeurs inhabituelles comme l'iPhone.
+
+- **Dette de sommeil plus juste** (ta décision) : une nuit courte ajoute ce qui manque pour 7 h 30 ; une nuit longue rembourse maintenant jusqu'à 1 h de dette. La dette reste entre 0 et 3 h, sur les 7 nuits avant aujourd'hui. Avec des nuits irrégulières autour de 7 h 30, ton besoin affiché redescend vers 7 h 30 à 8 h 45 au lieu de 10 h 30.
+- **Nuit et réveil** : seuls les moments où tu dors comptent pour délimiter ta nuit ; un long bloc « Au lit » ne relie plus ta nuit à une sieste et ne repousse plus l'heure de ton réveil. Tous les stades de l'Apple Watch (Principal ou Essentiel, Profond, Paradoxal, Endormi non précisé) comptent comme du sommeil.
+- **Recalcul automatique** : les résumés des 30 derniers jours sont recalculés une fois avec ces règles, à l'ouverture suivante, même si le dossier `sante` n'est pas joignable ou si les fichiers sont absents. S'il est interrompu, il reprend à l'ouverture d'après.
+- **Valeurs inhabituelles** : la carte « repos conseillé » ne s'affiche que pour une HRV ou une FC au repos à plus de 2 σ de ta base (exactement 2 σ ne suffit plus), jugée sur la valeur exacte et non arrondie. Le PC affiche la même décision que l'iPhone.
+- **Raccourci à l'ouverture de Spartiate** : si tu lances ton raccourci avec l'automatisation « Lorsque Spartiate est ouverte », Spartiate relit le dossier `sante` une seule fois, environ 45 secondes après l'ouverture, quand la première lecture n'a rien apporté de nouveau. Rien si tu quittes l'app avant. Le guide (`docs/guide-raccourcis-sante.md`, B.3 bis) explique comment créer cette automatisation.
+
 ## 0.17.1
 
 **Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment ; installe pourtant les deux le même jour (la règle des photos doit être la même des deux côtés).
