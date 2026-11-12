@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-12 : I1 à I5 livrés ; I6-01 à I6-04 (0.12.0 à 0.16.0, schéma 13) ; CLEAN-01 (0.17.0) et FIX-0171 (0.17.1, PR #110, bloquants 1, 3, 5, 6 de la relecture Codex et règle photos d'Ali D-121, docs/FIX-0171.md, D-120 à D-124, H-32) publiées. **FIX-0172 (0.17.2, sans migration) : sommeil et récupération (dette à compensation partielle, épisodes par segments endormis, stades Apple Watch, recalcul de règle sans import, seuil strict de 2 σ publié au PC, relecture 45 s après l'ouverture), docs/FIX-0172.md, D-130 à D-135.** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-135 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.).
+État au 2026-11-12 : I1 à I5 livrés ; I6-01 à I6-04 (0.12.0 à 0.16.0, schéma 13) ; CLEAN-01 (0.17.0), FIX-0171 (0.17.1, D-120 à D-124, H-32) et FIX-0172 (0.17.2, sommeil, D-130 à D-135, docs/FIX-0172.md) fusionnées. **FIX-0173 (0.17.3, sans migration) : fibres Renpho retirées avec le total, unité de l'export complet, base vide sur toutes les données, profil unique « Salle complète » (même id `fitness-park-antony`, D-142, clôt le constat 5 du 9/11), onglets et ligne Santé ; PR ouverte, docs/FIX-0173.md, D-140 à D-144.** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-144 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.).
 
 ## Fusionné (tout est dans main)
 
@@ -15,12 +15,12 @@
 
 ## Prochaines étapes
 
-1. Ali : installer 0.17.2 (PC et iPhone le même jour, schéma 13) ; constater H-27, H-32 (bouclier de Corps sans verrouillage) et la section « À vérifier par Ali » de docs/FIX-0172.md.
+1. FIX-0173 : CI verte, fusion et tags 0.17.3 par l'agent principal (pas de Swift touché). Ali : installer la dernière version publiée (PC et iPhone le même jour) ; constater H-27, H-32 et les sections « À vérifier par Ali » de docs/FIX-0172.md et docs/FIX-0173.md.
 2. D-73 à D-118 validées par Ali (D-119). Tickets en file pour les exceptions : FIX-0181 (D-79 favoris, D-93 journée rouge × 0,95), I6-03b (D-104 vrai replay), CLEAN-02 (D-116, D-117) ; FIX-0172 fait (D-130, D-134). À recaler après 3 semaines de séances réelles, sur demande d'Ali seulement : D-73 (4, durée estimée) et D-88 (échelle d'effort 20).
 
 ## À décider par Ali
 
-- Archive `archive/agent-a0528c3a67af21a44` (origin) : dernier commit I4-07 revue. Sa substance est dans main sauf une nuance de texte : `dayCompleteDeclaredDetail` (fr.nutrition.ts) y précise « quand les calories sont connues ». Non repris.
+- Archive `archive/agent-a0528c3a67af21a44` (origin) : sa nuance `dayCompleteDeclaredDetail` est dans main depuis I4-07 (D-144) ; l'archive peut être supprimée sur décision d'Ali.
 - Worktree `agent-a9d451df1eba848d1` (CLEAN-01-residus, tout poussé) : verrouillé par le pid 16360, laissé sans `--force`.
 
 ## Rappels

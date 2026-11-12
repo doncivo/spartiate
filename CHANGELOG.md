@@ -2,6 +2,16 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.17.3
+
+**Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment ; installe pourtant les deux le même jour, pour voir le même nom de salle des deux côtés.
+
+- **Une seule salle : « Salle complète »** (ta décision) : le profil de ta salle devient un profil générique avec tout le matériel d'une grande salle (machines Hammer Strength et Technogym, poulies, cages, Smith, banc décliné, pupitre, haltères de 2 à 58 kg, kettlebells de 4 à 20 kg). C'est le même profil, renommé : tes séances, ton historique, tes routines et ton profil actif ne bougent pas. Le préréglage « Salle commerciale » y est réuni. Tes copies personnelles gardent leur nom et leur contenu.
+- **Fibres Renpho** : quand tu saisis un repas un jour où Renpho avait mis son total, ou quand tu supprimes ce total, les fibres de ce jour partent avec lui, tout de suite. Une correction des fibres à 0 g dans Santé est appliquée ; un fichier de fibres absent ne change rien.
+- **Export complet** : le fichier `measurement.csv` dit maintenant l'unité de chaque ligne (cm, pct pour la masse grasse, kg, g pour les fibres) ; les valeurs ne changent pas.
+- **Premier lancement** : l'assistant de départ ne s'ouvre plus tout seul si ta base contient déjà de la récupération, des facteurs, des mensurations ou des photos.
+- **Petites finitions** : le fondu au bord des onglets défilants suit aussi un changement de taille de texte ; dans Plus, la ligne Apple Santé « dernier import » se met à jour dès qu'un import se termine.
+
 ## 0.17.2
 
 **Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment ; installe pourtant les deux le même jour, pour que le PC affiche les valeurs inhabituelles comme l'iPhone.
