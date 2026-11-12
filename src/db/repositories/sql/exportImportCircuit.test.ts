@@ -100,6 +100,60 @@ describe('export / import des groupes de circuit (I6-03)', () => {
     expect((await (await target.data.repos.workouts()).getClosed(W))?.sets).toHaveLength(4);
   });
 
+  describe('FIX-0171 constat 1 : colonne absente d’une archive ancienne ≠ valeur nulle explicite', () => {
+    const v12 = (source: ExportData, edit: (t: Record<string, Record<string, unknown>[]>) => void = () => undefined) =>
+      rewritten(source, 12, (t) => {
+        for (const row of t['workout_set'] ?? []) {
+          delete row['circuit_id'];
+          delete row['circuit_rest_sec'];
+        }
+        edit(t);
+      });
+    const sets = (db: TestDb) => db.driver.select<{ id: string; reps: number; circuit_id: string | null; circuit_rest_sec: number | null }>(`SELECT id, reps, circuit_id, circuit_rest_sec FROM workout_set WHERE workout_id = '${W}' ORDER BY position`);
+    async function importMode(db: TestDb, incoming: ExportData, mode: 'merge' | 'replace') {
+      return db.data.transaction(async (repos) => {
+        const repo = await repos.exportImport();
+        const plan = planImport(await repo.readExportData(), incoming, mode);
+        await repo.applyImport(plan, 2026);
+        return plan;
+      });
+    }
+
+    for (const mode of ['merge', 'replace'] as const) {
+      it(`${mode} : archive v12 de la même séance déjà groupée en v13 : aucune écriture, groupe et repos conservés`, async () => {
+        const db = await withCircuit(A);
+        const before = await sets(db);
+        const plan = await importMode(db, (await parse(await v12(await read(db)))).data, mode);
+        expect(plan.counts).toMatchObject({ add: 0, modify: 0, delete: 0 });
+        expect(await sets(db)).toEqual(before);
+        expect(before.every((s) => typeof s.circuit_id === 'string' && s.circuit_rest_sec === 10)).toBe(true);
+      });
+
+      it(`${mode} : archive v12 qui corrige une autre colonne : correction écrite, groupe et repos locaux gardés`, async () => {
+        const db = await withCircuit(A);
+        const before = await sets(db);
+        const plan = await importMode(db, (await parse(await v12(await read(db), (t) => (firstSet(t)['reps'] = 12)))).data, mode);
+        expect(plan.counts.modify).toBe(1);
+        const after = await sets(db);
+        expect(after.map((s) => [s.circuit_id, s.circuit_rest_sec])).toEqual(before.map((s) => [s.circuit_id, s.circuit_rest_sec]));
+        expect(after.filter((s) => s.reps === 12)).toHaveLength(1);
+      });
+
+      it(`${mode} : archive v13 avec groupe explicitement nul : l’effacement est appliqué`, async () => {
+        const db = await withCircuit(A);
+        const archive = await rewritten(await read(db), 13, (t) => {
+          for (const row of t['workout_set'] ?? []) {
+            row['circuit_id'] = null;
+            row['circuit_rest_sec'] = null;
+          }
+        });
+        const plan = await importMode(db, (await parse(archive)).data, mode);
+        expect(plan.counts.modify).toBe(4);
+        expect((await sets(db)).every((s) => s.circuit_id === null && s.circuit_rest_sec === null)).toBe(true);
+      });
+    }
+  });
+
   it('valeur hors bornes ou de mauvais type : archive refusée', async () => {
     const source = await read(await withCircuit(A));
     await expect(parse(await rewritten(source, 13, (t) => (firstSet(t)['circuit_rest_sec'] = -5)))).rejects.toMatchObject({ code: 'invalid-data' });
