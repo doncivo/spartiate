@@ -1,8 +1,10 @@
-import { Suspense, lazy, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { Fragment, Suspense, lazy, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { formatTimerRemaining } from '../../../domain/syntheticTimer';
 import {
   REST_CHOICES_SEC,
+  circuitsOf,
   groupByExercise,
+  restAfterCircuitSet,
   restRemainingMs,
   restSecondsFor,
   summarizeSets,
@@ -13,7 +15,7 @@ import {
   type WorkoutSet,
   type WorkoutWithSets,
 } from '../../../domain/training';
-import { positionRanks } from '../../../domain/training/positionRank';
+import { positionRanksOfSets } from '../../../domain/training/positionRank';
 import { warmupExerciseIds } from '../../../domain/training/warmup';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import { RepositoryError } from '../../../db/repositories/common';
@@ -42,6 +44,9 @@ const SESSION_SETS_ON_ADD = 3;
 /** I2-01 (PR 2/2) : prescription et ressenti par exercice, bloc à la demande (moteur, repository et textes chargés avec lui). */
 const ExerciseProgression = lazy(() => import('./ExerciseProgression').then((m) => ({ default: m.ExerciseProgression })));
 /** I5-02 point 2.2 : bandeau « journée rouge » et Recovery Split, blocs à la demande (lectures, domaine et textes chargés avec eux). */
+/** I6-03 : circuits (en-tête d'un groupe, formulaire « Grouper en circuit »), bloc à la demande avec son catalogue de textes. */
+const CircuitHeader = lazy(() => import('./CircuitUi').then((m) => ({ default: m.CircuitHeader })));
+const CircuitForm = lazy(() => import('./CircuitUi').then((m) => ({ default: m.CircuitForm })));
 const RedDayBanner = lazy(() => import('./RecoverySession').then((m) => ({ default: m.RedDayBanner })));
 const RecoverySplitView = lazy(() => import('./RecoverySession').then((m) => ({ default: m.RecoverySplitView })));
 
@@ -71,6 +76,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
+  const [grouping, setGrouping] = useState(false);
   const [confirm, setConfirm] = useState<
     { readonly kind: 'abandon' } | { readonly kind: 'finish'; readonly pending: number } | { readonly kind: 'exercise'; readonly block: ExerciseBlock } | null
   >(null);
@@ -209,7 +215,9 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     });
     if (!ok) return;
     haptics.notification('success');
-    const seconds = restSecondsFor(set, restSetting, exercise?.defaultRestSec ?? null);
+    // I6-03 : dans un groupe, repos entre exercices (nul = aucun) puis repos de fin de tour (cible des séries) ; hors groupe, repos de l'exercice.
+    const inCircuit = restAfterCircuitSet(workout.sets, set.id);
+    const seconds = inCircuit?.phase === 'between' ? inCircuit.seconds : restSecondsFor(set, restSetting, exercise?.defaultRestSec ?? null);
     if (seconds !== null) await startRest(seconds);
   }
 
@@ -313,7 +321,9 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   // REV-01 constat 6 : rang de position de chaque exercice parmi ceux du même muscle principal (§ 11.3).
   const musclesOf = (id: string) => exerciseOf(id)?.muscles ?? [];
   const muscleNameOf = (id: string): string => data.content.muscles.find((m) => m.id === id)?.nameFr ?? id;
-  const positionRankOf = positionRanks(blocks.map((b) => ({ exerciseId: b.exerciseId, muscles: musclesOf(b.exerciseId) })));
+  const positionRankOf = positionRanksOfSets(workout.sets, musclesOf);
+  const circuits = circuitsOf(workout.sets);
+  const freeExercises = blocks.filter((b) => b.sets.every((x) => !x.circuitId)).length;
   const warmupIds = warmupExerciseIds(blocks.map((b) => ({ exerciseId: b.exerciseId, exercise: exerciseOf(b.exerciseId) })));
   const summary = summarizeSets(workout.sets);
   const remaining = rest ? restRemainingMs(rest.endAt, now) : 0;
@@ -403,8 +413,15 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         const restSec = first ? restSecondsFor({ setKind: 'work', targetRestSec: first.targetRestSec }, restSetting, exercise?.defaultRestSec ?? null) : null;
         const work = block.sets.filter((s) => s.setKind !== 'warmup').length;
         let rank = 0;
+        const circuit = circuits.find((c) => c.exerciseIds[0] === block.exerciseId);
         return (
-          <section key={block.exerciseId} className="ct-session__block" role="region" aria-label={block.exerciseName}>
+          <Fragment key={block.exerciseId}>
+          {circuit && (
+            <Suspense fallback={null}>
+              <CircuitHeader circuit={circuit} workout={workout} busy={busy} onUngroup={() => void write((repo) => repo.ungroupCircuit(workout.id, circuit.circuitId))} />
+            </Suspense>
+          )}
+          <section className="ct-session__block" role="region" aria-label={block.exerciseName}>
             <div className="ct-session__block-head">
               <h3 className="ct-session__block-title">{block.exerciseName}</h3>
               <p className="ct-session__muted">
@@ -449,13 +466,33 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
               </Button>
             </div>
           </section>
+          </Fragment>
         );
       })}
+
+      {grouping && (
+        <Suspense fallback={null}>
+          <CircuitForm
+            access={access}
+            workout={workout}
+            onCancel={() => setGrouping(false)}
+            onDone={() => {
+              setGrouping(false);
+              void reload();
+            }}
+          />
+        </Suspense>
+      )}
 
       <div className="ct-training__actions">
         <Button variant="secondary" disabled={busy} onClick={() => setPicking(true)}>
           {tTraining('sessionAddExercise')}
         </Button>
+        {freeExercises >= 2 && !grouping && (
+          <Button variant="secondary" disabled={busy} onClick={() => setGrouping(true)}>
+            {tTraining('sessionGroup')}
+          </Button>
+        )}
         <Button variant="danger" disabled={busy} onClick={() => setConfirm({ kind: 'abandon' })}>
           {tTraining('sessionAbandon')}
         </Button>

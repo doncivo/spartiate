@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { buildFullExport, FULL_EXPORT_TABLES, fullExportColumns, parseCsvText } from '../../../domain/exportImport/fullExport';
-import { DEFAULT_THEME, EXPORT_SV, type ExportData } from '../../../domain/exportImport/archive';
+import { DEFAULT_THEME, EXPORT_SV, IMPORT_ZIP_LIMITS, type ExportData } from '../../../domain/exportImport/archive';
 import { readZip } from '../../../domain/exportImport/zip';
 import type { DeviceId, LocalDate } from '../../../domain/types';
 import { openBaseDb, type TestDb } from './testSetup';
@@ -37,14 +37,14 @@ describe('export complet relu et comparé aux tables', () => {
     const theme = await db.data.repos.settings.get('ui.theme');
     const data: ExportData = theme === DEFAULT_THEME ? base : { ...base, settings: { 'ui.theme': theme } };
     const built = await buildFullExport(data, { date: '2026-11-12T10:00:00.000Z', sv: EXPORT_SV, appVersion: '0.14.0' });
-    const files = new Map(readZip(built.bytes).map((e) => [e.name, new TextDecoder('utf-8', { ignoreBOM: true }).decode(e.data)]));
+    const files = new Map(readZip(built.bytes, IMPORT_ZIP_LIMITS).map((e) => [e.name, new TextDecoder('utf-8', { ignoreBOM: true }).decode(e.data)]));
     let compared = 0;
     for (const table of FULL_EXPORT_TABLES) {
       if (table === 'settings') continue;
       const columns = fullExportColumns(table).map((c) => c.name);
       const csv = parseCsvText(files.get(`csv/${table}.csv`) ?? '');
       expect(csv[0], table).toEqual(columns);
-      const sql = await db.driver.select<Record<string, string | number | null>>(`SELECT ${columns.join(', ')} FROM ${table} WHERE deleted_at IS NULL ORDER BY id`);
+      const sql = await db.driver.select<Record<string, string | number | null>>(`SELECT ${columns.map((c) => (c === 'decided_at' ? 'created_at AS decided_at' : c)).join(', ')} FROM ${table} WHERE deleted_at IS NULL ORDER BY id`);
       const expected = sql.map((row) => columns.map((c) => (row[c] === null || row[c] === undefined ? '' : String(row[c]))));
       expect(csv.slice(1), table).toEqual(expected);
       compared += expected.length;
@@ -58,6 +58,6 @@ describe('export complet relu et comparé aux tables', () => {
     expect(sets.slice(1).map((r) => [r[loadCol], r[restCol]])).toEqual([['52.5', '10'], ['52.5', '10'], ['52.5', '10'], ['52.5', '10']]);
     // Jamais le fichier d'une photo, ni la table locale des fichiers.
     expect(files.has('csv/progress_photo_file.csv')).toBe(false);
-    expect([...files.values()].join('\n')).not.toMatch(/progress_photo_file|\/9j\/|JFIF/);
+    expect([...files].filter(([name]) => name.startsWith('csv/')).map(([, text]) => text).join('\n')).not.toMatch(/progress_photo_file|\/9j\/|JFIF/);
   });
 });

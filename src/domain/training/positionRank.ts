@@ -22,3 +22,16 @@ export function positionRanks(order: readonly { readonly exerciseId: string; rea
   }
   return ranks;
 }
+
+/**
+ * Rang de position des exercices d'une séance lue série par série (I6-03, D-87) : l'ordre d'exécution est celui des positions, y compris quand les
+ * séries de plusieurs exercices d'un groupe (superset, triset, circuit) sont alternées. Un exercice ne passe donc jamais « deuxième » parce que ses
+ * séries sont intercalées avec celles d'un autre : la décote ne s'applique qu'entre exercices de même muscle principal. Pur.
+ */
+export function positionRanksOfSets(
+  sets: readonly { readonly exerciseId: string; readonly position: number }[],
+  musclesOf: (exerciseId: string) => readonly MuscleWeight[],
+): ReadonlyMap<string, number> {
+  const ordered = [...sets].sort((a, b) => a.position - b.position);
+  return positionRanks(ordered.map((s) => ({ exerciseId: s.exerciseId, muscles: musclesOf(s.exerciseId) })));
+}

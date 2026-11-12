@@ -4,6 +4,7 @@ import { tonnageKg, workoutDurationSec, type Workout } from '../../../domain/tra
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import { formatClock, formatDay, formatVolume, tTraining } from '../../../i18n/trainingText';
 import { Icon } from '../../../ui';
+import { useNavigationStore } from '../../app/navigation';
 import { useSyncedData } from '../../sync/remoteChanges';
 import type { TrainingData } from '../trainingState';
 import { HistoryDetail } from './HistoryDetail';
@@ -45,6 +46,7 @@ export function HistoryView({ data, access }: { readonly data: TrainingData; rea
   const [notice, setNotice] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const synced = useSyncedData(['workout', 'workout_set']);
+  const navigate = useNavigationStore((s) => s.navigate);
   const listHeading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -76,7 +78,7 @@ export function HistoryView({ data, access }: { readonly data: TrainingData; rea
           <Icon icon={ArrowLeft} size={20} />
           <span>{tTraining('historyBack')}</span>
         </button>
-        <HistoryDetail key={selected} data={data} access={access} workoutId={selected} synced={synced} onDeleted={() => back(tTraining('historyDeleted'))} />
+        <HistoryDetail key={selected} data={data} access={access} workoutId={selected} synced={synced} onDeleted={() => back(tTraining('historyDeleted'))} onReplay={() => navigate({ tab: 'training', screen: 'session' })} />
       </div>
     );
   }

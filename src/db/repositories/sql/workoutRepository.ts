@@ -10,6 +10,8 @@ import {
   isRestSeconds,
   planFromPastWorkout,
   planFromRoutineDay,
+  orderWithCircuit,
+  validateCircuit,
   restEndAt,
   routineDiff,
   summarizeWorkout,
@@ -67,6 +69,9 @@ interface SetRow extends SqlRow, SyncRow {
   readonly corrected_at: string | null;
   /** Absente d'une base antérieure à la migration 0006 (jamais en production : le migrateur passe avant). */
   readonly difficulty?: string | null;
+  /** Absentes d'une base antérieure à la migration 0013 (jamais en production : le migrateur passe avant). */
+  readonly circuit_id?: string | null;
+  readonly circuit_rest_sec?: number | null;
 }
 interface RoutineLineRow extends SqlRow {
   readonly exercise_id: string;
@@ -112,6 +117,8 @@ const rowToSet = (row: SetRow): WorkoutSet => ({
   doneAt: row.done_at as IsoDateTime | null,
   correctedAt: (row.corrected_at ?? null) as IsoDateTime | null,
   difficulty: (row.difficulty ?? null) as Difficulty | null,
+  circuitId: row.circuit_id ?? null,
+  circuitRestSec: row.circuit_rest_sec ?? null,
   ...readSyncMeta(row),
 });
 
@@ -168,10 +175,28 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     // Borne de l'agrégat publié d'un bloc (WORKOUT_SETS_MAX) : refus clair, rien n'est écrit pour cette série.
     if (live >= WORKOUT_SETS_MAX) invalid('workout_set', workoutId);
     const stamp = stamper.next();
+    // Les colonnes de groupe (0013) ne sont écrites que pour une série de groupe : une série libre s'écrit comme avant.
+    const grouped = plan.circuitId !== undefined && plan.circuitId !== null;
     await db.execute(
       `INSERT INTO workout_set (id, workout_id, exercise_id, exercise_name, position, set_kind, target_reps_min, target_reps_max, target_load_kg, target_rest_sec,
-         done, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
-      [id, workoutId, plan.exerciseId, plan.exerciseName, position, plan.setKind, plan.targetRepsMin, plan.targetRepsMax, plan.targetLoadKg, plan.targetRestSec, stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
+         done${grouped ? ', circuit_id, circuit_rest_sec' : ''}, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0${grouped ? ', ?, ?' : ''}, ?, ?, ?, ?)`,
+      [
+        id,
+        workoutId,
+        plan.exerciseId,
+        plan.exerciseName,
+        position,
+        plan.setKind,
+        plan.targetRepsMin,
+        plan.targetRepsMax,
+        plan.targetLoadKg,
+        plan.targetRestSec,
+        ...(grouped ? [plan.circuitId as string, plan.circuitRestSec ?? null] : []),
+        stamp.at,
+        stamp.at,
+        stamp.deviceId,
+        stamp.hlc,
+      ],
     );
   };
   const markSetDeleted = async (id: string): Promise<void> => {
@@ -185,6 +210,40 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       if (row.position === index) continue;
       const stamp = stamper.next();
       await db.execute('UPDATE workout_set SET position = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [index, stamp.at, stamp.deviceId, stamp.hlc, row.id]);
+    }
+  };
+  /** Écrit les positions de `order` (identifiants dans le nouvel ordre) ; ne réécrit que les lignes qui changent. */
+  const applyOrder = async (order: readonly string[]): Promise<void> => {
+    if (order.length === 0) return;
+    const current = new Map((await db.select<SetRow>(`SELECT id, position FROM workout_set WHERE id IN (${order.map(() => '?').join(', ')})`, [...order])).map((r) => [r.id, r.position]));
+    for (const [index, id] of order.entries()) {
+      if (current.get(id) === index) continue;
+      const stamp = stamper.next();
+      await db.execute('UPDATE workout_set SET position = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [index, stamp.at, stamp.deviceId, stamp.hlc, id]);
+    }
+  };
+  /** Exercices d'un groupe (ordre d'exécution du tour) dans la séance. */
+  const circuitExercises = (rows: readonly SetRow[], circuitId: string): string[] => [...new Set(rows.filter((r) => r.circuit_id === circuitId).map((r) => r.exercise_id))];
+  /** Remet les séries d'un groupe dans l'ordre alterné (après l'ajout d'une série ou d'un échauffement), positions contiguës. */
+  const reorderCircuit = async (workoutId: string, circuitId: string): Promise<void> => {
+    const rows = await rawSets(workoutId);
+    await applyOrder(orderWithCircuit(rows.map(rowToSet), circuitExercises(rows, circuitId)));
+  };
+  /** Efface le groupe (colonnes nulles) et rend les séries de chaque exercice voisines, dans l'ordre de première apparition. */
+  const dissolveCircuit = async (workoutId: string, circuitId: string): Promise<void> => {
+    for (const row of (await rawSets(workoutId)).filter((r) => r.circuit_id === circuitId)) {
+      const stamp = stamper.next();
+      await db.execute('UPDATE workout_set SET circuit_id = NULL, circuit_rest_sec = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.deviceId, stamp.hlc, row.id]);
+    }
+    const rows = await rawSets(workoutId);
+    const exerciseOrder = [...new Set(rows.map((r) => r.exercise_id))];
+    await applyOrder([...rows].sort((a, b) => exerciseOrder.indexOf(a.exercise_id) - exerciseOrder.indexOf(b.exercise_id) || a.position - b.position || a.id.localeCompare(b.id)).map((r) => r.id));
+  };
+  /** Un groupe qui n'a plus qu'un exercice (retrait) n'en est plus un : il est dissous. */
+  const dissolveBroken = async (workoutId: string): Promise<void> => {
+    const rows = await rawSets(workoutId);
+    for (const id of new Set(rows.map((r) => r.circuit_id).filter((c): c is string => c !== null && c !== undefined))) {
+      if (circuitExercises(rows, id).length < 2) await dissolveCircuit(workoutId, id);
     }
   };
   /** Le tampon sert aussi d'horloge : l'échéance se calcule depuis lui, puis l'écriture suit sans attente entre les deux. */
@@ -300,7 +359,16 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [id, routineId, dayId, name.trim(), stamp.at, input.source, copyFromId, stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
       );
-      for (const [position, set] of plan.entries()) await insertSet(id, ids.next(), position, set);
+      // Rejeu (I6-03) : chaque groupe de la source reçoit un identifiant neuf, la source n'est jamais modifiée ni partagée.
+      const circuitIds = new Map<string, string>();
+      for (const [position, set] of plan.entries()) {
+        let mapped: string | undefined;
+        if (set.circuitId) {
+          mapped = circuitIds.get(set.circuitId) ?? ids.next();
+          circuitIds.set(set.circuitId, mapped);
+        }
+        await insertSet(id, ids.next(), position, mapped === undefined ? set : { ...set, circuitId: mapped });
+      }
       return loadOrThrow(id);
     },
 
@@ -357,6 +425,66 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       if (rows.length === 0) throw new RepositoryError('not-found', 'workout_set', exerciseId);
       for (const row of rows) await markSetDeleted(row.id);
       await renumber(workoutId);
+      await dissolveBroken(workoutId);
+      return loadOrThrow(workoutId);
+    },
+
+    /**
+     * I6-03 : relie des exercices de la séance OUVERTE en un groupe (superset, triset, circuit). Les séries de travail de chaque exercice sont ramenées
+     * à `rounds` (par défaut le plus grand nombre existant) : séries manquantes ajoutées avec les cibles de l'exercice, séries à faire en trop
+     * retirées, jamais une série validée (`'invalid'`). Ordre alterné série par série ; repos entre exercices et de fin de tour écrits.
+     */
+    async groupExercises(workoutId, input) {
+      const inTx = atomic((tx) => tx.groupExercises(workoutId, input));
+      if (inTx) return inTx;
+      await requireOpen(workoutId);
+      const rows = await rawSets(workoutId);
+      const exerciseIds = [...input.exerciseIds];
+      const workOf = (e: string): SetRow[] => rows.filter((r) => r.exercise_id === e && r.set_kind !== 'warmup');
+      const rounds = input.rounds ?? Math.max(1, ...exerciseIds.map((e) => workOf(e).length));
+      if (validateCircuit({ exerciseIds, rounds, restBetweenSec: input.restBetweenSec, restRoundSec: input.restRoundSec }).length > 0) invalid('workout', workoutId);
+      if (exerciseIds.some((e) => !rows.some((r) => r.exercise_id === e))) invalid('workout_set', workoutId);
+      if (rows.some((r) => exerciseIds.includes(r.exercise_id) && r.circuit_id)) throw new RepositoryError('conflict', 'workout_set', workoutId);
+      if (rounds > SETS_MAX) invalid('workout', workoutId);
+      for (const e of exerciseIds) {
+        const works = workOf(e);
+        const base = works.at(-1) ?? rows.filter((r) => r.exercise_id === e).at(-1);
+        if (!base) return invalid('workout_set', e);
+        const extras = works.slice(rounds);
+        if (extras.some((x) => x.done === 1)) invalid('workout_set', e);
+        for (const x of extras) await markSetDeleted(x.id);
+        for (let i = works.length; i < rounds; i += 1) {
+          await insertSet(workoutId, ids.next(), rows.length + i, {
+            exerciseId: e,
+            exerciseName: base.exercise_name,
+            setKind: 'work',
+            targetRepsMin: base.target_reps_min,
+            targetRepsMax: base.target_reps_max,
+            targetLoadKg: base.target_load_kg,
+            targetRestSec: base.target_rest_sec,
+          });
+        }
+      }
+      const circuitId = ids.next();
+      for (const row of (await rawSets(workoutId)).filter((r) => exerciseIds.includes(r.exercise_id))) {
+        const stamp = stamper.next();
+        const restRound = input.restRoundSec !== null && row.set_kind !== 'warmup';
+        await db.execute(
+          `UPDATE workout_set SET circuit_id = ?, circuit_rest_sec = ?, target_rest_sec = ${restRound ? '?' : 'target_rest_sec'}, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?`,
+          [circuitId, input.restBetweenSec, ...(restRound ? [input.restRoundSec as number] : []), stamp.at, stamp.deviceId, stamp.hlc, row.id],
+        );
+      }
+      await applyOrder(orderWithCircuit((await rawSets(workoutId)).map(rowToSet), exerciseIds));
+      return loadOrThrow(workoutId);
+    },
+
+    /** I6-03 : défait un groupe de la séance OUVERTE ; les séries faites sont gardées, les exercices redeviennent indépendants. Groupe absent : `'not-found'`. */
+    async ungroupCircuit(workoutId, circuitId) {
+      const inTx = atomic((tx) => tx.ungroupCircuit(workoutId, circuitId));
+      if (inTx) return inTx;
+      await requireOpen(workoutId);
+      if (!(await rawSets(workoutId)).some((r) => r.circuit_id === circuitId)) throw new RepositoryError('not-found', 'workout_set', circuitId);
+      await dissolveCircuit(workoutId, circuitId);
       return loadOrThrow(workoutId);
     },
 
@@ -396,8 +524,10 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
         targetRepsMax: last.target_reps_max,
         targetLoadKg: last.target_load_kg,
         targetRestSec: last.target_rest_sec,
+        ...(last.circuit_id ? { circuitId: last.circuit_id, circuitRestSec: last.circuit_rest_sec ?? null } : {}),
       });
       await renumber(workoutId);
+      if (last.circuit_id) await reorderCircuit(workoutId, last.circuit_id);
       return rowToSet((await db.select<SetRow>('SELECT * FROM workout_set WHERE id = ?', [id]))[0] as SetRow);
     },
 
@@ -429,10 +559,12 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
           targetRepsMax: step.reps,
           targetLoadKg: step.loadKg,
           targetRestSec: null,
+          ...(first.circuit_id ? { circuitId: first.circuit_id, circuitRestSec: first.circuit_rest_sec ?? null } : {}),
         });
         created.push(id);
       }
       await renumber(workoutId);
+      if (first.circuit_id) await reorderCircuit(workoutId, first.circuit_id);
       const out: WorkoutSet[] = [];
       for (const id of created) out.push(await requireSetRow(id));
       return out;

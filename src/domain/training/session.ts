@@ -78,6 +78,10 @@ export interface WorkoutSet extends RowMeta {
   readonly correctedAt?: IsoDateTime | null;
   /** I2-01 : difficulté Facile / Juste / Dur de l'exercice dans la séance, portée par chacune de ses séries ; absent ou null : non saisie. */
   readonly difficulty?: Difficulty | null;
+  /** I6-03 : identifiant du groupe (superset, triset, circuit) de l'exercice dans la séance ; absent ou null : exercice hors groupe. Publié avec la séance close. */
+  readonly circuitId?: string | null;
+  /** I6-03 : repos entre deux exercices du groupe (secondes, 0 = aucun) ; porté par chaque série du groupe, null hors groupe. */
+  readonly circuitRestSec?: number | null;
 }
 
 export interface WorkoutWithSets extends Workout {
@@ -163,6 +167,9 @@ export interface PlannedSet {
   readonly targetRepsMax: number | null;
   readonly targetLoadKg: number | null;
   readonly targetRestSec: number | null;
+  /** I6-03 : groupe de la série (copie d'une séance passée : l'identifiant de la source, remplacé par un neuf au démarrage) ; absent : hors groupe. */
+  readonly circuitId?: string | null;
+  readonly circuitRestSec?: number | null;
 }
 
 /** Séries d'un jour de routine : lignes par position, `sets` séries de travail chacune, cibles de la routine, aucune charge. */
@@ -182,23 +189,29 @@ export function planFromRoutineDay(lines: readonly RoutineExerciseSpec[]): Plann
     );
 }
 
-/** Copie d'une séance passée (§ 13.8) : séries validées, dans l'ordre ; les dernières valeurs deviennent les cibles. */
+/**
+ * Copie d'une séance passée (§ 13.8) et rejeu (I6-03) : séries validées, dans l'ordre ; les dernières valeurs deviennent les cibles, jamais des séries
+ * faites. Les groupes de circuit sont conservés (même ordre alterné, même repos) tant qu'au moins deux exercices du groupe ont des séries validées ;
+ * sinon le groupe est dissous.
+ */
 export function planFromPastWorkout(past: WorkoutWithSets): PlannedSet[] {
-  return [...past.sets]
-    .filter((s) => s.done)
-    .sort((a, b) => a.position - b.position || a.id.localeCompare(b.id))
-    .map((s): PlannedSet => {
-      const target = s.setKind === 'timed' ? s.durationSec : s.reps;
-      return {
-        exerciseId: s.exerciseId,
-        exerciseName: s.exerciseName,
-        setKind: s.setKind,
-        targetRepsMin: target,
-        targetRepsMax: target,
-        targetLoadKg: s.loadKg,
-        targetRestSec: s.targetRestSec,
-      };
-    });
+  const done = [...past.sets].filter((s) => s.done).sort((a, b) => a.position - b.position || a.id.localeCompare(b.id));
+  const exercisesOf = new Map<string, Set<string>>();
+  for (const s of done) if (s.circuitId) exercisesOf.set(s.circuitId, (exercisesOf.get(s.circuitId) ?? new Set<string>()).add(s.exerciseId));
+  return done.map((s): PlannedSet => {
+    const target = s.setKind === 'timed' ? s.durationSec : s.reps;
+    const grouped = s.circuitId ? (exercisesOf.get(s.circuitId)?.size ?? 0) >= 2 : false;
+    return {
+      exerciseId: s.exerciseId,
+      exerciseName: s.exerciseName,
+      setKind: s.setKind,
+      targetRepsMin: target,
+      targetRepsMax: target,
+      targetLoadKg: s.loadKg,
+      targetRestSec: s.targetRestSec,
+      ...(grouped ? { circuitId: s.circuitId as string, circuitRestSec: s.circuitRestSec ?? null } : {}),
+    };
+  });
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------------
