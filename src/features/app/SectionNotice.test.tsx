@@ -63,7 +63,8 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
     await Promise.all([RecoveryToday.preload(), TodaySessionCard.preload(), NutritionRemainingCard.preload()]);
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
     open('today');
-    expect(await screen.findByRole('heading', { name: 'Aujourd’hui' })).toBeInTheDocument();
+    // Requête par texte et sélecteur : la requête par rôle calcule l'arbre d'accessibilité de toute la page (lent sous couverture, sur un runner chargé).
+    expect(await screen.findByText('Aujourd’hui', { selector: 'h1' })).toBeInTheDocument();
     expect(await screen.findByText('Trois réglages, puis on s’entraîne.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Renseigner mon profil' }));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'body' });
