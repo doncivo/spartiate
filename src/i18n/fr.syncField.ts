@@ -166,8 +166,6 @@ export const syncFieldFr = {
     done: 'validée',
     deleted_at: 'suppression',
     difficulty: 'difficulté',
-    circuit_id: 'groupe de circuit',
-    circuit_rest_sec: 'repos entre exercices du groupe',
   },
   // I2-01 : profil de progression et décisions d'Ali (seuls les champs visibles au journal des conflits).
   progression_profile: {

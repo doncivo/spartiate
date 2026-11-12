@@ -66,27 +66,29 @@ export type SimSchema = 'legacy' | 'i0' | 'v3' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9
  * I1-03 : `v3` : base et catalogue d'une app arrêtée à la migration 0003 (séance locale, ni `workout` ni `workout_set` publiées), `sv` = 3 :
  * appareil pas encore mis à jour qui reçoit des séances closes d'un appareil en schéma 4.
  */
+/** I6-03 : un appareil resté avant la migration 0013 n'a pas les colonnes de groupe de `workout_set` (la lecture de ses lignes publiées les nommerait sinon). */
+const beforeCircuit = (tables: readonly (typeof SYNC_CATALOGUE.tables)[number][]) => tables.map((t) => (t.name === 'workout_set' ? { ...t, columns: t.columns.filter((c) => c.name !== 'circuit_id' && c.name !== 'circuit_rest_sec') } : t));
 export const V3_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 7), order: SYNC_TABLE_ORDER.slice(0, 7) });
 /**
  * I2-01 (PR 2/2) : `v5` : base et catalogue de la 0.3.0 (migration 0005 : tables de progression LOCALES, absentes du catalogue ; séries sans
  * difficulté publiée), `sv` = 5 : appareil pas encore mis à jour qui reçoit profils, décisions et difficultés d'un appareil en 0.3.1.
  */
 export const V5_CATALOGUE = createCatalogue({
-  tables: SYNC_CATALOGUE.tables.slice(0, 9).map((t) => (t.name === 'workout_set' ? { ...t, columns: t.columns.filter((c) => c.name !== 'difficulty') } : t)),
+  tables: beforeCircuit(SYNC_CATALOGUE.tables.slice(0, 9)).map((t) => (t.name === 'workout_set' ? { ...t, columns: t.columns.filter((c) => c.name !== 'difficulty') } : t)),
   order: SYNC_TABLE_ORDER.slice(0, 9),
 });
 /** I3-02 : `v6` : base et catalogue sans mésocycle (migration 0006), `sv` = 6 : appareil pas encore mis à jour qui reçoit des cycles. */
-export const V6_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 11), order: SYNC_TABLE_ORDER.slice(0, 11) });
+export const V6_CATALOGUE = createCatalogue({ tables: beforeCircuit(SYNC_CATALOGUE.tables.slice(0, 11)), order: SYNC_TABLE_ORDER.slice(0, 11) });
 /** I4-02 : `v7` : base et catalogue sans nutrition (migration 0007), `sv` = 7 : appareil pas encore mis à jour qui reçoit fiches, portions, entrées et cibles. */
-export const V7_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 12), order: SYNC_TABLE_ORDER.slice(0, 12) });
+export const V7_CATALOGUE = createCatalogue({ tables: beforeCircuit(SYNC_CATALOGUE.tables.slice(0, 12)), order: SYNC_TABLE_ORDER.slice(0, 12) });
 /** I4-07 : `v8` : base et catalogue sans recettes ni journée complète (migration 0008), `sv` = 8 : appareil pas encore mis à jour qui reçoit `recipe`, `recipe_ingredient` et `day_completeness`. */
-export const V8_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 16), order: SYNC_TABLE_ORDER.slice(0, 16) });
+export const V8_CATALOGUE = createCatalogue({ tables: beforeCircuit(SYNC_CATALOGUE.tables.slice(0, 16)), order: SYNC_TABLE_ORDER.slice(0, 16) });
 /** I5-01 : `v9` : base et catalogue sans résumés de récupération (migration 0009), `sv` = 9 : PC pas encore mis à jour qui reçoit `recovery_day` et `muscle_recovery`. */
-export const V9_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 19), order: SYNC_TABLE_ORDER.slice(0, 19) });
+export const V9_CATALOGUE = createCatalogue({ tables: beforeCircuit(SYNC_CATALOGUE.tables.slice(0, 19)), order: SYNC_TABLE_ORDER.slice(0, 19) });
 /** I6-01 : `v10` : base et catalogue sans journal de facteurs (migration 0010), `sv` = 10 : appareil pas encore mis à jour qui reçoit `recovery_factor`. */
-export const V10_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 21), order: SYNC_TABLE_ORDER.slice(0, 21) });
+export const V10_CATALOGUE = createCatalogue({ tables: beforeCircuit(SYNC_CATALOGUE.tables.slice(0, 21)), order: SYNC_TABLE_ORDER.slice(0, 21) });
 /** I6-02 : `v11` : base et catalogue sans mensurations ni photos (migration 0011), `sv` = 11 : appareil pas encore mis à jour qui reçoit `measurement` et `progress_photo`. */
-export const V11_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 22), order: SYNC_TABLE_ORDER.slice(0, 22) });
+export const V11_CATALOGUE = createCatalogue({ tables: beforeCircuit(SYNC_CATALOGUE.tables.slice(0, 22)), order: SYNC_TABLE_ORDER.slice(0, 22) });
 /** I6-03 : `v12` : base et catalogue sans groupe de circuit (migration 0012 : `workout_set` sans `circuit_id` ni `circuit_rest_sec`), `sv` = 12 : appareil pas encore mis à jour qui reçoit des séries groupées. */
 export const V12_CATALOGUE = createCatalogue({
   tables: SYNC_CATALOGUE.tables.map((t) => (t.name === 'workout_set' ? { ...t, columns: t.columns.filter((c) => c.name !== 'circuit_id' && c.name !== 'circuit_rest_sec') } : t)),

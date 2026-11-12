@@ -23,11 +23,11 @@ L’archive complète est aussi une archive d’import valide : l’import ne li
 - Nombres : point décimal, sans séparateur de milliers, sans notation scientifique. Booléens : `1` ou `0`.
 - Une cellule vide est une valeur absente (NULL) ; un texte vide ne s’en distingue pas. `data.json` garde la distinction.
 - Colonnes `json` : texte JSON dans une seule cellule (entre guillemets).
-- Un texte qui commencerait par `=`, `+`, `@`, une tabulation ou `-` suivi d’autre chose qu’un chiffre est précédé d’une apostrophe (`'`) pour qu’un tableur ne l’exécute pas comme une formule ; `data.json` garde le texte exact.
+- Un texte qui commencerait par `=`, `+`, `-`, `@`, `%`, une tabulation ou un retour chariot est précédé d’une apostrophe (`'`) pour qu’un tableur ne l’exécute pas comme une formule ; `data.json` garde le texte exact.
 
 ## Règles d’ordre
 
-- Dans chaque CSV, les lignes sont triées par `id` (comparaison des unités de code, sans tenir compte de la langue) ; l’ordre ne dépend ni de l’appareil ni de la date de saisie.
+- Dans chaque CSV, les lignes sont triées par `id` (par `key` pour `settings.csv` ; comparaison des unités de code, sans tenir compte de la langue) ; l’ordre ne dépend ni de l’appareil ni de la date de saisie.
 - Dans `workout_set.csv`, l’ordre d’exécution d’une séance se lit par `position` (à partir de 0), pas par l’ordre des lignes.
 - Les fichiers sont écrits dans l’ordre : `manifest.json`, `contenu.json`, `data.json`, puis `csv/` : `profile`, `body_weight`, `settings`, puis les tables dans l’ordre du catalogue (parents avant enfants).
 

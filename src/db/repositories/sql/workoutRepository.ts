@@ -223,7 +223,11 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     }
   };
   /** Exercices d'un groupe (ordre d'exécution du tour) dans la séance. */
-  const circuitExercises = (rows: readonly SetRow[], circuitId: string): string[] => [...new Set(rows.filter((r) => r.circuit_id === circuitId).map((r) => r.exercise_id))];
+  const circuitExercises = (rows: readonly SetRow[], circuitId: string): string[] => {
+    // Ordre du tour : première série de TRAVAIL de chaque exercice (un échauffement ajouté plus tard ne change pas l'ordre) ; les exercices sans série de travail suivent.
+    const own = rows.filter((r) => r.circuit_id === circuitId);
+    return [...new Set([...own.filter((r) => r.set_kind !== 'warmup'), ...own].map((r) => r.exercise_id))];
+  };
   /** Remet les séries d'un groupe dans l'ordre alterné (après l'ajout d'une série ou d'un échauffement), positions contiguës. */
   const reorderCircuit = async (workoutId: string, circuitId: string): Promise<void> => {
     const rows = await rawSets(workoutId);
@@ -231,13 +235,18 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
   };
   /** Efface le groupe (colonnes nulles) et rend les séries de chaque exercice voisines, dans l'ordre de première apparition. */
   const dissolveCircuit = async (workoutId: string, circuitId: string): Promise<void> => {
-    for (const row of (await rawSets(workoutId)).filter((r) => r.circuit_id === circuitId)) {
+    const before = await rawSets(workoutId);
+    const members = before.filter((r) => r.circuit_id === circuitId);
+    const exerciseOrder = circuitExercises(before, circuitId);
+    for (const row of members) {
       const stamp = stamper.next();
       await db.execute('UPDATE workout_set SET circuit_id = NULL, circuit_rest_sec = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.deviceId, stamp.hlc, row.id]);
     }
-    const rows = await rawSets(workoutId);
-    const exerciseOrder = [...new Set(rows.map((r) => r.exercise_id))];
-    await applyOrder([...rows].sort((a, b) => exerciseOrder.indexOf(a.exercise_id) - exerciseOrder.indexOf(b.exercise_id) || a.position - b.position || a.id.localeCompare(b.id)).map((r) => r.id));
+    // Seules les séries du groupe dissous changent de place, dans les emplacements qu'elles occupaient : un autre groupe garde son alternance.
+    const grouped = [...members].sort((x, y) => exerciseOrder.indexOf(x.exercise_id) - exerciseOrder.indexOf(y.exercise_id) || x.position - y.position || x.id.localeCompare(y.id));
+    const slots = new Set(members.map((r) => r.id));
+    const queue = [...grouped];
+    await applyOrder(before.map((r) => (slots.has(r.id) ? (queue.shift() as SetRow).id : r.id)));
   };
   /** Un groupe qui n'a plus qu'un exercice (retrait) n'en est plus un : il est dissous. */
   const dissolveBroken = async (workoutId: string): Promise<void> => {

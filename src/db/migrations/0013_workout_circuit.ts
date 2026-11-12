@@ -9,7 +9,7 @@ import type { Migration } from '../migrator';
  *
  * Schéma additif, deux colonnes PUBLIÉES avec la séance close (le rejeu et l'historique d'un autre appareil en ont besoin ; catalogue de synchro,
  * export, vecteur). AUCUN déclencheur ajouté : les colonnes ne s'écrivent que sur une séance OUVERTE, jamais capturée (D-27), et la clôture met la
- * ligne entière en file (`sync_workout_au`, 0004), colonnes de groupe comprises ; aucune correction après clôture ne les touche (contrairement à
+ * ligne entière en file (`sync_workout_au`, 0004), colonnes de groupe comprises ; aucune correction après clôture ne les touche, et elles sont MASQUÉES du journal des conflits (un « Rétablir » n'y serait pas capturé) (contrairement à
  * `difficulty`, 0006). Aucune contrainte croisée entre colonnes (leçon A1 d'I6-01) : le repos peut être nul sans identifiant, la cohérence du groupe
  * (au moins deux exercices) est tenue par le domaine et le dépôt, et un groupe incomplet reçu d'un autre appareil se lit comme des exercices libres.
  * Un appareil resté au schéma 12 garde ces deux champs dans `sync_unknown` (ADR 0011 § 7.2) et les réintègre après sa migration.
