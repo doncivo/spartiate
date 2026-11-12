@@ -331,6 +331,20 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // I6-03b : groupes dans l'éditeur de routine (bloc à la demande RoutineCircuitUi, catalogue fr.routineCircuit) : hors du départ, présents dans le build.
+  it('I6-03b : src/features/training/RoutineCircuitUi.tsx est un bloc à la demande, hors du départ', () => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest['src/features/training/RoutineCircuitUi.tsx'];
+    if (!chunk) throw new Error('bloc RoutineCircuitUi absent du manifeste');
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes('src/features/training/RoutineCircuitUi.tsx'))).toBe(true);
+  });
+  it.each(['retrouvé dans chaque séance démarrée depuis ce jour', 'Repos de fin de tour : de 0 à 900 s'])('I6-03b : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   it('I3-07 : aucun module du domaine de l’onboarding ni de l’assistant hérité dans le graphe du départ', () => {
     const startFiles = new Set(startChunks().map((chunk) => chunk.file));
     for (const [source, chunk] of Object.entries(manifest)) {
