@@ -136,6 +136,36 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     expect(second.recomputedDays).toBe(2);
   });
 
+  it('FIX-0115 : un import « 0 ajoutée » après une montée de version recalcule quand même, et le marqueur est posé', async () => {
+    const nights = Array.from({ length: 10 }, (_, k) => {
+      const day = new Date(Date.parse('2026-11-08T12:00:00Z') - k * 86_400_000).toISOString().slice(0, 10);
+      const before = new Date(Date.parse(day + 'T12:00:00Z') - 86_400_000).toISOString().slice(0, 10);
+      return before + 'T23:00:00+01:00;' + day + 'T07:00:00+01:00;Endormi';
+    }).join('\n');
+    const reads = (): ShortcutFileRead[] => [ok('sommeil.csv', nights)];
+    await build(reader(async () => reads())).run('manual');
+    let stored: number | null = SLEEP_RULES_VERSION - 1;
+    const rules = { get: async () => stored, set: async (version: number) => void (stored = version) };
+    const again = await build(reader(async () => reads()), { clock: createManualClock('2026-11-08T11:00:00.000Z'), rules }).run('manual');
+    expect(again.files.find((f) => f.type === 'sommeil')?.added).toBe(0);
+    expect(again.recomputedDays).toBeGreaterThan(2);
+    expect(stored).toBe(SLEEP_RULES_VERSION);
+  });
+
+  it('FIX-0115 : un événement de diagnostic du sommeil, des nombres seulement (nuits retenues, écartées par raison ; jamais de dette, § 22)', async () => {
+    const nights = Array.from({ length: 10 }, (_, k) => {
+      const day = new Date(Date.parse('2026-11-08T12:00:00Z') - k * 86_400_000).toISOString().slice(0, 10);
+      const before = new Date(Date.parse(day + 'T12:00:00Z') - 86_400_000).toISOString().slice(0, 10);
+      return before + 'T23:00:00+01:00;' + day + 'T' + (k === 3 ? '01:30' : '07:00') + ':00+01:00;Endormi';
+    }).join('\n');
+    await build(reader(async () => [ok('sommeil.csv', nights)])).run('manual');
+    const diag = logs.filter((l) => l.event === 'recovery-import-diag-sleep');
+    expect(diag).toHaveLength(1);
+    expect(Object.keys(diag[0]?.counts ?? {}).sort()).toEqual(['excluded_no_asleep', 'excluded_short', 'ignored_episodes', 'nights_known', 'retained', 'rules_version']);
+    expect(diag[0]?.counts).toMatchObject({ excluded_short: 1, excluded_no_asleep: 0 });
+    expect(Object.values(diag[0]?.counts ?? {}).every((v) => Number.isInteger(v))).toBe(true);
+  });
+
   it('I5-06 : un échec de lecture de la version ne bloque pas l’import (recalcul habituel)', async () => {
     const rules = { get: async (): Promise<number | null> => Promise.reject(new Error('boom')), set: async () => undefined };
     const result = await build(reader(async () => [ok('pas.csv', PAS)]), { rules }).run('manual');

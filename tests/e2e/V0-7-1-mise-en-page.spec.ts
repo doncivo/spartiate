@@ -67,14 +67,25 @@ test('Point 4 : onglets d’Entraînement et de Nutrition sur une seule ligne, o
   await tab(page, 'Entraînement').click();
   const names = ['Routines', 'Bibliothèque', 'Matériel', 'Journal', 'Cycle'];
   const tops: number[] = [];
-  for (const name of names) tops.push((await page.getByRole('radio', { name, exact: true }).boundingBox())?.y ?? -1);
+  // FIX-0115 : une boîte nulle (onglet pas encore affiché) valait -1 et faisait lire un écart de 182 px ; on attend chaque onglet avant de le mesurer.
+  for (const name of names) await expect(page.getByRole('radio', { name, exact: true })).toBeVisible();
+  for (const name of names) tops.push((await page.getByRole('radio', { name, exact: true }).boundingBox())?.y ?? Number.NaN);
+  expect(tops.every(Number.isFinite), 'tous les onglets mesurés').toBe(true);
   expect(Math.max(...tops) - Math.min(...tops), 'une seule ligne').toBeLessThan(2);
+  // FIX-0115 : des onglets sont cachés à droite à l'ouverture, le fondu le dit ; une fois défilé, il passe à gauche.
+  const group = page.getByRole('radiogroup', { name: 'Sections de l’entraînement' });
+  await expect(group).toHaveAttribute('data-fade-end', 'true');
   await page.getByRole('radio', { name: 'Cycle', exact: true }).click();
   await expect(page.getByRole('radio', { name: 'Cycle', exact: true })).toBeInViewport();
+  await expect(group).toHaveAttribute('data-fade-start', 'true');
+  await expect(group).not.toHaveAttribute('data-fade-end', 'true');
 
   await tab(page, 'Nutrition').click();
   const nutritionTops: number[] = [];
-  for (const name of ['Journal', 'Dashboard', 'Stratégie', 'Check-in']) nutritionTops.push((await page.getByRole('radio', { name, exact: true }).boundingBox())?.y ?? -1);
+  const nutritionNames = ['Journal', 'Dashboard', 'Stratégie', 'Check-in'];
+  for (const name of nutritionNames) await expect(page.getByRole('radio', { name, exact: true })).toBeVisible();
+  for (const name of nutritionNames) nutritionTops.push((await page.getByRole('radio', { name, exact: true }).boundingBox())?.y ?? Number.NaN);
+  expect(nutritionTops.every(Number.isFinite), 'tous les onglets mesurés').toBe(true);
   expect(Math.max(...nutritionTops) - Math.min(...nutritionTops), 'une seule ligne').toBeLessThan(2);
 });
 
