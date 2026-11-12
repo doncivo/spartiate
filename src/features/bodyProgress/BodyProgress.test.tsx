@@ -7,6 +7,7 @@ import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { formatDayMonthYear } from '../../i18n/format';
+import { createFakePrivacyShield, shieldOwner, type FakePrivacyShield } from '../../platform/privacyShield';
 import { BodyProgress } from './BodyProgress';
 
 /**
@@ -18,7 +19,8 @@ const NOW = '2026-11-12T09:00:00.000Z';
 const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4, 0xff, 0xd9]);
 let db: TestDb;
 
-const container = (os: 'ios' | 'other') => createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, platform: { runtime: 'web', os } });
+let shield: FakePrivacyShield;
+const container = (os: 'ios' | 'other') => createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, platform: { runtime: 'web', os }, privacyShield: shield });
 const mount = (os: 'ios' | 'other' = 'ios', pickPhoto: () => Promise<Uint8Array | null> = () => Promise.resolve(JPEG)) =>
   render(
     <AppContainerProvider container={container(os)}>
@@ -32,6 +34,7 @@ const D = (n: number): LocalDate => `2026-11-${String(n).padStart(2, '0')}` as L
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
   db = await openBaseDb(DEVICE, NOW);
+  shield = createFakePrivacyShield();
   vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('aucune requête réseau attendue'))));
 });
 afterEach(async () => {
@@ -208,6 +211,87 @@ describe('photos de progression', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Annuler' }));
     expect(await (await photos()).list()).toHaveLength(1);
     expect(screen.queryByText(/sans retour possible/)).toBeNull();
+  });
+});
+
+const OTHER = '7d3c2e4f-0000-4000-8000-000000000009';
+const insertForeign = () =>
+  db.driver.execute(
+    `INSERT INTO progress_photo (id, date, file_name, created_at, updated_at, device_id, hlc) VALUES ('${OTHER}', '2026-11-05', '${OTHER}.jpg', ?, ?, 'autre', ?)`,
+    [NOW, NOW, `${String(Date.UTC(2026, 10, 5)).padStart(15, '0')}-0000-autre`],
+  );
+async function receiveDeletion(id: string): Promise<void> {
+  await db.driver.execute('INSERT OR IGNORE INTO sync_guard (id) VALUES (1)');
+  await db.driver.execute('UPDATE progress_photo SET deleted_at = ? WHERE id = ?', [NOW, id]);
+  await db.driver.execute('DELETE FROM sync_guard');
+}
+
+describe('FIX-0171 (constat 5) : bouclier de confidentialité des vues photo, indépendant du verrouillage', () => {
+  it('verrouillage jamais activé : bouclier activé à l’entrée, retiré à la sortie', async () => {
+    const view = mount();
+    await screen.findByRole('region', { name: 'Photos de progression' });
+    await waitFor(() => expect(shield.calls).toEqual([true]));
+    view.unmount();
+    await waitFor(() => expect(shield.calls.at(-1)).toBe(false));
+  });
+
+  it('verrouillage actif : la sortie des photos ne retire pas le bouclier du verrouillage', async () => {
+    await shieldOwner(shield, 'appLock').setEnabled(true);
+    const view = mount();
+    await screen.findByRole('region', { name: 'Photos de progression' });
+    await waitFor(() => expect(shield.calls.length).toBeGreaterThanOrEqual(2));
+    view.unmount();
+    await waitFor(() => expect(shield.calls.length).toBeGreaterThanOrEqual(3));
+    expect(shield.calls.every(Boolean)).toBe(true);
+  });
+
+  it('échec du plugin : erreur dite en texte, la page reste utilisable', async () => {
+    shield.failWith('unavailable');
+    mount();
+    expect(await screen.findByText(/Protection des photos indisponible/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ajouter une photo' })).toBeEnabled();
+  });
+});
+
+describe('FIX-0171 (D-121) : suppression seulement sur l’appareil qui a le fichier', () => {
+  it('sans le fichier (PC) : aucun bouton Supprimer, seulement « Masquer sur cet appareil », local et non publié ; réaffichage possible', async () => {
+    await insertForeign();
+    await db.driver.execute('DELETE FROM sync_outbox');
+    mount('other');
+    const hide = await screen.findByRole('button', { name: /Masquer la photo du 5 nov\. 2026 sur cet appareil/ });
+    expect(screen.queryByRole('button', { name: /Supprimer la photo du/ })).toBeNull();
+    fireEvent.click(hide);
+    await waitFor(() => expect(screen.queryByText(/Photo prise sur un autre appareil/)).toBeNull());
+    expect((await (await photos()).list()).map((p) => p.id)).toEqual([OTHER]);
+    expect(await db.data.repos.settings.get('bodyProgress.hiddenPhotos')).toEqual([OTHER]);
+    expect(await db.driver.select("SELECT 1 FROM sync_outbox WHERE table_name = 'progress_photo'")).toEqual([]);
+    fireEvent.click(screen.getByRole('button', { name: /Réafficher les photos masquées \(1\)/ }));
+    expect(await screen.findByText(/Photo prise sur un autre appareil/)).toBeInTheDocument();
+  });
+
+  it('suppression reçue de l’autre appareil : le fichier reste, la fiche est dite « supprimée ailleurs » ; suppression locale avec confirmation', async () => {
+    const added = await (await photos()).add(D(1), JPEG);
+    await receiveDeletion(added.id);
+    mount();
+    expect(await screen.findByText(/Supprimée sur un autre appareil/)).toBeInTheDocument();
+    expect(await screen.findByRole('img', { name: /Photo du 1er nov\. 2026/ })).toBeInTheDocument();
+    expect(await (await photos()).loadFile(added.id)).toEqual(JPEG);
+    fireEvent.click(screen.getByRole('button', { name: /Supprimer la photo du/ }));
+    expect(screen.getByText(/sans retour possible/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Confirmer la suppression/ }));
+    await waitFor(async () => expect(await (await photos()).loadFile(added.id)).toBeNull());
+    expect(await screen.findByText('Aucune photo.')).toBeInTheDocument();
+  });
+
+  it('constat 3 : échec de la fiche après l’effacement du fichier : alerte, photo intacte et toujours affichée', async () => {
+    const added = await (await photos()).add(D(1), JPEG);
+    await db.driver.execute("CREATE TRIGGER fix0171_fail BEFORE UPDATE ON progress_photo BEGIN SELECT RAISE(ABORT, 'injecté'); END");
+    mount();
+    fireEvent.click(await screen.findByRole('button', { name: /Supprimer la photo du/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Confirmer la suppression/ }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/impossible/);
+    expect(await (await photos()).loadFile(added.id)).toEqual(JPEG);
+    expect(await screen.findByRole('img', { name: /Photo du 1er nov\. 2026/ })).toBeInTheDocument();
   });
 });
 
