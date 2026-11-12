@@ -1,13 +1,7 @@
 import type { WriteStamper } from '../../domain/hlc';
 import type { SqlDriver, SqlExecutor } from '../driver';
-import type { AppleReminderLinkRepository } from './appleReminderLinkRepository';
-import type { CalendarAccountRepository, EventRepository, ExternalEventRepository } from './agendaRepository';
 import type { ChecklistItemRepository, ChecklistRepository } from './checklistRepository';
-import type { FocusSessionRepository } from './focusSessionRepository';
 import type { GoalRepository } from './goalRepository';
-import type { HolidayRepository } from './holidayRepository';
-import type { SearchRepository } from './searchRepository';
-import type { StatsRepository } from './statsRepository';
 import type { ReminderRepository } from './reminderRepository';
 import type { RoutineLogRepository, RoutineRepository } from './routineRepository';
 import type { SettingsRepository, SyncMetaRepository } from './settingsRepository';
@@ -43,15 +37,8 @@ export interface Repositories {
   readonly reminders: ReminderRepository;
   readonly goals: GoalRepository;
   readonly settings: SettingsRepository;
-  readonly events: EventRepository;
-  readonly holidays: HolidayRepository;
-  readonly focusSessions: FocusSessionRepository;
-  readonly search: SearchRepository;
-  readonly stats: StatsRepository;
   readonly checklists: ChecklistRepository;
   readonly checklistItems: ChecklistItemRepository;
-  readonly externalEvents: ExternalEventRepository;
-  readonly calendarAccounts: CalendarAccountRepository;
   readonly syncMeta: SyncMetaRepository;
   /** Base neuve (D-65) : profil (ligne unique `profile|singleton`) et pesées. */
   /** Chargés à la demande (hors du JavaScript de départ, BUNDLE-01) : `await repos.profile()`. */
@@ -93,7 +80,6 @@ export interface Repositories {
   /** Export / import de Spartiate (SPA-005, D-57), chargé à la demande. */
   readonly exportImport: () => Promise<ExportImportRepository>;
   /** Liens locaux aux Rappels Apple (K-05, ADR 0008 §10.2) : table non publiée, vide sur le PC. */
-  readonly appleLinks: AppleReminderLinkRepository;
   /** Tables de la synchronisation (ADR 0011, lot Y2). */
   readonly sync: SyncRepository;
 }

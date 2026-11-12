@@ -14,14 +14,8 @@ export type * from './routineRepository';
 export type * from './reminderRepository';
 export type * from './goalRepository';
 export type * from './settingsRepository';
-export type * from './agendaRepository';
 export type * from './checklistRepository';
-export type * from './holidayRepository';
-export type * from './focusSessionRepository';
-export type * from './searchRepository';
-export type * from './statsRepository';
 export type * from './syncRepository';
-export type * from './appleReminderLinkRepository';
 // Y-04 (début)
 export type * from './syncConflictRepository';
 // Y-04 (fin)
