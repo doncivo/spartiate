@@ -49,6 +49,57 @@ describe('SegmentedControl défilant : fondus de bord (FIX-0115)', () => {
     expect(group).not.toHaveAttribute('data-fade-end');
   });
 
+  it('FIX-0173 : ResizeObserver sur la rangée et ses choix recalcule le fondu (police plus grande, libellé changé) ; déconnecté au démontage', () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    const observers: { callback: ResizeObserverCallback; targets: Element[]; disconnected: boolean }[] = [];
+    class FakeResizeObserver {
+      private readonly entry: (typeof observers)[number];
+      constructor(callback: ResizeObserverCallback) {
+        this.entry = { callback, targets: [], disconnected: false };
+        observers.push(this.entry);
+      }
+      observe(target: Element): void {
+        this.entry.targets.push(target);
+      }
+      unobserve(): void {}
+      disconnect(): void {
+        this.entry.disconnected = true;
+      }
+    }
+    vi.stubGlobal('ResizeObserver', FakeResizeObserver);
+    try {
+      const view = render(<SegmentedControl label="Sections" value="a" onChange={() => undefined} options={options} scrollable />);
+      const group = screen.getByRole('radiogroup', { name: 'Sections' });
+      const live = observers.filter((o) => o.targets.includes(group));
+      expect(live).toHaveLength(1);
+      expect(live[0]?.targets).toEqual(expect.arrayContaining(screen.getAllByRole('radio')));
+      measure(group, { scrollWidth: 600, clientWidth: 400, scrollLeft: 0 });
+      live[0]?.callback([], live[0] as unknown as ResizeObserver);
+      expect(group).toHaveAttribute('data-fade-end', 'true');
+      measure(group, { scrollWidth: 400, clientWidth: 400, scrollLeft: 0 });
+      live[0]?.callback([], live[0] as unknown as ResizeObserver);
+      expect(group).not.toHaveAttribute('data-fade-end');
+      view.unmount();
+      expect(live[0]?.disconnected).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('FIX-0173 : sans ResizeObserver, repli sur le redimensionnement de la fenêtre', () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    vi.stubGlobal('ResizeObserver', undefined);
+    try {
+      render(<SegmentedControl label="Sections" value="a" onChange={() => undefined} options={options} scrollable />);
+      const group = screen.getByRole('radiogroup', { name: 'Sections' });
+      measure(group, { scrollWidth: 600, clientWidth: 400, scrollLeft: 0 });
+      fireEvent(window, new Event('resize'));
+      expect(group).toHaveAttribute('data-fade-end', 'true');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('une rangée non défilante n’a jamais de fondu', () => {
     render(<SegmentedControl label="Sections" value="a" onChange={() => undefined} options={options} />);
     const group = screen.getByRole('radiogroup', { name: 'Sections' });
