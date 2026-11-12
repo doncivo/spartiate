@@ -40,10 +40,10 @@ afterEach(async () => {
 });
 
 describe('rejeu depuis l’historique', () => {
-  it('« Rejouer cette séance » crée une séance ouverte préremplie (cibles, aucune série faite) et ouvre la séance active', async () => {
+  it('« Refaire cette séance » (ex-« Rejouer », I6-03b) crée une séance ouverte préremplie (cibles, aucune série faite) et ouvre la séance active', async () => {
     await openDetail();
     expect(await open()).toEqual([]);
-    fireEvent.click(await screen.findByRole('button', { name: 'Rejouer cette séance' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Refaire cette séance' }));
     await waitFor(async () => expect((await open()).length).toBe(1));
     const [created] = await open();
     expect(created).toMatchObject({ source: 'copy', copied_from_workout_id: PAST_WORKOUT_ID });
@@ -62,7 +62,7 @@ describe('rejeu depuis l’historique', () => {
   it('séance déjà ouverte : rien n’est écrasé, le refus est dit', async () => {
     await db.data.transaction(async (r) => (await r.workouts()).start({ source: 'empty', name: 'En cours' }));
     await openDetail();
-    fireEvent.click(await screen.findByRole('button', { name: 'Rejouer cette séance' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Refaire cette séance' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Une séance est déjà ouverte');
     expect((await open()).map((w) => w.source)).toEqual(['empty']);
     expect(useNavigationStore.getState().route).toMatchObject({ tab: 'training', screen: 'history' });
