@@ -18,6 +18,11 @@
 1. Ali : installer 0.17.0 (PC et iPhone le même jour, schéma 13, avant toute saisie) ; constater le sélecteur de photo sur iPhone (H-27).
 2. D-73 à D-118 validées par Ali (D-119). Tickets en file pour les exceptions : FIX-0181 (D-79 favoris, D-93 journée rouge × 0,95), FIX-0172 (D-95 seuil 2 σ non arrondi, dette de sommeil à compensation partielle), I6-03b (D-104 vrai replay), CLEAN-02 (D-116, D-117). À recaler après 3 semaines de séances réelles, sur demande d'Ali seulement : D-73 (4, durée estimée) et D-88 (échelle d'effort 20).
 
+## À décider par Ali
+
+- Archive `archive/agent-a0528c3a67af21a44` (origin) : dernier commit I4-07 revue. Sa substance est dans main sauf une nuance de texte : `dayCompleteDeclaredDetail` (fr.nutrition.ts) y précise « quand les calories sont connues ». Non repris.
+- Worktree `agent-a9d451df1eba848d1` (CLEAN-01-residus, tout poussé) : verrouillé par le pid 16360, laissé sans `--force`.
+
 ## Rappels
 
 - Première utilisation réelle : 2026-11-09 (D-38), plus aucun accès aux données réelles ni à iCloud Drive/Spartiate. D-69 : HealthKit direct BLOCKED, import par Raccourcis. H-21 UNVERIFIED.
