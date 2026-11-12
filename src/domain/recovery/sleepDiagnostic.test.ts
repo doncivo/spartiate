@@ -57,9 +57,11 @@ describe('fixture des nuits d’Ali', () => {
     expect(diag).toEqual({ retained: 7, excludedNoAsleep: 0, excludedShort: 0 });
   });
 
-  it('caractérise la règle actuelle : la dette ne compense pas les excédents, elle atteint le plafond de 3 h et le besoin 10 h 30', () => {
+  // FIX-0172 (D-130, décision d'Ali du 12/11/2026) : remplace la caractérisation de l'ancienne règle (« la dette ne compense pas, 10 h 30 »).
+  it('compensation partielle : déficits 230 min, crédits 158 min (dont deux nuits plafonnées à 1 h), dette 72 min, besoin 8 h 42', () => {
     const out = summarizeRecoveryDay({ today: TODAY, now: '2026-11-12T10:00:00.000Z', timeZone: TZ, nights: records, workouts: [] });
-    expect(out.summary.sleepNeedMinutes).toBe(Math.round(RECOVERY_CONFIG.sleep.baseSleepHours * 60) + Math.round(RECOVERY_CONFIG.sleep.debtCapHours * 60));
+    expect(out.summary.sleepNeedMinutes).toBe(Math.round(RECOVERY_CONFIG.sleep.baseSleepHours * 60) + 72);
+    expect(out.summary.sleepNeedMinutes).toBeLessThan(Math.round(RECOVERY_CONFIG.sleep.baseSleepHours * 60) + Math.round(RECOVERY_CONFIG.sleep.debtCapHours * 60));
   });
 
   it('une nuit sous 180 min ou sans sommeil mesuré est comptée écartée, par raison ; hors fenêtre de 7 jours, elle n’est pas comptée', () => {
