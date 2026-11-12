@@ -198,7 +198,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     for (const s of rhr) if (s.value !== null) byDay.set(utcToLocal(s.startAt, tz).date, s.value);
     const records = toNightRecords({ nights, hrv: hrvSamples, restingHrByDay: [...byDay].map(([day, value]) => ({ day, value })), timeZone: tz });
 
-    // FIX-0115 : diagnostic sans valeur (nombres seulement) de ce qui entre dans la dette et le besoin de sommeil.
+    // FIX-0115 : diagnostic sans valeur (compteurs seulement, § 22) des nuits retenues et écartées.
     const debt = sleepDebtDiagnostic(records, today);
     deps.log('recovery-import-diag-sleep', {
       nights_known: records.length,
@@ -206,7 +206,6 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       excluded_no_asleep: debt.excludedNoAsleep,
       excluded_short: debt.excludedShort,
       ignored_episodes: ignoredGroups,
-      debt_hours: debt.debtHours,
       rules_version: SLEEP_RULES_VERSION,
     });
 
