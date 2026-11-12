@@ -10,6 +10,7 @@ import { parseShortcutWeights } from '../../domain/health/shortcutWeights';
 import { detectTimeZone } from '../../platform/timeZone';
 import type { ShortcutFilesReader } from '../../platform/shortcutFiles';
 import { Button, Icon, useLayout } from '../../ui';
+import { HealthBodyImportSection } from './HealthBodyImportSection';
 import { RecoveryImportSection } from './RecoveryImportSection';
 import { RecoveryNotificationsSection } from './RecoveryNotificationsSection';
 import { useAppContainer } from '../app/AppContainerContext';
@@ -153,6 +154,8 @@ export function AppleHealthScreen({
         {blocked && <ShortcutImport />}
 
         <RecoveryImportSection {...(shortcutReader ? { reader: shortcutReader } : {})} {...(shortcutFallback ? { fallback: shortcutFallback } : {})} />
+
+        <HealthBodyImportSection {...(shortcutReader ? { reader: shortcutReader } : {})} {...(shortcutFallback ? { fallback: shortcutFallback } : {})} />
 
         <RecoveryNotificationsSection />
 
