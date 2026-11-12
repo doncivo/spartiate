@@ -5,6 +5,7 @@ import type { DeviceId } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from './AppContainerContext';
 import { createAppContainer } from './container';
+import { BodyProgress, NutritionRemainingCard, RecoveryProgress, RecoveryToday, TodaySessionCard } from './lazyScreens';
 import { INITIAL_NAVIGATION, useNavigationStore } from './navigation';
 import { SectionNotice } from './SectionNotice';
 
@@ -43,15 +44,27 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
   });
 
   it('progress : la section Récupération (journal de facteurs, I6-01) est chargée à la demande sous l’explication', async () => {
+    // I6-02 : deux blocs à la demande sous Progrès (Récupération, Corps) ; leur import à froid est fait avant l'attente (aucun délai allongé).
+    await Promise.all([RecoveryProgress.preload(), BodyProgress.preload()]);
     open('progress');
     expect(await screen.findByRole('region', { name: 'Récupération : ce qui change ta Recovery' })).toBeInTheDocument();
     expect(screen.getByText(/Aucun jour renseigné/)).toBeInTheDocument();
   });
 
+  it('progress : la section Corps (mensurations, photos de progression, I6-02) est chargée à la demande', async () => {
+    await BodyProgress.preload();
+    open('progress');
+    expect(await screen.findByRole('region', { name: 'Mensurations' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Photos de progression' })).toBeInTheDocument();
+  });
+
   it('Aujourd’hui : rend l’écran I0 (iPhone) ; sans profil, le bouton principal ouvre Profil et poids', async () => {
+    // I6-02 (CI 43206818645) : l'import à froid des cartes d'Aujourd'hui dépassait la seconde de `findBy` sur un runner chargé ; il est fait avant l'attente (aucun délai allongé).
+    await Promise.all([RecoveryToday.preload(), TodaySessionCard.preload(), NutritionRemainingCard.preload()]);
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
     open('today');
-    expect(await screen.findByRole('heading', { name: 'Aujourd’hui' })).toBeInTheDocument();
+    // Requête par texte et sélecteur : la requête par rôle calcule l'arbre d'accessibilité de toute la page (lent sous couverture, sur un runner chargé).
+    expect(await screen.findByText('Aujourd’hui', { selector: 'h1' })).toBeInTheDocument();
     expect(await screen.findByText('Trois réglages, puis on s’entraîne.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Renseigner mon profil' }));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'body' });

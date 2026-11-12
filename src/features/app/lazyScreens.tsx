@@ -131,6 +131,8 @@ export const NutritionRemainingCard = lazyScreen<object>(() => import('../nutrit
 export const RecoveryToday = lazyScreen<object>(() => import('../recovery/RecoveryToday').then((m) => ({ default: m.RecoveryToday })), 'recoverytoday', { onDemand: true });
 /** I6-01 : Progrès › Récupération (écart de Recovery avec / sans facteur), bloc à part chargé avec son catalogue de textes (jamais dans le départ). */
 export const RecoveryProgress = lazyScreen<object>(() => import('../recovery/RecoveryProgress').then((m) => ({ default: m.RecoveryProgress })), 'recoveryprogress', { onDemand: true });
+/** I6-02 : Progrès › Corps (mensurations, photos de progression), bloc à part chargé avec son catalogue de textes (jamais dans le départ). */
+export const BodyProgress = lazyScreen<object>(() => import('../bodyProgress/BodyProgress').then((m) => ({ default: m.BodyProgress })), 'bodyprogress', { onDemand: true });
 export const BodyScreen =lazyScreen<object>(() => import('../settings/BodyScreen').then((m) => ({ default: m.BodyScreen })), 'bodyscreen');
 /** Finitions 0.1.2 : Apple Santé (Plus, iPhone seulement), chargé à la demande avec ses textes et la façade HealthKit. */
 export const AppleHealthScreen = lazyScreen<object>(() => import('../settings/AppleHealthScreen').then((m) => ({ default: m.AppleHealthScreen })), 'applehealthscreen');

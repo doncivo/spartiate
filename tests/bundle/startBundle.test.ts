@@ -286,6 +286,13 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // I6-02 : Progrès › Corps (catalogue fr.bodyProgress) et sélecteur de photo : hors du départ, présents dans le build.
+  it.each(['Photos de progression', 'Les photos restent sur cet appareil', 'Mensurations'])('I6-02 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   // I4-03 : onglet Nutrition (écrans, catalogue fr.nutrition, domaine) et carte « nutrition restante » d'Aujourd'hui : blocs à la demande.
   it.each(['src/features/nutrition/NutritionScreen.tsx', 'src/features/nutrition/NutritionRemainingCard.tsx'])('I4-03 : %s est un bloc à la demande, hors du départ', (source) => {
     const start = new Set(startChunks().map((chunk) => chunk.file));

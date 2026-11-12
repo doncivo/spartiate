@@ -87,5 +87,7 @@ export const syncCarryReportFr = {
   kindRecoveryDay: 'Résumé de récupération du jour',
   kindMuscleRecovery: 'Récupération d’un muscle',
   kindRecoveryFactor: 'Journal de facteurs du jour',
+  kindMeasurement: 'Mensuration',
+  kindProgressPhoto: 'Photo de progression (fiche seulement)',
   kindOther: 'Autre élément',
 } as const;

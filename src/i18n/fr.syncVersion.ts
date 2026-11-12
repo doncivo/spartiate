@@ -56,6 +56,8 @@ export const syncVersionFr = {
     recoveryDay: 'résumés de récupération',
     muscleRecovery: 'récupérations par muscle',
     recoveryFactor: 'journaux de facteurs',
+    measurement: 'mensurations',
+    progressPhoto: 'photos de progression',
     other: 'autres éléments',
   },
 } as const;

@@ -17,6 +17,7 @@ import {
   expectedMuscleRecoveryId,
   expectedProgressionId,
   expectedRecoveryDayId,
+  expectedMeasurementId,
   expectedRecoveryFactorId,
   expectedWeightId,
   isDayCompletenessId,
@@ -24,6 +25,7 @@ import {
   isProfileId,
   isProgressionId,
   isRecoveryDayId,
+  isMeasurementId,
   isRecoveryFactorId,
   isWeightId,
   MUSCLE_RECOVERY_MUSCLE_ID_MAX,
@@ -706,7 +708,29 @@ const RECOVERY_FACTOR_TABLE = table(
   { idKind: 'natural', natural: { is: isRecoveryFactorId, expected: (row) => expectedRecoveryFactorId(row) }, titleSource: { kind: 'own', column: 'date' } },
 );
 
-/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+/**
+ * Catalogue I6-02 (§ 17.1, § 20.2, migration 0012, schéma 12) : `measurement`, mensurations en cm, écrites par les DEUX appareils. Identifiant naturel
+ * `measurement|AAAA-MM-JJ|genre` : la même mesure saisie des deux côtés converge sur la plus récente (HLC, champ par champ). Données corporelles :
+ * masquées du journal des conflits, seule la suppression y est visible.
+ */
+const MEASUREMENT_TABLE = table(
+  'measurement',
+  [c('date', 'date', false, hidden), c('kind', 'text', false, { max: 32, conflictVisible: false }), c('value', 'real', false, hidden), createdAt, deletedAt],
+  { idKind: 'natural', natural: { is: isMeasurementId, expected: (row) => expectedMeasurementId(row) }, titleSource: { kind: 'own', column: 'date' } },
+);
+
+/**
+ * Catalogue I6-02 : `progress_photo`, FICHE d'une photo de progression, MÉTADONNÉES SEULEMENT (date, nom de fichier). Le fichier image reste sur
+ * l'appareil qui l'a pris (table locale `progress_photo_file`, jamais au catalogue, jamais exportée) : l'autre appareil voit la fiche, pas l'image
+ * (D-99). Identifiant UUID (plusieurs photos le même jour).
+ */
+const PROGRESS_PHOTO_TABLE = table(
+  'progress_photo',
+  [c('date', 'date', false, hidden), c('file_name', 'text', false, { max: 64, conflictVisible: false }), createdAt, deletedAt],
+  { titleSource: { kind: 'own', column: 'date' } },
+);
+
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   tables: [
     PROFILE_TABLE,
@@ -731,6 +755,8 @@ export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
     RECOVERY_DAY_TABLE,
     MUSCLE_RECOVERY_TABLE,
     RECOVERY_FACTOR_TABLE,
+    MEASUREMENT_TABLE,
+    PROGRESS_PHOTO_TABLE,
   ],
   order: SYNC_TABLE_ORDER,
 });

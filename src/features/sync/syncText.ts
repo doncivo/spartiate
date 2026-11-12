@@ -163,6 +163,8 @@ const KIND_KEYS = {
   recovery_day: 'sync.version.kinds.recoveryDay',
   muscle_recovery: 'sync.version.kinds.muscleRecovery',
   recovery_factor: 'sync.version.kinds.recoveryFactor',
+  measurement: 'sync.version.kinds.measurement',
+  progress_photo: 'sync.version.kinds.progressPhoto',
 } as const;
 
 /** Types d'éléments d'un échec (« tâches, événements »), d'après les tables du catalogue. */
