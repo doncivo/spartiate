@@ -162,6 +162,25 @@ describe('RecoveryRepository', () => {
     await expect(r.getDay(D(9))).rejects.toMatchObject({ code: 'invalid' });
   });
 
+  it('FIX-0172 (D-134) : la décision « inhabituel » des contributeurs est gardée et relue telle quelle ; un drapeau changé republie le jour', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    const flagged = output(D(9), { contributors: [{ key: 'hrv', value: -2, weight: 0.7, unusual: true }, { key: 'resting_hr', value: 0.1, weight: 0.3, unusual: false }, { key: 'sleep', value: 1, weight: null }] });
+    must(await r.saveDay(flagged));
+    expect((await r.getDay(D(9)))?.summary.contributors).toEqual(flagged.summary.contributors);
+    await clearOutbox();
+    must(await r.saveDay(output(D(9), { contributors: [{ key: 'hrv', value: -2, weight: 0.7, unusual: false }, { key: 'resting_hr', value: 0.1, weight: 0.3, unusual: false }, { key: 'sleep', value: 1, weight: null }] })));
+    expect(await outbox()).not.toEqual([]);
+  });
+
+  it('FIX-0172 : un drapeau « inhabituel » d’un autre type (appareil plus récent) est ignoré, jamais deviné ni refusé', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    await r.saveDay(output());
+    await db.driver.execute("UPDATE recovery_day SET contributors = '[{\"key\":\"hrv\",\"value\":-2.5,\"weight\":0.7,\"unusual\":\"oui\"}]' WHERE date = '2026-11-09'");
+    expect((await r.getDay(D(9)))?.summary.contributors).toEqual([{ key: 'hrv', value: -2.5, weight: 0.7 }]);
+  });
+
   it('plan de requête : la lecture par plage passe par l’index de date', async () => {
     db = await openBaseDb(DEVICE);
     const plan = await db.driver.select<{ detail: string }>("EXPLAIN QUERY PLAN SELECT * FROM recovery_day WHERE date >= '2026-11-01' AND date <= '2026-11-30' AND deleted_at IS NULL ORDER BY date");

@@ -31,7 +31,7 @@ Heuristiques expérimentales inspirées de Recovery / Strain / Sleep ; jamais un
 | Qualité | good / partial / insufficient | — |
 | Exertion 0–10 | `cardio = Σ min_zone_i × w_i`, w = \[1,2,3,4,5\] (zones depuis FC max estimée ou mesurée) ; `muscu = tonnage/1000 × facteur` (0,8 / 1 / 1,2) ; `10 × (1 − e^(−(cardio+muscu)/k))` | `k: 300` |
 | Zone cible | ≥ 66 → 6–8 ; 34–65 → 4–6 ; ≤ 33 → 0–3 ; null → aucune | — |
-| Sommeil | Besoin = 7 h 30 + 0,2 h × max(0, Exertion\_veille − 5) + dette (7 j, plafond 3 h) ; score = durée / besoin ; régularité σ coucher 7 j | `baseSleepHours: 7.5` |
+| Sommeil | Besoin = 7 h 30 + 0,2 h × max(0, Exertion\_veille − 5) + dette (7 j, plafond 3 h ; compensation partielle, D-130 : nuit courte + (7 h 30 − dormi), nuit longue − min(dormi − 7 h 30, 1 h), somme bornée à [0, 3 h]) ; score = durée / besoin ; régularité σ coucher 7 j | `baseSleepHours: 7.5` |
 | Par muscle | 0 % après séance (séries × difficulté) → 100 % sur `recoveryHours[muscle]` (48 / 72 / 96 h) ; cardio importé retire 10 / 25 / 40 % aux jambes, 5 / 10 / 20 % au reste ; **approximation** | `recoveryHours` |
 
 ### 16.4 Effets et publication
