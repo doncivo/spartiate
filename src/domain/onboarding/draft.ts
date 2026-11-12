@@ -50,7 +50,12 @@ export interface OnboardingDraft {
   readonly variety: VarietyLevel;
   /** Écran 7 : ajouter le programme proposé comme NOUVELLE routine à la fin (jamais en remplacement). */
   readonly acceptProposal: boolean;
+  /** Écran 8 : dépense de départ modifiée par Ali (kcal par jour) ; `null` : l'estimation de la formule (D-111). */
+  readonly expenditureKcal: number | null;
 }
+
+export const EXPENDITURE_MIN_KCAL = 800;
+export const EXPENDITURE_MAX_KCAL = 6000;
 
 export function emptyDraft(): OnboardingDraft {
   return {
@@ -74,6 +79,7 @@ export function emptyDraft(): OnboardingDraft {
     painfulPatterns: [],
     variety: 'consistent',
     acceptProposal: true,
+    expenditureKcal: null,
   };
 }
 
@@ -119,6 +125,7 @@ export function parseDraft(raw: unknown): OnboardingDraft {
     painfulPatterns: strings(raw['painfulPatterns']).filter((p): p is ExercisePattern => (EXERCISE_PATTERNS as readonly string[]).includes(p)),
     variety: oneOf(VARIETY_LEVELS, raw['variety']) ?? base.variety,
     acceptProposal: typeof raw['acceptProposal'] === 'boolean' ? raw['acceptProposal'] : base.acceptProposal,
+    expenditureKcal: positive(raw['expenditureKcal']),
   };
 }
 
@@ -132,7 +139,8 @@ export type StepIssueCode =
   | 'days-fewer-than-sessions'
   | 'priorities-max'
   | 'avoided-max'
-  | 'priority-avoided-overlap';
+  | 'priority-avoided-overlap'
+  | 'expenditure-range';
 
 export interface StepIssue {
   readonly code: StepIssueCode;
@@ -158,6 +166,9 @@ export function validateStep(step: OnboardingStepId, draft: OnboardingDraft, yea
     if (draft.priorities.length > PRIORITIES_MAX) issues.push('priorities-max');
     if (draft.avoided.length > AVOIDED_MAX) issues.push('avoided-max');
     if (draft.priorities.some((p) => draft.avoided.includes(p))) issues.push('priority-avoided-overlap');
+  } else if (step === 'result') {
+    const kcal = draft.expenditureKcal;
+    if (kcal !== null && !(kcal >= EXPENDITURE_MIN_KCAL && kcal <= EXPENDITURE_MAX_KCAL)) issues.push('expenditure-range');
   }
   return issues.map((code) => ({ code }));
 }
