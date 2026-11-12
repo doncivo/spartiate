@@ -1,9 +1,11 @@
+import { BODY_FILE_NAMES, type BodyFileName } from '../../domain/health/bodyShortcutFiles';
 import { decodeTextBytes } from '../../domain/textEncoding';
 import type { OsFamily, Runtime } from '../runtime';
 
 /**
  * Lecture des fichiers écrits par l'app Raccourcis dans iCloud Drive › Spartiate › sante (D-69, D-90, I5-03 point 1) : `hrv.csv`,
- * `fc-repos.csv`, `sommeil.csv`, `pas.csv`. Façade seule : le service d'import (`features/settings/recoveryImport`) ne connaît que ce contrat.
+ * `fc-repos.csv`, `sommeil.csv`, `pas.csv`, et (I6-04, D-113) les dix fichiers Renpho / Santé (`BODY_FILE_NAMES` : poids, masse grasse, masse maigre, tour de taille, taille,
+ * énergie, protéines, glucides, lipides, fibres) : quatorze noms exacts, jamais un autre. Façade seule : le service d'import (`features/settings/recoveryImport`) ne connaît que ce contrat.
  *
  * Trois lecteurs possibles :
  * - `unsupported` (PC, navigateur) : ne lit rien, l'écran dit « iPhone seulement » ;
@@ -17,6 +19,9 @@ import type { OsFamily, Runtime } from '../runtime';
 
 export const SHORTCUT_FILE_NAMES = ['hrv.csv', 'fc-repos.csv', 'sommeil.csv', 'pas.csv'] as const;
 export type ShortcutFileName = (typeof SHORTCUT_FILE_NAMES)[number];
+/** La liste blanche entière (quatorze noms) : la commande Rust `health_files_read` refuse tout autre nom. */
+export const ALL_SHORTCUT_FILE_NAMES = [...SHORTCUT_FILE_NAMES, ...BODY_FILE_NAMES] as const;
+export type AnyShortcutFileName = ShortcutFileName | BodyFileName;
 
 /** Dossier de synchro non lié (`not-configured`), injoignable (`unreachable`) ou lecture en échec (`failed`) ; jamais un chemin ni le texte de l'erreur. */
 export type ShortcutFolderErrorCode = 'not-configured' | 'unreachable' | 'failed';
@@ -32,9 +37,9 @@ export class ShortcutFolderError extends Error {
 
 /** `size` : taille en octets quand elle est connue ; `cloud` : fichier présent mais pas encore téléchargé (diagnostic, I5-04). */
 export type ShortcutFileRead =
-  | { readonly name: ShortcutFileName; readonly state: 'ok'; readonly text: string; readonly size?: number }
-  | { readonly name: ShortcutFileName; readonly state: 'absent' }
-  | { readonly name: ShortcutFileName; readonly state: 'unreadable'; readonly cloud?: true; readonly size?: number };
+  | { readonly name: AnyShortcutFileName; readonly state: 'ok'; readonly text: string; readonly size?: number }
+  | { readonly name: AnyShortcutFileName; readonly state: 'absent' }
+  | { readonly name: AnyShortcutFileName; readonly state: 'unreadable'; readonly cloud?: true; readonly size?: number };
 
 /** Diagnostic du dossier lu au dernier appel (I5-04) : booléens et comptes seulement, jamais un nom ni un chemin. */
 export interface ShortcutFolderProbe {
@@ -70,7 +75,7 @@ export interface ShortcutFilesReader {
   /** Lecture possible sans geste de l'utilisateur (à l'ouverture de l'app). */
   readonly automatic: boolean;
   /** Un résultat par nom demandé, dans l'ordre ; `null` : l'utilisateur a annulé (ou lecteur non pris en charge). Ne rejette pas pour un fichier seul. */
-  read(names: readonly ShortcutFileName[]): Promise<readonly ShortcutFileRead[] | null>;
+  read(names: readonly AnyShortcutFileName[]): Promise<readonly ShortcutFileRead[] | null>;
   /** Diagnostic du dossier au dernier `read` (lecteur de dossier seulement) ; `null` avant la première lecture. */
   probe?(): ShortcutFolderProbe | null;
 }
@@ -186,7 +191,7 @@ export function createFolderShortcutFiles(invoke: FolderInvoker = tauriInvoker):
     automatic: true,
     probe: () => last,
     async read(names) {
-      const wanted = names.filter((name) => (SHORTCUT_FILE_NAMES as readonly string[]).includes(name));
+      const wanted = names.filter((name) => (ALL_SHORTCUT_FILE_NAMES as readonly string[]).includes(name));
       let raw: unknown;
       try {
         raw = await invoke('health_files_read', { names: wanted });
