@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { DeviceId } from '../../domain/types';
@@ -62,14 +62,15 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
     // I6-02 (CI 43206818645) : l'import à froid des cartes d'Aujourd'hui dépassait la seconde de `findBy` sur un runner chargé ; il est fait avant l'attente (aucun délai allongé).
     await Promise.all([RecoveryToday.preload(), TodaySessionCard.preload(), NutritionRemainingCard.preload()]);
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+    // FIX-0116 (CI 43227901460, page complète mais attente expirée) : le premier rendu d'Aujourd'hui, sous couverture sur un runner chargé, bloque le fil plus d'une seconde ;
+    // `findBy` expire alors pendant ce bloc, même si la page est prête. Un premier rendu à blanc (chauffe) puis le rendu mesuré dans `act` sortent ce travail de l'attente ; les délais ne bougent pas.
     open('today');
-    // Requête par texte et sélecteur : la requête par rôle calcule l'arbre d'accessibilité de toute la page (lent sous couverture, sur un runner chargé).
-    // Diagnostic (CI 12/11, échec intermittent sur un runner chargé) : si l'en-tête manque, l'échec dit ce que la page contenait.
-    try {
-      expect(await screen.findByText('Aujourd’hui', { selector: 'h1' })).toBeInTheDocument();
-    } catch (error) {
-      throw new Error(`En-tête d’Aujourd’hui absent ; page : ${document.body.innerHTML.slice(0, 1500)} `, { cause: error });
-    }
+    await act(async () => undefined);
+    cleanup();
+    await act(async () => {
+      open('today');
+    });
+    expect(screen.getByText('Aujourd’hui', { selector: 'h1' })).toBeInTheDocument();
     expect(await screen.findByText('Trois réglages, puis on s’entraîne.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Renseigner mon profil' }));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'body' });
