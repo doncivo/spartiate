@@ -26,6 +26,7 @@ describe('Profil et poids (Plus)', () => {
     db = await openBaseDb(DEVICE, '2026-10-05T08:00:00.000Z');
   });
   afterEach(async () => {
+    useNavigationStore.setState({ ...INITIAL_NAVIGATION });
     cleanup();
     await db.close();
   });
@@ -128,7 +129,6 @@ describe('Profil et poids (Plus)', () => {
     fireEvent.click(await screen.findByText('Revoir mes réglages', { selector: 'button' }));
     expect(useNavigationStore.getState().overlays).toEqual([{ kind: 'onboarding' }]);
     expect(await db.driver.select('SELECT 1 FROM profile')).toEqual([]);
-    useNavigationStore.setState({ ...INITIAL_NAVIGATION });
   });
 
   it('0.1.4 (7) : Taille (cm) garde le clavier numérique, sans aide « en centimètres, ex. 186 » : le libellé suffit', async () => {

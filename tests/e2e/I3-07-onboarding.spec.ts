@@ -33,6 +33,8 @@ test('premier lancement sur base vide : l’onboarding s’ouvre sur l’écran 
 });
 
 test('parcours des 8 écrans : profil, pesée, routine proposée ajoutée, retour à Aujourd’hui', async ({ page }) => {
+  // L'âge de Mifflin vient de l'année courante : date figée, le chiffre attendu ne dépend pas du jour du test.
+  await page.clock.setFixedTime(new Date('2026-11-12T10:00:00Z'));
   await openApp(page);
   await expectOnboardingOpen(page);
   // 1. Toi : la dépense de départ (Mifflin-St Jeor) apparaît dès que tout est saisi.

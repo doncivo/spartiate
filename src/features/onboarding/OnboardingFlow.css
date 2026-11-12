@@ -45,6 +45,7 @@
 }
 
 .ct-onb__header {
+  flex-wrap: wrap;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -216,6 +217,7 @@
 }
 
 .ct-onb__row {
+  flex-wrap: wrap;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -374,13 +376,25 @@
   height: var(--ct-hit-target-min);
 }
 
+/* Pied collant : Retour et Continuer restent atteignables à toute taille de texte (Dynamic Type). */
 .ct-onb__footer {
+  position: sticky;
+  bottom: 0;
   display: flex;
+  flex-wrap: wrap;
   gap: var(--ct-space-3);
   margin-top: auto;
-  padding-top: var(--ct-space-2);
+  padding: var(--ct-space-2) 0;
+  background: var(--ct-color-bg);
 }
 
 .ct-onb__footer > * {
-  flex: 1;
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .ct-onb[data-layout='pc'] {
+    background: var(--ct-color-bg);
+  }
 }

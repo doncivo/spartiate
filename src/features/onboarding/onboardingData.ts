@@ -106,7 +106,12 @@ export async function finishOnboarding(deps: FinishDeps, draft: OnboardingDraft,
       ...(draft.experience !== null ? { experience: draft.experience } : {}),
     };
     if (Object.keys(profileInput).length > 0) await (await repos.profile()).save({ ...profileInput, units: 'metric' }, deps.year);
-    if (draft.weightKg !== null) await (await repos.bodyWeights()).saveManual({ date: deps.today, kg: draft.weightKg, timezone: deps.timeZone }, deps.today);
+    if (draft.weightKg !== null) {
+      const weights = await repos.bodyWeights();
+      // Poids prérempli par la dernière pesée et laissé tel quel : aucune pesée inventée ni ressuscitée (« Revoir mes réglages »).
+      const latest = (await weights.listRecent(1))[0];
+      if (latest?.kg !== draft.weightKg) await weights.saveManual({ date: deps.today, kg: draft.weightKg, timezone: deps.timeZone }, deps.today);
+    }
 
     const goal = nutritionGoal(draft);
     if (goal !== null || draft.activity !== null) {
@@ -132,6 +137,8 @@ export async function finishOnboarding(deps: FinishDeps, draft: OnboardingDraft,
       }
     }
     await repos.settings.set('onboarding.completed', true);
+    // Brouillon gardé (préremplit « Revoir mes réglages ») mais rouvert au premier écran.
+    await repos.settings.set('onboarding.draft', { ...draft, step: 'you' });
     return { routineId, routineCreated };
   });
 }

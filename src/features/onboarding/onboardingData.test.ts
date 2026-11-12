@@ -127,6 +127,15 @@ describe('onboarding : données (I3-07)', () => {
       expect(await routines.get(first.routineId ?? '')).toEqual(before);
     });
 
+    it('revoir sans toucher au poids : aucune pesée créée ni ressuscitée ; le brouillon rouvre au premier écran', async () => {
+      const weights = await db.data.repos.bodyWeights();
+      await weights.saveManual({ date: '2026-11-10' as LocalDate, kg: 80, timezone: 'Europe/Paris' }, TODAY);
+      await finishOnboarding(deps(), { ...FULL, acceptProposal: false }, content);
+      expect(await db.driver.select('SELECT date FROM body_weight')).toEqual([{ date: '2026-11-10' }]);
+      expect((await loadDraft(db.data)).step).toBe('you');
+      expect((await loadDraft(db.data)).heightCm).toBe(180);
+    });
+
     it('proposition refusée ou écran Split passé : aucune routine', async () => {
       await finishOnboarding(deps(), { ...FULL, acceptProposal: false }, content);
       expect(await (await db.data.repos.trainingRoutines()).list()).toEqual([]);

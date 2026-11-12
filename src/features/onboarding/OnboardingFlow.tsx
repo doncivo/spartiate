@@ -78,7 +78,15 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const trapRef = useFocusTrap<HTMLElement>({ active: true, onEscape: () => onClose('closed') });
+  const busyRef = useRef(false);
+  useEffect(() => {
+    busyRef.current = busy;
+  }, [busy]);
+  const close = (): void => {
+    // Pendant l'écriture finale, fermer ferait deux sorties : ignoré.
+    if (!busyRef.current) onClose('closed');
+  };
+  const trapRef = useFocusTrap<HTMLElement>({ active: true, onEscape: close });
   const { data } = container;
 
   useEffect(() => {
@@ -121,6 +129,14 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
   useLayoutEffect(() => {
     if (ready) headingRef.current?.focus();
   }, [step, ready]);
+
+  // Un « Continuer » refusé envoie le focus au premier champ en erreur (sinon à l'alerte) : clavier et lecteur d'écran n'ont pas à le chercher.
+  useEffect(() => {
+    if (issues.length === 0) return;
+    const panel = document.querySelector('.ct-onb__panel');
+    const target = panel?.querySelector<HTMLElement>('[aria-invalid="true"]') ?? panel?.querySelector<HTMLElement>('.ct-onb__body [role="alert"]');
+    target?.focus();
+  }, [issues]);
 
   const commit = useCallback(
     (next: OnboardingDraft) => {
@@ -208,8 +224,18 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
     setBusy(true);
     setNotice(null);
     try {
-      const loaded = content ?? (await loadTrainingContent().catch(() => null));
-      await finishOnboarding({ data, ids: container.ids, today, timeZone, year }, draft, loaded === 'error' ? null : loaded);
+      // Contenu absent alors que la proposition est acceptée : on ne termine pas en silence, l'erreur est dite et Ali peut réessayer ou écarter la proposition.
+      const wantsRoutine = draft.acceptProposal && !draft.skipped.includes('split');
+      const loaded = content === 'error' || content === null ? await loadTrainingContent().catch((error: unknown) => {
+        logFailure('onboarding-content', error);
+        return null;
+      }) : content;
+      if (loaded === null && wantsRoutine) {
+        setNotice(tOnboarding('contentError'));
+        setBusy(false);
+        return;
+      }
+      await finishOnboarding({ data, ids: container.ids, today, timeZone, year }, draft, loaded);
       navigate({ tab: 'today' });
       onClose('done');
     } catch (error) {
@@ -233,12 +259,12 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
               {tOnboarding('skip')}
             </button>
           )}
-          <button type="button" className="ct-onb__close" aria-label={tOnboarding('close')} onClick={() => onClose('closed')}>
+          <button type="button" className="ct-onb__close" aria-label={tOnboarding('close')} onClick={close}>
             <Icon icon={X} size={22} />
           </button>
         </div>
       </header>
-      <div className="ct-onb__progress" role="progressbar" aria-label={tOnboarding('progressLabel')} aria-valuemin={1} aria-valuemax={ONBOARDING_STEPS.length} aria-valuenow={index + 1}>
+      <div className="ct-onb__progress" role="progressbar" aria-label={tOnboarding('progressLabel')} aria-valuemin={1} aria-valuemax={ONBOARDING_STEPS.length} aria-valuenow={index + 1} aria-valuetext={tOnboarding('stepEyebrow', { step: index + 1, total: ONBOARDING_STEPS.length })}>
         {ONBOARDING_STEPS.map((id, i) => (
           <i key={id} className="ct-onb__segment" data-state={i < index ? 'done' : i === index ? 'current' : 'todo'} />
         ))}
