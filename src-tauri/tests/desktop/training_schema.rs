@@ -91,7 +91,8 @@ fn i6_03b_the_routine_circuit_trigger_does_not_exist_before_version_14() {
 }
 
 #[test]
-fn i6_03b_a_version_14_backup_with_the_routine_circuit_trigger_is_accepted_and_a_tampered_one_is_refused() {
+fn i6_03b_a_version_14_backup_with_the_routine_circuit_trigger_is_accepted_and_a_tampered_one_is_refused(
+) {
     let dir = scratch();
     let path = dir.path().join("v14.db");
     make_db(&path, 14, &TABLES);

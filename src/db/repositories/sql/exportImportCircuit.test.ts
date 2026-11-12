@@ -61,8 +61,8 @@ const firstSet = (t: Record<string, Record<string, unknown>[]>): Record<string, 
 const parse = (bytes: Uint8Array) => parseExportArchive(bytes, { currentSv: EXPORT_SV, currentYear: 2026 });
 
 describe('export / import des groupes de circuit (I6-03)', () => {
-  it('schéma 13 ; l’export porte le groupe et le repos du groupe sur chaque série', async () => {
-    expect(EXPORT_SV).toBe(13);
+  it('schéma 13 puis 14 (I6-03b) ; l’export porte le groupe et le repos du groupe sur chaque série', async () => {
+    expect(EXPORT_SV).toBe(14); // I6-03b : schéma 14 (groupes des lignes de routine).
     const data = await read(await withCircuit(A));
     const sets = data.training?.workout_set ?? [];
     expect(sets).toHaveLength(4);

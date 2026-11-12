@@ -136,6 +136,8 @@ export const syncFieldFr = {
     rest_sec: 'repos',
     position: 'position',
     deleted_at: 'suppression',
+    circuit_id: 'groupe (superset, triset, circuit)',
+    circuit_rest_sec: 'repos entre exercices du groupe',
   },
   // I1-03 : séance close et ses séries.
   workout: {

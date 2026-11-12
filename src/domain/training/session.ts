@@ -172,21 +172,45 @@ export interface PlannedSet {
   readonly circuitRestSec?: number | null;
 }
 
-/** Séries d'un jour de routine : lignes par position, `sets` séries de travail chacune, cibles de la routine, aucune charge. */
+/**
+ * Séries d'un jour de routine : lignes par position, `sets` séries de travail chacune, cibles de la routine, aucune charge. I6-03b : les lignes d'un
+ * même groupe (au moins deux lignes portant le même `circuitId`) forment un bloc à la place de la première, séries alternées tour par tour (A1 B1 A2
+ * B2 ; une ligne sans série dans un tour est sautée), chaque série portant l'identifiant de la routine (remplacé par un neuf au démarrage) et le
+ * repos entre exercices. Un identifiant porté par une seule ligne : ligne libre.
+ */
 export function planFromRoutineDay(lines: readonly RoutineExerciseSpec[]): PlannedSet[] {
-  return [...lines]
-    .sort((a, b) => a.position - b.position)
-    .flatMap((line) =>
-      Array.from({ length: line.sets }, (): PlannedSet => ({
-        exerciseId: line.exerciseId,
-        exerciseName: line.exerciseName,
-        setKind: 'work',
-        targetRepsMin: line.repMin,
-        targetRepsMax: line.repMax,
-        targetLoadKg: null,
-        targetRestSec: line.restSec,
-      })),
-    );
+  const sorted = [...lines].sort((a, b) => a.position - b.position);
+  const membersOf = new Map<string, RoutineExerciseSpec[]>();
+  for (const line of sorted) if (line.circuitId) membersOf.set(line.circuitId, [...(membersOf.get(line.circuitId) ?? []), line]);
+  const grouped = (line: RoutineExerciseSpec): readonly RoutineExerciseSpec[] | null => {
+    const members = line.circuitId ? membersOf.get(line.circuitId) : undefined;
+    return members !== undefined && members.length >= 2 ? members : null;
+  };
+  const setOf = (line: RoutineExerciseSpec, inGroup: boolean): PlannedSet => ({
+    exerciseId: line.exerciseId,
+    exerciseName: line.exerciseName,
+    setKind: 'work',
+    targetRepsMin: line.repMin,
+    targetRepsMax: line.repMax,
+    targetLoadKg: null,
+    targetRestSec: line.restSec,
+    ...(inGroup ? { circuitId: line.circuitId as string, circuitRestSec: line.circuitRestSec ?? 0 } : {}),
+  });
+  const placed = new Set<string>();
+  const out: PlannedSet[] = [];
+  for (const line of sorted) {
+    const members = grouped(line);
+    if (members === null) {
+      out.push(...Array.from({ length: line.sets }, () => setOf(line, false)));
+      continue;
+    }
+    const id = line.circuitId as string;
+    if (placed.has(id)) continue;
+    placed.add(id);
+    const rounds = Math.max(...members.map((m) => m.sets));
+    for (let round = 0; round < rounds; round += 1) for (const m of members) if (round < m.sets) out.push(setOf(m, true));
+  }
+  return out;
 }
 
 /**

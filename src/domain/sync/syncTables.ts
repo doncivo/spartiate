@@ -374,6 +374,10 @@ const ROUTINE_EXERCISE_TABLE = table(
     c('position', 'int', false),
     createdAt,
     deletedAt,
+    // I6-03b (migration 0014) : groupe de circuit du jour de routine et repos entre exercices du groupe. Visibles au journal des conflits : une
+    // écriture locale (« Rétablir » compris) est capturée par `sync_routine_exercise_circuit_au`.
+    c('circuit_id', 'text', true, { max: 64 }),
+    c('circuit_rest_sec', 'int', true),
   ],
   { parents: [{ column: 'routine_day_id', table: 'routine_day' }], titleSource: { kind: 'own', column: 'exercise_name' } },
 );
