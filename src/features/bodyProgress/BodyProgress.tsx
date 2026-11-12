@@ -229,7 +229,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
                   <span>{formatDayMonthYear(m.day)}</span>
                   <span className="ct-bodyprogress__value">{tBodyProgress('measureLine', { value: formatCm(m.value) })}</span>
                   <button type="button" className="ct-bodyprogress__delete" aria-label={tBodyProgress('measureDelete', { date: formatDayMonthYear(m.day) })} onClick={() => void removeMeasure(m)}>
-                    ×
+                    {tBodyProgress('deleteGlyph')}
                   </button>
                 </li>
               ))}
@@ -350,6 +350,7 @@ function PhotoItem({
 function PhotoImage({ id, alt }: { readonly id: string; readonly alt: string }) {
   const container = useAppContainer();
   const [src, setSrc] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
     let live = true;
     (async () => {
@@ -358,10 +359,13 @@ function PhotoImage({ id, alt }: { readonly id: string; readonly alt: string }) 
       let binary = '';
       for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
       setSrc(`data:image/jpeg;base64,${btoa(binary)}`);
-    })().catch(() => undefined);
+    })().catch(() => {
+      if (live) setFailed(true);
+    });
     return () => {
       live = false;
     };
   }, [container, id]);
+  if (failed) return <p role="status" className="ct-today__muted">{tBodyProgress('photoImageFailed')}</p>;
   return src === null ? <div className="ct-bodyprogress__img ct-bodyprogress__img--wait" aria-hidden="true" /> : <img className="ct-bodyprogress__img" src={src} alt={alt} />;
 }

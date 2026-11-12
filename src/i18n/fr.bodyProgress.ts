@@ -23,6 +23,8 @@ export const bodyProgressFr = {
   errorFuture: 'La date ne peut pas être dans le futur.',
   measuresEmpty: 'Aucune mesure pour cette zone.',
   measureLine: '{value} cm',
+  deleteGlyph: '×',
+  photoImageFailed: 'Image illisible sur cet appareil.',
   measureDelete: 'Supprimer la mesure du {date}',
   changeNone: 'Une deuxième mesure permettra de voir l’écart.',
   changeLine: 'Écart depuis le {date} : {delta} cm',

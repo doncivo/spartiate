@@ -99,6 +99,7 @@ describe('export / import des mensurations et des fiches de photos (I6-02)', () 
     };
     const cases: [string, ExportData][] = [
       ['value 0', withRows('measurement', (r) => (r.values['value'] = 0))],
+      ['taille 300 (sous le plafond SQL, au-dessus de la borne de la zone)', withRows('measurement', (r) => (r.values['value'] = 300))],
       ['value 5000', withRows('measurement', (r) => (r.values['value'] = 5000))],
       ['value texte', withRows('measurement', (r) => (r.values['value'] = 'abc'))],
       ['id faux', withRows('measurement', (r) => (r.id = 'measurement|2026-11-10|waist'))],
