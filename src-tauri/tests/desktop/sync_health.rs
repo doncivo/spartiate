@@ -200,7 +200,10 @@ fn a_full_sync_cycle_never_reads_writes_or_lists_the_health_folder() {
 fn reader_returns_the_four_files_and_never_writes() {
     let fs = MemFs::new();
     seed_health(&fs);
-    let names: Vec<String> = HEALTH_RECOVERY_FILES.iter().map(|n| (*n).to_owned()).collect();
+    let names: Vec<String> = HEALTH_RECOVERY_FILES
+        .iter()
+        .map(|n| (*n).to_owned())
+        .collect();
     let reads = read_health_files(&SharedFs(fs.clone()), &names).unwrap();
     assert_eq!(reads.len(), 4);
     for (read, (name, bytes)) in reads.iter().zip(FILES) {
@@ -327,7 +330,11 @@ fn reader_refuses_near_miss_body_names_and_more_than_fourteen_before_any_access(
             .code,
         SyncCode::BadName
     );
-    assert_eq!(fs.reads.load(Ordering::SeqCst), 0, "aucun accès avant la validation");
+    assert_eq!(
+        fs.reads.load(Ordering::SeqCst),
+        0,
+        "aucun accès avant la validation"
+    );
 }
 
 #[test]
@@ -364,7 +371,10 @@ fn core_reads_the_health_folder_through_its_own_access_and_keeps_the_sync_untouc
     d.setup(DEV_A);
     seed_health(&fs);
     let before = health_files(&fs);
-    let names: Vec<String> = HEALTH_RECOVERY_FILES.iter().map(|n| (*n).to_owned()).collect();
+    let names: Vec<String> = HEALTH_RECOVERY_FILES
+        .iter()
+        .map(|n| (*n).to_owned())
+        .collect();
     let reads = d.core.read_health_files(&names).unwrap();
     assert_eq!(reads.files.iter().filter(|r| r.state == "ok").count(), 4);
     assert_eq!(health_files(&fs), before);
@@ -401,7 +411,10 @@ fn bookmark_reads_only_through_status_download_and_read_from() {
     );
     fs.start_cycle_within(std::time::Duration::from_secs(30))
         .unwrap();
-    let names: Vec<String> = HEALTH_RECOVERY_FILES.iter().map(|n| (*n).to_owned()).collect();
+    let names: Vec<String> = HEALTH_RECOVERY_FILES
+        .iter()
+        .map(|n| (*n).to_owned())
+        .collect();
     let reads = read_health_files(&fs, &names).unwrap();
     let states: Vec<&str> = reads.iter().map(|r| r.state).collect();
     assert_eq!(states, ["ok", "absent", "ok", "absent"]);
@@ -524,7 +537,10 @@ fn bookmark_over(plugin: &Arc<FakePlugin>, clock: &Arc<AtomicU64>) -> BookmarkFs
 }
 
 fn all_names() -> Vec<String> {
-    HEALTH_RECOVERY_FILES.iter().map(|n| (*n).to_owned()).collect()
+    HEALTH_RECOVERY_FILES
+        .iter()
+        .map(|n| (*n).to_owned())
+        .collect()
 }
 
 fn report_of(fs: &dyn SyncFs) -> HealthReport {
