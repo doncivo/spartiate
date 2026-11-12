@@ -27,7 +27,14 @@ export type RoutineIssueCode =
   | 'rir'
   | 'rest'
   | 'position'
-  | 'position-duplicate';
+  | 'position-duplicate'
+  // I6-03b : identifiant de groupe (1 à 64 caractères) ou repos entre exercices (entier de 0 à 3 600 s) hors bornes ; même exercice deux fois dans un groupe.
+  | 'circuit'
+  | 'circuit-duplicate';
+
+/** Bornes des colonnes de groupe d'une ligne (CHECK de la migration 0014, mêmes que la séance en 0013 ; `circuit.ts` n'est pas importé : cycle). */
+const ROUTINE_CIRCUIT_ID_MAX = 64;
+const ROUTINE_CIRCUIT_REST_MAX_SEC = 3600;
 
 export interface RoutineIssue {
   readonly code: RoutineIssueCode;
@@ -50,6 +57,9 @@ export function validateRoutineLine(line: RoutineExerciseSpec): RoutineIssueCode
   if (line.rir !== null && !isCount(line.rir, 0, RIR_MAX)) codes.push('rir');
   if (!isCount(line.restSec, 0, REST_MAX_SEC)) codes.push('rest');
   if (!Number.isInteger(line.position) || line.position < 0) codes.push('position');
+  const circuitId = line.circuitId ?? null;
+  const circuitRest = line.circuitRestSec ?? null;
+  if ((circuitId !== null && (circuitId.length < 1 || circuitId.length > ROUTINE_CIRCUIT_ID_MAX)) || (circuitRest !== null && !isCount(circuitRest, 0, ROUTINE_CIRCUIT_REST_MAX_SEC))) codes.push('circuit');
   return codes;
 }
 
@@ -65,6 +75,15 @@ export function validateRoutineDay(day: RoutineDaySpec, dayIndex = 0): RoutineIs
       if (seen.has(line.position)) issues.push({ code: 'position-duplicate', dayIndex, lineIndex });
       seen.add(line.position);
     }
+  });
+  // I6-03b : un groupe relie des exercices DISTINCTS (la séance démarrée lit le groupe par exercice).
+  const groupExercises = new Map<string, Set<string>>();
+  day.exercises.forEach((line, lineIndex) => {
+    if (line.circuitId === undefined || line.circuitId === null) return;
+    const seenInGroup = groupExercises.get(line.circuitId) ?? new Set<string>();
+    if (seenInGroup.has(line.exerciseId)) issues.push({ code: 'circuit-duplicate', dayIndex, lineIndex });
+    seenInGroup.add(line.exerciseId);
+    groupExercises.set(line.circuitId, seenInGroup);
   });
   return issues;
 }
