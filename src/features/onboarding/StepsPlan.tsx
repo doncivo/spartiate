@@ -162,8 +162,8 @@ export function StepResult({ draft, issues, today, texts, setText, content }: St
       <section className="ct-onb__card" aria-label={tOnboarding('targetsTitle')}>
         <h2 className="ct-onb__h2">{tOnboarding('targetsTitle')}</h2>
         {estimate.kcal === null && !edited && <ExpenditureEstimate draft={draft} today={today} />}
-        <TextInput label={tOnboarding('expenditureField')} value={shown} inputMode="numeric" error={issues.includes('expenditure-range')} onChange={(value) => setText('expenditureKcal', value)} />
-        <FieldError show={issues.includes('expenditure-range')}>{tOnboarding('errorExpenditure')}</FieldError>
+        <TextInput label={tOnboarding('expenditureField')} value={shown} inputMode="numeric" errorId="ct-onb-err-kcal" error={issues.includes('expenditure-range')} onChange={(value) => setText('expenditureKcal', value)} />
+        <FieldError id="ct-onb-err-kcal" show={issues.includes('expenditure-range')}>{tOnboarding('errorExpenditure')}</FieldError>
         {estimate.kcal !== null && !edited && <p className="ct-onb__big">{tOnboarding('expenditureValue', { kcal: formatInt(estimate.kcal) })}</p>}
         {estimate.kcal !== null && <p className="ct-onb__muted">{tOnboarding('expenditureNote')}</p>}
         {edited && estimate.kcal !== null && <p className="ct-onb__muted">{tOnboarding('expenditureEdited', { kcal: formatInt(estimate.kcal) })}</p>}

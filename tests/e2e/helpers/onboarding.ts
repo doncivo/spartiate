@@ -27,5 +27,5 @@ export const onboardingTitle = (page: Page, title: string) => page.getByRole('he
 
 /** Attend le dialogue de l'onboarding sur son premier écran. */
 export async function expectOnboardingOpen(page: Page): Promise<void> {
-  await expect(page.getByRole('dialog', { name: 'Configuration de Spartiate' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole('dialog', { name: 'Configuration de Spartiate' })).toBeVisible();
 }

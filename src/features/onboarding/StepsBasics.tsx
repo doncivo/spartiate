@@ -57,13 +57,21 @@ function Group({ label, children }: { readonly label: string; readonly children:
   );
 }
 
-export function TextInput({ label, value, onChange, inputMode, error, hint }: { readonly label: string; readonly value: string; readonly onChange: (value: string) => void; readonly inputMode: 'numeric' | 'decimal'; readonly error?: boolean; readonly hint?: string }) {
+export function TextInput({ label, value, onChange, inputMode, error, hint, errorId }: { readonly label: string; readonly value: string; readonly onChange: (value: string) => void; readonly inputMode: 'numeric' | 'decimal'; readonly error?: boolean; readonly hint?: string; readonly errorId: string }) {
+  const hintId = `${errorId}-hint`;
+  const describedBy = [error === true ? errorId : null, hint !== undefined ? hintId : null].filter((x): x is string => x !== null).join(' ');
   return (
-    <label className="ct-onb__field">
-      <span className="ct-onb__label">{label}</span>
-      <input className="ct-onb__input" type="text" inputMode={inputMode} autoComplete="off" value={value} aria-invalid={error === true ? true : undefined} onChange={(event) => onChange(event.target.value)} />
-      {hint !== undefined && <span className="ct-onb__hint">{hint}</span>}
-    </label>
+    <div className="ct-onb__field">
+      <label className="ct-onb__field">
+        <span className="ct-onb__label">{label}</span>
+        <input className="ct-onb__input" type="text" inputMode={inputMode} autoComplete="off" value={value} aria-invalid={error === true ? true : undefined} aria-describedby={describedBy === '' ? undefined : describedBy} onChange={(event) => onChange(event.target.value)} />
+      </label>
+      {hint !== undefined && (
+        <span className="ct-onb__hint" id={hintId}>
+          {hint}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -96,19 +104,20 @@ export function StepYou(props: StepProps) {
           onChange={(value) => patch({ sex: value === '' ? null : value })}
         />
       </Group>
-      <TextInput label={tOnboarding('birthYear')} value={texts.birthYear} inputMode="numeric" error={issues.includes('birth-year-range')} onChange={(value) => setText('birthYear', value)} />
-      <FieldError show={issues.includes('birth-year-range')}>{tOnboarding('errorBirthYear', { min: BIRTH_YEAR_MIN, max: year - MIN_AGE_YEARS })}</FieldError>
-      <TextInput label={tOnboarding('heightCm')} value={texts.heightCm} inputMode="numeric" error={issues.includes('height-range')} onChange={(value) => setText('heightCm', value)} />
-      <FieldError show={issues.includes('height-range')}>{tOnboarding('errorHeight', { min: HEIGHT_MIN_CM, max: HEIGHT_MAX_CM })}</FieldError>
+      <TextInput label={tOnboarding('birthYear')} value={texts.birthYear} inputMode="numeric" errorId="ct-onb-err-birth" error={issues.includes('birth-year-range')} onChange={(value) => setText('birthYear', value)} />
+      <FieldError id="ct-onb-err-birth" show={issues.includes('birth-year-range')}>{tOnboarding('errorBirthYear', { min: BIRTH_YEAR_MIN, max: year - MIN_AGE_YEARS })}</FieldError>
+      <TextInput label={tOnboarding('heightCm')} value={texts.heightCm} inputMode="numeric" errorId="ct-onb-err-height" error={issues.includes('height-range')} onChange={(value) => setText('heightCm', value)} />
+      <FieldError id="ct-onb-err-height" show={issues.includes('height-range')}>{tOnboarding('errorHeight', { min: HEIGHT_MIN_CM, max: HEIGHT_MAX_CM })}</FieldError>
       <TextInput
         label={tOnboarding('weightKg')}
         value={texts.weightKg}
         inputMode="decimal"
+        errorId="ct-onb-err-weight"
         error={issues.includes('weight-range')}
         onChange={(value) => setText('weightKg', value)}
         {...(prefillWeightKg !== null ? { hint: tOnboarding('weightPrefill', { kg: formatDecimal(prefillWeightKg) }) } : {})}
       />
-      <FieldError show={issues.includes('weight-range')}>{tOnboarding('errorWeight', { max: WEIGHT_MAX_KG })}</FieldError>
+      <FieldError id="ct-onb-err-weight" show={issues.includes('weight-range')}>{tOnboarding('errorWeight', { max: WEIGHT_MAX_KG })}</FieldError>
       <Group label={tOnboarding('activity')}>
         <SegmentedControl<ActivityLevel | ''>
           label={tOnboarding('activity')}

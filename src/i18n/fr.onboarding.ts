@@ -35,7 +35,6 @@ export const onboardingFr = {
   activityLight: 'Légèrement actif',
   activityModerate: 'Modérément actif',
   activityActive: 'Très actif',
-  expenditureTitle: 'Dépense estimée',
   expenditureValue: 'Dépense estimée : {kcal} kcal par jour',
   expenditureNote: 'Estimation de départ (Mifflin-St Jeor) : point de départ, recalculé après 2 semaines de données.',
   expenditureMissing: 'Dépense estimée indisponible : renseigne le sexe, l’année de naissance, la taille, le poids et le niveau d’activité.',
@@ -86,7 +85,6 @@ export const onboardingFr = {
   equipmentTitle: 'Matériel',
   equipmentText: 'Choisis un préréglage de départ. Tu pourras l’affiner dans Entraînement › Matériel.',
   equipmentLabel: 'Matériel',
-  equipmentActive: 'Actuellement actif sur cet appareil.',
   equipmentLoading: 'Chargement des préréglages…',
 
   // 6. Priorités
@@ -94,7 +92,6 @@ export const onboardingFr = {
   prioritiesText: 'Touche un muscle : une fois pour le prioriser, deux pour l’éviter, trois pour le remettre à normal.',
   bodyFront: 'Avant',
   bodyBack: 'Arrière',
-  bodyMapLabel: 'Silhouettes avant et arrière, reflet des muscles choisis',
   musclesLabel: 'Muscles',
   muscleState: '{muscle}, {state}',
   stateNormal: 'normal',
@@ -133,7 +130,7 @@ export const onboardingFr = {
   firstSession: 'Première séance',
   firstSessionLine: '{name} · {sets} × {reps}',
   firstSessionDuration: 'Durée estimée : {min} min',
-  firstSessionCapped: '{n} exercice(s) retiré(s) pour tenir dans {min} min.',
+  firstSessionCapped: 'Pour tenir dans {min} min, la séance montrée est raccourcie ({n} en moins).',
   firstSessionNone: 'Aucune routine ne sera ajoutée : l’écran Split a été passé ou la proposition refusée. Tu pourras en créer une dans Entraînement.',
   targetsTitle: 'Cibles du jour',
   expenditureField: 'Dépense de départ (kcal par jour)',

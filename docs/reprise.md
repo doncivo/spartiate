@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-11 : I1 à I3 livrés, I4 hors IA livré, I5 livré ; version publiée 0.11.4 (schéma 10). I6-01 (0.12.0, schéma 11) : docs/I6-01.md, D-95 à D-98. **I6-02 (0.13.0, schéma 12, migration 0012 : `measurement`, `progress_photo`, `progress_photo_file` locale) : branche `I6-02-corps`, PR ouverte, fusion et tags par l'agent principal après CI verte (docs/I6-02.md, D-99 à D-101, H-27 UNVERIFIED ; synchro iCloud des photos non faite).** Historique des versions : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-101 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.) ; les décisions approuvées priment sur les textes historiques.
+État au 2026-11-11 : I1 à I3 livrés, I4 hors IA livré, I5 livré ; version publiée 0.11.4 (schéma 10). I6-01 (0.12.0, schéma 11) : docs/I6-01.md, D-95 à D-98. **I6-02 (0.13.0, schéma 12, migration 0012 : `measurement`, `progress_photo`, `progress_photo_file` locale) : branche `I6-02-corps`, PR ouverte, fusion et tags par l'agent principal après CI verte (docs/I6-02.md, D-99 à D-101, H-27 UNVERIFIED ; synchro iCloud des photos non faite).** **I3-07 (0.15.0, sans migration) : onboarding en 8 écrans, branche `I3-07-onboarding`, PR ouverte, fusion par l'agent principal (docs/I3-07.md, D-110 à D-112).** Historique des versions : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-101 et D-110 à D-112 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.) ; les décisions approuvées priment sur les textes historiques.
 
 ## Fusionné (tout est dans main)
 
@@ -23,7 +23,7 @@
 
 ## Prochaines étapes
 
-1. Ali : installer 0.12.0 puis 0.13.0 (PC et iPhone le même jour, schéma 12, avant toute saisie) ; constater le sélecteur de photo sur iPhone (H-27). Lot suivant : I6-03 (entraînement), I3-07 (onboarding) ; D-94 à D-101 à confirmer.
+1. Ali : installer 0.12.0 puis 0.13.0 (PC et iPhone le même jour, schéma 12, avant toute saisie) ; constater le sélecteur de photo sur iPhone (H-27). Lot suivant : I6-03 (entraînement), I3-07 (onboarding : voir en tête) ; D-94 à D-101 et D-110 à D-112 à confirmer.
 2. Confirmer ou réviser D-73, D-74, D-79 à D-81 et D-88 à D-93 (échelle d'Exertion 20, journée rouge = maintien).
 
 ## Rappels
