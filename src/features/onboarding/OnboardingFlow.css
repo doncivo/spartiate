@@ -368,6 +368,12 @@
   padding-top: var(--ct-space-1);
 }
 
+/* Pastilles de jours : 44 pt au minimum dans l'onboarding (40 px dans le formulaire de routine). */
+.ct-onb .ct-weekday-toggles__day {
+  width: var(--ct-hit-target-min);
+  height: var(--ct-hit-target-min);
+}
+
 .ct-onb__footer {
   display: flex;
   gap: var(--ct-space-3);
