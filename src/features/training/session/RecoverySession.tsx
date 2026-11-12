@@ -14,7 +14,7 @@ import './RecoverySession.css';
  * Récupération en séance (I5-02 point 2.2 ; § 16.4, § 16.7, § 16.1 niveau A). Bloc à la demande (import dynamique depuis `ActiveSession` et
  * « Séance proposée »), chargé avec son catalogue de textes. Même code sur l'iPhone et le PC : lectures par `recoveryRepository`, sans recalcul.
  *
- * - `RedDayBanner` : « Journée rouge : maintien des charges proposé », un tap pour accepter ou ignorer ; rien n'est appliqué sans ce geste ;
+ * - `RedDayBanner` : « Journée rouge : charges allégées de 5 % proposées », un tap pour accepter ou ignorer ; rien n'est appliqué sans ce geste ;
  *   le choix est gardé pour la séance (réglage local) puis dit en texte à la place des boutons.
  * - `RecoverySplitView` : pourcentage et repère (prêt / à ménager) par muscle principal de la séance, « inconnu » sans ligne du jour ;
  *   suggestion prudente pour les muscles sous le seuil, la séance n'est jamais modifiée. Jamais un diagnostic.
