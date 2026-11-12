@@ -47,17 +47,17 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
   });
 
   describe('bibliothèque', () => {
-    it('filtrée par défaut par le profil actif (Fitness Park Antony) ; la bascule montre tout', async () => {
+    it('filtrée par défaut par le profil actif (Salle complète, FIX-0173) ; la bascule montre tout', async () => {
       open('library');
       const toggle = await screen.findByRole('switch', { name: 'Compatibles avec mon matériel' });
       expect(toggle).toHaveAttribute('aria-checked', 'true');
-      fireEvent.change(screen.getByLabelText('Groupe musculaire'), { target: { value: 'biceps' } });
-      expect(screen.queryByRole('button', { name: /Curl au pupitre$/ })).toBeNull();
-      expect(screen.getByRole('button', { name: /^Curl aux haltères/ })).toBeInTheDocument();
-      expect(screen.getByText('14 exercices')).toBeInTheDocument();
+      fireEvent.change(screen.getByLabelText('Groupe musculaire'), { target: { value: 'hamstrings' } });
+      expect(screen.queryByRole('button', { name: /Curl nordique$/ })).toBeNull();
+      expect(screen.getByRole('button', { name: /^Leg curl couché/ })).toBeInTheDocument();
+      expect(screen.getByText('13 exercices')).toBeInTheDocument();
       fireEvent.click(toggle);
-      expect(screen.getByRole('button', { name: 'Curl au pupitre' })).toBeInTheDocument();
-      expect(screen.getByText('16 exercices')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Curl nordique' })).toBeInTheDocument();
+      expect(screen.getByText('15 exercices')).toBeInTheDocument();
     });
 
     it('recherche par nom français sans accents et par alias anglais', async () => {
@@ -152,7 +152,7 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
       fireEvent.click(within(day).getByRole('button', { name: 'Ajouter un exercice' }));
       const picker = await screen.findByRole('region', { name: 'Ajouter un exercice à « Full Body A »' });
       fireEvent.change(within(picker).getByLabelText('Rechercher un exercice'), { target: { value: 'curl' } });
-      expect(within(picker).queryByRole('button', { name: 'Curl au pupitre' })).toBeNull();
+      expect(within(picker).queryByRole('button', { name: 'Curl nordique' })).toBeNull();
       fireEvent.click(within(picker).getByRole('button', { name: /^Curl marteau$/ }));
       expect(within(day).getByRole('group', { name: 'Curl marteau' })).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la routine' }));
@@ -195,9 +195,9 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
   });
 
   describe('matériel', () => {
-    it('profil actif par défaut : Fitness Park Antony ; en activer un autre écrit le réglage local', async () => {
+    it('profil actif par défaut : Salle complète (FIX-0173) ; en activer un autre écrit le réglage local', async () => {
       open('equipment');
-      expect(await screen.findByRole('heading', { name: 'Fitness Park Antony' })).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { name: 'Salle complète' })).toBeInTheDocument();
       expect(screen.getByText('Actif sur cet appareil')).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: /^Poids de corps/ }));
       fireEvent.click(await screen.findByRole('button', { name: 'Activer sur cet appareil' }));
@@ -208,7 +208,7 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
       open('equipment');
       expect((await screen.findAllByText('à vérifier en salle')).length).toBeGreaterThan(0);
       fireEvent.click(screen.getByRole('button', { name: 'Dupliquer pour modifier' }));
-      expect(await screen.findByRole('heading', { name: 'Fitness Park Antony (copie)' })).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { name: 'Salle complète (copie)' })).toBeInTheDocument();
       expect(await count('SELECT COUNT(*) AS n FROM equipment_profile')).toBe(1);
       fireEvent.click(screen.getByRole('button', { name: 'Modifier le profil' }));
       fireEvent.change(screen.getByLabelText('Nom du profil'), { target: { value: 'Ma salle' } });

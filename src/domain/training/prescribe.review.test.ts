@@ -79,8 +79,13 @@ describe('I3 : la confiance est toujours un nombre', () => {
 });
 
 describe('M1 : la paire d’haltères de 9 kg existe', () => {
-  it('8 kg × 12 (8–12) → 9 kg', () => {
-    const p = run({ exercise: DB, target: target(8, 12), history: [session(3, 8, [12, 12, 12])] });
+  // FIX-0173 (D-142) : « Salle complète » n'a plus la paire de 9 kg propre à l'ancienne salle ; un profil qui la déclare (copie, profil personnel) la garde.
+  const WITH_9 = { ...ANTONY, inventory: { ...ANTONY.inventory, dumbbells: { minKg: 2, maxKg: 58, stepKg: 2, extraKg: [9] } } };
+  it('8 kg × 12 (8–12) → 9 kg avec la paire de 9 kg ; jamais 9 kg sur « Salle complète » (paire absente)', () => {
+    const p = run({ exercise: DB, target: target(8, 12), history: [session(3, 8, [12, 12, 12])], equipment: WITH_9 });
     expect(p.loadKg).toBe(9);
+    const generic = run({ exercise: DB, target: target(8, 12), history: [session(3, 8, [12, 12, 12])] });
+    expect(generic.loadKg).not.toBe(9);
+    expect([8, 10]).toContain(generic.loadKg);
   });
 });

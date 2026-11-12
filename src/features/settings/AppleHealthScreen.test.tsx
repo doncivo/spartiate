@@ -378,6 +378,22 @@ describe('Apple Santé (finitions 0.1.2 d)', () => {
       );
       expect(await screen.findByRole('button', { name: 'Apple Santé : via Raccourcis · dernier import 08:15' })).toBeInTheDocument();
     });
+
+    it('FIX-0173 : un import fait pendant que Plus est affiché rafraîchit la ligne, sans quitter l’écran', async () => {
+      useAppStore.setState({ timeZone: 'Europe/Paris' });
+      await container.data.repos.settings.set('healthkit.entitlementMissing', true);
+      const samples = await container.data.repos.recoverySamples();
+      await samples.recordImport({ type: 'sommeil', importedAt: '2026-11-11T07:15:00.000Z', newestSampleAt: null, added: 0, duplicates: 0, rejected: 0 });
+      render(
+        <AppContainerProvider container={container}>
+          <SettingsScreen />
+        </AppContainerProvider>,
+      );
+      expect(await screen.findByRole('button', { name: 'Apple Santé : via Raccourcis · dernier import 08:15' })).toBeInTheDocument();
+      // Import automatique (retour au premier plan) : aucun nouvel échantillon, mais un nouvel instant d'import.
+      await samples.recordImport({ type: 'hrv', importedAt: '2026-11-11T18:40:00.000Z', newestSampleAt: null, added: 0, duplicates: 0, rejected: 0 });
+      expect(await screen.findByRole('button', { name: 'Apple Santé : via Raccourcis · dernier import 19:40' })).toBeInTheDocument();
+    });
   });
 });
 

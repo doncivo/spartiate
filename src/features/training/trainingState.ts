@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { allExercises, backfillDumbbellExtras, type CustomExercise, type EquipmentProfile, type Exercise } from '../../domain/training';
+import { allExercises, backfillDumbbellExtras, LEGACY_DUMBBELL_EXTRAS_SOURCES, type CustomExercise, type EquipmentProfile, type Exercise } from '../../domain/training';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { useSyncedData } from '../sync/remoteChanges';
 import { loadTrainingContent, type EmbeddedProfile, type TrainingContent } from './content';
@@ -37,7 +37,8 @@ export async function readTrainingData(data: DataAccess): Promise<TrainingData> 
   const [allCustoms, personalRows, storedId] = await Promise.all([exercisesRepo.list({ includeDeleted: true }), profilesRepo.list(), data.repos.settings.get('training.activeEquipmentProfile')]);
   const customs = allCustoms.filter((c) => c.deletedAt === null);
   // I2-04 : copie d'un profil embarqué faite avant la 0.3.0 (paire de 9 kg absente) complétée à la lecture, jamais réécrite en base.
-  const personal = personalRows.map((p): PersonalProfile => ({ ...backfillDumbbellExtras(p, content.profiles), origin: 'personal' }));
+  // FIX-0173 : l'ancien profil de salle (figé) reste une source pour ses copies d'avant la 0.3.0.
+  const personal = personalRows.map((p): PersonalProfile => ({ ...backfillDumbbellExtras(p, [...content.profiles, ...LEGACY_DUMBBELL_EXTRAS_SOURCES]), origin: 'personal' }));
   return {
     content,
     customs,
