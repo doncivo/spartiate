@@ -719,6 +719,31 @@ describe('FIX-0172 : recalcul de règle indépendant de l’import', () => {
   });
 });
 
+describe('FIX-0172 : relecture « reread » après l’ouverture (D-135)', () => {
+  it('contourne la limite des 30 minutes, lit le dossier ; un lecteur non automatique ne lit rien', async () => {
+    const db = await openBaseDb(DEVICE);
+    try {
+      const make = (automatic: boolean) => {
+        const r = reader(async () => ABSENT(), { kind: 'folder', automatic });
+        const service = createShortcutImportService({ reader: r, samples: () => db.data.repos.recoverySamples(), recovery: () => db.data.repos.recovery(), workouts: async () => [], clock: createManualClock(NOW), timeZone: TZ, log: () => undefined });
+        return { r, service };
+      };
+      const { r, service } = make(true);
+      expect((await service.run('open')).status).toBe('done');
+      expect((await service.run('open')).status).toBe('throttled');
+      const again = await service.run('reread');
+      expect(again.status).toBe('done');
+      expect(again.trigger).toBe('reread');
+      expect(r.read).toHaveBeenCalledTimes(2);
+      const manualOnly = make(false);
+      expect((await manualOnly.service.run('reread')).status).toBe('needs-pick');
+      expect(manualOnly.r.read).not.toHaveBeenCalled();
+    } finally {
+      await db.close();
+    }
+  });
+});
+
 describe('FIX-0172 : version de la règle du sommeil', () => {
   it('passe à 3 (compensation partielle, épisodes endormis, stades Apple Watch) : un seul recalcul de l’historique', () => {
     expect(SLEEP_RULES_VERSION).toBe(3);
