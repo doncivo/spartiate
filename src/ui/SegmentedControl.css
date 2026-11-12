@@ -66,3 +66,21 @@
 .ct-segmented[data-scroll='true'] .ct-segmented__button {
   flex: 1 0 auto;
 }
+
+/* FIX-0115 (masque : seule l'opacité compte, `black` n'est pas une couleur affichée) : fondu sur le bord où des choix sont cachés (droite à l'ouverture, gauche une fois défilé). Le choix actif reste entièrement visible : la marge de défilement le garde hors du fondu. */
+.ct-segmented[data-scroll='true'] {
+  --ct-segmented-fade: 28px;
+  scroll-padding-inline: var(--ct-segmented-fade);
+}
+
+.ct-segmented[data-fade-end='true'] {
+  mask-image: linear-gradient(to right, black calc(100% - var(--ct-segmented-fade)), transparent);
+}
+
+.ct-segmented[data-fade-start='true'] {
+  mask-image: linear-gradient(to left, black calc(100% - var(--ct-segmented-fade)), transparent);
+}
+
+.ct-segmented[data-fade-start='true'][data-fade-end='true'] {
+  mask-image: linear-gradient(to right, transparent, black var(--ct-segmented-fade), black calc(100% - var(--ct-segmented-fade)), transparent);
+}

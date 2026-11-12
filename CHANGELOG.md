@@ -10,6 +10,15 @@ Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGEL
 - **Valeurs inhabituelles** : deux nuits de suite avec une HRV nettement sous ta base (au moins 2 σ) ou une fréquence cardiaque au repos nettement au-dessus : carte « repos conseillé » sur Aujourd'hui. Estimation, pas un avis médical ; aucune notification.
 - **Sauvegarde / export / synchro** : le journal est dans l'archive, dans la restauration et dans la synchro (les deux appareils l'écrivent).
 
+## 0.11.5
+
+Correctifs (FIX-0115). **Pas de mise à jour de la base** (reste en version 10).
+
+- **Onglets défilants** (Entraînement, Nutrition) : un fondu sur le bord signale les onglets cachés, à droite à l’ouverture puis à gauche une fois défilé ; l’onglet actif reste entièrement visible.
+- **Plus › Apple Santé** : la ligne dit « via Raccourcis · dernier import HH:MM » au lieu de « non disponible ».
+- **Sommeil** : événement de diagnostic dans le journal (compteurs de nuits retenues et écartées par raison ; aucun chiffre de santé).
+- Test d’onglets de la CI rendu fiable (il mesurait un onglet pas encore affiché).
+
 ## 0.11.4
 
 Correctif du sommeil et du dossier sante (constat du 11 nov.). **Pas de mise à jour de la base** (reste en version 10).
