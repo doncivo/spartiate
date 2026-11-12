@@ -30,6 +30,7 @@ mod restore_wal_guard;
 mod signing;
 mod speech;
 mod sql_closed;
+mod sqlite_engine;
 mod support;
 mod sync_bookmark;
 mod sync_closed_segments;
