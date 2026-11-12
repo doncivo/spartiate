@@ -107,11 +107,13 @@ export function createProgressPhotoRepository(db: SqlExecutor, stamper: WriteSta
       if (!isLocalDate(day) || bytes.length === 0 || bytes.length > PHOTO_MAX_BYTES || !looksLikeJpeg(bytes)) throw new RepositoryError('invalid', 'progress_photo', String(day));
       const id = String(ids.next());
       const data = encodeBytes(bytes);
-      return atomic(db, async (x) => {
+      // Tampon pris juste avant l'écriture qu'il date (seconde revue de Y-04, garde stampBeforeWrite) : la fiche d'abord, le fichier ensuite,
+      // dans la même transaction (un échec du second annule la première). Le paramètre de transaction reprend le nom `db` (exécuteur courant).
+      return atomic(db, async (db) => {
         const stamp = stamper.next();
-        await x.execute('INSERT INTO progress_photo_file (photo_id, mime, data, saved_at) VALUES (?, ?, ?, ?)', [id, 'image/jpeg', data, stamp.at]);
-        await x.execute('INSERT INTO progress_photo (id, date, file_name, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?, ?)', [id, day, photoFileName(id), stamp.at, stamp.at, stamp.deviceId, stamp.hlc]);
-        const saved = await read(x, id);
+        await db.execute('INSERT INTO progress_photo (id, date, file_name, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?, ?)', [id, day, photoFileName(id), stamp.at, stamp.at, stamp.deviceId, stamp.hlc]);
+        await db.execute('INSERT INTO progress_photo_file (photo_id, mime, data, saved_at) VALUES (?, ?, ?, ?)', [id, 'image/jpeg', data, stamp.at]);
+        const saved = await read(db, id);
         if (!saved) throw new RepositoryError('not-found', 'progress_photo', id);
         return toPhoto(saved);
       });
@@ -138,18 +140,18 @@ export function createProgressPhotoRepository(db: SqlExecutor, stamper: WriteSta
     },
 
     async remove(id) {
-      await atomic(db, async (x) => {
-        const row = await read(x, id);
-        const file = await x.select('SELECT 1 FROM progress_photo_file WHERE photo_id = ?', [id]);
+      await atomic(db, async (db) => {
+        const row = await read(db, id);
+        const file = await db.select('SELECT 1 FROM progress_photo_file WHERE photo_id = ?', [id]);
         if (file.length === 0) {
           // D-121 : sans le fichier, cet appareil ne supprime rien (il peut seulement masquer la fiche chez lui) ; fiche inconnue : sans effet.
           if (row && row.deleted_at === null) throw new RepositoryError('not-found', 'progress_photo_file', id);
           return;
         }
-        await x.execute('DELETE FROM progress_photo_file WHERE photo_id = ?', [id]);
+        await db.execute('DELETE FROM progress_photo_file WHERE photo_id = ?', [id]);
         if (!row || row.deleted_at !== null) return;
         const stamp = stamper.next();
-        await x.execute('UPDATE progress_photo SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
+        await db.execute('UPDATE progress_photo SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
       });
     },
   };
