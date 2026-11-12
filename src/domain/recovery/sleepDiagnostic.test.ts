@@ -52,9 +52,9 @@ describe('fixture des nuits d’Ali', () => {
     expect(Math.round(mean)).toBeLessThanOrEqual(460);
   });
 
-  it('diagnostic : nuits retenues sur 7 jours, écartées par raison, dette arrondie à l’heure (chiffres seulement)', () => {
+  it('diagnostic : nuits retenues sur 7 jours, écartées par raison, compteurs seulement (§ 22 : aucune dette)', () => {
     const diag = sleepDebtDiagnostic(records, TODAY);
-    expect(diag).toEqual({ retained: 7, excludedNoAsleep: 0, excludedShort: 0, debtHours: 3 });
+    expect(diag).toEqual({ retained: 7, excludedNoAsleep: 0, excludedShort: 0 });
   });
 
   it('caractérise la règle actuelle : la dette ne compense pas les excédents, elle atteint le plafond de 3 h et le besoin 10 h 30', () => {
@@ -66,6 +66,6 @@ describe('fixture des nuits d’Ali', () => {
     const blank = { hrvMs: null, restingHr: null, bedtimeMinutes: null, wakeMinutes: null } as const;
     const extra = [{ day: '2026-11-12', asleepMinutes: null, ...blank }, { day: '2026-11-11', asleepMinutes: 120, ...blank }, { day: '2026-11-01', asleepMinutes: 100, ...blank }];
     const diag = sleepDebtDiagnostic([...records.filter((r) => r.day < '2026-11-11'), ...extra], '2026-11-13');
-    expect(diag).toEqual({ retained: 5, excludedNoAsleep: 1, excludedShort: 1, debtHours: 3 });
+    expect(diag).toEqual({ retained: 5, excludedNoAsleep: 1, excludedShort: 1 });
   });
 });

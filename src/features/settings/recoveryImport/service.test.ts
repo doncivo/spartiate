@@ -152,7 +152,7 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     expect(stored).toBe(SLEEP_RULES_VERSION);
   });
 
-  it('FIX-0115 : un événement de diagnostic du sommeil, des nombres seulement (nuits retenues, écartées par raison, dette à l’heure)', async () => {
+  it('FIX-0115 : un événement de diagnostic du sommeil, des nombres seulement (nuits retenues, écartées par raison ; jamais de dette, § 22)', async () => {
     const nights = Array.from({ length: 10 }, (_, k) => {
       const day = new Date(Date.parse('2026-11-08T12:00:00Z') - k * 86_400_000).toISOString().slice(0, 10);
       const before = new Date(Date.parse(day + 'T12:00:00Z') - 86_400_000).toISOString().slice(0, 10);
@@ -161,7 +161,7 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     await build(reader(async () => [ok('sommeil.csv', nights)])).run('manual');
     const diag = logs.filter((l) => l.event === 'recovery-import-diag-sleep');
     expect(diag).toHaveLength(1);
-    expect(Object.keys(diag[0]?.counts ?? {}).sort()).toEqual(['debt_hours', 'excluded_no_asleep', 'excluded_short', 'ignored_episodes', 'nights_known', 'retained', 'rules_version']);
+    expect(Object.keys(diag[0]?.counts ?? {}).sort()).toEqual(['excluded_no_asleep', 'excluded_short', 'ignored_episodes', 'nights_known', 'retained', 'rules_version']);
     expect(diag[0]?.counts).toMatchObject({ excluded_short: 1, excluded_no_asleep: 0 });
     expect(Object.values(diag[0]?.counts ?? {}).every((v) => Number.isInteger(v))).toBe(true);
   });
