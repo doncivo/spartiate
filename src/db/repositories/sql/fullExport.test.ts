@@ -19,6 +19,8 @@ async function seed(): Promise<void> {
   await (await db.data.repos.profile()).save({ sex: 'male', birthYear: 1990, heightCm: 181.5, goal: null, experience: null, units: 'metric' }, 2026);
   await (await db.data.repos.bodyWeights()).saveManual({ date: '2026-11-10' as LocalDate, kg: 82.4, timezone: 'Europe/Paris' }, '2026-11-12' as LocalDate);
   await (await db.data.repos.measurements()).save('2026-11-09' as LocalDate, 'waist', 82.5);
+  await (await db.data.repos.measurements()).save('2026-11-09' as LocalDate, 'health_body_fat_pct', 18.5);
+  await (await db.data.repos.measurements()).save('2026-11-09' as LocalDate, 'health_fiber_g', 28);
   await (await db.data.repos.progressPhotos()).add('2026-11-09' as LocalDate, new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 0xff, 0xd9]));
   const r = await db.data.repos.workouts();
   await r.start({ source: 'empty', id: W, name: 'Superset ; « bras »' });
@@ -44,7 +46,10 @@ describe('export complet relu et comparé aux tables', () => {
       const columns = fullExportColumns(table).map((c) => c.name);
       const csv = parseCsvText(files.get(`csv/${table}.csv`) ?? '');
       expect(csv[0], table).toEqual(columns);
-      const sql = await db.driver.select<Record<string, string | number | null>>(`SELECT ${columns.map((c) => (c === 'decided_at' ? 'created_at AS decided_at' : c)).join(', ')} FROM ${table} WHERE deleted_at IS NULL ORDER BY id`);
+      // FIX-0173 : `measurement.unit` est dérivée du genre (oracle indépendant écrit ici en SQL).
+      const unitSql = "CASE kind WHEN 'health_body_fat_pct' THEN 'pct' WHEN 'health_lean_mass_kg' THEN 'kg' WHEN 'health_fiber_g' THEN 'g' ELSE 'cm' END AS unit";
+      const select = (c: string): string => (c === 'decided_at' ? 'created_at AS decided_at' : table === 'measurement' && c === 'unit' ? unitSql : c);
+      const sql = await db.driver.select<Record<string, string | number | null>>(`SELECT ${columns.map(select).join(', ')} FROM ${table} WHERE deleted_at IS NULL ORDER BY id`);
       const expected = sql.map((row) => columns.map((c) => (row[c] === null || row[c] === undefined ? '' : String(row[c]))));
       expect(csv.slice(1), table).toEqual(expected);
       compared += expected.length;

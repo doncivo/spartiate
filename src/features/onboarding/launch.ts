@@ -1,5 +1,4 @@
-import type { BaseCounts } from '../../domain/onboarding/draft';
-import type { LocalDate } from '../../domain/types';
+import type { BasePresence } from '../../domain/onboarding/draft';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 
 /**
@@ -19,18 +18,12 @@ export function onboardingDisabledForDev(): boolean {
   }
 }
 
-/** Ce qui existe déjà dans la base : sert à reconnaître un premier lancement (base vide) d'une installation existante. */
-export async function readBaseCounts(data: DataAccess): Promise<BaseCounts> {
-  const { repos } = data;
-  const [profile, routines, weights, openWorkout, closedWorkouts, meals] = await Promise.all([
-    repos.profile().then((r) => r.get()),
-    repos.trainingRoutines().then((r) => r.list()),
-    repos.bodyWeights().then((r) => r.listRecent(1)),
-    repos.workouts().then((r) => r.getOpen()),
-    repos.workouts().then((r) => r.listClosed(1)),
-    repos.mealEntries().then((r) => r.listBetween('2000-01-01' as LocalDate, '2999-12-31' as LocalDate)),
-  ]);
-  return { profile: profile !== null, routines: routines.length, weights: weights.length, workouts: (openWorkout ? 1 : 0) + closedWorkouts.length, meals: meals.length };
+/**
+ * Ce qui existe déjà dans la base : sert à reconnaître un premier lancement (base vide) d'une installation existante. FIX-0173 (constat 10) : TOUS les
+ * domaines de l'utilisateur (récupération, facteurs, mensurations, photos compris), par une requête d'existence bornée, jamais un comptage complet.
+ */
+export async function readBaseCounts(data: DataAccess): Promise<BasePresence> {
+  return (await data.repos.userData()).presence();
 }
 
 export async function markCompleted(data: DataAccess): Promise<void> {

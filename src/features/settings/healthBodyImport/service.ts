@@ -200,6 +200,15 @@ export function createHealthBodyImportService(deps: BodyImportDeps): HealthBodyI
     }
   }
 
+  /** Fibres du jour : enregistrées (ou rétablies) tant que l'entrée Renpho vit ; même valeur : aucune écriture ; refus du dépôt : ignoré, jamais un échec. */
+  async function saveFiber(measurements: MeasurementRepository, day: LocalDate, grams: number): Promise<void> {
+    try {
+      await measurements.save(day, 'health_fiber_g', grams);
+    } catch (error) {
+      if (!isRefusal(error)) throw error;
+    }
+  }
+
   async function applyNutrition(repos: BodyImportRepos, parsedByMetric: ReadonlyMap<BodyMetric, BodyParseResult>, today: LocalDate): Promise<NutritionOutcome> {
     const value = (metric: BodyMetric): Map<string, number> => new Map((parsedByMetric.get(metric)?.days ?? []).map((d) => [d.day, d.value] as const));
     const energy = value('energy');
@@ -225,6 +234,8 @@ export function createHealthBodyImportService(deps: BodyImportDeps): HealthBodyI
     // Jours à traiter : ceux du fichier, et les jours dont l'entrée Renpho est encore vivante alors que le journal a des repas (rapprochement).
     const days = new Set<string>(imported);
     for (const [day, slot] of byDay) if (slot.live !== null && slot.meals) days.add(day);
+    // FIX-0173 (constat 9) : des fibres vivantes sans total Renpho vivant (état d'une version antérieure) sont rapprochées même hors des fichiers.
+    for (const f of await repos.measurements.list('health_fiber_g')) if (f.day >= from && f.day <= today && byDay.get(f.day)?.live == null) days.add(f.day);
 
     const out = { ...EMPTY_NUTRITION, skippedOld } as { -readonly [K in keyof NutritionOutcome]: NutritionOutcome[K] };
     // Un fichier non lu cette fois (absent, encore dans iCloud) ne remet pas à zéro la valeur déjà importée : on garde celle de l'entrée.
@@ -268,11 +279,15 @@ export function createHealthBodyImportService(deps: BodyImportDeps): HealthBodyI
           else out.skippedNoEnergy += 1;
           break;
       }
-      // Fibres : liées à l'entrée du jour ; retirées dès que le journal a des repas (même si l'entrée Renpho a déjà été supprimée par la saisie).
-      const gone = slot.meals || (plan.action === 'skip' && plan.reason === 'deleted');
-      if (gone) await repos.measurements.remove(day as LocalDate, 'health_fiber_g');
-      // 0 g de fibres : rien à enregistrer (la table des mesures exige une valeur positive).
-      else if (plan.fiber === 'save' && totals.fiberG !== null && totals.fiberG > 0) await applyMeasure(repos.measurements, day as LocalDate, 'health_fiber_g', totals.fiberG, { added: 0, updated: 0, unchanged: 0, skippedDeleted: 0, refused: 0 });
+      // Fibres (FIX-0173, D-140) : elles vivent avec l'entrée Renpho du jour. Sans entrée vivante après ce jour (journal, remplacement, suppression) : retirées.
+      // Entrée vivante : fichier de fibres lu avec ce jour → 0 g retire la mesure (zéro explicite, la table exige une valeur positive), > 0 l'enregistre
+      // (y compris après un retrait par zéro : correction reprise) ; fichier non lu ou jour absent du fichier : la valeur gardée ne bouge pas.
+      const renphoLive = plan.action === 'create' || (slot.live !== null && plan.action !== 'supersede');
+      if (!renphoLive) await repos.measurements.remove(day as LocalDate, 'health_fiber_g');
+      else if (totals.fiberG !== null) {
+        if (totals.fiberG <= 0) await repos.measurements.remove(day as LocalDate, 'health_fiber_g');
+        else await saveFiber(repos.measurements, day as LocalDate, totals.fiberG);
+      }
     }
     return out;
   }

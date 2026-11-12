@@ -62,3 +62,61 @@ describe('MealEntryRepository : entrée Renpho remplacée par le journal', () =>
     expect((await r.listBetween(D8, D8)).map((e) => e.id)).not.toContain(renpho.id);
   });
 });
+
+/** FIX-0173 (constat 9 de la relecture du 12/11) : les fibres Renpho du jour partent avec le total Renpho, dans la même transaction. */
+describe('MealEntryRepository : fibres Renpho retirées avec le total', () => {
+  const fibers = async () => (await db.data.repos.measurements()).list('health_fiber_g');
+
+  it('une saisie Spartiate qui remplace le total retire les fibres de ce jour seulement', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    const m = await db.data.repos.measurements();
+    await r.create(renphoDayDraft(D8, totals));
+    await r.create(renphoDayDraft(D9, totals));
+    await m.save(D8, 'health_fiber_g', 28);
+    await m.save(D9, 'health_fiber_g', 31);
+    await r.create(meal());
+    expect((await fibers()).map((f) => [f.day, f.value])).toEqual([[D9, 31]]);
+  });
+
+  it('createMany et update (changement de date) retirent aussi les fibres du jour remplacé', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    const m = await db.data.repos.measurements();
+    await r.create(renphoDayDraft(D8, totals));
+    await m.save(D8, 'health_fiber_g', 28);
+    await r.createMany([meal({ foodName: 'A' })]);
+    expect(await fibers()).toEqual([]);
+    await r.create(renphoDayDraft(D9, totals));
+    await m.save(D9, 'health_fiber_g', 31);
+    const own = await r.create(meal({ date: D8, foodName: 'C' }));
+    await r.update(own.id, { date: D9 });
+    expect(await fibers()).toEqual([]);
+  });
+
+  it('supprimer l’entrée Renpho retire ses fibres ; supprimer un autre repas n’y touche pas', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    const m = await db.data.repos.measurements();
+    const renpho = await r.create(renphoDayDraft(D8, totals));
+    await m.save(D8, 'health_fiber_g', 28);
+    const other = await r.create(meal({ date: D9 }));
+    await m.save(D9, 'health_fiber_g', 31);
+    await r.softDelete(other.id);
+    expect((await fibers()).map((f) => f.day)).toEqual([D8, D9]);
+    await r.softDelete(renpho.id);
+    expect((await fibers()).map((f) => f.day)).toEqual([D9]);
+  });
+
+  it('même transaction : un échec du retrait des fibres annule la saisie du repas', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    const m = await db.data.repos.measurements();
+    await r.create(renphoDayDraft(D8, totals));
+    await m.save(D8, 'health_fiber_g', 28);
+    await db.driver.execute("CREATE TRIGGER fix0173_fail BEFORE UPDATE ON measurement BEGIN SELECT RAISE(ABORT, 'boom'); END");
+    await expect(r.create(meal())).rejects.toThrow();
+    expect((await r.listByDate(D8)).map((e) => e.foodName)).toEqual(['Renpho — total du jour']);
+    expect((await fibers()).map((f) => f.value)).toEqual([28]);
+  });
+});

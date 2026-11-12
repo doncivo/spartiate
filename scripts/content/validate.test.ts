@@ -279,7 +279,7 @@ describe('contenu embarqué réel', () => {
 
   it('compte au moins 150 exercices (extension CONTENT-02, D-83) et 4 programmes', () => {
     expect(real.stats['exercises']).toBeGreaterThanOrEqual(150);
-    expect(real.stats).toMatchObject({ programs: 4, profiles: 4 });
+    expect(real.stats).toMatchObject({ programs: 4, profiles: 3 });
   });
 
   it('n’embarque aucun média (H-9, D-71)', () => {
@@ -341,15 +341,46 @@ describe('contenu embarqué réel', () => {
     for (const d of prog.days) for (const e of d.exercises) for (const g of (lib.get(e.exerciseId) as Json).equipmentGroups as string[][]) expect(g.some((id) => allowed.has(id))).toBe(true);
   });
 
-  it('définit « Fitness Park Antony » comme profil par défaut de type salle, avec les trois préréglages', () => {
+  it('FIX-0173 (D-142) : un seul profil de salle, générique, « Salle complète », par défaut ; identifiant technique conservé ; plus aucun profil par salle', () => {
     const p = load('equipment-profiles', 'profiles.json');
     expect(p.defaultProfileId).toBe('fitness-park-antony');
-    expect(p.profiles.map((x: Json) => [x.id, x.kind, x.isPreset])).toEqual([
-      ['fitness-park-antony', 'salle', false],
-      ['salle-commerciale', 'salle', true],
-      ['maison-halteres', 'maison', true],
-      ['poids-de-corps', 'voyage', true],
+    expect(p.profiles.map((x: Json) => [x.id, x.name, x.kind, x.isPreset])).toEqual([
+      ['fitness-park-antony', 'Salle complète', 'salle', false],
+      ['maison-halteres', 'Maison haltères', 'maison', true],
+      ['poids-de-corps', 'Poids de corps', 'voyage', true],
     ]);
+    expect(p.profiles.filter((x: Json) => x.kind === 'salle')).toHaveLength(1);
+    expect(JSON.stringify(p)).not.toMatch(/Fitness Park|Antony/);
+    for (const name of ['full-body-3j.json', 'haut-bas-4j.json', 'ppl-6j.json']) expect(load('programs', name).compatibleProfileIds, name).toEqual(['fitness-park-antony']);
+  });
+
+  it('FIX-0173 (D-142) : tout exercice faisable avec l’ancien « Fitness Park Antony » ou l’ancien « Salle commerciale » reste faisable avec « Salle complète » ; lest et point d’ancrage gardés', () => {
+    const before = JSON.parse(readFileSync(resolve(ROOT, 'tests', 'fixtures', 'training', 'salles-avant-fix-0173.json'), 'utf8')) as { profiles: { id: string; equipment: string[] }[] };
+    expect(before.profiles.map((p) => p.id)).toEqual(['fitness-park-antony', 'salle-commerciale']);
+    const salle = new Set(((load('equipment-profiles', 'profiles.json').profiles as Json[])[0] as Json).equipment as string[]);
+    const feasible = (set: ReadonlySet<string>, e: Json): boolean => (e.equipmentGroups as string[][]).every((g) => g.some((id) => set.has(id)));
+    const exercises = load('exercises', 'exercises.json').exercises as Json[];
+    const lost = exercises.filter((e) => before.profiles.some((p) => feasible(new Set(p.equipment), e)) && !feasible(salle, e)).map((e) => e.id as string);
+    expect(lost).toEqual([]);
+    expect(salle.has('loading-belt')).toBe(true);
+    expect(salle.has('anchor-point')).toBe(true);
+  });
+
+  it('FIX-0173 (D-142) : « Salle complète » a tout le matériel d’une grande salle (ancienne salle et préréglage commercial réunis), haltères 2 à 58 kg, kettlebells 4 à 20 kg', () => {
+    const salle = (load('equipment-profiles', 'profiles.json').profiles as Json[])[0] as Json;
+    const equipment = new Set(salle.equipment as string[]);
+    const bigGym = [
+      'barbell', 'ez-bar', 'trap-bar', 'smith-machine', 'rack', 'pull-up-bar', 'parallel-bars', 'weight-plate', 'dumbbell', 'kettlebell',
+      'machine', 'seated-machine', 'chest-press-machine', 'incline-chest-press-machine', 'shoulder-press-machine', 'chest-supported-row-machine', 'pec-deck', 'reverse-pec-deck',
+      'hack-squat-machine', 'pendulum-squat-machine', 'leg-press-machine', 'leg-extension-machine', 'leg-curl-machine', 'hip-thrust-machine', 'hip-abduction-machine',
+      'low-pulley', 'high-pulley', 'cable-machine', 'cable-handle', 'rope-attachment', 'straight-bar-attachment', 'ankle-strap',
+      'bench', 'flat-bench', 'incline-bench', 'preacher-bench', 'back-extension-bench', 'landmine-attachment', 'resistance-band', 'plyo-box', 'ab-wheel', 'mat', 'bodyweight',
+    ];
+    for (const id of bigGym) expect(equipment.has(id), id).toBe(true);
+    expect(salle.inventory.dumbbells).toMatchObject({ minKg: 2, maxKg: 58, stepKg: 2, extraPairsKg: [] });
+    expect(salle.inventory.kettlebells).toMatchObject({ minKg: 4, maxKg: 20 });
+    // Une copie de ce profil doit rester lisible par un appareil resté à la version précédente (MAX_LIST = 64 dans src/db/parse/equipmentJson.ts).
+    expect((salle.equipment as string[]).length).toBeLessThanOrEqual(64);
   });
 });
 

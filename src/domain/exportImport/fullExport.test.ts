@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildExportArchive, canonicalHash, EXPORT_SV, IMPORT_ZIP_LIMITS, parseExportArchive, TRAINING_EXPORT_TABLES, type ExportData } from './archive';
-import { CSV_BOM, buildFullExport, csvCell, csvText, FULL_EXPORT_EXCLUDED, FULL_EXPORT_TABLES, fullExportColumns, parseCsvText } from './fullExport';
+import { CSV_BOM, MEASUREMENT_VALUE_UNIT, buildFullExport, csvCell, csvText, FULL_EXPORT_EXCLUDED, FULL_EXPORT_TABLES, fullExportColumns, parseCsvText } from './fullExport';
 import { readZip } from './zip';
 
 /**
@@ -94,8 +94,8 @@ describe('contenu de l’archive', () => {
     }
     const measurement = parseCsvText(text('csv/measurement.csv'));
     expect(measurement.slice(1)).toEqual([
-      ['measurement|2026-11-01|arm_left', '2026-11-01', 'arm_left', '36'],
-      ['measurement|2026-11-09|waist', '2026-11-09', 'waist', '82.5'],
+      ['measurement|2026-11-01|arm_left', '2026-11-01', 'arm_left', '36', 'cm'],
+      ['measurement|2026-11-09|waist', '2026-11-09', 'waist', '82.5', 'cm'],
     ]);
     const exercise = parseCsvText(text('csv/exercise.csv'));
     const col = exercise[0]?.indexOf('name_fr') as number;
@@ -119,7 +119,8 @@ describe('contenu de l’archive', () => {
       { name: 'id', type: 'text', unit: null },
       { name: 'date', type: 'date', unit: null },
       { name: 'kind', type: 'text', unit: null },
-      { name: 'value', type: 'real', unit: 'cm' },
+      { name: 'value', type: 'real', unit: MEASUREMENT_VALUE_UNIT },
+      { name: 'unit', type: 'enum', unit: null },
     ]);
     expect(content.excluded).toEqual([...FULL_EXPORT_EXCLUDED]);
     const all = JSON.stringify(content) + text('data.json');
@@ -136,10 +137,53 @@ describe('contenu de l’archive', () => {
   });
 });
 
+describe('FIX-0173 (constat 4) : unité des mesures selon leur genre', () => {
+  const MIXED: ExportData = {
+    ...DATA,
+    training: {
+      measurement: [
+        { id: 'measurement|2026-11-09|waist', values: { date: '2026-11-09', kind: 'waist', value: 82.5 } },
+        { id: 'measurement|2026-11-09|health_body_fat_pct', values: { date: '2026-11-09', kind: 'health_body_fat_pct', value: 18.5 } },
+        { id: 'measurement|2026-11-09|health_lean_mass_kg', values: { date: '2026-11-09', kind: 'health_lean_mass_kg', value: 64.2 } },
+        { id: 'measurement|2026-11-09|health_fiber_g', values: { date: '2026-11-09', kind: 'health_fiber_g', value: 28 } },
+        { id: 'measurement|2026-11-09|health_waist_cm', values: { date: '2026-11-09', kind: 'health_waist_cm', value: 83 } },
+        { id: 'measurement|2026-11-09|future_kind', values: { date: '2026-11-09', kind: 'future_kind', value: 3 } },
+      ],
+    },
+  };
+
+  it('CSV lisible : valeur stockée inchangée et unité par ligne (cm, pct, kg, g ; genre inconnu : cellule vide)', async () => {
+    const { text } = await entries(MIXED);
+    const rows = parseCsvText(text('csv/measurement.csv'));
+    expect(rows[0]).toEqual(['id', 'date', 'kind', 'value', 'unit']);
+    const byKind = new Map(rows.slice(1).map((r) => [r[2], [r[3], r[4]]] as const));
+    expect(byKind.get('waist')).toEqual(['82.5', 'cm']);
+    expect(byKind.get('health_body_fat_pct')).toEqual(['18.5', 'pct']);
+    expect(byKind.get('health_lean_mass_kg')).toEqual(['64.2', 'kg']);
+    expect(byKind.get('health_fiber_g')).toEqual(['28', 'g']);
+    expect(byKind.get('health_waist_cm')).toEqual(['83', 'cm']);
+    expect(byKind.get('future_kind')).toEqual(['3', '']);
+  });
+
+  it('contenu.json : la valeur ne prétend plus être en cm, l’unité de chaque genre est dite ; data.json et réimport inchangés', async () => {
+    // Réimport : genres connus seulement (l'archive refuse un genre inconnu, règle inchangée).
+    const KNOWN: ExportData = { ...MIXED, training: { measurement: (MIXED.training?.measurement ?? []).filter((r) => r.values.kind !== 'future_kind') } };
+    const { text, built } = await entries(KNOWN);
+    const content = JSON.parse(text('contenu.json')) as { files: { table: string; columns: { name: string; unit: string | null }[] }[]; measurementUnits: Record<string, string> };
+    expect(content.files.find((f) => f.table === 'measurement')?.columns.find((c) => c.name === 'value')?.unit).not.toBe('cm');
+    expect(content.measurementUnits).toMatchObject({ waist: 'cm', arm_left: 'cm', health_body_fat_pct: 'pct', health_lean_mass_kg: 'kg', health_waist_cm: 'cm', health_height_cm: 'cm', health_fiber_g: 'g' });
+    expect(text('data.json')).not.toContain('"unit"');
+    const parsed = await parseExportArchive(built.bytes, { currentSv: EXPORT_SV, currentYear: 2026 });
+    const byId = (rows: readonly { id: string; values: Record<string, unknown> }[] | undefined) => new Map((rows ?? []).map((r) => [r.id, r.values.value]));
+    expect(byId(parsed.data.training?.measurement)).toEqual(byId(KNOWN.training?.measurement));
+  });
+});
+
 describe('colonnes documentées', () => {
   it('type, unité et possibilité de NULL pour chaque colonne ; unités des mesures et des charges', () => {
     const unit = (table: string, name: string) => fullExportColumns(table).find((c) => c.name === name)?.unit;
-    expect(unit('measurement', 'value')).toBe('cm');
+    expect(unit('measurement', 'value')).toBe(MEASUREMENT_VALUE_UNIT);
+    expect(MEASUREMENT_VALUE_UNIT).not.toBe('cm');
     expect(unit('workout_set', 'load_kg')).toBe('kg');
     expect(unit('workout_set', 'duration_sec')).toBe('s');
     expect(unit('workout_set', 'target_rest_sec')).toBe('s');

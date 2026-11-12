@@ -146,6 +146,45 @@ describe('import Renpho via Santé et Raccourcis (I6-04)', () => {
     expect(await (await db.data.repos.measurements()).list('health_fiber_g')).toEqual([]);
   });
 
+  describe('FIX-0173 (constat 9) : fibres Renpho', () => {
+    const fibers = async () => (await (await db.data.repos.measurements()).list('health_fiber_g')).map((f) => [f.day, f.value]);
+    const withFiber = (g: number) => ({ ...NUTRITION, 'fibres.csv': `2026-11-08T08:00:00+01:00;${g};g\n` });
+
+    it('repas saisi après l’import : fibres retirées tout de suite, sans attendre un import', async () => {
+      await run(NUTRITION);
+      expect(await fibers()).toEqual([[D8, 28]]);
+      await (await db.data.repos.mealEntries()).create({ date: D8, time: '12:00' as LocalTime, foodId: null, foodName: 'Déjeuner', source: 'manual', grams: null, kcal: 700, proteinG: null, fatG: null, carbG: null, method: 'quickadd', confidence: null });
+      expect(await fibers()).toEqual([]);
+    });
+
+    it('réimport sans ce jour : des fibres restées sans total Renpho vivant sont retirées', async () => {
+      const mealsRepo = await db.data.repos.mealEntries();
+      await mealsRepo.create(renphoDayDraft(D8, { kcal: 2300, proteinG: 150, fatG: 70, carbG: 260, fiberG: 28 }));
+      await mealsRepo.create({ date: D8, time: '12:00' as LocalTime, foodId: null, foodName: 'Déjeuner', source: 'manual', grams: null, kcal: 700, proteinG: null, fatG: null, carbG: null, method: 'quickadd', confidence: null });
+      // État laissé par une version antérieure : fibres vivantes, total Renpho déjà remplacé.
+      await (await db.data.repos.measurements()).save(D8, 'health_fiber_g', 28);
+      const result = await run({ 'energie.csv': '2026-11-07T08:00:00+01:00;2000;kcal\n' });
+      expect(result.status).toBe('done');
+      expect(await fibers()).toEqual([]);
+      expect((await meals()).filter((e) => e.date === D8).map((e) => e.foodName)).toEqual(['Déjeuner']);
+    });
+
+    it('correction 20 → 0 appliquée ; fichier de fibres absent : valeur gardée ; correction 0 → 15 reprise ; second import identique sans écriture', async () => {
+      await run(withFiber(20));
+      expect(await fibers()).toEqual([[D8, 20]]);
+      const { 'fibres.csv': _absent, ...withoutFiber } = NUTRITION;
+      await run(withoutFiber);
+      expect(await fibers()).toEqual([[D8, 20]]);
+      await run(withFiber(0));
+      expect(await fibers()).toEqual([]);
+      await run(withFiber(15));
+      expect(await fibers()).toEqual([[D8, 15]]);
+      const before = await (await db.data.repos.measurements()).find(D8, 'health_fiber_g');
+      await run(withFiber(15));
+      expect((await (await db.data.repos.measurements()).find(D8, 'health_fiber_g'))?.hlc).toBe(before?.hlc);
+    });
+  });
+
   it('l’entrée Renpho supprimée par Ali ne revient pas ; macros sans énergie : rien d’écrit et compté', async () => {
     await run(NUTRITION);
     const mealsRepo = await db.data.repos.mealEntries();

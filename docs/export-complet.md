@@ -425,14 +425,24 @@ Journal de facteurs du matin (`factors` : liste JSON de codes).
 
 ### `csv/measurement.csv`
 
-Mensurations, une par date et par zone ; `id` = `measurement|<date>|<zone>`.
+Mensurations et mesures importées de Santé (Renpho), une par date et par genre ; `id` = `measurement|<date>|<genre>`. L’unité de `value` dépend du genre (FIX-0173, D-141) : la colonne `unit`, ajoutée au CSV seulement, la donne ligne par ligne, et `contenu.json` la rappelle dans `measurementUnits`. La valeur exportée est la valeur stockée, jamais convertie ; `data.json` n’a pas de colonne `unit`.
 
 | Colonne | Type | Unité | NULL possible | Remarque |
 | --- | --- | --- | --- | --- |
 | `id` | text | — | non |  |
 | `date` | date | — | non |  |
 | `kind` | text | — | non |  |
-| `value` | real | cm | non | mesure en centimètres |
+| `value` | real | selon kind (colonne unit) | non | valeur stockée, dans l’unité de la colonne `unit` |
+| `unit` | enum | — | oui | dérivée du genre ; vide pour un genre inconnu (appareil plus récent) |
+
+Unité par genre :
+
+| Unité | Genres |
+| --- | --- |
+| cm | `neck`, `shoulders`, `chest`, `waist`, `hips`, `arm_left`, `arm_right`, `thigh_left`, `thigh_right`, `calf_left`, `calf_right` (zones saisies) ; `health_waist_cm`, `health_height_cm` (importés) |
+| pct | `health_body_fat_pct` (masse grasse, en pour cent ; « pct » plutôt que « % », qu’un tableur prendrait pour une formule) |
+| kg | `health_lean_mass_kg` (masse maigre) |
+| g | `health_fiber_g` (fibres du jour) |
 
 ### `csv/progress_photo.csv`
 
