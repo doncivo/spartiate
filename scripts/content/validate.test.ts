@@ -354,6 +354,18 @@ describe('contenu embarqué réel', () => {
     for (const name of ['full-body-3j.json', 'haut-bas-4j.json', 'ppl-6j.json']) expect(load('programs', name).compatibleProfileIds, name).toEqual(['fitness-park-antony']);
   });
 
+  it('FIX-0173 (D-142) : tout exercice faisable avec l’ancien « Fitness Park Antony » ou l’ancien « Salle commerciale » reste faisable avec « Salle complète » ; lest et point d’ancrage gardés', () => {
+    const before = JSON.parse(readFileSync(resolve(ROOT, 'tests', 'fixtures', 'training', 'salles-avant-fix-0173.json'), 'utf8')) as { profiles: { id: string; equipment: string[] }[] };
+    expect(before.profiles.map((p) => p.id)).toEqual(['fitness-park-antony', 'salle-commerciale']);
+    const salle = new Set(((load('equipment-profiles', 'profiles.json').profiles as Json[])[0] as Json).equipment as string[]);
+    const feasible = (set: ReadonlySet<string>, e: Json): boolean => (e.equipmentGroups as string[][]).every((g) => g.some((id) => set.has(id)));
+    const exercises = load('exercises', 'exercises.json').exercises as Json[];
+    const lost = exercises.filter((e) => before.profiles.some((p) => feasible(new Set(p.equipment), e)) && !feasible(salle, e)).map((e) => e.id as string);
+    expect(lost).toEqual([]);
+    expect(salle.has('loading-belt')).toBe(true);
+    expect(salle.has('anchor-point')).toBe(true);
+  });
+
   it('FIX-0173 (D-142) : « Salle complète » a tout le matériel d’une grande salle (ancienne salle et préréglage commercial réunis), haltères 2 à 58 kg, kettlebells 4 à 20 kg', () => {
     const salle = (load('equipment-profiles', 'profiles.json').profiles as Json[])[0] as Json;
     const equipment = new Set(salle.equipment as string[]);
