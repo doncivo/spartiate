@@ -4,7 +4,7 @@ Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGEL
 
 ## 0.15.0
 
-**Sans migration** (le schéma de la base ne change pas) : cette version peut s'installer sur PC et iPhone à tout moment.
+**Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment.
 
 - **Onboarding en 8 écrans (I3-07)**, sur PC et iPhone : Toi (sexe, année de naissance, taille, poids, niveau d'activité), Objectif (muscle, force, recomposition, perte de gras, maintien, et rythme en % du poids par semaine, de −1 % à +0,5 %), Expérience, Disponibilité (séances par semaine, durée, jours), Matériel, Priorités (silhouettes avant et arrière : 2 muscles à prioriser, 4 à éviter, mouvements douloureux), Split proposé selon ta fréquence, Résultat (première séance et cibles du jour). Chaque question est ignorable, le brouillon est enregistré à chaque changement.
 - **Dépense de départ** : estimation Mifflin-St Jeor selon ton sexe, ton âge, ta taille, ton poids et ton niveau d'activité déclaré, présentée comme un point de départ recalculé après 2 semaines de données ; tu peux la modifier ou rétablir l'estimation.
@@ -12,6 +12,15 @@ Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGEL
 - **Ta routine n'est jamais remplacée** : le programme proposé s'ajoute comme une nouvelle routine, ou pas du tout si tu l'écartes.
 - **Pas encore branchés** : les muscles prioritaires ou évités, les mouvements douloureux et la variété sont enregistrés mais ne pilotent pas encore la séance proposée (ticket Entraînement à venir).
 - Retiré : l'ancien assistant de bienvenue hérité de CircleTasks (écrans, textes, réglage d'étape).
+
+## 0.14.0
+
+**Schéma 13 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** La mise à jour ajoute deux colonnes (additif) aux séries d'une séance ; aucune donnée saisie n'est modifiée.
+
+- **Circuits (I6-03)** : dans la séance active, « Grouper en circuit » relie deux exercices ou plus (superset, triset, circuit : un seul mécanisme) avec un nombre de tours, un repos entre exercices (nul = aucun minuteur) et un repos de fin de tour. Les séries s'enchaînent une à une (A1 B1 A2 B2…), l'exercice et le tour suivants sont dits en texte, « Défaire le groupe » garde les séries faites. La décote de position (D-87) ne s'applique pas entre exercices de muscles différents d'un même circuit. Les groupes ne sont pas encore proposés par les routines ni par la génération de séance.
+- **Rejouer une séance** : depuis le Journal, « Rejouer cette séance » crée une nouvelle séance avec les mêmes exercices et les mêmes groupes ; les charges et les répétitions de la séance passée deviennent les cibles, rien n'est copié comme déjà fait.
+- **Export complet** : Plus › Export et import › « Export complet (CSV et JSON) » : une archive zip avec un CSV par table (UTF-8 avec BOM, séparateur point-virgule, dates ISO, nombres à point décimal), le JSON complet et un fichier décrivant chaque colonne (docs/export-complet.md). Les photos de progression ne sont jamais exportées. L'archive complète est aussi une archive d'import valide.
+- **Sauvegarde / synchro** : les groupes sont dans l'archive, la restauration et la synchro (publiés avec la séance close).
 
 ## 0.13.0
 

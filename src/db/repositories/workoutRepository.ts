@@ -38,6 +38,13 @@ export interface AddExerciseInput {
   readonly targetRestSec?: number | null;
 }
 
+export interface GroupExercisesInput {
+  readonly exerciseIds: readonly string[];
+  readonly rounds?: number;
+  readonly restBetweenSec: number;
+  readonly restRoundSec: number | null;
+}
+
 export interface AddSetOptions {
   readonly id?: string;
   /** Défaut `work`. Les cibles sont celles de la dernière série de l'exercice. */
@@ -80,6 +87,16 @@ export interface WorkoutRepository {
   addExercise(workoutId: string, input: AddExerciseInput): Promise<WorkoutWithSets>;
   /** Supprime (logiquement) toutes les séries de l'exercice ; positions renumérotées. Retourne la séance. */
   removeExercise(workoutId: string, exerciseId: string): Promise<WorkoutWithSets>;
+  /**
+   * I6-03 (§ 13.8) : relie au moins deux exercices de la séance OUVERTE en un groupe (superset, triset, circuit : un seul mécanisme). `rounds` : nombre de
+   * tours (par défaut le plus grand nombre de séries de travail des exercices) ; séries manquantes ajoutées, séries à faire en trop retirées, jamais une
+   * série validée. `restBetweenSec` : repos entre exercices d'un tour (0 = aucun) ; `restRoundSec` : repos de fin de tour (null : celui de l'exercice).
+   * Séries alternées série par série. Absente : `'not-found'` ; close, groupe invalide ou série validée à retirer : `'invalid'` ; exercice déjà groupé :
+   * `'conflict'`. Atomique (transaction propre hors transaction).
+   */
+  groupExercises(workoutId: string, input: GroupExercisesInput): Promise<WorkoutWithSets>;
+  /** I6-03 : défait un groupe de la séance OUVERTE (séries gardées, exercices indépendants, séries de chaque exercice voisines). Groupe absent : `'not-found'`. */
+  ungroupCircuit(workoutId: string, circuitId: string): Promise<WorkoutWithSets>;
   /** Ajoute une série après la dernière de l'exercice (qui doit déjà figurer dans la séance). */
   addSet(workoutId: string, exerciseId: string, options?: AddSetOptions): Promise<WorkoutSet>;
   /**
