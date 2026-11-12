@@ -121,6 +121,21 @@ describe('ProgressPhotoRepository', () => {
     expect(await db.driver.select('SELECT 1 FROM progress_photo_file')).toEqual([]);
   });
 
+  it('purgeOrphanFiles : le fichier d’une fiche supprimée par l’autre appareil est effacé ; celui d’une fiche vivante est gardé', async () => {
+    db = await openBaseDb(DEVICE);
+    const repo = await photos();
+    const kept = await repo.add(D(9), JPEG);
+    const gone = await repo.add(D(8), JPEG);
+    // L'autre appareil a supprimé la fiche : la ligne reçue est supprimée logiquement, le fichier d'ici resterait sans fiche.
+    await db.driver.execute('INSERT OR IGNORE INTO sync_guard (id) VALUES (1)');
+    await db.driver.execute("UPDATE progress_photo SET deleted_at = '2026-11-12T09:00:00.000Z' WHERE id = ?", [gone.id]);
+    await db.driver.execute('DELETE FROM sync_guard');
+    await db.driver.execute("INSERT INTO progress_photo_file (photo_id, mime, data, saved_at) VALUES ('sans-fiche', 'image/jpeg', 'AAAA', '2026-11-12T09:00:00.000Z')");
+    expect(await repo.purgeOrphanFiles()).toBe(2);
+    expect(await repo.localFileIds()).toEqual(new Set([kept.id]));
+    expect(await repo.purgeOrphanFiles()).toBe(0);
+  });
+
   it('fichier de plus d’un million d’octets : aller-retour exact', async () => {
     db = await openBaseDb(DEVICE);
     const repo = await photos();
