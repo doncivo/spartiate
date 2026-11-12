@@ -1,3 +1,4 @@
+/* eslint-disable -- outil de nettoyage ponctuel (CLEAN-01), hors du code de l'app */
 // CLEAN-01 : graphe d'imports de Spartiate et inventaire des fichiers non atteignables depuis les racines vivantes.
 // Usage : node scripts/cleanup/reachability.mjs [--json sortie.json]
 // Racines vivantes : points d'entrée des deux pages Vite, plugin Vite, fichiers référencés par new URL(..., import.meta.url).

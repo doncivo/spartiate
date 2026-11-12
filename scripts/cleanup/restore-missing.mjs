@@ -1,3 +1,4 @@
+/* eslint-disable -- outil de nettoyage ponctuel (CLEAN-01), hors du code de l'app */
 // CLEAN-01 : après une suppression par lot, restaure depuis HEAD tout fichier supprimé qu'un fichier conservé importe encore
 // (erreurs TS2307 de tsc). Boucle jusqu'à ce que plus rien ne manque. Les fichiers restaurés sont consignés dans la fiche comme
 // « conservés : importés par du code vivant ».

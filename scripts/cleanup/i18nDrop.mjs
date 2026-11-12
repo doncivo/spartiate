@@ -1,3 +1,4 @@
+/* eslint-disable -- outil de nettoyage ponctuel (CLEAN-01), hors du code de l'app */
 // CLEAN-01 : retire de src/i18n/fr.ts des groupes de premier niveau (propriétés de l'objet `fr`) et supprime les modules de catalogue
 // (fr.xxx.ts) qui ne sont plus importés par personne. tsc dit ensuite si un groupe était encore lu.
 // Usage : node scripts/cleanup/i18nDrop.mjs groupe [groupe...]

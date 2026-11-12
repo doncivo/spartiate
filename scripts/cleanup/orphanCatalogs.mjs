@@ -1,3 +1,4 @@
+/* eslint-disable -- outil de nettoyage ponctuel (CLEAN-01), hors du code de l'app */
 // CLEAN-01 : supprime les modules de catalogue src/i18n/fr.*.ts qu'aucun fichier n'importe plus (jusqu'au point fixe).
 import { readFileSync, readdirSync, statSync, unlinkSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
