@@ -121,8 +121,12 @@ const TYPE_OF: Readonly<Record<ShortcutFileName, RecoverySampleType>> = { 'hrv.c
 const MAX_DIAG_ENTRIES = 5;
 const LIST_ERR_CODE: Readonly<Record<ShortcutSanteListError, number>> = { '': 0, 'not-found': 1, 'unsafe-name': 2, cloud: 3, io: 4 };
 
-/** Version de la règle du sommeil (I5-06 : nuit = plus long épisode, siestes et blocs « Au lit » ignorés). Un changement recalcule une fois les 30 derniers jours. */
-export const SLEEP_RULES_VERSION = 2;
+/**
+ * Version de la règle du sommeil. 2 (I5-06) : nuit = plus long épisode, siestes et blocs « Au lit » ignorés. 3 (FIX-0172) : dette à compensation
+ * partielle (D-130), épisodes et réveil par les seuls segments endormis (D-131), stades Apple Watch (D-132). Un changement recalcule une fois
+ * les 30 derniers jours, même sans fichier importé (D-133).
+ */
+export const SLEEP_RULES_VERSION = 3;
 const RECOMPUTE_DAYS = 30;
 const SAMPLE_WINDOW_DAYS = 60;
 const WORKOUT_WINDOW_DAYS = 45;
@@ -206,6 +210,8 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       retained: debt.retained,
       excluded_no_asleep: debt.excludedNoAsleep,
       excluded_short: debt.excludedShort,
+      nights_short: debt.short,
+      nights_long: debt.long,
       ignored_episodes: ignoredGroups,
       rules_version: SLEEP_RULES_VERSION,
     });
