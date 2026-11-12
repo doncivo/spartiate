@@ -64,7 +64,12 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
     open('today');
     // Requête par texte et sélecteur : la requête par rôle calcule l'arbre d'accessibilité de toute la page (lent sous couverture, sur un runner chargé).
-    expect(await screen.findByText('Aujourd’hui', { selector: 'h1' })).toBeInTheDocument();
+    // Diagnostic (CI 12/11, échec intermittent sur un runner chargé) : si l'en-tête manque, l'échec dit ce que la page contenait.
+    try {
+      expect(await screen.findByText('Aujourd’hui', { selector: 'h1' })).toBeInTheDocument();
+    } catch (error) {
+      throw new Error(`En-tête d’Aujourd’hui absent ; page : ${document.body.innerHTML.slice(0, 1500)} ; cause : ${String(error)}`);
+    }
     expect(await screen.findByText('Trois réglages, puis on s’entraîne.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Renseigner mon profil' }));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'body' });
