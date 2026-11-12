@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { MEASUREMENT_UNITS } from '../bodyProgress';
 import { FULL_EXPORT_EXCLUDED, FULL_EXPORT_TABLES, fullExportColumns } from './fullExport';
 
 /**
@@ -31,6 +32,16 @@ describe('docs/export-complet.md', () => {
         expect(cells[4], `${table}.${c.name} NULL`).toBe(c.nullable ? 'oui' : 'non');
       }
     }
+  });
+
+  it('FIX-0173 (constat 4) : la section des mesures dit l’unité de chaque genre, jamais « en centimètres » pour toutes', () => {
+    const text = section('measurement');
+    const lines = text.split('\n');
+    for (const [kind, unit] of Object.entries(MEASUREMENT_UNITS)) {
+      const line = lines.find((l) => l.startsWith(`| ${unit} |`) && l.includes(`\`${kind}\``));
+      expect(line, `${kind} en ${unit}`).toBeDefined();
+    }
+    expect(text).not.toMatch(/mesure en centimètres/);
   });
 
   it('dit le format (BOM, séparateur, fin de ligne, guillemets, dates, nombres, cellule vide), les règles d’ordre et les exclusions', () => {

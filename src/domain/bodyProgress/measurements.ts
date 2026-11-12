@@ -122,6 +122,16 @@ export const isHealthMetricKind = (value: string): value is HealthMetricKind => 
 export type StoredMeasurementKind = MeasurementKind | HealthMetricKind;
 export const isStoredMeasurementKind = (value: string): value is StoredMeasurementKind => isMeasurementKind(value) || isHealthMetricKind(value);
 
+/** Unité de la valeur stockée, par genre (FIX-0173, constat 4 : l'export complet la dit ligne par ligne ; la valeur stockée ne change jamais). */
+export type MeasurementUnit = 'cm' | 'pct' | 'kg' | 'g';
+const HEALTH_METRIC_UNITS: Readonly<Record<HealthMetricKind, MeasurementUnit>> = { health_body_fat_pct: 'pct', health_lean_mass_kg: 'kg', health_waist_cm: 'cm', health_height_cm: 'cm', health_fiber_g: 'g' };
+export const MEASUREMENT_UNITS: Readonly<Record<StoredMeasurementKind, MeasurementUnit>> = {
+  ...(Object.fromEntries(MEASUREMENT_KINDS.map((k) => [k, 'cm'])) as Record<MeasurementKind, 'cm'>),
+  ...HEALTH_METRIC_UNITS,
+};
+/** Unité d'un genre ; genre inconnu (appareil plus récent) : `null`, jamais une unité supposée. */
+export const measurementUnit = (kind: string): MeasurementUnit | null => (isStoredMeasurementKind(kind) ? MEASUREMENT_UNITS[kind] : null);
+
 /** Bornes d'un genre stocké (zone ou importé). */
 export const storedMeasurementBounds = (kind: StoredMeasurementKind): { readonly min: number; readonly max: number } => (isMeasurementKind(kind) ? MEASUREMENT_BOUNDS_CM[kind] : HEALTH_METRIC_BOUNDS[kind]);
 

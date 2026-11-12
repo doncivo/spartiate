@@ -18,6 +18,7 @@ import { SecuritySection } from './SecuritySection';
 import { SettingsScreenPc } from './SettingsScreenPc';
 import { formatAppearanceParts } from './AppearanceScreen';
 import { utcToLocal } from '../../domain/timeZone';
+import { onLocalImport } from '../../db/localWrite';
 import { settingsStore } from './settingsStore';
 import './SettingsScreen.css';
 
@@ -75,15 +76,20 @@ function SettingsScreenMobile() {
       },
       () => undefined,
     );
-    void container.data.repos.recoverySamples().then((samples) => samples.listImportStates()).then(
-      (states) => {
-        const latest = states.reduce<string | null>((max, state) => (max === null || state.importedAt > max ? state.importedAt : max), null);
-        if (live) setLastShortcutImport(latest);
-      },
-      () => undefined,
-    );
+    const readLastImport = (): void =>
+      void container.data.repos.recoverySamples().then((samples) => samples.listImportStates()).then(
+        (states) => {
+          const latest = states.reduce<string | null>((max, state) => (max === null || state.importedAt > max ? state.importedAt : max), null);
+          if (live) setLastShortcutImport(latest);
+        },
+        () => undefined,
+      );
+    readLastImport();
+    // FIX-0173 : un import consigné pendant que Plus est affiché (ouverture, retour au premier plan) rafraîchit la ligne.
+    const stop = onLocalImport(readLastImport);
     return () => {
       live = false;
+      stop();
     };
   }, [container, hasHealthRow]);
 

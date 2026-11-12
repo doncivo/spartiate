@@ -26,6 +26,8 @@ export interface SegmentedControlProps<V extends string> {
 export function SegmentedControl<V extends string>({ options, value, onChange, label, disabled = false, columns, scrollable = false }: SegmentedControlProps<V>) {
   const root = useRef<HTMLDivElement>(null);
   const [fade, setFade] = useState({ start: false, end: false });
+  /** Choix observés : la liste change quand un choix est ajouté ou retiré (pas à chaque rendu d'un tableau recréé). */
+  const optionsKey = options.map((o) => o.value).join('|');
   /** FIX-0115 : fondu sur un bord tant qu'il reste des choix cachés de ce côté (1 px de tolérance pour les arrondis). */
   const measureFade = useCallback((): void => {
     const el = root.current;
@@ -41,9 +43,18 @@ export function SegmentedControl<V extends string>({ options, value, onChange, l
   }, [scrollable, value, measureFade]);
   useEffect(() => {
     if (!scrollable) return;
+    // FIX-0173 : la rangée ET ses choix sont observés (police plus grande, libellé changé, panneau redimensionné) ; sans ResizeObserver, la fenêtre.
+    const Observer = (globalThis as { ResizeObserver?: typeof ResizeObserver }).ResizeObserver;
+    const el = root.current;
+    if (typeof Observer === 'function' && el) {
+      const observer = new Observer(() => measureFade());
+      observer.observe(el);
+      for (const child of Array.from(el.children)) observer.observe(child);
+      return () => observer.disconnect();
+    }
     window.addEventListener('resize', measureFade);
     return () => window.removeEventListener('resize', measureFade);
-  }, [scrollable, measureFade]);
+  }, [scrollable, measureFade, optionsKey]);
   function onKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number): void {
     const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
     if (step === 0) return;
