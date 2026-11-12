@@ -68,17 +68,14 @@ export interface SleepDebtDiagnostic {
   readonly excludedNoAsleep: number;
   /** Nuits de la fenêtre sous `validNightMinAsleepMinutes` : jamais une dette. */
   readonly excludedShort: number;
-  /** Dette de sommeil (plafonnée) arrondie à l'heure. */
-  readonly debtHours: number;
 }
 
 /**
  * Diagnostic de la dette (FIX-0115) : mêmes nuits que `summarizeRecoveryDay` (fenêtre de `debtDays` jours avant `today`, nuits valides seules),
- * avec le décompte des nuits écartées par raison. Des nombres seulement : le journal ne reçoit ni durée de nuit ni date.
+ * avec le décompte des nuits écartées par raison. Des compteurs seulement (§ 22) : ni durée de nuit, ni date, ni dette.
  */
 export function sleepDebtDiagnostic(nights: readonly { readonly day: string; readonly asleepMinutes: number | null }[], today: string): SleepDebtDiagnostic {
   const { window, valid } = debtNights(nights, today);
   const noAsleep = window.filter((n) => n.asleepMinutes === null).length;
-  const debt = sleepNeed({ exertionPrevDay: 0, previousAsleepMinutes: valid }).debtMinutes;
-  return { retained: valid.length, excludedNoAsleep: noAsleep, excludedShort: window.length - valid.length - noAsleep, debtHours: Math.round(debt / 60) };
+  return { retained: valid.length, excludedNoAsleep: noAsleep, excludedShort: window.length - valid.length - noAsleep };
 }
