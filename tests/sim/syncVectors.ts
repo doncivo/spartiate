@@ -248,6 +248,52 @@ export async function buildSyncVectors(rustSealed: SyncVectors['rustSealed'] = [
       },
       full: true,
     },
+    // I6-03 (§ 13.8) : journal d'un appareil en schéma 13, une série de séance close dans un circuit (valeurs synthétiques), lu par Vitest et cargo test.
+    {
+      name: 'journal-ops-workout-set-circuit',
+      place: journal(9, 0),
+      sm: 1,
+      sv: 13,
+      plaintext: {
+        json: JSON.stringify({
+          k: 'ops',
+          sv: 13,
+          ops: [
+            {
+              t: 'workout_set',
+              id: '7d3c2e4f-0000-4000-8000-0000000000a1',
+              at: '2026-11-12T19:00:00.000Z',
+              f: Object.fromEntries(
+                Object.entries({
+                  workout_id: '7d3c2e4f-0000-4000-8000-0000000000a0',
+                  exercise_id: 'bench-press-barbell',
+                  exercise_name: 'Développé couché à la barre',
+                  position: 0,
+                  set_kind: 'work',
+                  target_reps_min: 8,
+                  target_reps_max: 8,
+                  target_load_kg: 50,
+                  target_rest_sec: 75,
+                  reps: 8,
+                  load_kg: 50,
+                  duration_sec: null,
+                  rir: 2,
+                  done: 1,
+                  done_at: '2026-11-12T18:30:00.000Z',
+                  corrected_at: null,
+                  created_at: '2026-11-12T18:00:00.000Z',
+                  deleted_at: null,
+                  difficulty: null,
+                  circuit_id: 'c-7d3c2e4f',
+                  circuit_rest_sec: 10,
+                }).map(([name, value]) => [name, [value, '001794200000000-0000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60', null]]),
+              ),
+            },
+          ],
+        }),
+      },
+      full: true,
+    },
   ];
   const records: RecordVector[] = [];
   for (const [i, spec] of specs.entries()) {
