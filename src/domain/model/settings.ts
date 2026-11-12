@@ -1,6 +1,5 @@
 import type { AppleCreateSetting, AppleListsSetting, ApplePending } from '../appleReminders';
 import type { FocusDuration } from '../focusSession';
-import type { OnboardingStepId, SampleIds } from '../onboarding';
 import type { DeviceId, IsoDateTime, LocalTime, SpaceFilter, SpaceId } from '../types';
 import type { ReminderOffsetMin } from './reminder';
 import type { TimeFormat } from '../timeFormat';
@@ -54,12 +53,12 @@ export interface SettingsValues {
   'holidays.countries': { readonly FR: boolean; readonly TN: boolean };
   /** T-11 : dernier fuseau IANA détecté sur cet appareil (affiché dans Réglages). */
   'general.timeZone': string | null;
-  /** P-05 : l'assistant de premier lancement est terminé ou passé (jamais rouvert tout seul) ; local. */
+  /** P-05 : l'onboarding est terminé ou passé (jamais rouvert tout seul) ; local. */
   'onboarding.completed': boolean;
-  /** P-05 critère 10 : étape en cours de l'assistant, pour le rouvrir là après une interruption ; null hors assistant. */
-  'onboarding.step': OnboardingStepId | null;
-  /** P-05 critère 6 : éléments créés par « Ajouter des données d'exemple » (pour « Supprimer les données d'exemple »). */
-  'sample.ids': SampleIds;
+  /** I3-07 (D-110) : brouillon de l'onboarding en 8 écrans, valeur BRUTE lue par `parseDraft` (src/domain/onboarding) ; locale, jamais synchronisée. */
+  'onboarding.draft': unknown;
+  /** Reste de l'ancien projet : ids de données d'exemple (aucun usage ; nettoyage en CLEAN-01) ; local. */
+  'sample.ids': { readonly tasks: readonly string[]; readonly routines: readonly string[]; readonly checklists: readonly string[] };
   /** D-01 : fermer la fenêtre réduit l'app en zone de notification (PC). */
   'desktop.closeToTray': boolean;
   /** D-02 : démarrage avec Windows, réduit. */
@@ -171,7 +170,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'holidays.countries': { scope: 'shared', defaultValue: { FR: true, TN: true } },
   'general.timeZone': { scope: 'local', defaultValue: null },
   'onboarding.completed': { scope: 'local', defaultValue: false },
-  'onboarding.step': { scope: 'local', defaultValue: null },
+  'onboarding.draft': { scope: 'local', defaultValue: null },
   'sample.ids': { scope: 'local', defaultValue: { tasks: [], routines: [], checklists: [] } },
   'desktop.closeToTray': { scope: 'local', defaultValue: true },
   'desktop.launchAtStartup': { scope: 'local', defaultValue: false },
