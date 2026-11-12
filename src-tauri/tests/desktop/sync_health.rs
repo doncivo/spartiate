@@ -17,7 +17,8 @@ use serde_json::json;
 use spartiate_lib::sync::bookmark::BookmarkFs;
 use spartiate_lib::sync::files::{AppendMode, Availability, FsError, SyncFs};
 use spartiate_lib::sync::health::{
-    read_health_files, DevicesOnly, HEALTH_DIR, HEALTH_FILES, MAX_HEALTH_FILE_BYTES,
+    read_health_files, DevicesOnly, HEALTH_BODY_FILES, HEALTH_DIR, HEALTH_FILES,
+    HEALTH_RECOVERY_FILES, MAX_HEALTH_FILE_BYTES,
 };
 use spartiate_lib::sync::SyncCode;
 
@@ -199,7 +200,7 @@ fn a_full_sync_cycle_never_reads_writes_or_lists_the_health_folder() {
 fn reader_returns_the_four_files_and_never_writes() {
     let fs = MemFs::new();
     seed_health(&fs);
-    let names: Vec<String> = HEALTH_FILES.iter().map(|n| (*n).to_owned()).collect();
+    let names: Vec<String> = HEALTH_RECOVERY_FILES.iter().map(|n| (*n).to_owned()).collect();
     let reads = read_health_files(&SharedFs(fs.clone()), &names).unwrap();
     assert_eq!(reads.len(), 4);
     for (read, (name, bytes)) in reads.iter().zip(FILES) {
@@ -250,6 +251,85 @@ fn reader_refuses_every_name_outside_the_four_files_before_any_access() {
     );
 }
 
+/// I6-04 : la liste blanche passe de quatre à quatorze noms exacts (les quatre de la récupération et les dix fichiers Renpho / Santé).
+#[test]
+fn whitelist_is_exactly_the_four_recovery_files_and_the_ten_body_files() {
+    assert_eq!(
+        HEALTH_BODY_FILES,
+        [
+            "poids.csv",
+            "masse-grasse.csv",
+            "masse-maigre.csv",
+            "tour-taille.csv",
+            "taille.csv",
+            "energie.csv",
+            "proteines.csv",
+            "glucides.csv",
+            "lipides.csv",
+            "fibres.csv"
+        ]
+    );
+    assert_eq!(HEALTH_FILES.len(), 14);
+    let mut expected: Vec<&str> = HEALTH_RECOVERY_FILES.to_vec();
+    expected.extend(HEALTH_BODY_FILES);
+    assert_eq!(HEALTH_FILES.to_vec(), expected);
+}
+
+#[test]
+fn reader_returns_the_ten_body_files_in_order_and_never_writes() {
+    let fs = MemFs::new();
+    for name in HEALTH_BODY_FILES {
+        fs.put(&[HEALTH_DIR, name], b"2026-11-08T06:50:00+01:00;1\n");
+    }
+    let names: Vec<String> = HEALTH_BODY_FILES.iter().map(|n| (*n).to_owned()).collect();
+    let reads = read_health_files(&SharedFs(fs.clone()), &names).unwrap();
+    assert_eq!(reads.len(), 10);
+    for (read, name) in reads.iter().zip(HEALTH_BODY_FILES) {
+        assert_eq!(read.name, name);
+        assert_eq!(read.state, "ok");
+    }
+    // Les quatorze ensemble sont acceptés ; les absents sont « absent », jamais une erreur.
+    let all: Vec<String> = HEALTH_FILES.iter().map(|n| (*n).to_owned()).collect();
+    let reads = read_health_files(&SharedFs(fs.clone()), &all).unwrap();
+    assert_eq!(reads.len(), 14);
+    assert_eq!(reads.iter().filter(|r| r.state == "absent").count(), 4);
+    assert_eq!(fs.writes.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn reader_refuses_near_miss_body_names_and_more_than_fourteen_before_any_access() {
+    let fs = MemFs::new();
+    for bad in [
+        "poids.csv.txt",
+        "Poids.csv",
+        "poids",
+        "masse_grasse.csv",
+        "tour-de-taille.csv",
+        "../poids.csv",
+        "sante/poids.csv",
+        "poids.csv\0",
+    ] {
+        let err = read_health_files(&SharedFs(fs.clone()), &[bad.to_owned()]).expect_err(bad);
+        assert_eq!(err.code, SyncCode::BadName, "{bad}");
+    }
+    let dup = vec!["poids.csv".to_owned(), "poids.csv".to_owned()];
+    assert_eq!(
+        read_health_files(&SharedFs(fs.clone()), &dup)
+            .expect_err("doublon")
+            .code,
+        SyncCode::BadName
+    );
+    let mut fifteen: Vec<String> = HEALTH_FILES.iter().map(|n| (*n).to_owned()).collect();
+    fifteen.push("poids.csv.tmp".to_owned());
+    assert_eq!(
+        read_health_files(&SharedFs(fs.clone()), &fifteen)
+            .expect_err("quinze")
+            .code,
+        SyncCode::BadName
+    );
+    assert_eq!(fs.reads.load(Ordering::SeqCst), 0, "aucun accès avant la validation");
+}
+
 #[test]
 fn reader_reports_absent_unreadable_and_cloud_files_by_state() {
     let fs = MemFs::new();
@@ -284,7 +364,7 @@ fn core_reads_the_health_folder_through_its_own_access_and_keeps_the_sync_untouc
     d.setup(DEV_A);
     seed_health(&fs);
     let before = health_files(&fs);
-    let names: Vec<String> = HEALTH_FILES.iter().map(|n| (*n).to_owned()).collect();
+    let names: Vec<String> = HEALTH_RECOVERY_FILES.iter().map(|n| (*n).to_owned()).collect();
     let reads = d.core.read_health_files(&names).unwrap();
     assert_eq!(reads.files.iter().filter(|r| r.state == "ok").count(), 4);
     assert_eq!(health_files(&fs), before);
@@ -321,7 +401,7 @@ fn bookmark_reads_only_through_status_download_and_read_from() {
     );
     fs.start_cycle_within(std::time::Duration::from_secs(30))
         .unwrap();
-    let names: Vec<String> = HEALTH_FILES.iter().map(|n| (*n).to_owned()).collect();
+    let names: Vec<String> = HEALTH_RECOVERY_FILES.iter().map(|n| (*n).to_owned()).collect();
     let reads = read_health_files(&fs, &names).unwrap();
     let states: Vec<&str> = reads.iter().map(|r| r.state).collect();
     assert_eq!(states, ["ok", "absent", "ok", "absent"]);
@@ -444,7 +524,7 @@ fn bookmark_over(plugin: &Arc<FakePlugin>, clock: &Arc<AtomicU64>) -> BookmarkFs
 }
 
 fn all_names() -> Vec<String> {
-    HEALTH_FILES.iter().map(|n| (*n).to_owned()).collect()
+    HEALTH_RECOVERY_FILES.iter().map(|n| (*n).to_owned()).collect()
 }
 
 fn report_of(fs: &dyn SyncFs) -> HealthReport {
