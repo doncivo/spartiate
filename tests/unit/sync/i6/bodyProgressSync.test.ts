@@ -105,9 +105,9 @@ describe('(d) photo : la fiche passe, jamais le fichier', () => {
     await roundTrip();
     const onPc = await (await photos(pc)).list();
     expect(onPc.map((p) => [p.id, p.day, p.fileName])).toEqual([[added.id, DAY, added.fileName]]);
-    expect(await (await photos(pc)).readFile(added.id)).toBeNull();
+    expect(await (await photos(pc)).loadFile(added.id)).toBeNull();
     expect(await pc.driver.select('SELECT 1 FROM progress_photo_file')).toEqual([]);
-    expect(await (await photos(iphone)).readFile(added.id)).toEqual(BYTES);
+    expect(await (await photos(iphone)).loadFile(added.id)).toEqual(BYTES);
     // La publication ne porte que la fiche : rien du contenu de l'image dans les enregistrements du dossier partagé.
     const published = JSON.stringify(iphone.logger.entries) + JSON.stringify(pc.logger.entries);
     expect(published).not.toMatch(/\/9j|progress_photo_file/);

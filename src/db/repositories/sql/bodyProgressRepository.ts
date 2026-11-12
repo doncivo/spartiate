@@ -107,7 +107,7 @@ export function createProgressPhotoRepository(db: SqlExecutor, stamper: WriteSta
       return rows.map(toPhoto);
     },
 
-    async readFile(id) {
+    async loadFile(id) {
       const rows = await db.select<SqlRow & { data: string }>('SELECT data FROM progress_photo_file WHERE photo_id = ?', [id]);
       return rows[0] ? decodeBytes(rows[0].data) : null;
     },

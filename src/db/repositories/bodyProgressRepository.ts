@@ -54,7 +54,7 @@ export interface ProgressPhotoRepository {
   /** Fiches vivantes, la plus récente d'abord (même jour : la dernière ajoutée d'abord). */
   list(): Promise<readonly ProgressPhotoRecord[]>;
   /** Fichier de cette photo, ou `null` s'il n'est pas sur cet appareil (fiche reçue de l'autre appareil). */
-  readFile(id: string): Promise<Uint8Array | null>;
+  loadFile(id: string): Promise<Uint8Array | null>;
   /** Identifiants des fiches dont le fichier est sur cet appareil. */
   localFileIds(): Promise<ReadonlySet<string>>;
   /** Efface les fichiers locaux dont la fiche est SUPPRIMÉE (par l'autre appareil) ; un fichier sans fiche du tout n'est jamais touché (ajout en cours) ; rend leur nombre. */

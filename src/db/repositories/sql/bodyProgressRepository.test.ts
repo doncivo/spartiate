@@ -76,22 +76,22 @@ describe('ProgressPhotoRepository', () => {
     const repo = await photos();
     const p = await repo.add(D(9), JPEG);
     expect(p).toMatchObject({ day: D(9), fileName: `${p.id}.jpg`, deletedAt: null, deviceId: DEVICE });
-    expect(await repo.readFile(p.id)).toEqual(JPEG);
+    expect(await repo.loadFile(p.id)).toEqual(JPEG);
     expect(await repo.localFileIds()).toEqual(new Set([p.id]));
     expect(await outbox('progress_photo')).toEqual([{ row_id: p.id, field: '*' }]);
     expect(await db.driver.select("SELECT 1 FROM sync_outbox WHERE table_name = 'progress_photo_file'")).toEqual([]);
   });
 
-  it('list : fiches vivantes, la plus récente d’abord ; readFile null quand le fichier n’est pas sur cet appareil', async () => {
+  it('list : fiches vivantes, la plus récente d’abord ; loadFile null quand le fichier n’est pas sur cet appareil', async () => {
     db = await openBaseDb(DEVICE);
     const repo = await photos();
     const a = await repo.add(D(2), JPEG);
     const b = await repo.add(D(9), JPEG);
     expect((await repo.list()).map((p) => p.id)).toEqual([b.id, a.id]);
     await db.driver.execute('DELETE FROM progress_photo_file WHERE photo_id = ?', [a.id]);
-    expect(await repo.readFile(a.id)).toBeNull();
+    expect(await repo.loadFile(a.id)).toBeNull();
     expect(await repo.localFileIds()).toEqual(new Set([b.id]));
-    expect(await repo.readFile('inconnu')).toBeNull();
+    expect(await repo.loadFile('inconnu')).toBeNull();
   });
 
   it('remove : fichier effacé ET fiche supprimée logiquement ; sans effet sur une fiche inconnue', async () => {
@@ -146,7 +146,7 @@ describe('ProgressPhotoRepository', () => {
     bytes[0] = 0xff;
     bytes[1] = 0xd8;
     const p = await repo.add(D(9), bytes);
-    const back = await repo.readFile(p.id);
+    const back = await repo.loadFile(p.id);
     // Comparaison octet par octet : `toEqual` sur 1,2 million d'éléments est lent à lui seul.
     expect(back !== null && Buffer.from(back).equals(Buffer.from(bytes))).toBe(true);
   });

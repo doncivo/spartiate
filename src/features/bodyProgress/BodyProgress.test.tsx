@@ -140,7 +140,7 @@ describe('photos de progression', () => {
     expect(image.getAttribute('src')).toMatch(/^data:image\/jpeg;base64,/);
     const list = await (await photos()).list();
     expect(list).toHaveLength(1);
-    expect(await (await photos()).readFile(list[0]?.id ?? '')).toEqual(JPEG);
+    expect(await (await photos()).loadFile(list[0]?.id ?? '')).toEqual(JPEG);
     expect(await db.driver.select("SELECT DISTINCT table_name FROM sync_outbox WHERE table_name LIKE 'progress_photo%'")).toEqual([{ table_name: 'progress_photo' }]);
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -195,7 +195,7 @@ describe('photos de progression', () => {
     expect(await (await photos()).list()).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: /Confirmer la suppression/ }));
     await waitFor(async () => expect(await (await photos()).list()).toEqual([]));
-    expect(await (await photos()).readFile(added.id)).toBeNull();
+    expect(await (await photos()).loadFile(added.id)).toBeNull();
     expect(await db.driver.select('SELECT 1 FROM progress_photo_file')).toEqual([]);
     expect(await screen.findByText('Aucune photo.')).toBeInTheDocument();
   });

@@ -65,7 +65,7 @@ describe('export / import des mensurations et des fiches de photos (I6-02)', () 
     expect(await canonicalHash(await read(target))).toBe(await canonicalHash(data));
     expect(await target.driver.select('SELECT table_name FROM sync_outbox GROUP BY table_name ORDER BY table_name')).toEqual([{ table_name: 'measurement' }, { table_name: 'progress_photo' }]);
     expect(await target.driver.select('SELECT 1 FROM progress_photo_file')).toEqual([]);
-    expect(await (await target.data.repos.progressPhotos()).readFile(photo.id)).toBeNull();
+    expect(await (await target.data.repos.progressPhotos()).loadFile(photo.id)).toBeNull();
   });
 
   it('archive de schéma 11 en « remplacer » : aucune mensuration ni fiche supprimée ; archive de schéma 12 sans elles : supprimées (fichier local aussi)', async () => {
