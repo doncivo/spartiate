@@ -57,6 +57,8 @@ export interface ProgressPhotoRepository {
   readFile(id: string): Promise<Uint8Array | null>;
   /** Identifiants des fiches dont le fichier est sur cet appareil. */
   localFileIds(): Promise<ReadonlySet<string>>;
+  /** Efface les fichiers locaux sans fiche vivante (fiche supprimée par l'autre appareil) ; rend leur nombre. */
+  purgeOrphanFiles(): Promise<number>;
   /** Supprime le fichier (effacement réel) ET la fiche (suppression logique) ; sans effet sur une fiche inconnue. */
   remove(id: string): Promise<void>;
 }

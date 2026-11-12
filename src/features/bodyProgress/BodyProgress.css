@@ -1,0 +1,174 @@
+/* Progrès › Corps (I6-02) : jetons de tokens.css seulement, aucune couleur en dur. Mise en page 440 px et PC (1 440 px : colonnes bornées). */
+.ct-bodyprogress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-4);
+  min-width: 0;
+}
+
+.ct-bodyprogress__title {
+  margin: 0;
+}
+
+.ct-bodyprogress__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+}
+
+.ct-bodyprogress__heading {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.02em;
+  color: var(--ct-color-text);
+}
+
+.ct-bodyprogress__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ct-space-3);
+}
+
+.ct-bodyprogress__field {
+  display: flex;
+  flex: 1 1 120px;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  min-width: 0;
+}
+
+.ct-bodyprogress__label {
+  color: var(--ct-color-text);
+}
+
+.ct-bodyprogress__input {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 0 var(--ct-space-2);
+  background: var(--ct-color-surface);
+  color: var(--ct-color-text);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  font: inherit;
+}
+
+.ct-bodyprogress__save {
+  flex: 1 1 100%;
+  min-height: 44px;
+}
+
+.ct-bodyprogress__message {
+  margin: 0;
+  color: var(--ct-color-text);
+}
+
+.ct-bodyprogress__list,
+.ct-bodyprogress__photos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ct-bodyprogress__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-2);
+  min-height: 44px;
+  border-bottom: 1px solid var(--ct-color-border);
+}
+
+.ct-bodyprogress__value {
+  margin-left: auto;
+  color: var(--ct-color-bronze);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-bodyprogress__delete {
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: 0;
+  color: var(--ct-color-text-secondary);
+  cursor: pointer;
+}
+
+.ct-bodyprogress__photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--ct-space-3);
+}
+
+.ct-bodyprogress__photo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  min-width: 0;
+}
+
+.ct-bodyprogress__img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: var(--ct-radius-md);
+  background: var(--ct-color-surface);
+  border: 1px solid var(--ct-color-border);
+}
+
+.ct-bodyprogress__check {
+  display: flex;
+  align-items: center;
+  gap: var(--ct-space-2);
+  min-height: 44px;
+}
+
+.ct-bodyprogress__check input {
+  width: 24px;
+  height: 24px;
+}
+
+.ct-bodyprogress__confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+}
+
+.ct-bodyprogress__compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+}
+
+.ct-bodyprogress__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ct-space-3);
+}
+
+.ct-bodyprogress__figure {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  text-align: center;
+  color: var(--ct-color-text);
+}
+
+/* PC (planche PC-Progres, colonne de contenu bornée) : les deux cartes côte à côte, jamais étirées. */
+@media (min-width: 900px) {
+  .ct-bodyprogress {
+    max-width: 660px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ct-bodyprogress__delete {
+    transition: color 120ms ease;
+  }
+}

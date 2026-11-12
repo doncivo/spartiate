@@ -329,6 +329,11 @@
       "raison": "Migration I6-01 (table recovery_factor publiée, journal de facteurs, et ses deux déclencheurs de capture, 4 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0010. Le dépôt, l'analyse, les écrans et leurs textes restent hors du départ (import à la demande)."
     },
     {
+      "fichier": "src/db/migrations/0012_body_progress.ts",
+      "story": "I6-02",
+      "raison": "Migration I6-02 (tables measurement et progress_photo publiées avec leurs quatre déclencheurs de capture, table locale progress_photo_file, 6 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0011. Les dépôts, le domaine, l'écran Corps, le sélecteur de photo et leurs textes restent hors du départ (import à la demande)."
+    },
+    {
       "fichier": "src/features/app/ShellChrome.tsx",
       "story": "BUNDLE-01",
       "raison": "SPA-009 : carte d'état de la barre latérale PC et barre supérieure (1,6 Ko source), montées dès le premier rendu de la coquille."

@@ -5,6 +5,7 @@ import type { DeviceId } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from './AppContainerContext';
 import { createAppContainer } from './container';
+import { BodyProgress, RecoveryProgress } from './lazyScreens';
 import { INITIAL_NAVIGATION, useNavigationStore } from './navigation';
 import { SectionNotice } from './SectionNotice';
 
@@ -43,9 +44,18 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
   });
 
   it('progress : la section Récupération (journal de facteurs, I6-01) est chargée à la demande sous l’explication', async () => {
+    // I6-02 : deux blocs à la demande sous Progrès (Récupération, Corps) ; leur import à froid est fait avant l'attente (aucun délai allongé).
+    await Promise.all([RecoveryProgress.preload(), BodyProgress.preload()]);
     open('progress');
     expect(await screen.findByRole('region', { name: 'Récupération : ce qui change ta Recovery' })).toBeInTheDocument();
     expect(screen.getByText(/Aucun jour renseigné/)).toBeInTheDocument();
+  });
+
+  it('progress : la section Corps (mensurations, photos de progression, I6-02) est chargée à la demande', async () => {
+    await BodyProgress.preload();
+    open('progress');
+    expect(await screen.findByRole('region', { name: 'Mensurations' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Photos de progression' })).toBeInTheDocument();
   });
 
   it('Aujourd’hui : rend l’écran I0 (iPhone) ; sans profil, le bouton principal ouvre Profil et poids', async () => {

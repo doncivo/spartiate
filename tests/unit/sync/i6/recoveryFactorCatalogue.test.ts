@@ -22,9 +22,9 @@ const col = (name: string) => {
 };
 
 describe('catalogue de production : recovery_factor (I6-01)', () => {
-  it('dernière de l’ordre (22 tables), identifiant naturel, aucun parent ni colonne locale', () => {
-    expect(SYNC_TABLE_ORDER.at(-1)).toBe('recovery_factor');
-    expect(SYNC_TABLE_ORDER).toHaveLength(22);
+  it('22e de l’ordre (suivie des tables de I6-02), identifiant naturel, aucun parent ni colonne locale', () => {
+    expect(SYNC_TABLE_ORDER[21]).toBe('recovery_factor');
+    expect(SYNC_TABLE_ORDER.length).toBeGreaterThanOrEqual(22);
     expect(table().idKind).toBe('natural');
     expect(table().parents).toEqual([]);
     expect(table().local).toEqual([]);
