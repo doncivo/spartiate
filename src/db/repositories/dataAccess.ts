@@ -79,7 +79,6 @@ export interface Repositories {
   readonly progressPhotos: () => Promise<ProgressPhotoRepository>;
   /** Export / import de Spartiate (SPA-005, D-57), chargé à la demande. */
   readonly exportImport: () => Promise<ExportImportRepository>;
-  /** Liens locaux aux Rappels Apple (K-05, ADR 0008 §10.2) : table non publiée, vide sur le PC. */
   /** Tables de la synchronisation (ADR 0011, lot Y2). */
   readonly sync: SyncRepository;
 }
