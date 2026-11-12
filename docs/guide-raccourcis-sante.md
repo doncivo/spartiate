@@ -141,8 +141,11 @@ formater deux dates, puis écrire une ligne `début;fin;stade` :
 3. **Texte**, avec exactement : *Date formatée* (début) `;` *Date formatée* (fin) `;` *Élément de répétition › Valeur*
    - Les deux dates sont les variables produites par les deux actions **Formater la date** (Raccourcis les nomme « Date formatée »
      et « Date formatée 2 » : nom à vérifier).
-   - La valeur du stade (*Élément de répétition › Valeur*) doit donner l’un de ces libellés : **Au lit**, **Endormi**, **Éveillé**,
-     **Paradoxal**, **Profond**, **Principal** (libellés en français, à vérifier sur ton iPhone). Un autre libellé est refusé.
+   - La valeur du stade (*Élément de répétition › Valeur*) doit donner l’un de ces libellés : **Au lit**, **Endormi**,
+     **Endormi (non précisé)**, **Éveillé**, **Paradoxal**, **Profond**, **Principal** ou **Essentiel** (libellés en français, à vérifier
+     sur ton iPhone ; les libellés anglais In Bed, Asleep, Asleep (Unspecified), Awake, REM, Deep, Core sont lus aussi). Tous les stades
+     de l’Apple Watch (Principal ou Essentiel, Profond, Paradoxal, Endormi non précisé) comptent comme temps endormi ; « Au lit » et
+     « Éveillé » jamais. Un autre libellé est refusé.
    - Une seule ligne par segment : ne mets aucun autre texte dans la ligne.
 
 Le texte produit ressemble à : `2026-11-07T23:10:00+01:00;2026-11-08T00:05:00+01:00;Profond`.
