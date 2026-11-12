@@ -182,6 +182,36 @@ describe('buildSleepNights', () => {
   });
 });
 
+describe('FIX-0172 point 7 : tous les stades Apple Watch comptent comme endormi (D-132)', () => {
+  it('nuit typique d’Apple Watch (valeurs inventées, libellés français) : 448 min dormies, soit 7 h 28', () => {
+    const parsed = parseShortcutSleep(fixture('sommeil-apple-watch.csv'), TODAY, TZ);
+    expect(parsed.rejectedTotal).toBe(0);
+    const { nights, ignoredGroups } = buildSleepNights(parsed.segments, TZ);
+    expect(ignoredGroups).toBe(0);
+    expect(nights).toHaveLength(1);
+    expect(nights[0]).toMatchObject({ day: '2026-11-08', asleepMinutes: 448, bedAt: '2026-11-07T22:52:00.000Z', wakeAt: '2026-11-08T06:32:00.000Z' });
+  });
+
+  it('même nuit avec les libellés anglais (Core, Deep, REM, Asleep (Unspecified), Awake, In Bed) : 448 min', () => {
+    const en = fixture('sommeil-apple-watch.csv')
+      .replace(/;Au lit/g, ';In Bed').replace(/;Principal/g, ';Core').replace(/;Profond/g, ';Deep').replace(/;Paradoxal/g, ';REM')
+      .replace(/;Endormi \(non précisé\)/g, ';Asleep (Unspecified)').replace(/;Éveillé/g, ';Awake');
+    const parsed = parseShortcutSleep(en, TODAY, TZ);
+    expect(parsed.rejectedTotal).toBe(0);
+    expect(buildSleepNights(parsed.segments, TZ).nights[0]?.asleepMinutes).toBe(448);
+  });
+
+  it.each([
+    'Endormi (non précisé)', 'Endormi (Non précisé)', 'endormi non précisé', 'Asleep (Unspecified)', 'Asleep Unspecified', 'Unspecified',
+    'Essentiel', 'Sommeil essentiel', 'Sommeil principal', 'Sommeil profond', 'Sommeil paradoxal', 'Core Sleep', 'Deep Sleep', 'REM Sleep',
+    'Asleep Core', 'Asleep Deep', 'Asleep REM',
+  ])('libellé « %s » : temps endormi, jamais refusé', (label) => {
+    const parsed = parseShortcutSleep(`2026-11-08T01:00:00+01:00;2026-11-08T02:00:00+01:00;${label}`, TODAY, TZ);
+    expect(parsed.rejectedTotal).toBe(0);
+    expect(buildSleepNights(parsed.segments, TZ).nights[0]?.asleepMinutes).toBe(60);
+  });
+});
+
 describe('FIX-0172 constat 7 : épisodes et réveil définis par les seuls segments endormis (D-131)', () => {
   const nightsOf = (lines: readonly string[]) => buildSleepNights(parseShortcutSleep(lines.join('\n'), TODAY, TZ).segments, TZ);
 
