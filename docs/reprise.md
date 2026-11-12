@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-12 : I1 à I5 livrés ; I6-01 à I6-04 (0.12.0 à 0.16.0, schéma 13) ; **CLEAN-01 (0.17.0, sans migration) : suppression des résidus CircleTasks (ui, dépôts SQL hérités sans appelant, domaine, textes ; bundle de départ 209 328 → 193 544 octets), publiée (PR #106, docs/CLEAN-01.md, D-116 à D-118 ; banc legacy de synchro, src/platform/ocr et textes scan/reminders conservés).** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-119 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.).
+État au 2026-11-12 : I1 à I5 livrés ; I6-01 à I6-04 (0.12.0 à 0.16.0, schéma 13) ; CLEAN-01 (0.17.0) publiée. **FIX-0171 (0.17.1, sans migration) : bloquants 1, 3, 5, 6 de la relecture Codex du 12/11 et règle photos d'Ali (D-121) ; PR ouverte, non fusionnée, docs/FIX-0171.md, D-120 à D-124, H-32.** FIX-0172 en parallèle (D-130 et suivantes). Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-124 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.).
 
 ## Fusionné (tout est dans main)
 
@@ -15,7 +15,7 @@
 
 ## Prochaines étapes
 
-1. Ali : installer 0.17.0 (PC et iPhone le même jour, schéma 13, avant toute saisie) ; constater le sélecteur de photo sur iPhone (H-27).
+1. FIX-0171 : CI verte, build iOS (`-f publish=false`), fusion et tags 0.17.1 par l'agent principal ; Ali : installer PC et iPhone le même jour, constater H-27 et H-32 (bouclier de Corps sans verrouillage).
 2. D-73 à D-118 validées par Ali (D-119). Tickets en file pour les exceptions : FIX-0181 (D-79 favoris, D-93 journée rouge × 0,95), FIX-0172 (D-95 seuil 2 σ non arrondi, dette de sommeil à compensation partielle), I6-03b (D-104 vrai replay), CLEAN-02 (D-116, D-117). À recaler après 3 semaines de séances réelles, sur demande d'Ali seulement : D-73 (4, durée estimée) et D-88 (échelle d'effort 20).
 
 ## À décider par Ali

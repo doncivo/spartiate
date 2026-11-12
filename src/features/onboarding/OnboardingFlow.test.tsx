@@ -1,12 +1,15 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
-import type { DeviceId } from '../../domain/types';
+import type { DeviceId, LocalDate } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { loadTrainingContent } from '../training/content';
+import { createUuidGenerator } from '../../domain/id';
+import { emptyDraft, type OnboardingDraft } from '../../domain/onboarding';
+import { finishOnboarding } from './onboardingData';
 import { OnboardingFlow } from './OnboardingFlow';
 
 const DEVICE = '60000000-0000-4000-8000-0000000000c8' as DeviceId;
@@ -245,6 +248,78 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
     fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
     await waitFor(() => expect(onClose).toHaveBeenCalledWith('closed'));
     expect(await db.data.repos.settings.get('onboarding.completed')).toBe(false);
+  });
+
+  describe('FIX-0171 (constat 6) : « Revoir mes réglages » après un assistant terminé', () => {
+    const openReview = () => {
+      const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data });
+      return render(
+        <AppContainerProvider container={container}>
+          <OnboardingFlow mode="review" onClose={onClose} />
+        </AppContainerProvider>,
+      );
+    };
+    const FULL: OnboardingDraft = { ...emptyDraft(), sex: 'male', birthYear: 1996, heightCm: 180, weightKg: 80, activity: 'moderate', goal: 'muscle', weeklyRatePct: 0.25, experience: 'intermediate', sessionsPerWeek: 3, durationMin: 60, acceptProposal: false };
+    async function finishedThenChanged(): Promise<void> {
+      await finishOnboarding({ data: db.data, ids: createUuidGenerator(), today: '2026-11-12' as LocalDate, timeZone: 'Europe/Paris', year: 2026 }, FULL, await loadTrainingContent());
+      await (await db.data.repos.profile()).save({ heightCm: 181 }, 2026);
+      await (await db.data.repos.bodyWeights()).saveManual({ date: '2026-11-12' as LocalDate, kg: 75, timezone: 'Europe/Paris' }, '2026-11-12' as LocalDate);
+      await db.driver.execute('DELETE FROM sync_outbox');
+    }
+    const toResult = async (): Promise<void> => {
+      for (const next of ['Objectif', 'Expérience', 'Disponibilité', 'Matériel', 'Priorités', 'Split', 'Résultat']) {
+        press('Continuer');
+        await title(next);
+      }
+    };
+
+    it('préremplie depuis le profil et la dernière pesée actuels ; terminée sans rien changer : aucune écriture, aucune confirmation', async () => {
+      await finishedThenChanged();
+      const weights = await db.driver.select('SELECT id, kg FROM body_weight ORDER BY id');
+      openReview();
+      await title('Toi');
+      expect(screen.getByLabelText('Taille (cm)')).toHaveValue('181');
+      expect(screen.getByLabelText('Poids (kg)')).toHaveValue('75');
+      await toResult();
+      press('Commencer');
+      await waitFor(() => expect(onClose).toHaveBeenCalledWith('done'));
+      expect(screen.queryByText('Confirmer les remplacements')).toBeNull();
+      expect(await db.driver.select('SELECT id, kg FROM body_weight ORDER BY id')).toEqual(weights);
+      expect(await db.driver.select('SELECT height_cm FROM profile')).toEqual([{ height_cm: 181 }]);
+      expect(await db.driver.select('SELECT 1 FROM sync_outbox')).toEqual([]);
+    });
+
+    it('valeur remplacée : confirmation avant écriture ; décochée, elle n’est pas écrite', async () => {
+      await finishedThenChanged();
+      openReview();
+      await title('Toi');
+      fireEvent.change(screen.getByLabelText('Taille (cm)'), { target: { value: '185' } });
+      await toResult();
+      press('Commencer');
+      expect(await screen.findByText('Confirmer les remplacements')).toBeInTheDocument();
+      const line = screen.getByLabelText('Taille : 181 cm → 185 cm');
+      expect(line).toBeChecked();
+      expect(onClose).not.toHaveBeenCalled();
+      fireEvent.click(line);
+      press('Enregistrer');
+      await waitFor(() => expect(onClose).toHaveBeenCalledWith('done'));
+      expect(await db.driver.select('SELECT height_cm FROM profile')).toEqual([{ height_cm: 181 }]);
+      expect(await db.driver.select('SELECT 1 FROM sync_outbox')).toEqual([]);
+    });
+
+    it('« Revenir » depuis la confirmation : rien n’est écrit, l’assistant reste ouvert', async () => {
+      await finishedThenChanged();
+      openReview();
+      await title('Toi');
+      fireEvent.change(screen.getByLabelText('Poids (kg)'), { target: { value: '76' } });
+      await toResult();
+      press('Commencer');
+      expect(await screen.findByLabelText('Poids : nouvelle pesée de 76 kg (dernière : 75 kg)')).toBeChecked();
+      press('Revenir');
+      await title('Résultat');
+      expect(onClose).not.toHaveBeenCalled();
+      expect(await db.driver.select('SELECT kg FROM body_weight ORDER BY kg')).toEqual([{ kg: 75 }]);
+    });
   });
 
   it('les cibles tactiles et les groupes ont un nom accessible : tous les boutons nomment leur action', async () => {

@@ -69,7 +69,8 @@ export interface ExportWeight {
 export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient', 'recovery_day', 'muscle_recovery', 'recovery_factor', 'measurement', 'progress_photo'] as const;
 /**
  * Colonnes ajoutées après la première version exportée de leur table : absentes d'une archive plus ancienne (0.3.0 : `workout_set` sans
- * `difficulty` ; schéma 12 : sans `circuit_id` ni `circuit_rest_sec`), lues comme nulles. Toute autre colonne manquante reste refusée.
+ * `difficulty` ; schéma 12 : sans `circuit_id` ni `circuit_rest_sec`), lues comme nulles et notées `absent` (FIX-0171 : la valeur locale d'une
+ * ligne existante est gardée à l'import). Toute autre colonne manquante reste refusée.
  */
 const LATER_COLUMNS: Readonly<Partial<Record<string, readonly string[]>>> = { workout_set: ['difficulty', 'circuit_id', 'circuit_rest_sec'] };
 export type TrainingTable = (typeof TRAINING_EXPORT_TABLES)[number];
@@ -113,6 +114,12 @@ export interface TrainingRow {
   readonly id: string;
   /** Colonnes publiées hors `created_at` / `deleted_at`, nom SQL → valeur stockée. */
   readonly values: Readonly<Record<string, TrainingValue>>;
+  /**
+   * FIX-0171 (constat 1, D-120) : colonnes ABSENTES de la ligne d'une archive LUE (schéma plus ancien que la colonne, `LATER_COLUMNS`) ; leur valeur
+   * dans `values` est nulle par défaut, mais ce n'est pas une donnée : le plan garde la valeur locale d'une ligne existante. Une valeur nulle
+   * PRÉSENTE dans l'archive est un effacement explicite, appliqué. Hors de la forme canonique ; jamais rempli par une lecture de la base.
+   */
+  readonly absent?: readonly string[];
 }
 
 export type TrainingExport = Readonly<Partial<Record<TrainingTable, readonly TrainingRow[]>>>;
@@ -425,7 +432,7 @@ function parseTraining(raw: unknown): TrainingExport {
         if (parentId !== null && !idsByTable.get(parent.table)?.has(String(parentId))) throw new ArchiveError('invalid-data');
       }
       seen.add(id);
-      return { id, values };
+      return later.length > 0 ? { id, values, absent: later } : { id, values };
     });
     // REV-01 constat 1 (D-57) : une séance ouverte (ended_at nul) est une donnée de la sauvegarde ; elle n'est jamais publiée avant sa clôture (D-27).
     idsByTable.set(name, seen);

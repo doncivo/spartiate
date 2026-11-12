@@ -15,6 +15,33 @@ export interface PrivacyShield {
   setEnabled(enabled: boolean): Promise<PrivacyShieldResult>;
 }
 
+/**
+ * Propriétaires du bouclier (FIX-0171, constat 5, D-121) : le verrouillage de l'app et les vues photo le demandent chacun pour leur compte ; le plugin,
+ * qui ne connaît qu'un état, reste actif tant qu'au moins un propriétaire le demande. Appels servis dans l'ordre, l'état envoyé est celui du moment.
+ */
+export type ShieldOwnerName = 'appLock' | 'photos';
+
+const owners = new WeakMap<PrivacyShield, { readonly wants: Map<ShieldOwnerName, boolean>; queue: Promise<unknown> }>();
+
+/** Vue d'un propriétaire sur le bouclier `base` (le même objet pour tout l'app : celui du conteneur). Ne rejette jamais. */
+export function shieldOwner(base: PrivacyShield, name: ShieldOwnerName): PrivacyShield {
+  let state = owners.get(base);
+  if (!state) {
+    state = { wants: new Map(), queue: Promise.resolve() };
+    owners.set(base, state);
+  }
+  const shared = state;
+  return {
+    supported: base.supported,
+    setEnabled: (enabled) => {
+      shared.wants.set(name, enabled);
+      const run = shared.queue.then(() => base.setEnabled([...shared.wants.values()].some(Boolean))).catch((): PrivacyShieldResult => ({ ok: false, code: 'unknown' }));
+      shared.queue = run;
+      return run;
+    },
+  };
+}
+
 /** Implémentation vide (PC, navigateur) : rien à cacher hors iPhone, réussite sans effet. */
 export function createNoopPrivacyShield(): PrivacyShield {
   return { supported: false, setEnabled: () => Promise.resolve({ ok: true }) };
