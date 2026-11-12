@@ -1,15 +1,9 @@
 import { SYNC_CATALOGUE, type SyncCatalogue } from '../../../domain/sync/syncTables';
 import { signalingWrites } from '../../localWrite';
 import type { RepositoryFactory, RepositoryOptions } from '../dataAccess';
-import { createAppleReminderLinkRepository } from './appleReminderLinks';
-import { createCalendarAccountRepository, createEventRepository, createExternalEventRepository } from './agendaRepository';
 import { createChecklistItemRepository, createChecklistRepository } from './checklistRepository';
-import { createFocusSessionRepository } from './focusSessionRepository';
 import { createGoalRepository } from './goalRepository';
-import { createHolidayRepository } from './holidayRepository';
 import { createReminderRepository } from './reminderRepository';
-import { createSearchRepository } from './searchRepository';
-import { createStatsRepository } from './statsRepository';
 import { createRoutineLogRepository, createRoutineRepository } from './routineRepository';
 import { createSettingsRepository, createSyncMetaRepository } from './settingsRepository';
 import { createProjectRepository, createSpaceRepository } from './spaceRepository';
@@ -37,15 +31,8 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue, options: Repo
   reminders: createReminderRepository(executor, stamper),
   goals: createGoalRepository(executor, stamper),
   settings: createSettingsRepository(executor, stamper),
-  events: createEventRepository(executor, stamper),
-  holidays: createHolidayRepository(executor, stamper),
-  focusSessions: createFocusSessionRepository(executor, stamper),
-  search: createSearchRepository(executor),
-  stats: createStatsRepository(executor),
   checklists: createChecklistRepository(executor, stamper),
   checklistItems: createChecklistItemRepository(executor, stamper),
-  externalEvents: createExternalEventRepository(executor),
-  calendarAccounts: createCalendarAccountRepository(executor, stamper),
   syncMeta: createSyncMetaRepository(executor, catalogue),
   // D-65 : profil et poids, implémentation chargée à la demande (hors du JavaScript de départ).
   profile: () => import('./bodyRepositories').then((m) => signalingWrites(m.createProfileRepository(executor, stamper), ['save'])),
@@ -89,7 +76,6 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue, options: Repo
   measurements: () => import('./bodyProgressRepository').then((m) => signalingWrites(m.createMeasurementRepository(executor, stamper), ['save', 'remove'])),
   progressPhotos: () => import('./bodyProgressRepository').then((m) => signalingWrites(m.createProgressPhotoRepository(executor, stamper), ['add', 'remove'])),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue, options)),
-  appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)
   syncConflicts: createSyncConflictRepository(executor, stamper, catalogue),
   // Y-04 (fin)
