@@ -89,6 +89,8 @@ export interface BodyImportResult {
 /** Résumé gardé du dernier import (comptes seulement) pour l'écran, entre deux sessions. */
 export interface BodyImportSummary {
   readonly at: string;
+  /** Le dernier import a échoué (rien n'a été écrit) : dit à l'écran, effacé par le prochain succès ; ne compte pas pour la limite de 30 minutes. */
+  readonly failed?: true;
   readonly files: readonly { readonly name: BodyFileName; readonly state: BodyFileOutcome['state']; readonly read: number; readonly added: number; readonly updated: number; readonly rejected: number }[];
   readonly nutrition: NutritionOutcome;
 }
@@ -146,7 +148,8 @@ export function createHealthBodyImportService(deps: BodyImportDeps): HealthBodyI
     if (lastAttemptMs !== null && now - lastAttemptMs < BODY_AUTO_IMPORT_INTERVAL_MS) return true;
     try {
       const stored = await deps.state?.get();
-      const at = typeof stored === 'object' && stored !== null ? (stored as { at?: unknown }).at : undefined;
+      const record = typeof stored === 'object' && stored !== null ? (stored as { at?: unknown; failed?: unknown }) : undefined;
+      const at = record?.failed === true ? undefined : record?.at;
       return typeof at === 'string' && now - Date.parse(at) < BODY_AUTO_IMPORT_INTERVAL_MS && now >= Date.parse(at);
     } catch {
       return false;
@@ -317,6 +320,11 @@ export function createHealthBodyImportService(deps: BodyImportDeps): HealthBodyI
       } catch {
         // Rien n'a été écrit (transaction annulée) : l'écran le dit, l'import suivant réessaie.
         deps.log('body-import-failed', {});
+        try {
+          await deps.state?.set({ at, failed: true, files: [], nutrition: EMPTY_NUTRITION });
+        } catch {
+          /* l'échec reste dit par le résultat de cette session */
+        }
         return { ...none, status: 'failed', files: BODY_FILE_NAMES.map((n) => outcomes.get(n) ?? blank(n, 'absent')), trigger };
       }
     }
