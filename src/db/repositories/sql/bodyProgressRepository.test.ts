@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { MEASUREMENT_BOUNDS_CM, PHOTO_MAX_BYTES } from '../../../domain/bodyProgress/measurements';
 import type { DeviceId, LocalDate } from '../../../domain/types';
+import { SYNC_CATALOGUE } from '../../../domain/sync/syncTables';
+import type { SqlDriver, SqlExecutor } from '../../driver';
+import { createSqlRepositoriesFor } from './index';
 import { openBaseDb, type TestDb } from './testSetup';
 
 /**
@@ -15,6 +18,12 @@ afterEach(async () => db.close());
 const measures = async () => db.data.repos.measurements();
 const photos = async () => db.data.repos.progressPhotos();
 const outbox = (table: string) => db.driver.select<{ row_id: string; field: string }>('SELECT row_id, field FROM sync_outbox WHERE table_name = ? ORDER BY seq', [table]);
+/** Suppression reçue de l'autre appareil : la synchro écrit sous `sync_guard` (aucune capture). */
+async function receiveDeletion(id: string): Promise<void> {
+  await db.driver.execute('INSERT OR IGNORE INTO sync_guard (id) VALUES (1)');
+  await db.driver.execute("UPDATE progress_photo SET deleted_at = '2026-11-12T09:00:00.000Z' WHERE id = ?", [id]);
+  await db.driver.execute('DELETE FROM sync_guard');
+}
 
 describe('MeasurementRepository', () => {
   it('save : une ligne `measurement|date|kind`, relue telle quelle, mise en file en ligne entière', async () => {
@@ -121,22 +130,70 @@ describe('ProgressPhotoRepository', () => {
     expect(await db.driver.select('SELECT 1 FROM progress_photo_file')).toEqual([]);
   });
 
-  it('purgeOrphanFiles : le fichier d’une fiche supprimée par l’autre appareil est effacé ; celui d’une fiche vivante est gardé', async () => {
+  it('FIX-0171 (D-121) : une suppression reçue n’efface jamais le fichier ; la fiche est « supprimée ailleurs » jusqu’à une suppression locale', async () => {
     db = await openBaseDb(DEVICE);
     const repo = await photos();
     const kept = await repo.add(D(9), JPEG);
     const gone = await repo.add(D(8), JPEG);
-    // L'autre appareil a supprimé la fiche : la ligne reçue est supprimée logiquement, le fichier d'ici resterait sans fiche.
-    await db.driver.execute('INSERT OR IGNORE INTO sync_guard (id) VALUES (1)');
-    await db.driver.execute("UPDATE progress_photo SET deleted_at = '2026-11-12T09:00:00.000Z' WHERE id = ?", [gone.id]);
-    await db.driver.execute('DELETE FROM sync_guard');
-    await db.driver.execute("INSERT INTO progress_photo_file (photo_id, mime, data, saved_at) VALUES ('sans-fiche', 'image/jpeg', 'AAAA', '2026-11-12T09:00:00.000Z')");
-    // Un fichier sans fiche du tout (ajout en cours) n'est jamais purgé : seule une fiche supprimée désigne un orphelin.
-    expect(await repo.purgeOrphanFiles()).toBe(1);
-    expect((await repo.localFileIds()).has('sans-fiche')).toBe(true);
-    expect((await repo.localFileIds()).has(gone.id)).toBe(false);
-    expect((await repo.localFileIds()).has(kept.id)).toBe(true);
-    expect(await repo.purgeOrphanFiles()).toBe(0);
+    await receiveDeletion(gone.id);
+    expect((await repo.list()).map((p) => p.id)).toEqual([kept.id]);
+    expect((await repo.listDeletedWithFile()).map((p) => p.id)).toEqual([gone.id]);
+    expect(await repo.localFileIds()).toEqual(new Set([kept.id, gone.id]));
+    expect(await repo.loadFile(gone.id)).toEqual(JPEG);
+    await db.driver.execute('DELETE FROM sync_outbox');
+    await repo.remove(gone.id);
+    expect(await repo.listDeletedWithFile()).toEqual([]);
+    expect(await repo.loadFile(gone.id)).toBeNull();
+    // Fiche déjà supprimée : rien de plus à publier.
+    expect(await outbox('progress_photo')).toEqual([]);
+  });
+
+  it('FIX-0171 (D-121) : sans le fichier sur cet appareil, la suppression est refusée ; rien n’est écrit', async () => {
+    db = await openBaseDb(DEVICE);
+    const repo = await photos();
+    const p = await repo.add(D(9), JPEG);
+    await db.driver.execute('DELETE FROM progress_photo_file WHERE photo_id = ?', [p.id]);
+    await db.driver.execute('DELETE FROM sync_outbox');
+    await expect(repo.remove(p.id)).rejects.toMatchObject({ code: 'not-found' });
+    expect((await repo.list()).map((x) => x.id)).toEqual([p.id]);
+    expect(await outbox('progress_photo')).toEqual([]);
+  });
+
+  it('FIX-0171 (constat 3) : UPDATE de la fiche en échec après l’effacement du fichier : fichier, fiche et file d’envoi intacts', async () => {
+    db = await openBaseDb(DEVICE);
+    const repo = await photos();
+    const p = await repo.add(D(9), JPEG);
+    await db.driver.execute('DELETE FROM sync_outbox');
+    await db.driver.execute("CREATE TRIGGER fix0171_fail BEFORE UPDATE ON progress_photo BEGIN SELECT RAISE(ABORT, 'injecté'); END");
+    await expect(repo.remove(p.id)).rejects.toBeTruthy();
+    expect(await repo.loadFile(p.id)).toEqual(JPEG);
+    expect((await repo.list()).map((x) => x.id)).toEqual([p.id]);
+    expect(await outbox('progress_photo')).toEqual([]);
+    // Même résultat dans une transaction ouverte par l'appelant.
+    await expect(db.data.transaction(async (repos) => (await repos.progressPhotos()).remove(p.id))).rejects.toBeTruthy();
+    expect(await repo.loadFile(p.id)).toEqual(JPEG);
+    // Reprise : une fois la cause levée, la suppression aboutit et publie la suppression.
+    await db.driver.execute('DROP TRIGGER fix0171_fail');
+    await repo.remove(p.id);
+    expect(await repo.loadFile(p.id)).toBeNull();
+    expect(await outbox('progress_photo')).toEqual([{ row_id: p.id, field: 'deleted_at' }]);
+  });
+
+  it('FIX-0171 (constat 3) : ajout en échec après l’écriture de la fiche : ni fichier, ni fiche, ni file d’envoi', async () => {
+    let failRead = false;
+    const faulty = (x: SqlExecutor): SqlExecutor => ({
+      execute: (sql, params) => x.execute(sql, params),
+      select: (sql, params) => (failRead && sql.startsWith('SELECT * FROM progress_photo WHERE id') ? Promise.reject(new Error('lecture injectée')) : x.select(sql, params)),
+    });
+    const withTx = (x: SqlDriver): SqlDriver => ({ ...x, ...faulty(x), kind: x.kind, close: () => x.close(), transaction: (fn) => x.transaction((tx) => fn(faulty(tx))) });
+    db = await openBaseDb(DEVICE, '2026-10-01T08:00:00.000Z', { factory: (executor, stamper) => createSqlRepositoriesFor(SYNC_CATALOGUE, { recoveryWriter: true })('transaction' in executor ? withTx(executor as SqlDriver) : faulty(executor), stamper) });
+    const repo = await photos();
+    failRead = true;
+    await expect(repo.add(D(9), JPEG)).rejects.toBeTruthy();
+    failRead = false;
+    expect(await db.driver.select('SELECT 1 FROM progress_photo')).toEqual([]);
+    expect(await db.driver.select('SELECT 1 FROM progress_photo_file')).toEqual([]);
+    expect(await outbox('progress_photo')).toEqual([]);
   });
 
   it('fichier de plus d’un million d’octets : aller-retour exact', async () => {

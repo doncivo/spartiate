@@ -2,7 +2,7 @@ import { APP_LOCK_EXCURSION_MAX_MS, APP_LOCK_RELOCK_MS, parseAppLockSetting, sho
 import { t } from '../../i18n';
 import type { AppAuthenticator, AuthFailureCode, AuthResult } from '../../platform/biometric';
 import { logFailure } from '../../platform/desktop/log';
-import type { PrivacyShield } from '../../platform/privacyShield';
+import { shieldOwner, type PrivacyShield } from '../../platform/privacyShield';
 import type { AppContainer } from '../app/container';
 import { useAppLockStore, type AppLockActions, type LockMessage, type SettingsLockMessage } from './appLockStore';
 import { SYSTEM_SETTINGS_BACKGROUND_WINDOW_MS, takeExcursion } from './excursion';
@@ -295,7 +295,8 @@ export function startAppLockFor(container: AppContainer): AppLockController {
   const settings = container.data.repos.settings;
   return startAppLock({
     authenticator: container.authenticator,
-    shield: container.privacyShield,
+    // FIX-0171 (constat 5) : le verrouillage est UN des propriétaires du bouclier ; les vues photo en sont un autre.
+    shield: shieldOwner(container.privacyShield, 'appLock'),
     readSetting: () => settings.get('security.appLock'),
     writeSetting: (enabled) => settings.set('security.appLock', enabled),
     now: () => container.clock.nowMs(),

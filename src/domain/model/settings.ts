@@ -57,6 +57,11 @@ export interface SettingsValues {
   'onboarding.completed': boolean;
   /** I3-07 (D-110) : brouillon de l'onboarding en 8 écrans, valeur BRUTE lue par `parseDraft` (src/domain/onboarding) ; locale, jamais synchronisée. */
   'onboarding.draft': unknown;
+  /**
+   * FIX-0171 (constat 6, D-124) : réponses d'un assistant TERMINÉ qui n'ont pas d'autre place (rythme, disponibilité, priorités…), valeur BRUTE
+   * lue par `parseDraft` ; le brouillon (`onboarding.draft`) ne sert plus qu'à un assistant inachevé. Locale, jamais synchronisée.
+   */
+  'onboarding.answers': unknown;
   /** Reste de l'ancien projet : ids de données d'exemple (aucun usage ; nettoyage en CLEAN-01) ; local. */
   'sample.ids': { readonly tasks: readonly string[]; readonly routines: readonly string[]; readonly checklists: readonly string[] };
   /** D-01 : fermer la fenêtre réduit l'app en zone de notification (PC). */
@@ -144,6 +149,8 @@ export interface SettingsValues {
   'recovery.sleepRulesVersion': unknown;
   /** I6-04 (D-113) : résumé du dernier import Renpho / Santé (date, comptes par fichier et pour la nutrition, jamais une valeur). Valeur BRUTE lue par `parseBodyImportSummary` ; locale, jamais synchronisée. */
   'healthBody.lastImport': unknown;
+  /** FIX-0171 (D-121) : fiches de photos masquées sur cet appareil (« Masquer sur cet appareil »). Valeur BRUTE lue par `parseHiddenPhotoIds` ; locale, jamais synchronisée ni exportée. */
+  'bodyProgress.hiddenPhotos': unknown;
 }
 
 export type SettingKey = keyof SettingsValues;
@@ -173,6 +180,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'general.timeZone': { scope: 'local', defaultValue: null },
   'onboarding.completed': { scope: 'local', defaultValue: false },
   'onboarding.draft': { scope: 'local', defaultValue: null },
+  'onboarding.answers': { scope: 'local', defaultValue: null },
   'sample.ids': { scope: 'local', defaultValue: { tasks: [], routines: [], checklists: [] } },
   'desktop.closeToTray': { scope: 'local', defaultValue: true },
   'desktop.launchAtStartup': { scope: 'local', defaultValue: false },
@@ -207,6 +215,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'recovery.bedtimeProposal': { scope: 'local', defaultValue: null },
   'recovery.sleepRulesVersion': { scope: 'local', defaultValue: null },
   'healthBody.lastImport': { scope: 'local', defaultValue: null },
+  'bodyProgress.hiddenPhotos': { scope: 'local', defaultValue: null },
 };
 
 /** Valeur par défaut d'un réglage. */

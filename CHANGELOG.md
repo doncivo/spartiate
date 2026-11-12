@@ -2,6 +2,17 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.17.1
+
+**Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment ; installe pourtant les deux le même jour (la règle des photos doit être la même des deux côtés).
+
+- **Import d'une ancienne archive** : une archive faite avant les circuits (0.13.0 ou plus ancienne) n'efface plus tes groupes de circuit ni leurs repos, en « Fusionner » comme en « Remplacer ». Une valeur vraiment vidée dans une archive récente reste appliquée.
+- **Photos protégées dans le sélecteur d'apps** : sur iPhone, l'écran Corps cache désormais ses photos dans l'aperçu du sélecteur d'apps, même si le verrouillage de l'app est désactivé ; si la protection ne peut pas se poser, l'écran te le dit. À constater sur ton iPhone (H-32).
+- **Supprimer une photo** : seulement sur l'appareil qui a la photo, après confirmation. Sur le PC, qui n'a que la fiche, tu peux seulement « Masquer sur cet appareil » (rien ne change ailleurs) et tout réafficher plus tard.
+- **Une suppression venue d'ailleurs n'efface plus ta photo** : si la fiche est supprimée sur l'autre appareil ou par un import, la photo reste sur ton iPhone, marquée « Supprimée sur un autre appareil ou par un import », jusqu'à ce que tu la supprimes toi-même.
+- **Photo et fiche enregistrées ensemble** : un échec pendant l'ajout ou la suppression ne laisse plus une fiche sans image ni une image perdue.
+- **« Revoir mes réglages »** part maintenant de ton profil et de ta dernière pesée actuels, plus d'un ancien brouillon. Terminer sans rien changer n'écrit rien et ne crée aucune pesée ; si tu remplaces une valeur déjà enregistrée, Spartiate te montre l'avant et l'après et te laisse refuser chaque remplacement.
+
 ## 0.17.0
 
 **Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment.

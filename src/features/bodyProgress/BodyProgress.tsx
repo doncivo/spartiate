@@ -1,11 +1,27 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { HEALTH_METRIC_KINDS, MEASUREMENT_BOUNDS_CM, MEASUREMENT_KINDS, measurementChange, validateMeasurement, type HealthMetricKind, type MeasurementIssue, type MeasurementKind } from '../../domain/bodyProgress';
+import {
+  HEALTH_METRIC_KINDS,
+  MEASUREMENT_BOUNDS_CM,
+  MEASUREMENT_KINDS,
+  hidePhotoId,
+  measurementChange,
+  parseHiddenPhotoIds,
+  photoActions,
+  showAllPhotos,
+  validateMeasurement,
+  type HealthMetricKind,
+  type MeasurementIssue,
+  type MeasurementKind,
+  type PhotoActions,
+} from '../../domain/bodyProgress';
 import { todayLocal } from '../../domain/clock';
 import type { LocalDate } from '../../domain/types';
 import type { MeasurementRecord, ProgressPhotoRecord } from '../../db/repositories';
 import { formatDayMonthYear } from '../../i18n/format';
 import { formatCm, tBodyProgress, type BodyProgressTextKey } from '../../i18n/bodyProgressText';
+import { logFailure } from '../../platform/desktop/log';
 import { pickPhotoJpeg } from '../../platform/photoImage/picker';
+import { shieldOwner } from '../../platform/privacyShield';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
@@ -48,7 +64,17 @@ const COMPARE_MAX = 2;
 type Load =
   | { readonly status: 'loading' }
   | { readonly status: 'failed' }
-  | { readonly status: 'ready'; readonly measures: readonly MeasurementRecord[]; readonly health: readonly MeasurementRecord[]; readonly photos: readonly ProgressPhotoRecord[]; readonly local: ReadonlySet<string> };
+  | {
+      readonly status: 'ready';
+      readonly measures: readonly MeasurementRecord[];
+      readonly health: readonly MeasurementRecord[];
+      readonly photos: readonly ProgressPhotoRecord[];
+      /** Fiches supprimées ailleurs dont le fichier est encore ici (D-121). */
+      readonly deletedElsewhere: readonly ProgressPhotoRecord[];
+      /** Fiches masquées sur cet appareil (réglage local). */
+      readonly hidden: readonly string[];
+      readonly local: ReadonlySet<string>;
+    };
 
 export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto?: () => Promise<Uint8Array | null> }) {
   const container = useAppContainer();
@@ -68,19 +94,38 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
   const [reload, setReload] = useState(0);
   const refresh = useCallback(() => setReload((n) => n + 1), []);
 
+  // FIX-0171 (constat 5, D-121) : les vues photo (liste, comparaison) ont leur propre demande de bouclier, indépendante du verrouillage : activée à
+  // l'entrée, retirée à la sortie ; un échec du plugin est dit à l'écran (et au journal technique, sans aucune donnée).
+  const [shieldFailed, setShieldFailed] = useState(false);
+  useEffect(() => {
+    const shield = shieldOwner(container.privacyShield, 'photos');
+    let live = true;
+    void shield.setEnabled(true).then((result) => {
+      if (!result.ok) logFailure('security', `photo-shield-failed:${result.code}`);
+      if (live) setShieldFailed(!result.ok);
+    });
+    return () => {
+      live = false;
+      void shield.setEnabled(false).then((result) => {
+        if (!result.ok) logFailure('security', `photo-shield-release-failed:${result.code}`);
+      });
+    };
+  }, [container]);
+
   useEffect(() => {
     let live = true;
     (async () => {
       const { repos } = container.data;
       const photoRepo = await repos.progressPhotos();
-      // Fichier local d'une fiche supprimée par l'autre appareil : effacé avant l'affichage (jamais de fichier sans fiche vivante).
-      await photoRepo.purgeOrphanFiles();
       const measureRepo = await repos.measurements();
       const measures = await measureRepo.list();
       // Dernière valeur de chaque genre importé de Santé (I6-04), en lecture seule.
       const health = (await Promise.all(HEALTH_METRIC_KINDS.map((k) => measureRepo.list(k)))).flatMap((rows) => rows.slice(-1));
       const photos = await photoRepo.list();
-      return { status: 'ready', measures, health, photos, local: await photoRepo.localFileIds() } as const;
+      // D-121 : une suppression reçue n'efface jamais le fichier local ; la fiche reste affichée « supprimée ailleurs » jusqu'à la suppression ici.
+      const deletedElsewhere = await photoRepo.listDeletedWithFile();
+      const hidden = parseHiddenPhotoIds(await repos.settings.get('bodyProgress.hiddenPhotos'));
+      return { status: 'ready', measures, health, photos, deletedElsewhere, hidden, local: await photoRepo.localFileIds() } as const;
     })().then(
       (result) => {
         if (live) setLoad(result);
@@ -140,10 +185,23 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
 
   const removePhoto = async (id: string): Promise<void> => {
     setConfirming(null);
-    setCompare((ids) => ids.filter((x) => x !== id));
     try {
+      // Fichier, fiche et capture de synchro dans une seule transaction (constat 3) : un échec laisse la photo intacte.
       await (await container.data.repos.progressPhotos()).remove(id);
+      setCompare((ids) => ids.filter((x) => x !== id));
       setPhotoMessage({ alert: false, text: tBodyProgress('photoDeleted') });
+    } catch {
+      setPhotoMessage({ alert: true, text: tBodyProgress('photoDeleteFailed') });
+    }
+    refresh();
+  };
+
+  /** D-121 : masquer une fiche sans fichier sur cet appareil (réglage local, jamais publié) ; la fiche reste sur les autres appareils. */
+  const setHidden = async (next: readonly string[], done: BodyProgressTextKey | null): Promise<void> => {
+    try {
+      await container.data.repos.settings.set('bodyProgress.hiddenPhotos', next);
+      setCompare((ids) => ids.filter((x) => !next.includes(x)));
+      setPhotoMessage(done === null ? null : { alert: false, text: tBodyProgress(done) });
     } catch {
       setPhotoMessage({ alert: true, text: tBodyProgress('saveFailed') });
     }
@@ -175,7 +233,12 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
     );
   }
 
-  const { measures, health, photos, local } = load;
+  const { measures, health, local, hidden } = load;
+  const hiddenHere = load.photos.filter((p) => hidden.includes(p.id) && !local.has(p.id)).length;
+  const elsewhere = new Set(load.deletedElsewhere.map((p) => p.id));
+  const photos = [...load.photos.filter((p) => local.has(p.id) || !hidden.includes(p.id)), ...load.deletedElsewhere].sort((a, b) =>
+    a.day !== b.day ? (a.day < b.day ? 1 : -1) : a.createdAt !== b.createdAt ? (a.createdAt < b.createdAt ? 1 : -1) : a.id < b.id ? 1 : -1,
+  );
   const ofKind = measures.filter((m) => m.kind === kind);
   const change = measurementChange(ofKind.map((m) => ({ date: m.day, value: m.value })));
   const compared = compare.map((id) => photos.find((p) => p.id === id)).filter((p): p is ProgressPhotoRecord => p !== undefined);
@@ -265,6 +328,11 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
           {tBodyProgress('photosTitle')}
         </h3>
         <p className="ct-today__muted">{tBodyProgress('photosPrivacy')}</p>
+        {shieldFailed && (
+          <p className="ct-bodyprogress__message" role="alert">
+            {tBodyProgress('shieldFailed')}
+          </p>
+        )}
         <Button variant="secondary" fullWidth disabled={adding} onClick={() => void addPhoto()}>
           {adding ? tBodyProgress('photoAdding') : tBodyProgress('photoAdd')}
         </Button>
@@ -283,7 +351,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
                 <PhotoItem
                   key={p.id}
                   photo={p}
-                  hasFile={local.has(p.id)}
+                  actions={photoActions({ hasFile: local.has(p.id), deletedElsewhere: elsewhere.has(p.id) })}
                   checked={compare.includes(p.id)}
                   disabled={!compare.includes(p.id) && compare.length >= COMPARE_MAX}
                   confirming={confirming === p.id}
@@ -291,10 +359,16 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
                   onAskDelete={() => setConfirming(p.id)}
                   onCancelDelete={() => setConfirming(null)}
                   onDelete={() => void removePhoto(p.id)}
+                  onHide={() => void setHidden(hidePhotoId(hidden, p.id), 'photoHidden')}
                 />
               ))}
             </ul>
           </>
+        )}
+        {hiddenHere > 0 && (
+          <Button variant="secondary" fullWidth onClick={() => void setHidden(showAllPhotos(), null)}>
+            {tBodyProgress('photosShowHidden', { count: hiddenHere })}
+          </Button>
         )}
         {compared.length === COMPARE_MAX && (
           <section className="ct-bodyprogress__compare" aria-labelledby="ct-bodyprogress-compare">
@@ -323,7 +397,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
 
 function PhotoItem({
   photo,
-  hasFile,
+  actions,
   checked,
   disabled,
   confirming,
@@ -331,9 +405,10 @@ function PhotoItem({
   onAskDelete,
   onCancelDelete,
   onDelete,
+  onHide,
 }: {
   readonly photo: ProgressPhotoRecord;
-  readonly hasFile: boolean;
+  readonly actions: PhotoActions;
   readonly checked: boolean;
   readonly disabled: boolean;
   readonly confirming: boolean;
@@ -341,29 +416,40 @@ function PhotoItem({
   readonly onAskDelete: () => void;
   readonly onCancelDelete: () => void;
   readonly onDelete: () => void;
+  readonly onHide: () => void;
 }) {
   const date = formatDayMonthYear(photo.day);
   return (
     <li className="ct-bodyprogress__photo">
-      {hasFile ? <PhotoImage id={photo.id} alt={tBodyProgress('photoAlt', { date })} /> : <p className="ct-today__muted">{tBodyProgress('photoElsewhere')}</p>}
+      {actions.canDelete ? <PhotoImage id={photo.id} alt={tBodyProgress('photoAlt', { date })} /> : <p className="ct-today__muted">{tBodyProgress('photoElsewhere')}</p>}
       <p className="ct-today__text">{date}</p>
+      {actions.deletedElsewhere && <p className="ct-today__muted">{tBodyProgress('photoDeletedElsewhere')}</p>}
       <label className="ct-bodyprogress__check">
         <input type="checkbox" checked={checked} disabled={disabled} onChange={onToggle} aria-label={tBodyProgress('photoCompareLabel', { date })} />
         <span>{tBodyProgress('photoCompare')}</span>
       </label>
-      {confirming ? (
-        <div className="ct-bodyprogress__confirm">
-          <p className="ct-today__text">{tBodyProgress('photoDeleteCost')}</p>
-          <Button onClick={onDelete}>{tBodyProgress('photoDeleteConfirm', { date })}</Button>
-          <Button variant="secondary" onClick={onCancelDelete}>
-            {tBodyProgress('photoDeleteCancel')}
+      {actions.canHide && (
+        <>
+          <p className="ct-today__muted">{tBodyProgress('photoHideHint')}</p>
+          <Button variant="secondary" onClick={onHide}>
+            {tBodyProgress('photoHide', { date })}
           </Button>
-        </div>
-      ) : (
-        <Button variant="secondary" onClick={onAskDelete}>
-          {tBodyProgress('photoDelete', { date })}
-        </Button>
+        </>
       )}
+      {actions.canDelete &&
+        (confirming ? (
+          <div className="ct-bodyprogress__confirm">
+            <p className="ct-today__text">{tBodyProgress(actions.deletedElsewhere ? 'photoDeleteLocalCost' : 'photoDeleteCost')}</p>
+            <Button onClick={onDelete}>{tBodyProgress('photoDeleteConfirm', { date })}</Button>
+            <Button variant="secondary" onClick={onCancelDelete}>
+              {tBodyProgress('photoDeleteCancel')}
+            </Button>
+          </div>
+        ) : (
+          <Button variant="secondary" onClick={onAskDelete}>
+            {tBodyProgress('photoDelete', { date })}
+          </Button>
+        ))}
     </li>
   );
 }

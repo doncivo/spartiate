@@ -267,11 +267,9 @@ export function createExportImportRepository(db: SqlExecutor, stamper: WriteStam
           const decidedAt = ARCHIVE_EXTRA_COLUMNS[table]?.includes('decided_at') ? row.values['decided_at'] : null;
           await upsert(tableOf(table), row.id, row.values, typeof decidedAt === 'string' ? decidedAt : null);
         }
-        for (const { table, id } of deleteTraining) {
-          await softDelete(tableOf(table), id);
-          // I6-02 : une photo supprimée par un import emporte aussi son fichier local (jamais de fichier sans fiche vivante).
-          if (table === 'progress_photo') await db.execute('DELETE FROM progress_photo_file WHERE photo_id = ?', [id]);
-        }
+        // FIX-0171 (D-121, décision d'Ali) : une fiche de photo supprimée par un import garde son fichier local ; seule une suppression locale
+        // confirmée l'efface (la fiche se lit « supprimée ailleurs » d'ici là).
+        for (const { table, id } of deleteTraining) await softDelete(tableOf(table), id);
       } finally {
         await db.execute('DELETE FROM sync_guard');
       }
