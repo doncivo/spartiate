@@ -15,8 +15,9 @@ import type { ExerciseKind, ProposalOption, RecoverySnapshot } from './types';
  * - Inactivité : à partir de 14 jours sans le muscle, −1 % par semaine complète au-delà du seuil (première décote à J21), plancher −10 %.
  * - Deload manuel : séries ÷ 2 arrondi en dessous (au moins une), charge × 0,8, RIR cible ≥ 4 ; la séance retenue sort des statistiques.
  * - Récupération : Recovery ≤ 33, sommeil < 6 h ou FC repos > +8 % → charge × 0,95 et une série de moins sur un exercice secondaire.
- *   Exception, journée rouge acceptée par Ali (`redDay`, D-93 révisée, § 16.7 plus spécifique que § 11.3) : MAINTIEN de la charge et des séries
- *   de référence, aucune hausse, jamais de baisse automatique.
+ *   Journée rouge acceptée par Ali (`redDay`, D-93 révisée par Ali le 12/11, D-170) : charges × 0,95 (`lowRecoveryLoad`), séries et
+ *   répétitions de la référence inchangées (aucune série retirée) ; arrondi au matériel vers le bas par l'appelant (`snapDownAtLeastMin`) ;
+ *   exercice assisté : l'assistance n'est jamais réduite (la séance ne devient pas plus dure).
  *   Snapshot absent ou champ nul : aucune modulation, aucune valeur inventée.
  */
 
@@ -105,8 +106,8 @@ export interface ActiveConstraints {
   readonly inactivityCut: number;
   readonly deload: boolean;
   readonly lowRecovery: boolean;
-  /** Journée rouge acceptée : la récupération basse maintient la référence au lieu de la réduire (D-93 révisée). */
-  readonly redDayHold: boolean;
+  /** Journée rouge acceptée (D-170) : charges × 0,95 sans série retirée, au lieu de la réduction générale de la récupération basse. */
+  readonly redDay: boolean;
 }
 
 export interface ConstraintContext {
@@ -126,7 +127,7 @@ export function activeConstraints(ctx: ConstraintContext): ActiveConstraints {
     inactivityCut: ctx.lastWorkedAt === null ? 0 : inactivityCut(daysBetween(ctx.lastWorkedAt, ctx.now), config),
     deload: ctx.deload,
     lowRecovery: isLowRecovery(ctx.recovery, config),
-    redDayHold: ctx.recovery?.redDay === true && isLowRecovery(ctx.recovery, config),
+    redDay: ctx.recovery?.redDay === true && isLowRecovery(ctx.recovery, config),
   };
 }
 
@@ -139,13 +140,16 @@ export function reducedTarget(
   reference: Performance,
   kind: ExerciseKind | undefined,
   config: ProgressionConfig,
+  assisted = false,
 ): { readonly targetKg: number; readonly reps: readonly number[]; readonly recoverySetRemoved: boolean } {
   let sets = reference.reps.length;
   if (c.deload) sets = deloadSetCount(sets);
   const beforeRecovery = sets;
-  const recoveryCuts = c.lowRecovery && !c.redDayHold;
+  const recoveryCuts = c.lowRecovery && !c.redDay;
   if (recoveryCuts && kind === 'isolation') sets = Math.max(1, sets - 1);
-  const factor = (1 - c.inactivityCut) * (c.deload ? config.deloadLoad : 1) * (recoveryCuts ? config.lowRecoveryLoad : 1);
+  // Journée rouge (D-170) : même facteur, aucune série retirée ; assistance jamais réduite (la charge saisie est l'assistance).
+  const redDayCuts = c.redDay && !assisted;
+  const factor = (1 - c.inactivityCut) * (c.deload ? config.deloadLoad : 1) * (recoveryCuts || redDayCuts ? config.lowRecoveryLoad : 1);
   return { targetKg: reference.loadKg * factor, reps: reference.reps.slice(0, sets), recoverySetRemoved: sets < beforeRecovery };
 }
 
