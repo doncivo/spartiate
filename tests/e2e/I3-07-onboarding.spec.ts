@@ -63,7 +63,7 @@ test('parcours des 8 écrans : profil, pesée, routine proposée ajoutée, retou
   await next(page);
   // 5. Matériel : préréglages embarqués, chargés à la demande avec l'écran.
   await expect(onboardingTitle(page, 'Matériel')).toBeVisible();
-  await choose(page, 'Fitness Park Antony');
+  await choose(page, 'Salle complète');
   await next(page);
   // 6. Priorités : body map, 2 à prioriser au plus.
   await expect(onboardingTitle(page, 'Priorités')).toBeVisible();

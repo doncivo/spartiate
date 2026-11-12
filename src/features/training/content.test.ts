@@ -65,7 +65,9 @@ describe('contenu embarqué de l’entraînement', () => {
     expect(forBody).not.toContain('bench-press-barbell');
     const forAntony = filterCompatibleExercises(content.catalog.list(), antony).map((e) => e.id);
     expect(forAntony).toContain('bench-press-barbell');
-    expect(forAntony).not.toContain('preacher-curl');
+    // FIX-0173 : la salle complète a un pupitre (preacher-bench) ; la machine belt squat reste absente.
+    expect(forAntony).toContain('preacher-curl');
+    expect(forAntony).not.toContain('belt-squat');
   });
 
   it('les programmes de la salle sont entièrement compatibles avec Fitness Park Antony', async () => {

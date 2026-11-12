@@ -10,7 +10,7 @@ Données uniquement, aucune logique métier. Le contenu est généré avec Claud
 | `exercises/muscles.json` | Liste fermée des 34 muscles `{ id, nameFr, group }` |
 | `exercises/equipment.json` | Liste fermée des 76 matériels `{ id, nameFr, family }` |
 | `exercises/media/` | Réservé aux médias sous licence vérifiée (vide) ; tout média exige `license` et `source` |
-| `equipment-profiles/profiles.json` | `{ schemaVersion: 1, defaultProfileId, profiles: [4] }` : Fitness Park Antony (défaut) et trois préréglages |
+| `equipment-profiles/profiles.json` | `{ schemaVersion: 1, defaultProfileId, profiles: [3] }` : « Salle complète » (défaut, identifiant technique `fitness-park-antony` conservé, FIX-0173 D-142 : matériel d'une grande salle, Hammer Strength et Technogym, poulies, cages, Smith, haltères 2 à 58 kg, kettlebells 4 à 20 kg ; 64 matériels au plus) et deux préréglages (maison, poids de corps) |
 | `food/ciqual.json` | `{ schemaVersion: 1, source, groups, foods: [3 484 aliments Ciqual 2025] }` : énergie, protéines, lipides, glucides et fibres pour 100 g (`null` = inconnue, jamais 0), généré par `scripts/content/build-ciqual.mjs` depuis les XML officiels de l'Anses (Licence Ouverte Etalab 2.0, voir `docs/licences.md`), chargé à la demande |
 | `programs/*.json` | Un fichier par programme de départ (PRD § 12.5) : `haut-bas-4j`, `full-body-3j`, `ppl-6j`, `maison-halteres-3j` |
 
