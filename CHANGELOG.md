@@ -2,6 +2,13 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.18.1
+
+**Sans migration** (la base reste en schéma 14) : cette version peut s'installer sur PC et iPhone à tout moment.
+
+- **Moteur de base de données à jour** : Spartiate embarque maintenant SQLite 3.54.1 (avant : 3.46.0), qui corrige une faille de sécurité (RUSTSEC-2026-0459) : un fichier de base accompagné d'un journal `-wal` piégé pouvait faire relire des octets de mémoire. Tu n'avais rien à craindre en pratique (Spartiate n'ouvre que ta propre base et tes sauvegardes), mais l'exception qui tolérait cette faille dans nos contrôles est retirée.
+- **Rien ne change pour toi** : tes données, tes séances et tes sauvegardes restent lisibles telles quelles. La protection ajoutée en 0.9.4 (une sauvegarde dont le journal `-wal` ne correspond pas est refusée) reste en place.
+
 ## 0.18.0
 
 **Schéma 14 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** Migration 0014 : les lignes de routine reçoivent leur groupe de circuit. Un appareil resté en 0.17 garde les groupes de routine reçus sans les afficher et les retrouve après sa mise à jour.
