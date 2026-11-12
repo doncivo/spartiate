@@ -60,13 +60,15 @@ const groups = (d: SimDevice) => d.driver.select<{ exercise_id: string; position
   `SELECT exercise_id, position, circuit_rest_sec, circuit_id = (SELECT circuit_id FROM workout_set WHERE workout_id = '${W}' ORDER BY position LIMIT 1) AS same FROM workout_set WHERE workout_id = '${W}' ORDER BY position`,
 );
 
+const id = SYNC_CATALOGUE.column('workout_set', 'circuit_id');
+const rest = SYNC_CATALOGUE.column('workout_set', 'circuit_rest_sec');
+if (!id || !rest) throw new Error('colonnes absentes');
+
 describe('(a) catalogue', () => {
   it('colonnes publiées après difficulty : circuit_id (texte nul, 64 au plus), circuit_rest_sec (entier nul) ; libellés de synchro', () => {
     const cols = [...publishedColumns(SYNC_CATALOGUE.table('workout_set') as never)];
     expect(cols.slice(-3)).toEqual(['difficulty', 'circuit_id', 'circuit_rest_sec']);
-    const id = SYNC_CATALOGUE.column('workout_set', 'circuit_id');
-    const rest = SYNC_CATALOGUE.column('workout_set', 'circuit_rest_sec');
-    if (!id || !rest) throw new Error('colonnes absentes');
+
     expect(SYNC_CATALOGUE.isValidValue(id, null)).toBe(true);
     expect(SYNC_CATALOGUE.isValidValue(id, 'c1')).toBe(true);
     expect(SYNC_CATALOGUE.isValidValue(id, 5)).toBe(false);
@@ -75,6 +77,11 @@ describe('(a) catalogue', () => {
     expect(SYNC_CATALOGUE.isValidValue(rest, 'x')).toBe(false);
     expect(syncFieldFr.workout_set?.circuit_id).toBeTruthy();
     expect(syncFieldFr.workout_set?.circuit_rest_sec).toBeTruthy();
+  });
+
+  it('revue sync-icloud B1 : colonnes masquées du journal des conflits (aucun déclencheur ne capture un « Rétablir » sur une séance close)', () => {
+    expect(id.conflictVisible).toBe(false);
+    expect(rest.conflictVisible).toBe(false);
   });
 });
 
