@@ -25,11 +25,12 @@ export function parseContributors(text: string | null): Contributor[] | null {
   const out: Contributor[] = [];
   for (const item of value as unknown[]) {
     if (!isRecord(item)) return null;
-    const { key, value: v, weight } = item;
+    const { key, value: v, weight, unusual } = item;
     if (typeof key !== 'string' || !CONTRIBUTOR_KEYS.includes(key as Contributor['key'])) return null;
     if (typeof v !== 'number' || !Number.isFinite(v)) return null;
     if (weight !== null && (typeof weight !== 'number' || !Number.isFinite(weight))) return null;
-    out.push({ key: key as Contributor['key'], value: v, weight });
+    // FIX-0172 (D-134) : décision « inhabituel » publiée ; un autre type (appareil plus récent) est ignoré, jamais deviné ni refusé.
+    out.push({ key: key as Contributor['key'], value: v, weight, ...(typeof unusual === 'boolean' ? { unusual } : {}) });
   }
   return out;
 }
@@ -46,5 +47,6 @@ export function parseExplanationKeys(text: string | null): RecoveryExplanationKe
   return out;
 }
 
-export const encodeContributors = (items: readonly Contributor[]): string => JSON.stringify(items.map(({ key, value, weight }) => ({ key, value, weight })));
+export const encodeContributors = (items: readonly Contributor[]): string =>
+  JSON.stringify(items.map(({ key, value, weight, unusual }) => ({ key, value, weight, ...(typeof unusual === 'boolean' ? { unusual } : {}) })));
 export const encodeExplanationKeys = (keys: readonly RecoveryExplanationKey[]): string => JSON.stringify(keys);
