@@ -112,7 +112,7 @@ describe('migration 0006 : progression_sync (I2-01, PR 2/2)', () => {
     const table = (name: string) => SYNC_CATALOGUE.table(name) ?? (() => { throw new Error(name); })();
     for (const [name, columns] of CAPTURE_TABLES_V6) expect([...columns], name).toEqual([...publishedColumns(table(name))]);
     const v4Set = CAPTURE_TABLES_V4[1][1];
-    expect(publishedColumns(table('workout_set')).filter((c) => c !== 'difficulty')).toEqual([...v4Set]);
+    expect(publishedColumns(table('workout_set')).filter((c) => c !== 'difficulty' && c !== 'circuit_id' && c !== 'circuit_rest_sec')).toEqual([...v4Set]);
     expect(publishedColumns(table('workout_set'))).toContain('difficulty');
     // Base arrêtée à la 0006 (I3-02 ajoute ensuite les deux déclencheurs de mesocycle).
     const db = await openSqliteWasmDriver();

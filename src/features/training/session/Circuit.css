@@ -1,0 +1,79 @@
+/* Circuits de la séance (I6-03) : tokens seulement, aucune couleur en dur ; cibles ≥ 44 px ; champs à 17 px (pas de zoom iOS sous 16 px). */
+
+.ct-circuit,
+.ct-circuit-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  padding: var(--ct-space-3);
+  background: var(--ct-color-surface-raised);
+  border: 1px solid var(--ct-color-border);
+  border-left: 4px solid var(--ct-color-bronze);
+  border-radius: var(--ct-radius-md);
+  min-width: 0;
+}
+
+.ct-circuit__title,
+.ct-circuit-form__title {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-item);
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-circuit__line {
+  margin: 0;
+  color: var(--ct-color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.ct-circuit__next {
+  margin: 0;
+  font-weight: var(--ct-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.ct-circuit-form__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+}
+
+.ct-circuit-form__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+}
+
+.ct-circuit-form__pick {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.ct-circuit-form__check {
+  display: flex;
+  align-items: center;
+  gap: var(--ct-space-2);
+  min-height: 44px;
+  overflow-wrap: anywhere;
+}
+
+.ct-circuit-form__check input {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  accent-color: var(--ct-color-accent);
+}
+
+.ct-circuit-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}

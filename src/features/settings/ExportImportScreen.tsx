@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { ArchiveError, DEFAULT_THEME, EXPORT_SV, buildExportArchive, parseExportArchive, type ArchiveErrorCode, type ExportData, type ParsedArchive } from '../../domain/exportImport/archive';
+import { buildFullExport } from '../../domain/exportImport/fullExport';
 import { planImport, type ImportMode } from '../../domain/exportImport/plan';
 import { nowIso } from '../../domain/clock';
 import { tExportImport, type ExportImportTextKey } from '../../i18n/exportImportText';
@@ -51,14 +52,15 @@ export function ExportImportScreen() {
     return theme === DEFAULT_THEME ? base : { ...base, settings: { 'ui.theme': theme } };
   }
 
-  async function doExport(): Promise<void> {
+  async function doExport(full = false): Promise<void> {
     setMessage(null);
     setBusy(true);
     try {
       const local = await readLocal(data.repos);
-      const archive = await buildExportArchive(local, { date: nowIso(container.clock), sv: EXPORT_SV });
+      const date = nowIso(container.clock);
+      const archive = full ? await buildFullExport(local, { date, sv: EXPORT_SV, appVersion: container.appVersion.version ?? 'unknown' }) : await buildExportArchive(local, { date, sv: EXPORT_SV });
       const result = await files.save({ suggestedName: archive.fileName, mime: 'application/zip', data: archive.bytes });
-      if (result.saved) setMessage({ kind: 'ok', text: tExportImport('exportSaved') });
+      if (result.saved) setMessage({ kind: 'ok', text: tExportImport(full ? 'exportFullSaved' : 'exportSaved') });
     } catch (error) {
       const reason = error instanceof FileExportError ? error.reason : null;
       setMessage({ kind: 'error', text: tExportImport(reason === 'too-large' ? 'exportTooLarge' : reason === 'unavailable' ? 'exportUnavailable' : 'exportFailed') });
@@ -124,6 +126,10 @@ export function ExportImportScreen() {
         <p className="ct-body__hint">{tExportImport('exportHint')}</p>
         <Button disabled={busy || !files.canSave()} onClick={() => void doExport()}>
           {tExportImport('exportButton')}
+        </Button>
+        <p className="ct-body__hint">{tExportImport('exportFullHint')}</p>
+        <Button variant="secondary" disabled={busy || !files.canSave()} onClick={() => void doExport(true)}>
+          {tExportImport('exportFullButton')}
         </Button>
 
         <h2 className="ct-body__section">{tExportImport('sectionImport')}</h2>

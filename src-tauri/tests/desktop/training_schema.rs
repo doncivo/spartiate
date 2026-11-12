@@ -3,7 +3,7 @@
 //! vérification des sauvegardes, comme la 5 (I2-01, migration 0005 : `progression_profile` et `recommendation_decision`, locales, sans
 //! déclencheur), la 6 (I2-01 PR 2/2, migration 0006 : captures des deux tables de progression et de `workout_set.difficulty`) et la 7
 //! (I3-02, migration 0007 : captures de `mesocycle`), la 8 (I4-02, migration 0008 : captures de `food`, `food_portion`, `meal_entry` et
-//! `nutrition_target`) et la 9 (I4-07, migration 0009 : captures de `day_completeness`, `recipe` et `recipe_ingredient`) ; la version 13, inconnue
+//! `nutrition_target`) et la 9 (I4-07, migration 0009 : captures de `day_completeness`, `recipe` et `recipe_ingredient`) ; la version 14, inconnue
 //! de cette app, est refusée. Les déclencheurs de capture sont ceux de la référence.
 
 use std::path::Path;
@@ -72,8 +72,8 @@ fn error_code(path: &Path) -> &'static str {
 }
 
 #[test]
-fn i6_02_the_app_schema_version_is_12() {
-    assert_eq!(APP_SCHEMA_VERSION, 12);
+fn i6_03_the_app_schema_version_is_13() {
+    assert_eq!(APP_SCHEMA_VERSION, 13);
 }
 
 #[test]
@@ -444,13 +444,13 @@ fn i4_07_a_version_9_backup_with_the_recipe_tables_is_accepted_and_a_tampered_on
 }
 
 #[test]
-fn i6_02_a_version_13_backup_is_refused_as_newer_schema() {
+fn i6_03_a_version_14_backup_is_refused_as_newer_schema() {
     let dir = scratch();
-    let path = dir.path().join("v13.db");
+    let path = dir.path().join("v14.db");
     make_db(&path, 3, &TABLES);
     Connection::open(&path)
         .unwrap()
-        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5); INSERT INTO schema_migrations (version) VALUES (6); INSERT INTO schema_migrations (version) VALUES (7); INSERT INTO schema_migrations (version) VALUES (8); INSERT INTO schema_migrations (version) VALUES (9); INSERT INTO schema_migrations (version) VALUES (10); INSERT INTO schema_migrations (version) VALUES (11); INSERT INTO schema_migrations (version) VALUES (12); INSERT INTO schema_migrations (version) VALUES (13);")
+        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5); INSERT INTO schema_migrations (version) VALUES (6); INSERT INTO schema_migrations (version) VALUES (7); INSERT INTO schema_migrations (version) VALUES (8); INSERT INTO schema_migrations (version) VALUES (9); INSERT INTO schema_migrations (version) VALUES (10); INSERT INTO schema_migrations (version) VALUES (11); INSERT INTO schema_migrations (version) VALUES (12); INSERT INTO schema_migrations (version) VALUES (13); INSERT INTO schema_migrations (version) VALUES (14);")
         .unwrap();
     assert_eq!(error_code(&path), "newer-schema");
 }

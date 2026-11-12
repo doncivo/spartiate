@@ -34,9 +34,11 @@ export interface HistoryDetailProps {
   /** Compteur des lots de synchro appliqués (`useSyncedData`) : relecture à chaque changement. */
   readonly synced: number;
   readonly onDeleted: () => void;
+  /** Rejeu (I6-03) : la nouvelle séance est ouverte ; l'appelant affiche la séance active. */
+  readonly onReplay: () => void;
 }
 
-export function HistoryDetail({ data, access, workoutId, synced, onDeleted }: HistoryDetailProps) {
+export function HistoryDetail({ data, access, workoutId, synced, onDeleted, onReplay }: HistoryDetailProps) {
   const [load, setLoad] = useState<DetailLoad>({ status: 'loading' });
   const [version, setVersion] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
@@ -91,6 +93,23 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted }: Hi
       return false;
     } finally {
       if (live.current) setBusy(false);
+    }
+  }
+
+  /** Rejeu : copie les exercices, groupes, charges et répétitions comme CIBLES d'une nouvelle séance ouverte (aucune série faite). */
+  async function replay(): Promise<void> {
+    setNotice(null);
+    setError(null);
+    setBusy(true);
+    try {
+      await access.transaction(async (repos) => (await repos.workouts()).start({ source: 'copy', copyFromId: workoutId }));
+      if (live.current) onReplay();
+    } catch {
+      const open = await (await access.repos.workouts()).getOpen().catch(() => null);
+      if (live.current) {
+        setError(tTraining(open === null ? 'historyReplayError' : 'historyReplayOpen'));
+        setBusy(false);
+      }
     }
   }
 
@@ -186,6 +205,12 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted }: Hi
               </section>
             );
           })}
+          <div className="ct-training__actions">
+            <Button disabled={busy} onClick={() => void replay()}>
+              {tTraining('historyReplay')}
+            </Button>
+          </div>
+          <p className="ct-session__muted">{tTraining('historyReplayHint')}</p>
           <div className="ct-training__actions">
             <Button variant="danger" disabled={busy} onClick={() => setConfirmDelete(true)}>
               {tTraining('historyDelete')}
