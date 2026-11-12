@@ -176,7 +176,7 @@ Chaque fichier encore dans iCloud est téléchargé avant la lecture. La lecture
 
 **Nom du dossier `sante` (important).** Si tu crées le dossier à la main dans Fichiers, **tape « sante » toi-même, sans utiliser les suggestions du clavier** : la suggestion ajoute une espace ou une majuscule que iOS garde (« sante », « Sante »), et le dossier a un nom différent de « sante » (la lecture le retrouve en général, mais retaper le nom évite tout doute). Si Spartiate dit « Dossier sante illisible (nom du dossier) », renomme-le en tapant « sante » à la main, puis touche « Importer maintenant ».
 
-**Après une mise à jour de Spartiate** qui change le calcul du sommeil, les résumés des 30 derniers jours sont recalculés une seule fois, à l’import suivant, sans rien faire de ta part.
+**Après une mise à jour de Spartiate** qui change le calcul du sommeil, les résumés des 30 derniers jours sont recalculés une seule fois, à l’ouverture suivante, à partir des données déjà lues, sans rien faire de ta part : même si le dossier `sante` n’est pas joignable ou si les fichiers sont absents. Si ce recalcul est interrompu, il est repris à l’ouverture suivante.
 Cette lecture automatique est constatée sur ton iPhone (H-26, 11 nov. 2026). Si Spartiate dit que le dossier n’a pas pu être lu, lie le dossier `Spartiate` dans Plus → Appareils et synchro, ou utilise **Choisir les fichiers**.
 
 L’écran Apple Santé montre, pour chaque type, la date du dernier import, le nombre de lignes ajoutées, déjà connues et refusées (avec la raison du refus : nombre de colonnes, date sans fuseau, stade inconnu…), sans jamais afficher une valeur de mesure. Un fichier absent est dit « absent », ce n’est pas une erreur.
