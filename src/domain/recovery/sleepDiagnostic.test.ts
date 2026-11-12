@@ -54,7 +54,8 @@ describe('fixture des nuits d’Ali', () => {
 
   it('diagnostic : nuits retenues sur 7 jours, écartées par raison, compteurs seulement (§ 22 : aucune dette)', () => {
     const diag = sleepDebtDiagnostic(records, TODAY);
-    expect(diag).toEqual({ retained: 7, excludedNoAsleep: 0, excludedShort: 0 });
+    // FIX-0172 (D-133) : nuits retenues sous et au-dessus de 7 h 30, des nombres seulement.
+    expect(diag).toEqual({ retained: 7, excludedNoAsleep: 0, excludedShort: 0, short: 3, long: 4 });
   });
 
   // FIX-0172 (D-130, décision d'Ali du 12/11/2026) : remplace la caractérisation de l'ancienne règle (« la dette ne compense pas, 10 h 30 »).
@@ -68,6 +69,6 @@ describe('fixture des nuits d’Ali', () => {
     const blank = { hrvMs: null, restingHr: null, bedtimeMinutes: null, wakeMinutes: null } as const;
     const extra = [{ day: '2026-11-12', asleepMinutes: null, ...blank }, { day: '2026-11-11', asleepMinutes: 120, ...blank }, { day: '2026-11-01', asleepMinutes: 100, ...blank }];
     const diag = sleepDebtDiagnostic([...records.filter((r) => r.day < '2026-11-11'), ...extra], '2026-11-13');
-    expect(diag).toEqual({ retained: 5, excludedNoAsleep: 1, excludedShort: 1 });
+    expect(diag).toEqual({ retained: 5, excludedNoAsleep: 1, excludedShort: 1, short: 2, long: 3 });
   });
 });
