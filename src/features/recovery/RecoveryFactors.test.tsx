@@ -75,12 +75,12 @@ afterEach(async () => {
 });
 
 describe('carte « valeurs inhabituelles, repos conseillé » (A)', () => {
-  const twoBadNights = async (hrv = -2, rhr = 0.1): Promise<void> => {
+  const twoBadNights = async (hrv = -2.3, rhr = 0.1): Promise<void> => {
     await save(summary('2026-11-09', { contributors: contributors(hrv, rhr) }));
     await save(summary('2026-11-10', { contributors: contributors(hrv, rhr) }));
   };
 
-  it('deux nuits de suite à au moins 2 σ : la carte s’affiche sur iPhone et sur PC, en texte, sans diagnostic', async () => {
+  it('deux nuits de suite au-delà de 2 σ (FIX-0172, seuil strict) : la carte s’affiche sur iPhone et sur PC, en texte, sans diagnostic', async () => {
     await twoBadNights();
     for (const os of ['ios', 'other'] as const) {
       const view = mount(os);
@@ -93,7 +93,7 @@ describe('carte « valeurs inhabituelles, repos conseillé » (A)', () => {
   });
 
   it('fréquence cardiaque au repos élevée : raison dite en texte', async () => {
-    await twoBadNights(0.2, -2);
+    await twoBadNights(0.2, -2.3);
     mount();
     const card = await screen.findByRole('region', { name: CARD });
     expect(within(card).getByText(/fréquence cardiaque au repos élevée/i)).toBeInTheDocument();
@@ -101,23 +101,49 @@ describe('carte « valeurs inhabituelles, repos conseillé » (A)', () => {
 
   it('une seule nuit inhabituelle, jours non consécutifs, ou retour à la normale : aucune carte (elle disparaît d’elle-même)', async () => {
     await save(summary('2026-11-09'));
-    await save(summary('2026-11-10', { contributors: contributors(-2, 0) }));
+    await save(summary('2026-11-10', { contributors: contributors(-2.3, 0) }));
     mount();
     await screen.findByRole('img', { name: /Recovery : 60 sur 100/ });
     expect(screen.queryByRole('region', { name: CARD })).toBeNull();
     cleanup();
     await db.close();
     db = await openBaseDb(DEVICE, NOW);
-    await save(summary('2026-11-08', { contributors: contributors(-2, 0) }));
-    await save(summary('2026-11-10', { contributors: contributors(-2, 0) }));
+    await save(summary('2026-11-08', { contributors: contributors(-2.3, 0) }));
+    await save(summary('2026-11-10', { contributors: contributors(-2.3, 0) }));
     mount();
     await screen.findByRole('img', { name: /Recovery : 60 sur 100/ });
     expect(screen.queryByRole('region', { name: CARD })).toBeNull();
   });
 
+  it('FIX-0172 (D-134) : le PC affiche la décision publiée par l’iPhone, jamais une autre règle sur la valeur arrondie', async () => {
+    const published = (unusual: boolean): Contributor[] => [
+      { key: 'hrv', value: -2, weight: 0.7, unusual },
+      { key: 'resting_hr', value: 0.1, weight: 0.3, unusual: false },
+      { key: 'sleep', value: 0.5, weight: null },
+    ];
+    await save(summary('2026-11-09', { contributors: published(true) }));
+    await save(summary('2026-11-10', { contributors: published(true) }));
+    for (const os of ['ios', 'other'] as const) {
+      const view = mount(os);
+      expect(await screen.findByRole('region', { name: CARD })).toBeInTheDocument();
+      view.unmount();
+    }
+    await save(summary('2026-11-10', { contributors: published(false) }));
+    mount('other');
+    await screen.findByRole('img', { name: /Recovery : 60 sur 100/ });
+    expect(screen.queryByRole('region', { name: CARD })).toBeNull();
+  });
+
+  it('résumés sans décision publiée (version précédente) : exactement 2 σ ne suffit pas (seuil strict)', async () => {
+    await twoBadNights(-2, 0.1);
+    mount('other');
+    await screen.findByRole('img', { name: /Recovery : 60 sur 100/ });
+    expect(screen.queryByRole('region', { name: CARD })).toBeNull();
+  });
+
   it('baseline incomplète (niveau B) : aucune carte', async () => {
-    await save(summary('2026-11-09', { level: 'B', recovery: null, abstainReason: 'baseline_incomplete', contributors: contributors(-2, -2) }));
-    await save(summary('2026-11-10', { level: 'B', recovery: null, abstainReason: 'baseline_incomplete', contributors: contributors(-2, -2) }));
+    await save(summary('2026-11-09', { level: 'B', recovery: null, abstainReason: 'baseline_incomplete', contributors: contributors(-2.3, -2.3) }));
+    await save(summary('2026-11-10', { level: 'B', recovery: null, abstainReason: 'baseline_incomplete', contributors: contributors(-2.3, -2.3) }));
     mount();
     await screen.findByText(/En apprentissage/);
     expect(screen.queryByRole('region', { name: CARD })).toBeNull();
