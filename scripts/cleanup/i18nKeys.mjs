@@ -1,3 +1,4 @@
+/* eslint-disable -- outil de nettoyage ponctuel (CLEAN-01), hors du code de l'app */
 // CLEAN-01 : clés i18n du catalogue (src/i18n/fr.ts aplati) jamais référencées par du code non-test hors catalogues.
 // Une clé « a.b.c » est référencée si la chaîne 'a.b.c' apparaît dans un fichier source non-test hors src/i18n/fr*.ts, ou si un préfixe
 // dynamique (chaîne se terminant par « . » ou gabarit `a.b.${`) couvre son parent. En cas de doute : référencée.

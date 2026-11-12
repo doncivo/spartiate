@@ -1,3 +1,4 @@
+/* eslint-disable -- outil de nettoyage ponctuel (CLEAN-01), hors du code de l'app */
 // CLEAN-01 : plan de suppression à partir de .codex-tmp/sym.json (sortie de symbols.mjs).
 // Un fichier mort est supprimable si aucun test « mixte » (test qui importe aussi du code vivant) ne l'importe, directement ou par un
 // autre fichier conservé. Sinon il est conservé comme « support de test d'un test vivant ».

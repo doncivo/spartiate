@@ -1,3 +1,4 @@
+/* eslint-disable -- outil de nettoyage ponctuel (CLEAN-01), hors du code de l'app */
 // CLEAN-01 : jetons CSS déclarés dans src/ui/theme/tokens.css et jamais lus (var(--x)) ailleurs que dans leur déclaration.
 // Usage : node scripts/cleanup/cssTokens.mjs [--apply]   (--apply retire les lignes de déclaration, jusqu'au point fixe)
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';

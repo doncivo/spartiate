@@ -1,3 +1,4 @@
+/* eslint-disable -- outil de nettoyage ponctuel (CLEAN-01), hors du code de l'app */
 // CLEAN-01 : classes CSS (.ct-*, .xxx) définies dans src/**/*.css et jamais citées dans du code ou HTML non-test.
 // Une classe est citée si son nom apparaît comme sous-chaîne dans un .ts/.tsx non-test, index.html, pairing.html ou un autre .css (composition).
 // Inventaire seulement (sur-approximation : nom en sous-chaîne = cité). Usage : node scripts/cleanup/cssClasses.mjs [--json sortie.json]

@@ -1,3 +1,4 @@
+/* eslint-disable -- outil de nettoyage ponctuel (CLEAN-01), hors du code de l'app */
 // CLEAN-01 : applique un lot de suppression du plan (plan.mjs) : supprime les fichiers morts et les tests morts dont le chemin
 // commence par un des préfixes donnés, retire des barrels (export ... from) les lignes qui visent un fichier supprimé, et retire
 // les fichiers supprimés de tests/bundle/start-modules.json (la liste ne peut que se réduire).

@@ -40,12 +40,6 @@ redistribue pas les fichiers de police séparément de l'application.
 - Usage : lecture des dates absolues et de "dans N jours" dans la saisie rapide, locale française seule (`src/domain/naturalDate.ts`).
 - Texte complet de la licence : `node_modules/chrono-node/LICENSE`.
 
-# Licence — carillon de fin de session Focus (F-04 D4)
-
-- Fichier : `src/features/focus/assets/focus-end.wav` (22 050 Hz, mono, 16 bits, 1,6 s, environ 70 Ko).
-- Origine : synthétisé par `scripts/generate-focus-chime.mjs` (partiels de cloche à décroissance exponentielle) ; œuvre originale du projet, sans échantillon tiers, placée dans le domaine public (CC0). Aucune attribution requise.
-- Lu par un élément `Audio` au volume du système (`src/platform/focus/sound.ts`), jamais par une API Rust ; aucune notification Windows.
-
 # Licences — lecture de texte des images (Q-04, PRD sections 7 et 10)
 
 - Windows.Media.Ocr (PC) : API du système (Windows 10 et 11), via la crate `windows` 0.62 (MIT OU Apache-2.0, déjà compilée par Tauri) ; aucune donnée embarquée. Le pack de langue français est installé par l'utilisateur (Paramètres Windows).

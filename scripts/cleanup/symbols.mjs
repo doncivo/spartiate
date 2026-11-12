@@ -1,3 +1,4 @@
+/* eslint-disable -- outil de nettoyage ponctuel (CLEAN-01), hors du code de l'app */
 // CLEAN-01 : atteignabilité au niveau des symboles (complète reachability.mjs).
 // Un fichier est vivant s'il est atteint par un nom effectivement utilisé par du code vivant ; les déclarations de premier niveau
 // non exportées vers du code vivant et non référencées par du code vivant sont mortes. Analyse par noms d'identifiants
