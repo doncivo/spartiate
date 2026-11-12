@@ -75,6 +75,8 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue, options: Repo
   // I6-02 : mensurations et photos de progression, à la demande ; publiées (fiche seulement), écrites par les deux appareils.
   measurements: () => import('./bodyProgressRepository').then((m) => signalingWrites(m.createMeasurementRepository(executor, stamper), ['save', 'remove'])),
   progressPhotos: () => import('./bodyProgressRepository').then((m) => signalingWrites(m.createProgressPhotoRepository(executor, stamper), ['add', 'remove'])),
+  // FIX-0173 : présence de données (base vide), lecture seule, à la demande.
+  userData: () => import('./userDataRepository').then((m) => m.createUserDataRepository(executor)),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue, options)),
   // Y-04 (début)
   syncConflicts: createSyncConflictRepository(executor, stamper, catalogue),

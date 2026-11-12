@@ -165,7 +165,7 @@ describe('Quand afficher l’onboarding ? (premier lancement sur base vide)', ()
   });
 
   it('base vide : aucune donnée dans AUCUN domaine utilisateur (FIX-0173, constat 10)', () => {
-    expect([...USER_DATA_DOMAINS].sort()).toEqual(['measurements', 'meals', 'photos', 'profile', 'recoveryDays', 'recoveryFactors', 'recoverySamples', 'routines', 'weights', 'workouts']);
+    expect([...USER_DATA_DOMAINS].sort()).toEqual(['meals', 'measurements', 'photos', 'profile', 'recoveryDays', 'recoveryFactors', 'recoverySamples', 'routines', 'weights', 'workouts']);
     const none = Object.fromEntries(USER_DATA_DOMAINS.map((d) => [d, false])) as BasePresence;
     expect(isEmptyBase(none)).toBe(true);
     for (const domain of USER_DATA_DOMAINS) expect(isEmptyBase({ ...none, [domain]: true }), domain).toBe(false);

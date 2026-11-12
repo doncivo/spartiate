@@ -205,15 +205,17 @@ export function decideOnboarding(input: { readonly completed: boolean; readonly 
   return input.empty ? 'show' : 'mark-done';
 }
 
-export interface BaseCounts {
-  readonly profile: boolean;
-  readonly routines: number;
-  readonly weights: number;
-  readonly workouts: number;
-  readonly meals: number;
-}
+/**
+ * Domaines de données de l'utilisateur pris en compte pour reconnaître une base vide (FIX-0173, constat 10) : profil, routines, pesées, séances, repas,
+ * résumés de récupération (jour et muscles), échantillons importés, facteurs, mensurations et mesures importées, photos de progression.
+ */
+export const USER_DATA_DOMAINS = ['profile', 'routines', 'weights', 'workouts', 'meals', 'recoveryDays', 'recoverySamples', 'recoveryFactors', 'measurements', 'photos'] as const;
+export type UserDataDomain = (typeof USER_DATA_DOMAINS)[number];
 
-/** Base vide : aucun profil, aucune routine, aucune pesée, aucune séance, aucun repas. */
-export function isEmptyBase(counts: BaseCounts): boolean {
-  return !counts.profile && counts.routines === 0 && counts.weights === 0 && counts.workouts === 0 && counts.meals === 0;
+/** Présence d'au moins une ligne vivante par domaine (requête d'existence bornée, jamais un comptage). */
+export type BasePresence = Readonly<Record<UserDataDomain, boolean>>;
+
+/** Base vide : aucune donnée dans aucun domaine utilisateur. */
+export function isEmptyBase(presence: BasePresence): boolean {
+  return USER_DATA_DOMAINS.every((domain) => !presence[domain]);
 }
