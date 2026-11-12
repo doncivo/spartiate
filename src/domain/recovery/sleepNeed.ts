@@ -9,16 +9,25 @@ export interface SleepNeed {
 }
 
 /**
+ * Apport d'une nuit à la dette (D-130, décision d'Ali du 12/11/2026, compensation partielle) : nuit courte = + (7 h 30 − dormi) ;
+ * nuit longue = − min(dormi − 7 h 30, `surplusCreditCapMinutes`) ; nuit de 7 h 30 pile = 0.
+ */
+export function nightDebtMinutes(asleepMinutes: number, baseMinutes: number): number {
+  return asleepMinutes < baseMinutes ? baseMinutes - asleepMinutes : -Math.min(asleepMinutes - baseMinutes, RECOVERY_CONFIG.sleep.surplusCreditCapMinutes);
+}
+
+/**
  * Besoin de sommeil (§ 16.3) : 7 h 30 + 0,2 h × max(0, Exertion veille − 5) + dette.
- * Dette (proposition, le PRD donne « 7 j, plafond 3 h ») : somme sur les nuits CONNUES des 7 derniers jours de max(0, 7 h 30 − dormi),
- * plafonnée à 3 h ; une nuit absente n'ajoute rien (jamais un faux zéro de sommeil). `previousAsleepMinutes` : de la plus ancienne à la plus récente.
+ * Dette (D-130, compensation partielle) : somme, sur les nuits valides CONNUES des 7 jours avant aujourd'hui, de `nightDebtMinutes`
+ * (une nuit longue ne rembourse qu'1 h au plus), bornée à [0, 3 h] ; une nuit absente n'ajoute rien (jamais un faux zéro de sommeil).
+ * `previousAsleepMinutes` : de la plus ancienne à la plus récente (l'ordre ne change pas la somme).
  */
 export function sleepNeed(input: { readonly exertionPrevDay: number; readonly previousAsleepMinutes: readonly number[] }): SleepNeed {
   const cfg = RECOVERY_CONFIG.sleep;
   const baseMinutes = Math.round(cfg.baseSleepHours * 60);
   const exertionMinutes = Math.round(cfg.hoursPerExertionPoint * 60 * Math.max(0, input.exertionPrevDay - cfg.exertionBaseline));
-  const deficit = input.previousAsleepMinutes.slice(-cfg.debtDays).reduce((s, m) => s + Math.max(0, baseMinutes - m), 0);
-  const debtMinutes = Math.min(Math.round(cfg.debtCapHours * 60), deficit);
+  const net = input.previousAsleepMinutes.slice(-cfg.debtDays).reduce((s, m) => s + nightDebtMinutes(m, baseMinutes), 0);
+  const debtMinutes = Math.min(Math.round(cfg.debtCapHours * 60), Math.max(0, net));
   return { baseMinutes, exertionMinutes, debtMinutes, needMinutes: baseMinutes + exertionMinutes + debtMinutes };
 }
 
