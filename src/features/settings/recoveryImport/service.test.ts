@@ -596,3 +596,123 @@ describe('I5-06 : raison de l’échec de lecture du dossier', () => {
     }
   });
 });
+
+/**
+ * FIX-0172 (constat 2 de la relecture Codex du 12/11/2026, D-133) : le recalcul unique d'une nouvelle règle du sommeil part des échantillons
+ * LOCAUX, même quand aucun fichier n'est importé (dossier inaccessible, fichiers absents, lecture limitée par les 30 minutes). Le marqueur
+ * n'est posé qu'après un recalcul complet ; un recalcul interrompu est repris au lancement suivant ; un second passage n'écrit rien.
+ */
+describe('FIX-0172 : recalcul de règle indépendant de l’import', () => {
+  let db: TestDb;
+  let logs: { event: ImportLogEvent; counts: Record<string, number> }[];
+  let stored: number | null;
+  const rules = { get: async () => stored, set: async (version: number) => void (stored = version) };
+  const LATER = '2026-11-08T11:00:00.000Z';
+  const NIGHTS = Array.from({ length: 10 }, (_, k) => {
+    const day = new Date(Date.parse('2026-11-08T12:00:00Z') - k * 86_400_000).toISOString().slice(0, 10);
+    const before = new Date(Date.parse(day + 'T12:00:00Z') - 86_400_000).toISOString().slice(0, 10);
+    return before + 'T23:00:00+01:00;' + day + 'T07:00:00+01:00;Endormi';
+  }).join('\n');
+  const OLD_DAY = '2026-11-03';
+
+  const service = (r: ShortcutFilesReader, overrides: Partial<ShortcutImportDeps> = {}) =>
+    createShortcutImportService({
+      reader: r,
+      samples: () => db.data.repos.recoverySamples(),
+      recovery: () => db.data.repos.recovery(),
+      workouts: async () => [],
+      clock: createManualClock(LATER),
+      timeZone: TZ,
+      log: (event, counts) => logs.push({ event, counts }),
+      rules,
+      ...overrides,
+    });
+  const needOf = async (day: string): Promise<number | undefined> => (await (await db.data.repos.recovery()).getDay(day as LocalDate))?.summary.sleepNeedMinutes;
+  const hlcs = async (): Promise<string> => JSON.stringify(await db.driver.select('SELECT date, hlc FROM recovery_day ORDER BY date'));
+
+  beforeEach(async () => {
+    db = await openBaseDb(DEVICE);
+    logs = [];
+    // Résumés calculés par une version précédente (marqueur ancien) ; l'un porte une valeur de l'ancienne règle.
+    await createShortcutImportService({
+      reader: reader(async () => [ok('sommeil.csv', NIGHTS)]),
+      samples: () => db.data.repos.recoverySamples(),
+      recovery: () => db.data.repos.recovery(),
+      workouts: async () => [],
+      clock: createManualClock(NOW),
+      timeZone: TZ,
+      log: () => undefined,
+    }).run('manual');
+    await db.driver.execute(`UPDATE recovery_day SET sleep_need_minutes = 630 WHERE date = '${OLD_DAY}'`);
+    stored = SLEEP_RULES_VERSION - 1;
+  });
+  afterEach(async () => {
+    await db.close();
+  });
+
+  it('dossier inaccessible : recalcul depuis les échantillons locaux, marqueur posé', async () => {
+    const r = reader(async () => {
+      throw new ShortcutFolderError('injoignable');
+    });
+    const result = await service(r).run('manual');
+    expect(result.status).toBe('folder-unavailable');
+    expect(result.recomputedDays).toBeGreaterThan(2);
+    expect(await needOf(OLD_DAY)).toBe(450);
+    expect(stored).toBe(SLEEP_RULES_VERSION);
+  });
+
+  it('fichiers absents : recalcul depuis les échantillons locaux, marqueur posé', async () => {
+    const result = await service(reader(async () => ABSENT())).run('manual');
+    expect(result.status).toBe('done');
+    expect(result.files.every((f) => f.state === 'absent')).toBe(true);
+    expect(await needOf(OLD_DAY)).toBe(450);
+    expect(stored).toBe(SLEEP_RULES_VERSION);
+  });
+
+  it('lecture d’ouverture limitée par les 30 minutes : le recalcul de règle a lieu quand même, sans lire le dossier', async () => {
+    const r = reader(async () => ABSENT(), { automatic: true });
+    const result = await service(r, { clock: createManualClock('2026-11-08T10:10:00.000Z') }).run('open');
+    expect(result.status).toBe('throttled');
+    expect(r.read).not.toHaveBeenCalled();
+    expect(await needOf(OLD_DAY)).toBe(450);
+    expect(stored).toBe(SLEEP_RULES_VERSION);
+  });
+
+  it('recalcul interrompu : marqueur NON posé, puis repris au lancement suivant', async () => {
+    const recovery = await db.data.repos.recovery();
+    let calls = 0;
+    const failing = {
+      ...recovery,
+      saveDay: async (output: Parameters<typeof recovery.saveDay>[0]) => {
+        calls += 1;
+        if (calls > 3) throw new Error('arrêt');
+        return recovery.saveDay(output);
+      },
+    };
+    const first = await service(reader(async () => ABSENT()), { recovery: async () => failing }).run('manual');
+    expect(first.recomputeFailed).toBe(true);
+    expect(stored).toBe(SLEEP_RULES_VERSION - 1);
+    expect(logs.some((l) => l.event === 'recovery-import-rules-recompute')).toBe(false);
+    await service(reader(async () => ABSENT())).run('manual');
+    expect(await needOf(OLD_DAY)).toBe(450);
+    expect(stored).toBe(SLEEP_RULES_VERSION);
+  });
+
+  it('idempotence : une fois le marqueur à jour, un second passage sans fichier n’écrit rien', async () => {
+    await service(reader(async () => ABSENT())).run('manual');
+    const before = await hlcs();
+    const again = await service(reader(async () => ABSENT()), { clock: createManualClock('2026-11-08T11:30:00.000Z') }).run('manual');
+    expect(again.recomputedDays).toBe(0);
+    expect(await hlcs()).toBe(before);
+  });
+
+  it('installation neuve sans aucune donnée : aucun résumé inventé, marqueur posé', async () => {
+    await db.close();
+    db = await openBaseDb(DEVICE);
+    stored = null;
+    const result = await service(reader(async () => ABSENT())).run('manual');
+    expect(result.recomputedDays).toBe(0);
+    expect(await (await db.data.repos.recovery()).listDays('2026-10-01' as LocalDate, '2026-11-08' as LocalDate)).toEqual([]);
+    expect(stored).toBe(SLEEP_RULES_VERSION);
+  });
+});
