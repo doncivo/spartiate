@@ -654,7 +654,7 @@ describe('FIX-0172 : recalcul de règle indépendant de l’import', () => {
 
   it('dossier inaccessible : recalcul depuis les échantillons locaux, marqueur posé', async () => {
     const r = reader(async () => {
-      throw new ShortcutFolderError('injoignable');
+      throw new ShortcutFolderError('unreachable');
     });
     const result = await service(r).run('manual');
     expect(result.status).toBe('folder-unavailable');

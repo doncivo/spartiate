@@ -52,10 +52,15 @@ export interface RecoveryWorkout {
 
 export interface Contributor {
   readonly key: 'hrv' | 'resting_hr' | 'sleep';
-  /** z-score borné (hrv, resting_hr) ou facteur de sommeil (sleep). */
+  /** z-score arrondi à 0,01 (hrv, resting_hr) ou facteur de sommeil (sleep). */
   readonly value: number;
   /** Poids dans `raw` ; null pour le facteur de sommeil. */
   readonly weight: number | null;
+  /**
+   * FIX-0172 (D-134) : décision « valeur inhabituelle » (hrv, resting_hr) prise au calcul sur le z NON arrondi, au-delà de 2 σ (seuil strict),
+   * publiée avec le résumé pour que le PC affiche la même chose sans recalcul. Absente : résumé d'une version précédente (et facteur de sommeil).
+   */
+  readonly unusual?: boolean;
 }
 
 /** Résumé du jour, prêt pour `recovery_day`. */

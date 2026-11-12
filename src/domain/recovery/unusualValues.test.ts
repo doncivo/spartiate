@@ -3,7 +3,8 @@ import { buildBaseline } from './baseline';
 import { RECOVERY_CONFIG } from './config';
 import { summarizeRecoveryDay } from './daySummary';
 import type { Contributor, NightRecord } from './types';
-import { UNUSUAL_SIGMA, beyondUnusualSigma, unusualValues, type UnusualDayInput } from './unusualValues';
+import { beyondUnusualSigma } from './recoveryScore';
+import { UNUSUAL_SIGMA, unusualValues, type UnusualDayInput } from './unusualValues';
 
 /**
  * I6-01 point A (§ 16.7) : « valeurs inhabituelles ». FC de repos > μ + 2 σ ou HRV < μ − 2 σ, deux nuits de suite, nuits valides seulement.

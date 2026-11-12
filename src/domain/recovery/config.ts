@@ -68,6 +68,9 @@ export const RECOVERY_CONFIG = {
     episodeGapMinutes: 60,
   },
 
+  /** § 16.7 Valeurs inhabituelles : z au-delà de 2 σ, seuil STRICT sur le z non arrondi (décision d'Ali du 12/11/2026, D-134, révise D-95). */
+  unusualSigma: 2,
+
   /** § 16.7 Heure de coucher cible : médiane de l'heure de lever sur 14 j. */
   bedtime: { wakeDays: 14, minWakeNights: 7 },
 
