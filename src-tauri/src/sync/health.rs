@@ -1,7 +1,9 @@
 //! Lecture du dossier `sante/` de la synchro (I5-03 point 1, D-90, H-26 ; sans nouveau Swift).
 //!
 //! Le raccourci « Spartiate — récupération » écrit `hrv.csv`, `fc-repos.csv`, `sommeil.csv` et `pas.csv` dans
-//! `iCloud Drive/Spartiate/sante/`. Spartiate les lit par le marque-page que le plugin folder-bookmark détient déjà pour la synchro
+//! `iCloud Drive/Spartiate/sante/` ; depuis I6-04 (D-113), le raccourci « Spartiate — corps et nutrition » y écrit aussi dix fichiers Renpho / Santé
+//! (`poids.csv`, `masse-grasse.csv`, `masse-maigre.csv`, `tour-taille.csv`, `taille.csv`, `energie.csv`, `proteines.csv`, `glucides.csv`,
+//! `lipides.csv`, `fibres.csv`) : quatorze noms exacts en tout, liste blanche fermée. Spartiate les lit par le marque-page que le plugin folder-bookmark détient déjà pour la synchro
 //! (mêmes commandes `status`, `download` et `readFrom` que les journaux : téléchargement forcé avant lecture, borne de taille avant
 //! lecture, jamais un chemin dans la WebView).
 //!
@@ -9,7 +11,7 @@
 //! - `DevicesOnly` enveloppe le dossier de la synchro (`Bound.fs`) : toute opération, lecture comprise, sur un chemin hors de
 //!   `devices/` est refusée (`Unsafe`) sans toucher au dossier. La synchro ne peut donc ni écrire, ni renommer, ni supprimer, ni lire,
 //!   ni lister `sante/`, et rien de `sante/` n'entre dans un journal ni n'est chiffré ;
-//! - `read_health_report` a son propre accès au dossier (`SyncCore::read_health_files`) : lecture seule, quatre noms (casse et accents du
+//! - `read_health_report` a son propre accès au dossier (`SyncCore::read_health_files`) : lecture seule, quatorze noms (casse et accents du
 //!   dossier, casse des noms de fichiers ignorés), aucune écriture ; il liste la racine et `sante/` pour décrire le dossier (comptes seulement, I5-04). Un fichier absent ou le dossier absent donne l'état « absent », jamais une erreur.
 
 use std::time::Duration;
@@ -23,11 +25,41 @@ use super::{fail, SyncCode, SyncResult};
 
 /// Sous-dossier du raccourci, sous la racine liée.
 pub const HEALTH_DIR: &str = "sante";
-/// Les quatre fichiers lus, noms exacts (casse comprise).
-pub const HEALTH_FILES: [&str; 4] = ["hrv.csv", "fc-repos.csv", "sommeil.csv", "pas.csv"];
+/// Les quatre fichiers de la récupération, noms exacts (casse comprise).
+pub const HEALTH_RECOVERY_FILES: [&str; 4] = ["hrv.csv", "fc-repos.csv", "sommeil.csv", "pas.csv"];
+/// I6-04 : les dix fichiers Renpho / Santé (poids, composition, mensurations, nutrition du jour), noms exacts.
+pub const HEALTH_BODY_FILES: [&str; 10] = [
+    "poids.csv",
+    "masse-grasse.csv",
+    "masse-maigre.csv",
+    "tour-taille.csv",
+    "taille.csv",
+    "energie.csv",
+    "proteines.csv",
+    "glucides.csv",
+    "lipides.csv",
+    "fibres.csv",
+];
+/// La liste blanche entière : les quatorze fichiers lus, noms exacts (casse comprise). Aucun autre nom n'est jamais lu.
+pub const HEALTH_FILES: [&str; 14] = [
+    "hrv.csv",
+    "fc-repos.csv",
+    "sommeil.csv",
+    "pas.csv",
+    "poids.csv",
+    "masse-grasse.csv",
+    "masse-maigre.csv",
+    "tour-taille.csv",
+    "taille.csv",
+    "energie.csv",
+    "proteines.csv",
+    "glucides.csv",
+    "lipides.csv",
+    "fibres.csv",
+];
 /// Taille maximale d'un fichier lu (2 Mio : même borne que le sélecteur de fichiers, `SHORTCUT_FILE_MAX_BYTES`).
 pub const MAX_HEALTH_FILE_BYTES: u64 = 2 * 1024 * 1024;
-/// Budget de téléchargement d'une lecture (les quatre fichiers ensemble). Un `download` occupe la file série du plugin : il doit finir avant
+/// Budget de téléchargement d'une lecture (les fichiers d'une même lecture). Un `download` occupe la file série du plugin : il doit finir avant
 /// l'échéance d'un appel de synchro (20 s, `BOOKMARK_CALL_DEADLINE_MS`), sinon un cycle en cours rendrait `cloud-pending` (relecture D-26).
 pub const HEALTH_HYDRATE_BUDGET: Duration = Duration::from_secs(15);
 
@@ -154,7 +186,7 @@ pub fn read_health_files(fs: &dyn SyncFs, names: &[String]) -> SyncResult<Vec<He
     read_health_report(fs, names).map(|report| report.files)
 }
 
-/// Lit les fichiers demandés, dans l'ordre, et décrit le dossier. Un nom hors des quatre, un doublon ou plus de quatre noms : `bad-name` AVANT
+/// Lit les fichiers demandés, dans l'ordre, et décrit le dossier. Un nom hors des quatorze, un doublon ou plus de quatorze noms : `bad-name` AVANT
 /// tout accès. Lecture seule : une liste de la racine et de `sante/` (comptes et noms résolus, jamais renvoyés), puis une lecture par nom.
 pub fn read_health_report(fs: &dyn SyncFs, names: &[String]) -> SyncResult<HealthReport> {
     let distinct = names

@@ -20,7 +20,7 @@ import {
   type WeightSource,
 } from '../bodyProfile';
 import type { ThemeChoice } from '../model/settings';
-import { isMeasurementKind, isMeasurementValue, isPhotoFileName } from '../bodyProgress/measurements';
+import { isPhotoFileName, isStoredMeasurementKind, isStoredMeasurementValue } from '../bodyProgress/measurements';
 import { isIsoDateTime, isLocalDate } from '../types';
 import { SYNC_CATALOGUE, type SyncTable } from '../../domain/sync/syncTables';
 import { sha256Hex } from './sha256';
@@ -298,7 +298,7 @@ const jsonArray = (v: TrainingValue | undefined): boolean => {
 function measurementBoundsOk(id: string, v: Readonly<Record<string, TrainingValue>>): boolean {
   const kind = v['kind'];
   const value = v['value'];
-  return typeof kind === 'string' && isMeasurementKind(kind) && typeof value === 'number' && isMeasurementValue(kind, value) && id === `measurement|${String(v['date'])}|${kind}`;
+  return typeof kind === 'string' && isStoredMeasurementKind(kind) && typeof value === 'number' && isStoredMeasurementValue(kind, value) && id === `measurement|${String(v['date'])}|${kind}`;
 }
 
 /** I6-01 : bornes des CHECK de la migration 0011 (identifiant naturel, huit codes textuels au plus, « rien de particulier » = tableau vide). */

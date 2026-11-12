@@ -9,9 +9,12 @@ import { openBaseDb, type TestDb } from './testSetup';
  */
 const DEVICE = '60000000-0000-4000-8000-0000000000fc' as DeviceId;
 const D = (day: number): LocalDate => `2026-11-${String(day).padStart(2, '0')}` as LocalDate;
-let db: TestDb;
-afterEach(async () => db.close());
-const measures = async () => db.data.repos.measurements();
+let db: TestDb | undefined;
+afterEach(async () => {
+  await db?.close();
+  db = undefined;
+});
+const measures = async () => (db as TestDb).data.repos.measurements();
 
 describe('genres de mesures importées', () => {
   it('liste fermée, format accepté par le CHECK SQL, bornes nommées', () => {
@@ -48,6 +51,6 @@ describe('MeasurementRepository : genres de Santé', () => {
     await expect(repo.save(D(8), 'health_height_cm', 99)).rejects.toMatchObject({ code: 'invalid' });
     await repo.save(D(8), 'waist', 82);
     await repo.save(D(8), 'health_waist_cm', 83);
-    expect(await db.driver.select('SELECT COUNT(*) AS n FROM measurement')).toEqual([{ n: 2 }]);
+    expect(await (db as TestDb).driver.select('SELECT COUNT(*) AS n FROM measurement')).toEqual([{ n: 2 }]);
   });
 });

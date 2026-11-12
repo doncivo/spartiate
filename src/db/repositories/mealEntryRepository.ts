@@ -8,6 +8,8 @@ import type { DeviceId, Hlc, IsoDateTime, LocalDate, LocalTime } from '../../dom
  * - Les valeurs sont validées par le domaine (`validateMealEntry`) : refus `'invalid'`, rien n'est écrit. Kcal et macros sont un instantané
  *   NULLABLE (inconnu = `null`, jamais 0) ; `foodName` fige le nom ; `foodId` est une référence logique (`ciqual:<code>` ou UUID).
  * - Une ligne issue d'une photo (`method photo`, `source estimate`) reste corrigeable avant et après enregistrement (`update`).
+ * - I6-04 (D-113) : toute entrée écrite pour un jour (création, modification) SUPPRIME l'entrée « Renpho — total du jour » vivante de ce jour : le journal
+ *   Spartiate fait foi (`supersedeRenpho`). Écrire l'entrée Renpho elle-même ne supprime rien.
  * - `createMany` valide TOUTES les entrées avant d'écrire la première ; à appeler dans `DataAccess.transaction` pour l'atomicité.
  */
 
@@ -39,8 +41,8 @@ export interface MealEntryRepository {
   get(id: string, options?: { readonly includeDeleted?: boolean }): Promise<MealEntryRecord | null>;
   /** Entrées d'une date, par heure puis création. */
   listByDate(date: LocalDate): Promise<readonly MealEntryRecord[]>;
-  /** Entrées de `from` à `to` inclus, par date, heure puis création. */
-  listBetween(from: LocalDate, to: LocalDate): Promise<readonly MealEntryRecord[]>;
+  /** Entrées de `from` à `to` inclus, par date, heure puis création ; `includeDeleted` : les entrées supprimées aussi (l'import respecte une suppression). */
+  listBetween(from: LocalDate, to: LocalDate, options?: { readonly includeDeleted?: boolean }): Promise<readonly MealEntryRecord[]>;
   /** Aliments distincts (hors Quick Add), du plus récent au plus ancien, avec la dernière prise. */
   recentFoods(limit: number): Promise<readonly RecentFood[]>;
 }

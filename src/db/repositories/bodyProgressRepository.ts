@@ -1,4 +1,4 @@
-import type { MeasurementKind } from '../../domain/bodyProgress';
+import type { StoredMeasurementKind } from '../../domain/bodyProgress';
 import type { DeviceId, Hlc, IsoDateTime, LocalDate } from '../../domain/types';
 
 /**
@@ -11,8 +11,9 @@ export interface MeasurementRecord {
   /** `measurement|AAAA-MM-JJ|genre`. */
   readonly id: string;
   readonly day: LocalDate;
-  readonly kind: MeasurementKind;
-  /** Centimètres. */
+  /** Une zone saisie, ou un genre importé de Santé (`health_*`, I6-04). */
+  readonly kind: StoredMeasurementKind;
+  /** Centimètres (zones) ; l'unité d'un genre importé est dans son nom. */
   readonly value: number;
   readonly createdAt: IsoDateTime;
   readonly updatedAt: IsoDateTime;
@@ -26,11 +27,16 @@ export interface MeasurementRepository {
    * Enregistre la mesure du jour (crée la ligne, la modifie, ou rétablit une mesure supprimée). Même valeur : aucune écriture. Date, genre ou valeur hors
    * bornes : `'invalid'`, rien n'est écrit.
    */
-  save(day: LocalDate, kind: MeasurementKind, value: number): Promise<MeasurementRecord>;
+  save(day: LocalDate, kind: StoredMeasurementKind, value: number): Promise<MeasurementRecord>;
   /** Supprime la mesure (suppression logique, la synchro la suit) ; sans effet sans ligne vivante. */
-  remove(day: LocalDate, kind: MeasurementKind): Promise<void>;
-  /** Mesures vivantes d'un genre (ou de tous), de la plus ancienne à la plus récente ; un genre inconnu (appareil plus récent) n'est pas rendu. */
-  list(kind?: MeasurementKind): Promise<readonly MeasurementRecord[]>;
+  remove(day: LocalDate, kind: StoredMeasurementKind): Promise<void>;
+  /** La mesure d'un jour et d'un genre, SUPPRIMÉE comprise (l'import respecte une suppression) ; `null` sans ligne. */
+  find(day: LocalDate, kind: StoredMeasurementKind): Promise<MeasurementRecord | null>;
+  /**
+   * Mesures vivantes d'un genre, de la plus ancienne à la plus récente ; sans genre : les ZONES saisies seulement (les genres importés de Santé se lisent
+   * par leur genre) ; un genre inconnu (appareil plus récent) n'est pas rendu.
+   */
+  list(kind?: StoredMeasurementKind): Promise<readonly MeasurementRecord[]>;
 }
 
 export interface ProgressPhotoRecord {
