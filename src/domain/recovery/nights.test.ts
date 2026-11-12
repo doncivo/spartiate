@@ -111,11 +111,11 @@ describe('segments « Au lit » (I5-06)', () => {
     expect(nights).toEqual([]);
   });
 
-  it('un bloc « Au lit » après la nuit ne change pas le temps endormi ; le réveil inclut le temps au lit qui suit', () => {
+  it('un bloc « Au lit » après la nuit ne change ni le temps endormi ni le réveil (FIX-0172 constat 7, D-131 : réveil = fin du dernier segment endormi)', () => {
     const { nights } = buildSleepNights(segs([line(iso(5, '02:00'), iso(5, '09:30'), 'Endormi'), line(iso(5, '10:00'), iso(5, '10:40'), 'Au lit'), line(iso(5, '15:00'), iso(5, '16:30'), 'Au lit')]), TZ);
     expect(nights).toHaveLength(1);
     expect(nights[0]?.asleepMinutes).toBe(450);
-    expect(nights[0]?.wakeAt).toBe(new Date(iso(5, '10:40')).toISOString());
+    expect(nights[0]?.wakeAt).toBe(new Date(iso(5, '09:30')).toISOString());
   });
 
   it('semaine type avec trois blocs « Au lit » l’après-midi : sept nuits, dette proche de 0, besoin proche de 7 h 30', () => {

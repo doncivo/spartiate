@@ -53,12 +53,30 @@ export const IMPORT_LOG_EVENTS = [
   'recovery-import-purge',
   'recovery-import-purge-failed',
   'recovery-import-after-failed',
+  'recovery-import-reread',
 ] as const;
 export type ImportLogEvent = (typeof IMPORT_LOG_EVENTS)[number];
 export type ImportLog = (event: ImportLogEvent, counts: Readonly<Record<string, number>>) => void;
 
-/** `open` : ouverture de l'app et retour au premier plan (dossier, au plus une fois par `AUTO_IMPORT_INTERVAL_MS`) ; `manual` : « Importer maintenant » (dossier) ; `pick` : sélecteur de fichiers, en secours. */
-export type ImportTrigger = 'open' | 'manual' | 'pick';
+/**
+ * `open` : ouverture de l'app et retour au premier plan (dossier, au plus une fois par `AUTO_IMPORT_INTERVAL_MS`) ; `manual` : « Importer maintenant »
+ * (dossier) ; `pick` : sélecteur de fichiers, en secours ; `reread` (FIX-0172, D-135) : relecture unique du dossier après une ouverture qui n'a rien
+ * apporté, comme `open` (lecteur automatique seulement) mais sans la limite des 30 minutes.
+ */
+export type ImportTrigger = 'open' | 'manual' | 'pick' | 'reread';
+
+/** FIX-0172 (D-135) : délai de la relecture après la lecture d'ouverture (le raccourci « Lorsque Spartiate est ouverte » réécrit les fichiers). */
+export const REREAD_DELAY_MS = 45_000;
+
+/**
+ * Une relecture est-elle utile après cette lecture d'ouverture ? Oui si et seulement si elle n'a rien importé de nouveau (aucune ligne ajoutée ni
+ * remplacée) et qu'une lecture du dossier est possible : lue sans rien de nouveau, limitée par les 30 minutes ou dossier injoignable. Jamais sur PC
+ * (« unsupported »), sans lecteur automatique (« needs-pick ») ni pendant un autre import (« busy »).
+ */
+export function shouldReread(result: Pick<ImportRunResult, 'status' | 'files'>): boolean {
+  if (result.status !== 'done' && result.status !== 'throttled' && result.status !== 'folder-unavailable') return false;
+  return result.files.every((f) => f.added === 0 && f.updated === 0);
+}
 
 /** I5-03 (D-90) : lecture automatique au plus une fois toutes les 30 minutes (en mémoire pour la session, et d'après le dernier import gardé en base). */
 export const AUTO_IMPORT_INTERVAL_MS = 30 * 60 * 1000;
@@ -121,8 +139,12 @@ const TYPE_OF: Readonly<Record<ShortcutFileName, RecoverySampleType>> = { 'hrv.c
 const MAX_DIAG_ENTRIES = 5;
 const LIST_ERR_CODE: Readonly<Record<ShortcutSanteListError, number>> = { '': 0, 'not-found': 1, 'unsafe-name': 2, cloud: 3, io: 4 };
 
-/** Version de la règle du sommeil (I5-06 : nuit = plus long épisode, siestes et blocs « Au lit » ignorés). Un changement recalcule une fois les 30 derniers jours. */
-export const SLEEP_RULES_VERSION = 2;
+/**
+ * Version de la règle du sommeil. 2 (I5-06) : nuit = plus long épisode, siestes et blocs « Au lit » ignorés. 3 (FIX-0172) : dette à compensation
+ * partielle (D-130), épisodes et réveil par les seuls segments endormis (D-131), stades Apple Watch (D-132). Un changement recalcule une fois
+ * les 30 derniers jours, même sans fichier importé (D-133).
+ */
+export const SLEEP_RULES_VERSION = 3;
 const RECOMPUTE_DAYS = 30;
 const SAMPLE_WINDOW_DAYS = 60;
 const WORKOUT_WINDOW_DAYS = 45;
@@ -187,7 +209,8 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     }
   }
 
-  async function recompute(samples: RecoverySampleRepository, today: string, now: string, force: boolean): Promise<number> {
+  /** `imported` : au moins un fichier importé par CE lancement ; sans import (recalcul de règle seul, D-133), rien n'est inventé sur une base vide. */
+  async function recompute(samples: RecoverySampleRepository, today: string, now: string, force: boolean, imported = true): Promise<number> {
     const tz = deps.timeZone;
     const from = new Date(Date.parse(now) - SAMPLE_WINDOW_DAYS * DAY_MS).toISOString();
     const [sleep, hrv, rhr] = await Promise.all([samples.listWindow('sommeil', from, now), samples.listWindow('hrv', from, now), samples.listWindow('fc-repos', from, now)]);
@@ -205,6 +228,8 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       retained: debt.retained,
       excluded_no_asleep: debt.excludedNoAsleep,
       excluded_short: debt.excludedShort,
+      nights_short: debt.short,
+      nights_long: debt.long,
       ignored_episodes: ignoredGroups,
       rules_version: SLEEP_RULES_VERSION,
     });
@@ -216,6 +241,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     const recovery = await deps.recovery();
     const oldest = shiftDay(today, -(RECOMPUTE_DAYS - 1));
     const computedAt = new Map((await recovery.listDays(oldest as LocalDate, today as LocalDate)).map((d) => [d.summary.day, d.summary.computedAt] as const));
+    if (!imported && records.length === 0 && computedAt.size === 0) return 0;
     // Jours dont une mesure a été écrite par CET import (ajoutée ou remplacée) : sommeil = jour du réveil, hrv / fc-repos = jour de la mesure.
     const touched = new Set<string>();
     for (const [rows, useEnd] of [[sleep, true], [hrv, false], [rhr, false]] as const) {
@@ -273,6 +299,25 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     }
   }
 
+  /**
+   * FIX-0172 (constat 2, D-133) : recalcul unique d'une nouvelle règle du sommeil depuis les échantillons LOCAUX, quand ce lancement n'a importé
+   * aucun fichier (dossier inaccessible, fichiers absents ou illisibles, lecture limitée par les 30 minutes, sélecteur annulé). Le marqueur
+   * n'est posé qu'après un recalcul complet ; un échec est journalisé et repris au lancement suivant. null : règle déjà à jour.
+   */
+  async function recomputeRulesOnly(): Promise<{ readonly recomputedDays: number; readonly recomputeFailed: boolean } | null> {
+    if (!(await rulesOutdated())) return null;
+    const at = nowIso();
+    try {
+      const recomputedDays = await recompute(await deps.samples(), utcToLocal(at, deps.timeZone).date, at, true, false);
+      await markRulesCurrent();
+      deps.log('recovery-import-recompute', { days: recomputedDays });
+      return { recomputedDays, recomputeFailed: false };
+    } catch {
+      deps.log('recovery-import-recompute-failed', {});
+      return { recomputedDays: 0, recomputeFailed: true };
+    }
+  }
+
   /** Une lecture automatique a-t-elle eu lieu il y a moins de 30 minutes (cette session, ou dernier import gardé en base) ? */
   async function attemptedRecently(): Promise<boolean> {
     const now = deps.clock.nowMs();
@@ -326,13 +371,13 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     } catch (error) {
       if (error instanceof ShortcutFolderError) {
         deps.log('recovery-import-folder-unavailable', {});
-        return { status: 'folder-unavailable', files: [], recomputedDays: 0, recomputeFailed: false, at: null };
+        return { status: 'folder-unavailable', files: [], recomputedDays: 0, recomputeFailed: false, at: null, ...(await recomputeRulesOnly()) };
       }
       reads = null;
     }
     if (reads === null) {
       deps.log('recovery-import-cancelled', {});
-      return { status: 'cancelled', files: [], recomputedDays: 0, recomputeFailed: false, at: null };
+      return { status: 'cancelled', files: [], recomputedDays: 0, recomputeFailed: false, at: null, ...(await recomputeRulesOnly()) };
     }
     diagnose(source, reads);
     const at = nowIso();
@@ -366,6 +411,9 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
         recomputeFailed = true;
         deps.log('recovery-import-recompute-failed', {});
       }
+    } else {
+      const rules = await recomputeRulesOnly();
+      if (rules !== null) ({ recomputedDays, recomputeFailed } = rules);
     }
     const count = (state: FileOutcome['state']): number => files.filter((f) => f.state === state).length;
     deps.log('recovery-import-done', { files: files.length, imported: count('imported'), absent: count('absent'), unreadable: count('unreadable'), failed: count('failed') });
@@ -382,9 +430,15 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
         if (trigger !== 'open') deps.log('recovery-import-unsupported', {});
         return none;
       }
-      if (trigger === 'open' && !deps.reader.automatic) {
+      if ((trigger === 'open' || trigger === 'reread') && !deps.reader.automatic) {
         deps.log('recovery-import-needs-pick', {});
-        return { ...none, status: 'needs-pick' };
+        if (running) return { ...none, status: 'needs-pick' };
+        running = true;
+        try {
+          return { ...none, status: 'needs-pick', ...(await recomputeRulesOnly()) };
+        } finally {
+          running = false;
+        }
       }
       if (running) {
         deps.log('recovery-import-busy', {});
@@ -394,7 +448,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       try {
         if (trigger === 'open' && (await attemptedRecently())) {
           deps.log('recovery-import-throttled', {});
-          return { ...none, status: 'throttled' };
+          return { ...none, status: 'throttled', ...(await recomputeRulesOnly()) };
         }
         lastAttemptMs = deps.clock.nowMs();
         const result: ImportRunResult = { ...(await execute(trigger === 'pick' ? (deps.fallback ?? deps.reader) : deps.reader)), trigger };

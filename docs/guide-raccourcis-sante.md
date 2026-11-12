@@ -141,8 +141,11 @@ formater deux dates, puis écrire une ligne `début;fin;stade` :
 3. **Texte**, avec exactement : *Date formatée* (début) `;` *Date formatée* (fin) `;` *Élément de répétition › Valeur*
    - Les deux dates sont les variables produites par les deux actions **Formater la date** (Raccourcis les nomme « Date formatée »
      et « Date formatée 2 » : nom à vérifier).
-   - La valeur du stade (*Élément de répétition › Valeur*) doit donner l’un de ces libellés : **Au lit**, **Endormi**, **Éveillé**,
-     **Paradoxal**, **Profond**, **Principal** (libellés en français, à vérifier sur ton iPhone). Un autre libellé est refusé.
+   - La valeur du stade (*Élément de répétition › Valeur*) doit donner l’un de ces libellés : **Au lit**, **Endormi**,
+     **Endormi (non précisé)**, **Éveillé**, **Paradoxal**, **Profond**, **Principal** ou **Essentiel** (libellés en français, à vérifier
+     sur ton iPhone ; les libellés anglais In Bed, Asleep, Asleep (Unspecified), Awake, REM, Deep, Core sont lus aussi). Tous les stades
+     de l’Apple Watch (Principal ou Essentiel, Profond, Paradoxal, Endormi non précisé) comptent comme temps endormi ; « Au lit » et
+     « Éveillé » jamais. Un autre libellé est refusé.
    - Une seule ligne par segment : ne mets aucun autre texte dans la ligne.
 
 Le texte produit ressemble à : `2026-11-07T23:10:00+01:00;2026-11-08T00:05:00+01:00;Profond`.
@@ -160,11 +163,24 @@ Le texte produit ressemble à : `2026-11-07T23:10:00+01:00;2026-11-08T00:05:00+0
 Raccourcis → onglet **Automatisation** → **+** → **Heure de la journée** → 07:30, **Quotidiennement** → **Exécuter immédiatement**
 (sans demander) → choisis « Spartiate — récupération ».
 
+### B.3 bis Automatisation à l’ouverture de Spartiate (facultatif)
+
+Pour des données toujours fraîches, le raccourci peut aussi se lancer chaque fois que tu ouvres Spartiate :
+Raccourcis → onglet **Automatisation** → **+** → **App** → choisis **Spartiate**, coche **Est ouverte** (« Lorsque Spartiate est
+ouverte », nom à vérifier) → **Exécuter immédiatement** (sans demander) → choisis « Spartiate — récupération ».
+
+Le raccourci réécrit alors les fichiers de `sante` pendant que l’app démarre : la première lecture de Spartiate, quelques secondes après
+l’ouverture, peut encore voir les anciens fichiers. **Si cette première lecture n’a rien apporté de nouveau, Spartiate relit le dossier
+une seule fois, environ 45 secondes plus tard** (même si la dernière lecture date de moins de 30 minutes). Il n’y a qu’une relecture par
+ouverture, jamais de boucle ; si tu quittes l’app avant les 45 secondes, la relecture est annulée. Le journal de Plus › Journaux la note
+`recovery-import-reread` (`ok` quand elle a eu lieu, `skipped` quand elle a été annulée ou n’a pas pu lire).
+
 ### B.4 Lecture dans Spartiate (automatique)
 
 Spartiate lit les quatre fichiers du dossier `iCloud Drive › Spartiate › sante` **sans que tu fasses rien** :
 
-- à l’ouverture de l’app et à chaque retour au premier plan, **au plus une fois toutes les 30 minutes** ;
+- à l’ouverture de l’app et à chaque retour au premier plan, **au plus une fois toutes les 30 minutes** (plus une relecture, environ
+  45 secondes après l’ouverture, si la première lecture n’a rien apporté de nouveau : voir B.3 bis) ;
 - quand tu touches Plus → Apple Santé → **Importer maintenant** (relit le dossier tout de suite) ;
 - **Choisir les fichiers** (même écran) reste le secours : le sélecteur d’iOS, si le dossier n’est pas lu.
 
@@ -173,7 +189,7 @@ Chaque fichier encore dans iCloud est téléchargé avant la lecture. La lecture
 
 **Nom du dossier `sante` (important).** Si tu crées le dossier à la main dans Fichiers, **tape « sante » toi-même, sans utiliser les suggestions du clavier** : la suggestion ajoute une espace ou une majuscule que iOS garde (« sante », « Sante »), et le dossier a un nom différent de « sante » (la lecture le retrouve en général, mais retaper le nom évite tout doute). Si Spartiate dit « Dossier sante illisible (nom du dossier) », renomme-le en tapant « sante » à la main, puis touche « Importer maintenant ».
 
-**Après une mise à jour de Spartiate** qui change le calcul du sommeil, les résumés des 30 derniers jours sont recalculés une seule fois, à l’import suivant, sans rien faire de ta part.
+**Après une mise à jour de Spartiate** qui change le calcul du sommeil, les résumés des 30 derniers jours sont recalculés une seule fois, à l’ouverture suivante, à partir des données déjà lues, sans rien faire de ta part : même si le dossier `sante` n’est pas joignable ou si les fichiers sont absents. Si ce recalcul est interrompu, il est repris à l’ouverture suivante.
 Cette lecture automatique est constatée sur ton iPhone (H-26, 11 nov. 2026). Si Spartiate dit que le dossier n’a pas pu être lu, lie le dossier `Spartiate` dans Plus → Appareils et synchro, ou utilise **Choisir les fichiers**.
 
 L’écran Apple Santé montre, pour chaque type, la date du dernier import, le nombre de lignes ajoutées, déjà connues et refusées (avec la raison du refus : nombre de colonnes, date sans fuseau, stade inconnu…), sans jamais afficher une valeur de mesure. Un fichier absent est dit « absent », ce n’est pas une erreur.

@@ -1,5 +1,6 @@
 // SPA-001a, critère 8 quater (D-49) : le PRD v6.3 en chapitres conserve le texte de la v6.2, aux seules corrections listées près.
-// Source : docs/archive/PRD-v6.2.md (copie du commit de départ). Corrections : scripts/release/fixtures/prd-v6.3-changes.json.
+// Source : docs/archive/PRD-v6.2.md (copie du commit de départ). Corrections : scripts/release/fixtures/prd-v6.3-changes.json
+// (D-47 à D-59 au découpage ; ensuite, seulement une décision d'Ali inscrite dans docs/decisions.md : D-130, FIX-0172).
 import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -42,10 +43,10 @@ describe('conservation du contenu v6.2 → v6.3', () => {
   it('les corrections listées sont motivées par une décision approuvée', () => {
     expect(changes.length).toBeGreaterThan(0);
     for (const change of changes) {
-      expect(['D-47', 'D-48', 'D-49', 'D-58', 'D-59']).toContain(change.decision);
+      expect(['D-47', 'D-48', 'D-49', 'D-58', 'D-59', 'D-130']).toContain(change.decision);
       expect(change.why.length).toBeGreaterThan(10);
     }
-    expect(new Set(changes.map((c) => c.decision))).toEqual(new Set(['D-47', 'D-48', 'D-49', 'D-58', 'D-59']));
+    expect(new Set(changes.map((c) => c.decision))).toEqual(new Set(['D-47', 'D-48', 'D-49', 'D-58', 'D-59', 'D-130']));
   });
   it('un fichier par section, nommé d’après son titre et son numéro, dans l’ordre', () => {
     expect(files).toEqual(source.map((section, index) => chapterFileName(section.heading, sectionNumber(section.heading, index))));
