@@ -190,7 +190,7 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
     press('60 min');
     press('Continuer');
     await title('Matériel');
-    press('Fitness Park Antony');
+    press('Salle complète');
     press('Continuer');
     await title('Priorités');
     press('Continuer');

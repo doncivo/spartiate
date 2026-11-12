@@ -169,13 +169,13 @@ describe('premier exercice composé du pattern seulement (critères 2 et 5)', ()
     await waitFor(async () => expect((await stored(BENCH.exerciseId)).map((s) => s.set_kind)).toEqual(['warmup', 'warmup', 'warmup', 'work', 'work', 'work']));
   });
 
-  it('haltères en premier du pattern : rampe aux haltères d’Antony, paire de 9 kg comprise (24 kg → 9 / 14 / 18)', async () => {
+  it('haltères en premier du pattern : rampe aux haltères de la salle complète, sans paire de 9 kg (FIX-0173 : 24 kg → 8 / 14 / 18)', async () => {
     await seedPast([[BENCH_DB, 22]]);
     await seedCurrent([BENCH_DB]);
     openSession();
     const p = await proposal(BENCH_DB);
     expect(await within(p).findByText('24 kg × 8 · 8 · 8')).toBeInTheDocument();
-    expect(within(p).getByText('Échauffement ajouté en acceptant : 9 kg × 8 · 14 kg × 5 · 18 kg × 2.')).toBeInTheDocument();
+    expect(within(p).getByText('Échauffement ajouté en acceptant : 8 kg × 8 · 14 kg × 5 · 18 kg × 2.')).toBeInTheDocument();
   });
 });
 

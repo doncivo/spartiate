@@ -53,14 +53,16 @@ describe('CONTENT-02 : catalogue étendu', () => {
     expect(search(catalog.list(), 'ez bar skull crusher').map((e) => e.id)).toContain('skull-crusher');
   });
 
-  it('compatibilité avec le profil Fitness Park Antony : un matériel absent du profil exclut l’exercice, sans modifier le profil', async () => {
+  it('compatibilité avec le profil « Salle complète » (FIX-0173) : un matériel absent du profil exclut l’exercice, sans modifier le profil', async () => {
     const content = await loadTrainingContent();
-    const antony = content.profiles.find((p) => p.id === 'fitness-park-antony');
-    if (antony === undefined) throw new Error('profil Antony absent');
-    const available = usableEquipment(antony);
-    const compatible = (id: string) => isExerciseCompatible(content.catalog.get(id) as never, antony);
-    for (const id of ['triceps-pushdown-supinated', 'curl-ez-bar', 'bench-press-smith', 'rack-pull', 'crunch', 'pull-up-weighted']) expect(compatible(id), id).toBe(true);
-    for (const id of ['bench-press-decline-barbell', 'dip-machine', 'belt-squat', 'hip-adduction-machine', 'lat-pulldown-machine']) expect(compatible(id), id).toBe(false);
-    expect(available.has('decline-bench')).toBe(false);
+    const salle = content.profiles.find((p) => p.id === 'fitness-park-antony');
+    if (salle === undefined) throw new Error('profil de salle absent');
+    const available = usableEquipment(salle);
+    const compatible = (id: string) => isExerciseCompatible(content.catalog.get(id) as never, salle);
+    for (const id of ['triceps-pushdown-supinated', 'curl-ez-bar', 'bench-press-smith', 'rack-pull', 'crunch', 'pull-up-weighted', 'bench-press-decline-barbell', 'dip-machine', 'hip-adduction-machine', 'lat-pulldown-machine']) expect(compatible(id), id).toBe(true);
+    // Machines spécialisées laissées hors de la salle générique (D-142) : belt squat.
+    for (const id of ['belt-squat']) expect(compatible(id), id).toBe(false);
+    expect(available.has('belt-squat-machine')).toBe(false);
+    expect(available.has('decline-bench')).toBe(true);
   });
 });

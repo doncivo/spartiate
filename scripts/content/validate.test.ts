@@ -279,7 +279,7 @@ describe('contenu embarqué réel', () => {
 
   it('compte au moins 150 exercices (extension CONTENT-02, D-83) et 4 programmes', () => {
     expect(real.stats['exercises']).toBeGreaterThanOrEqual(150);
-    expect(real.stats).toMatchObject({ programs: 4, profiles: 4 });
+    expect(real.stats).toMatchObject({ programs: 4, profiles: 3 });
   });
 
   it('n’embarque aucun média (H-9, D-71)', () => {
@@ -367,6 +367,8 @@ describe('contenu embarqué réel', () => {
     for (const id of bigGym) expect(equipment.has(id), id).toBe(true);
     expect(salle.inventory.dumbbells).toMatchObject({ minKg: 2, maxKg: 58, stepKg: 2, extraPairsKg: [] });
     expect(salle.inventory.kettlebells).toMatchObject({ minKg: 4, maxKg: 20 });
+    // Une copie de ce profil doit rester lisible par un appareil resté à la version précédente (MAX_LIST = 64 dans src/db/parse/equipmentJson.ts).
+    expect((salle.equipment as string[]).length).toBeLessThanOrEqual(64);
   });
 });
 

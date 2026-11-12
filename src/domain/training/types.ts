@@ -288,7 +288,7 @@ export interface DecisionReference {
   readonly reps: readonly number[];
 }
 
-/** Matériel vu par le moteur : inventaire et incréments d'un profil (le profil actif est choisi par l'appelant ; défaut : Fitness Park Antony). */
+/** Matériel vu par le moteur : inventaire et incréments d'un profil (le profil actif est choisi par l'appelant ; défaut : « Salle complète », FIX-0173). */
 export type ProgressionEquipment = Pick<EquipmentProfileInput, 'inventory' | 'increments'>;
 
 /** Exercice vu par le moteur. */
