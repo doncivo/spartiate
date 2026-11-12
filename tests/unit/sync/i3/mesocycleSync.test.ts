@@ -61,7 +61,7 @@ const cycleOf = async (d: SimDevice) => (await d.data.repos.mesocycles()).get(M1
 
 describe('catalogue de production : mesocycle (I3-02)', () => {
   it('juste avant les tables de nutrition (I4-02), sans parent, UUID ; colonnes et listes fermées', () => {
-    expect(SYNC_TABLE_ORDER.at(-10)).toBe('mesocycle');
+    expect(SYNC_TABLE_ORDER.at(-11)).toBe('mesocycle');
     const t = SYNC_CATALOGUE.table('mesocycle');
     if (!t) throw new Error('mesocycle');
     expect(t.idKind).toBe('uuid');

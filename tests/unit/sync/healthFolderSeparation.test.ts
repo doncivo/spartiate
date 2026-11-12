@@ -56,7 +56,7 @@ describe('dossier sante : séparé de la synchro', () => {
       expect(names).not.toContain(local);
       expect(SYNC_CATALOGUE.table(local)).toBeUndefined();
     }
-    // Seuls les résumés calculés sont publiés (D-89) : jamais une mesure brute.
-    expect(names.filter((n) => n.startsWith('recovery'))).toEqual(['recovery_day']);
+    // Seuls les résumés calculés (D-89) et le journal de facteurs (I6-01, cases cochées par Ali) sont publiés : jamais une mesure brute.
+    expect(names.filter((n) => n.startsWith('recovery'))).toEqual(['recovery_day', 'recovery_factor']);
   });
 });

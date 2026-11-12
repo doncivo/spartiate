@@ -43,3 +43,4 @@ export type * from './dayCompletenessRepository';
 export type * from './recipeRepository';
 export type * from './recoveryRepository';
 export type * from './recoverySampleRepository';
+export type * from './recoveryFactorRepository';

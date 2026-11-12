@@ -1,8 +1,8 @@
-import { useEffect, useState, type ReactElement } from 'react';
+import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { todayLocal } from '../../domain/clock';
-import type { RecoveryExplanationKey } from '../../domain/recovery';
+import { unusualValues, type RecoveryExplanationKey, type UnusualValues } from '../../domain/recovery';
 import type { LocalDate } from '../../domain/types';
-import type { RecoveryDayRecord } from '../../db/repositories';
+import type { FactorEntry, RecoveryDayRecord, RecoveryFactorRecord } from '../../db/repositories';
 import { formatDetailDate } from '../../i18n/format';
 import { tRecovery, type RecoveryTextKey } from '../../i18n/recoveryText';
 import { Button } from '../../ui';
@@ -10,6 +10,8 @@ import { useAppContainer } from '../app/AppContainerContext';
 import type { AppContainer } from '../app/container';
 import { useNavigationStore } from '../app/navigation';
 import { useSyncedData } from '../sync/remoteChanges';
+import { FactorJournalCard } from './FactorJournalCard';
+import { UnusualValuesCard } from './UnusualValuesCard';
 import { contributorTone, exertionDial, formatDuration, formatScore, recoveryDial, ringFraction, sleepDial, stalenessOf, stepsSummary, type StepsSummary } from './display';
 import './RecoveryToday.css';
 
@@ -27,23 +29,36 @@ type Ready = {
   /** Pas des 7 derniers jours (iPhone seulement) ; `null` sur le PC. */
   readonly steps: StepsSummary | null;
   readonly hasImport: boolean;
+  /** I6-01 : deux nuits inhabituelles de suite (carte « repos conseillé »), sinon `null`. */
+  readonly unusual: UnusualValues | null;
+  /** I6-01 : journée de la veille du journal de facteurs et sa saisie (`null` : non renseigné). */
+  readonly factorDay: LocalDate;
+  readonly factor: RecoveryFactorRecord | null;
 };
 type Load = { readonly status: 'loading' } | { readonly status: 'failed' } | Ready;
 
 const DAY_MS = 86_400_000;
+/** Jours relus pour la carte « valeurs inhabituelles » : le jour le plus récent, sa veille et une marge. */
+const UNUSUAL_LOOKBACK_DAYS = 3;
 const shift = (day: string, delta: number): LocalDate => new Date(Date.parse(`${day}T00:00:00.000Z`) + delta * DAY_MS).toISOString().slice(0, 10) as LocalDate;
 
 async function read(container: AppContainer, today: LocalDate): Promise<Ready> {
   const { repos } = container.data;
   const phone = container.platform.os === 'ios';
   // Dernier résumé sans borne basse : un résumé ancien reste affiché, avec son avis périmé.
-  const record = await (await repos.recovery()).latestDay();
-  if (!phone) return { status: 'ready', record, phone, importedAt: null, steps: null, hasImport: false };
+  const recovery = await repos.recovery();
+  const record = await recovery.latestDay();
+  // I6-01 : valeurs inhabituelles (deux derniers jours consécutifs, fonction pure du domaine) et journal de la veille.
+  const unusual = unusualValues((await recovery.listDays(shift(today, -UNUSUAL_LOOKBACK_DAYS), today)).map((r) => r.summary), { today });
+  const factorDay = shift(today, -1);
+  const factor = await (await repos.recoveryFactors()).get(factorDay);
+  const extra = { unusual, factorDay, factor };
+  if (!phone) return { status: 'ready', record, phone, importedAt: null, steps: null, hasImport: false, ...extra };
   const samples = await repos.recoverySamples();
   const states = await samples.listImportStates();
   const importedAt = states.reduce<string | null>((best, s) => (best === null || s.importedAt > best ? s.importedAt : best), null);
   const window = await samples.listWindow('pas', `${shift(today, -6)}T00:00:00.000Z`, `${today}T23:59:59.999Z`);
-  return { status: 'ready', record, phone, importedAt, steps: stepsSummary(window, today), hasImport: states.length > 0 };
+  return { status: 'ready', record, phone, importedAt, steps: stepsSummary(window, today), hasImport: states.length > 0, ...extra };
 }
 
 function Dial({ fraction, children, label }: { readonly fraction: number | null; readonly children: ReactElement | string; readonly label: string }) {
@@ -206,7 +221,13 @@ export function RecoveryToday() {
   const container = useAppContainer();
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
-  const synced = useSyncedData(['recovery_day']);
+  const synced = useSyncedData(['recovery_day', 'recovery_factor']);
+  const [factorFailed, setFactorFailed] = useState(false);
+  /** Remonte la carte du journal après un échec d'écriture : la case revient à l'état enregistré. */
+  const [resetEpoch, setResetEpoch] = useState(0);
+  const queue = useRef<Promise<void>>(Promise.resolve());
+  const pending = useRef(0);
+  const batchFailed = useRef(false);
   const today = todayLocal(container.clock);
 
   useEffect(() => {
@@ -248,5 +269,34 @@ export function RecoveryToday() {
       </section>
     );
   }
-  return <Cards load={load} today={today} nowMs={container.clock.nowMs()} />;
+  /** Saisies enchaînées dans l'ordre des tapes ; la relecture n'a lieu qu'une fois la file vidée (l'écran suit les tapes d'ici là). */
+  const saveFactor = (next: FactorEntry | null): void => {
+    const day = load.factorDay;
+    pending.current += 1;
+    queue.current = queue.current.then(async () => {
+      try {
+        const repo = await container.data.repos.recoveryFactors();
+        if (next === null) await repo.clear(day);
+        else await repo.save(day, next);
+      } catch {
+        // Le compteur n'est jamais remis à zéro : les saisies déjà en file se décomptent toutes (il ne devient jamais négatif).
+        batchFailed.current = true;
+      }
+      pending.current -= 1;
+      if (pending.current === 0) {
+        // File vidée : l'alerte reflète le lot qui vient de finir (un échec dans le lot), puis l'écran relit l'état enregistré.
+        setFactorFailed(batchFailed.current);
+        if (batchFailed.current) setResetEpoch((n) => n + 1);
+        batchFailed.current = false;
+        setAttempt((n) => n + 1);
+      }
+    });
+  };
+  return (
+    <>
+      {load.unusual !== null ? <UnusualValuesCard values={load.unusual} /> : null}
+      <Cards load={load} today={today} nowMs={container.clock.nowMs()} />
+      <FactorJournalCard key={`${String(resetEpoch)}:${load.factor?.hlc ?? ''}`} day={load.factorDay} entry={load.factor} failed={factorFailed} onChange={saveFactor} />
+    </>
+  );
 }
