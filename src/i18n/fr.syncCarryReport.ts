@@ -86,5 +86,6 @@ export const syncCarryReportFr = {
   kindRecipeIngredient: 'Ingrédient de recette',
   kindRecoveryDay: 'Résumé de récupération du jour',
   kindMuscleRecovery: 'Récupération d’un muscle',
+  kindRecoveryFactor: 'Journal de facteurs du jour',
   kindOther: 'Autre élément',
 } as const;

@@ -2,6 +2,14 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.12.0
+
+**Schéma 11 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** La mise à jour ajoute une table (additif) ; aucune donnée saisie n'est modifiée.
+
+- **Journal de facteurs (I6-01)** : sur Aujourd'hui (PC et iPhone), cases à cocher le matin pour la journée de la veille (alcool, caféine après 16 h, repas tardif, stress, courbatures, maladie, voyage, entraînement tardif) ou « Rien de particulier » en un tap ; modifiable dans la journée, synchronisé entre les deux appareils, jamais envoyé à un tiers. Progrès › Récupération : après 30 jours renseignés et au moins 5 jours avec un facteur, l'écart moyen de Recovery du lendemain avec et sans ce facteur, dit comme une association observée, pas une cause.
+- **Valeurs inhabituelles** : deux nuits de suite avec une HRV nettement sous ta base (au moins 2 σ) ou une fréquence cardiaque au repos nettement au-dessus : carte « repos conseillé » sur Aujourd'hui. Estimation, pas un avis médical ; aucune notification.
+- **Sauvegarde / export / synchro** : le journal est dans l'archive, dans la restauration et dans la synchro (les deux appareils l'écrivent).
+
 ## 0.11.5
 
 Correctifs (FIX-0115). **Pas de mise à jour de la base** (reste en version 10).

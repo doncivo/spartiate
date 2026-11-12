@@ -60,7 +60,7 @@ let counter = 0;
  * 17 migrations (la moitié du coût d'un test à deux appareils).
  */
 /** `legacy` : ancien schéma et ancien catalogue (banc de test, D-67) ; `i0` : migration 0001 réelle et catalogue de production. */
-export type SimSchema = 'legacy' | 'i0' | 'v3' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9';
+export type SimSchema = 'legacy' | 'i0' | 'v3' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9' | 'v10';
 
 /**
  * I1-03 : `v3` : base et catalogue d'une app arrêtée à la migration 0003 (séance locale, ni `workout` ni `workout_set` publiées), `sv` = 3 :
@@ -83,8 +83,10 @@ export const V7_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slic
 export const V8_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 16), order: SYNC_TABLE_ORDER.slice(0, 16) });
 /** I5-01 : `v9` : base et catalogue sans résumés de récupération (migration 0009), `sv` = 9 : PC pas encore mis à jour qui reçoit `recovery_day` et `muscle_recovery`. */
 export const V9_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 19), order: SYNC_TABLE_ORDER.slice(0, 19) });
-const SCHEMA_CATALOGUES = { v3: V3_CATALOGUE, v5: V5_CATALOGUE, v6: V6_CATALOGUE, v7: V7_CATALOGUE, v8: V8_CATALOGUE, v9: V9_CATALOGUE } as const;
-const schemaMigrations = (schema: SimSchema) => (schema === 'i0' ? i0Migrations : schema === 'v3' ? i0Migrations.slice(0, 3) : schema === 'v5' ? i0Migrations.slice(0, 5) : schema === 'v6' ? i0Migrations.slice(0, 6) : schema === 'v7' ? i0Migrations.slice(0, 7) : schema === 'v8' ? i0Migrations.slice(0, 8) : schema === 'v9' ? i0Migrations.slice(0, 9) : legacyMigrationList);
+/** I6-01 : `v10` : base et catalogue sans journal de facteurs (migration 0010), `sv` = 10 : appareil pas encore mis à jour qui reçoit `recovery_factor`. */
+export const V10_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 21), order: SYNC_TABLE_ORDER.slice(0, 21) });
+const SCHEMA_CATALOGUES = { v3: V3_CATALOGUE, v5: V5_CATALOGUE, v6: V6_CATALOGUE, v7: V7_CATALOGUE, v8: V8_CATALOGUE, v9: V9_CATALOGUE, v10: V10_CATALOGUE } as const;
+const schemaMigrations = (schema: SimSchema) => (schema === 'i0' ? i0Migrations : schema === 'v3' ? i0Migrations.slice(0, 3) : schema === 'v5' ? i0Migrations.slice(0, 5) : schema === 'v6' ? i0Migrations.slice(0, 6) : schema === 'v7' ? i0Migrations.slice(0, 7) : schema === 'v8' ? i0Migrations.slice(0, 8) : schema === 'v9' ? i0Migrations.slice(0, 9) : schema === 'v10' ? i0Migrations.slice(0, 10) : legacyMigrationList);
 const migratedImages: Partial<Record<SimSchema, Promise<Uint8Array>>> = {};
 function migratedDatabaseImage(schema: SimSchema = 'legacy'): Promise<Uint8Array> {
   const migrations = schemaMigrations(schema);

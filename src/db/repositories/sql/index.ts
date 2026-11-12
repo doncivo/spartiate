@@ -83,6 +83,8 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue, options: Repo
       return options.recoveryWriter === true ? signalingWrites(repository, ['saveDay', 'deleteDay']) : repository;
     }),
   recoverySamples: () => import('./recoverySampleRepository').then((m) => m.createRecoverySampleRepository(executor)),
+  // I6-01 : journal de facteurs, à la demande ; publié, écrit par les deux appareils (aucune règle de lecteur).
+  recoveryFactors: () => import('./recoveryFactorRepository').then((m) => signalingWrites(m.createRecoveryFactorRepository(executor, stamper), ['save', 'clear'])),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue, options)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)

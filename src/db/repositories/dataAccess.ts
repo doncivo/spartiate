@@ -27,6 +27,7 @@ import type { DayCompletenessRepository } from './dayCompletenessRepository';
 import type { RecipeRepository } from './recipeRepository';
 import type { RecoveryRepository } from './recoveryRepository';
 import type { RecoverySampleRepository } from './recoverySampleRepository';
+import type { RecoveryFactorRepository } from './recoveryFactorRepository';
 import type { ProjectRepository, SpaceRepository } from './spaceRepository';
 import type { RecurrenceRepository, TaskRepository } from './taskRepository';
 
@@ -82,6 +83,8 @@ export interface Repositories {
   readonly recovery: () => Promise<RecoveryRepository>;
   /** I5-01 : échantillons importés des fichiers Raccourcis et état du dernier import (LOCAUX, jamais publiés), chargés à la demande. */
   readonly recoverySamples: () => Promise<RecoverySampleRepository>;
+  /** I6-01 : journal de facteurs de la veille (publié, écrit par les deux appareils), chargé à la demande. */
+  readonly recoveryFactors: () => Promise<RecoveryFactorRepository>;
   /** Export / import de Spartiate (SPA-005, D-57), chargé à la demande. */
   readonly exportImport: () => Promise<ExportImportRepository>;
   /** Liens locaux aux Rappels Apple (K-05, ADR 0008 §10.2) : table non publiée, vide sur le PC. */

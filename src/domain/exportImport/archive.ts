@@ -29,7 +29,7 @@ import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
 export const EXPORT_APP = 'spartiate';
 /** Version de schéma écrite au manifeste et maximale acceptée à l'import : celle de la dernière migration (vérifiée par un test). */
-export const EXPORT_SV = 10;
+export const EXPORT_SV = 11;
 /** Réglages exportés (D-57 : unités, jour de check-in, thème). Les unités sont dans `profile` ; le jour de check-in n'existe pas encore (nutrition). */
 export const EXPORT_SETTING_KEYS = ['ui.theme'] as const;
 export type ExportSettingKey = (typeof EXPORT_SETTING_KEYS)[number];
@@ -65,7 +65,7 @@ export interface ExportWeight {
  * I5-01 (schéma 10) : RÉSUMÉS de récupération (`recovery_day`, `muscle_recovery`) ; les échantillons importés (`recovery_sample`) et l'état
  * d'import (`recovery_import_state`) ne sont jamais exportés : ils se relisent depuis les fichiers Raccourcis.
  */
-export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient', 'recovery_day', 'muscle_recovery'] as const;
+export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient', 'recovery_day', 'muscle_recovery', 'recovery_factor'] as const;
 /**
  * Colonnes ajoutées après la première version exportée de leur table : absentes d'une archive plus ancienne (0.3.0 : `workout_set` sans
  * `difficulty`), lues comme nulles. Toute autre colonne manquante reste refusée.
@@ -96,6 +96,7 @@ export const TABLE_SINCE_SV: Readonly<Partial<Record<TrainingTable, number>>> = 
   recipe_ingredient: 9,
   recovery_day: 10,
   muscle_recovery: 10,
+  recovery_factor: 11,
 };
 
 /**
@@ -290,6 +291,19 @@ const jsonArray = (v: TrainingValue | undefined): boolean => {
   }
 };
 
+/** I6-01 : bornes des CHECK de la migration 0011 (identifiant naturel, huit codes textuels au plus, « rien de particulier » = tableau vide). */
+function recoveryFactorBoundsOk(id: string, v: Readonly<Record<string, TrainingValue>>): boolean {
+  const none = v['none'];
+  if (id !== `recovery_factor|${String(v['date'])}` || (none !== 0 && none !== 1) || typeof v['factors'] !== 'string') return false;
+  let list: unknown;
+  try {
+    list = JSON.parse(v['factors']);
+  } catch {
+    return false;
+  }
+  return Array.isArray(list) && list.length <= 8 && list.every((code) => typeof code === 'string') && (none === 0 || list.length === 0);
+}
+
 /** I5-01 : bornes des CHECK de la migration 0010 pour un résumé du jour. */
 function recoveryDayBoundsOk(id: string, v: Readonly<Record<string, TrainingValue>>): boolean {
   const zoneFrom = v['target_zone_from'];
@@ -336,6 +350,8 @@ function rowBoundsOk(table: TrainingTable, id: string, v: Readonly<Record<string
       );
     case 'recovery_day':
       return recoveryDayBoundsOk(id, v);
+    case 'recovery_factor':
+      return recoveryFactorBoundsOk(id, v);
     case 'muscle_recovery':
       return (
         id === `muscle|${String(v['date'])}|${String(v['muscle_id'])}` &&
