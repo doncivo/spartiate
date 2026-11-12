@@ -55,6 +55,7 @@ export function BodyScreen() {
   const container = useAppContainer();
   const layout = useLayout();
   const navigate = useNavigationStore((s) => s.navigate);
+  const openOverlay = useNavigationStore((s) => s.openOverlay);
   const { repos } = container.data;
   const timeZone = useAppStore((s) => s.timeZone) ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const year = new Date(container.clock.nowMs()).getUTCFullYear();
@@ -190,6 +191,12 @@ export function BodyScreen() {
           </button>
         </div>
         <h1 className="ct-body__title">{tBody('title')}</h1>
+        {/* I3-07 : rouvre l'onboarding en 8 écrans (surcouche de la coquille) ; ne s'ouvre jamais tout seul une fois terminé. */}
+        <div className="ct-body__review">
+          <Button variant="secondary" onClick={() => openOverlay({ kind: 'onboarding' })}>
+            {tBody('reviewSettings')}
+          </Button>
+        </div>
 
         <div className="ct-body__grid">
           <section className="ct-body__card ct-body__card--weight" aria-label={tBody('sectionWeight')}>

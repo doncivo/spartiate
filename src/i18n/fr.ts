@@ -18,7 +18,6 @@ import { eventsFr } from './fr.events';
 import { shortcutsUiFr } from './fr.shortcuts';
 import { backupFr } from './fr.backup';
 import { importCsvFr } from './fr.importCsv';
-import { onboardingFr } from './fr.onboarding';
 import { syncEngineFr } from './fr.syncEngine';
 import { syncFolderFr, syncKeyFr } from './fr.syncFolder';
 import { syncConflictsFr } from './fr.syncConflicts';
@@ -726,7 +725,6 @@ export const fr = {
   importCsv: importCsvFr,
   security: securityFr,
   signing: signingFr,
-  onboarding: onboardingFr,
   shortcuts: {
     quickCapture: 'Capture rapide',
     newTask: 'Nouvelle tâche',

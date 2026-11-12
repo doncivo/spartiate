@@ -2,6 +2,17 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.15.0
+
+**Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment.
+
+- **Onboarding en 8 écrans (I3-07)**, sur PC et iPhone : Toi (sexe, année de naissance, taille, poids, niveau d'activité), Objectif (muscle, force, recomposition, perte de gras, maintien, et rythme en % du poids par semaine, de −1 % à +0,5 %), Expérience, Disponibilité (séances par semaine, durée, jours), Matériel, Priorités (silhouettes avant et arrière : 2 muscles à prioriser, 4 à éviter, mouvements douloureux), Split proposé selon ta fréquence, Résultat (première séance et cibles du jour). Chaque question est ignorable, le brouillon est enregistré à chaque changement.
+- **Dépense de départ** : estimation Mifflin-St Jeor selon ton sexe, ton âge, ta taille, ton poids et ton niveau d'activité déclaré, présentée comme un point de départ recalculé après 2 semaines de données ; tu peux la modifier ou rétablir l'estimation.
+- **Quand il s'ouvre** : au premier lancement sur une base vide seulement. Une installation qui contient déjà des données ne le voit jamais tout seul ; Plus › Profil et poids › « Revoir mes réglages » le rouvre, prérempli.
+- **Ta routine n'est jamais remplacée** : le programme proposé s'ajoute comme une nouvelle routine, ou pas du tout si tu l'écartes.
+- **Pas encore branchés** : les muscles prioritaires ou évités, les mouvements douloureux et la variété sont enregistrés mais ne pilotent pas encore la séance proposée (ticket Entraînement à venir).
+- Retiré : l'ancien assistant de bienvenue hérité de CircleTasks (écrans, textes, réglage d'étape).
+
 ## 0.14.0
 
 **Schéma 13 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** La mise à jour ajoute deux colonnes (additif) aux séries d'une séance ; aucune donnée saisie n'est modifiée.

@@ -120,6 +120,34 @@ const SCREENS: Screen[] = [
   { name: 'PC-Aujourdhui-clair', viewport: PC, date: WEDNESDAY, dark: false, prepare: goLight },
 ];
 
+/**
+ * I3-07 : les 8 écrans de l'onboarding (Plus › Profil et poids › Revoir mes réglages), à 440 × 956 et 1 440 × 900. Seule la planche
+ * iPhone-Onboarding.html (écran 6, Priorités) existe : les autres écrans suivent son gabarit (consigné dans docs/I3-07.md et D-110).
+ */
+const ONBOARDING_STEPS = ['toi', 'objectif', 'experience', 'disponibilite', 'materiel', 'priorites', 'split', 'resultat'] as const;
+const goOnboarding = (step: number) => async (page: Page): Promise<void> => {
+  await goBody(page);
+  await page.getByRole('button', { name: 'Revoir mes réglages' }).click();
+  await page.getByRole('dialog', { name: 'Configuration de Spartiate' }).waitFor();
+  for (let i = 1; i < step; i += 1) {
+    await page.getByRole('button', { name: 'Continuer', exact: true }).click();
+    await page.getByText(`Configuration · étape ${String(i + 1)} sur 8`).waitFor();
+  }
+  if (step === 6) {
+    await page.getByLabel('Pectoraux, normal').click();
+    await page.getByLabel('Dos, normal').click();
+    // Deux priorités atteintes : le troisième toucher range le muscle directement parmi ceux à éviter.
+    await page.getByLabel('Mollets, normal').click();
+    await page.getByLabel('Mollets, à éviter').waitFor();
+  }
+};
+ONBOARDING_STEPS.forEach((name, i) => {
+  SCREENS.push(
+    { name: `Onboarding-${String(i + 1)}-${name}`, viewport: PHONE, date: WEDNESDAY, dark: true, ...(i === 5 ? { mockup: 'iPhone-Onboarding.html' } : {}), prepare: goOnboarding(i + 1) },
+    { name: `PC-Onboarding-${String(i + 1)}-${name}`, viewport: PC, date: WEDNESDAY, dark: true, prepare: goOnboarding(i + 1) },
+  );
+});
+
 for (const screen of SCREENS) {
   test(`capture ${screen.name}`, async ({ browser }) => {
     const phone = screen.viewport === PHONE;
