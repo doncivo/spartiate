@@ -2,6 +2,16 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.16.0
+
+**Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment ; installe pourtant les deux le même jour (un PC resté en 0.15.0 ne sait pas réimporter une archive contenant les nouvelles mesures).
+
+- **Import des données de ta balance Renpho (I6-04)**, via Santé et l'app Raccourcis : dix fichiers de plus dans `iCloud Drive › Spartiate › sante` (poids, masse grasse, masse maigre, tour de taille, taille, énergie, protéines, glucides, lipides, fibres), lus par Spartiate comme ceux de la récupération (à l'ouverture, au retour au premier plan, « Importer maintenant »). Le guide `docs/guide-raccourcis-sante.md` (partie C) décrit les dix blocs du raccourci. Plus › Apple Santé › « Corps et nutrition depuis Raccourcis » dit, par fichier, les lignes lues, ajoutées, mises à jour et refusées (avec la raison), jamais une valeur.
+- **Poids** : une pesée Santé par jour (la plus récente) ; ta saisie manuelle n'est jamais remplacée. **Composition et mensurations** : masse grasse, masse maigre, tour de taille et taille apparaissent dans Progrès › Corps (« Importé de Santé (Renpho) », lecture seule) ; tes mensurations saisies ne sont jamais touchées.
+- **Nutrition « les deux selon les jours »** : si tu as saisi un repas dans le journal pour un jour, ton journal fait foi et rien n'est importé pour ce jour. Sinon, une seule ligne « Renpho — total du jour » porte les totaux, mise à jour à chaque import ; elle est remplacée dès que tu saisis un repas ce jour-là. Ce qui est supprimé par toi ne revient pas.
+- **Valeurs hors limites** (poids, masse grasse, taille, tour de taille, énergie, macros) : rejetées et comptées. Rien n'est envoyé à un service tiers ; aucune valeur dans les journaux techniques.
+- À constater sur iPhone : les types Santé et les unités exposés par Raccourcis (H-28 à H-31).
+
 ## 0.15.0
 
 **Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment.

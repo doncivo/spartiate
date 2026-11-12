@@ -81,7 +81,7 @@ describe('Apple Santé : section « Corps et nutrition » (I6-04)', () => {
   });
 
   it('échec d’écriture gardé : le dernier import « a échoué » est dit à la réouverture, effacé par le prochain succès', async () => {
-    await container.data.repos.settings.set('healthBody.lastImport', { at: '2026-11-08T09:00:00.000Z', failed: true, files: [], nutrition: { created: 0, updated: 0, unchanged: 0, superseded: 0, skippedJournal: 0, skippedDeleted: 0, skippedNoEnergy: 0 } });
+    await container.data.repos.settings.set('healthBody.lastImport', { at: '2026-11-08T09:00:00.000Z', failed: true, files: [], nutrition: { created: 0, updated: 0, unchanged: 0, superseded: 0, skippedJournal: 0, skippedDeleted: 0, skippedNoEnergy: 0, skippedOld: 0 } });
     renderSection(folder(() => reads({})));
     expect(await screen.findByText(/Le dernier import a échoué/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Importer maintenant' }));

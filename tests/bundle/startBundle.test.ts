@@ -293,6 +293,21 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // I6-04 : import Renpho / Santé (section d'Apple Santé, catalogue fr.health, service, parseur, règle nutrition) et carte des mesures importées de Corps :
+  // hors du départ, présents dans le build ; aucun module du parseur ni de la règle dans le graphe du départ.
+  it.each(['Corps et nutrition depuis Raccourcis', 'Importé de Santé (Renpho)', 'Renpho — total du jour', 'body-import-file-absent'])('I6-04 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
+  it('I6-04 : aucun module de l’import Renpho dans le graphe du départ', () => {
+    const startFiles = new Set(startChunks().map((chunk) => chunk.file));
+    for (const [source, chunk] of Object.entries(manifest)) {
+      if (startFiles.has(chunk.file)) expect(/src\/domain\/health\/bodyShortcutFiles|src\/domain\/nutrition\/renphoDay|src\/features\/settings\/(healthBodyImport|HealthBodyImportSection)/.test(source), source).toBe(false);
+    }
+  });
+
   // I3-07 : onboarding en 8 écrans (hôte, écrans, catalogue fr.onboarding, domaine, dépense de départ) : blocs à la demande importés par
   // lazyScreens.tsx ; l'assistant hérité et son catalogue ont quitté le départ.
   it.each(['src/features/onboarding/OnboardingHost.tsx', 'src/features/onboarding/OnboardingFlow.tsx'])('I3-07 : %s est un bloc à la demande, hors du départ', (source) => {
