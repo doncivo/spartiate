@@ -227,13 +227,21 @@ describe('FIX-0172 constat 7 : épisodes et réveil définis par les seuls segme
     }
   });
 
-  it('un long bloc « Éveillé » ne relie pas non plus deux épisodes', () => {
+  it('un éveil mesuré (« Éveillé ») de 90 min au milieu de la nuit garde un seul épisode, mais ne repousse jamais le réveil', () => {
     const { nights, ignoredGroups } = nightsOf([
-      '2026-11-07T01:00:00+01:00;2026-11-07T09:00:00+01:00;Endormi',
-      '2026-11-07T09:00:00+01:00;2026-11-07T16:00:00+01:00;Éveillé',
-      '2026-11-07T16:00:00+01:00;2026-11-07T17:00:00+01:00;Endormi',
+      '2026-11-07T01:00:00+01:00;2026-11-07T05:00:00+01:00;Endormi',
+      '2026-11-07T05:00:00+01:00;2026-11-07T06:30:00+01:00;Éveillé',
+      '2026-11-07T06:30:00+01:00;2026-11-07T10:00:00+01:00;Endormi',
+      '2026-11-07T10:00:00+01:00;2026-11-07T10:40:00+01:00;Éveillé',
     ]);
-    expect(nights[0]).toMatchObject({ asleepMinutes: 480, wakeAt: '2026-11-07T08:00:00.000Z' });
+    expect(nights).toHaveLength(1);
+    expect(nights[0]).toMatchObject({ asleepMinutes: 450, bedAt: '2026-11-07T00:00:00.000Z', wakeAt: '2026-11-07T09:00:00.000Z' });
+    expect(ignoredGroups).toBe(0);
+  });
+
+  it('« Éveillé » seul, loin de tout sommeil : jamais une nuit, compté ignoré', () => {
+    const { nights, ignoredGroups } = nightsOf(['2026-11-07T01:00:00+01:00;2026-11-07T09:00:00+01:00;Endormi', '2026-11-07T15:00:00+01:00;2026-11-07T15:20:00+01:00;Éveillé']);
+    expect(nights).toHaveLength(1);
     expect(ignoredGroups).toBe(1);
   });
 });
