@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { RoutineInput } from '../../../domain/training';
 import type { DeviceId } from '../../../domain/types';
@@ -68,6 +68,11 @@ async function validateFirstOpen(exercise: string): Promise<void> {
   fireEvent.click(within(open).getByRole('button', { name: 'Valider la série' }));
   await within(open).findByText('Validée');
 }
+
+// Importations à froid (écran, séance active, blocs à la demande) préchauffées : aucun délai de `findBy` allongé.
+beforeAll(async () => {
+  await Promise.all([import('../TrainingScreen'), import('./ActiveSession'), import('./CircuitUi'), import('./ExerciseProgression'), import('./StartSession'), import('./RecoverySession')]);
+}, 60_000);
 
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);

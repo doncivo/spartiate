@@ -52,8 +52,8 @@ function numberText(n: number): string {
   return fixed.replace(/0+$/, '').replace(/\.$/, '');
 }
 
-/** Un texte qui commencerait une formule dans un tableur (= + @ tabulation, « - » suivi d'autre chose qu'un chiffre) est précédé d'une apostrophe. */
-const neutralize = (text: string): string => (/^[=+@\t\r]/.test(text) || /^-(?!\d)/.test(text) ? `'${text}` : text);
+/** Un texte qui commencerait une formule dans un tableur (= + - @ % tabulation, retour chariot) est précédé d'une apostrophe. */
+const neutralize = (text: string): string => (/^[=+\-@%\t\r]/.test(text) ? `'${text}` : text);
 
 /** Cellule : vide pour NULL, point décimal pour un nombre, guillemets (doublés) si le texte contient « ; » « " » ou un retour à la ligne. */
 export function csvCell(value: string | number | null): string {

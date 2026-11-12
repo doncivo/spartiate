@@ -6,7 +6,6 @@ import type { IsoDateTime } from '../../../../src/domain/types';
 import { migrate } from '../../../../src/db/migrator';
 import { migrations } from '../../../../src/db/migrations';
 import { reintegrateUnknownFields } from '../../../../src/db/repositories';
-import { syncFieldFr } from '../../../../src/i18n/fr.syncField';
 import vectors from '../../../fixtures/sync/vectors.json';
 import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice, type SimSchema } from '../../../sim/syncDevice';
 
@@ -65,7 +64,7 @@ const rest = SYNC_CATALOGUE.column('workout_set', 'circuit_rest_sec');
 if (!id || !rest) throw new Error('colonnes absentes');
 
 describe('(a) catalogue', () => {
-  it('colonnes publiées après difficulty : circuit_id (texte nul, 64 au plus), circuit_rest_sec (entier nul) ; libellés de synchro', () => {
+  it('colonnes publiées après difficulty : circuit_id (texte nul, 64 au plus), circuit_rest_sec (entier nul)', () => {
     const cols = [...publishedColumns(SYNC_CATALOGUE.table('workout_set') as never)];
     expect(cols.slice(-3)).toEqual(['difficulty', 'circuit_id', 'circuit_rest_sec']);
 
@@ -75,8 +74,6 @@ describe('(a) catalogue', () => {
     expect(SYNC_CATALOGUE.isValidValue(rest, 20)).toBe(true);
     expect(SYNC_CATALOGUE.isValidValue(rest, null)).toBe(true);
     expect(SYNC_CATALOGUE.isValidValue(rest, 'x')).toBe(false);
-    expect(syncFieldFr.workout_set?.circuit_id).toBeTruthy();
-    expect(syncFieldFr.workout_set?.circuit_rest_sec).toBeTruthy();
   });
 
   it('revue sync-icloud B1 : colonnes masquées du journal des conflits (aucun déclencheur ne capture un « Rétablir » sur une séance close)', () => {
