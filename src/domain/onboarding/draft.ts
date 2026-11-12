@@ -173,6 +173,26 @@ export function validateStep(step: OnboardingStepId, draft: OnboardingDraft, yea
   return issues.map((code) => ({ code }));
 }
 
+export interface MuscleSelection {
+  readonly priorities: readonly string[];
+  readonly avoided: readonly string[];
+}
+
+/**
+ * Body map (§ 10.1 écran 6) : un toucher fait passer le muscle de normal à prioritaire, puis évité, puis normal. Une liste pleine (2 à
+ * prioriser, 4 à éviter) est sautée : jamais de dépassement, jamais de muscle des deux côtés.
+ */
+export function cycleMuscle(state: MuscleSelection, group: string): MuscleSelection {
+  const without = (list: readonly string[]): string[] => list.filter((g) => g !== group);
+  if (state.priorities.includes(group)) {
+    return { priorities: without(state.priorities), avoided: state.avoided.length < AVOIDED_MAX ? [...state.avoided, group] : state.avoided };
+  }
+  if (state.avoided.includes(group)) return { priorities: state.priorities, avoided: without(state.avoided) };
+  if (state.priorities.length < PRIORITIES_MAX) return { priorities: [...state.priorities, group], avoided: state.avoided };
+  if (state.avoided.length < AVOIDED_MAX) return { priorities: state.priorities, avoided: [...state.avoided, group] };
+  return state;
+}
+
 export type OnboardingDecision = 'show' | 'mark-done' | 'skip';
 
 /**
