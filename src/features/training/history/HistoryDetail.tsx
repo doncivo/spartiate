@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { groupByExercise, type Exercise, type WorkoutSummary, type WorkoutWithSets } from '../../../domain/training';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { SetCorrection } from '../../../db/repositories/workoutRepository';
@@ -8,10 +8,14 @@ import { recordText, SummaryFigures } from '../session/SummaryFigures';
 import type { TrainingData } from '../trainingState';
 import { HistorySetRow } from './HistorySetRow';
 
+// I6-03b : déroulé série par série, bloc à la demande avec son catalogue (fr.workoutReplay) et sa règle (domain/training/replay).
+const HistoryTimelineView = lazy(() => import('./HistoryTimelineView').then((m) => ({ default: m.HistoryTimelineView })));
+
 /**
  * Détail d'une séance close (I1-03) : résumé (§ 13.5), exercices et séries (charge, répétitions ou durée, RIR, type, état écrit), nom figé
  * de l'exercice (D-71) et mention s'il n'existe plus dans la bibliothèque (P-09). Correction d'une série par `correctSet` (tracée,
- * synchronisée) ; suppression de la séance par `deleteClosed` dans une transaction, après confirmation.
+ * synchronisée) ; suppression de la séance par `deleteClosed` dans une transaction, après confirmation. I6-03b : « Voir le déroulé série par
+ * série » (lecture seule, ordre réel, écarts) et « Refaire cette séance » (copie en nouvelle séance, ex-« Rejouer ») sont deux actions distinctes.
  */
 
 type DetailLoad =
@@ -45,6 +49,7 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted, onRe
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [timeline, setTimeline] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const live = useRef(true);
 
@@ -205,6 +210,17 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted, onRe
               </section>
             );
           })}
+          <div className="ct-training__actions">
+            <Button variant="secondary" expanded={timeline} onClick={() => setTimeline((v) => !v)}>
+              {tTraining('historyTimeline')}
+            </Button>
+          </div>
+          <p className="ct-session__muted">{tTraining('historyTimelineHint')}</p>
+          {timeline ? (
+            <Suspense fallback={null}>
+              <HistoryTimelineView workout={load.workout} />
+            </Suspense>
+          ) : null}
           <div className="ct-training__actions">
             <Button disabled={busy} onClick={() => void replay()}>
               {tTraining('historyReplay')}
