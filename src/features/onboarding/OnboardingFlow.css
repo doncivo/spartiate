@@ -334,7 +334,8 @@
 .ct-onb__muscle[data-state='priority'] {
   background: var(--ct-color-surface-raised);
   border-color: var(--ct-color-bronze);
-  color: var(--ct-color-bronze);
+  border-width: 2px; /* le bronze (4,2:1 sur ce fond en clair) ne porte plus le texte, seulement le contour (CI 43235147971) */
+  color: var(--ct-color-text);
 }
 
 .ct-onb__muscle[data-state='avoided'] {
