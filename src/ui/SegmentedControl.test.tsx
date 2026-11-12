@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { SegmentedControl } from './SegmentedControl';
 
@@ -74,10 +74,10 @@ describe('SegmentedControl défilant : fondus de bord (FIX-0115)', () => {
       expect(live).toHaveLength(1);
       expect(live[0]?.targets).toEqual(expect.arrayContaining(screen.getAllByRole('radio')));
       measure(group, { scrollWidth: 600, clientWidth: 400, scrollLeft: 0 });
-      live[0]?.callback([], live[0] as unknown as ResizeObserver);
+      act(() => live[0]?.callback([], live[0] as unknown as ResizeObserver));
       expect(group).toHaveAttribute('data-fade-end', 'true');
       measure(group, { scrollWidth: 400, clientWidth: 400, scrollLeft: 0 });
-      live[0]?.callback([], live[0] as unknown as ResizeObserver);
+      act(() => live[0]?.callback([], live[0] as unknown as ResizeObserver));
       expect(group).not.toHaveAttribute('data-fade-end');
       view.unmount();
       expect(live[0]?.disconnected).toBe(true);

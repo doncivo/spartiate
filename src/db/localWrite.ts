@@ -22,15 +22,36 @@ export function notifyLocalWrite(): void {
   }
 }
 
+/**
+ * FIX-0173 : signal « un import Raccourcis vient d'être consigné » (état local `recovery_import_state`, jamais publié) : un écran qui affiche l'heure du
+ * dernier import (ligne Apple Santé de Plus) se relit sans attendre d'être rouvert. Distinct du signal de synchro : il ne lance aucun cycle.
+ */
+const importListeners = new Set<Listener>();
+
+export function onLocalImport(listener: Listener): () => void {
+  importListeners.add(listener);
+  return () => void importListeners.delete(listener);
+}
+
+export function notifyLocalImport(): void {
+  for (const listener of [...importListeners]) {
+    try {
+      listener();
+    } catch {
+      // Même règle : un écouteur défaillant ne fait jamais échouer l'écriture.
+    }
+  }
+}
+
 /** Enveloppe des méthodes d'écriture d'un dépôt : le signal part après une écriture réussie, jamais après un échec. */
-export function signalingWrites<T extends object, K extends keyof T>(repository: T, writes: readonly K[]): T {
+export function signalingWrites<T extends object, K extends keyof T>(repository: T, writes: readonly K[], notify: () => void = notifyLocalWrite): T {
   const wrapped: T = { ...repository };
   for (const name of writes) {
     const original = repository[name];
     if (typeof original !== 'function') continue;
     wrapped[name] = (async (...args: unknown[]) => {
       const result: unknown = await (original as (...a: unknown[]) => Promise<unknown>).apply(repository, args);
-      notifyLocalWrite();
+      notify();
       return result;
     }) as T[K];
   }
