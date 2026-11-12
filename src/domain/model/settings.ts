@@ -57,6 +57,11 @@ export interface SettingsValues {
   'onboarding.completed': boolean;
   /** I3-07 (D-110) : brouillon de l'onboarding en 8 écrans, valeur BRUTE lue par `parseDraft` (src/domain/onboarding) ; locale, jamais synchronisée. */
   'onboarding.draft': unknown;
+  /**
+   * FIX-0171 (constat 6, D-124) : réponses d'un assistant TERMINÉ qui n'ont pas d'autre place (rythme, disponibilité, priorités…), valeur BRUTE
+   * lue par `parseDraft` ; le brouillon (`onboarding.draft`) ne sert plus qu'à un assistant inachevé. Locale, jamais synchronisée.
+   */
+  'onboarding.answers': unknown;
   /** Reste de l'ancien projet : ids de données d'exemple (aucun usage ; nettoyage en CLEAN-01) ; local. */
   'sample.ids': { readonly tasks: readonly string[]; readonly routines: readonly string[]; readonly checklists: readonly string[] };
   /** D-01 : fermer la fenêtre réduit l'app en zone de notification (PC). */
@@ -175,6 +180,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'general.timeZone': { scope: 'local', defaultValue: null },
   'onboarding.completed': { scope: 'local', defaultValue: false },
   'onboarding.draft': { scope: 'local', defaultValue: null },
+  'onboarding.answers': { scope: 'local', defaultValue: null },
   'sample.ids': { scope: 'local', defaultValue: { tasks: [], routines: [], checklists: [] } },
   'desktop.closeToTray': { scope: 'local', defaultValue: true },
   'desktop.launchAtStartup': { scope: 'local', defaultValue: false },
