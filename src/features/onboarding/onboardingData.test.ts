@@ -4,7 +4,7 @@ import { STARTER_PROGRAM_DAYS, emptyDraft, type OnboardingDraft } from '../../do
 import type { DeviceId, LocalDate } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { loadTrainingContent, programToRoutine, type TrainingContent } from '../training/content';
-import { finishOnboarding, loadDraft, markCompleted, readBaseCounts, readPrefill, saveDraft } from './onboardingData';
+import { finishOnboarding, loadDraft, loadStart, markCompleted, previewChanges, readBaseCounts, readPrefill, saveDraft } from './onboardingData';
 
 const DEVICE = '60000000-0000-4000-8000-0000000000c7' as DeviceId;
 const TODAY = '2026-11-12' as LocalDate;
@@ -127,13 +127,14 @@ describe('onboarding : données (I3-07)', () => {
       expect(await routines.get(first.routineId ?? '')).toEqual(before);
     });
 
-    it('revoir sans toucher au poids : aucune pesée créée ni ressuscitée ; le brouillon rouvre au premier écran', async () => {
+    it('revoir sans toucher au poids : aucune pesée créée ni ressuscitée ; FIX-0171 : brouillon effacé, réponses de l’assistant terminé gardées à part', async () => {
       const weights = await db.data.repos.bodyWeights();
       await weights.saveManual({ date: '2026-11-10' as LocalDate, kg: 80, timezone: 'Europe/Paris' }, TODAY);
       await finishOnboarding(deps(), { ...FULL, acceptProposal: false }, content);
       expect(await db.driver.select('SELECT date FROM body_weight')).toEqual([{ date: '2026-11-10' }]);
-      expect((await loadDraft(db.data)).step).toBe('you');
-      expect((await loadDraft(db.data)).heightCm).toBe(180);
+      expect(await db.data.repos.settings.get('onboarding.draft')).toBeNull();
+      // Seules les réponses sans autre place sont gardées : profil, poids, activité et matériel se relisent dans leurs tables à la revue.
+      expect(await db.data.repos.settings.get('onboarding.answers')).toMatchObject({ step: 'you', heightCm: null, weightKg: null, sessionsPerWeek: 3, weeklyRatePct: 0.25 });
     });
 
     it('proposition refusée ou écran Split passé : aucune routine', async () => {
@@ -151,6 +152,75 @@ describe('onboarding : données (I3-07)', () => {
       expect(await db.data.repos.settings.get('nutrition.prefs')).toBeNull();
       expect(await db.data.repos.settings.get('training.activeEquipmentProfile')).toBeNull();
       expect(await db.data.repos.settings.get('onboarding.completed')).toBe(true);
+    });
+
+    describe('FIX-0171 (constat 6) : revoir ses réglages après un assistant terminé', () => {
+      const changeProfileAndWeight = async (): Promise<void> => {
+        await (await db.data.repos.profile()).save({ heightCm: 181 }, 2026);
+        db.clock.advance(86_400_000);
+        await (await db.data.repos.bodyWeights()).saveManual({ date: '2026-11-13' as LocalDate, kg: 75, timezone: 'Europe/Paris' }, '2026-11-13' as LocalDate);
+      };
+      const snapshot = async () => ({
+        profile: await db.driver.select('SELECT height_cm, updated_at, hlc FROM profile'),
+        weights: await db.driver.select('SELECT id, kg, updated_at FROM body_weight ORDER BY id'),
+        prefs: await db.data.repos.settings.get('nutrition.prefs'),
+        equipment: await db.data.repos.settings.get('training.activeEquipmentProfile'),
+        routines: (await (await db.data.repos.trainingRoutines()).list()).length,
+        answers: await db.data.repos.settings.get('onboarding.answers'),
+      });
+      const later = () => ({ ...deps(), today: '2026-11-14' as LocalDate });
+
+      it('terminer, modifier profil et poids, rouvrir et terminer sans rien changer : zéro écriture, zéro pesée', async () => {
+        await finishOnboarding(deps(), FULL, content);
+        await changeProfileAndWeight();
+        const start = await loadStart(db.data);
+        expect(start.draft).toMatchObject({ step: 'you', heightCm: 181, weightKg: 75 });
+        expect(start.persist).toBe(false);
+        await db.driver.execute('DELETE FROM sync_outbox');
+        const before = await snapshot();
+        expect(await previewChanges(db.data, start.draft, start.baseline)).toEqual([]);
+        await finishOnboarding(later(), start.draft, content, { baseline: start.baseline });
+        expect(await snapshot()).toEqual(before);
+        expect(await db.driver.select('SELECT 1 FROM sync_outbox')).toEqual([]);
+      });
+
+      it('ancien brouillon d’un assistant terminé (avant la 0.17.1) : jamais prioritaire sur le profil et la dernière pesée', async () => {
+        await finishOnboarding(deps(), FULL, content);
+        await changeProfileAndWeight();
+        await db.data.repos.settings.set('onboarding.answers', null);
+        await db.data.repos.settings.set('onboarding.draft', { ...FULL, step: 'you' });
+        const start = await loadStart(db.data);
+        expect(start.draft).toMatchObject({ heightCm: 181, weightKg: 75, sessionsPerWeek: 3 });
+        await db.driver.execute('DELETE FROM sync_outbox');
+        const weightsBefore = await db.driver.select('SELECT id FROM body_weight');
+        await finishOnboarding(later(), start.draft, content, { baseline: start.baseline });
+        expect(await db.driver.select('SELECT id FROM body_weight')).toEqual(weightsBefore);
+        expect(await db.driver.select('SELECT height_cm FROM profile')).toEqual([{ height_cm: 181 }]);
+        expect(await db.driver.select('SELECT 1 FROM sync_outbox')).toEqual([]);
+      });
+
+      it('remplacement refusé : rien n’est écrit pour ce champ ; accepté : seul ce champ est écrit', async () => {
+        await finishOnboarding(deps(), FULL, content);
+        await changeProfileAndWeight();
+        const start = await loadStart(db.data);
+        const edited = { ...start.draft, heightCm: 185 };
+        expect(await previewChanges(db.data, edited, start.baseline)).toEqual([{ field: 'heightCm', before: 181, after: 185, replaces: true }]);
+        await db.driver.execute('DELETE FROM sync_outbox');
+        await finishOnboarding(later(), edited, content, { baseline: start.baseline, refused: ['heightCm'] });
+        expect(await db.driver.select('SELECT height_cm FROM profile')).toEqual([{ height_cm: 181 }]);
+        expect(await db.driver.select("SELECT 1 FROM sync_outbox WHERE table_name = 'profile'")).toEqual([]);
+        await finishOnboarding(later(), edited, content, { baseline: start.baseline });
+        expect(await db.driver.select('SELECT height_cm FROM profile')).toEqual([{ height_cm: 185 }]);
+        expect(await db.driver.select("SELECT row_id, field FROM sync_outbox WHERE table_name = 'profile'")).toEqual([{ row_id: 'profile|singleton', field: 'height_cm' }]);
+      });
+
+      it('vrai brouillon inachevé (assistant jamais terminé) : repris à son écran, enregistré à chaque changement', async () => {
+        await saveDraft(db.data, { ...FULL, step: 'goal' });
+        const start = await loadStart(db.data);
+        expect(start.draft).toMatchObject({ step: 'goal', heightCm: 180 });
+        expect(start.persist).toBe(true);
+        expect(start.baseline).toBeNull();
+      });
     });
 
     it('une valeur invalide fait tout échouer : rien n’est écrit, l’onboarding n’est pas terminé', async () => {
