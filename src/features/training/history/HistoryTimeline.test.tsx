@@ -64,7 +64,7 @@ describe('déroulé série par série', () => {
     expect(steps).toHaveLength(3);
     const [first, second, third] = steps as [HTMLElement, HTMLElement, HTMLElement];
     expect(within(first).getByText('1. Développé couché à la barre · série 1')).toBeInTheDocument();
-    expect(within(first).getByText(/^Validée à \d{2}:00:00$/)).toBeInTheDocument();
+    expect(within(first).getByText(/^Validée à \d{2}:00$/)).toBeInTheDocument();
     expect(within(first).getByText('Charge : 60 kg (cible 60 kg) — conforme')).toBeInTheDocument();
     expect(within(first).getByText('Répétitions : 8 (cible 6 à 10) — conforme')).toBeInTheDocument();
     expect(within(first).getByText('Repos ensuite : 3 min 30 s (cible 2 min) — plus long de 1 min 30 s')).toBeInTheDocument();
