@@ -354,7 +354,7 @@ function PhotoImage({ id, alt }: { readonly id: string; readonly alt: string }) 
   useEffect(() => {
     let live = true;
     (async () => {
-      const bytes = await (await container.data.repos.progressPhotos()).readFile(id);
+      const bytes = await (await container.data.repos.progressPhotos()).loadFile(id);
       if (!live || bytes === null) return;
       let binary = '';
       for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
