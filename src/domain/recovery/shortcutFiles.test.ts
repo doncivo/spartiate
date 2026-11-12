@@ -144,7 +144,8 @@ describe('buildSleepNights', () => {
       {
         day: '2026-11-08',
         bedAt: '2026-11-07T22:20:00.000Z',
-        wakeAt: '2026-11-08T05:55:00.000Z',
+        // FIX-0172 (constat 7, D-131) : le réveil est la fin du dernier segment ENDORMI (06:50 locale), pas celle du bloc « Au lit » (06:55).
+        wakeAt: '2026-11-08T05:50:00.000Z',
         asleepMinutes: 450 - 10 - 0,
         inBedMinutes: 465,
       },
@@ -178,6 +179,62 @@ describe('buildSleepNights', () => {
 
   it('historique vide : aucune nuit', () => {
     expect(buildSleepNights([], TZ)).toEqual({ nights: [], ignoredGroups: 0 });
+  });
+});
+
+describe('FIX-0172 constat 7 : épisodes et réveil définis par les seuls segments endormis (D-131)', () => {
+  const nightsOf = (lines: readonly string[]) => buildSleepNights(parseShortcutSleep(lines.join('\n'), TODAY, TZ).segments, TZ);
+
+  it('nuit 01–09 h + épisode 16–17 h + Au lit 01–17 h : nuit de 480 min, réveil à 9 h, l’épisode de 16 h est une sieste', () => {
+    const { nights, ignoredGroups } = nightsOf([
+      '2026-11-07T01:00:00+01:00;2026-11-07T17:00:00+01:00;Au lit',
+      '2026-11-07T01:00:00+01:00;2026-11-07T09:00:00+01:00;Endormi',
+      '2026-11-07T16:00:00+01:00;2026-11-07T17:00:00+01:00;Endormi',
+    ]);
+    expect(nights).toHaveLength(1);
+    expect(nights[0]).toMatchObject({ day: '2026-11-07', bedAt: '2026-11-07T00:00:00.000Z', wakeAt: '2026-11-07T08:00:00.000Z', asleepMinutes: 480 });
+    expect(ignoredGroups).toBe(1);
+  });
+
+  it('variante passant minuit : Au lit de 1 h jusqu’à 0 h 30 le lendemain ne déplace pas la nuit au lendemain', () => {
+    const { nights, ignoredGroups } = nightsOf([
+      '2026-11-07T01:00:00+01:00;2026-11-08T00:30:00+01:00;Au lit',
+      '2026-11-07T01:00:00+01:00;2026-11-07T09:00:00+01:00;Endormi',
+      '2026-11-07T22:30:00+01:00;2026-11-07T23:30:00+01:00;Endormi',
+    ]);
+    expect(nights.map((n) => n.day)).toEqual(['2026-11-07']);
+    expect(nights[0]).toMatchObject({ wakeAt: '2026-11-07T08:00:00.000Z', asleepMinutes: 480 });
+    expect(ignoredGroups).toBe(1);
+  });
+
+  it('variante passant minuit : coucher à 23 h, réveil à 7 h, Au lit jusqu’à 16 h 30 et sieste 15–16 h : 480 min, réveil à 7 h', () => {
+    const { nights } = nightsOf([
+      '2026-11-06T22:30:00+01:00;2026-11-07T16:30:00+01:00;Au lit',
+      '2026-11-06T23:00:00+01:00;2026-11-07T07:00:00+01:00;Endormi',
+      '2026-11-07T15:00:00+01:00;2026-11-07T16:00:00+01:00;Endormi',
+    ]);
+    expect(nights).toHaveLength(1);
+    expect(nights[0]).toMatchObject({ day: '2026-11-07', bedAt: '2026-11-06T22:00:00.000Z', wakeAt: '2026-11-07T06:00:00.000Z', asleepMinutes: 480 });
+  });
+
+  it('une interruption de 30 min (éveil ou rien) reste dans le même épisode', () => {
+    for (const middle of ['2026-11-07T03:00:00+01:00;2026-11-07T03:30:00+01:00;Éveillé', null]) {
+      const lines = ['2026-11-06T23:00:00+01:00;2026-11-07T03:00:00+01:00;Endormi', '2026-11-07T03:30:00+01:00;2026-11-07T07:00:00+01:00;Endormi'];
+      const { nights, ignoredGroups } = nightsOf(middle === null ? lines : [...lines, middle]);
+      expect(nights).toHaveLength(1);
+      expect(nights[0]).toMatchObject({ day: '2026-11-07', asleepMinutes: 450, wakeAt: '2026-11-07T06:00:00.000Z' });
+      expect(ignoredGroups).toBe(0);
+    }
+  });
+
+  it('un long bloc « Éveillé » ne relie pas non plus deux épisodes', () => {
+    const { nights, ignoredGroups } = nightsOf([
+      '2026-11-07T01:00:00+01:00;2026-11-07T09:00:00+01:00;Endormi',
+      '2026-11-07T09:00:00+01:00;2026-11-07T16:00:00+01:00;Éveillé',
+      '2026-11-07T16:00:00+01:00;2026-11-07T17:00:00+01:00;Endormi',
+    ]);
+    expect(nights[0]).toMatchObject({ asleepMinutes: 480, wakeAt: '2026-11-07T08:00:00.000Z' });
+    expect(ignoredGroups).toBe(1);
   });
 });
 
