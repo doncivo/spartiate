@@ -5,7 +5,6 @@ import {
   RATE_GOALS,
   emptyDraft,
   parseDraft,
-  proposeSplit,
   validateStep,
   weeklyRateKg,
   type OnboardingDraft,
@@ -16,6 +15,7 @@ import type { Goal } from '../../domain/nutrition/checkIn';
 import type { LocalDate } from '../../domain/types';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { programToRoutine, type TrainingContent } from '../training/content';
+import { proposalFor } from './firstSession';
 
 /**
  * Données de l'onboarding (I3-07, D-110) : lecture de l'état de la base, brouillon (réglage local `onboarding.draft`), préremplissage et
@@ -118,9 +118,7 @@ export async function finishOnboarding(deps: FinishDeps, draft: OnboardingDraft,
     let routineId: string | null = null;
     let routineCreated = false;
     if (content !== null && draft.acceptProposal && !draft.skipped.includes('split')) {
-      const kind = content.profiles.find((p) => p.id === draft.equipmentProfileId)?.kind ?? null;
-      const proposal = proposeSplit({ sessionsPerWeek: draft.sessionsPerWeek, equipmentKind: kind });
-      const program = content.programs.find((p) => p.id === proposal.programId);
+      const { program } = proposalFor(draft, content);
       if (program) {
         const routines = await repos.trainingRoutines();
         const existing = (await routines.list()).find((r) => r.name === program.name);
