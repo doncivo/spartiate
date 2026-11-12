@@ -340,7 +340,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     const samples = await deps.samples();
     const files: FileOutcome[] = [];
     for (const [index, read] of reads.entries()) {
-      const type = TYPE_OF[read.name];
+      const type = TYPE_OF[read.name as ShortcutFileName];
       if (read.state === 'ok') {
         files.push(await importFile(samples, type, read.text, today, at, index));
         continue;

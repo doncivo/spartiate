@@ -5,6 +5,7 @@ import type { RecoverySet, RecoveryWorkout } from '../../../domain/recovery';
 import { resolveExercise } from '../../../domain/training';
 import type { AppContainer } from '../../app/container';
 import { createShortcutImportService, type ImportLog, type ShortcutImportService } from './service';
+import { healthBodyImportFor, type HealthBodyImportService } from '../healthBodyImport';
 
 export * from './service';
 
@@ -76,17 +77,21 @@ export function shortcutImportFor(container: AppContainer, reader?: ShortcutFile
 /**
  * Déclenchements automatiques (I5-03, D-90) : à l'ouverture de l'app (après le premier rendu, tâche différée de 3 s) et à chaque retour au
  * premier plan. Chacun appelle `run('open')` ; la limite de 30 minutes est tenue par le service (« throttled »). Lit seulement si le lecteur
- * est automatique (dossier sante) ; le sélecteur a besoin d'un geste. Ne rejette jamais.
+ * est automatique (dossier sante) ; le sélecteur a besoin d'un geste. Ne rejette jamais. I6-04 : l'import Renpho / Santé (`healthBodyImportFor`, même dossier,
+ * mêmes déclenchements, sa propre limite de 30 minutes) part juste après, et son échec ne gêne pas l'import de la récupération.
  */
 export function startRecoveryImportOnOpen(
   container: AppContainer,
-  options: { readonly service?: Pick<ShortcutImportService, 'run'>; readonly delayMs?: number } = {},
+  options: { readonly service?: Pick<ShortcutImportService, 'run'>; readonly bodyService?: Pick<HealthBodyImportService, 'run'>; readonly delayMs?: number } = {},
 ): { readonly dispose: () => void } {
   let cancelled = false;
   const trigger = (): void => {
     if (cancelled) return;
     const service = options.service ?? shortcutImportFor(container);
     void service.run('open').catch((error: unknown) => logFailure('recovery-import', error));
+    // Un service de récupération injecté (tests) ne lance l'import Renpho que si son service est injecté aussi.
+    const body = options.bodyService ?? (options.service === undefined ? healthBodyImportFor(container) : undefined);
+    if (body !== undefined) void body.run('open').catch((error: unknown) => logFailure('health-body-import', error));
   };
   const timer = window.setTimeout(trigger, options.delayMs ?? 3000);
   const onVisible = (): void => {

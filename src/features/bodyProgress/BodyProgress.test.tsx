@@ -6,6 +6,7 @@ import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
+import { formatDayMonthYear } from '../../i18n/format';
 import { BodyProgress } from './BodyProgress';
 
 /**
@@ -207,5 +208,32 @@ describe('photos de progression', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Annuler' }));
     expect(await (await photos()).list()).toHaveLength(1);
     expect(screen.queryByText(/sans retour possible/)).toBeNull();
+  });
+});
+
+describe('mesures importées de Santé (I6-04, D-113)', () => {
+  it('sans import : aucune carte, aucun chiffre inventé', async () => {
+    mount();
+    await screen.findByRole('region', { name: 'Mensurations' });
+    expect(screen.queryByRole('region', { name: 'Importé de Santé (Renpho)' })).toBeNull();
+  });
+
+  it('dernière valeur de chaque genre importé, avec son unité et sa date, en lecture seule ; la liste des zones saisies n’est pas touchée', async () => {
+    const repo = await measures();
+    await repo.save(D(10), 'health_body_fat_pct', 18.9);
+    await repo.save(D(11), 'health_body_fat_pct', 18.5);
+    await repo.save(D(11), 'health_lean_mass_kg', 64.3);
+    await repo.save(D(11), 'health_waist_cm', 82);
+    await repo.save(D(11), 'health_height_cm', 178);
+    await repo.save(D(11), 'health_fiber_g', 28);
+    mount();
+    const card = within(await screen.findByRole('region', { name: 'Importé de Santé (Renpho)' }));
+    expect(card.getByText(`Masse grasse : 18,5 % (${formatDayMonthYear(D(11))})`)).toBeInTheDocument();
+    expect(card.getByText(`Masse maigre : 64,3 kg (${formatDayMonthYear(D(11))})`)).toBeInTheDocument();
+    expect(card.getByText(`Tour de taille : 82 cm (${formatDayMonthYear(D(11))})`)).toBeInTheDocument();
+    expect(card.getByText(`Taille : 178 cm (${formatDayMonthYear(D(11))})`)).toBeInTheDocument();
+    expect(card.getByText(`Fibres : 28 g (${formatDayMonthYear(D(11))})`)).toBeInTheDocument();
+    expect(card.queryByRole('button')).toBeNull();
+    expect(screen.getByText('Aucune mesure pour cette zone.')).toBeInTheDocument();
   });
 });

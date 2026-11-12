@@ -66,6 +66,23 @@ describe('déclenchements de l’import automatique', () => {
     expect(run).not.toHaveBeenCalled();
   });
 
+  it('I6-04 : l’import Renpho part avec celui de la récupération, aux mêmes déclenchements ; son rejet ne gêne pas l’autre', async () => {
+    const run = vi.fn(async () => ({ status: 'done' }) as never);
+    const bodyRun = vi.fn(async () => {
+      throw new Error('boom');
+    });
+    const handle = startRecoveryImportOnOpen(container, { service: { run }, bodyService: { run: bodyRun } });
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(run).toHaveBeenCalledWith('open');
+    expect(bodyRun).toHaveBeenCalledWith('open');
+    setVisibility('hidden');
+    setVisibility('visible');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(run).toHaveBeenCalledTimes(2);
+    expect(bodyRun).toHaveBeenCalledTimes(2);
+    handle.dispose();
+  });
+
   it('un rejet du service ne remonte jamais', async () => {
     const run = vi.fn(async () => {
       throw new Error('boom');

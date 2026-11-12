@@ -1,6 +1,7 @@
 import type { WriteStamper } from '../../../domain/hlc';
 import { uuidGenerator, type IdGenerator } from '../../../domain/id';
 import type { EntrySource } from '../../../domain/nutrition/food';
+import { isRenphoDayEntry } from '../../../domain/nutrition/renphoDay';
 import { validateMealEntry, type EntryMethod, type MealEntryDraft } from '../../../domain/nutrition/mealEntry';
 import { isId, type LocalDate, type LocalTime } from '../../../domain/types';
 import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
@@ -77,11 +78,26 @@ export function createMealEntryRepository(db: SqlExecutor, stamper: WriteStamper
     return id;
   };
 
+  /** D-113 : une entrée du journal (autre qu'une entrée Renpho) pour ce jour supprime l'entrée « Renpho — total du jour » vivante de ce jour. */
+  const supersedeRenpho = async (date: string, exceptId: string): Promise<void> => {
+    const rows = await db.select<EntryRow>('SELECT * FROM meal_entry WHERE date = ? AND deleted_at IS NULL AND id <> ? AND method = ? AND source = ? AND food_id IS NULL', [date, exceptId, 'quickadd', 'manual']);
+    for (const row of rows) {
+      const entry = toRecord(row);
+      if (!isRenphoDayEntry(entry)) continue;
+      const stamp = stamper.next();
+      await db.execute('UPDATE meal_entry SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, entry.id]);
+    }
+  };
+  const afterWrite = async (clean: MealEntryDraft, id: string): Promise<void> => {
+    if (!isRenphoDayEntry(clean)) await supersedeRenpho(clean.date, id);
+  };
+
   return {
     async create(draft, options) {
       const id = await freshId(options?.id);
       const clean = check(draft, id);
       await insert(clean, id);
+      await afterWrite(clean, id);
       return reload(id);
     },
 
@@ -98,6 +114,7 @@ export function createMealEntryRepository(db: SqlExecutor, stamper: WriteStamper
       const out: MealEntryRecord[] = [];
       for (const { id, clean } of planned) {
         await insert(clean, id);
+        await afterWrite(clean, id);
         out.push(await reload(id));
       }
       return out;
@@ -127,6 +144,7 @@ export function createMealEntryRepository(db: SqlExecutor, stamper: WriteStamper
            updated_at = ?, device_id = ?, hlc = ? WHERE id = ?`,
         [clean.date, clean.time, clean.foodId, clean.foodName, clean.source, clean.grams, clean.kcal, clean.proteinG, clean.fatG, clean.carbG, clean.method, clean.confidence, stamp.at, stamp.deviceId, stamp.hlc, id],
       );
+      await afterWrite(clean, id);
       return reload(id);
     },
 
@@ -146,8 +164,9 @@ export function createMealEntryRepository(db: SqlExecutor, stamper: WriteStamper
       return (await db.select<EntryRow>(`SELECT * FROM meal_entry WHERE date = ? AND deleted_at IS NULL ${ORDER}`, [date])).map(toRecord);
     },
 
-    async listBetween(from, to) {
-      return (await db.select<EntryRow>(`SELECT * FROM meal_entry WHERE date >= ? AND date <= ? AND deleted_at IS NULL ${ORDER}`, [from, to])).map(toRecord);
+    async listBetween(from, to, options) {
+      const live = options?.includeDeleted === true ? '' : 'AND deleted_at IS NULL';
+      return (await db.select<EntryRow>(`SELECT * FROM meal_entry WHERE date >= ? AND date <= ? ${live} ${ORDER}`, [from, to])).map(toRecord);
     },
 
     async recentFoods(limit) {

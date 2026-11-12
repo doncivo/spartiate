@@ -462,8 +462,9 @@ pub async fn sync_device_forget<R: Runtime>(
     blocking(move || core.device_forget(&device_id, OWNER)).await
 }
 
-/// I5-03 (D-90, H-26) : fichiers du raccourci Santé dans `sante/` du dossier lié, LECTURE SEULE, quatre noms exacts (`hrv.csv`, `fc-repos.csv`,
-/// `sommeil.csv`, `pas.csv`), téléchargement forcé avant lecture. Pas une commande de synchro : rien n'est publié, chiffré ni écrit.
+/// I5-03 (D-90, H-26) : fichiers du raccourci Santé dans `sante/` du dossier lié, LECTURE SEULE, quatorze noms exacts (`hrv.csv`, `fc-repos.csv`,
+/// `sommeil.csv`, `pas.csv` et, depuis I6-04, les dix fichiers Renpho / Santé : `poids.csv`, `masse-grasse.csv`, `masse-maigre.csv`, `tour-taille.csv`,
+/// `taille.csv`, `energie.csv`, `proteines.csv`, `glucides.csv`, `lipides.csv`, `fibres.csv`), téléchargement forcé avant lecture. Pas une commande de synchro : rien n'est publié, chiffré ni écrit.
 #[tauri::command]
 pub async fn health_files_read<R: Runtime>(
     app: AppHandle<R>,
