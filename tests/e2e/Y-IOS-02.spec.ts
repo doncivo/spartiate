@@ -51,7 +51,8 @@ test('Y-IOS-02 : caméra refusée visible, puis « Associer au PC » par le scan
   await expect(page.getByRole('button', { name: 'Ouvrir les réglages d’iOS pour autoriser la caméra' })).toBeVisible();
   await expect(page.locator('.ct-status-banner').filter({ hasText: 'Associe cet iPhone au PC pour synchroniser' })).toBeVisible();
   await page.getByRole('button', { name: 'Ouvrir les réglages d’iOS pour autoriser la caméra' }).click();
-  expect((await setCamera(room, 'iphone', 'denied')).opened).toBe(1);
+  // FIX-0116 : le clic ouvre les réglages de façon asynchrone ; le compteur est relu jusqu'à ce qu'il le dise (même seuil, valeur attendue inchangée).
+  await expect.poll(async () => (await setCamera(room, 'iphone', 'denied')).opened).toBe(1);
 
   // Autorisation rendue dans les réglages d'iOS : relue au retour au premier plan, l'état disparaît.
   await setCamera(room, 'iphone', 'granted');
