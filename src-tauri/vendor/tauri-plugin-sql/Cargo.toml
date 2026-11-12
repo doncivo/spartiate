@@ -80,9 +80,9 @@ version = "2"
 features = ["serde"]
 
 # Spartiate (SEC-01) : autorisateur SQLite et limite d'attachement posés sur le descripteur de chaque connexion ; même version que
-# sqlx-sqlite 0.8.6 et rusqlite 0.32 (Cargo.lock), aucune nouvelle bibliothèque.
+# sqlx-sqlite 0.8.6 (copie vendored, borne élargie) et rusqlite 0.41 (Cargo.lock) ; DEP-01 : 0.39, SQLite >= 3.54.0 (RUSTSEC-2026-0459).
 [dependencies.libsqlite3-sys]
-version = "0.30.1"
+version = "0.39"
 optional = true
 
 [dependencies.log]

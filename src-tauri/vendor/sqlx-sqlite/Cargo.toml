@@ -79,7 +79,8 @@ features = [
 default-features = false
 
 [dependencies.libsqlite3-sys]
-version = "0.30.1"
+# Spartiate (DEP-01, D-160) : seul écart avec sqlx-sqlite 0.8.6 publié (amont : "0.30.1"). Voir PROVENANCE-SPARTIATE.md.
+version = ">=0.30.1, <0.40.0"
 features = [
     "pkg-config",
     "vcpkg",
