@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ONBOARDING_STEPS,
+  cycleMuscle,
   decideOnboarding,
   emptyDraft,
   isEmptyBase,
@@ -110,6 +111,37 @@ describe('Validation par écran', () => {
 
   it('les autres écrans n’ont pas de règle bloquante', () => {
     for (const step of ['experience', 'equipment', 'split'] as const) expect(codes(step, draft({}))).toEqual([]);
+  });
+});
+
+describe('Body map : toucher un muscle (§ 10.1 écran 6 : 2 à prioriser, 4 à éviter)', () => {
+  const state = (priorities: string[], avoided: string[]) => ({ priorities, avoided });
+
+  it('normal → prioritaire → évité → normal', () => {
+    const one = cycleMuscle(state([], []), 'chest');
+    expect(one).toEqual(state(['chest'], []));
+    const two = cycleMuscle(one, 'chest');
+    expect(two).toEqual(state([], ['chest']));
+    expect(cycleMuscle(two, 'chest')).toEqual(state([], []));
+  });
+
+  it('les autres muscles ne bougent pas', () => {
+    expect(cycleMuscle(state(['back'], ['calves']), 'chest')).toEqual(state(['back', 'chest'], ['calves']));
+  });
+
+  it('deux priorités déjà prises : un muscle normal passe directement à évité', () => {
+    expect(cycleMuscle(state(['back', 'chest'], []), 'abs')).toEqual(state(['back', 'chest'], ['abs']));
+  });
+
+  it('quatre évités déjà pris : un muscle prioritaire revient à normal, un muscle normal devient prioritaire', () => {
+    const full = state(['chest'], ['calves', 'forearms', 'abs', 'glutes']);
+    expect(cycleMuscle(full, 'chest')).toEqual(state([], ['calves', 'forearms', 'abs', 'glutes']));
+    expect(cycleMuscle(full, 'back')).toEqual(state(['chest', 'back'], ['calves', 'forearms', 'abs', 'glutes']));
+  });
+
+  it('tout est plein : un muscle normal ne change pas', () => {
+    const full = state(['chest', 'back'], ['calves', 'forearms', 'abs', 'glutes']);
+    expect(cycleMuscle(full, 'biceps')).toEqual(full);
   });
 });
 
