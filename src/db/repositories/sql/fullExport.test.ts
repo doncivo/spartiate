@@ -22,6 +22,8 @@ async function seed(): Promise<void> {
   await (await db.data.repos.measurements()).save('2026-11-09' as LocalDate, 'health_body_fat_pct', 18.5);
   await (await db.data.repos.measurements()).save('2026-11-09' as LocalDate, 'health_fiber_g', 28);
   await (await db.data.repos.progressPhotos()).add('2026-11-09' as LocalDate, new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 0xff, 0xd9]));
+  // FIX-0181 (D-171) : favoris publiés, dans l'export complet comme toute table de l'archive.
+  await (await db.data.repos.foodFavorites()).add({ source: 'ciqual', ref: 'ciqual:20' });
   const r = await db.data.repos.workouts();
   await r.start({ source: 'empty', id: W, name: 'Superset ; « bras »' });
   await r.addExercise(W, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé couché', sets: 2 });

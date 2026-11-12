@@ -60,7 +60,7 @@ let counter = 0;
  * 17 migrations (la moitié du coût d'un test à deux appareils).
  */
 /** `legacy` : ancien schéma et ancien catalogue (banc de test, D-67) ; `i0` : migration 0001 réelle et catalogue de production. */
-export type SimSchema = 'legacy' | 'i0' | 'v3' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9' | 'v10' | 'v11' | 'v12' | 'v13';
+export type SimSchema = 'legacy' | 'i0' | 'v3' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9' | 'v10' | 'v11' | 'v12' | 'v13' | 'v14';
 
 /**
  * I1-03 : `v3` : base et catalogue d'une app arrêtée à la migration 0003 (séance locale, ni `workout` ni `workout_set` publiées), `sv` = 3 :
@@ -93,13 +93,15 @@ export const V10_CATALOGUE = createCatalogue({ tables: beforeCircuit(SYNC_CATALO
 export const V11_CATALOGUE = createCatalogue({ tables: beforeCircuit(SYNC_CATALOGUE.tables.slice(0, 22)), order: SYNC_TABLE_ORDER.slice(0, 22) });
 /** I6-03 : `v12` : base et catalogue sans groupe de circuit (migration 0012 : `workout_set` sans `circuit_id` ni `circuit_rest_sec`), `sv` = 12 : appareil pas encore mis à jour qui reçoit des séries groupées. */
 export const V12_CATALOGUE = createCatalogue({
-  tables: beforeCircuit(SYNC_CATALOGUE.tables),
-  order: SYNC_TABLE_ORDER,
+  tables: beforeCircuit(SYNC_CATALOGUE.tables.slice(0, 24)),
+  order: SYNC_TABLE_ORDER.slice(0, 24),
 });
 /** I6-03b : `v13` : base et catalogue sans groupe de routine (migration 0013 : `routine_exercise` sans `circuit_id` ni `circuit_rest_sec`), `sv` = 13 : appareil pas encore mis à jour qui reçoit des lignes de routine groupées. */
-export const V13_CATALOGUE = createCatalogue({ tables: beforeRoutineCircuit(SYNC_CATALOGUE.tables), order: SYNC_TABLE_ORDER });
-const SCHEMA_CATALOGUES = { v3: V3_CATALOGUE, v5: V5_CATALOGUE, v6: V6_CATALOGUE, v7: V7_CATALOGUE, v8: V8_CATALOGUE, v9: V9_CATALOGUE, v10: V10_CATALOGUE, v11: V11_CATALOGUE, v12: V12_CATALOGUE, v13: V13_CATALOGUE } as const;
-const schemaMigrations = (schema: SimSchema) => (schema === 'i0' ? i0Migrations : schema === 'v3' ? i0Migrations.slice(0, 3) : schema === 'v5' ? i0Migrations.slice(0, 5) : schema === 'v6' ? i0Migrations.slice(0, 6) : schema === 'v7' ? i0Migrations.slice(0, 7) : schema === 'v8' ? i0Migrations.slice(0, 8) : schema === 'v9' ? i0Migrations.slice(0, 9) : schema === 'v10' ? i0Migrations.slice(0, 10) : schema === 'v11' ? i0Migrations.slice(0, 11) : schema === 'v12' ? i0Migrations.slice(0, 12) : schema === 'v13' ? i0Migrations.slice(0, 13) : legacyMigrationList);
+export const V13_CATALOGUE = createCatalogue({ tables: beforeRoutineCircuit(SYNC_CATALOGUE.tables.slice(0, 24)), order: SYNC_TABLE_ORDER.slice(0, 24) });
+/** FIX-0181 : `v14` : base et catalogue sans favoris publiés (migration 0014, D-79 : favoris locaux), `sv` = 14 : appareil pas encore mis à jour qui reçoit `food_favorite`. */
+export const V14_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 24), order: SYNC_TABLE_ORDER.slice(0, 24) });
+const SCHEMA_CATALOGUES = { v3: V3_CATALOGUE, v5: V5_CATALOGUE, v6: V6_CATALOGUE, v7: V7_CATALOGUE, v8: V8_CATALOGUE, v9: V9_CATALOGUE, v10: V10_CATALOGUE, v11: V11_CATALOGUE, v12: V12_CATALOGUE, v13: V13_CATALOGUE, v14: V14_CATALOGUE } as const;
+const schemaMigrations = (schema: SimSchema) => (schema === 'i0' ? i0Migrations : schema === 'v3' ? i0Migrations.slice(0, 3) : schema === 'v5' ? i0Migrations.slice(0, 5) : schema === 'v6' ? i0Migrations.slice(0, 6) : schema === 'v7' ? i0Migrations.slice(0, 7) : schema === 'v8' ? i0Migrations.slice(0, 8) : schema === 'v9' ? i0Migrations.slice(0, 9) : schema === 'v10' ? i0Migrations.slice(0, 10) : schema === 'v11' ? i0Migrations.slice(0, 11) : schema === 'v12' ? i0Migrations.slice(0, 12) : schema === 'v13' ? i0Migrations.slice(0, 13) : schema === 'v14' ? i0Migrations.slice(0, 14) : legacyMigrationList);
 const migratedImages: Partial<Record<SimSchema, Promise<Uint8Array>>> = {};
 function migratedDatabaseImage(schema: SimSchema = 'legacy'): Promise<Uint8Array> {
   const migrations = schemaMigrations(schema);

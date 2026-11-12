@@ -332,6 +332,33 @@ export async function buildSyncVectors(rustSealed: SyncVectors['rustSealed'] = [
       },
       full: true,
     },
+    // FIX-0181 (D-171) : journal d'un appareil en schéma 15, un favori de la recherche d'aliments (référence Ciqual synthétique), lu par Vitest et cargo test.
+    {
+      name: 'journal-ops-food-favorite',
+      place: journal(11, 0),
+      sm: 1,
+      sv: 15,
+      plaintext: {
+        json: JSON.stringify({
+          k: 'ops',
+          sv: 15,
+          ops: [
+            {
+              t: 'food_favorite',
+              id: 'favorite|ciqual:20',
+              at: '2026-11-13T08:00:00.000Z',
+              f: Object.fromEntries(
+                Object.entries({ source: 'ciqual', ref: 'ciqual:20', added_at: '2026-11-13T08:00:00.000Z', created_at: '2026-11-13T08:00:00.000Z', deleted_at: null }).map(([name, value]) => [
+                  name,
+                  [value, '001794480000000-0000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60', null],
+                ]),
+              ),
+            },
+          ],
+        }),
+      },
+      full: true,
+    },
   ];
   const records: RecordVector[] = [];
   for (const [i, spec] of specs.entries()) {
