@@ -11,8 +11,8 @@ import { utcToLocal } from '../timeZone';
  * - `pas.csv`        `date;valeur[;unité]`  CHOIX : un échantillon de Santé par ligne (`Rechercher des échantillons Santé`, type Pas),
  *                    sommés par jour local de l'appareil. Un fichier « total par jour » (une ligne par jour) est le cas particulier
  *                    à un échantillon par jour et donne le même résultat ; les deux ne se mélangent pas dans un même fichier ;
- * - `sommeil.csv`    `début;fin;stade`  stades de Raccourcis en français (Au lit, Endormi, Éveillé, Paradoxal, Profond, Principal)
- *                    ou en anglais (In Bed, Asleep, Awake, REM, Deep, Core), casse et accents indifférents.
+ * - `sommeil.csv`    `début;fin;stade`  stades de Raccourcis en français (Au lit, Endormi, Endormi (non précisé), Éveillé, Paradoxal, Profond, Principal ou Essentiel)
+ *                    ou en anglais (In Bed, Asleep, Asleep (Unspecified), Awake, REM, Deep, Core), casse, accents et parenthèses indifférents (D-132).
  * Dates : ISO 8601 AVEC fuseau (`yyyy-MM-dd'T'HH:mm:ssZZZZZ`) ; une ligne sans fuseau est refusée (heure ambiguë). Valeurs : virgule
  * ou point décimal. Une ligne illisible est refusée et comptée PAR RAISON (`ShortcutRejectReason`), jamais par sa valeur, jamais devinée.
  * Le jour d'un échantillon est son jour LOCAL de l'appareil (`timeZone`, REV-01 constat 9) ; le jour d'une nuit est le jour du RÉVEIL.
@@ -200,14 +200,17 @@ export type SleepStage = (typeof SLEEP_STAGES)[number];
 const STAGE_LABELS: Readonly<Record<string, SleepStage>> = {
   'au lit': 'in_bed', 'dans le lit': 'in_bed', 'in bed': 'in_bed', inbed: 'in_bed',
   endormi: 'asleep', asleep: 'asleep',
+  // FIX-0172 (D-132) : « Endormi (non précisé) » / « Asleep (Unspecified) », écrit quand la source ne donne pas de stade.
+  'endormi non precise': 'asleep', 'asleep unspecified': 'asleep', unspecified: 'asleep', 'non precise': 'asleep',
   eveille: 'awake', reveille: 'awake', awake: 'awake',
-  paradoxal: 'rem', 'sommeil paradoxal': 'rem', rem: 'rem',
-  profond: 'deep', 'sommeil profond': 'deep', deep: 'deep',
-  principal: 'core', 'sommeil principal': 'core', core: 'core',
+  paradoxal: 'rem', 'sommeil paradoxal': 'rem', rem: 'rem', 'rem sleep': 'rem', 'asleep rem': 'rem',
+  profond: 'deep', 'sommeil profond': 'deep', deep: 'deep', 'deep sleep': 'deep', 'asleep deep': 'deep',
+  principal: 'core', 'sommeil principal': 'core', core: 'core', essentiel: 'core', 'sommeil essentiel': 'core', 'core sleep': 'core', 'asleep core': 'core',
 };
 
+/** Libellé normalisé : sans accents ni casse, parenthèses retirées, espaces réduits (« Endormi (non précisé) » → « endormi non precise »). */
 function parseStage(label: string): SleepStage | null {
-  const key = label.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const key = label.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim();
   return Object.prototype.hasOwnProperty.call(STAGE_LABELS, key) ? (STAGE_LABELS[key] ?? null) : null;
 }
 
