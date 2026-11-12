@@ -214,6 +214,14 @@ describe('onboarding : données (I3-07)', () => {
         expect(await db.driver.select("SELECT row_id, field FROM sync_outbox WHERE table_name = 'profile'")).toEqual([{ row_id: 'profile|singleton', field: 'height_cm' }]);
       });
 
+      it('assistant FERMÉ sans être terminé (marqué terminé pour ne pas revenir tout seul) : son brouillon est repris à son écran', async () => {
+        await saveDraft(db.data, { ...FULL, step: 'experience' });
+        await markCompleted(db.data);
+        const start = await loadStart(db.data);
+        expect(start.draft).toMatchObject({ step: 'experience', heightCm: 180 });
+        expect(start.persist).toBe(true);
+      });
+
       it('vrai brouillon inachevé (assistant jamais terminé) : repris à son écran, enregistré à chaque changement', async () => {
         await saveDraft(db.data, { ...FULL, step: 'goal' });
         const start = await loadStart(db.data);
