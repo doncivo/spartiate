@@ -159,7 +159,7 @@
   --ct-focus-ink: #15171c;
   --ct-focus-launch-bg: #3a2a66;
 
-  /* Gestes de ligne (A-07, Gestes.html) : couleurs des actions, identiques en clair et en sombre (chaque fond porte son texte). */
+  /* Ombre portée des gestes de ligne (A-07). */
   --ct-swipe-shadow: rgba(0, 0, 0, 0.15);
   --ct-color-bronze: #8e6530;
   --ct-color-ok: #5e9e6b;
