@@ -187,7 +187,8 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     }
   }
 
-  async function recompute(samples: RecoverySampleRepository, today: string, now: string, force: boolean): Promise<number> {
+  /** `imported` : au moins un fichier importé par CE lancement ; sans import (recalcul de règle seul, D-133), rien n'est inventé sur une base vide. */
+  async function recompute(samples: RecoverySampleRepository, today: string, now: string, force: boolean, imported = true): Promise<number> {
     const tz = deps.timeZone;
     const from = new Date(Date.parse(now) - SAMPLE_WINDOW_DAYS * DAY_MS).toISOString();
     const [sleep, hrv, rhr] = await Promise.all([samples.listWindow('sommeil', from, now), samples.listWindow('hrv', from, now), samples.listWindow('fc-repos', from, now)]);
@@ -216,6 +217,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     const recovery = await deps.recovery();
     const oldest = shiftDay(today, -(RECOMPUTE_DAYS - 1));
     const computedAt = new Map((await recovery.listDays(oldest as LocalDate, today as LocalDate)).map((d) => [d.summary.day, d.summary.computedAt] as const));
+    if (!imported && records.length === 0 && computedAt.size === 0) return 0;
     // Jours dont une mesure a été écrite par CET import (ajoutée ou remplacée) : sommeil = jour du réveil, hrv / fc-repos = jour de la mesure.
     const touched = new Set<string>();
     for (const [rows, useEnd] of [[sleep, true], [hrv, false], [rhr, false]] as const) {
@@ -273,6 +275,25 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     }
   }
 
+  /**
+   * FIX-0172 (constat 2, D-133) : recalcul unique d'une nouvelle règle du sommeil depuis les échantillons LOCAUX, quand ce lancement n'a importé
+   * aucun fichier (dossier inaccessible, fichiers absents ou illisibles, lecture limitée par les 30 minutes, sélecteur annulé). Le marqueur
+   * n'est posé qu'après un recalcul complet ; un échec est journalisé et repris au lancement suivant. null : règle déjà à jour.
+   */
+  async function recomputeRulesOnly(): Promise<{ readonly recomputedDays: number; readonly recomputeFailed: boolean } | null> {
+    if (!(await rulesOutdated())) return null;
+    const at = nowIso();
+    try {
+      const recomputedDays = await recompute(await deps.samples(), utcToLocal(at, deps.timeZone).date, at, true, false);
+      await markRulesCurrent();
+      deps.log('recovery-import-recompute', { days: recomputedDays });
+      return { recomputedDays, recomputeFailed: false };
+    } catch {
+      deps.log('recovery-import-recompute-failed', {});
+      return { recomputedDays: 0, recomputeFailed: true };
+    }
+  }
+
   /** Une lecture automatique a-t-elle eu lieu il y a moins de 30 minutes (cette session, ou dernier import gardé en base) ? */
   async function attemptedRecently(): Promise<boolean> {
     const now = deps.clock.nowMs();
@@ -326,13 +347,13 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     } catch (error) {
       if (error instanceof ShortcutFolderError) {
         deps.log('recovery-import-folder-unavailable', {});
-        return { status: 'folder-unavailable', files: [], recomputedDays: 0, recomputeFailed: false, at: null };
+        return { status: 'folder-unavailable', files: [], recomputedDays: 0, recomputeFailed: false, at: null, ...(await recomputeRulesOnly()) };
       }
       reads = null;
     }
     if (reads === null) {
       deps.log('recovery-import-cancelled', {});
-      return { status: 'cancelled', files: [], recomputedDays: 0, recomputeFailed: false, at: null };
+      return { status: 'cancelled', files: [], recomputedDays: 0, recomputeFailed: false, at: null, ...(await recomputeRulesOnly()) };
     }
     diagnose(source, reads);
     const at = nowIso();
@@ -366,6 +387,9 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
         recomputeFailed = true;
         deps.log('recovery-import-recompute-failed', {});
       }
+    } else {
+      const rules = await recomputeRulesOnly();
+      if (rules !== null) ({ recomputedDays, recomputeFailed } = rules);
     }
     const count = (state: FileOutcome['state']): number => files.filter((f) => f.state === state).length;
     deps.log('recovery-import-done', { files: files.length, imported: count('imported'), absent: count('absent'), unreadable: count('unreadable'), failed: count('failed') });
@@ -384,7 +408,13 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       }
       if (trigger === 'open' && !deps.reader.automatic) {
         deps.log('recovery-import-needs-pick', {});
-        return { ...none, status: 'needs-pick' };
+        if (running) return { ...none, status: 'needs-pick' };
+        running = true;
+        try {
+          return { ...none, status: 'needs-pick', ...(await recomputeRulesOnly()) };
+        } finally {
+          running = false;
+        }
       }
       if (running) {
         deps.log('recovery-import-busy', {});
@@ -394,7 +424,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       try {
         if (trigger === 'open' && (await attemptedRecently())) {
           deps.log('recovery-import-throttled', {});
-          return { ...none, status: 'throttled' };
+          return { ...none, status: 'throttled', ...(await recomputeRulesOnly()) };
         }
         lastAttemptMs = deps.clock.nowMs();
         const result: ImportRunResult = { ...(await execute(trigger === 'pick' ? (deps.fallback ?? deps.reader) : deps.reader)), trigger };
