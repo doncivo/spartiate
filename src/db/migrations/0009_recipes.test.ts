@@ -160,7 +160,7 @@ describe('migration 0009 : recettes et journée complète (I4-07)', () => {
     const db = await freshDb();
     const names = (await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger' AND (name LIKE 'sync_day_completeness_%' OR name LIKE 'sync_recipe%') ORDER BY name")).map((r) => r.name);
     expect(names).toEqual(['sync_day_completeness_ai', 'sync_day_completeness_au', 'sync_recipe_ai', 'sync_recipe_au', 'sync_recipe_ingredient_ai', 'sync_recipe_ingredient_au']);
-    expect(await db.select("SELECT 1 FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_%'")).toHaveLength(50); // 40 avec la 0009, 44 avec la 0010 (I5-01), 46 avec la 0011 (I6-01), 50 avec la 0012 (I6-02)
+    expect(await db.select("SELECT 1 FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_%'")).toHaveLength(51); // 40 avec la 0009, 44 avec la 0010 (I5-01), 46 avec la 0011 (I6-01), 50 avec la 0012 (I6-02), 51 avec la 0014 (I6-03b)
     await db.close();
   });
 

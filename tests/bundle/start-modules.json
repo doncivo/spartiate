@@ -318,6 +318,11 @@
       "raison": "Migration I6-03 (deux colonnes publiées de workout_set pour les groupes de circuit, aucun déclencheur, 1 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0012. Le domaine, le dépôt, l'en-tête et le formulaire de groupe, le rejeu, l'export complet et leurs textes restent hors du départ (import à la demande)."
     },
     {
+      "fichier": "src/db/migrations/0014_routine_circuit.ts",
+      "story": "I6-03-b",
+      "raison": "Migration I6-03b (deux colonnes publiées de routine_exercise pour les groupes de circuit des routines et leur déclencheur de capture propre, 2 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0013. Les règles de groupe, l'en-tête et le formulaire de l'éditeur, le déroulé série par série et leurs textes restent hors du départ (import à la demande)."
+    },
+    {
       "fichier": "src/features/app/ShellChrome.tsx",
       "story": "BUNDLE-01",
       "raison": "SPA-009 : carte d'état de la barre latérale PC et barre supérieure (1,6 Ko source), montées dès le premier rendu de la coquille."

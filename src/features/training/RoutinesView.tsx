@@ -1,11 +1,17 @@
 import { ArrowDown, ArrowLeft, ArrowUp, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
+  dissolveLoneRoutineCircuits,
+  groupRoutineLines,
   incompatibleRoutineLines,
   resolveExercise,
+  routineCircuitsOf,
+  ungroupRoutineLines,
   validateRoutine,
   type Exercise,
   type Routine,
+  type RoutineCircuitLine,
+  type RoutineGroupInput,
   type RoutineMode,
   type RoutineSpec,
   type RoutineTree,
@@ -17,6 +23,10 @@ import { Button, ConfirmDialog, Icon } from '../../ui';
 import { programToRoutine, type StarterProgram } from './content';
 import { ExerciseList } from './LibraryView';
 import type { TrainingData } from './trainingState';
+
+// I6-03b : groupes de la routine (en-tête et formulaire), bloc à la demande avec son catalogue de textes.
+const RoutineCircuitHeader = lazy(() => import('./RoutineCircuitUi').then((m) => ({ default: m.RoutineCircuitHeader })));
+const RoutineCircuitForm = lazy(() => import('./RoutineCircuitUi').then((m) => ({ default: m.RoutineCircuitForm })));
 
 /**
  * Écran « Routines » (§ 14, § 12.5 ; maquettes iPhone-Routine, PC-Routine) : liste, programmes de départ (une transaction par ajout, noms
@@ -33,6 +43,9 @@ interface DraftLine {
   readonly repMax: string;
   readonly rir: string;
   readonly restSec: string;
+  /** I6-03b : groupe (superset, triset, circuit) de la ligne ; null : ligne libre. */
+  readonly circuitId: string | null;
+  readonly circuitRestSec: number | null;
 }
 interface DraftDay {
   readonly id: string;
@@ -62,9 +75,39 @@ const toDraft = (tree: RoutineTree): Draft => ({
       repMax: String(l.repMax),
       rir: l.rir === null ? '' : String(l.rir),
       restSec: String(l.restSec),
+      circuitId: l.circuitId ?? null,
+      circuitRestSec: l.circuitRestSec ?? null,
     })),
   })),
 });
+
+/** Lignes du brouillon vues par les règles de groupe (saisie illisible : 1 série, repos 0 ; la validation de l'enregistrement la refusera). */
+const circuitView = (lines: readonly DraftLine[]): (RoutineCircuitLine & { readonly name: string })[] =>
+  lines.map((l, position) => {
+    const sets = parseNumber(l.sets);
+    const rest = parseNumber(l.restSec);
+    return { id: l.id, exerciseId: l.exerciseId, name: l.exerciseName, sets: sets === null ? 1 : sets, restSec: rest === null ? 0 : rest, position, circuitId: l.circuitId, circuitRestSec: l.circuitRestSec };
+  });
+/** Reporte sur le brouillon le résultat d'une règle de groupe : ordre, groupe, et pour les lignes changées les séries et le repos. */
+function applyCircuitLines(lines: readonly DraftLine[], next: readonly RoutineCircuitLine[]): DraftLine[] {
+  const before = new Map(circuitView(lines).map((l) => [l.id, l]));
+  return [...next]
+    .sort((a, b) => a.position - b.position)
+    .flatMap((n) => {
+      const draft = lines.find((l) => l.id === n.id);
+      const old = before.get(n.id);
+      if (!draft || !old) return [];
+      return [
+        {
+          ...draft,
+          sets: old.sets === n.sets ? draft.sets : String(n.sets),
+          restSec: old.restSec === n.restSec ? draft.restSec : String(n.restSec),
+          circuitId: n.circuitId ?? null,
+          circuitRestSec: n.circuitRestSec ?? null,
+        },
+      ];
+    });
+}
 
 const int = (text: string): number => {
   const n = parseNumber(text);
@@ -87,6 +130,8 @@ const toSpec = (draft: Draft): RoutineSpec => ({
       rir: l.rir.trim() === '' ? null : int(l.rir),
       restSec: int(l.restSec),
       position,
+      circuitId: l.circuitId,
+      circuitRestSec: l.circuitRestSec,
     })),
   })),
 });
@@ -135,7 +180,9 @@ async function saveDraft(access: DataAccess, original: RoutineTree, draft: Draft
           old.rir !== line.rir ||
           old.restSec !== line.restSec ||
           old.position !== line.position;
-        if (changed)
+        // I6-03b : le groupe n'est écrit que s'il change (capture champ par champ de la 0014).
+        const circuitChanged = (old.circuitId ?? null) !== (line.circuitId ?? null) || (old.circuitRestSec ?? null) !== (line.circuitRestSec ?? null);
+        if (changed || circuitChanged)
           await repo.updateExercise(line.id, {
             sets: line.sets,
             repMin: line.repMin,
@@ -143,6 +190,7 @@ async function saveDraft(access: DataAccess, original: RoutineTree, draft: Draft
             rir: line.rir,
             restSec: line.restSec,
             position: line.position,
+            ...(circuitChanged ? { circuitId: line.circuitId ?? null, circuitRestSec: line.circuitRestSec ?? null } : {}),
           });
       }
     }
@@ -236,11 +284,25 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
           repMax: String(max),
           rir: '',
           restSec: String(exercise.defaultRestSec),
+          circuitId: null,
+          circuitRestSec: null,
         },
       ],
     }));
     setPicking(null);
   };
+  // I6-03b : groupes du jour (brouillon) ; un seul formulaire ouvert à la fois.
+  const [grouping, setGrouping] = useState<string | null>(null);
+  const createGroup = (dayId: string, input: RoutineGroupInput): void => {
+    updateDay(dayId, (d) => ({ ...d, lines: applyCircuitLines(d.lines, groupRoutineLines(circuitView(d.lines), input)) }));
+    setGrouping(null);
+  };
+  const ungroup = (dayId: string, circuitId: string): void => updateDay(dayId, (d) => ({ ...d, lines: applyCircuitLines(d.lines, ungroupRoutineLines(circuitView(d.lines), circuitId)) }));
+  const removeLine = (dayId: string, lineId: string): void =>
+    updateDay(dayId, (d) => {
+      const rest = d.lines.filter((l) => l.id !== lineId);
+      return { ...d, lines: applyCircuitLines(rest, dissolveLoneRoutineCircuits(circuitView(rest))) };
+    });
 
   async function save(): Promise<void> {
     setMessage(null);
@@ -307,6 +369,16 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
               <input className="ct-training__input" value={day.name} maxLength={120} onChange={(e) => updateDay(day.id, (d) => ({ ...d, name: e.target.value }))} />
             </label>
             {day.lines.length === 0 && <p className="ct-training__muted">{tTraining('emptyDay')}</p>}
+            {routineCircuitsOf(circuitView(day.lines)).map((circuit) => (
+              <Suspense key={circuit.circuitId} fallback={null}>
+                <RoutineCircuitHeader circuit={circuit} names={circuit.lineIds.map((id) => day.lines.find((l) => l.id === id)?.exerciseName ?? '')} onUngroup={() => ungroup(day.id, circuit.circuitId)} />
+              </Suspense>
+            ))}
+            {grouping === day.id && (
+              <Suspense fallback={null}>
+                <RoutineCircuitForm lines={circuitView(day.lines)} newId={() => ids.next()} onCreate={(input) => createGroup(day.id, input)} onCancel={() => setGrouping(null)} />
+              </Suspense>
+            )}
             <ol className="ct-training__lines">
               {day.lines.map((line, index) => {
                 const resolved = resolveExercise({ id: line.exerciseId, frozenName: line.exerciseName }, data.content.catalog, data.allCustoms);
@@ -331,12 +403,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
                           type="button"
                           className="ct-training__icon-button"
                           aria-label={tTraining('remove')}
-                          onClick={() =>
-                            updateDay(day.id, (d) => ({
-                              ...d,
-                              lines: d.lines.filter((l) => l.id !== line.id),
-                            }))
-                          }
+                          onClick={() => removeLine(day.id, line.id)}
                         >
                           <Icon icon={X} size={20} />
                         </button>
@@ -358,6 +425,9 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
             <div className="ct-training__actions">
               <Button variant="secondary" onClick={() => setPicking(day.id)}>
                 {tTraining('addExercise')}
+              </Button>
+              <Button variant="secondary" expanded={grouping === day.id} onClick={() => setGrouping((now) => (now === day.id ? null : day.id))}>
+                {tTraining('sessionGroup')}
               </Button>
               <Button
                 variant="secondary"

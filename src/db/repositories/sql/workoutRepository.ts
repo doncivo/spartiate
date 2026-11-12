@@ -82,6 +82,9 @@ interface RoutineLineRow extends SqlRow {
   readonly rir: number | null;
   readonly rest_sec: number;
   readonly position: number;
+  // I6-03b (migration 0014) : absentes d'une base plus ancienne (lecture par `SELECT *`).
+  readonly circuit_id?: string | null;
+  readonly circuit_rest_sec?: number | null;
 }
 
 const rowToWorkout = (row: WorkoutRow): Workout => ({
@@ -288,7 +291,7 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       )[0];
       if (!day) throw new RepositoryError('not-found', 'routine_day', input.dayId);
       const lines = await db.select<RoutineLineRow>(
-        'SELECT exercise_id, exercise_name, sets, rep_min, rep_max, rir, rest_sec, position FROM routine_exercise WHERE routine_day_id = ? AND deleted_at IS NULL ORDER BY position, id',
+        'SELECT * FROM routine_exercise WHERE routine_day_id = ? AND deleted_at IS NULL ORDER BY position, id',
         [input.dayId],
       );
       const specs: RoutineExerciseSpec[] = lines.map((l) => ({
@@ -300,6 +303,8 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
         rir: l.rir,
         restSec: l.rest_sec,
         position: l.position,
+        circuitId: l.circuit_id ?? null,
+        circuitRestSec: l.circuit_rest_sec ?? null,
       }));
       return { plan: planFromRoutineDay(specs), name: input.name ?? day.name, routineId: input.routineId, dayId: input.dayId, copyFromId: null };
     }

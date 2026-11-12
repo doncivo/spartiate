@@ -2,6 +2,15 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.18.0
+
+**Schéma 14 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** Migration 0014 : les lignes de routine reçoivent leur groupe de circuit. Un appareil resté en 0.17 garde les groupes de routine reçus sans les afficher et les retrouve après sa mise à jour.
+
+- **Superset, triset ou circuit dans tes routines** (ta décision) : dans l'éditeur de routine, « Grouper en circuit » relie des exercices d'un même jour (deux = superset, trois = triset, quatre ou plus = circuit), avec le nombre de tours, le repos entre exercices et le repos de fin de tour. Le groupe est enregistré avec la routine et tu le retrouves dans chaque séance démarrée depuis ce jour : séries alternées, repos du groupe. « Défaire le groupe » ou retirer un exercice d'un superset le dissout. Les programmes de départ et les séances proposées restent sans groupe tant que tu n'en crées pas.
+- **Déroulé série par série** (ta décision) : dans Journal, le détail d'une séance passée propose « Voir le déroulé série par série ». Tu y revois chaque série dans l'ordre où tu l'as validée, avec l'heure, la charge, les répétitions et le repos réellement pris face à ce qui était prévu, et l'écart écrit en toutes lettres (« conforme », « 2,5 kg de plus », « plus long de 1 min 30 s »). Le repos est mesuré d'une validation à la suivante, exécution de la série comprise. Si l'heure d'une validation manque, le repos est dit « inconnu », jamais 0. Rien n'est créé ni modifié.
+- **« Refaire cette séance »** : le bouton qui crée une nouvelle séance à partir d'une séance passée (même exercices, mêmes groupes, tes charges et répétitions en cibles) s'appelait « Rejouer cette séance ». Il fonctionne comme avant.
+- **Export** : l'export et l'export complet (`routine_exercise.csv`) portent les groupes de tes routines. Une archive faite avant cette version s'importe toujours et ne retire jamais un groupe existant.
+
 ## 0.17.3
 
 **Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment ; installe pourtant les deux le même jour, pour voir le même nom de salle des deux côtés.

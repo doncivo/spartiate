@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-12 : I1 à I5 livrés ; I6-01 à I6-04 (0.12.0 à 0.16.0, schéma 13) ; CLEAN-01 (0.17.0), FIX-0171 (0.17.1, D-120 à D-124, H-32) et FIX-0172 (0.17.2, sommeil, D-130 à D-135, docs/FIX-0172.md) fusionnées. **FIX-0173 (0.17.3, sans migration) : fibres Renpho retirées avec le total, unité de l'export complet, base vide sur toutes les données, profil unique « Salle complète » (même id `fitness-park-antony`, D-142, clôt le constat 5 du 9/11), onglets et ligne Santé ; PR ouverte, docs/FIX-0173.md, D-140 à D-144.** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-144 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.).
+État au 2026-11-12 : I1 à I5 livrés ; I6-01 à I6-04 (0.12.0 à 0.16.0, schéma 13) ; CLEAN-01 (0.17.0), FIX-0171 (0.17.1, D-120 à D-124, H-32) et FIX-0172 (0.17.2, sommeil, D-130 à D-135, docs/FIX-0172.md) fusionnées. **FIX-0173 (0.17.3, sans migration) : fibres Renpho retirées avec le total, unité de l'export complet, base vide sur toutes les données, profil unique « Salle complète » (même id `fitness-park-antony`, D-142, clôt le constat 5 du 9/11), onglets et ligne Santé, fusionnée (#111), docs/FIX-0173.md, D-140 à D-144. **I6-03b (0.18.0, migration 0014, schéma 14) : groupes de circuit dans les routines et déroulé série par série du Journal, « Refaire cette séance » ; PR ouverte, docs/I6-03b.md, D-150 à D-153.** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-153 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.).
 
 ## Fusionné (tout est dans main)
 
@@ -15,8 +15,8 @@
 
 ## Prochaines étapes
 
-1. FIX-0173 : CI verte, fusion et tags 0.17.3 par l'agent principal (pas de Swift touché). Ali : installer la dernière version publiée (PC et iPhone le même jour) ; constater H-27, H-32 et les sections « À vérifier par Ali » de docs/FIX-0172.md et docs/FIX-0173.md.
-2. D-73 à D-118 validées par Ali (D-119). Tickets en file pour les exceptions : FIX-0181 (D-79 favoris, D-93 journée rouge × 0,95), I6-03b (D-104 vrai replay), CLEAN-02 (D-116, D-117) ; FIX-0172 fait (D-130, D-134). À recaler après 3 semaines de séances réelles, sur demande d'Ali seulement : D-73 (4, durée estimée) et D-88 (échelle d'effort 20).
+1. I6-03b : CI verte (garde du bundle et e2e lus en CI : tesseract.js absent du worktree), fusion et tags 0.18.0 par l'agent principal (pas de Swift). Ali : installer 0.18.0 sur PC et iPhone le même jour, avant toute saisie (schéma 14) ; constater H-27, H-32 et les sections « À vérifier par Ali » de docs/FIX-0172.md et docs/FIX-0173.md.
+2. D-73 à D-118 validées par Ali (D-119). Tickets en file pour les exceptions : FIX-0181 (D-79 favoris, D-93 journée rouge × 0,95), CLEAN-02 (D-116, D-117) ; FIX-0172 fait (D-130, D-134). À recaler après 3 semaines de séances réelles, sur demande d'Ali seulement : D-73 (4, durée estimée) et D-88 (échelle d'effort 20).
 
 ## À décider par Ali
 
