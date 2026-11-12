@@ -13,13 +13,17 @@ const must = <T,>(value: T | undefined): T => {
 };
 
 describe('contenu embarqué de l’entraînement', () => {
-  it('au moins 150 exercices (D-83), 4 programmes, 4 profils ; profil par défaut Fitness Park Antony ; chargé une seule fois', async () => {
+  it('au moins 150 exercices (D-83), 4 programmes, 3 profils ; profil par défaut « Salle complète » (FIX-0173, identifiant conservé) ; chargé une seule fois', async () => {
     const first = loadTrainingContent();
     expect(loadTrainingContent()).toBe(first);
     const content = await first;
     expect(content.catalog.list().length).toBeGreaterThanOrEqual(150);
     expect(content.programs.map((p) => p.id)).toEqual(['full-body-3j', 'haut-bas-4j', 'ppl-6j', 'maison-halteres-3j']);
-    expect(content.profiles.map((p) => p.id)).toEqual(['fitness-park-antony', 'salle-commerciale', 'maison-halteres', 'poids-de-corps']);
+    expect(content.profiles.map((p) => [p.id, p.name])).toEqual([
+      ['fitness-park-antony', 'Salle complète'],
+      ['maison-halteres', 'Maison haltères'],
+      ['poids-de-corps', 'Poids de corps'],
+    ]);
     expect(content.defaultProfileId).toBe('fitness-park-antony');
     expect(content.catalog.get('bench-press-barbell')?.origin).toBe('embedded');
     expect(content.catalog.get('bench-press-barbell')?.media).toBeNull();
