@@ -46,15 +46,15 @@ describe('onboarding : données (I3-07)', () => {
 
   describe('base vide et brouillon', () => {
     it('base neuve : tout est à zéro ; un profil, une routine ou une pesée la rend non vide', async () => {
-      expect(await readBaseCounts(db.data, TODAY)).toEqual({ profile: false, routines: 0, weights: 0, workouts: 0, meals: 0 });
+      expect(await readBaseCounts(db.data)).toEqual({ profile: false, routines: 0, weights: 0, workouts: 0, meals: 0 });
       await (await db.data.repos.profile()).save({ sex: 'male' }, 2026);
-      expect((await readBaseCounts(db.data, TODAY)).profile).toBe(true);
+      expect((await readBaseCounts(db.data)).profile).toBe(true);
       await (await db.data.repos.bodyWeights()).saveManual({ date: TODAY, kg: 80, timezone: 'Europe/Paris' }, TODAY);
-      expect((await readBaseCounts(db.data, TODAY)).weights).toBe(1);
+      expect((await readBaseCounts(db.data)).weights).toBe(1);
       const first = content.programs[0];
       if (!first) throw new Error('programme absent');
       await (await db.data.repos.trainingRoutines()).create(programToRoutine(first, content.catalog, ids));
-      expect((await readBaseCounts(db.data, TODAY)).routines).toBe(1);
+      expect((await readBaseCounts(db.data)).routines).toBe(1);
     });
 
     it('le brouillon survit à une fermeture : enregistré, relu à l’identique ; absent ou illisible : brouillon vide', async () => {
