@@ -96,7 +96,7 @@ jobs:
         shard: [1, 2, 3]
     env:
       CT_COVERAGE_SHARD: "1"
-      CT_TEST_WORKERS: "4"
+      CT_TEST_WORKERS: "2" # D-105 : 4 workers sur 4 cœurs avec couverture faisaient dépasser leur seconde de findBy à des tests de l'interface (chargement à froid) ; même réglage que le projet node
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4

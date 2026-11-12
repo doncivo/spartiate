@@ -32,8 +32,8 @@ const outbox = (db: SqlDriver) => db.select<{ table_name: string; row_id: string
 
 describe('migration 0012 : corps (I6-02, schéma 12)', () => {
   it('registre : 0001 à 0012 ; version 12, nom body_progress', () => {
-    expect(migrations.map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-    expect(migrations.at(-1)).toBe(migration0012BodyProgress);
+    expect(migrations.slice(0, 12).map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    expect(migrations[11]).toBe(migration0012BodyProgress);
     expect(migration0012BodyProgress.name).toBe('body_progress');
   });
 
@@ -42,7 +42,8 @@ describe('migration 0012 : corps (I6-02, schéma 12)', () => {
     await migrate(db, migrations.slice(0, BASE - 1));
     await db.execute('DELETE FROM sync_outbox');
     const before = await db.select<{ name: string; sql: string }>("SELECT name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY name");
-    await migrate(db, migrations);
+    // La 0013 (I6-03) modifie `workout_set` : cette migration se teste sur sa base, comme la 0011 et la 0010.
+    await migrate(db, migrations.slice(0, BASE));
     const after = await db.select<{ name: string; sql: string }>("SELECT name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY name");
     const beforeNames = new Set(before.map((r) => r.name));
     for (const row of before) expect(after.find((r) => r.name === row.name), row.name).toEqual(row);
