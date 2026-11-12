@@ -2,6 +2,15 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.13.0
+
+**Schéma 12 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** La mise à jour ajoute trois tables (additif) ; aucune donnée saisie n'est modifiée.
+
+- **Corps (I6-02)** : Progrès › Corps, sur PC et iPhone. **Mensurations** en centimètres (cou, épaules, poitrine, taille, hanches, bras, cuisses, mollets) : une mesure par jour et par zone, valeurs plausibles seulement, écart entre les deux dernières mesures, synchronisées entre les deux appareils.
+- **Photos de progression** : copie réduite gardée sur l'appareil, jamais envoyée, ni synchronisée, ni exportée ; seule la date (la fiche) passe d'un appareil à l'autre, l'autre appareil dit « photo prise sur un autre appareil ». Deux photos côte à côte ; supprimer une photo efface le fichier et la fiche. La synchro iCloud des photos n'est pas faite (D-99).
+- **Sauvegarde / export / synchro** : mensurations et fiches de photos sont dans l'archive (jamais les images), dans la restauration et dans la synchro.
+- À constater sur iPhone : le sélecteur de photo (H-27).
+
 ## 0.12.0
 
 **Schéma 11 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** La mise à jour ajoute une table (additif) ; aucune donnée saisie n'est modifiée.

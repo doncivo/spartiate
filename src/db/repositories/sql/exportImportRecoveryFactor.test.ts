@@ -47,7 +47,7 @@ const count = async (db: TestDb): Promise<number> => Number((await db.driver.sel
 
 describe('export / import du journal de facteurs (I6-01)', () => {
   it('table exportée en dernier, schéma 11, écrite par les deux appareils', () => {
-    expect(TRAINING_EXPORT_TABLES.at(-1)).toBe('recovery_factor');
+    expect(TRAINING_EXPORT_TABLES.at(-3)).toBe('recovery_factor');
     expect(TABLE_SINCE_SV.recovery_factor).toBe(11);
     expect((IPHONE_WRITTEN_TABLES as readonly string[]).includes('recovery_factor')).toBe(false);
   });
@@ -77,9 +77,9 @@ describe('export / import du journal de facteurs (I6-01)', () => {
     expect(await count(db)).toBe(0);
   });
 
-  it('archive de schéma 12 : refusée (future-version)', async () => {
+  it('archive de schéma 13 : refusée (future-version)', async () => {
     const db = await open(A);
-    await expect(parse(await read(db), 12)).rejects.toMatchObject({ code: 'future-version' });
+    await expect(parse(await read(db), 13)).rejects.toMatchObject({ code: 'future-version' });
   });
 
   it('ligne au JSON illisible, au code non textuel ou à l’identifiant faux : refusée à l’import, rien n’est écrit', async () => {

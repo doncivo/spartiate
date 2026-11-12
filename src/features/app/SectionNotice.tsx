@@ -1,6 +1,6 @@
 import { tSections, type SectionsTextKey } from '../../i18n/sectionsText';
 import './SectionNotice.css';
-import { RecoveryProgress } from './lazyScreens';
+import { BodyProgress, RecoveryProgress } from './lazyScreens';
 import { TodayScreen } from './TodayScreen';
 
 export type NoticeTab = 'today' | 'training' | 'nutrition' | 'progress';
@@ -25,6 +25,7 @@ export function SectionNotice({ tab }: { readonly tab: NoticeTab }) {
       <p className="ct-section-notice__lead">{tSections('unavailable')}</p>
       <p className="ct-section-notice__hint">{tSections('unavailableHint')}</p>
       {tab === 'progress' ? <RecoveryProgress /> : null}
+      {tab === 'progress' ? <BodyProgress /> : null}
     </section>
   );
 }

@@ -20,6 +20,7 @@ import {
   type WeightSource,
 } from '../bodyProfile';
 import type { ThemeChoice } from '../model/settings';
+import { isMeasurementKind, isMeasurementValue, isPhotoFileName } from '../bodyProgress/measurements';
 import { isIsoDateTime, isLocalDate } from '../types';
 import { SYNC_CATALOGUE, type SyncTable } from '../../domain/sync/syncTables';
 import { sha256Hex } from './sha256';
@@ -29,7 +30,7 @@ import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
 export const EXPORT_APP = 'spartiate';
 /** Version de schéma écrite au manifeste et maximale acceptée à l'import : celle de la dernière migration (vérifiée par un test). */
-export const EXPORT_SV = 11;
+export const EXPORT_SV = 12;
 /** Réglages exportés (D-57 : unités, jour de check-in, thème). Les unités sont dans `profile` ; le jour de check-in n'existe pas encore (nutrition). */
 export const EXPORT_SETTING_KEYS = ['ui.theme'] as const;
 export type ExportSettingKey = (typeof EXPORT_SETTING_KEYS)[number];
@@ -65,7 +66,7 @@ export interface ExportWeight {
  * I5-01 (schéma 10) : RÉSUMÉS de récupération (`recovery_day`, `muscle_recovery`) ; les échantillons importés (`recovery_sample`) et l'état
  * d'import (`recovery_import_state`) ne sont jamais exportés : ils se relisent depuis les fichiers Raccourcis.
  */
-export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient', 'recovery_day', 'muscle_recovery', 'recovery_factor'] as const;
+export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient', 'recovery_day', 'muscle_recovery', 'recovery_factor', 'measurement', 'progress_photo'] as const;
 /**
  * Colonnes ajoutées après la première version exportée de leur table : absentes d'une archive plus ancienne (0.3.0 : `workout_set` sans
  * `difficulty`), lues comme nulles. Toute autre colonne manquante reste refusée.
@@ -97,6 +98,8 @@ export const TABLE_SINCE_SV: Readonly<Partial<Record<TrainingTable, number>>> = 
   recovery_day: 10,
   muscle_recovery: 10,
   recovery_factor: 11,
+  measurement: 12,
+  progress_photo: 12,
 };
 
 /**
@@ -291,6 +294,13 @@ const jsonArray = (v: TrainingValue | undefined): boolean => {
   }
 };
 
+/** I6-02 : bornes des CHECK de la migration 0012 et des bornes par genre (cm) du domaine ; genre inconnu refusé (une archive de schéma 12 n'en porte pas). */
+function measurementBoundsOk(id: string, v: Readonly<Record<string, TrainingValue>>): boolean {
+  const kind = v['kind'];
+  const value = v['value'];
+  return typeof kind === 'string' && isMeasurementKind(kind) && typeof value === 'number' && isMeasurementValue(kind, value) && id === `measurement|${String(v['date'])}|${kind}`;
+}
+
 /** I6-01 : bornes des CHECK de la migration 0011 (identifiant naturel, huit codes textuels au plus, « rien de particulier » = tableau vide). */
 function recoveryFactorBoundsOk(id: string, v: Readonly<Record<string, TrainingValue>>): boolean {
   const none = v['none'];
@@ -352,6 +362,10 @@ function rowBoundsOk(table: TrainingTable, id: string, v: Readonly<Record<string
       return recoveryDayBoundsOk(id, v);
     case 'recovery_factor':
       return recoveryFactorBoundsOk(id, v);
+    case 'measurement':
+      return measurementBoundsOk(id, v);
+    case 'progress_photo':
+      return typeof v['file_name'] === 'string' && isPhotoFileName(v['file_name']);
     case 'muscle_recovery':
       return (
         id === `muscle|${String(v['date'])}|${String(v['muscle_id'])}` &&
