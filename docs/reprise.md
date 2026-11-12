@@ -1,13 +1,13 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-12 : I1 à I5 livrés ; I6-01 à I6-04 (0.12.0 à 0.16.0, schéma 13) ; **CLEAN-01 (0.17.0, sans migration) : suppression des résidus CircleTasks (ui, dépôts SQL hérités sans appelant, domaine, textes ; bundle de départ 209 328 → 193 544 octets), publiée (PR #106, docs/CLEAN-01.md, D-116 à D-118).** **FIX-0172 (0.17.2, sans migration) : sommeil et récupération (dette à compensation partielle, épisodes par segments endormis, stades Apple Watch, recalcul de règle sans import, seuil strict de 2 σ publié au PC, relecture 45 s après l'ouverture), PR ouverte, non fusionnée (docs/FIX-0172.md, D-130 à D-135).** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-135 dans docs/decisions.md (D-120 à D-129 réservées à FIX-0171) (DEP-01, SQLite >= 0.39, revue au 30 nov.).
+État au 2026-11-12 : I1 à I5 livrés ; I6-01 à I6-04 (0.12.0 à 0.16.0, schéma 13) ; CLEAN-01 (0.17.0) et FIX-0171 (0.17.1, PR #110, bloquants 1, 3, 5, 6 de la relecture Codex et règle photos d'Ali D-121, docs/FIX-0171.md, D-120 à D-124, H-32) publiées. **FIX-0172 (0.17.2, sans migration) : sommeil et récupération (dette à compensation partielle, épisodes par segments endormis, stades Apple Watch, recalcul de règle sans import, seuil strict de 2 σ publié au PC, relecture 45 s après l'ouverture), docs/FIX-0172.md, D-130 à D-135.** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-135 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.).
 
 ## Fusionné (tout est dans main)
 
 - Base : SPA-000 (#1 à #10), SPA-001a (#11), préparation et arbitrages (#12 à #14, D-65), 001b (front #15, périphérie #16 #18, base #20), FMT-01 (#17, D-66).
 - Livraison : SPA-002 (Windows, updater signé), SPA-003 (IPA ad hoc, entitlements), ios-demarrage et ios-identite (journal visible, source SideStore propre).
 - Produit I0 : SPA-005 (export / import), SPA-009 (écrans fidèles aux planches), SPA-006 (Apple Santé en lecture, diagnostic natif en 0.1.3), SPA-007 (Live Activity, minuteur de test).
-- Versions publiées : 0.1.0 à 0.17.0 (PC `vX.Y.Z`, iPhone `ios-vX.Y.Z`).
+- Versions publiées : 0.1.0 à 0.17.1 (PC `vX.Y.Z`, iPhone `ios-vX.Y.Z`).
 
 ## Décisions récentes
 
@@ -15,8 +15,8 @@
 
 ## Prochaines étapes
 
-1. Ali : installer 0.17.0 (PC et iPhone le même jour, schéma 13, avant toute saisie) ; constater le sélecteur de photo sur iPhone (H-27).
-2. D-73 à D-118 validées par Ali (D-119). Tickets en file pour les exceptions : FIX-0181 (D-79 favoris, D-93 journée rouge × 0,95), FIX-0172 (fait en PR : D-130, D-134), I6-03b (D-104 vrai replay), CLEAN-02 (D-116, D-117). À recaler après 3 semaines de séances réelles, sur demande d'Ali seulement : D-73 (4, durée estimée) et D-88 (échelle d'effort 20).
+1. Ali : installer 0.17.2 (PC et iPhone le même jour, schéma 13) ; constater H-27, H-32 (bouclier de Corps sans verrouillage) et la section « À vérifier par Ali » de docs/FIX-0172.md.
+2. D-73 à D-118 validées par Ali (D-119). Tickets en file pour les exceptions : FIX-0181 (D-79 favoris, D-93 journée rouge × 0,95), I6-03b (D-104 vrai replay), CLEAN-02 (D-116, D-117) ; FIX-0172 fait (D-130, D-134). À recaler après 3 semaines de séances réelles, sur demande d'Ali seulement : D-73 (4, durée estimée) et D-88 (échelle d'effort 20).
 
 ## À décider par Ali
 

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { type createFakePrivacyShield, openPrivacyShield } from './index';
+import { createFakePrivacyShield, createNoopPrivacyShield, openPrivacyShield, shieldOwner } from './index';
 import { setNativeShield, shieldFailureOf } from './tauriPrivacyShield';
 
 describe('cache de confidentialité natif (I-03, ADR 0013 §2.5)', () => {
@@ -34,5 +34,45 @@ describe('cache de confidentialité natif (I-03, ADR 0013 §2.5)', () => {
     fake?.failWith('unavailable');
     await expect(shield.setEnabled(false)).resolves.toEqual({ ok: false, code: 'unavailable' });
     expect(fake?.calls).toEqual([true, false]);
+  });
+});
+
+describe('FIX-0171 (constat 5) : propriétaires du bouclier (verrouillage, vues photo)', () => {
+  it('le bouclier reste actif tant qu’un propriétaire le demande ; retiré quand plus personne ne le demande', async () => {
+    const base = createFakePrivacyShield();
+    const lock = shieldOwner(base, 'appLock');
+    const photos = shieldOwner(base, 'photos');
+    expect(photos.supported).toBe(true);
+    await lock.setEnabled(false);
+    await photos.setEnabled(true);
+    await lock.setEnabled(false);
+    await photos.setEnabled(false);
+    expect(base.calls).toEqual([false, true, true, false]);
+    await lock.setEnabled(true);
+    await photos.setEnabled(true);
+    await photos.setEnabled(false);
+    expect(base.calls.slice(-3)).toEqual([true, true, true]);
+  });
+
+  it('appels rapprochés : servis dans l’ordre, le dernier état demandé gagne', async () => {
+    const base = createFakePrivacyShield();
+    const photos = shieldOwner(base, 'photos');
+    const results = await Promise.all([photos.setEnabled(true), photos.setEnabled(false), photos.setEnabled(true)]);
+    expect(results.every((r) => r.ok)).toBe(true);
+    expect(base.calls.at(-1)).toBe(true);
+  });
+
+  it('échec du plugin rendu au propriétaire, jamais levé', async () => {
+    const base = createFakePrivacyShield();
+    base.failWith('unavailable');
+    await expect(shieldOwner(base, 'photos').setEnabled(true)).resolves.toEqual({ ok: false, code: 'unavailable' });
+    const throwing = { supported: true, setEnabled: () => Promise.reject(new Error('boum')) };
+    await expect(shieldOwner(throwing, 'photos').setEnabled(true)).resolves.toEqual({ ok: false, code: 'unknown' });
+  });
+
+  it('PC : bouclier vide, sans effet', async () => {
+    const owner = shieldOwner(createNoopPrivacyShield(), 'photos');
+    expect(owner.supported).toBe(false);
+    await expect(owner.setEnabled(true)).resolves.toEqual({ ok: true });
   });
 });

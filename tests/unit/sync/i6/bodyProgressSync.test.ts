@@ -6,6 +6,7 @@ import type { IsoDateTime, LocalDate } from '../../../../src/domain/types';
 import { migrate } from '../../../../src/db/migrator';
 import { migrations } from '../../../../src/db/migrations';
 import { reintegrateUnknownFields } from '../../../../src/db/repositories';
+import { planImport } from '../../../../src/domain/exportImport/plan';
 import vectors from '../../../fixtures/sync/vectors.json';
 import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice, type SimSchema } from '../../../sim/syncDevice';
 
@@ -115,6 +116,40 @@ describe('(d) photo : la fiche passe, jamais le fichier', () => {
     await roundTrip();
     expect(await (await photos(pc)).list()).toEqual([]);
     expect(await iphone.driver.select('SELECT 1 FROM progress_photo_file')).toEqual([]);
+  });
+
+  it('FIX-0171 (D-121) : le PC sans fichier ne peut pas supprimer ; masquer y reste local et n’est jamais publié', async () => {
+    const [pc, iphone] = await pcAndIphone();
+    const added = await (await photos(iphone)).add(DAY, BYTES);
+    await roundTrip();
+    await expect((await photos(pc)).remove(added.id)).rejects.toMatchObject({ code: 'not-found' });
+    await pc.data.repos.settings.set('bodyProgress.hiddenPhotos', [added.id]);
+    expect(await pc.driver.select("SELECT 1 FROM sync_outbox WHERE table_name = 'progress_photo'")).toEqual([]);
+    await roundTrip();
+    expect((await (await photos(iphone)).list()).map((p) => p.id)).toEqual([added.id]);
+    expect(await iphone.data.repos.settings.get('bodyProgress.hiddenPhotos')).toBeNull();
+  });
+
+  it('FIX-0171 (D-121) : suppression reçue (import « remplacer » sur le PC) : le fichier de l’iPhone reste, fiche « supprimée ailleurs » jusqu’à sa suppression locale', async () => {
+    const [pc, iphone] = await pcAndIphone();
+    const added = await (await photos(iphone)).add(DAY, BYTES);
+    await roundTrip();
+    pc.clock.advance(60_000);
+    await pc.data.transaction(async (repos) => {
+      const repo = await repos.exportImport();
+      const local = await repo.readExportData();
+      await repo.applyImport(planImport(local, { ...local, training: { ...local.training, progress_photo: [] }, archiveSv: 13 }, 'replace'), 2026);
+    });
+    await roundTrip();
+    const onIphone = await photos(iphone);
+    expect(await onIphone.list()).toEqual([]);
+    expect((await onIphone.listDeletedWithFile()).map((p) => p.id)).toEqual([added.id]);
+    expect(await onIphone.loadFile(added.id)).toEqual(BYTES);
+    await onIphone.remove(added.id);
+    await roundTrip();
+    expect(await onIphone.loadFile(added.id)).toBeNull();
+    expect(await iphone.driver.select('SELECT 1 FROM sync_outbox')).toEqual([]);
+    expect(await pc.driver.select('SELECT deleted_at IS NOT NULL AS gone FROM progress_photo')).toEqual([{ gone: 1 }]);
   });
 });
 

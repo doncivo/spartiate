@@ -1,24 +1,28 @@
 import { X } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { todayLocal } from '../../domain/clock';
-import { parseDecimal } from '../../domain/bodyProfile';
+import { parseDecimal, type BodyGoal, type Experience, type Sex } from '../../domain/bodyProfile';
+import type { ActivityLevel } from '../../domain/nutrition/config';
 import {
   ONBOARDING_STEPS,
   nextStep,
   previousStep,
   validateStep,
+  type ChangeField,
+  type ChangeValue,
+  type OnboardingChange,
   type OnboardingDraft,
   type OnboardingStepId,
   type StepIssueCode,
 } from '../../domain/onboarding';
 import { logFailure } from '../../platform/desktop/log';
-import { tOnboarding, type OnboardingTextKey } from '../../i18n/onboardingText';
+import { formatDecimal, tOnboarding, type OnboardingTextKey } from '../../i18n/onboardingText';
 import { Button, Icon, useFocusTrap, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useAppStore } from '../app/appStore';
 import { useNavigationStore } from '../app/navigation';
 import { loadTrainingContent, type TrainingContent } from '../training/content';
-import { finishOnboarding, loadDraft, mergePrefill, parseField, readPrefill, saveDraft } from './onboardingData';
+import { finishOnboarding, loadStart, parseField, previewChanges, saveDraft } from './onboardingData';
 import { StepAvailability, StepExperience, StepGoal, StepYou, type FieldTexts, type StepProps } from './StepsBasics';
 import { StepEquipment, StepPriorities, StepResult, StepSplit } from './StepsPlan';
 import './OnboardingFlow.css';
@@ -77,6 +81,9 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
   const [issues, setIssues] = useState<readonly StepIssueCode[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [startMeta, setStartMeta] = useState<{ readonly baseline: OnboardingDraft | null; readonly persist: boolean } | null>(null);
+  /** Remplacements à confirmer avant l'écriture finale, et ceux que l'utilisateur refuse (décochés). */
+  const [confirming, setConfirming] = useState<{ readonly changes: readonly OnboardingChange[]; readonly refused: ReadonlySet<ChangeField> } | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const busyRef = useRef(false);
   useEffect(() => {
@@ -93,10 +100,12 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
     let live = true;
     void (async () => {
       try {
-        const [saved, prefill] = await Promise.all([loadDraft(data), readPrefill(data)]);
+        // FIX-0171 (constat 6) : brouillon inachevé repris tel quel ; assistant terminé revu depuis les données actuelles, sans brouillon enregistré.
+        const start = await loadStart(data);
         if (!live) return;
-        const merged = mergePrefill(saved, prefill);
-        setPrefillWeightKg(prefill.weightKg ?? null);
+        const merged = start.draft;
+        setPrefillWeightKg(start.prefillWeightKg);
+        setStartMeta({ baseline: start.baseline, persist: start.persist });
         setTexts({ birthYear: asText(merged.birthYear), heightCm: asText(merged.heightCm), weightKg: asText(merged.weightKg), expenditureKcal: asText(merged.expenditureKcal) });
         setDraft(merged);
       } catch (error) {
@@ -138,9 +147,13 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
     target?.focus();
   }, [issues]);
 
+  const persist = startMeta?.persist ?? false;
   const commit = useCallback(
     (next: OnboardingDraft) => {
       setDraft(next);
+      setConfirming(null);
+      // Revue d'un assistant terminé : rien n'est écrit avant la fin (aucun brouillon qui reprendrait le pas sur les données actuelles).
+      if (!persist) return;
       saveDraft(data, next).then(
         () => setNotice((current) => (current === tOnboarding('saveDraftError') ? null : current)),
         (error: unknown) => {
@@ -149,7 +162,7 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
         },
       );
     },
-    [data],
+    [data, persist],
   );
 
   if (loadFailed) {
@@ -215,7 +228,8 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
     const target = previousStep(step);
     if (target !== null) goTo(target);
   };
-  const onFinish = async (): Promise<void> => {
+  const baseline = startMeta?.baseline ?? null;
+  const onFinish = async (refused: ReadonlySet<ChangeField> | null): Promise<void> => {
     const found = check();
     if (found.length > 0) {
       setIssues(found);
@@ -224,6 +238,15 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
     setBusy(true);
     setNotice(null);
     try {
+      // FIX-0171 (constat 6) : une valeur qui en remplace une déjà enregistrée est confirmée (ou refusée) avant toute écriture.
+      if (refused === null) {
+        const replacements = (await previewChanges(data, draft, baseline)).filter((c) => c.replaces);
+        if (replacements.length > 0) {
+          setConfirming({ changes: replacements, refused: new Set() });
+          setBusy(false);
+          return;
+        }
+      }
       // Contenu absent alors que la proposition est acceptée : on ne termine pas en silence, l'erreur est dite et Ali peut réessayer ou écarter la proposition.
       const wantsRoutine = draft.acceptProposal && !draft.skipped.includes('split');
       const loaded = content === 'error' || content === null ? await loadTrainingContent().catch((error: unknown) => {
@@ -235,7 +258,7 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
         setBusy(false);
         return;
       }
-      await finishOnboarding({ data, ids: container.ids, today, timeZone, year }, draft, loaded);
+      await finishOnboarding({ data, ids: container.ids, today, timeZone, year }, draft, loaded, { baseline, refused: [...(refused ?? [])] });
       navigate({ tab: 'today' });
       onClose('done');
     } catch (error) {
@@ -280,13 +303,48 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
         </p>
       )}
       <p className="ct-onb__hint">{tOnboarding('skipHint')}</p>
+      {step === 'result' && confirming && (
+        <section className="ct-onb__body" aria-labelledby="ct-onb-confirm">
+          <h2 id="ct-onb-confirm" className="ct-onb__label">
+            {tOnboarding('confirmTitle')}
+          </h2>
+          <p className="ct-onb__text">{tOnboarding('confirmText')}</p>
+          {confirming.changes.map((change) => (
+            <label key={change.field} className="ct-onb__check">
+              <input
+                type="checkbox"
+                checked={!confirming.refused.has(change.field)}
+                onChange={() =>
+                  setConfirming((current) => {
+                    if (!current) return current;
+                    const next = new Set(current.refused);
+                    if (next.has(change.field)) next.delete(change.field);
+                    else next.add(change.field);
+                    return { ...current, refused: next };
+                  })
+                }
+              />
+              <span>{changeLine(change, content === 'error' ? null : content)}</span>
+            </label>
+          ))}
+        </section>
+      )}
       <footer className="ct-onb__footer">
-        {step === 'result' ? (
+        {step === 'result' && confirming ? (
+          <>
+            <Button variant="secondary" fullWidth onClick={() => setConfirming(null)} disabled={busy}>
+              {tOnboarding('confirmBack')}
+            </Button>
+            <Button fullWidth onClick={() => void onFinish(confirming.refused)} disabled={busy} ariaBusy={busy}>
+              {tOnboarding('confirmSave')}
+            </Button>
+          </>
+        ) : step === 'result' ? (
           <>
             <Button variant="secondary" fullWidth onClick={() => goTo('you')} disabled={busy}>
               {tOnboarding('edit')}
             </Button>
-            <Button fullWidth onClick={() => void onFinish()} disabled={busy} ariaBusy={busy}>
+            <Button fullWidth onClick={() => void onFinish(null)} disabled={busy} ariaBusy={busy}>
               {tOnboarding('start')}
             </Button>
           </>
@@ -305,6 +363,51 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
       </footer>
     </Shell>
   );
+}
+
+const SEX_KEY = { male: 'sexMale', female: 'sexFemale' } as const satisfies Record<Sex, OnboardingTextKey>;
+const ACTIVITY_KEY = { sedentary: 'activitySedentary', light: 'activityLight', moderate: 'activityModerate', active: 'activityActive' } as const satisfies Record<ActivityLevel, OnboardingTextKey>;
+const PROFILE_GOAL_KEY = { gain: 'profileGoalGain', loss: 'profileGoalLoss', maintain: 'profileGoalMaintain' } as const satisfies Record<BodyGoal, OnboardingTextKey>;
+const EXPERIENCE_KEY = { beginner: 'experienceBeginner', intermediate: 'experienceIntermediate', advanced: 'experienceAdvanced' } as const satisfies Record<Experience, OnboardingTextKey>;
+const FIELD_KEY = {
+  sex: 'fieldSex',
+  birthYear: 'fieldBirthYear',
+  heightCm: 'fieldHeight',
+  weightKg: 'weightKg',
+  activity: 'fieldActivity',
+  goal: 'fieldGoal',
+  experience: 'fieldExperience',
+  equipmentProfileId: 'fieldEquipment',
+  nutritionGoal: 'fieldNutritionGoal',
+} as const satisfies Record<ChangeField, OnboardingTextKey>;
+
+/** Valeur d'un remplacement dite en texte (libellés du catalogue, jamais un code). */
+function changeValue(field: ChangeField, value: ChangeValue | null, content: TrainingContent | null): string {
+  if (value === null) return tOnboarding('unset');
+  if (typeof value === 'object') {
+    return value.kind === 'maintain' ? tOnboarding('nutritionMaintain') : tOnboarding(value.kind === 'gain' ? 'nutritionGain' : 'nutritionLoss', { kg: formatDecimal(value.weeklyRateKg) });
+  }
+  switch (field) {
+    case 'sex':
+      return tOnboarding(SEX_KEY[value as Sex]);
+    case 'heightCm':
+      return tOnboarding('valueCm', { n: formatDecimal(Number(value)) });
+    case 'activity':
+      return tOnboarding(ACTIVITY_KEY[value as ActivityLevel]);
+    case 'goal':
+      return tOnboarding(PROFILE_GOAL_KEY[value as BodyGoal]);
+    case 'experience':
+      return tOnboarding(EXPERIENCE_KEY[value as Experience]);
+    case 'equipmentProfileId':
+      return content?.profiles.find((p) => p.id === value)?.name ?? String(value);
+    default:
+      return typeof value === 'number' ? formatDecimal(value) : value;
+  }
+}
+
+function changeLine(change: OnboardingChange, content: TrainingContent | null): string {
+  if (change.field === 'weightKg') return tOnboarding('confirmWeight', { after: changeValue('weightKg', change.after, content), before: changeValue('weightKg', change.before, content) });
+  return tOnboarding('confirmLine', { label: tOnboarding(FIELD_KEY[change.field]), before: changeValue(change.field, change.before, content), after: changeValue(change.field, change.after, content) });
 }
 
 function Shell({ layout, trapRef, children }: { readonly layout: string; readonly trapRef: React.RefObject<HTMLElement>; readonly children: React.ReactNode }) {

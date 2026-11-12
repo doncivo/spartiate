@@ -218,8 +218,11 @@ export function planImport(local: ExportData, incoming: ExportData, mode: Import
     for (const incomingRow of ordered) {
       if (skipRow(table, incomingRow)) continue;
       if (table === 'nutrition_target' && !localRows.has(incomingRow.id) && incomingRow.values['accepted'] === 1 && decidedAt(incomingRow) !== '' && decidedAt(incomingRow) < newestLocalDecision) continue;
-      const row = table === 'workout' && open.closeAt.has(incomingRow.id) ? { ...incomingRow, values: { ...incomingRow.values, ended_at: open.closeAt.get(incomingRow.id) ?? null } } : incomingRow;
-      const existing = localRows.get(row.id);
+      const closed = table === 'workout' && open.closeAt.has(incomingRow.id) ? { ...incomingRow, values: { ...incomingRow.values, ended_at: open.closeAt.get(incomingRow.id) ?? null } } : incomingRow;
+      const existing = localRows.get(closed.id);
+      // FIX-0171 (constat 1, D-120) : une colonne absente de l'archive (schéma plus ancien) garde la valeur locale, dans les deux modes ; une valeur
+      // nulle présente dans l'archive reste un effacement explicite. Ligne nouvelle : la colonne absente reste nulle.
+      const row = existing && closed.absent && closed.absent.length > 0 ? { id: closed.id, values: { ...closed.values, ...Object.fromEntries(closed.absent.map((col) => [col, existing.values[col] ?? null])) } } : closed;
       if (existing && columns.every((col) => (existing.values[col] ?? null) === (row.values[col] ?? null))) unchanged += 1;
       else {
         trainingWrites.push({ table, row });
