@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildExportArchive, canonicalHash, EXPORT_SV, parseExportArchive, TRAINING_EXPORT_TABLES, type ExportData } from './archive';
+import { buildExportArchive, canonicalHash, EXPORT_SV, IMPORT_ZIP_LIMITS, parseExportArchive, TRAINING_EXPORT_TABLES, type ExportData } from './archive';
 import { CSV_BOM, buildFullExport, csvCell, csvText, FULL_EXPORT_EXCLUDED, FULL_EXPORT_TABLES, fullExportColumns, parseCsvText } from './fullExport';
 import { readZip } from './zip';
 
@@ -26,7 +26,7 @@ const DATA: ExportData = {
 };
 const entries = async (data: ExportData = DATA) => {
   const built = await buildFullExport(data, { date: '2026-11-12T10:00:00.000Z', sv: EXPORT_SV, appVersion: '0.14.0' });
-  const map = new Map(readZip(built.bytes).map((e) => [e.name, e.data]));
+  const map = new Map(readZip(built.bytes, IMPORT_ZIP_LIMITS).map((e) => [e.name, e.data]));
   return { built, map, text: (name: string): string => new TextDecoder('utf-8', { ignoreBOM: true }).decode(map.get(name)) };
 };
 
@@ -119,7 +119,7 @@ describe('contenu de l’archive', () => {
     expect(content.files.find((f) => f.table === 'measurement')?.columns).toEqual([
       { name: 'id', type: 'text', unit: null },
       { name: 'date', type: 'date', unit: null },
-      { name: 'kind', type: 'enum', unit: null },
+      { name: 'kind', type: 'text', unit: null },
       { name: 'value', type: 'real', unit: 'cm' },
     ]);
     expect(content.excluded).toEqual([...FULL_EXPORT_EXCLUDED]);
@@ -128,11 +128,12 @@ describe('contenu de l’archive', () => {
   });
 
   it('data.json et manifest.json : même forme que l’export habituel (l’archive complète est aussi une archive importable)', async () => {
-    const { text, built } = await entries();
-    const plain = await buildExportArchive(DATA, { date: '2026-11-12T10:00:00.000Z', sv: EXPORT_SV });
+    const importable: ExportData = { ...DATA, training: { measurement: DATA.training?.measurement ?? [] } };
+    const { text, built } = await entries(importable);
+    const plain = await buildExportArchive(importable, { date: '2026-11-12T10:00:00.000Z', sv: EXPORT_SV });
     expect(text('data.json')).toBe(new TextDecoder().decode(readZip(plain.bytes).find((e) => e.name === 'data.json')?.data));
     const parsed = await parseExportArchive(built.bytes, { currentSv: EXPORT_SV, currentYear: 2026 });
-    expect(await canonicalHash(parsed.data)).toBe(await canonicalHash(DATA));
+    expect(await canonicalHash(parsed.data)).toBe(await canonicalHash(importable));
   });
 });
 

@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
+import { IMPORT_ZIP_LIMITS } from '../../domain/exportImport/archive';
 import { readZip } from '../../domain/exportImport/zip';
 import type { DeviceId, LocalDate } from '../../domain/types';
 import { createMemoryFiles, type MemoryFiles } from '../../platform/files';
@@ -41,7 +42,7 @@ describe('Plus › Export complet', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Export complet (CSV et JSON)' }));
     await waitFor(() => expect(files.saved).toHaveLength(1));
     expect(files.saved[0]).toMatchObject({ suggestedName: 'spartiate-export-complet-2026-10-05.zip', mime: 'application/zip' });
-    const names = readZip(files.saved[0]?.data as Uint8Array).map((e) => e.name);
+    const names = readZip(files.saved[0]?.data as Uint8Array, IMPORT_ZIP_LIMITS).map((e) => e.name);
     expect(names).toEqual(expect.arrayContaining(['manifest.json', 'contenu.json', 'data.json', 'csv/body_weight.csv', 'csv/workout_set.csv', 'csv/measurement.csv']));
     expect(names.some((n) => /photo_file|\.jpe?g$/i.test(n))).toBe(false);
     expect(await screen.findByRole('status')).toHaveTextContent('Archive complète enregistrée');

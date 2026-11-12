@@ -4,7 +4,7 @@ import { confidenceBand, confidencePercent, constraintAlerts, explainOption, exp
 import { prescribe } from '../../../domain/training/prescribe';
 import { currentBodyweightKg } from '../../../domain/training/bodyweight';
 import { analyzeHistory } from '../../../domain/training/estimate1rm';
-import { positionRanks } from '../../../domain/training/positionRank';
+import { positionRanksOfSets } from '../../../domain/training/positionRank';
 import { warmupForExercise, type WarmupSet } from '../../../domain/training/warmup';
 import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type MuscleWeight, type Prescription, type ProgressionEquipment, type RecoverySnapshot, type RepTarget } from '../../../domain/training/types';
 import type { WorkoutSet, WorkoutWithSets } from '../../../domain/training/session';
@@ -152,7 +152,7 @@ async function referencePositionRank(access: DataAccess, history: readonly Exerc
   try {
     const closed = await (await access.repos.workouts()).getClosed(latest.workoutId);
     if (closed === null) return null;
-    return positionRanks(closed.sets.map((s) => ({ exerciseId: s.exerciseId, muscles: musclesOf(s.exerciseId) }))).get(exerciseId) ?? null;
+    return positionRanksOfSets(closed.sets, musclesOf).get(exerciseId) ?? null;
   } catch {
     return null;
   }

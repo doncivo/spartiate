@@ -53,6 +53,11 @@ async function rewritten(data: ExportData, sv: number, edit: (training: Record<s
     { name: 'manifest.json', data: new TextEncoder().encode(JSON.stringify(manifest)) },
   ]);
 }
+const firstSet = (t: Record<string, Record<string, unknown>[]>): Record<string, unknown> => {
+  const row = t['workout_set']?.[0];
+  if (!row) throw new Error('série attendue');
+  return row;
+};
 const parse = (bytes: Uint8Array) => parseExportArchive(bytes, { currentSv: EXPORT_SV, currentYear: 2026 });
 
 describe('export / import des groupes de circuit (I6-03)', () => {
@@ -97,9 +102,9 @@ describe('export / import des groupes de circuit (I6-03)', () => {
 
   it('valeur hors bornes ou de mauvais type : archive refusée', async () => {
     const source = await read(await withCircuit(A));
-    await expect(parse(await rewritten(source, 13, (t) => ((t['workout_set'] ?? [])[0]!['circuit_rest_sec'] = -5)))).rejects.toMatchObject({ code: 'invalid-data' });
-    await expect(parse(await rewritten(source, 13, (t) => ((t['workout_set'] ?? [])[0]!['circuit_rest_sec'] = 3601)))).rejects.toMatchObject({ code: 'invalid-data' });
-    await expect(parse(await rewritten(source, 13, (t) => ((t['workout_set'] ?? [])[0]!['circuit_id'] = 12)))).rejects.toMatchObject({ code: 'invalid-data' });
-    await expect(parse(await rewritten(source, 13, (t) => ((t['workout_set'] ?? [])[0]!['circuit_id'] = '')))).rejects.toMatchObject({ code: 'invalid-data' });
+    await expect(parse(await rewritten(source, 13, (t) => (firstSet(t)['circuit_rest_sec'] = -5)))).rejects.toMatchObject({ code: 'invalid-data' });
+    await expect(parse(await rewritten(source, 13, (t) => (firstSet(t)['circuit_rest_sec'] = 3601)))).rejects.toMatchObject({ code: 'invalid-data' });
+    await expect(parse(await rewritten(source, 13, (t) => (firstSet(t)['circuit_id'] = 12)))).rejects.toMatchObject({ code: 'invalid-data' });
+    await expect(parse(await rewritten(source, 13, (t) => (firstSet(t)['circuit_id'] = '')))).rejects.toMatchObject({ code: 'invalid-data' });
   });
 });

@@ -2,6 +2,15 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.14.0
+
+**Schéma 13 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** La mise à jour ajoute deux colonnes (additif) aux séries d'une séance ; aucune donnée saisie n'est modifiée.
+
+- **Circuits (I6-03)** : dans la séance active, « Grouper en circuit » relie deux exercices ou plus (superset, triset, circuit : un seul mécanisme) avec un nombre de tours, un repos entre exercices (nul = aucun minuteur) et un repos de fin de tour. Les séries s'enchaînent une à une (A1 B1 A2 B2…), l'exercice et le tour suivants sont dits en texte, « Défaire le groupe » garde les séries faites. La décote de position (D-87) ne s'applique pas entre exercices de muscles différents d'un même circuit. Les groupes ne sont pas encore proposés par les routines ni par la génération de séance.
+- **Rejouer une séance** : depuis le Journal, « Rejouer cette séance » crée une nouvelle séance avec les mêmes exercices et les mêmes groupes ; les charges et les répétitions de la séance passée deviennent les cibles, rien n'est copié comme déjà fait.
+- **Export complet** : Plus › Export et import › « Export complet (CSV et JSON) » : une archive zip avec un CSV par table (UTF-8 avec BOM, séparateur point-virgule, dates ISO, nombres à point décimal), le JSON complet et un fichier décrivant chaque colonne (docs/export-complet.md). Les photos de progression ne sont jamais exportées. L'archive complète est aussi une archive d'import valide.
+- **Sauvegarde / synchro** : les groupes sont dans l'archive, la restauration et la synchro (publiés avec la séance close).
+
 ## 0.13.0
 
 **Schéma 12 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** La mise à jour ajoute trois tables (additif) ; aucune donnée saisie n'est modifiée.
