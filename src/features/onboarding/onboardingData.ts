@@ -94,12 +94,16 @@ export interface OnboardingStart {
 export async function loadStart(data: DataAccess): Promise<OnboardingStart> {
   const { settings } = data.repos;
   const [completed, rawDraft, rawAnswers, current] = await Promise.all([settings.get('onboarding.completed'), settings.get('onboarding.draft'), settings.get('onboarding.answers'), readCurrent(data.repos)]);
-  if (completed !== true) {
+  const saved = rawDraft === null || rawDraft === undefined ? null : parseDraft(rawDraft);
+  // `onboarding.completed` vaut aussi pour un assistant FERMÉ sans être terminé (il ne revient pas tout seul) : c'est la présence des réponses qui
+  // dit « terminé ». Ancien format : la fin rouvrait le brouillon au premier écran ; un brouillon au premier écran d'un assistant marqué terminé est
+  // donc lu comme les réponses d'un assistant terminé.
+  const finished = rawAnswers !== null && rawAnswers !== undefined ? parseDraft(rawAnswers) : completed === true && saved !== null && saved.step === 'you' ? saved : null;
+  if (finished === null) {
     const prefill = await readPrefill(data);
-    return { draft: mergePrefill(parseDraft(rawDraft), prefill), baseline: null, persist: true, prefillWeightKg: current.weightKg };
+    return { draft: mergePrefill(saved ?? parseDraft(null), prefill), baseline: null, persist: true, prefillWeightKg: current.weightKg };
   }
-  const answersRaw = rawAnswers ?? rawDraft;
-  const start = reviewStart(answersRaw === null || answersRaw === undefined ? null : parseDraft(answersRaw), current);
+  const start = reviewStart(finished, current);
   return { draft: start, baseline: start, persist: false, prefillWeightKg: current.weightKg };
 }
 
