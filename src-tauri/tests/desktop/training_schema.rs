@@ -3,8 +3,8 @@
 //! vérification des sauvegardes, comme la 5 (I2-01, migration 0005 : `progression_profile` et `recommendation_decision`, locales, sans
 //! déclencheur), la 6 (I2-01 PR 2/2, migration 0006 : captures des deux tables de progression et de `workout_set.difficulty`) et la 7
 //! (I3-02, migration 0007 : captures de `mesocycle`), la 8 (I4-02, migration 0008 : captures de `food`, `food_portion`, `meal_entry` et
-//! `nutrition_target`) et la 9 (I4-07, migration 0009 : captures de `day_completeness`, `recipe` et `recipe_ingredient`) ; la version 14, inconnue
-//! de cette app, est refusée. Les déclencheurs de capture sont ceux de la référence.
+//! `nutrition_target`) et la 9 (I4-07, migration 0009 : captures de `day_completeness`, `recipe` et `recipe_ingredient`), jusqu'à la 14
+//! (I6-03b, migration 0014 : capture propre des colonnes de groupe de `routine_exercise`) ; la version 15, inconnue de cette app, est refusée. Les déclencheurs de capture sont ceux de la référence.
 
 use std::path::Path;
 
@@ -72,8 +72,46 @@ fn error_code(path: &Path) -> &'static str {
 }
 
 #[test]
-fn i6_03_the_app_schema_version_is_13() {
-    assert_eq!(APP_SCHEMA_VERSION, 13);
+fn i6_03b_the_app_schema_version_is_14() {
+    assert_eq!(APP_SCHEMA_VERSION, 14);
+}
+
+/// I6-03b (migration 0014) : le déclencheur propre des colonnes de groupe de `routine_exercise` n'existe qu'à partir de la version 14 ; le corps publié
+/// de `sync_routine_exercise_au` (0002) n'est pas remplacé.
+#[test]
+fn i6_03b_the_routine_circuit_trigger_does_not_exist_before_version_14() {
+    let name = "sync_routine_exercise_circuit_au";
+    assert_eq!(trigger_body_for(name, "routine_exercise", 13), None);
+    let body = trigger_body_for(name, "routine_exercise", 14).expect(name);
+    assert!(body.contains("AFTER UPDATE OF circuit_id, circuit_rest_sec ON routine_exercise"));
+    assert_eq!(
+        trigger_body_for("sync_routine_exercise_au", "routine_exercise", 2),
+        trigger_body_for("sync_routine_exercise_au", "routine_exercise", 14)
+    );
+}
+
+#[test]
+fn i6_03b_a_version_14_backup_with_the_routine_circuit_trigger_is_accepted_and_a_tampered_one_is_refused(
+) {
+    let dir = scratch();
+    let path = dir.path().join("v14.db");
+    make_db(&path, 14, &TABLES);
+    let sql = trigger_body_for("sync_routine_exercise_circuit_au", "routine_exercise", 14).unwrap();
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(
+            "ALTER TABLE routine_exercise ADD COLUMN circuit_id TEXT; ALTER TABLE routine_exercise ADD COLUMN circuit_rest_sec INTEGER;",
+        )
+        .unwrap();
+    Connection::open(&path).unwrap().execute_batch(sql).unwrap();
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 14);
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(
+            "DROP TRIGGER sync_routine_exercise_circuit_au; CREATE TRIGGER sync_routine_exercise_circuit_au AFTER UPDATE OF circuit_id ON routine_exercise BEGIN SELECT 1; END;",
+        )
+        .unwrap();
+    assert!(check_backup_file(&path, APP_SCHEMA_VERSION).is_err());
 }
 
 #[test]
@@ -444,13 +482,13 @@ fn i4_07_a_version_9_backup_with_the_recipe_tables_is_accepted_and_a_tampered_on
 }
 
 #[test]
-fn i6_03_a_version_14_backup_is_refused_as_newer_schema() {
+fn i6_03b_a_version_15_backup_is_refused_as_newer_schema() {
     let dir = scratch();
-    let path = dir.path().join("v14.db");
+    let path = dir.path().join("v15.db");
     make_db(&path, 3, &TABLES);
     Connection::open(&path)
         .unwrap()
-        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5); INSERT INTO schema_migrations (version) VALUES (6); INSERT INTO schema_migrations (version) VALUES (7); INSERT INTO schema_migrations (version) VALUES (8); INSERT INTO schema_migrations (version) VALUES (9); INSERT INTO schema_migrations (version) VALUES (10); INSERT INTO schema_migrations (version) VALUES (11); INSERT INTO schema_migrations (version) VALUES (12); INSERT INTO schema_migrations (version) VALUES (13); INSERT INTO schema_migrations (version) VALUES (14);")
+        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5); INSERT INTO schema_migrations (version) VALUES (6); INSERT INTO schema_migrations (version) VALUES (7); INSERT INTO schema_migrations (version) VALUES (8); INSERT INTO schema_migrations (version) VALUES (9); INSERT INTO schema_migrations (version) VALUES (10); INSERT INTO schema_migrations (version) VALUES (11); INSERT INTO schema_migrations (version) VALUES (12); INSERT INTO schema_migrations (version) VALUES (13); INSERT INTO schema_migrations (version) VALUES (14); INSERT INTO schema_migrations (version) VALUES (15);")
         .unwrap();
     assert_eq!(error_code(&path), "newer-schema");
 }
