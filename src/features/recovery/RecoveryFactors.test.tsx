@@ -86,6 +86,9 @@ describe('carte « valeurs inhabituelles, repos conseillé » (A)', () => {
       const view = mount(os);
       const card = await screen.findByRole('region', { name: CARD });
       expect(within(card).getByText(/HRV basse/i)).toBeInTheDocument();
+      // FIX-0172 (D-134) : le texte dit le seuil strict.
+      expect(card.textContent ?? '').toMatch(/plus de 2 σ sous ta base/);
+      expect(card.textContent ?? '').not.toMatch(/au moins 2 σ/);
       expect(card.textContent ?? '').toMatch(/pas un avis médical/i);
       expect(card.textContent ?? '').not.toMatch(/maladie|malade|infection|diagnostic :/i);
       view.unmount();
