@@ -40,7 +40,6 @@
         "glute-kickback-machine",
         "hip-abduction-machine",
         "standing-calf-machine",
-        "seated-calf-machine",
         "tibialis-machine",
         "ab-crunch-machine",
         "captain-chair",
@@ -61,7 +60,6 @@
         "ankle-strap",
         "mat",
         "wall",
-        "floor",
         "preacher-bench",
         "resistance-band",
         "landmine-attachment",
@@ -72,7 +70,9 @@
         "dip-machine",
         "decline-chest-press-machine",
         "lat-pulldown-machine",
-        "hip-adduction-machine"
+        "hip-adduction-machine",
+        "loading-belt",
+        "anchor-point"
       ],
       "inventory": {
         "barbells": [
