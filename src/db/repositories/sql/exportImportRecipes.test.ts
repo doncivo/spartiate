@@ -53,7 +53,7 @@ const apply = async (db: TestDb, incoming: ExportData, mode: 'merge' | 'replace'
 describe('export / import des recettes et de la journée déclarée (I4-07)', () => {
   it('trois tables exportées après la nutrition et avant la récupération (I5-01), recette avant ingrédient ; schéma 9 puis 10', () => {
     expect(TRAINING_EXPORT_TABLES.slice(-8, -5)).toEqual(['day_completeness', 'recipe', 'recipe_ingredient']);
-    expect(EXPORT_SV).toBe(12);
+    expect(EXPORT_SV).toBe(13);
   });
 
   it('aller-retour : mêmes données (hash canonique), inconnus conservés nuls, publiées comme toute écriture', async () => {
@@ -108,9 +108,9 @@ describe('export / import des recettes et de la journée déclarée (I4-07)', ()
     expect(await canonicalHash(await read(db))).toBe(before);
   });
 
-  it('archive d’un schéma plus récent (13) : refusée, rien n’est écrit', async () => {
+  it('archive d’un schéma plus récent (14) : refusée, rien n’est écrit', async () => {
     const db = await open(A);
-    const archive = await buildExportArchive(await read(db), { date: '2026-11-09T10:00:00.000Z', sv: 13 });
+    const archive = await buildExportArchive(await read(db), { date: '2026-11-09T10:00:00.000Z', sv: 14 });
     await expect(parseExportArchive(archive.bytes, { currentSv: EXPORT_SV, currentYear: 2026 })).rejects.toBeInstanceOf(ArchiveError);
     await expect(parseExportArchive(archive.bytes, { currentSv: EXPORT_SV, currentYear: 2026 })).rejects.toMatchObject({ code: 'future-version' });
   });

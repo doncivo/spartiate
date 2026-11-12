@@ -430,6 +430,10 @@ const WORKOUT_SET_TABLE = table(
     deletedAt,
     // I2-01 (migration 0006) : Facile / Juste / Dur de l'exercice dans la séance, publié avec la séance close.
     c('difficulty', 'enum', true, { values: ['easy', 'ok', 'hard'] }),
+    // I6-03 (migration 0013) : groupe de circuit (superset, triset, circuit) et repos entre exercices du groupe, publiés avec la séance close.
+    // Masquées du journal des conflits : aucun déclencheur ne les capture (séance ouverte seulement), un « Rétablir » sur une séance close ne serait pas publié (relecture sync-icloud).
+    c('circuit_id', 'text', true, { max: 64, ...hidden }),
+    c('circuit_rest_sec', 'int', true, hidden),
   ],
   { parents: [{ column: 'workout_id', table: 'workout' }], publishWhen: { parent: 'workout_id' }, titleSource: { kind: 'own', column: 'exercise_name' } },
 );
