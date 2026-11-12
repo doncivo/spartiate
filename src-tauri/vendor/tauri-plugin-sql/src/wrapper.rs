@@ -457,6 +457,29 @@ mod tests {
         db.close().await;
     }
 
+    /// DEP-01 (0.18.1) : RUSTSEC-2026-0459 est corrigé à partir de SQLite 3.54.0 ; le moteur lu par sqlx doit l'être.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn dep01_engine_is_at_least_sqlite_3_54_0() {
+        let dir = tempfile::Builder::new()
+            .prefix("db-version-")
+            .tempdir_in(concat!(env!("CARGO_MANIFEST_DIR"), "/../../target"))
+            .unwrap();
+        let url = format!("sqlite:{}", dir.path().join("t.db").to_str().unwrap());
+        Sqlite::create_database(&url).await.unwrap();
+        let db = DbPool::Sqlite(open_sqlite_pool(&url).await.unwrap());
+        let rows = db
+            .select("select sqlite_version() as v".to_string(), vec![])
+            .await
+            .unwrap();
+        let v = rows[0]["v"].as_str().unwrap().to_string();
+        db.close().await;
+        let n: Vec<u32> = v.split('.').map(|p| p.parse().unwrap()).collect();
+        assert!(
+            (n[0], n[1], n.get(2).copied().unwrap_or(0)) >= (3, 54, 0),
+            "SQLite {v} < 3.54.0 : RUSTSEC-2026-0459 non corrigé"
+        );
+    }
+
     #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
     async fn sequential_transactions_never_lock_themselves() {
         let dir = tempfile::Builder::new()
