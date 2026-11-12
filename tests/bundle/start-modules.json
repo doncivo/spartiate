@@ -72,13 +72,11 @@
       "fichiers": [
         "src/domain/appStatus.ts",
         "src/domain/appUpdate.ts",
-        "src/domain/appleReminders.ts",
         "src/domain/clock.ts",
         "src/domain/compareCodeUnits.ts",
         "src/domain/hlc.ts",
         "src/domain/id.ts",
         "src/domain/localDate.ts",
-        "src/domain/model/externalEvent.ts",
         "src/domain/model/icon.ts",
         "src/domain/model/settings.ts",
         "src/domain/notificationId.ts",
