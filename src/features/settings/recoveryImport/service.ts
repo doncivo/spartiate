@@ -53,12 +53,30 @@ export const IMPORT_LOG_EVENTS = [
   'recovery-import-purge',
   'recovery-import-purge-failed',
   'recovery-import-after-failed',
+  'recovery-import-reread',
 ] as const;
 export type ImportLogEvent = (typeof IMPORT_LOG_EVENTS)[number];
 export type ImportLog = (event: ImportLogEvent, counts: Readonly<Record<string, number>>) => void;
 
-/** `open` : ouverture de l'app et retour au premier plan (dossier, au plus une fois par `AUTO_IMPORT_INTERVAL_MS`) ; `manual` : « Importer maintenant » (dossier) ; `pick` : sélecteur de fichiers, en secours. */
-export type ImportTrigger = 'open' | 'manual' | 'pick';
+/**
+ * `open` : ouverture de l'app et retour au premier plan (dossier, au plus une fois par `AUTO_IMPORT_INTERVAL_MS`) ; `manual` : « Importer maintenant »
+ * (dossier) ; `pick` : sélecteur de fichiers, en secours ; `reread` (FIX-0172, D-135) : relecture unique du dossier après une ouverture qui n'a rien
+ * apporté, comme `open` (lecteur automatique seulement) mais sans la limite des 30 minutes.
+ */
+export type ImportTrigger = 'open' | 'manual' | 'pick' | 'reread';
+
+/** FIX-0172 (D-135) : délai de la relecture après la lecture d'ouverture (le raccourci « Lorsque Spartiate est ouverte » réécrit les fichiers). */
+export const REREAD_DELAY_MS = 45_000;
+
+/**
+ * Une relecture est-elle utile après cette lecture d'ouverture ? Oui si et seulement si elle n'a rien importé de nouveau (aucune ligne ajoutée ni
+ * remplacée) et qu'une lecture du dossier est possible : lue sans rien de nouveau, limitée par les 30 minutes ou dossier injoignable. Jamais sur PC
+ * (« unsupported »), sans lecteur automatique (« needs-pick ») ni pendant un autre import (« busy »).
+ */
+export function shouldReread(result: Pick<ImportRunResult, 'status' | 'files'>): boolean {
+  if (result.status !== 'done' && result.status !== 'throttled' && result.status !== 'folder-unavailable') return false;
+  return result.files.every((f) => f.added === 0 && f.updated === 0);
+}
 
 /** I5-03 (D-90) : lecture automatique au plus une fois toutes les 30 minutes (en mémoire pour la session, et d'après le dernier import gardé en base). */
 export const AUTO_IMPORT_INTERVAL_MS = 30 * 60 * 1000;
@@ -412,7 +430,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
         if (trigger !== 'open') deps.log('recovery-import-unsupported', {});
         return none;
       }
-      if (trigger === 'open' && !deps.reader.automatic) {
+      if ((trigger === 'open' || trigger === 'reread') && !deps.reader.automatic) {
         deps.log('recovery-import-needs-pick', {});
         if (running) return { ...none, status: 'needs-pick' };
         running = true;
