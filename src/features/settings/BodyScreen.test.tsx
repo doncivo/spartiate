@@ -5,6 +5,7 @@ import type { DeviceId } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer, type AppContainer } from '../app/container';
+import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { createFakeSyncService } from '../sync/testKit';
 import { BodyScreen } from './BodyScreen';
 
@@ -120,6 +121,14 @@ describe('Profil et poids (Plus)', () => {
     const list = await screen.findByRole('list');
     expect(within(list).getByText('jeu. 5 nov.')).toBeInTheDocument();
     expect(list.textContent).not.toMatch(/d{4}-d{2}-d{2}/);
+  });
+
+  it('I3-07 : « Revoir mes réglages » rouvre l’onboarding en 8 écrans (surcouche), sans rien écrire', async () => {
+    open();
+    fireEvent.click(await screen.findByText('Revoir mes réglages', { selector: 'button' }));
+    expect(useNavigationStore.getState().overlays).toEqual([{ kind: 'onboarding' }]);
+    expect(await db.driver.select('SELECT 1 FROM profile')).toEqual([]);
+    useNavigationStore.setState({ ...INITIAL_NAVIGATION });
   });
 
   it('0.1.4 (7) : Taille (cm) garde le clavier numérique, sans aide « en centimètres, ex. 186 » : le libellé suffit', async () => {

@@ -293,6 +293,29 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // I3-07 : onboarding en 8 écrans (hôte, écrans, catalogue fr.onboarding, domaine, dépense de départ) : blocs à la demande importés par
+  // lazyScreens.tsx ; l'assistant hérité et son catalogue ont quitté le départ.
+  it.each(['src/features/onboarding/OnboardingHost.tsx', 'src/features/onboarding/OnboardingFlow.tsx'])('I3-07 : %s est un bloc à la demande, hors du départ', (source) => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest[source];
+    if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
+  });
+
+  it.each(['Configuration · étape', 'Rétablir l’estimation', 'Choisis au moins autant de jours que de séances par semaine.', 'recalculé après 2 semaines de données'])('I3-07 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
+  it('I3-07 : aucun module du domaine de l’onboarding ni de l’assistant hérité dans le graphe du départ', () => {
+    const startFiles = new Set(startChunks().map((chunk) => chunk.file));
+    for (const [source, chunk] of Object.entries(manifest)) {
+      if (startFiles.has(chunk.file)) expect(/src\/(domain|features)\/onboarding|src\/i18n\/(fr\.onboarding|onboardingText)/.test(source), source).toBe(false);
+    }
+  });
+
   // I4-03 : onglet Nutrition (écrans, catalogue fr.nutrition, domaine) et carte « nutrition restante » d'Aujourd'hui : blocs à la demande.
   it.each(['src/features/nutrition/NutritionScreen.tsx', 'src/features/nutrition/NutritionRemainingCard.tsx'])('I4-03 : %s est un bloc à la demande, hors du départ', (source) => {
     const start = new Set(startChunks().map((chunk) => chunk.file));
