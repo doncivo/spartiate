@@ -53,7 +53,7 @@ export interface ProgressPhotoRecord {
 
 export interface ProgressPhotoRepository {
   /**
-   * Enregistre une photo (JPEG déjà réduit) : fichier dans la table locale, fiche publiée. Date invalide, fichier vide, au-delà de
+   * Enregistre une photo (JPEG déjà réduit) : fichier dans la table locale, fiche publiée, dans une seule transaction. Date invalide, fichier vide, au-delà de
    * `PHOTO_MAX_BYTES` ou qui n'est pas un JPEG : `'invalid'`, rien n'est écrit.
    */
   add(day: LocalDate, bytes: Uint8Array): Promise<ProgressPhotoRecord>;
@@ -63,8 +63,15 @@ export interface ProgressPhotoRepository {
   loadFile(id: string): Promise<Uint8Array | null>;
   /** Identifiants des fiches dont le fichier est sur cet appareil. */
   localFileIds(): Promise<ReadonlySet<string>>;
-  /** Efface les fichiers locaux dont la fiche est SUPPRIMÉE (par l'autre appareil) ; un fichier sans fiche du tout n'est jamais touché (ajout en cours) ; rend leur nombre. */
-  purgeOrphanFiles(): Promise<number>;
-  /** Supprime le fichier (effacement réel) ET la fiche (suppression logique) ; sans effet sur une fiche inconnue. */
+  /**
+   * FIX-0171 (D-121) : fiches SUPPRIMÉES ailleurs (synchro, import) dont le fichier est encore sur cet appareil ; une suppression reçue n'efface jamais
+   * le fichier, il reste jusqu'à une suppression locale confirmée (`remove`).
+   */
+  listDeletedWithFile(): Promise<readonly ProgressPhotoRecord[]>;
+  /**
+   * Supprime le fichier (effacement réel) ET la fiche (suppression logique), dans une seule transaction (FIX-0171, constat 3) ; fiche déjà supprimée
+   * ailleurs : le fichier seul. Sans le fichier sur cet appareil : `'not-found'`, rien n'est écrit (D-121 : seul l'appareil qui le détient supprime) ;
+   * fiche inconnue : sans effet.
+   */
   remove(id: string): Promise<void>;
 }
