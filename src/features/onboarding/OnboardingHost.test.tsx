@@ -80,7 +80,7 @@ describe('Hôte de l’onboarding : premier lancement sur base vide (I3-07)', ()
     await screen.findByText('Toi', { selector: 'h1' });
     fireEvent.click(screen.getByLabelText('Fermer la configuration'));
     await waitFor(() => expect(dialog()).toBeNull());
-    expect(await db.data.repos.settings.get('onboarding.completed')).toBe(true);
+    await waitFor(async () => expect(await db.data.repos.settings.get('onboarding.completed')).toBe(true));
     view.unmount();
     document.documentElement.removeAttribute('data-ct-onboarding');
     open();

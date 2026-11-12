@@ -133,6 +133,17 @@ export const RecoveryToday = lazyScreen<object>(() => import('../recovery/Recove
 export const RecoveryProgress = lazyScreen<object>(() => import('../recovery/RecoveryProgress').then((m) => ({ default: m.RecoveryProgress })), 'recoveryprogress', { onDemand: true });
 /** I6-02 : Progrès › Corps (mensurations, photos de progression), bloc à part chargé avec son catalogue de textes (jamais dans le départ). */
 export const BodyProgress = lazyScreen<object>(() => import('../bodyProgress/BodyProgress').then((m) => ({ default: m.BodyProgress })), 'bodyprogress', { onDemand: true });
+/**
+ * I3-07 : onboarding en 8 écrans. L'hôte (décision de premier lancement, surcouche « Revoir mes réglages ») est monté en permanence par la
+ * coquille et préchargé au repos, sans repli ; les écrans, leurs textes et le contenu d'entraînement ne sont chargés que quand l'onboarding
+ * s'ouvre (jamais dans le départ).
+ */
+export const OnboardingHost = lazyScreen<object>(() => import('../onboarding/OnboardingHost').then((m) => ({ default: m.OnboardingHost })), 'onboardinghost', { fallback: 'none' });
+export const OnboardingFlow = lazyScreen<{ readonly mode: 'first-launch' | 'review'; readonly onClose: (reason: 'done' | 'closed') => void }>(
+  () => import('../onboarding/OnboardingFlow').then((m) => ({ default: m.OnboardingFlow })),
+  'onboardingflow',
+  { onDemand: true },
+);
 export const BodyScreen =lazyScreen<object>(() => import('../settings/BodyScreen').then((m) => ({ default: m.BodyScreen })), 'bodyscreen');
 /** Finitions 0.1.2 : Apple Santé (Plus, iPhone seulement), chargé à la demande avec ses textes et la façade HealthKit. */
 export const AppleHealthScreen = lazyScreen<object>(() => import('../settings/AppleHealthScreen').then((m) => ({ default: m.AppleHealthScreen })), 'applehealthscreen');
