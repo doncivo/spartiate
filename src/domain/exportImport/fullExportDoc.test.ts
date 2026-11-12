@@ -36,7 +36,11 @@ describe('docs/export-complet.md', () => {
 
   it('FIX-0173 (constat 4) : la section des mesures dit l’unité de chaque genre, jamais « en centimètres » pour toutes', () => {
     const text = section('measurement');
-    for (const [kind, unit] of Object.entries(MEASUREMENT_UNITS)) expect(text, kind).toMatch(new RegExp(`\`${kind}\`[^\\n|]*\\|\\s*${unit.replace('%', '\\%')}\\s*\\|`));
+    const lines = text.split('\n');
+    for (const [kind, unit] of Object.entries(MEASUREMENT_UNITS)) {
+      const line = lines.find((l) => l.startsWith(`| ${unit} |`) && l.includes(`\`${kind}\``));
+      expect(line, `${kind} en ${unit}`).toBeDefined();
+    }
     expect(text).not.toMatch(/mesure en centimètres/);
   });
 
