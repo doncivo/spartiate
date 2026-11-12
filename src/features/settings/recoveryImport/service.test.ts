@@ -161,7 +161,9 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     await build(reader(async () => [ok('sommeil.csv', nights)])).run('manual');
     const diag = logs.filter((l) => l.event === 'recovery-import-diag-sleep');
     expect(diag).toHaveLength(1);
-    expect(Object.keys(diag[0]?.counts ?? {}).sort()).toEqual(['excluded_no_asleep', 'excluded_short', 'ignored_episodes', 'nights_known', 'retained', 'rules_version']);
+    expect(Object.keys(diag[0]?.counts ?? {}).sort()).toEqual(['excluded_no_asleep', 'excluded_short', 'ignored_episodes', 'nights_known', 'nights_long', 'nights_short', 'retained', 'rules_version']);
+    // FIX-0172 : sur les 7 jours avant aujourd’hui, 6 nuits de 8 h retenues (longues) et une de 2 h 30 écartée ; aucune courte.
+    expect(diag[0]?.counts).toMatchObject({ nights_short: 0, nights_long: 6, rules_version: 3 });
     expect(diag[0]?.counts).toMatchObject({ excluded_short: 1, excluded_no_asleep: 0 });
     expect(Object.values(diag[0]?.counts ?? {}).every((v) => Number.isInteger(v))).toBe(true);
   });
@@ -714,5 +716,11 @@ describe('FIX-0172 : recalcul de règle indépendant de l’import', () => {
     expect(result.recomputedDays).toBe(0);
     expect(await (await db.data.repos.recovery()).listDays('2026-10-01' as LocalDate, '2026-11-08' as LocalDate)).toEqual([]);
     expect(stored).toBe(SLEEP_RULES_VERSION);
+  });
+});
+
+describe('FIX-0172 : version de la règle du sommeil', () => {
+  it('passe à 3 (compensation partielle, épisodes endormis, stades Apple Watch) : un seul recalcul de l’historique', () => {
+    expect(SLEEP_RULES_VERSION).toBe(3);
   });
 });
