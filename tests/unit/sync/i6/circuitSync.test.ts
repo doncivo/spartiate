@@ -6,6 +6,10 @@ import type { IsoDateTime } from '../../../../src/domain/types';
 import { migrate } from '../../../../src/db/migrator';
 import { migrations } from '../../../../src/db/migrations';
 import { reintegrateUnknownFields } from '../../../../src/db/repositories';
+import { buildExportArchive, EXPORT_SV, parseExportArchive, type ExportData } from '../../../../src/domain/exportImport/archive';
+import { planImport } from '../../../../src/domain/exportImport/plan';
+import { sha256Hex } from '../../../../src/domain/exportImport/sha256';
+import { buildZip, readZip } from '../../../../src/domain/exportImport/zip';
 import vectors from '../../../fixtures/sync/vectors.json';
 import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice, type SimSchema } from '../../../sim/syncDevice';
 
@@ -149,5 +153,55 @@ describe('(e) vecteur chiffré (tests/fixtures/sync/vectors.json)', () => {
       }
     }
     expect(journalRecordToText(parsed)).toBe(record.plaintext.json);
+  });
+});
+
+describe('(f) FIX-0171 constat 1 : archive de schéma 12 importée sur une séance déjà groupée', () => {
+  async function v12Archive(d: SimDevice, reps: number): Promise<ExportData> {
+    const source = await d.data.transaction(async (repos) => (await repos.exportImport()).readExportData());
+    const built = await buildExportArchive(source, { date: '2026-11-12T10:00:00.000Z', sv: 12 });
+    const entries = readZip(built.bytes);
+    const json = JSON.parse(new TextDecoder().decode(entries.find((e) => e.name === 'data.json')?.data)) as { training: Record<string, Record<string, unknown>[]> };
+    const rows = json.training['workout_set'] ?? [];
+    for (const row of rows) {
+      delete row['circuit_id'];
+      delete row['circuit_rest_sec'];
+    }
+    const first = rows.find((r) => r['position'] === 0) ?? rows[0];
+    if (!first) throw new Error('série attendue');
+    first['reps'] = reps;
+    const bytes = new TextEncoder().encode(JSON.stringify(json));
+    const manifest = { app: 'spartiate', sv: 12, date: '2026-11-12T10:00:00.000Z', sha256: sha256Hex(bytes) };
+    const zip = buildZip([
+      { name: 'data.json', data: bytes },
+      { name: 'manifest.json', data: new TextEncoder().encode(JSON.stringify(manifest)) },
+    ]);
+    return (await parseExportArchive(zip, { currentSv: EXPORT_SV, currentYear: 2026 })).data;
+  }
+  const reps = (d: SimDevice) => d.driver.select<{ position: number; reps: number }>('SELECT position, reps FROM workout_set WHERE workout_id = ? ORDER BY position', [W]);
+
+  it('Fusionner sur le PC : correction publiée, groupe et repos conservés sur les deux appareils, outbox vidée, rien en attente', async () => {
+    const [pc, iphone] = await pcAndIphone();
+    await circuitWorkout(iphone, true);
+    await roundTrip();
+    const before = await groups(pc);
+    expect(before.every((r) => r.same === 1 && r.circuit_rest_sec === 10)).toBe(true);
+    pc.clock.advance(60_000);
+    iphone.clock.advance(60_000);
+    const incoming = await v12Archive(pc, 12);
+    await pc.data.transaction(async (repos) => {
+      const repo = await repos.exportImport();
+      await repo.applyImport(planImport(await repo.readExportData(), incoming, 'merge'), 2026);
+    });
+    expect(await groups(pc)).toEqual(before);
+    expect(await pc.driver.select('SELECT COUNT(*) AS n FROM sync_outbox WHERE table_name = ?', ['workout_set'])).toEqual([{ n: 1 }]);
+    await roundTrip();
+    await roundTrip([iphone, pc]);
+    expect(await groups(iphone)).toEqual(before);
+    expect(await groups(pc)).toEqual(before);
+    expect(await reps(iphone)).toEqual(await reps(pc));
+    expect((await reps(pc)).filter((r) => r.reps === 12)).toHaveLength(1);
+    expect(await pc.driver.select('SELECT * FROM sync_outbox')).toEqual([]);
+    expect(await iphone.driver.select('SELECT 1 FROM sync_parked')).toEqual([]);
   });
 });
