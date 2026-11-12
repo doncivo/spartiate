@@ -9,6 +9,8 @@ import {
   parseDraft,
   previousStep,
   validateStep,
+  USER_DATA_DOMAINS,
+  type BasePresence,
   type OnboardingDraft,
 } from './draft';
 
@@ -162,13 +164,10 @@ describe('Quand afficher l’onboarding ? (premier lancement sur base vide)', ()
     expect(decideOnboarding({ completed: true, empty: false, requested: true })).toBe('show');
   });
 
-  it('base vide : aucun profil, aucune routine, aucune pesée, aucune séance, aucun repas', () => {
-    const none = { profile: false, routines: 0, weights: 0, workouts: 0, meals: 0 };
+  it('base vide : aucune donnée dans AUCUN domaine utilisateur (FIX-0173, constat 10)', () => {
+    expect([...USER_DATA_DOMAINS].sort()).toEqual(['measurements', 'meals', 'photos', 'profile', 'recoveryDays', 'recoveryFactors', 'recoverySamples', 'routines', 'weights', 'workouts']);
+    const none = Object.fromEntries(USER_DATA_DOMAINS.map((d) => [d, false])) as BasePresence;
     expect(isEmptyBase(none)).toBe(true);
-    expect(isEmptyBase({ ...none, profile: true })).toBe(false);
-    expect(isEmptyBase({ ...none, routines: 1 })).toBe(false);
-    expect(isEmptyBase({ ...none, weights: 1 })).toBe(false);
-    expect(isEmptyBase({ ...none, workouts: 1 })).toBe(false);
-    expect(isEmptyBase({ ...none, meals: 1 })).toBe(false);
+    for (const domain of USER_DATA_DOMAINS) expect(isEmptyBase({ ...none, [domain]: true }), domain).toBe(false);
   });
 });
