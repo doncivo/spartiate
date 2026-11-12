@@ -52,7 +52,7 @@ export const DEFAULT_ROUTES: { readonly [K in TabId]: Extract<Route, { tab: K }>
 export type DetailTarget = never;
 
 /** Surcouches modales, empilées. */
-export type Overlay = { readonly kind: 'shortcutsHelp' };
+export type Overlay = { readonly kind: 'shortcutsHelp' } | { readonly kind: 'onboarding' };
 
 export interface NavigationState {
   readonly route: Route;

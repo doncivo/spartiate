@@ -4,6 +4,7 @@
  */
 export const bodyFr = {
   title: 'Profil et poids',
+  reviewSettings: 'Revoir mes réglages',
   back: 'Retour',
   row: 'Profil et poids',
   sectionProfile: 'PROFIL',

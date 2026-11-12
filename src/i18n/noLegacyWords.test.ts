@@ -38,6 +38,7 @@ const LIVE_CATALOGS = [
   'fr.trainingGeneration.ts',
   'fr.trainingCycle.ts',
   'fr.body.ts',
+  'fr.onboarding.ts',
   'fr.health.ts',
   'fr.today.ts',
   'fr.timer.ts',
