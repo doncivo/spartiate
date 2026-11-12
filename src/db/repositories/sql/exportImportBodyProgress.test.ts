@@ -68,10 +68,10 @@ describe('export / import des mensurations et des fiches de photos (I6-02)', () 
     expect(await (await target.data.repos.progressPhotos()).loadFile(photo.id)).toBeNull();
   });
 
-  it('archive de schéma 11 en « remplacer » : aucune mensuration ni fiche supprimée ; archive de schéma 12 sans elles : supprimées (fichier local aussi)', async () => {
+  it('archive de schéma 11 en « remplacer » : aucune mensuration ni fiche supprimée ; archive de schéma 12 sans elles : fiches supprimées, fichier local GARDÉ (FIX-0171, D-121)', async () => {
     const db = await open(A);
     await (await db.data.repos.measurements()).save(DAY, 'waist', 80);
-    await (await db.data.repos.progressPhotos()).add(DAY, JPEG);
+    const photo = await (await db.data.repos.progressPhotos()).add(DAY, JPEG);
     const plain = await read(await open(B));
     await apply(db, { ...plain, training: {} }, 'replace', 11);
     expect(await count(db, 'measurement')).toBe(1);
@@ -79,7 +79,9 @@ describe('export / import des mensurations et des fiches de photos (I6-02)', () 
     await apply(db, plain, 'replace', 12);
     expect(await count(db, 'measurement')).toBe(0);
     expect(await count(db, 'progress_photo')).toBe(0);
-    expect(await db.driver.select('SELECT 1 FROM progress_photo_file')).toEqual([]);
+    // Le fichier ne s'efface que par une suppression locale confirmée : la fiche reste lisible comme « supprimée ailleurs ».
+    expect(await (await db.data.repos.progressPhotos()).loadFile(photo.id)).toEqual(JPEG);
+    expect((await (await db.data.repos.progressPhotos()).listDeletedWithFile()).map((p) => p.id)).toEqual([photo.id]);
   });
 
   it('archive de schéma 14 : refusée (future-version)', async () => {
