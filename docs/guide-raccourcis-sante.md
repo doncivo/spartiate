@@ -163,11 +163,24 @@ Le texte produit ressemble à : `2026-11-07T23:10:00+01:00;2026-11-08T00:05:00+0
 Raccourcis → onglet **Automatisation** → **+** → **Heure de la journée** → 07:30, **Quotidiennement** → **Exécuter immédiatement**
 (sans demander) → choisis « Spartiate — récupération ».
 
+### B.3 bis Automatisation à l’ouverture de Spartiate (facultatif)
+
+Pour des données toujours fraîches, le raccourci peut aussi se lancer chaque fois que tu ouvres Spartiate :
+Raccourcis → onglet **Automatisation** → **+** → **App** → choisis **Spartiate**, coche **Est ouverte** (« Lorsque Spartiate est
+ouverte », nom à vérifier) → **Exécuter immédiatement** (sans demander) → choisis « Spartiate — récupération ».
+
+Le raccourci réécrit alors les fichiers de `sante` pendant que l’app démarre : la première lecture de Spartiate, quelques secondes après
+l’ouverture, peut encore voir les anciens fichiers. **Si cette première lecture n’a rien apporté de nouveau, Spartiate relit le dossier
+une seule fois, environ 45 secondes plus tard** (même si la dernière lecture date de moins de 30 minutes). Il n’y a qu’une relecture par
+ouverture, jamais de boucle ; si tu quittes l’app avant les 45 secondes, la relecture est annulée. Le journal de Plus › Journaux la note
+`recovery-import-reread` (`ok` quand elle a eu lieu, `skipped` quand elle a été annulée ou n’a pas pu lire).
+
 ### B.4 Lecture dans Spartiate (automatique)
 
 Spartiate lit les quatre fichiers du dossier `iCloud Drive › Spartiate › sante` **sans que tu fasses rien** :
 
-- à l’ouverture de l’app et à chaque retour au premier plan, **au plus une fois toutes les 30 minutes** ;
+- à l’ouverture de l’app et à chaque retour au premier plan, **au plus une fois toutes les 30 minutes** (plus une relecture, environ
+  45 secondes après l’ouverture, si la première lecture n’a rien apporté de nouveau : voir B.3 bis) ;
 - quand tu touches Plus → Apple Santé → **Importer maintenant** (relit le dossier tout de suite) ;
 - **Choisir les fichiers** (même écran) reste le secours : le sélecteur d’iOS, si le dossier n’est pas lu.
 
