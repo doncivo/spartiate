@@ -5,6 +5,7 @@ import type { DeviceId, LocalDate } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { loadTrainingContent, programToRoutine, type TrainingContent } from '../training/content';
 import { finishOnboarding, loadDraft, loadStart, markCompleted, previewChanges, readBaseCounts, readPrefill, saveDraft } from './onboardingData';
+import { isEmptyBase } from '../../domain/onboarding/draft';
 
 const DEVICE = '60000000-0000-4000-8000-0000000000c7' as DeviceId;
 const TODAY = '2026-11-12' as LocalDate;
@@ -46,15 +47,15 @@ describe('onboarding : données (I3-07)', () => {
 
   describe('base vide et brouillon', () => {
     it('base neuve : tout est à zéro ; un profil, une routine ou une pesée la rend non vide', async () => {
-      expect(await readBaseCounts(db.data)).toEqual({ profile: false, routines: 0, weights: 0, workouts: 0, meals: 0 });
+      expect(isEmptyBase(await readBaseCounts(db.data))).toBe(true);
       await (await db.data.repos.profile()).save({ sex: 'male' }, 2026);
       expect((await readBaseCounts(db.data)).profile).toBe(true);
       await (await db.data.repos.bodyWeights()).saveManual({ date: TODAY, kg: 80, timezone: 'Europe/Paris' }, TODAY);
-      expect((await readBaseCounts(db.data)).weights).toBe(1);
+      expect((await readBaseCounts(db.data)).weights).toBe(true);
       const first = content.programs[0];
       if (!first) throw new Error('programme absent');
       await (await db.data.repos.trainingRoutines()).create(programToRoutine(first, content.catalog, ids));
-      expect((await readBaseCounts(db.data)).routines).toBe(1);
+      expect((await readBaseCounts(db.data)).routines).toBe(true);
     });
 
     it('le brouillon survit à une fermeture : enregistré, relu à l’identique ; absent ou illisible : brouillon vide', async () => {

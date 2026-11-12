@@ -1,5 +1,5 @@
 import { SYNC_CATALOGUE, type SyncCatalogue } from '../../../domain/sync/syncTables';
-import { signalingWrites } from '../../localWrite';
+import { notifyLocalImport, signalingWrites } from '../../localWrite';
 import type { RepositoryFactory, RepositoryOptions } from '../dataAccess';
 import { createChecklistItemRepository, createChecklistRepository } from './checklistRepository';
 import { createGoalRepository } from './goalRepository';
@@ -69,12 +69,15 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue, options: Repo
       const repository = m.createRecoveryRepository(executor, stamper, options);
       return options.recoveryWriter === true ? signalingWrites(repository, ['saveDay', 'deleteDay']) : repository;
     }),
-  recoverySamples: () => import('./recoverySampleRepository').then((m) => m.createRecoverySampleRepository(executor)),
+  // FIX-0173 : l'état d'un import consigné lève le signal d'import local (pas celui de synchro : ces tables ne sont jamais publiées).
+  recoverySamples: () => import('./recoverySampleRepository').then((m) => signalingWrites(m.createRecoverySampleRepository(executor), ['recordImport'], notifyLocalImport)),
   // I6-01 : journal de facteurs, à la demande ; publié, écrit par les deux appareils (aucune règle de lecteur).
   recoveryFactors: () => import('./recoveryFactorRepository').then((m) => signalingWrites(m.createRecoveryFactorRepository(executor, stamper), ['save', 'clear'])),
   // I6-02 : mensurations et photos de progression, à la demande ; publiées (fiche seulement), écrites par les deux appareils.
   measurements: () => import('./bodyProgressRepository').then((m) => signalingWrites(m.createMeasurementRepository(executor, stamper), ['save', 'remove'])),
   progressPhotos: () => import('./bodyProgressRepository').then((m) => signalingWrites(m.createProgressPhotoRepository(executor, stamper), ['add', 'remove'])),
+  // FIX-0173 : présence de données (base vide), lecture seule, à la demande.
+  userData: () => import('./userDataRepository').then((m) => m.createUserDataRepository(executor)),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue, options)),
   // Y-04 (début)
   syncConflicts: createSyncConflictRepository(executor, stamper, catalogue),

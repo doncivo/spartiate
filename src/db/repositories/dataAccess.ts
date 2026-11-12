@@ -23,6 +23,7 @@ import type { RecoveryRepository } from './recoveryRepository';
 import type { RecoverySampleRepository } from './recoverySampleRepository';
 import type { RecoveryFactorRepository } from './recoveryFactorRepository';
 import type { MeasurementRepository, ProgressPhotoRepository } from './bodyProgressRepository';
+import type { UserDataRepository } from './userDataRepository';
 import type { ProjectRepository, SpaceRepository } from './spaceRepository';
 import type { RecurrenceRepository, TaskRepository } from './taskRepository';
 
@@ -77,6 +78,8 @@ export interface Repositories {
   readonly measurements: () => Promise<MeasurementRepository>;
   /** I6-02 : photos de progression : fiche publiée, fichier LOCAL (jamais publié ni exporté), chargées à la demande. */
   readonly progressPhotos: () => Promise<ProgressPhotoRepository>;
+  /** FIX-0173 : présence de données de l'utilisateur (base vide au premier lancement), requêtes d'existence bornées, chargée à la demande. */
+  readonly userData: () => Promise<UserDataRepository>;
   /** Export / import de Spartiate (SPA-005, D-57), chargé à la demande. */
   readonly exportImport: () => Promise<ExportImportRepository>;
   /** Tables de la synchronisation (ADR 0011, lot Y2). */

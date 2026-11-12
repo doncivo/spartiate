@@ -253,7 +253,7 @@ describe('saisie et validation (critère 2)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Ajouter un exercice' }));
     const picker = await screen.findByRole('region', { name: 'Ajouter un exercice à la séance' });
     fireEvent.change(within(picker).getByLabelText('Rechercher un exercice'), { target: { value: 'curl' } });
-    expect(within(picker).queryByRole('button', { name: 'Curl au pupitre' })).toBeNull();
+    expect(within(picker).queryByRole('button', { name: 'Curl nordique' })).toBeNull();
     fireEvent.click(within(picker).getByRole('button', { name: /^Curl marteau$/ }));
     expect(await screen.findByRole('region', { name: 'Curl marteau' })).toBeInTheDocument();
     expect(await count("SELECT COUNT(*) AS n FROM workout_set WHERE exercise_id = 'hammer-curl' AND deleted_at IS NULL")).toBe(3);

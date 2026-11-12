@@ -12,6 +12,7 @@
  */
 
 import { canonicalDataJson, ARCHIVE_EXTRA_COLUMNS, TRAINING_EXPORT_TABLES, trainingRows, trainingTable, trainingColumns, type ExportData, type TrainingTable, type TrainingValue, type Manifest, EXPORT_APP } from './archive';
+import { MEASUREMENT_UNITS, measurementUnit } from '../bodyProgress/measurements';
 import { sha256Hex } from './sha256';
 import { buildZip, type ZipEntry } from './zip';
 
@@ -122,9 +123,17 @@ const STATIC_TABLES: Readonly<Record<'profile' | 'body_weight' | 'settings', rea
   settings: [col('key', 'text', false), col('value', 'text', false)],
 };
 
+/**
+ * FIX-0173 (constat 4, D-141) : `measurement.value` porte des cm (zones, tour de taille et taille importés), des % (masse grasse), des kg (masse maigre)
+ * et des g (fibres). L'unité dépend du genre : colonne `unit` dérivée dans le CSV (jamais stockée, absente de `data.json`) et table `measurementUnits`
+ * dans `contenu.json`.
+ */
+export const MEASUREMENT_VALUE_UNIT = 'selon kind (colonne unit)';
+const MEASUREMENT_UNIT_COLUMN = 'unit';
+
 /** Unités qui ne se lisent pas au suffixe du nom (par table et colonne). */
 const UNIT_OVERRIDES: Readonly<Record<string, string>> = {
-  'measurement.value': 'cm',
+  'measurement.value': MEASUREMENT_VALUE_UNIT,
   'food.kcal': 'kcal pour 100 g',
   'food.protein_g': 'g pour 100 g',
   'food.fat_g': 'g pour 100 g',
@@ -172,7 +181,8 @@ export function fullExportColumns(table: string): readonly FullExportColumn[] {
     return col(name, c?.type === 'id' ? 'text' : (c?.type ?? 'text'), c?.nullable ?? true, unitOf(table, name));
   });
   const extras = (ARCHIVE_EXTRA_COLUMNS[t] ?? []).map((name) => col(name, 'datetime'));
-  return [col('id', 'text', false), ...columns, ...extras];
+  const derived = t === 'measurement' ? [col(MEASUREMENT_UNIT_COLUMN, 'enum')] : [];
+  return [col('id', 'text', false), ...columns, ...extras, ...derived];
 }
 
 // --- construction ------------------------------------------------------------------------------------------------------------------
@@ -195,7 +205,12 @@ function rowsOf(table: FullExportTableName, data: ExportData): (string | number 
     rows = theme === undefined ? [] : [['ui.theme', theme]];
   } else {
     const columns = fullExportColumns(table).map((c) => c.name);
-    rows = trainingRows(data, table).map((r) => columns.map((name): string | number | null => (name === 'id' ? r.id : ((r.values[name] ?? null) as TrainingValue))));
+    const cell = (r: { readonly id: string; readonly values: Readonly<Record<string, unknown>> }, name: string): string | number | null => {
+      if (name === 'id') return r.id;
+      if (table === 'measurement' && name === MEASUREMENT_UNIT_COLUMN) return typeof r.values.kind === 'string' ? measurementUnit(r.values.kind) : null;
+      return (r.values[name] ?? null) as TrainingValue;
+    };
+    rows = trainingRows(data, table).map((r) => columns.map((name) => cell(r, name)));
   }
   return rows.sort(byKey);
 }
@@ -237,6 +252,7 @@ export function buildFullExport(data: ExportData, options: { readonly date: stri
     date: options.date,
     csv: { encoding: 'utf-8', bom: true, separator: CSV_SEPARATOR, eol: 'CRLF', quote: '"', nullCell: '' },
     files: described,
+    measurementUnits: { ...MEASUREMENT_UNITS },
     excluded: [...FULL_EXPORT_EXCLUDED],
   };
   const entries: ZipEntry[] = [

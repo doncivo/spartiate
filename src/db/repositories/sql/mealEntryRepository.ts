@@ -7,6 +7,7 @@ import { isId, type LocalDate, type LocalTime } from '../../../domain/types';
 import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
 import { RepositoryError } from '../common';
 import type { MealEntryRecord, MealEntryRepository, RecentFood } from '../mealEntryRepository';
+import { createMeasurementRepository } from './bodyProgressRepository';
 import { readSyncMeta, type SyncRow } from './sqlHelpers';
 
 interface EntryRow extends SqlRow, SyncRow {
@@ -47,6 +48,8 @@ export function createMealEntryRepository(db: SqlExecutor, stamper: WriteStamper
   const atomic = <T>(work: (inTx: MealEntryRepository) => Promise<T>): Promise<T> | null =>
     typeof (db as Partial<SqlDriver>).transaction === 'function' ? (db as SqlDriver).transaction((tx) => work(createMealEntryRepository(tx, stamper, ids))) : null;
   const read = async (id: string): Promise<EntryRow | undefined> => (await db.select<EntryRow>('SELECT * FROM meal_entry WHERE id = ?', [id]))[0];
+  /** FIX-0173 (constat 9) : les fibres Renpho d'un jour (`health_fiber_g`) vivent avec l'entrée « Renpho — total du jour » et partent avec elle. */
+  const removeRenphoFiber = (date: string): Promise<void> => createMeasurementRepository(db, stamper).remove(date as LocalDate, 'health_fiber_g');
   const live = async (id: string): Promise<EntryRow> => {
     const row = await read(id);
     if (!row || row.deleted_at !== null) throw new RepositoryError('not-found', 'meal_entry', id);
@@ -86,6 +89,7 @@ export function createMealEntryRepository(db: SqlExecutor, stamper: WriteStamper
       if (!isRenphoDayEntry(entry)) continue;
       const stamp = stamper.next();
       await db.execute('UPDATE meal_entry SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, entry.id]);
+      await removeRenphoFiber(entry.date);
     }
   };
   const afterWrite = async (clean: MealEntryDraft, id: string): Promise<void> => {
@@ -94,6 +98,9 @@ export function createMealEntryRepository(db: SqlExecutor, stamper: WriteStamper
 
   return {
     async create(draft, options) {
+      // Saisie et remplacement du total Renpho (fibres comprises) dans une transaction ; dans `DataAccess.transaction`, écrit directement.
+      const outer = atomic((r) => r.create(draft, options));
+      if (outer) return outer;
       const id = await freshId(options?.id);
       const clean = check(draft, id);
       await insert(clean, id);
@@ -121,6 +128,8 @@ export function createMealEntryRepository(db: SqlExecutor, stamper: WriteStamper
     },
 
     async update(id, patch) {
+      const outer = atomic((r) => r.update(id, patch));
+      if (outer) return outer;
       const row = await live(id);
       const current = toRecord(row);
       const merged: MealEntryDraft = {
@@ -149,9 +158,12 @@ export function createMealEntryRepository(db: SqlExecutor, stamper: WriteStamper
     },
 
     async softDelete(id) {
-      await live(id);
+      const outer = atomic((r) => r.softDelete(id));
+      if (outer) return outer;
+      const row = await live(id);
       const stamp = stamper.next();
       await db.execute('UPDATE meal_entry SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
+      if (isRenphoDayEntry(toRecord(row))) await removeRenphoFiber(row.date);
     },
 
     async get(id, options) {

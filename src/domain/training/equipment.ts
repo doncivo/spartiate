@@ -73,6 +73,21 @@ export interface DumbbellExtrasSource {
   readonly inventory: Pick<EquipmentInventory, 'available' | 'dumbbells'>;
 }
 
+/**
+ * FIX-0173 (D-142) : source figée de l'ancien profil embarqué de salle (avant « Salle complète »), pour qu'une copie personnelle faite avant la 0.3.0
+ * garde sa paire de 9 kg à la lecture ; le contenu embarqué ne la porte plus. Nom et liste de matériel d'origine, jamais affichés.
+ */
+export const LEGACY_DUMBBELL_EXTRAS_SOURCES: readonly DumbbellExtrasSource[] = [
+  {
+    name: 'Fitness Park Antony',
+    inventory: {
+      // prettier-ignore
+      available: ['barbell', 'ez-bar', 'trap-bar', 'pull-up-bar', 'parallel-bars', 'weight-plate', 'dumbbell', 'kettlebell', 'machine', 'seated-machine', 'assisted-pull-up-machine', 'chest-supported-row-machine', 'chest-press-machine', 'incline-chest-press-machine', 'pec-deck', 'reverse-pec-deck', 'shoulder-press-machine', 'preacher-curl-machine', 'triceps-machine', 'hack-squat-machine', 'smith-machine', 'pendulum-squat-machine', 'leg-press-machine', 'leg-extension-machine', 'leg-curl-machine', 'seated-leg-curl-machine', 'lying-leg-curl-machine', 'hip-thrust-machine', 'glute-kickback-machine', 'hip-abduction-machine', 'standing-calf-machine', 'seated-calf-machine', 'tibialis-machine', 'ab-crunch-machine', 'captain-chair', 'low-pulley', 'high-pulley', 'cable-machine', 'bench', 'flat-bench', 'incline-bench', 'back-extension-bench', 'rack', 'bodyweight', 'cable-handle', 'neutral-grip-handle', 'close-grip-handle', 'straight-bar-attachment', 'rope-attachment', 'ankle-strap', 'mat', 'wall', 'floor'],
+      dumbbells: { minKg: 2, maxKg: 50, stepKg: 2, extraKg: [9] },
+    },
+  },
+];
+
 const normalizeName = (text: string): string => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
 const sameSet = (a: readonly string[], b: readonly string[]): boolean => {
   const set = new Set(a);
