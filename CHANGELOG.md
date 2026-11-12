@@ -2,6 +2,12 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.17.0
+
+**Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment.
+
+- **Nettoyage** : du code, des textes et des réglages hérités de l'ancien projet de tâches, qui ne servaient plus à rien dans Spartiate, ont été retirés ; rien ne change dans ce que tu vois ni dans tes données.
+
 ## 0.16.0
 
 **Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment ; installe pourtant les deux le même jour (un PC resté en 0.15.0 ne sait pas réimporter une archive contenant les nouvelles mesures).

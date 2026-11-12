@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-12 : I1 à I5 livrés ; version publiée 0.13.0 (schéma 12). I6-01 (0.12.0) : docs/I6-01.md, D-95 à D-98. I6-02 (0.13.0) : docs/I6-02.md, D-99 à D-101, H-27. I6-03 (0.14.0, schéma 13, migration 0013) : docs/I6-03.md, D-102 à D-104 (circuits, rejeu, export complet). I3-07 (0.15.0, sans migration) : onboarding, PR #103, D-110 à D-112. **I6-04 (0.16.0, sans migration) : import Renpho via Santé et Raccourcis (dix fichiers CSV, liste blanche Rust à 14 noms, nutrition « journal fait foi, sinon Renpho — total du jour », mesures `health_*`) : branche `I6-04-renpho`, PR ouverte (docs/I6-04.md, D-113 à D-115, H-28 à H-31 UNVERIFIED).** Historique des versions : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 en chapitres : docs/prd/README.md. Décisions D-22 à D-104 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.) ; les décisions approuvées priment sur les textes historiques.
+État au 2026-11-12 : I1 à I5 livrés ; I6-01 à I6-04 (0.12.0 à 0.16.0, schéma 13) ; **CLEAN-01 (0.17.0, sans migration) : suppression des résidus CircleTasks (ui, dépôts SQL hérités sans appelant, domaine, textes ; bundle de départ 209 328 → 193 544 octets), branche `CLEAN-01-residus`, PR ouverte (docs/CLEAN-01.md, D-116 à D-118 ; banc legacy de synchro, src/platform/ocr et textes scan/reminders conservés).** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-118 dans docs/decisions.md (DEP-01, SQLite >= 0.39, revue au 30 nov.).
 
 ## Fusionné (tout est dans main)
 
@@ -11,15 +11,7 @@
 
 ## Décisions récentes
 
-- D-69 : accès direct HealthKit BLOCKED (compte Apple gratuit, SideStore retire l'entitlement) ; l'import passera par l'app Raccourcis, ticket séparé.
 - D-70 : l'agent fusionne (`gh pr merge --squash`) et publie (tags `vX.Y.Z` et `ios-vX.Y.Z` sur origin/main après contrôle d'absence), puis suit les builds jusqu'à spartiate-releases. Ali installe et fait les constats sur appareil.
-
-## Où on en est (2026-11-08)
-
-- Publiées les nuits du 7 au 9 nov. : 0.3.2 à 0.7.0 (I2, I3, I4-01 à I4-03), 0.7.1 (correctifs iPhone), 0.8.0, 0.8.1, 0.9.0 (PC `vX.Y.Z` et iPhone `ios-vX.Y.Z`).
-- D-73 (I3) et D-74 (I4) : décisions par défaut, **révisables par Ali** (à confirmer). H-21 (format du fichier Raccourcis) UNVERIFIED, noté dans decisions.md (le chapitre 26 du PRD est figé par prd-split.test.ts).
-- I4 sans IA livré (D-74, D-76 par défaut, révisables) : moteur, catalogue Ciqual, journal, dashboard, stratégie, check-in. 0.8.0 (I4-05, D-77, D-78) : Open Food Facts et scan iPhone, H-12 et le scan restent UNVERIFIED (check-list dans la matrice). 0.8.1 (I4-06, D-79) : favoris locaux (non synchronisés), correctif de la restauration des déclencheurs de synchro, relectures de la nuit consignées dans docs/I4-06.md. 0.9.0 (I4-07, D-80, D-81, migration 0009) : recettes et journée complète déclarée, synchronisées. Exclus : photo IA (I4-04), I5. Le test de perf de démarrage est proche du seuil (1592 ms contre 1500 une fois, vert au second passage) : à surveiller.
-- **Première utilisation réelle : lundi 2026-11-09** (D-38) : plus aucun accès aux données réelles ni à iCloud Drive/Spartiate.
 
 ## Prochaines étapes
 
@@ -27,6 +19,8 @@
 2. Confirmer ou réviser D-73, D-74, D-79 à D-81 et D-88 à D-93 (échelle d'Exertion 20, journée rouge = maintien).
 
 ## Rappels
+
+- Première utilisation réelle : 2026-11-09 (D-38), plus aucun accès aux données réelles ni à iCloud Drive/Spartiate. D-69 : HealthKit direct BLOCKED, import par Raccourcis. D-73 et D-74 (I3, I4) et H-21 UNVERIFIED : révisables par Ali (decisions.md).
 
 - Données réelles interdites (voir CLAUDE.md) ; jamais `git fetch circletasks` ; pas de `push --force`, de `reset --hard`, de `rm -rf`, de push sur main ; aucun tag supprimé ou repoussé.
 - Suite complète en CI seulement ; en local, des tests ciblés (`--maxWorkers=1`, pas de commandes lourdes en parallèle : le système a déjà tué des processus pour manque de mémoire). Une compilation iPhone (`build-ios.yml`, `-f publish=false`) par lot qui touche Swift ou l'extension.

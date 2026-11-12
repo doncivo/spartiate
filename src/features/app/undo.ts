@@ -69,9 +69,9 @@ export const UNDO_LABEL_KEYS: { readonly [K in UndoKind]: MessageKey } = {
   series: 'undo.seriesOccurrence',
   // Les commandes de routine portent toujours leur propre `labelKey` (routines.undo.*) ; ce libellé générique est un repli.
   routine: 'undo.routine',
-  // Les commandes d'objectif portent toujours leur propre `labelKey` (goals.undo.*) ; ce libellé générique est un repli.
+  // Les commandes d'objectif portent toujours leur propre `labelKey` ; ce libellé générique est un repli.
   goal: 'undo.goal',
-  // Les commandes de checklist portent toujours leur propre `labelKey` (checklists.undo.*) ; ce libellé générique est un repli.
+  // Les commandes de checklist portent toujours leur propre `labelKey` ; ce libellé générique est un repli.
   checklist: 'undo.checklist',
   // Les commandes d'événement portent toujours leur propre `labelKey` (events.undo.*) ; ce libellé générique est un repli.
   event: 'undo.event',
