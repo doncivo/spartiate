@@ -83,6 +83,88 @@ describe('déclenchements de l’import automatique', () => {
     handle.dispose();
   });
 
+  describe('FIX-0172 : une relecture environ 45 s après l’ouverture, si la lecture d’ouverture n’a rien apporté (D-135)', () => {
+    type Logged = { event: string; counts: Record<string, number> };
+    const nothingNew = { status: 'done', files: [{ type: 'sommeil', state: 'imported', read: 10, added: 0, duplicates: 10, updated: 0 }] };
+    const somethingNew = { status: 'done', files: [{ type: 'sommeil', state: 'imported', read: 10, added: 3, duplicates: 7, updated: 0 }] };
+    const setup = (first: object, then: object = nothingNew) => {
+      const logs: Logged[] = [];
+      const run = vi.fn(async (trigger: string) => (trigger === 'open' ? first : then) as never);
+      const handle = startRecoveryImportOnOpen(container, { service: { run }, log: (event, counts) => logs.push({ event, counts }) });
+      return { run, logs, handle };
+    };
+    const rereads = (logs: readonly Logged[]) => logs.filter((l) => l.event === 'recovery-import-reread');
+
+    it('rien de nouveau à l’ouverture : UNE relecture « reread » 45 s plus tard, pas avant, journalisée ok', async () => {
+      const { run, logs, handle } = setup(nothingNew);
+      await vi.advanceTimersByTimeAsync(3000);
+      expect(run.mock.calls.map((c) => c[0])).toEqual(['open']);
+      await vi.advanceTimersByTimeAsync(44_999);
+      expect(run).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(run.mock.calls.map((c) => c[0])).toEqual(['open', 'reread']);
+      expect(rereads(logs)).toEqual([{ event: 'recovery-import-reread', counts: { ok: 1 } }]);
+      handle.dispose();
+    });
+
+    it('jamais de boucle : une relecture qui n’apporte rien n’en programme pas d’autre', async () => {
+      const { run, handle } = setup(nothingNew, nothingNew);
+      await vi.advanceTimersByTimeAsync(3000 + 45_000);
+      await vi.advanceTimersByTimeAsync(10 * 60_000);
+      expect(run.mock.calls.map((c) => c[0])).toEqual(['open', 'reread']);
+      handle.dispose();
+    });
+
+    it('lecture d’ouverture limitée par les 30 minutes (« throttled ») : la relecture a lieu quand même, une fois', async () => {
+      const { run, handle } = setup({ status: 'throttled', files: [] });
+      await vi.advanceTimersByTimeAsync(3000 + 45_000);
+      expect(run.mock.calls.map((c) => c[0])).toEqual(['open', 'reread']);
+      handle.dispose();
+    });
+
+    it('la lecture d’ouverture a importé du nouveau : aucune relecture', async () => {
+      const { run, logs, handle } = setup(somethingNew);
+      await vi.advanceTimersByTimeAsync(3000 + 120_000);
+      expect(run.mock.calls.map((c) => c[0])).toEqual(['open']);
+      expect(rereads(logs)).toEqual([]);
+      handle.dispose();
+    });
+
+    it('PC (« unsupported ») ou lecteur non automatique (« needs-pick ») : aucune relecture', async () => {
+      for (const status of ['unsupported', 'needs-pick', 'busy']) {
+        const { run, handle } = setup({ status, files: [] });
+        await vi.advanceTimersByTimeAsync(3000 + 120_000);
+        expect(run.mock.calls.map((c) => c[0]), status).toEqual(['open']);
+        handle.dispose();
+      }
+    });
+
+    it('l’app passe en arrière-plan avant 45 s : minuteur annulé, aucune relecture, journalisée skipped', async () => {
+      const { run, logs, handle } = setup(nothingNew);
+      await vi.advanceTimersByTimeAsync(3000 + 20_000);
+      setVisibility('hidden');
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(run.mock.calls.map((c) => c[0])).toEqual(['open']);
+      expect(rereads(logs)).toEqual([{ event: 'recovery-import-reread', counts: { skipped: 1 } }]);
+      handle.dispose();
+    });
+
+    it('dispose avant 45 s : aucune relecture', async () => {
+      const { run, handle } = setup(nothingNew);
+      await vi.advanceTimersByTimeAsync(3000);
+      handle.dispose();
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(run.mock.calls.map((c) => c[0])).toEqual(['open']);
+    });
+
+    it('relecture qui ne peut pas lire (dossier injoignable, import en cours) : journalisée skipped', async () => {
+      const { logs, handle } = setup(nothingNew, { status: 'folder-unavailable', files: [] });
+      await vi.advanceTimersByTimeAsync(3000 + 45_000);
+      expect(rereads(logs)).toEqual([{ event: 'recovery-import-reread', counts: { skipped: 1 } }]);
+      handle.dispose();
+    });
+  });
+
   it('un rejet du service ne remonte jamais', async () => {
     const run = vi.fn(async () => {
       throw new Error('boom');
