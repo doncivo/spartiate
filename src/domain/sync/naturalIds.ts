@@ -146,3 +146,28 @@ export function expectedRecoveryFactorId(row: ReadonlyMap<string, unknown>): str
   const date = row.get('date');
   return typeof date === 'string' && isLocalDate(date) ? recoveryFactorId(date) : null;
 }
+
+/**
+ * I6-02 (§ 17.1, § 20.2) : mensurations, une ligne par date locale et genre, `measurement|AAAA-MM-JJ|<genre>` (genre : 1 à 32 minuscules ou
+ * soulignés, sans `|`). Aucun repli UUID : deux appareils qui saisissent la même mesure écrivent la même ligne. Le CHECK SQL de la migration 0012
+ * porte la même forme. `progress_photo` garde un identifiant UUID (plusieurs photos le même jour).
+ */
+export const MEASUREMENT_KIND_MAX = 32;
+const MEASUREMENT_RE = /^measurement\|(\d{4}-\d{2}-\d{2})\|([a-z_]{1,32})$/;
+const MEASUREMENT_KIND_RE = /^[a-z_]{1,32}$/;
+
+export function measurementId(date: LocalDate, kind: string): string {
+  return `measurement|${date}|${kind}`;
+}
+
+export function isMeasurementId(id: string): boolean {
+  const m = MEASUREMENT_RE.exec(id);
+  return m !== null && m[1] !== undefined && isLocalDate(m[1]);
+}
+
+/** Identifiant attendu d'une ligne de ces valeurs, ou null si `date` ou `kind` manque ou est mal formé. */
+export function expectedMeasurementId(row: ReadonlyMap<string, unknown>): string | null {
+  const date = row.get('date');
+  const kind = row.get('kind');
+  return typeof date === 'string' && isLocalDate(date) && typeof kind === 'string' && MEASUREMENT_KIND_RE.test(kind) ? measurementId(date, kind) : null;
+}

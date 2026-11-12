@@ -67,6 +67,9 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   muscle_recovery: { label: 'muscle_id', kind: 'muscleRecovery' },
   // I6-01 : journal de facteurs (libellé : la date).
   recovery_factor: { label: 'date', kind: 'recoveryFactor' },
+  // I6-02 : mensurations et fiches de photos (libellé : la date).
+  measurement: { label: 'date', kind: 'measurement' },
+  progress_photo: { label: 'date', kind: 'progressPhoto' },
 };
 
 export const carryReportTableEntry = (table: string): { readonly label: string | null; readonly kind: string } | undefined =>

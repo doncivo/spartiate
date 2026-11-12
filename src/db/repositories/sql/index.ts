@@ -85,6 +85,9 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue, options: Repo
   recoverySamples: () => import('./recoverySampleRepository').then((m) => m.createRecoverySampleRepository(executor)),
   // I6-01 : journal de facteurs, à la demande ; publié, écrit par les deux appareils (aucune règle de lecteur).
   recoveryFactors: () => import('./recoveryFactorRepository').then((m) => signalingWrites(m.createRecoveryFactorRepository(executor, stamper), ['save', 'clear'])),
+  // I6-02 : mensurations et photos de progression, à la demande ; publiées (fiche seulement), écrites par les deux appareils.
+  measurements: () => import('./bodyProgressRepository').then((m) => signalingWrites(m.createMeasurementRepository(executor, stamper), ['save', 'remove'])),
+  progressPhotos: () => import('./bodyProgressRepository').then((m) => signalingWrites(m.createProgressPhotoRepository(executor, stamper), ['add', 'remove'])),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue, options)),
   appleLinks: createAppleReminderLinkRepository(executor),
   // Y-04 (début)
