@@ -197,7 +197,7 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
     await title('Résultat');
     expect(screen.getByText('Configuration · étape 8 sur 8')).toBeInTheDocument();
     expect(await screen.findByText(/Dépense estimée/)).toBeInTheDocument();
-    expect(screen.getByText(/Première séance/)).toBeInTheDocument();
+    expect(screen.getByText('Première séance', { selector: 'h2' })).toBeInTheDocument();
     press('Commencer');
     await waitFor(() => expect(onClose).toHaveBeenCalledWith('done'));
     expect(await db.driver.select('SELECT sex, birth_year, height_cm, goal, experience FROM profile')).toEqual([{ sex: 'male', birth_year: 1996, height_cm: 180, goal: 'gain', experience: 'intermediate' }]);

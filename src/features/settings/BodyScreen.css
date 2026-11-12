@@ -246,3 +246,8 @@
 .ct-body__unit {
   margin-left: var(--ct-space-1);
 }
+
+.ct-body__review {
+  display: flex;
+  justify-content: flex-start;
+}

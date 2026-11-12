@@ -1,5 +1,6 @@
 import { defineConfig, type PlaywrightTestConfig } from '@playwright/test';
 import { E2E_DEV_PORT, E2E_PREVIEW_PORT, E2E_WEBKIT_PORT } from './tests/sim/ports';
+import { skipOnboardingState } from './tests/e2e/helpers/onboarding';
 
 /**
  * Ports de la suite e2e (voir tests/sim/ports.ts). Par défaut : Vite 1420, simulateur de dossier iCloud 53703.
@@ -34,7 +35,7 @@ const PERF_PROJECT: NonNullable<PlaywrightTestConfig['projects']>[number] = {
       name: 'perf',
       // Bundle de production (second serveur ci-dessous) : les budgets du PRD 8 se mesurent sur ce que l'utilisateur installe, pas sur React en
       // mode développement (rendu environ deux fois plus lent).
-      use: { browserName: 'chromium', viewport: { width: 1440, height: 900 }, baseURL: PERF_URL },
+      use: { browserName: 'chromium', viewport: { width: 1440, height: 900 }, baseURL: PERF_URL, storageState: skipOnboardingState(E2E_PREVIEW_PORT) },
       grep: /@perf/,
       dependencies: ['pc', 'iphone'],
       // Consigne d'Ali : une mesure n'est jamais rejouée (aucune nouvelle tentative, même en CI).
@@ -68,6 +69,7 @@ const WEBKIT_PROJECT: NonNullable<PlaywrightTestConfig['projects']>[number] = {
     isMobile: true,
     hasTouch: true,
     baseURL: WEBKIT_URL,
+    storageState: skipOnboardingState(E2E_WEBKIT_PORT),
   },
   grepInvert: /@perf/,
 };
@@ -110,6 +112,8 @@ export default defineConfig({
     locale: 'fr-FR',
     timezoneId: 'Europe/Paris',
     trace: 'retain-on-failure',
+    // I3-07 : base vide à chaque test, donc pas d'onboarding automatique sauf pour les specs qui le testent (helpers/onboarding.ts).
+    storageState: skipOnboardingState(E2E_DEV_PORT),
   },
   projects: [
     {

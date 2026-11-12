@@ -4,12 +4,10 @@ import {
   ONBOARDING_STEPS,
   RATE_GOALS,
   emptyDraft,
-  isEmptyBase,
   parseDraft,
   proposeSplit,
   validateStep,
   weeklyRateKg,
-  type BaseCounts,
   type OnboardingDraft,
   type OnboardingGoal,
 } from '../../domain/onboarding';
@@ -25,31 +23,7 @@ import { programToRoutine, type TrainingContent } from '../training/content';
  * préférences de nutrition et le profil de matériel actif reçoivent ce qui a une place ; le reste vit dans le brouillon.
  */
 
-/** Accroche de développement (e2e, tests) : `localStorage[SKIP_ONBOARDING_KEY] = '1'` masque le lancement automatique (jamais dans un build de production). */
-export const SKIP_ONBOARDING_KEY = 'ct.skipOnboarding';
-
-export function onboardingDisabledForDev(): boolean {
-  if (!import.meta.env.DEV) return false;
-  try {
-    return globalThis.localStorage?.getItem(SKIP_ONBOARDING_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-/** Ce qui existe déjà dans la base : sert à reconnaître un premier lancement (base vide) d'une installation existante. */
-export async function readBaseCounts(data: DataAccess): Promise<BaseCounts> {
-  const { repos } = data;
-  const [profile, routines, weights, openWorkout, closedWorkouts, meals] = await Promise.all([
-    repos.profile().then((r) => r.get()),
-    repos.trainingRoutines().then((r) => r.list()),
-    repos.bodyWeights().then((r) => r.listRecent(1)),
-    repos.workouts().then((r) => r.getOpen()),
-    repos.workouts().then((r) => r.listClosed(1)),
-    repos.mealEntries().then((r) => r.listBetween('2000-01-01' as LocalDate, '2999-12-31' as LocalDate)),
-  ]);
-  return { profile: profile !== null, routines: routines.length, weights: weights.length, workouts: (openWorkout ? 1 : 0) + closedWorkouts.length, meals: meals.length };
-}
+export { SKIP_ONBOARDING_KEY, markCompleted, onboardingDisabledForDev, readBaseCounts } from './launch';
 
 export async function loadDraft(data: DataAccess): Promise<OnboardingDraft> {
   return parseDraft(await data.repos.settings.get('onboarding.draft'));
@@ -57,10 +31,6 @@ export async function loadDraft(data: DataAccess): Promise<OnboardingDraft> {
 
 export async function saveDraft(data: DataAccess, draft: OnboardingDraft): Promise<void> {
   await data.repos.settings.set('onboarding.draft', draft);
-}
-
-export async function markCompleted(data: DataAccess): Promise<void> {
-  await data.repos.settings.set('onboarding.completed', true);
 }
 
 const GOAL_FROM_PROFILE: Readonly<Record<BodyGoal, OnboardingGoal>> = { gain: 'muscle', loss: 'fat-loss', maintain: 'maintenance' };
@@ -123,7 +93,7 @@ function nutritionGoal(draft: OnboardingDraft): Goal | null {
  * (activité déclarée et objectif), profil de matériel actif, puis la routine proposée comme NOUVELLE routine (jamais en remplacement : une
  * routine de même nom n'est ni dupliquée ni modifiée), enfin « terminé ». Toute valeur invalide fait tout échouer.
  */
-export async function finishOnboarding(deps: FinishDeps, draft: OnboardingDraft, content: TrainingContent): Promise<FinishResult> {
+export async function finishOnboarding(deps: FinishDeps, draft: OnboardingDraft, content: TrainingContent | null): Promise<FinishResult> {
   for (const step of ONBOARDING_STEPS) {
     if (validateStep(step, draft, deps.year).length > 0) throw new Error(`onboarding : valeur invalide à l'étape ${step}`);
   }
@@ -147,7 +117,7 @@ export async function finishOnboarding(deps: FinishDeps, draft: OnboardingDraft,
 
     let routineId: string | null = null;
     let routineCreated = false;
-    if (draft.acceptProposal && !draft.skipped.includes('split')) {
+    if (content !== null && draft.acceptProposal && !draft.skipped.includes('split')) {
       const kind = content.profiles.find((p) => p.id === draft.equipmentProfileId)?.kind ?? null;
       const proposal = proposeSplit({ sessionsPerWeek: draft.sessionsPerWeek, equipmentKind: kind });
       const program = content.programs.find((p) => p.id === proposal.programId);
