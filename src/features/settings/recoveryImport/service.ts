@@ -6,6 +6,7 @@ import {
   parseShortcutSleep,
   parseShortcutSteps,
   shiftDay,
+  sleepDebtDiagnostic,
   summarizeRecoveryDay,
   toNightRecords,
   type NightRecord,
@@ -41,6 +42,7 @@ export const IMPORT_LOG_EVENTS = [
   'recovery-import-diag-folder',
   'recovery-import-diag-entry',
   'recovery-import-rules-recompute',
+  'recovery-import-diag-sleep',
   'recovery-import-diag-file',
   'recovery-import-file',
   'recovery-import-file-absent',
@@ -190,11 +192,22 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     const from = new Date(Date.parse(now) - SAMPLE_WINDOW_DAYS * DAY_MS).toISOString();
     const [sleep, hrv, rhr] = await Promise.all([samples.listWindow('sommeil', from, now), samples.listWindow('hrv', from, now), samples.listWindow('fc-repos', from, now)]);
     const segments = sleep.flatMap((s) => (s.stage === null ? [] : [{ start: s.startAt, end: s.endAt, stage: s.stage as SleepStage }]));
-    const { nights } = buildSleepNights(segments, tz);
+    const { nights, ignoredGroups } = buildSleepNights(segments, tz);
     const hrvSamples = hrv.flatMap((s) => (s.value === null ? [] : [{ measuredAt: s.startAt, day: utcToLocal(s.startAt, tz).date, value: s.value }]));
     const byDay = new Map<string, number>();
     for (const s of rhr) if (s.value !== null) byDay.set(utcToLocal(s.startAt, tz).date, s.value);
     const records = toNightRecords({ nights, hrv: hrvSamples, restingHrByDay: [...byDay].map(([day, value]) => ({ day, value })), timeZone: tz });
+
+    // FIX-0115 : diagnostic sans valeur (compteurs seulement, § 22) des nuits retenues et écartées.
+    const debt = sleepDebtDiagnostic(records, today);
+    deps.log('recovery-import-diag-sleep', {
+      nights_known: records.length,
+      retained: debt.retained,
+      excluded_no_asleep: debt.excludedNoAsleep,
+      excluded_short: debt.excludedShort,
+      ignored_episodes: ignoredGroups,
+      rules_version: SLEEP_RULES_VERSION,
+    });
 
     const workouts = await deps.workouts(new Date(Date.parse(now) - WORKOUT_WINDOW_DAYS * DAY_MS).toISOString());
     const dataDays = new Set<string>(records.map((n) => n.day));
