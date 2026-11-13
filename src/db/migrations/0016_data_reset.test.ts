@@ -14,8 +14,8 @@ const ID = '20000000-0000-4000-8000-000000000016';
 const HLC = `${String(Date.parse(AT)).padStart(15, '0')}-0000-${DEV}`;
 
 describe('migration 0016 : remises à zéro publiées (RESET-01, schéma 16)', () => {
-  it('registre : 0001 à 0016, seizième et dernière ; version 16, nom data_reset', () => {
-    expect(migrations.map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+  it('registre : 0001 à 0016, seizième (la 0017, I6-05, et la 0018, I6-06, la suivent) ; version 16, nom data_reset', () => {
+    expect(migrations.slice(0, 16).map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
     expect(migrations[15]).toBe(migration0016DataReset);
     expect(migration0016DataReset.name).toBe('data_reset');
   });

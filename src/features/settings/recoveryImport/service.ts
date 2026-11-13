@@ -10,6 +10,7 @@ import {
   summarizeRecoveryDay,
   toNightRecords,
   type NightRecord,
+  type RecoveryCardio,
   type RecoveryWorkout,
   type ShortcutParseReport,
   type ShortcutRejections,
@@ -119,6 +120,8 @@ export interface ShortcutImportDeps {
   readonly recovery: () => Promise<RecoveryRepository>;
   /** Séances closes depuis cet instant (ISO UTC), dans la forme attendue par le moteur. */
   readonly workouts: (sinceIso: string) => Promise<readonly RecoveryWorkout[]>;
+  /** I6-06 (D-220) : séances cardio saisies commencées depuis cet instant (absent : aucune). */
+  readonly cardio?: (sinceIso: string) => Promise<readonly RecoveryCardio[]>;
   readonly clock: Clock;
   /** Fuseau IANA de l'appareil. */
   readonly timeZone: string;
@@ -234,9 +237,13 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       rules_version: SLEEP_RULES_VERSION,
     });
 
-    const workouts = await deps.workouts(new Date(Date.parse(now) - WORKOUT_WINDOW_DAYS * DAY_MS).toISOString());
+    const since = new Date(Date.parse(now) - WORKOUT_WINDOW_DAYS * DAY_MS).toISOString();
+    const workouts = await deps.workouts(since);
+    const cardio = (await deps.cardio?.(since)) ?? [];
+    // I6-06 : une séance cardio compte le jour local de sa fin, comme une séance de musculation.
+    const ends = [...workouts.map((w) => Date.parse(w.endedAt)), ...cardio.map((c) => Date.parse(c.startedAt) + c.durationSec * 1000)].filter((ms) => Number.isFinite(ms));
     const dataDays = new Set<string>(records.map((n) => n.day));
-    for (const w of workouts) dataDays.add(utcToLocal(new Date(Date.parse(w.endedAt)).toISOString(), tz).date);
+    for (const ms of ends) dataDays.add(utcToLocal(new Date(ms).toISOString(), tz).date);
 
     const recovery = await deps.recovery();
     const oldest = shiftDay(today, -(RECOMPUTE_DAYS - 1));
@@ -251,10 +258,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     const stale = (day: string, at: string): boolean => {
       if (touched.has(day) && Date.parse(now) > Date.parse(at)) return true;
       const end = dayEndMs(day);
-      return workouts.some((w) => {
-        const ended = Date.parse(w.endedAt);
-        return ended > Date.parse(at) && ended <= end;
-      });
+      return ends.some((ended) => ended > Date.parse(at) && ended <= end);
     };
     // Aujourd'hui et la veille : toujours. Un autre jour passé (29 au plus) : absent avec des données, ou périmé (séance close / mesure plus récente que son résumé).
     const days = [today, shiftDay(today, -1)];
@@ -267,7 +271,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     }
     let exertionToday = 0;
     for (const day of days) {
-      const output = summarizeRecoveryDay({ today: day, now: day === today ? now : new Date(dayEndMs(day)).toISOString(), timeZone: tz, nights: records, workouts });
+      const output = summarizeRecoveryDay({ today: day, now: day === today ? now : new Date(dayEndMs(day)).toISOString(), timeZone: tz, nights: records, workouts, cardio });
       await recovery.saveDay(output);
       if (day === today) exertionToday = output.summary.exertion;
     }

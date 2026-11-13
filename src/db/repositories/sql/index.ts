@@ -75,6 +75,8 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue, options: Repo
   recoveryFactors: () => import('./recoveryFactorRepository').then((m) => signalingWrites(m.createRecoveryFactorRepository(executor, stamper), ['save', 'clear'])),
   // FIX-0181 : favoris publiés, à la demande ; écrits par les deux appareils (aucune règle de lecteur).
   foodFavorites: () => import('./foodFavoriteRepository').then((m) => signalingWrites(m.createFoodFavoriteRepository(executor, stamper), ['add', 'remove', 'importLocal'])),
+  // I6-05 : compléments et prises publiés, à la demande ; écrits par les deux appareils (aucune règle de lecteur).
+  supplements: () => import('./supplementRepository').then((m) => signalingWrites(m.createSupplementRepository(executor, stamper), ['create', 'update', 'remove', 'setTaken'])),
   // I6-02 : mensurations et photos de progression, à la demande ; publiées (fiche seulement), écrites par les deux appareils.
   measurements: () => import('./bodyProgressRepository').then((m) => signalingWrites(m.createMeasurementRepository(executor, stamper), ['save', 'remove'])),
   progressPhotos: () => import('./bodyProgressRepository').then((m) => signalingWrites(m.createProgressPhotoRepository(executor, stamper), ['add', 'remove'])),
@@ -82,6 +84,8 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue, options: Repo
   userData: () => import('./userDataRepository').then((m) => m.createUserDataRepository(executor)),
   // RESET-01 : remises à zéro des données et effacement local, à la demande (hors du JavaScript de départ).
   dataReset: () => import('./dataResetRepository').then((m) => m.createDataResetRepository(executor, stamper, catalogue)),
+  // I6-06 : séances cardio publiées et tracés locaux, à la demande ; écrites par les deux appareils (aucune règle de lecteur).
+  cardio: () => import('./cardioRepository').then((m) => signalingWrites(m.createCardioRepository(executor, stamper), ['add', 'update', 'remove'])),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue, options)),
   // Y-04 (début)
   syncConflicts: createSyncConflictRepository(executor, stamper, catalogue),

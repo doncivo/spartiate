@@ -118,11 +118,13 @@ pub fn run() {
         .plugin(tauri_plugin_sql::Builder::default().build())
         .manage(startup_gate::PendingRestoreMarker::default());
     // iPhone (ADR 0011 §22 point 7, §23 point 2) : plugin folder-bookmark (appelé par Rust seul), scan du QR (JS), service de synchro.
+    // I6-06 (D-222) : plugin officiel geolocation (JS, capability geolocation-ios.json), GPS du cardio au premier plan seulement.
     // Android non géré, volontairement : ni plugin ni commandes (seuls le PC Windows et l'iPhone sont livrés).
     #[cfg(target_os = "ios")]
     let builder = builder
         .plugin(tauri_plugin_folder_bookmark::init())
         .plugin(tauri_plugin_barcode_scanner::init())
+        .plugin(tauri_plugin_geolocation::init())
         .plugin(tauri_plugin_vision::init())
         .plugin(tauri_plugin_speech::init())
         .plugin(tauri_plugin_healthkit::init())

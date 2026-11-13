@@ -24,6 +24,8 @@ import type { RecoverySampleRepository } from './recoverySampleRepository';
 import type { RecoveryFactorRepository } from './recoveryFactorRepository';
 import type { FoodFavoriteRepository } from './foodFavoriteRepository';
 import type { DataResetRepository } from './dataResetRepository';
+import type { SupplementRepository } from './supplementRepository';
+import type { CardioRepository } from './cardioRepository';
 import type { MeasurementRepository, ProgressPhotoRepository } from './bodyProgressRepository';
 import type { UserDataRepository } from './userDataRepository';
 import type { ProjectRepository, SpaceRepository } from './spaceRepository';
@@ -78,6 +80,8 @@ export interface Repositories {
   readonly recoveryFactors: () => Promise<RecoveryFactorRepository>;
   /** FIX-0181 (D-171) : favoris de la recherche d'aliments (publiés, écrits par les deux appareils), chargés à la demande. */
   readonly foodFavorites: () => Promise<FoodFavoriteRepository>;
+  /** I6-05 (D-210) : compléments et prises (publiés, écrits par les deux appareils), chargés à la demande. */
+  readonly supplements: () => Promise<SupplementRepository>;
   /** I6-02 : mensurations (publiées, écrites par les deux appareils), chargées à la demande. */
   readonly measurements: () => Promise<MeasurementRepository>;
   /** I6-02 : photos de progression : fiche publiée, fichier LOCAL (jamais publié ni exporté), chargées à la demande. */
@@ -86,6 +90,8 @@ export interface Repositories {
   readonly userData: () => Promise<UserDataRepository>;
   /** RESET-01 : remises à zéro des données (table publiée `data_reset`) et effacement local, chargées à la demande. */
   readonly dataReset: () => Promise<DataResetRepository>;
+  /** I6-06 : séances cardio (publiées, écrites par les deux appareils) et tracés GPS (LOCAUX, jamais publiés ni exportés), chargés à la demande. */
+  readonly cardio: () => Promise<CardioRepository>;
   /** Export / import de Spartiate (SPA-005, D-57), chargé à la demande. */
   readonly exportImport: () => Promise<ExportImportRepository>;
   /** Tables de la synchronisation (ADR 0011, lot Y2). */

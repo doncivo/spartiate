@@ -82,8 +82,8 @@ const dayRow = (d: SimDevice, id = `recovery|${DAY}`) => d.driver.select('SELECT
 
 describe('(a) catalogue de production : recovery_day et muscle_recovery (I5-01)', () => {
   it('deux tables à la fin de l’ordre, identifiant naturel, aucun parent ni colonne locale', () => {
-    expect(SYNC_TABLE_ORDER.slice(-7, -5)).toEqual(['recovery_day', 'muscle_recovery']); // recovery_factor (I6-01) vient après, puis food_favorite (FIX-0181), data_reset (RESET-01) en dernier
-    expect(SYNC_TABLE_ORDER).toHaveLength(26); // FIX-0181 : food_favorite ; RESET-01 : data_reset.
+    expect(SYNC_TABLE_ORDER.slice(-10, -8)).toEqual(['recovery_day', 'muscle_recovery']); // recovery_factor (I6-01) vient après, puis food_favorite (FIX-0181), data_reset (RESET-01) en dernier
+    expect(SYNC_TABLE_ORDER).toHaveLength(29); // I6-06 : cardio_session en dernier. // I6-05 : supplement et supplement_intake après data_reset. // FIX-0181 : food_favorite ; RESET-01 : data_reset.
     for (const name of ['recovery_day', 'muscle_recovery']) {
       const t = SYNC_CATALOGUE.table(name);
       if (!t) throw new Error(name);

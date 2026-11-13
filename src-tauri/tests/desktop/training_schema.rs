@@ -5,7 +5,8 @@
 //! (I3-02, migration 0007 : captures de `mesocycle`), la 8 (I4-02, migration 0008 : captures de `food`, `food_portion`, `meal_entry` et
 //! `nutrition_target`) et la 9 (I4-07, migration 0009 : captures de `day_completeness`, `recipe` et `recipe_ingredient`), jusqu'à la 14
 //! (I6-03b, migration 0014 : capture propre des colonnes de groupe de `routine_exercise`) et la 15 (FIX-0181, migration 0015 : captures de
-//! `food_favorite`) et la 16 (RESET-01, migration 0016 : captures de `data_reset`) ; la version 17, inconnue de cette app, est refusée. Les
+//! `food_favorite`) et la 16 (RESET-01, migration 0016 : captures de `data_reset`), la 17 (I6-05, migration 0017 : captures de `supplement` et `supplement_intake`) et celle du cardio (I6-06, `CARDIO_VERSION`,
+//! migration 0018 : captures de `cardio_session`, tracé local sans déclencheur) ; la version suivante, inconnue de cette app, est refusée. Les
 //! déclencheurs de capture sont ceux de la référence.
 
 use std::path::Path;
@@ -73,9 +74,123 @@ fn error_code(path: &Path) -> &'static str {
         .code
 }
 
+/// I6-06 : version de la migration du cardio (`src/db/migrations/00NN_cardio.ts`), la dernière du registre.
+const CARDIO_VERSION: u32 = 18;
+
 #[test]
-fn reset_01_the_app_schema_version_is_16() {
-    assert_eq!(APP_SCHEMA_VERSION, 16);
+fn i6_06_the_app_schema_version_is_the_cardio_version() {
+    assert_eq!(APP_SCHEMA_VERSION, CARDIO_VERSION);
+}
+
+/// I6-06 : les deux déclencheurs de capture de `cardio_session` n'existent qu'à partir de la version du cardio ; aucun sur le tracé local
+/// `cardio_track` ; une sauvegarde dont le corps est modifié est refusée.
+#[test]
+fn i6_06_the_cardio_triggers_exist_only_from_the_cardio_version_and_the_track_has_none() {
+    for suffix in ["ai", "au"] {
+        let name = format!("sync_cardio_session_{suffix}");
+        assert_eq!(
+            trigger_body_for(&name, "cardio_session", CARDIO_VERSION - 1),
+            None
+        );
+        assert!(trigger_body_for(&name, "cardio_session", CARDIO_VERSION).is_some());
+    }
+    assert!(REFERENCE_TRIGGERS
+        .iter()
+        .all(|(_, table, _)| *table != "cardio_track"));
+}
+
+/// I6-06 : une sauvegarde Spartiate de la version du cardio (déclencheurs de `cardio_session`) est admise ; un corps modifié est refusé ; la même
+/// version portant un déclencheur de l'ancien projet (CircleTasks, numérotation 17 à 19) est refusée comme d'un schéma inconnu (D-54).
+#[test]
+fn i6_06_a_cardio_version_backup_is_accepted_a_tampered_or_old_project_one_is_refused() {
+    let dir = scratch();
+    let build = |name: &str| {
+        let path = dir.path().join(name);
+        make_db(&path, CARDIO_VERSION, &TABLES);
+        let circuit = trigger_body_for(
+            "sync_routine_exercise_circuit_au",
+            "routine_exercise",
+            CARDIO_VERSION,
+        )
+        .unwrap();
+        let conn = Connection::open(&path).unwrap();
+        conn.execute_batch(
+            "ALTER TABLE routine_exercise ADD COLUMN circuit_id TEXT; ALTER TABLE routine_exercise ADD COLUMN circuit_rest_sec INTEGER;",
+        )
+        .unwrap();
+        conn.execute_batch(circuit).unwrap();
+        drop(conn);
+        make_tables(&path, CARDIO_VERSION, &["cardio_session"]);
+        path
+    };
+    let good = build("cardio.db");
+    assert_eq!(
+        check_backup_file(&good, APP_SCHEMA_VERSION).unwrap(),
+        CARDIO_VERSION
+    );
+    let tampered = build("tampered.db");
+    Connection::open(&tampered)
+        .unwrap()
+        .execute_batch(
+            "DROP TRIGGER sync_cardio_session_au; CREATE TRIGGER sync_cardio_session_au AFTER UPDATE ON cardio_session BEGIN SELECT 1; END;",
+        )
+        .unwrap();
+    assert!(check_backup_file(&tampered, APP_SCHEMA_VERSION).is_err());
+    let old = build("old-project.db");
+    let task = trigger_body_for("sync_task_ai", "task", CARDIO_VERSION).unwrap();
+    let conn = Connection::open(&old).unwrap();
+    conn.execute_batch("CREATE TABLE task (id TEXT PRIMARY KEY);")
+        .unwrap();
+    conn.execute_batch(task).unwrap();
+    drop(conn);
+    assert_eq!(error_code(&old), "newer-schema");
+}
+
+/// I6-05 (migration 0017) : les quatre déclencheurs de capture des compléments n'existent qu'à partir de la version 17 ; une sauvegarde de version 17
+/// qui les porte est admise, une dont un corps est modifié est refusée.
+#[test]
+fn i6_05_a_version_17_backup_with_the_supplement_triggers_is_accepted_and_a_tampered_one_is_refused(
+) {
+    for table in ["supplement", "supplement_intake"] {
+        for suffix in ["ai", "au"] {
+            let name = format!("sync_{table}_{suffix}");
+            assert_eq!(trigger_body_for(&name, table, 16), None);
+            assert!(trigger_body_for(&name, table, 17).is_some());
+        }
+    }
+    let dir = scratch();
+    let path = dir.path().join("v17.db");
+    make_db(&path, 17, &TABLES);
+    let circuit =
+        trigger_body_for("sync_routine_exercise_circuit_au", "routine_exercise", 17).unwrap();
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(
+            "ALTER TABLE routine_exercise ADD COLUMN circuit_id TEXT; ALTER TABLE routine_exercise ADD COLUMN circuit_rest_sec INTEGER;",
+        )
+        .unwrap();
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(circuit)
+        .unwrap();
+    make_tables(
+        &path,
+        17,
+        &[
+            "food_favorite",
+            "data_reset",
+            "supplement",
+            "supplement_intake",
+        ],
+    );
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 17);
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(
+            "DROP TRIGGER sync_supplement_intake_au; CREATE TRIGGER sync_supplement_intake_au AFTER UPDATE ON supplement_intake BEGIN SELECT 1; END;",
+        )
+        .unwrap();
+    assert!(check_backup_file(&path, APP_SCHEMA_VERSION).is_err());
 }
 
 /// RESET-01 (migration 0016) : les deux déclencheurs de capture de `data_reset` n'existent qu'à partir de la version 16.
@@ -530,13 +645,16 @@ fn i4_07_a_version_9_backup_with_the_recipe_tables_is_accepted_and_a_tampered_on
 }
 
 #[test]
-fn reset_01_a_version_17_backup_is_refused_as_newer_schema() {
+fn i6_06_a_backup_newer_than_the_cardio_version_is_refused_as_newer_schema() {
     let dir = scratch();
-    let path = dir.path().join("v17.db");
+    let path = dir.path().join("newer.db");
     make_db(&path, 3, &TABLES);
+    let inserts: String = (4..=CARDIO_VERSION + 1)
+        .map(|v| format!("INSERT INTO schema_migrations (version) VALUES ({v}); "))
+        .collect();
     Connection::open(&path)
         .unwrap()
-        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5); INSERT INTO schema_migrations (version) VALUES (6); INSERT INTO schema_migrations (version) VALUES (7); INSERT INTO schema_migrations (version) VALUES (8); INSERT INTO schema_migrations (version) VALUES (9); INSERT INTO schema_migrations (version) VALUES (10); INSERT INTO schema_migrations (version) VALUES (11); INSERT INTO schema_migrations (version) VALUES (12); INSERT INTO schema_migrations (version) VALUES (13); INSERT INTO schema_migrations (version) VALUES (14); INSERT INTO schema_migrations (version) VALUES (15); INSERT INTO schema_migrations (version) VALUES (16); INSERT INTO schema_migrations (version) VALUES (17);")
+        .execute_batch(&inserts)
         .unwrap();
     assert_eq!(error_code(&path), "newer-schema");
 }

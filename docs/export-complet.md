@@ -36,6 +36,7 @@ L’archive complète est aussi une archive d’import valide : l’import ne li
 Jamais exportés : les photos de progression (fichiers image : elles ne quittent jamais l’appareil, seule leur fiche figure dans `progress_photo.csv`), jamais de clé de chiffrement ni de jeton, aucun identifiant d’appareil, aucune horloge de synchro, les lignes supprimées, et les tables suivantes :
 
 - `progress_photo_file`
+- `cardio_track` (tracés GPS des séances cardio : les positions ne quittent jamais l’appareil, seules durée et distance figurent dans `cardio_session.csv`)
 - `sync_outbox`
 - `sync_field_clock`
 - `sync_tombstone`
@@ -465,3 +466,45 @@ Favoris de la recherche d’aliments (FIX-0181, schéma 15), écrits sur l’un 
 | `source` | text | — | non | `custom`, `ciqual` ou `off` |
 | `ref` | text | — | non |  |
 | `added_at` | datetime | — | non | instant de la mise en favori |
+
+### `csv/supplement.csv`
+
+Compléments (I6-05, schéma 17), écrits sur l’un ou l’autre appareil. `times` : liste JSON des heures de prise (`HH:mm`, 24 h, une à quatre) ; `days` : jours de la semaine en masque (lundi = 1, mardi = 2, mercredi = 4, jeudi = 8, vendredi = 16, samedi = 32, dimanche = 64 ; tous les jours = 127) ; `active` = 0 : en pause.
+
+| Colonne | Type | Unité | NULL possible | Remarque |
+| --- | --- | --- | --- | --- |
+| `id` | text | — | non |  |
+| `name` | text | — | non |  |
+| `dose` | real | — | oui | dans l’unité `unit` |
+| `unit` | text | — | oui |  |
+| `times` | json | — | non |  |
+| `days` | int | — | non |  |
+| `active` | bool | — | non |  |
+
+### `csv/supplement_intake.csv`
+
+Prises de compléments cochées (I6-05, schéma 17), une par complément, date et heure ; `id` = `intake|<supplement_id>|<date>|<moment>`.
+
+| Colonne | Type | Unité | NULL possible | Remarque |
+| --- | --- | --- | --- | --- |
+| `id` | text | — | non |  |
+| `supplement_id` | text | — | non | `id` de `supplement.csv` |
+| `date` | date | — | non |  |
+| `moment` | time | — | non | heure prévue de la prise |
+| `taken_at` | datetime | — | non | instant où la prise a été cochée |
+
+### `csv/cardio_session.csv`
+
+Séances cardio saisies (I6-06, schéma 18), écrites sur l’un ou l’autre appareil. Le tracé GPS n’est jamais exporté (table locale `cardio_track`) : seules la durée et la distance figurent ici.
+
+| Colonne | Type | Unité | NULL possible | Remarque |
+| --- | --- | --- | --- | --- |
+| `id` | text | — | non |  |
+| `kind` | text | — | non | `walk` (marche), `run` (course), `bike` (vélo), `row` (rameur), `elliptical` (elliptique), `skierg` (SkiErg) ou `other` (autre) |
+| `started_at` | datetime | — | non | début de la séance |
+| `duration_sec` | int | s | non | 1 s à 24 h |
+| `distance_m` | real | m | oui | vide : distance non saisie |
+| `avg_hr` | int | bpm | oui | FC moyenne saisie |
+| `rpe` | int | 1 à 10 | non | ressenti de la séance |
+| `source` | enum | — | non | `manual` (saisie) ou `gps` (suivi GPS de l’iPhone) |
+| `notes` | text | — | non |  |

@@ -13,6 +13,8 @@ import './NutritionScreen.css';
 
 /** Section Recettes (I4-07) : bloc à la demande, avec son catalogue de textes, jamais dans le départ ni dans le bloc de Nutrition. */
 const RecipesView = lazy(() => import('./recipes/RecipesView').then((m) => ({ default: m.RecipesView })));
+/** Section Compléments (I6-05) : bloc à la demande, avec son catalogue de textes. */
+const SupplementsView = lazy(() => import('./supplements/SupplementsView').then((m) => ({ default: m.SupplementsView })));
 
 /**
  * Onglet Nutrition (I4-03, § 15.2–15.5, § 18.1–18.6) : Journal (par défaut), Dashboard, Stratégie et Check-in, comme la barre de sections
@@ -47,6 +49,7 @@ export function NutritionScreen() {
             { value: 'strategy', label: tNutrition('sectionStrategy') },
             { value: 'checkin', label: tNutrition('sectionCheckIn') },
             { value: 'recipes', label: tNutrition('sectionRecipes') },
+            { value: 'supplements', label: tNutrition('sectionSupplements') },
           ]}
         />
         {state.status === 'ready' && state.stale ? (
@@ -83,6 +86,16 @@ export function NutritionScreen() {
             }
           >
             <RecipesView today={today} onChanged={reload} />
+          </Suspense>
+        ) : current === 'supplements' ? (
+          <Suspense
+            fallback={
+              <p className="ct-nutrition__muted" role="status">
+                {tNutrition('loading')}
+              </p>
+            }
+          >
+            <SupplementsView today={today} />
           </Suspense>
         ) : (
           <JournalView snapshot={state.snapshot} onChanged={reload} />

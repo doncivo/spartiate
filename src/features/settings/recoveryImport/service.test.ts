@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createManualClock, type ManualClock } from '../../../domain/clock';
-import type { RecoveryWorkout } from '../../../domain/recovery';
+import type { RecoveryCardio, RecoveryWorkout } from '../../../domain/recovery';
 import { asEntityId, type DeviceId, type LocalDate } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
 import type { RecoverySampleRepository } from '../../../db/repositories/recoverySampleRepository';
@@ -338,6 +338,21 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     expect(await recovery.listMuscles('2026-11-08' as LocalDate)).toEqual([]);
     expect((await recovery.listMuscles('2026-11-09' as LocalDate)).map((m) => m.muscleId)).toEqual(['chest']);
     expect((await recovery.getDay('2026-11-08' as LocalDate))?.summary.computedAt).toBe('2026-11-08T22:59:59.999Z');
+  });
+
+  it('I6-06 (D-220) : le cardio saisi entre dans l’Exertion ; une séance plus récente qu’un résumé passé le fait recalculer', async () => {
+    let cardio: RecoveryCardio[] = [];
+    const deps = { cardio: async () => cardio };
+    await build(reader(async () => ALL_OK()), { ...deps, clock: createManualClock('2026-11-08T08:00:00.000Z') }).run('manual');
+    const recovery = await db.data.repos.recovery();
+    expect((await recovery.getDay('2026-11-08' as LocalDate))?.summary.exertion).toBe(0);
+    // 45 min à RPE 7 le 8 à 18 h (Paris) : 315 points → 6,50.
+    cardio = [{ startedAt: '2026-11-08T16:15:00.000Z', durationSec: 2700, rpe: 7 }];
+    await build(reader(async () => ALL_OK()), { ...deps, clock: createManualClock('2026-11-10T08:00:00.000Z') }).run('manual');
+    const day = await recovery.getDay('2026-11-08' as LocalDate);
+    expect(day?.summary.exertion).toBeCloseTo(6.5, 2);
+    expect(day?.summary.explanationKeys).toContain('exertion_cardio_srpe');
+    expect(await recovery.listMuscles('2026-11-08' as LocalDate)).toEqual([]);
   });
 });
 

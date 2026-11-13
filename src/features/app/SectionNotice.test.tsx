@@ -5,7 +5,7 @@ import type { DeviceId } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from './AppContainerContext';
 import { createAppContainer } from './container';
-import { BodyProgress, NutritionRemainingCard, RecoveryProgress, RecoveryToday, TodaySessionCard } from './lazyScreens';
+import { BodyProgress, CardioProgress, NutritionRemainingCard, RecoveryProgress, RecoveryToday, TodaySessionCard } from './lazyScreens';
 import { INITIAL_NAVIGATION, useNavigationStore } from './navigation';
 import { SectionNotice } from './SectionNotice';
 
@@ -49,6 +49,13 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
     open('progress');
     expect(await screen.findByRole('region', { name: 'Récupération : ce qui change ta Recovery' })).toBeInTheDocument();
     expect(screen.getByText(/Aucun jour renseigné/)).toBeInTheDocument();
+  });
+
+  it('progress : I6-06, la carte Cardio (quatre semaines) est chargée à la demande, sans faux zéro', async () => {
+    await CardioProgress.preload();
+    open('progress');
+    expect(await screen.findByRole('region', { name: 'Cardio' })).toBeInTheDocument();
+    expect(await screen.findByText('Aucune séance de cardio sur les quatre dernières semaines.')).toBeInTheDocument();
   });
 
   it('progress : la section Corps (mensurations, photos de progression, I6-02) est chargée à la demande', async () => {
