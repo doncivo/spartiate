@@ -105,6 +105,8 @@ export type SyncReportTable =
   | 'measurement'
   | 'progress_photo'
   | 'food_favorite'
+  | 'supplement'
+  | 'supplement_intake'
   | 'cardio_session';
 
 /** Compteurs seulement (jamais le contenu d'une ligne) : bilan de l'export des journaux. */

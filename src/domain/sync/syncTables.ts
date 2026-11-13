@@ -15,6 +15,7 @@ import { SYNC_TABLE_ORDER } from './format';
 import {
   expectedDayCompletenessId,
   expectedFavoriteId,
+  expectedIntakeId,
   expectedMuscleRecoveryId,
   expectedProgressionId,
   expectedRecoveryDayId,
@@ -23,6 +24,7 @@ import {
   expectedWeightId,
   isDayCompletenessId,
   isFavoriteId,
+  isIntakeId,
   isMuscleRecoveryId,
   isProfileId,
   isProgressionId,
@@ -760,8 +762,34 @@ export const DATA_RESET_TABLE = 'data_reset';
 const DATA_RESET_TABLE_DEF = table(DATA_RESET_TABLE,[c('created_at', 'datetime', false, hidden), c('deleted_at', 'datetime', true, hidden)], { purgeable: false, titleSource: { kind: 'none' } });
 
 /**
- * Catalogue I6-06 (D-221, D-222 ; migration 0017, schéma 17) : `cardio_session`, séances cardio saisies, écrites par les DEUX appareils, identifiant UUID.
- * Fusion champ par champ par HLC, dernière écriture gagne. Le tracé GPS (`cardio_track`) est LOCAL : absent du catalogue, jamais publié ni exporté ;
+ * Catalogue I6-05 (§ 15.3, D-210) : `supplement` (compléments, UUID) et `supplement_intake` (prises cochées, `intake|<complément>|<date>|<heure>`),
+ * écrits par les DEUX appareils, sans parent publié (lien logique par `supplement_id`). La même prise cochée des deux côtés donne une ligne ; fusion
+ * champ par champ par HLC, dernière écriture gagne. Journal des conflits : nom, état et suppression du complément ; suppression de la prise.
+ */
+const SUPPLEMENT_DAY_MASKS: readonly number[] = Array.from({ length: 127 }, (_, i) => i + 1);
+const SUPPLEMENT_TABLE = table(
+  'supplement',
+  [
+    c('name', 'text', false, { max: 80 }),
+    c('dose', 'real', true, hidden),
+    c('unit', 'text', true, { max: 16, conflictVisible: false }),
+    c('times', 'json', false, { max: 64, conflictVisible: false }),
+    c('days', 'int', false, { values: SUPPLEMENT_DAY_MASKS, conflictVisible: false }),
+    bool('active'),
+    createdAt,
+    deletedAt,
+  ],
+  { titleSource: { kind: 'own', column: 'name' } },
+);
+const SUPPLEMENT_INTAKE_TABLE = table(
+  'supplement_intake',
+  [c('supplement_id', 'id', false, hidden), c('date', 'date', false, hidden), c('moment', 'time', false, hidden), c('taken_at', 'datetime', false, hidden), createdAt, deletedAt],
+  { idKind: 'natural', natural: { is: isIntakeId, expected: (row) => expectedIntakeId(row) }, titleSource: { kind: 'own', column: 'date' } },
+);
+
+/**
+ * Catalogue I6-06 (D-221, D-222 ; migration 0018, schéma 18) : `cardio_session`, séances cardio saisies, écrites par les DEUX appareils, identifiant UUID.
+ * Fusion champ par champ par HLC, dernière écriture gagne. Le tracé GPS (table locale des tracés) est absent du catalogue, jamais publié ni exporté ;
  * seules la durée et la distance passent. `kind` est un texte court (non fermé : un type ajouté par une version plus récente reste lisible, « autre ») ;
  * la FC moyenne (donnée corporelle) est masquée du journal des conflits.
  */
@@ -782,7 +810,7 @@ const CARDIO_SESSION_TABLE = table(
   { titleSource: { kind: 'none' } },
 );
 
-/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02 + FIX-0181 + RESET-01 + I6-06) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02 + FIX-0181 + RESET-01 + I6-05 + I6-06) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   tables: [
     PROFILE_TABLE,
@@ -811,6 +839,8 @@ export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
     PROGRESS_PHOTO_TABLE,
     FOOD_FAVORITE_TABLE,
     DATA_RESET_TABLE_DEF,
+    SUPPLEMENT_TABLE,
+    SUPPLEMENT_INTAKE_TABLE,
     CARDIO_SESSION_TABLE,
   ],
   order: SYNC_TABLE_ORDER,

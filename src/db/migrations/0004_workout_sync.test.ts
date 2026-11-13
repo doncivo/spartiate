@@ -69,7 +69,7 @@ describe('migration 0004 : workout_sync (I1-03, D-27)', () => {
     expect(triggers.some((t) => /rest_timer/.test(t.sql))).toBe(false);
     expect(triggers.every((t) => /ended_at/.test(t.sql))).toBe(true);
     // 18 en version 4 ; 24 avec la 0006 (I2-01 : deux tables de progression, la difficulté, les décisions à la clôture) ; 26 avec la 0007 (I3-02 : mesocycle) ; 34 avec la 0008 (I4-02 : food, food_portion, meal_entry, nutrition_target) ; 40 avec la 0009 (I4-07 : day_completeness, recipe, recipe_ingredient) ; 44 avec la 0010 (I5-01 : recovery_day, muscle_recovery) ; 46 avec la 0011 (I6-01 : recovery_factor).
-    expect((await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger'")).length).toBe(57); // 57 avec la migration du cardio (I6-06 : cardio_session) ; 50 avec la 0012 (I6-02) ; 51 avec la 0014 (I6-03b : capture propre des colonnes de groupe de routine_exercise) ; 53 avec la 0015 (FIX-0181 : food_favorite) ; 55 avec la 0016 (RESET-01 : data_reset).
+    expect((await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger'")).length).toBe(61); // 61 avec la 0018 (I6-06 : cardio_session) ; 59 avec la 0017 (I6-05 : compléments et prises) ; 50 avec la 0012 (I6-02) ; 51 avec la 0014 (I6-03b : capture propre des colonnes de groupe de routine_exercise) ; 53 avec la 0015 (FIX-0181 : food_favorite) ; 55 avec la 0016 (RESET-01 : data_reset).
     await db.close();
   });
 

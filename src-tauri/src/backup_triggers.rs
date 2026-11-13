@@ -5,7 +5,7 @@
 //! à régénérer avec ce test si la migration 0011 change (jamais, une migration publiée ne se modifie plus) ou si un déclencheur est ajouté.
 
 /// (nom, table, SQL) de chaque déclencheur, triés par nom.
-pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 105] = [
+pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 109] = [
     (
         "search_checklist_ad",
         "checklist",
@@ -3411,6 +3411,176 @@ INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine_exercise', N
      END"##,
     ),
     (
+        "sync_supplement_ai",
+        "supplement",
+        r##"CREATE TRIGGER sync_supplement_ai AFTER INSERT ON supplement
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+       DELETE FROM sync_tombstone WHERE table_name = 'supplement' AND row_id = NEW.id;
+       DELETE FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field = '*';
+       INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('supplement', NEW.id, '*');
+     END"##,
+    ),
+    (
+        "sync_supplement_au",
+        "supplement",
+        r##"CREATE TRIGGER sync_supplement_au AFTER UPDATE ON supplement
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+         SELECT 'supplement', NEW.id, '*', OLD.hlc, NULL
+         WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = '*');
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement', NEW.id, 'name', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field IN ('name', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'name')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'name'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.name IS NOT NEW.name
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'name' AND OLD.name IS NOT NEW.name;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement', NEW.id, 'name' WHERE OLD.name IS NOT NEW.name;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement', NEW.id, 'dose', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field IN ('dose', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'dose')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'dose'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.dose IS NOT NEW.dose
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'dose' AND OLD.dose IS NOT NEW.dose;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement', NEW.id, 'dose' WHERE OLD.dose IS NOT NEW.dose;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement', NEW.id, 'unit', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field IN ('unit', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'unit')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'unit'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.unit IS NOT NEW.unit
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'unit' AND OLD.unit IS NOT NEW.unit;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement', NEW.id, 'unit' WHERE OLD.unit IS NOT NEW.unit;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement', NEW.id, 'times', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field IN ('times', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'times')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'times'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.times IS NOT NEW.times
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'times' AND OLD.times IS NOT NEW.times;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement', NEW.id, 'times' WHERE OLD.times IS NOT NEW.times;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement', NEW.id, 'days', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field IN ('days', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'days')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'days'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.days IS NOT NEW.days
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'days' AND OLD.days IS NOT NEW.days;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement', NEW.id, 'days' WHERE OLD.days IS NOT NEW.days;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement', NEW.id, 'active', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field IN ('active', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'active')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'active'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.active IS NOT NEW.active
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'active' AND OLD.active IS NOT NEW.active;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement', NEW.id, 'active' WHERE OLD.active IS NOT NEW.active;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement', NEW.id, 'created_at', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field IN ('created_at', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'created_at')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'created_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.created_at IS NOT NEW.created_at
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'created_at' AND OLD.created_at IS NOT NEW.created_at;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement', NEW.id, 'created_at' WHERE OLD.created_at IS NOT NEW.created_at;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement', NEW.id, 'deleted_at', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field IN ('deleted_at', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'deleted_at')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'deleted_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.deleted_at IS NOT NEW.deleted_at
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field = 'deleted_at' AND OLD.deleted_at IS NOT NEW.deleted_at;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
+       DELETE FROM sync_outbox WHERE table_name = 'supplement' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
+       INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
+     END"##,
+    ),
+    (
+        "sync_supplement_intake_ai",
+        "supplement_intake",
+        r##"CREATE TRIGGER sync_supplement_intake_ai AFTER INSERT ON supplement_intake
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+       DELETE FROM sync_tombstone WHERE table_name = 'supplement_intake' AND row_id = NEW.id;
+       DELETE FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = '*';
+       INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('supplement_intake', NEW.id, '*');
+     END"##,
+    ),
+    (
+        "sync_supplement_intake_au",
+        "supplement_intake",
+        r##"CREATE TRIGGER sync_supplement_intake_au AFTER UPDATE ON supplement_intake
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+         SELECT 'supplement_intake', NEW.id, '*', OLD.hlc, NULL
+         WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = '*');
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement_intake', NEW.id, 'supplement_id', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field IN ('supplement_id', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'supplement_id')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'supplement_id'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.supplement_id IS NOT NEW.supplement_id
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'supplement_id' AND OLD.supplement_id IS NOT NEW.supplement_id;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement_intake', NEW.id, 'supplement_id' WHERE OLD.supplement_id IS NOT NEW.supplement_id;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement_intake', NEW.id, 'date', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field IN ('date', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'date')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'date'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.date IS NOT NEW.date
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'date' AND OLD.date IS NOT NEW.date;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement_intake', NEW.id, 'date' WHERE OLD.date IS NOT NEW.date;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement_intake', NEW.id, 'moment', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field IN ('moment', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'moment')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'moment'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.moment IS NOT NEW.moment
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'moment' AND OLD.moment IS NOT NEW.moment;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement_intake', NEW.id, 'moment' WHERE OLD.moment IS NOT NEW.moment;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement_intake', NEW.id, 'taken_at', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field IN ('taken_at', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'taken_at')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'taken_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.taken_at IS NOT NEW.taken_at
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'taken_at' AND OLD.taken_at IS NOT NEW.taken_at;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement_intake', NEW.id, 'taken_at' WHERE OLD.taken_at IS NOT NEW.taken_at;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement_intake', NEW.id, 'created_at', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field IN ('created_at', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'created_at')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'created_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.created_at IS NOT NEW.created_at
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'created_at' AND OLD.created_at IS NOT NEW.created_at;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement_intake', NEW.id, 'created_at' WHERE OLD.created_at IS NOT NEW.created_at;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'supplement_intake', NEW.id, 'deleted_at', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field IN ('deleted_at', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'deleted_at')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'deleted_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.deleted_at IS NOT NEW.deleted_at
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = 'deleted_at' AND OLD.deleted_at IS NOT NEW.deleted_at;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement_intake', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
+       DELETE FROM sync_outbox WHERE table_name = 'supplement_intake' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
+       INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'supplement_intake', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
+     END"##,
+    ),
+    (
         "sync_task_ai",
         "task",
         r##"CREATE TRIGGER sync_task_ai AFTER INSERT ON task WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
@@ -4220,7 +4390,7 @@ pub const SUPERSEDED_TRIGGERS: [(&str, &str, &str, u32, u32); 3] = [
 /// de 1 à `APP_SCHEMA_VERSION`, même vide (migration sans déclencheur) : une version sans entrée, ou un déclencheur d'une base migrée absent
 /// d'ici, fait échouer `backup_versions.rs` (`i5_01_*`, comparaison avec `tests/fixtures/spartiate-migrations.json`). Jamais de version
 /// par défaut : un oubli ferait recréer à la restauration un déclencheur qu'une migration suivante créerait encore (« trigger already exists »).
-pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 17] = [
+pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 18] = [
     // SPA-001b (migration 0001) : profil et poids.
     (
         1,
@@ -4332,15 +4502,25 @@ pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 17] = [
     (15, &["sync_food_favorite_ai", "sync_food_favorite_au"]),
     // RESET-01 (migration 0016) : remises à zéro des données publiées (data_reset).
     (16, &["sync_data_reset_ai", "sync_data_reset_au"]),
-    // I6-06 (migration 0017) : séances cardio publiées (cardio_session) ; le tracé (cardio_track) est local, sans déclencheur.
-    (17, &["sync_cardio_session_ai", "sync_cardio_session_au"]),
+    // I6-05 (migration 0017) : compléments et prises publiés (supplement, supplement_intake).
+    (
+        17,
+        &[
+            "sync_supplement_ai",
+            "sync_supplement_au",
+            "sync_supplement_intake_ai",
+            "sync_supplement_intake_au",
+        ],
+    ),
+    // I6-06 (migration 0018) : séances cardio publiées (cardio_session) ; le tracé (cardio_track) est local, sans déclencheur.
+    (18, &["sync_cardio_session_ai", "sync_cardio_session_au"]),
 ];
 
 /// I5-01 point 1.1 : tables créées par les migrations Spartiate (toutes versions). Un déclencheur hérité de l'ancien projet (nom absent de
 /// `SPARTIATE_TRIGGERS_BY_VERSION`) n'est jamais admis ni recréé sur l'une d'elles, à aucune version : `sync_settings_*` (valables à partir de la
 /// version 15 dans l'ancien projet) ne reviennent pas sur `settings`, ni `search_routine_*` sur `routine`. Tenue égale aux tables d'une base
 /// migrée par `backup_versions.rs` (une table nouvelle, `recovery_day` par exemple, doit être ajoutée ici).
-pub const SPARTIATE_TABLES: [&str; 43] = [
+pub const SPARTIATE_TABLES: [&str; 45] = [
     "body_weight",
     "cardio_session",
     "cardio_track",
@@ -4374,6 +4554,8 @@ pub const SPARTIATE_TABLES: [&str; 43] = [
     "routine_exercise",
     "schema_migrations",
     "settings",
+    "supplement",
+    "supplement_intake",
     "sync_field_clock",
     "sync_guard",
     "sync_meta",
@@ -4405,16 +4587,11 @@ pub fn introduced_in(name: &str) -> Option<u32> {
     })
 }
 
-/// I6-06 : première version de schéma de l'ancien projet (CircleTasks : 17 à 19, D-54) que la numérotation de Spartiate rejoint. À partir d'elle,
-/// une sauvegarde qui porte un déclencheur de l'ancien projet vient de l'ancien projet et reste refusée, quelle que soit la version de l'app.
-pub const OLD_PROJECT_COLLIDING_FROM: u32 = 17;
-
-/// Déclencheur connu de la référence et propre à l'ancien projet (aucune migration Spartiate ne le crée).
-pub fn is_old_project_trigger(name: &str) -> bool {
-    REFERENCE_TRIGGERS.iter().any(|(n, _, _)| *n == name) && is_legacy(name)
+/// Déclencheur hérité de l'ancien projet (absent de `SPARTIATE_TRIGGERS_BY_VERSION`).
+pub fn is_legacy_trigger(name: &str) -> bool {
+    is_legacy(name)
 }
 
-/// Déclencheur hérité de l'ancien projet (aucune migration Spartiate ne le crée).
 fn is_legacy(name: &str) -> bool {
     !SPARTIATE_TRIGGERS_BY_VERSION
         .iter()

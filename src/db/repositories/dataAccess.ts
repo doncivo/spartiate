@@ -24,6 +24,7 @@ import type { RecoverySampleRepository } from './recoverySampleRepository';
 import type { RecoveryFactorRepository } from './recoveryFactorRepository';
 import type { FoodFavoriteRepository } from './foodFavoriteRepository';
 import type { DataResetRepository } from './dataResetRepository';
+import type { SupplementRepository } from './supplementRepository';
 import type { CardioRepository } from './cardioRepository';
 import type { MeasurementRepository, ProgressPhotoRepository } from './bodyProgressRepository';
 import type { UserDataRepository } from './userDataRepository';
@@ -79,6 +80,8 @@ export interface Repositories {
   readonly recoveryFactors: () => Promise<RecoveryFactorRepository>;
   /** FIX-0181 (D-171) : favoris de la recherche d'aliments (publiés, écrits par les deux appareils), chargés à la demande. */
   readonly foodFavorites: () => Promise<FoodFavoriteRepository>;
+  /** I6-05 (D-210) : compléments et prises (publiés, écrits par les deux appareils), chargés à la demande. */
+  readonly supplements: () => Promise<SupplementRepository>;
   /** I6-02 : mensurations (publiées, écrites par les deux appareils), chargées à la demande. */
   readonly measurements: () => Promise<MeasurementRepository>;
   /** I6-02 : photos de progression : fiche publiée, fichier LOCAL (jamais publié ni exporté), chargées à la demande. */

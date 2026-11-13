@@ -11,6 +11,7 @@ export const nutritionFr = {
   sectionStrategy: 'Stratégie',
   sectionCheckIn: 'Check-in',
   sectionRecipes: 'Recettes',
+  sectionSupplements: 'Compléments',
   loading: 'Chargement de Nutrition…',
   loadError: 'Nutrition n’a pas pu être lu.',
   retry: 'Réessayer',

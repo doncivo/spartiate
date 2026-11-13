@@ -9,7 +9,7 @@ import { createAppContainer } from '../app/container';
 import { CardioView } from './CardioView';
 
 /**
- * I6-06 (D-222, H-34) : suivi GPS sur l'iPhone, premier plan seulement, par la façade (faux GPS injecté, positions SYNTHÉTIQUES le long d'un méridien
+ * I6-06 (D-222, H-35) : suivi GPS sur l'iPhone, premier plan seulement, par la façade (faux GPS injecté, positions SYNTHÉTIQUES le long d'un méridien
  * depuis 0° / 0°). Permission demandée au premier usage ; refus ou panne dits à l'écran, saisie manuelle intacte ; « Arrêter et reporter » remplit le
  * formulaire ; le tracé est gardé sur l'appareil ; aucune position dans la console.
  */

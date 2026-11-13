@@ -2,17 +2,17 @@ import { describe, expect, it } from 'vitest';
 import type { SqlDriver } from '../driver';
 import { openSqliteWasmDriver } from '../drivers/sqliteWasm';
 import { migrate } from '../migrator';
-import { CAPTURE_TABLES_V17, migration0017Cardio } from './0017_cardio';
+import { CAPTURE_TABLES_V18, migration0018Cardio } from './0018_cardio';
 import { migrations } from './index';
 
 /**
- * I6-06 (D-221) : migration 0017 (schéma 17) — `cardio_session` PUBLIÉE (écrite par les deux appareils) et `cardio_track` LOCALE (tracé GPS, jamais
+ * I6-06 (D-221) : migration 0018 (schéma 18) — `cardio_session` PUBLIÉE (écrite par les deux appareils) et `cardio_track` LOCALE (tracé GPS, jamais
  * publié ni exporté). DEUX TABLES NEUVES ; AUCUNE table existante n'est modifiée ; aucune donnée migrée.
  */
 const DEV = '0f8fad5b-d9cb-469f-a165-70867728950e';
 const h = (ms: number): string => `${String(ms).padStart(15, '0')}-0000-${DEV}`;
 const AT = '2026-11-13T08:00:00.000Z';
-const INDEX = migrations.findIndex((m) => m === migration0017Cardio);
+const INDEX = migrations.findIndex((m) => m === migration0018Cardio);
 const BASE = INDEX + 1;
 const S1 = '30000000-0000-4000-8000-000000000001';
 const S2 = '30000000-0000-4000-8000-000000000002';
@@ -32,15 +32,15 @@ const insert = (db: SqlDriver, table: string, row: Row): Promise<unknown> => {
 };
 const outbox = (db: SqlDriver) => db.select<{ table_name: string; row_id: string; field: string }>('SELECT table_name, row_id, field FROM sync_outbox ORDER BY seq');
 
-describe('migration 0017 : cardio (I6-06, schéma 17)', () => {
-  it('registre : version 17, nom cardio, après la 0016 (data_reset) ; toutes les versions se suivent', () => {
-    expect(INDEX).toBeGreaterThanOrEqual(16);
-    expect(migration0017Cardio.version).toBe(INDEX + 1);
-    expect(migration0017Cardio.name).toBe('cardio');
+describe('migration 0018 : cardio (I6-06, schéma 18)', () => {
+  it('registre : version 18, nom cardio, après la 0017 (compléments, I6-05) ; toutes les versions se suivent', () => {
+    expect(INDEX).toBeGreaterThanOrEqual(17);
+    expect(migration0018Cardio.version).toBe(INDEX + 1);
+    expect(migration0018Cardio.name).toBe('cardio');
     expect(migrations.map((m) => m.version)).toEqual(migrations.map((_, i) => i + 1));
   });
 
-  it('base précédente → 0017 : deux tables vides, un index, deux déclencheurs, rien mis en file, AUCUN objet existant modifié', async () => {
+  it('base précédente → 0018 : deux tables vides, un index, deux déclencheurs, rien mis en file, AUCUN objet existant modifié', async () => {
     const db = await openSqliteWasmDriver();
     await migrate(db, migrations.slice(0, BASE - 1));
     await db.execute('DELETE FROM sync_outbox');
@@ -59,7 +59,7 @@ describe('migration 0017 : cardio (I6-06, schéma 17)', () => {
   });
 
   it('copie figée des colonnes capturées (le tracé n’en fait pas partie)', () => {
-    expect(CAPTURE_TABLES_V17).toEqual([['cardio_session', ['kind', 'started_at', 'duration_sec', 'distance_m', 'avg_hr', 'rpe', 'source', 'notes', 'created_at', 'deleted_at']]]);
+    expect(CAPTURE_TABLES_V18).toEqual([['cardio_session', ['kind', 'started_at', 'duration_sec', 'distance_m', 'avg_hr', 'rpe', 'source', 'notes', 'created_at', 'deleted_at']]]);
   });
 
   it('CHECK de cardio_session : bornes du domaine (durée, distance, FC, ressenti, source, notes, format du type)', async () => {
