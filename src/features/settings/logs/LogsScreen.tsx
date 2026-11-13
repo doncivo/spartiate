@@ -14,6 +14,8 @@ import { saveFile } from '../../app/saveFile';
 import { buildLogExport } from './logExport';
 import { readSyncReport, type SyncReport, type SyncReportUnavailable } from './syncReport';
 import { useLogJournal, useLogStatus } from './useLogJournal';
+import { TimerTestRow } from '../TimerTestRow';
+import '../SettingsScreen.css';
 import './LogsScreen.css';
 
 type Filter = 'all' | LogCategory;
@@ -57,6 +59,7 @@ export function LogsScreen({ journal: injected, version }: LogsScreenProps = {})
   const status = useLogStatus(journal);
   const [entries, setEntries] = useState<readonly LogEntry[] | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
+  const [tools, setTools] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [exported, setExported] = useState(false);
@@ -202,6 +205,15 @@ export function LogsScreen({ journal: injected, version }: LogsScreenProps = {})
             ))}
           </ol>
         )}
+        {/* ERGO-01b P5 (D-238) : outil de test déplacé de Plus › À propos vers les Logs (diagnostic), monté à la demande. */}
+        <Button variant="secondary" expanded={tools} onClick={() => setTools((open) => !open)}>
+          {tLogs('toolsOpen')}
+        </Button>
+        {tools ? (
+          <div className="ct-settings__card ct-flat">
+            <TimerTestRow />
+          </div>
+        ) : null}
       </div>
       {confirming && <ConfirmDialog title={tLogs('clearTitle')} description={tLogs('clearMessage')} confirmLabel={tLogs('clearConfirm')} onCancel={() => setConfirming(false)} onConfirm={() => void runClear()} />}
     </div>

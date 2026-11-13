@@ -61,6 +61,10 @@ export function NutritionRemainingCard() {
           <p className="ct-today__muted">{day.entryCount === 0 ? tNutrition('emptyToday') : tNutrition(day.state === 'complete' ? (day.origin === 'declared' ? 'dayCompleteDeclared' : 'dayCompleteInferred') : 'dayPartial')}</p>
         </>
       )}
+      {/* ERGO-01b P2 (D-238) : un écran de moins, le Journal s'ouvre recherche active. Contour : le rouge d'Aujourd'hui reste à la séance. */}
+      <Button variant="secondary" fullWidth onClick={() => navigate({ tab: 'nutrition', screen: 'journal', search: true })}>
+        {tNutrition('cardAddMeal')}
+      </Button>
       {target === null ? (
         <Button variant="secondary" fullWidth onClick={() => navigate({ tab: 'nutrition', screen: 'strategy' })}>
           {tNutrition('setTarget')}

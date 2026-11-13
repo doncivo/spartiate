@@ -205,6 +205,13 @@ export const trainingFr = {
   sessionOpenEyebrow: 'Séance en cours',
   sessionStart: 'Commencer une séance',
   sessionResume: 'Reprendre la séance',
+  // ERGO-01b P1 (D-238) : séance du jour désignée par le programme suivi, lancée en un tap.
+  sessionTodayEyebrow: 'Séance du jour',
+  sessionTodayMeta: '{n} exercices',
+  sessionTodayMetaOne: '1 exercice',
+  sessionTodayExercises: 'Exercices de la séance du jour',
+  sessionLaunch: 'Lancer la séance',
+  sessionOther: 'Autre séance…',
   sessionSummaryShort: '{done} / {planned} séries',
   // ERGO-01 : chiffre héros de la carte (« 3 / 12 ») et son unité ; série en cours ; position dans la séance.
   sessionSetsHero: '{done} / {planned}',
@@ -273,6 +280,13 @@ export const trainingFr = {
   sessionLastReps: 'Dernière fois : {reps} répétitions',
   sessionLastDuration: 'Dernière fois : {n} s',
   sessionValidate: 'Valider la série',
+  // ERGO-01b P3 (D-238) : « − / + » de la série en cours (charge au cran du matériel, répétitions une à une).
+  sessionStepMinus: '−',
+  sessionStepPlus: '+',
+  sessionLoadDown: 'Charge : un cran de moins',
+  sessionLoadUp: 'Charge : un cran de plus',
+  sessionRepsDown: 'Répétitions : une de moins',
+  sessionRepsUp: 'Répétitions : une de plus',
   sessionUnvalidate: 'Annuler la validation',
   sessionDone: 'Validée',
   sessionTodo: 'À faire',

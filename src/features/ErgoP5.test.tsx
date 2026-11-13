@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../domain/hlc';
 import type { DeviceId } from '../domain/types';
@@ -55,6 +55,7 @@ describe('ERGO-01b P5 : doublon retiré, accès gardé', () => {
     expect(screen.queryByText('Tester le minuteur (60 s)')).toBeNull();
     cleanup();
     mount(<LogsScreen journal={createLogJournal(createMemoryLogTransport([]), { document: null, window: null })} version={() => Promise.resolve('0.22.1')} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Outils de test' }));
     expect(await screen.findByText('Tester le minuteur (60 s)')).toBeInTheDocument();
   });
 });

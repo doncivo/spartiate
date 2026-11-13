@@ -381,4 +381,6 @@ export const nutritionFr = {
   // Carte d'Aujourd'hui
   cardTitle: 'Nutrition',
   cardOpen: 'Ouvrir le journal',
+  /** ERGO-01b P2 (D-238) : ouvre le Journal recherche active. */
+  cardAddMeal: 'Ajouter un repas',
 } as const;
