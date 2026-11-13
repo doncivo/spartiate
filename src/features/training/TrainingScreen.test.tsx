@@ -95,7 +95,8 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
       expect(await screen.findByRole('heading', { name: 'Développé couché à la barre' })).toBeInTheDocument();
       expect(screen.getByText('6 à 10 répétitions')).toBeInTheDocument();
       expect(screen.getByText('2 min 30 s de repos')).toBeInTheDocument();
-      expect(screen.getByText(/Pectoraux/)).toBeInTheDocument();
+      // ERGO-02 : les muscles sont aussi rappelés sous le nom (aperçu Fiche-apres) ; la liste des muscles reste vérifiée, poids compris.
+      expect(within(screen.getByRole('list', { name: 'Muscles' })).getByText('Pectoraux')).toBeInTheDocument();
       expect(screen.getByText(/Barre droite/)).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: 'Erreurs fréquentes' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Développé couché aux haltères' })).toBeInTheDocument();
