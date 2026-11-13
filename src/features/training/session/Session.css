@@ -110,6 +110,35 @@
   border-radius: var(--ct-radius-sm);
 }
 
+/* ERGO-01 (Seance-apres.dc.html) : la série en cours est le bloc central ; fond relevé, liseré bronze, saisie en grands chiffres, Valider à 56 px. */
+.ct-session__set--current {
+  padding: var(--ct-space-3);
+  background: var(--ct-color-surface-raised);
+  border: 1px solid var(--ct-color-bronze);
+  border-radius: var(--ct-radius-lg);
+}
+
+.ct-session__current {
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ct-color-bronze);
+}
+
+.ct-session__set--current .ct-session__input {
+  min-height: 56px;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading-sm);
+  text-align: center;
+}
+
+.ct-session__set--current .ct-session__validate {
+  flex-basis: 100%;
+  min-height: 56px;
+  font-size: var(--ct-font-size-text-lg);
+}
+
 .ct-session__set-head,
 .ct-session__set-body,
 .ct-session__set-actions {
@@ -226,6 +255,23 @@
   background: var(--ct-color-surface-raised);
   border: 1px solid var(--ct-color-bronze);
   border-radius: var(--ct-radius-lg);
+}
+
+/* ERGO-01 : repos en barre de progression (piste et remplissage en jetons), en tête de la barre collante. */
+.ct-session__rest-bar {
+  flex: 1 0 100%;
+  height: 4px;
+  overflow: hidden;
+  background: var(--ct-color-surface);
+  border-radius: var(--ct-radius-pill);
+}
+
+.ct-session__rest-fill {
+  display: block;
+  height: 100%;
+  background: var(--ct-color-bronze);
+  border-radius: var(--ct-radius-pill);
+  transition: width 200ms linear;
 }
 
 .ct-session__rest-main {

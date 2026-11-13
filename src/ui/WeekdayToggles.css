@@ -5,10 +5,11 @@
   gap: var(--ct-space-1);
 }
 
+/* ERGO-01 : cible tactile ≥ 44 pt (§ 18.4) ; sept pastilles de 44 px tiennent à 440 px. */
 .ct-weekday-toggles__day {
-  width: 40px;
-  height: 40px;
-  flex: 0 1 40px;
+  width: var(--ct-hit-target-min);
+  min-height: var(--ct-hit-target-min);
+  flex: 0 1 var(--ct-hit-target-min);
   border-radius: 50%;
   border: 1.5px solid var(--ct-routine-ring, var(--ct-color-border-strong));
   background: var(--ct-color-surface);

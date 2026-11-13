@@ -134,9 +134,16 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
           {tRecovery('title')}
         </h2>
         {stale.stale ? <p className="ct-recovery__notice">{tRecovery(staleKey, { n: stale.days })}</p> : null}
+        {/* ERGO-01 : un tap gagné, l'import Santé directement depuis l'avis « périmé » (iPhone seulement : le PC reçoit, il n'importe pas). */}
+        {stale.stale && phone ? (
+          <Button variant="secondary" fullWidth onClick={goHealth}>
+            {tRecovery('neverImportedAction')}
+          </Button>
+        ) : null}
         {s.day !== today ? <p className="ct-today__muted">{tRecovery('summaryOfDay', { date: formatDetailDate(s.day) })}</p> : null}
         <div className="ct-recovery__dials">
-          <section className="ct-recovery__cell" aria-label={tRecovery('recoveryLabel')}>
+          {/* ERGO-01 (Recuperation-apres.dc.html) : la Recovery est le chiffre héros du bloc, Effort et Sommeil restent à côté. */}
+          <section className="ct-recovery__cell ct-recovery__cell--hero" aria-label={tRecovery('recoveryLabel')}>
             <Dial fraction={recovery.kind === 'value' ? ringFraction(recovery.value, 100) : recovery.kind === 'learning' ? ringFraction(recovery.nights, recovery.of) : null} label={recoveryLabel}>
               {recovery.kind === 'value' ? String(recovery.value) : recovery.kind === 'learning' ? tRecovery('learningProgress', { x: recovery.nights }) : '—'}
             </Dial>
@@ -193,25 +200,26 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
           </ul>
         ) : null}
         <p className="ct-today__muted ct-recovery__disclaimer">{tRecovery('disclaimer')}</p>
-      </section>
-      <section className="ct-today__card ct-recovery" aria-label={tRecovery('stepsTitle')}>
-        <h2 className="ct-today__eyebrow">{tRecovery('stepsTitle')}</h2>
-        {!phone ? (
-          <p className="ct-today__muted">{tRecovery('stepsOnPhone')}</p>
-        ) : load.steps === null || load.steps.average === null ? (
-          <p className="ct-today__muted">{tRecovery('stepsNone')}</p>
-        ) : (
-          <dl className="ct-today__rows">
-            <div className="ct-today__row ct-today__row--kv">
-              <dt>{tRecovery('stepsToday')}</dt>
-              <dd>{load.steps.today === null ? tRecovery('stepsTodayUnknown') : `${load.steps.today.toLocaleString('fr-FR')} ${tRecovery('stepsUnit')}`}</dd>
-            </div>
-            <div className="ct-today__row ct-today__row--kv">
-              <dt>{load.steps.knownDays < 7 ? tRecovery('stepsAveragePartial', { n: load.steps.knownDays }) : tRecovery('stepsAverage')}</dt>
-              <dd>{`${load.steps.average.toLocaleString('fr-FR')} ${tRecovery('stepsUnit')}`}</dd>
-            </div>
-          </dl>
-        )}
+        {/* ERGO-01 : une carte de moins, les Pas sont une ligne du même bloc. */}
+        <section className="ct-recovery__steps" aria-label={tRecovery('stepsTitle')}>
+          <h3 className="ct-today__eyebrow">{tRecovery('stepsTitle')}</h3>
+          {!phone ? (
+            <p className="ct-today__muted">{tRecovery('stepsOnPhone')}</p>
+          ) : load.steps === null || load.steps.average === null ? (
+            <p className="ct-today__muted">{tRecovery('stepsNone')}</p>
+          ) : (
+            <dl className="ct-today__rows">
+              <div className="ct-today__row ct-today__row--kv">
+                <dt>{tRecovery('stepsToday')}</dt>
+                <dd>{load.steps.today === null ? tRecovery('stepsTodayUnknown') : `${load.steps.today.toLocaleString('fr-FR')} ${tRecovery('stepsUnit')}`}</dd>
+              </div>
+              <div className="ct-today__row ct-today__row--kv">
+                <dt>{load.steps.knownDays < 7 ? tRecovery('stepsAveragePartial', { n: load.steps.knownDays }) : tRecovery('stepsAverage')}</dt>
+                <dd>{`${load.steps.average.toLocaleString('fr-FR')} ${tRecovery('stepsUnit')}`}</dd>
+              </div>
+            </dl>
+          )}
+        </section>
       </section>
     </>
   );
