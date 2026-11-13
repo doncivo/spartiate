@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { todayLocal } from '../../domain/clock';
 import { aggregateDay, remainingForDay, toMealEntryInput, type DayTotals, type Remaining, type Target } from '../../domain/nutrition';
-import { formatInt, tNutrition } from '../../i18n/nutritionText';
+import { tNutrition } from '../../i18n/nutritionText';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
 import { useSyncedData } from '../sync/remoteChanges';
+import { KcalHero } from './shared';
 
 type Load = { readonly status: 'loading' | 'failed' } | { readonly status: 'ready'; readonly day: DayTotals; readonly target: Target | null; readonly remaining: Remaining | null };
 
@@ -44,7 +45,8 @@ export function NutritionRemainingCard() {
   if (load.status !== 'ready') return null;
   const { day, target, remaining } = load;
   return (
-    <section className="ct-today__card ct-nutrition-card" aria-labelledby="ct-nutrition-card-title">
+    // ERGO-01 : bloc à plat (Aujourdhui-apres.dc.html), le chiffre héros suffit à le détacher ; marge de carte conservée.
+    <section className="ct-today__card ct-today__card--flat ct-nutrition-card" aria-labelledby="ct-nutrition-card-title">
       <h2 id="ct-nutrition-card-title" className="ct-today__eyebrow">
         {tNutrition('cardTitle')}
       </h2>
@@ -55,7 +57,7 @@ export function NutritionRemainingCard() {
         </>
       ) : (
         <>
-          <p className="ct-today__text">{remaining.kcal < 0 ? tNutrition('overKcal', { n: formatInt(-remaining.kcal) }) : tNutrition('remainingKcal', { n: formatInt(remaining.kcal) })}</p>
+          <KcalHero kcal={remaining.kcal} />
           <p className="ct-today__muted">{day.entryCount === 0 ? tNutrition('emptyToday') : tNutrition(day.state === 'complete' ? (day.origin === 'declared' ? 'dayCompleteDeclared' : 'dayCompleteInferred') : 'dayPartial')}</p>
         </>
       )}

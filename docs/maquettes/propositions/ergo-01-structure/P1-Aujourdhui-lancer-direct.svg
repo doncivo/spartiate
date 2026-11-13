@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" font-family="Segoe UI, system-ui, sans-serif" role="img" aria-label="Proposition P1 : lancer la séance du jour depuis Aujourd'hui en un tap">
+  <title>P1 — Aujourd'hui : « Lancer Haut A » en un tap (proposition structurelle ERGO-01, à valider par Ali)</title>
+  <rect width="900" height="560" fill="#0D0E11"/>
+  <text x="24" y="36" fill="#C28E4C" font-size="13" font-weight="600" letter-spacing="2">P1 · AUJOURD'HUI · SÉANCE DU JOUR EN UN TAP</text>
+  <text x="24" y="58" fill="#A39C90" font-size="13">Aujourd'hui (0.19.0) : « Commencer une séance » puis « Démarrer Haut A » = 2 taps. Proposé : le programme désigne le jour, 1 tap.</text>
+  <g transform="translate(24 84)">
+    <text x="0" y="0" fill="#A39C90" font-size="12" letter-spacing="1">AVANT</text>
+    <rect x="0" y="12" width="400" height="430" rx="14" fill="#15171C" stroke="#2A2E37"/>
+    <text x="20" y="44" fill="#A39C90" font-size="11" letter-spacing="2">SÉANCE</text>
+    <rect x="20" y="58" width="360" height="48" rx="24" fill="none" stroke="#2A2E37"/>
+    <text x="200" y="88" fill="#EDE7DC" font-size="15" font-weight="600" text-anchor="middle">Commencer une séance</text>
+    <text x="20" y="140" fill="#A39C90" font-size="12">puis, écran suivant :</text>
+    <rect x="20" y="152" width="360" height="56" rx="10" fill="#1D2027"/>
+    <text x="36" y="178" fill="#EDE7DC" font-size="15">Démarrer « Haut A »</text>
+    <text x="36" y="198" fill="#A39C90" font-size="12">Haut / Bas · 7 exercices</text>
+    <text x="20" y="250" fill="#EDE7DC" font-size="22" font-family="Cinzel, serif">2 taps</text>
+  </g>
+  <g transform="translate(470 84)">
+    <text x="0" y="0" fill="#A39C90" font-size="12" letter-spacing="1">APRÈS (PROPOSÉ)</text>
+    <rect x="0" y="12" width="400" height="430" rx="14" fill="#15171C" stroke="#2A2E37"/>
+    <text x="20" y="44" fill="#C28E4C" font-size="11" letter-spacing="2">SÉANCE DU JOUR</text>
+    <text x="20" y="80" fill="#EDE7DC" font-size="26" font-family="Cinzel, serif">Haut A</text>
+    <text x="380" y="80" fill="#A39C90" font-size="13" text-anchor="end">≈ 62 min · 7 exercices</text>
+    <text x="20" y="116" fill="#EDE7DC" font-size="14">Développé couché barre</text><text x="380" y="116" fill="#E0B577" font-size="14" text-anchor="end">82,5 kg</text>
+    <text x="20" y="146" fill="#EDE7DC" font-size="14">Rowing barre</text><text x="380" y="146" fill="#E0B577" font-size="14" text-anchor="end">70 kg</text>
+    <rect x="20" y="172" width="360" height="54" rx="12" fill="#B8322A"/>
+    <text x="200" y="205" fill="#EDE7DC" font-size="17" font-weight="600" text-anchor="middle">Lancer la séance</text>
+    <text x="200" y="252" fill="#A39C90" font-size="13" text-anchor="middle">Autre séance… (lien vers les options actuelles)</text>
+    <text x="20" y="300" fill="#EDE7DC" font-size="22" font-family="Cinzel, serif">1 tap</text>
+    <text x="20" y="330" fill="#A39C90" font-size="12">À trancher : quel jour quand le programme est en avance</text>
+    <text x="20" y="348" fill="#A39C90" font-size="12">ou en retard (cycle § 12, D-73) ; sans programme, carte inchangée.</text>
+  </g>
+</svg>

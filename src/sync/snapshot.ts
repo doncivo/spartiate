@@ -1,10 +1,11 @@
 import type { ExportedRow, FieldClock, Repositories, Tombstone } from '../db/repositories';
-import { APPLY_BATCH_OPS, isUnknownName, MAX_RECORD_PLAINTEXT_BYTES, PAGE_ROWS, SNAPSHOT_CHUNK_PLAINTEXT_BYTES, utf8Bytes, type DeviceAck, type EpochId, type SnapshotClocks, type SnapshotRecord, type SnapshotRow, type SyncField, type SyncOp, type SyncValue } from '../domain/sync/format';
+import { APPLY_BATCH_OPS, isStrictHlc, isUnknownName, MAX_RECORD_PLAINTEXT_BYTES, PAGE_ROWS, SNAPSHOT_CHUNK_PLAINTEXT_BYTES, utf8Bytes, type DeviceAck, type EpochId, type SnapshotClocks, type SnapshotRecord, type SnapshotRow, type SyncField, type SyncOp, type SyncValue } from '../domain/sync/format';
 import { hlcIso, parseSnapshotRecord, snapshotRecordToText, snapshotRowToJson } from '../domain/sync/parse';
 import { isTooFarAhead } from '../domain/sync/drift';
-import type { SyncCatalogue, SyncTable } from '../domain/sync/syncTables';
+import { DATA_RESET_TABLE, type SyncCatalogue, type SyncTable } from '../domain/sync/syncTables';
 import type { DeviceId, Hlc } from '../domain/types';
 import { applyOpsIsolated, mergeTouched, type ApplyContext } from './apply';
+import { META } from './meta';
 import type { SyncDeps } from './deps';
 import { guarded } from './guarded';
 import { purgeRows, type PurgeItem } from './purge';
@@ -346,6 +347,17 @@ export async function replaceFromSnapshot(deps: SyncDeps, snapshot: LoadedSnapsh
   const touched = new Map<string, Set<string>>();
   const keep = new Map<string, Set<string>>();
   const rows = rowsOf(snapshot.records);
+  // RESET-01 (ADR 0011 avenant 36) : horizon de remise à zéro = le plus grand de celui de cet appareil et des lignes `data_reset` de l'instantané. Une
+  // ligne créée avant lui n'est pas reprise (elle part avec les lignes absentes) : un instantané ancien ne ressuscite rien. `data_reset` n'est jamais vidée.
+  let horizon: Hlc | null = null;
+  if (deps.catalogue.table(DATA_RESET_TABLE)) {
+    const seen = await deps.data.repos.sync.getMeta(META.dataResetSeen);
+    if (seen !== null && isStrictHlc(seen)) horizon = seen;
+    for (const [table, , clocks] of rows) {
+      const star = clocks.get('*');
+      if (table === DATA_RESET_TABLE && star !== undefined && (horizon === null || star > horizon)) horizon = star;
+    }
+  }
   for (let i = 0; i < rows.length; i += APPLY_BATCH_OPS) {
     const page = rows.slice(i, i + APPLY_BATCH_OPS);
     await guarded(deps.data, async (repos) => {
@@ -356,6 +368,7 @@ export async function replaceFromSnapshot(deps: SyncDeps, snapshot: LoadedSnapsh
         const star = clocks.get('*');
         if (!t || typeof id !== 'string' || star === undefined) continue;
         if (t.idKind === 'setting' && deps.catalogue.settingScope(id) !== 'shared') continue;
+        if (horizon !== null && t.name !== DATA_RESET_TABLE && (clocks.get('created_at') ?? star) <= horizon) continue;
         const values = new Map(t.columns.filter((c) => row.has(c.name)).map((c) => [c.name, row.get(c.name) ?? null] as const));
         let max = star;
         for (const hlc of clocks.values()) if (hlc > max) max = hlc;
@@ -386,6 +399,7 @@ export async function replaceFromSnapshot(deps: SyncDeps, snapshot: LoadedSnapsh
   }
   // Lignes absentes de l'instantané : supprimées, enfants d'abord.
   for (const t of [...deps.catalogue.tables].reverse()) {
+    if (t.name === DATA_RESET_TABLE) continue;
     const kept = keep.get(t.name) ?? new Set<string>();
     const drop: string[] = [];
     let after: string | null = null;

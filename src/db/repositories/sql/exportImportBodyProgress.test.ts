@@ -41,7 +41,7 @@ const count = async (db: TestDb, table: string): Promise<number> => Number((awai
 
 describe('export / import des mensurations et des fiches de photos (I6-02)', () => {
   it('tables exportées en dernier, schéma 12, écrites par les deux appareils ; le fichier n’est jamais exporté', () => {
-    expect(EXPORT_SV).toBe(15); // FIX-0181 : schéma 15 (favoris publiés).
+    expect(EXPORT_SV).toBe(16); // FIX-0181 : schéma 15 (favoris publiés) ; RESET-01 : schéma 16 (data_reset, jamais exportée).
     expect(TRAINING_EXPORT_TABLES.slice(-3, -1)).toEqual(['measurement', 'progress_photo']); // FIX-0181 : food_favorite en dernier.
     expect(TABLE_SINCE_SV.measurement).toBe(12);
     expect(TABLE_SINCE_SV.progress_photo).toBe(12);
@@ -84,9 +84,9 @@ describe('export / import des mensurations et des fiches de photos (I6-02)', () 
     expect((await (await db.data.repos.progressPhotos()).listDeletedWithFile()).map((p) => p.id)).toEqual([photo.id]);
   });
 
-  it('archive de schéma 16 : refusée (future-version)', async () => {
+  it('archive de schéma 17 : refusée (future-version)', async () => {
     const db = await open(A);
-    await expect(parse(await read(db), 16)).rejects.toMatchObject({ code: 'future-version' });
+    await expect(parse(await read(db), 17)).rejects.toMatchObject({ code: 'future-version' });
   });
 
   it('ligne hors bornes, à l’identifiant faux ou au nom de fichier avec chemin : refusée à l’import, rien n’est écrit', async () => {
