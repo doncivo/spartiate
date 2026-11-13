@@ -47,7 +47,7 @@ export function NutritionRemainingCard() {
   return (
     // ERGO-01 : bloc à plat (Aujourdhui-apres.dc.html), le chiffre héros suffit à le détacher ; marge de carte conservée.
     <section className="ct-today__card ct-today__card--flat ct-nutrition-card" aria-labelledby="ct-nutrition-card-title">
-      <h2 id="ct-nutrition-card-title" className="ct-today__eyebrow">
+      <h2 id="ct-nutrition-card-title" className="ct-today__eyebrow ct-section-title">
         {tNutrition('cardTitle')}
       </h2>
       {target === null || remaining === null || remaining.kcal === null ? (

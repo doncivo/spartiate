@@ -129,9 +129,9 @@ export function ExportImportScreen() {
         </div>
         <h1 className="ct-body__title">{tExportImport('title')}</h1>
 
-        <h2 className="ct-body__section">{tExportImport('sectionExport')}</h2>
+        <h2 className="ct-body__section ct-section-title">{tExportImport('sectionExport')}</h2>
         <p className="ct-body__hint">{tExportImport('exportHint')}</p>
-        <Button disabled={busy || !files.canSave()} onClick={() => void doExport()}>
+        <Button variant={preview ? 'secondary' : 'primary'} disabled={busy || !files.canSave()} onClick={() => void doExport()}>
           {tExportImport('exportButton')}
         </Button>
         <p className="ct-body__hint">{tExportImport('exportFullHint')}</p>
@@ -139,9 +139,9 @@ export function ExportImportScreen() {
           {tExportImport('exportFullButton')}
         </Button>
 
-        <h2 className="ct-body__section">{tExportImport('sectionImport')}</h2>
+        <h2 className="ct-body__section ct-section-title">{tExportImport('sectionImport')}</h2>
         <p className="ct-body__hint">{tExportImport('importHint')}</p>
-        <Button disabled={busy} onClick={() => void pick()}>
+        <Button variant="secondary" disabled={busy} onClick={() => void pick()}>
           {tExportImport('pickButton')}
         </Button>
 

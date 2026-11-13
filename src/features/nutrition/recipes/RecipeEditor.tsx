@@ -90,14 +90,14 @@ export function RecipeEditor({ recipe, onSaved, onCancel }: RecipeEditorProps) {
 
   return (
     <form
-      className="ct-nutrition__panel ct-nutrition__form"
+      className="ct-nutrition__panel ct-nutrition__form ct-flat"
       noValidate
       onSubmit={(event) => {
         event.preventDefault();
         void save();
       }}
     >
-      <h2 className="ct-nutrition__subtitle">{tRecipes(recipe === null ? 'formNew' : 'formEdit')}</h2>
+      <h2 className="ct-nutrition__subtitle ct-section-title">{tRecipes(recipe === null ? 'formNew' : 'formEdit')}</h2>
       <label className="ct-nutrition__field">
         <span className="ct-nutrition__field-label">{tRecipes('nameLabel')}</span>
         <input className="ct-nutrition__input" type="text" autoComplete="off" value={name} aria-invalid={(attempted && name.trim() === '') || undefined} onChange={(event) => setName(event.target.value)} />
@@ -110,7 +110,7 @@ export function RecipeEditor({ recipe, onSaved, onCancel }: RecipeEditorProps) {
         {tRecipes('cookedHint')}
       </p>
 
-      <h3 className="ct-nutrition__subtitle">{tRecipes('ingredientsTitle')}</h3>
+      <h3 className="ct-nutrition__subtitle ct-section-title">{tRecipes('ingredientsTitle')}</h3>
       {rows.length === 0 ? (
         <p className="ct-nutrition__muted">{tRecipes('ingredientsEmpty')}</p>
       ) : (

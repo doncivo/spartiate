@@ -31,7 +31,7 @@ function PagedList<T>({ title, items, overflow, itemKey, render }: PagedListProp
   const all = items.length <= shown;
   return (
     <section className="ct-carry__block">
-      <h3 className="ct-settings__section">{title}</h3>
+      <h3 className="ct-settings__section ct-section-title">{title}</h3>
       <ul role="list" aria-label={tCarry('listLabel', { title, count: items.length + overflow })} className="ct-carry__list">
         {visible.map((item) => (
           <li key={itemKey(item)} className="ct-carry__item">
@@ -166,7 +166,7 @@ export function CarryReportSheet({ report, devices, onClose, onSeen, seenFailed 
       {held.length > 0 && <PagedList title={tCarry('heldTitle')} items={held} overflow={0} itemKey={parentKey} render={parentItem} />}
       {report.overflowBy.parentReplaced > 0 && (
         <section className="ct-carry__block">
-          {reattached.length === 0 && held.length === 0 && <h3 className="ct-settings__section">{tCarry('parentTitle')}</h3>}
+          {reattached.length === 0 && held.length === 0 && <h3 className="ct-settings__section ct-section-title">{tCarry('parentTitle')}</h3>}
           <p className="ct-carry__overflow">{tCarry('more', { count: report.overflowBy.parentReplaced })}</p>
         </section>
       )}

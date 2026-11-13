@@ -100,7 +100,7 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
       {(status.ownDelete?.length ?? 0) > 0 && <SyncDetailsOwnDeletionHost />}
       {slots.pairing ?? <SyncDetailsPairing />}
       {slots.version ?? <SyncDetailsVersion />}
-      <h2 className="ct-settings__section">{t('sync.status.sectionDevices')}</h2>
+      <h2 className="ct-settings__section ct-section-title">{t('sync.status.sectionDevices')}</h2>
       {nameError && <p role="alert" className="ct-settings__error">{t(nameError)} {nameError === 'sync.status.nameReadFailed' && <button type="button" onClick={() => void loadNames()}>{t('common.retry')}</button>}</p>}
       <ul className="ct-sync__devices">
         {status.devices.map((device) => (
@@ -134,7 +134,7 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
       {slots.forget ?? <SyncDetailsForget />}
       {(status.stateUnreadable === true || shownWarnings.length > 0 || carryRaised) && (
         <>
-          <h2 className="ct-settings__section">{t('sync.status.sectionWarnings')}</h2>
+          <h2 className="ct-settings__section ct-section-title">{t('sync.status.sectionWarnings')}</h2>
           {(status.stateUnreadable === true || shownWarnings.length > 0) && (
             <ul className="ct-sync__warnings">
               {status.stateUnreadable === true && (
@@ -159,13 +159,13 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
       {slots.carryReport === undefined ? <SyncDetailsCarryReportHost /> : slots.carryReport}
       {status.pendingFiles.length > 0 && (
         <>
-          <h2 className="ct-settings__section">{t('sync.status.sectionPending')}</h2>
+          <h2 className="ct-settings__section ct-section-title">{t('sync.status.sectionPending')}</h2>
           <div className="ct-settings__row">
             <span>{pendingCount === 1 ? t('sync.status.pendingOne', { count: 1 }) : t('sync.status.pendingMany', { count: pendingCount })}</span>
           </div>
         </>
       )}
-      <h2 className="ct-settings__section">{t('sync.status.sectionConflicts')}</h2>
+      <h2 className="ct-settings__section ct-section-title">{t('sync.status.sectionConflicts')}</h2>
       <p className="ct-settings__hint ct-sync__conflictsHelp">{tSyncRefonte('conflictsHelp')}</p>
       <div className="ct-settings__row">
         <span>

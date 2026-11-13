@@ -163,8 +163,8 @@ function ExerciseDetail({ data, exercise, onBack, onOpen, onEdit, onDelete }: De
           <ExerciseMedia key={exercise.id} exercise={exercise} />
         </Suspense>
       )}
-      <section className="ct-training__card">
-        <h3 className="ct-training__eyebrow">{tTraining('muscles')}</h3>
+      <section className="ct-training__card ct-flat">
+        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('muscles')}</h3>
         <ul className="ct-training__plain">
           {exercise.muscles.map((m) => (
             <li key={m.id}>
@@ -173,13 +173,13 @@ function ExerciseDetail({ data, exercise, onBack, onOpen, onEdit, onDelete }: De
           ))}
         </ul>
       </section>
-      <section className="ct-training__card">
-        <h3 className="ct-training__eyebrow">{tTraining('equipment')}</h3>
+      <section className="ct-training__card ct-flat">
+        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('equipment')}</h3>
         <p>{exercise.equipment.length === 0 ? tTraining('noEquipment') : exercise.equipment.map((id) => equipmentName.get(id) ?? id).join(', ')}</p>
       </section>
       {exercise.instructions.setup !== '' || exercise.instructions.execution !== '' || exercise.instructions.mistakes.length > 0 ? (
-        <section className="ct-training__card">
-          <h3 className="ct-training__eyebrow">{tTraining('instructions')}</h3>
+        <section className="ct-training__card ct-flat">
+          <h3 className="ct-training__eyebrow ct-section-title">{tTraining('instructions')}</h3>
           {exercise.instructions.setup !== '' && (
             <>
               <h4 className="ct-training__subheading">{tTraining('setup')}</h4>
@@ -205,8 +205,8 @@ function ExerciseDetail({ data, exercise, onBack, onOpen, onEdit, onDelete }: De
         </section>
       ) : null}
       {alternatives.length > 0 && (
-        <section className="ct-training__card">
-          <h3 className="ct-training__eyebrow">{tTraining('alternatives')}</h3>
+        <section className="ct-training__card ct-flat">
+          <h3 className="ct-training__eyebrow ct-section-title">{tTraining('alternatives')}</h3>
           <ul className="ct-training__plain">
             {alternatives.map((id) => {
               const resolved = resolveExercise({ id }, data.content.catalog, data.allCustoms);

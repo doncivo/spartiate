@@ -39,8 +39,8 @@ export function CardioProgress({ timeZone }: { readonly timeZone?: string }) {
   }, [container, synced, attempt, tz]);
 
   return (
-    <section className="ct-today__card ct-cardio__card ct-cardio-progress" aria-labelledby="ct-cardio-progress-title">
-      <h2 id="ct-cardio-progress-title" className="ct-today__eyebrow ct-cardio__progress-title">
+    <section className="ct-today__card ct-cardio__card ct-cardio-progress ct-flat" aria-labelledby="ct-cardio-progress-title">
+      <h2 id="ct-cardio-progress-title" className="ct-today__eyebrow ct-cardio__progress-title ct-section-title">
         {tCardio('progressTitle')}
       </h2>
       {load.status === 'loading' ? (

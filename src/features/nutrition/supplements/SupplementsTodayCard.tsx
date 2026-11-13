@@ -70,7 +70,7 @@ export function SupplementsTodayCard() {
   if (items === null || items.length === 0) return null;
   return (
     <section className="ct-today__card ct-supplements-card" aria-labelledby="ct-supplements-card-title">
-      <h2 id="ct-supplements-card-title" className="ct-today__eyebrow">
+      <h2 id="ct-supplements-card-title" className="ct-today__eyebrow ct-section-title">
         {tSupplements('cardTitle')}
       </h2>
       <p className="ct-today__text">{progressText(items)}</p>

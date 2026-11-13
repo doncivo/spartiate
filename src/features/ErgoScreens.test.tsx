@@ -49,14 +49,18 @@ function mount(node: ReactNode, route?: Route): HTMLElement {
   return render(<AppContainerProvider container={container}>{node}</AppContainerProvider>).container;
 }
 
-/** Attend le premier titre de section (ancienne ou nouvelle classe), puis vérifie les trois règles. */
-async function expectRules(root: HTMLElement): Promise<void> {
-  await waitFor(() => expect(root.querySelectorAll(`${SCREEN_TITLES}, .ct-section-title`).length).toBeGreaterThan(0));
+/**
+ * Attend que l'écran soit chargé (`ready` : par défaut, le premier titre de section, ancienne ou nouvelle classe), puis vérifie les règles.
+ * Un écran sans section (liste des recettes, premier écran de l'onboarding) n'a pas de titre à exiger : `ready` désigne alors son contenu.
+ */
+async function expectRules(root: HTMLElement, ready = `${SCREEN_TITLES}, .ct-section-title`): Promise<void> {
+  await waitFor(() => expect(root.querySelectorAll(ready).length).toBeGreaterThan(0));
   const primaries = root.querySelectorAll('.ct-button--primary');
   expect(primaries.length, [...primaries].map((b) => b.textContent).join(' | ')).toBeLessThanOrEqual(1);
   for (const title of root.querySelectorAll(SCREEN_TITLES)) expect(title, title.textContent ?? '').toHaveClass('ct-section-title');
-  for (const card of root.querySelectorAll(SCREEN_CARDS)) expect(card, card.className).toHaveClass('ct-flat');
-  expect(root.querySelectorAll('.ct-section-title').length).toBeGreaterThan(0);
+  // La carte « Séance » (TodaySessionCard, en tête d'Entraînement comme d'Aujourd'hui) a été refaite par ERGO-01 (chiffre héros, carte gardée
+  // comme dans l'aperçu du 12/11) : hors du périmètre « cartes » d'ERGO-01b ; son titre suit la règle commune.
+  for (const card of root.querySelectorAll(SCREEN_CARDS)) if (!card.classList.contains('ct-session-card')) expect(card, card.className).toHaveClass('ct-flat');
 }
 
 beforeEach(async () => {
@@ -88,8 +92,12 @@ describe.each([440, 1440])('ERGO-01b à %i px', (width) => {
     await expectRules(mount(<TrainingScreen />, { tab: 'training', screen: screenId }));
   });
 
-  it.each(['strategy', 'checkin', 'recipes', 'supplements'] as const)('Nutrition › %s', async (screenId) => {
+  it.each(['strategy', 'checkin', 'supplements'] as const)('Nutrition › %s', async (screenId) => {
     await expectRules(mount(<NutritionScreen />, { tab: 'nutrition', screen: screenId }));
+  });
+
+  it('Nutrition › recettes (liste sans section)', async () => {
+    await expectRules(mount(<NutritionScreen />, { tab: 'nutrition', screen: 'recipes' }), '.ct-recipe__list, .ct-nutrition__card');
   });
 
   it.each([
@@ -101,7 +109,7 @@ describe.each([440, 1440])('ERGO-01b à %i px', (width) => {
   });
 
   it('Onboarding (premier écran)', async () => {
-    await expectRules(mount(<OnboardingFlow mode="first-launch" onClose={() => undefined} />));
+    await expectRules(mount(<OnboardingFlow mode="first-launch" onClose={() => undefined} />), '#ct-onb-title');
   });
 });
 

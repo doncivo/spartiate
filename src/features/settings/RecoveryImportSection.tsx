@@ -89,8 +89,8 @@ export function RecoveryImportSection({ reader, fallback }: { readonly reader?: 
   }
 
   return (
-    <section className="ct-body__card" aria-label={tHealth('recTitle')}>
-      <h2 className="ct-body__section">{tHealth('recTitle')}</h2>
+    <section className="ct-body__card ct-flat" aria-label={tHealth('recTitle')}>
+      <h2 className="ct-body__section ct-section-title">{tHealth('recTitle')}</h2>
       {pc ? (
         <p className="ct-body__hint">{tHealth('recPcOnly')}</p>
       ) : (

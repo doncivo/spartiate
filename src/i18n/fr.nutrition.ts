@@ -69,6 +69,8 @@ export const nutritionFr = {
   entriesLabel: 'Entrées du jour',
   gramsValue: '{n} g',
   kcalValue: '{n} kcal',
+  /** ERGO-01b : unité du chiffre héros de la cible actuelle (Stratégie). */
+  targetKcalUnit: 'kcal par jour',
   edit: 'Corriger',
   editEntry: 'Corriger {name}',
   deleteEntry: 'Supprimer {name}',

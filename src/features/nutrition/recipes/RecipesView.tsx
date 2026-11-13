@@ -136,7 +136,7 @@ export function RecipesView({ today, onChanged }: RecipesViewProps) {
           </Button>
         </div>
       ) : state.list.length === 0 ? (
-        <div className="ct-nutrition__card" role="status">
+        <div className="ct-nutrition__card ct-flat" role="status">
           <p className="ct-nutrition__coverage-title">{tRecipes('empty')}</p>
           <p className="ct-nutrition__muted">{tRecipes('emptyHint')}</p>
         </div>
@@ -155,7 +155,7 @@ export function RecipesView({ today, onChanged }: RecipesViewProps) {
                   </p>
                 </div>
                 <div className="ct-nutrition__actions">
-                  <Button ariaLabel={tRecipes('addRecipe', { name: recipe.name })} onClick={() => { setNotice(null); setView({ kind: 'add', recipe }); }}>
+                  <Button variant="secondary" ariaLabel={tRecipes('addRecipe', { name: recipe.name })} onClick={() => { setNotice(null); setView({ kind: 'add', recipe }); }}>
                     {tRecipes('addShort')}
                   </Button>
                   <Button variant="secondary" ariaLabel={tRecipes('editRecipe', { name: recipe.name })} onClick={() => { setNotice(null); setView({ kind: 'edit', recipe }); }}>

@@ -344,7 +344,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
 
   if (recipeSelection) {
     return (
-      <div className="ct-nutrition__panel" onKeyDown={closeOnEscape}>
+      <div className="ct-nutrition__panel ct-flat" onKeyDown={closeOnEscape}>
         <Suspense
           fallback={
             <p role="status" className="ct-nutrition__muted">
@@ -360,7 +360,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
 
   if (selection) {
     return (
-      <div className="ct-nutrition__panel" onKeyDown={closeOnEscape}>
+      <div className="ct-nutrition__panel ct-flat" onKeyDown={closeOnEscape}>
         <QuantityStep
           food={selection.food}
           staleCause={selection.staleCause}
@@ -386,7 +386,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   const recipeCount = recipeView?.hits.length ?? 0;
   const onlineView = online !== null && online.query === query.trim() ? online : null;
   return (
-    <div className="ct-nutrition__panel" ref={root} onKeyDown={(event) => { closeOnEscape(event); moveFocus(event); }}>
+    <div className="ct-nutrition__panel ct-flat" ref={root} onKeyDown={(event) => { closeOnEscape(event); moveFocus(event); }}>
       <div className="ct-nutrition__panel-head">
         <label className="ct-nutrition__field ct-nutrition__field--grow">
           <span className="ct-nutrition__field-label">{tNutrition('searchLabel')}</span>
@@ -501,7 +501,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
       ) : null}
       {query.trim() === '' && favorites.foods.length > 0 ? (
         <section aria-labelledby="ct-nutrition-favorites">
-          <h2 id="ct-nutrition-favorites" className="ct-nutrition__subtitle">
+          <h2 id="ct-nutrition-favorites" className="ct-nutrition__subtitle ct-section-title">
             {tNutrition('favorites')}
           </h2>
           <ul className="ct-nutrition__list">
@@ -530,7 +530,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
         </section>
       ) : query.trim() === '' ? (
         <section aria-labelledby="ct-nutrition-recents">
-          <h2 id="ct-nutrition-recents" className="ct-nutrition__subtitle">
+          <h2 id="ct-nutrition-recents" className="ct-nutrition__subtitle ct-section-title">
             {tNutrition('recents')}
           </h2>
           {recents === null ? null : recents.length === 0 ? (
@@ -638,7 +638,7 @@ function OnlineResults({ query, result, onPick }: OnlineResultsProps) {
   }
   return (
     <section aria-labelledby="ct-nutrition-online">
-      <h2 id="ct-nutrition-online" className="ct-nutrition__subtitle">
+      <h2 id="ct-nutrition-online" className="ct-nutrition__subtitle ct-section-title">
         {tNutrition('onlineResults')}
       </h2>
       {result.items.length === 0 ? (
@@ -740,14 +740,14 @@ function QuantityStep({ food, staleCause, favorite, favoritesStatus, onToggleFav
 
   return (
     <form
-      className="ct-nutrition__panel ct-nutrition__form"
+      className="ct-nutrition__panel ct-nutrition__form ct-flat"
       onSubmit={(event) => {
         event.preventDefault();
         void save();
       }}
     >
       <div className="ct-nutrition__food-head">
-        <h2 className="ct-nutrition__subtitle">{food.name}</h2>
+        <h2 className="ct-nutrition__subtitle ct-section-title">{food.name}</h2>
         <ProvenanceBadge source={food.provenance} />
         <span className="ct-nutrition__muted ct-nutrition__num">
           {food.per100g.kcal === null ? tNutrition('per100gUnknown') : tNutrition('per100g', { kcal: formatInt(food.per100g.kcal) })}

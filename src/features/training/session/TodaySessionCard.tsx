@@ -40,7 +40,7 @@ export function TodaySessionCard() {
   const summary = open ? summarizeSets(open.sets) : null;
   return (
     <section className="ct-today__card ct-session-card" aria-labelledby="ct-session-card-title">
-      <h2 id="ct-session-card-title" className="ct-today__eyebrow">
+      <h2 id="ct-session-card-title" className="ct-today__eyebrow ct-section-title">
         {tTraining(open ? 'sessionOpenEyebrow' : 'sessionEyebrow')}
       </h2>
       {open && summary ? (

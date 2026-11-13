@@ -194,11 +194,6 @@
 
 .ct-settings--pc .ct-settings__section {
   margin: 0 0 4px 0;
-  font-family: var(--ct-font-title);
-  font-size: var(--ct-font-size-heading-sm);
-  font-weight: var(--ct-font-weight-bold);
-  letter-spacing: 0;
-  color: var(--ct-color-text);
 }
 
 .ct-settings--pc .ct-settings__row {
@@ -272,8 +267,6 @@
 
 .ct-settings--phone .ct-settings__section {
   margin: var(--ct-space-4) 0 var(--ct-space-2) 4px;
-  font-weight: var(--ct-font-weight-semibold);
-  letter-spacing: 0.1em;
 }
 
 .ct-settings__profile {

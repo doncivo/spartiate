@@ -62,14 +62,14 @@ export function IngredientPicker({ onAdd, onBack }: IngredientPickerProps) {
     const ingredient = typeof grams === 'number' ? ingredientFromFood(selected.food, grams) : null;
     return (
       <form
-        className="ct-nutrition__panel ct-nutrition__form"
+        className="ct-nutrition__panel ct-nutrition__form ct-flat"
         onSubmit={(event) => {
           event.preventDefault();
           if (ingredient !== null) onAdd(ingredient);
         }}
       >
         <div className="ct-nutrition__food-head">
-          <h2 className="ct-nutrition__subtitle">{selected.food.name}</h2>
+          <h2 className="ct-nutrition__subtitle ct-section-title">{selected.food.name}</h2>
           <ProvenanceBadge source={selected.food.provenance} />
           <span className="ct-nutrition__muted ct-nutrition__num">{per100g(selected.food)}</span>
         </div>
@@ -93,8 +93,8 @@ export function IngredientPicker({ onAdd, onBack }: IngredientPickerProps) {
 
   const result = found !== null && found.query === query ? found.result : null;
   return (
-    <div className="ct-nutrition__panel">
-      <h2 className="ct-nutrition__subtitle">{tRecipes('pickerTitle')}</h2>
+    <div className="ct-nutrition__panel ct-flat">
+      <h2 className="ct-nutrition__subtitle ct-section-title">{tRecipes('pickerTitle')}</h2>
       <label className="ct-nutrition__field">
         <span className="ct-nutrition__field-label">{tRecipes('pickerSearch')}</span>
         <input className="ct-nutrition__input" type="search" autoFocus value={query} onChange={(event) => setQuery(event.target.value)} />

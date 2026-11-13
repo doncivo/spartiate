@@ -116,7 +116,6 @@
 .ct-supplements__panel h3,
 .ct-supplements__form h3 {
   margin: 0;
-  font-size: var(--ct-font-size-text-lg);
 }
 
 .ct-supplements__panel p {

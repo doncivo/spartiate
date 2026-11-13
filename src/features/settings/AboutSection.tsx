@@ -52,7 +52,7 @@ export function AboutSection({ heading = true }: { readonly heading?: boolean } 
 
   return (
     <>
-      {heading && <h2 className="ct-settings__section">{t('settings.sectionAbout')}</h2>}
+      {heading && <h2 className="ct-settings__section ct-section-title">{t('settings.sectionAbout')}</h2>}
       <div className="ct-settings__row">
         <span className="ct-settings__stack">
           {version ? t('app.version', { version }) : t('app.versionUnknown')}
