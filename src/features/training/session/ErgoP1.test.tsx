@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { RoutineInput } from '../../../domain/training';
 import { DEFAULT_GENERATION_CONFIG } from '../../../domain/training/config';
@@ -46,6 +46,10 @@ async function followProgram(): Promise<void> {
 }
 const openWorkout = () => db.data.repos.workouts().then((r) => r.getOpen());
 
+// FIX-0223 : la carte attend son aperçu (module à la demande) ; premier import fait avant les attentes, pas pendant.
+beforeAll(async () => {
+  await import('./todaySessionPreview');
+});
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
   db = await openBaseDb(DEVICE, '2026-11-10T07:00:00.000Z');
