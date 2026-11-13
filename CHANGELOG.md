@@ -2,6 +2,21 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.19.0
+
+**Sans migration** (la base reste en schéma 15) : cette version peut s'installer sur PC et iPhone à tout moment.
+
+Premier lot du chantier ergonomie, d'après l'aperçu esthétique que tu as validé le 12 novembre. Mêmes informations, mêmes onglets, seule la présentation change.
+
+- **Séance active** : la série à faire maintenant est mise en avant au centre (« Série en cours », grands chiffres, « Valider la série » plus grand). Après validation, la suivante prend sa place, y compris dans un superset ou un circuit. Sous le chrono, tu vois où tu en es (« Exercice 2 sur 5 »).
+- **Repos** : une barre se remplit pendant le repos, en plus du temps restant ; elle reste juste après un « +30 s » ou un redémarrage.
+- **Un chiffre par bloc** : calories restantes (Aujourd'hui, Journal, Dashboard), séries faites d'une séance ouverte, Recovery (cadran agrandi), chiffres du résumé de séance et semaine du programme ressortent en grand, en bronze.
+- **Moins de cartes** : la nutrition d'Aujourd'hui n'est plus encadrée, les pas sont dans le bloc Récupération, les chiffres du résumé ne sont plus dans une carte.
+- **Import Santé plus court** : quand ta récupération date de plusieurs jours, « Ouvrir Apple Santé » est proposé directement dans la carte (un tap de moins).
+- **Boutons plus faciles à toucher** : « Annuler » du bandeau d'annulation et les jours de la semaine de la configuration font au moins 44 points.
+- **Progrès** ne dit plus « arrive avec une prochaine version » au-dessus de Récupération et Corps, qui y fonctionnent.
+- **À valider** : quatre propositions qui changeraient la navigation (lancer la séance du jour en un tap, ajouter un repas en un tap de moins, « − / + » sur la charge, Aujourd'hui sur PC regroupé) t'attendent en maquettes dans `docs/maquettes/propositions/ergo-01-structure/`.
+
 ## 0.18.2
 
 **Schéma 15 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** Migration 0015 : tes favoris d'aliments sont enregistrés dans une table synchronisée. Un appareil resté en 0.18.1 ou avant garde les favoris reçus sans les afficher et les retrouve après sa mise à jour.
