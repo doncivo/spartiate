@@ -18,6 +18,8 @@ const files = (dir: string): string[] =>
   });
 const POSITION_MODULES = [...files('src/platform/geolocation'), ...files('src/domain/cardio'), ...files('src/features/cardio'), 'src/db/repositories/sql/cardioRepository.ts'];
 const NETWORK = /\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|EventSource|plugin-http|from '[^']*platform\/(off|ai|sync)\b|invoke\(/;
+/** Code seul : commentaires retirés (un commentaire peut nommer le tracé pour dire qu'il n'est jamais publié). */
+const code = (text: string): string => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 const LOGGING = /\bconsole\.|logFailure|logEvent|\bappLog\b|platform\/logs|platform\/desktop\/log|recordLog|writeLog/;
 
 describe('garde de la localisation (I6-06, D-222)', () => {
@@ -38,12 +40,12 @@ describe('garde de la localisation (I6-06, D-222)', () => {
     expect(FULL_EXPORT_EXCLUDED as readonly string[]).toContain('cardio_track');
     for (const dir of ['src/sync', 'src/platform/sync', 'src/platform/logs', 'src/platform/off', 'src/platform/ai', 'src/domain/sync']) {
       if (!existsSync(join(root, dir))) continue;
-      for (const path of files(dir)) expect(/cardio_track|latitude|longitude/.test(readFileSync(join(root, path), 'utf8')), path).toBe(false);
+      for (const path of files(dir)) expect(/cardio_track|latitude|longitude/.test(code(readFileSync(join(root, path), 'utf8'))), path).toBe(false);
     }
     for (const dir of ['src-tauri/src']) {
       const rs = (d: string): string[] => readdirSync(join(root, d)).flatMap((n) => (statSync(join(root, d, n)).isDirectory() ? rs(join(d, n)) : n.endsWith('.rs') ? [join(d, n)] : []));
       // Rust ne voit jamais une position (le plugin la remet à la WebView) ; `cardio_track` n'y figure que comme nom de table des sauvegardes.
-      for (const path of rs(dir)) expect(/latitude|longitude/.test(readFileSync(join(root, path), 'utf8')), path).toBe(false);
+      for (const path of rs(dir)) expect(/latitude|longitude/.test(code(readFileSync(join(root, path), 'utf8'))), path).toBe(false);
     }
   });
 });

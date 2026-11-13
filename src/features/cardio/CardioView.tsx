@@ -18,10 +18,12 @@ import { isLocalDate, isLocalTime } from '../../domain/types';
 import type { CardioSessionRecord } from '../../db/repositories';
 import { formatKm, formatDuration, formatPace, tCardio, type CardioTextKey } from '../../i18n/cardioText';
 import { formatDayMonthYear, formatTime } from '../../i18n/format';
+import { geolocationExpected, resolveGeolocation } from '../../platform/geolocation';
 import { detectTimeZone } from '../../platform/timeZone';
 import { Button, ConfirmDialog } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
+import { CardioGps } from './CardioGps';
 import './Cardio.css';
 
 /**
@@ -250,12 +252,16 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
     setMessage({ alert: false, text: tCardio('gpsReported') });
   };
 
+  // I6-06 (D-222) : bloc GPS sur l'iPhone installé seulement (le PC n'a pas de GPS : saisie manuelle, aucun bouton).
+  const { runtime, os } = container.platform;
+  const gpsBlock = gps ?? (geolocationExpected(runtime, os) ? (report: (r: GpsReport) => void) => <CardioGps load={resolveGeolocation(runtime, os)} clock={container.clock} onReport={report} /> : undefined);
+
   const dateOf = (s: CardioSessionRecord): string => formatDayMonthYear(utcToLocal(s.startedAt, tz).date);
 
   return (
     <div className="ct-cardio">
       <p className="ct-today__muted">{tCardio('hint')}</p>
-      {gps ? gps(onReport) : null}
+      {gpsBlock ? gpsBlock(onReport) : null}
 
       <section className="ct-today__card ct-cardio__card" aria-labelledby="ct-cardio-form">
         <h2 id="ct-cardio-form" className="ct-cardio__heading">
