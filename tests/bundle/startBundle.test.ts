@@ -348,7 +348,16 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
   });
 
-  it.each(['Aucune séance de cardio pour l’instant.', 'Aucune séance de cardio sur les quatre dernières semaines.', 'Durée (min ou h:mm:ss)'])('I6-06 : « %s » hors du départ et présent dans le build', (marker) => {
+  // I6-06 (D-222) : façade et plugin de géolocalisation chargés à la demande (iPhone), jamais au départ.
+  it('I6-06 : src/platform/geolocation/tauriGeolocation.ts est un bloc à la demande, hors du départ ; aucun module geolocation au départ', () => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest['src/platform/geolocation/tauriGeolocation.ts'];
+    if (!chunk) throw new Error('bloc tauriGeolocation absent du manifeste');
+    expect(start.has(chunk.file)).toBe(false);
+    for (const [source, c] of Object.entries(manifest)) if (start.has(c.file)) expect(/geolocation|src\/features\/cardio|src\/domain\/cardio/.test(source), source).toBe(false);
+  });
+
+  it.each(['Aucune séance de cardio pour l’instant.', 'Aucune séance de cardio sur les quatre dernières semaines.', 'Durée (min ou h:mm:ss)', 'Démarrer le suivi GPS', 'plugin:geolocation|watch_position'])('I6-06 : « %s » hors du départ et présent dans le build', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
