@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-13 : I1 à I5, I6-01 à I6-04, CLEAN-01, FIX-0171 à 0173, I6-03b (#112), DEP-01 (SQLite 3.54.1, #113), FIX-0182 (#114), FIX-0181 (#115), RESET-01 (#117, schéma 16, « Repartir de zéro », docs/RESET-01.md : marche à suivre du jour J) et ERGO-01 (#116, docs/ERGO-01.md) publiés (0.12.0 à 0.19.0). **CLEAN-02 (0.19.1, sans migration) : tesseract.js, chrono-node, plugin Vite ocrAssets et saisie rapide héritée retirés ; OCR natif (vision) gardé pour I6-06 (D-200) ; migration des tests de synchro legacy reportée à CLEAN-03 (D-201) ; docs/CLEAN-02.md.** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-201 dans docs/decisions.md.
+État au 2026-11-13 : I1 à I5, I6-01 à I6-04, CLEAN-01, FIX-0171 à 0173, I6-03b (#112), DEP-01 (SQLite 3.54.1, #113), FIX-0182 (#114), FIX-0181 (#115), RESET-01 (#117, schéma 16, « Repartir de zéro », docs/RESET-01.md : marche à suivre du jour J) et ERGO-01 (#116, docs/ERGO-01.md) publiés (0.12.0 à 0.19.0). **I6-07 (0.22.0, sans migration) : 87 illustrations Everkinetic (CC BY-SA 4.0) dans la fiche d’exercice, à la demande, attribution sous l’image, validateur des médias (D-230 à D-237, docs/I6-07.md) ; H-9 UNVERIFIED.** CLEAN-02 (0.19.1) : D-200, D-201 (CLEAN-03). Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-237 dans docs/decisions.md.
 
 ## Fusionné (tout est dans main)
 
