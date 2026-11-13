@@ -62,6 +62,11 @@ li.ct-flat {
   padding: var(--ct-space-4) 0;
 }
 
+/* Formulaire à plat : les champs gardent une marge intérieure de 8 px (V0-7-1 point 1 : rien collé au bord de la fiche). */
+form.ct-flat {
+  padding-inline: var(--ct-space-2);
+}
+
 /* Filet seul (composant Rule). */
 .ct-rule {
   margin: 0;

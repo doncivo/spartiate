@@ -109,3 +109,7 @@ Relecture à froid de `git diff origin/main...HEAD` :
 
 - iPhone : barre d'onglets (trait bronze), « Séance du jour » et « Lancer la séance », « − / + » d'une main pendant la séance, « Ajouter un repas » ; Dynamic Type « Très grand ».
 - PC 1 440 : barre latérale, Aujourd'hui (Récupération en tête, carte « État »), Plus ; captures `visual-pairs` avant (dernier run Tests de main) et après (run de la PR).
+
+## Reprise après la CI rouge (run 43400917710)
+
+- e2e iphone `V0-7-1-mise-en-page.spec.ts:17` (point 1, fiche d'ajout d'un aliment) rouge sur `39fbfebd` : le bloc à plat `form.ct-flat` mettait à 0 la marge horizontale, champs collés au bord de la fiche (20 px reçus, 28 attendus). Test existant inchangé (preuve rouge : ce run). Correctif : `form.ct-flat { padding-inline: var(--ct-space-2) }` (8 px, jeton), commit suivant.
