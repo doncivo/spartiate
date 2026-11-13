@@ -166,6 +166,9 @@ describe('Réglages > DONNÉES ET SÉCURITÉ (critères 5 et 9, D2)', () => {
       </AppContainerProvider>,
     );
     await flush();
+    // ERGO-02 : sur PC (jsdom = 1 024 px), la ligne de verrouillage est dans le panneau « À propos et diagnostic » de Plus.
+    fireEvent.click(screen.getByRole('button', { name: /^À propos et diagnostic/ }));
+    await flush();
     return container;
   }
 
