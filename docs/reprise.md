@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-13 : I1 à I5 livrés ; I6-01 à I6-04 (0.12.0 à 0.16.0) ; CLEAN-01 (0.17.0), FIX-0171 à FIX-0173 (0.17.1 à 0.17.3, docs/FIX-017x.md), I6-03b (0.18.0, migration 0014, #112) , DEP-01 (0.18.1, SQLite 3.54.1, #113) , FIX-0182 (#114) et FIX-0181 (0.18.2, schéma 15, #115) fusionnées. **RESET-01 (0.18.3, migration 0016, schéma 16) : « Repartir de zéro » sur les deux appareils, horizon publié `data_reset` (ADR 0011 avenant 36, D-180 à D-186, H-33) ; PR ouverte, docs/RESET-01.md (marche à suivre du jour J).** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-186 dans docs/decisions.md.
+État au 2026-11-13 : I1 à I5 livrés ; I6-01 à I6-04 (0.12.0 à 0.16.0) ; CLEAN-01 (0.17.0), FIX-0171 à FIX-0173 (0.17.1 à 0.17.3, docs/FIX-017x.md), I6-03b (0.18.0, migration 0014, #112) , DEP-01 (0.18.1, SQLite 3.54.1, #113) , FIX-0182 (#114) et FIX-0181 (0.18.2, schéma 15, #115) fusionnées. RESET-01 (0.18.3, schéma 16, #117) fusionnée. **I6-05 (0.20.0, migration 0017, schéma 17) : compléments (Nutrition › Compléments, carte d’Aujourd’hui, constance, rappels iPhone désactivés par défaut ; D-210 à D-215, H-34) ; PR ouverte, docs/I6-05.md.** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-215 dans docs/decisions.md.
 
 ## Fusionné (tout est dans main)
 
@@ -15,7 +15,7 @@
 
 ## Prochaines étapes
 
-1. RESET-01 : CI verte (bundle, e2e, Rust lus en CI), fusion et tags 0.18.3 par l'agent principal (pas de Swift). Ali : installer 0.18.3 sur PC et iPhone le même jour (schéma 16), puis suivre « Marche à suivre pour Ali le jour J » de docs/RESET-01.md ; constater H-33.
+1. I6-05 : CI verte (bundle, e2e pc et iphone, Rust lus en CI), fusion et tags 0.20.0 par l’agent principal (pas de Swift), après ERGO-01 et CLEAN-02 (fusionner origin/main avant). Ali : installer 0.20.0 sur PC et iPhone le même jour, avant toute saisie (schéma 17) ; constats « À vérifier par Ali » de docs/I6-05.md ; RESET-01 : docs/RESET-01.md (H-33).
 2. DEP-01 : retirer `src-tauri/vendor/sqlx-sqlite` dès qu’un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
 3. D-73 à D-118 validées par Ali (D-119). Exceptions faites : FIX-0181 (D-79, D-93), FIX-0172 (D-130, D-134), I6-03b (D-104). Reste en file : CLEAN-02 (D-116, D-117). À recaler après 3 semaines de séances réelles, sur demande d'Ali seulement : D-73 (4, durée estimée) et D-88 (échelle d'effort 20).
 
