@@ -2,6 +2,14 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.19.1
+
+Rien ne change pour toi à l'écran, aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.
+
+- **Second nettoyage** (ta décision du 12 novembre) : la lecture de texte de secours (tesseract.js), l'analyse de dates en langage libre (chrono-node) et la saisie rapide de tâches, héritées de CircleTasks et sans aucun écran dans Spartiate, sont retirées. L'app embarque environ 4,7 Mo de moins.
+- **Gardé exprès** : la lecture de texte native (Vision sur l'iPhone, Windows sur le PC), prévue par le PRD pour importer un programme papier (I6). La retirer demande ta décision.
+- **Pas encore fait** : la réécriture des tests de synchro qui s'appuient encore sur les anciennes tâches et projets de CircleTasks (222 fichiers) dépasse ce ticket ; elle passe dans un ticket dédié (CLEAN-03).
+
 ## 0.18.2
 
 **Schéma 15 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** Migration 0015 : tes favoris d'aliments sont enregistrés dans une table synchronisée. Un appareil resté en 0.18.1 ou avant garde les favoris reçus sans les afficher et les retrouve après sa mise à jour.
