@@ -23,8 +23,7 @@ import type { ThemeChoice } from '../model/settings';
 import { isPhotoFileName, isStoredMeasurementKind, isStoredMeasurementValue } from '../bodyProgress/measurements';
 import { toFavorite } from '../nutrition/favorites';
 import { parseSupplementTimes, validateSupplementDraft } from '../nutrition/supplements';
-import { isIntakeId } from '../sync/naturalIds';
-import { isIsoDateTime, isLocalDate } from '../types';
+import { isId, isIsoDateTime, isLocalDate, isLocalTime } from '../types';
 import { SYNC_CATALOGUE, type SyncTable } from '../../domain/sync/syncTables';
 import { sha256Hex } from './sha256';
 import { RECIPE_COOKED_WEIGHT_MAX_G, RECIPE_INGREDIENT_GRAMS_MAX, RECIPE_INGREDIENT_NAME_MAX, RECIPE_NAME_MAX, RECIPE_SERVINGS_MAX } from '../nutrition/recipeTypes';
@@ -399,7 +398,8 @@ function rowBoundsOk(table: TrainingTable, id: string, v: Readonly<Record<string
       );
     }
     case 'supplement_intake':
-      return isIntakeId(id) && id === `intake|${String(v['supplement_id'])}|${String(v['date'])}|${String(v['moment'])}`;
+      // Même forme que l'identifiant naturel de la synchro (`intake|<UUID>|<date>|<HH:mm>`), vérifiée ici avec les types du domaine.
+      return typeof v['supplement_id'] === 'string' && isId(v['supplement_id']) && typeof v['date'] === 'string' && isLocalDate(v['date']) && typeof v['moment'] === 'string' && isLocalTime(v['moment']) && id === `intake|${v['supplement_id']}|${v['date']}|${v['moment']}`;
     case 'food_favorite':
       // FIX-0181 (D-171) : CHECK de la migration 0015 (identifiant naturel) et cohérence provenance / référence du domaine (`toFavorite`).
       return id === `favorite|${String(v['ref'])}` && toFavorite(v['source'], v['ref']) !== null;
