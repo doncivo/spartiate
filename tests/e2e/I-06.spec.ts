@@ -113,7 +113,7 @@ test.describe('I-06 — mise à jour N vers N+1 (iPhone, base préremplie, versi
     await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
     await expect(page.getByText('Version 0.3.0', { exact: true })).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });
     // Données affichées après la mise à jour : le profil et la pesée d'avant sont relus.
-    await page.getByRole('button', { name: 'Profil et poids' }).click();
+    await page.getByRole('button', { name: /^Profil et poids/ }).click();
     await expect(page.getByLabel('Taille (cm)')).toHaveValue('181', { timeout: APP_READY_TIMEOUT_MS });
     await expect(page.getByLabel('Année de naissance')).toHaveValue('1990');
     await expect(page.getByText('82,4 kg')).toBeVisible();

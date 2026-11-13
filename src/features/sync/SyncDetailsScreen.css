@@ -346,3 +346,46 @@
   color: var(--ct-color-danger);
   font-weight: var(--ct-font-weight-bold);
 }
+
+/* ERGO-02 (Appairage-apres, PC-Appairage-apres) : colonne principale, et « Ajouter un iPhone » à droite sur PC (le QR est dans la fenêtre
+   d'association, ouverte par le bouton de la colonne). Jetons seulement. */
+.ct-sync__main,
+.ct-sync__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ct-sync__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: var(--ct-space-6);
+  align-items: start;
+}
+
+.ct-sync__aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  padding: var(--ct-space-4);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-lg);
+  background: var(--ct-color-surface);
+  box-sizing: border-box;
+}
+
+.ct-sync__add {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Section vide (rien à associer dans l'état courant) : ni titre seul ni région vide. */
+.ct-sync__add:not(:has(> :not(h2))),
+.ct-sync__aside:not(:has(> :not(h2))) {
+  display: none;
+}
+
+.ct-sync__back {
+  min-height: var(--ct-hit-target-min);
+}

@@ -11,8 +11,6 @@ import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { SettingsScreen } from './SettingsScreen';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000d9');
-const NAV = ['Profil et poids', 'Synchro et données', 'Préférences', 'Raccourcis clavier', 'À propos et diagnostic'];
-const SECTIONS = NAV.slice(1);
 
 function mockViewport(width: number): void {
   vi.stubGlobal('matchMedia', (query: string) => ({
@@ -42,9 +40,13 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
         <SettingsScreen />
       </AppContainerProvider>,
     );
-  const ready = () => screen.findByRole('switch', { name: 'Démarrer avec Windows' });
-  const region = (name: string) => screen.getByRole('region', { name });
-  const summary = () => screen.getByRole('group', { name: 'Sections des réglages' });
+  const list = () => screen.getByRole('group', { name: 'Réglages' });
+  const ready = () => screen.findByRole('group', { name: 'Réglages' });
+  const open = async (name: RegExp) => {
+    await ready();
+    fireEvent.click(within(list()).getByRole('button', { name }));
+    return screen.findByRole('region', { name: name.source.replace(/[\^]/g, '') });
+  };
 
   beforeEach(async () => {
     db = await openTestDb(DEVICE);
@@ -68,71 +70,53 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
     await db.close();
   });
 
-  it('sommaire : titre, cinq entrées dans l’ordre, section courante, un clic fait défiler la section ; « Profil et poids » ouvre son écran', async () => {
+  it('liste : titre, quatre groupes, entrées dans l’ordre (ERGO-02) ; l’entrée courante est marquée', async () => {
     renderScreen();
     await ready();
     expect(screen.getByRole('heading', { level: 1, name: 'Plus' })).toBeInTheDocument();
-    const nav = summary();
-    expect(within(nav).getAllByRole('button').map((button) => button.textContent)).toEqual(NAV);
-    for (const name of SECTIONS) expect(within(region(name)).getByRole('heading', { level: 2, name })).toBeInTheDocument();
-    for (const old of ['GÉNÉRAL', 'TÂCHES', 'RAPPELS', 'SYNCHRONISATION', 'DONNÉES ET SÉCURITÉ', 'CLAVIER', 'À PROPOS', 'Général', 'Clavier']) {
-      expect(screen.queryByText(old)).toBeNull();
-    }
-    expect(within(nav).getByRole('button', { name: 'Synchro et données' })).toHaveAttribute('aria-current', 'true');
-    expect(within(nav).getByRole('button', { name: 'À propos et diagnostic' })).not.toHaveAttribute('aria-current');
-    fireEvent.click(within(nav).getByRole('button', { name: 'À propos et diagnostic' }));
-    expect(scrolled).toEqual([region('À propos et diagnostic')]);
-    expect(within(nav).getByRole('button', { name: 'À propos et diagnostic' })).toHaveAttribute('aria-current', 'true');
-    expect(within(nav).getByRole('button', { name: 'Synchro et données' })).not.toHaveAttribute('aria-current');
-    expect(document.querySelector('.ct-settings__rule')).toBeNull();
-    fireEvent.click(within(nav).getByRole('button', { name: 'Profil et poids' }));
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'body' });
-    expect(scrolled).toHaveLength(1);
+    expect(within(list()).getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual(['MOI', 'SOURCES', 'APP', 'DONNÉES']);
+    expect(within(list()).getAllByRole('button').map((b) => (b.firstChild as HTMLElement).textContent)).toEqual([
+      'Profil et poids',
+      'Appareils et synchro',
+      'Apparence',
+      'Fuseau et démarrage',
+      'Raccourcis clavier',
+      'À propos et diagnostic',
+      'Export et import',
+      'Journaux',
+      'Repartir de zéro',
+    ]);
+    for (const old of ['Synchro et données', 'Préférences', 'GÉNÉRAL', 'CLAVIER']) expect(screen.queryByText(old)).toBeNull();
+    expect(screen.getByRole('region', { name: 'Profil et poids' })).toBeInTheDocument();
   });
 
-  it('Synchro et données : sous-titres en capitales (iCloud, sauvegardes, export et import) ; l’export mène à son écran', async () => {
+  it('Fuseau et démarrage : fuseau expliqué, démarrage expliqué avec son interrupteur (critère 3)', async () => {
     renderScreen();
-    await ready();
-    const data = region('Synchro et données');
-    const groups = within(data).getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
-    expect(groups).toContain('EXPORT ET IMPORT');
-    for (const title of groups) expect(title).toBe(title?.toUpperCase());
-    expect(groups.filter((g) => g === 'SYNCHRONISATION ICLOUD' || g === 'SAUVEGARDES' || g === 'EXPORT ET IMPORT').length).toBe(groups.length);
-    const exportGroup = within(data).getByRole('group', { name: 'EXPORT ET IMPORT' });
-    fireEvent.click(within(exportGroup).getByRole('button', { name: 'Export et import' }));
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'exportimport' });
-  });
-
-  it('Préférences : Thème, Début de semaine et Format de l’heure en trois lignes vers Apparence  ; fuseau expliqué ; démarrage expliqué (critère 3)', async () => {
-    renderScreen();
-    await ready();
-    const general = region('Préférences');
-    expect(within(general).queryByRole('button', { name: /^Thème · semaine · heure/ })).toBeNull();
-    const rows = ['Thème : Sombre', 'Début de semaine : Lundi', 'Format de l’heure : 24 h'];
-    for (const name of rows) {
-      fireEvent.click(within(general).getByRole('button', { name }));
-      expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'appearance' });
-      useNavigationStore.setState(INITIAL_NAVIGATION);
-    }
+    const general = await open(/^Fuseau et démarrage/);
     expect(within(general).getByText('Fuseau horaire')).toBeInTheDocument();
     expect(within(general).getByText('Suit celui de Windows')).toBeInTheDocument();
     expect(within(general).getByText('Europe/Paris')).toBeInTheDocument();
-    expect(screen.queryByText(/\(automatique\)/)).toBeNull();
+    expect(screen.queryByText(/(automatique)/)).toBeNull();
     expect(within(general).getByText('Spartiate s’ouvre réduit dans la zone de notification')).toBeInTheDocument();
-    expect(within(general).getByRole('switch', { name: 'Démarrer avec Windows' })).toBeInTheDocument();
+    expect(await within(general).findByRole('switch', { name: 'Démarrer avec Windows' })).toBeInTheDocument();
   });
 
-  it('les lignes partagées rejoignent leurs sections (critère 4)', async () => {
+  it('À propos et diagnostic : mise à jour dans le panneau (critère 4)', async () => {
     renderScreen();
-    await ready();
-    const about = region('À propos et diagnostic');
-    expect(within(about).getByRole('button', { name: 'Rechercher une mise à jour' })).toBeInTheDocument();
+    const about = await open(/^À propos et diagnostic/);
+    expect(await within(about).findByRole('button', { name: 'Rechercher une mise à jour' })).toBeInTheDocument();
+  });
+
+  it('Export et import s’ouvre dans le panneau, sans changer de route', async () => {
+    renderScreen();
+    const panel = await open(/^Export et import/);
+    expect(panel).toBeInTheDocument();
+    expect(useNavigationStore.getState().route).toEqual(INITIAL_NAVIGATION.route);
   });
 
   it('Clavier : « Tous les raccourcis » avec « Ctrl / » ouvre la liste ; aucune ligne de capture rapide (supprimée en 001b-front)', async () => {
     renderScreen();
-    await ready();
-    const keyboard = region('Raccourcis clavier');
+    const keyboard = await open(/^Raccourcis clavier/);
     const all = within(keyboard).getByRole('button', { name: 'Afficher les raccourcis clavier' });
     expect(all).toHaveTextContent('Tous les raccourcis');
     expect(all).toHaveTextContent('Ctrl /');
@@ -141,11 +125,12 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
     expect(useNavigationStore.getState().overlays).toEqual([{ kind: 'shortcutsHelp' }]);
   });
 
-  it('iPhone : pas de sommaire, sections DONNÉES / PRÉFÉRENCES / À PROPOS (Plus réorganisé)', async () => {
+  it('iPhone : pas de liste ni de panneau, quatre groupes (Plus réorganisé)', async () => {
     mockViewport(440);
     renderScreen(containerWith(null));
-    await screen.findByRole('heading', { name: 'PRÉFÉRENCES' });
-    expect(screen.queryByRole('group', { name: 'Sections des réglages' })).toBeNull();
+    await screen.findByRole('heading', { name: 'APP' });
+    expect(screen.queryByRole('group', { name: 'Réglages' })).toBeNull();
+    expect(screen.queryByRole('region')).toBeNull();
     expect(screen.getByRole('heading', { name: 'DONNÉES' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Thème : Sombre' })).toBeInTheDocument();
     expect(screen.getByText('Europe/Paris (automatique)')).toBeInTheDocument();

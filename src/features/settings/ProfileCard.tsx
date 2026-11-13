@@ -9,13 +9,11 @@ const pad2 = (n: number): string => String(n).padStart(2, '0');
 const GOAL_KEY = { gain: 'goalGain', loss: 'goalLoss', maintain: 'goalMaintain' } as const;
 
 /**
- * Carte « Profil et poids » en tête de Plus sur iPhone (planche iPhone-Plus) : avatar, titre, résumé et chevron ; ouvre l'écran Profil et
- * poids. Le résumé n'est construit qu'avec les valeurs réellement saisies (taille, dernier poids, objectif) ; sans aucune valeur, ou si la
+ * Résumé de « Profil et poids » (Plus, iPhone et PC). Le résumé n'est construit qu'avec les valeurs réellement saisies (taille, dernier poids, objectif) ; sans aucune valeur, ou si la
  * lecture échoue, texte neutre (la carte reste un lien vers l'écran, où l'échec de lecture est dit).
  */
-export function ProfileCard() {
+export function useProfileSummary(): readonly string[] {
   const container = useAppContainer();
-  const navigate = useNavigationStore((s) => s.navigate);
   const { repos } = container.data;
   const [parts, setParts] = useState<readonly string[]>([]);
 
@@ -48,13 +46,17 @@ export function ProfileCard() {
     };
   }, [repos, container.clock]);
 
+  return parts;
+}
+
+/** Ligne « Profil et poids » du groupe MOI (ERGO-02, aperçu Plus-apres) : résumé sous le libellé, qui passe à la ligne plutôt que d'être coupé. */
+export function ProfileCard() {
+  const navigate = useNavigationStore((s) => s.navigate);
+  const parts = useProfileSummary();
   return (
-    <button type="button" className="ct-settings__profile ct-settings__rowButton" onClick={() => navigate({ tab: 'more', screen: 'body' })}>
-      <span className="ct-settings__avatar" aria-hidden="true">
-        {tPlus('avatarInitial')}
-      </span>
+    <button type="button" className="ct-settings__row ct-settings__rowButton" onClick={() => navigate({ tab: 'more', screen: 'body' })}>
       <span className="ct-settings__stack">
-        <span className="ct-settings__profileTitle">{tBody('row')}</span>
+        <span>{tBody('row')}</span>
         <span className="ct-settings__hint">{parts.length > 0 ? parts.join(tPlus('profileSummarySeparator')) : tPlus('profileSummaryEmpty')}</span>
       </span>
     </button>
