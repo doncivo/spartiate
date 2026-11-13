@@ -13,6 +13,14 @@ export type RecoveryDifficulty = 'easy' | 'ok' | 'hard';
  */
 export const STRENGTH_SCALE = 20;
 
+/**
+ * I6-06 (D-220, met à jour D-88) : échelle du cardio dans l'Exertion. Règle nommée « minutes × ressenti » (charge de séance par le ressenti, sRPE) :
+ * points cardio = durée en minutes × RPE (1 à 10) × échelle, additionnés aux points muscu avant la courbe `10 × (1 − e^(−x/k))`. Avec 1 : 30 min à
+ * RPE 5 → 150 → 3,93 ; 45 min à RPE 7 → 315 → 6,50 ; 60 min à RPE 8 → 480 → 7,98, du même ordre qu'une séance de musculation de 6 à 20 t.
+ * Choix prudent de l'agent, révisable par Ali ; les zones de FC du PRD restent inutilisées (pas de zones fiables, D-69).
+ */
+export const CARDIO_SRPE_SCALE = 1;
+
 export const RECOVERY_CONFIG = {
   /** § 16.3 Baseline. */
   baselineDays: 14,
@@ -37,13 +45,18 @@ export const RECOVERY_CONFIG = {
     low: { from: 0, target: [0, 3] },
   },
 
-  /** § 16.3 Exertion. `cardioWeights` : poids des zones 1 à 5, INUTILISÉS (D-88 : la partie cardio vaut zéro, pas de zones FC fiables). */
+  /**
+   * § 16.3 Exertion. `cardioWeights` : poids des zones 1 à 5, INUTILISÉS (pas de zones FC fiables) ; depuis I6-06 (D-220) le cardio saisi compte par
+   * minutes × ressenti × `CARDIO_SRPE_SCALE`, `cardioCounted` le dit.
+   */
   exertion: {
     k: 300,
     tonnageUnit: 1000,
     difficultyFactor: { easy: 0.8, ok: 1, hard: 1.2 } as Readonly<Record<RecoveryDifficulty, number>>,
     cardioWeights: [1, 2, 3, 4, 5] as readonly number[],
-    cardioCounted: false,
+    cardioCounted: true,
+    /** Ressenti admis pour le cardio (RPE entier), bornes de la migration `cardio_session`. */
+    cardioRpe: { rpeMin: 1, rpeMax: 10 },
     max: 10,
   },
 

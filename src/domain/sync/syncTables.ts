@@ -787,7 +787,30 @@ const SUPPLEMENT_INTAKE_TABLE = table(
   { idKind: 'natural', natural: { is: isIntakeId, expected: (row) => expectedIntakeId(row) }, titleSource: { kind: 'own', column: 'date' } },
 );
 
-/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02 + FIX-0181 + RESET-01 + I6-05) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+/**
+ * Catalogue I6-06 (D-221, D-222 ; migration 0018, schéma 18) : `cardio_session`, séances cardio saisies, écrites par les DEUX appareils, identifiant UUID.
+ * Fusion champ par champ par HLC, dernière écriture gagne. Le tracé GPS (table locale des tracés) est absent du catalogue, jamais publié ni exporté ;
+ * seules la durée et la distance passent. `kind` est un texte court (non fermé : un type ajouté par une version plus récente reste lisible, « autre ») ;
+ * la FC moyenne (donnée corporelle) est masquée du journal des conflits.
+ */
+const CARDIO_SESSION_TABLE = table(
+  'cardio_session',
+  [
+    c('kind', 'text', false, { max: 32 }),
+    c('started_at', 'datetime', false),
+    c('duration_sec', 'int', false),
+    c('distance_m', 'real', true),
+    c('avg_hr', 'int', true, hidden),
+    c('rpe', 'int', false, { values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }),
+    c('source', 'enum', false, { values: ['manual', 'gps'] }),
+    c('notes', 'text', false, { max: 2_000 }),
+    createdAt,
+    deletedAt,
+  ],
+  { titleSource: { kind: 'none' } },
+);
+
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02 + FIX-0181 + RESET-01 + I6-05 + I6-06) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   tables: [
     PROFILE_TABLE,
@@ -818,6 +841,7 @@ export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
     DATA_RESET_TABLE_DEF,
     SUPPLEMENT_TABLE,
     SUPPLEMENT_INTAKE_TABLE,
+    CARDIO_SESSION_TABLE,
   ],
   order: SYNC_TABLE_ORDER,
 });

@@ -62,6 +62,7 @@ export const syncVersionFr = {
     dataReset: 'remise à zéro',
     supplement: 'compléments',
     supplementIntake: 'prises de compléments',
+    cardioSession: 'séances cardio',
     other: 'autres éléments',
   },
 } as const;

@@ -4304,7 +4304,7 @@ dependencies = [
 
 [[package]]
 name = "spartiate"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "aws-lc-rs",
  "base64 0.22.1",
@@ -4327,6 +4327,7 @@ dependencies = [
  "tauri-plugin-ct-haptics",
  "tauri-plugin-dialog",
  "tauri-plugin-folder-bookmark",
+ "tauri-plugin-geolocation",
  "tauri-plugin-healthkit",
  "tauri-plugin-live-activity",
  "tauri-plugin-notification",
@@ -5009,6 +5010,20 @@ dependencies = [
  "thiserror 2.0.21",
  "toml 1.1.6+spec-1.1.0",
  "url",
+]
+
+[[package]]
+name = "tauri-plugin-geolocation"
+version = "2.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "240085699dfda0556e20ae95f10db8050a9bb158702e8fdd927d217e49d90757"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.21",
 ]
 
 [[package]]

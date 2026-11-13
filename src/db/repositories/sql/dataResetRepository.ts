@@ -89,6 +89,8 @@ export function createDataResetRepository(db: SqlExecutor, stamper: WriteStamper
       }
       // Fichiers de photos (table locale) : seuls ceux d'une fiche encore présente (prise après l'horizon) restent.
       count((await db.execute('DELETE FROM progress_photo_file WHERE photo_id NOT IN (SELECT id FROM progress_photo)')).rowsAffected);
+      // I6-06 : tracés GPS (table locale) : seuls ceux d'une séance encore présente restent.
+      count((await db.execute('DELETE FROM cardio_track WHERE session_id NOT IN (SELECT id FROM cardio_session)')).rowsAffected);
       for (const name of RESET_LOCAL_TABLES) count((await db.execute(`DELETE FROM ${name}`)).rowsAffected);
       const keys = wipedSettingKeys();
       const settings = (await db.execute(`DELETE FROM settings WHERE key IN (${keys.map(() => '?').join(', ')})`, keys)).rowsAffected;

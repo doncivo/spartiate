@@ -2,6 +2,16 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.21.0
+
+**Schéma 18 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** Migration 0018 : une table synchronisée porte les séances cardio, une table propre à chaque appareil garde les tracés GPS. Un appareil resté en version précédente garde les séances reçues de côté et les reprend après sa mise à jour.
+
+- **Cardio** (Entraînement › Cardio) : tu saisis une séance (marche, course, vélo, rameur, elliptique, SkiErg ou autre), son début, sa durée, la distance en km et la FC moyenne si tu les as, ton ressenti de 1 à 10 et des notes. L'historique liste tes séances ; tu peux les modifier ou les supprimer (avec confirmation).
+- **Suivi GPS sur l'iPhone** : « Démarrer le suivi GPS » suit la durée et la distance tant que l'app reste ouverte (aucun suivi en arrière-plan). L'iPhone te demande d'abord l'autorisation « pendant l'utilisation ». « Arrêter et reporter » remplit le formulaire ; tu choisis le ressenti et tu enregistres. Le tracé reste sur l'iPhone : seules la durée et la distance vont sur le PC. Refus ou signal perdu : l'écran le dit, la saisie à la main reste là. Le PC n'a pas de GPS : saisie à la main.
+- **Exertion** : le cardio compte enfin. Règle « minutes × ressenti » (45 min à 7/10 → 315 points → Exertion 6,5), ajoutée à la musculation avant la courbe du PRD ; constante réglable, à recaler avec toi après quelques semaines.
+- **Progrès** : une carte Cardio donne tes séances, ta durée et ta distance par semaine sur quatre semaines.
+- Export, import et export complet portent les séances cardio (jamais les tracés). « Repartir de zéro » efface aussi le cardio et les tracés.
+
 ## 0.20.0
 
 **Schéma 17 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** Migration 0017 : tes compléments et leurs prises sont enregistrés dans deux tables synchronisées. Un appareil resté en version antérieure garde ce qu'il reçoit sans l'afficher et le retrouve après sa mise à jour.

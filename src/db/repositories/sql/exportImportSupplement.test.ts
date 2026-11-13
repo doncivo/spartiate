@@ -13,7 +13,8 @@ import { openBaseDb, type TestDb } from './testSetup';
  */
 const A = '60000000-0000-4000-8000-0000000000e3' as DeviceId;
 const B = '60000000-0000-4000-8000-0000000000e4' as DeviceId;
-const SV = migrations.length;
+/** Schéma des compléments (0017) ; I6-06 ajoute la 0018 (cardio) après lui. */
+const SV = migrations.findIndex((m) => m.name === 'supplement') + 1;
 const D = '2026-11-13' as LocalDate;
 const T = '08:00' as LocalTime;
 
@@ -50,8 +51,9 @@ const seed = async (db: TestDb): Promise<string> => {
 
 describe('export / import des compléments (I6-05)', () => {
   it('tables exportées en dernier, depuis le schéma courant, écrites par les deux appareils, présentes dans l’export complet', () => {
-    expect(EXPORT_SV).toBe(SV);
-    expect(TRAINING_EXPORT_TABLES.slice(-2)).toEqual(['supplement', 'supplement_intake']);
+    expect(SV).toBe(17);
+    expect(EXPORT_SV).toBe(migrations.length);
+    expect(TRAINING_EXPORT_TABLES.slice(-3, -1)).toEqual(['supplement', 'supplement_intake']); // I6-06 : cardio_session en dernier.
     expect(TABLE_SINCE_SV.supplement).toBe(SV);
     expect(TABLE_SINCE_SV.supplement_intake).toBe(SV);
     for (const t of ['supplement', 'supplement_intake']) {
@@ -87,7 +89,7 @@ describe('export / import des compléments (I6-05)', () => {
 
   it('archive d’un schéma futur : refusée (future-version)', async () => {
     const db = await open(A);
-    await expect(parse(await read(db), SV + 1)).rejects.toMatchObject({ code: 'future-version' });
+    await expect(parse(await read(db), migrations.length + 1)).rejects.toMatchObject({ code: 'future-version' });
   });
 
   it('ligne incohérente : refusée à l’import, rien n’est écrit', async () => {

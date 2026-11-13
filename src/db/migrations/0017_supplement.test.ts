@@ -34,9 +34,9 @@ const insert = (db: SqlDriver, table: string, row: Row): Promise<unknown> => {
 const outbox = (db: SqlDriver) => db.select<{ table_name: string; row_id: string; field: string }>('SELECT table_name, row_id, field FROM sync_outbox ORDER BY seq');
 
 describe('migration supplement (I6-05)', () => {
-  it('registre : dernière migration, nom supplement, version = rang', () => {
-    expect(migrations.at(-1)).toBe(migration0017Supplement);
-    expect(migration0017Supplement.version).toBe(migrations.length);
+  it('registre : dix-septième migration, nom supplement, version = rang (I6-06 ajoute la 0018 après elle)', () => {
+    expect(migrations[16]).toBe(migration0017Supplement);
+    expect(migration0017Supplement.version).toBe(17);
     expect(migration0017Supplement.name).toBe('supplement');
   });
 

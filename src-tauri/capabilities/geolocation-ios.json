@@ -1,0 +1,17 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "geolocation-ios",
+  "description": "iPhone : suivi GPS d'une séance cardio au premier plan (I6-06, D-222). Plugin officiel geolocation : état et demande de l'autorisation « pendant l'utilisation », suivi et arrêt du suivi. Aucune position ponctuelle, aucun mode d'arrière-plan.",
+  "windows": [
+    "main"
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "permissions": [
+    "geolocation:allow-check-permissions",
+    "geolocation:allow-request-permissions",
+    "geolocation:allow-watch-position",
+    "geolocation:allow-clear-watch"
+  ]
+}

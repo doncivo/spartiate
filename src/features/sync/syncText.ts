@@ -169,6 +169,7 @@ const KIND_KEYS = {
   data_reset: 'sync.version.kinds.dataReset',
   supplement: 'sync.version.kinds.supplement',
   supplement_intake: 'sync.version.kinds.supplementIntake',
+  cardio_session: 'sync.version.kinds.cardioSession',
 } as const;
 
 /** Types d'éléments d'un échec (« tâches, événements »), d'après les tables du catalogue. */

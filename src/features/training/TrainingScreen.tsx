@@ -15,6 +15,8 @@ import './TrainingScreen.css';
 const HistoryView = lazy(() => import('./history/HistoryView').then((m) => ({ default: m.HistoryView })));
 /** Cycle d'entraînement (I3-02) : bloc à la demande, chargé à l'ouverture de la section, avec son catalogue de textes. */
 const CycleView = lazy(() => import('./cycle/CycleView').then((m) => ({ default: m.CycleView })));
+/** Cardio (I6-06) : bloc à la demande, chargé à l'ouverture de la section, avec son catalogue de textes (et le GPS sur l'iPhone). */
+const CardioView = lazy(() => import('../cardio/CardioView').then((m) => ({ default: m.CardioView })));
 
 /**
  * Onglet Entraînement (I1-01) : accueil à trois sections, Routines (par défaut), Bibliothèque et Matériel, comme la barre de sections des
@@ -74,6 +76,7 @@ export function TrainingScreen({ session }: { readonly session?: SessionPlatform
             { value: 'equipment', label: tTraining('sectionEquipment') },
             { value: 'history', label: tTraining('sectionHistory') },
             { value: 'cycle', label: tTraining('sectionCycle') },
+            { value: 'cardio', label: tTraining('sectionCardio') },
           ]}
         />
         {state.status === 'loading' ? (
@@ -108,6 +111,16 @@ export function TrainingScreen({ session }: { readonly session?: SessionPlatform
             }
           >
             <CycleView access={container.data} />
+          </Suspense>
+        ) : current === 'cardio' ? (
+          <Suspense
+            fallback={
+              <p className="ct-training__muted" role="status">
+                {tTraining('loading')}
+              </p>
+            }
+          >
+            <CardioView />
           </Suspense>
         ) : current === 'equipment' ? (
           <EquipmentView data={state.data} access={container.data} ids={container.ids} reload={reload} />

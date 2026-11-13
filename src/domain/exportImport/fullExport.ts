@@ -28,6 +28,8 @@ export const FULL_EXPORT_TABLES: readonly FullExportTableName[] = ['profile', 'b
 /** Tables et lignes jamais exportées (noms de tables, pas de contenu) : fichiers de photos, technique de synchro, conflits, échantillons importés. */
 export const FULL_EXPORT_EXCLUDED = [
   'progress_photo_file',
+  // I6-06 : tracés GPS (positions), locaux à l'appareil.
+  'cardio_track',
   'sync_outbox',
   'sync_field_clock',
   'sync_tombstone',
@@ -161,6 +163,9 @@ const UNIT_OVERRIDES: Readonly<Record<string, string>> = {
   'recovery_day.resting_hr': 'bpm',
   'muscle_recovery.percent': '%',
   'muscle_recovery.hours': 'h',
+  'cardio_session.distance_m': 'm',
+  'cardio_session.avg_hr': 'bpm',
+  'cardio_session.rpe': '1 à 10',
 };
 
 function unitOf(table: string, column: string): string | null {

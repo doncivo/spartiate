@@ -93,5 +93,6 @@ export const syncCarryReportFr = {
   kindDataReset: 'Remise à zéro des données',
   kindSupplement: 'Complément',
   kindSupplementIntake: 'Prise de complément',
+  kindCardioSession: 'Séance cardio',
   kindOther: 'Autre élément',
 } as const;

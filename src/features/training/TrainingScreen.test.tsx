@@ -41,9 +41,19 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
   it('accueil : sections Routines, Bibliothèque, Matériel et Journal (I1-03)', async () => {
     open();
     const nav = await screen.findByRole('radiogroup', { name: 'Sections de l’entraînement' });
-    expect(within(nav).getAllByRole('radio').map((r) => r.textContent)).toEqual(['Routines', 'Bibliothèque', 'Matériel', 'Journal', 'Cycle']);
+    expect(within(nav).getAllByRole('radio').map((r) => r.textContent)).toEqual(['Routines', 'Bibliothèque', 'Matériel', 'Journal', 'Cycle', 'Cardio']);
     fireEvent.click(within(nav).getByRole('radio', { name: 'Bibliothèque' }));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'training', screen: 'library' });
+  });
+
+  it('I6-06 : section Cardio (bloc à la demande) : saisie et historique, sur PC sans bouton GPS', async () => {
+    open();
+    const nav = await screen.findByRole('radiogroup', { name: 'Sections de l’entraînement' });
+    fireEvent.click(within(nav).getByRole('radio', { name: 'Cardio' }));
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'training', screen: 'cardio' });
+    expect(await screen.findByRole('region', { name: 'Nouvelle séance' })).toBeInTheDocument();
+    expect(await screen.findByText('Aucune séance de cardio pour l’instant.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Démarrer le suivi GPS' })).toBeNull();
   });
 
   describe('bibliothèque', () => {

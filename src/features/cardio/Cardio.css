@@ -1,0 +1,137 @@
+/* Entraînement › Cardio et Progrès › Cardio (I6-06) : jetons de tokens.css seulement, aucune couleur en dur. Mise en page 440 px et PC. */
+.ct-cardio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-4);
+  min-width: 0;
+}
+
+.ct-cardio__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+}
+
+.ct-cardio__heading,
+.ct-cardio__progress-title {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.02em;
+  color: var(--ct-color-text);
+}
+
+.ct-cardio__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--ct-space-3);
+}
+
+.ct-cardio__field {
+  display: flex;
+  flex: 1 1 140px;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  min-width: 0;
+}
+
+.ct-cardio__field--wide {
+  flex-basis: 100%;
+}
+
+.ct-cardio__label {
+  color: var(--ct-color-text);
+}
+
+.ct-cardio__input {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 0 var(--ct-space-2);
+  background: var(--ct-color-surface);
+  color: var(--ct-color-text);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  font: inherit;
+}
+
+.ct-cardio__notes {
+  min-height: 88px;
+  padding: var(--ct-space-2);
+  resize: vertical;
+}
+
+.ct-cardio__save {
+  flex: 1 1 100%;
+  min-height: 44px;
+}
+
+.ct-cardio__message {
+  margin: 0;
+  color: var(--ct-color-text);
+}
+
+.ct-cardio__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ct-cardio__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-2);
+  min-height: 44px;
+  padding: var(--ct-space-2) 0;
+  border-bottom: 1px solid var(--ct-color-border);
+}
+
+.ct-cardio__item-text {
+  display: flex;
+  flex: 1 1 200px;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  min-width: 0;
+}
+
+.ct-cardio__item-title {
+  color: var(--ct-color-text);
+}
+
+.ct-cardio__value {
+  color: var(--ct-color-bronze);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-cardio__notes-text {
+  color: var(--ct-color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.ct-cardio__actions {
+  display: flex;
+  gap: var(--ct-space-2);
+}
+
+.ct-cardio__gps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+}
+
+.ct-cardio__gps-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+
+.ct-cardio__gps-live {
+  margin: 0;
+  color: var(--ct-color-bronze);
+  font-variant-numeric: tabular-nums;
+}

@@ -342,6 +342,7 @@ export const trainingFr = {
   sectionHistory: 'Journal',
   /** I3-02 : section Cycle (mésocycle), chargée à la demande. */
   sectionCycle: 'Cycle',
+  sectionCardio: 'Cardio',
   historyTitle: 'Séances terminées',
   historyEmpty: 'Aucune séance terminée pour l’instant. Termine une séance pour la retrouver ici, avec ses séries et son volume.',
   historyOpen: 'Ouvrir « {name} »',

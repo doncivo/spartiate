@@ -271,4 +271,6 @@ export const syncFieldFr = {
   // I6-05 : compléments (nom, état, suppression) et prises (suppression seulement).
   supplement: { name: 'nom', active: 'actif', deleted_at: 'suppression' },
   supplement_intake: { deleted_at: 'suppression' },
+  // I6-06 : séance cardio ; la FC moyenne (donnée corporelle) est masquée du journal des conflits.
+  cardio_session: { kind: 'type', started_at: 'début', duration_sec: 'durée', distance_m: 'distance', rpe: 'ressenti', source: 'origine', notes: 'notes', deleted_at: 'suppression' },
 } as const;
