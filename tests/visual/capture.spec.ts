@@ -131,7 +131,7 @@ const goOnboarding = (step: number) => async (page: Page): Promise<void> => {
   await page.getByRole('dialog', { name: 'Configuration de Spartiate' }).waitFor();
   for (let i = 1; i < step; i += 1) {
     await page.getByRole('button', { name: 'Continuer', exact: true }).click();
-    await page.getByText(`Configuration · étape ${String(i + 1)} sur 8`).waitFor();
+    await page.getByText(`Étape ${String(i + 1)} sur 8`, { exact: true }).waitFor();
   }
   if (step === 6) {
     await page.getByLabel('Pectoraux, normal').click();
