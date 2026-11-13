@@ -7,7 +7,6 @@ import { useAppContainer, useFeatureStore } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
 import { updaterStore } from '../updater';
 import { useLogJournal, useLogStatus } from './logs/useLogJournal';
-import { TimerTestRow } from './TimerTestRow';
 
 /**
  * Section « À PROPOS » (Reglages.html, D-03 critères 6 et 7, P-05 critère 8, I-04 critère 1). Partout : ligne « Version … » avec le lien
@@ -78,8 +77,6 @@ export function AboutSection({ heading = true }: { readonly heading?: boolean } 
           )}
         </span>
       </div>
-      {/* SPA-007 : minuteur de test de 60 s (Live Activity et repli), PC et iPhone. */}
-      <TimerTestRow />
       {desktop && (
         <>
           <div className="ct-settings__row">

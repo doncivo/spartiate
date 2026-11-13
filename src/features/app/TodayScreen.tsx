@@ -4,7 +4,7 @@ import { todayLocal } from '../../domain/clock';
 import type { BodyWeight, Profile } from '../../domain/bodyProfile';
 import { isTrendLearning } from '../../domain/nutrition/trendLearning';
 import { formatDetailDate, formatStamp } from '../../i18n/format';
-import { formatKg, tBody, type BodyTextKey } from '../../i18n/bodyText';
+import { formatKg } from '../../i18n/bodyText';
 import { formatTodayEyebrow, tToday, type TodayTextKey } from '../../i18n/todayText';
 import { Button, Icon, useLayout } from '../../ui';
 import { useSyncedData } from '../sync/remoteChanges';
@@ -14,8 +14,6 @@ import { NutritionRemainingCard, RecoveryToday, SupplementsTodayCard, TodaySessi
 import { useNavigationStore, type Route } from './navigation';
 import './TodayScreen.css';
 
-const GOAL_KEY = { gain: 'goalGain', loss: 'goalLoss', maintain: 'goalMaintain' } as const satisfies Record<string, BodyTextKey>;
-const EXPERIENCE_KEY = { beginner: 'experienceBeginner', intermediate: 'experienceIntermediate', advanced: 'experienceAdvanced' } as const satisfies Record<string, BodyTextKey>;
 
 const CHART_POINTS = 6;
 const subscribeNone = (): (() => void) => () => undefined;
@@ -194,44 +192,28 @@ export function TodayScreen() {
   const dash = tToday('unknown');
 
   if (layout === 'pc') {
-    const goal = profile?.goal ? tBody(GOAL_KEY[profile.goal]) : dash;
-    const experience = profile?.experience ? tBody(EXPERIENCE_KEY[profile.experience]) : dash;
     const backup = backupMs === undefined ? dash : backupMs === null ? tToday('never') : formatStamp(new Date(backupMs).toISOString(), nowMs);
     return (
       <section className="ct-section-notice ct-today ct-today--pc" aria-labelledby="ct-section-notice-title">
         {title}
         <div className="ct-today__cols">
+          {/* ERGO-01b P4 (D-238, maquette P4-PC-Aujourdhui-regroupement.svg) : Récupération en tête, puis Séance et Nutrition. */}
           <div className="ct-today__col">
+            <RecoveryToday />
             <TodaySessionCard />
             <NutritionRemainingCard />
             <SupplementsTodayCard />
             <WeightCard weights={weights} nowMs={nowMs} showActions />
-            <RecoveryToday />
           </div>
+          {/* Une seule carte « État » au lieu de Profil, iPhone et Données ; le profil se règle dans Plus › Profil et poids. */}
           <aside className="ct-today__col">
             <KeyValueCard
-              id="ct-today-profile"
-              title={tToday('profileEyebrow')}
-              rows={[
-                [tToday('height'), profile?.heightCm != null ? tToday('heightValue', { n: formatKg(profile.heightCm) }) : dash],
-                [tToday('birthYear'), profile?.birthYear != null ? String(profile.birthYear) : dash],
-                [tToday('goal'), goal],
-                [tToday('experience'), experience],
-              ]}
-            />
-            <KeyValueCard
-              id="ct-today-phone"
-              title={tToday('phoneEyebrow')}
+              id="ct-today-state"
+              title={tToday('stateEyebrow')}
               rows={[
                 [tToday('sync'), syncText ?? tToday('notConfigured')],
                 [tToday('signature'), dash],
                 [tToday('healthKit'), dash],
-              ]}
-            />
-            <KeyValueCard
-              id="ct-today-data"
-              title={tToday('dataEyebrow')}
-              rows={[
                 [tToday('backup'), backup],
                 [tToday('lastExport'), dash],
               ]}

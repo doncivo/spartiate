@@ -21,6 +21,8 @@ type Mode = { readonly kind: 'idle' } | { readonly kind: 'search' } | { readonly
 export interface JournalViewProps {
   readonly snapshot: NutritionSnapshot;
   readonly onChanged: () => Promise<void>;
+  /** ERGO-01b P2 : recherche ouverte d'office (route `search`). */
+  readonly openSearch?: boolean;
 }
 
 /** Couverture du jour : dit si l'état est DÉCLARÉ par Ali ou DÉDUIT (D-81) ; une journée sans entrée reste inconnue, même déclarée complète. */
@@ -59,7 +61,7 @@ function CoverageNote({ day, isToday }: { readonly day: DayTotals; readonly isTo
  * zéro (une journée sans entrée reste « rien de saisi », une journée partielle n'est pas présentée comme complète), entrées avec provenance,
  * ajout (recherche locale, Ajout rapide), correction et suppression avec confirmation. Le scan et la photo ne sont pas offerts : l'écran le dit.
  */
-export function JournalView({ snapshot, onChanged }: JournalViewProps) {
+export function JournalView({ snapshot, onChanged, openSearch = false }: JournalViewProps) {
   const container = useAppContainer();
   const { data } = container;
   const navigate = useNavigationStore((s) => s.navigate);
@@ -68,7 +70,8 @@ export function JournalView({ snapshot, onChanged }: JournalViewProps) {
   const [loaded, setLoaded] = useState<{ readonly date: LocalDate; readonly list: readonly MealEntryRecord[]; readonly declaration: DayDeclaration | null } | null>(null);
   const entries = loaded !== null && loaded.date === date ? loaded.list : null;
   const [version, setVersion] = useState(0);
-  const [mode, setMode] = useState<Mode>({ kind: 'idle' });
+  // ERGO-01b P2 : ouvert depuis « Ajouter un repas » d'Aujourd'hui, la recherche est déjà ouverte (champ actif).
+  const [mode, setMode] = useState<Mode>(openSearch ? { kind: 'search' } : { kind: 'idle' });
   const [toDelete, setToDelete] = useState<MealEntryRecord | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [declBusy, setDeclBusy] = useState(false);
