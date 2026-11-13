@@ -140,7 +140,7 @@ function ExerciseDetail({ data, exercise, onBack, onOpen, onEdit, onDelete }: De
   return (
     <article className="ct-training__detail" aria-labelledby={`ct-ex-${exercise.id}`}>
       <button type="button" className="ct-training__back" onClick={onBack}>
-        <Icon icon={ArrowLeft} size={20} />
+        <Icon icon={ArrowLeft} size="md" />
         <span>{tTraining('backToLibrary')}</span>
       </button>
       <h2 id={`ct-ex-${exercise.id}`} className="ct-training__heading">

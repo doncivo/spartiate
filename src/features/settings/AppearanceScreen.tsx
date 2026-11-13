@@ -49,7 +49,7 @@ export function AppearanceScreen() {
       <div className="ct-appearance">
         <div className="ct-appearance__topRow">
           <button type="button" className="ct-appearance__back" aria-label={t('appearance.back')} onClick={() => navigate({ tab: 'more', screen: 'home' })}>
-            <Icon icon={ArrowLeft} size={26} />
+            <Icon icon={ArrowLeft} size="lg" />
           </button>
         </div>
         <h1 className="ct-appearance__title">{t('appearance.title')}</h1>

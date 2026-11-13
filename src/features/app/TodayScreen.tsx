@@ -6,7 +6,7 @@ import { isTrendLearning } from '../../domain/nutrition/trendLearning';
 import { formatDetailDate, formatStamp } from '../../i18n/format';
 import { formatKg, tBody, type BodyTextKey } from '../../i18n/bodyText';
 import { formatTodayEyebrow, tToday, type TodayTextKey } from '../../i18n/todayText';
-import { Button, useLayout } from '../../ui';
+import { Button, Icon, useLayout } from '../../ui';
 import { useSyncedData } from '../sync/remoteChanges';
 import { statusLine } from '../sync/syncText';
 import { useAppContainer } from './AppContainerContext';
@@ -269,13 +269,13 @@ export function TodayScreen() {
                 <li key={step.title} className="ct-today__step">
                   <button type="button" className="ct-today__step-button" onClick={() => navigate(step.route)}>
                     <span className={step.done ? 'ct-today__step-mark ct-today__step-mark--done' : 'ct-today__step-mark'}>
-                      {step.done ? <Check size={16} role="img" aria-label={tToday('stepDone')} /> : index + 1}
+                      {step.done ? <Icon icon={Check} size="sm" label={tToday('stepDone')} /> : index + 1}
                     </span>
                     <span className="ct-today__step-text">
                       <span className="ct-today__step-title">{tToday(step.title)}</span>
                       <span className="ct-today__muted">{tToday(step.hint)}</span>
                     </span>
-                    <ChevronRight size={20} aria-hidden="true" className="ct-today__chevron" />
+                    <Icon icon={ChevronRight} size="md" className="ct-today__chevron" />
                   </button>
                 </li>
               ))}

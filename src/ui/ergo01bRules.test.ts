@@ -35,7 +35,7 @@ describe('ERGO-01b : classes partagées (figures.css, importé par tokens.css)',
   });
 
   it('bloc à plat : ni fond ni bordure de carte, filet fin au-dessus, 16 px dedans', () => {
-    const flat = rule(figures, 'div.ct-flat');
+    const flat = rule(figures, 'li.ct-flat'); // dernier sélecteur du groupe section, div, form, li
     expect(flat).toContain('background: transparent');
     expect(flat).toContain('border: 0');
     expect(flat).toContain('border-top: var(--ct-line)');

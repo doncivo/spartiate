@@ -52,6 +52,10 @@
   --ct-space-6: 28px;
   --ct-space-7: 36px;
   --ct-space-8: 52px;
+  /* ERGO-01b (décision d'Ali du 13/11) : espacement entre sections (grille 4 pt : 16 px dans un bloc, 24 px entre deux blocs) et filet fin
+     qui remplace les cartes. Le filet n'est pas une couleur : il reprend --ct-color-border, déjà redéfini en sombre. */
+  --ct-space-section: 24px;
+  --ct-line: 1px solid var(--ct-color-border);
 
   /* Zone tactile minimale (PRD 5 : ≥ 44 points) et marges de sécurité iOS. */
   --ct-hit-target-min: 44px;

@@ -13,9 +13,12 @@ import { TabRail } from './TabRail';
  * bronze espacées, chiffre héros, filet fin, icônes Lucide homogènes, indicateur bronze de l'onglet actif.
  */
 
+const GOAL = 'Objectif';
+const HISTORY = 'Historique';
+
 describe('ERGO-01b : titre de section', () => {
   it('h2 par défaut, classe partagée (petites capitales bronze), identifiant transmis', () => {
-    render(<SectionTitle id="x-title">Objectif</SectionTitle>);
+    render(<SectionTitle id="x-title">{GOAL}</SectionTitle>);
     const heading = screen.getByRole('heading', { level: 2, name: 'Objectif' });
     expect(heading).toHaveClass('ct-section-title');
     expect(heading).toHaveAttribute('id', 'x-title');
@@ -24,7 +27,7 @@ describe('ERGO-01b : titre de section', () => {
   it('niveau 3 sur demande, classe de l’écran ajoutée à la classe partagée', () => {
     render(
       <SectionTitle level={3} className="ct-x__title">
-        Historique
+        {HISTORY}
       </SectionTitle>,
     );
     const heading = screen.getByRole('heading', { level: 3, name: 'Historique' });

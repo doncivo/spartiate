@@ -140,7 +140,7 @@ export function SetRow({ set, number, current = false, timed, source, busy, onVa
         </span>
         <span className="ct-session__set-target">{target ?? ''}</span>
         <span className={set.done ? 'ct-session__state ct-session__state--done' : 'ct-session__state'}>
-          {set.done ? <Icon icon={Check} size={16} /> : null}
+          {set.done ? <Icon icon={Check} size="sm" /> : null}
           {tTraining(set.done ? 'sessionDone' : 'sessionTodo')}
         </span>
       </div>
@@ -170,7 +170,7 @@ export function SetRow({ set, number, current = false, timed, source, busy, onVa
               </select>
             </label>
             <button type="button" className="ct-training__icon-button" aria-label={tTraining('sessionRemoveSet')} disabled={busy} onClick={onRemove}>
-              <Icon icon={X} size={20} />
+              <Icon icon={X} size="md" />
             </button>
             <button type="button" className="ct-session__validate" disabled={busy} onClick={validate}>
               {tTraining('sessionValidate')}

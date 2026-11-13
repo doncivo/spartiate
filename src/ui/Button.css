@@ -5,6 +5,7 @@
   justify-content: center;
   gap: var(--ct-space-2);
   height: 48px;
+  min-height: var(--ct-hit-target-min); /* ERGO-01b : jamais sous 44 px, même quand un écran réduit la hauteur */
   padding: 0 20px;
   border-radius: var(--ct-radius-pill);
   font-family: var(--ct-font-text);

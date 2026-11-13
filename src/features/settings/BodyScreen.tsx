@@ -187,7 +187,7 @@ export function BodyScreen() {
       <div className="ct-body">
         <div className="ct-body__topRow">
           <button type="button" className="ct-body__back" aria-label={tBody('back')} onClick={() => navigate({ tab: 'more', screen: 'home' })}>
-            <Icon icon={ArrowLeft} size={26} />
+            <Icon icon={ArrowLeft} size="lg" />
           </button>
         </div>
         <h1 className="ct-body__title">{tBody('title')}</h1>

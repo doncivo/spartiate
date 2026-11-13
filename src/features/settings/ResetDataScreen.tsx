@@ -64,7 +64,7 @@ export function ResetDataScreen({ onDone = reloadApp }: { readonly onDone?: () =
       <div className="ct-body">
         <div className="ct-body__topRow">
           <button type="button" className="ct-body__back" aria-label={tDataReset('back')} onClick={() => navigate({ tab: 'more', screen: 'home' })}>
-            <Icon icon={ArrowLeft} size={26} />
+            <Icon icon={ArrowLeft} size="lg" />
           </button>
         </div>
         <h1 className="ct-body__title">{tDataReset('title')}</h1>

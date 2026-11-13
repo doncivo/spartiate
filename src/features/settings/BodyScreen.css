@@ -216,9 +216,9 @@
 /* Boutons « Enregistrer » : hauteur normale, jamais étirés (planches I0). */
 .ct-body .ct-body__save {
   align-self: flex-start;
-  height: 40px;
-  padding: 0 var(--ct-space-3);
-  border-radius: var(--ct-radius-md);
+  min-height: var(--ct-hit-target-min);
+  padding: 0 var(--ct-space-4);
+  border-radius: var(--ct-radius-pill);
 }
 
 .ct-body__item {

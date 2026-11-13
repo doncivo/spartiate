@@ -338,7 +338,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
       {pickingDay && (
         <section className="ct-training__picker" role="region" aria-label={tTraining('pickerTitle', { day: pickingDay.name })}>
           <button type="button" className="ct-training__back" onClick={() => setPicking(null)}>
-            <Icon icon={ArrowLeft} size={20} />
+            <Icon icon={ArrowLeft} size="md" />
             <span>{tTraining('cancel')}</span>
           </button>
           <h2 ref={pickerHeading} tabIndex={-1} className="ct-training__heading">
@@ -349,7 +349,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
       )}
       <div className="ct-training__editor" hidden={pickingDay !== null}>
         <button type="button" className="ct-training__back" onClick={() => onClose()}>
-          <Icon icon={ArrowLeft} size={20} />
+          <Icon icon={ArrowLeft} size="md" />
           <span>{tTraining('backToRoutines')}</span>
         </button>
         <h2 className="ct-training__heading">{tTraining('editRoutine')}</h2>
@@ -388,7 +388,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
                       <span className="ct-training__row-name">{resolved.name}</span>
                       <span className="ct-training__line-tools">
                         <button type="button" className="ct-training__icon-button" aria-label={tTraining('moveUp')} disabled={index === 0} onClick={() => move(day.id, index, -1)}>
-                          <Icon icon={ArrowUp} size={20} />
+                          <Icon icon={ArrowUp} size="md" />
                         </button>
                         <button
                           type="button"
@@ -397,7 +397,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
                           disabled={index === day.lines.length - 1}
                           onClick={() => move(day.id, index, 1)}
                         >
-                          <Icon icon={ArrowDown} size={20} />
+                          <Icon icon={ArrowDown} size="md" />
                         </button>
                         <button
                           type="button"
@@ -405,7 +405,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
                           aria-label={tTraining('remove')}
                           onClick={() => removeLine(day.id, line.id)}
                         >
-                          <Icon icon={X} size={20} />
+                          <Icon icon={X} size="md" />
                         </button>
                       </span>
                     </div>
