@@ -99,6 +99,53 @@ fn i6_06_the_cardio_triggers_exist_only_from_the_cardio_version_and_the_track_ha
         .all(|(_, table, _)| *table != "cardio_track"));
 }
 
+/// I6-06 : une sauvegarde Spartiate de la version du cardio (déclencheurs de `cardio_session`) est admise ; un corps modifié est refusé ; la même
+/// version portant un déclencheur de l'ancien projet (CircleTasks, numérotation 17 à 19) est refusée comme d'un schéma inconnu (D-54).
+#[test]
+fn i6_06_a_cardio_version_backup_is_accepted_a_tampered_or_old_project_one_is_refused() {
+    let dir = scratch();
+    let build = |name: &str| {
+        let path = dir.path().join(name);
+        make_db(&path, CARDIO_VERSION, &TABLES);
+        let circuit = trigger_body_for(
+            "sync_routine_exercise_circuit_au",
+            "routine_exercise",
+            CARDIO_VERSION,
+        )
+        .unwrap();
+        let conn = Connection::open(&path).unwrap();
+        conn.execute_batch(
+            "ALTER TABLE routine_exercise ADD COLUMN circuit_id TEXT; ALTER TABLE routine_exercise ADD COLUMN circuit_rest_sec INTEGER;",
+        )
+        .unwrap();
+        conn.execute_batch(circuit).unwrap();
+        drop(conn);
+        make_tables(&path, CARDIO_VERSION, &["cardio_session"]);
+        path
+    };
+    let good = build("cardio.db");
+    assert_eq!(
+        check_backup_file(&good, APP_SCHEMA_VERSION).unwrap(),
+        CARDIO_VERSION
+    );
+    let tampered = build("tampered.db");
+    Connection::open(&tampered)
+        .unwrap()
+        .execute_batch(
+            "DROP TRIGGER sync_cardio_session_au; CREATE TRIGGER sync_cardio_session_au AFTER UPDATE ON cardio_session BEGIN SELECT 1; END;",
+        )
+        .unwrap();
+    assert!(check_backup_file(&tampered, APP_SCHEMA_VERSION).is_err());
+    let old = build("old-project.db");
+    let task = trigger_body_for("sync_task_ai", "task", CARDIO_VERSION).unwrap();
+    let conn = Connection::open(&old).unwrap();
+    conn.execute_batch("CREATE TABLE task (id TEXT PRIMARY KEY);")
+        .unwrap();
+    conn.execute_batch(task).unwrap();
+    drop(conn);
+    assert_eq!(error_code(&old), "newer-schema");
+}
+
 /// RESET-01 (migration 0016) : les deux déclencheurs de capture de `data_reset` n'existent qu'à partir de la version 16.
 #[test]
 fn reset_01_the_data_reset_triggers_do_not_exist_before_version_16() {
