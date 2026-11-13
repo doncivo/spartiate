@@ -106,8 +106,9 @@ function SettingsScreenMobile() {
       <div className="ct-settings__card ct-flat">
         <ProfileCard />
       </div>
-      <h2 className="ct-settings__section ct-section-title">{tPlus('groupSources')}</h2>
-      <div className="ct-settings__card ct-flat">
+      {/* Sources : Apple Santé (iPhone) et synchro ; groupe absent quand la plateforme n'en a aucune (navigateur de développement). */}
+      {(hasHealthRow || syncValue !== null) && <h2 className="ct-settings__section ct-section-title">{tPlus('groupSources')}</h2>}
+      <div className="ct-settings__card ct-flat" hidden={!hasHealthRow && syncValue === null}>
         {hasHealthRow && <LinkRow label={healthFr.row} value={healthBlocked ? shortcutsValue : healthFr.rowValue} onClick={() => navigate({ tab: 'more', screen: 'health' })} />}
         {syncValue !== null && <LinkRow label={tPlus('navSync')} value={syncValue} onClick={() => navigate({ tab: 'more', screen: 'sync' })} />}
         <SyncSettingsSection heading={false} showStatus={false} />
