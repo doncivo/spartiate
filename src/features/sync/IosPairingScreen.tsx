@@ -206,7 +206,7 @@ export function IosPairingScreen({ platform, onClose, document: injected }: IosP
     <div ref={ref} className="ct-ios-pair" role="dialog" aria-modal="true" aria-labelledby="ct-ios-pair-title" tabIndex={-1}>
       <div className="ct-ios-pair__bar">
         <button type="button" className="ct-ios-pair__close" aria-label={t('sync.pairing.ios.cancelLabel')} onClick={onClose}>
-          <Icon icon={X} size={24} />
+          <Icon icon={X} size="lg" />
         </button>
         <span className="ct-ios-pair__section">{t('sync.pairing.ios.section')}</span>
         <span className="ct-ios-pair__spacer" />

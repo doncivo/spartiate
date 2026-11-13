@@ -162,3 +162,23 @@ export function snapToEquipment(targetKg: number, reps: readonly number[], loads
   const extraRep = loadKg > 0 && (targetKg - loadKg) / loadKg > config.snapTolerance + EPS;
   return { loadKg, reps: extraRep ? reps.map((r) => r + 1) : [...reps], extraRep };
 }
+
+/** ERGO-01b P3 (D-238, D-244) : cran de « − / + » sans grille de matériel connue (profil absent, matériel sans palier). Révisable par Ali. */
+export const FALLBACK_LOAD_STEP_KG = 2.5;
+
+/**
+ * ERGO-01b P3 : charge après un tap sur « + » (`dir` 1) ou « − » (`dir` -1). Avec la grille du matériel : la charge disponible suivante ou
+ * précédente (aux bornes, la charge reste ; vide, « + » rend la plus petite). Sans grille : ± 2,5 kg, jamais sous zéro ; vide, « + » rend 2,5 et
+ * « − » rien.
+ */
+export function stepLoad(kg: number | null, loads: readonly number[] | null, dir: 1 | -1): number | null {
+  if (loads !== null && loads.length > 0) {
+    if (kg === null) return dir === 1 ? Math.min(...loads) : null;
+    if (dir === 1) return nextLoadAbove(kg, loads) ?? kg;
+    let below: number | null = null;
+    for (const load of loads) if (load < kg - EPS && (below === null || load > below)) below = load;
+    return below ?? kg;
+  }
+  if (kg === null) return dir === 1 ? FALLBACK_LOAD_STEP_KG : null;
+  return Math.max(0, roundKg(kg + dir * FALLBACK_LOAD_STEP_KG));
+}

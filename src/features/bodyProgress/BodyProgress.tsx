@@ -217,7 +217,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
   }
   if (load.status === 'failed') {
     return (
-      <section className="ct-today__card ct-bodyprogress" role="alert">
+      <section className="ct-today__card ct-bodyprogress ct-flat" role="alert">
         <p className="ct-today__text">{tBodyProgress('loadFailed')}</p>
         <Button
           variant="secondary"
@@ -246,10 +246,10 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
 
   return (
     <div className="ct-bodyprogress">
-      <h2 className="ct-today__eyebrow ct-bodyprogress__title">{tBodyProgress('title')}</h2>
+      <h2 className="ct-today__eyebrow ct-bodyprogress__title ct-section-title">{tBodyProgress('title')}</h2>
 
-      <section className="ct-today__card ct-bodyprogress__card" aria-labelledby="ct-bodyprogress-measures">
-        <h3 id="ct-bodyprogress-measures" className="ct-bodyprogress__heading">
+      <section className="ct-today__card ct-bodyprogress__card ct-flat" aria-labelledby="ct-bodyprogress-measures">
+        <h3 id="ct-bodyprogress-measures" className="ct-bodyprogress__heading ct-section-title">
           {tBodyProgress('measuresTitle')}
         </h3>
         <p className="ct-today__muted">{tBodyProgress('measuresHint')}</p>
@@ -308,8 +308,8 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
       </section>
 
       {health.length > 0 && (
-        <section className="ct-today__card ct-bodyprogress__card" aria-labelledby="ct-bodyprogress-health">
-          <h3 id="ct-bodyprogress-health" className="ct-bodyprogress__heading">
+        <section className="ct-today__card ct-bodyprogress__card ct-flat" aria-labelledby="ct-bodyprogress-health">
+          <h3 id="ct-bodyprogress-health" className="ct-bodyprogress__heading ct-section-title">
             {tBodyProgress('healthTitle')}
           </h3>
           <p className="ct-today__muted">{tBodyProgress('healthHint')}</p>
@@ -323,8 +323,8 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
         </section>
       )}
 
-      <section className="ct-today__card ct-bodyprogress__card" aria-labelledby="ct-bodyprogress-photos">
-        <h3 id="ct-bodyprogress-photos" className="ct-bodyprogress__heading">
+      <section className="ct-today__card ct-bodyprogress__card ct-flat" aria-labelledby="ct-bodyprogress-photos">
+        <h3 id="ct-bodyprogress-photos" className="ct-bodyprogress__heading ct-section-title">
           {tBodyProgress('photosTitle')}
         </h3>
         <p className="ct-today__muted">{tBodyProgress('photosPrivacy')}</p>
@@ -372,7 +372,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
         )}
         {compared.length === COMPARE_MAX && (
           <section className="ct-bodyprogress__compare" aria-labelledby="ct-bodyprogress-compare">
-            <h4 id="ct-bodyprogress-compare" className="ct-bodyprogress__heading">
+            <h4 id="ct-bodyprogress-compare" className="ct-bodyprogress__heading ct-section-title">
               {tBodyProgress('compareTitle')}
             </h4>
             <div className="ct-bodyprogress__pair">

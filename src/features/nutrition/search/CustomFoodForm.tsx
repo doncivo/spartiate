@@ -75,14 +75,14 @@ export function CustomFoodForm({ initialName, initialBarcode, onCreated, onCance
 
   return (
     <form
-      className="ct-nutrition__panel ct-nutrition__form"
+      className="ct-nutrition__panel ct-nutrition__form ct-flat"
       onKeyDown={onKeyDown}
       onSubmit={(event) => {
         event.preventDefault();
         void save();
       }}
     >
-      <h2 className="ct-nutrition__subtitle">{tNutrition('customTitle')}</h2>
+      <h2 className="ct-nutrition__subtitle ct-section-title">{tNutrition('customTitle')}</h2>
       <p className="ct-nutrition__muted">{tNutrition('customIntro')}</p>
       <label className="ct-nutrition__field">
         <span className="ct-nutrition__field-label">{tNutrition('foodNameLabel')}</span>

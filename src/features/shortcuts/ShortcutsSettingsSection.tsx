@@ -16,7 +16,7 @@ export function ShortcutsSettingsSection({ heading = true }: { readonly heading?
   if (layout !== 'pc') return null;
   return (
     <>
-      {heading && <h2 className="ct-settings__section">{t('shortcutsUi.settings.section')}</h2>}
+      {heading && <h2 className="ct-settings__section ct-section-title">{t('shortcutsUi.settings.section')}</h2>}
       <button
         type="button"
         className="ct-settings__row ct-settings__rowButton"

@@ -84,7 +84,7 @@ export function EntryEditor({ entry, onSaved, onClose }: EntryEditorProps) {
       }}
     >
       <div className="ct-nutrition__food-head">
-        <h2 className="ct-nutrition__subtitle">{tNutrition('editTitle')}</h2>
+        <h2 className="ct-nutrition__subtitle ct-section-title">{tNutrition('editTitle')}</h2>
         <ProvenanceBadge source={entry.source} />
       </div>
       {byGrams ? (

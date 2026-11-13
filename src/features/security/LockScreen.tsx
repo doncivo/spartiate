@@ -42,7 +42,7 @@ export function LockScreen() {
   const screen = (
     <main className="ct-lock" aria-labelledby="ct-lock-title">
       <span className="ct-lock__badge">
-        <Icon icon={LockKeyhole} size={30} />
+        <Icon icon={LockKeyhole} size="lg" />
       </span>
       <p className="ct-lock__app">{t('app.name')}</p>
       <h1 id="ct-lock-title" className="ct-lock__title">

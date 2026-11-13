@@ -187,7 +187,7 @@ export function BodyScreen() {
       <div className="ct-body">
         <div className="ct-body__topRow">
           <button type="button" className="ct-body__back" aria-label={tBody('back')} onClick={() => navigate({ tab: 'more', screen: 'home' })}>
-            <Icon icon={ArrowLeft} size={26} />
+            <Icon icon={ArrowLeft} size="lg" />
           </button>
         </div>
         <h1 className="ct-body__title">{tBody('title')}</h1>
@@ -199,14 +199,14 @@ export function BodyScreen() {
         </div>
 
         <div className="ct-body__grid">
-          <section className="ct-body__card ct-body__card--weight" aria-label={tBody('sectionWeight')}>
-            <h2 className="ct-body__section">{tBody('sectionWeight')}</h2>
+          <section className="ct-body__card ct-body__card--weight ct-flat" aria-label={tBody('sectionWeight')}>
+            <h2 className="ct-body__section ct-section-title">{tBody('sectionWeight')}</h2>
             <div className="ct-body__latest">
-              <div className="ct-body__latestValue">
+              <div className="ct-body__latestValue ct-hero">
                 {latest ? (
                   <>
-                    <span className="ct-body__big">{formatKg(latest.kg)}</span>
-                    <span className="ct-body__unit">{tBody('weightUnit')}</span>
+                    <span className="ct-body__big ct-hero__num">{formatKg(latest.kg)}</span>
+                    <span className="ct-body__unit ct-hero__unit">{tBody('weightUnit')}</span>
                   </>
                 ) : (
                   <span className="ct-body__hint">{tBody('weightLatestNone')}</span>
@@ -253,8 +253,8 @@ export function BodyScreen() {
             )}
           </section>
 
-          <section className="ct-body__card ct-body__card--profile" aria-label={tBody('sectionProfile')}>
-            <h2 className="ct-body__section">{tBody('sectionProfile')}</h2>
+          <section className="ct-body__card ct-body__card--profile ct-flat" aria-label={tBody('sectionProfile')}>
+            <h2 className="ct-body__section ct-section-title">{tBody('sectionProfile')}</h2>
             {waiting && (
               <p className="ct-body__hint" role="note">
                 <strong>{tBody('waitingFirstSync')}</strong> {tBody('waitingHint')}
@@ -288,7 +288,7 @@ export function BodyScreen() {
                 {profileMessage.text}
               </p>
             )}
-            <Button className="ct-body__save" disabled={waiting} onClick={() => void saveProfile()}>
+            <Button variant="secondary" className="ct-body__save" disabled={waiting} onClick={() => void saveProfile()}>
               {tBody('saveProfile')}
             </Button>
           </section>

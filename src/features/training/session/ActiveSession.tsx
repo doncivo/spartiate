@@ -18,6 +18,7 @@ import {
 } from '../../../domain/training';
 import { positionRanksOfSets } from '../../../domain/training/positionRank';
 import { warmupExerciseIds } from '../../../domain/training/warmup';
+import { loadGrid } from '../../../domain/training/loadGrid';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import { RepositoryError } from '../../../db/repositories/common';
 import type { ClosedWorkout, WorkoutRepository } from '../../../db/repositories/workoutRepository';
@@ -422,6 +423,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         const first = block.sets.find((s) => s.setKind !== 'warmup') ?? block.sets[0];
         const restSec = first ? restSecondsFor({ setKind: 'work', targetRestSec: first.targetRestSec }, restSetting, exercise?.defaultRestSec ?? null) : null;
         const work = block.sets.filter((s) => s.setKind !== 'warmup').length;
+        // ERGO-01b P3 : cran du « − / + » = charges disponibles avec le profil de matériel actif.
+        const loads = loadGrid(exercise?.equipment ?? [], data.active)?.loads ?? null;
         let rank = 0;
         const circuit = circuits.find((c) => c.exerciseIds[0] === block.exerciseId);
         return (
@@ -457,6 +460,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                     set={set}
                     number={rank}
                     current={set.id === currentSetId}
+                    loads={loads}
                     timed={isTimedExercise(exercise, set)}
                     source={workout.source}
                     busy={busy}

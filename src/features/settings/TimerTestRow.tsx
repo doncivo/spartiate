@@ -16,7 +16,7 @@ interface Props {
 }
 
 /**
- * Ligne « Tester le minuteur (60 s) » de Plus › À propos et diagnostic (SPA-007). Affichage seul : la logique (date persistée, notification,
+ * Ligne « Tester le minuteur (60 s) » de Plus › Logs (SPA-007 ; déplacée de Plus › À propos par ERGO-01b P5, D-238). Affichage seul : la logique (date persistée, notification,
  * Live Activity, arrêt, reprise) est dans `syntheticTimer.ts`. Le temps restant est recalculé depuis la date de fin à chaque tour de
  * l'horloge d'affichage (une seconde) et à chaque retour au premier plan ; aucun compteur n'est tenu en JavaScript.
  */

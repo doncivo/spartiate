@@ -92,8 +92,8 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
 
   const line = (key: CardioTextKey): string => tCardio(key);
   return (
-    <section className="ct-today__card ct-cardio__card ct-cardio__gps" aria-labelledby="ct-cardio-gps">
-      <h2 id="ct-cardio-gps" className="ct-cardio__heading">
+    <section className="ct-today__card ct-cardio__card ct-cardio__gps ct-flat" aria-labelledby="ct-cardio-gps">
+      <h2 id="ct-cardio-gps" className="ct-cardio__heading ct-section-title">
         {tCardio('gpsTitle')}
       </h2>
       <p className="ct-today__muted">{tCardio('gpsHint')}</p>

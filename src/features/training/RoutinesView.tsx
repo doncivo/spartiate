@@ -338,7 +338,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
       {pickingDay && (
         <section className="ct-training__picker" role="region" aria-label={tTraining('pickerTitle', { day: pickingDay.name })}>
           <button type="button" className="ct-training__back" onClick={() => setPicking(null)}>
-            <Icon icon={ArrowLeft} size={20} />
+            <Icon icon={ArrowLeft} size="md" />
             <span>{tTraining('cancel')}</span>
           </button>
           <h2 ref={pickerHeading} tabIndex={-1} className="ct-training__heading">
@@ -349,7 +349,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
       )}
       <div className="ct-training__editor" hidden={pickingDay !== null}>
         <button type="button" className="ct-training__back" onClick={() => onClose()}>
-          <Icon icon={ArrowLeft} size={20} />
+          <Icon icon={ArrowLeft} size="md" />
           <span>{tTraining('backToRoutines')}</span>
         </button>
         <h2 className="ct-training__heading">{tTraining('editRoutine')}</h2>
@@ -388,7 +388,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
                       <span className="ct-training__row-name">{resolved.name}</span>
                       <span className="ct-training__line-tools">
                         <button type="button" className="ct-training__icon-button" aria-label={tTraining('moveUp')} disabled={index === 0} onClick={() => move(day.id, index, -1)}>
-                          <Icon icon={ArrowUp} size={20} />
+                          <Icon icon={ArrowUp} size="md" />
                         </button>
                         <button
                           type="button"
@@ -397,7 +397,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
                           disabled={index === day.lines.length - 1}
                           onClick={() => move(day.id, index, 1)}
                         >
-                          <Icon icon={ArrowDown} size={20} />
+                          <Icon icon={ArrowDown} size="md" />
                         </button>
                         <button
                           type="button"
@@ -405,7 +405,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
                           aria-label={tTraining('remove')}
                           onClick={() => removeLine(day.id, line.id)}
                         >
-                          <Icon icon={X} size={20} />
+                          <Icon icon={X} size="md" />
                         </button>
                       </span>
                     </div>
@@ -514,7 +514,7 @@ function ProgramCard({ data, program, onAdd }: { readonly data: TrainingData; re
   );
   const incompatible = new Set(incompatibleRoutineLines(lines, data.active, data.content.catalog, data.allCustoms).map((l) => l.exerciseId)).size;
   return (
-    <li className="ct-training__card">
+    <li className="ct-training__card ct-flat">
       <h3 className="ct-training__subheading">{program.name}</h3>
       <p className="ct-training__muted">
         {program.audienceFr} · {tTraining('programDays', { n: program.days.length })}
@@ -638,7 +638,7 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
       )}
       {programs && (
         <section aria-labelledby="ct-programs-title">
-          <h2 id="ct-programs-title" className="ct-training__eyebrow">
+          <h2 id="ct-programs-title" className="ct-training__eyebrow ct-section-title">
             {tTraining('programsTitle')}
           </h2>
           <p className="ct-training__muted">{tTraining('programsHint')}</p>
@@ -650,7 +650,7 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
         </section>
       )}
       <section aria-labelledby="ct-routines-title">
-        <h2 id="ct-routines-title" className="ct-training__eyebrow">
+        <h2 id="ct-routines-title" className="ct-training__eyebrow ct-section-title">
           {tTraining('routines')}
         </h2>
         {routines !== null && routines.length === 0 && <p className="ct-training__empty">{tTraining('noRoutines')}</p>}

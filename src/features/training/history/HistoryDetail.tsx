@@ -160,7 +160,7 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted, onRe
           <SummaryFigures summary={load.summary} />
           {load.summary.records.length > 0 ? (
             <div className="ct-summary__card">
-              <h3 id="ct-history-records" className="ct-training__eyebrow">
+              <h3 id="ct-history-records" className="ct-training__eyebrow ct-section-title">
                 {tTraining('summaryRecordsTitle')}
               </h3>
               <ul className="ct-summary__records" aria-labelledby="ct-history-records">
