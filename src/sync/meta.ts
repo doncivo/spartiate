@@ -59,6 +59,12 @@ export const META = {
   epochCarryNotice: 'epochCarryNotice',
   /** Quatrième revue, point D : repères `[stateSeq, lastSyncHlc]` de ses états publiés (ADR 0011 §5.5, condition 3). */
   ownStateHlcs: 'ownStateHlcs',
+  /** RESET-01 : plus grand horizon de remise à zéro connu (hlc), posé dès qu'une ligne `data_reset` est reçue ou écrite ; ne décroît jamais. */
+  dataResetSeen: 'dataResetSeen',
+  /** RESET-01 : horizon pour lequel l'effacement a été fait sur cet appareil (hlc) ; < `dataResetSeen` : effacement dû. */
+  dataResetApplied: 'dataResetApplied',
+  /** RESET-01 : heure locale (ms) du dernier effacement fait ici ; les sauvegardes antérieures ne se restaurent plus (D-185). */
+  dataResetWipedAt: 'dataResetWipedAt',
 } as const;
 
 /** Valeur JSON de `sync_meta` ; absente : null ; illisible : `SyncStateUnreadableError` journalisée (jamais lue comme absente). */

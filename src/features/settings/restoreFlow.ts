@@ -4,6 +4,17 @@ import type { AppContainer } from '../app/container';
 import { writeMarkerFailed, writeRestoreResult } from './restoreMemo';
 import { quiesceForRestore, type QuiesceHandle } from './restoreQuiesce';
 
+/** RESET-01 : la version a-t-elle été écrite avant le dernier effacement fait sur cet appareil ? */
+async function isBeforeReset(container: AppContainer, version: BackupVersion): Promise<boolean> {
+  try {
+    const resetAt = await (await import('../../sync/dataReset')).readResetAtMs(container.data.repos);
+    return resetAt !== null && version.modifiedMs <= resetAt;
+  } catch (error) {
+    logFailure('backup-restore', error);
+    return true;
+  }
+}
+
 export type RestoreFlowOutcome =
   | { readonly kind: 'failed'; readonly reason: BackupFailureReason; readonly databaseClosed: boolean }
   | { readonly kind: 'done'; readonly markerFailure: string | null };
@@ -15,6 +26,9 @@ export type RestoreFlowOutcome =
  * Marqueur de la synchro non écrit : mémo gardé jusqu'à résolution (critère 12). Ne rejette jamais.
  */
 export async function performRestore(container: AppContainer, service: BackupService, version: BackupVersion, stamp: string): Promise<RestoreFlowOutcome> {
+  // RESET-01 (D-185) : une sauvegarde prise avant « Repartir de zéro » ne se restaure jamais (elle ramènerait les données effacées) ; refus avant
+  // toute mise au calme, base intacte. Lecture impossible : refus aussi (échec fermé), jamais une restauration à l'aveugle.
+  if (await isBeforeReset(container, version)) return { kind: 'failed', reason: 'before-reset', databaseClosed: false };
   let quiet: QuiesceHandle | null = null;
   let result: RestoreResult | undefined;
   try {
