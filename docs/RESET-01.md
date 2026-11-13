@@ -26,6 +26,7 @@ Hors périmètre : archive automatique (D-182), suppression des sauvegardes (D-5
 | Point | Rouge | Vert |
 | --- | --- | --- |
 | 1-10 | `6afd7f6c` | `527d6c3b` |
+| SEC-01 (pragma refusé par la garde du plugin SQL) | `527d6c3b` (`tests/unit/sqlPragmaScan.test.ts` rouge : `defer_foreign_keys` hors liste blanche) | `2ef1d0c4` |
 
 Rouge (relancé sur une copie de `6afd7f6c` sans le code, `git archive` dans `.codex-tmp/red`) : 8 fichiers en échec sur 9 lancés — modules `src/domain/dataReset`, `0016_data_reset`, `ResetDataScreen`, `src/sync/dataReset` absents (5 fichiers), comptes figés (55 déclencheurs attendus, 53 trouvés ; 26 tables attendues, 25 trouvées ; ordre sans `data_reset`). Écarts consignés, sans affaiblissement : comptes et positions figés mis à jour d'une table (même test, valeur nouvelle) ; le test du registre de la 0015 vérifie ses 15 premières migrations (la 0016 la suit, comme la 0014 en FIX-0181) ; Rust : 103 déclencheurs de référence, version 16 admise, 17 refusée.
 
@@ -47,7 +48,7 @@ Aucune clé, aucun appel réseau, aucune permission. Le journal ne porte que des
 
 ## Passe qa-test
 
-QA_DETAIL
+Lancé en local (`--coverage.enabled=false --maxWorkers=1`) : `src/db`, `src/domain`, `src/platform/backup`, `src/i18n` (273 fichiers, verts après mise à jour des comptes figés) ; `tests/unit` entier (dont tout `tests/unit/sync`, `tests/unit/sync/reset` Y-11, `stampBeforeWrite.test.ts`, `resetHygiene.test.ts`), `src/features/settings`, `src/features/onboarding`, `src/features/app`, `src/domain/timeFormat.arch.test.ts`, `scripts/release/backupMigrationsFixture.test.ts` (258 fichiers : 2 échecs, `sqlPragmaScan` — corrigé par `2ef1d0c4` — et `publishedVersion`, faux échec dû au bump posé dans l'arbre pendant le passage, vert relancé) ; `src/sync`, `src/features/sync` ; puis les 5 gardes documentaires après le bump. `tsc --noEmit` et `eslint` des fichiers touchés : verts. `cargo fmt` appliqué ; `cargo test --features test-hooks --test desktop -j 2` lancé puis arrêté (compilation complète du worktree à partir de zéro, plus de deux heures estimées à `-j 2`) : la CI tranche (comme FIX-0181 après DEP-01). Changements Rust limités aux constantes de sauvegarde (`APP_SCHEMA_VERSION` 16, deux déclencheurs de référence générés par script depuis le gabarit de la 0016, `SPARTIATE_TABLES` 41) et à leurs tests ; la cohérence TS ↔ Rust des déclencheurs est vérifiée en local par `src/platform/backup/triggers.test.ts` et `backupMigrationsFixture.test.ts` (verts). Hygiène : aucune minuterie réelle dans `tests/unit/sync/reset01` (horloge simulée du banc). Non lancé en local : suite complète avec couverture, e2e (pc, iphone, iphone-webkit ; spec `tests/e2e/RESET-01-repartir-de-zero.spec.ts`), visual, `npm run test:bundle` (la CI tranche : migration 0016 au départ par la liste blanche, écran, catalogue et effacement à la demande, assertions ajoutées dans `startBundle.test.ts`).
 
 ## Passe code-reviewer (relecture à froid du diff)
 
