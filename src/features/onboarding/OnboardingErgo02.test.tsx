@@ -78,7 +78,7 @@ describe('ERGO-02 : onboarding selon l’aperçu du 13/11', () => {
   it('PC : les 8 étapes sont listées à gauche avec leur avancement, la question au centre', async () => {
     open();
     await title('Toi');
-    const nav = screen.getByRole('navigation', { name: 'Étapes de la configuration' });
+    const nav = screen.getByRole('list', { name: 'Étapes de la configuration' });
     const items = within(nav).getAllByRole('listitem');
     expect(items).toHaveLength(8);
     NAMES.forEach((name, i) => expect(items[i]).toHaveTextContent(name));
@@ -90,7 +90,7 @@ describe('ERGO-02 : onboarding selon l’aperçu du 13/11', () => {
     expect(document.querySelectorAll('[role="dialog"] h1')).toHaveLength(1);
     press('Continuer');
     await title('Ton objectif');
-    const after = within(screen.getByRole('navigation', { name: 'Étapes de la configuration' })).getAllByRole('listitem');
+    const after = within(screen.getByRole('list', { name: 'Étapes de la configuration' })).getAllByRole('listitem');
     expect(after[0]).toHaveAttribute('data-state', 'done');
     expect(after[1]).toHaveAttribute('aria-current', 'step');
     expect(screen.getByText('Entrée pour continuer')).toBeInTheDocument();
@@ -100,7 +100,7 @@ describe('ERGO-02 : onboarding selon l’aperçu du 13/11', () => {
     setWidth(440);
     open();
     await title('Toi');
-    expect(screen.queryByRole('navigation', { name: 'Étapes de la configuration' })).toBeNull();
+    expect(screen.queryByRole('list', { name: 'Étapes de la configuration' })).toBeNull();
     expect(screen.getByText('≈ 6 min')).toBeInTheDocument();
     expect(screen.getByText('Λ SPARTIATE')).toBeInTheDocument();
     expect(document.querySelectorAll('.ct-onb__segment')).toHaveLength(8);
