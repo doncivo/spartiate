@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { backupState, failNextBackup, installFakeBackups, type FakeVersion } from './helpers/backups';
 import { installFakeFiles, nextFilesMode, savedFiles } from './helpers/files';
 import { openToday } from './helpers/today';
+import { openPlusEntry } from './helpers/settings';
 
 /**
  * QA du lot F (FILES-IOS-01, I-04, P-04-iOS) : états d'échec jamais sans action utile, jamais un « Réessayer » qui ne peut pas réussir, et
@@ -88,6 +89,7 @@ test.describe('Lot F QA — P-04-iOS : échecs de la restauration', () => {
     await installFakeBackups(page, [], { directory: null, failFirstDaily: true });
     await openToday(page);
     await tab(page, 'Plus').click();
+    await openPlusEntry(page, /^Sauvegarde/);
     await expect(page.getByTestId('backup-summary')).toContainText('Dernière sauvegarde échouée');
     await expect(page.getByTestId('backup-summary')).toHaveClass(/danger/);
     await noHorizontalScroll(page);
@@ -101,6 +103,7 @@ test.describe('Lot F QA — FILES-IOS-01 / I-04 : échecs d’enregistrement et 
     await installLogs(page);
     await openToday(page);
     await tab(page, 'Plus').click();
+    await openPlusEntry(page, /^À propos et diagnostic/);
     await page.getByRole('button', { name: 'Ouvrir l’écran des logs' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Logs' })).toBeVisible();
   }
