@@ -91,6 +91,10 @@ async function sha256Hex(text: string): Promise<string> {
 
 const journal = (segment: number, index: number): RecordPlace => ({ kind: 'j', dev: VECTOR_DEVICE, epoch: VECTOR_EPOCH, segment, index });
 
+/** Champs d'une opération, tous au même horodatage synthétique (vecteurs I6-05). */
+const fieldsAt = (values: Readonly<Record<string, string | number | null>>): Record<string, [string | number | null, string, null]> =>
+  Object.fromEntries(Object.entries(values).map(([name, value]) => [name, [value, '001794480000000-0000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60', null]]));
+
 export async function buildSyncVectors(rustSealed: SyncVectors['rustSealed'] = []): Promise<SyncVectors> {
   const key = vectorKey();
   const kid = await kidOf(key);
@@ -353,6 +357,34 @@ export async function buildSyncVectors(rustSealed: SyncVectors['rustSealed'] = [
                   [value, '001794480000000-0000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60', null],
                 ]),
               ),
+            },
+          ],
+        }),
+      },
+      full: true,
+    },
+    // I6-05 (D-210) : journal d'un appareil au schéma des compléments, un complément et une prise cochée (valeurs synthétiques), lu par Vitest et cargo test.
+    {
+      name: 'journal-ops-supplement',
+      place: journal(12, 0),
+      sm: 1,
+      sv: 16,
+      plaintext: {
+        json: JSON.stringify({
+          k: 'ops',
+          sv: 16,
+          ops: [
+            {
+              t: 'supplement',
+              id: '30000000-0000-4000-8000-000000000001',
+              at: '2026-11-13T08:00:00.000Z',
+              f: fieldsAt({ name: 'Créatine', dose: 5, unit: 'g', times: '["08:00"]', days: 127, active: 1, created_at: '2026-11-13T08:00:00.000Z', deleted_at: null }),
+            },
+            {
+              t: 'supplement_intake',
+              id: 'intake|30000000-0000-4000-8000-000000000001|2026-11-13|08:00',
+              at: '2026-11-13T08:00:00.000Z',
+              f: fieldsAt({ supplement_id: '30000000-0000-4000-8000-000000000001', date: '2026-11-13', moment: '08:00', taken_at: '2026-11-13T08:00:00.000Z', created_at: '2026-11-13T08:00:00.000Z', deleted_at: null }),
             },
           ],
         }),

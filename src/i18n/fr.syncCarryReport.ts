@@ -90,5 +90,7 @@ export const syncCarryReportFr = {
   kindMeasurement: 'Mensuration',
   kindProgressPhoto: 'Photo de progression (fiche seulement)',
   kindFoodFavorite: 'Favori de la recherche d’aliments',
+  kindSupplement: 'Complément',
+  kindSupplementIntake: 'Prise de complément',
   kindOther: 'Autre élément',
 } as const;

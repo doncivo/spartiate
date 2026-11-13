@@ -67,6 +67,8 @@ fn make_db(path: &Path, version: u32, bodies_version: u32) {
         "progress_photo",
         "progress_photo_file",
         "food_favorite",
+        "supplement",
+        "supplement_intake",
         "search_index_doc",
     ] {
         conn.execute_batch(&format!(
