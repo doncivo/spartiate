@@ -465,3 +465,29 @@ Favoris de la recherche d’aliments (FIX-0181, schéma 15), écrits sur l’un 
 | `source` | text | — | non | `custom`, `ciqual` ou `off` |
 | `ref` | text | — | non |  |
 | `added_at` | datetime | — | non | instant de la mise en favori |
+
+### `csv/supplement.csv`
+
+Compléments (I6-05, schéma 17), écrits sur l’un ou l’autre appareil. `times` : liste JSON des heures de prise (`HH:mm`, 24 h, une à quatre) ; `days` : jours de la semaine en masque (lundi = 1, mardi = 2, mercredi = 4, jeudi = 8, vendredi = 16, samedi = 32, dimanche = 64 ; tous les jours = 127) ; `active` = 0 : en pause.
+
+| Colonne | Type | Unité | NULL possible | Remarque |
+| --- | --- | --- | --- | --- |
+| `id` | text | — | non |  |
+| `name` | text | — | non |  |
+| `dose` | real | — | oui | dans l’unité `unit` |
+| `unit` | text | — | oui |  |
+| `times` | json | — | non |  |
+| `days` | int | — | non |  |
+| `active` | bool | — | non |  |
+
+### `csv/supplement_intake.csv`
+
+Prises de compléments cochées (I6-05, schéma 17), une par complément, date et heure ; `id` = `intake|<supplement_id>|<date>|<moment>`.
+
+| Colonne | Type | Unité | NULL possible | Remarque |
+| --- | --- | --- | --- | --- |
+| `id` | text | — | non |  |
+| `supplement_id` | text | — | non | `id` de `supplement.csv` |
+| `date` | date | — | non |  |
+| `moment` | time | — | non | heure prévue de la prise |
+| `taken_at` | datetime | — | non | instant où la prise a été cochée |

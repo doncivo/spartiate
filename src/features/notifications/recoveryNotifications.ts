@@ -38,6 +38,8 @@ export interface RecoveryNotificationDeps {
   /** Score du jour local (`recovery_day`) ; null = abstention ou jour non calculé. */
   readonly todayScore: (day: LocalDate) => Promise<number | null>;
   readonly log: (code: string, data?: Readonly<Record<string, number>>) => void;
+  /** I6-05 : file partagée des passages de planification (défaut : file propre). */
+  readonly serial?: <T>(task: () => Promise<T>) => Promise<T>;
 }
 
 export interface RecoveryNotificationService {
@@ -59,11 +61,12 @@ const FAILED: RecoveryNotificationResult = { status: 'failed', planned: 0, reaso
 
 export function createRecoveryNotificationService(deps: RecoveryNotificationDeps): RecoveryNotificationService {
   let queue: Promise<unknown> = Promise.resolve();
-  function serial<T>(task: () => Promise<T>): Promise<T> {
+  function ownSerial<T>(task: () => Promise<T>): Promise<T> {
     const next = queue.then(task, task);
     queue = next.catch(() => undefined);
     return next;
   }
+  const serial = deps.serial ?? ownSerial;
 
   async function readPrefs(): Promise<RecoveryNotificationPrefs> {
     try {

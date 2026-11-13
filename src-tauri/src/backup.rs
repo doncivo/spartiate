@@ -22,7 +22,7 @@ use std::path::{Path, PathBuf};
 use serde::Serialize;
 use tauri::{AppHandle, Manager};
 
-use crate::backup_triggers::{trigger_body_for, REFERENCE_TRIGGERS};
+use crate::backup_triggers::{is_legacy_trigger, trigger_body_for, REFERENCE_TRIGGERS};
 
 /// Nom du fichier de base (tauri-plugin-sql, `sqlite:spartiate.db`).
 pub const DB_FILE: &str = "spartiate.db";
@@ -42,7 +42,9 @@ pub const PRE_RESTORE_PREFIX: &str = "spartiate-pre-restore-";
 pub const KEEP_PRE_RESTORE_BACKUPS: usize = 3;
 /// Version de schéma de cette app (plus haute migration de `src/db/migrations`). Une sauvegarde plus récente est refusée. Constante côté Rust :
 /// la WebView ne fournit jamais cette valeur ; un test (`restore_hardening.rs`) la compare aux fichiers de migration.
-pub const APP_SCHEMA_VERSION: u32 = 16;
+pub const APP_SCHEMA_VERSION: u32 = 17;
+/// I6-05 (D-215) : première version de schéma commune à Spartiate et à l'ancien projet (sauvegardes 17 à 19 de CircleTasks).
+pub const LEGACY_COLLISION_FROM: u32 = 17;
 /// Plafond de taille d'une base à vérifier ou à restaurer (512 Mo) : au-delà, la sauvegarde est refusée (`corrupt`).
 pub const MAX_BACKUP_BYTES: u64 = 512 * 1024 * 1024;
 /// Attente maximale d'un verrou pendant une sauvegarde quotidienne : la base n'est jamais bloquée plus de 2 s (P-04 critère 1).
@@ -900,6 +902,18 @@ pub fn check_backup_file(path: &Path, app_version: u32) -> Result<u32, BackupErr
         return Err(BackupError::new(
             "newer-schema",
             format!("version de schéma {version} > {app_version}"),
+        ));
+    }
+    // I6-05 (D-215) : à partir de la version 17, les numéros de Spartiate rejoignent ceux de l'ancien projet (17 à 19) ; une sauvegarde qui porte
+    // un déclencheur de l'ancien projet n'est pas une base Spartiate de cette version : refusée comme avant (D-54), jamais restaurée.
+    if version >= LEGACY_COLLISION_FROM
+        && found
+            .iter()
+            .any(|(kind, name, _, _)| kind == "trigger" && is_legacy_trigger(name))
+    {
+        return Err(BackupError::new(
+            "newer-schema",
+            format!("sauvegarde de l'ancien projet (version de schéma {version})"),
         ));
     }
     Ok(version)

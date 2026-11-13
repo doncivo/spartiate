@@ -405,6 +405,21 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
   });
 
+  // I6-05 : carte « Compléments » d'Aujourd'hui, section Compléments, service et déclencheurs des rappels : blocs à la demande, avec leurs textes.
+  it.each(['src/features/nutrition/supplements/SupplementsTodayCard.tsx', 'src/features/nutrition/supplements/SupplementsView.tsx', 'src/features/notifications/supplementWake.ts'])('I6-05 : %s est un bloc à la demande, hors du départ', (source) => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest[source];
+    if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
+  });
+
+  it.each(['Aucun complément. Ajoute le premier.', 'Gérer les compléments', 'Une prise à cocher.', 'Les rappels sont envoyés par l’iPhone.'])('I6-05 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   it('I4-03 : aucun module du domaine ni des écrans de nutrition dans le graphe du départ', () => {
     const startFiles = new Set(startChunks().map((chunk) => chunk.file));
     for (const [source, chunk] of Object.entries(manifest)) {

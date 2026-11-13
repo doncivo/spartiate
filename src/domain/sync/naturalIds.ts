@@ -195,3 +195,32 @@ export function expectedFavoriteId(row: ReadonlyMap<string, unknown>): string | 
   const ref = row.get('ref');
   return typeof ref === 'string' && isFavoriteRef(ref) ? favoriteId(ref) : null;
 }
+
+/**
+ * I6-05 (D-210) : prise de complément, une par (complément, date, heure), `intake|<UUID du complément>|<AAAA-MM-JJ>|<HH:mm>`. Aucun repli UUID : la
+ * même prise cochée sur les deux appareils donne la même ligne. Le CHECK SQL de la migration porte la même forme.
+ */
+const INTAKE_PREFIX = 'intake|';
+const INTAKE_MOMENT_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+
+export function intakeId(supplementId: string, date: string, moment: string): string {
+  return `${INTAKE_PREFIX}${supplementId}|${date}|${moment}`;
+}
+
+export function isIntakeId(id: string): boolean {
+  if (!id.startsWith(INTAKE_PREFIX)) return false;
+  const parts = id.slice(INTAKE_PREFIX.length).split('|');
+  if (parts.length !== 3) return false;
+  const [supplementId = '', date = '', moment = ''] = parts;
+  return isId(supplementId) && isLocalDate(date) && INTAKE_MOMENT_RE.test(moment);
+}
+
+/** Identifiant attendu d'une ligne de ces valeurs, ou null si une valeur manque ou est illisible. */
+export function expectedIntakeId(row: ReadonlyMap<string, unknown>): string | null {
+  const supplementId = row.get('supplement_id');
+  const date = row.get('date');
+  const moment = row.get('moment');
+  if (typeof supplementId !== 'string' || typeof date !== 'string' || typeof moment !== 'string') return null;
+  const id = intakeId(supplementId, date, moment);
+  return isIntakeId(id) ? id : null;
+}
