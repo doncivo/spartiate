@@ -143,6 +143,8 @@ export interface SettingsValues {
   'nutrition.favorites': unknown;
   /** I5-02 (point 2.3) : notifications de récupération (coucher, matin), désactivées par défaut. Valeur BRUTE lue par `parseRecoveryNotificationPrefs` ; locale, jamais synchronisée. */
   'recovery.notificationPrefs': unknown;
+  /** I6-05 (D-212) : rappels de compléments sur cet appareil (iPhone), désactivés par défaut. Valeur BRUTE lue par `parseSupplementNotificationPrefs` ; locale, jamais synchronisée. */
+  'supplements.notificationPrefs': unknown;
   /** I5-02 (point 2.3) : dernière heure de coucher proposée (calculée à l'import). Valeur BRUTE lue par `parseBedtimeProposalSetting` ; locale, jamais synchronisée. */
   'recovery.bedtimeProposal': unknown;
   /** I5-06 : version de la règle du sommeil avec laquelle les résumés des 30 derniers jours ont été calculés (null : jamais). Locale, jamais synchronisée. */
@@ -212,6 +214,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'nutrition.prefs': { scope: 'local', defaultValue: null },
   'nutrition.favorites': { scope: 'local', defaultValue: null },
   'recovery.notificationPrefs': { scope: 'local', defaultValue: null },
+  'supplements.notificationPrefs': { scope: 'local', defaultValue: null },
   'recovery.bedtimeProposal': { scope: 'local', defaultValue: null },
   'recovery.sleepRulesVersion': { scope: 'local', defaultValue: null },
   'healthBody.lastImport': { scope: 'local', defaultValue: null },

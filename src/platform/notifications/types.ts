@@ -9,9 +9,9 @@ import type { LocalDateTime } from '../../domain/types';
 /** Plafond iOS des notifications locales en attente. */
 export const NOTIFICATION_LIMIT = 64;
 
-/** `bedtime` et `morning` : récupération (I5-02 point 2.3). `snooze` : répétition « +15 min » de N-03 (place réservée par l'avenant N1, non branchée au lot N1 tant que N-03 est en attente). */
-export type NotificationKind = 'task' | 'routine' | 'event' | 'recap' | 'snooze' | 'bedtime' | 'morning';
-export const NOTIFICATION_KINDS: readonly NotificationKind[] = ['task', 'routine', 'event', 'recap', 'snooze', 'bedtime', 'morning'];
+/** `supplement` : rappels de compléments (I6-05, D-212). `bedtime` et `morning` : récupération (I5-02 point 2.3). `snooze` : répétition « +15 min » de N-03 (place réservée par l'avenant N1, non branchée au lot N1 tant que N-03 est en attente). */
+export type NotificationKind = 'task' | 'routine' | 'event' | 'recap' | 'snooze' | 'bedtime' | 'morning' | 'supplement';
+export const NOTIFICATION_KINDS: readonly NotificationKind[] = ['task', 'routine', 'event', 'recap', 'snooze', 'bedtime', 'morning', 'supplement'];
 /** Actions proposées par la notification (N-03) ; absente pour un récapitulatif et la fin de Focus. */
 export type NotificationCategory = 'task' | 'routine' | 'event';
 
