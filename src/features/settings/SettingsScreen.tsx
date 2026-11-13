@@ -102,8 +102,8 @@ function SettingsScreenMobile() {
         </p>
       )}
       <ProfileCard />
-      <h2 className="ct-settings__section">{tPlus('sectionData')}</h2>
-      <div className="ct-settings__card">
+      <h2 className="ct-settings__section ct-section-title">{tPlus('sectionData')}</h2>
+      <div className="ct-settings__card ct-flat">
         <SyncSettingsSection heading={false} />
         <BackupRow />
         <LinkRow label={tExportImport('row')} onClick={() => navigate({ tab: 'more', screen: 'exportimport' })} />
@@ -111,16 +111,16 @@ function SettingsScreenMobile() {
       </div>
       {hasIphoneRows && (
         <>
-          <h2 className="ct-settings__section">{tPlus('sectionIphone')}</h2>
-          <div className="ct-settings__card">
+          <h2 className="ct-settings__section ct-section-title">{tPlus('sectionIphone')}</h2>
+          <div className="ct-settings__card ct-flat">
             {hasHealthRow && <LinkRow label={healthFr.row} value={healthBlocked ? shortcutsValue : healthFr.rowValue} onClick={() => navigate({ tab: 'more', screen: 'health' })} />}
             <SigningAboutRow />
             {showLockRow && <SecuritySection />}
           </div>
         </>
       )}
-      <h2 className="ct-settings__section">{tPlus('sectionPreferences')}</h2>
-      <div className="ct-settings__card">
+      <h2 className="ct-settings__section ct-section-title">{tPlus('sectionPreferences')}</h2>
+      <div className="ct-settings__card ct-flat">
         <LinkRow label={tSettingsRefonte('theme')} value={themeText} onClick={openAppearance} />
         <LinkRow label={tSettingsRefonte('firstWeekday')} value={weekdayCapitalized} onClick={openAppearance} />
         <LinkRow label={tSettingsRefonte('timeFormat')} value={formatText} onClick={openAppearance} />
@@ -135,8 +135,8 @@ function SettingsScreenMobile() {
           </div>
         )}
       </div>
-      <h2 className="ct-settings__section">{tPlus('sectionAbout')}</h2>
-      <div className="ct-settings__card">
+      <h2 className="ct-settings__section ct-section-title">{tPlus('sectionAbout')}</h2>
+      <div className="ct-settings__card ct-flat">
         <AboutSection heading={false} />
       </div>
     </div>

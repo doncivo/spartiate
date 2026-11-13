@@ -2,6 +2,8 @@
 export const logsFr = {
   rowLabel: 'Logs',
   rowOpenLabel: 'Ouvrir l’écran des logs',
+  /** ERGO-01b P5 (D-238) : outils de test déplacés de Plus › À propos, montés à la demande. */
+  toolsOpen: 'Outils de test',
   title: 'Logs',
   back: 'Retour aux réglages',
   filtersLabel: 'Filtrer les entrées',

@@ -1,6 +1,7 @@
 import { Check, X } from 'lucide-react';
 import { useState, type KeyboardEvent } from 'react';
 import { defaultEntry, validateSetEntry, type SetEntry, type SetKind, type WorkoutSet, type WorkoutSource } from '../../../domain/training';
+import { stepLoad } from '../../../domain/training/loadGrid';
 import { formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
 import { Icon } from '../../../ui';
 
@@ -59,6 +60,8 @@ export interface SetRowProps {
   readonly number: number;
   /** ERGO-01 : série en cours (première à faire de la séance), bloc central mis en avant et annoncé (`aria-current="step"`). */
   readonly current?: boolean;
+  /** ERGO-01b P3 : charges disponibles de l'exercice avec le profil de matériel actif (cran du « − / + ») ; null : cran par défaut. */
+  readonly loads?: readonly number[] | null;
   readonly timed: boolean;
   readonly source: WorkoutSource;
   readonly busy: boolean;
@@ -68,7 +71,7 @@ export interface SetRowProps {
   readonly onRemove: () => void;
 }
 
-export function SetRow({ set, number, current = false, timed, source, busy, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
+export function SetRow({ set, number, current = false, loads = null, timed, source, busy, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
   const [draft, setDraft] = useState<Draft>(() => initialDraft(set, timed));
   const [issue, setIssue] = useState<string | null>(null);
   // I2-01 : une proposition acceptée écrit charge et répétitions dans une série à faire ; la saisie repart des valeurs enregistrées (la ligne
@@ -111,6 +114,25 @@ export function SetRow({ set, number, current = false, timed, source, busy, onVa
       if (!busy) validate();
     }
   };
+  /** ERGO-01b P3 : un tap = un cran (charge) ou une répétition ; la saisie au clavier reste possible. */
+  function step(key: 'load' | 'reps', dir: 1 | -1): void {
+    setDraft((now) => {
+      const value = parseNumber(now[key]);
+      const next = key === 'load' ? stepLoad(value, loads, dir) : value === null ? (dir === 1 ? 1 : null) : Math.max(0, value + dir);
+      return next === null ? now : { ...now, [key]: formatNumber(next) };
+    });
+  }
+  const stepper = (key: 'load' | 'reps', down: TrainingTextKey, up: TrainingTextKey) => (
+    <div className="ct-session__stepper">
+      <button type="button" className="ct-session__step" aria-label={tTraining(down)} disabled={busy} onClick={() => step(key, -1)}>
+        {tTraining('sessionStepMinus')}
+      </button>
+      <button type="button" className="ct-session__step" aria-label={tTraining(up)} disabled={busy} onClick={() => step(key, 1)}>
+        {tTraining('sessionStepPlus')}
+      </button>
+    </div>
+  );
+  const steps = current && !timed;
   const field = (key: keyof Draft, labelKey: TrainingTextKey, mode: 'decimal' | 'numeric') => (
     <label className="ct-session__field">
       <span className="ct-training__label">{tTraining(labelKey)}</span>
@@ -140,7 +162,7 @@ export function SetRow({ set, number, current = false, timed, source, busy, onVa
         </span>
         <span className="ct-session__set-target">{target ?? ''}</span>
         <span className={set.done ? 'ct-session__state ct-session__state--done' : 'ct-session__state'}>
-          {set.done ? <Icon icon={Check} size={16} /> : null}
+          {set.done ? <Icon icon={Check} size="sm" /> : null}
           {tTraining(set.done ? 'sessionDone' : 'sessionTodo')}
         </span>
       </div>
@@ -156,7 +178,9 @@ export function SetRow({ set, number, current = false, timed, source, busy, onVa
         <>
           <div className="ct-session__fields">
             {field('load', 'sessionLoad', 'decimal')}
+            {steps ? stepper('load', 'sessionLoadDown', 'sessionLoadUp') : null}
             {timed ? field('duration', 'sessionDuration', 'numeric') : field('reps', 'sessionReps', 'numeric')}
+            {steps ? stepper('reps', 'sessionRepsDown', 'sessionRepsUp') : null}
             {field('rir', 'sessionRir', 'numeric')}
           </div>
           <div className="ct-session__set-actions">
@@ -170,7 +194,7 @@ export function SetRow({ set, number, current = false, timed, source, busy, onVa
               </select>
             </label>
             <button type="button" className="ct-training__icon-button" aria-label={tTraining('sessionRemoveSet')} disabled={busy} onClick={onRemove}>
-              <Icon icon={X} size={20} />
+              <Icon icon={X} size="md" />
             </button>
             <button type="button" className="ct-session__validate" disabled={busy} onClick={validate}>
               {tTraining('sessionValidate')}

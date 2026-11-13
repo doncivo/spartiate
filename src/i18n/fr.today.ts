@@ -35,6 +35,8 @@ export const todayFr = {
   newWeight: 'Nouvelle pesée',
   profileAndWeight: 'Profil et poids',
   profileEyebrow: 'Profil',
+  /** ERGO-01b P4 (D-238) : carte unique de la colonne de droite d'Aujourd'hui sur PC. */
+  stateEyebrow: 'État',
   height: 'Taille',
   heightValue: '{n} cm',
   birthYear: 'Année de naissance',

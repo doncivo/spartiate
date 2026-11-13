@@ -1,5 +1,9 @@
 export { PC_MEDIA_QUERY, PC_MIN_WIDTH_PX, useLayout, type Layout } from './useLayout';
 export { Icon, type IconProps } from './Icon';
+export { ICON_SIZE, ICON_STROKE, type IconSize } from './iconStyle';
+export { SectionTitle, type SectionTitleProps } from './SectionTitle';
+export { HeroFigure, type HeroFigureProps } from './HeroFigure';
+export { Rule } from './Rule';
 export { Kbd, tokenLabel, type KbdProps } from './Kbd';
 export { TabRail, type TabRailItem, type TabRailProps } from './TabRail';
 export { AppShell, useDetailSlot, type AppShellProps } from './AppShell';

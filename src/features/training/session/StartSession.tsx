@@ -80,7 +80,7 @@ export function StartSession({ access, data, onStarted }: { readonly access: Dat
       {sources && (
         <>
           <section aria-labelledby="ct-session-routines">
-            <h3 id="ct-session-routines" className="ct-training__eyebrow">
+            <h3 id="ct-session-routines" className="ct-training__eyebrow ct-section-title">
               {tTraining('sessionFromRoutine')}
             </h3>
             {days.length === 0 ? (
@@ -125,7 +125,7 @@ export function StartSession({ access, data, onStarted }: { readonly access: Dat
             )}
           </section>
           <section aria-labelledby="ct-session-copy">
-            <h3 id="ct-session-copy" className="ct-training__eyebrow">
+            <h3 id="ct-session-copy" className="ct-training__eyebrow ct-section-title">
               {tTraining('sessionCopy')}
             </h3>
             {sources.closed.length === 0 ? (

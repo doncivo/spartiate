@@ -1,5 +1,6 @@
 /**
- * Icônes des cinq sections (maquettes docs/maquettes/ : trait de 1,6 px, 22 × 22). Dessinées en `currentColor` : la couleur vient des
+ * Icônes des cinq sections, au trait et à la taille « lg » des icônes Lucide (ERGO-01b : 1,8 px, 24 × 24 ; valeurs écrites ici plutôt qu’importées
+ * de iconStyle.ts pour ne pas ajouter de module au départ, égalité vérifiée par ErgoShared.test.tsx). Dessinées en `currentColor` : la couleur vient des
  * jetons de la barre. Un identifiant inconnu ne dessine rien.
  */
 const PATHS: Readonly<Record<string, string>> = {
@@ -10,10 +11,10 @@ const PATHS: Readonly<Record<string, string>> = {
   more: 'M5 12h.01M12 12h.01M19 12h.01',
 };
 
-export function TabIcon({ id, size = 22 }: { readonly id: string; readonly size?: number }) {
+export function TabIcon({ id, size = 24 }: { readonly id: string; readonly size?: number }) {
   const path = Object.hasOwn(PATHS, id) ? PATHS[id] : undefined;
   return (
-    <svg className="ct-tab-rail__icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+    <svg className="ct-tab-rail__icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
       {path ? <path d={path} /> : null}
     </svg>
   );

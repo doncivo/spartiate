@@ -283,7 +283,7 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
             </button>
           )}
           <button type="button" className="ct-onb__close" aria-label={tOnboarding('close')} onClick={close}>
-            <Icon icon={X} size={22} />
+            <Icon icon={X} size="lg" />
           </button>
         </div>
       </header>
