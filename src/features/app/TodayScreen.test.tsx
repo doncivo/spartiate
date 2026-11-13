@@ -101,11 +101,24 @@ describe('Aujourd’hui (I0) : planches iPhone et PC, valeurs réelles seulement
       expect(screen.queryByText('Trois réglages, puis on s’entraîne.')).toBeNull();
       expect(screen.queryByText('Arrive avec les prochaines versions')).toBeNull();
       expect(await screen.findByText('Aucun résumé de récupération reçu de l’iPhone.')).toBeInTheDocument();
-      const profile = screen.getByRole('region', { name: 'Profil' });
-      expect(within(profile).getAllByText('—')).toHaveLength(4);
-      expect(screen.getByText('non configurée')).toBeInTheDocument();
-      expect(within(screen.getByRole('region', { name: 'Données' })).getAllByText('—')).toHaveLength(2);
+      // ERGO-01b P4 (D-238) : une seule carte « État » à droite (synchro, signature, Apple Santé, sauvegarde, dernier export) au lieu de
+      // « Profil », « iPhone » et « Données » ; le profil se règle dans Plus › Profil et poids. Mêmes valeurs « — », aucun faux zéro.
+      const state = screen.getByRole('region', { name: 'État' });
+      expect(within(state).getAllByText('—')).toHaveLength(4);
+      expect(within(state).getByText('non configurée')).toBeInTheDocument();
+      for (const gone of ['Profil', 'iPhone', 'Données']) expect(screen.queryByRole('region', { name: gone })).toBeNull();
       expect(document.body.textContent ?? '').not.toMatch(/\b0\b/);
+    });
+
+    it('ERGO-01b P4 : Récupération en tête de la colonne principale, puis Séance et Nutrition ; une carte « État » à droite', async () => {
+      const { container } = open();
+      expect(await screen.findByText('Aucun résumé de récupération reçu de l’iPhone.')).toBeInTheDocument();
+      const [main, aside] = [...container.querySelectorAll('.ct-today__col')];
+      expect(main?.firstElementChild?.querySelector('h2')).toHaveTextContent('Récupération');
+      const state = screen.getByRole('region', { name: 'État' });
+      expect(aside?.contains(state)).toBe(true);
+      expect(aside?.querySelectorAll('section')).toHaveLength(1);
+      expect(within(state).getAllByRole('term').map((t) => t.textContent)).toEqual(['Synchro', 'Signature', 'Apple Santé', 'Sauvegarde', 'Dernier export']);
     });
 
     it('avec profil et pesées : dernier poids en grand, apprentissage, courbe, profil réel, boutons', async () => {
@@ -115,11 +128,9 @@ describe('Aujourd’hui (I0) : planches iPhone et PC, valeurs réelles seulement
       expect(screen.getByText('en apprentissage')).toBeInTheDocument();
       expect(screen.getByText('4 pesées sur 14 nécessaires')).toBeInTheDocument();
       expect(screen.getByRole('img', { name: 'Courbe des pesées récentes' })).toBeInTheDocument();
-      const profile = screen.getByRole('region', { name: 'Profil' });
-      expect(within(profile).getByText('178 cm')).toBeInTheDocument();
-      expect(within(profile).getByText('1990')).toBeInTheDocument();
-      expect(within(profile).getByText('Prise de masse')).toBeInTheDocument();
-      expect(within(profile).getByText('Intermédiaire')).toBeInTheDocument();
+      // ERGO-01b P4 (D-238) : le profil n'est plus une carte d'Aujourd'hui sur PC (maquette P4) ; il reste à un clic, « Profil et poids ».
+      expect(screen.queryByText('178 cm')).toBeNull();
+      expect(screen.queryByRole('region', { name: 'Profil' })).toBeNull();
       fireEvent.click(screen.getByRole('button', { name: 'Nouvelle pesée' }));
       expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'body' });
       useNavigationStore.setState(INITIAL_NAVIGATION);
