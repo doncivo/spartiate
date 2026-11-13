@@ -49,6 +49,7 @@ Jamais exportés : les photos de progression (fichiers image : elles ne quittent
 - `recovery_sample`
 - `recovery_import_state`
 - `schema_migrations`
+- `data_reset` (remises à zéro « Repartir de zéro », technique de synchro)
 
 Les réglages de l’app autres que le thème et les favoris alimentaires locaux ne sont pas exportés.
 
