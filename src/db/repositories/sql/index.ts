@@ -84,6 +84,8 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue, options: Repo
   userData: () => import('./userDataRepository').then((m) => m.createUserDataRepository(executor)),
   // RESET-01 : remises à zéro des données et effacement local, à la demande (hors du JavaScript de départ).
   dataReset: () => import('./dataResetRepository').then((m) => m.createDataResetRepository(executor, stamper, catalogue)),
+  // I6-06 : séances cardio publiées et tracés locaux, à la demande ; écrites par les deux appareils (aucune règle de lecteur).
+  cardio: () => import('./cardioRepository').then((m) => signalingWrites(m.createCardioRepository(executor, stamper), ['add', 'update', 'remove'])),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue, options)),
   // Y-04 (début)
   syncConflicts: createSyncConflictRepository(executor, stamper, catalogue),

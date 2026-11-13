@@ -52,11 +52,16 @@
       "usageDescriptions": [
         "NSHealthShareUsageDescription"
       ]
+    },
+    "geolocation": {
+      "story": "I6-06",
+      "usageDescriptions": [
+        "NSLocationWhenInUseUsageDescription"
+      ]
     }
   },
   "forbiddenKeys": [
     "UIBackgroundModes",
-    "NSLocationWhenInUseUsageDescription",
     "NSLocationAlwaysAndWhenInUseUsageDescription",
     "NSPhotoLibraryUsageDescription",
     "NSPhotoLibraryAddUsageDescription",

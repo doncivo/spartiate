@@ -7,7 +7,11 @@ const TABLES: Readonly<Record<UserDataDomain, readonly { readonly table: string;
   profile: [{ table: 'profile', live: true }],
   routines: [{ table: 'routine', live: true }],
   weights: [{ table: 'body_weight', live: true }],
-  workouts: [{ table: 'workout', live: true }],
+  // I6-06 : une séance cardio est une séance (une base qui n'a que du cardio n'est pas vide).
+  workouts: [
+    { table: 'workout', live: true },
+    { table: 'cardio_session', live: true },
+  ],
   meals: [{ table: 'meal_entry', live: true }],
   recoveryDays: [
     { table: 'recovery_day', live: true },

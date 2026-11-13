@@ -61,8 +61,8 @@ const intakeRows = (d: SimDevice) => d.driver.select('SELECT id, deleted_at IS N
 
 describe('(a) catalogue : supplement et supplement_intake', () => {
   it('dernières de l’ordre, sans parent publié ni colonne locale', () => {
-    expect(SYNC_TABLE_ORDER.slice(-2)).toEqual(['supplement', 'supplement_intake']);
-    expect(SYNC_CATALOGUE.tables.map((t) => t.name).slice(-2)).toEqual(['supplement', 'supplement_intake']);
+    expect(SYNC_TABLE_ORDER.slice(-3, -1)).toEqual(['supplement', 'supplement_intake']); // I6-06 : cardio_session ensuite.
+    expect(SYNC_CATALOGUE.tables.map((t) => t.name).slice(-3, -1)).toEqual(['supplement', 'supplement_intake']);
     for (const name of ['supplement', 'supplement_intake']) {
       const t = SYNC_CATALOGUE.table(name);
       expect(t?.parents).toEqual([]);
@@ -201,7 +201,8 @@ describe('(e) vecteur chiffré (tests/fixtures/sync/vectors.json)', () => {
     if (!record || !('json' in record.plaintext)) throw new Error('vecteur journal-ops-supplement absent');
     const parsed = parseJournalRecord(record.plaintext.json);
     if (!parsed || parsed.k !== 'ops') throw new Error('vecteur illisible');
-    expect(parsed.sv).toBe(migrations.length);
+    // I6-06 : le vecteur est écrit par un appareil au schéma des compléments (0017), qui n'est plus le dernier (0018, cardio).
+    expect(parsed.sv).toBe(migrations.findIndex((m) => m.name === 'supplement') + 1);
     expect(parsed.ops.map((op) => [op.t, op.id])).toEqual([
       ['supplement', SUP],
       ['supplement_intake', intakeId(SUP, D, T)],

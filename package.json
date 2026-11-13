@@ -1,7 +1,7 @@
 {
   "name": "spartiate",
   "private": true,
-  "version": "0.20.0",
+  "version": "0.21.0",
   "type": "module",
   "sideEffects": [
     "**/*.css"
@@ -34,6 +34,7 @@
     "@tauri-apps/api": "^2.12.1",
     "@tauri-apps/plugin-autostart": "^2.7.0",
     "@tauri-apps/plugin-barcode-scanner": "~2.5.1",
+    "@tauri-apps/plugin-geolocation": "2.5.0",
     "@tauri-apps/plugin-opener": "^2.7.0",
     "@tauri-apps/plugin-process": "^2.4.0",
     "@tauri-apps/plugin-sql": "^2.5.0",

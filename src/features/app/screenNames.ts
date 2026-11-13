@@ -16,6 +16,7 @@ export type ScreenName =
   | 'recoverytoday'
   | 'recoveryprogress'
   | 'bodyprogress'
+  | 'cardioprogress'
   | 'onboardinghost'
   | 'onboardingflow'
   | 'applehealthscreen'

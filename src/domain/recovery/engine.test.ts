@@ -1,13 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { baselineStats, buildBaseline } from './baseline';
-import { RECOVERY_CONFIG, STRENGTH_SCALE } from './config';
+import { CARDIO_SRPE_SCALE, RECOVERY_CONFIG, STRENGTH_SCALE } from './config';
 import { summarizeRecoveryDay } from './daySummary';
 import { dayExertion } from './exertion';
 import { muscleRecovery } from './muscleRecovery';
 import { recoveryScore, targetZone } from './recoveryScore';
 import { bedtimeRegularity, bedtimeTarget, sleepNeed } from './sleepNeed';
-import type { NightRecord, RecoverySet, RecoveryWorkout } from './types';
+import type { NightRecord, RecoveryCardio, RecoverySet, RecoveryWorkout } from './types';
 
 /** Fixtures § 16.6 : 30 nuits, du 2026-10-10 au 2026-11-08. HRV alternée 48 / 52 (μ 50), FC repos alternée 54 / 56 (μ 55). */
 const TZ = 'Europe/Paris';
@@ -166,7 +166,7 @@ describe('targetZone (§ 16.3)', () => {
   });
 });
 
-describe('dayExertion : musculation seule, cardio à zéro (D-88)', () => {
+describe('dayExertion : musculation (D-88 révisée)', () => {
   const workout = (sets: RecoverySet[], endedAt = '2026-11-07T17:00:00.000Z'): RecoveryWorkout => ({ endedAt, sets });
 
   it('points muscu = tonnes × facteur de difficulté × échelle, puis 10 × (1 − e^(−points/300))', () => {
@@ -192,11 +192,12 @@ describe('dayExertion : musculation seule, cardio à zéro (D-88)', () => {
     expect(STRENGTH_SCALE).toBe(20);
   });
 
-  it('l’explication dit que le cardio n’est pas compté (clé dédiée), même sans séance', () => {
-    expect(dayExertion([workout([set()])], '2026-11-07', TZ).explanationKeys).toContain('exertion_cardio_not_counted');
+  it('I6-06 (D-220) : l’explication dit la règle du cardio (clé dédiée), même sans séance ; l’ancienne clé n’est plus émise', () => {
+    expect(dayExertion([workout([set()])], '2026-11-07', TZ).explanationKeys).toEqual(['exertion_cardio_srpe']);
     const none = dayExertion([], '2026-11-07', TZ);
     expect(none.value).toBe(0);
-    expect(none.explanationKeys).toContain('exertion_cardio_not_counted');
+    expect(none.cardioLoad).toBe(0);
+    expect(none.explanationKeys).toEqual(['exertion_cardio_srpe']);
   });
 
   it('échauffements, séries non terminées, charge absente exclus ; autre jour local exclu', () => {
@@ -345,7 +346,8 @@ describe('summarizeRecoveryDay : résumé du jour (§ 16.4)', () => {
       day: TODAY, level: 'C', recovery: 98, abstainReason: null, quality: 'good', targetZone: { from: 6, to: 8 },
       learningNights: 14, sleepMinutes: 450, sleepNeedMinutes: 450, sleepScore: 100, bedtimeSigmaMinutes: 0,
     });
-    expect(summary.explanationKeys).toContain('exertion_cardio_not_counted');
+    expect(summary.explanationKeys).toContain('exertion_cardio_srpe');
+    expect(summary.explanationKeys).not.toContain('exertion_cardio_not_counted');
     expect(summary.contributors.map((c) => c.key)).toEqual(['hrv', 'resting_hr', 'sleep']);
     expect(summary.computedAt).toBe(NOW);
     expect(muscles).toEqual([]);
@@ -409,5 +411,53 @@ describe('summarizeRecoveryDay : résumé du jour (§ 16.4)', () => {
   it('nuits postérieures au jour ignorées', () => {
     const nights = [...thirty(), night(31)];
     expect(summarizeRecoveryDay({ ...base, nights }).summary.recovery).toBe(50);
+  });
+});
+
+describe('dayExertion : cardio saisi, règle « minutes × ressenti » (I6-06, D-220)', () => {
+  const cardio = (startedAt: string, durationSec: number, rpe: number): RecoveryCardio => ({ startedAt, durationSec, rpe });
+  const workout = (sets: RecoverySet[], endedAt = '2026-11-07T17:00:00.000Z'): RecoveryWorkout => ({ endedAt, sets });
+
+  it('échelle de départ 1 (choix prudent, révisable par Ali) ; la config dit que le cardio compte', () => {
+    expect(CARDIO_SRPE_SCALE).toBe(1);
+    expect(RECOVERY_CONFIG.exertion.cardioCounted).toBe(true);
+  });
+
+  // Vecteurs : points cardio = minutes × RPE × 1 ; Exertion = 10 × (1 − e^(−points / 300)).
+  it.each([
+    [30, 5, 150, 3.93, 'footing facile'],
+    [45, 7, 315, 6.5, 'course soutenue'],
+    [60, 8, 480, 7.98, 'longue séance dure'],
+    [20, 10, 200, 4.87, 'fractionné court maximal'],
+  ])('%i min à RPE %i → %i points → Exertion %f (%s)', (min, rpe, points, expected) => {
+    const e = dayExertion([], '2026-11-07', TZ, [cardio('2026-11-07T07:00:00.000Z', min * 60, rpe)]);
+    expect(e.cardioLoad).toBeCloseTo(points, 10);
+    expect(e.muscuLoad).toBe(0);
+    expect(e.value).toBeCloseTo(expected, 2);
+  });
+
+  it('musculation et cardio du même jour s’additionnent avant la courbe : 6 t + 30 min à RPE 5 → 270 points → 5,93', () => {
+    const sets = Array.from({ length: 6 }, () => set({ kg: 100, reps: 10, difficulty: 'ok' }));
+    const e = dayExertion([workout(sets)], '2026-11-07', TZ, [cardio('2026-11-07T07:00:00.000Z', 1800, 5)]);
+    expect(e.muscuLoad).toBeCloseTo(120, 10);
+    expect(e.cardioLoad).toBeCloseTo(150, 10);
+    expect(e.value).toBeCloseTo(5.93, 2);
+  });
+
+  it('jour local de la FIN de la séance (comme la musculation) ; autre jour exclu ; durée ou ressenti invalides ignorés', () => {
+    // Début 22 h 30 à Paris le 6, fin 23 h 30 le 6 → compte le 6 ; début 23 h 30 le 6, fin 0 h 30 le 7 → compte le 7.
+    expect(dayExertion([], '2026-11-06', TZ, [cardio('2026-11-06T21:30:00.000Z', 3600, 5)]).cardioLoad).toBe(300);
+    expect(dayExertion([], '2026-11-07', TZ, [cardio('2026-11-06T22:30:00.000Z', 3600, 5)]).cardioLoad).toBe(300);
+    expect(dayExertion([], '2026-11-06', TZ, [cardio('2026-11-06T22:30:00.000Z', 3600, 5)]).cardioLoad).toBe(0);
+    for (const bad of [cardio('2026-11-07T07:00:00.000Z', 0, 5), cardio('2026-11-07T07:00:00.000Z', 600, 0), cardio('2026-11-07T07:00:00.000Z', 600, 11), cardio('pas une date', 600, 5)]) {
+      expect(dayExertion([], '2026-11-07', TZ, [bad]).cardioLoad).toBe(0);
+    }
+  });
+
+  it('résumé du jour : le cardio de la veille entre dans le besoin de sommeil (60 min à RPE 9 → 540 points → 8,35 > 5)', () => {
+    const { summary } = summarizeRecoveryDay({ today: TODAY, now: NOW, timeZone: TZ, nights: thirty(), workouts: [], cardio: [cardio('2026-11-07T07:00:00.000Z', 3600, 9)] });
+    expect(summary.exertionPrevDay).toBeCloseTo(8.35, 2);
+    expect(summary.sleepNeedMinutes).toBeGreaterThan(450);
+    expect(summary.exertion).toBe(0);
   });
 });

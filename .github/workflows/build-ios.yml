@@ -95,6 +95,9 @@ jobs:
           sf=$(cargo tree --locked --target aarch64-apple-ios -e normal -i security-framework@3.7.0 --prefix none)
           echo "$sf" | grep -q '^spartiate ' || { echo "::error::security-framework 3.7.0 n'est pas une dépendance directe de l'app iOS"; exit 1; }
           echo "$ios" | grep -q '^tauri-plugin-barcode-scanner ' || { echo "::error::tauri-plugin-barcode-scanner absent de la cible iOS"; exit 1; }
+          # I6-06 (D-222) : GPS au premier plan, plugin officiel geolocation, iPhone seulement.
+          echo "$ios" | grep -q '^tauri-plugin-geolocation ' || { echo "::error::tauri-plugin-geolocation absent de la cible iOS"; exit 1; }
+          if echo "$windows" | grep -q '^tauri-plugin-geolocation '; then echo "::error::tauri-plugin-geolocation dans la cible Windows"; exit 1; fi
 
       # Le projet Xcode (src-tauri/gen/apple) n'est pas versionné : il est régénéré à chaque build
       # depuis tauri.conf.json et src-tauri/Info.ios.plist.

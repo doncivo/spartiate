@@ -1,6 +1,6 @@
 [package]
 name = "spartiate"
-version = "0.20.0"
+version = "0.21.0"
 description = "Spartiate : planificateur personnel (PC Windows et iPhone)"
 authors = ["Ali Cherif"]
 edition = "2021"
@@ -89,6 +89,9 @@ tauri-plugin-live-activity = { path = "plugins/live-activity" }
 # sync_key_import. Version exacte relue (2.5.1, revue audit), alignée sur @tauri-apps/plugin-barcode-scanner ~2.5.1 ; relire le code
 # (API Rust, permissions) à chaque montée de version.
 tauri-plugin-barcode-scanner = "=2.5.1"
+# I6-06 (D-222) : GPS au premier plan (plugin OFFICIEL, autorisation « pendant l'utilisation » seulement), appelé par la façade
+# src/platform/geolocation ; version exacte alignée sur @tauri-apps/plugin-geolocation 2.5.0 (tauri ^2.12, tauri-plugin ^2.7.1). iPhone seulement.
+tauri-plugin-geolocation = "=2.5.0"
 # Verrouillage par Face ID ou code de l'iPhone (I-03, ADR 0013 §2.1) : version ÉPINGLÉE (les constats 3 à 6 de l'ADR lisent son code Swift ;
 # toute montée exige une relecture et un avenant). iOS seulement ; aucune commande Rust, permissions accordées par biometric-ios.json.
 tauri-plugin-biometric = "=2.4.1"

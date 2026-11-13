@@ -3,7 +3,7 @@ import { dayExertion } from './exertion';
 import { muscleRecovery } from './muscleRecovery';
 import { beyondUnusualSigma, recoveryScore, targetZone } from './recoveryScore';
 import { bedtimeRegularity, debtNights, sleepNeed } from './sleepNeed';
-import type { Contributor, MuscleRecoveryRow, NightRecord, RecoveryDaySummary, RecoveryExplanationKey, RecoveryLevel, RecoveryQuality, RecoveryWorkout } from './types';
+import type { Contributor, MuscleRecoveryRow, NightRecord, RecoveryCardio, RecoveryDaySummary, RecoveryExplanationKey, RecoveryLevel, RecoveryQuality, RecoveryWorkout } from './types';
 
 export interface RecoveryDayInput {
   /** Jour local `yyyy-MM-dd` du résumé. */
@@ -14,6 +14,8 @@ export interface RecoveryDayInput {
   readonly timeZone: string;
   readonly nights: readonly NightRecord[];
   readonly workouts: readonly RecoveryWorkout[];
+  /** I6-06 (D-220) : séances cardio saisies (absent : aucune). */
+  readonly cardio?: readonly RecoveryCardio[];
 }
 
 export interface RecoveryDayOutput {
@@ -31,7 +33,7 @@ export function shiftDay(day: string, delta: number): string {
 const byDay = (a: NightRecord, b: NightRecord): number => (a.day < b.day ? -1 : a.day > b.day ? 1 : 0);
 
 /**
- * Résumé du jour (§ 16.1, § 16.3) : niveau A / B / C, Recovery ou null avec raison, qualité, Exertion (musculation seule, D-88),
+ * Résumé du jour (§ 16.1, § 16.3) : niveau A / B / C, Recovery ou null avec raison, qualité, Exertion (musculation et cardio saisi, D-220),
  * sommeil, régularité, contributeurs, zone cible, et récupération par muscle. Pur : mêmes entrées, mêmes sorties.
  */
 export function summarizeRecoveryDay(input: RecoveryDayInput): RecoveryDayOutput {
@@ -39,8 +41,9 @@ export function summarizeRecoveryDay(input: RecoveryDayInput): RecoveryDayOutput
   const nights = input.nights.filter((n) => n.day <= input.today).sort(byDay);
   const tonight = nights.find((n) => n.day === input.today);
 
-  const exertionToday = dayExertion(input.workouts, input.today, input.timeZone);
-  const exertionPrev = dayExertion(input.workouts, shiftDay(input.today, -1), input.timeZone);
+  const cardio = input.cardio ?? [];
+  const exertionToday = dayExertion(input.workouts, input.today, input.timeZone, cardio);
+  const exertionPrev = dayExertion(input.workouts, shiftDay(input.today, -1), input.timeZone, cardio);
   const previousAsleep = debtNights(nights, input.today).valid;
   const need = sleepNeed({ exertionPrevDay: exertionPrev.value, previousAsleepMinutes: previousAsleep });
 

@@ -62,8 +62,10 @@ export const RESET_TABLES: Readonly<Record<string, ResetFate>> = {
   food_favorite: 'wiped',
   supplement: 'wiped', // I6-05 : compléments et prises de l'utilisateur.
   supplement_intake: 'wiped',
+  cardio_session: 'wiped',
   // Locales.
   progress_photo_file: 'wiped',
+  cardio_track: 'wiped',
   recovery_sample: 'wiped',
   recovery_import_state: 'wiped',
   conflict_log: 'wiped',

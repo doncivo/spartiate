@@ -22,6 +22,7 @@ import {
 import type { ThemeChoice } from '../model/settings';
 import { isPhotoFileName, isStoredMeasurementKind, isStoredMeasurementValue } from '../bodyProgress/measurements';
 import { toFavorite } from '../nutrition/favorites';
+import { toCardioKind, validateCardioSession, type CardioSessionInput } from '../cardio/session';
 import { parseSupplementTimes, validateSupplementDraft } from '../nutrition/supplements';
 import { isId, isIsoDateTime, isLocalDate, isLocalTime } from '../types';
 import { SYNC_CATALOGUE, type SyncTable } from '../../domain/sync/syncTables';
@@ -32,7 +33,7 @@ import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
 export const EXPORT_APP = 'spartiate';
 /** Version de schéma écrite au manifeste et maximale acceptée à l'import : celle de la dernière migration (vérifiée par un test). */
-export const EXPORT_SV = 17;
+export const EXPORT_SV = 18;
 /** Réglages exportés (D-57 : unités, jour de check-in, thème). Les unités sont dans `profile` ; le jour de check-in n'existe pas encore (nutrition). */
 export const EXPORT_SETTING_KEYS = ['ui.theme'] as const;
 export type ExportSettingKey = (typeof EXPORT_SETTING_KEYS)[number];
@@ -69,7 +70,26 @@ export interface ExportWeight {
  * d'import (`recovery_import_state`) ne sont jamais exportés : ils se relisent depuis les fichiers Raccourcis. FIX-0181 (schéma 15) : favoris de la
  * recherche d'aliments (`food_favorite`), écrits par les deux appareils ; l'ancien réglage local `nutrition.favorites` n'a jamais été exporté. I6-05 (schéma 17) : compléments et prises (`supplement`, `supplement_intake`), écrits par les deux appareils.
  */
-export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient', 'recovery_day', 'muscle_recovery', 'recovery_factor', 'measurement', 'progress_photo', 'food_favorite', 'supplement', 'supplement_intake'] as const;
+/** I6-06 : une ligne de séance cardio respecte-t-elle les bornes du domaine (le début n'est jamais refusé comme futur à l'import) ? */
+function cardioRowOk(v: Readonly<Record<string, unknown>>): boolean {
+  const kind = v['kind'];
+  if (typeof kind !== 'string' || !/^[a-z]{1,32}$/.test(kind) || typeof v['notes'] !== 'string') return false;
+  const distance = v['distance_m'];
+  const avgHr = v['avg_hr'];
+  const input: CardioSessionInput = {
+    kind: toCardioKind(kind),
+    startedAt: String(v['started_at']),
+    durationSec: Number(v['duration_sec']),
+    distanceM: distance === null ? null : Number(distance),
+    avgHr: avgHr === null ? null : Number(avgHr),
+    rpe: Number(v['rpe']),
+    notes: v['notes'],
+    source: v['source'] as CardioSessionInput['source'],
+  };
+  return validateCardioSession(input, '9999-12-31T23:59:59.999Z').length === 0;
+}
+
+export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient', 'recovery_day', 'muscle_recovery', 'recovery_factor', 'measurement', 'progress_photo', 'food_favorite', 'supplement', 'supplement_intake', 'cardio_session'] as const;
 /**
  * Colonnes ajoutées après la première version exportée de leur table : absentes d'une archive plus ancienne (0.3.0 : `workout_set` sans
  * `difficulty` ; schéma 12 : sans `circuit_id` ni `circuit_rest_sec` ; schéma 13 : `routine_exercise` sans ces deux colonnes, I6-03b), lues comme nulles et notées `absent` (FIX-0171 : la valeur locale d'une
@@ -107,6 +127,7 @@ export const TABLE_SINCE_SV: Readonly<Partial<Record<TrainingTable, number>>> = 
   food_favorite: 15,
   supplement: 17,
   supplement_intake: 17,
+  cardio_session: 18,
 };
 
 /**
@@ -403,6 +424,9 @@ function rowBoundsOk(table: TrainingTable, id: string, v: Readonly<Record<string
     case 'food_favorite':
       // FIX-0181 (D-171) : CHECK de la migration 0015 (identifiant naturel) et cohérence provenance / référence du domaine (`toFavorite`).
       return id === `favorite|${String(v['ref'])}` && toFavorite(v['source'], v['ref']) !== null;
+    case 'cardio_session':
+      // I6-06 (D-221) : bornes du domaine (= CHECK de la migration 0018) ; l'instant courant n'est pas connu ici : seul « futur » n'est pas contrôlé.
+      return cardioRowOk(v);
     case 'progress_photo':
       return typeof v['file_name'] === 'string' && isPhotoFileName(v['file_name']);
     case 'muscle_recovery':
