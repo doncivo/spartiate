@@ -46,6 +46,7 @@ export const bodyProgressFr = {
   zonesListTitle: 'Zones · dernière · 4 sem.',
   zoneNoMeasure: 'aucune mesure',
   zoneDeltaSame: '=',
+  zoneNoDelta: 'pas d’écart sur 4 semaines',
   entryKeys: 'Entrée valide · ↑ ↓ change de zone',
   historyTitle: 'Relevés',
   kindShort_neck: 'Cou',

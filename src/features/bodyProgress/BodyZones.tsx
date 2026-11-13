@@ -92,18 +92,20 @@ export function ZoneList({ kind, summaries, onSelect }: ZoneProps & { readonly s
         onKeyDown={(event) => {
           if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
           event.preventDefault();
-          onSelect(neighbourZone(kind, event.key === 'ArrowDown' ? 1 : -1));
+          const next = neighbourZone(kind, event.key === 'ArrowDown' ? 1 : -1);
+          onSelect(next);
+          event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]')[MEASUREMENT_KINDS.indexOf(next)]?.focus();
         }}
       >
         {MEASUREMENT_KINDS.map((k) => {
           const s = summaries[k];
           return (
-            <button key={k} type="button" role="radio" aria-checked={k === kind} aria-label={tBodyProgress(KIND_TEXT[k])} aria-describedby={`ct-zone-value-${k}`} className="ct-bodyprogress__zone" onClick={() => onSelect(k)}>
+            <button key={k} type="button" role="radio" aria-checked={k === kind} aria-label={tBodyProgress(KIND_TEXT[k])} aria-describedby={`ct-zone-value-${k}`} tabIndex={k === kind ? 0 : -1} className="ct-bodyprogress__zone" onClick={() => onSelect(k)}>
               <span aria-hidden="true">{tBodyProgress(KIND_TEXT[k])}</span>
               <span id={`ct-zone-value-${k}`} className="ct-bodyprogress__zonevalue">
                 {s.last === null ? <MissingValue reason={tBodyProgress('zoneNoMeasure')} /> : formatCm(s.last.value)}
               </span>
-              <span className="ct-bodyprogress__zonedelta">{s.delta === null ? '—' : s.delta === 0 ? tBodyProgress('zoneDeltaSame') : signed(s.delta)}</span>
+              <span className="ct-bodyprogress__zonedelta">{s.delta === null ? <MissingValue reason={tBodyProgress('zoneNoDelta')} /> : s.delta === 0 ? tBodyProgress('zoneDeltaSame') : signed(s.delta)}</span>
             </button>
           );
         })}

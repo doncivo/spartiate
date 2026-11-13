@@ -320,7 +320,6 @@ export const nutritionFr = {
 
   // Check-in
   checkInTitle: 'Check-in hebdomadaire',
-  checkInPeriod: 'Semaine du {from} au {to} · cible à partir du {date}',
   /** ERGO-02 (CheckIn-apres). */
   checkInEyebrow: 'Check-in · {date} · style {style}',
   checkInWeekOf: 'Semaine du {from}',
@@ -346,6 +345,7 @@ export const nutritionFr = {
   checkInProteinPerKg: '{n} g/kg',
   checkInFatMin: '≥ 0,6 g/kg',
   checkInDeltaSame: '=',
+  checkInNoDelta: 'pas d’écart',
   checkInFirstTitle: 'Premier check-in : {date}',
   checkInFirstLead: 'Il analysera la semaine du {from} au {to}. Rien n’est suspendu : il n’y a simplement pas encore de semaine à analyser.',
   checkInFirstNeed: 'D’ici là, il faut au moins {days} jours complets et {weighIns} pesées sur cette semaine.',
@@ -367,10 +367,6 @@ export const nutritionFr = {
   openStrategy: 'Ouvrir Stratégie',
   proposalTitle: 'Proposition',
   proposalInitial: 'Première cible calculée à partir de ta dépense estimée.',
-  proposalLine: '{label} : {from} → {to}',
-  proposalLineSame: '{label} : {value} (inchangé)',
-  proposalNew: '{label} : {to}',
-  proposalDelta: 'Variation : {n} kcal (borne ± 150 kcal par semaine).',
   why: 'Pourquoi',
   whyTdee: 'Dépense retenue : {n} kcal / j.',
   whyGoal: 'Objectif : {goal}.',
