@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Check-in hebdo — après</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&amp;display=swap">
+<style>
+body{margin:0}
+.c{font-family:Cinzel,"Times New Roman",serif;font-weight:600}
+.sec{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#C28E4C}
+.ln{display:grid;grid-template-columns:1fr 70px 70px 54px;align-items:baseline;padding:10px 0;border-top:1px solid #1D2027;font-size:14px}
+</style>
+</helmet>
+<div style="width:440px;height:956px;background:#0D0E11;color:#EDE7DC;font-family:-apple-system,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums;overflow:hidden;padding:56px 24px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:20px">
+<a href="#" style="font-size:14px;color:#E0B577;text-decoration:none">‹ Nutrition</a>
+<div><div class="sec">Check-in · dim. 1er nov. · style collaboratif</div><h1 class="c" style="font-size:26px;margin:6px 0 0">Semaine du 26 oct.</h1></div>
+
+<div style="display:flex;align-items:center;gap:20px">
+<div><div style="display:flex;align-items:baseline;gap:6px"><span class="c" style="font-size:40px;color:#E0B577">−0,35</span><span style="color:#A39C90">kg / sem.</span></div><div style="font-size:13px;color:#A39C90">objectif −0,40 · couverture suffisante</div></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid #2A2E37;border-bottom:1px solid #2A2E37;text-align:center">
+<div style="padding:12px 0;border-right:1px solid #2A2E37"><div class="c" style="font-size:18px">81,4</div><div style="font-size:11px;color:#A39C90">kg tendance</div></div>
+<div style="padding:12px 0;border-right:1px solid #2A2E37"><div class="c" style="font-size:18px">5/7</div><div style="font-size:11px;color:#A39C90">jours loggés</div></div>
+<div style="padding:12px 0;border-right:1px solid #2A2E37"><div class="c" style="font-size:18px">2 480</div><div style="font-size:11px;color:#A39C90">kcal apports</div></div>
+<div style="padding:12px 0"><div class="c" style="font-size:18px">2 790</div><div style="font-size:11px;color:#A39C90">kcal dépense</div></div>
+</div>
+
+<div>
+<div style="display:flex;justify-content:space-between"><span class="sec">Proposition</span><span style="font-size:12px;color:#A39C90">borne ± 150 kcal</span></div>
+<div style="margin-top:6px">
+<div class="ln" style="border-top:0;font-size:11px;color:#A39C90;letter-spacing:.06em;text-transform:uppercase;padding-bottom:4px"><span></span><span>Actuel</span><span>Proposé</span><span></span></div>
+<div class="ln"><span>Calories</span><span style="color:#A39C90">2 650</span><b class="c" style="font-size:18px;color:#E0B577">2 700</b><span style="color:#5E9E6B;text-align:right">+50</span></div>
+<div class="ln"><span>Protéines <span style="font-size:11px;color:#A39C90">2,1 g/kg</span></span><span style="color:#A39C90">170 g</span><span>170 g</span><span style="color:#A39C90;text-align:right">=</span></div>
+<div class="ln"><span>Glucides</span><span style="color:#A39C90">300 g</span><span>312 g</span><span style="color:#5E9E6B;text-align:right">+12</span></div>
+<div class="ln"><span>Lipides <span style="font-size:11px;color:#A39C90">≥ 0,6 g/kg</span></span><span style="color:#A39C90">75 g</span><span>75 g</span><span style="color:#A39C90;text-align:right">=</span></div>
+</div>
+</div>
+
+<div style="font-size:13px;line-height:1.55;color:#A39C90;border-left:2px solid #C28E4C;padding-left:12px">Perte sur 4 semaines −0,45 kg / sem., au-dessus de l'objectif ; cette semaine revient à −0,35. +50 kcal portés par les glucides, protéines gardées.</div>
+
+<div style="margin-top:auto;margin-bottom:44px;display:flex;flex-direction:column;gap:10px">
+<button type="button" style="height:54px;border-radius:14px;border:0;background:#B8322A;color:#EDE7DC;font-weight:600;font-size:16px">Accepter 2 700 kcal</button>
+<div style="display:flex;gap:10px"><button type="button" style="flex:1;height:46px;border-radius:12px;border:1px solid #2A2E37;background:transparent;color:#EDE7DC">Personnaliser</button><button type="button" style="flex:1;height:46px;border-radius:12px;border:1px solid #2A2E37;background:transparent;color:#EDE7DC">Refuser</button></div>
+<div style="font-size:11px;color:#A39C90;text-align:center">Modifiable plus tard dans Stratégie</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":440,"height":956}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
