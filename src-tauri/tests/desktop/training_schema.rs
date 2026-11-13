@@ -146,7 +146,6 @@ fn i6_06_a_cardio_version_backup_is_accepted_a_tampered_or_old_project_one_is_re
     assert_eq!(error_code(&old), "newer-schema");
 }
 
-
 /// I6-05 (migration 0017) : les quatre déclencheurs de capture des compléments n'existent qu'à partir de la version 17 ; une sauvegarde de version 17
 /// qui les porte est admise, une dont un corps est modifié est refusée.
 #[test]

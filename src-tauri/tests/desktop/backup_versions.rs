@@ -149,8 +149,18 @@ fn k05_4_the_three_replaced_triggers_have_a_superseded_body_valid_from_15_to_17(
         } else {
             Some(sql)
         };
-        assert_eq!(trigger_body_for(name, table, 17), expected, "{name}");
-        assert_eq!(trigger_body_for(name, table, 18), expected, "{name}");
+        // I6-06 : un déclencheur introduit après la version 17 (cardio, 0018) n'a pas de corps avant elle.
+        let since = introduced_in(name).unwrap();
+        assert_eq!(
+            trigger_body_for(name, table, 17),
+            if since > 17 { None } else { expected },
+            "{name}"
+        );
+        assert_eq!(
+            trigger_body_for(name, table, 18),
+            if since > 18 { None } else { expected },
+            "{name}"
+        );
     }
     assert_eq!(
         trigger_body_for("sync_task_au", "settings", 17),
