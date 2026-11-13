@@ -5,7 +5,7 @@ import { pendingFileCount } from '../../domain/sync/pendingFiles';
 import { isPublishBlockedCause, publishCauseText } from '../../i18n/syncPublishCauseText';
 import { tSyncRefonte } from '../../i18n/syncRefonteText';
 import type { SyncDeviceStatus } from '../../platform/sync/types';
-import { Icon } from '../../ui';
+import { Icon, useLayout } from '../../ui';
 import { useAppContainer, useFeatureStore } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
 import { SyncDetailsCarryReportHost } from './SyncDetailsCarryReportHost';
@@ -59,6 +59,7 @@ function deviceTone(device: Pick<SyncDeviceStatus, 'status' | 'seen'>): 'success
  */
 export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetailsSlots }) {
   const container = useAppContainer();
+  const pc = useLayout() === 'pc';
   const navigate = useNavigationStore((s) => s.navigate);
   const status = useFeatureStore(syncStore, (s) => s.status);
   const loadNames = useFeatureStore(syncStore, (s) => s.loadDeviceNames);
@@ -71,6 +72,13 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
   // Avertissements, vers lequel renvoie la ligne d'état « Synchro incomplète : voir les avertissements » (contre-revue, point 3).
   const carryRaised = (status.warnings ?? []).includes('carry-report');
   const shownWarnings = (status.warnings ?? []).filter((code) => code !== 'carry-report' && code !== 'own-delete-failed');
+  /** ERGO-02 : "Ajouter un appareil" (iPhone) ou "Ajouter un iPhone" (PC, colonne de droite) : l'appairage existant, inchangé. */
+  const addDevice = (title: string, className = 'ct-sync__add') => (
+    <section className={className} role="region" aria-labelledby="ct-sync-add-title">
+      <h2 id="ct-sync-add-title" className="ct-settings__section ct-section-title">{title}</h2>
+      {slots.pairing ?? <SyncDetailsPairing />}
+    </section>
+  );
   return (
     <div className="ct-settings ct-sync">
       <div className="ct-sync__topRow">
@@ -81,6 +89,8 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
         </button>
       </div>
       <h1 className="ct-settings__title">{t('sync.status.title')}</h1>
+      <div className={pc ? 'ct-sync__layout' : 'ct-sync__stack'}>
+      <div className="ct-sync__main">
       {/* Carte d'état (critère 2) : la phrase de la ligne de Réglages, verte seulement quand tout est effectivement parti (règle 5). */}
       <SyncStatusLine showDetailsLink={false} variant="card" />
       {status.progress && (
@@ -98,7 +108,7 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
       {/* QA D2 : dossier à choisir de nouveau : « Choisir le dossier » aussi dans Détails (où mène le bandeau). */}
       <SyncDetailsFolder />
       {(status.ownDelete?.length ?? 0) > 0 && <SyncDetailsOwnDeletionHost />}
-      {slots.pairing ?? <SyncDetailsPairing />}
+      {!pc && addDevice(tSyncRefonte('addDevice'))}
       {slots.version ?? <SyncDetailsVersion />}
       <h2 className="ct-settings__section ct-section-title">{t('sync.status.sectionDevices')}</h2>
       {nameError && <p role="alert" className="ct-settings__error">{t(nameError)} {nameError === 'sync.status.nameReadFailed' && <button type="button" onClick={() => void loadNames()}>{t('common.retry')}</button>}</p>}
@@ -178,6 +188,9 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
       </div>
       {slots.conflicts ?? <SyncDetailsConflicts />}
       {slots.reset ?? <SyncDetailsReset />}
+      </div>
+      {pc && addDevice(tSyncRefonte('addIphone'), 'ct-sync__aside')}
+      </div>
     </div>
   );
 }

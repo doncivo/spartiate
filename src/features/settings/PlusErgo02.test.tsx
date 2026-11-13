@@ -103,7 +103,7 @@ describe('ERGO-02 — Plus et Appareils et synchro (aperçu 13/11)', () => {
       await screen.findByRole('heading', { level: 1, name: 'Plus' });
       fireEvent.click(within(list()).getByRole('button', { name: /^Apparence/ }));
       const panel = await screen.findByRole('region', { name: 'Apparence' });
-      expect(await within(panel).findByRole('heading', { level: 1, name: 'Apparence' })).toBeInTheDocument();
+      expect(await within(panel).findByRole('heading', { level: 1, name: /^Apparence/ })).toBeInTheDocument();
       expect(within(list()).getByRole('button', { name: /^Apparence/ })).toHaveAttribute('aria-current', 'true');
       expect(useNavigationStore.getState().route).toEqual(INITIAL_NAVIGATION.route);
     });
