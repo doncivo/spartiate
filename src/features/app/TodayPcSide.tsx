@@ -6,6 +6,8 @@ import { loadGrid } from '../../domain/training/loadGrid';
 import type { WorkoutWithSets } from '../../domain/training';
 import type { LocalDate } from '../../domain/types';
 import { formatInt, tNutrition } from '../../i18n/nutritionText';
+import { formatStamp } from '../../i18n/format';
+import { tToday } from '../../i18n/todayText';
 import { tTodayPc } from '../../i18n/todayPcText';
 import { formatExerciseLoad } from '../../i18n/trainingText';
 import { MissingValue } from '../../ui/MissingValue';
@@ -73,7 +75,41 @@ async function readRecords(container: ReturnType<typeof useAppContainer>, setsOf
   return rows.slice(0, RECORDS_SHOWN);
 }
 
-export function TodayPcSide({ weight }: { readonly weight: ReactNode }) {
+export interface TodayPcSideProps {
+  /** Carte Poids, rendue par Aujourd'hui (départ) et placée ici dans l'ordre de l'aperçu. */
+  readonly weight: ReactNode;
+  /** Carte « État » (petite, en dernier) : ligne de synchro déjà formulée, dernière sauvegarde (undefined : indisponible ici ; null : jamais). */
+  readonly state: { readonly sync: string; readonly backupMs: number | null | undefined; readonly nowMs: number };
+}
+
+/** ERGO-02 (D-262) : carte « État » (synchro, signature, Apple Santé, sauvegarde, dernier export) ; une donnée absente dit sa raison. */
+function StateCard({ sync, backupMs, nowMs }: TodayPcSideProps['state']) {
+  const backup = backupMs === undefined ? <MissingValue reason={tTodayPc('backupUnknown')} /> : backupMs === null ? tToday('never') : formatStamp(new Date(backupMs).toISOString(), nowMs);
+  const rows: readonly (readonly [string, ReactNode])[] = [
+    [tToday('sync'), sync],
+    [tToday('signature'), <MissingValue key="signature" reason={tTodayPc('signatureMissing')} />],
+    [tToday('healthKit'), <MissingValue key="healthKit" reason={tTodayPc('healthKitMissing')} />],
+    [tToday('backup'), backup],
+    [tToday('lastExport'), <MissingValue key="lastExport" reason={tTodayPc('lastExportMissing')} />],
+  ];
+  return (
+    <section className="ct-today__card ct-today__kv ct-today__state" aria-labelledby="ct-today-state">
+      <h2 id="ct-today-state" className="ct-today__eyebrow ct-section-title">
+        {tToday('stateEyebrow')}
+      </h2>
+      <dl className="ct-today__rows">
+        {rows.map(([label, value]) => (
+          <div key={label} className="ct-today__row ct-today__row--kv">
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
+export function TodayPcSide({ weight, state }: TodayPcSideProps) {
   const container = useAppContainer();
   const { data, clock } = container;
   const [load, setLoad] = useState<Load>({ status: 'loading' });
@@ -107,7 +143,14 @@ export function TodayPcSide({ weight }: { readonly weight: ReactNode }) {
   }, [data, clock, container, synced]);
 
   // La carte Poids garde sa clé d'un état à l'autre : elle n'est pas démontée quand la colonne finit de se lire (aucun clignotement).
-  if (load.status !== 'ready') return <Fragment key="weight">{weight}</Fragment>;
+  const stateCard = <StateCard key="state" {...state} />;
+  if (load.status !== 'ready')
+    return (
+      <>
+        <Fragment key="weight">{weight}</Fragment>
+        {stateCard}
+      </>
+    );
   const { snapshot, doneDays, records } = load;
   const today = snapshot.today;
   const day = snapshot.days.find((d) => d.date === today);
@@ -198,6 +241,7 @@ export function TodayPcSide({ weight }: { readonly weight: ReactNode }) {
           </ul>
         )}
       </section>
+      {stateCard}
     </>
   );
 }

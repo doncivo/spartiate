@@ -50,11 +50,6 @@ export const todayFr = {
   backup: 'Sauvegarde',
   lastExport: 'Dernier export',
   unknown: '—',
-  /** ERGO-02 : raisons des données manquantes de la carte « État » (les textes du tableau et de la colonne droite sont dans fr.todayPc.ts). */
-  signatureMissing: 'lue sur l’iPhone',
-  healthKitMissing: 'iPhone seulement',
-  lastExportMissing: 'aucun export noté',
-  backupUnknown: 'non disponible ici',
   never: 'jamais',
   notConfigured: 'non configurée',
 } as const;
