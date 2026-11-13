@@ -104,7 +104,8 @@ export type SyncReportTable =
   | 'recovery_factor'
   | 'measurement'
   | 'progress_photo'
-  | 'food_favorite';
+  | 'food_favorite'
+  | 'cardio_session';
 
 /** Compteurs seulement (jamais le contenu d'une ligne) : bilan de l'export des journaux. */
 export interface SyncDiagnostics {

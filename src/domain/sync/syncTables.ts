@@ -759,7 +759,30 @@ const FOOD_FAVORITE_TABLE = table(
 export const DATA_RESET_TABLE = 'data_reset';
 const DATA_RESET_TABLE_DEF = table(DATA_RESET_TABLE,[c('created_at', 'datetime', false, hidden), c('deleted_at', 'datetime', true, hidden)], { purgeable: false, titleSource: { kind: 'none' } });
 
-/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02 + FIX-0181 + RESET-01) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+/**
+ * Catalogue I6-06 (D-221, D-222 ; migration 0017, schéma 17) : `cardio_session`, séances cardio saisies, écrites par les DEUX appareils, identifiant UUID.
+ * Fusion champ par champ par HLC, dernière écriture gagne. Le tracé GPS (`cardio_track`) est LOCAL : absent du catalogue, jamais publié ni exporté ;
+ * seules la durée et la distance passent. `kind` est un texte court (non fermé : un type ajouté par une version plus récente reste lisible, « autre ») ;
+ * la FC moyenne (donnée corporelle) est masquée du journal des conflits.
+ */
+const CARDIO_SESSION_TABLE = table(
+  'cardio_session',
+  [
+    c('kind', 'text', false, { max: 32 }),
+    c('started_at', 'datetime', false),
+    c('duration_sec', 'int', false),
+    c('distance_m', 'real', true),
+    c('avg_hr', 'int', true, hidden),
+    c('rpe', 'int', false, { values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }),
+    c('source', 'enum', false, { values: ['manual', 'gps'] }),
+    c('notes', 'text', false, { max: 2_000 }),
+    createdAt,
+    deletedAt,
+  ],
+  { titleSource: { kind: 'none' } },
+);
+
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02 + FIX-0181 + RESET-01 + I6-06) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   tables: [
     PROFILE_TABLE,
@@ -788,6 +811,7 @@ export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
     PROGRESS_PHOTO_TABLE,
     FOOD_FAVORITE_TABLE,
     DATA_RESET_TABLE_DEF,
+    CARDIO_SESSION_TABLE,
   ],
   order: SYNC_TABLE_ORDER,
 });

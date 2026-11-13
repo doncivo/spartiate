@@ -5,8 +5,9 @@
 //! (I3-02, migration 0007 : captures de `mesocycle`), la 8 (I4-02, migration 0008 : captures de `food`, `food_portion`, `meal_entry` et
 //! `nutrition_target`) et la 9 (I4-07, migration 0009 : captures de `day_completeness`, `recipe` et `recipe_ingredient`), jusqu'à la 14
 //! (I6-03b, migration 0014 : capture propre des colonnes de groupe de `routine_exercise`) et la 15 (FIX-0181, migration 0015 : captures de
-//! `food_favorite`) et la 16 (RESET-01, migration 0016 : captures de `data_reset`) ; la version 17, inconnue de cette app, est refusée. Les
-//! déclencheurs de capture sont ceux de la référence.
+//! `food_favorite`), la 16 (RESET-01, migration 0016 : captures de `data_reset`) et celle du cardio (I6-06, `CARDIO_VERSION` : captures de
+//! `cardio_session`, tracé local sans déclencheur) ; la version suivante, inconnue de cette app, est refusée. Les déclencheurs de capture sont ceux de
+//! la référence.
 
 use std::path::Path;
 
@@ -73,9 +74,29 @@ fn error_code(path: &Path) -> &'static str {
         .code
 }
 
+/// I6-06 : version de la migration du cardio (`src/db/migrations/00NN_cardio.ts`), la dernière du registre.
+const CARDIO_VERSION: u32 = 17;
+
 #[test]
-fn reset_01_the_app_schema_version_is_16() {
-    assert_eq!(APP_SCHEMA_VERSION, 16);
+fn i6_06_the_app_schema_version_is_the_cardio_version() {
+    assert_eq!(APP_SCHEMA_VERSION, CARDIO_VERSION);
+}
+
+/// I6-06 : les deux déclencheurs de capture de `cardio_session` n'existent qu'à partir de la version du cardio ; aucun sur le tracé local
+/// `cardio_track` ; une sauvegarde dont le corps est modifié est refusée.
+#[test]
+fn i6_06_the_cardio_triggers_exist_only_from_the_cardio_version_and_the_track_has_none() {
+    for suffix in ["ai", "au"] {
+        let name = format!("sync_cardio_session_{suffix}");
+        assert_eq!(
+            trigger_body_for(&name, "cardio_session", CARDIO_VERSION - 1),
+            None
+        );
+        assert!(trigger_body_for(&name, "cardio_session", CARDIO_VERSION).is_some());
+    }
+    assert!(REFERENCE_TRIGGERS
+        .iter()
+        .all(|(_, table, _)| *table != "cardio_track"));
 }
 
 /// RESET-01 (migration 0016) : les deux déclencheurs de capture de `data_reset` n'existent qu'à partir de la version 16.
@@ -530,13 +551,16 @@ fn i4_07_a_version_9_backup_with_the_recipe_tables_is_accepted_and_a_tampered_on
 }
 
 #[test]
-fn reset_01_a_version_17_backup_is_refused_as_newer_schema() {
+fn i6_06_a_backup_newer_than_the_cardio_version_is_refused_as_newer_schema() {
     let dir = scratch();
-    let path = dir.path().join("v17.db");
+    let path = dir.path().join("newer.db");
     make_db(&path, 3, &TABLES);
+    let inserts: String = (4..=CARDIO_VERSION + 1)
+        .map(|v| format!("INSERT INTO schema_migrations (version) VALUES ({v}); "))
+        .collect();
     Connection::open(&path)
         .unwrap()
-        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5); INSERT INTO schema_migrations (version) VALUES (6); INSERT INTO schema_migrations (version) VALUES (7); INSERT INTO schema_migrations (version) VALUES (8); INSERT INTO schema_migrations (version) VALUES (9); INSERT INTO schema_migrations (version) VALUES (10); INSERT INTO schema_migrations (version) VALUES (11); INSERT INTO schema_migrations (version) VALUES (12); INSERT INTO schema_migrations (version) VALUES (13); INSERT INTO schema_migrations (version) VALUES (14); INSERT INTO schema_migrations (version) VALUES (15); INSERT INTO schema_migrations (version) VALUES (16); INSERT INTO schema_migrations (version) VALUES (17);")
+        .execute_batch(&inserts)
         .unwrap();
     assert_eq!(error_code(&path), "newer-schema");
 }

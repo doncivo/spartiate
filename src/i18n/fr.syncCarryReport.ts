@@ -91,5 +91,6 @@ export const syncCarryReportFr = {
   kindProgressPhoto: 'Photo de progression (fiche seulement)',
   kindFoodFavorite: 'Favori de la recherche d’aliments',
   kindDataReset: 'Remise à zéro des données',
+  kindCardioSession: 'Séance cardio',
   kindOther: 'Autre élément',
 } as const;
