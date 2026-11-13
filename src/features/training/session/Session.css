@@ -52,6 +52,50 @@
   overflow-wrap: anywhere;
 }
 
+/* ERGO-01b P1 : exercices de la séance du jour, à plat sous des filets fins. */
+.ct-session-card__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ct-session-card__list li {
+  padding: var(--ct-space-2) 0;
+  border-top: var(--ct-line);
+  font-size: var(--ct-font-size-text);
+  overflow-wrap: anywhere;
+}
+
+/* ERGO-01b P3 : « − / + » de la série en cours, boutons ronds de 44 px au moins (une main, sans clavier). */
+.ct-session__stepper {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--ct-space-2);
+}
+
+.ct-session__step {
+  min-width: var(--ct-hit-target-min);
+  min-height: var(--ct-hit-target-min);
+  border: 1px solid var(--ct-color-border-strong);
+  border-radius: var(--ct-radius-pill);
+  background: transparent;
+  color: var(--ct-color-text);
+  font-family: var(--ct-font-text);
+  font-size: var(--ct-font-size-item);
+  font-weight: var(--ct-font-weight-semibold);
+  cursor: pointer;
+}
+
+.ct-session__step:focus-visible {
+  outline: 2px solid var(--ct-color-accent);
+  outline-offset: 2px;
+}
+
+.ct-session__step:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* En-tête : nom, chrono, résumé, repos par défaut */
 .ct-session__head {
   display: flex;

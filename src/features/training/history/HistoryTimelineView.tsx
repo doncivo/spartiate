@@ -53,7 +53,7 @@ export function HistoryTimelineView({ workout }: { readonly workout: WorkoutWith
   const replay = replayWorkout(workout);
   return (
     <section className="ct-summary__card" role="region" aria-label={tReplay('title')}>
-      <h3 className="ct-training__eyebrow">{tReplay('title')}</h3>
+      <h3 className="ct-training__eyebrow ct-section-title">{tReplay('title')}</h3>
       <p className="ct-session__muted">{tReplay('intro')}</p>
       {replay.steps.length === 0 ? (
         <p className="ct-session__muted">{tReplay('empty')}</p>

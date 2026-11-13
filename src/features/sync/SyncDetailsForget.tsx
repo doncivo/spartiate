@@ -112,7 +112,7 @@ export function SyncDetailsForget({ relaunch }: { readonly relaunch?: () => Prom
 
   return (
     <>
-      <h2 className="ct-settings__section">{t('sync.forget.section')}</h2>
+      <h2 className="ct-settings__section ct-section-title">{t('sync.forget.section')}</h2>
       <div role="status" className="ct-sync__forget" ref={region} tabIndex={-1}>
         {forgotten && (
           <div className="ct-settings__row ct-sync__device" data-forgotten-self="true">

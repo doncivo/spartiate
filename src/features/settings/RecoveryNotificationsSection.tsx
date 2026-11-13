@@ -63,16 +63,16 @@ export function RecoveryNotificationsSection() {
 
   if (pc) {
     return (
-      <section className="ct-body__card ct-recnotif" aria-label={tRn('title')}>
-        <h2 className="ct-body__section">{tRn('title')}</h2>
+      <section className="ct-body__card ct-recnotif ct-flat" aria-label={tRn('title')}>
+        <h2 className="ct-body__section ct-section-title">{tRn('title')}</h2>
         <p className="ct-body__hint">{tRn('pcInfo')}</p>
       </section>
     );
   }
 
   return (
-    <section className="ct-body__card ct-recnotif" aria-label={tRn('title')}>
-      <h2 className="ct-body__section">{tRn('title')}</h2>
+    <section className="ct-body__card ct-recnotif ct-flat" aria-label={tRn('title')}>
+      <h2 className="ct-body__section ct-section-title">{tRn('title')}</h2>
       <p className="ct-body__hint">{tRn('intro')}</p>
       <div className="ct-recnotif__proposal">
         <span className="ct-recnotif__label">{tRn('proposalTitle')}</span>

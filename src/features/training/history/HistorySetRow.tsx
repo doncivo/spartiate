@@ -122,7 +122,7 @@ export function HistorySetRow({ set, number, timedExercise, busy, onCorrect }: H
         <span className="ct-session__set-target">{tTraining(KIND_TEXT[set.setKind])}</span>
         {corrected ? <span className="ct-session__state ct-history__corrected">{tTraining('historyCorrected')}</span> : null}
         <span className={set.done ? 'ct-session__state ct-session__state--done' : 'ct-session__state'}>
-          {set.done ? <Icon icon={Check} size={16} /> : null}
+          {set.done ? <Icon icon={Check} size="sm" /> : null}
           {tTraining(set.done ? 'sessionDone' : 'historyNotDone')}
         </span>
       </div>

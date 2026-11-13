@@ -21,13 +21,15 @@ describe('Icon', () => {
     expect(svg).toHaveAttribute('stroke-width', '1.8');
   });
 
-  it('accepte une taille, une couleur et une épaisseur personnalisées', () => {
-    const { container } = render(<Icon icon={Search} size={30} color="#3F7FC4" strokeWidth={2.2} />);
+  // ERGO-01b (décision d'Ali du 13/11) : icônes homogènes. La taille se choisit dans l'échelle nommée ; trait et couleur ne sont plus au
+  // choix de l'appelant (ancienne attente « taille, couleur et épaisseur personnalisées » remplacée, voir src/ui/ErgoShared.test.tsx).
+  it('accepte une taille nommée de l’échelle partagée, trait et couleur inchangés', () => {
+    const { container } = render(<Icon icon={Search} size="sm" />);
     const svg = container.querySelector('svg');
-    expect(svg).toHaveAttribute('width', '30');
-    expect(svg).toHaveAttribute('height', '30');
-    expect(svg).toHaveAttribute('stroke', '#3F7FC4');
-    expect(svg).toHaveAttribute('stroke-width', '2.2');
+    expect(svg).toHaveAttribute('width', '16');
+    expect(svg).toHaveAttribute('height', '16');
+    expect(svg).toHaveAttribute('stroke', 'currentColor');
+    expect(svg).toHaveAttribute('stroke-width', '1.8');
   });
 
   it('devient porteuse de sens quand un libellé accessible est fourni', () => {

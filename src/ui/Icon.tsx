@@ -1,14 +1,11 @@
 import type { LucideIcon } from 'lucide-react';
+import { ICON_SIZE, ICON_STROKE, type IconSize } from './iconStyle';
 
 export interface IconProps {
   /** Composant d'icône Lucide importé nommément par l'appelant (tree-shaking, ADR 0001). */
   icon: LucideIcon;
-  /** Côté du carré en pixels (largeur = hauteur). Les maquettes utilisent 18 à 30 px. */
-  size?: number;
-  /** Couleur du trait ; `currentColor` par défaut pour suivre la couleur du texte ambiant. */
-  color?: string;
-  /** Épaisseur du trait ; 1.8 par défaut, comme dans toutes les maquettes Spartiate. */
-  strokeWidth?: number;
+  /** Taille nommée de l'échelle partagée (ERGO-01b : sm 16, md 20, lg 24 px) ; `lg` par défaut. Jamais une taille en pixels. */
+  size?: IconSize;
   className?: string;
   /**
    * Texte accessible (clé i18n déjà résolue par l'appelant, jamais en dur ici).
@@ -19,14 +16,18 @@ export interface IconProps {
   label?: string;
 }
 
-/** Enveloppe fine autour des icônes Lucide au trait, au style des maquettes Spartiate. */
-export function Icon({ icon: LucideIconComponent, size = 24, color = 'currentColor', strokeWidth = 1.8, className, label }: IconProps) {
+/**
+ * Enveloppe des icônes Lucide au trait, au style des maquettes Spartiate : trait unique (`ICON_STROKE`), couleur du texte ambiant
+ * (`currentColor`), taille de l'échelle partagée (ERGO-01b, icônes homogènes).
+ */
+export function Icon({ icon: LucideIconComponent, size = 'lg', className, label }: IconProps) {
+  const px = ICON_SIZE[size];
   return (
     <LucideIconComponent
-      width={size}
-      height={size}
-      color={color}
-      strokeWidth={strokeWidth}
+      width={px}
+      height={px}
+      color="currentColor"
+      strokeWidth={ICON_STROKE}
       className={className}
       aria-hidden={label === undefined ? true : undefined}
       aria-label={label}

@@ -2,6 +2,18 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.22.1
+
+Aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.
+
+- **Même allure partout** : sur tous les écrans (Plus, Bibliothèque, Matériel, Journal des séances, Cardio, Stratégie, Check-in, Recettes, Compléments, Corps, Onboarding…), les titres de section sont en petites capitales bronze, les cartes laissent place à des filets fins, un seul bouton rouge par écran (l'action principale), des boutons arrondis d'au moins 44 px et des icônes de même taille et même trait.
+- **Onglets** : l'onglet actif de l'iPhone et l'entrée active de la barre latérale du PC ont un trait bronze.
+- **Séance du jour en un tap** : avec un cycle en cours, la carte « Séance du jour » d'Aujourd'hui et d'Entraînement donne le jour du programme et ses exercices ; « Lancer la séance » l'ouvre directement. « Autre séance… » garde les autres choix.
+- **Ajouter un repas en 3 taps** : le bouton de la carte Nutrition ouvre le Journal avec la recherche déjà ouverte.
+- **Charge en un tap** : sur la série en cours, « − / + » change la charge d'un cran de ton matériel (2,5 kg sans profil) et les répétitions d'une unité, sans clavier.
+- **Aujourd'hui sur PC** : la récupération en tête, une seule carte « État » à droite ; le profil se règle dans Plus › Profil et poids.
+- **Rangement** : « Journal des séances » quitte la carte Séance (la section « Journal » d'Entraînement le donne) ; « Tester le minuteur » passe dans Plus › Logs.
+
 ## 0.22.0
 
 Aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.

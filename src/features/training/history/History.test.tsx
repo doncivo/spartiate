@@ -88,13 +88,23 @@ describe('journal des séances', () => {
     expect(list).not.toHaveTextContent('Ouverte');
   });
 
-  it('Aujourd’hui mène au journal', async () => {
+  // ERGO-01b P5 (D-238) : le doublon « Journal des séances » de la carte Séance est retiré ; l'accès au journal passe par la section
+  // « Journal » d'Entraînement (attente d'avant : bouton de la carte ; voir aussi src/features/ErgoP5.test.tsx).
+  it('Entraînement mène au journal (section « Journal ») ; la carte Séance n’a plus de doublon', async () => {
     render(
       <AppContainerProvider container={container()}>
         <TodaySessionCard />
       </AppContainerProvider>,
     );
-    fireEvent.click(await screen.findByRole('button', { name: 'Journal des séances' }));
+    expect(await screen.findByRole('button', { name: 'Commencer une séance' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Journal des séances' })).toBeNull();
+    cleanup();
+    render(
+      <AppContainerProvider container={container()}>
+        <TrainingScreen />
+      </AppContainerProvider>,
+    );
+    fireEvent.click(await screen.findByRole('radio', { name: 'Journal' }));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'training', screen: 'history' });
   });
 });

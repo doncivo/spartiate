@@ -221,11 +221,6 @@
 /* Titres de section en bas de casse, en encre ; « Repartir de zéro » en rouge. */
 .ct-sync .ct-settings__section {
   margin-top: 22px;
-  font-size: 1.0625rem;
-  font-weight: var(--ct-font-weight-bold);
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--ct-color-text);
 }
 
 .ct-sync .ct-settings__section[data-tone='danger'] {

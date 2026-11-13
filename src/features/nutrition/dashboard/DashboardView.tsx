@@ -35,7 +35,7 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
   return (
     <div className="ct-nutrition__dashboard">
       <section className="ct-nutrition__card" aria-labelledby="ct-nutrition-today">
-        <h2 id="ct-nutrition-today" className="ct-nutrition__eyebrow">
+        <h2 id="ct-nutrition-today" className="ct-nutrition__eyebrow ct-section-title">
           {tNutrition('todayCard')}
         </h2>
         {remainingToday === null || remainingToday.kcal === null ? (
@@ -47,7 +47,7 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
       </section>
 
       <section className="ct-nutrition__card" aria-labelledby="ct-nutrition-balance">
-        <h2 id="ct-nutrition-balance" className="ct-nutrition__eyebrow">
+        <h2 id="ct-nutrition-balance" className="ct-nutrition__eyebrow ct-section-title">
           {tNutrition('balanceTitle')}
         </h2>
         {model.balance.averageKcal === null ? (
@@ -69,7 +69,7 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
       </section>
 
       <section className="ct-nutrition__card" aria-labelledby="ct-nutrition-trend">
-        <h2 id="ct-nutrition-trend" className="ct-nutrition__eyebrow">
+        <h2 id="ct-nutrition-trend" className="ct-nutrition__eyebrow ct-section-title">
           {tNutrition('trendTitle')}
         </h2>
         {model.trendNow === null ? (
@@ -98,7 +98,7 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
       </section>
 
       <section className="ct-nutrition__card" aria-labelledby="ct-nutrition-tdee">
-        <h2 id="ct-nutrition-tdee" className="ct-nutrition__eyebrow">
+        <h2 id="ct-nutrition-tdee" className="ct-nutrition__eyebrow ct-section-title">
           {tNutrition('tdeeTitle')}
         </h2>
         {tdee.value === null ? (
@@ -126,7 +126,7 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
       </section>
 
       <section className="ct-nutrition__card" aria-labelledby="ct-nutrition-coverage">
-        <h2 id="ct-nutrition-coverage" className="ct-nutrition__eyebrow">
+        <h2 id="ct-nutrition-coverage" className="ct-nutrition__eyebrow ct-section-title">
           {tNutrition('coverageTitle')}
         </h2>
         <p>{tNutrition(tdee.coverage.sufficient ? 'coverageSufficient' : 'coverageInsufficient')}</p>

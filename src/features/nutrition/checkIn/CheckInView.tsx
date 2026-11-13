@@ -152,7 +152,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
 
   const header = (
     <>
-      <h2 className="ct-nutrition__subtitle">{tNutrition('checkInTitle')}</h2>
+      <h2 className="ct-nutrition__subtitle ct-section-title">{tNutrition('checkInTitle')}</h2>
       <p className="ct-nutrition__muted">
         {tNutrition('checkInPeriod', { from: formatDayMonth(addDays(period.weekEnd, -6)), to: formatDayMonth(period.weekEnd), date: formatDayMonth(period.checkInDate) })}
       </p>
@@ -161,8 +161,8 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
 
   if (first.first && prefs.style !== 'manual') {
     return (
-      <section className="ct-nutrition__card ct-nutrition__checkin" aria-label={tNutrition('checkInTitle')}>
-        <h2 className="ct-nutrition__subtitle">{tNutrition('checkInTitle')}</h2>
+      <section className="ct-nutrition__card ct-nutrition__checkin ct-flat" aria-label={tNutrition('checkInTitle')}>
+        <h2 className="ct-nutrition__subtitle ct-section-title">{tNutrition('checkInTitle')}</h2>
         <p className="ct-nutrition__big">{tNutrition('checkInFirstTitle', { date: formatDayLong(first.date) })}</p>
         <p>{tNutrition('checkInFirstLead', { from: formatDayMonth(first.weekStart), to: formatDayMonth(first.weekEnd) })}</p>
         <p>{tNutrition('checkInFirstNeed', { days: first.needDays, weighIns: first.needWeighIns })}</p>
@@ -173,7 +173,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
 
   if (result.status === 'manual') {
     return (
-      <section className="ct-nutrition__card ct-nutrition__checkin" aria-label={tNutrition('checkInTitle')}>
+      <section className="ct-nutrition__card ct-nutrition__checkin ct-flat" aria-label={tNutrition('checkInTitle')}>
         {header}
         <p>{tNutrition('checkInManual')}</p>
         <p className="ct-nutrition__muted">{tNutrition('checkInManualHint')}</p>
@@ -186,7 +186,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
 
   if (result.status === 'suspended') {
     return (
-      <section className="ct-nutrition__card ct-nutrition__checkin" aria-label={tNutrition('checkInTitle')}>
+      <section className="ct-nutrition__card ct-nutrition__checkin ct-flat" aria-label={tNutrition('checkInTitle')}>
         {header}
         <p className="ct-nutrition__big">{tNutrition('checkInSuspended')}</p>
         <p>{tNutrition('checkInLead')}</p>
@@ -211,7 +211,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
 
   if (result.status === 'alert' && result.alert) {
     return (
-      <section className="ct-nutrition__card ct-nutrition__checkin" aria-label={tNutrition('checkInTitle')}>
+      <section className="ct-nutrition__card ct-nutrition__checkin ct-flat" aria-label={tNutrition('checkInTitle')}>
         {header}
         <p role="alert" className="ct-nutrition__warning">
           {alertText(result.alert)}
@@ -226,7 +226,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
 
   if (proposal === null) return null;
   return (
-    <section className="ct-nutrition__card ct-nutrition__checkin" aria-label={tNutrition('checkInTitle')}>
+    <section className="ct-nutrition__card ct-nutrition__checkin ct-flat" aria-label={tNutrition('checkInTitle')}>
       {header}
       {result.coverage ? (
         <ul className="ct-nutrition__list ct-nutrition__num">
@@ -240,12 +240,12 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
           {tNutrition('previousDecision', { what: tNutrition(existing.source === 'manual' ? 'previousManual' : existing.accepted ? 'previousAccepted' : 'previousRefused') })}
         </p>
       ) : null}
-      <h3 className="ct-nutrition__subtitle">{tNutrition('proposalTitle')}</h3>
+      <h3 className="ct-nutrition__subtitle ct-section-title">{tNutrition('proposalTitle')}</h3>
       {proposal.initial ? <p className="ct-nutrition__muted">{tNutrition('proposalInitial')}</p> : null}
       <ProposalLines proposal={proposal} />
       {proposal.deltaKcal !== null ? <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('proposalDelta', { n: formatSigned(proposal.deltaKcal) })}</p> : null}
 
-      <h3 className="ct-nutrition__subtitle">{tNutrition('why')}</h3>
+      <h3 className="ct-nutrition__subtitle ct-section-title">{tNutrition('why')}</h3>
       <ul className="ct-nutrition__list ct-nutrition__muted">
         <li>{tNutrition('whyTdee', { n: formatInt(proposal.trace.tdee) })}</li>
         <li>{tNutrition('whyGoal', { goal: goalText(prefs.goal) })}</li>
