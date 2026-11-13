@@ -1,6 +1,6 @@
 # ERGO-02 — écrans restants, onboarding complet et Aujourd'hui PC réaligné (0.23.0)
 
-Statut : **en cours** (pas de PR, pas de tag). Budget L (400 k). Branche `ERGO-02-ecrans-restants` depuis `origin/main` `cb1a1120` (0.22.3, schéma 18). Présentation seule : aucune migration, aucune règle métier modifiée, aucun changement de navigation entre onglets. Décision d'Ali du 13/11 (aperçu validé) ; D-261 (charge aux haltères, révise D-260) et D-262 suivantes.
+Statut : **point d'étape budget (AGENTS.md : dépassement > 50 %)**, PR #128 ouverte, non fusionnée, ni tag ni build iOS. Budget L dépassé (environ 1,3 M tokens d'agents de module et de relecture) ; arrêt demandé à Ali avant la ronde de corrections de la revue (§ 7). Budget L (400 k). Branche `ERGO-02-ecrans-restants` depuis `origin/main` `cb1a1120` (0.22.3, schéma 18). Présentation seule : aucune migration, aucune règle métier modifiée, aucun changement de navigation entre onglets. Décision d'Ali du 13/11 (aperçu validé) ; D-261 (charge aux haltères, révise D-260) et D-262 suivantes.
 
 Chapitres PRD : 10 (§ 10.1 onboarding), 13 (séance), 14 (fiche, matériel), 15 (check-in, compléments), 17 (Corps), 18 (§ 18.2 Plus, § 18.4 charte, § 18.5 états dégradés, § 18.6 accessibilité). Référence visuelle : `docs/maquettes/propositions/esthetique-2026-11-13/` (29 écrans, reprise du commit `74721fc` de `origin/maquettes-esthetique-2026-11-13`) ; `esthetique-2026-11-12/` pour les écrans déjà faits et `PC-Aujourdhui-apres.dc.html`.
 
@@ -60,3 +60,14 @@ Verdict : conforme sous réserve. Aucune couleur en dur, `tokens.css` inchangé 
 ## 6. Passe accessibility-i18n (`.claude/agents/accessibility-i18n.md`)
 
 Verdict : conforme après corrections (`0d8fe825` → `f62d2d69`). Textes tous dans `src/i18n`, tutoiement, 24 h, aucun « ! » ; jamais la couleur seule (onboarding, constance, coches, courbe, tracé) ; rôles radiogroup / radio, `aria-current`, régions nommées ; raccourcis PC sans capture de saisie. Corrigé : tiret sans raison (Corps, check-in), tabindex itinérant et focus des zones, coche à libellé constant, annonce GPS à la minute, 14 clés mortes retirées. Contrastes : couples employés couverts par `charte` / `contrastCss` (bronze, secondaire sur surface) ; Dynamic Type « Très grand » : tailles en rem, à constater sur l'iPhone.
+
+## 7. Passe code-reviewer (`.claude/agents/code-reviewer.md`)
+
+Verdict : **REFUSÉ (à corriger)**. Conformes : aucun fichier de src/sync, src/domain/sync, src-tauri ; aucune migration ; « Saisir la séance ici » = même lancement ; valeur stockée d'un haltère et volume inchangés ; bundle (import de type seul, liste blanche inchangée) ; aucun test sauté ni attente allongée.
+
+À corriger :
+1. **Bloquant** — « Derniers records » d'Aujourd'hui PC (`TodayPcSide.tsx`) : records calculés sur les 10 dernières séances seulement, alors que la clôture compare à tout l'historique ; un retour de deload peut s'afficher comme record. Correction : records de charge du résumé de clôture (`summary(id).records`) des 3 dernières séances, test avec un record plus ancien que la fenêtre.
+2. Onboarding étape 1 iPhone : le poids lu dans Santé, non modifié, est écrit à « Commencer » comme pesée manuelle : écart à C5 (aucune pesée sans saisie) et provenance perdue. Correction : ne rien écrire si la valeur n'a pas été modifiée.
+3. Erreurs avalées dans `TodayPcSide` (records, état `failed`) : afficher « lecture impossible » et journaliser.
+4. Couches : `lastKmSecPerKm` (gpsFigures.ts), règle de record de la fiche (exerciseSheet.ts), `weeklyRateKg` (weekSummary.ts) à déplacer dans src/domain.
+5. Mineurs : test de la coche « pris » des Compléments ; « par haltère » dans les écarts de fr.progression ; `heldFor` réemployé (TodayPcSide, todaySessionPreview) ; raison « aperçu illisible » distincte de « à saisir » ; semaine selon « Début de semaine » ; clés mortes `sessionTodayLoad`, `unknown` ; dates Renpho vérifiées sur les 5 lignes (BodyProgress.test).
