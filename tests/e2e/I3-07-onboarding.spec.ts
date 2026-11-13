@@ -50,7 +50,7 @@ test('parcours des 8 écrans : profil, pesée, routine proposée ajoutée, retou
   await expect(onboardingTitle(page, 'Ton objectif')).toBeVisible();
   await choose(page, 'Prendre du muscle');
   await choose(page, '+0,25 % par semaine');
-  await expect(dialog(page).getByText('Environ 0,2 kg par semaine.')).toBeVisible();
+  await expect(dialog(page).getByText('du poids / sem. · ≈ +0,2 kg')).toBeVisible();
   await next(page);
   // 3. Expérience.
   await expect(onboardingTitle(page, 'Ton expérience')).toBeVisible();
