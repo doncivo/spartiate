@@ -453,3 +453,14 @@ Fiches des photos de progression (date et nom de fichier). Les fichiers image ne
 | `id` | text | — | non |  |
 | `date` | date | — | non |  |
 | `file_name` | text | — | non |  |
+
+### `csv/food_favorite.csv`
+
+Favoris de la recherche d’aliments (FIX-0181, schéma 15), écrits sur l’un ou l’autre appareil, le plus récent d’abord par `added_at`. `ref` est la référence de l’aliment : `ciqual:<code>` ou l’identifiant d’une fiche (`food.csv`).
+
+| Colonne | Type | Unité | NULL possible | Remarque |
+| --- | --- | --- | --- | --- |
+| `id` | text | — | non | « favorite », une barre verticale, puis `ref` |
+| `source` | text | — | non | `custom`, `ciqual` ou `off` |
+| `ref` | text | — | non |  |
+| `added_at` | datetime | — | non | instant de la mise en favori |

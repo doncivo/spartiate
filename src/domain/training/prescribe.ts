@@ -2,7 +2,7 @@ import { ENGINE_VERSION, REASON_ORDER, type ProgressionConfig } from './config';
 import { confidenceOf } from './confidence';
 import { analyzeHistory, current1rmFromSessions, epley, totalLoad, type BodyLoad, type SessionEstimate } from './estimate1rm';
 import { activeConstraints, proposalOptions, reducedTarget, reduces, type ActiveConstraints } from './constraints';
-import { gridToVerify, loadGrid, nextLoadAbove, roundKg, snapDiscount, snapToEquipment } from './loadGrid';
+import { gridToVerify, loadGrid, nextLoadAbove, roundKg, snapDiscount, snapDownAtLeastMin, snapToEquipment } from './loadGrid';
 import type { MuscleWeight, PrescribeInput, PrescribedSet, Prescription, PrescriptionHeadline, PrescriptionReference, ReasonCode } from './types';
 
 /**
@@ -238,16 +238,19 @@ export function prescribe(input: PrescribeInput): Prescription {
   const positionFields = (cut: number): { readonly positionRank: number; readonly positionCut: number; readonly positionBasisKg: number } => ({ positionRank: rank, positionCut: cut, positionBasisKg: body === null ? refLoad : body.baseKg + body.sign * refLoad });
   if (reduces(constraints)) {
     // Maintien de la référence (aucun cran, échelle ni recalibrage), puis réductions ; arrondi au matériel, jamais au-dessus de la référence.
-    const reduced = reducedTarget(constraints, refPerformance, input.exercise.kind, config);
+    const reduced = reducedTarget(constraints, refPerformance, input.exercise.kind, config, input.exercise.assisted === true);
     if (reduced.recoverySetRemoved) reasons.add('recovery-set-removed');
     // I4-08 : décote d'inactivité seule sur une grille connue : arrondie au cran (maintien sous le demi-cran), jamais un cran entier dit « −1 % ».
-    const discountOnly = constraints.inactivityCut > 0 && !constraints.deload && !(constraints.lowRecovery && !constraints.redDayHold);
+    const discountOnly = constraints.inactivityCut > 0 && !constraints.deload && !constraints.lowRecovery;
+    // Journée rouge acceptée (D-170) : arrondi vers le bas, jamais sous la charge minimale, sans répétition ajoutée.
     const snapped =
       reduced.targetKg >= refLoad - EPS
         ? { loadKg: refLoad, reps: reduced.reps, extraRep: false }
         : discountOnly && available !== null
           ? snapDiscount(refLoad, reduced.targetKg, reduced.reps, available, config)
-          : snapToEquipment(reduced.targetKg, reduced.reps, available, config);
+          : constraints.redDay
+            ? snapDownAtLeastMin(reduced.targetKg, reduced.reps, available, refLoad, config)
+            : snapToEquipment(reduced.targetKg, reduced.reps, available, config);
     if (snapped.extraRep) reasons.add('snap-extra-rep');
     const keptKg = roundKg(Math.min(snapped.loadKg, refLoad));
     const pos = positioned(keptKg, snapped.reps);

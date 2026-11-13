@@ -13,9 +13,9 @@ import { localDayOf } from '../cycle/currentCycle';
 import { TrainingScreen } from '../TrainingScreen';
 
 /**
- * I5-02 point 2.2 (§ 16.4, § 16.7) : au lancement d'une séance, Recovery ≤ 33 lue dans `recovery_day` → bandeau « Journée rouge : maintien
- * des charges proposé », un tap pour accepter ou ignorer, choix gardé pour la séance (réglage local), jamais imposé ; Recovery nulle ou
- * absente : aucun bandeau. Accepté : la proposition ne monte pas et le dit ; ignoré : inchangée. Recovery Split : pourcentage par muscle
+ * I5-02 point 2.2 (§ 16.4, § 16.7) : au lancement d'une séance, Recovery ≤ 33 lue dans `recovery_day` → bandeau « Journée rouge : charges
+ * allégées de 5 % proposées », un tap pour accepter ou ignorer, choix gardé pour la séance (réglage local), jamais imposé ; Recovery nulle ou
+ * absente : aucun bandeau. Accepté : charges × 0,95 arrondies au matériel vers le bas (D-170) et dit ; ignoré : inchangée. Recovery Split : pourcentage par muscle
  * principal, muscle sans ligne « inconnu ». Base SQLite réelle (wasm), contenu embarqué, profil Fitness Park Antony (barre 2,5 kg).
  */
 
@@ -25,7 +25,7 @@ const CURRENT = u(9);
 const BENCH = 'Développé couché à la barre';
 const BENCH_ID = 'bench-press-barbell';
 const SQUAT_ID = 'squat-barbell';
-const BANNER = 'Journée rouge : maintien des charges proposé';
+const BANNER = 'Journée rouge : charges allégées de 5 % proposées';
 
 const notifier: TimerNotifier = { permission: async () => 'granted', requestPermission: async () => 'granted', isPending: async () => false, schedule: async () => true, cancel: async () => undefined };
 const liveActivity: LiveActivity = { isAvailable: async () => ({ available: false }) as never, start: async () => ({ started: false }) as never, end: async () => ({ ended: true, count: 0 }) };
@@ -88,25 +88,25 @@ describe('bandeau « journée rouge » (§ 16.7)', () => {
     await seedCurrent();
   });
 
-  it.each(['other', 'ios'] as const)('Recovery 20 (%s) : bandeau, rien n’est appliqué sans geste ; accepter : aucune hausse, dit dans la phrase, gardé à la reprise', async (os) => {
+  it.each(['other', 'ios'] as const)('Recovery 20 (%s) : bandeau, rien n’est appliqué sans geste ; accepter : charges × 0,95, dit dans la phrase, gardé à la reprise', async (os) => {
     await seedRecovery(20);
     const view = openSession(os);
     const b = await banner();
     expect(within(b).getByText(BANNER)).toBeInTheDocument();
-    // D-93 révisée : la phrase dit le maintien, jamais une baisse automatique.
-    expect(within(b).getByText(/aucune baisse automatique/)).toBeInTheDocument();
+    // D-93 révisée par Ali (FIX-0181, D-170) : charges × 0,95, arrondies au matériel vers le bas, jamais sous la charge minimale.
+    expect(within(b).getByText(/charges × 0,95 pendant cette séance, arrondies au matériel vers le bas, jamais sous la charge minimale/)).toBeInTheDocument();
     // Proposition habituelle tant qu'Ali n'a rien choisi.
     expect(await within(await proposal()).findByText('102,5 kg × 8 · 8 · 8')).toBeInTheDocument();
-    fireEvent.click(within(b).getByRole('button', { name: 'Accepter le maintien' }));
-    expect(await within(await proposal()).findByText('100 kg × 10 · 10 · 10')).toBeInTheDocument();
-    expect(within(await proposal()).getByText('Journée rouge : charges maintenues, aucune hausse ni baisse automatique ; estimation, pas un avis médical.')).toBeInTheDocument();
-    expect(await within(await banner()).findByText('Journée rouge : maintien des charges accepté pour cette séance.')).toBeInTheDocument();
-    expect(within(await banner()).queryByRole('button', { name: 'Accepter le maintien' })).toBeNull();
+    fireEvent.click(within(b).getByRole('button', { name: 'Accepter l’allègement' }));
+    expect(await within(await proposal()).findByText('95 kg × 10 · 10 · 10')).toBeInTheDocument();
+    expect(within(await proposal()).getByText('Journée rouge : charges −5 %, arrondies au matériel vers le bas (−5 kg) ; estimation, pas un avis médical.')).toBeInTheDocument();
+    expect(await within(await banner()).findByText('Journée rouge : charges allégées de 5 % pour cette séance.')).toBeInTheDocument();
+    expect(within(await banner()).queryByRole('button', { name: 'Accepter l’allègement' })).toBeNull();
     // Reprise (fermeture puis réouverture) : le choix vaut pour cette séance, sans nouvelle question.
     view.unmount();
     openSession(os);
-    expect(await within(await banner()).findByText('Journée rouge : maintien des charges accepté pour cette séance.')).toBeInTheDocument();
-    expect(await within(await proposal()).findByText('100 kg × 10 · 10 · 10')).toBeInTheDocument();
+    expect(await within(await banner()).findByText('Journée rouge : charges allégées de 5 % pour cette séance.')).toBeInTheDocument();
+    expect(await within(await proposal()).findByText('95 kg × 10 · 10 · 10')).toBeInTheDocument();
   });
 
   it('ignorer : proposition inchangée, choix dit et gardé', async () => {
@@ -125,7 +125,7 @@ describe('bandeau « journée rouge » (§ 16.7)', () => {
     await seedRecovery(20);
     await db.data.repos.settings.set('training.redDay', { v: 1, workoutId: u(1), choice: 'accepted' });
     openSession();
-    expect(within(await banner()).getByRole('button', { name: 'Accepter le maintien' })).toBeInTheDocument();
+    expect(within(await banner()).getByRole('button', { name: 'Accepter l’allègement' })).toBeInTheDocument();
     expect(await within(await proposal()).findByText('102,5 kg × 8 · 8 · 8')).toBeInTheDocument();
   });
 

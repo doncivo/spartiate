@@ -209,6 +209,16 @@
     "ALTER TABLE routine_exercise ADD COLUMN circuit_rest_sec INTEGER CHECK (circuit_rest_sec IS NULL OR circuit_rest_sec BETWEEN 0 AND 3600)",
     "CREATE TRIGGER sync_routine_exercise_circuit_au AFTER UPDATE OF circuit_id, circuit_rest_sec ON routine_exercise\n     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN\n       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n         SELECT 'routine_exercise', NEW.id, '*', OLD.hlc, NULL\n         WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = '*');\n       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'routine_exercise', NEW.id, 'circuit_id', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field IN ('circuit_id', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_id')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_id'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.circuit_id IS NOT NEW.circuit_id\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_id' AND OLD.circuit_id IS NOT NEW.circuit_id;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine_exercise', NEW.id, 'circuit_id' WHERE OLD.circuit_id IS NOT NEW.circuit_id;\nINSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'routine_exercise', NEW.id, 'circuit_rest_sec', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field IN ('circuit_rest_sec', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_rest_sec')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_rest_sec'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.circuit_rest_sec IS NOT NEW.circuit_rest_sec\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_rest_sec' AND OLD.circuit_rest_sec IS NOT NEW.circuit_rest_sec;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine_exercise', NEW.id, 'circuit_rest_sec' WHERE OLD.circuit_rest_sec IS NOT NEW.circuit_rest_sec;\n     END"
    ]
+  },
+  {
+   "version": 15,
+   "name": "food_favorite",
+   "statements": [
+    "CREATE TABLE food_favorite (\n      id TEXT PRIMARY KEY NOT NULL,\n      source TEXT NOT NULL CHECK (length(source) BETWEEN 1 AND 16 AND source NOT GLOB '*[^a-z]*'),\n      ref TEXT NOT NULL CHECK (length(ref) BETWEEN 1 AND 64 AND instr(ref, '|') = 0),\n      added_at TEXT NOT NULL,\n      created_at TEXT NOT NULL,\n      updated_at TEXT NOT NULL,\n      deleted_at TEXT,\n      device_id TEXT NOT NULL,\n      hlc TEXT NOT NULL,\n      CHECK (id = 'favorite|' || ref)\n    )",
+    "CREATE INDEX food_favorite_added_idx ON food_favorite (added_at)",
+    "CREATE TRIGGER sync_food_favorite_ai AFTER INSERT ON food_favorite\n     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN\n       DELETE FROM sync_tombstone WHERE table_name = 'food_favorite' AND row_id = NEW.id;\n       DELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*';\n       INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('food_favorite', NEW.id, '*');\n     END",
+    "CREATE TRIGGER sync_food_favorite_au AFTER UPDATE ON food_favorite\n     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN\n       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n         SELECT 'food_favorite', NEW.id, '*', OLD.hlc, NULL\n         WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*');\n       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'food_favorite', NEW.id, 'source', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field IN ('source', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'source')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'source'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.source IS NOT NEW.source\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'source' AND OLD.source IS NOT NEW.source;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'food_favorite', NEW.id, 'source' WHERE OLD.source IS NOT NEW.source;\nINSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'food_favorite', NEW.id, 'ref', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field IN ('ref', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'ref')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'ref'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.ref IS NOT NEW.ref\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'ref' AND OLD.ref IS NOT NEW.ref;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'food_favorite', NEW.id, 'ref' WHERE OLD.ref IS NOT NEW.ref;\nINSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'food_favorite', NEW.id, 'added_at', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field IN ('added_at', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'added_at')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'added_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.added_at IS NOT NEW.added_at\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'added_at' AND OLD.added_at IS NOT NEW.added_at;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'food_favorite', NEW.id, 'added_at' WHERE OLD.added_at IS NOT NEW.added_at;\nINSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'food_favorite', NEW.id, 'created_at', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field IN ('created_at', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'created_at')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'created_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.created_at IS NOT NEW.created_at\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'created_at' AND OLD.created_at IS NOT NEW.created_at;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'food_favorite', NEW.id, 'created_at' WHERE OLD.created_at IS NOT NEW.created_at;\nINSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'food_favorite', NEW.id, 'deleted_at', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field IN ('deleted_at', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'deleted_at')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'deleted_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.deleted_at IS NOT NEW.deleted_at\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'deleted_at' AND OLD.deleted_at IS NOT NEW.deleted_at;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'food_favorite', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;\n       DELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;\n       INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'food_favorite', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;\n     END"
+   ]
   }
  ],
  "versions": [
@@ -1134,6 +1144,106 @@
     "sync_workout_set_au",
     "sync_workout_set_difficulty_au"
    ]
+  },
+  {
+   "version": 15,
+   "tables": [
+    "body_weight",
+    "conflict_log",
+    "day_completeness",
+    "epoch_carry_report",
+    "equipment_profile",
+    "exercise",
+    "food",
+    "food_favorite",
+    "food_portion",
+    "meal_entry",
+    "measurement",
+    "mesocycle",
+    "muscle_recovery",
+    "nutrition_target",
+    "profile",
+    "progress_photo",
+    "progress_photo_file",
+    "progression_profile",
+    "recipe",
+    "recipe_ingredient",
+    "recommendation_decision",
+    "recovery_day",
+    "recovery_factor",
+    "recovery_import_state",
+    "recovery_sample",
+    "routine",
+    "routine_day",
+    "routine_exercise",
+    "schema_migrations",
+    "settings",
+    "sync_field_clock",
+    "sync_guard",
+    "sync_meta",
+    "sync_outbox",
+    "sync_parked",
+    "sync_state",
+    "sync_tombstone",
+    "sync_unknown",
+    "workout",
+    "workout_set"
+   ],
+   "triggers": [
+    "sync_body_weight_ai",
+    "sync_body_weight_au",
+    "sync_day_completeness_ai",
+    "sync_day_completeness_au",
+    "sync_equipment_profile_ai",
+    "sync_equipment_profile_au",
+    "sync_exercise_ai",
+    "sync_exercise_au",
+    "sync_food_ai",
+    "sync_food_au",
+    "sync_food_favorite_ai",
+    "sync_food_favorite_au",
+    "sync_food_portion_ai",
+    "sync_food_portion_au",
+    "sync_meal_entry_ai",
+    "sync_meal_entry_au",
+    "sync_measurement_ai",
+    "sync_measurement_au",
+    "sync_mesocycle_ai",
+    "sync_mesocycle_au",
+    "sync_muscle_recovery_ai",
+    "sync_muscle_recovery_au",
+    "sync_nutrition_target_ai",
+    "sync_nutrition_target_au",
+    "sync_profile_ai",
+    "sync_profile_au",
+    "sync_progress_photo_ai",
+    "sync_progress_photo_au",
+    "sync_progression_profile_ai",
+    "sync_progression_profile_au",
+    "sync_recipe_ai",
+    "sync_recipe_au",
+    "sync_recipe_ingredient_ai",
+    "sync_recipe_ingredient_au",
+    "sync_recommendation_decision_ai",
+    "sync_recommendation_decision_au",
+    "sync_recovery_day_ai",
+    "sync_recovery_day_au",
+    "sync_recovery_factor_ai",
+    "sync_recovery_factor_au",
+    "sync_routine_ai",
+    "sync_routine_au",
+    "sync_routine_day_ai",
+    "sync_routine_day_au",
+    "sync_routine_exercise_ai",
+    "sync_routine_exercise_au",
+    "sync_routine_exercise_circuit_au",
+    "sync_workout_ai",
+    "sync_workout_au",
+    "sync_workout_close_decisions_au",
+    "sync_workout_set_ai",
+    "sync_workout_set_au",
+    "sync_workout_set_difficulty_au"
+   ]
   }
  ],
  "triggers": [
@@ -1155,7 +1265,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1176,7 +1287,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1189,7 +1301,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1202,7 +1315,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1222,7 +1336,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1242,7 +1357,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1262,7 +1378,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1282,7 +1399,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1296,7 +1414,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1310,7 +1429,24 @@
     11,
     12,
     13,
-    14
+    14,
+    15
+   ]
+  },
+  {
+   "name": "sync_food_favorite_ai",
+   "table": "food_favorite",
+   "sql": "CREATE TRIGGER sync_food_favorite_ai AFTER INSERT ON food_favorite WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN DELETE FROM sync_tombstone WHERE table_name = 'food_favorite' AND row_id = NEW.id; DELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*'; INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('food_favorite', NEW.id, '*'); END",
+   "versions": [
+    15
+   ]
+  },
+  {
+   "name": "sync_food_favorite_au",
+   "table": "food_favorite",
+   "sql": "CREATE TRIGGER sync_food_favorite_au AFTER UPDATE ON food_favorite WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'food_favorite', NEW.id, '*', OLD.hlc, NULL WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*'); INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'food_favorite', NEW.id, 'source', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field IN ('source', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'source') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'source'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.source IS NOT NEW.source ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'source' AND OLD.source IS NOT NEW.source; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'food_favorite', NEW.id, 'source' WHERE OLD.source IS NOT NEW.source; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'food_favorite', NEW.id, 'ref', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field IN ('ref', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'ref') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'ref'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.ref IS NOT NEW.ref ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'ref' AND OLD.ref IS NOT NEW.ref; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'food_favorite', NEW.id, 'ref' WHERE OLD.ref IS NOT NEW.ref; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'food_favorite', NEW.id, 'added_at', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field IN ('added_at', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'added_at') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'added_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.added_at IS NOT NEW.added_at ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'added_at' AND OLD.added_at IS NOT NEW.added_at; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'food_favorite', NEW.id, 'added_at' WHERE OLD.added_at IS NOT NEW.added_at; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'food_favorite', NEW.id, 'created_at', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field IN ('created_at', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'created_at') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'created_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.created_at IS NOT NEW.created_at ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'created_at' AND OLD.created_at IS NOT NEW.created_at; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'food_favorite', NEW.id, 'created_at' WHERE OLD.created_at IS NOT NEW.created_at; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'food_favorite', NEW.id, 'deleted_at', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field IN ('deleted_at', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'deleted_at') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'deleted_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.deleted_at IS NOT NEW.deleted_at ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = 'deleted_at' AND OLD.deleted_at IS NOT NEW.deleted_at; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'food_favorite', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at; DELETE FROM sync_outbox WHERE table_name = 'food_favorite' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'food_favorite', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL; END",
+   "versions": [
+    15
    ]
   },
   {
@@ -1324,7 +1460,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1338,7 +1475,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1352,7 +1490,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1366,7 +1505,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1376,7 +1516,8 @@
    "versions": [
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1386,7 +1527,8 @@
    "versions": [
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1401,7 +1543,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1416,7 +1559,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1428,7 +1572,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1440,7 +1585,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1454,7 +1600,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1468,7 +1615,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1489,7 +1637,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1510,7 +1659,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1520,7 +1670,8 @@
    "versions": [
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1530,7 +1681,8 @@
    "versions": [
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1546,7 +1698,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1562,7 +1715,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1575,7 +1729,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1588,7 +1743,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1601,7 +1757,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1614,7 +1771,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1630,7 +1788,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1646,7 +1805,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1658,7 +1818,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1670,7 +1831,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1681,7 +1843,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1692,7 +1855,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1712,7 +1876,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1732,7 +1897,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1752,7 +1918,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1772,7 +1939,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1792,7 +1960,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1812,7 +1981,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1820,7 +1990,8 @@
    "table": "routine_exercise",
    "sql": "CREATE TRIGGER sync_routine_exercise_circuit_au AFTER UPDATE OF circuit_id, circuit_rest_sec ON routine_exercise WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'routine_exercise', NEW.id, '*', OLD.hlc, NULL WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = '*'); INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'routine_exercise', NEW.id, 'circuit_id', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field IN ('circuit_id', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_id') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_id'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.circuit_id IS NOT NEW.circuit_id ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_id' AND OLD.circuit_id IS NOT NEW.circuit_id; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine_exercise', NEW.id, 'circuit_id' WHERE OLD.circuit_id IS NOT NEW.circuit_id; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'routine_exercise', NEW.id, 'circuit_rest_sec', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field IN ('circuit_rest_sec', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_rest_sec') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_rest_sec'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.circuit_rest_sec IS NOT NEW.circuit_rest_sec ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'routine_exercise' AND row_id = NEW.id AND field = 'circuit_rest_sec' AND OLD.circuit_rest_sec IS NOT NEW.circuit_rest_sec; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine_exercise', NEW.id, 'circuit_rest_sec' WHERE OLD.circuit_rest_sec IS NOT NEW.circuit_rest_sec; END",
    "versions": [
-    14
+    14,
+    15
    ]
   },
   {
@@ -1838,7 +2009,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1856,7 +2028,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1872,7 +2045,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1890,7 +2064,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1908,7 +2083,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   },
   {
@@ -1924,7 +2100,8 @@
     11,
     12,
     13,
-    14
+    14,
+    15
    ]
   }
  ]

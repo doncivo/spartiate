@@ -142,6 +142,17 @@ export interface SnapResult {
 }
 
 /**
+ * Journée rouge acceptée (D-170) : cible arrondie au matériel VERS LE BAS (plus grande charge disponible ≤ cible), jamais sous la charge
+ * minimale (la plus petite charge disponible ; sans grille, le demi-kilo, ou la référence si elle est plus petite). Aucune répétition
+ * ajoutée : la séance est allégée, pas compensée.
+ */
+export function snapDownAtLeastMin(targetKg: number, reps: readonly number[], loads: readonly number[] | null, referenceKg: number, config: ProgressionConfig): SnapResult {
+  const unit = config.unknownGridRoundingKg;
+  const loadKg = loads === null ? Math.max(roundKg(Math.floor(targetKg / unit + EPS) * unit), Math.min(unit, referenceKg)) : snapDown(targetKg, loads);
+  return { loadKg, reps: [...reps], extraRep: false };
+}
+
+/**
  * Arrondit la cible au matériel (charges `loads`, ou demi-kilo inférieur sans grille) ; écart au cran inférieur > tolérance : +1 rep par
  * série. Égalité à 3 % : pas de répétition ajoutée (règle stricte du § 11.3).
  */

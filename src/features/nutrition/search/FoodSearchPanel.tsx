@@ -17,7 +17,7 @@ import { searchCatalogue, toSearchable, type CatalogueSearchResult } from './cat
 import { CustomFoodForm } from './CustomFoodForm';
 import { chooseOnline, resolveBarcode, searchOnline, type OffDeps, type OffFailure, type OnlineItem, type OnlineSearch } from './offLookup';
 import { missingList, offFailureCause, offFailureMessage, offRefusalMessage } from './offMessages';
-import { loadFavorites, saveFavorites } from './favoritesStore';
+import { loadFavorites, writeFavorite } from './favoritesStore';
 import { resolveFood } from './resolveFood';
 
 /** Écran de visée du scan (iPhone) : bloc à la demande, jamais dans le départ. */
@@ -204,7 +204,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   useEffect(() => {
     let live = true;
     void (async () => {
-      const read = await loadFavorites(data.repos.settings);
+      const read = await loadFavorites(data.repos);
       if (!read.ok) {
         if (live) setFavorites((c) => ({ ...c, status: 'failed' }));
         return;
@@ -225,20 +225,16 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   }, [data]);
 
   /**
-   * Ajoute ou retire un favori ; `false` si rien n'a été écrit. La liste est RELUE avant d'écrire (jamais écrasée depuis un état d'écran) ;
-   * une lecture en échec n'écrit rien et désactive l'étoile (D-79 point 3).
+   * Ajoute ou retire un favori ; `false` si rien n'a été écrit. FIX-0181 (D-171) : un seul favori est écrit (table publiée), jamais la liste entière ;
+   * une lecture en échec désactive l'étoile (D-79 point 3). Un favori dont l'aliment est introuvable ici reste en base, masqué (il peut arriver
+   * plus tard par la synchro).
    */
   async function onToggleFavorite(food: SearchableFood): Promise<boolean> {
     if (favorites.status !== 'ready') return false;
-    const read = await loadFavorites(data.repos.settings);
-    if (!read.ok) {
-      setFavorites((current) => ({ ...current, status: 'failed' }));
-      return false;
-    }
-    const base = read.list.filter((f) => !favorites.gone.includes(f.ref));
-    const nextKept = toggleFavorite(base, { source: food.provenance, ref: food.ref });
+    const item = { source: food.provenance, ref: food.ref };
+    const nextKept = toggleFavorite(favorites.kept, item);
     try {
-      await saveFavorites(data.repos.settings, nextKept);
+      await writeFavorite(data.repos, item, isFavorite(nextKept, food.ref));
     } catch {
       return false;
     }

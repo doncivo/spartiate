@@ -27,7 +27,7 @@ describe('configuration Tauri', () => {
   it('porte l’identité Spartiate', () => {
     expect(conf.productName).toBe('Spartiate');
     expect(conf.identifier).toBe('fr.spartiate.app');
-    expect(conf.version).toBe('0.18.1');
+    expect(conf.version).toBe('0.18.2');
     expect(conf.app.windows[0].title).toBe('Spartiate');
   });
   it('rend withGlobalTauri explicitement faux (D-47 7)', () => {
@@ -57,22 +57,22 @@ describe('updater : rétabli en SPA-002 (D-30 clos)', () => {
 });
 
 describe('paquet et crate', () => {
-  it('package.json : spartiate 0.18.1', () => {
+  it('package.json : spartiate 0.18.2', () => {
     const pkg = json('package.json');
     expect(pkg.name).toBe('spartiate');
-    expect(pkg.version).toBe('0.18.1');
+    expect(pkg.version).toBe('0.18.2');
     const lock = json('package-lock.json');
     expect(lock.name).toBe('spartiate');
-    expect(lock.version).toBe('0.18.1');
+    expect(lock.version).toBe('0.18.2');
     expect(lock.packages[''].name).toBe('spartiate');
-    expect(lock.packages[''].version).toBe('0.18.1');
+    expect(lock.packages[''].version).toBe('0.18.2');
   });
   it('Cargo.toml : package, lib et version', () => {
     const cargo = read('src-tauri/Cargo.toml');
     expect(cargo).toMatch(/^name = "spartiate"$/m);
-    expect(cargo).toMatch(/^version = "0.18.1"$/m);
+    expect(cargo).toMatch(/^version = "0.18.2"$/m);
     expect(cargo).toMatch(/^name = "spartiate_lib"$/m);
-    expect(read('src-tauri/Cargo.lock')).toMatch(/\[\[package\]\]\r?\nname = "spartiate"\r?\nversion = "0.18.1"/);
+    expect(read('src-tauri/Cargo.lock')).toMatch(/\[\[package\]\]\r?\nname = "spartiate"\r?\nversion = "0.18.2"/);
     expect(read('src-tauri/src/main.rs')).toContain('spartiate_lib');
   });
 });
@@ -87,8 +87,8 @@ describe('base de données : trois constantes alignées (D-32)', () => {
   it('le nom de base est unique entre les trois', () => {
     expect(new Set([sql, guard, backup]).size).toBe(1);
   });
-  it('la version de schéma vaut 14 (base neuve 001b, bibliothèque et routines I1-01, séance locale I1-02, séances closes publiées I1-03, progression locale I2-01, difficulté et progression publiées I2-01 PR 2/2, mésocycle I3-02, nutrition I4-02, recettes et journée déclarée I4-07, récupération I5-01, journal de facteurs I6-01, mensurations et photos I6-02, groupes de circuit I6-03, groupes de circuit des routines I6-03b)', () => {
-    expect(read('src-tauri/src/backup.rs')).toMatch(/APP_SCHEMA_VERSION[^=]*=\s*14\b/);
+  it('la version de schéma vaut 15 (base neuve 001b, bibliothèque et routines I1-01, séance locale I1-02, séances closes publiées I1-03, progression locale I2-01, difficulté et progression publiées I2-01 PR 2/2, mésocycle I3-02, nutrition I4-02, recettes et journée déclarée I4-07, récupération I5-01, journal de facteurs I6-01, mensurations et photos I6-02, groupes de circuit I6-03, groupes de circuit des routines I6-03b, favoris publiés FIX-0181)', () => {
+    expect(read('src-tauri/src/backup.rs')).toMatch(/APP_SCHEMA_VERSION[^=]*=\s*15\b/);
   });
 });
 

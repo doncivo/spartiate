@@ -103,7 +103,8 @@ export type SyncReportTable =
   | 'muscle_recovery'
   | 'recovery_factor'
   | 'measurement'
-  | 'progress_photo';
+  | 'progress_photo'
+  | 'food_favorite';
 
 /** Compteurs seulement (jamais le contenu d'une ligne) : bilan de l'export des journaux. */
 export interface SyncDiagnostics {

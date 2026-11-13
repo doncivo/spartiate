@@ -266,4 +266,6 @@ export const syncFieldFr = {
   // I6-02 : mensurations et fiches de photos, données corporelles masquées du journal des conflits ; seule la suppression y figure.
   measurement: { deleted_at: 'suppression' },
   progress_photo: { deleted_at: 'suppression' },
+  // FIX-0181 : favoris de la recherche d'aliments ; seule la suppression figure au journal des conflits.
+  food_favorite: { deleted_at: 'suppression' },
 } as const;
