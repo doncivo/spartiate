@@ -6,8 +6,6 @@ import { Button } from '../../ui';
 import { whenIdle } from './idle';
 import { SCREEN_LOADED_PREFIX, type ScreenName } from './screenNames';
 import './lazyScreens.css';
-// Type seul (effacé à la compilation) : aucun code de la colonne droite d'Aujourd'hui PC n'entre dans le départ.
-import type { TodayPcSideProps } from './TodayPcSide';
 
 /**
  * Écrans chargés à la demande (PERF-02, avenant à l'ADR 0001) : seul Aujourd'hui, l'écran du premier rendu, est dans le bloc de
@@ -133,8 +131,6 @@ export const NutritionRemainingCard = lazyScreen<object>(() => import('../nutrit
 /** I6-05 : carte « Compléments » d'Aujourd'hui (prises du jour), bloc à la demande avec ses textes ; rien tant qu'elle n'est pas chargée. */
 export const SupplementsTodayCard = lazyScreen<object>(() => import('../nutrition/supplements/SupplementsTodayCard').then((m) => ({ default: m.SupplementsTodayCard })), 'supplementstoday', { onDemand: true });
 export const RecoveryToday =lazyScreen<object>(() => import('../recovery/RecoveryToday').then((m) => ({ default: m.RecoveryToday })), 'recoverytoday', { onDemand: true });
-/** ERGO-02 : colonne de droite d'Aujourd'hui sur PC (macros, dépense, semaine, records), bloc à part chargé avec ses lectures (jamais dans le départ). */
-export const TodayPcSide = lazyScreen<TodayPcSideProps>(() => import('./TodayPcSide').then((m) => ({ default: m.TodayPcSide })), 'todaypcside', { onDemand: true });
 /** I6-01 : Progrès › Récupération (écart de Recovery avec / sans facteur), bloc à part chargé avec son catalogue de textes (jamais dans le départ). */
 export const RecoveryProgress = lazyScreen<object>(() => import('../recovery/RecoveryProgress').then((m) => ({ default: m.RecoveryProgress })), 'recoveryprogress', { onDemand: true });
 /** I6-02 : Progrès › Corps (mensurations, photos de progression), bloc à part chargé avec son catalogue de textes (jamais dans le départ). */

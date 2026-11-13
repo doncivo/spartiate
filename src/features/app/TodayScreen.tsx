@@ -10,9 +10,16 @@ import { Button, Icon, useLayout } from '../../ui';
 import { useSyncedData } from '../sync/remoteChanges';
 import { statusLine } from '../sync/syncText';
 import { useAppContainer } from './AppContainerContext';
-import { NutritionRemainingCard, RecoveryToday, SupplementsTodayCard, TodayPcSide, TodaySessionCard } from './lazyScreens';
+import { lazyScreen, NutritionRemainingCard, RecoveryToday, SupplementsTodayCard, TodaySessionCard } from './lazyScreens';
+import type { TodayPcSideProps } from './TodayPcSide';
 import { useNavigationStore, type Route } from './navigation';
 import './TodayScreen.css';
+
+/**
+ * ERGO-02 : colonne de droite d'Aujourd'hui sur PC (macros, dépense, semaine, records, carte « État »), bloc à la demande. Déclaré ici et non dans
+ * lazyScreens.tsx : Aujourd'hui est lui-même chargé à la demande, ainsi l'import dynamique et ses dépendances n'entrent pas dans le départ.
+ */
+const TodayPcSide = lazyScreen<TodayPcSideProps>(() => import('./TodayPcSide').then((m) => ({ default: m.TodayPcSide })), 'todaypcside', { onDemand: true });
 
 
 const CHART_POINTS = 6;
