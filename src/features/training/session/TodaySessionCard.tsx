@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { summarizeSets, type RoutineDay, type WorkoutWithSets } from '../../../domain/training';
 import { nextProgramDay } from '../../../domain/training/programDay';
-import { tToday } from '../../../i18n/todayText';
+import { tTodayPc } from '../../../i18n/todayPcText';
 import { formatExerciseLoad, tTraining } from '../../../i18n/trainingText';
 import { Button, useLayout } from '../../../ui';
 import { MissingValue } from '../../../ui/MissingValue';
@@ -99,7 +99,7 @@ export function TodaySessionCard() {
     const n = day.exercises.length;
     const more = n - SHOWN;
     const loadOf = (id: string, kg: number | null): string | null => (kg === null ? null : formatExerciseLoad(kg, preview?.held.get(id) ?? null));
-    const targetOf = (l: RoutineDay['exercises'][number]): string => tToday(l.repMin === l.repMax ? 'sessionTargetSame' : 'sessionTarget', { sets: l.sets, min: l.repMin, max: l.repMax });
+    const targetOf = (l: RoutineDay['exercises'][number]): string => tTodayPc(l.repMin === l.repMax ? 'sessionTargetSame' : 'sessionTarget', { sets: l.sets, min: l.repMin, max: l.repMax });
     const meta =
       preview === null
         ? n === 1
@@ -122,10 +122,10 @@ export function TodaySessionCard() {
             <table className="ct-session-card__table" aria-label={tTraining('sessionTodayExercises')}>
               <thead>
                 <tr>
-                  <th scope="col">{tToday('sessionTableRank')}</th>
-                  <th scope="col">{tToday('sessionTableExercise')}</th>
-                  <th scope="col">{tToday('sessionTableTarget')}</th>
-                  <th scope="col" className="ct-session-card__num">{tToday('sessionTableLoad')}</th>
+                  <th scope="col">{tTodayPc('sessionTableRank')}</th>
+                  <th scope="col">{tTodayPc('sessionTableExercise')}</th>
+                  <th scope="col">{tTodayPc('sessionTableTarget')}</th>
+                  <th scope="col" className="ct-session-card__num">{tTodayPc('sessionTableLoad')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -134,7 +134,7 @@ export function TodaySessionCard() {
                     <td className="ct-session-card__rank">{index + 1}</td>
                     <td>{line.exerciseName}</td>
                     <td className="ct-session-card__rank">{targetOf(line)}</td>
-                    <td className="ct-session-card__num ct-session-card__load">{loadOf(line.id, preview?.loads.get(line.id) ?? null) ?? <MissingValue reason={tToday('loadToEnter')} />}</td>
+                    <td className="ct-session-card__num ct-session-card__load">{loadOf(line.id, preview?.loads.get(line.id) ?? null) ?? <MissingValue reason={tTodayPc('loadToEnter')} />}</td>
                   </tr>
                 ))}
               </tbody>
@@ -162,7 +162,7 @@ export function TodaySessionCard() {
           </p>
         ) : null}
         <Button fullWidth disabled={busy} onClick={() => void launch(program)}>
-          {pc ? tToday('sessionEnterHere') : tTraining('sessionLaunch')}
+          {pc ? tTodayPc('sessionEnterHere') : tTraining('sessionLaunch')}
         </Button>
         <Button fullWidth variant="secondary" disabled={busy} onClick={() => navigate({ tab: 'training', screen: 'session' })}>
           {tTraining('sessionOther')}

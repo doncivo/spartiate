@@ -6,7 +6,7 @@ import { loadGrid } from '../../domain/training/loadGrid';
 import type { WorkoutWithSets } from '../../domain/training';
 import type { LocalDate } from '../../domain/types';
 import { formatInt, tNutrition } from '../../i18n/nutritionText';
-import { tToday } from '../../i18n/todayText';
+import { tTodayPc } from '../../i18n/todayPcText';
 import { formatExerciseLoad } from '../../i18n/trainingText';
 import { MissingValue } from '../../ui/MissingValue';
 import { useSyncedData } from '../sync/remoteChanges';
@@ -124,7 +124,7 @@ export function TodayPcSide({ weight }: { readonly weight: ReactNode }) {
   return (
     <>
       {target === null ? null : (
-        <ul className="ct-today__macros" aria-label={tToday('macrosLabel')}>
+        <ul className="ct-today__macros" aria-label={tTodayPc('macrosLabel')}>
           {macros.map((m) => {
             const goal = m.goal ?? 0;
             const pct = m.done === null || goal <= 0 ? 0 : Math.max(0, Math.min(100, (m.done / goal) * 100));
@@ -134,8 +134,8 @@ export function TodayPcSide({ weight }: { readonly weight: ReactNode }) {
                   <span className="ct-today__macro-fill" style={{ width: `${String(pct)}%` }} />
                 </span>
                 <span className="ct-today__macro-text">
-                  <span className="ct-today__muted">{tToday(m.key)}</span>{' '}
-                  {m.done === null ? <MissingValue reason={tToday('macroUnknown')} /> : tToday('macroOf', { done: formatInt(m.done), target: formatInt(m.goal ?? 0) })}
+                  <span className="ct-today__muted">{tTodayPc(m.key)}</span>{' '}
+                  {m.done === null ? <MissingValue reason={tTodayPc('macroUnknown')} /> : tTodayPc('macroOf', { done: formatInt(m.done), target: formatInt(m.goal ?? 0) })}
                 </span>
               </li>
             );
@@ -145,31 +145,31 @@ export function TodayPcSide({ weight }: { readonly weight: ReactNode }) {
       <Fragment key="weight">{weight}</Fragment>
       <section className="ct-today__card ct-today__card--flat" aria-labelledby="ct-today-spend">
         <h2 id="ct-today-spend" className="ct-today__eyebrow ct-section-title">
-          {tToday('spendEyebrow')}
+          {tTodayPc('spendEyebrow')}
         </h2>
         {tdee.value === null ? (
           <p className="ct-today__text">
-            <MissingValue reason={tToday('spendMissing')} />
+            <MissingValue reason={tTodayPc('spendMissing')} />
           </p>
         ) : (
           <>
             <p className="ct-today__text">
-              <b className="ct-today__figure">{formatInt(tdee.value)}</b> <span className="ct-today__muted">{tToday('spendUnit')}</span>
+              <b className="ct-today__figure">{formatInt(tdee.value)}</b> <span className="ct-today__muted">{tTodayPc('spendUnit')}</span>
             </p>
             <p className="ct-today__muted">{tdee.basis === 'formula' ? tNutrition('tdeeBasisFormula') : tdee.basis === 'blend' ? tNutrition('tdeeBasisBlend', { pct: formatInt(tdee.weightMeasured * 100) }) : tNutrition('tdeeBasisMeasured')}</p>
           </>
         )}
       </section>
-      <section className="ct-today__card ct-today__card--flat" aria-label={tToday('weekEyebrow')}>
+      <section className="ct-today__card ct-today__card--flat" aria-label={tTodayPc('weekEyebrow')}>
         <h2 className="ct-today__eyebrow ct-section-title">
-          {tToday('weekEyebrow')}
-          {count === 0 ? '' : ` · ${count === 1 ? tToday('weekCountOne') : tToday('weekCount', { n: count })}`}
+          {tTodayPc('weekEyebrow')}
+          {count === 0 ? '' : ` · ${count === 1 ? tTodayPc('weekCountOne') : tTodayPc('weekCount', { n: count })}`}
         </h2>
         <ul className="ct-today__week">
           {week.map((d) => {
             const done = doneDays.has(d.day);
             return (
-              <li key={d.day} className={['ct-today__week-day', done ? 'ct-today__week-day--done' : '', d.day === today ? 'ct-today__week-day--today' : ''].filter(Boolean).join(' ')} aria-label={`${d.name} : ${tToday(done ? 'weekDone' : 'weekNone')}`}>
+              <li key={d.day} className={['ct-today__week-day', done ? 'ct-today__week-day--done' : '', d.day === today ? 'ct-today__week-day--today' : ''].filter(Boolean).join(' ')} aria-label={`${d.name} : ${tTodayPc(done ? 'weekDone' : 'weekNone')}`}>
                 <span className="ct-today__week-mark" aria-hidden="true" />
                 <span className="ct-today__muted" aria-hidden="true">
                   {d.short}
@@ -181,11 +181,11 @@ export function TodayPcSide({ weight }: { readonly weight: ReactNode }) {
       </section>
       <section className="ct-today__card ct-today__card--flat" aria-labelledby="ct-today-records">
         <h2 id="ct-today-records" className="ct-today__eyebrow ct-section-title">
-          {tToday('recordsEyebrow')}
+          {tTodayPc('recordsEyebrow')}
         </h2>
         {records.length === 0 ? (
           <p className="ct-today__text">
-            <MissingValue reason={tToday('recordsMissing')} />
+            <MissingValue reason={tTodayPc('recordsMissing')} />
           </p>
         ) : (
           <ul className="ct-today__records">
