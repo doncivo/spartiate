@@ -32,6 +32,22 @@ export function applyRemoteChanges(_container: AppContainer, change: RemoteChang
 }
 
 /**
+ * FIX-0221 : une écriture locale faite hors de l'écran qui l'affiche (action « Pris » d'une notification, appliquée au réveil de l'app) prévient
+ * les mêmes abonnés, pour que la carte d'Aujourd'hui se relise et que les rappels se replanifient. Ne touche ni la synchro ni ses journaux.
+ */
+export function announceLocalChanges(tables: readonly string[]): void {
+  const touched = new Set(tables);
+  for (const listener of [...listeners]) {
+    try {
+      listener(touched);
+    } catch {
+      // Un abonné en échec n'empêche pas les autres ; l'écriture est déjà faite. Journalisé comme pour un lot reçu.
+      defaultSyncLogger.log('remote-reload-failed', { code: 'listener' });
+    }
+  }
+}
+
+/**
  * Compteur qui change chaque fois qu'un lot appliqué touche l'une des `tables` : à mettre dans les dépendances de l'effet de lecture de
  * l'écran. Un lot sans rapport ne change rien.
  */

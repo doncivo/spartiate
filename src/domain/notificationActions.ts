@@ -221,11 +221,13 @@ export function dismissQueueTrouble(queue: NotificationActionQueueV1): Notificat
 }
 
 /** Catégories de notification par nature (`actionTypeId` envoyé avec `show`, enregistrées par le plugin d'actions). */
-export const ACTION_TYPE_ID = { task: 'ct.task', routine: 'ct.routine', event: 'ct.event' } as const;
+export const ACTION_TYPE_ID = { task: 'ct.task', routine: 'ct.routine', event: 'ct.event', supplement: 'sp.supplement' } as const;
 
 /** Actions proposées par catégorie : « Fait » n'a pas de sens pour un événement (décision du 2026-10-08). */
 export const ACTIONS_BY_CATEGORY: Readonly<Record<keyof typeof ACTION_TYPE_ID, readonly NotificationActionId[]>> = {
   task: ['done', 'snooze15'],
   routine: ['done', 'snooze15'],
   event: ['snooze15'],
+  /** FIX-0221 (D-250) : complément, « Pris » seulement (titre dans `src/i18n`), sans premier plan. */
+  supplement: ['done'],
 };
