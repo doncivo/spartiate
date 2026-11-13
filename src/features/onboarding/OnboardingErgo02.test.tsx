@@ -146,6 +146,30 @@ describe('ERGO-02 : onboarding selon l’aperçu du 13/11', () => {
     expect(screen.getByLabelText('Poids (kg)')).toHaveValue('80,5');
   });
 
+  it('étape 1, iPhone : le poids pré-rempli depuis Santé et laissé tel quel n’écrit aucune pesée ; modifié, il en écrit une (C5)', async () => {
+    setWidth(440);
+    for (const [typed, expected] of [[null, []], ['80,5', [{ kg: 80.5 }]]] as const) {
+      const { healthKit } = fakeHealthKit({ state: 'granted', value: mass(81.2) });
+      const view = open(healthKit);
+      await title('Toi');
+      await waitFor(() => expect(screen.getByLabelText('Poids (kg)')).toHaveValue('81,2'));
+      if (typed !== null) fireEvent.change(screen.getByLabelText('Poids (kg)'), { target: { value: typed } });
+      press('Continuer');
+      for (let i = 0; i < 6; i += 1) {
+        await screen.findByRole('button', { name: 'Passer cette étape' });
+        press('Passer cette étape');
+      }
+      await title('Prêt');
+      press('Commencer');
+      await waitFor(() => expect(onClose).toHaveBeenCalled());
+      expect(await db.driver.select('SELECT kg FROM body_weight')).toEqual(expected);
+      view.unmount();
+      onClose.mockClear();
+      await db.driver.execute('DELETE FROM body_weight');
+      await db.data.repos.settings.set('onboarding.draft', null);
+    }
+  });
+
   it('étape 1, iPhone : sans autorisation ou sans mesure, rien n’est pré-rempli et aucune demande d’autorisation n’est faite', async () => {
     setWidth(440);
     for (const state of ['denied', 'empty', 'unavailable'] as const) {
