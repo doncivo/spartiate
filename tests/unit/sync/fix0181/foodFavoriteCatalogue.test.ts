@@ -26,10 +26,10 @@ const col = (name: string) => {
 };
 
 describe('catalogue de production : food_favorite (FIX-0181)', () => {
-  it('25e et dernière de l’ordre, identifiant naturel, aucun parent ni colonne locale ni règle de publication', () => {
-    expect(SYNC_TABLE_ORDER.length).toBe(25);
+  it('25e de l’ordre (I6-05 : compléments et prises ensuite), identifiant naturel, aucun parent ni colonne locale ni règle de publication', () => {
+    expect(SYNC_TABLE_ORDER.length).toBe(27);
     expect(SYNC_TABLE_ORDER[24]).toBe('food_favorite');
-    expect(SYNC_CATALOGUE.tables.map((t) => t.name).at(-1)).toBe('food_favorite');
+    expect(SYNC_CATALOGUE.tables.map((t) => t.name).at(24)).toBe('food_favorite');
     expect(table().idKind).toBe('natural');
     expect(table().parents).toEqual([]);
     expect(table().local).toEqual([]);

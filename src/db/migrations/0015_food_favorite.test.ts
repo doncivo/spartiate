@@ -32,8 +32,8 @@ const insert = (db: SqlDriver, row: Row): Promise<unknown> => {
 const outbox = (db: SqlDriver) => db.select<{ table_name: string; row_id: string; field: string }>('SELECT table_name, row_id, field FROM sync_outbox ORDER BY seq');
 
 describe('migration 0015 : favoris publiés (FIX-0181, schéma 15)', () => {
-  it('registre : 0001 à 0015, quinzième et dernière ; version 15, nom food_favorite', () => {
-    expect(migrations.map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+  it('registre : 0001 à 0016, quinzième (la 0016, I6-05, la suit) ; version 15, nom food_favorite', () => {
+    expect(migrations.map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
     expect(migrations[14]).toBe(migration0015FoodFavorite);
     expect(migration0015FoodFavorite.name).toBe('food_favorite');
   });
