@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit, puis 0.22.1 (ERGO-01b, PR #125) (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247 et D-250 à D-253 dans docs/decisions.md.
+État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit, puis 0.22.1 (ERGO-01b, PR #125) (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 dans docs/decisions.md.
 
 ## Rapport du matin (13/11)
 
@@ -11,7 +11,7 @@
 
 ## Prochaines étapes
 
-1. FIX-0221 (0.22.2, PR #124 : action « Pris » des compléments en arrière-plan, sans Swift, D-250 à D-253 ; constat d'Ali : « Pris » app en arrière-plan et app tuée, H-36). Ali : constats ci-dessus et écarts ERGO-01b (pas de charges sur « Séance du jour », carte Poids gardée sur PC ; docs/ERGO-01b.md). Import de programme : I6-08 (docs/I6-08.md, non exécuté).
+1. FIX-0221 (0.22.2, PR #124 : action « Pris » des compléments en arrière-plan, sans Swift, D-250 à D-253 ; constat d'Ali : « Pris » app en arrière-plan et app tuée, H-36). FIX-0223 (0.22.3, docs/FIX-0223.md, D-260) : « Séance du jour » avec durée et charges proposées, en attente de CI et de fusion. Ali : constats ci-dessus. Import de programme : I6-08 (docs/I6-08.md, non exécuté).
 2. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
 3. À recaler sur demande d'Ali : D-73 (4), Exertion (D-88, D-220).
 
