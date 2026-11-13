@@ -3,7 +3,7 @@ import { EQUIPMENT_PROFILE_KINDS, validateEquipmentProfile, type EquipmentInvent
 import type { IdGenerator } from '../../domain/id';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../i18n/trainingText';
-import { Button, ConfirmDialog, SegmentedControl, Switch } from '../../ui';
+import { Button, ConfirmDialog, SectionTitle, SegmentedControl, Switch } from '../../ui';
 import { duplicateEmbeddedProfile } from './content';
 import { PROFILE_KIND_KEY } from './labels';
 import { setActiveProfile, type AnyProfile, type PersonalProfile, type TrainingData } from './trainingState';
@@ -35,6 +35,22 @@ function verifyLabel(key: string): string {
   return k ? tTraining(k) : key;
 }
 
+/** Ligne « libellé · valeur » d'un bloc du profil (aperçu PC-Materiel-apres), valeur en chiffres tabulaires, « à vérifier » en texte. */
+function Row({ label, value, verify = false }: { readonly label: string; readonly value: string; readonly verify?: boolean }) {
+  return (
+    <div className="ct-equipment__row">
+      <dt>{label}</dt>
+      <dd>
+        <span className="ct-training__num">{value}</span> <VerifyTag show={verify} />
+      </dd>
+    </div>
+  );
+}
+
+/**
+ * ERGO-02 (aperçu PC-Materiel-apres) : profil ouvert à plat, sans cartes. Trois colonnes (barres ; haltères et kettlebells ; crans), disques par
+ * côté de barre en barres proportionnelles, machines à stack et poulies, matériel disponible. Une donnée absente : « Aucun ».
+ */
 function Inventory({ data, profile }: { readonly data: TrainingData; readonly profile: AnyProfile }) {
   const inv = profile.inventory;
   const check = new Set(inv.toVerify ?? []);
@@ -46,67 +62,98 @@ function Inventory({ data, profile }: { readonly data: TrainingData; readonly pr
     families.set(family, [...(families.get(family) ?? []), entry?.nameFr ?? id]);
   }
   const machinesRange = profile.origin === 'embedded' ? profile.machinesRange : null;
+  const heaviestPlate = Math.max(1, ...inv.platesPerSideKg.map((p) => p.weightKg));
+  const platesUnknown = check.has('plates');
+  const increments = INCREMENT_KEYS.filter(([key]) => profile.increments[key] !== undefined);
+  const stacks = [
+    ...inv.machines.map((m) => ({ key: `m-${m.equipmentId}`, label: names.get(m.equipmentId)?.nameFr ?? m.equipmentId, value: range({ minKg: m.stackMinKg, maxKg: m.stackMaxKg, stepKg: m.stepKg }) })),
+    ...(inv.machines.length === 0 && machinesRange ? [{ key: 'machines', label: tTraining('machines'), value: range(machinesRange) }] : []),
+    ...inv.cables.map((c, i) => ({ key: `c-${String(i)}`, label: tTraining('cables'), value: range(c) })),
+  ];
   return (
     <div className="ct-training__inventory">
-      <section className="ct-training__card ct-flat">
-        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('barbells')}</h3>
-        {inv.barbells.length === 0 ? (
-          <p>{tTraining('none')}</p>
+      <div className="ct-equipment__columns">
+        <section className="ct-equipment__block">
+          <SectionTitle level={3}>{tTraining('barbells')}</SectionTitle>
+          {inv.barbells.length === 0 ? (
+            <p className="ct-training__muted">{tTraining('none')}</p>
+          ) : (
+            <dl className="ct-equipment__rows">
+              {inv.barbells.map((b) => (
+                <Row key={`${b.type}-${String(b.weightKg)}`} label={b.type} value={kg(b.weightKg)} verify={check.has(`barbell:${b.type}`)} />
+              ))}
+            </dl>
+          )}
+          {[...check].filter((k) => k.startsWith('barbell:') && !inv.barbells.some((b) => `barbell:${b.type}` === k)).map((k) => (
+            <p key={k}>
+              {verifyLabel(k)} <VerifyTag show />
+            </p>
+          ))}
+        </section>
+        <section className="ct-equipment__block">
+          <SectionTitle level={3}>{tTraining('equipmentDumbbellsKettlebells')}</SectionTitle>
+          <dl className="ct-equipment__rows">
+            <Row label={tTraining('dumbbells')} value={inv.dumbbells ? tTraining('equipmentDumbbellRange', { min: formatNumber(inv.dumbbells.minKg), max: formatNumber(inv.dumbbells.maxKg) }) : tTraining('none')} verify={check.has('dumbbells')} />
+            {inv.dumbbells ? <Row label={tTraining('equipmentStep')} value={kg(inv.dumbbells.stepKg)} /> : null}
+            <Row label={tTraining('kettlebells')} value={inv.kettlebellsKg.length === 0 ? tTraining('none') : inv.kettlebellsKg.map(formatNumber).join(' · ')} verify={check.has('kettlebells')} />
+          </dl>
+        </section>
+        <section className="ct-equipment__block">
+          <SectionTitle level={3}>{tTraining('equipmentIncrements')}</SectionTitle>
+          {increments.length === 0 ? (
+            <p className="ct-training__muted">{tTraining('none')}</p>
+          ) : (
+            <dl className="ct-equipment__rows">
+              {increments.map(([key, label]) => (
+                <Row key={key} label={tTraining(label)} value={formatNumber(profile.increments[key] ?? 0)} />
+              ))}
+            </dl>
+          )}
+          {inv.bodyweight ? <p className="ct-training__muted">{tTraining('bodyweightYes')}</p> : null}
+        </section>
+      </div>
+      <section className="ct-equipment__block">
+        <SectionTitle level={3} id={`ct-plates-${profile.id}`}>
+          {tTraining('equipmentPlates')}
+        </SectionTitle>
+        {inv.platesPerSideKg.length === 0 ? (
+          <p className="ct-training__muted">{tTraining('none')}</p>
         ) : (
-          <ul className="ct-training__plain">
-            {inv.barbells.map((b) => (
-              <li key={`${b.type}-${String(b.weightKg)}`}>
-                {b.type} · <span className="ct-training__num">{kg(b.weightKg)}</span> <VerifyTag show={check.has(`barbell:${b.type}`)} />
+          <ul className="ct-equipment__plates" aria-labelledby={`ct-plates-${profile.id}`}>
+            {inv.platesPerSideKg.map((p) => (
+              <li key={p.weightKg} className="ct-equipment__plate">
+                <span className="ct-equipment__plate-bar" aria-hidden="true" style={{ blockSize: `${(1.5 + 6 * (p.weightKg / heaviestPlate)).toFixed(2)}rem` }} />
+                <span className="ct-training__num">{tTraining('equipmentPlate', { n: formatNumber(p.weightKg) })}</span>
+                {platesUnknown ? null : <span className="ct-training__muted ct-training__num">{tTraining('equipmentPlateCount', { n: p.count })}</span>}
               </li>
             ))}
           </ul>
         )}
-        {[...check].filter((k) => k.startsWith('barbell:') && !inv.barbells.some((b) => `barbell:${b.type}` === k)).map((k) => (
-          <p key={k}>
-            {verifyLabel(k)} <VerifyTag show />
+        {platesUnknown ? (
+          <p className="ct-training__muted">
+            {tTraining('platesCountUnknown')} : {tTraining('equipmentPlateCountUnknown')} <VerifyTag show />
           </p>
-        ))}
+        ) : null}
       </section>
-      <section className="ct-training__card ct-flat">
-        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('plates')}</h3>
-        <p className="ct-training__num">
-          {inv.platesPerSideKg.length === 0 ? tTraining('none') : inv.platesPerSideKg.map((p) => formatNumber(p.weightKg)).join(' · ')} {check.has('plates') && <span className="ct-training__muted">({tTraining('platesCountUnknown')})</span>} <VerifyTag show={check.has('plates')} />
-        </p>
+      <section className="ct-equipment__block">
+        <SectionTitle level={3}>{tTraining('equipmentStacks')}</SectionTitle>
+        {stacks.length === 0 ? (
+          <p className="ct-training__muted">{tTraining('none')}</p>
+        ) : (
+          <dl className="ct-equipment__rows">
+            {stacks.map((s) => (
+              <Row key={s.key} label={s.label} value={s.value} />
+            ))}
+          </dl>
+        )}
+        {check.has('machines') || check.has('cables') ? (
+          <p className="ct-training__muted">
+            {[check.has('machines') ? tTraining('machines') : null, check.has('cables') ? tTraining('cables') : null].filter((x) => x !== null).join(', ')} <VerifyTag show />
+          </p>
+        ) : null}
       </section>
-      <section className="ct-training__card ct-flat">
-        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('dumbbells')}</h3>
-        <p>
-          {inv.dumbbells ? range(inv.dumbbells) : tTraining('none')} <VerifyTag show={check.has('dumbbells')} />
-        </p>
-        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('kettlebells')}</h3>
-        <p className="ct-training__num">
-          {inv.kettlebellsKg.length === 0 ? tTraining('none') : inv.kettlebellsKg.map(formatNumber).join(' · ')} <VerifyTag show={check.has('kettlebells')} />
-        </p>
-      </section>
-      <section className="ct-training__card ct-flat">
-        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('machines')}</h3>
-        <p>
-          {inv.machines.length > 0 ? inv.machines.map((m) => `${names.get(m.equipmentId)?.nameFr ?? m.equipmentId} : ${range({ minKg: m.stackMinKg, maxKg: m.stackMaxKg, stepKg: m.stepKg })}`).join(' ; ') : machinesRange ? range(machinesRange) : tTraining('none')}{' '}
-          <VerifyTag show={check.has('machines')} />
-        </p>
-        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('cables')}</h3>
-        <p>
-          {inv.cables.length > 0 ? inv.cables.map(range).join(' ; ') : tTraining('none')} <VerifyTag show={check.has('cables')} />
-        </p>
-      </section>
-      <section className="ct-training__card ct-flat">
-        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('increments')}</h3>
-        <ul className="ct-training__plain">
-          {INCREMENT_KEYS.filter(([key]) => profile.increments[key] !== undefined).map(([key, label]) => (
-            <li key={key}>
-              {tTraining(label)} · <span className="ct-training__num">{formatNumber(profile.increments[key] ?? 0)}</span>
-            </li>
-          ))}
-        </ul>
-        <p>{inv.bodyweight ? tTraining('bodyweightYes') : null}</p>
-      </section>
-      <section className="ct-training__card ct-training__card--wide ct-flat">
-        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('availableEquipment')}</h3>
+      <section className="ct-equipment__block">
+        <SectionTitle level={3}>{tTraining('availableEquipment')}</SectionTitle>
         {[...families.values()].map((list) => (
           <p key={list.join('|')}>{list.join(', ')}</p>
         ))}
@@ -357,7 +404,7 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
           />
         ) : (
           <>
-            <h2 id="ct-profile-title" className="ct-training__heading">
+            <h2 id="ct-profile-title" className="ct-training__heading ct-equipment__title">
               {viewed.name}
             </h2>
             <p className="ct-training__muted">
@@ -390,7 +437,8 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
                   >
                     {tTraining('editProfile')}
                   </Button>
-                  <Button variant="danger" onClick={() => setConfirm(true)}>
+                  {/* ERGO-02 : une seule action rouge à l'écran ; « Activer » l'est déjà quand le profil n'est pas actif (suppression confirmée). */}
+                  <Button variant={isActive ? 'danger' : 'secondary'} onClick={() => setConfirm(true)}>
                     {tTraining('deleteProfile')}
                   </Button>
                 </>
