@@ -380,9 +380,9 @@
   gap: var(--ct-space-2);
   box-sizing: border-box;
   width: 100%;
-  padding: 6px 12px;
+  padding: var(--ct-space-1) var(--ct-space-3);
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--ct-radius-md);
   background: transparent;
   color: var(--ct-color-text);
   font-family: var(--ct-font-text);

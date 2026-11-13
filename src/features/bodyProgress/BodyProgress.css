@@ -213,7 +213,7 @@
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
-  min-height: 48px;
+  min-height: var(--ct-hit-target-min);
   padding: 0 var(--ct-space-3);
   background: var(--ct-color-surface-input);
   color: var(--ct-color-text);
@@ -224,7 +224,7 @@
 
 .ct-bodyprogress__save {
   flex: 1 1 auto;
-  min-height: 48px;
+  min-height: var(--ct-hit-target-min);
 }
 
 .ct-bodyprogress__message {
