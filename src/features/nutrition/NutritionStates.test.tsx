@@ -94,7 +94,8 @@ describe('I4-03 : lecture en échec ou en cours (aucun faux chiffre)', () => {
     const r = await region();
     expect(await within(r).findByText('Nutrition n’a pas pu être lu.')).toBeInTheDocument();
     expect(r.textContent ?? '').not.toMatch(/2.650 kcal restantes/);
-    expect(within(r).getByText('— kcal restantes')).toBeInTheDocument();
+    // ERGO-01 : chiffre héros et unité en deux éléments ; même texte complet attendu sur la ligne.
+    expect(within(r).getByText((_, el) => (el?.classList.contains('ct-hero') ?? false) && el?.textContent === '— kcal restantes')).toBeInTheDocument();
   });
 
   it('I4-03 : changer de jour retire aussitôt les actions des entrées de l’autre jour', async () => {

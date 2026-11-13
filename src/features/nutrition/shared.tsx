@@ -1,5 +1,5 @@
 import type { EntrySource } from '../../domain/nutrition';
-import { tNutrition, type NutritionTextKey } from '../../i18n/nutritionText';
+import { formatInt, orDash, tNutrition, type NutritionTextKey } from '../../i18n/nutritionText';
 
 /** Éléments communs aux écrans de Nutrition (I4-03) : provenance, champs numériques et heure. */
 
@@ -95,5 +95,19 @@ export function MacroLine({ p, c, f }: { readonly p: string; readonly c: string;
         {tNutrition('macroShortF')} <span className="ct-nutrition__num">{f}</span>
       </span>
     </span>
+  );
+}
+
+/**
+ * ERGO-01 : calories restantes (ou dépassées) en chiffre héros, l'unité à part ; `null` (journal non lu, valeur inconnue) : « — », jamais la
+ * cible entière ni un zéro. Le texte complet de la ligne reste celui d'avant (« 1 190 kcal restantes »).
+ */
+export function KcalHero({ kcal }: { readonly kcal: number | null }) {
+  const over = kcal !== null && kcal < 0;
+  return (
+    <p className="ct-hero">
+      <span className="ct-hero__num">{kcal === null ? orDash(null) : formatInt(Math.abs(kcal))}</span>{' '}
+      <span className="ct-hero__unit">{tNutrition(over ? 'overKcalUnit' : 'remainingKcalUnit')}</span>
+    </p>
   );
 }

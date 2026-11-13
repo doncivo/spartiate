@@ -198,6 +198,7 @@ describe('restauration depuis l’écran d’échec : chaque raison d’échec d
     'sync-busy': true,
     busy: true,
     'db-open': true,
+    'before-reset': true,
   } satisfies Record<BackupFailureReason, true>;
 
   it.each(Object.keys(REASONS) as BackupFailureReason[])('raison %s : un texte lisible, jamais « undefined » ni une clé brute', (reason) => {
