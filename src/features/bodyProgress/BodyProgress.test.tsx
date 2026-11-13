@@ -107,7 +107,7 @@ describe('mensurations', () => {
     mount();
     expect(await screen.findByText('84 cm')).toBeInTheDocument();
     expect(screen.queryByText('96 cm')).toBeNull();
-    fireEvent.change(screen.getByLabelText('Zone'), { target: { value: 'hips' } });
+    fireEvent.click(screen.getByRole('radio', { name: 'Hanches' }));
     expect(await screen.findByText('96 cm')).toBeInTheDocument();
   });
 
@@ -312,11 +312,16 @@ describe('mesures importées de Santé (I6-04, D-113)', () => {
     await repo.save(D(11), 'health_fiber_g', 28);
     mount();
     const card = within(await screen.findByRole('region', { name: 'Importé de Santé (Renpho)' }));
-    expect(card.getByText(`Masse grasse : 18,5 % (${formatDayMonthYear(D(11))})`)).toBeInTheDocument();
-    expect(card.getByText(`Masse maigre : 64,3 kg (${formatDayMonthYear(D(11))})`)).toBeInTheDocument();
-    expect(card.getByText(`Tour de taille : 82 cm (${formatDayMonthYear(D(11))})`)).toBeInTheDocument();
-    expect(card.getByText(`Taille : 178 cm (${formatDayMonthYear(D(11))})`)).toBeInTheDocument();
-    expect(card.getByText(`Fibres : 28 g (${formatDayMonthYear(D(11))})`)).toBeInTheDocument();
+    // ERGO-02 : étiquette, valeur et date sont trois éléments d'une grille (mêmes faits, mise en forme de l'aperçu).
+    const date = `le ${formatDayMonthYear(D(11))}`;
+    const row = (label: string) => within(card.getByText(label).closest('div') as HTMLElement);
+    expect(row('Masse grasse').getByText('18,5 %')).toBeInTheDocument();
+    expect(row('Masse grasse').getByText(date)).toBeInTheDocument();
+    expect(row('Masse maigre').getByText('64,3 kg')).toBeInTheDocument();
+    expect(row('Tour de taille').getByText('82 cm')).toBeInTheDocument();
+    expect(row('Taille').getByText('178 cm')).toBeInTheDocument();
+    expect(row('Fibres').getByText('28 g')).toBeInTheDocument();
+    expect(row('Fibres').getByText(date)).toBeInTheDocument();
     expect(card.queryByRole('button')).toBeNull();
     expect(screen.getByText('Aucune mesure pour cette zone.')).toBeInTheDocument();
   });

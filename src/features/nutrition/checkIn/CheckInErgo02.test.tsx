@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import { addDays } from '../../../domain/localDate';
