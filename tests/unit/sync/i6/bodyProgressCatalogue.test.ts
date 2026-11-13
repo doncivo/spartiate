@@ -22,9 +22,9 @@ const col = (tableName: string, name: string) => {
 };
 
 describe('catalogue de production : measurement et progress_photo (I6-02)', () => {
-  it('dernières de l’ordre (24 tables), sans parent ni colonne locale', () => {
-    expect(SYNC_TABLE_ORDER.slice(-2)).toEqual(['measurement', 'progress_photo']);
-    expect(SYNC_TABLE_ORDER).toHaveLength(24);
+  it('juste avant food_favorite (FIX-0181, 25 tables), sans parent ni colonne locale', () => {
+    expect(SYNC_TABLE_ORDER.slice(-3, -1)).toEqual(['measurement', 'progress_photo']);
+    expect(SYNC_TABLE_ORDER).toHaveLength(25);
     expect(table('measurement').idKind).toBe('natural');
     expect(table('progress_photo').idKind).toBe('uuid');
     for (const name of ['measurement', 'progress_photo']) {

@@ -39,8 +39,9 @@ export const progressionFr = {
   explainDeload: 'Deload : moitié des séries ({sets}), charge allégée, au moins {rir} répétitions en réserve ; hors statistiques.',
   explainRecoveryLow: 'Charge réduite de {cut} % : récupération basse aujourd’hui.',
   explainRecoveryLowSet: 'Charge réduite de {cut} % et une série de moins (exercice d’isolation) : récupération basse aujourd’hui.',
-  // I5-02 point 2.2 : journée rouge acceptée au lancement (§ 16.7), sans diagnostic.
-  explainRedDayHeld: 'Journée rouge : charges maintenues, aucune hausse ni baisse automatique ; estimation, pas un avis médical.',
+  // I5-02 point 2.2 : journée rouge acceptée au lancement (§ 16.7), sans diagnostic ; règle d'Ali du 12/11 (D-170) : charges × 0,95.
+  explainRedDay: 'Journée rouge : charges −{cut} %, arrondies au matériel vers le bas (−{delta} kg) ; estimation, pas un avis médical.',
+  explainRedDayHeld: 'Journée rouge : charge maintenue (charge minimale du matériel ou exercice assisté), aucune hausse ; estimation, pas un avis médical.',
   // Précisions ajoutées à la phrase (I2-04), information seulement.
   notePartialIgnored: 'Ta dernière séance (moins de la moitié des séries faites) n’est pas prise en compte.',
   noteBodyweightUnknown: 'Poids de corps inconnu : le 1RM et les écarts de charge sont calculés sur le lest seul. Enregistre une pesée pour compter le poids de ton corps.',
@@ -52,7 +53,7 @@ export const progressionFr = {
   alertDeload: 'Deload : séries réduites de moitié, hors statistiques.',
   alertRecoveryLow: 'Récupération basse : charge réduite de {cut} %.',
   alertRecoveryLowSet: 'Récupération basse : charge réduite de {cut} % et une série de moins (exercice d’isolation).',
-  alertRedDay: 'Journée rouge acceptée : aucune hausse aujourd’hui ; estimation, pas un avis médical.',
+  alertRedDay: 'Journée rouge acceptée : charges −{cut} % en plus, aucune hausse aujourd’hui ; estimation, pas un avis médical.',
   alertsLabel: 'Alertes',
   optionsTitle: 'Choix facultatifs',
   optionFatigueLoad: '−{cut} % de charge : {value}.',

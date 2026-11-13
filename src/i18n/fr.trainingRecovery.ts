@@ -4,12 +4,13 @@
  */
 export const trainingRecoveryFr = {
   redDayRegion: 'Journée rouge',
-  redDayTitle: 'Journée rouge : maintien des charges proposé',
+  // Règle d'Ali du 12/11 (D-170, révise D-93) : charges × 0,95, arrondies au matériel vers le bas, jamais sous la charge minimale.
+  redDayTitle: 'Journée rouge : charges allégées de 5 % proposées',
   redDayHint:
-    'Recovery {score} aujourd’hui. Accepter : les charges sont maintenues pendant cette séance, aucune hausse et aucune baisse automatique. Ignorer : propositions habituelles. Estimation, pas un avis médical.',
-  redDayAccept: 'Accepter le maintien',
+    'Recovery {score} aujourd’hui. Accepter : charges × 0,95 pendant cette séance, arrondies au matériel vers le bas, jamais sous la charge minimale ; séries et répétitions inchangées, aucune hausse. Ignorer : propositions habituelles. Estimation, pas un avis médical.',
+  redDayAccept: 'Accepter l’allègement',
   redDayIgnore: 'Ignorer',
-  redDayAccepted: 'Journée rouge : maintien des charges accepté pour cette séance.',
+  redDayAccepted: 'Journée rouge : charges allégées de 5 % pour cette séance.',
   redDayIgnored: 'Journée rouge ignorée : propositions habituelles pour cette séance.',
   redDayWriteError: 'Choix non enregistré. Réessaie.',
   splitTitle: 'Récupération par muscle',

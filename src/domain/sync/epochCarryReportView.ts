@@ -70,6 +70,8 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   // I6-02 : mensurations et fiches de photos (libellé : la date).
   measurement: { label: 'date', kind: 'measurement' },
   progress_photo: { label: 'date', kind: 'progressPhoto' },
+  // FIX-0181 : favori de la recherche d'aliments (libellé : la référence de l'aliment).
+  food_favorite: { label: 'ref', kind: 'foodFavorite' },
 };
 
 export const carryReportTableEntry = (table: string): { readonly label: string | null; readonly kind: string } | undefined =>

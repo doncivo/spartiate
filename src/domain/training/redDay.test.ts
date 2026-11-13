@@ -38,20 +38,23 @@ describe('journée rouge : offre au lancement', () => {
   });
 });
 
-describe('journée rouge acceptée : prescription', () => {
+describe('journée rouge acceptée : prescription (D-93 révisée par Ali le 12/11, FIX-0181)', () => {
   const top = [session(3, 100, [10, 10, 10])];
 
-  // D-93 révisée (I5-03) : § 16.7 (« maintien ») l'emporte sur § 11.3 (× 0,95) pour la journée rouge ; jamais une baisse automatique.
-  it('haut de plage atteint : aucune hausse, charge de référence maintenue, dite « charges maintenues »', () => {
+  // Décision d'Ali (D-170) : charges × 0,95 (`lowRecoveryLoad`), arrondies au matériel VERS LE BAS, jamais sous la charge minimale ;
+  // séries et répétitions de la référence inchangées (aucune répétition ajoutée par l'arrondi, aucune série retirée), aucune hausse.
+  it('haut de plage atteint : aucune hausse, 100 kg × 0,95 = 95 kg, dit « charges −5 % »', () => {
     const normal = prescribe(input({ history: top }));
     expect(normal.loadKg).toBe(102.5);
     const p = prescribe(input({ history: top, recovery: redDaySnapshot(20, 'accepted', CFG) }));
-    expect(p.loadKg).toBe(100);
-    expect(p.sets.every((x) => x.loadKg === 100)).toBe(true);
+    expect(p.loadKg).toBe(95);
+    expect(p.sets).toEqual([{ reps: 10, loadKg: 95 }, { reps: 10, loadKg: 95 }, { reps: 10, loadKg: 95 }]);
+    expect(p.deltaKg).toBe(-5);
     expect(p.headline).toBe('recovery-low');
     expect(p.reasons).toContain('recovery-low');
     expect(p.reasons).toContain('recovery-red-day');
-    expect(explainPrescription(p)).toEqual({ key: 'redDayHeld', params: {} });
+    expect(p.reasons).not.toContain('snap-extra-rep');
+    expect(explainPrescription(p)).toEqual({ key: 'redDay', params: { cut: 5, delta: 5 } });
     expect(explanationNotes(p)).toEqual([]);
     expect(constraintAlerts(p)).toEqual([]);
   });
@@ -62,45 +65,84 @@ describe('journée rouge acceptée : prescription', () => {
     expect(prescribe(input({ history: top, recovery: redDaySnapshot(null, 'accepted', CFG) }))).toEqual(none);
   });
 
-  it('le facteur de récupération basse (× 0,95) n’agit jamais sur une journée rouge acceptée', () => {
+  it('le facteur vient de la configuration active (`lowRecoveryLoad`)', () => {
     const p = prescribe(input({ history: top, recovery: redDaySnapshot(20, 'accepted', CFG), config: { ...CFG, lowRecoveryLoad: 0.5 } }));
-    expect(p.loadKg).toBe(100);
-    expect(explainPrescription(p)).toEqual({ key: 'redDayHeld', params: {} });
+    expect(p.loadKg).toBe(50);
+    expect(explainPrescription(p)).toEqual({ key: 'redDay', params: { cut: 50, delta: 50 } });
   });
 
-  it('maintien exact : la charge de référence, ni plus ni moins, quelles que soient les charges et répétitions', () => {
-    for (const load of [20, 47.5, 60, 100, 142.5]) {
-      for (const reps of [[8, 8, 8], [10, 10, 10], [6, 5, 5]]) {
-        const p = prescribe(input({ history: [session(3, load, reps)], recovery: redDaySnapshot(33, 'accepted', CFG) }));
-        expect(p.loadKg).toBe(load);
-      }
+  // Vecteurs du moteur : barre olympique (grille de 2,5 kg à partir de 20 kg) et haltères (grille de 2 kg à partir de 2 kg) du profil de test.
+  const BAR_VECTORS: readonly (readonly [number, number])[] = [
+    [100, 95],
+    [142.5, 135], // 135,375 → 135
+    [60, 55], // 57 → 55 (57,5 est au-dessus de la cible)
+    [47.5, 45], // 45,125 → 45
+    [22.5, 20], // 21,375 → 20
+    [20, 20], // 19 → sous la barre seule : charge minimale, maintenue
+  ];
+  it.each(BAR_VECTORS)('barre : %s kg → %s kg, répétitions de la référence, jamais au-dessus', (load, expected) => {
+    for (const reps of [[8, 8, 8], [10, 10, 10], [6, 5, 5]]) {
+      const p = prescribe(input({ history: [session(3, load, reps)], recovery: redDaySnapshot(33, 'accepted', CFG) }));
+      expect(p.loadKg).toBe(expected);
+      expect(p.sets.map((s) => s.reps)).toEqual(reps);
+      expect(p.sets.every((s) => s.loadKg === expected)).toBe(true);
     }
   });
 
-  it('exercice d’isolation : maintien complet, aucune série retirée', () => {
+  const DUMBBELL_VECTORS: readonly (readonly [number, number])[] = [
+    [40, 38],
+    [10, 8], // 9,5 → 8
+    [2, 2], // 1,9 → sous la plus petite paire : charge minimale, maintenue
+  ];
+  it.each(DUMBBELL_VECTORS)('haltères : %s kg → %s kg', (load, expected) => {
+    const p = prescribe(input({ exercise: ISO_CURL, history: [session(3, load, [10, 10, 10])], target: target(8, 12), recovery: redDaySnapshot(10, 'accepted', CFG) }));
+    expect(p.loadKg).toBe(expected);
+    expect(p.sets).toHaveLength(3);
+  });
+
+  it('sans grille connue : demi-kilo inférieur, jamais sous le demi-kilo', () => {
+    const noGrid = { equipment: null };
+    expect(prescribe(input({ ...noGrid, history: [session(3, 33, [10, 10, 10])], recovery: redDaySnapshot(20, 'accepted', CFG) })).loadKg).toBe(31); // 31,35
+    expect(prescribe(input({ ...noGrid, history: [session(3, 0.5, [10, 10, 10])], recovery: redDaySnapshot(20, 'accepted', CFG) })).loadKg).toBe(0.5); // 0,475
+  });
+
+  it('charge minimale atteinte : maintenue, dite « maintenue »', () => {
+    const p = prescribe(input({ history: [session(3, 20, [10, 10, 10])], recovery: redDaySnapshot(20, 'accepted', CFG) }));
+    expect(p.loadKg).toBe(20);
+    expect(explainPrescription(p)).toEqual({ key: 'redDayHeld', params: {} });
+  });
+
+  it('exercice d’isolation : charges × 0,95, aucune série retirée', () => {
     const p = prescribe(input({ exercise: ISO_CURL, history: [session(3, 40, [10, 10, 10])], target: target(8, 12), recovery: redDaySnapshot(10, 'accepted', CFG) }));
     expect(p.sets).toHaveLength(3);
-    expect(p.loadKg).toBe(40);
+    expect(p.loadKg).toBe(38);
     expect(p.reasons).not.toContain('recovery-set-removed');
-    expect(explainPrescription(p)).toEqual({ key: 'redDayHeld', params: {} });
+    expect(explainPrescription(p)).toEqual({ key: 'redDay', params: { cut: 5, delta: 2 } });
     expect(explanationNotes(p)).toEqual([]);
   });
 
-  it('deload en raison principale : la journée rouge est une alerte', () => {
-    const p = prescribe(input({ history: [session(3, 100, [8, 8, 8, 8])], target: target(8, 10, 4), recovery: redDaySnapshot(20, 'accepted', CFG), deload: true }));
-    expect(p.headline).toBe('deload');
-    expect(constraintAlerts(p)).toEqual([{ key: 'alertRedDay', params: {} }]);
+  it('exercice assisté : l’assistance n’est jamais réduite (la séance ne devient pas plus dure), maintien dit', () => {
+    const assisted = { id: 'pull-up-assisted', metric: 'load-reps', equipment: ['pull-up-bar'], kind: 'compound', assisted: true, bodyweightFraction: 1 } as const;
+    for (const bodyweightKg of [80, null]) {
+      const p = prescribe(input({ exercise: assisted, bodyweightKg, history: [session(3, 30, [10, 10, 10])], recovery: redDaySnapshot(20, 'accepted', CFG) }));
+      expect(p.loadKg).toBe(30);
+      expect(explainPrescription(p)).toEqual({ key: 'redDayHeld', params: {} });
+    }
   });
 
-  it('jamais au-dessus de la référence ; raison rangée dans l’ordre normatif', () => {
-    for (const load of [20, 47.5, 60, 100, 142.5]) {
-      for (const reps of [[8, 8, 8], [10, 10, 10], [6, 5, 5]]) {
-        const p = prescribe(input({ history: [session(3, load, reps)], recovery: redDaySnapshot(33, 'accepted', CFG) }));
-        expect(p.loadKg ?? 0).toBeLessThanOrEqual(load);
-        const ranks = p.reasons.map((r) => REASON_ORDER.indexOf(r));
-        expect(ranks.every((r) => r >= 0)).toBe(true);
-        expect([...ranks].sort((a, b) => a - b)).toEqual(ranks);
-      }
+  it('deload en raison principale : la journée rouge est une alerte, et réduit encore (× 0,8 × 0,95)', () => {
+    const p = prescribe(input({ history: [session(3, 100, [8, 8, 8, 8])], target: target(8, 10, 4), recovery: redDaySnapshot(20, 'accepted', CFG), deload: true }));
+    expect(p.headline).toBe('deload');
+    expect(p.loadKg).toBe(75); // 76 → 75
+    expect(constraintAlerts(p)).toEqual([{ key: 'alertRedDay', params: { cut: 5 } }]);
+  });
+
+  it('raisons rangées dans l’ordre normatif', () => {
+    for (const [load] of BAR_VECTORS) {
+      const p = prescribe(input({ history: [session(3, load, [8, 8, 8])], recovery: redDaySnapshot(33, 'accepted', CFG) }));
+      const ranks = p.reasons.map((r) => REASON_ORDER.indexOf(r));
+      expect(ranks.every((r) => r >= 0)).toBe(true);
+      expect([...ranks].sort((a, b) => a - b)).toEqual(ranks);
     }
   });
 
@@ -110,16 +152,19 @@ describe('journée rouge acceptée : prescription', () => {
     expect(explainPrescription(p)).toEqual({ key: 'recoveryLow', params: { cut: 5 } });
   });
 
-  it('journée rouge acceptée + décote d’inactivité : jamais plus bas que sans journée rouge (pas de baisse due à l’acceptation)', () => {
+  it('journée rouge acceptée + décote d’inactivité : un seul arrondi, jamais plus haut que sans journée rouge', () => {
     const old = [session(22, 100, [10, 10, 10])];
     const ignored = prescribe(input({ history: old, recovery: redDaySnapshot(20, 'ignored', CFG) }));
     const accepted = prescribe(input({ history: old, recovery: redDaySnapshot(20, 'accepted', CFG) }));
-    expect(accepted.loadKg ?? 0).toBeGreaterThanOrEqual(ignored.loadKg ?? 0);
+    expect(accepted.loadKg ?? 0).toBeLessThan(ignored.loadKg ?? 0);
+    expect(accepted.loadKg).toBe(92.5); // 100 × 0,99 × 0,95 = 94,05 → 92,5
   });
 
-  it('redDayHold n’existe que pour une journée rouge : un signal bas sans indicateur garde × 0,95', () => {
+  it('un signal bas sans journée rouge garde × 0,95 et la série retirée sur une isolation', () => {
     const p = prescribe(input({ history: top, recovery: { recovery: 0, sleepHours: null, restingHrDelta: null } }));
     expect(p.loadKg).toBe(95);
+    const iso = prescribe(input({ exercise: ISO_CURL, history: [session(3, 40, [10, 10, 10])], target: target(8, 12), recovery: { recovery: 0, sleepHours: null, restingHrDelta: null } }));
+    expect(iso.sets).toHaveLength(2);
   });
 
   it('décision d’Ali : jamais modulée', () => {

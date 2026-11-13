@@ -25,6 +25,7 @@ export type ExplanationKey =
   | 'deload'
   | 'recoveryLow'
   | 'recoveryLowSet'
+  | 'redDay'
   | 'redDayHeld'
   | 'outlierHold'
   | 'position'
@@ -97,8 +98,12 @@ export function explainPrescription(p: Prescription): Explanation {
     }
     case 'recovery-low':
       if (p.reasons.includes('recovery-red-day')) {
-        // Journée rouge acceptée (D-93 révisée) : maintien des charges, jamais une baisse ; une éventuelle décote de position est dite à part (note).
-        return { key: 'redDayHeld', params: {} };
+        // Journée rouge acceptée (D-170) : charges × 0,95 arrondies au matériel vers le bas ; l'écart dit est celui de la charge appliquée.
+        // Aucun écart (charge minimale du matériel, exercice assisté) : maintien dit.
+        const ref = p.reference?.loadKg ?? 0;
+        const delta = -(p.deltaKg ?? 0);
+        if (!(delta > 0) || !(ref > 0)) return { key: 'redDayHeld', params: {} };
+        return { key: 'redDay', params: { cut: recoveryCut(p), delta: Math.round(delta * 100) / 100 } };
       }
       return { key: p.reasons.includes('recovery-set-removed') ? 'recoveryLowSet' : 'recoveryLow', params: { cut: recoveryCut(p) } };
   }
@@ -147,7 +152,7 @@ export function constraintAlerts(p: Prescription): { readonly key: ConstraintAle
   return ALERTS.filter((a) => p.reasons.includes(a.reason) && a.headline !== p.headline).map((a) => {
     if (a.key === 'alertStall') return { key: a.key, params: { sessions: p.activeConfig.stallSessions } };
     if (a.key === 'alertInactivity') return { key: a.key, params: { cut: percent(p.inactivityCut ?? 0) } };
-    if (a.key === 'alertRecoveryLow' && p.reasons.includes('recovery-red-day')) return { key: 'alertRedDay', params: {} };
+    if (a.key === 'alertRecoveryLow' && p.reasons.includes('recovery-red-day')) return { key: 'alertRedDay', params: { cut: recoveryCut(p) } };
     if (a.key === 'alertRecoveryLow') return { key: p.reasons.includes('recovery-set-removed') ? 'alertRecoveryLowSet' : a.key, params: { cut: recoveryCut(p) } };
     return { key: a.key, params: {} };
   });

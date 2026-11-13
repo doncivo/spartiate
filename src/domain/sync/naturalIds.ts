@@ -9,7 +9,7 @@
  */
 
 import type { LocalDate } from '../types';
-import { isLocalDate } from '../types';
+import { isId, isLocalDate } from '../types';
 
 export const PROFILE_ID = 'profile|singleton';
 
@@ -170,4 +170,28 @@ export function expectedMeasurementId(row: ReadonlyMap<string, unknown>): string
   const date = row.get('date');
   const kind = row.get('kind');
   return typeof date === 'string' && isLocalDate(date) && typeof kind === 'string' && MEASUREMENT_KIND_RE.test(kind) ? measurementId(date, kind) : null;
+}
+
+/**
+ * FIX-0181 (D-171) : favori de la recherche d'aliments, un par aliment, `favorite|<ref>` ; `ref` = `ciqual:<code>` (1 à 8 chiffres) ou UUID d'une fiche
+ * (même forme que `parseFoodId`, recopiée ici pour ne pas tirer le domaine de la nutrition dans le départ). Aucun repli UUID : le même aliment mis en
+ * favori sur les deux appareils donne la même ligne. Le CHECK SQL de la migration 0015 porte la même forme.
+ */
+const FAVORITE_PREFIX = 'favorite|';
+const CIQUAL_REF_RE = /^ciqual:[0-9]{1,8}$/;
+
+export const isFavoriteRef = (ref: string): boolean => CIQUAL_REF_RE.test(ref) || isId(ref);
+
+export function favoriteId(ref: string): string {
+  return `${FAVORITE_PREFIX}${ref}`;
+}
+
+export function isFavoriteId(id: string): boolean {
+  return id.startsWith(FAVORITE_PREFIX) && isFavoriteRef(id.slice(FAVORITE_PREFIX.length));
+}
+
+/** Identifiant attendu d'une ligne de ces valeurs, ou null si `ref` manque ou est illisible. */
+export function expectedFavoriteId(row: ReadonlyMap<string, unknown>): string | null {
+  const ref = row.get('ref');
+  return typeof ref === 'string' && isFavoriteRef(ref) ? favoriteId(ref) : null;
 }

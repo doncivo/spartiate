@@ -139,7 +139,7 @@ export interface SettingsValues {
   'training.redDay': unknown;
   /** I4-03 : préférences de nutrition (style du check-in, objectif, activité déclarée, jour). Valeur BRUTE lue par `parseNutritionPrefs` ; locale, jamais synchronisée. */
   'nutrition.prefs': unknown;
-  /** I4-06 : favoris de la recherche d'aliments, valeur BRUTE lue par `parseFavorites` ({ v: 1, items }) ; locale, jamais synchronisée (D-79). */
+  /** I4-06 : favoris de la recherche d'aliments, valeur BRUTE lue par `parseFavorites` ({ v: 1, items }) ; locale, jamais synchronisée (D-79). FIX-0181 (D-171) : lue une seule fois pour la reprise dans la table publiée `food_favorite`, puis remise à null. */
   'nutrition.favorites': unknown;
   /** I5-02 (point 2.3) : notifications de récupération (coucher, matin), désactivées par défaut. Valeur BRUTE lue par `parseRecoveryNotificationPrefs` ; locale, jamais synchronisée. */
   'recovery.notificationPrefs': unknown;

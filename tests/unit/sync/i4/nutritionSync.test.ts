@@ -73,7 +73,7 @@ const seed = async (d: SimDevice): Promise<void> => {
 
 describe('catalogue de production : tables de nutrition (I4-02)', () => {
   it('quatre tables à la fin de l’ordre, UUID ; seule food_portion a un parent ; aucune colonne locale', () => {
-    expect(SYNC_TABLE_ORDER.slice(-12, -8)).toEqual(['food', 'food_portion', 'meal_entry', 'nutrition_target']);
+    expect(SYNC_TABLE_ORDER.slice(-13, -9)).toEqual(['food', 'food_portion', 'meal_entry', 'nutrition_target']);
     for (const name of ['food', 'food_portion', 'meal_entry', 'nutrition_target']) {
       const t = SYNC_CATALOGUE.table(name);
       if (!t) throw new Error(name);
@@ -83,8 +83,9 @@ describe('catalogue de production : tables de nutrition (I4-02)', () => {
     expect(SYNC_CATALOGUE.table('food_portion')?.parents).toEqual([{ column: 'food_id', table: 'food' }]);
     expect(SYNC_CATALOGUE.table('meal_entry')?.parents).toEqual([]);
   });
+  // FIX-0181 (D-171, D-79 révisée par Ali) : food_favorite est désormais publiée (tests/unit/sync/fix0181).
   it('tables non publiées : ai_call, préférences locales', () => {
-    for (const name of ['ai_call', 'food_favorite', 'nutrition_pref']) expect(SYNC_CATALOGUE.table(name)).toBeUndefined();
+    for (const name of ['ai_call', 'nutrition_pref']) expect(SYNC_CATALOGUE.table(name)).toBeUndefined();
   });
   it('types et listes fermées : provenance, méthode, source de la cible', () => {
     const col = (t: string, c: string) => {
