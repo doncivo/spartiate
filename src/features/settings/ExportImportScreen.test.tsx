@@ -108,6 +108,27 @@ describe('Plus › Export et import', () => {
     expect(await db.driver.select('SELECT 1 FROM body_weight')).toEqual([]);
   });
 
+  it('RESET-01 (D-187) : archive faite avant « Repartir de zéro » : refusée avant l’aperçu, rien n’est réécrit ; une archive d’après s’importe', async () => {
+    db.clock.advance(60_000);
+    const { resetAllData } = await import('../../sync/dataReset');
+    const { SYNC_CATALOGUE } = await import('../../domain/sync/syncTables');
+    const { createMemorySyncLogger } = await import('../../sync/log');
+    expect((await resetAllData(db.data, SYNC_CATALOGUE, createMemorySyncLogger())).kind).toBe('done');
+    files.setPickBytes({ name: 'spartiate-export.zip', bytes: await archive() }); // datée du 5 octobre, avant la remise à zéro
+    open();
+    fireEvent.click(await screen.findByRole('button', { name: 'Choisir une archive…' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Archive refusée : elle date d’avant « Repartir de zéro ».');
+    expect(screen.queryByRole('region', { name: 'Aperçu de l’import' })).toBeNull();
+    expect(await db.driver.select('SELECT 1 FROM body_weight')).toEqual([]);
+    cleanup();
+    db.clock.advance(60_000);
+    const later = (await buildExportArchive(DATA, { date: new Date(db.clock.nowMs()).toISOString(), sv: 1 })).bytes;
+    files.setPickBytes({ name: 'spartiate-export.zip', bytes: later });
+    open();
+    fireEvent.click(await screen.findByRole('button', { name: 'Choisir une archive…' }));
+    expect(await screen.findByRole('region', { name: 'Aperçu de l’import' })).toBeTruthy();
+  });
+
   it('annuler la boîte de choix ne change rien', async () => {
     files.setPick(null);
     open();

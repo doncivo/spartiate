@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { DATA_RESET_TABLE, RESET_CONFIRMATION_WORD, RESET_SETTINGS, RESET_TABLES, isBeforeReset, isResetConfirmed, laterHorizon, wipedSettingKeys } from './dataReset';
+import { DATA_RESET_TABLE, RESET_CONFIRMATION_WORD, RESET_SETTINGS, RESET_TABLES, isArchiveBeforeReset, isBeforeReset, isResetConfirmed, laterHorizon, wipedSettingKeys } from './dataReset';
+import { TRAINING_EXPORT_TABLES } from './exportImport/archive';
+import { FULL_EXPORT_EXCLUDED } from './exportImport/fullExport';
 import { SETTINGS_DEFINITIONS, type SettingKey } from './model/settings';
 import { SYNC_CATALOGUE } from './sync/syncTables';
 import type { Hlc } from './types';
@@ -36,6 +38,22 @@ describe('sort des tables et des réglages (D-181)', () => {
     const wiped: SettingKey[] = ['onboarding.completed', 'onboarding.draft', 'onboarding.answers', 'nutrition.prefs', 'training.activeEquipmentProfile', 'training.cycleSession', 'training.redDay', 'healthBody.lastImport', 'bodyProgress.hiddenPhotos', 'recovery.bedtimeProposal'];
     for (const key of wiped) expect(RESET_SETTINGS[key], key).toBe('wiped');
     expect(wipedSettingKeys()).toEqual((Object.keys(RESET_SETTINGS) as SettingKey[]).filter((k) => RESET_SETTINGS[k] === 'wiped'));
+  });
+});
+
+describe('export et import (D-187)', () => {
+  it('data_reset n’est jamais exportée (ni archive, ni export complet)', () => {
+    expect(TRAINING_EXPORT_TABLES as readonly string[]).not.toContain(DATA_RESET_TABLE);
+    expect(FULL_EXPORT_EXCLUDED as readonly string[]).toContain(DATA_RESET_TABLE);
+  });
+
+  it('archive datée avant ou à l’instant de l’effacement : refusée ; après, ou aucun effacement : admise ; date illisible : refusée', () => {
+    const at = Date.parse('2026-11-20T08:00:00.000Z');
+    expect(isArchiveBeforeReset('2026-11-20T07:59:59.999Z', at)).toBe(true);
+    expect(isArchiveBeforeReset('2026-11-20T08:00:00.000Z', at)).toBe(true);
+    expect(isArchiveBeforeReset('2026-11-20T08:00:00.001Z', at)).toBe(false);
+    expect(isArchiveBeforeReset('2026-10-05T08:00:00.000Z', null)).toBe(false);
+    expect(isArchiveBeforeReset('pas une date', at)).toBe(true);
   });
 });
 
