@@ -7,6 +7,7 @@ import {
   restAfterCircuitSet,
   restRemainingMs,
   restSecondsFor,
+  resumeState,
   summarizeSets,
   type Exercise,
   type ExerciseBlock,
@@ -332,8 +333,9 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   // ERGO-01 : repos en barre de progression (secondes écoulées sur la durée lancée), recalculé depuis la date de fin persistée.
   const restElapsed = rest ? Math.min(rest.seconds, Math.max(0, rest.seconds - Math.ceil(remaining / 1000))) : 0;
   const startedMs = Date.parse(workout.startedAt);
-  // ERGO-01 (Seance-apres.dc.html) : la série en cours est la première à faire dans l'ordre de la séance ; elle est le bloc central.
-  const currentSetId = blocks.flatMap((b) => b.sets).find((s) => !s.done)?.id ?? null;
+  // ERGO-01 (Seance-apres.dc.html) : la série en cours est la prochaine série de la séance (ordre des positions, séries alternées d'un circuit
+  // comprises : règle `resumeState`, § 13.7) ; elle est le bloc central.
+  const currentSetId = resumeState(workout, now)?.nextSetId ?? null;
   const currentBlock = blocks.findIndex((b) => b.sets.some((s) => s.id === currentSetId));
 
   if (picking) {
