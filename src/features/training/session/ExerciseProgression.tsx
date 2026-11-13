@@ -12,6 +12,7 @@ import { tProgression, type ProgressionTextKey } from '../../../i18n/progression
 import { Button } from '../../../ui';
 import { loadCurrentCycle, localDayOf } from '../cycle/currentCycle';
 import { linkedRir, parseSessionLink, sessionRoutineId } from '../cycle/sessionLink';
+import { heldFor, type Held } from '../loadDisplay';
 import { bodyweightNow, referencePositionRank, reportUnreadableDecision as reportUnreadable } from './prescriptionContext';
 import './Progression.css';
 
@@ -136,13 +137,16 @@ function targetOf(sets: readonly WorkoutSet[], exercise: Exercise | undefined, r
   return { sets: Math.max(1, work.length), repMin, repMax: Math.max(repMin, repMax), rir };
 }
 
+/** ERGO-02 (D-261) : charge affichée, « 2 × 26 kg » pour deux haltères (la valeur reste celle d'un haltère). */
+const loadText = (n: number, held: Held): string => tProgression(held === 2 ? 'loadPair' : 'loadSingle', { load: kg(n) });
 /** Rampe : « 25 kg × 8 · 37,5 kg × 5 · 50 kg × 2 ». */
-const rampText = (ramp: readonly WarmupSet[]): string => ramp.map((s) => tProgression('warmupStep', { load: kg(s.loadKg), reps: s.reps })).join(tProgression('warmupJoin'));
+const rampText = (ramp: readonly WarmupSet[], held: Held): string => ramp.map((s) => tProgression('warmupStep', { load: loadText(s.loadKg, held), reps: s.reps })).join(tProgression('warmupJoin'));
 
 export function ExerciseProgression({ access, workout, exerciseId, sets, exercise, equipment, clock, onChanged, warmup = false, positionRank: liveRank = 1, musclesOf, recovery = null }: ExerciseProgressionProps) {
   // La proposition ne change pas pendant la séance : le rang est celui du premier rendu (retirer un exercice ne la fait pas remonter).
   const [positionRank] = useState(liveRank);
   const [load, setLoad] = useState<Load>({ status: 'loading' });
+  const held = heldFor(exercise, equipment);
   const [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -328,11 +332,12 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     const p = prescription;
     const explanation = explainPrescription(p);
     const params: Record<string, string | number> = { ...explanation.params };
-    for (const key of ['load', 'delta', 'cut'] as const) if (typeof params[key] === 'number') params[key] = kg(params[key]);
+    if (typeof params['load'] === 'number') params['load'] = loadText(params['load'], held);
+    for (const key of ['delta', 'cut'] as const) if (typeof params[key] === 'number') params[key] = kg(params[key]);
     // I2-04 : précisions (séance partielle ignorée, matériel à vérifier) dans la même phrase, lues d'un trait.
     const notes = explanationNotes(p).map((n) => tProgression(n.key, n.params));
     const sentence = [tProgression(EXPLAIN_KEYS[explanation.key], params), ...notes].join(' ');
-    const value = p.status === 'unsupported' ? tProgression('noProposal') : p.loadKg === null ? tProgression('toEnter') : tProgression('value', { load: kg(p.loadKg), reps: repsText(p.sets.map((s) => s.reps)) });
+    const value = p.status === 'unsupported' ? tProgression('noProposal') : p.loadKg === null ? tProgression('toEnter') : tProgression('value', { load: loadText(p.loadKg, held), reps: repsText(p.sets.map((s) => s.reps)) });
     const proposed = p.status === 'prescribed' && p.loadKg !== null;
     const alerts = constraintAlerts(p);
     const ramp = proposed && ownDecision === null && p.loadKg !== null ? rampFor(p.loadKg) : [];
@@ -358,7 +363,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
               ? tProgression('refused')
               : ownDecision.accepted
                 ? tProgression('accepted')
-                : tProgression('modified', { load: kg(ownDecision.loadKg), reps: chosenRepsText(ownDecision.reps) })}
+                : tProgression('modified', { load: loadText(ownDecision.loadKg, held), reps: chosenRepsText(ownDecision.reps) })}
           </p>
         ) : proposed && p.loadKg !== null && editing === null ? (
           <>
@@ -375,7 +380,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
             </div>
             {ramp.length > 0 ? (
               <div className="ct-progression__warmup">
-                <p className="ct-progression__sentence ct-session__num">{tProgression('warmupPreview', { ramp: rampText(ramp) })}</p>
+                <p className="ct-progression__sentence ct-session__num">{tProgression('warmupPreview', { ramp: rampText(ramp, held) })}</p>
                 <p className="ct-progression__hint">{tProgression('warmupHint')}</p>
               </div>
             ) : null}
@@ -386,7 +391,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
                 {options.map((o) => {
                   const e = explainOption(o, p.activeConfig);
                   const chosen = o.loadKg !== null && o.reps !== null ? { loadKg: o.loadKg, reps: o.reps } : null;
-                  const text = tProgression(OPTION_KEYS[e.key], { ...e.params, value: chosen === null ? '' : tProgression('value', { load: kg(chosen.loadKg), reps: repsText(chosen.reps) }) });
+                  const text = tProgression(OPTION_KEYS[e.key], { ...e.params, value: chosen === null ? '' : tProgression('value', { load: loadText(chosen.loadKg, held), reps: repsText(chosen.reps) }) });
                   return (
                     <div key={o.kind} className="ct-progression__option">
                       <p className="ct-progression__sentence">{text}</p>
@@ -417,7 +422,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         {editing !== null && ownDecision === null ? (
           <div className="ct-progression__edit">
             <label className="ct-progression__field">
-              <span className="ct-training__label">{tProgression('editLoad')}</span>
+              <span className="ct-training__label">{tProgression(held === 2 ? 'editLoadPair' : 'editLoad')}</span>
               <input
                 ref={editLoad}
                 className="ct-session__input"

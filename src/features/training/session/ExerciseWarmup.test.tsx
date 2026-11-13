@@ -174,8 +174,9 @@ describe('premier exercice composé du pattern seulement (critères 2 et 5)', ()
     await seedCurrent([BENCH_DB]);
     openSession();
     const p = await proposal(BENCH_DB);
-    expect(await within(p).findByText('24 kg × 8 · 8 · 8')).toBeInTheDocument();
-    expect(within(p).getByText('Échauffement ajouté en acceptant : 8 kg × 8 · 14 kg × 5 · 18 kg × 2.')).toBeInTheDocument();
+    // ERGO-02 (D-261) : développé couché aux haltères, deux haltères : charge affichée « 2 × 24 kg », valeurs inchangées (un haltère).
+    expect(await within(p).findByText('2 × 24 kg × 8 · 8 · 8')).toBeInTheDocument();
+    expect(within(p).getByText('Échauffement ajouté en acceptant : 2 × 8 kg × 8 · 2 × 14 kg × 5 · 2 × 18 kg × 2.')).toBeInTheDocument();
   });
 });
 

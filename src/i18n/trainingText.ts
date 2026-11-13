@@ -34,6 +34,9 @@ export function formatClock(ms: number): string {
 /** Jour d'une séance passée : « 26 octobre » (heure locale). */
 export const formatDay = (iso: string): string => new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
 
+/** ERGO-02 : jour court d'une séance passée, « ven. 30 oct. » (heure locale), comme la fiche de l'aperçu. */
+export const formatShortDay = (iso: string): string => new Date(iso).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+
 /**
  * Volume en kg, à la française : séparateur de milliers fine insécable, virgule décimale, au dixième (1417.5 → « 1 417,5 », 1000 → « 1 000 »).
  */

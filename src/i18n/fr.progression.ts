@@ -8,7 +8,10 @@ export const progressionFr = {
   loadError: 'Proposition indisponible : la séance continue sans elle.',
   toEnter: 'À saisir',
   noProposal: 'Pas de proposition',
-  value: '{load} kg × {reps}',
+  value: '{load} × {reps}',
+  /** ERGO-02 (D-261) : charge affichée ; deux haltères « 2 × 26 kg », {load} est celle d'un haltère. */
+  loadPair: '2 × {load} kg',
+  loadSingle: '{load} kg',
   repsJoin: ' · ',
   confidence: 'Confiance {percent} % ({band})',
   // I4-08 : RIR cible de la séance proposée (semaine du cycle).
@@ -20,7 +23,7 @@ export const progressionFr = {
   // Une phrase par raison principale (explain.ts).
   explainToEnter: 'Aucune séance de référence : saisis la charge, la proposition viendra ensuite.',
   explainUnsupported: 'Pas de charge proposée pour ce type d’exercice : saisis tes valeurs.',
-  explainDecision: 'Ta dernière décision : {load} kg, reprise telle quelle.',
+  explainDecision: 'Ta dernière décision : {load}, reprise telle quelle.',
   explainIncrease: '+{delta} kg : {sets} × {reps} atteint la dernière fois.',
   explainIncreaseUnknownStep: '+{delta} kg (cran supposé, matériel à vérifier) : {sets} × {reps} atteint la dernière fois.',
   explainRepLadder: 'Même charge, une répétition de plus sur la série {set}.',
@@ -31,7 +34,7 @@ export const progressionFr = {
   explainExtraRepMax: 'Même charge, une répétition de plus sur la série {set} : charge maximale du matériel.',
   explainPosition: '−{delta} kg (−{cut} %) : {rank}ᵉ exercice de ce muscle dans la séance, la charge est plus basse que pour un premier exercice.',
   explainPositionHeld: 'Même charge : {rank}ᵉ exercice de ce muscle dans la séance, la hausse est absorbée par la décote de position.',
-  explainOutlierHold: '{load} kg, bien au-dessus de tes séances précédentes : même charge, une répétition de plus sur la série {set}. Vérifie ta saisie ; la progression reprendra après une seconde séance à cette charge.',
+  explainOutlierHold: '{load}, bien au-dessus de tes séances précédentes : même charge, une répétition de plus sur la série {set}. Vérifie ta saisie ; la progression reprendra après une seconde séance à cette charge.',
   // Contraintes (I2-02) : maintien ou réduction, jamais imposés.
   explainFatigue: 'Même charge, mêmes répétitions : plus de 20 % de répétitions en moins qu’à la dernière séance à cette charge.',
   explainInactivity: '−{delta} kg (−{cut} %) : reprise après une pause de 3 semaines ou plus sur ce muscle.',
@@ -73,6 +76,7 @@ export const progressionFr = {
   refuse: 'Refuser',
   decisionHint: 'Rien n’est rempli sans ton accord ; tes saisies l’emportent toujours.',
   editLoad: 'Charge proposée (kg)',
+  editLoadPair: 'Charge proposée par haltère (kg)',
   editReps: 'Répétitions proposées',
   save: 'Enregistrer',
   cancel: 'Annuler',
@@ -80,10 +84,10 @@ export const progressionFr = {
   writeError: 'Décision non enregistrée : réessaie.',
   accepted: 'Proposition acceptée.',
   refused: 'Proposition refusée : tu saisis toi-même.',
-  modified: 'Valeurs retenues : {load} kg × {reps}.',
+  modified: 'Valeurs retenues : {load} × {reps}.',
   // I2-03 (§ 13.8) : rampe d'échauffement annoncée avant la décision, insérée avec la charge retenue.
   warmupPreview: 'Échauffement ajouté en acceptant : {ramp}.',
-  warmupStep: '{load} kg × {reps}',
+  warmupStep: '{load} × {reps}',
   warmupJoin: ' · ',
   warmupHint: 'Séries facultatives, hors statistiques ; recalculées sur ta charge si tu la modifies.',
   difficultyTitle: 'Ressenti de l’exercice',

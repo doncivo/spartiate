@@ -1,0 +1,222 @@
+/*
+ * ERGO-02 : fiche exercice selon l'aperçu (docs/maquettes/propositions/esthetique-2026-11-13/Fiche-apres, PC-Fiche-apres). Jetons seulement,
+ * aucune couleur en dur ; tailles en rem par les jetons, aucune hauteur fixe sur du texte (Dynamic Type « Très grand »).
+ */
+
+/* PC : bibliothèque à gauche, fiche à droite. */
+.ct-training__library-panes {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  gap: var(--ct-space-7);
+  align-items: start;
+  min-width: 0;
+}
+
+.ct-training__library-list,
+.ct-training__library-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  min-width: 0;
+}
+
+.ct-training__library-list {
+  padding-inline-end: var(--ct-space-4);
+  border-inline-end: var(--ct-line);
+}
+
+/* Colonne étroite : filtres l'un sous l'autre, chacun à sa hauteur de contenu (0.7.1 point 5). */
+.ct-training-shell[data-layout='pc'] .ct-training__library-list .ct-training__filters {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.ct-training-shell[data-layout='pc'] .ct-training__library-list .ct-training__filters > .ct-training__field {
+  flex: 0 0 auto;
+}
+
+.ct-sheet {
+  gap: var(--ct-space-section);
+}
+
+.ct-sheet__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  min-width: 0;
+}
+
+.ct-sheet__title {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading);
+  font-weight: var(--ct-font-weight-semibold);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.ct-sheet__columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--ct-space-7);
+  align-items: start;
+}
+
+.ct-sheet__column,
+.ct-sheet__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+}
+
+.ct-sheet__section .ct-section-title,
+.ct-sheet__figure .ct-section-title,
+.ct-sheet__trend .ct-section-title {
+  margin: 0;
+}
+
+.ct-sheet__figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ct-space-4);
+}
+
+.ct-sheet__figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  min-width: 0;
+}
+
+.ct-sheet__figure--side {
+  padding-inline-start: var(--ct-space-4);
+  border-inline-start: var(--ct-line);
+}
+
+.ct-sheet__record,
+.ct-sheet__none {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading-sm);
+  font-weight: var(--ct-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.ct-sheet__none {
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-sheet__trend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  min-width: 0;
+}
+
+.ct-sheet__trend-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--ct-space-2);
+}
+
+.ct-sheet__delta {
+  color: var(--ct-color-text-secondary);
+  font-size: var(--ct-font-size-sm);
+  font-weight: var(--ct-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-sheet__delta--up {
+  color: var(--ct-color-achieved-text);
+}
+
+.ct-sheet__chart-box {
+  margin: 0;
+  min-width: 0;
+}
+
+.ct-sheet__chart {
+  display: block;
+  inline-size: 100%;
+  block-size: 6rem;
+}
+
+.ct-sheet__chart-base {
+  stroke: var(--ct-color-border);
+}
+
+.ct-sheet__chart-line {
+  fill: none;
+  stroke: var(--ct-color-bronze);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ct-sheet__chart-dot {
+  fill: var(--ct-color-bronze);
+}
+
+.ct-sheet__sessions,
+.ct-sheet__muscles {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.ct-sheet__session {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, auto) minmax(0, 1fr) auto;
+  gap: var(--ct-space-3);
+  align-items: baseline;
+  padding-block: var(--ct-space-2);
+  border-top: var(--ct-line);
+  font-size: var(--ct-font-size-sm);
+}
+
+.ct-sheet__session:first-child {
+  border-top: 0;
+}
+
+.ct-sheet__session-sets {
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.ct-sheet__session-feel {
+  text-align: end;
+}
+
+.ct-sheet__muscles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+}
+
+.ct-sheet__muscle {
+  display: grid;
+  grid-template-columns: minmax(6rem, 8rem) minmax(0, 1fr) auto;
+  gap: var(--ct-space-3);
+  align-items: center;
+  font-size: var(--ct-font-size-sm);
+}
+
+.ct-sheet__bar {
+  display: block;
+  block-size: 4px;
+  border-radius: var(--ct-radius-sm);
+  background: var(--ct-color-surface-raised);
+  overflow: hidden;
+}
+
+.ct-sheet__bar-fill {
+  display: block;
+  block-size: 100%;
+  background: var(--ct-color-bronze);
+}
