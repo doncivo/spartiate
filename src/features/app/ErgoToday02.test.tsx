@@ -1,5 +1,5 @@
 import { act, cleanup, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { RoutineInput } from '../../domain/training';
 import type { DeviceId, LocalDate, LocalTime } from '../../domain/types';
@@ -44,6 +44,10 @@ async function closeWith(loadKg: number): Promise<void> {
   await db.data.transaction(async (repos) => (await repos.workouts()).close(w.id));
 }
 
+// Premier import du bloc (instantané de Nutrition, catalogue, records) hors de la mesure des attentes.
+beforeAll(async () => {
+  await import('./TodayPcSide');
+}, 30_000);
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
   viewport();
@@ -59,7 +63,7 @@ afterEach(async () => {
 describe('ERGO-02 : Aujourd’hui sur PC, colonne droite', () => {
   it('données vides : semaine et records sans faux zéro, dépense et records en « — » avec leur raison', async () => {
     open();
-    const week = await screen.findByRole('region', { name: 'Cette semaine' });
+    const week = await screen.findByRole('region', { name: 'Cette semaine' }, { timeout: 8000 });
     expect(within(week).getAllByRole('listitem')).toHaveLength(7);
     const records = screen.getByRole('region', { name: 'Derniers records' });
     expect(within(records).getByText('pas encore de record')).toBeInTheDocument();
@@ -78,7 +82,7 @@ describe('ERGO-02 : Aujourd’hui sur PC, colonne droite', () => {
     await closeWith(85);
     open();
     const macros = await screen.findByRole('list', { name: 'Macros du jour' });
-    const text = (macros.textContent ?? '').replace(/[  ]/g, ' ');
+    const text = (macros.textContent ?? '').replace(/\s/g, ' ');
     expect(text).toContain('Protéines 96 / 170 g');
     expect(text).toContain('Glucides 150 / 261 g');
     expect(text).toContain('Lipides 48 / 75 g');
@@ -102,6 +106,7 @@ describe('ERGO-02 : Aujourd’hui sur PC, colonne droite', () => {
   it('Récupération en tête de la colonne gauche, puis la séance du jour', async () => {
     const { container } = open();
     await screen.findByRole('region', { name: 'Cette semaine' });
+    await screen.findByText('Aucun résumé de récupération reçu de l’iPhone.');
     const left = container.querySelector('.ct-today__col');
     expect(left?.firstElementChild?.querySelector('h2')).toHaveTextContent('Récupération');
     expect(left?.querySelector('aside')).toBeNull();
