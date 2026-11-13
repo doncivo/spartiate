@@ -27,4 +27,9 @@ export const todayPcFr = {
   weekCountOne: '1 séance',
   recordsEyebrow: 'Derniers records',
   recordsMissing: 'pas encore de record',
+  /** Raisons des données manquantes de la carte « État » (PC). */
+  signatureMissing: 'lue sur l’iPhone',
+  healthKitMissing: 'iPhone seulement',
+  lastExportMissing: 'aucun export noté',
+  backupUnknown: 'non disponible ici',
 } as const;

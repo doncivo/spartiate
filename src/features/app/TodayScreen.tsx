@@ -1,5 +1,5 @@
 import { Check, ChevronRight } from 'lucide-react';
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { todayLocal } from '../../domain/clock';
 import type { BodyWeight, Profile } from '../../domain/bodyProfile';
 import { isTrendLearning } from '../../domain/nutrition/trendLearning';
@@ -10,7 +10,6 @@ import { Button, Icon, useLayout } from '../../ui';
 import { useSyncedData } from '../sync/remoteChanges';
 import { statusLine } from '../sync/syncText';
 import { useAppContainer } from './AppContainerContext';
-import { MissingValue } from '../../ui/MissingValue';
 import { NutritionRemainingCard, RecoveryToday, SupplementsTodayCard, TodayPcSide, TodaySessionCard } from './lazyScreens';
 import { useNavigationStore, type Route } from './navigation';
 import './TodayScreen.css';
@@ -101,24 +100,6 @@ function WeightCard({ weights, nowMs, showActions }: { readonly weights: readonl
   );
 }
 
-function KeyValueCard({ id, title, rows, small = false }: { readonly id: string; readonly title: string; readonly rows: readonly (readonly [string, ReactNode])[]; readonly small?: boolean }) {
-  return (
-    <section className={small ? 'ct-today__card ct-today__kv ct-today__state' : 'ct-today__card ct-today__kv'} aria-labelledby={id}>
-      <h2 id={id} className="ct-today__eyebrow ct-section-title">
-        {title}
-      </h2>
-      <dl className="ct-today__rows">
-        {rows.map(([label, value]) => (
-          <div key={label} className="ct-today__row ct-today__row--kv">
-            <dt>{label}</dt>
-            <dd>{value}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  );
-}
-
 interface Step {
   readonly done: boolean;
   readonly title: TodayTextKey;
@@ -192,7 +173,6 @@ export function TodayScreen() {
   const { profile, weights, backupMs } = loaded;
 
   if (layout === 'pc') {
-    const backup = backupMs === undefined ? <MissingValue reason={tToday('backupUnknown')} /> : backupMs === null ? tToday('never') : formatStamp(new Date(backupMs).toISOString(), nowMs);
     return (
       <section className="ct-section-notice ct-today ct-today--pc" aria-labelledby="ct-section-notice-title">
         {title}
@@ -206,19 +186,8 @@ export function TodayScreen() {
           </div>
           <aside className="ct-today__col">
             <NutritionRemainingCard />
-            <TodayPcSide weight={<WeightCard weights={weights} nowMs={nowMs} showActions />} />
-            <KeyValueCard
-              small
-              id="ct-today-state"
-              title={tToday('stateEyebrow')}
-              rows={[
-                [tToday('sync'), syncText ?? tToday('notConfigured')],
-                [tToday('signature'), <MissingValue key="signature" reason={tToday('signatureMissing')} />],
-                [tToday('healthKit'), <MissingValue key="healthKit" reason={tToday('healthKitMissing')} />],
-                [tToday('backup'), backup],
-                [tToday('lastExport'), <MissingValue key="lastExport" reason={tToday('lastExportMissing')} />],
-              ]}
-            />
+            {/* La carte « État » (petite, en dernier) est rendue par le bloc à la demande, avec ses raisons de données manquantes. */}
+            <TodayPcSide weight={<WeightCard weights={weights} nowMs={nowMs} showActions />} state={{ sync: syncText ?? tToday('notConfigured'), backupMs, nowMs }} />
           </aside>
         </div>
       </section>
