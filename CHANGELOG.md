@@ -2,6 +2,16 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.22.2
+
+Aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.
+
+- **Bouton « Pris » sur le rappel de compléments (iPhone)** : appui long sur la notification, puis « Pris » ; les prises de cette heure sont cochées sans ouvrir l'app. Elles apparaissent cochées à la prochaine ouverture, avec le message « Prise cochée depuis la notification. », puis sur le PC après la synchro.
+- **Deux appuis, une seule prise** : une action répétée ou rejouée ne coche rien de plus ; une prise que tu as décochée ensuite n'est pas recochée.
+- **Écran verrouillé** : toujours aucun nom de complément, seulement « Compléments », « N prises à cocher » et le bouton « Pris ».
+- **Appui sur la notification** : ouvre Aujourd'hui, comme avant, sans rien cocher.
+- **À vérifier** : le bouton sur ton iPhone, app en arrière-plan et app fermée (H-36) ; si rien n'est coché app fermée, dis-le : l'action ouvrira l'app à la place.
+
 ## 0.22.0
 
 Aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.
