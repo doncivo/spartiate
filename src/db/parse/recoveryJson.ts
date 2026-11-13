@@ -11,6 +11,7 @@ const CONTRIBUTOR_KEYS: readonly Contributor['key'][] = ['hrv', 'resting_hr', 's
 /** Doit rester égale à `RecoveryExplanationKey` (le `satisfies` refuse une clé inconnue du domaine ; le test de la base compare les deux). */
 export const EXPLANATION_KEYS = [
   'exertion_cardio_not_counted',
+  'exertion_cardio_srpe',
   'sleep_short',
   'sleep_debt',
   'baseline_outliers_excluded',
