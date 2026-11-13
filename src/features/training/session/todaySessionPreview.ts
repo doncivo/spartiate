@@ -1,5 +1,7 @@
 import { DEFAULT_GENERATION_CONFIG } from '../../../domain/training/config';
 import { estimateSessionSec } from '../../../domain/training/generateSession';
+import { dumbbellsHeld } from '../../../domain/training/dumbbellPair';
+import { loadGrid } from '../../../domain/training/loadGrid';
 import { positionRanks } from '../../../domain/training/positionRank';
 import { prescribe } from '../../../domain/training/prescribe';
 import { prescriptionInputOf, routineLineTarget } from '../../../domain/training/prescriptionInput';
@@ -25,16 +27,19 @@ export interface TodaySessionPreview {
   readonly minutes: number;
   /** Charge proposée par identifiant de ligne du jour (lignes demandées seulement) ; null : inconnue. */
   readonly loads: ReadonlyMap<string, number | null>;
+  /** ERGO-02 (D-261) : haltères tenus par ligne (2 : « 2 × 26 kg », 1 : « 26 kg », null : la charge ne vient pas des haltères) ; affichage seulement. */
+  readonly held: ReadonlyMap<string, 1 | 2 | null>;
 }
 
 export async function loadTodaySessionPreview(access: DataAccess, day: RoutineDay, lineIds: readonly string[], options: { readonly nowMs: number; readonly deload: boolean }): Promise<TodaySessionPreview> {
   const minutes = Math.round(estimateSessionSec(day.exercises, DEFAULT_GENERATION_CONFIG) / 60);
   const loads = new Map<string, number | null>();
+  const held = new Map<string, 1 | 2 | null>();
   let data: Awaited<ReturnType<typeof readTrainingData>>;
   try {
     data = await readTrainingData(access);
   } catch {
-    return { minutes, loads };
+    return { minutes, loads, held };
   }
   const exerciseOf = (id: string): Exercise | undefined => data.content.catalog.get(id) ?? data.allCustoms.find((c) => c.id === id);
   const musclesOf = (id: string) => exerciseOf(id)?.muscles ?? [];
@@ -46,6 +51,7 @@ export async function loadTodaySessionPreview(access: DataAccess, day: RoutineDa
       .filter((l) => lineIds.includes(l.id))
       .map(async (line) => {
         const exercise = exerciseOf(line.exerciseId);
+        held.set(line.id, exercise === undefined ? null : dumbbellsHeld(exercise, loadGrid(exercise.equipment, data.active)?.source));
         try {
           const context = await loadPrescriptionContext(access, line.exerciseId, exercise, musclesOf);
           const p = prescribe(
@@ -67,5 +73,5 @@ export async function loadTodaySessionPreview(access: DataAccess, day: RoutineDa
         }
       }),
   );
-  return { minutes, loads };
+  return { minutes, loads, held };
 }

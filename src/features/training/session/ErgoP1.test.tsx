@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { RoutineInput } from '../../../domain/training';
 import { DEFAULT_GENERATION_CONFIG } from '../../../domain/training/config';
@@ -51,11 +51,14 @@ beforeAll(async () => {
   await import('./todaySessionPreview');
 });
 beforeEach(async () => {
+  // ERGO-02 : la carte a une disposition PC (tableau) ; ces vérifications portent sur l'iPhone, viewport étroit déclaré (jsdom : 1 024 px = PC).
+  vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
   useNavigationStore.setState(INITIAL_NAVIGATION);
   db = await openBaseDb(DEVICE, '2026-11-10T07:00:00.000Z');
 });
 afterEach(async () => {
   cleanup();
+  vi.unstubAllGlobals();
   await db.close();
 });
 
