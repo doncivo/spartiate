@@ -107,6 +107,7 @@ function SettingsScreenMobile() {
         <SyncSettingsSection heading={false} />
         <BackupRow />
         <LinkRow label={tExportImport('row')} onClick={() => navigate({ tab: 'more', screen: 'exportimport' })} />
+        <LinkRow label={tPlus('resetRow')} onClick={() => navigate({ tab: 'more', screen: 'reset' })} />
       </div>
       {hasIphoneRows && (
         <>
