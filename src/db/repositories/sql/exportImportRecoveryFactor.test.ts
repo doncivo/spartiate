@@ -77,9 +77,9 @@ describe('export / import du journal de facteurs (I6-01)', () => {
     expect(await count(db)).toBe(0);
   });
 
-  it('archive de schéma 16 : refusée (future-version)', async () => {
+  it('archive de schéma 17 : refusée (future-version)', async () => {
     const db = await open(A);
-    await expect(parse(await read(db), 16)).rejects.toMatchObject({ code: 'future-version' });
+    await expect(parse(await read(db), 17)).rejects.toMatchObject({ code: 'future-version' });
   });
 
   it('ligne au JSON illisible, au code non textuel ou à l’identifiant faux : refusée à l’import, rien n’est écrit', async () => {
