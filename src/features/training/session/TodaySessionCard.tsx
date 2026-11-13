@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { summarizeSets, type RoutineDay, type WorkoutWithSets } from '../../../domain/training';
 import { nextProgramDay } from '../../../domain/training/programDay';
-import { formatNumber, tTraining } from '../../../i18n/trainingText';
-import { Button } from '../../../ui';
+import { formatExerciseLoad, tTraining } from '../../../i18n/trainingText';
+import { Button, useLayout } from '../../../ui';
+import { MissingValue } from '../../../ui/MissingValue';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { loadCurrentCycle, localDayOf } from '../cycle/currentCycle';
@@ -41,6 +42,7 @@ export function TodaySessionCard() {
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  const pc = useLayout() === 'pc';
 
   useEffect(() => {
     let live = true;
@@ -62,8 +64,9 @@ export function TodaySessionCard() {
       const dayId = nextProgramDay(routine.days, closed, routine.id);
       const day = routine.days.find((d) => d.id === dayId);
       if (day === undefined) return null;
+      // ERGO-02 : sur PC le tableau montre tous les exercices ; l'iPhone en garde trois.
       const shown = byPosition(day)
-        .slice(0, SHOWN)
+        .slice(0, pc ? day.exercises.length : SHOWN)
         .map((l) => l.id);
       // Semaine de deload du cycle : la séance lancée depuis la routine du cycle propose le deload par défaut (I3-02), l'aperçu aussi.
       const deload = cycle.state.kind === 'deload';
@@ -73,7 +76,7 @@ export function TodaySessionCard() {
     return () => {
       live = false;
     };
-  }, [data, clock]);
+  }, [data, clock, pc]);
 
   if (load.status !== 'ready') return null;
   const { open, program } = load;
@@ -94,6 +97,8 @@ export function TodaySessionCard() {
     const { day, preview } = program;
     const n = day.exercises.length;
     const more = n - SHOWN;
+    const loadOf = (id: string, kg: number | null): string | null => (kg === null ? null : formatExerciseLoad(kg, preview?.held.get(id) ?? null));
+    const targetOf = (l: RoutineDay['exercises'][number]): string => tTraining(l.repMin === l.repMax ? 'sessionTargetSame' : 'sessionTarget', { sets: l.sets, min: l.repMin, max: l.repMax });
     const meta =
       preview === null
         ? n === 1
@@ -112,6 +117,28 @@ export function TodaySessionCard() {
             <p className="ct-session-card__name">{day.name}</p>
             <p className="ct-today__muted ct-session-card__meta">{meta}</p>
           </div>
+          {pc ? (
+            <table className="ct-session-card__table" aria-label={tTraining('sessionTodayExercises')}>
+              <thead>
+                <tr>
+                  <th scope="col">{tTraining('sessionTableRank')}</th>
+                  <th scope="col">{tTraining('sessionTableExercise')}</th>
+                  <th scope="col">{tTraining('sessionTableTarget')}</th>
+                  <th scope="col" className="ct-session-card__num">{tTraining('sessionTableLoad')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {byPosition(day).map((line, index) => (
+                  <tr key={line.id}>
+                    <td className="ct-session-card__rank">{index + 1}</td>
+                    <td>{line.exerciseName}</td>
+                    <td className="ct-session-card__rank">{targetOf(line)}</td>
+                    <td className="ct-session-card__num ct-session-card__load">{loadOf(line.id, preview?.loads.get(line.id) ?? null) ?? <MissingValue reason={tTraining('loadToEnter')} />}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
           <ul className="ct-session-card__list" aria-label={tTraining('sessionTodayExercises')}>
             {byPosition(day)
               .slice(0, SHOWN)
@@ -120,12 +147,13 @@ export function TodaySessionCard() {
                 return (
                   <li key={line.id} className="ct-session-card__row">
                     <span className="ct-session-card__exercise">{line.exerciseName}</span>
-                    {loadKg === null ? null : <b className="ct-session-card__load">{tTraining('sessionTodayLoad', { load: formatNumber(loadKg) })}</b>}
+                    {loadKg === null ? null : <b className="ct-session-card__load">{loadOf(line.id, loadKg)}</b>}
                   </li>
                 );
               })}
           </ul>
-          {more > 0 ? <p className="ct-today__muted ct-session-card__more">{more === 1 ? tTraining('sessionTodayMoreOne') : tTraining('sessionTodayMore', { n: more })}</p> : null}
+          )}
+          {!pc && more > 0 ? <p className="ct-today__muted ct-session-card__more">{more === 1 ? tTraining('sessionTodayMoreOne') : tTraining('sessionTodayMore', { n: more })}</p> : null}
         </div>
         {failed ? (
           <p className="ct-training__error" role="alert">
@@ -133,7 +161,7 @@ export function TodaySessionCard() {
           </p>
         ) : null}
         <Button fullWidth disabled={busy} onClick={() => void launch(program)}>
-          {tTraining('sessionLaunch')}
+          {pc ? tTraining('sessionEnterHere') : tTraining('sessionLaunch')}
         </Button>
         <Button fullWidth variant="secondary" disabled={busy} onClick={() => navigate({ tab: 'training', screen: 'session' })}>
           {tTraining('sessionOther')}

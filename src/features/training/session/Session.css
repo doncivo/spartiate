@@ -386,3 +386,47 @@
 .ct-training-shell[data-layout='pc'] .ct-training--session {
   max-width: 900px;
 }
+
+/* ERGO-02 (PC-Aujourdhui-apres.dc.html) : séance du jour en tableau sur PC (rang, exercice, cible, charge en bronze). */
+.ct-session-card__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ct-font-size-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-session-card__table th {
+  padding: var(--ct-space-1) var(--ct-space-2) var(--ct-space-1) 0;
+  color: var(--ct-color-text-secondary);
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.ct-session-card__table td {
+  padding: var(--ct-space-2) var(--ct-space-2) var(--ct-space-2) 0;
+  border-top: var(--ct-line);
+  overflow-wrap: anywhere;
+}
+
+.ct-session-card__rank {
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-session-card__table .ct-session-card__num {
+  padding-right: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ERGO-02 (D-261) : charge de deux haltères, « 2 × 26 kg », à côté de la saisie (charge d'un haltère). */
+.ct-session__pair {
+  align-self: end;
+  padding-block: var(--ct-space-2);
+  color: var(--ct-color-bronze);
+  font-size: var(--ct-font-size-item);
+  font-weight: var(--ct-font-weight-semibold);
+  overflow-wrap: anywhere;
+}

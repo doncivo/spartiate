@@ -11,6 +11,10 @@ export function tTraining(key: TrainingTextKey, params?: Readonly<Record<string,
 /** Nombre affiché avec la virgule française : 2.5 → « 2,5 ». */
 export const formatNumber = (n: number): string => String(n).replace('.', ',');
 
+/** ERGO-02 (D-261) : charge d'exercice affichée, « 2 × 26 kg » pour deux haltères (`dumbbellsHeld` = 2), sinon « 26 kg ». */
+export const formatExerciseLoad = (kg: number, held: 1 | 2 | null): string =>
+  tTraining(held === 2 ? 'loadPair' : 'loadSingle', { load: formatNumber(kg) });
+
 /** Lecture d'un nombre saisi (virgule ou point) ; vide ou illisible → null. */
 export function parseNumber(text: string): number | null {
   const trimmed = text.trim().replace(',', '.');
@@ -29,6 +33,9 @@ export function formatClock(ms: number): string {
 
 /** Jour d'une séance passée : « 26 octobre » (heure locale). */
 export const formatDay = (iso: string): string => new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+
+/** ERGO-02 : jour court d'une séance passée, « ven. 30 oct. » (heure locale), comme la fiche de l'aperçu. */
+export const formatShortDay = (iso: string): string => new Date(iso).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
 
 /**
  * Volume en kg, à la française : séparateur de milliers fine insécable, virgule décimale, au dixième (1417.5 → « 1 417,5 », 1000 → « 1 000 »).
