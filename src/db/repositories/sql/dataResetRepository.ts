@@ -18,15 +18,34 @@ export function createDataResetRepository(db: SqlExecutor, stamper: WriteStamper
     return `COALESCE(${clock('created_at')}, ${clock('*')}, ${t.name}.hlc)`;
   };
 
-  /** Lignes d'une table parente absentes : leurs enfants partent avec elles (lien obligatoire ou non). */
-  const orphanClause = (t: SyncTable): string =>
-    t.parents
-      .filter((p) => catalogue.table(p.table) !== undefined)
-      .map((p) => {
-        const pt = catalogue.table(p.table) as SyncTable;
-        return ` OR (${t.name}.${p.column} IS NOT NULL AND NOT EXISTS (SELECT 1 FROM ${pt.name} p WHERE p.${pt.key} = ${t.name}.${p.column}))`;
-      })
-      .join('');
+  /** Paquets de paramètres liés (plafond de SQLite largement en dessous). */
+  const CHUNK = 400;
+  const chunks = (ids: readonly string[]): string[][] => {
+    const out: string[][] = [];
+    for (let i = 0; i < ids.length; i += CHUNK) out.push(ids.slice(i, i + CHUNK));
+    return out;
+  };
+  const marks = (n: number): string => Array.from({ length: n }, () => '?').join(', ');
+
+  /**
+   * Plan d'effacement, parents d'abord (ordre topologique du catalogue) : une ligne part si elle a été créée avant l'horizon, ou si un de ses parents
+   * part (un enfant créé après l'horizon sous un parent d'avant part avec lui, à toute profondeur).
+   */
+  async function plan(horizon: Hlc): Promise<Map<SyncTable, Set<string>>> {
+    const doomed = new Map<SyncTable, Set<string>>();
+    for (const t of catalogue.tables) {
+      if (t.name === DATA_RESET_TABLE) continue;
+      const ids = new Set((await db.select<{ id: string }>(`SELECT ${t.key} AS id FROM ${t.name} WHERE ${creationClock(t)} <= ?`, [horizon])).map((r) => r.id));
+      for (const p of t.parents) {
+        const pt = catalogue.table(p.table);
+        const parents = pt ? doomed.get(pt) : undefined;
+        if (!parents || parents.size === 0) continue;
+        for (const part of chunks([...parents])) for (const r of await db.select<{ id: string }>(`SELECT ${t.key} AS id FROM ${t.name} WHERE ${p.column} IN (${marks(part.length)})`, part)) ids.add(r.id);
+      }
+      doomed.set(t, ids);
+    }
+    return doomed;
+  }
 
   return {
     async horizon() {
@@ -47,18 +66,19 @@ export function createDataResetRepository(db: SqlExecutor, stamper: WriteStamper
     },
 
     async wipe(horizon) {
-      await db.execute('PRAGMA defer_foreign_keys = ON');
       let rows = 0;
       let tables = 0;
       const count = (n: number): void => {
         rows += n;
         if (n > 0) tables += 1;
       };
-      // Parents d'abord (ordre topologique du catalogue) : un enfant créé après l'horizon sous un parent effacé part avec lui.
-      for (const t of catalogue.tables) {
+      // Plan parents d'abord, suppression enfants d'abord : les clés étrangères restent valides à chaque instruction (aucun pragma, garde du plugin SQL).
+      const doomed = await plan(horizon);
+      for (const t of [...catalogue.tables].reverse()) {
         if (t.name === DATA_RESET_TABLE) continue;
-        const where = `${creationClock(t)} <= ?${orphanClause(t)}`;
-        count((await db.execute(`DELETE FROM ${t.name} WHERE ${where}`, [horizon])).rowsAffected);
+        let removed = 0;
+        for (const part of chunks([...(doomed.get(t) ?? [])])) removed += (await db.execute(`DELETE FROM ${t.name} WHERE ${t.key} IN (${marks(part.length)})`, part)).rowsAffected;
+        count(removed);
         const gone = `table_name = ? AND row_id NOT IN (SELECT ${t.key} FROM ${t.name})`;
         await db.execute(`DELETE FROM sync_field_clock WHERE ${gone}`, [t.name]);
         await db.execute(`DELETE FROM sync_outbox WHERE ${gone}`, [t.name]);
