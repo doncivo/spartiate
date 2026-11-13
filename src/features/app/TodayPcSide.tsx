@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import { todayLocal } from '../../domain/clock';
 import { personalRecords } from '../../domain/training/closure';
 import { dumbbellsHeld } from '../../domain/training/dumbbellPair';
@@ -106,7 +106,8 @@ export function TodayPcSide({ weight }: { readonly weight: ReactNode }) {
     };
   }, [data, clock, container, synced]);
 
-  if (load.status !== 'ready') return <>{weight}</>;
+  // La carte Poids garde sa clé d'un état à l'autre : elle n'est pas démontée quand la colonne finit de se lire (aucun clignotement).
+  if (load.status !== 'ready') return <Fragment key="weight">{weight}</Fragment>;
   const { snapshot, doneDays, records } = load;
   const today = snapshot.today;
   const day = snapshot.days.find((d) => d.date === today);
@@ -141,7 +142,7 @@ export function TodayPcSide({ weight }: { readonly weight: ReactNode }) {
           })}
         </ul>
       )}
-      {weight}
+      <Fragment key="weight">{weight}</Fragment>
       <section className="ct-today__card ct-today__card--flat" aria-labelledby="ct-today-spend">
         <h2 id="ct-today-spend" className="ct-today__eyebrow ct-section-title">
           {tToday('spendEyebrow')}
