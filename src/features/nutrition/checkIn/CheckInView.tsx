@@ -15,12 +15,15 @@ import {
   type Target,
 } from '../../../domain/nutrition';
 import { addDays } from '../../../domain/localDate';
-import { formatDayLong, formatDayMonth, formatInt, formatSigned, tNutrition, type NutritionTextKey } from '../../../i18n/nutritionText';
+import { formatDayLong, formatDayMonth, formatInt, formatKgDelta, formatSigned, formatTenth, tNutrition, type NutritionTextKey } from '../../../i18n/nutritionText';
 import { Button } from '../../../ui';
+import { MissingValue } from '../../../ui/MissingValue';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { TargetForm, type TargetSaveResult } from '../strategy/TargetForm';
 import { recordCheckInDecision, tdeeAt, type NutritionSnapshot } from '../useCases';
+import { weekSummary } from './weekSummary';
+import './CheckIn.css';
 
 const REASON_KEY: Readonly<Record<CheckInReason, NutritionTextKey | null>> = {
   'manual-style': null,
@@ -44,32 +47,65 @@ function goalText(goal: Goal): string {
   return tNutrition(goal.kind === 'loss' ? 'goalLossShort' : 'goalGainShort', { n: String(goal.weeklyRateKg).replace('.', ',') });
 }
 
+/** Objectif en une ligne du héros : « objectif maintien », « objectif −0,40 » (kg par semaine). */
+function heroGoalText(goal: Goal): string {
+  if (goal.kind === 'maintain') return tNutrition('checkInGoalMaintain');
+  return tNutrition('checkInGoalRate', { n: formatKgDelta(goal.kind === 'loss' ? -goal.weeklyRateKg : goal.weeklyRateKg) });
+}
+
 function alertText(alert: CheckInAlert): string {
   if (alert.kind === 'below-floor') return tNutrition('checkInAlertFloor', { kcal: formatInt(alert.currentKcal) });
   if (alert.kind === 'target-vs-tdee') return tNutrition('checkInAlertRatio', { pct: formatSigned(Math.round(alert.ratio * 100)) });
   return tNutrition('checkInAlertMacros', { min: formatInt(alert.minimumKcal), kcal: formatInt(alert.kcal) });
 }
 
-function ProposalLines({ proposal }: { readonly proposal: Proposal }) {
+/** Tableau Actuel / Proposé / écart (CheckIn-apres) : mêmes valeurs que la proposition du moteur ; sans cible en vigueur, « — » et sa raison. */
+function ProposalTable({ proposal }: { readonly proposal: Proposal }) {
   const previous = proposal.previousTarget;
-  const rows: readonly (readonly [string, number, number | undefined, string])[] = [
-    [tNutrition('calories'), proposal.target.kcal, previous?.kcal, 'kcal'],
-    [tNutrition('protein'), proposal.target.proteinG, previous?.proteinG, 'g'],
-    [tNutrition('carbs'), proposal.target.carbG, previous?.carbG, 'g'],
-    [tNutrition('fat'), proposal.target.fatG, previous?.fatG, 'g'],
+  const perKg = (g: number): string => tNutrition('checkInProteinPerKg', { n: formatTenth(g / proposal.trace.weightKg) });
+  const rows: readonly { readonly label: string; readonly note?: string; readonly to: number; readonly from: number | undefined; readonly unit: string }[] = [
+    { label: tNutrition('calories'), to: proposal.target.kcal, from: previous?.kcal, unit: '' },
+    { label: tNutrition('protein'), note: perKg(proposal.target.proteinG), to: proposal.target.proteinG, from: previous?.proteinG, unit: ' g' },
+    { label: tNutrition('carbs'), to: proposal.target.carbG, from: previous?.carbG, unit: ' g' },
+    { label: tNutrition('fat'), note: tNutrition('checkInFatMin'), to: proposal.target.fatG, from: previous?.fatG, unit: ' g' },
   ];
   return (
-    <ul className="ct-nutrition__list">
-      {rows.map(([label, to, from, unit]) => (
-        <li key={label} className="ct-nutrition__num">
-          {from === undefined
-            ? tNutrition('proposalNew', { label, to: `${formatInt(to)} ${unit}` })
-            : from === to
-              ? tNutrition('proposalLineSame', { label, value: `${formatInt(to)} ${unit}` })
-              : tNutrition('proposalLine', { label, from: formatInt(from), to: `${formatInt(to)} ${unit}` })}
-        </li>
-      ))}
-    </ul>
+    <table className="ct-checkin__table" aria-label={tNutrition('proposalTitle')}>
+      <thead>
+        <tr>
+          <td />
+          <th scope="col">{tNutrition('checkInTableCurrent')}</th>
+          <th scope="col">{tNutrition('checkInTableProposed')}</th>
+          <th scope="col">{tNutrition('checkInTableDelta')}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, index) => (
+          <tr key={row.label}>
+            <th scope="row">
+              {row.label}
+              {row.note ? <span className="ct-checkin__note">{row.note}</span> : null}
+            </th>
+            <td className="ct-checkin__current">
+              {row.from === undefined ? (
+                index === 0 ? (
+                  <MissingValue reason={tNutrition('checkInNoCurrent')} />
+                ) : (
+                  <>
+                    <span aria-hidden="true">—</span>
+                    <span className="ct-visually-hidden">{tNutrition('checkInNoCurrent')}</span>
+                  </>
+                )
+              ) : (
+                `${formatInt(row.from)}${row.unit}`
+              )}
+            </td>
+            <td className={index === 0 ? 'ct-checkin__proposed ct-checkin__proposed--main' : 'ct-checkin__proposed'}>{`${formatInt(row.to)}${row.unit}`}</td>
+            <td className="ct-checkin__delta">{row.from === undefined ? '—' : row.from === row.to ? tNutrition('checkInDeltaSame') : formatSigned(row.to - row.from)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
@@ -150,13 +186,13 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
       ? resolveCheckIn({ proposal, currentTarget: current, weightKg: tdee.weightKg, lowFloorConfirmed: true, decision: { action: 'customize', target: preview } }).warnings
       : [];
 
+  const summary = useMemo(() => weekSummary({ trend: snapshot.trend, days: snapshot.days, weekEnd: period.weekEnd }), [snapshot.trend, snapshot.days, period.weekEnd]);
+  const styleName = tNutrition(prefs.style === 'guided' ? 'styleGuided' : prefs.style === 'collaborative' ? 'styleCollaborative' : 'styleManual').toLocaleLowerCase('fr');
   const header = (
-    <>
-      <h2 className="ct-nutrition__subtitle ct-section-title">{tNutrition('checkInTitle')}</h2>
-      <p className="ct-nutrition__muted">
-        {tNutrition('checkInPeriod', { from: formatDayMonth(addDays(period.weekEnd, -6)), to: formatDayMonth(period.weekEnd), date: formatDayMonth(period.checkInDate) })}
-      </p>
-    </>
+    <header className="ct-checkin__header">
+      <p className="ct-nutrition__eyebrow">{tNutrition('checkInEyebrow', { date: formatDayMonth(period.checkInDate), style: styleName })}</p>
+      <h2 className="ct-checkin__title">{tNutrition('checkInWeekOf', { from: formatDayMonth(addDays(period.weekEnd, -6)) })}</h2>
+    </header>
   );
 
   if (first.first && prefs.style !== 'manual') {
@@ -188,9 +224,11 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
     return (
       <section className="ct-nutrition__card ct-nutrition__checkin ct-flat" aria-label={tNutrition('checkInTitle')}>
         {header}
-        <p className="ct-nutrition__big">{tNutrition('checkInSuspended')}</p>
-        <p>{tNutrition('checkInLead')}</p>
-        <p>{tNutrition('checkInNoTarget')}</p>
+        <div className="ct-checkin__banner">
+          <p className="ct-checkin__bannertitle">{tNutrition('checkInSuspended')}</p>
+          <p>{tNutrition('checkInLead')}</p>
+          <p>{tNutrition('checkInNoTarget')}</p>
+        </div>
         <ul className="ct-nutrition__list">
           {result.reasons.map((reason) => {
             const key = REASON_KEY[reason];
@@ -228,23 +266,55 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
   return (
     <section className="ct-nutrition__card ct-nutrition__checkin ct-flat" aria-label={tNutrition('checkInTitle')}>
       {header}
-      {result.coverage ? (
-        <ul className="ct-nutrition__list ct-nutrition__num">
-          {result.coverage.weeks.map((week, index) => (
-            <li key={week.endDate}>{tNutrition('weekCoverage', { n: index + 1, days: daysText(week.completeDays), weighIns: weighInsText(week.weighInDays) })}</li>
-          ))}
-        </ul>
-      ) : null}
+      <div className="ct-checkin__hero">
+        {summary.weeklyRateKg === null ? (
+          <p className="ct-today__text">
+            <MissingValue reason={tNutrition('checkInRateMissing')} />
+          </p>
+        ) : (
+          <p className="ct-hero">
+            <span className="ct-hero__num">{formatKgDelta(summary.weeklyRateKg)}</span>
+            <span className="ct-hero__unit">{tNutrition('checkInRateUnit')}</span>
+          </p>
+        )}
+        <p className="ct-nutrition__muted">
+          {tNutrition('checkInHeroSub', {
+            goal: heroGoalText(prefs.goal),
+            coverage: tNutrition(result.coverage?.sufficient ? 'checkInCoverageEnough' : 'checkInCoverageNot'),
+          })}
+        </p>
+      </div>
+      <div className="ct-checkin__stats" role="group" aria-label={tNutrition('checkInSummary')}>
+        <div className="ct-checkin__stat">
+          <p className="ct-checkin__statvalue">{summary.trendKg === null ? <MissingValue reason={tNutrition('checkInStatTrendMissing')} /> : formatTenth(summary.trendKg)}</p>
+          <p className="ct-checkin__statlabel">{tNutrition('checkInStatTrend')}</p>
+        </div>
+        <div className="ct-checkin__stat">
+          <p className="ct-checkin__statvalue">{tNutrition('checkInStatDaysValue', { n: result.coverage?.weeks.at(-1)?.completeDays ?? 0 })}</p>
+          <p className="ct-checkin__statlabel">{tNutrition('checkInStatDays')}</p>
+        </div>
+        <div className="ct-checkin__stat">
+          <p className="ct-checkin__statvalue">{summary.keptKcal === null ? <MissingValue reason={tNutrition('checkInStatKeptMissing')} /> : formatInt(summary.keptKcal)}</p>
+          <p className="ct-checkin__statlabel">{tNutrition('checkInStatKept')}</p>
+        </div>
+        <div className="ct-checkin__stat">
+          <p className="ct-checkin__statvalue">{formatInt(proposal.trace.tdee)}</p>
+          <p className="ct-checkin__statlabel">{tNutrition('checkInStatTdee')}</p>
+        </div>
+      </div>
       {existing && done === null ? (
         <p className="ct-nutrition__muted">
           {tNutrition('previousDecision', { what: tNutrition(existing.source === 'manual' ? 'previousManual' : existing.accepted ? 'previousAccepted' : 'previousRefused') })}
         </p>
       ) : null}
-      <h3 className="ct-nutrition__subtitle ct-section-title">{tNutrition('proposalTitle')}</h3>
+      <div className="ct-checkin__proposalhead">
+        <h3 className="ct-nutrition__subtitle ct-section-title">{tNutrition('proposalTitle')}</h3>
+        <span className="ct-nutrition__muted">{tNutrition('checkInBound')}</span>
+      </div>
       {proposal.initial ? <p className="ct-nutrition__muted">{tNutrition('proposalInitial')}</p> : null}
-      <ProposalLines proposal={proposal} />
-      {proposal.deltaKcal !== null ? <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('proposalDelta', { n: formatSigned(proposal.deltaKcal) })}</p> : null}
+      <ProposalTable proposal={proposal} />
 
+      <div className="ct-checkin__why">
       <h3 className="ct-nutrition__subtitle ct-section-title">{tNutrition('why')}</h3>
       <ul className="ct-nutrition__list ct-nutrition__muted">
         <li>{tNutrition('whyTdee', { n: formatInt(proposal.trace.tdee) })}</li>
@@ -255,6 +325,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
         ))}
         <li>{tNutrition('whyMacros')}</li>
       </ul>
+      </div>
 
       {done ? (
         <div className="ct-nutrition__done">
@@ -293,16 +364,18 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
               {message}
             </p>
           ) : null}
-          <div className="ct-nutrition__actions">
-            <Button disabled={busy} onClick={() => void decide({ action: 'accept' })}>
+          <div className="ct-checkin__actions">
+            <Button fullWidth disabled={busy} onClick={() => void decide({ action: 'accept' })}>
               {tNutrition('accept', { kcal: formatInt(proposal.target.kcal) })}
             </Button>
-            <Button variant="secondary" disabled={busy} onClick={() => setCustomizing(true)}>
-              {tNutrition('customize')}
-            </Button>
-            <Button variant="secondary" disabled={busy} onClick={() => void decide({ action: 'refuse' })}>
-              {tNutrition('refuse')}
-            </Button>
+            <div className="ct-checkin__secondary">
+              <Button variant="secondary" fullWidth disabled={busy} onClick={() => setCustomizing(true)}>
+                {tNutrition('customize')}
+              </Button>
+              <Button variant="secondary" fullWidth disabled={busy} onClick={() => void decide({ action: 'refuse' })}>
+                {tNutrition('refuse')}
+              </Button>
+            </div>
           </div>
           {proposal.alternatives.map((alternative) => (
             <Button key={alternative.kind} variant="secondary" disabled={busy} onClick={() => void decide({ action: 'refuse' })}>

@@ -1,7 +1,10 @@
+import { Check } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { addDays } from '../../../domain/localDate';
 import {
   ALL_DAYS,
+  dueIntakes,
+  type DueIntake,
   supplementAdherence,
   supplementStreak,
   validateSupplementDraft,
@@ -11,12 +14,15 @@ import {
   type SupplementIntake,
 } from '../../../domain/nutrition/supplements';
 import type { LocalDate, Weekday } from '../../../domain/types';
+import { formatDayMonth } from '../../../i18n/nutritionText';
 import { weekdayName } from '../../../i18n/formatRoutine';
 import { formatSupplementDose, tSupplements, type SupplementsTextKey } from '../../../i18n/supplementsText';
-import { Button, ConfirmDialog, Switch, WeekdayToggles } from '../../../ui';
+import { Button, ConfirmDialog, Icon, Switch, WeekdayToggles } from '../../../ui';
+import { MissingValue } from '../../../ui/MissingValue';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useSyncedData } from '../../sync/remoteChanges';
 import type { SupplementNotificationResult } from '../../notifications/supplementNotifications';
+import { constancyDays, type ConstancyDay } from './constancy';
 import { replanSupplementReminders } from './replan';
 import './Supplements.css';
 
@@ -51,6 +57,22 @@ function summary(s: Supplement): string {
 
 function adherenceText(a: SupplementAdherence): string {
   return a.ratio === null ? tSupplements('statsNone') : tSupplements('statsValue', { pct: Math.round(a.ratio * 100), taken: a.taken, due: a.due });
+}
+
+const STRIP_DAYS = 14;
+const LEVEL_TEXT = { full: 'dayFull', partial: 'dayPartial', none: 'dayNone', free: 'dayFree' } as const satisfies Record<ConstancyDay['level'], SupplementsTextKey>;
+
+/** « Matin », « Après-midi » ou « Soir » selon l'heure de la prise (Complements-apres : « Matin · 08:00 »). */
+function momentName(time: string): string {
+  const hour = Number(time.slice(0, 2));
+  return tSupplements(hour < 12 ? 'momentMorning' : hour < 18 ? 'momentAfternoon' : 'momentEvening');
+}
+
+/** Sous-titre d'une prise : « 5 g · pris » ou « 2 capsules · prévu à 20:00 ». */
+function intakeSub(item: DueIntake): string {
+  const dose = formatSupplementDose(item.supplement.dose, item.supplement.unit);
+  const state = item.taken ? tSupplements('intakeTaken') : tSupplements('intakePlanned', { time: item.moment });
+  return dose === null ? state : `${dose} · ${state}`;
 }
 
 /** Rappels : état lisible du dernier passage (iPhone) ; PC : « envoyés par l'iPhone ». */
@@ -119,8 +141,20 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
       week: supplementAdherence(supplements, intakes, addDays(today, -6), today),
       month: supplementAdherence(supplements, intakes, addDays(today, -(HISTORY_DAYS - 1)), today),
       streak: supplementStreak(supplements, intakes, today),
+      strip: constancyDays(supplements, intakes, today, STRIP_DAYS),
+      stripShare: supplementAdherence(supplements, intakes, addDays(today, -(STRIP_DAYS - 1)), today),
+      todays: dueIntakes(supplements, intakes, today),
     };
   }, [load, today]);
+
+  const toggleIntake = async (item: DueIntake): Promise<void> => {
+    try {
+      await (await data.repos.supplements()).setTaken(item.supplement.id, today, item.moment, !item.taken);
+      await afterWrite(null);
+    } catch {
+      setNotice(tSupplements('writeError'));
+    }
+  };
 
   const afterWrite = async (message: string | null): Promise<void> => {
     setNotice(message);
@@ -207,6 +241,7 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
           {notice}
         </p>
       ) : null}
+      {stats !== null && supplements.length > 0 ? <TodayIntakes items={stats.todays} onToggle={(item) => void toggleIntake(item)} /> : null}
       {form !== null ? (
         <form
           className="ct-supplements__form ct-flat"
@@ -291,6 +326,8 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
           <p className="ct-nutrition__muted">{tSupplements('emptyHint')}</p>
         </div>
       ) : (
+        <>
+        <h3 className="ct-section-title">{tSupplements('listLabel')}</h3>
         <ul className="ct-supplements__list" aria-label={tSupplements('listLabel')}>
           {supplements.map((s) => (
             <li key={s.id} className="ct-supplements__item" aria-label={s.name}>
@@ -311,6 +348,7 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
             </li>
           ))}
         </ul>
+        </>
       )}
 
       {stats !== null ? (
@@ -319,6 +357,17 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
           <p>{tSupplements('stats7', { value: adherenceText(stats.week) })}</p>
           <p>{tSupplements('stats30', { value: adherenceText(stats.month) })}</p>
           <p>{stats.streak === 0 ? tSupplements('streakNone') : stats.streak === 1 ? tSupplements('streakOne') : tSupplements('streakMany', { n: stats.streak })}</p>
+          <ul className="ct-supplements__strip" aria-label={tSupplements('stripLabel')}>
+            {stats.strip.map((day) => (
+              <li key={day.date} className={`ct-supplements__day ct-supplements__day--${day.level}`}>
+                <span className="ct-visually-hidden">{tSupplements('dayLine', { date: formatDayMonth(day.date), state: tSupplements(LEVEL_TEXT[day.level]) })}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="ct-nutrition__muted">
+            {tSupplements('stripLegend')} ·{' '}
+            {stats.stripShare.ratio === null ? <MissingValue reason={tSupplements('stripNone')} /> : tSupplements('stripShare', { pct: Math.round(stats.stripShare.ratio * 100) })}
+          </p>
         </section>
       ) : null}
 
@@ -342,6 +391,50 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
           onCancel={() => setConfirm(null)}
         />
       ) : null}
+    </div>
+  );
+}
+
+/** Héros « 2 / 3 pris aujourd'hui » et prises du jour par heure (Complements-apres) : coche de 44 px, état dit en texte. */
+function TodayIntakes({ items, onToggle }: { readonly items: readonly DueIntake[]; readonly onToggle: (item: DueIntake) => void }) {
+  const groups = [...new Set(items.map((i) => i.moment))].map((moment) => ({ moment, items: items.filter((i) => i.moment === moment) }));
+  return (
+    <div className="ct-supplements__today" role="group" aria-label={tSupplements('todayGroup')}>
+      {items.length === 0 ? (
+        <p className="ct-today__text">
+          <MissingValue reason={tSupplements('todayNone')} />
+        </p>
+      ) : (
+        <p className="ct-hero">
+          <span className="ct-hero__num">{tSupplements('todayCount', { taken: items.filter((i) => i.taken).length, total: items.length })}</span>
+          <span className="ct-hero__unit">{tSupplements('todayUnit')}</span>
+        </p>
+      )}
+      {groups.map((group) => (
+        <section key={group.moment} className="ct-supplements__group" aria-label={tSupplements('groupHeading', { moment: momentName(group.moment), time: group.moment })}>
+          <h3 className="ct-section-title">{tSupplements('groupHeading', { moment: momentName(group.moment), time: group.moment })}</h3>
+          <ul className="ct-supplements__rows">
+            {group.items.map((item) => (
+              <li key={item.supplement.id} className="ct-supplements__row">
+                <button
+                  type="button"
+                  role="checkbox"
+                  aria-checked={item.taken}
+                  aria-label={tSupplements(item.taken ? 'checkTaken' : 'checkMark', { name: item.supplement.name })}
+                  className="ct-supplements__ck"
+                  onClick={() => onToggle(item)}
+                >
+                  {item.taken ? <Icon icon={Check} size="sm" /> : null}
+                </button>
+                <div className="ct-supplements__item-text">
+                  <p>{item.supplement.name}</p>
+                  <p className="ct-nutrition__muted">{intakeSub(item)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
     </div>
   );
 }

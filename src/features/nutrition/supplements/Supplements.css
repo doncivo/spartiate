@@ -121,3 +121,91 @@
 .ct-supplements__panel p {
   margin: 0;
 }
+
+/* ERGO-02 (Complements-apres) : prises du jour (coche de 44 px) et bande « Constance · 14 jours ». Jetons seulement, tailles en rem. */
+.ct-supplements__today {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-4);
+}
+
+.ct-supplements__group h3 {
+  margin: 0;
+}
+
+.ct-supplements__rows {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ct-supplements__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ct-space-3);
+  padding: var(--ct-space-3) 0;
+  border-top: var(--ct-line);
+}
+
+.ct-supplements__row:first-child {
+  border-top: 0;
+}
+
+.ct-supplements__ck {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ct-hit-target-min);
+  height: var(--ct-hit-target-min);
+  padding: 0;
+  background: transparent;
+  border: 2px solid var(--ct-color-border-strong);
+  border-radius: var(--ct-radius-round);
+  color: var(--ct-color-accent-on);
+  cursor: pointer;
+}
+
+/* Prise cochée : fond plein ET coche dessinée (jamais la couleur seule). */
+.ct-supplements__ck[aria-checked='true'] {
+  background: var(--ct-color-accent);
+  border-color: var(--ct-color-accent);
+}
+
+.ct-supplements__strip {
+  display: grid;
+  grid-template-columns: repeat(14, minmax(0, 1fr));
+  gap: var(--ct-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ct-supplements__day {
+  height: 1.375rem;
+  border: 1px solid var(--ct-color-border-strong);
+  border-radius: 4px;
+}
+
+.ct-supplements__day--full {
+  background: var(--ct-color-bronze);
+  border-color: var(--ct-color-bronze);
+}
+
+/* En partie : la moitié basse seulement est remplie. */
+.ct-supplements__day--partial {
+  background: linear-gradient(to top, var(--ct-color-bronze) 50%, transparent 50%);
+  border-color: var(--ct-color-bronze);
+}
+
+.ct-supplements__day--none {
+  background: transparent;
+}
+
+.ct-supplements__day--free {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--ct-color-border);
+}

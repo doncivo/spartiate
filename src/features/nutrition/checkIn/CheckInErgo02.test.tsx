@@ -101,7 +101,7 @@ describe('Check-in : proposition (CheckIn-apres)', () => {
     const table = within(r).getByRole('table', { name: 'Proposition' });
     expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Actuel', 'Proposé', 'Écart']);
     const kcal = within(table).getByRole('row', { name: /^Calories/ });
-    expect(kcal.textContent).toContain(fr(2400));
+    expect((kcal.textContent ?? '').replace(/[  ]/g, ' ')).toContain(fr(2400));
     for (const label of ['Calories', 'Protéines', 'Glucides', 'Lipides']) expect(within(table).getByRole('row', { name: new RegExp(`^${label}`) })).toBeInTheDocument();
     expect(within(r).getByText('borne ± 150 kcal')).toBeInTheDocument();
   });
