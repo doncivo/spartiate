@@ -23,8 +23,8 @@ const col = (tableName: string, name: string) => {
 
 describe('catalogue de production : measurement et progress_photo (I6-02)', () => {
   it('juste avant food_favorite (FIX-0181) et data_reset (RESET-01, 26 tables), sans parent ni colonne locale', () => {
-    expect(SYNC_TABLE_ORDER.slice(-4, -2)).toEqual(['measurement', 'progress_photo']);
-    expect(SYNC_TABLE_ORDER).toHaveLength(26);
+    expect(SYNC_TABLE_ORDER.slice(-6, -4)).toEqual(['measurement', 'progress_photo']);
+    expect(SYNC_TABLE_ORDER).toHaveLength(28); // I6-05 : supplement et supplement_intake après data_reset.
     expect(table('measurement').idKind).toBe('natural');
     expect(table('progress_photo').idKind).toBe('uuid');
     for (const name of ['measurement', 'progress_photo']) {

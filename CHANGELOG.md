@@ -2,6 +2,15 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.20.0
+
+**Schéma 17 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** Migration 0017 : tes compléments et leurs prises sont enregistrés dans deux tables synchronisées. Un appareil resté en version antérieure garde ce qu'il reçoit sans l'afficher et le retrouve après sa mise à jour.
+
+- **Compléments** : Nutrition › Compléments. Nom, dose et unité si tu veux, une à quatre heures de prise (24 h), les jours de la semaine ; actif ou en pause, modifiable, supprimable après confirmation.
+- **La prise du jour en un tap** : la carte « Compléments » d'Aujourd'hui liste les prises dues ; un tap coche, un autre décoche. Cochée sur le PC, elle l'est aussi sur l'iPhone (et la même prise cochée des deux côtés n'en fait qu'une).
+- **Constance** : sur 7 et 30 jours, et ta série de jours complets ; « — » quand rien n'était prévu.
+- **Rappels sur l'iPhone** (désactivés par défaut) : une notification à chaque heure de prise, sans le nom du complément sur l'écran verrouillé, retirée quand c'est coché. Le PC n'envoie rien. Pas encore de bouton « Pris » dans la notification : un appui ouvre Aujourd'hui.
+
 ## 0.19.1
 
 Rien ne change pour toi à l'écran, aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.

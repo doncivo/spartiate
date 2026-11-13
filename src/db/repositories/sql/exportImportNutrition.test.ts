@@ -26,8 +26,8 @@ const read = async (db: TestDb): Promise<ExportData> => (await db.data.repos.exp
 
 describe('export / import de la nutrition (I4-02)', () => {
   it('quatre tables exportées après le mésocycle, parents d’abord ; schéma 8 (puis 9 avec les recettes, I4-07)', () => {
-    expect(TRAINING_EXPORT_TABLES.slice(-13, -9)).toEqual(['food', 'food_portion', 'meal_entry', 'nutrition_target']);
-    expect(EXPORT_SV).toBe(16); // FIX-0181 : schéma 15 (favoris publiés) ; RESET-01 : schéma 16 (data_reset, jamais exportée).
+    expect(TRAINING_EXPORT_TABLES.slice(-15, -11)).toEqual(['food', 'food_portion', 'meal_entry', 'nutrition_target']);
+    expect(EXPORT_SV).toBe(17); // FIX-0181 : schéma 15 (favoris publiés) ; RESET-01 : schéma 16 (data_reset, jamais exportée) ; I6-05 : schéma 17 (compléments).
   });
 
   it('aller-retour : mêmes données (hash canonique), valeurs inconnues conservées nulles, publiées comme toute écriture', async () => {

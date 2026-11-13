@@ -60,6 +60,8 @@ export const syncVersionFr = {
     progressPhoto: 'photos de progression',
     foodFavorite: 'favoris',
     dataReset: 'remise à zéro',
+    supplement: 'compléments',
+    supplementIntake: 'prises de compléments',
     other: 'autres éléments',
   },
 } as const;

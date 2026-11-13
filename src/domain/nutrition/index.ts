@@ -19,3 +19,4 @@ export * from './offProduct';
 export * from './firstCheckIn';
 export * from './recipeTypes';
 export * from './recipe';
+export * from './supplements';

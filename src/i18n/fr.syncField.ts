@@ -268,4 +268,7 @@ export const syncFieldFr = {
   progress_photo: { deleted_at: 'suppression' },
   // FIX-0181 : favoris de la recherche d'aliments ; seule la suppression figure au journal des conflits.
   food_favorite: { deleted_at: 'suppression' },
+  // I6-05 : compléments (nom, état, suppression) et prises (suppression seulement).
+  supplement: { name: 'nom', active: 'actif', deleted_at: 'suppression' },
+  supplement_intake: { deleted_at: 'suppression' },
 } as const;
