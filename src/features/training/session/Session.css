@@ -66,6 +66,39 @@
   overflow-wrap: anywhere;
 }
 
+/* FIX-0223 (aperçu du 12/11) : nom du jour et « ≈ durée · nombre » sur une ligne, charge proposée en bronze à droite de l'exercice. */
+.ct-session-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ct-space-1) var(--ct-space-2);
+}
+
+.ct-session-card__meta {
+  margin: 0;
+}
+
+.ct-session-card__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ct-space-2);
+}
+
+.ct-session-card__load {
+  flex-shrink: 0;
+  color: var(--ct-color-bronze);
+  font-weight: var(--ct-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-session-card__more {
+  margin: 0;
+  padding-top: var(--ct-space-2);
+  border-top: var(--ct-line);
+}
+
 /* ERGO-01b P3 : « − / + » de la série en cours, boutons ronds de 44 px au moins (une main, sans clavier). */
 .ct-session__stepper {
   display: flex;

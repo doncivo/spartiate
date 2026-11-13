@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { summarizeSets, type RoutineDay, type WorkoutWithSets } from '../../../domain/training';
 import { nextProgramDay } from '../../../domain/training/programDay';
-import { tTraining } from '../../../i18n/trainingText';
+import { formatNumber, tTraining } from '../../../i18n/trainingText';
 import { Button } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { loadCurrentCycle, localDayOf } from '../cycle/currentCycle';
+import type { TodaySessionPreview } from './todaySessionPreview';
 import '../../app/TodayScreen.css';
 import './Session.css';
 
@@ -17,12 +18,22 @@ import './Session.css';
  * ERGO-01b P1 (D-238, D-243) : avec un programme suivi (cycle actif), la carte devient « Séance du jour » : le jour désigné (`nextProgramDay`),
  * ses exercices, « Lancer la séance » en un tap (même départ que « Démarrer « jour » » de l'écran de séance) et « Autre séance… » vers les
  * options. P5 : le bouton « Journal des séances » (doublon de la section « Journal » d'Entraînement) est retiré.
+ *
+ * FIX-0223 (D-260, aperçu validé du 12/11) : durée estimée et nombre d'exercices, les trois premiers exercices (ordre `position`) avec la
+ * charge que la séance proposera, en bronze, puis « + n exercices ». L'aperçu (moteur de prescription) est un module à part, importé à la
+ * demande : rien du moteur dans le départ. Charge inconnue : aucun chiffre ; aperçu illisible : nombre d'exercices seul, sans charge.
  */
+const SHOWN = 3;
+
 interface ProgramDay {
   readonly routineId: string;
   readonly day: RoutineDay;
+  /** Durée et charges ; null si l'aperçu est illisible. */
+  readonly preview: TodaySessionPreview | null;
 }
 type Load = { readonly status: 'loading' | 'failed' } | { readonly status: 'ready'; readonly open: WorkoutWithSets | null; readonly program: ProgramDay | null };
+
+const byPosition = (day: RoutineDay) => [...day.exercises].sort((a, b) => a.position - b.position);
 
 export function TodaySessionCard() {
   const { data, clock } = useAppContainer();
@@ -50,7 +61,14 @@ export function TodaySessionCard() {
       if (routine === null) return null;
       const dayId = nextProgramDay(routine.days, closed, routine.id);
       const day = routine.days.find((d) => d.id === dayId);
-      return day === undefined ? null : { routineId: routine.id, day };
+      if (day === undefined) return null;
+      const shown = byPosition(day)
+        .slice(0, SHOWN)
+        .map((l) => l.id);
+      // Semaine de deload du cycle : la séance lancée depuis la routine du cycle propose le deload par défaut (I3-02), l'aperçu aussi.
+      const deload = cycle.state.kind === 'deload';
+      const preview = await import('./todaySessionPreview').then((m) => m.loadTodaySessionPreview(data, day, shown, { nowMs: clock.nowMs(), deload })).catch(() => null);
+      return { routineId: routine.id, day, preview };
     }
     return () => {
       live = false;
@@ -73,23 +91,41 @@ export function TodaySessionCard() {
   }
 
   if (open === null && program !== null) {
-    const { day } = program;
+    const { day, preview } = program;
     const n = day.exercises.length;
+    const more = n - SHOWN;
+    const meta =
+      preview === null
+        ? n === 1
+          ? tTraining('sessionTodayMetaOne')
+          : tTraining('sessionTodayMeta', { n })
+        : n === 1
+          ? tTraining('sessionTodayMetaTimedOne', { min: preview.minutes })
+          : tTraining('sessionTodayMetaTimed', { min: preview.minutes, n });
     return (
       <section className="ct-today__card ct-session-card" aria-labelledby="ct-session-card-title">
         <h2 id="ct-session-card-title" className="ct-today__eyebrow ct-section-title">
           {tTraining('sessionTodayEyebrow')}
         </h2>
         <div className="ct-session-card__body">
-          <p className="ct-session-card__name">{day.name}</p>
-          <p className="ct-today__muted">{n === 1 ? tTraining('sessionTodayMetaOne') : tTraining('sessionTodayMeta', { n })}</p>
+          <div className="ct-session-card__head">
+            <p className="ct-session-card__name">{day.name}</p>
+            <p className="ct-today__muted ct-session-card__meta">{meta}</p>
+          </div>
           <ul className="ct-session-card__list" aria-label={tTraining('sessionTodayExercises')}>
-            {[...day.exercises]
-              .sort((a, b) => a.position - b.position)
-              .map((line) => (
-                <li key={line.id}>{line.exerciseName}</li>
-              ))}
+            {byPosition(day)
+              .slice(0, SHOWN)
+              .map((line) => {
+                const loadKg = preview?.loads.get(line.id) ?? null;
+                return (
+                  <li key={line.id} className="ct-session-card__row">
+                    <span className="ct-session-card__exercise">{line.exerciseName}</span>
+                    {loadKg === null ? null : <b className="ct-session-card__load">{tTraining('sessionTodayLoad', { load: formatNumber(loadKg) })}</b>}
+                  </li>
+                );
+              })}
           </ul>
+          {more > 0 ? <p className="ct-today__muted ct-session-card__more">{more === 1 ? tTraining('sessionTodayMoreOne') : tTraining('sessionTodayMore', { n: more })}</p> : null}
         </div>
         {failed ? (
           <p className="ct-training__error" role="alert">
