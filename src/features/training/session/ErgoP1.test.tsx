@@ -61,7 +61,8 @@ describe('ERGO-01b P1 : séance du jour en un tap', () => {
     mount();
     const card = await screen.findByRole('region', { name: 'Séance du jour' });
     expect(within(card).getByText('Haut A')).toBeInTheDocument();
-    expect(within(card).getByText('2 exercices')).toBeInTheDocument();
+    // FIX-0223 : la ligne porte la durée estimée (2 × 375 s → 13 min).
+    expect(within(card).getByText('≈ 13 min · 2 exercices')).toBeInTheDocument();
     expect(within(card).getByText('Développé couché à la barre')).toBeInTheDocument();
     const launch = within(card).getByRole('button', { name: 'Lancer la séance' });
     expect(launch).toHaveClass('ct-button--primary');
