@@ -10,7 +10,7 @@ import { Button, useLayout } from '../../ui';
 import { useSyncedData } from '../sync/remoteChanges';
 import { statusLine } from '../sync/syncText';
 import { useAppContainer } from './AppContainerContext';
-import { NutritionRemainingCard, RecoveryToday, TodaySessionCard } from './lazyScreens';
+import { NutritionRemainingCard, RecoveryToday, SupplementsTodayCard, TodaySessionCard } from './lazyScreens';
 import { useNavigationStore, type Route } from './navigation';
 import './TodayScreen.css';
 
@@ -204,6 +204,7 @@ export function TodayScreen() {
           <div className="ct-today__col">
             <TodaySessionCard />
             <NutritionRemainingCard />
+            <SupplementsTodayCard />
             <WeightCard weights={weights} nowMs={nowMs} showActions />
             <RecoveryToday />
           </div>
@@ -289,6 +290,7 @@ export function TodayScreen() {
       ) : null}
       <TodaySessionCard />
       <NutritionRemainingCard />
+      <SupplementsTodayCard />
       {weights.length > 0 ? <WeightCard weights={weights} nowMs={nowMs} showActions={false} /> : null}
       <RecoveryToday />
       <p className="ct-today__footer">{syncText ?? tToday('syncNotConfigured')}</p>
