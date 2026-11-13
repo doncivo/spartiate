@@ -153,7 +153,7 @@ export function SyncSettingsSection({
   readonly platform?: SyncPlatform;
   readonly heading?: boolean;
   readonly showStatus?: boolean;
-  /** ERGO-02 : faux dans le panneau de Plus PC, où « Ajouter un iPhone » (colonne de droite des détails) porte le seul bouton d'association. */
+  /** ERGO-02 : faux dans le panneau de Plus PC, où « Ajouter un iPhone » (colonne de droite des détails) porte le seul bouton d'association (afficher le code ou associer cet appareil). */
   readonly showPairing?: boolean;
 }) {
   const container = useAppContainer();
@@ -403,7 +403,7 @@ export function SyncSettingsSection({
           }}
         />
       )}
-      {view.kind === 'bound' && toAssociate && !ios && (
+      {view.kind === 'bound' && toAssociate && !ios && showPairing && (
         <div className="ct-settings__row">
           <span className="ct-settings__stack">
             {t('sync.pairing.importLabel')}

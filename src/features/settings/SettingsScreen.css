@@ -344,10 +344,6 @@
   overflow-wrap: anywhere;
 }
 
-.ct-settings__rowButton[data-tone='danger'] > :first-child {
-  color: var(--ct-color-danger);
-}
-
 /* PC : liste (300 px) à gauche, réglage ouvert à droite. */
 .ct-settings--pc {
   gap: 0;
