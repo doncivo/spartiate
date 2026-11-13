@@ -25,7 +25,7 @@ describe('sort des tables et des réglages (D-181)', () => {
 
   it('réglages, technique de synchro et registre des migrations gardés ; données locales effacées', () => {
     for (const kept of ['settings', 'schema_migrations', 'sync_state', 'sync_meta', 'sync_outbox', 'sync_field_clock', 'sync_guard', 'sync_tombstone', 'sync_unknown', 'sync_parked']) expect(RESET_TABLES[kept], kept).toBe('kept');
-    for (const wiped of ['progress_photo_file', 'recovery_sample', 'recovery_import_state', 'conflict_log', 'epoch_carry_report']) expect(RESET_TABLES[wiped], wiped).toBe('wiped');
+    for (const wiped of ['progress_photo_file', 'cardio_track', 'recovery_sample', 'recovery_import_state', 'conflict_log', 'epoch_carry_report']) expect(RESET_TABLES[wiped], wiped).toBe('wiped');
   });
 
   it('chaque réglage connu est classé ; aucune clé inconnue', () => {
