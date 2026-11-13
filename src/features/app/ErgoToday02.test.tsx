@@ -4,7 +4,8 @@ import { createHlcClock } from '../../domain/hlc';
 import type { RoutineInput } from '../../domain/training';
 import type { DeviceId, LocalDate, LocalTime } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
-import { quickAddDraft, saveManualTarget } from '../nutrition/useCases';
+import { loadNutritionSnapshot, quickAddDraft, saveManualTarget } from '../nutrition/useCases';
+import { readTrainingData } from '../training/trainingState';
 import { PC_MEDIA_QUERY } from '../../ui';
 import { AppContainerProvider } from './AppContainerContext';
 import { AppStatusBanner } from './AppStatusBanner';
@@ -44,9 +45,23 @@ async function closeWith(loadKg: number): Promise<void> {
   await db.data.transaction(async (repos) => (await repos.workouts()).close(w.id));
 }
 
-// Premier import du bloc (instantané de Nutrition, catalogue, records) hors de la mesure des attentes.
+// Premier import des blocs à la demande d'Aujourd'hui PC (colonne droite, séance, récupération, nutrition, compléments, notices) hors de la
+// mesure des attentes : à froid, ils se chargent ensemble et dépassent l'attente par défaut. Aucune attente allongée.
 beforeAll(async () => {
-  await import('./TodayPcSide');
+  await Promise.all([
+    import('./TodayPcSide'),
+    import('./SectionNotice'),
+    import('../training/session/TodaySessionCard'),
+    import('../nutrition/NutritionRemainingCard'),
+    import('../nutrition/supplements/SupplementsTodayCard'),
+    import('../recovery/RecoveryToday'),
+  ]);
+  // Premières lectures (instantané de Nutrition, données d'entraînement) sur une base jetable : compilation des requêtes à froid.
+  const warm = await openBaseDb(DEVICE, '2026-11-10T07:00:00.000Z');
+  await loadNutritionSnapshot(warm.data, '2026-11-10' as LocalDate);
+  await readTrainingData(warm.data);
+  await (await warm.data.repos.workouts()).listClosed(10);
+  await warm.close();
 }, 30_000);
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
@@ -63,7 +78,7 @@ afterEach(async () => {
 describe('ERGO-02 : Aujourd’hui sur PC, colonne droite', () => {
   it('données vides : semaine et records sans faux zéro, dépense et records en « — » avec leur raison', async () => {
     open();
-    const week = await screen.findByRole('region', { name: 'Cette semaine' }, { timeout: 8000 });
+    const week = await screen.findByRole('region', { name: 'Cette semaine' });
     expect(within(week).getAllByRole('listitem')).toHaveLength(7);
     const records = screen.getByRole('region', { name: 'Derniers records' });
     expect(within(records).getByText('pas encore de record')).toBeInTheDocument();

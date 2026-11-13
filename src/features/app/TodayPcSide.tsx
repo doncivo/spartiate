@@ -56,6 +56,8 @@ function weekOf(today: LocalDate): readonly { readonly day: string; readonly nam
 }
 
 async function readRecords(container: ReturnType<typeof useAppContainer>, setsOf: readonly WorkoutWithSets[]): Promise<readonly RecordRow[]> {
+  // Un record se compare à une séance close plus ancienne : sans deux séances closes, aucun record, et le catalogue n’est pas lu.
+  if (setsOf.length < 2) return [];
   const data = await readTrainingData(container.data);
   const exerciseOf = (id: string) => data.content.catalog.get(id) ?? data.allCustoms.find((c) => c.id === id);
   const rows: RecordRow[] = [];
