@@ -156,6 +156,16 @@ export function laterHorizon(a: Hlc | null, b: Hlc | null): Hlc | null {
   return b > a ? b : a;
 }
 
+/**
+ * D-187 : une archive d'export datée (manifeste) avant ou à l'instant du dernier effacement fait sur cet appareil est refusée à l'import : elle
+ * ramènerait, réhorodatées, des données d'avant la remise à zéro. Date illisible : refus (échec fermé). Aucun effacement : admise.
+ */
+export function isArchiveBeforeReset(manifestDate: string, resetAtMs: number | null): boolean {
+  if (resetAtMs === null) return false;
+  const at = Date.parse(manifestDate);
+  return !Number.isFinite(at) || at <= resetAtMs;
+}
+
 /** Comptes du journal `data-reset` : nombres seulement, jamais une valeur, un identifiant ni une date (D-186). */
 export interface DataResetCounts {
   /** Lignes effacées (toutes tables). */
