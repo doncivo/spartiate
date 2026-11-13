@@ -20,7 +20,7 @@ export function SyncDetailsVersion() {
   if (newer.length === 0 && !failure) return null;
   return (
     <>
-      <h2 className="ct-settings__section">{t('sync.version.section')}</h2>
+      <h2 className="ct-settings__section ct-section-title">{t('sync.version.section')}</h2>
       <div role="status" className="ct-sync__version">
         {failure && (
           <div className="ct-settings__row ct-sync__device" data-failed="true">

@@ -67,13 +67,13 @@ export function RecipeQuantityStep({ recipe, date, defaultTime, chooseDay, onBac
 
   return (
     <form
-      className="ct-nutrition__panel ct-nutrition__form"
+      className="ct-nutrition__panel ct-nutrition__form ct-flat"
       onSubmit={(event) => {
         event.preventDefault();
         void save();
       }}
     >
-      <h2 className="ct-nutrition__subtitle">{tRecipes('quantityTitle', { name: recipe.name })}</h2>
+      <h2 className="ct-nutrition__subtitle ct-section-title">{tRecipes('quantityTitle', { name: recipe.name })}</h2>
       <p className="ct-nutrition__muted">
         {tRecipes(recipe.servings === 1 ? 'servingsOne' : 'servingsMany', { n: recipe.servings })} · {tRecipes('oneServingGrams', { n: formatTenth(Math.round(servingGrams * 10) / 10) })}
       </p>

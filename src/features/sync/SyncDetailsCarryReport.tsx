@@ -71,7 +71,7 @@ export function SyncDetailsCarryReport() {
   if (loaded === 'failed') {
     return (
       <>
-        <h2 className="ct-settings__section">{tCarry('title')}</h2>
+        <h2 className="ct-settings__section ct-section-title">{tCarry('title')}</h2>
         <div className="ct-settings__row ct-carry__problem" role="alert">
           <span>{tCarry('loadFailed')}</span>
           <Button variant="secondary" onClick={reload}>
@@ -112,7 +112,7 @@ export function SyncDetailsCarryReport() {
 
   return (
     <>
-      <h2 className="ct-settings__section">{tCarry('title')}</h2>
+      <h2 className="ct-settings__section ct-section-title">{tCarry('title')}</h2>
       {loaded.failure && (
         <div className="ct-settings__row ct-carry__problem" data-testid="carry-report-failed">
           <span>{tCarry('failed', { cause: carryFailureCause(loaded.failure.code) })}</span>

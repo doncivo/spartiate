@@ -61,7 +61,7 @@ function WeightCard({ weights, nowMs, showActions }: { readonly weights: readonl
     <section className="ct-today__card ct-today__weight" aria-labelledby="ct-today-weight">
       <div className="ct-today__weight-head">
         <div>
-          <h2 id="ct-today-weight" className="ct-today__eyebrow">
+          <h2 id="ct-today-weight" className="ct-today__eyebrow ct-section-title">
             {tToday('weightEyebrow')}
           </h2>
           {last ? (
@@ -105,7 +105,7 @@ function WeightCard({ weights, nowMs, showActions }: { readonly weights: readonl
 function KeyValueCard({ id, title, rows }: { readonly id: string; readonly title: string; readonly rows: readonly (readonly [string, ReactNode])[] }) {
   return (
     <section className="ct-today__card ct-today__kv" aria-labelledby={id}>
-      <h2 id={id} className="ct-today__eyebrow">
+      <h2 id={id} className="ct-today__eyebrow ct-section-title">
         {title}
       </h2>
       <dl className="ct-today__rows">

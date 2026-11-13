@@ -514,7 +514,7 @@ function ProgramCard({ data, program, onAdd }: { readonly data: TrainingData; re
   );
   const incompatible = new Set(incompatibleRoutineLines(lines, data.active, data.content.catalog, data.allCustoms).map((l) => l.exerciseId)).size;
   return (
-    <li className="ct-training__card">
+    <li className="ct-training__card ct-flat">
       <h3 className="ct-training__subheading">{program.name}</h3>
       <p className="ct-training__muted">
         {program.audienceFr} · {tTraining('programDays', { n: program.days.length })}
@@ -638,7 +638,7 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
       )}
       {programs && (
         <section aria-labelledby="ct-programs-title">
-          <h2 id="ct-programs-title" className="ct-training__eyebrow">
+          <h2 id="ct-programs-title" className="ct-training__eyebrow ct-section-title">
             {tTraining('programsTitle')}
           </h2>
           <p className="ct-training__muted">{tTraining('programsHint')}</p>
@@ -650,7 +650,7 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
         </section>
       )}
       <section aria-labelledby="ct-routines-title">
-        <h2 id="ct-routines-title" className="ct-training__eyebrow">
+        <h2 id="ct-routines-title" className="ct-training__eyebrow ct-section-title">
           {tTraining('routines')}
         </h2>
         {routines !== null && routines.length === 0 && <p className="ct-training__empty">{tTraining('noRoutines')}</p>}

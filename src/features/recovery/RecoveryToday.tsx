@@ -90,7 +90,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
     const never = phone ? !load.hasImport : true;
     return (
       <section className="ct-today__card ct-recovery" aria-labelledby="ct-recovery-title">
-        <h2 id="ct-recovery-title" className="ct-today__eyebrow">
+        <h2 id="ct-recovery-title" className="ct-today__eyebrow ct-section-title">
           {tRecovery('title')}
         </h2>
         <p className="ct-today__text">{tRecovery(phone ? (never ? 'neverImportedPhone' : 'noSummaryPhone') : 'neverReceivedPc')}</p>
@@ -130,7 +130,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
   return (
     <>
       <section className="ct-today__card ct-recovery" aria-labelledby="ct-recovery-title">
-        <h2 id="ct-recovery-title" className="ct-today__eyebrow">
+        <h2 id="ct-recovery-title" className="ct-today__eyebrow ct-section-title">
           {tRecovery('title')}
         </h2>
         {stale.stale ? <p className="ct-recovery__notice">{tRecovery(staleKey, { n: stale.days })}</p> : null}
@@ -173,7 +173,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
         </div>
         {s.contributors.length > 0 ? (
           <>
-            <h3 className="ct-today__eyebrow">{tRecovery('contributors')}</h3>
+            <h3 className="ct-today__eyebrow ct-section-title">{tRecovery('contributors')}</h3>
             <ul className="ct-recovery__list">
               {s.contributors.map((c) => {
                 const tone = contributorTone(c);
@@ -202,7 +202,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
         <p className="ct-today__muted ct-recovery__disclaimer">{tRecovery('disclaimer')}</p>
         {/* ERGO-01 : une carte de moins, les Pas sont une ligne du même bloc. */}
         <section className="ct-recovery__steps" aria-label={tRecovery('stepsTitle')}>
-          <h3 className="ct-today__eyebrow">{tRecovery('stepsTitle')}</h3>
+          <h3 className="ct-today__eyebrow ct-section-title">{tRecovery('stepsTitle')}</h3>
           {!phone ? (
             <p className="ct-today__muted">{tRecovery('stepsOnPhone')}</p>
           ) : load.steps === null || load.steps.average === null ? (

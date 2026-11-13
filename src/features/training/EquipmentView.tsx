@@ -48,8 +48,8 @@ function Inventory({ data, profile }: { readonly data: TrainingData; readonly pr
   const machinesRange = profile.origin === 'embedded' ? profile.machinesRange : null;
   return (
     <div className="ct-training__inventory">
-      <section className="ct-training__card">
-        <h3 className="ct-training__eyebrow">{tTraining('barbells')}</h3>
+      <section className="ct-training__card ct-flat">
+        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('barbells')}</h3>
         {inv.barbells.length === 0 ? (
           <p>{tTraining('none')}</p>
         ) : (
@@ -67,35 +67,35 @@ function Inventory({ data, profile }: { readonly data: TrainingData; readonly pr
           </p>
         ))}
       </section>
-      <section className="ct-training__card">
-        <h3 className="ct-training__eyebrow">{tTraining('plates')}</h3>
+      <section className="ct-training__card ct-flat">
+        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('plates')}</h3>
         <p className="ct-training__num">
           {inv.platesPerSideKg.length === 0 ? tTraining('none') : inv.platesPerSideKg.map((p) => formatNumber(p.weightKg)).join(' · ')} {check.has('plates') && <span className="ct-training__muted">({tTraining('platesCountUnknown')})</span>} <VerifyTag show={check.has('plates')} />
         </p>
       </section>
-      <section className="ct-training__card">
-        <h3 className="ct-training__eyebrow">{tTraining('dumbbells')}</h3>
+      <section className="ct-training__card ct-flat">
+        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('dumbbells')}</h3>
         <p>
           {inv.dumbbells ? range(inv.dumbbells) : tTraining('none')} <VerifyTag show={check.has('dumbbells')} />
         </p>
-        <h3 className="ct-training__eyebrow">{tTraining('kettlebells')}</h3>
+        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('kettlebells')}</h3>
         <p className="ct-training__num">
           {inv.kettlebellsKg.length === 0 ? tTraining('none') : inv.kettlebellsKg.map(formatNumber).join(' · ')} <VerifyTag show={check.has('kettlebells')} />
         </p>
       </section>
-      <section className="ct-training__card">
-        <h3 className="ct-training__eyebrow">{tTraining('machines')}</h3>
+      <section className="ct-training__card ct-flat">
+        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('machines')}</h3>
         <p>
           {inv.machines.length > 0 ? inv.machines.map((m) => `${names.get(m.equipmentId)?.nameFr ?? m.equipmentId} : ${range({ minKg: m.stackMinKg, maxKg: m.stackMaxKg, stepKg: m.stepKg })}`).join(' ; ') : machinesRange ? range(machinesRange) : tTraining('none')}{' '}
           <VerifyTag show={check.has('machines')} />
         </p>
-        <h3 className="ct-training__eyebrow">{tTraining('cables')}</h3>
+        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('cables')}</h3>
         <p>
           {inv.cables.length > 0 ? inv.cables.map(range).join(' ; ') : tTraining('none')} <VerifyTag show={check.has('cables')} />
         </p>
       </section>
-      <section className="ct-training__card">
-        <h3 className="ct-training__eyebrow">{tTraining('increments')}</h3>
+      <section className="ct-training__card ct-flat">
+        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('increments')}</h3>
         <ul className="ct-training__plain">
           {INCREMENT_KEYS.filter(([key]) => profile.increments[key] !== undefined).map(([key, label]) => (
             <li key={key}>
@@ -105,8 +105,8 @@ function Inventory({ data, profile }: { readonly data: TrainingData; readonly pr
         </ul>
         <p>{inv.bodyweight ? tTraining('bodyweightYes') : null}</p>
       </section>
-      <section className="ct-training__card ct-training__card--wide">
-        <h3 className="ct-training__eyebrow">{tTraining('availableEquipment')}</h3>
+      <section className="ct-training__card ct-training__card--wide ct-flat">
+        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('availableEquipment')}</h3>
         {[...families.values()].map((list) => (
           <p key={list.join('|')}>{list.join(', ')}</p>
         ))}
@@ -312,7 +312,7 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
   return (
     <div className="ct-training__equipment">
       <section className="ct-training__side" aria-labelledby="ct-profiles-title">
-        <h2 id="ct-profiles-title" className="ct-training__eyebrow">
+        <h2 id="ct-profiles-title" className="ct-training__eyebrow ct-section-title">
           {tTraining('profiles')}
         </h2>
         <ul className="ct-training__rows">

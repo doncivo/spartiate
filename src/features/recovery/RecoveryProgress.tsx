@@ -94,7 +94,7 @@ export function RecoveryProgress() {
   }
   if (load.status === "failed") {
     return (
-      <section className="ct-today__card ct-recovery" role="alert">
+      <section className="ct-today__card ct-recovery ct-flat" role="alert">
         <p className="ct-today__text">{tRecoveryFactors("loadFailed")}</p>
         <Button
           variant="secondary"
@@ -113,10 +113,10 @@ export function RecoveryProgress() {
   const { analysis, entered } = load;
   return (
     <section
-      className="ct-today__card ct-recovery"
+      className="ct-today__card ct-recovery ct-flat"
       aria-labelledby="ct-progress-factors-title"
     >
-      <h2 id="ct-progress-factors-title" className="ct-today__eyebrow">
+      <h2 id="ct-progress-factors-title" className="ct-today__eyebrow ct-section-title">
         {tRecoveryFactors("progressTitle")}
       </h2>
       {entered === 0 ? (

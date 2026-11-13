@@ -100,8 +100,8 @@ export function HealthBodyImportSection({ reader, fallback }: { readonly reader?
   const failedLast = summary?.failed === true && run === null;
 
   return (
-    <section className="ct-body__card" aria-label={tHealth('bodyTitle')}>
-      <h2 className="ct-body__section">{tHealth('bodyTitle')}</h2>
+    <section className="ct-body__card ct-flat" aria-label={tHealth('bodyTitle')}>
+      <h2 className="ct-body__section ct-section-title">{tHealth('bodyTitle')}</h2>
       {pc ? (
         <p className="ct-body__hint">{tHealth('bodyPcOnly')}</p>
       ) : (

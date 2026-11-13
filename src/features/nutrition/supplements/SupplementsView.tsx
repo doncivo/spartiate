@@ -209,14 +209,14 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
       ) : null}
       {form !== null ? (
         <form
-          className="ct-supplements__form"
+          className="ct-supplements__form ct-flat"
           aria-labelledby="ct-supplements-form-title"
           onSubmit={(e) => {
             e.preventDefault();
             void save();
           }}
         >
-          <h3 id="ct-supplements-form-title">{tSupplements(form.id === null ? 'formTitleNew' : 'formTitleEdit')}</h3>
+          <h3 id="ct-supplements-form-title" className="ct-section-title">{tSupplements(form.id === null ? 'formTitleNew' : 'formTitleEdit')}</h3>
           <label className="ct-nutrition__field">
             <span className="ct-nutrition__field-label">{tSupplements('name')}</span>
             <input className="ct-nutrition__input" maxLength={80} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
@@ -286,7 +286,7 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
       )}
 
       {supplements.length === 0 ? (
-        <div className="ct-supplements__panel">
+        <div className="ct-supplements__panel ct-flat">
           <p>{tSupplements('empty')}</p>
           <p className="ct-nutrition__muted">{tSupplements('emptyHint')}</p>
         </div>
@@ -314,16 +314,16 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
       )}
 
       {stats !== null ? (
-        <section className="ct-supplements__panel" aria-labelledby="ct-supplements-stats">
-          <h3 id="ct-supplements-stats">{tSupplements('statsTitle')}</h3>
+        <section className="ct-supplements__panel ct-flat" aria-labelledby="ct-supplements-stats">
+          <h3 id="ct-supplements-stats" className="ct-section-title">{tSupplements('statsTitle')}</h3>
           <p>{tSupplements('stats7', { value: adherenceText(stats.week) })}</p>
           <p>{tSupplements('stats30', { value: adherenceText(stats.month) })}</p>
           <p>{stats.streak === 0 ? tSupplements('streakNone') : stats.streak === 1 ? tSupplements('streakOne') : tSupplements('streakMany', { n: stats.streak })}</p>
         </section>
       ) : null}
 
-      <section className="ct-supplements__panel" aria-labelledby="ct-supplements-reminders">
-        <h3 id="ct-supplements-reminders">{tSupplements('remindersTitle')}</h3>
+      <section className="ct-supplements__panel ct-flat" aria-labelledby="ct-supplements-reminders">
+        <h3 id="ct-supplements-reminders" className="ct-section-title">{tSupplements('remindersTitle')}</h3>
         {reminders !== null && reminders.result?.status !== 'unsupported' ? (
           <>
             <Switch checked={reminders.enabled} label={tSupplements('remindersLabel')} onChange={(enabled) => void toggleReminders(enabled)} />

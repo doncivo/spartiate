@@ -59,7 +59,7 @@ export function AppearanceScreen() {
           </p>
         )}
         {/* --- Section THÈME (P-02) --- */}
-        <h2 className="ct-appearance__section">{t('appearance.sectionTheme')}</h2>
+        <h2 className="ct-appearance__section ct-section-title">{t('appearance.sectionTheme')}</h2>
         <div className="ct-appearance__field">
           <span className="ct-appearance__label">{t('appearance.theme')}</span>
           <SegmentedControl
@@ -77,7 +77,7 @@ export function AppearanceScreen() {
           {announced ? t(ANNOUNCE_KEY[theme]) : ''}
         </p>
         {/* --- fin section THÈME --- */}
-        <h2 className="ct-appearance__section">{t('appearance.sectionWeek')}</h2>
+        <h2 className="ct-appearance__section ct-section-title">{t('appearance.sectionWeek')}</h2>
         <div className="ct-appearance__field">
           <span className="ct-appearance__label">{t('appearance.firstDay')}</span>
           <SegmentedControl
@@ -88,13 +88,13 @@ export function AppearanceScreen() {
           />
         </div>
         <p className="ct-appearance__hint">{t('appearance.weekHint')}</p>
-        <h2 className="ct-appearance__section">{t('appearance.sectionLanguage')}</h2>
+        <h2 className="ct-appearance__section ct-section-title">{t('appearance.sectionLanguage')}</h2>
         <div className="ct-appearance__row">
           <span>{t('appearance.language')}</span>
           <span className="ct-appearance__value">{t('appearance.languageValue')}</span>
         </div>
         <p className="ct-appearance__hint">{t('appearance.languageHint')}</p>
-        <h2 className="ct-appearance__section">{t('appearance.sectionTime')}</h2>
+        <h2 className="ct-appearance__section ct-section-title">{t('appearance.sectionTime')}</h2>
         <div className="ct-appearance__field">
           <span className="ct-appearance__label">{t('appearance.timeFormat')}</span>
           <SegmentedControl

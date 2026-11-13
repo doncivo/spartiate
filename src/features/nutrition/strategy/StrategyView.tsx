@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ACTIVITY_LEVELS, GOAL_RATE_MAX_KG, type ActivityLevel, type CheckInStyle, type NutritionPrefs, type Target } from '../../../domain/nutrition';
 import type { NutritionTargetRecord } from '../../../db/repositories/nutritionTargetRepository';
 import { formatDayMonth, formatInt, tNutrition, weekdayNames, type NutritionTextKey } from '../../../i18n/nutritionText';
-import { Button, SegmentedControl } from '../../../ui';
+import { Button, HeroFigure, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { NumberField, parseNumber } from '../shared';
@@ -22,11 +22,15 @@ export function describeDecision(record: NutritionTargetRecord): string {
   return tNutrition(record.accepted ? 'historyAuto' : 'historyAutoRefused');
 }
 
+/** Cible actuelle : les calories en chiffre héros du bloc (ERGO-01b), les macros en dessous. */
 export function TargetSummary({ target }: { readonly target: Target }) {
   return (
-    <p className="ct-nutrition__num">
-      {tNutrition('kcalValue', { n: formatInt(target.kcal) })} · {tNutrition('macroShortP')} {formatInt(target.proteinG)} · {tNutrition('macroShortC')} {formatInt(target.carbG)} · {tNutrition('macroShortF')} {formatInt(target.fatG)}
-    </p>
+    <>
+      <HeroFigure value={formatInt(target.kcal)} unit={tNutrition('targetKcalUnit')} />
+      <p className="ct-nutrition__num">
+        {tNutrition('macroShortP')} {formatInt(target.proteinG)} · {tNutrition('macroShortC')} {formatInt(target.carbG)} · {tNutrition('macroShortF')} {formatInt(target.fatG)}
+      </p>
+    </>
   );
 }
 
@@ -99,8 +103,8 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
         </p>
       ) : null}
 
-      <section className="ct-nutrition__card" aria-labelledby="ct-nutrition-style">
-        <h2 id="ct-nutrition-style" className="ct-nutrition__eyebrow">
+      <section className="ct-nutrition__card ct-flat" aria-labelledby="ct-nutrition-style">
+        <h2 id="ct-nutrition-style" className="ct-nutrition__eyebrow ct-section-title">
           {tNutrition('styleTitle')}
         </h2>
         <SegmentedControl
@@ -117,8 +121,8 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
         <p className="ct-nutrition__muted">{tNutrition('styleHelp')}</p>
       </section>
 
-      <section className="ct-nutrition__card" aria-labelledby="ct-nutrition-goal">
-        <h2 id="ct-nutrition-goal" className="ct-nutrition__eyebrow">
+      <section className="ct-nutrition__card ct-flat" aria-labelledby="ct-nutrition-goal">
+        <h2 id="ct-nutrition-goal" className="ct-nutrition__eyebrow ct-section-title">
           {tNutrition('goalTitle')}
         </h2>
         <SegmentedControl
@@ -145,8 +149,8 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
         )}
       </section>
 
-      <section className="ct-nutrition__card" aria-labelledby="ct-nutrition-activity">
-        <h2 id="ct-nutrition-activity" className="ct-nutrition__eyebrow">
+      <section className="ct-nutrition__card ct-flat" aria-labelledby="ct-nutrition-activity">
+        <h2 id="ct-nutrition-activity" className="ct-nutrition__eyebrow ct-section-title">
           {tNutrition('activityTitle')}
         </h2>
         <SegmentedControl
@@ -172,8 +176,8 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
         )}
       </section>
 
-      <section className="ct-nutrition__card" aria-labelledby="ct-nutrition-weekday">
-        <h2 id="ct-nutrition-weekday" className="ct-nutrition__eyebrow">
+      <section className="ct-nutrition__card ct-flat" aria-labelledby="ct-nutrition-weekday">
+        <h2 id="ct-nutrition-weekday" className="ct-nutrition__eyebrow ct-section-title">
           {tNutrition('sectionCheckIn')}
         </h2>
         <label className="ct-nutrition__field">
@@ -193,8 +197,8 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
         <p className="ct-nutrition__muted">{tNutrition('weekdayHelp')}</p>
       </section>
 
-      <section className="ct-nutrition__card" aria-labelledby="ct-nutrition-current">
-        <h2 id="ct-nutrition-current" className="ct-nutrition__eyebrow">
+      <section className="ct-nutrition__card ct-flat" aria-labelledby="ct-nutrition-current">
+        <h2 id="ct-nutrition-current" className="ct-nutrition__eyebrow ct-section-title">
           {tNutrition('currentTarget')}
         </h2>
         {target === null ? (
@@ -209,8 +213,8 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
         {saved ? <p role="status">{tNutrition('targetSaved')}</p> : null}
       </section>
 
-      <section className="ct-nutrition__card" aria-labelledby="ct-nutrition-history">
-        <h2 id="ct-nutrition-history" className="ct-nutrition__eyebrow">
+      <section className="ct-nutrition__card ct-flat" aria-labelledby="ct-nutrition-history">
+        <h2 id="ct-nutrition-history" className="ct-nutrition__eyebrow ct-section-title">
           {tNutrition('historyTitle')}
         </h2>
         {targets.length === 0 ? (

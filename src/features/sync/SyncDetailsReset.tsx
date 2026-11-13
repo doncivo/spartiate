@@ -120,7 +120,7 @@ export function SyncDetailsReset() {
 
   return (
     <>
-      <h2 className="ct-settings__section" data-tone="danger">{t('sync.reset.section')}</h2>
+      <h2 className="ct-settings__section ct-section-title" data-tone="danger">{t('sync.reset.section')}</h2>
       <div role="status" className="ct-sync__reset" data-testid="sync-reset">
         {required && (
           <div className="ct-settings__row ct-sync__device" data-reset-required="true">
@@ -203,7 +203,7 @@ export function SyncDetailsReset() {
       {waiting.length > 0 && <WaitingDevices waiting={waiting} devices={devices} nowMs={nowMs} />}
       {showKey && (
         <>
-          <h2 className="ct-settings__section">{t('sync.reset.recoveryTitle')}</h2>
+          <h2 className="ct-settings__section ct-section-title">{t('sync.reset.recoveryTitle')}</h2>
           <div className="ct-settings__row">
             <span className="ct-settings__stack">
               {t('sync.reset.recoveryBody')}
@@ -228,7 +228,7 @@ export function SyncDetailsReset() {
 function WaitingDevices({ waiting, devices, nowMs }: { readonly waiting: readonly DeviceId[]; readonly devices: readonly SyncDeviceStatus[]; readonly nowMs: number }) {
   return (
     <>
-      <h2 className="ct-settings__section">{t('sync.reset.waitingTitle')}</h2>
+      <h2 className="ct-settings__section ct-section-title">{t('sync.reset.waitingTitle')}</h2>
       <p className="ct-settings__hint">{t('sync.reset.waitingHint')}</p>
       <ul className="ct-sync__devices" data-testid="sync-reset-waiting">
         {waiting.map((id) => {
