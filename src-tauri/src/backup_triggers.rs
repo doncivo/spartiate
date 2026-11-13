@@ -4405,6 +4405,15 @@ pub fn introduced_in(name: &str) -> Option<u32> {
     })
 }
 
+/// I6-06 : première version de schéma de l'ancien projet (CircleTasks : 17 à 19, D-54) que la numérotation de Spartiate rejoint. À partir d'elle,
+/// une sauvegarde qui porte un déclencheur de l'ancien projet vient de l'ancien projet et reste refusée, quelle que soit la version de l'app.
+pub const OLD_PROJECT_COLLIDING_FROM: u32 = 17;
+
+/// Déclencheur connu de la référence et propre à l'ancien projet (aucune migration Spartiate ne le crée).
+pub fn is_old_project_trigger(name: &str) -> bool {
+    REFERENCE_TRIGGERS.iter().any(|(n, _, _)| *n == name) && is_legacy(name)
+}
+
 /// Déclencheur hérité de l'ancien projet (aucune migration Spartiate ne le crée).
 fn is_legacy(name: &str) -> bool {
     !SPARTIATE_TRIGGERS_BY_VERSION

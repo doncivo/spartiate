@@ -22,7 +22,9 @@ use std::path::{Path, PathBuf};
 use serde::Serialize;
 use tauri::{AppHandle, Manager};
 
-use crate::backup_triggers::{trigger_body_for, REFERENCE_TRIGGERS};
+use crate::backup_triggers::{
+    is_old_project_trigger, trigger_body_for, OLD_PROJECT_COLLIDING_FROM, REFERENCE_TRIGGERS,
+};
 
 /// Nom du fichier de base (tauri-plugin-sql, `sqlite:spartiate.db`).
 pub const DB_FILE: &str = "spartiate.db";
@@ -900,6 +902,18 @@ pub fn check_backup_file(path: &Path, app_version: u32) -> Result<u32, BackupErr
         return Err(BackupError::new(
             "newer-schema",
             format!("version de schéma {version} > {app_version}"),
+        ));
+    }
+    // I6-06 : la numérotation de Spartiate rejoint celle de l'ancien projet (versions 17 à 19 de CircleTasks, D-54). Une sauvegarde qui porte un
+    // déclencheur de l'ancien projet à partir de la version 17 vient de l'ancien projet : elle reste refusée comme d'un schéma inconnu.
+    if version >= OLD_PROJECT_COLLIDING_FROM
+        && found
+            .iter()
+            .any(|(kind, name, _, _)| kind == "trigger" && is_old_project_trigger(name))
+    {
+        return Err(BackupError::new(
+            "newer-schema",
+            format!("sauvegarde de l'ancien projet (version de schéma {version})"),
         ));
     }
     Ok(version)
