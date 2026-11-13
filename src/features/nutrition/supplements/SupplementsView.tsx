@@ -311,6 +311,7 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
         </form>
       ) : (
         <Button
+          variant="secondary"
           onClick={() => {
             setFormError(null);
             setForm(EMPTY_FORM);

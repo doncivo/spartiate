@@ -119,7 +119,7 @@ export function ZoneCurve({ points, zoneName, large }: { readonly points: readon
   const geometry = curveGeometry(points, width, height, large ? 12 : 6);
   if (geometry === null) return null;
   const sorted = [...points].sort((a, b) => (a.date < b.date ? -1 : 1)).slice(-12);
-  const label = tBodyProgress('curveLabel', { zone: zoneName, from: formatCm(sorted[0]!.value), to: formatCm(sorted.at(-1)!.value) });
+  const label = tBodyProgress('curveLabel', { zone: zoneName, from: formatCm(sorted[0]?.value ?? 0), to: formatCm(sorted.at(-1)?.value ?? 0) });
   return (
     <svg className="ct-bodyprogress__curve" viewBox={`-6 -6 ${String(width + 12)} ${String(height + 12)}`} role="img" aria-label={label}>
       <path className="ct-bodyprogress__curveline" d={geometry.path} fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />

@@ -19,7 +19,7 @@ import { quickAddDraft, saveManualTarget, saveNutritionPrefs } from '../useCases
 const DEVICE = '60000000-0000-4000-8000-0000000000e3' as DeviceId;
 const TODAY = '2026-11-09' as LocalDate;
 const d = (offset: number): LocalDate => addDays(TODAY, offset);
-const fr = (n: number): string => n.toLocaleString('fr-FR').replace(/[  ]/g, ' ');
+const fr = (n: number): string => n.toLocaleString('fr-FR').replace(/\s/g, ' ');
 let db: TestDb;
 
 beforeAll(async () => {
@@ -101,7 +101,7 @@ describe('Check-in : proposition (CheckIn-apres)', () => {
     const table = within(r).getByRole('table', { name: 'Proposition' });
     expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Actuel', 'Proposé', 'Écart']);
     const kcal = within(table).getByRole('row', { name: /^Calories/ });
-    expect((kcal.textContent ?? '').replace(/[  ]/g, ' ')).toContain(fr(2400));
+    expect((kcal.textContent ?? '').replace(/\s/g, ' ')).toContain(fr(2400));
     for (const label of ['Calories', 'Protéines', 'Glucides', 'Lipides']) expect(within(table).getByRole('row', { name: new RegExp(`^${label}`) })).toBeInTheDocument();
     expect(within(r).getByText('borne ± 150 kcal')).toBeInTheDocument();
   });

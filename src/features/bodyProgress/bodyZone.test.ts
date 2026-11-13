@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { LocalDate } from '../../domain/types';
 import { SILHOUETTE_DOTS, curveGeometry, summarizeZone, type ZonePoint } from './bodyZone';
 
+function need<T>(value: T | null | undefined): T {
+  if (value === null || value === undefined) throw new Error('valeur attendue');
+  return value;
+}
 const p = (date: string, value: number): ZonePoint => ({ date: date as LocalDate, value });
 
 /** ERGO-02 (C1, C2) : écart sur 4 semaines et courbe de Progrès › Corps, calculs d'affichage seulement (aucune règle métier). */
@@ -42,24 +46,23 @@ describe('curveGeometry : courbe de la zone', () => {
   });
 
   it('une valeur plus haute est plus haut dans l’image ; le dernier point est marqué ; x suit les dates', () => {
-    const g = curveGeometry([p('2026-11-01', 90), p('2026-11-11', 88), p('2026-11-21', 86)], 200, 60);
-    expect(g).not.toBeNull();
-    expect(g!.dots).toHaveLength(3);
-    expect(g!.dots.map((d) => d.last)).toEqual([false, false, true]);
-    expect(g!.dots[0]!.y).toBeLessThan(g!.dots[2]!.y);
-    expect(g!.dots[1]!.x).toBeCloseTo(100, 5);
-    expect(g!.path.startsWith('M')).toBe(true);
-    expect([g!.min, g!.max]).toEqual([86, 90]);
+    const g = need(curveGeometry([p('2026-11-01', 90), p('2026-11-11', 88), p('2026-11-21', 86)], 200, 60));
+    expect(g.dots).toHaveLength(3);
+    expect(g.dots.map((d) => d.last)).toEqual([false, false, true]);
+    expect(need(g.dots[0]).y).toBeLessThan(need(g.dots[2]).y);
+    expect(need(g.dots[1]).x).toBeCloseTo(100, 5);
+    expect(g.path.startsWith('M')).toBe(true);
+    expect([g.min, g.max]).toEqual([86, 90]);
   });
 
   it('valeurs toutes égales : droite au milieu, sans division par zéro', () => {
-    const g = curveGeometry([p('2026-11-01', 80), p('2026-11-08', 80)], 200, 60);
-    expect(g!.dots.every((d) => Number.isFinite(d.y) && d.y === 30)).toBe(true);
+    const g = need(curveGeometry([p('2026-11-01', 80), p('2026-11-08', 80)], 200, 60));
+    expect(g.dots.every((d) => Number.isFinite(d.y) && d.y === 30)).toBe(true);
   });
 
   it('au plus douze dernières mesures', () => {
     const points = Array.from({ length: 20 }, (_, i) => p(`2026-10-${String(i + 1).padStart(2, '0')}`, 80 + i));
-    expect(curveGeometry(points, 200, 60)!.dots).toHaveLength(12);
+    expect(need(curveGeometry(points, 200, 60)).dots).toHaveLength(12);
   });
 });
 
