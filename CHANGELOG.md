@@ -9,6 +9,12 @@ Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGEL
 - **Favoris synchronisés** (ta décision) : une étoile posée sur le PC apparaît sur l'iPhone et inversement. Tes favoris d'avant sont repris une fois, dans leur ordre, à la première ouverture de « Rechercher un aliment » sur chaque appareil, puis réunis par la synchro, sans doublon. Retirer un favori sur un appareil le retire aussi sur l'autre ; si tu le remets plus tard ailleurs, c'est ton dernier geste qui compte. Un favori dont l'aliment n'est pas encore arrivé sur cet appareil reste masqué au lieu d'être effacé.
 - **Journée rouge : charges −5 %** (ta décision) : quand tu acceptes la journée rouge (Recovery 33 ou moins), tes charges sont multipliées par 0,95 et arrondies vers le bas au matériel de ta salle (100 kg → 95 kg), jamais sous la charge la plus petite disponible (barre seule, plus petite paire d'haltères). Séries et répétitions restent celles de ta dernière séance, aucune hausse. Le bandeau dit « charges allégées de 5 % » et le bouton devient « Accepter l'allègement ». Sur un exercice assisté, l'assistance n'est jamais réduite.
 - **Export** : l'export et l'export complet (`food_favorite.csv`) portent tes favoris. Une archive faite avant cette version s'importe toujours et ne retire jamais un favori.
+## 0.18.1
+
+**Sans migration** (la base reste en schéma 14) : cette version peut s'installer sur PC et iPhone à tout moment.
+
+- **Moteur de base de données à jour** : Spartiate embarque maintenant SQLite 3.54.1 (avant : 3.46.0), qui corrige une faille de sécurité (RUSTSEC-2026-0459) : un fichier de base accompagné d'un journal `-wal` piégé pouvait faire relire des octets de mémoire. Tu n'avais rien à craindre en pratique (Spartiate n'ouvre que ta propre base et tes sauvegardes), mais l'exception qui tolérait cette faille dans nos contrôles est retirée.
+- **Rien ne change pour toi** : tes données, tes séances et tes sauvegardes restent lisibles telles quelles. La protection ajoutée en 0.9.4 (une sauvegarde dont le journal `-wal` ne correspond pas est refusée) reste en place.
 
 ## 0.18.0
 
