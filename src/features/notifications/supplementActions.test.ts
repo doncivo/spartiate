@@ -17,7 +17,11 @@ const D = '2026-11-13' as LocalDate;
 const T = '08:00' as LocalTime;
 const NOW = Date.parse('2026-11-13T07:30:00Z');
 let db: TestDb;
-afterEach(async () => db.close());
+let opened = false;
+afterEach(async () => {
+  if (opened) await db.close();
+  opened = false;
+});
 
 const draft = { name: 'Créatine secrète', dose: 5, unit: 'g', times: [T], days: 127, active: true };
 const intakeRows = () => db.driver.select<{ id: string; deleted_at: string | null }>('SELECT id, deleted_at FROM supplement_intake ORDER BY id');
@@ -25,6 +29,7 @@ const intakeOutbox = () => db.driver.select<{ row_id: string }>("SELECT row_id F
 
 async function setup(over: Partial<SupplementActionDeps> = {}) {
   db = await openBaseDb(DEVICE, '2026-11-01T08:00:00.000Z');
+  opened = true;
   const repo = await db.data.repos.supplements();
   const a = await repo.create(draft);
   const b = await repo.create({ ...draft, name: 'Zinc' });
