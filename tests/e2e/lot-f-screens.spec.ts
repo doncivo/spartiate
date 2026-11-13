@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { installFakeBackups, type FakeVersion } from './helpers/backups';
 import { installFakeFiles, nextFilesMode } from './helpers/files';
 import { openToday } from './helpers/today';
+import { openPlusEntry } from './helpers/settings';
 
 /**
  * Lot F (FILES-IOS-01, I-04, P-04-iOS), consigne d'audit : chaque écran du lot tient dans 440 × 956 (projet `iphone`) sans défilement
@@ -26,6 +27,7 @@ test.describe('Lot F — écrans sans défilement horizontal, échecs avec une a
     await installFakeFiles(page);
     await openToday(page);
     await tab(page, 'Plus').click();
+    await openPlusEntry(page, /^À propos et diagnostic/);
     await page.getByRole('button', { name: 'Ouvrir l’écran des logs' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Logs' })).toBeVisible();
     await noHorizontalScroll(page);
@@ -43,6 +45,7 @@ test.describe('Lot F — écrans sans défilement horizontal, échecs avec une a
     await installFakeBackups(page, VERSIONS, { directory: null });
     await openToday(page);
     await tab(page, 'Plus').click();
+    await openPlusEntry(page, /^Sauvegarde/);
     await page.getByRole('button', { name: 'Restaurer une sauvegarde' }).click();
     const sheet = page.getByRole('dialog', { name: 'Restaurer une sauvegarde' });
     await expect(sheet).toBeVisible();

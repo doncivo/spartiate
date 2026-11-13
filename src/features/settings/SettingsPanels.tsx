@@ -59,7 +59,7 @@ function content(id: PanelId): ReactNode {
         <>
           {/* Dossier, association de cet appareil et « Oublier » : mêmes actions que la ligne de Réglages d'avant. */}
           <div className="ct-settings__card ct-flat">
-            <SyncSettingsSection heading={false} showStatus={false} />
+            <SyncSettingsSection heading={false} showStatus={false} showPairing={false} />
           </div>
           <SyncDetailsScreen />
         </>
