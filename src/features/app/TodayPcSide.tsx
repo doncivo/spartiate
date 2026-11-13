@@ -13,7 +13,6 @@ import { formatExerciseLoad } from '../../i18n/trainingText';
 import { MissingValue } from '../../ui/MissingValue';
 import { useSyncedData } from '../sync/remoteChanges';
 import { loadNutritionSnapshot, type NutritionSnapshot } from '../nutrition/useCases';
-import { localDayOf } from '../training/cycle/currentCycle';
 import { readTrainingData } from '../training/trainingState';
 import { useAppContainer } from './AppContainerContext';
 import './TodayScreen.css';
@@ -25,6 +24,12 @@ import './TodayScreen.css';
  * (`lazyScreens.TodayPcSide`) : l'écran du départ ne l'importe jamais. Donnée manquante : « — » et sa raison, jamais un zéro.
  */
 const DAY_MS = 86_400_000;
+
+/** Date locale de l'appareil d'un instant (comme `localDayOf` du cycle, recopiée : importer le cycle créerait un bloc partagé de plus). */
+function localDayOf(ms: number): string {
+  const d = new Date(ms);
+  return `${String(d.getFullYear())}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 const WEEK = 7;
 const RECENT = 10;
 const RECORD_WORKOUTS = 3;

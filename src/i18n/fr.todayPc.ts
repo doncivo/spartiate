@@ -1,16 +1,8 @@
 /**
- * ERGO-02 (PC-Aujourdhui-apres.dc.html) : textes de la séance du jour en tableau et de la colonne droite d'Aujourd'hui PC. Catalogue à part de
- * fr.today.ts (départ) : il n'est lu que par des blocs à la demande (TodaySessionCard, TodayPcSide) et se charge avec eux.
+ * ERGO-02 (PC-Aujourdhui-apres.dc.html) : textes de la colonne droite d'Aujourd'hui PC (le tableau de la séance du jour est dans fr.training.ts). Catalogue à part de
+ * fr.today.ts (départ) : il n'est lu que par des blocs à la demande (TodayPcSide) et se charge avec eux.
  */
 export const todayPcFr = {
-  sessionEnterHere: 'Saisir la séance ici',
-  sessionTableRank: '#',
-  sessionTableExercise: 'Exercice',
-  sessionTableTarget: 'Cible',
-  sessionTableLoad: 'Charge',
-  loadToEnter: 'à saisir',
-  sessionTarget: '{sets} × {min}–{max}',
-  sessionTargetSame: '{sets} × {min}',
   macrosLabel: 'Macros du jour',
   macroProtein: 'Protéines',
   macroCarb: 'Glucides',

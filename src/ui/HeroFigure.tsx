@@ -24,3 +24,22 @@ export function HeroFigure({ value, unit, className }: HeroFigureProps) {
     </p>
   );
 }
+
+/**
+ * ERGO-02 (Degrades-apres.dc.html) : donnée manquante = un tiret « — » (décoratif) et sa raison en plus petit, jamais un faux zéro.
+ * Les lecteurs d'écran lisent la raison seule. Défini ici, avec le chiffre héros, pour ne pas créer un bloc de plus (le nom de chaque bloc compte dans le départ) ;
+ * importé par `src/ui/MissingValue.tsx`. Styles `.ct-missing` dans src/ui/theme/figures.css.
+ *
+ * @example
+ * <MissingValue reason="pas de nuit importée" />
+ */
+export function MissingValue({ reason }: { readonly reason: string }) {
+  return (
+    <span className="ct-missing">
+      <span className="ct-missing__dash" aria-hidden="true">
+        —
+      </span>{' '}
+      <span className="ct-missing__reason">{reason}</span>
+    </span>
+  );
+}

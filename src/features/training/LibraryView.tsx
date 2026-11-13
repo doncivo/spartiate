@@ -22,7 +22,7 @@ import { formatNumber, formatRest, parseNumber, tTraining } from '../../i18n/tra
 import type { IsoDateTime } from '../../domain/types';
 import { Button, ConfirmDialog, Icon, SectionTitle, SegmentedControl, Switch, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
-import type { SheetHistory } from './library/ExerciseSheetStats';
+import { SheetFigures, SheetSessions, type SheetHistory } from './library/ExerciseSheetStats';
 import { heldFor } from './loadDisplay';
 import './library/Sheet.css';
 import { groupLabel, KIND_KEY, METRIC_KEY, PATTERN_KEY } from './labels';
@@ -31,8 +31,6 @@ import { exerciseGroup, normalizeSearch, type TrainingData } from './trainingSta
 /** Illustration sous licence (I6-07, D-235) : bloc à la demande, chargé à l'ouverture d'une fiche qui a un média. */
 const ExerciseMedia = lazy(() => import('./media/ExerciseMedia'));
 /** ERGO-02 : chiffres de la fiche (1RM estimé, record, 8 semaines, séances) : bloc à la demande, avec les règles d'estimation du domaine. */
-const SheetFigures = lazy(() => import('./library/ExerciseSheetStats').then((m) => ({ default: m.SheetFigures })));
-const SheetSessions = lazy(() => import('./library/ExerciseSheetStats').then((m) => ({ default: m.SheetSessions })));
 
 // -----------------------------------------------------------------------------------------------------------------------------------
 // Liste filtrable (bibliothèque et choix d'un exercice pour une routine)
