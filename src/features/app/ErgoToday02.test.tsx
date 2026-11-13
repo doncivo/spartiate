@@ -92,6 +92,21 @@ describe('ERGO-02 : Aujourd’hui sur PC, colonne droite', () => {
     expect(within(records).getByText('85 kg')).toBeInTheDocument();
   });
 
+  it('derniers records : les mêmes que le résumé de séance, comparés à tout l’historique (un record plus ancien que les 10 dernières séances compte)', async () => {
+    await db.data.transaction(async (repos) => (await repos.trainingRoutines()).create(ROUTINE));
+    await closeWith(100);
+    for (let i = 0; i < 11; i += 1) {
+      db.clock.advance(60_000);
+      await closeWith(60);
+    }
+    db.clock.advance(60_000);
+    await closeWith(80);
+    open();
+    const records = await screen.findByRole('region', { name: 'Derniers records' });
+    await within(records).findByText('pas encore de record', { exact: false });
+    expect(within(records).queryByText('80 kg')).toBeNull();
+  });
+
   it('ordre de la colonne droite : nutrition, poids, semaine, records ; carte « État » en dernier et sans titre plus grand que les autres', async () => {
     const { container } = open();
     await screen.findByRole('region', { name: 'Cette semaine' });
