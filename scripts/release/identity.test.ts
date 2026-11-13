@@ -27,7 +27,7 @@ describe('configuration Tauri', () => {
   it('porte l’identité Spartiate', () => {
     expect(conf.productName).toBe('Spartiate');
     expect(conf.identifier).toBe('fr.spartiate.app');
-    expect(conf.version).toBe('0.19.1');
+    expect(conf.version).toBe('0.18.2');
     expect(conf.app.windows[0].title).toBe('Spartiate');
   });
   it('rend withGlobalTauri explicitement faux (D-47 7)', () => {
@@ -57,22 +57,22 @@ describe('updater : rétabli en SPA-002 (D-30 clos)', () => {
 });
 
 describe('paquet et crate', () => {
-  it('package.json : spartiate 0.19.1', () => {
+  it('package.json : spartiate 0.18.2', () => {
     const pkg = json('package.json');
     expect(pkg.name).toBe('spartiate');
-    expect(pkg.version).toBe('0.19.1');
+    expect(pkg.version).toBe('0.18.2');
     const lock = json('package-lock.json');
     expect(lock.name).toBe('spartiate');
-    expect(lock.version).toBe('0.19.1');
+    expect(lock.version).toBe('0.18.2');
     expect(lock.packages[''].name).toBe('spartiate');
-    expect(lock.packages[''].version).toBe('0.19.1');
+    expect(lock.packages[''].version).toBe('0.18.2');
   });
   it('Cargo.toml : package, lib et version', () => {
     const cargo = read('src-tauri/Cargo.toml');
     expect(cargo).toMatch(/^name = "spartiate"$/m);
-    expect(cargo).toMatch(/^version = "0.19.1"$/m);
+    expect(cargo).toMatch(/^version = "0.18.2"$/m);
     expect(cargo).toMatch(/^name = "spartiate_lib"$/m);
-    expect(read('src-tauri/Cargo.lock')).toMatch(/\[\[package\]\]\r?\nname = "spartiate"\r?\nversion = "0.19.1"/);
+    expect(read('src-tauri/Cargo.lock')).toMatch(/\[\[package\]\]\r?\nname = "spartiate"\r?\nversion = "0.18.2"/);
     expect(read('src-tauri/src/main.rs')).toContain('spartiate_lib');
   });
 });
