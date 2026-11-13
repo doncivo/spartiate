@@ -3,6 +3,7 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
+import { t } from '../../i18n';
 import { asEntityId, type DeviceId, type IsoDateTime } from '../../domain/types';
 import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { MemorySyncFolder, createMemorySyncPlatform } from '../../platform/sync';
@@ -128,7 +129,7 @@ describe('ERGO-02 — Plus et Appareils et synchro (aperçu 13/11)', () => {
   });
 
   describe('Appareils et synchro', () => {
-    const slots = { pairing: <button type="button">Associer l’iPhone (emplacement)</button>, conflicts: null, version: null, forget: null, reset: null, carryReport: null };
+    const slots = { pairing: <button type="button">{t('sync.pairing.show')}</button>, conflicts: null, version: null, forget: null, reset: null, carryReport: null };
 
     it('iPhone : section « Ajouter un appareil » avec l’appairage', async () => {
       mockViewport(440);
@@ -136,7 +137,7 @@ describe('ERGO-02 — Plus et Appareils et synchro (aperçu 13/11)', () => {
         renderIn(<SyncDetailsScreen slots={slots} />);
       });
       const section = screen.getByRole('region', { name: 'Ajouter un appareil' });
-      expect(within(section).getByRole('button', { name: 'Associer l’iPhone (emplacement)' })).toBeInTheDocument();
+      expect(within(section).getByRole('button', { name: t('sync.pairing.show') })).toBeInTheDocument();
     });
 
     it('PC : « Ajouter un iPhone » est une colonne à droite de l’état et des appareils', async () => {
@@ -145,7 +146,7 @@ describe('ERGO-02 — Plus et Appareils et synchro (aperçu 13/11)', () => {
         renderIn(<SyncDetailsScreen slots={slots} />);
       });
       const aside = screen.getByRole('region', { name: 'Ajouter un iPhone' });
-      expect(within(aside).getByRole('button', { name: 'Associer l’iPhone (emplacement)' })).toBeInTheDocument();
+      expect(within(aside).getByRole('button', { name: t('sync.pairing.show') })).toBeInTheDocument();
       const main = document.querySelector('.ct-sync__main');
       expect(main).not.toBeNull();
       expect((main as Element).compareDocumentPosition(aside) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
