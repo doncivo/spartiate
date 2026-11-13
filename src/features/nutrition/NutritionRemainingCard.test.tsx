@@ -18,6 +18,11 @@ const TODAY = '2026-11-09' as LocalDate;
 let db: TestDb;
 /** Testing Library normalise les espaces du DOM (fines insécables comprises) : même normalisation côté attendu. */
 const fr = (n: number): string => n.toLocaleString('fr-FR').replace(/[\u202f\u00a0]/g, ' ');
+/** ERGO-01 : la ligne est un chiffre h\u00e9ros et son unit\u00e9 (deux \u00e9l\u00e9ments) ; on lit le texte complet de la ligne, inchang\u00e9. */
+const heroLine =
+  (text: string) =>
+  (_: string, el: Element | null): boolean =>
+    (el?.classList.contains('ct-hero') ?? false) && (el?.textContent ?? '').replace(/[\u202f\u00a0]/g, ' ') === text;
 const mount = () =>
   render(
     <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data })}>
@@ -47,7 +52,7 @@ describe('I4-03 : NutritionRemainingCard', () => {
     await saveManualTarget(db.data, { weekStart: '2026-11-01' as LocalDate, target: { kcal: 2400, proteinG: 170, fatG: 75, carbG: 261 }, lowFloorConfirmed: false });
     await (await db.data.repos.mealEntries()).create(quickAddDraft({ date: TODAY, time: '08:00' as LocalTime, name: 'Petit-déjeuner', kcal: 500, proteinG: 30, fatG: 10, carbG: 60 }));
     mount();
-    expect(await screen.findByText(`${fr(1900)} kcal restantes`)).toBeInTheDocument();
+    expect(await screen.findByText(heroLine(`${fr(1900)} kcal restantes`))).toBeInTheDocument();
     expect(screen.getByText('Journée partielle')).toBeInTheDocument();
     act(() => fireEvent.click(screen.getByRole('button', { name: 'Ouvrir le journal' })));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'nutrition', screen: 'journal' });
@@ -66,7 +71,7 @@ describe('I4-03 : NutritionRemainingCard', () => {
   it('journée sans entrée avec cible : cible entière restante et « rien de saisi » (pas de zéro)', async () => {
     await saveManualTarget(db.data, { weekStart: '2026-11-01' as LocalDate, target: { kcal: 2400, proteinG: 170, fatG: 75, carbG: 261 }, lowFloorConfirmed: false });
     mount();
-    expect(await screen.findByText(`${fr(2400)} kcal restantes`)).toBeInTheDocument();
+    expect(await screen.findByText(heroLine(`${fr(2400)} kcal restantes`))).toBeInTheDocument();
     expect(screen.getByText('Rien de saisi aujourd’hui')).toBeInTheDocument();
   });
 });
