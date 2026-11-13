@@ -4,8 +4,7 @@ import { createHlcClock } from '../../domain/hlc';
 import type { RoutineInput } from '../../domain/training';
 import type { DeviceId, LocalDate, LocalTime } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
-import { loadNutritionSnapshot, quickAddDraft, saveManualTarget } from '../nutrition/useCases';
-import { readTrainingData } from '../training/trainingState';
+import { quickAddDraft, saveManualTarget } from '../nutrition/useCases';
 import { PC_MEDIA_QUERY } from '../../ui';
 import { AppContainerProvider } from './AppContainerContext';
 import { AppStatusBanner } from './AppStatusBanner';
@@ -13,6 +12,7 @@ import { createAppContainer } from './container';
 import { INITIAL_NAVIGATION, useNavigationStore } from './navigation';
 import { useAppStatusStore } from './appStatus';
 import { TodayScreen } from './TodayScreen';
+import { preloadTodayBlocks } from './todayTestPreload';
 
 /**
  * ERGO-02 (PC-Aujourdhui-apres.dc.html, Degrades-apres.dc.html) : Aujourd'hui PC réaligné (colonne droite : nutrition et macros, poids et
@@ -45,24 +45,7 @@ async function closeWith(loadKg: number): Promise<void> {
   await db.data.transaction(async (repos) => (await repos.workouts()).close(w.id));
 }
 
-// Premier import des blocs à la demande d'Aujourd'hui PC (colonne droite, séance, récupération, nutrition, compléments, notices) hors de la
-// mesure des attentes : à froid, ils se chargent ensemble et dépassent l'attente par défaut. Aucune attente allongée.
-beforeAll(async () => {
-  await Promise.all([
-    import('./TodayPcSide'),
-    import('./SectionNotice'),
-    import('../training/session/TodaySessionCard'),
-    import('../nutrition/NutritionRemainingCard'),
-    import('../nutrition/supplements/SupplementsTodayCard'),
-    import('../recovery/RecoveryToday'),
-  ]);
-  // Premières lectures (instantané de Nutrition, données d'entraînement) sur une base jetable : compilation des requêtes à froid.
-  const warm = await openBaseDb(DEVICE, '2026-11-10T07:00:00.000Z');
-  await loadNutritionSnapshot(warm.data, '2026-11-10' as LocalDate);
-  await readTrainingData(warm.data);
-  await (await warm.data.repos.workouts()).listClosed(10);
-  await warm.close();
-}, 30_000);
+beforeAll(() => preloadTodayBlocks('2026-11-10T07:00:00.000Z'), 30_000);
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
   viewport();

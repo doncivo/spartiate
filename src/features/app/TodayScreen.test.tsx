@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { DeviceId, LocalDate } from '../../domain/types';
 import type { SyncEngineService } from '../../platform/sync/types';
@@ -9,6 +9,7 @@ import { AppContainerProvider } from './AppContainerContext';
 import { createAppContainer } from './container';
 import { INITIAL_NAVIGATION, useNavigationStore } from './navigation';
 import { TodayScreen } from './TodayScreen';
+import { preloadTodayBlocks } from './todayTestPreload';
 
 const DEVICE = '60000000-0000-4000-8000-0000000000c9' as DeviceId;
 
@@ -40,7 +41,9 @@ describe('Aujourd’hui (I0) : planches iPhone et PC, valeurs réelles seulement
       await weights.saveManual({ date: `2026-11-${day}` as LocalDate, kg, timezone: 'Europe/Paris' }, '2026-11-04' as LocalDate);
     }
   };
-  beforeEach(async () => {
+  // ERGO-02 : la colonne droite d'Aujourd'hui PC (poids compris) est un bloc à la demande ; premier import hors des attentes.
+beforeAll(() => preloadTodayBlocks('2026-11-04T08:00:00.000Z', false), 30_000);
+beforeEach(async () => {
     useNavigationStore.setState(INITIAL_NAVIGATION);
     db = await openBaseDb(DEVICE, '2026-11-04T08:00:00.000Z');
   });
