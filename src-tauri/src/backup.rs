@@ -45,6 +45,8 @@ pub const KEEP_PRE_RESTORE_BACKUPS: usize = 3;
 pub const APP_SCHEMA_VERSION: u32 = 18;
 /// I6-05 (D-215) : première version de schéma commune à Spartiate et à l'ancien projet (sauvegardes 17 à 19 de CircleTasks).
 pub const LEGACY_COLLISION_FROM: u32 = 17;
+/// I6-06 (D-226) : table centrale de l'ancien projet, qu'aucune migration Spartiate ne crée (base neuve, D-23).
+pub const OLD_PROJECT_TABLE: &str = "task";
 /// Plafond de taille d'une base à vérifier ou à restaurer (512 Mo) : au-delà, la sauvegarde est refusée (`corrupt`).
 pub const MAX_BACKUP_BYTES: u64 = 512 * 1024 * 1024;
 /// Attente maximale d'un verrou pendant une sauvegarde quotidienne : la base n'est jamais bloquée plus de 2 s (P-04 critère 1).
@@ -915,6 +917,24 @@ pub fn check_backup_file(path: &Path, app_version: u32) -> Result<u32, BackupErr
             "newer-schema",
             format!("sauvegarde de l'ancien projet (version de schéma {version})"),
         ));
+    }
+    // I6-06 (D-226) : Spartiate atteint la version 18 ; une base de l'ancien projet SANS déclencheur de capture est reconnue à sa table `task`,
+    // qu'aucune migration Spartiate ne crée : refusée de même aux versions que Spartiate a rejointes (17 à la sienne ; au-delà, « plus récent »
+    // refuse déjà, et un appel qui simule une app plus récente garde l'ancienne règle) (D-54, D-215).
+    if (LEGACY_COLLISION_FROM..=APP_SCHEMA_VERSION).contains(&version) {
+        let old_project_table: u32 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?1",
+                [OLD_PROJECT_TABLE],
+                |r| r.get(0),
+            )
+            .map_err(|e| corrupt(e.to_string()))?;
+        if old_project_table > 0 {
+            return Err(BackupError::new(
+                "newer-schema",
+                format!("sauvegarde de l'ancien projet (version de schéma {version})"),
+            ));
+        }
     }
     Ok(version)
 }
