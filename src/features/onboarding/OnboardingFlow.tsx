@@ -186,6 +186,8 @@ export function OnboardingFlow({ onClose, healthKit = platformHealthKit }: Onboa
   // ERGO-02 (C6) : sur iPhone seulement, le poids lu dans Santé (lecture existante, autorisation déjà accordée) remplit un champ encore vide.
   // Jamais de demande d'autorisation ici, jamais de lecture sur PC ; un champ déjà rempli ou saisi n'est jamais remplacé.
   const healthTried = useRef(false);
+  /** Poids lu dans Santé et posé dans le champ (null : aucun) ; comparé à la fin pour ne pas en faire une pesée s'il n'a pas été modifié. */
+  const healthPrefillKg = useRef<number | null>(null);
   const latest = useRef<{ draft: OnboardingDraft | null; texts: FieldTexts }>({ draft: null, texts });
   useEffect(() => {
     latest.current = { draft, texts };
@@ -198,6 +200,7 @@ export function OnboardingFlow({ onClose, healthKit = platformHealthKit }: Onboa
         const current = latest.current;
         if (read.state !== 'granted' || current.draft === null || current.draft.weightKg !== null || current.texts.weightKg.trim() !== '') return;
         setTexts((old) => ({ ...old, weightKg: asText(read.value.kg) }));
+        healthPrefillKg.current = read.value.kg;
         setHealthSource(read.value.source.name);
         commit({ ...current.draft, weightKg: read.value.kg });
       },
@@ -298,7 +301,7 @@ export function OnboardingFlow({ onClose, healthKit = platformHealthKit }: Onboa
         setBusy(false);
         return;
       }
-      await finishOnboarding({ data, ids: container.ids, today, timeZone, year }, draft, loaded, { baseline, refused: [...(refused ?? [])] });
+      await finishOnboarding({ data, ids: container.ids, today, timeZone, year }, draft, loaded, { baseline, refused: [...(refused ?? [])], healthPrefillKg: healthPrefillKg.current });
       navigate({ tab: 'today' });
       onClose('done');
     } catch (error) {
