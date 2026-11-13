@@ -96,6 +96,23 @@ describe('ERGO-01 : série en cours en bloc central', () => {
   });
 });
 
+describe('ERGO-01 (passe code-reviewer) : série en cours dans un circuit', () => {
+  it('séries alternées : après la 1re série du couché, la série en cours est la 1re du rowing (ordre de la séance, pas ordre des blocs)', async () => {
+    const started = await db.data.transaction(async (repos) => (await repos.workouts()).start({ source: 'routine', routineId: ROUTINE.id, dayId: u(2) }));
+    const workouts = await db.data.repos.workouts();
+    const grouped = await workouts.groupExercises(started.id, { exerciseIds: ['bench-press-barbell', 'row-barbell'], restBetweenSec: 0, restRoundSec: null });
+    const first = grouped.sets.filter((s) => s.exerciseId === 'bench-press-barbell').sort((a, b) => a.position - b.position)[0];
+    if (!first) throw new Error('aucune série de couché');
+    await db.data.transaction(async (repos) => (await repos.workouts()).validateSet(first.id, { reps: 8, loadKg: 80, durationSec: null, rir: null }));
+    openSession();
+    await screen.findByRole('heading', { level: 2, name: 'Haut A' });
+    const set = current();
+    expect(within(screen.getByRole('region', { name: 'Rowing à la barre' })).getByRole('group', { current: 'step' })).toBe(set);
+    expect(set).toHaveAccessibleName('Série 1');
+    expect(screen.getByText('Exercice 2 sur 2')).toBeInTheDocument();
+  });
+});
+
 describe('ERGO-01 : repos en barre de progression', () => {
   it('après une série : barre « Repos » (progressbar) bornée par la durée lancée, valeur écoulée et texte restant', async () => {
     await start();
