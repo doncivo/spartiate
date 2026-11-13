@@ -4,7 +4,6 @@ import {
   MEASUREMENT_BOUNDS_CM,
   MEASUREMENT_KINDS,
   hidePhotoId,
-  measurementChange,
   parseHiddenPhotoIds,
   photoActions,
   showAllPhotos,
@@ -23,8 +22,12 @@ import { logFailure } from '../../platform/desktop/log';
 import { pickPhotoJpeg } from '../../platform/photoImage/picker';
 import { shieldOwner } from '../../platform/privacyShield';
 import { Button } from '../../ui';
+import { MissingValue } from '../../ui/MissingValue';
+import { useLayout } from '../../ui/useLayout';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
+import { KIND_TEXT, Silhouette, ZoneChips, ZoneCurve, ZoneList, neighbourZone, signed } from './BodyZones';
+import { summarizeZone, type ZoneSummary } from './bodyZone';
 import './BodyProgress.css';
 
 /**
@@ -33,20 +36,6 @@ import './BodyProgress.css';
  * appareil qui n'a pas le fichier le dit. Lecture et écriture par les dépôts ; règles dans `src/domain/bodyProgress`. Bloc chargé à la demande avec
  * son catalogue de textes. Aucune couleur seule : l'état est dit en texte ; cibles de 44 pt ; saisie au clavier (formulaire, Entrée).
  */
-
-const KIND_TEXT = {
-  neck: 'kind_neck',
-  shoulders: 'kind_shoulders',
-  chest: 'kind_chest',
-  waist: 'kind_waist',
-  hips: 'kind_hips',
-  arm_left: 'kind_arm_left',
-  arm_right: 'kind_arm_right',
-  thigh_left: 'kind_thigh_left',
-  thigh_right: 'kind_thigh_right',
-  calf_left: 'kind_calf_left',
-  calf_right: 'kind_calf_right',
-} as const satisfies Record<MeasurementKind, BodyProgressTextKey>;
 
 const ISSUE_TEXT: Record<Exclude<MeasurementIssue, 'range'>, BodyProgressTextKey> = {
   empty: 'errorEmpty',
@@ -78,6 +67,7 @@ type Load =
 
 export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto?: () => Promise<Uint8Array | null> }) {
   const container = useAppContainer();
+  const pc = useLayout() === 'pc';
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const synced = useSyncedData(['measurement', 'progress_photo']);
@@ -240,86 +230,111 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
     a.day !== b.day ? (a.day < b.day ? 1 : -1) : a.createdAt !== b.createdAt ? (a.createdAt < b.createdAt ? 1 : -1) : a.id < b.id ? 1 : -1,
   );
   const ofKind = measures.filter((m) => m.kind === kind);
-  const change = measurementChange(ofKind.map((m) => ({ date: m.day, value: m.value })));
+  const pointsOf = (k: MeasurementKind) => measures.filter((m) => m.kind === k).map((m) => ({ date: m.day, value: m.value }));
+  const summaries = Object.fromEntries(MEASUREMENT_KINDS.map((k) => [k, summarizeZone(pointsOf(k))])) as Record<MeasurementKind, ZoneSummary>;
+  const summary = summaries[kind];
+  const zoneName = tBodyProgress(KIND_TEXT[kind]);
   const compared = compare.map((id) => photos.find((p) => p.id === id)).filter((p): p is ProgressPhotoRecord => p !== undefined);
-  const sign = (delta: number): string => (delta > 0 ? tBodyProgress('signPlus') : delta < 0 ? tBodyProgress('signMinus') : '');
+  const changeText = (): string => {
+    if (summary.delta === null || summary.reference === null) return tBodyProgress('changeNone');
+    if (summary.span === 'four-weeks' && summary.delta !== 0) return tBodyProgress('heroChange4w', { delta: signed(summary.delta) });
+    return summary.delta === 0 ? tBodyProgress('changeSame', { date: formatDayMonthYear(summary.reference.date) }) : tBodyProgress('changeLine', { date: formatDayMonthYear(summary.reference.date), delta: signed(summary.delta) });
+  };
+  const onKeyZone = (event: React.KeyboardEvent): void => {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    event.preventDefault();
+    setKind(neighbourZone(kind, event.key === 'ArrowDown' ? 1 : -1));
+  };
 
   return (
-    <div className="ct-bodyprogress">
+    <div className={pc ? 'ct-bodyprogress ct-bodyprogress--pc' : 'ct-bodyprogress'}>
       <h2 className="ct-today__eyebrow ct-bodyprogress__title ct-section-title">{tBodyProgress('title')}</h2>
 
-      <section className="ct-today__card ct-bodyprogress__card ct-flat" aria-labelledby="ct-bodyprogress-measures">
+      {pc ? <ZoneList kind={kind} summaries={summaries} onSelect={setKind} /> : null}
+
+      <section className="ct-bodyprogress__main ct-flat" aria-labelledby="ct-bodyprogress-measures">
         <h3 id="ct-bodyprogress-measures" className="ct-bodyprogress__heading ct-section-title">
           {tBodyProgress('measuresTitle')}
         </h3>
-        <p className="ct-today__muted">{tBodyProgress('measuresHint')}</p>
-        <form className="ct-bodyprogress__form" onSubmit={(event) => void saveMeasure(event)} noValidate>
-          <label className="ct-bodyprogress__field">
-            <span className="ct-bodyprogress__label">{tBodyProgress('kindLabel')}</span>
-            <select className="ct-bodyprogress__input" value={kind} onChange={(e) => setKind(e.target.value as MeasurementKind)}>
-              {MEASUREMENT_KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {tBodyProgress(KIND_TEXT[k])}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="ct-bodyprogress__field">
-            <span className="ct-bodyprogress__label">{tBodyProgress('valueLabel')}</span>
-            <input className="ct-bodyprogress__input" inputMode="decimal" autoComplete="off" value={text} onChange={(e) => setText(e.target.value)} />
-          </label>
-          <label className="ct-bodyprogress__field">
+        <div className="ct-bodyprogress__hero">
+          {pc ? null : <Silhouette kind={kind} onSelect={setKind} />}
+          <div className="ct-bodyprogress__herotext">
+            <p className="ct-bodyprogress__zonename">{zoneName}</p>
+            {summary.last === null ? (
+              <p className="ct-today__text">
+                <MissingValue reason={tBodyProgress('heroMissing')} />
+              </p>
+            ) : (
+              <>
+                <p className="ct-hero">
+                  <span className="ct-hero__num">{formatCm(summary.last.value)}</span>
+                  <span className="ct-hero__unit">{tBodyProgress('unitCm')}</span>
+                </p>
+                <p className="ct-today__text">{changeText()}</p>
+                <p className="ct-today__muted">{tBodyProgress('heroLastOn', { date: formatDayMonthYear(summary.last.date) })}</p>
+                <ZoneCurve points={pointsOf(kind)} zoneName={zoneName} large={pc} />
+              </>
+            )}
+          </div>
+        </div>
+        {pc ? null : <ZoneChips kind={kind} onSelect={setKind} />}
+        <form className="ct-bodyprogress__entry" onSubmit={(event) => void saveMeasure(event)} noValidate>
+          <label className="ct-bodyprogress__date">
             <span className="ct-bodyprogress__label">{tBodyProgress('dateLabel')}</span>
             <input className="ct-bodyprogress__input" type="date" max={today} value={date} onChange={(e) => setDate(e.target.value as LocalDate)} />
+          </label>
+          <label className="ct-bodyprogress__value">
+            <input className="ct-bodyprogress__input" inputMode="decimal" autoComplete="off" placeholder={summary.last === null ? undefined : formatCm(summary.last.value)} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={onKeyZone} aria-label={tBodyProgress('valueLabel')} />
+            <span className="ct-bodyprogress__unit" aria-hidden="true">
+              {tBodyProgress('unitCm')}
+            </span>
           </label>
           <Button type="submit" className="ct-bodyprogress__save">
             {tBodyProgress('save')}
           </Button>
         </form>
+        {pc ? <p className="ct-today__muted">{tBodyProgress('entryKeys')}</p> : null}
         {measureMessage && (
           <p className="ct-bodyprogress__message" role={measureMessage.alert ? 'alert' : 'status'}>
             {measureMessage.text}
           </p>
         )}
+        <p className="ct-today__muted">{tBodyProgress('measuresHint')}</p>
         {ofKind.length === 0 ? (
           <p className="ct-today__muted">{tBodyProgress('measuresEmpty')}</p>
         ) : (
-          <>
-            <p className="ct-today__text">
-              {change === null
-                ? tBodyProgress('changeNone')
-                : change.delta === 0
-                  ? tBodyProgress('changeSame', { date: formatDayMonthYear(change.from) })
-                  : tBodyProgress('changeLine', { date: formatDayMonthYear(change.from), delta: `${sign(change.delta)}${formatCm(Math.abs(change.delta))}` })}
-            </p>
-            <ul className="ct-bodyprogress__list">
-              {[...ofKind].reverse().map((m) => (
-                <li key={m.id} className="ct-bodyprogress__item">
-                  <span>{formatDayMonthYear(m.day)}</span>
-                  <span className="ct-bodyprogress__value">{tBodyProgress('measureLine', { value: formatCm(m.value) })}</span>
-                  <button type="button" className="ct-bodyprogress__delete" aria-label={tBodyProgress('measureDelete', { date: formatDayMonthYear(m.day) })} onClick={() => void removeMeasure(m)}>
-                    {tBodyProgress('deleteGlyph')}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </section>
-
-      {health.length > 0 && (
-        <section className="ct-today__card ct-bodyprogress__card ct-flat" aria-labelledby="ct-bodyprogress-health">
-          <h3 id="ct-bodyprogress-health" className="ct-bodyprogress__heading ct-section-title">
-            {tBodyProgress('healthTitle')}
-          </h3>
-          <p className="ct-today__muted">{tBodyProgress('healthHint')}</p>
-          <ul className="ct-bodyprogress__list">
-            {health.map((m) => (
+          <ul className="ct-bodyprogress__list" aria-label={tBodyProgress('historyTitle')}>
+            {[...ofKind].reverse().map((m) => (
               <li key={m.id} className="ct-bodyprogress__item">
-                {tBodyProgress('healthLine', { label: tBodyProgress(`health_${m.kind}` as BodyProgressTextKey), value: formatCm(m.value), unit: tBodyProgress(HEALTH_UNIT[m.kind as HealthMetricKind]), date: formatDayMonthYear(m.day) })}
+                <span>{formatDayMonthYear(m.day)}</span>
+                <span className="ct-bodyprogress__value-text">{tBodyProgress('measureLine', { value: formatCm(m.value) })}</span>
+                <button type="button" className="ct-bodyprogress__delete" aria-label={tBodyProgress('measureDelete', { date: formatDayMonthYear(m.day) })} onClick={() => void removeMeasure(m)}>
+                  {tBodyProgress('deleteGlyph')}
+                </button>
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <div className="ct-bodyprogress__side">
+      {health.length > 0 && (
+        <section className="ct-bodyprogress__card ct-flat" aria-labelledby="ct-bodyprogress-health">
+          <h3 id="ct-bodyprogress-health" className="ct-bodyprogress__heading ct-section-title">
+            {tBodyProgress('healthTitle')}
+          </h3>
+          <dl className="ct-bodyprogress__health">
+            {health.map((m) => (
+              <div key={m.id} className="ct-bodyprogress__healthrow">
+                <dt>{tBodyProgress(`health_${m.kind}` as BodyProgressTextKey)}</dt>
+                <dd>
+                  <span className="ct-bodyprogress__healthvalue">{`${formatCm(m.value)} ${tBodyProgress(HEALTH_UNIT[m.kind as HealthMetricKind])}`}</span>
+                  <span className="ct-today__muted">{tBodyProgress('healthDate', { date: formatDayMonthYear(m.day) })}</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <p className="ct-today__muted">{tBodyProgress('healthHint')}</p>
         </section>
       )}
 
@@ -391,6 +406,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
           </section>
         )}
       </section>
+      </div>
     </div>
   );
 }
