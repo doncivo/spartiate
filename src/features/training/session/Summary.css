@@ -32,10 +32,10 @@
   display: flex;
   flex-wrap: wrap;
   margin: 0;
-  padding: var(--ct-space-3) var(--ct-space-2);
-  background: var(--ct-color-surface);
-  border: 1px solid var(--ct-color-border);
-  border-radius: var(--ct-radius-md);
+  /* ERGO-01 (Resume-apres.dc.html) : trois chiffres à plat, séparés du reste par un filet ; plus de carte. */
+  padding: var(--ct-space-3) 0;
+  border-top: 1px solid var(--ct-color-border);
+  border-bottom: 1px solid var(--ct-color-border);
 }
 
 .ct-summary__kpi {
@@ -58,6 +58,7 @@
   font-family: var(--ct-font-title);
   font-size: var(--ct-font-size-heading-sm);
   font-weight: var(--ct-font-weight-semibold);
+  color: var(--ct-color-bronze);
   overflow-wrap: anywhere;
 }
 

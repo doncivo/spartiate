@@ -1,0 +1,29 @@
+/*
+ * Chiffre héros (ERGO-01, aperçu esthétique validé par Ali le 12/11) : un chiffre par bloc, en capitales romaines bronze, l'unité à part en
+ * texte secondaire. Classes globales importées par tokens.css (aucun JavaScript ajouté au départ) ; jetons seulement, aucune couleur en dur.
+ */
+.ct-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ct-space-2);
+  margin: 0;
+  min-width: 0;
+}
+
+.ct-hero__num {
+  font-family: var(--ct-font-title);
+  font-weight: var(--ct-font-weight-semibold);
+  font-size: var(--ct-font-size-heading);
+  line-height: 1;
+  color: var(--ct-color-bronze);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.ct-hero__unit {
+  font-family: var(--ct-font-text);
+  font-weight: var(--ct-font-weight-regular);
+  font-size: var(--ct-font-size-text-sm);
+  color: var(--ct-color-text-secondary);
+}

@@ -22,8 +22,13 @@ export function SectionNotice({ tab }: { readonly tab: NoticeTab }) {
       <h1 id="ct-section-notice-title" className="ct-section-notice__title">
         {tSections(TITLE[tab])}
       </h1>
-      <p className="ct-section-notice__lead">{tSections('unavailable')}</p>
-      <p className="ct-section-notice__hint">{tSections('unavailableHint')}</p>
+      {/* ERGO-01 (D-193) : Progrès montre Récupération et Corps ; « arrive avec une prochaine version » n'y est plus vrai. */}
+      {tab === 'progress' ? null : (
+        <>
+          <p className="ct-section-notice__lead">{tSections('unavailable')}</p>
+          <p className="ct-section-notice__hint">{tSections('unavailableHint')}</p>
+        </>
+      )}
       {tab === 'progress' ? <RecoveryProgress /> : null}
       {tab === 'progress' ? <BodyProgress /> : null}
     </section>

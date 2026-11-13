@@ -10,7 +10,7 @@ import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { QuickAddForm } from '../quickAdd/QuickAddForm';
 import { FoodSearchPanel } from '../search/FoodSearchPanel';
-import { MacroLine, nowTime, ProvenanceBadge } from '../shared';
+import { KcalHero, MacroLine, nowTime, ProvenanceBadge } from '../shared';
 import type { NutritionSnapshot } from '../useCases';
 import { EntryEditor } from './EntryEditor';
 
@@ -172,11 +172,7 @@ export function JournalView({ snapshot, onChanged }: JournalViewProps) {
           </>
         ) : (
           <>
-            <p className="ct-nutrition__big ct-nutrition__num">
-              {remaining.kcal !== null && remaining.kcal < 0
-                ? tNutrition('overKcal', { n: formatInt(-remaining.kcal) })
-                : tNutrition('remainingKcal', { n: orDash(remaining.kcal, formatInt) })}
-            </p>
+            <KcalHero kcal={remaining.kcal} />
             <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('targetOfKcal', { n: formatInt(target.kcal) })}</p>
             <dl className="ct-nutrition__macros">
               {macros.map(([label, left, goal]) => (

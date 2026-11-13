@@ -104,7 +104,9 @@ const summary = (patch: Partial<RecoveryDaySummary> = {}): RecoveryDaySummary =>
   computedAt: '2026-11-10T07:00:00.000Z',
   ...patch,
 });
-const save = async (s: RecoveryDaySummary): Promise<void> => (await db.data.repos.recovery()).saveDay({ summary: s, muscles: [] });
+const save = async (s: RecoveryDaySummary): Promise<void> => {
+  await (await db.data.repos.recovery()).saveDay({ summary: s, muscles: [] });
+};
 
 describe('ERGO-01 : Récupération sur Aujourd’hui', () => {
   it('cadran Recovery en héros, Pas dans la même carte (une carte de moins)', async () => {
