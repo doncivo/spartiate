@@ -1,10 +1,12 @@
 // Tests du validateur de contenu (I1-01). Chaque règle a un cas rouge sur un jeu minimal synthétique ;
-// le contenu réel est vérifié par les derniers blocs (comptages, programmes, profils, absence de média).
+// le contenu réel est vérifié par les derniers blocs (comptages, programmes, profils, médias sous licence vérifiée).
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
-import { PERIODIZATION, isExerciseCompatible, validateContent, validateContentDir } from './validate-content.mjs';
+import { createHash } from 'node:crypto';
+import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { afterAll, describe, expect, it } from 'vitest';
+import { ALLOWED_MEDIA_LICENSES, MEDIA_MAX_BYTES, MEDIA_SOURCES, MEDIA_TOTAL_MAX_BYTES, PERIODIZATION, isExerciseCompatible, validateContent, validateContentDir } from './validate-content.mjs';
 
 const ROOT = resolve(__dirname, '..', '..');
 const CONTENT = resolve(ROOT, 'content');
@@ -206,7 +208,7 @@ describe('validateContent : jeu minimal', () => {
 
   it('accepte un média avec licence et source, puis refuse un fichier absent', () => {
     const b = bundle();
-    b['exercises'].exercises[0].media = { images: ['ex-a-1.jpg'], video: null, license: 'CC0', source: 'https://exemple.test' };
+    b['exercises'].exercises[0].media = { images: ['ex-a-1.jpg'], video: null, license: 'CC-BY-SA-4.0', source: 'everkinetic:dist/png/0001-tension.png' };
     expect(run(b, { ...OPTS, mediaDir: null })).toEqual([]);
     expect(run(b, { ...OPTS, mediaDir: resolve(ROOT, 'tests', 'fixtures', 'content', 'absent') }).join('\n')).toMatch(/fichier média introuvable/);
   });
@@ -268,6 +270,101 @@ describe('validateContent : jeu minimal', () => {
   });
 });
 
+// --- Médias (I6-07, D-231 à D-233) : une règle, un cas rouge ---
+describe('validateContent : médias d’exercice (I6-07)', () => {
+  const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3, 4]);
+  const sha = (b: Buffer) => createHash('sha256').update(b).digest('hex');
+  const dirs: string[] = [];
+  afterAll(() => {
+    for (const d of dirs) rmSync(d, { recursive: true, force: true });
+  });
+
+  /** Jeu minimal avec un média sur ex-a, son dossier et son registre de provenance cohérents. */
+  function withMedia(file = 'ex-a.png', bytes: Buffer = PNG): { b: Json; dir: string; registry: Json } {
+    const b = bundle();
+    b['exercises'].exercises[0].media = { images: [file], video: null, license: 'CC-BY-SA-4.0', source: 'everkinetic:dist/png/0001-tension.png' };
+    const dir = mkdtempSync(join(tmpdir(), 'spartiate-media-'));
+    dirs.push(dir);
+    writeFileSync(join(dir, file), bytes);
+    const registry = { schemaVersion: 1, files: [{ file, exerciseId: 'ex-a', source: 'everkinetic', originPath: 'dist/png/0001-tension.png', bytes: bytes.length, sha256: sha(bytes) }] };
+    return { b: { ...b, mediaRegistry: registry }, dir, registry };
+  }
+  const runMedia = (b: Json, dir: string, extra: Json = {}) => run(b, { ...OPTS, mediaDir: dir, ...extra }).join('\n');
+
+  it('accepte un média cohérent (fichier, registre, licence de la liste blanche, source connue)', () => {
+    const { b, dir } = withMedia();
+    expect(runMedia(b, dir)).toBe('');
+    expect(ALLOWED_MEDIA_LICENSES).toEqual(['CC0-1.0', 'CC-BY-4.0', 'CC-BY-SA-4.0', 'PDM']);
+    expect(MEDIA_SOURCES['everkinetic']).toMatchObject({ license: 'CC-BY-SA-4.0', commit: '446bb9a3d0c3beb6b84f7c9d77dfc8af707a2ab6' });
+  });
+
+  it('refuse une licence NC, ND ou hors liste blanche', () => {
+    for (const license of ['CC-BY-NC-4.0', 'CC-BY-ND-4.0', 'tous droits réservés']) {
+      const { b, dir } = withMedia();
+      b['exercises'].exercises[0].media.license = license;
+      expect(runMedia(b, dir)).toMatch(/licence de média non autorisée/);
+    }
+  });
+
+  it('refuse une source inconnue ou une licence différente de celle de la source', () => {
+    const { b, dir } = withMedia();
+    b['exercises'].exercises[0].media.source = 'inconnue:x.png';
+    expect(runMedia(b, dir)).toMatch(/source de média inconnue/);
+    const other = withMedia();
+    other.b['exercises'].exercises[0].media.license = 'CC0-1.0';
+    expect(runMedia(other.b, other.dir)).toMatch(/licence différente de la source/);
+  });
+
+  it('refuse plus d’un média par exercice', () => {
+    const { b, dir } = withMedia();
+    b['exercises'].exercises[0].media.images = ['ex-a.png', 'ex-a-2.png'];
+    expect(runMedia(b, dir)).toMatch(/un seul média par exercice/);
+    const video = withMedia();
+    video.b['exercises'].exercises[0].media.video = 'ex-a.mp4';
+    expect(runMedia(video.b, video.dir)).toMatch(/un seul média par exercice/);
+  });
+
+  it('refuse un format non admis', () => {
+    const { b, dir } = withMedia('ex-a.svg');
+    expect(runMedia(b, dir)).toMatch(/format de média non admis : ex-a\.svg/);
+  });
+
+  it('refuse une adresse réseau dans le contenu média ou le registre', () => {
+    const { b, dir } = withMedia();
+    b['exercises'].exercises[0].media.source = 'everkinetic:https://exemple.test/x.png';
+    expect(runMedia(b, dir)).toMatch(/adresse réseau interdite/);
+    const reg = withMedia();
+    reg.registry['files'][0].originPath = 'http://exemple.test/x.png';
+    expect(runMedia(reg.b, reg.dir)).toMatch(/adresse réseau interdite/);
+  });
+
+  it('refuse un fichier au-delà de 153 600 octets', () => {
+    const big = Buffer.concat([PNG, Buffer.alloc(MEDIA_MAX_BYTES)]);
+    const { b, dir } = withMedia('ex-a.png', big);
+    expect(runMedia(b, dir)).toMatch(/média trop lourd : ex-a\.png/);
+  });
+
+  it('refuse un total au-delà du budget du catalogue', () => {
+    const { b, dir } = withMedia();
+    expect(runMedia(b, dir, { mediaTotalMaxBytes: PNG.length - 1 })).toMatch(/budget total des médias dépassé/);
+  });
+
+  it('refuse un fichier absent du registre, une empreinte ou une taille qui ne correspond pas', () => {
+    const { b, dir } = withMedia();
+    b['mediaRegistry'] = { schemaVersion: 1, files: [] };
+    expect(runMedia(b, dir)).toMatch(/absent du registre de provenance : ex-a\.png/);
+    const tampered = withMedia();
+    writeFileSync(join(tampered.dir, 'ex-a.png'), Buffer.concat([PNG, Buffer.from([9])]));
+    expect(runMedia(tampered.b, tampered.dir)).toMatch(/empreinte ou taille différente du registre : ex-a\.png/);
+  });
+
+  it('refuse un fichier orphelin dans le dossier des médias', () => {
+    const { b, dir } = withMedia();
+    writeFileSync(join(dir, 'oublie.png'), PNG);
+    expect(runMedia(b, dir)).toMatch(/média orphelin : oublie\.png/);
+  });
+});
+
 // --- Contenu réel ---
 const real = validateContentDir(CONTENT);
 const load = (...p: string[]) => JSON.parse(readFileSync(resolve(CONTENT, ...p), 'utf8')) as Json;
@@ -282,12 +379,30 @@ describe('contenu embarqué réel', () => {
     expect(real.stats).toMatchObject({ programs: 4, profiles: 3 });
   });
 
-  it('n’embarque aucun média (H-9, D-71)', () => {
+  // I6-07 (D-237) : remplace « n'embarque aucun média » ; D-71 (4) reste respectée : licence vérifiée, sinon aucun média.
+  it('I6-07 : tout média a une licence de la liste blanche, une source connue, une entrée au registre ; budgets tenus', () => {
     const { exercises } = load('exercises', 'exercises.json');
-    for (const x of exercises) {
-      expect(x.media.images).toEqual([]);
-      expect(x.media.video).toBeNull();
+    const registry = load('exercises', 'media', 'sources.json');
+    const map = JSON.parse(readFileSync(resolve(ROOT, 'scripts', 'content', 'media-map.json'), 'utf8')) as Json;
+    const withMedia = (exercises as Json[]).filter((x) => x['media'].images.length > 0);
+    expect(withMedia.length).toBe(map['entries'].length);
+    expect(withMedia.length).toBe(87);
+    let total = 0;
+    for (const x of withMedia) {
+      expect(ALLOWED_MEDIA_LICENSES, x['id']).toContain(x['media'].license);
+      expect(x['media'].video).toBeNull();
+      expect(x['media'].images).toEqual([`${String(x['id'])}.png`]);
+      const entry = (registry['files'] as Json[]).find((f) => f['file'] === x['media'].images[0]);
+      expect(entry, x['id']).toBeDefined();
+      const size = statSync(resolve(CONTENT, 'exercises', 'media', String(x['media'].images[0]))).size;
+      expect(size).toBeLessThanOrEqual(MEDIA_MAX_BYTES);
+      total += size;
     }
+    expect(total).toBeLessThanOrEqual(MEDIA_TOTAL_MAX_BYTES);
+    expect(MEDIA_MAX_BYTES).toBe(153_600);
+    expect(MEDIA_TOTAL_MAX_BYTES).toBe(8_388_608);
+    // Les exercices écartés restent sans média (repli propre).
+    for (const skipped of map['excluded'] as Json[]) expect((exercises as Json[]).find((x) => x['id'] === skipped['id'])?.['media'].images).toEqual([]);
   });
 
   it('conserve les 26 identifiants du programme Haut / Bas 4 j avec séries, plages et repos du PRD § 12.5', () => {
