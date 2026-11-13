@@ -6,6 +6,8 @@
  */
 const fr = {
   back: 'Réglages',
+  addDevice: 'Ajouter un appareil',
+  addIphone: 'Ajouter un iPhone',
   conflictsHelp: 'Deux appareils ont modifié la même chose. La version la plus récente est appliquée.',
   applied: 'Appliquée · {side}',
   resetBodyBefore: 'Une nouvelle clé est créée. ',

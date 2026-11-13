@@ -20,6 +20,7 @@ import { formatAppearanceParts } from './AppearanceScreen';
 import { utcToLocal } from '../../domain/timeZone';
 import { onLocalImport } from '../../db/localWrite';
 import { settingsStore } from './settingsStore';
+import { useSyncValue } from './useSyncValue';
 import './SettingsScreen.css';
 
 /** `HH:MM` en 24 h dans le fuseau de l'app (celui de l'appareil tant qu'il n'est pas connu). */
@@ -48,11 +49,11 @@ function SettingsScreenMobile() {
   const [healthBlocked, setHealthBlocked] = useState(false);
   /** Dernier import Raccourcis (le plus récent des fichiers lus), affiché quand Santé n'est pas accessible. */
   const [lastShortcutImport, setLastShortcutImport] = useState<string | null>(null);
-  const hasIphoneRows = container.signing.source.supported || hasHealthRow || showLockRow;
   const load = useFeatureStore(settingsStore, (s) => s.load);
   const errorKey = useFeatureStore(settingsStore, (s) => s.errorKey);
   const timeZone = useAppStore((s) => s.timeZone);
   const shortcutsValue = lastShortcutImport === null ? healthFr.rowValueViaShortcuts : healthFr.rowValueViaShortcutsAt.replace('{time}', formatLocalTime(lastShortcutImport, timeZone));
+  const syncValue = useSyncValue();
   const launchAtStartup = useFeatureStore(settingsStore, (s) => s.launchAtStartup);
   const setLaunchAtStartup = useFeatureStore(settingsStore, (s) => s.setLaunchAtStartup);
   const navigate = useNavigationStore((s) => s.navigate);
@@ -101,25 +102,17 @@ function SettingsScreenMobile() {
           {t(errorKey)}
         </p>
       )}
-      <ProfileCard />
-      <h2 className="ct-settings__section ct-section-title">{tPlus('sectionData')}</h2>
+      <h2 className="ct-settings__section ct-section-title">{tPlus('groupMe')}</h2>
       <div className="ct-settings__card ct-flat">
-        <SyncSettingsSection heading={false} />
-        <BackupRow />
-        <LinkRow label={tExportImport('row')} onClick={() => navigate({ tab: 'more', screen: 'exportimport' })} />
-        <LinkRow label={tPlus('resetRow')} onClick={() => navigate({ tab: 'more', screen: 'reset' })} />
+        <ProfileCard />
       </div>
-      {hasIphoneRows && (
-        <>
-          <h2 className="ct-settings__section ct-section-title">{tPlus('sectionIphone')}</h2>
-          <div className="ct-settings__card ct-flat">
-            {hasHealthRow && <LinkRow label={healthFr.row} value={healthBlocked ? shortcutsValue : healthFr.rowValue} onClick={() => navigate({ tab: 'more', screen: 'health' })} />}
-            <SigningAboutRow />
-            {showLockRow && <SecuritySection />}
-          </div>
-        </>
-      )}
-      <h2 className="ct-settings__section ct-section-title">{tPlus('sectionPreferences')}</h2>
+      <h2 className="ct-settings__section ct-section-title">{tPlus('groupSources')}</h2>
+      <div className="ct-settings__card ct-flat">
+        {hasHealthRow && <LinkRow label={healthFr.row} value={healthBlocked ? shortcutsValue : healthFr.rowValue} onClick={() => navigate({ tab: 'more', screen: 'health' })} />}
+        {syncValue !== null && <LinkRow label={tPlus('navSync')} value={syncValue} onClick={() => navigate({ tab: 'more', screen: 'sync' })} />}
+        <SyncSettingsSection heading={false} showStatus={false} />
+      </div>
+      <h2 className="ct-settings__section ct-section-title">{tPlus('groupApp')}</h2>
       <div className="ct-settings__card ct-flat">
         <LinkRow label={tSettingsRefonte('theme')} value={themeText} onClick={openAppearance} />
         <LinkRow label={tSettingsRefonte('firstWeekday')} value={weekdayCapitalized} onClick={openAppearance} />
@@ -134,10 +127,15 @@ function SettingsScreenMobile() {
             <Switch checked={launchAtStartup} onChange={(value) => void setLaunchAtStartup(value)} label={t('settings.launchAtStartup')} />
           </div>
         )}
-      </div>
-      <h2 className="ct-settings__section ct-section-title">{tPlus('sectionAbout')}</h2>
-      <div className="ct-settings__card ct-flat">
+        <SigningAboutRow />
+        {showLockRow && <SecuritySection />}
         <AboutSection heading={false} />
+      </div>
+      <h2 className="ct-settings__section ct-section-title">{tPlus('groupData')}</h2>
+      <div className="ct-settings__card ct-flat">
+        <LinkRow label={tExportImport('row')} onClick={() => navigate({ tab: 'more', screen: 'exportimport' })} />
+        <BackupRow />
+        <LinkRow label={tPlus('resetRow')} tone="danger" onClick={() => navigate({ tab: 'more', screen: 'reset' })} />
       </div>
     </div>
   );

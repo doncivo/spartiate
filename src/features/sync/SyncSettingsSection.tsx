@@ -140,7 +140,11 @@ export function useSyncAvailable(injected?: SyncPlatform): boolean {
   return (injected ?? container.syncPlatform ?? platformOf(container)).available();
 }
 
-export function SyncSettingsSection({ platform: injected, heading = true }: { readonly platform?: SyncPlatform; readonly heading?: boolean }) {
+/**
+ * `showStatus` faux (ERGO-02 : Plus montre l'état sur la ligne « Appareils et synchro », et sa carte est dans l'écran de détails) : pas de ligne
+ * d'état avec « Détails » et « Synchroniser » ici, seulement le dossier et ses actions.
+ */
+export function SyncSettingsSection({ platform: injected, heading = true, showStatus = true }: { readonly platform?: SyncPlatform; readonly heading?: boolean; readonly showStatus?: boolean }) {
   const container = useAppContainer();
   // Même plateforme que le service de synchro (conteneur), pour que le cycle voie le dossier et la clé choisis ici.
   const platform = injected ?? container.syncPlatform ?? platformOf(container);
@@ -330,8 +334,8 @@ export function SyncSettingsSection({ platform: injected, heading = true }: { re
       {view.kind === 'bound' && (
         <div className="ct-settings__row">
           <span className="ct-settings__stack">
-            {container.sync && !needsPairing ? <SyncStatusLine /> : folderLabel(view.info)}
-            {container.sync && !needsPairing ? null : needsPairing ? (
+            {container.sync && !needsPairing && showStatus ? <SyncStatusLine /> : folderLabel(view.info)}
+            {container.sync && !needsPairing && showStatus ? null : needsPairing ? (
               <span className="ct-settings__hint ct-settings__hint--danger" role="status" data-testid="sync-folder-state">
                 {t(ios ? 'sync.key.needsPairingIos' : 'sync.key.needsPairing')}
               </span>
