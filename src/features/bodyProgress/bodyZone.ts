@@ -32,7 +32,7 @@ export function summarizeZone(points: readonly ZonePoint[]): ZoneSummary {
   if (last === null || sorted.length < 2) return { last, reference: null, delta: null, span: null };
   const limit = addDays(last.date, -FOUR_WEEKS);
   const older = sorted.slice(0, -1).filter((p) => p.date <= limit);
-  const reference = older.at(-1) ?? sorted[0]!;
+  const reference = older.at(-1) ?? sorted[0] ?? last;
   return { last, reference, delta: tenth(last.value - reference.value), span: older.length > 0 ? 'four-weeks' : 'since' };
 }
 
@@ -55,12 +55,14 @@ const dayNumber = (date: LocalDate): number => Date.parse(`${date}T00:00:00Z`) /
 /** Courbe des dernières mesures (au plus 12) dans une boîte `width` x `height` ; `null` sous deux mesures. x suit les dates, y est inversé (plus haut = plus grand). */
 export function curveGeometry(points: readonly ZonePoint[], width: number, height: number, pad = 4): CurveGeometry | null {
   const sorted = [...points].sort(byDate).slice(-CURVE_MAX_POINTS);
-  if (sorted.length < 2) return null;
+  const first = sorted[0];
+  const end = sorted.at(-1);
+  if (first === undefined || end === undefined || sorted.length < 2) return null;
   const values = sorted.map((p) => p.value);
   const min = Math.min(...values);
   const max = Math.max(...values);
-  const t0 = dayNumber(sorted[0]!.date);
-  const span = dayNumber(sorted.at(-1)!.date) - t0;
+  const t0 = dayNumber(first.date);
+  const span = dayNumber(end.date) - t0;
   const dots = sorted.map((p, i): CurveDot => {
     const x = span === 0 ? (width * i) / (sorted.length - 1) : ((dayNumber(p.date) - t0) / span) * width;
     const y = max === min ? height / 2 : pad + ((max - p.value) / (max - min)) * (height - 2 * pad);

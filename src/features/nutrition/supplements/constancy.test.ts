@@ -16,8 +16,8 @@ describe('constancyDays', () => {
   it('14 jours, du plus ancien au plus récent, aujourd’hui en dernier', () => {
     const days = constancyDays([supp('a', ['08:00'])], [], today, 14);
     expect(days).toHaveLength(14);
-    expect(days[0]!.date).toBe('2026-10-31');
-    expect(days[13]!.date).toBe('2026-11-13');
+    expect(days[0]?.date).toBe('2026-10-31');
+    expect(days[13]?.date).toBe('2026-11-13');
   });
 
   it('plein : tout pris ; partiel : en partie ; vide : rien pris ; libre : rien de prévu', () => {

@@ -88,8 +88,8 @@ describe('Compléments (Complements-apres)', () => {
     const strip = await screen.findByRole('list', { name: 'Constance sur 14 jours' });
     const items = within(strip).getAllByRole('listitem');
     expect(items).toHaveLength(14);
-    expect(items[13]!.textContent).toMatch(/en partie/);
-    expect(items[0]!.textContent).toMatch(/rien de prévu/);
+    expect(items[13]?.textContent).toMatch(/en partie/);
+    expect(items[0]?.textContent).toMatch(/rien de prévu/);
     expect(screen.getByText(/67 % des prises/)).toBeInTheDocument();
   });
 
