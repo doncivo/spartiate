@@ -75,7 +75,7 @@ export function HistoryView({ data, access }: { readonly data: TrainingData; rea
     return (
       <div className="ct-history">
         <button type="button" className="ct-training__back" onClick={() => back(null)}>
-          <Icon icon={ArrowLeft} size={20} />
+          <Icon icon={ArrowLeft} size="md" />
           <span>{tTraining('historyBack')}</span>
         </button>
         <HistoryDetail key={selected} data={data} access={access} workoutId={selected} synced={synced} onDeleted={() => back(tTraining('historyDeleted'))} onReplay={() => navigate({ tab: 'training', screen: 'session' })} />

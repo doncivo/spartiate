@@ -47,7 +47,7 @@ export function NutritionRemainingCard() {
   return (
     // ERGO-01 : bloc à plat (Aujourdhui-apres.dc.html), le chiffre héros suffit à le détacher ; marge de carte conservée.
     <section className="ct-today__card ct-today__card--flat ct-nutrition-card" aria-labelledby="ct-nutrition-card-title">
-      <h2 id="ct-nutrition-card-title" className="ct-today__eyebrow">
+      <h2 id="ct-nutrition-card-title" className="ct-today__eyebrow ct-section-title">
         {tNutrition('cardTitle')}
       </h2>
       {target === null || remaining === null || remaining.kcal === null ? (
@@ -61,6 +61,10 @@ export function NutritionRemainingCard() {
           <p className="ct-today__muted">{day.entryCount === 0 ? tNutrition('emptyToday') : tNutrition(day.state === 'complete' ? (day.origin === 'declared' ? 'dayCompleteDeclared' : 'dayCompleteInferred') : 'dayPartial')}</p>
         </>
       )}
+      {/* ERGO-01b P2 (D-238) : un écran de moins, le Journal s'ouvre recherche active. Contour : le rouge d'Aujourd'hui reste à la séance. */}
+      <Button variant="secondary" fullWidth onClick={() => navigate({ tab: 'nutrition', screen: 'journal', search: true })}>
+        {tNutrition('cardAddMeal')}
+      </Button>
       {target === null ? (
         <Button variant="secondary" fullWidth onClick={() => navigate({ tab: 'nutrition', screen: 'strategy' })}>
           {tNutrition('setTarget')}

@@ -118,11 +118,11 @@ export function AppleHealthScreen({
       <div className="ct-body">
         <div className="ct-body__topRow">
           <button type="button" className="ct-body__back" aria-label={tHealth('back')} onClick={() => navigate({ tab: 'more', screen: 'home' })}>
-            <Icon icon={ArrowLeft} size={26} />
+            <Icon icon={ArrowLeft} size="lg" />
           </button>
         </div>
         <h1 className="ct-body__title">{tHealth('title')}</h1>
-        <section className="ct-body__card" aria-label={tHealth('title')}>
+        <section className="ct-body__card ct-flat" aria-label={tHealth('title')}>
           {!blocked && <p className="ct-body__hint">{tHealth('intro')}</p>}
           {availability === null && <p className="ct-body__hint">{tHealth('checking')}</p>}
           {availability === 'unsupported' && <p className="ct-body__hint">{tHealth('unsupported')}</p>}
@@ -161,8 +161,8 @@ export function AppleHealthScreen({
 
         {reads && (
           <>
-            <section className="ct-body__card" aria-label={tHealth('sectionWeight')}>
-              <h2 className="ct-body__section">{tHealth('sectionWeight')}</h2>
+            <section className="ct-body__card ct-flat" aria-label={tHealth('sectionWeight')}>
+              <h2 className="ct-body__section ct-section-title">{tHealth('sectionWeight')}</h2>
               <WeightRead read={reads.mass} onRetry={() => void read()} onUse={(mass) => void saveWeight(mass)} />
               {saved === 'ok' && (
                 <p className="ct-body__message" role="status">
@@ -175,8 +175,8 @@ export function AppleHealthScreen({
                 </p>
               )}
             </section>
-            <section className="ct-body__card" aria-label={tHealth('sectionSteps')}>
-              <h2 className="ct-body__section">{tHealth('sectionSteps')}</h2>
+            <section className="ct-body__card ct-flat" aria-label={tHealth('sectionSteps')}>
+              <h2 className="ct-body__section ct-section-title">{tHealth('sectionSteps')}</h2>
               <StepsRead read={reads.steps} onRetry={() => void read()} />
             </section>
             {anyEmpty && <p className="ct-body__hint">{tHealth('emptyNote')}</p>}
@@ -231,8 +231,8 @@ function ShortcutImport() {
   }
 
   return (
-    <section className="ct-body__card" aria-label={tHealth('shortcutTitle')}>
-      <h2 className="ct-body__section">{tHealth('shortcutTitle')}</h2>
+    <section className="ct-body__card ct-flat" aria-label={tHealth('shortcutTitle')}>
+      <h2 className="ct-body__section ct-section-title">{tHealth('shortcutTitle')}</h2>
       <p className="ct-body__hint">{tHealth('shortcutHint')}</p>
       <Button className="ct-body__save" disabled={state.kind === 'busy'} onClick={() => void importFile()}>
         {state.kind === 'busy' ? tHealth('shortcutImporting') : tHealth('shortcutImport')}

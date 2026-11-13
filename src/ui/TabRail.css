@@ -10,6 +10,7 @@
 }
 
 .ct-tab-rail__tab {
+  position: relative;
   display: flex;
   align-items: center;
   border: 0;
@@ -52,6 +53,19 @@
   justify-content: center;
   gap: 4px;
   padding: 8px 2px;
+}
+
+/* ERGO-01b : indicateur bronze de l'onglet actif, trait de 2 px au ras du filet supérieur (la couleur ne fait que doubler aria-current). */
+.ct-tab-rail[data-layout='mobile'] .ct-tab-rail__tab[data-active='true']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--ct-space-6);
+  height: 2px;
+  transform: translateX(-50%);
+  border-radius: 0 0 var(--ct-radius-sm) var(--ct-radius-sm);
+  background: var(--ct-color-nav-accent);
 }
 
 .ct-tab-rail[data-layout='mobile'] .ct-tab-rail__label {
@@ -112,7 +126,7 @@
 
 .ct-tab-rail[data-layout='pc'] .ct-tab-rail__tab {
   width: 100%;
-  min-height: 40px;
+  min-height: var(--ct-hit-target-min);
   gap: 12px;
   padding: 0 12px;
   border-radius: 8px;
@@ -123,6 +137,22 @@
 .ct-tab-rail[data-layout='pc'] .ct-tab-rail__tab[data-active='true'] {
   background: var(--ct-color-nav-active);
   color: var(--ct-color-on-nav);
+}
+
+/* ERGO-01b : indicateur bronze de la barre latérale (liseré de 3 px à gauche de l'onglet actif) et icône active en bronze. */
+.ct-tab-rail[data-layout='pc'] .ct-tab-rail__tab[data-active='true']::before {
+  content: '';
+  position: absolute;
+  top: var(--ct-space-2);
+  bottom: var(--ct-space-2);
+  left: 0;
+  width: 3px;
+  border-radius: var(--ct-radius-pill);
+  background: var(--ct-color-nav-accent);
+}
+
+.ct-tab-rail[data-layout='pc'] .ct-tab-rail__tab[data-active='true'] .ct-tab-rail__icon {
+  color: var(--ct-color-nav-accent);
 }
 
 .ct-tab-rail[data-layout='pc'] .ct-tab-rail__label {

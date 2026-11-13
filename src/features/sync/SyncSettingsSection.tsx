@@ -304,7 +304,7 @@ export function SyncSettingsSection({ platform: injected, heading = true }: { re
 
   return (
     <>
-      {heading && <h2 className="ct-settings__section">{t('sync.folder.sectionTitle')}</h2>}
+      {heading && <h2 className="ct-settings__section ct-section-title">{t('sync.folder.sectionTitle')}</h2>}
       <RestoreMarkerResume />
       {view.kind === 'loading' && (
         <div className="ct-settings__row" aria-busy="true">

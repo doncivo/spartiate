@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-238 et D-250 à D-253 (FIX-0221) dans docs/decisions.md.
+État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit, puis 0.22.1 (ERGO-01b, PR #125) (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247 et D-250 à D-253 dans docs/decisions.md.
 
 ## Rapport du matin (13/11)
 
@@ -11,12 +11,13 @@
 
 ## Prochaines étapes
 
-1. En cours : ERGO-01b (0.22.1 : règles visuelles de tous les écrans et P1 à P5, D-238), puis FIX-0221 (0.22.2, PR ouverte, mode arrière-plan sans Swift, D-251 ; constat d’Ali : « Pris » app en arrière-plan et app tuée, H-36). Ali : constats ci-dessus. Import de programme : I6-08 (docs/I6-08.md, non exécuté).
+1. FIX-0221 (0.22.2, PR #124 : action « Pris » des compléments en arrière-plan, sans Swift, D-250 à D-253 ; constat d'Ali : « Pris » app en arrière-plan et app tuée, H-36). Ali : constats ci-dessus et écarts ERGO-01b (pas de charges sur « Séance du jour », carte Poids gardée sur PC ; docs/ERGO-01b.md). Import de programme : I6-08 (docs/I6-08.md, non exécuté).
 2. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
 3. À recaler sur demande d'Ali : D-73 (4), Exertion (D-88, D-220).
 
 ## À décider par Ali
 
+- ERGO-01b, révisables : jour du programme (D-243), cran de 2,5 kg sans profil de matériel (D-244), action rouge choisie par écran (D-246).
 - Archive `archive/agent-a0528c3a67af21a44` (origin) : supprimable sur décision d'Ali (D-144).
 - Worktrees d'agents verrouillés par le pid 16360 (tout poussé) : agent-a9d451df1eba848d1, agent-a895df175f43a280d, agent-a7c1af61eb1c76410, agent-a393a3030e58910ef ; à retirer par `git worktree remove` après redémarrage du PC.
 

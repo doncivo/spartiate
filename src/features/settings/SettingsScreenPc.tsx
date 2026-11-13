@@ -105,7 +105,7 @@ export function SettingsScreenPc() {
           refs.current[id] = element;
         }}
       >
-        <h2 id={headingId} className="ct-settings__section">
+        <h2 id={headingId} className="ct-settings__section ct-section-title">
           {tPlus(NAV_TITLES[id])}
         </h2>
         {children}
@@ -116,8 +116,8 @@ export function SettingsScreenPc() {
   /** Sous-groupe de « Synchro et données » : titre en capitales discrètes, lignes en carte. */
   const group = (key: PlusTextKey, children: ReactNode) => (
     <div className="ct-settings__subgroup" role="group" aria-label={tPlus(key)}>
-      <h3 className="ct-settings__groupTitle">{tPlus(key)}</h3>
-      <div className="ct-settings__card">{children}</div>
+      <h3 className="ct-settings__groupTitle ct-section-title">{tPlus(key)}</h3>
+      <div className="ct-settings__card ct-flat">{children}</div>
     </div>
   );
 
@@ -166,7 +166,7 @@ export function SettingsScreenPc() {
         )}
         {section(
           'prefs',
-          <div className="ct-settings__card">
+          <div className="ct-settings__card ct-flat">
             <LinkRow label={tSettingsRefonte('theme')} value={themeText} onClick={openAppearance} />
             <LinkRow label={tSettingsRefonte('firstWeekday')} value={weekdayCapitalized} onClick={openAppearance} />
             <LinkRow label={tSettingsRefonte('timeFormat')} value={formatText} onClick={openAppearance} />
@@ -190,13 +190,13 @@ export function SettingsScreenPc() {
         )}
         {section(
           'keyboard',
-          <div className="ct-settings__card">
+          <div className="ct-settings__card ct-flat">
             <ShortcutsSettingsSection heading={false} />
           </div>,
         )}
         {section(
           'about',
-          <div className="ct-settings__card">
+          <div className="ct-settings__card ct-flat">
             <AboutSection heading={false} />
           </div>,
         )}

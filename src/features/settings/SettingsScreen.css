@@ -89,19 +89,14 @@
   gap: var(--ct-space-2);
 }
 
-/* Bouton lien de ligne (.lk de Reglages.html). */
+/* Bouton lien de ligne (.lk de Reglages.html). ERGO-01b : arrondi, 44 px au moins sur l'iPhone comme sur le PC. */
 .ct-settings__link {
-  height: 30px;
+  height: var(--ct-hit-target-min);
+  min-height: var(--ct-hit-target-min);
+  border-radius: var(--ct-radius-pill);
   padding: 0 12px;
   font-size: var(--ct-font-size-text-sm);
   font-weight: var(--ct-font-weight-semibold);
-}
-
-/* Zone de toucher >= 44 pt sur écran tactile (iPhone) ; l'aspect PC reste celui de la maquette. */
-@media (pointer: coarse) {
-  .ct-settings__link {
-    min-height: var(--ct-hit-target-min);
-  }
 }
 
 /* Valeur en lecture seule d'une ligne (.v de Reglages.html). */
@@ -199,11 +194,6 @@
 
 .ct-settings--pc .ct-settings__section {
   margin: 0 0 4px 0;
-  font-family: var(--ct-font-title);
-  font-size: var(--ct-font-size-heading-sm);
-  font-weight: var(--ct-font-weight-bold);
-  letter-spacing: 0;
-  color: var(--ct-color-text);
 }
 
 .ct-settings--pc .ct-settings__row {
@@ -277,8 +267,6 @@
 
 .ct-settings--phone .ct-settings__section {
   margin: var(--ct-space-4) 0 var(--ct-space-2) 4px;
-  font-weight: var(--ct-font-weight-semibold);
-  letter-spacing: 0.1em;
 }
 
 .ct-settings__profile {

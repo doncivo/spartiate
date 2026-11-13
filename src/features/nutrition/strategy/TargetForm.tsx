@@ -66,7 +66,7 @@ export function TargetForm({ title, initial, submitLabel, onSave, onChange, onCa
         void submit();
       }}
     >
-      <h2 className="ct-nutrition__subtitle">{title}</h2>
+      <h2 className="ct-nutrition__subtitle ct-section-title">{title}</h2>
       <p className="ct-nutrition__muted">{tNutrition('targetFormHint')}</p>
       <div className="ct-nutrition__row">
         <NumberField label={tNutrition('kcalLabel')} value={kcal} onChange={setKcal} step="1" />

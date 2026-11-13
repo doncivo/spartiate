@@ -8,7 +8,7 @@ import { tRecoveryFactors } from '../../i18n/recoveryFactorsText';
 export function UnusualValuesCard({ values }: { readonly values: UnusualValues }) {
   return (
     <section className="ct-today__card ct-recovery ct-unusual" aria-labelledby="ct-unusual-title">
-      <h2 id="ct-unusual-title" className="ct-today__eyebrow">
+      <h2 id="ct-unusual-title" className="ct-today__eyebrow ct-section-title">
         <span aria-hidden="true" className="ct-recovery__mark">
           !{' '}
         </span>

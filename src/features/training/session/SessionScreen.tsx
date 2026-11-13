@@ -104,7 +104,7 @@ export function SessionScreen({ data, platform, onExit }: { readonly data: Train
   return (
     <div className="ct-session">
       <button type="button" className="ct-training__back" onClick={onExit}>
-        <Icon icon={ArrowLeft} size={20} />
+        <Icon icon={ArrowLeft} size="md" />
         <span>{tTraining('sessionBack')}</span>
       </button>
       {load.status === 'loading' ? (

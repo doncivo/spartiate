@@ -263,8 +263,8 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
       <p className="ct-today__muted">{tCardio('hint')}</p>
       {gpsBlock ? gpsBlock(onReport) : null}
 
-      <section className="ct-today__card ct-cardio__card" aria-labelledby="ct-cardio-form">
-        <h2 id="ct-cardio-form" className="ct-cardio__heading">
+      <section className="ct-today__card ct-cardio__card ct-flat" aria-labelledby="ct-cardio-form">
+        <h2 id="ct-cardio-form" className="ct-cardio__heading ct-section-title">
           {tCardio(editing === null ? 'formTitle' : 'editTitle')}
         </h2>
         <form className="ct-cardio__form" onSubmit={(event) => void submit(event)} noValidate>
@@ -347,8 +347,8 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
         )}
       </section>
 
-      <section className="ct-today__card ct-cardio__card" aria-labelledby="ct-cardio-list">
-        <h2 id="ct-cardio-list" className="ct-cardio__heading">
+      <section className="ct-today__card ct-cardio__card ct-flat" aria-labelledby="ct-cardio-list">
+        <h2 id="ct-cardio-list" className="ct-cardio__heading ct-section-title">
           {tCardio('listTitle')}
         </h2>
         {load.status === 'loading' ? (

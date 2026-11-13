@@ -86,7 +86,7 @@ export function WorkoutSummary({ access, closed, onClose, onJournal }: WorkoutSu
 
       {records.length > 0 ? (
         <div className="ct-summary__card">
-          <h3 id="ct-summary-records" className="ct-training__eyebrow">
+          <h3 id="ct-summary-records" className="ct-training__eyebrow ct-section-title">
             {tTraining('summaryRecordsTitle')}
           </h3>
           <ul className="ct-summary__records" aria-labelledby="ct-summary-records">

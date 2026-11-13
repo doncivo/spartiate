@@ -64,19 +64,19 @@ export function ResetDataScreen({ onDone = reloadApp }: { readonly onDone?: () =
       <div className="ct-body">
         <div className="ct-body__topRow">
           <button type="button" className="ct-body__back" aria-label={tDataReset('back')} onClick={() => navigate({ tab: 'more', screen: 'home' })}>
-            <Icon icon={ArrowLeft} size={26} />
+            <Icon icon={ArrowLeft} size="lg" />
           </button>
         </div>
         <h1 className="ct-body__title">{tDataReset('title')}</h1>
         <p className="ct-body__hint">{tDataReset('intro')}</p>
 
-        <h2 className="ct-body__section">{tDataReset('wipedTitle')}</h2>
+        <h2 className="ct-body__section ct-section-title">{tDataReset('wipedTitle')}</h2>
         <ul className="ct-body__list">
           {WIPED.map((key) => (
             <li key={key}>{tDataReset(key)}</li>
           ))}
         </ul>
-        <h2 className="ct-body__section">{tDataReset('keptTitle')}</h2>
+        <h2 className="ct-body__section ct-section-title">{tDataReset('keptTitle')}</h2>
         <ul className="ct-body__list">
           {KEPT.map((key) => (
             <li key={key}>{tDataReset(key)}</li>
