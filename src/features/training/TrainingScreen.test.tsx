@@ -71,7 +71,7 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
       expect(screen.getByText('Aucun exercice ne correspond.')).toBeInTheDocument();
     });
 
-    it('fiche : muscles, matériel, consignes, plage, repos, alternatives ; aucune image', async () => {
+    it('fiche : muscles, matériel, consignes, plage, repos, alternatives ; illustration sous licence avec attribution (I6-07)', async () => {
       const { container } = open('library');
       fireEvent.change(await screen.findByLabelText('Rechercher un exercice'), { target: { value: 'développé couché à la barre' } });
       fireEvent.click(screen.getByRole('button', { name: /^Développé couché à la barre/ }));
@@ -82,7 +82,9 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
       expect(screen.getByText(/Barre droite/)).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: 'Erreurs fréquentes' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Développé couché aux haltères' })).toBeInTheDocument();
-      expect(container.querySelector('img')).toBeNull();
+      expect(await screen.findByRole('img', { name: 'Illustration : Développé couché à la barre' })).toBeInTheDocument();
+      expect(screen.getByText(/^Illustration : Everkinetic/)).toBeInTheDocument();
+      expect(container.querySelectorAll('img')).toHaveLength(1);
       fireEvent.click(screen.getByRole('button', { name: 'Retour à la bibliothèque' }));
       expect(await screen.findByLabelText('Rechercher un exercice')).toBeInTheDocument();
     });
