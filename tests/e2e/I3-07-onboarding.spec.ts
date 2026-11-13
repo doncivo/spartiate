@@ -23,12 +23,14 @@ async function goToStep(page: Page, index: number): Promise<void> {
   await expect(onboardingTitle(page, TITLES[index] ?? '')).toBeVisible();
 }
 
-test('premier lancement sur base vide : l’onboarding s’ouvre sur l’écran 1, étape 1 sur 8, le titre a le focus', async ({ page }) => {
+test('premier lancement sur base vide : l’onboarding s’ouvre sur l’écran 1, étape 1 sur 8, le titre a le focus', async ({ page }, testInfo) => {
   await openApp(page);
   await expectOnboardingOpen(page);
   await expect(page.getByText('Étape 1 sur 8', { exact: true })).toBeVisible();
   await expect(onboardingTitle(page, 'Toi')).toBeFocused();
-  await expect(dialog(page).getByRole('progressbar', { name: 'Progression de la configuration' })).toHaveAttribute('aria-valuenow', '1');
+  // ERGO-02 (aperçu) : barre d'avancement sur l'iPhone ; sur PC, les 8 étapes à gauche, l'étape en cours marquée `aria-current="step"`.
+  if (isPhone(testInfo)) await expect(dialog(page).getByRole('progressbar', { name: 'Progression de la configuration' })).toHaveAttribute('aria-valuenow', '1');
+  else await expect(dialog(page).locator('[aria-current="step"]')).toContainText('Toi');
   await expect(dialog(page).getByRole('button', { name: 'Retour' })).toHaveCount(0);
 });
 
@@ -171,14 +173,15 @@ test('priorités au clavier : une pression fait passer le muscle prioritaire pui
   await expect(chest).toHaveAccessibleName('Pectoraux, normal');
 });
 
-test('mise en page : rien ne déborde, cibles tactiles de 44 pt, carte centrée de 640 px au plus sur PC', async ({ page }, testInfo) => {
+test('mise en page : rien ne déborde, cibles tactiles de 44 pt, sur PC étapes à gauche et question de 68 rem au plus', async ({ page }, testInfo) => {
   await openApp(page);
   await expectOnboardingOpen(page);
   for (let i = 0; i < TITLES.length; i += 1) {
     await expect(onboardingTitle(page, TITLES[i] ?? '')).toBeVisible();
     const report = await page.evaluate(() => {
       const root = document.querySelector('[role="dialog"]');
-      const panel = root?.getBoundingClientRect();
+      // ERGO-02 (aperçu PC-Onb-*) : la question occupe la colonne centrale (`.ct-onb__main`, 68 rem au plus), les étapes à gauche.
+      const panel = root?.querySelector('.ct-onb__main')?.getBoundingClientRect();
       const small = Array.from(root?.querySelectorAll<HTMLElement>('button, input:not([type="checkbox"]), [role="radio"], [role="checkbox"]') ?? [])
         .map((el) => ({ el, box: el.getBoundingClientRect() }))
         .filter(({ box }) => box.width > 0 && box.height > 0 && box.height < 43.5)
@@ -188,7 +191,7 @@ test('mise en page : rien ne déborde, cibles tactiles de 44 pt, carte centrée 
     });
     expect(report.scrollWidth, `défilement horizontal à l'écran ${TITLES[i] ?? ''}`).toBeLessThanOrEqual(report.clientWidth);
     expect(report.small, `cibles de moins de 44 pt à l'écran ${TITLES[i] ?? ''}`).toEqual([]);
-    if (!isPhone(testInfo)) expect(report.panelWidth).toBeLessThanOrEqual(640);
+    if (!isPhone(testInfo)) expect(report.panelWidth).toBeLessThanOrEqual(68 * 16);
     if (i < TITLES.length - 1) await next(page);
   }
 });

@@ -27,6 +27,7 @@ async function openSheet(page: Page, options: Parameters<typeof installFakeBacku
   await installFakeBackups(page, VERSIONS, options);
   await openToday(page);
   await tab(page, 'Plus').click();
+  await openPlusEntry(page, /^Sauvegarde/);
   await page.getByRole('button', { name: 'Restaurer une sauvegarde' }).click();
   const sheet = page.getByRole('dialog', { name: 'Restaurer une sauvegarde' });
   await expect(sheet).toBeVisible();

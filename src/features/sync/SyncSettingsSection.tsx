@@ -144,7 +144,18 @@ export function useSyncAvailable(injected?: SyncPlatform): boolean {
  * `showStatus` faux (ERGO-02 : Plus montre l'état sur la ligne « Appareils et synchro », et sa carte est dans l'écran de détails) : pas de ligne
  * d'état avec « Détails » et « Synchroniser » ici, seulement le dossier et ses actions.
  */
-export function SyncSettingsSection({ platform: injected, heading = true, showStatus = true }: { readonly platform?: SyncPlatform; readonly heading?: boolean; readonly showStatus?: boolean }) {
+export function SyncSettingsSection({
+  platform: injected,
+  heading = true,
+  showStatus = true,
+  showPairing = true,
+}: {
+  readonly platform?: SyncPlatform;
+  readonly heading?: boolean;
+  readonly showStatus?: boolean;
+  /** ERGO-02 : faux dans le panneau de Plus PC, où « Ajouter un iPhone » (colonne de droite des détails) porte le seul bouton d'association. */
+  readonly showPairing?: boolean;
+}) {
   const container = useAppContainer();
   // Même plateforme que le service de synchro (conteneur), pour que le cycle voie le dossier et la clé choisis ici.
   const platform = injected ?? container.syncPlatform ?? platformOf(container);
@@ -410,7 +421,7 @@ export function SyncSettingsSection({ platform: injected, heading = true, showSt
       {view.kind === 'bound' && !toAssociate && (
         <>
           {/* Y-IOS-02 (point de contrôle d'Ali) : « Associer l'iPhone » directement ici sur le PC (chemin dit par l'iPhone), aussi dans Détails. */}
-          {!ios && <SyncDetailsPairing showOnly withProgress={false} />}
+          {!ios && showPairing && <SyncDetailsPairing showOnly withProgress={false} />}
           <JoinProgress />
         </>
       )}
