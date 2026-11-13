@@ -143,6 +143,31 @@ describe('Corps PC (PC-Corps-apres)', () => {
     expect(screen.queryByRole('img', { name: /Silhouette/ })).toBeNull();
   });
 
+  it('écart absent : le tiret porte sa raison, lue par les lecteurs d’écran', async () => {
+    await seedWaist();
+    mount();
+    const group = await screen.findByRole('radiogroup', { name: 'Zone' });
+    const hips = within(group).getByRole('radio', { name: 'Hanches' });
+    expect(within(hips).getByText('pas d’écart sur 4 semaines')).toBeInTheDocument();
+  });
+
+  it('liste des zones : tabindex itinérant (seule la zone choisie est tabulable) et les flèches déplacent le focus', async () => {
+    await seedWaist();
+    mount();
+    const group = await screen.findByRole('radiogroup', { name: 'Zone' });
+    const radios = within(group).getAllByRole('radio');
+    expect(radios.filter((r) => r.getAttribute('tabindex') === '0').map((r) => r.getAttribute('aria-label'))).toEqual(['Taille']);
+    expect(radios.filter((r) => r.getAttribute('tabindex') === '-1')).toHaveLength(10);
+    const waist = within(group).getByRole('radio', { name: 'Taille' });
+    waist.focus();
+    fireEvent.keyDown(waist, { key: 'ArrowDown' });
+    const hips = await within(group).findByRole('radio', { name: 'Hanches' });
+    await waitFor(() => expect(hips).toBeChecked());
+    expect(document.activeElement).toBe(hips);
+    expect(hips).toHaveAttribute('tabindex', '0');
+    expect(within(group).getByRole('radio', { name: 'Taille' })).toHaveAttribute('tabindex', '-1');
+  });
+
   it('flèche bas / haut dans le champ de saisie change de zone', async () => {
     await seedWaist();
     mount();
