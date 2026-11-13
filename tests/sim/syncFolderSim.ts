@@ -149,6 +149,11 @@ async function createDevice(room: Room, name: string, role: SimRole, devicePlatf
   return device;
 }
 
+/** FIX-0182 : appareil d'une salle, pour les routes de pilotage (comportement actuel : seulement s'il est déjà enregistré). */
+export async function awaitDevice(rooms: Map<string, Room>, roomId: string, name: string, _limitMs: number): Promise<SimSyncDevice | undefined> {
+  return rooms.get(roomId)?.devices.get(name);
+}
+
 async function deviceOf(rooms: Map<string, Room>, roomId: string, name: string, role: SimRole, devicePlatform: 'windows' | 'ios'): Promise<SimSyncDevice> {
   let room = rooms.get(roomId);
   if (!room) {
