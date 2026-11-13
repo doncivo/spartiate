@@ -159,6 +159,15 @@ export const trainingFr = {
   /** ERGO-02 (D-261) : charge de deux haltères, la valeur est celle d'un haltère. */
   loadPair: '2 × {load} kg',
   loadSingle: '{load} kg',
+  /** ERGO-02 (PC-Aujourdhui-apres) : séance du jour en tableau sur PC (même catalogue que la carte : aucun bloc partagé de plus). */
+  sessionEnterHere: 'Saisir la séance ici',
+  sessionTableRank: '#',
+  sessionTableExercise: 'Exercice',
+  sessionTableTarget: 'Cible',
+  sessionTableLoad: 'Charge',
+  loadToEnter: 'à saisir',
+  sessionTarget: '{sets} × {min}–{max}',
+  sessionTargetSame: '{sets} × {min}',
 
   // Routines
   routines: 'Mes routines',
