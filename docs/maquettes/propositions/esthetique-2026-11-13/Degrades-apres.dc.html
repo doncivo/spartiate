@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>États dégradés — après</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&amp;display=swap">
+<style>
+body{margin:0}
+.c{font-family:Cinzel,"Times New Roman",serif;font-weight:600}
+.sec{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#C28E4C}
+.lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#A39C90;margin-bottom:8px}
+.ic{width:20px;height:20px;flex:none;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</helmet>
+<div style="width:440px;height:956px;background:#0D0E11;color:#EDE7DC;font-family:-apple-system,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.4;overflow:hidden;padding:56px 24px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:26px">
+<div><h1 class="c" style="font-size:26px;margin:0">États dégradés</h1><div style="font-size:13px;color:#A39C90;margin-top:4px">Un bandeau fin en haut d'Aujourd'hui, jamais une carte de plus. Le reste de l'écran ne change pas.</div></div>
+
+<div>
+<div class="lab">Hors ligne</div>
+<div style="display:flex;gap:10px;align-items:center;padding:10px 14px;border-radius:12px;background:#15171C;border-left:3px solid #6F8FB3">
+<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="stroke:#6F8FB3"><path d="M3 3l18 18M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5-2.7M19 13a10 10 0 0 0-2-1.6"></path></svg>
+<div style="font-size:13px">Hors ligne · tout fonctionne ici<br><span style="color:#A39C90;font-size:12px">dernière synchro hier 22:14</span></div>
+</div>
+</div>
+
+<div>
+<div class="lab">Signature iPhone qui expire</div>
+<div style="padding:14px;border-radius:12px;background:#15171C;border-left:3px solid #D9A441">
+<div style="display:flex;gap:10px;align-items:center"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="stroke:#D9A441"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span style="font-size:14px;font-weight:600">Signature : expire demain 09:12</span></div>
+<div style="font-size:12px;color:#A39C90;margin:6px 0 12px 30px">Tes données restent sur l'iPhone et le PC.</div>
+<div style="display:flex;gap:8px;margin-left:30px"><button type="button" style="height:40px;padding:0 16px;border-radius:20px;border:0;background:#B8322A;color:#EDE7DC;font-weight:600">Ouvrir SideStore</button><button type="button" style="height:40px;padding:0 14px;border-radius:20px;border:1px solid #2A2E37;background:transparent;color:#EDE7DC">Comment faire</button></div>
+</div>
+</div>
+
+<div>
+<div class="lab">Apprentissage (premiers jours)</div>
+<div style="display:flex;gap:14px;align-items:center;padding:14px;border-radius:12px;background:#15171C;border-left:3px solid #C28E4C">
+<svg width="52" height="52" viewBox="0 0 52 52" role="img" aria-label="3 nuits sur 7"><circle cx="26" cy="26" r="21" stroke="#1D2027" stroke-width="6" fill="none"></circle><circle cx="26" cy="26" r="21" stroke="#C28E4C" stroke-width="6" fill="none" stroke-dasharray="132" stroke-dashoffset="75" stroke-linecap="round" transform="rotate(-90 26 26)"></circle><text x="26" y="31" text-anchor="middle" fill="#E0B577" font-family="Cinzel,serif" font-size="15" font-weight="600">3/7</text></svg>
+<div style="font-size:13px">Récupération et sommeil dans 4 nuits<br><span style="color:#A39C90;font-size:12px">Dépense : point de départ 2 650 kcal, mesurée après 2 semaines</span></div>
+</div>
+</div>
+
+<div>
+<div class="lab">Donnée manquante dans un bloc</div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-top:1px solid #1D2027;border-bottom:1px solid #1D2027"><span>Sommeil</span><span style="color:#A39C90">— <span style="font-size:12px">pas de nuit importée</span></span></div>
+<div style="font-size:12px;color:#A39C90;margin-top:6px">Un tiret et la raison, jamais un faux zéro.</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":440,"height":956}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
