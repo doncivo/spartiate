@@ -2,6 +2,14 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.18.2
+
+**Schéma 15 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** Migration 0015 : tes favoris d'aliments sont enregistrés dans une table synchronisée. Un appareil resté en 0.18.1 ou avant garde les favoris reçus sans les afficher et les retrouve après sa mise à jour.
+
+- **Favoris synchronisés** (ta décision) : une étoile posée sur le PC apparaît sur l'iPhone et inversement. Tes favoris d'avant sont repris une fois, dans leur ordre, à la première ouverture de « Rechercher un aliment » sur chaque appareil, puis réunis par la synchro, sans doublon. Retirer un favori sur un appareil le retire aussi sur l'autre ; si tu le remets plus tard ailleurs, c'est ton dernier geste qui compte. Un favori dont l'aliment n'est pas encore arrivé sur cet appareil reste masqué au lieu d'être effacé.
+- **Journée rouge : charges −5 %** (ta décision) : quand tu acceptes la journée rouge (Recovery 33 ou moins), tes charges sont multipliées par 0,95 et arrondies vers le bas au matériel de ta salle (100 kg → 95 kg), jamais sous la charge la plus petite disponible (barre seule, plus petite paire d'haltères). Séries et répétitions restent celles de ta dernière séance, aucune hausse. Le bandeau dit « charges allégées de 5 % » et le bouton devient « Accepter l'allègement ». Sur un exercice assisté, l'assistance n'est jamais réduite.
+- **Export** : l'export et l'export complet (`food_favorite.csv`) portent tes favoris. Une archive faite avant cette version s'importe toujours et ne retire jamais un favori.
+
 ## 0.18.0
 
 **Schéma 14 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** Migration 0014 : les lignes de routine reçoivent leur groupe de circuit. Un appareil resté en 0.17 garde les groupes de routine reçus sans les afficher et les retrouve après sa mise à jour.
