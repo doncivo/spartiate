@@ -12,6 +12,7 @@
  */
 
 @import './fonts.css';
+@import './figures.css';
 
 :root {
   /* Polices : jamais chargées depuis Internet (fichiers locaux, voir fonts.css). */

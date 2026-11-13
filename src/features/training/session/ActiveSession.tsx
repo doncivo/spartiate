@@ -52,6 +52,8 @@ const RecoverySplitView = lazy(() => import('./RecoverySession').then((m) => ({ 
 
 interface RestView {
   readonly endAt: string;
+  /** ERGO-01 : durée totale lancée (prolongations comprises), borne de la barre de progression du repos. */
+  readonly seconds: number;
   readonly report: RestReport | null;
 }
 
@@ -125,7 +127,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
       if (!live.current) return;
       setNow(clock.nowMs());
       if (result.phase === 'running') {
-        setRest({ endAt: result.endAt, report: result });
+        setRest({ endAt: result.endAt, seconds: result.seconds, report: result });
       } else {
         setRest(null);
         if (result.phase === 'finished') {
@@ -199,7 +201,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
       if (!live.current) return;
       setNow(clock.nowMs());
       setRestDone(false);
-      setRest({ endAt: report.endAt, report });
+      setRest({ endAt: report.endAt, seconds: report.seconds, report });
     } catch {
       if (live.current) setError(tTraining('restError'));
     }
@@ -298,7 +300,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
       const report = await timer.extend();
       if (!live.current) return;
       setNow(clock.nowMs());
-      setRest({ endAt: report.endAt, report });
+      setRest({ endAt: report.endAt, seconds: report.seconds, report });
     } catch {
       if (live.current) setError(tTraining('restError'));
     }
@@ -327,7 +329,12 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const warmupIds = warmupExerciseIds(blocks.map((b) => ({ exerciseId: b.exerciseId, exercise: exerciseOf(b.exerciseId) })));
   const summary = summarizeSets(workout.sets);
   const remaining = rest ? restRemainingMs(rest.endAt, now) : 0;
+  // ERGO-01 : repos en barre de progression (secondes écoulées sur la durée lancée), recalculé depuis la date de fin persistée.
+  const restElapsed = rest ? Math.min(rest.seconds, Math.max(0, rest.seconds - Math.ceil(remaining / 1000))) : 0;
   const startedMs = Date.parse(workout.startedAt);
+  // ERGO-01 (Seance-apres.dc.html) : la série en cours est la première à faire dans l'ordre de la séance ; elle est le bloc central.
+  const currentSetId = blocks.flatMap((b) => b.sets).find((s) => !s.done)?.id ?? null;
+  const currentBlock = blocks.findIndex((b) => b.sets.some((s) => s.id === currentSetId));
 
   if (picking) {
     const onKey = (event: KeyboardEvent<HTMLElement>): void => {
@@ -362,6 +369,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
             {' · '}
             <span>{tTraining('sessionSummary', { done: summary.validated, planned: summary.planned })}</span>
           </p>
+          {currentBlock >= 0 ? <p className="ct-session__muted ct-session__num">{tTraining('sessionExercisePosition', { n: currentBlock + 1, total: blocks.length })}</p> : null}
         </div>
         <div className="ct-session__field ct-session__field--rest">
           <label className="ct-training__label" htmlFor="ct-session-rest">
@@ -446,6 +454,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                     key={set.id}
                     set={set}
                     number={rank}
+                    current={set.id === currentSetId}
                     timed={isTimedExercise(exercise, set)}
                     source={workout.source}
                     busy={busy}
@@ -505,6 +514,17 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         <div className="ct-session__rest" role="region" aria-label={tTraining('restEyebrow')}>
           {rest !== null ? (
             <>
+              <div
+                className="ct-session__rest-bar"
+                role="progressbar"
+                aria-label={tTraining('restEyebrow')}
+                aria-valuemin={0}
+                aria-valuemax={rest.seconds}
+                aria-valuenow={restElapsed}
+                aria-valuetext={tTraining('restProgressText', { left: formatTimerRemaining(remaining) })}
+              >
+                <span className="ct-session__rest-fill" style={{ width: `${String(rest.seconds > 0 ? (restElapsed * 100) / rest.seconds : 100)}%` }} />
+              </div>
               <div className="ct-session__rest-main">
                 <span className="ct-training__eyebrow">{tTraining('restEyebrow')}</span>
                 <span className="ct-session__rest-time ct-session__num" role="timer" aria-live="off" aria-label={tTraining('restRemaining')}>
