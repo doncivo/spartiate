@@ -323,6 +323,11 @@
       "raison": "Migration I6-03b (deux colonnes publiées de routine_exercise pour les groupes de circuit des routines et leur déclencheur de capture propre, 2 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0013. Les règles de groupe, l'en-tête et le formulaire de l'éditeur, le déroulé série par série et leurs textes restent hors du départ (import à la demande)."
     },
     {
+      "fichier": "src/db/migrations/0015_food_favorite.ts",
+      "story": "FIX-01-81",
+      "raison": "Migration FIX-0181 (ID écrit FIX-01-81 : l'expression STORY_ID impose deux chiffres après le tiret ; table food_favorite publiée, favoris de la recherche d'aliments synchronisés, et ses deux déclencheurs de capture, 4 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0014. Le dépôt des favoris, la reprise des favoris locaux, la recherche et leurs textes restent hors du départ (import à la demande)."
+    },
+    {
       "fichier": "src/features/app/ShellChrome.tsx",
       "story": "BUNDLE-01",
       "raison": "SPA-009 : carte d'état de la barre latérale PC et barre supérieure (1,6 Ko source), montées dès le premier rendu de la coquille."

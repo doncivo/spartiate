@@ -14,6 +14,7 @@ import { MAX_SYNC_ID_LENGTH } from './limits';
 import { SYNC_TABLE_ORDER } from './format';
 import {
   expectedDayCompletenessId,
+  expectedFavoriteId,
   expectedMuscleRecoveryId,
   expectedProgressionId,
   expectedRecoveryDayId,
@@ -21,6 +22,7 @@ import {
   expectedRecoveryFactorId,
   expectedWeightId,
   isDayCompletenessId,
+  isFavoriteId,
   isMuscleRecoveryId,
   isProfileId,
   isProgressionId,
@@ -738,7 +740,19 @@ const PROGRESS_PHOTO_TABLE = table(
   { titleSource: { kind: 'own', column: 'date' } },
 );
 
-/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+/**
+ * Catalogue FIX-0181 (D-171, D-79 révisée par Ali le 12/11 ; migration 0015, schéma 15) : `food_favorite`, favoris de la recherche d'aliments, écrits par les
+ * DEUX appareils. Identifiant naturel `favorite|<ref>` : le même aliment mis en favori des deux côtés donne une ligne. Fusion champ par champ par HLC,
+ * dernière écriture gagne (suppression sur un appareil, rétablissement sur l'autre). Rien de corporel, mais rien d'utile à lire au journal des conflits :
+ * seule la suppression y est visible.
+ */
+const FOOD_FAVORITE_TABLE = table(
+  'food_favorite',
+  [c('source', 'text', false, { max: 16, conflictVisible: false }), c('ref', 'text', false, { max: 64, conflictVisible: false }), c('added_at', 'datetime', false, hidden), createdAt, deletedAt],
+  { idKind: 'natural', natural: { is: isFavoriteId, expected: (row) => expectedFavoriteId(row) }, titleSource: { kind: 'own', column: 'ref' } },
+);
+
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02 + FIX-0181) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   tables: [
     PROFILE_TABLE,
@@ -765,6 +779,7 @@ export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
     RECOVERY_FACTOR_TABLE,
     MEASUREMENT_TABLE,
     PROGRESS_PHOTO_TABLE,
+    FOOD_FAVORITE_TABLE,
   ],
   order: SYNC_TABLE_ORDER,
 });

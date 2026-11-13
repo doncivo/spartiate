@@ -22,6 +22,7 @@ import type { RecipeRepository } from './recipeRepository';
 import type { RecoveryRepository } from './recoveryRepository';
 import type { RecoverySampleRepository } from './recoverySampleRepository';
 import type { RecoveryFactorRepository } from './recoveryFactorRepository';
+import type { FoodFavoriteRepository } from './foodFavoriteRepository';
 import type { MeasurementRepository, ProgressPhotoRepository } from './bodyProgressRepository';
 import type { UserDataRepository } from './userDataRepository';
 import type { ProjectRepository, SpaceRepository } from './spaceRepository';
@@ -74,6 +75,8 @@ export interface Repositories {
   readonly recoverySamples: () => Promise<RecoverySampleRepository>;
   /** I6-01 : journal de facteurs de la veille (publié, écrit par les deux appareils), chargé à la demande. */
   readonly recoveryFactors: () => Promise<RecoveryFactorRepository>;
+  /** FIX-0181 (D-171) : favoris de la recherche d'aliments (publiés, écrits par les deux appareils), chargés à la demande. */
+  readonly foodFavorites: () => Promise<FoodFavoriteRepository>;
   /** I6-02 : mensurations (publiées, écrites par les deux appareils), chargées à la demande. */
   readonly measurements: () => Promise<MeasurementRepository>;
   /** I6-02 : photos de progression : fiche publiée, fichier LOCAL (jamais publié ni exporté), chargées à la demande. */

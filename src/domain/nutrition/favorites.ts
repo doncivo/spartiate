@@ -1,5 +1,6 @@
 /**
- * Favoris de la recherche d'aliments (I4-06 ; D-79). Liste LOCALE à l'appareil (réglage `nutrition.favorites`), jamais synchronisée.
+ * Favoris de la recherche d'aliments (I4-06 ; D-79, révisée par Ali le 12/11 : FIX-0181, D-171). Depuis le schéma 15 : table PUBLIÉE `food_favorite`,
+ * écrite par les deux appareils (dépôt `FoodFavoriteRepository`) ; l'ancien réglage LOCAL `nutrition.favorites` n'est plus lu que pour la reprise unique.
  * `ref` est la référence d'aliment du journal : `ciqual:<code>` ou UUID d'une fiche (perso ou cache Open Food Facts).
  * Lecture stricte d'une valeur non fiable : jamais d'exception, une valeur illisible donne une liste vide.
  */
@@ -20,16 +21,19 @@ export interface FavoritesValue {
   readonly items: readonly Favorite[];
 }
 
-function parseItem(raw: unknown): Favorite | null {
-  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return null;
-  const source = (raw as Record<string, unknown>)['source'];
-  const ref = (raw as Record<string, unknown>)['ref'];
+/** Favori valide de ces valeurs (provenance connue, référence lisible et cohérente avec la provenance), ou null ; jamais d'exception. */
+export function toFavorite(source: unknown, ref: unknown): Favorite | null {
   if (typeof source !== 'string' || typeof ref !== 'string' || !(SOURCES as readonly string[]).includes(source)) return null;
   const parsed = parseFoodId(ref);
   if (parsed === null) return null;
   // Une référence Ciqual n'est jamais perso ni OFF, et inversement.
   if ((parsed.kind === 'ciqual') !== (source === 'ciqual')) return null;
   return { source: source as SearchProvenance, ref };
+}
+
+function parseItem(raw: unknown): Favorite | null {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return null;
+  return toFavorite((raw as Record<string, unknown>)['source'], (raw as Record<string, unknown>)['ref']);
 }
 
 /** Dédoublonne par référence (la première occurrence gagne) et borne à 200. */

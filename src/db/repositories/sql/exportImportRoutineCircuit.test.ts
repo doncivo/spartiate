@@ -86,7 +86,7 @@ const firstLine = (t: Record<string, Record<string, unknown>[]>): Record<string,
 
 describe('export / import des groupes de routine (I6-03b)', () => {
   it('schéma 14 ; l’export porte le groupe et le repos du groupe sur chaque ligne de routine', async () => {
-    expect(EXPORT_SV).toBe(14);
+    expect(EXPORT_SV).toBe(15); // FIX-0181 : schéma 15 (favoris publiés).
     const data = await read(await withRoutine(A));
     const rows = data.training?.routine_exercise ?? [];
     expect(rows.map((r) => [r.values['circuit_id'], r.values['circuit_rest_sec']])).toEqual(

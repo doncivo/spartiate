@@ -58,6 +58,7 @@ export const syncVersionFr = {
     recoveryFactor: 'journaux de facteurs',
     measurement: 'mensurations',
     progressPhoto: 'photos de progression',
+    foodFavorite: 'favoris',
     other: 'autres éléments',
   },
 } as const;

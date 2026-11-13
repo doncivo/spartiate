@@ -37,8 +37,8 @@ const insertLine = (db: SqlDriver, circuitId: string | null, rest: number | null
 const names = async (db: SqlDriver) => (await db.select<{ name: string; type: string }>(`SELECT name, type FROM sqlite_master WHERE type IN ('table', 'trigger') ORDER BY name`)).map((r) => `${r.type}:${r.name}`);
 
 describe('migration 0014 : routine_circuit (I6-03b)', () => {
-  it('registre : quatorzième et dernière, version 14, nom routine_circuit', () => {
-    expect(migrations.map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
+  it('registre : 0001 à 0014 ; version 14, nom routine_circuit', () => {
+    expect(migrations.slice(0, 14).map((m) => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
     expect(migrations[13]).toBe(migration0014RoutineCircuit);
     expect(migration0014RoutineCircuit.name).toBe('routine_circuit');
   });
