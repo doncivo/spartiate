@@ -42,7 +42,7 @@ pub const PRE_RESTORE_PREFIX: &str = "spartiate-pre-restore-";
 pub const KEEP_PRE_RESTORE_BACKUPS: usize = 3;
 /// Version de schéma de cette app (plus haute migration de `src/db/migrations`). Une sauvegarde plus récente est refusée. Constante côté Rust :
 /// la WebView ne fournit jamais cette valeur ; un test (`restore_hardening.rs`) la compare aux fichiers de migration.
-pub const APP_SCHEMA_VERSION: u32 = 18;
+pub const APP_SCHEMA_VERSION: u32 = 19;
 /// I6-05 (D-215) : première version de schéma commune à Spartiate et à l'ancien projet (sauvegardes 17 à 19 de CircleTasks).
 pub const LEGACY_COLLISION_FROM: u32 = 17;
 /// I6-06 (D-226) : table centrale de l'ancien projet, qu'aucune migration Spartiate ne crée (base neuve, D-23).
