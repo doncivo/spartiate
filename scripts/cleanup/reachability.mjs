@@ -25,7 +25,7 @@ function walk(dir, out = []) {
 const rel = (p) => relative(ROOT, p).split(sep).join('/');
 const files = SCAN_DIRS.flatMap((d) => (existsSync(join(ROOT, d)) ? walk(join(ROOT, d)) : [])).filter((f) => /\.(tsx?|mjs|js|css)$/.test(f));
 const fileSet = new Set(files.map(rel));
-for (const extra of ['vite.config.ts', 'vite.ocrAssets.ts', 'vitest.config.ts', 'vitest.bundle.config.ts', 'vitest.perf.config.ts', 'vitest.nsis.config.ts', 'playwright.config.ts', 'playwright.smoke.config.ts', 'playwright.visual.config.ts']) {
+for (const extra of ['vite.config.ts', 'vitest.config.ts', 'vitest.bundle.config.ts', 'vitest.perf.config.ts', 'vitest.nsis.config.ts', 'playwright.config.ts', 'playwright.smoke.config.ts', 'playwright.visual.config.ts']) {
   if (existsSync(join(ROOT, extra))) fileSet.add(extra);
 }
 
@@ -70,7 +70,7 @@ for (const f of fileSet) {
 }
 
 const isTest = (f) => /\.test\.(tsx?|mjs)$/.test(f) || f.startsWith('tests/');
-const roots = ['src/main.tsx', 'src/features/sync/pairing-window/main.tsx', 'vite.ocrAssets.ts'].filter((r) => fileSet.has(r));
+const roots = ['src/main.tsx', 'src/features/sync/pairing-window/main.tsx'].filter((r) => fileSet.has(r));
 const live = new Set();
 const stack = [...roots];
 while (stack.length) {

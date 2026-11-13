@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { ocrAssets } from './vite.ocrAssets.ts';
 
 // I-06 (ADR 0007 avenant I-06 point 1) : version de tauri.conf.json, constante de build lue par src/platform/appVersion.ts (repli quand
 // `getVersion()` de Tauri ne répond pas : navigateur de développement, e2e).
@@ -18,7 +17,7 @@ const E2E_HOOKS = process.env['VITE_CT_E2E_HOOKS'] === '1';
 
 export default defineConfig({
   define: { __CT_APP_VERSION__: JSON.stringify(APP_VERSION), ...(E2E_HOOKS ? { 'import.meta.env.DEV': 'true', 'import.meta.env.PROD': 'false' } : {}) },
-  plugins: [react(), ocrAssets()],
+  plugins: [react()],
   clearScreen: false,
   server: {
     port: DEV_PORT,

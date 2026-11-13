@@ -1,16 +1,14 @@
 import { detectOs, detectRuntime, type OsFamily, type Runtime } from '../runtime';
-import { createTesseractOcr } from './tesseractOcr';
 import { createFakeOcr } from './testing';
 import type { OcrEngine, OcrEngines, OcrFailure } from './types';
 import { createNativeOcr } from './nativeOcr';
 
 export { OcrError, type OcrEngine, type OcrEngineId, type OcrEngineStatus, type OcrEngines, type OcrFailure, type OcrLineResult, type RecognizeOptions } from './types';
-export { BUNDLED_TESSERACT_PATHS, createTesseractOcr, linesOfPage, type TesseractPaths } from './tesseractOcr';
 export { createNativeOcr, createWindowsOcr, toOcrError } from './nativeOcr';
 
-/** Moteurs de l'appareil. Une instance suffit : le worker de tesseract.js est libéré par `dispose()` à la fermeture de l'écran de scan. */
+/** Moteurs de l'appareil (natifs seulement depuis CLEAN-02, D-200 : plus de repli tesseract.js embarqué). */
 export interface OcrService extends OcrEngines {
-  /** Libère le worker du repli (mémoire), sans effet s'il n'a pas servi. */
+  /** Libère les ressources des moteurs ; sans effet pour les moteurs natifs. */
   dispose(): Promise<void>;
 }
 
@@ -21,7 +19,7 @@ interface FakeOcrHook {
   readonly failure?: 'failed';
   /**
    * Faux « Vision » (iPhone, CAP-IOS-01 critère 6) comme moteur natif : lecture qui échoue (`failure`) ou moteur indisponible (`unavailable`) ;
-   * sans l'un ni l'autre, il lit `lines` avec leurs confiances. Le repli tesseract reste le faux ordinaire, lu seulement sur choix.
+   * sans l'un ni l'autre, il lit `lines` avec leurs confiances. Le faux ordinaire tient lieu de repli, lu seulement sur choix (tests).
    */
   readonly vision?: {
     readonly failure?: OcrFailure;
@@ -31,8 +29,8 @@ interface FakeOcrHook {
 }
 
 /**
- * Moteurs disponibles : PC Windows = Windows.Media.Ocr (fr-FR) puis repli tesseract.js ; iPhone = Vision (plugin Swift appelé par Rust) puis
- * repli tesseract.js CHOISI par l'utilisateur, jamais automatique (CAP-IOS-01) ; navigateur = tesseract.js seul. En développement et en test seulement, `globalThis.__CT_FAKE_OCR__`
+ * Moteurs disponibles : PC Windows = Windows.Media.Ocr (fr-FR) ; iPhone = Vision (plugin Swift appelé par Rust, CAP-IOS-01) ;
+ * navigateur = aucun moteur. Aucun repli embarqué (CLEAN-02, D-200). En développement et en test seulement, `globalThis.__CT_FAKE_OCR__`
  * remplace les moteurs par un faux (e2e Playwright : « faux moteur »).
  */
 export function openOcrService(runtime: Runtime = detectRuntime(), os: OsFamily = detectOs()): OcrService {
@@ -68,7 +66,6 @@ export function openOcrService(runtime: Runtime = detectRuntime(), os: OsFamily 
     }
     return { primary: null, fallback: fake, dispose: () => Promise.resolve() };
   }
-  const fallback = createTesseractOcr();
   const primary: OcrEngine | null = runtime === 'tauri' && os === 'windows' ? createNativeOcr('windows') : runtime === 'tauri' && os === 'ios' ? createNativeOcr('vision') : null;
-  return { primary, fallback, dispose: () => fallback.dispose() };
+  return { primary, fallback: null, dispose: () => Promise.resolve() };
 }
