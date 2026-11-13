@@ -51,6 +51,7 @@ Lot 2, inventaire (`node scripts/cleanup/legacySyncInventory.mjs`, sur-approxima
 
 - Preuve rouge → vert : `f696842a` (3 tests rouges : `openOcrService` attend `fallback: null`), `b54b8759` (vert). Pour le reste (suppressions), le juge est `tsc --noEmit` et la suite ciblée verte ; aucun test désactivé, allongé ni affaibli ; trois tests supprimés avec le seul code qu'ils testaient, un test supprimé avec le repli (`tesseractOcr.test.ts`).
 - Lancé en local (`--coverage.enabled=false --maxWorkers=1`) : `src/platform` (dont `capture.ios.consistency`, `lotM.consistency`), `src/domain/timeFormat*.test.ts`, `dateInput`, `formatPrefs.qa`, `tests/unit/eslintGuards`, `tests/bundle/bundleMeasure`, `startModules`, `scripts/ios` : 68 fichiers, 890 tests verts ; `npm run test:bundle` : 4 fichiers, 127 tests verts ; cinq gardes documentaires (78 tests) ; `npm run typecheck`, `eslint .` propres.
+- Incident de méthode : un premier commit de version a été poussé alors que deux gardes documentaires échouaient (ligne « CircleTasks » dans l'en-tête du script d'inventaire, chemin supprimé cité dans D-200). Corrigé sans réécrire l'historique : retour de la version, correction, puis nouveau commit de version en dernier.
 - **Non lancé en local** : `cargo test` (aucun Rust modifié), e2e, visual, smoke, suite complète (CI), compilation iPhone (aucun Swift).
 
 ## Mesures
@@ -61,7 +62,7 @@ Lot 2, inventaire (`node scripts/cleanup/legacySyncInventory.mjs`, sur-approxima
 | Sortie `vite build` (octets) | 18 011 656 | 13 293 471 (−4 718 185, dossier `ocr/` retiré) |
 | Installeur Windows (artefact `Spartiate-windows`) | 6 081 323 (run 43344970372, `v0.18.2`) ; `Spartiate_0.18.2_x64-setup.exe` : 6 096 579 | voir ci-dessous |
 
-Installeur après : build manuel `build-windows.yml` sur la branche (run 43352270542, non signé, sans publication) ; valeur relevée en fin de ticket.
+Installeur après : build manuel `build-windows.yml` sur la branche (run 43352270542, non signé, sans publication) ; non terminé à la clôture de la session : taille à relever par `gh api repos/doncivo/spartiate/actions/runs/43352270542/artifacts` (artefact `Spartiate-windows`). Attendu : environ 2,3 Mo de moins (poids du repli annoncé par docs/licences.md à son ajout).
 
 ## Passe code-reviewer
 
