@@ -2,7 +2,7 @@ import type { Migration } from '../migrator';
 
 /**
  * I6-06 (D-221, D-222) : cardio saisi et tracé GPS. DEUX TABLES NEUVES ; AUCUNE table existante n'est modifiée, aucune donnée migrée (schéma strictement
- * additif, schéma 17).
+ * additif, schéma 18).
  *
  * PUBLIÉE (écrite par les deux appareils) :
  * - `cardio_session` : une séance cardio, identifiant UUID. Type au format court NON fermé en SQL (un type ajouté par une version plus récente ne bloque
@@ -14,12 +14,12 @@ import type { Migration } from '../migrator';
  * - `cardio_track` : le tracé GPS codé (`src/domain/cardio/track.ts`), clé = identifiant de la séance. Les positions ne quittent jamais l'appareil
  *   (§ 4, § 22, D-222) ; un appareil qui reçoit une séance GPS n'en a que la durée et la distance.
  *
- * Copie figée `CAPTURE_TABLES_V17` (jamais lue depuis le catalogue vivant), deux déclencheurs sur le modèle de la 0016. Aucune migration publiée n'est
+ * Copie figée `CAPTURE_TABLES_V18` (jamais lue depuis le catalogue vivant), deux déclencheurs sur le modèle de la 0017. Aucune migration publiée n'est
  * modifiée.
  */
 
-/** Copie figée (version 17) des colonnes capturées : colonnes métier, `created_at` et `deleted_at` (ni `id`, ni `updated_at`, `device_id`, `hlc`). */
-export const CAPTURE_TABLES_V17 = [['cardio_session', ['kind', 'started_at', 'duration_sec', 'distance_m', 'avg_hr', 'rpe', 'source', 'notes', 'created_at', 'deleted_at']]] as const;
+/** Copie figée (version 18) des colonnes capturées : colonnes métier, `created_at` et `deleted_at` (ni `id`, ni `updated_at`, `device_id`, `hlc`). */
+export const CAPTURE_TABLES_V18 = [['cardio_session', ['kind', 'started_at', 'duration_sec', 'distance_m', 'avg_hr', 'rpe', 'source', 'notes', 'created_at', 'deleted_at']]] as const;
 
 const fieldCapture = (table: string, column: string): string[] => {
   const row = `table_name = '${table}' AND row_id = NEW.id`;
@@ -37,7 +37,7 @@ const fieldCapture = (table: string, column: string): string[] => {
   ];
 };
 
-/** Modèle de la 0016 : un `_ai` (ligne entière) et un `_au` (champ par champ, `base_hlc`, `'+'` au rétablissement). */
+/** Modèle de la 0017 : un `_ai` (ligne entière) et un `_au` (champ par champ, `base_hlc`, `'+'` au rétablissement). */
 function captureTriggers(table: string, columns: readonly string[]): string[] {
   const row = `table_name = '${table}' AND row_id = NEW.id`;
   return [
@@ -59,10 +59,10 @@ function captureTriggers(table: string, columns: readonly string[]): string[] {
   ];
 }
 
-const [[CARDIO, CARDIO_COLUMNS]] = CAPTURE_TABLES_V17;
+const [[CARDIO, CARDIO_COLUMNS]] = CAPTURE_TABLES_V18;
 
-export const migration0017Cardio: Migration = {
-  version: 17,
+export const migration0018Cardio: Migration = {
+  version: 18,
   name: 'cardio',
   statements: [
     `CREATE TABLE cardio_session (

@@ -57,6 +57,14 @@ export function startAppStartup(container: AppContainer, env: StartupEnv = { doc
       logFailure('backup-daily', error);
     },
   );
+  // I6-05 (D-212) : rappels de compléments (iPhone) replanifiés à l'ouverture, à la reprise et après un lot reçu ; module à la demande.
+  let stopSupplements: (() => void) | null = null;
+  void import('../notifications/supplementWake').then(
+    (module) => {
+      if (!disposed) stopSupplements = module.startSupplementReminders(container, { document: env.document });
+    },
+    (error: unknown) => logFailure('notifications', error),
+  );
   const onCheck = (): void => {
     if (env.document.visibilityState !== 'hidden') void timeZone.check();
   };
@@ -69,6 +77,7 @@ export function startAppStartup(container: AppContainer, env: StartupEnv = { doc
       if (disposed) return;
       disposed = true;
       backups?.dispose();
+      stopSupplements?.();
       env.document.removeEventListener('visibilitychange', onCheck);
       env.window.removeEventListener('focus', onCheck);
     },

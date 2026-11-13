@@ -1,4 +1,4 @@
-// I6-06 (D-222, H-34) : GPS sur l'iPhone par le plugin OFFICIEL Tauri `geolocation`, au premier plan seulement. Contrôles déterministes de la
+// I6-06 (D-222, H-35) : GPS sur l'iPhone par le plugin OFFICIEL Tauri `geolocation`, au premier plan seulement. Contrôles déterministes de la
 // chaîne : versions exactes et identiques (npm et crate), crate dans la cible iOS seulement, plugin enregistré dans le bloc iOS de lib.rs, capability
 // iOS seule et minimale, clé Info.plist « pendant l'utilisation » en français, aucune clé « toujours » ni mode d'arrière-plan, contrôle du build iOS.
 import { readdirSync, readFileSync } from 'node:fs';

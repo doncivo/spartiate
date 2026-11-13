@@ -14,7 +14,7 @@ import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice, type Si
  * I6-06 (D-26, D-221, D-222) : publication de `cardio_session` (UUID), écrite par les DEUX appareils ; le tracé (`cardio_track`) ne quitte jamais
  * l'appareil. Périmètre de non-régression : (a) séance saisie sur un appareil reçue par l'autre, tracé absent de l'autre ; (b) conflit : la même
  * séance modifiée des deux côtés hors ligne, fusion champ par champ (dernière écriture gagne par champ) ; suppression contre modification ;
- * (c) appareil resté au schéma précédent (ADR 0011 §7.2) : lignes gardées dans `sync_unknown`, réintégrées après la migration 0017 ; (d) vecteur chiffré.
+ * (c) appareil resté au schéma précédent (ADR 0011 §7.2) : lignes gardées dans `sync_unknown`, réintégrées après la migration 0018 ; (d) vecteur chiffré.
  * Horloges manuelles, aucun délai réel ; positions synthétiques.
  */
 
@@ -110,8 +110,8 @@ describe('(b) conflits : la même séance touchée des deux côtés hors ligne',
 });
 
 describe('(c) appareil resté au schéma précédent (ADR 0011 §7.2)', () => {
-  it('lignes reçues : aucune erreur, gardées dans sync_unknown ; réintégrées après la migration 0017', async () => {
-    const [pc, iphone] = await pcAndIphone('v16');
+  it('lignes reçues : aucune erreur, gardées dans sync_unknown ; réintégrées après la migration 0018', async () => {
+    const [pc, iphone] = await pcAndIphone('v17');
     const id = await (await cardio(iphone)).add(input(iphone));
     await roundTrip();
     expect((await pc.driver.select<{ table_name: string }>('SELECT DISTINCT table_name FROM sync_unknown ORDER BY table_name')).map((r) => r.table_name)).toEqual(['cardio_session']);
@@ -129,10 +129,10 @@ describe('(d) vecteur chiffré (tests/fixtures/sync/vectors.json)', () => {
   it('journal-ops-cardio-session : opérations valides pour le catalogue, forme canonique stable, aucune position', () => {
     const record = vectors.records.find((r) => r.name === 'journal-ops-cardio-session');
     if (!record || !('json' in record.plaintext)) throw new Error('vecteur journal-ops-cardio-session absent');
-    expect(record.sv).toBe(17);
+    expect(record.sv).toBe(18);
     const parsed = parseJournalRecord(record.plaintext.json);
     if (!parsed || parsed.k !== 'ops') throw new Error('vecteur illisible');
-    expect(parsed.sv).toBe(17);
+    expect(parsed.sv).toBe(18);
     expect(parsed.ops.map((op) => op.t)).toEqual(['cardio_session']);
     for (const op of parsed.ops) {
       const t = SYNC_CATALOGUE.table(op.t);

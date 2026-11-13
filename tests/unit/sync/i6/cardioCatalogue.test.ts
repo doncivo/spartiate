@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SYNC_TABLE_ORDER } from '../../../../src/domain/sync/format';
 import { publishedColumns, SYNC_CATALOGUE } from '../../../../src/domain/sync/syncTables';
-import { CAPTURE_TABLES_V17 } from '../../../../src/db/migrations/0017_cardio';
+import { CAPTURE_TABLES_V18 } from '../../../../src/db/migrations/0018_cardio';
 import { carryKindText } from '../../../../src/features/sync/carryReportText';
 import { failureKinds } from '../../../../src/features/sync/syncText';
 import { syncFieldFr } from '../../../../src/i18n/fr.syncField';
@@ -33,9 +33,9 @@ describe('catalogue de production : cardio_session (I6-06)', () => {
     expect(SYNC_CATALOGUE.table('cardio_track')).toBeUndefined();
   });
 
-  it('copie figée de la migration 0017 = catalogue vivant (colonnes et ordre)', () => {
-    expect(CAPTURE_TABLES_V17.map(([name]) => name)).toEqual(['cardio_session']);
-    expect([...publishedColumns(table())]).toEqual([...CAPTURE_TABLES_V17[0][1]]);
+  it('copie figée de la migration 0018 = catalogue vivant (colonnes et ordre)', () => {
+    expect(CAPTURE_TABLES_V18.map(([name]) => name)).toEqual(['cardio_session']);
+    expect([...publishedColumns(table())]).toEqual([...CAPTURE_TABLES_V18[0][1]]);
   });
 
   it('types : type en texte court, durée et ressenti entiers, distance et FC facultatives, source fermée', () => {

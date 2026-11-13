@@ -5,9 +5,9 @@
 //! (I3-02, migration 0007 : captures de `mesocycle`), la 8 (I4-02, migration 0008 : captures de `food`, `food_portion`, `meal_entry` et
 //! `nutrition_target`) et la 9 (I4-07, migration 0009 : captures de `day_completeness`, `recipe` et `recipe_ingredient`), jusqu'à la 14
 //! (I6-03b, migration 0014 : capture propre des colonnes de groupe de `routine_exercise`) et la 15 (FIX-0181, migration 0015 : captures de
-//! `food_favorite`), la 16 (RESET-01, migration 0016 : captures de `data_reset`) et celle du cardio (I6-06, `CARDIO_VERSION` : captures de
-//! `cardio_session`, tracé local sans déclencheur) ; la version suivante, inconnue de cette app, est refusée. Les déclencheurs de capture sont ceux de
-//! la référence.
+//! `food_favorite`) et la 16 (RESET-01, migration 0016 : captures de `data_reset`), la 17 (I6-05, migration 0017 : captures de `supplement` et `supplement_intake`) et celle du cardio (I6-06, `CARDIO_VERSION`,
+//! migration 0018 : captures de `cardio_session`, tracé local sans déclencheur) ; la version suivante, inconnue de cette app, est refusée. Les
+//! déclencheurs de capture sont ceux de la référence.
 
 use std::path::Path;
 
@@ -75,7 +75,7 @@ fn error_code(path: &Path) -> &'static str {
 }
 
 /// I6-06 : version de la migration du cardio (`src/db/migrations/00NN_cardio.ts`), la dernière du registre.
-const CARDIO_VERSION: u32 = 17;
+const CARDIO_VERSION: u32 = 18;
 
 #[test]
 fn i6_06_the_app_schema_version_is_the_cardio_version() {
@@ -144,6 +144,54 @@ fn i6_06_a_cardio_version_backup_is_accepted_a_tampered_or_old_project_one_is_re
     conn.execute_batch(task).unwrap();
     drop(conn);
     assert_eq!(error_code(&old), "newer-schema");
+}
+
+
+/// I6-05 (migration 0017) : les quatre déclencheurs de capture des compléments n'existent qu'à partir de la version 17 ; une sauvegarde de version 17
+/// qui les porte est admise, une dont un corps est modifié est refusée.
+#[test]
+fn i6_05_a_version_17_backup_with_the_supplement_triggers_is_accepted_and_a_tampered_one_is_refused(
+) {
+    for table in ["supplement", "supplement_intake"] {
+        for suffix in ["ai", "au"] {
+            let name = format!("sync_{table}_{suffix}");
+            assert_eq!(trigger_body_for(&name, table, 16), None);
+            assert!(trigger_body_for(&name, table, 17).is_some());
+        }
+    }
+    let dir = scratch();
+    let path = dir.path().join("v17.db");
+    make_db(&path, 17, &TABLES);
+    let circuit =
+        trigger_body_for("sync_routine_exercise_circuit_au", "routine_exercise", 17).unwrap();
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(
+            "ALTER TABLE routine_exercise ADD COLUMN circuit_id TEXT; ALTER TABLE routine_exercise ADD COLUMN circuit_rest_sec INTEGER;",
+        )
+        .unwrap();
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(circuit)
+        .unwrap();
+    make_tables(
+        &path,
+        17,
+        &[
+            "food_favorite",
+            "data_reset",
+            "supplement",
+            "supplement_intake",
+        ],
+    );
+    assert_eq!(check_backup_file(&path, APP_SCHEMA_VERSION).unwrap(), 17);
+    Connection::open(&path)
+        .unwrap()
+        .execute_batch(
+            "DROP TRIGGER sync_supplement_intake_au; CREATE TRIGGER sync_supplement_intake_au AFTER UPDATE ON supplement_intake BEGIN SELECT 1; END;",
+        )
+        .unwrap();
+    assert!(check_backup_file(&path, APP_SCHEMA_VERSION).is_err());
 }
 
 /// RESET-01 (migration 0016) : les deux déclencheurs de capture de `data_reset` n'existent qu'à partir de la version 16.

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { buildFullExport, FULL_EXPORT_TABLES, fullExportColumns, parseCsvText } from '../../../domain/exportImport/fullExport';
 import { DEFAULT_THEME, EXPORT_SV, IMPORT_ZIP_LIMITS, type ExportData } from '../../../domain/exportImport/archive';
 import { readZip } from '../../../domain/exportImport/zip';
-import type { DeviceId, LocalDate } from '../../../domain/types';
+import type { DeviceId, LocalDate, LocalTime } from '../../../domain/types';
 import { openBaseDb, type TestDb } from './testSetup';
 
 /**
@@ -24,6 +24,9 @@ async function seed(): Promise<void> {
   await (await db.data.repos.progressPhotos()).add('2026-11-09' as LocalDate, new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 0xff, 0xd9]));
   // FIX-0181 (D-171) : favoris publiés, dans l'export complet comme toute table de l'archive.
   await (await db.data.repos.foodFavorites()).add({ source: 'ciqual', ref: 'ciqual:20' });
+  // I6-05 (D-210) : compléments et prises publiés, dans l'export complet.
+  const supplement = await (await db.data.repos.supplements()).create({ name: 'Créatine ; « soir »', dose: 5, unit: 'g', times: ['08:00' as LocalTime, '20:00' as LocalTime], days: 127, active: true });
+  await (await db.data.repos.supplements()).setTaken(supplement.id, '2026-11-12' as LocalDate, '08:00' as LocalTime, true);
   const r = await db.data.repos.workouts();
   await r.start({ source: 'empty', id: W, name: 'Superset ; « bras »' });
   await r.addExercise(W, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé couché', sets: 2 });

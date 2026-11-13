@@ -42,3 +42,4 @@ export type * from './bodyProgressRepository';
 export type * from './foodFavoriteRepository';
 export type * from './cardioRepository';
 export type * from './dataResetRepository';
+export type * from './supplementRepository';

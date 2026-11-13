@@ -7,9 +7,9 @@ import type { DeviceId } from '../../../domain/types';
 import { openBaseDb, type TestDb } from './testSetup';
 
 /**
- * I6-06 (D-221, schéma 17) : l'archive porte les séances cardio (`cardio_session`), écrites par les deux appareils ; l'export complet aussi. Le TRACÉ
- * (`cardio_track`, local) n'est JAMAIS exporté. Une archive de schéma 16 (sans la table) s'importe sans rien supprimer, même en « remplacer » ; une
- * archive de schéma 18 est refusée ; une ligne hors bornes n'est jamais écrite.
+ * I6-06 (D-221, schéma 18) : l'archive porte les séances cardio (`cardio_session`), écrites par les deux appareils ; l'export complet aussi. Le TRACÉ
+ * (`cardio_track`, local) n'est JAMAIS exporté. Une archive de schéma 17 (sans la table) s'importe sans rien supprimer, même en « remplacer » ; une
+ * archive de schéma 19 est refusée ; une ligne hors bornes n'est jamais écrite.
  */
 const A = '60000000-0000-4000-8000-0000000000d1' as DeviceId;
 const B = '60000000-0000-4000-8000-0000000000d2' as DeviceId;
@@ -50,8 +50,8 @@ const seed = async (db: TestDb): Promise<void> => {
 };
 
 describe('export / import des séances cardio (I6-06)', () => {
-  it('table exportée en dernier, depuis le schéma 17, écrite par les deux appareils ; le tracé jamais exporté', () => {
-    expect(EXPORT_SV).toBeGreaterThanOrEqual(17);
+  it('table exportée en dernier, depuis le schéma 18, écrite par les deux appareils ; le tracé jamais exporté', () => {
+    expect(EXPORT_SV).toBeGreaterThanOrEqual(18);
     expect(SV).toBe(EXPORT_SV);
     expect(TRAINING_EXPORT_TABLES.at(-1)).toBe('cardio_session');
     expect((IPHONE_WRITTEN_TABLES as readonly string[]).includes('cardio_session')).toBe(false);

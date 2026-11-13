@@ -47,7 +47,7 @@ describe('Déclencheurs de référence d’une sauvegarde (P-04)', () => {
       // 24 déclencheurs de capture : profile, body_weight (0001) ; exercise, equipment_profile, routine, routine_day, routine_exercise (0002) ;
       // workout, workout_set, gardés : séance close seulement (0004, I1-03) ; progression_profile, recommendation_decision et la difficulté des
       // séries d'une séance close, décisions mises en file à la clôture (0006, I2-01) ; mesocycle (0007, I3-02) ; food, food_portion, meal_entry, nutrition_target (0008, I4-02) ; day_completeness, recipe, recipe_ingredient (0009, I4-07) ; recovery_day, muscle_recovery (0010, I5-01) ; recovery_factor (0011, I6-01) ; mesures et photos (0012, I6-02) ; colonnes de groupe des lignes de routine (0014, I6-03b, déclencheur propre) ; favoris (0015, FIX-0181) ; remises à zéro (0016, RESET-01).
-      expect(spartiate).toHaveLength(57);
+      expect(spartiate).toHaveLength(61); // I6-06 : deux de plus (cardio_session, 0018). // I6-05 : quatre de plus (compléments et prises, 0017).
       const taken = new Set(spartiate.map((row) => row.name));
       const legacy = (await triggersOf(db.driver)).filter((row) => !taken.has(row.name));
       const expected = [...legacy, ...spartiate].sort((x, y) => (x.name < y.name ? -1 : x.name > y.name ? 1 : 0));
