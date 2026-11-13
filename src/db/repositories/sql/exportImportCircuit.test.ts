@@ -62,7 +62,7 @@ const parse = (bytes: Uint8Array) => parseExportArchive(bytes, { currentSv: EXPO
 
 describe('export / import des groupes de circuit (I6-03)', () => {
   it('schéma 13 puis 14 (I6-03b) ; l’export porte le groupe et le repos du groupe sur chaque série', async () => {
-    expect(EXPORT_SV).toBe(14); // I6-03b : schéma 14 (groupes des lignes de routine).
+    expect(EXPORT_SV).toBe(15); // FIX-0181 : schéma 15 (favoris publiés).
     const data = await read(await withCircuit(A));
     const sets = data.training?.workout_set ?? [];
     expect(sets).toHaveLength(4);

@@ -71,10 +71,10 @@ const recoveryCount = async (db: TestDb): Promise<[number, number]> => [
 
 describe('export / import des résumés de récupération (I5-01)', () => {
   it('deux tables exportées en dernier, schéma 10 ; échantillons et état d’import jamais exportés', () => {
-    expect(TRAINING_EXPORT_TABLES.slice(-5, -2)).toEqual(['recovery_day', 'muscle_recovery', 'recovery_factor']);
+    expect(TRAINING_EXPORT_TABLES.slice(-6, -3)).toEqual(['recovery_day', 'muscle_recovery', 'recovery_factor']);
     expect(TABLE_SINCE_SV.recovery_day).toBe(10);
     expect(TABLE_SINCE_SV.muscle_recovery).toBe(10);
-    expect(EXPORT_SV).toBe(14); // I6-03b : schéma 14 (groupes des lignes de routine).
+    expect(EXPORT_SV).toBe(15); // FIX-0181 : schéma 15 (favoris publiés).
     for (const t of ['recovery_sample', 'recovery_import_state']) expect((TRAINING_EXPORT_TABLES as readonly string[]).includes(t), t).toBe(false);
   });
 
@@ -115,9 +115,9 @@ describe('export / import des résumés de récupération (I5-01)', () => {
     expect(await db.driver.select('SELECT COUNT(*) AS n FROM recovery_sample')).toEqual([{ n: 1 }]); // les échantillons ne sont pas des données d'archive
   });
 
-  it('archive de schéma 15 : refusée (future-version)', async () => {
+  it('archive de schéma 16 : refusée (future-version)', async () => {
     const db = await openWriter(IPHONE);
-    await expect(parse(await read(db), 15)).rejects.toMatchObject({ code: 'future-version' });
+    await expect(parse(await read(db), 16)).rejects.toMatchObject({ code: 'future-version' });
   });
 });
 

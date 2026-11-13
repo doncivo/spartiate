@@ -39,3 +39,4 @@ export type * from './recoveryRepository';
 export type * from './recoverySampleRepository';
 export type * from './recoveryFactorRepository';
 export type * from './bodyProgressRepository';
+export type * from './foodFavoriteRepository';
