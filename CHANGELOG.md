@@ -2,6 +2,14 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.22.3
+
+Aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.
+
+- **Séance du jour comme sur l'aperçu** : avec un cycle en cours, la carte d'Aujourd'hui (iPhone et PC) et d'Entraînement donne la durée estimée et le nombre d'exercices (« ≈ 31 min · 5 exercices »), les 3 premiers exercices avec la charge que la séance te proposera, en bronze, puis « + n exercices ». « Lancer la séance » reste le bouton rouge.
+- **Pas de chiffre deviné** : un exercice sans charge connue (jamais fait, au poids du corps) s'affiche sans charge ; la séance te dira « À saisir ».
+- **Carte Poids sur PC** : inchangée.
+
 ## 0.22.2
 
 Aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.

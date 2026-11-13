@@ -210,6 +210,12 @@ export const trainingFr = {
   sessionTodayMeta: '{n} exercices',
   sessionTodayMetaOne: '1 exercice',
   sessionTodayExercises: 'Exercices de la séance du jour',
+  // FIX-0223 (D-260) : aperçu validé du 12/11 : durée estimée, charges proposées des trois premiers exercices, reste en nombre.
+  sessionTodayMetaTimed: '≈ {min} min · {n} exercices',
+  sessionTodayMetaTimedOne: '≈ {min} min · 1 exercice',
+  sessionTodayLoad: '{load} kg',
+  sessionTodayMore: '+ {n} exercices',
+  sessionTodayMoreOne: '+ 1 exercice',
   sessionLaunch: 'Lancer la séance',
   sessionOther: 'Autre séance…',
   sessionSummaryShort: '{done} / {planned} séries',

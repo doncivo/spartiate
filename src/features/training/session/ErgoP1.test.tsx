@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { RoutineInput } from '../../../domain/training';
 import { DEFAULT_GENERATION_CONFIG } from '../../../domain/training/config';
@@ -46,6 +46,10 @@ async function followProgram(): Promise<void> {
 }
 const openWorkout = () => db.data.repos.workouts().then((r) => r.getOpen());
 
+// FIX-0223 : la carte attend son aperçu (module à la demande) ; premier import fait avant les attentes, pas pendant.
+beforeAll(async () => {
+  await import('./todaySessionPreview');
+});
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
   db = await openBaseDb(DEVICE, '2026-11-10T07:00:00.000Z');
@@ -61,7 +65,8 @@ describe('ERGO-01b P1 : séance du jour en un tap', () => {
     mount();
     const card = await screen.findByRole('region', { name: 'Séance du jour' });
     expect(within(card).getByText('Haut A')).toBeInTheDocument();
-    expect(within(card).getByText('2 exercices')).toBeInTheDocument();
+    // FIX-0223 : la ligne porte la durée estimée (2 × 375 s → 13 min).
+    expect(within(card).getByText('≈ 13 min · 2 exercices')).toBeInTheDocument();
     expect(within(card).getByText('Développé couché à la barre')).toBeInTheDocument();
     const launch = within(card).getByRole('button', { name: 'Lancer la séance' });
     expect(launch).toHaveClass('ct-button--primary');

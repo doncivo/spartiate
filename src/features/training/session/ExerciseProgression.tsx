@@ -1,21 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { DEFAULT_PROGRESSION_CONFIG } from '../../../domain/training/config';
 import { confidenceBand, confidencePercent, constraintAlerts, explainOption, explainPrescription, explanationNotes, type ExplanationKey, type OptionKey } from '../../../domain/training/explain';
 import { prescribe } from '../../../domain/training/prescribe';
-import { currentBodyweightKg } from '../../../domain/training/bodyweight';
-import { analyzeHistory } from '../../../domain/training/estimate1rm';
-import { positionRanksOfSets } from '../../../domain/training/positionRank';
+import { prescriptionInputOf } from '../../../domain/training/prescriptionInput';
 import { warmupForExercise, type WarmupSet } from '../../../domain/training/warmup';
 import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type MuscleWeight, type Prescription, type ProgressionEquipment, type RecoverySnapshot, type RepTarget } from '../../../domain/training/types';
 import type { WorkoutSet, WorkoutWithSets } from '../../../domain/training/session';
 import type { IsoDateTime } from '../../../domain/types';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
-import type { DecisionReadEvent, ProgressionProfileRecord, RecommendationDecisionRecord } from '../../../db/repositories/progressionRepository';
-import { logFailure } from '../../../platform/desktop/log';
+import type { ProgressionProfileRecord, RecommendationDecisionRecord } from '../../../db/repositories/progressionRepository';
 import { tProgression, type ProgressionTextKey } from '../../../i18n/progressionText';
 import { Button } from '../../../ui';
 import { loadCurrentCycle, localDayOf } from '../cycle/currentCycle';
 import { linkedRir, parseSessionLink, sessionRoutineId } from '../cycle/sessionLink';
+import { bodyweightNow, referencePositionRank, reportUnreadableDecision as reportUnreadable } from './prescriptionContext';
 import './Progression.css';
 
 /**
@@ -118,8 +115,6 @@ const OPTION_KEYS: Readonly<Record<OptionKey, ProgressionTextKey>> = {
 const BAND_KEYS = { low: 'bandLow', medium: 'bandMedium', high: 'bandHigh' } as const;
 const DIFFICULTY_KEYS: Readonly<Record<Difficulty, ProgressionTextKey>> = { easy: 'easy', ok: 'ok', hard: 'hard' };
 
-const reportUnreadable = (event: DecisionReadEvent): void => logFailure('training', event);
-
 /** Nombre à la française : 62.5 → « 62,5 ». */
 const kg = (n: number): string => String(n).replace('.', ',');
 const parse = (text: string): number | null => {
@@ -139,34 +134,6 @@ function targetOf(sets: readonly WorkoutSet[], exercise: Exercise | undefined, r
   const repMin = first?.targetRepsMin ?? defMin;
   const repMax = first?.targetRepsMax ?? Math.max(repMin, defMax);
   return { sets: Math.max(1, work.length), repMin, repMax: Math.max(repMin, repMax), rir };
-}
-
-/**
- * Rang qu'avait l'exercice dans sa dernière séance close (celle qui fixe la charge de référence), parmi les exercices du même muscle
- * principal. Null si la séance ou le catalogue des muscles est illisible : aucune décote (jamais de double compte, jamais de faux rang).
- */
-async function referencePositionRank(access: DataAccess, history: readonly ExerciseSession[], exerciseId: string, musclesOf: ((id: string) => readonly MuscleWeight[]) | undefined): Promise<number | null> {
-  if (musclesOf === undefined) return null;
-  // La séance de référence est celle dont `prescribe` tire la charge : la plus récente VALIDE (ni déload ni partielle), pas la plus récente.
-  const latest = analyzeHistory(history, DEFAULT_PROGRESSION_CONFIG).estimates[0] ?? null;
-  if (latest === null) return null;
-  try {
-    const closed = await (await access.repos.workouts()).getClosed(latest.workoutId);
-    if (closed === null) return null;
-    return positionRanksOfSets(closed.sets, musclesOf).get(exerciseId) ?? null;
-  } catch {
-    return null;
-  }
-}
-
-/** Poids de corps actuel (tendance des pesées récentes) ; null si illisible ou sans pesée. */
-async function bodyweightNow(access: DataAccess): Promise<number | null> {
-  try {
-    const recent = await (await access.repos.bodyWeights()).listRecent(400);
-    return currentBodyweightKg(recent.map((w) => ({ date: w.date, kg: w.kg })));
-  } catch {
-    return null;
-  }
 }
 
 /** Rampe : « 25 kg × 8 · 37,5 kg × 5 · 50 kg × 2 ». */
@@ -240,34 +207,21 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
 
   const prescription = useMemo((): Prescription | null => {
     if (load.status !== 'ready' || recovery === 'loading') return null;
-    const d = load.reference;
-    // Référence du moteur : décision d'une séance close avec une valeur retenue (un refus ne fixe rien) ; en pratique antérieure à la fin de
-    // cette séance, l'historique l'emporte (critère 8 : la séance faite fait foi).
-    const reference = d !== null && d.loadKg !== null ? { decidedAt: d.decidedAt, accepted: d.accepted, loadKg: d.loadKg, reps: d.reps } : null;
-    return prescribe({
-      exercise: {
-        id: exerciseId,
-        metric: exercise?.metric ?? 'load-reps',
-        equipment: exercise?.equipment ?? [],
-        ...(exercise === undefined ? {} : { kind: exercise.kind, bodyweightFraction: exercise.bodyweightFraction }),
-        ...(exercise?.equipment.includes('assisted-pull-up-machine') === true ? { assisted: true } : {}),
-      },
-      history: load.history,
-      lastDecision: reference,
-      profile: load.profile,
-      equipment,
-      target,
-      config: DEFAULT_PROGRESSION_CONFIG,
-      now: new Date(clock.nowMs()).toISOString() as IsoDateTime,
-      // I5-02 point 2.2 : Recovery du jour seulement si Ali a accepté la journée rouge ; ignorée ou absente : aucune modulation.
-      recovery,
-      deload,
-      // REV-01 constat 6 : décote de position (§ 11.3) ; inconnue → aucun effet.
-      positionRank,
-      ...(load.lastPositionRank === null ? {} : { lastPositionRank: load.lastPositionRank }),
-      // REV-01 : poids de corps pour 1RM et écarts des exercices lestés ou assistés.
-      bodyweightKg: load.bodyweightKg,
-    });
+    // Entrée partagée avec l'aperçu de la carte « Séance du jour » (FIX-0223) : la séance et la carte voient la même proposition.
+    return prescribe(
+      prescriptionInputOf({
+        exerciseId,
+        exercise,
+        context: load,
+        equipment,
+        target,
+        now: new Date(clock.nowMs()).toISOString() as IsoDateTime,
+        // I5-02 point 2.2 : Recovery du jour seulement si Ali a accepté la journée rouge ; ignorée ou absente : aucune modulation.
+        recovery,
+        deload,
+        positionRank,
+      }),
+    );
     // L'instant de calcul est celui du chargement : la proposition ne change pas pendant la séance.
   }, [load, exerciseId, exercise, equipment, target, deload, positionRank, recovery]); // eslint-disable-line react-hooks/exhaustive-deps
 
