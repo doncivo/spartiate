@@ -27,6 +27,9 @@ const fr = {
   groupBackups: 'SAUVEGARDES',
   groupExport: 'EXPORT ET IMPORT',
   exportHint: 'Archive .zip : profil, pesées et thème',
+  // RESET-01 : entrée de l'écran « Repartir de zéro » (ses textes sont chargés avec lui).
+  resetRow: 'Repartir de zéro',
+  resetHint: 'Efface toutes les données, sur tes deux appareils',
 } as const;
 export type PlusTextKey = keyof typeof fr;
 

@@ -14,7 +14,7 @@ import { useBackupLabelContext } from './useBackupLabelContext';
 import './BackupSheet.css';
 import { tRestore } from '../../i18n/syncRestoreText';
 
-const ERROR_KEYS: Record<Exclude<BackupFailureReason, 'sync-busy' | 'busy' | 'db-open'>, PlainMessageKey> = {
+const ERROR_KEYS: Record<Exclude<BackupFailureReason, 'sync-busy' | 'busy' | 'db-open' | 'before-reset'>, PlainMessageKey> = {
   corrupt: 'backup.errorCorrupt',
   'wal-page-size': 'backup.errorWalPageSize',
   'newer-schema': 'backup.errorNewer',
@@ -32,6 +32,7 @@ function errorText(reason: BackupFailureReason): string {
   if (reason === 'sync-busy') return tBackupRestore('errorSyncBusy');
   if (reason === 'busy') return tBackupRestore('errorBusy');
   if (reason === 'db-open') return tBackupRestore('errorDbOpen');
+  if (reason === 'before-reset') return tBackupRestore('errorBeforeReset');
   return t(ERROR_KEYS[reason]);
 }
 

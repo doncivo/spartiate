@@ -10,6 +10,7 @@ import type { ApplyContext } from './apply';
 import type { SyncDeps } from './deps';
 import { maintain, retryParked } from './maintenance';
 import { META, readJson, writeJson } from './meta';
+import { DATA_RESET_TABLE } from '../domain/sync/syncTables';
 import { AWAITING_ACK_SEQ, ackSeqAwaited, comparableState, deviceStatusOf } from '../domain/sync/ownState';
 import { finishResumeTx, isJoining, joinFromSnapshot, triedTracker } from './join';
 import { evaluateForget, finishRejoin, FORGET_META, forgetKnownDevices, forgetPublishPending, readForgetStatus, readLimit, rejoinPending, runForgetDeletions, setSnapshotWait, type ForgetView } from './forget';
@@ -140,6 +141,13 @@ async function acceptStates(deps: SyncDeps, scan: FolderScan, known: Map<string,
     await deps.data.repos.sync.saveState(device.deviceId, { status, ...(device.kid ? { kid: device.kid } : {}) });
   }
   return accepted;
+}
+
+/** RESET-01 : effacement dû appliqué (`src/sync/dataReset.ts`, à la demande) ; les tables effacées et `data_reset` sont signalées (rechargement). */
+async function enforceReset(deps: SyncDeps, hooks: CycleHooks): Promise<void> {
+  if (!deps.catalogue.table(DATA_RESET_TABLE)) return;
+  const touched = await (await import('./dataReset')).enforceDataReset(deps.data, deps.catalogue, deps.logger, deps.clock.nowMs());
+  if (touched) hooks.onRemoteChanges(touched);
 }
 
 /**
@@ -684,6 +692,10 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
 
     seen.stage = 'read';
 
+    // RESET-01 (ADR 0011 avenant 36) : remise à zéro connue mais pas encore appliquée ici (ligne réintégrée après une mise à jour, arrêt pendant
+    // l'effacement) : effacée avant toute lecture ; module chargé à la demande (hors du départ).
+    await enforceReset(deps, hooks);
+
     // 4. Lecture (avec reprise depuis l'instantané si demandée ou nécessaire, une fois par cycle).
     const knows = await knowsFrom(repos, logger);
     /** Repères de ses états publiés, lus au premier segment absent du cycle (quatrième revue, point D). */
@@ -1008,6 +1020,10 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
       },
     );
     if (carryRaised) seen.warnings = [...(seen.warnings ?? []), 'carry-report'];
+
+    // RESET-01 : remise à zéro reçue pendant la lecture (journal, instantané, changement d'époque) : effacement AVANT la publication, rien
+    // d'antérieur ne repart de cet appareil.
+    await enforceReset(deps, hooks);
 
     seen.stage = 'publish';
 
