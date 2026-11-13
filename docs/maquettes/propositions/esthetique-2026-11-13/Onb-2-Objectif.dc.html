@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Onboarding 2/8 · Objectif</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&amp;display=swap">
+<style>
+body{margin:0}
+.c{font-family:Cinzel,"Times New Roman",serif;font-weight:600}
+.sec{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#C28E4C}
+.op{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:58px;padding:0 16px;border-radius:14px;border:1px solid #2A2E37;background:transparent;color:#EDE7DC;text-align:left;font-size:15px}
+.op small{display:block;font-size:12px;color:#A39C90}
+</style>
+</helmet>
+<div style="width:440px;height:956px;background:#0D0E11;color:#EDE7DC;font-family:-apple-system,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums;overflow:hidden;padding:60px 24px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:#A39C90">Étape 2 sur 8</span><a href="#" style="font-size:13px;color:#A39C90;text-decoration:none">Passer</a></div>
+<div style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px" aria-hidden="true"><i style="height:3px;border-radius:2px;background:#C28E4C"></i><i style="height:3px;border-radius:2px;background:#E0B577"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i></div>
+<div><h1 class="c" style="font-size:30px;margin:0">Ton objectif</h1><div style="color:#A39C90;margin-top:6px;font-size:14px">Il fixe ta cible calorique et le rythme visé.</div></div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<button type="button" class="op"><span>Prise de muscle<small>surplus léger</small></span></button>
+<button type="button" class="op"><span>Force<small>charges lourdes, peu de reps</small></span></button>
+<button type="button" class="op"><span>Recomposition<small>autour du maintien</small></span></button>
+<button type="button" class="op" style="border-color:#C28E4C;background:#15171C"><span>Perte de gras<small>déficit modéré, muscle préservé</small></span><span style="color:#E0B577">●</span></button>
+<button type="button" class="op"><span>Maintien</span></button>
+</div>
+<div>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="sec">Rythme</span><span><b class="c" style="font-size:20px;color:#E0B577">−0,5 %</b> <span style="color:#A39C90;font-size:13px">du poids / sem.</span></span></div>
+<div style="position:relative;height:6px;border-radius:3px;background:#1D2027;margin-top:16px"><div style="position:absolute;left:0;width:33%;height:100%;border-radius:3px;background:#C28E4C"></div><div style="position:absolute;left:33%;top:-9px;width:24px;height:24px;margin-left:-12px;border-radius:12px;background:#E0B577"></div></div>
+<div style="display:flex;justify-content:space-between;font-size:11px;color:#A39C90;margin-top:10px"><span>−1 %</span><span>0</span><span>+0,5 %</span></div>
+<div style="font-size:13px;margin-top:8px">soit environ <b>−0,4 kg</b> par semaine</div>
+</div>
+<div style="margin-top:auto;margin-bottom:44px;display:flex;gap:10px">
+<button type="button" style="height:54px;padding:0 22px;border-radius:14px;border:1px solid #2A2E37;background:transparent;color:#EDE7DC">Retour</button>
+<button type="button" style="flex:1;height:54px;border-radius:14px;border:0;background:#B8322A;color:#EDE7DC;font-weight:600;font-size:16px">Continuer</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":440,"height":956}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

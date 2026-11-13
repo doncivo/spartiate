@@ -5,6 +5,7 @@ import type { SetCorrection } from '../../../db/repositories/workoutRepository';
 import { formatDay, tTraining } from '../../../i18n/trainingText';
 import { Button, ConfirmDialog } from '../../../ui';
 import { recordText, SummaryFigures } from '../session/SummaryFigures';
+import { heldLookup } from '../loadDisplay';
 import type { TrainingData } from '../trainingState';
 import { HistorySetRow } from './HistorySetRow';
 
@@ -82,6 +83,8 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted, onRe
   }, [ready]);
 
   const exerciseOf = (id: string): Exercise | undefined => data.content.catalog.get(id) ?? data.allCustoms.find((c) => c.id === id);
+  // ERGO-02 (D-261) : charge de deux haltères affichée « 2 × 26 kg » (séries, records, déroulé) ; la valeur stockée ne change pas.
+  const heldOf = heldLookup(data);
 
   async function correct(setId: string, patch: SetCorrection): Promise<boolean> {
     setNotice(null);
@@ -167,7 +170,7 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted, onRe
                 {load.summary.records.map((r) => (
                   <li key={`${r.exerciseId}-${r.kind}`} className="ct-summary__record">
                     <span className="ct-summary__record-name">{r.exerciseName}</span>
-                    <span className="ct-session__num">{recordText(r)}</span>
+                    <span className="ct-session__num">{recordText(r, heldOf(r.exerciseId))}</span>
                   </li>
                 ))}
               </ul>
@@ -201,6 +204,7 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted, onRe
                         set={set}
                         number={rank}
                         timedExercise={exercise?.metric === 'time'}
+                        held={heldOf(block.exerciseId)}
                         busy={busy}
                         onCorrect={(patch) => correct(set.id, patch)}
                       />
@@ -218,7 +222,7 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted, onRe
           <p className="ct-session__muted">{tTraining('historyTimelineHint')}</p>
           {timeline ? (
             <Suspense fallback={null}>
-              <HistoryTimelineView workout={load.workout} />
+              <HistoryTimelineView workout={load.workout} heldOf={heldOf} />
             </Suspense>
           ) : null}
           <div className="ct-training__actions">

@@ -66,7 +66,7 @@ describe('SettingsScreen (T-06)', () => {
   it('T-11 : la ligne « Fuseau horaire » affiche le fuseau courant suivi de « (automatique) » (critère 5)', () => {
     useAppStore.setState({ timeZone: 'Europe/Paris' });
     renderScreen();
-    expect(screen.getByRole('heading', { level: 2, name: 'PRÉFÉRENCES' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'APP' })).toBeInTheDocument();
     expect(screen.getByText('Fuseau horaire')).toBeInTheDocument();
     expect(screen.getByText('Europe/Paris (automatique)')).toBeInTheDocument();
   });
@@ -82,15 +82,15 @@ describe('SettingsScreen (T-06)', () => {
     renderScreen(containerWith(failing('get')));
     expect(await screen.findByRole('alert')).toHaveTextContent('Impossible de lire les réglages.');
   });
-  it('Plus iPhone : titre, carte profil puis DONNÉES, PRÉFÉRENCES, À PROPOS dans l’ordre (IPHONE absent sans signature ni Face ID)', async () => {
+  it('Plus iPhone (ERGO-02) : titre, puis MOI (profil), SOURCES, APP, DONNÉES dans l’ordre ; plus de groupe IPHONE ni À PROPOS', async () => {
     renderScreen();
     expect(screen.getByRole('heading', { level: 1, name: 'Plus' })).toBeInTheDocument();
     const titles = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
-    expect(titles).toEqual(['DONNÉES', 'PRÉFÉRENCES', 'À PROPOS']);
-    for (const old of ['GÉNÉRAL', 'DONNÉES ET SÉCURITÉ', 'SYNCHRONISATION']) expect(screen.queryByText(old)).toBeNull();
+    expect(titles).toEqual(['MOI', 'SOURCES', 'APP', 'DONNÉES']);
+    for (const old of ['GÉNÉRAL', 'DONNÉES ET SÉCURITÉ', 'SYNCHRONISATION', 'IPHONE', 'PRÉFÉRENCES', 'À PROPOS']) expect(screen.queryByText(old)).toBeNull();
     const profile = screen.getByRole('button', { name: /Profil et poids/ });
-    const data = screen.getByRole('heading', { name: 'DONNÉES' });
-    expect(profile.compareDocumentPosition(data) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+    const me = screen.getByRole('heading', { name: 'MOI' });
+    expect(me.compareDocumentPosition(profile) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
     expect(screen.queryByRole('group', { name: 'Sections des réglages' })).toBeNull();
     expect(document.querySelector('.ct-settings__rule')).toBeNull();
   });
@@ -153,10 +153,10 @@ describe('SettingsScreen (T-06)', () => {
     }
   });
 
-  it('À PROPOS : version et « Logs » (diagnostic et journal) restent accessibles', async () => {
+  it('Version et « Logs » (diagnostic et journal) restent accessibles, dans le groupe APP (ERGO-02)', async () => {
     renderScreen();
-    const about = screen.getByRole('heading', { name: 'À PROPOS' }).nextElementSibling as HTMLElement;
-    expect(within(about).getByText(/^Version/)).toBeInTheDocument();
-    expect(within(about).getByRole('button', { name: 'Ouvrir l’écran des logs' })).toBeInTheDocument();
+    const app = screen.getByRole('heading', { name: 'APP' }).nextElementSibling as HTMLElement;
+    expect(within(app).getByText(/^Version/)).toBeInTheDocument();
+    expect(within(app).getByRole('button', { name: 'Ouvrir l’écran des logs' })).toBeInTheDocument();
   });
 });

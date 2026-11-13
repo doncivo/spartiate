@@ -11,3 +11,4 @@ export * from './closure';
 // Génération (I3-01) : types seulement ; le générateur (`generateSession.ts`, `programModes.ts`) s'importe directement, depuis le bloc à la
 // demande « Séance proposée », comme le moteur de prescription.
 export * from './generationTypes';
+export * from './dumbbellPair';

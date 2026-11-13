@@ -4,7 +4,10 @@ import { todayLocal } from '../../domain/clock';
 import { parseDecimal, type BodyGoal, type Experience, type Sex } from '../../domain/bodyProfile';
 import type { ActivityLevel } from '../../domain/nutrition/config';
 import {
+  GOAL_RATE_MAX_PCT,
+  GOAL_RATE_MIN_PCT,
   ONBOARDING_STEPS,
+  RATE_GOALS,
   nextStep,
   previousStep,
   validateStep,
@@ -16,11 +19,13 @@ import {
   type StepIssueCode,
 } from '../../domain/onboarding';
 import { logFailure } from '../../platform/desktop/log';
+import { healthKit as platformHealthKit, type HealthKit } from '../../platform/healthkit';
 import { formatDecimal, tOnboarding, type OnboardingTextKey } from '../../i18n/onboardingText';
 import { Button, Icon, useFocusTrap, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useAppStore } from '../app/appStore';
 import { useNavigationStore } from '../app/navigation';
+import { RATES as RATE_OPTIONS } from './StepsBasics';
 import { loadTrainingContent, type TrainingContent } from '../training/content';
 import { finishOnboarding, loadStart, parseField, previewChanges, saveDraft } from './onboardingData';
 import { StepAvailability, StepExperience, StepGoal, StepYou, type FieldTexts, type StepProps } from './StepsBasics';
@@ -36,6 +41,16 @@ const TITLE_KEY: Readonly<Record<OnboardingStepId, OnboardingTextKey>> = {
   priorities: 'prioritiesTitle',
   split: 'splitTitle',
   result: 'resultTitle',
+};
+const NAME_KEY: Readonly<Record<OnboardingStepId, OnboardingTextKey>> = {
+  you: 'stepNameYou',
+  goal: 'stepNameGoal',
+  experience: 'stepNameExperience',
+  availability: 'stepNameAvailability',
+  equipment: 'stepNameEquipment',
+  priorities: 'stepNamePriorities',
+  split: 'stepNameSplit',
+  result: 'stepNameResult',
 };
 const TEXT_KEY: Readonly<Record<OnboardingStepId, OnboardingTextKey>> = {
   you: 'youText',
@@ -53,6 +68,8 @@ export interface OnboardingFlowProps {
   readonly mode: 'first-launch' | 'review';
   /** `done` : « Commencer » (tout est enregistré) ; `closed` : fermé sans terminer (le brouillon reste). */
   readonly onClose: (reason: 'done' | 'closed') => void;
+  /** Lecture Santé du poids (iPhone seulement, jamais de demande d'autorisation ici) ; défaut : la façade de la plateforme. */
+  readonly healthKit?: HealthKit;
 }
 
 const asText = (n: number | null): string => (n === null ? '' : String(n).replace('.', ','));
@@ -66,7 +83,7 @@ const asInteger = (text: string): number | null => {
  * suivant, passer (toute question non essentielle est ignorable), brouillon enregistré à chaque changement (reprise après fermeture).
  * Rien n'est écrit dans le profil, la nutrition ni les routines avant « Commencer » (une transaction, tout ou rien).
  */
-export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
+export function OnboardingFlow({ onClose, healthKit = platformHealthKit }: OnboardingFlowProps) {
   const container = useAppContainer();
   const layout = useLayout();
   const navigate = useNavigationStore((s) => s.navigate);
@@ -81,6 +98,7 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
   const [issues, setIssues] = useState<readonly StepIssueCode[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [healthSource, setHealthSource] = useState<string | null>(null);
   const [startMeta, setStartMeta] = useState<{ readonly baseline: OnboardingDraft | null; readonly persist: boolean } | null>(null);
   /** Remplacements à confirmer avant l'écriture finale, et ceux que l'utilisateur refuse (décochés). */
   const [confirming, setConfirming] = useState<{ readonly changes: readonly OnboardingChange[]; readonly refused: ReadonlySet<ChangeField> } | null>(null);
@@ -165,9 +183,34 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
     [data, persist],
   );
 
+  // ERGO-02 (C6) : sur iPhone seulement, le poids lu dans Santé (lecture existante, autorisation déjà accordée) remplit un champ encore vide.
+  // Jamais de demande d'autorisation ici, jamais de lecture sur PC ; un champ déjà rempli ou saisi n'est jamais remplacé.
+  const healthTried = useRef(false);
+  /** Poids lu dans Santé et posé dans le champ (null : aucun) ; comparé à la fin pour ne pas en faire une pesée s'il n'a pas été modifié. */
+  const healthPrefillKg = useRef<number | null>(null);
+  const latest = useRef<{ draft: OnboardingDraft | null; texts: FieldTexts }>({ draft: null, texts });
+  useEffect(() => {
+    latest.current = { draft, texts };
+  }, [draft, texts]);
+  useEffect(() => {
+    if (draft === null || layout !== 'mobile' || healthTried.current) return;
+    healthTried.current = true;
+    healthKit.bodyMassToday().then(
+      (read) => {
+        const current = latest.current;
+        if (read.state !== 'granted' || current.draft === null || current.draft.weightKg !== null || current.texts.weightKg.trim() !== '') return;
+        setTexts((old) => ({ ...old, weightKg: asText(read.value.kg) }));
+        healthPrefillKg.current = read.value.kg;
+        setHealthSource(read.value.source.name);
+        commit({ ...current.draft, weightKg: read.value.kg });
+      },
+      (error: unknown) => logFailure('onboarding-health', error),
+    );
+  }, [draft, layout, healthKit, commit]);
+
   if (loadFailed) {
     return (
-      <Shell layout={layout} trapRef={trapRef}>
+      <Shell layout={layout} trapRef={trapRef} onKeyDown={null} side={null}>
         <p role="alert">{tOnboarding('loadError')}</p>
         <Button variant="secondary" onClick={() => onClose('closed')}>
           {tOnboarding('close')}
@@ -177,7 +220,7 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
   }
   if (draft === null) {
     return (
-      <Shell layout={layout} trapRef={trapRef}>
+      <Shell layout={layout} trapRef={trapRef} onKeyDown={null} side={null}>
         <p role="status">{tOnboarding('loading')}</p>
       </Shell>
     );
@@ -258,7 +301,7 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
         setBusy(false);
         return;
       }
-      await finishOnboarding({ data, ids: container.ids, today, timeZone, year }, draft, loaded, { baseline, refused: [...(refused ?? [])] });
+      await finishOnboarding({ data, ids: container.ids, today, timeZone, year }, draft, loaded, { baseline, refused: [...(refused ?? [])], healthPrefillKg: healthPrefillKg.current });
       navigate({ tab: 'today' });
       onClose('done');
     } catch (error) {
@@ -268,41 +311,121 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
     }
   };
 
-  const props: StepProps = { draft, patch, issues, year, today, texts, setText, content, prefillWeightKg };
+  const props: StepProps = { draft, patch, issues, year, today, texts, setText, content, prefillWeightKg, layout, healthSource };
+  const pc = layout === 'pc';
+  /** Raccourcis PC (aperçu) : Entrée continue, 1 / 2 / 3 choisissent l'expérience, ← → règlent les séances ou le rythme. Jamais depuis un bouton ou un choix. */
+  const onKeyDown = (event: React.KeyboardEvent<HTMLElement>): void => {
+    if (!pc || busy || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+    const target = event.target as HTMLElement;
+    const interactive = target.closest('button, a, select, textarea, [role="radio"], [role="switch"], input:not([type="text"])') !== null;
+    if (interactive) return;
+    const inField = target.tagName === 'INPUT';
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (step === 'result') {
+        if (!confirming) void onFinish(null);
+      } else onNext();
+      return;
+    }
+    if (inField) return;
+    if (step === 'experience' && ['1', '2', '3'].includes(event.key)) {
+      const level = (['beginner', 'intermediate', 'advanced'] as const)[Number(event.key) - 1];
+      if (level !== undefined) {
+        event.preventDefault();
+        patch({ experience: level });
+      }
+      return;
+    }
+    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+    const direction = event.key === 'ArrowRight' ? 1 : -1;
+    if (step === 'availability') {
+      const choices = [1, 2, 3, 4, 5, 6, 7];
+      const at = draft.sessionsPerWeek === null ? -1 : choices.indexOf(draft.sessionsPerWeek);
+      const next = choices[at === -1 ? (direction === 1 ? 0 : choices.length - 1) : Math.min(choices.length - 1, Math.max(0, at + direction))];
+      if (next !== undefined) {
+        event.preventDefault();
+        patch({ sessionsPerWeek: next });
+      }
+    } else if (step === 'goal' && draft.goal !== null && RATE_GOALS.includes(draft.goal)) {
+      const rates = (RATE_OPTIONS[draft.goal] ?? []).filter((r) => r >= GOAL_RATE_MIN_PCT && r <= GOAL_RATE_MAX_PCT);
+      const sorted = [...rates].sort((a, b) => a - b);
+      const at = draft.weeklyRatePct === null ? -1 : sorted.indexOf(draft.weeklyRatePct);
+      const next = sorted[at === -1 ? (direction === 1 ? 0 : sorted.length - 1) : Math.min(sorted.length - 1, Math.max(0, at + direction))];
+      if (next !== undefined) {
+        event.preventDefault();
+        patch({ weeklyRatePct: next });
+      }
+    }
+  };
   const body =
     step === 'you' ? <StepYou {...props} /> : step === 'goal' ? <StepGoal {...props} /> : step === 'experience' ? <StepExperience {...props} /> : step === 'availability' ? <StepAvailability {...props} /> : step === 'equipment' ? <StepEquipment {...props} /> : step === 'priorities' ? <StepPriorities {...props} /> : step === 'split' ? <StepSplit {...props} /> : <StepResult {...props} />;
 
+  const closeButton = (
+    <button type="button" className="ct-onb__close" aria-label={tOnboarding('close')} onClick={close}>
+      <Icon icon={X} size="lg" />
+    </button>
+  );
+  const skipLink =
+    step !== 'result' ? (
+      <button type="button" className="ct-onb__link" onClick={onSkip}>
+        {tOnboarding('skip')}
+      </button>
+    ) : null;
+  const side = pc ? (
+    <aside className="ct-onb__side">
+      <p className="ct-onb__brand">{tOnboarding('brandPc')}</p>
+      <p className="ct-onb__sideTitle">{tOnboarding('sideTitle')}</p>
+      {/* Liste nommée, pas une navigation : les étapes ne sont pas des liens (une seule « navigation » à l'écran, celle de l'app). */}
+      <ol className="ct-onb__steps" aria-label={tOnboarding('sideLabel')}>
+          {ONBOARDING_STEPS.map((id, i) => {
+            const state = i < index ? 'done' : i === index ? 'current' : 'todo';
+            return (
+              <li key={id} className="ct-onb__stepItem" data-state={state} {...(state === 'current' ? { 'aria-current': 'step' as const } : {})}>
+                <i className="ct-onb__stepDot" aria-hidden="true">
+                  {state === 'done' ? '✓' : i + 1}
+                </i>
+                <span>{tOnboarding(NAME_KEY[id])}</span>
+                {state !== 'todo' && <span className="ct-visually-hidden">{tOnboarding(state === 'done' ? 'stepStateDone' : 'stepStateCurrent')}</span>}
+              </li>
+            );
+          })}
+      </ol>
+      <p className="ct-onb__sideNote">{tOnboarding('sideNote')}</p>
+    </aside>
+  ) : null;
+  const keyHint = step === 'result' ? 'hintStart' : step === 'you' ? 'hintEnterTab' : step === 'experience' ? 'hintDigits' : 'hintEnter';
+
   return (
-    <Shell layout={layout} trapRef={trapRef}>
+    <Shell layout={layout} trapRef={trapRef} onKeyDown={onKeyDown} side={side}>
       <header className="ct-onb__header">
         <p className="ct-onb__eyebrow">{tOnboarding('stepEyebrow', { step: index + 1, total: ONBOARDING_STEPS.length })}</p>
         <div className="ct-onb__headerActions">
-          {step !== 'result' && (
-            <button type="button" className="ct-onb__link" onClick={onSkip}>
-              {tOnboarding('skip')}
-            </button>
-          )}
-          <button type="button" className="ct-onb__close" aria-label={tOnboarding('close')} onClick={close}>
-            <Icon icon={X} size="lg" />
-          </button>
+          {!pc && <span className="ct-onb__duration">{tOnboarding('duration')}</span>}
+          {!pc && skipLink}
+          {closeButton}
         </div>
       </header>
-      <div className="ct-onb__progress" role="progressbar" aria-label={tOnboarding('progressLabel')} aria-valuemin={1} aria-valuemax={ONBOARDING_STEPS.length} aria-valuenow={index + 1} aria-valuetext={tOnboarding('stepEyebrow', { step: index + 1, total: ONBOARDING_STEPS.length })}>
-        {ONBOARDING_STEPS.map((id, i) => (
-          <i key={id} className="ct-onb__segment" data-state={i < index ? 'done' : i === index ? 'current' : 'todo'} />
-        ))}
-      </div>
+      {!pc && (
+        <div className="ct-onb__progress" role="progressbar" aria-label={tOnboarding('progressLabel')} aria-valuemin={1} aria-valuemax={ONBOARDING_STEPS.length} aria-valuenow={index + 1} aria-valuetext={tOnboarding('stepEyebrow', { step: index + 1, total: ONBOARDING_STEPS.length })}>
+          {ONBOARDING_STEPS.map((id, i) => (
+            <i key={id} className="ct-onb__segment" data-state={i < index ? 'done' : i === index ? 'current' : 'todo'} />
+          ))}
+        </div>
+      )}
+      {!pc && step === 'you' && <p className="ct-onb__brand">{tOnboarding('brand')}</p>}
       <h1 ref={headingRef} id="ct-onb-title" tabIndex={-1} className="ct-onb__title">
         {tOnboarding(TITLE_KEY[step])}
       </h1>
       <p className="ct-onb__text">{tOnboarding(TEXT_KEY[step])}</p>
-      <div className="ct-onb__body">{body}</div>
+      <div className="ct-onb__body" data-step={step}>
+        {body}
+      </div>
       {notice && (
         <p className="ct-onb__error" role="alert">
           {notice}
         </p>
       )}
-      <p className="ct-onb__hint">{tOnboarding('skipHint')}</p>
+      {!pc && <p className="ct-onb__hint">{tOnboarding('skipHint')}</p>}
       {step === 'result' && confirming && (
         <section className="ct-onb__body" aria-labelledby="ct-onb-confirm">
           <h2 id="ct-onb-confirm" className="ct-onb__label">
@@ -332,32 +455,35 @@ export function OnboardingFlow({ onClose }: OnboardingFlowProps) {
       <footer className="ct-onb__footer">
         {step === 'result' && confirming ? (
           <>
-            <Button variant="secondary" fullWidth onClick={() => setConfirming(null)} disabled={busy}>
+            <Button variant="secondary" fullWidth={!pc} onClick={() => setConfirming(null)} disabled={busy}>
               {tOnboarding('confirmBack')}
             </Button>
-            <Button fullWidth onClick={() => void onFinish(confirming.refused)} disabled={busy} ariaBusy={busy}>
+            <Button fullWidth={!pc} onClick={() => void onFinish(confirming.refused)} disabled={busy} ariaBusy={busy}>
               {tOnboarding('confirmSave')}
             </Button>
           </>
         ) : step === 'result' ? (
           <>
-            <Button variant="secondary" fullWidth onClick={() => goTo('you')} disabled={busy}>
+            <Button variant="secondary" fullWidth={!pc} onClick={() => goTo('you')} disabled={busy}>
               {tOnboarding('edit')}
             </Button>
-            <Button fullWidth onClick={() => void onFinish(null)} disabled={busy} ariaBusy={busy}>
+            <Button fullWidth={!pc} onClick={() => void onFinish(null)} disabled={busy} ariaBusy={busy}>
               {tOnboarding('start')}
             </Button>
+            {pc && <span className="ct-onb__keyHint">{tOnboarding(keyHint)}</span>}
           </>
         ) : (
           <>
             {step !== 'you' && (
-              <Button variant="secondary" fullWidth onClick={onBack}>
+              <Button variant="secondary" fullWidth={!pc} onClick={onBack}>
                 {tOnboarding('back')}
               </Button>
             )}
-            <Button fullWidth onClick={onNext}>
+            <Button fullWidth={!pc} onClick={onNext}>
               {tOnboarding('next')}
             </Button>
+            {pc && <span className="ct-onb__keyHint">{tOnboarding(keyHint)}</span>}
+            {pc && <span className="ct-onb__footerSkip">{skipLink}</span>}
           </>
         )}
       </footer>
@@ -410,11 +536,12 @@ function changeLine(change: OnboardingChange, content: TrainingContent | null): 
   return tOnboarding('confirmLine', { label: tOnboarding(FIELD_KEY[change.field]), before: changeValue(change.field, change.before, content), after: changeValue(change.field, change.after, content) });
 }
 
-function Shell({ layout, trapRef, children }: { readonly layout: string; readonly trapRef: React.RefObject<HTMLElement>; readonly children: React.ReactNode }) {
+function Shell({ layout, trapRef, onKeyDown, side, children }: { readonly layout: string; readonly trapRef: React.RefObject<HTMLElement>; readonly onKeyDown: ((event: React.KeyboardEvent<HTMLElement>) => void) | null; readonly side: React.ReactNode; readonly children: React.ReactNode }) {
   return (
     <div className="ct-onb" data-layout={layout}>
-      <section ref={trapRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={tOnboarding('dialogLabel')} className="ct-onb__panel">
-        {children}
+      <section ref={trapRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={tOnboarding('dialogLabel')} className="ct-onb__panel" {...(onKeyDown ? { onKeyDown } : {})}>
+        {side}
+        <div className="ct-onb__main">{children}</div>
       </section>
     </div>
   );

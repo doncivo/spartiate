@@ -9,35 +9,127 @@
   font-family: var(--ct-font-text);
 }
 
-.ct-onb[data-layout='pc'] {
-  align-items: center;
-  justify-content: center;
-  background: color-mix(in srgb, var(--ct-color-bg) 82%, transparent);
+.ct-onb[data-layout='mobile'] {
+  inset: var(--ct-safe-area-top) var(--ct-safe-area-right) var(--ct-safe-area-bottom) var(--ct-safe-area-left);
 }
 
 .ct-onb__panel {
   display: flex;
-  flex-direction: column;
-  gap: var(--ct-space-3);
   box-sizing: border-box;
   width: 100%;
   height: 100%;
-  overflow-y: auto;
-  padding: var(--ct-space-4) var(--ct-space-5) var(--ct-space-5);
+  overflow: hidden;
   background: var(--ct-color-bg);
 }
 
-.ct-onb[data-layout='phone'] {
-  inset: var(--ct-safe-area-top) var(--ct-safe-area-right) var(--ct-safe-area-bottom) var(--ct-safe-area-left);
+/* Colonne de la question : défile seule, le pied reste collé en bas. */
+.ct-onb__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: var(--ct-space-4) var(--ct-space-5) var(--ct-space-5);
 }
 
-.ct-onb[data-layout='pc'] .ct-onb__panel {
-  max-width: 640px;
-  height: auto;
-  max-height: calc(100% - var(--ct-space-8));
-  border: 1px solid var(--ct-color-border);
-  border-radius: var(--ct-radius-xl);
-  padding: var(--ct-space-6) var(--ct-space-7);
+/* PC (1 440 px) : les 8 étapes à gauche avec leur avancement, la question au centre. */
+.ct-onb[data-layout='pc'] .ct-onb__main {
+  gap: var(--ct-space-5);
+  max-width: 68rem;
+  padding: var(--ct-space-8) var(--ct-space-8) var(--ct-space-6);
+}
+
+.ct-onb__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  box-sizing: border-box;
+  flex: none;
+  width: 18rem;
+  padding: var(--ct-space-7) var(--ct-space-6);
+  border-right: 1px solid var(--ct-color-border);
+  overflow-y: auto;
+}
+
+.ct-onb__brand {
+  margin: 0 0 var(--ct-space-2);
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-text-lg);
+  letter-spacing: 0.08em;
+  color: var(--ct-color-bronze);
+}
+
+.ct-onb__side .ct-onb__brand {
+  margin-bottom: var(--ct-space-6);
+  font-size: var(--ct-font-size-item);
+}
+
+.ct-onb__sideTitle {
+  margin: 0 0 var(--ct-space-2);
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ct-color-bronze);
+}
+
+.ct-onb__steps {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ct-onb__stepItem {
+  display: flex;
+  align-items: center;
+  gap: var(--ct-space-3);
+  min-height: var(--ct-hit-target-min);
+  font-size: var(--ct-font-size-text-sm);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-onb__stepItem[data-state='done'] {
+  color: var(--ct-color-text);
+}
+
+.ct-onb__stepItem[data-state='current'] {
+  color: var(--ct-color-text);
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-onb__stepDot {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--ct-space-6);
+  height: var(--ct-space-6);
+  border: 1px solid var(--ct-color-border-strong);
+  border-radius: var(--ct-radius-round);
+  font-style: normal;
+  font-size: var(--ct-font-size-xs);
+}
+
+.ct-onb__stepItem[data-state='done'] .ct-onb__stepDot {
+  border-color: var(--ct-color-bronze);
+  background: var(--ct-color-surface-raised);
+}
+
+.ct-onb__stepItem[data-state='current'] .ct-onb__stepDot {
+  border-width: 2px;
+  border-color: var(--ct-color-nav-accent);
+}
+
+.ct-onb__sideNote {
+  margin: auto 0 0;
+  font-size: var(--ct-font-size-xs);
+  line-height: 1.6;
+  color: var(--ct-color-text-secondary);
 }
 
 .ct-onb__panel:focus-visible {
@@ -117,7 +209,7 @@
 .ct-onb__title {
   margin: var(--ct-space-1) 0 0;
   font-family: var(--ct-font-title);
-  font-size: var(--ct-font-size-display-mobile);
+  font-size: var(--ct-font-size-heading);
   font-weight: var(--ct-font-weight-semibold);
   letter-spacing: 0.02em;
 }
@@ -127,7 +219,7 @@
 }
 
 .ct-onb[data-layout='pc'] .ct-onb__title {
-  font-size: var(--ct-font-size-display-pc);
+  font-size: var(--ct-font-size-heading);
 }
 
 .ct-onb__text,
@@ -394,8 +486,178 @@
   min-width: 0;
 }
 
-@media (prefers-reduced-transparency: reduce) {
-  .ct-onb[data-layout='pc'] {
-    background: var(--ct-color-bg);
-  }
+
+.ct-onb__duration {
+  font-size: var(--ct-font-size-sm);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-onb__note {
+  margin: 0;
+  padding-left: var(--ct-space-3);
+  border-left: 2px solid var(--ct-color-nav-accent);
+  font-size: var(--ct-font-size-sm);
+  line-height: 1.55;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-onb__rateValue {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ct-space-2);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-onb__rateValue b {
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading-sm);
+  font-weight: var(--ct-font-weight-semibold);
+  color: var(--ct-color-text);
+}
+
+/* Cartes de choix (objectif, expérience, matériel). */
+.ct-onb__cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ct-space-3);
+}
+
+.ct-onb__cards[data-columns='3'] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ct-onb__cards[data-columns='2'] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ct-onb__card-option {
+  box-sizing: border-box;
+  min-height: var(--ct-hit-target-min);
+  padding: var(--ct-space-4);
+  background: transparent;
+  color: var(--ct-color-text);
+  border: 1px solid var(--ct-color-border-strong);
+  border-radius: var(--ct-radius-lg);
+  font: inherit;
+  font-size: var(--ct-font-size-text-lg);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ct-onb__card-option small {
+  display: block;
+  margin-top: var(--ct-space-1);
+  font-size: var(--ct-font-size-xs);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-onb__card-option[data-checked] {
+  background: var(--ct-color-surface-raised);
+  border-width: 2px;
+  border-color: var(--ct-color-bronze);
+  padding: calc(var(--ct-space-4) - 1px);
+}
+
+.ct-onb__card-option:focus-visible {
+  outline: 2px solid var(--ct-color-select-ring);
+  outline-offset: 2px;
+}
+
+/* Écran 1 : libellé à gauche, champ à droite (aperçu). */
+.ct-onb__body[data-step='you'] .ct-onb__field > .ct-onb__field {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-3);
+  min-height: var(--ct-hit-target-min);
+}
+
+.ct-onb__body[data-step='you'] .ct-onb__field > .ct-onb__field .ct-onb__input {
+  width: 8rem;
+  text-align: right;
+}
+
+/* Écran 6 : silhouettes, puis priorités et mouvements douloureux. */
+.ct-onb__duo,
+.ct-onb__duoMap,
+.ct-onb__duoList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-4);
+  min-width: 0;
+}
+
+.ct-onb[data-layout='pc'] .ct-onb__duo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--ct-space-7);
+  align-items: start;
+}
+
+/* Écran 7 : jours du programme proposé. */
+.ct-onb__days {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ct-onb__days li {
+  padding-top: var(--ct-space-2);
+  border-top: 1px solid var(--ct-color-border);
+}
+
+/* Écran 8 : première séance en tableau (exercice, cible). */
+.ct-onb__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ct-onb__table th {
+  padding: var(--ct-space-2) 0;
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-onb__table td {
+  padding: var(--ct-space-2) 0;
+  border-top: 1px solid var(--ct-color-border);
+}
+
+.ct-onb__table td:last-child,
+.ct-onb__table th:last-child {
+  text-align: right;
+}
+
+.ct-onb[data-layout='pc'] .ct-onb__body[data-step='result'] {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: var(--ct-space-7);
+  align-items: start;
+}
+
+.ct-onb[data-layout='pc'] .ct-onb__footer {
+  align-items: center;
+}
+
+.ct-onb[data-layout='pc'] .ct-onb__footer > * {
+  flex: 0 0 auto;
+}
+
+.ct-onb__keyHint {
+  font-size: var(--ct-font-size-xs);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-onb__footerSkip {
+  margin-left: auto;
 }

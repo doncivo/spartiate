@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>PC · Onboarding 3/8 · Expérience</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&amp;display=swap">
+<style>
+body{margin:0}
+.c{font-family:Cinzel,"Times New Roman",serif;font-weight:600}
+.sec{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#C28E4C}
+.st{display:flex;gap:12px;align-items:center;height:40px;font-size:14px;color:#A39C90}
+.st i{width:24px;height:24px;border-radius:12px;border:1px solid #2A2E37;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:12px}
+.dn{color:#EDE7DC}.dn i{background:#C28E4C;border-color:#C28E4C;color:#0D0E11}
+.op{display:block;padding:22px;border-radius:16px;border:1px solid #2A2E37;background:transparent;color:#EDE7DC;text-align:left;font-size:18px}
+.op small{display:block;font-size:13px;color:#A39C90;margin-top:8px;line-height:1.5}
+</style>
+</helmet>
+<div style="width:1440px;height:900px;background:#0D0E11;color:#EDE7DC;font-family:'Segoe UI',-apple-system,system-ui,sans-serif;font-size:14px;line-height:1.4;display:flex;overflow:hidden">
+<aside style="width:300px;flex:none;border-right:1px solid #1D2027;padding:40px 32px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px">
+<div class="c" style="font-size:20px;color:#E0B577;margin-bottom:28px">Λ  Spartiate</div>
+<div class="sec" style="margin-bottom:8px">Configuration · ≈ 6 min</div>
+<div class="st dn"><i>✓</i>Toi</div><div class="st dn"><i>✓</i>Objectif</div>
+<div class="st" style="color:#E0B577;font-weight:600"><i style="border-color:#E0B577;color:#E0B577">3</i>Expérience</div>
+<div class="st"><i>4</i>Disponibilité</div><div class="st"><i>5</i>Matériel</div><div class="st"><i>6</i>Priorités</div><div class="st"><i>7</i>Split</div><div class="st"><i>8</i>Résultat</div>
+<div style="margin-top:auto;font-size:12px;color:#A39C90;line-height:1.6">Brouillon gardé à chaque étape. Toute question non essentielle peut être passée.</div>
+</aside>
+<main style="flex:1;padding:72px 96px;box-sizing:border-box;display:flex;flex-direction:column;gap:30px;max-width:1040px">
+<div><div class="sec">Étape 3 sur 8</div><h1 class="c" style="font-size:40px;margin:8px 0 0">Ton expérience</h1><div style="color:#A39C90;margin-top:8px;font-size:15px">Les charges de départ restent prudentes, puis s'ajustent dès la 2ᵉ séance.</div></div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px">
+<button type="button" class="op">Débutant<small>Moins d'un an de musculation régulière, ou reprise après une longue pause.</small></button>
+<button type="button" class="op" style="border-color:#C28E4C;background:#15171C">Intermédiaire<small>1 à 4 ans réguliers ; tu connais les mouvements de base et tes charges.</small></button>
+<button type="button" class="op">Avancé<small>Plus de 4 ans, programmation structurée, progression devenue lente.</small></button>
+</div>
+<div style="font-size:13px;color:#A39C90;border-left:2px solid #C28E4C;padding-left:12px">Intermédiaire : départ à environ 80 % de tes charges habituelles, RIR 3 la première semaine.</div>
+<div style="margin-top:auto;display:flex;gap:12px;align-items:center">
+<button type="button" style="height:50px;padding:0 24px;border-radius:12px;border:1px solid #2A2E37;background:transparent;color:#EDE7DC">Retour</button>
+<button type="button" style="height:50px;padding:0 32px;border-radius:12px;border:0;background:#B8322A;color:#EDE7DC;font-weight:600;font-size:15px">Continuer</button>
+<span style="font-size:12px;color:#A39C90">1, 2, 3 pour choisir · Entrée pour continuer</span>
+<a href="#" style="margin-left:auto;color:#A39C90;text-decoration:none">Passer cette étape</a>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

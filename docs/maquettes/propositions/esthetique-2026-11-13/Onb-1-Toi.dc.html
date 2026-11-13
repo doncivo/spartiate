@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Onboarding 1/8 · Toi</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&amp;display=swap">
+<style>
+body{margin:0}
+.c{font-family:Cinzel,"Times New Roman",serif;font-weight:600}
+.sec{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#C28E4C}
+.f{display:flex;justify-content:space-between;align-items:center;min-height:56px;border-top:1px solid #1D2027}
+.inp{width:110px;height:44px;border-radius:12px;background:#15171C;border:1px solid #2A2E37;color:#EDE7DC;text-align:right;padding:0 12px;font-size:17px;box-sizing:border-box}
+.seg{height:40px;padding:0 18px;border-radius:20px;border:1px solid #2A2E37;background:transparent;color:#A39C90;font-size:14px}
+</style>
+</helmet>
+<div style="width:440px;height:956px;background:#0D0E11;color:#EDE7DC;font-family:-apple-system,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums;overflow:hidden;padding:60px 24px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:#A39C90">Étape 1 sur 8</span><span style="font-size:13px;color:#A39C90">≈ 6 min</span></div>
+<div style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px" aria-hidden="true"><i style="height:3px;border-radius:2px;background:#E0B577"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i></div>
+<div><div class="c" style="font-size:16px;color:#C28E4C;letter-spacing:.08em">Λ SPARTIATE</div><h1 class="c" style="font-size:30px;margin:10px 0 0">Toi</h1><div style="color:#A39C90;margin-top:6px;font-size:14px">Pour estimer tes charges de départ et ta dépense. Rien ne quitte tes appareils.</div></div>
+<div>
+<div class="f" style="border-top:0"><span>Sexe pour les formules</span><span style="display:flex;gap:6px"><button type="button" class="seg" style="border-color:#C28E4C;color:#E0B577">Homme</button><button type="button" class="seg">Femme</button></span></div>
+<div class="f"><label for="b">Année de naissance</label><input id="b" class="inp" type="text" placeholder="1988"></div>
+<div class="f"><label for="h">Taille</label><span><input id="h" class="inp" type="text" placeholder="178"> <span style="color:#A39C90">cm</span></span></div>
+<div class="f"><label for="w">Poids</label><span><input id="w" class="inp" type="text" value="81,2"> <span style="color:#A39C90">kg</span></span></div>
+</div>
+<div style="display:flex;gap:10px;align-items:center;font-size:12px;color:#A39C90;border-left:2px solid #C28E4C;padding-left:10px">Poids pré-rempli depuis Apple Santé (Renpho, ce matin). Tu peux le corriger.</div>
+<div style="margin-top:auto;margin-bottom:44px;display:flex;flex-direction:column;gap:10px">
+<button type="button" style="height:54px;border-radius:14px;border:0;background:#B8322A;color:#EDE7DC;font-weight:600;font-size:16px">Continuer</button>
+<div style="font-size:11px;color:#A39C90;text-align:center">Toute question non essentielle peut être passée · brouillon gardé</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":440,"height":956}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -38,5 +38,5 @@ test('confirmation par EFFACER obligatoire, puis effacement et onboarding rouver
 
   // L'app redémarre comme une installation neuve (rechargement : même attente de démarrage que `openApp`) : l'onboarding s'ouvre tout seul.
   await expect(dialog(page)).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });
-  await expect(page.getByText('Configuration · étape 1 sur 8')).toBeVisible();
+  await expect(page.getByText('Étape 1 sur 8', { exact: true })).toBeVisible();
 });

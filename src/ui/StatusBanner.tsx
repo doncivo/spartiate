@@ -11,6 +11,8 @@ export interface StatusBannerProps {
   onAction?: () => void;
   /** Masqué à l'écran (reste lu par les lecteurs d'écran) : garde le contenu d'une région vivante stable pendant qu'un autre bandeau s'affiche. */
   concealed?: boolean;
+  /** ERGO-02 : teinte du filet de gauche (information : hors ligne, synchro ; avertissement : signature, échec). Sans teinte : bandeau neutre d'avant. */
+  tone?: 'info' | 'warn';
 }
 
 /**
@@ -22,9 +24,9 @@ export interface StatusBannerProps {
  * @example
  * <StatusBannerRegion><StatusBanner message={t('status.offline')} /></StatusBannerRegion>
  */
-export function StatusBanner({ message, actionLabel, actionAriaLabel, onAction, concealed }: StatusBannerProps) {
+export function StatusBanner({ message, actionLabel, actionAriaLabel, onAction, concealed, tone }: StatusBannerProps) {
   return (
-    <div className={concealed ? 'ct-status-banner ct-visually-hidden' : 'ct-status-banner'}>
+    <div className={['ct-status-banner', tone ? 'ct-status-banner--' + tone : '', concealed ? 'ct-visually-hidden' : ''].filter(Boolean).join(' ')}>
       <span>{message}</span>
       {actionLabel && onAction && (
         <button type="button" className="ct-status-banner__action" onClick={onAction} {...(actionAriaLabel ? { 'aria-label': actionAriaLabel } : {})}>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Compléments — après</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&amp;display=swap">
+<style>
+body{margin:0}
+.c{font-family:Cinzel,"Times New Roman",serif;font-weight:600}
+.sec{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#C28E4C}
+.row{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid #1D2027}
+.ck{width:44px;height:44px;flex:none;border-radius:22px;border:2px solid #2A2E37;background:transparent;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.on{background:#B8322A;border-color:#B8322A}
+.ic{width:20px;height:20px;stroke:#EDE7DC;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</helmet>
+<div style="width:440px;height:956px;background:#0D0E11;color:#EDE7DC;font-family:-apple-system,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums;overflow:hidden;padding:56px 24px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:22px">
+<a href="#" style="font-size:14px;color:#E0B577;text-decoration:none">‹ Nutrition</a>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><h1 class="c" style="font-size:26px;margin:0">Compléments</h1><a href="#" style="font-size:13px;color:#E0B577;text-decoration:none;font-weight:600">+ Ajouter</a></div>
+
+<div style="display:flex;align-items:baseline;gap:8px"><span class="c" style="font-size:40px;color:#E0B577">2 / 3</span><span style="color:#A39C90">pris aujourd'hui</span></div>
+
+<div>
+<div class="sec">Matin · 08:00</div>
+<div class="row" style="border-top:0"><button type="button" class="ck on" aria-label="Créatine prise"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></button><div style="flex:1"><div>Créatine</div><div style="font-size:12px;color:#A39C90">5 g · pris à 07:42</div></div></div>
+<div class="row"><button type="button" class="ck on" aria-label="Vitamine D prise"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></button><div style="flex:1"><div>Vitamine D3</div><div style="font-size:12px;color:#A39C90">1 000 UI · pris à 07:42</div></div></div>
+</div>
+<div>
+<div class="sec">Soir · 20:00</div>
+<div class="row" style="border-top:0"><button type="button" class="ck" aria-label="Marquer Oméga-3 pris"></button><div style="flex:1"><div>Oméga-3</div><div style="font-size:12px;color:#A39C90">2 capsules · rappel à 20:00</div></div></div>
+</div>
+
+<div>
+<div class="sec">Constance · 14 jours</div>
+<div style="display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px;margin-top:10px" aria-hidden="true">
+<i style="height:22px;border-radius:4px;background:#C28E4C"></i><i style="height:22px;border-radius:4px;background:#C28E4C"></i><i style="height:22px;border-radius:4px;background:#C28E4C"></i><i style="height:22px;border-radius:4px;background:#C28E4C;opacity:.45"></i><i style="height:22px;border-radius:4px;background:#C28E4C"></i><i style="height:22px;border-radius:4px;background:#C28E4C"></i><i style="height:22px;border-radius:4px;background:#1D2027"></i><i style="height:22px;border-radius:4px;background:#C28E4C"></i><i style="height:22px;border-radius:4px;background:#C28E4C"></i><i style="height:22px;border-radius:4px;background:#C28E4C"></i><i style="height:22px;border-radius:4px;background:#C28E4C;opacity:.45"></i><i style="height:22px;border-radius:4px;background:#C28E4C"></i><i style="height:22px;border-radius:4px;background:#C28E4C"></i><i style="height:22px;border-radius:4px;background:#C28E4C;opacity:.45"></i>
+</div>
+<div style="font-size:12px;color:#A39C90;margin-top:8px">plein : tout pris · pâle : en partie · vide : rien · 89 % des prises</div>
+</div>
+
+<div style="font-size:12px;color:#A39C90;border-left:2px solid #C28E4C;padding-left:10px">Rappels sur l'iPhone uniquement. Sur l'écran verrouillé : « Rappel Spartiate », jamais le nom du complément. Appui long › « Pris » coche sans ouvrir l'app.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":440,"height":956}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

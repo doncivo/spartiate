@@ -2,6 +2,17 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.23.0
+
+Aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.
+
+- **Charges aux haltères** : un exercice à deux haltères affiche « 2 × 26 kg » partout (Aujourd'hui, séance, fiche, journal, résumé, records) ; un seul haltère reste « 26 kg ». La saisie se fait toujours par haltère (« Charge par haltère (kg) ») ; rien ne change dans tes données.
+- **Onboarding en 8 étapes comme sur l'aperçu** (iPhone et PC) : sur PC, les étapes à gauche avec leur avancement, et le clavier (Entrée, Tab, flèches pour le rythme, 1 / 2 / 3 pour l'expérience). Sur l'iPhone, ton poids est pré-rempli depuis Santé si tu l'as autorisé. À revoir par Plus › Profil et poids › « Revoir mes réglages ».
+- **Aujourd'hui sur PC** : récupération puis séance du jour en tableau (exercices, cibles, charges, « Saisir la séance ici ») à gauche ; nutrition et macros, poids, dépense, semaine et derniers records à droite ; la carte « État » en petit, en bas.
+- **Plus** : 4 groupes (Moi, Sources, App, Données), chaque réglage avec sa valeur actuelle ; sur PC, la liste à gauche et le réglage ouvert à droite.
+- **Écrans refaits** : Progrès › Corps (silhouette, dernière mesure, écart sur 4 semaines, saisie en une ligne), fiche exercice, Matériel (PC), check-in hebdomadaire, Compléments, cardio GPS en cours (tracé schématique sur l'iPhone), Appareils et synchro.
+- **États dégradés** : bandeaux fins ; une donnée manquante s'affiche « — » avec sa raison, jamais un zéro.
+
 ## 0.22.3
 
 Aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.

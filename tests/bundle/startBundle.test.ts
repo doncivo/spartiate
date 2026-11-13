@@ -357,7 +357,14 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
   });
 
-  it.each(['Configuration · étape', 'Rétablir l’estimation', 'Choisis au moins autant de jours que de séances par semaine.', 'recalculé après 2 semaines de données'])('I3-07 : « %s » hors du départ et présent dans le build', (marker) => {
+  it.each(['Configuration · ≈ 6 min', 'Rétablir l’estimation', 'Choisis au moins autant de jours que de séances par semaine.', 'recalculé après 2 semaines de données'])('I3-07 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
+  // ERGO-02 : textes de la séance en tableau et de la colonne droite d'Aujourd'hui PC (fr.todayPc.ts) : avec leurs blocs à la demande, hors du départ.
+  it.each(['Saisir la séance ici', 'Derniers records', 'Macros du jour', 'pas encore de record', 'aucun export noté'])('ERGO-02 : « %s » hors du départ et présent dans le build', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);

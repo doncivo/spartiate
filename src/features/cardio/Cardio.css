@@ -130,8 +130,103 @@
   gap: var(--ct-space-2);
 }
 
-.ct-cardio__gps-live {
+/* ERGO-02 (aperçu Cardio-apres) : actions côte à côte, à parts égales ; « Arrêter et reporter » seule action rouge. */
+.ct-cardio__gps-actions > .ct-button {
+  flex: 1 1 8rem;
+}
+
+.ct-cardio__gps-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--ct-space-2);
+}
+
+.ct-cardio__gps-signal {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ct-space-1);
+  font-size: var(--ct-font-size-xs);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-cardio__gps-signal[data-signal='good'] {
+  color: var(--ct-color-achieved-text);
+}
+
+.ct-cardio__gps-dot {
+  display: inline-block;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: var(--ct-radius-round);
+  background: currentColor;
+}
+
+.ct-cardio__gps-hero {
+  justify-content: center;
+}
+
+.ct-cardio__gps-hero .ct-hero__num {
+  font-size: var(--ct-font-size-display-mobile);
+}
+
+.ct-cardio__gps-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
-  color: var(--ct-color-bronze);
+  padding: 0;
+  list-style: none;
+  border-block: var(--ct-line);
+}
+
+.ct-cardio__gps-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ct-space-1);
+  padding: var(--ct-space-3) var(--ct-space-1);
+  min-width: 0;
+  text-align: center;
+}
+
+.ct-cardio__gps-stat + .ct-cardio__gps-stat {
+  border-inline-start: var(--ct-line);
+}
+
+.ct-cardio__gps-stat-value {
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading-sm);
+  font-weight: var(--ct-font-weight-semibold);
   font-variant-numeric: tabular-nums;
+}
+
+.ct-cardio__gps-stat-label {
+  font-size: var(--ct-font-size-xs);
+  color: var(--ct-color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.ct-cardio__gps-map {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  margin: 0;
+  padding: var(--ct-space-2);
+  border-radius: var(--ct-radius-lg);
+  background: var(--ct-color-surface);
+}
+
+.ct-cardio__gps-track {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+.ct-cardio__gps-track path {
+  fill: none;
+  stroke: var(--ct-color-bronze);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }

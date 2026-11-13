@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import { isSharedSetting } from '../../domain/model';
 import { asEntityId, type DeviceId } from '../../domain/types';
@@ -134,7 +134,14 @@ describe('Apparence et formats (P-03)', () => {
     expect(getTimeFormat()).toBe('12h');
   });
 
-  it('les lignes de Réglages (PC, UI-REFONTE-09 : Thème, Début de semaine, Format de l’heure) affichent « Lundi » et « 24 h » puis « Dimanche » et « 12 h » (critère 9)', async () => {
+  it('PC (ERGO-02) : une entrée « Apparence » avec le thème courant, qui s’ouvre dans le panneau de droite', async () => {
+    renderIn(<SettingsScreen />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Apparence : Sombre' }));
+    expect(await screen.findByRole('region', { name: 'Apparence' })).toBeInTheDocument();
+  });
+
+  it('les lignes de Réglages (iPhone, ERGO-02 : Thème, Début de semaine, Format de l’heure) affichent « Lundi » et « 24 h » puis « Dimanche » et « 12 h » (critère 9)', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
     renderIn(<SettingsScreen />);
     expect(await screen.findByRole('button', { name: 'Thème : Sombre' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Début de semaine : Lundi' })).toBeInTheDocument();
@@ -148,5 +155,6 @@ describe('Apparence et formats (P-03)', () => {
     renderIn(<SettingsScreen />);
     expect(await screen.findByRole('button', { name: 'Début de semaine : Dimanche' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Format de l’heure : 12 h' })).toBeInTheDocument();
+    vi.unstubAllGlobals();
   });
 });
