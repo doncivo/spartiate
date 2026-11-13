@@ -1,5 +1,5 @@
 /* eslint-disable -- outil de nettoyage (CLEAN-02), hors du code de l'app */
-// CLEAN-02 : inventaire des tests qui s'appuient sur le banc legacy CircleTasks (D-67) : import direct de tests/fixtures/legacy-schema,
+// CLEAN-02 : inventaire des tests qui s'appuient sur le banc legacy de l'ancien projet (D-67) : import direct de tests/fixtures/legacy-schema,
 // des dépôts hérités (tâches, projets, espaces, routines, rappels, récurrences, objectifs, checklists), ou du simulateur tests/sim dont
 // le schéma par défaut est `legacy`. Classement par famille de scénario (dossier) et par entité héritée appelée.
 // Usage : node scripts/cleanup/legacySyncInventory.mjs [--json sortie.json]
