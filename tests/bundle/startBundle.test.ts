@@ -10,8 +10,8 @@ import { compareStartModules, describeComparison, initialList, normalizeSource, 
  * Taille du bundle de départ (PRD 8, démarrage rapide) : `npm run build` vers un dossier temporaire avec le manifeste de Vite, puis somme
  * gzip du JavaScript chargé AVANT toute interaction, c'est-à-dire le bloc d'entrée de `index.html` et tous ses imports STATIQUES,
  * récursivement. Les blocs sont repérés par le graphe du manifeste, jamais par leur nom (Rollup nomme automatiquement les blocs partagés,
- * par exemple « tokens », et ces noms peuvent changer). Les imports dynamiques (Recharts du rapport, tesseract.js, etc.) et les
- * ressources copiées telles quelles (/ocr/) n'en font pas partie. Seuil : 350 Ko gzip.
+ * par exemple « tokens », et ces noms peuvent changer). Les imports dynamiques (Recharts du rapport, écrans à la demande, etc.) et les
+ * ressources copiées telles quelles n'en font pas partie. Seuil : 350 Ko gzip.
  *
  * BUNDLE-01 : la mesure jugée est la mesure NORMALISÉE (`bundleMeasure.ts`) : les noms hachés des blocs, qui changent à chaque retouche CSS
  * et faisaient bouger le gzip de quelques dizaines d'octets sans aucune ligne de code changée, sont remplacés dans le contenu mesuré par un
@@ -121,7 +121,7 @@ describe('bundle de départ (index.html)', () => {
     }
   });
 
-  // PERF-02 (ADR 0001, avenant) : chrono-node, le catalogue anglais et les écrans à la demande ne reviennent pas dans le départ par un
+  // PERF-02 (ADR 0001, avenant) : le catalogue anglais et les écrans à la demande ne reviennent pas dans le départ par un
   // import statique oublié, un barrel ou un effet de bord ajouté (retrait de « sideEffects » dans package.json compris).
   // BUNDLE-01 : fiche de tâche (palier 1) et les six hôtes de la coquille (palier 2), blocs à la demande importés dynamiquement par lazyScreens.tsx.
   it.each(['src/features/shortcuts/ShortcutsHelp.tsx', 'src/features/updater/UpdateBanner.tsx', 'src/features/settings/SettingsScreen.tsx', 'src/features/sync/RestoreChoiceDialog.tsx', 'src/db/repositories/sql/epochCarryReports.ts', 'src/features/sync/SyncDetailsCarryReport.tsx', 'src/features/sync/carryReportBannerLine.ts', 'src/sync/epochCarryReportBanner.ts', 'src/sync/epochCarryReportAck.ts', 'src/sync/orphanEpoch.ts', 'src/sync/publishRotation.ts', 'src/features/sync/SyncDetailsOwnDeletion.tsx', 'src/db/repositories/sql/occurrenceDedup.ts'])('%s est un bloc à la demande, hors du départ', (source) => {
