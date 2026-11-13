@@ -451,6 +451,7 @@ Journal technique : codes et nombres seulement.
 - `notifications-ios.json` : retire `notification:allow-register-action-types`, `allow-register-listener` et `allow-remove-listener` (plus aucun usage : catégories et écoute passent par le plugin maison) ; garde les cinq permissions d'envoi ; ajoute `notification-actions:allow-drain`, `allow-ack`, `allow-status`, `allow-register-action-types`, `allow-register-listener`, `allow-remove-listener`. Aucune autre capability n'accorde `notification-actions:`. Jamais `allow-get-active` ni `allow-notify`.
 - Info.plist : **aucune clé**, aucune entrée dans `scripts/ios/plist-contract.json` (délégué et catégories n'exigent ni droit ni description d'usage).
 - Pas de `UIBackgroundModes` : l'app n'est jamais réveillée par une notification locale ; l'action `foreground` ouvre l'app.
+- Avenant FIX-0221 (D-250 à D-253, Spartiate 0.22.2) : catégorie `sp.supplement`, action `done` « Pris » **sans** `foreground`. Toujours aucun `UIBackgroundModes` : c'est la réponse à l'action (et non la notification) qui réveille l'app sans l'ouvrir, le temps que le délégué écrive la ligne (N3.3) ; l'application se fait au passage suivant du JS (réveil, ouverture, reprise). Hypothèse H-36, repli : `foreground`.
 
 ### N3.8 Aucun échec silencieux
 

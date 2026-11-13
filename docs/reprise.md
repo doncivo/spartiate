@@ -1,17 +1,17 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247 dans docs/decisions.md.
+État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit, puis 0.22.1 (ERGO-01b, PR #125) (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247 et D-250 à D-253 dans docs/decisions.md.
 
 ## Rapport du matin (13/11)
 
 - Publiées : 0.17.1 FIX-0171, 0.17.2 FIX-0172, 0.17.3 FIX-0173, 0.18.0 I6-03b (schéma 14), 0.18.1 DEP-01 (SQLite 3.54.1) et FIX-0182 (e2e Y-IOS-02), 0.18.2 FIX-0181 (schéma 15), 0.18.3 RESET-01 (schéma 16), 0.19.0 ERGO-01, 0.19.1 CLEAN-02, 0.20.0 I6-05 compléments (schéma 17), 0.21.0 I6-06 cardio et GPS (schéma 18), 0.22.0 I6-07 médias (87 exercices sur 196).
-- Bloqué ou partiel : CLEAN-02 sans la migration des tests de synchro hérités (CLEAN-03, L, D-201) ni le retrait du plugin vision (gardé pour l'import de programme, D-200) ; I6-05 sans action « Pris » dans la notification (D-213).
+- Bloqué ou partiel : CLEAN-02 sans la migration des tests de synchro hérités (CLEAN-03, L, D-201) ni le retrait du plugin vision (gardé pour l'import de programme, D-200)  ; action « Pris » des compléments livrée en 0.22.2 (FIX-0221, D-250 à D-253), à constater sur l’iPhone (H-36).
 - Installer : PC et iPhone le même jour, avant toute saisie (schéma 18). Le jour J : docs/RESET-01.md.
 - Constats iPhone : GPS (demande en français, parcours de distance connue ± 5 %, séance sur le PC sans tracé, refus affiché ; H-35) ; rappels de compléments (texte sans nom sur l'écran verrouillé, prise cochée avant l'heure = pas de rappel ; H-34) ; journée rouge (charges × 0,95 au cran du matériel, bouton « Accepter l'allègement ») ; favoris (ajout sur un appareil, présent sur l'autre après synchro) ; besoin de sommeil (7 h 30 à ~8 h 45 sur tes nuits, relecture dans Plus › Journaux) ; images d'exercice en thème sombre (H-9) ; bouclier de Corps (H-32) ; « Repartir de zéro » (H-33).
 
 ## Prochaines étapes
 
-1. En cours : ERGO-01b (0.22.1, PR #125 : règles visuelles de tous les écrans D-240, P1 à P5 D-238 et D-243 à D-247, fiche docs/ERGO-01b.md), puis FIX-0221 (0.22.2, PR #124 : action « Pris » des compléments, D-250). Ali : constats ci-dessus et écarts ERGO-01b (pas de charges sur « Séance du jour », carte Poids gardée sur PC). Import de programme : I6-08 (docs/I6-08.md, non exécuté).
+1. FIX-0221 (0.22.2, PR #124 : action « Pris » des compléments en arrière-plan, sans Swift, D-250 à D-253 ; constat d'Ali : « Pris » app en arrière-plan et app tuée, H-36). Ali : constats ci-dessus et écarts ERGO-01b (pas de charges sur « Séance du jour », carte Poids gardée sur PC ; docs/ERGO-01b.md). Import de programme : I6-08 (docs/I6-08.md, non exécuté).
 2. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
 3. À recaler sur demande d'Ali : D-73 (4), Exertion (D-88, D-220).
 
