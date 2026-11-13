@@ -1,6 +1,8 @@
-# PROG-01 — Programme
+# PROG-01 — Mésocycle réglable et cible des jours de repos (0.24.0)
 
-Statut : **fiche à compléter par la session PROG-01.** Aucune fiche PROG-01 n'existait dans le dépôt au 13/11 (branche DOC-FIX-0241-fiche) ; seules les décisions complémentaires d'Ali y sont consignées. À publier avant le dimanche 15/11 au soir.
+Statut : **en cours.** Budget M. Branche `PROG-01-mesocycle-jours-repos` depuis `DOC-FIX-0241-fiche` (remplace #130). Schéma 19. À publier avant le dimanche 15/11 au soir : Ali démarre son programme réel le lundi 16/11 (12 semaines, 3 mésocycles de 4 semaines, séances lundi, mardi, jeudi, vendredi, samedi ; repos mercredi et dimanche). Décisions D-267 (fait foi pour le mésocycle et la semaine de reprise), D-269 à D-272. Fixtures synthétiques uniquement (§ 22, D-38) : aucune donnée d'Ali dans le dépôt, les tests ou les journaux.
+
+Chapitres PRD : 12 (mésocycle, § 12.2, § 12.5), 11 (prescription, deload), 15 (cibles, check-in, § 15.1–15.2), 20 (schéma), 18 (écrans). Sync : D-26 (passe sync-icloud).
 
 ## Décisions complémentaires d'Ali du 13/11 (D-267, à intégrer avant la fusion)
 
@@ -17,3 +19,33 @@ Statut : **fiche à compléter par la session PROG-01.** Aucune fiche PROG-01 n'
 - Mésocycle : 4 semaines (6 semaines prévu à la revue du 07/02).
 - Semaine de reprise : désactivée.
 - Cible des jours de repos : 2 250 kcal.
+
+## Passe product-owner : critères
+
+### A. Mésocycle (D-267, D-269)
+
+| # | Critère (Given / When / Then) |
+| --- | --- |
+| A1 | Durée réglable à 4, 5 ou 6 semaines dans Entraînement › Programme et à l'étape 7 (« split ») de l'onboarding ; défaut 5. |
+| A2 | 4 semaines : RIR 3, 2-3, 2, puis décharge ; 6 semaines : RIR 3, 3, 2-3, 2, 1-2, puis décharge ; 5 semaines : RIR 3, 2-3, 2, 1-2, puis décharge (D-269). Séries de la routine en semaines de travail. |
+| A3 | Dernière semaine de travail, à partir du 2e mésocycle : RIR 1 sur les exercices d'isolation. Jamais RIR 0 par défaut. |
+| A4 | Décharge : 2 séries par exercice (1 si la ligne n'en a qu'une), charge = 90 % de la référence arrondie au cran du matériel vers le bas (2,5 kg ; par haltère pour une paire), RIR 3-4. Décharge anticipée proposée, jamais imposée (inchangé). |
+| A5 | Semaine de reprise désactivée par défaut, activable à la main : semaine 1, −1 série sur les lignes à 4 séries ou plus. Désactivée : semaine 1 avec toutes les séries, RIR 3. |
+| A6 | Changement de durée en cours de cycle : enregistré dans `next_weeks`, appliqué au cycle suivant ; semaines, historique et séances du cycle en cours inchangés. |
+| A7 | Pause (D-73 (9)) : semaine allégée de reprise = semaine 1 avec l'allègement de la semaine de reprise. |
+
+### B. Cible des jours de repos (D-270 à D-272)
+
+| # | Critère |
+| --- | --- |
+| B1 | Sans cible de repos (défaut) : comportement identique à 0.23.0, partout. |
+| B2 | Cible de repos saisie dans Stratégie, en kcal ou par un écart (défaut −200 kcal, porté par les glucides : −50 g) ; protéines et lipides identiques ; jours d'entraînement choisis (défaut : jours de la routine active si connus, sinon lundi, mardi, jeudi, vendredi, samedi). |
+| B3 | Type de jour : jour d'entraînement prévu, sinon jour de repos ; une séance de musculation close ce jour-là le fait passer en jour d'entraînement (D-270). |
+| B4 | Aujourd'hui et le journal : cible du type de jour, mention « Jour d'entraînement » ou « Jour de repos » ; Stratégie : moyenne hebdomadaire. |
+| B5 | Check-in : sur la moyenne hebdomadaire, même écart appliqué aux deux cibles (différence conservée), borne ± 150 kcal, protéines fixes, plancher de lipides inchangé. Balance et dépense mesurée : comparaison à la cible du jour. |
+| B6 | Schéma 19 additif ; catalogue de synchro ; export / import ; appareil resté au schéma 18. |
+| B7 | Une archive sv 18 s'importe en 0.24.0, en Remplacer comme en Fusionner, sans cible de repos (archive synthétique : routine en mode programme de 5 jours avec un superset, nutrition_target, 3 compléments, profil, une pesée). |
+
+## Vérification après fusion
+
+Sur une base de test vide : « Repartir de zéro », onboarding passé, import Remplacer de l'archive sv 18 synthétique → routine, cibles et compléments présents, aucune erreur. Résultat consigné ici.
