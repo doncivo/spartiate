@@ -55,6 +55,7 @@ export const recoveryFr = {
   toneFlat: 'neutre',
   toneDown: 'défavorable',
   explain_exertion_cardio_not_counted: 'L’Exertion compte la musculation seule ; le cardio n’est pas compté.',
+  explain_exertion_cardio_srpe: 'L’Exertion compte la musculation et le cardio saisi (minutes × ressenti).',
   explain_sleep_short: 'Nuit courte.',
   explain_sleep_debt: 'Dette de sommeil sur la semaine prise en compte.',
   explain_baseline_outliers_excluded: 'Quelques nuits atypiques sont écartées de ta base.',
