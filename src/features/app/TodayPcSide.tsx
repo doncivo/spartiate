@@ -1,9 +1,8 @@
 import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import { todayLocal } from '../../domain/clock';
-import { personalRecords } from '../../domain/training/closure';
+import type { PersonalRecord } from '../../domain/training/closure';
 import { dumbbellsHeld } from '../../domain/training/dumbbellPair';
 import { loadGrid } from '../../domain/training/loadGrid';
-import type { WorkoutWithSets } from '../../domain/training';
 import type { LocalDate } from '../../domain/types';
 import { formatInt, tNutrition } from '../../i18n/nutritionText';
 import { formatStamp } from '../../i18n/format';
@@ -57,22 +56,26 @@ function weekOf(today: LocalDate): readonly { readonly day: string; readonly nam
   });
 }
 
-async function readRecords(container: ReturnType<typeof useAppContainer>, setsOf: readonly WorkoutWithSets[]): Promise<readonly RecordRow[]> {
-  // Un record se compare à une séance close plus ancienne : sans deux séances closes, aucun record, et le catalogue n’est pas lu.
-  if (setsOf.length < 2) return [];
-  const data = await readTrainingData(container.data);
-  const exerciseOf = (id: string) => data.content.catalog.get(id) ?? data.allCustoms.find((c) => c.id === id);
-  const rows: RecordRow[] = [];
-  for (let i = 0; i < Math.min(RECORD_WORKOUTS, setsOf.length - 1); i += 1) {
-    const history = setsOf.slice(i + 1).flatMap((w) => w.sets);
-    for (const record of personalRecords((setsOf[i] as WorkoutWithSets).sets, history)) {
-      if (record.kind !== 'load' || rows.some((r) => r.exerciseId === record.exerciseId)) continue;
-      const exercise = exerciseOf(record.exerciseId);
-      const held = exercise === undefined ? null : dumbbellsHeld(exercise, loadGrid(exercise.equipment, data.active)?.source);
-      rows.push({ exerciseId: record.exerciseId, name: record.exerciseName, text: formatExerciseLoad(record.value, held) });
+/**
+ * Records de charge des `RECORD_WORKOUTS` dernières séances closes : exactement ceux du résumé de séance (`summary`, même règle que la
+ * clôture, comparée à tout l'historique de l'exercice). Le catalogue n'est lu que s'il y a un record à nommer.
+ */
+async function readRecords(container: ReturnType<typeof useAppContainer>, closedIds: readonly string[]): Promise<readonly RecordRow[]> {
+  const workouts = await container.data.repos.workouts();
+  const found: PersonalRecord[] = [];
+  for (const id of closedIds.slice(0, RECORD_WORKOUTS)) {
+    for (const record of (await workouts.summary(id)).records) {
+      if (record.kind === 'load' && !found.some((f) => f.exerciseId === record.exerciseId)) found.push(record);
     }
   }
-  return rows.slice(0, RECORDS_SHOWN);
+  if (found.length === 0) return [];
+  const data = await readTrainingData(container.data);
+  const exerciseOf = (id: string) => data.content.catalog.get(id) ?? data.allCustoms.find((c) => c.id === id);
+  return found.slice(0, RECORDS_SHOWN).map((record) => {
+    const exercise = exerciseOf(record.exerciseId);
+    const held = exercise === undefined ? null : dumbbellsHeld(exercise, loadGrid(exercise.equipment, data.active)?.source);
+    return { exerciseId: record.exerciseId, name: record.exerciseName, text: formatExerciseLoad(record.value, held) };
+  });
 }
 
 export interface TodayPcSideProps {
@@ -125,10 +128,9 @@ export function TodayPcSide({ weight, state }: TodayPcSideProps) {
         const closed = await workouts.listClosed(RECENT);
         const week = new Set(weekOf(today).map((d) => d.day));
         const doneDays = new Set(closed.flatMap((w) => (w.endedAt === null ? [] : [localDayOf(Date.parse(w.endedAt))])).filter((d) => week.has(d)));
-        const full = (await Promise.all(closed.map((w) => workouts.get(w.id)))).filter((w): w is WorkoutWithSets => w !== null);
         let records: readonly RecordRow[] = [];
         try {
-          records = await readRecords(container, full);
+          records = await readRecords(container, closed.map((w) => w.id));
         } catch {
           records = [];
         }
