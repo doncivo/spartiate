@@ -5,7 +5,8 @@
 //! (I3-02, migration 0007 : captures de `mesocycle`), la 8 (I4-02, migration 0008 : captures de `food`, `food_portion`, `meal_entry` et
 //! `nutrition_target`) et la 9 (I4-07, migration 0009 : captures de `day_completeness`, `recipe` et `recipe_ingredient`), jusqu'à la 14
 //! (I6-03b, migration 0014 : capture propre des colonnes de groupe de `routine_exercise`) et la 15 (FIX-0181, migration 0015 : captures de
-//! `food_favorite`) ; la version 16, inconnue de cette app, est refusée. Les déclencheurs de capture sont ceux de la référence.
+//! `food_favorite`) et la 16 (RESET-01, migration 0016 : captures de `data_reset`) ; la version 17, inconnue de cette app, est refusée. Les
+//! déclencheurs de capture sont ceux de la référence.
 
 use std::path::Path;
 
@@ -73,8 +74,18 @@ fn error_code(path: &Path) -> &'static str {
 }
 
 #[test]
-fn fix_0181_the_app_schema_version_is_15() {
-    assert_eq!(APP_SCHEMA_VERSION, 15);
+fn reset_01_the_app_schema_version_is_16() {
+    assert_eq!(APP_SCHEMA_VERSION, 16);
+}
+
+/// RESET-01 (migration 0016) : les deux déclencheurs de capture de `data_reset` n'existent qu'à partir de la version 16.
+#[test]
+fn reset_01_the_data_reset_triggers_do_not_exist_before_version_16() {
+    for suffix in ["ai", "au"] {
+        let name = format!("sync_data_reset_{suffix}");
+        assert_eq!(trigger_body_for(&name, "data_reset", 15), None);
+        assert!(trigger_body_for(&name, "data_reset", 16).is_some());
+    }
 }
 
 /// FIX-0181 (migration 0015) : les deux déclencheurs de capture de `food_favorite` n'existent qu'à partir de la version 15 ; une sauvegarde de version 15
@@ -519,13 +530,13 @@ fn i4_07_a_version_9_backup_with_the_recipe_tables_is_accepted_and_a_tampered_on
 }
 
 #[test]
-fn fix_0181_a_version_16_backup_is_refused_as_newer_schema() {
+fn reset_01_a_version_17_backup_is_refused_as_newer_schema() {
     let dir = scratch();
-    let path = dir.path().join("v16.db");
+    let path = dir.path().join("v17.db");
     make_db(&path, 3, &TABLES);
     Connection::open(&path)
         .unwrap()
-        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5); INSERT INTO schema_migrations (version) VALUES (6); INSERT INTO schema_migrations (version) VALUES (7); INSERT INTO schema_migrations (version) VALUES (8); INSERT INTO schema_migrations (version) VALUES (9); INSERT INTO schema_migrations (version) VALUES (10); INSERT INTO schema_migrations (version) VALUES (11); INSERT INTO schema_migrations (version) VALUES (12); INSERT INTO schema_migrations (version) VALUES (13); INSERT INTO schema_migrations (version) VALUES (14); INSERT INTO schema_migrations (version) VALUES (15); INSERT INTO schema_migrations (version) VALUES (16);")
+        .execute_batch("INSERT INTO schema_migrations (version) VALUES (4); INSERT INTO schema_migrations (version) VALUES (5); INSERT INTO schema_migrations (version) VALUES (6); INSERT INTO schema_migrations (version) VALUES (7); INSERT INTO schema_migrations (version) VALUES (8); INSERT INTO schema_migrations (version) VALUES (9); INSERT INTO schema_migrations (version) VALUES (10); INSERT INTO schema_migrations (version) VALUES (11); INSERT INTO schema_migrations (version) VALUES (12); INSERT INTO schema_migrations (version) VALUES (13); INSERT INTO schema_migrations (version) VALUES (14); INSERT INTO schema_migrations (version) VALUES (15); INSERT INTO schema_migrations (version) VALUES (16); INSERT INTO schema_migrations (version) VALUES (17);")
         .unwrap();
     assert_eq!(error_code(&path), "newer-schema");
 }
