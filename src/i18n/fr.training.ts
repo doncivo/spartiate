@@ -156,6 +156,9 @@ export const trainingFr = {
   profileDeleted: 'Profil supprimé',
   errorProfile: 'Vérifie le profil : un nom, des nombres positifs, le minimum avant le maximum.',
   kg: '{n} kg',
+  /** ERGO-02 (D-261) : charge de deux haltères, la valeur est celle d'un haltère. */
+  loadPair: '2 × {load} kg',
+  loadSingle: '{load} kg',
 
   // Routines
   routines: 'Mes routines',

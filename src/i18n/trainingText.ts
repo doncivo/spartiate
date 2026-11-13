@@ -11,6 +11,10 @@ export function tTraining(key: TrainingTextKey, params?: Readonly<Record<string,
 /** Nombre affiché avec la virgule française : 2.5 → « 2,5 ». */
 export const formatNumber = (n: number): string => String(n).replace('.', ',');
 
+/** ERGO-02 (D-261) : charge d'exercice affichée, « 2 × 26 kg » pour deux haltères (`dumbbellsHeld` = 2), sinon « 26 kg ». */
+export const formatExerciseLoad = (kg: number, held: 1 | 2 | null): string =>
+  tTraining(held === 2 ? 'loadPair' : 'loadSingle', { load: formatNumber(kg) });
+
 /** Lecture d'un nombre saisi (virgule ou point) ; vide ou illisible → null. */
 export function parseNumber(text: string): number | null {
   const trimmed = text.trim().replace(',', '.');
