@@ -60,8 +60,12 @@ export const RESET_TABLES: Readonly<Record<string, ResetFate>> = {
   measurement: 'wiped',
   progress_photo: 'wiped',
   food_favorite: 'wiped',
+  supplement: 'wiped', // I6-05 : compléments et prises de l'utilisateur.
+  supplement_intake: 'wiped',
+  cardio_session: 'wiped',
   // Locales.
   progress_photo_file: 'wiped',
+  cardio_track: 'wiped',
   recovery_sample: 'wiped',
   recovery_import_state: 'wiped',
   conflict_log: 'wiped',
@@ -138,6 +142,7 @@ export const RESET_SETTINGS: Readonly<Record<SettingKey, ResetFate>> = {
   'nutrition.prefs': 'wiped',
   'nutrition.favorites': 'wiped',
   'recovery.notificationPrefs': 'kept',
+  'supplements.notificationPrefs': 'kept', // I6-05 : préférence de l'appareil (rappels), comme celles de la récupération.
   'recovery.bedtimeProposal': 'wiped',
   'recovery.sleepRulesVersion': 'wiped',
   'healthBody.lastImport': 'wiped',

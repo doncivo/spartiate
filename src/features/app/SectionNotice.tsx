@@ -1,6 +1,6 @@
 import { tSections, type SectionsTextKey } from '../../i18n/sectionsText';
 import './SectionNotice.css';
-import { BodyProgress, RecoveryProgress } from './lazyScreens';
+import { BodyProgress, CardioProgress, RecoveryProgress } from './lazyScreens';
 import { TodayScreen } from './TodayScreen';
 
 export type NoticeTab = 'today' | 'training' | 'nutrition' | 'progress';
@@ -31,6 +31,8 @@ export function SectionNotice({ tab }: { readonly tab: NoticeTab }) {
       )}
       {tab === 'progress' ? <RecoveryProgress /> : null}
       {tab === 'progress' ? <BodyProgress /> : null}
+      {/* I6-06 : séances cardio des quatre dernières semaines. */}
+      {tab === 'progress' ? <CardioProgress /> : null}
     </section>
   );
 }

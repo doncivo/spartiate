@@ -128,11 +128,15 @@ export const NutritionScreen = lazyScreen<object>(() => import('../nutrition/Nut
 /** I4-03 : carte « Nutrition » (cibles restantes) d'Aujourd'hui, bloc à part chargé quand Aujourd'hui la rend (jamais dans le départ). */
 export const NutritionRemainingCard = lazyScreen<object>(() => import('../nutrition/NutritionRemainingCard').then((m) => ({ default: m.NutritionRemainingCard })), 'nutritionremainingcard', { onDemand: true });
 /** I5-02 point 2.1 : cadrans Recovery, Exertion, Sommeil et tuile Pas d'Aujourd'hui, bloc à part chargé avec son catalogue de textes (jamais dans le départ). */
-export const RecoveryToday = lazyScreen<object>(() => import('../recovery/RecoveryToday').then((m) => ({ default: m.RecoveryToday })), 'recoverytoday', { onDemand: true });
+/** I6-05 : carte « Compléments » d'Aujourd'hui (prises du jour), bloc à la demande avec ses textes ; rien tant qu'elle n'est pas chargée. */
+export const SupplementsTodayCard = lazyScreen<object>(() => import('../nutrition/supplements/SupplementsTodayCard').then((m) => ({ default: m.SupplementsTodayCard })), 'supplementstoday', { onDemand: true });
+export const RecoveryToday =lazyScreen<object>(() => import('../recovery/RecoveryToday').then((m) => ({ default: m.RecoveryToday })), 'recoverytoday', { onDemand: true });
 /** I6-01 : Progrès › Récupération (écart de Recovery avec / sans facteur), bloc à part chargé avec son catalogue de textes (jamais dans le départ). */
 export const RecoveryProgress = lazyScreen<object>(() => import('../recovery/RecoveryProgress').then((m) => ({ default: m.RecoveryProgress })), 'recoveryprogress', { onDemand: true });
 /** I6-02 : Progrès › Corps (mensurations, photos de progression), bloc à part chargé avec son catalogue de textes (jamais dans le départ). */
 export const BodyProgress = lazyScreen<object>(() => import('../bodyProgress/BodyProgress').then((m) => ({ default: m.BodyProgress })), 'bodyprogress', { onDemand: true });
+/** I6-06 : Progrès › Cardio (quatre semaines), bloc à part chargé avec son catalogue de textes (jamais dans le départ). */
+export const CardioProgress = lazyScreen<object>(() => import('../cardio/CardioProgress').then((m) => ({ default: m.CardioProgress })), 'cardioprogress', { onDemand: true });
 /**
  * I3-07 : onboarding en 8 écrans. L'hôte (décision de premier lancement, surcouche « Revoir mes réglages ») est monté en permanence par la
  * coquille et préchargé au repos, sans repli ; les écrans, leurs textes et le contenu d'entraînement ne sont chargés que quand l'onboarding

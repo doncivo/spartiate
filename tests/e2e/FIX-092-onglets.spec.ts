@@ -34,7 +34,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('Entraînement : chaque onglet est visible (≥ 44 px), même avec la Bibliothèque ouverte, et un clic change d’écran', async ({ page }) => {
-  const names = ['Routines', 'Bibliothèque', 'Matériel', 'Journal', 'Cycle'] as const;
+  const names = ['Routines', 'Bibliothèque', 'Matériel', 'Journal', 'Cycle', 'Cardio'] as const;
   await nav(page, 'Entraînement').click();
   await expectTabsUsable(page, names);
   await page.getByRole('radio', { name: 'Bibliothèque', exact: true }).click();

@@ -136,6 +136,7 @@ describe('contrat des permissions Info.plist', () => {
       'NSSpeechRecognitionUsageDescription absente (plugin speech, CAP-IOS-01)',
       'NSSupportsLiveActivities absente (plugin live-activity, SPA-007)',
       'NSHealthShareUsageDescription absente (plugin healthkit, SPA-006)',
+      'NSLocationWhenInUseUsageDescription absente (plugin geolocation, I6-06)',
       'NSCameraUsageDescription : description d\'usage vide',
     ]);
   });

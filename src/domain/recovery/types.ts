@@ -23,6 +23,8 @@ export type AbstainReason = 'measure_missing_hrv' | 'measure_missing_rhr' | 'mea
 /** Clés d'explication : des codes, les phrases vivent dans src/i18n. Aucune ne porte de diagnostic. */
 export type RecoveryExplanationKey =
   | 'exertion_cardio_not_counted'
+  /** I6-06 (D-220) : l'Exertion compte la musculation et le cardio saisi (minutes × ressenti). Remplace la clé précédente, gardée pour les résumés anciens. */
+  | 'exertion_cardio_srpe'
   | 'sleep_short'
   | 'sleep_debt'
   | 'baseline_outliers_excluded'
@@ -50,6 +52,15 @@ export interface RecoveryWorkout {
   readonly sets: readonly RecoverySet[];
 }
 
+/** I6-06 (D-220) : séance cardio saisie vue par le moteur (sous-ensemble de `cardio_session`). */
+export interface RecoveryCardio {
+  /** Début, instant ISO 8601 UTC. */
+  readonly startedAt: string;
+  readonly durationSec: number;
+  /** Ressenti 1 à 10. */
+  readonly rpe: number;
+}
+
 export interface Contributor {
   readonly key: 'hrv' | 'resting_hr' | 'sleep';
   /** z-score arrondi à 0,01 (hrv, resting_hr) ou facteur de sommeil (sleep). */
@@ -70,7 +81,7 @@ export interface RecoveryDaySummary {
   readonly recovery: number | null;
   readonly abstainReason: AbstainReason | null;
   readonly quality: RecoveryQuality;
-  /** Exertion du jour (musculation seule, D-88). */
+  /** Exertion du jour (musculation et cardio saisi, D-88 révisée puis D-220). */
   readonly exertion: number;
   readonly exertionPrevDay: number;
   readonly sleepMinutes: number | null;

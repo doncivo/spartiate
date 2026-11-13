@@ -53,6 +53,10 @@ redistribue pas les fichiers de police séparément de l'application.
 - Aucun plugin Tauri dialog ni fs côté WebView : « Enregistrer sous » est ouvert et le fichier écrit par Rust. Seule la crate `tauri-plugin-dialog` (MIT OU Apache-2.0, projet Tauri, PC Windows uniquement) sert à ouvrir la boîte depuis Rust ; `tauri-plugin-opener` (déjà présent) affiche le fichier dans le dossier.
 - Aucune dépendance pour le PDF ni le PNG (dessin canvas, PDF minimal écrit par `src/domain/pdfDocument.ts`).
 
+# Licences — GPS du cardio (I6-06, D-222)
+
+- `@tauri-apps/plugin-geolocation` 2.5.0 (npm) et `tauri-plugin-geolocation` 2.5.0 (crate, avec son code Swift) : licence **MIT OU Apache-2.0**, projet Tauri (plugin officiel). iPhone seulement ; aucune dépendance transitive nouvelle côté npm (`@tauri-apps/api` déjà présent).
+
 # Licences — dépendances Rust de la synchronisation (Y-08, ADR 0011 section 2)
 
 Ajoutées en dépendances directes **sans nouvelle entrée dans `Cargo.lock`** (déjà compilées par les dépendances existantes ; seule la liste des dépendances du paquet `circletasks` change) :

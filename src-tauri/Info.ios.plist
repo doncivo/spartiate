@@ -19,6 +19,10 @@
 	<!-- SPA-006 : lectures uniquement du poids et du nombre de pas ; aucune donnée Santé n'est écrite ni envoyée. -->
 	<key>NSHealthShareUsageDescription</key>
 	<string>Spartiate lit ton poids et tes pas pour les afficher dans l’application. Aucune autre donnée de Santé n’est consultée.</string>
+	<!-- I6-06 (D-222) : suivi GPS d'une séance cardio par le plugin officiel geolocation, au premier plan seulement (« pendant l'utilisation »).
+	     Aucune clé « toujours » ni mode d'arrière-plan (forbiddenKeys du contrat). -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Spartiate utilise la position de l’iPhone seulement pendant une séance cardio que tu suis, app ouverte, pour mesurer la durée et la distance. Le tracé reste sur l’iPhone.</string>
 	<!-- SPA-007 : Live Activity du compteur (extension SpartiateLiveActivity). Aucun entitlement restreint, aucun App Group, aucun push. -->
 	<key>NSSupportsLiveActivities</key>
 	<true/>
