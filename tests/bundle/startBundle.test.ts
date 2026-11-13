@@ -195,6 +195,36 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // I6-07 (D-235) : médias d'exercice. Le composant, ses textes et la table des adresses d'images forment un bloc à la demande ; aucune
+  // image du catalogue n'est nommée par un bloc de départ ; les 87 images sont émises comme fichiers (jamais incorporées en base64).
+  it('I6-07 : le composant des médias d’exercice est un bloc à la demande, hors du départ', () => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest['src/features/training/media/ExerciseMedia.tsx'];
+    if (!chunk) throw new Error('bloc src/features/training/media/ExerciseMedia.tsx absent du manifeste');
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes('src/features/training/media/ExerciseMedia.tsx'))).toBe(true);
+  });
+
+  it('I6-07 : les images du catalogue sont des fichiers du build, nommés par aucun bloc de départ, sous le budget de 8 388 608 octets', () => {
+    const images = [...files.keys()].filter((file) => /^assets\/[a-z0-9-]+-[A-Za-z0-9_-]{8}\.png$/.test(file) && files.get(file)?.subarray(1, 4).toString('latin1') === 'PNG');
+    const media = images.filter((file) => /^assets\/bench-press-barbell-|^assets\/squat-barbell-|^assets\/deadlift-barbell-/.test(file));
+    expect(media).toHaveLength(3);
+    const total = images.reduce((sum, file) => sum + (files.get(file)?.length ?? 0), 0);
+    expect(total).toBeLessThanOrEqual(8_388_608);
+    const startJs = startChunks().filter((c) => c.file.endsWith('.js'));
+    for (const c of startJs) {
+      const text = readFileSync(join(outDir, c.file), 'utf8');
+      for (const file of media) expect(text.includes(file.slice('assets/'.length)), `${c.file} : ${file}`).toBe(false);
+      expect(text.includes('data:image/png;base64'), c.file).toBe(false);
+    }
+  });
+
+  it.each(['Illustration indisponible', 'creativecommons.org/licenses/by-sa/4.0'])('I6-07 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   // I1-03 : journal des séances et résumé de fin, blocs à la demande importés dynamiquement ; leurs textes ne sont dans aucun bloc de départ.
   it.each(['src/features/training/history/HistoryView.tsx', 'src/features/training/session/WorkoutSummary.tsx'])('I1-03 : %s est un bloc à la demande, hors du départ', (source) => {
     const start = new Set(startChunks().map((chunk) => chunk.file));

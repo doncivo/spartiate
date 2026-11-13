@@ -1,0 +1,591 @@
+{
+  "schemaVersion": 1,
+  "source": "everkinetic",
+  "commit": "446bb9a3d0c3beb6b84f7c9d77dfc8af707a2ab6",
+  "entries": [
+    {
+      "exerciseId": "bench-press-barbell",
+      "everkineticId": "0042",
+      "everkineticTitle": "Bench Press: Barbell",
+      "path": "dist/png/0042-tension.png"
+    },
+    {
+      "exerciseId": "incline-press-dumbbell",
+      "everkineticId": "0061",
+      "everkineticTitle": "Bench Press: Dumbbell (Incline)",
+      "path": "dist/png/0061-tension.png"
+    },
+    {
+      "exerciseId": "bench-press-dumbbell",
+      "everkineticId": "0055",
+      "everkineticTitle": "Bench Press: Dumbbell",
+      "path": "dist/png/0055-tension.png"
+    },
+    {
+      "exerciseId": "incline-press-barbell",
+      "everkineticId": "0043",
+      "everkineticTitle": "Bench Press: Barbell (Incline)",
+      "path": "dist/png/0043-tension.png"
+    },
+    {
+      "exerciseId": "chest-press-machine",
+      "everkineticId": "0066",
+      "everkineticTitle": "Bench Press: Machine",
+      "path": "dist/png/0066-tension.png"
+    },
+    {
+      "exerciseId": "push-up",
+      "everkineticId": "0077",
+      "everkineticTitle": "Push Up: Body Weight",
+      "path": "dist/png/0077-tension.png"
+    },
+    {
+      "exerciseId": "dip-chest",
+      "everkineticId": "0054",
+      "everkineticTitle": "Chest Dips",
+      "path": "dist/png/0054-tension.png"
+    },
+    {
+      "exerciseId": "cable-fly",
+      "everkineticId": "0048",
+      "everkineticTitle": "Cable Crossover",
+      "path": "dist/png/0048-tension.png"
+    },
+    {
+      "exerciseId": "pullover-dumbbell",
+      "everkineticId": "0046",
+      "everkineticTitle": "Dumbbell Bent Arm Pullover",
+      "path": "dist/png/0046-tension.png"
+    },
+    {
+      "exerciseId": "pull-up",
+      "everkineticId": "0087",
+      "everkineticTitle": "Pull Ups",
+      "path": "dist/png/0087-tension.png"
+    },
+    {
+      "exerciseId": "seated-row-cable",
+      "everkineticId": "0025",
+      "everkineticTitle": "Seated Cable Rows",
+      "path": "dist/png/0025-tension.png"
+    },
+    {
+      "exerciseId": "row-inverted",
+      "everkineticId": "0086",
+      "everkineticTitle": "Body Row",
+      "path": "dist/png/0086-tension.png"
+    },
+    {
+      "exerciseId": "lat-pulldown-neutral",
+      "everkineticId": "0096",
+      "everkineticTitle": "Pull Down: V Bar ",
+      "path": "dist/png/0096-tension.png"
+    },
+    {
+      "exerciseId": "straight-arm-pulldown",
+      "everkineticId": "0092",
+      "everkineticTitle": "Straight Arm Push Down",
+      "path": "dist/png/0092-tension.png"
+    },
+    {
+      "exerciseId": "back-extension",
+      "everkineticId": "0103",
+      "everkineticTitle": "Hyperextensions",
+      "path": "dist/png/0103-tension.png"
+    },
+    {
+      "exerciseId": "good-morning",
+      "everkineticId": "0101",
+      "everkineticTitle": "Good Mornings: Barbell",
+      "path": "dist/png/0101-tension.png"
+    },
+    {
+      "exerciseId": "shrug-barbell",
+      "everkineticId": "0030",
+      "everkineticTitle": "Barbell Shrugs",
+      "path": "dist/png/0030-tension.png"
+    },
+    {
+      "exerciseId": "shrug-dumbbell",
+      "everkineticId": "0005",
+      "everkineticTitle": "Shoulder Shrugs: Dumbbell",
+      "path": "dist/png/0005-tension.png"
+    },
+    {
+      "exerciseId": "cable-shrug",
+      "everkineticId": "0009",
+      "everkineticTitle": "Shoulder Shrugs: Cable",
+      "path": "dist/png/0009-tension.png"
+    },
+    {
+      "exerciseId": "overhead-press-seated-barbell",
+      "everkineticId": "0004",
+      "everkineticTitle": "Seated Military Press",
+      "path": "dist/png/0004-tension.png"
+    },
+    {
+      "exerciseId": "lateral-raise-dumbbell",
+      "everkineticId": "0018",
+      "everkineticTitle": "Lateral Dumbbell Raises",
+      "path": "dist/png/0018-tension.png"
+    },
+    {
+      "exerciseId": "front-raise-dumbbell",
+      "everkineticId": "0033",
+      "everkineticTitle": "Front Dumbbell Raise",
+      "path": "dist/png/0033-tension.png"
+    },
+    {
+      "exerciseId": "front-raise-cable",
+      "everkineticId": "0008",
+      "everkineticTitle": "Front Cable Raises",
+      "path": "dist/png/0008-tension.png"
+    },
+    {
+      "exerciseId": "reverse-fly-dumbbell",
+      "everkineticId": "0032",
+      "everkineticTitle": "Bent Over Rear Deltoid Raise With Head On Bench",
+      "path": "dist/png/0032-tension.png"
+    },
+    {
+      "exerciseId": "reverse-fly-cable",
+      "everkineticId": "0017",
+      "everkineticTitle": "Bent-over Lateral Cable Raises",
+      "path": "dist/png/0017-tension.png"
+    },
+    {
+      "exerciseId": "upright-row-cable",
+      "everkineticId": "0015",
+      "everkineticTitle": "Upright Cable Row",
+      "path": "dist/png/0015-tension.png"
+    },
+    {
+      "exerciseId": "upright-row-dumbbell",
+      "everkineticId": "0016",
+      "everkineticTitle": "Upright Row: Dumbbell",
+      "path": "dist/png/0016-tension.png"
+    },
+    {
+      "exerciseId": "curl-barbell",
+      "everkineticId": "0211",
+      "everkineticTitle": "Biceps Curl: Barbell",
+      "path": "dist/png/0211-tension.png"
+    },
+    {
+      "exerciseId": "curl-incline-dumbbell",
+      "everkineticId": "0214",
+      "everkineticTitle": "Alternating Incline Curl with Dumbbell",
+      "path": "dist/png/0214-tension.png"
+    },
+    {
+      "exerciseId": "curl-dumbbell",
+      "everkineticId": "0224",
+      "everkineticTitle": "Biceps Curl: Dumbbell",
+      "path": "dist/png/0224-tension.png"
+    },
+    {
+      "exerciseId": "curl-cable",
+      "everkineticId": "0212",
+      "everkineticTitle": "Standing Biceps Curl with Cable",
+      "path": "dist/png/0212-tension.png"
+    },
+    {
+      "exerciseId": "preacher-curl",
+      "everkineticId": "0239",
+      "everkineticTitle": "Preacher Curl: Barbell",
+      "path": "dist/png/0239-tension.png"
+    },
+    {
+      "exerciseId": "preacher-curl-machine",
+      "everkineticId": "0236",
+      "everkineticTitle": "Preacher Curl: Machine",
+      "path": "dist/png/0236-tension.png"
+    },
+    {
+      "exerciseId": "hammer-curl",
+      "everkineticId": "0227",
+      "everkineticTitle": "Biceps Curl: Dumbbell (Hammer)",
+      "path": "dist/png/0227-tension.png"
+    },
+    {
+      "exerciseId": "rope-hammer-curl",
+      "everkineticId": "0216",
+      "everkineticTitle": "Hammer Curls with Rope and Cable",
+      "path": "dist/png/0216-tension.png"
+    },
+    {
+      "exerciseId": "reverse-curl",
+      "everkineticId": "0257",
+      "everkineticTitle": "Biceps Curl: Dumbbell (Reverse)",
+      "path": "dist/png/0257-tension.png"
+    },
+    {
+      "exerciseId": "triceps-pushdown-cable",
+      "everkineticId": "0205",
+      "everkineticTitle": "Triceps Pushdown: Cable",
+      "path": "dist/png/0205-tension.png"
+    },
+    {
+      "exerciseId": "triceps-pushdown-rope",
+      "everkineticId": "0206",
+      "everkineticTitle": "Triceps Pushdown: Cable (Rope)",
+      "path": "dist/png/0206-tension.png"
+    },
+    {
+      "exerciseId": "overhead-triceps-extension-dumbbell",
+      "everkineticId": "0192",
+      "everkineticTitle": "Triceps Extension: Dumbbell (Seated, Two Arm)",
+      "path": "dist/png/0192-tension.png"
+    },
+    {
+      "exerciseId": "skull-crusher",
+      "everkineticId": "0183",
+      "everkineticTitle": "Lying Triceps Press with Barbell",
+      "path": "dist/png/0183-tension.png"
+    },
+    {
+      "exerciseId": "triceps-extension-machine",
+      "everkineticId": "0210",
+      "everkineticTitle": "Triceps Extension: Machine",
+      "path": "dist/png/0210-tension.png"
+    },
+    {
+      "exerciseId": "triceps-kickback",
+      "everkineticId": "0204",
+      "everkineticTitle": "Triceps Kickback with Dumbbell",
+      "path": "dist/png/0204-tension.png"
+    },
+    {
+      "exerciseId": "close-grip-bench-press",
+      "everkineticId": "0049",
+      "everkineticTitle": "Bench Press: Barbell (Close Grip)",
+      "path": "dist/png/0049-tension.png"
+    },
+    {
+      "exerciseId": "diamond-push-up",
+      "everkineticId": "0188",
+      "everkineticTitle": "Close Triceps Pushup",
+      "path": "dist/png/0188-tension.png"
+    },
+    {
+      "exerciseId": "bench-dip",
+      "everkineticId": "0162",
+      "everkineticTitle": "Bench Dips",
+      "path": "dist/png/0162-tension.png"
+    },
+    {
+      "exerciseId": "squat-barbell",
+      "everkineticId": "0122",
+      "everkineticTitle": "Barbell Squat",
+      "path": "dist/png/0122-tension.png"
+    },
+    {
+      "exerciseId": "leg-press",
+      "everkineticId": "0127",
+      "everkineticTitle": "Leg Press",
+      "path": "dist/png/0127-tension.png"
+    },
+    {
+      "exerciseId": "leg-extension-machine",
+      "everkineticId": "0142",
+      "everkineticTitle": "Leg Extensions",
+      "path": "dist/png/0142-tension.png"
+    },
+    {
+      "exerciseId": "front-squat-barbell",
+      "everkineticId": "0138",
+      "everkineticTitle": "Front Squat with Barbell",
+      "path": "dist/png/0138-tension.png"
+    },
+    {
+      "exerciseId": "hack-squat",
+      "everkineticId": "0123",
+      "everkineticTitle": "Hack Squat: Machine",
+      "path": "dist/png/0123-tension.png"
+    },
+    {
+      "exerciseId": "smith-squat",
+      "everkineticId": "0124",
+      "everkineticTitle": "Squats: Smith Machine",
+      "path": "dist/png/0124-tension.png"
+    },
+    {
+      "exerciseId": "reverse-lunge",
+      "everkineticId": "0129",
+      "everkineticTitle": "Lunges: Dumbbell (Rear)",
+      "path": "dist/png/0129-tension.png"
+    },
+    {
+      "exerciseId": "walking-lunge",
+      "everkineticId": "0121",
+      "everkineticTitle": "Lunges: Dumbbell (Walking)",
+      "path": "dist/png/0121-tension.png"
+    },
+    {
+      "exerciseId": "step-up",
+      "everkineticId": "0137",
+      "everkineticTitle": "Step Ups: Dumbbell",
+      "path": "dist/png/0137-tension.png"
+    },
+    {
+      "exerciseId": "sissy-squat",
+      "everkineticId": "0158",
+      "everkineticTitle": "Weighted Sissy Squat with Weight Plate",
+      "path": "dist/png/0158-tension.png"
+    },
+    {
+      "exerciseId": "romanian-deadlift-barbell",
+      "everkineticId": "0118",
+      "everkineticTitle": "Romanian Dead Lift",
+      "path": "dist/png/0118-tension.png"
+    },
+    {
+      "exerciseId": "leg-curl-lying",
+      "everkineticId": "0117",
+      "everkineticTitle": "Lying Leg Curl Machine",
+      "path": "dist/png/0117-tension.png"
+    },
+    {
+      "exerciseId": "leg-curl-seated",
+      "everkineticId": "0119",
+      "everkineticTitle": "Seated Leg Curl",
+      "path": "dist/png/0119-tension.png"
+    },
+    {
+      "exerciseId": "leg-curl-machine",
+      "everkineticId": "0117",
+      "everkineticTitle": "Lying Leg Curl Machine",
+      "path": "dist/png/0117-tension.png"
+    },
+    {
+      "exerciseId": "deadlift-barbell",
+      "everkineticId": "0099",
+      "everkineticTitle": "Dead Lifts: Barbell",
+      "path": "dist/png/0099-tension.png"
+    },
+    {
+      "exerciseId": "glute-bridge",
+      "everkineticId": "0109",
+      "everkineticTitle": "Bridging",
+      "path": "dist/png/0109-tension.png"
+    },
+    {
+      "exerciseId": "cable-kickback",
+      "everkineticId": "0112",
+      "everkineticTitle": "One Legged Cable Kickback",
+      "path": "dist/png/0112-tension.png"
+    },
+    {
+      "exerciseId": "hip-abduction-machine",
+      "everkineticId": "0156",
+      "everkineticTitle": "Thigh Abductor",
+      "path": "dist/png/0156-tension.png"
+    },
+    {
+      "exerciseId": "hip-adduction-machine",
+      "everkineticId": "0157",
+      "everkineticTitle": "Thigh Adductor",
+      "path": "dist/png/0157-tension.png"
+    },
+    {
+      "exerciseId": "calf-raise-standing",
+      "everkineticId": "0282",
+      "everkineticTitle": "Standing Calf Raises using Machine",
+      "path": "dist/png/0282-tension.png"
+    },
+    {
+      "exerciseId": "calf-raise-seated",
+      "everkineticId": "0279",
+      "everkineticTitle": "Seated Calf Raise using Machine",
+      "path": "dist/png/0279-tension.png"
+    },
+    {
+      "exerciseId": "calf-raise-leg-press",
+      "everkineticId": "0273",
+      "everkineticTitle": "Calves Press on Leg Machine",
+      "path": "dist/png/0273-tension.png"
+    },
+    {
+      "exerciseId": "calf-raise-donkey",
+      "everkineticId": "0275",
+      "everkineticTitle": "Donkey Calf Raises",
+      "path": "dist/png/0275-tension.png"
+    },
+    {
+      "exerciseId": "side-plank",
+      "everkineticId": "0113",
+      "everkineticTitle": "Side Plank",
+      "path": "dist/png/0113-tension.png"
+    },
+    {
+      "exerciseId": "crunch",
+      "everkineticId": "0291",
+      "everkineticTitle": "Crunches",
+      "path": "dist/png/0291-tension.png"
+    },
+    {
+      "exerciseId": "decline-crunch",
+      "everkineticId": "0292",
+      "everkineticTitle": "Decline Crunch",
+      "path": "dist/png/0292-tension.png"
+    },
+    {
+      "exerciseId": "lying-leg-raise",
+      "everkineticId": "0021",
+      "everkineticTitle": "Flat Bench Leg Raises",
+      "path": "dist/png/0021-tension.png"
+    },
+    {
+      "exerciseId": "bench-press-decline-barbell",
+      "everkineticId": "0051",
+      "everkineticTitle": "Bench Press: Barbell (Decline)",
+      "path": "dist/png/0051-tension.png"
+    },
+    {
+      "exerciseId": "bench-press-decline-dumbbell",
+      "everkineticId": "0052",
+      "everkineticTitle": "Bench Press: Dumbbell (Decline)",
+      "path": "dist/png/0052-tension.png"
+    },
+    {
+      "exerciseId": "bench-press-smith",
+      "everkineticId": "0078",
+      "everkineticTitle": "Bench Press: Smith Machine",
+      "path": "dist/png/0078-tension.png"
+    },
+    {
+      "exerciseId": "incline-press-smith",
+      "everkineticId": "0081",
+      "everkineticTitle": "Bench Press: Smith Machine (Incline)",
+      "path": "dist/png/0081-tension.png"
+    },
+    {
+      "exerciseId": "fly-flat-dumbbell",
+      "everkineticId": "0056",
+      "everkineticTitle": "Dumbbell Flys",
+      "path": "dist/png/0056-tension.png"
+    },
+    {
+      "exerciseId": "fly-incline-dumbbell",
+      "everkineticId": "0062",
+      "everkineticTitle": "Incline Dumbbell Fly's",
+      "path": "dist/png/0062-tension.png"
+    },
+    {
+      "exerciseId": "decline-chest-press-machine",
+      "everkineticId": "0085",
+      "everkineticTitle": "Decline Chest Press",
+      "path": "dist/png/0085-tension.png"
+    },
+    {
+      "exerciseId": "row-barbell-supinated",
+      "everkineticId": "0026",
+      "everkineticTitle": "Reverse Grips Bent Over Barbell Rows",
+      "path": "dist/png/0026-tension.png"
+    },
+    {
+      "exerciseId": "skull-crusher-dumbbell",
+      "everkineticId": "0181",
+      "everkineticTitle": "Triceps Extension: Dumbbell (Lying)",
+      "path": "dist/png/0181-tension.png"
+    },
+    {
+      "exerciseId": "overhead-triceps-extension-ez-bar",
+      "everkineticId": "0193",
+      "everkineticTitle": "Triceps Extension: Barbell (Seated, Overhead)",
+      "path": "dist/png/0193-tension.png"
+    },
+    {
+      "exerciseId": "triceps-pushdown-supinated",
+      "everkineticId": "0189",
+      "everkineticTitle": "Reverse Grip Triceps Pushdown",
+      "path": "dist/png/0189-tension.png"
+    },
+    {
+      "exerciseId": "curl-ez-bar",
+      "everkineticId": "0226",
+      "everkineticTitle": "EZ Bar Curl with Barbell",
+      "path": "dist/png/0226-tension.png"
+    },
+    {
+      "exerciseId": "concentration-curl",
+      "everkineticId": "0220",
+      "everkineticTitle": "Concentration Curls with Dumbbell",
+      "path": "dist/png/0220-tension.png"
+    },
+    {
+      "exerciseId": "zottman-curl",
+      "everkineticId": "0251",
+      "everkineticTitle": "Zottman Curl with Dumbbells",
+      "path": "dist/png/0251-tension.png"
+    },
+    {
+      "exerciseId": "hammer-curl-preacher",
+      "everkineticId": "0240",
+      "everkineticTitle": "Preacher Curl: Dumbbell (Hammer)",
+      "path": "dist/png/0240-tension.png"
+    }
+  ],
+  "excluded": [
+    {
+      "id": "incline-press-machine",
+      "reason": "Everkinetic 0084 (Incline Chest Press) : aucune image PNG publiée dans dist/png"
+    },
+    {
+      "id": "pec-deck",
+      "reason": "Everkinetic 0047 (Butterfly Machine) : aucune image PNG publiée dans dist/png"
+    },
+    {
+      "id": "row-barbell",
+      "reason": "Everkinetic 0298 (Bent Over Row with Barbell) : aucune image PNG publiée dans dist/png"
+    },
+    {
+      "id": "lat-pulldown",
+      "reason": "Everkinetic 0097 (Pull Down: Wide Bar (Wide Grip)) : aucune image PNG publiée dans dist/png"
+    },
+    {
+      "id": "row-t-bar",
+      "reason": "image Everkinetic 0029 : machine T-bar, la fiche est à la landmine"
+    },
+    {
+      "id": "chin-up",
+      "reason": "Everkinetic 0089 (Chin Ups) : aucune image PNG publiée dans dist/png"
+    },
+    {
+      "id": "overhead-press-barbell",
+      "reason": "Everkinetic 0011 (Seated Barbell Shoulder Press) : aucune image PNG publiée dans dist/png"
+    },
+    {
+      "id": "overhead-press-dumbbell",
+      "reason": "Everkinetic 0012 (Dumbbell Shoulder Press) : aucune image PNG publiée dans dist/png"
+    },
+    {
+      "id": "shoulder-press-machine",
+      "reason": "Everkinetic 0003 (Seated Shoulder Press Machine) : aucune image PNG publiée dans dist/png"
+    },
+    {
+      "id": "arnold-press",
+      "reason": "Everkinetic 0006 (Arnold Press) : aucune image PNG publiée dans dist/png"
+    },
+    {
+      "id": "dips",
+      "reason": "image Everkinetic 0171 : dips à la machine, pas aux barres parallèles"
+    },
+    {
+      "id": "calf-raise-dumbbell",
+      "reason": "Everkinetic 0283 (Standing Calf Raise with Dumbbell) : aucune image PNG publiée dans dist/png"
+    },
+    {
+      "id": "overhead-triceps-extension-dumbbell-one-arm",
+      "reason": "Everkinetic 0200 (Triceps Extension: Dumbbell (Standing, One Arm)) : aucune image PNG publiée dans dist/png"
+    },
+    {
+      "id": "spider-curl",
+      "reason": "image Everkinetic 0245 : à la barre, la fiche est aux haltères"
+    },
+    {
+      "id": "cable-crunch",
+      "reason": "image Everkinetic 0288 : assis, la fiche est à genoux sous la poulie haute"
+    }
+  ]
+}

@@ -123,6 +123,7 @@
   --ct-color-agenda-late: #b5483b;
   --ct-color-agenda-event: #1f6698;
   --ct-space-white: 0%;
+  --ct-media-invert: 0; /* I6-07 : dessin noir sur blanc des médias d'exercice, inversé en sombre */
   --ct-color-event-bg: #e6edf2;
   --ct-color-event-text: #1f6698;
   /* Semaine : événement externe (PC-Semaine.html, #E3EEF5) et événement local (anniversaire, #FBE7E4). */
@@ -214,6 +215,7 @@
     --ct-color-agenda-late: #e4857a;
     --ct-color-agenda-event: #8db8ec;
     --ct-space-white: 55%;
+    --ct-media-invert: 1; /* I6-07 : dessin noir sur blanc des médias d'exercice, inversé en sombre */
   --ct-color-event-bg: #1d2530;
     --ct-color-event-text: #8db8ec;
     --ct-color-event-external-bg: #1d2530;
@@ -276,6 +278,7 @@
   --ct-color-agenda-late: #e4857a;
   --ct-color-agenda-event: #8db8ec;
   --ct-space-white: 55%;
+  --ct-media-invert: 1; /* I6-07 : dessin noir sur blanc des médias d'exercice, inversé en sombre */
   --ct-color-event-bg: #1d2530;
   --ct-color-event-text: #8db8ec;
   --ct-color-event-external-bg: #1d2530;
@@ -333,6 +336,7 @@
   --ct-color-agenda-late: #b5483b;
   --ct-color-agenda-event: #1f6698;
   --ct-space-white: 0%;
+  --ct-media-invert: 0; /* I6-07 : dessin noir sur blanc des médias d'exercice, inversé en sombre */
   --ct-color-event-bg: #e6edf2;
   --ct-color-event-text: #1f6698;
   /* Semaine : événement externe (PC-Semaine.html, #E3EEF5) et événement local (anniversaire, #FBE7E4). */

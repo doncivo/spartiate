@@ -26,7 +26,9 @@ describe('contenu embarqué de l’entraînement', () => {
     ]);
     expect(content.defaultProfileId).toBe('fitness-park-antony');
     expect(content.catalog.get('bench-press-barbell')?.origin).toBe('embedded');
-    expect(content.catalog.get('bench-press-barbell')?.media).toBeNull();
+    // I6-07 : média sous licence vérifiée (D-231) ; un exercice sans correspondance reste sans média (repli, D-71).
+    expect(content.catalog.get('bench-press-barbell')?.media).toEqual({ images: ['bench-press-barbell.png'], video: null, license: 'CC-BY-SA-4.0', source: 'everkinetic:dist/png/0042-tension.png' });
+    expect(content.catalog.get('plank')?.media).toBeNull();
   });
 
   it('chaque programme devient une routine valide, nom d’exercice figé depuis le catalogue, durée en secondes pour la planche', async () => {

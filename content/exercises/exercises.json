@@ -63,10 +63,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "bench-press-barbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0042-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -133,10 +135,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "incline-press-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0061-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -203,10 +207,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "bench-press-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0055-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -273,10 +279,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "incline-press-barbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0043-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -339,10 +347,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "chest-press-machine.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0066-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -546,10 +556,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "push-up.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0077-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -688,10 +700,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "dip-chest.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0054-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -753,10 +767,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "cable-fly.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0048-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -1014,10 +1030,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "pullover-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0046-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -1361,10 +1379,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "pull-up.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0087-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -1501,10 +1521,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "seated-row-cable.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0025-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -1787,10 +1809,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "row-inverted.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0086-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -1995,10 +2019,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "lat-pulldown-neutral.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0096-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -2137,10 +2163,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "straight-arm-pulldown.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0092-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -2275,10 +2303,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "back-extension.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0103-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -2345,10 +2375,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "good-morning.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0101-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -2406,10 +2438,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "shrug-barbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0030-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -2467,10 +2501,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "shrug-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0005-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -2532,10 +2568,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "cable-shrug.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0009-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -2803,10 +2841,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "lateral-raise-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0018-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -3126,10 +3166,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "front-raise-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0033-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -3191,10 +3233,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "front-raise-cable.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0008-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -3314,10 +3358,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "reverse-fly-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0032-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -3379,10 +3425,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "reverse-fly-cable.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0017-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -3650,10 +3698,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "upright-row-cable.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0015-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -3716,10 +3766,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "upright-row-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0016-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -3782,10 +3834,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "curl-barbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0211-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -3852,10 +3906,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "curl-incline-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0214-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -3918,10 +3974,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "curl-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0224-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -3988,10 +4046,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "curl-cable.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0212-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -4060,10 +4120,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "preacher-curl.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0239-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -4126,10 +4188,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "preacher-curl-machine.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0236-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -4192,10 +4256,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "hammer-curl.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0227-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -4262,10 +4328,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "rope-hammer-curl.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0216-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -4330,10 +4398,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "reverse-curl.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0257-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -4467,10 +4537,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "triceps-pushdown-cable.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0205-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -4532,10 +4604,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "triceps-pushdown-rope.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0206-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -4593,10 +4667,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "overhead-triceps-extension-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0192-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -4725,10 +4801,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "skull-crusher.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0183-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -4786,10 +4864,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "triceps-extension-machine.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0210-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -4851,10 +4931,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "triceps-kickback.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0204-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -4921,10 +5003,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "close-grip-bench-press.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0049-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -4987,10 +5071,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "diamond-push-up.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0188-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -5053,10 +5139,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "bench-dip.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0162-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -5190,10 +5278,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "squat-barbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0122-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -5256,10 +5346,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "leg-press.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0127-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -5384,10 +5476,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "leg-extension-machine.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0142-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -5454,10 +5548,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "front-squat-barbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0138-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -5583,10 +5679,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "hack-squat.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0123-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -5644,10 +5742,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "smith-squat.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0124-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -5778,10 +5878,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "reverse-lunge.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0129-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -5846,10 +5948,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "walking-lunge.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0121-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -5920,10 +6024,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "step-up.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0137-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -5982,10 +6088,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "sissy-squat.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0158-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -6450,10 +6558,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "romanian-deadlift-barbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0118-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -6511,10 +6621,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "leg-curl-machine.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0117-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -6582,10 +6694,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "deadlift-barbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0099-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -6777,10 +6891,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "leg-curl-seated.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0119-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -6838,10 +6954,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "leg-curl-lying.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0117-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -7441,10 +7559,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "glute-bridge.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0109-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -7701,10 +7821,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "cable-kickback.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0112-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -7886,10 +8008,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "hip-abduction-machine.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0156-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -8280,10 +8404,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "calf-raise-standing.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0282-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -8341,10 +8467,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "calf-raise-seated.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0279-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -8402,10 +8530,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "calf-raise-leg-press.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0273-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -8595,10 +8725,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "calf-raise-donkey.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0275-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -9348,10 +9480,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "side-plank.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0113-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -10005,10 +10139,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "triceps-pushdown-supinated.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0189-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -10198,10 +10334,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "skull-crusher-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0181-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -10255,10 +10393,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "overhead-triceps-extension-ez-bar.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0193-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -10446,10 +10586,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "curl-ez-bar.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0226-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -10512,10 +10654,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "concentration-curl.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0220-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -10715,10 +10859,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "zottman-curl.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0251-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -10786,10 +10932,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "hammer-curl-preacher.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0240-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -10857,10 +11005,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "bench-press-decline-barbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0051-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -10928,10 +11078,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "bench-press-decline-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0052-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -10999,10 +11151,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "bench-press-smith.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0078-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -11070,10 +11224,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "incline-press-smith.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0081-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -11136,10 +11292,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "fly-flat-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0056-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -11202,10 +11360,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "fly-incline-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0062-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -11269,10 +11429,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "decline-chest-press-machine.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0085-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -11342,10 +11504,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "row-barbell-supinated.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0026-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -11852,10 +12016,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "overhead-press-seated-barbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0004-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -12440,10 +12606,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "hip-adduction-machine.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0157-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -12698,10 +12866,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "crunch.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0291-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -12765,10 +12935,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "decline-crunch.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0292-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -12831,10 +13003,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "lying-leg-raise.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic:dist/png/0021-tension.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1

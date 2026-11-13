@@ -3,6 +3,7 @@
 // Validation du contenu embarqué de Spartiate (I1-01) : Node, aucune dépendance.
 // Usage : node scripts/content/validate-content.mjs [dossier-content]   (défaut : content/)
 // Sortie : lignes `::error::` et code 1 à la moindre erreur ; aucun avertissement toléré.
+import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,6 +27,26 @@ export const PERIODIZATION = [
   { week: 4, workingSets: 4, rirMin: 0, rirMax: 1, loadFactor: null },
   { week: 5, workingSets: 2, rirMin: 5, rirMax: null, loadFactor: 0.8 },
 ];
+
+/** Médias d'exercice (I6-07, D-232, révisables par Ali) : plafond par fichier et budget du catalogue, en octets. */
+export const MEDIA_MAX_BYTES = 153_600;
+export const MEDIA_TOTAL_MAX_BYTES = 8_388_608;
+/** Licences admises pour un média (D-233) : aucune licence NC ni ND, aucune licence floue. */
+export const ALLOWED_MEDIA_LICENSES = ['CC0-1.0', 'CC-BY-4.0', 'CC-BY-SA-4.0', 'PDM'];
+export const MEDIA_EXTENSIONS = ['.png', '.jpg', '.webp'];
+/** Sources vérifiées (D-231) : licence lue sur la page source, commit épinglé. Une nouvelle source entre ici, par une décision. */
+export const MEDIA_SOURCES = {
+  everkinetic: {
+    title: 'Everkinetic',
+    author: 'Everkinetic (Greg Priday et contributeurs)',
+    repository: 'github.com/everkinetic/data',
+    commit: '446bb9a3d0c3beb6b84f7c9d77dfc8af707a2ab6',
+    license: 'CC-BY-SA-4.0',
+    licenseUri: 'creativecommons.org/licenses/by-sa/4.0',
+    retrievedOn: '2026-11-13',
+  },
+};
+const NETWORK = /[a-z][a-z0-9+.-]*:\/\//i;
 
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const isObj = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -84,6 +105,7 @@ export function validateContent(c, opts = {}) {
 
   // --- exercises.json ---
   const exercisesById = new Map();
+  const mediaFiles = [];
   const list = isObj(c.exercises) && c.exercises.schemaVersion === 1 && Array.isArray(c.exercises.exercises) ? c.exercises.exercises : null;
   if (!list) {
     err('exercises.json', 'forme attendue { schemaVersion: 1, exercises: [] }');
@@ -171,13 +193,29 @@ export function validateContent(c, opts = {}) {
         const hasMedia = media.images.length > 0 || media.video !== null;
         if (hasMedia && (!isStr(media.license) || !isStr(media.source))) err(w, 'média sans licence ou sans source (H-9)');
         if (!hasMedia && (media.license !== null || media.source !== null)) err(w, 'licence ou source renseignée sans média');
+        const files = [...media.images, ...(media.video ? [media.video] : [])];
+        if (hasMedia) {
+          // I6-07 (D-231 à D-233) : un média, licence de la liste blanche, source vérifiée, aucune adresse réseau.
+          if (files.length > 1) err(w, 'un seul média par exercice');
+          if (isStr(media.license) && !ALLOWED_MEDIA_LICENSES.includes(media.license)) err(w, `licence de média non autorisée : ${media.license}`);
+          if ([media.license, media.source, ...files].some((v) => typeof v === 'string' && NETWORK.test(v))) err(w, 'adresse réseau interdite dans le média');
+          const sourceId = isStr(media.source) ? media.source.split(':')[0] : '';
+          const source = Object.hasOwn(MEDIA_SOURCES, sourceId) ? MEDIA_SOURCES[sourceId] : null;
+          if (!source) err(w, `source de média inconnue : ${String(media.source)}`);
+          else if (media.license !== source.license) err(w, `licence différente de la source ${sourceId} : ${String(media.license)}`);
+          for (const f of files) {
+            if (!isStr(f) || !MEDIA_EXTENSIONS.some((ext) => f.endsWith(ext)) || f.includes('/') || f.includes('\\')) err(w, `format de média non admis : ${String(f)}`);
+            else mediaFiles.push({ where: w, file: f, exerciseId: x.id, source: media.source });
+          }
+        }
         if (hasMedia && opts.mediaDir) {
-          for (const f of [...media.images, ...(media.video ? [media.video] : [])]) {
+          for (const f of files) {
             if (!existsSync(join(opts.mediaDir, f))) err(w, `fichier média introuvable : ${f}`);
           }
         }
       }
     });
+    if (opts.mediaDir) validateMediaFiles(mediaFiles, c.mediaRegistry, opts, err);
 
     // liens internes : alternatives
     for (const x of list) {
@@ -309,6 +347,46 @@ export function validateContent(c, opts = {}) {
   };
 }
 
+/**
+ * Fichiers des médias (I6-07) : chaque fichier référencé est au registre de provenance (`media/sources.json` : exercice, source, chemin
+ * d'origine, taille, SHA-256) et lui correspond octet pour octet ; plafond par fichier, budget du catalogue, aucun fichier orphelin, aucune
+ * adresse réseau dans le registre.
+ */
+function validateMediaFiles(mediaFiles, registry, opts, err) {
+  const dir = opts.mediaDir;
+  const where = 'exercises/media';
+  const maxTotal = opts.mediaTotalMaxBytes ?? MEDIA_TOTAL_MAX_BYTES;
+  const present = existsSync(dir) ? readdirSync(dir).filter((f) => f !== 'sources.json') : [];
+  if (mediaFiles.length === 0 && present.length === 0) return;
+  const entries = isObj(registry) && registry.schemaVersion === 1 && Array.isArray(registry.files) ? registry.files : null;
+  if (!entries) {
+    err(`${where}/sources.json`, 'registre de provenance manquant ou mal formé { schemaVersion: 1, files: [] }');
+    return;
+  }
+  if (NETWORK.test(JSON.stringify(registry))) err(`${where}/sources.json`, 'adresse réseau interdite dans le registre');
+  const byFile = new Map(entries.filter(isObj).map((e) => [e.file, e]));
+  const referenced = new Set();
+  let total = 0;
+  for (const m of mediaFiles) {
+    referenced.add(m.file);
+    const path = join(dir, m.file);
+    if (!existsSync(path)) continue; // déjà signalé : fichier média introuvable
+    const bytes = readFileSync(path);
+    total += bytes.length;
+    if (bytes.length > MEDIA_MAX_BYTES) err(m.where, `média trop lourd : ${m.file} (${bytes.length} octets > ${MEDIA_MAX_BYTES})`);
+    const entry = byFile.get(m.file);
+    if (!entry) {
+      err(m.where, `absent du registre de provenance : ${m.file}`);
+      continue;
+    }
+    if (entry.exerciseId !== m.exerciseId || `${entry.source}:${entry.originPath}` !== m.source) err(m.where, `registre incohérent (exercice ou source) : ${m.file}`);
+    if (entry.bytes !== bytes.length || entry.sha256 !== createHash('sha256').update(bytes).digest('hex')) err(m.where, `empreinte ou taille différente du registre : ${m.file}`);
+  }
+  if (total > maxTotal) err(where, `budget total des médias dépassé : ${total} octets > ${maxTotal}`);
+  for (const f of present) if (!referenced.has(f)) err(where, `média orphelin : ${f}`);
+  for (const e of entries) if (isObj(e) && !referenced.has(e.file)) err(`${where}/sources.json`, `entrée sans média référencé : ${String(e.file)}`);
+}
+
 function readJson(path, errors) {
   try {
     return JSON.parse(readFileSync(path, 'utf8'));
@@ -330,6 +408,7 @@ export function validateContentDir(dir, opts = {}) {
     exercises: readJson(join(root, 'exercises', 'exercises.json'), errors),
     profiles: readJson(join(root, 'equipment-profiles', 'profiles.json'), errors),
     programs: programFiles.map((file) => ({ file, data: readJson(join(programsDir, file), errors) })),
+    mediaRegistry: existsSync(join(root, 'exercises', 'media', 'sources.json')) ? readJson(join(root, 'exercises', 'media', 'sources.json'), errors) : null,
   };
   const result = validateContent(content, { mediaDir: join(root, 'exercises', 'media'), ...opts });
   return { errors: [...errors, ...result.errors], stats: result.stats };

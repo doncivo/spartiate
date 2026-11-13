@@ -1,0 +1,701 @@
+{
+  "schemaVersion": 1,
+  "files": [
+    {
+      "file": "back-extension.png",
+      "exerciseId": "back-extension",
+      "source": "everkinetic",
+      "originPath": "dist/png/0103-tension.png",
+      "bytes": 39139,
+      "sha256": "d6de3eb53b92dc01ab05ad9b693205baa6bd5a42f874ddd6c746f72804ce2f69"
+    },
+    {
+      "file": "bench-dip.png",
+      "exerciseId": "bench-dip",
+      "source": "everkinetic",
+      "originPath": "dist/png/0162-tension.png",
+      "bytes": 34685,
+      "sha256": "84ccec599502917eee8979d01fa7a63d68c04a35249370dffd2c1071c7605791"
+    },
+    {
+      "file": "bench-press-barbell.png",
+      "exerciseId": "bench-press-barbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0042-tension.png",
+      "bytes": 55484,
+      "sha256": "33f685fde6fd2dba006d4d73c34789ffb33252a3cd1d70d6659de517d223b2bf"
+    },
+    {
+      "file": "bench-press-decline-barbell.png",
+      "exerciseId": "bench-press-decline-barbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0051-tension.png",
+      "bytes": 44506,
+      "sha256": "f87d37391ef261c5f44b73793fe52c71246c40234f64d4cea21d4c3984135c78"
+    },
+    {
+      "file": "bench-press-decline-dumbbell.png",
+      "exerciseId": "bench-press-decline-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0052-tension.png",
+      "bytes": 43789,
+      "sha256": "3adbc29c7f338b05ac1f8f8cead7ed635449c45b52cb73737a91f7c28bf268f7"
+    },
+    {
+      "file": "bench-press-dumbbell.png",
+      "exerciseId": "bench-press-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0055-tension.png",
+      "bytes": 50059,
+      "sha256": "5503d157789f4952c7cadae16192ec40ac83ddd15e4d802fc6a7e5a77341de88"
+    },
+    {
+      "file": "bench-press-smith.png",
+      "exerciseId": "bench-press-smith",
+      "source": "everkinetic",
+      "originPath": "dist/png/0078-tension.png",
+      "bytes": 66594,
+      "sha256": "640f791901be113761867900388e13b72e21af03e1c009a1773a9117fedc02a7"
+    },
+    {
+      "file": "cable-fly.png",
+      "exerciseId": "cable-fly",
+      "source": "everkinetic",
+      "originPath": "dist/png/0048-tension.png",
+      "bytes": 47479,
+      "sha256": "7513c4b8254a5c3dcbf5410b20451a713d3b390fa1653d5f1687f058294a857e"
+    },
+    {
+      "file": "cable-kickback.png",
+      "exerciseId": "cable-kickback",
+      "source": "everkinetic",
+      "originPath": "dist/png/0112-tension.png",
+      "bytes": 32801,
+      "sha256": "5e3108fb3e7da2eeed684bb4a456600cfa16e7e915d79f6c33aa597f171ff37a"
+    },
+    {
+      "file": "cable-shrug.png",
+      "exerciseId": "cable-shrug",
+      "source": "everkinetic",
+      "originPath": "dist/png/0009-tension.png",
+      "bytes": 35201,
+      "sha256": "3240a7fce43ca0f7cb9511520f061e222735469653c1b92cf815df7c851c65d5"
+    },
+    {
+      "file": "calf-raise-donkey.png",
+      "exerciseId": "calf-raise-donkey",
+      "source": "everkinetic",
+      "originPath": "dist/png/0275-tension.png",
+      "bytes": 44206,
+      "sha256": "2c3f39f240dca8bc76b1531a1282b979e002869796fa1d2c4b7e7dc2049af56f"
+    },
+    {
+      "file": "calf-raise-leg-press.png",
+      "exerciseId": "calf-raise-leg-press",
+      "source": "everkinetic",
+      "originPath": "dist/png/0273-tension.png",
+      "bytes": 52838,
+      "sha256": "20842bdf79721742e78d8f04b0297bc1282138585acdaad8526312415b81eb07"
+    },
+    {
+      "file": "calf-raise-seated.png",
+      "exerciseId": "calf-raise-seated",
+      "source": "everkinetic",
+      "originPath": "dist/png/0279-tension.png",
+      "bytes": 41145,
+      "sha256": "ddcbc8d89cf97d6a8f19dad4f1f3c631027d7f2c8debdef7b11c00baab1064cd"
+    },
+    {
+      "file": "calf-raise-standing.png",
+      "exerciseId": "calf-raise-standing",
+      "source": "everkinetic",
+      "originPath": "dist/png/0282-tension.png",
+      "bytes": 40593,
+      "sha256": "5e99e5ea9cb89b8714c6ac93237fa08175224f8456f84f9b3b0634154f3634da"
+    },
+    {
+      "file": "chest-press-machine.png",
+      "exerciseId": "chest-press-machine",
+      "source": "everkinetic",
+      "originPath": "dist/png/0066-tension.png",
+      "bytes": 53281,
+      "sha256": "7e40d8c0b02dc182c5bdb6e88c0826d83cba09330bb0add50683d6ee5781cab4"
+    },
+    {
+      "file": "close-grip-bench-press.png",
+      "exerciseId": "close-grip-bench-press",
+      "source": "everkinetic",
+      "originPath": "dist/png/0049-tension.png",
+      "bytes": 45717,
+      "sha256": "10284833ad151d8315640fc80177b5c7244c6af58fa724317eb1b4f0a3099ea2"
+    },
+    {
+      "file": "concentration-curl.png",
+      "exerciseId": "concentration-curl",
+      "source": "everkinetic",
+      "originPath": "dist/png/0220-tension.png",
+      "bytes": 40381,
+      "sha256": "a563accfe6430f1d5865847d0b508d1a0ef3cd83f440f6a9d6ed2a3e592d1d3f"
+    },
+    {
+      "file": "crunch.png",
+      "exerciseId": "crunch",
+      "source": "everkinetic",
+      "originPath": "dist/png/0291-tension.png",
+      "bytes": 31433,
+      "sha256": "9c3174a79f3d528aa966bf9e00b551f20fe2c6734ec554c74e520d13059245e4"
+    },
+    {
+      "file": "curl-barbell.png",
+      "exerciseId": "curl-barbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0211-tension.png",
+      "bytes": 52241,
+      "sha256": "c5b0a5a515735e4d0dbeecc31fbb21dc6565eddc61165bee47c5aeadaf2a703d"
+    },
+    {
+      "file": "curl-cable.png",
+      "exerciseId": "curl-cable",
+      "source": "everkinetic",
+      "originPath": "dist/png/0212-tension.png",
+      "bytes": 38908,
+      "sha256": "60b7b3740e8f77dd6119c1666bd140a5134b91f857c48ee850da8dcccaed9c82"
+    },
+    {
+      "file": "curl-dumbbell.png",
+      "exerciseId": "curl-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0224-tension.png",
+      "bytes": 37866,
+      "sha256": "06223444d1cf84765b4a4accaf32647c2710c320d797a5e3c8c46283ab0cdc6c"
+    },
+    {
+      "file": "curl-ez-bar.png",
+      "exerciseId": "curl-ez-bar",
+      "source": "everkinetic",
+      "originPath": "dist/png/0226-tension.png",
+      "bytes": 50112,
+      "sha256": "1b1b5efdb05eb6cb56636f716420247320dcac69f6d1d66db4be8f68f692bfb6"
+    },
+    {
+      "file": "curl-incline-dumbbell.png",
+      "exerciseId": "curl-incline-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0214-tension.png",
+      "bytes": 39364,
+      "sha256": "baa1d825bd46de3f2ccd850c1a97c503f6a5b367c613bbe844850a6a3422fbd9"
+    },
+    {
+      "file": "deadlift-barbell.png",
+      "exerciseId": "deadlift-barbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0099-tension.png",
+      "bytes": 37581,
+      "sha256": "1d64426b8cfe859016466fba31a9196623df1df74d908a880ae1a760c71b0860"
+    },
+    {
+      "file": "decline-chest-press-machine.png",
+      "exerciseId": "decline-chest-press-machine",
+      "source": "everkinetic",
+      "originPath": "dist/png/0085-tension.png",
+      "bytes": 46516,
+      "sha256": "3da25c6174dad37a8a9e77751f6eba838af4aa7b8f1cdea685b30c499a1c44b7"
+    },
+    {
+      "file": "decline-crunch.png",
+      "exerciseId": "decline-crunch",
+      "source": "everkinetic",
+      "originPath": "dist/png/0292-tension.png",
+      "bytes": 33095,
+      "sha256": "bf6b5bcfe0cfdd3c8f19842db7365182b623d5f686229fd062f9d61ce67db0a4"
+    },
+    {
+      "file": "diamond-push-up.png",
+      "exerciseId": "diamond-push-up",
+      "source": "everkinetic",
+      "originPath": "dist/png/0188-tension.png",
+      "bytes": 31626,
+      "sha256": "920f57fc5c46a81b278f55b82cd5d1c39e6a31ff0339f8148326008f075abbba"
+    },
+    {
+      "file": "dip-chest.png",
+      "exerciseId": "dip-chest",
+      "source": "everkinetic",
+      "originPath": "dist/png/0054-tension.png",
+      "bytes": 46076,
+      "sha256": "872fc4c4289e3c78d19cb7c1473db96fa52f970dde5f51478418d3f5637432d2"
+    },
+    {
+      "file": "fly-flat-dumbbell.png",
+      "exerciseId": "fly-flat-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0056-tension.png",
+      "bytes": 46510,
+      "sha256": "443cd6be3deb5a848865b83e5b30c2744ab7cd3a2d2a63084f853de75f56d32f"
+    },
+    {
+      "file": "fly-incline-dumbbell.png",
+      "exerciseId": "fly-incline-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0062-tension.png",
+      "bytes": 47357,
+      "sha256": "f5ef7350844632cff81b484ec7038b8dd7ecda690eb0c770484716e84d029b33"
+    },
+    {
+      "file": "front-raise-cable.png",
+      "exerciseId": "front-raise-cable",
+      "source": "everkinetic",
+      "originPath": "dist/png/0008-tension.png",
+      "bytes": 37062,
+      "sha256": "fbc50911dfff9ff5793dd3e5a81b3d509826a276dfb722a6673b96c5a258f6e4"
+    },
+    {
+      "file": "front-raise-dumbbell.png",
+      "exerciseId": "front-raise-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0033-tension.png",
+      "bytes": 38223,
+      "sha256": "90fd4beb03e232bf293b6d60bba2f7c7cf1f12981db9456be09f336f4080065d"
+    },
+    {
+      "file": "front-squat-barbell.png",
+      "exerciseId": "front-squat-barbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0138-tension.png",
+      "bytes": 41524,
+      "sha256": "119cfbb653d011a76588a9fb882d3d21eb85e1d593ce1aa2df2b751a684a2077"
+    },
+    {
+      "file": "glute-bridge.png",
+      "exerciseId": "glute-bridge",
+      "source": "everkinetic",
+      "originPath": "dist/png/0109-tension.png",
+      "bytes": 24506,
+      "sha256": "5eccf7de7a05790595a4a926f3c00660f037543de7494769885cd608e3cbfae5"
+    },
+    {
+      "file": "good-morning.png",
+      "exerciseId": "good-morning",
+      "source": "everkinetic",
+      "originPath": "dist/png/0101-tension.png",
+      "bytes": 32382,
+      "sha256": "404bf5aab1d8066711f16ab3bd41a31b544ef1232cd7f88f2c1c131143b41e8e"
+    },
+    {
+      "file": "hack-squat.png",
+      "exerciseId": "hack-squat",
+      "source": "everkinetic",
+      "originPath": "dist/png/0123-tension.png",
+      "bytes": 40354,
+      "sha256": "be6409d7c5aaf5defa26290c1e4fa86b28125c93a663f7ae4825718fad79bcea"
+    },
+    {
+      "file": "hammer-curl-preacher.png",
+      "exerciseId": "hammer-curl-preacher",
+      "source": "everkinetic",
+      "originPath": "dist/png/0240-tension.png",
+      "bytes": 39703,
+      "sha256": "e7a0e8a75c5cd8f828149a9603cc9df876ae2ee27afd4c445b935c670413ecca"
+    },
+    {
+      "file": "hammer-curl.png",
+      "exerciseId": "hammer-curl",
+      "source": "everkinetic",
+      "originPath": "dist/png/0227-tension.png",
+      "bytes": 34370,
+      "sha256": "50989276810112f435b9fde71c86e7c01553fe48c2b2f10caeda361c339ae1e1"
+    },
+    {
+      "file": "hip-abduction-machine.png",
+      "exerciseId": "hip-abduction-machine",
+      "source": "everkinetic",
+      "originPath": "dist/png/0156-tension.png",
+      "bytes": 42154,
+      "sha256": "4a13afc1ac21cfcb5f85e06867604e769cadb3214e14008685b9257bb00567db"
+    },
+    {
+      "file": "hip-adduction-machine.png",
+      "exerciseId": "hip-adduction-machine",
+      "source": "everkinetic",
+      "originPath": "dist/png/0157-tension.png",
+      "bytes": 42819,
+      "sha256": "0d1625da565477602bd55eb4c268a1aaf49de1c3757ece4bbbec873aaaa9b317"
+    },
+    {
+      "file": "incline-press-barbell.png",
+      "exerciseId": "incline-press-barbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0043-tension.png",
+      "bytes": 57355,
+      "sha256": "7a3fd051682c7c4232d7bee69ce4241ea472d4751f15e76a5a75606135ac9280"
+    },
+    {
+      "file": "incline-press-dumbbell.png",
+      "exerciseId": "incline-press-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0061-tension.png",
+      "bytes": 47469,
+      "sha256": "24c196f66063adc587676205b7ec74129a23ea3462ce685258dad032fa987ea4"
+    },
+    {
+      "file": "incline-press-smith.png",
+      "exerciseId": "incline-press-smith",
+      "source": "everkinetic",
+      "originPath": "dist/png/0081-tension.png",
+      "bytes": 67093,
+      "sha256": "7729d25ce512778297b8fcbbaf62bdc67e1fe4569307ab63484182d52dc712ca"
+    },
+    {
+      "file": "lat-pulldown-neutral.png",
+      "exerciseId": "lat-pulldown-neutral",
+      "source": "everkinetic",
+      "originPath": "dist/png/0096-tension.png",
+      "bytes": 39957,
+      "sha256": "b06c244dc13d21b8706e5f88644c21213fbf64b3df7446b67a778f94b166a832"
+    },
+    {
+      "file": "lateral-raise-dumbbell.png",
+      "exerciseId": "lateral-raise-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0018-tension.png",
+      "bytes": 43903,
+      "sha256": "bd070280e253625fd90eeae0dc059c1224df3fce9467899d439c13ef693da66a"
+    },
+    {
+      "file": "leg-curl-lying.png",
+      "exerciseId": "leg-curl-lying",
+      "source": "everkinetic",
+      "originPath": "dist/png/0117-tension.png",
+      "bytes": 35234,
+      "sha256": "7ff4869ebb6e417a8c4f0da37e32bac80cae0f5923b332c08c68b6c83bede072"
+    },
+    {
+      "file": "leg-curl-machine.png",
+      "exerciseId": "leg-curl-machine",
+      "source": "everkinetic",
+      "originPath": "dist/png/0117-tension.png",
+      "bytes": 35234,
+      "sha256": "7ff4869ebb6e417a8c4f0da37e32bac80cae0f5923b332c08c68b6c83bede072"
+    },
+    {
+      "file": "leg-curl-seated.png",
+      "exerciseId": "leg-curl-seated",
+      "source": "everkinetic",
+      "originPath": "dist/png/0119-tension.png",
+      "bytes": 42772,
+      "sha256": "c8b4ee4a044e9bb65335a08f26f9c09d4d49762139abc2098b8f8153a02dfdea"
+    },
+    {
+      "file": "leg-extension-machine.png",
+      "exerciseId": "leg-extension-machine",
+      "source": "everkinetic",
+      "originPath": "dist/png/0142-tension.png",
+      "bytes": 42394,
+      "sha256": "af74e968597d5b36e08e2d3583c0c2af3cccfd215740d277e74e0b3f3ae0fe5c"
+    },
+    {
+      "file": "leg-press.png",
+      "exerciseId": "leg-press",
+      "source": "everkinetic",
+      "originPath": "dist/png/0127-tension.png",
+      "bytes": 51737,
+      "sha256": "078c7c902505de0fd5049774d92628f0c6e14c1a1979484e71e5d24abec84135"
+    },
+    {
+      "file": "lying-leg-raise.png",
+      "exerciseId": "lying-leg-raise",
+      "source": "everkinetic",
+      "originPath": "dist/png/0021-tension.png",
+      "bytes": 32873,
+      "sha256": "76fa0a4fed4b35f0907a1095f04ad5fd963db8df1fc674d4e855e9a4a2ac8c21"
+    },
+    {
+      "file": "overhead-press-seated-barbell.png",
+      "exerciseId": "overhead-press-seated-barbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0004-tension.png",
+      "bytes": 51027,
+      "sha256": "234b805f43452c59c9aec2e7ebd0f798d446944d3350f71aaf7c6eb738e19e72"
+    },
+    {
+      "file": "overhead-triceps-extension-dumbbell.png",
+      "exerciseId": "overhead-triceps-extension-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0192-tension.png",
+      "bytes": 31184,
+      "sha256": "9d88f8729a07565725d79f3dc418f59434b2173c58e777b6327a3569fdaafec1"
+    },
+    {
+      "file": "overhead-triceps-extension-ez-bar.png",
+      "exerciseId": "overhead-triceps-extension-ez-bar",
+      "source": "everkinetic",
+      "originPath": "dist/png/0193-tension.png",
+      "bytes": 55795,
+      "sha256": "9196a3083e0d8c454a31f7ae9303cd28ed44f30f3de0458219f09c2449a8d234"
+    },
+    {
+      "file": "preacher-curl-machine.png",
+      "exerciseId": "preacher-curl-machine",
+      "source": "everkinetic",
+      "originPath": "dist/png/0236-tension.png",
+      "bytes": 53062,
+      "sha256": "e3539e769c6fb32dc5f6189fce0a5c38501aeb55ef58b73ac56042509962bfc5"
+    },
+    {
+      "file": "preacher-curl.png",
+      "exerciseId": "preacher-curl",
+      "source": "everkinetic",
+      "originPath": "dist/png/0239-tension.png",
+      "bytes": 47459,
+      "sha256": "14a16da2b576d5655586a59c6d30ccc6fb382343554a0e2701a39aef8ef40ebe"
+    },
+    {
+      "file": "pull-up.png",
+      "exerciseId": "pull-up",
+      "source": "everkinetic",
+      "originPath": "dist/png/0087-tension.png",
+      "bytes": 39982,
+      "sha256": "493b28c0701f888605e719576434fe39d87838620955109870082b2c01ec42ac"
+    },
+    {
+      "file": "pullover-dumbbell.png",
+      "exerciseId": "pullover-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0046-tension.png",
+      "bytes": 36998,
+      "sha256": "573edcd4fedc0193c11af30e1d0ddab0466b553edbe0d0c110b89d9885423842"
+    },
+    {
+      "file": "push-up.png",
+      "exerciseId": "push-up",
+      "source": "everkinetic",
+      "originPath": "dist/png/0077-tension.png",
+      "bytes": 32738,
+      "sha256": "8d1e1b0b23647d2a2b93be32bdb5c1bf3217b80e91309c96100c5765633447ea"
+    },
+    {
+      "file": "reverse-curl.png",
+      "exerciseId": "reverse-curl",
+      "source": "everkinetic",
+      "originPath": "dist/png/0257-tension.png",
+      "bytes": 35759,
+      "sha256": "ddff9bee03a545ed395f9ba7af36b7c1a2e562b47eea259f0ee11d9fb8724243"
+    },
+    {
+      "file": "reverse-fly-cable.png",
+      "exerciseId": "reverse-fly-cable",
+      "source": "everkinetic",
+      "originPath": "dist/png/0017-tension.png",
+      "bytes": 40713,
+      "sha256": "bc1912142da642d22a7117c0a628e111bb0e7ea7d0d99d43ffcc41a116e9103b"
+    },
+    {
+      "file": "reverse-fly-dumbbell.png",
+      "exerciseId": "reverse-fly-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0032-tension.png",
+      "bytes": 46196,
+      "sha256": "30a77deca86908b65e96f53a741222492706a8744f2e39456ec5d26233b32734"
+    },
+    {
+      "file": "reverse-lunge.png",
+      "exerciseId": "reverse-lunge",
+      "source": "everkinetic",
+      "originPath": "dist/png/0129-tension.png",
+      "bytes": 34715,
+      "sha256": "4171509951de7ce0c44672de2c5d9c76e57f5575cbaf3f5f6a6ae0ba0bc9d8ae"
+    },
+    {
+      "file": "romanian-deadlift-barbell.png",
+      "exerciseId": "romanian-deadlift-barbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0118-tension.png",
+      "bytes": 38819,
+      "sha256": "7fbb3416cad6b695ceaa69840f1be8212ff3a2328834b73bde5e7b83060d589a"
+    },
+    {
+      "file": "rope-hammer-curl.png",
+      "exerciseId": "rope-hammer-curl",
+      "source": "everkinetic",
+      "originPath": "dist/png/0216-tension.png",
+      "bytes": 36428,
+      "sha256": "f77c8f1b62e885e3bb4edafba68043c0d12327439f49d45e7af63d6e2f0b9877"
+    },
+    {
+      "file": "row-barbell-supinated.png",
+      "exerciseId": "row-barbell-supinated",
+      "source": "everkinetic",
+      "originPath": "dist/png/0026-tension.png",
+      "bytes": 43821,
+      "sha256": "90439fa476a31406b34e744c07ff729435467c376cf36f40c52308c926c42673"
+    },
+    {
+      "file": "row-inverted.png",
+      "exerciseId": "row-inverted",
+      "source": "everkinetic",
+      "originPath": "dist/png/0086-tension.png",
+      "bytes": 45973,
+      "sha256": "32d867bd912bfef245ddd94008bf6e5be33cb6eac57b9b589513fb722fd9db28"
+    },
+    {
+      "file": "seated-row-cable.png",
+      "exerciseId": "seated-row-cable",
+      "source": "everkinetic",
+      "originPath": "dist/png/0025-tension.png",
+      "bytes": 33054,
+      "sha256": "94a53a11577d49da862800f151d767cd4d865af7e93eff337b9533c7afb23892"
+    },
+    {
+      "file": "shrug-barbell.png",
+      "exerciseId": "shrug-barbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0030-tension.png",
+      "bytes": 49052,
+      "sha256": "8a8803963696c52173900e05be9ca37ca3952bb1eac21d691557e5d89bfca65e"
+    },
+    {
+      "file": "shrug-dumbbell.png",
+      "exerciseId": "shrug-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0005-tension.png",
+      "bytes": 44450,
+      "sha256": "864c61dbf62b8da87fd9e84d1b32d6c4bb506ba846f13680f79e63fde386e0e7"
+    },
+    {
+      "file": "side-plank.png",
+      "exerciseId": "side-plank",
+      "source": "everkinetic",
+      "originPath": "dist/png/0113-tension.png",
+      "bytes": 26537,
+      "sha256": "37a09c01d7e27fc205804a79fe7136bea9154ea8340abf53ce405d1e5861828d"
+    },
+    {
+      "file": "sissy-squat.png",
+      "exerciseId": "sissy-squat",
+      "source": "everkinetic",
+      "originPath": "dist/png/0158-tension.png",
+      "bytes": 38984,
+      "sha256": "d06a34b6d8d468c8cc9131223cfe1e03b97bae6278f7d054c006b360a08b2e77"
+    },
+    {
+      "file": "skull-crusher-dumbbell.png",
+      "exerciseId": "skull-crusher-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0181-tension.png",
+      "bytes": 35914,
+      "sha256": "fa47b674c28480961af40f0f7cc076ff9e3830fdfb06755bb9a170af1d8601cc"
+    },
+    {
+      "file": "skull-crusher.png",
+      "exerciseId": "skull-crusher",
+      "source": "everkinetic",
+      "originPath": "dist/png/0183-tension.png",
+      "bytes": 45586,
+      "sha256": "5f601a8d41cdce18f1aaf32e97bc5689129ea5ce01855fb0c2de0037b415e52a"
+    },
+    {
+      "file": "smith-squat.png",
+      "exerciseId": "smith-squat",
+      "source": "everkinetic",
+      "originPath": "dist/png/0124-tension.png",
+      "bytes": 62019,
+      "sha256": "28ce37e4d2fcb1c3fb4b639f892f5142579942cdd6fac85dcb1ed96cfe1724d2"
+    },
+    {
+      "file": "squat-barbell.png",
+      "exerciseId": "squat-barbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0122-tension.png",
+      "bytes": 42265,
+      "sha256": "feee7970c7731f1cc6a3d9625c9eeb543e5bfbd29d6ee5a85ca1af20c680db5c"
+    },
+    {
+      "file": "step-up.png",
+      "exerciseId": "step-up",
+      "source": "everkinetic",
+      "originPath": "dist/png/0137-tension.png",
+      "bytes": 44070,
+      "sha256": "14705bc494619888cc68e85852e33618cc50896393e00649100b6bc58591fc68"
+    },
+    {
+      "file": "straight-arm-pulldown.png",
+      "exerciseId": "straight-arm-pulldown",
+      "source": "everkinetic",
+      "originPath": "dist/png/0092-tension.png",
+      "bytes": 34264,
+      "sha256": "93187cc70b242ef86c9599ae6f73a06559e2ad2b3e7159556fc713291a9be4fc"
+    },
+    {
+      "file": "triceps-extension-machine.png",
+      "exerciseId": "triceps-extension-machine",
+      "source": "everkinetic",
+      "originPath": "dist/png/0210-tension.png",
+      "bytes": 49476,
+      "sha256": "6c61d6cef2897679228630f050d0635b59822f699440f525185e4d3de0be163d"
+    },
+    {
+      "file": "triceps-kickback.png",
+      "exerciseId": "triceps-kickback",
+      "source": "everkinetic",
+      "originPath": "dist/png/0204-tension.png",
+      "bytes": 47546,
+      "sha256": "a3943c906882c66c854078d2c8421018052fe562e76b212f322c97acc60f18f2"
+    },
+    {
+      "file": "triceps-pushdown-cable.png",
+      "exerciseId": "triceps-pushdown-cable",
+      "source": "everkinetic",
+      "originPath": "dist/png/0205-tension.png",
+      "bytes": 37882,
+      "sha256": "1baec2f1b26ac112986ba63834dd29f7addda1a80274f200e0cb8087a2ec2424"
+    },
+    {
+      "file": "triceps-pushdown-rope.png",
+      "exerciseId": "triceps-pushdown-rope",
+      "source": "everkinetic",
+      "originPath": "dist/png/0206-tension.png",
+      "bytes": 37888,
+      "sha256": "5cd1ffd9fd011592e8d58960b0b83531dd83c9acdfe132b39d2728c888bd235f"
+    },
+    {
+      "file": "triceps-pushdown-supinated.png",
+      "exerciseId": "triceps-pushdown-supinated",
+      "source": "everkinetic",
+      "originPath": "dist/png/0189-tension.png",
+      "bytes": 38300,
+      "sha256": "100ee8ac0285f12937e26748c7928cd5556632fc82e61befc5ea5ea61a6b5cf3"
+    },
+    {
+      "file": "upright-row-cable.png",
+      "exerciseId": "upright-row-cable",
+      "source": "everkinetic",
+      "originPath": "dist/png/0015-tension.png",
+      "bytes": 38397,
+      "sha256": "d27b330bc6b8cf5c54ed717b7eea175af655af286e404b67b2d8da83b84c95ee"
+    },
+    {
+      "file": "upright-row-dumbbell.png",
+      "exerciseId": "upright-row-dumbbell",
+      "source": "everkinetic",
+      "originPath": "dist/png/0016-tension.png",
+      "bytes": 37331,
+      "sha256": "d679ce6ba92c07c14856a08db80165765203a95a091b3ea8a2457e49518cfd4c"
+    },
+    {
+      "file": "walking-lunge.png",
+      "exerciseId": "walking-lunge",
+      "source": "everkinetic",
+      "originPath": "dist/png/0121-tension.png",
+      "bytes": 41125,
+      "sha256": "1a862e47e130029448d46e8ef4b50972870acc21f74f244ac2cd7e12d08d1176"
+    },
+    {
+      "file": "zottman-curl.png",
+      "exerciseId": "zottman-curl",
+      "source": "everkinetic",
+      "originPath": "dist/png/0251-tension.png",
+      "bytes": 37349,
+      "sha256": "b7f953d8a7de0bb0cf2207e72ab534ae6c98ce7dc66eec2d1d9a4cd50d30bd18"
+    }
+  ]
+}

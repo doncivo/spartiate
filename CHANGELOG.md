@@ -2,6 +2,15 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.22.0
+
+Aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.
+
+- **Illustrations d'exercice** : 87 exercices sur 196 ont maintenant un dessin du mouvement dans leur fiche (Entraînement › Bibliothèque). Les dessins viennent d'Everkinetic, sous licence libre CC BY-SA 4.0 ; l'auteur et la licence sont écrits sous chaque image.
+- **Rien n'est téléchargé** : les images sont dans l'app (3,7 Mo en tout) et ne se chargent qu'à l'ouverture d'une fiche ; le démarrage ne change pas.
+- **Les autres exercices** restent sans image : aucune source à licence vérifiée ne les couvrait ; pas d'icône cassée.
+- **À regarder** : si un dessin ne correspond pas à l'exercice, dis-le ; la liste des correspondances est dans `scripts/content/media-map.json`.
+
 ## 0.21.0
 
 **Schéma 18 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** Migration 0018 : une table synchronisée porte les séances cardio, une table propre à chaque appareil garde les tracés GPS. Un appareil resté en version précédente garde les séances reçues de côté et les reprend après sa mise à jour.

@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { IdGenerator } from '../../domain/id';
 import type { DeviceId, Id } from '../../domain/types';
@@ -57,6 +57,13 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
   });
 
   describe('bibliothèque', () => {
+    // I6-07 : sous Vitest, le premier import du bloc à la demande `ExerciseMedia` transforme un module par image (87 adresses `?url`), soit
+    // plus d'une seconde quand le poste est chargé ; dans le build, c'est un seul petit bloc. Le module est donc chargé une fois avant les
+    // tests : `React.lazy` le résout depuis le cache, la fiche reste jugée sur son rendu, sans délai allongé (docs/journal.md, I6-07).
+    beforeAll(async () => {
+      await import('./media/ExerciseMedia');
+    });
+
     it('filtrée par défaut par le profil actif (Salle complète, FIX-0173) ; la bascule montre tout', async () => {
       open('library');
       const toggle = await screen.findByRole('switch', { name: 'Compatibles avec mon matériel' });
@@ -81,7 +88,7 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
       expect(screen.getByText('Aucun exercice ne correspond.')).toBeInTheDocument();
     });
 
-    it('fiche : muscles, matériel, consignes, plage, repos, alternatives ; aucune image', async () => {
+    it('fiche : muscles, matériel, consignes, plage, repos, alternatives ; illustration sous licence avec attribution (I6-07)', async () => {
       const { container } = open('library');
       fireEvent.change(await screen.findByLabelText('Rechercher un exercice'), { target: { value: 'développé couché à la barre' } });
       fireEvent.click(screen.getByRole('button', { name: /^Développé couché à la barre/ }));
@@ -92,7 +99,9 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
       expect(screen.getByText(/Barre droite/)).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: 'Erreurs fréquentes' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Développé couché aux haltères' })).toBeInTheDocument();
-      expect(container.querySelector('img')).toBeNull();
+      expect(await screen.findByRole('img', { name: 'Illustration : Développé couché à la barre' })).toBeInTheDocument();
+      expect(screen.getByText(/^Illustration : Everkinetic/)).toBeInTheDocument();
+      expect(container.querySelectorAll('img')).toHaveLength(1);
       fireEvent.click(screen.getByRole('button', { name: 'Retour à la bibliothèque' }));
       expect(await screen.findByLabelText('Rechercher un exercice')).toBeInTheDocument();
     });
