@@ -189,7 +189,16 @@ describe('bundle de départ (index.html)', () => {
     expect(start.has(chunk.file)).toBe(false);
   });
 
-  it.each(['Reprendre la séance', 'Valider la série', 'Repos par défaut', 'Passe à la série suivante.'])('I1-02 : « %s » hors du départ et présent dans le build', (marker) => {
+  // FIX-0223 (D-260) : l'aperçu de la carte « Séance du jour » (durée, charges proposées) tire le moteur de prescription : bloc à la demande.
+  it('FIX-0223 : l’aperçu de la « Séance du jour » et le moteur de prescription sont hors du départ', () => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest['src/features/training/session/todaySessionPreview.ts'];
+    if (!chunk) throw new Error('bloc src/features/training/session/todaySessionPreview.ts absent du manifeste');
+    expect(start.has(chunk.file)).toBe(false);
+    expect([...start].some((file) => file.includes('prescribe'))).toBe(false);
+  });
+
+  it.each(['Reprendre la séance','Valider la série', 'Repos par défaut', 'Passe à la série suivante.'])('I1-02 : « %s » hors du départ et présent dans le build', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
