@@ -37,9 +37,10 @@
   flex-grow: 1;
 }
 
+/* ERGO-01 : « Annuler » est souvent touché à la hâte sur l'iPhone : cible ≥ 44 pt (§ 18.4). */
 .ct-toast__action {
   position: relative;
-  height: 34px;
+  min-height: var(--ct-hit-target-min);
   padding: 0 14px;
   border: 0;
   border-radius: var(--ct-radius-pill);

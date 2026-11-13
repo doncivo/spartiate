@@ -34,8 +34,12 @@
   color: var(--ct-color-text);
 }
 
+/* ERGO-01 (Programme-apres.dc.html) : la semaine du mésocycle est la ligne de tête du bloc (capitales romaines). */
 .ct-cycle__week {
   margin: 0;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading-sm);
+  line-height: 1.15;
   font-weight: var(--ct-font-weight-semibold);
   font-variant-numeric: tabular-nums;
   color: var(--ct-color-text);

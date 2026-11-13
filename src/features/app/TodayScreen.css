@@ -38,6 +38,12 @@
   min-width: 0;
 }
 
+/* ERGO-01 (Aujourdhui-apres.dc.html) : moins de cartes ; un bloc porté par son chiffre héros reste à plat, même marge, ni fond ni bordure. */
+.ct-today__card--flat {
+  background: transparent;
+  border-color: transparent;
+}
+
 .ct-today__eyebrow {
   margin: 0 0 var(--ct-space-1);
   color: var(--ct-color-text-secondary);

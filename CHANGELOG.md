@@ -11,6 +11,29 @@ Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGEL
 - **Constance** : sur 7 et 30 jours, et ta série de jours complets ; « — » quand rien n'était prévu.
 - **Rappels sur l'iPhone** (désactivés par défaut) : une notification à chaque heure de prise, sans le nom du complément sur l'écran verrouillé, retirée quand c'est coché. Le PC n'envoie rien. Pas encore de bouton « Pris » dans la notification : un appui ouvre Aujourd'hui.
 
+## 0.19.1
+
+Rien ne change pour toi à l'écran, aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.
+
+- **Second nettoyage** (ta décision du 12 novembre) : la lecture de texte de secours (tesseract.js), l'analyse de dates en langage libre (chrono-node) et la saisie rapide de tâches, héritées de CircleTasks et sans aucun écran dans Spartiate, sont retirées. L'app embarque environ 4,7 Mo de moins.
+- **Gardé exprès** : la lecture de texte native (Vision sur l'iPhone, Windows sur le PC), prévue par le PRD pour importer un programme papier (I6). La retirer demande ta décision.
+- **Pas encore fait** : la réécriture des tests de synchro qui s'appuient encore sur les anciennes tâches et projets de CircleTasks (222 fichiers) dépasse ce ticket ; elle passe dans un ticket dédié (CLEAN-03).
+
+## 0.19.0
+
+**Sans migration** (la base reste en schéma 15) : cette version peut s'installer sur PC et iPhone à tout moment.
+
+Premier lot du chantier ergonomie, d'après l'aperçu esthétique que tu as validé le 12 novembre. Mêmes informations, mêmes onglets, seule la présentation change.
+
+- **Séance active** : la série à faire maintenant est mise en avant au centre (« Série en cours », grands chiffres, « Valider la série » plus grand). Après validation, la suivante prend sa place, y compris dans un superset ou un circuit. Sous le chrono, tu vois où tu en es (« Exercice 2 sur 5 »).
+- **Repos** : une barre se remplit pendant le repos, en plus du temps restant ; elle reste juste après un « +30 s » ou un redémarrage.
+- **Un chiffre par bloc** : calories restantes (Aujourd'hui, Journal, Dashboard), séries faites d'une séance ouverte, Recovery (cadran agrandi), chiffres du résumé de séance et semaine du programme ressortent en grand, en bronze.
+- **Moins de cartes** : la nutrition d'Aujourd'hui n'est plus encadrée, les pas sont dans le bloc Récupération, les chiffres du résumé ne sont plus dans une carte.
+- **Import Santé plus court** : quand ta récupération date de plusieurs jours, « Ouvrir Apple Santé » est proposé directement dans la carte (un tap de moins).
+- **Boutons plus faciles à toucher** : « Annuler » du bandeau d'annulation et les jours de la semaine de la configuration font au moins 44 points.
+- **Progrès** ne dit plus « arrive avec une prochaine version » au-dessus de Récupération et Corps, qui y fonctionnent.
+- **À valider** : quatre propositions qui changeraient la navigation (lancer la séance du jour en un tap, ajouter un repas en un tap de moins, « − / + » sur la charge, Aujourd'hui sur PC regroupé) t'attendent en maquettes dans `docs/maquettes/propositions/ergo-01-structure/`.
+
 ## 0.18.3
 
 **Schéma 16 : mettre à jour le PC et l'iPhone le même jour, avant d'utiliser « Repartir de zéro ».** Migration 0016 : une petite table synchronisée porte les remises à zéro. Un appareil resté en 0.18.2 ou avant affiche « Mets à jour l'app », garde ses données le temps de sa mise à jour, puis efface à son tour.

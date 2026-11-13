@@ -22,7 +22,7 @@ function walk(dir, out = []) {
   return out;
 }
 const all = ['src', 'tests', 'scripts'].flatMap((d) => (existsSync(join(ROOT, d)) ? walk(join(ROOT, d)) : [])).filter((f) => /\.(tsx?|mjs|js|css)$/.test(f)).map(rel);
-for (const e of ['vite.config.ts', 'vite.ocrAssets.ts']) all.push(e);
+for (const e of ['vite.config.ts']) all.push(e);
 const fileSet = new Set(all);
 const isTest = (f) => /\.test\.(tsx?|mjs)$/.test(f) || f.startsWith('tests/') || f.startsWith('scripts/');
 
@@ -158,7 +158,7 @@ function mark(file, names) {
   } else for (const n of names) if (!u.has(n)) (u.add(n), (changed = true));
   if (changed) work.push(file);
 }
-for (const r of ['src/main.tsx', 'src/features/sync/pairing-window/main.tsx', 'vite.ocrAssets.ts']) mark(r, 'all');
+for (const r of ['src/main.tsx', 'src/features/sync/pairing-window/main.tsx']) mark(r, 'all');
 
 // nsUsage : pour un fichier, pour un alias d'espace de noms, les propriétés lues ou 'all'.
 function nsUse(sf, local, root) {

@@ -57,6 +57,8 @@ export interface SetRowProps {
   readonly set: WorkoutSet;
   /** Rang parmi les séries hors échauffement de l'exercice (1, 2…). */
   readonly number: number;
+  /** ERGO-01 : série en cours (première à faire de la séance), bloc central mis en avant et annoncé (`aria-current="step"`). */
+  readonly current?: boolean;
   readonly timed: boolean;
   readonly source: WorkoutSource;
   readonly busy: boolean;
@@ -66,7 +68,7 @@ export interface SetRowProps {
   readonly onRemove: () => void;
 }
 
-export function SetRow({ set, number, timed, source, busy, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
+export function SetRow({ set, number, current = false, timed, source, busy, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
   const [draft, setDraft] = useState<Draft>(() => initialDraft(set, timed));
   const [issue, setIssue] = useState<string | null>(null);
   // I2-01 : une proposition acceptée écrit charge et répétitions dans une série à faire ; la saisie repart des valeurs enregistrées (la ligne
@@ -125,7 +127,13 @@ export function SetRow({ set, number, timed, source, busy, onValidate, onUnvalid
   );
 
   return (
-    <li className={set.done ? 'ct-session__set ct-session__set--done' : 'ct-session__set'} role="group" aria-label={label}>
+    <li
+      className={set.done ? 'ct-session__set ct-session__set--done' : current ? 'ct-session__set ct-session__set--current' : 'ct-session__set'}
+      role="group"
+      aria-label={label}
+      aria-current={current ? 'step' : undefined}
+    >
+      {current ? <span className="ct-session__current">{tTraining('sessionCurrentSet')}</span> : null}
       <div className="ct-session__set-head">
         <span className="ct-session__set-mark ct-session__num" aria-hidden="true">
           {warmup ? tTraining('sessionWarmupMark') : number}

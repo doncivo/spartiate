@@ -32,6 +32,9 @@ export const nutritionFr = {
   setTarget: 'Définir une cible',
   remainingKcal: '{n} kcal restantes',
   overKcal: '{n} kcal au-dessus de la cible',
+  // ERGO-01 : unité posée à côté du chiffre héros (le chiffre est formaté à part).
+  remainingKcalUnit: 'kcal restantes',
+  overKcalUnit: 'kcal au-dessus de la cible',
   targetOfKcal: 'cible {n} kcal',
   loggedKcal: '{n} kcal saisies',
   calories: 'Calories',
