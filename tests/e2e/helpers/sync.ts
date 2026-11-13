@@ -94,7 +94,8 @@ export async function openSyncDetails(page: Page): Promise<void> {
   await waitForScreenLoaded(page, 'syncdetailsscreen');
   await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
   const heading = page.getByRole('heading', { name: 'Synchronisation', level: 1 });
-  const details = page.getByRole('button', { name: 'Détails', exact: true });
+  // ERGO-02 : la ligne « Appareils et synchro » de Plus (iPhone) ou l'entrée de la liste (PC) remplace « Détails ».
+  const details = page.getByRole('button', { name: /^Appareils et synchro/ });
   await expect(heading.or(details)).toBeVisible();
   if (!(await heading.isVisible())) await details.click();
   await expect(heading).toBeVisible();
