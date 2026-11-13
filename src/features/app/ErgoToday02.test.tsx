@@ -107,6 +107,26 @@ describe('ERGO-02 : Aujourd’hui sur PC, colonne droite', () => {
     expect(within(records).queryByText('80 kg')).toBeNull();
   });
 
+  it('lecture des records impossible : dite comme une erreur, jamais « pas encore de record »', async () => {
+    await db.data.transaction(async (repos) => (await repos.trainingRoutines()).create(ROUTINE));
+    await closeWith(80);
+    const real = await db.data.repos.workouts();
+    vi.spyOn(db.data.repos, 'workouts').mockResolvedValue({ ...real, summary: () => Promise.reject(new Error('base illisible')) });
+    open();
+    const records = await screen.findByRole('region', { name: 'Derniers records' });
+    expect(await within(records).findByText(/lecture impossible/i)).toBeInTheDocument();
+    expect(within(records).queryByText(/pas encore de record/)).toBeNull();
+  });
+
+  it('lecture de la colonne droite impossible : une erreur est affichée à la place de la nutrition, de la semaine et des records', async () => {
+    const real = await db.data.repos.workouts();
+    vi.spyOn(db.data.repos, 'workouts').mockResolvedValue({ ...real, listClosed: () => Promise.reject(new Error('base illisible')) });
+    open();
+    expect(await screen.findByRole('alert')).toHaveTextContent(/lecture impossible/i);
+    expect(screen.queryByRole('region', { name: 'Cette semaine' })).toBeNull();
+    expect(screen.getByRole('region', { name: 'État' })).toBeInTheDocument();
+  });
+
   it('ordre de la colonne droite : nutrition, poids, semaine, records ; carte « État » en dernier et sans titre plus grand que les autres', async () => {
     const { container } = open();
     await screen.findByRole('region', { name: 'Cette semaine' });
