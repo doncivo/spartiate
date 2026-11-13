@@ -1,6 +1,6 @@
 # ERGO-02 — écrans restants, onboarding complet et Aujourd'hui PC réaligné (0.23.0)
 
-Statut : **point d'étape budget (AGENTS.md : dépassement > 50 %)**, PR #128 ouverte, non fusionnée, ni tag ni build iOS. Budget L dépassé (environ 1,3 M tokens d'agents de module et de relecture) ; arrêt demandé à Ali avant la ronde de corrections de la revue (§ 7). Budget L (400 k). Branche `ERGO-02-ecrans-restants` depuis `origin/main` `cb1a1120` (0.22.3, schéma 18). Présentation seule : aucune migration, aucune règle métier modifiée, aucun changement de navigation entre onglets. Décision d'Ali du 13/11 (aperçu validé) ; D-261 (charge aux haltères, révise D-260) et D-262 suivantes.
+Statut : **corrections de la revue faites (D-264), en attente de CI verte et de fusion** ; budget L dépassé (point d'étape du 13/11, option 2 d'Ali). Bundle de départ : 198 848 octets contre 198 694 sur main, exception chiffrée D-265 (option C), à corriger dans ERGO-02b.
 
 Chapitres PRD : 10 (§ 10.1 onboarding), 13 (séance), 14 (fiche, matériel), 15 (check-in, compléments), 17 (Corps), 18 (§ 18.2 Plus, § 18.4 charte, § 18.5 états dégradés, § 18.6 accessibilité). Référence visuelle : `docs/maquettes/propositions/esthetique-2026-11-13/` (29 écrans, reprise du commit `74721fc` de `origin/maquettes-esthetique-2026-11-13`) ; `esthetique-2026-11-12/` pour les écrans déjà faits et `PC-Aujourdhui-apres.dc.html`.
 
@@ -71,3 +71,14 @@ Verdict : **REFUSÉ (à corriger)**. Conformes : aucun fichier de src/sync, src/
 3. Erreurs avalées dans `TodayPcSide` (records, état `failed`) : afficher « lecture impossible » et journaliser.
 4. Couches : `lastKmSecPerKm` (gpsFigures.ts), règle de record de la fiche (exerciseSheet.ts), `weeklyRateKg` (weekSummary.ts) à déplacer dans src/domain.
 5. Mineurs : test de la coche « pris » des Compléments ; « par haltère » dans les écarts de fr.progression ; `heldFor` réemployé (TodayPcSide, todaySessionPreview) ; raison « aperçu illisible » distincte de « à saisir » ; semaine selon « Début de semaine » ; clés mortes `sessionTodayLoad`, `unknown` ; dates Renpho vérifiées sur les 5 lignes (BodyProgress.test).
+
+### Corrections après la revue (option 2 d'Ali, D-264)
+
+| Défaut | Rouge | Vert |
+| --- | --- | --- |
+| 1. Derniers records PC = records du résumé de séance (tout l'historique) | `138353f1` | `c949eb1b` |
+| 2. Onboarding iPhone : poids Santé non modifié, aucune pesée | `e038b31c` | `3a7f3604` |
+| 3. Colonne droite PC : lecture impossible affichée comme une erreur | `4f44e748` | `1f5ede83` |
+| Smoke Windows : deux « navigation » sur base neuve (étapes de l'onboarding en liste nommée) | smoke rouge, run de `1f71b248` | `0d779ffc`, `4b2c6575` |
+
+Verdict code-reviewer après corrections : défaut bloquant corrigé et testé ; points 4 et 5 reportés en ERGO-02b (D-264). Bundle : D-265.
