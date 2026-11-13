@@ -1,29 +1,25 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-13 : I1 à I5, I6-01 à I6-04, CLEAN-01, FIX-0171 à 0173, I6-03b, DEP-01, FIX-0182, FIX-0181, RESET-01 (schéma 16, docs/RESET-01.md : marche à suivre du jour J), ERGO-01, CLEAN-02 (D-200 ; CLEAN-03 en file, D-201), I6-05 (0.20.0, compléments, schéma 17, H-34) et I6-06 (0.21.0, cardio et GPS iPhone, schéma 18, D-220, H-35) publiés. **I6-07 (0.22.0, sans migration) : 87 illustrations Everkinetic (CC BY-SA 4.0) dans la fiche d’exercice, à la demande, attribution sous l’image, validateur des médias (D-230 à D-237, docs/I6-07.md) ; H-9 UNVERIFIED.** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-237 dans docs/decisions.md.
+État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-237 dans docs/decisions.md.
 
-## Fusionné (tout est dans main)
+## Rapport du matin (13/11)
 
-- Base, livraison et produit I0 (SPA-000 à SPA-009, FMT-01) : voir CHANGELOG.md et docs/SPA-*.md.
-- Versions publiées : 0.1.0 à 0.19.0 (PC `vX.Y.Z`, iPhone `ios-vX.Y.Z`).
-
-## Décisions récentes
-
-- D-70 : l'agent fusionne (`gh pr merge --squash`) et publie (tags `vX.Y.Z` et `ios-vX.Y.Z` sur origin/main après contrôle d'absence), puis suit les builds jusqu'à spartiate-releases. Ali installe et fait les constats sur appareil.
+- Publiées : 0.17.1 FIX-0171, 0.17.2 FIX-0172, 0.17.3 FIX-0173, 0.18.0 I6-03b (schéma 14), 0.18.1 DEP-01 (SQLite 3.54.1) et FIX-0182 (e2e Y-IOS-02), 0.18.2 FIX-0181 (schéma 15), 0.18.3 RESET-01 (schéma 16), 0.19.0 ERGO-01, 0.19.1 CLEAN-02, 0.20.0 I6-05 compléments (schéma 17), 0.21.0 I6-06 cardio et GPS (schéma 18), 0.22.0 I6-07 médias (87 exercices sur 196).
+- Bloqué ou partiel : CLEAN-02 sans la migration des tests de synchro hérités (CLEAN-03, L, D-201) ni le retrait du plugin vision (gardé pour l'import de programme, D-200) ; ERGO-01 : règles « autres écrans » du message coupé à fournir (D-195) ; I6-05 sans action « Pris » dans la notification (D-213).
+- Installer : PC et iPhone le même jour, avant toute saisie (schéma 18). Le jour J : docs/RESET-01.md.
+- Constats iPhone : GPS (demande en français, parcours de distance connue ± 5 %, séance sur le PC sans tracé, refus affiché ; H-35) ; rappels de compléments (texte sans nom sur l'écran verrouillé, prise cochée avant l'heure = pas de rappel ; H-34) ; journée rouge (charges × 0,95 au cran du matériel, bouton « Accepter l'allègement ») ; favoris (ajout sur un appareil, présent sur l'autre après synchro) ; besoin de sommeil (7 h 30 à ~8 h 45 sur tes nuits, relecture dans Plus › Journaux) ; images d'exercice en thème sombre (H-9) ; bouclier de Corps (H-32) ; « Repartir de zéro » (H-33).
 
 ## Prochaines étapes
 
-1. I6-06 : CI verte (bundle, e2e pc et iphone, Rust), puis compilation iOS `build-ios.yml` de la branche (plugin geolocation, lancée par Ali), fusion et tags 0.21.0. Ali : installer 0.21.0 sur PC et iPhone le même jour, avant toute saisie (schéma 18) ; constats « À vérifier par Ali » de docs/I6-06.md (H-35).
-2. I6-05 : tags 0.20.0 si pas encore posés ; constats de docs/I6-05.md (H-34).
-3. Ali : constats en attente de RESET-01 (H-33), ERGO-01, FIX-0172, FIX-0173, FIX-0181 ; H-27, H-32.
-4. DEP-01 : retirer `src-tauri/vendor/sqlx-sqlite` dès qu’un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
-5. D-73 à D-118 validées par Ali (D-119). CLEAN-03 (L, sync-icloud) en file (D-201). À recaler sur demande d'Ali : D-73 (4) et l'Exertion (D-88 musculation, D-220 cardio). Numéro de l'import de programme (ancien I6-06) à donner (D-225).
+1. Ali : constats ci-dessus, propositions ERGO-01, numéro de l'import de programme (ancien I6-06, D-225), fusion de « Salle commerciale » dans « Salle complète » (D-142).
+2. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
+3. À recaler sur demande d'Ali : D-73 (4), Exertion (D-88, D-220).
 
 ## À décider par Ali
 
 - ERGO-01, propositions structurelles (`docs/maquettes/propositions/ergo-01-structure/`, rien d'implémenté) : P1 séance du jour en un tap ; P2 « Ajouter un repas » ouvre la recherche ; P3 « − / + » au cran du matériel ; P4 PC Aujourd'hui, Récupération en tête ; P5 retirer le doublon « Journal des séances ». Suite du message coupé à fournir (D-195).
 - Archive `archive/agent-a0528c3a67af21a44` (origin) : supprimable sur décision d'Ali (D-144).
-- Worktree `agent-a9d451df1eba848d1` (CLEAN-01-residus, tout poussé) : verrouillé par le pid 16360, laissé sans `--force`.
+- Worktrees d'agents verrouillés par le pid 16360 (tout poussé) : agent-a9d451df1eba848d1, agent-a895df175f43a280d, agent-a7c1af61eb1c76410, agent-a393a3030e58910ef ; à retirer par `git worktree remove` après redémarrage du PC.
 
 ## Rappels
 
