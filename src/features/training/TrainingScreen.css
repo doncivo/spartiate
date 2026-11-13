@@ -404,13 +404,95 @@
   align-items: start;
 }
 
-.ct-training-shell[data-layout='pc'] .ct-training__inventory {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.ct-training-shell[data-layout='pc'] .ct-training__equipment {
+  gap: var(--ct-space-7);
 }
 
-.ct-training-shell[data-layout='pc'] .ct-training__card--wide {
-  grid-column: 1 / -1;
+/* ERGO-02 (aperçu PC-Materiel-apres) : profil ouvert à plat, blocs empilés à 24 px, trois colonnes sur le PC. */
+.ct-training__inventory {
+  gap: var(--ct-space-section);
+}
+
+.ct-equipment__title {
+  font-size: var(--ct-font-size-heading);
+  line-height: 1.15;
+}
+
+.ct-equipment__columns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-section);
+  min-width: 0;
+}
+
+.ct-training-shell[data-layout='pc'] .ct-equipment__columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ct-space-7);
+}
+
+.ct-equipment__block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  min-width: 0;
+}
+
+.ct-equipment__block .ct-section-title {
+  margin: 0;
+}
+
+.ct-equipment__rows {
+  margin: 0;
+}
+
+.ct-equipment__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--ct-space-1) var(--ct-space-3);
+  padding-block: var(--ct-space-2);
+  border-top: var(--ct-line);
+}
+
+.ct-equipment__row:first-child {
+  border-top: 0;
+}
+
+.ct-equipment__row dt {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ct-equipment__row dd {
+  margin: 0;
+  color: var(--ct-color-text-secondary);
+  text-align: end;
+}
+
+.ct-equipment__plates {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ct-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ct-equipment__plate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ct-space-1);
+  min-inline-size: 2.75rem;
+}
+
+.ct-equipment__plate-bar {
+  display: block;
+  inline-size: 2.75rem;
+  border-radius: var(--ct-radius-sm);
+  background: var(--ct-color-bronze);
 }
 
 /* FIX-092 : aucun enfant direct de la colonne ne rétrécit (un enfant à overflow autre que visible tomberait à une hauteur minimale de 0). */
