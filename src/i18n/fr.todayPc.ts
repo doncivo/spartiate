@@ -27,6 +27,8 @@ export const todayPcFr = {
   weekCountOne: '1 séance',
   recordsEyebrow: 'Derniers records',
   recordsMissing: 'pas encore de record',
+  recordsFailed: 'lecture impossible des séances',
+  sideFailed: 'Lecture impossible : nutrition, semaine et records ne sont pas affichés. Réessaie en rouvrant l’écran.',
   /** Raisons des données manquantes de la carte « État » (PC). */
   signatureMissing: 'lue sur l’iPhone',
   healthKitMissing: 'iPhone seulement',

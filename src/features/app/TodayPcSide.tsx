@@ -6,6 +6,7 @@ import { loadGrid } from '../../domain/training/loadGrid';
 import type { LocalDate } from '../../domain/types';
 import { formatInt, tNutrition } from '../../i18n/nutritionText';
 import { formatStamp } from '../../i18n/format';
+import { logFailure } from '../../platform/desktop/log';
 import { tToday } from '../../i18n/todayText';
 import { tTodayPc } from '../../i18n/todayPcText';
 import { formatExerciseLoad } from '../../i18n/trainingText';
@@ -39,7 +40,8 @@ interface Ready {
   readonly snapshot: NutritionSnapshot;
   /** Jours locaux des séances closes de la semaine. */
   readonly doneDays: ReadonlySet<string>;
-  readonly records: readonly RecordRow[];
+  /** 'failed' : lecture impossible, dite comme une erreur (jamais « pas encore de record »). */
+  readonly records: readonly RecordRow[] | 'failed';
 }
 type Load = { readonly status: 'loading' | 'failed' } | Ready;
 
@@ -128,14 +130,16 @@ export function TodayPcSide({ weight, state }: TodayPcSideProps) {
         const closed = await workouts.listClosed(RECENT);
         const week = new Set(weekOf(today).map((d) => d.day));
         const doneDays = new Set(closed.flatMap((w) => (w.endedAt === null ? [] : [localDayOf(Date.parse(w.endedAt))])).filter((d) => week.has(d)));
-        let records: readonly RecordRow[] = [];
+        let records: readonly RecordRow[] | 'failed';
         try {
           records = await readRecords(container, closed.map((w) => w.id));
-        } catch {
-          records = [];
+        } catch (error) {
+          logFailure('today-records', error);
+          records = 'failed';
         }
         if (live) setLoad({ status: 'ready', snapshot, doneDays, records });
-      } catch {
+      } catch (error) {
+        logFailure('today-side', error);
         if (live) setLoad({ status: 'failed' });
       }
     })();
@@ -150,6 +154,11 @@ export function TodayPcSide({ weight, state }: TodayPcSideProps) {
     return (
       <>
         <Fragment key="weight">{weight}</Fragment>
+        {load.status === 'failed' ? (
+          <p key="failed" className="ct-today__text" role="alert">
+            {tTodayPc('sideFailed')}
+          </p>
+        ) : null}
         {stateCard}
       </>
     );
@@ -228,9 +237,9 @@ export function TodayPcSide({ weight, state }: TodayPcSideProps) {
         <h2 id="ct-today-records" className="ct-today__eyebrow ct-section-title">
           {tTodayPc('recordsEyebrow')}
         </h2>
-        {records.length === 0 ? (
+        {records === 'failed' || records.length === 0 ? (
           <p className="ct-today__text">
-            <MissingValue reason={tTodayPc('recordsMissing')} />
+            <MissingValue reason={tTodayPc(records === 'failed' ? 'recordsFailed' : 'recordsMissing')} />
           </p>
         ) : (
           <ul className="ct-today__records">
