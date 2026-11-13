@@ -28,6 +28,8 @@ async function seed(): Promise<void> {
   await (await repos.measurements()).save('2026-11-09' as LocalDate, 'waist', 82.5);
   await (await repos.progressPhotos()).add('2026-11-09' as LocalDate, new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 0xff, 0xd9]));
   await (await repos.foodFavorites()).add({ source: 'ciqual', ref: 'ciqual:20' });
+  // I6-06 : séance cardio publiée et son tracé local (position synthétique).
+  await (await repos.cardio()).add({ kind: 'run', startedAt: '2026-11-12T07:00:00.000Z', durationSec: 1800, distanceM: 5000, avgHr: null, rpe: 6, notes: '', source: 'gps' }, [{ lat: 0, lon: 0, at: 1_800_000_000_000, accuracyM: 5 }]);
   const food = await db.data.transaction(async (tx) => (await tx.foods()).create({ source: 'custom', barcode: null, name: 'Fiche synthétique', brand: null, per100g: { kcal: 100, proteinG: null, fatG: null, carbG: null, fiberG: null }, fetchedAt: null }));
   await db.data.transaction(async (tx) =>
     (await tx.mealEntries()).create({ date: '2026-11-10' as LocalDate, time: '12:30' as LocalTime, foodId: food.id, foodName: 'Fiche synthétique', source: 'custom', grams: 150, kcal: 150, proteinG: null, fatG: null, carbG: null, method: 'search', confidence: null }),
