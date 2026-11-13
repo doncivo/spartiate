@@ -14,6 +14,7 @@ export type ScreenName =
   | 'nutritionremainingcard'
   | 'supplementstoday'
   | 'recoverytoday'
+  | 'todaypcside'
   | 'recoveryprogress'
   | 'bodyprogress'
   | 'cardioprogress'

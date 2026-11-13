@@ -10,7 +10,8 @@ import { Button, Icon, useLayout } from '../../ui';
 import { useSyncedData } from '../sync/remoteChanges';
 import { statusLine } from '../sync/syncText';
 import { useAppContainer } from './AppContainerContext';
-import { NutritionRemainingCard, RecoveryToday, SupplementsTodayCard, TodaySessionCard } from './lazyScreens';
+import { MissingValue } from '../../ui/MissingValue';
+import { NutritionRemainingCard, RecoveryToday, SupplementsTodayCard, TodayPcSide, TodaySessionCard } from './lazyScreens';
 import { useNavigationStore, type Route } from './navigation';
 import './TodayScreen.css';
 
@@ -100,9 +101,9 @@ function WeightCard({ weights, nowMs, showActions }: { readonly weights: readonl
   );
 }
 
-function KeyValueCard({ id, title, rows }: { readonly id: string; readonly title: string; readonly rows: readonly (readonly [string, ReactNode])[] }) {
+function KeyValueCard({ id, title, rows, small = false }: { readonly id: string; readonly title: string; readonly rows: readonly (readonly [string, ReactNode])[]; readonly small?: boolean }) {
   return (
-    <section className="ct-today__card ct-today__kv" aria-labelledby={id}>
+    <section className={small ? 'ct-today__card ct-today__kv ct-today__state' : 'ct-today__card ct-today__kv'} aria-labelledby={id}>
       <h2 id={id} className="ct-today__eyebrow ct-section-title">
         {title}
       </h2>
@@ -189,33 +190,33 @@ export function TodayScreen() {
   }
 
   const { profile, weights, backupMs } = loaded;
-  const dash = tToday('unknown');
 
   if (layout === 'pc') {
-    const backup = backupMs === undefined ? dash : backupMs === null ? tToday('never') : formatStamp(new Date(backupMs).toISOString(), nowMs);
+    const backup = backupMs === undefined ? <MissingValue reason={tToday('backupUnknown')} /> : backupMs === null ? tToday('never') : formatStamp(new Date(backupMs).toISOString(), nowMs);
     return (
       <section className="ct-section-notice ct-today ct-today--pc" aria-labelledby="ct-section-notice-title">
         {title}
         <div className="ct-today__cols">
-          {/* ERGO-01b P4 (D-238, maquette P4-PC-Aujourdhui-regroupement.svg) : Récupération en tête, puis Séance et Nutrition. */}
+          {/* ERGO-02 (PC-Aujourdhui-apres.dc.html, D-262) : à gauche Récupération puis la séance du jour en tableau (et les compléments) ;
+              à droite Nutrition et macros, Poids, Dépense, Semaine, Derniers records ; la carte « État » reste, petite, en dernier. */}
           <div className="ct-today__col">
             <RecoveryToday />
             <TodaySessionCard />
-            <NutritionRemainingCard />
             <SupplementsTodayCard />
-            <WeightCard weights={weights} nowMs={nowMs} showActions />
           </div>
-          {/* Une seule carte « État » au lieu de Profil, iPhone et Données ; le profil se règle dans Plus › Profil et poids. */}
           <aside className="ct-today__col">
+            <NutritionRemainingCard />
+            <TodayPcSide weight={<WeightCard weights={weights} nowMs={nowMs} showActions />} />
             <KeyValueCard
+              small
               id="ct-today-state"
               title={tToday('stateEyebrow')}
               rows={[
                 [tToday('sync'), syncText ?? tToday('notConfigured')],
-                [tToday('signature'), dash],
-                [tToday('healthKit'), dash],
+                [tToday('signature'), <MissingValue key="signature" reason={tToday('signatureMissing')} />],
+                [tToday('healthKit'), <MissingValue key="healthKit" reason={tToday('healthKitMissing')} />],
                 [tToday('backup'), backup],
-                [tToday('lastExport'), dash],
+                [tToday('lastExport'), <MissingValue key="lastExport" reason={tToday('lastExportMissing')} />],
               ]}
             />
           </aside>
