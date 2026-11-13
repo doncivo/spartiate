@@ -46,7 +46,11 @@ export function TodaySessionCard() {
       {open && summary ? (
         <div className="ct-session-card__body">
           <p className="ct-session-card__name">{open.name === '' ? tTraining('sessionFree') : open.name}</p>
-          <p className="ct-session__muted ct-session__num">{tTraining('sessionSummaryShort', { done: summary.validated, planned: summary.planned })}</p>
+          {/* ERGO-01 : séries faites sur prévues en chiffre héros, l'unité à part. */}
+          <p className="ct-hero">
+            <span className="ct-hero__num">{tTraining('sessionSetsHero', { done: summary.validated, planned: summary.planned })}</span>{' '}
+            <span className="ct-hero__unit">{tTraining('sessionSetsUnit')}</span>
+          </p>
         </div>
       ) : null}
       <Button fullWidth variant={open ? 'primary' : 'secondary'} onClick={() => navigate({ tab: 'training', screen: 'session' })}>

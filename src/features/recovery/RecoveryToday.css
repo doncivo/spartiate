@@ -31,6 +31,27 @@
   height: 96px;
 }
 
+/* ERGO-01 (Recuperation-apres.dc.html) : la Recovery, chiffre héros, prend toute la ligne ; Effort et Sommeil se partagent la suivante. */
+.ct-recovery__cell--hero {
+  grid-column: 1 / -1;
+}
+
+.ct-recovery__cell--hero .ct-recovery__dial {
+  width: 148px;
+  height: 148px;
+}
+
+.ct-recovery__cell--hero .ct-recovery__center {
+  font-size: var(--ct-font-size-heading);
+  color: var(--ct-color-bronze);
+}
+
+/* ERGO-01 : les Pas, ligne du bloc Récupération (une carte de moins), séparés par un filet. */
+.ct-recovery__steps {
+  padding-top: var(--ct-space-3);
+  border-top: 1px solid var(--ct-color-border);
+}
+
 .ct-recovery__ring {
   width: 100%;
   height: 100%;
