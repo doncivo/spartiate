@@ -4471,7 +4471,11 @@ pub fn introduced_in(name: &str) -> Option<u32> {
     })
 }
 
-/// Déclencheur hérité de l'ancien projet (aucune migration Spartiate ne le crée).
+/// Déclencheur hérité de l'ancien projet (absent de `SPARTIATE_TRIGGERS_BY_VERSION`).
+pub fn is_legacy_trigger(name: &str) -> bool {
+    is_legacy(name)
+}
+
 fn is_legacy(name: &str) -> bool {
     !SPARTIATE_TRIGGERS_BY_VERSION
         .iter()
