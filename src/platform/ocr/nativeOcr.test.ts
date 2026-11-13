@@ -87,21 +87,22 @@ describe('nativeOcr', () => {
 });
 
 describe('openOcrService : moteurs de l’appareil', () => {
-  it('(tauri, ios) : primary = Vision, fallback = tesseract.js', () => {
+  it('(tauri, ios) : primary = Vision, aucun repli embarqué (CLEAN-02, D-200)', () => {
     const service = openOcrService('tauri', 'ios');
     expect(service.primary?.id).toBe('vision');
-    expect(service.fallback?.id).toBe('tesseract');
+    expect(service.fallback).toBeNull();
   });
 
-  it('(tauri, windows) : primary = Windows, inchangé', () => {
+  it('(tauri, windows) : primary = Windows, aucun repli embarqué', () => {
     expect(openOcrService('tauri', 'windows').primary?.id).toBe('windows');
+    expect(openOcrService('tauri', 'windows').fallback).toBeNull();
   });
 
-  it('navigateur : pas de moteur natif, repli seul', () => {
+  it('navigateur : ni moteur natif ni repli', () => {
     for (const os of ['ios', 'windows', 'other'] as const) {
       const service = openOcrService('web', os);
       expect(service.primary).toBeNull();
-      expect(service.fallback?.id).toBe('tesseract');
+      expect(service.fallback).toBeNull();
     }
   });
 });

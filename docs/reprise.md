@@ -1,13 +1,13 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-13 : I1 à I5, I6-01 à I6-04, CLEAN-01, FIX-0171 à 0173, I6-03b (#112), DEP-01 (SQLite 3.54.1, #113), FIX-0182 (#114), FIX-0181 (#115) publiés (0.12.0 à 0.18.2, fiches docs/). **RESET-01 (0.18.3, migration 0016, schéma 16, #117) : « Repartir de zéro » sur les deux appareils, horizon publié `data_reset` (ADR 0011 avenant 36, D-180 à D-186, H-33) ; publiée, docs/RESET-01.md (marche à suivre du jour J).** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-197 dans docs/decisions.md. **ERGO-01 (0.19.0, sans migration) : ergonomie et esthétique (série en cours, repos en barre, chiffres héros, moins de cartes, 44 pt, D-190 à D-197) ; PR ouverte, non fusionnée, docs/ERGO-01.md.**
+État au 2026-11-13 : I1 à I5, I6-01 à I6-04, CLEAN-01, FIX-0171 à 0173, I6-03b (#112), DEP-01 (SQLite 3.54.1, #113), FIX-0182 (#114), FIX-0181 (#115), RESET-01 (#117, schéma 16, « Repartir de zéro », docs/RESET-01.md : marche à suivre du jour J) et ERGO-01 (#116, docs/ERGO-01.md) publiés (0.12.0 à 0.19.0). **CLEAN-02 (0.19.1, sans migration) : tesseract.js, chrono-node, plugin Vite ocrAssets et saisie rapide héritée retirés ; OCR natif (vision) gardé pour I6-06 (D-200) ; migration des tests de synchro legacy reportée à CLEAN-03 (D-201) ; docs/CLEAN-02.md.** Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-201 dans docs/decisions.md.
 
 ## Fusionné (tout est dans main)
 
 - Base : SPA-000 (#1 à #10), SPA-001a (#11), préparation et arbitrages (#12 à #14, D-65), 001b (front #15, périphérie #16 #18, base #20), FMT-01 (#17, D-66).
 - Livraison : SPA-002 (Windows, updater signé), SPA-003 (IPA ad hoc, entitlements), ios-demarrage et ios-identite (journal visible, source SideStore propre).
 - Produit I0 : SPA-005 (export / import), SPA-009 (écrans fidèles aux planches), SPA-006 (Apple Santé en lecture, diagnostic natif en 0.1.3), SPA-007 (Live Activity, minuteur de test).
-- Versions publiées : 0.1.0 à 0.17.1 (PC `vX.Y.Z`, iPhone `ios-vX.Y.Z`).
+- Versions publiées : 0.1.0 à 0.19.0 (PC `vX.Y.Z`, iPhone `ios-vX.Y.Z`).
 
 ## Décisions récentes
 
@@ -15,9 +15,9 @@
 
 ## Prochaines étapes
 
-1. ERGO-01 : CI verte (e2e, captures visual relues), fusion et tags 0.19.0 par l'agent principal. Ali : installer 0.18.3 ou plus sur PC et iPhone le même jour (schéma 16), puis suivre « Marche à suivre pour Ali le jour J » de docs/RESET-01.md ; constater H-33 ; constats « À vérifier par Ali » de docs/ERGO-01.md, FIX-0172.md, FIX-0173.md, FIX-0181.md ; H-27, H-32.
+1. Ali : installer 0.18.3 ou plus sur PC et iPhone le même jour (schéma 16), puis suivre « Marche à suivre pour Ali le jour J » de docs/RESET-01.md ; constater H-33 ; constats « À vérifier par Ali » de docs/ERGO-01.md, FIX-0172.md, FIX-0173.md, FIX-0181.md ; H-27, H-32.
 2. DEP-01 : retirer `src-tauri/vendor/sqlx-sqlite` dès qu’un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
-3. D-73 à D-118 validées par Ali (D-119). Exceptions faites : FIX-0181 (D-79, D-93), FIX-0172 (D-130, D-134), I6-03b (D-104). Reste en file : CLEAN-02 (D-116, D-117). À recaler après 3 semaines de séances réelles, sur demande d'Ali seulement : D-73 (4, durée estimée) et D-88 (échelle d'effort 20).
+3. D-73 à D-118 validées par Ali (D-119). Exceptions faites : FIX-0181 (D-79, D-93), FIX-0172 (D-130, D-134), I6-03b (D-104). CLEAN-02 livré en partie (D-200) ; reste en file CLEAN-03 (L, sync-icloud) : tests de synchro sur les tables Spartiate puis retrait du banc legacy (D-201, découpage dans docs/CLEAN-02.md). À recaler après 3 semaines de séances réelles, sur demande d'Ali seulement : D-73 (4, durée estimée) et D-88 (échelle d'effort 20).
 
 ## À décider par Ali
 

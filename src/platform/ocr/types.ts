@@ -1,10 +1,10 @@
 /**
  * Contrat de la lecture de texte d'une image (Q-04, PRD sections 7 et 10). Trois moteurs derrière le même contrat : Windows.Media.Ocr
- * sur PC (commandes Rust), Vision sur iPhone (plugin Swift appelé par Rust, CAP-IOS-01), tesseract.js embarqué (repli choisi, PC et iPhone) ; un faux pour les tests.
+ * sur PC (commandes Rust), Vision sur iPhone (plugin Swift appelé par Rust, CAP-IOS-01) ; un faux pour les tests (le repli tesseract.js est retiré en CLEAN-02, D-200).
  * L'image n'est jamais enregistrée ni envoyée : elle passe en mémoire et est libérée à la fin de l'appel.
  */
 
-/** Une ligne reconnue. `confidence` (0 à 100) existe pour Vision et tesseract.js ; Windows.Media.Ocr n'en donne pas (décision D2). */
+/** Une ligne reconnue. `confidence` (0 à 100) existe pour Vision ; Windows.Media.Ocr n'en donne pas (décision D2). */
 export interface OcrLineResult {
   readonly text: string;
   readonly confidence?: number;
@@ -28,7 +28,7 @@ export interface RecognizeOptions {
   readonly onProgress?: (progress: number) => void;
 }
 
-export type OcrEngineId = 'windows' | 'tesseract' | 'vision' | 'fake';
+export type OcrEngineId = 'windows' | 'vision' | 'fake';
 
 export interface OcrEngine {
   readonly id: OcrEngineId;
@@ -51,7 +51,7 @@ export class OcrError extends Error {
   }
 }
 
-/** Moteur principal de l'appareil (Windows, Vision) et repli embarqué (tesseract.js). */
+/** Moteur principal de l'appareil (Windows, Vision) et repli (aucun en production depuis CLEAN-02 ; faux moteur en test). */
 export interface OcrEngines {
   /** Moteur natif, `null` si l'appareil n'en a pas (navigateur). */
   readonly primary: OcrEngine | null;
