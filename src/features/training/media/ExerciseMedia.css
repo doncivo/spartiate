@@ -1,0 +1,30 @@
+/* Illustration d'un exercice (I6-07, D-235) : jetons seulement ; dessin noir sur blanc inversé en thème sombre (--ct-media-invert). */
+.ct-exmedia {
+  margin: 0;
+  padding: var(--ct-space-3);
+  background: var(--ct-color-surface);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-lg);
+  min-width: 0;
+}
+
+.ct-exmedia__img {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  margin: 0 auto;
+  filter: invert(var(--ct-media-invert));
+}
+
+.ct-exmedia__missing {
+  margin: 0;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-exmedia__caption {
+  margin-top: var(--ct-space-2);
+  font-size: var(--ct-font-size-xs);
+  color: var(--ct-color-text-secondary);
+  overflow-wrap: anywhere;
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* global process, console, fetch */
+/* global process, console, fetch, Buffer */
 // Médias d'exercice (I6-07) : Node, aucune dépendance. Script mécanique (D-51), lancé une fois par lot de médias, jamais par l'app.
 // Usage : node scripts/content/build-media.mjs
 // Lit scripts/content/media-map.json (correspondance relue : exercice → fichier de la source), télécharge chaque fichier au commit

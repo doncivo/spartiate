@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import { useId, useMemo, useState } from 'react';
+import { lazy, Suspense, useId, useMemo, useState } from 'react';
 import {
   EXERCISE_KINDS,
   EXERCISE_METRICS,
@@ -22,6 +22,9 @@ import { formatNumber, formatRest, parseNumber, tTraining } from '../../i18n/tra
 import { Button, ConfirmDialog, Icon, Switch } from '../../ui';
 import { groupLabel, KIND_KEY, METRIC_KEY, PATTERN_KEY } from './labels';
 import { exerciseGroup, normalizeSearch, type TrainingData } from './trainingState';
+
+/** Illustration sous licence (I6-07, D-235) : bloc à la demande, chargé à l'ouverture d'une fiche qui a un média. */
+const ExerciseMedia = lazy(() => import('./media/ExerciseMedia'));
 
 // -----------------------------------------------------------------------------------------------------------------------------------
 // Liste filtrable (bibliothèque et choix d'un exercice pour une routine)
@@ -108,7 +111,7 @@ export function ExerciseList({ data, mode, onSelect }: ExerciseListProps) {
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------------
-// Fiche d'un exercice (sans média : aucun visuel, jamais d'icône cassée, D-71)
+// Fiche d'un exercice (illustration sous licence vérifiée, I6-07 ; sans média : aucun visuel, jamais d'icône cassée, D-71)
 // -----------------------------------------------------------------------------------------------------------------------------------
 
 function repText(exercise: Exercise): string {
@@ -155,6 +158,11 @@ function ExerciseDetail({ data, exercise, onBack, onOpen, onEdit, onDelete }: De
         {compatible ? tTraining('compatibleYes') : tTraining('compatibleNo')}
         {missing.length > 0 ? ` : ${missing.map((id) => equipmentName.get(id) ?? id).join(', ')}` : ''}
       </p>
+      {exercise.media !== null && (
+        <Suspense fallback={null}>
+          <ExerciseMedia key={exercise.id} exercise={exercise} />
+        </Suspense>
+      )}
       <section className="ct-training__card">
         <h3 className="ct-training__eyebrow">{tTraining('muscles')}</h3>
         <ul className="ct-training__plain">
