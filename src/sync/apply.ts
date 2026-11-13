@@ -286,8 +286,13 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
         await sync.setMeta(META.dataResetSeen, at);
       }
     } else if (resetHorizon !== null) {
+      // Règle de LIGNE (D-187) : une ligne dont la création est connue d'avant l'horizon (`created_at` au hlc <= H), ou que l'opération modifie
+      // en partant d'une valeur d'avant (une base <= H), appartient à l'avant-remise : l'opération entière est écartée, même ses champs écrits
+      // après l'horizon (appareil hors ligne qui corrige une ancienne ligne, ligne republiée entière « + »). Sinon, champ par champ.
       const horizon = resetHorizon;
-      const kept = new Map([...fields].filter(([, field]) => !isBeforeReset(field, horizon)));
+      const created = fields.get('created_at');
+      const beforeRow = (created !== undefined && created[1] <= horizon) || [...fields.values()].some((field) => field[2] !== null && field[2] <= horizon);
+      const kept = beforeRow ? new Map<string, SyncField>() : new Map([...fields].filter(([, field]) => !isBeforeReset(field, horizon)));
       if (kept.size < fields.size) beforeReset += 1;
       fields = kept;
       if (fields.size === 0) {
