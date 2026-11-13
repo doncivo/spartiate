@@ -26,14 +26,16 @@ Captures : artefact `visual-pairs` du run Tests `43343218983` (main, 0.18.2, 13/
 
 ### Taps des 6 parcours clés (iPhone 440 px ; PC identique, clavier en plus)
 
-| Parcours | Avant (0.18.2) | Après (0.19.0) | Proposition |
+| Parcours | Avant (0.18.2) | Après (0.19.0) | Après P1 à P5 (0.22.1, ERGO-01b, D-238) |
 | --- | --- | --- | --- |
-| Démarrer la séance du jour | 2 (Aujourd'hui « Commencer une séance » → « Démarrer « Haut A » ») ; 3 par « Proposer une séance » → « Lancer » | 2 | P1 → 1 |
-| Valider une série | 1 (« Valider la série », champs pré-remplis ; PC : Entrée) après recherche visuelle de la bonne ligne | 1, série en cours en bloc central, bouton 56 px | — |
-| Changer une charge | 2 taps + saisie (champ, clavier, valeur) | 2 + saisie (champ agrandi, centré) | P3 → 1 par cran |
-| Ajouter un repas | 4 (« Ouvrir le journal » → « Rechercher un aliment » → aliment → « Ajouter ») | 4 | P2 → 3 |
-| Voir la récupération du jour | 0 (Aujourd'hui, sous Séance et Nutrition, défilement) | 0, cadran Recovery agrandi | P4 (en tête) |
-| Lancer un import Santé | 3 (Plus → Apple Santé → importer) | 2 quand le résumé est périmé (Aujourd'hui → « Ouvrir Apple Santé » → importer) ; 3 sinon | — |
+| Démarrer la séance du jour | 2 (Aujourd'hui « Commencer une séance » → « Démarrer « Haut A » ») ; 3 par « Proposer une séance » → « Lancer » | 2 | **1** avec un cycle actif (« Lancer la séance », P1) ; 2 sans cycle |
+| Valider une série | 1 (« Valider la série », champs pré-remplis ; PC : Entrée) après recherche visuelle de la bonne ligne | 1, série en cours en bloc central, bouton 56 px | 1 |
+| Changer une charge | 2 taps + saisie (champ, clavier, valeur) | 2 + saisie (champ agrandi, centré) | **1 tap par cran**, sans clavier (« − / + », P3) ; saisie toujours possible |
+| Ajouter un repas | 4 (« Ouvrir le journal » → « Rechercher un aliment » → aliment → « Ajouter ») | 4 | **3** (« Ajouter un repas » → aliment → « Ajouter », P2) |
+| Voir la récupération du jour | 0 (Aujourd'hui, sous Séance et Nutrition, défilement) | 0, cadran Recovery agrandi | 0, en tête sur PC sans défilement (P4) ; iPhone inchangé |
+| Lancer un import Santé | 3 (Plus → Apple Santé → importer) | 2 quand le résumé est périmé (Aujourd'hui → « Ouvrir Apple Santé » → importer) ; 3 sinon | 2 ou 3 (inchangé) |
+
+Propositions P1 à P5 validées par Ali le 13/11 (D-238) et livrées par ERGO-01b (0.22.1) : voir `docs/ERGO-01b.md`.
 
 ### Frictions classées (gravité × fréquence d'usage)
 
@@ -78,6 +80,8 @@ Classes globales `.ct-hero`, `.ct-hero__num`, `.ct-hero__unit` dans `src/ui/them
 Bundle de départ (mesure normalisée, `node tests/bundle/measureStart.ts`, build de production) : **avant 194 871 octets**, après : voir § 6 (qa-test). Plafond 358 400. `tests/bundle/start-modules.json` inchangé.
 
 ### Règles des autres écrans : en attente (D-195)
+
+Mise à jour du 13/11 : la suite du message a été fournie par Ali (D-240) et appliquée par ERGO-01b (0.22.1, `docs/ERGO-01b.md`).
 
 Le message d'Ali a été coupé à « Règles pour tous les autres écrans, PC compris : un… ». Rien n'est inventé. Appliqué ailleurs seulement le sans-risque explicite (chiffre héros, moins de cartes) : Programme, Résumé. Attendent ces règles : Plus et ses sous-écrans, Bibliothèque, Matériel, Historique, Fiche exercice, Stratégie, Check-in, Recherche / Scan, Appareils et synchro, Onboarding, Corps (Progrès), Apple Santé, Journaux ; F19, F20.
 
