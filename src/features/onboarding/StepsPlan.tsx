@@ -4,14 +4,17 @@ import { NUTRITION_CONFIG } from '../../domain/nutrition/config';
 import { EXERCISE_PATTERNS, type ExercisePattern, type SplitKind, type VarietyLevel } from '../../domain/training';
 import { tGeneration, type TrainingGenerationTextKey } from '../../i18n/trainingGenerationText';
 import { tTraining } from '../../i18n/trainingText';
-import { formatInt, tOnboarding } from '../../i18n/onboardingText';
+import { formatInt, tOnboarding, type OnboardingTextKey } from '../../i18n/onboardingText';
 import { Button, SegmentedControl, Switch } from '../../ui';
 import { groupLabel, PATTERN_KEY } from '../training/labels';
 import { BodyMap } from './BodyMap';
+import { OptionCards } from './OptionCards';
 import { FieldError, TextInput, ExpenditureEstimate, type StepProps } from './StepsBasics';
 import { buildFirstSession, proposalFor } from './firstSession';
 
 const MUSCLES = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'quadriceps', 'hamstrings', 'glutes', 'calves', 'abs', 'forearms'] as const;
+
+const EQUIPMENT_HINT = { salle: 'equipmentSalleHint', maison: 'equipmentMaisonHint', voyage: 'equipmentVoyageHint' } as const satisfies Record<string, OnboardingTextKey>;
 
 export function StepEquipment({ draft, patch, content }: StepProps) {
   if (content === null) return <p className="ct-onb__muted" role="status">{tOnboarding('equipmentLoading')}</p>;
@@ -19,11 +22,11 @@ export function StepEquipment({ draft, patch, content }: StepProps) {
   return (
     <div className="ct-onb__group">
       <span className="ct-onb__label">{tOnboarding('equipmentLabel')}</span>
-      <SegmentedControl<string>
+      <OptionCards<string>
         label={tOnboarding('equipmentLabel')}
-        columns={2}
+        columns={1}
         value={draft.equipmentProfileId !== null && content.profiles.some((p) => p.id === draft.equipmentProfileId) ? draft.equipmentProfileId : ''}
-        options={[{ value: '', label: tOnboarding('keepEquipment') }, ...content.profiles.map((p) => ({ value: p.id, label: p.name }))]}
+        options={[{ value: '', label: tOnboarding('keepEquipment') }, ...content.profiles.map((p) => ({ value: p.id, label: p.name, hint: tOnboarding(EQUIPMENT_HINT[p.kind]) }))]}
         onChange={(value) => patch({ equipmentProfileId: value === '' ? null : value })}
       />
     </div>
@@ -44,13 +47,16 @@ export function StepPriorities({ draft, patch, issues }: StepProps) {
   const togglePain = (pattern: ExercisePattern): void => patch({ painfulPatterns: draft.painfulPatterns.includes(pattern) ? draft.painfulPatterns.filter((p) => p !== pattern) : [...draft.painfulPatterns, pattern] });
   const names = (list: readonly string[]): string => (list.length === 0 ? tOnboarding('noneChosen') : list.map(groupLabel).join(', '));
   return (
-    <>
+    <div className="ct-onb__duo">
+      <div className="ct-onb__duoMap">
       <BodyMap states={Object.fromEntries(MUSCLES.map((g) => [g, stateOf(g)]))} onTouch={touch} />
       <div className="ct-onb__legend" aria-hidden="true">
         <span data-kind="priority">{tOnboarding('legendPriority')}</span>
         <span data-kind="avoided">{tOnboarding('legendAvoided')}</span>
         <span data-kind="normal">{tOnboarding('legendNormal')}</span>
       </div>
+      </div>
+      <div className="ct-onb__duoList">
       <div className="ct-onb__group">
         <span className="ct-onb__label">{tOnboarding('musclesLabel')}</span>
         <div className="ct-onb__muscles">
@@ -93,7 +99,8 @@ export function StepPriorities({ draft, patch, issues }: StepProps) {
         ))}
         <span className="ct-onb__hint">{tOnboarding('painfulHint')}</span>
       </fieldset>
-    </>
+      </div>
+    </div>
   );
 }
 
@@ -109,6 +116,13 @@ export function StepSplit({ draft, patch, content }: StepProps) {
       <div className="ct-onb__card">
         <p className="ct-onb__big">{tOnboarding('splitProposal', { split: tGeneration(SPLIT_KEY[proposal.split]) })}</p>
         {program ? <p>{tOnboarding('splitProgram', { name: program.name, days: proposal.programDays })}</p> : <p className="ct-onb__muted">{tOnboarding('splitNoContent')}</p>}
+        {program && (
+          <ul className="ct-onb__days">
+            {program.days.map((day) => (
+              <li key={day.dayOrder}>{tOnboarding('splitDayLine', { name: day.name, n: day.exercises.length, sets: day.exercises.reduce((sum, line) => sum + line.sets, 0) })}</li>
+            ))}
+          </ul>
+        )}
         {draft.sessionsPerWeek === null && draft.equipmentProfileId === null && <p className="ct-onb__muted">{tOnboarding('splitDefaults')}</p>}
         {draft.sessionsPerWeek !== null && !proposal.matchesFrequency && <p className="ct-onb__muted">{tOnboarding('splitMismatch', { days: proposal.programDays, sessions: draft.sessionsPerWeek })}</p>}
       </div>
@@ -133,7 +147,7 @@ export function StepSplit({ draft, patch, content }: StepProps) {
   );
 }
 
-export function StepResult({ draft, issues, today, texts, setText, content }: StepProps) {
+export function StepResult({ draft, issues, today, texts, setText, content, layout }: StepProps) {
   const estimate = startingExpenditure({ sex: draft.sex, birthYear: draft.birthYear, heightCm: draft.heightCm, weightKg: draft.weightKg, activity: draft.activity, onDate: today });
   const edited = draft.expenditureKcal !== null || texts.expenditureKcal !== '';
   const shown = edited ? texts.expenditureKcal : estimate.kcal === null ? '' : String(estimate.kcal);
@@ -149,11 +163,22 @@ export function StepResult({ draft, issues, today, texts, setText, content }: St
         {first !== null && (
           <>
             <p className="ct-onb__big">{tOnboarding('splitFirstDay', { name: first.dayName })}</p>
-            <ul className="ct-onb__list">
-              {first.items.map((item) => (
-                <li key={item.name}>{tOnboarding('firstSessionLine', { name: item.name, sets: item.sets, reps: item.reps })}</li>
-              ))}
-            </ul>
+            <table className="ct-onb__table" aria-label={tOnboarding('firstSession')}>
+              <thead>
+                <tr>
+                  <th scope="col">{tOnboarding('colExercise')}</th>
+                  <th scope="col">{tOnboarding('colTarget')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {first.items.map((item) => (
+                  <tr key={item.name}>
+                    <td>{item.name}</td>
+                    <td>{tOnboarding('firstSessionTarget', { sets: item.sets, reps: item.reps })}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
             <p className="ct-onb__muted">{tOnboarding('firstSessionDuration', { min: first.estimatedMin })}</p>
             {first.droppedCount > 0 && draft.durationMin !== null && <p className="ct-onb__muted">{tOnboarding('firstSessionCapped', { n: first.droppedCount, min: draft.durationMin })}</p>}
           </>
@@ -165,7 +190,7 @@ export function StepResult({ draft, issues, today, texts, setText, content }: St
         <TextInput label={tOnboarding('expenditureField')} value={shown} inputMode="numeric" errorId="ct-onb-err-kcal" error={issues.includes('expenditure-range')} onChange={(value) => setText('expenditureKcal', value)} />
         <FieldError id="ct-onb-err-kcal" show={issues.includes('expenditure-range')}>{tOnboarding('errorExpenditure')}</FieldError>
         {estimate.kcal !== null && !edited && <p className="ct-onb__big">{tOnboarding('expenditureValue', { kcal: formatInt(estimate.kcal) })}</p>}
-        {estimate.kcal !== null && <p className="ct-onb__muted">{tOnboarding('expenditureNote')}</p>}
+        {estimate.kcal !== null && <p className="ct-onb__note">{tOnboarding('resultExpenditureNote', { kcal: formatInt(estimate.kcal) })}</p>}
         {edited && estimate.kcal !== null && <p className="ct-onb__muted">{tOnboarding('expenditureEdited', { kcal: formatInt(estimate.kcal) })}</p>}
         {edited && (
           <Button variant="secondary" onClick={() => setText('expenditureKcal', '')}>
@@ -181,6 +206,7 @@ export function StepResult({ draft, issues, today, texts, setText, content }: St
           <p className="ct-onb__muted">{tOnboarding('targetsMissing')}</p>
         )}
         <p className="ct-onb__muted">{tOnboarding('targetsNote')}</p>
+        {layout === 'pc' && <p className="ct-onb__muted">{tOnboarding('resultNextStep')}</p>}
       </section>
     </>
   );

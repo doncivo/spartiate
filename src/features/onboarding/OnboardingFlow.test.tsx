@@ -48,7 +48,7 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
   it('écran 1 : « Toi », étape 1 sur 8, dialogue modal, le titre reçoit le focus ; aucune valeur inventée', async () => {
     open();
     const heading = await title('Toi');
-    expect(screen.getByText('Configuration · étape 1 sur 8')).toBeInTheDocument();
+    expect(screen.getByText('Étape 1 sur 8')).toBeInTheDocument();
     expect(document.querySelector('[role="dialog"][aria-modal="true"]')).not.toBeNull();
     expect(heading).toHaveFocus();
     expect(screen.getByLabelText('Taille (cm)')).toHaveValue('');
@@ -84,12 +84,12 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
     await title('Toi');
     fireEvent.change(screen.getByLabelText('Taille (cm)'), { target: { value: '181' } });
     press('Continuer');
-    await title('Objectif');
-    expect(screen.getByText('Configuration · étape 2 sur 8')).toBeInTheDocument();
+    await title('Ton objectif');
+    expect(screen.getByText('Étape 2 sur 8')).toBeInTheDocument();
     press('Passer cette étape');
-    await title('Expérience');
+    await title('Ton expérience');
     press('Retour');
-    await title('Objectif');
+    await title('Ton objectif');
     press('Retour');
     await title('Toi');
     expect(screen.getByLabelText('Taille (cm)')).toHaveValue('181');
@@ -100,16 +100,16 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
     await title('Toi');
     press('Femme');
     press('Continuer');
-    await title('Objectif');
+    await title('Ton objectif');
     press('Prendre du muscle');
     press('Continuer');
-    await title('Expérience');
+    await title('Ton expérience');
     await waitFor(async () => expect(await db.data.repos.settings.get('onboarding.draft')).toMatchObject({ step: 'experience', sex: 'female', goal: 'muscle' }));
     first.unmount();
     open();
-    await title('Expérience');
+    await title('Ton expérience');
     press('Retour');
-    await title('Objectif');
+    await title('Ton objectif');
     expect(screen.getByText('Prendre du muscle', { selector: 'button' })).toHaveAttribute('aria-checked', 'true');
   });
 
@@ -117,7 +117,7 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
     open();
     await title('Toi');
     press('Continuer');
-    await title('Objectif');
+    await title('Ton objectif');
     press('Maintenir');
     expect(screen.queryByText('Rythme par semaine')).toBeNull();
     press('Perdre du gras');
@@ -133,11 +133,11 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
     open();
     await title('Toi');
     press('Continuer');
-    await title('Objectif');
+    await title('Ton objectif');
     press('Continuer');
-    await title('Expérience');
+    await title('Ton expérience');
     press('Continuer');
-    await title('Disponibilité');
+    await title('Ton temps');
     press('4', 'button');
     fireEvent.click(screen.getByLabelText('Lundi'));
     fireEvent.click(screen.getByLabelText('Mercredi'));
@@ -148,7 +148,7 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
   it('priorités : toucher un muscle le fait passer prioritaire, évité, normal ; 2 prioritaires au plus', async () => {
     open();
     await title('Toi');
-    for (const next of ['Objectif', 'Expérience', 'Disponibilité', 'Matériel', 'Priorités']) {
+    for (const next of ['Ton objectif', 'Ton expérience', 'Ton temps', 'Où t’entraînes-tu ?', 'Tes priorités']) {
       press('Continuer');
       await title(next);
     }
@@ -178,27 +178,27 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
     fireEvent.change(screen.getByLabelText('Poids (kg)'), { target: { value: '80' } });
     press('Modérément actif');
     press('Continuer');
-    await title('Objectif');
+    await title('Ton objectif');
     press('Prendre du muscle');
     press('+0,25 % par semaine');
     press('Continuer');
-    await title('Expérience');
+    await title('Ton expérience');
     press('Intermédiaire');
     press('Continuer');
-    await title('Disponibilité');
+    await title('Ton temps');
     press('3', 'button');
     press('60 min');
     press('Continuer');
-    await title('Matériel');
+    await title('Où t’entraînes-tu ?');
     press('Salle complète');
     press('Continuer');
-    await title('Priorités');
+    await title('Tes priorités');
     press('Continuer');
-    await title('Split');
+    await title('Ta semaine');
     expect(await screen.findByText(/Full Body 3 j/)).toBeInTheDocument();
     press('Continuer');
-    await title('Résultat');
-    expect(screen.getByText('Configuration · étape 8 sur 8')).toBeInTheDocument();
+    await title('Prêt');
+    expect(screen.getByText('Étape 8 sur 8')).toBeInTheDocument();
     expect(await screen.findByText(/Dépense estimée/)).toBeInTheDocument();
     expect(screen.getByText('Première séance', { selector: 'h2' })).toBeInTheDocument();
     press('Commencer');
@@ -217,7 +217,7 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
     fireEvent.change(screen.getByLabelText('Taille (cm)'), { target: { value: '180' } });
     fireEvent.change(screen.getByLabelText('Poids (kg)'), { target: { value: '80' } });
     press('Modérément actif');
-    for (const next of ['Objectif', 'Expérience', 'Disponibilité', 'Matériel', 'Priorités', 'Split', 'Résultat']) {
+    for (const next of ['Ton objectif', 'Ton expérience', 'Ton temps', 'Où t’entraînes-tu ?', 'Tes priorités', 'Ta semaine', 'Prêt']) {
       press('Continuer');
       await title(next);
     }
@@ -232,7 +232,7 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
   it('Modifier revient au premier écran sans rien écrire', async () => {
     open();
     await title('Toi');
-    for (const next of ['Objectif', 'Expérience', 'Disponibilité', 'Matériel', 'Priorités', 'Split', 'Résultat']) {
+    for (const next of ['Ton objectif', 'Ton expérience', 'Ton temps', 'Où t’entraînes-tu ?', 'Tes priorités', 'Ta semaine', 'Prêt']) {
       press('Continuer');
       await title(next);
     }
@@ -267,7 +267,7 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
       await db.driver.execute('DELETE FROM sync_outbox');
     }
     const toResult = async (): Promise<void> => {
-      for (const next of ['Objectif', 'Expérience', 'Disponibilité', 'Matériel', 'Priorités', 'Split', 'Résultat']) {
+      for (const next of ['Ton objectif', 'Ton expérience', 'Ton temps', 'Où t’entraînes-tu ?', 'Tes priorités', 'Ta semaine', 'Prêt']) {
         press('Continuer');
         await title(next);
       }
@@ -316,7 +316,7 @@ describe('Onboarding en 8 écrans (I3-07)', () => {
       press('Commencer');
       expect(await screen.findByLabelText('Poids : nouvelle pesée de 76 kg (dernière : 75 kg)')).toBeChecked();
       press('Revenir');
-      await title('Résultat');
+      await title('Prêt');
       expect(onClose).not.toHaveBeenCalled();
       expect(await db.driver.select('SELECT kg FROM body_weight ORDER BY kg')).toEqual([{ kg: 75 }]);
     });
