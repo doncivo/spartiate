@@ -34,7 +34,7 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
   it.each([
     ['training', 'Entraînement'],
     ['nutrition', 'Nutrition'],
-    ['progress', 'Progrès'],
+    // ERGO-01 (D-193) : Progrès montre Récupération et Corps ; « arrive avec une prochaine version » y était faux (ErgoToday.test.tsx).
   ] as const)('%s : titre, explication de l’indisponibilité, aucun bouton, aucun chiffre', async (tab, title) => {
     open(tab);
     expect(await screen.findByRole('heading', { name: title })).toBeInTheDocument();

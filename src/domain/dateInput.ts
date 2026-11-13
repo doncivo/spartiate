@@ -4,7 +4,7 @@ import type { LocalDate, LocalTime, Result, Weekday } from './types';
 
 /**
  * Saisie d'une date et d'une heure (T-14) : analyse du français libre (24 h), sans dépendance externe
- * (chrono-node : Q-02, titre des tâches). Fonctions pures : « aujourd'hui » est fourni par l'appelant.
+ * (chrono-node, retiré en CLEAN-02). Fonctions pures : « aujourd'hui » est fourni par l'appelant.
  *
  * Exemples compris : « demain », « après-demain », « lun. 10h », « ven 10h », « lundi prochain »,
  * « semaine prochaine », « 25/09 », « 25/09/2026 », « 25.09 », « 2026-09-25 », « 25 sept. 14:30 »,

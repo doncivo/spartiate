@@ -32,6 +32,11 @@ const open = (screenId?: 'journal' | 'dashboard' | 'strategy' | 'checkin') => {
 const region = () => screen.findByRole('region', { name: 'Nutrition' });
 /** Le texte du DOM est normalisé par Testing Library (espaces fines insécables comprises) : même normalisation côté attendu. */
 const fr = (n: number): string => n.toLocaleString('fr-FR').replace(/[\u202f\u00a0]/g, ' ');
+/** ERGO-01 : la ligne est un chiffre h\u00e9ros et son unit\u00e9 (deux \u00e9l\u00e9ments) ; on lit le texte complet de la ligne, inchang\u00e9. */
+const heroLine =
+  (text: string) =>
+  (_: string, el: Element | null): boolean =>
+    (el?.classList.contains('ct-hero') ?? false) && (el?.textContent ?? '').replace(/[\u202f\u00a0]/g, ' ') === text;
 
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
@@ -98,7 +103,7 @@ describe('I4-03 : Journal : états de la journée, sans faux zéro (critère 1)'
     await seedQuick(TODAY, '08:00', 600);
     open();
     const r = await region();
-    expect(await within(r).findByText(`${fr(1400)} kcal restantes`)).toBeInTheDocument();
+    expect(await within(r).findByText(heroLine(`${fr(1400)} kcal restantes`))).toBeInTheDocument();
   });
 
   it('navigation de jour : la veille est vide sans effacer aujourd’hui', async () => {

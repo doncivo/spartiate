@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>PC · Dashboard nutrition — après</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&amp;display=swap">
+<style>
+body{margin:0}
+.c{font-family:Cinzel,"Times New Roman",serif;font-weight:600}
+.sec{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#C28E4C}
+.nav{display:flex;justify-content:space-between;align-items:center;height:40px;padding:0 12px;border-radius:10px;color:#A39C90;text-decoration:none;font-size:14px}
+.k{font-size:11px;color:#A39C90;opacity:.7}
+.tab{height:36px;padding:0 4px;border:0;background:transparent;color:#A39C90;font-size:14px;font-weight:600}
+.ln{display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid #1D2027;font-size:13px}
+</style>
+</helmet>
+<div style="width:1440px;height:900px;background:#0D0E11;color:#EDE7DC;font-family:'Segoe UI',-apple-system,system-ui,sans-serif;font-size:14px;line-height:1.4;font-variant-numeric:tabular-nums;display:flex;overflow:hidden">
+<aside style="width:232px;flex:none;border-right:1px solid #1D2027;padding:28px 16px;box-sizing:border-box;display:flex;flex-direction:column;gap:4px">
+<div class="c" style="font-size:18px;padding:0 12px 24px;color:#E0B577">Λ  Spartiate</div>
+<a class="nav" href="#">Aujourd'hui<span class="k">Ctrl 1</span></a>
+<a class="nav" href="#">Entraînement<span class="k">Ctrl 2</span></a>
+<a class="nav" href="#" style="background:#15171C;color:#EDE7DC;box-shadow:inset 2px 0 0 #C28E4C">Nutrition<span class="k">Ctrl 3</span></a>
+<a class="nav" href="#">Progrès<span class="k">Ctrl 4</span></a>
+<a class="nav" href="#">Plus<span class="k">Ctrl 5</span></a>
+<div style="margin-top:auto;font-size:12px;color:#A39C90;padding:0 12px;line-height:1.7">Synchro il y a 2 min<br>iPhone vu il y a 2 min</div>
+</aside>
+<main style="flex:1;padding:32px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:26px;min-width:0">
+<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid #1D2027">
+<div style="display:flex;gap:24px"><button type="button" class="tab">Journal</button><button type="button" class="tab" style="color:#E0B577;border-bottom:2px solid #C28E4C">Dashboard</button><button type="button" class="tab">Stratégie</button><button type="button" class="tab">Check-in dim.</button></div>
+<span style="padding-bottom:8px;color:#A39C90">Perte de gras · objectif −0,4 kg / sem.</span>
+</div>
+<div style="display:flex;align-items:center;gap:12px"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" style="stroke:#5E9E6B;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg><span class="c" style="font-size:26px">Sur la trajectoire</span></div>
+
+<div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:48px;flex:1;min-height:0">
+<div style="display:flex;flex-direction:column;gap:26px">
+<div>
+<div class="sec">Tendance de poids · 28 j</div>
+<div style="display:flex;align-items:baseline;gap:10px;margin-top:6px"><span class="c" style="font-size:48px;color:#E0B577">81,4</span><span style="color:#A39C90">kg · −0,3 kg / sem. · dernière pesée 81,2 kg ce matin</span></div>
+<svg width="720" height="200" viewBox="0 0 720 200" role="img" aria-label="Tendance de poids en baisse régulière sur 28 jours" style="margin-top:10px"><line x1="0" y1="199" x2="720" y2="199" stroke="#1D2027"></line><line x1="0" y1="40" x2="720" y2="150" stroke="#2A2E37" stroke-dasharray="4 6"></line><path d="M0 46 L90 58 L180 70 L270 84 L360 98 L450 112 L540 124 L630 136 L720 146" stroke="#C28E4C" stroke-width="3" fill="none" stroke-linecap="round"></path><g fill="#A39C90"><circle cx="30" cy="40" r="3"></circle><circle cx="96" cy="66" r="3"></circle><circle cx="150" cy="58" r="3"></circle><circle cx="230" cy="88" r="3"></circle><circle cx="300" cy="78" r="3"></circle><circle cx="380" cy="106" r="3"></circle><circle cx="440" cy="100" r="3"></circle><circle cx="520" cy="128" r="3"></circle><circle cx="600" cy="124" r="3"></circle><circle cx="700" cy="150" r="3"></circle></g></svg>
+<div style="font-size:12px;color:#A39C90">trait : tendance lissée · pointillé : objectif · points : 16 pesées</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #2A2E37;border-bottom:1px solid #2A2E37">
+<div style="padding:18px 18px 18px 0;border-right:1px solid #2A2E37"><div class="sec">Balance 7 j</div><div class="c" style="font-size:28px;margin-top:6px">−310</div><div style="font-size:12px;color:#A39C90">kcal / j · 5 jours loggés</div></div>
+<div style="padding:18px;border-right:1px solid #2A2E37"><div class="sec">Dépense</div><div class="c" style="font-size:28px;margin-top:6px">2 790</div><div style="font-size:12px;color:#A39C90">kcal / j · confiance moyenne</div></div>
+<div style="padding:18px 0 18px 18px"><div class="sec">Couverture</div><div class="c" style="font-size:28px;margin-top:6px">5 / 7</div><div style="font-size:12px;color:#A39C90">jours · 3 pesées</div></div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:24px">
+<div style="background:#15171C;border-radius:16px;padding:22px">
+<div class="sec">Dépense estimée</div>
+<div style="font-size:13px;margin-top:8px;line-height:1.6">Apports 2 480 kcal / j + perte 0,3 kg / sem. Formule pondérée à 25 %.</div>
+<div class="ln" style="margin-top:10px"><span style="color:#A39C90">Jours complets</span><span>19 / 28</span></div>
+<div class="ln"><span style="color:#A39C90">Pesées</span><span>16</span></div>
+<div class="ln"><span style="color:#A39C90">Jour exclu</span><span>mercredi</span></div>
+</div>
+<div>
+<div class="sec">Historique des check-ins</div>
+<div style="margin-top:6px">
+<div class="ln" style="border-top:0"><span>25 oct.</span><span style="color:#A39C90">2 650 kcal · accepté</span></div>
+<div class="ln"><span>18 oct.</span><span style="color:#A39C90">2 700 kcal · accepté</span></div>
+<div class="ln"><span>11 oct.</span><span style="color:#A39C90">2 750 kcal · refusé</span></div>
+</div>
+</div>
+<button type="button" style="height:46px;border-radius:12px;border:1px solid #C28E4C;background:transparent;color:#E0B577;font-weight:600">Check-in de dimanche</button>
+</div>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
