@@ -245,12 +245,9 @@ jobs:
       - name: Installer cargo-audit
         if: steps.cache-audit.outputs.cache-hit != 'true'
         run: cargo install cargo-audit --locked
-      # RUSTSEC-2026-0459 (libsqlite3-sys 0.30.1, SQLite embarqué < 3.54.0, CVE-2026-119375, moyen 6.8, vecteur local) : fuite de mémoire
-      # si le processus ouvre un fichier de base et un fichier -wal voisin forgés par un tiers. Spartiate n'ouvre que sa propre base
-      # locale et ses sauvegardes locales (D-84). Correctif (libsqlite3-sys >= 0.39) = ticket DEP-01, revue au 30 novembre 2026 au plus
-      # tard ; cette exception ne vaut que pour cet identifiant et se retire avec DEP-01.
+      # DEP-01 (D-160) : plus d'exception RUSTSEC-2026-0459 (libsqlite3-sys 0.39.1, SQLite 3.54.1) ; seule reste RUSTSEC-2023-0071.
       - name: cargo audit
-        run: cargo audit --file src-tauri/Cargo.lock --ignore RUSTSEC-2023-0071 --ignore RUSTSEC-2026-0459
+        run: cargo audit --file src-tauri/Cargo.lock --ignore RUSTSEC-2023-0071
 
   # Playwright : projet pc en 4 tranches, projet iphone en 4 tranches (Chromium en émulation mobile).
   e2e:

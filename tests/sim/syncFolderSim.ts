@@ -149,6 +149,27 @@ async function createDevice(room: Room, name: string, role: SimRole, devicePlatf
   return device;
 }
 
+/** FIX-0182 : délai fixe pendant lequel une route de pilotage attend l'enregistrement d'un appareil par le premier appel de sa page. */
+export const DEVICE_WAIT_MS = 10_000;
+
+/**
+ * FIX-0182 : appareil d'une salle, pour les routes de pilotage (`/camera`, `/scan`, `/fail`, …). L'appareil n'existe qu'au premier `/rpc` de
+ * sa page : création en cours, elle est attendue ; pas encore commencée, l'enregistrement est attendu jusqu'à `limitMs`. `undefined` au-delà
+ * (la route répond alors 404, comme avant).
+ */
+export async function awaitDevice(rooms: Map<string, Room>, roomId: string, name: string, limitMs: number): Promise<SimSyncDevice | undefined> {
+  const deadline = Date.now() + limitMs;
+  for (;;) {
+    const room = rooms.get(roomId);
+    const known = room?.devices.get(name);
+    if (known) return known;
+    const pending = room?.creating.get(name);
+    if (pending) return pending;
+    if (Date.now() >= deadline) return undefined;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+}
+
 async function deviceOf(rooms: Map<string, Room>, roomId: string, name: string, role: SimRole, devicePlatform: 'windows' | 'ios'): Promise<SimSyncDevice> {
   let room = rooms.get(roomId);
   if (!room) {
@@ -256,27 +277,26 @@ export async function startSyncFolderSim(port = 0): Promise<SyncFolderSim> {
       }
       case '/fail': {
         const { room, device, method, after, code } = JSON.parse(request.body) as { room: string; device: string; method: string; after: number; code: SyncErrorCode };
-        const target = rooms.get(room)?.devices.get(device);
+        const target = await awaitDevice(rooms, room, device, DEVICE_WAIT_MS);
         if (!target) return json(404, { ok: false });
         target.failure = { method, remaining: after, code };
         return json(200, { ok: true });
       }
       case '/inspect': {
         const { room, device } = JSON.parse(request.body) as { room: string; device: string };
-        const target = rooms.get(room)?.devices.get(device);
+        const target = await awaitDevice(rooms, room, device, DEVICE_WAIT_MS);
         if (!target) return json(404, { ok: false });
         return json(200, { deviceId: target.deviceId, appends: target.appends, rows: publishedRows(target), failing: target.failure !== null, scanBudgets: target.scanBudgets });
       }
       case '/scan': {
         const parsed = JSON.parse(request.body) as { room: string; device: string; from?: string; text?: string | null };
         const { room, device, from } = parsed;
-        const found = rooms.get(room);
-        const target = found?.devices.get(device);
+        const target = await awaitDevice(rooms, room, device, DEVICE_WAIT_MS);
         if (target && 'text' in parsed) {
           target.platform.testing.setScanResult(parsed.text ?? null);
           return json(200, { ok: true });
         }
-        const owner = found?.devices.get(from ?? '');
+        const owner = from === undefined ? undefined : await awaitDevice(rooms, room, from, DEVICE_WAIT_MS);
         if (!target || !owner) return json(404, { ok: false });
         await owner.platform.key.openPairing('show');
         const payload = await owner.platform.key.pairingPayload();
@@ -286,14 +306,14 @@ export async function startSyncFolderSim(port = 0): Promise<SyncFolderSim> {
       }
       case '/camera': {
         const { room, device, state, answer } = JSON.parse(request.body) as { room: string; device: string; state: 'granted' | 'denied' | 'prompt'; answer?: 'granted' | 'denied' };
-        const target = rooms.get(room)?.devices.get(device);
+        const target = await awaitDevice(rooms, room, device, DEVICE_WAIT_MS);
         if (!target) return json(404, { ok: false });
         target.platform.testing.setCameraPermission(state, answer);
         return json(200, { ok: true, opened: target.platform.testing.cameraSettingsOpened() });
       }
       case '/testing': {
         const { room, device, call, args } = JSON.parse(request.body) as { room: string; device: string; call: string; args: unknown[] };
-        const target = rooms.get(room)?.devices.get(device);
+        const target = await awaitDevice(rooms, room, device, DEVICE_WAIT_MS);
         if (!target || !TESTING_CALLS.has(call)) return json(404, { ok: false });
         const hooks = target.platform.testing as unknown as Record<string, (...a: unknown[]) => unknown>;
         hooks[call]?.(...args);
@@ -301,7 +321,7 @@ export async function startSyncFolderSim(port = 0): Promise<SyncFolderSim> {
       }
       case '/unreachable': {
         const { room, device, on } = JSON.parse(request.body) as { room: string; device: string; on: boolean };
-        const target = rooms.get(room)?.devices.get(device);
+        const target = await awaitDevice(rooms, room, device, DEVICE_WAIT_MS);
         if (!target) return json(404, { ok: false });
         target.unreachable = on;
         if (!on) target.rebind = true;
