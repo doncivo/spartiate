@@ -5,6 +5,7 @@ import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { ClosedWorkout } from '../../../db/repositories/workoutRepository';
 import { tTraining } from '../../../i18n/trainingText';
 import { Button } from '../../../ui';
+import type { Held } from '../loadDisplay';
 import { recordText, SummaryFigures } from './SummaryFigures';
 
 /**
@@ -29,9 +30,11 @@ export interface WorkoutSummaryProps {
   readonly closed: ClosedWorkout;
   readonly onClose: () => void;
   readonly onJournal: () => void;
+  /** ERGO-02 (D-261) : haltères tenus par exercice, pour un record de charge « 2 × 26 kg » ; absent : charge telle quelle. */
+  readonly heldOf?: (exerciseId: string) => Held;
 }
 
-export function WorkoutSummary({ access, closed, onClose, onJournal }: WorkoutSummaryProps) {
+export function WorkoutSummary({ access, closed, onClose, onJournal, heldOf = () => null }: WorkoutSummaryProps) {
   const { workout, summary, routineDiff } = closed;
   const [step, setStep] = useState<RoutineStep>('ask');
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +96,7 @@ export function WorkoutSummary({ access, closed, onClose, onJournal }: WorkoutSu
             {records.map((r) => (
               <li key={`${r.exerciseId}-${r.kind}`} className="ct-summary__record">
                 <span className="ct-summary__record-name">{r.exerciseName}</span>
-                <span className="ct-session__num">{recordText(r)}</span>
+                <span className="ct-session__num">{recordText(r, heldOf(r.exerciseId))}</span>
               </li>
             ))}
           </ul>
