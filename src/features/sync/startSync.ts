@@ -2,6 +2,7 @@ import type { AppStatusKind } from '../../domain/appStatus';
 import { onLocalWrite } from '../../db/localWrite';
 import { newerDevices } from '../../domain/sync/compat';
 import { isSyncErrorCode } from '../../domain/sync/format';
+import { DATA_RESET_TABLE } from '../../domain/sync/syncTables';
 import { QUIT_HANDLER_SYNC_MS, SYNCING_BANNER_DELAY_MS } from '../../domain/sync/limits';
 import { phaseBanner, syncBannerFor, type BlockingPhaseFact, type PersistedSyncFacts, type SyncTrouble } from '../../domain/syncBanners';
 import type { DeviceId } from '../../domain/types';
@@ -21,6 +22,12 @@ import { carryLines, markerFailures, schedulers } from './syncRestoreState';
 import { deviceName, deviceStatusText, formatCount, statusLine, waitingLong, warningText } from './syncText';
 import { forgetFailureText, forgetPendingBanner } from './forgetText';
 import { resetProgressBanner, resetReminderText } from './resetText';
+
+/** RESET-01 : rechargement complet de la WebView après un effacement reçu (même procédé que la restauration sur iPhone). */
+function reloadAfterReset(): void {
+  logFailure('sync', 'data-reset-reload {}');
+  globalThis.location?.reload();
+}
 
 export interface SyncIntegration {
   dispose(): void;
@@ -354,6 +361,7 @@ export function startSyncIntegration(container: AppContainer, env: SyncIntegrati
   // Y-TECH-02 (revue, point 2 ; seconde revue, point 1) : rechargement en échec journalisé (par `applyRemoteChanges`, ou ici s'il lève),
   // signalé, et son lot gardé (`failedChanges`) : relancé à la fin de chaque cycle et à « Synchroniser maintenant », jusqu'à la réussite.
   let failedChanges: RemoteChanges | null = null;
+  let resetReloadDue = false;
   const reload = async (change: RemoteChanges): Promise<void> => {
     let failed: boolean;
     try {
@@ -388,6 +396,10 @@ export function startSyncIntegration(container: AppContainer, env: SyncIntegrati
       const conclusion = current.phase !== 'syncing' && current.progress === null;
       reread = conclusion || current.phase !== lastPhase;
       lastPhase = current.phase;
+      if (conclusion && resetReloadDue) {
+        resetReloadDue = false;
+        reloadAfterReset();
+      }
       if (conclusion) {
         settled = current;
         if (!concluded) {
@@ -415,7 +427,12 @@ export function startSyncIntegration(container: AppContainer, env: SyncIntegrati
     else void refreshPersisted();
   });
   setReloadRetry(container, retryReload);
-  const stopChanges = sync.onRemoteChanges((change) => void enqueue(() => reload(change)));
+  // RESET-01 (D-184) : remise à zéro reçue d'un autre appareil et appliquée ici : l'app est rechargée à la fin du cycle (même état qu'une
+  // installation neuve, onboarding ouvert au démarrage), au lieu de relire chaque écran.
+  const stopChanges = sync.onRemoteChanges((change) => {
+    if (change.tables.has(DATA_RESET_TABLE)) resetReloadDue = true;
+    else void enqueue(() => reload(change));
+  });
   safely(() => {
     const initial = sync.status();
     lastPhase = initial.phase;

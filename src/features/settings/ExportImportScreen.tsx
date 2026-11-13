@@ -4,6 +4,7 @@ import { ArchiveError, DEFAULT_THEME, EXPORT_SV, buildExportArchive, parseExport
 import { buildFullExport } from '../../domain/exportImport/fullExport';
 import { planImport, type ImportMode } from '../../domain/exportImport/plan';
 import { nowIso } from '../../domain/clock';
+import { isArchiveBeforeReset } from '../../domain/dataReset';
 import { tExportImport, type ExportImportTextKey } from '../../i18n/exportImportText';
 import { FileExportError } from '../../platform/files';
 import { Button, Icon, SegmentedControl, useLayout } from '../../ui';
@@ -77,6 +78,12 @@ export function ExportImportScreen() {
       const picked = await files.pickBytes({ accept: ['.zip'] });
       if (picked === null) return;
       const parsed = await parseExportArchive(picked.bytes, { currentSv: EXPORT_SV, currentYear: year });
+      // RESET-01 (D-187) : une archive d'avant « Repartir de zéro » ramènerait des données effacées : refus avant l'aperçu, rien n'est écrit.
+      const { readResetAtMs } = await import('../../sync/dataReset');
+      if (isArchiveBeforeReset(parsed.manifest.date, await readResetAtMs(data.repos))) {
+        setMessage({ kind: 'error', text: tExportImport('refusedBeforeReset') });
+        return;
+      }
       setPreview({ name: picked.name, parsed, local: await readLocal(data.repos) });
       setMode('merge');
     } catch (error) {

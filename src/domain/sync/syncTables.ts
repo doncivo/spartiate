@@ -752,7 +752,14 @@ const FOOD_FAVORITE_TABLE = table(
   { idKind: 'natural', natural: { is: isFavoriteId, expected: (row) => expectedFavoriteId(row) }, titleSource: { kind: 'own', column: 'ref' } },
 );
 
-/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02 + FIX-0181) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+/**
+ * Catalogue RESET-01 (D-183, ADR 0011 avenant 36 ; migration 0016, schéma 16) : `data_reset`, une ligne par remise à zéro des données ; son hlc est
+ * l'horizon (`src/domain/dataReset.ts`). Aucune donnée de l'utilisateur, jamais modifiée ni purgée (identifiants hors purge), rien au journal des conflits.
+ */
+export const DATA_RESET_TABLE = 'data_reset';
+const DATA_RESET_TABLE_DEF = table(DATA_RESET_TABLE,[c('created_at', 'datetime', false, hidden), c('deleted_at', 'datetime', true, hidden)], { purgeable: false, titleSource: { kind: 'none' } });
+
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02 + FIX-0181 + RESET-01) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   tables: [
     PROFILE_TABLE,
@@ -780,6 +787,7 @@ export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
     MEASUREMENT_TABLE,
     PROGRESS_PHOTO_TABLE,
     FOOD_FAVORITE_TABLE,
+    DATA_RESET_TABLE_DEF,
   ],
   order: SYNC_TABLE_ORDER,
 });

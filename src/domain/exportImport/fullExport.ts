@@ -41,6 +41,8 @@ export const FULL_EXPORT_EXCLUDED = [
   'recovery_sample',
   'recovery_import_state',
   'schema_migrations',
+  // RESET-01 : remises à zéro (technique de synchro, aucune donnée de l'utilisateur).
+  'data_reset',
 ] as const;
 
 // --- cellules et fichiers CSV -----------------------------------------------------------------------------------------------------
