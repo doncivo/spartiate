@@ -40,4 +40,5 @@ export type * from './recoverySampleRepository';
 export type * from './recoveryFactorRepository';
 export type * from './bodyProgressRepository';
 export type * from './foodFavoriteRepository';
+export type * from './dataResetRepository';
 export type * from './supplementRepository';

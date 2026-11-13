@@ -36,6 +36,7 @@ export const exportImportFr = {
   importDone: 'Import terminé : {add} ajouts, {modify} modifications, {delete} suppressions.',
   importFailed: 'L’import a échoué : rien n’a été modifié.',
   refused: 'Archive refusée : {reason} Rien n’a été modifié.',
+  refusedBeforeReset: 'Archive refusée : elle date d’avant « Repartir de zéro ». Rien n’a été modifié.',
   reasonNotZip: 'ce fichier n’est pas une archive Spartiate.',
   reasonCorrupt: 'l’archive est abîmée.',
   reasonMissingFile: 'un fichier est manquant dans l’archive.',

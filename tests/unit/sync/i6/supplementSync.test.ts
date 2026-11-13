@@ -7,7 +7,7 @@ import { publishedColumns, SYNC_CATALOGUE } from '../../../../src/domain/sync/sy
 import type { IsoDateTime, LocalDate, LocalTime } from '../../../../src/domain/types';
 import { migrate } from '../../../../src/db/migrator';
 import { migrations } from '../../../../src/db/migrations';
-import { CAPTURE_TABLES_V16 } from '../../../../src/db/migrations/0016_supplement';
+import { CAPTURE_TABLES_V17 } from '../../../../src/db/migrations/0017_supplement';
 import { reintegrateUnknownFields } from '../../../../src/db/repositories';
 import { carryKindText } from '../../../../src/features/sync/carryReportText';
 import { failureKinds } from '../../../../src/features/sync/syncText';
@@ -74,8 +74,8 @@ describe('(a) catalogue : supplement et supplement_intake', () => {
   });
 
   it('copie figée de la migration = catalogue vivant', () => {
-    expect(CAPTURE_TABLES_V16.map(([name]) => name)).toEqual(['supplement', 'supplement_intake']);
-    for (const [name, columns] of CAPTURE_TABLES_V16) {
+    expect(CAPTURE_TABLES_V17.map(([name]) => name)).toEqual(['supplement', 'supplement_intake']);
+    for (const [name, columns] of CAPTURE_TABLES_V17) {
       const t = SYNC_CATALOGUE.table(name);
       if (!t) throw new Error(name);
       expect([...publishedColumns(t)]).toEqual([...columns]);

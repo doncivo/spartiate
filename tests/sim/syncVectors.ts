@@ -368,11 +368,11 @@ export async function buildSyncVectors(rustSealed: SyncVectors['rustSealed'] = [
       name: 'journal-ops-supplement',
       place: journal(12, 0),
       sm: 1,
-      sv: 16,
+      sv: 17,
       plaintext: {
         json: JSON.stringify({
           k: 'ops',
-          sv: 16,
+          sv: 17,
           ops: [
             {
               t: 'supplement',

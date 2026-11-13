@@ -755,6 +755,13 @@ const FOOD_FAVORITE_TABLE = table(
 );
 
 /**
+ * Catalogue RESET-01 (D-183, ADR 0011 avenant 36 ; migration 0016, schéma 16) : `data_reset`, une ligne par remise à zéro des données ; son hlc est
+ * l'horizon (`src/domain/dataReset.ts`). Aucune donnée de l'utilisateur, jamais modifiée ni purgée (identifiants hors purge), rien au journal des conflits.
+ */
+export const DATA_RESET_TABLE = 'data_reset';
+const DATA_RESET_TABLE_DEF = table(DATA_RESET_TABLE,[c('created_at', 'datetime', false, hidden), c('deleted_at', 'datetime', true, hidden)], { purgeable: false, titleSource: { kind: 'none' } });
+
+/**
  * Catalogue I6-05 (§ 15.3, D-210) : `supplement` (compléments, UUID) et `supplement_intake` (prises cochées, `intake|<complément>|<date>|<heure>`),
  * écrits par les DEUX appareils, sans parent publié (lien logique par `supplement_id`). La même prise cochée des deux côtés donne une ligne ; fusion
  * champ par champ par HLC, dernière écriture gagne. Journal des conflits : nom, état et suppression du complément ; suppression de la prise.
@@ -780,7 +787,7 @@ const SUPPLEMENT_INTAKE_TABLE = table(
   { idKind: 'natural', natural: { is: isIntakeId, expected: (row) => expectedIntakeId(row) }, titleSource: { kind: 'own', column: 'date' } },
 );
 
-/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02 + FIX-0181 + I6-05) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02 + FIX-0181 + RESET-01 + I6-05) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   tables: [
     PROFILE_TABLE,
@@ -808,6 +815,7 @@ export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
     MEASUREMENT_TABLE,
     PROGRESS_PHOTO_TABLE,
     FOOD_FAVORITE_TABLE,
+    DATA_RESET_TABLE_DEF,
     SUPPLEMENT_TABLE,
     SUPPLEMENT_INTAKE_TABLE,
   ],

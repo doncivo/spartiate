@@ -156,7 +156,10 @@ export function SettingsScreenPc() {
             {backupsAvailable && group('groupBackups', <BackupRow />)}
             {group(
               'groupExport',
-              <LinkRow label={tExportImport('row')} hint={tPlus('exportHint')} onClick={() => navigate({ tab: 'more', screen: 'exportimport' })} />,
+              <>
+                <LinkRow label={tExportImport('row')} hint={tPlus('exportHint')} onClick={() => navigate({ tab: 'more', screen: 'exportimport' })} />
+                <LinkRow label={tPlus('resetRow')} hint={tPlus('resetHint')} onClick={() => navigate({ tab: 'more', screen: 'reset' })} />
+              </>,
             )}
             <SecuritySection />
           </>,

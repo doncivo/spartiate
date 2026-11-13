@@ -82,6 +82,8 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue, options: Repo
   progressPhotos: () => import('./bodyProgressRepository').then((m) => signalingWrites(m.createProgressPhotoRepository(executor, stamper), ['add', 'remove'])),
   // FIX-0173 : présence de données (base vide), lecture seule, à la demande.
   userData: () => import('./userDataRepository').then((m) => m.createUserDataRepository(executor)),
+  // RESET-01 : remises à zéro des données et effacement local, à la demande (hors du JavaScript de départ).
+  dataReset: () => import('./dataResetRepository').then((m) => m.createDataResetRepository(executor, stamper, catalogue)),
   exportImport: () => import('./exportImportRepository').then((m) => m.createExportImportRepository(executor, stamper, catalogue, options)),
   // Y-04 (début)
   syncConflicts: createSyncConflictRepository(executor, stamper, catalogue),

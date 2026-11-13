@@ -78,19 +78,26 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
   const [reminders, setReminders] = useState<{ readonly enabled: boolean; readonly result: SupplementNotificationResult | null } | null>(null);
   const synced = useSyncedData(['supplement', 'supplement_intake']);
 
-  const reload = useCallback(async (): Promise<void> => {
+  const read = useCallback(async (): Promise<Load> => {
     try {
       const repo = await data.repos.supplements();
       const [supplements, intakes] = await Promise.all([repo.list(), repo.intakes(addDays(today, -(HISTORY_DAYS - 1)), today)]);
-      setLoad({ status: 'ready', supplements, intakes });
+      return { status: 'ready', supplements, intakes };
     } catch {
-      setLoad({ status: 'failed' });
+      return { status: 'failed' };
     }
   }, [data, today]);
+  const reload = useCallback(async (): Promise<void> => setLoad(await read()), [read]);
 
   useEffect(() => {
-    void reload();
-  }, [reload, synced]);
+    let live = true;
+    void read().then((next) => {
+      if (live) setLoad(next);
+    });
+    return () => {
+      live = false;
+    };
+  }, [read, synced]);
 
   useEffect(() => {
     let live = true;

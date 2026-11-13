@@ -9,11 +9,11 @@ import type { Migration } from '../migrator';
  * - `supplement_intake` : prise cochée, identifiant naturel `intake|<complément>|<date>|<heure>` (CHECK) : la même prise cochée sur les deux appareils
  *   donne UNE ligne ; décocher = suppression logique. Lien logique au complément (comme `meal_entry` → `food`), sans clé étrangère.
  *
- * Copie figée `CAPTURE_TABLES_V16` (jamais lue depuis le catalogue vivant), deux déclencheurs par table sur le modèle de la 0015.
+ * Copie figée `CAPTURE_TABLES_V17` (jamais lue depuis le catalogue vivant), deux déclencheurs par table sur le modèle de la 0016.
  */
 
 /** Copie figée des colonnes capturées : colonnes métier, `created_at` et `deleted_at` (ni `id`, ni `updated_at`, `device_id`, `hlc`). */
-export const CAPTURE_TABLES_V16 = [
+export const CAPTURE_TABLES_V17 = [
   ['supplement', ['name', 'dose', 'unit', 'times', 'days', 'active', 'created_at', 'deleted_at']],
   ['supplement_intake', ['supplement_id', 'date', 'moment', 'taken_at', 'created_at', 'deleted_at']],
 ] as const;
@@ -34,7 +34,7 @@ const fieldCapture = (table: string, column: string): string[] => {
   ];
 };
 
-/** Modèle de la 0002 (et des 0006 à 0015) : un `_ai` (ligne entière) et un `_au` (champ par champ, `base_hlc`, `'+'` à la restauration). */
+/** Modèle de la 0002 (et des 0006 à 0016) : un `_ai` (ligne entière) et un `_au` (champ par champ, `base_hlc`, `'+'` à la restauration). */
 function captureTriggers(table: string, columns: readonly string[]): string[] {
   const row = `table_name = '${table}' AND row_id = NEW.id`;
   return [
@@ -56,10 +56,10 @@ function captureTriggers(table: string, columns: readonly string[]): string[] {
   ];
 }
 
-const [[SUPPLEMENT, SUPPLEMENT_COLUMNS], [INTAKE, INTAKE_COLUMNS]] = CAPTURE_TABLES_V16;
+const [[SUPPLEMENT, SUPPLEMENT_COLUMNS], [INTAKE, INTAKE_COLUMNS]] = CAPTURE_TABLES_V17;
 
-export const migration0016Supplement: Migration = {
-  version: 16,
+export const migration0017Supplement: Migration = {
+  version: 17,
   name: 'supplement',
   statements: [
     `CREATE TABLE supplement (

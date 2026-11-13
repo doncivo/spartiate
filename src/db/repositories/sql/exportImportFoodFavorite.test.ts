@@ -7,7 +7,7 @@ import { openBaseDb, type TestDb } from './testSetup';
 
 /**
  * FIX-0181 (D-171, schéma 15) : l'archive porte les FAVORIS (`food_favorite`), écrits par les deux appareils ; l'export complet aussi (`csv/food_favorite.csv`).
- * Une archive de schéma 14 (sans la table) s'importe sans rien supprimer, même en « remplacer » ; une archive de schéma 16 est refusée ; une ligne
+ * Une archive de schéma 14 (sans la table) s'importe sans rien supprimer, même en « remplacer » ; une archive de schéma 17 est refusée ; une ligne
  * incohérente (identifiant, provenance, référence) n'est jamais écrite.
  */
 const A = '60000000-0000-4000-8000-0000000000e1' as DeviceId;
@@ -46,7 +46,7 @@ const seed = async (db: TestDb): Promise<void> => {
 
 describe('export / import des favoris (FIX-0181)', () => {
   it('table exportée en dernier, schéma 15, écrite par les deux appareils, présente dans l’export complet', () => {
-    expect(EXPORT_SV).toBe(16); // I6-05 : schéma 16 (compléments).
+    expect(EXPORT_SV).toBe(17); // RESET-01 : schéma 16 ; I6-05 : schéma 17.
     expect(TRAINING_EXPORT_TABLES.at(-3)).toBe('food_favorite'); // I6-05 : compléments et prises ensuite.
     expect(TABLE_SINCE_SV.food_favorite).toBe(15);
     expect((IPHONE_WRITTEN_TABLES as readonly string[]).includes('food_favorite')).toBe(false);
@@ -78,9 +78,9 @@ describe('export / import des favoris (FIX-0181)', () => {
     expect(await count(db)).toBe(0);
   });
 
-  it('archive de schéma 17 : refusée (future-version)', async () => {
+  it('archive de schéma 18 : refusée (future-version)', async () => {
     const db = await open(A);
-    await expect(parse(await read(db), 17)).rejects.toMatchObject({ code: 'future-version' });
+    await expect(parse(await read(db), 18)).rejects.toMatchObject({ code: 'future-version' });
   });
 
   it('ligne incohérente : refusée à l’import, rien n’est écrit', async () => {

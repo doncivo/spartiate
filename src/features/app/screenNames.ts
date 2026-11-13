@@ -20,6 +20,7 @@ export type ScreenName =
   | 'onboardingflow'
   | 'applehealthscreen'
   | 'exportimportscreen'
+  | 'resetdatascreen'
   | 'sectionnotice'
   | 'logsscreen'
   | 'recoveryfailure'
