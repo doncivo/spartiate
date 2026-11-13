@@ -1,3 +1,5 @@
+import { useId } from 'react';
+
 /** Choix unique en cartes (aperçu ERGO-02 : objectif, expérience, matériel) : un groupe radio, un libellé et sa précision par carte. */
 export interface CardOption<T extends string> {
   readonly value: T;
@@ -17,6 +19,7 @@ export interface OptionCardsProps<T extends string> {
 }
 
 export function OptionCards<T extends string>({ label, value, options, onChange, columns }: OptionCardsProps<T>) {
+  const baseId = useId();
   const checkedIndex = options.findIndex((o) => o.value === value);
   const tabbable = checkedIndex >= 0 ? checkedIndex : 0;
   function onKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number): void {
@@ -34,12 +37,15 @@ export function OptionCards<T extends string>({ label, value, options, onChange,
     <div className="ct-onb__cards" data-columns={columns} role="radiogroup" aria-label={label}>
       {options.map((option, index) => {
         const checked = index === checkedIndex;
+        const hintId = option.hint === undefined ? undefined : `${baseId}-${String(index)}`;
         return (
           <button
             key={option.value === '' ? 'none' : option.value}
             type="button"
             role="radio"
             aria-checked={checked}
+            aria-label={option.label}
+            aria-describedby={hintId}
             tabIndex={index === tabbable ? 0 : -1}
             className="ct-onb__card-option"
             data-checked={checked || undefined}
@@ -47,7 +53,7 @@ export function OptionCards<T extends string>({ label, value, options, onChange,
             onKeyDown={(event) => onKeyDown(event, index)}
           >
             {option.label}
-            {option.hint !== undefined && <small>{option.hint}</small>}
+            {option.hint !== undefined && <small id={hintId}>{option.hint}</small>}
           </button>
         );
       })}
