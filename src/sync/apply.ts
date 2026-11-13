@@ -1,10 +1,10 @@
 import type { ConflictEntry, FieldClock, Repositories, StoredRow } from '../db/repositories';
 import type { DeviceId, Hlc, IsoDateTime } from '../domain/types';
 import type { SyncField, SyncOp, SyncValue } from '../domain/sync/format';
-import { isUnknownName, isUnknownSettingKey } from '../domain/sync/format';
-import { deletedWhileModified, mergeField, modifiedWhileDeleted, type FieldConflict, type LocalField } from '../domain/sync/merge';
+import { isStrictHlc, isUnknownName, isUnknownSettingKey } from '../domain/sync/format';
+import { deletedWhileModified, isBeforeReset, mergeField, modifiedWhileDeleted, type FieldConflict, type LocalField } from '../domain/sync/merge';
 import { hlcDevice } from '../domain/sync/parse';
-import { TECHNICAL_COLUMNS, type SyncCatalogue, type SyncTable } from '../domain/sync/syncTables';
+import { DATA_RESET_TABLE, TECHNICAL_COLUMNS, type SyncCatalogue, type SyncTable } from '../domain/sync/syncTables';
 import type { SyncLogger } from './log';
 import { META, bumpLossCounter } from './meta';
 
@@ -99,6 +99,10 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
   const cache = new Map<string, CachedRow>();
   const tombstoneCache = new Map<string, Map<string, Hlc>>();
   let orphanTraces: ReadonlySet<string> | undefined;
+  /** RESET-01 : horizon de remise à zéro connu (`sync_meta`, posé par `src/sync/dataReset.ts` ou ci-dessous) ; relevé par une ligne `data_reset` du lot. */
+  const seen = cat.table(DATA_RESET_TABLE) ? await sync.getMeta(META.dataResetSeen) : null;
+  let resetHorizon: Hlc | null = seen !== null && isStrictHlc(seen) ? seen : null;
+  let beforeReset = 0;
 
   // Préchargement par table : lignes, horloges, champs en attente, traces.
   const byTable = new Map<SyncTable, string[]>();
@@ -271,6 +275,30 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
     if (fields.size === 0) {
       outcomes.push('rejected');
       continue;
+    }
+
+    // RESET-01 (ADR 0011 avenant 36) : une remise à zéro reçue relève l'horizon pour la suite du lot ; ailleurs, tout champ antérieur à l'horizon
+    // (écrit avant, ou fondé sur une valeur d'avant) est écarté, jamais appliqué : aucune résurrection par un journal ancien ou un appareil en retard.
+    if (t.name === DATA_RESET_TABLE) {
+      const at = maxOf([...fields.values()].map((f) => f[1]));
+      if (resetHorizon === null || at > resetHorizon) {
+        resetHorizon = at;
+        await sync.setMeta(META.dataResetSeen, at);
+      }
+    } else if (resetHorizon !== null) {
+      // Règle de LIGNE (D-187) : une ligne dont la création est connue d'avant l'horizon (`created_at` au hlc <= H), ou que l'opération modifie
+      // en partant d'une valeur d'avant (une base <= H), appartient à l'avant-remise : l'opération entière est écartée, même ses champs écrits
+      // après l'horizon (appareil hors ligne qui corrige une ancienne ligne, ligne republiée entière « + »). Sinon, champ par champ.
+      const horizon = resetHorizon;
+      const created = fields.get('created_at');
+      const beforeRow = (created !== undefined && created[1] <= horizon) || [...fields.values()].some((field) => field[2] !== null && field[2] <= horizon);
+      const kept = beforeRow ? new Map<string, SyncField>() : new Map([...fields].filter(([, field]) => !isBeforeReset(field, horizon)));
+      if (kept.size < fields.size) beforeReset += 1;
+      fields = kept;
+      if (fields.size === 0) {
+        outcomes.push('unchanged');
+        continue;
+      }
     }
 
     const key = `${t.name}\u0000${op.id}`;
@@ -525,6 +553,7 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
   }
 
   if (conflicts.length > 0) await sync.insertConflicts(conflicts, ctx.now);
+  if (beforeReset > 0) ctx.logger.log('data-reset-filtered', { ops: beforeReset });
   return { touched, conflicts: conflicts.length, outcomes };
 }
 

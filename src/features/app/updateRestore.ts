@@ -36,6 +36,7 @@ const REASON_KEYS = {
   'sync-busy': 'backup.errorIo',
   busy: 'backup.errorIo',
   'db-open': 'backup.errorIo',
+  'before-reset': 'backup.errorIo',
 } satisfies Record<BackupFailureReason, PlainMessageKey>;
 
 /** Raison P-04 d'un échec de restauration (base fermée : `io` après la fermeture = redémarrer). */
@@ -43,6 +44,7 @@ export function updateRestoreFailureText(reason: BackupFailureReason, databaseCl
   if (reason === 'sync-busy') return tBackupRestore('errorSyncBusy');
   if (reason === 'busy') return tBackupRestore('errorBusy');
   if (reason === 'db-open') return tBackupRestore('errorDbOpen');
+  if (reason === 'before-reset') return tBackupRestore('errorBeforeReset');
   if (databaseClosed && reason === 'io') return t('backup.errorClosed');
   return t(REASON_KEYS[reason]);
 }

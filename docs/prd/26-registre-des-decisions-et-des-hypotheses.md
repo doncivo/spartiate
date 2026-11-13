@@ -81,6 +81,5 @@ Les renvois « H-3 » du texte désignent la famille H-3a, H-3b, H-3c (D-59).
 | H-19a | Deux largeurs (440 / 1 440 px, rupture unique 1 024 px, `PC_MIN_WIDTH_PX` de `src/ui/useLayout.ts`) couvrent tous les usages, y compris zoom et texte agrandi, sans débordement autour de 1 024 px | UNVERIFIED | Scénarios `visual` Spartiate aux deux largeurs plus relecture à 1 024 px et en Dynamic Type « Très grand » (SPA-009) |
 | H-19b | Ciqual fournit les 8 micronutriments épinglés pour la majorité des aliments génériques | UNVERIFIED | Comptage des colonnes Ciqual au chargement (I6) |
 | H-20 | « Recovery HRV » de l'Apple Watch est lisible comme un type HealthKit (ou dérivable de `hrvSDNN`) | UNVERIFIED | Lecture des types exposés par `healthkit_read_quantity` sur l'iPhone (I5) ; fallback : HRV SDNN nocturne seule |
-| H-33 | Une action « Pris » portée par le plugin `notification-actions` (catégorie dédiée) est reçue et appliquée même app tuée, sans doublon, sur l’iPhone 16 Pro Max | UNVERIFIED | Constat d’Ali sur l’iPhone après branchement de la file d’actions (ticket à ouvrir, D-213) ; aujourd’hui un appui ouvre l’app sur Aujourd’hui |
 
 Règle : aucune hypothèse ne passe `CONFIRMED` sans preuve archivée (log CI, capture, vecteur) référencée dans `docs/capability-matrix.md`.

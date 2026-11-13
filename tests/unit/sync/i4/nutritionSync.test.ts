@@ -73,7 +73,7 @@ const seed = async (d: SimDevice): Promise<void> => {
 
 describe('catalogue de production : tables de nutrition (I4-02)', () => {
   it('quatre tables à la fin de l’ordre, UUID ; seule food_portion a un parent ; aucune colonne locale', () => {
-    expect(SYNC_TABLE_ORDER.slice(-13, -9)).toEqual(['food', 'food_portion', 'meal_entry', 'nutrition_target']);
+    expect(SYNC_TABLE_ORDER.slice(-16, -12)).toEqual(['food', 'food_portion', 'meal_entry', 'nutrition_target']); // RESET-01 : data_reset en dernier.
     for (const name of ['food', 'food_portion', 'meal_entry', 'nutrition_target']) {
       const t = SYNC_CATALOGUE.table(name);
       if (!t) throw new Error(name);

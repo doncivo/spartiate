@@ -49,6 +49,7 @@ Jamais exportés : les photos de progression (fichiers image : elles ne quittent
 - `recovery_sample`
 - `recovery_import_state`
 - `schema_migrations`
+- `data_reset` (remises à zéro « Repartir de zéro », technique de synchro)
 
 Les réglages de l’app autres que le thème et les favoris alimentaires locaux ne sont pas exportés.
 
@@ -467,7 +468,7 @@ Favoris de la recherche d’aliments (FIX-0181, schéma 15), écrits sur l’un 
 
 ### `csv/supplement.csv`
 
-Compléments (I6-05, schéma 16), écrits sur l’un ou l’autre appareil. `times` : liste JSON des heures de prise (`HH:mm`, 24 h, une à quatre) ; `days` : jours de la semaine en masque (lundi = 1, mardi = 2, mercredi = 4, jeudi = 8, vendredi = 16, samedi = 32, dimanche = 64 ; tous les jours = 127) ; `active` = 0 : en pause.
+Compléments (I6-05, schéma 17), écrits sur l’un ou l’autre appareil. `times` : liste JSON des heures de prise (`HH:mm`, 24 h, une à quatre) ; `days` : jours de la semaine en masque (lundi = 1, mardi = 2, mercredi = 4, jeudi = 8, vendredi = 16, samedi = 32, dimanche = 64 ; tous les jours = 127) ; `active` = 0 : en pause.
 
 | Colonne | Type | Unité | NULL possible | Remarque |
 | --- | --- | --- | --- | --- |
@@ -481,7 +482,7 @@ Compléments (I6-05, schéma 16), écrits sur l’un ou l’autre appareil. `tim
 
 ### `csv/supplement_intake.csv`
 
-Prises de compléments cochées (I6-05, schéma 16), une par complément, date et heure ; `id` = `intake|<supplement_id>|<date>|<moment>`.
+Prises de compléments cochées (I6-05, schéma 17), une par complément, date et heure ; `id` = `intake|<supplement_id>|<date>|<moment>`.
 
 | Colonne | Type | Unité | NULL possible | Remarque |
 | --- | --- | --- | --- | --- |

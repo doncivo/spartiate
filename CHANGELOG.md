@@ -2,6 +2,14 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.18.3
+
+**Schéma 16 : mettre à jour le PC et l'iPhone le même jour, avant d'utiliser « Repartir de zéro ».** Migration 0016 : une petite table synchronisée porte les remises à zéro. Un appareil resté en 0.18.2 ou avant affiche « Mets à jour l'app », garde ses données le temps de sa mise à jour, puis efface à son tour.
+
+- **Repartir de zéro** (ta décision) : Plus › Données › « Repartir de zéro », sur l'iPhone et le PC. L'écran dit ce qui est effacé (profil, objectifs, programmes, routines, matériel, séances, nutrition, pesées, mensurations, photos, récupération, Renpho, onboarding) et ce qui est gardé (tes réglages de l'appareil, l'appairage et la clé de synchro, le contenu fourni avec l'app). Tu confirmes en tapant EFFACER. C'est irréversible, sans archive avant.
+- **Sur tes deux appareils** : l'autre appareil efface aussi à sa prochaine synchro, même s'il était hors ligne. Rien d'avant ne revient, ni d'un vieux journal, ni d'un appareil en retard. Ce que tu saisis après circule normalement.
+- **Comme neuf** : après l'effacement, l'app redémarre sur l'onboarding. Refusé si une séance est en cours. Le dossier Santé n'est pas touché, le prochain import relit ses fichiers. Une sauvegarde d'avant ne peut plus être restaurée par erreur.
+
 ## 0.18.2
 
 **Schéma 15 : mettre à jour le PC et l'iPhone le même jour, avant toute saisie.** Migration 0015 : tes favoris d'aliments sont enregistrés dans une table synchronisée. Un appareil resté en 0.18.1 ou avant garde les favoris reçus sans les afficher et les retrouve après sa mise à jour.

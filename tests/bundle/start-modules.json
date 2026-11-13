@@ -328,9 +328,14 @@
       "raison": "Migration FIX-0181 (ID écrit FIX-01-81 : l'expression STORY_ID impose deux chiffres après le tiret ; table food_favorite publiée, favoris de la recherche d'aliments synchronisés, et ses deux déclencheurs de capture, 4 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0014. Le dépôt des favoris, la reprise des favoris locaux, la recherche et leurs textes restent hors du départ (import à la demande)."
     },
     {
-      "fichier": "src/db/migrations/0016_supplement.ts",
+      "fichier": "src/db/migrations/0016_data_reset.ts",
+      "story": "RESET-01",
+      "raison": "Migration RESET-01 (table data_reset publiée, remises à zéro des données, et ses deux déclencheurs de capture, 3 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0015. L'écran « Repartir de zéro », ses textes, l'effacement (src/sync/dataReset.ts) et son dépôt restent hors du départ (import à la demande)."
+    },
+    {
+      "fichier": "src/db/migrations/0017_supplement.ts",
       "story": "I6-05",
-      "raison": "Migration I6-05 (tables supplement et supplement_intake publiées, compléments et prises cochées synchronisés, et leurs quatre déclencheurs de capture, 5 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0015. Le dépôt des compléments, la carte d'Aujourd'hui, la section de Nutrition, le service des rappels et leurs textes restent hors du départ (import à la demande)."
+      "raison": "Migration I6-05 (tables supplement et supplement_intake publiées, compléments et prises cochées synchronisés, et leurs quatre déclencheurs de capture, 5 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0016. Le dépôt des compléments, la carte d'Aujourd'hui, la section de Nutrition, le service des rappels et leurs textes restent hors du départ (import à la demande)."
     },
     {
       "fichier": "src/features/app/ShellChrome.tsx",

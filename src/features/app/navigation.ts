@@ -38,7 +38,7 @@ export type Route =
   | { readonly tab: 'training'; readonly screen?: TrainingScreenId }
   | { readonly tab: 'nutrition'; readonly screen?: NutritionScreenId }
   | { readonly tab: 'progress' }
-  | { readonly tab: 'more'; readonly screen: 'home' | 'general' | 'desktop' | 'about' | 'appearance' | 'body' | 'health' | 'exportimport' | 'sync' | 'logs' };
+  | { readonly tab: 'more'; readonly screen: 'home' | 'general' | 'desktop' | 'about' | 'appearance' | 'body' | 'health' | 'exportimport' | 'reset' | 'sync' | 'logs' };
 
 export const DEFAULT_ROUTES: { readonly [K in TabId]: Extract<Route, { tab: K }> } = {
   today: { tab: 'today' },

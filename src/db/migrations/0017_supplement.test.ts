@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { SqlDriver } from '../driver';
 import { openSqliteWasmDriver } from '../drivers/sqliteWasm';
 import { migrate } from '../migrator';
-import { CAPTURE_TABLES_V16, migration0016Supplement } from './0016_supplement';
+import { CAPTURE_TABLES_V17, migration0017Supplement } from './0017_supplement';
 import { migrations } from './index';
 
 /**
@@ -13,7 +13,7 @@ const DEV = '0f8fad5b-d9cb-469f-a165-70867728950e';
 const h = (ms: number): string => `${String(ms).padStart(15, '0')}-0000-${DEV}`;
 const AT = '2026-11-13T08:00:00.000Z';
 const SUP = '30000000-0000-4000-8000-000000000001';
-const POS = migrations.indexOf(migration0016Supplement);
+const POS = migrations.indexOf(migration0017Supplement);
 
 async function freshDb(): Promise<SqlDriver> {
   const db = await openSqliteWasmDriver();
@@ -35,9 +35,9 @@ const outbox = (db: SqlDriver) => db.select<{ table_name: string; row_id: string
 
 describe('migration supplement (I6-05)', () => {
   it('registre : dernière migration, nom supplement, version = rang', () => {
-    expect(migrations.at(-1)).toBe(migration0016Supplement);
-    expect(migration0016Supplement.version).toBe(migrations.length);
-    expect(migration0016Supplement.name).toBe('supplement');
+    expect(migrations.at(-1)).toBe(migration0017Supplement);
+    expect(migration0017Supplement.version).toBe(migrations.length);
+    expect(migration0017Supplement.name).toBe('supplement');
   });
 
   it('base précédente → nouvelle : deux tables, deux index, quatre déclencheurs, rien en file, AUCUN objet existant modifié', async () => {
@@ -66,7 +66,7 @@ describe('migration supplement (I6-05)', () => {
   });
 
   it('copie figée des colonnes capturées', () => {
-    expect(CAPTURE_TABLES_V16).toEqual([
+    expect(CAPTURE_TABLES_V17).toEqual([
       ['supplement', ['name', 'dose', 'unit', 'times', 'days', 'active', 'created_at', 'deleted_at']],
       ['supplement_intake', ['supplement_id', 'date', 'moment', 'taken_at', 'created_at', 'deleted_at']],
     ]);

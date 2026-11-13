@@ -12,7 +12,7 @@ import { startAppStartup, type AppStartup } from './features/app/startup';
 import { StartupWatchdog } from './features/app/StartupWatchdog';
 import { startupTracker } from './features/app/startupSteps';
 import { registerTabShortcuts } from './features/app/tabShortcuts';
-import { AppearanceScreen, AppleHealthScreen, BodyScreen, ExportImportScreen, LogsScreen, NutritionScreen, SectionNotice, RecoveryFailureLazy, OnboardingHost, preloadScreens, SettingsScreen, ShortcutsHelp, SyncDetailsScreen, TrainingScreen, UpdateBanner } from './features/app/lazyScreens';
+import { AppearanceScreen, AppleHealthScreen, BodyScreen, ExportImportScreen, LogsScreen, NutritionScreen, SectionNotice, RecoveryFailureLazy, OnboardingHost, preloadScreens, ResetDataScreen, SettingsScreen, ShortcutsHelp, SyncDetailsScreen, TrainingScreen, UpdateBanner } from './features/app/lazyScreens';
 import { AppStatusBanner } from './features/app/AppStatusBanner';
 import { startNetworkStatus } from './features/app/appStatus';
 import { restoreAppearance, startThemeSync } from './features/settings';
@@ -84,7 +84,7 @@ function AppShellContent() {
       {/* I3-07 : onboarding en 8 écrans (premier lancement sur base vide, ou « Revoir mes réglages ») ; hôte et écrans à la demande. */}
       <OnboardingHost />
       {route.tab === 'more' ? (
-        route.screen === 'appearance' ? <AppearanceScreen /> : route.screen === 'body' ? <BodyScreen /> : route.screen === 'health' ? <AppleHealthScreen /> : route.screen === 'exportimport' ? <ExportImportScreen /> : route.screen === 'logs' ? <LogsScreen /> : route.screen === 'sync' ? <SyncDetailsScreen /> : <SettingsScreen />
+        route.screen === 'appearance' ? <AppearanceScreen /> : route.screen === 'body' ? <BodyScreen /> : route.screen === 'health' ? <AppleHealthScreen /> : route.screen === 'exportimport' ? <ExportImportScreen /> : route.screen === 'reset' ? <ResetDataScreen /> : route.screen === 'logs' ? <LogsScreen /> : route.screen === 'sync' ? <SyncDetailsScreen /> : <SettingsScreen />
       ) : route.tab === 'training' ? (
         <TrainingScreen />
       ) : route.tab === 'nutrition' ? (

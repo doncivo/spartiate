@@ -72,6 +72,8 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   progress_photo: { label: 'date', kind: 'progressPhoto' },
   // FIX-0181 : favori de la recherche d'aliments (libellé : la référence de l'aliment).
   food_favorite: { label: 'ref', kind: 'foodFavorite' },
+  // RESET-01 : remise à zéro des données (aucun libellé : la ligne ne porte que son instant).
+  data_reset: { label: null, kind: 'dataReset' },
   // I6-05 : complément (libellé : le nom) et prise (libellé : la date).
   supplement: { label: 'name', kind: 'supplement' },
   supplement_intake: { label: 'date', kind: 'supplementIntake' },
