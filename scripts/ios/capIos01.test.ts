@@ -11,9 +11,10 @@ type Json = Record<string, unknown>;
 const root = resolve(__dirname, '..', '..');
 const read = (p: string): string => readFileSync(join(root, p), 'utf8');
 
+// I6-06 (D-222) : la localisation « pendant l'utilisation » (NSLocationWhenInUseUsageDescription) est demandée par le plugin geolocation ; la
+// localisation « toujours » et tout mode d'arrière-plan restent interdits (GPS au premier plan seulement).
 const FORBIDDEN = [
   'UIBackgroundModes',
-  'NSLocationWhenInUseUsageDescription',
   'NSLocationAlwaysAndWhenInUseUsageDescription',
   'NSPhotoLibraryUsageDescription',
   'NSPhotoLibraryAddUsageDescription',
@@ -23,7 +24,7 @@ const FORBIDDEN = [
 ];
 
 /** Clés d'usage de l'app (Rappels Apple : K-05, fusionné ; écart 8 de l'ADR 0015 soldé). */
-const USAGE_KEYS = ['NSCameraUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'NSFaceIDUsageDescription', 'NSHealthShareUsageDescription'];
+const USAGE_KEYS = ['NSCameraUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'NSFaceIDUsageDescription', 'NSHealthShareUsageDescription', 'NSLocationWhenInUseUsageDescription'];
 
 /** Heuristique de langue : au moins deux mots français courants et aucun mot anglais courant. */
 function looksFrench(text: string): boolean {

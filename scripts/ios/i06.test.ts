@@ -245,15 +245,15 @@ describe('critère 18 : guide, étape 7', () => {
 });
 
 describe('critère 19 : gel de non-régression après SPA-006', () => {
-  it('Info.ios.plist : la permission de lecture Santé (SPA-006) et NSSupportsLiveActivities (SPA-007) s’ajoutent', () => {
+  it('Info.ios.plist : la permission de lecture Santé (SPA-006), NSSupportsLiveActivities (SPA-007) et la localisation pendant l’utilisation (I6-06) s’ajoutent', () => {
     const keys = Object.keys(parsePlist(read('src-tauri/Info.ios.plist')) as Record<string, unknown>).sort();
-    expect(keys).toEqual(['ITSAppUsesNonExemptEncryption', 'LSSupportsOpeningDocumentsInPlace', 'NSCameraUsageDescription', 'NSFaceIDUsageDescription', 'NSHealthShareUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'NSSupportsLiveActivities', 'UIFileSharingEnabled', 'UIRequiresFullScreen', 'UISupportedInterfaceOrientations', 'UISupportedInterfaceOrientations~ipad']);
+    expect(keys).toEqual(['ITSAppUsesNonExemptEncryption', 'LSSupportsOpeningDocumentsInPlace', 'NSCameraUsageDescription', 'NSFaceIDUsageDescription', 'NSHealthShareUsageDescription', 'NSLocationWhenInUseUsageDescription', 'NSMicrophoneUsageDescription', 'NSSpeechRecognitionUsageDescription', 'NSSupportsLiveActivities', 'UIFileSharingEnabled', 'UIRequiresFullScreen', 'UISupportedInterfaceOrientations', 'UISupportedInterfaceOrientations~ipad']);
   });
 
-  it('plugins et capabilities : HealthKit (SPA-006) et live-activity (SPA-007) s’ajoutent', () => {
+  it('plugins et capabilities : HealthKit (SPA-006), live-activity (SPA-007) et geolocation (I6-06, plugin officiel, sans dossier local) s’ajoutent', () => {
     expect(readdirSync(join(root, 'src-tauri', 'plugins')).filter((d) => d !== 'README.md').sort()).toEqual(['files', 'folder-bookmark', 'haptics', 'healthkit', 'live-activity', 'notification-actions', 'privacy-shield', 'speech', 'vision']);
     expect(readdirSync(join(root, 'src-tauri', 'capabilities')).sort()).toEqual([
-      'backups-ios.json', 'backups.json', 'biometric-ios.json', 'capture-ios.json', 'default.json', 'desktop.json', 'export-ios.json', 'export.json', 'haptics-ios.json', 'health-files-ios.json', 'healthkit-ios.json', 'import.json', 'live-activity-ios.json', 'logs-ios.json', 'logs.json', 'notifications-ios.json', 'ocr.json', 'off.json', 'privacy-shield-ios.json', 'signing-ios.json', 'sync-ios.json', 'sync-pairing.json', 'sync.json',
+      'backups-ios.json', 'backups.json', 'biometric-ios.json', 'capture-ios.json', 'default.json', 'desktop.json', 'export-ios.json', 'export.json', 'geolocation-ios.json', 'haptics-ios.json', 'health-files-ios.json', 'healthkit-ios.json', 'import.json', 'live-activity-ios.json', 'logs-ios.json', 'logs.json', 'notifications-ios.json', 'ocr.json', 'off.json', 'privacy-shield-ios.json', 'signing-ios.json', 'sync-ios.json', 'sync-pairing.json', 'sync.json',
     ]);
     // `getVersion` est couvert par core:default (aucune permission ajoutée).
     expect(read('src-tauri/capabilities/default.json')).toContain('"core:default"');
