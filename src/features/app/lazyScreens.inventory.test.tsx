@@ -7,7 +7,8 @@ import { SCREEN_LOADED_PREFIX } from './screenNames';
 /**
  * BUNDLE-01 (critère 16) : aucun écran manquant. Chaque export paresseux de `lazyScreens.tsx` (écrans, fiche de tâche, hôtes de la coquille)
  * se charge réellement (son module existe et exporte le composant nommé) et pose son repère `data-ct-loaded-<nom>` ; l'inventaire des
- * `ScreenName` est exact : un nom par export, pas un de plus, sauf `restorechoicedialog`, posé par `RestoreChoiceHost` (Y-FIX-04).
+ * `ScreenName` est exact : un nom par export, pas un de plus, sauf `restorechoicedialog`, posé par `RestoreChoiceHost` (Y-FIX-04),
+ * et `todaypcside`, déclaré dans `TodayScreen.tsx` (ERGO-02 : hors du départ ; son chargement est vérifié par `ErgoToday02.test.tsx`).
  */
 describe('inventaire des écrans et hôtes à la demande', () => {
   it('chaque export paresseux se charge et pose son repère ; les ScreenName correspondent un à un', async () => {
@@ -23,6 +24,6 @@ describe('inventaire des écrans et hôtes à la demande', () => {
     expect(posted).toHaveLength(lazy.length);
     const source = readFileSync(join(import.meta.dirname, 'screenNames.ts'), 'utf8');
     const declared = Array.from(source.matchAll(/^\s*\| '([a-z]+)'/gm), (match) => match[1] as string).sort();
-    expect(declared).toEqual([...posted, 'restorechoicedialog'].sort());
+    expect(declared).toEqual([...posted, 'restorechoicedialog', 'todaypcside'].sort());
   });
 });
