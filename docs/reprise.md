@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247 dans docs/decisions.md (D-238 : PR documentaire du coordinateur).
+État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247 dans docs/decisions.md.
 
 ## Rapport du matin (13/11)
 
@@ -11,8 +11,7 @@
 
 ## Prochaines étapes
 
-0. ERGO-01b (0.22.1, PR ouverte, non fusionnée) : règles visuelles de tous les écrans (D-240) et propositions P1 à P5 (D-238, D-243 à D-247) ; fiche docs/ERGO-01b.md (captures visual-pairs à relire).
-1. Ali : constats ci-dessus, écarts ERGO-01b (pas de charges sur « Séance du jour », carte Poids gardée sur PC), numéro de l'import de programme (ancien I6-06, D-225), fusion de « Salle commerciale » dans « Salle complète » (D-142).
+1. En cours : ERGO-01b (0.22.1, PR #125 : règles visuelles de tous les écrans D-240, P1 à P5 D-238 et D-243 à D-247, fiche docs/ERGO-01b.md), puis FIX-0221 (0.22.2, PR #124 : action « Pris » des compléments, D-250). Ali : constats ci-dessus et écarts ERGO-01b (pas de charges sur « Séance du jour », carte Poids gardée sur PC). Import de programme : I6-08 (docs/I6-08.md, non exécuté).
 2. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
 3. À recaler sur demande d'Ali : D-73 (4), Exertion (D-88, D-220).
 
