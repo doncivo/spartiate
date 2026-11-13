@@ -363,6 +363,13 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // ERGO-02 : textes de la séance en tableau et de la colonne droite d'Aujourd'hui PC (fr.todayPc.ts) : avec leurs blocs à la demande, hors du départ.
+  it.each(['Saisir la séance ici', 'Derniers records', 'Macros du jour', 'pas encore de record'])('ERGO-02 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   // RESET-01 : « Repartir de zéro » (écran, catalogue fr.dataReset, effacement src/sync/dataReset.ts et son dépôt) : blocs à la demande, hors du départ.
   it.each(['src/features/settings/ResetDataScreen.tsx', 'src/sync/dataReset.ts', 'src/db/repositories/sql/dataResetRepository.ts'])('RESET-01 : %s est un bloc à la demande, hors du départ', (source) => {
     const start = new Set(startChunks().map((chunk) => chunk.file));
