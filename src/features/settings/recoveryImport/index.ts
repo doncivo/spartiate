@@ -56,6 +56,8 @@ export function shortcutImportFor(container: AppContainer, reader?: ShortcutFile
     samples: () => container.data.repos.recoverySamples(),
     recovery: () => container.data.repos.recovery(),
     workouts: (since) => loadRecoveryWorkouts(container, since),
+    // I6-06 (D-220) : séances cardio saisies (publiées), dans l'Exertion.
+    cardio: async (since) => (await container.data.repos.cardio()).listSince(since),
     clock: container.clock,
     timeZone: detectTimeZone() ?? 'Europe/Paris',
     log: importLog,

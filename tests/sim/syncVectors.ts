@@ -359,6 +359,42 @@ export async function buildSyncVectors(rustSealed: SyncVectors['rustSealed'] = [
       },
       full: true,
     },
+    // I6-06 (D-221) : journal d'un appareil en schéma 17, une séance cardio synthétique (durée et distance seulement : le tracé ne quitte jamais
+    // l'appareil), lu par Vitest et cargo test.
+    {
+      name: 'journal-ops-cardio-session',
+      place: journal(12, 0),
+      sm: 1,
+      sv: 17,
+      plaintext: {
+        json: JSON.stringify({
+          k: 'ops',
+          sv: 17,
+          ops: [
+            {
+              t: 'cardio_session',
+              id: '7d3c2e4f-0000-4000-8000-0000000000c6',
+              at: '2026-11-13T18:00:00.000Z',
+              f: Object.fromEntries(
+                Object.entries({
+                  kind: 'run',
+                  started_at: '2026-11-13T17:00:00.000Z',
+                  duration_sec: 2700,
+                  distance_m: 7500,
+                  avg_hr: 152,
+                  rpe: 7,
+                  source: 'gps',
+                  notes: '',
+                  created_at: '2026-11-13T18:00:00.000Z',
+                  deleted_at: null,
+                }).map(([name, value]) => [name, [value, '001794600000000-0000-3f2b8c1e-5a7d-4e9b-9c2a-1b2c3d4e5f60', null]]),
+              ),
+            },
+          ],
+        }),
+      },
+      full: true,
+    },
   ];
   const records: RecordVector[] = [];
   for (const [i, spec] of specs.entries()) {

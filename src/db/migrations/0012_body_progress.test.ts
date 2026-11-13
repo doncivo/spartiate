@@ -128,11 +128,11 @@ describe('migration 0012 : corps (I6-02, schéma 12)', () => {
     await db.close();
   });
 
-  it('quatre déclencheurs de capture (deux par table publiée), 55 au total (la 0014, I6-03b, ajoute la capture propre des groupes de routine ; la 0015, FIX-0181, les deux de food_favorite ; la 0016, RESET-01, les deux de data_reset)', async () => {
+  it('quatre déclencheurs de capture (deux par table publiée), 57 au total (la 0014, I6-03b, ajoute la capture propre des groupes de routine ; la 0015, FIX-0181, les deux de food_favorite ; la 0016, RESET-01, les deux de data_reset ; le cardio, I6-06, les deux de cardio_session)', async () => {
     const db = await freshDb();
     const names = (await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger' AND (name LIKE 'sync_measurement%' OR name LIKE 'sync_progress_photo%') ORDER BY name")).map((r) => r.name);
     expect(names).toEqual(['sync_measurement_ai', 'sync_measurement_au', 'sync_progress_photo_ai', 'sync_progress_photo_au']);
-    expect(await db.select("SELECT 1 FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_%'")).toHaveLength(55);
+    expect(await db.select("SELECT 1 FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_%'")).toHaveLength(57);
     await db.close();
   });
 

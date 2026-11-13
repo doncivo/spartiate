@@ -268,4 +268,6 @@ export const syncFieldFr = {
   progress_photo: { deleted_at: 'suppression' },
   // FIX-0181 : favoris de la recherche d'aliments ; seule la suppression figure au journal des conflits.
   food_favorite: { deleted_at: 'suppression' },
+  // I6-06 : séance cardio ; la FC moyenne (donnée corporelle) est masquée du journal des conflits.
+  cardio_session: { kind: 'type', started_at: 'début', duration_sec: 'durée', distance_m: 'distance', rpe: 'ressenti', source: 'origine', notes: 'notes', deleted_at: 'suppression' },
 } as const;

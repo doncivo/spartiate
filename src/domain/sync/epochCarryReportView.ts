@@ -74,6 +74,8 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   food_favorite: { label: 'ref', kind: 'foodFavorite' },
   // RESET-01 : remise à zéro des données (aucun libellé : la ligne ne porte que son instant).
   data_reset: { label: null, kind: 'dataReset' },
+  // I6-06 : séance cardio (libellé : le début).
+  cardio_session: { label: 'started_at', kind: 'cardioSession' },
 };
 
 export const carryReportTableEntry = (table: string): { readonly label: string | null; readonly kind: string } | undefined =>
