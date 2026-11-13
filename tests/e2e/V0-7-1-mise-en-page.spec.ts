@@ -72,7 +72,7 @@ const rowSpread = (group: Locator): Promise<number> =>
 
 test('Point 4 : onglets d’Entraînement et de Nutrition sur une seule ligne, onglet actif visible', async ({ page }) => {
   await tab(page, 'Entraînement').click();
-  const names = ['Routines', 'Bibliothèque', 'Matériel', 'Journal', 'Cycle'];
+  const names = ['Routines', 'Bibliothèque', 'Matériel', 'Journal', 'Cycle', 'Cardio'];
   // FIX-0115 : les onglets sont lus dans la même image (une seule évaluation) ; une mesure onglet par onglet pouvait croiser un décalage de mise en page (CI du 12/11 : 182 px d'écart) et n'est plus utilisée. Le seuil (< 2 px) est inchangé ; la lecture est refaite jusqu'à la stabilité de la page.
   const trainingGroup = page.getByRole('radiogroup', { name: 'Sections de l’entraînement' });
   for (const name of names) await expect(trainingGroup.getByRole('radio', { name, exact: true })).toBeVisible();
@@ -80,8 +80,9 @@ test('Point 4 : onglets d’Entraînement et de Nutrition sur une seule ligne, o
   // FIX-0115 : des onglets sont cachés à droite à l'ouverture, le fondu le dit ; une fois défilé, il passe à gauche.
   const group = page.getByRole('radiogroup', { name: 'Sections de l’entraînement' });
   await expect(group).toHaveAttribute('data-fade-end', 'true');
-  await page.getByRole('radio', { name: 'Cycle', exact: true }).click();
-  await expect(page.getByRole('radio', { name: 'Cycle', exact: true })).toBeInViewport();
+  // I6-06 : « Cardio » est désormais le dernier onglet : c'est lui qui, une fois choisi, fait défiler la bande jusqu'au bout.
+  await page.getByRole('radio', { name: 'Cardio', exact: true }).click();
+  await expect(page.getByRole('radio', { name: 'Cardio', exact: true })).toBeInViewport();
   await expect(group).toHaveAttribute('data-fade-start', 'true');
   await expect(group).not.toHaveAttribute('data-fade-end', 'true');
 

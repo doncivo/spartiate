@@ -27,7 +27,7 @@ export const TABS: readonly TabDefinition[] = [
 ];
 
 /** I1-01 : sections de l'Entraînement ; absent = Routines. I1-02 : `session` = séance active (ou ses options de départ). */
-export type TrainingScreenId = 'routines' | 'library' | 'equipment' | 'history' | 'cycle' | 'session';
+export type TrainingScreenId = 'routines' | 'library' | 'equipment' | 'history' | 'cycle' | 'cardio' | 'session';
 
 /** I4-03 : sections de Nutrition ; absent = Journal. */
 export type NutritionScreenId = 'journal' | 'dashboard' | 'strategy' | 'checkin' | 'recipes';
