@@ -59,6 +59,7 @@ export const syncVersionFr = {
     measurement: 'mensurations',
     progressPhoto: 'photos de progression',
     foodFavorite: 'favoris',
+    dataReset: 'remise à zéro',
     other: 'autres éléments',
   },
 } as const;

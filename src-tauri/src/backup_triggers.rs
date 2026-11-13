@@ -5,7 +5,7 @@
 //! à régénérer avec ce test si la migration 0011 change (jamais, une migration publiée ne se modifie plus) ou si un déclencheur est ajouté.
 
 /// (nom, table, SQL) de chaque déclencheur, triés par nom.
-pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 101] = [
+pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 103] = [
     (
         "search_checklist_ad",
         "checklist",
@@ -461,6 +461,46 @@ INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'body_weight', NEW.id
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'checklist_item', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'checklist_item' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'checklist_item', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
+     END"##,
+    ),
+    (
+        "sync_data_reset_ai",
+        "data_reset",
+        r##"CREATE TRIGGER sync_data_reset_ai AFTER INSERT ON data_reset
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+       DELETE FROM sync_tombstone WHERE table_name = 'data_reset' AND row_id = NEW.id;
+       DELETE FROM sync_outbox WHERE table_name = 'data_reset' AND row_id = NEW.id AND field = '*';
+       INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('data_reset', NEW.id, '*');
+     END"##,
+    ),
+    (
+        "sync_data_reset_au",
+        "data_reset",
+        r##"CREATE TRIGGER sync_data_reset_au AFTER UPDATE ON data_reset
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+         SELECT 'data_reset', NEW.id, '*', OLD.hlc, NULL
+         WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'data_reset' AND row_id = NEW.id AND field = '*');
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'data_reset', NEW.id, 'created_at', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'data_reset' AND row_id = NEW.id AND field IN ('created_at', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'data_reset' AND row_id = NEW.id AND field = 'created_at')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'data_reset' AND row_id = NEW.id AND field = 'created_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'data_reset' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.created_at IS NOT NEW.created_at
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'data_reset' AND row_id = NEW.id AND field = 'created_at' AND OLD.created_at IS NOT NEW.created_at;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'data_reset', NEW.id, 'created_at' WHERE OLD.created_at IS NOT NEW.created_at;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'data_reset', NEW.id, 'deleted_at', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'data_reset' AND row_id = NEW.id AND field IN ('deleted_at', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'data_reset' AND row_id = NEW.id AND field = 'deleted_at')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'data_reset' AND row_id = NEW.id AND field = 'deleted_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'data_reset' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.deleted_at IS NOT NEW.deleted_at
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'data_reset' AND row_id = NEW.id AND field = 'deleted_at' AND OLD.deleted_at IS NOT NEW.deleted_at;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'data_reset', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
+       DELETE FROM sync_outbox WHERE table_name = 'data_reset' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
+       INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'data_reset', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
      END"##,
     ),
     (
@@ -4068,7 +4108,7 @@ pub const SUPERSEDED_TRIGGERS: [(&str, &str, &str, u32, u32); 3] = [
 /// de 1 à `APP_SCHEMA_VERSION`, même vide (migration sans déclencheur) : une version sans entrée, ou un déclencheur d'une base migrée absent
 /// d'ici, fait échouer `backup_versions.rs` (`i5_01_*`, comparaison avec `tests/fixtures/spartiate-migrations.json`). Jamais de version
 /// par défaut : un oubli ferait recréer à la restauration un déclencheur qu'une migration suivante créerait encore (« trigger already exists »).
-pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 15] = [
+pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 16] = [
     // SPA-001b (migration 0001) : profil et poids.
     (
         1,
@@ -4178,15 +4218,18 @@ pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 15] = [
     (14, &["sync_routine_exercise_circuit_au"]),
     // FIX-0181 (migration 0015) : favoris de la recherche d’aliments publiés (food_favorite).
     (15, &["sync_food_favorite_ai", "sync_food_favorite_au"]),
+    // RESET-01 (migration 0016) : remises à zéro des données publiées (data_reset).
+    (16, &["sync_data_reset_ai", "sync_data_reset_au"]),
 ];
 
 /// I5-01 point 1.1 : tables créées par les migrations Spartiate (toutes versions). Un déclencheur hérité de l'ancien projet (nom absent de
 /// `SPARTIATE_TRIGGERS_BY_VERSION`) n'est jamais admis ni recréé sur l'une d'elles, à aucune version : `sync_settings_*` (valables à partir de la
 /// version 15 dans l'ancien projet) ne reviennent pas sur `settings`, ni `search_routine_*` sur `routine`. Tenue égale aux tables d'une base
 /// migrée par `backup_versions.rs` (une table nouvelle, `recovery_day` par exemple, doit être ajoutée ici).
-pub const SPARTIATE_TABLES: [&str; 40] = [
+pub const SPARTIATE_TABLES: [&str; 41] = [
     "body_weight",
     "conflict_log",
+    "data_reset",
     "day_completeness",
     "epoch_carry_report",
     "equipment_profile",

@@ -18,6 +18,15 @@ import type { DeviceId, Hlc } from '../types';
 import type { SyncField, SyncValue } from './format';
 import { hlcDevice } from './parse';
 
+/**
+ * RESET-01 (ADR 0011 avenant 36) : un champ reçu est-il antérieur à la remise à zéro d'horizon `horizon` ? Oui si sa valeur a été écrite avant
+ * (`hlc <= H`) ou si elle remplace une valeur écrite avant (`base <= H` : modification hors ligne d'une ligne d'avant la remise à zéro). Un tel
+ * champ n'est jamais appliqué.
+ */
+export function isBeforeReset(field: readonly [unknown, Hlc, Hlc | null], horizon: Hlc): boolean {
+  return field[1] <= horizon || (field[2] !== null && field[2] <= horizon);
+}
+
 /** Champ local tel que la fusion le voit : valeur, horloge du champ (section 3.2), base, et « en attente de publication ». */
 export interface LocalField {
   readonly value: SyncValue;
