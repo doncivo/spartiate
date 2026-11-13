@@ -116,6 +116,16 @@ describe('Check-in : proposition (CheckIn-apres)', () => {
     expect(table.textContent ?? '').not.toMatch(/(^|\D)0 (kcal|g)/);
   });
 
+  it('sans cible en vigueur : la cellule Écart porte aussi une raison, pas un tiret nu', async () => {
+    await seedHistory(false);
+    open();
+    const r = await region();
+    await within(r).findByRole('button', { name: /^Accepter/ });
+    const cells = within(r).getByRole('table', { name: 'Proposition' }).querySelectorAll('.ct-checkin__delta');
+    expect(cells).toHaveLength(4);
+    for (const cell of cells) expect(within(cell as HTMLElement).getByText('pas d’écart')).toBeInTheDocument();
+  });
+
   it('une seule action principale : Accepter en premier, Personnaliser et Refuser ensuite ; aucun point d’exclamation', async () => {
     await seedHistory(true);
     open();

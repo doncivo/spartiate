@@ -59,25 +59,38 @@ describe('Compléments (Complements-apres)', () => {
     mount();
     expect(await screen.findByText('Matin · 08:00')).toBeInTheDocument();
     expect(screen.getByText('Soir · 20:00')).toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: 'Créatine : pris' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Marquer Créatine comme pris' })).toBeChecked();
     expect(screen.getByRole('checkbox', { name: 'Marquer Oméga-3 comme pris' })).not.toBeChecked();
     expect(screen.getByText('5 g · pris')).toBeInTheDocument();
     expect(screen.getByText('2 capsules · prévu à 20:00')).toBeInTheDocument();
   });
 
-  it('cocher une prise l’enregistre, passe le héros à « 3 / 3 » et renomme la coche', async () => {
+  it('la coche garde un libellé constant (l’état est porté par aria-checked seul) ; la section est nommée par son titre', async () => {
+    await seed();
+    mount();
+    const box = await screen.findByRole('checkbox', { name: 'Marquer Oméga-3 comme pris' });
+    fireEvent.click(box);
+    await screen.findByText('3 / 3');
+    expect(screen.getByRole('checkbox', { name: 'Marquer Oméga-3 comme pris' })).toHaveAttribute('aria-checked', 'true');
+    const section = screen.getByText('Soir · 20:00').closest('section') as HTMLElement;
+    expect(section).not.toHaveAttribute('aria-label');
+    expect(section.getAttribute('aria-labelledby')).toBe(screen.getByText('Soir · 20:00').id);
+    expect(screen.getByRole('region', { name: 'Soir · 20:00' })).toBe(section);
+  });
+
+  it('cocher une prise l’enregistre, passe le héros à « 3 / 3 » et garde le nom de la coche', async () => {
     await seed();
     mount();
     fireEvent.click(await screen.findByRole('checkbox', { name: 'Marquer Oméga-3 comme pris' }));
     expect(await screen.findByText('3 / 3')).toBeInTheDocument();
-    expect(await screen.findByRole('checkbox', { name: 'Oméga-3 : pris' })).toBeChecked();
+    expect(await screen.findByRole('checkbox', { name: 'Marquer Oméga-3 comme pris' })).toBeChecked();
     await waitFor(async () => expect(await (await db.data.repos.supplements()).intakes(TODAY, TODAY)).toHaveLength(3));
   });
 
   it('décocher une prise la retire', async () => {
     await seed();
     mount();
-    fireEvent.click(await screen.findByRole('checkbox', { name: 'Créatine : pris' }));
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'Marquer Créatine comme pris' }));
     expect(await screen.findByText('1 / 3')).toBeInTheDocument();
     await waitFor(async () => expect(await (await db.data.repos.supplements()).intakes(TODAY, TODAY)).toHaveLength(1));
   });

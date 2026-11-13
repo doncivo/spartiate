@@ -106,6 +106,30 @@ describe('suivi GPS (iPhone, premier plan)', () => {
     expect(await screen.findByText('allure 4:30 /km · Suivi GPS · Tracé gardé sur cet appareil')).toBeInTheDocument();
   });
 
+  it('région masquée (role status) : son texte ne change qu’à la minute, jamais à chaque seconde', async () => {
+    const gps = fakeGps('granted');
+    setGeolocation(gps.geo);
+    mount('ios');
+    fireEvent.click(await screen.findByRole('button', { name: 'Démarrer le suivi GPS' }));
+    await screen.findByText('En attente du signal GPS…');
+    gps.emit(fix(0));
+    const status = (): string => screen.getAllByRole('status').map((s) => s.textContent ?? '').find((t) => t.startsWith('Suivi en cours')) ?? '';
+    const chrono = (): string => (document.querySelector('.ct-cardio__gps-stat-value')?.textContent ?? '');
+    gps.emit({ kind: 'error', code: 'unavailable' });
+    let last = status();
+    const changes: string[] = [];
+    for (let s = 1; s <= 130; s += 1) {
+      db.clock.advance(1_000);
+      gps.emit({ kind: 'error', code: 'unavailable' });
+      const now = status();
+      if (now !== last) changes.push(chrono());
+      last = now;
+    }
+    // Le texte ne change qu’au passage d’une minute entière du chrono (m:00), jamais à mi-minute ni chaque seconde.
+    expect(changes.length).toBeGreaterThan(0);
+    for (const at of changes) expect(at).toMatch(/:00$/);
+  });
+
   it('permission refusée : dit à l’écran, aucun suivi ; la saisie manuelle reste possible', async () => {
     const gps = fakeGps('denied');
     setGeolocation(gps.geo);
