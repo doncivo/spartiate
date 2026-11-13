@@ -104,7 +104,7 @@ describe('Apple Santé (finitions 0.1.2 d)', () => {
       );
       const row = await screen.findByRole('button', { name: /Apple Santé/ });
       expect(row).not.toHaveTextContent(/autorisé|accordé/i);
-      expect(screen.getByRole('heading', { name: 'IPHONE' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'SOURCES' })).toBeInTheDocument();
       fireEvent.click(row);
       expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'health' });
     });
