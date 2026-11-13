@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { todayLocal } from '../../../domain/clock';
 import { dueIntakes, type DueIntake } from '../../../domain/nutrition/supplements';
 import { formatSupplementDose, tSupplements } from '../../../i18n/supplementsText';
-import { Button } from '../../../ui';
+import { Button, Icon } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { useSyncedData } from '../../sync/remoteChanges';
@@ -79,7 +79,7 @@ export function SupplementsTodayCard() {
           <li key={`${item.supplement.id}|${item.moment}`}>
             <button type="button" role="checkbox" aria-checked={item.taken} aria-label={intakeLabel(item)} className="ct-supplements__intake" onClick={() => void toggle(item)}>
               <span className="ct-supplements__mark" aria-hidden="true">
-                {item.taken ? <Check size={16} /> : null}
+                {item.taken ? <Icon icon={Check} size="sm" /> : null}
               </span>
               <span className="ct-supplements__time">{item.moment}</span>
               <span>{intakeLabel(item).slice(item.moment.length + 3)}</span>

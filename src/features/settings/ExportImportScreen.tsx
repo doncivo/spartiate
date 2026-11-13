@@ -124,7 +124,7 @@ export function ExportImportScreen() {
       <div className="ct-body">
         <div className="ct-body__topRow">
           <button type="button" className="ct-body__back" aria-label={tExportImport('back')} onClick={() => navigate({ tab: 'more', screen: 'home' })}>
-            <Icon icon={ArrowLeft} size={26} />
+            <Icon icon={ArrowLeft} size="lg" />
           </button>
         </div>
         <h1 className="ct-body__title">{tExportImport('title')}</h1>

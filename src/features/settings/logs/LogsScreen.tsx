@@ -132,7 +132,7 @@ export function LogsScreen({ journal: injected, version }: LogsScreenProps = {})
       <div className="ct-logs">
         <div className="ct-logs__topRow">
           <button type="button" className="ct-logs__back" aria-label={tLogs('back')} onClick={() => navigate({ tab: 'more', screen: 'home' })}>
-            <Icon icon={Undo2} size={26} />
+            <Icon icon={Undo2} size="lg" />
           </button>
         </div>
         <h1 ref={titleRef} tabIndex={-1} className="ct-logs__title">
@@ -167,12 +167,12 @@ export function LogsScreen({ journal: injected, version }: LogsScreenProps = {})
         <div className="ct-logs__actions">
           {container.files.canSave() && (
             <button type="button" className="ct-logs__export" onClick={() => void runExport()} disabled={busy || !journal}>
-              <Icon icon={Download} size={18} />
+              <Icon icon={Download} size="md" />
               <span>{tLogs('export')}</span>
             </button>
           )}
           <button type="button" className="ct-logs__clear" onClick={() => setConfirming(true)} disabled={busy || !journal}>
-            <Icon icon={Trash2} size={18} />
+            <Icon icon={Trash2} size="md" />
             <span>{tLogs('clear')}</span>
           </button>
         </div>
