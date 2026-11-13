@@ -10,6 +10,7 @@ import { openTimerNotifier, type TimerNotifier } from '../../../platform/notific
 import { Button, Icon } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
+import { heldLookup } from '../loadDisplay';
 import type { TrainingData } from '../trainingState';
 import { ActiveSession } from './ActiveSession';
 import { createRestTimer } from './restTimer';
@@ -129,6 +130,7 @@ export function SessionScreen({ data, platform, onExit }: { readonly data: Train
           <WorkoutSummary
             access={access}
             closed={load.closed}
+            heldOf={heldLookup(data)}
             onClose={() => setLoad((now) => (now.status === 'ready' ? { ...now, workout: null, closed: null } : now))}
             onJournal={() => navigate({ tab: 'training', screen: 'history' })}
           />
