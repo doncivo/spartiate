@@ -101,7 +101,7 @@ function ProposalTable({ proposal }: { readonly proposal: Proposal }) {
               )}
             </td>
             <td className={index === 0 ? 'ct-checkin__proposed ct-checkin__proposed--main' : 'ct-checkin__proposed'}>{`${formatInt(row.to)}${row.unit}`}</td>
-            <td className="ct-checkin__delta">{row.from === undefined ? '—' : row.from === row.to ? tNutrition('checkInDeltaSame') : formatSigned(row.to - row.from)}</td>
+            <td className="ct-checkin__delta">{row.from === undefined ? <MissingValue reason={tNutrition('checkInNoDelta')} /> : row.from === row.to ? tNutrition('checkInDeltaSame') : formatSigned(row.to - row.from)}</td>
           </tr>
         ))}
       </tbody>

@@ -400,10 +400,6 @@
   box-shadow: inset 2px 0 0 var(--ct-color-bronze);
 }
 
-.ct-settings__listItem[data-tone='danger'] > :first-child {
-  color: var(--ct-color-danger);
-}
-
 .ct-settings__listItem:focus-visible {
   outline: 2px solid var(--ct-color-accent);
   outline-offset: 2px;

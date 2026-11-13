@@ -144,7 +144,7 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
             </figure>
           )}
           <p className="ct-visually-hidden" role="status">
-            {live.track.points.length === 0 ? line('gpsWaiting') : tCardio('gpsRunning', { duration: formatDuration(elapsedSec), distance: formatKm(distanceM) })}
+            {live.track.points.length === 0 ? line('gpsWaiting') : tCardio('gpsRunning', { duration: formatDuration(Math.floor(elapsedSec / 60) * 60), distance: formatKm(distanceM) })}
           </p>
           {live.paused ? <p className="ct-cardio__message">{line('gpsPaused')}</p> : live.lost ? <p className="ct-cardio__message">{line('gpsLost')}</p> : null}
           <div className="ct-cardio__gps-actions">

@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { addDays } from '../../../domain/localDate';
 import {
   ALL_DAYS,
@@ -398,6 +398,7 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
 
 /** Héros « 2 / 3 pris aujourd'hui » et prises du jour par heure (Complements-apres) : coche de 44 px, état dit en texte. */
 function TodayIntakes({ items, onToggle }: { readonly items: readonly DueIntake[]; readonly onToggle: (item: DueIntake) => void }) {
+  const baseId = useId();
   const groups = [...new Set(items.map((i) => i.moment))].map((moment) => ({ moment, items: items.filter((i) => i.moment === moment) }));
   return (
     <div className="ct-supplements__today" role="group" aria-label={tSupplements('todayGroup')}>
@@ -412,8 +413,8 @@ function TodayIntakes({ items, onToggle }: { readonly items: readonly DueIntake[
         </p>
       )}
       {groups.map((group) => (
-        <section key={group.moment} className="ct-supplements__group" aria-label={tSupplements('groupHeading', { moment: momentName(group.moment), time: group.moment })}>
-          <h3 className="ct-section-title">{tSupplements('groupHeading', { moment: momentName(group.moment), time: group.moment })}</h3>
+        <section key={group.moment} className="ct-supplements__group" aria-labelledby={`${baseId}-${group.moment}`}>
+          <h3 id={`${baseId}-${group.moment}`} className="ct-section-title">{tSupplements('groupHeading', { moment: momentName(group.moment), time: group.moment })}</h3>
           <ul className="ct-supplements__rows">
             {group.items.map((item) => (
               <li key={item.supplement.id} className="ct-supplements__row">
@@ -421,7 +422,7 @@ function TodayIntakes({ items, onToggle }: { readonly items: readonly DueIntake[
                   type="button"
                   role="checkbox"
                   aria-checked={item.taken}
-                  aria-label={tSupplements(item.taken ? 'checkTaken' : 'checkMark', { name: item.supplement.name })}
+                  aria-label={tSupplements('checkMark', { name: item.supplement.name })}
                   className="ct-supplements__ck"
                   onClick={() => onToggle(item)}
                 >

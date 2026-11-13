@@ -58,7 +58,6 @@ export const supplementsFr = {
   momentAfternoon: 'Après-midi',
   momentEvening: 'Soir',
   groupHeading: '{moment} · {time}',
-  checkTaken: '{name} : pris',
   checkMark: 'Marquer {name} comme pris',
   intakeTaken: 'pris',
   intakePlanned: 'prévu à {time}',
