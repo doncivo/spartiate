@@ -339,6 +339,21 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // I6-06 : cardio (écran, carte de Progrès, catalogue fr.cardio, dépôt) : blocs à la demande, hors du départ.
+  it.each(['src/features/cardio/CardioView.tsx', 'src/features/cardio/CardioProgress.tsx', 'src/db/repositories/sql/cardioRepository.ts'])('I6-06 : %s est un bloc à la demande, hors du départ', (source) => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest[source];
+    if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
+  });
+
+  it.each(['Aucune séance de cardio pour l’instant.', 'Aucune séance de cardio sur les quatre dernières semaines.', 'Durée (min ou h:mm:ss)'])('I6-06 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   // I6-03 : circuits (catalogue fr.circuit), rejeu depuis l'historique et export complet : hors du départ, présents dans le build.
   it.each(['Superset, triset ou circuit', 'Repos de fin de tour (s)', 'Refaire cette séance', 'Export complet (CSV et JSON)'])('I6-03 : « %s » hors du départ et présent dans le build', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
