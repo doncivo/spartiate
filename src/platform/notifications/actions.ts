@@ -6,11 +6,14 @@ import type { NotificationActionId, RawNotificationAction } from '../../domain/n
  * le cas d'usage l'inscrit dans la file locale durable, puis l'acquitte (`ack`). Hors iPhone il n'y a pas de source (`null`).
  */
 
-/** Action proposée dans une catégorie : toujours au premier plan (l'app s'ouvre, décision du 2026-10-07). */
+/**
+ * Action proposée dans une catégorie. `foreground: true` ouvre l'app (décision du 2026-10-07, ancien projet) ; `false` la laisse fermée : iOS
+ * réveille l'app en arrière-plan, le plugin écrit l'action dans son fichier durable, l'app l'applique au passage suivant (« Pris », FIX-0221, D-251).
+ */
 export interface ActionSpec {
   readonly id: NotificationActionId;
   readonly title: string;
-  readonly foreground: true;
+  readonly foreground: boolean;
 }
 
 /** Catégorie de notification (`ct.task`, `ct.routine`, `ct.event`) et ses actions. */

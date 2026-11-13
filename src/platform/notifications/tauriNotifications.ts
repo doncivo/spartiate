@@ -9,6 +9,7 @@ import type { LocalDateTime } from '../../domain/types';
 import type { LedgerStore } from './notificationLedger';
 import type { NotificationClock } from './notificationClock';
 import {
+  CATEGORY_OF_KIND,
   NOTIFICATION_LIMIT,
   NotificationSchedulerError,
   type NotificationAvailability,
@@ -463,7 +464,9 @@ export function createTauriNotificationScheduler(deps: TauriSchedulerDeps): Noti
       return sortRequests(
         items.flatMap((item): NotificationRequest[] => {
           const entry = byNumber.get(item.id);
-          return entry === undefined ? [] : [{ id: entry.sid, fireAt: localDateTimeAt(entry.at, zone), title: item.title, body: item.body ?? '', kind: entry.kind }];
+          if (entry === undefined) return [];
+          const category = CATEGORY_OF_KIND[entry.kind];
+          return [{ id: entry.sid, fireAt: localDateTimeAt(entry.at, zone), title: item.title, body: item.body ?? '', kind: entry.kind, ...(category === undefined ? {} : { category }) }];
         }),
       );
     },

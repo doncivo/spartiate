@@ -99,7 +99,7 @@ export function createSupplementNotificationService(deps: SupplementNotification
       let ours: NotificationRequest[] = [];
       if (plan.items.length > 0) {
         const { supplementNotificationsFr: fr } = await import('../../i18n/fr.supplementNotifications');
-        ours = plan.items.map((item) => ({ id: item.id, fireAt: item.fireAt, kind: 'supplement', title: fr.title, body: item.count === 1 ? fr.bodyOne : fr.bodyMany.replace('{n}', String(item.count)) }));
+        ours = plan.items.map((item) => ({ id: item.id, fireAt: item.fireAt, kind: 'supplement', category: 'supplement', title: fr.title, body: item.count === 1 ? fr.bodyOne : fr.bodyMany.replace('{n}', String(item.count)) }));
       }
       await scheduler.replace([...others, ...ours]);
       return { status: 'planned', planned: ours.length };

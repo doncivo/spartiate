@@ -13,7 +13,12 @@ export const NOTIFICATION_LIMIT = 64;
 export type NotificationKind = 'task' | 'routine' | 'event' | 'recap' | 'snooze' | 'bedtime' | 'morning' | 'supplement';
 export const NOTIFICATION_KINDS: readonly NotificationKind[] = ['task', 'routine', 'event', 'recap', 'snooze', 'bedtime', 'morning', 'supplement'];
 /** Actions proposées par la notification (N-03) ; absente pour un récapitulatif et la fin de Focus. */
-export type NotificationCategory = 'task' | 'routine' | 'event';
+export type NotificationCategory = 'task' | 'routine' | 'event' | 'supplement';
+/**
+ * FIX-0221 (D-250) : catégorie implicite d'une nature. `pending()` ne relit pas la catégorie chez iOS ; elle est rendue d'après la nature, pour
+ * qu'une notification reposée telle quelle par un autre service (récupération) garde son bouton « Pris ».
+ */
+export const CATEGORY_OF_KIND: Readonly<Partial<Record<NotificationKind, NotificationCategory>>> = { supplement: 'supplement' };
 
 export interface NotificationRequest {
   /** Identifiant stable produit par le domaine (`task:{reminderId}`, `recap:evening:{jour}`…). */
