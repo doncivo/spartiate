@@ -110,14 +110,15 @@ describe('Aujourd’hui (I0) : planches iPhone et PC, valeurs réelles seulement
       expect(document.body.textContent ?? '').not.toMatch(/\b0\b/);
     });
 
-    it('ERGO-01b P4 : Récupération en tête de la colonne principale, puis Séance et Nutrition ; une carte « État » à droite', async () => {
+    it('ERGO-01b P4 puis ERGO-02 : Récupération en tête de la colonne principale ; la carte « État » à droite, en dernier', async () => {
       const { container } = open();
       expect(await screen.findByText('Aucun résumé de récupération reçu de l’iPhone.')).toBeInTheDocument();
       const [main, aside] = [...container.querySelectorAll('.ct-today__col')];
       expect(main?.firstElementChild?.querySelector('h2')).toHaveTextContent('Récupération');
       const state = screen.getByRole('region', { name: 'État' });
       expect(aside?.contains(state)).toBe(true);
-      expect(aside?.querySelectorAll('section')).toHaveLength(1);
+      // ERGO-02 (D-262) : la colonne de droite porte aussi nutrition, poids, dépense, semaine et records ; « État » reste, en dernier.
+      expect(aside?.querySelector('section:last-of-type')).toBe(state);
       expect(within(state).getAllByRole('term').map((t) => t.textContent)).toEqual(['Synchro', 'Signature', 'Apple Santé', 'Sauvegarde', 'Dernier export']);
     });
 
