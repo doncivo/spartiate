@@ -420,3 +420,13 @@
   text-align: right;
   white-space: nowrap;
 }
+
+/* ERGO-02 (D-261) : charge de deux haltères, « 2 × 26 kg », à côté de la saisie (charge d'un haltère). */
+.ct-session__pair {
+  align-self: end;
+  padding-block: var(--ct-space-2);
+  color: var(--ct-color-bronze);
+  font-size: var(--ct-font-size-item);
+  font-weight: var(--ct-font-weight-semibold);
+  overflow-wrap: anywhere;
+}

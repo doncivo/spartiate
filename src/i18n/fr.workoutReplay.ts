@@ -15,6 +15,10 @@ export const workoutReplayFr = {
   loadNoTarget: 'Charge : {actual} — sans cible',
   loadNoValue: 'Charge : non saisie',
   kg: '{n} kg',
+  /** ERGO-02 (D-261) : charge de deux haltères ; {n} est celle d'un haltère. */
+  kgPair: '2 × {n} kg',
+  loadMorePair: '{n} kg de plus par haltère',
+  loadLessPair: '{n} kg de moins par haltère',
   reps: 'Répétitions : {actual} (cible {target}) — {gap}',
   repsNoTarget: 'Répétitions : {actual} — sans cible',
   repsNoValue: 'Répétitions : non saisies',

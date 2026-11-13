@@ -8,10 +8,23 @@ export function tCardio(key: CardioTextKey, params?: Readonly<Record<string, str
   return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
 }
 
+/** ERGO-02 : nombre de km seul (chiffre héros), virgule décimale, au plus deux décimales (« 5,24 »). */
+export function kmValue(meters: number): string {
+  return String(Math.round(meters / 10) / 100).replace('.', ',');
+}
+
 /** Distance en km, virgule décimale, au plus deux décimales (« 7,5 km », « 12 km »). */
 export function formatKm(meters: number): string {
-  const km = Math.round(meters / 10) / 100;
-  return tCardio('km', { value: String(km).replace('.', ',') });
+  return tCardio('km', { value: kmValue(meters) });
+}
+
+/** ERGO-02 : chrono du suivi en cours, « 28:41 » ou « 1:02:05 » (secondes entières). */
+export function formatChrono(sec: number): string {
+  const total = Math.max(0, Math.floor(sec));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = String(total % 60).padStart(2, '0');
+  return h > 0 ? `${String(h)}:${String(m).padStart(2, '0')}:${s}` : `${String(m)}:${s}`;
 }
 
 /** Durée lisible : « 45 min », « 1 h 05 min » (secondes arrondies à la minute la plus proche, au moins 1 min). */

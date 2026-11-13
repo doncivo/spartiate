@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import { lazy, Suspense, useId, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useId, useMemo, useState } from 'react';
 import {
   EXERCISE_KINDS,
   EXERCISE_METRICS,
@@ -19,12 +19,20 @@ import type { IdGenerator } from '../../domain/id';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { RepositoryError } from '../../db/repositories/common';
 import { formatNumber, formatRest, parseNumber, tTraining } from '../../i18n/trainingText';
-import { Button, ConfirmDialog, Icon, Switch } from '../../ui';
+import type { IsoDateTime } from '../../domain/types';
+import { Button, ConfirmDialog, Icon, SectionTitle, SegmentedControl, Switch, useLayout } from '../../ui';
+import { useAppContainer } from '../app/AppContainerContext';
+import type { SheetHistory } from './library/ExerciseSheetStats';
+import { heldFor } from './loadDisplay';
+import './library/Sheet.css';
 import { groupLabel, KIND_KEY, METRIC_KEY, PATTERN_KEY } from './labels';
 import { exerciseGroup, normalizeSearch, type TrainingData } from './trainingState';
 
 /** Illustration sous licence (I6-07, D-235) : bloc à la demande, chargé à l'ouverture d'une fiche qui a un média. */
 const ExerciseMedia = lazy(() => import('./media/ExerciseMedia'));
+/** ERGO-02 : chiffres de la fiche (1RM estimé, record, 8 semaines, séances) : bloc à la demande, avec les règles d'estimation du domaine. */
+const SheetFigures = lazy(() => import('./library/ExerciseSheetStats').then((m) => ({ default: m.SheetFigures })));
+const SheetSessions = lazy(() => import('./library/ExerciseSheetStats').then((m) => ({ default: m.SheetSessions })));
 
 // -----------------------------------------------------------------------------------------------------------------------------------
 // Liste filtrable (bibliothèque et choix d'un exercice pour une routine)
@@ -123,6 +131,7 @@ function repText(exercise: Exercise): string {
 
 interface DetailProps {
   readonly data: TrainingData;
+  readonly access: DataAccess;
   readonly exercise: Exercise;
   readonly onBack: () => void;
   readonly onOpen: (exercise: Exercise) => void;
@@ -130,26 +139,82 @@ interface DetailProps {
   readonly onDelete: (exercise: CustomExercise) => void;
 }
 
-function ExerciseDetail({ data, exercise, onBack, onOpen, onEdit, onDelete }: DetailProps) {
+type SheetTab = 'info' | 'instructions' | 'history';
+
+/** Nombre de séances de « Dernières séances » (aperçu : 5). */
+const RECENT_SESSIONS = 5;
+
+/**
+ * Historique clos de l'exercice (lecture seule, repository de progression) : en cours, illisible, ou les séances. Relu à chaque fiche ouverte.
+ */
+function useExerciseHistory(access: DataAccess, exerciseId: string): SheetHistory {
+  const [state, setState] = useState<{ readonly id: string; readonly history: SheetHistory }>({ id: exerciseId, history: 'loading' });
+  useEffect(() => {
+    let live = true;
+    void (async () => {
+      try {
+        const history = await (await access.repos.progression()).history(exerciseId);
+        if (live) setState({ id: exerciseId, history });
+      } catch {
+        if (live) setState({ id: exerciseId, history: 'error' });
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, [access, exerciseId]);
+  return state.id === exerciseId ? state.history : 'loading';
+}
+
+/**
+ * ERGO-02 (aperçu Fiche-apres, PC-Fiche-apres) : en-tête (nom, mouvement, muscles), puis sur l'iPhone trois onglets Info (1RM estimé en chiffre
+ * héros, record, 8 semaines, dernières séances, muscles), Instructions (consignes, illustration, matériel, alternatives) et Historique ; sur le
+ * PC, deux colonnes (chiffres, évolution et consignes ; historique, muscles et matériel). Charge de deux haltères en « 2 × 26 kg » (D-261).
+ */
+function ExerciseDetail({ data, access, exercise, onBack, onOpen, onEdit, onDelete }: DetailProps) {
+  const layout = useLayout();
+  const { clock } = useAppContainer();
+  const [tab, setTab] = useState<SheetTab>('info');
+  const history = useExerciseHistory(access, exercise.id);
   const muscleName = new Map(data.content.muscles.map((m) => [m.id, m.nameFr]));
   const equipmentName = new Map(data.content.equipment.map((e) => [e.id, e.nameFr]));
   const compatible = isExerciseCompatible(exercise, data.active);
   const usable = usableEquipment(data.active);
   const missing = compatible ? [] : exercise.equipment.filter((id) => !usable.has(id));
   const alternatives = exercise.origin === 'embedded' ? (exercise.alternatives ?? []) : [];
-  return (
-    <article className="ct-training__detail" aria-labelledby={`ct-ex-${exercise.id}`}>
-      <button type="button" className="ct-training__back" onClick={onBack}>
-        <Icon icon={ArrowLeft} size="md" />
-        <span>{tTraining('backToLibrary')}</span>
-      </button>
-      <h2 id={`ct-ex-${exercise.id}`} className="ct-training__heading">
-        {exercise.nameFr}
-      </h2>
-      <p className="ct-training__muted">
-        {[tTraining(PATTERN_KEY[exercise.pattern]), tTraining(KIND_KEY[exercise.kind]), tTraining(METRIC_KEY[exercise.metric])].join(' · ')}
-        {exercise.origin === 'custom' ? <span className="ct-training__badge">{tTraining('custom')}</span> : null}
-      </p>
+  const held = heldFor(exercise, data.active);
+  const now = new Date(clock.nowMs()).toISOString() as IsoDateTime;
+  const pc = layout === 'pc';
+  const stats = { history, exercise, held, now };
+
+  const figures = (
+    <Suspense fallback={null}>
+      <SheetFigures {...stats} />
+    </Suspense>
+  );
+  const recent = (
+    <Suspense fallback={null}>
+      <SheetSessions {...stats} limit={RECENT_SESSIONS} label={tTraining('sheetRecent')} />
+    </Suspense>
+  );
+  const muscles = (
+    <section className="ct-sheet__section">
+      <SectionTitle level={3}>{tTraining(pc ? 'muscles' : 'sheetMusclesWorked')}</SectionTitle>
+      <ul className="ct-sheet__muscles" aria-label={tTraining(pc ? 'muscles' : 'sheetMusclesWorked')}>
+        {exercise.muscles.map((m) => (
+          <li key={m.id} className="ct-sheet__muscle">
+            <span>{muscleName.get(m.id) ?? m.id}</span>
+            <span className="ct-sheet__bar" aria-hidden="true">
+              <span className="ct-sheet__bar-fill" style={{ inlineSize: `${String(Math.round(Math.min(1, Math.max(0, m.weight)) * 100))}%` }} />
+            </span>
+            <span className="ct-training__num ct-training__muted">{formatNumber(m.weight)}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+  const facts = (
+    <>
       <div className="ct-training__facts">
         <span className="ct-training__fact">{repText(exercise)}</span>
         <span className="ct-training__fact">{tTraining('rest', { time: formatRest(exercise.defaultRestSec) })}</span>
@@ -158,28 +223,19 @@ function ExerciseDetail({ data, exercise, onBack, onOpen, onEdit, onDelete }: De
         {compatible ? tTraining('compatibleYes') : tTraining('compatibleNo')}
         {missing.length > 0 ? ` : ${missing.map((id) => equipmentName.get(id) ?? id).join(', ')}` : ''}
       </p>
+    </>
+  );
+  const hasInstructions = exercise.instructions.setup !== '' || exercise.instructions.execution !== '' || exercise.instructions.mistakes.length > 0;
+  const instructions = (
+    <>
       {exercise.media !== null && (
         <Suspense fallback={null}>
           <ExerciseMedia key={exercise.id} exercise={exercise} />
         </Suspense>
       )}
-      <section className="ct-training__card ct-flat">
-        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('muscles')}</h3>
-        <ul className="ct-training__plain">
-          {exercise.muscles.map((m) => (
-            <li key={m.id}>
-              {muscleName.get(m.id) ?? m.id} · <span className="ct-training__num">{formatNumber(m.weight)}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-      <section className="ct-training__card ct-flat">
-        <h3 className="ct-training__eyebrow ct-section-title">{tTraining('equipment')}</h3>
-        <p>{exercise.equipment.length === 0 ? tTraining('noEquipment') : exercise.equipment.map((id) => equipmentName.get(id) ?? id).join(', ')}</p>
-      </section>
-      {exercise.instructions.setup !== '' || exercise.instructions.execution !== '' || exercise.instructions.mistakes.length > 0 ? (
-        <section className="ct-training__card ct-flat">
-          <h3 className="ct-training__eyebrow ct-section-title">{tTraining('instructions')}</h3>
+      {hasInstructions ? (
+        <section className="ct-sheet__section">
+          <SectionTitle level={3}>{tTraining('instructions')}</SectionTitle>
           {exercise.instructions.setup !== '' && (
             <>
               <h4 className="ct-training__subheading">{tTraining('setup')}</h4>
@@ -204,9 +260,17 @@ function ExerciseDetail({ data, exercise, onBack, onOpen, onEdit, onDelete }: De
           )}
         </section>
       ) : null}
+    </>
+  );
+  const equipmentAndAlternatives = (
+    <>
+      <section className="ct-sheet__section">
+        <SectionTitle level={3}>{tTraining('equipment')}</SectionTitle>
+        <p>{exercise.equipment.length === 0 ? tTraining('noEquipment') : exercise.equipment.map((id) => equipmentName.get(id) ?? id).join(', ')}</p>
+      </section>
       {alternatives.length > 0 && (
-        <section className="ct-training__card ct-flat">
-          <h3 className="ct-training__eyebrow ct-section-title">{tTraining('alternatives')}</h3>
+        <section className="ct-sheet__section">
+          <SectionTitle level={3}>{tTraining('alternatives')}</SectionTitle>
           <ul className="ct-training__plain">
             {alternatives.map((id) => {
               const resolved = resolveExercise({ id }, data.content.catalog, data.allCustoms);
@@ -226,6 +290,77 @@ function ExerciseDetail({ data, exercise, onBack, onOpen, onEdit, onDelete }: De
             })}
           </ul>
         </section>
+      )}
+    </>
+  );
+
+  return (
+    <article className="ct-training__detail ct-sheet" aria-labelledby={`ct-ex-${exercise.id}`}>
+      <button type="button" className="ct-training__back" onClick={onBack}>
+        <Icon icon={ArrowLeft} size="md" />
+        <span>{tTraining('backToLibrary')}</span>
+      </button>
+      <header className="ct-sheet__head">
+        <h2 id={`ct-ex-${exercise.id}`} className="ct-sheet__title">
+          {exercise.nameFr}
+        </h2>
+        <p className="ct-training__muted">
+          {[tTraining(PATTERN_KEY[exercise.pattern]), tTraining(KIND_KEY[exercise.kind]), tTraining(METRIC_KEY[exercise.metric])].join(' · ')}
+          {exercise.origin === 'custom' ? <span className="ct-training__badge">{tTraining('custom')}</span> : null}
+        </p>
+        <p className="ct-training__muted">{exercise.muscles.map((m) => muscleName.get(m.id) ?? m.id).join(' · ')}</p>
+      </header>
+      {pc ? (
+        <div className="ct-sheet__columns">
+          <div className="ct-sheet__column">
+            {figures}
+            {instructions}
+          </div>
+          <div className="ct-sheet__column">
+            <section className="ct-sheet__section">
+              <SectionTitle level={3}>{tTraining('sheetHistory')}</SectionTitle>
+              {recent}
+            </section>
+            {muscles}
+            {facts}
+            {equipmentAndAlternatives}
+          </div>
+        </div>
+      ) : (
+        <>
+          <SegmentedControl
+            label={tTraining('sheetSections')}
+            value={tab}
+            onChange={setTab}
+            options={[
+              { value: 'info', label: tTraining('sheetTabInfo') },
+              { value: 'instructions', label: tTraining('sheetTabInstructions') },
+              { value: 'history', label: tTraining('sheetTabHistory') },
+            ]}
+          />
+          {tab === 'info' ? (
+            <div className="ct-sheet__column">
+              {figures}
+              <section className="ct-sheet__section">
+                <SectionTitle level={3}>{tTraining('sheetRecent')}</SectionTitle>
+                {recent}
+              </section>
+              {muscles}
+            </div>
+          ) : tab === 'instructions' ? (
+            <div className="ct-sheet__column">
+              {facts}
+              {instructions}
+              {equipmentAndAlternatives}
+            </div>
+          ) : (
+            <div className="ct-sheet__column">
+              <Suspense fallback={null}>
+                <SheetSessions {...stats} limit={null} label={tTraining('sheetHistory')} />
+              </Suspense>
+            </div>
+          )}
+        </>
       )}
       {exercise.origin === 'custom' && (
         <div className="ct-training__actions">
@@ -432,6 +567,7 @@ export function LibraryView({ data, access, ids, reload }: LibraryViewProps) {
   const [view, setView] = useState<View>({ kind: 'list' });
   const [confirm, setConfirm] = useState<CustomExercise | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const layout = useLayout();
 
   const find = (id: string): Exercise | null => data.content.catalog.get(id) ?? data.customs.find((c) => c.id === id) ?? null;
 
@@ -455,40 +591,53 @@ export function LibraryView({ data, access, ids, reload }: LibraryViewProps) {
   }
 
   const shown = view.kind === 'detail' ? find(view.id) : null;
+  const detail = shown ? (
+    <ExerciseDetail
+      key={shown.id}
+      data={data}
+      access={access}
+      exercise={shown}
+      onBack={() => {
+        setMessage(null);
+        setView({ kind: 'list' });
+      }}
+      onOpen={(e) => setView({ kind: 'detail', id: e.id })}
+      onEdit={(e) => setView({ kind: 'form', id: e.id })}
+      onDelete={setConfirm}
+    />
+  ) : null;
+  const list = (
+    <>
+      <div className="ct-training__actions">
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setMessage(null);
+            setView({ kind: 'form', id: null });
+          }}
+        >
+          {tTraining('newExercise')}
+        </Button>
+      </div>
+      <ExerciseList data={data} mode="library" onSelect={(e) => setView({ kind: 'detail', id: e.id })} />
+    </>
+  );
+  // ERGO-02 (aperçu PC-Fiche-apres) : sur le PC, la bibliothèque reste à gauche et la fiche s'ouvre à droite.
+  const pc = layout === 'pc';
   return (
-    <div className="ct-training__library">
+    <div className={pc ? 'ct-training__library ct-training__library--split' : 'ct-training__library'}>
       {message && (
         <p className="ct-training__message" role="status">
           {message}
         </p>
       )}
-      {shown ? (
-        <ExerciseDetail
-          data={data}
-          exercise={shown}
-          onBack={() => {
-            setMessage(null);
-            setView({ kind: 'list' });
-          }}
-          onOpen={(e) => setView({ kind: 'detail', id: e.id })}
-          onEdit={(e) => setView({ kind: 'form', id: e.id })}
-          onDelete={setConfirm}
-        />
+      {pc ? (
+        <div className="ct-training__library-panes">
+          <div className="ct-training__library-list">{list}</div>
+          <div className="ct-training__library-sheet">{detail ?? <p className="ct-training__muted">{tTraining('sheetPick')}</p>}</div>
+        </div>
       ) : (
-        <>
-          <div className="ct-training__actions">
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setMessage(null);
-                setView({ kind: 'form', id: null });
-              }}
-            >
-              {tTraining('newExercise')}
-            </Button>
-          </div>
-          <ExerciseList data={data} mode="library" onSelect={(e) => setView({ kind: 'detail', id: e.id })} />
-        </>
+        (detail ?? list)
       )}
       {confirm && (
         <ConfirmDialog

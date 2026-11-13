@@ -2,8 +2,9 @@ import { Check } from 'lucide-react';
 import { useState, type KeyboardEvent } from 'react';
 import { SET_KINDS, validateSetBounds, validateSetEntry, type SetEntry, type SetKind, type WorkoutSet } from '../../../domain/training';
 import type { SetCorrection } from '../../../db/repositories/workoutRepository';
-import { formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
+import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
 import { Icon } from '../../../ui';
+import type { Held } from '../loadDisplay';
 
 /**
  * Une série d'une séance close dans le journal (I1-03) : type, valeurs, RIR et état écrits en toutes lettres (« Validée », « Non validée »,
@@ -29,12 +30,13 @@ interface Draft {
 
 const text = (n: number | null): string => (n === null ? '' : formatNumber(n));
 
-export function valueText(set: WorkoutSet): string {
+/** ERGO-02 (D-261) : charge de deux haltères en « 2 × 26 kg » (`held` = 2) ; la valeur stockée reste celle d'un haltère. */
+export function valueText(set: WorkoutSet, held: Held = null): string {
   const { loadKg, reps, durationSec } = set;
   if (reps === null && durationSec !== null)
-    return loadKg === null ? tTraining('sessionDoneDuration', { n: durationSec }) : tTraining('sessionDoneLoadDuration', { load: formatNumber(loadKg), n: durationSec });
-  if (reps === null) return loadKg === null ? '—' : tTraining('kg', { n: formatNumber(loadKg) });
-  return loadKg === null ? tTraining('sessionDoneReps', { reps }) : tTraining('sessionDoneLoad', { load: formatNumber(loadKg), reps });
+    return loadKg === null ? tTraining('sessionDoneDuration', { n: durationSec }) : tTraining('sessionDoneLoadDuration', { load: formatExerciseLoad(loadKg, held), n: durationSec });
+  if (reps === null) return loadKg === null ? '—' : formatExerciseLoad(loadKg, held);
+  return loadKg === null ? tTraining('sessionDoneReps', { reps }) : tTraining('sessionDoneLoad', { load: formatExerciseLoad(loadKg, held), reps });
 }
 
 export interface HistorySetRowProps {
@@ -43,11 +45,13 @@ export interface HistorySetRowProps {
   readonly number: number;
   /** Exercice mesuré en durée (bibliothèque) : la saisie porte sur la durée. */
   readonly timedExercise: boolean;
+  /** ERGO-02 (D-261) : haltères tenus (2 : « 2 × 26 kg », correction « par haltère ») ; null : charge affichée telle quelle. */
+  readonly held?: Held;
   readonly busy: boolean;
   readonly onCorrect: (patch: SetCorrection) => Promise<boolean>;
 }
 
-export function HistorySetRow({ set, number, timedExercise, busy, onCorrect }: HistorySetRowProps) {
+export function HistorySetRow({ set, number, timedExercise, held = null, busy, onCorrect }: HistorySetRowProps) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [issue, setIssue] = useState<string | null>(null);
   const label = set.setKind === 'warmup' ? tTraining('sessionWarmupSet') : tTraining('sessionSet', { n: number });
@@ -128,7 +132,7 @@ export function HistorySetRow({ set, number, timedExercise, busy, onCorrect }: H
       </div>
       {draft === null ? (
         <div className="ct-session__set-body">
-          <span className="ct-session__done-value ct-session__num">{valueText(set)}</span>
+          <span className="ct-session__done-value ct-session__num">{valueText(set, held)}</span>
           {set.rir !== null ? <span className="ct-session__muted">{tTraining('sessionDoneRir', { n: set.rir })}</span> : null}
           <button type="button" className="ct-training__link" disabled={busy} onClick={open}>
             {tTraining('historyCorrect')}
@@ -137,7 +141,7 @@ export function HistorySetRow({ set, number, timedExercise, busy, onCorrect }: H
       ) : (
         <>
           <div className="ct-session__fields">
-            {field('load', 'sessionLoad', 'decimal')}
+            {field('load', held === 2 ? 'sessionLoadPerDumbbell' : 'sessionLoad', 'decimal')}
             {draft.kind === 'timed' || timedExercise ? field('duration', 'sessionDuration', 'numeric') : field('reps', 'sessionReps', 'numeric')}
             {field('rir', 'sessionRir', 'numeric')}
           </div>
