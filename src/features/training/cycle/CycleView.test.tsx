@@ -199,9 +199,10 @@ describe('section Cycle : 4 / 6 semaines, semaine de reprise, durée du prochain
   it('4 semaines, semaine de reprise désactivée par défaut : semaine 1 avec toutes les séries, RIR 3 ; semaine 2 : 2 à 3 en réserve', async () => {
     open();
     const r = await region();
-    expect(within(r).getByRole('switch', { name: 'Semaine de reprise' })).not.toBeChecked();
+    expect(within(r).queryByRole('switch', { name: 'Semaine de reprise' })).toBeNull(); // 5 semaines : sans effet, non proposée (D-269 (5))
     fireEvent.click(within(r).getByRole('radio', { name: 'Haut / Bas' }));
     fireEvent.click(within(r).getByRole('radio', { name: '4 semaines' }));
+    expect(within(r).getByRole('switch', { name: 'Semaine de reprise' })).not.toBeChecked();
     fireEvent.click(within(r).getByRole('button', { name: 'Commencer le cycle' }));
     expect(await within(r).findByText('Semaine 1 sur 4 · Haut / Bas')).toBeInTheDocument();
     expect(within(r).getByText('Semaine de travail : les séries de la routine, 3 répétitions en réserve.')).toBeInTheDocument();

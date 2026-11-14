@@ -88,7 +88,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   async function saveRest(restPlan: RestPlan | null): Promise<boolean> {
     if (target === null) return false;
     try {
-      const result = await saveManualTarget(data, { weekStart: snapshot.today, target: target.target, lowFloorConfirmed: true, restPlan });
+      const result = await saveManualTarget(data, { weekStart: snapshot.today, target: target.target, lowFloorConfirmed: false, restPlan });
       if (typeof result === 'string') return false;
       await onChanged();
       return true;

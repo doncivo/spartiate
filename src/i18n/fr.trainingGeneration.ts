@@ -96,4 +96,6 @@ export const trainingGenerationFr = {
   cycleSetsPlus: 'une série de plus que la routine par exercice',
   cycleRirOne: '1 répétition en réserve',
   cycleRirMany: '{rir} répétitions en réserve',
+  cycleRirRange: '{low} à {high} répétitions en réserve',
+  cycleProgramDeload: 'Cycle : semaine de décharge ; 2 séries par exercice, charges à 90 % arrondies vers le bas, 3 à 4 répétitions en réserve.',
 } as const;
