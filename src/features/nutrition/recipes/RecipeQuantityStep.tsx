@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { useRef, useState } from 'react';
 import { entryFromRecipe, recipeWeightG, validateMealEntry, type Recipe } from '../../../domain/nutrition';
 import type { LocalDate, LocalTime } from '../../../domain/types';
@@ -75,7 +76,7 @@ export function RecipeQuantityStep({ recipe, date, defaultTime, chooseDay, onBac
     >
       <h2 className="ct-nutrition__subtitle ct-section-title">{tRecipes('quantityTitle', { name: recipe.name })}</h2>
       <p className="ct-nutrition__muted">
-        {tRecipes(recipe.servings === 1 ? 'servingsOne' : 'servingsMany', { n: recipe.servings })} · {tRecipes('oneServingGrams', { n: formatTenth(Math.round(servingGrams * 10) / 10) })}
+        {tPlural(tRecipes, recipe.servings, 'servingsOne', 'servingsMany')} · {tRecipes('oneServingGrams', { n: formatTenth(Math.round(servingGrams * 10) / 10) })}
       </p>
       <SegmentedControl<Mode>
         label={tRecipes('modeLabel')}

@@ -1,3 +1,4 @@
+import { tPlural } from '../../i18n/plural';
 import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import { todayLocal } from '../../domain/clock';
 import type { PersonalRecord } from '../../domain/training/closure';
@@ -222,7 +223,7 @@ export function TodayPcSide({ weight, state }: TodayPcSideProps) {
       <section className="ct-today__card ct-today__card--flat" aria-label={tTodayPc('weekEyebrow')}>
         <h2 className="ct-today__eyebrow ct-section-title">
           {tTodayPc('weekEyebrow')}
-          {count === 0 ? '' : ` · ${count === 1 ? tTodayPc('weekCountOne') : tTodayPc('weekCount', { n: count })}`}
+          {count === 0 ? '' : ` · ${tPlural(tTodayPc, count, 'weekCountOne', 'weekCount')}`}
         </h2>
         <ul className="ct-today__week">
           {week.map((d) => {

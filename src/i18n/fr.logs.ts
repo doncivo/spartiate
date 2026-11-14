@@ -17,6 +17,7 @@ export const logsFr = {
   unavailable: 'Journal indisponible.',
   exportUnavailable: 'L’export n’est pas disponible sur cette plateforme (aucun enregistrement de fichier possible) : les entrées restent lisibles ici.',
   count: '{count} entrées affichées (500 au plus)',
+  countOne: '{count} entrée affichée (500 au plus)',
   repeated: '×{count}',
   writeError: 'Le journal n’a pas pu être écrit.',
   readError: 'Le journal n’a pas pu être lu : seules les entrées de cette session sont affichées.',

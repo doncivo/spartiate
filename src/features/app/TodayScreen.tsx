@@ -1,3 +1,4 @@
+import { tPlural } from '../../i18n/plural';
 import { Check, ChevronRight } from 'lucide-react';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { todayLocal } from '../../domain/clock';
@@ -90,7 +91,7 @@ function WeightCard({ weights, nowMs, showActions }: { readonly weights: readonl
           <div className="ct-today__trend">
             <p className="ct-today__muted">{tToday('trendLabel')}</p>
             <p className="ct-today__text">{tToday(isTrendLearning(count) ? 'trendLearning' : 'trendNotComputed')}</p>
-            {isTrendLearning(count) ? <p className="ct-today__muted">{count === 1 ? tToday('weightsCountOne') : tToday('weightsCount', { n: count })}</p> : null}
+            {isTrendLearning(count) ? <p className="ct-today__muted">{tPlural(tToday, count, 'weightsCountOne', 'weightsCount')}</p> : null}
           </div>
         ) : null}
       </div>

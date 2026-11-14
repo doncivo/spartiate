@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { tHealth } from '../../../i18n/healthText';
 import type { ImportRunResult } from './service';
 
@@ -29,11 +30,9 @@ export function importStatusMessage(result: ImportRunResult): string {
             : result.files.some((f) => f.state === 'unreadable')
               ? tHealth(result.folderIssue === 'unsafe-name' ? 'recDoneUnreadableName' : 'recDoneUnreadable')
               : tHealth('recDoneNone')
-          : imported.length === 1
-            ? tHealth('recDoneRead1', { added })
-            : tHealth('recDoneReadN', { files: imported.length, added });
+          : tPlural(tHealth, imported.length, 'recDoneRead1', 'recDoneReadN', { files: imported.length, added });
       if (result.recomputeFailed) return `${read} ${tHealth('recRecomputeFailed')}`;
-      return result.recomputedDays > 0 ? `${read} ${tHealth('recRecomputed', { days: result.recomputedDays })}` : read;
+      return result.recomputedDays > 0 ? `${read} ${tPlural(tHealth, result.recomputedDays, 'recRecomputedOne', 'recRecomputed', { days: result.recomputedDays })}` : read;
     }
   }
 }

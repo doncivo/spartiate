@@ -158,7 +158,8 @@ describe('Corps PC (PC-Corps-apres)', () => {
     const hips = within(group).getByRole('radio', { name: 'Hanches' });
     expect(within(hips).getByText('4 sem. : —')).toBeVisible();
     expect(within(hips).getByText('4 sem. : —')).toHaveAttribute('aria-hidden', 'true');
-    expect(hips).toHaveAccessibleDescription(/pas d’écart sur 4 semaines : aucune mesure/);
+    expect(hips).toHaveAccessibleDescription(/pas d’écart sur 4 semaines$/);
+    expect(within(group).getByRole('radio', { name: 'Cou' })).toHaveAccessibleDescription(/pas d’écart sur 4 semaines : aucune mesure/);
     const waist = within(group).getByRole('radio', { name: 'Taille' });
     expect(waist).not.toHaveAccessibleDescription(/pas d’écart/);
   });
