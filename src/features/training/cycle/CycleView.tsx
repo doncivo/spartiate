@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { DEFAULT_GENERATION_CONFIG as CONFIG } from '../../../domain/training/config';
-import { anticipateDeload, closeMesocycle, createMesocycleSpec, nextMesocycleSpec, type MesocycleSpec, type MesocycleState, type WeekPlan } from '../../../domain/training/mesocycle';
+import { anticipateDeload, changeNextWeeks, closeMesocycle, createMesocycleSpec, MESO_WEEK_CHOICES, nextMesocycleSpec, type MesocycleSpec, type MesocycleState, type WeekPlan } from '../../../domain/training/mesocycle';
 import { pauseProgram, resumeProgram, resumeProposal } from '../../../domain/training/programPause';
 import type { Routine } from '../../../domain/training';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { MesocycleRecord } from '../../../db/repositories/mesocycleRepository';
 import { cycleDate, tCycle } from '../../../i18n/trainingCycleText';
-import { Button, SegmentedControl } from '../../../ui';
+import { Button, SegmentedControl, Switch } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { loadCurrentCycle, localDayOf, type CurrentCycle } from './currentCycle';
 import './CycleView.css';
@@ -33,8 +33,10 @@ const rirText = (rir: number): string => (rir === 1 ? tCycle('rirOne') : tCycle(
 const setsText = (offset: number): string => tCycle(offset < 0 ? 'setsMinus' : offset > 0 ? 'setsPlus' : 'setsSame');
 
 function planText(state: MesocycleState, plan: WeekPlan): string {
-  if (plan.deload) return tCycle('deloadWeek');
-  const params = { sets: setsText(plan.setsOffset), rir: rirText(plan.rir) };
+  // PROG-01 : décharge d'un cycle de 4 ou 6 semaines (2 séries, 90 %, RIR 3-4) ; plage de RIR (« 2 à 3 »).
+  if (plan.deload) return tCycle(plan.deloadSets !== undefined ? 'programDeloadWeek' : 'deloadWeek');
+  const rir = plan.rirLow !== undefined && plan.rirLow < plan.rir ? tCycle('rirRange', { low: plan.rirLow, high: plan.rir }) : rirText(plan.rir);
+  const params = { sets: setsText(plan.setsOffset), rir };
   return tCycle(state.kind === 'light' ? 'lightWeek' : 'workWeek', params);
 }
 
@@ -55,6 +57,7 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
   const [mode, setMode] = useState<Mode>('view');
   const [routineId, setRoutineId] = useState('');
   const [weeks, setWeeks] = useState<WeeksChoice>('5');
+  const [rampUp, setRampUp] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
 
@@ -157,6 +160,8 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
           options={WEEKS.map((w) => ({ value: w, label: w === 'unlimited' ? tCycle('unlimited') : tCycle('weeksOption', { weeks: w }) }))}
         />
         {weeks === 'unlimited' && <p className="ct-cycle__note">{tCycle('unlimitedHint')}</p>}
+        {mode !== 'change' && <Switch checked={rampUp} label={tCycle('rampUpLabel')} onChange={setRampUp} />}
+        {mode !== 'change' && <p className="ct-cycle__note">{tCycle('rampUpHint')}</p>}
         <div className="ct-cycle__actions">
           <Button variant="primary" disabled={busy || routineId === ''} onClick={onStart}>
             {tCycle('start')}
@@ -171,7 +176,7 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
     );
 
   const startFresh = () => {
-    const spec = createMesocycleSpec({ routineId, startDate: today(), weeks: toWeeks(weeks) }, CONFIG);
+    const spec = createMesocycleSpec({ routineId, startDate: today(), weeks: toWeeks(weeks), rampUp }, CONFIG);
     void write(spec === null ? null : async (repos) => void (await (await repos.mesocycles()).start(spec)));
   };
 
@@ -269,6 +274,19 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
         <>
           <p className="ct-cycle__week">{weekLabel(state, routine)}</p>
           {state.plan !== null && <p className="ct-cycle__status">{planText(state, state.plan)}</p>}
+          {state.plan?.rampUp === true && state.kind === 'work' && <p className="ct-cycle__note">{tCycle('rampUpWeek')}</p>}
+          {state.plan?.isolationRir !== undefined && <p className="ct-cycle__note">{tCycle('isolationRir', { rir: state.plan.isolationRir })}</p>}
+          {!record.unlimited && (
+            <SegmentedControl<string>
+              label={tCycle('nextWeeksLabel')}
+              value={String(record.nextWeeks ?? record.weeks)}
+              onChange={(value) => void write(saving(record, changeNextWeeks(record, Number(value), CONFIG)))}
+              options={MESO_WEEK_CHOICES.map((w) => ({ value: String(w), label: tCycle('weeksOption', { weeks: w }) }))}
+            />
+          )}
+          {!record.unlimited && record.nextWeeks !== undefined && record.nextWeeks !== null && record.nextWeeks !== record.weeks && (
+            <p className="ct-cycle__note">{tCycle('nextWeeksNote', { weeks: record.weeks })}</p>
+          )}
           {state.kind === 'work' && <p className="ct-cycle__note">{tCycle('priorityNote')}</p>}
           <p className="ct-cycle__note">{tCycle('scopeNote')}</p>
           {mode === 'anticipate' ? (
