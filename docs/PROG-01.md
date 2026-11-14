@@ -50,6 +50,20 @@ Chapitres PRD : 12 (mésocycle, § 12.2, § 12.5), 11 (prescription, deload), 15
 
 Sur une base de test vide : « Repartir de zéro », onboarding passé, import Remplacer de l'archive sv 18 synthétique → routine, cibles et compléments présents, aucune erreur. Résultat consigné ici.
 
+## Passes (reprise du 14/11, budget M supplémentaire)
+
+**domain-logic.** `mesocycle.ts` : tables RIR de 4 et 6 semaines (plage, moteur sur la borne haute), décharge 2 séries × 0,9 au cran vers le bas, RIR 1 sur l'isolation en dernière semaine de travail à partir du 2e cycle, semaine de reprise, `changeNextWeeks` ; 5 semaines inchangé (test de non-régression). `constraints.ts` : assisté jamais plus lourd (D-273). `restDay.ts`, `checkIn.ts`, `journal.ts` : cible de repos, type de jour, check-in sur la moyenne, balance par jour. Rouge `b148b1f8` puis vert ; vecteurs : 4 / 5 / 6 semaines, 2,5 kg (100 → 90, 87,5 → 77,5, 52,5 → 45), haltères (26 → 22, 30 → 26), reprise, 5 → 4 en cours, pause, tractions assistées seules et avec la journée rouge. Deux attentes de test corrigées en cours (grille inconnue au lieu d'un cran de 2,5 kg ; 47,25 arrondi vers le bas = 45).
+
+**training.** Décharge propagée à la séance (`ExerciseProgression`), à l'aperçu d'Aujourd'hui (calcul déplacé dans l'aperçu chargé à la demande) et au générateur (RIR de l'isolation, reprise). Écran Programme : semaine de reprise (désactivée par défaut), durée du prochain cycle (4 / 5 / 6), RIR en plage, note de l'isolation. Onboarding étape 7 : durée et reprise, qui préremplissent le premier cycle (D-269 (7)).
+
+**nutrition.** Stratégie : cible de repos par écart (200 kcal par défaut) ou en kcal, jours d'entraînement, moyenne de la semaine ; une nouvelle cible manuelle garde l'écart ; check-in à deux cibles (ligne « Calories, jours de repos »), décision acceptée, refusée ou personnalisée qui garde la cible de repos. Aujourd'hui et journal : cible du type de jour et mention.
+
+**data-model.** Schéma 19 additif (`0019_program_rest_day.ts` + test) ; repositories : `next_weeks`, `ramp_up`, `closedBefore`, cible de repos ; export sv 19, import sv 18 (Remplacer, Fusionner) vert.
+
+**sync-icloud (D-26).** Relecture : captures, garde, restauration Rust conformes ; défaut corrigé : catalogues V7 à V17 du banc sans les colonnes 19 (`tests/sim/syncDevice.ts`, neuf scénarios « appareil resté au schéma N » rouges puis verts). Limite consignée (D-275) : une ligne créée par un appareil 18 n'est pas appliquée par un appareil 19 (déjà vrai en 0012 et 0013) ; correction = avenant ADR 0011, ticket SYNC-01 ; mesure : mise à jour des deux appareils le même jour, avant toute saisie.
+
+**qa-test.** Local, `--maxWorkers=1` : src/domain, src/db, features training / nutrition / onboarding / app, platform/backup, scripts/release, tests/unit/sync, src/sync, src/i18n : verts (après mise à jour de l'identité 0.24.0 / schéma 19 et des libellés de conflit). Typecheck propre (hors `plugin-geolocation` connu), lint propre. `test:bundle` vert ; départ +321 octets (D-274). Non lancés en local : cargo, e2e, visual (CI).
+
 ## État au 14/11, nuit (arrêt : budget M dépassé, consigne de la mission de nuit)
 
 Branche `PROG-01-mesocycle-jours-repos`, PR #131 en brouillon, à jour sur main (#130 fusionnée). Rien n'est publié.
