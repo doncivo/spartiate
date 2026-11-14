@@ -49,3 +49,20 @@ Chapitres PRD : 12 (mésocycle, § 12.2, § 12.5), 11 (prescription, deload), 15
 ## Vérification après fusion
 
 Sur une base de test vide : « Repartir de zéro », onboarding passé, import Remplacer de l'archive sv 18 synthétique → routine, cibles et compléments présents, aucune erreur. Résultat consigné ici.
+
+## État au 14/11, nuit (arrêt : budget M dépassé, consigne de la mission de nuit)
+
+Branche `PROG-01-mesocycle-jours-repos`, PR #131 en brouillon, à jour sur main (#130 fusionnée). Rien n'est publié.
+
+Fait et poussé (tests ciblés verts en local) :
+- Schéma 19 (migration 0019 + test, catalogue syncTables, déclencheurs de restauration Rust, fixture, `APP_SCHEMA_VERSION` 19).
+- Domaine nutrition : `restDay.ts` (cible de repos, type de jour, moyenne hebdomadaire), check-in sur la moyenne (D-272), balance comparée à la cible du jour ; rouge `656e1d94` → vert `f243a52a`. Le test écrit avant le code avait un décalage d'un jour sur le jour ISO, corrigé.
+- Repository des cibles : lecture et écriture de la cible de repos (+ tests ; rouge non vérifié à part).
+- Import : archive sv 18 synthétique en Remplacer et Fusionner, rouge `invalid-data` puis vert ; `EXPORT_SV` 19, colonnes de la 0019 dans `LATER_COLUMNS`, docs/export-complet.md.
+- Version 0.24.0 (manifestes).
+
+Reste, dans l'ordre :
+1. Mésocycle, domaine (D-267, D-269) : table RIR 4 / 5 / 6 semaines, séries de la routine, décharge (2 séries, 90 % au cran vers le bas, RIR 3-4), isolation RIR 1 à partir du 2e cycle, semaine de reprise (`ramp_up`), `next_weeks` ; vecteurs. Le travail de l'agent training est perdu (rien sur disque) : à refaire.
+2. Constat 6 de Codex (PR #127) : en décharge, un exercice assisté ne devient jamais plus lourd (garder l'assistance ou réduire la charge totale) ; D- à créer ; tests : tractions assistées en décharge seule, puis décharge et journée rouge.
+3. Repository mésocycle (`next_weeks`, `ramp_up`, cycles clos avant le cycle courant) ; écrans : Programme (4 / 5 / 6, reprise), onboarding étape 7 ; Stratégie (cible de repos, jours), Aujourd'hui et journal (mention du type de jour) sans grossir le bundle de départ.
+4. Relecture sync-icloud (D-26), passes qa-test et code-reviewer, CHANGELOG 0.24.0, CI, fusion, tags, build-ios publish=false, vérification « Repartir de zéro → onboarding → import Remplacer sv 18 ».
