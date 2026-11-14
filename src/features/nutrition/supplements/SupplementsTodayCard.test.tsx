@@ -1,12 +1,15 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { DeviceId, LocalDate, LocalTime } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../../app/navigation';
+import { logFailure } from '../../../platform/desktop/log';
 import { SupplementsTodayCard } from './SupplementsTodayCard';
+
+vi.mock('../../../platform/desktop/log', async (importOriginal) => ({ ...(await importOriginal<Record<string, unknown>>()), logFailure: vi.fn() }));
 
 /** I6-05 (critère 2) : carte « Compléments » d'Aujourd'hui, prises du jour cochées en un tap ; aucune prise due : pas de carte. */
 const DEVICE = '60000000-0000-4000-8000-0000000000d7' as DeviceId;
@@ -131,6 +134,46 @@ describe('I6-05 : SupplementsTodayCard', () => {
       await screen.findByRole('checkbox');
       expect(screen.queryByRole('alert')).toBeNull();
       expect((await db.data.repos.settings.get(KEY)) as unknown).toMatchObject({ failed: false, days: [], lost: false });
+    });
+
+    const mountWithSettings = (over: { get?: () => Promise<never>; set?: (key: string, value: unknown) => Promise<void> }) => {
+      const settings = { ...db.data.repos.settings, ...over } as typeof db.data.repos.settings;
+      const data = { ...db.data, repos: { ...db.data.repos, settings } };
+      return render(
+        <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data })}>
+          <SupplementsTodayCard />
+        </AppContainerProvider>,
+      );
+    };
+
+    it('lecture de l’état impossible : journalisée (jamais avalée)', async () => {
+      await create();
+      vi.mocked(logFailure).mockClear();
+      mountWithSettings({ get: () => Promise.reject(new Error('disk')) });
+      await screen.findByRole('checkbox');
+      await waitFor(() => expect(logFailure).toHaveBeenCalledWith('supplements', expect.any(String)));
+    });
+
+    it('« Compris » qui ne peut pas écrire : message visible sur la carte, journal, état toujours affiché', async () => {
+      await create();
+      await put({ failed: true, days: [TODAY], lost: false });
+      vi.mocked(logFailure).mockClear();
+      mountWithSettings({ set: () => Promise.reject(new Error('disk')) });
+      await screen.findByText(text);
+      fireEvent.click(screen.getByRole('button', { name: 'Compris' }));
+      expect(await screen.findByText('Impossible d’effacer ce message. Réessaie.')).toBeInTheDocument();
+      expect(screen.getByText(text)).toBeInTheDocument();
+      expect(logFailure).toHaveBeenCalledWith('supplements', expect.any(String));
+    });
+
+    it('prise cochée sans état à effacer : aucune écriture de l’état durable', async () => {
+      await create();
+      const writes: string[] = [];
+      mountWithSettings({ set: (key, value) => (writes.push(key), db.data.repos.settings.set(key as 'notifications.status', value as never)) });
+      fireEvent.click(await screen.findByRole('checkbox'));
+      await waitFor(async () => expect(await (await db.data.repos.supplements()).intakes(TODAY, TODAY)).toHaveLength(1));
+      await act(async () => new Promise((r) => setTimeout(r, 30))); // laisse finir la fin du geste (levée éventuelle de l'état)
+      expect(writes).not.toContain(KEY);
     });
 
     it('aucun état : aucun message', async () => {
