@@ -21,6 +21,12 @@ export interface CardioSessionRecord {
   readonly hasTrack: boolean;
 }
 
+/** Options de `CardioRepository.add` (FIX-0242). */
+export interface CardioAddOptions {
+  /** Identifiant de la séance, créé une fois par saisie et réutilisé à chaque nouvel essai ; défaut : un nouvel identifiant. */
+  readonly id?: string;
+}
+
 export interface CardioRepository {
   /** Séances vivantes, la plus récente d'abord (début), au plus `limit` (200 par défaut). */
   list(limit?: number): Promise<readonly CardioSessionRecord[]>;
@@ -28,8 +34,12 @@ export interface CardioRepository {
   get(id: string): Promise<CardioSessionRecord | null>;
   /** Séances vivantes commencées depuis cet instant (moteur de récupération, D-220). */
   listSince(sinceIso: string): Promise<readonly RecoveryCardio[]>;
-  /** Enregistre une séance (et son tracé, gardé sur l'appareil) ; rend son identifiant. Invalide : `'invalid'`. */
-  add(input: CardioSessionInput, track?: readonly TrackPoint[] | null): Promise<string>;
+  /**
+   * Enregistre une séance (et son tracé, gardé sur l'appareil) dans une seule transaction ; rend son identifiant. Invalide : `'invalid'`.
+   * FIX-0242 : `options.id`, identifiant choisi par l'appelant (un par saisie) ; si une séance vivante de cet identifiant existe déjà, rien n'est
+   * réécrit et l'identifiant est rendu (nouvel essai après un échec : jamais de doublon).
+   */
+  add(input: CardioSessionInput, track?: readonly TrackPoint[] | null, options?: CardioAddOptions): Promise<string>;
   /** Remplace les champs d'une séance vivante (seuls les champs changés sont publiés). Invalide : `'invalid'` ; absente : `'not-found'`. */
   update(id: string, input: CardioSessionInput): Promise<void>;
   /** Suppression logique publiée ; le tracé local est effacé. Sans effet si absente ou déjà supprimée. */

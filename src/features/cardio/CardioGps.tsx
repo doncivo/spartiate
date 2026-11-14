@@ -29,6 +29,11 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
   const [state, setState] = useState<State>({ kind: 'idle' });
   const [, setTick] = useState(0);
   const stopRef = useRef<(() => Promise<void>) | null>(null);
+  // FIX-0242 : `mounted` faux après le démontage ; `run` change à chaque démarrage, abandon, arrêt et démontage (un démarrage périmé n'a plus d'effet) ;
+  // `starting` refuse un second démarrage tant que le premier n'a pas abouti (deux appuis rapides = un seul suivi).
+  const mounted = useRef(true);
+  const run = useRef(0);
+  const starting = useRef(false);
 
   const stopWatch = async (): Promise<void> => {
     const stop = stopRef.current;
@@ -36,12 +41,15 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
     if (stop) await stop();
   };
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      run.current += 1;
+      starting.current = false;
       void stopWatch();
-    },
-    [],
-  );
+    };
+  }, []);
 
   const running = state.kind === 'running';
   useEffect(() => {
@@ -57,38 +65,58 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
     };
   }, [running]);
 
-  const onEvent = (event: GeoEvent): void => {
-    if (event.kind === 'error') {
-      if (event.code === 'denied') {
-        void stopWatch();
-        setState({ kind: 'blocked', reason: 'gpsDenied' });
-      } else setState((s) => (s.kind === 'running' ? { ...s, lost: true } : s));
-      return;
-    }
-    setState((s) => (s.kind === 'running' ? { ...s, track: addTrackPoint(s.track, event.fix), lost: false, paused: false } : s));
-  };
-
   const start = async (): Promise<void> => {
+    if (starting.current || stopRef.current !== null) return;
+    starting.current = true;
+    run.current += 1;
+    const token = run.current;
+    const current = (): boolean => mounted.current && run.current === token;
+    const onEvent = (event: GeoEvent): void => {
+      if (!current()) return;
+      if (event.kind === 'error') {
+        if (event.code === 'denied') {
+          void stopWatch();
+          setState({ kind: 'blocked', reason: 'gpsDenied' });
+        } else setState((s) => (s.kind === 'running' ? { ...s, lost: true } : s));
+        return;
+      }
+      setState((s) => (s.kind === 'running' ? { ...s, track: addTrackPoint(s.track, event.fix), lost: false, paused: false } : s));
+    };
     setState({ kind: 'starting' });
     try {
       const geo = await load();
+      if (!current()) return;
       let permission = await geo.permission();
+      if (!current()) return;
       if (permission === 'prompt') permission = await geo.request();
+      if (!current()) return;
       if (permission !== 'granted') {
         setState({ kind: 'blocked', reason: geo.available ? 'gpsDenied' : 'gpsUnavailable' });
         return;
       }
       setState({ kind: 'running', startMs: clock.nowMs(), track: emptyTrack(), lost: false, paused: false });
-      stopRef.current = await geo.watch(onEvent);
+      const stop = await geo.watch(onEvent);
+      // Démonté, abandonné ou arrêté pendant que le suivi démarrait : arrêté aussitôt, jamais gardé.
+      if (!current()) {
+        await stop();
+        return;
+      }
+      stopRef.current = stop;
     } catch {
+      if (!current()) return;
       await stopWatch();
-      setState({ kind: 'blocked', reason: 'gpsUnavailable' });
+      if (mounted.current) setState({ kind: 'blocked', reason: 'gpsUnavailable' });
+    } finally {
+      if (run.current === token) starting.current = false;
     }
   };
 
   const finish = async (report: boolean): Promise<void> => {
     const current = state;
+    run.current += 1;
+    starting.current = false;
     await stopWatch();
+    if (!mounted.current) return;
     setState({ kind: 'idle' });
     if (!report || current.kind !== 'running') return;
     const durationSec = Math.max(1, Math.round((clock.nowMs() - current.startMs) / 1000));

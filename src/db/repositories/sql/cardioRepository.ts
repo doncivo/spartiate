@@ -1,7 +1,7 @@
 import { decodeTrack, encodeTrack, toCardioKind, validateCardioSession, type CardioSessionInput } from '../../../domain/cardio';
 import type { WriteStamper } from '../../../domain/hlc';
 import { uuidGenerator, type IdGenerator } from '../../../domain/id';
-import type { SqlExecutor, SqlRow } from '../../driver';
+import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
 import type { CardioRepository, CardioSessionRecord } from '../cardioRepository';
 import { RepositoryError } from '../common';
 
@@ -35,6 +35,15 @@ const toRecord = (r: SessionRow): CardioSessionRecord => ({
 });
 
 /**
+ * FIX-0242 (comme FIX-0171) : exécute `fn` d'un seul tenant. Dépôt lié au pilote : transaction ouverte ici ; dépôt d'une transaction de l'appelant
+ * (`data.transaction`) : déjà atomique, exécuté tel quel (une transaction imbriquée bloquerait la file).
+ */
+function atomic<T>(db: SqlExecutor, fn: (x: SqlExecutor) => Promise<T>): Promise<T> {
+  const driver = db as Partial<SqlDriver>;
+  return typeof driver.transaction === 'function' ? driver.transaction(fn) : fn(db);
+}
+
+/**
  * Séances cardio publiées et tracés locaux (I6-06, D-221, D-222). Toute écriture publiée prend son tampon HLC juste avant son `db.execute` ; la
  * validation du domaine se fait sur l'instant de ce tampon (aucune attente entre les deux). Le tracé n'a ni colonne de synchro ni déclencheur.
  */
@@ -61,18 +70,23 @@ export function createCardioRepository(db: SqlExecutor, stamper: WriteStamper, i
       return rows.map((r) => ({ startedAt: r.started_at, durationSec: Number(r.duration_sec), rpe: Number(r.rpe) }));
     },
 
-    async add(input, track = null) {
-      const id = String(ids.next());
-      const stamp = stamper.next();
-      check(input, stamp.at, id);
-      await db.execute(
-        'INSERT INTO cardio_session (id, kind, started_at, duration_sec, distance_m, avg_hr, rpe, source, notes, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [id, ...values(input), stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
-      );
-      if (track && track.length > 0) {
-        await db.execute('INSERT OR REPLACE INTO cardio_track (session_id, points, point_count, saved_at) VALUES (?, ?, ?, ?)', [id, encodeTrack(track), track.length, stamp.at]);
-      }
-      return id;
+    async add(input, track = null, options = {}) {
+      const id = options.id ?? String(ids.next());
+      // FIX-0242 : séance et tracé dans UNE transaction (un échec du tracé annule la séance) ; nouvel essai avec le même identifiant : si la séance
+      // vivante existe déjà, rien n'est réécrit (aucun doublon, aucune écriture publiée de plus). Tampon pris juste avant l'écriture qu'il date.
+      return atomic(db, async (db) => {
+        if ((await db.select('SELECT 1 FROM cardio_session WHERE id = ? AND deleted_at IS NULL', [id])).length > 0) return id;
+        const stamp = stamper.next();
+        check(input, stamp.at, id);
+        await db.execute(
+          'INSERT INTO cardio_session (id, kind, started_at, duration_sec, distance_m, avg_hr, rpe, source, notes, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [id, ...values(input), stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
+        );
+        if (track && track.length > 0) {
+          await db.execute('INSERT OR REPLACE INTO cardio_track (session_id, points, point_count, saved_at) VALUES (?, ?, ?, ?)', [id, encodeTrack(track), track.length, stamp.at]);
+        }
+        return id;
+      });
     },
 
     async update(id, input) {
