@@ -80,4 +80,49 @@ describe('I6-05 : SupplementsTodayCard', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Gérer les compléments' }));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'nutrition', screen: 'supplements' });
   });
+
+  describe('prise cochée depuis la notification non enregistrée (FIX-0242)', () => {
+    const KEY = 'notifications.supplementActionTrouble' as 'notifications.status';
+    const text = 'Une prise cochée depuis la notification n’a pas pu être enregistrée. Coche-la ici.';
+    const lostText = 'Une action « Pris » de la notification n’a pas pu être lue. Vérifie tes prises ici.';
+    const put = (value: { failed: boolean; days: string[]; lost: boolean }) => db.data.repos.settings.set(KEY, { v: 1, ...value } as never);
+
+    it('état durable présent : message visible (role=alert), toujours là après un redémarrage simulé (nouveau montage, même base)', async () => {
+      await create();
+      await put({ failed: true, days: [TODAY], lost: false });
+      const first = mount();
+      expect(await screen.findByRole('alert')).toHaveTextContent(text);
+      first.unmount();
+      mount();
+      expect(await screen.findByRole('alert')).toHaveTextContent(text);
+    });
+
+    it('perte : message dédié', async () => {
+      await create();
+      await put({ failed: false, days: [], lost: true });
+      mount();
+      expect(await screen.findByRole('alert')).toHaveTextContent(lostText);
+    });
+
+    it('prise cochée à la main : message effacé, et il le reste après un nouveau montage', async () => {
+      await create();
+      await put({ failed: true, days: [TODAY], lost: true });
+      const first = mount();
+      await screen.findByRole('alert');
+      fireEvent.click(screen.getByRole('checkbox'));
+      await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
+      first.unmount();
+      mount();
+      await screen.findByRole('checkbox');
+      expect(screen.queryByRole('alert')).toBeNull();
+      expect((await db.data.repos.settings.get(KEY)) as unknown).toMatchObject({ failed: false, lost: false });
+    });
+
+    it('aucun état : aucun message', async () => {
+      await create();
+      mount();
+      await screen.findByRole('checkbox');
+      expect(screen.queryByRole('alert')).toBeNull();
+    });
+  });
 });
