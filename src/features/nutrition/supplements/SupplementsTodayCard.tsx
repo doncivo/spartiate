@@ -76,6 +76,16 @@ export function SupplementsTodayCard() {
     }
   };
 
+  /** « Compris » : accusé de réception explicite, efface tout l'état durable (échecs et pertes). Une écriture impossible laisse le message. */
+  const acknowledgeTrouble = async (): Promise<void> => {
+    try {
+      await data.repos.settings.set(TROUBLE_KEY, NO_SUPPLEMENT_ACTION_TROUBLE);
+      setTrouble(NO_SUPPLEMENT_ACTION_TROUBLE);
+    } catch {
+      // le message reste affiché
+    }
+  };
+
   const toggle = async (item: DueIntake): Promise<void> => {
     const taken = !item.taken;
     setItems((current) => current?.map((x) => (x === item ? { ...x, taken } : x)) ?? null);
@@ -107,6 +117,11 @@ export function SupplementsTodayCard() {
         <p role="alert" className="ct-today__muted">
           {tSupplements('actionTroubleLost')}
         </p>
+      ) : null}
+      {showTrouble ? (
+        <Button variant="secondary" fullWidth onClick={() => void acknowledgeTrouble()}>
+          {tSupplements('actionTroubleAck')}
+        </Button>
       ) : null}
       <ul className="ct-supplements__intakes">
         {items.map((item) => (
