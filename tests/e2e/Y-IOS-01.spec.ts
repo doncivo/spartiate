@@ -47,7 +47,7 @@ test('Y-IOS-01 : cycle borné au passage en arrière-plan, signet perdu visible 
   // Une pesée du jour est enregistrée dans « Profil et poids » : c'est la ligne que le cycle `hide` doit publier.
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' }).format(new Date());
   await page.getByRole('navigation').getByText('Plus', { exact: true }).click();
-  await page.getByRole('button', { name: 'Profil et poids' }).click();
+  await page.getByRole('button', { name: /^Profil et poids/ }).click();
   await page.getByLabel('Poids (kg)').fill('82,4');
   await page.getByRole('button', { name: 'Enregistrer la pesée' }).click();
   await expect(page.getByText('82,4 kg')).toBeVisible();

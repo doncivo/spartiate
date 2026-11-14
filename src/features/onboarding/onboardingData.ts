@@ -142,6 +142,11 @@ export interface FinishOptions {
   readonly baseline?: OnboardingDraft | null;
   /** Remplacements refusés à la confirmation : ces champs ne sont pas écrits. */
   readonly refused?: readonly ChangeField[];
+  /**
+   * ERGO-02 (C5) : poids pré-rempli depuis Apple Santé à l'étape 1 (iPhone). Laissé tel quel, il sert aux calculs mais n'écrit aucune pesée :
+   * ce n'est pas une saisie, et Santé reste sa source. Modifié, il s'écrit comme une saisie.
+   */
+  readonly healthPrefillKg?: number | null;
 }
 
 /**
@@ -175,7 +180,8 @@ export async function finishOnboarding(deps: FinishDeps, draft: OnboardingDraft,
       await profiles.save(exists ? profileInput : { ...profileInput, units: 'metric' }, deps.year);
     }
     // Pesée du jour seulement si le poids a été saisi ou modifié : aucune pesée inventée ni ressuscitée (« Revoir mes réglages »).
-    if (changed('weightKg') && draft.weightKg !== null) await (await repos.bodyWeights()).saveManual({ date: deps.today, kg: draft.weightKg, timezone: deps.timeZone }, deps.today);
+    const untouchedHealthWeight = options.healthPrefillKg !== undefined && options.healthPrefillKg !== null && draft.weightKg === options.healthPrefillKg;
+    if (changed('weightKg') && draft.weightKg !== null && !untouchedHealthWeight) await (await repos.bodyWeights()).saveManual({ date: deps.today, kg: draft.weightKg, timezone: deps.timeZone }, deps.today);
 
     const goal = nutritionGoalOf(draft);
     if (changed('nutritionGoal') || changed('activity')) {

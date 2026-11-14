@@ -31,6 +31,7 @@ import type { TrainingData } from '../trainingState';
 import type { RestReport, RestTimerController } from './restTimer';
 import type { RedDayState } from './redDayState';
 import { SetRow } from './SetRow';
+import { heldFor } from '../loadDisplay';
 
 /**
  * Écran de séance active (§ 13.2–13.4 ; maquettes iPhone-Seance, PC-Seance ; I1-02). Chaque écriture passe par le repository dans une
@@ -425,6 +426,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         const work = block.sets.filter((s) => s.setKind !== 'warmup').length;
         // ERGO-01b P3 : cran du « − / + » = charges disponibles avec le profil de matériel actif.
         const loads = loadGrid(exercise?.equipment ?? [], data.active)?.loads ?? null;
+        // ERGO-02 (D-261) : charge de deux haltères affichée « 2 × 26 kg » (cible, dernière fois, série faite, libellé du « − / + »).
+        const held = heldFor(exercise, data.active);
         let rank = 0;
         const circuit = circuits.find((c) => c.exerciseIds[0] === block.exerciseId);
         return (
@@ -461,6 +464,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                     number={rank}
                     current={set.id === currentSetId}
                     loads={loads}
+                    held={held}
                     timed={isTimedExercise(exercise, set)}
                     source={workout.source}
                     busy={busy}

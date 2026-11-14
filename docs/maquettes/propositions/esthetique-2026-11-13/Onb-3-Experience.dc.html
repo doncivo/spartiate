@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Onboarding 3/8 · Expérience</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&amp;display=swap">
+<style>
+body{margin:0}
+.c{font-family:Cinzel,"Times New Roman",serif;font-weight:600}
+.op{display:block;width:100%;padding:16px;border-radius:14px;border:1px solid #2A2E37;background:transparent;color:#EDE7DC;text-align:left;font-size:16px}
+.op small{display:block;font-size:13px;color:#A39C90;margin-top:4px;line-height:1.45}
+</style>
+</helmet>
+<div style="width:440px;height:956px;background:#0D0E11;color:#EDE7DC;font-family:-apple-system,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.35;overflow:hidden;padding:60px 24px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:#A39C90">Étape 3 sur 8</span><a href="#" style="font-size:13px;color:#A39C90;text-decoration:none">Passer</a></div>
+<div style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px" aria-hidden="true"><i style="height:3px;border-radius:2px;background:#C28E4C"></i><i style="height:3px;border-radius:2px;background:#C28E4C"></i><i style="height:3px;border-radius:2px;background:#E0B577"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i></div>
+<div><h1 class="c" style="font-size:30px;margin:0">Ton expérience</h1><div style="color:#A39C90;margin-top:6px;font-size:14px">Les charges de départ restent prudentes, puis s'ajustent dès la 2ᵉ séance.</div></div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<button type="button" class="op">Débutant<small>Moins d'un an de musculation régulière, ou reprise après une longue pause.</small></button>
+<button type="button" class="op" style="border-color:#C28E4C;background:#15171C">Intermédiaire<small>1 à 4 ans réguliers ; tu connais les mouvements de base et tes charges.</small></button>
+<button type="button" class="op">Avancé<small>Plus de 4 ans, programmation structurée, progression devenue lente.</small></button>
+</div>
+<div style="font-size:12px;color:#A39C90;border-left:2px solid #C28E4C;padding-left:10px">Intermédiaire : départ à environ 80 % de tes charges habituelles, RIR 3 la première semaine.</div>
+<div style="margin-top:auto;margin-bottom:44px;display:flex;gap:10px">
+<button type="button" style="height:54px;padding:0 22px;border-radius:14px;border:1px solid #2A2E37;background:transparent;color:#EDE7DC">Retour</button>
+<button type="button" style="flex:1;height:54px;border-radius:14px;border:0;background:#B8322A;color:#EDE7DC;font-weight:600;font-size:16px">Continuer</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":440,"height":956}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

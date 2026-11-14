@@ -293,3 +293,113 @@
   gap: var(--ct-space-5);
   min-width: 0;
 }
+
+/* ERGO-02 (PC-Aujourdhui-apres.dc.html) : macros, semaine, records et carte « État » en petit, jetons seulement. */
+.ct-today__macros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ct-space-4);
+  margin: 0;
+  padding: 0 var(--ct-space-6);
+  list-style: none;
+}
+
+.ct-today__macro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  min-width: 0;
+  font-size: var(--ct-font-size-xs);
+}
+
+.ct-today__macro-bar {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ct-color-border);
+}
+
+.ct-today__macro-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--ct-color-bronze);
+}
+
+.ct-today__figure {
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading-sm);
+  font-weight: var(--ct-font-weight-semibold);
+  color: var(--ct-color-bronze);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-today__week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--ct-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: center;
+  font-size: var(--ct-font-size-xs);
+}
+
+.ct-today__week-day {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}
+
+.ct-today__week-mark {
+  display: block;
+  height: var(--ct-space-6);
+  box-sizing: border-box;
+  border-radius: var(--ct-radius-sm);
+  background: var(--ct-color-border);
+}
+
+.ct-today__week-day--done .ct-today__week-mark {
+  background: var(--ct-color-bronze);
+}
+
+.ct-today__week-day--today:not(.ct-today__week-day--done) .ct-today__week-mark {
+  background: transparent;
+  border: 1px dashed var(--ct-color-bronze);
+}
+
+.ct-today__records {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ct-today__record {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ct-space-2);
+  padding: var(--ct-space-2) 0;
+  border-top: var(--ct-line);
+  font-size: var(--ct-font-size-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-today__record:first-child {
+  border-top: 0;
+}
+
+.ct-today__record-value {
+  flex-shrink: 0;
+  color: var(--ct-color-bronze);
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+/* Carte « État » en petit : marges et texte resserrés, sans ajouter de hauteur à la colonne. */
+.ct-today__state {
+  padding: var(--ct-space-3) var(--ct-space-4);
+  font-size: var(--ct-font-size-xs);
+}
+
+.ct-today__state .ct-today__row {
+  min-height: 0;
+}

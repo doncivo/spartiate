@@ -9,7 +9,7 @@ import { isPhone } from './helpers/today';
  */
 test.use({ storageState: NO_STORAGE });
 
-const TITLES = ['Toi', 'Objectif', 'Expérience', 'Disponibilité', 'Matériel', 'Priorités', 'Split', 'Résultat'] as const;
+const TITLES = ['Toi', 'Ton objectif', 'Ton expérience', 'Ton temps', 'Où t’entraînes-tu ?', 'Tes priorités', 'Ta semaine', 'Prêt'] as const;
 const dialog = (page: Page) => page.getByRole('dialog', { name: 'Configuration de Spartiate' });
 const next = (page: Page) => dialog(page).getByRole('button', { name: 'Continuer', exact: true }).click();
 const choose = (page: Page, name: string) => dialog(page).getByRole('radio', { name, exact: true }).click();
@@ -23,12 +23,14 @@ async function goToStep(page: Page, index: number): Promise<void> {
   await expect(onboardingTitle(page, TITLES[index] ?? '')).toBeVisible();
 }
 
-test('premier lancement sur base vide : l’onboarding s’ouvre sur l’écran 1, étape 1 sur 8, le titre a le focus', async ({ page }) => {
+test('premier lancement sur base vide : l’onboarding s’ouvre sur l’écran 1, étape 1 sur 8, le titre a le focus', async ({ page }, testInfo) => {
   await openApp(page);
   await expectOnboardingOpen(page);
-  await expect(page.getByText('Configuration · étape 1 sur 8')).toBeVisible();
+  await expect(page.getByText('Étape 1 sur 8', { exact: true })).toBeVisible();
   await expect(onboardingTitle(page, 'Toi')).toBeFocused();
-  await expect(dialog(page).getByRole('progressbar', { name: 'Progression de la configuration' })).toHaveAttribute('aria-valuenow', '1');
+  // ERGO-02 (aperçu) : barre d'avancement sur l'iPhone ; sur PC, les 8 étapes à gauche, l'étape en cours marquée `aria-current="step"`.
+  if (isPhone(testInfo)) await expect(dialog(page).getByRole('progressbar', { name: 'Progression de la configuration' })).toHaveAttribute('aria-valuenow', '1');
+  else await expect(dialog(page).locator('[aria-current="step"]')).toContainText('Toi');
   await expect(dialog(page).getByRole('button', { name: 'Retour' })).toHaveCount(0);
 });
 
@@ -47,36 +49,36 @@ test('parcours des 8 écrans : profil, pesée, routine proposée ajoutée, retou
   await expect(dialog(page).getByText(/point de départ, recalculé après 2 semaines/)).toBeVisible();
   await next(page);
   // 2. Objectif.
-  await expect(onboardingTitle(page, 'Objectif')).toBeVisible();
+  await expect(onboardingTitle(page, 'Ton objectif')).toBeVisible();
   await choose(page, 'Prendre du muscle');
   await choose(page, '+0,25 % par semaine');
-  await expect(dialog(page).getByText('Environ 0,2 kg par semaine.')).toBeVisible();
+  await expect(dialog(page).getByText('du poids / sem. · ≈ +0,2 kg')).toBeVisible();
   await next(page);
   // 3. Expérience.
-  await expect(onboardingTitle(page, 'Expérience')).toBeVisible();
+  await expect(onboardingTitle(page, 'Ton expérience')).toBeVisible();
   await choose(page, 'Intermédiaire');
   await next(page);
   // 4. Disponibilité.
-  await expect(onboardingTitle(page, 'Disponibilité')).toBeVisible();
+  await expect(onboardingTitle(page, 'Ton temps')).toBeVisible();
   await choose(page, '3');
   await choose(page, '60 min');
   await next(page);
   // 5. Matériel : préréglages embarqués, chargés à la demande avec l'écran.
-  await expect(onboardingTitle(page, 'Matériel')).toBeVisible();
+  await expect(onboardingTitle(page, 'Où t’entraînes-tu ?')).toBeVisible();
   await choose(page, 'Salle complète');
   await next(page);
   // 6. Priorités : body map, 2 à prioriser au plus.
-  await expect(onboardingTitle(page, 'Priorités')).toBeVisible();
+  await expect(onboardingTitle(page, 'Tes priorités')).toBeVisible();
   await dialog(page).getByLabel('Pectoraux, normal').click();
   await expect(dialog(page).getByText('Prioriser : 1 sur 2')).toBeVisible();
   await next(page);
   // 7. Split : proposition, aucune routine existante remplacée.
-  await expect(onboardingTitle(page, 'Split')).toBeVisible();
+  await expect(onboardingTitle(page, 'Ta semaine')).toBeVisible();
   await expect(dialog(page).getByText('Proposition : Full Body')).toBeVisible();
   await expect(dialog(page).getByText(/aucune routine existante n’est remplacée/)).toBeVisible();
   await next(page);
   // 8. Résultat : première séance et cibles du jour.
-  await expect(onboardingTitle(page, 'Résultat')).toBeVisible();
+  await expect(onboardingTitle(page, 'Prêt')).toBeVisible();
   await expect(dialog(page).getByRole('heading', { name: 'Première séance' })).toBeVisible();
   await expect(dialog(page).getByLabel('Dépense de départ (kcal par jour)')).toHaveValue('2760');
   await dialog(page).getByRole('button', { name: 'Commencer', exact: true }).click();
@@ -98,7 +100,7 @@ test('Passer : les 7 questions peuvent être ignorées, aucun profil ni routine 
     await expect(onboardingTitle(page, TITLES[i] ?? '')).toBeVisible();
     await dialog(page).getByRole('button', { name: 'Passer cette étape' }).click();
   }
-  await expect(onboardingTitle(page, 'Résultat')).toBeVisible();
+  await expect(onboardingTitle(page, 'Prêt')).toBeVisible();
   await expect(dialog(page).getByText(/Dépense estimée indisponible/)).toBeVisible();
   await expect(dialog(page).getByText(/Aucune routine ne sera ajoutée/)).toBeVisible();
   await dialog(page).getByRole('button', { name: 'Commencer', exact: true }).click();
@@ -118,7 +120,7 @@ test('Retour garde les valeurs ; une valeur hors bornes est refusée en françai
   await dialog(page).getByLabel('Année de naissance').fill('1990');
   await dialog(page).getByLabel('Taille (cm)').fill('172');
   await next(page);
-  await expect(onboardingTitle(page, 'Objectif')).toBeVisible();
+  await expect(onboardingTitle(page, 'Ton objectif')).toBeVisible();
   await dialog(page).getByRole('button', { name: 'Retour' }).click();
   await expect(dialog(page).getByLabel('Taille (cm)')).toHaveValue('172');
 });
@@ -130,13 +132,13 @@ test('fermer puis « Revoir mes réglages » : le brouillon est repris là où i
   await next(page);
   await choose(page, 'Perdre du gras');
   await next(page);
-  await expect(onboardingTitle(page, 'Expérience')).toBeVisible();
+  await expect(onboardingTitle(page, 'Ton expérience')).toBeVisible();
   await dialog(page).getByRole('button', { name: 'Fermer la configuration' }).click();
   await expect(dialog(page)).toHaveCount(0);
   await tab(page, 'Plus');
   await page.getByRole('button', { name: /Profil et poids/ }).click();
   await page.getByRole('button', { name: 'Revoir mes réglages' }).click();
-  await expect(onboardingTitle(page, 'Expérience')).toBeVisible();
+  await expect(onboardingTitle(page, 'Ton expérience')).toBeVisible();
   await dialog(page).getByRole('button', { name: 'Retour' }).click();
   await expect(dialog(page).getByRole('radio', { name: 'Perdre du gras', exact: true })).toBeChecked();
   await dialog(page).getByRole('button', { name: 'Retour' }).click();
@@ -151,7 +153,7 @@ test('clavier : Échap ferme, Tab part du titre vers le premier champ, Entrée s
   await expect(dialog(page).getByRole('radio', { name: 'Non renseigné' }).first()).toBeFocused();
   await dialog(page).getByRole('button', { name: 'Continuer', exact: true }).focus();
   await page.keyboard.press('Enter');
-  await expect(onboardingTitle(page, 'Objectif')).toBeFocused();
+  await expect(onboardingTitle(page, 'Ton objectif')).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(dialog(page)).toHaveCount(0);
 });
@@ -171,14 +173,15 @@ test('priorités au clavier : une pression fait passer le muscle prioritaire pui
   await expect(chest).toHaveAccessibleName('Pectoraux, normal');
 });
 
-test('mise en page : rien ne déborde, cibles tactiles de 44 pt, carte centrée de 640 px au plus sur PC', async ({ page }, testInfo) => {
+test('mise en page : rien ne déborde, cibles tactiles de 44 pt, sur PC étapes à gauche et question de 68 rem au plus', async ({ page }, testInfo) => {
   await openApp(page);
   await expectOnboardingOpen(page);
   for (let i = 0; i < TITLES.length; i += 1) {
     await expect(onboardingTitle(page, TITLES[i] ?? '')).toBeVisible();
     const report = await page.evaluate(() => {
       const root = document.querySelector('[role="dialog"]');
-      const panel = root?.getBoundingClientRect();
+      // ERGO-02 (aperçu PC-Onb-*) : la question occupe la colonne centrale (`.ct-onb__main`, 68 rem au plus), les étapes à gauche.
+      const panel = root?.querySelector('.ct-onb__main')?.getBoundingClientRect();
       const small = Array.from(root?.querySelectorAll<HTMLElement>('button, input:not([type="checkbox"]), [role="radio"], [role="checkbox"]') ?? [])
         .map((el) => ({ el, box: el.getBoundingClientRect() }))
         .filter(({ box }) => box.width > 0 && box.height > 0 && box.height < 43.5)
@@ -188,7 +191,7 @@ test('mise en page : rien ne déborde, cibles tactiles de 44 pt, carte centrée 
     });
     expect(report.scrollWidth, `défilement horizontal à l'écran ${TITLES[i] ?? ''}`).toBeLessThanOrEqual(report.clientWidth);
     expect(report.small, `cibles de moins de 44 pt à l'écran ${TITLES[i] ?? ''}`).toEqual([]);
-    if (!isPhone(testInfo)) expect(report.panelWidth).toBeLessThanOrEqual(640);
+    if (!isPhone(testInfo)) expect(report.panelWidth).toBeLessThanOrEqual(68 * 16);
     if (i < TITLES.length - 1) await next(page);
   }
 });

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>PC · Plus — après</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&amp;display=swap">
+<style>
+body{margin:0}
+.c{font-family:Cinzel,"Times New Roman",serif;font-weight:600}
+.sec{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#C28E4C}
+.nav{display:flex;justify-content:space-between;align-items:center;height:40px;padding:0 12px;border-radius:10px;color:#A39C90;text-decoration:none;font-size:14px}
+.k{font-size:11px;color:#A39C90;opacity:.7}
+.it{display:flex;justify-content:space-between;align-items:center;height:42px;padding:0 12px;border-radius:10px;text-decoration:none;color:#EDE7DC;font-size:14px}
+.v{font-size:12px;color:#A39C90}
+.f{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid #1D2027}
+.inp{width:120px;height:40px;border-radius:10px;background:#15171C;border:1px solid #2A2E37;color:#EDE7DC;text-align:right;padding:0 12px;font-size:15px;box-sizing:border-box}
+</style>
+</helmet>
+<div style="width:1440px;height:900px;background:#0D0E11;color:#EDE7DC;font-family:'Segoe UI',-apple-system,system-ui,sans-serif;font-size:14px;line-height:1.4;font-variant-numeric:tabular-nums;display:flex;overflow:hidden">
+<aside style="width:232px;flex:none;border-right:1px solid #1D2027;padding:28px 16px;box-sizing:border-box;display:flex;flex-direction:column;gap:4px">
+<div class="c" style="font-size:18px;padding:0 12px 24px;color:#E0B577">Λ  Spartiate</div>
+<a class="nav" href="#">Aujourd'hui<span class="k">Ctrl 1</span></a><a class="nav" href="#">Entraînement<span class="k">Ctrl 2</span></a><a class="nav" href="#">Nutrition<span class="k">Ctrl 3</span></a><a class="nav" href="#">Progrès<span class="k">Ctrl 4</span></a><a class="nav" href="#" style="background:#15171C;color:#EDE7DC;box-shadow:inset 2px 0 0 #C28E4C">Plus<span class="k">Ctrl 5</span></a>
+<div style="margin-top:auto;font-size:12px;color:#A39C90;padding:0 12px;line-height:1.7">Synchro il y a 2 min<br>iPhone vu il y a 2 min</div>
+</aside>
+<div style="width:300px;flex:none;border-right:1px solid #1D2027;padding:32px 16px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px">
+<h1 class="c" style="font-size:28px;margin:0 12px 6px">Plus</h1>
+<div><div class="sec" style="padding:0 12px 4px">Moi</div><a class="it" href="#" style="background:#15171C;box-shadow:inset 2px 0 0 #C28E4C">Profil et poids<span class="v">81,4 kg</span></a><a class="it" href="#">Objectifs<span class="v">perte de gras</span></a><a class="it" href="#">Compléments<span class="v">3 actifs</span></a></div>
+<div><div class="sec" style="padding:0 12px 4px">Sources</div><a class="it" href="#">Apple Santé<span class="v">via l'iPhone</span></a><a class="it" href="#">Matériel<span class="v">Salle complète</span></a><a class="it" href="#">Appareils et synchro<span class="v" style="color:#5E9E6B">synchronisé</span></a></div>
+<div><div class="sec" style="padding:0 12px 4px">App</div><a class="it" href="#">Apparence<span class="v">sombre</span></a><a class="it" href="#">Clé IA et budget<span class="v">non configurée</span></a><a class="it" href="#">Mise à jour<span class="v">0.22.2</span></a></div>
+<div><div class="sec" style="padding:0 12px 4px">Données</div><a class="it" href="#">Export et import</a><a class="it" href="#">Sauvegarde<span class="v">10:00</span></a><a class="it" href="#">Journaux</a><a class="it" href="#" style="color:#E5675C">Repartir de zéro</a></div>
+</div>
+<main style="flex:1;padding:36px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:26px;min-width:0;max-width:820px">
+<div><div class="sec">Moi</div><h2 class="c" style="font-size:30px;margin:4px 0 0">Profil et poids</h2></div>
+<div style="display:flex;align-items:baseline;gap:10px"><span class="c" style="font-size:48px;color:#E0B577">81,4</span><span style="color:#A39C90">kg tendance · dernière pesée 81,2 kg ce matin</span></div>
+<div>
+<div class="sec">Profil</div>
+<div class="f" style="border-top:0"><label for="t">Taille</label><span><input id="t" class="inp" type="text" value="178"> <span style="color:#A39C90">cm</span></span></div>
+<div class="f"><label for="n">Année de naissance</label><input id="n" class="inp" type="text" value="1988"></div>
+<div class="f"><span>Sexe pour les formules</span><span style="display:flex;gap:6px"><button type="button" style="height:36px;padding:0 14px;border-radius:18px;border:1px solid #C28E4C;background:transparent;color:#E0B577">Homme</button><button type="button" style="height:36px;padding:0 14px;border-radius:18px;border:1px solid #2A2E37;background:transparent;color:#A39C90">Femme</button></span></div>
+<div class="f"><span>Activité hors séances</span><span style="color:#A39C90">bureau, ~8 000 pas ›</span></div>
+</div>
+<div>
+<div class="sec">Ajouter une pesée</div>
+<div style="display:flex;gap:10px;align-items:center;margin-top:10px"><input class="inp" type="text" placeholder="81,2" aria-label="Poids en kg" style="width:160px"><span style="color:#A39C90">kg · 13 nov. 07:10</span><button type="button" style="margin-left:auto;height:42px;padding:0 20px;border-radius:12px;border:0;background:#B8322A;color:#EDE7DC;font-weight:600">Enregistrer</button></div>
+<div style="font-size:12px;color:#A39C90;margin-top:8px">Une pesée Renpho du même jour ne remplace jamais une saisie manuelle.</div>
+</div>
+<a href="#" style="color:#E0B577;text-decoration:none;font-weight:600">Revoir mes réglages (assistant de démarrage)</a>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

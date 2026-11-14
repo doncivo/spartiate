@@ -80,3 +80,12 @@ form.ct-flat {
   flex-direction: column;
   gap: var(--ct-space-section);
 }
+
+/* ERGO-02 : tiret et raison d'une donnée manquante ; jetons seulement. */
+.ct-missing {
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-missing__reason {
+  font-size: var(--ct-font-size-xs);
+}

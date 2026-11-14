@@ -15,7 +15,7 @@ export function AppStatusBanner() {
   const offline = useAppStatusStore((state) => state.sources.offline !== undefined);
   // Pendant « Synchro en cours » (qui passe devant « Hors ligne »), la région garde le texte masqué de l'état suivant : même élément,
   // aucun changement de contenu, donc pas de réannonce à chaque cycle. La priorité du domaine ne change pas.
-  const kept = silent && offline ? <StatusBanner message={t('status.offline')} concealed /> : null;
+  const kept = silent && offline ? <StatusBanner message={t('status.offline')} tone="info" concealed /> : null;
   return (
     <>
       <StatusBannerRegion visuallyEmpty={silent || banner === null}>{silent ? kept : banner}</StatusBannerRegion>
@@ -34,6 +34,7 @@ function useCurrentBanner() {
       // I-02 (ADR 0013 §3.3) : texte composé par l'alerte d'expiration (durée restante) ; à défaut, texte générique selon `detail`.
       return (
         <StatusBanner
+          tone="warn"
           message={source.message ?? t(source.detail === 'expired' ? 'status.signingExpired' : 'status.signingSoon')}
           {...(source.onAction ? { actionLabel: t('status.syncTroubleView'), actionAriaLabel: t('status.signingViewLabel'), onAction: source.onAction } : {})}
         />
@@ -41,6 +42,7 @@ function useCurrentBanner() {
     case 'calendarDisconnected':
       return (
         <StatusBanner
+          tone="warn"
           message={t('status.calendarDisconnected', { name: source.detail ?? '' })}
           {...(source.onAction ? { actionLabel: t('status.reconnect'), onAction: source.onAction } : {})}
         />
@@ -49,18 +51,18 @@ function useCurrentBanner() {
       // Critères 9 c et 9 g : texte de la ligne de Réglages (composé par la synchro), « (+N) » s'il y a d'autres états, « Voir ».
       const text = source.message ?? t('sync.status.errorGeneric');
       const message = source.more && source.more > 0 ? t('status.syncTroubleMore', { message: text, n: source.more }) : text;
-      return <StatusBanner message={message} {...(source.onAction ? { actionLabel: t('status.syncTroubleView'), actionAriaLabel: t('status.syncTroubleViewLabel'), onAction: source.onAction } : {})} />;
+      return <StatusBanner tone="warn" message={message} {...(source.onAction ? { actionLabel: t('status.syncTroubleView'), actionAriaLabel: t('status.syncTroubleViewLabel'), onAction: source.onAction } : {})} />;
     }
     case 'updateRequired':
       // Y-07 critère 9 : texte seul, aucun bouton (mise à jour par l'updater PC ou SideStore). Détail « reintegration » : échec de
       // réintégration (exigence d'Ali), état A-09 le plus proche, faute d'autre signe visible depuis l'écran principal.
-      return <StatusBanner message={t(source.detail === 'reintegration' ? 'sync.version.failedBanner' : 'sync.version.banner')} />;
+      return <StatusBanner tone="warn" message={t(source.detail === 'reintegration' ? 'sync.version.failedBanner' : 'sync.version.banner')} />;
     case 'waitingIcloud':
       // Critère 9 e : la cause (texte de la ligne de Réglages) quand elle est connue, sinon le texte générique.
-      return <StatusBanner message={source.message ?? t('status.waitingIcloud')} />;
+      return <StatusBanner tone="info" message={source.message ?? t('status.waitingIcloud')} />;
     case 'syncing':
-      return <StatusBanner message={t('status.syncing')} />;
+      return <StatusBanner tone="info" message={t('status.syncing')} />;
     case 'offline':
-      return <StatusBanner message={t('status.offline')} />;
+      return <StatusBanner tone="info" message={t('status.offline')} />;
   }
 }

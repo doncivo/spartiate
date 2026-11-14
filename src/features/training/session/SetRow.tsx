@@ -2,8 +2,9 @@ import { Check, X } from 'lucide-react';
 import { useState, type KeyboardEvent } from 'react';
 import { defaultEntry, validateSetEntry, type SetEntry, type SetKind, type WorkoutSet, type WorkoutSource } from '../../../domain/training';
 import { stepLoad } from '../../../domain/training/loadGrid';
-import { formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
+import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
 import { Icon } from '../../../ui';
+import type { Held } from '../loadDisplay';
 
 /**
  * Une série de la séance active (§ 13.2, I1-02 critères 2 et 5) : cible rappelée (plage de la routine, ou valeurs de la séance copiée),
@@ -33,25 +34,28 @@ function initialDraft(set: WorkoutSet, timed: boolean): Draft {
   };
 }
 
-/** Rappel de la cible : « Dernière fois » pour une séance copiée (cible unique), sinon la plage de la routine. */
-export function targetText(set: WorkoutSet, timed: boolean, source: WorkoutSource): string | null {
+/**
+ * Rappel de la cible : « Dernière fois » pour une séance copiée (cible unique), sinon la plage de la routine. ERGO-02 (D-261) : charge de deux
+ * haltères en « 2 × 26 kg » (`held` = 2).
+ */
+export function targetText(set: WorkoutSet, timed: boolean, source: WorkoutSource, held: Held = null): string | null {
   const { targetRepsMin: min, targetRepsMax: max, targetLoadKg: load } = set;
   if (source === 'copy' && min !== null && min === max) {
     if (timed) return tTraining('sessionLastDuration', { n: min });
-    return load === null ? tTraining('sessionLastReps', { reps: min }) : tTraining('sessionLastLoad', { load: formatNumber(load), reps: min });
+    return load === null ? tTraining('sessionLastReps', { reps: min }) : tTraining('sessionLastLoad', { load: formatExerciseLoad(load, held), reps: min });
   }
   if (min !== null && max !== null) {
     if (timed) return min === max ? tTraining('sessionTargetDuration', { n: min }) : tTraining('sessionTargetDurationRange', { min, max });
     return min === max ? tTraining('sessionTargetReps', { n: min }) : tTraining('sessionTargetRange', { min, max });
   }
-  return load === null ? null : tTraining('sessionTargetLoad', { n: formatNumber(load) });
+  return load === null ? null : tTraining('sessionTargetLoad', { load: formatExerciseLoad(load, held) });
 }
 
-function doneText(set: WorkoutSet): string {
+function doneText(set: WorkoutSet, held: Held): string {
   if (set.durationSec !== null && set.reps === null)
-    return set.loadKg === null ? tTraining('sessionDoneDuration', { n: set.durationSec }) : tTraining('sessionDoneLoadDuration', { load: formatNumber(set.loadKg), n: set.durationSec });
+    return set.loadKg === null ? tTraining('sessionDoneDuration', { n: set.durationSec }) : tTraining('sessionDoneLoadDuration', { load: formatExerciseLoad(set.loadKg, held), n: set.durationSec });
   if (set.loadKg === null) return tTraining('sessionDoneReps', { reps: set.reps ?? 0 });
-  return tTraining('sessionDoneLoad', { load: formatNumber(set.loadKg), reps: set.reps ?? 0 });
+  return tTraining('sessionDoneLoad', { load: formatExerciseLoad(set.loadKg, held), reps: set.reps ?? 0 });
 }
 
 export interface SetRowProps {
@@ -62,6 +66,8 @@ export interface SetRowProps {
   readonly current?: boolean;
   /** ERGO-01b P3 : charges disponibles de l'exercice avec le profil de matériel actif (cran du « − / + ») ; null : cran par défaut. */
   readonly loads?: readonly number[] | null;
+  /** ERGO-02 (D-261) : haltères tenus (2 : « 2 × 26 kg », saisie « par haltère ») ; null : charge affichée telle quelle. */
+  readonly held?: Held;
   readonly timed: boolean;
   readonly source: WorkoutSource;
   readonly busy: boolean;
@@ -71,7 +77,7 @@ export interface SetRowProps {
   readonly onRemove: () => void;
 }
 
-export function SetRow({ set, number, current = false, loads = null, timed, source, busy, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
+export function SetRow({ set, number, current = false, loads = null, held = null, timed, source, busy, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
   const [draft, setDraft] = useState<Draft>(() => initialDraft(set, timed));
   const [issue, setIssue] = useState<string | null>(null);
   // I2-01 : une proposition acceptée écrit charge et répétitions dans une série à faire ; la saisie repart des valeurs enregistrées (la ligne
@@ -84,7 +90,7 @@ export function SetRow({ set, number, current = false, loads = null, timed, sour
     if (!set.done && sameDraft(draft, synced.draft)) setDraft(next);
   }
   const warmup = set.setKind === 'warmup';
-  const target = targetText(set, timed, source);
+  const target = targetText(set, timed, source, held);
   const label = warmup ? tTraining('sessionWarmupSet') : tTraining('sessionSet', { n: number });
 
   function validate(): void {
@@ -133,6 +139,8 @@ export function SetRow({ set, number, current = false, loads = null, timed, sour
     </div>
   );
   const steps = current && !timed;
+  // ERGO-02 (D-261) : deux haltères, le libellé « 2 × 26 kg » suit la saisie et le « − / + » ; la valeur saisie reste celle d'un haltère.
+  const pairLoad = held === 2 ? parseNumber(draft.load) : null;
   const field = (key: keyof Draft, labelKey: TrainingTextKey, mode: 'decimal' | 'numeric') => (
     <label className="ct-session__field">
       <span className="ct-training__label">{tTraining(labelKey)}</span>
@@ -168,7 +176,7 @@ export function SetRow({ set, number, current = false, loads = null, timed, sour
       </div>
       {set.done ? (
         <div className="ct-session__set-body">
-          <span className="ct-session__done-value ct-session__num">{doneText(set)}</span>
+          <span className="ct-session__done-value ct-session__num">{doneText(set, held)}</span>
           {set.rir !== null ? <span className="ct-session__muted">{tTraining('sessionDoneRir', { n: set.rir })}</span> : null}
           <button type="button" className="ct-training__link" disabled={busy} onClick={onUnvalidate}>
             {tTraining('sessionUnvalidate')}
@@ -177,7 +185,12 @@ export function SetRow({ set, number, current = false, loads = null, timed, sour
       ) : (
         <>
           <div className="ct-session__fields">
-            {field('load', 'sessionLoad', 'decimal')}
+            {field('load', held === 2 ? 'sessionLoadPerDumbbell' : 'sessionLoad', 'decimal')}
+            {pairLoad === null ? null : (
+              <output className="ct-session__pair ct-session__num" aria-live="polite">
+                {formatExerciseLoad(pairLoad, 2)}
+              </output>
+            )}
             {steps ? stepper('load', 'sessionLoadDown', 'sessionLoadUp') : null}
             {timed ? field('duration', 'sessionDuration', 'numeric') : field('reps', 'sessionReps', 'numeric')}
             {steps ? stepper('reps', 'sessionRepsDown', 'sessionRepsUp') : null}

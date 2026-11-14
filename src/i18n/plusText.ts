@@ -4,12 +4,21 @@
  */
 const fr = {
   // iPhone : sections en capitales
-  sectionData: 'DONNÉES',
-  sectionIphone: 'IPHONE',
-  sectionPreferences: 'PRÉFÉRENCES',
-  sectionAbout: 'À PROPOS',
+  // ERGO-02 : quatre groupes (aperçu Plus-apres), iPhone et PC
+  groupMe: 'MOI',
+  groupSources: 'SOURCES',
+  groupApp: 'APP',
+  groupData: 'DONNÉES',
+  listLabel: 'Réglages',
+  navAppearance: 'Apparence',
+  navSync: 'Appareils et synchro',
+  navHealth: 'Apple Santé',
+  navGeneral: 'Fuseau et démarrage',
+  navBackup: 'Sauvegarde',
+  navExport: 'Export et import',
+  navLogs: 'Journaux',
+  valueMissing: '— non renseigné',
   // Carte profil
-  avatarInitial: 'A',
   profileSummaryEmpty: 'Taille, poids et objectif',
   profileSummarySeparator: ' · ',
   profileHeight: '{cm} cm',
@@ -18,18 +27,11 @@ const fr = {
   profileWeightOn: 'le {date}',
   // PC : sommaire (cinq entrées) et titres de section
   navProfile: 'Profil et poids',
-  navData: 'Synchro et données',
-  navPreferences: 'Préférences',
   navKeyboard: 'Raccourcis clavier',
   navAbout: 'À propos et diagnostic',
   // PC : sous-titres de « Synchro et données »
-  groupSync: 'SYNCHRONISATION ICLOUD',
-  groupBackups: 'SAUVEGARDES',
-  groupExport: 'EXPORT ET IMPORT',
-  exportHint: 'Archive .zip : profil, pesées et thème',
   // RESET-01 : entrée de l'écran « Repartir de zéro » (ses textes sont chargés avec lui).
   resetRow: 'Repartir de zéro',
-  resetHint: 'Efface toutes les données, sur tes deux appareils',
 } as const;
 export type PlusTextKey = keyof typeof fr;
 

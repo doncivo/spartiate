@@ -6,15 +6,18 @@ export function LinkRow({
   label,
   value = '',
   hint,
+  tone,
   onClick,
 }: {
   readonly label: string;
   readonly value?: string;
   readonly hint?: string;
+  /** ERGO-02 : `danger` colore le libellé (« Repartir de zéro », la seule action rouge de Plus). */
+  readonly tone?: 'danger';
   readonly onClick: () => void;
 }) {
   return (
-    <button type="button" className="ct-settings__row ct-settings__rowButton" aria-label={value === '' ? label : `${label} : ${value}`} onClick={onClick}>
+    <button type="button" className="ct-settings__row ct-settings__rowButton" data-tone={tone} aria-label={value === '' ? label : `${label} : ${value}`} onClick={onClick}>
       {hint ? (
         <span className="ct-settings__stack">
           <span>{label}</span>

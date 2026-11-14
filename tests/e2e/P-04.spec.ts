@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { backupState, failNextBackup, installFakeBackups, type FakeVersion } from './helpers/backups';
 import { isPhone, openToday } from './helpers/today';
-import { settingsSectionHeading } from './helpers/settings';
+import { openPlusEntry, settingsSectionHeading } from './helpers/settings';
 
 /**
  * P-04 — Je sauvegarde et restaure mes données. Date figée au lun. 5 oct. 2026, 10:00 (Paris). Le service de sauvegarde est un faux gardé dans
@@ -23,6 +23,7 @@ async function openSettings(page: Page, versions: FakeVersion[] = OLDER, options
   await openToday(page);
   await tab(page, 'Plus').click();
   await expect(page.getByRole('heading', { name: 'Plus', exact: true })).toBeVisible();
+  await openPlusEntry(page, /^Sauvegarde/); // ERGO-02 : sur PC, la sauvegarde s'ouvre dans le panneau de droite
 }
 
 async function openSheet(page: Page) {

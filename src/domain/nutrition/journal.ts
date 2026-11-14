@@ -43,7 +43,8 @@ export interface WeeklyBalance {
   readonly deltaKcal: number | null;
 }
 
-export function weeklyBalance(days: readonly DayTotals[], weighIns: readonly WeighIn[], target: Target | null, endDate: LocalDate): WeeklyBalance {
+/** `targetFor` (PROG-01, D-272) : cible du jour selon son type ; l'écart compare alors la moyenne mangée à la moyenne des cibles des mêmes jours. */
+export function weeklyBalance(days: readonly DayTotals[], weighIns: readonly WeighIn[], target: Target | null, endDate: LocalDate, targetFor?: (date: LocalDate) => Target): WeeklyBalance {
   const start = addDays(endDate, -6);
   const inWindow = (d: LocalDate): boolean => d >= start && d <= endDate;
   const complete = new Map<LocalDate, number>();
@@ -57,7 +58,12 @@ export function weeklyBalance(days: readonly DayTotals[], weighIns: readonly Wei
     completeDays: complete.size,
     weighInDays,
     averageKcal,
-    deltaKcal: averageKcal === null || target === null ? null : averageKcal - target.kcal,
+    deltaKcal:
+      averageKcal === null || target === null
+        ? null
+        : targetFor === undefined
+          ? averageKcal - target.kcal
+          : Math.round(total / complete.size - [...complete.keys()].reduce((sum, d) => sum + targetFor(d).kcal, 0) / complete.size),
   };
 }
 

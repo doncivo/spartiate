@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit, puis 0.22.1 (ERGO-01b, PR #125) (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 dans docs/decisions.md.
+État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit, puis 0.22.1 (ERGO-01b, PR #125) (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-275 dans docs/decisions.md.
 
 ## Rapport du matin (13/11)
 
@@ -11,19 +11,21 @@
 
 ## Prochaines étapes
 
-1. FIX-0221 (0.22.2, PR #124 : action « Pris » des compléments en arrière-plan, sans Swift, D-250 à D-253 ; constat d'Ali : « Pris » app en arrière-plan et app tuée, H-36). FIX-0223 (0.22.3, docs/FIX-0223.md, D-260) : « Séance du jour » avec durée et charges proposées, en attente de CI et de fusion. Ali : constats ci-dessus. Import de programme : I6-08 (docs/I6-08.md, non exécuté).
-2. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
-3. À recaler sur demande d'Ali : D-73 (4), Exertion (D-88, D-220).
+1. **0.24.0 (PROG-01) publiée sur PC et iPhone le 14/11** (tags v0.24.0 et ios-v0.24.0 sur `7dcb6a88`, docs/PROG-01.md, D-267, D-269 à D-275). Ali démarre le 16/11. **Prochain chantier : lot 0.25.0.** Puis FIX-0242, FIX-0241 (D-268), SYNC-01 (D-275).
+   Test instable à corriger dans FIX-0242 : `src/features/app/TodayScreen.test.tsx:61` (titre « Aujourd'hui » introuvable en 1 s), rouge une fois en CI, vert à la relance.
+2. ERGO-02b (après PROG-01, décision d'Ali du 13/11) : bundle de départ ramené sous 198 694 octets par la configuration du build (passe architect, D-265 : exception de +154 en 0.23.0) ; règles de calcul à mettre dans src/domain (allure du dernier km, record de la fiche, rythme du check-in) ; test de la coche « pris » ; « par haltère » dans les écarts de fr.progression ; `heldFor` réemployé ; raison « aperçu illisible » ; semaine selon « Début de semaine » (Aujourd'hui PC) ; clés mortes `sessionTodayLoad`, `unknown` ; dates Renpho sur les 5 lignes (BodyProgress.test).
+3. Constat d'Ali : « Pris » app en arrière-plan et tuée (H-36). Import de programme : I6-08 (docs/I6-08.md, non exécuté).
+4. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
+5. À recaler sur demande d'Ali : D-73 (4), Exertion (D-88, D-220).
 
 ## À décider par Ali
 
 - ERGO-01b, révisables : jour du programme (D-243), cran de 2,5 kg sans profil de matériel (D-244), action rouge choisie par écran (D-246).
 - Archive `archive/agent-a0528c3a67af21a44` (origin) : supprimable sur décision d'Ali (D-144).
-- Worktrees d'agents verrouillés par le pid 16360 (tout poussé) : agent-a9d451df1eba848d1, agent-a895df175f43a280d, agent-a7c1af61eb1c76410, agent-a393a3030e58910ef ; à retirer par `git worktree remove` après redémarrage du PC.
 
 ## Rappels
 
-- Première utilisation réelle : 2026-11-09 (D-38), plus aucun accès aux données réelles ni à iCloud Drive/Spartiate. D-69 : HealthKit direct BLOCKED, import par Raccourcis. H-21 UNVERIFIED.
+- Usage réel non commencé (D-266) : toutes les données actuelles sont des données de test ; il commencera après « Repartir de zéro » (docs/RESET-01.md), à la date qu'Ali annoncera et consignera. Les interdits d'accès aux données réelles (CLAUDE.md) restent en vigueur pour les agents dans tous les cas. D-69 : HealthKit direct BLOCKED, import par Raccourcis. H-21 UNVERIFIED.
 - Données réelles interdites (voir CLAUDE.md) ; jamais `git fetch circletasks` ; pas de `push --force`, de `reset --hard`, de `rm -rf`, de push sur main ; aucun tag supprimé ou repoussé.
 - Suite complète en CI seulement ; en local, des tests ciblés (`--maxWorkers=1`, pas de commandes lourdes en parallèle : le système a déjà tué des processus pour manque de mémoire). Une compilation iPhone (`build-ios.yml`, `-f publish=false`) par lot qui touche Swift, l'extension ou un plugin iOS.
 - Preuve native : aucun `CONFIRMED` sans constat d'Ali (D-36) ; H-3a et H-3b BLOCKED, H-4 CONFIRMED avec deux défauts d'affichage (voir la matrice).

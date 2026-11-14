@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { APP_READY_TIMEOUT_MS } from './helpers/app';
 import { expectFitsViewport } from './helpers/layout';
+import { openPlusEntry } from './helpers/settings';
 import { closeRoom, inspect, openPairingWindow, openSyncDetails, openSyncedPage, presentQr, presentText, propagate, setCamera, syncNow, type SyncedPage } from './helpers/sync';
 
 /**
@@ -50,6 +51,7 @@ test('Y-IOS-02 QA : PC + iPhone de bout en bout, échecs d’association puis r�
   await syncNow(pc.page);
   await propagate(room);
   await reglages(pc.page).click();
+  await openPlusEntry(pc.page, /^Appareils et synchro/);
   await expect(pc.page.getByRole('button', { name: SHOW_QR })).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });
   await expect(pc.page.getByRole('button', { name: 'Synchroniser', exact: true })).toBeVisible();
 

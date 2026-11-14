@@ -79,10 +79,13 @@ const firstOpenSet = async (exercise: string) => {
   if (!open) throw new Error('aucune série à valider');
   return open;
 };
-/** Saisit la charge et les répétitions de la première série à faire, puis la valide. */
+/**
+ * Saisit la charge et les répétitions de la première série à faire, puis la valide. ERGO-02 (D-261) : pour deux haltères (curl marteau), le champ
+ * s'appelle « Charge par haltère (kg) » ; la valeur saisie est la même (un haltère).
+ */
 async function validateNext(exercise: string, load: string, reps: string): Promise<void> {
   const set = await firstOpenSet(exercise);
-  fireEvent.change(within(set).getByLabelText('Charge (kg)'), { target: { value: load } });
+  fireEvent.change(within(set).getByLabelText(/^Charge( par haltère)? \(kg\)$/), { target: { value: load } });
   fireEvent.change(within(set).getByLabelText('Répétitions'), { target: { value: reps } });
   fireEvent.click(within(set).getByRole('button', { name: 'Valider la série' }));
   await within(set).findByText('Validée');
