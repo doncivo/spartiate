@@ -1,5 +1,6 @@
 import type { WriteStamper } from '../../../domain/hlc';
 import { uuidGenerator, type IdGenerator } from '../../../domain/id';
+import { formatTrainingDays, restPlanOf } from '../../../domain/nutrition/restDay';
 import { effectiveTarget, validateTargetRecord, type TargetSource } from '../../../domain/nutrition/targetRecord';
 import { isId, type LocalDate } from '../../../domain/types';
 import type { SqlExecutor, SqlRow } from '../../driver';
@@ -16,6 +17,9 @@ interface TargetRow extends SqlRow, SyncRow {
   readonly source: string;
   readonly accepted: number;
   readonly engine_version: number | null;
+  readonly rest_kcal?: number | null;
+  readonly rest_carb_g?: number | null;
+  readonly training_days?: string | null;
 }
 
 const toRecord = (row: TargetRow): NutritionTargetRecord => {
@@ -26,6 +30,10 @@ const toRecord = (row: TargetRow): NutritionTargetRecord => {
     target: { kcal: row.kcal, proteinG: row.protein_g, fatG: row.fat_g, carbG: row.carb_g },
     source: row.source as TargetSource,
     accepted: row.accepted === 1,
+    restPlan: restPlanOf(
+      { kcal: row.kcal, proteinG: row.protein_g, fatG: row.fat_g, carbG: row.carb_g },
+      { restKcal: row.rest_kcal ?? null, restCarbG: row.rest_carb_g ?? null, trainingDays: row.training_days ?? null },
+    ),
     engineVersion: row.engine_version,
     ...meta,
   };
@@ -44,9 +52,9 @@ export function createNutritionTargetRepository(db: SqlExecutor, stamper: WriteS
       if ((await read(id)) !== undefined) throw new RepositoryError('conflict', 'nutrition_target', id);
       const stamp = stamper.next();
       await db.execute(
-        `INSERT INTO nutrition_target (id, week_start, kcal, protein_g, fat_g, carb_g, source, accepted, engine_version, created_at, updated_at, device_id, hlc)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, draft.weekStart, draft.target.kcal, draft.target.proteinG, draft.target.fatG, draft.target.carbG, draft.source, draft.accepted ? 1 : 0, draft.engineVersion, stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
+        `INSERT INTO nutrition_target (id, week_start, kcal, protein_g, fat_g, carb_g, source, accepted, engine_version, rest_kcal, rest_carb_g, training_days, created_at, updated_at, device_id, hlc)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, draft.weekStart, draft.target.kcal, draft.target.proteinG, draft.target.fatG, draft.target.carbG, draft.source, draft.accepted ? 1 : 0, draft.engineVersion, draft.restPlan?.rest.kcal ?? null, draft.restPlan?.rest.carbG ?? null, draft.restPlan ? formatTrainingDays(draft.restPlan.trainingDays) : null, stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
       );
       const row = await read(id);
       if (!row) throw new RepositoryError('not-found', 'nutrition_target', id);

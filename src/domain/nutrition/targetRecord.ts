@@ -6,6 +6,7 @@
 
 import { isLocalDate, type Hlc, type IsoDateTime, type LocalDate } from '../types';
 import { NUTRITION_CONFIG } from './config';
+import type { RestPlan } from './restDay';
 import type { Target } from './types';
 
 export const TARGET_SOURCES = ['auto', 'manual'] as const;
@@ -25,6 +26,8 @@ export interface TargetRecordDraft {
   readonly engineVersion: number | null;
   /** Ali a confirmé explicitement une cible sous 1 200 kcal (§ 15.2) : condition d'écriture, non stockée. */
   readonly lowFloorConfirmed: boolean;
+  /** PROG-01 (D-271) : cible des jours de repos ; absente ou nulle : une seule cible (comportement d'avant). */
+  readonly restPlan?: RestPlan | null;
 }
 
 export type TargetRecordIssue = 'week-invalid' | 'source-invalid' | 'engine-version-invalid' | 'value-invalid' | 'kcal-below-minimum' | 'confirmation-required';
@@ -36,7 +39,11 @@ export function validateTargetRecord(draft: TargetRecordDraft): TargetRecordIssu
   if (draft.engineVersion !== null && (!Number.isInteger(draft.engineVersion) || draft.engineVersion < 1)) issues.push('engine-version-invalid');
   const { kcal, proteinG, fatG, carbG } = draft.target;
   const grams = [proteinG, fatG, carbG];
-  if (!Number.isFinite(kcal) || kcal <= 0 || kcal > TARGET_KCAL_MAX || grams.some((g) => !Number.isFinite(g) || g < 0)) {
+  const rest = draft.restPlan ?? null;
+  const restInvalid =
+    rest !== null &&
+    (!Number.isFinite(rest.rest.kcal) || rest.rest.kcal <= 0 || rest.rest.kcal > TARGET_KCAL_MAX || !Number.isFinite(rest.rest.carbG) || rest.rest.carbG < 0 || rest.trainingDays.length === 0);
+  if (restInvalid || !Number.isFinite(kcal) || kcal <= 0 || kcal > TARGET_KCAL_MAX || grams.some((g) => !Number.isFinite(g) || g < 0)) {
     issues.push('value-invalid');
     return issues;
   }
@@ -54,6 +61,8 @@ export interface TargetRecord {
   readonly target: Target;
   readonly source: TargetSource;
   readonly accepted: boolean;
+  /** PROG-01 : cible des jours de repos (`null` : une seule cible). */
+  readonly restPlan?: RestPlan | null;
   readonly createdAt: IsoDateTime;
   /** Ordre causal de la décision (colonne `hlc`, lecture seule) : horloge d'appareil non fiable, HLC si. */
   readonly hlc: Hlc;

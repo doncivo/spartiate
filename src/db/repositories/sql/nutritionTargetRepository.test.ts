@@ -97,3 +97,26 @@ describe('NutritionTargetRepository', () => {
     expect(Object.keys(r).sort()).toEqual(['effective', 'get', 'list', 'record']);
   });
 });
+
+describe('NutritionTargetRepository : cible des jours de repos (PROG-01, D-271)', () => {
+  it('sans cible de repos : colonnes nulles, restPlan nul', async () => {
+    db = await openBaseDb(DEVICE);
+    const saved = await (await repo()).record(draft(), { id: T(1) });
+    expect(saved.restPlan).toBeNull();
+    expect(await db.driver.select('SELECT rest_kcal, rest_carb_g, training_days FROM nutrition_target')).toEqual([{ rest_kcal: null, rest_carb_g: null, training_days: null }]);
+  });
+
+  it('avec cible de repos : écrite et relue (protéines et lipides de la cible d’entraînement)', async () => {
+    db = await openBaseDb(DEVICE);
+    const restPlan = { rest: { kcal: 2200, proteinG: 150, fatG: 70, carbG: 240 }, trainingDays: [1, 2, 4, 5, 6] as const };
+    const saved = await (await repo()).record(draft({ restPlan: { rest: restPlan.rest, trainingDays: [...restPlan.trainingDays] } }), { id: T(1) });
+    expect(saved.restPlan).toEqual({ rest: restPlan.rest, trainingDays: [1, 2, 4, 5, 6] });
+    expect(await db.driver.select('SELECT rest_kcal, rest_carb_g, training_days FROM nutrition_target')).toEqual([{ rest_kcal: 2200, rest_carb_g: 240, training_days: '1,2,4,5,6' }]);
+  });
+
+  it('cible de repos invalide (aucun jour d’entraînement, kcal nulle) : refusée', async () => {
+    db = await openBaseDb(DEVICE);
+    await expect((await repo()).record(draft({ restPlan: { rest: { kcal: 2200, proteinG: 150, fatG: 70, carbG: 240 }, trainingDays: [] } }), { id: T(1) })).rejects.toThrow();
+    await expect((await repo()).record(draft({ restPlan: { rest: { kcal: 0, proteinG: 150, fatG: 70, carbG: 240 }, trainingDays: [1] } }), { id: T(2) })).rejects.toThrow();
+  });
+});
