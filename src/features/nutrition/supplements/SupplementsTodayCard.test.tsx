@@ -108,7 +108,7 @@ describe('I6-05 : SupplementsTodayCard', () => {
       await create();
       await put({ failed: true, days: [TODAY], lost: true });
       const first = mount();
-      await screen.findByRole('alert');
+      expect(await screen.findAllByRole('alert')).toHaveLength(2);
       fireEvent.click(screen.getByRole('checkbox'));
       await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
       first.unmount();
