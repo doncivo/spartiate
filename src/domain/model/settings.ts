@@ -93,6 +93,8 @@ export interface SettingsValues {
   'notifications.status': unknown;
   /** N-03 (avenant N3.4) : file durable des actions « Fait » et « +15 min » reçues de la notification, répétitions vivantes. Valeur BRUTE lue par `parseActionQueue` ; locale, jamais synchronisée. */
   'notifications.actionQueue': unknown;
+  /** FIX-0242 : état durable des échecs de l'action « Pris » (valeur BRUTE lue par `parseSupplementActionTrouble`) ; locale, jamais synchronisée. */
+  'notifications.supplementActionTrouble': unknown;
   /** K-05 (ADR 0008 §10.3) : listes Rappels choisies, avec leur espace et leur nom lisible sur le PC ; partagé. Valeur à relire par `parseAppleLists`. */
   'appleReminders.lists': AppleListsSetting;
   /** K-06 : création dans Rappels par espace (désactivée par défaut) ; partagé. Valeur à relire par `parseAppleCreate`. */
@@ -195,6 +197,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'notifications.ledger': { scope: 'local', defaultValue: null },
   'notifications.status': { scope: 'local', defaultValue: null },
   'notifications.actionQueue': { scope: 'local', defaultValue: null },
+  'notifications.supplementActionTrouble': { scope: 'local', defaultValue: null },
   'appleReminders.lists': { scope: 'shared', defaultValue: { lists: [] } },
   'appleReminders.create': { scope: 'shared', defaultValue: { bySpace: [] } },
   'appleReminders.lastPassAt': { scope: 'shared', defaultValue: null },

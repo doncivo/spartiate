@@ -1,7 +1,8 @@
 import { ACTIONS_BY_CATEGORY, EMPTY_ACTION_QUEUE, parseActionQueue, type NotificationActionQueueV1 } from '../../domain/notificationActions';
-import { intakesToTake, receiveSupplementActions, settleSupplementAction, SUPPLEMENT_ACTION_TYPE_ID, supplementActionTodo } from '../../domain/supplementNotificationActions';
+import { hasSupplementActionTrouble, intakesToTake, parseSupplementActionTrouble, receiveSupplementActions, settleSupplementAction, SUPPLEMENT_ACTION_TYPE_ID, supplementActionTodo, troubleAfterPass, type SupplementActionTrouble } from '../../domain/supplementNotificationActions';
 import type { SettingsRepository } from '../../db/repositories/settingsRepository';
 import type { SupplementRepository } from '../../db/repositories/supplementRepository';
+import type { LocalDate } from '../../domain/types';
 import type { NotificationActionSource } from '../../platform/notifications';
 
 /**
@@ -30,6 +31,8 @@ export interface SupplementActionDeps {
   /** `failed` : une action n'a pas pu être appliquée (rejouée au passage suivant) ; `lost` : lignes illisibles ou non écrites par le natif. */
   readonly onTrouble: (kind: 'failed' | 'lost') => void;
   readonly log: (code: string) => void;
+  /** FIX-0242 : l'état durable des échecs (`notifications.supplementActionTrouble`) vient de changer : la carte d'Aujourd'hui le relit. */
+  readonly onTroubleChange?: () => void;
 }
 
 export type SupplementActionStatus = 'done' | 'source-failed' | 'queue-failed' | 'ack-failed';
@@ -51,6 +54,13 @@ export interface SupplementActionProcessor {
 }
 
 const QUEUE_KEY = 'notifications.actionQueue';
+const TROUBLE_KEY = 'notifications.supplementActionTrouble';
+
+interface PassOutcome {
+  readonly run: SupplementActionRun;
+  readonly failedDays: readonly LocalDate[];
+  readonly lost: boolean;
+}
 
 export function createSupplementActionProcessor(deps: SupplementActionDeps): SupplementActionProcessor {
   let chain: Promise<unknown> = Promise.resolve();
@@ -68,21 +78,21 @@ export function createSupplementActionProcessor(deps: SupplementActionDeps): Sup
     return EMPTY_ACTION_QUEUE;
   }
 
-  async function pass(): Promise<SupplementActionRun> {
+  async function pass(): Promise<PassOutcome> {
     const result = { taken: 0, applied: 0, duplicates: 0, failed: 0 };
     let drained;
     try {
       drained = await deps.source.drain();
     } catch {
       deps.log('supplement-action-source-failed');
-      return { status: 'source-failed', ...result };
+      return { run: { status: 'source-failed', ...result }, failedDays: [], lost: false };
     }
     let queue: NotificationActionQueueV1;
     try {
       queue = await readQueue();
     } catch {
       deps.log('supplement-action-queue-failed');
-      return { status: 'queue-failed', ...result };
+      return { run: { status: 'queue-failed', ...result }, failedDays: [], lost: false };
     }
     const lostBefore = queue.lost;
     const received = receiveSupplementActions(queue, drained.entries, drained.unreadable + drained.writeFailures, deps.nowMs());
@@ -106,6 +116,7 @@ export function createSupplementActionProcessor(deps: SupplementActionDeps): Sup
         deps.log('supplement-action-apply-failed');
       }
     }
+    const failedDays = supplementActionTodo(queue).flatMap(({ entry, day }) => (entry.lastError === 'apply-failed' ? [day] : []));
     const lost = queue.lost > lostBefore;
     // Les pertes sont dites une fois (bandeau) ; le compteur n'est pas gardé au-delà.
     if (lost) queue = { ...queue, lost: 0 };
@@ -115,7 +126,7 @@ export function createSupplementActionProcessor(deps: SupplementActionDeps): Sup
     } catch {
       deps.log('supplement-action-queue-failed');
       if (result.taken > 0) deps.onTaken(result.taken);
-      return { status: 'queue-failed', ...result };
+      return { run: { status: 'queue-failed', ...result }, failedDays, lost };
     }
     let status: SupplementActionStatus = 'done';
     if (drained.lines > 0 || drained.writeFailures > 0) {
@@ -132,7 +143,28 @@ export function createSupplementActionProcessor(deps: SupplementActionDeps): Sup
       deps.log('supplement-action-lost');
       deps.onTrouble('lost');
     }
-    return { status, ...result };
+    return { run: { status, ...result }, failedDays, lost };
+  }
+
+  /** Écrit l'état durable d'après le passage ; une écriture impossible est journalisée (le bandeau bref reste le seul recours). */
+  async function recordTrouble(outcome: PassOutcome): Promise<void> {
+    try {
+      const raw = await deps.settings.get(TROUBLE_KEY);
+      const prev = parseSupplementActionTrouble(raw);
+      const next: SupplementActionTrouble = troubleAfterPass(prev, { status: outcome.run.status, failedDays: outcome.failedDays, lost: outcome.lost });
+      // Rien à dire avant, rien à dire après, ou état identique : aucune écriture.
+      if (JSON.stringify(next) === JSON.stringify(prev) || (raw == null && !hasSupplementActionTrouble(next))) return;
+      await deps.settings.set(TROUBLE_KEY, next);
+      deps.onTroubleChange?.();
+    } catch {
+      deps.log('supplement-action-trouble-write-failed');
+    }
+  }
+
+  async function guarded(): Promise<SupplementActionRun> {
+    const outcome = await pass();
+    await recordTrouble(outcome);
+    return outcome.run;
   }
 
   return {
@@ -151,7 +183,7 @@ export function createSupplementActionProcessor(deps: SupplementActionDeps): Sup
         return false;
       }
     },
-    run: () => serial(pass),
+    run: () => serial(guarded),
   };
 }
 

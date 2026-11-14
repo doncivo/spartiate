@@ -59,6 +59,8 @@ export function startSupplementReminders(container: AppContainer, env: Supplemen
         },
         onTrouble: (kind) => useNoticeStore.getState().show(kind === 'failed' ? fr.noticeFailed : fr.noticeLost),
         log: (code) => logFailure('notifications', code),
+        // FIX-0242 : état durable des échecs changé (posé ou levé) : la carte d'Aujourd'hui le relit.
+        onTroubleChange: () => announceLocalChanges(['supplement_intake']),
       }),
   });
   return () => {

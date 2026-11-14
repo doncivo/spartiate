@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { todayLocal } from '../../../domain/clock';
+import { NO_SUPPLEMENT_ACTION_TROUBLE, parseSupplementActionTrouble, troubleAfterManualTake, type SupplementActionTrouble } from '../../../domain/supplementNotificationActions';
 import { dueIntakes, type DueIntake } from '../../../domain/nutrition/supplements';
 import { formatSupplementDose, tSupplements } from '../../../i18n/supplementsText';
 import { Button, Icon } from '../../../ui';
@@ -9,6 +10,8 @@ import { useNavigationStore } from '../../app/navigation';
 import { useSyncedData } from '../../sync/remoteChanges';
 import { replanSupplementReminders } from './replan';
 import './Supplements.css';
+
+const TROUBLE_KEY = 'notifications.supplementActionTrouble';
 
 /** Libellé d'une prise : « 08:00 · Créatine, 5 g ». */
 export function intakeLabel(item: DueIntake): string {
@@ -31,6 +34,7 @@ export function SupplementsTodayCard() {
   const navigate = useNavigationStore((s) => s.navigate);
   const [items, setItems] = useState<readonly DueIntake[] | null>(null);
   const [error, setError] = useState(false);
+  const [trouble, setTrouble] = useState<SupplementActionTrouble>(NO_SUPPLEMENT_ACTION_TROUBLE);
   const synced = useSyncedData(['supplement', 'supplement_intake']);
   const today = todayLocal(container.clock);
 
@@ -49,10 +53,28 @@ export function SupplementsTodayCard() {
     void load().then((next) => {
       if (live) setItems(next);
     });
+    // FIX-0242 : échec durable d'une prise cochée depuis la notification (réglage local, relu à chaque lecture de la carte).
+    void data.repos.settings.get(TROUBLE_KEY).then(
+      (raw) => {
+        if (live) setTrouble(parseSupplementActionTrouble(raw));
+      },
+      () => undefined,
+    );
     return () => {
       live = false;
     };
-  }, [load, synced]);
+  }, [load, data, synced]);
+
+  /** Prise cochée à la main : lève l'état durable (jour concerné ou antérieur, pertes). Une écriture impossible laisse le message visible. */
+  const clearTrouble = async (): Promise<void> => {
+    try {
+      const next = troubleAfterManualTake(parseSupplementActionTrouble(await data.repos.settings.get(TROUBLE_KEY)), today);
+      await data.repos.settings.set(TROUBLE_KEY, next);
+      setTrouble(next);
+    } catch {
+      // le message reste affiché : rien n'est effacé sans succès
+    }
+  };
 
   const toggle = async (item: DueIntake): Promise<void> => {
     const taken = !item.taken;
@@ -60,6 +82,7 @@ export function SupplementsTodayCard() {
     try {
       await (await data.repos.supplements()).setTaken(item.supplement.id, today, item.moment, taken);
       setError(false);
+      if (taken) await clearTrouble();
       replanSupplementReminders(container);
     } catch {
       setError(true);
@@ -67,13 +90,24 @@ export function SupplementsTodayCard() {
     }
   };
 
-  if (items === null || items.length === 0) return null;
+  const showTrouble = trouble.failed || trouble.lost;
+  if (items === null || (items.length === 0 && !showTrouble)) return null;
   return (
     <section className="ct-today__card ct-supplements-card" aria-labelledby="ct-supplements-card-title">
       <h2 id="ct-supplements-card-title" className="ct-today__eyebrow ct-section-title">
         {tSupplements('cardTitle')}
       </h2>
-      <p className="ct-today__text">{progressText(items)}</p>
+      {items.length > 0 ? <p className="ct-today__text">{progressText(items)}</p> : null}
+      {trouble.failed ? (
+        <p role="alert" className="ct-today__muted">
+          {tSupplements('actionTroubleFailed')}
+        </p>
+      ) : null}
+      {trouble.lost ? (
+        <p role="alert" className="ct-today__muted">
+          {tSupplements('actionTroubleLost')}
+        </p>
+      ) : null}
       <ul className="ct-supplements__intakes">
         {items.map((item) => (
           <li key={`${item.supplement.id}|${item.moment}`}>
