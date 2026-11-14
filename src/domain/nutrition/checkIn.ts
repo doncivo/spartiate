@@ -8,6 +8,7 @@
 import type { LocalDate } from '../types';
 import { twoWeekCoverage, type TwoWeekCoverage } from './coverage';
 import { KCAL_PER_G, NUTRITION_CONFIG, NUTRITION_ENGINE_VERSION } from './config';
+import { shiftTarget, weeklyAverageTarget, type RestPlan } from './restDay';
 import type { DayTotals, Target, WeighIn } from './types';
 
 export type CheckInStyle = 'guided' | 'collaborative' | 'manual';
@@ -30,6 +31,8 @@ export interface CheckInInput {
   readonly currentTarget: Target | null;
   /** Ali a confirmé explicitement que la cible peut descendre sous 1 200 kcal (jamais sous 800). */
   readonly lowFloorConfirmed: boolean;
+  /** PROG-01 (D-272) : cible des jours de repos ; `currentTarget` est alors celle des jours d'entraînement. Absente : comportement d'avant. */
+  readonly restPlan?: RestPlan | null;
 }
 
 export type CheckInReason = 'manual-style' | 'insufficient-coverage' | 'no-tdee' | 'no-weight';
@@ -37,6 +40,8 @@ export type Clamp = 'max-weekly-delta' | 'max-loss-rate' | 'floor';
 
 export interface Proposal {
   readonly target: Target;
+  /** PROG-01 : nouvelle cible des jours de repos (même écart que `target`) ; clé absente sans cible de repos. */
+  readonly restTarget?: Target;
   readonly previousTarget: Target | null;
   readonly deltaKcal: number | null;
   readonly initial: boolean;
@@ -99,6 +104,26 @@ function result(
 }
 
 export function proposeCheckIn(input: CheckInInput): CheckInResult {
+  const plan = input.restPlan ?? null;
+  if (plan === null || input.currentTarget === null) return proposeSingle(input);
+  // D-272 : le check-in raisonne sur la moyenne hebdomadaire, puis applique le même écart aux deux cibles (différence conservée).
+  const training = input.currentTarget;
+  const average = weeklyAverageTarget(training, plan);
+  const single = proposeSingle({ ...input, currentTarget: average, restPlan: null });
+  if (single.proposal === null) return single;
+  const p = single.proposal;
+  const delta = p.target.kcal - average.kcal;
+  const proposal: Proposal = {
+    ...p,
+    target: shiftTarget(training, delta, p.target.proteinG, p.target.fatG),
+    restTarget: shiftTarget(plan.rest, delta, p.target.proteinG, p.target.fatG),
+    previousTarget: training,
+    alternatives: p.alternatives.length > 0 ? [{ kind: 'hold', target: training }] : [],
+  };
+  return { ...single, proposal };
+}
+
+function proposeSingle(input: CheckInInput): CheckInResult {
   const cfg = NUTRITION_CONFIG;
   const current = input.currentTarget;
   const coverage = current === null ? null : twoWeekCoverage(input.days, input.weighIns, input.weekEnd);
