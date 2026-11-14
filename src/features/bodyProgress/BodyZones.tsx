@@ -105,7 +105,7 @@ export function ZoneList({ kind, summaries, onSelect }: ZoneProps & { readonly s
               <span id={`ct-zone-value-${k}`} className="ct-bodyprogress__zonevalue">
                 {s.last === null ? <MissingValue reason={tBodyProgress('zoneNoMeasure')} /> : formatCm(s.last.value)}
               </span>
-              <span className="ct-bodyprogress__zonedelta">{s.delta === null ? <MissingValue reason={tBodyProgress('zoneNoDelta')} /> : s.delta === 0 ? tBodyProgress('zoneDeltaSame') : signed(s.delta)}</span>
+              <span className="ct-bodyprogress__zonedelta">{s.delta === null ? tBodyProgress('zoneNoDelta') : s.delta === 0 ? tBodyProgress('zoneDeltaSame') : signed(s.delta)}</span>
             </button>
           );
         })}
