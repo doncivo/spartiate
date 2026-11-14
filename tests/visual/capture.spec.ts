@@ -14,6 +14,7 @@ const OUT = resolve('test-results/visual');
 const MOCKUPS = resolve('docs/maquettes');
 const PHONE = { width: 440, height: 956 };
 const PC = { width: 1440, height: 900 };
+const PC_1280 = { width: 1280, height: 900 }; // FIX-0241 (D-268) : largeur utile fréquente sur Windows, sans maquette
 const WEDNESDAY = new Date('2026-09-23T08:00:00Z'); // 10:00 à Paris
 
 mkdirSync(OUT, { recursive: true });
@@ -122,6 +123,15 @@ const SCREENS: Screen[] = [
   { name: 'Aujourdhui-clair', viewport: PHONE, date: WEDNESDAY, dark: false, prepare: goLight },
   { name: 'PC-Aujourdhui-clair', viewport: PC, date: WEDNESDAY, dark: false, prepare: goLight },
 ];
+
+// FIX-0241 critère 4 : captures à 1 280 × 900 (app seule, sans maquette).
+SCREENS.push(
+  { name: 'PC-Aujourdhui-1280', viewport: PC_1280, date: WEDNESDAY, dark: true },
+  { name: 'PC-Plus-1280', viewport: PC_1280, date: WEDNESDAY, dark: true, prepare: goTab('Plus') },
+  { name: 'PC-Corps-1280', viewport: PC_1280, date: SUNDAY, dark: true, prepare: async (page) => { await goTab('Progrès')(page); await page.locator('.ct-bodyprogress').scrollIntoViewIfNeeded(); } },
+  { name: 'PC-Nutrition-journal-1280', viewport: PC_1280, date: SUNDAY, dark: true, prepare: goNutrition() },
+  { name: 'PC-Progres-1280', viewport: PC_1280, date: SUNDAY, dark: true, prepare: goTab('Progrès') },
+);
 
 /**
  * I3-07 : les 8 écrans de l'onboarding (Plus › Profil et poids › Revoir mes réglages), à 440 × 956 et 1 440 × 900. Seule la planche
