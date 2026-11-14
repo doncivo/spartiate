@@ -169,10 +169,21 @@ export function TodayScreen() {
   );
 
   if (!loaded) {
-    return (
-      <section className="ct-section-notice ct-today" aria-labelledby="ct-section-notice-title">
+    // FIX-0242 : pendant la lecture, même arbre de tête que l'écran lu (section de la même mise en page, titre au même endroit) : le titre n'est
+    // jamais démonté puis remonté à la fin de la lecture (lecteur d'écran, et cause du test instable « sans profil : carte d'accueil »).
+    const note = failed ? <p className="ct-today__muted">{tToday('loadFailed')}</p> : null;
+    return layout === 'pc' ? (
+      <section className="ct-section-notice ct-today ct-today--pc" aria-labelledby="ct-section-notice-title">
         {title}
-        {failed ? <p className="ct-today__muted">{tToday('loadFailed')}</p> : null}
+        {note}
+      </section>
+    ) : (
+      <section className="ct-section-notice ct-today ct-today--mobile" aria-labelledby="ct-section-notice-title">
+        <div className="ct-today__head">
+          <p className="ct-today__date">{formatTodayEyebrow(today)}</p>
+          {title}
+        </div>
+        {note}
       </section>
     );
   }

@@ -60,7 +60,8 @@ beforeEach(async () => {
       open();
       expect(await screen.findByRole('heading', { name: 'Aujourd’hui' })).toBeInTheDocument();
       expect(await screen.findByText('mercredi 4 novembre')).toBeInTheDocument();
-      expect(screen.getByText('Trois réglages, puis on s’entraîne.')).toBeInTheDocument();
+      // FIX-0242 : la date s'affiche dès la lecture ; la fin de la lecture se lit sur la carte d'accueil.
+      expect(await screen.findByText('Trois réglages, puis on s’entraîne.')).toBeInTheDocument();
       const steps = screen.getAllByRole('listitem');
       expect(steps).toHaveLength(3);
       expect(within(steps[0] as HTMLElement).getByText('Profil')).toBeInTheDocument();
