@@ -1,4 +1,5 @@
 import type { Profile } from '../../domain/bodyProfile';
+import { restTargetFromGap, type RestPlan } from '../../domain/nutrition/restDay';
 import { addDays } from '../../domain/localDate';
 import {
   aggregateDays,
@@ -163,9 +164,10 @@ export type TargetWriteRefusal = 'confirmation-required' | 'rejected';
 /** Cible fixée par Ali : ligne `manual` acceptée. Sous 1 200 kcal : confirmation explicite ; sous 800 kcal ou valeur invalide : refus. Rien n'est écrit en cas de refus. */
 export async function saveManualTarget(
   access: DataAccess,
-  input: { readonly weekStart: LocalDate; readonly target: Target; readonly lowFloorConfirmed: boolean },
+  input: { readonly weekStart: LocalDate; readonly target: Target; readonly lowFloorConfirmed: boolean; readonly restPlan?: RestPlan | null },
 ): Promise<NutritionTargetRecord | TargetWriteRefusal> {
-  const draft = { weekStart: input.weekStart, target: input.target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: input.lowFloorConfirmed } as const;
+  // PROG-01 (D-271) : la cible de repos accompagne la cible d'entraînement ; absente : une seule cible.
+  const draft = { weekStart: input.weekStart, target: input.target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: input.lowFloorConfirmed, restPlan: input.restPlan ?? null } as const;
   const issues = validateTargetRecord(draft);
   if (issues.includes('confirmation-required') && issues.length === 1) return 'confirmation-required';
   if (issues.length > 0) return 'rejected';
@@ -193,9 +195,16 @@ export async function recordCheckInDecision(
     readonly currentTarget: Target | null;
     readonly decision: CheckInDecision;
     readonly lowFloorConfirmed: boolean;
+    /** PROG-01 : cible de repos en vigueur ; la nouvelle garde ses jours d'entraînement (D-272). */
+    readonly restPlan?: RestPlan | null;
   },
 ): Promise<RecordedDecision> {
   const { proposal, weekStart, lowFloorConfirmed } = input;
+  const plan = input.restPlan ?? null;
+  // D-272 : accepter ou refuser la proposition trace sa cible de repos ; personnaliser garde l'écart d'avant (D-271).
+  const proposedRest: RestPlan | null = plan === null ? null : { rest: proposal.restTarget ?? plan.rest, trainingDays: plan.trainingDays };
+  const customRest = (target: Target): RestPlan | null =>
+    plan === null || input.currentTarget === null ? null : { rest: restTargetFromGap(target, plan.rest.kcal - input.currentTarget.kcal), trainingDays: plan.trainingDays };
   const outcome = resolveCheckIn({ proposal, currentTarget: input.currentTarget, weightKg: input.weightKg, lowFloorConfirmed, decision: input.decision });
   const repo = await access.repos.nutritionTargets();
   const engineVersion = proposal.trace.engineVersion;
@@ -204,13 +213,13 @@ export async function recordCheckInDecision(
     if (proposal.belowStandardFloor && !lowFloorConfirmed) {
       return { outcome: { ...outcome, action: 'confirmation-required', target: null, source: null, retryable: true, warnings: ['below-floor'] }, record: null };
     }
-    return { outcome, record: await repo.record({ weekStart, target: proposal.target, source: 'auto', accepted: true, engineVersion, lowFloorConfirmed }) };
+    return { outcome, record: await repo.record({ weekStart, target: proposal.target, source: 'auto', accepted: true, engineVersion, lowFloorConfirmed, restPlan: proposedRest }) };
   }
   if (outcome.action === 'refuse') {
-    return { outcome, record: await repo.record({ weekStart, target: proposal.target, source: 'auto', accepted: false, engineVersion, lowFloorConfirmed }) };
+    return { outcome, record: await repo.record({ weekStart, target: proposal.target, source: 'auto', accepted: false, engineVersion, lowFloorConfirmed, restPlan: proposedRest }) };
   }
   if (outcome.action === 'customize' && outcome.target !== null) {
-    return { outcome, record: await repo.record({ weekStart, target: outcome.target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed }) };
+    return { outcome, record: await repo.record({ weekStart, target: outcome.target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed, restPlan: customRest(outcome.target) }) };
   }
   return { outcome, record: null };
 }

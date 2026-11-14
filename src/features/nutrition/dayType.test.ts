@@ -34,6 +34,8 @@ describe('PROG-01 : cible du jour (D-270)', () => {
     await withPlan();
     const r = await db.data.repos.workouts();
     await r.start({ source: 'empty', id: '7e2d1c3a-0000-4000-8000-0000000000d1', name: 'Séance' });
+    const w = await r.addExercise('7e2d1c3a-0000-4000-8000-0000000000d1', { exerciseId: 'bench-press-barbell', exerciseName: 'Développé couché', sets: 1 });
+    for (const set of w.sets) await r.validateSet(set.id, { reps: 8, loadKg: 60 });
     await db.data.transaction(async (repos) => (await repos.workouts()).close('7e2d1c3a-0000-4000-8000-0000000000d1'));
     expect(await loadDayTarget(db.data, '2026-11-18' as LocalDate)).toEqual({ type: 'training', target: TRAINING });
   });
