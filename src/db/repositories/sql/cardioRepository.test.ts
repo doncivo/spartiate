@@ -97,4 +97,44 @@ describe('CardioRepository', () => {
     await db.driver.execute("UPDATE cardio_session SET kind = 'swim' WHERE id = ?", [id]);
     expect((await r.list())[0]).toMatchObject({ id, kind: 'other' });
   });
+
+  it('FIX-0242 : échec à l’écriture du tracé → aucune séance écrite, rien en file (une seule transaction)', async () => {
+    db = await openBaseDb(DEVICE, NOW);
+    const r = await repo();
+    await db.driver.execute("CREATE TRIGGER fix0242_fail BEFORE INSERT ON cardio_track BEGIN SELECT RAISE(ABORT, 'injecté'); END");
+    await expect(r.add(input({ source: 'gps', distanceM: 222 }), pts)).rejects.toBeTruthy();
+    expect(await r.list()).toEqual([]);
+    expect(await db.driver.select('SELECT 1 FROM cardio_session')).toEqual([]);
+    expect(await outbox()).toEqual([]);
+  });
+
+  it('FIX-0242 : deux `add` avec le même identifiant fourni → une seule séance, identifiant rendu, rien réécrit', async () => {
+    db = await openBaseDb(DEVICE, NOW);
+    const r = await repo();
+    const id = '30000000-0000-4000-8000-000000000242';
+    expect(await r.add(input({ source: 'gps', distanceM: 222 }), pts, { id })).toBe(id);
+    db.clock.advance(1_000);
+    expect(await r.add(input({ source: 'gps', distanceM: 999, rpe: 3 }), pts, { id })).toBe(id);
+    const list = await r.list();
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({ id, distanceM: 222, rpe: 7, hasTrack: true });
+    expect(await outbox()).toEqual([{ table_name: 'cardio_session', field: '*' }]);
+  });
+
+  it('revue FIX-0242 : `add` dans une transaction de l’appelant (dépôt de transaction) : écrit, relu ; même identifiant rejoué → une seule séance', async () => {
+    db = await openBaseDb(DEVICE, NOW);
+    const id = '30000000-0000-4000-8000-000000000243';
+    const got = await db.data.transaction(async (repos) => {
+      const r = await repos.cardio();
+      await r.add(input({ source: 'gps' }), pts, { id });
+      return r.add(input({ source: 'gps' }), pts, { id });
+    });
+    expect(got).toBe(id);
+    const list = await (await repo()).list();
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({ id, hasTrack: true });
+    await db.driver.execute("CREATE TRIGGER fix0242_fail BEFORE INSERT ON cardio_track BEGIN SELECT RAISE(ABORT, 'injecté'); END");
+    await expect(db.data.transaction(async (repos) => (await repos.cardio()).add(input({ source: 'gps' }), pts))).rejects.toBeTruthy();
+    expect(await (await repo()).list()).toHaveLength(1);
+  });
 });

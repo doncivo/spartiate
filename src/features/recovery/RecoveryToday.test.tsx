@@ -140,7 +140,7 @@ describe('cadrans', () => {
     expect(await screen.findByRole('img', { name: /Recovery : 72 sur 100/ })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /Exertion : 3,5 sur 10/ })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /Sommeil : 7 h 12/ })).toBeInTheDocument();
-    expect(screen.getByText('Qualité : bonne')).toBeInTheDocument();
+    expect(screen.getByText('Données de la nuit : complètes')).toBeInTheDocument();
     expect(screen.getByText('HRV au-dessus de ta base')).toBeInTheDocument();
     expect(screen.getByText('FC de repos au-dessus de ta base')).toBeInTheDocument();
     expect(screen.getByText('Sommeil court : score ajusté')).toBeInTheDocument();
@@ -154,7 +154,7 @@ describe('cadrans', () => {
     mount('other');
     expect(await screen.findByRole('img', { name: /Recovery : en apprentissage J\+5\/14/ })).toBeInTheDocument();
     expect(screen.getByText('J+5/14')).toBeInTheDocument();
-    expect(screen.getByText('Qualité : insuffisante')).toBeInTheDocument();
+    expect(screen.getByText('Données de la nuit : insuffisantes')).toBeInTheDocument();
     expect(within(screen.getByRole('region', { name: 'Recovery' })).queryByText('0')).toBeNull();
   });
 

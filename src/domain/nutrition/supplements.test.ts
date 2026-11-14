@@ -4,6 +4,7 @@ import {
   ALL_DAYS,
   dueIntakes,
   isDueOn,
+  normalizeSupplementUnit,
   parseSupplementTimes,
   supplementAdherence,
   supplementStreak,
@@ -107,5 +108,42 @@ describe('constance (D-211)', () => {
     expect(supplementStreak([b], [...intakes, take(b, '2026-11-11', '08:00')], d('2026-11-11'))).toBe(5);
     expect(supplementStreak([b], [], d('2026-11-11'))).toBe(0);
     expect(supplementStreak([], [], d('2026-11-11'))).toBe(0);
+  });
+});
+
+describe('unité de dose (FIX-0242 : « 1 g » et non « 1 G »)', () => {
+  it('symboles connus remis en casse canonique, quelle que soit la majuscule ajoutée par le clavier', () => {
+    expect(normalizeSupplementUnit('G')).toBe('g');
+    expect(normalizeSupplementUnit(' Mg ')).toBe('mg');
+    expect(normalizeSupplementUnit('MG')).toBe('mg');
+    expect(normalizeSupplementUnit('Kg')).toBe('kg');
+    expect(normalizeSupplementUnit('ML')).toBe('ml');
+    expect(normalizeSupplementUnit('ui')).toBe('UI');
+  });
+  it('unité libre inconnue gardée telle quelle (rognée) ; vide = null', () => {
+    expect(normalizeSupplementUnit('Gélules')).toBe('Gélules');
+    expect(normalizeSupplementUnit('  ')).toBeNull();
+    expect(normalizeSupplementUnit(null)).toBeNull();
+  });
+  it('validateSupplementDraft enregistre l’unité normalisée', () => {
+    const r = validateSupplementDraft({ name: 'Créatine', dose: 1, unit: 'G', times: ['08:00'], days: ALL_DAYS, active: true });
+    expect(r.ok && r.value.unit).toBe('g');
+  });
+});
+
+describe('masque des jours, de la saisie au rappel (FIX-0242, vendredi compris)', () => {
+  it('chaque jour coché seul est dû ce jour-là et seulement ce jour-là', () => {
+    // Semaine du lundi 2026-11-16 au dimanche 2026-11-22 ; lundi = bit 1 … dimanche = bit 64 (vendredi = 16).
+    const week = ['2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20', '2026-11-21', '2026-11-22'];
+    week.forEach((day, i) => {
+      const s = sup({ days: 1 << i });
+      week.forEach((other) => expect(isDueOn(s, d(other))).toBe(other === day));
+    });
+  });
+  it('lundi, mardi, jeudi, vendredi, samedi : dû le vendredi, pas le mercredi ni le dimanche', () => {
+    const s = sup({ days: 1 | 2 | 8 | 16 | 32 });
+    expect(isDueOn(s, d('2026-11-20'))).toBe(true);
+    expect(isDueOn(s, d('2026-11-18'))).toBe(false);
+    expect(isDueOn(s, d('2026-11-22'))).toBe(false);
   });
 });

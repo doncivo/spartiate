@@ -1,3 +1,4 @@
+import { normalizeSupplementUnit } from '../domain/nutrition/supplements';
 import { supplementsFr } from './fr.supplements';
 
 /** Textes des compléments (I6-05) ; importé seulement par la carte et la section des compléments, chargées à la demande. */
@@ -12,5 +13,6 @@ export function tSupplements(key: SupplementsTextKey, params?: Readonly<Record<s
 export function formatSupplementDose(dose: number | null, unit: string | null): string | null {
   if (dose === null) return null;
   const n = dose.toLocaleString('fr-FR', { maximumFractionDigits: 3 }).replace(/\s/g, ' ');
-  return unit === null ? n : `${n} ${unit}`;
+  const u = normalizeSupplementUnit(unit);
+  return u === null ? n : `${n} ${u}`;
 }
