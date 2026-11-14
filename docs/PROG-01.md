@@ -66,6 +66,8 @@ Sur une base de test vide : « Repartir de zéro », onboarding passé, import R
 
 **code-reviewer.** Revue à froid : approuvé, aucun bloquant. Mineurs corrigés : plancher (800 / 1 200 kcal) appliqué aussi à la cible de repos (test rouge puis vert) ; A2 alignée sur D-269 ; « Semaine de reprise » proposée en 4 et 6 semaines seulement ; séance générée : RIR en plage et texte de la décharge à 90 %. Mineurs consignés, laissés pour ERGO-02b : jours d'entraînement par défaut toujours lundi, mardi, jeudi, vendredi, samedi (B2 voulait ceux de la routine active ; même résultat pour Ali) ; préremplissage de l'onboarding appliqué à chaque nouveau cycle, pas seulement au premier ; import en double dans `dashboard/model.ts`. Check-in qui ferait passer la cible de repos sous 1 200 kcal : la décision est refusée par le plancher et le dit (cas improbable à 2 250 kcal).
 
+**code-reviewer, contrôles locaux avant tout push qui touche du Rust** (ajout du 14/11, après la CI rouge de 89b6759 sur `cargo fmt --check`) : dans src-tauri, `cargo fmt --check`, `cargo clippy --locked -- -D warnings`, `cargo test --locked --features test-hooks --test desktop`. Le premier passage a aussi révélé 4 tests Rust à mettre au schéma 19 (nombre de déclencheurs de référence 109 → 111, version de l'app = dernière migration, sauvegarde « plus récente » à 20, preuve A9 qui lit la version validée dans la base car une base de l'ancien projet est désormais refusée à 19, D-226) : corrigés, 846 verts.
+
 ## État au 14/11, nuit (arrêt : budget M dépassé, consigne de la mission de nuit)
 
 Branche `PROG-01-mesocycle-jours-repos`, PR #131 en brouillon, à jour sur main (#130 fusionnée). Rien n'est publié.
