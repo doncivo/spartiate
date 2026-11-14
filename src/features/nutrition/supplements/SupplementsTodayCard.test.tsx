@@ -118,6 +118,21 @@ describe('I6-05 : SupplementsTodayCard', () => {
       expect((await db.data.repos.settings.get(KEY)) as unknown).toMatchObject({ failed: false, lost: false });
     });
 
+    it('bouton « Compris » : accusé de réception explicite, efface tout l’état durable (même sans prise à cocher), durablement', async () => {
+      await create();
+      await put({ failed: true, days: [TODAY], lost: true });
+      const first = mount();
+      expect(await screen.findAllByRole('alert')).toHaveLength(2);
+      fireEvent.click(screen.getByRole('button', { name: 'Compris' }));
+      await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
+      expect(screen.queryByRole('button', { name: 'Compris' })).toBeNull();
+      first.unmount();
+      mount();
+      await screen.findByRole('checkbox');
+      expect(screen.queryByRole('alert')).toBeNull();
+      expect((await db.data.repos.settings.get(KEY)) as unknown).toMatchObject({ failed: false, days: [], lost: false });
+    });
+
     it('aucun état : aucun message', async () => {
       await create();
       mount();
