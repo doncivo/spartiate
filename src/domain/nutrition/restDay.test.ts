@@ -17,6 +17,7 @@ import {
   weeklyAverageTarget,
   type RestPlan,
 } from './restDay';
+import { validateTargetRecord } from './targetRecord';
 import type { DayTotals, Target, WeighIn } from './types';
 
 /** PROG-01 (B1 à B5 ; D-270 à D-272) : cible des jours de repos. Valeurs inventées. */
@@ -145,5 +146,16 @@ describe('PROG-01 : check-in sur la moyenne hebdomadaire (D-272)', () => {
   it('couverture insuffisante : toujours suspendu', () => {
     const r = proposeCheckIn(base({ restPlan: PLAN, days: [], weighIns: [] }));
     expect(r.status).toBe('suspended');
+  });
+});
+
+describe('PROG-01 : plancher de la cible de repos (§ 15.2, revue du 14/11)', () => {
+  const draft = (restKcal: number, lowFloorConfirmed = false) =>
+    validateTargetRecord({ weekStart: D(2), target: TRAINING, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed, restPlan: { rest: { ...PLAN.rest, kcal: restKcal }, trainingDays: PLAN.trainingDays } });
+  it('sous 1 200 kcal : confirmation explicite ; sous 800 : refusée ; au-dessus : admise', () => {
+    expect(draft(1100)).toEqual(['confirmation-required']);
+    expect(draft(1100, true)).toEqual([]);
+    expect(draft(700, true)).toEqual(['kcal-below-minimum']);
+    expect(draft(2250)).toEqual([]);
   });
 });
