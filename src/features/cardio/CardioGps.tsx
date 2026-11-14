@@ -102,7 +102,7 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
       const stop = await geo.watch(onEvent);
       // Démonté, abandonné ou arrêté pendant que le suivi démarrait : arrêté aussitôt, jamais gardé.
       if (!current()) {
-        await stop();
+        await stop().catch(() => logFailure('cardio-gps', 'gps-late-stop-failed'));
         return;
       }
       stopRef.current = stop;

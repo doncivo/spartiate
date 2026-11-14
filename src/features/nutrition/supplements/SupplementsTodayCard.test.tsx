@@ -170,13 +170,18 @@ describe('I6-05 : SupplementsTodayCard', () => {
     it('prise cochée sans état à effacer : aucune écriture de l’état durable', async () => {
       await create();
       const writes: string[] = [];
+      let settled = 0;
       mountWithSettings({
         transaction: (work) =>
-          db.data.transaction((repos) => work({ ...repos, settings: { ...repos.settings, set: (key, value) => (writes.push(key), repos.settings.set(key, value)) } })),
+          db.data
+            .transaction((repos) => work({ ...repos, settings: { ...repos.settings, set: (key, value) => (writes.push(key), repos.settings.set(key, value)) } }))
+            .finally(() => {
+              settled += 1;
+            }),
       });
       fireEvent.click(await screen.findByRole('checkbox'));
-      await waitFor(async () => expect(await (await db.data.repos.supplements()).intakes(TODAY, TODAY)).toHaveLength(1));
-      await act(async () => new Promise((r) => setTimeout(r, 30))); // laisse finir la fin du geste (levée éventuelle de l'état)
+      // Signal sûr, sans délai : la transaction de levée de l'état (lecture seule ici) est terminée.
+      await waitFor(() => expect(settled).toBe(1));
       expect(writes).not.toContain(KEY);
     });
 

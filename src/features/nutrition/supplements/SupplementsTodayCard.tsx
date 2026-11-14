@@ -128,7 +128,7 @@ export function SupplementsTodayCard() {
           {tSupplements('actionTroubleAck')}
         </Button>
       ) : null}
-      {clearError ? (
+      {clearError && showTrouble ? (
         <p role="alert" className="ct-today__muted">
           {tSupplements('actionTroubleClearError')}
         </p>
