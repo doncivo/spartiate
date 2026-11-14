@@ -60,7 +60,8 @@ beforeEach(async () => {
       open();
       expect(await screen.findByRole('heading', { name: 'Aujourd’hui' })).toBeInTheDocument();
       expect(await screen.findByText('mercredi 4 novembre')).toBeInTheDocument();
-      expect(screen.getByText('Trois réglages, puis on s’entraîne.')).toBeInTheDocument();
+      // FIX-0242 : la date s'affiche dès la lecture ; la fin de la lecture se lit sur la carte d'accueil.
+      expect(await screen.findByText('Trois réglages, puis on s’entraîne.')).toBeInTheDocument();
       const steps = screen.getAllByRole('listitem');
       expect(steps).toHaveLength(3);
       expect(within(steps[0] as HTMLElement).getByText('Profil')).toBeInTheDocument();
@@ -73,6 +74,14 @@ beforeEach(async () => {
       expect(screen.getByText('Synchro non configurée')).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: 'Renseigner mon profil' }));
       expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'body' });
+    });
+
+    it('FIX-0242 : le titre rendu pendant la lecture est le même nœud une fois les données lues (iPhone), jamais remplacé', async () => {
+      open();
+      const early = screen.getByRole('heading', { name: 'Aujourd’hui' });
+      expect(await screen.findByText('Trois réglages, puis on s’entraîne.')).toBeInTheDocument();
+      expect(early.isConnected).toBe(true);
+      expect(screen.getByRole('heading', { name: 'Aujourd’hui' })).toBe(early);
     });
 
     it('étape 3 : relier le PC mène à Synchro quand profil et pesée sont faits ; étapes faites cochées', async () => {
@@ -97,6 +106,13 @@ beforeEach(async () => {
 
   describe('PC', () => {
     beforeEach(() => viewport('pc'));
+
+    it('FIX-0242 : le titre rendu pendant la lecture est le même nœud une fois les données lues (PC)', async () => {
+      open();
+      const early = screen.getByRole('heading', { name: 'Aujourd’hui' });
+      expect(await screen.findByRole('heading', { name: 'Poids' })).toBeInTheDocument();
+      expect(early.isConnected).toBe(true);
+    });
 
     it('sans pesée ni profil : état vide sobre, valeurs « — », aucun faux zéro', async () => {
       open();
