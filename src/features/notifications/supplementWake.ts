@@ -1,10 +1,24 @@
 import { supplementNotificationsFr as fr } from '../../i18n/fr.supplementNotifications';
 import { logFailure } from '../../platform/desktop/log';
 import { openNotificationActionSource, type NotificationActionSource } from '../../platform/notifications';
+import type { DataAccess } from '../../db/repositories/dataAccess';
 import type { AppContainer } from '../app/container';
 import { useNoticeStore } from '../app/notice';
 import { announceLocalChanges, onSyncedDataApplied } from '../sync/remoteChanges';
-import { createSupplementActionProcessor, startSupplementActions } from './supplementActions';
+import { createSupplementActionProcessor, startSupplementActions, type SupplementActionDeps } from './supplementActions';
+
+const TROUBLE_KEY = 'notifications.actionTrouble';
+
+/** FIX-0242 : mise à jour de l'état durable, lecture et écriture dans UNE transaction (BEGIN IMMEDIATE : deux mises à jour concurrentes ne se perdent pas). */
+export function makeTroubleUpdater(data: DataAccess): SupplementActionDeps['updateTrouble'] {
+  return (change) =>
+    data.transaction(async (repos) => {
+      const next = change(await repos.settings.get(TROUBLE_KEY));
+      if (next === null) return false;
+      await repos.settings.set(TROUBLE_KEY, next);
+      return true;
+    });
+}
 
 /** Tables dont un lot reçu change le plan des rappels de compléments. */
 const SUPPLEMENT_TABLES = ['supplement', 'supplement_intake'];
@@ -60,6 +74,7 @@ export function startSupplementReminders(container: AppContainer, env: Supplemen
         onTrouble: (kind) => useNoticeStore.getState().show(kind === 'failed' ? fr.noticeFailed : fr.noticeLost),
         log: (code) => logFailure('notifications', code),
         // FIX-0242 : état durable des échecs changé (posé ou levé) : la carte d'Aujourd'hui le relit.
+        updateTrouble: makeTroubleUpdater(container.data),
         onTroubleChange: () => announceLocalChanges(['supplement_intake']),
       }),
   });

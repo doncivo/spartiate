@@ -33,6 +33,11 @@ export interface SupplementActionDeps {
   readonly log: (code: string) => void;
   /** FIX-0242 : l'état durable des échecs (`notifications.actionTrouble`) vient de changer : la carte d'Aujourd'hui le relit. */
   readonly onTroubleChange?: () => void;
+  /**
+   * FIX-0242 : lecture puis écriture de l'état durable DANS une transaction de la base (sérialisée par le pilote : le passage et la carte d'Aujourd'hui
+   * ne s'écrasent jamais). `change` reçoit la valeur brute relue et rend le nouvel état, ou null pour ne rien écrire ; rend vrai si écrit.
+   */
+  readonly updateTrouble: (change: (raw: unknown) => SupplementActionTrouble | null) => Promise<boolean>;
 }
 
 export type SupplementActionStatus = 'done' | 'source-failed' | 'queue-failed' | 'ack-failed';
@@ -54,18 +59,6 @@ export interface SupplementActionProcessor {
 }
 
 const QUEUE_KEY = 'notifications.actionQueue';
-const TROUBLE_KEY = 'notifications.actionTrouble';
-
-/**
- * FIX-0242 : file UNIQUE des écritures de l'état durable (lire puis écrire) : le passage des actions et la carte d'Aujourd'hui (« Compris », prise cochée)
- * ne s'écrasent jamais. Une tâche en échec rejette pour son appelant mais ne bloque pas la suivante.
- */
-let troubleChain: Promise<unknown> = Promise.resolve();
-export function serialTroubleWrite<T>(task: () => Promise<T>): Promise<T> {
-  const next = troubleChain.then(task, task);
-  troubleChain = next.catch(() => undefined);
-  return next;
-}
 
 interface PassOutcome {
   readonly run: SupplementActionRun;
@@ -160,15 +153,13 @@ export function createSupplementActionProcessor(deps: SupplementActionDeps): Sup
   /** Écrit l'état durable d'après le passage ; une écriture impossible est journalisée (le bandeau bref reste le seul recours). */
   async function recordTrouble(outcome: PassOutcome): Promise<void> {
     try {
-      await serialTroubleWrite(async () => {
-        const raw = await deps.settings.get(TROUBLE_KEY);
+      const written = await deps.updateTrouble((raw) => {
         const prev = parseSupplementActionTrouble(raw);
         const next: SupplementActionTrouble = troubleAfterPass(prev, { status: outcome.run.status, failedDays: outcome.failedDays, lost: outcome.lost });
         // Rien à dire avant, rien à dire après, ou état identique : aucune écriture.
-        if (JSON.stringify(next) === JSON.stringify(prev) || (raw == null && !hasSupplementActionTrouble(next))) return;
-        await deps.settings.set(TROUBLE_KEY, next);
-        deps.onTroubleChange?.();
+        return JSON.stringify(next) === JSON.stringify(prev) || (raw == null && !hasSupplementActionTrouble(next)) ? null : next;
       });
+      if (written) deps.onTroubleChange?.();
     } catch {
       deps.log('supplement-action-trouble-write-failed');
     }

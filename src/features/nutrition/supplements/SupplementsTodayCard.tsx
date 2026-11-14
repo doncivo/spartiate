@@ -7,7 +7,6 @@ import { Button, Icon } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { logFailure } from '../../../platform/desktop/log';
-import { serialTroubleWrite } from '../../notifications/supplementActions';
 import { useSyncedData } from '../../sync/remoteChanges';
 import { replanSupplementReminders } from './replan';
 import './Supplements.css';
@@ -67,13 +66,14 @@ export function SupplementsTodayCard() {
     };
   }, [load, data, synced]);
 
-  /** Applique `change` à l'état durable relu juste avant l'écriture, dans la file unique ; n'écrit que si l'état change. Échec : message sur la carte et journal. */
+  /** Applique `change` à l'état durable relu juste avant l'écriture, dans une transaction ; n'écrit que si l'état change. Échec : message sur la carte et journal. */
   const updateTrouble = async (change: (prev: SupplementActionTrouble) => SupplementActionTrouble): Promise<void> => {
     try {
-      const next = await serialTroubleWrite(async () => {
-        const prev = parseSupplementActionTrouble(await data.repos.settings.get(TROUBLE_KEY));
+      // Lecture et écriture dans une transaction (sérialisée par le pilote) : un échec noté par le passage des actions n'est jamais écrasé.
+      const next = await data.transaction(async (repos) => {
+        const prev = parseSupplementActionTrouble(await repos.settings.get(TROUBLE_KEY));
         const changed = change(prev);
-        if (JSON.stringify(changed) !== JSON.stringify(prev)) await data.repos.settings.set(TROUBLE_KEY, changed);
+        if (JSON.stringify(changed) !== JSON.stringify(prev)) await repos.settings.set(TROUBLE_KEY, changed);
         return changed;
       });
       setTrouble(next);
