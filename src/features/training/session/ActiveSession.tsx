@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { Fragment, Suspense, lazy, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { formatTimerRemaining } from '../../../domain/syntheticTimer';
 import {
@@ -443,12 +444,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
               <p className="ct-session__muted">
                 {/* 0.2.3 : un repos nul ou absent n'affiche plus « repos 0 s ». */}
                 {!restSec
-                  ? work === 1
-                    ? tTraining('sessionExerciseMetaOneNoRest')
-                    : tTraining('sessionExerciseMetaNoRest', { n: work })
-                  : work === 1
-                    ? tTraining('sessionExerciseMetaOne', { rest: formatRest(restSec) })
-                    : tTraining('sessionExerciseMeta', { n: work, rest: formatRest(restSec) })}
+                  ? tPlural(tTraining, work, 'sessionExerciseMetaNoRestOne', 'sessionExerciseMetaNoRest')
+                  : tPlural(tTraining, work, 'sessionExerciseMetaOne', 'sessionExerciseMeta', { rest: formatRest(restSec) })}
               </p>
             </div>
             <Suspense fallback={null}>
@@ -569,7 +566,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
       {confirm?.kind === 'finish' && (
         <ConfirmDialog
           title={tTraining('sessionFinishTitle')}
-          description={confirm.pending === 1 ? tTraining('sessionFinishPendingOne') : tTraining('sessionFinishPending', { n: confirm.pending })}
+          description={tPlural(tTraining, confirm.pending, 'sessionFinishPendingOne', 'sessionFinishPending')}
           confirmLabel={tTraining('sessionFinishConfirm')}
           cancelLabel={tTraining('sessionFinishContinue')}
           onCancel={() => setConfirm(null)}

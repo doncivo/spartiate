@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { useMemo } from 'react';
 import { remainingForDay, type TdeeConfidence } from '../../../domain/nutrition';
 import { formatDayShort, formatInt, formatKgDelta, formatSigned, formatTenth, orDash, tNutrition, weekdayNames, type NutritionTextKey } from '../../../i18n/nutritionText';
@@ -15,8 +16,8 @@ const CONFIDENCE_KEY: Readonly<Record<TdeeConfidence, NutritionTextKey>> = {
   high: 'confidenceHigh',
 };
 
-const daysText = (n: number): string => (n === 0 ? tNutrition('daysCompleteNone') : n === 1 ? tNutrition('daysCompleteOne') : tNutrition('daysComplete', { n }));
-const weighInsText = (n: number): string => (n === 0 ? tNutrition('weighInsNone') : n === 1 ? tNutrition('weighInsOne') : tNutrition('weighInsCount', { n }));
+const daysText = (n: number): string => (n === 0 ? tNutrition('daysCompleteNone') : tPlural(tNutrition, n, 'daysCompleteOne', 'daysComplete'));
+const weighInsText = (n: number): string => (n === 0 ? tNutrition('weighInsNone') : tPlural(tNutrition, n, 'weighInsOne', 'weighInsCount'));
 
 /**
  * Dashboard (I4-03, § 15.1–15.2, critère 5 ; maquettes iPhone-Dashboard / PC-Dashboard) : aujourd'hui, balance 7 jours, tendance de poids
@@ -79,7 +80,7 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
             {model.learning && model.lastWeighIn ? (
               <>
                 <p className="ct-nutrition__big ct-nutrition__num">{tNutrition('trendValue', { n: formatTenth(model.lastWeighIn.kg) })}</p>
-                <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('trendLearning', { count: model.weighInCount === 1 ? tNutrition('trendLearningCountOne') : tNutrition('trendLearningCount', { n: model.weighInCount }) })}</p>
+                <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('trendLearning', { count: tPlural(tNutrition, model.weighInCount, 'trendLearningCountOne', 'trendLearningCount') })}</p>
               </>
             ) : (
               <>

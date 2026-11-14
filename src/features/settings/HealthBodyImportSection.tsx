@@ -1,3 +1,4 @@
+import { tPlural } from '../../i18n/plural';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { BODY_FILE_NAMES, BODY_METRIC_OF } from '../../domain/health/bodyShortcutFiles';
 import { MAX_LINES, SHORTCUT_REJECT_REASONS, type ShortcutRejectReason } from '../../domain/recovery/shortcutFiles';
@@ -37,7 +38,7 @@ export function bodyImportStatusMessage(result: BodyImportResult): string {
     case 'done': {
       const imported = result.files.filter((f) => f.state === 'imported').length;
       if (imported === 0) return result.files.some((f) => f.state === 'unreadable') ? tHealth('bodyDoneUnreadable') : tHealth('bodyDoneNone');
-      return imported === 1 ? tHealth('bodyDoneRead1') : tHealth('bodyDoneReadN', { files: imported });
+      return tPlural(tHealth, imported, 'bodyDoneRead1', 'bodyDoneReadN', { files: imported });
     }
   }
 }
@@ -156,7 +157,7 @@ function FileRow({ name, outcome, summary, at }: { readonly name: (typeof BODY_F
       {imported === null && stored !== null && (
         <p>{isDays ? tHealth('bodyFileCountsDays', { read: stored.read, rejected: stored.rejected }) : tHealth('bodyFileCounts', { read: stored.read, added: stored.added, updated: stored.updated, unchanged: Math.max(0, stored.read - stored.added - stored.updated), rejected: stored.rejected })}</p>
       )}
-      {imported !== null && imported.skippedDeleted > 0 && <p>{tHealth('bodyFileDeleted', { count: imported.skippedDeleted })}</p>}
+      {imported !== null && imported.skippedDeleted > 0 && <p>{tPlural(tHealth, imported.skippedDeleted, 'bodyFileDeletedOne', 'bodyFileDeleted')}</p>}
       {imported?.truncated && <p>{tHealth('bodyFileTruncated', { max: MAX_LINES.toLocaleString('fr-FR') })}</p>}
       {reasons.length > 0 && (
         <ul aria-label={tHealth('bodyRejectedBy')}>

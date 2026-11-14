@@ -87,7 +87,7 @@ export function RecoveryKeyEntry({ platform, texts = pairingTexts(), now = Date.
 
   const remaining = Math.max(0, deadline - nowMs);
   const minutes = Math.ceil(remaining / 60_000);
-  const closesIn = remaining < 60_000 ? texts.import.closesSoon : minutes === 1 ? texts.import.closesInOne : fill(texts.import.closesIn, { n: minutes });
+  const closesIn = remaining < 60_000 ? texts.import.closesSoon : fill(texts.import.closesIn, { n: minutes });
 
   return (
     <main ref={ref} className="ct-pair ct-pair--import" tabIndex={-1} aria-labelledby="ct-pair-import-title">

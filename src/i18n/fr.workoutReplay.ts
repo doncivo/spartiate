@@ -39,8 +39,8 @@ export const workoutReplayFr = {
   restLast: 'Dernière série de la séance.',
   restLonger: 'plus long de {d}',
   restShorter: 'plus court de {d}',
-  notDoneOne: '1 série non validée, absente du déroulé.',
+  notDoneOne: '{n} série non validée, absente du déroulé.',
   notDone: '{n} séries non validées, absentes du déroulé.',
-  missingOne: '1 série sans instant de validation : sa place est estimée, son repos est inconnu.',
+  missingOne: '{n} série sans instant de validation : sa place est estimée, son repos est inconnu.',
   missing: '{n} séries sans instant de validation : leur place est estimée, leur repos est inconnu.',
 } as const;

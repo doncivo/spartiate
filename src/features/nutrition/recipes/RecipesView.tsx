@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { useCallback, useEffect, useState } from 'react';
 import { recipePerServing, type Recipe } from '../../../domain/nutrition';
 import type { LocalDate } from '../../../domain/types';
@@ -149,7 +150,7 @@ export function RecipesView({ today, onChanged }: RecipesViewProps) {
                 <div className="ct-recipe__item-main">
                   <p className="ct-nutrition__entry-name">{recipe.name}</p>
                   <p className="ct-nutrition__muted ct-nutrition__num">
-                    {tRecipes(recipe.servings === 1 ? 'servingsOne' : 'servingsMany', { n: recipe.servings })}
+                    {tPlural(tRecipes, recipe.servings, 'servingsOne', 'servingsMany')}
                     {' · '}
                     {kcal === null ? tRecipes('kcalPerServingUnknown') : tRecipes('kcalPerServing', { n: formatInt(kcal) })}
                   </p>

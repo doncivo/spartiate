@@ -1,3 +1,4 @@
+import { isSingular } from '../../i18n/plural';
 import { useState, type FormEvent } from 'react';
 import { routineCircuitsOf, validateRoutineGroup, type RoutineCircuitInfo, type RoutineCircuitLine, type RoutineGroupInput } from '../../domain/training';
 import { tCircuit } from '../../i18n/circuitText';
@@ -23,7 +24,7 @@ export function RoutineCircuitHeader({ circuit, names, onUngroup }: { readonly c
   const kind = tCircuit(circuit.kind);
   return (
     <section className="ct-circuit" role="region" aria-label={tCircuit('region', { kind })}>
-      <h3 className="ct-circuit__title">{tCircuit(circuit.rounds === 1 ? 'headlineOne' : 'headline', { kind, n: circuit.lineIds.length, rounds: circuit.rounds })}</h3>
+      <h3 className="ct-circuit__title">{tCircuit(isSingular(circuit.rounds) ? 'headlineOne' : 'headline', { kind, n: circuit.lineIds.length, rounds: circuit.rounds })}</h3>
       <p className="ct-circuit__line">
         {tCircuit('rests', {
           between: circuit.restBetweenSec > 0 ? formatRest(circuit.restBetweenSec) : tCircuit('restNone'),

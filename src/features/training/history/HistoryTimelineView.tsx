@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { replayWorkout, type ReplayEffort, type ReplayLoad, type ReplayRest, type ReplayStep } from '../../../domain/training/replay';
 import type { WorkoutWithSets } from '../../../domain/training';
 import { formatNumber, formatRest } from '../../../i18n/trainingText';
@@ -76,8 +77,8 @@ export function HistoryTimelineView({ workout, heldOf = () => null }: { readonly
           ))}
         </ol>
       )}
-      {replay.notDone > 0 ? <p className="ct-session__muted">{replay.notDone === 1 ? tReplay('notDoneOne') : tReplay('notDone', { n: replay.notDone })}</p> : null}
-      {replay.missingInstants > 0 ? <p className="ct-session__muted">{replay.missingInstants === 1 ? tReplay('missingOne') : tReplay('missing', { n: replay.missingInstants })}</p> : null}
+      {replay.notDone > 0 ? <p className="ct-session__muted">{tPlural(tReplay, replay.notDone, 'notDoneOne', 'notDone')}</p> : null}
+      {replay.missingInstants > 0 ? <p className="ct-session__muted">{tPlural(tReplay, replay.missingInstants, 'missingOne', 'missing')}</p> : null}
     </section>
   );
 }

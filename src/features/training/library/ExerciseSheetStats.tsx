@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import type { Exercise, ExerciseSession } from '../../../domain/training/types';
 import type { IsoDateTime } from '../../../domain/types';
 import { confidencePercent } from '../../../domain/training/explain';
@@ -86,7 +87,7 @@ export function SheetFigures({ history, exercise, held, now }: StatsProps) {
             <>
               <HeroFigure className="ct-sheet__hero" value={pair ? `2 × ${formatNumber(Math.round(oneRm.kg))}` : formatNumber(Math.round(oneRm.kg))} unit="kg" />
               <p className="ct-training__muted">
-                {tTraining(oneRm.sessions === 1 ? 'sheetOneRmMetaOne' : 'sheetOneRmMeta', { percent: confidencePercent(oneRm.confidence), n: oneRm.sessions })}
+                {tPlural(tTraining, oneRm.sessions, 'sheetOneRmMetaOne', 'sheetOneRmMeta', { percent: confidencePercent(oneRm.confidence) })}
               </p>
             </>
           ) : (

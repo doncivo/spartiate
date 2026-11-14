@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { confidenceBand, confidencePercent, constraintAlerts, explainOption, explainPrescription, explanationNotes, type ExplanationKey, type OptionKey } from '../../../domain/training/explain';
 import { prescribe } from '../../../domain/training/prescribe';
@@ -352,7 +353,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         <p className="ct-progression__value ct-session__num">{value}</p>
         <p className="ct-progression__sentence">{sentence}</p>
         {p.status !== 'unsupported' && p.deload !== true && typeof p.rirTarget === 'number' ? (
-          <p className="ct-progression__muted">{p.rirTarget === 1 ? tProgression('rirTargetOne') : tProgression('rirTargetMany', { rir: p.rirTarget })}</p>
+          <p className="ct-progression__muted">{tPlural(tProgression, p.rirTarget, 'rirTargetOne', 'rirTargetMany', { rir: p.rirTarget })}</p>
         ) : null}
         {proposed ? <p className="ct-progression__muted">{tProgression('confidence', { percent: confidencePercent(p.confidence), band: tProgression(BAND_KEYS[confidenceBand(p.confidence)]) })}</p> : null}
         {proposed && alerts.length > 0 ? (

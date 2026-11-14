@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { generationWeekOf } from '../../../domain/training/mesocycle';
 import { generateSession } from '../../../domain/training/generateSession';
@@ -109,7 +110,7 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
     if (s.plan.deload) return tGeneration(s.plan.deloadSets !== undefined ? 'cycleProgramDeload' : 'cycleDeload');
     const week = s.totalWeeks === null ? tGeneration('cycleBlockWeek', { week: s.blockWeek, block: s.blockIndex + 1 }) : tGeneration('cycleWeekOf', { week: s.week, total: s.totalWeeks });
     const sets = tGeneration(s.plan.setsOffset < 0 ? 'cycleSetsMinus' : s.plan.setsOffset > 0 ? 'cycleSetsPlus' : 'cycleSetsSame');
-    const rir = s.plan.rirLow !== undefined && s.plan.rirLow < s.plan.rir ? tGeneration('cycleRirRange', { low: s.plan.rirLow, high: s.plan.rir }) : s.plan.rir === 1 ? tGeneration('cycleRirOne') : tGeneration('cycleRirMany', { rir: s.plan.rir });
+    const rir = s.plan.rirLow !== undefined && s.plan.rirLow < s.plan.rir ? tGeneration('cycleRirRange', { low: s.plan.rirLow, high: s.plan.rir }) : tPlural(tGeneration, s.plan.rir, 'cycleRirOne', 'cycleRirMany', { rir: s.plan.rir });
     return tGeneration(s.kind === 'light' ? 'cycleLight' : 'cycleWork', { week, sets, rir });
   })();
   const set = (patch: Partial<GenerationSettings>): void => setSettings((s) => ({ ...s, ...patch }));
@@ -367,7 +368,7 @@ function Proposal({ session, entryDays, sourceName, nameOf }: ProposalProps) {
                 <p className="ct-generated__note">{tGeneration(e.substitutionReason === 'pain' ? 'originSubstitutionPain' : 'originSubstitutionEquipment', { name: sourceName(e.sourceExerciseId) })}</p>
               )}
               {e.origin === 'rotation' && <p className="ct-generated__note">{tGeneration('originRotation', { name: sourceName(e.sourceExerciseId) })}</p>}
-              {e.setsRemoved > 0 && <p className="ct-generated__note">{e.setsRemoved === 1 ? tGeneration('setsRemovedOne') : tGeneration('setsRemovedMany', { n: e.setsRemoved })}</p>}
+              {e.setsRemoved > 0 && <p className="ct-generated__note">{tPlural(tGeneration, e.setsRemoved, 'setsRemovedOne', 'setsRemovedMany')}</p>}
               {e.warnings.includes('duplicate-in-routine') && <p className="ct-generated__note">{tGeneration('duplicateInRoutine')}</p>}
               {e.warnings.includes('off-split-in-routine') && <p className="ct-generated__note">{tGeneration('offSplitInRoutine')}</p>}
             </li>

@@ -30,7 +30,7 @@ export const todayFr = {
   trendLearning: 'en apprentissage',
   trendNotComputed: 'pas encore calculée',
   weightsCount: '{n} pesées sur 14 nécessaires',
-  weightsCountOne: '1 pesée sur 14 nécessaires',
+  weightsCountOne: '{n} pesée sur 14 nécessaires',
   chartLabel: 'Courbe des pesées récentes',
   newWeight: 'Nouvelle pesée',
   profileAndWeight: 'Profil et poids',

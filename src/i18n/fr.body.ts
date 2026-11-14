@@ -32,6 +32,7 @@ export const bodyFr = {
   weightSaved: 'Pesée enregistrée',
   weightTrendLearning: 'tendance en apprentissage · {n} / {need} pesées',
   weightTrendCount: '{n} pesées',
+  weightTrendCountOne: '{n} pesée',
   weightUnit: 'kg',
   weightLatestNone: 'Aucune pesée',
   weightSourceManual: 'saisie',

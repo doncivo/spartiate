@@ -12,7 +12,7 @@ export const recipesFr = {
   empty: 'Aucune recette. Crée la première.',
   emptyHint: 'Une recette garde ses ingrédients et te donne les valeurs par portion.',
   newRecipe: 'Nouvelle recette',
-  servingsOne: '1 portion',
+  servingsOne: '{n} portion',
   servingsMany: '{n} portions',
   kcalPerServing: '{n} kcal / portion',
   kcalPerServingUnknown: '— kcal / portion',

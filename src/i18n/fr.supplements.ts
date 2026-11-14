@@ -80,7 +80,7 @@ export const supplementsFr = {
   stats30: '30 jours : {value}',
   statsValue: '{pct} % ({taken} sur {due})',
   statsNone: '—',
-  streakOne: 'Série : 1 jour complet',
+  streakOne: 'Série : {n} jour complet',
   streakMany: 'Série : {n} jours complets',
   streakNone: 'Série : —',
   // Rappels

@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { useEffect, useState } from 'react';
 import { summarizeSets, type RoutineDay, type WorkoutWithSets } from '../../../domain/training';
 import { nextProgramDay } from '../../../domain/training/programDay';
@@ -100,12 +101,8 @@ export function TodaySessionCard() {
     const targetOf = (l: RoutineDay['exercises'][number]): string => tTraining(l.repMin === l.repMax ? 'sessionTargetSame' : 'sessionTarget', { sets: l.sets, min: l.repMin, max: l.repMax });
     const meta =
       preview === null
-        ? n === 1
-          ? tTraining('sessionTodayMetaOne')
-          : tTraining('sessionTodayMeta', { n })
-        : n === 1
-          ? tTraining('sessionTodayMetaTimedOne', { min: preview.minutes })
-          : tTraining('sessionTodayMetaTimed', { min: preview.minutes, n });
+        ? tPlural(tTraining, n, 'sessionTodayMetaOne', 'sessionTodayMeta')
+        : tPlural(tTraining, n, 'sessionTodayMetaTimedOne', 'sessionTodayMetaTimed', { min: preview.minutes });
     return (
       <section className="ct-today__card ct-session-card" aria-labelledby="ct-session-card-title">
         <h2 id="ct-session-card-title" className="ct-today__eyebrow ct-section-title">
@@ -152,7 +149,7 @@ export function TodaySessionCard() {
               })}
           </ul>
           )}
-          {!pc && more > 0 ? <p className="ct-today__muted ct-session-card__more">{more === 1 ? tTraining('sessionTodayMoreOne') : tTraining('sessionTodayMore', { n: more })}</p> : null}
+          {!pc && more > 0 ? <p className="ct-today__muted ct-session-card__more">{tPlural(tTraining, more, 'sessionTodayMoreOne', 'sessionTodayMore')}</p> : null}
         </div>
         {failed ? (
           <p className="ct-training__error" role="alert">

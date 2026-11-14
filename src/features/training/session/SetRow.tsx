@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { Check, X } from 'lucide-react';
 import { useState, type KeyboardEvent } from 'react';
 import { defaultEntry, validateSetEntry, type SetEntry, type SetKind, type WorkoutSet, type WorkoutSource } from '../../../domain/training';
@@ -42,11 +43,11 @@ export function targetText(set: WorkoutSet, timed: boolean, source: WorkoutSourc
   const { targetRepsMin: min, targetRepsMax: max, targetLoadKg: load } = set;
   if (source === 'copy' && min !== null && min === max) {
     if (timed) return tTraining('sessionLastDuration', { n: min });
-    return load === null ? tTraining('sessionLastReps', { reps: min }) : tTraining('sessionLastLoad', { load: formatExerciseLoad(load, held), reps: min });
+    return load === null ? tPlural(tTraining, min, 'sessionLastRepsOne', 'sessionLastReps', { reps: min }) : tTraining('sessionLastLoad', { load: formatExerciseLoad(load, held), reps: min });
   }
   if (min !== null && max !== null) {
     if (timed) return min === max ? tTraining('sessionTargetDuration', { n: min }) : tTraining('sessionTargetDurationRange', { min, max });
-    return min === max ? tTraining('sessionTargetReps', { n: min }) : tTraining('sessionTargetRange', { min, max });
+    return min === max ? tPlural(tTraining, min, 'sessionTargetRepsOne', 'sessionTargetReps') : tTraining('sessionTargetRange', { min, max });
   }
   return load === null ? null : tTraining('sessionTargetLoad', { load: formatExerciseLoad(load, held) });
 }
@@ -54,7 +55,7 @@ export function targetText(set: WorkoutSet, timed: boolean, source: WorkoutSourc
 function doneText(set: WorkoutSet, held: Held): string {
   if (set.durationSec !== null && set.reps === null)
     return set.loadKg === null ? tTraining('sessionDoneDuration', { n: set.durationSec }) : tTraining('sessionDoneLoadDuration', { load: formatExerciseLoad(set.loadKg, held), n: set.durationSec });
-  if (set.loadKg === null) return tTraining('sessionDoneReps', { reps: set.reps ?? 0 });
+  if (set.loadKg === null) return tPlural(tTraining, set.reps ?? 0, 'sessionDoneRepsOne', 'sessionDoneReps', { reps: set.reps ?? 0 });
   return tTraining('sessionDoneLoad', { load: formatExerciseLoad(set.loadKg, held), reps: set.reps ?? 0 });
 }
 

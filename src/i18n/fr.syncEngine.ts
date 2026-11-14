@@ -51,7 +51,6 @@ export const syncEngineFr = {
     syncing: 'Synchronisation…',
     details: 'Détails',
     back: 'Retour à Réglages',
-    sectionState: 'ÉTAT',
     sectionDevices: 'Appareils',
     keyId: 'Clé de chiffrement (identifiant)',
     // Y-IOS-02 : sans clé, les états des autres appareils ne peuvent pas être lus ; jamais une liste vide sans explication.
@@ -63,7 +62,6 @@ export const syncEngineFr = {
     thisDevice: 'Cet appareil · {time}',
     thisDeviceName: 'Cet appareil',
     lastSync: 'Dernière synchronisation : {time}',
-    thisDeviceNever: 'Cet appareil · jamais synchronisé',
     lastRead: 'Dernière modification lue : {time}',
     neverRead: 'Jamais lu',
     devicePc: 'PC',

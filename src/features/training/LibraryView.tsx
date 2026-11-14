@@ -1,3 +1,4 @@
+import { tPlural } from '../../i18n/plural';
 import { ArrowLeft } from 'lucide-react';
 import { lazy, Suspense, useEffect, useId, useMemo, useState } from 'react';
 import {
@@ -89,7 +90,7 @@ export function ExerciseList({ data, mode, onSelect }: ExerciseListProps) {
         )}
       </div>
       <p className="ct-training__muted" aria-live="polite">
-        {filtered.length === 1 ? tTraining('countOne') : tTraining('countMany', { n: filtered.length })}
+        {tPlural(tTraining, filtered.length, 'countOne', 'countMany')}
       </p>
       {filtered.length === 0 ? (
         <p className="ct-training__empty">{tTraining('noMatch')}</p>
@@ -124,7 +125,7 @@ function repText(exercise: Exercise): string {
   const [min, max] = exercise.defaultRepRange;
   if (exercise.metric === 'time') return min === max ? tTraining('durationSame', { min }) : tTraining('durationRange', { min, max });
   if (exercise.metric === 'distance') return min === max ? tTraining('distanceSame', { min }) : tTraining('distanceRange', { min, max });
-  return min === max ? tTraining('repRangeSame', { min }) : tTraining('repRange', { min, max });
+  return min === max ? tPlural(tTraining, min, 'repRangeSameOne', 'repRangeSame', { min }) : tTraining('repRange', { min, max });
 }
 
 interface DetailProps {

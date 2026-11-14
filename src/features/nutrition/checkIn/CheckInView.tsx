@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { useMemo, useState } from 'react';
 import {
   checkInPeriod,
@@ -39,8 +40,8 @@ const WARNING_KEY: Readonly<Record<CheckInWarning, NutritionTextKey>> = {
   'beyond-weekly-delta': 'warnDelta',
 };
 
-const daysText = (n: number): string => (n === 0 ? tNutrition('daysCompleteNone') : n === 1 ? tNutrition('daysCompleteOne') : tNutrition('daysComplete', { n }));
-const weighInsText = (n: number): string => (n === 0 ? tNutrition('weighInsNone') : n === 1 ? tNutrition('weighInsOne') : tNutrition('weighInsCount', { n }));
+const daysText = (n: number): string => (n === 0 ? tNutrition('daysCompleteNone') : tPlural(tNutrition, n, 'daysCompleteOne', 'daysComplete'));
+const weighInsText = (n: number): string => (n === 0 ? tNutrition('weighInsNone') : tPlural(tNutrition, n, 'weighInsOne', 'weighInsCount'));
 
 function goalText(goal: Goal): string {
   if (goal.kind === 'maintain') return tNutrition('goalMaintainShort');

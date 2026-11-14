@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import type { RoutineTree, Workout, WorkoutWithSets } from '../../../domain/training';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
@@ -92,9 +93,7 @@ export function StartSession({ access, data, onStarted }: { readonly access: Dat
                     <button type="button" className="ct-training__row" disabled={busy} onClick={() => void start({ source: 'routine', routineId: routine.id, dayId: day.id })}>
                       <span className="ct-training__row-name">{tTraining('sessionStartDay', { day: day.name })}</span>
                       <span className="ct-training__row-meta">
-                        {day.exercises.length === 1
-                          ? tTraining('sessionStartDayMetaOne', { routine: routine.name })
-                          : tTraining('sessionStartDayMeta', { routine: routine.name, n: day.exercises.length })}
+                        {tPlural(tTraining, day.exercises.length, 'sessionStartDayMetaOne', 'sessionStartDayMeta', { routine: routine.name })}
                       </span>
                     </button>
                   </li>

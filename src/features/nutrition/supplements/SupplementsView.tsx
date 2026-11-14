@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { Check } from 'lucide-react';
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { addDays } from '../../../domain/localDate';
@@ -357,7 +358,7 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
           <h3 id="ct-supplements-stats" className="ct-section-title">{tSupplements('statsTitle')}</h3>
           <p>{tSupplements('stats7', { value: adherenceText(stats.week) })}</p>
           <p>{tSupplements('stats30', { value: adherenceText(stats.month) })}</p>
-          <p>{stats.streak === 0 ? tSupplements('streakNone') : stats.streak === 1 ? tSupplements('streakOne') : tSupplements('streakMany', { n: stats.streak })}</p>
+          <p>{stats.streak === 0 ? tSupplements('streakNone') : tPlural(tSupplements, stats.streak, 'streakOne', 'streakMany')}</p>
           <ul className="ct-supplements__strip" aria-label={tSupplements('stripLabel')}>
             {stats.strip.map((day) => (
               <li key={day.date} className={`ct-supplements__day ct-supplements__day--${day.level}`}>

@@ -1,3 +1,4 @@
+import { tPlural } from '../../i18n/plural';
 import { ArrowDown, ArrowLeft, ArrowUp, X } from 'lucide-react';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
@@ -517,9 +518,9 @@ function ProgramCard({ data, program, onAdd }: { readonly data: TrainingData; re
     <li className="ct-training__card ct-flat">
       <h3 className="ct-training__subheading">{program.name}</h3>
       <p className="ct-training__muted">
-        {program.audienceFr} · {tTraining('programDays', { n: program.days.length })}
+        {program.audienceFr} · {tPlural(tTraining, program.days.length, 'programDaysOne', 'programDays')}
       </p>
-      {incompatible > 0 && <p className="ct-training__warn">{incompatible === 1 ? tTraining('programIncompatibleOne') : tTraining('programIncompatible', { n: incompatible })}</p>}
+      {incompatible > 0 && <p className="ct-training__warn">{tPlural(tTraining, incompatible, 'programIncompatibleOne', 'programIncompatible')}</p>}
       <Button variant="secondary" onClick={onAdd}>
         {tTraining('programAdd', { name: program.name })}
       </Button>

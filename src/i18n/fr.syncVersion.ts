@@ -11,10 +11,10 @@ export const syncVersionFr = {
   /** I-06 : l'autre appareil n'a pas pu lire son numéro (publié `unknown`, ou `0.0.0` des anciennes versions de l'iPhone). */
   unknownVersion: 'version inconnue',
   readSuspended: 'Lecture de ses données suspendue : mets à jour l’app',
-  failedLineOne: '1 élément reçu d’une version plus récente n’a pas pu être intégré',
+  failedLineOne: '{count} élément reçu d’une version plus récente n’a pas pu être intégré',
   failedLineMany: '{count} éléments reçus d’une version plus récente n’ont pas pu être intégrés',
   failedDetail: '{count} éléments non intégrés ({kinds})',
-  failedDetailOne: '1 élément non intégré ({kinds})',
+  failedDetailOne: '{count} élément non intégré ({kinds})',
   failedLastTry: 'Dernier essai : {time}',
   failedRetry: 'L’app réessaie à chaque démarrage',
   failedBanner: 'Des éléments reçus n’ont pas pu être intégrés : voir Réglages › Synchronisation',

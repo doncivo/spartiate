@@ -114,7 +114,7 @@ export function ConflictList() {
     <>
       {page.unreadable > 0 && (
         <p className="ct-settings__error" role="status">
-          {page.unreadable === 1 ? t('sync.conflicts.unreadableOne') : t('sync.conflicts.unreadableMany', { count: page.unreadable })}
+          {t(page.unreadable < 2 ? 'sync.conflicts.unreadableOne' : 'sync.conflicts.unreadableMany', { count: page.unreadable })}
         </p>
       )}
       <ul className="ct-conflicts" aria-label={t('sync.conflicts.listLabel')}>

@@ -1,3 +1,4 @@
+import { tPlural } from '../../i18n/plural';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { todayLocal } from '../../domain/clock';
@@ -204,7 +205,7 @@ function ShortcutImport() {
       const today = todayLocal(container.clock);
       const timezone = detectTimeZone() ?? 'Europe/Paris';
       const parsed = parseShortcutWeights(picked.text, today, timezone);
-      if (parsed.weights.length === 0) return setState({ kind: 'empty', text: tHealth('shortcutEmpty', { count: parsed.rejected }) });
+      if (parsed.weights.length === 0) return setState({ kind: 'empty', text: tPlural(tHealth, parsed.rejected, 'shortcutEmptyOne', 'shortcutEmpty') });
       // Une ligne refusée par le dépôt (jour recalculé dans le fuseau de l'appareil, donc futur) ne fait pas échouer le fichier : comptée.
       let refused = 0;
       await container.data.transaction(async (repos) => {
@@ -220,9 +221,9 @@ function ShortcutImport() {
       });
       const imported = parsed.weights.length - refused;
       const totalRejected = parsed.rejected + refused;
-      const rejected = totalRejected > 0 ? tHealth('shortcutRejected', { count: totalRejected }) : '';
-      if (imported === 0) return setState({ kind: 'empty', text: tHealth('shortcutEmpty', { count: totalRejected }) });
-      const done = imported === 1 ? tHealth('shortcutDoneOne', { rejected }) : tHealth('shortcutDoneMany', { count: imported, rejected });
+      const rejected = totalRejected > 0 ? tPlural(tHealth, totalRejected, 'shortcutRejectedOne', 'shortcutRejected') : '';
+      if (imported === 0) return setState({ kind: 'empty', text: tPlural(tHealth, totalRejected, 'shortcutEmptyOne', 'shortcutEmpty') });
+      const done = tPlural(tHealth, imported, 'shortcutDoneOne', 'shortcutDoneMany', { rejected });
       setState({ kind: 'done', text: done + (parsed.truncated ? tHealth('shortcutTruncated') : '') });
     } catch (error) {
       logFailure('healthkit', { code: 'shortcut-import-failed', message: error instanceof Error ? error.name : 'inconnu' });

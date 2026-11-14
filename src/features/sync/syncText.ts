@@ -122,7 +122,7 @@ function failureShown(status: SyncStatus): boolean {
 
 /** « 3 éléments reçus d'une version plus récente n'ont pas pu être intégrés » (exigence d'Ali, Y-07). */
 export function failureLine(fields: number): string {
-  return fields === 1 ? t('sync.version.failedLineOne') : t('sync.version.failedLineMany', { count: fields });
+  return t(fields < 2 ? 'sync.version.failedLineOne' : 'sync.version.failedLineMany', { count: fields });
 }
 
 const KIND_KEYS = {

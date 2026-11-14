@@ -14,7 +14,6 @@ export const syncForgetFr = {
   pending: 'Oubli de {device} en cours…',
   cancelled: 'Oubli annulé',
   done: '{device} est oublié. Pour lui retirer l’accès aux données futures, réinitialise la synchronisation.',
-  shortId: 'Identifiant {id}…',
   unseenName: 'Appareil {short}',
   unseenState: 'Jamais vu',
   deletionWaiting: 'Oublié · suppression des fichiers en attente de {device}',

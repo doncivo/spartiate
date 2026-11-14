@@ -47,6 +47,9 @@ export const bodyProgressFr = {
   zoneNoMeasure: 'aucune mesure',
   zoneDeltaSame: '=',
   zoneNoDelta: '4 sem. : —',
+  /** Phrase complète dite aux lecteurs d'écran pendant que le libellé court reste affiché. */
+  zoneNoDeltaFull: 'pas d’écart sur 4 semaines',
+  zoneNoDeltaNoMeasure: 'pas d’écart sur 4 semaines : aucune mesure',
   entryKeys: 'Entrée valide · ↑ ↓ change de zone',
   historyTitle: 'Relevés',
   kindShort_neck: 'Cou',

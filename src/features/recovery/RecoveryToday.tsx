@@ -1,3 +1,4 @@
+import { isSingular, tPlural } from '../../i18n/plural';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { todayLocal } from '../../domain/clock';
 import { unusualValues, type RecoveryExplanationKey, type UnusualValues } from '../../domain/recovery';
@@ -109,7 +110,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
   const exertion = exertionDial(s);
   const sleep = sleepDial(s);
   const quality = tRecovery(`quality_${s.quality}`);
-  const staleKey = stale.days === 1 ? (phone ? 'staleImportOne' : 'staleSummaryOne') : phone ? 'staleImport' : 'staleSummary';
+  const staleKey = isSingular(stale.days) ? (phone ? 'staleImportOne' : 'staleSummaryOne') : phone ? 'staleImport' : 'staleSummary';
 
   const recoveryLabel =
     recovery.kind === 'value'
@@ -214,7 +215,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
                 <dd>{load.steps.today === null ? tRecovery('stepsTodayUnknown') : `${load.steps.today.toLocaleString('fr-FR')} ${tRecovery('stepsUnit')}`}</dd>
               </div>
               <div className="ct-today__row ct-today__row--kv">
-                <dt>{load.steps.knownDays < 7 ? tRecovery('stepsAveragePartial', { n: load.steps.knownDays }) : tRecovery('stepsAverage')}</dt>
+                <dt>{load.steps.knownDays < 7 ? tPlural(tRecovery, load.steps.knownDays, 'stepsAveragePartialOne', 'stepsAveragePartial') : tRecovery('stepsAverage')}</dt>
                 <dd>{`${load.steps.average.toLocaleString('fr-FR')} ${tRecovery('stepsUnit')}`}</dd>
               </div>
             </dl>

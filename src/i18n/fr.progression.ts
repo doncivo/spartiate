@@ -15,7 +15,7 @@ export const progressionFr = {
   repsJoin: ' · ',
   confidence: 'Confiance {percent} % ({band})',
   // I4-08 : RIR cible de la séance proposée (semaine du cycle).
-  rirTargetOne: 'Objectif : 1 répétition en réserve.',
+  rirTargetOne: 'Objectif : {rir} répétition en réserve.',
   rirTargetMany: 'Objectif : {rir} répétitions en réserve.',
   bandLow: 'faible',
   bandMedium: 'moyenne',

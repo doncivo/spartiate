@@ -25,7 +25,7 @@ export function SyncDetailsVersion() {
         {failure && (
           <div className="ct-settings__row ct-sync__device" data-failed="true">
             <span className="ct-sync__deviceName">
-              {failure.fields === 1 ? t('sync.version.failedDetailOne', { kinds: failureKinds(failure.tables) }) : t('sync.version.failedDetail', { count: failure.fields, kinds: failureKinds(failure.tables) })}
+              {t(failure.fields < 2 ? 'sync.version.failedDetailOne' : 'sync.version.failedDetail', { count: failure.fields, kinds: failureKinds(failure.tables) })}
             </span>
             <span className="ct-sync__deviceRead">{t('sync.version.failedLastTry', { time: formatSyncTime(failure.at, container.clock.nowMs()) })}</span>
             <span className="ct-sync__deviceRead">{t('sync.version.failedRetry')}</span>

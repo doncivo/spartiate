@@ -16,7 +16,7 @@ export const todayPcFr = {
   weekDone: 'séance faite',
   weekNone: 'pas de séance',
   weekCount: '{n} séances',
-  weekCountOne: '1 séance',
+  weekCountOne: '{n} séance',
   recordsEyebrow: 'Derniers records',
   recordsMissing: 'pas encore de record',
   recordsFailed: 'lecture impossible des séances',

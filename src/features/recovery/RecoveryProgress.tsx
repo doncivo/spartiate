@@ -1,3 +1,4 @@
+import { isSingular, tPlural } from '../../i18n/plural';
 import { useEffect, useState } from "react";
 import { todayLocal } from "../../domain/clock";
 import {
@@ -123,10 +124,7 @@ export function RecoveryProgress() {
         <p className="ct-today__text">{tRecoveryFactors("progressEmpty")}</p>
       ) : !analysis.enough ? (
         <p className="ct-today__text">
-          {tRecoveryFactors("progressNotEnough", {
-            n: analysis.pairedDays,
-            min: FACTOR_MIN_DAYS,
-          })}
+          {tPlural(tRecoveryFactors, analysis.pairedDays, "progressNotEnoughOne", "progressNotEnough", { min: FACTOR_MIN_DAYS })}
         </p>
       ) : analysis.associations.length === 0 ? (
         <p className="ct-today__text">
@@ -144,10 +142,10 @@ export function RecoveryProgress() {
                 a.difference === 0
                   ? "progressSame"
                   : a.difference < 0
-                    ? abs === 1
+                    ? isSingular(abs)
                       ? "progressLowerOne"
                       : "progressLower"
-                    : abs === 1
+                    : isSingular(abs)
                       ? "progressHigherOne"
                       : "progressHigher";
               return (
@@ -157,15 +155,9 @@ export function RecoveryProgress() {
                 >
                   <strong>{tRecoveryFactors(FACTOR_TEXT[a.factor])}</strong>
                   <br />
-                  {tRecoveryFactors("progressDaysWith", {
-                    n: a.withDays,
-                    mean: fr(a.withMean),
-                  })}
+                  {tPlural(tRecoveryFactors, a.withDays, "progressDaysWithOne", "progressDaysWith", { mean: fr(a.withMean) })}
                   <br />
-                  {tRecoveryFactors("progressDaysWithout", {
-                    n: a.withoutDays,
-                    mean: fr(a.withoutMean),
-                  })}
+                  {tPlural(tRecoveryFactors, a.withoutDays, "progressDaysWithoutOne", "progressDaysWithout", { mean: fr(a.withoutMean) })}
                   <br />
                   {tRecoveryFactors(diff, { d: fr(abs) })}
                 </li>
