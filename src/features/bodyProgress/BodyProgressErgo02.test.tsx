@@ -143,12 +143,12 @@ describe('Corps PC (PC-Corps-apres)', () => {
     expect(screen.queryByRole('img', { name: /Silhouette/ })).toBeNull();
   });
 
-  it('écart absent : le tiret porte sa raison, lue par les lecteurs d’écran', async () => {
+  it('écart absent : libellé court « 4 sem. : — » (FIX-0241), sur une ligne', async () => {
     await seedWaist();
     mount();
     const group = await screen.findByRole('radiogroup', { name: 'Zone' });
     const hips = within(group).getByRole('radio', { name: 'Hanches' });
-    expect(within(hips).getByText('pas d’écart sur 4 semaines')).toBeInTheDocument();
+    expect(within(hips).getByText('4 sem. : —')).toBeInTheDocument();
   });
 
   it('liste des zones : tabindex itinérant (seule la zone choisie est tabulable) et les flèches déplacent le focus', async () => {
