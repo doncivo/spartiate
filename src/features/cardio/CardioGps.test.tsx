@@ -6,6 +6,7 @@ import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { setGeolocation, type GeoEvent, type GeoPermission, type Geolocation } from '../../platform/geolocation';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer } from '../app/container';
+import { CardioGps } from './CardioGps';
 import { CardioView } from './CardioView';
 
 /**
@@ -172,5 +173,119 @@ describe('suivi GPS (iPhone, premier plan)', () => {
     expect(await screen.findByText('Aucune séance de cardio pour l’instant.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Démarrer le suivi GPS' })).toBeNull();
     expect(screen.queryByRole('region', { name: 'Suivi GPS' })).toBeNull();
+  });
+});
+
+/** FIX-0242 : promesse résolue à la main (étapes asynchrones de `start()`). */
+function deferred<T>(): { readonly promise: Promise<T>; resolve(value: T): void } {
+  let resolve: (value: T) => void = () => undefined;
+  const promise = new Promise<T>((r) => {
+    resolve = r;
+  });
+  return { promise, resolve };
+}
+const flush = () =>
+  act(async () => {
+    await new Promise((r) => setTimeout(r, 0));
+  });
+
+describe('FIX-0242 : démontage et double appui (aucun suivi orphelin)', () => {
+  const clock = { nowMs: () => Date.parse(NOW) };
+
+  it('démonté pendant la demande d’autorisation : `watch` jamais appelé', async () => {
+    const asked = deferred<GeoPermission>();
+    const calls = { requested: 0, watching: 0 };
+    const geo: Geolocation = {
+      available: true,
+      permission: async () => 'prompt',
+      request: () => {
+        calls.requested += 1;
+        return asked.promise;
+      },
+      watch: async () => {
+        calls.watching += 1;
+        return async () => undefined;
+      },
+    };
+    const onReport = vi.fn();
+    const view = render(<CardioGps load={async () => geo} clock={clock} onReport={onReport} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Démarrer le suivi GPS' }));
+    await flush();
+    expect(calls.requested).toBe(1);
+    view.unmount();
+    asked.resolve('granted');
+    await flush();
+    expect(calls.watching).toBe(0);
+    expect(onReport).not.toHaveBeenCalled();
+  });
+
+  it('démonté pendant le chargement de la façade : rien n’est demandé ni suivi', async () => {
+    const loaded = deferred<Geolocation>();
+    const gps = fakeGps('prompt');
+    const view = render(<CardioGps load={() => loaded.promise} clock={clock} onReport={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Démarrer le suivi GPS' }));
+    view.unmount();
+    loaded.resolve(gps.geo);
+    await flush();
+    expect(gps.calls).toEqual({ requested: 0, watching: 0, stopped: 0 });
+  });
+
+  it('démonté alors que `watch` est en attente : arrêté dès sa résolution, une fois', async () => {
+    const watching = deferred<() => Promise<void>>();
+    let stopped = 0;
+    let listener: ((e: GeoEvent) => void) | null = null;
+    const geo: Geolocation = {
+      available: true,
+      permission: async () => 'granted',
+      request: async () => 'granted',
+      watch: (cb) => {
+        listener = cb;
+        return watching.promise;
+      },
+    };
+    const onReport = vi.fn();
+    const view = render(<CardioGps load={async () => geo} clock={clock} onReport={onReport} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Démarrer le suivi GPS' }));
+    await flush();
+    expect(listener).not.toBeNull();
+    view.unmount();
+    watching.resolve(async () => {
+      stopped += 1;
+    });
+    await flush();
+    expect(stopped).toBe(1);
+    // Une position reçue après le démontage n'a aucun effet (ni état ni report).
+    const late = listener as ((e: GeoEvent) => void) | null;
+    act(() => late?.(fix(0)));
+    expect(onReport).not.toHaveBeenCalled();
+  });
+
+  it('démonté pendant le suivi : arrêté une fois, aucun report', async () => {
+    const gps = fakeGps('granted');
+    const onReport = vi.fn();
+    const view = render(<CardioGps load={async () => gps.geo} clock={clock} onReport={onReport} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Démarrer le suivi GPS' }));
+    await screen.findByText('En attente du signal GPS…');
+    view.unmount();
+    await flush();
+    expect(gps.calls.stopped).toBe(1);
+    gps.emit(fix(0));
+    await flush();
+    expect(gps.calls.stopped).toBe(1);
+    expect(onReport).not.toHaveBeenCalled();
+  });
+
+  it('deux appuis rapides sur Démarrer : un seul suivi', async () => {
+    const gps = fakeGps('granted');
+    render(<CardioGps load={async () => gps.geo} clock={clock} onReport={vi.fn()} />);
+    const button = screen.getByRole('button', { name: 'Démarrer le suivi GPS' });
+    // Deux appuis dans le même tour (avant tout rendu) : le second ne doit rien lancer.
+    act(() => {
+      button.click();
+      button.click();
+    });
+    await screen.findByText('En attente du signal GPS…');
+    await flush();
+    expect(gps.calls.watching).toBe(1);
   });
 });
