@@ -117,8 +117,6 @@ export const RESET_SETTINGS: Readonly<Record<SettingKey, ResetFate>> = {
   'desktop.updater': 'kept',
   'shortcut.quickCapture': 'kept',
   'focus.lastDuration': 'kept',
-  'focus.endSound': 'kept',
-  'focus.windowPosition': 'kept',
   'device.id': 'kept',
   'notifications.ledger': 'kept',
   'notifications.status': 'kept',

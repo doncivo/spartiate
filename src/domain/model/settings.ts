@@ -78,10 +78,6 @@ export interface SettingsValues {
   'shortcut.quickCapture': { readonly enabled: boolean; readonly keys: string };
   /** F-01 critère 12 : dernière durée de session choisie (minutes ; null = « Libre »), propre à l'appareil. */
   'focus.lastDuration': FocusDuration;
-  /** F-04 : son de fin de session (Réglages › TÂCHES), propre à l'appareil, activé par défaut. */
-  'focus.endSound': boolean;
-  /** F-01 critère 3 : position de la mini-fenêtre Focus du PC (pixels physiques), propre à l'appareil. */
-  'focus.windowPosition': { readonly x: number; readonly y: number } | null;
   /** ADR 0005 : identifiant de cet appareil, créé au premier lancement. */
   'device.id': DeviceId | null;
   /**
@@ -189,8 +185,6 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'desktop.updater': { scope: 'local', defaultValue: { lastCheckAt: null } },
   'shortcut.quickCapture': { scope: 'local', defaultValue: { enabled: true, keys: 'Ctrl+Alt+Space' } },
   'focus.lastDuration': { scope: 'local', defaultValue: 25 },
-  'focus.endSound': { scope: 'local', defaultValue: true },
-  'focus.windowPosition': { scope: 'local', defaultValue: null },
   'device.id': { scope: 'local', defaultValue: null },
   'notifications.ledger': { scope: 'local', defaultValue: null },
   'notifications.status': { scope: 'local', defaultValue: null },
