@@ -462,3 +462,21 @@ describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', ()
     await waitFor(async () => expect((await (await db.data.repos.nutritionTargets()).effective(TODAY))?.restPlan?.rest).toEqual({ kcal: 2250, proteinG: 150, fatG: 80, carbG: 232 }));
   });
 });
+
+describe('PROG-01 : type de jour dans le journal (D-270)', () => {
+  it('lundi non coché : « Jour de repos » et la cible de repos', async () => {
+    await (await db.data.repos.nutritionTargets()).record({
+      weekStart: TODAY,
+      target: { kcal: 2600, proteinG: 150, fatG: 80, carbG: 320 },
+      source: 'manual',
+      accepted: true,
+      engineVersion: null,
+      lowFloorConfirmed: false,
+      restPlan: { rest: { kcal: 2400, proteinG: 150, fatG: 80, carbG: 270 }, trainingDays: [2, 4, 5, 6] },
+    });
+    open('journal');
+    const r = await region();
+    expect(await within(r).findByText('Jour de repos')).toBeInTheDocument();
+    expect(within(r).getByText(`cible ${fr(2400)} kcal`)).toBeInTheDocument();
+  });
+});

@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
 import { todayLocal } from '../../domain/clock';
-import { aggregateDay, remainingForDay, toMealEntryInput, type DayTotals, type Remaining, type Target } from '../../domain/nutrition';
+import { aggregateDay, remainingForDay, toMealEntryInput, type DayTotals, type DayType, type Remaining, type Target } from '../../domain/nutrition';
 import { tNutrition } from '../../i18n/nutritionText';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
 import { useSyncedData } from '../sync/remoteChanges';
+import { loadDayTarget } from './dayType';
 import { KcalHero } from './shared';
 
-type Load = { readonly status: 'loading' | 'failed' } | { readonly status: 'ready'; readonly day: DayTotals; readonly target: Target | null; readonly remaining: Remaining | null };
+type Load = { readonly status: 'loading' | 'failed' } | { readonly status: 'ready'; readonly day: DayTotals; readonly target: Target | null; readonly remaining: Remaining | null; readonly dayType: DayType | null };
 
 /**
  * Carte « Nutrition » d'Aujourd'hui (I4-03, critère 7) : seulement ce qu'il reste de la cible et l'état de la journée. Sans cible, elle le dit
@@ -27,12 +28,13 @@ export function NutritionRemainingCard() {
     void (async () => {
       try {
         const today = todayLocal(container.clock);
-        const [entries, targets, completeness] = await Promise.all([data.repos.mealEntries(), data.repos.nutritionTargets(), data.repos.dayCompleteness()]);
-        const [list, effective, declared] = await Promise.all([entries.listByDate(today), targets.effective(today), completeness.get(today)]);
+        const [entries, completeness] = await Promise.all([data.repos.mealEntries(), data.repos.dayCompleteness()]);
+        // PROG-01 (D-270) : cible du type de jour (entraînement ou repos) ; sans cible de repos, la cible unique.
+        const [list, effective, declared] = await Promise.all([entries.listByDate(today), loadDayTarget(data, today), completeness.get(today)]);
         // La déclaration d'Ali prime sur la déduction (D-81) : même état que le Journal.
         const day = aggregateDay(today, list.map(toMealEntryInput), declared?.state);
         const target = effective?.target ?? null;
-        if (live) setLoad({ status: 'ready', day, target, remaining: remainingForDay(target, day) });
+        if (live) setLoad({ status: 'ready', day, target, remaining: remainingForDay(target, day), dayType: effective?.type ?? null });
       } catch {
         if (live) setLoad({ status: 'failed' });
       }
@@ -43,7 +45,7 @@ export function NutritionRemainingCard() {
   }, [data, container, synced]);
 
   if (load.status !== 'ready') return null;
-  const { day, target, remaining } = load;
+  const { day, target, remaining, dayType } = load;
   return (
     // ERGO-01 : bloc à plat (Aujourdhui-apres.dc.html), le chiffre héros suffit à le détacher ; marge de carte conservée.
     <section className="ct-today__card ct-today__card--flat ct-nutrition-card" aria-labelledby="ct-nutrition-card-title">
@@ -58,6 +60,7 @@ export function NutritionRemainingCard() {
       ) : (
         <>
           <KcalHero kcal={remaining.kcal} />
+          {dayType !== null ? <p className="ct-today__muted">{tNutrition(dayType === 'rest' ? 'dayTypeRest' : 'dayTypeTraining')}</p> : null}
           <p className="ct-today__muted">{day.entryCount === 0 ? tNutrition('emptyToday') : tNutrition(day.state === 'complete' ? (day.origin === 'declared' ? 'dayCompleteDeclared' : 'dayCompleteInferred') : 'dayPartial')}</p>
         </>
       )}
