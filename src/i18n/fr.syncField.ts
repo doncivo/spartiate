@@ -194,6 +194,8 @@ export const syncFieldFr = {
     status: 'état',
     outcome: 'issue du bilan',
     ended_on: 'fin',
+    next_weeks: 'durée du prochain cycle',
+    ramp_up: 'semaine de reprise',
     deleted_at: 'suppression',
   },
   // I4-02 : nutrition (champs visibles au journal des conflits).
@@ -239,6 +241,9 @@ export const syncFieldFr = {
     carb_g: 'glucides',
     source: 'origine',
     accepted: 'acceptée',
+    rest_kcal: 'énergie des jours de repos',
+    rest_carb_g: 'glucides des jours de repos',
+    training_days: 'jours d’entraînement',
     deleted_at: 'suppression',
   },
   // I4-07 : journée déclarée, recettes et ingrédients (champs visibles au journal des conflits).

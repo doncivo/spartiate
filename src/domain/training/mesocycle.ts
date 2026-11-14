@@ -51,6 +51,10 @@ export interface MesocycleSpec {
   /** Issue du bilan (cycle clos) ; `null` tant qu'il est actif. */
   readonly outcome: MesocycleOutcome | null;
   readonly endedOn: LocalDate | null;
+  /** PROG-01 (D-267 (3)) : durée choisie pendant le cycle, appliquée au cycle suivant (`null` : même durée). */
+  readonly nextWeeks?: number | null;
+  /** PROG-01 (D-267 (4)) : semaine de reprise (semaine 1, −1 série sur les lignes à 4 séries ou plus). */
+  readonly rampUp?: boolean;
   /** Faux : ligne reçue illisible (repository) ; le cycle est alors invalide, jamais suivi en silence. */
   readonly readable?: boolean;
 }
@@ -61,10 +65,57 @@ export type MesocyclePhase = 'not-started' | 'active' | 'paused' | 'finished' | 
 /** Plan d'une semaine pour une ligne de routine : écart de séries, RIR, deload, séries de priorité. */
 export interface WeekPlan {
   readonly setsOffset: number;
+  /** RIR visé par le moteur (borne haute d'une plage, D-269 (3)). */
   readonly rir: number;
   readonly deload: boolean;
   readonly priorityBonus: number;
+  /** PROG-01 (cycles de 4 et 6 semaines) : borne basse de la plage affichée (« RIR 2-3 ») ; absente : RIR unique. */
+  readonly rirLow?: number;
+  /** PROG-01 : RIR des exercices d'isolation (dernière semaine de travail, à partir du 2e cycle). */
+  readonly isolationRir?: number;
+  /** PROG-01 : semaine de reprise (−1 série sur les lignes à 4 séries ou plus). */
+  readonly rampUp?: boolean;
+  /** PROG-01 : décharge d'un cycle de 4 ou 6 semaines : séries et facteur de charge (absents : deload I2, D-72 point 9). */
+  readonly deloadSets?: number;
+  readonly deloadLoad?: number;
 }
+
+/** PROG-01 (D-267, D-269) : plages de RIR [basse, haute] des semaines de travail, cycles de 4 et 6 semaines ; 5 et 7 : table d'avant. */
+const PROGRAM_RIR: Readonly<Record<number, readonly (readonly [number, number])[]>> = {
+  4: [[3, 3], [2, 3], [2, 2]],
+  6: [[3, 3], [3, 3], [2, 3], [2, 2], [1, 2]],
+};
+/** Durées proposées à l'écran (D-267) ; 7 reste lisible pour un cycle existant. */
+export const MESO_WEEK_CHOICES = [4, 5, 6] as const;
+const RAMP_UP_MIN_SETS = 4;
+const ISOLATION_LAST_WEEK_RIR = 1;
+const PROGRAM_DELOAD_SETS = 2;
+const PROGRAM_DELOAD_LOAD = 0.9;
+const PROGRAM_DELOAD_RIR: readonly [number, number] = [3, 4];
+
+/** Plan d'une semaine de travail d'un cycle de 4 ou 6 semaines (`index` 0 = première) ; `second` : au moins un cycle clos avant celui-ci. */
+function programWorkPlan(index: number, table: readonly (readonly [number, number])[], config: GenerationConfig, second: boolean): WeekPlan {
+  const i = Math.min(table.length - 1, Math.max(0, index));
+  const [low, high] = table[i] as readonly [number, number];
+  const last = i === table.length - 1;
+  return {
+    setsOffset: 0,
+    rir: Math.max(1, high),
+    deload: false,
+    priorityBonus: config.prioritySetDelta,
+    ...(low !== high ? { rirLow: Math.max(1, low) } : {}),
+    ...(last && second ? { isolationRir: ISOLATION_LAST_WEEK_RIR } : {}),
+  };
+}
+const programDeloadPlan = (): WeekPlan => ({
+  setsOffset: 0,
+  rir: PROGRAM_DELOAD_RIR[1],
+  rirLow: PROGRAM_DELOAD_RIR[0],
+  deload: true,
+  priorityBonus: 0,
+  deloadSets: PROGRAM_DELOAD_SETS,
+  deloadLoad: PROGRAM_DELOAD_LOAD,
+});
 
 export interface MesocycleState {
   readonly phase: MesocyclePhase;
@@ -105,7 +156,8 @@ const deloadPlan = (config: GenerationConfig): WeekPlan => ({ setsOffset: 0, rir
 /** Séries d'une ligne de routine (`sets`) pour la semaine ; `priority` : groupe prioritaire, premier exercice du groupe. Bornées à 1–20. */
 export function linePlanSets(sets: number, plan: WeekPlan, config: GenerationConfig, priority = false): number {
   const bonus = priority ? Math.min(plan.priorityBonus, config.prioritySetDelta) : 0;
-  return clamp(Math.round(sets) + plan.setsOffset + bonus, 1, SETS_MAX);
+  const rampCut = plan.rampUp === true && Math.round(sets) >= RAMP_UP_MIN_SETS ? 1 : 0;
+  return clamp(Math.round(sets) + plan.setsOffset + bonus - rampCut, 1, SETS_MAX);
 }
 
 /** Le cycle est-il bien formé (domaine, repository et lecture d'une ligne reçue) ? */
@@ -122,6 +174,8 @@ export function validateMesocycleSpec(spec: MesocycleSpec, config: GenerationCon
   const closed = spec.status === 'completed';
   if (closed !== (spec.outcome !== null) || closed !== (spec.endedOn !== null)) return false;
   if (spec.endedOn !== null && (typeof spec.endedOn !== 'string' || !isLocalDate(spec.endedOn))) return false;
+  if (spec.nextWeeks !== undefined && spec.nextWeeks !== null && !(isInt(spec.nextWeeks, min) && spec.nextWeeks <= max)) return false;
+  if (spec.rampUp !== undefined && typeof spec.rampUp !== 'boolean') return false;
   if (!Array.isArray(spec.pauses)) return false;
   let previousEnd: LocalDate = spec.startDate;
   for (const [i, p] of spec.pauses.entries()) {
@@ -142,6 +196,8 @@ export interface CreateMesocycleInput {
   readonly startDate: LocalDate;
   readonly weeks: number | 'unlimited';
   readonly rotationIndex?: number;
+  /** PROG-01 : semaine de reprise (désactivée par défaut). */
+  readonly rampUp?: boolean;
 }
 
 /** Nouveau cycle actif ; `null` si la durée, la routine ou la date ne sont pas admises. */
@@ -156,6 +212,8 @@ export function createMesocycleSpec(input: CreateMesocycleInput, config: Generat
     blockOriginWeek: 1,
     blockOriginIndex: 0,
     rotationIndex: input.rotationIndex ?? 0,
+    nextWeeks: null,
+    rampUp: input.rampUp === true,
     pauses: [],
     status: 'active',
     outcome: null,
@@ -181,7 +239,8 @@ const INVALID: MesocycleState = Object.freeze({
 });
 
 /** État du cycle à la date `today`. */
-export function mesocycleState(spec: MesocycleSpec, today: LocalDate, config: GenerationConfig): MesocycleState {
+/** `options.closedBefore` (PROG-01) : nombre de cycles clos avant le début de celui-ci (RIR 1 sur l'isolation à partir du 2e cycle). */
+export function mesocycleState(spec: MesocycleSpec, today: LocalDate, config: GenerationConfig, options?: { readonly closedBefore?: number }): MesocycleState {
   if (!validateMesocycleSpec(spec, config) || typeof today !== 'string' || !isLocalDate(today)) return INVALID;
   const L = spec.weeks;
   const pausedDays = pausedDaysUntil(spec.pauses, today, config.lightWeekDays);
@@ -219,14 +278,18 @@ export function mesocycleState(spec: MesocycleSpec, today: LocalDate, config: Ge
 
   const phase: MesocyclePhase =
     spec.status === 'completed' ? 'completed' : elapsed < 0 ? 'not-started' : pausedSince !== null ? 'paused' : finished ? 'finished' : 'active';
-  const plan =
-    phase !== 'active'
-      ? null
-      : kind === 'deload'
-        ? deloadPlan(config)
-        : kind === 'light'
-          ? { ...workWeekPlan(0, L - 1, config), priorityBonus: 0 }
-          : workWeekPlan(blockWeek - 1, L - 1, config);
+  // PROG-01 (D-267, D-269) : cycles de 4 et 6 semaines ; semaine allégée après une pause = semaine 1 avec l'allègement de la reprise.
+  const table = spec.unlimited ? undefined : PROGRAM_RIR[L];
+  const second = (options?.closedBefore ?? 0) > 0;
+  const rampUp = spec.rampUp === true;
+  let plan: WeekPlan | null = null;
+  if (phase === 'active' && table !== undefined) {
+    if (kind === 'deload') plan = programDeloadPlan();
+    else if (kind === 'light') plan = { ...programWorkPlan(0, table, config, second), priorityBonus: 0, rampUp: true };
+    else plan = { ...programWorkPlan(blockWeek - 1, table, config, second), ...(rampUp && blockWeek === 1 ? { rampUp: true } : {}) };
+  } else if (phase === 'active') {
+    plan = kind === 'deload' ? deloadPlan(config) : kind === 'light' ? { ...workWeekPlan(0, L - 1, config), priorityBonus: 0 } : workWeekPlan(blockWeek - 1, L - 1, config);
+  }
   const canAnticipate = phase === 'active' && kind === 'work' && (spec.unlimited || spec.deloadWeek === null);
   return {
     phase,
@@ -248,8 +311,18 @@ export function mesocycleState(spec: MesocycleSpec, today: LocalDate, config: Ge
 /** Semaine du générateur (interface I3-01) ; `null` hors d'un cycle actif : la routine s'applique telle quelle. */
 export function generationWeekOf(state: MesocycleState): GenerationWeek | null {
   if (state.phase !== 'active' || state.plan === null) return null;
-  const { setsOffset, rir, deload, priorityBonus } = state.plan;
-  return { workingSets: null, rir, setsOffset, deload, priorityBonus };
+  const { setsOffset, rir, deload, priorityBonus, isolationRir, rampUp, deloadSets, deloadLoad } = state.plan;
+  return {
+    workingSets: null,
+    rir,
+    setsOffset,
+    deload,
+    priorityBonus,
+    ...(isolationRir !== undefined ? { isolationRir } : {}),
+    ...(rampUp === true ? { rampUp } : {}),
+    ...(deloadSets !== undefined ? { deloadSets } : {}),
+    ...(deloadLoad !== undefined ? { deloadLoad } : {}),
+  };
 }
 
 /** Le jour est-il en semaine de deload (planifié ou anticipé) d'un cycle actif ? */
@@ -282,7 +355,8 @@ export function nextMesocycleSpec(
   config: GenerationConfig,
   change?: { readonly routineId: string; readonly weeks?: number | 'unlimited' },
 ): MesocycleSpec | null {
-  const sameWeeks = previous.unlimited ? 'unlimited' : previous.weeks;
+  // PROG-01 (D-267 (3)) : une durée choisie pendant le cycle s'applique au suivant ; la semaine de reprise ne se reprend jamais.
+  const sameWeeks = previous.unlimited ? 'unlimited' : (previous.nextWeeks ?? previous.weeks);
   if (outcome === 'change') {
     if (change === undefined) return null;
     return createMesocycleSpec({ routineId: change.routineId, startDate: today, weeks: change.weeks ?? sameWeeks }, config);
@@ -290,4 +364,11 @@ export function nextMesocycleSpec(
   const state = mesocycleState(previous, today, config);
   const current = state.phase === 'invalid' ? previous.rotationIndex : state.mesocycleIndex;
   return createMesocycleSpec({ routineId: previous.routineId, startDate: today, weeks: sameWeeks, rotationIndex: outcome === 'regenerate' ? current + 1 : current }, config);
+}
+
+/** PROG-01 (D-267 (3)) : durée du cycle suivant choisie pendant le cycle (4, 5 ou 6) ; le cycle en cours ne change pas. `null` si refusée. */
+export function changeNextWeeks(spec: MesocycleSpec, weeks: number, config: GenerationConfig): MesocycleSpec | null {
+  if (!(MESO_WEEK_CHOICES as readonly number[]).includes(weeks)) return null;
+  const next = { ...spec, nextWeeks: weeks };
+  return validateMesocycleSpec(next, config) ? next : null;
 }

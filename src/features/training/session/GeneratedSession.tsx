@@ -106,10 +106,10 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
     const s = followed.state;
     if (s.phase === 'paused') return tGeneration('cyclePaused');
     if (s.phase !== 'active' || s.plan === null) return tGeneration('cycleInactive');
-    if (s.plan.deload) return tGeneration('cycleDeload');
+    if (s.plan.deload) return tGeneration(s.plan.deloadSets !== undefined ? 'cycleProgramDeload' : 'cycleDeload');
     const week = s.totalWeeks === null ? tGeneration('cycleBlockWeek', { week: s.blockWeek, block: s.blockIndex + 1 }) : tGeneration('cycleWeekOf', { week: s.week, total: s.totalWeeks });
     const sets = tGeneration(s.plan.setsOffset < 0 ? 'cycleSetsMinus' : s.plan.setsOffset > 0 ? 'cycleSetsPlus' : 'cycleSetsSame');
-    const rir = s.plan.rir === 1 ? tGeneration('cycleRirOne') : tGeneration('cycleRirMany', { rir: s.plan.rir });
+    const rir = s.plan.rirLow !== undefined && s.plan.rirLow < s.plan.rir ? tGeneration('cycleRirRange', { low: s.plan.rirLow, high: s.plan.rir }) : s.plan.rir === 1 ? tGeneration('cycleRirOne') : tGeneration('cycleRirMany', { rir: s.plan.rir });
     return tGeneration(s.kind === 'light' ? 'cycleLight' : 'cycleWork', { week, sets, rir });
   })();
   const set = (patch: Partial<GenerationSettings>): void => setSettings((s) => ({ ...s, ...patch }));

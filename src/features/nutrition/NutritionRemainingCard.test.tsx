@@ -75,3 +75,32 @@ describe('I4-03 : NutritionRemainingCard', () => {
     expect(screen.getByText('Rien de saisi aujourd’hui')).toBeInTheDocument();
   });
 });
+
+describe('PROG-01 : type de jour sur Aujourd’hui (D-270)', () => {
+  const record = async (rest: boolean) =>
+    (await db.data.repos.nutritionTargets()).record({
+      weekStart: TODAY,
+      target: { kcal: 2600, proteinG: 150, fatG: 80, carbG: 320 },
+      source: 'manual',
+      accepted: true,
+      engineVersion: null,
+      lowFloorConfirmed: false,
+      // Lundi 9 novembre 2026 : jour d'entraînement si lundi est coché, repos sinon.
+      ...(rest ? { restPlan: { rest: { kcal: 2400, proteinG: 150, fatG: 80, carbG: 270 }, trainingDays: [2, 4, 5, 6] as const } } : {}),
+    } as never);
+
+  it('avec une cible de repos, lundi non coché : « Jour de repos » et la cible de repos (2 400 kcal restantes)', async () => {
+    await record(true);
+    mount();
+    expect(await screen.findByText('Jour de repos')).toBeInTheDocument();
+    expect(screen.getByText(heroLine(`${fr(2400)} kcal restantes`))).toBeInTheDocument();
+  });
+
+  it('sans cible de repos : aucune mention, cible unique', async () => {
+    await record(false);
+    mount();
+    expect(await screen.findByText(heroLine(`${fr(2600)} kcal restantes`))).toBeInTheDocument();
+    expect(screen.queryByText('Jour de repos')).toBeNull();
+    expect(screen.queryByText('Jour d’entraînement')).toBeNull();
+  });
+});

@@ -90,7 +90,7 @@ describe('migration 0007 : mesocycle (I3-02)', () => {
   it('copie figée = catalogue ; capture : insertion en ligne entière, modification champ par champ avec base_hlc, restauration « + »', async () => {
     const table = SYNC_CATALOGUE.table('mesocycle');
     if (!table) throw new Error('mesocycle absent du catalogue');
-    for (const [name, columns] of CAPTURE_TABLES_V7) expect([...columns], name).toEqual([...publishedColumns(table)]);
+    for (const [name, columns] of CAPTURE_TABLES_V7) expect([...columns], name).toEqual([...publishedColumns(table)].filter((c) => c !== 'next_weeks' && c !== 'ramp_up')); // 0019 (PROG-01) : capture propre
     const db = await freshDb();
     await insert(db);
     expect(await outbox(db)).toEqual([{ table_name: 'mesocycle', row_id: M, field: '*' }]);

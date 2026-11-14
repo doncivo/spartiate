@@ -211,9 +211,12 @@ export function generateSession(input: GenerateSessionInput): GeneratedSession {
     const group = groupOf(slot.chosen);
     const first = bonus > 0 && group !== null && priorities.has(group) && !bonusGroups.has(group);
     if (first) bonusGroups.add(group);
-    slot.sets = Math.min(SETS_MAX, Math.max(1, Math.round(weekSets ?? slot.line.sets + offset) + (first ? bonus : 0)));
+    // PROG-01 (D-267 (4)) : semaine de reprise, −1 série sur les lignes à 4 séries ou plus.
+    const rampCut = input.week?.rampUp === true && weekSets === null && Math.round(slot.line.sets) >= 4 ? 1 : 0;
+    slot.sets = Math.min(SETS_MAX, Math.max(1, Math.round(weekSets ?? slot.line.sets + offset) + (first ? bonus : 0) - rampCut));
   }
-  const rirOf = (slot: Slot): number | null => input.week?.rir ?? slot.line.rir;
+  // PROG-01 : dernière semaine de travail à partir du 2e cycle, RIR 1 sur les exercices d'isolation.
+  const rirOf = (slot: Slot): number | null => (slot.chosen.kind === 'isolation' && input.week?.isolationRir !== undefined ? input.week.isolationRir : (input.week?.rir ?? slot.line.rir));
   const estimate = (slot: Slot): number => estimateExerciseSec(slot.sets, slot.line.restSec, config);
   const total = (): number => slots.reduce((sum, s) => sum + estimate(s), 0);
 

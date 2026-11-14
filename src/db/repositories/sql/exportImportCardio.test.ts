@@ -52,7 +52,7 @@ const seed = async (db: TestDb): Promise<void> => {
 describe('export / import des séances cardio (I6-06)', () => {
   it('table exportée en dernier, depuis le schéma 18, écrite par les deux appareils ; le tracé jamais exporté', () => {
     expect(EXPORT_SV).toBeGreaterThanOrEqual(18);
-    expect(SV).toBe(EXPORT_SV);
+    expect(SV).toBe(18); // PROG-01 : le schéma 19 n'ajoute aucune table (colonnes seulement).
     expect(TRAINING_EXPORT_TABLES.at(-1)).toBe('cardio_session');
     expect((IPHONE_WRITTEN_TABLES as readonly string[]).includes('cardio_session')).toBe(false);
     expect(FULL_EXPORT_TABLES).toContain('cardio_session');

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { dayTargetFor } from '../../../domain/nutrition/restDay';
 import { addDays } from '../../../domain/localDate';
 import type { LocalDate } from '../../../domain/types';
 import { aggregateDay, effectiveTarget, remainingForDay, toMealEntryInput, type DayDeclaration, type DayTotals } from '../../../domain/nutrition';
@@ -105,7 +106,10 @@ export function JournalView({ snapshot, onChanged, openSearch = false }: Journal
 
   const declaration = loaded !== null && loaded.date === date ? loaded.declaration : null;
   const day = useMemo(() => aggregateDay(date, (entries ?? []).map(toMealEntryInput), declaration ?? undefined), [date, entries, declaration]);
-  const target = effectiveTarget(snapshot.targets, date)?.target ?? null;
+  // PROG-01 (D-270) : cible du type de jour (entraînement ou repos) ; sans cible de repos, la cible unique.
+  const record = effectiveTarget(snapshot.targets, date);
+  const dayTarget = record === null ? null : dayTargetFor(record.target, record.restPlan ?? null, date, snapshot.strengthDays ?? new Set());
+  const target = dayTarget?.target ?? null;
   // Tant que le journal du jour n'est pas lu (chargement, échec), aucun restant n'est affiché : « — », jamais la cible entière.
   const remaining = entries === null ? (target === null ? null : { kcal: null, proteinG: null, fatG: null, carbG: null }) : remainingForDay(target, day);
   const defaultTime = isToday ? nowTime(container.clock.nowMs()) : '12:00';
@@ -177,6 +181,7 @@ export function JournalView({ snapshot, onChanged, openSearch = false }: Journal
           <>
             <KcalHero kcal={remaining.kcal} />
             <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('targetOfKcal', { n: formatInt(target.kcal) })}</p>
+            {dayTarget?.type ? <p className="ct-nutrition__muted">{tNutrition(dayTarget.type === 'rest' ? 'dayTypeRest' : 'dayTypeTraining')}</p> : null}
             <dl className="ct-nutrition__macros">
               {macros.map(([label, left, goal]) => (
                 <div key={label} className="ct-nutrition__macro">

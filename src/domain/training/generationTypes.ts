@@ -69,6 +69,11 @@ export interface GenerationWeek {
   readonly setsOffset?: number;
   readonly deload?: boolean;
   readonly priorityBonus?: number;
+  /** PROG-01 : RIR des exercices d'isolation (dernière semaine de travail, à partir du 2e cycle) ; semaine de reprise ; décharge à 90 %. */
+  readonly isolationRir?: number;
+  readonly rampUp?: boolean;
+  readonly deloadSets?: number;
+  readonly deloadLoad?: number;
 }
 
 export interface GenerateSessionInput {

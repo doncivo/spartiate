@@ -5,7 +5,7 @@
 //! à régénérer avec ce test si la migration 0011 change (jamais, une migration publiée ne se modifie plus) ou si un déclencheur est ajouté.
 
 /// (nom, table, SQL) de chaque déclencheur, triés par nom.
-pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 109] = [
+pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 111] = [
     (
         "search_checklist_ad",
         "checklist",
@@ -1972,6 +1972,34 @@ INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 
      END"##,
     ),
     (
+        "sync_mesocycle_program_au",
+        "mesocycle",
+        r##"CREATE TRIGGER sync_mesocycle_program_au AFTER UPDATE OF next_weeks, ramp_up ON mesocycle
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+         SELECT 'mesocycle', NEW.id, '*', OLD.hlc, NULL
+         WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*');
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'next_weeks', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('next_weeks', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'next_weeks')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'next_weeks'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.next_weeks IS NOT NEW.next_weeks
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'next_weeks' AND OLD.next_weeks IS NOT NEW.next_weeks;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'next_weeks' WHERE OLD.next_weeks IS NOT NEW.next_weeks;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'mesocycle', NEW.id, 'ramp_up', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field IN ('ramp_up', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'ramp_up')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'ramp_up'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.ramp_up IS NOT NEW.ramp_up
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'mesocycle' AND row_id = NEW.id AND field = 'ramp_up' AND OLD.ramp_up IS NOT NEW.ramp_up;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'mesocycle', NEW.id, 'ramp_up' WHERE OLD.ramp_up IS NOT NEW.ramp_up;
+     END"##,
+    ),
+    (
         "sync_muscle_recovery_ai",
         "muscle_recovery",
         r##"CREATE TRIGGER sync_muscle_recovery_ai AFTER INSERT ON muscle_recovery WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN DELETE FROM sync_tombstone WHERE table_name = 'muscle_recovery' AND row_id = NEW.id; DELETE FROM sync_outbox WHERE table_name = 'muscle_recovery' AND row_id = NEW.id AND field = '*'; INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('muscle_recovery', NEW.id, '*'); END"##,
@@ -2091,6 +2119,43 @@ DELETE FROM sync_outbox WHERE table_name = 'nutrition_target' AND row_id = NEW.i
 INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'nutrition_target', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;
        DELETE FROM sync_outbox WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
        INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'nutrition_target', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;
+     END"##,
+    ),
+    (
+        "sync_nutrition_target_rest_au",
+        "nutrition_target",
+        r##"CREATE TRIGGER sync_nutrition_target_rest_au AFTER UPDATE OF rest_kcal, rest_carb_g, training_days ON nutrition_target
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+         SELECT 'nutrition_target', NEW.id, '*', OLD.hlc, NULL
+         WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = '*');
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'nutrition_target', NEW.id, 'rest_kcal', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field IN ('rest_kcal', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = 'rest_kcal')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = 'rest_kcal'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.rest_kcal IS NOT NEW.rest_kcal
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = 'rest_kcal' AND OLD.rest_kcal IS NOT NEW.rest_kcal;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'nutrition_target', NEW.id, 'rest_kcal' WHERE OLD.rest_kcal IS NOT NEW.rest_kcal;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'nutrition_target', NEW.id, 'rest_carb_g', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field IN ('rest_carb_g', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = 'rest_carb_g')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = 'rest_carb_g'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.rest_carb_g IS NOT NEW.rest_carb_g
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = 'rest_carb_g' AND OLD.rest_carb_g IS NOT NEW.rest_carb_g;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'nutrition_target', NEW.id, 'rest_carb_g' WHERE OLD.rest_carb_g IS NOT NEW.rest_carb_g;
+INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'nutrition_target', NEW.id, 'training_days', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field IN ('training_days', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = 'training_days')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = 'training_days'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.training_days IS NOT NEW.training_days
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'nutrition_target' AND row_id = NEW.id AND field = 'training_days' AND OLD.training_days IS NOT NEW.training_days;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'nutrition_target', NEW.id, 'training_days' WHERE OLD.training_days IS NOT NEW.training_days;
      END"##,
     ),
     (
@@ -4390,7 +4455,7 @@ pub const SUPERSEDED_TRIGGERS: [(&str, &str, &str, u32, u32); 3] = [
 /// de 1 à `APP_SCHEMA_VERSION`, même vide (migration sans déclencheur) : une version sans entrée, ou un déclencheur d'une base migrée absent
 /// d'ici, fait échouer `backup_versions.rs` (`i5_01_*`, comparaison avec `tests/fixtures/spartiate-migrations.json`). Jamais de version
 /// par défaut : un oubli ferait recréer à la restauration un déclencheur qu'une migration suivante créerait encore (« trigger already exists »).
-pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 18] = [
+pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 19] = [
     // SPA-001b (migration 0001) : profil et poids.
     (
         1,
@@ -4514,6 +4579,11 @@ pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 18] = [
     ),
     // I6-06 (migration 0018) : séances cardio publiées (cardio_session) ; le tracé (cardio_track) est local, sans déclencheur.
     (18, &["sync_cardio_session_ai", "sync_cardio_session_au"]),
+    // PROG-01 (migration 0019) : captures propres de la durée du prochain mésocycle, de la semaine de reprise et de la cible des jours de repos.
+    (
+        19,
+        &["sync_mesocycle_program_au", "sync_nutrition_target_rest_au"],
+    ),
 ];
 
 /// I5-01 point 1.1 : tables créées par les migrations Spartiate (toutes versions). Un déclencheur hérité de l'ancien projet (nom absent de
