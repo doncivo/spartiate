@@ -44,6 +44,16 @@ export interface SupplementDraftInput {
   readonly active: boolean;
 }
 
+/** Symboles d'unité connus, en casse canonique (clé : minuscules). « 1 g » et non « 1 G » : le clavier de l'iPhone met une majuscule au début du champ (FIX-0242). */
+const UNIT_SYMBOLS: Readonly<Record<string, string>> = { g: 'g', mg: 'mg', 'µg': 'µg', 'μg': 'µg', mcg: 'µg', kg: 'kg', ml: 'ml', cl: 'cl', l: 'l', ui: 'UI' };
+
+/** Unité saisie, rognée ; symbole connu remis en casse canonique, unité libre gardée telle quelle ; vide : null. */
+export function normalizeSupplementUnit(unit: string | null): string | null {
+  const text = unit?.trim() ?? '';
+  if (text === '') return null;
+  return UNIT_SYMBOLS[text.toLowerCase()] ?? text;
+}
+
 /** Heures valides, triées, sans doublon ; null hors de 1 à 4. */
 function normalizeTimes(times: readonly unknown[]): LocalTime[] | null {
   if (!times.every((x): x is string => typeof x === 'string' && isLocalTime(x))) return null;
@@ -61,7 +71,7 @@ export function validateSupplementDraft(input: SupplementDraftInput): { readonly
   const times = normalizeTimes(input.times);
   if (times === null) return { ok: false, error: 'times' };
   if (!Number.isInteger(input.days) || input.days < 1 || input.days > ALL_DAYS) return { ok: false, error: 'days' };
-  return { ok: true, value: { name, dose, unit: unitText === '' ? null : unitText, times, days: input.days, active: input.active } };
+  return { ok: true, value: { name, dose, unit: normalizeSupplementUnit(unitText), times, days: input.days, active: input.active } };
 }
 
 /** Colonne `times` (tableau JSON d'heures) ; null si illisible. */
