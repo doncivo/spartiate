@@ -100,8 +100,9 @@ describe('PROG-01 : décharge à 90 %, arrondie vers le bas au cran du matériel
     const r = reducedTarget(c, { loadKg: refKg, reps: Array.from({ length: sets }, () => 8) }, 'compound', PCONFIG, assisted);
     return { sets: r.reps.length, kg: snapToEquipment(r.targetKg, r.reps, loads, PCONFIG).loadKg, targetKg: r.targetKg };
   };
-  it('cran de 2,5 kg : 100 → 90, 87,5 → 77,5, 52,5 → 47,5 ; 2 séries', () => {
-    expect([100, 87.5, 52.5].map((kg) => deloaded(kg, 4, null).kg)).toEqual([90, 77.5, 47.5]);
+  it('cran de 2,5 kg : 100 → 90, 87,5 → 77,5, 52,5 → 45 (47,25 arrondi vers le bas) ; 2 séries', () => {
+    const bar = Array.from({ length: 73 }, (_, i) => 20 + i * 2.5); // barre : 20 à 200 kg au cran de 2,5 kg
+    expect([100, 87.5, 52.5].map((kg) => deloaded(kg, 4, bar).kg)).toEqual([90, 77.5, 45]);
     expect(deloaded(100, 4, null).sets).toBe(2);
     expect(deloaded(100, 1, null).sets).toBe(1);
   });
