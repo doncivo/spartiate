@@ -148,6 +148,8 @@ const UNIT_OVERRIDES: Readonly<Record<string, string>> = {
   'nutrition_target.protein_g': 'g par jour',
   'nutrition_target.fat_g': 'g par jour',
   'nutrition_target.carb_g': 'g par jour',
+  'nutrition_target.rest_kcal': 'kcal par jour',
+  'nutrition_target.rest_carb_g': 'g par jour',
   'recipe_ingredient.kcal_100g': 'kcal pour 100 g',
   'recipe_ingredient.protein_100g': 'g pour 100 g',
   'recipe_ingredient.fat_100g': 'g pour 100 g',
