@@ -1,4 +1,6 @@
 import { addDays } from '../../../domain/localDate';
+import { dayTargetFor, effectiveTarget, type Target as DayTarget } from '../../../domain/nutrition';
+import type { LocalDate as Day } from '../../../domain/types';
 import { isTrendLearning, tdeeConfidence, trendAt, weeklyBalance, weeklyTrendSlope, type DayState, type TdeeConfidence, type TrendPoint, type WeeklyBalance } from '../../../domain/nutrition';
 import type { LocalDate } from '../../../domain/types';
 import type { NutritionSnapshot } from '../useCases';
@@ -53,6 +55,17 @@ export interface DashboardModel {
   readonly confidence: TdeeConfidence;
 }
 
+/** Cible de chaque jour selon son type (PROG-01) ; `undefined` sans cible de repos : comparaison à la cible unique, inchangée. */
+function targetForDay(snapshot: NutritionSnapshot): ((date: Day) => DayTarget) | undefined {
+  if (!snapshot.targets.some((t) => t.restPlan !== null && t.restPlan !== undefined)) return undefined;
+  const fallback = snapshot.target?.target ?? null;
+  return (date) => {
+    const record = effectiveTarget(snapshot.targets, date);
+    if (record === null) return fallback ?? { kcal: 0, proteinG: 0, fatG: 0, carbG: 0 };
+    return dayTargetFor(record.target, record.restPlan ?? null, date, snapshot.strengthDays ?? new Set()).target;
+  };
+}
+
 /** Modèle pur des graphiques du dashboard : 7 jours d'apports, 28 jours de tendance. Aucune interpolation des jours absents. */
 export function dashboardModel(snapshot: NutritionSnapshot): DashboardModel {
   const { reference, days, weighIns, trend, tdee } = snapshot;
@@ -63,7 +76,8 @@ export function dashboardModel(snapshot: NutritionSnapshot): DashboardModel {
   const trendStart = addDays(today, -(TREND_WINDOW_DAYS - 1));
   const known = weighIns.filter((w) => w.date <= today);
   return {
-    balance: weeklyBalance(days, weighIns, target, reference),
+    // PROG-01 (D-272) : avec une cible de repos, chaque jour est comparé à la cible de son type.
+    balance: weeklyBalance(days, weighIns, target, reference, targetForDay(snapshot)),
     slope: weeklyTrendSlope(trend, reference),
     bars: days.filter((d) => d.date >= weekStart && d.date <= reference).map((d) => ({ date: d.date, state: d.state, kcal: d.kcal })),
     trendPoints: trend.filter((p) => p.date >= trendStart && p.date <= today),

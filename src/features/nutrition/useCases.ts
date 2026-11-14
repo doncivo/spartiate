@@ -1,4 +1,5 @@
 import type { Profile } from '../../domain/bodyProfile';
+import { strengthDays } from './dayType';
 import { restTargetFromGap, type RestPlan } from '../../domain/nutrition/restDay';
 import { addDays } from '../../domain/localDate';
 import {
@@ -48,6 +49,8 @@ export interface NutritionSnapshot {
   readonly tdee: TdeeEstimate;
   readonly prefs: NutritionPrefs;
   readonly profile: Profile | null;
+  /** PROG-01 (D-270) : dates locales des séances de musculation closes (type de jour) ; absent : aucune. */
+  readonly strengthDays?: ReadonlySet<LocalDate>;
   /** Cible en vigueur à `today` ; `null` tant qu'aucune n'est acceptée. */
   readonly target: NutritionTargetRecord | null;
   /** Toutes les décisions, de la plus récente à la plus ancienne. */
@@ -88,7 +91,9 @@ export async function loadNutritionSnapshot(access: DataAccess, today: LocalDate
     activity: prefs.activity,
     previousSmoothed: null,
   });
-  return { today, reference, days, weighIns, trend: computeTrend(weighIns), tdee, prefs, profile, target: effective, targets: decisions };
+  // PROG-01 : les séances closes ne servent qu'avec une cible de repos (aucune lecture de plus sinon).
+  const strength = decisions.some((d) => d.restPlan !== null && d.restPlan !== undefined) ? await strengthDays(access) : new Set<LocalDate>();
+  return { today, reference, days, weighIns, trend: computeTrend(weighIns), tdee, prefs, profile, target: effective, targets: decisions, strengthDays: strength };
 }
 
 /** Dépense estimée à une autre date de fin (le check-in analyse la semaine qui précède son jour, pas la veille d'aujourd'hui). */
