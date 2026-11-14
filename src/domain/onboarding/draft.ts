@@ -50,6 +50,9 @@ export interface OnboardingDraft {
   readonly variety: VarietyLevel;
   /** Écran 7 : ajouter le programme proposé comme NOUVELLE routine à la fin (jamais en remplacement). */
   readonly acceptProposal: boolean;
+  /** Écran 7 (PROG-01, D-267) : durée du mésocycle (4, 5 ou 6 semaines, défaut 5) et semaine de reprise (désactivée par défaut). */
+  readonly mesoWeeks: 4 | 5 | 6;
+  readonly rampUp: boolean;
   /** Écran 8 : dépense de départ modifiée par Ali (kcal par jour) ; `null` : l'estimation de la formule (D-111). */
   readonly expenditureKcal: number | null;
 }
@@ -79,6 +82,8 @@ export function emptyDraft(): OnboardingDraft {
     painfulPatterns: [],
     variety: 'consistent',
     acceptProposal: true,
+    mesoWeeks: 5,
+    rampUp: false,
     expenditureKcal: null,
   };
 }
@@ -125,6 +130,8 @@ export function parseDraft(raw: unknown): OnboardingDraft {
     painfulPatterns: strings(raw['painfulPatterns']).filter((p): p is ExercisePattern => (EXERCISE_PATTERNS as readonly string[]).includes(p)),
     variety: oneOf(VARIETY_LEVELS, raw['variety']) ?? base.variety,
     acceptProposal: typeof raw['acceptProposal'] === 'boolean' ? raw['acceptProposal'] : base.acceptProposal,
+    mesoWeeks: raw['mesoWeeks'] === 4 || raw['mesoWeeks'] === 6 ? raw['mesoWeeks'] : base.mesoWeeks,
+    rampUp: raw['rampUp'] === true,
     expenditureKcal: positive(raw['expenditureKcal']),
   };
 }

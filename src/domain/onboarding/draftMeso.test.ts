@@ -7,8 +7,8 @@ describe('brouillon de l’onboarding : mésocycle', () => {
     expect(emptyDraft()).toMatchObject({ mesoWeeks: 5, rampUp: false });
   });
   it('relecture : 4 / 6 admis, autre valeur ramenée au défaut', () => {
-    expect(parseDraft({ mesoWeeks: 4, rampUp: true })).toMatchObject({ mesoWeeks: 4, rampUp: true });
-    expect(parseDraft({ mesoWeeks: 6 })).toMatchObject({ mesoWeeks: 6, rampUp: false });
-    expect(parseDraft({ mesoWeeks: 7, rampUp: 'oui' })).toMatchObject({ mesoWeeks: 5, rampUp: false });
+    expect(parseDraft({ v: 1, mesoWeeks: 4, rampUp: true })).toMatchObject({ mesoWeeks: 4, rampUp: true });
+    expect(parseDraft({ v: 1, mesoWeeks: 6 })).toMatchObject({ mesoWeeks: 6, rampUp: false });
+    expect(parseDraft({ v: 1, mesoWeeks: 7, rampUp: 'oui' })).toMatchObject({ mesoWeeks: 5, rampUp: false });
   });
 });
