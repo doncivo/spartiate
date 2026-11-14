@@ -78,7 +78,7 @@ describe('PROG-01 : import d’une archive sv 18 en 0.24.0 (B7)', () => {
       expect(await target.driver.select('SELECT kcal, rest_kcal, rest_carb_g, training_days FROM nutrition_target WHERE deleted_at IS NULL')).toEqual([{ kcal: 2500, rest_kcal: null, rest_carb_g: null, training_days: null }]);
       expect(await target.driver.select('SELECT COUNT(*) AS n FROM supplement WHERE deleted_at IS NULL')).toEqual([{ n: 3 }]);
       expect(await (await target.data.repos.profile()).get()).toMatchObject({ heightCm: 180 });
-      expect((await (await target.data.repos.bodyWeights()).list()).map((w) => w.kg)).toEqual([80]);
+      expect(await target.driver.select('SELECT kg FROM body_weight WHERE deleted_at IS NULL')).toEqual([{ kg: 80 }]);
       expect((await (await target.data.repos.nutritionTargets()).list())[0]?.restPlan).toBeNull();
     });
   }

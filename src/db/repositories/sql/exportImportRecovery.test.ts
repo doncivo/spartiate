@@ -74,7 +74,7 @@ describe('export / import des résumés de récupération (I5-01)', () => {
     expect(TRAINING_EXPORT_TABLES.slice(-9, -6)).toEqual(['recovery_day', 'muscle_recovery', 'recovery_factor']);
     expect(TABLE_SINCE_SV.recovery_day).toBe(10);
     expect(TABLE_SINCE_SV.muscle_recovery).toBe(10);
-    expect(EXPORT_SV).toBe(18); // FIX-0181 : schéma 15 (favoris publiés) ; RESET-01 : schéma 16 (data_reset, jamais exportée) ; I6-05 : schéma 17 (compléments). ; I6-06 : schéma 18 (cardio).
+    expect(EXPORT_SV).toBe(19); // PROG-01 : schéma 19 ; FIX-0181 : schéma 15 (favoris publiés) ; RESET-01 : schéma 16 (data_reset, jamais exportée) ; I6-05 : schéma 17 (compléments). ; I6-06 : schéma 18 (cardio).
     for (const t of ['recovery_sample', 'recovery_import_state']) expect((TRAINING_EXPORT_TABLES as readonly string[]).includes(t), t).toBe(false);
   });
 
@@ -115,9 +115,9 @@ describe('export / import des résumés de récupération (I5-01)', () => {
     expect(await db.driver.select('SELECT COUNT(*) AS n FROM recovery_sample')).toEqual([{ n: 1 }]); // les échantillons ne sont pas des données d'archive
   });
 
-  it('archive de schéma 19 : refusée (future-version)', async () => {
+  it('archive de schéma 20 : refusée (future-version)', async () => {
     const db = await openWriter(IPHONE);
-    await expect(parse(await read(db), 19)).rejects.toMatchObject({ code: 'future-version' });
+    await expect(parse(await read(db), 20)).rejects.toMatchObject({ code: 'future-version' });
   });
 });
 
