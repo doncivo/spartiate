@@ -98,18 +98,23 @@ export function planChanged(draft: OnboardingDraft, baseline: OnboardingDraft | 
  */
 export function onboardingChanges(draft: OnboardingDraft, current: CurrentSettings, baseline: OnboardingDraft | null): OnboardingChange[] {
   const out: OnboardingChange[] = [];
-  const push = (field: ChangeField, after: ChangeValue | null, before: ChangeValue | null): void => {
+  // FIX-0242 : avec un point de départ, un champ n'est « changé » que si l'utilisateur l'a retouché (brouillon ≠ point de départ) ; une valeur reçue
+  // par la synchro pendant la revue n'est jamais écrasée par une valeur non retouchée.
+  const push = (field: ChangeField, after: ChangeValue | null, before: ChangeValue | null, start: ChangeValue | null): void => {
     if (after === null || after === before) return;
+    if (baseline !== null && after === start) return;
     out.push({ field, before, after, replaces: before !== null });
   };
-  push('sex', draft.sex, current.sex);
-  push('birthYear', draft.birthYear, current.birthYear);
-  push('heightCm', draft.heightCm, current.heightCm);
-  push('weightKg', draft.weightKg, current.weightKg);
-  push('activity', draft.activity, current.activity);
-  push('goal', draft.goal === null ? null : PROFILE_GOAL[draft.goal], current.goal);
-  push('experience', draft.experience, current.experience);
-  push('equipmentProfileId', draft.equipmentProfileId, current.equipmentProfileId);
+  const profileGoal = (g: OnboardingGoal | null): BodyGoal | null => (g === null ? null : PROFILE_GOAL[g]);
+  const b = baseline;
+  push('sex', draft.sex, current.sex, b?.sex ?? null);
+  push('birthYear', draft.birthYear, current.birthYear, b?.birthYear ?? null);
+  push('heightCm', draft.heightCm, current.heightCm, b?.heightCm ?? null);
+  push('weightKg', draft.weightKg, current.weightKg, b?.weightKg ?? null);
+  push('activity', draft.activity, current.activity, b?.activity ?? null);
+  push('goal', profileGoal(draft.goal), current.goal, profileGoal(b?.goal ?? null));
+  push('experience', draft.experience, current.experience, b?.experience ?? null);
+  push('equipmentProfileId', draft.equipmentProfileId, current.equipmentProfileId, b?.equipmentProfileId ?? null);
   const goal = nutritionGoalOf(draft);
   // Une pesée corrigée seule ne réécrit pas la cible (le check-in a pu l'ajuster depuis) : seuls l'objectif et le rythme la redemandent.
   const asked = baseline === null || draft.goal !== baseline.goal || draft.weeklyRatePct !== baseline.weeklyRatePct;

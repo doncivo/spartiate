@@ -1,5 +1,5 @@
 import { addDays, weekdayOf } from '../localDate';
-import { isLocalTime, type Id, type LocalDate, type LocalTime } from '../types';
+import { isLocalDate, isLocalTime, type Id, type LocalDate, type LocalTime } from '../types';
 
 /**
  * Compléments (I6-05, § 15.3 ; D-210, D-211) : règles pures. Un complément a un nom, une dose et une unité facultatives, 1 à 4 heures de prise
@@ -44,6 +44,16 @@ export interface SupplementDraftInput {
   readonly active: boolean;
 }
 
+/** Symboles d'unité connus, en casse canonique (clé : minuscules). « 1 g » et non « 1 G » : le clavier de l'iPhone met une majuscule au début du champ (FIX-0242). */
+const UNIT_SYMBOLS: Readonly<Record<string, string>> = { g: 'g', mg: 'mg', 'µg': 'µg', 'μg': 'µg', mcg: 'µg', kg: 'kg', ml: 'ml', cl: 'cl', l: 'l', ui: 'UI' };
+
+/** Unité saisie, rognée ; symbole connu remis en casse canonique, unité libre gardée telle quelle ; vide : null. */
+export function normalizeSupplementUnit(unit: string | null): string | null {
+  const text = unit?.trim() ?? '';
+  if (text === '') return null;
+  return UNIT_SYMBOLS[text.toLowerCase()] ?? text;
+}
+
 /** Heures valides, triées, sans doublon ; null hors de 1 à 4. */
 function normalizeTimes(times: readonly unknown[]): LocalTime[] | null {
   if (!times.every((x): x is string => typeof x === 'string' && isLocalTime(x))) return null;
@@ -61,7 +71,7 @@ export function validateSupplementDraft(input: SupplementDraftInput): { readonly
   const times = normalizeTimes(input.times);
   if (times === null) return { ok: false, error: 'times' };
   if (!Number.isInteger(input.days) || input.days < 1 || input.days > ALL_DAYS) return { ok: false, error: 'days' };
-  return { ok: true, value: { name, dose, unit: unitText === '' ? null : unitText, times, days: input.days, active: input.active } };
+  return { ok: true, value: { name, dose, unit: normalizeSupplementUnit(unitText), times, days: input.days, active: input.active } };
 }
 
 /** Colonne `times` (tableau JSON d'heures) ; null si illisible. */
@@ -153,4 +163,49 @@ export interface SupplementNotificationPrefs {
 
 export function parseSupplementNotificationPrefs(raw: unknown): SupplementNotificationPrefs {
   return { v: 1, enabled: typeof raw === 'object' && raw !== null && (raw as Record<string, unknown>)['v'] === 1 && (raw as Record<string, unknown>)['enabled'] === true };
+}
+
+/**
+ * FIX-0242 : état DURABLE des échecs de l'action « Pris » (réglage local `notifications.actionTrouble`, jamais publié). Un échec n'est plus
+ * seulement dit par un bandeau bref : la carte des compléments d'Aujourd'hui le montre tant qu'il n'est pas levé.
+ * - `failed` : une action n'a pas pu être appliquée, lue, enregistrée ou acquittée ; `days` : jours des actions en échec (vide : jour inconnu) ;
+ *   levé par un passage suivant sans échec, ou par une prise cochée à la main ce jour-là (ou après).
+ * - `lost` : lignes illisibles ou non écrites par le natif ; rien ne peut être rejoué, levé seulement par une prise cochée à la main.
+ */
+export interface SupplementActionTrouble {
+  readonly v: 1;
+  readonly failed: boolean;
+  readonly days: readonly LocalDate[];
+  readonly lost: boolean;
+}
+
+export const NO_SUPPLEMENT_ACTION_TROUBLE: SupplementActionTrouble = { v: 1, failed: false, days: [], lost: false };
+
+export const hasSupplementActionTrouble = (trouble: SupplementActionTrouble): boolean => trouble.failed || trouble.lost;
+
+/** Valeur brute du réglage ; illisible : traitée comme une perte (jamais effacée en silence). */
+export function parseSupplementActionTrouble(raw: unknown): SupplementActionTrouble {
+  if (raw === null || raw === undefined) return NO_SUPPLEMENT_ACTION_TROUBLE;
+  if (typeof raw !== 'object' || Array.isArray(raw)) return { ...NO_SUPPLEMENT_ACTION_TROUBLE, lost: true };
+  const r = raw as Record<string, unknown>;
+  if (r['v'] !== 1 || typeof r['failed'] !== 'boolean' || typeof r['lost'] !== 'boolean' || !Array.isArray(r['days']) || !r['days'].every((d) => typeof d === 'string' && isLocalDate(d))) {
+    return { ...NO_SUPPLEMENT_ACTION_TROUBLE, lost: true };
+  }
+  return { v: 1, failed: r['failed'], days: r['days'] as LocalDate[], lost: r['lost'] };
+}
+
+/** État après un passage : `failedDays` = jours des entrées encore en échec ; un statut autre que `done` est un échec de jour inconnu (jours déjà notés gardés). */
+export function troubleAfterPass(
+  prev: SupplementActionTrouble,
+  pass: { readonly status: 'done' | 'source-failed' | 'queue-failed' | 'ack-failed'; readonly failedDays: readonly LocalDate[]; readonly lost: boolean },
+): SupplementActionTrouble {
+  const failed = pass.status !== 'done' || pass.failedDays.length > 0;
+  const days = pass.status === 'done' ? pass.failedDays : [...prev.days, ...pass.failedDays];
+  return { v: 1, failed, days: failed ? [...new Set(days)].sort() : [], lost: prev.lost || pass.lost };
+}
+
+/** Prise cochée à la main pour `day` : lève les échecs de ce jour ou d'avant (la carte ne montre que le jour courant) et les pertes. */
+export function troubleAfterManualTake(prev: SupplementActionTrouble, day: LocalDate): SupplementActionTrouble {
+  const days = prev.days.filter((d) => d > day);
+  return { v: 1, failed: days.length > 0, days, lost: false };
 }

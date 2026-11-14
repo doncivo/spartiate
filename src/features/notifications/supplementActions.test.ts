@@ -5,6 +5,7 @@ import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { supplementNotificationsFr } from '../../i18n/fr.supplementNotifications';
 import { createFakeNotificationActionSource, createFakeNotificationScheduler, type FakeNotificationActionSource } from '../../platform/notifications';
 import { createSupplementActionProcessor, startSupplementActions, type SupplementActionDeps } from './supplementActions';
+import { makeTroubleUpdater } from './supplementWake';
 import { createSupplementNotificationService } from './supplementNotifications';
 
 /**
@@ -46,6 +47,7 @@ async function setup(over: Partial<SupplementActionDeps> = {}) {
     onTaken: (count) => taken.push(count),
     onTrouble: (kind) => trouble.push(kind),
     log: (code) => logs.push(code),
+    updateTrouble: makeTroubleUpdater(db.data),
     ...over,
   });
   return { source, processor, taken, trouble, logs, a, b };
@@ -158,6 +160,96 @@ describe('action « Pris » (FIX-0221)', () => {
     expect(await processor.run()).toMatchObject({ status: 'source-failed' });
     expect(await intakeRows()).toEqual([]);
     expect(logs).toEqual(['supplement-action-source-failed']);
+  });
+
+  describe('état durable des échecs (FIX-0242)', () => {
+    const KEY = 'notifications.actionTrouble' as 'notifications.status';
+    const stored = async () => (await db.data.repos.settings.get(KEY)) as { failed: boolean; days: string[]; lost: boolean } | null;
+    const failingWrites = () => {
+      let fail = true;
+      return {
+        stop: () => (fail = false),
+        supplements: async () => {
+          const repo = await db.data.repos.supplements();
+          return { ...repo, setTaken: (...args: Parameters<typeof repo.setTaken>) => (fail ? Promise.reject(new Error('disk')) : repo.setTaken(...args)) };
+        },
+      };
+    };
+
+    it('mises à jour concurrentes de l’état (transaction) : aucune perdue', async () => {
+      await setup();
+      const update = makeTroubleUpdater(db.data);
+      const base = { v: 1 as const, failed: false, days: [] as LocalDate[], lost: false };
+      await Promise.all([update((raw) => ({ ...base, ...(raw as object), failed: true })), update((raw) => ({ ...base, ...(raw as object), lost: true }))]);
+      expect(await stored()).toMatchObject({ failed: true, lost: true });
+    });
+
+    it('échec d’application : état durable écrit (jour concerné), gardé au passage en échec, effacé au passage réussi', async () => {
+      const w = failingWrites();
+      const { source, processor } = await setup({ supplements: w.supplements });
+      press(source);
+      await processor.run();
+      expect(await stored()).toMatchObject({ failed: true, days: [D], lost: false });
+      await processor.run();
+      expect(await stored()).toMatchObject({ failed: true, days: [D] });
+      w.stop();
+      await processor.run();
+      expect(await stored()).toMatchObject({ failed: false, days: [], lost: false });
+    });
+
+    it('source en échec : état durable écrit ; passage suivant réussi : effacé', async () => {
+      const { source, processor } = await setup();
+      press(source);
+      source.failNext('drain');
+      await processor.run();
+      expect(await stored()).toMatchObject({ failed: true });
+      await processor.run();
+      expect(await stored()).toMatchObject({ failed: false });
+    });
+
+    it('file locale non enregistrée : état durable écrit (autre clé de réglage)', async () => {
+      const { source, processor } = await setup({
+        settings: {
+          get: (key) => db.data.repos.settings.get(key),
+          set: (key, value) => (key === 'notifications.actionQueue' ? Promise.reject(new Error('disk')) : db.data.repos.settings.set(key, value)),
+        } as SupplementActionDeps['settings'],
+      });
+      press(source);
+      await processor.run();
+      expect(await stored()).toMatchObject({ failed: true });
+    });
+
+    it('acquittement en échec : état durable écrit ; effacé au passage suivant', async () => {
+      const { source, processor } = await setup();
+      press(source);
+      source.failNext('ack');
+      expect(await processor.run()).toMatchObject({ status: 'ack-failed' });
+      expect(await stored()).toMatchObject({ failed: true });
+      await processor.run();
+      expect(await stored()).toMatchObject({ failed: false });
+    });
+
+    it('lignes perdues : état durable « lost », gardé par un passage réussi (rien n’a été réparé)', async () => {
+      const { source, processor } = await setup();
+      source.addUnreadable(1);
+      await processor.run();
+      expect(await stored()).toMatchObject({ lost: true });
+      await processor.run();
+      expect(await stored()).toMatchObject({ lost: true });
+    });
+
+    it('signale le changement d’état (relecture de la carte)', async () => {
+      const changes: number[] = [];
+      const w = failingWrites();
+      const { source, processor } = await setup({ supplements: w.supplements, onTroubleChange: () => changes.push(1) });
+      press(source);
+      await processor.run();
+      await processor.run();
+      expect(changes).toEqual([1]);
+      w.stop();
+      await processor.run();
+      expect(changes).toEqual([1, 1]);
+    });
   });
 });
 

@@ -78,10 +78,6 @@ export interface SettingsValues {
   'shortcut.quickCapture': { readonly enabled: boolean; readonly keys: string };
   /** F-01 critère 12 : dernière durée de session choisie (minutes ; null = « Libre »), propre à l'appareil. */
   'focus.lastDuration': FocusDuration;
-  /** F-04 : son de fin de session (Réglages › TÂCHES), propre à l'appareil, activé par défaut. */
-  'focus.endSound': boolean;
-  /** F-01 critère 3 : position de la mini-fenêtre Focus du PC (pixels physiques), propre à l'appareil. */
-  'focus.windowPosition': { readonly x: number; readonly y: number } | null;
   /** ADR 0005 : identifiant de cet appareil, créé au premier lancement. */
   'device.id': DeviceId | null;
   /**
@@ -93,6 +89,8 @@ export interface SettingsValues {
   'notifications.status': unknown;
   /** N-03 (avenant N3.4) : file durable des actions « Fait » et « +15 min » reçues de la notification, répétitions vivantes. Valeur BRUTE lue par `parseActionQueue` ; locale, jamais synchronisée. */
   'notifications.actionQueue': unknown;
+  /** FIX-0242 : état durable des échecs de l'action « Pris » (valeur BRUTE lue par `parseSupplementActionTrouble`) ; locale, jamais synchronisée. */
+  'notifications.actionTrouble': unknown;
   /** K-05 (ADR 0008 §10.3) : listes Rappels choisies, avec leur espace et leur nom lisible sur le PC ; partagé. Valeur à relire par `parseAppleLists`. */
   'appleReminders.lists': AppleListsSetting;
   /** K-06 : création dans Rappels par espace (désactivée par défaut) ; partagé. Valeur à relire par `parseAppleCreate`. */
@@ -101,8 +99,6 @@ export interface SettingsValues {
   'appleReminders.lastPassAt': IsoDateTime | null;
   /** K-06 critère 8, K-07 critère 8 : écritures dues vers Rappels (nombre et heure), publié par l'iPhone ; partagé. */
   'appleReminders.pending': ApplePending | null;
-  /** ADR 0008 §10.3 : échec persistant, plafonds, suppressions retenues, liens inconnus, messages ; LOCAL. Valeur BRUTE lue par `parseAppleStatus` ; jamais de titre. */
-  'appleReminders.status': unknown;
   /**
    * I-03 (ADR 0013 §2.3) : verrouillage de l'app par Face ID ou code de l'iPhone. Valeur BRUTE lue par `parseAppLockSetting` (illisible :
    * verrouillé, échec fermé) ; locale, jamais synchronisée ni observée par la replanification.
@@ -189,17 +185,15 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'desktop.updater': { scope: 'local', defaultValue: { lastCheckAt: null } },
   'shortcut.quickCapture': { scope: 'local', defaultValue: { enabled: true, keys: 'Ctrl+Alt+Space' } },
   'focus.lastDuration': { scope: 'local', defaultValue: 25 },
-  'focus.endSound': { scope: 'local', defaultValue: true },
-  'focus.windowPosition': { scope: 'local', defaultValue: null },
   'device.id': { scope: 'local', defaultValue: null },
   'notifications.ledger': { scope: 'local', defaultValue: null },
   'notifications.status': { scope: 'local', defaultValue: null },
   'notifications.actionQueue': { scope: 'local', defaultValue: null },
+  'notifications.actionTrouble': { scope: 'local', defaultValue: null },
   'appleReminders.lists': { scope: 'shared', defaultValue: { lists: [] } },
   'appleReminders.create': { scope: 'shared', defaultValue: { bySpace: [] } },
   'appleReminders.lastPassAt': { scope: 'shared', defaultValue: null },
   'appleReminders.pending': { scope: 'shared', defaultValue: null },
-  'appleReminders.status': { scope: 'local', defaultValue: null },
   'security.appLock': { scope: 'local', defaultValue: false },
   'notifications.signing': { scope: 'local', defaultValue: null },
   'app.lastLaunchedVersion': { scope: 'local', defaultValue: null },

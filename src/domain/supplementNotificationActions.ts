@@ -57,3 +57,6 @@ export function settleSupplementAction(queue: NotificationActionQueueV1, key: st
   }
   return { ...queue, entries: queue.entries.map((entry) => (entry.key === key ? { ...entry, tries: entry.tries + 1, lastError: outcome } : entry)) };
 }
+
+// FIX-0242 : état durable des échecs de « Pris », rangé avec les règles des compléments (même bloc à la demande que la carte d’Aujourd’hui).
+export { hasSupplementActionTrouble, NO_SUPPLEMENT_ACTION_TROUBLE, parseSupplementActionTrouble, troubleAfterManualTake, troubleAfterPass, type SupplementActionTrouble } from './nutrition/supplements';

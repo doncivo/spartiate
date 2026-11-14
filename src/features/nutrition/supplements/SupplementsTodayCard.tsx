@@ -1,14 +1,17 @@
 import { Check } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { todayLocal } from '../../../domain/clock';
-import { dueIntakes, type DueIntake } from '../../../domain/nutrition/supplements';
+import { dueIntakes, NO_SUPPLEMENT_ACTION_TROUBLE, parseSupplementActionTrouble, troubleAfterManualTake, type DueIntake, type SupplementActionTrouble } from '../../../domain/nutrition/supplements';
 import { formatSupplementDose, tSupplements } from '../../../i18n/supplementsText';
 import { Button, Icon } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
+import { logFailure } from '../../../platform/desktop/log';
 import { useSyncedData } from '../../sync/remoteChanges';
 import { replanSupplementReminders } from './replan';
 import './Supplements.css';
+
+const TROUBLE_KEY = 'notifications.actionTrouble';
 
 /** Libellé d'une prise : « 08:00 · Créatine, 5 g ». */
 export function intakeLabel(item: DueIntake): string {
@@ -31,6 +34,8 @@ export function SupplementsTodayCard() {
   const navigate = useNavigationStore((s) => s.navigate);
   const [items, setItems] = useState<readonly DueIntake[] | null>(null);
   const [error, setError] = useState(false);
+  const [clearError, setClearError] = useState(false);
+  const [trouble, setTrouble] = useState<SupplementActionTrouble>(NO_SUPPLEMENT_ACTION_TROUBLE);
   const synced = useSyncedData(['supplement', 'supplement_intake']);
   const today = todayLocal(container.clock);
 
@@ -49,10 +54,42 @@ export function SupplementsTodayCard() {
     void load().then((next) => {
       if (live) setItems(next);
     });
+    // FIX-0242 : échec durable d'une prise cochée depuis la notification (réglage local, relu à chaque lecture de la carte).
+    void data.repos.settings.get(TROUBLE_KEY).then(
+      (raw) => {
+        if (live) setTrouble(parseSupplementActionTrouble(raw));
+      },
+      () => logFailure('supplements', 'action-trouble-read-failed'),
+    );
     return () => {
       live = false;
     };
-  }, [load, synced]);
+  }, [load, data, synced]);
+
+  /** Applique `change` à l'état durable relu juste avant l'écriture, dans une transaction ; n'écrit que si l'état change. Échec : message sur la carte et journal. */
+  const updateTrouble = async (change: (prev: SupplementActionTrouble) => SupplementActionTrouble): Promise<void> => {
+    try {
+      // Lecture et écriture dans une transaction (sérialisée par le pilote) : un échec noté par le passage des actions n'est jamais écrasé.
+      const next = await data.transaction(async (repos) => {
+        const prev = parseSupplementActionTrouble(await repos.settings.get(TROUBLE_KEY));
+        const changed = change(prev);
+        if (JSON.stringify(changed) !== JSON.stringify(prev)) await repos.settings.set(TROUBLE_KEY, changed);
+        return changed;
+      });
+      setTrouble(next);
+      setClearError(false);
+    } catch {
+      // rien n'est effacé sans succès : le message reste affiché, avec la raison
+      logFailure('supplements', 'action-trouble-clear-failed');
+      setClearError(true);
+    }
+  };
+
+  /** Prise cochée à la main : lève l'état durable (jour concerné ou antérieur, pertes). */
+  const clearTrouble = (): Promise<void> => updateTrouble((prev) => troubleAfterManualTake(prev, today));
+
+  /** « Compris » : accusé de réception explicite, efface tout l'état durable (échecs et pertes). */
+  const acknowledgeTrouble = (): Promise<void> => updateTrouble(() => NO_SUPPLEMENT_ACTION_TROUBLE);
 
   const toggle = async (item: DueIntake): Promise<void> => {
     const taken = !item.taken;
@@ -60,6 +97,7 @@ export function SupplementsTodayCard() {
     try {
       await (await data.repos.supplements()).setTaken(item.supplement.id, today, item.moment, taken);
       setError(false);
+      if (taken) await clearTrouble();
       replanSupplementReminders(container);
     } catch {
       setError(true);
@@ -67,13 +105,34 @@ export function SupplementsTodayCard() {
     }
   };
 
-  if (items === null || items.length === 0) return null;
+  const showTrouble = trouble.failed || trouble.lost;
+  if (items === null || (items.length === 0 && !showTrouble)) return null;
   return (
     <section className="ct-today__card ct-supplements-card" aria-labelledby="ct-supplements-card-title">
       <h2 id="ct-supplements-card-title" className="ct-today__eyebrow ct-section-title">
         {tSupplements('cardTitle')}
       </h2>
-      <p className="ct-today__text">{progressText(items)}</p>
+      {items.length > 0 ? <p className="ct-today__text">{progressText(items)}</p> : null}
+      {trouble.failed ? (
+        <p role="alert" className="ct-today__muted">
+          {tSupplements('actionTroubleFailed')}
+        </p>
+      ) : null}
+      {trouble.lost ? (
+        <p role="alert" className="ct-today__muted">
+          {tSupplements('actionTroubleLost')}
+        </p>
+      ) : null}
+      {showTrouble ? (
+        <Button variant="secondary" fullWidth onClick={() => void acknowledgeTrouble()}>
+          {tSupplements('actionTroubleAck')}
+        </Button>
+      ) : null}
+      {clearError && showTrouble ? (
+        <p role="alert" className="ct-today__muted">
+          {tSupplements('actionTroubleClearError')}
+        </p>
+      ) : null}
       <ul className="ct-supplements__intakes">
         {items.map((item) => (
           <li key={`${item.supplement.id}|${item.moment}`}>
