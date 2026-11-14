@@ -231,3 +231,13 @@ describe('section Cycle : 4 / 6 semaines, semaine de reprise, durée du prochain
     expect(await rampUp()).toEqual([{ weeks: 5, ramp_up: 0, next_weeks: 4 }]);
   });
 });
+
+describe('section Cycle : réglages de l’étape 7 de l’onboarding (PROG-01, D-269 (7))', () => {
+  it('durée et semaine de reprise choisies à l’onboarding : préremplissent le premier cycle', async () => {
+    await db.data.repos.settings.set('onboarding.answers', { mesoWeeks: 4, rampUp: true });
+    open();
+    const r = await region();
+    expect(await within(r).findByRole('radio', { name: '4 semaines' })).toHaveAttribute('aria-checked', 'true');
+    expect(within(r).getByRole('switch', { name: 'Semaine de reprise' })).toBeChecked();
+  });
+});
