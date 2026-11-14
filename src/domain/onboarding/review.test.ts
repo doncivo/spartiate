@@ -75,6 +75,16 @@ describe('onboardingChanges : seulement ce qui a changé', () => {
     expect(onboardingChanges({ ...start, weeklyRatePct: 0.5 }, CURRENT, start).map((c) => c.field)).toEqual(['nutritionGoal']);
     expect(onboardingChanges({ ...start, goal: 'maintenance' }, CURRENT, start).map((c) => c.field)).toEqual(['goal', 'nutritionGoal']);
   });
+  it('FIX-0242 : valeur reçue par la synchro pendant la revue, champ non retouché : jamais écrasée ni montrée à l’aperçu', () => {
+    const start = reviewStart(ANSWERS, CURRENT);
+    const synced: CurrentSettings = { ...CURRENT, weightKg: 81, heightCm: 183, sex: 'female', birthYear: 1990, experience: 'advanced', activity: 'high', equipmentProfileId: 'autre', goal: 'maintain' };
+    expect(onboardingChanges(start, synced, start).map((c) => c.field)).toEqual([]);
+  });
+  it('FIX-0242 : champ retouché pendant la revue : compte, même si la synchro a changé la valeur entre-temps', () => {
+    const start = reviewStart(ANSWERS, CURRENT);
+    const synced: CurrentSettings = { ...CURRENT, weightKg: 81, heightCm: 183 };
+    expect(onboardingChanges({ ...start, weightKg: 79 }, synced, start)).toEqual([{ field: 'weightKg', before: 81, after: 79, replaces: true }]);
+  });
   it('plan d’entraînement modifié : la proposition est reconsidérée', () => {
     const start = reviewStart(ANSWERS, CURRENT);
     expect(planChanged({ ...start, sessionsPerWeek: 4 }, start)).toBe(true);

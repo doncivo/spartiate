@@ -215,6 +215,22 @@ describe('onboarding : données (I3-07)', () => {
         expect(await db.driver.select("SELECT row_id, field FROM sync_outbox WHERE table_name = 'profile'")).toEqual([{ row_id: 'profile|singleton', field: 'height_cm' }]);
       });
 
+      it('FIX-0242 : pesée reçue par la synchro entre l’aperçu et la fin : aucune pesée inventée, la pesée reçue reste', async () => {
+        await finishOnboarding(deps(), FULL, content);
+        await changeProfileAndWeight();
+        const start = await loadStart(db.data);
+        expect(start.draft.weightKg).toBe(75);
+        expect(await previewChanges(db.data, start.draft, start.baseline)).toEqual([]);
+        db.clock.advance(86_400_000);
+        await (await db.data.repos.bodyWeights()).saveManual({ date: '2026-11-14' as LocalDate, kg: 81, timezone: 'Europe/Paris' }, '2026-11-14' as LocalDate);
+        await (await db.data.repos.profile()).save({ heightCm: 183 }, 2026);
+        expect(await previewChanges(db.data, start.draft, start.baseline)).toEqual([]);
+        const weightsBefore = await db.driver.select('SELECT id, kg FROM body_weight ORDER BY id');
+        await finishOnboarding(later(), start.draft, content, { baseline: start.baseline });
+        expect(await db.driver.select('SELECT id, kg FROM body_weight ORDER BY id')).toEqual(weightsBefore);
+        expect(await db.driver.select('SELECT height_cm FROM profile')).toEqual([{ height_cm: 183 }]);
+      });
+
       it('assistant FERMÉ sans être terminé (marqué terminé pour ne pas revenir tout seul) : son brouillon est repris à son écran', async () => {
         await saveDraft(db.data, { ...FULL, step: 'experience' });
         await markCompleted(db.data);
