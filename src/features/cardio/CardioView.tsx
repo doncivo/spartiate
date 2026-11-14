@@ -121,6 +121,13 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
   const [message, setMessage] = useState<Message>(null);
   const [confirming, setConfirming] = useState<CardioSessionRecord | null>(null);
   const [busy, setBusy] = useState(false);
+  // FIX-0242 : identifiant de la saisie en cours, créé au premier essai et réutilisé à chaque nouvel essai (aucun doublon si un essai a écrit puis
+  // échoué) ; oublié après un enregistrement réussi ou une remise à blanc du formulaire.
+  const [draftId, setDraftId] = useState<string | null>(null);
+  const resetForm = (): void => {
+    setDraftId(null);
+    setForm(blank());
+  };
   const set = <K extends keyof Form>(key: K, value: Form[K]): void => setForm((f) => ({ ...f, [key]: value }));
 
   useEffect(() => {
@@ -188,14 +195,17 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
     setBusy(true);
     try {
       const repo = await container.data.repos.cardio();
-      if (editing === null) await repo.add(result.input, form.track);
-      else await repo.update(editing, result.input);
+      if (editing === null) {
+        const id = draftId ?? String(container.ids.next());
+        setDraftId(id);
+        await repo.add(result.input, form.track, { id });
+      } else await repo.update(editing, result.input);
       setMessage({
         alert: false,
         text: tCardio(editing === null ? 'saved' : 'updated'),
       });
       setEditing(null);
-      setForm(blank());
+      resetForm();
       reload();
     } catch {
       setMessage({ alert: true, text: tCardio('saveFailed') });
@@ -228,7 +238,7 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
       await (await container.data.repos.cardio()).remove(s.id);
       if (editing === s.id) {
         setEditing(null);
-        setForm(blank());
+        resetForm();
       }
       setMessage({ alert: false, text: tCardio('deleted') });
     } catch {
@@ -238,6 +248,8 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
   };
 
   const onReport = (report: GpsReport): void => {
+    // Nouveau suivi reporté : nouvelle saisie (nouvel identifiant au prochain enregistrement).
+    setDraftId(null);
     const local = utcToLocal(report.startedAt, tz);
     setEditing(null);
     setForm((f) => ({
@@ -332,7 +344,7 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
               className="ct-cardio__save"
               onClick={() => {
                 setEditing(null);
-                setForm(blank());
+                resetForm();
                 setMessage(null);
               }}
             >
