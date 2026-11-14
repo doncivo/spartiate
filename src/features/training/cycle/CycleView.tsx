@@ -170,8 +170,8 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
           options={WEEKS.map((w) => ({ value: w, label: w === 'unlimited' ? tCycle('unlimited') : tCycle('weeksOption', { weeks: w }) }))}
         />
         {weeks === 'unlimited' && <p className="ct-cycle__note">{tCycle('unlimitedHint')}</p>}
-        {mode !== 'change' && <Switch checked={rampUp} label={tCycle('rampUpLabel')} onChange={setRampUp} />}
-        {mode !== 'change' && <p className="ct-cycle__note">{tCycle('rampUpHint')}</p>}
+        {mode !== 'change' && (weeks === '4' || weeks === '6') && <Switch checked={rampUp} label={tCycle('rampUpLabel')} onChange={setRampUp} />}
+        {mode !== 'change' && (weeks === '4' || weeks === '6') && <p className="ct-cycle__note">{tCycle('rampUpHint')}</p>}
         <div className="ct-cycle__actions">
           <Button variant="primary" disabled={busy || routineId === ''} onClick={onStart}>
             {tCycle('start')}
@@ -186,7 +186,7 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
     );
 
   const startFresh = () => {
-    const spec = createMesocycleSpec({ routineId, startDate: today(), weeks: toWeeks(weeks), rampUp }, CONFIG);
+    const spec = createMesocycleSpec({ routineId, startDate: today(), weeks: toWeeks(weeks), rampUp: rampUp && (weeks === '4' || weeks === '6') }, CONFIG);
     void write(spec === null ? null : async (repos) => void (await (await repos.mesocycles()).start(spec)));
   };
 

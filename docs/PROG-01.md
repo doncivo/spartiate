@@ -27,7 +27,7 @@ Chapitres PRD : 12 (mésocycle, § 12.2, § 12.5), 11 (prescription, deload), 15
 | # | Critère (Given / When / Then) |
 | --- | --- |
 | A1 | Durée réglable à 4, 5 ou 6 semaines dans Entraînement › Programme et à l'étape 7 (« split ») de l'onboarding ; défaut 5. |
-| A2 | 4 semaines : RIR 3, 2-3, 2, puis décharge ; 6 semaines : RIR 3, 3, 2-3, 2, 1-2, puis décharge ; 5 semaines : RIR 3, 2-3, 2, 1-2, puis décharge (D-269). Séries de la routine en semaines de travail. |
+| A2 | 4 semaines : RIR 3, 2-3, 2, puis décharge ; 6 semaines : RIR 3, 3, 2-3, 2, 1-2, puis décharge ; 5 semaines : table d'avant PROG-01 inchangée (RIR 3, 2, 1, 1, deload I2 ; D-269 (1), corrigée par Ali le 14/11). Séries de la routine en semaines de travail. |
 | A3 | Dernière semaine de travail, à partir du 2e mésocycle : RIR 1 sur les exercices d'isolation. Jamais RIR 0 par défaut. |
 | A4 | Décharge : 2 séries par exercice (1 si la ligne n'en a qu'une), charge = 90 % de la référence arrondie au cran du matériel vers le bas (2,5 kg ; par haltère pour une paire), RIR 3-4. Décharge anticipée proposée, jamais imposée (inchangé). |
 | A5 | Semaine de reprise désactivée par défaut, activable à la main : semaine 1, −1 série sur les lignes à 4 séries ou plus. Désactivée : semaine 1 avec toutes les séries, RIR 3. |
@@ -63,6 +63,8 @@ Sur une base de test vide : « Repartir de zéro », onboarding passé, import R
 **sync-icloud (D-26).** Relecture : captures, garde, restauration Rust conformes ; défaut corrigé : catalogues V7 à V17 du banc sans les colonnes 19 (`tests/sim/syncDevice.ts`, neuf scénarios « appareil resté au schéma N » rouges puis verts). Limite consignée (D-275) : une ligne créée par un appareil 18 n'est pas appliquée par un appareil 19 (déjà vrai en 0012 et 0013) ; correction = avenant ADR 0011, ticket SYNC-01 ; mesure : mise à jour des deux appareils le même jour, avant toute saisie.
 
 **qa-test.** Local, `--maxWorkers=1` : src/domain, src/db, features training / nutrition / onboarding / app, platform/backup, scripts/release, tests/unit/sync, src/sync, src/i18n : verts (après mise à jour de l'identité 0.24.0 / schéma 19 et des libellés de conflit). Typecheck propre (hors `plugin-geolocation` connu), lint propre. `test:bundle` vert ; départ +321 octets (D-274). Non lancés en local : cargo, e2e, visual (CI).
+
+**code-reviewer.** Revue à froid : approuvé, aucun bloquant. Mineurs corrigés : plancher (800 / 1 200 kcal) appliqué aussi à la cible de repos (test rouge puis vert) ; A2 alignée sur D-269 ; « Semaine de reprise » proposée en 4 et 6 semaines seulement ; séance générée : RIR en plage et texte de la décharge à 90 %. Mineurs consignés, laissés pour ERGO-02b : jours d'entraînement par défaut toujours lundi, mardi, jeudi, vendredi, samedi (B2 voulait ceux de la routine active ; même résultat pour Ali) ; préremplissage de l'onboarding appliqué à chaque nouveau cycle, pas seulement au premier ; import en double dans `dashboard/model.ts`. Check-in qui ferait passer la cible de repos sous 1 200 kcal : la décision est refusée par le plancher et le dit (cas improbable à 2 250 kcal).
 
 ## État au 14/11, nuit (arrêt : budget M dépassé, consigne de la mission de nuit)
 

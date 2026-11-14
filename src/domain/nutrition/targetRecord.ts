@@ -49,8 +49,10 @@ export function validateTargetRecord(draft: TargetRecordDraft): TargetRecordIssu
   }
   // Plancher (D-74 point 7) : seulement pour une cible adoptée ; la trace d'une proposition refusée est conservée telle quelle.
   if (draft.accepted) {
-    if (kcal < NUTRITION_CONFIG.confirmedFloorKcal) issues.push('kcal-below-minimum');
-    else if (kcal < NUTRITION_CONFIG.floorKcal && !draft.lowFloorConfirmed) issues.push('confirmation-required');
+    // PROG-01 (revue du 14/11) : le plancher vaut aussi pour la cible des jours de repos.
+    const lowest = rest === null ? kcal : Math.min(kcal, rest.rest.kcal);
+    if (lowest < NUTRITION_CONFIG.confirmedFloorKcal) issues.push('kcal-below-minimum');
+    else if (lowest < NUTRITION_CONFIG.floorKcal && !draft.lowFloorConfirmed) issues.push('confirmation-required');
   }
   return issues;
 }
