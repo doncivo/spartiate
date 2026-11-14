@@ -57,3 +57,9 @@ describe('réglages', () => {
     }
   });
 });
+
+describe('FIX-0242 : réglages hérités sans lecteur retirés du registre (bundle de départ)', () => {
+  it('appleReminders.status (Rappels Apple, retirés en SPA-001b) n’est plus déclaré', () => {
+    expect(Object.keys(SETTINGS_DEFINITIONS)).not.toContain('appleReminders.status');
+  });
+});
