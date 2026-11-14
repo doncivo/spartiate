@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Onboarding 4/8 · Disponibilité</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&amp;display=swap">
+<style>
+body{margin:0}
+.c{font-family:Cinzel,"Times New Roman",serif;font-weight:600}
+.sec{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#C28E4C}
+.n{flex:1;height:52px;border-radius:12px;border:1px solid #2A2E37;background:transparent;color:#A39C90;font-size:17px}
+.on{border-color:#C28E4C;background:#15171C;color:#E0B577;font-weight:600}
+.d{width:44px;height:44px;border-radius:22px;border:1px solid #2A2E37;background:transparent;color:#A39C90;font-size:14px}
+</style>
+</helmet>
+<div style="width:440px;height:956px;background:#0D0E11;color:#EDE7DC;font-family:-apple-system,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.35;overflow:hidden;padding:60px 24px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:#A39C90">Étape 4 sur 8</span><a href="#" style="font-size:13px;color:#A39C90;text-decoration:none">Passer</a></div>
+<div style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px" aria-hidden="true"><i style="height:3px;border-radius:2px;background:#C28E4C"></i><i style="height:3px;border-radius:2px;background:#C28E4C"></i><i style="height:3px;border-radius:2px;background:#C28E4C"></i><i style="height:3px;border-radius:2px;background:#E0B577"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i><i style="height:3px;border-radius:2px;background:#1D2027"></i></div>
+<div><h1 class="c" style="font-size:30px;margin:0">Ton temps</h1><div style="color:#A39C90;margin-top:6px;font-size:14px">La durée plafonne le nombre de séries par séance.</div></div>
+<div><div class="sec">Séances par semaine</div><div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="n">2</button><button type="button" class="n">3</button><button type="button" class="n on">4</button><button type="button" class="n">5</button><button type="button" class="n">6</button></div></div>
+<div><div class="sec">Durée d'une séance</div><div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="n">45</button><button type="button" class="n on">60</button><button type="button" class="n">75</button><button type="button" class="n">90</button></div><div style="font-size:12px;color:#A39C90;margin-top:6px">minutes, échauffement compris</div></div>
+<div><div class="sec">Jours habituels</div><div style="display:flex;gap:6px;margin-top:10px;justify-content:space-between"><button type="button" class="d on">L</button><button type="button" class="d">M</button><button type="button" class="d on">M</button><button type="button" class="d">J</button><button type="button" class="d on">V</button><button type="button" class="d on">S</button><button type="button" class="d">D</button></div><div style="font-size:12px;color:#A39C90;margin-top:6px">facultatif · sert aux rappels et à l'ordre des séances</div></div>
+<div style="display:flex;align-items:baseline;gap:8px;border-top:1px solid #2A2E37;padding-top:14px"><span class="c" style="font-size:28px;color:#E0B577">≈ 18–20</span><span style="color:#A39C90;font-size:13px">séries par séance</span></div>
+<div style="margin-top:auto;margin-bottom:44px;display:flex;gap:10px">
+<button type="button" style="height:54px;padding:0 22px;border-radius:14px;border:1px solid #2A2E37;background:transparent;color:#EDE7DC">Retour</button>
+<button type="button" style="flex:1;height:54px;border-radius:14px;border:0;background:#B8322A;color:#EDE7DC;font-weight:600;font-size:16px">Continuer</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":440,"height":956}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

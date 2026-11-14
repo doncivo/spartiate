@@ -15,6 +15,7 @@ import {
 import type { LocalDate, Weekday } from '../../domain/types';
 import { formatDecimal, formatInt, tOnboarding, type OnboardingTextKey } from '../../i18n/onboardingText';
 import { SegmentedControl, WeekdayToggles } from '../../ui';
+import { OptionCards } from './OptionCards';
 import type { TrainingContent } from '../training/content';
 
 export interface FieldTexts {
@@ -36,6 +37,9 @@ export interface StepProps {
   readonly content: TrainingContent | 'error' | null;
   /** Dernière pesée déjà enregistrée (préremplie), ou `null`. */
   readonly prefillWeightKg: number | null;
+  /** Mise en page : sur PC, jamais de lecture Santé (texte de l'aperçu) ; sur iPhone, le poids lu dans Santé est dit avec sa source. */
+  readonly layout: 'pc' | 'mobile';
+  readonly healthSource: string | null;
 }
 
 const UNSET = { value: '' as const, label: tOnboarding('unset') };
@@ -93,7 +97,7 @@ export function ExpenditureEstimate({ draft, today }: Pick<StepProps, 'draft' | 
 }
 
 export function StepYou(props: StepProps) {
-  const { draft, patch, issues, year, texts, setText, prefillWeightKg } = props;
+  const { draft, patch, issues, year, texts, setText, prefillWeightKg, layout, healthSource } = props;
   return (
     <>
       <Group label={tOnboarding('sex')}>
@@ -115,9 +119,10 @@ export function StepYou(props: StepProps) {
         errorId="ct-onb-err-weight"
         error={issues.includes('weight-range')}
         onChange={(value) => setText('weightKg', value)}
-        {...(prefillWeightKg !== null ? { hint: tOnboarding('weightPrefill', { kg: formatDecimal(prefillWeightKg) }) } : {})}
+        {...(healthSource !== null ? { hint: tOnboarding('weightHealthNote', { source: healthSource }) } : prefillWeightKg !== null ? { hint: tOnboarding('weightPrefill', { kg: formatDecimal(prefillWeightKg) }) } : {})}
       />
       <FieldError id="ct-onb-err-weight" show={issues.includes('weight-range')}>{tOnboarding('errorWeight', { max: WEIGHT_MAX_KG })}</FieldError>
+      {layout === 'pc' && <p className="ct-onb__note">{tOnboarding('weightPcNote')}</p>}
       <Group label={tOnboarding('activity')}>
         <SegmentedControl<ActivityLevel | ''>
           label={tOnboarding('activity')}
@@ -137,25 +142,33 @@ const ACTIVITY_KEY = { sedentary: 'activitySedentary', light: 'activityLight', m
 const GOAL_KEY = { muscle: 'goalMuscle', strength: 'goalStrength', recomposition: 'goalRecomposition', 'fat-loss': 'goalFatLoss', maintenance: 'goalMaintenance' } as const satisfies Record<OnboardingGoal, OnboardingTextKey>;
 
 /** Rythmes proposés (% du poids par semaine), tous dans les bornes de −1 % à +0,5 %. */
-const RATES: Readonly<Partial<Record<OnboardingGoal, readonly number[]>>> = { muscle: [0.25, 0.5], 'fat-loss': [-0.25, -0.5, -0.75, -1] };
+export const RATES: Readonly<Partial<Record<OnboardingGoal, readonly number[]>>> = { muscle: [0.25, 0.5], 'fat-loss': [-0.25, -0.5, -0.75, -1] };
 const rateText = (pct: number): string => `${pct > 0 ? '+' : '−'}${formatDecimal(Math.abs(pct))}`;
 
-export function StepGoal({ draft, patch, issues }: StepProps) {
+const GOAL_HINT_KEY = { muscle: 'goalMuscleHint', strength: 'goalStrengthHint', recomposition: 'goalRecompositionHint', 'fat-loss': 'goalFatLossHint', maintenance: 'goalMaintenanceHint' } as const satisfies Record<OnboardingGoal, OnboardingTextKey>;
+const signed = (n: number): string => `${n < 0 ? '−' : '+'}${formatDecimal(Math.abs(n))}`;
+
+export function StepGoal({ draft, patch, issues, layout }: StepProps) {
   const rates = draft.goal !== null && RATE_GOALS.includes(draft.goal) ? (RATES[draft.goal] ?? []) : [];
   const kg = draft.weeklyRatePct === null ? null : weeklyRateKg(draft.weightKg, draft.weeklyRatePct);
   return (
     <>
       <Group label={tOnboarding('goalLabel')}>
-        <SegmentedControl<OnboardingGoal | ''>
+        <OptionCards<OnboardingGoal>
           label={tOnboarding('goalLabel')}
-          columns={2}
+          columns={layout === 'pc' ? 3 : 1}
           value={draft.goal ?? ''}
-          options={[UNSET, ...ONBOARDING_GOALS.map((goal) => ({ value: goal, label: tOnboarding(GOAL_KEY[goal]) }))]}
+          options={ONBOARDING_GOALS.map((goal) => ({ value: goal, label: tOnboarding(GOAL_KEY[goal]), hint: tOnboarding(GOAL_HINT_KEY[goal]) }))}
           onChange={(value) => patch({ goal: value === '' ? null : value, weeklyRatePct: null })}
         />
       </Group>
       {rates.length > 0 && (
         <Group label={tOnboarding('rateLabel')}>
+          {draft.weeklyRatePct !== null && (
+            <p className="ct-onb__rateValue">
+              <b>{signed(draft.weeklyRatePct)} %</b> <span>{kg === null ? tOnboarding('rateSuffix') : tOnboarding('rateSuffixKg', { kg: signed(kg) })}</span>
+            </p>
+          )}
           <SegmentedControl<string>
             label={tOnboarding('rateLabel')}
             columns={2}
@@ -164,7 +177,8 @@ export function StepGoal({ draft, patch, issues }: StepProps) {
             onChange={(value) => patch({ weeklyRatePct: value === '' ? null : Number(value) })}
           />
           <span className="ct-onb__hint">{tOnboarding('rateHint')}</span>
-          {draft.weeklyRatePct !== null && <span className="ct-onb__hint">{kg === null ? tOnboarding('rateNeedsWeight') : tOnboarding('rateKg', { kg: formatDecimal(Math.abs(kg)) })}</span>}
+          {draft.weeklyRatePct !== null && kg === null && <span className="ct-onb__hint">{tOnboarding('rateNeedsWeight')}</span>}
+          {layout === 'pc' && <span className="ct-onb__hint">{tOnboarding('rateKeys')}</span>}
           <FieldError show={issues.includes('rate-range')}>{tOnboarding('errorRate')}</FieldError>
         </Group>
       )}
@@ -175,17 +189,16 @@ export function StepGoal({ draft, patch, issues }: StepProps) {
 const EXPERIENCE_KEY = { beginner: 'experienceBeginner', intermediate: 'experienceIntermediate', advanced: 'experienceAdvanced' } as const satisfies Record<Experience, OnboardingTextKey>;
 const EXPERIENCE_HINT = { beginner: 'experienceBeginnerHint', intermediate: 'experienceIntermediateHint', advanced: 'experienceAdvancedHint' } as const satisfies Record<Experience, OnboardingTextKey>;
 
-export function StepExperience({ draft, patch }: StepProps) {
+export function StepExperience({ draft, patch, layout }: StepProps) {
   return (
     <Group label={tOnboarding('experienceLabel')}>
-      <SegmentedControl<Experience | ''>
+      <OptionCards<Experience>
         label={tOnboarding('experienceLabel')}
-        columns={2}
+        columns={layout === 'pc' ? 3 : 1}
         value={draft.experience ?? ''}
-        options={[UNSET, ...(['beginner', 'intermediate', 'advanced'] as const).map((level) => ({ value: level, label: tOnboarding(EXPERIENCE_KEY[level]) }))]}
+        options={(['beginner', 'intermediate', 'advanced'] as const).map((level) => ({ value: level, label: tOnboarding(EXPERIENCE_KEY[level]), hint: tOnboarding(EXPERIENCE_HINT[level]) }))}
         onChange={(value) => patch({ experience: value === '' ? null : value })}
       />
-      {draft.experience !== null && <span className="ct-onb__hint">{tOnboarding(EXPERIENCE_HINT[draft.experience])}</span>}
     </Group>
   );
 }

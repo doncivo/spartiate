@@ -50,13 +50,13 @@ describe('À propos : expiration de la signature (I-02)', () => {
       </AppContainerProvider>,
     );
 
-  it('UI-FIX-02 : expiration visible dans le groupe IPHONE de Plus, avant PRÉFÉRENCES, en un seul exemplaire', async () => {
+  it('UI-FIX-02 : expiration visible dans le groupe APP de Plus, avant DONNÉES, en un seul exemplaire', async () => {
     source.expireAt('2026-10-14T08:00:00Z');
     await replanNotifications(h.container, 'open');
     render(<AppContainerProvider container={h.container}><SettingsScreen /></AppContainerProvider>);
     const expiry = await screen.findByText('Expire le mer. 14 oct. à 10:00 · dans 6 jours');
-    const iphone = screen.getByRole('heading', { name: 'IPHONE' });
-    const preferences = screen.getByRole('heading', { name: 'PRÉFÉRENCES' });
+    const iphone = screen.getByRole('heading', { name: 'APP' });
+    const preferences = screen.getByRole('heading', { name: 'DONNÉES' });
     expect(iphone.compareDocumentPosition(expiry) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
     expect(expiry.compareDocumentPosition(preferences) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
     expect(screen.getAllByText('Expire le mer. 14 oct. à 10:00 · dans 6 jours')).toHaveLength(1);

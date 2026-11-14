@@ -108,6 +108,9 @@ export interface ActiveConstraints {
   readonly lowRecovery: boolean;
   /** Journée rouge acceptée (D-170) : charges × 0,95 sans série retirée, au lieu de la réduction générale de la récupération basse. */
   readonly redDay: boolean;
+  /** PROG-01 (D-267) : décharge d'un cycle de 4 ou 6 semaines (séries, facteur de charge) ; absents : deload I2 (D-72 point 9). */
+  readonly deloadSets?: number;
+  readonly deloadLoad?: number;
 }
 
 export interface ConstraintContext {
@@ -117,6 +120,8 @@ export interface ConstraintContext {
   readonly deload: boolean;
   readonly recovery: RecoverySnapshot | null | undefined;
   readonly config: ProgressionConfig;
+  readonly deloadSets?: number;
+  readonly deloadLoad?: number;
 }
 
 export function activeConstraints(ctx: ConstraintContext): ActiveConstraints {
@@ -128,6 +133,8 @@ export function activeConstraints(ctx: ConstraintContext): ActiveConstraints {
     deload: ctx.deload,
     lowRecovery: isLowRecovery(ctx.recovery, config),
     redDay: ctx.recovery?.redDay === true && isLowRecovery(ctx.recovery, config),
+    ...(ctx.deloadSets !== undefined ? { deloadSets: ctx.deloadSets } : {}),
+    ...(ctx.deloadLoad !== undefined ? { deloadLoad: ctx.deloadLoad } : {}),
   };
 }
 
@@ -143,13 +150,15 @@ export function reducedTarget(
   assisted = false,
 ): { readonly targetKg: number; readonly reps: readonly number[]; readonly recoverySetRemoved: boolean } {
   let sets = reference.reps.length;
-  if (c.deload) sets = deloadSetCount(sets);
+  if (c.deload) sets = c.deloadSets !== undefined ? Math.max(1, Math.min(sets, c.deloadSets)) : deloadSetCount(sets);
   const beforeRecovery = sets;
   const recoveryCuts = c.lowRecovery && !c.redDay;
   if (recoveryCuts && kind === 'isolation') sets = Math.max(1, sets - 1);
   // Journée rouge (D-170) : même facteur, aucune série retirée ; assistance jamais réduite (la charge saisie est l'assistance).
   const redDayCuts = c.redDay && !assisted;
-  const factor = (1 - c.inactivityCut) * (c.deload ? config.deloadLoad : 1) * (recoveryCuts || redDayCuts ? config.lowRecoveryLoad : 1);
+  // D-273 (constat 6 de Codex) : exercice assisté, la charge saisie est l'assistance ; la réduire alourdirait l'exercice : en décharge, elle est gardée.
+  const deloadCut = c.deload && !assisted ? (c.deloadLoad ?? config.deloadLoad) : 1;
+  const factor = (1 - c.inactivityCut) * deloadCut * (recoveryCuts || redDayCuts ? config.lowRecoveryLoad : 1);
   return { targetKg: reference.loadKg * factor, reps: reference.reps.slice(0, sets), recoverySetRemoved: sets < beforeRecovery };
 }
 

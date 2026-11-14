@@ -1,0 +1,171 @@
+/* Check-in hebdomadaire (I4-03, ERGO-02 : CheckIn-apres) : jetons de tokens.css seulement, tailles en rem (Dynamic Type), cibles >= 44 px. */
+.ct-checkin__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}
+
+.ct-checkin__header .ct-nutrition__eyebrow {
+  margin: 0;
+}
+
+.ct-checkin__title {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-size: var(--ct-font-size-heading-sm);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.02em;
+  color: var(--ct-color-text);
+}
+
+.ct-checkin__hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}
+
+/* Résumé de la semaine : quatre cases séparées par des filets (le chiffre, puis son libellé). */
+.ct-checkin__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: var(--ct-line);
+  border-bottom: var(--ct-line);
+  text-align: center;
+}
+
+.ct-checkin__stat {
+  min-width: 0;
+  padding: var(--ct-space-3) var(--ct-space-1);
+  border-right: var(--ct-line);
+}
+
+.ct-checkin__stat:last-child {
+  border-right: 0;
+}
+
+.ct-checkin__statvalue {
+  font-family: var(--ct-font-title);
+  font-weight: var(--ct-font-weight-semibold);
+  font-size: var(--ct-font-size-item);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.ct-checkin__statlabel {
+  font-size: var(--ct-font-size-xs);
+  color: var(--ct-color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+/* Très grand (Dynamic Type) : les quatre cases passent sur deux lignes plutôt que de couper le texte. */
+@media (max-width: 30rem) {
+  .ct-checkin__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ct-checkin__stat:nth-child(2) {
+    border-right: 0;
+  }
+
+  .ct-checkin__stat:nth-child(n + 3) {
+    border-top: var(--ct-line);
+  }
+}
+
+.ct-checkin__proposalhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ct-space-2);
+}
+
+.ct-checkin__proposalhead .ct-nutrition__subtitle {
+  margin: 0;
+}
+
+.ct-checkin__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-checkin__table th,
+.ct-checkin__table td {
+  padding: var(--ct-space-3) var(--ct-space-1);
+  border-top: var(--ct-line);
+  text-align: right;
+  vertical-align: baseline;
+  font-weight: var(--ct-font-weight-regular);
+}
+
+.ct-checkin__table thead th,
+.ct-checkin__table thead td {
+  border-top: 0;
+  padding-bottom: var(--ct-space-1);
+  font-size: var(--ct-font-size-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-checkin__table tbody th {
+  text-align: left;
+}
+
+.ct-checkin__note {
+  display: block;
+  font-size: var(--ct-font-size-xs);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-checkin__current,
+.ct-checkin__delta {
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-checkin__proposed--main {
+  font-family: var(--ct-font-title);
+  font-weight: var(--ct-font-weight-semibold);
+  font-size: var(--ct-font-size-item);
+  color: var(--ct-color-bronze);
+}
+
+/* Note « Pourquoi » : liseré bronze à gauche. */
+.ct-checkin__why {
+  padding-left: var(--ct-space-3);
+  border-left: 2px solid var(--ct-color-bronze);
+}
+
+.ct-checkin__why .ct-nutrition__subtitle {
+  margin-bottom: var(--ct-space-1);
+}
+
+/* Bandeau fin (suspendu) : un liseré et trois lignes, jamais une carte pleine. */
+.ct-checkin__banner {
+  padding-left: var(--ct-space-3);
+  border-left: 2px solid var(--ct-color-warn);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}
+
+.ct-checkin__bannertitle {
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+/* Une seule action principale (Accepter, rouge), Personnaliser et Refuser à égalité dessous. */
+.ct-checkin__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+}
+
+.ct-checkin__secondary {
+  display: flex;
+  gap: var(--ct-space-3);
+}
+
+.ct-checkin__secondary > * {
+  flex: 1 1 0;
+}

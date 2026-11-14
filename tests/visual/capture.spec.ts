@@ -54,7 +54,10 @@ const goTab = (name: string) => async (page: Page): Promise<void> => {
 /** Applique réellement le thème clair par Plus › Apparence (le thème vient du réglage de l'app, pas du système), puis revient à Aujourd'hui. */
 const goLight = async (page: Page): Promise<void> => {
   await goTab('Plus')(page);
-  await page.getByRole('button', { name: /Thème/ }).first().click();
+  // ERGO-02 : sur PC, Plus est une liste et un panneau ; « Apparence » ouvre les réglages du thème à droite. iPhone : ligne « Thème : … ».
+  const pcEntry = page.getByRole('group', { name: 'Réglages' }).getByRole('button', { name: /^Apparence/ });
+  if ((await pcEntry.count()) > 0) await pcEntry.first().click();
+  else await page.getByRole('button', { name: /Thème/ }).first().click();
   await page.getByRole('radio', { name: 'Clair' }).click();
   await page.waitForFunction(() => document.documentElement.dataset['theme'] === 'light');
   await goTab('Aujourd’hui')(page);
@@ -100,11 +103,11 @@ const openAddSheet = async (page: Page): Promise<void> => {
 
 const SCREENS: Screen[] = [
   { name: 'Aujourdhui', mockup: 'iPhone-Aujourdhui.html', viewport: PHONE, date: WEDNESDAY, dark: true },
-  { name: 'PC-Aujourdhui', mockup: 'PC-Aujourdhui.html', viewport: PC, date: WEDNESDAY, dark: true },
+  { name: 'PC-Aujourdhui', mockup: 'propositions/esthetique-2026-11-12/PC-Aujourdhui-apres.dc.html', viewport: PC, date: WEDNESDAY, dark: true },
   { name: 'Entrainement-indisponible', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: goTab('Entraînement') },
   { name: 'PC-Entrainement-indisponible', viewport: PC, date: WEDNESDAY, dark: true, prepare: goTab('Entraînement') },
-  { name: 'Plus', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: goTab('Plus') },
-  { name: 'PC-Plus', viewport: PC, date: WEDNESDAY, dark: true, prepare: goTab('Plus') },
+  { name: 'Plus', mockup: 'propositions/esthetique-2026-11-13/Plus-apres.dc.html', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: goTab('Plus') },
+  { name: 'PC-Plus', mockup: 'propositions/esthetique-2026-11-13/PC-Plus-apres.dc.html', viewport: PC, date: WEDNESDAY, dark: true, prepare: goTab('Plus') },
   { name: 'Profil-poids', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: goBody },
   { name: 'PC-Profil-poids', viewport: PC, date: WEDNESDAY, dark: true, prepare: goBody },
   { name: 'Aujourdhui-0-7-1', viewport: PHONE, date: SUNDAY, dark: true, prepare: seedWeights },
@@ -112,7 +115,7 @@ const SCREENS: Screen[] = [
   { name: 'Entrainement-bibliotheque', viewport: PHONE, date: SUNDAY, dark: true, prepare: goTraining('Bibliothèque') },
   { name: 'Nutrition-journal-fiche', viewport: PHONE, date: SUNDAY, dark: true, prepare: openAddSheet },
   { name: 'Nutrition-dashboard', viewport: PHONE, date: SUNDAY, dark: true, prepare: goNutrition('Dashboard') },
-  { name: 'Nutrition-checkin', viewport: PHONE, date: SUNDAY, dark: true, prepare: goNutrition('Check-in') },
+  { name: 'Nutrition-checkin', mockup: 'propositions/esthetique-2026-11-13/CheckIn-apres.dc.html', viewport: PHONE, date: SUNDAY, dark: true, prepare: goNutrition('Check-in') },
   { name: 'PC-Entrainement-bibliotheque', viewport: PC, date: SUNDAY, dark: true, prepare: goTraining('Bibliothèque') },
   { name: 'PC-Entrainement-bibliotheque-clair', viewport: PC, date: SUNDAY, dark: false, prepare: async (page) => { await goLight(page); await goTraining('Bibliothèque')(page); } },
   { name: 'PC-Nutrition-journal-clair', viewport: PC, date: SUNDAY, dark: false, prepare: async (page) => { await goLight(page); await goNutrition()(page); } },
@@ -131,7 +134,7 @@ const goOnboarding = (step: number) => async (page: Page): Promise<void> => {
   await page.getByRole('dialog', { name: 'Configuration de Spartiate' }).waitFor();
   for (let i = 1; i < step; i += 1) {
     await page.getByRole('button', { name: 'Continuer', exact: true }).click();
-    await page.getByText(`Configuration · étape ${String(i + 1)} sur 8`).waitFor();
+    await page.getByText(`Étape ${String(i + 1)} sur 8`, { exact: true }).waitFor();
   }
   if (step === 6) {
     await page.getByLabel('Pectoraux, normal').click();
@@ -141,10 +144,13 @@ const goOnboarding = (step: number) => async (page: Page): Promise<void> => {
     await page.getByLabel('Mollets, à éviter').waitFor();
   }
 };
+// ERGO-02 : chaque étape est comparée à son aperçu du 13/11 (étape 6 iPhone : Onboarding-apres ; étape 2 PC : PC-Onboarding-apres).
+const ONB_PHONE = ['Onb-1-Toi', 'Onb-2-Objectif', 'Onb-3-Experience', 'Onb-4-Disponibilite', 'Onb-5-Materiel', 'Onboarding-apres', 'Onb-7-Split', 'Onb-8-Resultat'].map((f) => `propositions/esthetique-2026-11-13/${f}.dc.html`);
+const ONB_PC = ['PC-Onb-1', 'PC-Onboarding-apres', 'PC-Onb-3', 'PC-Onb-4', 'PC-Onb-5', 'PC-Onb-6', 'PC-Onb-7', 'PC-Onb-8'].map((f) => `propositions/esthetique-2026-11-13/${f}.dc.html`);
 ONBOARDING_STEPS.forEach((name, i) => {
   SCREENS.push(
-    { name: `Onboarding-${String(i + 1)}-${name}`, viewport: PHONE, date: WEDNESDAY, dark: true, ...(i === 5 ? { mockup: 'iPhone-Onboarding.html' } : {}), prepare: goOnboarding(i + 1) },
-    { name: `PC-Onboarding-${String(i + 1)}-${name}`, viewport: PC, date: WEDNESDAY, dark: true, prepare: goOnboarding(i + 1) },
+    { name: `Onboarding-${String(i + 1)}-${name}`, viewport: PHONE, date: WEDNESDAY, dark: true, mockup: ONB_PHONE[i] ?? '', prepare: goOnboarding(i + 1) },
+    { name: `PC-Onboarding-${String(i + 1)}-${name}`, viewport: PC, date: WEDNESDAY, dark: true, mockup: ONB_PC[i] ?? '', prepare: goOnboarding(i + 1) },
   );
 });
 

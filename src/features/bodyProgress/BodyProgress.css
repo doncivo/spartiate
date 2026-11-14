@@ -1,4 +1,4 @@
-/* Progrès › Corps (I6-02) : jetons de tokens.css seulement, aucune couleur en dur. Mise en page 440 px et PC (1 440 px : colonnes bornées). */
+/* Progrès › Corps (I6-02, ERGO-02 : Corps-apres et PC-Corps-apres) : jetons de tokens.css seulement, aucune couleur en dur, tailles en rem (Dynamic Type). */
 .ct-bodyprogress {
   display: flex;
   flex-direction: column;
@@ -10,10 +10,19 @@
   margin: 0;
 }
 
-.ct-bodyprogress__card {
+.ct-bodyprogress__card,
+.ct-bodyprogress__main {
   display: flex;
   flex-direction: column;
   gap: var(--ct-space-3);
+  min-width: 0;
+}
+
+.ct-bodyprogress__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-4);
+  min-width: 0;
 }
 
 .ct-bodyprogress__heading {
@@ -24,32 +33,189 @@
   color: var(--ct-color-text);
 }
 
-.ct-bodyprogress__form {
+/* Héros : silhouette à gauche (iPhone), dernière mesure, écart, courbe à droite. */
+.ct-bodyprogress__hero {
+  display: flex;
+  align-items: center;
+  gap: var(--ct-space-5);
+  min-width: 0;
+}
+
+.ct-bodyprogress__herotext {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  min-width: 0;
+}
+
+.ct-bodyprogress__zonename {
+  margin: 0;
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ct-color-bronze);
+}
+
+.ct-bodyprogress__silhouette {
+  flex: 0 0 7.5rem;
+  width: 7.5rem;
+  height: auto;
+}
+
+.ct-bodyprogress__outline {
+  fill: none;
+  stroke: var(--ct-color-border-strong);
+  stroke-width: 2;
+}
+
+.ct-bodyprogress__selected {
+  stroke: var(--ct-color-bronze);
+}
+
+.ct-bodyprogress__dot {
+  fill: var(--ct-color-text-secondary);
+}
+
+.ct-bodyprogress__dot--on {
+  fill: var(--ct-color-bronze);
+}
+
+.ct-bodyprogress__hit {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.ct-bodyprogress__curve {
+  width: 100%;
+  max-width: 38rem;
+  height: auto;
+  margin-top: var(--ct-space-2);
+}
+
+.ct-bodyprogress__curveline {
+  stroke: var(--ct-color-bronze);
+}
+
+.ct-bodyprogress__curvedot {
+  fill: var(--ct-color-text-secondary);
+}
+
+.ct-bodyprogress__curvelast {
+  fill: var(--ct-color-bronze);
+}
+
+/* Pastilles de zone (iPhone) : cibles de 44 px, la zone choisie en trait épais et en gras (jamais la couleur seule). */
+.ct-bodyprogress__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+
+.ct-bodyprogress__chip {
+  min-height: var(--ct-hit-target-min);
+  min-width: var(--ct-hit-target-min);
+  padding: 0 var(--ct-space-3);
+  background: transparent;
+  color: var(--ct-color-text-secondary);
+  border: 1px solid var(--ct-color-border-strong);
+  border-radius: var(--ct-radius-lg);
+  font: inherit;
+  font-size: var(--ct-font-size-sm);
+  cursor: pointer;
+}
+
+.ct-bodyprogress__chip[aria-checked='true'] {
+  color: var(--ct-color-text);
+  border: 2px solid var(--ct-color-bronze);
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+/* Liste des zones (PC). */
+.ct-bodyprogress__zones {
+  min-width: 0;
+}
+
+.ct-bodyprogress__zone {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 3.5rem;
+  align-items: center;
+  gap: var(--ct-space-2);
+  width: 100%;
+  min-height: var(--ct-hit-target-min);
+  padding: 0 var(--ct-space-3);
+  background: transparent;
+  color: var(--ct-color-text);
+  border: 0;
+  border-bottom: var(--ct-line);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ct-bodyprogress__zone[aria-checked='true'] {
+  background: var(--ct-color-row-selected);
+  box-shadow: inset 3px 0 0 var(--ct-color-bronze);
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-bodyprogress__zonevalue,
+.ct-bodyprogress__zonedelta {
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-bodyprogress__zonedelta {
+  text-align: right;
+  color: var(--ct-color-text-secondary);
+}
+
+/* Saisie en une ligne : date, mesure, Enregistrer. */
+.ct-bodyprogress__entry {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--ct-space-3);
 }
 
-.ct-bodyprogress__field {
+.ct-bodyprogress__date {
   display: flex;
-  flex: 1 1 120px;
+  flex: 1 1 9rem;
   flex-direction: column;
   gap: var(--ct-space-1);
   min-width: 0;
 }
 
+.ct-bodyprogress__value {
+  display: flex;
+  flex: 2 1 9rem;
+  align-items: center;
+  gap: var(--ct-space-2);
+  min-width: 0;
+}
+
+.ct-bodyprogress__value .ct-bodyprogress__input {
+  flex: 1 1 auto;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-bodyprogress__unit {
+  color: var(--ct-color-text-secondary);
+}
+
 .ct-bodyprogress__label {
-  color: var(--ct-color-text);
+  font-size: var(--ct-font-size-xs);
+  color: var(--ct-color-text-secondary);
 }
 
 .ct-bodyprogress__input {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
-  min-height: 44px;
-  padding: 0 var(--ct-space-2);
-  background: var(--ct-color-surface);
+  min-height: var(--ct-hit-target-min);
+  padding: 0 var(--ct-space-3);
+  background: var(--ct-color-surface-input);
   color: var(--ct-color-text);
   border: 1px solid var(--ct-color-border);
   border-radius: var(--ct-radius-md);
@@ -57,8 +223,8 @@
 }
 
 .ct-bodyprogress__save {
-  flex: 1 1 100%;
-  min-height: 44px;
+  flex: 1 1 auto;
+  min-height: var(--ct-hit-target-min);
 }
 
 .ct-bodyprogress__message {
@@ -82,7 +248,7 @@
   border-bottom: 1px solid var(--ct-color-border);
 }
 
-.ct-bodyprogress__value {
+.ct-bodyprogress__value-text {
   margin-left: auto;
   color: var(--ct-color-bronze);
   font-variant-numeric: tabular-nums;
@@ -97,9 +263,44 @@
   cursor: pointer;
 }
 
+/* Valeurs importées de Santé : grille deux colonnes, étiquette puis valeur. */
+.ct-bodyprogress__health {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  border-top: var(--ct-line);
+  border-bottom: var(--ct-line);
+}
+
+.ct-bodyprogress__healthrow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  padding: var(--ct-space-3) var(--ct-space-3) var(--ct-space-3) 0;
+  min-width: 0;
+}
+
+.ct-bodyprogress__healthrow dt {
+  font-size: var(--ct-font-size-xs);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-bodyprogress__healthrow dd {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.ct-bodyprogress__healthvalue {
+  font-family: var(--ct-font-title);
+  font-weight: var(--ct-font-weight-semibold);
+  font-size: var(--ct-font-size-item);
+  font-variant-numeric: tabular-nums;
+}
+
 .ct-bodyprogress__photos {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
   gap: var(--ct-space-3);
 }
 
@@ -160,10 +361,37 @@
   color: var(--ct-color-text);
 }
 
-/* PC (planche PC-Progres, colonne de contenu bornée) : les deux cartes côte à côte, jamais étirées. */
-@media (min-width: 900px) {
-  .ct-bodyprogress {
-    max-width: 660px;
+/* PC (PC-Corps-apres) : zones à gauche, mesure et courbe au centre, Santé et photos à droite. */
+@media (min-width: 1024px) {
+  .ct-bodyprogress--pc {
+    display: grid;
+    grid-template-columns: 17.5rem minmax(0, 1fr) 18.75rem;
+    align-items: start;
+    gap: var(--ct-space-4) var(--ct-space-7);
+  }
+
+  .ct-bodyprogress--pc .ct-bodyprogress__title {
+    grid-column: 1 / -1;
+  }
+
+  .ct-bodyprogress--pc .ct-bodyprogress__hero {
+    align-items: flex-start;
+  }
+
+  .ct-bodyprogress--pc .ct-hero__num {
+    font-size: var(--ct-font-size-display-pc);
+  }
+
+  .ct-bodyprogress--pc .ct-bodyprogress__date {
+    flex: 0 1 11rem;
+  }
+
+  .ct-bodyprogress--pc .ct-bodyprogress__value {
+    flex: 0 1 13rem;
+  }
+
+  .ct-bodyprogress--pc .ct-bodyprogress__save {
+    flex: 0 0 auto;
   }
 }
 

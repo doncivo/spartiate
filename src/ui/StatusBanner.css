@@ -13,6 +13,15 @@
   font-weight: var(--ct-font-weight-semibold);
 }
 
+/* ERGO-02 (Degrades-apres.dc.html) : bandeau fin, filet de teinte à gauche, jamais une carte de plus. */
+.ct-status-banner--info {
+  border-left: 3px solid var(--ct-color-info);
+}
+
+.ct-status-banner--warn {
+  border-left: 3px solid var(--ct-color-warn);
+}
+
 .ct-status-banner__action {
   min-height: var(--ct-hit-target-min);
   padding: 0 var(--ct-space-2);

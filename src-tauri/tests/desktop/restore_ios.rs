@@ -1486,6 +1486,16 @@ fn i06_update_restore_is_a_local_rollback_without_any_sync_marker() {
     assert_eq!(fs::read(&marker).unwrap(), before);
 }
 
+/// Version de schéma validée (plus grande ligne de `schema_migrations`).
+fn committed_version(path: &std::path::Path) -> u32 {
+    Connection::open(path)
+        .unwrap()
+        .query_row("SELECT MAX(version) FROM schema_migrations", [], |r| {
+            r.get(0)
+        })
+        .unwrap()
+}
+
 /// Sous-processus de la preuve A9 : exit sans Drop, après le vrai COMMIT SQLite et avant tout afterApply.
 #[test]
 fn i06_a9_child_exits_after_committed_schema_19() {
@@ -1554,7 +1564,9 @@ fn i06_a9_committed_19_survives_process_exit_and_native_rollback_recovers_18() {
         Some(83),
         "arrêt abrupt au point voulu, jamais test ignoré"
     );
-    assert_eq!(check_backup_file(&database, 19).unwrap(), 19);
+    // PROG-01 : Spartiate a rejoint la version 19 ; cette base de l'ancien projet (table `task`) est refusée à 19 (D-226) :
+    // la preuve A9 lit la version validée dans la base elle-même.
+    assert_eq!(committed_version(&database), 19);
     assert_eq!(
         check_backup_file(&database, 18).unwrap_err().code,
         "newer-schema"
@@ -1578,7 +1590,7 @@ fn i06_a9_committed_19_survives_process_exit_and_native_rollback_recovers_18() {
     let refused =
         restore_local_rollback(dir.path(), name, "20261021T170000Z", NO_FAIL).unwrap_err();
     assert_eq!(refused.code, "newer-schema");
-    assert_eq!(check_backup_file(&database, 19).unwrap(), 19);
+    assert_eq!(committed_version(&database), 19);
     assert_eq!(lock_value(&database).as_deref(), Some("true"));
 }
 

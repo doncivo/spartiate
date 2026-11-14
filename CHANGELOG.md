@@ -2,6 +2,30 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.24.0
+
+Migration de la base (schéma 19, ajout de colonnes seulement) : mets à jour le PC et l'iPhone le même jour, avant toute saisie.
+
+- **Mésocycle de 4, 5 ou 6 semaines** (Entraînement › Programme, et étape 7 de l'onboarding) : en 4 semaines, 3 puis 2 à 3 puis 2 répétitions en réserve, et une semaine de décharge ; en 6 semaines, 3, 3, 2 à 3, 2, 1 à 2, puis la décharge. Le cycle de 5 semaines est inchangé.
+- **Décharge** (cycles de 4 et 6 semaines) : 2 séries par exercice, charges à 90 % arrondies vers le bas au cran de ton matériel, 3 à 4 répétitions en réserve. La décharge anticipée reste proposée, jamais imposée.
+- **Exercices d'isolation** : à partir du 2e cycle, 1 répétition en réserve la dernière semaine de travail. Jamais 0.
+- **Semaine de reprise** (désactivée par défaut) : semaine 1 avec une série de moins sur les exercices à 4 séries ou plus.
+- **Durée du prochain cycle** : la changer pendant un cycle vaut pour le suivant ; le cycle en cours et ton historique ne bougent pas.
+- **Tractions assistées en décharge** : l'assistance est gardée, l'exercice ne devient jamais plus lourd.
+- **Cible des jours de repos** (Nutrition › Stratégie) : par un écart (−200 kcal par défaut, pris sur les glucides) ou en kcal, avec tes jours d'entraînement et la moyenne de la semaine. Aujourd'hui et le journal disent « Jour d'entraînement » ou « Jour de repos » ; une séance faite un jour de repos en fait un jour d'entraînement. Le check-in garde l'écart entre les deux cibles.
+- **Import** : une archive exportée en 0.23.0 (sv 18) s'importe, en Remplacer comme en Fusionner.
+
+## 0.23.0
+
+Aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.
+
+- **Charges aux haltères** : un exercice à deux haltères affiche « 2 × 26 kg » partout (Aujourd'hui, séance, fiche, journal, résumé, records) ; un seul haltère reste « 26 kg ». La saisie se fait toujours par haltère (« Charge par haltère (kg) ») ; rien ne change dans tes données.
+- **Onboarding en 8 étapes comme sur l'aperçu** (iPhone et PC) : sur PC, les étapes à gauche avec leur avancement, et le clavier (Entrée, Tab, flèches pour le rythme, 1 / 2 / 3 pour l'expérience). Sur l'iPhone, ton poids est pré-rempli depuis Santé si tu l'as autorisé. À revoir par Plus › Profil et poids › « Revoir mes réglages ».
+- **Aujourd'hui sur PC** : récupération puis séance du jour en tableau (exercices, cibles, charges, « Saisir la séance ici ») à gauche ; nutrition et macros, poids, dépense, semaine et derniers records à droite ; la carte « État » en petit, en bas.
+- **Plus** : 4 groupes (Moi, Sources, App, Données), chaque réglage avec sa valeur actuelle ; sur PC, la liste à gauche et le réglage ouvert à droite.
+- **Écrans refaits** : Progrès › Corps (silhouette, dernière mesure, écart sur 4 semaines, saisie en une ligne), fiche exercice, Matériel (PC), check-in hebdomadaire, Compléments, cardio GPS en cours (tracé schématique sur l'iPhone), Appareils et synchro.
+- **États dégradés** : bandeaux fins ; une donnée manquante s'affiche « — » avec sa raison, jamais un zéro.
+
 ## 0.22.3
 
 Aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.
