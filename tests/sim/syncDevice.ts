@@ -68,7 +68,10 @@ export type SimSchema = 'legacy' | 'i0' | 'v3' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9
  */
 /** I6-03 : un appareil resté avant la migration 0013 n'a pas les colonnes de groupe de `workout_set` (la lecture de ses lignes publiées les nommerait sinon). */
 /** I6-03b : un appareil resté avant la migration 0014 n'a pas les colonnes de groupe de `routine_exercise` (même raison) ; `v3` à `v12` non plus. */
-const beforeRoutineCircuit = (tables: readonly (typeof SYNC_CATALOGUE.tables)[number][]) => tables.map((t) => (t.name === 'routine_exercise' ? { ...t, columns: t.columns.filter((c) => c.name !== 'circuit_id' && c.name !== 'circuit_rest_sec') } : t));
+/** PROG-01 (schéma 19) : `mesocycle` sans `next_weeks` ni `ramp_up`, `nutrition_target` sans cible de repos, pour toute base avant la 0019. */
+const PROG01_COLUMNS: Readonly<Record<string, readonly string[]>> = { mesocycle: ['next_weeks', 'ramp_up'], nutrition_target: ['rest_kcal', 'rest_carb_g', 'training_days'] };
+const beforeProg01 = (tables: readonly (typeof SYNC_CATALOGUE.tables)[number][]) => tables.map((t) => (PROG01_COLUMNS[t.name] ? { ...t, columns: t.columns.filter((c) => !(PROG01_COLUMNS[t.name] ?? []).includes(c.name)) } : t));
+const beforeRoutineCircuit = (tables: readonly (typeof SYNC_CATALOGUE.tables)[number][]) => beforeProg01(tables).map((t) => (t.name === 'routine_exercise' ? { ...t, columns: t.columns.filter((c) => c.name !== 'circuit_id' && c.name !== 'circuit_rest_sec') } : t));
 const beforeCircuit = (tables: readonly (typeof SYNC_CATALOGUE.tables)[number][]) => beforeRoutineCircuit(tables).map((t) => (t.name === 'workout_set' ? { ...t, columns: t.columns.filter((c) => c.name !== 'circuit_id' && c.name !== 'circuit_rest_sec') } : t));
 export const V3_CATALOGUE = createCatalogue({ tables: beforeCircuit(SYNC_CATALOGUE.tables.slice(0, 7)), order: SYNC_TABLE_ORDER.slice(0, 7) });
 /**
@@ -99,15 +102,15 @@ export const V12_CATALOGUE = createCatalogue({
 /** I6-03b : `v13` : base et catalogue sans groupe de routine (migration 0013 : `routine_exercise` sans `circuit_id` ni `circuit_rest_sec`), `sv` = 13 : appareil pas encore mis à jour qui reçoit des lignes de routine groupées. */
 export const V13_CATALOGUE = createCatalogue({ tables: beforeRoutineCircuit(SYNC_CATALOGUE.tables.slice(0, 24)), order: SYNC_TABLE_ORDER.slice(0, 24) });
 /** FIX-0181 : `v14` : base et catalogue sans favoris publiés (migration 0014, D-79 : favoris locaux), `sv` = 14 : appareil pas encore mis à jour qui reçoit `food_favorite`. */
-export const V14_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 24), order: SYNC_TABLE_ORDER.slice(0, 24) });
+export const V14_CATALOGUE = createCatalogue({ tables: beforeProg01(SYNC_CATALOGUE.tables.slice(0, 24)), order: SYNC_TABLE_ORDER.slice(0, 24) });
 /** RESET-01 : `v15` : base et catalogue sans remise à zéro publiée (migration 0015), `sv` = 15 : appareil pas encore mis à jour qui reçoit `data_reset`. */
-export const V15_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 25), order: SYNC_TABLE_ORDER.slice(0, 25) });
+export const V15_CATALOGUE = createCatalogue({ tables: beforeProg01(SYNC_CATALOGUE.tables.slice(0, 25)), order: SYNC_TABLE_ORDER.slice(0, 25) });
 /** I6-05 : `v16` : base et catalogue sans compléments (migration 0016), `sv` = 16 : appareil pas encore mis à jour qui reçoit `supplement` et `supplement_intake`. */
-export const V16_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 26), order: SYNC_TABLE_ORDER.slice(0, 26) });
+export const V16_CATALOGUE = createCatalogue({ tables: beforeProg01(SYNC_CATALOGUE.tables.slice(0, 26)), order: SYNC_TABLE_ORDER.slice(0, 26) });
 /** I6-05 : schéma de l'appareil resté avant la migration des compléments (à renuméroter avec elle). */
 export const PRE_SUPPLEMENT_SCHEMA: SimSchema = 'v16';
 /** I6-06 : `v17` : base et catalogue sans séances cardio publiées (migration 0017), `sv` = 17 : appareil pas encore mis à jour qui reçoit `cardio_session`. */
-export const V17_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 28), order: SYNC_TABLE_ORDER.slice(0, 28) });
+export const V17_CATALOGUE = createCatalogue({ tables: beforeProg01(SYNC_CATALOGUE.tables.slice(0, 28)), order: SYNC_TABLE_ORDER.slice(0, 28) });
 const SCHEMA_CATALOGUES = { v3: V3_CATALOGUE, v5: V5_CATALOGUE, v6: V6_CATALOGUE, v7: V7_CATALOGUE, v8: V8_CATALOGUE, v9: V9_CATALOGUE, v10: V10_CATALOGUE, v11: V11_CATALOGUE, v12: V12_CATALOGUE, v13: V13_CATALOGUE, v14: V14_CATALOGUE, v15: V15_CATALOGUE, v16: V16_CATALOGUE, v17: V17_CATALOGUE } as const;
 const schemaMigrations = (schema: SimSchema) => (schema === 'i0' ? i0Migrations : schema === 'v3' ? i0Migrations.slice(0, 3) : schema === 'v5' ? i0Migrations.slice(0, 5) : schema === 'v6' ? i0Migrations.slice(0, 6) : schema === 'v7' ? i0Migrations.slice(0, 7) : schema === 'v8' ? i0Migrations.slice(0, 8) : schema === 'v9' ? i0Migrations.slice(0, 9) : schema === 'v10' ? i0Migrations.slice(0, 10) : schema === 'v11' ? i0Migrations.slice(0, 11) : schema === 'v12' ? i0Migrations.slice(0, 12) : schema === 'v13' ? i0Migrations.slice(0, 13) : schema === 'v14' ? i0Migrations.slice(0, 14) : schema === 'v15' ? i0Migrations.slice(0, 15) : schema === 'v16' ? i0Migrations.slice(0, 16) : schema === 'v17' ? i0Migrations.slice(0, 17) : legacyMigrationList);
 const migratedImages: Partial<Record<SimSchema, Promise<Uint8Array>>> = {};

@@ -2,6 +2,19 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.24.0
+
+Migration de la base (schéma 19, ajout de colonnes seulement) : mets à jour le PC et l'iPhone le même jour, avant toute saisie.
+
+- **Mésocycle de 4, 5 ou 6 semaines** (Entraînement › Programme, et étape 7 de l'onboarding) : en 4 semaines, 3 puis 2 à 3 puis 2 répétitions en réserve, et une semaine de décharge ; en 6 semaines, 3, 3, 2 à 3, 2, 1 à 2, puis la décharge. Le cycle de 5 semaines est inchangé.
+- **Décharge** (cycles de 4 et 6 semaines) : 2 séries par exercice, charges à 90 % arrondies vers le bas au cran de ton matériel, 3 à 4 répétitions en réserve. La décharge anticipée reste proposée, jamais imposée.
+- **Exercices d'isolation** : à partir du 2e cycle, 1 répétition en réserve la dernière semaine de travail. Jamais 0.
+- **Semaine de reprise** (désactivée par défaut) : semaine 1 avec une série de moins sur les exercices à 4 séries ou plus.
+- **Durée du prochain cycle** : la changer pendant un cycle vaut pour le suivant ; le cycle en cours et ton historique ne bougent pas.
+- **Tractions assistées en décharge** : l'assistance est gardée, l'exercice ne devient jamais plus lourd.
+- **Cible des jours de repos** (Nutrition › Stratégie) : par un écart (−200 kcal par défaut, pris sur les glucides) ou en kcal, avec tes jours d'entraînement et la moyenne de la semaine. Aujourd'hui et le journal disent « Jour d'entraînement » ou « Jour de repos » ; une séance faite un jour de repos en fait un jour d'entraînement. Le check-in garde l'écart entre les deux cibles.
+- **Import** : une archive exportée en 0.23.0 (sv 18) s'importe, en Remplacer comme en Fusionner.
+
 ## 0.23.0
 
 Aucune migration : ta base et ta synchro restent telles quelles. Tu peux mettre à jour le PC et l'iPhone quand tu veux.

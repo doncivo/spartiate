@@ -51,8 +51,15 @@ async function archiveSv18(db: TestDb): Promise<Uint8Array> {
   const data = await (await db.data.repos.exportImport()).readExportData();
   const archive = await buildExportArchive(data, { date: '2026-11-13T10:00:00.000Z', sv: 18 });
   const json = JSON.parse(new TextDecoder().decode(readZip(archive.bytes).find((e) => e.name === 'data.json')?.data)) as { training: Record<string, Record<string, unknown>[]> };
-  for (const row of json.training['mesocycle'] ?? []) for (const c of ['next_weeks', 'ramp_up']) delete row[c];
-  for (const row of json.training['nutrition_target'] ?? []) for (const c of ['rest_kcal', 'rest_carb_g', 'training_days']) delete row[c];
+  for (const row of json.training['mesocycle'] ?? []) {
+    delete row['next_weeks'];
+    delete row['ramp_up'];
+  }
+  for (const row of json.training['nutrition_target'] ?? []) {
+    delete row['rest_kcal'];
+    delete row['rest_carb_g'];
+    delete row['training_days'];
+  }
   const bytes = new TextEncoder().encode(JSON.stringify(json));
   const manifest = { app: 'spartiate', sv: 18, date: '2026-11-13T10:00:00.000Z', sha256: sha256Hex(bytes) };
   return buildZip([
