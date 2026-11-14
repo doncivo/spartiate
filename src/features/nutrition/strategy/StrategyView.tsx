@@ -7,7 +7,9 @@ import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { NumberField, parseNumber } from '../shared';
 import { saveManualTarget, saveNutritionPrefs, type NutritionSnapshot } from '../useCases';
+import { RestTargetForm } from './RestTargetForm';
 import { TargetForm, type TargetSaveResult } from './TargetForm';
+import { restTargetFromGap, type RestPlan } from '../../../domain/nutrition';
 
 const STYLE_HINT: Readonly<Record<CheckInStyle, NutritionTextKey>> = { guided: 'styleGuidedHint', collaborative: 'styleCollaborativeHint', manual: 'styleManualHint' };
 const ACTIVITY_KEY: Readonly<Record<ActivityLevel, NutritionTextKey>> = { sedentary: 'activitySedentary', light: 'activityLight', moderate: 'activityModerate', active: 'activityActive' };
@@ -83,9 +85,24 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   const rateParsed = parseNumber(rate);
   const rateInvalid = prefs.goal.kind !== 'maintain' && !(typeof rateParsed === 'number' && rateParsed >= MIN_RATE_KG && rateParsed <= GOAL_RATE_MAX_KG);
 
+  async function saveRest(restPlan: RestPlan | null): Promise<boolean> {
+    if (target === null) return false;
+    try {
+      const result = await saveManualTarget(data, { weekStart: snapshot.today, target: target.target, lowFloorConfirmed: true, restPlan });
+      if (typeof result === 'string') return false;
+      await onChanged();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async function saveTarget(next: Target, lowFloorConfirmed: boolean): Promise<TargetSaveResult> {
     try {
-      const result = await saveManualTarget(data, { weekStart: snapshot.today, target: next, lowFloorConfirmed });
+      // PROG-01 (D-271) : une nouvelle cible d'entraînement garde l'écart de la cible de repos en vigueur.
+      const plan = target?.restPlan ?? null;
+      const restPlan = plan === null || target === null ? null : { rest: restTargetFromGap(next, plan.rest.kcal - target.target.kcal), trainingDays: plan.trainingDays };
+      const result = await saveManualTarget(data, { weekStart: snapshot.today, target: next, lowFloorConfirmed, restPlan });
       if (typeof result === 'string') return result;
       setSaved(true);
       await onChanged();
@@ -209,6 +226,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
             <p className="ct-nutrition__muted">{tNutrition('currentTargetSince', { date: formatDayMonth(target.weekStart) })}</p>
           </>
         )}
+        {target !== null ? <RestTargetForm key={`rest-${target.id}`} target={target.target} plan={target.restPlan ?? null} onSave={saveRest} /> : null}
         <TargetForm key={target?.id ?? 'none'} title={tNutrition('targetFormTitle')} initial={target?.target ?? null} submitLabel={tNutrition('saveTarget')} onSave={saveTarget} />
         {saved ? <p role="status">{tNutrition('targetSaved')}</p> : null}
       </section>

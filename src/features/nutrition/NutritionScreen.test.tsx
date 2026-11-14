@@ -445,9 +445,9 @@ describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', ()
     fireEvent.click(toggle);
     expect(within(r).getByLabelText('Écart les jours de repos (kcal en moins)')).toHaveValue(200);
     const days = within(r).getByRole('group', { name: 'Jours d’entraînement' });
-    expect(within(days).getAllByRole('checkbox').map((c) => (c as HTMLInputElement).checked)).toEqual([true, true, false, true, true, true, false]);
+    expect(within(days).getAllByRole('checkbox').map((c) => c.getAttribute('aria-checked') === 'true')).toEqual([true, true, false, true, true, true, false]);
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible de repos' }));
-    await waitFor(async () => expect((await (await db.data.repos.nutritionTargets()).list())[0]?.restPlan).toEqual({ rest: { kcal: 2400, proteinG: 150, fatG: 80, carbG: 270 }, trainingDays: [1, 2, 4, 5, 6] }));
+    await waitFor(async () => expect((await (await db.data.repos.nutritionTargets()).effective(TODAY))?.restPlan).toEqual({ rest: { kcal: 2400, proteinG: 150, fatG: 80, carbG: 270 }, trainingDays: [1, 2, 4, 5, 6] }));
     expect(await within(r).findByText(`Moyenne de la semaine : ${fr(2543)} kcal`)).toBeInTheDocument();
   });
 
@@ -459,6 +459,6 @@ describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', ()
     fireEvent.click(within(r).getByRole('radio', { name: 'En kcal' }));
     fireEvent.change(within(r).getByLabelText('Calories les jours de repos (kcal)'), { target: { value: '2250' } });
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible de repos' }));
-    await waitFor(async () => expect((await (await db.data.repos.nutritionTargets()).list())[0]?.restPlan?.rest).toEqual({ kcal: 2250, proteinG: 150, fatG: 80, carbG: 232 }));
+    await waitFor(async () => expect((await (await db.data.repos.nutritionTargets()).effective(TODAY))?.restPlan?.rest).toEqual({ kcal: 2250, proteinG: 150, fatG: 80, carbG: 232 }));
   });
 });
