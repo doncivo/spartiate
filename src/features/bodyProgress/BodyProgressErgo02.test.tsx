@@ -151,6 +151,18 @@ describe('Corps PC (PC-Corps-apres)', () => {
     expect(within(hips).getByText('4 sem. : —')).toBeInTheDocument();
   });
 
+  it('écart absent : le libellé court reste affiché, la phrase complète (ou la raison) est dite aux lecteurs d’écran (FIX-0241)', async () => {
+    await seedWaist();
+    mount();
+    const group = await screen.findByRole('radiogroup', { name: 'Zone' });
+    const hips = within(group).getByRole('radio', { name: 'Hanches' });
+    expect(within(hips).getByText('4 sem. : —')).toBeVisible();
+    expect(within(hips).getByText('4 sem. : —')).toHaveAttribute('aria-hidden', 'true');
+    expect(hips).toHaveAccessibleDescription(/pas d’écart sur 4 semaines : aucune mesure/);
+    const waist = within(group).getByRole('radio', { name: 'Taille' });
+    expect(waist).not.toHaveAccessibleDescription(/pas d’écart/);
+  });
+
   it('liste des zones : tabindex itinérant (seule la zone choisie est tabulable) et les flèches déplacent le focus', async () => {
     await seedWaist();
     mount();
