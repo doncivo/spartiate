@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { addTrackPoint, emptyTrack, paceSecPerKm, type TrackState } from '../../domain/cardio';
 import type { Clock } from '../../domain/clock';
 import { formatChrono, formatDuration, formatKm, formatPace, kmValue, tCardio, type CardioTextKey } from '../../i18n/cardioText';
-import { logFailure } from '../../platform/desktop/log';
 import type { GeoEvent, GeolocationLoader } from '../../platform/geolocation';
 import { Button, HeroFigure } from '../../ui';
 import type { GpsReport } from './CardioView';
@@ -22,6 +21,11 @@ type State =
   | { readonly kind: 'running'; readonly startMs: number; readonly track: TrackState; readonly lost: boolean; readonly paused: boolean };
 
 const TICK_MS = 1_000;
+/**
+ * Échec de l'arrêt du suivi (plugin) : ignoré EXPRÈS, sans journal. D-222 : un module qui touche une position n'écrit jamais dans un journal (garde
+ * geolocationGuard.test.ts) ; l'autorisation est « pendant l'utilisation », le système coupe le suivi quand l'app quitte le premier plan (D-278).
+ */
+const ignoreStopFailure = (): void => undefined;
 /** Boîte du tracé schématique (unités du viewBox). */
 const TRACK_W = 392;
 const TRACK_H = 260;
@@ -48,7 +52,7 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
       mounted.current = false;
       run.current += 1;
       starting.current = false;
-      stopWatch().catch((error: unknown) => logFailure('cardio-gps', error));
+      stopWatch().catch(ignoreStopFailure);
     };
   }, []);
 
@@ -79,7 +83,7 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
           // Jeton invalidé : un `watch` encore en attente sera arrêté dès sa résolution ; un nouvel appui reste possible.
           run.current += 1;
           starting.current = false;
-          stopWatch().catch((error: unknown) => logFailure('cardio-gps', error));
+          stopWatch().catch(ignoreStopFailure);
           setState({ kind: 'blocked', reason: 'gpsDenied' });
         } else setState((s) => (s.kind === 'running' ? { ...s, lost: true } : s));
         return;
@@ -102,7 +106,7 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
       const stop = await geo.watch(onEvent);
       // Démonté, abandonné ou arrêté pendant que le suivi démarrait : arrêté aussitôt, jamais gardé.
       if (!current()) {
-        await stop().catch(() => logFailure('cardio-gps', 'gps-late-stop-failed'));
+        await stop().catch(ignoreStopFailure);
         return;
       }
       stopRef.current = stop;

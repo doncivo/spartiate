@@ -321,7 +321,7 @@ describe('FIX-0242 : démontage et double appui (aucun suivi orphelin)', () => {
     expect(watching).toBe(2);
   });
 
-  it('revue : arrêt en échec au démontage → écrit au journal technique (scope cardio-gps), jamais un rejet muet', async () => {
+  it('revue : arrêt en échec au démontage → aucun rejet non géré, rien dans la console ni le journal (D-222 : aucun journal depuis un module de position)', async () => {
     const geo: Geolocation = {
       available: true,
       permission: async () => 'granted',
@@ -336,6 +336,6 @@ describe('FIX-0242 : démontage et double appui (aucun suivi orphelin)', () => {
     view.unmount();
     await flush();
     const warned = spies.flatMap((spy) => spy.mock.calls).map((c) => String(c[0]));
-    expect(warned.some((line) => line.includes('cardio-gps') && line.includes('arret-injecte'))).toBe(true);
+    expect(warned.some((line) => line.includes('arret-injecte'))).toBe(false);
   });
 });
