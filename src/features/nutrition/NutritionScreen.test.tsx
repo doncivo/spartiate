@@ -431,3 +431,34 @@ describe('I4-03 : Navigation et clavier PC', () => {
     expect(await (await db.data.repos.mealEntries()).listByDate(TODAY)).toHaveLength(0);
   });
 });
+
+describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', () => {
+  const seedTarget = async () =>
+    (await db.data.repos.nutritionTargets()).record({ weekStart: TODAY, target: { kcal: 2600, proteinG: 150, fatG: 80, carbG: 320 }, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false });
+
+  it('absente par défaut ; par écart (−200 kcal par défaut) : 2 400 kcal, glucides −50 g, jours lundi, mardi, jeudi, vendredi, samedi ; moyenne 2 543 kcal', async () => {
+    await seedTarget();
+    open('strategy');
+    const r = await region();
+    const toggle = await within(r).findByRole('switch', { name: 'Cible des jours de repos' });
+    expect(toggle).not.toBeChecked();
+    fireEvent.click(toggle);
+    expect(within(r).getByLabelText('Écart les jours de repos (kcal en moins)')).toHaveValue(200);
+    const days = within(r).getByRole('group', { name: 'Jours d’entraînement' });
+    expect(within(days).getAllByRole('checkbox').map((c) => (c as HTMLInputElement).checked)).toEqual([true, true, false, true, true, true, false]);
+    fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible de repos' }));
+    await waitFor(async () => expect((await (await db.data.repos.nutritionTargets()).list())[0]?.restPlan).toEqual({ rest: { kcal: 2400, proteinG: 150, fatG: 80, carbG: 270 }, trainingDays: [1, 2, 4, 5, 6] }));
+    expect(await within(r).findByText(`Moyenne de la semaine : ${fr(2543)} kcal`)).toBeInTheDocument();
+  });
+
+  it('saisie en kcal : 2 250 kcal les jours de repos', async () => {
+    await seedTarget();
+    open('strategy');
+    const r = await region();
+    fireEvent.click(await within(r).findByRole('switch', { name: 'Cible des jours de repos' }));
+    fireEvent.click(within(r).getByRole('radio', { name: 'En kcal' }));
+    fireEvent.change(within(r).getByLabelText('Calories les jours de repos (kcal)'), { target: { value: '2250' } });
+    fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible de repos' }));
+    await waitFor(async () => expect((await (await db.data.repos.nutritionTargets()).list())[0]?.restPlan?.rest).toEqual({ kcal: 2250, proteinG: 150, fatG: 80, carbG: 232 }));
+  });
+});
