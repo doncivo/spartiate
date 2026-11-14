@@ -82,7 +82,7 @@ describe('I6-05 : SupplementsTodayCard', () => {
   });
 
   describe('prise cochée depuis la notification non enregistrée (FIX-0242)', () => {
-    const KEY = 'notifications.supplementActionTrouble' as 'notifications.status';
+    const KEY = 'notifications.actionTrouble' as 'notifications.status';
     const text = 'Une prise cochée depuis la notification n’a pas pu être enregistrée. Coche-la ici.';
     const lostText = 'Une action « Pris » de la notification n’a pas pu être lue. Vérifie tes prises ici.';
     const put = (value: { failed: boolean; days: string[]; lost: boolean }) => db.data.repos.settings.set(KEY, { v: 1, ...value } as never);

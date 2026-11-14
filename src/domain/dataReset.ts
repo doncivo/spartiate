@@ -123,7 +123,7 @@ export const RESET_SETTINGS: Readonly<Record<SettingKey, ResetFate>> = {
   'notifications.ledger': 'kept',
   'notifications.status': 'kept',
   'notifications.actionQueue': 'wiped',
-  'notifications.supplementActionTrouble': 'wiped',
+  'notifications.actionTrouble': 'wiped',
   'appleReminders.lists': 'kept',
   'appleReminders.create': 'kept',
   'appleReminders.lastPassAt': 'kept',
