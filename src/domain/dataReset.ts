@@ -128,7 +128,6 @@ export const RESET_SETTINGS: Readonly<Record<SettingKey, ResetFate>> = {
   'appleReminders.create': 'kept',
   'appleReminders.lastPassAt': 'kept',
   'appleReminders.pending': 'kept',
-  'appleReminders.status': 'kept',
   'security.appLock': 'kept',
   'notifications.signing': 'kept',
   'app.lastLaunchedVersion': 'kept',

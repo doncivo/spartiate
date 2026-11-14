@@ -103,8 +103,6 @@ export interface SettingsValues {
   'appleReminders.lastPassAt': IsoDateTime | null;
   /** K-06 critère 8, K-07 critère 8 : écritures dues vers Rappels (nombre et heure), publié par l'iPhone ; partagé. */
   'appleReminders.pending': ApplePending | null;
-  /** ADR 0008 §10.3 : échec persistant, plafonds, suppressions retenues, liens inconnus, messages ; LOCAL. Valeur BRUTE lue par `parseAppleStatus` ; jamais de titre. */
-  'appleReminders.status': unknown;
   /**
    * I-03 (ADR 0013 §2.3) : verrouillage de l'app par Face ID ou code de l'iPhone. Valeur BRUTE lue par `parseAppLockSetting` (illisible :
    * verrouillé, échec fermé) ; locale, jamais synchronisée ni observée par la replanification.
@@ -202,7 +200,6 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'appleReminders.create': { scope: 'shared', defaultValue: { bySpace: [] } },
   'appleReminders.lastPassAt': { scope: 'shared', defaultValue: null },
   'appleReminders.pending': { scope: 'shared', defaultValue: null },
-  'appleReminders.status': { scope: 'local', defaultValue: null },
   'security.appLock': { scope: 'local', defaultValue: false },
   'notifications.signing': { scope: 'local', defaultValue: null },
   'app.lastLaunchedVersion': { scope: 'local', defaultValue: null },
