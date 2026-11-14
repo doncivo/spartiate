@@ -26,6 +26,9 @@ export interface PrescriptionInputArgs {
   readonly now: IsoDateTime;
   readonly recovery: RecoverySnapshot | null;
   readonly deload: boolean;
+  /** PROG-01 : décharge d'un cycle de 4 ou 6 semaines (`WeekPlan.deloadSets`, `deloadLoad`). */
+  readonly deloadSets?: number;
+  readonly deloadLoad?: number;
   readonly positionRank: number;
 }
 
@@ -51,6 +54,8 @@ export function prescriptionInputOf(a: PrescriptionInputArgs): PrescribeInput {
     now: a.now,
     recovery: a.recovery,
     deload: a.deload,
+    ...(a.deload && a.deloadSets !== undefined ? { deloadSets: a.deloadSets } : {}),
+    ...(a.deload && a.deloadLoad !== undefined ? { deloadLoad: a.deloadLoad } : {}),
     // REV-01 constat 6 : décote de position (§ 11.3) ; rang de référence inconnu → aucun effet.
     positionRank: a.positionRank,
     ...(a.context.lastPositionRank === null ? {} : { lastPositionRank: a.context.lastPositionRank }),

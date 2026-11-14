@@ -21,6 +21,8 @@ interface MesocycleRow extends SqlRow, SyncRow {
   readonly status: string;
   readonly outcome: string | null;
   readonly ended_on: string | null;
+  readonly next_weeks?: number | null;
+  readonly ramp_up?: number | null;
 }
 
 /** Pauses relues strictement : `null` si le texte n'est pas un tableau de pauses bien formées (ligne d'une autre version). */
@@ -57,6 +59,8 @@ const toRecord = (row: MesocycleRow): MesocycleRecord => {
     status: row.status as MesocycleStatus,
     outcome: row.outcome as MesocycleOutcome | null,
     endedOn: row.ended_on as LocalDate | null,
+    nextWeeks: row.next_weeks ?? null,
+    rampUp: row.ramp_up === 1,
     readable: pauses !== null,
     ...readSyncMeta(row),
   };
@@ -76,6 +80,8 @@ const values = (spec: MesocycleSpec): (string | number | null)[] => [
   spec.status,
   spec.outcome,
   spec.endedOn,
+  spec.nextWeeks ?? null,
+  spec.rampUp === true ? 1 : 0,
 ];
 
 const ACTIVE_ORDER = "WHERE status = 'active' AND deleted_at IS NULL ORDER BY start_date DESC, created_at DESC, id DESC";
@@ -131,11 +137,16 @@ export function createMesocycleRepository(db: SqlExecutor, stamper: WriteStamper
       }
       const stamp = stamper.next();
       await db.execute(
-        `INSERT INTO mesocycle (id, routine_id, start_date, weeks, unlimited, deload_week, block_origin_week, block_origin_index, rotation_index, pauses, status, outcome, ended_on, created_at, updated_at, device_id, hlc)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO mesocycle (id, routine_id, start_date, weeks, unlimited, deload_week, block_origin_week, block_origin_index, rotation_index, pauses, status, outcome, ended_on, next_weeks, ramp_up, created_at, updated_at, device_id, hlc)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [id, ...values(spec), stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
       );
       return reload(id);
+    },
+
+    async closedBefore(startDate) {
+      const rows = await db.select<{ n: number }>("SELECT COUNT(*) AS n FROM mesocycle WHERE deleted_at IS NULL AND status = 'completed' AND start_date < ?", [startDate]);
+      return rows[0]?.n ?? 0;
     },
 
     async save(id, spec) {
@@ -145,7 +156,7 @@ export function createMesocycleRepository(db: SqlExecutor, stamper: WriteStamper
       const stamp = stamper.next();
       await db.execute(
         `UPDATE mesocycle SET routine_id = ?, start_date = ?, weeks = ?, unlimited = ?, deload_week = ?, block_origin_week = ?, block_origin_index = ?, rotation_index = ?,
-           pauses = ?, status = ?, outcome = ?, ended_on = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?`,
+           pauses = ?, status = ?, outcome = ?, ended_on = ?, next_weeks = ?, ramp_up = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?`,
         [...values(spec), stamp.at, stamp.deviceId, stamp.hlc, id],
       );
       return reload(id);

@@ -1,5 +1,5 @@
 import type { MesocycleSpec } from '../../domain/training/mesocycle';
-import type { DeviceId, Hlc, IsoDateTime } from '../../domain/types';
+import type { DeviceId, Hlc, IsoDateTime, LocalDate } from '../../domain/types';
 
 /**
  * Cycles d'entraînement (table `mesocycle`, migration 0007 ; I3-02, § 12.2, § 12.6). Publiés (catalogue de synchro, UUID).
@@ -27,6 +27,8 @@ export interface MesocycleRecord extends MesocycleSpec {
 export interface MesocycleRepository {
   current(): Promise<MesocycleRecord | null>;
   activeCount(): Promise<number>;
+  /** PROG-01 : cycles clos (non supprimés) commencés avant `startDate` (RIR 1 sur l'isolation à partir du 2e cycle). */
+  closedBefore(startDate: LocalDate): Promise<number>;
   get(id: string): Promise<MesocycleRecord | null>;
   /** Cycles non supprimés, du plus récent au plus ancien. */
   list(): Promise<readonly MesocycleRecord[]>;

@@ -344,6 +344,9 @@ export interface PrescribeInput {
   readonly recovery?: RecoverySnapshot | null;
   /** Deload manuel demandé par Ali pour cette séance. */
   readonly deload?: boolean;
+  /** PROG-01 (D-267) : décharge d'un cycle de 4 ou 6 semaines (séries, facteur de charge) ; absents : deload I2. */
+  readonly deloadSets?: number;
+  readonly deloadLoad?: number;
   /** Dernier travail du muscle principal, tous exercices confondus ; absent ou nul : dernière séance de cet exercice (la plus récente des deux l'emporte). */
   readonly muscleLastWorkedAt?: IsoDateTime | null;
   /**
