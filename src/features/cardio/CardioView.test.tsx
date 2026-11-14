@@ -171,15 +171,15 @@ describe('FIX-0242 : nouvel essai sans doublon', () => {
     save();
     expect(await screen.findByRole('status')).toHaveTextContent('Séance enregistrée.');
     expect(await real.list()).toHaveLength(1);
-    expect(ids).toHaveLength(2);
+    // Revue : le nouvel essai trouve la séance déjà écrite et la remplace (update), sans second add.
+    expect(ids).toHaveLength(1);
     expect(ids[0]).toBeDefined();
-    expect(ids[1]).toBe(ids[0]);
     type('Durée (min ou h:mm:ss)', '20');
     type('Ressenti (1 à 10)', '5');
     save();
     await waitFor(async () => expect(await real.list()).toHaveLength(2));
-    expect(ids[2]).toBeDefined();
-    expect(ids[2]).not.toBe(ids[0]);
+    expect(ids[1]).toBeDefined();
+    expect(ids[1]).not.toBe(ids[0]);
   });
 
   it('revue : essai qui écrit puis échoue, durée retouchée, nouvel essai → une seule séance, avec la durée retouchée', async () => {

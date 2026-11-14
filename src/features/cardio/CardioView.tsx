@@ -198,7 +198,9 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
       if (editing === null) {
         const id = draftId ?? String(container.ids.next());
         setDraftId(id);
-        await repo.add(result.input, form.track, { id });
+        // Nouvel essai après un essai qui a écrit puis échoué : la séance existe, la saisie (peut-être retouchée) la remplace.
+        if (draftId !== null && (await repo.get(id)) !== null) await repo.update(id, result.input);
+        else await repo.add(result.input, form.track, { id });
       } else await repo.update(editing, result.input);
       setMessage({
         alert: false,
