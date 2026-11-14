@@ -136,9 +136,10 @@ describe('I6-05 : SupplementsTodayCard', () => {
       expect((await db.data.repos.settings.get(KEY)) as unknown).toMatchObject({ failed: false, days: [], lost: false });
     });
 
-    const mountWithSettings = (over: { get?: () => Promise<never>; set?: (key: string, value: unknown) => Promise<void> }) => {
-      const settings = { ...db.data.repos.settings, ...over } as typeof db.data.repos.settings;
-      const data = { ...db.data, repos: { ...db.data.repos, settings } };
+    const mountWithSettings = (over: { get?: () => Promise<never>; set?: (key: string, value: unknown) => Promise<void>; transaction?: typeof db.data.transaction }) => {
+      const { transaction, ...settingsOver } = over;
+      const settings = { ...db.data.repos.settings, ...settingsOver } as typeof db.data.repos.settings;
+      const data = { ...db.data, ...(transaction ? { transaction } : {}), repos: { ...db.data.repos, settings } };
       return render(
         <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data })}>
           <SupplementsTodayCard />
@@ -158,7 +159,7 @@ describe('I6-05 : SupplementsTodayCard', () => {
       await create();
       await put({ failed: true, days: [TODAY], lost: false });
       vi.mocked(logFailure).mockClear();
-      mountWithSettings({ set: () => Promise.reject(new Error('disk')) });
+      mountWithSettings({ transaction: () => Promise.reject(new Error('disk')) });
       await screen.findByText(text);
       fireEvent.click(screen.getByRole('button', { name: 'Compris' }));
       expect(await screen.findByText('Impossible d’effacer ce message. Réessaie.')).toBeInTheDocument();
@@ -169,7 +170,10 @@ describe('I6-05 : SupplementsTodayCard', () => {
     it('prise cochée sans état à effacer : aucune écriture de l’état durable', async () => {
       await create();
       const writes: string[] = [];
-      mountWithSettings({ set: (key, value) => (writes.push(key), db.data.repos.settings.set(key as 'notifications.status', value as never)) });
+      mountWithSettings({
+        transaction: (work) =>
+          db.data.transaction((repos) => work({ ...repos, settings: { ...repos.settings, set: (key, value) => (writes.push(key), repos.settings.set(key, value)) } })),
+      });
       fireEvent.click(await screen.findByRole('checkbox'));
       await waitFor(async () => expect(await (await db.data.repos.supplements()).intakes(TODAY, TODAY)).toHaveLength(1));
       await act(async () => new Promise((r) => setTimeout(r, 30))); // laisse finir la fin du geste (levée éventuelle de l'état)
