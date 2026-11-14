@@ -263,7 +263,7 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
             </label>
             <label className="ct-nutrition__field">
               <span className="ct-nutrition__field-label">{tSupplements('unit')}</span>
-              <input className="ct-nutrition__input" maxLength={16} placeholder={tSupplements('unitHint')} value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
+              <input className="ct-nutrition__input" maxLength={16} autoCapitalize="none" autoCorrect="off" placeholder={tSupplements('unitHint')} value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
             </label>
           </div>
           <fieldset className="ct-supplements__fieldset">
