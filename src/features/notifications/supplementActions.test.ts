@@ -4,7 +4,7 @@ import type { DeviceId, LocalDate, LocalTime } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { supplementNotificationsFr } from '../../i18n/fr.supplementNotifications';
 import { createFakeNotificationActionSource, createFakeNotificationScheduler, type FakeNotificationActionSource } from '../../platform/notifications';
-import { createSupplementActionProcessor, startSupplementActions, type SupplementActionDeps } from './supplementActions';
+import { createSupplementActionProcessor, serialTroubleWrite, startSupplementActions, type SupplementActionDeps } from './supplementActions';
 import { createSupplementNotificationService } from './supplementNotifications';
 
 /**
@@ -161,6 +161,20 @@ describe('action « Pris » (FIX-0221)', () => {
   });
 
   describe('état durable des échecs (FIX-0242)', () => {
+    it('écritures de l’état en série : la seconde ne démarre qu’après la fin de la première (même si celle-ci échoue)', async () => {
+      const order: string[] = [];
+      const first = serialTroubleWrite(async () => {
+        order.push('1 début');
+        await new Promise((r) => setTimeout(r, 5));
+        order.push('1 fin');
+        throw new Error('x');
+      });
+      const second = serialTroubleWrite(async () => void order.push('2'));
+      await expect(first).rejects.toThrow('x');
+      await second;
+      expect(order).toEqual(['1 début', '1 fin', '2']);
+    });
+
     const KEY = 'notifications.actionTrouble' as 'notifications.status';
     const stored = async () => (await db.data.repos.settings.get(KEY)) as { failed: boolean; days: string[]; lost: boolean } | null;
     const failingWrites = () => {
