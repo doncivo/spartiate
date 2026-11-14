@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { addTrackPoint, emptyTrack, paceSecPerKm, type TrackState } from '../../domain/cardio';
 import type { Clock } from '../../domain/clock';
 import { formatChrono, formatDuration, formatKm, formatPace, kmValue, tCardio, type CardioTextKey } from '../../i18n/cardioText';
+import { logFailure } from '../../platform/desktop/log';
 import type { GeoEvent, GeolocationLoader } from '../../platform/geolocation';
 import { Button, HeroFigure } from '../../ui';
 import type { GpsReport } from './CardioView';
@@ -47,7 +48,7 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
       mounted.current = false;
       run.current += 1;
       starting.current = false;
-      void stopWatch();
+      stopWatch().catch((error: unknown) => logFailure('cardio-gps', error));
     };
   }, []);
 
@@ -75,7 +76,10 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
       if (!current()) return;
       if (event.kind === 'error') {
         if (event.code === 'denied') {
-          void stopWatch();
+          // Jeton invalidé : un `watch` encore en attente sera arrêté dès sa résolution ; un nouvel appui reste possible.
+          run.current += 1;
+          starting.current = false;
+          stopWatch().catch((error: unknown) => logFailure('cardio-gps', error));
           setState({ kind: 'blocked', reason: 'gpsDenied' });
         } else setState((s) => (s.kind === 'running' ? { ...s, lost: true } : s));
         return;

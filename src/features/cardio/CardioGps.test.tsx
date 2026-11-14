@@ -335,7 +335,7 @@ describe('FIX-0242 : démontage et double appui (aucun suivi orphelin)', () => {
     await screen.findByText('En attente du signal GPS…');
     view.unmount();
     await flush();
-    const warned = vi.mocked(console.warn).mock.calls.map((c) => String(c[0]));
+    const warned = spies.flatMap((spy) => spy.mock.calls).map((c) => String(c[0]));
     expect(warned.some((line) => line.includes('cardio-gps') && line.includes('arret-injecte'))).toBe(true);
   });
 });
