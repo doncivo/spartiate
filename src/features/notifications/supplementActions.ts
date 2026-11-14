@@ -56,6 +56,17 @@ export interface SupplementActionProcessor {
 const QUEUE_KEY = 'notifications.actionQueue';
 const TROUBLE_KEY = 'notifications.actionTrouble';
 
+/**
+ * FIX-0242 : file UNIQUE des écritures de l'état durable (lire puis écrire) : le passage des actions et la carte d'Aujourd'hui (« Compris », prise cochée)
+ * ne s'écrasent jamais. Une tâche en échec rejette pour son appelant mais ne bloque pas la suivante.
+ */
+let troubleChain: Promise<unknown> = Promise.resolve();
+export function serialTroubleWrite<T>(task: () => Promise<T>): Promise<T> {
+  const next = troubleChain.then(task, task);
+  troubleChain = next.catch(() => undefined);
+  return next;
+}
+
 interface PassOutcome {
   readonly run: SupplementActionRun;
   readonly failedDays: readonly LocalDate[];
@@ -149,13 +160,15 @@ export function createSupplementActionProcessor(deps: SupplementActionDeps): Sup
   /** Écrit l'état durable d'après le passage ; une écriture impossible est journalisée (le bandeau bref reste le seul recours). */
   async function recordTrouble(outcome: PassOutcome): Promise<void> {
     try {
-      const raw = await deps.settings.get(TROUBLE_KEY);
-      const prev = parseSupplementActionTrouble(raw);
-      const next: SupplementActionTrouble = troubleAfterPass(prev, { status: outcome.run.status, failedDays: outcome.failedDays, lost: outcome.lost });
-      // Rien à dire avant, rien à dire après, ou état identique : aucune écriture.
-      if (JSON.stringify(next) === JSON.stringify(prev) || (raw == null && !hasSupplementActionTrouble(next))) return;
-      await deps.settings.set(TROUBLE_KEY, next);
-      deps.onTroubleChange?.();
+      await serialTroubleWrite(async () => {
+        const raw = await deps.settings.get(TROUBLE_KEY);
+        const prev = parseSupplementActionTrouble(raw);
+        const next: SupplementActionTrouble = troubleAfterPass(prev, { status: outcome.run.status, failedDays: outcome.failedDays, lost: outcome.lost });
+        // Rien à dire avant, rien à dire après, ou état identique : aucune écriture.
+        if (JSON.stringify(next) === JSON.stringify(prev) || (raw == null && !hasSupplementActionTrouble(next))) return;
+        await deps.settings.set(TROUBLE_KEY, next);
+        deps.onTroubleChange?.();
+      });
     } catch {
       deps.log('supplement-action-trouble-write-failed');
     }
