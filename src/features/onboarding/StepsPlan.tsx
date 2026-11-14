@@ -143,6 +143,23 @@ export function StepSplit({ draft, patch, content }: StepProps) {
         </div>
         <Switch checked={draft.acceptProposal} label={tOnboarding('acceptLabel')} onChange={(acceptProposal) => patch({ acceptProposal })} />
       </div>
+      <div className="ct-onb__group">
+        <span className="ct-onb__label">{tOnboarding('mesoWeeksLabel')}</span>
+        <SegmentedControl<'4' | '5' | '6'>
+          label={tOnboarding('mesoWeeksLabel')}
+          value={String(draft.mesoWeeks) as '4' | '5' | '6'}
+          options={(['4', '5', '6'] as const).map((w) => ({ value: w, label: tOnboarding('mesoWeeksOption', { weeks: w }) }))}
+          onChange={(w) => patch({ mesoWeeks: Number(w) as 4 | 5 | 6 })}
+        />
+        <span className="ct-onb__hint">{tOnboarding('mesoWeeksHint')}</span>
+      </div>
+      <div className="ct-onb__switchRow">
+        <div>
+          <span className="ct-onb__label">{tOnboarding('rampUpLabel')}</span>
+          <span className="ct-onb__hint">{tOnboarding('rampUpHint')}</span>
+        </div>
+        <Switch checked={draft.rampUp} label={tOnboarding('rampUpLabel')} onChange={(rampUp) => patch({ rampUp })} />
+      </div>
     </>
   );
 }

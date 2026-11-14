@@ -5,6 +5,7 @@ import { pauseProgram, resumeProgram, resumeProposal } from '../../../domain/tra
 import type { Routine } from '../../../domain/training';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { MesocycleRecord } from '../../../db/repositories/mesocycleRepository';
+import { parseDraft } from '../../../domain/onboarding/draft';
 import { cycleDate, tCycle } from '../../../i18n/trainingCycleText';
 import { Button, SegmentedControl, Switch } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
@@ -62,11 +63,20 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
   const [error, setError] = useState(false);
 
   const fetchCycle = useCallback(async () => {
-    const [current, routines] = await Promise.all([loadCurrentCycle(access, today()), (await access.repos.trainingRoutines()).list()]);
-    return { current, routines };
+    const [current, routines, answers] = await Promise.all([
+      loadCurrentCycle(access, today()),
+      (await access.repos.trainingRoutines()).list(),
+      // PROG-01 (D-269 (7)) : durée et semaine de reprise de l'étape 7 de l'onboarding, valeurs du formulaire du premier cycle.
+      access.repos.settings.get('onboarding.answers').catch(() => null),
+    ]);
+    return { current, routines, answers: answers === null || answers === undefined ? null : parseDraft(answers) };
   }, [access, today]);
-  const apply = useCallback(({ current, routines }: { readonly current: CurrentCycle | null; readonly routines: readonly Routine[] }): void => {
+  const apply = useCallback(({ current, routines, answers }: { readonly current: CurrentCycle | null; readonly routines: readonly Routine[]; readonly answers?: ReturnType<typeof parseDraft> | null }): void => {
     setLoad({ status: 'ready', current, routines });
+    if (answers) {
+      setWeeks(String(answers.mesoWeeks) as WeeksChoice);
+      setRampUp(answers.rampUp);
+    }
     setRoutineId((id) => (routines.some((r) => r.id === id) ? id : (current?.record.routineId ?? routines[0]?.id ?? '')));
   }, []);
   const reload = async (): Promise<void> => {

@@ -234,7 +234,7 @@ describe('section Cycle : 4 / 6 semaines, semaine de reprise, durée du prochain
 
 describe('section Cycle : réglages de l’étape 7 de l’onboarding (PROG-01, D-269 (7))', () => {
   it('durée et semaine de reprise choisies à l’onboarding : préremplissent le premier cycle', async () => {
-    await db.data.repos.settings.set('onboarding.answers', { mesoWeeks: 4, rampUp: true });
+    await db.data.repos.settings.set('onboarding.answers', { v: 1, mesoWeeks: 4, rampUp: true });
     open();
     const r = await region();
     expect(await within(r).findByRole('radio', { name: '4 semaines' })).toHaveAttribute('aria-checked', 'true');
