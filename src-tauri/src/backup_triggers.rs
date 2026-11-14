@@ -4580,7 +4580,10 @@ pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 19] = [
     // I6-06 (migration 0018) : séances cardio publiées (cardio_session) ; le tracé (cardio_track) est local, sans déclencheur.
     (18, &["sync_cardio_session_ai", "sync_cardio_session_au"]),
     // PROG-01 (migration 0019) : captures propres de la durée du prochain mésocycle, de la semaine de reprise et de la cible des jours de repos.
-    (19, &["sync_mesocycle_program_au", "sync_nutrition_target_rest_au"]),
+    (
+        19,
+        &["sync_mesocycle_program_au", "sync_nutrition_target_rest_au"],
+    ),
 ];
 
 /// I5-01 point 1.1 : tables créées par les migrations Spartiate (toutes versions). Un déclencheur hérité de l'ancien projet (nom absent de
