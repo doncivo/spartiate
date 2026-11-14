@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit, puis 0.22.1 (ERGO-01b, PR #125) (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-272 dans docs/decisions.md.
+État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit, puis 0.22.1 (ERGO-01b, PR #125) (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Historique : CHANGELOG.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-275 dans docs/decisions.md.
 
 ## Rapport du matin (13/11)
 
@@ -11,7 +11,7 @@
 
 ## Prochaines étapes
 
-1. PROG-01 (0.24.0, PR #131 en brouillon, docs/PROG-01.md « État au 14/11 », D-267 à D-272) : schéma 19, domaine nutrition et import sv 18 faits ; reste le mésocycle (domaine, constat 6 de Codex, écrans), les écrans nutrition, les passes et la publication. Ali démarre le 16/11. Puis FIX-0242 (mission de nuit du 14/11), FIX-0241 (D-268, docs/FIX-0241.md).
+1. PROG-01 (0.24.0, PR #131 prête, docs/PROG-01.md, D-267, D-269 à D-275) : code, passes et revue faites ; reste CI verte → fusion → Tests sur main vert → tags v0.24.0 et ios-v0.24.0 → build-ios publish=false → vérification « Repartir de zéro → onboarding → import Remplacer sv 18 synthétique » (à consigner). Ali démarre le 16/11. Puis FIX-0242 (mission du 14/11), FIX-0241 (D-268), SYNC-01 (D-275).
 2. ERGO-02b (après PROG-01, décision d'Ali du 13/11) : bundle de départ ramené sous 198 694 octets par la configuration du build (passe architect, D-265 : exception de +154 en 0.23.0) ; règles de calcul à mettre dans src/domain (allure du dernier km, record de la fiche, rythme du check-in) ; test de la coche « pris » ; « par haltère » dans les écarts de fr.progression ; `heldFor` réemployé ; raison « aperçu illisible » ; semaine selon « Début de semaine » (Aujourd'hui PC) ; clés mortes `sessionTodayLoad`, `unknown` ; dates Renpho sur les 5 lignes (BodyProgress.test).
 3. Constat d'Ali : « Pris » app en arrière-plan et tuée (H-36). Import de programme : I6-08 (docs/I6-08.md, non exécuté).
 4. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
