@@ -161,7 +161,7 @@ describe('action « Pris » (FIX-0221)', () => {
   });
 
   describe('état durable des échecs (FIX-0242)', () => {
-    const KEY = 'notifications.supplementActionTrouble' as 'notifications.status';
+    const KEY = 'notifications.actionTrouble' as 'notifications.status';
     const stored = async () => (await db.data.repos.settings.get(KEY)) as { failed: boolean; days: string[]; lost: boolean } | null;
     const failingWrites = () => {
       let fail = true;

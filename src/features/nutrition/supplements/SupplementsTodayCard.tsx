@@ -1,8 +1,7 @@
 import { Check } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { todayLocal } from '../../../domain/clock';
-import { NO_SUPPLEMENT_ACTION_TROUBLE, parseSupplementActionTrouble, troubleAfterManualTake, type SupplementActionTrouble } from '../../../domain/supplementNotificationActions';
-import { dueIntakes, type DueIntake } from '../../../domain/nutrition/supplements';
+import { dueIntakes, NO_SUPPLEMENT_ACTION_TROUBLE, parseSupplementActionTrouble, troubleAfterManualTake, type DueIntake, type SupplementActionTrouble } from '../../../domain/nutrition/supplements';
 import { formatSupplementDose, tSupplements } from '../../../i18n/supplementsText';
 import { Button, Icon } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
@@ -11,7 +10,7 @@ import { useSyncedData } from '../../sync/remoteChanges';
 import { replanSupplementReminders } from './replan';
 import './Supplements.css';
 
-const TROUBLE_KEY = 'notifications.supplementActionTrouble';
+const TROUBLE_KEY = 'notifications.actionTrouble';
 
 /** Libellé d'une prise : « 08:00 · Créatine, 5 g ». */
 export function intakeLabel(item: DueIntake): string {

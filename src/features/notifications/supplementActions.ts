@@ -31,7 +31,7 @@ export interface SupplementActionDeps {
   /** `failed` : une action n'a pas pu être appliquée (rejouée au passage suivant) ; `lost` : lignes illisibles ou non écrites par le natif. */
   readonly onTrouble: (kind: 'failed' | 'lost') => void;
   readonly log: (code: string) => void;
-  /** FIX-0242 : l'état durable des échecs (`notifications.supplementActionTrouble`) vient de changer : la carte d'Aujourd'hui le relit. */
+  /** FIX-0242 : l'état durable des échecs (`notifications.actionTrouble`) vient de changer : la carte d'Aujourd'hui le relit. */
   readonly onTroubleChange?: () => void;
 }
 
@@ -54,7 +54,7 @@ export interface SupplementActionProcessor {
 }
 
 const QUEUE_KEY = 'notifications.actionQueue';
-const TROUBLE_KEY = 'notifications.supplementActionTrouble';
+const TROUBLE_KEY = 'notifications.actionTrouble';
 
 interface PassOutcome {
   readonly run: SupplementActionRun;
