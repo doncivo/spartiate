@@ -13,6 +13,7 @@ export const supplementsFr = {
   writeError: 'La prise n’a pas pu être enregistrée. Réessaie.',
   actionTroubleFailed: 'Une prise cochée depuis la notification n’a pas pu être enregistrée. Coche-la ici.',
   actionTroubleAck: 'Compris',
+  actionTroubleClearError: 'Impossible d’effacer ce message. Réessaie.',
   actionTroubleLost: 'Une action « Pris » de la notification n’a pas pu être lue. Vérifie tes prises ici.',
   // Section de Nutrition
   title: 'Compléments',

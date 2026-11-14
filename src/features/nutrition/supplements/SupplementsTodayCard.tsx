@@ -6,6 +6,8 @@ import { formatSupplementDose, tSupplements } from '../../../i18n/supplementsTex
 import { Button, Icon } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
+import { logFailure } from '../../../platform/desktop/log';
+import { serialTroubleWrite } from '../../notifications/supplementActions';
 import { useSyncedData } from '../../sync/remoteChanges';
 import { replanSupplementReminders } from './replan';
 import './Supplements.css';
@@ -33,6 +35,7 @@ export function SupplementsTodayCard() {
   const navigate = useNavigationStore((s) => s.navigate);
   const [items, setItems] = useState<readonly DueIntake[] | null>(null);
   const [error, setError] = useState(false);
+  const [clearError, setClearError] = useState(false);
   const [trouble, setTrouble] = useState<SupplementActionTrouble>(NO_SUPPLEMENT_ACTION_TROUBLE);
   const synced = useSyncedData(['supplement', 'supplement_intake']);
   const today = todayLocal(container.clock);
@@ -57,33 +60,36 @@ export function SupplementsTodayCard() {
       (raw) => {
         if (live) setTrouble(parseSupplementActionTrouble(raw));
       },
-      () => undefined,
+      () => logFailure('supplements', 'action-trouble-read-failed'),
     );
     return () => {
       live = false;
     };
   }, [load, data, synced]);
 
-  /** Prise cochée à la main : lève l'état durable (jour concerné ou antérieur, pertes). Une écriture impossible laisse le message visible. */
-  const clearTrouble = async (): Promise<void> => {
+  /** Applique `change` à l'état durable relu juste avant l'écriture, dans la file unique ; n'écrit que si l'état change. Échec : message sur la carte et journal. */
+  const updateTrouble = async (change: (prev: SupplementActionTrouble) => SupplementActionTrouble): Promise<void> => {
     try {
-      const next = troubleAfterManualTake(parseSupplementActionTrouble(await data.repos.settings.get(TROUBLE_KEY)), today);
-      await data.repos.settings.set(TROUBLE_KEY, next);
+      const next = await serialTroubleWrite(async () => {
+        const prev = parseSupplementActionTrouble(await data.repos.settings.get(TROUBLE_KEY));
+        const changed = change(prev);
+        if (JSON.stringify(changed) !== JSON.stringify(prev)) await data.repos.settings.set(TROUBLE_KEY, changed);
+        return changed;
+      });
       setTrouble(next);
+      setClearError(false);
     } catch {
-      // le message reste affiché : rien n'est effacé sans succès
+      // rien n'est effacé sans succès : le message reste affiché, avec la raison
+      logFailure('supplements', 'action-trouble-clear-failed');
+      setClearError(true);
     }
   };
 
-  /** « Compris » : accusé de réception explicite, efface tout l'état durable (échecs et pertes). Une écriture impossible laisse le message. */
-  const acknowledgeTrouble = async (): Promise<void> => {
-    try {
-      await data.repos.settings.set(TROUBLE_KEY, NO_SUPPLEMENT_ACTION_TROUBLE);
-      setTrouble(NO_SUPPLEMENT_ACTION_TROUBLE);
-    } catch {
-      // le message reste affiché
-    }
-  };
+  /** Prise cochée à la main : lève l'état durable (jour concerné ou antérieur, pertes). */
+  const clearTrouble = (): Promise<void> => updateTrouble((prev) => troubleAfterManualTake(prev, today));
+
+  /** « Compris » : accusé de réception explicite, efface tout l'état durable (échecs et pertes). */
+  const acknowledgeTrouble = (): Promise<void> => updateTrouble(() => NO_SUPPLEMENT_ACTION_TROUBLE);
 
   const toggle = async (item: DueIntake): Promise<void> => {
     const taken = !item.taken;
@@ -121,6 +127,11 @@ export function SupplementsTodayCard() {
         <Button variant="secondary" fullWidth onClick={() => void acknowledgeTrouble()}>
           {tSupplements('actionTroubleAck')}
         </Button>
+      ) : null}
+      {clearError ? (
+        <p role="alert" className="ct-today__muted">
+          {tSupplements('actionTroubleClearError')}
+        </p>
       ) : null}
       <ul className="ct-supplements__intakes">
         {items.map((item) => (
