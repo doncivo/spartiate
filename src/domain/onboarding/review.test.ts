@@ -77,7 +77,7 @@ describe('onboardingChanges : seulement ce qui a changé', () => {
   });
   it('FIX-0242 : valeur reçue par la synchro pendant la revue, champ non retouché : jamais écrasée ni montrée à l’aperçu', () => {
     const start = reviewStart(ANSWERS, CURRENT);
-    const synced: CurrentSettings = { ...CURRENT, weightKg: 81, heightCm: 183, sex: 'female', birthYear: 1990, experience: 'advanced', activity: 'high', equipmentProfileId: 'autre', goal: 'maintain' };
+    const synced: CurrentSettings = { ...CURRENT, weightKg: 81, heightCm: 183, sex: 'female', birthYear: 1990, experience: 'advanced', activity: 'active', equipmentProfileId: 'autre', goal: 'maintain' };
     expect(onboardingChanges(start, synced, start).map((c) => c.field)).toEqual([]);
   });
   it('FIX-0242 : champ retouché pendant la revue : compte, même si la synchro a changé la valeur entre-temps', () => {
