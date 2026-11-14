@@ -181,4 +181,36 @@ describe('FIX-0242 : nouvel essai sans doublon', () => {
     expect(ids[2]).toBeDefined();
     expect(ids[2]).not.toBe(ids[0]);
   });
+
+  it('revue : essai qui écrit puis échoue, durée retouchée, nouvel essai → une seule séance, avec la durée retouchée', async () => {
+    const real = await repo();
+    let failNext = true;
+    const flaky = {
+      ...real,
+      add: async (...args: Parameters<typeof real.add>) => {
+        const id = await real.add(...args);
+        if (failNext) {
+          failNext = false;
+          throw new Error('échec simulé après écriture');
+        }
+        return id;
+      },
+    };
+    const data = { ...db.data, repos: { ...db.data.repos, cardio: async () => flaky } } as typeof db.data;
+    render(
+      <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data, platform: { runtime: 'web', os: 'other' } })}>
+        <CardioView timeZone={TZ} />
+      </AppContainerProvider>,
+    );
+    await screen.findByText('Aucune séance de cardio pour l’instant.');
+    type('Durée (min ou h:mm:ss)', '30');
+    type('Ressenti (1 à 10)', '6');
+    save();
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    type('Durée (min ou h:mm:ss)', '40');
+    db.clock.advance(1_000);
+    save();
+    expect(await screen.findByRole('status')).toHaveTextContent('Séance enregistrée.');
+    await waitFor(async () => expect((await real.list()).map((s) => s.durationSec)).toEqual([2400]));
+  });
 });

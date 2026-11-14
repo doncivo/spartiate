@@ -288,4 +288,54 @@ describe('FIX-0242 : démontage et double appui (aucun suivi orphelin)', () => {
     await flush();
     expect(gps.calls.watching).toBe(1);
   });
+
+  it('revue : `denied` reçu pendant que `watch` est en attente → suivi arrêté dès sa résolution, une fois ; nouvel appui possible', async () => {
+    const first = deferred<() => Promise<void>>();
+    let stopped = 0;
+    let watching = 0;
+    let listener: ((e: GeoEvent) => void) | null = null;
+    const stop = async (): Promise<void> => {
+      stopped += 1;
+    };
+    const geo: Geolocation = {
+      available: true,
+      permission: async () => 'granted',
+      request: async () => 'granted',
+      watch: (cb) => {
+        watching += 1;
+        listener = cb;
+        return watching === 1 ? first.promise : Promise.resolve(stop);
+      },
+    };
+    render(<CardioGps load={async () => geo} clock={clock} onReport={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Démarrer le suivi GPS' }));
+    await flush();
+    const early = listener as ((e: GeoEvent) => void) | null;
+    act(() => early?.({ kind: 'error', code: 'denied' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Localisation refusée');
+    first.resolve(stop);
+    await flush();
+    expect(stopped).toBe(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Démarrer le suivi GPS' }));
+    await screen.findByText('En attente du signal GPS…');
+    expect(watching).toBe(2);
+  });
+
+  it('revue : arrêt en échec au démontage → écrit au journal technique (scope cardio-gps), jamais un rejet muet', async () => {
+    const geo: Geolocation = {
+      available: true,
+      permission: async () => 'granted',
+      request: async () => 'granted',
+      watch: async () => async () => {
+        throw new Error('arret-injecte');
+      },
+    };
+    const view = render(<CardioGps load={async () => geo} clock={clock} onReport={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Démarrer le suivi GPS' }));
+    await screen.findByText('En attente du signal GPS…');
+    view.unmount();
+    await flush();
+    const warned = vi.mocked(console.warn).mock.calls.map((c) => String(c[0]));
+    expect(warned.some((line) => line.includes('cardio-gps') && line.includes('arret-injecte'))).toBe(true);
+  });
 });
