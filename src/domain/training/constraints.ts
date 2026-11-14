@@ -120,6 +120,8 @@ export interface ConstraintContext {
   readonly deload: boolean;
   readonly recovery: RecoverySnapshot | null | undefined;
   readonly config: ProgressionConfig;
+  readonly deloadSets?: number;
+  readonly deloadLoad?: number;
 }
 
 export function activeConstraints(ctx: ConstraintContext): ActiveConstraints {
@@ -131,6 +133,8 @@ export function activeConstraints(ctx: ConstraintContext): ActiveConstraints {
     deload: ctx.deload,
     lowRecovery: isLowRecovery(ctx.recovery, config),
     redDay: ctx.recovery?.redDay === true && isLowRecovery(ctx.recovery, config),
+    ...(ctx.deloadSets !== undefined ? { deloadSets: ctx.deloadSets } : {}),
+    ...(ctx.deloadLoad !== undefined ? { deloadLoad: ctx.deloadLoad } : {}),
   };
 }
 

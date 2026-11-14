@@ -192,6 +192,8 @@ export function prescribe(input: PrescribeInput): Prescription {
     deload: input.deload === true,
     recovery: input.recovery,
     config,
+    ...(input.deload === true && input.deloadSets !== undefined ? { deloadSets: input.deloadSets } : {}),
+    ...(input.deload === true && input.deloadLoad !== undefined ? { deloadLoad: input.deloadLoad } : {}),
   });
   addConstraintReasons(constraints, reasons);
   // I5-02 point 2.2 : Recovery basse issue d'une journée rouge acceptée par Ali (§ 16.7) ; même contrainte, la phrase le dit.

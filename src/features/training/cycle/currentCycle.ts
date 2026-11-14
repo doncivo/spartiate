@@ -26,5 +26,7 @@ export interface CurrentCycle {
 export async function loadCurrentCycle(access: DataAccess, day: LocalDate): Promise<CurrentCycle | null> {
   const repo = await access.repos.mesocycles();
   const [record, activeCount] = await Promise.all([repo.current(), repo.activeCount()]);
-  return record === null ? null : { record, state: mesocycleState(record, day, DEFAULT_GENERATION_CONFIG), activeCount };
+  if (record === null) return null;
+  const closedBefore = await repo.closedBefore(record.startDate);
+  return { record, state: mesocycleState(record, day, DEFAULT_GENERATION_CONFIG, { closedBefore }), activeCount };
 }

@@ -113,3 +113,27 @@ describe('MesocycleRepository (I3-02)', () => {
     expect(await db.driver.select('SELECT * FROM sync_outbox')).toEqual([]);
   });
 });
+
+describe('MesocycleRepository : durée du cycle suivant, semaine de reprise, cycles clos (PROG-01)', () => {
+  it('nextWeeks et rampUp écrits et relus ; changer la durée met en file next_weeks seul', async () => {
+    db = await openBaseDb(DEVICE);
+    const s = createMesocycleSpec({ routineId: ROUTINE_ID, startDate: START, weeks: 4, rampUp: true }, CONFIG);
+    if (s === null) throw new Error('spec');
+    const created = await db.data.transaction(async (repos) => (await repos.mesocycles()).start(s, { id: M1 }));
+    expect(created).toMatchObject({ weeks: 4, nextWeeks: null, rampUp: true });
+    await db.driver.execute('DELETE FROM sync_outbox');
+    const saved = await (await repo()).save(M1, { ...s, nextWeeks: 6 });
+    expect(saved).toMatchObject({ weeks: 4, nextWeeks: 6, rampUp: true });
+    expect((await outbox()).map((r) => r.field)).toEqual(['next_weeks']);
+  });
+
+  it('closedBefore : cycles clos commencés avant la date, hors cycles supprimés et actifs', async () => {
+    db = await openBaseDb(DEVICE);
+    expect(await (await repo()).closedBefore(day(70))).toBe(0);
+    await db.data.transaction(async (repos) => (await repos.mesocycles()).start(spec(), { id: M1 }));
+    await (await repo()).save(M1, closeMesocycle(spec(), 'repeat', day(35)));
+    await db.data.transaction(async (repos) => (await repos.mesocycles()).start(spec(ROUTINE_ID, day(35)), { id: M2 }));
+    expect(await (await repo()).closedBefore(day(35))).toBe(1);
+    expect(await (await repo()).closedBefore(START)).toBe(0);
+  });
+});
