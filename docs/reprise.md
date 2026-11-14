@@ -11,8 +11,8 @@
 
 ## Prochaines étapes
 
-1. PROG-01 (0.24.0) fusionné (#131, `7dcb6a88`), vérification consignée dans docs/PROG-01.md (une archive d'avant « Repartir de zéro » est refusée, D-187). Ali démarre le 16/11. Puis FIX-0242, FIX-0241 (D-268), SYNC-01 (D-275).
-   Test instable à corriger dans FIX-0242 : `src/features/app/TodayScreen.test.tsx:61` (« sans profil : carte d'accueil », titre « Aujourd'hui » introuvable en 1 s), rouge une fois en CI sur 834609f (Vitest dom 1/3), vert à la relance ; premier test du fichier.
+1. **0.24.0 (PROG-01) publiée sur PC et iPhone le 14/11** (tags v0.24.0 et ios-v0.24.0 sur `7dcb6a88`, docs/PROG-01.md, D-267, D-269 à D-275). Ali démarre le 16/11. **Prochain chantier : lot 0.25.0.** Puis FIX-0242, FIX-0241 (D-268), SYNC-01 (D-275).
+   Test instable à corriger dans FIX-0242 : `src/features/app/TodayScreen.test.tsx:61` (titre « Aujourd'hui » introuvable en 1 s), rouge une fois en CI, vert à la relance.
 2. ERGO-02b (après PROG-01, décision d'Ali du 13/11) : bundle de départ ramené sous 198 694 octets par la configuration du build (passe architect, D-265 : exception de +154 en 0.23.0) ; règles de calcul à mettre dans src/domain (allure du dernier km, record de la fiche, rythme du check-in) ; test de la coche « pris » ; « par haltère » dans les écarts de fr.progression ; `heldFor` réemployé ; raison « aperçu illisible » ; semaine selon « Début de semaine » (Aujourd'hui PC) ; clés mortes `sessionTodayLoad`, `unknown` ; dates Renpho sur les 5 lignes (BodyProgress.test).
 3. Constat d'Ali : « Pris » app en arrière-plan et tuée (H-36). Import de programme : I6-08 (docs/I6-08.md, non exécuté).
 4. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
