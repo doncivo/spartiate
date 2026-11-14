@@ -205,3 +205,86 @@ test('géométrie Profil et poids 440 × 956 : cartes dans la colonne, flèche s
   await context.close();
   if (errors.length > 0) throw new Error(errors.join(' ; '));
 });
+
+/**
+ * FIX-0241 (D-268) : géométrie des écrans PC de 1 024 à 1 920 px. Pas de défilement horizontal, aucun texte écrasé en colonne
+ * verticale (titre plus étroit que quatre caractères), aucun champ plus étroit que son contenu. Même page, fenêtre redimensionnée :
+ * la disposition PC suit `useLayout()`. Non atteignables simplement dans le navigateur de test, donc non couverts ici : la séance en
+ * cours et le Programme (il faut une routine et un cycle), Appareils et synchro (la ligne n'existe qu'avec une synchro configurée).
+ */
+const PC_WIDTHS = [1024, 1210, 1280, 1440, 1920] as const;
+const openFirstExercise = async (page: Page): Promise<void> => {
+  await goTraining('Bibliothèque')(page);
+  await page.locator('.ct-training__row').first().click();
+  await page.waitForTimeout(300);
+};
+const goPlusSync = async (page: Page): Promise<void> => {
+  await goTab('Plus')(page);
+  const sync = page.getByRole('button', { name: /^Appareils et synchro/ });
+  if ((await sync.count()) > 0) await sync.first().click();
+};
+const GEOMETRY_SCREENS: ReadonlyArray<readonly [string, (page: Page) => Promise<void>]> = [
+  ['Aujourd’hui', async () => undefined],
+  ['Entraînement routines', goTraining()],
+  ['Entraînement bibliothèque', goTraining('Bibliothèque')],
+  ['Fiche d’exercice', openFirstExercise],
+  ['Entraînement matériel', goTraining('Matériel')],
+  ['Nutrition journal', goNutrition()],
+  ['Nutrition dashboard', goNutrition('Dashboard')],
+  ['Progrès (Récupération, Corps, Cardio)', goTab('Progrès')],
+  ['Plus', goTab('Plus')],
+  ['Plus › Appareils et synchro', goPlusSync],
+  ['Profil et poids', goBody],
+  ...ONBOARDING_STEPS.map((n, i) => [`Onboarding ${String(i + 1)} ${n}`, goOnboarding(i + 1)] as const),
+];
+
+interface GeometryProblem { readonly kind: string; readonly element: string; readonly detail: string }
+
+async function geometryProblems(page: Page): Promise<GeometryProblem[]> {
+  return page.evaluate(() => {
+    const out: Array<{ kind: string; element: string; detail: string }> = [];
+    const doc = document.documentElement;
+    if (doc.scrollWidth > doc.clientWidth + 1) out.push({ kind: 'défilement horizontal', element: 'document', detail: `${String(doc.scrollWidth)} > ${String(doc.clientWidth)}` });
+    const name = (el: Element): string => `${el.tagName.toLowerCase()}${el.className.toString() ? `.${el.className.toString().trim().split(/\s+/).join('.')}` : ''}`;
+    const visible = (el: Element): DOMRect | null => {
+      const r = el.getBoundingClientRect();
+      if (r.width <= 2 || r.height <= 2) return null; // masqué ou réservé aux lecteurs d'écran
+      const style = getComputedStyle(el);
+      return style.visibility === 'hidden' || style.display === 'none' ? null : r;
+    };
+    for (const el of Array.from(document.querySelectorAll('h1,h2,h3,h4,label,p,button,.ct-section-title'))) {
+      const r = visible(el);
+      if (r === null) continue;
+      const own = Array.from(el.childNodes).filter((n) => n.nodeType === Node.TEXT_NODE).map((n) => n.textContent ?? '').join('').trim();
+      const text = el.matches('h1,h2,h3,h4,.ct-section-title') ? (el.textContent ?? '').trim() : own;
+      const limit = el.matches('h1,h2,h3,h4,.ct-section-title') ? 48 : 40;
+      if (text.length > 3 && r.width < limit) out.push({ kind: 'texte écrasé (colonne verticale)', element: name(el), detail: `« ${text.slice(0, 30)} » : ${String(Math.round(r.width))} px` });
+    }
+    for (const el of Array.from(document.querySelectorAll('input'))) {
+      if (['checkbox', 'radio', 'hidden', 'range', 'file', 'button', 'submit'].includes(el.type)) continue;
+      const r = visible(el);
+      if (r === null) continue;
+      if (r.width < 64) out.push({ kind: 'champ trop étroit', element: name(el), detail: `${String(Math.round(r.width))} px` });
+      else if (el.scrollWidth > el.clientWidth + 1) out.push({ kind: 'champ plus étroit que son contenu', element: name(el), detail: `${String(el.scrollWidth)} > ${String(el.clientWidth)}` });
+    }
+    return out;
+  });
+}
+
+for (const [screenName, prepare] of GEOMETRY_SCREENS) {
+  test(`géométrie PC 1 024 à 1 920 px : ${screenName}`, async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: PC_WIDTHS[0], height: 900 }, locale: 'fr-FR', timezoneId: 'Europe/Paris', colorScheme: 'dark' });
+    const page = await context.newPage();
+    await page.clock.setFixedTime(SUNDAY);
+    await openToday(page);
+    await prepare(page);
+    const errors: string[] = [];
+    for (const width of PC_WIDTHS) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.waitForTimeout(300);
+      for (const p of await geometryProblems(page)) errors.push(`[${screenName}] ${String(width)} px : ${p.kind} : ${p.element} (${p.detail})`);
+    }
+    await context.close();
+    if (errors.length > 0) throw new Error(errors.join('\n'));
+  });
+}
