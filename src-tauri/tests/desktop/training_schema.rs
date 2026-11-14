@@ -76,10 +76,13 @@ fn error_code(path: &Path) -> &'static str {
 
 /// I6-06 : version de la migration du cardio (`src/db/migrations/00NN_cardio.ts`), la dernière du registre.
 const CARDIO_VERSION: u32 = 18;
+/// PROG-01 : version de la migration 0019 (mésocycle et jours de repos), la dernière du registre.
+const LATEST_VERSION: u32 = 19;
 
 #[test]
-fn i6_06_the_app_schema_version_is_the_cardio_version() {
-    assert_eq!(APP_SCHEMA_VERSION, CARDIO_VERSION);
+fn prog01_the_app_schema_version_is_the_latest_migration_after_the_cardio_one() {
+    assert_eq!(APP_SCHEMA_VERSION, LATEST_VERSION);
+    assert!(CARDIO_VERSION < LATEST_VERSION);
 }
 
 /// I6-06 : les deux déclencheurs de capture de `cardio_session` n'existent qu'à partir de la version du cardio ; aucun sur le tracé local
@@ -649,7 +652,7 @@ fn i6_06_a_backup_newer_than_the_cardio_version_is_refused_as_newer_schema() {
     let dir = scratch();
     let path = dir.path().join("newer.db");
     make_db(&path, 3, &TABLES);
-    let inserts: String = (4..=CARDIO_VERSION + 1)
+    let inserts: String = (4..=APP_SCHEMA_VERSION + 1)
         .map(|v| format!("INSERT INTO schema_migrations (version) VALUES ({v}); "))
         .collect();
     Connection::open(&path)

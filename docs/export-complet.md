@@ -263,6 +263,8 @@ Cycles d’entraînement.
 | `status` | enum | — | non |  |
 | `outcome` | enum | — | oui |  |
 | `ended_on` | date | — | oui |  |
+| `next_weeks` | int | — | oui |  |
+| `ramp_up` | bool | — | oui |  |
 
 ### `csv/food.csv`
 
@@ -329,6 +331,9 @@ Cibles de nutrition, une ligne par décision ; `decided_at` = instant de la déc
 | `source` | enum | — | non |  |
 | `accepted` | bool | — | non |  |
 | `engine_version` | int | — | oui |  |
+| `rest_kcal` | real | kcal par jour | oui |  |
+| `rest_carb_g` | real | g par jour | oui |  |
+| `training_days` | text | — | oui |  |
 | `decided_at` | datetime | — | oui |  |
 
 ### `csv/day_completeness.csv`

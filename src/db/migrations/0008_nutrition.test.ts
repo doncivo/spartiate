@@ -147,7 +147,7 @@ describe('migration 0008 : nutrition (I4-02)', () => {
     for (const [name, columns] of CAPTURE_TABLES_V8) {
       const table = SYNC_CATALOGUE.table(name);
       if (!table) throw new Error(`${name} absent du catalogue`);
-      expect([...columns], name).toEqual([...publishedColumns(table)]);
+      expect([...columns], name).toEqual([...publishedColumns(table)].filter((c) => !['rest_kcal', 'rest_carb_g', 'training_days'].includes(c))); // 0019 (PROG-01) : capture propre
     }
   });
 

@@ -69,8 +69,7 @@ export function TodaySessionCard() {
         .slice(0, pc ? day.exercises.length : SHOWN)
         .map((l) => l.id);
       // Semaine de deload du cycle : la séance lancée depuis la routine du cycle propose le deload par défaut (I3-02), l'aperçu aussi.
-      const deload = cycle.state.kind === 'deload';
-      const preview = await import('./todaySessionPreview').then((m) => m.loadTodaySessionPreview(data, day, shown, { nowMs: clock.nowMs(), deload })).catch(() => null);
+      const preview = await import('./todaySessionPreview').then((m) => m.loadTodaySessionPreview(data, day, shown, { nowMs: clock.nowMs(), plan: cycle.state.plan })).catch(() => null);
       return { routineId: routine.id, day, preview };
     }
     return () => {

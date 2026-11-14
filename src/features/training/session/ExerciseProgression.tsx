@@ -72,6 +72,8 @@ interface Loaded {
   readonly profile: ProgressionProfileRecord | null;
   /** I3-02 : la séance a commencé en semaine de deload du cycle suivi. */
   readonly cycleDeload: boolean;
+  /** PROG-01 : décharge d'un cycle de 4 ou 6 semaines (2 séries, 90 %) ; `null` : deload I2. */
+  readonly cycleDeloadPlan: { readonly sets: number; readonly load: number } | null;
   /** I4-08 point 4 : RIR cible de la séance proposée pour cet exercice (semaine du cycle) ; null : aucun. */
   readonly targetRir: number | null;
   /** Rang de l'exercice dans la séance de référence (celle dont vient la charge) ; null : inconnu, aucune décote de position. */
@@ -190,7 +192,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         if (!live.current) return;
         const bodyweightKg = exercise?.bodyweightFraction ? await bodyweightNow(access) : null;
         if (!live.current) return;
-        setLoad({ status: 'ready', history, reference, own, profile, cycleDeload, targetRir: linkedRir({ id: workout.id }, link, exerciseId), lastPositionRank, bodyweightKg });
+        const plan = cycleDeload ? cycle.state.plan : null;
+        const cycleDeloadPlan = plan?.deloadSets !== undefined && plan.deloadLoad !== undefined ? { sets: plan.deloadSets, load: plan.deloadLoad } : null;
+        setLoad({ status: 'ready', history, reference, own, profile, cycleDeload, cycleDeloadPlan, targetRir: linkedRir({ id: workout.id }, link, exerciseId), lastPositionRank, bodyweightKg });
       } catch {
         if (live.current) setLoad({ status: 'error' });
       }
@@ -223,6 +227,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         // I5-02 point 2.2 : Recovery du jour seulement si Ali a accepté la journée rouge ; ignorée ou absente : aucune modulation.
         recovery,
         deload,
+        ...(deload && load.cycleDeloadPlan !== null ? { deloadSets: load.cycleDeloadPlan.sets, deloadLoad: load.cycleDeloadPlan.load } : {}),
         positionRank,
       }),
     );

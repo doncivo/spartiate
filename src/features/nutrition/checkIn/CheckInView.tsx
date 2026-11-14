@@ -60,7 +60,7 @@ function alertText(alert: CheckInAlert): string {
 }
 
 /** Tableau Actuel / Proposé / écart (CheckIn-apres) : mêmes valeurs que la proposition du moteur ; sans cible en vigueur, « — » et sa raison. */
-function ProposalTable({ proposal }: { readonly proposal: Proposal }) {
+function ProposalTable({ proposal, restFrom }: { readonly proposal: Proposal; readonly restFrom?: number | undefined }) {
   const previous = proposal.previousTarget;
   const perKg = (g: number): string => tNutrition('checkInProteinPerKg', { n: formatTenth(g / proposal.trace.weightKg) });
   const rows: readonly { readonly label: string; readonly note?: string; readonly to: number; readonly from: number | undefined; readonly unit: string }[] = [
@@ -68,6 +68,8 @@ function ProposalTable({ proposal }: { readonly proposal: Proposal }) {
     { label: tNutrition('protein'), note: perKg(proposal.target.proteinG), to: proposal.target.proteinG, from: previous?.proteinG, unit: ' g' },
     { label: tNutrition('carbs'), to: proposal.target.carbG, from: previous?.carbG, unit: ' g' },
     { label: tNutrition('fat'), note: tNutrition('checkInFatMin'), to: proposal.target.fatG, from: previous?.fatG, unit: ' g' },
+    // PROG-01 (D-272) : avec une cible de repos, la ligne « Calories » est celle des jours d'entraînement ; même écart sur les jours de repos.
+    ...(proposal.restTarget !== undefined ? [{ label: tNutrition('restDayCalories'), to: proposal.restTarget.kcal, from: restFrom, unit: '' }] : []),
   ];
   return (
     <table className="ct-checkin__table" aria-label={tNutrition('proposalTitle')}>
@@ -136,7 +138,9 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
   const first = useMemo(() => firstCheckIn(snapshot.today, prefs.checkInWeekday, snapshot.days, snapshot.weighIns), [snapshot.today, prefs.checkInWeekday, snapshot.days, snapshot.weighIns]);
   const tdee = useMemo(() => tdeeAt(snapshot, period.weekEnd), [snapshot, period.weekEnd]);
   // Cible en vigueur pendant la semaine analysée : une décision prise pour la semaine suivante ne change pas la proposition relancée.
-  const current = effectiveTarget(targets, period.weekEnd)?.target ?? null;
+  const effective = effectiveTarget(targets, period.weekEnd);
+  const current = effective?.target ?? null;
+  const restPlan = effective?.restPlan ?? null;
   const result: CheckInResult = useMemo(
     () =>
       proposeCheckIn({
@@ -149,8 +153,9 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
         goal: prefs.goal,
         currentTarget: current,
         lowFloorConfirmed: false,
+        restPlan,
       }),
-    [prefs, period.weekEnd, snapshot.days, snapshot.weighIns, tdee, current],
+    [prefs, period.weekEnd, snapshot.days, snapshot.weighIns, tdee, current, restPlan],
   );
   const proposal = result.proposal;
   const existing = targets.find((t) => t.weekStart === period.checkInDate);
@@ -160,7 +165,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
     setBusy(true);
     setMessage(null);
     try {
-      const { outcome, record } = await recordCheckInDecision(data, { proposal, weekStart: period.checkInDate, weightKg: tdee.weightKg, currentTarget: current, decision, lowFloorConfirmed });
+      const { outcome, record } = await recordCheckInDecision(data, { proposal, weekStart: period.checkInDate, weightKg: tdee.weightKg, currentTarget: current, decision, lowFloorConfirmed, restPlan });
       if (record === null) {
         if (outcome.action === 'confirmation-required') {
           setMessage(tNutrition('decisionNeedsConfirm'));
@@ -312,7 +317,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
         <span className="ct-nutrition__muted">{tNutrition('checkInBound')}</span>
       </div>
       {proposal.initial ? <p className="ct-nutrition__muted">{tNutrition('proposalInitial')}</p> : null}
-      <ProposalTable proposal={proposal} />
+      <ProposalTable proposal={proposal} restFrom={restPlan?.rest.kcal} />
 
       <div className="ct-checkin__why">
       <h3 className="ct-nutrition__subtitle ct-section-title">{tNutrition('why')}</h3>

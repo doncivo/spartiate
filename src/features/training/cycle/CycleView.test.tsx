@@ -192,3 +192,53 @@ describe('section Cycle (I3-02)', () => {
     expect((await cycles()).map((c) => [c.status, c.outcome])).toEqual([['completed', 'stopped']]);
   });
 });
+
+describe('section Cycle : 4 / 6 semaines, semaine de reprise, durée du prochain cycle (PROG-01, D-267)', () => {
+  const rampUp = () => db.driver.select<{ weeks: number; ramp_up: number | null; next_weeks: number | null }>('SELECT weeks, ramp_up, next_weeks FROM mesocycle');
+
+  it('4 semaines, semaine de reprise désactivée par défaut : semaine 1 avec toutes les séries, RIR 3 ; semaine 2 : 2 à 3 en réserve', async () => {
+    open();
+    const r = await region();
+    expect(within(r).queryByRole('switch', { name: 'Semaine de reprise' })).toBeNull(); // 5 semaines : sans effet, non proposée (D-269 (5))
+    fireEvent.click(within(r).getByRole('radio', { name: 'Haut / Bas' }));
+    fireEvent.click(within(r).getByRole('radio', { name: '4 semaines' }));
+    expect(within(r).getByRole('switch', { name: 'Semaine de reprise' })).not.toBeChecked();
+    fireEvent.click(within(r).getByRole('button', { name: 'Commencer le cycle' }));
+    expect(await within(r).findByText('Semaine 1 sur 4 · Haut / Bas')).toBeInTheDocument();
+    expect(within(r).getByText('Semaine de travail : les séries de la routine, 3 répétitions en réserve.')).toBeInTheDocument();
+    expect(await rampUp()).toEqual([{ weeks: 4, ramp_up: 0, next_weeks: null }]);
+    const w2 = await later(7);
+    expect(await within(w2).findByText('Semaine de travail : les séries de la routine, 2 à 3 répétitions en réserve.')).toBeInTheDocument();
+  });
+
+  it('semaine de reprise activée à la main : enregistrée et dite en semaine 1', async () => {
+    open();
+    const r = await region();
+    fireEvent.click(within(r).getByRole('radio', { name: 'Haut / Bas' }));
+    fireEvent.click(within(r).getByRole('radio', { name: '4 semaines' }));
+    fireEvent.click(within(r).getByRole('switch', { name: 'Semaine de reprise' }));
+    fireEvent.click(within(r).getByRole('button', { name: 'Commencer le cycle' }));
+    expect(await within(r).findByText('Semaine de reprise : une série de moins sur les exercices à 4 séries ou plus.')).toBeInTheDocument();
+    expect(await rampUp()).toEqual([{ weeks: 4, ramp_up: 1, next_weeks: null }]);
+  });
+
+  it('durée changée en cours de cycle : appliquée au prochain cycle, celui-ci garde sa durée', async () => {
+    const r = await startCycle('5 semaines');
+    const next = within(r).getByRole('radiogroup', { name: 'Durée du prochain cycle' });
+    expect(within(next).getAllByRole('radio').map((b) => b.textContent)).toEqual(['4 semaines', '5 semaines', '6 semaines']);
+    fireEvent.click(within(next).getByRole('radio', { name: '4 semaines' }));
+    expect(await within(r).findByText('Appliquée au prochain cycle ; celui-ci garde 5 semaines.')).toBeInTheDocument();
+    expect(within(r).getByText('Semaine 1 sur 5 · Haut / Bas')).toBeInTheDocument();
+    expect(await rampUp()).toEqual([{ weeks: 5, ramp_up: 0, next_weeks: 4 }]);
+  });
+});
+
+describe('section Cycle : réglages de l’étape 7 de l’onboarding (PROG-01, D-269 (7))', () => {
+  it('durée et semaine de reprise choisies à l’onboarding : préremplissent le premier cycle', async () => {
+    await db.data.repos.settings.set('onboarding.answers', { v: 1, mesoWeeks: 4, rampUp: true });
+    open();
+    const r = await region();
+    expect(await within(r).findByRole('radio', { name: '4 semaines' })).toHaveAttribute('aria-checked', 'true');
+    expect(within(r).getByRole('switch', { name: 'Semaine de reprise' })).toBeChecked();
+  });
+});

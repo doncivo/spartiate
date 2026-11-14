@@ -120,6 +120,11 @@ export const onboardingFr = {
   varietyLabel: 'Variété',
   varietyHint: 'Constante : les mêmes exercices. Équilibrée : 70 % restent, les autres changent toutes les 4 semaines. Variée : changement à chaque cycle.',
   acceptLabel: 'Ajouter ce programme à mes routines',
+  mesoWeeksLabel: 'Durée du mésocycle',
+  mesoWeeksOption: '{weeks} semaines',
+  mesoWeeksHint: 'La dernière semaine est une décharge. Reprise dans Entraînement › Programme au début du cycle.',
+  rampUpLabel: 'Semaine de reprise',
+  rampUpHint: 'Semaine 1 allégée d’une série sur les exercices à 4 séries ou plus. Désactivée par défaut.',
   acceptHint: 'La proposition s’ajoute comme une nouvelle routine : aucune routine existante n’est remplacée ni modifiée.',
   splitNoContent: 'Aucun programme de départ disponible pour l’instant.',
 
