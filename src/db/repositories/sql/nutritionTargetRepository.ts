@@ -1,7 +1,7 @@
 import type { WriteStamper } from '../../../domain/hlc';
 import { uuidGenerator, type IdGenerator } from '../../../domain/id';
 import { formatTrainingDays, restPlanOf } from '../../../domain/nutrition/restDay';
-import { effectiveTarget, validateTargetRecord, type TargetSource } from '../../../domain/nutrition/targetRecord';
+import { effectiveTarget, validateTargetRecord, type TargetRecordDraft, type TargetSource } from '../../../domain/nutrition/targetRecord';
 import { isId, type LocalDate } from '../../../domain/types';
 import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
 import { RepositoryError } from '../common';
@@ -46,8 +46,7 @@ export function createNutritionTargetRepository(db: SqlExecutor, stamper: WriteS
     typeof (db as Partial<SqlDriver>).transaction === 'function' ? (db as SqlDriver).transaction((tx) => work(createNutritionTargetRepository(tx, stamper, ids))) : null;
   const read = async (id: string): Promise<TargetRow | undefined> => (await db.select<TargetRow>('SELECT * FROM nutrition_target WHERE id = ?', [id]))[0];
 
-  return {
-    async record(draft, options) {
+  const recordOne = async (draft: TargetRecordDraft, options?: { readonly id?: string }): Promise<NutritionTargetRecord> => {
       const id = options?.id ?? ids.next();
       if (!isId(id)) throw new RepositoryError('invalid', 'nutrition_target', id);
       if (validateTargetRecord(draft).length > 0) throw new RepositoryError('invalid', 'nutrition_target', id);
@@ -61,17 +60,21 @@ export function createNutritionTargetRepository(db: SqlExecutor, stamper: WriteS
       const row = await read(id);
       if (!row) throw new RepositoryError('not-found', 'nutrition_target', id);
       return toRecord(row);
-    },
+  };
+  /** Plusieurs décisions : tout est validé avant la première écriture, puis une transaction (tout ou rien) ; dans `DataAccess.transaction`, écrit directement. */
+  const recordBatch = async (drafts: readonly TargetRecordDraft[]): Promise<readonly NutritionTargetRecord[]> => {
+    for (const draft of drafts) if (validateTargetRecord(draft).length > 0) throw new RepositoryError('invalid', 'nutrition_target', 'batch');
+    const outer = atomic((r) => r.record(drafts));
+    if (outer) return outer;
+    const out: NutritionTargetRecord[] = [];
+    for (const draft of drafts) out.push(await recordOne(draft));
+    return out;
+  };
 
-    async recordMany(drafts) {
-      // Tout est validé avant la première écriture ; sur le driver, une transaction (tout ou rien) ; dans `DataAccess.transaction`, écrit directement.
-      for (const draft of drafts) if (validateTargetRecord(draft).length > 0) throw new RepositoryError('invalid', 'nutrition_target', 'recordMany');
-      const outer = atomic((r) => r.recordMany(drafts));
-      if (outer) return outer;
-      const out: NutritionTargetRecord[] = [];
-      for (const draft of drafts) out.push(await this.record(draft));
-      return out;
-    },
+  return {
+    // Surcharge (même signal de synchro que `record`, sans nom de plus dans le départ) : une décision, ou plusieurs en une transaction.
+    record: ((arg: TargetRecordDraft | readonly TargetRecordDraft[], options?: { readonly id?: string }) =>
+      Array.isArray(arg) ? recordBatch(arg as readonly TargetRecordDraft[]) : recordOne(arg as TargetRecordDraft, options)) as NutritionTargetRepository['record'],
 
     async get(id) {
       const row = await read(id);
