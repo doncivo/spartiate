@@ -3,7 +3,7 @@ import { SYNC_TABLE_ORDER } from '../../../../src/domain/sync/format';
 import { publishedColumns, SYNC_CATALOGUE } from '../../../../src/domain/sync/syncTables';
 import { CAPTURE_TABLES_V18 } from '../../../../src/db/migrations/0018_cardio';
 import { carryKindText } from '../../../../src/features/sync/carryReportText';
-import { failureKinds } from '../../../../src/features/sync/syncText';
+import { failureKinds } from '../../../../src/features/sync/failureKinds';
 import { syncFieldFr } from '../../../../src/i18n/fr.syncField';
 
 /**

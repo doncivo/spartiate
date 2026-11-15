@@ -3,6 +3,7 @@ import { useEffect, type ReactNode } from 'react';
 import { t } from '../../i18n';
 import { pendingFileCount } from '../../domain/sync/pendingFiles';
 import { isPublishBlockedCause, publishCauseText } from '../../i18n/syncPublishCauseText';
+import { olderDeviceText } from '../../i18n/syncOlderDeviceText';
 import { tSyncRefonte } from '../../i18n/syncRefonteText';
 import type { SyncDeviceStatus } from '../../platform/sync/types';
 import { Icon, useLayout } from '../../ui';
@@ -155,7 +156,7 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
               {shownWarnings.map((code) => (
                 <li key={code} className="ct-settings__row" data-warning={code}>
                   {/* Y-FIX-02 (§30) : cause nommée de `publish-blocked`, texte du catalogue à la demande. */}
-                  {isPublishBlockedCause(code) ? publishCauseText(code) : warningText(code)}
+                  {isPublishBlockedCause(code) ? publishCauseText(code) : code === 'older-device' ? olderDeviceText() : warningText(code)}
                 </li>
               ))}
             </ul>

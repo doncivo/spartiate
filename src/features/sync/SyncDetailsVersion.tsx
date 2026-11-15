@@ -2,7 +2,8 @@ import { newerDevices } from '../../domain/sync/compat';
 import { t } from '../../i18n';
 import { useAppContainer, useFeatureStore } from '../app/AppContainerContext';
 import { syncStore } from './syncStore';
-import { failureKinds, formatSyncTime, newerDeviceText } from './syncText';
+import { failureKinds } from './failureKinds';
+import { formatSyncTime, newerDeviceText } from './syncText';
 
 /**
  * Emplacement « version » de Réglages › Synchronisation › Détails (Y-07 critère 10 ; ADR 0011 §10.4) : sans maquette, composé avec les
