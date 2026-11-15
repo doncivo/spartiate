@@ -64,6 +64,24 @@ C. **Retenue (exemption maintenue).** **Historique exempté (D-290).** Republier
 - Tests : `tests/unit/sync/versions/olderWriter.test.ts` (deux SQLite migrées en 18 et 19), `src/features/sync/olderDeviceBanner.test.tsx`,
   `src/db/migrations/schemaRepublish.test.ts` ; non-régression `twoVersions`, `reintegrate`, suites de synchro existantes.
 
+## Limites connues (revue code-reviewer 1, 2026-11-15)
+
+- **Écrivain oublié ou inconnu (M1, corrigé).** Seul un écrivain connu et actif (`sync_state` présent, statut autre que `forgotten`) peut
+  donner `older-device` : oublié ou absent de l'état local, sa ligne de côté est une ligne manquante ordinaire (`received-unapplied`,
+  reprise proposée par Détails), jamais « Mets-le à jour » pour un appareil qui n'existe plus (`olderWriter.test.ts`, « revue 1 »).
+- **Écrivain déduit du plus grand hlc (M2).** `olderParked` attribue une opération gardée à l'appareil de son hlc (le plus grand de ses
+  champs). Si ce champ vient d'un autre appareil (report, reprise), l'écrivain retenu peut être faux : seul le message change
+  (`older-device` ou `received-unapplied`), la ligne reste gardée et reprise de la même façon.
+- **Reprise depuis l'instantané (M3).** Entre la lecture de l'état publié en 19 de l'écrivain et celle de son journal republié, un cycle peut
+  voir l'écrivain à jour et ses lignes encore de côté : `received-unapplied` et la reprise unique depuis l'instantané de l'époque sont
+  alors demandées, puis consommées sans effet ; la republication `'+'` arrive au cycle suivant et applique la ligne. Aucune perte ; au
+  pire, une reprise automatique gaspillée pour l'époque (le bouton de Détails reste disponible). Non corrigé : la correction demanderait de
+  relier la marque `parkedResume` au journal lu, hors de quelques lignes.
+- **Parties gardées par la 0.24.0 (M4).** Les opérations mises de côté avant SYNC-01 n'ont pas de `sv` dans `sync_parked.op` : elles
+  restent comptées en `received-unapplied` (reprise), jamais en `older-device`, jusqu'à la republication de l'écrivain qui les applique.
+- **Texte chargé à la demande en échec (M5, corrigé).** Le bandeau montre le texte générique (jamais muet) et le chargement est retenté au
+  retour suivant de l'avertissement, sans boucle (`olderDeviceText.retry.test.tsx`).
+
 ## Passe architect (2026-11-15)
 
 Verdict : **approuvé**, aucun point bloquant. Relu : ce fichier, D-290, `docs/SYNC-01.md`, `git diff origin/main...HEAD` (24 fichiers).
