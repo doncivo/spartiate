@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { RoutineInput } from '../../../domain/training';
@@ -9,6 +9,7 @@ import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup'
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../../app/navigation';
+import { applyRemoteChanges } from '../../sync/remoteChanges';
 import { TodaySessionCard } from './TodaySessionCard';
 
 /**
@@ -44,8 +45,8 @@ const PROGRAM: RoutineInput = {
 const DONE: Readonly<Record<string, number>> = { 'bench-press-barbell': 80, 'row-barbell': 70, 'incline-press-dumbbell': 26, 'curl-barbell': 30, 'lateral-raise-dumbbell': 10 };
 
 let db: TestDb;
-const mount = () => {
-  const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data });
+const containerOf = () => createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data });
+const mount = (container = containerOf()) => {
   return render(
     <AppContainerProvider container={container}>
       <TodaySessionCard />
@@ -123,5 +124,55 @@ describe('FIX-0223 : carte « Séance du jour » conforme à l’aperçu', () =>
     expect(within(card).getByRole('button', { name: 'Commencer une séance' })).toBeInTheDocument();
     expect(card.textContent).not.toMatch(/min|kg/);
     expect(screen.queryByRole('button', { name: 'Lancer la séance' })).toBeNull();
+  });
+});
+
+describe('FIX-0243 (constat 7, D-260) : carte « Séance du jour » relue après une synchro reçue, sans remontage', () => {
+  const notify = (tables: readonly string[]) => act(async () => void (await applyRemoteChanges(containerOf(), { tables: new Set(tables), ids: new Map() })));
+
+  it('séance close et séries reçues : la charge de la séance (80 kg) s’affiche, carte montée une seule fois', async () => {
+    await followProgram();
+    mount();
+    const card = await screen.findByRole('region', { name: 'Séance du jour' });
+    expect(await within(card).findByText('≈ 31 min · 5 exercices')).toBeInTheDocument();
+    expect(card.querySelectorAll('.ct-session-card__load')).toHaveLength(0);
+    // Historique synthétique écrit hors de l'écran (comme une séance reçue d'un autre appareil), puis lot appliqué.
+    await closeOnce();
+    await notify(['workout', 'workout_set']);
+    expect(await within(card).findByText('80 kg')).toBeInTheDocument();
+    expect(screen.getAllByRole('region', { name: 'Séance du jour' })).toHaveLength(1);
+  });
+
+  it('cycle reçu : la carte « Séance » devient « Séance du jour » ; un lot sans rapport ne relit rien', async () => {
+    await db.data.transaction(async (repos) => (await repos.trainingRoutines()).create(PROGRAM));
+    mount();
+    expect(await screen.findByRole('region', { name: 'Séance' })).toBeInTheDocument();
+    const spec = createMesocycleSpec({ routineId: PROGRAM.id ?? '', startDate: '2026-11-09' as LocalDate, weeks: 5 }, DEFAULT_GENERATION_CONFIG);
+    if (spec === null) throw new Error('spec');
+    await db.data.transaction(async (repos) => (await repos.mesocycles()).start(spec));
+    await notify(['meal_entry']);
+    expect(screen.queryByRole('region', { name: 'Séance du jour' })).toBeNull();
+    await notify(['mesocycle']);
+    expect(await screen.findByRole('region', { name: 'Séance du jour' })).toBeInTheDocument();
+  });
+
+  it.each(['recommendation_decision', 'progression_profile', 'routine', 'routine_exercise', 'body_weight'])('lot touchant « %s » : la carte se relit (80 kg)', async (table) => {
+    await followProgram();
+    mount();
+    const card = await screen.findByRole('region', { name: 'Séance du jour' });
+    expect(await within(card).findByText('≈ 31 min · 5 exercices')).toBeInTheDocument();
+    await closeOnce();
+    await notify([table]);
+    expect(await within(card).findByText('80 kg')).toBeInTheDocument();
+  });
+
+  it('routine reçue (jour renommé) : relue', async () => {
+    await followProgram();
+    mount();
+    const card = await screen.findByRole('region', { name: 'Séance du jour' });
+    expect(within(card).getByText('Haut A')).toBeInTheDocument();
+    await db.driver.execute("UPDATE routine_day SET name = 'Haut A bis' WHERE id = ?", [u(21)]);
+    await notify(['routine_day']);
+    expect(await within(card).findByText('Haut A bis')).toBeInTheDocument();
   });
 });
