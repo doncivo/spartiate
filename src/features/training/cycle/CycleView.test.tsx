@@ -242,3 +242,23 @@ describe('section Cycle : réglages de l’étape 7 de l’onboarding (PROG-01, 
     expect(within(r).getByRole('switch', { name: 'Semaine de reprise' })).toBeChecked();
   });
 });
+
+describe('section Cycle : réglages de l’onboarding au premier cycle seulement (ERGO-02b, critère 9)', () => {
+  it('onboarding 4 semaines avec reprise : premier cycle prérempli ; après un cycle clos, le formulaire suivant revient aux valeurs par défaut', async () => {
+    await db.data.repos.settings.set('onboarding.answers', { v: 1, mesoWeeks: 4, rampUp: true });
+    open();
+    let r = await region();
+    expect(await within(r).findByRole('radio', { name: '4 semaines' })).toHaveAttribute('aria-checked', 'true');
+    expect(within(r).getByRole('switch', { name: 'Semaine de reprise' })).toBeChecked();
+    fireEvent.click(within(r).getByRole('radio', { name: 'Haut / Bas' }));
+    fireEvent.click(within(r).getByRole('button', { name: 'Commencer le cycle' }));
+    await within(r).findByText(/^Semaine 1 sur 4/);
+    fireEvent.click(within(r).getByRole('button', { name: 'Terminer le cycle' }));
+    fireEvent.click(await within(r).findByRole('button', { name: 'Terminer sans suite' }));
+    await within(r).findByText('Aucun cycle en cours.');
+    r = await later(1);
+    expect(await within(r).findByRole('radio', { name: '5 semaines' })).toHaveAttribute('aria-checked', 'true');
+    expect(within(r).getByRole('radio', { name: '4 semaines' })).toHaveAttribute('aria-checked', 'false');
+    expect(within(r).queryByRole('switch', { name: 'Semaine de reprise' })).toBeNull();
+  });
+});
