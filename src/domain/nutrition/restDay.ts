@@ -23,6 +23,16 @@ export interface RestPlan {
 export const DEFAULT_REST_GAP_KCAL = -200;
 export const DEFAULT_TRAINING_DAYS: readonly Weekday[] = Object.freeze([1, 2, 4, 5, 6] as Weekday[]);
 
+/**
+ * ERGO-02b (D-286) : jours d'entraînement proposés d'après le nombre de jours de la routine active (la routine ne porte pas de jour de semaine) :
+ * répartition sur la semaine avec au moins un jour de repos entre deux séances tant que c'est possible. `null`, 0 ou 7 jours et plus (aucun jour de
+ * repos) : valeur d'avant (`DEFAULT_TRAINING_DAYS`). Proposition seulement : Ali la modifie, une cible de repos enregistrée garde ses jours.
+ */
+const SPREAD: Readonly<Record<number, readonly Weekday[]>> = { 1: [1], 2: [1, 4], 3: [1, 3, 5], 4: [1, 2, 4, 5], 5: [1, 2, 4, 5, 6], 6: [1, 2, 3, 4, 5, 6] };
+export function defaultTrainingDays(routineDayCount: number | null): readonly Weekday[] {
+  return (routineDayCount === null ? undefined : SPREAD[routineDayCount]) ?? DEFAULT_TRAINING_DAYS;
+}
+
 const carbFor = (kcal: number, proteinG: number, fatG: number): number =>
   Math.max(0, Math.round((kcal - KCAL_PER_G.protein * proteinG - KCAL_PER_G.fat * fatG) / KCAL_PER_G.carb));
 
