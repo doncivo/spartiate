@@ -20,7 +20,24 @@ Chapitres PRD : 11 et 13 (records, charges), 14 (cardio), 15 (nutrition, check-i
 
 ## Passes
 
-**Agents des modules.** (en cours)
+**Passe architect** (option A, lecture seule) : pistes mesurées une à une (polyfill, préchargements entre blocs du départ, noms de fichiers en hachage seul, `base`, regroupements, options du minifieur) ; retenue : polyfill retiré et préchargements entre blocs du départ filtrés (−1 866 sur main), sans toucher la normalisation ni la liste blanche ; noms en hachage seul refusés (normalisation inopérante). D-287.
+
+**Agents des modules (rouge puis vert).** Index git partagé entre agents parallèles : deux commits mêlent des fichiers de deux points (signalé, historique non réécrit).
+| Critère | Point | Rouge | Vert | Échec observé au rouge |
+| --- | --- | --- | --- | --- |
+| 1 | Préchargement (performance) | `95d70208` | `6822c909` | `main → types` cité par un bloc du départ ; polyfill dans `tokens` ; 199 428 ≥ 198 694 |
+| 1 | Bloc `localDate` sorti du départ par `daysSinceWeekStart` (constaté à la mesure) | `e13ec0e0` | `665fa605` | `daysFromWeekStart is not a function` ; 45 blocs, 197 517 → 44 blocs, 197 350 |
+| 2 | `lastKmSecPerKm` → src/domain/cardio (training) | `4002cccf` | `cb0ace8c` | `lastKmSecPerKm is not a function` (4) |
+| 2 | Chiffres et record de la fiche → src/domain/training (training) | `c8a32ada` | `eb8f8011` (+ renommage dans `3ef0d4aa`) | `Cannot find module './exerciseSheet'` |
+| 2 | `weeklyRateKg` → src/domain/nutrition (nutrition) | `23f8f5ba` | `181cf9a1` | import absent |
+| 3 | « par haltère » dans les écarts (training) | `4febc15a` | `1b53059a` | « +2 kg : 3 × 10… » sans « par haltère » |
+| 3 | `heldFor` / `heldLookup` réemployés (training) | `f32d89d5` | `cbfb151e` + `2b8cbcd7` | garde : imports absents, `dumbbellsHeld` recomposé |
+| 4 | Semaine d'Aujourd'hui PC selon « Début de semaine » (nutrition, app) | `a5f63b1f` | `cbfb151e` | semaine restée du lundi au dimanche (2) |
+| 5 | « aperçu illisible » (training) | `5d488b17` | `cf5f394f` | `expected '— à saisir' to contain 'aperçu illisible'` |
+| 7 | Coche « pris » des Compléments : test seul (comportement juste) | — | `c080b80d` | prouvé par mutation (message retiré, bascule figée) |
+| 7 | Dates Renpho sur les 5 lignes : test seul | — | `51b484a3` | prouvé par mutation (une date pour toutes) |
+| 8 | Jours d'entraînement par défaut de la routine active (nutrition) | `3ef0d4aa` | `0e751bbc` | 3 échecs (D-288) |
+| 9 | Onboarding au premier cycle seulement (training) | `586da1e2` | `1853a6af` | après un cycle clos, « 5 semaines » non coché |
 
 **qa-test.** (à venir)
 
