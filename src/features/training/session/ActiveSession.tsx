@@ -33,6 +33,7 @@ import type { RestReport, RestTimerController } from './restTimer';
 import type { RedDayState } from './redDayState';
 import { SetRow } from './SetRow';
 import { heldFor } from '../loadDisplay';
+import { announceLocalChanges } from '../../sync/remoteChanges';
 
 /**
  * Écran de séance active (§ 13.2–13.4 ; maquettes iPhone-Seance, PC-Seance ; I1-02). Chaque écriture passe par le repository dans une
@@ -286,6 +287,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         if (!result.alreadyClosed) await (await repos.progression()).applyClosedWorkout(workout.id, (event) => logFailure('training', event));
         return result;
       });
+      // FIX-0243 : les cartes déjà montées (nutrition, « Séance du jour ») se relisent ; la séance close est lisible (transaction faite).
+      if (!closed.alreadyClosed) announceLocalChanges(['workout', 'workout_set']);
       // Séance close (repos effacé en base) : minuteur, notification et Live Activity s'arrêtent ; un échec ici ne la rouvre pas.
       await timer.stop().catch(() => undefined);
       haptics.notification('success');
