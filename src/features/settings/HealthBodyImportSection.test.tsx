@@ -50,9 +50,9 @@ describe('Apple Santé : section « Corps et nutrition » (I6-04)', () => {
     const text = { 'poids.csv': '2026-11-08T06:50:12+01:00;81,4;kg\n2026-11-08T06:51:12;82;kg\n', 'energie.csv': '2026-11-08T08:00:00+01:00;2300;kcal\n' };
     renderSection(folder(() => reads(text)));
     fireEvent.click(await screen.findByRole('button', { name: 'Importer maintenant' }));
-    expect(await screen.findByText(/1 jours lus · 1 ajoutés · 0 mis à jour · 0 inchangés · 1 refusés\./)).toBeInTheDocument();
+    expect(await screen.findByText(/jours lus : 1 · ajoutés : 1 · mis à jour : 0 · inchangés : 0 · refusés : 1\./)).toBeInTheDocument();
     expect(screen.getByText('date sans fuseau horaire : 1')).toBeInTheDocument();
-    expect(screen.getByText(/1 jours créés · 0 mis à jour/)).toBeInTheDocument();
+    expect(screen.getByText(/jours créés : 1 · mis à jour : 0/)).toBeInTheDocument();
     expect(screen.getByText('2 fichiers lus.')).toBeInTheDocument();
     expect(screen.getAllByText('Fichier absent : rien n’a été lu pour ce type.')).toHaveLength(8);
     expect(document.body.textContent).not.toMatch(/81[,.]4|2300/);

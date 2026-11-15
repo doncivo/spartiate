@@ -33,7 +33,7 @@ export const exportImportFr = {
   replaceHint: 'L’archive devient l’état de cet appareil : ce qu’elle ne contient pas est supprimé (et supprimé sur tes autres appareils).',
   confirm: 'Confirmer l’import',
   cancel: 'Annuler',
-  importDone: 'Import terminé : {add} ajouts, {modify} modifications, {delete} suppressions.',
+  importDone: 'Import terminé. Ajouts : {add} ; modifications : {modify} ; suppressions : {delete}.',
   importFailed: 'L’import a échoué : rien n’a été modifié.',
   refused: 'Archive refusée : {reason} Rien n’a été modifié.',
   refusedBeforeReset: 'Archive refusée : elle date d’avant « Repartir de zéro ». Rien n’a été modifié.',
