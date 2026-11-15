@@ -1,13 +1,14 @@
-import { confidenceOf } from '../../../domain/training/confidence';
-import { DEFAULT_PROGRESSION_CONFIG } from '../../../domain/training/config';
-import { analyzeHistory, current1rmFromSessions } from '../../../domain/training/estimate1rm';
-import type { Difficulty, Exercise, ExerciseSession } from '../../../domain/training/types';
-import type { IsoDateTime } from '../../../domain/types';
+import type { IsoDateTime } from '../types';
+import { confidenceOf } from './confidence';
+import { DEFAULT_PROGRESSION_CONFIG } from './config';
+import { analyzeHistory, current1rmFromSessions } from './estimate1rm';
+import type { Difficulty, Exercise, ExerciseSession, HistorySet } from './types';
 
 /**
  * ERGO-02 : chiffres de la fiche exercice (aperçu Fiche-apres, PC-Fiche-apres), lus de l'historique clos de l'exercice. Aucune règle neuve :
  * le 1RM estimé et sa confiance sont ceux du moteur (`analyzeHistory`, `current1rmFromSessions`, `confidenceOf`, config du PRD) ; le reste est
- * une lecture (meilleure série validée, séances récentes). Module à la demande, avec la fiche.
+ * une lecture (meilleure série validée, séances récentes). Module pur (déplacé de l'écran en ERGO-02b), importé directement par la fiche
+ * (hors de l'index du domaine) : il reste à la demande, avec elle.
  */
 
 export type SheetOneRm =
@@ -49,6 +50,24 @@ const DAY_MS = 86_400_000;
 
 const byRecent = (a: { readonly endedAt: string }, b: { readonly endedAt: string }): number => (a.endedAt < b.endedAt ? 1 : a.endedAt > b.endedAt ? -1 : 0);
 
+/** Séries de travail validées (répétitions saisies) d'une séance, dans l'ordre des séries. */
+const workSets = (session: ExerciseSession): HistorySet[] => session.sets.filter((s) => s.done && s.setKind === 'work' && s.reps !== null).sort((a, b) => a.position - b.position);
+
+/**
+ * Record de la fiche : charge la plus lourde d'une série de travail validée, puis le plus de répétitions à cette charge ; à égalité, la séance
+ * la plus ancienne l'a établi. Charge nulle ou absente : jamais un record. Null : aucune série retenue.
+ */
+export function sheetRecord(history: readonly ExerciseSession[]): SheetRecord | null {
+  let record: SheetRecord | null = null;
+  for (const session of [...history].sort(byRecent)) {
+    for (const set of workSets(session)) {
+      if (set.loadKg !== null && set.loadKg > 0 && (record === null || set.loadKg > record.loadKg || (set.loadKg === record.loadKg && (set.reps as number) >= record.reps)))
+        record = { loadKg: set.loadKg, reps: set.reps as number, endedAt: session.endedAt };
+    }
+  }
+  return record;
+}
+
 function oneRmOf(history: readonly ExerciseSession[], exercise: Pick<Exercise, 'metric' | 'bodyweightFraction'>, now: IsoDateTime): SheetOneRm {
   if (exercise.metric !== 'load-reps') return { kind: 'none', reason: 'notLoad' };
   if (exercise.bodyweightFraction) return { kind: 'none', reason: 'bodyweight' };
@@ -61,18 +80,14 @@ function oneRmOf(history: readonly ExerciseSession[], exercise: Pick<Exercise, '
 
 export function sheetStats(history: readonly ExerciseSession[], exercise: Pick<Exercise, 'metric' | 'bodyweightFraction'>, now: IsoDateTime): SheetStats {
   const sessions: SheetSession[] = [];
-  let record: SheetRecord | null = null;
   for (const session of [...history].sort(byRecent)) {
-    const work = session.sets.filter((s) => s.done && s.setKind === 'work' && s.reps !== null).sort((a, b) => a.position - b.position);
+    const work = workSets(session);
     if (work.length === 0) continue;
     const groups: { loadKg: number | null; reps: number[] }[] = [];
     for (const set of work) {
       const last = groups.at(-1);
       if (last !== undefined && last.loadKg === set.loadKg) last.reps.push(set.reps as number);
       else groups.push({ loadKg: set.loadKg, reps: [set.reps as number] });
-      // Record : charge la plus lourde, puis le plus de répétitions à cette charge ; à égalité, la séance la plus ancienne l'a établi.
-      if (set.loadKg !== null && set.loadKg > 0 && (record === null || set.loadKg > record.loadKg || (set.loadKg === record.loadKg && (set.reps as number) >= record.reps)))
-        record = { loadKg: set.loadKg, reps: set.reps as number, endedAt: session.endedAt };
     }
     sessions.push({ workoutId: session.workoutId, endedAt: session.endedAt, difficulty: session.difficulty, deload: session.deload === true, groups });
   }
@@ -88,5 +103,5 @@ export function sheetStats(history: readonly ExerciseSession[], exercise: Pick<E
     const last = values.at(-1);
     if (values.length >= 2 && first !== undefined && last !== undefined) trend = { values, deltaKg: last - first };
   }
-  return { oneRm, record, trend, sessions };
+  return { oneRm, record: sheetRecord(history), trend, sessions };
 }
