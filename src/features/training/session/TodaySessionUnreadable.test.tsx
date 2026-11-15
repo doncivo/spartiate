@@ -10,10 +10,26 @@ import { PC_MEDIA_QUERY } from '../../../ui';
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../../app/navigation';
+import type * as TrainingStateModule from '../trainingState';
 import type * as PrescriptionContextModule from './prescriptionContext';
+import type * as TodaySessionPreviewModule from './todaySessionPreview';
 import { TodaySessionCard } from './TodaySessionCard';
 
-const flags = vi.hoisted(() => ({ unreadable: false }));
+const flags = vi.hoisted(() => ({ unreadable: false, trainingUnreadable: false, previewFails: false }));
+vi.mock('../trainingState', async (importOriginal) => {
+  const original = await importOriginal<typeof TrainingStateModule>();
+  return {
+    ...original,
+    readTrainingData: (...args: Parameters<typeof original.readTrainingData>) => (flags.trainingUnreadable ? Promise.reject(new Error('lecture impossible')) : original.readTrainingData(...args)),
+  };
+});
+vi.mock('./todaySessionPreview', async (importOriginal) => {
+  const original = await importOriginal<typeof TodaySessionPreviewModule>();
+  return {
+    ...original,
+    loadTodaySessionPreview: (...args: Parameters<typeof original.loadTodaySessionPreview>) => (flags.previewFails ? Promise.reject(new Error('aperçu impossible')) : original.loadTodaySessionPreview(...args)),
+  };
+});
 vi.mock('./prescriptionContext', async (importOriginal) => {
   const original = await importOriginal<typeof PrescriptionContextModule>();
   return {
@@ -48,10 +64,12 @@ async function follow(): Promise<void> {
   if (spec === null) throw new Error('spec');
   await db.data.transaction(async (repos) => (await repos.mesocycles()).start(spec));
 }
-const loadCells = async (): Promise<string[]> => {
+/** `timed` : l'aperçu a abouti (durée affichée) ; sans aperçu, la ligne dit seulement le nombre d'exercices. */
+const loadCells = async (timed = true): Promise<string[]> => {
   const card = await screen.findByRole('region', { name: 'Séance du jour' });
   const table = await within(card).findByRole('table', { name: 'Exercices de la séance du jour' });
-  await within(card).findByText(/≈ \d+ min/);
+  if (timed) await within(card).findByText(/≈ \d+ min/);
+  else expect(within(card).queryByText(/≈ \d+ min/)).toBeNull();
   return within(table)
     .getAllByRole('row')
     .slice(1)
@@ -63,6 +81,8 @@ beforeAll(async () => {
 });
 beforeEach(async () => {
   flags.unreadable = false;
+  flags.trainingUnreadable = false;
+  flags.previewFails = false;
   useNavigationStore.setState(INITIAL_NAVIGATION);
   vi.stubGlobal('matchMedia', (query: string) => ({ matches: query === PC_MEDIA_QUERY, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
   db = await openBaseDb(DEVICE, '2026-11-10T07:00:00.000Z');
@@ -90,6 +110,30 @@ describe('ERGO-02b : « à saisir » et « aperçu illisible » sont deux raison
     await follow();
     mount();
     const cells = await loadCells();
+    expect(cells).toHaveLength(2);
+    for (const cell of cells) {
+      expect(cell).toContain('aperçu illisible');
+      expect(cell).not.toContain('à saisir');
+    }
+  });
+
+  it('lecture des données d’entraînement impossible : toutes les lignes « — aperçu illisible », jamais « à saisir »', async () => {
+    flags.trainingUnreadable = true;
+    await follow();
+    mount();
+    const cells = await loadCells();
+    expect(cells).toHaveLength(2);
+    for (const cell of cells) {
+      expect(cell).toContain('aperçu illisible');
+      expect(cell).not.toContain('à saisir');
+    }
+  });
+
+  it('aperçu absent (chargement en échec) : toutes les lignes « — aperçu illisible », jamais « à saisir »', async () => {
+    flags.previewFails = true;
+    await follow();
+    mount();
+    const cells = await loadCells(false);
     expect(cells).toHaveLength(2);
     for (const cell of cells) {
       expect(cell).toContain('aperçu illisible');
