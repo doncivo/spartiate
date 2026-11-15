@@ -3,6 +3,7 @@ import { day, ROUTINE_ID, START } from '../../../tests/fixtures/training/mesocyc
 import { input, session } from '../../../tests/fixtures/training/progression';
 import { DEFAULT_GENERATION_CONFIG as CONFIG, DEFAULT_PROGRESSION_CONFIG as PCONFIG } from './config';
 import { activeConstraints, reducedTarget } from './constraints';
+import { constraintAlerts, explainPrescription } from './explain';
 import { prescribe } from './prescribe';
 import { redDaySnapshot } from './redDay';
 import { snapToEquipment } from './loadGrid';
@@ -149,6 +150,12 @@ describe('PROG-01 : exercice assisté en décharge, combinaisons (D-273, constat
           { reps: 10, loadKg: 30 },
         ]);
         if (bodyweightKg !== null) expect(bodyweightKg - (p.loadKg ?? 0)).toBeLessThanOrEqual(50);
+        // § 11.5 (FIX-0243) : assistance inchangée, aucune alerte ne dit une baisse de charge qui n'a pas eu lieu ; la phrase est celle de la décharge.
+        expect(explainPrescription(p)).toEqual({ key: 'deload', params: { sets: 2, rir: p.rirTarget ?? 0 } });
+        expect(constraintAlerts(p).map((x) => x.key)).toEqual([]);
+        expect(p.reasons).not.toContain('inactivity-discount');
+        expect(p.reasons).not.toContain('recovery-red-day');
+        expect(p.inactivityCut).toBe(0);
       });
     }
   }
@@ -156,5 +163,6 @@ describe('PROG-01 : exercice assisté en décharge, combinaisons (D-273, constat
     const plain = { ...ASSISTED, id: 'pull-up-weighted', assisted: false } as const;
     const p = prescribe(input({ exercise: plain, bodyweightKg: 80, history: [session(30, 30, [10, 10, 10, 10])], deload: true, deloadSets: 2, deloadLoad: 0.9 }));
     expect(p.loadKg ?? 0).toBeLessThan(30);
+    expect(constraintAlerts(p).map((x) => x.key)).toEqual(['alertInactivity']);
   });
 });
