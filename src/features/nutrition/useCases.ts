@@ -24,6 +24,7 @@ import {
   type WeighIn,
 } from '../../domain/nutrition';
 import { tNutrition } from '../../i18n/nutritionText';
+import { logFailure } from '../../platform/desktop/log';
 import type { SearchableFood } from '../../domain/nutrition/foodSearch';
 import type { LocalDate, LocalTime } from '../../domain/types';
 import type { DataAccess } from '../../db/repositories/dataAccess';
@@ -237,6 +238,7 @@ export async function activeRoutineDayCount(access: DataAccess): Promise<number 
     const routine = await (await access.repos.trainingRoutines()).get(cycle.routineId);
     return routine === null ? null : routine.days.length;
   } catch {
+    logFailure('nutrition', 'routine-days-read-failed');
     return null;
   }
 }
