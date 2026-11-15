@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { DeviceId, LocalDate, LocalTime } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
@@ -93,6 +93,47 @@ describe('Compléments (Complements-apres)', () => {
     fireEvent.click(await screen.findByRole('checkbox', { name: 'Marquer Créatine comme pris' }));
     expect(await screen.findByText('1 / 3')).toBeInTheDocument();
     await waitFor(async () => expect(await (await db.data.repos.supplements()).intakes(TODAY, TODAY)).toHaveLength(1));
+  });
+
+  it('ERGO-02b : la coche enregistre la prise pour ce complément, aujourd’hui, à l’heure prévue (et rien d’autre)', async () => {
+    await seed();
+    mount();
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'Marquer Oméga-3 comme pris' }));
+    await screen.findByText('3 / 3');
+    const repo = await db.data.repos.supplements();
+    const omega = (await repo.list()).find((x) => x.name === 'Oméga-3');
+    const intakes = await repo.intakes(TODAY, TODAY);
+    expect(intakes.filter((i) => i.supplementId === omega?.id)).toEqual([{ supplementId: omega?.id, date: TODAY, moment: '20:00' }]);
+    expect(await repo.intakes('2026-11-01' as LocalDate, '2026-11-12' as LocalDate)).toEqual([]);
+  });
+
+  it('ERGO-02b : cocher, décocher, recocher : une seule prise, jamais de doublon', async () => {
+    await seed();
+    mount();
+    const box = await screen.findByRole('checkbox', { name: 'Marquer Oméga-3 comme pris' });
+    fireEvent.click(box);
+    await screen.findByText('3 / 3');
+    fireEvent.click(box);
+    await screen.findByText('2 / 3');
+    fireEvent.click(box);
+    await screen.findByText('3 / 3');
+    expect(await (await db.data.repos.supplements()).intakes(TODAY, TODAY)).toHaveLength(3);
+  });
+
+  it('ERGO-02b : écriture impossible : message dit, la coche reste comme avant, aucun « pris » inventé', async () => {
+    await seed();
+    const repo = await db.data.repos.supplements();
+    const failing = { ...db.data, repos: { ...db.data.repos, supplements: async () => ({ ...(await db.data.repos.supplements()), setTaken: vi.fn().mockRejectedValue(new Error('disque plein')) }) } };
+    render(
+      <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: failing })}>
+        <SupplementsView today={TODAY} />
+      </AppContainerProvider>,
+    );
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'Marquer Oméga-3 comme pris' }));
+    expect(await screen.findByText('La prise n’a pas pu être enregistrée. Réessaie.')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Marquer Oméga-3 comme pris' })).not.toBeChecked();
+    expect(screen.getByText('2 / 3')).toBeInTheDocument();
+    expect(await repo.intakes(TODAY, TODAY)).toHaveLength(2);
   });
 
   it('constance : 14 jours, chaque jour dit en texte (jamais la couleur seule), part des prises', async () => {
