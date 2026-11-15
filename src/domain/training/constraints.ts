@@ -157,7 +157,9 @@ export function reducedTarget(
   // Journée rouge (D-170) : même facteur, aucune série retirée ; assistance jamais réduite (la charge saisie est l'assistance).
   const redDayCuts = c.redDay && !assisted;
   // D-273 (constat 6 de Codex) : exercice assisté, la charge saisie est l'assistance ; la réduire alourdirait l'exercice : en décharge, elle est gardée.
-  const deloadCut = c.deload && !assisted ? (c.deloadLoad ?? config.deloadLoad) : 1;
+  // FIX-0243 (constat 9) : en décharge, aucun facteur ne touche l'assistance (inactivité et Recovery comprises) ; seules les séries baissent.
+  if (c.deload && assisted) return { targetKg: reference.loadKg, reps: reference.reps.slice(0, sets), recoverySetRemoved: sets < beforeRecovery };
+  const deloadCut = c.deload ? (c.deloadLoad ?? config.deloadLoad) : 1;
   const factor = (1 - c.inactivityCut) * deloadCut * (recoveryCuts || redDayCuts ? config.lowRecoveryLoad : 1);
   return { targetKg: reference.loadKg * factor, reps: reference.reps.slice(0, sets), recoverySetRemoved: sets < beforeRecovery };
 }
