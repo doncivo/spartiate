@@ -4,7 +4,7 @@ import { expectedFavoriteId, favoriteId, isFavoriteId } from '../../../../src/do
 import { publishedColumns, SYNC_CATALOGUE } from '../../../../src/domain/sync/syncTables';
 import { CAPTURE_TABLES_V15 } from '../../../../src/db/migrations/0015_food_favorite';
 import { carryKindText } from '../../../../src/features/sync/carryReportText';
-import { failureKinds } from '../../../../src/features/sync/syncText';
+import { failureKinds } from '../../../../src/features/sync/failureKinds';
 import { syncFieldFr } from '../../../../src/i18n/fr.syncField';
 
 /**

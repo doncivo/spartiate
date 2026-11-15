@@ -599,6 +599,8 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
      */
     const firstModule = () => import('./orphanEpoch');
     const ownDeletionModule = () => import('./ownDeletion');
+    // SYNC-01 : un seul site de chargement du bloc à la demande `olderWriter` (détection et republication).
+    const olderModule = () => import('./olderWriter');
     if ((await repos.sync.getMeta(META.ownDeletionReceipts)) !== null) {
       await (await ownDeletionModule()).observeOwnDeletions(deps, ownScan, scan.incomplete);
     }
@@ -988,7 +990,12 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
       // curseurs aux positions couvertes et relit les journaux ; une seule demande par époque, ensuite l'avertissement reste visible.
       // TRI-04 : un parent qui manque encore après lecture complète est visible comme une ligne qui manque (même avertissement) ; la reprise
       // automatique reste réservée aux lignes manquantes (un parent absent n'est pas un enregistrement sauté).
-      const missingRow = (await repos.sync.parkedCount(['missing-row'])) > 0;
+      // SYNC-01 (D-275) : créations reçues d'un appareil encore à un schéma plus ancien (colonnes absentes) : gardées, `older-device` ; la
+      // reprise depuis l'instantané ne les compléterait pas, elle n'est demandée que pour les autres lignes manquantes.
+      const rowsParked = await repos.sync.parkedCount(['missing-row']);
+      const older = rowsParked > 0 ? await (await olderModule()).olderParked(deps) : 0;
+      if (allRead && older > 0) seen.warnings = [...(seen.warnings ?? []), 'older-device'];
+      const missingRow = rowsParked > older;
       if (allRead && (missingRow || (await repos.sync.parkedCount(['missing-parent'])) > 0)) seen.warnings = [...(seen.warnings ?? []), 'received-unapplied'];
       if (allRead && missingRow) {
         const tried = await readJson<{ epoch: EpochId }>(repos, META.parkedResume);
@@ -1024,6 +1031,9 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
     // RESET-01 : remise à zéro reçue pendant la lecture (journal, instantané, changement d'époque) : effacement AVANT la publication, rien
     // d'antérieur ne repart de cet appareil.
     await enforceReset(deps, hooks);
+
+    // SYNC-01 (D-290) : après une migration additive, lignes des tables concernées republiées entières, une fois (à la demande).
+    await (await olderModule()).republishAfterUpgrade(deps);
 
     seen.stage = 'publish';
 
