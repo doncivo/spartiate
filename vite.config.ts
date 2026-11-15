@@ -15,7 +15,7 @@ export const DEV_PORT = Number(process.env['CT_DEV_PORT'] ?? 1420);
 // build de playwright.config.ts ; jamais dans `npm run build`, `tauri build` ni les workflows de livraison (tests/bundle/startBundle.test.ts).
 const E2E_HOOKS = process.env['VITE_CT_E2E_HOOKS'] === '1';
 
-// ERGO-02b (D-n à acter) : blocs JavaScript du départ, graphe statique de l'entrée `main` (index.html), relevés au début de
+// ERGO-02b (D-287) : blocs JavaScript du départ, graphe statique de l'entrée `main` (index.html), relevés au début de
 // generateBundle, avant que vite:build-import-analysis réécrive les préchargements des imports dynamiques (__vite__mapDeps).
 const startFiles = new Set<string>();
 function startFilesPlugin(): Plugin {
@@ -59,8 +59,9 @@ export default defineConfig({
     target: ['es2022', 'chrome120', 'safari17'],
     // ERGO-02b : WebView2 (Chromium 120) et WKWebView (Safari 17+) gèrent <link rel="modulepreload"> : pas de polyfill. Un bloc du départ
     // qui importe à la demande ne précharge plus les blocs du départ, déjà chargés par index.html (préchargement sans effet, ~20 octets
-    // chacun dans __vite__mapDeps). Les CSS et les blocs hors du départ restent préchargés ; les autres hôtes (blocs à la demande,
-    // pairing.html, liens de index.html) gardent la liste complète.
+    // chacun dans __vite__mapDeps). Les CSS et les blocs hors du départ restent préchargés ; les blocs à la demande et les liens de
+    // index.html gardent la liste complète. pairing.html : un bloc partagé avec main qui importe à la demande (ex. tauriSync vers
+    // @tauri-apps/api/core) y perd un préchargement redondant (le bloc visé est déjà importé statiquement par la page), sans effet.
     modulePreload: {
       polyfill: false,
       resolveDependencies: (_file, deps, { hostId, hostType }) => (hostType === 'js' && startFiles.has(hostId) ? deps.filter((dep) => !startFiles.has(dep)) : deps),
