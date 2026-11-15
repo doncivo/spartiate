@@ -5,6 +5,7 @@ import type { RoutineInput } from '../../domain/training';
 import type { DeviceId, LocalDate, LocalTime } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { quickAddDraft, saveManualTarget } from '../nutrition/useCases';
+import { setFormatPrefs } from '../../i18n/formatPrefs';
 import { PC_MEDIA_QUERY } from '../../ui';
 import { AppContainerProvider } from './AppContainerContext';
 import { AppStatusBanner } from './AppStatusBanner';
@@ -53,9 +54,42 @@ beforeEach(async () => {
 });
 afterEach(async () => {
   cleanup();
+  setFormatPrefs({ firstWeekday: 'monday' });
   vi.unstubAllGlobals();
   for (const kind of ['offline', 'syncing', 'waitingIcloud', 'syncTrouble', 'signingExpiry'] as const) set(kind, null);
   await db.close();
+});
+
+describe('ERGO-02b (critère 4) : la semaine d’Aujourd’hui PC suit « Début de semaine »', () => {
+  const labels = async (): Promise<string[]> => {
+    const week = await screen.findByRole('region', { name: 'Cette semaine' });
+    return within(week)
+      .getAllByRole('listitem')
+      .map((li) => (li.getAttribute('aria-label') ?? '').split(' : ')[0] ?? '');
+  };
+
+  it('lundi (défaut) : lundi à dimanche', async () => {
+    open();
+    expect(await labels()).toEqual(['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']);
+  });
+
+  it('dimanche : la semaine du mardi 10/11 va du dimanche 08/11 au samedi 14/11', async () => {
+    setFormatPrefs({ firstWeekday: 'sunday' });
+    open();
+    expect(await labels()).toEqual(['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']);
+  });
+
+  it('dimanche : une séance close le dimanche 08/11 compte dans la semaine du mardi 10/11', async () => {
+    setFormatPrefs({ firstWeekday: 'sunday' });
+    await db.close();
+    db = await openBaseDb(DEVICE, '2026-11-08T09:00:00.000Z');
+    await db.data.transaction(async (repos) => (await repos.trainingRoutines()).create(ROUTINE));
+    await closeWith(80);
+    db.clock.advance(46 * 3_600_000); // mardi 10/11, 07 h
+    open();
+    const week = await screen.findByRole('region', { name: 'Cette semaine' });
+    expect(await within(week).findByLabelText('dimanche : séance faite')).toBeInTheDocument();
+  });
 });
 
 describe('ERGO-02 : Aujourd’hui sur PC, colonne droite', () => {

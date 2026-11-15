@@ -27,8 +27,6 @@ export const signingFr = {
     alertFailed: 'L’alerte n’a pas pu être planifiée : tu ne seras peut-être pas prévenu',
     allow: 'Autoriser',
     allowLabel: 'Autoriser les notifications pour l’alerte d’expiration',
-    viewReminders: 'Voir',
-    viewRemindersLabel: 'Voir les réglages pour autoriser les notifications',
     reading: 'Lecture de la date d’expiration…',
   },
 } as const;

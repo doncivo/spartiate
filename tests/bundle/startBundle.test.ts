@@ -34,6 +34,8 @@ const NORMALIZATION_UNDERSHOOT_BYTES = 100;
  * normalisation sans bruit, quand le plafond redeviendra serré.
  */
 const NORMALIZATION_OVERSHOOT_BYTES = 300;
+/** ERGO-02b : départ de 0.22.3 (D-265), à tenir sous cette valeur ; ce n'est pas un relèvement du plafond (358 400). */
+const ERGO_02B_TARGET_BYTES = 198_694;
 
 describe('bundle de départ (index.html)', () => {
   let outDir = '';
@@ -81,6 +83,43 @@ describe('bundle de départ (index.html)', () => {
     const label = `normalisé ${String(normalized.total)}, brut ${String(raw.total)}`;
     expect(raw.total - normalized.total, `${label} : la mesure jugée est plus petite que le build réel (dépassement silencieux possible)`).toBeLessThanOrEqual(NORMALIZATION_UNDERSHOOT_BYTES);
     expect(normalized.total - raw.total, `${label} : écart de normalisation anormal`).toBeLessThanOrEqual(NORMALIZATION_OVERSHOOT_BYTES);
+  });
+
+  // ERGO-02b (D-265, D-274) : le préchargement des imports dynamiques ne cite plus les blocs du départ, déjà chargés par index.html
+  // (chaque nom coûtait ~20 octets dans la table __vite__mapDeps du bloc d'entrée), sans polyfill ; index.html garde ses liens modulepreload.
+  it('ERGO-02b : aucun bloc du départ ne cite un autre bloc du départ dans sa table de préchargement (__vite__mapDeps)', () => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    const startNames = new Set(start.map((chunk) => chunk.file));
+    let tables = 0;
+    const offenders: string[] = [];
+    for (const chunk of start) {
+      const text = readFileSync(join(outDir, chunk.file), 'utf8');
+      const table = /m\.f\|\|\(m\.f=\[([^\]]*)\]\)/.exec(text);
+      if (!table?.[1]) continue;
+      tables += 1;
+      for (const name of table[1].matchAll(/"([^"]+\.js)"/g)) if (startNames.has(name[1] ?? '')) offenders.push(`${chunk.file} -> ${name[1]}`);
+    }
+    expect(tables, 'aucune table __vite__mapDeps trouvée').toBeGreaterThan(0);
+    expect(offenders, offenders.join('\n')).toEqual([]);
+  });
+
+  it('ERGO-02b : index.html garde ses liens modulepreload (un par bloc de départ hors entrée)', () => {
+    const html = readFileSync(join(outDir, 'index.html'), 'utf8');
+    const links = [...html.matchAll(/<link[^>]*rel="modulepreload"[^>]*>/g)].length;
+    const startJs = startChunks().filter((chunk) => chunk.file.endsWith('.js')).length;
+    expect(links).toBeGreaterThanOrEqual(startJs - 1);
+  });
+
+  it('ERGO-02b : le build n’émet aucun polyfill de préchargement (build.modulePreload.polyfill: false)', () => {
+    // Le polyfill de Vite (MutationObserver sur les liens modulepreload) porte le sélecteur `link[rel="modulepreload"]` ; l'assistant de
+    // préchargement des imports dynamiques (relList.supports) reste, lui, dans le départ.
+    const marker = 'link[rel="modulepreload"]';
+    for (const chunk of startChunks().filter((c) => c.file.endsWith('.js'))) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+  });
+
+  it('ERGO-02b : le départ revient sous 198 694 octets (mesure normalisée, D-265)', () => {
+    const chunks = startChunks().map((chunk) => chunk.file).filter((file) => file.endsWith('.js'));
+    expect(measureStart(files, chunks, { normalizeHashes: true }).total).toBeLessThan(ERGO_02B_TARGET_BYTES);
   });
 
   // BUNDLE-01 (critères 19 à 25) : garde par liste blanche des modules du départ, mécanisme principal ; le plafond reste le dernier juge. Les

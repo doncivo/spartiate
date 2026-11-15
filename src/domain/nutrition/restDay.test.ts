@@ -10,6 +10,7 @@ import {
   DEFAULT_TRAINING_DAYS,
   dayTargetFor,
   dayTypeOf,
+  defaultTrainingDays,
   formatTrainingDays,
   parseTrainingDays,
   restTargetFromGap,
@@ -157,5 +158,20 @@ describe('PROG-01 : plancher de la cible de repos (§ 15.2, revue du 14/11)', ()
     expect(draft(1100, true)).toEqual([]);
     expect(draft(700, true)).toEqual(['kcal-below-minimum']);
     expect(draft(2250)).toEqual([]);
+  });
+});
+
+describe('ERGO-02b (critère 8) : jours d’entraînement par défaut repris de la routine active', () => {
+  it('selon le nombre de jours de la routine : 1 à 6 séances, répartition sur la semaine', () => {
+    expect(defaultTrainingDays(1)).toEqual([1]);
+    expect(defaultTrainingDays(2)).toEqual([1, 4]);
+    expect(defaultTrainingDays(3)).toEqual([1, 3, 5]);
+    expect(defaultTrainingDays(4)).toEqual([1, 2, 4, 5]);
+    expect(defaultTrainingDays(5)).toEqual([1, 2, 4, 5, 6]);
+    expect(defaultTrainingDays(6)).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+
+  it('routine inconnue, vide ou de 7 jours et plus (aucun repos possible) : lundi, mardi, jeudi, vendredi, samedi', () => {
+    for (const n of [null, 0, 7, 9, -1, 2.5, Number.NaN]) expect(defaultTrainingDays(n)).toEqual(DEFAULT_TRAINING_DAYS);
   });
 });

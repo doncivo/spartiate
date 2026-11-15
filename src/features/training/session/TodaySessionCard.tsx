@@ -133,7 +133,7 @@ export function TodaySessionCard() {
                     <td className="ct-session-card__rank">{index + 1}</td>
                     <td>{line.exerciseName}</td>
                     <td className="ct-session-card__rank">{targetOf(line)}</td>
-                    <td className="ct-session-card__num ct-session-card__load">{loadOf(line.id, preview?.loads.get(line.id) ?? null) ?? <MissingValue reason={tTraining('loadToEnter')} />}</td>
+                    <td className="ct-session-card__num ct-session-card__load">{loadOf(line.id, preview?.loads.get(line.id) ?? null) ?? <MissingValue reason={tTraining(preview === null || preview.unreadable.has(line.id) ? 'loadUnreadable' : 'loadToEnter')} />}</td>
                   </tr>
                 ))}
               </tbody>
