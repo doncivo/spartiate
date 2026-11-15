@@ -22,6 +22,8 @@ Chapitres PRD : 19 (synchronisation), 18 (bandeaux A-09, états dégradés), 20 
 - data-model : aucune migration, table ni colonne (clé `sync_meta.schemaRepublished` et JSON local de `sync_parked.op` seulement) ; garde de migration ajoutée (`src/db/migrations/schemaRepublish.test.ts`, verte d'emblée sur 0001 à 0019 : 0006, 0013, 0014 exemptées, 0019 republiée).
 - Bundle de départ : 195 840 octets normalisés, 44 blocs (main `e77f3c51` : 196 136, 44 blocs ; -296) ; ajouts compensés en sortant `failureKinds` du départ.
 
+**Passe architect** (`e303e875`) : approuvé, aucun bloquant (couches, format inchangé, atomicité de la file et de la marque, garde des migrations futures, chargement à la demande). ADR 0018 accepté (décision d'Ali du 15/11 : option A avec C, B écartée), avenant 37 de l'ADR 0011, D-290 validée. Mineurs : transaction unique sur des tables entières (à paginer pour une future table volumineuse), toutes les lignes republiées (sans effet, même hlc), pas de test d'arrêt brutal propre à la republication, commentaires « ADR 0018 proposé » corrigés (`63513dc3`).
+
 **qa-test.** (à venir)
 
 **code-reviewer.** (à venir)
