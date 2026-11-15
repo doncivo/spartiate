@@ -81,11 +81,14 @@ interface CachedRow {
   pending: Set<string>;
 }
 
-/** `carry` : opération mise de côté par le report d'époque (republiée entière quand elle s'applique, Y-FIX-04). */
-const opText = (op: SyncOp, carry: boolean): string => {
+/**
+ * `carry` : opération mise de côté par le report d'époque (republiée entière quand elle s'applique, Y-FIX-04). `sv` (SYNC-01) : schéma de
+ * l'écrivain quand il est inférieur au schéma local (création sans les colonnes ajoutées depuis, `older-device`, `olderWriter.ts`).
+ */
+const opText = (op: SyncOp, carry: boolean, sv?: number): string => {
   const f: Record<string, SyncField> = {};
   for (const [name, field] of op.f) f[name] = field;
-  return JSON.stringify({ t: op.t, id: op.id, at: op.at, f, ...(carry ? { [CARRY_HELD_MARK]: 1 } : {}) });
+  return JSON.stringify({ t: op.t, id: op.id, at: op.at, f, ...(carry ? { [CARRY_HELD_MARK]: 1 } : {}), ...(sv === undefined ? {} : { sv }) });
 };
 
 const maxOf = (hlcs: readonly Hlc[]): Hlc => hlcs.reduce((a, b) => (b > a ? b : a));
@@ -377,8 +380,12 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
       // Une ligne créée puis modifiée avant sa publication part en plusieurs opérations (une par horloge de champ) : la création n'est
       // complète qu'avec toutes. Les parties déjà mises de côté pour cette ligne sont recomposées (plus grand hlc par champ).
       let combined: number[] = [];
+      /** SYNC-01 : hors report d'époque (marque à garder), chaque champ reçu est déjà gardé au même hlc ou plus récent par une partie mise de côté (rejeu, reprise) : rien de plus. */
+      let kept = false;
       if (!t.columns.every((col) => fields.has(col.name))) {
         const prior = await sync.parkedForRow('missing-row', t.name, op.id);
+        const parts = prior.map((p) => (JSON.parse(p.op) as { f: Record<string, SyncField> }).f);
+        kept = ctx.carry === undefined && [...fields].every(([name, field]) => parts.some((f) => f[name] !== undefined && f[name][1] >= field[1]));
         const union = new Map(fields);
         for (const parked of prior) {
           const raw = JSON.parse(parked.op) as { f: Record<string, SyncField> };
@@ -416,10 +423,10 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
         if (parents === 'purged') {
           ctx.logger.log('apply-abandoned', { table: t.name, reason: 'parent-purged' });
           outcomes.push('rejected');
-        } else if (ctx.noPark) {
+        } else if (ctx.noPark || (!full && kept)) {
           outcomes.push('parked');
         } else {
-          await sync.park(full ? 'missing-parent' : 'missing-row', t.name, op.id, maxOf([...fields.values()].map((f) => f[1])), opText({ ...op, f: fields }, ctx.carry !== undefined), ctx.now);
+          await sync.park(full ? 'missing-parent' : 'missing-row', t.name, op.id, maxOf([...fields.values()].map((f) => f[1])), opText({ ...op, f: fields }, ctx.carry !== undefined, !full && ctx.remoteSv < ctx.localSv ? ctx.remoteSv : undefined), ctx.now);
           outcomes.push('parked');
         }
         continue;

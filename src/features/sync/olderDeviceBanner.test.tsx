@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import { SYNC_TROUBLE_ORDER, syncBannerFor } from '../../domain/syncBanners';
 import { asEntityId, type DeviceId, type IsoDateTime } from '../../domain/types';
@@ -7,6 +7,7 @@ import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { t } from '../../i18n';
 import type { SyncDeviceStatus, SyncStatus } from '../../platform/sync/types';
 import { AppContainerProvider } from '../app/AppContainerContext';
+import { AppStatusBanner } from '../app/AppStatusBanner';
 import { useAppStatusStore } from '../app/appStatus';
 import { createAppContainer, type AppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
@@ -52,30 +53,35 @@ describe('SYNC-01 : appareil resté à une version plus ancienne', () => {
     const order = SYNC_TROUBLE_ORDER as readonly string[];
     expect(order).toContain('older-device');
     expect(order.indexOf('older-device')).toBeLessThan(order.indexOf('received-unapplied'));
-    const banners = syncBannerFor<SyncDeviceStatus, SyncStatus>(status({ warnings: ['older-device'] as SyncStatus['warnings'], devices: [] }), NO_PERSISTED);
+    const banners = syncBannerFor<SyncDeviceStatus, SyncStatus>(status({ warnings: ['older-device'], devices: [] }), NO_PERSISTED);
     expect(banners.troubles.map((x) => x.code)).toEqual(['older-device']);
-    expect(statusLine(status({ warnings: ['older-device'] as SyncStatus['warnings'] }), Date.parse(NOW))).toBe(t('sync.status.incomplete'));
+    expect(statusLine(status({ warnings: ['older-device'] }), Date.parse(NOW))).toBe(t('sync.status.incomplete'));
   });
 
   it('bandeau posé par l’intégration : texte chargé à la demande, « Voir » ; levé quand plus rien n’attend', async () => {
-    sync.setStatus({ warnings: ['older-device'] as SyncStatus['warnings'] });
+    sync.setStatus({ warnings: ['older-device'] });
     const integration = startSyncIntegration(container, timers);
     await integration.refreshed();
-    await vi.waitFor(() => {
-      expect(useAppStatusStore.getState().sources.syncTrouble?.message).toBe(TEXT);
-    });
+    render(
+      <AppContainerProvider container={container}>
+        <AppStatusBanner />
+      </AppContainerProvider>,
+    );
+    expect(await screen.findByText(TEXT)).toBeTruthy();
     const banner = useAppStatusStore.getState().sources.syncTrouble;
     expect(banner?.detail).toBe('older-device');
+    expect(banner?.message).toBe(TEXT);
     expect(banner?.onAction).toBeTypeOf('function');
-    sync.setStatus({ warnings: [] });
-    await vi.waitFor(() => {
-      expect(useAppStatusStore.getState().sources.syncTrouble).toBeFalsy();
+    act(() => {
+      sync.setStatus({ warnings: [] });
     });
+    expect(useAppStatusStore.getState().sources.syncTrouble).toBeFalsy();
+    expect(screen.queryByText(TEXT)).toBeNull();
     integration.dispose();
   });
 
   it('Réglages › Synchronisation : même texte dans AVERTISSEMENTS', () => {
-    syncStore.get(container).setState({ status: status({ warnings: ['older-device'] as SyncStatus['warnings'] }) });
+    syncStore.get(container).setState({ status: status({ warnings: ['older-device'] }) });
     render(
       <AppContainerProvider container={container}>
         <SyncDetailsScreen slots={{ pairing: null, conflicts: null, version: null, forget: null, reset: null }} />

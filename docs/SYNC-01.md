@@ -17,7 +17,10 @@ Chapitres PRD : 19 (synchronisation), 18 (bandeaux A-09, états dégradés), 20 
 
 ## Passes
 
-**Agents des modules.** (en cours)
+**Agents des modules (rouge puis vert).**
+- sync-icloud (propriétaire, D-26). Analyse : la création reçue d'un `sv` 18 n'a pas les cinq colonnes de la 0019 ; `apply.ts` ne crée une ligne absente que complète et la met de côté (`sync_parked`, `missing-row`) ; rien ne la reprenait : l'appareil 18 mis à jour ne republie pas (sa migration passe sous garde), la reprise depuis l'instantané relit les mêmes opérations, `received-unapplied` ne nommait pas la cause, et chaque rejeu dupliquait la partie gardée. Correction sans changer le format (D-290, ADR 0018 proposé) : conservation sans doublon avec le `sv` de l'écrivain (JSON local de `sync_parked.op`) ; avertissement `older-device` et bandeau A-09 « synchro » au texte chargé à la demande, sans reprise inutile ; republication unique des lignes entières (`'+'`) des tables d'une migration additive (`SCHEMA_REPUBLISH`, garde `schemaRepublish.test.ts`). Rouge `68fd4ef0` : 9 échecs observés (2 parties gardées au lieu d'une après redémarrage ; `received-unapplied` au lieu de `older-device`, 2 cas ; ligne absente sur 19 après la mise à jour, 2 cas ; aucune republication d’une base passée en 19 sans marque ; ordre, bandeau et texte de Détails absents). Vert : commit suivant de la branche.
+- data-model : aucune migration, table ni colonne (clé `sync_meta.schemaRepublished` et JSON local de `sync_parked.op` seulement) ; garde de migration ajoutée (`src/db/migrations/schemaRepublish.test.ts`, verte d'emblée sur 0001 à 0019 : 0006, 0013, 0014 exemptées, 0019 republiée).
+- Bundle de départ : 195 840 octets normalisés, 44 blocs (main `e77f3c51` : 196 136, 44 blocs ; -296) ; ajouts compensés en sortant `failureKinds` du départ.
 
 **qa-test.** (à venir)
 

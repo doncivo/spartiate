@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createManualClock } from '../../../../src/domain/clock';
+import { ROW_REPUBLISH_FIELD } from '../../../../src/sync/publisher';
+import { WHOLE_ROW_FIELD } from '../../../../src/sync/olderWriter';
 import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../../sim/syncDevice';
 
 /**
@@ -175,5 +177,11 @@ describe('SYNC-01 : ligne créée par un appareil au schéma 18, reçue par un a
     const republished = a.logger.entries.filter((e) => e.event === 'schema-republished').length;
     await roundTrip();
     expect(a.logger.entries.filter((e) => e.event === 'schema-republished').length).toBe(republished);
+  });
+});
+
+describe('SYNC-01 : republication', () => {
+  it('entrée « ligne entière » identique à celle du publieur', () => {
+    expect(WHOLE_ROW_FIELD).toBe(ROW_REPUBLISH_FIELD);
   });
 });

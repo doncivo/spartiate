@@ -23,6 +23,9 @@ import { deviceName, deviceStatusText, formatCount, statusLine, waitingLong, war
 import { forgetFailureText, forgetPendingBanner } from './forgetText';
 import { resetProgressBanner, resetReminderText } from './resetText';
 
+/** SYNC-01 : texte du bandeau `older-device` (undefined : pas encore demandé ; null : en chargement). */
+let olderText: string | null | undefined;
+
 /** RESET-01 : rechargement complet de la WebView après un effacement reçu (même procédé que la restauration sur iPhone). */
 function reloadAfterReset(): void {
   logFailure('sync', 'data-reset-reload {}');
@@ -104,6 +107,7 @@ export function syncTroubleText(trouble: SyncTrouble<SyncDeviceStatus>, textStat
     case 'awaiting-other-devices':
     case 'carry-held':
     case 'carry-report':
+    case 'older-device':
     case 'own-delete-failed':
       return warningText(trouble.code);
   }
@@ -224,13 +228,29 @@ export function startSyncIntegration(container: AppContainer, env: SyncIntegrati
           safely(applyBanners);
         });
     }
+    // SYNC-01 : texte « appareil plus ancien » d'un catalogue à la demande, chargé une fois au premier besoin (jamais au départ).
+    if (olderText === undefined && banners.troubles.some((x) => x.code === 'older-device')) {
+      olderText = null;
+      void import('../../i18n/syncOlderDeviceText')
+        .then(
+          (module) => module.olderDeviceText(),
+          (error: unknown) => {
+            logFailure('sync', error);
+            return t('sync.status.errorGeneric');
+          },
+        )
+        .then((text) => {
+          olderText = text;
+          safely(applyBanners);
+        });
+    }
     const carry = carryLines.get(container);
-    const [first, ...others] = banners.troubles.filter((x) => x.code !== 'carry-report' || carry);
+    const [first, ...others] = banners.troubles.filter((x) => (x.code !== 'carry-report' || carry) && (x.code !== 'older-device' || olderText));
     const own = first?.code === 'carry-report' ? carry : null;
     const marker = markerFailures.get(container);
     // P-04-iOS critère 12 : la restauration est faite, mais la synchro n'est pas suspendue : ce bandeau prime tant qu'il n'est pas résolu.
     if (marker) put('syncTrouble', { detail: 'restore-marker-failed', message: `${t('backup.markerFailed')} ${t('backup.errorCode', { code: marker.code })}`, more: 0, onAction: openSettings });
-    else if (first) put('syncTrouble', { detail: first.code, message: own ? own.message : syncTroubleText(first, banners.textStatus, banners.devices, nowMs), more: others.length, onAction: own ? own.onAction : actionFor(first) });
+    else if (first) put('syncTrouble', { detail: first.code, message: own ? own.message : first.code === 'older-device' ? String(olderText) : syncTroubleText(first, banners.textStatus, banners.devices, nowMs), more: others.length, onAction: own ? own.onAction : actionFor(first) });
     else put('syncTrouble', null);
 
     // Critère 9 e : cause connue, texte de la ligne de Réglages (sans l'échec de réintégration, montré par `updateRequired`).
