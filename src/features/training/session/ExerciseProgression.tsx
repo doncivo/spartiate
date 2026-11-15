@@ -109,6 +109,15 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   position: 'explainPosition',
   positionHeld: 'explainPositionHeld',
 };
+/** ERGO-02b : phrase d'un écart en kg pour deux haltères (« +2 kg par haltère »), l'écart du moteur étant celui d'un haltère (D-261). */
+const PAIR_KEYS: Partial<Record<ProgressionTextKey, ProgressionTextKey>> = {
+  explainIncrease: 'explainIncreasePair',
+  explainIncreaseUnknownStep: 'explainIncreaseUnknownStepPair',
+  explainRecalibration: 'explainRecalibrationPair',
+  explainPosition: 'explainPositionPair',
+  explainInactivity: 'explainInactivityPair',
+  explainRedDay: 'explainRedDayPair',
+};
 const OPTION_KEYS: Readonly<Record<OptionKey, ProgressionTextKey>> = {
   optionFatigueLoad: 'optionFatigueLoad',
   optionFatigueReps: 'optionFatigueReps',
@@ -342,7 +351,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     for (const key of ['delta', 'cut'] as const) if (typeof params[key] === 'number') params[key] = kg(params[key]);
     // I2-04 : précisions (séance partielle ignorée, matériel à vérifier) dans la même phrase, lues d'un trait.
     const notes = explanationNotes(p).map((n) => tProgression(n.key, n.params));
-    const sentence = [tProgression(EXPLAIN_KEYS[explanation.key], params), ...notes].join(' ');
+    const explainKey = EXPLAIN_KEYS[explanation.key];
+    const sentenceKey = held === 2 && typeof explanation.params['delta'] === 'number' ? (PAIR_KEYS[explainKey] ?? explainKey) : explainKey;
+    const sentence = [tProgression(sentenceKey, params), ...notes].join(' ');
     const value = p.status === 'unsupported' ? tProgression('noProposal') : p.loadKg === null ? tProgression('toEnter') : tProgression('value', { load: loadText(p.loadKg, held), reps: repsText(p.sets.map((s) => s.reps)) });
     const proposed = p.status === 'prescribed' && p.loadKg !== null;
     const alerts = constraintAlerts(p);
