@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -15,9 +15,34 @@ export const DEV_PORT = Number(process.env['CT_DEV_PORT'] ?? 1420);
 // build de playwright.config.ts ; jamais dans `npm run build`, `tauri build` ni les workflows de livraison (tests/bundle/startBundle.test.ts).
 const E2E_HOOKS = process.env['VITE_CT_E2E_HOOKS'] === '1';
 
+// ERGO-02b (D-n à acter) : blocs JavaScript du départ, graphe statique de l'entrée `main` (index.html), relevés au début de
+// generateBundle, avant que vite:build-import-analysis réécrive les préchargements des imports dynamiques (__vite__mapDeps).
+const startFiles = new Set<string>();
+function startFilesPlugin(): Plugin {
+  return {
+    name: 'spartiate:start-files',
+    apply: 'build',
+    generateBundle: {
+      order: 'pre',
+      handler(_options, bundle) {
+        startFiles.clear();
+        const entry = Object.values(bundle).find((item) => item.type === 'chunk' && item.isEntry && item.name === 'main');
+        const queue = entry ? [entry.fileName] : [];
+        while (queue.length > 0) {
+          const file = queue.shift() as string;
+          if (startFiles.has(file)) continue;
+          startFiles.add(file);
+          const item = bundle[file];
+          if (item?.type === 'chunk') queue.push(...item.imports);
+        }
+      },
+    },
+  };
+}
+
 export default defineConfig({
   define: { __CT_APP_VERSION__: JSON.stringify(APP_VERSION), ...(E2E_HOOKS ? { 'import.meta.env.DEV': 'true', 'import.meta.env.PROD': 'false' } : {}) },
-  plugins: [react()],
+  plugins: [react(), startFilesPlugin()],
   clearScreen: false,
   server: {
     port: DEV_PORT,
@@ -32,6 +57,14 @@ export default defineConfig({
   build: {
     // WebView2 (Chromium) sur Windows, WKWebView (Safari) sur iOS 17+.
     target: ['es2022', 'chrome120', 'safari17'],
+    // ERGO-02b : WebView2 (Chromium 120) et WKWebView (Safari 17+) gèrent <link rel="modulepreload"> : pas de polyfill. Un bloc du départ
+    // qui importe à la demande ne précharge plus les blocs du départ, déjà chargés par index.html (préchargement sans effet, ~20 octets
+    // chacun dans __vite__mapDeps). Les CSS et les blocs hors du départ restent préchargés ; les autres hôtes (blocs à la demande,
+    // pairing.html, liens de index.html) gardent la liste complète.
+    modulePreload: {
+      polyfill: false,
+      resolveDependencies: (_file, deps, { hostId, hostType }) => (hostType === 'js' && startFiles.has(hostId) ? deps.filter((dep) => !startFiles.has(dep)) : deps),
+    },
     // Deux pages : l'app et la fenêtre de la clé de synchronisation (Y-06,
     // pairing.html : bundle minimal contrôlé par tests/bundle/pairingBundle.test.ts, ADR 0011 section 2.1).
     rollupOptions: {
