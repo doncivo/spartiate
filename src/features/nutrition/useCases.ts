@@ -242,3 +242,14 @@ export async function activeRoutineDayCount(access: DataAccess): Promise<number 
     return null;
   }
 }
+
+export type RestPlanWriteResult = 'saved' | TargetWriteRefusal;
+
+/** FIX-0244 (D-291) : enregistre la cible de repos de la cible en vigueur. (Version d'avant : une décision manuelle d'aujourd'hui, qui masque une cible future.) */
+export async function saveRestPlan(
+  access: DataAccess,
+  input: { readonly today: LocalDate; readonly current: NutritionTargetRecord; readonly restPlan: RestPlan | null },
+): Promise<RestPlanWriteResult> {
+  const result = await saveManualTarget(access, { weekStart: input.today, target: input.current.target, lowFloorConfirmed: false, restPlan: input.restPlan });
+  return typeof result === 'string' ? result : 'saved';
+}

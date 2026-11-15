@@ -458,6 +458,19 @@ describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', ()
     expect(await within(r).findByText(`Moyenne de la semaine : ${fr(2543)} kcal`)).toBeInTheDocument();
   });
 
+  it('FIX-0244 : l’interrupteur a un nom accessible et un libellé visible ; cliquer le libellé le bascule', async () => {
+    await seedTarget();
+    open('strategy');
+    const r = await region();
+    const toggle = await within(r).findByRole('switch', { name: 'Cible des jours de repos' });
+    const visible = within(r).getByText('Cible des jours de repos', { selector: 'span' });
+    expect(visible).toBeVisible();
+    expect(visible.closest('label')).toContainElement(toggle);
+    expect(toggle).not.toBeChecked();
+    fireEvent.click(visible);
+    expect(toggle).toBeChecked();
+  });
+
   it('saisie en kcal : 2 250 kcal les jours de repos', async () => {
     await seedTarget();
     open('strategy');
