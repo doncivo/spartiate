@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { useEffect, useRef, useState } from 'react';
 import { logFailure } from '../../../platform/desktop/log';
 import type { RoutineDiff } from '../../../domain/training';
@@ -21,7 +22,7 @@ function diffLines(diff: RoutineDiff): string[] {
   return [
     ...diff.removed.map((r) => tTraining('routineRemoved', { name: r.exerciseName })),
     ...diff.setsChanged.map((c) => tTraining('routineSetsChanged', { name: c.exerciseName, from: c.from, to: c.to })),
-    ...diff.added.map((a) => (a.sets === 1 ? tTraining('routineAddedOne', { name: a.exerciseName }) : tTraining('routineAdded', { name: a.exerciseName, n: a.sets }))),
+    ...diff.added.map((a) => (tPlural(tTraining, a.sets, 'routineAddedOne', 'routineAdded', { name: a.exerciseName }))),
   ];
 }
 
@@ -81,7 +82,7 @@ export function WorkoutSummary({ access, closed, onClose, onJournal, heldOf = ()
           {tTraining('summaryTitle', { name })}
         </h2>
         {records.length > 0 ? (
-          <span className="ct-summary__pill">{records.length === 1 ? tTraining('summaryRecordsOne') : tTraining('summaryRecords', { n: records.length })}</span>
+          <span className="ct-summary__pill">{tPlural(tTraining, records.length, 'summaryRecordsOne', 'summaryRecords')}</span>
         ) : null}
       </div>
 

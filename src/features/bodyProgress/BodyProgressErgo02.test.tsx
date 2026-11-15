@@ -143,12 +143,30 @@ describe('Corps PC (PC-Corps-apres)', () => {
     expect(screen.queryByRole('img', { name: /Silhouette/ })).toBeNull();
   });
 
-  it('écart absent : le tiret porte sa raison, lue par les lecteurs d’écran', async () => {
+  it('écart absent : libellé court « 4 sem. : — » (FIX-0241), sur une ligne', async () => {
     await seedWaist();
     mount();
     const group = await screen.findByRole('radiogroup', { name: 'Zone' });
     const hips = within(group).getByRole('radio', { name: 'Hanches' });
-    expect(within(hips).getByText('pas d’écart sur 4 semaines')).toBeInTheDocument();
+    expect(within(hips).getByText('4 sem. : —')).toBeInTheDocument();
+  });
+
+  it('écart absent : le libellé court reste affiché, la phrase complète (ou la raison) est dite aux lecteurs d’écran (FIX-0241)', async () => {
+    await seedWaist();
+    mount();
+    const group = await screen.findByRole('radiogroup', { name: 'Zone' });
+    const hips = within(group).getByRole('radio', { name: 'Hanches' });
+    expect(within(hips).getByText('4 sem. : —')).toBeVisible();
+    expect(within(hips).getByText('4 sem. : —')).toHaveAttribute('aria-hidden', 'true');
+    expect(hips).toHaveAccessibleDescription(/pas d’écart sur 4 semaines$/);
+    // Revue FIX-0241 : sans mesure, la raison est dite une seule fois.
+    expect(within(group).getByRole('radio', { name: 'Cou' })).toHaveAccessibleDescription('aucune mesure pas d’écart sur 4 semaines');
+    const waist = within(group).getByRole('radio', { name: 'Taille' });
+    expect(waist).not.toHaveAccessibleDescription(/pas d’écart/);
+    // L'écart affiché est aussi annoncé (il n'était ni dans le nom ni dans la description).
+    const delta = waist.querySelector('.ct-bodyprogress__zonedelta')?.textContent ?? '';
+    expect(delta).not.toBe('');
+    expect((waist.getAttribute('aria-describedby') ?? '').split(' ').map((id) => document.getElementById(id)?.textContent ?? '')).toContain(delta);
   });
 
   it('liste des zones : tabindex itinérant (seule la zone choisie est tabulable) et les flèches déplacent le focus', async () => {

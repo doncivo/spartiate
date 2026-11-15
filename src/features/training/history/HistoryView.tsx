@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { tonnageKg, workoutDurationSec, type Workout } from '../../../domain/training';
@@ -116,7 +117,7 @@ export function HistoryView({ data, access }: { readonly data: TrainingData; rea
                   {[
                     formatDay(item.workout.endedAt ?? item.workout.startedAt),
                     item.durationSec === null ? null : formatClock(item.durationSec * 1000),
-                    item.sets === 1 ? tTraining('historySetsOne') : tTraining('historySets', { n: item.sets }),
+                    tPlural(tTraining, item.sets, 'historySetsOne', 'historySets'),
                     tTraining('historyVolume', { n: formatVolume(item.volumeKg) }),
                   ]
                     .filter((part): part is string => part !== null)

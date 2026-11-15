@@ -135,7 +135,6 @@ export const syncPairingWindowFr = {
     submit: 'Associer',
     busy: 'Association…',
     closesIn: 'Cette fenêtre se fermera dans {n} min',
-    closesInOne: 'Cette fenêtre se fermera dans 1 min',
     closesSoon: 'Cette fenêtre se fermera dans moins d’une minute',
     done: 'Cet appareil est associé',
   },

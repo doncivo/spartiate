@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { useCallback, useEffect, useState } from 'react';
 import { DEFAULT_GENERATION_CONFIG as CONFIG } from '../../../domain/training/config';
 import { anticipateDeload, changeNextWeeks, closeMesocycle, createMesocycleSpec, MESO_WEEK_CHOICES, nextMesocycleSpec, type MesocycleSpec, type MesocycleState, type WeekPlan } from '../../../domain/training/mesocycle';
@@ -30,7 +31,7 @@ type Load = { readonly status: 'loading' } | { readonly status: 'error' } | { re
 const WEEKS: readonly WeeksChoice[] = ['4', '5', '6', '7', 'unlimited'];
 const toWeeks = (choice: WeeksChoice): number | 'unlimited' => (choice === 'unlimited' ? 'unlimited' : Number(choice));
 
-const rirText = (rir: number): string => (rir === 1 ? tCycle('rirOne') : tCycle('rirMany', { rir }));
+const rirText = (rir: number): string => tPlural(tCycle, rir, 'rirOne', 'rirMany', { rir });
 const setsText = (offset: number): string => tCycle(offset < 0 ? 'setsMinus' : offset > 0 ? 'setsPlus' : 'setsSame');
 
 function planText(state: MesocycleState, plan: WeekPlan): string {

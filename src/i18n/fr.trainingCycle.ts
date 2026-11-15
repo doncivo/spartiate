@@ -28,7 +28,7 @@ export const trainingCycleFr = {
   setsMinus: 'une série de moins que la routine par exercice',
   setsSame: 'les séries de la routine',
   setsPlus: 'une série de plus que la routine par exercice',
-  rirOne: '1 répétition en réserve',
+  rirOne: '{rir} répétition en réserve',
   rirMany: '{rir} répétitions en réserve',
   rirRange: '{low} à {high} répétitions en réserve',
   programDeloadWeek: 'Semaine de décharge : 2 séries par exercice, charges à 90 % arrondies vers le bas au cran du matériel, 3 à 4 répétitions en réserve ; hors statistiques.',

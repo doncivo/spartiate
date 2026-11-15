@@ -26,3 +26,10 @@
   margin: 0;
   color: var(--ct-color-text-secondary);
 }
+
+/* FIX-0241 (D-268) : sur PC, Progrès (Récupération, Corps, Cardio) occupe toute la largeur utile ; les 560 px sont pour les textes « bientôt ». */
+.ct-app-shell[data-layout='pc'] .ct-section-notice:has(.ct-bodyprogress--pc) {
+  align-self: stretch;
+  align-items: stretch;
+  max-width: none;
+}

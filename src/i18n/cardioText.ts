@@ -1,3 +1,4 @@
+import { tPlural } from './plural';
 import { cardioFr } from './fr.cardio';
 
 /** Textes d'Entraînement › Cardio, à part du catalogue principal ; importé seulement par des modules chargés à la demande (I6-06). */
@@ -43,5 +44,5 @@ export function formatPace(secPerKm: number): string {
 
 /** « 1 séance », « 3 séances ». */
 export function sessionsCount(n: number): string {
-  return tCardio(n === 1 ? 'progressSessions_one' : 'progressSessions_other', { n });
+  return tPlural(tCardio, n, 'progressSessions_one', 'progressSessions_other');
 }

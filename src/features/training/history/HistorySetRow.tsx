@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { Check } from 'lucide-react';
 import { useState, type KeyboardEvent } from 'react';
 import { SET_KINDS, validateSetBounds, validateSetEntry, type SetEntry, type SetKind, type WorkoutSet } from '../../../domain/training';
@@ -36,7 +37,7 @@ export function valueText(set: WorkoutSet, held: Held = null): string {
   if (reps === null && durationSec !== null)
     return loadKg === null ? tTraining('sessionDoneDuration', { n: durationSec }) : tTraining('sessionDoneLoadDuration', { load: formatExerciseLoad(loadKg, held), n: durationSec });
   if (reps === null) return loadKg === null ? '—' : formatExerciseLoad(loadKg, held);
-  return loadKg === null ? tTraining('sessionDoneReps', { reps }) : tTraining('sessionDoneLoad', { load: formatExerciseLoad(loadKg, held), reps });
+  return loadKg === null ? tPlural(tTraining, reps, 'sessionDoneRepsOne', 'sessionDoneReps', { reps }) : tTraining('sessionDoneLoad', { load: formatExerciseLoad(loadKg, held), reps });
 }
 
 export interface HistorySetRowProps {

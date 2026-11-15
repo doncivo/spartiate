@@ -171,7 +171,7 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
         <>
           <h2 className="ct-settings__section ct-section-title">{t('sync.status.sectionPending')}</h2>
           <div className="ct-settings__row">
-            <span>{pendingCount === 1 ? t('sync.status.pendingOne', { count: 1 }) : t('sync.status.pendingMany', { count: pendingCount })}</span>
+            <span>{t(pendingCount < 2 ? 'sync.status.pendingOne' : 'sync.status.pendingMany', { count: pendingCount })}</span>
           </div>
         </>
       )}
@@ -181,9 +181,7 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
         <span>
           {status.conflictsThisWeek === 0
             ? t('sync.status.noConflicts')
-            : status.conflictsThisWeek === 1
-              ? t('sync.status.conflictsOne', { count: 1 })
-              : t('sync.status.conflictsMany', { count: status.conflictsThisWeek })}
+            : t(status.conflictsThisWeek < 2 ? 'sync.status.conflictsOne' : 'sync.status.conflictsMany', { count: status.conflictsThisWeek })}
         </span>
       </div>
       {slots.conflicts ?? <SyncDetailsConflicts />}
