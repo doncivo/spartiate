@@ -270,8 +270,15 @@ export async function saveRestPlan(
   if (typeof result === 'string') return result;
   const plan = input.restPlan;
   const gap = plan === null ? 0 : plan.rest.kcal - input.current.target.kcal;
+  // Plan hérité : absent, ou du même écart et des mêmes jours que celui d'aujourd'hui avant l'écriture ; sinon plan propre (check-in D-272, saisie à part), gardé tel quel.
+  const before = input.current.restPlan ?? null;
+  const inherited = (future: NutritionTargetRecord): boolean => {
+    const own = future.restPlan ?? null;
+    if (own === null) return true;
+    return before !== null && own.rest.kcal - future.target.kcal === before.rest.kcal - input.current.target.kcal && own.trainingDays.join() === before.trainingDays.join();
+  };
   for (const future of futures) {
-    const restPlan: RestPlan | null = plan === null ? null : { rest: restTargetFromGap(future.target, gap), trainingDays: plan.trainingDays };
+    const restPlan: RestPlan | null = !inherited(future) ? (future.restPlan ?? null) : plan === null ? null : { rest: restTargetFromGap(future.target, gap), trainingDays: plan.trainingDays };
     const draft = {
       weekStart: future.weekStart,
       target: future.target,
