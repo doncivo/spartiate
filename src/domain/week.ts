@@ -20,9 +20,17 @@ export function firstWeekdayIso(first: FirstWeekday): Weekday {
   return FIRST_WEEKDAY_ISO[first];
 }
 
+/**
+ * Nombre de jours entre le premier jour de la semaine et un jour ISO (0 à 6). ERGO-02b : sans `localDate`, pour un écran à la demande
+ * (un import de `daysSinceWeekStart` y sortait `localDate` du bloc d'entrée, soit un bloc de plus au départ).
+ */
+export function daysFromWeekStart(weekday: Weekday, first: FirstWeekday = DEFAULT_FIRST_WEEKDAY): number {
+  return (weekday - FIRST_WEEKDAY_ISO[first] + 7) % 7;
+}
+
 /** Nombre de jours entre le premier jour de la semaine et `date` (0 à 6). */
 export function daysSinceWeekStart(date: LocalDate, first: FirstWeekday = DEFAULT_FIRST_WEEKDAY): number {
-  return (weekdayOf(date) - FIRST_WEEKDAY_ISO[first] + 7) % 7;
+  return daysFromWeekStart(weekdayOf(date), first);
 }
 
 /** Jours ISO dans l'ordre d'affichage d'une semaine commençant par `first` (lundi : 1…7 ; dimanche : 7, 1…6). */

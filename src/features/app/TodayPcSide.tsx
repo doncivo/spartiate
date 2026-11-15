@@ -6,7 +6,8 @@ import type { LocalDate } from '../../domain/types';
 import { formatInt, tNutrition } from '../../i18n/nutritionText';
 import { formatStamp } from '../../i18n/format';
 import { getFirstWeekday } from '../../i18n/formatPrefs';
-import { daysSinceWeekStart, type FirstWeekday } from '../../domain/week';
+import { daysFromWeekStart, type FirstWeekday } from '../../domain/week';
+import type { Weekday } from '../../domain/types';
 import { logFailure } from '../../platform/desktop/log';
 import { tToday } from '../../i18n/todayText';
 import { tTodayPc } from '../../i18n/todayPcText';
@@ -56,7 +57,7 @@ type Load = { readonly status: 'loading' | 'failed' } | Ready;
 function weekOf(today: LocalDate, first: FirstWeekday): readonly { readonly day: string; readonly name: string; readonly short: string }[] {
   const [y, m, d] = today.split('-').map(Number) as [number, number, number];
   const base = Date.UTC(y, m - 1, d);
-  const startMs = base - daysSinceWeekStart(today, first) * DAY_MS;
+  const startMs = base - daysFromWeekStart((new Date(base).getUTCDay() || 7) as Weekday, first) * DAY_MS;
   const names = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', timeZone: 'UTC' });
   return Array.from({ length: WEEK }, (_, i) => {
     const at = new Date(startMs + i * DAY_MS);
