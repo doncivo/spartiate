@@ -294,4 +294,54 @@ describe('FIX-0244 (D-291) : la cible de repos ne passe jamais devant une cible 
     expect(now.weekStart).toBe(NOW);
     expect(now.restPlan).toEqual(PLAN);
   });
+  it('FIX-0244 plusieurs cibles futures : chacune reste en vigueur à sa date, valeurs inchangées, plan du même écart', async () => {
+    const repo = await seed();
+    const later = { kcal: 2700, proteinG: 170, fatG: 80, carbG: 400 };
+    await repo.record({ weekStart: '2026-11-23' as LocalDate, target: later, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false });
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
+    const first = await at(repo, FUTURE);
+    const second = await at(repo, '2026-11-23' as LocalDate);
+    expect(first.target).toEqual(FUTURE_TARGET);
+    expect(first.weekStart).toBe(FUTURE);
+    expect(second.target).toEqual(later);
+    expect(second.source).toBe('manual');
+    expect(second.weekStart).toBe('2026-11-23');
+    expect(first.restPlan?.rest.kcal).toBe(2250);
+    expect(second.restPlan?.rest.kcal).toBe(2500);
+  });
+
+  it('FIX-0244 cible future qui avait son propre plan : le code le remplace par le plan d’aujourd’hui (même écart, jours d’aujourd’hui)', async () => {
+    const repo = await seed(false);
+    await repo.record({ weekStart: FUTURE, target: FUTURE_TARGET, source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false, restPlan: { rest: { kcal: 2000, proteinG: 170, fatG: 75, carbG: 255 }, trainingDays: [3] as never } });
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
+    const future = await at(repo, FUTURE);
+    expect(future.target).toEqual(FUTURE_TARGET);
+    expect(future.restPlan?.rest.kcal).toBe(2250);
+    expect(future.restPlan?.trainingDays).toEqual(PLAN.trainingDays);
+  });
+
+  it('FIX-0244 cible future dont la copie serait refusée par le plancher : réenregistrée à l’identique avec son plan d’avant, toujours en vigueur à sa date', async () => {
+    const repo = await seed(false);
+    const low = { kcal: 900, proteinG: 100, fatG: 30, carbG: 100 };
+    const ownPlan = { rest: { kcal: 850, proteinG: 100, fatG: 30, carbG: 80 }, trainingDays: [3] as never };
+    await repo.record({ weekStart: FUTURE, target: low, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: true, restPlan: ownPlan });
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
+    const future = await at(repo, FUTURE);
+    expect(future.target).toEqual(low);
+    expect(future.weekStart).toBe(FUTURE);
+    expect(future.restPlan).toEqual(ownPlan);
+  });
+
+  it('FIX-0244 synchro : une décision de plus par cible future et par enregistrement, identifiants distincts, toutes acceptées', async () => {
+    const repo = await seed();
+    const before = await repo.list();
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
+    const after = await repo.list();
+    expect(after.length).toBe(before.length + 2);
+    expect(new Set(after.map((d) => d.id)).size).toBe(after.length);
+    expect(after.every((d) => d.accepted)).toBe(true);
+    const copies = after.filter((d) => d.weekStart === FUTURE);
+    expect(copies.length).toBe(2);
+    expect(copies.every((d) => d.source === 'auto' && d.engineVersion === 1)).toBe(true);
+  });
 });
