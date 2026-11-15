@@ -222,7 +222,7 @@ test('géométrie Profil et poids 440 × 956 : cartes dans la colonne, flèche s
  * la disposition PC suit `useLayout()`. Non atteignables simplement dans le navigateur de test, donc non couverts ici : la séance en
  * cours et le Programme (il faut une routine et un cycle), Appareils et synchro (la ligne n'existe qu'avec une synchro configurée).
  */
-const PC_WIDTHS = [1024, 1210, 1280, 1440, 1920] as const;
+const PC_WIDTHS = [1024, 1099, 1100, 1210, 1279, 1280, 1440, 1920] as const;
 const openFirstExercise = async (page: Page): Promise<void> => {
   await goTraining('Bibliothèque')(page);
   await page.locator('.ct-training__row').first().click();

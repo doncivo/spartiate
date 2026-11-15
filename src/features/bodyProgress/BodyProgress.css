@@ -365,7 +365,7 @@
 /*
  * PC (PC-Corps-apres) : zones à gauche, mesure et courbe au centre, Santé et photos à droite.
  * FIX-0241 (D-268) : trois colonnes dès 1 280 px, deux de 1 100 à 1 279 px (Santé et photos passent sous le centre), une seule de 1 024 à
- * 1 099 px. Les colonnes sont en minmax : la colonne centrale garde au moins 22 rem, jamais de texte vertical.
+ * 1 099 px. Les colonnes sont en minmax : la colonne centrale garde au moins 22 rem dès 1 280 px (minmax(0, 1fr) de 1 100 à 1 279 px), jamais de texte vertical.
  */
 @media (min-width: 1024px) {
   .ct-bodyprogress--pc {
