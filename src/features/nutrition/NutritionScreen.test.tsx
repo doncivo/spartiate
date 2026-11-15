@@ -465,10 +465,22 @@ describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', ()
     const toggle = await within(r).findByRole('switch', { name: 'Cible des jours de repos' });
     const visible = within(r).getByText('Cible des jours de repos', { selector: 'span' });
     expect(visible).toBeVisible();
+    expect(visible).toHaveAttribute('aria-hidden', 'true');
+    expect(within(r).getAllByRole('switch', { name: 'Cible des jours de repos' })).toHaveLength(1);
     expect(visible.closest('label')).toContainElement(toggle);
     expect(toggle).not.toBeChecked();
     fireEvent.click(visible);
     expect(toggle).toBeChecked();
+  });
+
+  it('FIX-0244 revue 1 : une cible prévue plus tard qui garde son réglage est signalée (role status)', async () => {
+    await seedTarget();
+    await (await db.data.repos.nutritionTargets()).record({ weekStart: '2026-11-16' as LocalDate, target: { kcal: 1350, proteinG: 150, fatG: 40, carbG: 150 }, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: true });
+    open('strategy');
+    const r = await region();
+    fireEvent.click(await within(r).findByRole('switch', { name: 'Cible des jours de repos' }));
+    fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible de repos' }));
+    expect(await within(r).findByText('Enregistrée. Une cible prévue plus tard garde son réglage de repos.')).toBeInTheDocument();
   });
 
   it('saisie en kcal : 2 250 kcal les jours de repos', async () => {

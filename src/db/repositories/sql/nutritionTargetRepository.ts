@@ -61,6 +61,10 @@ export function createNutritionTargetRepository(db: SqlExecutor, stamper: WriteS
       return toRecord(row);
     },
 
+    async recordMany() {
+      throw new RepositoryError('invalid', 'nutrition_target', 'recordMany');
+    },
+
     async get(id) {
       const row = await read(id);
       return row && row.deleted_at === null ? toRecord(row) : null;
