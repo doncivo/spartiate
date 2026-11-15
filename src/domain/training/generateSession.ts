@@ -207,6 +207,7 @@ export function generateSession(input: GenerateSessionInput): GeneratedSession {
   // Libre : exercices et volume d'Ali, aucune série de priorité ajoutée (revue I3-02).
   const bonus = rules.reorders ? Math.min(Math.max(0, input.week?.priorityBonus ?? 0), config.prioritySetDelta) : 0;
   const bonusGroups = new Set<string>();
+  const deloadSets = input.week?.deload === true && input.week.deloadSets !== undefined ? Math.max(1, Math.round(input.week.deloadSets)) : null;
   for (const slot of slots) {
     const group = groupOf(slot.chosen);
     const first = bonus > 0 && group !== null && priorities.has(group) && !bonusGroups.has(group);
@@ -214,6 +215,8 @@ export function generateSession(input: GenerateSessionInput): GeneratedSession {
     // PROG-01 (D-267 (4)) : semaine de reprise, −1 série sur les lignes à 4 séries ou plus.
     const rampCut = input.week?.rampUp === true && weekSets === null && Math.round(slot.line.sets) >= 4 ? 1 : 0;
     slot.sets = Math.min(SETS_MAX, Math.max(1, Math.round(weekSets ?? slot.line.sets + offset) + (first ? bonus : 0) - rampCut));
+    // FIX-0243 (constat 10) : décharge de cycle (4 ou 6 semaines, D-267) : séries de décharge, jamais plus que prévu (une ligne à 1 reste à 1).
+    if (deloadSets !== null) slot.sets = Math.min(slot.sets, deloadSets);
   }
   // PROG-01 : dernière semaine de travail à partir du 2e cycle, RIR 1 sur les exercices d'isolation.
   const rirOf = (slot: Slot): number | null => (slot.chosen.kind === 'isolation' && input.week?.isolationRir !== undefined ? input.week.isolationRir : (input.week?.rir ?? slot.line.rir));
