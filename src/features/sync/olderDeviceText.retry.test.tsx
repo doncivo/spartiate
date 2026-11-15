@@ -15,9 +15,10 @@ import { createFakeSyncService, type FakeSyncService } from './testKit';
  */
 
 const load = vi.hoisted(() => ({ fail: true }));
-vi.mock('../../i18n/syncOlderDeviceText', async (importOriginal) => {
+vi.mock('../../i18n/syncOlderDeviceText', async () => {
   if (load.fail) throw new Error('bloc indisponible');
-  return importOriginal();
+  const { syncOlderDeviceFr } = await import('../../i18n/fr.syncOlderDevice');
+  return { olderDeviceText: () => syncOlderDeviceFr.banner };
 });
 
 const SELF = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000f2');
@@ -41,9 +42,17 @@ afterEach(async () => {
   await db.close();
 });
 
-/** Laisse se terminer les chargements à la demande en cours (promesses déjà résolues ou rejetées, aucun délai réel). */
-async function settle(): Promise<void> {
-  for (let i = 0; i < 10; i += 1) await act(async () => { await Promise.resolve(); });
+/** Signal sûr, sans délai : résolu au premier message du bandeau `syncTrouble` égal à `expected` (déjà posé compris). */
+function bannerMessage(expected: string): Promise<void> {
+  return new Promise((resolve) => {
+    const done = (): boolean => useAppStatusStore.getState().sources.syncTrouble?.message === expected;
+    if (done()) return resolve();
+    const stop = useAppStatusStore.subscribe(() => {
+      if (!done()) return;
+      stop();
+      resolve();
+    });
+  });
 }
 
 describe('SYNC-01 revue 1 : chargement du texte « appareil plus ancien » en échec', () => {
@@ -52,7 +61,7 @@ describe('SYNC-01 revue 1 : chargement du texte « appareil plus ancien » en é
     sync.setStatus({ warnings: ['older-device'] });
     const integration = startSyncIntegration(container, timers);
     await integration.refreshed();
-    await settle();
+    await act(() => bannerMessage(t('sync.status.errorGeneric')));
     expect(useAppStatusStore.getState().sources.syncTrouble?.message).toBe(t('sync.status.errorGeneric'));
     load.fail = false;
     act(() => {
@@ -62,7 +71,7 @@ describe('SYNC-01 revue 1 : chargement du texte « appareil plus ancien » en é
     act(() => {
       sync.setStatus({ warnings: ['older-device'] });
     });
-    await settle();
+    await act(() => bannerMessage(TEXT));
     expect(useAppStatusStore.getState().sources.syncTrouble?.message).toBe(TEXT);
     integration.dispose();
   });
