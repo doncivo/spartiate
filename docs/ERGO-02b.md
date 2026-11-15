@@ -23,6 +23,7 @@ Chapitres PRD : 11 et 13 (records, charges), 14 (cardio), 15 (nutrition, check-i
 **Passe architect** (option A, lecture seule) : pistes mesurées une à une (polyfill, préchargements entre blocs du départ, noms de fichiers en hachage seul, `base`, regroupements, options du minifieur) ; retenue : polyfill retiré et préchargements entre blocs du départ filtrés (−1 866 sur main), sans toucher la normalisation ni la liste blanche ; noms en hachage seul refusés (normalisation inopérante). D-287.
 
 **Agents des modules (rouge puis vert).** Index git partagé entre agents parallèles : deux commits mêlent des fichiers de deux points (signalé, historique non réécrit).
+
 | Critère | Point | Rouge | Vert | Échec observé au rouge |
 | --- | --- | --- | --- | --- |
 | 1 | Préchargement (performance) | `95d70208` | `6822c909` | `main → types` cité par un bloc du départ ; polyfill dans `tokens` ; 199 428 ≥ 198 694 |
