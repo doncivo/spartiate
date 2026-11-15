@@ -10,6 +10,7 @@ import { seedPastWorkout } from '../../../../tests/fixtures/training/workout';
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../../app/navigation';
+import { onSyncedDataApplied } from '../../sync/remoteChanges';
 import { TrainingScreen } from '../TrainingScreen';
 
 /**
@@ -153,6 +154,24 @@ describe('« Terminer la séance »', () => {
     expect(f.calls.ends).toBeGreaterThanOrEqual(1);
     expect(f.calls.cancel).toBeGreaterThanOrEqual(1);
     expect(screen.queryByRole('timer', { name: 'Repos restant' })).toBeNull();
+  });
+
+  it('FIX-0243 : clôture réussie, un signal local « workout, workout_set » prévient les cartes montées (séance close déjà lisible)', async () => {
+    const seen: string[][] = [];
+    const off = onSyncedDataApplied((tables) => void seen.push([...tables].sort()));
+    try {
+      openSession();
+      await startFromRoutine();
+      await validateNext(BENCH, '60', '8');
+      expect(seen).toEqual([]);
+      fireEvent.click(screen.getByRole('button', { name: 'Terminer la séance' }));
+      fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Terminer' }));
+      await summaryRegion();
+      await waitFor(() => expect(seen).toEqual([['workout', 'workout_set']]));
+      expect(await count('SELECT COUNT(*) AS n FROM workout WHERE ended_at IS NOT NULL')).toBe(1);
+    } finally {
+      off();
+    }
   });
 
   it('double appui puis clôture rejouée : une seule clôture, rien de plus en file', async () => {
