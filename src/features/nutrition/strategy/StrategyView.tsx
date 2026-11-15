@@ -9,7 +9,7 @@ import { NumberField, parseNumber } from '../shared';
 import { activeRoutineDayCount, saveManualTarget, saveRestPlan, saveNutritionPrefs, type NutritionSnapshot } from '../useCases';
 import { RestTargetForm } from './RestTargetForm';
 import { TargetForm, type TargetSaveResult } from './TargetForm';
-import { defaultTrainingDays, restTargetFromGap, type RestPlan } from '../../../domain/nutrition';
+import { collapseRecopies, defaultTrainingDays, restTargetFromGap, type RestPlan } from '../../../domain/nutrition';
 
 const STYLE_HINT: Readonly<Record<CheckInStyle, NutritionTextKey>> = { guided: 'styleGuidedHint', collaborative: 'styleCollaborativeHint', manual: 'styleManualHint' };
 const ACTIVITY_KEY: Readonly<Record<ActivityLevel, NutritionTextKey>> = { sedentary: 'activitySedentary', light: 'activityLight', moderate: 'activityModerate', active: 'activityActive' };
@@ -250,7 +250,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
           <p className="ct-nutrition__muted">{tNutrition('historyEmpty')}</p>
         ) : (
           <ul className="ct-nutrition__list">
-            {targets.map((record) => (
+            {collapseRecopies(targets).map((record) => (
               <li key={record.id} className="ct-nutrition__history">
                 <p className="ct-nutrition__num">
                   {formatDayMonth(record.weekStart)} · {tNutrition('kcalValue', { n: formatInt(record.target.kcal) })} · {tNutrition('macroShortP')} {formatInt(record.target.proteinG)} · {tNutrition('macroShortC')} {formatInt(record.target.carbG)} · {tNutrition('macroShortF')} {formatInt(record.target.fatG)}
