@@ -12,6 +12,7 @@ import {
   resolveCheckIn,
   toMealEntryInput,
   validateTargetRecord,
+  type TargetRecordDraft,
   computeTrend,
   type CheckInDecision,
   type CheckInOutcome,
@@ -244,14 +245,17 @@ export async function activeRoutineDayCount(access: DataAccess): Promise<number 
   }
 }
 
-export type RestPlanWriteResult = 'saved' | TargetWriteRefusal;
+/** `saved-partial` : enregistré, mais une cible future garde son réglage de repos (le plan demanderait une confirmation ou serait refusé par le plancher). */
+export type RestPlanWriteResult = 'saved' | 'saved-partial' | TargetWriteRefusal;
 
 /**
  * FIX-0244 (D-291) : enregistre (ou retire) la cible de repos de la cible en vigueur sans jamais passer devant une cible future. La cible en
  * vigueur est la dernière décision par HLC parmi celles dont la semaine a commencé : une décision d'aujourd'hui, plus récente, masquerait donc
- * une cible déjà prévue à une date future. Après la décision d'aujourd'hui, chaque cible future qui était en vigueur à sa date est donc
- * réenregistrée à l'identique (mêmes valeurs, source, semaine, version du moteur) avec la cible de repos, du même écart que la cible
- * d'aujourd'hui ; si cette copie serait refusée (plancher), la cible future reste telle quelle. Sans cible future : une seule décision.
+ * une cible déjà prévue à une date future. La décision d'aujourd'hui et la recopie de chaque cible future qui était en vigueur à sa date
+ * (mêmes valeurs, source, semaine, version du moteur) s'écrivent dans UNE transaction (`recordMany`) : tout ou rien. Une cible future au plan
+ * propre garde son plan ; sans plan ou au plan hérité (même écart et mêmes jours, check-in compris), elle reçoit le nouveau plan, du même écart,
+ * sauf s'il demanderait une confirmation (< 1 200 kcal) ou serait refusé (< 800) : elle garde alors son plan d'avant (`saved-partial`).
+ * Une copie ne force jamais `lowFloorConfirmed` pour un nouveau plan.
  */
 export async function saveRestPlan(
   access: DataAccess,
@@ -266,30 +270,36 @@ export async function saveRestPlan(
     const winner = effectiveTarget(decisions, date);
     if (winner !== null && winner.weekStart === date) futures.push(winner);
   }
-  const result = await saveManualTarget(access, { weekStart: input.today, target: input.current.target, lowFloorConfirmed: false, restPlan: input.restPlan });
-  if (typeof result === 'string') return result;
   const plan = input.restPlan;
+  const todayDraft: TargetRecordDraft = { weekStart: input.today, target: input.current.target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false, restPlan: plan };
+  const issues = validateTargetRecord(todayDraft);
+  if (issues.includes('confirmation-required') && issues.length === 1) return 'confirmation-required';
+  if (issues.length > 0) return 'rejected';
   const gap = plan === null ? 0 : plan.rest.kcal - input.current.target.kcal;
-  // Plan hérité : absent, ou du même écart et des mêmes jours que celui d'aujourd'hui avant l'écriture ; sinon plan propre (check-in D-272, saisie à part), gardé tel quel.
+  // Plan hérité : absent, ou du même écart et des mêmes jours que celui d'aujourd'hui avant l'écriture ; sinon plan propre, gardé tel quel.
   const before = input.current.restPlan ?? null;
   const inherited = (future: NutritionTargetRecord): boolean => {
     const own = future.restPlan ?? null;
     if (own === null) return true;
     return before !== null && own.rest.kcal - future.target.kcal === before.rest.kcal - input.current.target.kcal && own.trainingDays.join() === before.trainingDays.join();
   };
+  let partial = false;
+  const copies: TargetRecordDraft[] = [];
   for (const future of futures) {
-    const restPlan: RestPlan | null = !inherited(future) ? (future.restPlan ?? null) : plan === null ? null : { rest: restTargetFromGap(future.target, gap), trainingDays: plan.trainingDays };
-    const draft = {
-      weekStart: future.weekStart,
-      target: future.target,
-      source: future.source,
-      accepted: true,
-      engineVersion: future.engineVersion,
-      lowFloorConfirmed: true,
-      restPlan,
-    } as const;
-    if (validateTargetRecord(draft).length === 0) await repo.record(draft);
-    else await repo.record({ ...draft, restPlan: future.restPlan ?? null });
+    // Décision déjà adoptée : sa recopie avec son plan d'avant n'est pas une nouvelle adoption.
+    const keep: TargetRecordDraft = { weekStart: future.weekStart, target: future.target, source: future.source, accepted: true, engineVersion: future.engineVersion, lowFloorConfirmed: true, restPlan: future.restPlan ?? null };
+    if (!inherited(future)) {
+      copies.push(keep);
+      continue;
+    }
+    const restPlan: RestPlan | null = plan === null ? null : { rest: restTargetFromGap(future.target, gap), trainingDays: plan.trainingDays };
+    const next: TargetRecordDraft = { ...keep, lowFloorConfirmed: false, restPlan };
+    if (validateTargetRecord(next).length === 0) copies.push(next);
+    else {
+      partial = true;
+      copies.push(keep);
+    }
   }
-  return 'saved';
+  await repo.recordMany([todayDraft, ...copies]);
+  return partial ? 'saved-partial' : 'saved';
 }

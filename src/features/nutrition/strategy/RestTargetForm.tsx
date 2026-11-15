@@ -42,7 +42,7 @@ export function RestTargetForm({ target, plan, defaultDays, onSave }: { readonly
     <div className="ct-nutrition__rest">
       {/* FIX-0244 : libellé visible, dans le même <label> que l'interrupteur (un clic sur le texte le bascule). */}
       <label className="ct-nutrition__restToggle">
-        <span>{tNutrition('restTargetToggle')}</span>
+        <span aria-hidden="true">{tNutrition('restTargetToggle')}</span>
         <Switch
           checked={enabled}
           label={tNutrition('restTargetToggle')}

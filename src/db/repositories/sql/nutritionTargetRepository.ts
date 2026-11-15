@@ -3,7 +3,7 @@ import { uuidGenerator, type IdGenerator } from '../../../domain/id';
 import { formatTrainingDays, restPlanOf } from '../../../domain/nutrition/restDay';
 import { effectiveTarget, validateTargetRecord, type TargetSource } from '../../../domain/nutrition/targetRecord';
 import { isId, type LocalDate } from '../../../domain/types';
-import type { SqlExecutor, SqlRow } from '../../driver';
+import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
 import { RepositoryError } from '../common';
 import type { NutritionTargetRecord, NutritionTargetRepository } from '../nutritionTargetRepository';
 import { readSyncMeta, type SyncRow } from './sqlHelpers';
@@ -42,6 +42,8 @@ const toRecord = (row: TargetRow): NutritionTargetRecord => {
 const ORDER = 'ORDER BY week_start DESC, created_at DESC, id DESC';
 
 export function createNutritionTargetRepository(db: SqlExecutor, stamper: WriteStamper, ids: IdGenerator = uuidGenerator): NutritionTargetRepository {
+  const atomic = <T>(work: (inTx: NutritionTargetRepository) => Promise<T>): Promise<T> | null =>
+    typeof (db as Partial<SqlDriver>).transaction === 'function' ? (db as SqlDriver).transaction((tx) => work(createNutritionTargetRepository(tx, stamper, ids))) : null;
   const read = async (id: string): Promise<TargetRow | undefined> => (await db.select<TargetRow>('SELECT * FROM nutrition_target WHERE id = ?', [id]))[0];
 
   return {
@@ -61,8 +63,14 @@ export function createNutritionTargetRepository(db: SqlExecutor, stamper: WriteS
       return toRecord(row);
     },
 
-    async recordMany() {
-      throw new RepositoryError('invalid', 'nutrition_target', 'recordMany');
+    async recordMany(drafts) {
+      // Tout est validé avant la première écriture ; sur le driver, une transaction (tout ou rien) ; dans `DataAccess.transaction`, écrit directement.
+      for (const draft of drafts) if (validateTargetRecord(draft).length > 0) throw new RepositoryError('invalid', 'nutrition_target', 'recordMany');
+      const outer = atomic((r) => r.recordMany(drafts));
+      if (outer) return outer;
+      const out: NutritionTargetRecord[] = [];
+      for (const draft of drafts) out.push(await this.record(draft));
+      return out;
     },
 
     async get(id) {

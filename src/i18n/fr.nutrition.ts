@@ -49,6 +49,7 @@ export const nutritionFr = {
   restTargetPreview: 'Jours de repos : {kcal} kcal, glucides {carbs} g ; protéines et lipides identiques.',
   restTargetSave: 'Enregistrer la cible de repos',
   restTargetSaved: 'Cible des jours de repos enregistrée.',
+  restTargetPartial: 'Enregistrée. Une cible prévue plus tard garde son réglage de repos.',
   restTargetError: 'Enregistrement impossible. Réessaie.',
   dayTypeTraining: 'Jour d’entraînement',
   dayTypeRest: 'Jour de repos',
