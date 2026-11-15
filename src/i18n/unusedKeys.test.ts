@@ -25,6 +25,9 @@ const WHITELIST: readonly string[] = [
   'fr.health.ts:bodyType_*', // HealthBodyImportSection : tHealth(`bodyType_${BODY_METRIC_OF[name]}`)
   'fr.recovery.ts:abstain_*', // RecoveryToday : tRecovery(`abstain_${recovery.reason}`), un par abstain_reason (§ 16.5)
   'fr.recovery.ts:quality_*', // RecoveryToday : tRecovery(`quality_${s.quality}`), un par qualité
+  'fr.recovery.ts:hrv_*', // RecoveryToday : tRecovery(`${c.key}_${tone}`), contributeur HRV : up, flat, down
+  'fr.recovery.ts:resting_hr_*', // idem, contributeur FC de repos : up, flat, down
+  'fr.recovery.ts:sleep_*', // idem, contributeur sommeil : up, down
   'fr.recovery.ts:explain_*', // RecoveryToday : tRecovery(`explain_${k}`), un par code d'explication du score
 ];
 
