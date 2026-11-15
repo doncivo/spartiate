@@ -481,6 +481,15 @@ describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', ()
     fireEvent.click(await within(r).findByRole('switch', { name: 'Cible des jours de repos' }));
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible de repos' }));
     expect(await within(r).findByText('Enregistrée. Une cible prévue plus tard garde son réglage de repos.')).toBeInTheDocument();
+    // Revue 2 : un enregistrement manuel ensuite efface ce signalement.
+    const fill = (label: string, value: string) => fireEvent.change(within(r).getByLabelText(label), { target: { value } });
+    fill('Calories (kcal)', '2700');
+    fill('Protéines (g)', '150');
+    fill('Lipides (g)', '80');
+    fill('Glucides (g)', '345');
+    fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible' }));
+    expect(await within(r).findByText('Cible enregistrée.')).toBeInTheDocument();
+    expect(within(r).queryByText('Enregistrée. Une cible prévue plus tard garde son réglage de repos.')).not.toBeInTheDocument();
   });
 
   it('saisie en kcal : 2 250 kcal les jours de repos', async () => {
