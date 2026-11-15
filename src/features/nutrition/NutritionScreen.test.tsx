@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { MealEntryDraft } from '../../domain/nutrition';
 import { addDays } from '../../domain/localDate';
@@ -13,6 +13,9 @@ import { createAppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../app/navigation';
 import { NutritionScreen } from './NutritionScreen';
 import { quickAddDraft, saveManualTarget, saveNutritionPrefs } from './useCases';
+import { logFailure } from '../../platform/desktop/log';
+
+vi.mock('../../platform/desktop/log', async (importOriginal) => ({ ...(await importOriginal<Record<string, unknown>>()), logFailure: vi.fn() }));
 
 /**
  * I4-03 : onglet Nutrition (journal, recherche locale, Quick Add, dashboard, stratégie, check-in). Base SQLite réelle (wasm), horloge
@@ -46,6 +49,7 @@ beforeEach(async () => {
   db = await openBaseDb(DEVICE, '2026-11-09T11:00:00.000Z');
 });
 afterEach(async () => {
+  vi.restoreAllMocks();
   cleanup();
   await db.close();
 });
@@ -521,6 +525,16 @@ describe('ERGO-02b (critère 8) : jours d’entraînement par défaut, repris de
     await seedTarget();
     open('strategy');
     fireEvent.click(await within(await region()).findByRole('switch', { name: 'Cible des jours de repos' }));
+    expect(await checked()).toEqual([true, true, false, true, true, true, false]);
+  });
+
+  it('lecture des cycles impossible : échec journalisé (code seul), jours par défaut gardés', async () => {
+    await seedTarget();
+    vi.mocked(logFailure).mockClear();
+    vi.spyOn(db.data.repos, 'mesocycles').mockRejectedValue(new Error('lecture impossible'));
+    open('strategy');
+    fireEvent.click(await within(await region()).findByRole('switch', { name: 'Cible des jours de repos' }));
+    await waitFor(() => expect(logFailure).toHaveBeenCalledWith('nutrition', 'routine-days-read-failed'));
     expect(await checked()).toEqual([true, true, false, true, true, true, false]);
   });
 
