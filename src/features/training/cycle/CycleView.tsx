@@ -64,13 +64,16 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
   const [error, setError] = useState(false);
 
   const fetchCycle = useCallback(async () => {
-    const [current, routines, answers] = await Promise.all([
+    const [current, routines, cycles, answers] = await Promise.all([
       loadCurrentCycle(access, today()),
       (await access.repos.trainingRoutines()).list(),
+      (await access.repos.mesocycles()).list(),
       // PROG-01 (D-269 (7)) : durée et semaine de reprise de l'étape 7 de l'onboarding, valeurs du formulaire du premier cycle.
       access.repos.settings.get('onboarding.answers').catch(() => null),
     ]);
-    return { current, routines, answers: answers === null || answers === undefined ? null : parseDraft(answers) };
+    // ERGO-02b : premier cycle seulement (aucun cycle en cours ni clos) ; les cycles suivants gardent les valeurs par défaut.
+    const first = cycles.length === 0;
+    return { current, routines, answers: !first || answers === null || answers === undefined ? null : parseDraft(answers) };
   }, [access, today]);
   const apply = useCallback(({ current, routines, answers }: { readonly current: CurrentCycle | null; readonly routines: readonly Routine[]; readonly answers?: ReturnType<typeof parseDraft> | null }): void => {
     setLoad({ status: 'ready', current, routines });
