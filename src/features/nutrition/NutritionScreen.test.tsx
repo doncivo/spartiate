@@ -3,6 +3,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { MealEntryDraft } from '../../domain/nutrition';
 import { addDays } from '../../domain/localDate';
+import type { RoutineInput } from '../../domain/training';
+import { DEFAULT_GENERATION_CONFIG } from '../../domain/training/config';
+import { createMesocycleSpec } from '../../domain/training/mesocycle';
 import type { DeviceId, LocalDate, LocalTime } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../app/AppContainerContext';
@@ -460,6 +463,74 @@ describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', ()
     fireEvent.change(within(r).getByLabelText('Calories les jours de repos (kcal)'), { target: { value: '2250' } });
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible de repos' }));
     await waitFor(async () => expect((await (await db.data.repos.nutritionTargets()).effective(TODAY))?.restPlan?.rest).toEqual({ kcal: 2250, proteinG: 150, fatG: 80, carbG: 232 }));
+  });
+});
+
+describe('ERGO-02b (critère 8) : jours d’entraînement par défaut, repris de la routine active', () => {
+  const u = (n: number): string => `5e4d3c00-0000-4000-8000-${String(n).padStart(12, '0')}`;
+  const routine = (dayCount: number): RoutineInput => ({
+    id: u(1),
+    name: 'Programme',
+    mode: 'programme',
+    days: Array.from({ length: dayCount }, (_, i) => ({
+      id: u(10 + i),
+      name: `Jour ${String(i + 1)}`,
+      dayOrder: i + 1,
+      exercises: [{ id: u(30 + i), exerciseId: 'bench-press-barbell', exerciseName: 'Développé couché barre', sets: 3, repMin: 6, repMax: 10, rir: 2, restSec: 150, position: 0 }],
+    })),
+  });
+  const followRoutine = async (dayCount: number): Promise<void> => {
+    await db.data.transaction(async (repos) => (await repos.trainingRoutines()).create(routine(dayCount)));
+    const spec = createMesocycleSpec({ routineId: u(1), startDate: TODAY, weeks: 5 }, DEFAULT_GENERATION_CONFIG);
+    if (spec === null) throw new Error('spec');
+    await db.data.transaction(async (repos) => (await repos.mesocycles()).start(spec));
+  };
+  const seedTarget = async (restPlan?: { rest: { kcal: number; proteinG: number; fatG: number; carbG: number }; trainingDays: number[] }) =>
+    (await db.data.repos.nutritionTargets()).record({
+      weekStart: TODAY,
+      target: { kcal: 2600, proteinG: 150, fatG: 80, carbG: 320 },
+      source: 'manual',
+      accepted: true,
+      engineVersion: null,
+      lowFloorConfirmed: false,
+      ...(restPlan === undefined ? {} : { restPlan: restPlan as never }),
+    });
+  const checked = async (): Promise<boolean[]> => {
+    const r = await region();
+    const days = await within(r).findByRole('group', { name: 'Jours d’entraînement' });
+    return within(days).getAllByRole('checkbox').map((c) => c.getAttribute('aria-checked') === 'true');
+  };
+
+  it('cycle actif sur une routine de 3 jours : lundi, mercredi, vendredi (et plus les cinq jours figés)', async () => {
+    await seedTarget();
+    await followRoutine(3);
+    open('strategy');
+    fireEvent.click(await within(await region()).findByRole('switch', { name: 'Cible des jours de repos' }));
+    await waitFor(async () => expect(await checked()).toEqual([true, false, true, false, true, false, false]));
+  });
+
+  it('cycle actif sur une routine de 5 jours (cas d’Ali) : lundi, mardi, jeudi, vendredi, samedi', async () => {
+    await seedTarget();
+    await followRoutine(5);
+    open('strategy');
+    fireEvent.click(await within(await region()).findByRole('switch', { name: 'Cible des jours de repos' }));
+    expect(await checked()).toEqual([true, true, false, true, true, true, false]);
+  });
+
+  it('aucun cycle actif : lundi, mardi, jeudi, vendredi, samedi', async () => {
+    await seedTarget();
+    open('strategy');
+    fireEvent.click(await within(await region()).findByRole('switch', { name: 'Cible des jours de repos' }));
+    expect(await checked()).toEqual([true, true, false, true, true, true, false]);
+  });
+
+  it('une cible de repos déjà enregistrée garde ses jours : la routine ne les remplace jamais (Ali a le dernier mot)', async () => {
+    await seedTarget({ rest: { kcal: 2400, proteinG: 150, fatG: 80, carbG: 270 }, trainingDays: [2, 4, 5, 6] });
+    await followRoutine(3);
+    open('strategy');
+    const r = await region();
+    await within(r).findByText(/Moyenne de la semaine/);
+    expect(await checked()).toEqual([false, true, false, true, true, true, false]);
   });
 });
 
