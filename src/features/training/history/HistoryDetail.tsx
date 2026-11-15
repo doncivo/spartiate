@@ -93,6 +93,8 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted, onRe
     setBusy(true);
     try {
       await access.transaction(async (repos) => (await repos.workouts()).correctSet(setId, patch));
+      // FIX-0243 (revue) : une série corrigée change la charge de référence ; la carte « Séance du jour » montée se relit.
+      announceLocalChanges(['workout_set']);
       if (!live.current) return true;
       setNotice(tTraining('historyCorrectionSaved'));
       setVersion((v) => v + 1);

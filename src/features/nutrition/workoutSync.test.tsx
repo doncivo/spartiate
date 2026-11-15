@@ -34,7 +34,7 @@ const recordRestPlan = async () =>
     engineVersion: null,
     lowFloorConfirmed: false,
     restPlan: { rest: { kcal: 2400, proteinG: 150, fatG: 80, carbG: 270 }, trainingDays: [2, 4, 5, 6] as const },
-  } as never);
+  });
 
 /** Séance de musculation close aujourd'hui, comme si la synchro venait de l'écrire. */
 const receiveClosedWorkout = async () => {
@@ -44,7 +44,7 @@ const receiveClosedWorkout = async () => {
   for (const set of w.sets) await r.validateSet(set.id, { reps: 8, loadKg: 60 });
   await db.data.transaction(async (repos) => (await repos.workouts()).close(WORKOUT));
 };
-const notify = (tables: string[]) => act(async () => void (await applyRemoteChanges(container(), { tables: new Set(tables) } as never)));
+const notify = (tables: string[]) => act(async () => void (await applyRemoteChanges(container(), { tables: new Set(tables), ids: new Map<string, ReadonlySet<string>>() })));
 
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
