@@ -1834,6 +1834,14 @@ Le délégué du sélecteur répond une fois au choix, à l'annulation et à la 
 - **Limites connues** : (1) l'horizon s'appuie sur les horloges : une écriture faite hors ligne APRÈS `H` (heure de l'appareil) sur une ligne NOUVELLE est gardée, comme toute écriture postérieure ; une horloge très en retard d'un appareil (au-delà de la tolérance de la section 4.4) pourrait faire écarter des écritures postérieures. (2) Les instantanés publiés avant `H` restent dans le dossier jusqu'au suivant ; tout appareil qui en repart relit ensuite la ligne `data_reset` et efface. (3) Un appareil qui ne se synchronise plus garde sa copie locale (comme section 14.1).
 - Tests : `tests/unit/sync/reset01` (local, propagation en ligne et hors ligne, appareil en retard, schéma 15, reprise après), `src/db/migrations/0016_data_reset.test.ts`, `src/domain/dataReset.test.ts`.
 
+### 37. Avenant SYNC-01 : republication unique après une migration additive (2026-11-15, D-290, ADR 0018)
+
+**Besoin** (D-275) : une création publiée par un appareil resté au schéma précédent n'a pas les colonnes ajoutées par la migration suivante ; l'appareil à jour ne crée une ligne absente que complète (§3.1, §7.2) et la met de côté (`missing-row`) : rien ne la reprenait.
+
+**Décision** (Ali, 2026-11-15 : option A avec C ; B écartée) : nouvelle cause d'entrée `'+'` (§3.2). Une fois par migration additive listée dans `SCHEMA_REPUBLISH` (`src/domain/sync/schemaRepublish.ts`), chaque appareil remet entière dans sa file chaque ligne des tables concernées, marque `sync_meta.schemaRepublished` posée dans la même transaction (`src/sync/olderWriter.ts`, à la demande). Tant que l'écrivain publie un `sv` inférieur, l'appareil à jour garde la création de côté (`sv` noté dans le JSON local de `sync_parked.op`) et lève `older-device` sans reprise depuis l'instantané. Historique exempté : 0006 et 0013 (`workout_set`), 0014 (`routine_exercise`). Écartée : la complétion à nul côté lecteur (§3.1 et §7.2 inchangés).
+
+**Inchangés** : format des journaux, des instantanés, état publié, `sm`, fusion. Garde : `src/db/migrations/schemaRepublish.test.ts` (toute migration qui ajoute une colonne publiée à une table déjà publiée a sa ligne). Détail, options et passe architect : ADR 0018.
+
 ## Conséquences
 
 - **Dépendances** (validées par l'architecte) :
