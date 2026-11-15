@@ -1,4 +1,4 @@
-Lot 0.25.0 : FIX-0242, FIX-0241, ERGO-02b, SYNC-01. Décision d'Ali du 14/11 : ces quatre tickets forment un seul déploiement.
+Lot 0.25.0 : FIX-0242, FIX-0241, FIX-0243, ERGO-02b, SYNC-01. Décision d'Ali du 14/11 : ces tickets forment un seul déploiement (FIX-0243 ajouté par décision d'Ali du 15/11).
 Ne pose aucune question : prends le choix prudent, consigne-le en D- « révisable par Ali », et continue.
 
 Avant toute chose
@@ -35,6 +35,14 @@ Cadre du lot
 - Écrans PC corrects de 1 024 à 1 920 px. Ali utilise environ 1 210 px ; Corps y casse aujourd'hui.
 - Largeur de 1 280 px ajoutée aux captures de la CI.
 - Pluriels gérés partout (« 1 jour », « 2 jours »).
+
+2b. FIX-0243, budget M, juste après FIX-0241 et avant ERGO-02b (décision d'Ali du 15/11 ; agents : training, nutrition). Constats de la relecture Codex (PR #127, commit 5d80c1eb, rapport docs/relecture-codex-2026-11-13.md sur sa branche), un test rouge avant le vert pour chacun :
+1. generateSession.ts:216 : en décharge, chaque exercice doit être à 2 séries ; aujourd'hui la séance propose [3,3,3,3,3,2,2] et la création reprend ces nombres.
+2. constraints.ts:161 : décharge après 30 jours d'inactivité, un exercice assisté ne doit jamais devenir plus lourd (assistance 30→29 kg, charge réelle 50→51) ; étendre le test de D-273.
+3. NutritionRemainingCard.tsx:24 et useNutritionData.ts:17 : une séance reçue par la synchro fait passer le jour en jour d'entraînement et actualise la cible affichée (2600 et non 2400).
+4. TodaySessionCard.tsx:84 : charges et jour actualisés après réception d'une synchro.
+5. Mineurs : statuts de docs/ERGO-01b.md et docs/FIX-0223.md ; D-274 corrigée à +372 octets mesurés.
+Passes : product-owner, training, nutrition, qa-test, code-reviewer.
 
 3. ERGO-02b, budget M (agents : performance, domain-logic, training, nutrition)
 - Bundle de départ : option A (configuration du build) pour revenir sous le niveau de la 0.22.3, en absorbant aussi les +321 octets de D-274. Mets à jour D-265 et D-274.

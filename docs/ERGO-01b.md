@@ -2,7 +2,7 @@
 
 Ticket L (400 k tokens). Branche `ERGO-01b-regles-ecrans`, partie d'origin/main `2f6107f5` (0.22.0, schéma 18). Présentation et ergonomie seules, sans migration (schéma 18 inchangé). Décisions : D-240 (règles d'Ali du 13/11, non révisable), D-241 à D-247 ; propositions P1 à P5 validées par Ali le 13/11 (D-238, consignée à part par le coordinateur). Chapitres : 18 (§ 18.4 charte, § 18.6 accessibilité).
 
-Statut : **code poussé, PR ouverte, non fusionnée** (ni tag, ni build iOS).
+Statut (15/11) : **fusionné (#125) et publié en 0.22.1** (tag v0.22.1 sur `22c0bc52`). Les réserves natives consignées plus bas restent ouvertes. Statut historique du 13/11 : code poussé, PR ouverte, non fusionnée.
 
 Point d'étape budget : le complément P1 à P5 est arrivé en cours de ticket ; le budget L est tenu de justesse. Livré : tout le périmètre ci-dessous ; non fait : voir « Non fait ».
 
