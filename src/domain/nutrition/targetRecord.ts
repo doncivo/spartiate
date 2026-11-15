@@ -84,3 +84,8 @@ export function effectiveTarget<T extends Pick<TargetRecord, 'id' | 'weekStart' 
   }
   return best;
 }
+
+/** FIX-0244 (D-291) : bouchon d'avant, aucune fusion. */
+export function collapseRecopies<T extends Pick<TargetRecord, 'id' | 'weekStart' | 'target' | 'source' | 'accepted' | 'hlc'> & { readonly engineVersion?: number | null }>(records: readonly T[]): readonly T[] {
+  return records;
+}

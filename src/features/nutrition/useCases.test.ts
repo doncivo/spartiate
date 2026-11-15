@@ -310,14 +310,27 @@ describe('FIX-0244 (D-291) : la cible de repos ne passe jamais devant une cible 
     expect(second.restPlan?.rest.kcal).toBe(2500);
   });
 
-  it('FIX-0244 cible future qui avait son propre plan : le code le remplace par le plan d’aujourd’hui (même écart, jours d’aujourd’hui)', async () => {
+  it('FIX-0244 cible future qui avait SON PROPRE plan (check-in D-272) : recopiée à l’identique avec son plan, à l’enregistrement comme à la désactivation', async () => {
     const repo = await seed(false);
-    await repo.record({ weekStart: FUTURE, target: FUTURE_TARGET, source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false, restPlan: { rest: { kcal: 2000, proteinG: 170, fatG: 75, carbG: 255 }, trainingDays: [3] as never } });
+    const own = { rest: { kcal: 2000, proteinG: 170, fatG: 75, carbG: 255 }, trainingDays: [3] as never };
+    await repo.record({ weekStart: FUTURE, target: FUTURE_TARGET, source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false, restPlan: own });
     await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
     const future = await at(repo, FUTURE);
     expect(future.target).toEqual(FUTURE_TARGET);
-    expect(future.restPlan?.rest.kcal).toBe(2250);
-    expect(future.restPlan?.trainingDays).toEqual(PLAN.trainingDays);
+    expect(future.restPlan).toEqual(own);
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: null });
+    expect((await at(repo, FUTURE)).restPlan).toEqual(own);
+    expect((await at(repo, NOW)).restPlan ?? null).toBeNull();
+  });
+
+  it('FIX-0244 cible future dont le plan est hérité (même écart et mêmes jours que celui d’aujourd’hui) : reçoit le nouveau plan', async () => {
+    const repo = await seed(true);
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
+    const newPlan = { rest: { kcal: 2877, proteinG: 170, fatG: 80, carbG: 415 }, trainingDays: [1, 3] as never };
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: newPlan });
+    const future = await at(repo, FUTURE);
+    expect(future.restPlan?.rest.kcal).toBe(2150);
+    expect(future.restPlan?.trainingDays).toEqual([1, 3]);
   });
 
   it('FIX-0244 cible future dont la copie serait refusée par le plancher : réenregistrée à l’identique avec son plan d’avant, toujours en vigueur à sa date', async () => {
