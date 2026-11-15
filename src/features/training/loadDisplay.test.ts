@@ -15,7 +15,7 @@ describe('heldFor réemployé (une seule règle d’affichage des haltères)', (
   for (const path of SCREENS) {
     it(`${path} : importe heldFor ou heldLookup, ne recompose pas dumbbellsHeld`, () => {
       const text = code(path);
-      expect(text).toMatch(/import \{[^}]*\bheld(For|Lookup)\b[^}]*\} from '[^']*training\/loadDisplay'/);
+      expect(text).toMatch(/import \{[^}]*\bheld(For|Lookup)\b[^}]*\} from '[^']*\/loadDisplay'/);
       expect(text).not.toMatch(/\bdumbbellsHeld\b/);
     });
   }
