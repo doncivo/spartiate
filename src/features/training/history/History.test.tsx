@@ -8,7 +8,7 @@ import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../../app/navigation';
 import { TodaySessionCard } from '../session/TodaySessionCard';
-import { applyRemoteChanges } from '../../sync/remoteChanges';
+import { applyRemoteChanges, onSyncedDataApplied } from '../../sync/remoteChanges';
 import { TrainingScreen } from '../TrainingScreen';
 
 /**
@@ -191,6 +191,50 @@ describe('détail d’une séance close', () => {
     expect(await screen.findByText(/Aucune séance terminée pour l’instant/)).toBeInTheDocument();
     expect(await one('SELECT deleted_at IS NOT NULL AS gone FROM workout WHERE id = ?', [PAST_WORKOUT_ID])).toEqual({ gone: 1 });
     expect(await one('SELECT COUNT(*) AS n FROM workout_set WHERE workout_id = ? AND deleted_at IS NULL', [PAST_WORKOUT_ID])).toEqual({ n: 0 });
+  });
+});
+
+describe('FIX-0243 : suppression d’une séance close, signal local aux cartes montées', () => {
+  it('suppression réussie : « workout, workout_set » annoncés une fois ; « Annuler » n’annonce rien', async () => {
+    const seen: string[][] = [];
+    const off = onSyncedDataApplied((tables) => void seen.push([...tables].sort()));
+    try {
+      await seedPastWorkout(db.driver);
+      openJournal();
+      const detail = await openDetail(/^Haut A/);
+      fireEvent.click(within(detail).getByRole('button', { name: 'Supprimer la séance' }));
+      fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Annuler' }));
+      await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+      expect(seen).toEqual([]);
+      fireEvent.click(within(detail).getByRole('button', { name: 'Supprimer la séance' }));
+      fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Supprimer' }));
+      expect(await screen.findByText(/Séance supprimée/)).toBeInTheDocument();
+      expect(seen.filter((t) => t.includes('workout'))).toEqual([['workout', 'workout_set']]);
+    } finally {
+      off();
+    }
+  });
+
+  it('revue : correction d’une série close réussie, « workout_set » annoncé (la carte « Séance du jour » montée relit la charge) ; refusée, rien', async () => {
+    const seen: string[][] = [];
+    const off = onSyncedDataApplied((tables) => void seen.push([...tables].sort()));
+    try {
+      await seedPastWorkout(db.driver);
+      openJournal();
+      const detail = await openDetail(/^Haut A/);
+      const set = within(within(detail).getByRole('region', { name: BENCH })).getAllByRole('group', { name: /^Série/ })[1] as HTMLElement;
+      fireEvent.click(within(set).getByRole('button', { name: 'Corriger' }));
+      fireEvent.change(within(set).getByLabelText('Répétitions'), { target: { value: '' } });
+      fireEvent.click(within(set).getByRole('button', { name: 'Enregistrer la correction' }));
+      await within(set).findByRole('alert');
+      expect(seen).toEqual([]);
+      fireEvent.change(within(set).getByLabelText('Répétitions'), { target: { value: '9' } });
+      fireEvent.click(within(set).getByRole('button', { name: 'Enregistrer la correction' }));
+      await within(detail).findByText(/Correction enregistrée/);
+      expect(seen).toEqual([['workout_set']]);
+    } finally {
+      off();
+    }
   });
 });
 

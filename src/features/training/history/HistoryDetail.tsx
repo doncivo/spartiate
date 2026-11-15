@@ -8,6 +8,7 @@ import { recordText, SummaryFigures } from '../session/SummaryFigures';
 import { heldLookup } from '../loadDisplay';
 import type { TrainingData } from '../trainingState';
 import { HistorySetRow } from './HistorySetRow';
+import { announceLocalChanges } from '../../sync/remoteChanges';
 
 // I6-03b : déroulé série par série, bloc à la demande avec son catalogue (fr.workoutReplay) et sa règle (domain/training/replay).
 const HistoryTimelineView = lazy(() => import('./HistoryTimelineView').then((m) => ({ default: m.HistoryTimelineView })));
@@ -92,6 +93,8 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted, onRe
     setBusy(true);
     try {
       await access.transaction(async (repos) => (await repos.workouts()).correctSet(setId, patch));
+      // FIX-0243 (revue) : une série corrigée change la charge de référence ; la carte « Séance du jour » montée se relit.
+      announceLocalChanges(['workout_set']);
       if (!live.current) return true;
       setNotice(tTraining('historyCorrectionSaved'));
       setVersion((v) => v + 1);
@@ -128,6 +131,8 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted, onRe
     setBusy(true);
     try {
       await access.transaction(async (repos) => (await repos.workouts()).deleteClosed(workoutId));
+      // FIX-0243 : les cartes déjà montées (nutrition, « Séance du jour ») se relisent.
+      announceLocalChanges(['workout', 'workout_set']);
       if (live.current) onDeleted();
     } catch {
       if (live.current) {

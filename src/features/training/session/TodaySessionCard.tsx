@@ -7,6 +7,7 @@ import { Button, useLayout } from '../../../ui';
 import { MissingValue } from '../../../ui/MissingValue';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
+import { useSyncedData } from '../../sync/remoteChanges';
 import { loadCurrentCycle, localDayOf } from '../cycle/currentCycle';
 import type { TodaySessionPreview } from './todaySessionPreview';
 import '../../app/TodayScreen.css';
@@ -26,6 +27,8 @@ import './Session.css';
  * demande : rien du moteur dans le départ. Charge inconnue : aucun chiffre ; aperçu illisible : nombre d'exercices seul, sans charge.
  */
 const SHOWN = 3;
+/** FIX-0243 (constat 7) : tables lues par la carte (séance, séries, cycle, routine, moteur) ; un lot reçu qui en touche une la relit. */
+const READ_TABLES = ['workout', 'workout_set', 'mesocycle', 'routine', 'routine_day', 'routine_exercise', 'recommendation_decision', 'progression_profile', 'exercise', 'equipment_profile', 'body_weight'] as const;
 
 interface ProgramDay {
   readonly routineId: string;
@@ -44,6 +47,7 @@ export function TodaySessionCard() {
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const pc = useLayout() === 'pc';
+  const synced = useSyncedData(READ_TABLES);
 
   useEffect(() => {
     let live = true;
@@ -76,7 +80,7 @@ export function TodaySessionCard() {
     return () => {
       live = false;
     };
-  }, [data, clock, pc]);
+  }, [data, clock, pc, synced]);
 
   if (load.status !== 'ready') return null;
   const { open, program } = load;
