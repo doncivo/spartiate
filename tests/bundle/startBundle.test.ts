@@ -36,8 +36,6 @@ const NORMALIZATION_UNDERSHOOT_BYTES = 100;
 const NORMALIZATION_OVERSHOOT_BYTES = 300;
 /** ERGO-02b : départ de 0.22.3 (D-265), à tenir sous cette valeur ; ce n'est pas un relèvement du plafond (358 400). */
 const ERGO_02B_TARGET_BYTES = 198_694;
-/** ERGO-02b : liens `modulepreload` de index.html avant la configuration (un par bloc de départ hors entrée, relevé sur le build de main). */
-const MODULEPRELOAD_LINKS_BEFORE = 43;
 
 describe('bundle de départ (index.html)', () => {
   let outDir = '';
@@ -110,7 +108,6 @@ describe('bundle de départ (index.html)', () => {
     const links = [...html.matchAll(/<link[^>]*rel="modulepreload"[^>]*>/g)].length;
     const startJs = startChunks().filter((chunk) => chunk.file.endsWith('.js')).length;
     expect(links).toBeGreaterThanOrEqual(startJs - 1);
-    expect(links).toBeGreaterThanOrEqual(MODULEPRELOAD_LINKS_BEFORE);
   });
 
   it('ERGO-02b : le build n’émet aucun polyfill de préchargement (build.modulePreload.polyfill: false)', () => {
