@@ -2,11 +2,11 @@ import { tPlural } from '../../i18n/plural';
 import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import { todayLocal } from '../../domain/clock';
 import type { PersonalRecord } from '../../domain/training/closure';
-import { dumbbellsHeld } from '../../domain/training/dumbbellPair';
-import { loadGrid } from '../../domain/training/loadGrid';
 import type { LocalDate } from '../../domain/types';
 import { formatInt, tNutrition } from '../../i18n/nutritionText';
 import { formatStamp } from '../../i18n/format';
+import { getFirstWeekday } from '../../i18n/formatPrefs';
+import { daysSinceWeekStart, type FirstWeekday } from '../../domain/week';
 import { logFailure } from '../../platform/desktop/log';
 import { tToday } from '../../i18n/todayText';
 import { tTodayPc } from '../../i18n/todayPcText';
@@ -14,6 +14,7 @@ import { formatExerciseLoad } from '../../i18n/trainingText';
 import { MissingValue } from '../../ui/MissingValue';
 import { useSyncedData } from '../sync/remoteChanges';
 import { loadNutritionSnapshot, type NutritionSnapshot } from '../nutrition/useCases';
+import { heldLookup } from '../training/loadDisplay';
 import { readTrainingData } from '../training/trainingState';
 import { useAppContainer } from './AppContainerContext';
 import './TodayScreen.css';
@@ -44,21 +45,21 @@ interface RecordRow {
 interface Ready {
   readonly status: 'ready';
   readonly snapshot: NutritionSnapshot;
-  /** Jours locaux des séances closes de la semaine. */
+  /** Jours locaux des dernières séances closes (la semaine affichée en retient 7). */
   readonly doneDays: ReadonlySet<string>;
   /** 'failed' : lecture impossible, dite comme une erreur (jamais « pas encore de record »). */
   readonly records: readonly RecordRow[] | 'failed';
 }
 type Load = { readonly status: 'loading' | 'failed' } | Ready;
 
-/** Les sept jours (lundi au dimanche) de la semaine de `today`, avec leur nom (« mardi ») et son abrégé (« mar »). */
-function weekOf(today: LocalDate): readonly { readonly day: string; readonly name: string; readonly short: string }[] {
+/** Les sept jours de la semaine de `today` (premier jour : réglage « Début de semaine »), avec leur nom (« mardi ») et son abrégé (« mar »). */
+function weekOf(today: LocalDate, first: FirstWeekday): readonly { readonly day: string; readonly name: string; readonly short: string }[] {
   const [y, m, d] = today.split('-').map(Number) as [number, number, number];
   const base = Date.UTC(y, m - 1, d);
-  const monday = base - ((new Date(base).getUTCDay() + 6) % WEEK) * DAY_MS;
+  const startMs = base - daysSinceWeekStart(today, first) * DAY_MS;
   const names = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', timeZone: 'UTC' });
   return Array.from({ length: WEEK }, (_, i) => {
-    const at = new Date(monday + i * DAY_MS);
+    const at = new Date(startMs + i * DAY_MS);
     const name = names.format(at);
     return { day: at.toISOString().slice(0, 10), name, short: name.slice(0, 3) };
   });
@@ -77,13 +78,8 @@ async function readRecords(container: ReturnType<typeof useAppContainer>, closed
     }
   }
   if (found.length === 0) return [];
-  const data = await readTrainingData(container.data);
-  const exerciseOf = (id: string) => data.content.catalog.get(id) ?? data.allCustoms.find((c) => c.id === id);
-  return found.slice(0, RECORDS_SHOWN).map((record) => {
-    const exercise = exerciseOf(record.exerciseId);
-    const held = exercise === undefined ? null : dumbbellsHeld(exercise, loadGrid(exercise.equipment, data.active)?.source);
-    return { exerciseId: record.exerciseId, name: record.exerciseName, text: formatExerciseLoad(record.value, held) };
-  });
+  const heldOf = heldLookup(await readTrainingData(container.data));
+  return found.slice(0, RECORDS_SHOWN).map((record) => ({ exerciseId: record.exerciseId, name: record.exerciseName, text: formatExerciseLoad(record.value, heldOf(record.exerciseId)) }));
 }
 
 export interface TodayPcSideProps {
@@ -134,8 +130,8 @@ export function TodayPcSide({ weight, state }: TodayPcSideProps) {
         const snapshot = await loadNutritionSnapshot(data, today);
         const workouts = await data.repos.workouts();
         const closed = await workouts.listClosed(RECENT);
-        const week = new Set(weekOf(today).map((d) => d.day));
-        const doneDays = new Set(closed.flatMap((w) => (w.endedAt === null ? [] : [localDayOf(Date.parse(w.endedAt))])).filter((d) => week.has(d)));
+        // Jours de toutes les séances récentes : la semaine affichée (réglage « Début de semaine ») filtre au rendu, sans relecture au changement du réglage.
+        const doneDays = new Set(closed.flatMap((w) => (w.endedAt === null ? [] : [localDayOf(Date.parse(w.endedAt))])));
         let records: readonly RecordRow[] | 'failed';
         try {
           records = await readRecords(container, closed.map((w) => w.id));
@@ -178,7 +174,7 @@ export function TodayPcSide({ weight, state }: TodayPcSideProps) {
     { key: 'macroCarb', done: day?.carbG ?? null, goal: target?.carbG ?? null },
     { key: 'macroFat', done: day?.fatG ?? null, goal: target?.fatG ?? null },
   ] as const;
-  const week = weekOf(today);
+  const week = weekOf(today, getFirstWeekday());
   const count = week.filter((d) => doneDays.has(d.day)).length;
 
   return (

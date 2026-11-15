@@ -1,14 +1,13 @@
 import { DEFAULT_GENERATION_CONFIG } from '../../../domain/training/config';
 import type { WeekPlan } from '../../../domain/training/mesocycle';
 import { estimateSessionSec } from '../../../domain/training/generateSession';
-import { dumbbellsHeld } from '../../../domain/training/dumbbellPair';
-import { loadGrid } from '../../../domain/training/loadGrid';
 import { positionRanks } from '../../../domain/training/positionRank';
 import { prescribe } from '../../../domain/training/prescribe';
 import { prescriptionInputOf, routineLineTarget } from '../../../domain/training/prescriptionInput';
 import type { Exercise, RoutineDay } from '../../../domain/training/types';
 import type { IsoDateTime } from '../../../domain/types';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
+import { heldFor } from '../loadDisplay';
 import { readTrainingData } from '../trainingState';
 import { loadPrescriptionContext } from './prescriptionContext';
 
@@ -52,7 +51,7 @@ export async function loadTodaySessionPreview(access: DataAccess, day: RoutineDa
       .filter((l) => lineIds.includes(l.id))
       .map(async (line) => {
         const exercise = exerciseOf(line.exerciseId);
-        held.set(line.id, exercise === undefined ? null : dumbbellsHeld(exercise, loadGrid(exercise.equipment, data.active)?.source));
+        held.set(line.id, heldFor(exercise, data.active));
         try {
           const context = await loadPrescriptionContext(access, line.exerciseId, exercise, musclesOf);
           const p = prescribe(
