@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Hlc, IsoDateTime, LocalDate } from '../types';
-import { effectiveTarget, validateTargetRecord, type TargetRecord, type TargetRecordDraft } from './targetRecord';
+import { collapseRecopies, effectiveTarget, validateTargetRecord, type TargetRecord, type TargetRecordDraft } from './targetRecord';
 
 /** I4-02 : enregistrement d'une cible (une ligne par décision, jamais écrasée) ; valeurs synthétiques. */
 
@@ -114,5 +114,47 @@ describe('effectiveTarget : parmi les lignes acceptées dont la semaine a commen
   it('même semaine : la décision la plus récente (modification d’Ali) l’emporte', () => {
     const later = [...records, rec('e', '2026-11-02', 2350, true, '2026-11-03T08:00:00.000Z')];
     expect(effectiveTarget(later, '2026-11-08' as LocalDate)?.id).toBe('e');
+  });
+});
+
+describe('FIX-0244 (D-291) : collapseRecopies fusionne la recopie d’une cible avec la décision précédente de la même semaine', () => {
+  const rec = (id: string, week: string, kcal: number, ms: number, over: Partial<TargetRecord & { engineVersion: number | null }> = {}) => ({
+    id,
+    weekStart: week as LocalDate,
+    target: { kcal, proteinG: 170, fatG: 75, carbG: 340 },
+    source: 'auto' as const,
+    accepted: true,
+    engineVersion: 1 as number | null,
+    createdAt: '2026-11-15T08:00:00.000Z' as IsoDateTime,
+    hlc: hlcAt(ms),
+    ...over,
+  });
+  const plan = { rest: { kcal: 2250, proteinG: 170, fatG: 75, carbG: 290 }, trainingDays: [1, 2] as never };
+
+  it('mêmes valeurs, même source, même semaine : une seule ligne (la plus récente), peu importe le plan', () => {
+    const original = rec('o', '2026-11-16', 2350, 1);
+    const copy = rec('c', '2026-11-16', 2350, 3, { restPlan: plan });
+    expect(collapseRecopies([copy, original]).map((r) => r.id)).toEqual(['c']);
+    expect(collapseRecopies([original, copy]).map((r) => r.id)).toEqual(['c']);
+  });
+
+  it('valeurs, source, acceptation ou version différentes : lignes conservées', () => {
+    const base = rec('o', '2026-11-16', 2350, 1);
+    expect(collapseRecopies([rec('k', '2026-11-16', 2500, 3), base]).length).toBe(2);
+    expect(collapseRecopies([rec('k', '2026-11-16', 2350, 3, { source: 'manual', engineVersion: null }), base]).length).toBe(2);
+    expect(collapseRecopies([rec('k', '2026-11-16', 2350, 3, { accepted: false }), base]).length).toBe(2);
+    expect(collapseRecopies([rec('k', '2026-11-23', 2350, 3), base]).length).toBe(2);
+  });
+
+  it('une autre décision entre deux identiques de la même semaine : rien n’est fusionné', () => {
+    const a = rec('a', '2026-11-16', 2350, 1);
+    const b = rec('b', '2026-11-16', 2600, 2, { source: 'manual', engineVersion: null });
+    const c = rec('c', '2026-11-16', 2350, 3);
+    expect(collapseRecopies([c, b, a]).map((r) => r.id)).toEqual(['c', 'b', 'a']);
+  });
+
+  it('plusieurs recopies d’affilée : une seule ligne ; l’ordre d’entrée est conservé', () => {
+    const rows = [rec('z', '2026-11-09', 2600, 9), rec('c2', '2026-11-16', 2350, 5), rec('c1', '2026-11-16', 2350, 4), rec('o', '2026-11-16', 2350, 1)];
+    expect(collapseRecopies(rows).map((r) => r.id)).toEqual(['z', 'c2']);
   });
 });
