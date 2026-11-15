@@ -3,7 +3,7 @@ import { tablesToRepublish } from '../domain/sync/schemaRepublish';
 import type { SyncDeps } from './deps';
 
 /**
- * SYNC-01 (D-275, D-290 ; ADR 0018 proposé), chargé à la demande par `engine.ts` (hors du bundle de départ) : appareils de schémas différents.
+ * SYNC-01 (D-275, D-290 ; ADR 0018 accepté), chargé à la demande par `engine.ts` (hors du bundle de départ) : appareils de schémas différents.
  *
  * - **Détection** (`olderParked`) : une création reçue d'un appareil resté au schéma précédent n'a pas les colonnes ajoutées depuis ; elle est
  *   gardée telle quelle dans `sync_parked` (`missing-row`, sv de l'écrivain noté par `apply.ts`), jamais appliquée à moitié. Tant que
