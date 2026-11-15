@@ -40,15 +40,19 @@ export function RestTargetForm({ target, plan, defaultDays, onSave }: { readonly
 
   return (
     <div className="ct-nutrition__rest">
-      <Switch
-        checked={enabled}
-        label={tNutrition('restTargetToggle')}
-        onChange={(on) => {
-          setEnabled(on);
-          setStatus('idle');
-          if (!on && plan !== null) void save(null);
-        }}
-      />
+      {/* FIX-0244 : libellé visible, dans le même <label> que l'interrupteur (un clic sur le texte le bascule). */}
+      <label className="ct-nutrition__restToggle">
+        <span>{tNutrition('restTargetToggle')}</span>
+        <Switch
+          checked={enabled}
+          label={tNutrition('restTargetToggle')}
+          onChange={(on) => {
+            setEnabled(on);
+            setStatus('idle');
+            if (!on && plan !== null) void save(null);
+          }}
+        />
+      </label>
       {plan !== null ? (
         <>
           <p className="ct-nutrition__muted">{tNutrition('restTargetCurrent', { kcal: formatInt(plan.rest.kcal), carbs: formatInt(plan.rest.carbG) })}</p>

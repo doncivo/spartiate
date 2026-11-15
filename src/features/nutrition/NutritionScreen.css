@@ -462,3 +462,13 @@ html.ct-scanning-food body > *:not(.ct-nutrition-scan) {
 .ct-nutrition > * {
   flex-shrink: 0;
 }
+
+/* FIX-0244 : libellé visible de l'interrupteur de la cible des jours de repos ; la ligne entière reste une zone tactile ≥ 44 pt. */
+.ct-nutrition__restToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-3);
+  min-height: var(--ct-hit-target-min);
+  cursor: pointer;
+}
