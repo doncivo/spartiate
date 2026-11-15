@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { addTrackPoint, emptyTrack, paceSecPerKm, type TrackState } from '../../domain/cardio';
+import { addTrackPoint, emptyTrack, lastKmSecPerKm, paceSecPerKm, type TrackState } from '../../domain/cardio';
 import type { Clock } from '../../domain/clock';
 import { formatChrono, formatDuration, formatKm, formatPace, kmValue, tCardio, type CardioTextKey } from '../../i18n/cardioText';
 import type { GeoEvent, GeolocationLoader } from '../../platform/geolocation';
 import { Button, HeroFigure } from '../../ui';
 import type { GpsReport } from './CardioView';
-import { lastKmSecPerKm, trackPath } from './gpsFigures';
+import { trackPath } from './gpsFigures';
 
 /**
  * Suivi GPS d'une séance cardio sur l'iPhone (I6-06, D-222), AU PREMIER PLAN SEULEMENT : l'autorisation demandée est « pendant l'utilisation de

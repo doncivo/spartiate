@@ -96,3 +96,19 @@ export function decodeTrack(text: string): TrackPoint[] | null {
   }
   return out;
 }
+
+/**
+ * ERGO-02 (déplacé de l'écran en ERGO-02b) : allure du dernier kilomètre parcouru (s / km, arrondie), depuis la fin du tracé, lue des points
+ * déjà retenus par `addTrackPoint` (aucun filtrage neuf) ; la durée est ramenée à 1 000 m exactement. Null tant que le tracé ne couvre pas 1 km.
+ */
+export function lastKmSecPerKm(points: readonly TrackPoint[]): number | null {
+  const last = points.at(-1);
+  if (last === undefined) return null;
+  let distance = 0;
+  for (let i = points.length - 1; i > 0; i -= 1) {
+    const a = points[i - 1] as TrackPoint;
+    distance += haversineM(a, points[i] as TrackPoint);
+    if (distance >= 1000) return Math.round(((last.at - a.at) / 1000) * (1000 / distance));
+  }
+  return null;
+}
