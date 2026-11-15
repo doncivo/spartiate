@@ -1,8 +1,6 @@
 import { addDays } from '../../../domain/localDate';
-import { dayTargetFor, effectiveTarget, type Target as DayTarget } from '../../../domain/nutrition';
-import type { LocalDate as Day } from '../../../domain/types';
-import { isTrendLearning, tdeeConfidence, trendAt, weeklyBalance, weeklyTrendSlope, type DayState, type TdeeConfidence, type TrendPoint, type WeeklyBalance } from '../../../domain/nutrition';
-import type { LocalDate } from '../../../domain/types';
+import { dayTargetFor, effectiveTarget, isTrendLearning, tdeeConfidence, trendAt, weeklyBalance, weeklyTrendSlope, type DayState, type TdeeConfidence, type TrendPoint, type WeeklyBalance, type Target as DayTarget } from '../../../domain/nutrition';
+import type { LocalDate, LocalDate as Day } from '../../../domain/types';
 import type { NutritionSnapshot } from '../useCases';
 
 /** Fenêtre de la tendance de poids affichée (jours) : au plus 28 jours. */
