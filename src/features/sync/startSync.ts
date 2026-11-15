@@ -25,6 +25,8 @@ import { resetProgressBanner, resetReminderText } from './resetText';
 
 /** SYNC-01 : texte du bandeau `older-device` (undefined : pas encore demandé ; null : en chargement). */
 let olderText: string | null | undefined;
+/** Revue 1 (M5) : chargement en échec, texte générique affiché ; nouvel essai au prochain retour de l'avertissement, jamais en boucle. */
+let olderFallback = false;
 
 /** RESET-01 : rechargement complet de la WebView après un effacement reçu (même procédé que la restauration sur iPhone). */
 function reloadAfterReset(): void {
@@ -229,13 +231,19 @@ export function startSyncIntegration(container: AppContainer, env: SyncIntegrati
         });
     }
     // SYNC-01 : texte « appareil plus ancien » d'un catalogue à la demande, chargé une fois au premier besoin (jamais au départ).
-    if (olderText === undefined && banners.troubles.some((x) => x.code === 'older-device')) {
+    const olderShown = banners.troubles.some((x) => x.code === 'older-device');
+    if (olderFallback && !olderShown) {
+      olderFallback = false;
+      olderText = undefined;
+    }
+    if (olderText === undefined && olderShown) {
       olderText = null;
       void import('../../i18n/syncOlderDeviceText')
         .then(
           (module) => module.olderDeviceText(),
           (error: unknown) => {
             logFailure('sync', error);
+            olderFallback = true;
             return t('sync.status.errorGeneric');
           },
         )
