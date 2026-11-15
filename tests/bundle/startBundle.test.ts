@@ -543,6 +543,23 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // SYNC-01 (D-290 point 6) : détection et republication (`olderWriter`, importé par `engine.ts`) et texte de l'avertissement `older-device`
+  // (`syncOlderDeviceText`, importé par `startSync.ts`) sont des blocs à la demande ; `failureKinds` (importé par l'écran Détails, sans entrée
+  // propre au manifeste) est vérifié par ses clés.
+  it.each(['src/sync/olderWriter.ts', 'src/i18n/syncOlderDeviceText.ts'])('SYNC-01 : %s est un bloc à la demande, hors du départ', (source) => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest[source];
+    if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
+  });
+
+  it.each(['Un appareil utilise une version plus ancienne. Mets-le à jour.', 'schema-republished', 'sync.version.kinds.routinePause'])('SYNC-01 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   // Y-04 critère 12, revue 7 : le client du simulateur de dossier (`__ctSyncSim`, route `/rpc`, codage `__ctMap`) n'est installé
   // qu'en développement (`import.meta.env.DEV`) ; aucun fichier JavaScript du build n'en contient la moindre trace.
   it('aucune trace du simulateur de synchro dans le JavaScript de production', () => {

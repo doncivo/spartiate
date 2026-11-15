@@ -10,7 +10,7 @@ import { migrations } from '../../../../src/db/migrations';
 import { CAPTURE_TABLES_V17 } from '../../../../src/db/migrations/0017_supplement';
 import { reintegrateUnknownFields } from '../../../../src/db/repositories';
 import { carryKindText } from '../../../../src/features/sync/carryReportText';
-import { failureKinds } from '../../../../src/features/sync/syncText';
+import { failureKinds } from '../../../../src/features/sync/failureKinds';
 import { syncFieldFr } from '../../../../src/i18n/fr.syncField';
 import vectors from '../../../fixtures/sync/vectors.json';
 import { createSimDevice, pair, PRE_SUPPLEMENT_SCHEMA, setupFirst, syncFolders, type SimDevice, type SimSchema } from '../../../sim/syncDevice';
