@@ -157,6 +157,30 @@ describe('séance proposée (I3-01)', () => {
     expect(await count('SELECT COUNT(*) AS n FROM routine_exercise WHERE deleted_at IS NULL')).toBe(5);
   });
 
+  it('FIX-0243 (constat 10) : cycle de 4 semaines en décharge : 2 séries par exercice proposées puis créées, une ligne à 1 série reste à 1', async () => {
+    // Cycle de 4 semaines commencé le 19/10 : le 09/11 (horloge de la base) est la semaine 4, de décharge (2 séries, 90 %).
+    await db.driver.execute("UPDATE routine_exercise SET sets = 1 WHERE exercise_id = 'triceps-pushdown-cable'", []);
+    const spec = createMesocycleSpec({ routineId: ROUTINE.id, startDate: '2026-10-19' as LocalDate, weeks: 4 }, DEFAULT_GENERATION_CONFIG);
+    if (spec === null) throw new Error('spec');
+    await db.data.transaction(async (repos) => (await repos.mesocycles()).start(spec, { id: u(91) }));
+    open();
+    const region = await proposal();
+    expect(within(region).getByText('Cycle : semaine de décharge ; 2 séries par exercice, charges à 90 % arrondies vers le bas, 3 à 4 répétitions en réserve.')).toBeInTheDocument();
+    const list = within(region).getByRole('list', { name: 'Exercices proposés' });
+    const lines = within(list).getAllByRole('listitem').map((li) => /(\d+) × \d/.exec(li.textContent ?? '')?.[1]);
+    expect(lines).toEqual(['2', '2', '2', '2', '1']);
+    fireEvent.click(within(region).getByRole('button', { name: 'Commencer cette séance' }));
+    expect(await screen.findByRole('heading', { level: 2, name: 'Haut A' })).toBeInTheDocument();
+    const sets = await db.driver.select<{ exercise_id: string; n: number }>('SELECT exercise_id, COUNT(*) AS n FROM workout_set GROUP BY exercise_id ORDER BY MIN(position)', []);
+    expect(sets).toEqual([
+      { exercise_id: 'bench-press-barbell', n: 2 },
+      { exercise_id: 'row-barbell', n: 2 },
+      { exercise_id: 'lateral-raise-dumbbell', n: 2 },
+      { exercise_id: 'curl-barbell', n: 2 },
+      { exercise_id: 'triceps-pushdown-cable', n: 1 },
+    ]);
+  });
+
   it('revue : le style choisi est dit comme une consigne d’exécution, et l’écran dit qu’il n’est pas enregistré dans la séance', async () => {
     open();
     const region = await proposal();
