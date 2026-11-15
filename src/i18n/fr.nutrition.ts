@@ -30,8 +30,6 @@ export const nutritionFr = {
   noTarget: 'Aucune cible définie',
   noTargetHint: 'Définis une cible dans Stratégie pour voir ce qu’il reste à manger.',
   setTarget: 'Définir une cible',
-  remainingKcal: '{n} kcal restantes',
-  overKcal: '{n} kcal au-dessus de la cible',
   // ERGO-01 : unité posée à côté du chiffre héros (le chiffre est formaté à part).
   remainingKcalUnit: 'kcal restantes',
   overKcalUnit: 'kcal au-dessus de la cible',
@@ -58,7 +56,6 @@ export const nutritionFr = {
   carbs: 'Glucides',
   fat: 'Lipides',
   macroRemaining: '{left} / {target} g',
-  macroOver: '+{n} g',
   macroShortP: 'P',
   macroShortC: 'G',
   macroShortF: 'L',
@@ -230,10 +227,8 @@ export const nutritionFr = {
   saveCorrection: 'Enregistrer la correction',
   editQuickHint: 'Les valeurs saisies sont conservées telles quelles.',
   editFoodHint: 'Les totaux suivent la quantité ; la provenance ne change pas.',
-  editNotPossible: 'Cette entrée n’a pas de masse connue : corrige ses valeurs directement.',
 
   // Dashboard
-  dashboardTitle: 'Dashboard',
   todayCard: 'Aujourd’hui',
   balanceTitle: 'Balance 7 jours',
   balanceValue: '{n} kcal / j',
@@ -287,7 +282,6 @@ export const nutritionFr = {
   openCheckIn: 'Ouvrir le check-in',
 
   // Stratégie
-  strategyTitle: 'Stratégie',
   styleTitle: 'Style du check-in',
   styleHelp: 'Dans les trois styles, rien ne change sans ton accord.',
   styleGuided: 'Guidé',
@@ -328,7 +322,6 @@ export const nutritionFr = {
   targetSaved: 'Cible enregistrée.',
   historyTitle: 'Historique des cibles',
   historyEmpty: 'Aucune décision enregistrée.',
-  historyRow: '{date} · {kcal} kcal · P {p} · G {c} · L {f}',
   historyAuto: 'Proposition du moteur · acceptée',
   historyAutoRefused: 'Proposition du moteur · refusée',
   historyManual: 'Manuelle · acceptée',
@@ -394,7 +387,6 @@ export const nutritionFr = {
   goalMaintainShort: 'maintien',
   goalLossShort: 'perte de {n} kg / sem.',
   goalGainShort: 'prise de {n} kg / sem.',
-  belowFloorProposal: 'Cette proposition est sous 1 200 kcal : tu dois la confirmer explicitement.',
   accept: 'Accepter {kcal} kcal',
   customize: 'Personnaliser',
   refuse: 'Refuser',

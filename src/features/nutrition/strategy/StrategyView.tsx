@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ACTIVITY_LEVELS, GOAL_RATE_MAX_KG, type ActivityLevel, type CheckInStyle, type NutritionPrefs, type Target } from '../../../domain/nutrition';
 import type { NutritionTargetRecord } from '../../../db/repositories/nutritionTargetRepository';
 import { formatDayMonth, formatInt, tNutrition, weekdayNames, type NutritionTextKey } from '../../../i18n/nutritionText';
@@ -6,10 +6,10 @@ import { Button, HeroFigure, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { NumberField, parseNumber } from '../shared';
-import { saveManualTarget, saveNutritionPrefs, type NutritionSnapshot } from '../useCases';
+import { activeRoutineDayCount, saveManualTarget, saveNutritionPrefs, type NutritionSnapshot } from '../useCases';
 import { RestTargetForm } from './RestTargetForm';
 import { TargetForm, type TargetSaveResult } from './TargetForm';
-import { restTargetFromGap, type RestPlan } from '../../../domain/nutrition';
+import { defaultTrainingDays, restTargetFromGap, type RestPlan } from '../../../domain/nutrition';
 
 const STYLE_HINT: Readonly<Record<CheckInStyle, NutritionTextKey>> = { guided: 'styleGuidedHint', collaborative: 'styleCollaborativeHint', manual: 'styleManualHint' };
 const ACTIVITY_KEY: Readonly<Record<ActivityLevel, NutritionTextKey>> = { sedentary: 'activitySedentary', light: 'activityLight', moderate: 'activityModerate', active: 'activityActive' };
@@ -53,8 +53,19 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   const [rate, setRate] = useState(snapshot.prefs.goal.kind === 'maintain' ? '' : String(snapshot.prefs.goal.weeklyRateKg));
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [routineDays, setRoutineDays] = useState<number | null>(null);
   const { profile, target, targets } = snapshot;
   const profileComplete = profile !== null && profile.sex !== null && profile.birthYear !== null && profile.heightCm !== null;
+
+  useEffect(() => {
+    let live = true;
+    void activeRoutineDayCount(data).then((n) => {
+      if (live) setRoutineDays(n);
+    });
+    return () => {
+      live = false;
+    };
+  }, [data]);
 
   async function update(next: NutritionPrefs): Promise<void> {
     setPrefs(next);
@@ -226,7 +237,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
             <p className="ct-nutrition__muted">{tNutrition('currentTargetSince', { date: formatDayMonth(target.weekStart) })}</p>
           </>
         )}
-        {target !== null ? <RestTargetForm key={`rest-${target.id}`} target={target.target} plan={target.restPlan ?? null} onSave={saveRest} /> : null}
+        {target !== null ? <RestTargetForm key={`rest-${target.id}`} target={target.target} plan={target.restPlan ?? null} defaultDays={defaultTrainingDays(routineDays)} onSave={saveRest} /> : null}
         <TargetForm key={target?.id ?? 'none'} title={tNutrition('targetFormTitle')} initial={target?.target ?? null} submitLabel={tNutrition('saveTarget')} onSave={saveTarget} />
         {saved ? <p role="status">{tNutrition('targetSaved')}</p> : null}
       </section>

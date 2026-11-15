@@ -21,3 +21,4 @@ export * from './recipeTypes';
 export * from './recipe';
 export * from './supplements';
 export * from './restDay';
+export * from './weeklyRate';

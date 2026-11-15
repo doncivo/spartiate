@@ -8,7 +8,6 @@ export const timerFr = {
   rowHintPc: 'Minuteur dans l’app. Sur l’iPhone, il s’affiche aussi sur l’écran verrouillé et dans la Dynamic Island.',
   start: 'Lancer',
   stop: 'Arrêter',
-  remaining: 'Il reste {time}',
   finished: 'Le minuteur de test est terminé.',
   label: 'Minuteur de test',
   notificationTitle: 'Minuteur terminé',

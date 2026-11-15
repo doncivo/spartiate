@@ -43,10 +43,11 @@ describe('textes de synchro : cohérence des libellés', () => {
       ['status.syncTroubleView', 'status.syncTroubleViewLabel'],
       ['status.syncTroubleView', 'status.signingViewLabel'],
       ['signing.about.allow', 'signing.about.allowLabel'],
-      ['signing.about.viewReminders', 'signing.about.viewRemindersLabel'],
     ];
     for (const catalog of [fr]) {
       const flat = flatten(catalog as unknown as Tree);
+      // Garde contre la vacuité : une clé retirée donnerait '' des deux côtés et la paire passerait sans rien prouver.
+      expect(pairs.flat().filter((key) => flat[key] === undefined)).toEqual([]);
       for (const [visible, label] of pairs) expect((flat[label] ?? '').toLowerCase(), label).toContain((flat[visible] ?? '').toLowerCase());
     }
   });

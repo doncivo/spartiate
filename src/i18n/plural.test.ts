@@ -5,8 +5,6 @@ import { isSingular, tPlural } from './plural';
 import { formatStreak } from './formatRoutine';
 import { sessionsCount } from './cardioText';
 import { failureLine } from '../features/sync/syncText';
-import { tBody } from './bodyText';
-import { tLogs } from './logsText';
 import { tNutrition } from './nutritionText';
 import { tRecoveryFactors } from './recoveryFactorsText';
 import { tToday } from './todayText';
@@ -40,19 +38,16 @@ function family(name: string, noun: [string, string], render: (n: number) => str
 }
 
 describe('familles de compteurs', () => {
-  family('jours', ['jour', 'jours'], (n) => tPlural(tTraining, n, 'routineDaysOne', 'routineDays'));
   family('jours (programme)', ['jour', 'jours'], (n) => tPlural(tTraining, n, 'programDaysOne', 'programDays'));
   family('jours (série de routine)', ['jour', 'jours'], (n) => formatStreak(n, 'days'));
   family('semaines', ['semaine', 'semaines'], (n) => formatStreak(n, 'weeks'));
   family('séances', ['séance', 'séances'], (n) => formatStreak(n, 'sessions'));
   family('séances (cardio)', ['séance', 'séances'], (n) => sessionsCount(n));
   family('séances (semaine d’Aujourd’hui PC)', ['séance', 'séances'], (n) => tPlural(tTodayPc, n, 'weekCountOne', 'weekCount'));
-  family('pesées', ['pesée', 'pesées'], (n) => tPlural(tBody, n, 'weightTrendCountOne', 'weightTrendCount'));
   family('pesées sur 14', ['pesée', 'pesées'], (n) => tPlural(tToday, n, 'weightsCountOne', 'weightsCount'), ' sur 14 nécessaires');
   family('séries', ['série', 'séries'], (n) => tPlural(tTraining, n, 'historySetsOne', 'historySets'));
   family('exercices', ['exercice', 'exercices'], (n) => tPlural(tTraining, n, 'countOne', 'countMany'));
   family('séries non validées', ['série non validée', 'séries non validées'], (n) => tPlural(tReplay, n, 'notDoneOne', 'notDone').replace(/, absentes? du déroulé\.$/, ''));
-  family('entrées du journal', ['entrée affichée', 'entrées affichées'], (n) => tPlural(tLogs, n, 'countOne', 'count').replace(/ \(500 au plus\)$/, ''));
   family('jours du journal de facteurs', ['jour avec', 'jours avec'], (n) => tPlural(tRecoveryFactors, n, 'progressDaysWithOne', 'progressDaysWith', { mean: 'x' }).replace(/ : Recovery moyenne du lendemain x$/, ''));
   family('jours complets', ['jour complet', 'jours complets'], (n) => tPlural(tNutrition, n, 'daysCompleteOne', 'daysComplete').replace(/ sur 7$/, ''));
   it('éléments non intégrés (écran du départ : `n < 2` sans importer plural.ts)', () => {
@@ -80,7 +75,7 @@ describe('garde : aucun « {n} <nom pluriel> » sans variante au singulier', () 
     'fr.supplements.ts:cardProgressMany', // « {n} sur {total} prises » : c'est le total (≥ 2) qui accorde
     // Fractions « fait / prévu » : le nom s'accorde avec le dénominateur, jamais avec le numérateur.
     'fr.body.ts:weightTrendLearning',
-    'fr.training.ts:sessionSummaryShort',
+    'fr.body.ts:weightTrendCount', // affiché à partir de 14 pesées (sous ce seuil : weightTrendLearning) : toujours au pluriel
     'fr.training.ts:sessionSummary',
     'fr.training.ts:routineSetsChanged', // « 3 → 4 séries » : plage, jamais un compteur seul
     // Plages et seuils fixes, toujours ≥ 2 par construction.

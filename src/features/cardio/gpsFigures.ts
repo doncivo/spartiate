@@ -1,22 +1,10 @@
-import { haversineM, type TrackPoint } from '../../domain/cardio';
+import type { TrackPoint } from '../../domain/cardio';
 
 /**
- * ERGO-02 : chiffres d'affichage du suivi GPS en cours (aperçu Cardio-apres), lus des points déjà retenus par `addTrackPoint` (aucun filtrage
- * neuf). Rien n'est écrit, journalisé ni envoyé ; le tracé n'est dessiné que sur l'appareil qui l'a enregistré (D-222).
+ * ERGO-02 : tracé d'affichage du suivi GPS en cours (aperçu Cardio-apres), lu des points déjà retenus par `addTrackPoint` (aucun filtrage
+ * neuf ; l'allure du dernier km est une règle du domaine, `lastKmSecPerKm`).
+ * Rien n'est écrit, journalisé ni envoyé ; le tracé n'est dessiné que sur l'appareil qui l'a enregistré (D-222).
  */
-
-/** Allure du dernier kilomètre parcouru (s / km, arrondie), depuis la fin du tracé ; null tant que le tracé ne couvre pas 1 km. */
-export function lastKmSecPerKm(points: readonly TrackPoint[]): number | null {
-  const last = points.at(-1);
-  if (last === undefined) return null;
-  let distance = 0;
-  for (let i = points.length - 1; i > 0; i -= 1) {
-    const a = points[i - 1] as TrackPoint;
-    distance += haversineM(a, points[i] as TrackPoint);
-    if (distance >= 1000) return Math.round(((last.at - a.at) / 1000) * (1000 / distance));
-  }
-  return null;
-}
 
 /** Tracé schématique : points ramenés dans une boîte `width` × `height` (marge comprise), proportions gardées ; moins de 2 points : vide. */
 export function trackPath(points: readonly TrackPoint[], width: number, height: number, margin: number): string {

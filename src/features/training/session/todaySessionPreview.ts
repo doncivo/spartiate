@@ -1,14 +1,13 @@
 import { DEFAULT_GENERATION_CONFIG } from '../../../domain/training/config';
 import type { WeekPlan } from '../../../domain/training/mesocycle';
 import { estimateSessionSec } from '../../../domain/training/generateSession';
-import { dumbbellsHeld } from '../../../domain/training/dumbbellPair';
-import { loadGrid } from '../../../domain/training/loadGrid';
 import { positionRanks } from '../../../domain/training/positionRank';
 import { prescribe } from '../../../domain/training/prescribe';
 import { prescriptionInputOf, routineLineTarget } from '../../../domain/training/prescriptionInput';
 import type { Exercise, RoutineDay } from '../../../domain/training/types';
 import type { IsoDateTime } from '../../../domain/types';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
+import { heldFor } from '../loadDisplay';
 import { readTrainingData } from '../trainingState';
 import { loadPrescriptionContext } from './prescriptionContext';
 
@@ -30,17 +29,20 @@ export interface TodaySessionPreview {
   readonly loads: ReadonlyMap<string, number | null>;
   /** ERGO-02 (D-261) : haltères tenus par ligne (2 : « 2 × 26 kg », 1 : « 26 kg », null : la charge ne vient pas des haltères) ; affichage seulement. */
   readonly held: ReadonlyMap<string, 1 | 2 | null>;
+  /** ERGO-02b : lignes dont la charge n'a pas pu être lue ni calculée (« aperçu illisible », distinct de « à saisir »). */
+  readonly unreadable: ReadonlySet<string>;
 }
 
 export async function loadTodaySessionPreview(access: DataAccess, day: RoutineDay, lineIds: readonly string[], options: { readonly nowMs: number; readonly plan: WeekPlan | null }): Promise<TodaySessionPreview> {
   const minutes = Math.round(estimateSessionSec(day.exercises, DEFAULT_GENERATION_CONFIG) / 60);
   const loads = new Map<string, number | null>();
   const held = new Map<string, 1 | 2 | null>();
+  const unreadable = new Set<string>();
   let data: Awaited<ReturnType<typeof readTrainingData>>;
   try {
     data = await readTrainingData(access);
   } catch {
-    return { minutes, loads, held };
+    return { minutes, loads, held, unreadable: new Set(lineIds) };
   }
   const exerciseOf = (id: string): Exercise | undefined => data.content.catalog.get(id) ?? data.allCustoms.find((c) => c.id === id);
   const musclesOf = (id: string) => exerciseOf(id)?.muscles ?? [];
@@ -52,7 +54,7 @@ export async function loadTodaySessionPreview(access: DataAccess, day: RoutineDa
       .filter((l) => lineIds.includes(l.id))
       .map(async (line) => {
         const exercise = exerciseOf(line.exerciseId);
-        held.set(line.id, exercise === undefined ? null : dumbbellsHeld(exercise, loadGrid(exercise.equipment, data.active)?.source));
+        held.set(line.id, heldFor(exercise, data.active));
         try {
           const context = await loadPrescriptionContext(access, line.exerciseId, exercise, musclesOf);
           const p = prescribe(
@@ -74,8 +76,9 @@ export async function loadTodaySessionPreview(access: DataAccess, day: RoutineDa
           loads.set(line.id, p.status === 'prescribed' && p.loadKg !== null && p.loadKg > 0 ? p.loadKg : null);
         } catch {
           loads.set(line.id, null);
+          unreadable.add(line.id);
         }
       }),
   );
-  return { minutes, loads, held };
+  return { minutes, loads, held, unreadable };
 }
