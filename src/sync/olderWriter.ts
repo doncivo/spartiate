@@ -26,14 +26,18 @@ export const WHOLE_ROW_FIELD = '+';
 /** Opérations `missing-row` reçues d'un `sv` inférieur dont l'écrivain publie encore un `sv` inférieur au schéma local. */
 export async function olderParked(deps: SyncDeps): Promise<number> {
   const sync = deps.data.repos.sync;
-  const published = new Map((await sync.getStates()).map((row) => [row.deviceId, row.schemaVersion]));
+  // Revue 1 (M1) : seul un écrivain connu et actif peut encore être mis à jour. Oublié ou absent de l'état local (opération reportée d'un
+  // appareil jamais lu ici), sa ligne de côté est une ligne manquante ordinaire (`received-unapplied`, reprise), jamais « mets-le à jour ».
+  const published = new Map((await sync.getStates()).filter((row) => row.status !== 'forgotten').map((row) => [row.deviceId, row.schemaVersion]));
   let count = 0;
   for (let after = 0; ; ) {
     const page = await sync.parked(['missing-row'], after, PAGE);
     for (const p of page) {
       const op = JSON.parse(p.op) as { sv?: unknown };
-      const writer = published.get(hlcDevice(p.hlc));
-      if (typeof op.sv === 'number' && op.sv < deps.sv && (writer === undefined || writer === null || writer < deps.sv)) count += 1;
+      const device = hlcDevice(p.hlc);
+      if (!published.has(device)) continue;
+      const writer = published.get(device) ?? null;
+      if (typeof op.sv === 'number' && op.sv < deps.sv && (writer === null || writer < deps.sv)) count += 1;
     }
     if (page.length < PAGE) return count;
     after = (page.at(-1) as { id: number }).id;
