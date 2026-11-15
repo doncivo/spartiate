@@ -14,8 +14,21 @@ import { describe, expect, it } from 'vitest';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const i18n = fileURLToPath(new URL('.', import.meta.url));
 
-/** Catalogues hérités retirés par SPA-001b : voir RETIRED de plural.test.ts (même liste). */
-const RETIRED = new Set(['fr.importCsv.ts', 'fr.scan.ts', 'fr.events.ts', 'fr.capture.ts', 'fr.notifications.ts', 'fr.syncField.ts', 'fr.syncCarryReport.ts', 'fr.ts']);
+/**
+ * Catalogues exclus du garde, une raison par fichier (même liste que RETIRED de plural.test.ts). Les cinq hérités de CircleTasks n'ont
+ * plus d'écran depuis SPA-001b (fonctions retirées) mais restent liés à l'arbre `fr.ts` ; leur retrait est un ticket à part (fr.scan et
+ * fr.capture : « Supprimer » à l'inventaire SPA-001b, lot a, non exécuté).
+ */
+const EXCLUDED: ReadonlyMap<string, string> = new Map([
+  ['fr.importCsv.ts', 'hérité de CircleTasks (import CSV de tâches), sans écran depuis SPA-001b, encore importé par fr.ts'],
+  ['fr.scan.ts', 'hérité de CircleTasks (scan de tâches), sans écran depuis SPA-001b, encore importé par fr.ts'],
+  ['fr.events.ts', 'hérité de CircleTasks (Événements), sans écran depuis SPA-001b, encore importé par fr.ts'],
+  ['fr.capture.ts', 'hérité de CircleTasks (capture rapide), sans écran depuis SPA-001b, encore importé par fr.ts'],
+  ['fr.notifications.ts', 'hérité de CircleTasks (rappels de tâches), sans écran depuis SPA-001b, encore importé par fr.ts'],
+  ['fr.syncField.ts', 'vivant : clés construites `sync.field.<table>.<colonne>` (conflictText.ts, fieldKey), introuvables par jeton'],
+  ['fr.syncCarryReport.ts', 'vivant : clés construites `kind${…}` (carryReportText.ts), introuvables par jeton'],
+  ['fr.ts', 'arbre des catalogues, importé par d’autres modules (index.ts, types.ts) : agrégat sans clé propre'],
+]);
 
 /** « fichier:clé » exacte, ou « fichier:préfixe* » pour une famille construite à l'exécution. Une entrée sans clé correspondante échoue. */
 const WHITELIST: readonly string[] = [
@@ -42,7 +55,8 @@ const isTest = (path: string): boolean => /\.(test|qa\.test|spec)\.tsx?$/.test(p
 const sources = walk(root)
   .map((path) => path.split('\\').join('/'))
   .filter((path) => /\.tsx?$/.test(path) && !isTest(path) && !/\/i18n\/fr\.\w+\.ts$/.test(path))
-  .map((path) => readFileSync(path, 'utf8'))
+  // Commentaires retirés (comme loadDisplay.test.ts) : une clé seulement citée dans un commentaire n'est pas vivante.
+  .map((path) => readFileSync(path, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, ''))
   .join('\n');
 
 /** Jetons d'appel : chaînes entre guillemets (et dernier segment d'un chemin pointé) et propriétés. */
@@ -55,7 +69,7 @@ for (const m of sources.matchAll(/['"`]([\w.]+)['"`]/g)) {
 for (const m of sources.matchAll(/\.(\w+)/g)) used.add(m[1] ?? '');
 
 const ENTRY = /^\s*['"]?(\w+)['"]?:\s*['"`(]/;
-const catalogues = readdirSync(i18n).filter((f) => /^fr\..*\.ts$/.test(f) && !f.endsWith('.test.ts') && !RETIRED.has(f));
+const catalogues = readdirSync(i18n).filter((f) => /^fr\..*\.ts$/.test(f) && !f.endsWith('.test.ts') && !EXCLUDED.has(f));
 
 const deadKeys = (file: string): string[] => {
   const keys = readFileSync(`${i18n}${file}`, 'utf8')
