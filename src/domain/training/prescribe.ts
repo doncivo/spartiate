@@ -185,7 +185,7 @@ export function prescribe(input: PrescribeInput): Prescription {
   // travaillé ; une séance sans aucune série faite ne compte pas).
   const muscle = input.muscleLastWorkedAt ?? null;
   const worked = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || s.endedAt > max) ? s.endedAt : max), null);
-  const constraints = activeConstraints({
+  const evaluated = activeConstraints({
     estimates,
     lastWorkedAt: muscle !== null && (worked === null || muscle > worked) ? muscle : worked,
     now: input.now,
@@ -195,6 +195,9 @@ export function prescribe(input: PrescribeInput): Prescription {
     ...(input.deload === true && input.deloadSets !== undefined ? { deloadSets: input.deloadSets } : {}),
     ...(input.deload === true && input.deloadLoad !== undefined ? { deloadLoad: input.deloadLoad } : {}),
   });
+  // FIX-0243 (D-273, § 11.5) : exercice assisté en décharge, l'assistance n'est touchée ni par l'inactivité ni par la Recovery (journée rouge
+  // comprise) ; ces contraintes sont écartées ici pour qu'aucune raison ni alerte ne dise une baisse qui n'a pas lieu.
+  const constraints = evaluated.deload && input.exercise.assisted === true ? { ...evaluated, inactivityCut: 0, lowRecovery: false, redDay: false } : evaluated;
   addConstraintReasons(constraints, reasons);
   // I5-02 point 2.2 : Recovery basse issue d'une journée rouge acceptée par Ali (§ 16.7) ; même contrainte, la phrase le dit.
   if (constraints.lowRecovery && input.recovery?.redDay === true) reasons.add('recovery-red-day');
