@@ -114,8 +114,10 @@ describe('bundle de départ (index.html)', () => {
   });
 
   it('ERGO-02b : le build n’émet aucun polyfill de préchargement (build.modulePreload.polyfill: false)', () => {
-    // Sans polyfill, aucun bloc de départ ne contient la détection `relList.supports("modulepreload")`.
-    for (const chunk of startChunks().filter((c) => c.file.endsWith('.js'))) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes('modulepreload'), chunk.file).toBe(false);
+    // Le polyfill de Vite (MutationObserver sur les liens modulepreload) porte le sélecteur `link[rel="modulepreload"]` ; l'assistant de
+    // préchargement des imports dynamiques (relList.supports) reste, lui, dans le départ.
+    const marker = 'link[rel="modulepreload"]';
+    for (const chunk of startChunks().filter((c) => c.file.endsWith('.js'))) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
   });
 
   it('ERGO-02b : le départ revient sous 198 694 octets (mesure normalisée, D-265)', () => {
