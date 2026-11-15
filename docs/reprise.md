@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-15 : versions 0.17.1 à 0.22.0 publiées cette nuit, puis 0.22.1 (ERGO-01b, PR #125) (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-275 dans docs/decisions.md.
+État au 2026-11-15 : 0.25.0 (lot de 6 tickets, schéma 19 inchangé) en publication ; avant : versions 0.17.1 à 0.22.0 publiées cette nuit, puis 0.22.1 (ERGO-01b, PR #125) (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-291 dans docs/decisions.md.
 
 ## Rapport du matin (13/11)
 
@@ -11,7 +11,7 @@
 
 ## Prochaines étapes
 
-1. **Lot 0.25.0 en cours** (docs/LOT-0.25.0.md, un seul tag v0.25.0 à la fin) : FIX-0242 fusionné (#134, D-276 à D-279), FIX-0241 (#135, D-280 à D-283), FIX-0243 (#136, constats Codex, D-284 à D-286), ERGO-02b (#137, D-287 à D-289 ; départ 196 136 octets). **SYNC-01 en cours** (PR #138 brouillon, worktree `C:\Dev\spartiate-SYNC-01`, D-275) : passe sync-icloud faite (rouge `68fd4ef0`, vert `134d6451`, D-290, ADR 0018 proposé à valider par Ali, départ 195 840 octets) ; restent qa-test, code-reviewer, CI, fusion, puis fin du lot (CHANGELOG, v0.25.0, build-ios, ios-v0.25.0). Arrêt propre au 2e compactage (règle du lot).
+1. **Lot 0.25.0 terminé** (docs/LOT-0.25.0.md) : FIX-0242 (#134, D-276 à D-279), FIX-0241 (#135, D-280 à D-283), FIX-0243 (#136, D-284 à D-286), ERGO-02b (#137, D-287 à D-289), SYNC-01 (#138, D-290 validée, ADR 0018 accepté, avenant 37 de l'ADR 0011), FIX-0244 (#139, D-291 révisable). Départ 199 211 → 195 860 octets. Publication : REL-0.25.0, tag v0.25.0, build-ios (publish=false), ios-v0.25.0. Suivi : test instable `src/features/sync/syncedData.test.tsx` (« la pesée reçue remplace l'ancienne », délai de 1 s dépassé après `forgetBanner.test.tsx`, aussi sur main) ; limites M2 à M4 de l'ADR 0018 ; lecture des cibles futures hors transaction (FIX-0244, mineur).
 3. Constat d'Ali : « Pris » app en arrière-plan et tuée (H-36). Import de programme : I6-08 (docs/I6-08.md, non exécuté).
 4. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
 5. À recaler sur demande d'Ali : D-73 (4), Exertion (D-88, D-220).

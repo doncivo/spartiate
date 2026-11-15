@@ -2,6 +2,22 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.25.0
+
+Aucune migration : ta base reste au schéma 19. Mets quand même à jour le PC et l'iPhone le même jour : une ligne créée par un appareil resté en 0.24.0 n'est reprise qu'une fois les deux appareils en 0.25.0.
+
+- **Cardio GPS** : le suivi démarre et continue même si tu quittes l'écran Cardio pendant la demande d'autorisation ou pendant la séance ; la séance et son tracé s'enregistrent ensemble, sans doublon au nouvel essai.
+- **Onboarding** : une synchro reçue pendant la validation n'écrit jamais de pesée que tu n'as pas saisie.
+- **« Pris » des compléments** : en cas d'erreur, l'état reste visible sur Aujourd'hui (et non un message furtif).
+- **Écrans PC de 1 024 à 1 920 px** : Corps et les autres écrans tiennent à ta largeur (~1 210 px) ; pluriels corrects partout (« 1 jour », « 2 jours »).
+- **Décharge** : 2 séries par exercice, jamais plus que prévu ; un exercice assisté garde son assistance et ne devient jamais plus lourd, même après 30 jours sans séance.
+- **Après une synchro** : une séance reçue fait passer le jour en jour d'entraînement et met à jour la cible et la carte « Séance du jour ».
+- **Aujourd'hui sur PC** : la semaine suit le réglage « Début de semaine » ; « par haltère » cohérent dans les écarts ; « aperçu illisible » distinct de « à saisir ».
+- **Jours d'entraînement par défaut** : repris de ta routine active ; le réglage du mésocycle fait à l'onboarding ne vaut que pour le premier cycle.
+- **Synchro entre versions** : une ligne créée par un appareil resté à la version précédente n'est plus jamais perdue. L'appareil à jour la garde et affiche « Un appareil utilise une version plus ancienne. Mets-le à jour. » ; après la mise à jour, elle est reprise une seule fois.
+- **Stratégie** : enregistrer la cible de repos ne passe plus devant une cible déjà prévue à une date future (ses valeurs et son propre réglage de repos restent les siens) ; l'interrupteur « Cible des jours de repos » a son libellé visible.
+- **Démarrage** : l'app charge un peu moins de code au départ (−3,3 Ko).
+
 ## 0.24.0
 
 Migration de la base (schéma 19, ajout de colonnes seulement) : mets à jour le PC et l'iPhone le même jour, avant toute saisie.
