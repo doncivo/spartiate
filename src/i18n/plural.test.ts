@@ -113,10 +113,6 @@ describe('garde : aucun « {n} <nom pluriel> » sans variante au singulier', () 
     'fr.routines.ts:rateLabel', // fenêtres fixes de 7 et 30 jours
     'fr.nutrition.ts:tdeeMeasuredTerms', // couverture minimale de 4 jours complets
     'fr.nutrition.ts:checkInFirstNeed', // seuils fixes : 4 jours complets, 2 pesées
-    // Lignes de bilan d'import à plusieurs compteurs aux participes accordés : suivi en D- (FIX-0241).
-    'fr.health.ts:bodyFileCounts',
-    'fr.health.ts:bodyFileCountsDays',
-    'fr.health.ts:bodyNutritionCounts',
   ]);
   const NOUNS = /\{(\w+)\} (?:non |déjà )?(jours|séances|pesées|séries|exercices|nuits|semaines|compléments|entrées|fichiers|lignes|éléments|versions|prises|conflits|appareils|records|portions|valeurs|points|avertissements|répétitions)/g;
   const stem = (key: string): string => key.replace(/(One|Many|Other|Plural|_one|_other|Single|None)$/, '').replace(/Count$/, '').replace(/(1|N)$/, '');
@@ -147,6 +143,20 @@ describe('garde : aucun « {n} <nom pluriel> » sans variante au singulier', () 
       expect(missing).toEqual([]);
     });
   }
+
+  // Revue FIX-0241 : bilans à plusieurs compteurs (« 1 ajoutées · 0 refusées ») écrits « ajoutées : {n} » (D-282) ; le participe ou le nom
+  // pluriel ne suit jamais un compteur.
+  const COUNTED_PLURAL = /\{\w+\} (?:jours |déjà )?(ajoutée?s|refusée?s|connues|lus|mis à jour|inchangée?s|créée?s|remplacée?s|gardée?s|supprimée?s|ajouts|modifications|suppressions)(?![a-zé])/;
+  it('bilan à plusieurs compteurs : « libellé : n », jamais « n participes »', () => {
+    const bad: string[] = [];
+    for (const file of files) {
+      for (const line of readFileSync(`${dir}${file}`, 'utf8').split('\n')) {
+        const m = ENTRY.exec(line);
+        if (m && COUNTED_PLURAL.test(m[3] ?? '') && !ALLOWED.has(`${file}:${m[1] ?? ''}`)) bad.push(`${file}:${m[1] ?? ''} : ${(m[3] ?? '').slice(0, 60)}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
 
   it('un texte au singulier porte le nombre au lieu de figer « 1 » : 0 s’écrit « 0 jour »', () => {
     const bad: string[] = [];

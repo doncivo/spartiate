@@ -159,9 +159,14 @@ describe('Corps PC (PC-Corps-apres)', () => {
     expect(within(hips).getByText('4 sem. : —')).toBeVisible();
     expect(within(hips).getByText('4 sem. : —')).toHaveAttribute('aria-hidden', 'true');
     expect(hips).toHaveAccessibleDescription(/pas d’écart sur 4 semaines$/);
-    expect(within(group).getByRole('radio', { name: 'Cou' })).toHaveAccessibleDescription(/pas d’écart sur 4 semaines : aucune mesure/);
+    // Revue FIX-0241 : sans mesure, la raison est dite une seule fois.
+    expect(within(group).getByRole('radio', { name: 'Cou' })).toHaveAccessibleDescription('aucune mesure pas d’écart sur 4 semaines');
     const waist = within(group).getByRole('radio', { name: 'Taille' });
     expect(waist).not.toHaveAccessibleDescription(/pas d’écart/);
+    // L'écart affiché est aussi annoncé (il n'était ni dans le nom ni dans la description).
+    const delta = waist.querySelector('.ct-bodyprogress__zonedelta')?.textContent ?? '';
+    expect(delta).not.toBe('');
+    expect((waist.getAttribute('aria-describedby') ?? '').split(' ').map((id) => document.getElementById(id)?.textContent ?? '')).toContain(delta);
   });
 
   it('liste des zones : tabindex itinérant (seule la zone choisie est tabulable) et les flèches déplacent le focus', async () => {
