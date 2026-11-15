@@ -1,5 +1,5 @@
 /**
- * SYNC-01 (D-275, D-290 ; ADR 0018 proposé) : republication des lignes entières après une migration additive sur une table déjà publiée.
+ * SYNC-01 (D-275, D-290 ; ADR 0018 accepté) : republication des lignes entières après une migration additive sur une table déjà publiée.
  *
  * Un appareil resté au schéma précédent publie ses créations sans les colonnes ajoutées par la migration suivante ; l'appareil à jour ne
  * peut pas les insérer incomplètes (aucune règle ne complète une colonne absente d'un `sv` plus ancien : ADR 0011 §3.1, §7.2) et les garde
