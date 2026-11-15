@@ -20,8 +20,8 @@ export interface NutritionTargetRecord extends TargetRecord {
 
 export interface NutritionTargetRepository {
   record(draft: TargetRecordDraft, options?: { readonly id?: string }): Promise<NutritionTargetRecord>;
-  /** FIX-0244 (D-291) : plusieurs décisions dans une seule transaction (toutes validées avant la première écriture) ; tout ou rien. */
-  recordMany(drafts: readonly TargetRecordDraft[]): Promise<readonly NutritionTargetRecord[]>;
+  /** FIX-0244 (D-291) : plusieurs décisions en un appel (surcharge de `record`, même signal de synchro), dans une seule transaction (toutes validées avant la première écriture) ; tout ou rien. */
+  record(drafts: readonly TargetRecordDraft[]): Promise<readonly NutritionTargetRecord[]>;
   get(id: string): Promise<NutritionTargetRecord | null>;
   /** Toutes les décisions, de la plus récente à la plus ancienne (semaine, création, identifiant). */
   list(): Promise<readonly NutritionTargetRecord[]>;

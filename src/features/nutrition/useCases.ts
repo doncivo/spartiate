@@ -252,7 +252,7 @@ export type RestPlanWriteResult = 'saved' | 'saved-partial' | TargetWriteRefusal
  * FIX-0244 (D-291) : enregistre (ou retire) la cible de repos de la cible en vigueur sans jamais passer devant une cible future. La cible en
  * vigueur est la dernière décision par HLC parmi celles dont la semaine a commencé : une décision d'aujourd'hui, plus récente, masquerait donc
  * une cible déjà prévue à une date future. La décision d'aujourd'hui et la recopie de chaque cible future qui était en vigueur à sa date
- * (mêmes valeurs, source, semaine, version du moteur) s'écrivent dans UNE transaction (`recordMany`) : tout ou rien. Une cible future au plan
+ * (mêmes valeurs, source, semaine, version du moteur) s'écrivent dans UNE transaction (`record([…])`) : tout ou rien. Une cible future au plan
  * propre garde son plan ; sans plan ou au plan hérité (même écart et mêmes jours, check-in compris), elle reçoit le nouveau plan, du même écart,
  * sauf s'il demanderait une confirmation (< 1 200 kcal) ou serait refusé (< 800) : elle garde alors son plan d'avant (`saved-partial`).
  * Une copie ne force jamais `lowFloorConfirmed` pour un nouveau plan.
@@ -300,6 +300,6 @@ export async function saveRestPlan(
       copies.push(keep);
     }
   }
-  await repo.recordMany([todayDraft, ...copies]);
+  await repo.record([todayDraft, ...copies]);
   return partial ? 'saved-partial' : 'saved';
 }
