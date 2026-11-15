@@ -230,7 +230,7 @@ export async function recordCheckInDecision(
   return { outcome, record: null };
 }
 
-/** ERGO-02b (D-286) : nombre de jours de la routine du cycle de musculation en cours ; null sans cycle, routine illisible ou lecture impossible. */
+/** ERGO-02b (D-288) : nombre de jours de la routine du cycle de musculation en cours ; null sans cycle, routine illisible ou lecture impossible. */
 export async function activeRoutineDayCount(access: DataAccess): Promise<number | null> {
   try {
     const cycle = await (await access.repos.mesocycles()).current();
