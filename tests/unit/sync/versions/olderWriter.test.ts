@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createManualClock } from '../../../../src/domain/clock';
+import type { DeviceId } from '../../../../src/domain/types';
+import type { SyncDeps } from '../../../../src/sync/deps';
 import { ROW_REPUBLISH_FIELD } from '../../../../src/sync/publisher';
-import { WHOLE_ROW_FIELD } from '../../../../src/sync/olderWriter';
+import { olderParked, WHOLE_ROW_FIELD } from '../../../../src/sync/olderWriter';
 import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../../sim/syncDevice';
 
 /**
@@ -71,6 +73,11 @@ async function createTargetOn18(a: SimDevice): Promise<void> {
 const cycleRow = (d: SimDevice) => d.driver.select('SELECT id, routine_id, start_date, weeks, unlimited, pauses, status, next_weeks, ramp_up, deleted_at, hlc FROM mesocycle ORDER BY id');
 const targetRow = (d: SimDevice) => d.driver.select('SELECT id, week_start, kcal, carb_g, source, rest_kcal, rest_carb_g, training_days, deleted_at, hlc FROM nutrition_target ORDER BY id');
 const parked = (d: SimDevice) => d.driver.select<{ reason: string; table_name: string }>('SELECT reason, table_name FROM sync_parked ORDER BY id');
+/** Dépendances lues par `olderParked` seulement (base et schéma local). */
+const depsOf = async (d: SimDevice): Promise<SyncDeps> => {
+  const sv = (await d.driver.select<{ v: number }>('SELECT MAX(version) AS v FROM schema_migrations'))[0]?.v ?? 0;
+  return { data: d.data, sv } as unknown as SyncDeps;
+};
 const conflicts = async (d: SimDevice) => (await d.driver.select<{ n: number }>('SELECT COUNT(*) AS n FROM conflict_log'))[0]?.n;
 
 describe('SYNC-01 : ligne créée par un appareil au schéma 18, reçue par un appareil au schéma 19', () => {
@@ -123,6 +130,31 @@ describe('SYNC-01 : ligne créée par un appareil au schéma 18, reçue par un a
     await b.restart();
     await b.cycle();
     expect(b.service.status().warnings ?? []).toContain('older-device');
+  });
+
+  // Revue 1 (M1) : un écrivain oublié ne sera jamais mis à jour ; « Mets-le à jour » ne mènerait à rien. Sa ligne restée de côté redevient
+  // une ligne manquante ordinaire (`received-unapplied`, reprise proposée par l'écran Détails), jamais muette.
+  it('revue 1 : écrivain oublié : plus « appareil plus ancien », ligne manquante ordinaire', async () => {
+    const { a, b } = await mixed();
+    await createCycleOn18(a);
+    await roundTrip();
+    expect(b.service.status().warnings ?? []).toContain('older-device');
+    expect(await b.service.forgetDevice(a.id as DeviceId)).toEqual({ kind: 'done' });
+    await b.cycle();
+    expect(await parked(b)).toEqual([{ reason: 'missing-row', table_name: 'mesocycle' }]);
+    const warnings = b.service.status().warnings ?? [];
+    expect(warnings).not.toContain('older-device');
+    expect(warnings).toContain('received-unapplied');
+  });
+
+  it('revue 1 : écrivain absent de l’état local : plus « appareil plus ancien »', async () => {
+    const { a, b } = await mixed();
+    await createCycleOn18(a);
+    await roundTrip();
+    expect(await olderParked(await depsOf(b))).toBe(1);
+    // Opération reportée d'un appareil que cet appareil n'a jamais connu (ou dont l'état local a disparu) : aucun schéma publié connu.
+    await b.driver.execute('DELETE FROM sync_state WHERE device_id = ?', [a.id]);
+    expect(await olderParked(await depsOf(b))).toBe(0);
   });
 
   it('critère 3 : A mis à jour en 19 : la ligne arrive sur B, une seule fois, mêmes valeurs ; avertissement levé ; aucun conflit', async () => {
