@@ -458,6 +458,40 @@ describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', ()
     expect(await within(r).findByText(`Moyenne de la semaine : ${fr(2543)} kcal`)).toBeInTheDocument();
   });
 
+  it('FIX-0244 : l’interrupteur a un nom accessible et un libellé visible ; cliquer le libellé le bascule', async () => {
+    await seedTarget();
+    open('strategy');
+    const r = await region();
+    const toggle = await within(r).findByRole('switch', { name: 'Cible des jours de repos' });
+    const visible = within(r).getByText('Cible des jours de repos', { selector: 'span' });
+    expect(visible).toBeVisible();
+    expect(visible).toHaveAttribute('aria-hidden', 'true');
+    expect(within(r).getAllByRole('switch', { name: 'Cible des jours de repos' })).toHaveLength(1);
+    expect(visible.closest('label')).toContainElement(toggle);
+    expect(toggle).not.toBeChecked();
+    fireEvent.click(visible);
+    expect(toggle).toBeChecked();
+  });
+
+  it('FIX-0244 revue 1 : une cible prévue plus tard qui garde son réglage est signalée (role status)', async () => {
+    await seedTarget();
+    await (await db.data.repos.nutritionTargets()).record({ weekStart: '2026-11-16' as LocalDate, target: { kcal: 1350, proteinG: 150, fatG: 40, carbG: 150 }, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: true });
+    open('strategy');
+    const r = await region();
+    fireEvent.click(await within(r).findByRole('switch', { name: 'Cible des jours de repos' }));
+    fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible de repos' }));
+    expect(await within(r).findByText('Enregistrée. Une cible prévue plus tard garde son réglage de repos.')).toBeInTheDocument();
+    // Revue 2 : un enregistrement manuel ensuite efface ce signalement.
+    const fill = (label: string, value: string) => fireEvent.change(within(r).getByLabelText(label), { target: { value } });
+    fill('Calories (kcal)', '2700');
+    fill('Protéines (g)', '150');
+    fill('Lipides (g)', '80');
+    fill('Glucides (g)', '345');
+    fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible' }));
+    expect(await within(r).findByText('Cible enregistrée.')).toBeInTheDocument();
+    expect(within(r).queryByText('Enregistrée. Une cible prévue plus tard garde son réglage de repos.')).not.toBeInTheDocument();
+  });
+
   it('saisie en kcal : 2 250 kcal les jours de repos', async () => {
     await seedTarget();
     open('strategy');

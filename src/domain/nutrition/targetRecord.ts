@@ -84,3 +84,24 @@ export function effectiveTarget<T extends Pick<TargetRecord, 'id' | 'weekStart' 
   }
   return best;
 }
+
+/**
+ * FIX-0244 (D-291) : Stratégie › historique. Une recopie (même semaine, mêmes valeurs, même source, même acceptation, même version du moteur
+ * que la décision précédente de cette semaine ; seul le plan de repos peut différer) ne porte aucune valeur nouvelle : elle est fusionnée avec
+ * la précédente, la plus récente restant affichée (c'est elle qui porte le plan en vigueur). Une autre décision de la même semaine entre deux
+ * identiques empêche la fusion. L'ordre d'entrée est conservé ; les enregistrements eux-mêmes ne sont jamais modifiés.
+ */
+export function collapseRecopies<T extends Pick<TargetRecord, 'id' | 'weekStart' | 'target' | 'source' | 'accepted' | 'hlc'> & { readonly engineVersion?: number | null }>(records: readonly T[]): readonly T[] {
+  const key = (r: T): string => JSON.stringify([r.weekStart, r.target.kcal, r.target.proteinG, r.target.fatG, r.target.carbG, r.source, r.accepted, r.engineVersion ?? null]);
+  const byWeek = new Map<string, T[]>();
+  for (const r of records) byWeek.set(r.weekStart, [...(byWeek.get(r.weekStart) ?? []), r]);
+  const dropped = new Set<string>();
+  for (const week of byWeek.values()) {
+    const ordered = [...week].sort((a, b) => (a.hlc < b.hlc ? -1 : a.hlc > b.hlc ? 1 : a.id < b.id ? -1 : 1));
+    for (let i = 0; i < ordered.length - 1; i++) {
+      const [now, next] = [ordered[i], ordered[i + 1]];
+      if (now !== undefined && next !== undefined && key(now) === key(next)) dropped.add(now.id);
+    }
+  }
+  return records.filter((r) => !dropped.has(r.id));
+}

@@ -6,10 +6,10 @@ import { Button, HeroFigure, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { NumberField, parseNumber } from '../shared';
-import { activeRoutineDayCount, saveManualTarget, saveNutritionPrefs, type NutritionSnapshot } from '../useCases';
+import { activeRoutineDayCount, saveManualTarget, saveRestPlan, saveNutritionPrefs, type NutritionSnapshot } from '../useCases';
 import { RestTargetForm } from './RestTargetForm';
 import { TargetForm, type TargetSaveResult } from './TargetForm';
-import { defaultTrainingDays, restTargetFromGap, type RestPlan } from '../../../domain/nutrition';
+import { collapseRecopies, defaultTrainingDays, restTargetFromGap, type RestPlan } from '../../../domain/nutrition';
 
 const STYLE_HINT: Readonly<Record<CheckInStyle, NutritionTextKey>> = { guided: 'styleGuidedHint', collaborative: 'styleCollaborativeHint', manual: 'styleManualHint' };
 const ACTIVITY_KEY: Readonly<Record<ActivityLevel, NutritionTextKey>> = { sedentary: 'activitySedentary', light: 'activityLight', moderate: 'activityModerate', active: 'activityActive' };
@@ -53,6 +53,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   const [rate, setRate] = useState(snapshot.prefs.goal.kind === 'maintain' ? '' : String(snapshot.prefs.goal.weeklyRateKg));
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [restPartial, setRestPartial] = useState(false);
   const [routineDays, setRoutineDays] = useState<number | null>(null);
   const { profile, target, targets } = snapshot;
   const profileComplete = profile !== null && profile.sex !== null && profile.birthYear !== null && profile.heightCm !== null;
@@ -99,8 +100,10 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   async function saveRest(restPlan: RestPlan | null): Promise<boolean> {
     if (target === null) return false;
     try {
-      const result = await saveManualTarget(data, { weekStart: snapshot.today, target: target.target, lowFloorConfirmed: false, restPlan });
-      if (typeof result === 'string') return false;
+      const result = await saveRestPlan(data, { today: snapshot.today, current: target, restPlan });
+      if (result !== 'saved' && result !== 'saved-partial') return false;
+      // Le formulaire est recréé à chaque nouvelle décision : le signalement vit ici, pas dans le formulaire.
+      setRestPartial(result === 'saved-partial');
       await onChanged();
       return true;
     } catch {
@@ -115,6 +118,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
       const restPlan = plan === null || target === null ? null : { rest: restTargetFromGap(next, plan.rest.kcal - target.target.kcal), trainingDays: plan.trainingDays };
       const result = await saveManualTarget(data, { weekStart: snapshot.today, target: next, lowFloorConfirmed, restPlan });
       if (typeof result === 'string') return result;
+      setRestPartial(false);
       setSaved(true);
       await onChanged();
       return 'saved';
@@ -239,6 +243,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
         )}
         {target !== null ? <RestTargetForm key={`rest-${target.id}`} target={target.target} plan={target.restPlan ?? null} defaultDays={defaultTrainingDays(routineDays)} onSave={saveRest} /> : null}
         <TargetForm key={target?.id ?? 'none'} title={tNutrition('targetFormTitle')} initial={target?.target ?? null} submitLabel={tNutrition('saveTarget')} onSave={saveTarget} />
+        {restPartial ? <p role="status">{tNutrition('restTargetPartial')}</p> : null}
         {saved ? <p role="status">{tNutrition('targetSaved')}</p> : null}
       </section>
 
@@ -250,7 +255,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
           <p className="ct-nutrition__muted">{tNutrition('historyEmpty')}</p>
         ) : (
           <ul className="ct-nutrition__list">
-            {targets.map((record) => (
+            {collapseRecopies(targets).map((record) => (
               <li key={record.id} className="ct-nutrition__history">
                 <p className="ct-nutrition__num">
                   {formatDayMonth(record.weekStart)} · {tNutrition('kcalValue', { n: formatInt(record.target.kcal) })} · {tNutrition('macroShortP')} {formatInt(record.target.proteinG)} · {tNutrition('macroShortC')} {formatInt(record.target.carbG)} · {tNutrition('macroShortF')} {formatInt(record.target.fatG)}

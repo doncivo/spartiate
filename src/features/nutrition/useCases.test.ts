@@ -3,7 +3,7 @@ import { effectiveTarget, type Proposal } from '../../domain/nutrition';
 import type { SearchableFood } from '../../domain/nutrition/foodSearch';
 import type { DeviceId, LocalDate, LocalTime } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
-import { entryFromFood, loadNutritionSnapshot, quickAddDraft, recordCheckInDecision, saveManualTarget, saveNutritionPrefs } from './useCases';
+import { entryFromFood, loadNutritionSnapshot, quickAddDraft, recordCheckInDecision, saveManualTarget, saveNutritionPrefs, saveRestPlan } from './useCases';
 
 /**
  * I4-03 : cas d'usage de Nutrition (sans interface). Base SQLite réelle (wasm). Journée sans entrée jamais à zéro ; une décision de check-in
@@ -237,5 +237,146 @@ describe('I4-08 point 8 : cible en vigueur (HLC), cohérente entre Journal, Aujo
   it('cible dont la semaine n’a pas commencé : jamais retenue', async () => {
     await saveManualTarget(db.data, { weekStart: '2026-11-16' as LocalDate, target: { kcal: 2900, proteinG: 150, fatG: 70, carbG: 300 }, lowFloorConfirmed: false });
     expect((await loadNutritionSnapshot(db.data, WED)).target).toBeNull();
+  });
+});
+
+describe('FIX-0244 (D-291) : la cible de repos ne passe jamais devant une cible future', () => {
+  const NOW = '2026-11-15' as LocalDate;
+  const FUTURE = '2026-11-16' as LocalDate;
+  const IN_FORCE = { kcal: 3177, proteinG: 170, fatG: 80, carbG: 440 };
+  const FUTURE_TARGET = { kcal: 2450, proteinG: 170, fatG: 75, carbG: 340 };
+  const PLAN = { rest: { kcal: 2977, proteinG: 170, fatG: 80, carbG: 390 }, trainingDays: [1, 2, 4, 5, 6] as never };
+  const at = async (repo: Awaited<ReturnType<typeof db.data.repos.nutritionTargets>>, date: LocalDate) => {
+    const found = await repo.effective(date);
+    if (found === null) throw new Error('aucune cible en vigueur');
+    return found;
+  };
+  const seed = async (withFuture = true) => {
+    const repo = await db.data.repos.nutritionTargets();
+    await repo.record({ weekStart: '2026-11-09' as LocalDate, target: IN_FORCE, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false });
+    if (withFuture) await repo.record({ weekStart: FUTURE, target: FUTURE_TARGET, source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false });
+    return repo;
+  };
+
+  it('enregistrer la cible de repos : le 16/11 la cible en vigueur reste 2 450 kcal (valeurs, source et date inchangées), le 15/11 elle porte le plan', async () => {
+    const repo = await seed();
+    const inForce = await at(repo, NOW);
+    const result = await saveRestPlan(db.data, { today: NOW, current: inForce, restPlan: PLAN });
+    expect(result).toBe('saved');
+    const future = await at(repo, FUTURE);
+    expect(future.target).toEqual(FUTURE_TARGET);
+    expect(future.source).toBe('auto');
+    expect(future.weekStart).toBe(FUTURE);
+    expect(future.restPlan?.trainingDays).toEqual(PLAN.trainingDays);
+    expect(future.restPlan?.rest.kcal).toBe(2250);
+    const today = await at(repo, NOW);
+    expect(today.target).toEqual(IN_FORCE);
+    expect(today.restPlan).toEqual(PLAN);
+  });
+
+  it('désactiver la cible de repos suit la même règle : la cible future reste en vigueur le 16/11, sans plan', async () => {
+    const repo = await seed();
+    await saveRestPlan(db.data, { today: NOW, current: (await at(repo, NOW)), restPlan: PLAN });
+    await saveRestPlan(db.data, { today: NOW, current: (await at(repo, NOW)), restPlan: null });
+    const future = await at(repo, FUTURE);
+    expect(future.target).toEqual(FUTURE_TARGET);
+    expect(future.restPlan ?? null).toBeNull();
+    expect((await at(repo, NOW)).restPlan ?? null).toBeNull();
+  });
+
+  it('sans cible future : une seule décision manuelle d’aujourd’hui, protéines et lipides inchangés (D-270, D-271)', async () => {
+    const repo = await seed(false);
+    const before = (await repo.list()).length;
+    await saveRestPlan(db.data, { today: NOW, current: (await at(repo, NOW)), restPlan: PLAN });
+    expect((await repo.list()).length).toBe(before + 1);
+    const now = await at(repo, NOW);
+    expect(now.source).toBe('manual');
+    expect(now.weekStart).toBe(NOW);
+    expect(now.restPlan).toEqual(PLAN);
+  });
+  it('FIX-0244 plusieurs cibles futures : chacune reste en vigueur à sa date, valeurs inchangées, plan du même écart', async () => {
+    const repo = await seed();
+    const later = { kcal: 2700, proteinG: 170, fatG: 80, carbG: 400 };
+    await repo.record({ weekStart: '2026-11-23' as LocalDate, target: later, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false });
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
+    const first = await at(repo, FUTURE);
+    const second = await at(repo, '2026-11-23' as LocalDate);
+    expect(first.target).toEqual(FUTURE_TARGET);
+    expect(first.weekStart).toBe(FUTURE);
+    expect(second.target).toEqual(later);
+    expect(second.source).toBe('manual');
+    expect(second.weekStart).toBe('2026-11-23');
+    expect(first.restPlan?.rest.kcal).toBe(2250);
+    expect(second.restPlan?.rest.kcal).toBe(2500);
+  });
+
+  it('FIX-0244 cible future qui avait SON PROPRE plan (check-in D-272) : recopiée à l’identique avec son plan, à l’enregistrement comme à la désactivation', async () => {
+    const repo = await seed(false);
+    const own = { rest: { kcal: 2000, proteinG: 170, fatG: 75, carbG: 255 }, trainingDays: [3] as never };
+    await repo.record({ weekStart: FUTURE, target: FUTURE_TARGET, source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false, restPlan: own });
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
+    const future = await at(repo, FUTURE);
+    expect(future.target).toEqual(FUTURE_TARGET);
+    expect(future.restPlan).toEqual(own);
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: null });
+    expect((await at(repo, FUTURE)).restPlan).toEqual(own);
+    expect((await at(repo, NOW)).restPlan ?? null).toBeNull();
+  });
+
+  it('FIX-0244 cible future dont le plan est hérité (même écart et mêmes jours que celui d’aujourd’hui) : reçoit le nouveau plan', async () => {
+    const repo = await seed(true);
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
+    const newPlan = { rest: { kcal: 2877, proteinG: 170, fatG: 80, carbG: 415 }, trainingDays: [1, 3] as never };
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: newPlan });
+    const future = await at(repo, FUTURE);
+    expect(future.restPlan?.rest.kcal).toBe(2150);
+    expect(future.restPlan?.trainingDays).toEqual([1, 3]);
+  });
+
+  it('FIX-0244 cible future dont la copie serait refusée par le plancher : réenregistrée à l’identique avec son plan d’avant, toujours en vigueur à sa date', async () => {
+    const repo = await seed(false);
+    const low = { kcal: 900, proteinG: 100, fatG: 30, carbG: 100 };
+    const ownPlan = { rest: { kcal: 850, proteinG: 100, fatG: 30, carbG: 80 }, trainingDays: [3] as never };
+    await repo.record({ weekStart: FUTURE, target: low, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: true, restPlan: ownPlan });
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
+    const future = await at(repo, FUTURE);
+    expect(future.target).toEqual(low);
+    expect(future.weekStart).toBe(FUTURE);
+    expect(future.restPlan).toEqual(ownPlan);
+  });
+
+  it('FIX-0244 revue 1 : écriture atomique, la copie de la cible du 16/11 échoue : rien n’est écrit, la cible du 16/11 reste 2 450', async () => {
+    const repo = await seed(true);
+    const before = (await repo.list()).length;
+    await db.driver.execute("CREATE TRIGGER fix0244_fail BEFORE INSERT ON nutrition_target WHEN NEW.week_start = '2026-11-16' AND NEW.rest_kcal IS NOT NULL BEGIN SELECT RAISE(ABORT, 'injecté'); END");
+    await expect(saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN })).rejects.toBeDefined();
+    await db.driver.execute('DROP TRIGGER fix0244_fail');
+    expect((await repo.list()).length).toBe(before);
+    expect((await at(repo, FUTURE)).target.kcal).toBe(2450);
+    expect((await at(repo, NOW)).restPlan ?? null).toBeNull();
+  });
+
+  it('FIX-0244 revue 1 : plan qui demanderait la confirmation sous 1 200 kcal (cible future de 1 350, écart −200) : jamais forcé, cible future recopiée avec son plan d’avant, résultat distinct', async () => {
+    const repo = await seed(false);
+    await repo.record({ weekStart: FUTURE, target: { kcal: 1350, proteinG: 150, fatG: 40, carbG: 150 }, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false });
+    const result = await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
+    expect(result).toBe('saved-partial');
+    const future = await at(repo, FUTURE);
+    expect(future.target.kcal).toBe(1350);
+    expect(future.restPlan ?? null).toBeNull();
+    expect((await at(repo, NOW)).restPlan).toEqual(PLAN);
+  });
+
+  it('FIX-0244 synchro : une décision de plus par cible future et par enregistrement, identifiants distincts, toutes acceptées', async () => {
+    const repo = await seed();
+    const before = await repo.list();
+    await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
+    const after = await repo.list();
+    expect(after.length).toBe(before.length + 2);
+    expect(new Set(after.map((d) => d.id)).size).toBe(after.length);
+    expect(after.every((d) => d.accepted)).toBe(true);
+    const copies = after.filter((d) => d.weekStart === FUTURE);
+    expect(copies.length).toBe(2);
+    expect(copies.every((d) => d.source === 'auto' && d.engineVersion === 1)).toBe(true);
   });
 });
