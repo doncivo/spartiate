@@ -94,7 +94,7 @@ describe('NutritionTargetRepository', () => {
   it('aucune API de modification ni de suppression : l’historique est conservé', async () => {
     db = await openBaseDb(DEVICE);
     const r = await repo();
-    expect(Object.keys(r).sort()).toEqual(['effective', 'get', 'list', 'record']);
+    expect(Object.keys(r).sort()).toEqual(['effective', 'get', 'list', 'record', 'recordMany']);
   });
 });
 
@@ -118,5 +118,14 @@ describe('NutritionTargetRepository : cible des jours de repos (PROG-01, D-271)'
     db = await openBaseDb(DEVICE);
     await expect((await repo()).record(draft({ restPlan: { rest: { kcal: 2200, proteinG: 150, fatG: 70, carbG: 240 }, trainingDays: [] } }), { id: T(1) })).rejects.toThrow();
     await expect((await repo()).record(draft({ restPlan: { rest: { kcal: 0, proteinG: 150, fatG: 70, carbG: 240 }, trainingDays: [1] } }), { id: T(2) })).rejects.toThrow();
+  });
+
+  it('FIX-0244 revue 1 : recordMany écrit tout dans l’ordre, ou rien si une décision est invalide', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    const saved = await r.recordMany([draft(), draft({ weekStart: '2026-11-09' as LocalDate })]);
+    expect(saved.map((x) => x.weekStart)).toEqual(['2026-11-02', '2026-11-09']);
+    await expect(r.recordMany([draft({ weekStart: '2026-11-16' as LocalDate }), draft({ target: { kcal: 0, proteinG: 1, fatG: 1, carbG: 1 } })])).rejects.toBeDefined();
+    expect((await r.list()).length).toBe(2);
   });
 });

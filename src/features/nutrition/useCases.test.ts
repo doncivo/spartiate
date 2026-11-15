@@ -345,6 +345,28 @@ describe('FIX-0244 (D-291) : la cible de repos ne passe jamais devant une cible 
     expect(future.restPlan).toEqual(ownPlan);
   });
 
+  it('FIX-0244 revue 1 : écriture atomique, la copie de la cible du 16/11 échoue : rien n’est écrit, la cible du 16/11 reste 2 450', async () => {
+    const repo = await seed(true);
+    const before = (await repo.list()).length;
+    await db.driver.execute("CREATE TRIGGER fix0244_fail BEFORE INSERT ON nutrition_target WHEN NEW.week_start = '2026-11-16' AND NEW.rest_kcal IS NOT NULL BEGIN SELECT RAISE(ABORT, 'injecté'); END");
+    await expect(saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN })).rejects.toBeDefined();
+    await db.driver.execute('DROP TRIGGER fix0244_fail');
+    expect((await repo.list()).length).toBe(before);
+    expect((await at(repo, FUTURE)).target.kcal).toBe(2450);
+    expect((await at(repo, NOW)).restPlan ?? null).toBeNull();
+  });
+
+  it('FIX-0244 revue 1 : plan qui demanderait la confirmation sous 1 200 kcal (cible future de 1 350, écart −200) : jamais forcé, cible future recopiée avec son plan d’avant, résultat distinct', async () => {
+    const repo = await seed(false);
+    await repo.record({ weekStart: FUTURE, target: { kcal: 1350, proteinG: 150, fatG: 40, carbG: 150 }, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false });
+    const result = await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
+    expect(result).toBe('saved-partial');
+    const future = await at(repo, FUTURE);
+    expect(future.target.kcal).toBe(1350);
+    expect(future.restPlan ?? null).toBeNull();
+    expect((await at(repo, NOW)).restPlan).toEqual(PLAN);
+  });
+
   it('FIX-0244 synchro : une décision de plus par cible future et par enregistrement, identifiants distincts, toutes acceptées', async () => {
     const repo = await seed();
     const before = await repo.list();
