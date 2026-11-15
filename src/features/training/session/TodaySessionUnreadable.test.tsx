@@ -10,11 +10,12 @@ import { PC_MEDIA_QUERY } from '../../../ui';
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../../app/navigation';
+import type * as PrescriptionContextModule from './prescriptionContext';
 import { TodaySessionCard } from './TodaySessionCard';
 
 const flags = vi.hoisted(() => ({ unreadable: false }));
 vi.mock('./prescriptionContext', async (importOriginal) => {
-  const original = await importOriginal<typeof import('./prescriptionContext')>();
+  const original = await importOriginal<typeof PrescriptionContextModule>();
   return {
     ...original,
     loadPrescriptionContext: (...args: Parameters<typeof original.loadPrescriptionContext>) => (flags.unreadable ? Promise.reject(new Error('lecture impossible')) : original.loadPrescriptionContext(...args)),
