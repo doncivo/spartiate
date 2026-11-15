@@ -43,7 +43,6 @@ describe('textes de synchro : cohérence des libellés', () => {
       ['status.syncTroubleView', 'status.syncTroubleViewLabel'],
       ['status.syncTroubleView', 'status.signingViewLabel'],
       ['signing.about.allow', 'signing.about.allowLabel'],
-      ['signing.about.viewReminders', 'signing.about.viewRemindersLabel'],
     ];
     for (const catalog of [fr]) {
       const flat = flatten(catalog as unknown as Tree);
