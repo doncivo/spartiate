@@ -35,6 +35,7 @@ Chapitres PRD : 11 et 13 (records, charges), 14 (cardio), 15 (nutrition, check-i
 | 3 | `heldFor` / `heldLookup` réemployés (training) | `f32d89d5` | `cbfb151e` + `2b8cbcd7` | garde : imports absents, `dumbbellsHeld` recomposé |
 | 4 | Semaine d'Aujourd'hui PC selon « Début de semaine » (nutrition, app) | `a5f63b1f` | `cbfb151e` | semaine restée du lundi au dimanche (2) |
 | 5 | « aperçu illisible » (training) | `5d488b17` | `cf5f394f` | `expected '— à saisir' to contain 'aperçu illisible'` |
+| 6 | Clés de catalogue sans appelant (accessibility-i18n) : 145 retirées dans 14 catalogues, garde `src/i18n/unusedKeys.test.ts` à liste blanche commentée (clés construites à l'exécution) | `ae51795e` | `121e5ea8` | 14 catalogues en échec (50 tests) ; départ 197 350 → 196 136 |
 | 7 | Coche « pris » des Compléments : test seul (comportement juste) | — | `c080b80d` | prouvé par mutation (message retiré, bascule figée) |
 | 7 | Dates Renpho sur les 5 lignes : test seul | — | `51b484a3` | prouvé par mutation (une date pour toutes) |
 | 8 | Jours d'entraînement par défaut de la routine active (nutrition) | `3ef0d4aa` | `0e751bbc` | 3 échecs (D-288) |
