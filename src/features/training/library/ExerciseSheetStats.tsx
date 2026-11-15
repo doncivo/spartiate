@@ -5,7 +5,7 @@ import { confidencePercent } from '../../../domain/training/explain';
 import { formatExerciseLoad, formatNumber, formatShortDay, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
 import { HeroFigure, SectionTitle } from '../../../ui';
 import type { Held } from '../loadDisplay';
-import { sheetStats, type SheetOneRm, type SheetSession } from './exerciseSheet';
+import { sheetStats, type SheetOneRm, type SheetSession } from '../../../domain/training/exerciseSheet';
 
 /**
  * ERGO-02 : blocs chiffrés de la fiche exercice (aperçu Fiche-apres, PC-Fiche-apres), chargés à la demande avec la fiche : 1RM estimé en chiffre

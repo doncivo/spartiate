@@ -11,7 +11,7 @@ import type { ExerciseSession, HistorySet } from './types';
  * cette charge ; à égalité, la séance la plus ancienne l'a établi ; échauffement, série non validée, charge nulle ou absente : jamais un record.
  * Données SYNTHÉTIQUES.
  */
-const LOAD = { metric: 'load-reps', bodyweightFraction: undefined } as const;
+const LOAD = { metric: 'load-reps', bodyweightFraction: null } as const;
 const day = (n: number): IsoDateTime => `2026-10-${String(n).padStart(2, '0')}T18:00:00.000Z` as IsoDateTime;
 const NOW = day(31);
 const set = (position: number, loadKg: number | null, reps: number | null, over: Partial<HistorySet> = {}): HistorySet => ({ position, setKind: 'work', done: true, reps, loadKg, rir: null, ...over });
@@ -82,7 +82,7 @@ describe('séances de la fiche (sheetStats.sessions)', () => {
 
 describe('1RM estimé et 8 semaines de la fiche', () => {
   it('raisons d’absence : métrique sans charge, poids du corps, aucun historique', () => {
-    expect(sheetStats([], { metric: 'duration', bodyweightFraction: undefined }, NOW).oneRm).toEqual({ kind: 'none', reason: 'notLoad' });
+    expect(sheetStats([], { metric: 'time', bodyweightFraction: null }, NOW).oneRm).toEqual({ kind: 'none', reason: 'notLoad' });
     expect(sheetStats([], { metric: 'load-reps', bodyweightFraction: 1 }, NOW).oneRm).toEqual({ kind: 'none', reason: 'bodyweight' });
     expect(sheetStats([], LOAD, NOW)).toEqual({ oneRm: { kind: 'none', reason: 'noHistory' }, record: null, trend: null, sessions: [] });
   });
