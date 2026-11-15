@@ -28,5 +28,4 @@ export const circuitFr = {
   next: 'Suivant : {name} (tour {round} sur {rounds})',
   finished: 'Groupe terminé.',
   ungroup: 'Défaire le groupe',
-  ungroupFailed: 'Le groupe n’a pas pu être défait. Rien n’a été modifié.',
 } as const;

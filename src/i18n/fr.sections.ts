@@ -3,10 +3,6 @@
  * avec le composant à la demande. Aucun chiffre, aucun faux zéro : une section sans fonction dit pourquoi elle est vide.
  */
 export const sectionsFr = {
-  todayTitle: 'Aujourd’hui',
-  todayEmpty: 'Aucune donnée pour l’instant.',
-  todayHint: 'Ton profil et ton poids apparaîtront ici dès qu’ils seront renseignés.',
-  todayAction: 'Renseigner mon profil et mon poids',
   trainingTitle: 'Entraînement',
   nutritionTitle: 'Nutrition',
   progressTitle: 'Progrès',

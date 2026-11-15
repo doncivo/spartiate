@@ -5,8 +5,6 @@
  */
 export const recoveryNotificationsFr = {
   row: 'Sommeil et rappels',
-  rowValueOff: 'désactivés',
-  rowValueOn: 'activés',
   title: 'Sommeil et rappels',
   back: 'Retour',
   intro: 'Spartiate peut te prévenir sur cet iPhone, avec un texte neutre : jamais un chiffre de ta récupération sur l’écran verrouillé. Tout est désactivé tant que tu ne l’actives pas.',
@@ -20,7 +18,6 @@ export const recoveryNotificationsFr = {
   morningLabel: 'Notification du matin',
   morningHint: 'Une notification au plus par jour, à 08:00, quand ta récupération du jour est calculée.',
   permissionDenied: 'Les notifications sont refusées pour Spartiate. Autorise-les dans Réglages › Notifications › Spartiate sur l’iPhone, puis reviens ici.',
-  permissionUndetermined: 'iOS va te demander l’autorisation d’envoyer des notifications.',
   unavailable: 'Les notifications ne sont pas disponibles sur cet iPhone.',
   failed: 'Les notifications n’ont pas pu être planifiées. Réessaie en rouvrant l’écran.',
   pcInfo: 'Les notifications sont envoyées par l’iPhone uniquement : le PC n’en envoie aucune. Les réglages se font sur l’iPhone.',

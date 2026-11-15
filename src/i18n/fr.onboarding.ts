@@ -210,8 +210,4 @@ export const onboardingFr = {
   colTarget: 'Cible',
   resultExpenditureNote: 'Dépense : point de départ de {kcal} kcal (Mifflin-St Jeor), recalculée après 2 semaines de journal et de pesées.',
   resultNextStep: 'Prochaine étape : associer ton iPhone (Plus › Appareils et synchro).',
-
-  // Plus › Profil
-  reviewRow: 'Revoir mes réglages',
-  reviewHint: 'Rouvre les 8 écrans de configuration : objectif, expérience, disponibilité, matériel, priorités, split.',
 } as const;
