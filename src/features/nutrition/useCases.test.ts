@@ -246,6 +246,11 @@ describe('FIX-0244 (D-291) : la cible de repos ne passe jamais devant une cible 
   const IN_FORCE = { kcal: 3177, proteinG: 170, fatG: 80, carbG: 440 };
   const FUTURE_TARGET = { kcal: 2450, proteinG: 170, fatG: 75, carbG: 340 };
   const PLAN = { rest: { kcal: 2977, proteinG: 170, fatG: 80, carbG: 390 }, trainingDays: [1, 2, 4, 5, 6] as never };
+  const at = async (repo: Awaited<ReturnType<typeof db.data.repos.nutritionTargets>>, date: LocalDate) => {
+    const found = await repo.effective(date);
+    if (found === null) throw new Error('aucune cible en vigueur');
+    return found;
+  };
   const seed = async (withFuture = true) => {
     const repo = await db.data.repos.nutritionTargets();
     await repo.record({ weekStart: '2026-11-09' as LocalDate, target: IN_FORCE, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false });
@@ -255,36 +260,36 @@ describe('FIX-0244 (D-291) : la cible de repos ne passe jamais devant une cible 
 
   it('enregistrer la cible de repos : le 16/11 la cible en vigueur reste 2 450 kcal (valeurs, source et date inchangées), le 15/11 elle porte le plan', async () => {
     const repo = await seed();
-    const inForce = (await repo.effective(NOW))!;
+    const inForce = await at(repo, NOW);
     const result = await saveRestPlan(db.data, { today: NOW, current: inForce, restPlan: PLAN });
     expect(result).toBe('saved');
-    const future = (await repo.effective(FUTURE))!;
+    const future = await at(repo, FUTURE);
     expect(future.target).toEqual(FUTURE_TARGET);
     expect(future.source).toBe('auto');
     expect(future.weekStart).toBe(FUTURE);
     expect(future.restPlan?.trainingDays).toEqual(PLAN.trainingDays);
     expect(future.restPlan?.rest.kcal).toBe(2250);
-    const today = (await repo.effective(NOW))!;
+    const today = await at(repo, NOW);
     expect(today.target).toEqual(IN_FORCE);
     expect(today.restPlan).toEqual(PLAN);
   });
 
   it('désactiver la cible de repos suit la même règle : la cible future reste en vigueur le 16/11, sans plan', async () => {
     const repo = await seed();
-    await saveRestPlan(db.data, { today: NOW, current: (await repo.effective(NOW))!, restPlan: PLAN });
-    await saveRestPlan(db.data, { today: NOW, current: (await repo.effective(NOW))!, restPlan: null });
-    const future = (await repo.effective(FUTURE))!;
+    await saveRestPlan(db.data, { today: NOW, current: (await at(repo, NOW)), restPlan: PLAN });
+    await saveRestPlan(db.data, { today: NOW, current: (await at(repo, NOW)), restPlan: null });
+    const future = await at(repo, FUTURE);
     expect(future.target).toEqual(FUTURE_TARGET);
     expect(future.restPlan ?? null).toBeNull();
-    expect((await repo.effective(NOW))!.restPlan ?? null).toBeNull();
+    expect((await at(repo, NOW)).restPlan ?? null).toBeNull();
   });
 
   it('sans cible future : une seule décision manuelle d’aujourd’hui, protéines et lipides inchangés (D-270, D-271)', async () => {
     const repo = await seed(false);
     const before = (await repo.list()).length;
-    await saveRestPlan(db.data, { today: NOW, current: (await repo.effective(NOW))!, restPlan: PLAN });
+    await saveRestPlan(db.data, { today: NOW, current: (await at(repo, NOW)), restPlan: PLAN });
     expect((await repo.list()).length).toBe(before + 1);
-    const now = (await repo.effective(NOW))!;
+    const now = await at(repo, NOW);
     expect(now.source).toBe('manual');
     expect(now.weekStart).toBe(NOW);
     expect(now.restPlan).toEqual(PLAN);
