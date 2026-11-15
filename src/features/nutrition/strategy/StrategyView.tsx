@@ -118,6 +118,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
       const restPlan = plan === null || target === null ? null : { rest: restTargetFromGap(next, plan.rest.kcal - target.target.kcal), trainingDays: plan.trainingDays };
       const result = await saveManualTarget(data, { weekStart: snapshot.today, target: next, lowFloorConfirmed, restPlan });
       if (typeof result === 'string') return result;
+      setRestPartial(false);
       setSaved(true);
       await onChanged();
       return 'saved';
