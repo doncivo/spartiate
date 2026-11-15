@@ -145,8 +145,17 @@ describe('FIX-0243 (constat 7, D-260) : carte « Séance du jour » relue après
 
   it('cycle reçu : la carte « Séance » devient « Séance du jour » ; un lot sans rapport ne relit rien', async () => {
     await db.data.transaction(async (repos) => (await repos.trainingRoutines()).create(PROGRAM));
-    mount();
+    // Revue : chaque lecture de la carte commence par un seul `getOpen()` ; le compte prouve qu'un lot sans rapport n'en lance aucune.
+    let reads = 0;
+    const base = db.data.repos.workouts;
+    const workouts = async () => {
+      const repo = await base();
+      return { ...repo, getOpen: () => ((reads += 1), repo.getOpen()) };
+    };
+    const counted = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: { ...db.data, repos: { ...db.data.repos, workouts } } });
+    mount(counted);
     expect(await screen.findByRole('region', { name: 'Séance' })).toBeInTheDocument();
+    const before = reads;
     const spec = createMesocycleSpec({ routineId: PROGRAM.id ?? '', startDate: '2026-11-09' as LocalDate, weeks: 5 }, DEFAULT_GENERATION_CONFIG);
     if (spec === null) throw new Error('spec');
     await db.data.transaction(async (repos) => (await repos.mesocycles()).start(spec));
@@ -154,6 +163,8 @@ describe('FIX-0243 (constat 7, D-260) : carte « Séance du jour » relue après
     expect(screen.queryByRole('region', { name: 'Séance du jour' })).toBeNull();
     await notify(['mesocycle']);
     expect(await screen.findByRole('region', { name: 'Séance du jour' })).toBeInTheDocument();
+    // Une seule lecture de plus : celle du lot « mesocycle ».
+    expect(reads - before).toBe(1);
   });
 
   it.each(['recommendation_decision', 'progression_profile', 'routine', 'routine_exercise', 'body_weight'])('lot touchant « %s » : la carte se relit (80 kg)', async (table) => {
