@@ -18,11 +18,11 @@ const DEVICE = '60000000-0000-4000-8000-0000000000d7' as DeviceId;
 const TODAY = '2026-11-09' as LocalDate;
 const WORKOUT = '7e2d1c3a-0000-4000-8000-0000000000e1';
 let db: TestDb;
-const fr = (n: number): string => n.toLocaleString('fr-FR').replace(/[  ]/g, ' ');
+const fr = (n: number): string => n.toLocaleString('fr-FR').replace(/[\u202f\u00a0]/g, ' ');
 const heroLine =
   (text: string) =>
   (_: string, el: Element | null): boolean =>
-    (el?.classList.contains('ct-hero') ?? false) && (el?.textContent ?? '').replace(/[  ]/g, ' ') === text;
+    (el?.classList.contains('ct-hero') ?? false) && (el?.textContent ?? '').replace(/[\u202f\u00a0]/g, ' ') === text;
 const container = () => createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data });
 
 const recordRestPlan = async () =>
