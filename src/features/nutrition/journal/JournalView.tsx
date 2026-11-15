@@ -1,3 +1,4 @@
+import { tPlural } from '../../../i18n/plural';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { dayTargetFor } from '../../../domain/nutrition/restDay';
 import { addDays } from '../../../domain/localDate';
@@ -48,9 +49,7 @@ function CoverageNote({ day, isToday }: { readonly day: DayTotals; readonly isTo
           ? tNutrition(day.state === 'complete' ? 'dayCompleteDeclaredDetail' : 'dayIncompleteDeclaredDetail')
           : day.state === 'complete'
             ? tNutrition('dayCompleteDetail')
-            : day.entryCount === 1
-              ? tNutrition('dayPartialOne')
-              : tNutrition('dayPartialDetail', { count: day.entryCount, hours: formatTenth(day.spanHours ?? 0) })}
+            : tPlural(tNutrition, day.entryCount, 'dayPartialDetailOne', 'dayPartialDetail', { hours: formatTenth(day.spanHours ?? 0) })}
       </p>
       {unknownValues ? <p className="ct-nutrition__muted">{tNutrition('dayUnknownValues')}</p> : null}
     </div>

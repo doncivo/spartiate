@@ -1,3 +1,4 @@
+import { isSingular } from '../../../i18n/plural';
 import { useState, type FormEvent } from 'react';
 import { groupByExercise, nextCircuitSet, roundOf, validateCircuit, type CircuitInfo, type WorkoutWithSets } from '../../../domain/training';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
@@ -23,7 +24,7 @@ export function CircuitHeader({ circuit, workout, busy, onUngroup }: { readonly 
   const round = next === null ? null : roundOf(workout.sets, next.id);
   return (
     <section className="ct-circuit" role="region" aria-label={tCircuit('region', { kind })}>
-      <h3 className="ct-circuit__title">{tCircuit(circuit.rounds === 1 ? 'headlineOne' : 'headline', { kind, n: circuit.exerciseIds.length, rounds: circuit.rounds })}</h3>
+      <h3 className="ct-circuit__title">{tCircuit(isSingular(circuit.rounds) ? 'headlineOne' : 'headline', { kind, n: circuit.exerciseIds.length, rounds: circuit.rounds })}</h3>
       <p className="ct-circuit__line">
         {tCircuit('rests', {
           between: circuit.restBetweenSec > 0 ? formatRest(circuit.restBetweenSec) : tCircuit('restNone'),

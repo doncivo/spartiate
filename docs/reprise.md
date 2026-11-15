@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-13 matin : versions 0.17.1 à 0.22.0 publiées cette nuit, puis 0.22.1 (ERGO-01b, PR #125) (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-275 dans docs/decisions.md.
+État au 2026-11-15 : versions 0.17.1 à 0.22.0 publiées cette nuit, puis 0.22.1 (ERGO-01b, PR #125) (PC et iPhone, schéma 18), fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-275 dans docs/decisions.md.
 
 ## Rapport du matin (13/11)
 
@@ -11,8 +11,7 @@
 
 ## Prochaines étapes
 
-1. **0.24.0 (PROG-01) publiée sur PC et iPhone le 14/11** (tags v0.24.0 et ios-v0.24.0 sur `7dcb6a88`, docs/PROG-01.md, D-267, D-269 à D-275). Ali démarre le 16/11. **Prochain chantier : lot 0.25.0.** Puis FIX-0242, FIX-0241 (D-268), SYNC-01 (D-275).
-   Test instable à corriger dans FIX-0242 : `src/features/app/TodayScreen.test.tsx:61` (titre « Aujourd'hui » introuvable en 1 s), rouge une fois en CI, vert à la relance.
+1. **Lot 0.25.0 en cours** (docs/LOT-0.25.0.md, un seul tag v0.25.0 à la fin) : FIX-0242 fusionné (#134, D-276 à D-279), FIX-0241 fusionné (#135, D-280 à D-283). **Prochain : ERGO-02b** (worktree `C:\Dev\spartiate-ERGO-02b`), puis SYNC-01 (`C:\Dev\spartiate-SYNC-01`). Piste bundle d'ERGO-02b mesurée : modulePreload sans polyfill et sans blocs du départ entre eux (−1 866, 197 344).
 2. ERGO-02b (après PROG-01, décision d'Ali du 13/11) : bundle de départ ramené sous 198 694 octets par la configuration du build (passe architect, D-265 : exception de +154 en 0.23.0) ; règles de calcul à mettre dans src/domain (allure du dernier km, record de la fiche, rythme du check-in) ; test de la coche « pris » ; « par haltère » dans les écarts de fr.progression ; `heldFor` réemployé ; raison « aperçu illisible » ; semaine selon « Début de semaine » (Aujourd'hui PC) ; clés mortes `sessionTodayLoad`, `unknown` ; dates Renpho sur les 5 lignes (BodyProgress.test).
 3. Constat d'Ali : « Pris » app en arrière-plan et tuée (H-36). Import de programme : I6-08 (docs/I6-08.md, non exécuté).
 4. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
