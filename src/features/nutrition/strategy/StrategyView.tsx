@@ -6,7 +6,7 @@ import { Button, HeroFigure, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { NumberField, parseNumber } from '../shared';
-import { activeRoutineDayCount, saveManualTarget, saveNutritionPrefs, type NutritionSnapshot } from '../useCases';
+import { activeRoutineDayCount, saveManualTarget, saveRestPlan, saveNutritionPrefs, type NutritionSnapshot } from '../useCases';
 import { RestTargetForm } from './RestTargetForm';
 import { TargetForm, type TargetSaveResult } from './TargetForm';
 import { defaultTrainingDays, restTargetFromGap, type RestPlan } from '../../../domain/nutrition';
@@ -99,8 +99,8 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   async function saveRest(restPlan: RestPlan | null): Promise<boolean> {
     if (target === null) return false;
     try {
-      const result = await saveManualTarget(data, { weekStart: snapshot.today, target: target.target, lowFloorConfirmed: false, restPlan });
-      if (typeof result === 'string') return false;
+      const result = await saveRestPlan(data, { today: snapshot.today, current: target, restPlan });
+      if (result !== 'saved') return false;
       await onChanged();
       return true;
     } catch {

@@ -6,6 +6,7 @@ import {
   aggregateDays,
   computeTotals,
   DEFAULT_NUTRITION_PREFS,
+  effectiveTarget,
   estimateTdee,
   parseNutritionPrefs,
   resolveCheckIn,
@@ -245,11 +246,43 @@ export async function activeRoutineDayCount(access: DataAccess): Promise<number 
 
 export type RestPlanWriteResult = 'saved' | TargetWriteRefusal;
 
-/** FIX-0244 (D-291) : enregistre la cible de repos de la cible en vigueur. (Version d'avant : une décision manuelle d'aujourd'hui, qui masque une cible future.) */
+/**
+ * FIX-0244 (D-291) : enregistre (ou retire) la cible de repos de la cible en vigueur sans jamais passer devant une cible future. La cible en
+ * vigueur est la dernière décision par HLC parmi celles dont la semaine a commencé : une décision d'aujourd'hui, plus récente, masquerait donc
+ * une cible déjà prévue à une date future. Après la décision d'aujourd'hui, chaque cible future qui était en vigueur à sa date est donc
+ * réenregistrée à l'identique (mêmes valeurs, source, semaine, version du moteur) avec la cible de repos, du même écart que la cible
+ * d'aujourd'hui ; si cette copie serait refusée (plancher), la cible future reste telle quelle. Sans cible future : une seule décision.
+ */
 export async function saveRestPlan(
   access: DataAccess,
   input: { readonly today: LocalDate; readonly current: NutritionTargetRecord; readonly restPlan: RestPlan | null },
 ): Promise<RestPlanWriteResult> {
+  const repo = await access.repos.nutritionTargets();
+  // Cibles futures en vigueur à leur date, relevées avant l'écriture (la décision d'aujourd'hui les masquerait ensuite).
+  const decisions = await repo.list();
+  const dates = [...new Set(decisions.filter((d) => d.accepted && d.weekStart > input.today).map((d) => d.weekStart))].sort();
+  const futures: NutritionTargetRecord[] = [];
+  for (const date of dates) {
+    const winner = effectiveTarget(decisions, date);
+    if (winner !== null && winner.weekStart === date) futures.push(winner);
+  }
   const result = await saveManualTarget(access, { weekStart: input.today, target: input.current.target, lowFloorConfirmed: false, restPlan: input.restPlan });
-  return typeof result === 'string' ? result : 'saved';
+  if (typeof result === 'string') return result;
+  const plan = input.restPlan;
+  const gap = plan === null ? 0 : plan.rest.kcal - input.current.target.kcal;
+  for (const future of futures) {
+    const restPlan: RestPlan | null = plan === null ? null : { rest: restTargetFromGap(future.target, gap), trainingDays: plan.trainingDays };
+    const draft = {
+      weekStart: future.weekStart,
+      target: future.target,
+      source: future.source,
+      accepted: true,
+      engineVersion: future.engineVersion,
+      lowFloorConfirmed: true,
+      restPlan,
+    } as const;
+    if (validateTargetRecord(draft).length === 0) await repo.record(draft);
+    else await repo.record({ ...draft, restPlan: future.restPlan ?? null });
+  }
+  return 'saved';
 }
