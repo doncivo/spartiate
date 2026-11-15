@@ -21,7 +21,7 @@ export function NutritionRemainingCard() {
   const { data } = container;
   const navigate = useNavigationStore((s) => s.navigate);
   const [load, setLoad] = useState<Load>({ status: 'loading' });
-  const synced = useSyncedData(['meal_entry', 'nutrition_target', 'day_completeness']);
+  const synced = useSyncedData(['meal_entry', 'nutrition_target', 'day_completeness', 'workout', 'workout_set']);
 
   useEffect(() => {
     let live = true;
