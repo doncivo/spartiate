@@ -85,6 +85,22 @@ describe('SYNC-01 : ligne créée par un appareil au schéma 18, reçue par un a
     expect(await parked(b)).toEqual([{ reason: 'missing-row', table_name: 'mesocycle' }]);
   });
 
+  it('critère 1 : relecture du même journal (curseurs ramenés à zéro) : aucune partie gardée en double, ni après une modification sur 18', async () => {
+    const { a, b } = await mixed();
+    await createCycleOn18(a);
+    await roundTrip();
+    a.clock.advance(5_000);
+    await a.driver.execute('UPDATE mesocycle SET weeks = 6, updated_at = ?, hlc = ? WHERE id = ?', [iso(a), a.hlc.now(), M1]);
+    await roundTrip();
+    const before = (await b.driver.select<{ op: string }>('SELECT op FROM sync_parked ORDER BY id')).map((r) => r.op);
+    await b.driver.execute('UPDATE sync_state SET cursor_segment = 0, cursor_record = 0 WHERE is_self = 0');
+    await roundTrip();
+    await b.restart();
+    await roundTrip();
+    expect((await b.driver.select<{ op: string }>('SELECT op FROM sync_parked ORDER BY id')).map((r) => r.op)).toEqual(before);
+    expect(await cycleRow(b)).toEqual([]);
+  });
+
   it('critère 2 : avertissement « appareil plus ancien » sur l’appareil à jour, sans reprise complète inutile ni donnée dans le journal technique', async () => {
     const { a, b } = await mixed();
     await createCycleOn18(a);
