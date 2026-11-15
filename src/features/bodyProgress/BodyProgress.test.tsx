@@ -325,4 +325,27 @@ describe('mesures importées de Santé (I6-04, D-113)', () => {
     expect(card.queryByRole('button')).toBeNull();
     expect(screen.getByText('Aucune mesure pour cette zone.')).toBeInTheDocument();
   });
+
+  it('ERGO-02b : la date de CHAQUE ligne (5) est celle de sa dernière valeur, jamais celle d’une autre ligne', async () => {
+    const repo = await measures();
+    // Dates toutes différentes ; une valeur plus ancienne par genre qui ne doit pas se montrer.
+    const expected = [
+      ['health_body_fat_pct', 'Masse grasse', 18.5, 11, '18,5 %'],
+      ['health_lean_mass_kg', 'Masse maigre', 64.3, 9, '64,3 kg'],
+      ['health_waist_cm', 'Tour de taille', 82, 8, '82 cm'],
+      ['health_height_cm', 'Taille', 178, 7, '178 cm'],
+      ['health_fiber_g', 'Fibres', 28, 10, '28 g'],
+    ] as const;
+    for (const [kind, , value, day] of expected) {
+      await repo.save(D(day - 5), kind, value + 1);
+      await repo.save(D(day), kind, value);
+    }
+    mount();
+    const card = within(await screen.findByRole('region', { name: 'Importé de Santé (Renpho)' }));
+    for (const [, label, , day, text] of expected) {
+      const row = within(card.getByText(label).closest('div') as HTMLElement);
+      expect(row.getByText(text)).toBeInTheDocument();
+      expect(row.getByText(`le ${formatDayMonthYear(D(day))}`)).toBeInTheDocument();
+    }
+  });
 });
