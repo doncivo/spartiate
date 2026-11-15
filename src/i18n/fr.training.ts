@@ -167,6 +167,8 @@ export const trainingFr = {
   sessionTableTarget: 'Cible',
   sessionTableLoad: 'Charge',
   loadToEnter: 'à saisir',
+  /** ERGO-02b : charge dont l'aperçu n'a pas pu être lu ou calculé (jamais confondue avec « à saisir », rien à proposer). */
+  loadUnreadable: 'aperçu illisible',
   sessionTarget: '{sets} × {min}–{max}',
   sessionTargetSame: '{sets} × {min}',
 
