@@ -61,7 +61,7 @@ export default defineConfig({
     // qui importe à la demande ne précharge plus les blocs du départ, déjà chargés par index.html (préchargement sans effet, ~20 octets
     // chacun dans __vite__mapDeps). Les CSS et les blocs hors du départ restent préchargés ; les blocs à la demande et les liens de
     // index.html gardent la liste complète. pairing.html : un bloc partagé avec main qui importe à la demande (ex. tauriSync vers
-    // @tauri-apps/api/core) y perd un préchargement redondant (le bloc visé est déjà importé statiquement par la page), sans effet.
+    // @tauri-apps/api/core) y perd ce préchargement : le bloc est chargé au moment de l'import, sans erreur ; effet négligeable.
     modulePreload: {
       polyfill: false,
       resolveDependencies: (_file, deps, { hostId, hostType }) => (hostType === 'js' && startFiles.has(hostId) ? deps.filter((dep) => !startFiles.has(dep)) : deps),
