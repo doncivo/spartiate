@@ -11,8 +11,7 @@
 
 ## Prochaines étapes
 
-1. **Lot 0.25.0 en cours** (docs/LOT-0.25.0.md, un seul tag v0.25.0 à la fin) : FIX-0242 fusionné (#134, D-276 à D-279), FIX-0241 fusionné (#135, D-280 à D-283). FIX-0243 fusionné (#136, constats Codex, D-284 à D-286). **Prochain : ERGO-02b** (worktree `C:\Dev\spartiate-ERGO-02b`), puis SYNC-01 (`C:\Dev\spartiate-SYNC-01`). Piste bundle d'ERGO-02b mesurée : modulePreload sans polyfill et sans blocs du départ entre eux (−1 866, 197 344).
-2. ERGO-02b (après PROG-01, décision d'Ali du 13/11) : bundle de départ ramené sous 198 694 octets par la configuration du build (passe architect, D-265 : exception de +154 en 0.23.0) ; règles de calcul à mettre dans src/domain (allure du dernier km, record de la fiche, rythme du check-in) ; test de la coche « pris » ; « par haltère » dans les écarts de fr.progression ; `heldFor` réemployé ; raison « aperçu illisible » ; semaine selon « Début de semaine » (Aujourd'hui PC) ; clés mortes `sessionTodayLoad`, `unknown` ; dates Renpho sur les 5 lignes (BodyProgress.test).
+1. **Lot 0.25.0 en cours** (docs/LOT-0.25.0.md, un seul tag v0.25.0 à la fin) : FIX-0242 fusionné (#134, D-276 à D-279), FIX-0241 (#135, D-280 à D-283), FIX-0243 (#136, constats Codex, D-284 à D-286), ERGO-02b (#137, D-287 à D-289 ; départ 196 136 octets). **Prochain : SYNC-01** (worktree `C:\Dev\spartiate-SYNC-01`, D-275, sync-icloud et data-model), puis fin du lot (CHANGELOG, v0.25.0, build-ios, ios-v0.25.0).
 3. Constat d'Ali : « Pris » app en arrière-plan et tuée (H-36). Import de programme : I6-08 (docs/I6-08.md, non exécuté).
 4. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
 5. À recaler sur demande d'Ali : D-73 (4), Exertion (D-88, D-220).
