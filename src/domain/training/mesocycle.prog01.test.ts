@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { day, ROUTINE_ID, START } from '../../../tests/fixtures/training/mesocycle';
+import { input, session } from '../../../tests/fixtures/training/progression';
 import { DEFAULT_GENERATION_CONFIG as CONFIG, DEFAULT_PROGRESSION_CONFIG as PCONFIG } from './config';
 import { activeConstraints, reducedTarget } from './constraints';
+import { prescribe } from './prescribe';
+import { redDaySnapshot } from './redDay';
 import { snapToEquipment } from './loadGrid';
 import { changeNextWeeks, createMesocycleSpec, generationWeekOf, linePlanSets, mesocycleState, nextMesocycleSpec, type MesocycleSpec } from './mesocycle';
 
@@ -113,5 +116,45 @@ describe('PROG-01 : décharge à 90 %, arrondie vers le bas au cran du matériel
   it('tractions assistées (D-273) : l’assistance est gardée, jamais réduite ; en décharge seule puis avec la journée rouge', () => {
     expect(deloaded(30, 4, null, true)).toEqual({ sets: 2, kg: 30, targetKg: 30 });
     expect(deloaded(30, 4, null, true, true)).toEqual({ sets: 2, kg: 30, targetKg: 30 });
+  });
+});
+
+describe('PROG-01 : exercice assisté en décharge, combinaisons (D-273, constat 9 de Codex, FIX-0243)', () => {
+  // Corps 80 kg, assistance de référence 30 kg : charge réelle 50 kg ; jamais plus lourde en décharge (assistance jamais réduite).
+  const ASSISTED = { id: 'pull-up-assisted', metric: 'load-reps', equipment: ['assisted-pull-up-machine'], kind: 'compound', assisted: true, bodyweightFraction: 1 } as const;
+  const cases = [
+    { name: 'décharge seule', days: 3, red: false },
+    { name: 'décharge et 30 jours d’inactivité', days: 30, red: false },
+    { name: 'décharge et journée rouge', days: 3, red: true },
+    { name: 'décharge, 30 jours d’inactivité et journée rouge', days: 30, red: true },
+  ] as const;
+  for (const bodyweightKg of [80, null]) {
+    for (const { name, days, red } of cases) {
+      it(`${name}, poids de corps ${bodyweightKg === null ? 'inconnu' : '80 kg'} : assistance 30 kg gardée, 2 séries`, () => {
+        const p = prescribe(
+          input({
+            exercise: ASSISTED,
+            bodyweightKg,
+            history: [session(days, 30, [10, 10, 10, 10])],
+            deload: true,
+            deloadSets: 2,
+            deloadLoad: 0.9,
+            ...(red ? { recovery: redDaySnapshot(20, 'accepted', PCONFIG) } : {}),
+          }),
+        );
+        expect(p.deload).toBe(true);
+        expect(p.loadKg).toBe(30);
+        expect(p.sets).toEqual([
+          { reps: 10, loadKg: 30 },
+          { reps: 10, loadKg: 30 },
+        ]);
+        if (bodyweightKg !== null) expect(bodyweightKg - (p.loadKg ?? 0)).toBeLessThanOrEqual(50);
+      });
+    }
+  }
+  it('non assisté, décharge et 30 jours d’inactivité : la charge baisse toujours (non-régression)', () => {
+    const plain = { ...ASSISTED, id: 'pull-up-weighted', assisted: false } as const;
+    const p = prescribe(input({ exercise: plain, bodyweightKg: 80, history: [session(30, 30, [10, 10, 10, 10])], deload: true, deloadSets: 2, deloadLoad: 0.9 }));
+    expect(p.loadKg ?? 0).toBeLessThan(30);
   });
 });
