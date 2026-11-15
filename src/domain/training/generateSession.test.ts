@@ -12,11 +12,14 @@ import {
   MIXED,
   PPL_DAYS,
   UPPER_A,
+  UPPER_LOWER_DAYS,
 } from '../../../tests/fixtures/training/generation';
+import { day as cycleDay, ROUTINE_ID, START as CYCLE_START } from '../../../tests/fixtures/training/mesocycle';
 import { DEFAULT_GENERATION_CONFIG as C, GENERATION_VERSION } from './config';
 import { isExerciseCompatible } from './equipment';
 import { estimateExerciseSec, estimateSessionSec, generateSession, orderSetsForStyle } from './generateSession';
 import type { GeneratedSession, GenerationEquipment } from './generationTypes';
+import { createMesocycleSpec, generationWeekOf, mesocycleState } from './mesocycle';
 import { primaryMuscle } from './prescribe';
 import type { RoutineDaySpec } from './types';
 
@@ -451,5 +454,32 @@ describe('critère 7 : déterministe, horloge injectée, moins d’une seconde',
     const t1 = performance.now();
     for (let i = 0; i < 200; i++) generateSession(input({ library: big, day: i % 4, now: at(i % 30), timeBudgetMin: 20 + (i % 30) }, { variety: 'balanced' }));
     expect(performance.now() - t1).toBeLessThan(1000);
+  });
+});
+
+describe('PROG-01 : décharge de cycle de 4 semaines, séries de décharge dans la proposition (constat 10 de Codex, FIX-0243)', () => {
+  // Cycle de 4 semaines commencé le 02/11 : le 23/11 est la semaine de décharge (2 séries, 90 %).
+  const spec = createMesocycleSpec({ routineId: ROUTINE_ID, startDate: CYCLE_START, weeks: 4 }, C);
+  const weekAt = (n: number) => (spec === null ? null : generationWeekOf(mesocycleState(spec, cycleDay(n), C)));
+  const sets = (s: GeneratedSession): number[] => s.exercises.map((e) => e.sets);
+
+  it('le 23/11 : 2 séries par exercice (jamais 3, 3, 3, 3, 3, 2, 2), décharge dite', () => {
+    const week = weekAt(21);
+    expect(week).toMatchObject({ deload: true, deloadSets: 2, deloadLoad: 0.9 });
+    const session = generateSession(input({ week }));
+    expect(sets(session)).toEqual([2, 2, 2, 2, 2, 2, 2]);
+    expect(session.deload).toBe(true);
+  });
+
+  it('une ligne prévue à 1 série reste à 1 (min(prévu, séries de décharge)) ; jamais une série ajoutée par la priorité', () => {
+    const one: RoutineDaySpec = { ...UPPER_A, exercises: UPPER_A.exercises.map((e, i) => (i === 6 ? { ...e, sets: 1 } : e)) };
+    const session = generateSession(input({ week: weekAt(21) }, { days: [one, ...UPPER_LOWER_DAYS.slice(1)], priorities: ['chest'] }));
+    expect(sets(session)).toEqual([2, 2, 2, 2, 2, 2, 1]);
+  });
+
+  it('hors décharge (semaine 1 du même cycle) : volume de la routine, inchangé', () => {
+    const week = weekAt(0);
+    expect(week?.deload).toBe(false);
+    expect(sets(generateSession(input({ week })))).toEqual([3, 3, 3, 3, 3, 2, 2]);
   });
 });
