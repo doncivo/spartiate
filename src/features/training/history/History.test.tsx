@@ -214,6 +214,28 @@ describe('FIX-0243 : suppression d’une séance close, signal local aux cartes 
       off();
     }
   });
+
+  it('revue : correction d’une série close réussie, « workout_set » annoncé (la carte « Séance du jour » montée relit la charge) ; refusée, rien', async () => {
+    const seen: string[][] = [];
+    const off = onSyncedDataApplied((tables) => void seen.push([...tables].sort()));
+    try {
+      await seedPastWorkout(db.driver);
+      openJournal();
+      const detail = await openDetail(/^Haut A/);
+      const set = within(within(detail).getByRole('region', { name: BENCH })).getAllByRole('group', { name: /^Série/ })[1] as HTMLElement;
+      fireEvent.click(within(set).getByRole('button', { name: 'Corriger' }));
+      fireEvent.change(within(set).getByLabelText('Répétitions'), { target: { value: '' } });
+      fireEvent.click(within(set).getByRole('button', { name: 'Enregistrer la correction' }));
+      await within(set).findByRole('alert');
+      expect(seen).toEqual([]);
+      fireEvent.change(within(set).getByLabelText('Répétitions'), { target: { value: '9' } });
+      fireEvent.click(within(set).getByRole('button', { name: 'Enregistrer la correction' }));
+      await within(detail).findByText(/Correction enregistrée/);
+      expect(seen).toEqual([['workout_set']]);
+    } finally {
+      off();
+    }
+  });
 });
 
 describe('0.2.4 point 5 : le Journal se relit dès qu’un lot touche workout ou workout_set, même déjà affiché', () => {
