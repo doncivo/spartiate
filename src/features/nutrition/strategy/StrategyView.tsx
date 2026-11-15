@@ -53,6 +53,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   const [rate, setRate] = useState(snapshot.prefs.goal.kind === 'maintain' ? '' : String(snapshot.prefs.goal.weeklyRateKg));
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [restPartial, setRestPartial] = useState(false);
   const [routineDays, setRoutineDays] = useState<number | null>(null);
   const { profile, target, targets } = snapshot;
   const profileComplete = profile !== null && profile.sex !== null && profile.birthYear !== null && profile.heightCm !== null;
@@ -100,7 +101,9 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
     if (target === null) return false;
     try {
       const result = await saveRestPlan(data, { today: snapshot.today, current: target, restPlan });
-      if (result !== 'saved') return false;
+      if (result !== 'saved' && result !== 'saved-partial') return false;
+      // Le formulaire est recréé à chaque nouvelle décision : le signalement vit ici, pas dans le formulaire.
+      setRestPartial(result === 'saved-partial');
       await onChanged();
       return true;
     } catch {
@@ -239,6 +242,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
         )}
         {target !== null ? <RestTargetForm key={`rest-${target.id}`} target={target.target} plan={target.restPlan ?? null} defaultDays={defaultTrainingDays(routineDays)} onSave={saveRest} /> : null}
         <TargetForm key={target?.id ?? 'none'} title={tNutrition('targetFormTitle')} initial={target?.target ?? null} submitLabel={tNutrition('saveTarget')} onSave={saveTarget} />
+        {restPartial ? <p role="status">{tNutrition('restTargetPartial')}</p> : null}
         {saved ? <p role="status">{tNutrition('targetSaved')}</p> : null}
       </section>
 
