@@ -1,6 +1,7 @@
 import { tPlural } from '../../../i18n/plural';
 import { useEffect, useState } from 'react';
 import { summarizeSets, type RoutineDay, type WorkoutWithSets } from '../../../domain/training';
+import { cycleWeekMarker, type CycleWeekMarker } from '../../../domain/training/cycleWeek';
 import { nextProgramDay } from '../../../domain/training/programDay';
 import { formatExerciseLoad, tTraining } from '../../../i18n/trainingText';
 import { Button, useLayout } from '../../../ui';
@@ -36,9 +37,20 @@ interface ProgramDay {
   /** Durée et charges ; null si l'aperçu est illisible. */
   readonly preview: TodaySessionPreview | null;
 }
-type Load = { readonly status: 'loading' | 'failed' } | { readonly status: 'ready'; readonly open: WorkoutWithSets | null; readonly program: ProgramDay | null };
+type Load = { readonly status: 'loading' | 'failed' } | { readonly status: 'ready'; readonly open: WorkoutWithSets | null; readonly program: ProgramDay | null; readonly marker: CycleWeekMarker | null };
 
 const byPosition = (day: RoutineDay) => [...day.exercises].sort((a, b) => a.position - b.position);
+
+/** ERGO-03 (D-297) : « Semaine 1 sur 4 » et, en semaine de décharge, le badge bronze « Décharge » ; rien sans cycle en cours. */
+function CycleMarker({ marker }: { readonly marker: CycleWeekMarker | null }) {
+  if (marker === null) return null;
+  return (
+    <p className="ct-session-card__cycle">
+      <span>{tTraining('cycleWeekMarker', { week: marker.week, total: marker.total })}</span>
+      {marker.deload ? <span className="ct-session-card__deload">{tTraining('cycleDeloadBadge')}</span> : null}
+    </p>
+  );
+}
 
 export function TodaySessionCard() {
   const { data, clock } = useAppContainer();
@@ -54,15 +66,15 @@ export function TodaySessionCard() {
     void (async () => {
       try {
         const open = await (await data.repos.workouts()).getOpen();
-        const program = open === null ? await programDayOf() : null;
-        if (live) setLoad({ status: 'ready', open, program });
+        const cycle = await loadCurrentCycle(data, localDayOf(clock.nowMs()));
+        const program = open === null ? await programDayOf(cycle) : null;
+        if (live) setLoad({ status: 'ready', open, program, marker: cycle === null ? null : cycleWeekMarker(cycle.state) });
       } catch {
         if (live) setLoad({ status: 'failed' });
       }
     })();
     /** Jour désigné par le cycle actif ; null sans cycle actif, routine illisible ou sans jour garni (carte d'avant). */
-    async function programDayOf(): Promise<ProgramDay | null> {
-      const cycle = await loadCurrentCycle(data, localDayOf(clock.nowMs()));
+    async function programDayOf(cycle: Awaited<ReturnType<typeof loadCurrentCycle>>): Promise<ProgramDay | null> {
       if (cycle === null || cycle.state.phase !== 'active') return null;
       const [routine, closed] = await Promise.all([(await data.repos.trainingRoutines()).get(cycle.record.routineId), (await data.repos.workouts()).listClosed(50)]);
       if (routine === null) return null;
@@ -83,7 +95,7 @@ export function TodaySessionCard() {
   }, [data, clock, pc, synced]);
 
   if (load.status !== 'ready') return null;
-  const { open, program } = load;
+  const { open, program, marker } = load;
 
   async function launch(target: ProgramDay): Promise<void> {
     setBusy(true);
@@ -112,6 +124,7 @@ export function TodaySessionCard() {
         <h2 id="ct-session-card-title" className="ct-today__eyebrow ct-section-title">
           {tTraining('sessionTodayEyebrow')}
         </h2>
+        <CycleMarker marker={marker} />
         <div className="ct-session-card__body">
           <div className="ct-session-card__head">
             <p className="ct-session-card__name">{day.name}</p>
@@ -176,6 +189,7 @@ export function TodaySessionCard() {
       <h2 id="ct-session-card-title" className="ct-today__eyebrow ct-section-title">
         {tTraining(open ? 'sessionOpenEyebrow' : 'sessionEyebrow')}
       </h2>
+      <CycleMarker marker={marker} />
       {open && summary ? (
         <div className="ct-session-card__body">
           <p className="ct-session-card__name">{open.name === '' ? tTraining('sessionFree') : open.name}</p>
