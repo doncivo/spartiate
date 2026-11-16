@@ -45,7 +45,8 @@ Typecheck et eslint (fichiers touchés) verts. Une suite large a vu `GeneratedSe
 Quatre scènes ajoutées à tests/visual/capture.spec.ts dès le commit rouge. Elles portent des données synthétiques en SQL : cible en vigueur au 02/11, cible à venir au lundi 09/11, cycle de 4 semaines en décharge le dimanche 08/11. Les scènes : `Nutrition-strategie` et `PC-Nutrition-strategie` (Stratégie), `Aujourdhui-cycle` et `PC-Aujourdhui-cycle` (Aujourd'hui).
 - **Avant** : artefact `visual-pairs` du run Tests du commit rouge `b0229d62`, qui a l'ancien écran avec les mêmes données.
 - **Après** : artefact `visual-pairs` du run Tests du dernier commit de la PR.
-- Emplacement où l'orchestrateur reporte les liens des deux runs et sa relecture : (à compléter par l'orchestrateur)
+- **Runs** : avant = run [43797714780](https://github.com/doncivo/spartiate/actions/runs/43797714780) (branche jetable `ERGO-03-avant` sur `b0229d62`, lancé à la main : aucune CI n'avait tourné sur le commit rouge ; job « Captures » vert, tests rouges attendus) ; après = run [43797522416](https://github.com/doncivo/spartiate/actions/runs/43797522416) (`6eeab8e8`). Artefacts `visual-pairs` gardés 14 jours.
+- **Relecture de l'orchestrateur** : Stratégie iPhone, avant = segments empilés (style, objectif, activité en boutons) ; après = groupes Style / Objectif / Cible en lignes « étiquette · valeur », cible en vigueur en chiffre héros, ligne bronze « À partir du lundi 09/11 : 2 450 kcal · P 190 · G 250 · L 75 », bouton « Modifier ma cible ». PC : même structure dans la colonne de 900 px. Aujourd'hui : carte Séance « Semaine 4 sur 4 » et badge bronze « Décharge ». Aucun texte coupé ni débordement aux deux largeurs ; le très grand texte reste à constater sur l'iPhone.
 
 ## code-reviewer
 
