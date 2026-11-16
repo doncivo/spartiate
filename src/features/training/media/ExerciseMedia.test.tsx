@@ -43,6 +43,12 @@ describe('ExerciseMedia', () => {
     expect(screen.getByText('Illustration : Everkinetic (Greg Priday et contributeurs), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0')).toBeInTheDocument();
   });
 
+  it('MEDIA-02 (D-302) : image réduite de la source everkinetic-web, l’attribution signale la modification (CC BY-SA 4.0, 3(a)(1)(B))', () => {
+    expect(mediaAttribution('everkinetic-web')).toBe('Illustration : Everkinetic (Greg Priday et contributeurs), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0 ; image réduite et passée en niveaux de gris');
+    render(<ExerciseMedia exercise={exercise('lat-pulldown', { images: ['lat-pulldown.png'], video: null, license: 'CC-BY-SA-4.0', source: 'everkinetic-web:src/images-web/wide-grip-lat-pull-down-2.png' })} />);
+    expect(screen.getByText(/image réduite et passée en niveaux de gris$/)).toBeInTheDocument();
+  });
+
   it('sans média : ne rend rien (aucune icône cassée, D-71)', () => {
     const { container } = render(<ExerciseMedia exercise={exercise('plank', null)} />);
     expect(container.innerHTML).toBe('');
