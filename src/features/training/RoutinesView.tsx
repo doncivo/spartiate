@@ -1,6 +1,6 @@
 import { tPlural } from '../../i18n/plural';
-import { ArrowDown, ArrowLeft, ArrowUp, X } from 'lucide-react';
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { ArrowDown, ArrowLeft, ArrowUp, GripVertical, X } from 'lucide-react';
+import { lazy, Suspense, useEffect, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
 import {
   dissolveLoneRoutineCircuits,
   groupRoutineLines,
@@ -20,7 +20,7 @@ import {
 import type { IdGenerator } from '../../domain/id';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { parseNumber, tTraining } from '../../i18n/trainingText';
-import { Button, ConfirmDialog, Icon } from '../../ui';
+import { Button, ConfirmDialog, Icon, useLayout } from '../../ui';
 import { programToRoutine, type StarterProgram } from './content';
 import { ExerciseList } from './LibraryView';
 import type { TrainingData } from './trainingState';
@@ -109,6 +109,24 @@ function applyCircuitLines(lines: readonly DraftLine[], next: readonly RoutineCi
       ];
     });
 }
+
+/** PROG-03 : liste avec l'élément `from` placé à l'indice `to` (ordre affiché ; hors bornes ou sans effet : la liste telle quelle). */
+function moveItem<T>(list: readonly T[], from: number, to: number): readonly T[] {
+  if (from === to || from < 0 || to < 0 || from >= list.length || to >= list.length) return list;
+  const next = [...list];
+  const [item] = next.splice(from, 1);
+  if (item !== undefined) next.splice(to, 0, item);
+  return next;
+}
+
+/** PROG-03 : type du glisser interne (jamais text/plain). */
+const REORDER_MIME = 'application/x-spartiate-reorder';
+
+/** PROG-03 : ce qui est en cours de glisser (un exercice d'un jour, ou un jour). */
+type Dragging = { readonly kind: 'line'; readonly dayId: string; readonly index: number } | { readonly kind: 'day'; readonly index: number };
+
+/** PROG-03 : Alt+↑ / Alt+↓ ; -1, 1, ou null pour toute autre touche. */
+const altStep = (e: KeyboardEvent): -1 | 1 | null => (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey ? null : e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : null);
 
 const int = (text: string): number => {
   const n = parseNumber(text);
@@ -261,15 +279,95 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
       ...d,
       lines: d.lines.map((l) => (l.id === lineId ? { ...l, ...patch } : l)),
     }));
-  const move = (dayId: string, index: number, step: -1 | 1): void =>
-    updateDay(dayId, (d) => {
-      const target = index + step;
-      if (target < 0 || target >= d.lines.length) return d;
-      const lines = [...d.lines];
-      const [line] = lines.splice(index, 1);
-      if (line) lines.splice(target, 0, line);
-      return { ...d, lines };
-    });
+  // PROG-03 (§ 18.1, § 18.6) : l'ordre change dans le brouillon seulement ; l'enregistrement réécrit position et day_order par saveDraft, comme avant.
+  // Sur PC, une poignée se glisse ou répond à Alt+↑/↓ ; partout, l'annonce polie dit la nouvelle position.
+  const pc = useLayout() === 'pc';
+  const [announce, setAnnounce] = useState('');
+  const dragging = useRef<Dragging | null>(null);
+  const refocus = useRef<string | null>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const id = refocus.current;
+    if (id === null) return;
+    refocus.current = null;
+    const el = editorRef.current?.querySelector<HTMLElement>(`[data-reorder-handle="${id}"]`);
+    if (el && document.activeElement !== el) el.focus();
+  }, [draft]);
+  const moveLine = (dayId: string, from: number, to: number, name: string, focusId?: string): void => {
+    const day = draft.days.find((d) => d.id === dayId);
+    if (!day || moveItem(day.lines, from, to) === day.lines) return;
+    updateDay(dayId, (d) => ({ ...d, lines: [...moveItem(d.lines, from, to)] }));
+    if (focusId) refocus.current = focusId;
+    setAnnounce(tTraining('reorderMoved', { name, position: to + 1, total: day.lines.length }));
+  };
+  const moveDay = (from: number, to: number, focusId?: string): void => {
+    const day = draft.days[from];
+    if (!day || moveItem(draft.days, from, to) === draft.days) return;
+    setDraft((now) => ({ ...now, days: [...moveItem(now.days, from, to)] }));
+    if (focusId) refocus.current = focusId;
+    setAnnounce(tTraining('reorderMoved', { name: day.name, position: to + 1, total: draft.days.length }));
+  };
+  const move = (dayId: string, index: number, step: -1 | 1, name: string): void => moveLine(dayId, index, index + step, name);
+  const startDrag = (e: DragEvent, what: Dragging, id: string): void => {
+    dragging.current = what;
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+      // Revue 1 : type propre, qu'un champ texte n'accepte pas (text/plain y serait inséré par WebView2 au dépôt, puis enregistré).
+      e.dataTransfer.setData(REORDER_MIME, id);
+    }
+  };
+  const endDrag = (): void => {
+    dragging.current = null;
+  };
+  /** Dépôt d'un exercice sur une ligne du même jour (un dépôt sur un autre jour, ou sans glisser en cours, est refusé). */
+  const lineDropProps = (dayId: string, index: number) => ({
+    onDragOver: (e: DragEvent) => {
+      const now = dragging.current;
+      if (now?.kind !== 'line' || now.dayId !== dayId) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    },
+    onDrop: (e: DragEvent) => {
+      const now = dragging.current;
+      if (now?.kind !== 'line' || now.dayId !== dayId) return;
+      e.preventDefault();
+      e.stopPropagation();
+      dragging.current = null;
+      const moved = draft.days.find((d) => d.id === dayId)?.lines[now.index];
+      if (!moved) return;
+      moveLine(dayId, now.index, index, resolveExercise({ id: moved.exerciseId, frozenName: moved.exerciseName }, data.content.catalog, data.allCustoms).name);
+    },
+  });
+  /** Revue 1 : pendant un glisser interne, tout dépôt ailleurs dans l'éditeur (champ compris) est absorbé, sans insertion ni effet. */
+  const absorbDrop = {
+    onDragOver: (e: DragEvent) => {
+      // Une ligne ou un jour qui accepte le dépôt l'a déjà annulé : son effet « move » est gardé.
+      if (dragging.current === null || e.defaultPrevented) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'none';
+    },
+    onDrop: (e: DragEvent) => {
+      if (dragging.current === null) return;
+      e.preventDefault();
+      dragging.current = null;
+    },
+  };
+  /** Dépôt d'un jour sur un autre jour (n'importe où dans sa carte). */
+  const dayDropProps = (index: number) => ({
+    onDragOver: (e: DragEvent) => {
+      const now = dragging.current;
+      if (now?.kind !== 'day' || now.index === index) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    },
+    onDrop: (e: DragEvent) => {
+      const now = dragging.current;
+      if (now?.kind !== 'day' || now.index === index) return;
+      e.preventDefault();
+      dragging.current = null;
+      moveDay(now.index, index);
+    },
+  });
   const addLine = (dayId: string, exercise: Exercise): void => {
     const [min, max] = exercise.defaultRepRange;
     updateDay(dayId, (d) => ({
@@ -348,7 +446,10 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
           <ExerciseList data={data} mode="picker" onSelect={(exercise) => addLine(pickingDay.id, exercise)} />
         </section>
       )}
-      <div className="ct-training__editor" hidden={pickingDay !== null}>
+      <div ref={editorRef} className="ct-training__editor" hidden={pickingDay !== null} {...(pc ? absorbDrop : {})}>
+        <p className="ct-training__reorder-live ct-visually-hidden" aria-live="polite">
+          {announce}
+        </p>
         <button type="button" className="ct-training__back" onClick={() => onClose()}>
           <Icon icon={ArrowLeft} size="md" />
           <span>{tTraining('backToRoutines')}</span>
@@ -363,8 +464,27 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
           <span className="ct-training__label">{tTraining('routineName')}</span>
           <input className="ct-training__input" value={draft.name} maxLength={120} onChange={(e) => setDraft((now) => ({ ...now, name: e.target.value }))} />
         </label>
-        {draft.days.map((day) => (
-          <fieldset key={day.id} className="ct-training__day" role="group" aria-label={day.name}>
+        {draft.days.map((day, dayIndex) => (
+          <fieldset key={day.id} className="ct-training__day" role="group" aria-label={day.name} {...(pc ? dayDropProps(dayIndex) : {})}>
+            {pc && (
+              <button
+                type="button"
+                className="ct-training__drag-handle"
+                draggable
+                data-reorder-handle={day.id}
+                aria-label={tTraining('reorderDayHandle', { name: day.name })}
+                onDragStart={(e) => startDrag(e, { kind: 'day', index: dayIndex }, day.id)}
+                onDragEnd={endDrag}
+                onKeyDown={(e) => {
+                  const step = altStep(e);
+                  if (step === null) return;
+                  e.preventDefault();
+                  moveDay(dayIndex, dayIndex + step, day.id);
+                }}
+              >
+                <Icon icon={GripVertical} size="md" />
+              </button>
+            )}
             <label className="ct-training__field">
               <span className="ct-training__label">{tTraining('dayName')}</span>
               <input className="ct-training__input" value={day.name} maxLength={120} onChange={(e) => updateDay(day.id, (d) => ({ ...d, name: e.target.value }))} />
@@ -384,11 +504,30 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
               {day.lines.map((line, index) => {
                 const resolved = resolveExercise({ id: line.exerciseId, frozenName: line.exerciseName }, data.content.catalog, data.allCustoms);
                 return (
-                  <li key={line.id} className="ct-training__line" role="group" aria-label={resolved.name}>
+                  <li key={line.id} className="ct-training__line" role="group" aria-label={resolved.name} {...(pc ? lineDropProps(day.id, index) : {})}>
                     <div className="ct-training__line-head">
                       <span className="ct-training__row-name">{resolved.name}</span>
                       <span className="ct-training__line-tools">
-                        <button type="button" className="ct-training__icon-button" aria-label={tTraining('moveUp')} disabled={index === 0} onClick={() => move(day.id, index, -1)}>
+                        {pc && (
+                          <button
+                            type="button"
+                            className="ct-training__drag-handle"
+                            draggable
+                            data-reorder-handle={line.id}
+                            aria-label={tTraining('reorderHandle', { name: resolved.name })}
+                            onDragStart={(e) => startDrag(e, { kind: 'line', dayId: day.id, index }, line.id)}
+                            onDragEnd={endDrag}
+                            onKeyDown={(e) => {
+                              const step = altStep(e);
+                              if (step === null) return;
+                              e.preventDefault();
+                              moveLine(day.id, index, index + step, resolved.name, line.id);
+                            }}
+                          >
+                            <Icon icon={GripVertical} size="md" />
+                          </button>
+                        )}
+                        <button type="button" className="ct-training__icon-button" aria-label={tTraining('moveUp')} disabled={index === 0} onClick={() => move(day.id, index, -1, resolved.name)}>
                           <Icon icon={ArrowUp} size="md" />
                         </button>
                         <button
@@ -396,7 +535,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
                           className="ct-training__icon-button"
                           aria-label={tTraining('moveDown')}
                           disabled={index === day.lines.length - 1}
-                          onClick={() => move(day.id, index, 1)}
+                          onClick={() => move(day.id, index, 1, resolved.name)}
                         >
                           <Icon icon={ArrowDown} size="md" />
                         </button>
