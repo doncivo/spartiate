@@ -45,6 +45,7 @@ export function decodePngGray(bytes) {
     const data = bytes.subarray(off + 8, off + 8 + len);
     if (type === 'IHDR') ihdr = { width: data.readUInt32BE(0), height: data.readUInt32BE(4), depth: data[8], ctype: data[9], interlace: data[12] };
     else if (type === 'IDAT') idat.push(data);
+    else if (type === 'tRNS' || type === 'PLTE') throw new Error(`PNG non pris en charge (bloc ${type} : transparence par clé ou palette)`);
     else if (type === 'IEND') break;
     off += 12 + len;
   }
@@ -53,6 +54,7 @@ export function decodePngGray(bytes) {
   const { width, height } = ihdr;
   const raw = inflateSync(Buffer.concat(idat));
   const stride = width * bpp;
+  if (raw.length !== height * (stride + 1)) throw new Error(`PNG tronqué : longueur du flux ${raw.length} au lieu de ${height * (stride + 1)}`);
   const pixels = Buffer.alloc(stride * height);
   for (let y = 0; y < height; y++) {
     const f = raw[y * (stride + 1)];
