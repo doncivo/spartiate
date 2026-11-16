@@ -66,4 +66,19 @@ describe('png-reduce (MEDIA-02)', () => {
     png[8 + 8 + 12] = 1; // octet d'entrelacement de IHDR
     expect(() => decodePngGray(png)).toThrow(/non pris en charge/);
   });
+
+  it("revue : flux image tronqué refusé, jamais de lignes noires silencieuses", () => {
+    const full = rgbPng(9, 6);
+    const ihdr = full.subarray(8, 8 + 25);
+    const short = Buffer.concat([SIG, ihdr, chunk("IDAT", deflateSync(Buffer.alloc(3 * (9 * 3 + 1)))), chunk("IEND", Buffer.alloc(0))]);
+    expect(() => decodePngGray(short)).toThrow(/tronqué|longueur/);
+  });
+
+  it("revue : PNG avec transparence par clé (tRNS) ou palette (PLTE) refusé explicitement", () => {
+    const full = rgbPng(9, 6);
+    const head = full.subarray(0, 8 + 25);
+    const rest = full.subarray(8 + 25);
+    expect(() => decodePngGray(Buffer.concat([head, chunk("tRNS", Buffer.alloc(6)), rest]))).toThrow(/tRNS|PLTE/);
+    expect(() => decodePngGray(Buffer.concat([head, chunk("PLTE", Buffer.alloc(3)), rest]))).toThrow(/tRNS|PLTE/);
+  });
 });
