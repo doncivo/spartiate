@@ -15,7 +15,7 @@ Chapitres PRD : 16 (récupération, import Raccourcis), 15 (nutrition), 17 (IA),
 
 ## Passes
 
-**docs-writer (rouge puis vert).** Nouveau test `scripts/release/healthShortcutsGuide.test.ts` (7 cas). Rouge `204bbdd7` contre les documents d'origine : 7 échecs (type absent, filtre Source absent, automatisation horaire, avertissement absent, nutrition non marquée, `81,4`, matrice UNVERIFIED). Vert : commit suivant (guide, matrice, décisions). Choix prudents (D-293, D-294, révisables) : blocs de nutrition gardés et marqués « facultatifs, déconseillés » plutôt que retirés (l'import les lit toujours) ; PRD § 27 non modifié.
+**docs-writer (rouge puis vert).** Nouveau test `scripts/release/healthShortcutsGuide.test.ts` (7 cas). Rouge `204bbdd7` contre les documents d'origine : 7 échecs (type absent, filtre Source absent, automatisation horaire, avertissement absent, nutrition non marquée, `81,4`, matrice UNVERIFIED). Vert `7ec6b82e` (guide, matrice, décisions). Choix prudents (D-293, D-294, révisables) : blocs de nutrition gardés et marqués « facultatifs, déconseillés » plutôt que retirés (l'import les lit toujours) ; PRD § 27 non modifié.
 
 **qa-test.** Contrôles documentaires (`identity`, `agents`, `docs-paths`, `prd-split`, `healthShortcutsGuide`) et `src/i18n/healthPrivacy.test.ts` : 79 verts. Vérifié : aucune donnée d'Ali (valeurs d'exemple synthétiques ; `105.800000001` et `26.9` sont des formes citées par Ali, pas des mesures datées) ; aucun texte de l'app ne nommait « Pourcentage de graisse corporelle » (grep `src`) ; les quatorze noms de fichiers lus sont inchangés.
 
