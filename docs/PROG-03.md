@@ -47,8 +47,7 @@ Budget : S (≈ 50k) dépassé (≈ 90k, attentes de build et une mutation) ; po
 transaction, aucun changement de synchro, focus et annonce, poignée 44 px, tokens, i18n, aucune dépendance, bundle stable, iPhone inchangé, rouge/vert réels. Constats :
 (1, important) `setData('text/plain', id)` : un dépôt dans un champ texte y insérerait l'UUID (WebView2, `insertFromDrop`), enregistré puis publié ; (2) « {name} déplacé »
 faux au féminin ; (3) ligne 5 de la fiche disait le glisser WebView2 « vérifié par Ali » (D-36) ; (4) aucun test d'un exercice groupé déplacé.
-Corrections : rouge `c678ab61` (5 échecs : type MIME, dépôt absorbé, 4 annonces ; le test du groupe, vert d'emblée, couvre un comportement existant), vert : commit
-« PROG-03 : corrections de la revue 1 » (SHA dans `git log`, consigné au rapport).
+Corrections : rouge `c678ab61` (5 échecs : type MIME, dépôt absorbé, 4 annonces ; le test du groupe, vert d'emblée, couvre un comportement existant), vert `01b3f024`.
 (1) type propre `application/x-spartiate-reorder`, plus jamais `text/plain` ; pendant un glisser interne, l'éditeur absorbe tout dépôt hors cible (`preventDefault`,
 `dropEffect = 'none'`) sans écraser l'effet « move » d'une cible valide (`defaultPrevented`) ; mutation : retrait de cette dernière garde → test 1 rouge, annulée.
 Les assertions « dépôt refusé » de deux tests passent de « pas de preventDefault » à « absorbé, dropEffect none, rien ne change ». (2) annonce « « {name} » : position {n} sur
