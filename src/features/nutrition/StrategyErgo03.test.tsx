@@ -184,3 +184,41 @@ describe('ERGO-03 critère 7 : lignes ≥ 44 pt et très grand texte sans coupur
     expect(rule('.ct-strategy__upcoming')).toContain('overflow-wrap: anywhere');
   });
 });
+
+describe('ERGO-03 qa-test : cas limites', () => {
+  it('objectif de perte : la ligne porte la vitesse (« Perte · 0,25 kg / semaine »)', async () => {
+    open();
+    const r = await region();
+    fireEvent.click(await within(r).findByRole('button', { name: 'Objectif : Maintien' }));
+    fireEvent.click(within(r).getByRole('radio', { name: 'Perte' }));
+    expect(await within(r).findByRole('button', { name: 'Objectif : Perte · 0,25 kg / semaine' })).toBeInTheDocument();
+  });
+
+  it('une seule ligne ouverte à la fois', async () => {
+    open();
+    const r = await region();
+    const style = await within(r).findByRole('button', { name: /^Style du check-in/ });
+    const day = within(r).getByRole('button', { name: /^Jour du check-in/ });
+    fireEvent.click(style);
+    fireEvent.click(day);
+    expect(style).toHaveAttribute('aria-expanded', 'false');
+    expect(day).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('sans cible : la section Jours de repos le dit, sans interrupteur', async () => {
+    open();
+    const r = await region();
+    const section = await within(r).findByRole('region', { name: 'Jours de repos' });
+    expect(within(section).getByText('Fixe d’abord ta cible : la cible des jours de repos part d’elle.')).toBeInTheDocument();
+    expect(within(section).queryByRole('switch')).not.toBeInTheDocument();
+  });
+
+  it('cible future masquée par une décision plus récente (D-82) : ni ligne « À partir du », ni confirmation', async () => {
+    await seed(FUTURE, UPCOMING);
+    await seed(TODAY, CURRENT);
+    open();
+    const r = await region();
+    await within(r).findByText(/En vigueur depuis/);
+    expect(within(r).queryByText(/À partir du/)).not.toBeInTheDocument();
+  });
+});
