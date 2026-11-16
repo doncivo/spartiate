@@ -40,5 +40,5 @@ export const strengthFr = {
   tierGold: 'Or',
   method:
     'Rang centile du 1RM estimé parmi les pratiquants du même sexe et de la même catégorie de poids ; meilleur mouvement de référence de chaque groupe. Paliers : Fer < 25 · Bronze 25–49 · Argent 50–74 · Or ≥ 75. Inchangé en décharge : ses séances n’entrent pas. Les haltères n’ont pas de norme publiée dans la source.',
-  attribution: 'Normes : FitnessVolt Strength Standards ({dataset}, données du {date}), fitnessvolt.com/strength-standards, licence CC BY 4.0.',
+  attribution: 'Normes : FitnessVolt Strength Standards ({dataset}, version des données du {date}), https://fitnessvolt.com/strength-standards/, licence CC BY 4.0.',
 } as const;
