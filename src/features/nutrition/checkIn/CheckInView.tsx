@@ -167,7 +167,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
 
   async function decide(decision: Parameters<typeof recordCheckInDecision>[1]['decision'], lowFloorConfirmed = false): Promise<TargetSaveResult> {
     if (proposal === null || tdee.weightKg === null) return 'error';
-    if (decision.action !== 'refuse' && !(await future.ask(decision.action === 'customize' ? targetKey(decision.target) : 'accept'))) return 'cancelled';
+    if (decision.action !== 'refuse' && !(await future.ask(decision.action === 'customize' ? targetKey(decision.target) : `accept|${targetKey(proposal.target)}`))) return 'cancelled';
     setBusy(true);
     setMessage(null);
     try {
