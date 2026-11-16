@@ -1,0 +1,618 @@
+{
+  "limite": "Délais explicites présents au tag ; leur augmentation historique et leur justification demandent lecture des commits. Les extraits sont plafonnés à 650 caractères. Une condition de plateforme n’est pas une désactivation de commodité.",
+  "files": 873,
+  "markers": [
+    {
+      "fichier": "tests/e2e/I-02.spec.ts",
+      "ligne": 42,
+      "extrait": "test.skip(!isPhone(testInfo), 'Le profil de signature injecté représente l’iPhone.')"
+    },
+    {
+      "fichier": "tests/e2e/I-02.spec.ts",
+      "ligne": 124,
+      "extrait": "test.skip(!isPhone(testInfo), 'Le profil de signature injecté représente l’iPhone.')"
+    },
+    {
+      "fichier": "tests/e2e/I-02.spec.ts",
+      "ligne": 172,
+      "extrait": "test.skip(isPhone(testInfo), 'Comportement du projet pc.')"
+    },
+    {
+      "fichier": "tests/e2e/I-03.spec.ts",
+      "ligne": 41,
+      "extrait": "test.skip(!isPhone(testInfo), 'La biométrie injectée représente l’iPhone.')"
+    },
+    {
+      "fichier": "tests/e2e/I-03.spec.ts",
+      "ligne": 142,
+      "extrait": "test.skip(isPhone(testInfo), 'Projet pc seulement.')"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 106,
+      "extrait": "test.skip(({ isMobile }) => !isMobile, 'La mise à jour par SideStore concerne l’iPhone (projet iphone).')"
+    },
+    {
+      "fichier": "tests/e2e/layoutHelper.spec.ts",
+      "ligne": 12,
+      "extrait": "test.skip(!isPhone(testInfo), 'Mesure à 440 × 956.')"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 43,
+      "extrait": "test.skip(info.project.name !== 'pc', 'lancé une fois, depuis le projet pc')"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 75,
+      "extrait": "test.skip(info.project.name !== 'pc', 'lancé une fois, depuis le projet pc')"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 133,
+      "extrait": "test.skip(info.project.name !== 'pc', 'lancé une fois, depuis le projet pc')"
+    },
+    {
+      "fichier": "tests/e2e/V0-7-1-mise-en-page.spec.ts",
+      "ligne": 12,
+      "extrait": "test.skip(!isPhone(testInfo), 'défauts propres à l’iPhone (440 px)')"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 40,
+      "extrait": "test.skip(info.project.name !== 'iphone', 'iPhone seulement')"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 41,
+      "extrait": "test.skip(info.project.name !== 'iphone', 'iPhone seulement')"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 160,
+      "extrait": "test.skip(info.project.name !== 'pc', 'PC seulement')"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 31,
+      "extrait": "test.skip(info.project.name !== 'iphone', 'iPhone seulement')"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 81,
+      "extrait": "test.skip(info.project.name !== 'iphone', 'iPhone seulement')"
+    }
+  ],
+  "timeouts": [
+    {
+      "fichier": "src/App.test.tsx",
+      "ligne": 37,
+      "extrait": "timeout: 10_000"
+    },
+    {
+      "fichier": "src/db/repositories/sql/taskRepository.done.test.ts",
+      "ligne": 77,
+      "extrait": "it('5 000 tâches terminées : un mois se lit bien sous 300 ms (seuil large : driver Wasm)', async () => {\n    const tasks = buildManyTasks(DAY, 5000);\n    await db.data.repos.tasks.createMany(tasks);\n    await db.driver.execute(\n      \"UPDATE task SET status = 'done', done_at = strftime('%Y-%m-%dT%H:%M:%fZ', '2026-01-01', '+' || (sort_order % 270) || ' days', '+12 hours')\",\n    );\n    const start = performance.now();\n    const done = await db.data.repos.tasks.listDone(donePeriodInstants(donePeriodOf('month', asLocalDate('2026-09-15'))), 'all');\n    const elapsed = performance.now() - start;\n    expect(done.length).toBeGreaterThan(0);\n    expec"
+    },
+    {
+      "fichier": "src/db/repositories/sql/taskRepository.perf.test.ts",
+      "ligne": 25,
+      "extrait": "it('listForDay reste rapide avec 5000 tâches', async () => {\n    const db = await openTestDb(DEVICE);\n    try {\n      await db.data.repos.tasks.createMany(buildManyTasks(DAY, 5000));\n\n      const start = performance.now();\n      const result = await db.data.repos.tasks.listForDay(DAY, 'all');\n      const elapsed = performance.now() - start;\n\n      // eslint-disable-next-line no-console -- mesure relevée à la main pour le rapport de performance (sortie de `npm run test:perf`)\n      console.info(`[perf T-01] listForDay, 5 000 tâches : ${elapsed.toFixed(1)} ms`);\n      expect(result).toHaveLength(5000);\n      expect(elapsed).toBeLessThan(2000);\n"
+    },
+    {
+      "fichier": "src/db/serializedDriver.test.ts",
+      "ligne": 48,
+      "extrait": "setTimeout(resolve, 10)"
+    },
+    {
+      "fichier": "src/features/cardio/CardioGps.test.tsx",
+      "ligne": 189,
+      "extrait": "setTimeout(r, 0)"
+    },
+    {
+      "fichier": "src/features/notifications/supplementActions.test.ts",
+      "ligne": 296,
+      "extrait": "setTimeout(resolve, 0)"
+    },
+    {
+      "fichier": "src/features/notifications/supplementWake.test.ts",
+      "ligne": 68,
+      "extrait": "setTimeout(resolve, 0)"
+    },
+    {
+      "fichier": "src/features/notifications/supplementWake.test.ts",
+      "ligne": 72,
+      "extrait": "setTimeout(resolve, 10)"
+    },
+    {
+      "fichier": "src/features/nutrition/search/OffSearch.test.tsx",
+      "ligne": 255,
+      "extrait": "setTimeout(resolve, 60)"
+    },
+    {
+      "fichier": "src/features/security/appLockScreenFailure.test.tsx",
+      "ligne": 19,
+      "extrait": "setTimeout(resolve, 0)"
+    },
+    {
+      "fichier": "src/features/settings/logs/logsUnavailable.test.tsx",
+      "ligne": 47,
+      "extrait": "timeout: 10_000"
+    },
+    {
+      "fichier": "src/platform/files/iosFiles.test.tsx",
+      "ligne": 71,
+      "extrait": "setTimeout(() => resolve({ completed: false }), 30_000)"
+    },
+    {
+      "fichier": "src/platform/geolocation/geolocation.test.ts",
+      "ligne": 82,
+      "extrait": "timeout: 10_000"
+    },
+    {
+      "fichier": "src/platform/haptics/haptics.test.ts",
+      "ligne": 5,
+      "extrait": "setTimeout(resolve, 0)"
+    },
+    {
+      "fichier": "src/platform/speech/speech.test.ts",
+      "ligne": 36,
+      "extrait": "setTimeout(resolve, 20)"
+    },
+    {
+      "fichier": "src/platform/sync/memory.bounds.test.ts",
+      "ligne": 199,
+      "extrait": "it('snapshot : 256 Mio exactement acceptés, un enregistrement de plus : too-large et rien n’est publié', async () => {\n    const big = 'x'.repeat(MAX_RECORD_PLAINTEXT_BYTES);\n    const line = encryptedLineBytes(MAX_RECORD_PLAINTEXT_BYTES, 1, 14);\n    const header = { f: 'sp-s', sm: 1, kid: await kidOf(a), dev: A, e: E1, n: 1 };\n    const fit = Math.floor((MAX_SNAPSHOT_BYTES - headerBytes(header)) / line);\n    expect(headerBytes(header) + (fit + 1) * line).toBeGreaterThan(MAX_SNAPSHOT_BYTES);\n    expect(await codeOf(a.writeSnapshot({ epoch: E1, seq: 1, sv: 14, records: pages(Array<string>(fit + 1).fill(big)) }))).toBe('too-large');\n    expect("
+    },
+    {
+      "fichier": "src/sync/sync.perf.test.ts",
+      "ligne": 14,
+      "extrait": "it('nouvel appareil de 5 000 tâches en moins de 15 s ; cycle sans changement en moins de 300 ms', async () => {\n    const a = await createSimDevice('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');\n    const b = await createSimDevice('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', { clock: a.clock });\n    devices = [a, b];\n    await setupFirst(a);\n    const model = await a.createTask('Modèle');\n    await a.data.transaction(async (repos) => {\n      for (let i = 0; i < 4_999; i += 1) await repos.tasks.create({ ...model, id: `${String(i).padStart(8, '0')}-2222-4222-8222-aaaaaaaaaaaa` as TaskId, title: `Tâche ${String(i)}` });\n    });\n    await a.cycle();\n    awa"
+    },
+    {
+      "fichier": "tests/e2e/db-open-failure.spec.ts",
+      "ligne": 44,
+      "extrait": "timeout: READY_BUDGET_MS"
+    },
+    {
+      "fichier": "tests/e2e/db-open-failure.spec.ts",
+      "ligne": 56,
+      "extrait": "timeout: READY_BUDGET_MS"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 111,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 114,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 117,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 125,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 158,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 169,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 182,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/lot-f-qa.spec.ts",
+      "ligne": 58,
+      "extrait": "page.waitForTimeout(1500)"
+    },
+    {
+      "fichier": "tests/e2e/P-04.spec.ts",
+      "ligne": 114,
+      "extrait": "timeout: 5000"
+    },
+    {
+      "fichier": "tests/e2e/P-04.spec.ts",
+      "ligne": 124,
+      "extrait": "page.waitForTimeout(1500)"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 44,
+      "extrait": "test.setTimeout(PARCOURS_BUDGET_MS)"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 79,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 106,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 109,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 138,
+      "extrait": "test.setTimeout(CANCEL_BUDGET_MS)"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 166,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 173,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 211,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 36,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 70,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 76,
+      "extrait": "test.setTimeout(PARCOURS_BUDGET_MS)"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 110,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 134,
+      "extrait": "test.setTimeout(PARCOURS_BUDGET_MS)"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 141,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/RESET-01-repartir-de-zero.spec.ts",
+      "ligne": 40,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 41,
+      "extrait": "test.setTimeout(BUDGET_MS)"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 63,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 72,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 75,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 86,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 87,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 93,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 42,
+      "extrait": "test.setTimeout(BUDGET_MS)"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 55,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 64,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 130,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 161,
+      "extrait": "test.setTimeout(BUDGET_MS)"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 169,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 173,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 32,
+      "extrait": "test.setTimeout(BUDGET_MS)"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 50,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 70,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 82,
+      "extrait": "test.setTimeout(BUDGET_MS)"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 99,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 111,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/smoke/pc-demarrage.spec.ts",
+      "ligne": 70,
+      "extrait": "timeout: 120_000"
+    },
+    {
+      "fichier": "tests/smoke/pc-demarrage.spec.ts",
+      "ligne": 100,
+      "extrait": "test.setTimeout(240_000)"
+    },
+    {
+      "fichier": "tests/smoke/pc-demarrage.spec.ts",
+      "ligne": 119,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/smoke/pc-demarrage.spec.ts",
+      "ligne": 133,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/smoke/pc-demarrage.spec.ts",
+      "ligne": 138,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/smoke/pc-demarrage.spec.ts",
+      "ligne": 172,
+      "extrait": "timeout: 15_000"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 101,
+      "extrait": "timeout: timeoutMs"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 131,
+      "extrait": "timeout: TASKKILL_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 157,
+      "extrait": "timeout: CAPTURE_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 170,
+      "extrait": "test.setTimeout(TEST_TIMEOUT_MS)"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 205,
+      "extrait": "timeout: SILENT_INSTALL_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 234,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 247,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 250,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 271,
+      "extrait": "timeout: APP_KILL_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 282,
+      "extrait": "timeout: INSTALL_DIR_GONE_TIMEOUT_MS"
+    },
+    {
+      "fichier": "tests/unit/sync/conflicts/largeQueueResume.test.ts",
+      "ligne": 98,
+      "extrait": "it.each(CRASH_POINTS)('arrêt avant l’écriture n° %i : aucune perte, aucun doublon après redémarrage', async (crashAt) => {\n    const [pc, iphone] = await largeQueue();\n    const probe = armCrash(pc, crashAt);\n    await pc.cycle();\n    expect(probe.crashed).toBe(true);\n    probe.disarm();\n    // Le processus repart (nouvelle instance de l'app sur la même base et le même dossier).\n    await pc.restart();\n    expect((await pc.cycle()).phase).toBe('idle');\n    expect(await pc.data.repos.sync.outboxCount()).toBe(0);\n    expect(await pc.data.repos.sync.getMeta('inflight')).toBeNull();\n    const published = publishedTasks(pc);\n    expect(published.s"
+    },
+    {
+      "fichier": "tests/unit/sync/conflicts/publishFreesDatabase.test.ts",
+      "ligne": 42,
+      "extrait": "it.each([2, 5, 10])('lecture et écriture de l’interface demandées au retour n° %i : abouties avant le retour suivant, écriture publiée au cycle suivant', async (at) => {\n    const [pc, iphone] = await seeded();\n    let tick = 0;\n    let yields = 0;\n    let readDoneAt: number | null = null;\n    let writeDoneAt: number | null = null;\n    vi.spyOn(performance, 'now').mockImplementation(() => (tick += 1));\n    globals.scheduler = {\n      yield: async () => {\n        yields += 1;\n        if (yields === at) {\n          void pc.data.repos.tasks.getById(taskId(7)).then(() => (readDoneAt = yields));\n          void pc.updateTask(taskId(8), { title: 'Éc"
+    },
+    {
+      "fichier": "tests/unit/sync/conflicts/qaPublisherSlices.test.ts",
+      "ligne": 184,
+      "extrait": "it('Y-05 critère 6 : même file lue et mise en forme avec et sans tranches (opérations, entrées, enregistrements)', async () => {\n    const { pc } = await seeded();\n    // Plusieurs hlc par ligne et des suppressions : des groupes de hlc de toutes tailles.\n    for (let i = 0; i < 300; i += 1) {\n      pc.clock.advance(1);\n      await pc.updateTask(taskId(i), { title: `Titre ${String(i)}` });\n    }\n    for (let i = 600; i < 650; i += 1) await pc.deleteTask(taskId(i));\n    const read = (slicer: Parameters<typeof materializeOutbox>[6], limit?: number) => pc.data.transaction((repos) => materializeOutbox(repos, LEGACY_SYNC_CATALOGUE, pc.id, null, lim"
+    },
+    {
+      "fichier": "tests/unit/sync/conflicts/qaPublisherSlices.test.ts",
+      "ligne": 218,
+      "extrait": "it('Y-05 critère 6 : deux appareils identiques, l’un publie en tranches, l’autre non : mêmes opérations dans le même ordre, file vide', async () => {\n    const sliced = await seeded();\n    const slicing = forceSlicing();\n    await sliced.pc.cycle();\n    expect(slicing.yields()).toBeGreaterThan(10);\n    expect(await sliced.pc.data.repos.sync.outboxCount()).toBe(0);\n    const slicedOps = journalOps(sliced.pc);\n    stopSlicing();\n    await Promise.all(devices.map((d) => d.close()));\n\n    const plain = await seeded();\n    const none = noSlicing();\n    await plain.pc.cycle();\n    expect(none.yields()).toBe(0);\n    expect(await plain.pc.data.repos."
+    },
+    {
+      "fichier": "tests/unit/sync/conflicts/qaPublisherSlices.test.ts",
+      "ligne": 239,
+      "extrait": "it.each([1, 2, 3, 4, 8, 16, 24, 32, 40])('Y-05 critère 6 : écritures au retour n° %i à la boucle d’événements : toutes publiées, les deux appareils convergent', async (at) => {\n    const s = await seeded();\n    const writes: Promise<string>[] = [];\n    let fired = false;\n    forceSlicing((n) => {\n      if (n === at) {\n        fired = true;\n        writes.push(...userWrites(s.pc));\n      }\n    });\n    const status = await s.pc.cycle();\n    expect(fired, `moins de ${String(at)} retours à la boucle d’événements`).toBe(true);\n    expect(['idle', 'error']).toContain(status.phase);\n    expect(await Promise.all(writes)).toEqual(['ok', 'ok', 'ok', 'o"
+    },
+    {
+      "fichier": "tests/unit/sync/conflicts/qaPublisherSlices.test.ts",
+      "ligne": 257,
+      "extrait": "it('Y-05 critère 6 : écritures à chaque retour (toutes les phases à la fois) : toutes publiées', async () => {\n    const s = await seeded(1_100);\n    const writes: Promise<string>[] = [];\n    let counter = 0;\n    forceSlicing((n) => {\n      // Une réécriture du même titre à chaque retour : la dernière doit gagner partout.\n      counter = n;\n      writes.push(\n        s.pc.updateTask(taskId(0), { title: `Version ${String(n)}` }).then(\n          () => 'ok',\n          (error: unknown) => String(error),\n        ),\n      );\n    });\n    await s.pc.cycle();\n    expect(counter).toBeGreaterThan(10);\n    expect((await Promise.all(writes)).every((r) => "
+    },
+    {
+      "fichier": "tests/unit/sync/conflicts/qaPublisherSlices.test.ts",
+      "ligne": 281,
+      "extrait": "it.each([1, 2, 3])('Y-05 critère 6 : écritures juste avant l’ajout n° %i : publiées au cycle suivant, aucune perte', async (at) => {\n    const s = await seeded(COUNT, 4_000);\n    const platform = s.pc.platform as unknown as { appendJournal: (...args: unknown[]) => Promise<unknown> };\n    const real = platform.appendJournal.bind(s.pc.platform);\n    let appends = 0;\n    let fired = false;\n    platform.appendJournal = async (...args) => {\n      appends += 1;\n      if (appends === at) {\n        fired = true;\n        expect(await Promise.all(userWrites(s.pc))).toEqual(['ok', 'ok', 'ok', 'ok']);\n      }\n      return real(...args);\n    };\n    const "
+    },
+    {
+      "fichier": "tests/unit/sync/conflicts/qaPublisherSlices.test.ts",
+      "ligne": 304,
+      "extrait": "it('Y-05 critère 6 : la ligne réécrite pendant l’ajout garde son entrée de file (le retrait se fait par numéro)', async () => {\n    const s = await seeded(COUNT, 4_000);\n    const platform = s.pc.platform as unknown as { appendJournal: (...args: unknown[]) => Promise<unknown> };\n    const real = platform.appendJournal.bind(s.pc.platform);\n    let appends = 0;\n    platform.appendJournal = async (...args) => {\n      appends += 1;\n      if (appends === 1) await s.pc.updateTask(taskId(0), { title: 'Réécrite pendant l’ajout' });\n      return real(...args);\n    };\n    await s.pc.cycle();\n    const left = await s.pc.driver.select(\"SELECT field FROM "
+    },
+    {
+      "fichier": "tests/unit/sync/conflicts/qaPublisherSlices.test.ts",
+      "ligne": 323,
+      "extrait": "it.each([1, 2, 3, 4, 8, 16, 24, 32, 40])('Y-05 critère 6 : arrêt au retour n° %i à la boucle d’événements : rien n’est perdu ni publié à moitié ; après redémarrage, chaque tâche une seule fois', async (at) => {\n    const s = await seeded();\n    let fired = false;\n    forceSlicing((n) => {\n      if (n === at) {\n        fired = true;\n        throw new Error('arrêt simulé');\n      }\n    });\n    const status = await s.pc.cycle();\n    expect(fired, `moins de ${String(at)} retours à la boucle d’événements`).toBe(true);\n    // Le cycle n'a pas abouti ; il le dit (jamais « À jour »), et rien n'a quitté la file ni été publié.\n    expect(status.phase)."
+    },
+    {
+      "fichier": "tests/unit/sync/engine.property.test.ts",
+      "ligne": 45,
+      "extrait": "it('convergence et aucune perte, quels que soient l’ordre des recopies, des cycles et des écritures hors ligne', async () => {\n    await fc.assert(\n      fc.asyncProperty(fc.array(stepArb, { minLength: 4, maxLength: 18 }), async (steps) => {\n        const a = await createSimDevice(IDS[0]);\n        const b = await createSimDevice(IDS[1], { clock: a.clock });\n        const devices = [a, b];\n        TASKS_DYNAMIC.length = 0;\n        try {\n          await setupFirst(a);\n          for (const id of TASKS) await a.createTask('Initiale', { id });\n          await a.cycle();\n          await pair(a, b);\n          await b.cycle();\n          syncFolders(d"
+    },
+    {
+      "fichier": "tests/unit/sync/publishRead.test.ts",
+      "ligne": 64,
+      "extrait": "it('file volumineuse (5 000 opérations, note de 200 Kio) : enregistrements de 256 Kio au plus, appels de 1 Mio au plus, segment suivant sur segment-full', async () => {\n    const [a, b] = await twoDevices();\n    const appends: number[] = [];\n    const real = a.platform.appendJournal.bind(a.platform);\n    vi.spyOn(a.platform, 'appendJournal').mockImplementation(async (r) => {\n      appends.push(r.records.reduce((sum, text) => sum + encryptedLineBytes(utf8Bytes(text), SYNC_FORMAT_MAJOR, r.sv), 0));\n      return real(r);\n    });\n    const long = await a.createTask('Longue note', { note: 'x'.repeat(200 * 1024) });\n    await a.data.transaction(asy"
+    },
+    {
+      "fichier": "tests/visual/capture.spec.ts",
+      "ligne": 28,
+      "extrait": "page.waitForTimeout(500)"
+    },
+    {
+      "fichier": "tests/visual/capture.spec.ts",
+      "ligne": 35,
+      "extrait": "page.waitForTimeout(400)"
+    },
+    {
+      "fichier": "tests/visual/capture.spec.ts",
+      "ligne": 224,
+      "extrait": "page.waitForTimeout(400)"
+    },
+    {
+      "fichier": "tests/visual/capture.spec.ts",
+      "ligne": 258,
+      "extrait": "page.waitForTimeout(300)"
+    },
+    {
+      "fichier": "tests/visual/capture.spec.ts",
+      "ligne": 323,
+      "extrait": "page.waitForTimeout(300)"
+    },
+    {
+      "fichier": "scripts/release/backupMigrationsFixture.test.ts",
+      "ligne": 54,
+      "extrait": "it('la fixture des migrations (restauration Rust, I5-01 point 1.1) correspond aux migrations TypeScript réelles', async () => {\n  const expected = await build();\n  if (process.env.UPDATE_BACKUP_MIGRATIONS_FIXTURE === '1') writeFileSync(FIXTURE, expected);\n  expect(readFileSync(FIXTURE, 'utf8').replace(/\\r\\n/g, '\\n'), 'fixture périmée : node scripts/backup/export-migrations-fixture.mjs').toBe(expected);\n}, 120_000)"
+    },
+    {
+      "fichier": "playwright.config.ts",
+      "ligne": 29,
+      "extrait": "timeout: 240_000"
+    },
+    {
+      "fichier": "playwright.config.ts",
+      "ligne": 42,
+      "extrait": "retries: 0"
+    },
+    {
+      "fichier": "playwright.config.ts",
+      "ligne": 58,
+      "extrait": "timeout: 240_000"
+    },
+    {
+      "fichier": "playwright.config.ts",
+      "ligne": 95,
+      "extrait": "timeout: 120_000"
+    },
+    {
+      "fichier": "playwright.config.ts",
+      "ligne": 108,
+      "extrait": "retries: 0"
+    },
+    {
+      "fichier": "playwright.smoke.config.ts",
+      "ligne": 13,
+      "extrait": "retries: 0"
+    },
+    {
+      "fichier": "vitest.bundle.config.ts",
+      "ligne": 12,
+      "extrait": "testTimeout: 600_000"
+    },
+    {
+      "fichier": "vitest.bundle.config.ts",
+      "ligne": 13,
+      "extrait": "hookTimeout: 600_000"
+    },
+    {
+      "fichier": "vitest.config.ts",
+      "ligne": 30,
+      "extrait": "testTimeout: 15_000"
+    }
+  ]
+}

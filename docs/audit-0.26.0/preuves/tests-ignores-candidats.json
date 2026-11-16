@@ -1,0 +1,92 @@
+﻿[
+    {
+        "fichier":  "src/platform/sync/faultPlan.test.ts",
+        "ligne":  205,
+        "extrait":  "it(\u0027les motifs reconnaissent test.skip, it.skipIf, describe.todo, xit et .only(\u0027, () =\u003e {"
+    },
+    {
+        "fichier":  "src/platform/sync/faultPlan.test.ts",
+        "ligne":  207,
+        "extrait":  "for (const sample of [\u0027test.skip(\u0027, \u0027it.skipIf(\u0027, \u0027describe.todo(\u0027, \u0027it.todo(\u0027, \u0027describe.skip(\u0027, \u0027xit(\u0027, \u0027it.only(\u0027]) expect(disabled.test(sample), sample).toBe(true);"
+    },
+    {
+        "fichier":  "tests/e2e/I-02.spec.ts",
+        "ligne":  42,
+        "extrait":  "test.skip(!isPhone(testInfo), \u0027Le profil de signature injecté représente l’iPhone.\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/I-02.spec.ts",
+        "ligne":  124,
+        "extrait":  "test.skip(!isPhone(testInfo), \u0027Le profil de signature injecté représente l’iPhone.\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/I-02.spec.ts",
+        "ligne":  172,
+        "extrait":  "test.skip(isPhone(testInfo), \u0027Comportement du projet pc.\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/I-03.spec.ts",
+        "ligne":  41,
+        "extrait":  "test.skip(!isPhone(testInfo), \u0027La biométrie injectée représente l’iPhone.\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/I-03.spec.ts",
+        "ligne":  142,
+        "extrait":  "test.skip(isPhone(testInfo), \u0027Projet pc seulement.\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/I-06.spec.ts",
+        "ligne":  106,
+        "extrait":  "test.skip(({ isMobile }) =\u003e !isMobile, \u0027La mise à jour par SideStore concerne l’iPhone (projet iphone).\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/V0-7-1-mise-en-page.spec.ts",
+        "ligne":  12,
+        "extrait":  "test.skip(!isPhone(testInfo), \u0027défauts propres à l’iPhone (440 px)\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/Y-IOS-01.spec.ts",
+        "ligne":  40,
+        "extrait":  "test.skip(info.project.name !== \u0027iphone\u0027, \u0027iPhone seulement\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/Y-IOS-02-parcours.spec.ts",
+        "ligne":  41,
+        "extrait":  "test.skip(info.project.name !== \u0027iphone\u0027, \u0027iPhone seulement\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/Y-IOS-02-parcours.spec.ts",
+        "ligne":  160,
+        "extrait":  "test.skip(info.project.name !== \u0027pc\u0027, \u0027PC seulement\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/Y-IOS-02.spec.ts",
+        "ligne":  31,
+        "extrait":  "test.skip(info.project.name !== \u0027iphone\u0027, \u0027iPhone seulement\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/Y-IOS-02.spec.ts",
+        "ligne":  81,
+        "extrait":  "test.skip(info.project.name !== \u0027iphone\u0027, \u0027iPhone seulement\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/layoutHelper.spec.ts",
+        "ligne":  12,
+        "extrait":  "test.skip(!isPhone(testInfo), \u0027Mesure à 440 × 956.\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+        "ligne":  43,
+        "extrait":  "test.skip(info.project.name !== \u0027pc\u0027, \u0027lancé une fois, depuis le projet pc\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+        "ligne":  75,
+        "extrait":  "test.skip(info.project.name !== \u0027pc\u0027, \u0027lancé une fois, depuis le projet pc\u0027);"
+    },
+    {
+        "fichier":  "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+        "ligne":  133,
+        "extrait":  "test.skip(info.project.name !== \u0027pc\u0027, \u0027lancé une fois, depuis le projet pc\u0027);"
+    }
+]

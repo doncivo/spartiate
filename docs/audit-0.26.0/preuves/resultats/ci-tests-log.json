@@ -1,0 +1,15 @@
+﻿{
+    "nom":  "ci-tests-log",
+    "executable":  "gh",
+    "arguments":  [
+                      "run",
+                      "view",
+                      "43801990156",
+                      "--log"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-16T08:16:01.5861041Z",
+    "fin":  "2026-11-16T08:16:20.0876323Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

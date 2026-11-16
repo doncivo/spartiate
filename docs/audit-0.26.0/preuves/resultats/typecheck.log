@@ -1,0 +1,3 @@
+
+> spartiate@0.26.0 typecheck
+> tsc --noEmit

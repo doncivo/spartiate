@@ -1,0 +1,5 @@
+
+> spartiate@0.26.0 validate:content
+> node scripts/content/validate-content.mjs content/
+
+validate-content : OK (196 exercices, 4 programmes, 34 muscles, 76 matériels, 3 profils).

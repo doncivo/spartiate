@@ -1,0 +1,142 @@
+[
+  {
+    "fichier": "bundle.log",
+    "original": "bundle.log.gz",
+    "sha256Original": "0c86ac16108984b61f0a0cc2974f0d1a5515a25a195b527964d42f0043c43c9a"
+  },
+  {
+    "fichier": "cargo-audit-install.log",
+    "original": "cargo-audit-install.log.gz",
+    "sha256Original": "c0816953c9b57257f72a264431bda39f3bb33ece841b2d7e196728af1de88240"
+  },
+  {
+    "fichier": "cargo-audit.log",
+    "original": "cargo-audit.log.gz",
+    "sha256Original": "2060e45959e03d33405d3e3793c370841c1534e53c5796edca61ecce89670826"
+  },
+  {
+    "fichier": "cargo-clippy.log",
+    "original": "cargo-clippy.log.gz",
+    "sha256Original": "db8a24d33f4fcb915f0d1f5e34b64b81177277d7ea1485e74c7fe6bd66c79171"
+  },
+  {
+    "fichier": "cargo-desktop.log",
+    "original": "cargo-desktop.log.gz",
+    "sha256Original": "7e1235288fa592a153d70b9682f4b3b73e0b8f1820a58c721513f5a5795468f4"
+  },
+  {
+    "fichier": "cargo-fmt.log",
+    "original": "cargo-fmt.log.gz",
+    "sha256Original": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "fichier": "cargo-metadata.log",
+    "original": "cargo-metadata.log.gz",
+    "sha256Original": "8f549fd4fb244cf47bb1fbb0f77d081bb1bed92de6827f58720ed7f963021905"
+  },
+  {
+    "fichier": "cargo-rsa-graphe.log",
+    "original": "cargo-rsa-graphe.log.gz",
+    "sha256Original": "317653b3ea2e7a3932bfe8c6455d1a0333f612c1c708956011dedd408ac15a85"
+  },
+  {
+    "fichier": "cargo-sql-dossier-prepare.log",
+    "original": "cargo-sql-dossier-prepare.log.gz",
+    "sha256Original": "3bb21f985a4afab0943b294b8ca3c929b983669f1be4fd63f3777996393c137f"
+  },
+  {
+    "fichier": "cargo-sql.log",
+    "original": "cargo-sql.log.gz",
+    "sha256Original": "5704a5af83bc553190b3d8fba7af97630846097024c27c1420fd1fe64634ac14"
+  },
+  {
+    "fichier": "ci-tests-log.log",
+    "original": "ci-tests-log.log.gz",
+    "sha256Original": "abe2ddb471f1660f4b0ebda22bce40ffbb9224f200333e8d713513cb8d421348"
+  },
+  {
+    "fichier": "gardes-docs-apres-rapport.log",
+    "original": "gardes-docs-apres-rapport.log.gz",
+    "sha256Original": "e476d08673b3676f31a2fd37009abd2db7b5f66c9f273eeac3ec2df82a71f140"
+  },
+  {
+    "fichier": "gardes-docs-publication.log",
+    "original": "gardes-docs-publication.log.gz",
+    "sha256Original": "43b6f0fa610b2f5ab5ad5602e37098aa819e5aa9d3262fa3b4cacf28fa82214e"
+  },
+  {
+    "fichier": "gardes-docs.log",
+    "original": "gardes-docs.log.gz",
+    "sha256Original": "6b64fbad9517cc5a67b1aba905de1b90e681525fd371b85abee64c816ad47d1d"
+  },
+  {
+    "fichier": "i18n-keys.log",
+    "original": "i18n-keys.log.gz",
+    "sha256Original": "3f1d85a14ff880221fcbd797ab8e7927a83d13a5626bcdd662a4382921cae40e"
+  },
+  {
+    "fichier": "lint-publication.log",
+    "original": "lint-publication.log.gz",
+    "sha256Original": "d3ee1c55b15436c3d763ddb14519e55180b9514540c59eb1bd218550084a53e8"
+  },
+  {
+    "fichier": "lint.log",
+    "original": "lint.log.gz",
+    "sha256Original": "dddafb499ff3fd397a5fe88f0a5f881ec8fd904e62b019e468487e6654b9f4ab"
+  },
+  {
+    "fichier": "npm-audit-complet.log",
+    "original": "npm-audit-complet.log.gz",
+    "sha256Original": "be86469ca1d41458071bd2bd5fd6065e3ff452a13e5cbec55e43b04090cd0026"
+  },
+  {
+    "fichier": "npm-audit-prod.log",
+    "original": "npm-audit-prod.log.gz",
+    "sha256Original": "d0c758351100a8eb1048823c78683fa83df45044cece94e4841ab02af8011355"
+  },
+  {
+    "fichier": "npm-ci-lancement-invalide.log",
+    "original": "npm-ci-lancement-invalide.log.gz",
+    "sha256Original": "fa672042c2df97013f076dd8abc05071acccd25e76ae562daf2b1d915b4cfaf4"
+  },
+  {
+    "fichier": "npm-ci.log",
+    "original": "npm-ci.log.gz",
+    "sha256Original": "e323e60704a483b2817654abdbbc277076bb38e16143a650736484782b080814"
+  },
+  {
+    "fichier": "partie0-rouges-exec.log",
+    "original": "partie0-rouges-exec.log.gz",
+    "sha256Original": "4f121ff5b2c71ceff29941265ed4eb289ca394f16dbfb7291c7a67df94092434"
+  },
+  {
+    "fichier": "partie0-rouges.log",
+    "original": "partie0-rouges.log.gz",
+    "sha256Original": "0dc34f9919bf168119e0309d8cdb91bc47bb93c8f304107fbaa450f988ae6fe8"
+  },
+  {
+    "fichier": "reachability.log",
+    "original": "reachability.log.gz",
+    "sha256Original": "ef738b035383882cf3ebee2ea1cfc55f95540c8964b450819692f49efe59af6c"
+  },
+  {
+    "fichier": "symbols.log",
+    "original": "symbols.log.gz",
+    "sha256Original": "c6721e5475d053a63f62b131bba5ddae41ccd05b5a2f09c4dbc5c602f6604972"
+  },
+  {
+    "fichier": "typecheck.log",
+    "original": "typecheck.log.gz",
+    "sha256Original": "7d66dd3ed7aa6c724b840db40aafccea87981f400065ba8dfab3f2fe574d2610"
+  },
+  {
+    "fichier": "unitaires.log",
+    "original": "unitaires.log.gz",
+    "sha256Original": "0e32c7ddbda9c621401246468338a98c96107bceb7289eec30951261fcac853f"
+  },
+  {
+    "fichier": "validate-content.log",
+    "original": "validate-content.log.gz",
+    "sha256Original": "2b134421403a9456a092b311446ea3a1e14a8a9765dd3cfa2c90026481f323b0"
+  }
+]

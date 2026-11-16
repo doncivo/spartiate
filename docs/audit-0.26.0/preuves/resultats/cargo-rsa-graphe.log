@@ -1,0 +1,10 @@
+cargo.exe : warning: nothing to print.
+Au caractère C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\executer.ps1:29 : 3
++   & $Executable @Arguments > $journal 2>&1
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: nothing to print.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+To find dependencies that require specific target platforms, try to use option `--target all` first, and then narrow
+your search scope accordingly.

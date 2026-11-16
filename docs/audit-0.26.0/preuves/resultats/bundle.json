@@ -1,0 +1,13 @@
+﻿{
+    "nom":  "bundle",
+    "executable":  "npm.cmd",
+    "arguments":  [
+                      "run",
+                      "test:bundle"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-16T10:01:13.6011803Z",
+    "fin":  "2026-11-16T10:06:11.7892014Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

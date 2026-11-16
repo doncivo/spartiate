@@ -1,0 +1,13 @@
+﻿{
+    "nom":  "npm-audit-complet",
+    "executable":  "npm.cmd",
+    "arguments":  [
+                      "audit",
+                      "--json"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-16T08:16:14.9637959Z",
+    "fin":  "2026-11-16T08:16:28.4249800Z",
+    "code":  1,
+    "etat":  "Ã©chec"
+}

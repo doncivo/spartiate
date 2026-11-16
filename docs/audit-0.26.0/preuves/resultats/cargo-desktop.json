@@ -1,0 +1,17 @@
+﻿{
+    "nom":  "cargo-desktop",
+    "executable":  "cargo.exe",
+    "arguments":  [
+                      "test",
+                      "--locked",
+                      "--features",
+                      "test-hooks",
+                      "--test",
+                      "desktop"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut":  "2026-11-16T10:29:29.2188214Z",
+    "fin":  "2026-11-16T10:49:07.1616983Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

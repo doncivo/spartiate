@@ -1,0 +1,22 @@
+﻿{
+    "nom":  "gardes-docs-publication",
+    "executable":  "npx.cmd",
+    "arguments":  [
+                      "vitest",
+                      "run",
+                      "--coverage.enabled=false",
+                      "--maxWorkers=1",
+                      "--project",
+                      "node",
+                      "scripts/release/identity.test.ts",
+                      "scripts/release/agents.test.ts",
+                      "scripts/release/docs-paths.test.ts",
+                      "scripts/release/prd-split.test.ts",
+                      "scripts/release/rename.test.ts"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-16T18:43:01.9774217Z",
+    "fin":  "2026-11-16T18:43:08.1896159Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

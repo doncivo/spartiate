@@ -1,0 +1,17 @@
+﻿{
+    "nom":  "cargo-sql-dossier-prepare",
+    "executable":  "cargo.exe",
+    "arguments":  [
+                      "test",
+                      "--locked",
+                      "-p",
+                      "tauri-plugin-sql",
+                      "--features",
+                      "sqlite"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut":  "2026-11-16T18:34:38.2181311Z",
+    "fin":  "2026-11-16T18:35:15.2721614Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

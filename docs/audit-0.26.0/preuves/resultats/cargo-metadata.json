@@ -1,0 +1,15 @@
+﻿{
+    "nom":  "cargo-metadata",
+    "executable":  "cargo.exe",
+    "arguments":  [
+                      "metadata",
+                      "--locked",
+                      "--format-version",
+                      "1"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0/preuves\\.runtime\\source\\src-tauri",
+    "debut":  "2026-11-16T18:35:39.7922107Z",
+    "fin":  "2026-11-16T18:36:33.2712185Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

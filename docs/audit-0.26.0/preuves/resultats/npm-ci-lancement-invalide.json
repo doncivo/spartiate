@@ -1,0 +1,10 @@
+﻿{
+    "nom":  "npm-ci",
+    "executable":  "npm.cmd",
+    "arguments":  null,
+    "dossier":  "ci",
+    "debut":  "2026-11-16T07:49:50.3685611Z",
+    "fin":  "2026-11-16T07:49:51.5473476Z",
+    "code":  1,
+    "etat":  "Ã©chec"
+}

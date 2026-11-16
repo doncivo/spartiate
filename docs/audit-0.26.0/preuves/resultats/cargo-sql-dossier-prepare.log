@@ -1,0 +1,333 @@
+cargo.exe : warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use
+`StringLiteral` instead; raw bytes are not recommended
+Au caractère C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\executer.ps1:29 : 3
++   & $Executable @Arguments > $journal 2>&1
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: use of...not recommended:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+   --> vendor\sqlx-sqlite\src\types\time.rs:192:67
+    |
+192 |     use time::format_description::BorrowedFormatItem::{Component, Literal, Optional};
+    |                                                                   ^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated tuple variant `time::format_description::Component::Year`: use one of the various `Year*`
+components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:195:52
+    |
+195 |     const YEAR: BorrowedFormatItem<'_> = Component(Year({
+    |                                                    ^^^^
+
+warning: use of deprecated struct `time::format_description::modifier::Year`: use one of the various `Year*`
+components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:196:35
+    |
+196 |         let mut value = modifier::Year::default();
+    |                                   ^^^^
+
+warning: use of deprecated unit variant `time::format_description::modifier::YearRepr::Full`: used only in the
+deprecated `Year` component
+   --> vendor\sqlx-sqlite\src\types\time.rs:198:42
+    |
+198 |         value.repr = modifier::YearRepr::Full;
+    |                                          ^^^^
+
+warning: use of deprecated tuple variant `time::format_description::Component::Month`: use `MonthShort`, `MonthLong`,
+or `MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:204:53
+    |
+204 |     const MONTH: BorrowedFormatItem<'_> = Component(Month({
+    |                                                     ^^^^^
+
+warning: use of deprecated struct `time::format_description::modifier::Month`: use `MonthShort`, `MonthLong`, or
+`MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:205:35
+    |
+205 |         let mut value = modifier::Month::default();
+    |                                   ^^^^^
+
+warning: use of deprecated unit variant `time::format_description::modifier::MonthRepr::Numerical`: used only in the
+deprecated `Month` component
+   --> vendor\sqlx-sqlite\src\types\time.rs:207:43
+    |
+207 |         value.repr = modifier::MonthRepr::Numerical;
+    |                                           ^^^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::Component::Hour`: use `Hour12` or `Hour24` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:218:52
+    |
+218 |     const HOUR: BorrowedFormatItem<'_> = Component(Hour({
+    |                                                    ^^^^
+
+warning: use of deprecated struct `time::format_description::modifier::Hour`: use `Hour12` or `Hour24` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:219:35
+    |
+219 |         let mut value = modifier::Hour::default();
+    |                                   ^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:259:13
+    |
+259 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:261:13
+    |
+261 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:263:23
+    |
+263 |             Optional(&Literal(b" ")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:264:23
+    |
+264 |             Optional(&Literal(b"T")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:266:13
+    |
+266 |             Literal(b":"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:268:23
+    |
+268 |             Optional(&Literal(b":")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:270:23
+    |
+270 |             Optional(&Literal(b".")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:273:23
+    |
+273 |             Optional(&Literal(b":")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:281:13
+    |
+281 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:283:13
+    |
+283 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:285:13
+    |
+285 |             Literal(b" "),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:287:13
+    |
+287 |             Literal(b":"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:289:23
+    |
+289 |             Optional(&Literal(b":")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:291:23
+    |
+291 |             Optional(&Literal(b".")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:293:23
+    |
+293 |             Optional(&Literal(b"Z")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:300:13
+    |
+300 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:302:13
+    |
+302 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:304:13
+    |
+304 |             Literal(b"T"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:306:13
+    |
+306 |             Literal(b":"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:308:23
+    |
+308 |             Optional(&Literal(b":")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:310:23
+    |
+310 |             Optional(&Literal(b".")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:312:23
+    |
+312 |             Optional(&Literal(b"Z")),
+    |                       ^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Year::padding`: use one of the various `Year*`
+components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:197:9
+    |
+197 |         value.padding = modifier::Padding::Zero;
+    |         ^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Year::repr`: use one of the various `Year*`
+components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:198:9
+    |
+198 |         value.repr = modifier::YearRepr::Full;
+    |         ^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Year::iso_week_based`: use one of the various
+`Year*` components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:199:9
+    |
+199 |         value.iso_week_based = false;
+    |         ^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Year::sign_is_mandatory`: use one of the various
+`Year*` components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:200:9
+    |
+200 |         value.sign_is_mandatory = false;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Month::padding`: use `MonthShort`, `MonthLong`,
+or `MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:206:9
+    |
+206 |         value.padding = modifier::Padding::Zero;
+    |         ^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Month::repr`: use `MonthShort`, `MonthLong`, or
+`MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:207:9
+    |
+207 |         value.repr = modifier::MonthRepr::Numerical;
+    |         ^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Month::case_sensitive`: use `MonthShort`,
+`MonthLong`, or `MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:208:9
+    |
+208 |         value.case_sensitive = true;
+    |         ^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Hour::padding`: use `Hour12` or `Hour24` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:220:9
+    |
+220 |         value.padding = modifier::Padding::Zero;
+    |         ^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Hour::is_12_hour_clock`: use `Hour12` or
+`Hour24` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:221:9
+    |
+221 |         value.is_12_hour_clock = false;
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `sqlx-sqlite` (lib) generated 40 warnings
+warning: `sqlx-sqlite` (lib) generated 40 warnings (40 duplicates)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.88s
+     Running unittests src\lib.rs (C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\cargo-target\debug\deps\ta
+uri_plugin_sql-dea62001d21871ea.exe)
+
+running 30 tests
+test guard_tests::sec01_1_the_only_accepted_url_is_spartiate_db ... ok
+test guard_tests::sec01_2_every_other_url_is_refused_with_the_url_code ... ok
+test guard_tests::sec01_3_load_with_an_absolute_path_or_dotdot_refuses_and_creates_nothing ... ok
+test guard_tests::sec01_3_a_second_load_closes_the_previous_pool ... ok
+test guard_tests::sec01_3_load_of_the_legitimate_url_creates_the_database_in_the_app_dir ... ok
+test guard_tests::sec01_4_execute_refuses_every_form_of_attach_and_creates_no_file ... ok
+test guard_tests::sec01_10_fts5_tables_and_triggers_are_still_created ... ok
+test guard_tests::sec01_10_the_statements_the_front_really_sends_still_pass ... ok
+test guard_tests::sec01_7_lexical_filter_cases ... ok
+test guard_tests::sec01_11_alter_table_forms_that_run_internal_pragmas_pass ... ok
+test guard_tests::sec01_5_select_refuses_attach_too ... ok
+test guard_tests::sec01_6_detach_is_refused ... ok
+test guard_tests::sec01_4_attaching_an_existing_foreign_database_is_refused_and_not_written ... ok
+test guard_tests::sec01_8_pragma_white_list_cases ... ok
+test guard_tests::sec01_8_the_single_white_list_matches_the_decisions ... ok
+test guard_tests::sec01_6_the_attached_database_limit_is_zero_independently_of_the_authorizer ... ok
+test guard_tests::sec01_9_authorizer_decisions_for_functions_and_virtual_tables ... ok
+test guard_tests::sec01_6_the_limit_alone_blocks_attach_and_vacuum_into ... ok
+test guard_tests::sec01_7_vacuum_in_any_form_is_refused_by_execute_and_select ... ok
+test guard_tests::sec01_7_the_word_in_a_literal_a_comment_or_an_identifier_is_not_refused ... ok
+test guard_tests::sec01_8_pragma_table_functions_are_refused_like_pragmas ... ok
+test guard_tests::sec01_9_dangerous_functions_and_virtual_tables_are_refused ... ok
+test wrapper::tests::dep01_engine_is_at_least_sqlite_3_54_0 ... ok
+test guard_tests::sec01_9_schema_objects_carrying_a_refused_construct_are_refused_at_creation ... ok
+test guard_tests::sec01_9_the_connection_is_defensive_and_the_schema_is_not_trusted ... ok
+test guard_tests::sec01_9_a_stale_refusal_reason_never_survives_the_next_call ... ok
+test wrapper::tests::pool_has_one_connection_in_wal_mode ... ok
+test guard_tests::sec01_8_every_pragma_outside_the_white_list_is_refused_and_changes_nothing ... ok
+test guard_tests::sec01_11_every_statement_the_front_sends_passes_the_closed_plugin ... ok
+test wrapper::tests::sequential_transactions_never_lock_themselves ... ok
+
+test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.12s
+
+   Doc-tests tauri_plugin_sql
+
+running 1 test
+test vendor\tauri-plugin-sql\src\lib.rs - Builder::build (line 194) ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+all doctests ran in 6.89s; merged doctests compilation took 6.71s

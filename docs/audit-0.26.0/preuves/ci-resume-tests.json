@@ -1,0 +1,214 @@
+[
+  {
+    "ligneJournal": 614,
+    "texte": "e2e pc (1/4)\tUNKNOWN STEP\t2026-11-16T04:06:55.2194538Z   12 skipped"
+  },
+  {
+    "ligneJournal": 615,
+    "texte": "e2e pc (1/4)\tUNKNOWN STEP\t2026-11-16T04:06:55.2194755Z   8 passed (14.8s)"
+  },
+  {
+    "ligneJournal": 1562,
+    "texte": "Vitest node (5/5)\tUNKNOWN STEP\t2026-11-16T04:07:54.4384552Z Statements   : 37.61% ( 13723/36487 )"
+  },
+  {
+    "ligneJournal": 1563,
+    "texte": "Vitest node (5/5)\tUNKNOWN STEP\t2026-11-16T04:07:54.4384936Z Branches     : 33.41% ( 9938/29741 )"
+  },
+  {
+    "ligneJournal": 1564,
+    "texte": "Vitest node (5/5)\tUNKNOWN STEP\t2026-11-16T04:07:54.4385470Z Functions    : 31.5% ( 2859/9074 )"
+  },
+  {
+    "ligneJournal": 1565,
+    "texte": "Vitest node (5/5)\tUNKNOWN STEP\t2026-11-16T04:07:54.4385916Z Lines        : 40.22% ( 11649/28963 )"
+  },
+  {
+    "ligneJournal": 2043,
+    "texte": "Captures app et maquettes\tUNKNOWN STEP\t2026-11-16T04:09:54.7524868Z   64 passed (3.1m)"
+  },
+  {
+    "ligneJournal": 6182,
+    "texte": "Vitest node (1/5)\tUNKNOWN STEP\t2026-11-16T04:07:49.6087188Z Statements   : 41.8% ( 15255/36487 )"
+  },
+  {
+    "ligneJournal": 6183,
+    "texte": "Vitest node (1/5)\tUNKNOWN STEP\t2026-11-16T04:07:49.6087570Z Branches     : 36.76% ( 10935/29741 )"
+  },
+  {
+    "ligneJournal": 6184,
+    "texte": "Vitest node (1/5)\tUNKNOWN STEP\t2026-11-16T04:07:49.6088695Z Functions    : 35.72% ( 3242/9074 )"
+  },
+  {
+    "ligneJournal": 6185,
+    "texte": "Vitest node (1/5)\tUNKNOWN STEP\t2026-11-16T04:07:49.6089067Z Lines        : 43.74% ( 12671/28963 )"
+  },
+  {
+    "ligneJournal": 6693,
+    "texte": "e2e pc (4/4)\tUNKNOWN STEP\t2026-11-16T04:07:26.2773242Z   8 skipped"
+  },
+  {
+    "ligneJournal": 6694,
+    "texte": "e2e pc (4/4)\tUNKNOWN STEP\t2026-11-16T04:07:26.2773569Z   11 passed (35.1s)"
+  },
+  {
+    "ligneJournal": 7282,
+    "texte": "Vitest dom (3/3)\tUNKNOWN STEP\t2026-11-16T04:08:17.6193400Z Statements   : 41.44% ( 15122/36487 )"
+  },
+  {
+    "ligneJournal": 7283,
+    "texte": "Vitest dom (3/3)\tUNKNOWN STEP\t2026-11-16T04:08:17.6223334Z Branches     : 33.57% ( 9985/29741 )"
+  },
+  {
+    "ligneJournal": 7284,
+    "texte": "Vitest dom (3/3)\tUNKNOWN STEP\t2026-11-16T04:08:17.6253269Z Functions    : 43% ( 3902/9074 )"
+  },
+  {
+    "ligneJournal": 7285,
+    "texte": "Vitest dom (3/3)\tUNKNOWN STEP\t2026-11-16T04:08:17.6253860Z Lines        : 45.02% ( 13040/28963 )"
+  },
+  {
+    "ligneJournal": 7793,
+    "texte": "e2e iphone (4/4)\tUNKNOWN STEP\t2026-11-16T04:08:03.7272974Z   4 skipped"
+  },
+  {
+    "ligneJournal": 7794,
+    "texte": "e2e iphone (4/4)\tUNKNOWN STEP\t2026-11-16T04:08:03.7273444Z   15 passed (45.2s)"
+  },
+  {
+    "ligneJournal": 8367,
+    "texte": "Vitest node (3/5)\tUNKNOWN STEP\t2026-11-16T04:07:28.9562836Z Statements   : 40.13% ( 14644/36487 )"
+  },
+  {
+    "ligneJournal": 8368,
+    "texte": "Vitest node (3/5)\tUNKNOWN STEP\t2026-11-16T04:07:28.9563241Z Branches     : 34.52% ( 10268/29741 )"
+  },
+  {
+    "ligneJournal": 8369,
+    "texte": "Vitest node (3/5)\tUNKNOWN STEP\t2026-11-16T04:07:28.9563511Z Functions    : 33.57% ( 3047/9074 )"
+  },
+  {
+    "ligneJournal": 8370,
+    "texte": "Vitest node (3/5)\tUNKNOWN STEP\t2026-11-16T04:07:28.9563753Z Lines        : 42.42% ( 12287/28963 )"
+  },
+  {
+    "ligneJournal": 9044,
+    "texte": "Vitest dom (1/3)\tUNKNOWN STEP\t2026-11-16T04:08:03.5469151Z Statements   : 39.18% ( 14298/36487 )"
+  },
+  {
+    "ligneJournal": 9045,
+    "texte": "Vitest dom (1/3)\tUNKNOWN STEP\t2026-11-16T04:08:03.5469597Z Branches     : 31.42% ( 9346/29741 )"
+  },
+  {
+    "ligneJournal": 9046,
+    "texte": "Vitest dom (1/3)\tUNKNOWN STEP\t2026-11-16T04:08:03.5470004Z Functions    : 40.05% ( 3635/9074 )"
+  },
+  {
+    "ligneJournal": 9047,
+    "texte": "Vitest dom (1/3)\tUNKNOWN STEP\t2026-11-16T04:08:03.5470430Z Lines        : 42.67% ( 12360/28963 )"
+  },
+  {
+    "ligneJournal": 9778,
+    "texte": "Vitest node (2/5)\tUNKNOWN STEP\t2026-11-16T04:07:38.5416973Z Statements   : 38.28% ( 13968/36487 )"
+  },
+  {
+    "ligneJournal": 9779,
+    "texte": "Vitest node (2/5)\tUNKNOWN STEP\t2026-11-16T04:07:38.5417707Z Branches     : 33.69% ( 10020/29741 )"
+  },
+  {
+    "ligneJournal": 9780,
+    "texte": "Vitest node (2/5)\tUNKNOWN STEP\t2026-11-16T04:07:38.5418091Z Functions    : 31.59% ( 2867/9074 )"
+  },
+  {
+    "ligneJournal": 9781,
+    "texte": "Vitest node (2/5)\tUNKNOWN STEP\t2026-11-16T04:07:38.5418470Z Lines        : 40.21% ( 11648/28963 )"
+  },
+  {
+    "ligneJournal": 10299,
+    "texte": "Vitest dom (2/3)\tUNKNOWN STEP\t2026-11-16T04:08:07.4910840Z Statements   : 45.93% ( 16759/36487 )"
+  },
+  {
+    "ligneJournal": 10300,
+    "texte": "Vitest dom (2/3)\tUNKNOWN STEP\t2026-11-16T04:08:07.4911273Z Branches     : 35.76% ( 10638/29741 )"
+  },
+  {
+    "ligneJournal": 10301,
+    "texte": "Vitest dom (2/3)\tUNKNOWN STEP\t2026-11-16T04:08:07.4911656Z Functions    : 45.06% ( 4089/9074 )"
+  },
+  {
+    "ligneJournal": 10302,
+    "texte": "Vitest dom (2/3)\tUNKNOWN STEP\t2026-11-16T04:08:07.4911999Z Lines        : 50.07% ( 14503/28963 )"
+  },
+  {
+    "ligneJournal": 12314,
+    "texte": "smoke Windows (binaire réel)\tUNKNOWN STEP\t2026-11-16T04:12:13.9634706Z   2 passed (28.0s)"
+  },
+  {
+    "ligneJournal": 12821,
+    "texte": "e2e pc (3/4)\tUNKNOWN STEP\t2026-11-16T04:07:34.3260853Z   19 passed (36.9s)"
+  },
+  {
+    "ligneJournal": 13303,
+    "texte": "e2e pc (2/4)\tUNKNOWN STEP\t2026-11-16T04:07:32.7323423Z   7 skipped"
+  },
+  {
+    "ligneJournal": 13304,
+    "texte": "e2e pc (2/4)\tUNKNOWN STEP\t2026-11-16T04:07:32.7323785Z   12 passed (21.1s)"
+  },
+  {
+    "ligneJournal": 13791,
+    "texte": "e2e iphone (1/4)\tUNKNOWN STEP\t2026-11-16T04:07:43.1715159Z   2 skipped"
+  },
+  {
+    "ligneJournal": 13792,
+    "texte": "e2e iphone (1/4)\tUNKNOWN STEP\t2026-11-16T04:07:43.1715567Z   18 passed (37.8s)"
+  },
+  {
+    "ligneJournal": 15140,
+    "texte": "e2e iphone-webkit\tUNKNOWN STEP\t2026-11-16T04:07:23.8554331Z   3 passed (10.8s)"
+  },
+  {
+    "ligneJournal": 15968,
+    "texte": "Vitest node (4/5)\tUNKNOWN STEP\t2026-11-16T04:08:17.9573951Z Statements   : 63.03% ( 13922/22086 )"
+  },
+  {
+    "ligneJournal": 15969,
+    "texte": "Vitest node (4/5)\tUNKNOWN STEP\t2026-11-16T04:08:17.9574250Z Branches     : 53.92% ( 9501/17618 )"
+  },
+  {
+    "ligneJournal": 15970,
+    "texte": "Vitest node (4/5)\tUNKNOWN STEP\t2026-11-16T04:08:17.9574614Z Functions    : 60.4% ( 2988/4947 )"
+  },
+  {
+    "ligneJournal": 15971,
+    "texte": "Vitest node (4/5)\tUNKNOWN STEP\t2026-11-16T04:08:17.9575012Z Lines        : 67.9% ( 11790/17363 )"
+  },
+  {
+    "ligneJournal": 16446,
+    "texte": "e2e iphone (2/4)\tUNKNOWN STEP\t2026-11-16T04:07:58.3878859Z   19 passed (40.6s)"
+  },
+  {
+    "ligneJournal": 16903,
+    "texte": "Performance et bundle\tUNKNOWN STEP\t2026-11-16T04:08:17.4712557Z   2 passed (8.9s)"
+  },
+  {
+    "ligneJournal": 17554,
+    "texte": "e2e iphone (3/4)\tUNKNOWN STEP\t2026-11-16T04:08:38.4224215Z   19 passed (31.8s)"
+  },
+  {
+    "ligneJournal": 20904,
+    "texte": "Couverture fusionnée\tUNKNOWN STEP\t2026-11-16T04:08:47.1703296Z Statements   : 92.06% ( 33593/36487 )"
+  },
+  {
+    "ligneJournal": 20905,
+    "texte": "Couverture fusionnée\tUNKNOWN STEP\t2026-11-16T04:08:47.1703723Z Branches     : 86.44% ( 25709/29741 )"
+  },
+  {
+    "ligneJournal": 20906,
+    "texte": "Couverture fusionnée\tUNKNOWN STEP\t2026-11-16T04:08:47.1704021Z Functions    : 91.27% ( 8282/9074 )"
+  },
+  {
+    "ligneJournal": 20907,
+    "texte": "Couverture fusionnée\tUNKNOWN STEP\t2026-11-16T04:08:47.1704323Z Lines        : 94.16% ( 27273/28963 )"
+  }
+]

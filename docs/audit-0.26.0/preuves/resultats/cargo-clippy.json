@@ -1,0 +1,16 @@
+﻿{
+    "nom":  "cargo-clippy",
+    "executable":  "cargo.exe",
+    "arguments":  [
+                      "clippy",
+                      "--locked",
+                      "--",
+                      "-D",
+                      "warnings"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut":  "2026-11-16T10:06:33.9431291Z",
+    "fin":  "2026-11-16T10:29:29.1556665Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

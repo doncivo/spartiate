@@ -1,0 +1,19 @@
+﻿{
+    "nom":  "unitaires",
+    "executable":  "npm.cmd",
+    "arguments":  [
+                      "run",
+                      "test",
+                      "--",
+                      "--maxWorkers=1",
+                      "--coverage.reportsDirectory=docs/audit-0.26.0/preuves/.runtime/coverage",
+                      "--reporter=default",
+                      "--reporter=json",
+                      "--outputFile.json=docs/audit-0.26.0/preuves/.runtime/unitaires.json"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-16T08:17:06.6964450Z",
+    "fin":  "2026-11-16T10:01:13.4091542Z",
+    "code":  1,
+    "etat":  "Ã©chec"
+}

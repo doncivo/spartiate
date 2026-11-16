@@ -1,0 +1,14 @@
+﻿{
+    "nom":  "symbols",
+    "executable":  "node.exe",
+    "arguments":  [
+                      "scripts/cleanup/symbols.mjs",
+                      "--json",
+                      "docs/audit-0.26.0/preuves/symbols.json"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-16T08:16:34.2456687Z",
+    "fin":  "2026-11-16T08:16:44.2236466Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

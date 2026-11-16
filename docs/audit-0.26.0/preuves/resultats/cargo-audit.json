@@ -1,0 +1,13 @@
+﻿{
+    "nom":  "cargo-audit",
+    "executable":  "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\outils\\bin\\cargo-audit.exe",
+    "arguments":  [
+                      "audit",
+                      "--json"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut":  "2026-11-16T11:20:01.3666576Z",
+    "fin":  "2026-11-16T11:20:19.7967428Z",
+    "code":  1,
+    "etat":  "Ã©chec"
+}

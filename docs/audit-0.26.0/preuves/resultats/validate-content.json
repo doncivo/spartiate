@@ -1,0 +1,13 @@
+﻿{
+    "nom":  "validate-content",
+    "executable":  "npm.cmd",
+    "arguments":  [
+                      "run",
+                      "validate:content"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-16T08:16:28.4725999Z",
+    "fin":  "2026-11-16T08:16:30.3802363Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

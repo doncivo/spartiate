@@ -1,0 +1,24 @@
+{"cles":1714,"mortes":644}
+events: 118
+tasks: 91
+reminders: 89
+scan: 88
+importCsv: 76
+capture: 56
+detail: 34
+routines: 33
+shortcuts: 20
+undo: 13
+notifications: 8
+settings: 7
+shortcutsUi: 4
+appearance: 2
+app: 1
+common: 1
+sync: 1
+status: 1
+backup: 1
+--- groupes entièrement morts
+reminders: 89
+notifications: 8
+scan: 88

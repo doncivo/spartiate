@@ -1,0 +1,16 @@
+﻿{
+    "nom":  "lint",
+    "executable":  "npm.cmd",
+    "arguments":  [
+                      "run",
+                      "lint",
+                      "--",
+                      "--ignore-pattern",
+                      "docs/audit-0.26.0/**"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-16T08:14:48.0092122Z",
+    "fin":  "2026-11-16T08:16:10.2363103Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

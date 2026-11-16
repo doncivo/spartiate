@@ -1,0 +1,16 @@
+[
+  { "fichier": "scripts/cleanup/i18nKeys.mjs", "partie": 0, "preuve": "Catalogue fr.ts seul ; heuristique de chaînes et préfixes, limites documentées partie-00." },
+  { "fichier": "scripts/cleanup/reachability.mjs", "partie": 0, "preuve": "Racines main/pairing, imports relatifs et glob ; résultats candidats, aucun retrait automatique." },
+  { "fichier": "src/i18n/index.ts", "partie": 0, "preuve": "Résolution des chemins, interpolation, repli clé ; complément AST et typecheck." },
+  { "fichier": "src/i18n/trainingText.ts", "partie": 0, "preuve": "Wrapper de catalogue et formateurs lus ; validation numérique approfondie réservée partie 4." },
+  { "fichier": "src/i18n/plusText.ts", "partie": 0, "preuve": "Catalogue local fr, faux positif initial du scanner éliminé par résolution des bindings." },
+  { "fichier": "src/i18n/settingsRefonteText.ts", "partie": 0, "preuve": "Catalogue local fr et interpolation ; pas un alias du catalogue racine." },
+  { "fichier": "src/i18n/syncRefonteText.ts", "partie": 0, "preuve": "Catalogue local fr et interpolation ; sémantique des conflits à confronter partie 3." },
+  { "fichier": "src/i18n/syncRescue.ts", "partie": 0, "preuve": "Catalogue local, commentaire anglais obsolète ; contrat reprise à confronter partie 3." },
+  { "fichier": "src/ui/Sheet.css", "partie": 0, "preuve": "Couleur de fond hors tokens A-002 ; états, safe area et hauteur lus." },
+  { "fichier": "src/ui/ConfirmDialog.css", "partie": 0, "preuve": "Voile hors tokens A-002 ; contraintes de largeur, safe area et débordement lues." },
+  { "fichier": "src/domain/clock.ts", "partie": 1, "preuve": "Source système injectable, règles nowIso/todayLocal/nowLocalTime reçoivent Clock ; pas de hasard métier trouvé." },
+  { "fichier": "src/domain/id.ts", "partie": 1, "preuve": "Générateur injectable RandomBytes, bits UUIDv4 et copie défensive lus ; source crypto isolée dans la fabrique." },
+  { "fichier": "src/features/settings/theme.ts", "partie": 1, "preuve": "Import dynamique Tauri hors façade à consigner ; exceptions ignorées explicitement pour barre de titre facultative." },
+  { "fichier": "src/platform/tauri/migrationBackup.ts", "partie": 1, "preuve": "PRAGMA checkpoint, busy=0 exigé, invocation backup et propagation d'erreur ; analyse des sauvegardes réservée partie 2." }
+]

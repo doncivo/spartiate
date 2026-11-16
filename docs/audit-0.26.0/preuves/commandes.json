@@ -1,0 +1,433 @@
+[
+  {
+    "nom": "bundle",
+    "executable": "npm.cmd",
+    "arguments": [
+      "run",
+      "test:bundle"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T10:01:13.6011803Z",
+    "fin": "2026-11-16T10:06:11.7892014Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "cargo-audit-install",
+    "executable": "cargo.exe",
+    "arguments": [
+      "install",
+      "cargo-audit",
+      "--locked",
+      "--root",
+      "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\outils"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut": "2026-11-16T10:55:17.2388264Z",
+    "fin": "2026-11-16T11:20:01.3351935Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "cargo-audit",
+    "executable": "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\outils\\bin\\cargo-audit.exe",
+    "arguments": [
+      "audit",
+      "--json"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut": "2026-11-16T11:20:01.3666576Z",
+    "fin": "2026-11-16T11:20:19.7967428Z",
+    "code": 1,
+    "etat": "Ã©chec"
+  },
+  {
+    "nom": "cargo-clippy",
+    "executable": "cargo.exe",
+    "arguments": [
+      "clippy",
+      "--locked",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut": "2026-11-16T10:06:33.9431291Z",
+    "fin": "2026-11-16T10:29:29.1556665Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "cargo-desktop",
+    "executable": "cargo.exe",
+    "arguments": [
+      "test",
+      "--locked",
+      "--features",
+      "test-hooks",
+      "--test",
+      "desktop"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut": "2026-11-16T10:29:29.2188214Z",
+    "fin": "2026-11-16T10:49:07.1616983Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "cargo-fmt",
+    "executable": "cargo.exe",
+    "arguments": [
+      "fmt",
+      "--check"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut": "2026-11-16T10:06:22.1268415Z",
+    "fin": "2026-11-16T10:06:33.8627645Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "cargo-metadata",
+    "executable": "cargo.exe",
+    "arguments": [
+      "metadata",
+      "--locked",
+      "--format-version",
+      "1"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0/preuves\\.runtime\\source\\src-tauri",
+    "debut": "2026-11-16T18:35:39.7922107Z",
+    "fin": "2026-11-16T18:36:33.2712185Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "cargo-rsa-graphe",
+    "executable": "cargo.exe",
+    "arguments": [
+      "tree",
+      "--locked",
+      "-i",
+      "rsa",
+      "--target",
+      "all",
+      "-e",
+      "normal,build"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut": "2026-11-16T18:38:18.2012994Z",
+    "fin": "2026-11-16T18:38:19.5290763Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "cargo-sql-dossier-prepare",
+    "executable": "cargo.exe",
+    "arguments": [
+      "test",
+      "--locked",
+      "-p",
+      "tauri-plugin-sql",
+      "--features",
+      "sqlite"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut": "2026-11-16T18:34:38.2181311Z",
+    "fin": "2026-11-16T18:35:15.2721614Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "cargo-sql",
+    "executable": "cargo.exe",
+    "arguments": [
+      "test",
+      "--locked",
+      "-p",
+      "tauri-plugin-sql",
+      "--features",
+      "sqlite"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut": "2026-11-16T10:49:07.2487563Z",
+    "fin": "2026-11-16T10:55:17.1879160Z",
+    "code": 101,
+    "etat": "Ã©chec"
+  },
+  {
+    "nom": "ci-tests-log",
+    "executable": "gh",
+    "arguments": [
+      "run",
+      "view",
+      "43801990156",
+      "--log"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T08:16:01.5861041Z",
+    "fin": "2026-11-16T08:16:20.0876323Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "gardes-docs-apres-rapport",
+    "executable": "npx.cmd",
+    "arguments": [
+      "vitest",
+      "run",
+      "--coverage.enabled=false",
+      "--maxWorkers=1",
+      "--project",
+      "node",
+      "scripts/release/identity.test.ts",
+      "scripts/release/agents.test.ts",
+      "scripts/release/docs-paths.test.ts",
+      "scripts/release/prd-split.test.ts",
+      "scripts/release/rename.test.ts"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T18:41:05.0314574Z",
+    "fin": "2026-11-16T18:41:14.4934517Z",
+    "code": 1,
+    "etat": "Ã©chec"
+  },
+  {
+    "nom": "gardes-docs-publication",
+    "executable": "npx.cmd",
+    "arguments": [
+      "vitest",
+      "run",
+      "--coverage.enabled=false",
+      "--maxWorkers=1",
+      "--project",
+      "node",
+      "scripts/release/identity.test.ts",
+      "scripts/release/agents.test.ts",
+      "scripts/release/docs-paths.test.ts",
+      "scripts/release/prd-split.test.ts",
+      "scripts/release/rename.test.ts"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T18:43:01.9774217Z",
+    "fin": "2026-11-16T18:43:08.1896159Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "gardes-docs",
+    "executable": "npx.cmd",
+    "arguments": [
+      "vitest",
+      "run",
+      "--coverage.enabled=false",
+      "--maxWorkers=1",
+      "--project",
+      "node",
+      "scripts/release/identity.test.ts",
+      "scripts/release/agents.test.ts",
+      "scripts/release/docs-paths.test.ts",
+      "scripts/release/prd-split.test.ts",
+      "scripts/release/rename.test.ts"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T08:16:53.7085181Z",
+    "fin": "2026-11-16T08:17:06.6228729Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "i18n-keys",
+    "executable": "node.exe",
+    "arguments": [
+      "scripts/cleanup/i18nKeys.mjs",
+      "--json",
+      "docs/audit-0.26.0/preuves/i18n-keys.json"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T08:16:44.2612597Z",
+    "fin": "2026-11-16T08:16:53.6163626Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "lint-publication",
+    "executable": "npm.cmd",
+    "arguments": [
+      "run",
+      "lint",
+      "--",
+      "--ignore-pattern",
+      "docs/audit-0.26.0/preuves/.runtime/**"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T18:43:31.4269290Z",
+    "fin": "2026-11-16T18:44:16.3558080Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "lint",
+    "executable": "npm.cmd",
+    "arguments": [
+      "run",
+      "lint",
+      "--",
+      "--ignore-pattern",
+      "docs/audit-0.26.0/**"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T08:14:48.0092122Z",
+    "fin": "2026-11-16T08:16:10.2363103Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "npm-audit-complet",
+    "executable": "npm.cmd",
+    "arguments": [
+      "audit",
+      "--json"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T08:16:14.9637959Z",
+    "fin": "2026-11-16T08:16:28.4249800Z",
+    "code": 1,
+    "etat": "Ã©chec"
+  },
+  {
+    "nom": "npm-audit-prod",
+    "executable": "npm.cmd",
+    "arguments": [
+      "audit",
+      "--omit=dev",
+      "--json"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T08:16:10.3454090Z",
+    "fin": "2026-11-16T08:16:14.9073890Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "npm-ci",
+    "executable": "npm.cmd",
+    "arguments": null,
+    "dossier": "ci",
+    "debut": "2026-11-16T07:49:50.3685611Z",
+    "fin": "2026-11-16T07:49:51.5473476Z",
+    "code": 1,
+    "etat": "Ã©chec"
+  },
+  {
+    "nom": "npm-ci",
+    "executable": "npm.cmd",
+    "arguments": [
+      "ci"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T07:52:53.7672225Z",
+    "fin": "2026-11-16T07:54:45.1404125Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "partie0-rouges-exec",
+    "executable": "node.exe",
+    "arguments": [
+      "--test",
+      "docs/audit-0.26.0/preuves/partie0-rouges.test.mjs"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T08:34:20.0821622Z",
+    "fin": "2026-11-16T08:34:20.5244243Z",
+    "code": 1,
+    "etat": "Ã©chec"
+  },
+  {
+    "nom": "partie0-rouges",
+    "executable": "node.exe",
+    "arguments": [
+      "--test",
+      "docs/audit-0.26.0/preuves/partie0-rouges.test.mjs"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T08:33:56.7946838Z",
+    "fin": "2026-11-16T08:33:57.7148365Z",
+    "code": 1,
+    "etat": "Ã©chec"
+  },
+  {
+    "nom": "reachability",
+    "executable": "node.exe",
+    "arguments": [
+      "scripts/cleanup/reachability.mjs",
+      "--json",
+      "docs/audit-0.26.0/preuves/reachability.json"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T08:16:30.4241560Z",
+    "fin": "2026-11-16T08:16:34.2173381Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "symbols",
+    "executable": "node.exe",
+    "arguments": [
+      "scripts/cleanup/symbols.mjs",
+      "--json",
+      "docs/audit-0.26.0/preuves/symbols.json"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T08:16:34.2456687Z",
+    "fin": "2026-11-16T08:16:44.2236466Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "typecheck",
+    "executable": "npm.cmd",
+    "arguments": [
+      "run",
+      "typecheck"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T08:05:51.9703695Z",
+    "fin": "2026-11-16T08:07:52.2821986Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  },
+  {
+    "nom": "unitaires",
+    "executable": "npm.cmd",
+    "arguments": [
+      "run",
+      "test",
+      "--",
+      "--maxWorkers=1",
+      "--coverage.reportsDirectory=docs/audit-0.26.0/preuves/.runtime/coverage",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile.json=docs/audit-0.26.0/preuves/.runtime/unitaires.json"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T08:17:06.6964450Z",
+    "fin": "2026-11-16T10:01:13.4091542Z",
+    "code": 1,
+    "etat": "Ã©chec"
+  },
+  {
+    "nom": "validate-content",
+    "executable": "npm.cmd",
+    "arguments": [
+      "run",
+      "validate:content"
+    ],
+    "dossier": "C:\\Dev\\spartiate-codex",
+    "debut": "2026-11-16T08:16:28.4725999Z",
+    "fin": "2026-11-16T08:16:30.3802363Z",
+    "code": 0,
+    "etat": "rÃ©ussi"
+  }
+]

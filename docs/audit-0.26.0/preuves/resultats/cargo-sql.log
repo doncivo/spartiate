@@ -1,0 +1,562 @@
+cargo.exe :    Compiling smallvec v1.16.2
+Au caractère C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\executer.ps1:29 : 3
++   & $Executable @Arguments > $journal 2>&1
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (   Compiling smallvec v1.16.2:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+   Compiling parking_lot_core v0.9.12
+   Compiling parking_lot v0.12.5
+   Compiling hashbrown v0.17.1
+   Compiling cc v1.5.1
+   Compiling icu_normalizer v2.3.0
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling uuid v1.26.1
+   Compiling windows-sys v0.61.2
+   Compiling url v2.5.8
+   Compiling indexmap v2.14.2
+   Compiling string_cache v0.9.0
+   Compiling web_atoms v0.2.6
+   Compiling cssparser v0.37.0
+   Compiling markup5ever v0.39.0
+   Compiling selectors v0.38.0
+   Compiling num-traits v0.2.19
+   Compiling html5ever v0.39.0
+   Compiling cfb v0.14.0
+   Compiling futures-sink v0.3.34
+   Compiling libc v0.2.189
+   Compiling schemars v0.8.22
+   Compiling dom_query v0.28.0
+   Compiling cargo_metadata v0.19.2
+   Compiling infer v0.22.0
+   Compiling plist v1.10.1
+   Compiling urlpattern v0.6.0
+   Compiling vswhom-sys v0.1.3
+   Compiling tauri-utils v2.10.1
+   Compiling windows-result v0.4.1
+   Compiling futures-util v0.3.34
+   Compiling crc32fast v1.5.2
+   Compiling windows-core v0.62.2
+   Compiling vswhom v0.1.0
+   Compiling futures-intrusive v0.5.0
+   Compiling embed-resource v3.0.11
+   Compiling flate2 v1.1.10
+   Compiling libsqlite3-sys v0.39.1
+   Compiling mio v1.2.3
+   Compiling socket2 v0.6.5
+   Compiling tokio v1.53.1
+   Compiling windows-future v0.3.2
+   Compiling flume v0.11.1
+   Compiling tauri-winres v0.3.6
+   Compiling rust_decimal v1.43.0
+   Compiling windows-collections v0.3.2
+   Compiling windows-numerics v0.3.1
+   Compiling futures-executor v0.3.34
+   Compiling atoi v2.0.0
+   Compiling futures-channel v0.3.34
+   Compiling cargo_toml v1.0.1
+   Compiling winapi-util v0.1.11
+   Compiling png v0.17.16
+   Compiling sqlx-core v0.8.6
+   Compiling same-file v1.0.6
+   Compiling digest v0.10.7
+   Compiling tauri-build v2.7.1
+   Compiling windows v0.62.2
+   Compiling ico v0.5.0
+   Compiling sqlx-sqlite v0.8.6
+(C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\source\src-tauri\vendor\sqlx-sqlite)
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:192:67
+    |
+192 |     use time::format_description::BorrowedFormatItem::{Component, Literal, Optional};
+    |                                                                   ^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated tuple variant `time::format_description::Component::Year`: use one of the various `Year*`
+components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:195:52
+    |
+195 |     const YEAR: BorrowedFormatItem<'_> = Component(Year({
+    |                                                    ^^^^
+
+warning: use of deprecated struct `time::format_description::modifier::Year`: use one of the various `Year*`
+components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:196:35
+    |
+196 |         let mut value = modifier::Year::default();
+    |                                   ^^^^
+
+warning: use of deprecated unit variant `time::format_description::modifier::YearRepr::Full`: used only in the
+deprecated `Year` component
+   --> vendor\sqlx-sqlite\src\types\time.rs:198:42
+    |
+198 |         value.repr = modifier::YearRepr::Full;
+    |                                          ^^^^
+
+warning: use of deprecated tuple variant `time::format_description::Component::Month`: use `MonthShort`, `MonthLong`,
+or `MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:204:53
+    |
+204 |     const MONTH: BorrowedFormatItem<'_> = Component(Month({
+    |                                                     ^^^^^
+
+warning: use of deprecated struct `time::format_description::modifier::Month`: use `MonthShort`, `MonthLong`, or
+`MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:205:35
+    |
+205 |         let mut value = modifier::Month::default();
+    |                                   ^^^^^
+
+warning: use of deprecated unit variant `time::format_description::modifier::MonthRepr::Numerical`: used only in the
+deprecated `Month` component
+   --> vendor\sqlx-sqlite\src\types\time.rs:207:43
+    |
+207 |         value.repr = modifier::MonthRepr::Numerical;
+    |                                           ^^^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::Component::Hour`: use `Hour12` or `Hour24` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:218:52
+    |
+218 |     const HOUR: BorrowedFormatItem<'_> = Component(Hour({
+    |                                                    ^^^^
+
+warning: use of deprecated struct `time::format_description::modifier::Hour`: use `Hour12` or `Hour24` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:219:35
+    |
+219 |         let mut value = modifier::Hour::default();
+    |                                   ^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:259:13
+    |
+259 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:261:13
+    |
+261 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:263:23
+    |
+263 |             Optional(&Literal(b" ")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:264:23
+    |
+264 |             Optional(&Literal(b"T")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:266:13
+    |
+266 |             Literal(b":"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:268:23
+    |
+268 |             Optional(&Literal(b":")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:270:23
+    |
+270 |             Optional(&Literal(b".")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:273:23
+    |
+273 |             Optional(&Literal(b":")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:281:13
+    |
+281 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:283:13
+    |
+283 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:285:13
+    |
+285 |             Literal(b" "),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:287:13
+    |
+287 |             Literal(b":"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:289:23
+    |
+289 |             Optional(&Literal(b":")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:291:23
+    |
+291 |             Optional(&Literal(b".")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:293:23
+    |
+293 |             Optional(&Literal(b"Z")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:300:13
+    |
+300 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:302:13
+    |
+302 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:304:13
+    |
+304 |             Literal(b"T"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:306:13
+    |
+306 |             Literal(b":"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:308:23
+    |
+308 |             Optional(&Literal(b":")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:310:23
+    |
+310 |             Optional(&Literal(b".")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:312:23
+    |
+312 |             Optional(&Literal(b"Z")),
+    |                       ^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Year::padding`: use one of the various `Year*`
+components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:197:9
+    |
+197 |         value.padding = modifier::Padding::Zero;
+    |         ^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Year::repr`: use one of the various `Year*`
+components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:198:9
+    |
+198 |         value.repr = modifier::YearRepr::Full;
+    |         ^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Year::iso_week_based`: use one of the various
+`Year*` components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:199:9
+    |
+199 |         value.iso_week_based = false;
+    |         ^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Year::sign_is_mandatory`: use one of the various
+`Year*` components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:200:9
+    |
+200 |         value.sign_is_mandatory = false;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Month::padding`: use `MonthShort`, `MonthLong`,
+or `MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:206:9
+    |
+206 |         value.padding = modifier::Padding::Zero;
+    |         ^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Month::repr`: use `MonthShort`, `MonthLong`, or
+`MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:207:9
+    |
+207 |         value.repr = modifier::MonthRepr::Numerical;
+    |         ^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Month::case_sensitive`: use `MonthShort`,
+`MonthLong`, or `MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:208:9
+    |
+208 |         value.case_sensitive = true;
+    |         ^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Hour::padding`: use `Hour12` or `Hour24` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:220:9
+    |
+220 |         value.padding = modifier::Padding::Zero;
+    |         ^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Hour::is_12_hour_clock`: use `Hour12` or
+`Hour24` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:221:9
+    |
+221 |         value.is_12_hour_clock = false;
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `sqlx-sqlite` (lib) generated 40 warnings
+   Compiling webview2-com-sys v0.39.1
+   Compiling tauri v2.12.1
+   Compiling sha2 v0.10.9
+   Compiling walkdir v2.5.0
+   Compiling tokio-stream v0.1.19
+   Compiling png v0.18.1
+   Compiling base64 v0.22.1
+   Compiling semver v1.0.28
+   Compiling getrandom v0.3.4
+   Compiling muda v0.20.0
+   Compiling sqlx-macros-core v0.8.6
+   Compiling webview2-com v0.39.1
+   Compiling tauri-codegen v2.7.1
+   Compiling dirs-sys v0.5.0
+   Compiling tauri-plugin v2.7.1
+   Compiling window-vibrancy v0.8.1
+   Compiling tauri-plugin-sql v2.5.0
+(C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\source\src-tauri\vendor\tauri-plugin-sql)
+   Compiling dirs v7.0.0
+warning: `sqlx-sqlite` (lib) generated 40 warnings (40 duplicates)
+   Compiling tauri-runtime v2.12.1
+   Compiling tauri-macros v2.7.1
+   Compiling sqlx-macros v0.8.6
+   Compiling sqlx v0.8.6
+   Compiling tempfile v3.27.0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6m 08s
+     Running unittests src\lib.rs (C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\cargo-target\debug\deps\ta
+uri_plugin_sql-dea62001d21871ea.exe)
+
+running 30 tests
+test guard_tests::sec01_1_the_only_accepted_url_is_spartiate_db ... ok
+test guard_tests::sec01_2_every_other_url_is_refused_with_the_url_code ... ok
+test guard_tests::sec01_3_a_second_load_closes_the_previous_pool ... FAILED
+test guard_tests::sec01_10_the_statements_the_front_really_sends_still_pass ... FAILED
+test guard_tests::sec01_3_load_of_the_legitimate_url_creates_the_database_in_the_app_dir ... FAILED
+test guard_tests::sec01_10_fts5_tables_and_triggers_are_still_created ... FAILED
+test guard_tests::sec01_3_load_with_an_absolute_path_or_dotdot_refuses_and_creates_nothing ... FAILED
+test guard_tests::sec01_4_attaching_an_existing_foreign_database_is_refused_and_not_written ... FAILED
+test guard_tests::sec01_11_alter_table_forms_that_run_internal_pragmas_pass ... FAILED
+test guard_tests::sec01_7_lexical_filter_cases ... ok
+test guard_tests::sec01_6_detach_is_refused ... FAILED
+test guard_tests::sec01_6_the_attached_database_limit_is_zero_independently_of_the_authorizer ... FAILED
+test guard_tests::sec01_6_the_limit_alone_blocks_attach_and_vacuum_into ... FAILED
+test guard_tests::sec01_4_execute_refuses_every_form_of_attach_and_creates_no_file ... FAILED
+test guard_tests::sec01_5_select_refuses_attach_too ... FAILED
+test guard_tests::sec01_7_the_word_in_a_literal_a_comment_or_an_identifier_is_not_refused ... FAILED
+test guard_tests::sec01_8_pragma_white_list_cases ... ok
+test guard_tests::sec01_8_the_single_white_list_matches_the_decisions ... ok
+test guard_tests::sec01_7_vacuum_in_any_form_is_refused_by_execute_and_select ... FAILED
+test guard_tests::sec01_8_every_pragma_outside_the_white_list_is_refused_and_changes_nothing ... FAILED
+test guard_tests::sec01_9_authorizer_decisions_for_functions_and_virtual_tables ... ok
+test guard_tests::sec01_8_pragma_table_functions_are_refused_like_pragmas ... FAILED
+test guard_tests::sec01_9_a_stale_refusal_reason_never_survives_the_next_call ... FAILED
+test guard_tests::sec01_9_dangerous_functions_and_virtual_tables_are_refused ... FAILED
+test guard_tests::sec01_11_every_statement_the_front_sends_passes_the_closed_plugin ... FAILED
+test wrapper::tests::dep01_engine_is_at_least_sqlite_3_54_0 ... FAILED
+test wrapper::tests::pool_has_one_connection_in_wal_mode ... FAILED
+test guard_tests::sec01_9_schema_objects_carrying_a_refused_construct_are_refused_at_creation ... FAILED
+test guard_tests::sec01_9_the_connection_is_defensive_and_the_schema_is_not_trusted ... FAILED
+test wrapper::tests::sequential_transactions_never_lock_themselves ... FAILED
+
+failures:
+
+---- guard_tests::sec01_3_a_second_load_closes_the_previous_pool stdout ----
+
+thread 'guard_tests::sec01_3_a_second_load_closes_the_previous_pool' (15168) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-reload-bLiw5x", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_10_the_statements_the_front_really_sends_still_pass stdout ----
+
+thread 'guard_tests::sec01_10_the_statements_the_front_really_sends_still_pass' (19668) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-front-ZePltB", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_3_load_of_the_legitimate_url_creates_the_database_in_the_app_dir stdout ----
+
+thread 'guard_tests::sec01_3_load_of_the_legitimate_url_creates_the_database_in_the_app_dir' (29520) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-load-ok-qoAGvu", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- guard_tests::sec01_10_fts5_tables_and_triggers_are_still_created stdout ----
+
+thread 'guard_tests::sec01_10_fts5_tables_and_triggers_are_still_created' (23776) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-fts5-MGAHTH", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_3_load_with_an_absolute_path_or_dotdot_refuses_and_creates_nothing stdout ----
+
+thread 'guard_tests::sec01_3_load_with_an_absolute_path_or_dotdot_refuses_and_creates_nothing' (31388) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-load-x9Gupw", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_4_attaching_an_existing_foreign_database_is_refused_and_not_written stdout ----
+
+thread 'guard_tests::sec01_4_attaching_an_existing_foreign_database_is_refused_and_not_written' (20816) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-attach-existing-aQ4lVf", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_11_alter_table_forms_that_run_internal_pragmas_pass stdout ----
+
+thread 'guard_tests::sec01_11_alter_table_forms_that_run_internal_pragmas_pass' (23400) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-alter-9TUvKM", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_6_detach_is_refused stdout ----
+
+thread 'guard_tests::sec01_6_detach_is_refused' (21184) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-detach-IgQwL4", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_6_the_attached_database_limit_is_zero_independently_of_the_authorizer stdout ----
+
+thread 'guard_tests::sec01_6_the_attached_database_limit_is_zero_independently_of_the_authorizer' (14344) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-limit-WukfZe", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_6_the_limit_alone_blocks_attach_and_vacuum_into stdout ----
+
+thread 'guard_tests::sec01_6_the_limit_alone_blocks_attach_and_vacuum_into' (30972) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-limit-alone-A4mAjR", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_4_execute_refuses_every_form_of_attach_and_creates_no_file stdout ----
+
+thread 'guard_tests::sec01_4_execute_refuses_every_form_of_attach_and_creates_no_file' (21276) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-attach-n4lkQt", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_5_select_refuses_attach_too stdout ----
+
+thread 'guard_tests::sec01_5_select_refuses_attach_too' (14860) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-attach-sel-K2Q5wD", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_7_the_word_in_a_literal_a_comment_or_an_identifier_is_not_refused stdout ----
+
+thread 'guard_tests::sec01_7_the_word_in_a_literal_a_comment_or_an_identifier_is_not_refused' (15680) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-vacuum-ok-1HMcq7", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_7_vacuum_in_any_form_is_refused_by_execute_and_select stdout ----
+
+thread 'guard_tests::sec01_7_vacuum_in_any_form_is_refused_by_execute_and_select' (12056) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-vacuum-JenyyC", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_8_every_pragma_outside_the_white_list_is_refused_and_changes_nothing stdout ----
+
+thread 'guard_tests::sec01_8_every_pragma_outside_the_white_list_is_refused_and_changes_nothing' (10420) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-pragma-WGb19i", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_8_pragma_table_functions_are_refused_like_pragmas stdout ----
+
+thread 'guard_tests::sec01_8_pragma_table_functions_are_refused_like_pragmas' (26452) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-pragma-fn-FNqRdT", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_9_a_stale_refusal_reason_never_survives_the_next_call stdout ----
+
+thread 'guard_tests::sec01_9_a_stale_refusal_reason_never_survives_the_next_call' (30892) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-stale-QFxiBQ", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_9_dangerous_functions_and_virtual_tables_are_refused stdout ----
+
+thread 'guard_tests::sec01_9_dangerous_functions_and_virtual_tables_are_refused' (28744) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-function-LBwbUN", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_11_every_statement_the_front_sends_passes_the_closed_plugin stdout ----
+
+thread 'guard_tests::sec01_11_every_statement_the_front_sends_passes_the_closed_plugin' (16096) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-front-sql-AjBmEd", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- wrapper::tests::dep01_engine_is_at_least_sqlite_3_54_0 stdout ----
+
+thread 'wrapper::tests::dep01_engine_is_at_least_sqlite_3_54_0' (18156) panicked at vendor\tauri-plugin-sql\src\wrapper.rs:466:14:
+called `Result::unwrap()` on an `Err` value: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-version-fAgrtF", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- wrapper::tests::pool_has_one_connection_in_wal_mode stdout ----
+
+thread 'wrapper::tests::pool_has_one_connection_in_wal_mode' (4424) panicked at vendor\tauri-plugin-sql\src\wrapper.rs:446:14:
+called `Result::unwrap()` on an `Err` value: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-wal-Gl2cOX", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_9_schema_objects_carrying_a_refused_construct_are_refused_at_creation stdout ----
+
+thread 'guard_tests::sec01_9_schema_objects_carrying_a_refused_construct_are_refused_at_creation' (21348) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-schema-ugYBIi", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- guard_tests::sec01_9_the_connection_is_defensive_and_the_schema_is_not_trusted stdout ----
+
+thread 'guard_tests::sec01_9_the_connection_is_defensive_and_the_schema_is_not_trusted' (31052) panicked at vendor\tauri-plugin-sql\src\guard_tests.rs:19:10:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-dbconfig-7RaZ4Y", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+---- wrapper::tests::sequential_transactions_never_lock_themselves stdout ----
+
+thread 'wrapper::tests::sequential_transactions_never_lock_themselves' (31676) panicked at vendor\tauri-plugin-sql\src\wrapper.rs:488:14:
+dossier de test dans target/: Custom { kind: NotFound, error: PathError { path: "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri\\vendor\\tauri-plugin-sql/../../target\\db-lock-9WYz7y", err: Os { code: 3, kind: NotFound, message: "Le chemin d’accès spécifié est introuvable." } } }
+
+
+failures:
+    guard_tests::sec01_10_fts5_tables_and_triggers_are_still_created
+    guard_tests::sec01_10_the_statements_the_front_really_sends_still_pass
+    guard_tests::sec01_11_alter_table_forms_that_run_internal_pragmas_pass
+    guard_tests::sec01_11_every_statement_the_front_sends_passes_the_closed_plugin
+    guard_tests::sec01_3_a_second_load_closes_the_previous_pool
+    guard_tests::sec01_3_load_of_the_legitimate_url_creates_the_database_in_the_app_dir
+    guard_tests::sec01_3_load_with_an_absolute_path_or_dotdot_refuses_and_creates_nothing
+    guard_tests::sec01_4_attaching_an_existing_foreign_database_is_refused_and_not_written
+    guard_tests::sec01_4_execute_refuses_every_form_of_attach_and_creates_no_file
+    guard_tests::sec01_5_select_refuses_attach_too
+    guard_tests::sec01_6_detach_is_refused
+    guard_tests::sec01_6_the_attached_database_limit_is_zero_independently_of_the_authorizer
+    guard_tests::sec01_6_the_limit_alone_blocks_attach_and_vacuum_into
+    guard_tests::sec01_7_the_word_in_a_literal_a_comment_or_an_identifier_is_not_refused
+    guard_tests::sec01_7_vacuum_in_any_form_is_refused_by_execute_and_select
+    guard_tests::sec01_8_every_pragma_outside_the_white_list_is_refused_and_changes_nothing
+    guard_tests::sec01_8_pragma_table_functions_are_refused_like_pragmas
+    guard_tests::sec01_9_a_stale_refusal_reason_never_survives_the_next_call
+    guard_tests::sec01_9_dangerous_functions_and_virtual_tables_are_refused
+    guard_tests::sec01_9_schema_objects_carrying_a_refused_construct_are_refused_at_creation
+    guard_tests::sec01_9_the_connection_is_defensive_and_the_schema_is_not_trusted
+    wrapper::tests::dep01_engine_is_at_least_sqlite_3_54_0
+    wrapper::tests::pool_has_one_connection_in_wal_mode
+    wrapper::tests::sequential_transactions_never_lock_themselves
+
+test result: FAILED. 6 passed; 24 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p tauri-plugin-sql --lib`

@@ -1,0 +1,19 @@
+﻿{
+    "nom":  "cargo-rsa-graphe",
+    "executable":  "cargo.exe",
+    "arguments":  [
+                      "tree",
+                      "--locked",
+                      "-i",
+                      "rsa",
+                      "--target",
+                      "all",
+                      "-e",
+                      "normal,build"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut":  "2026-11-16T18:38:18.2012994Z",
+    "fin":  "2026-11-16T18:38:19.5290763Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}
