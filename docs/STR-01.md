@@ -74,3 +74,5 @@ de décharge ; mention de la source lisible.
 | 4 | Lien d'attribution demandé, texte non cliquable | Adresse complète écrite en clair (CC BY 4.0 § 3(a)(2)), noté dans licences.md |
 | 5 | Date incohérente (affichée 09/06, docs 05/06) | Corrigé : « version des données du 09/06/2026 » (`data_version`), population du 05/06 ; rouge `2b16ee6a`, vert `532e5180` |
 | 6 | Test d'écran retouché dans le commit vert (ordre alphabétique) | Consigné, rien d'affaibli |
+
+Revue 2 (à froid) : **approuvé** ; corrections 1, 4 et 5 vérifiées, fusions de main sans perte (D-300 à D-305, section MEDIA-02 de licences.md intactes) ; constat 2 laissé à Ali (reprise, « À décider par Ali »).
