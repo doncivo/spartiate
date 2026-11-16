@@ -11,8 +11,11 @@ Ce guide contient trois parties :
 - **Partie A — pesées** (raccourci « Spartiate — poids ») : fonctionne aujourd’hui.
 - **Partie B — récupération** (raccourci « Spartiate — récupération ») : le raccourci est décrit ici ; Spartiate lit ses fichiers
   tout seul (voir la section B.4).
-- **Partie C — corps et nutrition** (balance Renpho via Santé, raccourci « Spartiate — corps et nutrition », dix fichiers, I6-04) : poids, masse grasse,
-  masse maigre, tour de taille, taille, énergie, protéines, glucides, lipides et fibres du jour ; lus tout seuls comme ceux de la partie B.
+- **Partie C — corps** (balance Renpho via Santé, raccourci « Spartiate — corps et nutrition », I6-04) : poids, masse grasse,
+  masse maigre, tour de taille et taille ; lus tout seuls comme ceux de la partie B. **La nutrition se saisit dans Spartiate** (décision d’Ali
+  du 15/11, D-293) : les blocs de nutrition (énergie, macros, fibres) sont facultatifs et déconseillés.
+- **Lancement** : une seule automatisation, « Lorsque Spartiate est ouverte », lance les deux raccourcis (section B.3). Les automatisations
+  à heure fixe ne sont plus conseillées : iPhone verrouillé, Santé refuse la lecture et le raccourci échoue.
 
 Durée : 5 minutes pour la partie A, 15 minutes pour la partie B, 20 minutes pour la partie C, une seule fois.
 
@@ -48,14 +51,15 @@ l’ordre (barre de recherche « Rechercher des actions ») :
 Touche ▶︎ une fois : Raccourcis demande l’accès à Santé (Poids) → **Autoriser**. Le fichier `iCloud Drive › Spartiate › sante ›
 poids.csv` apparaît dans l’app Fichiers.
 
-Exemple de contenu : `2026-11-08T06:50:12+01:00;81,4;kg`
+Exemple de contenu : `2026-11-08T06:50:12+01:00;81.4;kg` (Raccourcis écrit la décimale au **point** ; une espace avant le `;` et une valeur
+comme `105.800000001` sont acceptées, la valeur est arrondie ; constat du 14/11, H-21)
 
 Dans `iCloud Drive › Spartiate`, seul le sous-dossier `sante` est pour ces raccourcis. Ne touche à rien d’autre : le dossier `devices` et son contenu appartiennent à la synchro.
 
-### A.2 Le lancer chaque matin (facultatif)
+### A.2 Le lancer (facultatif)
 
-Raccourcis → onglet **Automatisation** → **+** → **Heure de la journée** → 09:00, **Quotidiennement** → **Exécuter immédiatement**
-(sans demander) → choisis « Spartiate — poids ».
+Pas d’automatisation à heure fixe (elle échoue iPhone verrouillé). Le bloc 1 du raccourci « Spartiate — corps et nutrition » (partie C)
+écrit le même fichier et se lance à l’ouverture de Spartiate (B.3) : garde l’un ou l’autre, jamais les deux.
 
 ### A.3 Importer dans Spartiate
 
@@ -98,6 +102,8 @@ Pour chaque bloc :
 1. **Rechercher des échantillons Santé**
    - Type : voir le tableau ci-dessous (noms des types en français, nom à vérifier sur ton iPhone si l’un manque)
    - Ajoute un filtre : **Date de début** · **au cours des derniers** · **30 jours**
+   - Blocs 1 à 3 (HRV, FC de repos, sommeil) : ajoute un second filtre **Source** · **est** · **Apple Watch** (ta montre), pour ne garder
+     que ses mesures ; **jamais sur les pas** (bloc 4), que l’iPhone compte aussi
    - Trier par : **Date de début** · Ordre : **Plus ancien en premier**
 2. **Répéter avec chaque** (élément : *Échantillons Santé*). À l’intérieur de la boucle : voir le détail par bloc ci-dessous.
 3. Après **Fin de la répétition** : **Combiner le texte** · *Résultats de la répétition* · avec **Nouvelles lignes**
@@ -120,6 +126,8 @@ Pour chaque bloc :
 
 - **Sommeil** (bloc 3) : choisis le type **Sommeil** (et non un autre type voisin).
 - **Pas** (bloc 4) : dans **Rechercher des échantillons Santé**, règle **Grouper par : Jour** (un total par jour) ; dans **Enregistrer le fichier**, laisse **Fichier manquant** désactivé.
+- **Attention avec « Grouper par »** : l’action **Formater la date** doit pointer **Élément de répétition › Date de début**, jamais l’élément
+  entier ; sinon Raccourcis écrit deux dates (début et fin) dans la ligne, qui est alors refusée.
 
 **Blocs 1, 2 et 4 (HRV, FC de repos, pas) — à l’intérieur de la boucle :**
 
@@ -158,16 +166,18 @@ Le texte produit ressemble à : `2026-11-07T23:10:00+01:00;2026-11-08T00:05:00+0
 4. iOS ne dit pas si un accès est refusé. Si un fichier est vide alors que tu as des données, vérifie Réglages › Santé › Accès aux
    données et appareils, puis relance le raccourci (nom du réglage à vérifier).
 
-### B.3 Automatisation quotidienne à 07:30
+### B.3 Automatisation « Lorsque Spartiate est ouverte » (les deux raccourcis)
 
-Raccourcis → onglet **Automatisation** → **+** → **Heure de la journée** → 07:30, **Quotidiennement** → **Exécuter immédiatement**
-(sans demander) → choisis « Spartiate — récupération ».
+Une seule automatisation lance les deux raccourcis chaque fois que tu ouvres Spartiate (l’iPhone est alors déverrouillé, Santé est lisible) :
 
-### B.3 bis Automatisation à l’ouverture de Spartiate (facultatif)
+1. Raccourcis → onglet **Automatisation** → **+** → **App** → choisis **Spartiate**, coche **Est ouverte** (« Lorsque Spartiate est ouverte »)
+   → **Exécuter immédiatement** (sans demander).
+2. Ajoute l’action **Exécuter le raccourci** → « Spartiate — récupération », puis une seconde action **Exécuter le raccourci** →
+   « Spartiate — corps et nutrition ».
+3. **Supprime les anciennes automatisations à heure fixe** (07:30, 07:45, 22:00, 09:00) : iPhone verrouillé, Santé refuse la lecture et elles
+   échouent ou écrivent des fichiers vides.
 
-Pour des données toujours fraîches, le raccourci peut aussi se lancer chaque fois que tu ouvres Spartiate :
-Raccourcis → onglet **Automatisation** → **+** → **App** → choisis **Spartiate**, coche **Est ouverte** (« Lorsque Spartiate est
-ouverte », nom à vérifier) → **Exécuter immédiatement** (sans demander) → choisis « Spartiate — récupération ».
+### B.3 bis Relecture après l’ouverture
 
 Le raccourci réécrit alors les fichiers de `sante` pendant que l’app démarre : la première lecture de Spartiate, quelques secondes après
 l’ouverture, peut encore voir les anciens fichiers. **Si cette première lecture n’a rien apporté de nouveau, Spartiate relit le dossier
@@ -199,8 +209,9 @@ L’écran Apple Santé montre, pour chaque type, la date du dernier import, le 
 ## Partie C — Corps et nutrition (balance Renpho via Santé, I6-04)
 
 Ta balance Renpho écrit ton poids, ta masse grasse, ta masse maigre (et parfois ton tour de taille) dans **Santé**. Le raccourci
-« Spartiate — corps et nutrition » les copie, avec l’énergie et les macros du jour (protéines, glucides, lipides, fibres), dans dix fichiers
-du dossier `iCloud Drive › Spartiate › sante`. Spartiate les lit seul, comme ceux de la partie B. Aucune donnée n’est envoyée à un service tiers :
+« Spartiate — corps et nutrition » les copie dans cinq fichiers (blocs 1 à 5). **La nutrition se saisit dans Spartiate** (décision d’Ali du
+15/11, D-293) : les blocs 6 à 10 (énergie, macros, fibres) sont **facultatifs et déconseillés** ; s’ils existent, Spartiate les lit encore
+(C.12). Les fichiers vont dans le dossier `iCloud Drive › Spartiate › sante`. Spartiate les lit seul, comme ceux de la partie B. Aucune donnée n’est envoyée à un service tiers :
 les fichiers restent dans ton iCloud Drive, et les valeurs passent par ta synchro chiffrée vers le PC.
 
 Durée : 20 minutes, une seule fois. Les noms de fichiers ci-dessous sont **exacts** (minuscules, tirets, sans accent) : Spartiate refuse tout autre nom.
@@ -208,15 +219,15 @@ Durée : 20 minutes, une seule fois. Les noms de fichiers ci-dessous sont **exac
 | Fichier | Type Santé (nom à vérifier) | Unité écrite | Regroupement | Ce que Spartiate en fait |
 | --- | --- | --- | --- | --- |
 | `poids.csv` | Poids | kg (lb accepté) | aucun | une pesée Santé par jour, la plus récente ; ta saisie manuelle n’est jamais remplacée |
-| `masse-grasse.csv` | Pourcentage de graisse corporelle | % | aucun | une valeur par jour (Corps) |
+| `masse-grasse.csv` | Indice de masse grasse | % | aucun | une valeur par jour (Corps) |
 | `masse-maigre.csv` | Masse maigre | kg (lb accepté) | aucun | une valeur par jour (Corps) |
 | `tour-taille.csv` | Tour de taille | cm (m, po acceptés) | aucun | une valeur par jour (Corps) |
 | `taille.csv` | Taille | cm (m, po acceptés) | aucun | une valeur par jour (Corps) |
-| `energie.csv` | Énergie alimentaire | kcal (cal, kJ acceptés) | Grouper par **Jour** | total du jour (journal, voir C.12) |
-| `proteines.csv` | Protéines | g | Grouper par **Jour** | total du jour |
-| `glucides.csv` | Glucides | g | Grouper par **Jour** | total du jour |
-| `lipides.csv` | Lipides (graisse totale) | g | Grouper par **Jour** | total du jour |
-| `fibres.csv` | Fibres | g | Grouper par **Jour** | total du jour (Corps) |
+| `energie.csv` (facultatif) | Énergie alimentaire | kcal (cal, kJ acceptés) | Grouper par **Jour** | total du jour (journal, voir C.12) |
+| `proteines.csv` (facultatif) | Protéines | g | Grouper par **Jour** | total du jour |
+| `glucides.csv` (facultatif) | Glucides | g | Grouper par **Jour** | total du jour |
+| `lipides.csv` (facultatif) | Lipides (graisse totale) | g | Grouper par **Jour** | total du jour |
+| `fibres.csv` (facultatif) | Fibres | g | Grouper par **Jour** | total du jour (Corps) |
 
 Si ton iPhone n’expose pas un de ces types sous ce nom, cherche le plus proche dans la liste de **Rechercher des échantillons Santé**
 (nom à vérifier sur ton iPhone) ; si un type n’existe pas du tout (par exemple le tour de taille, que Renpho n’écrit pas toujours), saute simplement
@@ -224,14 +235,15 @@ son bloc : un fichier absent n’est pas une erreur.
 
 ### C.1 Créer le raccourci
 
-Dans **Raccourcis** → **+** → nomme-le « Spartiate — corps et nutrition ». Le raccourci contient **dix blocs identiques dans la structure**, un par
-fichier. Pour chaque bloc :
+Dans **Raccourcis** → **+** → nomme-le « Spartiate — corps et nutrition ». Le raccourci contient **cinq blocs identiques dans la structure** (dix
+avec la nutrition facultative), un par fichier. Pour chaque bloc :
 
 1. **Rechercher des échantillons Santé**
    - Type : voir le bloc ci-dessous
    - Ajoute un filtre : **Date de début** · **au cours des derniers** · **30 jours**
    - Trier par : **Date de début** · Ordre : **Plus ancien en premier**
-   - Regroupement : voir le bloc (**Grouper par : Jour** pour la nutrition)
+   - Regroupement : voir le bloc (**Grouper par : Jour** pour la nutrition facultative ; avec « Grouper par », **Formater la date** doit
+     pointer **Date de début**, sinon deux dates par ligne et la ligne est refusée)
 2. **Répéter avec chaque** (élément : *Échantillons Santé*). À l’intérieur de la boucle :
    1. **Formater la date** — Date : **Élément de répétition** → **Date de début** ; format **Personnalisé** → `yyyy-MM-dd'T'HH:mm:ssZZZZZ`
    2. **Texte**, avec exactement : *Date formatée* `;` *Élément de répétition › Valeur* `;` *Élément de répétition › Unité*
@@ -253,16 +265,16 @@ par le bloc 1 : n’écris jamais deux fois le même fichier.
 - **Unité** : kg (Spartiate convertit les lb)
 - **Regroupement** : aucun (un échantillon par ligne ; la pesée la plus récente du jour est gardée)
 - **Fichier** : `Spartiate/sante/poids.csv`
-- **Réglages** : 30 jours, plus ancien en premier. Exemple : `2026-11-08T06:50:12+01:00;81,4;kg`
+- **Réglages** : 30 jours, plus ancien en premier. Exemple : `2026-11-08T06:50:12+01:00;81.4;kg` (décimale au point)
 - Plausible : 20 à 500 kg ; au-delà, la ligne est refusée et comptée.
 
 ### C.3 Bloc 2 — `masse-grasse.csv`
 
-- **Type Santé** : Pourcentage de graisse corporelle
-- **Unité** : % (Santé la garde en fraction, 0,185 ; Spartiate lit aussi `18,5;%` et `0,185;`, le résultat est 18,5 %)
+- **Type Santé** : **Indice de masse grasse** (nom constaté sur l’iPhone le 14/11 ; ce n’est pas « Pourcentage de graisse corporelle »)
+- **Unité** : % (Raccourcis écrit `26.9;%` ; Spartiate lit aussi `18,5;%` et la fraction `0,185;`, le résultat est un pourcentage)
 - **Regroupement** : aucun
 - **Fichier** : `Spartiate/sante/masse-grasse.csv`
-- **Réglages** : 30 jours. Exemple : `2026-11-08T06:50:12+01:00;18,5;%`
+- **Réglages** : 30 jours. Exemple : `2026-11-08T06:50:12+01:00;26.9;%`
 - Plausible : 3 à 60 %.
 
 ### C.4 Bloc 3 — `masse-maigre.csv`
@@ -271,7 +283,7 @@ par le bloc 1 : n’écris jamais deux fois le même fichier.
 - **Unité** : kg (lb accepté)
 - **Regroupement** : aucun
 - **Fichier** : `Spartiate/sante/masse-maigre.csv`
-- **Réglages** : 30 jours. Exemple : `2026-11-08T06:50:12+01:00;64,3;kg`
+- **Réglages** : 30 jours. Exemple : `2026-11-08T06:50:12+01:00;64.3;kg`
 - Plausible : 15 à 200 kg.
 
 ### C.5 Bloc 4 — `tour-taille.csv`
@@ -291,6 +303,11 @@ par le bloc 1 : n’écris jamais deux fois le même fichier.
 - **Fichier** : `Spartiate/sante/taille.csv`
 - **Réglages** : 30 jours (une taille change rarement : un seul échantillon suffit). Exemple : `2026-11-08T06:50:12+01:00;178;cm`
 - Plausible : 100 à 250 cm. N’est **pas** copiée dans ton profil : elle reste une mesure de Corps.
+
+### Blocs 6 à 10 — nutrition (facultatifs, déconseillés)
+
+La nutrition se saisit dans Spartiate (décision d’Ali du 15/11, D-293). Ne crée ces blocs que si tu veux malgré tout copier un total du jour
+écrit dans Santé par une autre app ; ton journal Spartiate garde toujours la main (C.12).
 
 ### C.7 Bloc 6 — `energie.csv`
 
@@ -339,8 +356,8 @@ par le bloc 1 : n’écris jamais deux fois le même fichier.
 2. Ouvre Fichiers → iCloud Drive → Spartiate → sante : les fichiers des blocs que tu as créés apparaissent.
 3. Spartiate → **Plus** → **Apple Santé** → « Corps et nutrition depuis Raccourcis » → **Importer maintenant** : chaque fichier dit ses lignes lues, ajoutées,
    mises à jour et refusées (avec la raison), sans jamais afficher une valeur.
-4. Automatisation : Raccourcis → **Automatisation** → **+** → **Heure de la journée** → 07:45 puis 22:00, **Quotidiennement** → **Exécuter
-   immédiatement** → « Spartiate — corps et nutrition ». Spartiate lit alors tout seul, au plus une fois toutes les 30 minutes.
+4. Automatisation : la même que la partie B (B.3, « Lorsque Spartiate est ouverte ») lance aussi « Spartiate — corps et nutrition » ;
+   pas d’automatisation à heure fixe. Spartiate lit alors tout seul, au plus une fois toutes les 30 minutes.
 
 ---
 
@@ -355,6 +372,6 @@ par le bloc 1 : n’écris jamais deux fois le même fichier.
 - Plus → Logs : les échecs d’import y sont notés (`shortcut-import-failed`, `body-import-failed`), sans aucune valeur de mesure.
 - Partie C : « valeur hors limites » = la valeur sort des bornes plausibles de son fichier (voir C.2 à C.11), la ligne n’est pas importée ; « date sans fuseau horaire » : vérifie le format `yyyy-MM-dd'T'HH:mm:ssZZZZZ`.
 - Partie C : un jour sans énergie n’écrit rien dans le journal ; un jour où tu as saisi un repas garde ton journal (C.12).
-- Partie C : Spartiate ne lit que les quatorze noms exacts (les quatre de la partie B et les dix de la partie C) ; `Poids.csv`, `poids.csv.txt` ou `masse_grasse.csv` sont ignorés.
+- Partie C : Spartiate ne lit que les quatorze noms exacts (les quatre de la partie B et les dix de la partie C, nutrition facultative comprise) ; `Poids.csv`, `poids.csv.txt` ou `masse_grasse.csv` sont ignorés.
 - **Ne copie jamais le contenu d’un fichier** (données de santé) dans un message, un ticket ou une capture d’écran. Pour demander de
   l’aide, donne seulement le nombre de lignes et la raison du rejet.
