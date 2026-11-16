@@ -13,6 +13,10 @@ export interface CycleWeekMarker {
  * Rien (`null`) hors d'un cycle en cours : pas commencé, fini, clos, invalide.
  */
 export function cycleWeekMarker(state: Pick<MesocycleState, 'phase' | 'week' | 'blockWeek' | 'blockLength' | 'totalWeeks' | 'kind'>): CycleWeekMarker | null {
-  void state;
-  return null;
+  if (state.phase !== 'active' && state.phase !== 'paused') return null;
+  const limited = state.totalWeeks !== null;
+  const week = limited ? state.week : state.blockWeek;
+  const total = state.totalWeeks ?? state.blockLength;
+  if (!(week >= 1 && week <= total)) return null;
+  return { week, total, deload: state.kind === 'deload' };
 }

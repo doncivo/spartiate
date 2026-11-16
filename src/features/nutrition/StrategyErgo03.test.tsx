@@ -29,7 +29,7 @@ const open = () => {
   );
 };
 const region = () => screen.findByRole('region', { name: 'Nutrition' });
-const norm = (s: string | null | undefined): string => (s ?? '').replace(/[  ]/g, ' ');
+const norm = (s: string | null | undefined): string => (s ?? '').replace(/[\u202f\u00a0]/g, ' ');
 const isUpcoming = (_: string, el: Element | null): boolean => el?.classList.contains('ct-strategy__upcoming') === true;
 const seed = async (weekStart: LocalDate, target: Target, restPlan?: { rest: Target; trainingDays: readonly Weekday[] }) =>
   (await db.data.repos.nutritionTargets()).record({ weekStart, target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false, ...(restPlan === undefined ? {} : { restPlan }) });
@@ -47,8 +47,8 @@ afterEach(async () => {
 
 describe('ERGO-03 critère 1 : cible en vigueur et cible à venir', () => {
   it('une cible acceptée au lundi 16/11 : « À partir du lundi 16/11 : 2 450 kcal · P 190 · G 250 · L 75 », la cible en vigueur reste en chiffre héros', async () => {
-    await seed(FUTURE, UPCOMING);
     await seed(TODAY, CURRENT);
+    await seed(FUTURE, UPCOMING);
     open();
     const r = await region();
     const line = await within(r).findByText(isUpcoming);
@@ -58,8 +58,8 @@ describe('ERGO-03 critère 1 : cible en vigueur et cible à venir', () => {
 
   it('deux cibles futures : seule la plus proche (D-295)', async () => {
     await seed('2026-11-23' as LocalDate, { kcal: 2300, proteinG: 190, fatG: 70, carbG: 230 });
-    await seed(FUTURE, UPCOMING);
     await seed(TODAY, CURRENT);
+    await seed(FUTURE, UPCOMING);
     open();
     const r = await region();
     const lines = await within(r).findAllByText(isUpcoming);
@@ -108,8 +108,8 @@ describe('ERGO-03 critère 3 : une cible du jour qui passerait devant une cible 
   };
 
   it('Annuler : rien n’est écrit ; Enregistrer quand même : la cible du jour est écrite', async () => {
-    await seed(FUTURE, UPCOMING);
     await seed(TODAY, CURRENT);
+    await seed(FUTURE, UPCOMING);
     open();
     const r = await region();
     await fillAndSave(r);

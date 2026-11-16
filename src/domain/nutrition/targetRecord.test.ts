@@ -169,24 +169,28 @@ describe('ERGO-03 (D-295) : upcomingTargets, cibles à venir après aujourd’hu
   });
 
   it('une cible acceptée au lundi 16/11 : elle est à venir', () => {
-    expect(upcomingTargets([current, rec('f', '2026-11-16', 2450, 500)], TODAY).map((r) => r.id)).toEqual(['f']);
+    expect(upcomingTargets([current, rec('f', '2026-11-16', 2450, 1_500)], TODAY).map((r) => r.id)).toEqual(['f']);
   });
 
   it('plusieurs cibles futures : dans l’ordre des dates (la plus proche d’abord), chacune en vigueur à sa date', () => {
-    const list = [rec('b', '2026-11-23', 2300, 600), current, rec('a', '2026-11-16', 2450, 500)];
+    const list = [rec('b', '2026-11-23', 2300, 1_600), current, rec('a', '2026-11-16', 2450, 1_500)];
     expect(upcomingTargets(list, TODAY).map((r) => r.id)).toEqual(['a', 'b']);
+  });
+
+  it('une cible future plus ancienne que la décision en vigueur est masquée (D-82) : elle n’est pas à venir', () => {
+    expect(upcomingTargets([rec('f', '2026-11-16', 2450, 500), current], TODAY)).toEqual([]);
   });
 
   it('une décision plus récente d’aujourd’hui masque la cible future : elle n’est plus à venir', () => {
     const today = rec('t', '2026-11-12', 2700, 2_000);
-    expect(upcomingTargets([current, rec('f', '2026-11-16', 2450, 500), today], TODAY)).toEqual([]);
+    expect(upcomingTargets([current, rec('f', '2026-11-16', 2450, 1_500), today], TODAY)).toEqual([]);
   });
 
   it('une proposition refusée, ou datée d’aujourd’hui, n’est pas à venir', () => {
-    expect(upcomingTargets([current, rec('r', '2026-11-16', 2450, 500, false), rec('t', '2026-11-12', 2500, 3_000)], TODAY)).toEqual([]);
+    expect(upcomingTargets([current, rec('r', '2026-11-16', 2450, 1_500, false), rec('t', '2026-11-12', 2500, 3_000)], TODAY)).toEqual([]);
   });
 
   it('deux décisions de la même date future : la plus récente seulement', () => {
-    expect(upcomingTargets([current, rec('f1', '2026-11-16', 2450, 500), rec('f2', '2026-11-16', 2400, 700)], TODAY).map((r) => r.id)).toEqual(['f2']);
+    expect(upcomingTargets([current, rec('f1', '2026-11-16', 2450, 1_500), rec('f2', '2026-11-16', 2400, 1_700)], TODAY).map((r) => r.id)).toEqual(['f2']);
   });
 });

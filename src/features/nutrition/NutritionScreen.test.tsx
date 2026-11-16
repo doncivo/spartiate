@@ -305,9 +305,14 @@ describe('I4-03 : Stratégie et cibles (critère 6, D-74)', () => {
   it('valeurs par défaut D-74 : collaboratif, maintien, lundi, activité non déclarée', async () => {
     open('strategy');
     const r = await region();
-    expect(await within(r).findByRole('radio', { name: 'Collaboratif' })).toBeChecked();
+    // ERGO-03 : une ligne par réglage, qui déplie son réglage.
+    fireEvent.click(await within(r).findByRole('button', { name: 'Style du check-in : Collaboratif' }));
+    expect(within(r).getByRole('radio', { name: 'Collaboratif' })).toBeChecked();
+    fireEvent.click(within(r).getByRole('button', { name: 'Objectif : Maintien' }));
     expect(within(r).getByRole('radio', { name: 'Maintien' })).toBeChecked();
+    fireEvent.click(within(r).getByRole('button', { name: 'Jour du check-in : lundi' }));
     expect(within(r).getByLabelText('Jour du check-in')).toHaveValue('1');
+    fireEvent.click(within(r).getByRole('button', { name: 'Niveau d’activité : Non déclaré' }));
     expect(within(r).getByRole('radio', { name: 'Non déclaré' })).toBeChecked();
     expect(within(r).getByText('Aucune cible définie')).toBeInTheDocument();
   });
@@ -315,7 +320,9 @@ describe('I4-03 : Stratégie et cibles (critère 6, D-74)', () => {
   it('changer le style et l’activité est conservé', async () => {
     open('strategy');
     const r = await region();
-    fireEvent.click(await within(r).findByRole('radio', { name: 'Manuel' }));
+    fireEvent.click(await within(r).findByRole('button', { name: /^Style du check-in/ }));
+    fireEvent.click(within(r).getByRole('radio', { name: 'Manuel' }));
+    fireEvent.click(within(r).getByRole('button', { name: /^Niveau d’activité/ }));
     fireEvent.click(within(r).getByRole('radio', { name: 'Modéré' }));
     await waitFor(async () => {
       const prefs = (await import('./useCases')).loadNutritionSnapshot;
@@ -328,7 +335,7 @@ describe('I4-03 : Stratégie et cibles (critère 6, D-74)', () => {
     open('strategy');
     const r = await region();
     const fill = (label: string, value: string) => fireEvent.change(within(r).getByLabelText(label), { target: { value } });
-    await within(r).findByLabelText('Calories (kcal)');
+    fireEvent.click(await within(r).findByRole('button', { name: 'Fixer ma cible' }));
     fill('Calories (kcal)', '1100');
     fill('Protéines (g)', '120');
     fill('Lipides (g)', '40');
@@ -481,13 +488,15 @@ describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', ()
     fireEvent.click(await within(r).findByRole('switch', { name: 'Cible des jours de repos' }));
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible de repos' }));
     expect(await within(r).findByText('Enregistrée. Une cible prévue plus tard garde son réglage de repos.')).toBeInTheDocument();
-    // Revue 2 : un enregistrement manuel ensuite efface ce signalement.
+    // Revue 2 : un enregistrement manuel ensuite efface ce signalement (ERGO-03 : formulaire déplié ; la cible future demande confirmation).
+    fireEvent.click(within(r).getByRole('button', { name: 'Modifier ma cible' }));
     const fill = (label: string, value: string) => fireEvent.change(within(r).getByLabelText(label), { target: { value } });
     fill('Calories (kcal)', '2700');
     fill('Protéines (g)', '150');
     fill('Lipides (g)', '80');
     fill('Glucides (g)', '345');
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible' }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Enregistrer quand même' }));
     expect(await within(r).findByText('Cible enregistrée.')).toBeInTheDocument();
     expect(within(r).queryByText('Enregistrée. Une cible prévue plus tard garde son réglage de repos.')).not.toBeInTheDocument();
   });

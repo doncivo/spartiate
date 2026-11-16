@@ -327,6 +327,20 @@ export const nutritionFr = {
   historyAutoRefused: 'Proposition du moteur · refusée',
   historyManual: 'Manuelle · acceptée',
   historyVersion: 'moteur v{n}',
+  // ERGO-03 : Stratégie groupée (Style, Objectif, Cible, Jours de repos, Historique), une ligne par réglage.
+  groupStyle: 'Style',
+  groupTarget: 'Cible',
+  groupRest: 'Jours de repos',
+  groupHistory: 'Historique',
+  goalValueRate: '{goal} · {rate} kg / semaine',
+  upcomingTarget: 'À partir du {date} : {values}',
+  editTarget: 'Modifier ma cible',
+  futureConfirmTitle: 'Enregistrer cette cible dès aujourd’hui ?',
+  futureConfirmText: 'Elle passera devant la cible prévue à partir du {date} ({kcal} kcal) : celle-ci ne s’appliquera plus.',
+  futureConfirm: 'Enregistrer quand même',
+  restDaysList: 'Repos {days}',
+  restDayArticle: 'le {day}',
+  restNeedsTarget: 'Fixe d’abord ta cible : la cible des jours de repos part d’elle.',
 
   // Check-in
   checkInTitle: 'Check-in hebdomadaire',
