@@ -960,10 +960,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "pec-deck.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/butterfly-machine-2.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -1243,10 +1245,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "row-barbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/rear-deltoid-row-barbell-2.png"
       },
       "strengthStandardKey": "barbell-row",
       "schemaVersion": 1
@@ -1313,10 +1317,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "lat-pulldown.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/wide-grip-lat-pull-down-2.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -1949,10 +1955,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "chin-up.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/chin-ups-1.png"
       },
       "strengthStandardKey": "chin-up",
       "schemaVersion": 1
@@ -2091,10 +2099,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "lat-pulldown-close.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/v-bar-pull-down-2.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -2237,10 +2247,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "cable-pullover.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/straight-arm-push-down-1.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -2780,10 +2792,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "overhead-press-barbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/barbell-shoulder-press-2.png"
       },
       "strengthStandardKey": "overhead-press",
       "schemaVersion": 1
@@ -2913,10 +2927,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "overhead-press-dumbbell.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/dumbbell-shoulder-press-2.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -2979,10 +2995,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "shoulder-press-machine.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/seated-shoulder-press-machine-1.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -3558,10 +3576,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "arnold-press.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/arnold-press-2.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -8277,10 +8297,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "cable-hip-extension.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/one-legged-cable-kickback-2.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -9297,10 +9319,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "reverse-crunch.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/bent-knee-hip-raise-2.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -10452,10 +10476,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "overhead-triceps-extension-dumbbell-one-arm.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/one-arm-triceps-extension-with-dumbbell-2.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
@@ -12669,10 +12695,12 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "hip-adduction-cable.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "everkinetic-web:src/images-web/hip-adduction-2.png"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1
