@@ -2,6 +2,17 @@
   "schemaVersion": 1,
   "files": [
     {
+      "file": "arnold-press.png",
+      "exerciseId": "arnold-press",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/arnold-press-2.png",
+      "bytes": 44393,
+      "sha256": "9dbf7fc9b9ba5bdce54f121e444a7ae4728fdd54575ef92f262d68765ba93328",
+      "originBytes": 177964,
+      "originSha256": "0e4da2c3c919dc86d5ecc9da9307b022754f93d613018c1017b099575d831fc6",
+      "transform": "gris-8-bits-hauteur-640"
+    },
+    {
       "file": "back-extension.png",
       "exerciseId": "back-extension",
       "source": "everkinetic",
@@ -66,12 +77,34 @@
       "sha256": "7513c4b8254a5c3dcbf5410b20451a713d3b390fa1653d5f1687f058294a857e"
     },
     {
+      "file": "cable-hip-extension.png",
+      "exerciseId": "cable-hip-extension",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/one-legged-cable-kickback-2.png",
+      "bytes": 67128,
+      "sha256": "e0c44cfab5728e1c5f100c6b59893c1e652a22362679a641ad5e3c75fdca3db4",
+      "originBytes": 248226,
+      "originSha256": "0c490aa16a0506a7f0e0f97eeda24909793f624f4aa4409c9d2a9f895443e38e",
+      "transform": "gris-8-bits-hauteur-640"
+    },
+    {
       "file": "cable-kickback.png",
       "exerciseId": "cable-kickback",
       "source": "everkinetic",
       "originPath": "dist/png/0112-tension.png",
       "bytes": 32801,
       "sha256": "5e3108fb3e7da2eeed684bb4a456600cfa16e7e915d79f6c33aa597f171ff37a"
+    },
+    {
+      "file": "cable-pullover.png",
+      "exerciseId": "cable-pullover",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/straight-arm-push-down-1.png",
+      "bytes": 44956,
+      "sha256": "6a0a178f4ca3639ac9ae46cb6fab1bde00a65384e7732e82d22e285f87cedb74",
+      "originBytes": 167396,
+      "originSha256": "ce9a4b72e4497114bec228bea11eaacf34292e2f3c9588e8dbdb0424d734bf80",
+      "transform": "gris-8-bits-hauteur-640"
     },
     {
       "file": "cable-shrug.png",
@@ -120,6 +153,17 @@
       "originPath": "dist/png/0066-tension.png",
       "bytes": 53281,
       "sha256": "7e40d8c0b02dc182c5bdb6e88c0826d83cba09330bb0add50683d6ee5781cab4"
+    },
+    {
+      "file": "chin-up.png",
+      "exerciseId": "chin-up",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/chin-ups-1.png",
+      "bytes": 41918,
+      "sha256": "cc95c076804121f33d7a4849bdfa3f01a264efa40e04bbc890de6c3a66e87ee7",
+      "originBytes": 225215,
+      "originSha256": "70f3dc20cddbe79aa5761e9a0757271f6685f494cf071ca34cb47333c30b76d0",
+      "transform": "gris-8-bits-hauteur-640"
     },
     {
       "file": "close-grip-bench-press.png",
@@ -314,6 +358,17 @@
       "sha256": "4a13afc1ac21cfcb5f85e06867604e769cadb3214e14008685b9257bb00567db"
     },
     {
+      "file": "hip-adduction-cable.png",
+      "exerciseId": "hip-adduction-cable",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/hip-adduction-2.png",
+      "bytes": 62320,
+      "sha256": "70dd5a667ed4fac54c9a7bb42eb396f4b8fbef056c250aa5603f8f47e22272db",
+      "originBytes": 232572,
+      "originSha256": "6331e8a1554cf94ab8f4e369c3bb5918555888b9bbcb5359c7b502d3d45a1f58",
+      "transform": "gris-8-bits-hauteur-640"
+    },
+    {
       "file": "hip-adduction-machine.png",
       "exerciseId": "hip-adduction-machine",
       "source": "everkinetic",
@@ -346,12 +401,34 @@
       "sha256": "7729d25ce512778297b8fcbbaf62bdc67e1fe4569307ab63484182d52dc712ca"
     },
     {
+      "file": "lat-pulldown-close.png",
+      "exerciseId": "lat-pulldown-close",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/v-bar-pull-down-2.png",
+      "bytes": 44238,
+      "sha256": "e7ca43876ab8da4c0f3fcf5a5b18f32d718c22912592bbc2a61190c08c5ddc32",
+      "originBytes": 165527,
+      "originSha256": "a2f3f92f2485a2e26579daa1e5288e36419863dab363c7c088603389b5ebe1fc",
+      "transform": "gris-8-bits-hauteur-640"
+    },
+    {
       "file": "lat-pulldown-neutral.png",
       "exerciseId": "lat-pulldown-neutral",
       "source": "everkinetic",
       "originPath": "dist/png/0096-tension.png",
       "bytes": 39957,
       "sha256": "b06c244dc13d21b8706e5f88644c21213fbf64b3df7446b67a778f94b166a832"
+    },
+    {
+      "file": "lat-pulldown.png",
+      "exerciseId": "lat-pulldown",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/wide-grip-lat-pull-down-2.png",
+      "bytes": 70232,
+      "sha256": "9faa1f00c76e75bbbdbda161a6425ff8399c3b972bb724602e25cfa0e321cad3",
+      "originBytes": 280336,
+      "originSha256": "b3c1a2a0f64eeee0d045ded7779c8beb2ad54bb0a6b7eafc28c3e4038d9fb0b2",
+      "transform": "gris-8-bits-hauteur-640"
     },
     {
       "file": "lateral-raise-dumbbell.png",
@@ -410,12 +487,45 @@
       "sha256": "76fa0a4fed4b35f0907a1095f04ad5fd963db8df1fc674d4e855e9a4a2ac8c21"
     },
     {
+      "file": "overhead-press-barbell.png",
+      "exerciseId": "overhead-press-barbell",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/barbell-shoulder-press-2.png",
+      "bytes": 70245,
+      "sha256": "0535cc424bcd07f66a3b320ac0e8ab27766114fbe9382f287936fa4427ca07c2",
+      "originBytes": 281116,
+      "originSha256": "685df60c3944dd3fad34b0c28459b8fb5d89989165182680fbad5e2ea7b980df",
+      "transform": "gris-8-bits-hauteur-640"
+    },
+    {
+      "file": "overhead-press-dumbbell.png",
+      "exerciseId": "overhead-press-dumbbell",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/dumbbell-shoulder-press-2.png",
+      "bytes": 65768,
+      "sha256": "596d205341a988ecd470a087ce919ddc005814b0283e544488856f6639e10e8e",
+      "originBytes": 263945,
+      "originSha256": "d6532d2a90f0cc60aedfc03c7ef062aac68c786e0c48d7c93efd80a86fae6a64",
+      "transform": "gris-8-bits-hauteur-640"
+    },
+    {
       "file": "overhead-press-seated-barbell.png",
       "exerciseId": "overhead-press-seated-barbell",
       "source": "everkinetic",
       "originPath": "dist/png/0004-tension.png",
       "bytes": 51027,
       "sha256": "234b805f43452c59c9aec2e7ebd0f798d446944d3350f71aaf7c6eb738e19e72"
+    },
+    {
+      "file": "overhead-triceps-extension-dumbbell-one-arm.png",
+      "exerciseId": "overhead-triceps-extension-dumbbell-one-arm",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/one-arm-triceps-extension-with-dumbbell-2.png",
+      "bytes": 40404,
+      "sha256": "9bed24b51e81b2f98d23823c2d02c8f8cb1422a2ba7db84db1cfbc92f0421e29",
+      "originBytes": 72521,
+      "originSha256": "fb7ede76c72c5ba7733e160ecb5924fe933fafe4008e449b27c1ff76da2a8e70",
+      "transform": "gris-8-bits-hauteur-640"
     },
     {
       "file": "overhead-triceps-extension-dumbbell.png",
@@ -432,6 +542,17 @@
       "originPath": "dist/png/0193-tension.png",
       "bytes": 55795,
       "sha256": "9196a3083e0d8c454a31f7ae9303cd28ed44f30f3de0458219f09c2449a8d234"
+    },
+    {
+      "file": "pec-deck.png",
+      "exerciseId": "pec-deck",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/butterfly-machine-2.png",
+      "bytes": 60075,
+      "sha256": "720422fc195d002d8b810505cdbcf44063f8bfa66415e6405997f4fb6cb1ce51",
+      "originBytes": 223321,
+      "originSha256": "d18717aa3d071e58902c6aabe3f494b0a74d2155f4e461bc943dd7a40c26d59a",
+      "transform": "gris-8-bits-hauteur-640"
     },
     {
       "file": "preacher-curl-machine.png",
@@ -472,6 +593,17 @@
       "originPath": "dist/png/0077-tension.png",
       "bytes": 32738,
       "sha256": "8d1e1b0b23647d2a2b93be32bdb5c1bf3217b80e91309c96100c5765633447ea"
+    },
+    {
+      "file": "reverse-crunch.png",
+      "exerciseId": "reverse-crunch",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/bent-knee-hip-raise-2.png",
+      "bytes": 80866,
+      "sha256": "ad24d3504fb2bdbf7d3f1746c76553e15e5cb690ef38ea47ffc1e7f1754267ca",
+      "originBytes": 258980,
+      "originSha256": "6aba2fdbf72e8c7debb4a1e5a8916850d8e3d59111d620ccfe9ccbea0d541469",
+      "transform": "gris-8-bits-hauteur-640"
     },
     {
       "file": "reverse-curl.png",
@@ -530,6 +662,17 @@
       "sha256": "90439fa476a31406b34e744c07ff729435467c376cf36f40c52308c926c42673"
     },
     {
+      "file": "row-barbell.png",
+      "exerciseId": "row-barbell",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/rear-deltoid-row-barbell-2.png",
+      "bytes": 91629,
+      "sha256": "39ee096994a1ffe76a6c6080dc0c68dda50812cdf16666e13d2e55ca3ea998b5",
+      "originBytes": 282894,
+      "originSha256": "5d1983ea7e3dbc620274bc2539df683e2adda1abdd2b1c02f496d3397d8fc430",
+      "transform": "gris-8-bits-hauteur-640"
+    },
+    {
       "file": "row-inverted.png",
       "exerciseId": "row-inverted",
       "source": "everkinetic",
@@ -544,6 +687,17 @@
       "originPath": "dist/png/0025-tension.png",
       "bytes": 33054,
       "sha256": "94a53a11577d49da862800f151d767cd4d865af7e93eff337b9533c7afb23892"
+    },
+    {
+      "file": "shoulder-press-machine.png",
+      "exerciseId": "shoulder-press-machine",
+      "source": "everkinetic-web",
+      "originPath": "src/images-web/seated-shoulder-press-machine-1.png",
+      "bytes": 43404,
+      "sha256": "81782f850a46365e04f5c3e2990de9e9eef77ba164691be254dc3a806a243d1b",
+      "originBytes": 140712,
+      "originSha256": "342e6efa21eadc9ded31b01eb19c66ba3bd6be33f4ce92518b0bfffe21b6ae10",
+      "transform": "gris-8-bits-hauteur-640"
     },
     {
       "file": "shrug-barbell.png",
