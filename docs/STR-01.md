@@ -1,6 +1,6 @@
 # STR-01 — Strength Score : 8 groupes, normes publiques, Progrès › Strength Score (lot 0.26.0)
 
-Statut : **en cours.** Budget M (≈ 150 k tokens ; Ali a demandé de poursuivre en cas de dépassement : dépassement éventuel consigné ici).
+Statut : **code prêt, en revue** (pas « fait » : relecture à froid et CI à venir). Budget M (≈ 150 k tokens ; Ali a demandé de poursuivre en cas de dépassement : dépassement éventuel consigné ici).
 Branche `STR-01` depuis `origin/main` (`cdf1a900`). Rôles : domain-logic, training, ui-design-system. Plage de décisions : D-310 à D-319.
 Énoncé : docs/LOT-0.26.0.md, § 4. Chapitres PRD : [17 (§ 17.1, Strength Score)](prd/17-progres-bilans-appels-ia.md),
 [11 (§ 11.2–11.3, 1RM estimé, deload hors statistiques)](prd/11-moteur-de-progression-src-domain-training.md),
@@ -35,10 +35,10 @@ versionnées). Clés du catalogue par `scripts/content/set-strength-keys.mjs` (1
 
 | Critère | Point | Rouge | Vert | Échec observé au rouge |
 | --- | --- | --- | --- | --- |
-| 1–6 | Vecteurs du domaine (20 cas : interpolation, bornes, catégorie, paliers, sexe, poids, décharge, charge totale, meilleur mouvement, « — » et raisons, global) | `b8055511` | VERT | `expected { score: +0 } to deeply equal { score: 63 }`, `groupe chest absent` (bouchon) |
-| 7 | validate-content : clé inconnue, groupes incohérents, norme orpheline, centiles, catégories, source ; contenu réel (12 clés, 11 mouvements, recopie exacte homme ≤ 83 kg) | `b8055511` | VERT | `ENOENT … content/strength/standards.json` (suite entière rouge) |
-| 8 | Écran (5 cas Testing Library : sans sexe, sans pesée, homme 45 Bronze, femme 96 Or, attribution) | `b8055511` | VERT | `Unable to find … Sexe non renseigné…` (bouchon qui ne rend rien) |
-| 9 | Hors du départ : `StrengthScore.tsx` et `standards.json` blocs à la demande, textes absents du départ | `b8055511` | VERT | bloc absent du manifeste |
+| 1–6 | Vecteurs du domaine (20 cas : interpolation, bornes, catégorie, paliers, sexe, poids, décharge, charge totale, meilleur mouvement, « — » et raisons, global) | `b8055511` | `d54ab40b` | `expected { score: +0 } to deeply equal { score: 63 }`, `groupe chest absent` (bouchon) |
+| 7 | validate-content : clé inconnue, groupes incohérents, norme orpheline, centiles, catégories, source ; contenu réel (12 clés, 11 mouvements, recopie exacte homme ≤ 83 kg) | `b8055511` | `d54ab40b` | `ENOENT … content/strength/standards.json` (suite entière rouge) |
+| 8 | Écran (5 cas Testing Library : sans sexe, sans pesée, homme 45 Bronze, femme 96 Or, attribution) | `b8055511` | `d54ab40b` | `Unable to find … Sexe non renseigné…` (bouchon qui ne rend rien) |
+| 9 | Hors du départ : `StrengthScore.tsx` et `standards.json` blocs à la demande, textes absents du départ | `b8055511` | `d54ab40b` | bloc absent du manifeste |
 
 Ajustement après le rouge, avant le vert : dans le test d'écran, l'ordre des mouvements de référence cités par la raison du Dos est alphabétique
 (choix de l'écran, « Traction lestée » avant « Traction pronation »). Bundle : un premier essai ajoutait 9 octets au départ (l'estimation du 1RM
@@ -48,6 +48,20 @@ sans dépendances récursives (vite.config.ts) : le bloc `prescribe` retrouve ex
 Environnement : `npm run test:bundle` local échoue sur `pairingBundle.test.ts` (2 cas) dès main, sans changement : les modules de `node_modules`
 s'y écrivent `../../node_modules/…` parce que `node_modules` du worktree est une jonction vers le dépôt principal ; hors périmètre, la CI tranche.
 
-**qa-test.** À compléter.
+**qa-test.** Rouge rejoué au commit `b8055511` (mêmes fichiers qu'à l'observation) : 20 vecteurs, 5 cas d'écran et la suite de validate-content
+rouges comme annoncé. Cas ajoutés (verts) : poids de corps nul, négatif ou non fini (« — », noBodyweight) ; table des femmes à catégorie ouverte
+seule ; moyenne pondérée par récence du moteur (pas le meilleur 1RM historique : 83,25 kg → 54) ; « < 10 » compté 10 dans le global ; carte montée
+par Progrès (SectionNotice.test.tsx : région « Strength Score », sans profil aucun chiffre). Mutations prouvées puis annulées : catégorie
+`<=` → `<` (5 cas rouges), meilleur mouvement du groupe inversé (1 cas rouge). Suites locales : src/domain/training, src/features/strength,
+content de training, scripts/content, src/i18n, src/features/app : 1 088 verts ; strengthScore + SectionNotice : 31 verts après ajouts ;
+startBundle.test.ts 154 verts ; contrôles documentaires 78 verts ; `npm run typecheck` et `npm run lint` verts. Constats sans défaut bloquant :
+(a) « barre et haltères » du § 17.1 n'est tenu que pour la barre et le poids du corps (aucune norme d'haltères publiée et citable, D-311) ;
+(b) Rowing à la barre noté sur la norme du Pendlay row (approximation, D-311) ; (c) charge totale des tractions et dips supposée (H-37) ;
+(d) la catégorie affichée est celle du développé couché ; pour une femme de moins de 52 kg, push press et sumo n'ont pas de catégorie ≤ 47 kg
+(la première sert, D-312 (3)). Budget : dépassement probable du budget M (≈ 150 k), consigné ici comme demandé par Ali ; travail poursuivi.
+
+À constater par Ali (iPhone et PC) : Progrès › Strength Score visible entre Récupération et Corps ; avec sexe et pesée renseignés, chiffres
+plausibles pour ses mouvements à la barre ; groupes sans mouvement de référence en « — » avec la raison ; score inchangé pendant la semaine
+de décharge ; mention de la source lisible.
 
 **code-reviewer.** (laissé vide : relecture à froid par l'orchestrateur)
