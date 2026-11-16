@@ -2,7 +2,7 @@
 
 Statut : **en revue (code-reviewer à faire).** Budget S. Branche `PROG-03` depuis `origin/main` (`cdf1a900`). Aucune migration. Lot 0.26.0 (docs/LOT-0.26.0.md, § 3) : pas de tag à la fusion.
 Rôles : training, ui-design-system. Chapitres PRD : 18 (§ 18.1 gestes PC « glisser-déposer pour réordonner », § 18.6 clavier PC, lecteur d'écran, 44 pt),
-14 (routines). Hypothèse H-n touchée : aucune (pas de capacité de plateforme nouvelle ; l'API HTML5 drag and drop de WebView2 est vérifiée par Ali, constat ci-dessous).
+14 (routines). Hypothèse H-n touchée : aucune (pas de capacité de plateforme nouvelle ; le glisser-déposer HTML5 dans WebView2 reste à vérifier par Ali, constat ci-dessous ; D-36).
 Fixtures synthétiques uniquement.
 
 ## Passe product-owner : critères
@@ -43,7 +43,18 @@ TrainingScreen, Ergo02Screens, trainingNavigation, src/i18n : 26 fichiers, 227 t
 
 Budget : S (≈ 50k) dépassé (≈ 90k, attentes de build et une mutation) ; poursuivi sur consigne d'Ali.
 
-**code-reviewer.** (laissée vide : relecture à froid par l'orchestrateur)
+**code-reviewer.** Revue 1 (relecture à froid, orchestrateur) : « à corriger », aucun bloquant. Conformes : calcul de position, glisser d'un jour, écriture en une
+transaction, aucun changement de synchro, focus et annonce, poignée 44 px, tokens, i18n, aucune dépendance, bundle stable, iPhone inchangé, rouge/vert réels. Constats :
+(1, important) `setData('text/plain', id)` : un dépôt dans un champ texte y insérerait l'UUID (WebView2, `insertFromDrop`), enregistré puis publié ; (2) « {name} déplacé »
+faux au féminin ; (3) ligne 5 de la fiche disait le glisser WebView2 « vérifié par Ali » (D-36) ; (4) aucun test d'un exercice groupé déplacé.
+Corrections : rouge `c678ab61` (5 échecs : type MIME, dépôt absorbé, 4 annonces ; le test du groupe, vert d'emblée, couvre un comportement existant), vert : commit
+« PROG-03 : corrections de la revue 1 » (SHA dans `git log`, consigné au rapport).
+(1) type propre `application/x-spartiate-reorder`, plus jamais `text/plain` ; pendant un glisser interne, l'éditeur absorbe tout dépôt hors cible (`preventDefault`,
+`dropEffect = 'none'`) sans écraser l'effet « move » d'une cible valide (`defaultPrevented`) ; mutation : retrait de cette dernière garde → test 1 rouge, annulée.
+Les assertions « dépôt refusé » de deux tests passent de « pas de preventDefault » à « absorbé, dropEffect none, rien ne change ». (2) annonce « « {name} » : position {n} sur
+{total} ». (3) « à vérifier par Ali ». (4) test : superset Squat + Développé couché, Développé couché glissé en tête, `circuit_id` commun gardé, Rowing sans groupe.
+Vérifications : RoutineReorder (10), RoutineCircuit, TrainingScreen : 27 tests verts ; typecheck et eslint verts.
 
 ## Constats à faire par Ali sur le PC
+- Glisser une poignée et la lâcher sur un champ (« Nom du jour », nom de la routine, champ d'un exercice) : aucun texte inséré (jsdom ne reproduit pas l'insertion).
 - Éditeur d'une routine : glisser un exercice par sa poignée, puis un jour ; Alt+↑/↓ sur une poignée ; avec le Narrateur, l'annonce de la position.

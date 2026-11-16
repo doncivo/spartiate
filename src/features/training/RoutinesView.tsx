@@ -119,6 +119,9 @@ function moveItem<T>(list: readonly T[], from: number, to: number): readonly T[]
   return next;
 }
 
+/** PROG-03 : type du glisser interne (jamais text/plain). */
+const REORDER_MIME = 'application/x-spartiate-reorder';
+
 /** PROG-03 : ce qui est en cours de glisser (un exercice d'un jour, ou un jour). */
 type Dragging = { readonly kind: 'line'; readonly dayId: string; readonly index: number } | { readonly kind: 'day'; readonly index: number };
 
@@ -309,7 +312,8 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
     dragging.current = what;
     if (e.dataTransfer) {
       e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', id);
+      // Revue 1 : type propre, qu'un champ texte n'accepte pas (text/plain y serait inséré par WebView2 au dépôt, puis enregistré).
+      e.dataTransfer.setData(REORDER_MIME, id);
     }
   };
   const endDrag = (): void => {
@@ -334,6 +338,20 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
       moveLine(dayId, now.index, index, resolveExercise({ id: moved.exerciseId, frozenName: moved.exerciseName }, data.content.catalog, data.allCustoms).name);
     },
   });
+  /** Revue 1 : pendant un glisser interne, tout dépôt ailleurs dans l'éditeur (champ compris) est absorbé, sans insertion ni effet. */
+  const absorbDrop = {
+    onDragOver: (e: DragEvent) => {
+      // Une ligne ou un jour qui accepte le dépôt l'a déjà annulé : son effet « move » est gardé.
+      if (dragging.current === null || e.defaultPrevented) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'none';
+    },
+    onDrop: (e: DragEvent) => {
+      if (dragging.current === null) return;
+      e.preventDefault();
+      dragging.current = null;
+    },
+  };
   /** Dépôt d'un jour sur un autre jour (n'importe où dans sa carte). */
   const dayDropProps = (index: number) => ({
     onDragOver: (e: DragEvent) => {
@@ -428,7 +446,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
           <ExerciseList data={data} mode="picker" onSelect={(exercise) => addLine(pickingDay.id, exercise)} />
         </section>
       )}
-      <div ref={editorRef} className="ct-training__editor" hidden={pickingDay !== null}>
+      <div ref={editorRef} className="ct-training__editor" hidden={pickingDay !== null} {...(pc ? absorbDrop : {})}>
         <p className="ct-training__reorder-live ct-visually-hidden" aria-live="polite">
           {announce}
         </p>

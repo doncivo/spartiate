@@ -99,8 +99,10 @@ describe('PROG-03 : réordonner sur PC (glisser-déposer, Alt+flèches, annonce)
     expect(source.getAttribute('draggable')).toBe('true');
     fireEvent.dragStart(source);
     const target = item(day, SQUAT);
-    const over = fireEvent.dragOver(target);
+    const accepted = { dropEffect: 'none' };
+    const over = fireEvent.dragOver(target, { dataTransfer: accepted });
     expect(over).toBe(false); // preventDefault : dépôt accepté
+    expect(accepted.dropEffect).toBe('move'); // l'absorption de l'éditeur (revue 1) ne l'écrase pas
     fireEvent.drop(target);
     fireEvent.dragEnd(source);
     expect(lineNames(day)).toEqual([ROW, SQUAT, BENCH]);
@@ -159,7 +161,9 @@ describe('PROG-03 : réordonner sur PC (glisser-déposer, Alt+flèches, annonce)
     const day = await openEditor();
     fireEvent.dragStart(handle(SQUAT));
     const otherDay = screen.getByRole('group', { name: 'Jour B' });
-    expect(fireEvent.dragOver(otherDay)).toBe(true); // dépôt refusé : pas de preventDefault
+    const refused = { dropEffect: 'move' };
+    expect(fireEvent.dragOver(otherDay, { dataTransfer: refused })).toBe(false); // absorbé par l'éditeur (revue 1)
+    expect(refused.dropEffect).toBe('none'); // dépôt refusé
     fireEvent.drop(otherDay);
     fireEvent.dragEnd(handle(SQUAT));
     expect(lineNames(day)).toEqual([SQUAT, BENCH, ROW]);
@@ -185,7 +189,9 @@ describe('PROG-03 : réordonner sur PC (glisser-déposer, Alt+flèches, annonce)
     fireEvent.dragStart(handle(ROW));
     const target = dayB.querySelector('li.ct-training__line');
     if (!(target instanceof HTMLElement)) throw new Error('ligne du jour B absente');
-    expect(fireEvent.dragOver(target)).toBe(true);
+    const refused = { dropEffect: 'move' };
+    expect(fireEvent.dragOver(target, { dataTransfer: refused })).toBe(false);
+    expect(refused.dropEffect).toBe('none');
     fireEvent.drop(target);
     expect(lineNames(day)).toEqual([SQUAT, BENCH, ROW]);
     expect(lineNames(dayB)).toEqual(before);
@@ -205,6 +211,7 @@ describe('PROG-03 : réordonner sur PC (glisser-déposer, Alt+flèches, annonce)
     expect(fireEvent.drop(dayName, { dataTransfer })).toBe(false);
     expect((dayName as HTMLInputElement).value).toBe('Jour A');
     const routineName = screen.getByLabelText('Nom de la routine');
+    fireEvent.dragStart(handle(ROW), { dataTransfer });
     expect(fireEvent.drop(routineName, { dataTransfer })).toBe(false);
     expect((routineName as HTMLInputElement).value).toBe('Essai ordre');
     fireEvent.dragEnd(handle(ROW));
