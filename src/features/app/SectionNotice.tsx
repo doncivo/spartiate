@@ -1,7 +1,13 @@
 import { tSections, type SectionsTextKey } from '../../i18n/sectionsText';
 import './SectionNotice.css';
-import { BodyProgress, CardioProgress, RecoveryProgress } from './lazyScreens';
+import { BodyProgress, CardioProgress, lazyScreen, RecoveryProgress } from './lazyScreens';
 import { TodayScreen } from './TodayScreen';
+
+/**
+ * STR-01 : Progrès › Strength Score, bloc à part chargé avec son catalogue de textes et ses normes. Déclaré ici (bloc à la demande de Progrès)
+ * plutôt que dans lazyScreens.tsx : rien n'entre dans le départ.
+ */
+const StrengthScore = lazyScreen<object>(() => import('../strength/StrengthScore').then((m) => ({ default: m.StrengthScore })), undefined, { onDemand: true });
 
 export type NoticeTab = 'today' | 'training' | 'nutrition' | 'progress';
 
@@ -30,6 +36,7 @@ export function SectionNotice({ tab }: { readonly tab: NoticeTab }) {
         </>
       )}
       {tab === 'progress' ? <RecoveryProgress /> : null}
+      {tab === 'progress' ? <StrengthScore /> : null}
       {tab === 'progress' ? <BodyProgress /> : null}
       {/* I6-06 : séances cardio des quatre dernières semaines. */}
       {tab === 'progress' ? <CardioProgress /> : null}

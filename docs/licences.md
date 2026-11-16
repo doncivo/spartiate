@@ -103,3 +103,12 @@ Ajoutées en dépendances directes **sans nouvelle entrée dans `Cargo.lock`** (
 - Attribution affichée par l'app sous chaque image (fiche d'exercice) : « Illustration : Everkinetic (Greg Priday et contributeurs), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0 ». Partage à l'identique : les images ne sont pas modifiées ; le code de Spartiate n'est pas une œuvre adaptée (agrégation).
 - Refusées ou non retenues : free-exercise-db (provenance des images non déclarée), wger (licence et auteur à vérifier image par image), Wikimedia Commons (fichier par fichier, lot suivant), WorkoutLabs (droits réservés), Darebee (CC BY-NC-ND). Détail : `docs/I6-07.md`.
 - Aucun téléchargement par l'app : les images sont dans le paquet, chargées à la demande à l'ouverture d'une fiche. **H-9 reste UNVERIFIED** (D-36) : licence lue sur la page du dépôt, aucun constat d'Ali.
+
+# Licences — normes du Strength Score (STR-01, D-310)
+
+- Fichier embarqué : `content/strength/standards.json` (centiles 10, 25, 50, 75, 90, 95, 99 du 1RM, par sexe et catégorie de poids, pour 11 mouvements), construit par `scripts/content/build-strength-standards.mjs` ; aucun nombre ajouté ni modifié (valeurs de la source au pas de 0,1 kg).
+- Source : FitnessVolt Strength Standards, population « gym » (Symmetric Strength self-reported gym dataset), <https://fitnessvolt.com/strength-standards/> ; API publique `https://fitnessvolt.com/wp-json/fvss/v1/standards/{lift}?sex={sex}&source=gym&format=table&unit=kg`.
+- Version des données : 2026-06-05 (population gym), API 1.0.0, version 2026-06-09 ; consultée le 16 novembre 2026.
+- Licence : Creative Commons Attribution 4.0 (CC BY 4.0, <https://creativecommons.org/licenses/by/4.0/>), déclarée dans les données structurées de <https://fitnessvolt.com/strength-standards/methodology/> ; la réponse de l’API précise « Free with a visible attribution link ». Attribution demandée : « Strength standards data by FitnessVolt (https://fitnessvolt.com/strength-standards/) ».
+- Attribution dans l’app : Progrès › Strength Score affiche en clair « Normes : FitnessVolt Strength Standards (Symmetric Strength self-reported gym dataset, données du 09/06/2026), fitnessvolt.com/strength-standards, licence CC BY 4.0. » (texte, pas de lien cliquable : l’app n’ouvre pas de lien externe depuis Progrès).
+- Données déclarées par des pratiquants, non jugées (méthode de la source) ; ce que mesurent les charges des tractions et dips est l’hypothèse H-37.
