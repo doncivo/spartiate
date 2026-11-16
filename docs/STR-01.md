@@ -64,4 +64,13 @@ startBundle.test.ts 154 verts ; contrôles documentaires 78 verts ; `npm run typ
 plausibles pour ses mouvements à la barre ; groupes sans mouvement de référence en « — » avec la raison ; score inchangé pendant la semaine
 de décharge ; mention de la source lisible.
 
-**code-reviewer.** (laissé vide : relecture à froid par l'orchestrateur)
+**code-reviewer.** Revue 1 (à froid, agent code-reviewer) : **à corriger**, aucun bloquant dans le code. Vérifié conforme : recopie exacte (4 réponses de l'API, 32 catégories identiques au pas de 0,1 kg), domaine pur, interpolation et bornes, décharge exclue (`analyzeHistory` saute `deload` : le score affiché en décharge est celui d'avant ; seule une pesée peut le faire bouger, D-312), « — » avec raison, groupe `prescribe` de vite.config.ts sûr (aucun module du départ déplacé, garde BUNDLE-01 intacte), écran à la demande, 12 clés justes, validate-content OK, 87 tests ciblés verts.
+
+| # | Constat | Suite |
+| --- | --- | --- |
+| 1 (important) | Licence citée sur la mauvaise page (données structurées de la page de méthode = jeu « FVCP ») | Corrigé (orchestrateur) : preuve = page de l'API, « The data is free to use under CC BY 4.0. », vérifiée par curl le 16/11 ; licences.md et D-310 |
+| 2 (important) | « Barre et haltères » du § 17.1 réduit à la barre et au poids du corps, Rowing barre noté sur le Pendlay row : écart au PRD | Consigné comme le prévoit le lot (D-311, choix prudent révisable) et ajouté à « À décider par Ali » dans docs/reprise.md |
+| 3 (important) | Aucun contrôle CI sur la PR (conflit avec main) | Main fusionnée, CI relancée |
+| 4 | Lien d'attribution demandé, texte non cliquable | Adresse complète écrite en clair (CC BY 4.0 § 3(a)(2)), noté dans licences.md |
+| 5 | Date incohérente (affichée 09/06, docs 05/06) | Corrigé : « version des données du 09/06/2026 » (`data_version`), population du 05/06 ; rouge `2b16ee6a`, vert commit suivant |
+| 6 | Test d'écran retouché dans le commit vert (ordre alphabétique) | Consigné, rien d'affaibli |
