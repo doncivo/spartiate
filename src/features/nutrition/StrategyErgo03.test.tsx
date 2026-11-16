@@ -57,9 +57,10 @@ describe('ERGO-03 critère 1 : cible en vigueur et cible à venir', () => {
   });
 
   it('deux cibles futures : seule la plus proche (D-295)', async () => {
-    await seed('2026-11-23' as LocalDate, { kcal: 2300, proteinG: 190, fatG: 70, carbG: 230 });
     await seed(TODAY, CURRENT);
     await seed(FUTURE, UPCOMING);
+    // Revue 1 (point 4) : écrite en dernier, la cible du 23/11 est bien à venir elle aussi ; seule la plus proche est montrée.
+    await seed('2026-11-23' as LocalDate, { kcal: 2300, proteinG: 190, fatG: 70, carbG: 230 });
     open();
     const r = await region();
     const lines = await within(r).findAllByText(isUpcoming);
@@ -130,6 +131,27 @@ describe('ERGO-03 critère 3 : une cible du jour qui passerait devant une cible 
     const r = await region();
     await fillAndSave(r);
     expect(await within(r).findByText('Cible enregistrée.')).toBeInTheDocument();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+});
+
+describe('ERGO-03 revue 1 (point 2) : cible future et saisie sous 1 200 kcal', () => {
+  it('la confirmation D-296 est demandée une seule fois pour la même saisie, puis le plancher', async () => {
+    await seed(TODAY, CURRENT);
+    await seed(FUTURE, UPCOMING);
+    open();
+    const r = await region();
+    fireEvent.click(await within(r).findByRole('button', { name: 'Modifier ma cible' }));
+    const fill = (label: string, value: string) => fireEvent.change(within(r).getByLabelText(label), { target: { value } });
+    fill('Calories (kcal)', '1100');
+    fill('Protéines (g)', '150');
+    fill('Lipides (g)', '40');
+    fill('Glucides (g)', '80');
+    fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible' }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Enregistrer quand même' }));
+    fireEvent.click(await within(r).findByRole('checkbox', { name: 'Je confirme une cible sous 1 200 kcal' }));
+    fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible' }));
+    await waitFor(async () => expect(await (await db.data.repos.nutritionTargets()).list()).toHaveLength(3));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 });
