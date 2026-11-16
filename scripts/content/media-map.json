@@ -524,6 +524,90 @@
       "everkineticId": "0240",
       "everkineticTitle": "Preacher Curl: Dumbbell (Hammer)",
       "path": "dist/png/0240-tension.png"
+    },
+    {
+      "exerciseId": "overhead-press-dumbbell",
+      "source": "everkinetic-web",
+      "everkineticTitle": "Dumbbell Shoulder Press",
+      "path": "src/images-web/dumbbell-shoulder-press-2.png"
+    },
+    {
+      "exerciseId": "row-barbell",
+      "source": "everkinetic-web",
+      "everkineticTitle": "Rear Deltoid Row: Barbell (rowing penché à la barre)",
+      "path": "src/images-web/rear-deltoid-row-barbell-2.png"
+    },
+    {
+      "exerciseId": "lat-pulldown",
+      "source": "everkinetic-web",
+      "everkineticTitle": "Wide Grip Lat Pull Down",
+      "path": "src/images-web/wide-grip-lat-pull-down-2.png"
+    },
+    {
+      "exerciseId": "cable-pullover",
+      "source": "everkinetic-web",
+      "everkineticTitle": "Straight Arm Push Down (poulie haute, bras tendus)",
+      "path": "src/images-web/straight-arm-push-down-1.png"
+    },
+    {
+      "exerciseId": "overhead-press-barbell",
+      "source": "everkinetic-web",
+      "everkineticTitle": "Barbell Shoulder Press (assis)",
+      "path": "src/images-web/barbell-shoulder-press-2.png"
+    },
+    {
+      "exerciseId": "shoulder-press-machine",
+      "source": "everkinetic-web",
+      "everkineticTitle": "Seated Shoulder Press Machine",
+      "path": "src/images-web/seated-shoulder-press-machine-1.png"
+    },
+    {
+      "exerciseId": "arnold-press",
+      "source": "everkinetic-web",
+      "everkineticTitle": "Arnold Press",
+      "path": "src/images-web/arnold-press-2.png"
+    },
+    {
+      "exerciseId": "pec-deck",
+      "source": "everkinetic-web",
+      "everkineticTitle": "Butterfly Machine",
+      "path": "src/images-web/butterfly-machine-2.png"
+    },
+    {
+      "exerciseId": "chin-up",
+      "source": "everkinetic-web",
+      "everkineticTitle": "Chin Ups",
+      "path": "src/images-web/chin-ups-1.png"
+    },
+    {
+      "exerciseId": "lat-pulldown-close",
+      "source": "everkinetic-web",
+      "everkineticTitle": "V-Bar Pull Down",
+      "path": "src/images-web/v-bar-pull-down-2.png"
+    },
+    {
+      "exerciseId": "cable-hip-extension",
+      "source": "everkinetic-web",
+      "everkineticTitle": "One Legged Cable Kickback (sangle de cheville, poulie basse)",
+      "path": "src/images-web/one-legged-cable-kickback-2.png"
+    },
+    {
+      "exerciseId": "hip-adduction-cable",
+      "source": "everkinetic-web",
+      "everkineticTitle": "Hip Adduction (sangle de cheville, poulie basse)",
+      "path": "src/images-web/hip-adduction-2.png"
+    },
+    {
+      "exerciseId": "reverse-crunch",
+      "source": "everkinetic-web",
+      "everkineticTitle": "Bent Knee Hip Raise",
+      "path": "src/images-web/bent-knee-hip-raise-2.png"
+    },
+    {
+      "exerciseId": "overhead-triceps-extension-dumbbell-one-arm",
+      "source": "everkinetic-web",
+      "everkineticTitle": "One Arm Triceps Extension with Dumbbell (assis)",
+      "path": "src/images-web/one-arm-triceps-extension-with-dumbbell-2.png"
     }
   ],
   "excluded": [
@@ -532,40 +616,8 @@
       "reason": "Everkinetic 0084 (Incline Chest Press) : aucune image PNG publiée dans dist/png"
     },
     {
-      "id": "pec-deck",
-      "reason": "Everkinetic 0047 (Butterfly Machine) : aucune image PNG publiée dans dist/png"
-    },
-    {
-      "id": "row-barbell",
-      "reason": "Everkinetic 0298 (Bent Over Row with Barbell) : aucune image PNG publiée dans dist/png"
-    },
-    {
-      "id": "lat-pulldown",
-      "reason": "Everkinetic 0097 (Pull Down: Wide Bar (Wide Grip)) : aucune image PNG publiée dans dist/png"
-    },
-    {
       "id": "row-t-bar",
       "reason": "image Everkinetic 0029 : machine T-bar, la fiche est à la landmine"
-    },
-    {
-      "id": "chin-up",
-      "reason": "Everkinetic 0089 (Chin Ups) : aucune image PNG publiée dans dist/png"
-    },
-    {
-      "id": "overhead-press-barbell",
-      "reason": "Everkinetic 0011 (Seated Barbell Shoulder Press) : aucune image PNG publiée dans dist/png"
-    },
-    {
-      "id": "overhead-press-dumbbell",
-      "reason": "Everkinetic 0012 (Dumbbell Shoulder Press) : aucune image PNG publiée dans dist/png"
-    },
-    {
-      "id": "shoulder-press-machine",
-      "reason": "Everkinetic 0003 (Seated Shoulder Press Machine) : aucune image PNG publiée dans dist/png"
-    },
-    {
-      "id": "arnold-press",
-      "reason": "Everkinetic 0006 (Arnold Press) : aucune image PNG publiée dans dist/png"
     },
     {
       "id": "dips",
@@ -576,16 +628,40 @@
       "reason": "Everkinetic 0283 (Standing Calf Raise with Dumbbell) : aucune image PNG publiée dans dist/png"
     },
     {
-      "id": "overhead-triceps-extension-dumbbell-one-arm",
-      "reason": "Everkinetic 0200 (Triceps Extension: Dumbbell (Standing, One Arm)) : aucune image PNG publiée dans dist/png"
-    },
-    {
       "id": "spider-curl",
       "reason": "image Everkinetic 0245 : à la barre, la fiche est aux haltères"
     },
     {
       "id": "cable-crunch",
-      "reason": "image Everkinetic 0288 : assis, la fiche est à genoux sous la poulie haute"
+      "reason": "image Everkinetic 0288 : assis, la fiche est à genoux sous la poulie haute ; src/images-web/seated-ab-crunch-with-cable (MEDIA-02) : même dessin assis, écarté ; wger : aucune image de crunch à la poulie"
+    },
+    {
+      "id": "overhead-triceps-extension-cable",
+      "reason": "MEDIA-02 : Everkinetic n'a que des extensions à la poulie à genoux ou allongé (kneeling-triceps-extension-with-cable), pas au-dessus de la tête ; wger 395 (Franpol) refusé : dessin d'origine commerciale, licence déclarée non crédible"
+    },
+    {
+      "id": "split-squat-bulgarian",
+      "reason": "MEDIA-02 : aucune image Everkinetic ; wger 383 (Franpol) et 597 (AlucardEvil40, .jfif) refusés : illustrations d'origine commerciale, licence déclarée non crédible"
+    },
+    {
+      "id": "hip-thrust-barbell",
+      "reason": "MEDIA-02 : aucune image Everkinetic ; wger n'a qu'un hip thrust aux haltères (582, AlucardEvil40, origine commerciale) : autre variante et licence non crédible"
+    },
+    {
+      "id": "hanging-leg-raise",
+      "reason": "MEDIA-02 : aucune image Everkinetic (flat-bench-leg-raises est allongé) ; wger 678 marqué généré par IA (is_ai_generated) : refusé"
+    },
+    {
+      "id": "chest-supported-row-machine",
+      "reason": "MEDIA-02 : aucune image Everkinetic ; wger 598 (barry) refusé : rendu 3D d'origine commerciale ; wger 459 (carlos3c) : haltères et source externe sans licence vérifiable"
+    },
+    {
+      "id": "face-pull",
+      "reason": "MEDIA-02 : aucune image Everkinetic ; wger : seulement des variantes à l'élastique (600), aux anneaux (741) ou aux haltères (579), aucune à la corde à la poulie haute"
+    },
+    {
+      "id": "lateral-raise-cable",
+      "reason": "MEDIA-02 : aucune image Everkinetic (bent-over-lateral-cable-raises vise l'arrière d'épaule) ; wger 514 : photo à l'élastique (autre matériel), auteur réel sur une page externe"
     }
   ]
 }

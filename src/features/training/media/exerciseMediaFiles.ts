@@ -15,7 +15,7 @@ export function mediaUrl(file: string): string | null {
 }
 
 /** Attribution par source vérifiée (D-231) ; `null` pour une source inconnue (le validateur de contenu la refuse). */
-const ATTRIBUTION: Readonly<Record<string, TrainingMediaTextKey>> = { everkinetic: 'attributionEverkinetic' };
+const ATTRIBUTION: Readonly<Record<string, TrainingMediaTextKey>> = { everkinetic: 'attributionEverkinetic', 'everkinetic-web': 'attributionEverkineticWeb' };
 
 export function mediaAttribution(sourceId: string): string | null {
   const key = Object.hasOwn(ATTRIBUTION, sourceId) ? ATTRIBUTION[sourceId] : undefined;
