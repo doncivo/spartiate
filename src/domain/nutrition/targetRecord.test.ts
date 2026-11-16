@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Hlc, IsoDateTime, LocalDate } from '../types';
-import { collapseRecopies, effectiveTarget, validateTargetRecord, type TargetRecord, type TargetRecordDraft } from './targetRecord';
+import { collapseRecopies, effectiveTarget, upcomingTargets, validateTargetRecord, type TargetRecord, type TargetRecordDraft } from './targetRecord';
 
 /** I4-02 : enregistrement d'une cible (une ligne par décision, jamais écrasée) ; valeurs synthétiques. */
 
@@ -156,5 +156,41 @@ describe('FIX-0244 (D-291) : collapseRecopies fusionne la recopie d’une cible 
   it('plusieurs recopies d’affilée : une seule ligne ; l’ordre d’entrée est conservé', () => {
     const rows = [rec('z', '2026-11-09', 2600, 9), rec('c2', '2026-11-16', 2350, 5), rec('c1', '2026-11-16', 2350, 4), rec('o', '2026-11-16', 2350, 1)];
     expect(collapseRecopies(rows).map((r) => r.id)).toEqual(['z', 'c2']);
+  });
+});
+
+describe('ERGO-03 (D-295) : upcomingTargets, cibles à venir après aujourd’hui', () => {
+  const TODAY = '2026-11-12' as LocalDate;
+  const rec = (id: string, week: string, kcal: number, ms: number, accepted = true) => ({ id, weekStart: week as LocalDate, target: { kcal, proteinG: 180, fatG: 72, carbG: 240 }, accepted, hlc: hlcAt(ms) });
+  const current = rec('now', '2026-11-09', 2600, 1_000);
+
+  it('aucune cible future : rien', () => {
+    expect(upcomingTargets([current], TODAY)).toEqual([]);
+  });
+
+  it('une cible acceptée au lundi 16/11 : elle est à venir', () => {
+    expect(upcomingTargets([current, rec('f', '2026-11-16', 2350, 1_500)], TODAY).map((r) => r.id)).toEqual(['f']);
+  });
+
+  it('plusieurs cibles futures : dans l’ordre des dates (la plus proche d’abord), chacune en vigueur à sa date', () => {
+    const list = [rec('b', '2026-11-23', 2300, 1_600), current, rec('a', '2026-11-16', 2350, 1_500)];
+    expect(upcomingTargets(list, TODAY).map((r) => r.id)).toEqual(['a', 'b']);
+  });
+
+  it('une cible future plus ancienne que la décision en vigueur est masquée (D-82) : elle n’est pas à venir', () => {
+    expect(upcomingTargets([rec('f', '2026-11-16', 2350, 500), current], TODAY)).toEqual([]);
+  });
+
+  it('une décision plus récente d’aujourd’hui masque la cible future : elle n’est plus à venir', () => {
+    const today = rec('t', '2026-11-12', 2700, 2_000);
+    expect(upcomingTargets([current, rec('f', '2026-11-16', 2350, 1_500), today], TODAY)).toEqual([]);
+  });
+
+  it('une proposition refusée, ou datée d’aujourd’hui, n’est pas à venir', () => {
+    expect(upcomingTargets([current, rec('r', '2026-11-16', 2350, 1_500, false), rec('t', '2026-11-12', 2500, 3_000)], TODAY)).toEqual([]);
+  });
+
+  it('deux décisions de la même date future : la plus récente seulement', () => {
+    expect(upcomingTargets([current, rec('f1', '2026-11-16', 2350, 1_500), rec('f2', '2026-11-16', 2400, 1_700)], TODAY).map((r) => r.id)).toEqual(['f2']);
   });
 });

@@ -90,6 +90,30 @@ const goNutrition = (section?: string) => async (page: Page): Promise<void> => {
   await goTab('Nutrition')(page);
   if (section) await page.getByRole('radio', { name: section, exact: true }).click();
 };
+/** ERGO-03 : cible en vigueur (depuis le lundi 2/11) et cible à venir (lundi 9/11), cycle de 4 semaines en décharge le dimanche 8/11. Synthétique. */
+const seedErgo03 = async (page: Page): Promise<void> => {
+  await page.evaluate(async () => {
+    const stamp = '2026-11-08T10:00:00.000Z';
+    const device = '0f8fad5b-d9cb-469f-a165-70867728950e';
+    const target = "INSERT INTO nutrition_target (id, week_start, kcal, protein_g, fat_g, carb_g, source, accepted, engine_version, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?, 'manual', 1, NULL, ?, ?, ?, ?)";
+    await window.__ctTest?.execute(target, ['e3000000-0000-4000-8000-000000000001', '2026-11-02', 2600, 150, 80, 320, stamp, stamp, device, `001794218400000-0000-${device}`]);
+    await window.__ctTest?.execute(target, ['e3000000-0000-4000-8000-000000000002', '2026-11-09', 2350, 180, 72, 240, stamp, stamp, device, `001794218400001-0000-${device}`]);
+    await window.__ctTest?.execute(
+      "INSERT INTO mesocycle (id, routine_id, start_date, weeks, unlimited, deload_week, block_origin_week, block_origin_index, rotation_index, pauses, status, outcome, ended_on, created_at, updated_at, device_id, hlc) VALUES (?, ?, '2026-10-12', 4, 0, NULL, 1, 0, 0, '[]', 'active', NULL, NULL, ?, ?, ?, ?)",
+      ['e3000000-0000-4000-8000-000000000003', 'e3000000-0000-4000-8000-000000000004', stamp, stamp, device, `001794218400002-0000-${device}`],
+    );
+  });
+};
+const goStrategy = async (page: Page): Promise<void> => {
+  await seedErgo03(page);
+  await goNutrition('Stratégie')(page);
+};
+/** Aujourd'hui relu après l'ajout du cycle : on passe par un autre onglet et on revient. */
+const goTodayCycle = async (page: Page): Promise<void> => {
+  await seedErgo03(page);
+  await goTab('Plus')(page);
+  await goTab('Aujourd’hui')(page);
+};
 const goTraining = (section?: string) => async (page: Page): Promise<void> => {
   await goTab('Entraînement')(page);
   if (section) await page.getByRole('radio', { name: section, exact: true }).click();
@@ -116,6 +140,11 @@ const SCREENS: Screen[] = [
   { name: 'Entrainement-bibliotheque', viewport: PHONE, date: SUNDAY, dark: true, prepare: goTraining('Bibliothèque') },
   { name: 'Nutrition-journal-fiche', viewport: PHONE, date: SUNDAY, dark: true, prepare: openAddSheet },
   { name: 'Nutrition-dashboard', viewport: PHONE, date: SUNDAY, dark: true, prepare: goNutrition('Dashboard') },
+  // ERGO-03 : Stratégie (cible à venir, lignes de réglage) et repère du cycle d'Aujourd'hui, iPhone et PC ; « avant » : run du commit rouge.
+  { name: 'Nutrition-strategie', viewport: PHONE, date: SUNDAY, dark: true, prepare: goStrategy },
+  { name: 'PC-Nutrition-strategie', viewport: PC, date: SUNDAY, dark: true, prepare: goStrategy },
+  { name: 'Aujourdhui-cycle', viewport: PHONE, date: SUNDAY, dark: true, prepare: goTodayCycle },
+  { name: 'PC-Aujourdhui-cycle', viewport: PC, date: SUNDAY, dark: true, prepare: goTodayCycle },
   { name: 'Nutrition-checkin', mockup: 'propositions/esthetique-2026-11-13/CheckIn-apres.dc.html', viewport: PHONE, date: SUNDAY, dark: true, prepare: goNutrition('Check-in') },
   { name: 'PC-Entrainement-bibliotheque', viewport: PC, date: SUNDAY, dark: true, prepare: goTraining('Bibliothèque') },
   { name: 'PC-Entrainement-bibliotheque-clair', viewport: PC, date: SUNDAY, dark: false, prepare: async (page) => { await goLight(page); await goTraining('Bibliothèque')(page); } },

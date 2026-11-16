@@ -4,7 +4,8 @@ import { tNutrition } from '../../../i18n/nutritionText';
 import { Button } from '../../../ui';
 import { NumberField, parseNumber } from '../shared';
 
-export type TargetSaveResult = 'saved' | 'confirmation-required' | 'rejected' | 'error';
+/** `cancelled` : Ali a renoncé à la confirmation de l'appelant (ERGO-03, D-296) ; rien n'est écrit, aucun message. */
+export type TargetSaveResult = 'saved' | 'confirmation-required' | 'rejected' | 'error' | 'cancelled';
 
 export interface TargetFormProps {
   readonly title: string;

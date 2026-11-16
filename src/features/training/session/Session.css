@@ -430,3 +430,24 @@
   font-weight: var(--ct-font-weight-semibold);
   overflow-wrap: anywhere;
 }
+
+/* ERGO-03 (D-297) : repère du cycle de la carte Séance ; badge bronze « Décharge » (texte et liseré bronze sur la surface de la carte). */
+.ct-session-card__cycle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ct-space-1) var(--ct-space-2);
+  margin: 0;
+  font-weight: var(--ct-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.ct-session-card__deload {
+  padding: 2px var(--ct-space-2);
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-semibold);
+  color: var(--ct-color-bronze);
+  background: var(--ct-color-surface);
+  border: 1px solid var(--ct-color-bronze);
+  border-radius: var(--ct-radius-pill);
+}

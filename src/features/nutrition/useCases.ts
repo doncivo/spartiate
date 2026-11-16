@@ -6,7 +6,7 @@ import {
   aggregateDays,
   computeTotals,
   DEFAULT_NUTRITION_PREFS,
-  effectiveTarget,
+  upcomingTargets,
   estimateTdee,
   parseNutritionPrefs,
   resolveCheckIn,
@@ -264,12 +264,7 @@ export async function saveRestPlan(
   const repo = await access.repos.nutritionTargets();
   // Cibles futures en vigueur à leur date, relevées avant l'écriture (la décision d'aujourd'hui les masquerait ensuite).
   const decisions = await repo.list();
-  const dates = [...new Set(decisions.filter((d) => d.accepted && d.weekStart > input.today).map((d) => d.weekStart))].sort();
-  const futures: NutritionTargetRecord[] = [];
-  for (const date of dates) {
-    const winner = effectiveTarget(decisions, date);
-    if (winner !== null && winner.weekStart === date) futures.push(winner);
-  }
+  const futures = upcomingTargets(decisions, input.today);
   const plan = input.restPlan;
   const todayDraft: TargetRecordDraft = { weekStart: input.today, target: input.current.target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false, restPlan: plan };
   const issues = validateTargetRecord(todayDraft);

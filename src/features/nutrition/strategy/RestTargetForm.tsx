@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { DEFAULT_REST_GAP_KCAL, restTargetFromGap, restTargetFromKcal, weeklyAverageTarget, type RestPlan, type Target } from '../../../domain/nutrition';
 import type { Weekday } from '../../../domain/types';
-import { formatInt, tNutrition } from '../../../i18n/nutritionText';
+import { formatInt, formatWeekdayList, tNutrition } from '../../../i18n/nutritionText';
 import { Button, SegmentedControl, Switch, WeekdayToggles } from '../../../ui';
 import { NumberField, parseNumber } from '../shared';
 
@@ -55,6 +55,8 @@ export function RestTargetForm({ target, plan, defaultDays, onSave }: { readonly
       </label>
       {plan !== null ? (
         <>
+          {/* ERGO-03 : jours de repos en toutes lettres (complément des jours d’entraînement). */}
+          <p className="ct-strategy__restDays">{tNutrition('restDaysList', { days: formatWeekdayList(([1, 2, 3, 4, 5, 6, 7] as const).filter((d) => !plan.trainingDays.includes(d))) })}</p>
           <p className="ct-nutrition__muted">{tNutrition('restTargetCurrent', { kcal: formatInt(plan.rest.kcal), carbs: formatInt(plan.rest.carbG) })}</p>
           <p className="ct-nutrition__muted">{tNutrition('weeklyAverage', { kcal: formatInt(weeklyAverageTarget(target, plan).kcal) })}</p>
         </>

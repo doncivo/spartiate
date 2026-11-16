@@ -154,7 +154,8 @@ describe('I4-03 : écriture en échec (rien ne change, l’échec est dit)', () 
     open('strategy', failing('nutritionTargets', 'record'));
     const r = await region();
     const fill = (label: string, value: string) => fireEvent.change(within(r).getByLabelText(label), { target: { value } });
-    await within(r).findByLabelText('Calories (kcal)');
+    // ERGO-03 : le formulaire de cible est replié derrière « Fixer ma cible ».
+    fireEvent.click(await within(r).findByRole('button', { name: 'Fixer ma cible' }));
     fill('Calories (kcal)', '2500');
     fill('Protéines (g)', '160');
     fill('Lipides (g)', '70');
