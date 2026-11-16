@@ -49,4 +49,16 @@ Quatre scènes ajoutées à tests/visual/capture.spec.ts dès le commit rouge. E
 
 ## code-reviewer
 
-(laissé vide : relecture à froid par l'orchestrateur)
+**Revue 1 (à froid, orchestrateur) : à corriger.** Un important et quatre mineurs.
+
+| # | Constat | Rouge | Vert | Échec observé au rouge |
+| --- | --- | --- | --- | --- |
+| 1 (important) | Le check-in contournait D-296 : « Accepter » ou « Personnaliser » écrivait une décision acceptée datée du jour du check-in, qui masquait sans rien dire la cible du 16/11. Même confirmation désormais (CheckInErgo03.test.tsx : Accepter, Annuler n'écrit rien, Refuser sans fenêtre) ; D-296 (4) | `c81ce460` | `33be944d` | « Unable to find role="alertdialog" » |
+| 2 | Cible future + saisie sous 1 200 kcal : D-296 demandée deux fois. La confirmation est retenue pour la même saisie et la même cible future (Stratégie et check-in) | `c81ce460` | `33be944d` | 2 décisions au lieu de 3 (la 2e fenêtre bloquait) ; « Unable to find role="alertdialog" » côté check-in |
+| 3 | Promesse jamais résolue si la cible future disparaît, fenêtre ouverte, ou au démontage. Résolue à faux (`useFutureConfirm.test.tsx`, 4 cas) | `c81ce460` | `33be944d` | « Failed to resolve import "./useFutureConfirm" » (crochet absent) |
+| 4 | Test « seule la plus proche » : la cible du 23/11 est maintenant écrite en dernier. Mutation prouvée puis annulée : `.at(-1)` à la place de `[0]` fait échouer le test | `c81ce460` | `33be944d` | vert dès le rouge (garde) ; rouge sous la mutation |
+| 5 | Fiche, critère 4 : texte aligné sur « Repos le mercredi et le dimanche » | — | `c81ce460` | — |
+
+Suites après correction : nutrition (Stratégie, check-in, écran, états, crochet) vertes ; `npm run typecheck` et eslint verts. Code changé hors du départ (Stratégie et check-in sont à la demande).
+
+**Budget.** Le budget M (≈ 150k jetons) est dépassé avec la revue 1. Décision d'Ali du 16/11 : poursuivre malgré tout.
