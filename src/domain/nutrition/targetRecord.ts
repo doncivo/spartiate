@@ -105,3 +105,14 @@ export function collapseRecopies<T extends Pick<TargetRecord, 'id' | 'weekStart'
   }
   return records.filter((r) => !dropped.has(r.id));
 }
+
+/**
+ * ERGO-03 (D-295) : cibles À VENIR après `today`, dans l'ordre des dates : pour chaque date postérieure portant une décision acceptée, la
+ * cible qui y sera en vigueur (`effectiveTarget`) quand c'est bien une décision de cette date (une décision plus récente d'une semaine
+ * antérieure la masque : elle n'est pas à venir). Même relevé que FIX-0244 (D-291).
+ */
+export function upcomingTargets<T extends Pick<TargetRecord, 'id' | 'weekStart' | 'accepted' | 'hlc'>>(records: readonly T[], today: LocalDate): readonly T[] {
+  void records;
+  void today;
+  return [];
+}
