@@ -1,6 +1,6 @@
 # ERGO-03 — Stratégie lisible (cible à venir, cible non pré-remplie, repos) et repère du cycle sur Aujourd'hui (lot 0.26.0)
 
-Statut : **en revue** (passes product-owner, modules et qa-test faites ; code-reviewer à faire). Budget M. Branche `ERGO-03` depuis `origin/main` (`a35f9f70`, 0.25.0, schéma 19). Aucune migration attendue. Lot 0.26.0 (docs/LOT-0.26.0.md, § 2) : pas de tag à la fusion.
+Statut : **fait** (passes product-owner, modules, qa-test et code-reviewer faites ; revue 2 approuvée). Budget M. Branche `ERGO-03` depuis `origin/main` (`a35f9f70`, 0.25.0, schéma 19). Aucune migration attendue. Lot 0.26.0 (docs/LOT-0.26.0.md, § 2) : pas de tag à la fusion.
 Rôles : ui-design-system, nutrition, accessibility-i18n. Décisions : D-295 à D-299. Origine : énoncé d'Ali du 15/11 (après le constat FIX-0244 de la cible importée du 16/11).
 Chapitres PRD : 15 (nutrition, Stratégie : docs/prd/15-nutrition.md), 12 (mésocycle et décharge), 18 (écrans, charte § 18.4, accessibilité § 18.6 : docs/prd/18-navigation-ecrans-et-etats-degrades.md).
 Règles de cible : D-74, D-82 (cible en vigueur), D-270 à D-272 (cible de repos), D-291 (FIX-0244). Hypothèses H-n : aucune touchée. Fixtures synthétiques uniquement.
@@ -62,3 +62,7 @@ Quatre scènes ajoutées à tests/visual/capture.spec.ts dès le commit rouge. E
 Suites après correction : nutrition (Stratégie, check-in, écran, états, crochet) vertes ; `npm run typecheck` et eslint verts. Code changé hors du départ (Stratégie et check-in sont à la demande).
 
 **Budget.** Le budget M (≈ 150k jetons) est dépassé avec la revue 1. Décision d'Ali du 16/11 : poursuivre malgré tout.
+
+**Revue 2 (à froid) : approuvé.** Les cinq constats sont corrigés (vitest ciblé CheckInErgo03, StrategyErgo03, useFutureConfirm : 23 verts). Autres chemins d'écriture de `nutrition_target` relus : `saveManualTarget` (Stratégie, confirmé), `recordCheckInDecision` (confirmé), `saveRestPlan` (recopie les cibles futures, D-291) ; import d'archive et synchro ne sont pas des gestes d'enregistrement. Deux mineurs :
+1. La clé de confirmation de « Accepter » au check-in (`'accept'`) ne contenait pas les valeurs proposées : une proposition changée après un échec d'écriture s'écrivait sans fenêtre. **Corrigé** par l'orchestrateur (`accept|` + `targetKey(proposal.target)`, CheckInView.tsx:170), sans test rouge propre : le crochet re-demande déjà pour une autre clé (`useFutureConfirm.test.tsx`) ; check-in et Stratégie 35 verts, typecheck et eslint verts.
+2. Une décision reçue par la synchro peut masquer une cible future sans le dire : hors du périmètre de D-296, signalé dans docs/reprise.md pour sync-icloud.
