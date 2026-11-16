@@ -30,7 +30,7 @@ const open = () => {
   );
 };
 const region = () => screen.findByRole('region', { name: 'Nutrition' });
-const norm = (s: string | null | undefined): string => (s ?? '').replace(/[  ]/g, ' ');
+const norm = (s: string | null | undefined): string => (s ?? '').replace(/[\u202f\u00a0]/g, ' ');
 const decisions = async () => (await db.data.repos.nutritionTargets()).list();
 
 /** Quatre semaines complètes (repas et pesées), profil, préférences, cible d'il y a deux semaines ; puis la cible future, écrite en dernier (HLC le plus récent). */
@@ -74,7 +74,7 @@ describe('ERGO-03 revue 1 : check-in devant une cible future', () => {
     fireEvent.click(within(r).getByRole('button', { name: /^Accepter/ }));
     fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Enregistrer quand même' }));
     expect(await within(r).findByText('Cible enregistrée.')).toBeInTheDocument();
-    expect((await decisions())[0]).toMatchObject({ source: 'auto', accepted: true, weekStart: TODAY });
+    expect((await decisions()).filter((t) => t.source === 'auto')).toMatchObject([{ accepted: true, weekStart: TODAY }]);
   });
 
   it('Refuser : pas de confirmation (une proposition refusée ne masque rien)', async () => {
