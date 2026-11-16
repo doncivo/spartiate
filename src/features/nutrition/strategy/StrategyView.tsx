@@ -2,13 +2,14 @@ import { useEffect, useId, useState, type ReactNode } from 'react';
 import { ACTIVITY_LEVELS, GOAL_RATE_MAX_KG, type ActivityLevel, type CheckInStyle, type NutritionPrefs, type Target } from '../../../domain/nutrition';
 import type { NutritionTargetRecord } from '../../../db/repositories/nutritionTargetRepository';
 import { formatDayMonth, formatInt, formatKgDelta, formatWeekdayDate, tNutrition, weekdayNames, type NutritionTextKey } from '../../../i18n/nutritionText';
-import { Button, ConfirmDialog, HeroFigure, SegmentedControl } from '../../../ui';
+import { Button, HeroFigure, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { NumberField, parseNumber } from '../shared';
 import { activeRoutineDayCount, saveManualTarget, saveRestPlan, saveNutritionPrefs, type NutritionSnapshot } from '../useCases';
 import { RestTargetForm } from './RestTargetForm';
 import { TargetForm, type TargetSaveResult } from './TargetForm';
+import { targetKey, useFutureConfirm } from './useFutureConfirm';
 import { collapseRecopies, defaultTrainingDays, restTargetFromGap, upcomingTargets, type RestPlan } from '../../../domain/nutrition';
 
 const STYLE_HINT: Readonly<Record<CheckInStyle, NutritionTextKey>> = { guided: 'styleGuidedHint', collaborative: 'styleCollaborativeHint', manual: 'styleManualHint' };
@@ -89,11 +90,11 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   const [routineDays, setRoutineDays] = useState<number | null>(null);
   const [openRow, setOpenRow] = useState<RowId | null>(null);
   const [editing, setEditing] = useState(false);
-  /** Confirmation d'une cible du jour qui passerait devant une cible future (D-296) : la réponse d'Ali résout la promesse. */
-  const [pending, setPending] = useState<{ readonly resolve: (ok: boolean) => void } | null>(null);
   const { profile, target, targets } = snapshot;
   // D-295 : la plus proche des cibles à venir (acceptée, datée après aujourd'hui, en vigueur à sa date).
   const upcoming = upcomingTargets(targets, snapshot.today)[0] ?? null;
+  // D-296 (revue 1) : confirmation partagée avec le check-in ; jamais suspendue, pas redemandée pour la même saisie.
+  const future = useFutureConfirm(upcoming);
   const profileComplete = profile !== null && profile.sex !== null && profile.birthYear !== null && profile.heightCm !== null;
   const toggle = (row: RowId) => () => setOpenRow((current) => (current === row ? null : row));
 
@@ -152,7 +153,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
 
   async function saveTarget(next: Target, lowFloorConfirmed: boolean): Promise<TargetSaveResult> {
     // D-296 : une cible du jour, plus récente, passerait devant la cible future (D-82) : Ali le confirme explicitement, sinon rien n'est écrit.
-    if (upcoming !== null && !(await new Promise<boolean>((resolve) => setPending({ resolve })))) return 'cancelled';
+    if (!(await future.ask(targetKey(next)))) return 'cancelled';
     try {
       // PROG-01 (D-271) : une nouvelle cible d'entraînement garde l'écart de la cible de repos en vigueur.
       const plan = target?.restPlan ?? null;
@@ -169,10 +170,6 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
     }
   }
 
-  const answer = (ok: boolean): void => {
-    pending?.resolve(ok);
-    setPending(null);
-  };
   const goalName = tNutrition(GOAL_KEY[prefs.goal.kind]);
   const goalValue = prefs.goal.kind === 'maintain' ? goalName : tNutrition('goalValueRate', { goal: goalName, rate: formatKgDelta(prefs.goal.weeklyRateKg).replace(/^[+−]/, '') });
   const targetButton = tNutrition(target === null ? 'targetFormTitle' : 'editTarget');
@@ -335,16 +332,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
           </ul>
         )}
       </section>
-      {pending !== null && upcoming !== null ? (
-        <ConfirmDialog
-          title={tNutrition('futureConfirmTitle')}
-          description={tNutrition('futureConfirmText', { date: formatWeekdayDate(upcoming.weekStart), kcal: formatInt(upcoming.target.kcal) })}
-          confirmLabel={tNutrition('futureConfirm')}
-          cancelLabel={tNutrition('cancel')}
-          onConfirm={() => answer(true)}
-          onCancel={() => answer(false)}
-        />
-      ) : null}
+      {future.dialog}
     </div>
   );
 }
