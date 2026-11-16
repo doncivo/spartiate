@@ -152,4 +152,31 @@ describe('strengthScore', () => {
     const r = strengthScore(input({ exercises: [ex('bench-press-barbell', 'bench', [session(4, 75, [6], { sets: [set(75, 6, { done: false })] })])] }));
     expect(group(r, 'chest')).toMatchObject({ kind: 'none', reason: 'noSession' });
   });
+
+  // Passe qa-test : cas limites ajoutés.
+  it('qa : poids de corps nul, négatif ou non fini : « — » (noBodyweight), jamais un score', () => {
+    for (const bw of [0, -5, Number.NaN]) {
+      const r = strengthScore(input({ bodyweightKg: bw, exercises: [ex('bench-press-barbell', 'bench', bench75x6)] }));
+      expect(r.groups.every((g) => g.kind === 'none' && g.reason === 'noBodyweight'), String(bw)).toBe(true);
+    }
+  });
+
+  it('qa : une catégorie de femmes sans borne propre (catégorie ouverte seule) sert à tout poids', () => {
+    const r = strengthScore(input({ sex: 'female', bodyweightKg: 45, exercises: [ex('bench-press-barbell', 'bench', [session(10, 25, [6])])] }));
+    // 25 × 1,2 = 30 kg = p25 de la table des femmes : 25.
+    expect(group(r, 'chest')).toMatchObject({ kind: 'value', score: 25, tier: 'bronze' });
+    expect(r.weightClass).toEqual({ upToKg: null, aboveKg: null });
+  });
+
+  it('qa : la séance la plus récente compte d’abord (moyenne 1 / 0,6 / 0,3 du moteur), pas le meilleur 1RM historique', () => {
+    // 90 kg (il y a 2 j) puis 72 kg (il y a 20 j) : (90 + 0,6 × 72) / 1,6 = 83,25 → entre p50 80 et p75 100 : 50 + 25 × 3,25 / 20 = 54,06 → 54.
+    const r = strengthScore(input({ exercises: [ex('bench-press-barbell', 'bench', [session(20, 60, [6]), session(2, 75, [6])])] }));
+    expect(group(r, 'chest')).toMatchObject({ kind: 'value', score: 54 });
+  });
+
+  it('qa : « < 10 » compte 10 dans le global, et le dit par sa borne', () => {
+    const r = strengthScore(input({ exercises: [ex('bench-press-barbell', 'bench', [session(3, 30, [5])])] }));
+    expect(group(r, 'chest')).toMatchObject({ kind: 'value', score: 10, bound: 'below', tier: 'iron' });
+    expect(r.global).toEqual({ score: 10, tier: 'iron', counted: 1 });
+  });
 });
