@@ -386,7 +386,7 @@ describe('contenu embarqué réel', () => {
     const map = JSON.parse(readFileSync(resolve(ROOT, 'scripts', 'content', 'media-map.json'), 'utf8')) as Json;
     const withMedia = (exercises as Json[]).filter((x) => x['media'].images.length > 0);
     expect(withMedia.length).toBe(map['entries'].length);
-    expect(withMedia.length).toBe(102); // 87 (I6-07) + 15 (MEDIA-02, D-303)
+    expect(withMedia.length).toBe(101); // 87 (I6-07) + 14 (MEDIA-02, D-303)
     let total = 0;
     for (const x of withMedia) {
       expect(ALLOWED_MEDIA_LICENSES, x['id']).toContain(x['media'].license);
@@ -409,11 +409,11 @@ describe('contenu embarqué réel', () => {
   // ou une exclusion motivée dans media-map.json (repli sans image) ; jamais ni l'une ni l'autre.
   const ROUTINE_12 = ['overhead-press-dumbbell', 'cable-crunch', 'overhead-triceps-extension-cable', 'split-squat-bulgarian', 'hip-thrust-barbell', 'cable-pullover', 'hanging-leg-raise', 'row-barbell', 'chest-supported-row-machine', 'lat-pulldown', 'face-pull', 'lateral-raise-cable'];
 
-  it('MEDIA-02 : routine d’Ali, 5 exercices sur 12 illustrés, les 7 autres écartés avec un motif', () => {
+  it('MEDIA-02 : routine d’Ali, 4 exercices sur 12 illustrés, les 8 autres écartés avec un motif', () => {
     const { exercises } = load('exercises', 'exercises.json');
     const map = JSON.parse(readFileSync(resolve(ROOT, 'scripts', 'content', 'media-map.json'), 'utf8')) as Json;
     const illustrated = ROUTINE_12.filter((id) => (exercises as Json[]).find((x) => x['id'] === id)?.['media'].images.length === 1);
-    expect(illustrated).toEqual(['overhead-press-dumbbell', 'cable-crunch', 'cable-pullover', 'row-barbell', 'lat-pulldown']);
+    expect(illustrated).toEqual(['overhead-press-dumbbell', 'cable-pullover', 'row-barbell', 'lat-pulldown']);
     for (const id of ROUTINE_12.filter((r) => !illustrated.includes(r))) {
       const ex = (map['excluded'] as Json[]).find((e) => e['id'] === id);
       expect(ex?.['reason'], id).toMatch(/\S{10,}/);
@@ -424,7 +424,7 @@ describe('contenu embarqué réel', () => {
   it('MEDIA-02 : images réduites de la source everkinetic-web, empreinte d’origine et transformation au registre (D-301, D-302)', () => {
     const registry = load('exercises', 'media', 'sources.json');
     const web = (registry['files'] as Json[]).filter((f) => f['source'] === 'everkinetic-web');
-    expect(web).toHaveLength(15);
+    expect(web).toHaveLength(14);
     expect(MEDIA_SOURCES).toHaveProperty('everkinetic-web.license', 'CC-BY-SA-4.0');
     expect(MEDIA_SOURCES).toHaveProperty('everkinetic-web.commit', MEDIA_SOURCES['everkinetic'].commit);
     for (const f of web) {

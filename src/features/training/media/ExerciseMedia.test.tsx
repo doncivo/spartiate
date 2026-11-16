@@ -72,7 +72,7 @@ describe('ExerciseMedia', () => {
       expect(mediaUrl(image.file), x.id).toMatch(/\.png/);
       expect(mediaAttribution(image.sourceId), x.id).not.toBeNull();
     }
-    expect(n).toBe(87);
+    expect(n).toBe(101); // 87 (I6-07) + 14 (MEDIA-02)
     expect(mediaAttribution('inconnue')).toBeNull();
     expect(mediaUrl('inconnu.png')).toBeNull();
   });

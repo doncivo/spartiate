@@ -27,7 +27,8 @@ function rgbPng(width: number, height: number): Buffer {
     const f = y % 3;
     const out = Buffer.alloc(width * 3 + 1);
     out[0] = f;
-    for (let i = 0; i < width * 3; i++) out[i + 1] = (line[i]! - (f === 1 ? (i >= 3 ? line[i - 3]! : 0) : f === 2 ? prev[i]! : 0)) & 0xff;
+    const at = (b: Buffer, i: number): number => (i >= 0 ? (b[i] ?? 0) : 0);
+    for (let i = 0; i < width * 3; i++) out[i + 1] = (at(line, i) - (f === 1 ? at(line, i - 3) : f === 2 ? at(prev, i) : 0)) & 0xff;
     rows.push(out);
     prev = line;
   }
