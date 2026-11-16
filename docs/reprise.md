@@ -1,10 +1,10 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-16 : 0.25.0 publiée (v0.25.0, ios-v0.25.0) ; **lot 0.26.0 en cours** (docs/LOT-0.26.0.md : DOC-H21, ERGO-03, PROG-03, STR-01, MEDIA-02), worktrees `.codex-tmp/wt-<ticket>` (jonction `node_modules` : `rmdir` avant `git worktree remove`). Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-294 dans docs/decisions.md.
+État au 2026-11-16 : 0.25.0 publiée (v0.25.0, ios-v0.25.0) ; **lot 0.26.0 en cours** (docs/LOT-0.26.0.md : DOC-H21, ERGO-03, PROG-03, STR-01, MEDIA-02), worktrees `.codex-tmp/wt-<ticket>` (jonction `node_modules` : `rmdir` avant `git worktree remove`). Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-304 dans docs/decisions.md.
 
 ## Rapport du matin (13/11)
 
-- Publiées : 0.17.1 FIX-0171, 0.17.2 FIX-0172, 0.17.3 FIX-0173, 0.18.0 I6-03b (schéma 14), 0.18.1 DEP-01 (SQLite 3.54.1) et FIX-0182 (e2e Y-IOS-02), 0.18.2 FIX-0181 (schéma 15), 0.18.3 RESET-01 (schéma 16), 0.19.0 ERGO-01, 0.19.1 CLEAN-02, 0.20.0 I6-05 compléments (schéma 17), 0.21.0 I6-06 cardio et GPS (schéma 18), 0.22.0 I6-07 médias (87 exercices sur 196).
+- Publiées les 12-13/11 : 0.17.1 à 0.22.0 (détail dans CHANGELOG.md).
 - Bloqué ou partiel : CLEAN-02 sans la migration des tests de synchro hérités (CLEAN-03, L, D-201) ni le retrait du plugin vision (gardé pour l'import de programme, D-200)  ; action « Pris » des compléments livrée en 0.22.2 (FIX-0221, D-250 à D-253), à constater sur l’iPhone (H-36).
 - Installer : PC et iPhone le même jour, avant toute saisie (schéma 18). Le jour J : docs/RESET-01.md.
 - Constats iPhone : GPS (demande en français, parcours de distance connue ± 5 %, séance sur le PC sans tracé, refus affiché ; H-35) ; rappels de compléments (texte sans nom sur l'écran verrouillé, prise cochée avant l'heure = pas de rappel ; H-34) ; journée rouge (charges × 0,95 au cran du matériel, bouton « Accepter l'allègement ») ; favoris (ajout sur un appareil, présent sur l'autre après synchro) ; besoin de sommeil (7 h 30 à ~8 h 45 sur tes nuits, relecture dans Plus › Journaux) ; images d'exercice en thème sombre (H-9) ; bouclier de Corps (H-32) ; « Repartir de zéro » (H-33).
