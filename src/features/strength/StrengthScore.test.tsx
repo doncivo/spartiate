@@ -93,6 +93,7 @@ describe('Progrès › Strength Score', () => {
     await weigh(80);
     mount();
     expect(await screen.findByText(/Normes : FitnessVolt Strength Standards/)).toBeInTheDocument();
+    expect(screen.getByText((t) => t.includes('version des données du 09/06/2026), https://fitnessvolt.com/strength-standards/'))).toBeInTheDocument();
     expect(screen.getByText(/fitnessvolt\.com\/strength-standards/)).toBeInTheDocument();
     expect(screen.getByText(/Fer < 25 · Bronze 25–49 · Argent 50–74 · Or ≥ 75/)).toBeInTheDocument();
     expect(screen.getByText(/Inchangé en décharge/)).toBeInTheDocument();
