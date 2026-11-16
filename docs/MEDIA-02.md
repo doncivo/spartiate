@@ -83,16 +83,21 @@ d'attribution ; consigné ici.
 
 | Fonction | Rouge | Vert |
 | --- | --- | --- |
-| Contenu réel (routine, compte, registre `everkinetic-web`), réduction PNG, attribution modifiée | `8b431537` : 3 tests de contenu rouges (87 ≠ 102, routine [], registre vide), `png-reduce.test.ts` en échec (module absent), attribution `null` | voir commit vert |
+| Contenu réel (routine, compte, registre `everkinetic-web`), réduction PNG, attribution modifiée | `8b431537` : 3 tests de contenu rouges (87 ≠ 102, routine [], registre vide), `png-reduce.test.ts` en échec (module absent), attribution `null` | `3e47465f` (87 / 87 ciblés) |
 
 - Le test rouge visait 5 exercices de la routine (102 au total) ; ramené à 4 (101) avant le vert, par cohérence avec I6-07 (D-304).
 - Cas limites ajoutés : PNG entrelacé ou non PNG refusé, image plus petite que le plafond non agrandie, sortie déterministe.
 - Suites ciblées (`scripts/content`, `src/features/training/media`, `src/domain/training/media`, `--maxWorkers=1`) : 87 / 87 ; validate-content :
-  OK (196 exercices) ; typecheck, lint : voir rapport ; bundle : voir ci-dessous.
+  OK (196 exercices) ; `npm run typecheck`, `npm run lint` : verts.
+- Mutation : retrait de la clé `everkinetic-web` de la table d'attribution → 2 tests rouges (`ExerciseMedia.test.tsx`), annulée.
+- `npm run test:bundle` : 166 / 168 ; les 2 échecs sont dans `pairingBundle.test.ts` (liste blanche de pairing.html) et viennent du
+  worktree (`node_modules` en jonction, chemins `../../node_modules/…`), sans lien avec ce ticket ; le départ et la garde des médias sont verts.
+  À confirmer par la CI.
 
 ## Bundle de départ
 
-Voir rapport final (mesure `npm run test:bundle` après). Les images sont des fichiers émis par Vite, référencés seulement par le bloc à la
+Mesure `node tests/bundle/measureStart.ts` sur un build avec manifeste : **avant** (sources de `a35f9f70`) normalisée **195 861** octets
+(brute 195 866) ; **après** normalisée **195 861** octets (brute 195 886, écart de hachage) ; plafond 358 400, marge 162 539. Les images sont des fichiers émis par Vite, référencés seulement par le bloc à la
 demande `ExerciseMedia` ; `tests/bundle/start-modules.json` inchangé.
 
 ## Constats à faire par Ali
