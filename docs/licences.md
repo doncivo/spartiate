@@ -99,10 +99,23 @@ Ajoutées en dépendances directes **sans nouvelle entrée dans `Cargo.lock`** (
 
 - Source retenue : **Everkinetic**, dépôt `https://github.com/everkinetic/data` (organisation « Everkinetic », projet fondé sur everkinetic.com, créé par Greg Priday), commit épinglé `446bb9a3d0c3beb6b84f7c9d77dfc8af707a2ab6` (2022-02-20), consulté le 2026-11-13.
 - Licence : **Creative Commons Attribution-ShareAlike 4.0 International** (CC BY-SA 4.0, `https://creativecommons.org/licenses/by-sa/4.0/`), texte complet dans `LICENSE.md` du dépôt, licence déclarée par GitHub `CC-BY-SA-4.0`. wger redistribue les mêmes illustrations avec l'auteur « Everkinetic » sous CC BY-SA.
-- Fichiers embarqués : `content/exercises/media/<id-exercice>.png`, copies à l'identique de `dist/png/<n>-tension.png` (aucune retouche, aucune conversion) ; un fichier par exercice, 87 exercices sur 196. Registre de provenance : `content/exercises/media/sources.json` (fichier, exercice, chemin d'origine, taille, SHA-256), produit par `node scripts/content/build-media.mjs` depuis la correspondance relue `scripts/content/media-map.json`, vérifié par `validate-content.mjs`.
+- Fichiers embarqués : `content/exercises/media/<id-exercice>.png`, copies à l'identique de `dist/png/<n>-tension.png` (aucune retouche, aucune conversion) ; un fichier par exercice, 87 exercices sur 196 (I6-07 ; 101 depuis MEDIA-02, voir plus bas). Registre de provenance : `content/exercises/media/sources.json` (fichier, exercice, chemin d'origine, taille, SHA-256), produit par `node scripts/content/build-media.mjs` depuis la correspondance relue `scripts/content/media-map.json`, vérifié par `validate-content.mjs`.
 - Attribution affichée par l'app sous chaque image (fiche d'exercice) : « Illustration : Everkinetic (Greg Priday et contributeurs), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0 ». Partage à l'identique : les images ne sont pas modifiées ; le code de Spartiate n'est pas une œuvre adaptée (agrégation).
 - Refusées ou non retenues : free-exercise-db (provenance des images non déclarée), wger (licence et auteur à vérifier image par image), Wikimedia Commons (fichier par fichier, lot suivant), WorkoutLabs (droits réservés), Darebee (CC BY-NC-ND). Détail : `docs/I6-07.md`.
 - Aucun téléchargement par l'app : les images sont dans le paquet, chargées à la demande à l'ouverture d'une fiche. **H-9 reste UNVERIFIED** (D-36) : licence lue sur la page du dépôt, aucun constat d'Ali.
+
+## Complément MEDIA-02 (0.26.0) : images web d'Everkinetic, réduites
+
+- Même dépôt, même commit épinglé (`446bb9a3`), même licence **CC BY-SA 4.0** ; dossier `images-web/` (dossier source du dépôt Everkinetic) (dessins du site everkinetic.com),
+  consulté le 2026-11-16. Source déclarée `everkinetic-web` dans `validate-content.mjs` (D-301).
+- 14 fichiers embarqués (liste dans `scripts/content/media-map.json`, entrées `source: "everkinetic-web"`) : **réduits** par
+  `scripts/content/png-reduce.mjs` (Node seul : niveaux de gris 8 bits, hauteur ≤ 640 px, D-302). Ce sont des œuvres adaptées : elles restent
+  sous CC BY-SA 4.0 ; le registre garde l'empreinte et la taille d'origine (`originSha256`, `originBytes`, `transform`).
+- Attribution affichée sous ces images : « Illustration : Everkinetic (Greg Priday et contributeurs), CC BY-SA 4.0,
+  creativecommons.org/licenses/by-sa/4.0 ; image réduite et passée en niveaux de gris » (modification signalée, CC BY-SA 4.0 § 3(a)(1)(B)).
+- wger (API publique, licence lue image par image le 2026-11-16) : **aucune image retenue** (D-300) ; candidates refusées pour licence non
+  crédible (rendus d'origine commerciale, filigranes), image marquée générée par IA, source externe sans licence vérifiable ou mauvais
+  matériel. Détail : `docs/MEDIA-02.md`. Total du catalogue : 101 exercices sur 196, 4 495 435 octets. **H-9 reste UNVERIFIED** (D-36).
 
 # Licences — normes du Strength Score (STR-01, D-310)
 

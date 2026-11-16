@@ -7,11 +7,14 @@
 // plafond par média, écrit content/exercises/media/<id>.png, le registre de provenance content/exercises/media/sources.json (empreinte
 // SHA-256, taille, chemin d'origine) et les champs `media` de content/exercises/exercises.json. Les fichiers ne sont jamais retouchés
 // (copie à l'identique : aucune œuvre adaptée au sens de CC BY-SA 4.0).
+// MEDIA-02 (D-301, D-302) : une entrée peut porter sa propre `source` (ex. `everkinetic-web`, même dépôt et commit) ; si la source déclare
+// `reduceMaxHeight`, le fichier est réduit par png-reduce.mjs (gris 8 bits) et le registre garde l'empreinte et la taille d'origine.
 // L'app ne télécharge rien : ce script est le seul endroit qui connaît l'adresse de la source.
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { reducePng } from './png-reduce.mjs';
 import { MEDIA_MAX_BYTES, MEDIA_SOURCES } from './validate-content.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -28,14 +31,21 @@ async function main() {
   for (const f of readdirSync(MEDIA_DIR)) if (f.endsWith('.png')) unlinkSync(join(MEDIA_DIR, f));
   const files = [];
   for (const entry of map.entries) {
+    const sourceId = entry.source ?? map.source;
+    const entrySource = MEDIA_SOURCES[sourceId];
+    if (!entrySource || entrySource.commit !== map.commit) throw new Error(`source ou commit inconnu : ${sourceId}`);
     const res = await fetch(`${RAW_BASE}/${map.commit}/${entry.path}`);
     if (!res.ok) throw new Error(`${entry.path} : HTTP ${res.status}`);
-    const bytes = Buffer.from(await res.arrayBuffer());
-    if (!bytes.subarray(0, 8).equals(PNG_SIGNATURE)) throw new Error(`${entry.path} : pas un PNG`);
+    const origin = Buffer.from(await res.arrayBuffer());
+    if (!origin.subarray(0, 8).equals(PNG_SIGNATURE)) throw new Error(`${entry.path} : pas un PNG`);
+    const reduce = entrySource.reduceMaxHeight;
+    const bytes = reduce ? reducePng(origin, reduce) : origin;
     if (bytes.length > MEDIA_MAX_BYTES) throw new Error(`${entry.path} : ${bytes.length} octets > ${MEDIA_MAX_BYTES}`);
     const file = `${entry.exerciseId}.png`;
     writeFileSync(join(MEDIA_DIR, file), bytes);
-    files.push({ file, exerciseId: entry.exerciseId, source: map.source, originPath: entry.path, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
+    const sha = (b) => createHash('sha256').update(b).digest('hex');
+    const reduced = reduce ? { originBytes: origin.length, originSha256: sha(origin), transform: `gris-8-bits-hauteur-${reduce}` } : {};
+    files.push({ file, exerciseId: entry.exerciseId, source: sourceId, originPath: entry.path, bytes: bytes.length, sha256: sha(bytes), ...reduced });
   }
   files.sort((a, b) => a.file.localeCompare(b.file));
   writeFileSync(join(MEDIA_DIR, 'sources.json'), `${JSON.stringify({ schemaVersion: 1, files }, null, 2)}\n`);
@@ -43,7 +53,7 @@ async function main() {
   const exercises = JSON.parse(readFileSync(EXERCISES, 'utf8'));
   for (const x of exercises.exercises) {
     const f = byId.get(x.id);
-    x.media = f ? { images: [f.file], video: null, license: source.license, source: `${map.source}:${f.originPath}` } : { images: [], video: null, license: null, source: null };
+    x.media = f ? { images: [f.file], video: null, license: MEDIA_SOURCES[f.source].license, source: `${f.source}:${f.originPath}` } : { images: [], video: null, license: null, source: null };
   }
   writeFileSync(EXERCISES, `${JSON.stringify(exercises, null, 2)}\n`);
   const total = files.reduce((s, f) => s + f.bytes, 0);

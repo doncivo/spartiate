@@ -45,6 +45,18 @@ export const MEDIA_SOURCES = {
     licenseUri: 'creativecommons.org/licenses/by-sa/4.0',
     retrievedOn: '2026-11-13',
   },
+  // MEDIA-02 (D-301, D-302) : même dépôt, même commit, même licence ; dessins de src/images-web, réduits (gris 8 bits, hauteur ≤ 640 px)
+  // par scripts/content/png-reduce.mjs. Œuvre adaptée : reste sous CC BY-SA 4.0, la modification est signalée sous l'image.
+  'everkinetic-web': {
+    title: 'Everkinetic (images web, réduites)',
+    author: 'Everkinetic (Greg Priday et contributeurs)',
+    repository: 'github.com/everkinetic/data',
+    commit: '446bb9a3d0c3beb6b84f7c9d77dfc8af707a2ab6',
+    license: 'CC-BY-SA-4.0',
+    licenseUri: 'creativecommons.org/licenses/by-sa/4.0',
+    retrievedOn: '2026-11-16',
+    reduceMaxHeight: 640,
+  },
 };
 const NETWORK = /[a-z][a-z0-9+.-]*:\/\//i;
 
