@@ -9,7 +9,7 @@ Fixtures synthétiques uniquement.
 
 | # | Critère (Given / When / Then) | Tests (src/features/training/RoutineReorder.test.tsx) |
 | --- | --- | --- |
-| 1 | PC (≥ 1 024 px), éditeur d'une routine : chaque exercice d'un jour porte une poignée « Déplacer « nom » (Alt+Flèche haut ou bas) », `draggable`. Je glisse la poignée du 3ᵉ exercice et la dépose sur le 1ᵉʳ → il passe en tête ; la région polie dit « Rowing à la barre déplacé en position 1 sur 3 » ; à l'enregistrement, `routine_exercise.position` suit l'ordre affiché. | glisser le troisième exercice… |
+| 1 | PC (≥ 1 024 px), éditeur d'une routine : chaque exercice d'un jour porte une poignée « Déplacer « nom » (Alt+Flèche haut ou bas) », `draggable`. Je glisse la poignée du 3ᵉ exercice et la dépose sur le 1ᵉʳ → il passe en tête ; la région polie dit « « Rowing à la barre » : position 1 sur 3 » ; à l'enregistrement, `routine_exercise.position` suit l'ordre affiché. | glisser le troisième exercice… |
 | 2 | PC : poignée au focus, Alt+↓ / Alt+↑ déplacent d'une place, annoncent ; le focus reste sur la poignée ; en bout de liste ou sans Alt, rien ne bouge. | Alt+↓ puis Alt+↑… |
 | 3 | PC : chaque jour porte une poignée « Déplacer le jour « nom » … » ; glisser-déposer et Alt+flèches changent l'ordre des jours ; `routine_day.day_order` (1, 2, …) suit l'ordre affiché. | les jours se réordonnent… |
 | 4 | Un exercice déposé sur un autre jour, ou un jour déposé sur un exercice : rien ne change (pas de déplacement entre jours dans ce ticket). | un exercice déposé sur un autre jour… |
@@ -50,9 +50,11 @@ faux au féminin ; (3) ligne 5 de la fiche disait le glisser WebView2 « vérifi
 Corrections : rouge `c678ab61` (5 échecs : type MIME, dépôt absorbé, 4 annonces ; le test du groupe, vert d'emblée, couvre un comportement existant), vert `01b3f024`.
 (1) type propre `application/x-spartiate-reorder`, plus jamais `text/plain` ; pendant un glisser interne, l'éditeur absorbe tout dépôt hors cible (`preventDefault`,
 `dropEffect = 'none'`) sans écraser l'effet « move » d'une cible valide (`defaultPrevented`) ; mutation : retrait de cette dernière garde → test 1 rouge, annulée.
-Les assertions « dépôt refusé » de deux tests passent de « pas de preventDefault » à « absorbé, dropEffect none, rien ne change ». (2) annonce « « {name} » : position {n} sur
+Les assertions « dépôt refusé » de trois blocs de test (et un `dragStart` réarmé avant le second dépôt, comme le geste réel) passent de « pas de preventDefault » à « absorbé, dropEffect none, rien ne change ». (2) annonce « « {name} » : position {n} sur
 {total} ». (3) « à vérifier par Ali ». (4) test : superset Squat + Développé couché, Développé couché glissé en tête, `circuit_id` commun gardé, Rowing sans groupe.
 Vérifications : RoutineReorder (10), RoutineCircuit, TrainingScreen : 27 tests verts ; typecheck et eslint verts.
+
+**Revue 2 (à froid) : approuvé**, sans bloquant ni important (RoutineReorder 10 verts). Type MIME propre et absorption hors cible vérifiés ; un fichier ou un texte venant de l’extérieur n’est pas bloqué hors glisser interne (`RoutineReorder.test.tsx:221`) ; tests réécrits non affaiblis (preventDefault et `dropEffect` none, état inchangé). Deux mineurs de forme, corrigés par l’orchestrateur : nombre de tests adaptés précisé ci-dessus ; texte de l’annonce aligné dans D-305 (4) et le critère 1.
 
 ## Constats à faire par Ali sur le PC
 - Glisser une poignée et la lâcher sur un champ (« Nom du jour », nom de la routine, champ d'un exercice) : aucun texte inséré (jsdom ne reproduit pas l'insertion).
