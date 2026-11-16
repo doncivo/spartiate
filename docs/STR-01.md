@@ -72,5 +72,5 @@ de décharge ; mention de la source lisible.
 | 2 (important) | « Barre et haltères » du § 17.1 réduit à la barre et au poids du corps, Rowing barre noté sur le Pendlay row : écart au PRD | Consigné comme le prévoit le lot (D-311, choix prudent révisable) et ajouté à « À décider par Ali » dans docs/reprise.md |
 | 3 (important) | Aucun contrôle CI sur la PR (conflit avec main) | Main fusionnée, CI relancée |
 | 4 | Lien d'attribution demandé, texte non cliquable | Adresse complète écrite en clair (CC BY 4.0 § 3(a)(2)), noté dans licences.md |
-| 5 | Date incohérente (affichée 09/06, docs 05/06) | Corrigé : « version des données du 09/06/2026 » (`data_version`), population du 05/06 ; rouge `2b16ee6a`, vert commit suivant |
+| 5 | Date incohérente (affichée 09/06, docs 05/06) | Corrigé : « version des données du 09/06/2026 » (`data_version`), population du 05/06 ; rouge `2b16ee6a`, vert `532e5180` |
 | 6 | Test d'écran retouché dans le commit vert (ordre alphabétique) | Consigné, rien d'affaibli |
