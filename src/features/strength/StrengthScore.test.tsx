@@ -73,7 +73,7 @@ describe('Progrès › Strength Score', () => {
     expect(within(row('Pectoraux')).getByText('Développé couché à la barre · 1RM estimé 90 kg')).toBeInTheDocument();
     // Groupe sans séance : « — » et la raison, avec les mouvements de référence ; jamais 0.
     expect(within(row('Dos')).getByText('—')).toBeInTheDocument();
-    expect(within(row('Dos')).getByText('Aucune séance de : Rowing à la barre, Traction pronation, Traction lestée, Traction supination.')).toBeInTheDocument();
+    expect(within(row('Dos')).getByText('Aucune séance de : Rowing à la barre, Traction lestée, Traction pronation, Traction supination.')).toBeInTheDocument();
     expect(screen.queryByText('0')).toBeNull();
   });
 

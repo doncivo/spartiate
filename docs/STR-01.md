@@ -28,7 +28,25 @@ Choix prudents (Ali absent, révisables) : D-310 (source des normes), D-311 (8 g
 
 ## Passes
 
-**Agent du module (rouge puis vert).** À compléter.
+**Agent du module (rouge puis vert).** Source des normes (D-310) : API publique FitnessVolt (population « gym », Symmetric Strength), CC BY 4.0,
+recopiée par script (`scripts/content/build-strength-standards.mjs`, réponses brutes téléchargées le 16/11 dans `.codex-tmp/tmp-STR-01/`, non
+versionnées). Clés du catalogue par `scripts/content/set-strength-keys.mjs` (12 exercices, D-311). Calcul (D-312) dans
+`src/domain/training/strengthScore.ts` ; écran `src/features/strength/StrengthScore.tsx`, monté par `SectionNotice.tsx` (D-313).
+
+| Critère | Point | Rouge | Vert | Échec observé au rouge |
+| --- | --- | --- | --- | --- |
+| 1–6 | Vecteurs du domaine (20 cas : interpolation, bornes, catégorie, paliers, sexe, poids, décharge, charge totale, meilleur mouvement, « — » et raisons, global) | `b8055511` | VERT | `expected { score: +0 } to deeply equal { score: 63 }`, `groupe chest absent` (bouchon) |
+| 7 | validate-content : clé inconnue, groupes incohérents, norme orpheline, centiles, catégories, source ; contenu réel (12 clés, 11 mouvements, recopie exacte homme ≤ 83 kg) | `b8055511` | VERT | `ENOENT … content/strength/standards.json` (suite entière rouge) |
+| 8 | Écran (5 cas Testing Library : sans sexe, sans pesée, homme 45 Bronze, femme 96 Or, attribution) | `b8055511` | VERT | `Unable to find … Sexe non renseigné…` (bouchon qui ne rend rien) |
+| 9 | Hors du départ : `StrengthScore.tsx` et `standards.json` blocs à la demande, textes absents du départ | `b8055511` | VERT | bloc absent du manifeste |
+
+Ajustement après le rouge, avant le vert : dans le test d'écran, l'ordre des mouvements de référence cités par la raison du Dos est alphabétique
+(choix de l'écran, « Traction lestée » avant « Traction pronation »). Bundle : un premier essai ajoutait 9 octets au départ (l'estimation du 1RM
+devenait un bloc commun de plus, ajouté aux préchargements des imports à la demande du départ) ; corrigé par un groupe de découpage `prescribe`
+sans dépendances récursives (vite.config.ts) : le bloc `prescribe` retrouve exactement son contenu et son empreinte d'avant
+(`prescribe-CrizTkXB.js`). Départ : **195 861 octets normalisés avant (main `cdf1a900`) et après, 44 blocs** (brut 195 865 → 195 872 ; marge 162 539).
+Environnement : `npm run test:bundle` local échoue sur `pairingBundle.test.ts` (2 cas) dès main, sans changement : les modules de `node_modules`
+s'y écrivent `../../node_modules/…` parce que `node_modules` du worktree est une jonction vers le dépôt principal ; hors périmètre, la CI tranche.
 
 **qa-test.** À compléter.
 

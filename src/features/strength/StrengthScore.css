@@ -1,0 +1,118 @@
+/* Progrès › Strength Score (STR-01, proposition docs/maquettes/propositions/strength-score/) : jetons de tokens.css seulement, aucune couleur en dur, tailles en rem (Dynamic Type). */
+.ct-strength {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  min-width: 0;
+}
+
+.ct-strength__title {
+  color: var(--ct-color-bronze);
+}
+
+.ct-strength__subtitle,
+.ct-strength__notice p {
+  margin: 0;
+}
+
+.ct-strength__hero {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--ct-space-2) var(--ct-space-4);
+  margin: var(--ct-space-2) 0;
+}
+
+.ct-strength__global {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ct-space-2);
+}
+
+.ct-strength__global-value {
+  font-family: var(--ct-font-title);
+  font-weight: var(--ct-font-weight-semibold);
+  font-size: 2.75rem;
+  line-height: 1;
+  color: var(--ct-color-bronze);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-strength__global-label,
+.ct-strength__context,
+.ct-strength__detail,
+.ct-strength__foot {
+  color: var(--ct-color-text-secondary);
+  font-size: var(--ct-font-size-sm);
+}
+
+.ct-strength__context,
+.ct-strength__foot {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ct-strength__foot {
+  font-size: var(--ct-font-size-xs);
+}
+
+.ct-strength__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Une ligne par groupe : nom, barre décorative, valeur ; détail (mouvement retenu ou raison du « — ») dessous. Hauteur ≥ 44 pt. */
+.ct-strength__row {
+  display: grid;
+  grid-template-columns: minmax(6rem, 7rem) minmax(0, 1fr) minmax(3rem, auto);
+  align-items: center;
+  gap: var(--ct-space-1) var(--ct-space-3);
+  min-height: 44px;
+  padding: var(--ct-space-2) 0;
+  border-bottom: 1px solid var(--ct-color-border);
+}
+
+.ct-strength__name {
+  color: var(--ct-color-text);
+  overflow-wrap: anywhere;
+}
+
+.ct-strength__bar {
+  height: 6px;
+  border-radius: var(--ct-radius-pill);
+  background: var(--ct-color-border);
+  overflow: hidden;
+}
+
+.ct-strength__fill {
+  display: block;
+  height: 100%;
+  background: var(--ct-color-bronze);
+}
+
+.ct-strength__value {
+  text-align: right;
+  font-weight: var(--ct-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--ct-color-text);
+}
+
+.ct-strength__detail {
+  grid-column: 1 / -1;
+  overflow-wrap: anywhere;
+}
+
+/* Très grand texte : la ligne passe en colonne, rien n'est coupé. */
+@media (max-width: 22rem) {
+  .ct-strength__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .ct-strength__bar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}

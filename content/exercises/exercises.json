@@ -70,7 +70,7 @@
         "license": "CC-BY-SA-4.0",
         "source": "everkinetic:dist/png/0042-tension.png"
       },
-      "strengthStandardKey": null,
+      "strengthStandardKey": "bench",
       "schemaVersion": 1
     },
     {
@@ -286,7 +286,7 @@
         "license": "CC-BY-SA-4.0",
         "source": "everkinetic:dist/png/0043-tension.png"
       },
-      "strengthStandardKey": null,
+      "strengthStandardKey": "incline-bench",
       "schemaVersion": 1
     },
     {
@@ -1248,7 +1248,7 @@
         "license": null,
         "source": null
       },
-      "strengthStandardKey": null,
+      "strengthStandardKey": "barbell-row",
       "schemaVersion": 1
     },
     {
@@ -1386,7 +1386,7 @@
         "license": "CC-BY-SA-4.0",
         "source": "everkinetic:dist/png/0087-tension.png"
       },
-      "strengthStandardKey": null,
+      "strengthStandardKey": "pull-up",
       "schemaVersion": 1
     },
     {
@@ -1954,7 +1954,7 @@
         "license": null,
         "source": null
       },
-      "strengthStandardKey": null,
+      "strengthStandardKey": "chin-up",
       "schemaVersion": 1
     },
     {
@@ -2785,7 +2785,7 @@
         "license": null,
         "source": null
       },
-      "strengthStandardKey": null,
+      "strengthStandardKey": "overhead-press",
       "schemaVersion": 1
     },
     {
@@ -5213,7 +5213,7 @@
         "license": null,
         "source": null
       },
-      "strengthStandardKey": null,
+      "strengthStandardKey": "dip",
       "schemaVersion": 1
     },
     {
@@ -5285,7 +5285,7 @@
         "license": "CC-BY-SA-4.0",
         "source": "everkinetic:dist/png/0122-tension.png"
       },
-      "strengthStandardKey": null,
+      "strengthStandardKey": "back-squat",
       "schemaVersion": 1
     },
     {
@@ -5555,7 +5555,7 @@
         "license": "CC-BY-SA-4.0",
         "source": "everkinetic:dist/png/0138-tension.png"
       },
-      "strengthStandardKey": null,
+      "strengthStandardKey": "front-squat",
       "schemaVersion": 1
     },
     {
@@ -6701,7 +6701,7 @@
         "license": "CC-BY-SA-4.0",
         "source": "everkinetic:dist/png/0099-tension.png"
       },
-      "strengthStandardKey": null,
+      "strengthStandardKey": "deadlift",
       "schemaVersion": 1
     },
     {
@@ -8217,7 +8217,7 @@
         "license": null,
         "source": null
       },
-      "strengthStandardKey": null,
+      "strengthStandardKey": "sumo-deadlift",
       "schemaVersion": 1
     },
     {
@@ -11798,7 +11798,7 @@
         "license": null,
         "source": null
       },
-      "strengthStandardKey": null,
+      "strengthStandardKey": "pull-up",
       "schemaVersion": 1
     },
     {

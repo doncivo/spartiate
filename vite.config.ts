@@ -70,6 +70,10 @@ export default defineConfig({
     // pairing.html : bundle minimal contrôlé par tests/bundle/pairingBundle.test.ts, ADR 0011 section 2.1).
     rollupOptions: {
       input: { main: resolve(import.meta.dirname, 'index.html'), pairing: resolve(import.meta.dirname, 'pairing.html') },
+      // STR-01 (D-313) : le moteur de prescription et l'estimation du 1RM restent un seul bloc à la demande (« prescribe »), comme avant
+      // l'écran Strength Score, qui lit l'estimation sans la prescription : sans ce groupe, l'estimation devient un bloc commun de plus,
+      // et chaque import à la demande du départ qui en dépend l'ajoute à sa liste de préchargement (+9 octets dans le départ).
+      output: { codeSplitting: { groups: [{ name: 'prescribe', includeDependenciesRecursively: false, test: /src[\\/]domain[\\/]training[\\/](confidence|estimate1rm|constraints|prescribe)\.ts$/ }] } },
     },
     // Cartes de source seulement en debug : l'installeur reste léger (PRD 8 : < 15 Mo).
     sourcemap: !!process.env['TAURI_ENV_DEBUG'] || !process.env['TAURI_ENV_PLATFORM'],
