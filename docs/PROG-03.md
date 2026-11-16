@@ -1,6 +1,6 @@
 # PROG-03 — Réordonner exercices et jours d'une routine sur PC (glisser-déposer, Alt+flèches, annonce) (lot 0.26.0)
 
-Statut : **en revue.** Budget S. Branche `PROG-03` depuis `origin/main` (`cdf1a900`). Aucune migration. Lot 0.26.0 (docs/LOT-0.26.0.md, § 3) : pas de tag à la fusion.
+Statut : **en revue (code-reviewer à faire).** Budget S. Branche `PROG-03` depuis `origin/main` (`cdf1a900`). Aucune migration. Lot 0.26.0 (docs/LOT-0.26.0.md, § 3) : pas de tag à la fusion.
 Rôles : training, ui-design-system. Chapitres PRD : 18 (§ 18.1 gestes PC « glisser-déposer pour réordonner », § 18.6 clavier PC, lecteur d'écran, 44 pt),
 14 (routines). Hypothèse H-n touchée : aucune (pas de capacité de plateforme nouvelle ; l'API HTML5 drag and drop de WebView2 est vérifiée par Ali, constat ci-dessous).
 Fixtures synthétiques uniquement.
@@ -20,9 +20,28 @@ Fixtures synthétiques uniquement.
 
 ## Passes
 
-**Agent du module (training, ui-design-system).** À compléter.
+**Agent du module (training, ui-design-system).** Rouge : `c5411577` (6 tests sur 7 en échec : poignées `Déplacer « … »` introuvables, région `.ct-training__reorder-live` absente, règle `.ct-training__drag-handle` absente ; le 7ᵉ, « sans glisser en cours », est une garde de non-régression verte dès l'origine).
+Vert : `6fabc60e`. Dans `src/features/training/RoutinesView.tsx` : poignée `GripVertical` (lucide-react, déjà présent) rendue si `useLayout() === 'pc'`, `draggable`, Alt+↑/↓
+(sans Ctrl, Maj ni Méta), focus rendu à la poignée après le déplacement (`data-reorder-handle`) ; dépôt d'un exercice sur une ligne du même jour, d'un jour sur la carte
+d'un autre jour ; `dataTransfer` facultatif (jsdom). Région `aria-live="polite"` masquée (`ct-visually-hidden`) ; « Monter » / « Descendre » annoncent aussi. Textes
+`reorderHandle`, `reorderDayHandle`, `reorderMoved` dans src/i18n/fr.training.ts ; CSS par tokens dans TrainingScreen.css. Choix prudents : D-305.
+L'arrangement d'une liste (`moveItem`) reste dans la feature : simple ordre d'affichage, pas une règle métier (src/domain/training évité, STR-01 y travaille).
 
-**qa-test.** À compléter.
+**Synchro (D-26) : aucune colonne ni règle de synchro changée, pas de relecture D-26 requise.** Preuve : `git diff --stat origin/main -- src/sync src/domain/sync src-tauri src/db`
+est vide ; l'ordre est écrit à l'enregistrement par `saveDraft` → `updateExercise(position)` / `updateDay(dayOrder)`, chemin inchangé et déjà publié.
+
+**Bundle de départ** (`npm run build -- --manifest` puis `node tests/bundle/measureStart.ts`, origin/main `cdf1a900` puis branche) : normalisée 195 861 → 195 861 octets
+(brute 195 865 → 195 853, écart de hachage), 44 blocs dans les deux cas, marge 162 539 octets. L'éditeur reste dans le bloc Entraînement chargé à la demande.
+`npm run test:bundle` sur origin/main dans ce worktree : startBundle vert ; 2 échecs de `pairingBundle.test.ts` (chemins `../../node_modules` dus à la jonction du
+worktree sous .codex-tmp), sans lien avec ce ticket, à juger par la CI.
+
+**qa-test.** Rouge rejoué (ci-dessus). Cas limite ajouté : exercice déposé sur un exercice d'un autre jour (jour B garni par le repository). Mutation : retrait de la garde
+« même jour » dans `lineDropProps` → ce test seul passe au rouge (1 échec sur 8), mutation annulée, 8/8 verts. Suites ciblées : RoutineReorder (8), RoutineCircuit,
+TrainingScreen, Ergo02Screens, trainingNavigation, src/i18n : 26 fichiers, 227 tests verts ; `npm run typecheck` vert ; eslint vert sur les fichiers touchés
+(Prettier non imposé par `npm run lint`, fichiers déjà non conformes sur main). Non testable en jsdom : le rendu réel du glisser dans WebView2 et l'annonce du Narrateur
+(constat d'Ali ci-dessous ; e2e PC en CI seulement).
+
+Budget : S (≈ 50k) dépassé (≈ 90k, attentes de build et une mutation) ; poursuivi sur consigne d'Ali.
 
 **code-reviewer.** (laissée vide : relecture à froid par l'orchestrateur)
 

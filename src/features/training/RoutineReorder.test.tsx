@@ -175,6 +175,23 @@ describe('PROG-03 : réordonner sur PC (glisser-déposer, Alt+flèches, annonce)
     expect(dayNames()).toEqual(['Jour B', 'Jour A']);
   });
 
+  it('qa : un exercice déposé sur un exercice d’un autre jour ne change aucun des deux jours', async () => {
+    viewport(1440);
+    await (await db.data.repos.trainingRoutines()).addExercise(u(6), { id: u(7), exerciseId: 'deadlift-barbell', exerciseName: 'Soulevé de terre', sets: 3, repMin: 3, repMax: 5, rir: 2, restSec: 180, position: 0 });
+    const day = await openEditor();
+    const dayB = screen.getByRole('group', { name: 'Jour B' });
+    const before = lineNames(dayB);
+    expect(before).toHaveLength(1);
+    fireEvent.dragStart(handle(ROW));
+    const target = dayB.querySelector('li.ct-training__line');
+    if (!(target instanceof HTMLElement)) throw new Error('ligne du jour B absente');
+    expect(fireEvent.dragOver(target)).toBe(true);
+    fireEvent.drop(target);
+    expect(lineNames(day)).toEqual([SQUAT, BENCH, ROW]);
+    expect(lineNames(dayB)).toEqual(before);
+    expect(live().textContent).toBe('');
+  });
+
   it('sans glisser en cours, un dépôt (fichier venu d’ailleurs) ne change rien', async () => {
     viewport(1440);
     const day = await openEditor();
