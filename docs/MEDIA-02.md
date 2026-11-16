@@ -110,7 +110,7 @@ demande `ExerciseMedia` ; `tests/bundle/start-modules.json` inchangé.
 ## Passe 5 — code-reviewer
 
 Relecture à froid (agent code-reviewer, lecture seule, branche à `6d3eaaf3`) : **approuvé**, aucun bloquant ni important. Vérifié : validate-content vert, 79 tests de `scripts/content` verts, SHA-256 et tailles des 14 fichiers recalculés et conformes, PNG gris 8 bits ≤ 640 px, 91 629 octets au plus, 4 495 435 au total ; provenance complète ; attribution BY-SA modifiée tirée du catalogue i18n ; `png-reduce.mjs` sans dépendance (zlib seul), décodage et encodage corrects ; écart de périmètre de `exerciseMediaFiles.ts` consigné ; bundle inchangé ; aucune donnée d'Ali. Cinq mineurs :
-1. Flux décompressé de longueur non contrôlée (IDAT tronqué → lignes noires silencieuses) : **corrigé**, rouge `ced58b18`, vert dans le commit suivant.
+1. Flux décompressé de longueur non contrôlée (IDAT tronqué → lignes noires silencieuses) : **corrigé**, rouge `ced58b18`, vert `4699b99c`.
 2. `tRNS` (transparence par clé) et `PLTE` ignorés : **corrigé** (refus explicite), mêmes SHA. Le CRC reste non vérifié (entrées épinglées par commit).
 3. `validateMediaFiles` n'impose pas `originSha256`, `originBytes`, `transform` à une source réduite (seul le test sur le contenu réel le fait) : **laissé**, à reprendre avec une prochaine source réduite.
 4. `row-barbell` illustré par une variante : **ajouté** aux constats d'Ali (H-8).
