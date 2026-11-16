@@ -116,3 +116,12 @@ Ajoutées en dépendances directes **sans nouvelle entrée dans `Cargo.lock`** (
 - wger (API publique, licence lue image par image le 2026-11-16) : **aucune image retenue** (D-300) ; candidates refusées pour licence non
   crédible (rendus d'origine commerciale, filigranes), image marquée générée par IA, source externe sans licence vérifiable ou mauvais
   matériel. Détail : `docs/MEDIA-02.md`. Total du catalogue : 101 exercices sur 196, 4 495 435 octets. **H-9 reste UNVERIFIED** (D-36).
+
+# Licences — normes du Strength Score (STR-01, D-310)
+
+- Fichier embarqué : `content/strength/standards.json` (centiles 10, 25, 50, 75, 90, 95, 99 du 1RM, par sexe et catégorie de poids, pour 11 mouvements), construit par `scripts/content/build-strength-standards.mjs` ; aucun nombre ajouté ni modifié (valeurs de la source au pas de 0,1 kg).
+- Source : FitnessVolt Strength Standards, population « gym » (Symmetric Strength self-reported gym dataset), <https://fitnessvolt.com/strength-standards/> ; API publique `https://fitnessvolt.com/wp-json/fvss/v1/standards/{lift}?sex={sex}&source=gym&format=table&unit=kg`.
+- Version des données : `data_version` 2026-06-09 (date affichée dans l’app, « version des données du 09/06/2026 ») ; population gym mise à jour le 2026-06-05 ; API 1.0.0 ; consultée le 16 novembre 2026.
+- Licence : Creative Commons Attribution 4.0 (CC BY 4.0, <https://creativecommons.org/licenses/by/4.0/>), déclarée sur la page de l’API <https://fitnessvolt.com/strength-standards/api/> : « The data is free to use under CC BY 4.0. » (vérifié le 16/11/2026 ; le bloc Dataset de la page de méthode décrit un autre jeu, « FVCP », et n’est pas la preuve retenue) ; la réponse de l’API précise « Free with a visible attribution link ». Attribution demandée : « Strength standards data by FitnessVolt (https://fitnessvolt.com/strength-standards/) ».
+- Attribution dans l’app : Progrès › Strength Score affiche en clair « Normes : FitnessVolt Strength Standards (Symmetric Strength self-reported gym dataset, version des données du 09/06/2026), https://fitnessvolt.com/strength-standards/, licence CC BY 4.0. » (texte, pas de lien cliquable : l’app n’ouvre pas de lien externe depuis Progrès). La source demande « a visible attribution link » : l’adresse complète est écrite en clair, ce qui satisfait CC BY 4.0 § 3(a)(2) (attribution par un moyen raisonnable selon le support) ; choix révisable par Ali (D-310).
+- Données déclarées par des pratiquants, non jugées (méthode de la source) ; ce que mesurent les charges des tractions et dips est l’hypothèse H-37.

@@ -58,6 +58,15 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
     expect(await screen.findByText('Aucune séance de cardio sur les quatre dernières semaines.')).toBeInTheDocument();
   });
 
+  it('progress : STR-01, la carte Strength Score est chargée à la demande ; sans profil, elle le dit et ne chiffre rien', async () => {
+    // Import à froid fait avant l'attente (comme I6-02) : le bloc, ses normes et le catalogue ; aucun délai allongé.
+    await Promise.all([import('../strength/StrengthScore'), import('../../../content/strength/standards.json'), import('../../../content/exercises/exercises.json')]);
+    open('progress');
+    expect(await screen.findByRole('region', { name: 'Strength Score' })).toBeInTheDocument();
+    expect(await screen.findByText('Sexe non renseigné dans le profil : les normes dépendent du sexe.')).toBeInTheDocument();
+    expect(screen.queryByText(/global ·/)).toBeNull();
+  });
+
   it('progress : la section Corps (mensurations, photos de progression, I6-02) est chargée à la demande', async () => {
     await BodyProgress.preload();
     open('progress');
