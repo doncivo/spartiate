@@ -1,17 +1,16 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-16 : 0.25.0 publiée (v0.25.0, ios-v0.25.0) ; **lot 0.26.0 en cours** (docs/LOT-0.26.0.md : DOC-H21, ERGO-03, PROG-03, STR-01, MEDIA-02), worktrees `.codex-tmp/wt-<ticket>` (jonction `node_modules` : `rmdir` avant `git worktree remove`). Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-305 dans docs/decisions.md.
+État au 2026-11-16 : 0.25.0 publiée (v0.25.0, ios-v0.25.0) ; **lot 0.26.0 en cours** (docs/LOT-0.26.0.md : DOC-H21, ERGO-03, PROG-03, STR-01, MEDIA-02), worktrees `.codex-tmp/wt-<ticket>` (jonction `node_modules` : `rmdir` avant `git worktree remove`). Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-313 dans docs/decisions.md.
 
 ## Rapport du matin (13/11)
 
 - Publiées les 12-13/11 : 0.17.1 à 0.22.0 (détail dans CHANGELOG.md).
 - Bloqué ou partiel : CLEAN-02 sans la migration des tests de synchro hérités (CLEAN-03, L, D-201) ni le retrait du plugin vision (gardé pour l'import de programme, D-200)  ; action « Pris » des compléments livrée en 0.22.2 (FIX-0221, D-250 à D-253), à constater sur l’iPhone (H-36).
-- Installer : PC et iPhone le même jour, avant toute saisie (schéma 18). Le jour J : docs/RESET-01.md.
 - Constats iPhone : GPS (demande en français, parcours de distance connue ± 5 %, séance sur le PC sans tracé, refus affiché ; H-35) ; rappels de compléments (texte sans nom sur l'écran verrouillé, prise cochée avant l'heure = pas de rappel ; H-34) ; journée rouge (charges × 0,95 au cran du matériel, bouton « Accepter l'allègement ») ; favoris (ajout sur un appareil, présent sur l'autre après synchro) ; besoin de sommeil (7 h 30 à ~8 h 45 sur tes nuits, relecture dans Plus › Journaux) ; images d'exercice en thème sombre (H-9) ; bouclier de Corps (H-32) ; « Repartir de zéro » (H-33).
 
 ## Prochaines étapes
 
-0. **Lot 0.26.0 en cours** (Ali, 16/11 : poursuivre même en cas de dépassement de budget) : fusionnés DOC-H21 (#141, D-292 à D-294), note GPS FIX-0242 (#144), MEDIA-02 (#142, D-300 à D-304, 101/196 images, 4 des 12 de la routine), ERGO-03 (#143, D-295 à D-298). PROG-03 (#145, D-305) fusionné ; STR-01 (D-310 à D-319) en cours. Suivi : une décision reçue par la synchro peut masquer une cible future sans le dire (revue ERGO-03, pour sync-icloud).
+0. **Lot 0.26.0** (Ali, 16/11 : poursuivre même en cas de dépassement de budget) : fusionnés DOC-H21 (#141, D-292 à D-294), note GPS FIX-0242 (#144), MEDIA-02 (#142, D-300 à D-304, 101/196 images, 4 des 12 de la routine), ERGO-03 (#143, D-295 à D-298), PROG-03 (#145, D-305), STR-01 (#146, D-310 à D-313, H-37). Puis REL-0.26.0. Suivi : une décision reçue par la synchro peut masquer une cible future sans le dire (revue ERGO-03, pour sync-icloud).
 1. **Lot 0.25.0 terminé** (docs/LOT-0.25.0.md) : FIX-0242 (#134, D-276 à D-279), FIX-0241 (#135, D-280 à D-283), FIX-0243 (#136, D-284 à D-286), ERGO-02b (#137, D-287 à D-289), SYNC-01 (#138, D-290 validée, ADR 0018 accepté, avenant 37 de l'ADR 0011), FIX-0244 (#139, D-291 révisable). Départ 199 211 → 195 860 octets. Publication : REL-0.25.0, tag v0.25.0, build-ios (publish=false), ios-v0.25.0. Suivi : test instable `src/features/sync/syncedData.test.tsx` (« la pesée reçue remplace l'ancienne », délai de 1 s dépassé après `forgetBanner.test.tsx`, aussi sur main) ; limites M2 à M4 de l'ADR 0018 ; lecture des cibles futures hors transaction (FIX-0244, mineur).
 3. Constat d'Ali : « Pris » app en arrière-plan et tuée (H-36). Import de programme : I6-08 (docs/I6-08.md, non exécuté).
 4. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
@@ -19,6 +18,7 @@
 
 ## À décider par Ali
 
+- Lot 0.26.0, révisables : Strength Score tenu pour la barre et le poids du corps seulement, Rowing barre noté sur le Pendlay row (D-311, écart au § 17.1 « barre et haltères ») ; normes FitnessVolt (D-310) ; nutrition facultative dans le guide (D-293) ; cible future montrée et confirmation (D-295, D-296).
 - ERGO-01b, révisables : jour du programme (D-243), cran de 2,5 kg sans profil de matériel (D-244), action rouge choisie par écran (D-246).
 - Archive `archive/agent-a0528c3a67af21a44` (origin) : supprimable sur décision d'Ali (D-144).
 

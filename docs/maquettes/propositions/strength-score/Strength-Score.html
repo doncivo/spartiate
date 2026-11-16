@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strength Score — proposition STR-01</title>
+<!-- Proposition STR-01 (lot 0.26.0) : jetons de src/ui/theme/tokens.css seulement, aucune couleur en dur. Données d'exemple synthétiques. -->
+<link rel="stylesheet" href="../../../../src/ui/theme/tokens.css">
+<style>
+body { margin: 0; background: var(--ct-color-bg); color: var(--ct-color-text); font-family: var(--ct-font-text); }
+.boards { display: flex; flex-wrap: wrap; gap: var(--ct-space-8); padding: var(--ct-space-6); align-items: flex-start; }
+.label { font-size: var(--ct-font-size-xs); color: var(--ct-color-text-secondary); margin-bottom: var(--ct-space-2); }
+.phone { width: 440px; box-sizing: border-box; padding: var(--ct-space-6); background: var(--ct-color-bg); border: 1px solid var(--ct-color-border); border-radius: var(--ct-radius-xl); }
+.pc { width: 660px; box-sizing: border-box; padding: var(--ct-space-6); background: var(--ct-color-surface); border: 1px solid var(--ct-color-border); border-radius: var(--ct-radius-lg); }
+h2 { margin: 0; font-family: var(--ct-font-title); font-weight: 600; font-size: var(--ct-font-size-heading-sm); color: var(--ct-color-bronze); letter-spacing: .12em; text-transform: uppercase; }
+.sub { font-size: var(--ct-font-size-sm); color: var(--ct-color-text-secondary); }
+.hero { display: flex; justify-content: space-between; align-items: baseline; margin: var(--ct-space-3) 0; gap: var(--ct-space-3); flex-wrap: wrap; }
+.big { font-family: var(--ct-font-title); font-size: 2.75rem; color: var(--ct-color-bronze); }
+.big small { font-family: var(--ct-font-text); font-size: var(--ct-font-size-text-sm); color: var(--ct-color-text-secondary); }
+.row { display: grid; grid-template-columns: 7rem 1fr 3rem; gap: var(--ct-space-3); align-items: center; min-height: 44px; border-bottom: 1px solid var(--ct-color-border); }
+.bar { height: 6px; background: var(--ct-color-border); border-radius: var(--ct-radius-pill); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--ct-color-bronze); }
+.v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.why { grid-column: 1 / -1; font-size: var(--ct-font-size-xs); color: var(--ct-color-text-secondary); margin: -6px 0 var(--ct-space-2); }
+.foot { font-size: var(--ct-font-size-xs); color: var(--ct-color-text-secondary); line-height: 1.5; margin-top: var(--ct-space-3); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--ct-space-6); }
+</style>
+</head>
+<body>
+<div class="boards">
+  <div>
+    <div class="label">iPhone · Progrès › Strength Score (440 px)</div>
+    <section class="phone" aria-label="Strength Score, iPhone">
+      <h2>Strength Score</h2>
+      <div class="sub">8 groupes · mouvements à la barre et au poids du corps</div>
+      <div class="hero"><span class="big">47 <small>global · Bronze · 6 groupes sur 8</small></span><span class="sub">81,4 kg · homme · catégorie ≤ 83 kg</span></div>
+      <div class="row"><span>Pectoraux</span><span class="bar"><i style="width:56%"></i></span><span class="v">56</span></div>
+      <div class="row"><span>Dos</span><span class="bar"><i style="width:52%"></i></span><span class="v">52</span></div>
+      <div class="row"><span>Épaules</span><span class="bar"><i style="width:44%"></i></span><span class="v">44</span></div>
+      <div class="row"><span>Biceps</span><span class="bar"></span><span class="v">—</span><p class="why">Aucune séance de Traction supination. Les haltères n'ont pas de norme publiée dans la source.</p></div>
+      <div class="row"><span>Triceps</span><span class="bar"><i style="width:45%"></i></span><span class="v">45</span></div>
+      <div class="row"><span>Quadriceps</span><span class="bar"><i style="width:41%"></i></span><span class="v">41</span></div>
+      <div class="row"><span>Ischios</span><span class="bar"><i style="width:10%"></i></span><span class="v">&lt; 10</span></div>
+      <div class="row"><span>Fessiers</span><span class="bar"></span><span class="v">—</span><p class="why">Aucune séance de Soulevé de terre à la barre ou sumo.</p></div>
+      <p class="foot">Rang centile du 1RM estimé parmi les pratiquants du même sexe et de la même catégorie de poids. Paliers : Fer &lt; 25 · Bronze 25–49 · Argent 50–74 · Or ≥ 75. Inchangé en décharge : ses séances n'entrent pas.<br>Normes : FitnessVolt Strength Standards (données Symmetric Strength, déclarées), fitnessvolt.com/strength-standards, CC BY 4.0.</p>
+    </section>
+  </div>
+  <div>
+    <div class="label">PC · Progrès › Strength Score (colonne bornée à 660 px)</div>
+    <section class="pc" aria-label="Strength Score, PC">
+      <h2>Strength Score</h2>
+      <div class="hero"><span class="big">47 <small>global · Bronze · 6 groupes sur 8</small></span><span class="sub">81,4 kg · homme · catégorie ≤ 83 kg</span></div>
+      <div class="cols">
+        <div>
+          <div class="row"><span>Pectoraux</span><span class="bar"><i style="width:56%"></i></span><span class="v">56</span></div>
+          <div class="row"><span>Dos</span><span class="bar"><i style="width:52%"></i></span><span class="v">52</span></div>
+          <div class="row"><span>Épaules</span><span class="bar"><i style="width:44%"></i></span><span class="v">44</span></div>
+          <div class="row"><span>Biceps</span><span class="bar"></span><span class="v">—</span><p class="why">Aucune séance de Traction supination.</p></div>
+        </div>
+        <div>
+          <div class="row"><span>Triceps</span><span class="bar"><i style="width:45%"></i></span><span class="v">45</span></div>
+          <div class="row"><span>Quadriceps</span><span class="bar"><i style="width:41%"></i></span><span class="v">41</span></div>
+          <div class="row"><span>Ischios</span><span class="bar"><i style="width:10%"></i></span><span class="v">&lt; 10</span></div>
+          <div class="row"><span>Fessiers</span><span class="bar"></span><span class="v">—</span><p class="why">Aucune séance de Soulevé de terre.</p></div>
+        </div>
+      </div>
+      <p class="foot">Mouvement retenu par groupe : le meilleur score parmi ses mouvements de référence. Normes : FitnessVolt Strength Standards (Symmetric Strength), CC BY 4.0.</p>
+    </section>
+  </div>
+</div>
+</body>
+</html>

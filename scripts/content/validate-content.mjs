@@ -347,6 +347,9 @@ export function validateContent(c, opts = {}) {
     });
   }
 
+  // --- strength/standards.json (STR-01, D-310, D-311) et clés `strengthStandardKey` ---
+  validateStrength(c.strength ?? null, exercisesById, err);
+
   return {
     errors,
     stats: {
@@ -399,6 +402,70 @@ function validateMediaFiles(mediaFiles, registry, opts, err) {
   for (const e of entries) if (isObj(e) && !referenced.has(e.file)) err(`${where}/sources.json`, `entrée sans média référencé : ${String(e.file)}`);
 }
 
+/** Groupes du Strength Score, dans l'ordre de l'écran (D-311). */
+export const STRENGTH_GROUP_IDS = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'glutes'];
+
+/**
+ * Normes du Strength Score : source citée, centiles croissants, catégories croissantes terminées par une catégorie ouverte, charges croissantes
+ * (une par centile) ; chaque clé d'exercice connue des normes, chaque norme portée par au moins un exercice, groupes d'une norme égaux à ceux
+ * que désignent les muscles PRINCIPAUX de chaque exercice qui porte sa clé.
+ */
+function validateStrength(s, exercisesById, err) {
+  const where = 'standards.json';
+  const lifts = new Map();
+  const groupMuscles = new Map();
+  if (s !== null) {
+    if (!isObj(s) || s.schemaVersion !== 1 || !Array.isArray(s.lifts) || !Array.isArray(s.groups) || !Array.isArray(s.percentiles)) {
+      err(where, 'forme attendue { schemaVersion: 1, source, percentiles, groups, lifts }');
+      s = null;
+    }
+  }
+  if (s !== null) {
+    for (const field of ['name', 'url', 'license', 'attribution', 'consultedOn']) if (!isObj(s.source) || !isStr(s.source[field])) err(where, `source.${field} manquante`);
+    const p = s.percentiles;
+    if (!(p.length >= 2 && p.every((v, i) => isNum(v) && v > 0 && v < 100 && (i === 0 || v > p[i - 1])))) err(where, 'percentiles : nombres croissants dans ]0, 100[ attendus');
+    const ids = s.groups.map((g) => (isObj(g) ? g.id : null));
+    if (JSON.stringify(ids) !== JSON.stringify(STRENGTH_GROUP_IDS)) err(where, `groupes attendus dans l'ordre : ${STRENGTH_GROUP_IDS.join(', ')}`);
+    for (const g of s.groups) if (isObj(g) && Array.isArray(g.muscles)) groupMuscles.set(g.id, new Set(g.muscles));
+    s.lifts.forEach((l, i) => {
+      const w = `${where} lifts[${i}]`;
+      if (!isObj(l) || !isStr(l.key) || !KEBAB.test(l.key)) return err(w, 'key manquante ou invalide');
+      if (lifts.has(l.key)) err(w, `clé dupliquée : ${l.key}`);
+      lifts.set(l.key, l);
+      if (!isStr(l.sourceLift)) err(w, 'sourceLift manquant');
+      if (typeof l.totalLoad !== 'boolean') err(w, 'totalLoad : booléen attendu');
+      if (!Array.isArray(l.groups) || l.groups.length === 0) err(w, 'groups : tableau non vide attendu');
+      else for (const g of l.groups) if (!STRENGTH_GROUP_IDS.includes(g)) err(w, `groupe hors liste : ${String(g)}`);
+      for (const sex of ['male', 'female']) {
+        const classes = l[sex];
+        const ok = Array.isArray(classes) && classes.length > 0 && classes.every((c, k) => isObj(c) && (k === classes.length - 1 ? c.upToKg === null : isNum(c.upToKg) && c.upToKg > 0 && (k === 0 || c.upToKg > classes[k - 1].upToKg)));
+        if (!ok) err(`${l.key} ${sex}`, 'catégories croissantes, la dernière ouverte (upToKg null), attendues');
+        if (!Array.isArray(classes)) continue;
+        classes.forEach((c, k) => {
+          if (!isObj(c)) return;
+          if (!(Array.isArray(c.kg) && c.kg.length === p.length && c.kg.every((v, j) => isNum(v) && v > 0 && (j === 0 || v >= c.kg[j - 1])))) err(`${l.key} ${sex}[${k}]`, `${p.length} charges croissantes attendues`);
+          if (!(isInt(c.sampleSize) && c.sampleSize > 0)) err(`${l.key} ${sex}[${k}]`, 'sampleSize : entier > 0 attendu');
+        });
+      }
+    });
+  }
+  const used = new Set();
+  for (const x of exercisesById.values()) {
+    if (x.strengthStandardKey === null || !isStr(x.strengthStandardKey)) continue;
+    const lift = lifts.get(x.strengthStandardKey);
+    if (lift === undefined) {
+      err(`exercises.json (${x.id})`, `strengthStandardKey inconnue des normes : ${x.strengthStandardKey}`);
+      continue;
+    }
+    used.add(lift.key);
+    const primary = new Set((Array.isArray(x.muscles) ? x.muscles : []).filter((m) => isObj(m) && m.role === 'primary').map((m) => m.id));
+    const derived = STRENGTH_GROUP_IDS.filter((g) => [...(groupMuscles.get(g) ?? [])].some((m) => primary.has(m)));
+    const declared = Array.isArray(lift.groups) ? [...lift.groups].sort((a, b) => STRENGTH_GROUP_IDS.indexOf(a) - STRENGTH_GROUP_IDS.indexOf(b)) : [];
+    if (JSON.stringify(declared) !== JSON.stringify(derived)) err(`exercises.json (${x.id})`, `strengthStandardKey ${lift.key} : groupes [${declared.join(', ')}] différents de ceux des muscles principaux [${derived.join(', ')}]`);
+  }
+  for (const key of lifts.keys()) if (!used.has(key)) err(where, `norme sans exercice : ${key}`);
+}
+
 function readJson(path, errors) {
   try {
     return JSON.parse(readFileSync(path, 'utf8'));
@@ -420,6 +487,7 @@ export function validateContentDir(dir, opts = {}) {
     exercises: readJson(join(root, 'exercises', 'exercises.json'), errors),
     profiles: readJson(join(root, 'equipment-profiles', 'profiles.json'), errors),
     programs: programFiles.map((file) => ({ file, data: readJson(join(programsDir, file), errors) })),
+    strength: existsSync(join(root, 'strength', 'standards.json')) ? readJson(join(root, 'strength', 'standards.json'), errors) : null,
     mediaRegistry: existsSync(join(root, 'exercises', 'media', 'sources.json')) ? readJson(join(root, 'exercises', 'media', 'sources.json'), errors) : null,
   };
   const result = validateContent(content, { mediaDir: join(root, 'exercises', 'media'), ...opts });
