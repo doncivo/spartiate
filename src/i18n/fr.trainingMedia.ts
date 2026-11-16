@@ -7,4 +7,7 @@ export const trainingMediaFr = {
   mediaAlt: 'Illustration : {name}',
   mediaUnavailable: 'Illustration indisponible',
   attributionEverkinetic: 'Illustration : Everkinetic (Greg Priday et contributeurs), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0',
+  /** MEDIA-02 (D-302) : image adaptée (réduite, niveaux de gris), modification signalée comme l'exige CC BY-SA 4.0, 3(a)(1)(B). */
+  attributionEverkineticWeb:
+    'Illustration : Everkinetic (Greg Priday et contributeurs), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0 ; image réduite et passée en niveaux de gris',
 } as const;
