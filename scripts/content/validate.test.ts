@@ -512,3 +512,80 @@ describe('CLI validate-content.mjs', () => {
     expect(r.stdout).toMatch(/^::error::/m);
   });
 });
+
+// STR-01 (D-310, D-311) : normes du Strength Score (content/strength/standards.json) et clés `strengthStandardKey` du catalogue.
+function strength(): Json {
+  const cls = (upToKg: number | null) => ({ upToKg, sampleSize: 100, kg: [10, 20, 30, 40, 50, 60, 70] });
+  return {
+    schemaVersion: 1,
+    source: { name: 'Source', dataset: 'Jeu', population: 'gym', url: 'https://exemple.invalid/', api: 'https://exemple.invalid/api', license: 'CC BY 4.0', attribution: 'Données : Source', dataVersion: '2026-01-01', consultedOn: '2026-11-16', unit: 'kg' },
+    percentiles: [10, 25, 50, 75, 90, 95, 99],
+    groups: [{ id: 'chest', muscles: ['chest'] }, { id: 'back', muscles: [] }, { id: 'shoulders', muscles: [] }, { id: 'biceps', muscles: [] }, { id: 'triceps', muscles: ['triceps'] }, { id: 'quads', muscles: [] }, { id: 'hamstrings', muscles: [] }, { id: 'glutes', muscles: [] }],
+    lifts: [{ key: 'bench', sourceLift: 'bench_press', groups: ['chest'], totalLoad: false, male: [cls(80), cls(null)], female: [cls(null)] }],
+  };
+}
+const keyed = (): Json => {
+  const b = bundle();
+  b['strength'] = strength();
+  b['exercises'].exercises[0].strengthStandardKey = 'bench';
+  return b;
+};
+
+describe('validateContent : normes du Strength Score (STR-01)', () => {
+  it('accepte une clé connue dont les groupes suivent les muscles principaux', () => {
+    expect(run(keyed())).toEqual([]);
+  });
+  it('refuse une clé inconnue des normes, ou une clé sans fichier de normes', () => {
+    const b = keyed();
+    b['exercises'].exercises[0].strengthStandardKey = 'squat-imaginaire';
+    expect(run(b).join('\n')).toMatch(/strengthStandardKey inconnue des normes : squat-imaginaire/);
+    const c = keyed();
+    delete c['strength'];
+    expect(run(c).join('\n')).toMatch(/strengthStandardKey inconnue des normes : bench/);
+  });
+  it('refuse des groupes incohérents avec les muscles principaux de l’exercice', () => {
+    const b = keyed();
+    b['strength'].lifts[0].groups = ['chest', 'triceps'];
+    expect(run(b).join('\n')).toMatch(/groupes \[chest, triceps\] différents de ceux des muscles principaux \[chest\]/);
+  });
+  it('refuse une norme sans exercice, des centiles non croissants, une catégorie ouverte absente, un groupe hors liste', () => {
+    const orphan = keyed();
+    orphan['strength'].lifts.push({ ...clone(orphan['strength'].lifts[0]), key: 'orpheline' });
+    expect(run(orphan).join('\n')).toMatch(/norme sans exercice : orpheline/);
+    const decreasing = keyed();
+    decreasing['strength'].lifts[0].male[0].kg = [10, 20, 15, 40, 50, 60, 70];
+    expect(run(decreasing).join('\n')).toMatch(/bench male\[0\] : 7 charges croissantes attendues/);
+    const closed = keyed();
+    closed['strength'].lifts[0].female = [{ upToKg: 60, sampleSize: 1, kg: [10, 20, 30, 40, 50, 60, 70] }];
+    expect(run(closed).join('\n')).toMatch(/bench female : catégories croissantes, la dernière ouverte/);
+    const group = keyed();
+    group['strength'].lifts[0].groups = ['mollets'];
+    expect(run(group).join('\n')).toMatch(/groupe hors liste : mollets/);
+  });
+  it('refuse une source sans URL, licence ou attribution', () => {
+    const b = keyed();
+    b['strength'].source.attribution = '';
+    expect(run(b).join('\n')).toMatch(/standards.json : source\.attribution manquante/);
+  });
+});
+
+describe('contenu réel : normes et clés du Strength Score (STR-01)', () => {
+  const standards = JSON.parse(readFileSync(join(CONTENT, 'strength', 'standards.json'), 'utf8')) as Json;
+  const exercises = (JSON.parse(readFileSync(join(CONTENT, 'exercises', 'exercises.json'), 'utf8')) as Json)['exercises'] as Json[];
+  it('12 exercices portent une clé, tous à la barre ou au poids du corps (aucun haltère : la source n’en publie pas)', () => {
+    const withKey = exercises.filter((x) => x['strengthStandardKey'] !== null).map((x) => `${String(x['id'])}=${String(x['strengthStandardKey'])}`);
+    expect(withKey.sort()).toEqual(
+      ['bench-press-barbell=bench', 'chin-up=chin-up', 'deadlift-barbell=deadlift', 'dips=dip', 'front-squat-barbell=front-squat', 'incline-press-barbell=incline-bench', 'overhead-press-barbell=overhead-press', 'pull-up-weighted=pull-up', 'pull-up=pull-up', 'row-barbell=barbell-row', 'squat-barbell=back-squat', 'sumo-deadlift=sumo-deadlift'].sort(),
+    );
+  });
+  it('8 groupes, 11 mouvements ; recopie exacte de la source (homme ≤ 83 kg, développé couché : 66,7 / 79,3 / 92,6 / 106,7 / 119,5 / 128,3 / 147,3 kg)', () => {
+    expect((standards['groups'] as Json[]).map((g) => g['id'])).toEqual(['chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'glutes']);
+    expect(standards['lifts']).toHaveLength(11);
+    const bench = (standards['lifts'] as Json[]).find((l) => l['key'] === 'bench') as Json;
+    expect((bench['male'] as Json[]).find((c) => c['upToKg'] === 83)).toEqual({ upToKg: 83, sampleSize: 121681, kg: [66.7, 79.3, 92.6, 106.7, 119.5, 128.3, 147.3] });
+    expect(standards['source']).toMatchObject({ name: 'FitnessVolt Strength Standards', url: 'https://fitnessvolt.com/strength-standards/', consultedOn: '2026-11-16' });
+  });
+  it('le contenu réel passe le validateur avec les normes', () => {
+    expect(real.errors).toEqual([]);
+  });
+});
