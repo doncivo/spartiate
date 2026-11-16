@@ -371,6 +371,21 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // STR-01 : Progrès › Strength Score (écran, catalogue fr.strength, normes content/strength/standards.json) : bloc à la demande, hors du départ.
+  it.each(['src/features/strength/StrengthScore.tsx', 'content/strength/standards.json'])('STR-01 : %s est un bloc à la demande, hors du départ', (source) => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest[source];
+    if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
+  });
+
+  it.each(['Normes : FitnessVolt Strength Standards', 'Sexe non renseigné dans le profil', 'symmetric strength self-reported gym dataset'])('STR-01 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').toLowerCase().includes(marker.toLowerCase()), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').toLowerCase().includes(marker.toLowerCase()))).toBe(true);
+  });
+
   // I6-04 : import Renpho / Santé (section d'Apple Santé, catalogue fr.health, service, parseur, règle nutrition) et carte des mesures importées de Corps :
   // hors du départ, présents dans le build ; aucun module du parseur ni de la règle dans le graphe du départ.
   it.each(['Corps et nutrition depuis Raccourcis', 'Importé de Santé (Renpho)', 'Renpho — total du jour', 'body-import-file-absent'])('I6-04 : « %s » hors du départ et présent dans le build', (marker) => {
