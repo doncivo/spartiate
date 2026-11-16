@@ -2,6 +2,20 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.26.0
+
+Aucune migration : ta base reste au schéma 19. Mets à jour le PC et l'iPhone le même jour, comme d'habitude.
+
+- **Stratégie** : l'écran est regroupé en Style, Objectif, Cible, Jours de repos et Historique, une ligne par réglage. La cible en vigueur reste en grand ; s'il y a une cible prévue plus tard, elle s'affiche dessous en bronze (« À partir du lundi 16/11 : [retiré] kcal · P · G · L [retirés] »).
+- **Modifier ma cible** : le formulaire est replié et vide. Si une cible future existe, enregistrer une cible du jour demande une confirmation qui dit qu'elle passera devant. C'est pareil au check-in, pour « Accepter » et « Personnaliser ».
+- **Jours de repos** : écrits en toutes lettres (« Repos le mercredi et le dimanche »).
+- **Aujourd'hui** : la carte Séance affiche « Semaine 1 sur 4 », avec le badge bronze « Décharge » pendant la semaine de décharge, et rien sans cycle.
+- **Routines sur PC** : les exercices d'un jour et les jours d'une routine se réordonnent par glisser-déposer, ou avec Alt+↑ / Alt+↓ sur la poignée ; le lecteur d'écran annonce la nouvelle position. Rien ne change sur l'iPhone.
+- **Strength Score** (Progrès) : un score par groupe musculaire, calculé sur tes 1RM estimés, ton poids et ton sexe, à partir des normes publiques FitnessVolt (CC BY 4.0, source affichée). Un groupe sans mouvement de référence affiche « — » avec la raison. Les séances de décharge ne comptent pas. Pour l'instant, seuls la barre et le poids du corps sont notés : la source ne publie pas de normes pour les haltères.
+- **Images d'exercices** : 14 nouvelles images, soit 101 exercices illustrés sur 196. Parmi elles, 4 exercices de ta routine : Développé épaules aux haltères, Rowing à la barre, Tirage vertical à la poulie et Pull-over à la poulie.
+- **Guide Santé par Raccourcis** : le type s'appelle « Indice de masse grasse ». Le guide ajoute un filtre « Source : Apple Watch » pour la HRV, la FC de repos et le sommeil. Une seule automatisation, « Lorsque Spartiate est ouverte », lance les deux raccourcis : les automatisations à heure fixe échouent quand l'iPhone est verrouillé. La nutrition se saisit dans Spartiate.
+- **Correction de la note 0.25.0 sur le GPS** : quitter l'écran Cardio **arrête** le suivi, et la durée et la distance en cours ne sont pas gardées. Enregistre avant de quitter l'écran. Si l'app passe seulement en arrière-plan, le suivi n'est pas arrêté : il s'affiche « en pause » jusqu'au point GPS suivant.
+
 ## 0.25.0
 
 Aucune migration : ta base reste au schéma 19. Mets quand même à jour le PC et l'iPhone le même jour : une ligne créée par un appareil resté en 0.24.0 n'est reprise qu'une fois les deux appareils en 0.25.0.
