@@ -377,6 +377,34 @@
   cursor: pointer;
 }
 
+/* PROG-03 (§ 18.1, § 18.6) : poignée de glisser sur PC, cible ≥ 44 px, contour visible au focus. */
+.ct-training__drag-handle {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  background: transparent;
+  border: 0;
+  color: var(--ct-color-text-secondary);
+  cursor: grab;
+}
+
+.ct-training__drag-handle:active {
+  cursor: grabbing;
+}
+
+.ct-training__drag-handle:hover {
+  color: var(--ct-color-text);
+}
+
+.ct-training__drag-handle:focus-visible {
+  outline: 2px solid var(--ct-color-select-ring);
+  outline-offset: 2px;
+  color: var(--ct-color-text);
+}
+
 .ct-training__icon-button:disabled {
   color: var(--ct-color-text-secondary);
   cursor: default;

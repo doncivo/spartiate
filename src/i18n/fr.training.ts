@@ -202,6 +202,10 @@ export const trainingFr = {
   rir: 'RIR (facultatif)',
   moveUp: 'Monter',
   moveDown: 'Descendre',
+  // PROG-03 (§ 18.1, § 18.6) : réordonner sur PC par glisser-déposer ou Alt+flèches ; annonce polie de la nouvelle position.
+  reorderHandle: 'Déplacer « {name} » (Alt+Flèche haut ou bas)',
+  reorderDayHandle: 'Déplacer le jour « {name} » (Alt+Flèche haut ou bas)',
+  reorderMoved: '« {name} » : position {position} sur {total}',
   remove: 'Retirer',
   saveRoutine: 'Enregistrer la routine',
   routineSaved: 'Routine enregistrée',
