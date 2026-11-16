@@ -216,6 +216,9 @@ export const trainingFr = {
   sessionEyebrow: 'Séance',
   sessionOpenEyebrow: 'Séance en cours',
   sessionStart: 'Commencer une séance',
+  // ERGO-03 (D-297) : repère du cycle sur la carte Séance d’Aujourd’hui.
+  cycleWeekMarker: 'Semaine {week} sur {total}',
+  cycleDeloadBadge: 'Décharge',
   sessionResume: 'Reprendre la séance',
   // ERGO-01b P1 (D-238) : séance du jour désignée par le programme suivi, lancée en un tap.
   sessionTodayEyebrow: 'Séance du jour',

@@ -112,7 +112,11 @@ export function collapseRecopies<T extends Pick<TargetRecord, 'id' | 'weekStart'
  * antérieure la masque : elle n'est pas à venir). Même relevé que FIX-0244 (D-291).
  */
 export function upcomingTargets<T extends Pick<TargetRecord, 'id' | 'weekStart' | 'accepted' | 'hlc'>>(records: readonly T[], today: LocalDate): readonly T[] {
-  void records;
-  void today;
-  return [];
+  const dates = [...new Set(records.filter((r) => r.accepted && r.weekStart > today).map((r) => r.weekStart))].sort();
+  const out: T[] = [];
+  for (const date of dates) {
+    const winner = effectiveTarget(records, date);
+    if (winner !== null && winner.weekStart === date) out.push(winner);
+  }
+  return out;
 }

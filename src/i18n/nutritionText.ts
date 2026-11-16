@@ -37,3 +37,12 @@ export const formatDayLong = (date: string): string => frFirst(new Intl.DateTime
 export const formatDayMonth = (date: string): string => formatDayMonthFr(date, 'long');
 
 export const weekdayNames = (): readonly string[] => nutritionFr.weekdays.split('|');
+/** ERGO-03 : « lundi 16/11 » (jour de la semaine en toutes lettres, jour et mois sur deux chiffres). */
+export const formatWeekdayDate = (date: string): string => {
+  const d = toUtc(date);
+  const two = (n: number): string => String(n).padStart(2, '0');
+  return `${weekdayNames()[(d.getUTCDay() + 6) % 7] ?? ''} ${two(d.getUTCDate())}/${two(d.getUTCMonth() + 1)}`;
+};
+/** ERGO-03 : jours en toutes lettres, « le mercredi et le dimanche » (1 = lundi … 7 = dimanche). */
+export const formatWeekdayList = (days: readonly number[]): string =>
+  new Intl.ListFormat('fr-FR', { type: 'conjunction' }).format(days.map((n) => tNutrition('restDayArticle', { day: weekdayNames()[n - 1] ?? '' })));
