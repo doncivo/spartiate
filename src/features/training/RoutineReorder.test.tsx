@@ -104,7 +104,7 @@ describe('PROG-03 : réordonner sur PC (glisser-déposer, Alt+flèches, annonce)
     fireEvent.drop(target);
     fireEvent.dragEnd(source);
     expect(lineNames(day)).toEqual([ROW, SQUAT, BENCH]);
-    expect(live().textContent).toBe(`${ROW} déplacé en position 1 sur 3`);
+    expect(live().textContent).toBe(`« ${ROW} » : position 1 sur 3`);
     await save();
     expect(await savedLines()).toEqual([
       { exercise_id: 'row-barbell', position: 0 },
@@ -120,11 +120,11 @@ describe('PROG-03 : réordonner sur PC (glisser-déposer, Alt+flèches, annonce)
     squat.focus();
     fireEvent.keyDown(squat, { key: 'ArrowDown', altKey: true });
     expect(lineNames(day)).toEqual([BENCH, SQUAT, ROW]);
-    expect(live().textContent).toBe(`${SQUAT} déplacé en position 2 sur 3`);
+    expect(live().textContent).toBe(`« ${SQUAT} » : position 2 sur 3`);
     expect(document.activeElement).toBe(handle(SQUAT));
     fireEvent.keyDown(handle(SQUAT), { key: 'ArrowDown', altKey: true });
     expect(lineNames(day)).toEqual([BENCH, ROW, SQUAT]);
-    expect(live().textContent).toBe(`${SQUAT} déplacé en position 3 sur 3`);
+    expect(live().textContent).toBe(`« ${SQUAT} » : position 3 sur 3`);
     fireEvent.keyDown(handle(BENCH), { key: 'ArrowUp', altKey: true });
     expect(lineNames(day)).toEqual([BENCH, ROW, SQUAT]); // déjà en tête : rien ne bouge
     fireEvent.keyDown(handle(ROW), { key: 'ArrowUp' }); // sans Alt : rien
@@ -142,7 +142,7 @@ describe('PROG-03 : réordonner sur PC (glisser-déposer, Alt+flèches, annonce)
     fireEvent.dragOver(target);
     fireEvent.drop(target);
     expect(dayNames()).toEqual(['Jour B', 'Jour A']);
-    expect(live().textContent).toBe('Jour B déplacé en position 1 sur 2');
+    expect(live().textContent).toBe('« Jour B » : position 1 sur 2');
     fireEvent.keyDown(dayHandle('Jour B'), { key: 'ArrowDown', altKey: true });
     expect(dayNames()).toEqual(['Jour A', 'Jour B']);
     fireEvent.keyDown(dayHandle('Jour A'), { key: 'ArrowDown', altKey: true });
@@ -192,6 +192,49 @@ describe('PROG-03 : réordonner sur PC (glisser-déposer, Alt+flèches, annonce)
     expect(live().textContent).toBe('');
   });
 
+  it('revue 1 : le glisser porte un type propre (jamais text/plain) et un dépôt sur un champ de l’éditeur est absorbé, valeur inchangée', async () => {
+    viewport(1440);
+    await openEditor();
+    const setData = vi.fn();
+    const dataTransfer = { setData, getData: vi.fn(() => ''), effectAllowed: 'none', dropEffect: 'none', types: [] as string[] };
+    fireEvent.dragStart(handle(ROW), { dataTransfer });
+    expect(setData).toHaveBeenCalledWith('application/x-spartiate-reorder', expect.any(String));
+    expect(setData.mock.calls.some(([type]) => type === 'text/plain' || type === 'text')).toBe(false);
+    const dayName = within(screen.getByRole('group', { name: 'Jour A' })).getByLabelText('Nom du jour');
+    expect(fireEvent.dragOver(dayName, { dataTransfer })).toBe(false); // absorbé par l'éditeur : pas d'insertion du navigateur
+    expect(fireEvent.drop(dayName, { dataTransfer })).toBe(false);
+    expect((dayName as HTMLInputElement).value).toBe('Jour A');
+    const routineName = screen.getByLabelText('Nom de la routine');
+    expect(fireEvent.drop(routineName, { dataTransfer })).toBe(false);
+    expect((routineName as HTMLInputElement).value).toBe('Essai ordre');
+    fireEvent.dragEnd(handle(ROW));
+    expect(fireEvent.dragOver(dayName)).toBe(true); // hors glisser interne : comportement natif rendu
+  });
+
+  it('revue 1 : un exercice groupé (superset) déplacé par glisser garde son groupe après l’enregistrement', async () => {
+    viewport(1440);
+    const day = await openEditor();
+    fireEvent.click(within(day).getByRole('button', { name: 'Grouper en circuit' }));
+    const form = await within(day).findByRole('region', { name: 'Superset, triset ou circuit' });
+    fireEvent.click(within(form).getByRole('checkbox', { name: SQUAT }));
+    fireEvent.click(within(form).getByRole('checkbox', { name: BENCH }));
+    fireEvent.click(within(form).getByRole('button', { name: 'Créer le groupe' }));
+    await within(day).findByRole('region', { name: 'Groupe : Superset' });
+    fireEvent.dragStart(handle(BENCH));
+    fireEvent.dragOver(item(day, SQUAT));
+    fireEvent.drop(item(day, SQUAT));
+    expect(lineNames(day)).toEqual([BENCH, SQUAT, ROW]);
+    fireEvent.keyDown(handle(ROW), { key: 'ArrowUp', altKey: true });
+    fireEvent.keyDown(handle(ROW), { key: 'ArrowDown', altKey: true });
+    expect(lineNames(day)).toEqual([BENCH, SQUAT, ROW]);
+    await save();
+    const rows = await db.driver.select<{ exercise_id: string; position: number; circuit_id: string | null }>('SELECT exercise_id, position, circuit_id FROM routine_exercise WHERE deleted_at IS NULL ORDER BY position');
+    expect(rows.map((r) => r.exercise_id)).toEqual(['bench-press-barbell', 'squat-barbell', 'row-barbell']);
+    expect(rows[0]?.circuit_id).not.toBeNull();
+    expect(rows[1]?.circuit_id).toBe(rows[0]?.circuit_id);
+    expect(rows[2]?.circuit_id).toBeNull();
+  });
+
   it('sans glisser en cours, un dépôt (fichier venu d’ailleurs) ne change rien', async () => {
     viewport(1440);
     const day = await openEditor();
@@ -209,7 +252,7 @@ describe('PROG-03 : iPhone inchangé', () => {
     expect(screen.queryByRole('button', { name: /^Déplacer/ })).toBeNull();
     fireEvent.click(within(item(day, BENCH)).getByRole('button', { name: 'Monter' }));
     expect(lineNames(day)).toEqual([BENCH, SQUAT, ROW]);
-    await waitFor(() => expect(live().textContent).toBe(`${BENCH} déplacé en position 1 sur 3`));
+    await waitFor(() => expect(live().textContent).toBe(`« ${BENCH} » : position 1 sur 3`));
   });
 });
 
