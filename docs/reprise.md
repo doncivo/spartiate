@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-16 : 0.25.0 publiée (v0.25.0, ios-v0.25.0) ; **lot 0.26.0 arrêté (point d’étape)** (docs/LOT-0.26.0.md : DOC-H21, ERGO-03, PROG-03, STR-01, MEDIA-02), worktrees sous `.codex-tmp/wt-<ticket>` (jonction `node_modules` vers le dépôt principal). Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-294 dans docs/decisions.md.
+État au 2026-11-16 : 0.25.0 publiée (v0.25.0, ios-v0.25.0) ; **lot 0.26.0 en cours** (docs/LOT-0.26.0.md : DOC-H21, ERGO-03, PROG-03, STR-01, MEDIA-02), worktrees `.codex-tmp/wt-<ticket>` (jonction `node_modules` : `rmdir` avant `git worktree remove`). Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-294 dans docs/decisions.md.
 
 ## Rapport du matin (13/11)
 
@@ -11,7 +11,7 @@
 
 ## Prochaines étapes
 
-0. **Lot 0.26.0 ARRÊTÉ le 16/11 (dépassement de budget, point d’étape)** : DOC-H21 fusionné (#141, D-292 à D-294 ; e2e pc instable à l’installation du navigateur, vert à la relance). MEDIA-02 (#142, ~211 k tokens pour M 150 k ; 14 images, 101/196, 4 des 12 de la routine ; D-300 à D-304) et ERGO-03 (#143, ~245 k tokens ; D-295 à D-298 ; CI verte) : PR ouvertes, **non fusionnées**, passe code-reviewer à faire, captures avant/après d’ERGO-03 (artefacts `visual-pairs`) à reporter dans docs/ERGO-03.md. PROG-03 et STR-01 non commencés (STR-01 : `strengthStandardKey` vaut `null` sur les 196 exercices). Reprise sur décision d’Ali ; worktrees `.codex-tmp/wt-ERGO-03` et `wt-MEDIA-02` gardés (retirer la jonction `node_modules` par `rmdir` avant `git worktree remove`).
+0. **Lot 0.26.0 en cours** (Ali, 16/11 : poursuivre même en cas de dépassement de budget, consigné) : DOC-H21 fusionné (#141, D-292 à D-294). MEDIA-02 (#142, D-300 à D-304, 101/196 images) et ERGO-03 (#143, D-295 à D-298) : en relecture. Puis PROG-03 (D-305 à D-309), STR-01 (D-310 à D-319 ; `strengthStandardKey` nul partout).
 1. **Lot 0.25.0 terminé** (docs/LOT-0.25.0.md) : FIX-0242 (#134, D-276 à D-279), FIX-0241 (#135, D-280 à D-283), FIX-0243 (#136, D-284 à D-286), ERGO-02b (#137, D-287 à D-289), SYNC-01 (#138, D-290 validée, ADR 0018 accepté, avenant 37 de l'ADR 0011), FIX-0244 (#139, D-291 révisable). Départ 199 211 → 195 860 octets. Publication : REL-0.25.0, tag v0.25.0, build-ios (publish=false), ios-v0.25.0. Suivi : test instable `src/features/sync/syncedData.test.tsx` (« la pesée reçue remplace l'ancienne », délai de 1 s dépassé après `forgetBanner.test.tsx`, aussi sur main) ; limites M2 à M4 de l'ADR 0018 ; lecture des cibles futures hors transaction (FIX-0244, mineur).
 3. Constat d'Ali : « Pris » app en arrière-plan et tuée (H-36). Import de programme : I6-08 (docs/I6-08.md, non exécuté).
 4. CLEAN-03 (L, sync-icloud) ; DEP-01 : retirer src-tauri/vendor/sqlx-sqlite dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160).
