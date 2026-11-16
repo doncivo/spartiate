@@ -106,7 +106,7 @@ Ajoutées en dépendances directes **sans nouvelle entrée dans `Cargo.lock`** (
 
 ## Complément MEDIA-02 (0.26.0) : images web d'Everkinetic, réduites
 
-- Même dépôt, même commit épinglé (`446bb9a3`), même licence **CC BY-SA 4.0** ; dossier `src/images-web/` (dessins du site everkinetic.com),
+- Même dépôt, même commit épinglé (`446bb9a3`), même licence **CC BY-SA 4.0** ; dossier `images-web/` (dossier source du dépôt Everkinetic) (dessins du site everkinetic.com),
   consulté le 2026-11-16. Source déclarée `everkinetic-web` dans `validate-content.mjs` (D-301).
 - 14 fichiers embarqués (liste dans `scripts/content/media-map.json`, entrées `source: "everkinetic-web"`) : **réduits** par
   `scripts/content/png-reduce.mjs` (Node seul : niveaux de gris 8 bits, hauteur ≤ 640 px, D-302). Ce sont des œuvres adaptées : elles restent

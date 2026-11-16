@@ -34,8 +34,8 @@ Sources (consultées le 2026-11-16, requêtes anonymes, aucune donnée personnel
   roneydya (592) ; capture vidéo — Rottekongen (576) ; auteur douteux d'un dessin au style Everkinetic — cshep442 (211). Seule plausible :
   gainage de utkb (346), reportée (l'app n'affiche pas encore un auteur par image). Les copies wger de dessins Everkinetic (CC BY-SA 3
   sur wger) ne sont pas prises : leur original est au dépôt Everkinetic (CC BY-SA 4.0).
-- **Everkinetic** (`everkinetic/data`, commit `446bb9a3`, CC BY-SA 4.0) : le dossier `src/images-web/` couvre des exercices sans PNG dans
-  `dist/png` (cause des exclusions de I6-07). Source `everkinetic-web` (D-301) ; `src/images-ai` et `src/images-png-unknown` écartés.
+- **Everkinetic** (`everkinetic/data`, commit `446bb9a3`, CC BY-SA 4.0) : le dossier `images-web/` (dossier source du dépôt Everkinetic) couvre des exercices sans PNG dans
+  `dist/png` (cause des exclusions de I6-07). Source `everkinetic-web` (D-301) ; `images-ai` et `images-png-unknown` écartés.
   40 fichiers téléchargés, 26 relus visuellement ; `t-bar-rows` est un exercice au ballon (mal nommé), écarté.
 
 Réduction (D-302) : `scripts/content/png-reduce.mjs` (Node + zlib, aucune dépendance), gris 8 bits, hauteur ≤ 640 px, appelé par
@@ -44,7 +44,7 @@ Réduction (D-302) : `scripts/content/png-reduce.mjs` (Node + zlib, aucune dépe
 Résultat (D-303) : **14 images ajoutées, 101 exercices sur 196**, catalogue **4 495 435 octets** (était 3 667 859 ; plafond 8 388 608), plus
 lourde ajoutée 91 629 octets (`row-barbell.png`).
 
-| Exercice | Fichier d'origine (`src/images-web/`) |
+| Exercice | Fichier d'origine (`images-web/` (dossier source du dépôt Everkinetic)) |
 | --- | --- |
 | overhead-press-dumbbell (routine) | dumbbell-shoulder-press-2 |
 | row-barbell (routine) | rear-deltoid-row-barbell-2 |
