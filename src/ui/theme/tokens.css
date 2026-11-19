@@ -167,6 +167,15 @@
 
   /* Ombre portée des gestes de ligne (A-07). */
   --ct-swipe-shadow: rgba(0, 0, 0, 0.15);
+  /* FIX-0272 : voiles et ombres, auparavant en dur dans les composants (mêmes valeurs, tous thèmes). */
+  --ct-scrim: rgba(0, 0, 0, 0.45);
+  --ct-shadow-strong: rgba(0, 0, 0, 0.28);
+  --ct-shadow-soft: rgba(0, 0, 0, 0.15);
+  --ct-shadow-faint: rgba(0, 0, 0, 0.14);
+  --ct-help-scrim: rgb(28 22 48 / 0.45);
+  --ct-help-shadow: rgb(28 22 48 / 0.28);
+  --ct-sheet-backdrop: #6e6687;
+  --ct-toast-action-bg: rgba(255, 255, 255, 0.14);
   --ct-color-bronze: #8e6530;
   --ct-color-ok: #5e9e6b;
   --ct-color-ok-on: #0d0e11;
