@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Hlc, IsoDateTime, LocalDate } from '../types';
-import { collapseRecopies, effectiveTarget, upcomingTargets, validateTargetRecord, type TargetRecord, type TargetRecordDraft } from './targetRecord';
+import { checkInRestPlan, collapseRecopies, effectiveTarget, targetDecidedOn, targetInForceSince, upcomingTargets, validateTargetRecord, type TargetRecord, type TargetRecordDraft } from './targetRecord';
 
 /** I4-02 : enregistrement d'une cible (une ligne par décision, jamais écrasée) ; valeurs synthétiques. */
 
@@ -177,13 +177,13 @@ describe('ERGO-03 (D-295) : upcomingTargets, cibles à venir après aujourd’hu
     expect(upcomingTargets(list, TODAY).map((r) => r.id)).toEqual(['a', 'b']);
   });
 
-  it('une cible future plus ancienne que la décision en vigueur est masquée (D-82) : elle n’est pas à venir', () => {
-    expect(upcomingTargets([rec('f', '2026-11-16', 2450, 500), current], TODAY)).toEqual([]);
+  it('FIX-0271 (D-314) : une cible future plus ancienne (HLC) que la décision en vigueur reste à venir (elle prend effet à sa date)', () => {
+    expect(upcomingTargets([rec('f', '2026-11-16', 2450, 500), current], TODAY).map((r) => r.id)).toEqual(['f']);
   });
 
-  it('une décision plus récente d’aujourd’hui masque la cible future : elle n’est plus à venir', () => {
+  it('FIX-0271 (D-314) : une décision plus récente d’aujourd’hui ne masque plus la cible future', () => {
     const today = rec('t', '2026-11-12', 2700, 2_000);
-    expect(upcomingTargets([current, rec('f', '2026-11-16', 2450, 1_500), today], TODAY)).toEqual([]);
+    expect(upcomingTargets([current, rec('f', '2026-11-16', 2450, 1_500), today], TODAY).map((r) => r.id)).toEqual(['f']);
   });
 
   it('une proposition refusée, ou datée d’aujourd’hui, n’est pas à venir', () => {
@@ -192,5 +192,59 @@ describe('ERGO-03 (D-295) : upcomingTargets, cibles à venir après aujourd’hu
 
   it('deux décisions de la même date future : la plus récente seulement', () => {
     expect(upcomingTargets([current, rec('f1', '2026-11-16', 2450, 1_500), rec('f2', '2026-11-16', 2400, 1_700)], TODAY).map((r) => r.id)).toEqual(['f2']);
+  });
+});
+
+describe('FIX-0271 (D-314) : une cible prévue n’est pas battue par une décision prise avant sa date', () => {
+  // Décision = date locale de la partie physique du HLC (jamais created_at, horloge d'appareil non fiable) ; prise d'effet =
+  // max(semaine, date de décision) ; la prise d'effet la plus tardive l'emporte, puis le HLC.
+  const at = (iso: string, device = '60000000-0000-4000-8000-0000000000a1'): Hlc => hlcAt(Date.parse(iso), 0, device);
+  const rec = (id: string, weekStart: string, kcal: number, hlc: Hlc) => ({ id, weekStart: weekStart as LocalDate, target: { kcal, proteinG: 150, fatG: 70, carbG: 250 }, accepted: true, hlc });
+  const plan = rec('plan', '2026-11-16', 2450, at('2026-11-15T10:00:00.000Z'));
+  const checkIn = rec('check', '2026-11-09', 3177, at('2026-11-15T10:05:00.000Z'));
+
+  it('scénario 1a : check-in de la semaine du 09/11 décidé après l’import de la cible du 16/11 : 3 177 le 15/11, 2 450 dès le 16/11', () => {
+    expect(effectiveTarget([plan, checkIn], '2026-11-15' as LocalDate)?.id).toBe('check');
+    expect(effectiveTarget([plan, checkIn], '2026-11-16' as LocalDate)?.id).toBe('plan');
+    expect(effectiveTarget([checkIn, plan], '2026-11-19' as LocalDate)?.id).toBe('plan');
+  });
+
+  it('deux appareils : la décision reçue de l’autre appareil, plus récente (HLC), prise avant le 16/11, ne masque pas la cible prévue', () => {
+    const received = rec('b', '2026-11-09', 3177, at('2026-11-15T20:00:00.000Z', '60000000-0000-4000-8000-0000000000b2'));
+    expect(effectiveTarget([plan, received], '2026-11-19' as LocalDate)?.id).toBe('plan');
+  });
+
+  it('archive sans HLC ou au HLC ancien : la ligne importée porte un HLC quelconque, la cible prévue s’applique à sa date', () => {
+    const old = rec('old', '2026-11-16', 2450, at('2026-10-01T10:00:00.000Z'));
+    expect(effectiveTarget([old, checkIn], '2026-11-19' as LocalDate)?.id).toBe('old');
+  });
+
+  it('une décision prise le 17/11, même pour une semaine antérieure, passe devant la cible du 16/11 (dernière décision d’Ali)', () => {
+    const late = rec('late', '2026-11-09', 2300, at('2026-11-17T10:00:00.000Z'));
+    expect(effectiveTarget([plan, late], '2026-11-16' as LocalDate)?.id).toBe('plan');
+    expect(effectiveTarget([plan, late], '2026-11-17' as LocalDate)?.id).toBe('late');
+  });
+
+  it('même semaine prévue : la décision la plus récente (HLC) l’emporte', () => {
+    const revised = rec('rev', '2026-11-16', 2400, at('2026-11-15T12:00:00.000Z'));
+    expect(effectiveTarget([plan, revised], '2026-11-19' as LocalDate)?.id).toBe('rev');
+  });
+
+  it('la cible prévue reste « à venir » malgré une décision plus récente prise avant sa date', () => {
+    expect(upcomingTargets([plan, checkIn], '2026-11-15' as LocalDate).map((r) => r.id)).toEqual(['plan']);
+  });
+
+  it('Stratégie : date de décision et date de prise d’effet', () => {
+    expect(targetDecidedOn(checkIn)).toBe('2026-11-15');
+    expect(targetInForceSince(checkIn)).toBe('2026-11-15');
+    expect(targetInForceSince(plan)).toBe('2026-11-16');
+  });
+
+  it('U-12 : le check-in du lundi garde la cible de repos enregistrée le matin même (décision de la semaine qui commence)', () => {
+    const restPlan = { rest: { kcal: 2150, proteinG: 150, fatG: 70, carbG: 180 }, trainingDays: [1, 2, 4, 5, 6] as const };
+    const before = { ...rec('w', '2026-11-09', 2450, at('2026-11-09T10:00:00.000Z')), restPlan: null };
+    const morning = { ...rec('m', '2026-11-16', 2450, at('2026-11-16T07:00:00.000Z')), restPlan };
+    expect(checkInRestPlan([before, morning], '2026-11-15' as LocalDate, '2026-11-16' as LocalDate)).toEqual(restPlan);
+    expect(checkInRestPlan([before], '2026-11-15' as LocalDate, '2026-11-16' as LocalDate)).toBeNull();
   });
 });

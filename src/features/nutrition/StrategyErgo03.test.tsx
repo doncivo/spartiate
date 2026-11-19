@@ -97,62 +97,48 @@ describe('ERGO-03 critère 2 : cible non pré-remplie', () => {
   });
 });
 
-describe('ERGO-03 critère 3 : une cible du jour qui passerait devant une cible future demande une confirmation explicite', () => {
-  const fillAndSave = async (r: HTMLElement) => {
+describe('FIX-0271 (D-314) : une cible du jour ne masque plus une cible future, aucune confirmation', () => {
+  const fillAndSave = async (r: HTMLElement, kcal = '2700') => {
     fireEvent.click(await within(r).findByRole('button', { name: 'Modifier ma cible' }));
     const fill = (label: string, value: string) => fireEvent.change(within(r).getByLabelText(label), { target: { value } });
-    fill('Calories (kcal)', '2700');
+    fill('Calories (kcal)', kcal);
     fill('Protéines (g)', '150');
-    fill('Lipides (g)', '80');
-    fill('Glucides (g)', '345');
+    fill('Lipides (g)', kcal === '2700' ? '80' : '40');
+    fill('Glucides (g)', kcal === '2700' ? '345' : '80');
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible' }));
   };
 
-  it('Annuler : rien n’est écrit ; Enregistrer quand même : la cible du jour est écrite', async () => {
+  it('cible future : la cible du jour est enregistrée sans confirmation et la cible du 16/11 reste à venir', async () => {
     await seed(TODAY, CURRENT);
     await seed(FUTURE, UPCOMING);
-    open();
-    const r = await region();
-    await fillAndSave(r);
-    const dialog = await screen.findByRole('alertdialog');
-    expect(norm(dialog.textContent)).toContain('Elle passera devant la cible prévue à partir du lundi 16/11 (2 450 kcal)');
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Annuler' }));
-    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
-    expect(await (await db.data.repos.nutritionTargets()).list()).toHaveLength(2);
-    fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible' }));
-    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Enregistrer quand même' }));
-    await waitFor(async () => expect(await (await db.data.repos.nutritionTargets()).list()).toHaveLength(3));
-    expect((await (await db.data.repos.nutritionTargets()).effective(TODAY))?.target.kcal).toBe(2700);
-  });
-
-  it('sans cible future : enregistrée sans confirmation', async () => {
-    await seed(TODAY, CURRENT);
     open();
     const r = await region();
     await fillAndSave(r);
     expect(await within(r).findByText('Cible enregistrée.')).toBeInTheDocument();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    const repo = await db.data.repos.nutritionTargets();
+    expect((await repo.effective(TODAY))?.target.kcal).toBe(2700);
+    expect((await repo.effective(FUTURE))?.target.kcal).toBe(2450);
+    expect(norm((await within(r).findByText(isUpcoming)).textContent)).toContain('À partir du lundi 16/11 : 2 450 kcal');
   });
-});
 
-describe('ERGO-03 revue 1 (point 2) : cible future et saisie sous 1 200 kcal', () => {
-  it('la confirmation D-296 est demandée une seule fois pour la même saisie, puis le plancher', async () => {
+  it('sous 1 200 kcal avec une cible future : seul le plancher est demandé', async () => {
     await seed(TODAY, CURRENT);
     await seed(FUTURE, UPCOMING);
     open();
     const r = await region();
-    fireEvent.click(await within(r).findByRole('button', { name: 'Modifier ma cible' }));
-    const fill = (label: string, value: string) => fireEvent.change(within(r).getByLabelText(label), { target: { value } });
-    fill('Calories (kcal)', '1100');
-    fill('Protéines (g)', '150');
-    fill('Lipides (g)', '40');
-    fill('Glucides (g)', '80');
-    fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible' }));
-    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Enregistrer quand même' }));
+    await fillAndSave(r, '1100');
     fireEvent.click(await within(r).findByRole('checkbox', { name: 'Je confirme une cible sous 1 200 kcal' }));
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible' }));
     await waitFor(async () => expect(await (await db.data.repos.nutritionTargets()).list()).toHaveLength(3));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('la cible en vigueur dit pourquoi : « En vigueur depuis le 09/11 · décidée le 09/11 »', async () => {
+    await seed(TODAY, CURRENT);
+    open();
+    const r = await region();
+    expect(norm((await within(r).findByText(/En vigueur depuis/)).textContent)).toBe('En vigueur depuis le 09/11 · décidée le 09/11');
   });
 });
 
@@ -235,12 +221,12 @@ describe('ERGO-03 qa-test : cas limites', () => {
     expect(within(section).queryByRole('switch')).not.toBeInTheDocument();
   });
 
-  it('cible future masquée par une décision plus récente (D-82) : ni ligne « À partir du », ni confirmation', async () => {
+  it('FIX-0271 (D-314) : une décision du jour plus récente que la cible future ne la masque pas : la ligne « À partir du » reste', async () => {
     await seed(FUTURE, UPCOMING);
     await seed(TODAY, CURRENT);
     open();
     const r = await region();
     await within(r).findByText(/En vigueur depuis/);
-    expect(within(r).queryByText(/À partir du/)).not.toBeInTheDocument();
+    expect(within(r).getByText(/À partir du/)).toBeInTheDocument();
   });
 });
