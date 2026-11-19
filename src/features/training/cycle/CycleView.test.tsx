@@ -222,14 +222,43 @@ describe('section Cycle : 4 / 6 semaines, semaine de reprise, durée du prochain
     expect(await rampUp()).toEqual([{ weeks: 4, ramp_up: 1, next_weeks: null }]);
   });
 
-  it('durée changée en cours de cycle : appliquée au prochain cycle, celui-ci garde sa durée', async () => {
-    const r = await startCycle('5 semaines');
+  it('durée changée en cours de cycle (semaine 2) : appliquée au prochain cycle, celui-ci garde sa durée', async () => {
+    await startCycle('5 semaines');
+    const r = await later(8);
+    await within(r).findByText(/^Semaine 2/);
     const next = within(r).getByRole('radiogroup', { name: 'Durée du prochain cycle' });
     expect(within(next).getAllByRole('radio').map((b) => b.textContent)).toEqual(['4 semaines', '5 semaines', '6 semaines']);
     fireEvent.click(within(next).getByRole('radio', { name: '4 semaines' }));
     expect(await within(r).findByText('Appliquée au prochain cycle ; celui-ci garde 5 semaines.')).toBeInTheDocument();
-    expect(within(r).getByText('Semaine 1 sur 5 · Haut / Bas')).toBeInTheDocument();
+    expect(within(r).getByText(/^Semaine 2 sur 5/)).toBeInTheDocument();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     expect(await rampUp()).toEqual([{ weeks: 5, ramp_up: 0, next_weeks: 4 }]);
+  });
+
+  it('PROG-05 (D-315) : semaine 1 sans séance close, durée changée : confirmation, puis appliquée au cycle en cours', async () => {
+    const r = await startCycle('5 semaines');
+    const next = within(r).getByRole('radiogroup', { name: 'Durée du prochain cycle' });
+    fireEvent.click(within(next).getByRole('radio', { name: '4 semaines' }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog.textContent).toContain('Appliquer 4 semaines au cycle en cours ?');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Annuler' }));
+    expect(await rampUp()).toEqual([{ weeks: 5, ramp_up: 0, next_weeks: null }]);
+    fireEvent.click(within(next).getByRole('radio', { name: '4 semaines' }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Appliquer maintenant' }));
+    expect(await within(r).findByText('Semaine 1 sur 4 · Haut / Bas')).toBeInTheDocument();
+    expect(await rampUp()).toEqual([{ weeks: 4, ramp_up: 0, next_weeks: null }]);
+    expect(await db.data.repos.settings.get('training.cycleWeeks')).toBe(4);
+  });
+
+  it('PROG-05 (D-315) : la durée proposée au lancement reprend le dernier réglage, même avec un cycle clos de 5 semaines importé', async () => {
+    await startCycle('5 semaines');
+    cleanup();
+    // Onboarding refait à 4 semaines, puis un cycle clos de 5 semaines arrivé par l'import.
+    await db.data.repos.settings.set('training.cycleWeeks', 4);
+    await db.driver.execute("UPDATE mesocycle SET status = 'completed', outcome = 'stopped', ended_on = '2026-11-09'");
+    open();
+    const r = await region();
+    expect(await within(r).findByRole('radio', { name: '4 semaines' })).toHaveAttribute('aria-checked', 'true');
   });
 });
 
@@ -244,7 +273,7 @@ describe('section Cycle : réglages de l’étape 7 de l’onboarding (PROG-01, 
 });
 
 describe('section Cycle : réglages de l’onboarding au premier cycle seulement (ERGO-02b, critère 9)', () => {
-  it('onboarding 4 semaines avec reprise : premier cycle prérempli ; après un cycle clos, le formulaire suivant revient aux valeurs par défaut', async () => {
+  it('onboarding 4 semaines avec reprise : premier cycle prérempli ; après un cycle clos, la durée reste 4 (PROG-05), la reprise revient désactivée', async () => {
     await db.data.repos.settings.set('onboarding.answers', { v: 1, mesoWeeks: 4, rampUp: true });
     open();
     let r = await region();
@@ -257,8 +286,8 @@ describe('section Cycle : réglages de l’onboarding au premier cycle seulement
     fireEvent.click(await within(r).findByRole('button', { name: 'Terminer sans suite' }));
     await within(r).findByText('Aucun cycle en cours.');
     r = await later(1);
-    expect(await within(r).findByRole('radio', { name: '5 semaines' })).toHaveAttribute('aria-checked', 'true');
-    expect(within(r).getByRole('radio', { name: '4 semaines' })).toHaveAttribute('aria-checked', 'false');
-    expect(within(r).queryByRole('switch', { name: 'Semaine de reprise' })).toBeNull();
+    // PROG-05 (D-315) : la durée reprend le dernier réglage (4) ; la semaine de reprise ne se reprend jamais (D-267).
+    expect(await within(r).findByRole('radio', { name: '4 semaines' })).toHaveAttribute('aria-checked', 'true');
+    expect(within(r).getByRole('switch', { name: 'Semaine de reprise' })).not.toBeChecked();
   });
 });
