@@ -45,7 +45,8 @@ const hasWeekday = (d: ProgramDayLike): d is ProgramDayLike & { readonly weekday
  */
 export function programDayFor(days: readonly ProgramDayLike[], recentClosed: readonly ClosedWorkoutLike[], routineId: string, today: LocalDate): ProgramDayChoice | null {
   const garnished = days.filter((d) => d.exercises.length > 0);
-  const dated = garnished.filter(hasWeekday);
+  // Deux jours au même jour de la semaine (fusion de deux appareils) : le premier dans l'ordre de la routine.
+  const dated = garnished.filter(hasWeekday).sort((x, y) => x.dayOrder - y.dayOrder || (x.id < y.id ? -1 : x.id > y.id ? 1 : 0));
   if (dated.length === 0) {
     const id = nextProgramDay(days, recentClosed, routineId);
     return id === null ? null : { kind: 'day', dayId: id };

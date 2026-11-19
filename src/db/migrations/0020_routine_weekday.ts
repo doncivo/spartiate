@@ -9,15 +9,10 @@ import type { Migration } from '../migrator';
  * existante est capturée par un déclencheur PROPRE (`AFTER UPDATE OF`, modèle de la 0014 et de la 0019) : le corps publié du `_au` de la 0002
  * ne change pas. Un appareil resté au schéma 19 garde ce champ dans `sync_unknown` (ADR 0011 § 7.2).
  *
- * Rattachement des jours existants (D-317) : un jour vivant dont le nom commence par un jour de la semaine (mot entier, casse indifférente),
- * seul de sa routine à porter ce jour, reçoit ce jour. L'écriture se fait sous la garde de synchro, avant la création du déclencheur propre :
- * rien n'est mis en file, chaque appareil faisant le même calcul sur les mêmes lignes en migrant.
+ * Aucun rattachement des jours existants à la migration (relecture sync-icloud, D-317 (1)) : une écriture sous la garde n'aurait pas d'horloge
+ * propre, et deux appareils migrant à des moments différents sur des lignes différentes (renommage, suppression entre-temps) garderaient
+ * chacun leur valeur sans jamais converger. Le rattachement par le nom se fait à l'import d'archive, ou par Ali dans l'éditeur.
  */
-
-const WEEKDAYS = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] as const;
-/** Jour ISO lu dans le nom (expression SQL sur la colonne `col`), nul sinon. */
-const weekdayOfName = (col: string): string =>
-  `(CASE ${WEEKDAYS.map((w, i) => `WHEN lower(trim(${col})) = '${w}' OR lower(trim(${col})) GLOB '${w}[^a-z]*' THEN ${String(i + 1)}`).join(' ')} END)`;
 
 const fieldCapture = (table: string, column: string): string[] => {
   const row = `table_name = '${table}' AND row_id = NEW.id`;
@@ -51,11 +46,6 @@ export const migration0020RoutineWeekday: Migration = {
   name: 'routine_weekday',
   statements: [
     'ALTER TABLE routine_day ADD COLUMN weekday INTEGER CHECK (weekday IS NULL OR weekday BETWEEN 1 AND 7)',
-    'INSERT OR IGNORE INTO sync_guard (id) VALUES (1)',
-    `UPDATE routine_day SET weekday = ${weekdayOfName('name')}
-       WHERE deleted_at IS NULL AND ${weekdayOfName('name')} IS NOT NULL
-         AND (SELECT COUNT(*) FROM routine_day o WHERE o.routine_id = routine_day.routine_id AND o.deleted_at IS NULL AND ${weekdayOfName('o.name')} = ${weekdayOfName('routine_day.name')}) = 1`,
-    'DELETE FROM sync_guard',
     ownTrigger('sync_routine_day_weekday_au', 'routine_day', ['weekday']),
   ],
 };
