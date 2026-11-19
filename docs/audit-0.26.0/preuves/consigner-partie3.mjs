@@ -3,6 +3,8 @@ import fs from 'node:fs';
 const base = 'docs/audit-0.26.0/';
 const reads = JSON.parse(fs.readFileSync(base + 'preuves/lectures.json', 'utf8'));
 const groups = [
+  [['src/sync/snapshot.ts', 'src/db/repositories/sql/dataResetRepository.ts'], 'Instantanés fusion/remplacement, export, traces et effacement SQL intégralement lus. A-009 : colonne inconnue de table connue ignorée en fusion, preuve ciblée journal/instantané.'],
+  [['src/sync/service.ts', 'src/features/sync/SyncDetailsVersion.tsx', 'src/features/sync/syncText.ts', 'src/features/sync/startSync.ts', 'src/features/sync/yIos02.test.tsx'], 'Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution.'],
   [['src/sync/engine.ts', 'src/sync/status.ts', 'src/sync/maintenance.ts', 'src/domain/syncBanners.ts'], 'Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer.'],
   [['src/domain/hlc.ts', 'src/sync/index.ts', 'src/sync/guarded.ts', 'src/sync/dataReset.ts'], 'Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter.'],
   [['src/domain/sync/merge.ts', 'src/domain/sync/compat.ts', 'src/domain/sync/limits.ts', 'src/domain/sync/drift.ts'], 'Fusion par champ, bases, conflits, réintégration, plafonds et dérive physique intégralement lus.'],

@@ -1,9 +1,9 @@
 # Couverture de relecture — AUDIT-0.26.0
 
 SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
-97/2047 fichiers lus (4.74 %). « Lu » indique une lecture complète dans la passe précisée, pas la validation de tous les scénarios métier. Les lectures partielles et scans ne sont pas comptés.
+104/2047 fichiers lus (5.08 %). « Lu » indique une lecture complète dans la passe précisée, pas la validation de tous les scénarios métier. Les lectures partielles et scans ne sont pas comptés.
 
-Production et outillage : 96/1046 lus intégralement. Tests et supports : 1001 fichiers ; partie 11 par outils, lecture complète des règles critiques et échantillon motivé du reste (décision d’Ali des 16 et 19/11). Inventaire corrigé en partie 1 : 389 ajouts, dont 33 de production/outillage et 356 de tests/supports ; les 645 tests du compteur initial n’incluaient pas tout le banc. Les 81 fichiers vendored exclus restent listés. Configurations déclaratives et documents consultés sont cités dans les rapports de partie, hors de ce décompte de sources.
+Production et outillage : 102/1046 lus intégralement. Tests et supports : 1001 fichiers ; partie 11 par outils, lecture complète des règles critiques et échantillon motivé du reste (décision d’Ali des 16 et 19/11). Inventaire corrigé en partie 1 : 389 ajouts, dont 33 de production/outillage et 356 de tests/supports ; les 645 tests du compteur initial n’incluaient pas tout le banc. Les 81 fichiers vendored exclus restent listés. Configurations déclaratives et documents consultés sont cités dans les rapports de partie, hors de ce décompte de sources.
 
 | Fichier | Statut | Motif / preuve |
 | --- | --- | --- |
@@ -423,7 +423,7 @@ Production et outillage : 96/1046 lus intégralement. Tests et supports : 1001 f
 | `src/db/repositories/sql/cardioRepository.ts` | à lire |  |
 | `src/db/repositories/sql/checklistRepository.test.ts` | à lire |  |
 | `src/db/repositories/sql/checklistRepository.ts` | à lire |  |
-| `src/db/repositories/sql/dataResetRepository.ts` | à lire |  |
+| `src/db/repositories/sql/dataResetRepository.ts` | lu | Partie 3 : Instantanés fusion/remplacement, export, traces et effacement SQL intégralement lus. A-009 : colonne inconnue de table connue ignorée en fusion, preuve ciblée journal/instantané. |
 | `src/db/repositories/sql/dayCompletenessRepository.test.ts` | à lire |  |
 | `src/db/repositories/sql/dayCompletenessRepository.ts` | à lire |  |
 | `src/db/repositories/sql/epochCarryReports.test.ts` | à lire |  |
@@ -1273,7 +1273,7 @@ Production et outillage : 96/1046 lus intégralement. Tests et supports : 1001 f
 | `src/features/sync/SyncDetailsScreen.css` | à lire |  |
 | `src/features/sync/SyncDetailsScreen.tsx` | à lire |  |
 | `src/features/sync/SyncDetailsVersion.test.tsx` | à lire |  |
-| `src/features/sync/SyncDetailsVersion.tsx` | à lire |  |
+| `src/features/sync/SyncDetailsVersion.tsx` | lu | Partie 3 : Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution. |
 | `src/features/sync/SyncDeviceName.tsx` | à lire |  |
 | `src/features/sync/SyncNowButton.test.tsx` | à lire |  |
 | `src/features/sync/SyncNowButton.tsx` | à lire |  |
@@ -1329,7 +1329,7 @@ Production et outillage : 96/1046 lus intégralement. Tests et supports : 1001 f
 | `src/features/sync/restoreChoiceHost.test.tsx` | à lire |  |
 | `src/features/sync/segmentGapText.test.tsx` | à lire |  |
 | `src/features/sync/startSync.test.tsx` | à lire |  |
-| `src/features/sync/startSync.ts` | à lire |  |
+| `src/features/sync/startSync.ts` | lu | Partie 3 : Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution. |
 | `src/features/sync/startSyncQa.test.tsx` | à lire |  |
 | `src/features/sync/syncConflictUseCases.ts` | à lire |  |
 | `src/features/sync/syncI18nQa.test.ts` | à lire |  |
@@ -1337,12 +1337,12 @@ Production et outillage : 96/1046 lus intégralement. Tests et supports : 1001 f
 | `src/features/sync/syncRestoreControl.ts` | à lire |  |
 | `src/features/sync/syncRestoreState.ts` | à lire |  |
 | `src/features/sync/syncStore.ts` | à lire |  |
-| `src/features/sync/syncText.ts` | à lire |  |
+| `src/features/sync/syncText.ts` | lu | Partie 3 : Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution. |
 | `src/features/sync/syncedData.test.tsx` | à lire |  |
 | `src/features/sync/testKit.ts` | à lire |  |
 | `src/features/sync/waitingLong.test.tsx` | à lire |  |
 | `src/features/sync/yIos01.test.tsx` | à lire |  |
-| `src/features/sync/yIos02.test.tsx` | à lire |  |
+| `src/features/sync/yIos02.test.tsx` | lu | Partie 3 : Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution. |
 | `src/features/sync/yIos02Pairing.test.tsx` | à lire |  |
 | `src/features/sync/yTech02Warnings.test.tsx` | à lire |  |
 | `src/features/sync/yTech02WarningsQa.test.tsx` | à lire |  |
@@ -1762,8 +1762,8 @@ Production et outillage : 96/1046 lus intégralement. Tests et supports : 1001 f
 | `src/sync/scheduler.test.ts` | à lire |  |
 | `src/sync/scheduler.ts` | à lire |  |
 | `src/sync/schedulerPending.test.ts` | à lire |  |
-| `src/sync/service.ts` | à lire |  |
-| `src/sync/snapshot.ts` | à lire |  |
+| `src/sync/service.ts` | lu | Partie 3 : Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution. |
+| `src/sync/snapshot.ts` | lu | Partie 3 : Instantanés fusion/remplacement, export, traces et effacement SQL intégralement lus. A-009 : colonne inconnue de table connue ignorée en fusion, preuve ciblée journal/instantané. |
 | `src/sync/status.ts` | lu | Partie 3 : Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer. |
 | `src/sync/sync.perf.test.ts` | à lire |  |
 | `src/ui/AppShell.css` | à lire |  |

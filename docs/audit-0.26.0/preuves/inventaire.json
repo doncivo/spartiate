@@ -2913,10 +2913,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/dataResetRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Instantanés fusion/remplacement, export, traces et effacement SQL intégralement lus. A-009 : colonne inconnue de table connue ignorée en fusion, preuve ciblée journal/instantané."
   },
   {
     "fichier": "src/db/repositories/sql/dayCompletenessRepository.test.ts",
@@ -8863,10 +8863,10 @@
   },
   {
     "fichier": "src/features/sync/SyncDetailsVersion.tsx",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution."
   },
   {
     "fichier": "src/features/sync/SyncDeviceName.tsx",
@@ -9255,10 +9255,10 @@
   },
   {
     "fichier": "src/features/sync/startSync.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution."
   },
   {
     "fichier": "src/features/sync/startSyncQa.test.tsx",
@@ -9311,10 +9311,10 @@
   },
   {
     "fichier": "src/features/sync/syncText.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution."
   },
   {
     "fichier": "src/features/sync/syncedData.test.tsx",
@@ -9346,10 +9346,10 @@
   },
   {
     "fichier": "src/features/sync/yIos02.test.tsx",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution."
   },
   {
     "fichier": "src/features/sync/yIos02Pairing.test.tsx",
@@ -12286,17 +12286,17 @@
   },
   {
     "fichier": "src/sync/service.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution."
   },
   {
     "fichier": "src/sync/snapshot.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Instantanés fusion/remplacement, export, traces et effacement SQL intégralement lus. A-009 : colonne inconnue de table connue ignorée en fusion, preuve ciblée journal/instantané."
   },
   {
     "fichier": "src/sync/status.ts",

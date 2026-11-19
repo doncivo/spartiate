@@ -1,0 +1,10 @@
+﻿
+ RUN  v5.0.3 C:/Dev/spartiate-codex
+
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  20:48:07
+   Duration  12.39s (environment 42%, transform 29%, setup 11%, tests 11%, import 7%)
+
+

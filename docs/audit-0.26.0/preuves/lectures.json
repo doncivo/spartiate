@@ -483,5 +483,40 @@
     "fichier": "src/domain/syncBanners.ts",
     "partie": 3,
     "preuve": "Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer."
+  },
+  {
+    "fichier": "src/sync/snapshot.ts",
+    "partie": 3,
+    "preuve": "Instantanés fusion/remplacement, export, traces et effacement SQL intégralement lus. A-009 : colonne inconnue de table connue ignorée en fusion, preuve ciblée journal/instantané."
+  },
+  {
+    "fichier": "src/db/repositories/sql/dataResetRepository.ts",
+    "partie": 3,
+    "preuve": "Instantanés fusion/remplacement, export, traces et effacement SQL intégralement lus. A-009 : colonne inconnue de table connue ignorée en fusion, preuve ciblée journal/instantané."
+  },
+  {
+    "fichier": "src/sync/service.ts",
+    "partie": 3,
+    "preuve": "Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution."
+  },
+  {
+    "fichier": "src/features/sync/SyncDetailsVersion.tsx",
+    "partie": 3,
+    "preuve": "Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution."
+  },
+  {
+    "fichier": "src/features/sync/syncText.ts",
+    "partie": 3,
+    "preuve": "Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution."
+  },
+  {
+    "fichier": "src/features/sync/startSync.ts",
+    "partie": 3,
+    "preuve": "Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution."
+  },
+  {
+    "fichier": "src/features/sync/yIos02.test.tsx",
+    "partie": 3,
+    "preuve": "Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution."
   }
 ]

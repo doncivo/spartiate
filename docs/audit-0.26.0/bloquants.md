@@ -6,6 +6,14 @@ Au terme de la partie 1, aucun nouveau bloquant démontré. **Partie 2 en cours 
 
 Les constats d’usage connus du lot 0.27.0 seront vérifiés dans les parties 4 et 5. Les risques non reproduits de démarrage/réintégration restent des pistes, listées dans `partie-01.md`.
 
+## A-009 — colonne nouvelle ignorée dans un instantané d'une table connue
+
+- **Ce qu'Ali peut voir dans ce scénario** : une valeur de cible nutritionnelle présente sur l'appareil récent n'est pas conservée par l'appareil ancien qui la reçoit par instantané ; sa mise à jour ne pourra pas la réintégrer depuis `sync_unknown`.
+- Cause : `src/sync/snapshot.ts`, `rowToOp` ne parcourt que `t.columns` du lecteur ; `keepUnknownTableRows` ignore les tables déjà connues. Les colonnes nouvelles de ces tables n'atteignent donc jamais `putUnknown`, contrairement au chemin journal `applyOps`. Les enregistrements `snap-unknown` déjà constitués sont conservés, ce qui ne couvre pas la colonne native du schéma récent dans `snap-rows`.
+- Preuve : `preuves/partie3-snapshot-colonnes.test.mjs`, vraies fonctions `mergeSnapshot` et `applyOps` transpilées en mémoire sans changement de logique, catalogue de lecture 18 obtenu en retirant les trois colonnes nutritionnelles ajoutées par migration 19. Même ligne existante et même champ synthétique `rest_kcal = 2200` : **journal, témoin vert** (champ gardé avec sv 19) ; **instantané, assertion rouge** (champ absent). Observations JSON et logs dans `preuves/` et `preuves/resultats/`.
+- **Portée établie** : perte du champ à la réception de l'instantané en fusion, sans signal spécifique dans ce chemin. **Limites** : repository de preuve en mémoire, aucune donnée réelle, ni transport natif ni purge de journaux simulés. Le test ne démontre pas une perte définitive de toutes les copies : un journal encore rejouable ou une republication peut restituer la valeur. Aucun constat d'usage réel ni mauvaise prescription effective n'est affirmé.
+- Classement bloquant de conservation, publication immédiate ; distinct des constats « connu, lot 0.27.0 » relatifs à l'onboarding. Correction proposée hors audit : conserver aussi les colonnes inconnues des tables connues d'un instantané de schéma supérieur, avec horloge et version, sous les mêmes validations que les journaux. Couvrir réception, republication, mise à jour et réintégration, ainsi que remplacement d'époque.
+
 ## A-008 — perte d'une écriture acquittée après un rollback en échec
 
 - **Ce qu'Ali peut voir dans ce scénario** : une première opération affiche une erreur ; une saisie suivante semble enregistrée et reste lisible, puis disparaît au redémarrage.

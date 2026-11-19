@@ -1,0 +1,16 @@
+﻿{
+    "nom":  "partie3-reintegration-ui",
+    "executable":  "node",
+    "arguments":  [
+                      "node_modules/vitest/vitest.mjs",
+                      "run",
+                      "--coverage.enabled=false",
+                      "--maxWorkers=1",
+                      "src/features/sync/yIos02.test.tsx"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-19T19:47:47.0606492Z",
+    "fin":  "2026-11-19T19:47:49.2032609Z",
+    "code":  1,
+    "etat":  "Ã©chec"
+}
