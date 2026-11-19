@@ -5475,10 +5475,10 @@
   },
   {
     "fichier": "src/domain/sync/ownState.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Arrivée par tranches, finalisation des curseurs, états propres et publication intégralement lus. A-009 étendu : curseur couvert avancé malgré champ inconnu perdu."
   },
   {
     "fichier": "src/domain/sync/parse.test.ts",
@@ -5510,10 +5510,10 @@
   },
   {
     "fichier": "src/domain/sync/positions.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Arrivée par tranches, finalisation des curseurs, états propres et publication intégralement lus. A-009 étendu : curseur couvert avancé malgré champ inconnu perdu."
   },
   {
     "fichier": "src/domain/sync/publishRotation.test.ts",
@@ -12160,10 +12160,10 @@
   },
   {
     "fichier": "src/sync/join.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Arrivée par tranches, finalisation des curseurs, états propres et publication intégralement lus. A-009 étendu : curseur couvert avancé malgré champ inconnu perdu."
   },
   {
     "fichier": "src/sync/log.ts",
@@ -12223,10 +12223,10 @@
   },
   {
     "fichier": "src/sync/publisher.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Arrivée par tranches, finalisation des curseurs, états propres et publication intégralement lus. A-009 étendu : curseur couvert avancé malgré champ inconnu perdu."
   },
   {
     "fichier": "src/sync/purge.ts",

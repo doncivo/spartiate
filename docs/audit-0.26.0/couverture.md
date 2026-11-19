@@ -1,9 +1,9 @@
 # Couverture de relecture — AUDIT-0.26.0
 
 SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
-104/2047 fichiers lus (5.08 %). « Lu » indique une lecture complète dans la passe précisée, pas la validation de tous les scénarios métier. Les lectures partielles et scans ne sont pas comptés.
+108/2047 fichiers lus (5.28 %). « Lu » indique une lecture complète dans la passe précisée, pas la validation de tous les scénarios métier. Les lectures partielles et scans ne sont pas comptés.
 
-Production et outillage : 102/1046 lus intégralement. Tests et supports : 1001 fichiers ; partie 11 par outils, lecture complète des règles critiques et échantillon motivé du reste (décision d’Ali des 16 et 19/11). Inventaire corrigé en partie 1 : 389 ajouts, dont 33 de production/outillage et 356 de tests/supports ; les 645 tests du compteur initial n’incluaient pas tout le banc. Les 81 fichiers vendored exclus restent listés. Configurations déclaratives et documents consultés sont cités dans les rapports de partie, hors de ce décompte de sources.
+Production et outillage : 106/1046 lus intégralement. Tests et supports : 1001 fichiers ; partie 11 par outils, lecture complète des règles critiques et échantillon motivé du reste (décision d’Ali des 16 et 19/11). Inventaire corrigé en partie 1 : 389 ajouts, dont 33 de production/outillage et 356 de tests/supports ; les 645 tests du compteur initial n’incluaient pas tout le banc. Les 81 fichiers vendored exclus restent listés. Configurations déclaratives et documents consultés sont cités dans les rapports de partie, hors de ce décompte de sources.
 
 | Fichier | Statut | Motif / preuve |
 | --- | --- | --- |
@@ -789,12 +789,12 @@ Production et outillage : 102/1046 lus intégralement. Tests et supports : 1001 
 | `src/domain/sync/orphanRelist.ts` | à lire |  |
 | `src/domain/sync/ownDeletion.test.ts` | à lire |  |
 | `src/domain/sync/ownDeletion.ts` | à lire |  |
-| `src/domain/sync/ownState.ts` | à lire |  |
+| `src/domain/sync/ownState.ts` | lu | Partie 3 : Arrivée par tranches, finalisation des curseurs, états propres et publication intégralement lus. A-009 étendu : curseur couvert avancé malgré champ inconnu perdu. |
 | `src/domain/sync/parse.test.ts` | à lire |  |
 | `src/domain/sync/parse.ts` | à lire |  |
 | `src/domain/sync/pendingFiles.test.ts` | à lire |  |
 | `src/domain/sync/pendingFiles.ts` | à lire |  |
-| `src/domain/sync/positions.ts` | à lire |  |
+| `src/domain/sync/positions.ts` | lu | Partie 3 : Arrivée par tranches, finalisation des curseurs, états propres et publication intégralement lus. A-009 étendu : curseur couvert avancé malgré champ inconnu perdu. |
 | `src/domain/sync/publishRotation.test.ts` | à lire |  |
 | `src/domain/sync/publishRotation.ts` | à lire |  |
 | `src/domain/sync/repairs.ts` | à lire |  |
@@ -1744,7 +1744,7 @@ Production et outillage : 102/1046 lus intégralement. Tests et supports : 1001 
 | `src/sync/forget.ts` | à lire |  |
 | `src/sync/guarded.ts` | lu | Partie 3 : Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter. |
 | `src/sync/index.ts` | lu | Partie 3 : Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter. |
-| `src/sync/join.ts` | à lire |  |
+| `src/sync/join.ts` | lu | Partie 3 : Arrivée par tranches, finalisation des curseurs, états propres et publication intégralement lus. A-009 étendu : curseur couvert avancé malgré champ inconnu perdu. |
 | `src/sync/log.ts` | à lire |  |
 | `src/sync/maintenance.ts` | lu | Partie 3 : Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer. |
 | `src/sync/meta.ts` | à lire |  |
@@ -1753,7 +1753,7 @@ Production et outillage : 102/1046 lus intégralement. Tests et supports : 1001 
 | `src/sync/ownDeletion.ts` | à lire |  |
 | `src/sync/publishDeferred.test.ts` | à lire |  |
 | `src/sync/publishRotation.ts` | à lire |  |
-| `src/sync/publisher.ts` | à lire |  |
+| `src/sync/publisher.ts` | lu | Partie 3 : Arrivée par tranches, finalisation des curseurs, états propres et publication intégralement lus. A-009 étendu : curseur couvert avancé malgré champ inconnu perdu. |
 | `src/sync/purge.ts` | à lire |  |
 | `src/sync/reader.ts` | lu | Partie 3 : Application, savepoints, lignes partielles, tombstones, groupes HLC et curseurs intégralement lus ; vérifications croisées encore ouvertes. |
 | `src/sync/repair.ts` | lu | Partie 3 : Application, savepoints, lignes partielles, tombstones, groupes HLC et curseurs intégralement lus ; vérifications croisées encore ouvertes. |

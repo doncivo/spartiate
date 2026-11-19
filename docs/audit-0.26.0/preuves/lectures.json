@@ -518,5 +518,25 @@
     "fichier": "src/features/sync/yIos02.test.tsx",
     "partie": 3,
     "preuve": "Service et affichage de réintégration intégralement lus ; 7 tests verts sur le seul fichier yIos02, hors sandbox après blocage spawn EPERM avant exécution."
+  },
+  {
+    "fichier": "src/sync/join.ts",
+    "partie": 3,
+    "preuve": "Arrivée par tranches, finalisation des curseurs, états propres et publication intégralement lus. A-009 étendu : curseur couvert avancé malgré champ inconnu perdu."
+  },
+  {
+    "fichier": "src/domain/sync/positions.ts",
+    "partie": 3,
+    "preuve": "Arrivée par tranches, finalisation des curseurs, états propres et publication intégralement lus. A-009 étendu : curseur couvert avancé malgré champ inconnu perdu."
+  },
+  {
+    "fichier": "src/domain/sync/ownState.ts",
+    "partie": 3,
+    "preuve": "Arrivée par tranches, finalisation des curseurs, états propres et publication intégralement lus. A-009 étendu : curseur couvert avancé malgré champ inconnu perdu."
+  },
+  {
+    "fichier": "src/sync/publisher.ts",
+    "partie": 3,
+    "preuve": "Arrivée par tranches, finalisation des curseurs, états propres et publication intégralement lus. A-009 étendu : curseur couvert avancé malgré champ inconnu perdu."
   }
 ]
