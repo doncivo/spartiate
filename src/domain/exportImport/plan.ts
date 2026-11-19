@@ -11,6 +11,7 @@
 
 import { localDateOfInstant } from '../donePeriod';
 import type { IsoDateTime } from '../types';
+import { weekdayFromDayName } from '../training/programDay';
 import { TABLE_SINCE_SV, TRAINING_EXPORT_TABLES, trainingColumns, trainingRows, trainingTable, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable } from './archive';
 
 export type ImportMode = 'merge' | 'replace';
@@ -222,6 +223,16 @@ export function planImport(local: ExportData, incoming: ExportData, mode: Import
     const decidedDay = (iso: string): string => (iso === '' ? '' : localDateOfInstant(iso as IsoDateTime));
     const latestLocalDay = [...keptLocal.map((r) => String(r.values['week_start'] ?? '')), ...keptLocal.map((r) => decidedDay(decidedAt(r)))].sort().pop() ?? '';
     const ordered = [...trainingRows(incoming, table)].sort((a, b) => (table === 'nutrition_target' && decidedAt(a) !== decidedAt(b) ? (decidedAt(a) < decidedAt(b) ? -1 : 1) : a.id < b.id ? -1 : 1));
+    // PROG-04 (D-317) : jours de la semaine lus dans les noms (par routine) et déjà pris ici.
+    const namedWeekdays = new Map<string, number>();
+    const takenWeekdays = new Set<string>();
+    if (table === 'routine_day') {
+      for (const r of ordered) {
+        const named = weekdayFromDayName(String(r.values['name'] ?? ''));
+        if (named !== null) namedWeekdays.set(`${String(r.values['routine_id'] ?? '')}|${String(named)}`, (namedWeekdays.get(`${String(r.values['routine_id'] ?? '')}|${String(named)}`) ?? 0) + 1);
+      }
+      for (const r of localRows.values()) if (r.values['weekday'] !== null && r.values['weekday'] !== undefined) takenWeekdays.add(`${String(r.values['routine_id'] ?? '')}|${String(r.values['weekday'])}`);
+    }
     for (const incomingRow of ordered) {
       if (skipRow(table, incomingRow)) continue;
       // FIX-0271 (D-314) : une cible PRÉVUE pour une semaine postérieure à toute décision locale gardée est toujours importée : elle prend effet
@@ -232,7 +243,14 @@ export function planImport(local: ExportData, incoming: ExportData, mode: Import
       const existing = localRows.get(closed.id);
       // FIX-0171 (constat 1, D-120) : une colonne absente de l'archive (schéma plus ancien) garde la valeur locale, dans les deux modes ; une valeur
       // nulle présente dans l'archive reste un effacement explicite. Ligne nouvelle : la colonne absente reste nulle.
-      const row = existing && closed.absent && closed.absent.length > 0 ? { id: closed.id, values: { ...closed.values, ...Object.fromEntries(closed.absent.map((col) => [col, existing.values[col] ?? null])) } } : closed;
+      let row = existing && closed.absent && closed.absent.length > 0 ? { id: closed.id, values: { ...closed.values, ...Object.fromEntries(closed.absent.map((col) => [col, existing.values[col] ?? null])) } } : closed;
+      // PROG-04 (D-317) : archive sans `weekday` (sv 18, 19) : un jour sans jour de la semaine ici est rattaché par son nom (« Lundi — … »), si ce
+      // jour de la semaine est libre dans sa routine (archive et base) ; sinon il reste sans date.
+      if (table === 'routine_day' && closed.absent?.includes('weekday') === true && (row.values['weekday'] ?? null) === null) {
+        const named = weekdayFromDayName(String(row.values['name'] ?? ''));
+        const routineId = String(row.values['routine_id'] ?? '');
+        if (named !== null && (namedWeekdays.get(`${routineId}|${String(named)}`) ?? 0) === 1 && !takenWeekdays.has(`${routineId}|${String(named)}`)) row = { ...row, values: { ...row.values, weekday: named } };
+      }
       if (existing && columns.every((col) => (existing.values[col] ?? null) === (row.values[col] ?? null))) unchanged += 1;
       else {
         trainingWrites.push({ table, row });

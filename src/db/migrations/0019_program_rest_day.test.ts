@@ -46,7 +46,7 @@ const outbox = async (db: SqlDriver, table: string): Promise<string[]> =>
 
 describe('migration 0019 : program_rest_day (PROG-01)', () => {
   it('registre : 0001 à 0019 ; version 19, nom program_rest_day', () => {
-    expect(migrations.map((m) => m.version)).toEqual(Array.from({ length: 19 }, (_, i) => i + 1));
+    expect(migrations.map((m) => m.version).slice(0, 19)).toEqual(Array.from({ length: 19 }, (_, i) => i + 1));
     expect(migrations[18]).toBe(migration0019ProgramRestDay);
     expect(migration0019ProgramRestDay.name).toBe('program_rest_day');
   });

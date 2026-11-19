@@ -26,6 +26,8 @@ interface DayRow extends SqlRow, SyncRow {
   readonly routine_id: string;
   readonly name: string;
   readonly day_order: number;
+  // PROG-04 (migration 0020) : absente d'une base plus ancienne (lecture tolérante).
+  readonly weekday?: number | null;
 }
 interface LineRow extends SqlRow, SyncRow {
   readonly routine_day_id: string;
@@ -63,6 +65,7 @@ const rowToDay = (row: DayRow, lines: readonly LineRow[]): RoutineDay => ({
   routineId: row.routine_id,
   name: row.name,
   dayOrder: row.day_order,
+  weekday: row.weekday ?? null,
   exercises: lines.filter((l) => l.routine_day_id === row.id).map(rowToLine),
   ...readSyncMeta(row),
 });
@@ -101,11 +104,14 @@ export function createTrainingRoutineRepository(db: SqlExecutor, stamper: WriteS
   };
   const insertDay = async (routineId: string, day: Omit<RoutineDayInput, 'exercises'>): Promise<void> => {
     const stamp = stamper.next();
-    await db.execute('INSERT INTO routine_day (id, routine_id, name, day_order, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [
+    // PROG-04 : la colonne n'est écrite que si un jour de la semaine est donné (une base au schéma 19 ne l'a pas).
+    const weekday = day.weekday ?? null;
+    await db.execute(`INSERT INTO routine_day (id, routine_id, name, day_order${weekday === null ? '' : ', weekday'}, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?${weekday === null ? '' : ', ?'}, ?, ?, ?, ?)`, [
       day.id,
       routineId,
       day.name.trim(),
       day.dayOrder,
+      ...(weekday === null ? [] : [weekday]),
       stamp.at,
       stamp.at,
       stamp.deviceId,
@@ -213,10 +219,14 @@ export function createTrainingRoutineRepository(db: SqlExecutor, stamper: WriteS
 
     async updateDay(id, patch) {
       const current = await liveDay(id);
-      const next = { name: patch.name ?? current.name, dayOrder: patch.dayOrder ?? current.day_order, exercises: [] };
+      const weekday = patch.weekday === undefined ? (current.weekday ?? null) : patch.weekday;
+      const next = { name: patch.name ?? current.name, dayOrder: patch.dayOrder ?? current.day_order, weekday, exercises: [] };
       if (validateRoutineDay(next).length > 0) invalid('routine_day', id);
+      // PROG-04 (D-316) : un jour de la semaine porte au plus un jour vivant de la routine.
+      if (patch.weekday !== undefined && weekday !== null && (await db.select('SELECT 1 FROM routine_day WHERE routine_id = ? AND id <> ? AND weekday = ? AND deleted_at IS NULL', [current.routine_id, id, weekday])).length > 0) invalid('routine_day', id);
       const stamp = stamper.next();
-      await db.execute('UPDATE routine_day SET name = ?, day_order = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [next.name.trim(), next.dayOrder, stamp.at, stamp.deviceId, stamp.hlc, id]);
+      const withWeekday = patch.weekday !== undefined;
+      await db.execute(`UPDATE routine_day SET name = ?, day_order = ?${withWeekday ? ', weekday = ?' : ''}, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?`, [next.name.trim(), next.dayOrder, ...(withWeekday ? [weekday] : []), stamp.at, stamp.deviceId, stamp.hlc, id]);
       return dayWithLines(id);
     },
 

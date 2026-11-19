@@ -372,3 +372,35 @@ export function changeNextWeeks(spec: MesocycleSpec, weeks: number, config: Gene
   const next = { ...spec, nextWeeks: weeks };
   return validateMesocycleSpec(next, config) ? next : null;
 }
+
+/** PROG-05 (D-315) : durées admises au lancement (formulaire du cycle). */
+const isWeeksChoice = (w: unknown, config: GenerationConfig): w is number | 'unlimited' =>
+  w === 'unlimited' || (typeof w === 'number' && Number.isInteger(w) && w >= config.mesoWeeksRange[0] && w <= config.mesoWeeksRange[1]);
+
+/**
+ * PROG-05 (D-315) : durée proposée au lancement d'un cycle = le dernier réglage. Ordre : dernière durée choisie par Ali (réglage local
+ * `training.cycleWeeks`, écrit à l'onboarding, au lancement et à chaque changement de durée) ; sinon le cycle le plus récent (date de début),
+ * sa durée du cycle suivant d'abord (cycles portés par une archive ou la synchro compris) ; sinon la durée de l'onboarding ; sinon le défaut.
+ */
+export function defaultCycleWeeks(input: { readonly lastChoice: unknown; readonly cycles: readonly MesocycleSpec[]; readonly onboardingWeeks: number | null }, config: GenerationConfig): number | 'unlimited' {
+  if (isWeeksChoice(input.lastChoice, config)) return input.lastChoice;
+  const latest = [...input.cycles].sort((a, b) => (a.startDate < b.startDate ? 1 : a.startDate > b.startDate ? -1 : 0))[0];
+  if (latest !== undefined) {
+    const weeks = latest.unlimited ? 'unlimited' : (latest.nextWeeks ?? latest.weeks);
+    if (isWeeksChoice(weeks, config)) return weeks;
+  }
+  if (isWeeksChoice(input.onboardingWeeks, config)) return input.onboardingWeeks;
+  return config.mesoWeeks;
+}
+
+/** PROG-05 (D-315) : la durée peut s'appliquer au cycle en cours : cycle limité, actif, en semaine 1, aucune séance close depuis son début. */
+export function canApplyWeeksNow(spec: MesocycleSpec, state: MesocycleState, closedSinceStart: number): boolean {
+  return !spec.unlimited && spec.status === 'active' && state.phase === 'active' && state.week === 1 && closedSinceStart === 0;
+}
+
+/** PROG-05 (D-315) : cycle en cours passé à `weeks` (4, 5 ou 6) ; la durée du suivant est effacée ; reprise gardée sur 4 ou 6 seulement. */
+export function weeksNowSpec(spec: MesocycleSpec, weeks: number, config: GenerationConfig): MesocycleSpec | null {
+  if (!(MESO_WEEK_CHOICES as readonly number[]).includes(weeks)) return null;
+  const next: MesocycleSpec = { ...spec, weeks, nextWeeks: null, rampUp: spec.rampUp === true && (weeks === 4 || weeks === 6) };
+  return validateMesocycleSpec(next, config) ? next : null;
+}

@@ -137,6 +137,8 @@ describe('(d) appareil resté au schéma 13 (ADR 0011 §7.2)', () => {
     expect(kept).toEqual([
       { table_name: 'routine_exercise', field: 'circuit_id' },
       { table_name: 'routine_exercise', field: 'circuit_rest_sec' },
+      // PROG-04 (migration 0020) : le jour de la semaine, publié avec la ligne entière, est lui aussi gardé à part sur un appareil au schéma 13.
+      { table_name: 'routine_day', field: 'weekday' },
     ]);
     expect(await pc.driver.select('SELECT 1 FROM sync_parked')).toEqual([]);
     // La séance démarrée sur l'appareil resté au schéma 13 : exercices libres, rien n'est perdu.
