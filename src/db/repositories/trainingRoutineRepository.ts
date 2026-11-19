@@ -20,7 +20,7 @@ export interface TrainingRoutineRepository {
   /** Suppression logique de la routine, de ses jours et de leurs lignes. */
   softDelete(id: string): Promise<void>;
   addDay(routineId: string, day: RoutineDayInput): Promise<RoutineDay>;
-  updateDay(id: string, patch: { readonly name?: string; readonly dayOrder?: number }): Promise<RoutineDay>;
+  updateDay(id: string, patch: { readonly name?: string; readonly dayOrder?: number; readonly weekday?: number | null }): Promise<RoutineDay>;
   /** Suppression logique du jour et de ses lignes. */
   removeDay(id: string): Promise<void>;
   addExercise(dayId: string, line: RoutineExerciseInput): Promise<RoutineExercise>;

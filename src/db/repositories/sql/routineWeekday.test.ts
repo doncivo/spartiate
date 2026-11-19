@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { buildExportArchive, EXPORT_SV, parseExportArchive, type ExportData } from '../../../domain/exportImport/archive';
 import { planImport } from '../../../domain/exportImport/plan';
+import { sha256Hex } from '../../../domain/exportImport/sha256';
+import { buildZip, readZip } from '../../../domain/exportImport/zip';
 import type { RoutineInput } from '../../../domain/training';
 import type { DeviceId } from '../../../domain/types';
 import { openBaseDb, type TestDb } from './testSetup';
@@ -34,10 +36,18 @@ const importInto = (db: TestDb, data: ExportData, mode: 'merge' | 'replace') =>
   });
 async function archive(db: TestDb, sv: number): Promise<ExportData> {
   const data = await (await db.data.repos.exportImport()).readExportData();
-  // Archive d'un schéma antérieur : la colonne n'existe pas encore.
-  const old: ExportData = sv >= 20 ? data : { ...data, training: { ...data.training, routine_day: (data.training?.routine_day ?? []).map((r) => ({ id: r.id, values: Object.fromEntries(Object.entries(r.values).filter(([k]) => k !== 'weekday')) })) } };
-  const { bytes } = await buildExportArchive(old, { date: '2026-11-19T10:05:00.000Z', sv });
-  return (await parseExportArchive(bytes, { currentSv: EXPORT_SV, currentYear: 2026 })).data;
+  const built = await buildExportArchive(data, { date: '2026-11-19T10:05:00.000Z', sv });
+  if (sv >= 20) return (await parseExportArchive(built.bytes, { currentSv: EXPORT_SV, currentYear: 2026 })).data;
+  // Archive d'un schéma antérieur (sv 18, 19) : la clé `weekday` n'existe pas encore dans les lignes de `routine_day`.
+  const json = JSON.parse(new TextDecoder().decode(readZip(built.bytes).find((e) => e.name === 'data.json')?.data)) as { training: Record<string, Record<string, unknown>[]> };
+  for (const row of json.training['routine_day'] ?? []) delete row['weekday'];
+  const bytes = new TextEncoder().encode(JSON.stringify(json));
+  const manifest = { app: 'spartiate', sv, date: '2026-11-19T10:05:00.000Z', sha256: sha256Hex(bytes) };
+  const zip = buildZip([
+    { name: 'data.json', data: bytes },
+    { name: 'manifest.json', data: new TextEncoder().encode(JSON.stringify(manifest)) },
+  ]);
+  return (await parseExportArchive(zip, { currentSv: EXPORT_SV, currentYear: 2026 })).data;
 }
 
 describe('PROG-04 : dépôt', () => {

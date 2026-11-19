@@ -57,10 +57,11 @@ describe('PROG-04 : appareil resté au schéma 19', () => {
     expect((await b.driver.select<{ n: number }>('SELECT COUNT(*) AS n FROM conflict_log'))[0]?.n).toBe(0);
   });
 
-  it('jour créé sur le 19 : arrive sur le 20 sans jour de la semaine (la rotation s’applique)', async () => {
+  it('jour créé sur le 19 : gardé de côté et signalé sur le 20 jusqu’à la mise à jour de l’appareil ancien (SYNC-01, ADR 0018), jamais appliqué à moitié', async () => {
     const { a, b } = await mixed();
-    await a.data.transaction(async (r) => (await r.trainingRoutines()).create({ ...ROUTINE, days: ROUTINE.days.map((d) => ({ ...d, weekday: undefined })) as RoutineInput['days'] }));
+    await a.data.transaction(async (r) => (await r.trainingRoutines()).create({ ...ROUTINE, days: ROUTINE.days.map(({ weekday: _weekday, ...d }) => d) }));
     await roundTrip();
-    expect(await days(b, 'name, weekday')).toEqual([{ name: 'Jeudi — Poussée', weekday: null }]);
+    expect(await days(b, 'name, weekday')).toEqual([]);
+    expect((await b.driver.select<{ table_name: string }>('SELECT DISTINCT table_name FROM sync_parked ORDER BY table_name')).map((r) => r.table_name)).toContain('routine_day');
   });
 });

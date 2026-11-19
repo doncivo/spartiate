@@ -87,8 +87,8 @@ describe('base de données : trois constantes alignées (D-32)', () => {
   it('le nom de base est unique entre les trois', () => {
     expect(new Set([sql, guard, backup]).size).toBe(1);
   });
-  it('la version de schéma vaut 19 (base neuve 001b, bibliothèque et routines I1-01, séance locale I1-02, séances closes publiées I1-03, progression locale I2-01, difficulté et progression publiées I2-01 PR 2/2, mésocycle I3-02, nutrition I4-02, recettes et journée déclarée I4-07, récupération I5-01, journal de facteurs I6-01, mensurations et photos I6-02, groupes de circuit I6-03, groupes de circuit des routines I6-03b, favoris publiés FIX-0181, remises à zéro publiées RESET-01, compléments et prises publiés I6-05, séances cardio publiées et tracés locaux I6-06, durée du prochain mésocycle, semaine de reprise et cible des jours de repos PROG-01)', () => {
-    expect(read('src-tauri/src/backup.rs')).toMatch(/APP_SCHEMA_VERSION[^=]*=\s*19\b/);
+  it('la version de schéma vaut 20 (base neuve 001b, bibliothèque et routines I1-01, séance locale I1-02, séances closes publiées I1-03, progression locale I2-01, difficulté et progression publiées I2-01 PR 2/2, mésocycle I3-02, nutrition I4-02, recettes et journée déclarée I4-07, récupération I5-01, journal de facteurs I6-01, mensurations et photos I6-02, groupes de circuit I6-03, groupes de circuit des routines I6-03b, favoris publiés FIX-0181, remises à zéro publiées RESET-01, compléments et prises publiés I6-05, séances cardio publiées et tracés locaux I6-06, durée du prochain mésocycle, semaine de reprise et cible des jours de repos PROG-01, jour de la semaine des jours de routine PROG-04)', () => {
+    expect(read('src-tauri/src/backup.rs')).toMatch(/APP_SCHEMA_VERSION[^=]*=\s*20\b/);
   });
 });
 

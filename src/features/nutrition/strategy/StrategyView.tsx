@@ -6,7 +6,8 @@ import { Button, HeroFigure, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { NumberField, parseNumber } from '../shared';
-import { activeRoutineDayCount, saveManualTarget, saveRestPlan, saveNutritionPrefs, type NutritionSnapshot } from '../useCases';
+import type { Weekday } from '../../../domain/types';
+import { activeRoutineDayCount, activeRoutineWeekdays, saveManualTarget, saveRestPlan, saveNutritionPrefs, type NutritionSnapshot } from '../useCases';
 import { RestTargetForm } from './RestTargetForm';
 import { TargetForm, type TargetSaveResult } from './TargetForm';
 import { targetKey, useFutureConfirm } from './useFutureConfirm';
@@ -88,6 +89,8 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   const [saved, setSaved] = useState(false);
   const [restPartial, setRestPartial] = useState(false);
   const [routineDays, setRoutineDays] = useState<number | null>(null);
+  // PROG-04 (D-316) : jours de la semaine de la routine du cycle, quand ils existent (priment sur la répartition par nombre de jours).
+  const [routineWeekdays, setRoutineWeekdays] = useState<Weekday[] | null>(null);
   const [openRow, setOpenRow] = useState<RowId | null>(null);
   const [editing, setEditing] = useState(false);
   const { profile, target, targets } = snapshot;
@@ -100,6 +103,9 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
 
   useEffect(() => {
     let live = true;
+    void activeRoutineWeekdays(data).then((w) => {
+      if (live) setRoutineWeekdays(w);
+    });
     void activeRoutineDayCount(data).then((n) => {
       if (live) setRoutineDays(n);
     });
@@ -305,7 +311,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
         {target === null ? (
           <p className="ct-nutrition__muted">{tNutrition('restNeedsTarget')}</p>
         ) : (
-          <RestTargetForm key={`rest-${target.id}`} target={target.target} plan={target.restPlan ?? null} defaultDays={defaultTrainingDays(routineDays)} onSave={saveRest} />
+          <RestTargetForm key={`rest-${target.id}`} target={target.target} plan={target.restPlan ?? null} defaultDays={defaultTrainingDays(routineDays, routineWeekdays)} onSave={saveRest} />
         )}
         {restPartial ? <p role="status">{tNutrition('restTargetPartial')}</p> : null}
       </section>

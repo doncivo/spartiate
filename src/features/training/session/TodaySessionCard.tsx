@@ -2,7 +2,7 @@ import { tPlural } from '../../../i18n/plural';
 import { useEffect, useState } from 'react';
 import { summarizeSets, type RoutineDay, type WorkoutWithSets } from '../../../domain/training';
 import { cycleWeekMarker, type CycleWeekMarker } from '../../../domain/training/cycleWeek';
-import { nextProgramDay } from '../../../domain/training/programDay';
+import { programDayFor } from '../../../domain/training/programDay';
 import { formatExerciseLoad, tTraining } from '../../../i18n/trainingText';
 import { Button, useLayout } from '../../../ui';
 import { MissingValue } from '../../../ui/MissingValue';
@@ -37,7 +37,13 @@ interface ProgramDay {
   /** Durée et charges ; null si l'aperçu est illisible. */
   readonly preview: TodaySessionPreview | null;
 }
-type Load = { readonly status: 'loading' | 'failed' } | { readonly status: 'ready'; readonly open: WorkoutWithSets | null; readonly program: ProgramDay | null; readonly marker: CycleWeekMarker | null };
+/** PROG-04 (D-316) : jour sans séance prévue (jours rattachés à un jour de la semaine) ; le prochain jour prévu est annoncé. */
+interface RestDay {
+  readonly rest: true;
+  readonly nextName: string;
+  readonly nextWeekday: number;
+}
+type Load = { readonly status: 'loading' | 'failed' } | { readonly status: 'ready'; readonly open: WorkoutWithSets | null; readonly program: ProgramDay | RestDay | null; readonly marker: CycleWeekMarker | null };
 
 const byPosition = (day: RoutineDay) => [...day.exercises].sort((a, b) => a.position - b.position);
 
@@ -74,12 +80,18 @@ export function TodaySessionCard() {
       }
     })();
     /** Jour désigné par le cycle actif ; null sans cycle actif, routine illisible ou sans jour garni (carte d'avant). */
-    async function programDayOf(cycle: Awaited<ReturnType<typeof loadCurrentCycle>>): Promise<ProgramDay | null> {
+    async function programDayOf(cycle: Awaited<ReturnType<typeof loadCurrentCycle>>): Promise<ProgramDay | RestDay | null> {
       if (cycle === null || cycle.state.phase !== 'active') return null;
       const [routine, closed] = await Promise.all([(await data.repos.trainingRoutines()).get(cycle.record.routineId), (await data.repos.workouts()).listClosed(50)]);
       if (routine === null) return null;
-      const dayId = nextProgramDay(routine.days, closed, routine.id);
-      const day = routine.days.find((d) => d.id === dayId);
+      // PROG-04 (D-316) : jour de la semaine s'il est donné ; sinon rotation d'avant (D-243).
+      const choice = programDayFor(routine.days, closed, routine.id, localDayOf(clock.nowMs()));
+      if (choice === null) return null;
+      if (choice.kind === 'rest') {
+        const next = routine.days.find((d) => d.id === choice.nextDayId);
+        return next === undefined ? null : { rest: true, nextName: next.name, nextWeekday: choice.nextWeekday };
+      }
+      const day = routine.days.find((d) => d.id === choice.dayId);
       if (day === undefined) return null;
       // ERGO-02 : sur PC le tableau montre tous les exercices ; l'iPhone en garde trois.
       const shown = byPosition(day)
@@ -97,6 +109,25 @@ export function TodaySessionCard() {
   if (load.status !== 'ready') return null;
   const { open, program, marker } = load;
 
+  if (open === null && program !== null && 'rest' in program) {
+    const weekday = tTraining('weekdayNames').split('|')[program.nextWeekday - 1] ?? '';
+    return (
+      <section className="ct-today__card ct-session-card" aria-labelledby="ct-session-card-title">
+        <h2 id="ct-session-card-title" className="ct-today__eyebrow ct-section-title">
+          {tTraining('sessionTodayEyebrow')}
+        </h2>
+        <CycleMarker marker={marker} />
+        <div className="ct-session-card__body">
+          <p className="ct-session-card__name">{tTraining('sessionRestTitle')}</p>
+          <p className="ct-today__muted ct-session-card__meta">{tTraining('sessionRestToday', { weekday, name: program.nextName })}</p>
+        </div>
+        <Button fullWidth variant="secondary" onClick={() => navigate({ tab: 'training', screen: 'session' })}>
+          {tTraining('sessionOther')}
+        </Button>
+      </section>
+    );
+  }
+
   async function launch(target: ProgramDay): Promise<void> {
     setBusy(true);
     setFailed(false);
@@ -109,7 +140,7 @@ export function TodaySessionCard() {
     }
   }
 
-  if (open === null && program !== null) {
+  if (open === null && program !== null && !('rest' in program)) {
     const { day, preview } = program;
     const n = day.exercises.length;
     const more = n - SHOWN;
