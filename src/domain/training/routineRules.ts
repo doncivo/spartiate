@@ -20,6 +20,8 @@ export type RoutineIssueCode =
   | 'day-name-empty'
   | 'day-order'
   | 'day-order-duplicate'
+  | 'day-weekday'
+  | 'day-weekday-duplicate'
   | 'exercise-id'
   | 'exercise-name'
   | 'sets'
@@ -68,6 +70,8 @@ export function validateRoutineDay(day: RoutineDaySpec, dayIndex = 0): RoutineIs
   const issues: RoutineIssue[] = [];
   if (blank(day.name) || day.name.length > NAME_MAX) issues.push({ code: 'day-name-empty', dayIndex });
   if (!Number.isInteger(day.dayOrder) || day.dayOrder < 0) issues.push({ code: 'day-order', dayIndex });
+  // PROG-04 (D-316) : jour de la semaine ISO 1 à 7, ou aucun.
+  if (day.weekday !== undefined && day.weekday !== null && !(Number.isInteger(day.weekday) && day.weekday >= 1 && day.weekday <= 7)) issues.push({ code: 'day-weekday', dayIndex });
   const seen = new Set<number>();
   day.exercises.forEach((line, lineIndex) => {
     for (const code of validateRoutineLine(line)) issues.push({ code, dayIndex, lineIndex });
@@ -93,8 +97,14 @@ export function validateRoutine(routine: RoutineSpec): RoutineIssue[] {
   if (blank(routine.name) || routine.name.length > NAME_MAX) issues.push({ code: 'name-empty' });
   if (!(ROUTINE_MODES as readonly string[]).includes(routine.mode)) issues.push({ code: 'mode' });
   const orders = new Set<number>();
+  const weekdays = new Set<number>();
   routine.days.forEach((day, dayIndex) => {
     issues.push(...validateRoutineDay(day, dayIndex));
+    // PROG-04 (D-316) : un jour de la semaine porte au plus un jour de la routine.
+    if (day.weekday !== undefined && day.weekday !== null) {
+      if (weekdays.has(day.weekday)) issues.push({ code: 'day-weekday-duplicate', dayIndex });
+      weekdays.add(day.weekday);
+    }
     if (Number.isInteger(day.dayOrder) && day.dayOrder >= 0) {
       if (orders.has(day.dayOrder)) issues.push({ code: 'day-order-duplicate', dayIndex });
       orders.add(day.dayOrder);
