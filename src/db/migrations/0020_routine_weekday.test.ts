@@ -33,32 +33,18 @@ describe('migration 0020 : routine_weekday (PROG-04)', () => {
     expect(migration0020RoutineWeekday.name).toBe('routine_weekday');
   });
 
-  it('depuis la version 19 : jours nommés « Lundi — … » rattachés (unique par routine), les autres nuls, rien de mis en file', async () => {
+  it('depuis la version 19 : lignes existantes intactes, colonne nulle (aucun rattachement à la migration, revue sync-icloud), rien de mis en file', async () => {
     const db = await dbAt(19);
     await routine(db, u(1));
     await day(db, u(2), u(1), 'Lundi — Poussée', 1);
-    await day(db, u(3), u(1), 'mardi - Bas du corps', 2);
-    await day(db, u(4), u(1), 'Jeudi — Poussée', 3);
-    await day(db, u(5), u(1), 'Haut A', 4);
-    await day(db, u(6), u(1), 'Dimanche', 5);
-    await routine(db, u(10));
-    await day(db, u(11), u(10), 'Lundi A', 1);
-    await day(db, u(12), u(10), 'Lundi B', 2);
-    await day(db, u(13), u(10), 'Lundis', 3);
+    await day(db, u(3), u(1), 'Haut A', 2);
     await db.execute('DELETE FROM sync_outbox');
     await migrate(db, migrations);
     expect(await db.select('SELECT name, weekday FROM routine_day ORDER BY id')).toEqual([
-      { name: 'Lundi — Poussée', weekday: 1 },
-      { name: 'mardi - Bas du corps', weekday: 2 },
-      { name: 'Jeudi — Poussée', weekday: 4 },
+      { name: 'Lundi — Poussée', weekday: null },
       { name: 'Haut A', weekday: null },
-      { name: 'Dimanche', weekday: 7 },
-      { name: 'Lundi A', weekday: null },
-      { name: 'Lundi B', weekday: null },
-      { name: 'Lundis', weekday: null },
     ]);
     expect(await db.select('SELECT 1 FROM sync_outbox')).toEqual([]);
-    expect(await db.select('SELECT 1 FROM sync_guard')).toEqual([]);
   });
 
   it('contrainte : 1 à 7 ou nul', async () => {

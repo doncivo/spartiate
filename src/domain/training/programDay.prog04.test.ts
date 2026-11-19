@@ -28,6 +28,10 @@ describe('programDayFor', () => {
     const free = WEEK.map((d) => ({ ...d, weekday: null }));
     expect(programDayFor(free, [closedOn('lun')], 'r', '2026-11-19' as LocalDate)).toEqual({ kind: 'day', dayId: 'mar' });
   });
+  it('revue sync-icloud : deux jours au même jour de la semaine (fusion de deux appareils) : le premier dans l’ordre de la routine', () => {
+    expect(programDayFor([day('b', 2, 4), day('a', 1, 4)], [], 'r', '2026-11-19' as LocalDate)).toEqual({ kind: 'day', dayId: 'a' });
+  });
+
   it('aucun jour garni : null', () => {
     expect(programDayFor([day('a', 1, 1, 0)], [], 'r', '2026-11-16' as LocalDate)).toBeNull();
   });
