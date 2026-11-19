@@ -1,9 +1,9 @@
 # Couverture de relecture — AUDIT-0.26.0
 
 SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
-50/2047 fichiers lus (2.44 %). « Lu » indique une lecture complète dans la passe précisée, pas la validation de tous les scénarios métier. Les lectures partielles et scans ne sont pas comptés.
+78/2047 fichiers lus (3.81 %). « Lu » indique une lecture complète dans la passe précisée, pas la validation de tous les scénarios métier. Les lectures partielles et scans ne sont pas comptés.
 
-Production et outillage : 50/1046 lus intégralement. Tests et supports : 1001 fichiers ; partie 11 par outils, lecture complète des règles critiques et échantillon motivé du reste (décision d’Ali des 16 et 19/11). Inventaire corrigé en partie 1 : 389 ajouts, dont 33 de production/outillage et 356 de tests/supports ; les 645 tests du compteur initial n’incluaient pas tout le banc. Les 81 fichiers vendored exclus restent listés. Configurations déclaratives et documents consultés sont cités dans les rapports de partie, hors de ce décompte de sources.
+Production et outillage : 77/1046 lus intégralement. Tests et supports : 1001 fichiers ; partie 11 par outils, lecture complète des règles critiques et échantillon motivé du reste (décision d’Ali des 16 et 19/11). Inventaire corrigé en partie 1 : 389 ajouts, dont 33 de production/outillage et 356 de tests/supports ; les 645 tests du compteur initial n’incluaient pas tout le banc. Les 81 fichiers vendored exclus restent listés. Configurations déclaratives et documents consultés sont cités dans les rapports de partie, hors de ce décompte de sources.
 
 | Fichier | Statut | Motif / preuve |
 | --- | --- | --- |
@@ -323,57 +323,57 @@ Production et outillage : 50/1046 lus intégralement. Tests et supports : 1001 f
 | `src/App.tsx` | lu | Partie 1 : Composition, ordre des attentes, publication des erreurs et nettoyage lus ; réintégration/garde à approfondir en parties 2/3. |
 | `src/db/driver.ts` | lu | Partie 1 : Contrats, fabrique liée à la transaction et association catalogue/repositories lus ; atomicité effective à vérifier partie 2. |
 | `src/db/drivers/sqliteWasm.test.ts` | à lire |  |
-| `src/db/drivers/sqliteWasm.ts` | à lire |  |
+| `src/db/drivers/sqliteWasm.ts` | lu | Partie 2 : Cache borné des statements, fermeture, signaux et observateurs lus ; effets transactionnels à confronter aux appelants. |
 | `src/db/errorText.ts` | à lire |  |
 | `src/db/index.ts` | à lire |  |
 | `src/db/localWrite.test.ts` | à lire |  |
-| `src/db/localWrite.ts` | à lire |  |
+| `src/db/localWrite.ts` | lu | Partie 2 : Cache borné des statements, fermeture, signaux et observateurs lus ; effets transactionnels à confronter aux appelants. |
 | `src/db/migrationBackup.test.ts` | à lire |  |
-| `src/db/migrationBackup.ts` | à lire |  |
+| `src/db/migrationBackup.ts` | lu | Partie 2 : Ordre, sommes, version future, transactions, sauvegarde et réutilisation lus ; sans preuve native nouvelle. |
 | `src/db/migrationBackupUpdate.test.ts` | à lire |  |
 | `src/db/migrations/0001_spartiate_init.test.ts` | à lire |  |
-| `src/db/migrations/0001_spartiate_init.ts` | à lire |  |
+| `src/db/migrations/0001_spartiate_init.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0002_training.test.ts` | à lire |  |
-| `src/db/migrations/0002_training.ts` | à lire |  |
+| `src/db/migrations/0002_training.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0003_workout.test.ts` | à lire |  |
-| `src/db/migrations/0003_workout.ts` | à lire |  |
+| `src/db/migrations/0003_workout.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0004_workout_sync.test.ts` | à lire |  |
-| `src/db/migrations/0004_workout_sync.ts` | à lire |  |
+| `src/db/migrations/0004_workout_sync.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0005_progression.test.ts` | à lire |  |
-| `src/db/migrations/0005_progression.ts` | à lire |  |
+| `src/db/migrations/0005_progression.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0006_progression_sync.test.ts` | à lire |  |
-| `src/db/migrations/0006_progression_sync.ts` | à lire |  |
+| `src/db/migrations/0006_progression_sync.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0007_mesocycle.test.ts` | à lire |  |
-| `src/db/migrations/0007_mesocycle.ts` | à lire |  |
+| `src/db/migrations/0007_mesocycle.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0008_nutrition.test.ts` | à lire |  |
-| `src/db/migrations/0008_nutrition.ts` | à lire |  |
+| `src/db/migrations/0008_nutrition.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0009_recipes.test.ts` | à lire |  |
-| `src/db/migrations/0009_recipes.ts` | à lire |  |
+| `src/db/migrations/0009_recipes.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0010_recovery.test.ts` | à lire |  |
-| `src/db/migrations/0010_recovery.ts` | à lire |  |
+| `src/db/migrations/0010_recovery.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0011_recovery_factor.test.ts` | à lire |  |
-| `src/db/migrations/0011_recovery_factor.ts` | à lire |  |
+| `src/db/migrations/0011_recovery_factor.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0012_body_progress.test.ts` | à lire |  |
-| `src/db/migrations/0012_body_progress.ts` | à lire |  |
+| `src/db/migrations/0012_body_progress.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0013_workout_circuit.test.ts` | à lire |  |
-| `src/db/migrations/0013_workout_circuit.ts` | à lire |  |
+| `src/db/migrations/0013_workout_circuit.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0014_routine_circuit.test.ts` | à lire |  |
-| `src/db/migrations/0014_routine_circuit.ts` | à lire |  |
+| `src/db/migrations/0014_routine_circuit.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0015_food_favorite.test.ts` | à lire |  |
-| `src/db/migrations/0015_food_favorite.ts` | à lire |  |
+| `src/db/migrations/0015_food_favorite.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0016_data_reset.test.ts` | à lire |  |
-| `src/db/migrations/0016_data_reset.ts` | à lire |  |
+| `src/db/migrations/0016_data_reset.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0017_supplement.test.ts` | à lire |  |
-| `src/db/migrations/0017_supplement.ts` | à lire |  |
+| `src/db/migrations/0017_supplement.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0018_cardio.test.ts` | à lire |  |
-| `src/db/migrations/0018_cardio.ts` | à lire |  |
+| `src/db/migrations/0018_cardio.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/0019_program_rest_day.test.ts` | à lire |  |
-| `src/db/migrations/0019_program_rest_day.ts` | à lire |  |
-| `src/db/migrations/index.ts` | à lire |  |
+| `src/db/migrations/0019_program_rest_day.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
+| `src/db/migrations/index.ts` | lu | Partie 2 : DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2. |
 | `src/db/migrations/schemaRepublish.test.ts` | à lire |  |
 | `src/db/migrations/spartiateSchemaFixture.test.ts` | à lire |  |
 | `src/db/migrator.test.ts` | à lire |  |
-| `src/db/migrator.ts` | à lire |  |
+| `src/db/migrator.ts` | lu | Partie 2 : Ordre, sommes, version future, transactions, sauvegarde et réutilisation lus ; sans preuve native nouvelle. |
 | `src/db/parse/equipmentJson.ts` | à lire |  |
 | `src/db/parse/exerciseJson.ts` | à lire |  |
 | `src/db/parse/jsonText.ts` | à lire |  |
@@ -403,7 +403,7 @@ Production et outillage : 50/1046 lus intégralement. Tests et supports : 1001 f
 | `src/db/repositories/mesocycleRepository.ts` | à lire |  |
 | `src/db/repositories/nutritionTargetRepository.ts` | à lire |  |
 | `src/db/repositories/observeWrites.test.ts` | à lire |  |
-| `src/db/repositories/observeWrites.ts` | à lire |  |
+| `src/db/repositories/observeWrites.ts` | lu | Partie 2 : Cache borné des statements, fermeture, signaux et observateurs lus ; effets transactionnels à confronter aux appelants. |
 | `src/db/repositories/occurrenceDedupRepository.ts` | à lire |  |
 | `src/db/repositories/progressionRepository.ts` | à lire |  |
 | `src/db/repositories/recipeRepository.ts` | à lire |  |
@@ -496,7 +496,7 @@ Production et outillage : 50/1046 lus intégralement. Tests et supports : 1001 f
 | `src/db/repositories/sql/supplementRepository.ts` | à lire |  |
 | `src/db/repositories/sql/syncConflicts.ts` | à lire |  |
 | `src/db/repositories/sql/syncRepository.ts` | à lire |  |
-| `src/db/repositories/sql/syncUnknown.ts` | à lire |  |
+| `src/db/repositories/sql/syncUnknown.ts` | lu | Partie 2 : Réintégration par pages/savepoints, garde et état persistant lus ; nuance la piste de partie 1, affichage à vérifier partie 3. |
 | `src/db/repositories/sql/taskRepository.done.test.ts` | à lire |  |
 | `src/db/repositories/sql/taskRepository.perf.test.ts` | à lire |  |
 | `src/db/repositories/sql/taskRepository.purge.test.ts` | à lire |  |
@@ -524,8 +524,8 @@ Production et outillage : 50/1046 lus intégralement. Tests et supports : 1001 f
 | `src/db/seed/defaultSpaces.ts` | à lire |  |
 | `src/db/seed/externalEventFixtures.ts` | à lire |  |
 | `src/db/seed/sampleData.ts` | à lire |  |
-| `src/db/serializedDriver.test.ts` | à lire |  |
-| `src/db/serializedDriver.ts` | à lire |  |
+| `src/db/serializedDriver.test.ts` | lu | Partie 2 : File, transactions et tests existants intégralement lus ; A-008 reproduit sous rejet de rollback injecté, écriture suivante perdue. |
+| `src/db/serializedDriver.ts` | lu | Partie 2 : File, transactions et tests existants intégralement lus ; A-008 reproduit sous rejet de rollback injecté, écriture suivante perdue. |
 | `src/db/spaceOwnership.test.ts` | à lire |  |
 | `src/db/testHooks.ts` | à lire |  |
 | `src/domain/appLock.test.ts` | à lire |  |

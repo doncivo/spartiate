@@ -1,0 +1,27 @@
+﻿✔ A-008 : écriture suivante durable, ROLLBACK réussi (témoin) (37.3151ms)
+✖ A-008 : écriture suivante durable, ROLLBACK en échec injecté (25.1911ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 834.0343
+
+✖ failing tests:
+
+test at docs\audit-0.26.0\preuves\partie2-rollback.test.mjs:19:43
+✖ A-008 : écriture suivante durable, ROLLBACK en échec injecté (25.1911ms)
+  AssertionError [ERR_ASSERTION]: Une écriture acquittée après la transaction refusée disparaît à la réouverture
+      at TestContext.<anonymous> (file:///C:/Dev/spartiate-codex/docs/audit-0.26.0/preuves/partie2-rollback.test.mjs:46:10)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+

@@ -1,0 +1,14 @@
+﻿{
+    "nom":  "partie2-rollback",
+    "executable":  "node",
+    "arguments":  [
+                      "--test",
+                      "--test-isolation=none",
+                      "docs/audit-0.26.0/preuves/partie2-rollback.test.mjs"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-19T13:37:18.1882189Z",
+    "fin":  "2026-11-19T13:37:19.5392307Z",
+    "code":  1,
+    "etat":  "Ã©chec"
+}

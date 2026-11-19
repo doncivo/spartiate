@@ -248,5 +248,145 @@
     "fichier": "src/domain/routineTestKit.ts",
     "partie": 1,
     "preuve": "Compteurs mutables propres aux fabriques de fixtures ; pas assimilés à un moteur métier avec état."
+  },
+  {
+    "fichier": "src/db/migrations/0001_spartiate_init.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0002_training.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0003_workout.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0004_workout_sync.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0005_progression.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0006_progression_sync.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0007_mesocycle.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0008_nutrition.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0009_recipes.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0010_recovery.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0011_recovery_factor.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0012_body_progress.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0013_workout_circuit.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0014_routine_circuit.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0015_food_favorite.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0016_data_reset.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0017_supplement.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0018_cardio.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/0019_program_rest_day.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrations/index.ts",
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
+  },
+  {
+    "fichier": "src/db/migrator.ts",
+    "partie": 2,
+    "preuve": "Ordre, sommes, version future, transactions, sauvegarde et réutilisation lus ; sans preuve native nouvelle."
+  },
+  {
+    "fichier": "src/db/migrationBackup.ts",
+    "partie": 2,
+    "preuve": "Ordre, sommes, version future, transactions, sauvegarde et réutilisation lus ; sans preuve native nouvelle."
+  },
+  {
+    "fichier": "src/db/serializedDriver.ts",
+    "partie": 2,
+    "preuve": "File, transactions et tests existants intégralement lus ; A-008 reproduit sous rejet de rollback injecté, écriture suivante perdue."
+  },
+  {
+    "fichier": "src/db/serializedDriver.test.ts",
+    "partie": 2,
+    "preuve": "File, transactions et tests existants intégralement lus ; A-008 reproduit sous rejet de rollback injecté, écriture suivante perdue."
+  },
+  {
+    "fichier": "src/db/drivers/sqliteWasm.ts",
+    "partie": 2,
+    "preuve": "Cache borné des statements, fermeture, signaux et observateurs lus ; effets transactionnels à confronter aux appelants."
+  },
+  {
+    "fichier": "src/db/localWrite.ts",
+    "partie": 2,
+    "preuve": "Cache borné des statements, fermeture, signaux et observateurs lus ; effets transactionnels à confronter aux appelants."
+  },
+  {
+    "fichier": "src/db/repositories/observeWrites.ts",
+    "partie": 2,
+    "preuve": "Cache borné des statements, fermeture, signaux et observateurs lus ; effets transactionnels à confronter aux appelants."
+  },
+  {
+    "fichier": "src/db/repositories/sql/syncUnknown.ts",
+    "partie": 2,
+    "preuve": "Réintégration par pages/savepoints, garde et état persistant lus ; nuance la piste de partie 1, affichage à vérifier partie 3."
   }
 ]

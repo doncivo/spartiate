@@ -2213,10 +2213,10 @@
   },
   {
     "fichier": "src/db/drivers/sqliteWasm.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Cache borné des statements, fermeture, signaux et observateurs lus ; effets transactionnels à confronter aux appelants."
   },
   {
     "fichier": "src/db/errorText.ts",
@@ -2241,10 +2241,10 @@
   },
   {
     "fichier": "src/db/localWrite.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Cache borné des statements, fermeture, signaux et observateurs lus ; effets transactionnels à confronter aux appelants."
   },
   {
     "fichier": "src/db/migrationBackup.test.ts",
@@ -2255,10 +2255,10 @@
   },
   {
     "fichier": "src/db/migrationBackup.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Ordre, sommes, version future, transactions, sauvegarde et réutilisation lus ; sans preuve native nouvelle."
   },
   {
     "fichier": "src/db/migrationBackupUpdate.test.ts",
@@ -2276,10 +2276,10 @@
   },
   {
     "fichier": "src/db/migrations/0001_spartiate_init.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0002_training.test.ts",
@@ -2290,10 +2290,10 @@
   },
   {
     "fichier": "src/db/migrations/0002_training.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0003_workout.test.ts",
@@ -2304,10 +2304,10 @@
   },
   {
     "fichier": "src/db/migrations/0003_workout.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0004_workout_sync.test.ts",
@@ -2318,10 +2318,10 @@
   },
   {
     "fichier": "src/db/migrations/0004_workout_sync.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0005_progression.test.ts",
@@ -2332,10 +2332,10 @@
   },
   {
     "fichier": "src/db/migrations/0005_progression.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0006_progression_sync.test.ts",
@@ -2346,10 +2346,10 @@
   },
   {
     "fichier": "src/db/migrations/0006_progression_sync.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0007_mesocycle.test.ts",
@@ -2360,10 +2360,10 @@
   },
   {
     "fichier": "src/db/migrations/0007_mesocycle.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0008_nutrition.test.ts",
@@ -2374,10 +2374,10 @@
   },
   {
     "fichier": "src/db/migrations/0008_nutrition.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0009_recipes.test.ts",
@@ -2388,10 +2388,10 @@
   },
   {
     "fichier": "src/db/migrations/0009_recipes.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0010_recovery.test.ts",
@@ -2402,10 +2402,10 @@
   },
   {
     "fichier": "src/db/migrations/0010_recovery.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0011_recovery_factor.test.ts",
@@ -2416,10 +2416,10 @@
   },
   {
     "fichier": "src/db/migrations/0011_recovery_factor.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0012_body_progress.test.ts",
@@ -2430,10 +2430,10 @@
   },
   {
     "fichier": "src/db/migrations/0012_body_progress.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0013_workout_circuit.test.ts",
@@ -2444,10 +2444,10 @@
   },
   {
     "fichier": "src/db/migrations/0013_workout_circuit.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0014_routine_circuit.test.ts",
@@ -2458,10 +2458,10 @@
   },
   {
     "fichier": "src/db/migrations/0014_routine_circuit.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0015_food_favorite.test.ts",
@@ -2472,10 +2472,10 @@
   },
   {
     "fichier": "src/db/migrations/0015_food_favorite.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0016_data_reset.test.ts",
@@ -2486,10 +2486,10 @@
   },
   {
     "fichier": "src/db/migrations/0016_data_reset.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0017_supplement.test.ts",
@@ -2500,10 +2500,10 @@
   },
   {
     "fichier": "src/db/migrations/0017_supplement.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0018_cardio.test.ts",
@@ -2514,10 +2514,10 @@
   },
   {
     "fichier": "src/db/migrations/0018_cardio.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/0019_program_rest_day.test.ts",
@@ -2528,17 +2528,17 @@
   },
   {
     "fichier": "src/db/migrations/0019_program_rest_day.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/index.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "DDL et déclencheurs intégralement lus : captures figées, contraintes, extensions additives et clôture. Concordance catalogue à vérifier dans la suite de partie 2."
   },
   {
     "fichier": "src/db/migrations/schemaRepublish.test.ts",
@@ -2563,10 +2563,10 @@
   },
   {
     "fichier": "src/db/migrator.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Ordre, sommes, version future, transactions, sauvegarde et réutilisation lus ; sans preuve native nouvelle."
   },
   {
     "fichier": "src/db/parse/equipmentJson.ts",
@@ -2773,10 +2773,10 @@
   },
   {
     "fichier": "src/db/repositories/observeWrites.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Cache borné des statements, fermeture, signaux et observateurs lus ; effets transactionnels à confronter aux appelants."
   },
   {
     "fichier": "src/db/repositories/occurrenceDedupRepository.ts",
@@ -3424,10 +3424,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/syncUnknown.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Réintégration par pages/savepoints, garde et état persistant lus ; nuance la piste de partie 1, affichage à vérifier partie 3."
   },
   {
     "fichier": "src/db/repositories/sql/taskRepository.done.test.ts",
@@ -3620,17 +3620,17 @@
   },
   {
     "fichier": "src/db/serializedDriver.test.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "File, transactions et tests existants intégralement lus ; A-008 reproduit sous rejet de rollback injecté, écriture suivante perdue."
   },
   {
     "fichier": "src/db/serializedDriver.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "File, transactions et tests existants intégralement lus ; A-008 reproduit sous rejet de rollback injecté, écriture suivante perdue."
   },
   {
     "fichier": "src/db/spaceOwnership.test.ts",
