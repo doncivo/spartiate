@@ -64,4 +64,52 @@ describe('PROG-04 : appareil resté au schéma 19', () => {
     expect(await days(b, 'name, weekday')).toEqual([]);
     expect((await b.driver.select<{ table_name: string }>('SELECT DISTINCT table_name FROM sync_parked ORDER BY table_name')).map((r) => r.table_name)).toContain('routine_day');
   });
+
+  it('revue sync-icloud : jour créé sur le 19, A mis à jour en 20 : la ligne republiée arrive sur B, une seule fois, sans jour de la semaine', async () => {
+    const { a, b } = await mixed();
+    await a.data.transaction(async (r) => (await r.trainingRoutines()).create({ ...ROUTINE, days: ROUTINE.days.map(({ weekday: _weekday, ...d }) => d) }));
+    await roundTrip();
+    await a.upgradeSchema('i0');
+    await roundTrip(3);
+    expect(await days(b, 'name, weekday')).toEqual([{ name: 'Jeudi — Poussée', weekday: null }]);
+    expect(await days(a, 'name, weekday')).toEqual([{ name: 'Jeudi — Poussée', weekday: null }]);
+  });
+
+  it('revue sync-icloud : jour de la semaine changé sur le 20 pendant que l’autre est au 19 : gardé à part sur le 19, retrouvé à sa mise à jour', async () => {
+    const { a, b } = await mixed();
+    await b.data.transaction(async (r) => (await r.trainingRoutines()).create(ROUTINE));
+    await roundTrip();
+    await b.data.transaction(async (r) => (await r.trainingRoutines()).updateDay(u(2), { weekday: 5 }));
+    await roundTrip();
+    await a.data.transaction(async (r) => (await r.trainingRoutines()).updateDay(u(2), { name: 'Vendredi — Poussée' }));
+    await roundTrip();
+    expect(await days(b, 'name, weekday')).toEqual([{ name: 'Vendredi — Poussée', weekday: 5 }]);
+    await a.upgradeSchema('i0');
+    await roundTrip(3);
+    expect(await days(a, 'name, weekday')).toEqual([{ name: 'Vendredi — Poussée', weekday: 5 }]);
+  });
+});
+
+describe('revue sync-icloud (bloquant) : migration décalée entre deux appareils', () => {
+  it('A passe en 20, B renomme le jour au 19 puis passe en 20 : même jour de la semaine des deux côtés, jamais deux valeurs', async () => {
+    const b = await createSimDevice(NEW_ID, { name: 'PC', schema: 'v19' });
+    const a = await createSimDevice(OLD_ID, { name: 'iPhone', schema: 'v19', clock: createManualClock(b.clock.nowMs()) });
+    devices = [b, a];
+    await setupFirst(b);
+    await b.cycle();
+    await pair(b, a);
+    await a.cycle();
+    syncFolders(devices);
+    await b.cycle();
+    const named = { ...ROUTINE, days: ROUTINE.days.map(({ weekday: _weekday, ...d }) => ({ ...d, name: 'Lundi — Poussée' })) };
+    await b.data.transaction(async (r) => (await r.trainingRoutines()).create(named));
+    await roundTrip();
+    await a.upgradeSchema('i0');
+    await b.data.transaction(async (r) => (await r.trainingRoutines()).updateDay(u(2), { name: 'Mardi — Poussée' }));
+    await b.upgradeSchema('i0');
+    await roundTrip(3);
+    const onA = await days(a, 'name, weekday');
+    expect(onA).toEqual(await days(b, 'name, weekday'));
+    expect(onA).toEqual([{ name: 'Mardi — Poussée', weekday: null }]);
+  });
 });
