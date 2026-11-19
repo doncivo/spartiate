@@ -376,6 +376,11 @@
       "fichier": "src/db/localWrite.ts",
       "story": "BUNDLE-01",
       "raison": "SPA-008 (0.1.3 k) : signal d'écriture locale (1,3 Ko source) levé par les dépôts de profil et de pesée, importé par sql/index.ts qui est dans le départ ; la synchro l'écoute pour publier en moins de 60 s."
+    },
+    {
+      "fichier": "src/platform/windowTheme.ts",
+      "story": "LOT-27-FIX0272",
+      "raison": "Façade platform de la barre de titre Tauri (ADR 0001, constat de l'audit 0.26.0) : code DÉPLACÉ de src/features/settings/theme.ts, déjà au départ (thème appliqué avant le premier rendu) ; aucun octet de logique ajouté, l'import Tauri reste dynamique."
     }
   ]
 }

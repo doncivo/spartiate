@@ -74,5 +74,5 @@
   right: 0;
   bottom: 0;
   z-index: 5;
-  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.14);
+  box-shadow: -8px 0 24px var(--ct-shadow-faint);
 }

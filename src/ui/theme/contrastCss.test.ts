@@ -97,6 +97,14 @@ const DECORATIFS: Readonly<Record<string, string>> = {
   '--ct-focus-border': 'bordure des boutons de l’écran Focus ; leur libellé porte l’information',
   '--ct-ios-pair-line': 'filet de l’écran d’appairage iPhone',
   '--ct-swipe-shadow': 'ombre portée des actions de geste',
+  '--ct-scrim': 'voile derrière les fenêtres modales (FIX-0272) ; aucune information portée',
+  '--ct-shadow-strong': 'ombre portée (FIX-0272)',
+  '--ct-shadow-soft': 'ombre portée (FIX-0272)',
+  '--ct-shadow-faint': 'ombre portée (FIX-0272)',
+  '--ct-help-scrim': 'voile de l’aide des raccourcis (FIX-0272)',
+  '--ct-help-shadow': 'ombre de l’aide des raccourcis (FIX-0272)',
+  '--ct-sheet-backdrop': 'fond derrière la feuille plein écran (FIX-0272) ; le texte est sur la feuille',
+  '--ct-toast-action-bg': 'fond du bouton d’action du toast (FIX-0272) ; contraste porté par le texte du toast',
 };
 
 /**

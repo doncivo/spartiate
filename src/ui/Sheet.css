@@ -2,7 +2,7 @@
 .ct-sheet__backdrop {
   position: fixed;
   inset: 0;
-  background: #6e6687;
+  background: var(--ct-sheet-backdrop);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
