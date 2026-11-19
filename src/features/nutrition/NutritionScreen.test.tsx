@@ -488,7 +488,7 @@ describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', ()
     fireEvent.click(await within(r).findByRole('switch', { name: 'Cible des jours de repos' }));
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible de repos' }));
     expect(await within(r).findByText('Enregistrée. Une cible prévue plus tard garde son réglage de repos.')).toBeInTheDocument();
-    // Revue 2 : un enregistrement manuel ensuite efface ce signalement (ERGO-03 : formulaire déplié ; la cible future demande confirmation).
+    // Revue 2 : un enregistrement manuel ensuite efface ce signalement (ERGO-03 : formulaire déplié ; FIX-0271 : plus de confirmation).
     fireEvent.click(within(r).getByRole('button', { name: 'Modifier ma cible' }));
     const fill = (label: string, value: string) => fireEvent.change(within(r).getByLabelText(label), { target: { value } });
     fill('Calories (kcal)', '2700');
@@ -496,7 +496,6 @@ describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', ()
     fill('Lipides (g)', '80');
     fill('Glucides (g)', '345');
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible' }));
-    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Enregistrer quand même' }));
     expect(await within(r).findByText('Cible enregistrée.')).toBeInTheDocument();
     expect(within(r).queryByText('Enregistrée. Une cible prévue plus tard garde son réglage de repos.')).not.toBeInTheDocument();
   });
