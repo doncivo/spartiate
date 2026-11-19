@@ -141,15 +141,13 @@ describe('ChecklistRepository et ChecklistItemRepository (SQL)', () => {
   });
 
   describe('createWithItems (C-04)', () => {
-    it('crée la checklist et ses 200 items en une transaction en moins de 300 ms', async () => {
+    // A-006 (FIX-0272) : la mesure de durée vit dans checklistRepository.perf.test.ts (`npm run test:perf`).
+    it('crée la checklist et ses 200 items en une transaction', async () => {
       const items = Array.from({ length: 200 }, (_, i) => newItem(i + 1, 7, { text: `Élément ${String(i + 1)}` }));
-      const started = performance.now();
       const result = await db.data.transaction((repos) => repos.checklists.createWithItems(newList(7, { title: 'Grande liste' }), items));
-      const elapsed = performance.now() - started;
       expect(result.items).toHaveLength(200);
       expect(result.items[199]?.text).toBe('Élément 200');
       expect(new Set(result.items.map((i) => i.hlc)).size).toBe(200);
-      expect(elapsed).toBeLessThan(300);
       expect((await db.data.repos.checklists.listSummaries('all'))[0]).toMatchObject({ total: 200, checked: 0 });
     });
 

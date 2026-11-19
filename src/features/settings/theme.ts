@@ -1,5 +1,4 @@
 import type { ThemeChoice } from '../../domain/model';
-import { detectRuntime } from '../../platform';
 
 /** Miroir local synchrone du réglage `ui.theme`, lu par `public/theme-init.js` avant le premier rendu (P-02 D3). */
 export const THEME_STORAGE_KEY = 'ct.theme';
@@ -31,21 +30,9 @@ export function applyTheme(choice: ThemeChoice, root: HTMLElement = document.doc
 }
 
 /** Port de la barre de titre (Windows) ; absent hors fenêtre Tauri. */
-export interface WindowThemePort {
-  setTheme(theme: ResolvedTheme | null): Promise<void>;
-}
-
-/** Barre de titre Tauri : suit le thème quand la plateforme le permet ; toute erreur est ignorée (P-02 critère 6). */
-export async function openWindowThemePort(): Promise<WindowThemePort | null> {
-  if (detectRuntime() !== 'tauri') return null;
-  try {
-    const { getCurrentWindow } = await import('@tauri-apps/api/window');
-    const window = getCurrentWindow();
-    return { setTheme: (theme) => window.setTheme(theme) };
-  } catch {
-    return null;
-  }
-}
+// FIX-0272 (ADR 0001) : la barre de titre Tauri passe par la façade src/platform/windowTheme.ts ; réexportée pour les appelants d'avant.
+import type { WindowThemePort } from '../../platform/windowTheme';
+export { openWindowThemePort, type WindowThemePort } from '../../platform/windowTheme';
 
 /** Applique le thème à la barre de titre ; sans effet ni erreur si la fenêtre ne l'autorise pas. */
 export async function applyWindowTheme(choice: ThemeChoice, port: WindowThemePort | null): Promise<void> {

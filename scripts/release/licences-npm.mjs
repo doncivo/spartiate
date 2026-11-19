@@ -1,3 +1,4 @@
+/* global process */
 // FIX-0272 (A-003 de l'audit 0.26.0) : tableau des dépendances npm LIVRÉES (`dependencies` de package.json) dans docs/licences.md,
 // version et licence lues dans package-lock.json. Mécanique (D-51) : `node scripts/release/licences-npm.mjs` réécrit le bloc balisé ;
 // la garde `scripts/release/licences.test.ts` refuse un bloc qui ne correspond plus aux fichiers.

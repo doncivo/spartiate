@@ -25,6 +25,7 @@ import { useSyncedData } from '../../sync/remoteChanges';
 import type { SupplementNotificationResult } from '../../notifications/supplementNotifications';
 import { constancyDays, type ConstancyDay } from './constancy';
 import { replanSupplementReminders } from './replan';
+import { logFailure } from '../../../platform/desktop/log';
 import './Supplements.css';
 
 const WEEK: readonly Weekday[] = [1, 2, 3, 4, 5, 6, 7];
@@ -124,12 +125,19 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
 
   useEffect(() => {
     let live = true;
-    void import('../../notifications').then(async (m) => {
-      const service = m.supplementNotificationsFor(container);
-      const prefs = await service.readPrefs();
-      const result = await service.replan();
-      if (live) setReminders({ enabled: prefs.enabled, result });
-    });
+    // FIX-0272 : rien ne se poursuit après le démontage (ni replanification, ni écriture d'état) ; un échec n'est jamais un rejet perdu.
+    void import('../../notifications')
+      .then(async (m) => {
+        if (!live) return;
+        const service = m.supplementNotificationsFor(container);
+        const prefs = await service.readPrefs();
+        if (!live) return;
+        const result = await service.replan();
+        if (live) setReminders({ enabled: prefs.enabled, result });
+      })
+      .catch(() => {
+        if (live) logFailure('supplements', 'reminders-replan-failed');
+      });
     return () => {
       live = false;
     };
