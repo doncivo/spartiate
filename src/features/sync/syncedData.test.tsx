@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 import { act, cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { TodayScreen } from '../app/TodayScreen';
+import { preloadTodayBlocks } from '../app/todayTestPreload';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer, type AppContainer } from '../app/container';
 import { BodyScreen } from '../settings/BodyScreen';
@@ -20,6 +21,11 @@ const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000b3');
 const change = (...tables: string[]) => ({ tables: new Set(tables), ids: new Map<string, ReadonlySet<string>>() });
 let db: TestDb;
 let container: AppContainer;
+
+// FIX-0272 : cause de l'instabilité (« la pesée reçue remplace l'ancienne », délai de 1 s dépassé après forgetBanner.test.tsx) : les blocs
+// d'Aujourd'hui sont chargés à la demande et leur PREMIER import tombait dans l'attente de `findByText`. Préchargés une fois, comme dans
+// TodayScreen.test.tsx (FIX-0223) ; aucun délai allongé.
+beforeAll(() => preloadTodayBlocks('2026-11-06T08:00:00.000Z'), 30_000);
 
 beforeEach(async () => {
   db = await openBaseDb(DEVICE, '2026-11-06T08:00:00.000Z');
