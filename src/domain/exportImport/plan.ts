@@ -9,6 +9,8 @@
  *   supprimées, dans aucun mode ; leurs lignes de l'archive sont comptées dans `skippedReadOnly` (elles reviennent de l'iPhone par la synchro).
  */
 
+import { localDateOfInstant } from '../donePeriod';
+import type { IsoDateTime } from '../types';
 import { TABLE_SINCE_SV, TRAINING_EXPORT_TABLES, trainingColumns, trainingRows, trainingTable, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable } from './archive';
 
 export type ImportMode = 'merge' | 'replace';
@@ -213,11 +215,19 @@ export function planImport(local: ExportData, incoming: ExportData, mode: Import
     const decidedAt = (r: TrainingRow): string => (typeof r.values['decided_at'] === 'string' ? r.values['decided_at'] : '');
     const incomingIdsOfTable = new Set(trainingRows(incoming, table).map((r) => r.id));
     // En remplacement, seules les décisions locales qui restent (présentes dans l'archive) comptent : les autres vont être supprimées.
-    const newestLocalDecision = table === 'nutrition_target' ? [...localRows.values()].filter((r) => mode === 'merge' || incomingIdsOfTable.has(r.id)).map(decidedAt).sort().pop() ?? '' : '';
+    const keptLocal = table === 'nutrition_target' ? [...localRows.values()].filter((r) => mode === 'merge' || incomingIdsOfTable.has(r.id)) : [];
+    const newestLocalDecision = keptLocal.map(decidedAt).sort().pop() ?? '';
+    // FIX-0271 (D-314) : dernier jour couvert par une décision locale gardée : sa semaine, ou le jour LOCAL où elle a été prise (même calendrier
+    // que la lecture de la cible en vigueur ; jamais la date UTC de l'instant).
+    const decidedDay = (iso: string): string => (iso === '' ? '' : localDateOfInstant(iso as IsoDateTime));
+    const latestLocalDay = [...keptLocal.map((r) => String(r.values['week_start'] ?? '')), ...keptLocal.map((r) => decidedDay(decidedAt(r)))].sort().pop() ?? '';
     const ordered = [...trainingRows(incoming, table)].sort((a, b) => (table === 'nutrition_target' && decidedAt(a) !== decidedAt(b) ? (decidedAt(a) < decidedAt(b) ? -1 : 1) : a.id < b.id ? -1 : 1));
     for (const incomingRow of ordered) {
       if (skipRow(table, incomingRow)) continue;
-      if (table === 'nutrition_target' && !localRows.has(incomingRow.id) && incomingRow.values['accepted'] === 1 && decidedAt(incomingRow) !== '' && decidedAt(incomingRow) < newestLocalDecision) continue;
+      // FIX-0271 (D-314) : une cible PRÉVUE pour une semaine postérieure à toute décision locale gardée est toujours importée : elle prend effet
+      // à sa date et ne passe devant aucune de ces décisions ; même semaine ou avant : règle REV-01 constat 3 inchangée.
+      const plannedLater = String(incomingRow.values['week_start'] ?? '') > latestLocalDay;
+      if (table === 'nutrition_target' && !localRows.has(incomingRow.id) && incomingRow.values['accepted'] === 1 && decidedAt(incomingRow) !== '' && decidedAt(incomingRow) < newestLocalDecision && !plannedLater) continue;
       const closed = table === 'workout' && open.closeAt.has(incomingRow.id) ? { ...incomingRow, values: { ...incomingRow.values, ended_at: open.closeAt.get(incomingRow.id) ?? null } } : incomingRow;
       const existing = localRows.get(closed.id);
       // FIX-0171 (constat 1, D-120) : une colonne absente de l'archive (schéma plus ancien) garde la valeur locale, dans les deux modes ; une valeur

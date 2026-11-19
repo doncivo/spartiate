@@ -30,7 +30,6 @@ const open = () => {
   );
 };
 const region = () => screen.findByRole('region', { name: 'Nutrition' });
-const norm = (s: string | null | undefined): string => (s ?? '').replace(/[\u202f\u00a0]/g, ' ');
 const decisions = async () => (await db.data.repos.nutritionTargets()).list();
 
 /** Quatre semaines complètes (repas et pesées), profil, préférences, cible d'il y a deux semaines ; puis la cible future, écrite en dernier (HLC le plus récent). */
@@ -59,25 +58,19 @@ afterEach(async () => {
   await db.close();
 });
 
-describe('ERGO-03 revue 1 : check-in devant une cible future', () => {
-  it('Accepter : confirmation D-296 ; Annuler n’écrit rien ; Enregistrer quand même écrit la décision', async () => {
+describe('FIX-0271 (D-314) : check-in devant une cible future', () => {
+  it('Accepter : aucune confirmation ; la décision est écrite et la cible du lundi 16/11 reste à venir', async () => {
     await seed();
     open();
     const r = await region();
     fireEvent.click(await within(r).findByRole('button', { name: /^Accepter/ }));
-    const dialog = await screen.findByRole('alertdialog');
-    expect(norm(dialog.textContent)).toContain('Elle passera devant la cible prévue à partir du lundi 16/11 ([retiré] kcal)');
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Annuler' }));
-    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
-    expect(await decisions()).toHaveLength(2);
-    expect(within(r).getByRole('button', { name: /^Accepter/ })).toBeEnabled();
-    fireEvent.click(within(r).getByRole('button', { name: /^Accepter/ }));
-    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Enregistrer quand même' }));
     expect(await within(r).findByText('Cible enregistrée.')).toBeInTheDocument();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     expect((await decisions()).filter((t) => t.source === 'auto')).toMatchObject([{ accepted: true, weekStart: TODAY }]);
+    expect((await (await db.data.repos.nutritionTargets()).effective(d(7)))?.target.kcal).toBe(2350);
   });
 
-  it('Refuser : pas de confirmation (une proposition refusée ne masque rien)', async () => {
+  it('Refuser : pas de confirmation', async () => {
     await seed();
     open();
     const r = await region();
@@ -86,7 +79,7 @@ describe('ERGO-03 revue 1 : check-in devant une cible future', () => {
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
-  it('Personnaliser sous 1 200 kcal : la confirmation D-296 est demandée une seule fois pour la même saisie (revue 1, point 2)', async () => {
+  it('Personnaliser sous 1 200 kcal : seul le plancher est demandé', async () => {
     await seed();
     open();
     const r = await region();
@@ -99,7 +92,6 @@ describe('ERGO-03 revue 1 : check-in devant une cible future', () => {
     const save = within(r).getAllByRole('button').find((b) => b.getAttribute('type') === 'submit');
     if (save === undefined) throw new Error('submit');
     fireEvent.click(save);
-    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Enregistrer quand même' }));
     fireEvent.click(await within(r).findByRole('checkbox', { name: 'Je confirme une cible sous 1 200 kcal' }));
     fireEvent.click(save);
     await waitFor(async () => expect(await decisions()).toHaveLength(3));

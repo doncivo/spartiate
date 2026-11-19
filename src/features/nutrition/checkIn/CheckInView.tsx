@@ -4,7 +4,7 @@ import {
   checkInPeriod,
   firstCheckIn,
   effectiveTarget,
-  upcomingTargets,
+  checkInRestPlan,
   proposeCheckIn,
   resolveCheckIn,
   type CheckInAlert,
@@ -23,7 +23,6 @@ import { MissingValue } from '../../../ui/MissingValue';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { TargetForm, type TargetSaveResult } from '../strategy/TargetForm';
-import { targetKey, useFutureConfirm } from '../strategy/useFutureConfirm';
 import { recordCheckInDecision, tdeeAt, type NutritionSnapshot } from '../useCases';
 import { weekSummary } from './weekSummary';
 import './CheckIn.css';
@@ -143,7 +142,8 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
   // Cible en vigueur pendant la semaine analysée : une décision prise pour la semaine suivante ne change pas la proposition relancée.
   const effective = effectiveTarget(targets, period.weekEnd);
   const current = effective?.target ?? null;
-  const restPlan = effective?.restPlan ?? null;
+  // FIX-0271 (U-12) : plan de repos actuel (une cible de repos enregistrée le matin du check-in compte), rapporté à la cible analysée.
+  const restPlan = checkInRestPlan(targets, period.weekEnd, snapshot.today);
   const result: CheckInResult = useMemo(
     () =>
       proposeCheckIn({
@@ -162,12 +162,9 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
   );
   const proposal = result.proposal;
   const existing = targets.find((t) => t.weekStart === period.checkInDate);
-  // ERGO-03 revue 1 (D-296) : une décision acceptée, datée du jour du check-in (aujourd'hui ou avant), passerait devant une cible future.
-  const future = useFutureConfirm(upcomingTargets(targets, snapshot.today)[0] ?? null);
 
   async function decide(decision: Parameters<typeof recordCheckInDecision>[1]['decision'], lowFloorConfirmed = false): Promise<TargetSaveResult> {
     if (proposal === null || tdee.weightKg === null) return 'error';
-    if (decision.action !== 'refuse' && !(await future.ask(decision.action === 'customize' ? targetKey(decision.target) : `accept|${targetKey(proposal.target)}`))) return 'cancelled';
     setBusy(true);
     setMessage(null);
     try {
@@ -396,7 +393,6 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
         </>
       )}
       <p className="ct-nutrition__muted">{tNutrition('checkInFooter')}</p>
-      {future.dialog}
     </section>
   );
 }
