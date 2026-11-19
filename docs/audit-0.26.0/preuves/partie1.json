@@ -1,0 +1,109 @@
+{
+  "sha": "8686a8fc2860f7a94eb193426cbcc640a33bac80",
+  "sourceIdentiqueAuTag": true,
+  "files": 835,
+  "edges": 2308,
+  "cycles": [
+    [
+      "src/domain/goalRules.ts",
+      "src/domain/todayList.ts",
+      "src/domain/week.ts"
+    ]
+  ],
+  "globals": [
+    {
+      "fichier": "src/domain/clock.ts",
+      "ligne": 12,
+      "nom": "systemClock"
+    },
+    {
+      "fichier": "src/domain/id.ts",
+      "ligne": 38,
+      "nom": "uuidGenerator"
+    },
+    {
+      "fichier": "src/domain/recovery/sleepNeed.ts",
+      "ligne": 66,
+      "nom": "window"
+    },
+    {
+      "fichier": "src/domain/recovery/sleepNeed.ts",
+      "ligne": 69,
+      "nom": "window"
+    },
+    {
+      "fichier": "src/domain/recovery/sleepNeed.ts",
+      "ligne": 70,
+      "nom": "window"
+    },
+    {
+      "fichier": "src/domain/recovery/sleepNeed.ts",
+      "ligne": 70,
+      "nom": "window"
+    },
+    {
+      "fichier": "src/domain/recovery/sleepNeed.ts",
+      "ligne": 91,
+      "nom": "window"
+    },
+    {
+      "fichier": "src/domain/recovery/sleepNeed.ts",
+      "ligne": 92,
+      "nom": "window"
+    },
+    {
+      "fichier": "src/domain/recovery/sleepNeed.ts",
+      "ligne": 97,
+      "nom": "window"
+    },
+    {
+      "fichier": "src/domain/training/confidence.ts",
+      "ligne": 37,
+      "nom": "window"
+    },
+    {
+      "fichier": "src/domain/training/confidence.ts",
+      "ligne": 38,
+      "nom": "window"
+    },
+    {
+      "fichier": "src/domain/training/confidence.ts",
+      "ligne": 45,
+      "nom": "window"
+    },
+    {
+      "fichier": "src/domain/training/confidence.ts",
+      "ligne": 46,
+      "nom": "window"
+    }
+  ],
+  "mutable": [
+    {
+      "fichier": "src/domain/eventTestKit.ts",
+      "ligne": 9,
+      "texte": "let counter = 0;"
+    },
+    {
+      "fichier": "src/domain/routineTestKit.ts",
+      "ligne": 9,
+      "texte": "let counter = 0;"
+    }
+  ],
+  "external": [],
+  "probes": {
+    "statique": [
+      {
+        "ruleId": "no-restricted-imports",
+        "message": "'@tauri-apps/api/window' import is restricted from being used by a pattern. Les API Tauri ne s’importent que dans src/platform (ADR 0001)."
+      }
+    ],
+    "dynamique": []
+  },
+  "themeLint": [
+    {
+      "errors": 0,
+      "warnings": 0
+    }
+  ],
+  "limites": "Scan syntaxique, pas une lecture. Types exclus du graphe cyclique, réexports mixtes conservateurs. Globaux par nom : candidats, pas résolution de symboles. Aucun constat de pureté globale déduit du scan."
+}

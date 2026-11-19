@@ -1,7 +1,7 @@
 # AUDIT-0.26.0 — rapport en cours
 
 **SHA audité : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.** Version publiée 0.26.0, schéma à vérifier par les contrôles. Début : 16 novembre 2026.
-Couverture de relecture : **14 / 1 658 fichiers (0,84 %)**, 81 fichiers vendored exclus. Une lecture mécanique n'est pas une relecture sémantique ; une lecture dans une passe ne valide pas tous les scénarios.
+Couverture de relecture : **50 / 2 047 fichiers (2,44 %)**, dont 50 / 1 046 de production/outillage, 81 fichiers vendored exclus. Inventaire réconcilié en partie 1 : 389 omissions ajoutées, dont 356 tests/supports ; le banc complet en compte 1 001. Une lecture mécanique n'est pas une relecture sémantique ; une lecture dans une passe ne valide pas tous les scénarios.
 Partie 0 terminée : typecheck/lint/contenu/docs/bundle/fmt/clippy verts ; 24 échecs unitaires et 12 erreurs non interceptées ; Rust desktop 846 verts, SQL 30 + 1 verts après préparation du dossier de fixtures. Audits des dépendances détaillés dans `partie-00.md`. **Audit global incomplet : aucune conclusion de conformité ni de sécurité.**
 
 ## Constats
@@ -57,5 +57,9 @@ Chaque constat sera identifié A-001, A-002… avec gravité, partie, fichier et
 Les résultats natifs et les performances sur appareil ne peuvent être établis localement. Les seules données autorisées sont synthétiques. Les constats des relectures précédentes sont des pistes, pas des preuves pour ce SHA.
 
 ## Corrections prioritaires et traçabilité
+
+### A-007 — mineur — partie 1 — import Tauri hors façade
+
+`src/features/settings/theme.ts:42` importe dynamiquement `@tauri-apps/api/window` hors de `platform`. La garde `eslint.config.js` refuse la forme statique mais laisse passer cette forme dynamique. Preuves : `preuves/partie1.json`, deux assertions rouges dans `preuves/resultats/partie1-rouges.log` ; analyse et correction proposée dans `partie-01.md`. Impact établi : frontière d'architecture et garde incomplète ; aucune perte de données ni mauvaise prescription démontrée. Partie 1 terminée, autres parties ouvertes. Aucun correctif applicatif réalisé.
 
 À établir après les douze parties de relecture. Aucun ticket présenté comme prêt avant preuve et définition de son périmètre.

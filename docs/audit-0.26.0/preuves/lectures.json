@@ -1,16 +1,252 @@
 [
-  { "fichier": "scripts/cleanup/i18nKeys.mjs", "partie": 0, "preuve": "Catalogue fr.ts seul ; heuristique de chaînes et préfixes, limites documentées partie-00." },
-  { "fichier": "scripts/cleanup/reachability.mjs", "partie": 0, "preuve": "Racines main/pairing, imports relatifs et glob ; résultats candidats, aucun retrait automatique." },
-  { "fichier": "src/i18n/index.ts", "partie": 0, "preuve": "Résolution des chemins, interpolation, repli clé ; complément AST et typecheck." },
-  { "fichier": "src/i18n/trainingText.ts", "partie": 0, "preuve": "Wrapper de catalogue et formateurs lus ; validation numérique approfondie réservée partie 4." },
-  { "fichier": "src/i18n/plusText.ts", "partie": 0, "preuve": "Catalogue local fr, faux positif initial du scanner éliminé par résolution des bindings." },
-  { "fichier": "src/i18n/settingsRefonteText.ts", "partie": 0, "preuve": "Catalogue local fr et interpolation ; pas un alias du catalogue racine." },
-  { "fichier": "src/i18n/syncRefonteText.ts", "partie": 0, "preuve": "Catalogue local fr et interpolation ; sémantique des conflits à confronter partie 3." },
-  { "fichier": "src/i18n/syncRescue.ts", "partie": 0, "preuve": "Catalogue local, commentaire anglais obsolète ; contrat reprise à confronter partie 3." },
-  { "fichier": "src/ui/Sheet.css", "partie": 0, "preuve": "Couleur de fond hors tokens A-002 ; états, safe area et hauteur lus." },
-  { "fichier": "src/ui/ConfirmDialog.css", "partie": 0, "preuve": "Voile hors tokens A-002 ; contraintes de largeur, safe area et débordement lues." },
-  { "fichier": "src/domain/clock.ts", "partie": 1, "preuve": "Source système injectable, règles nowIso/todayLocal/nowLocalTime reçoivent Clock ; pas de hasard métier trouvé." },
-  { "fichier": "src/domain/id.ts", "partie": 1, "preuve": "Générateur injectable RandomBytes, bits UUIDv4 et copie défensive lus ; source crypto isolée dans la fabrique." },
-  { "fichier": "src/features/settings/theme.ts", "partie": 1, "preuve": "Import dynamique Tauri hors façade à consigner ; exceptions ignorées explicitement pour barre de titre facultative." },
-  { "fichier": "src/platform/tauri/migrationBackup.ts", "partie": 1, "preuve": "PRAGMA checkpoint, busy=0 exigé, invocation backup et propagation d'erreur ; analyse des sauvegardes réservée partie 2." }
+  {
+    "fichier": "scripts/cleanup/i18nKeys.mjs",
+    "partie": 0,
+    "preuve": "Catalogue fr.ts seul ; heuristique de chaînes et préfixes, limites documentées partie-00."
+  },
+  {
+    "fichier": "scripts/cleanup/reachability.mjs",
+    "partie": 0,
+    "preuve": "Racines main/pairing, imports relatifs et glob ; résultats candidats, aucun retrait automatique."
+  },
+  {
+    "fichier": "src/i18n/index.ts",
+    "partie": 0,
+    "preuve": "Résolution des chemins, interpolation, repli clé ; complément AST et typecheck."
+  },
+  {
+    "fichier": "src/i18n/trainingText.ts",
+    "partie": 0,
+    "preuve": "Wrapper de catalogue et formateurs lus ; validation numérique approfondie réservée partie 4."
+  },
+  {
+    "fichier": "src/i18n/plusText.ts",
+    "partie": 0,
+    "preuve": "Catalogue local fr, faux positif initial du scanner éliminé par résolution des bindings."
+  },
+  {
+    "fichier": "src/i18n/settingsRefonteText.ts",
+    "partie": 0,
+    "preuve": "Catalogue local fr et interpolation ; pas un alias du catalogue racine."
+  },
+  {
+    "fichier": "src/i18n/syncRefonteText.ts",
+    "partie": 0,
+    "preuve": "Catalogue local fr et interpolation ; sémantique des conflits à confronter partie 3."
+  },
+  {
+    "fichier": "src/i18n/syncRescue.ts",
+    "partie": 0,
+    "preuve": "Catalogue local, commentaire anglais obsolète ; contrat reprise à confronter partie 3."
+  },
+  {
+    "fichier": "src/ui/Sheet.css",
+    "partie": 0,
+    "preuve": "Couleur de fond hors tokens A-002 ; états, safe area et hauteur lus."
+  },
+  {
+    "fichier": "src/ui/ConfirmDialog.css",
+    "partie": 0,
+    "preuve": "Voile hors tokens A-002 ; contraintes de largeur, safe area et débordement lues."
+  },
+  {
+    "fichier": "src/domain/clock.ts",
+    "partie": 1,
+    "preuve": "Source système injectable, règles nowIso/todayLocal/nowLocalTime reçoivent Clock ; pas de hasard métier trouvé."
+  },
+  {
+    "fichier": "src/domain/id.ts",
+    "partie": 1,
+    "preuve": "Générateur injectable RandomBytes, bits UUIDv4 et copie défensive lus ; source crypto isolée dans la fabrique."
+  },
+  {
+    "fichier": "src/features/settings/theme.ts",
+    "partie": 1,
+    "preuve": "Import dynamique Tauri hors façade à consigner ; exceptions ignorées explicitement pour barre de titre facultative."
+  },
+  {
+    "fichier": "src/platform/tauri/migrationBackup.ts",
+    "partie": 1,
+    "preuve": "PRAGMA checkpoint, busy=0 exigé, invocation backup et propagation d'erreur ; analyse des sauvegardes réservée partie 2."
+  },
+  {
+    "fichier": "src/App.tsx",
+    "partie": 1,
+    "preuve": "Composition, ordre des attentes, publication des erreurs et nettoyage lus ; réintégration/garde à approfondir en parties 2/3."
+  },
+  {
+    "fichier": "src/main.tsx",
+    "partie": 1,
+    "preuve": "Composition, ordre des attentes, publication des erreurs et nettoyage lus ; réintégration/garde à approfondir en parties 2/3."
+  },
+  {
+    "fichier": "src/features/app/bootstrap.ts",
+    "partie": 1,
+    "preuve": "Composition, ordre des attentes, publication des erreurs et nettoyage lus ; réintégration/garde à approfondir en parties 2/3."
+  },
+  {
+    "fichier": "src/features/app/container.ts",
+    "partie": 1,
+    "preuve": "Injection, instance par conteneur, état transverse et diagnostics lus ; héritages identifiés."
+  },
+  {
+    "fichier": "src/features/app/AppContainerContext.tsx",
+    "partie": 1,
+    "preuve": "Injection, instance par conteneur, état transverse et diagnostics lus ; héritages identifiés."
+  },
+  {
+    "fichier": "src/features/app/appStore.ts",
+    "partie": 1,
+    "preuve": "Injection, instance par conteneur, état transverse et diagnostics lus ; héritages identifiés."
+  },
+  {
+    "fichier": "src/platform/index.ts",
+    "partie": 1,
+    "preuve": "Façades, sélection runtime/OS, garde de démarrage et contrat du driver lus ; comportement natif réservé partie 8."
+  },
+  {
+    "fichier": "src/platform/runtime.ts",
+    "partie": 1,
+    "preuve": "Façades, sélection runtime/OS, garde de démarrage et contrat du driver lus ; comportement natif réservé partie 8."
+  },
+  {
+    "fichier": "src/platform/database.ts",
+    "partie": 1,
+    "preuve": "Façades, sélection runtime/OS, garde de démarrage et contrat du driver lus ; comportement natif réservé partie 8."
+  },
+  {
+    "fichier": "src/platform/tauri/sqlDriver.ts",
+    "partie": 1,
+    "preuve": "Façades, sélection runtime/OS, garde de démarrage et contrat du driver lus ; comportement natif réservé partie 8."
+  },
+  {
+    "fichier": "src/db/driver.ts",
+    "partie": 1,
+    "preuve": "Contrats, fabrique liée à la transaction et association catalogue/repositories lus ; atomicité effective à vérifier partie 2."
+  },
+  {
+    "fichier": "src/db/repositories/index.ts",
+    "partie": 1,
+    "preuve": "Contrats, fabrique liée à la transaction et association catalogue/repositories lus ; atomicité effective à vérifier partie 2."
+  },
+  {
+    "fichier": "src/db/repositories/dataAccess.ts",
+    "partie": 1,
+    "preuve": "Contrats, fabrique liée à la transaction et association catalogue/repositories lus ; atomicité effective à vérifier partie 2."
+  },
+  {
+    "fichier": "src/db/repositories/storage.ts",
+    "partie": 1,
+    "preuve": "Contrats, fabrique liée à la transaction et association catalogue/repositories lus ; atomicité effective à vérifier partie 2."
+  },
+  {
+    "fichier": "src/platform/backup/tauriBackup.ts",
+    "partie": 1,
+    "preuve": "Port, normalisation des erreurs et ordre check/prepare/close/restore lus ; garanties Rust réservées parties 2/8."
+  },
+  {
+    "fichier": "src/features/app/startup.ts",
+    "partie": 1,
+    "preuve": "Démarrage différé, arrêt, suivi des étapes, diagnostics et erreurs absorbées lus ; relais partie-01."
+  },
+  {
+    "fichier": "src/features/app/startupSteps.ts",
+    "partie": 1,
+    "preuve": "Démarrage différé, arrêt, suivi des étapes, diagnostics et erreurs absorbées lus ; relais partie-01."
+  },
+  {
+    "fichier": "src/features/app/StartupWatchdog.tsx",
+    "partie": 1,
+    "preuve": "Démarrage différé, arrêt, suivi des étapes, diagnostics et erreurs absorbées lus ; relais partie-01."
+  },
+  {
+    "fichier": "src/features/app/DbFailureDetails.tsx",
+    "partie": 1,
+    "preuve": "Démarrage différé, arrêt, suivi des étapes, diagnostics et erreurs absorbées lus ; relais partie-01."
+  },
+  {
+    "fichier": "src/features/app/timeZoneWatcher.ts",
+    "partie": 1,
+    "preuve": "Démarrage différé, arrêt, suivi des étapes, diagnostics et erreurs absorbées lus ; relais partie-01."
+  },
+  {
+    "fichier": "src/features/app/lazyScreens.tsx",
+    "partie": 1,
+    "preuve": "Frontières Suspense/erreur, réessai, préchargement et composition des sections lus ; parcours complets réservés partie 7."
+  },
+  {
+    "fichier": "src/features/app/idle.ts",
+    "partie": 1,
+    "preuve": "Frontières Suspense/erreur, réessai, préchargement et composition des sections lus ; parcours complets réservés partie 7."
+  },
+  {
+    "fichier": "src/features/app/SectionNotice.tsx",
+    "partie": 1,
+    "preuve": "Frontières Suspense/erreur, réessai, préchargement et composition des sections lus ; parcours complets réservés partie 7."
+  },
+  {
+    "fichier": "eslint.config.js",
+    "partie": 1,
+    "preuve": "Gardes statiques, sideEffects, entrées et graphe du démarrage lus ; A-007 reproduit par sondes ESLint."
+  },
+  {
+    "fichier": "vite.config.ts",
+    "partie": 1,
+    "preuve": "Gardes statiques, sideEffects, entrées et graphe du démarrage lus ; A-007 reproduit par sondes ESLint."
+  },
+  {
+    "fichier": "public/theme-init.js",
+    "partie": 1,
+    "preuve": "Entrées et initialisation du thème lues ; fenêtre pairing distincte sans StrictMode ; thème système à vérifier partie 7c."
+  },
+  {
+    "fichier": "index.html",
+    "partie": 1,
+    "preuve": "Entrées et initialisation du thème lues ; fenêtre pairing distincte sans StrictMode ; thème système à vérifier partie 7c."
+  },
+  {
+    "fichier": "pairing.html",
+    "partie": 1,
+    "preuve": "Entrées et initialisation du thème lues ; fenêtre pairing distincte sans StrictMode ; thème système à vérifier partie 7c."
+  },
+  {
+    "fichier": "src/features/sync/pairing-window/main.tsx",
+    "partie": 1,
+    "preuve": "Entrées et initialisation du thème lues ; fenêtre pairing distincte sans StrictMode ; thème système à vérifier partie 7c."
+  },
+  {
+    "fichier": "src/domain/goalRules.ts",
+    "partie": 1,
+    "preuve": "Lecture complète du cycle statique hérité : appels croisés dans des fonctions, pas pendant leur initialisation ; aucun plantage démontré."
+  },
+  {
+    "fichier": "src/domain/week.ts",
+    "partie": 1,
+    "preuve": "Lecture complète du cycle statique hérité : appels croisés dans des fonctions, pas pendant leur initialisation ; aucun plantage démontré."
+  },
+  {
+    "fichier": "src/domain/todayList.ts",
+    "partie": 1,
+    "preuve": "Lecture complète du cycle statique hérité : appels croisés dans des fonctions, pas pendant leur initialisation ; aucun plantage démontré."
+  },
+  {
+    "fichier": "src/domain/training/confidence.ts",
+    "partie": 1,
+    "preuve": "Lecture complète pour qualification du candidat window : variable locale ; revue des formules réservée parties 4/6."
+  },
+  {
+    "fichier": "src/domain/recovery/sleepNeed.ts",
+    "partie": 1,
+    "preuve": "Lecture complète pour qualification du candidat window : variable locale ; revue des formules réservée parties 4/6."
+  },
+  {
+    "fichier": "src/domain/eventTestKit.ts",
+    "partie": 1,
+    "preuve": "Compteurs mutables propres aux fabriques de fixtures ; pas assimilés à un moteur métier avec état."
+  },
+  {
+    "fichier": "src/domain/routineTestKit.ts",
+    "partie": 1,
+    "preuve": "Compteurs mutables propres aux fabriques de fixtures ; pas assimilés à un moteur métier avec état."
+  }
 ]

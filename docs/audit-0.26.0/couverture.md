@@ -1,7 +1,9 @@
 # Couverture de relecture — AUDIT-0.26.0
 
 SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
-14/1658 fichiers lus (0.84 %). « Lu » indique une lecture complète dans la passe précisée, pas la validation de tous les scénarios métier. Les lectures partielles et scans ne sont pas comptés.
+50/2047 fichiers lus (2.44 %). « Lu » indique une lecture complète dans la passe précisée, pas la validation de tous les scénarios métier. Les lectures partielles et scans ne sont pas comptés.
+
+Production et outillage : 50/1046 lus intégralement. Tests et supports : 1001 fichiers ; partie 11 par outils, lecture complète des règles critiques et échantillon motivé du reste (décision d’Ali des 16 et 19/11). Inventaire corrigé en partie 1 : 389 ajouts, dont 33 de production/outillage et 356 de tests/supports ; les 645 tests du compteur initial n’incluaient pas tout le banc. Les 81 fichiers vendored exclus restent listés. Configurations déclaratives et documents consultés sont cités dans les rapports de partie, hors de ce décompte de sources.
 
 | Fichier | Statut | Motif / preuve |
 | --- | --- | --- |
@@ -9,6 +11,13 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `.github/workflows/build-ios.yml` | à lire |  |
 | `.github/workflows/build-windows.yml` | à lire |  |
 | `.github/workflows/tests.yml` | à lire |  |
+| `eslint.config.js` | lu | Partie 1 : Gardes statiques, sideEffects, entrées et graphe du démarrage lus ; A-007 reproduit par sondes ESLint. |
+| `index.html` | lu | Partie 1 : Entrées et initialisation du thème lues ; fenêtre pairing distincte sans StrictMode ; thème système à vérifier partie 7c. |
+| `pairing.html` | lu | Partie 1 : Entrées et initialisation du thème lues ; fenêtre pairing distincte sans StrictMode ; thème système à vérifier partie 7c. |
+| `playwright.config.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `playwright.smoke.config.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `playwright.visual.config.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `public/theme-init.js` | lu | Partie 1 : Entrées et initialisation du thème lues ; fenêtre pairing distincte sans StrictMode ; thème système à vérifier partie 7c. |
 | `scripts/backup/export-migrations-fixture.mjs` | à lire |  |
 | `scripts/ci/test-counts.mjs` | à lire |  |
 | `scripts/cleanup/apply.mjs` | à lire |  |
@@ -32,8 +41,8 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `scripts/content/png-reduce.mjs` | à lire |  |
 | `scripts/content/png-reduce.test.ts` | à lire |  |
 | `scripts/content/set-strength-keys.mjs` | à lire |  |
-| `scripts/content/validate.test.ts` | à lire |  |
 | `scripts/content/validate-content.mjs` | à lire |  |
+| `scripts/content/validate.test.ts` | à lire |  |
 | `scripts/e2e-perf.mjs` | à lire |  |
 | `scripts/ios/a9.test.ts` | à lire |  |
 | `scripts/ios/apply-entitlements.mjs` | à lire |  |
@@ -54,8 +63,8 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `scripts/ios/journalVisible.test.ts` | à lire |  |
 | `scripts/ios/liveActivity.test.ts` | à lire |  |
 | `scripts/ios/make-source-json.mjs` | à lire |  |
-| `scripts/ios/plist.mjs` | à lire |  |
 | `scripts/ios/plist-contract.json` | à lire |  |
+| `scripts/ios/plist.mjs` | à lire |  |
 | `scripts/ios/prepare-a9.mjs` | à lire |  |
 | `scripts/ios/source.template.json` | à lire |  |
 | `scripts/ios/sourceIdentity.test.ts` | à lire |  |
@@ -75,17 +84,244 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `scripts/release/make-latest-json.mjs` | à lire |  |
 | `scripts/release/prd-split.test.ts` | à lire |  |
 | `scripts/release/purge.test.ts` | à lire |  |
-| `scripts/release/release.test.ts` | à lire |  |
 | `scripts/release/release-notes.mjs` | à lire |  |
+| `scripts/release/release.test.ts` | à lire |  |
 | `scripts/release/rename.mjs` | à lire |  |
 | `scripts/release/rename.test.ts` | à lire |  |
 | `scripts/release/signingBoundary.test.ts` | à lire |  |
 | `scripts/release/split-prd.mjs` | à lire |  |
 | `scripts/release/verify-signature.mjs` | à lire |  |
 | `scripts/smoke/build.mjs` | à lire |  |
+| `src-tauri/build.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/ios/LiveActivity/SpartiateLiveActivity.swift` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/ios/LiveActivity/SpartiateTimerAttributes.swift` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/files/build.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/files/ios/Package.swift` | à lire |  |
+| `src-tauri/plugins/files/ios/Sources/CtFilesPlugin.swift` | à lire |  |
+| `src-tauri/plugins/files/src/lib.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/folder-bookmark/build.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/folder-bookmark/ios/Package.swift` | à lire |  |
+| `src-tauri/plugins/folder-bookmark/ios/Sources/FolderBookmarkPlugin.swift` | à lire |  |
+| `src-tauri/plugins/folder-bookmark/src/lib.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/haptics/build.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/haptics/ios/Package.swift` | à lire |  |
+| `src-tauri/plugins/haptics/ios/Sources/HapticsPlugin.swift` | à lire |  |
+| `src-tauri/plugins/haptics/src/lib.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/healthkit/build.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/healthkit/ios/Package.swift` | à lire |  |
+| `src-tauri/plugins/healthkit/ios/Sources/HealthKitPlugin.swift` | à lire |  |
+| `src-tauri/plugins/healthkit/src/lib.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/live-activity/build.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/live-activity/ios/Package.swift` | à lire |  |
+| `src-tauri/plugins/live-activity/ios/Sources/LiveActivityPlugin.swift` | à lire |  |
+| `src-tauri/plugins/live-activity/ios/Sources/SpartiateTimerAttributes.swift` | à lire |  |
+| `src-tauri/plugins/live-activity/src/lib.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/notification-actions/build.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/notification-actions/ios/Package.swift` | à lire |  |
+| `src-tauri/plugins/notification-actions/ios/Sources/NotificationActionsPlugin.swift` | à lire |  |
+| `src-tauri/plugins/notification-actions/src/lib.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/privacy-shield/build.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/privacy-shield/ios/Package.swift` | à lire |  |
+| `src-tauri/plugins/privacy-shield/ios/Sources/PrivacyShieldPlugin.swift` | à lire |  |
+| `src-tauri/plugins/privacy-shield/src/lib.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/speech/build.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/speech/ios/Package.swift` | à lire |  |
+| `src-tauri/plugins/speech/ios/Sources/SpeechPlugin.swift` | à lire |  |
+| `src-tauri/plugins/speech/src/lib.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/vision/build.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/plugins/vision/ios/Package.swift` | à lire |  |
+| `src-tauri/plugins/vision/ios/Sources/VisionPlugin.swift` | à lire |  |
+| `src-tauri/plugins/vision/src/lib.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/src/applog.rs` | à lire |  |
+| `src-tauri/src/backup.rs` | à lire |  |
+| `src-tauri/src/backup_triggers.rs` | à lire |  |
+| `src-tauri/src/desktop.rs` | à lire |  |
+| `src-tauri/src/export.rs` | à lire |  |
+| `src-tauri/src/export_common.rs` | à lire |  |
+| `src-tauri/src/export_ios.rs` | à lire |  |
+| `src-tauri/src/healthkit.rs` | à lire |  |
+| `src-tauri/src/import.rs` | à lire |  |
+| `src-tauri/src/ios_setup.rs` | à lire |  |
+| `src-tauri/src/lib.rs` | à lire |  |
+| `src-tauri/src/live_activity.rs` | à lire |  |
+| `src-tauri/src/main.rs` | à lire |  |
+| `src-tauri/src/mobile_call.rs` | à lire |  |
+| `src-tauri/src/ocr/mod.rs` | à lire |  |
+| `src-tauri/src/ocr/vision.rs` | à lire |  |
+| `src-tauri/src/ocr/win.rs` | à lire |  |
+| `src-tauri/src/off.rs` | à lire |  |
+| `src-tauri/src/signing.rs` | à lire |  |
+| `src-tauri/src/speech/ios.rs` | à lire |  |
+| `src-tauri/src/speech/mod.rs` | à lire |  |
+| `src-tauri/src/startup_gate.rs` | à lire |  |
+| `src-tauri/src/sync/bookmark.rs` | à lire |  |
+| `src-tauri/src/sync/cloud_windows.rs` | à lire |  |
+| `src-tauri/src/sync/commands.rs` | à lire |  |
+| `src-tauri/src/sync/commands_ios.rs` | à lire |  |
+| `src-tauri/src/sync/consent.rs` | à lire |  |
+| `src-tauri/src/sync/consent_ios.rs` | à lire |  |
+| `src-tauri/src/sync/crypto.rs` | à lire |  |
+| `src-tauri/src/sync/files.rs` | à lire |  |
+| `src-tauri/src/sync/folder.rs` | à lire |  |
+| `src-tauri/src/sync/forget.rs` | à lire |  |
+| `src-tauri/src/sync/health.rs` | à lire |  |
+| `src-tauri/src/sync/limits.rs` | à lire |  |
+| `src-tauri/src/sync/marker.rs` | à lire |  |
+| `src-tauri/src/sync/mod.rs` | à lire |  |
+| `src-tauri/src/sync/names.rs` | à lire |  |
+| `src-tauri/src/sync/pairing.rs` | à lire |  |
+| `src-tauri/src/sync/reset.rs` | à lire |  |
+| `src-tauri/src/sync/service.rs` | à lire |  |
+| `src-tauri/src/sync/state.rs` | à lire |  |
+| `src-tauri/src/sync/store.rs` | à lire |  |
+| `src-tauri/src/vault.rs` | à lire |  |
+| `src-tauri/src/vault_ios.rs` | à lire |  |
+| `src-tauri/src/window_fit.rs` | à lire |  |
+| `src-tauri/tests/desktop/applog.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/backup.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/backup_summary.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/backup_versions.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/capture_ios.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/config.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/db_diagnostics.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/export.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/export_ios.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/import.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/logic.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/main.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/notification_actions.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/ocr.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/ocr_vision.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/off.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/quit.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/restore.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/restore_hardening.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/restore_identity.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/restore_identity_sync.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/restore_ios.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/restore_qa_ios.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/restore_recovery.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/restore_wal_guard.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/signing.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/speech.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sql_closed.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sqlite_engine.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/support/fake_bookmark.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/support/fault_plan.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/support/http_mock.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/support/mod.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_bookmark.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_closed_segments.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_crypto.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_fault_plan.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_fixes.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_folder.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_forget.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_forget_qa.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_fs_conformance.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_health.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_ios_y02.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_key.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_pairing.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_pairing_qa.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_pairing_y06.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_publish_bound.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_qa_crypto.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_qa_folder.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_reset.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_separation.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_store.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_support.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_tz.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/sync_y_tech_02.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/training_schema.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/updater.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/window.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/tests/desktop/window_fit.rs` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `src-tauri/vendor/sqlx-sqlite/.cargo_vcs_info.json` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/Cargo.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/Cargo.toml.orig` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/LICENSE-APACHE` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/LICENSE-MIT` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/PROVENANCE-SPARTIATE.md` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/any.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/arguments.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/column.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/connection/collation.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/connection/describe.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/connection/establish.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/connection/execute.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/connection/executor.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/connection/explain.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/connection/handle.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/connection/intmap.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/connection/mod.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/connection/preupdate_hook.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/connection/serialize.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/connection/worker.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/database.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/error.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/lib.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/logger.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/migrate.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/options/auto_vacuum.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/options/connect.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/options/journal_mode.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/options/locking_mode.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/options/mod.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/options/parse.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/options/synchronous.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/query_result.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/regexp.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/row.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/statement/handle.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/statement/mod.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/statement/unlock_notify.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/statement/virtual.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/testing/mod.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/transaction.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/type_checking.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/type_info.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/types/bool.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/types/bytes.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/types/chrono.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/types/float.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/types/int.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/types/json.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/types/mod.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/types/str.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/types/text.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/types/time.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/types/uint.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/types/uuid.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/sqlx-sqlite/src/value.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/Cargo.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/LICENSE.spdx` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/LICENSE_APACHE-2.0` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/LICENSE_MIT` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/README.md` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/api-iife.js` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/build.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/permissions/autogenerated/commands/close.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/permissions/autogenerated/commands/execute.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/permissions/autogenerated/commands/load.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/permissions/autogenerated/commands/select.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/permissions/autogenerated/reference.md` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/permissions/default.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/permissions/schemas/schema.json` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/src/commands.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/src/decode/mod.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/src/decode/mysql.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/src/decode/postgres.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/src/decode/sqlite.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/src/error.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/src/guard.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/src/guard_tests.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/src/lib.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `src-tauri/vendor/tauri-plugin-sql/src/wrapper.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
 | `src/App.test.tsx` | à lire |  |
-| `src/App.tsx` | à lire |  |
-| `src/db/driver.ts` | à lire |  |
+| `src/App.tsx` | lu | Partie 1 : Composition, ordre des attentes, publication des erreurs et nettoyage lus ; réintégration/garde à approfondir en parties 2/3. |
+| `src/db/driver.ts` | lu | Partie 1 : Contrats, fabrique liée à la transaction et association catalogue/repositories lus ; atomicité effective à vérifier partie 2. |
 | `src/db/drivers/sqliteWasm.test.ts` | à lire |  |
 | `src/db/drivers/sqliteWasm.ts` | à lire |  |
 | `src/db/errorText.ts` | à lire |  |
@@ -152,7 +388,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/db/repositories/checklistRepository.ts` | à lire |  |
 | `src/db/repositories/common.ts` | à lire |  |
 | `src/db/repositories/dataAccess.test.ts` | à lire |  |
-| `src/db/repositories/dataAccess.ts` | à lire |  |
+| `src/db/repositories/dataAccess.ts` | lu | Partie 1 : Contrats, fabrique liée à la transaction et association catalogue/repositories lus ; atomicité effective à vérifier partie 2. |
 | `src/db/repositories/dataResetRepository.ts` | à lire |  |
 | `src/db/repositories/dayCompletenessRepository.ts` | à lire |  |
 | `src/db/repositories/epochCarryReportRepository.ts` | à lire |  |
@@ -162,7 +398,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/db/repositories/foodFavoriteRepository.ts` | à lire |  |
 | `src/db/repositories/foodRepository.ts` | à lire |  |
 | `src/db/repositories/goalRepository.ts` | à lire |  |
-| `src/db/repositories/index.ts` | à lire |  |
+| `src/db/repositories/index.ts` | lu | Partie 1 : Contrats, fabrique liée à la transaction et association catalogue/repositories lus ; atomicité effective à vérifier partie 2. |
 | `src/db/repositories/mealEntryRepository.ts` | à lire |  |
 | `src/db/repositories/mesocycleRepository.ts` | à lire |  |
 | `src/db/repositories/nutritionTargetRepository.ts` | à lire |  |
@@ -276,7 +512,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/db/repositories/sql/workoutRepository.test.ts` | à lire |  |
 | `src/db/repositories/sql/workoutRepository.ts` | à lire |  |
 | `src/db/repositories/sql/workoutWarmup.test.ts` | à lire |  |
-| `src/db/repositories/storage.ts` | à lire |  |
+| `src/db/repositories/storage.ts` | lu | Partie 1 : Contrats, fabrique liée à la transaction et association catalogue/repositories lus ; atomicité effective à vérifier partie 2. |
 | `src/db/repositories/supplementRepository.ts` | à lire |  |
 | `src/db/repositories/syncConflictRepository.ts` | à lire |  |
 | `src/db/repositories/syncRepository.ts` | à lire |  |
@@ -292,14 +528,14 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/db/serializedDriver.ts` | à lire |  |
 | `src/db/spaceOwnership.test.ts` | à lire |  |
 | `src/db/testHooks.ts` | à lire |  |
-| `src/domain/appleReminders.test.ts` | à lire |  |
-| `src/domain/appleReminders.ts` | à lire |  |
 | `src/domain/appLock.test.ts` | à lire |  |
 | `src/domain/appLock.ts` | à lire |  |
 | `src/domain/appStatus.test.ts` | à lire |  |
 | `src/domain/appStatus.ts` | à lire |  |
 | `src/domain/appUpdate.test.ts` | à lire |  |
 | `src/domain/appUpdate.ts` | à lire |  |
+| `src/domain/appleReminders.test.ts` | à lire |  |
+| `src/domain/appleReminders.ts` | à lire |  |
 | `src/domain/backupSchedule.test.ts` | à lire |  |
 | `src/domain/backupSchedule.ts` | à lire |  |
 | `src/domain/bodyProfile.test.ts` | à lire |  |
@@ -337,7 +573,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/domain/eventReminders.ts` | à lire |  |
 | `src/domain/eventRules.test.ts` | à lire |  |
 | `src/domain/eventRules.ts` | à lire |  |
-| `src/domain/eventTestKit.ts` | à lire |  |
+| `src/domain/eventTestKit.ts` | lu | Partie 1 : Compteurs mutables propres aux fabriques de fixtures ; pas assimilés à un moteur métier avec état. |
 | `src/domain/exportImport/archive.test.ts` | à lire |  |
 | `src/domain/exportImport/archive.ts` | à lire |  |
 | `src/domain/exportImport/fullExport.test.ts` | à lire |  |
@@ -354,7 +590,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/domain/focusSession.test.ts` | à lire |  |
 | `src/domain/focusSession.ts` | à lire |  |
 | `src/domain/goalRules.test.ts` | à lire |  |
-| `src/domain/goalRules.ts` | à lire |  |
+| `src/domain/goalRules.ts` | lu | Partie 1 : Lecture complète du cycle statique hérité : appels croisés dans des fonctions, pas pendant leur initialisation ; aucun plantage démontré. |
 | `src/domain/health/bodyShortcutFiles.test.ts` | à lire |  |
 | `src/domain/health/bodyShortcutFiles.ts` | à lire |  |
 | `src/domain/health/rev01.shortcutDay.test.ts` | à lire |  |
@@ -489,7 +725,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/domain/recovery/shortcutFiles.test.ts` | à lire |  |
 | `src/domain/recovery/shortcutFiles.ts` | à lire |  |
 | `src/domain/recovery/sleepDiagnostic.test.ts` | à lire |  |
-| `src/domain/recovery/sleepNeed.ts` | à lire |  |
+| `src/domain/recovery/sleepNeed.ts` | lu | Partie 1 : Lecture complète pour qualification du candidat window : variable locale ; revue des formules réservée parties 4/6. |
 | `src/domain/recovery/types.ts` | à lire |  |
 | `src/domain/recovery/unusualValues.test.ts` | à lire |  |
 | `src/domain/recovery/unusualValues.ts` | à lire |  |
@@ -509,7 +745,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/domain/routineStats.perf.test.ts` | à lire |  |
 | `src/domain/routineStreaks.test.ts` | à lire |  |
 | `src/domain/routineStreaks.ts` | à lire |  |
-| `src/domain/routineTestKit.ts` | à lire |  |
+| `src/domain/routineTestKit.ts` | lu | Partie 1 : Compteurs mutables propres aux fabriques de fixtures ; pas assimilés à un moteur métier avec état. |
 | `src/domain/signingNotice.test.ts` | à lire |  |
 | `src/domain/signingNotice.ts` | à lire |  |
 | `src/domain/spaceRules.test.ts` | à lire |  |
@@ -589,7 +825,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/domain/timeZone.ts` | à lire |  |
 | `src/domain/timeZoneLocalToUtc.test.ts` | à lire |  |
 | `src/domain/todayList.test.ts` | à lire |  |
-| `src/domain/todayList.ts` | à lire |  |
+| `src/domain/todayList.ts` | lu | Partie 1 : Lecture complète du cycle statique hérité : appels croisés dans des fonctions, pas pendant leur initialisation ; aucun plantage démontré. |
 | `src/domain/training/bodyweight.ts` | à lire |  |
 | `src/domain/training/circuit.position.test.ts` | à lire |  |
 | `src/domain/training/circuit.test.ts` | à lire |  |
@@ -597,7 +833,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/domain/training/closure.test.ts` | à lire |  |
 | `src/domain/training/closure.ts` | à lire |  |
 | `src/domain/training/confidence.test.ts` | à lire |  |
-| `src/domain/training/confidence.ts` | à lire |  |
+| `src/domain/training/confidence.ts` | lu | Partie 1 : Lecture complète pour qualification du candidat window : variable locale ; revue des formules réservée parties 4/6. |
 | `src/domain/training/config.ts` | à lire |  |
 | `src/domain/training/constraints.test.ts` | à lire |  |
 | `src/domain/training/constraints.ts` | à lire |  |
@@ -668,55 +904,68 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/domain/types.test.ts` | à lire |  |
 | `src/domain/types.ts` | à lire |  |
 | `src/domain/week.test.ts` | à lire |  |
-| `src/domain/week.ts` | à lire |  |
+| `src/domain/week.ts` | lu | Partie 1 : Lecture complète du cycle statique hérité : appels croisés dans des fonctions, pas pendant leur initialisation ; aucun plantage démontré. |
 | `src/domain/weekFromIso.test.ts` | à lire |  |
-| `src/features/app/a9AfterApply.test.tsx` | à lire |  |
+| `src/features/ErgoP5.test.tsx` | à lire |  |
+| `src/features/ErgoScreens.test.tsx` | à lire |  |
 | `src/features/app/AppContainerContext.test.tsx` | à lire |  |
-| `src/features/app/AppContainerContext.tsx` | à lire |  |
-| `src/features/app/appStatus.ts` | à lire |  |
+| `src/features/app/AppContainerContext.tsx` | lu | Partie 1 : Injection, instance par conteneur, état transverse et diagnostics lus ; héritages identifiés. |
 | `src/features/app/AppStatusBanner.test.tsx` | à lire |  |
 | `src/features/app/AppStatusBanner.tsx` | à lire |  |
-| `src/features/app/appStore.ts` | à lire |  |
+| `src/features/app/DbFailureDetails.css` | à lire |  |
+| `src/features/app/DbFailureDetails.tsx` | lu | Partie 1 : Démarrage différé, arrêt, suivi des étapes, diagnostics et erreurs absorbées lus ; relais partie-01. |
+| `src/features/app/ErgoToday.test.tsx` | à lire |  |
+| `src/features/app/ErgoToday02.test.tsx` | à lire |  |
+| `src/features/app/FileSaveFailure.css` | à lire |  |
+| `src/features/app/FileSaveFailure.tsx` | à lire |  |
+| `src/features/app/RecoveryFailure.tsx` | à lire |  |
+| `src/features/app/SectionNotice.css` | à lire |  |
+| `src/features/app/SectionNotice.test.tsx` | à lire |  |
+| `src/features/app/SectionNotice.tsx` | lu | Partie 1 : Frontières Suspense/erreur, réessai, préchargement et composition des sections lus ; parcours complets réservés partie 7. |
+| `src/features/app/ShellChrome.css` | à lire |  |
+| `src/features/app/ShellChrome.tsx` | à lire |  |
+| `src/features/app/StartupBlocked.test.tsx` | à lire |  |
+| `src/features/app/StartupBlocked.tsx` | à lire |  |
+| `src/features/app/StartupWatchdog.tsx` | lu | Partie 1 : Démarrage différé, arrêt, suivi des étapes, diagnostics et erreurs absorbées lus ; relais partie-01. |
+| `src/features/app/TodayPcSide.tsx` | à lire |  |
+| `src/features/app/TodayScreen.css` | à lire |  |
+| `src/features/app/TodayScreen.test.tsx` | à lire |  |
+| `src/features/app/TodayScreen.tsx` | à lire |  |
+| `src/features/app/UndoToast.css` | à lire |  |
+| `src/features/app/UndoToast.test.tsx` | à lire |  |
+| `src/features/app/UndoToast.tsx` | à lire |  |
+| `src/features/app/UpdateRestoreAction.tsx` | à lire |  |
+| `src/features/app/a9AfterApply.test.tsx` | à lire |  |
+| `src/features/app/appStatus.ts` | à lire |  |
+| `src/features/app/appStore.ts` | lu | Partie 1 : Injection, instance par conteneur, état transverse et diagnostics lus ; héritages identifiés. |
 | `src/features/app/bootstrap.recoveryWriter.test.ts` | à lire |  |
 | `src/features/app/bootstrap.storage.test.ts` | à lire |  |
 | `src/features/app/bootstrap.sync.test.ts` | à lire |  |
 | `src/features/app/bootstrap.test.ts` | à lire |  |
-| `src/features/app/bootstrap.ts` | à lire |  |
+| `src/features/app/bootstrap.ts` | lu | Partie 1 : Composition, ordre des attentes, publication des erreurs et nettoyage lus ; réintégration/garde à approfondir en parties 2/3. |
 | `src/features/app/container.test.ts` | à lire |  |
-| `src/features/app/container.ts` | à lire |  |
+| `src/features/app/container.ts` | lu | Partie 1 : Injection, instance par conteneur, état transverse et diagnostics lus ; héritages identifiés. |
 | `src/features/app/dbFailure.test.tsx` | à lire |  |
-| `src/features/app/DbFailureDetails.css` | à lire |  |
-| `src/features/app/DbFailureDetails.tsx` | à lire |  |
 | `src/features/app/desktop.test.tsx` | à lire |  |
 | `src/features/app/desktop.ts` | à lire |  |
-| `src/features/app/ErgoToday.test.tsx` | à lire |  |
-| `src/features/app/ErgoToday02.test.tsx` | à lire |  |
-| `src/features/app/FileSaveFailure.css` | à lire |  |
 | `src/features/app/fileSaveFailure.test.tsx` | à lire |  |
-| `src/features/app/FileSaveFailure.tsx` | à lire |  |
 | `src/features/app/globalErrors.test.ts` | à lire |  |
 | `src/features/app/globalErrors.ts` | à lire |  |
-| `src/features/app/idle.ts` | à lire |  |
+| `src/features/app/idle.ts` | lu | Partie 1 : Frontières Suspense/erreur, réessai, préchargement et composition des sections lus ; parcours complets réservés partie 7. |
 | `src/features/app/lazyHosts.test.tsx` | à lire |  |
 | `src/features/app/lazyScreens.css` | à lire |  |
 | `src/features/app/lazyScreens.inventory.test.tsx` | à lire |  |
 | `src/features/app/lazyScreens.test.tsx` | à lire |  |
-| `src/features/app/lazyScreens.tsx` | à lire |  |
+| `src/features/app/lazyScreens.tsx` | lu | Partie 1 : Frontières Suspense/erreur, réessai, préchargement et composition des sections lus ; parcours complets réservés partie 7. |
 | `src/features/app/logJournalBoot.ts` | à lire |  |
 | `src/features/app/navigation.test.ts` | à lire |  |
 | `src/features/app/navigation.ts` | à lire |  |
 | `src/features/app/notice.ts` | à lire |  |
 | `src/features/app/recoveryFailure.test.tsx` | à lire |  |
-| `src/features/app/RecoveryFailure.tsx` | à lire |  |
 | `src/features/app/saveFile.ts` | à lire |  |
 | `src/features/app/screenNames.ts` | à lire |  |
-| `src/features/app/SectionNotice.css` | à lire |  |
-| `src/features/app/SectionNotice.test.tsx` | à lire |  |
-| `src/features/app/SectionNotice.tsx` | à lire |  |
 | `src/features/app/settingsLedger.ts` | à lire |  |
 | `src/features/app/shareStartupLog.ts` | à lire |  |
-| `src/features/app/ShellChrome.css` | à lire |  |
-| `src/features/app/ShellChrome.tsx` | à lire |  |
 | `src/features/app/shortcuts.test.ts` | à lire |  |
 | `src/features/app/shortcuts.ts` | à lire |  |
 | `src/features/app/shortcutsHelp.test.ts` | à lire |  |
@@ -724,39 +973,28 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/app/shortcutsQa.test.ts` | à lire |  |
 | `src/features/app/shortcutsWiring.test.ts` | à lire |  |
 | `src/features/app/startup.test.ts` | à lire |  |
-| `src/features/app/startup.ts` | à lire |  |
-| `src/features/app/StartupBlocked.test.tsx` | à lire |  |
-| `src/features/app/StartupBlocked.tsx` | à lire |  |
+| `src/features/app/startup.ts` | lu | Partie 1 : Démarrage différé, arrêt, suivi des étapes, diagnostics et erreurs absorbées lus ; relais partie-01. |
 | `src/features/app/startupSteps.test.ts` | à lire |  |
-| `src/features/app/startupSteps.ts` | à lire |  |
-| `src/features/app/StartupWatchdog.tsx` | à lire |  |
+| `src/features/app/startupSteps.ts` | lu | Partie 1 : Démarrage différé, arrêt, suivi des étapes, diagnostics et erreurs absorbées lus ; relais partie-01. |
 | `src/features/app/tabShortcuts.dom.test.tsx` | à lire |  |
 | `src/features/app/tabShortcuts.test.ts` | à lire |  |
 | `src/features/app/tabShortcuts.ts` | à lire |  |
 | `src/features/app/timeZoneWatcher.test.ts` | à lire |  |
-| `src/features/app/timeZoneWatcher.ts` | à lire |  |
-| `src/features/app/TodayPcSide.tsx` | à lire |  |
-| `src/features/app/TodayScreen.css` | à lire |  |
-| `src/features/app/TodayScreen.test.tsx` | à lire |  |
-| `src/features/app/TodayScreen.tsx` | à lire |  |
+| `src/features/app/timeZoneWatcher.ts` | lu | Partie 1 : Démarrage différé, arrêt, suivi des étapes, diagnostics et erreurs absorbées lus ; relais partie-01. |
 | `src/features/app/todayTestPreload.ts` | à lire |  |
 | `src/features/app/undo.test.ts` | à lire |  |
 | `src/features/app/undo.ts` | à lire |  |
-| `src/features/app/UndoToast.css` | à lire |  |
-| `src/features/app/UndoToast.test.tsx` | à lire |  |
-| `src/features/app/UndoToast.tsx` | à lire |  |
 | `src/features/app/updateFailure.test.tsx` | à lire |  |
 | `src/features/app/updateFailureQa.test.tsx` | à lire |  |
 | `src/features/app/updateRestore.ts` | à lire |  |
-| `src/features/app/UpdateRestoreAction.tsx` | à lire |  |
 | `src/features/app/updateRestoreReview.test.tsx` | à lire |  |
 | `src/features/bodyProgress/BodyProgress.css` | à lire |  |
 | `src/features/bodyProgress/BodyProgress.test.tsx` | à lire |  |
 | `src/features/bodyProgress/BodyProgress.tsx` | à lire |  |
 | `src/features/bodyProgress/BodyProgressErgo02.test.tsx` | à lire |  |
+| `src/features/bodyProgress/BodyZones.tsx` | à lire |  |
 | `src/features/bodyProgress/bodyZone.test.ts` | à lire |  |
 | `src/features/bodyProgress/bodyZone.ts` | à lire |  |
-| `src/features/bodyProgress/BodyZones.tsx` | à lire |  |
 | `src/features/cardio/Cardio.css` | à lire |  |
 | `src/features/cardio/CardioGps.test.tsx` | à lire |  |
 | `src/features/cardio/CardioGps.tsx` | à lire |  |
@@ -765,8 +1003,6 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/cardio/CardioView.test.tsx` | à lire |  |
 | `src/features/cardio/CardioView.tsx` | à lire |  |
 | `src/features/cardio/gpsFigures.ts` | à lire |  |
-| `src/features/ErgoP5.test.tsx` | à lire |  |
-| `src/features/ErgoScreens.test.tsx` | à lire |  |
 | `src/features/notifications/index.test.ts` | à lire |  |
 | `src/features/notifications/index.ts` | à lire |  |
 | `src/features/notifications/noUnusualValuesNotification.test.ts` | à lire |  |
@@ -778,6 +1014,16 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/notifications/supplementNotifications.ts` | à lire |  |
 | `src/features/notifications/supplementWake.test.ts` | à lire |  |
 | `src/features/notifications/supplementWake.ts` | à lire |  |
+| `src/features/nutrition/CheckInErgo03.test.tsx` | à lire |  |
+| `src/features/nutrition/ErgoNutrition.test.tsx` | à lire |  |
+| `src/features/nutrition/ErgoP2.test.tsx` | à lire |  |
+| `src/features/nutrition/NutritionRemainingCard.test.tsx` | à lire |  |
+| `src/features/nutrition/NutritionRemainingCard.tsx` | à lire |  |
+| `src/features/nutrition/NutritionScreen.css` | à lire |  |
+| `src/features/nutrition/NutritionScreen.test.tsx` | à lire |  |
+| `src/features/nutrition/NutritionScreen.tsx` | à lire |  |
+| `src/features/nutrition/NutritionStates.test.tsx` | à lire |  |
+| `src/features/nutrition/StrategyErgo03.test.tsx` | à lire |  |
 | `src/features/nutrition/catalogue/ciqualCatalogue.test.ts` | à lire |  |
 | `src/features/nutrition/catalogue/ciqualCatalogue.ts` | à lire |  |
 | `src/features/nutrition/checkIn/CheckIn.css` | à lire |  |
@@ -785,7 +1031,6 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/nutrition/checkIn/CheckInView.tsx` | à lire |  |
 | `src/features/nutrition/checkIn/weekSummary.test.ts` | à lire |  |
 | `src/features/nutrition/checkIn/weekSummary.ts` | à lire |  |
-| `src/features/nutrition/CheckInErgo03.test.tsx` | à lire |  |
 | `src/features/nutrition/dashboard/Charts.tsx` | à lire |  |
 | `src/features/nutrition/dashboard/DashboardView.tsx` | à lire |  |
 | `src/features/nutrition/dashboard/DashboardView.weighIn.test.tsx` | à lire |  |
@@ -793,43 +1038,35 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/nutrition/dashboard/model.ts` | à lire |  |
 | `src/features/nutrition/dayType.test.ts` | à lire |  |
 | `src/features/nutrition/dayType.ts` | à lire |  |
-| `src/features/nutrition/ErgoNutrition.test.tsx` | à lire |  |
-| `src/features/nutrition/ErgoP2.test.tsx` | à lire |  |
 | `src/features/nutrition/journal/DayCompleteness.test.tsx` | à lire |  |
 | `src/features/nutrition/journal/EntryEditor.tsx` | à lire |  |
 | `src/features/nutrition/journal/JournalView.tsx` | à lire |  |
-| `src/features/nutrition/NutritionRemainingCard.test.tsx` | à lire |  |
-| `src/features/nutrition/NutritionRemainingCard.tsx` | à lire |  |
-| `src/features/nutrition/NutritionScreen.css` | à lire |  |
-| `src/features/nutrition/NutritionScreen.test.tsx` | à lire |  |
-| `src/features/nutrition/NutritionScreen.tsx` | à lire |  |
-| `src/features/nutrition/NutritionStates.test.tsx` | à lire |  |
 | `src/features/nutrition/quickAdd/QuickAddForm.tsx` | à lire |  |
 | `src/features/nutrition/recipes/IngredientPicker.tsx` | à lire |  |
 | `src/features/nutrition/recipes/RecipeEditor.tsx` | à lire |  |
 | `src/features/nutrition/recipes/RecipeHits.tsx` | à lire |  |
-| `src/features/nutrition/recipes/recipeModel.test.ts` | à lire |  |
-| `src/features/nutrition/recipes/recipeModel.ts` | à lire |  |
 | `src/features/nutrition/recipes/RecipeQuantityStep.tsx` | à lire |  |
 | `src/features/nutrition/recipes/Recipes.css` | à lire |  |
 | `src/features/nutrition/recipes/Recipes.test.tsx` | à lire |  |
-| `src/features/nutrition/recipes/recipeSearch.ts` | à lire |  |
 | `src/features/nutrition/recipes/RecipesView.tsx` | à lire |  |
+| `src/features/nutrition/recipes/recipeModel.test.ts` | à lire |  |
+| `src/features/nutrition/recipes/recipeModel.ts` | à lire |  |
+| `src/features/nutrition/recipes/recipeSearch.ts` | à lire |  |
 | `src/features/nutrition/scan/BarcodeScanView.tsx` | à lire |  |
 | `src/features/nutrition/scan/scanBarcode.test.ts` | à lire |  |
 | `src/features/nutrition/scan/scanBarcode.ts` | à lire |  |
-| `src/features/nutrition/search/catalogueSearch.test.ts` | à lire |  |
-| `src/features/nutrition/search/catalogueSearch.ts` | à lire |  |
 | `src/features/nutrition/search/CustomFood.test.tsx` | à lire |  |
 | `src/features/nutrition/search/CustomFoodForm.tsx` | à lire |  |
 | `src/features/nutrition/search/Favorites.test.tsx` | à lire |  |
 | `src/features/nutrition/search/FavoritesCiqual.test.tsx` | à lire |  |
-| `src/features/nutrition/search/favoritesStore.ts` | à lire |  |
 | `src/features/nutrition/search/FoodSearchPanel.tsx` | à lire |  |
+| `src/features/nutrition/search/OffSearch.test.tsx` | à lire |  |
+| `src/features/nutrition/search/catalogueSearch.test.ts` | à lire |  |
+| `src/features/nutrition/search/catalogueSearch.ts` | à lire |  |
+| `src/features/nutrition/search/favoritesStore.ts` | à lire |  |
 | `src/features/nutrition/search/offLookup.test.ts` | à lire |  |
 | `src/features/nutrition/search/offLookup.ts` | à lire |  |
 | `src/features/nutrition/search/offMessages.ts` | à lire |  |
-| `src/features/nutrition/search/OffSearch.test.tsx` | à lire |  |
 | `src/features/nutrition/search/resolveFood.ts` | à lire |  |
 | `src/features/nutrition/shared.tsx` | à lire |  |
 | `src/features/nutrition/strategy/RestTargetForm.tsx` | à lire |  |
@@ -837,10 +1074,6 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/nutrition/strategy/TargetForm.tsx` | à lire |  |
 | `src/features/nutrition/strategy/useFutureConfirm.test.tsx` | à lire |  |
 | `src/features/nutrition/strategy/useFutureConfirm.tsx` | à lire |  |
-| `src/features/nutrition/StrategyErgo03.test.tsx` | à lire |  |
-| `src/features/nutrition/supplements/constancy.test.ts` | à lire |  |
-| `src/features/nutrition/supplements/constancy.ts` | à lire |  |
-| `src/features/nutrition/supplements/replan.ts` | à lire |  |
 | `src/features/nutrition/supplements/Supplements.css` | à lire |  |
 | `src/features/nutrition/supplements/SupplementsFix0242.test.tsx` | à lire |  |
 | `src/features/nutrition/supplements/SupplementsTodayCard.test.tsx` | à lire |  |
@@ -848,17 +1081,15 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/nutrition/supplements/SupplementsView.test.tsx` | à lire |  |
 | `src/features/nutrition/supplements/SupplementsView.tsx` | à lire |  |
 | `src/features/nutrition/supplements/SupplementsViewErgo02.test.tsx` | à lire |  |
+| `src/features/nutrition/supplements/constancy.test.ts` | à lire |  |
+| `src/features/nutrition/supplements/constancy.ts` | à lire |  |
+| `src/features/nutrition/supplements/replan.ts` | à lire |  |
 | `src/features/nutrition/useCases.test.ts` | à lire |  |
 | `src/features/nutrition/useCases.ts` | à lire |  |
 | `src/features/nutrition/useNutritionData.ts` | à lire |  |
 | `src/features/nutrition/useNutritionStale.test.tsx` | à lire |  |
 | `src/features/nutrition/workoutSync.test.tsx` | à lire |  |
 | `src/features/onboarding/BodyMap.tsx` | à lire |  |
-| `src/features/onboarding/firstSession.ts` | à lire |  |
-| `src/features/onboarding/launch.basePresence.test.ts` | à lire |  |
-| `src/features/onboarding/launch.ts` | à lire |  |
-| `src/features/onboarding/onboardingData.test.ts` | à lire |  |
-| `src/features/onboarding/onboardingData.ts` | à lire |  |
 | `src/features/onboarding/OnboardingErgo02.test.tsx` | à lire |  |
 | `src/features/onboarding/OnboardingFlow.css` | à lire |  |
 | `src/features/onboarding/OnboardingFlow.test.tsx` | à lire |  |
@@ -868,9 +1099,11 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/onboarding/OptionCards.tsx` | à lire |  |
 | `src/features/onboarding/StepsBasics.tsx` | à lire |  |
 | `src/features/onboarding/StepsPlan.tsx` | à lire |  |
-| `src/features/recovery/display.test.ts` | à lire |  |
-| `src/features/recovery/display.ts` | à lire |  |
-| `src/features/recovery/factorJournal.ts` | à lire |  |
+| `src/features/onboarding/firstSession.ts` | à lire |  |
+| `src/features/onboarding/launch.basePresence.test.ts` | à lire |  |
+| `src/features/onboarding/launch.ts` | à lire |  |
+| `src/features/onboarding/onboardingData.test.ts` | à lire |  |
+| `src/features/onboarding/onboardingData.ts` | à lire |  |
 | `src/features/recovery/FactorJournalCard.tsx` | à lire |  |
 | `src/features/recovery/RecoveryFactors.test.tsx` | à lire |  |
 | `src/features/recovery/RecoveryProgress.tsx` | à lire |  |
@@ -878,9 +1111,13 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/recovery/RecoveryToday.test.tsx` | à lire |  |
 | `src/features/recovery/RecoveryToday.tsx` | à lire |  |
 | `src/features/recovery/UnusualValuesCard.tsx` | à lire |  |
-| `src/features/security/appLockBoot.ts` | à lire |  |
+| `src/features/recovery/display.test.ts` | à lire |  |
+| `src/features/recovery/display.ts` | à lire |  |
+| `src/features/recovery/factorJournal.ts` | à lire |  |
 | `src/features/security/AppLockGate.test.tsx` | à lire |  |
 | `src/features/security/AppLockGate.tsx` | à lire |  |
+| `src/features/security/LockScreen.tsx` | à lire |  |
+| `src/features/security/appLockBoot.ts` | à lire |  |
 | `src/features/security/appLockLateContent.test.tsx` | à lire |  |
 | `src/features/security/appLockLazyFailure.test.tsx` | à lire |  |
 | `src/features/security/appLockQa.test.tsx` | à lire |  |
@@ -888,63 +1125,31 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/security/appLockStore.ts` | à lire |  |
 | `src/features/security/excursion.ts` | à lire |  |
 | `src/features/security/lockLayer.ts` | à lire |  |
-| `src/features/security/LockScreen.tsx` | à lire |  |
 | `src/features/security/privacyCover.ts` | à lire |  |
 | `src/features/security/security.css` | à lire |  |
 | `src/features/security/startAppLock.test.tsx` | à lire |  |
 | `src/features/security/startAppLock.ts` | à lire |  |
 | `src/features/security/systemSettingsAction.ts` | à lire |  |
 | `src/features/settings/AboutSection.tsx` | à lire |  |
-| `src/features/settings/appearance.ts` | à lire |  |
 | `src/features/settings/AppearanceScreen.css` | à lire |  |
 | `src/features/settings/AppearanceScreen.test.tsx` | à lire |  |
 | `src/features/settings/AppearanceScreen.tsx` | à lire |  |
 | `src/features/settings/AppleHealthScreen.test.tsx` | à lire |  |
 | `src/features/settings/AppleHealthScreen.tsx` | à lire |  |
-| `src/features/settings/backup.test.tsx` | à lire |  |
-| `src/features/settings/backupLabels.test.ts` | à lire |  |
-| `src/features/settings/backupLabels.ts` | à lire |  |
-| `src/features/settings/backupOrigin.sheet.test.tsx` | à lire |  |
 | `src/features/settings/BackupRow.tsx` | à lire |  |
-| `src/features/settings/backupScheduler.ts` | à lire |  |
-| `src/features/settings/backupSchedulerStatus.ts` | à lire |  |
 | `src/features/settings/BackupSheet.css` | à lire |  |
 | `src/features/settings/BackupSheet.tsx` | à lire |  |
-| `src/features/settings/backupStore.ts` | à lire |  |
 | `src/features/settings/BodyScreen.css` | à lire |  |
 | `src/features/settings/BodyScreen.test.tsx` | à lire |  |
 | `src/features/settings/BodyScreen.tsx` | à lire |  |
 | `src/features/settings/ExportFull.test.tsx` | à lire |  |
 | `src/features/settings/ExportImportScreen.test.tsx` | à lire |  |
 | `src/features/settings/ExportImportScreen.tsx` | à lire |  |
-| `src/features/settings/healthBodyImport/index.ts` | à lire |  |
-| `src/features/settings/healthBodyImport/service.test.ts` | à lire |  |
-| `src/features/settings/healthBodyImport/service.ts` | à lire |  |
 | `src/features/settings/HealthBodyImportSection.test.tsx` | à lire |  |
 | `src/features/settings/HealthBodyImportSection.tsx` | à lire |  |
-| `src/features/settings/index.ts` | à lire |  |
 | `src/features/settings/LinkRow.tsx` | à lire |  |
-| `src/features/settings/logs/logExport.ts` | à lire |  |
-| `src/features/settings/logs/logsQa.test.tsx` | à lire |  |
-| `src/features/settings/logs/logsRow.test.tsx` | à lire |  |
-| `src/features/settings/logs/LogsScreen.css` | à lire |  |
-| `src/features/settings/logs/LogsScreen.test.tsx` | à lire |  |
-| `src/features/settings/logs/LogsScreen.tsx` | à lire |  |
-| `src/features/settings/logs/logsUnavailable.test.tsx` | à lire |  |
-| `src/features/settings/logs/sentinel.test.tsx` | à lire |  |
-| `src/features/settings/logs/syncReport.test.ts` | à lire |  |
-| `src/features/settings/logs/syncReport.ts` | à lire |  |
-| `src/features/settings/logs/useLogJournal.ts` | à lire |  |
 | `src/features/settings/PlusErgo02.test.tsx` | à lire |  |
 | `src/features/settings/ProfileCard.tsx` | à lire |  |
-| `src/features/settings/prog01AfterMerge.test.tsx` | à lire |  |
-| `src/features/settings/recoveryImport/afterRecompute.test.ts` | à lire |  |
-| `src/features/settings/recoveryImport/index.ts` | à lire |  |
-| `src/features/settings/recoveryImport/service.test.ts` | à lire |  |
-| `src/features/settings/recoveryImport/service.ts` | à lire |  |
-| `src/features/settings/recoveryImport/statusMessage.test.ts` | à lire |  |
-| `src/features/settings/recoveryImport/statusMessage.ts` | à lire |  |
-| `src/features/settings/recoveryImport/triggers.test.ts` | à lire |  |
 | `src/features/settings/RecoveryImportSection.test.tsx` | à lire |  |
 | `src/features/settings/RecoveryImportSection.tsx` | à lire |  |
 | `src/features/settings/RecoveryNotificationsSection.css` | à lire |  |
@@ -952,14 +1157,6 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/settings/RecoveryNotificationsSection.tsx` | à lire |  |
 | `src/features/settings/ResetDataScreen.test.tsx` | à lire |  |
 | `src/features/settings/ResetDataScreen.tsx` | à lire |  |
-| `src/features/settings/restoreFlow.ts` | à lire |  |
-| `src/features/settings/restoreIos.test.tsx` | à lire |  |
-| `src/features/settings/restoreMemo.ts` | à lire |  |
-| `src/features/settings/restoreMemoPeek.ts` | à lire |  |
-| `src/features/settings/restoreQa.closed.test.tsx` | à lire |  |
-| `src/features/settings/restoreQa.sheet.test.tsx` | à lire |  |
-| `src/features/settings/restoreQuiesce.ts` | à lire |  |
-| `src/features/settings/restoreQuiet.test.ts` | à lire |  |
 | `src/features/settings/SecuritySection.tsx` | à lire |  |
 | `src/features/settings/SettingsPanels.tsx` | à lire |  |
 | `src/features/settings/SettingsPc.test.tsx` | à lire |  |
@@ -968,28 +1165,67 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/settings/SettingsScreen.test.tsx` | à lire |  |
 | `src/features/settings/SettingsScreen.tsx` | à lire |  |
 | `src/features/settings/SettingsScreenPc.tsx` | à lire |  |
+| `src/features/settings/SigningAbout.dom.test.tsx` | à lire |  |
+| `src/features/settings/TimerTestRow.test.tsx` | à lire |  |
+| `src/features/settings/TimerTestRow.tsx` | à lire |  |
+| `src/features/settings/appearance.ts` | à lire |  |
+| `src/features/settings/backup.test.tsx` | à lire |  |
+| `src/features/settings/backupLabels.test.ts` | à lire |  |
+| `src/features/settings/backupLabels.ts` | à lire |  |
+| `src/features/settings/backupOrigin.sheet.test.tsx` | à lire |  |
+| `src/features/settings/backupScheduler.ts` | à lire |  |
+| `src/features/settings/backupSchedulerStatus.ts` | à lire |  |
+| `src/features/settings/backupStore.ts` | à lire |  |
+| `src/features/settings/healthBodyImport/index.ts` | à lire |  |
+| `src/features/settings/healthBodyImport/service.test.ts` | à lire |  |
+| `src/features/settings/healthBodyImport/service.ts` | à lire |  |
+| `src/features/settings/index.ts` | à lire |  |
+| `src/features/settings/logs/LogsScreen.css` | à lire |  |
+| `src/features/settings/logs/LogsScreen.test.tsx` | à lire |  |
+| `src/features/settings/logs/LogsScreen.tsx` | à lire |  |
+| `src/features/settings/logs/logExport.ts` | à lire |  |
+| `src/features/settings/logs/logsQa.test.tsx` | à lire |  |
+| `src/features/settings/logs/logsRow.test.tsx` | à lire |  |
+| `src/features/settings/logs/logsUnavailable.test.tsx` | à lire |  |
+| `src/features/settings/logs/sentinel.test.tsx` | à lire |  |
+| `src/features/settings/logs/syncReport.test.ts` | à lire |  |
+| `src/features/settings/logs/syncReport.ts` | à lire |  |
+| `src/features/settings/logs/useLogJournal.ts` | à lire |  |
+| `src/features/settings/prog01AfterMerge.test.tsx` | à lire |  |
+| `src/features/settings/recoveryImport/afterRecompute.test.ts` | à lire |  |
+| `src/features/settings/recoveryImport/index.ts` | à lire |  |
+| `src/features/settings/recoveryImport/service.test.ts` | à lire |  |
+| `src/features/settings/recoveryImport/service.ts` | à lire |  |
+| `src/features/settings/recoveryImport/statusMessage.test.ts` | à lire |  |
+| `src/features/settings/recoveryImport/statusMessage.ts` | à lire |  |
+| `src/features/settings/recoveryImport/triggers.test.ts` | à lire |  |
+| `src/features/settings/restoreFlow.ts` | à lire |  |
+| `src/features/settings/restoreIos.test.tsx` | à lire |  |
+| `src/features/settings/restoreMemo.ts` | à lire |  |
+| `src/features/settings/restoreMemoPeek.ts` | à lire |  |
+| `src/features/settings/restoreQa.closed.test.tsx` | à lire |  |
+| `src/features/settings/restoreQa.sheet.test.tsx` | à lire |  |
+| `src/features/settings/restoreQuiesce.ts` | à lire |  |
+| `src/features/settings/restoreQuiet.test.ts` | à lire |  |
 | `src/features/settings/settingsStore.ts` | à lire |  |
 | `src/features/settings/settingsUseCases.test.ts` | à lire |  |
 | `src/features/settings/settingsUseCases.ts` | à lire |  |
-| `src/features/settings/SigningAbout.dom.test.tsx` | à lire |  |
 | `src/features/settings/syntheticTimer.test.ts` | à lire |  |
 | `src/features/settings/syntheticTimer.ts` | à lire |  |
 | `src/features/settings/theme.test.ts` | à lire |  |
 | `src/features/settings/theme.ts` | lu | Partie 1 : Import dynamique Tauri hors façade à consigner ; exceptions ignorées explicitement pour barre de titre facultative. |
 | `src/features/settings/themeInit.test.tsx` | à lire |  |
-| `src/features/settings/TimerTestRow.test.tsx` | à lire |  |
-| `src/features/settings/TimerTestRow.tsx` | à lire |  |
 | `src/features/settings/useBackupLabelContext.ts` | à lire |  |
 | `src/features/settings/useSyncValue.ts` | à lire |  |
-| `src/features/shortcuts/index.ts` | à lire |  |
-| `src/features/shortcuts/registerShellShortcuts.ts` | à lire |  |
-| `src/features/shortcuts/shortcuts.dom.test.tsx` | à lire |  |
 | `src/features/shortcuts/ShortcutsHelp.css` | à lire |  |
 | `src/features/shortcuts/ShortcutsHelp.tsx` | à lire |  |
 | `src/features/shortcuts/ShortcutsSettingsSection.css` | à lire |  |
 | `src/features/shortcuts/ShortcutsSettingsSection.tsx` | à lire |  |
-| `src/features/signing/requestPermission.ts` | à lire |  |
+| `src/features/shortcuts/index.ts` | à lire |  |
+| `src/features/shortcuts/registerShellShortcuts.ts` | à lire |  |
+| `src/features/shortcuts/shortcuts.dom.test.tsx` | à lire |  |
 | `src/features/signing/SigningAbout.tsx` | à lire |  |
+| `src/features/signing/requestPermission.ts` | à lire |  |
 | `src/features/signing/signingNotice.test.ts` | à lire |  |
 | `src/features/signing/signingNotice.ts` | à lire |  |
 | `src/features/signing/signingNoticeQa.test.ts` | à lire |  |
@@ -1001,68 +1237,19 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/strength/StrengthScore.test.tsx` | à lire |  |
 | `src/features/strength/StrengthScore.tsx` | à lire |  |
 | `src/features/sync/CarryReport.css` | à lire |  |
-| `src/features/sync/carryReportBanner.test.tsx` | à lire |  |
-| `src/features/sync/carryReportBannerLine.ts` | à lire |  |
-| `src/features/sync/carryReportBannerRace.test.ts` | à lire |  |
-| `src/features/sync/carryReportLoadFailure.test.tsx` | à lire |  |
-| `src/features/sync/carryReportOpen.ts` | à lire |  |
-| `src/features/sync/carryReportReview2.test.tsx` | à lire |  |
-| `src/features/sync/carryReportScenario.test.tsx` | à lire |  |
-| `src/features/sync/carryReportSheet.test.tsx` | à lire |  |
 | `src/features/sync/CarryReportSheet.tsx` | à lire |  |
-| `src/features/sync/carryReportText.ts` | à lire |  |
-| `src/features/sync/carryWarnings.test.tsx` | à lire |  |
-| `src/features/sync/conflictLabels.test.ts` | à lire |  |
 | `src/features/sync/ConflictList.css` | à lire |  |
 | `src/features/sync/ConflictList.test.tsx` | à lire |  |
 | `src/features/sync/ConflictList.tsx` | à lire |  |
-| `src/features/sync/conflictText.ts` | à lire |  |
-| `src/features/sync/deviceNames.test.tsx` | à lire |  |
-| `src/features/sync/failureKinds.ts` | à lire |  |
-| `src/features/sync/finalRemarks.test.tsx` | à lire |  |
-| `src/features/sync/forgetBanner.test.tsx` | à lire |  |
-| `src/features/sync/forgetBannerQa.test.tsx` | à lire |  |
 | `src/features/sync/ForgetDeviceDialog.tsx` | à lire |  |
-| `src/features/sync/forgetText.ts` | à lire |  |
 | `src/features/sync/IosPairingRow.tsx` | à lire |  |
 | `src/features/sync/IosPairingScreen.css` | à lire |  |
 | `src/features/sync/IosPairingScreen.tsx` | à lire |  |
 | `src/features/sync/JoinProgress.tsx` | à lire |  |
-| `src/features/sync/keyPresence.ts` | à lire |  |
-| `src/features/sync/olderDeviceBanner.test.tsx` | à lire |  |
-| `src/features/sync/olderDeviceText.retry.test.tsx` | à lire |  |
-| `src/features/sync/pairingDefects.test.tsx` | à lire |  |
-| `src/features/sync/pairingHub.ts` | à lire |  |
-| `src/features/sync/pairingMatrix.test.tsx` | à lire |  |
-| `src/features/sync/pairingReview17.test.tsx` | à lire |  |
-| `src/features/sync/pairingScreens.test.tsx` | à lire |  |
-| `src/features/sync/pairingStatus.ts` | à lire |  |
-| `src/features/sync/pairing-window/main.tsx` | à lire |  |
-| `src/features/sync/pairing-window/pairing.css` | à lire |  |
-| `src/features/sync/pairing-window/pairingPlatform.ts` | à lire |  |
-| `src/features/sync/pairing-window/pairingQa.test.tsx` | à lire |  |
-| `src/features/sync/pairing-window/pairingText.ts` | à lire |  |
-| `src/features/sync/pairing-window/PairingView.test.tsx` | à lire |  |
-| `src/features/sync/pairing-window/PairingView.tsx` | à lire |  |
-| `src/features/sync/pairing-window/pairingWindowStates.test.tsx` | à lire |  |
-| `src/features/sync/pairing-window/RecoveryKeyEntry.tsx` | à lire |  |
-| `src/features/sync/publishBlockedCause.test.tsx` | à lire |  |
-| `src/features/sync/quit.test.ts` | à lire |  |
-| `src/features/sync/reloadRetry.ts` | à lire |  |
-| `src/features/sync/remoteChanges.ts` | à lire |  |
-| `src/features/sync/resetBanner.test.tsx` | à lire |  |
-| `src/features/sync/resetReason.ts` | à lire |  |
 | `src/features/sync/ResetSyncDialog.tsx` | à lire |  |
-| `src/features/sync/resetText.ts` | à lire |  |
 | `src/features/sync/RestoreChoiceDialog.tsx` | à lire |  |
-| `src/features/sync/restoreChoiceHost.test.tsx` | à lire |  |
 | `src/features/sync/RestoreChoiceHost.tsx` | à lire |  |
 | `src/features/sync/RestoreMarkerResume.tsx` | à lire |  |
-| `src/features/sync/segmentGapText.test.tsx` | à lire |  |
-| `src/features/sync/startSync.test.tsx` | à lire |  |
-| `src/features/sync/startSync.ts` | à lire |  |
-| `src/features/sync/startSyncQa.test.tsx` | à lire |  |
-| `src/features/sync/syncConflictUseCases.ts` | à lire |  |
 | `src/features/sync/SyncDetailsCarryReport.tsx` | à lire |  |
 | `src/features/sync/SyncDetailsCarryReportHost.tsx` | à lire |  |
 | `src/features/sync/SyncDetailsConflicts.tsx` | à lire |  |
@@ -1088,21 +1275,70 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/sync/SyncDetailsVersion.test.tsx` | à lire |  |
 | `src/features/sync/SyncDetailsVersion.tsx` | à lire |  |
 | `src/features/sync/SyncDeviceName.tsx` | à lire |  |
-| `src/features/sync/syncedData.test.tsx` | à lire |  |
-| `src/features/sync/syncI18nQa.test.ts` | à lire |  |
 | `src/features/sync/SyncNowButton.test.tsx` | à lire |  |
 | `src/features/sync/SyncNowButton.tsx` | à lire |  |
-| `src/features/sync/syncQa.test.tsx` | à lire |  |
 | `src/features/sync/SyncRefonte.test.tsx` | à lire |  |
-| `src/features/sync/syncRestoreControl.ts` | à lire |  |
-| `src/features/sync/syncRestoreState.ts` | à lire |  |
 | `src/features/sync/SyncScreens.test.tsx` | à lire |  |
 | `src/features/sync/SyncSettingsSection.css` | à lire |  |
 | `src/features/sync/SyncSettingsSection.test.tsx` | à lire |  |
 | `src/features/sync/SyncSettingsSection.tsx` | à lire |  |
 | `src/features/sync/SyncStatusLine.tsx` | à lire |  |
+| `src/features/sync/carryReportBanner.test.tsx` | à lire |  |
+| `src/features/sync/carryReportBannerLine.ts` | à lire |  |
+| `src/features/sync/carryReportBannerRace.test.ts` | à lire |  |
+| `src/features/sync/carryReportLoadFailure.test.tsx` | à lire |  |
+| `src/features/sync/carryReportOpen.ts` | à lire |  |
+| `src/features/sync/carryReportReview2.test.tsx` | à lire |  |
+| `src/features/sync/carryReportScenario.test.tsx` | à lire |  |
+| `src/features/sync/carryReportSheet.test.tsx` | à lire |  |
+| `src/features/sync/carryReportText.ts` | à lire |  |
+| `src/features/sync/carryWarnings.test.tsx` | à lire |  |
+| `src/features/sync/conflictLabels.test.ts` | à lire |  |
+| `src/features/sync/conflictText.ts` | à lire |  |
+| `src/features/sync/deviceNames.test.tsx` | à lire |  |
+| `src/features/sync/failureKinds.ts` | à lire |  |
+| `src/features/sync/finalRemarks.test.tsx` | à lire |  |
+| `src/features/sync/forgetBanner.test.tsx` | à lire |  |
+| `src/features/sync/forgetBannerQa.test.tsx` | à lire |  |
+| `src/features/sync/forgetText.ts` | à lire |  |
+| `src/features/sync/keyPresence.ts` | à lire |  |
+| `src/features/sync/olderDeviceBanner.test.tsx` | à lire |  |
+| `src/features/sync/olderDeviceText.retry.test.tsx` | à lire |  |
+| `src/features/sync/pairing-window/PairingView.test.tsx` | à lire |  |
+| `src/features/sync/pairing-window/PairingView.tsx` | à lire |  |
+| `src/features/sync/pairing-window/RecoveryKeyEntry.tsx` | à lire |  |
+| `src/features/sync/pairing-window/main.tsx` | lu | Partie 1 : Entrées et initialisation du thème lues ; fenêtre pairing distincte sans StrictMode ; thème système à vérifier partie 7c. |
+| `src/features/sync/pairing-window/pairing.css` | à lire |  |
+| `src/features/sync/pairing-window/pairingPlatform.ts` | à lire |  |
+| `src/features/sync/pairing-window/pairingQa.test.tsx` | à lire |  |
+| `src/features/sync/pairing-window/pairingText.ts` | à lire |  |
+| `src/features/sync/pairing-window/pairingWindowStates.test.tsx` | à lire |  |
+| `src/features/sync/pairingDefects.test.tsx` | à lire |  |
+| `src/features/sync/pairingHub.ts` | à lire |  |
+| `src/features/sync/pairingMatrix.test.tsx` | à lire |  |
+| `src/features/sync/pairingReview17.test.tsx` | à lire |  |
+| `src/features/sync/pairingScreens.test.tsx` | à lire |  |
+| `src/features/sync/pairingStatus.ts` | à lire |  |
+| `src/features/sync/publishBlockedCause.test.tsx` | à lire |  |
+| `src/features/sync/quit.test.ts` | à lire |  |
+| `src/features/sync/reloadRetry.ts` | à lire |  |
+| `src/features/sync/remoteChanges.ts` | à lire |  |
+| `src/features/sync/resetBanner.test.tsx` | à lire |  |
+| `src/features/sync/resetReason.ts` | à lire |  |
+| `src/features/sync/resetText.ts` | à lire |  |
+| `src/features/sync/restoreChoiceHost.test.tsx` | à lire |  |
+| `src/features/sync/segmentGapText.test.tsx` | à lire |  |
+| `src/features/sync/startSync.test.tsx` | à lire |  |
+| `src/features/sync/startSync.ts` | à lire |  |
+| `src/features/sync/startSyncQa.test.tsx` | à lire |  |
+| `src/features/sync/syncConflictUseCases.ts` | à lire |  |
+| `src/features/sync/syncI18nQa.test.ts` | à lire |  |
+| `src/features/sync/syncQa.test.tsx` | à lire |  |
+| `src/features/sync/syncRestoreControl.ts` | à lire |  |
+| `src/features/sync/syncRestoreState.ts` | à lire |  |
 | `src/features/sync/syncStore.ts` | à lire |  |
 | `src/features/sync/syncText.ts` | à lire |  |
+| `src/features/sync/syncedData.test.tsx` | à lire |  |
 | `src/features/sync/testKit.ts` | à lire |  |
 | `src/features/sync/waitingLong.test.tsx` | à lire |  |
 | `src/features/sync/yIos01.test.tsx` | à lire |  |
@@ -1110,19 +1346,27 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/sync/yIos02Pairing.test.tsx` | à lire |  |
 | `src/features/sync/yTech02Warnings.test.tsx` | à lire |  |
 | `src/features/sync/yTech02WarningsQa.test.tsx` | à lire |  |
+| `src/features/training/EquipmentView.tsx` | à lire |  |
+| `src/features/training/Ergo02Load.test.tsx` | à lire |  |
+| `src/features/training/Ergo02Screens.test.tsx` | à lire |  |
+| `src/features/training/LibraryView.tsx` | à lire |  |
+| `src/features/training/RoutineCircuit.test.tsx` | à lire |  |
+| `src/features/training/RoutineCircuitUi.tsx` | à lire |  |
+| `src/features/training/RoutineReorder.test.tsx` | à lire |  |
+| `src/features/training/RoutinesView.tsx` | à lire |  |
+| `src/features/training/TrainingScreen.css` | à lire |  |
+| `src/features/training/TrainingScreen.test.tsx` | à lire |  |
+| `src/features/training/TrainingScreen.tsx` | à lire |  |
 | `src/features/training/content.test.ts` | à lire |  |
 | `src/features/training/content.ts` | à lire |  |
 | `src/features/training/content02.originals.json` | à lire |  |
 | `src/features/training/content02.test.ts` | à lire |  |
-| `src/features/training/cycle/currentCycle.ts` | à lire |  |
 | `src/features/training/cycle/CycleView.css` | à lire |  |
 | `src/features/training/cycle/CycleView.test.tsx` | à lire |  |
 | `src/features/training/cycle/CycleView.tsx` | à lire |  |
+| `src/features/training/cycle/currentCycle.ts` | à lire |  |
 | `src/features/training/cycle/sessionLink.test.ts` | à lire |  |
 | `src/features/training/cycle/sessionLink.ts` | à lire |  |
-| `src/features/training/EquipmentView.tsx` | à lire |  |
-| `src/features/training/Ergo02Load.test.tsx` | à lire |  |
-| `src/features/training/Ergo02Screens.test.tsx` | à lire |  |
 | `src/features/training/history/History.css` | à lire |  |
 | `src/features/training/history/History.test.tsx` | à lire |  |
 | `src/features/training/history/HistoryDetail.tsx` | à lire |  |
@@ -1134,17 +1378,12 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/training/labels.ts` | à lire |  |
 | `src/features/training/library/ExerciseSheetStats.tsx` | à lire |  |
 | `src/features/training/library/Sheet.css` | à lire |  |
-| `src/features/training/LibraryView.tsx` | à lire |  |
 | `src/features/training/loadDisplay.test.ts` | à lire |  |
 | `src/features/training/loadDisplay.ts` | à lire |  |
 | `src/features/training/media/ExerciseMedia.css` | à lire |  |
 | `src/features/training/media/ExerciseMedia.test.tsx` | à lire |  |
 | `src/features/training/media/ExerciseMedia.tsx` | à lire |  |
 | `src/features/training/media/exerciseMediaFiles.ts` | à lire |  |
-| `src/features/training/RoutineCircuit.test.tsx` | à lire |  |
-| `src/features/training/RoutineCircuitUi.tsx` | à lire |  |
-| `src/features/training/RoutineReorder.test.tsx` | à lire |  |
-| `src/features/training/RoutinesView.tsx` | à lire |  |
 | `src/features/training/session/ActiveSession.tsx` | à lire |  |
 | `src/features/training/session/Circuit.css` | à lire |  |
 | `src/features/training/session/Circuit.test.tsx` | à lire |  |
@@ -1164,17 +1403,11 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/training/session/GeneratedSession.css` | à lire |  |
 | `src/features/training/session/GeneratedSession.test.tsx` | à lire |  |
 | `src/features/training/session/GeneratedSession.tsx` | à lire |  |
-| `src/features/training/session/generationInput.test.ts` | à lire |  |
-| `src/features/training/session/generationInput.ts` | à lire |  |
-| `src/features/training/session/prescriptionContext.ts` | à lire |  |
 | `src/features/training/session/Progression.css` | à lire |  |
 | `src/features/training/session/RecoverySession.css` | à lire |  |
 | `src/features/training/session/RecoverySession.tsx` | à lire |  |
 | `src/features/training/session/RecoverySplitProposed.test.tsx` | à lire |  |
 | `src/features/training/session/RedDay.test.tsx` | à lire |  |
-| `src/features/training/session/redDayState.ts` | à lire |  |
-| `src/features/training/session/restTimer.test.ts` | à lire |  |
-| `src/features/training/session/restTimer.ts` | à lire |  |
 | `src/features/training/session/Session.css` | à lire |  |
 | `src/features/training/session/SessionClosure.test.tsx` | à lire |  |
 | `src/features/training/session/SessionScreen.test.tsx` | à lire |  |
@@ -1187,19 +1420,22 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/features/training/session/TodaySessionCycle.test.tsx` | à lire |  |
 | `src/features/training/session/TodaySessionPc.test.tsx` | à lire |  |
 | `src/features/training/session/TodaySessionPreview.test.tsx` | à lire |  |
-| `src/features/training/session/todaySessionPreview.ts` | à lire |  |
 | `src/features/training/session/TodaySessionUnreadable.test.tsx` | à lire |  |
 | `src/features/training/session/WorkoutSummary.tsx` | à lire |  |
+| `src/features/training/session/generationInput.test.ts` | à lire |  |
+| `src/features/training/session/generationInput.ts` | à lire |  |
+| `src/features/training/session/prescriptionContext.ts` | à lire |  |
+| `src/features/training/session/redDayState.ts` | à lire |  |
+| `src/features/training/session/restTimer.test.ts` | à lire |  |
+| `src/features/training/session/restTimer.ts` | à lire |  |
+| `src/features/training/session/todaySessionPreview.ts` | à lire |  |
 | `src/features/training/trainingNavigation.test.tsx` | à lire |  |
-| `src/features/training/TrainingScreen.css` | à lire |  |
-| `src/features/training/TrainingScreen.test.tsx` | à lire |  |
-| `src/features/training/TrainingScreen.tsx` | à lire |  |
 | `src/features/training/trainingState.test.ts` | à lire |  |
 | `src/features/training/trainingState.ts` | à lire |  |
-| `src/features/updater/index.ts` | à lire |  |
 | `src/features/updater/UpdateBanner.css` | à lire |  |
 | `src/features/updater/UpdateBanner.test.tsx` | à lire |  |
 | `src/features/updater/UpdateBanner.tsx` | à lire |  |
+| `src/features/updater/index.ts` | à lire |  |
 | `src/features/updater/updateChecks.ts` | à lire |  |
 | `src/features/updater/updater.test.ts` | à lire |  |
 | `src/features/updater/updaterNoPlugin.test.ts` | à lire |  |
@@ -1228,9 +1464,9 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/i18n/formatToday.test.ts` | à lire |  |
 | `src/i18n/formatWeek.test.ts` | à lire |  |
 | `src/i18n/formatWeekday.ergo03.test.ts` | à lire |  |
-| `src/i18n/fr.appearance.ts` | à lire |  |
 | `src/i18n/fr.appUpdate.ts` | à lire |  |
 | `src/i18n/fr.appUpdateRestore.ts` | à lire |  |
+| `src/i18n/fr.appearance.ts` | à lire |  |
 | `src/i18n/fr.backup.ts` | à lire |  |
 | `src/i18n/fr.backupRestore.ts` | à lire |  |
 | `src/i18n/fr.body.ts` | à lire |  |
@@ -1332,7 +1568,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/i18n/types.ts` | à lire |  |
 | `src/i18n/unusedKeys.test.ts` | à lire |  |
 | `src/i18n/workoutReplayText.ts` | à lire |  |
-| `src/main.tsx` | à lire |  |
+| `src/main.tsx` | lu | Partie 1 : Composition, ordre des attentes, publication des erreurs et nettoyage lus ; réintégration/garde à approfondir en parties 2/3. |
 | `src/platform/appVersion.test.ts` | à lire |  |
 | `src/platform/appVersion.ts` | à lire |  |
 | `src/platform/backup/backup.test.ts` | à lire |  |
@@ -1344,7 +1580,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/platform/backup/recoveryAvailable.ts` | à lire |  |
 | `src/platform/backup/recoveryMessage.test.ts` | à lire |  |
 | `src/platform/backup/startupRecovery.ts` | à lire |  |
-| `src/platform/backup/tauriBackup.ts` | à lire |  |
+| `src/platform/backup/tauriBackup.ts` | lu | Partie 1 : Port, normalisation des erreurs et ordre check/prepare/close/restore lus ; garanties Rust réservées parties 2/8. |
 | `src/platform/backup/triggers.test.ts` | à lire |  |
 | `src/platform/backup/types.ts` | à lire |  |
 | `src/platform/barcode/index.ts` | à lire |  |
@@ -1356,7 +1592,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/platform/biometric/tauriBiometric.ts` | à lire |  |
 | `src/platform/biometric/types.ts` | à lire |  |
 | `src/platform/capture.ios.consistency.test.ts` | à lire |  |
-| `src/platform/database.ts` | à lire |  |
+| `src/platform/database.ts` | lu | Partie 1 : Façades, sélection runtime/OS, garde de démarrage et contrat du driver lus ; comportement natif réservé partie 8. |
 | `src/platform/dbDiagnostics.ts` | à lire |  |
 | `src/platform/desktop/consistency.test.ts` | à lire |  |
 | `src/platform/desktop/index.test.ts` | à lire |  |
@@ -1395,7 +1631,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/platform/healthkit/types.ts` | à lire |  |
 | `src/platform/healthkit/unavailable.ts` | à lire |  |
 | `src/platform/healthkit/validation.ts` | à lire |  |
-| `src/platform/index.ts` | à lire |  |
+| `src/platform/index.ts` | lu | Partie 1 : Façades, sélection runtime/OS, garde de démarrage et contrat du driver lus ; comportement natif réservé partie 8. |
 | `src/platform/liveActivity/index.ts` | à lire |  |
 | `src/platform/liveActivity/liveActivity.test.ts` | à lire |  |
 | `src/platform/liveActivity/liveActivitySources.test.ts` | à lire |  |
@@ -1451,7 +1687,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/platform/privacyShield/tauriPrivacyShield.ts` | à lire |  |
 | `src/platform/quiet.ts` | à lire |  |
 | `src/platform/relaunch.ts` | à lire |  |
-| `src/platform/runtime.ts` | à lire |  |
+| `src/platform/runtime.ts` | lu | Partie 1 : Façades, sélection runtime/OS, garde de démarrage et contrat du driver lus ; comportement natif réservé partie 8. |
 | `src/platform/shortcutFiles/index.ts` | à lire |  |
 | `src/platform/shortcutFiles/shortcutFiles.test.ts` | à lire |  |
 | `src/platform/signing/fake.ts` | à lire |  |
@@ -1490,7 +1726,7 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/platform/tauri/migrationBackup.test.ts` | à lire |  |
 | `src/platform/tauri/migrationBackup.ts` | lu | Partie 1 : PRAGMA checkpoint, busy=0 exigé, invocation backup et propagation d'erreur ; analyse des sauvegardes réservée partie 2. |
 | `src/platform/tauri/sqlDriver.test.ts` | à lire |  |
-| `src/platform/tauri/sqlDriver.ts` | à lire |  |
+| `src/platform/tauri/sqlDriver.ts` | lu | Partie 1 : Façades, sélection runtime/OS, garde de démarrage et contrat du driver lus ; comportement natif réservé partie 8. |
 | `src/platform/tauri/startupGate.test.ts` | à lire |  |
 | `src/platform/timeZone.ts` | à lire |  |
 | `src/sync/apply.ts` | à lire |  |
@@ -1516,8 +1752,8 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/sync/orphanEpoch.ts` | à lire |  |
 | `src/sync/ownDeletion.ts` | à lire |  |
 | `src/sync/publishDeferred.test.ts` | à lire |  |
-| `src/sync/publisher.ts` | à lire |  |
 | `src/sync/publishRotation.ts` | à lire |  |
+| `src/sync/publisher.ts` | à lire |  |
 | `src/sync/purge.ts` | à lire |  |
 | `src/sync/reader.ts` | à lire |  |
 | `src/sync/repair.ts` | à lire |  |
@@ -1543,23 +1779,17 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/ui/ConfirmDialog.css` | lu | Partie 0 : Voile hors tokens A-002 ; contraintes de largeur, safe area et débordement lues. |
 | `src/ui/ConfirmDialog.test.tsx` | à lire |  |
 | `src/ui/ConfirmDialog.tsx` | à lire |  |
-| `src/ui/ergo01bRules.test.ts` | à lire |  |
-| `src/ui/ergoRules.test.ts` | à lire |  |
 | `src/ui/ErgoShared.test.tsx` | à lire |  |
 | `src/ui/HeroFigure.tsx` | à lire |  |
 | `src/ui/Icon.test.tsx` | à lire |  |
 | `src/ui/Icon.tsx` | à lire |  |
-| `src/ui/iconStyle.ts` | à lire |  |
-| `src/ui/index.ts` | à lire |  |
 | `src/ui/Kbd.css` | à lire |  |
 | `src/ui/Kbd.test.tsx` | à lire |  |
 | `src/ui/Kbd.tsx` | à lire |  |
-| `src/ui/layoutRules.test.ts` | à lire |  |
 | `src/ui/ListSkeleton.css` | à lire |  |
 | `src/ui/ListSkeleton.tsx` | à lire |  |
 | `src/ui/MissingValue.test.tsx` | à lire |  |
 | `src/ui/MissingValue.tsx` | à lire |  |
-| `src/ui/mobileLayout.test.ts` | à lire |  |
 | `src/ui/Rule.tsx` | à lire |  |
 | `src/ui/SectionTitle.tsx` | à lire |  |
 | `src/ui/SegmentedControl.css` | à lire |  |
@@ -1580,6 +1810,17 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/ui/TabRail.css` | à lire |  |
 | `src/ui/TabRail.test.tsx` | à lire |  |
 | `src/ui/TabRail.tsx` | à lire |  |
+| `src/ui/Toast.css` | à lire |  |
+| `src/ui/Toast.test.tsx` | à lire |  |
+| `src/ui/Toast.tsx` | à lire |  |
+| `src/ui/WeekdayToggles.css` | à lire |  |
+| `src/ui/WeekdayToggles.tsx` | à lire |  |
+| `src/ui/ergo01bRules.test.ts` | à lire |  |
+| `src/ui/ergoRules.test.ts` | à lire |  |
+| `src/ui/iconStyle.ts` | à lire |  |
+| `src/ui/index.ts` | à lire |  |
+| `src/ui/layoutRules.test.ts` | à lire |  |
+| `src/ui/mobileLayout.test.ts` | à lire |  |
 | `src/ui/theme/charte.test.ts` | à lire |  |
 | `src/ui/theme/contrast.test.ts` | à lire |  |
 | `src/ui/theme/contrastCss.test.ts` | à lire |  |
@@ -1589,158 +1830,308 @@ SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
 | `src/ui/theme/noHardCodedColors.test.ts` | à lire |  |
 | `src/ui/theme/tokens.css` | à lire |  |
 | `src/ui/theme/tokens.test.ts` | à lire |  |
-| `src/ui/Toast.css` | à lire |  |
-| `src/ui/Toast.test.tsx` | à lire |  |
-| `src/ui/Toast.tsx` | à lire |  |
 | `src/ui/useFocusTrap.test.tsx` | à lire |  |
 | `src/ui/useFocusTrap.ts` | à lire |  |
 | `src/ui/useLayout.test.tsx` | à lire |  |
 | `src/ui/useLayout.ts` | à lire |  |
-| `src/ui/WeekdayToggles.css` | à lire |  |
-| `src/ui/WeekdayToggles.tsx` | à lire |  |
 | `src/vite-env.d.ts` | à lire |  |
-| `src-tauri/plugins/files/ios/Package.swift` | à lire |  |
-| `src-tauri/plugins/files/ios/Sources/CtFilesPlugin.swift` | à lire |  |
-| `src-tauri/plugins/folder-bookmark/ios/Package.swift` | à lire |  |
-| `src-tauri/plugins/folder-bookmark/ios/Sources/FolderBookmarkPlugin.swift` | à lire |  |
-| `src-tauri/plugins/haptics/ios/Package.swift` | à lire |  |
-| `src-tauri/plugins/haptics/ios/Sources/HapticsPlugin.swift` | à lire |  |
-| `src-tauri/plugins/healthkit/ios/Package.swift` | à lire |  |
-| `src-tauri/plugins/healthkit/ios/Sources/HealthKitPlugin.swift` | à lire |  |
-| `src-tauri/plugins/live-activity/ios/Package.swift` | à lire |  |
-| `src-tauri/plugins/live-activity/ios/Sources/LiveActivityPlugin.swift` | à lire |  |
-| `src-tauri/plugins/live-activity/ios/Sources/SpartiateTimerAttributes.swift` | à lire |  |
-| `src-tauri/plugins/notification-actions/ios/Package.swift` | à lire |  |
-| `src-tauri/plugins/notification-actions/ios/Sources/NotificationActionsPlugin.swift` | à lire |  |
-| `src-tauri/plugins/privacy-shield/ios/Package.swift` | à lire |  |
-| `src-tauri/plugins/privacy-shield/ios/Sources/PrivacyShieldPlugin.swift` | à lire |  |
-| `src-tauri/plugins/speech/ios/Package.swift` | à lire |  |
-| `src-tauri/plugins/speech/ios/Sources/SpeechPlugin.swift` | à lire |  |
-| `src-tauri/plugins/vision/ios/Package.swift` | à lire |  |
-| `src-tauri/plugins/vision/ios/Sources/VisionPlugin.swift` | à lire |  |
-| `src-tauri/src/applog.rs` | à lire |  |
-| `src-tauri/src/backup.rs` | à lire |  |
-| `src-tauri/src/backup_triggers.rs` | à lire |  |
-| `src-tauri/src/desktop.rs` | à lire |  |
-| `src-tauri/src/export.rs` | à lire |  |
-| `src-tauri/src/export_common.rs` | à lire |  |
-| `src-tauri/src/export_ios.rs` | à lire |  |
-| `src-tauri/src/healthkit.rs` | à lire |  |
-| `src-tauri/src/import.rs` | à lire |  |
-| `src-tauri/src/ios_setup.rs` | à lire |  |
-| `src-tauri/src/lib.rs` | à lire |  |
-| `src-tauri/src/live_activity.rs` | à lire |  |
-| `src-tauri/src/main.rs` | à lire |  |
-| `src-tauri/src/mobile_call.rs` | à lire |  |
-| `src-tauri/src/ocr/mod.rs` | à lire |  |
-| `src-tauri/src/ocr/vision.rs` | à lire |  |
-| `src-tauri/src/ocr/win.rs` | à lire |  |
-| `src-tauri/src/off.rs` | à lire |  |
-| `src-tauri/src/signing.rs` | à lire |  |
-| `src-tauri/src/speech/ios.rs` | à lire |  |
-| `src-tauri/src/speech/mod.rs` | à lire |  |
-| `src-tauri/src/startup_gate.rs` | à lire |  |
-| `src-tauri/src/sync/bookmark.rs` | à lire |  |
-| `src-tauri/src/sync/cloud_windows.rs` | à lire |  |
-| `src-tauri/src/sync/commands.rs` | à lire |  |
-| `src-tauri/src/sync/commands_ios.rs` | à lire |  |
-| `src-tauri/src/sync/consent.rs` | à lire |  |
-| `src-tauri/src/sync/consent_ios.rs` | à lire |  |
-| `src-tauri/src/sync/crypto.rs` | à lire |  |
-| `src-tauri/src/sync/files.rs` | à lire |  |
-| `src-tauri/src/sync/folder.rs` | à lire |  |
-| `src-tauri/src/sync/forget.rs` | à lire |  |
-| `src-tauri/src/sync/health.rs` | à lire |  |
-| `src-tauri/src/sync/limits.rs` | à lire |  |
-| `src-tauri/src/sync/marker.rs` | à lire |  |
-| `src-tauri/src/sync/mod.rs` | à lire |  |
-| `src-tauri/src/sync/names.rs` | à lire |  |
-| `src-tauri/src/sync/pairing.rs` | à lire |  |
-| `src-tauri/src/sync/reset.rs` | à lire |  |
-| `src-tauri/src/sync/service.rs` | à lire |  |
-| `src-tauri/src/sync/state.rs` | à lire |  |
-| `src-tauri/src/sync/store.rs` | à lire |  |
-| `src-tauri/src/vault.rs` | à lire |  |
-| `src-tauri/src/vault_ios.rs` | à lire |  |
-| `src-tauri/src/window_fit.rs` | à lire |  |
-| `src-tauri/vendor/sqlx-sqlite/.cargo_vcs_info.json` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/Cargo.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/Cargo.toml.orig` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/LICENSE-APACHE` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/LICENSE-MIT` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/PROVENANCE-SPARTIATE.md` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/any.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/arguments.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/column.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/connection/collation.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/connection/describe.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/connection/establish.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/connection/execute.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/connection/executor.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/connection/explain.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/connection/handle.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/connection/intmap.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/connection/mod.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/connection/preupdate_hook.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/connection/serialize.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/connection/worker.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/database.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/error.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/lib.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/logger.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/migrate.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/options/auto_vacuum.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/options/connect.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/options/journal_mode.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/options/locking_mode.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/options/mod.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/options/parse.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/options/synchronous.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/query_result.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/regexp.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/row.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/statement/handle.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/statement/mod.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/statement/unlock_notify.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/statement/virtual.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/testing/mod.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/transaction.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/type_checking.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/type_info.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/types/bool.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/types/bytes.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/types/chrono.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/types/float.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/types/int.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/types/json.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/types/mod.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/types/str.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/types/text.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/types/time.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/types/uint.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/types/uuid.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/sqlx-sqlite/src/value.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/api-iife.js` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/build.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/Cargo.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/LICENSE.spdx` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/LICENSE_APACHE-2.0` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/LICENSE_MIT` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/permissions/autogenerated/commands/close.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/permissions/autogenerated/commands/execute.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/permissions/autogenerated/commands/load.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/permissions/autogenerated/commands/select.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/permissions/autogenerated/reference.md` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/permissions/default.toml` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/permissions/schemas/schema.json` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/README.md` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/src/commands.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/src/decode/mod.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/src/decode/mysql.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/src/decode/postgres.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/src/decode/sqlite.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/src/error.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/src/guard.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/src/guard_tests.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/src/lib.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
-| `src-tauri/vendor/tauri-plugin-sql/src/wrapper.rs` | hors relecture | code tiers vendored, inventorié ; dépendances et correctifs locaux à contrôler séparément |
+| `tests/bundle/bundleMeasure.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/bundle/bundleMeasure.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/bundle/measureStart.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/bundle/pairingBundle.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/bundle/startBundle.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/bundle/startModules.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/bundle/startModules.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/D-01.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/FIX-092-onglets.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/I-02.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/I-03.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/I-04.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/I-06.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/I3-07-onboarding.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/I6-03b-routine-circuit.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/I6-05-complements.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/I6-06-cardio.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/P-04.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/RESET-01-repartir-de-zero.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/V0-7-1-mise-en-page.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/Y-IOS-01.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/Y-IOS-02-FIX-01.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/Y-IOS-02-parcours.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/Y-IOS-02.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/db-open-failure.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/globalSetup.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/helpers/app.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/helpers/backups.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/helpers/files.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/helpers/frames.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/helpers/layout.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/helpers/notifications.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/helpers/onboarding.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/helpers/settings.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/helpers/sync.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/helpers/today.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/layoutHelper.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/lot-f-qa.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/lot-f-screens.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/parcours/Y10-oublier-appareil.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/parcours/Y11-reinitialiser.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/perf-start.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/e2e/smoke.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0001_core_tables.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0002_task_done_at_index.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0003_task_series_template.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0004_task_discarded.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0005_external_calendar.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0006_routine_pause.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0007_pro_quiet_hours.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0008_checklist_icon.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0009_event_reminder_offsets.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0010_holiday.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0011_search_index.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0012_task_external_event.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0013_focus_session.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0014_focus_session_project.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0015_sync_tables.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0016_sync_natural_ids.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0017_calendar_account_username.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0018_apple_reminders.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/0019_epoch_carry_report.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/catalogue.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/index.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/isolation.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/naturalIds.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/legacy-schema/repairs.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/migrations/sample.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/nutrition/dayKit.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/nutrition/eightWeeks.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/pairingMatrixKit.tsx` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/pairingWorld.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/pendingRepositories.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/sync/forgetRandom.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/training/generation.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/training/index.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/training/mesocycle.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/training/progression.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/training/warmup.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/fixtures/training/workout.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/nsis/installerScript.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/setup/dom.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/setup/settle.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/sim/httpSim.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/sim/index.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/sim/ports.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/sim/syncCloudSim.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/sim/syncCodec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/sim/syncCrash.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/sim/syncDevice.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/sim/syncFolderSim.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/sim/syncOrphanSession.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/sim/syncStartup.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/sim/syncVectors.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/sim/syncVersions.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/smoke/nsisScript.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/smoke/pc-demarrage.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/smoke/pc-installeur.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/smoke/pixels.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/eslintGuards.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/smoke/nsisScript.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/smoke/pixels.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/smoke/smokeConf.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sqlFrontReference.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sqlPragmaScan.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/apply.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/applyFaultyRecord.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/capsRules.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/closedSegments.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/closedSegmentsQa.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/closedSegmentsSim.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/concurrentWrites.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/devSyncHook.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/kit.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/largeQueueResume.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/list.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/parcours10.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/publishFreesDatabase.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/qaList.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/qaPublisherSlices.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/qaRestore.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/qaRewriteDuringPublish.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/qaTwoDevices.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/restore.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/stampBeforeWrite.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/texts.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/conflicts/wholeRowDuringPublish.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/crashPoints.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/cycleJournal.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/deletions.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/deviceStatus.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/engine.property.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/engineCarryReportImport.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochCarry.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochCarryForget.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochCarryGuard.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochCarryInterface.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochCarryKit.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochCarryNewerOrder.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochCarryOptionB.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochCarryReplacedParent.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochCarryReplacedParentResume.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochCarryReplacedParentRules.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochCarryReport.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochCarryReportRules.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochCarryScenario.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/epochConcurrent.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/evictedHeadRotation.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/fallbackClock.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/firstPublicationCrashPoints.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/firstPublicationLoadFailure.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/fix0181/foodFavoriteCatalogue.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/fix0181/foodFavoriteSync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/forgetCancel.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/forgetDifferential.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/forgetHygiene.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/forgetInterrupt.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/forgetQa.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/forgetRegistry.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/forgetReplay.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/forgetScope.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/forgetSecondReview.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/forgetSeen.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/forgetSim.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/forgetSnapshotAuthor.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/memoryForget.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/retentionForget.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/forget/snapshotJson.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/healthFolderSeparation.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hideBarrier.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hideDeadline.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/cloudSimDeletions.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/evictedHeadReaders.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/fakesLoadFixtures.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/mixedOldEpochDeletion.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/ownDeletionReturn.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/readFailure.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/scenario1OldRule.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/scenario1Orphan.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/scenario2CrashBeforeState.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/scenario3ReadIo.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/scenario4DurableDelete.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/scenario5MuteFollowUp.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/scenario5MuteTransport.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/hostile/scenario6EvictedHeadSegment.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i0/catalogue.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i0/exportImport.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i0/profileWeight.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i0/weightIdentity.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i1/trainingTables.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i2/progressionSync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i3/mesocycleSync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i4/nutritionSync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i4/recipeSync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i5/recoverySync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i6/bodyProgressCatalogue.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i6/bodyProgressSync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i6/cardioCatalogue.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i6/cardioSync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i6/circuitSync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i6/healthBodySync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i6/recoveryFactorCatalogue.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i6/recoveryFactorSync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i6/routineCircuitSync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/i6/supplementSync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/manualSync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/offline.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/ownDeletionPersistence.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/pairing/join.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/pairing/joinAfterRecords.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/pairing/joinInterrupt.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/pairing/needsPairing.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/pairing/orphanEpoch.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/pairing/orphanRelisted.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/pairing/parcours11.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/pairing/stateDeletedInflight.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/pairing/stateTransitions.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/positions.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/positionsQa.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/publishRead.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/publisherRules.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/purgeKit.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/purgeNaturalIds.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/purgeRules.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetAdr18.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetConcurrent.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetExposure.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetHygiene.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetInterrupt.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetKit.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetLostClosed.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetMemory.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetMergeNullRow.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetOrder.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetQa.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetQaDefects.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetSim.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetSingle.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset/resetText.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset01/dataResetLocal.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset01/dataResetRowRule.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/reset01/dataResetSync.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/restore.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/restoreChoice.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/restoreOtherDevice.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/restoreThenForget.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/resumeCrash.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/rotationModuleLoad.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/segmentGaps.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/service.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/serviceBanners.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/sim/folderSimDeviceWait.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/snapshotGuards.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/snapshotRules.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/stateRewrites.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/stateRewritesQa.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/stateRewritesRules.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/storedQa.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/strayFiles.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/syncRepository.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/syncTestFiles.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/tombstoneProperties.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/twoDevices.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/versions/applyRecette.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/versions/failureVisible.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/versions/formatMajor.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/versions/olderWriter.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/versions/reintegrate.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/versions/reintegrateQa.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/versions/startupHook.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/versions/texts.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/versions/threeVersions.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/versions/twoVersions.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/visibleLosses.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/workoutClosure.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/workoutClosureReview.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/workoutJoinBefore.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/writeStateAfterSnapshot.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/yTech02.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/yTech02Epochs.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/yTech02Qa.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/sync/yTech02QaFinal.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/syncCodec.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/syncCodecQa.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/syncSeparation.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/theme/cssContrastKit.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/update/bookmarkKeychain.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/update/firstLaunch.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/update/publishedVersion.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/update/qaInterruptions.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/update/reintegrationIos.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/update/reviewBackupReuse.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/update/versionsPcIphone.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/unit/viteDevServer.test.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `tests/visual/capture.spec.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `vite.config.ts` | lu | Partie 1 : Gardes statiques, sideEffects, entrées et graphe du démarrage lus ; A-007 reproduit par sondes ESLint. |
+| `vitest.bundle.config.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `vitest.config.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `vitest.nsis.config.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
+| `vitest.perf.config.ts` | à lire | Ajout partie 1 : source suivie au tag absente de l’inventaire initial. |
