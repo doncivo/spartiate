@@ -9,6 +9,8 @@
  *   supprimées, dans aucun mode ; leurs lignes de l'archive sont comptées dans `skippedReadOnly` (elles reviennent de l'iPhone par la synchro).
  */
 
+import { localDateOfInstant } from '../donePeriod';
+import type { IsoDateTime } from '../types';
 import { TABLE_SINCE_SV, TRAINING_EXPORT_TABLES, trainingColumns, trainingRows, trainingTable, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable } from './archive';
 
 export type ImportMode = 'merge' | 'replace';
@@ -217,7 +219,7 @@ export function planImport(local: ExportData, incoming: ExportData, mode: Import
     const newestLocalDecision = keptLocal.map(decidedAt).sort().pop() ?? '';
     // FIX-0271 (D-314) : dernier jour couvert par une décision locale gardée : sa semaine, ou le jour LOCAL où elle a été prise (même calendrier
     // que la lecture de la cible en vigueur ; jamais la date UTC de l'instant).
-    const decidedDay = (iso: string): string => (iso === '' ? '' : iso.slice(0, 10));
+    const decidedDay = (iso: string): string => (iso === '' ? '' : localDateOfInstant(iso as IsoDateTime));
     const latestLocalDay = [...keptLocal.map((r) => String(r.values['week_start'] ?? '')), ...keptLocal.map((r) => decidedDay(decidedAt(r)))].sort().pop() ?? '';
     const ordered = [...trainingRows(incoming, table)].sort((a, b) => (table === 'nutrition_target' && decidedAt(a) !== decidedAt(b) ? (decidedAt(a) < decidedAt(b) ? -1 : 1) : a.id < b.id ? -1 : 1));
     for (const incomingRow of ordered) {
