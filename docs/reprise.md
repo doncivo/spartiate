@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-16 : **0.26.0** en publication (lot 0.26.0 terminé, docs/LOT-0.26.0.md ; schéma 19 inchangé). Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-313 dans docs/decisions.md.
+État au 2026-11-19 : **lot 0.27.0 en cours** (docs/LOT-0.27.0.md) sur 0.26.0 publiée (schéma 19). Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-315 dans docs/decisions.md.
 
 ## Rappel du 13/11
 
@@ -9,6 +9,7 @@
 
 ## Prochaines étapes
 
+00. **Lot 0.27.0** : AUDIT-USAGE fusionné (#149, docs/AUDIT-USAGE.md, 13 constats dont 7 écarts) ; FIX-0271 (#150, D-314) en revue ; PROG-05 (D-315) ; restent PROG-04 (schéma 20), FIX-0272, REL-0.27.0. Piège : aucun `prettier --write` (pas de configuration Prettier, le dépôt n'est pas au format Prettier). Worktrees sous `.codex-tmp/wt-<ticket>`.
 0. **Lot 0.26.0 terminé** (Ali, 16/11 : poursuivre même en cas de dépassement de budget) : fusionnés DOC-H21 (#141, D-292 à D-294), note GPS FIX-0242 (#144), MEDIA-02 (#142, D-300 à D-304, 101/196 images, 4 des 12 de la routine), ERGO-03 (#143, D-295 à D-298), PROG-03 (#145, D-305), STR-01 (#146, D-310 à D-313, H-37). REL-0.26.0 : tag v0.26.0, build-ios (publish=false), ios-v0.26.0. Le CHANGELOG 0.25.0 disait à tort que le GPS continue hors de l’écran Cardio : corrigé en 0.26.0. Worktree `.codex-tmp/wt-STR-01` verrouillé au retrait : à supprimer plus tard. Suivi : une décision reçue par la synchro peut masquer une cible future sans le dire (revue ERGO-03, pour sync-icloud).
 1. **Lot 0.25.0 terminé** (docs/LOT-0.25.0.md) : FIX-0242 (#134, D-276 à D-279), FIX-0241 (#135, D-280 à D-283), FIX-0243 (#136, D-284 à D-286), ERGO-02b (#137, D-287 à D-289), SYNC-01 (#138, D-290 validée, ADR 0018 accepté, avenant 37 de l'ADR 0011), FIX-0244 (#139, D-291 révisable). Départ 199 211 → 195 860 octets. Publication : REL-0.25.0, tag v0.25.0, build-ios (publish=false), ios-v0.25.0. Suivi : test instable `src/features/sync/syncedData.test.tsx` (« la pesée reçue remplace l'ancienne », délai de 1 s dépassé après `forgetBanner.test.tsx`, aussi sur main) ; limites M2 à M4 de l'ADR 0018 ; lecture des cibles futures hors transaction (FIX-0244, mineur).
 3. Constat d'Ali : « Pris » app en arrière-plan et tuée (H-36). Import de programme : I6-08 (docs/I6-08.md, non exécuté).

@@ -1,14 +1,27 @@
 import { tPlural } from '../../../i18n/plural';
 import { useCallback, useEffect, useState } from 'react';
 import { DEFAULT_GENERATION_CONFIG as CONFIG } from '../../../domain/training/config';
-import { anticipateDeload, changeNextWeeks, closeMesocycle, createMesocycleSpec, MESO_WEEK_CHOICES, nextMesocycleSpec, type MesocycleSpec, type MesocycleState, type WeekPlan } from '../../../domain/training/mesocycle';
+import {
+  anticipateDeload,
+  canApplyWeeksNow,
+  changeNextWeeks,
+  closeMesocycle,
+  createMesocycleSpec,
+  defaultCycleWeeks,
+  MESO_WEEK_CHOICES,
+  nextMesocycleSpec,
+  weeksNowSpec,
+  type MesocycleSpec,
+  type MesocycleState,
+  type WeekPlan,
+} from '../../../domain/training/mesocycle';
 import { pauseProgram, resumeProgram, resumeProposal } from '../../../domain/training/programPause';
 import type { Routine } from '../../../domain/training';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { MesocycleRecord } from '../../../db/repositories/mesocycleRepository';
 import { parseDraft } from '../../../domain/onboarding/draft';
 import { cycleDate, tCycle } from '../../../i18n/trainingCycleText';
-import { Button, SegmentedControl, Switch } from '../../../ui';
+import { Button, ConfirmDialog, SegmentedControl, Switch } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { loadCurrentCycle, localDayOf, type CurrentCycle } from './currentCycle';
 import './CycleView.css';
@@ -62,27 +75,51 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
   const [rampUp, setRampUp] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  // PROG-05 (D-315) : séances closes depuis le début du cycle en cours, et durée en attente de confirmation (semaine 1).
+  const [closedSince, setClosedSince] = useState(0);
+  const [pendingWeeks, setPendingWeeks] = useState<number | null>(null);
 
   const fetchCycle = useCallback(async () => {
-    const [current, routines, cycles, answers] = await Promise.all([
+    const [current, routines, cycles, answers, lastChoice, closed] = await Promise.all([
       loadCurrentCycle(access, today()),
       (await access.repos.trainingRoutines()).list(),
       (await access.repos.mesocycles()).list(),
       // PROG-01 (D-269 (7)) : durée et semaine de reprise de l'étape 7 de l'onboarding, valeurs du formulaire du premier cycle.
       access.repos.settings.get('onboarding.answers').catch(() => null),
+      access.repos.settings.get('training.cycleWeeks').catch(() => null),
+      (await access.repos.workouts()).listClosed(20),
     ]);
-    // ERGO-02b : premier cycle seulement (aucun cycle en cours ni clos) ; les cycles suivants gardent les valeurs par défaut.
+    // ERGO-02b : semaine de reprise de l'onboarding au premier cycle seulement (D-267 : elle ne se reprend jamais ensuite).
     const first = cycles.length === 0;
-    return { current, routines, answers: !first || answers === null || answers === undefined ? null : parseDraft(answers) };
+    const parsed = answers === null || answers === undefined ? null : parseDraft(answers);
+    // PROG-05 (D-315) : durée proposée = dernier réglage (réglage local, cycle le plus récent, onboarding, défaut).
+    const weeks = defaultCycleWeeks({ lastChoice, cycles, onboardingWeeks: parsed?.mesoWeeks ?? null }, CONFIG);
+    const start = current?.record.startDate ?? null;
+    const closedSince = start === null ? 0 : closed.filter((w) => w.endedAt !== null && localDayOf(Date.parse(w.endedAt)) >= start).length;
+    return { current, routines, answers: first ? parsed : null, weeks, closedSince };
   }, [access, today]);
-  const apply = useCallback(({ current, routines, answers }: { readonly current: CurrentCycle | null; readonly routines: readonly Routine[]; readonly answers?: ReturnType<typeof parseDraft> | null }): void => {
+  const apply = useCallback(
+    ({
+      current,
+      routines,
+      answers,
+      weeks: proposed,
+      closedSince: closedCount,
+    }: {
+      readonly current: CurrentCycle | null;
+      readonly routines: readonly Routine[];
+      readonly answers?: ReturnType<typeof parseDraft> | null;
+      readonly weeks: number | 'unlimited';
+      readonly closedSince: number;
+    }): void => {
     setLoad({ status: 'ready', current, routines });
-    if (answers) {
-      setWeeks(String(answers.mesoWeeks) as WeeksChoice);
-      setRampUp(answers.rampUp);
-    }
+    setClosedSince(closedCount);
+    setWeeks(String(proposed) as WeeksChoice);
+    if (answers) setRampUp(answers.rampUp);
     setRoutineId((id) => (routines.some((r) => r.id === id) ? id : (current?.record.routineId ?? routines[0]?.id ?? '')));
-  }, []);
+    },
+    [],
+  );
   const reload = async (): Promise<void> => {
     try {
       apply(await fetchCycle());
@@ -125,6 +162,16 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
     }
   }
   const saving = (record: MesocycleRecord, spec: MesocycleSpec | null) => (spec === null ? null : async (repos: DataAccess['repos']) => void (await (await repos.mesocycles()).save(record.id, spec)));
+  /** PROG-05 (D-315) : enregistre la durée et la retient comme dernier réglage, dans la même transaction. */
+  const savingWeeks = (record: MesocycleRecord, spec: MesocycleSpec | null, chosen: number) => {
+    const work = saving(record, spec);
+    return work === null
+      ? null
+      : async (repos: DataAccess['repos']) => {
+          await work(repos);
+          await repos.settings.set('training.cycleWeeks', chosen);
+        };
+  };
   /** Clôt `record` (bilan) puis commence `next` dans la même transaction. */
   const chaining = (record: MesocycleRecord | null, outcome: 'repeat' | 'regenerate' | 'change', next: MesocycleSpec | null) =>
     next === null
@@ -133,6 +180,7 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
           const repo = await repos.mesocycles();
           if (record !== null && record.readable) await repo.save(record.id, closeMesocycle(record, outcome, today()));
           await repo.start(next);
+          if (outcome === 'change') await repos.settings.set('training.cycleWeeks', next.unlimited ? 'unlimited' : next.weeks);
         };
 
   if (load.status === 'loading') {
@@ -191,7 +239,14 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
 
   const startFresh = () => {
     const spec = createMesocycleSpec({ routineId, startDate: today(), weeks: toWeeks(weeks), rampUp: rampUp && (weeks === '4' || weeks === '6') }, CONFIG);
-    void write(spec === null ? null : async (repos) => void (await (await repos.mesocycles()).start(spec)));
+    void write(
+      spec === null
+        ? null
+        : async (repos) => {
+            await (await repos.mesocycles()).start(spec);
+            await repos.settings.set('training.cycleWeeks', toWeeks(weeks));
+          },
+    );
   };
 
   let body: React.ReactNode;
@@ -294,8 +349,27 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
             <SegmentedControl<string>
               label={tCycle('nextWeeksLabel')}
               value={String(record.nextWeeks ?? record.weeks)}
-              onChange={(value) => void write(saving(record, changeNextWeeks(record, Number(value), CONFIG)))}
+              onChange={(value) => {
+                const chosen = Number(value);
+                // PROG-05 (D-315) : semaine 1 sans séance close : proposée pour le cycle en cours, après confirmation.
+                if (canApplyWeeksNow(record, state, closedSince) && chosen !== record.weeks) setPendingWeeks(chosen);
+                else void write(savingWeeks(record, changeNextWeeks(record, chosen, CONFIG), chosen));
+              }}
               options={MESO_WEEK_CHOICES.map((w) => ({ value: String(w), label: tCycle('weeksOption', { weeks: w }) }))}
+            />
+          )}
+          {pendingWeeks !== null && (
+            <ConfirmDialog
+              title={tCycle('weeksNowTitle', { weeks: pendingWeeks })}
+              description={tCycle('weeksNowText', { weeks: pendingWeeks })}
+              confirmLabel={tCycle('weeksNowConfirm')}
+              cancelLabel={tCycle('weeksNowCancel')}
+              onConfirm={() => {
+                const chosen = pendingWeeks;
+                setPendingWeeks(null);
+                void write(savingWeeks(record, weeksNowSpec(record, chosen, CONFIG), chosen));
+              }}
+              onCancel={() => setPendingWeeks(null)}
             />
           )}
           {!record.unlimited && record.nextWeeks !== undefined && record.nextWeeks !== null && record.nextWeeks !== record.weeks && (
