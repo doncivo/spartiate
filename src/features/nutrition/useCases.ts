@@ -261,40 +261,42 @@ export async function saveRestPlan(
   access: DataAccess,
   input: { readonly today: LocalDate; readonly current: NutritionTargetRecord; readonly restPlan: RestPlan | null },
 ): Promise<RestPlanWriteResult> {
-  const repo = await access.repos.nutritionTargets();
-  // Cibles futures en vigueur à leur date, relevées avant l'écriture (la décision d'aujourd'hui les masquerait ensuite).
-  const decisions = await repo.list();
-  const futures = upcomingTargets(decisions, input.today);
-  const plan = input.restPlan;
-  const todayDraft: TargetRecordDraft = { weekStart: input.today, target: input.current.target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false, restPlan: plan };
-  const issues = validateTargetRecord(todayDraft);
-  if (issues.includes('confirmation-required') && issues.length === 1) return 'confirmation-required';
-  if (issues.length > 0) return 'rejected';
-  const gap = plan === null ? 0 : plan.rest.kcal - input.current.target.kcal;
-  // Plan hérité : absent, ou du même écart et des mêmes jours que celui d'aujourd'hui avant l'écriture ; sinon plan propre, gardé tel quel.
-  const before = input.current.restPlan ?? null;
-  const inherited = (future: NutritionTargetRecord): boolean => {
-    const own = future.restPlan ?? null;
-    if (own === null) return true;
-    return before !== null && own.rest.kcal - future.target.kcal === before.rest.kcal - input.current.target.kcal && own.trainingDays.join() === before.trainingDays.join();
-  };
-  let partial = false;
-  const copies: TargetRecordDraft[] = [];
-  for (const future of futures) {
-    // Décision déjà adoptée : sa recopie avec son plan d'avant n'est pas une nouvelle adoption.
-    const keep: TargetRecordDraft = { weekStart: future.weekStart, target: future.target, source: future.source, accepted: true, engineVersion: future.engineVersion, lowFloorConfirmed: true, restPlan: future.restPlan ?? null };
-    if (!inherited(future)) {
-      copies.push(keep);
-      continue;
+  // FIX-0271 : cibles futures lues et décisions écrites dans la MÊME transaction (une décision reçue entre les deux ne peut plus être ignorée).
+  return access.transaction(async (repos) => {
+    const repo = await repos.nutritionTargets();
+    // Cibles futures en vigueur à leur date, relevées avant l'écriture (la décision d'aujourd'hui les masquerait ensuite).
+    const decisions = await repo.list();
+    const futures = upcomingTargets(decisions, input.today);
+    const plan = input.restPlan;
+    const todayDraft: TargetRecordDraft = { weekStart: input.today, target: input.current.target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false, restPlan: plan };
+    const issues = validateTargetRecord(todayDraft);
+    if (issues.includes('confirmation-required') && issues.length === 1) return 'confirmation-required';
+    if (issues.length > 0) return 'rejected';
+    const gap = plan === null ? 0 : plan.rest.kcal - input.current.target.kcal;
+    // Plan hérité : absent, ou du même écart et des mêmes jours que celui d'aujourd'hui avant l'écriture ; sinon plan propre, gardé tel quel.
+    const before = input.current.restPlan ?? null;
+    const inherited = (future: NutritionTargetRecord): boolean => {
+      const own = future.restPlan ?? null;
+      if (own === null) return true;
+      return before !== null && own.rest.kcal - future.target.kcal === before.rest.kcal - input.current.target.kcal && own.trainingDays.join() === before.trainingDays.join();
+    };
+    let partial = false;
+    const copies: TargetRecordDraft[] = [];
+    for (const future of futures) {
+      // Décision déjà adoptée : sa recopie avec son plan d'avant n'est pas une nouvelle adoption.
+      const keep: TargetRecordDraft = { weekStart: future.weekStart, target: future.target, source: future.source, accepted: true, engineVersion: future.engineVersion, lowFloorConfirmed: true, restPlan: future.restPlan ?? null };
+      if (!inherited(future)) {
+        copies.push(keep);
+        continue;
+      }
+      const restPlan: RestPlan | null = plan === null ? null : { rest: restTargetFromGap(future.target, gap), trainingDays: plan.trainingDays };
+      const next: TargetRecordDraft = { ...keep, lowFloorConfirmed: false, restPlan };
+      if (validateTargetRecord(next).length === 0) copies.push(next);
+      else {
+        partial = true;
+        copies.push(keep);
+      }
     }
-    const restPlan: RestPlan | null = plan === null ? null : { rest: restTargetFromGap(future.target, gap), trainingDays: plan.trainingDays };
-    const next: TargetRecordDraft = { ...keep, lowFloorConfirmed: false, restPlan };
-    if (validateTargetRecord(next).length === 0) copies.push(next);
-    else {
-      partial = true;
-      copies.push(keep);
-    }
-  }
-  await repo.record([todayDraft, ...copies]);
-  return partial ? 'saved-partial' : 'saved';
+    await repo.record([todayDraft, ...copies]);
+    return partial ? 'saved-partial' : 'saved';  });
 }

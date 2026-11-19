@@ -9,8 +9,7 @@ import { NumberField, parseNumber } from '../shared';
 import { activeRoutineDayCount, saveManualTarget, saveRestPlan, saveNutritionPrefs, type NutritionSnapshot } from '../useCases';
 import { RestTargetForm } from './RestTargetForm';
 import { TargetForm, type TargetSaveResult } from './TargetForm';
-import { targetKey, useFutureConfirm } from './useFutureConfirm';
-import { collapseRecopies, defaultTrainingDays, restTargetFromGap, upcomingTargets, type RestPlan } from '../../../domain/nutrition';
+import { collapseRecopies, defaultTrainingDays, restTargetFromGap, targetDecidedOn, targetInForceSince, upcomingTargets, type RestPlan } from '../../../domain/nutrition';
 
 const STYLE_HINT: Readonly<Record<CheckInStyle, NutritionTextKey>> = { guided: 'styleGuidedHint', collaborative: 'styleCollaborativeHint', manual: 'styleManualHint' };
 const STYLE_KEY: Readonly<Record<CheckInStyle, NutritionTextKey>> = { guided: 'styleGuided', collaborative: 'styleCollaborative', manual: 'styleManual' };
@@ -76,8 +75,8 @@ export interface StrategyViewProps {
  * enregistrée telle quelle (source « manuelle ») et tracée ; rien ne change sans son geste.
  *
  * ERGO-03 : groupes Style / Objectif / Cible / Jours de repos / Historique, une ligne par réglage avec sa valeur ; cible en vigueur et, à
- * côté, la plus proche des cibles à venir (D-295) ; formulaire de cible replié et vide ; une cible du jour qui passerait devant une cible
- * future demande une confirmation explicite (D-296).
+ * côté, la plus proche des cibles à venir (D-295) ; formulaire de cible replié et vide ; une cible du jour ne masque plus une cible
+ * prévue plus tard, aucune confirmation (FIX-0271, D-314, remplace D-296 (2) et (4)).
  */
 export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   const { data } = useAppContainer();
@@ -93,8 +92,6 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   const { profile, target, targets } = snapshot;
   // D-295 : la plus proche des cibles à venir (acceptée, datée après aujourd'hui, en vigueur à sa date).
   const upcoming = upcomingTargets(targets, snapshot.today)[0] ?? null;
-  // D-296 (revue 1) : confirmation partagée avec le check-in ; jamais suspendue, pas redemandée pour la même saisie.
-  const future = useFutureConfirm(upcoming);
   const profileComplete = profile !== null && profile.sex !== null && profile.birthYear !== null && profile.heightCm !== null;
   const toggle = (row: RowId) => () => setOpenRow((current) => (current === row ? null : row));
 
@@ -152,8 +149,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   }
 
   async function saveTarget(next: Target, lowFloorConfirmed: boolean): Promise<TargetSaveResult> {
-    // D-296 : une cible du jour, plus récente, passerait devant la cible future (D-82) : Ali le confirme explicitement, sinon rien n'est écrit.
-    if (!(await future.ask(targetKey(next)))) return 'cancelled';
+    // FIX-0271 (D-314) : une cible du jour ne masque plus une cible prévue plus tard (elle prend effet à sa date) : aucune confirmation.
     try {
       // PROG-01 (D-271) : une nouvelle cible d'entraînement garde l'écart de la cible de repos en vigueur.
       const plan = target?.restPlan ?? null;
@@ -286,7 +282,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
         ) : (
           <>
             <TargetSummary target={target.target} />
-            <p className="ct-nutrition__muted">{tNutrition('currentTargetSince', { date: formatDayMonth(target.weekStart) })}</p>
+            <p className="ct-nutrition__muted">{tNutrition('currentTargetSince', { date: formatDayMonth(targetInForceSince(target)), decided: formatDayMonth(targetDecidedOn(target) ?? target.weekStart) })}</p>
           </>
         )}
         {upcoming !== null ? <p className="ct-nutrition__num ct-strategy__upcoming">{tNutrition('upcomingTarget', { date: formatWeekdayDate(upcoming.weekStart), values: targetValues(upcoming.target) })}</p> : null}
@@ -332,7 +328,6 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
           </ul>
         )}
       </section>
-      {future.dialog}
     </div>
   );
 }
