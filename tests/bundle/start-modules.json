@@ -350,7 +350,7 @@
     {
       "fichier": "src/db/migrations/0020_routine_weekday.ts",
       "story": "PROG-04",
-      "raison": "Migration PROG-04 (colonne publiée weekday de routine_day, rattachement des jours par leur nom et déclencheur de capture propre, 3,8 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0019. L'éditeur de routine, la saisie du jour de la semaine et ses textes restent hors du départ."
+      "raison": "Migration PROG-04 (colonne publiée weekday de routine_day et déclencheur de capture propre, 2,5 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0019. L'éditeur de routine, la saisie du jour de la semaine et ses textes restent hors du départ."
     },
     {
       "fichier": "src/features/app/ShellChrome.tsx",
