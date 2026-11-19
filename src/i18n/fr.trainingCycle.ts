@@ -38,6 +38,11 @@ export const trainingCycleFr = {
   isolationRir: 'Exercices d’isolation : {rir} répétition en réserve.',
   nextWeeksLabel: 'Durée du prochain cycle',
   nextWeeksNote: 'Appliquée au prochain cycle ; celui-ci garde {weeks} semaines.',
+  /** PROG-05 (D-315) : semaine 1 sans séance close, la durée peut s'appliquer au cycle en cours. */
+  weeksNowTitle: 'Appliquer {weeks} semaines au cycle en cours ?',
+  weeksNowText: 'Aucune séance n’est encore close dans ce cycle : il passe à {weeks} semaines dès maintenant.',
+  weeksNowConfirm: 'Appliquer maintenant',
+  weeksNowCancel: 'Annuler',
   workWeek: 'Semaine de travail : {sets}, {rir}.',
   lightWeek: 'Semaine allégée : {sets}, {rir} ; les charges tiennent compte de l’arrêt.',
   deloadWeek:

@@ -62,6 +62,8 @@ export interface SettingsValues {
    * lue par `parseDraft` ; le brouillon (`onboarding.draft`) ne sert plus qu'à un assistant inachevé. Locale, jamais synchronisée.
    */
   'onboarding.answers': unknown;
+  /** PROG-05 (D-315) : dernière durée de cycle choisie (onboarding, lancement, changement) ; valeur BRUTE lue par `defaultCycleWeeks` ; locale. */
+  'training.cycleWeeks': unknown;
   /** Reste de l'ancien projet : ids de données d'exemple (aucun usage ; nettoyage en CLEAN-01) ; local. */
   'sample.ids': { readonly tasks: readonly string[]; readonly routines: readonly string[]; readonly checklists: readonly string[] };
   /** D-01 : fermer la fenêtre réduit l'app en zone de notification (PC). */
@@ -179,6 +181,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'onboarding.completed': { scope: 'local', defaultValue: false },
   'onboarding.draft': { scope: 'local', defaultValue: null },
   'onboarding.answers': { scope: 'local', defaultValue: null },
+  'training.cycleWeeks': { scope: 'local', defaultValue: null },
   'sample.ids': { scope: 'local', defaultValue: { tasks: [], routines: [], checklists: [] } },
   'desktop.closeToTray': { scope: 'local', defaultValue: true },
   'desktop.launchAtStartup': { scope: 'local', defaultValue: false },

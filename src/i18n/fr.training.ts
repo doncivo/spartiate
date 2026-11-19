@@ -236,6 +236,14 @@ export const trainingFr = {
   sessionTodayMoreOne: '+ {n} exercice',
   sessionLaunch: 'Lancer la séance',
   sessionOther: 'Autre séance…',
+  /** PROG-04 (D-316) : jour sans séance prévue dans un programme rattaché aux jours de la semaine. */
+  sessionRestTitle: 'Repos',
+  sessionRestToday: 'Repos aujourd’hui. Prochaine séance {weekday} : {name}.',
+  weekdayNames: 'lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche',
+  /** PROG-04 : saisie du jour de la semaine d'un jour de routine. */
+  dayWeekday: 'Jour de la semaine',
+  dayWeekdayNone: 'Aucun (rotation)',
+  errorDayWeekday: 'Jour {day} : un autre jour de la routine porte déjà ce jour de la semaine.',
   // ERGO-01 : chiffre héros de la carte (« 3 / 12 ») et son unité ; série en cours ; position dans la séance.
   sessionSetsHero: '{done} / {planned}',
   sessionSetsUnit: 'séries',

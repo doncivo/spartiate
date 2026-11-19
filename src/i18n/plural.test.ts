@@ -70,6 +70,8 @@ describe('garde : aucun « {n} <nom pluriel> » sans variante au singulier', () 
     'fr.routines.ts:everyNDays', // « tous les N jours » : N ≥ 2 (1 = « chaque jour »)
     'fr.routines.ts:everyNWeeksOn', // idem pour les semaines
     'fr.syncPairing.ts:validMinutes', // durée fixe, jamais 0 ni 1
+    'fr.trainingCycle.ts:weeksNowTitle', // PROG-05 : durée de cycle 4, 5 ou 6 semaines, jamais 1
+    'fr.trainingCycle.ts:weeksNowText', // idem
     'fr.syncReset.ts:waitingMany', // la variante au singulier s'appelle waitingOne et n'a pas de nombre
     'fr.supplements.ts:cardProgressOne', // « {n} sur 1 prise » : le total vaut 1, c'est lui qui accorde
     'fr.supplements.ts:cardProgressMany', // « {n} sur {total} prises » : c'est le total (≥ 2) qui accorde
