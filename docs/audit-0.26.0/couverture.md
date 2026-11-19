@@ -1,9 +1,9 @@
 # Couverture de relecture — AUDIT-0.26.0
 
 SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
-78/2047 fichiers lus (3.81 %). « Lu » indique une lecture complète dans la passe précisée, pas la validation de tous les scénarios métier. Les lectures partielles et scans ne sont pas comptés.
+97/2047 fichiers lus (4.74 %). « Lu » indique une lecture complète dans la passe précisée, pas la validation de tous les scénarios métier. Les lectures partielles et scans ne sont pas comptés.
 
-Production et outillage : 77/1046 lus intégralement. Tests et supports : 1001 fichiers ; partie 11 par outils, lecture complète des règles critiques et échantillon motivé du reste (décision d’Ali des 16 et 19/11). Inventaire corrigé en partie 1 : 389 ajouts, dont 33 de production/outillage et 356 de tests/supports ; les 645 tests du compteur initial n’incluaient pas tout le banc. Les 81 fichiers vendored exclus restent listés. Configurations déclaratives et documents consultés sont cités dans les rapports de partie, hors de ce décompte de sources.
+Production et outillage : 96/1046 lus intégralement. Tests et supports : 1001 fichiers ; partie 11 par outils, lecture complète des règles critiques et échantillon motivé du reste (décision d’Ali des 16 et 19/11). Inventaire corrigé en partie 1 : 389 ajouts, dont 33 de production/outillage et 356 de tests/supports ; les 645 tests du compteur initial n’incluaient pas tout le banc. Les 81 fichiers vendored exclus restent listés. Configurations déclaratives et documents consultés sont cités dans les rapports de partie, hors de ce décompte de sources.
 
 | Fichier | Statut | Motif / preuve |
 | --- | --- | --- |
@@ -599,7 +599,7 @@ Production et outillage : 77/1046 lus intégralement. Tests et supports : 1001 f
 | `src/domain/historyExport.test.ts` | à lire |  |
 | `src/domain/historyExport.ts` | à lire |  |
 | `src/domain/hlc.test.ts` | à lire |  |
-| `src/domain/hlc.ts` | à lire |  |
+| `src/domain/hlc.ts` | lu | Partie 3 : Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter. |
 | `src/domain/id.test.ts` | à lire |  |
 | `src/domain/id.ts` | lu | Partie 1 : Générateur injectable RandomBytes, bits UUIDv4 et copie défensive lus ; source crypto isolée dans la fabrique. |
 | `src/domain/itemFilter.ts` | à lire |  |
@@ -757,12 +757,12 @@ Production et outillage : 77/1046 lus intégralement. Tests et supports : 1001 f
 | `src/domain/sync/catalogue.test.ts` | à lire |  |
 | `src/domain/sync/compat.reintegration.test.ts` | à lire |  |
 | `src/domain/sync/compat.test.ts` | à lire |  |
-| `src/domain/sync/compat.ts` | à lire |  |
+| `src/domain/sync/compat.ts` | lu | Partie 3 : Fusion par champ, bases, conflits, réintégration, plafonds et dérive physique intégralement lus. |
 | `src/domain/sync/conflictRestore.test.ts` | à lire |  |
 | `src/domain/sync/conflictRestore.ts` | à lire |  |
 | `src/domain/sync/devices.test.ts` | à lire |  |
 | `src/domain/sync/devices.ts` | à lire |  |
-| `src/domain/sync/drift.ts` | à lire |  |
+| `src/domain/sync/drift.ts` | lu | Partie 3 : Fusion par champ, bases, conflits, réintégration, plafonds et dérive physique intégralement lus. |
 | `src/domain/sync/epoch.ts` | à lire |  |
 | `src/domain/sync/epochCarryNotice.test.ts` | à lire |  |
 | `src/domain/sync/epochCarryNotice.ts` | à lire |  |
@@ -778,9 +778,9 @@ Production et outillage : 77/1046 lus intégralement. Tests et supports : 1001 f
 | `src/domain/sync/format.test.ts` | à lire |  |
 | `src/domain/sync/format.ts` | à lire |  |
 | `src/domain/sync/limits.test.ts` | à lire |  |
-| `src/domain/sync/limits.ts` | à lire |  |
+| `src/domain/sync/limits.ts` | lu | Partie 3 : Fusion par champ, bases, conflits, réintégration, plafonds et dérive physique intégralement lus. |
 | `src/domain/sync/merge.test.ts` | à lire |  |
-| `src/domain/sync/merge.ts` | à lire |  |
+| `src/domain/sync/merge.ts` | lu | Partie 3 : Fusion par champ, bases, conflits, réintégration, plafonds et dérive physique intégralement lus. |
 | `src/domain/sync/naturalIds.ts` | à lire |  |
 | `src/domain/sync/naturalIdsDay.test.ts` | à lire |  |
 | `src/domain/sync/naturalIdsMeasurement.test.ts` | à lire |  |
@@ -799,13 +799,13 @@ Production et outillage : 77/1046 lus intégralement. Tests et supports : 1001 f
 | `src/domain/sync/publishRotation.ts` | à lire |  |
 | `src/domain/sync/repairs.ts` | à lire |  |
 | `src/domain/sync/retention.test.ts` | à lire |  |
-| `src/domain/sync/retention.ts` | à lire |  |
-| `src/domain/sync/schemaRepublish.ts` | à lire |  |
+| `src/domain/sync/retention.ts` | lu | Partie 3 : Éligibilité des instantanés, accusés, expiration, purge et ordre des oublis intégralement lus ; contrat natif à vérifier en partie 8b. |
+| `src/domain/sync/schemaRepublish.ts` | lu | Partie 3 : Conservation des créations incomplètes, détection et republication intégralement lues, confrontées à ADR 0018. |
 | `src/domain/sync/stored.ts` | à lire |  |
 | `src/domain/sync/storedQa.test.ts` | à lire |  |
 | `src/domain/sync/syncTables.ts` | à lire |  |
 | `src/domain/syncBanners.test.ts` | à lire |  |
-| `src/domain/syncBanners.ts` | à lire |  |
+| `src/domain/syncBanners.ts` | lu | Partie 3 : Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer. |
 | `src/domain/syntheticTimer.test.ts` | à lire |  |
 | `src/domain/syntheticTimer.ts` | à lire |  |
 | `src/domain/taskPostpone.test.ts` | à lire |  |
@@ -1729,34 +1729,34 @@ Production et outillage : 77/1046 lus intégralement. Tests et supports : 1001 f
 | `src/platform/tauri/sqlDriver.ts` | lu | Partie 1 : Façades, sélection runtime/OS, garde de démarrage et contrat du driver lus ; comportement natif réservé partie 8. |
 | `src/platform/tauri/startupGate.test.ts` | à lire |  |
 | `src/platform/timeZone.ts` | à lire |  |
-| `src/sync/apply.ts` | à lire |  |
+| `src/sync/apply.ts` | lu | Partie 3 : Application, savepoints, lignes partielles, tombstones, groupes HLC et curseurs intégralement lus ; vérifications croisées encore ouvertes. |
 | `src/sync/carryNoticeState.ts` | à lire |  |
-| `src/sync/dataReset.ts` | à lire |  |
+| `src/sync/dataReset.ts` | lu | Partie 3 : Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter. |
 | `src/sync/deadline.ts` | à lire |  |
 | `src/sync/deps.ts` | à lire |  |
 | `src/sync/deviceStatus.test.ts` | à lire |  |
 | `src/sync/deviceStatus.ts` | à lire |  |
-| `src/sync/eligible.ts` | à lire |  |
-| `src/sync/engine.ts` | à lire |  |
+| `src/sync/eligible.ts` | lu | Partie 3 : Éligibilité des instantanés, accusés, expiration, purge et ordre des oublis intégralement lus ; contrat natif à vérifier en partie 8b. |
+| `src/sync/engine.ts` | lu | Partie 3 : Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer. |
 | `src/sync/epochCarryReportAck.ts` | à lire |  |
 | `src/sync/epochCarryReportBanner.ts` | à lire |  |
 | `src/sync/epochSwitch.ts` | à lire |  |
 | `src/sync/forget.ts` | à lire |  |
-| `src/sync/guarded.ts` | à lire |  |
-| `src/sync/index.ts` | à lire |  |
+| `src/sync/guarded.ts` | lu | Partie 3 : Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter. |
+| `src/sync/index.ts` | lu | Partie 3 : Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter. |
 | `src/sync/join.ts` | à lire |  |
 | `src/sync/log.ts` | à lire |  |
-| `src/sync/maintenance.ts` | à lire |  |
+| `src/sync/maintenance.ts` | lu | Partie 3 : Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer. |
 | `src/sync/meta.ts` | à lire |  |
-| `src/sync/olderWriter.ts` | à lire |  |
+| `src/sync/olderWriter.ts` | lu | Partie 3 : Conservation des créations incomplètes, détection et republication intégralement lues, confrontées à ADR 0018. |
 | `src/sync/orphanEpoch.ts` | à lire |  |
 | `src/sync/ownDeletion.ts` | à lire |  |
 | `src/sync/publishDeferred.test.ts` | à lire |  |
 | `src/sync/publishRotation.ts` | à lire |  |
 | `src/sync/publisher.ts` | à lire |  |
 | `src/sync/purge.ts` | à lire |  |
-| `src/sync/reader.ts` | à lire |  |
-| `src/sync/repair.ts` | à lire |  |
+| `src/sync/reader.ts` | lu | Partie 3 : Application, savepoints, lignes partielles, tombstones, groupes HLC et curseurs intégralement lus ; vérifications croisées encore ouvertes. |
+| `src/sync/repair.ts` | lu | Partie 3 : Application, savepoints, lignes partielles, tombstones, groupes HLC et curseurs intégralement lus ; vérifications croisées encore ouvertes. |
 | `src/sync/reset.ts` | à lire |  |
 | `src/sync/restoreChoice.ts` | à lire |  |
 | `src/sync/scheduler.test.ts` | à lire |  |
@@ -1764,7 +1764,7 @@ Production et outillage : 77/1046 lus intégralement. Tests et supports : 1001 f
 | `src/sync/schedulerPending.test.ts` | à lire |  |
 | `src/sync/service.ts` | à lire |  |
 | `src/sync/snapshot.ts` | à lire |  |
-| `src/sync/status.ts` | à lire |  |
+| `src/sync/status.ts` | lu | Partie 3 : Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer. |
 | `src/sync/sync.perf.test.ts` | à lire |  |
 | `src/ui/AppShell.css` | à lire |  |
 | `src/ui/AppShell.layout.test.ts` | à lire |  |

@@ -1,7 +1,7 @@
 # AUDIT-0.26.0 — rapport en cours
 
 **SHA audité : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.** Version publiée 0.26.0, schéma à vérifier par les contrôles. Début : 16 novembre 2026.
-Couverture de relecture : **78 / 2 047 fichiers lus (3,81 %)**, dont 77 / 1 046 de production/outillage, 81 fichiers vendored exclus. Inventaire réconcilié en partie 1 : 389 omissions ajoutées, dont 356 tests/supports ; le banc complet en compte 1 001. Une lecture mécanique n'est pas une relecture sémantique ; une lecture dans une passe ne valide pas tous les scénarios.
+Couverture de relecture : **97 / 2 047 fichiers lus (4,74 %)**, dont 96 / 1 046 de production/outillage, 81 fichiers vendored exclus. Inventaire réconcilié en partie 1 : 389 omissions ajoutées, dont 356 tests/supports ; le banc complet en compte 1 001. Une lecture mécanique n'est pas une relecture sémantique ; une lecture dans une passe ne valide pas tous les scénarios.
 Partie 0 terminée : typecheck/lint/contenu/docs/bundle/fmt/clippy verts ; 24 échecs unitaires et 12 erreurs non interceptées ; Rust desktop 846 verts, SQL 30 + 1 verts après préparation du dossier de fixtures. Audits des dépendances détaillés dans `partie-00.md`. **Audit global incomplet : aucune conclusion de conformité ni de sécurité.**
 
 ## Constats

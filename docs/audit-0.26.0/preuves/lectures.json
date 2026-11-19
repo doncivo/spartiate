@@ -388,5 +388,100 @@
     "fichier": "src/db/repositories/sql/syncUnknown.ts",
     "partie": 2,
     "preuve": "Réintégration par pages/savepoints, garde et état persistant lus ; nuance la piste de partie 1, affichage à vérifier partie 3."
+  },
+  {
+    "fichier": "src/domain/hlc.ts",
+    "partie": 3,
+    "preuve": "Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter."
+  },
+  {
+    "fichier": "src/sync/index.ts",
+    "partie": 3,
+    "preuve": "Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter."
+  },
+  {
+    "fichier": "src/sync/guarded.ts",
+    "partie": 3,
+    "preuve": "Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter."
+  },
+  {
+    "fichier": "src/sync/dataReset.ts",
+    "partie": 3,
+    "preuve": "Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter."
+  },
+  {
+    "fichier": "src/domain/sync/merge.ts",
+    "partie": 3,
+    "preuve": "Fusion par champ, bases, conflits, réintégration, plafonds et dérive physique intégralement lus."
+  },
+  {
+    "fichier": "src/domain/sync/compat.ts",
+    "partie": 3,
+    "preuve": "Fusion par champ, bases, conflits, réintégration, plafonds et dérive physique intégralement lus."
+  },
+  {
+    "fichier": "src/domain/sync/limits.ts",
+    "partie": 3,
+    "preuve": "Fusion par champ, bases, conflits, réintégration, plafonds et dérive physique intégralement lus."
+  },
+  {
+    "fichier": "src/domain/sync/drift.ts",
+    "partie": 3,
+    "preuve": "Fusion par champ, bases, conflits, réintégration, plafonds et dérive physique intégralement lus."
+  },
+  {
+    "fichier": "src/sync/apply.ts",
+    "partie": 3,
+    "preuve": "Application, savepoints, lignes partielles, tombstones, groupes HLC et curseurs intégralement lus ; vérifications croisées encore ouvertes."
+  },
+  {
+    "fichier": "src/sync/reader.ts",
+    "partie": 3,
+    "preuve": "Application, savepoints, lignes partielles, tombstones, groupes HLC et curseurs intégralement lus ; vérifications croisées encore ouvertes."
+  },
+  {
+    "fichier": "src/sync/repair.ts",
+    "partie": 3,
+    "preuve": "Application, savepoints, lignes partielles, tombstones, groupes HLC et curseurs intégralement lus ; vérifications croisées encore ouvertes."
+  },
+  {
+    "fichier": "src/sync/olderWriter.ts",
+    "partie": 3,
+    "preuve": "Conservation des créations incomplètes, détection et republication intégralement lues, confrontées à ADR 0018."
+  },
+  {
+    "fichier": "src/domain/sync/schemaRepublish.ts",
+    "partie": 3,
+    "preuve": "Conservation des créations incomplètes, détection et republication intégralement lues, confrontées à ADR 0018."
+  },
+  {
+    "fichier": "src/sync/eligible.ts",
+    "partie": 3,
+    "preuve": "Éligibilité des instantanés, accusés, expiration, purge et ordre des oublis intégralement lus ; contrat natif à vérifier en partie 8b."
+  },
+  {
+    "fichier": "src/domain/sync/retention.ts",
+    "partie": 3,
+    "preuve": "Éligibilité des instantanés, accusés, expiration, purge et ordre des oublis intégralement lus ; contrat natif à vérifier en partie 8b."
+  },
+  {
+    "fichier": "src/sync/engine.ts",
+    "partie": 3,
+    "preuve": "Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer."
+  },
+  {
+    "fichier": "src/sync/status.ts",
+    "partie": 3,
+    "preuve": "Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer."
+  },
+  {
+    "fichier": "src/sync/maintenance.ts",
+    "partie": 3,
+    "preuve": "Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer."
+  },
+  {
+    "fichier": "src/domain/syncBanners.ts",
+    "partie": 3,
+    "preuve": "Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer."
   }
 ]

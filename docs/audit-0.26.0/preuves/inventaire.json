@@ -4145,10 +4145,10 @@
   },
   {
     "fichier": "src/domain/hlc.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter."
   },
   {
     "fichier": "src/domain/id.test.ts",
@@ -5251,10 +5251,10 @@
   },
   {
     "fichier": "src/domain/sync/compat.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Fusion par champ, bases, conflits, réintégration, plafonds et dérive physique intégralement lus."
   },
   {
     "fichier": "src/domain/sync/conflictRestore.test.ts",
@@ -5286,10 +5286,10 @@
   },
   {
     "fichier": "src/domain/sync/drift.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Fusion par champ, bases, conflits, réintégration, plafonds et dérive physique intégralement lus."
   },
   {
     "fichier": "src/domain/sync/epoch.ts",
@@ -5398,10 +5398,10 @@
   },
   {
     "fichier": "src/domain/sync/limits.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Fusion par champ, bases, conflits, réintégration, plafonds et dérive physique intégralement lus."
   },
   {
     "fichier": "src/domain/sync/merge.test.ts",
@@ -5412,10 +5412,10 @@
   },
   {
     "fichier": "src/domain/sync/merge.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Fusion par champ, bases, conflits, réintégration, plafonds et dérive physique intégralement lus."
   },
   {
     "fichier": "src/domain/sync/naturalIds.ts",
@@ -5545,17 +5545,17 @@
   },
   {
     "fichier": "src/domain/sync/retention.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Éligibilité des instantanés, accusés, expiration, purge et ordre des oublis intégralement lus ; contrat natif à vérifier en partie 8b."
   },
   {
     "fichier": "src/domain/sync/schemaRepublish.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Conservation des créations incomplètes, détection et republication intégralement lues, confrontées à ADR 0018."
   },
   {
     "fichier": "src/domain/sync/stored.ts",
@@ -5587,10 +5587,10 @@
   },
   {
     "fichier": "src/domain/syncBanners.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer."
   },
   {
     "fichier": "src/domain/syntheticTimer.test.ts",
@@ -12055,10 +12055,10 @@
   },
   {
     "fichier": "src/sync/apply.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Application, savepoints, lignes partielles, tombstones, groupes HLC et curseurs intégralement lus ; vérifications croisées encore ouvertes."
   },
   {
     "fichier": "src/sync/carryNoticeState.ts",
@@ -12069,10 +12069,10 @@
   },
   {
     "fichier": "src/sync/dataReset.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter."
   },
   {
     "fichier": "src/sync/deadline.ts",
@@ -12104,17 +12104,17 @@
   },
   {
     "fichier": "src/sync/eligible.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Éligibilité des instantanés, accusés, expiration, purge et ordre des oublis intégralement lus ; contrat natif à vérifier en partie 8b."
   },
   {
     "fichier": "src/sync/engine.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer."
   },
   {
     "fichier": "src/sync/epochCarryReportAck.ts",
@@ -12146,17 +12146,17 @@
   },
   {
     "fichier": "src/sync/guarded.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter."
   },
   {
     "fichier": "src/sync/index.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Horloges, exports, transaction gardée et horizons de remise à zéro intégralement lus ; appelants et persistance à confronter."
   },
   {
     "fichier": "src/sync/join.ts",
@@ -12174,10 +12174,10 @@
   },
   {
     "fichier": "src/sync/maintenance.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer."
   },
   {
     "fichier": "src/sync/meta.ts",
@@ -12188,10 +12188,10 @@
   },
   {
     "fichier": "src/sync/olderWriter.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Conservation des créations incomplètes, détection et republication intégralement lues, confrontées à ADR 0018."
   },
   {
     "fichier": "src/sync/orphanEpoch.ts",
@@ -12237,17 +12237,17 @@
   },
   {
     "fichier": "src/sync/reader.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Application, savepoints, lignes partielles, tombstones, groupes HLC et curseurs intégralement lus ; vérifications croisées encore ouvertes."
   },
   {
     "fichier": "src/sync/repair.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Application, savepoints, lignes partielles, tombstones, groupes HLC et curseurs intégralement lus ; vérifications croisées encore ouvertes."
   },
   {
     "fichier": "src/sync/reset.ts",
@@ -12300,10 +12300,10 @@
   },
   {
     "fichier": "src/sync/status.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 3,
+    "preuve": "Cycle intégral, reprises, publication, entretien, états et choix des bandeaux lus ; état de réintégration transmis au statut, raccordement interface à terminer."
   },
   {
     "fichier": "src/sync/sync.perf.test.ts",
