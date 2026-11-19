@@ -1,3 +1,6 @@
+import { weekdayOf } from '../localDate';
+import type { LocalDate, Weekday } from '../types';
+
 /**
  * ERGO-01b P1 (D-238, D-243) : jour du programme désigné pour la séance du jour. Règle pure, sans date : le jour qui suit, dans l'ordre des
  * jours de la routine du programme, le dernier jour fait (séance close issue de cette routine) ; en boucle ; les jours sans exercice sont
@@ -7,6 +10,8 @@
 export interface ProgramDayLike {
   readonly id: string;
   readonly dayOrder: number;
+  /** PROG-04 : jour de la semaine ISO, facultatif. */
+  readonly weekday?: number | null;
   readonly exercises: readonly unknown[];
 }
 
@@ -26,4 +31,43 @@ export function nextProgramDay(days: readonly ProgramDayLike[], recentClosed: re
     return (ordered[(index + 1) % ordered.length] as ProgramDayLike).id;
   }
   return (ordered[0] as ProgramDayLike).id;
+}
+
+/** PROG-04 (D-316) : séance du jour désignée, ou repos (avec le prochain jour prévu). */
+export type ProgramDayChoice = { readonly kind: 'day'; readonly dayId: string } | { readonly kind: 'rest'; readonly nextDayId: string; readonly nextWeekday: Weekday };
+
+const hasWeekday = (d: ProgramDayLike): d is ProgramDayLike & { readonly weekday: number } => typeof d.weekday === 'number' && d.weekday >= 1 && d.weekday <= 7;
+
+/**
+ * PROG-04 (D-316) : si au moins un jour garni de la routine porte un jour de la semaine, la séance du jour est celle du jour de la semaine de
+ * `today` ; un jour sans séance prévue est un jour de repos (le prochain jour prévu est donné) ; une séance manquée est sautée, jamais
+ * décalée. Sans aucun jour rattaché : rotation d'avant (`nextProgramDay`). `null` si aucun jour n'a d'exercice.
+ */
+export function programDayFor(days: readonly ProgramDayLike[], recentClosed: readonly ClosedWorkoutLike[], routineId: string, today: LocalDate): ProgramDayChoice | null {
+  const garnished = days.filter((d) => d.exercises.length > 0);
+  const dated = garnished.filter(hasWeekday);
+  if (dated.length === 0) {
+    const id = nextProgramDay(days, recentClosed, routineId);
+    return id === null ? null : { kind: 'day', dayId: id };
+  }
+  const wd = weekdayOf(today);
+  const todays = dated.find((d) => d.weekday === wd);
+  if (todays !== undefined) return { kind: 'day', dayId: todays.id };
+  const next = [...dated].sort((a, b) => ((a.weekday - wd + 7) % 7) - ((b.weekday - wd + 7) % 7))[0] as ProgramDayLike & { readonly weekday: number };
+  return { kind: 'rest', nextDayId: next.id, nextWeekday: next.weekday as Weekday };
+}
+
+const WEEKDAY_NAMES = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] as const;
+
+/** PROG-04 (D-317) : jour de la semaine d'un nom de jour qui COMMENCE par « Lundi », « Mardi »… (mot entier, casse indifférente) ; sinon `null`. */
+export function weekdayFromDayName(name: string): Weekday | null {
+  const word = /^\s*([a-zA-Z]+)(?![a-zA-ZÀ-ɏ])/.exec(name)?.[1]?.toLowerCase();
+  const index = word === undefined ? -1 : (WEEKDAY_NAMES as readonly string[]).indexOf(word);
+  return index < 0 ? null : ((index + 1) as Weekday);
+}
+
+/** PROG-04 (D-316) : jours d'entraînement déduits des jours garnis rattachés à un jour de la semaine, triés ; `null` sans aucun. */
+export function routineTrainingDays(days: readonly ProgramDayLike[]): Weekday[] | null {
+  const set = [...new Set(days.filter((d) => d.exercises.length > 0).filter(hasWeekday).map((d) => d.weekday as Weekday))].sort((a, b) => a - b);
+  return set.length === 0 ? null : set;
 }

@@ -29,7 +29,9 @@ export const DEFAULT_TRAINING_DAYS: readonly Weekday[] = Object.freeze([1, 2, 4,
  * repos) : valeur d'avant (`DEFAULT_TRAINING_DAYS`). Proposition seulement : Ali la modifie, une cible de repos enregistrée garde ses jours.
  */
 const SPREAD: Readonly<Record<number, readonly Weekday[]>> = { 1: [1], 2: [1, 4], 3: [1, 3, 5], 4: [1, 2, 4, 5], 5: [1, 2, 4, 5, 6], 6: [1, 2, 3, 4, 5, 6] };
-export function defaultTrainingDays(routineDayCount: number | null): readonly Weekday[] {
+/** PROG-04 (D-316) : les jours de la semaine des jours de la routine, quand ils existent, priment sur la répartition par nombre de jours. */
+export function defaultTrainingDays(routineDayCount: number | null, routineWeekdays: readonly Weekday[] | null = null): readonly Weekday[] {
+  if (routineWeekdays !== null && routineWeekdays.length > 0) return [...new Set(routineWeekdays)].sort((a, b) => a - b);
   return (routineDayCount === null ? undefined : SPREAD[routineDayCount]) ?? DEFAULT_TRAINING_DAYS;
 }
 

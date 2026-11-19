@@ -188,6 +188,8 @@ export interface RoutineExerciseSpec {
 export interface RoutineDaySpec {
   readonly name: string;
   readonly dayOrder: number;
+  /** PROG-04 (D-316, migration 0020) : jour de la semaine ISO (1 = lundi … 7 = dimanche) ; absent ou nul : jour sans date (rotation). */
+  readonly weekday?: number | null;
   readonly exercises: readonly RoutineExerciseSpec[];
 }
 

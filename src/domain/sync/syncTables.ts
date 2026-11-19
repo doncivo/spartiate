@@ -355,7 +355,8 @@ const ROUTINE_TABLE = table('routine', [c('name', 'text', false, { max: 120 }), 
 
 const ROUTINE_DAY_TABLE = table(
   'routine_day',
-  [uuidId('routine_id'), c('name', 'text', false, { max: 120 }), c('day_order', 'int', false), createdAt, deletedAt],
+  // PROG-04 (schéma 20) : jour de la semaine ISO, facultatif.
+  [uuidId('routine_id'), c('name', 'text', false, { max: 120 }), c('day_order', 'int', false), c('weekday', 'int', true, { values: [1, 2, 3, 4, 5, 6, 7] }), createdAt, deletedAt],
   { parents: [{ column: 'routine_id', table: 'routine' }], titleSource: { kind: 'own', column: 'name' } },
 );
 

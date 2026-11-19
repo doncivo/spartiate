@@ -150,6 +150,7 @@ Jours d’une routine (`routine_id` renvoie à `routine.csv`).
 | `routine_id` | text | — | non |  |
 | `name` | text | — | non |  |
 | `day_order` | int | — | non |  |
+| `weekday` | int | — | oui | Jour de la semaine ISO (1 = lundi … 7 = dimanche), PROG-04 ; nul : jour sans date. |
 
 ### `csv/routine_exercise.csv`
 

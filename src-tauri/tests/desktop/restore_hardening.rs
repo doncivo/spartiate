@@ -354,8 +354,8 @@ fn p04_a_trapped_database_is_refused() {
     // 18 déclencheurs de recherche (0011) + 30 de capture de l'ancien projet (0015, sans `routine`) + 61 de capture de Spartiate (0001 : 4, 0002 : 10,
     // 0004 : 4, 0006 : 6, 0007 : 2, 0008 : 8, 0009 : 6, 0010 : 4, 0011 : 2, 0012 : 4, 0014 : 1, I6-03b ; 0015 : 2, FIX-0181 : capture de food_favorite ;
     // 0016 : 2, RESET-01 : capture de data_reset ; 0017 : 4, I6-05 : compléments et prises ; 0018 : 2, I6-06 : capture de cardio_session ;
-    // 0019 : 2, PROG-01 : colonnes du mésocycle et de la cible de repos).
-    assert_eq!(REFERENCE_TRIGGERS.len(), 111);
+    // 0019 : 2, PROG-01 : colonnes du mésocycle et de la cible de repos ; 0020 : 1, PROG-04 : jour de la semaine).
+    assert_eq!(REFERENCE_TRIGGERS.len(), 112);
 }
 
 #[test]

@@ -13,6 +13,8 @@
  */
 export const SCHEMA_REPUBLISH: Readonly<Record<number, readonly string[]>> = {
   19: ['mesocycle', 'nutrition_target'],
+  // PROG-04 (D-316) : jour de la semaine des jours de routine.
+  20: ['routine_day'],
 };
 
 /**

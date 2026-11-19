@@ -28,7 +28,8 @@ import {
 import { tNutrition } from '../../i18n/nutritionText';
 import { logFailure } from '../../platform/desktop/log';
 import type { SearchableFood } from '../../domain/nutrition/foodSearch';
-import type { LocalDate, LocalTime } from '../../domain/types';
+import type { LocalDate, LocalTime, Weekday } from '../../domain/types';
+import { routineTrainingDays } from '../../domain/training/programDay';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import type { NutritionTargetRecord } from '../../db/repositories/nutritionTargetRepository';
 
@@ -230,6 +231,19 @@ export async function recordCheckInDecision(
     return { outcome, record: await repo.record({ weekStart, target: outcome.target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed, restPlan: customRest(outcome.target) }) };
   }
   return { outcome, record: null };
+}
+
+/** PROG-04 (D-316) : jours de la semaine des jours garnis de la routine du cycle en cours ; null sans cycle, sans jour rattaché ou lecture impossible. */
+export async function activeRoutineWeekdays(access: DataAccess): Promise<Weekday[] | null> {
+  try {
+    const cycle = await (await access.repos.mesocycles()).current();
+    if (cycle === null) return null;
+    const routine = await (await access.repos.trainingRoutines()).get(cycle.routineId);
+    return routine === null ? null : routineTrainingDays(routine.days);
+  } catch {
+    logFailure('nutrition', 'routine-days-read-failed');
+    return null;
+  }
 }
 
 /** ERGO-02b (D-288) : nombre de jours de la routine du cycle de musculation en cours ; null sans cycle, routine illisible ou lecture impossible. */

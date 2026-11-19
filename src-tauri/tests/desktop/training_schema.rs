@@ -76,8 +76,8 @@ fn error_code(path: &Path) -> &'static str {
 
 /// I6-06 : version de la migration du cardio (`src/db/migrations/00NN_cardio.ts`), la dernière du registre.
 const CARDIO_VERSION: u32 = 18;
-/// PROG-01 : version de la migration 0019 (mésocycle et jours de repos), la dernière du registre.
-const LATEST_VERSION: u32 = 19;
+/// PROG-04 : version de la migration 0020 (jour de la semaine des jours de routine), la dernière du registre.
+const LATEST_VERSION: u32 = 20;
 
 #[test]
 fn prog01_the_app_schema_version_is_the_latest_migration_after_the_cardio_one() {
