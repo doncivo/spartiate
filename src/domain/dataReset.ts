@@ -111,6 +111,7 @@ export const RESET_SETTINGS: Readonly<Record<SettingKey, ResetFate>> = {
   'onboarding.completed': 'wiped',
   'onboarding.draft': 'wiped',
   'onboarding.answers': 'wiped',
+  'training.cycleWeeks': 'wiped',
   'sample.ids': 'wiped',
   'desktop.closeToTray': 'kept',
   'desktop.launchAtStartup': 'kept',
