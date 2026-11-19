@@ -51,6 +51,8 @@ interface DraftLine {
 interface DraftDay {
   readonly id: string;
   readonly name: string;
+  /** PROG-04 (D-316) : jour de la semaine ISO, facultatif. */
+  readonly weekday?: number | null;
   readonly lines: readonly DraftLine[];
 }
 interface Draft {
@@ -67,6 +69,7 @@ const toDraft = (tree: RoutineTree): Draft => ({
   days: tree.days.map((d) => ({
     id: d.id,
     name: d.name,
+    weekday: d.weekday ?? null,
     lines: d.exercises.map((l) => ({
       id: l.id,
       exerciseId: l.exerciseId,
@@ -140,6 +143,7 @@ const toSpec = (draft: Draft): RoutineSpec => ({
   days: draft.days.map((d, dayIndex) => ({
     name: d.name.trim(),
     dayOrder: dayIndex + 1,
+    weekday: d.weekday ?? null,
     exercises: d.lines.map((l, position) => ({
       exerciseId: l.exerciseId,
       exerciseName: l.exerciseName,
@@ -175,14 +179,17 @@ async function saveDraft(access: DataAccess, original: RoutineTree, draft: Draft
           id: day.id,
           name: daySpec.name,
           dayOrder: daySpec.dayOrder,
+          weekday: daySpec.weekday ?? null,
           exercises: lines,
         });
         continue;
       }
-      if (before.name !== daySpec.name || before.dayOrder !== daySpec.dayOrder)
+      const weekdayChanged = (before.weekday ?? null) !== (daySpec.weekday ?? null);
+      if (before.name !== daySpec.name || before.dayOrder !== daySpec.dayOrder || weekdayChanged)
         await repo.updateDay(day.id, {
           name: daySpec.name,
           dayOrder: daySpec.dayOrder,
+          ...(weekdayChanged ? { weekday: daySpec.weekday ?? null } : {}),
         });
       const kept = new Set(lines.map((l) => l.id));
       for (const line of before.exercises) if (!kept.has(line.id)) await repo.removeExercise(line.id);
@@ -225,6 +232,7 @@ function issueText(spec: RoutineSpec): string | null {
     return tTraining('errorLine', {
       name: day.exercises[issue.lineIndex]?.exerciseName ?? '',
     });
+  if (issue.code === 'day-weekday' || issue.code === 'day-weekday-duplicate') return tTraining('errorDayWeekday', { day: (issue.dayIndex ?? 0) + 1 });
   return tTraining('errorDayName', { day: (issue.dayIndex ?? 0) + 1 });
 }
 
@@ -488,6 +496,20 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
             <label className="ct-training__field">
               <span className="ct-training__label">{tTraining('dayName')}</span>
               <input className="ct-training__input" value={day.name} maxLength={120} onChange={(e) => updateDay(day.id, (d) => ({ ...d, name: e.target.value }))} />
+            </label>
+            {/* PROG-04 (D-316) : jour de la semaine ; « Aucun » garde la rotation. */}
+            <label className="ct-training__field">
+              <span className="ct-training__label">{tTraining('dayWeekday')}</span>
+              <select className="ct-training__input" value={day.weekday === null || day.weekday === undefined ? '' : String(day.weekday)} onChange={(e) => updateDay(day.id, (d) => ({ ...d, weekday: e.target.value === '' ? null : Number(e.target.value) }))}>
+                <option value="">{tTraining('dayWeekdayNone')}</option>
+                {tTraining('weekdayNames')
+                  .split('|')
+                  .map((name, index) => (
+                    <option key={name} value={String(index + 1)}>
+                      {name}
+                    </option>
+                  ))}
+              </select>
             </label>
             {day.lines.length === 0 && <p className="ct-training__muted">{tTraining('emptyDay')}</p>}
             {routineCircuitsOf(circuitView(day.lines)).map((circuit) => (

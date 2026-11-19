@@ -124,7 +124,7 @@ export const syncFieldFr = {
     deleted_at: 'suppression',
   },
   equipment_profile: { name: 'nom', kind: 'type', inventory: 'inventaire', increments: 'incréments', deleted_at: 'suppression' },
-  routine_day: { routine_id: 'routine', name: 'nom', day_order: 'ordre du jour', deleted_at: 'suppression' },
+  routine_day: { routine_id: 'routine', name: 'nom', day_order: 'ordre du jour', weekday: 'jour de la semaine', deleted_at: 'suppression' },
   routine_exercise: {
     routine_day_id: 'jour',
     exercise_id: 'exercice',
