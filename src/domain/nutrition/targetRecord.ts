@@ -8,7 +8,7 @@ import { localDateOfInstant } from '../donePeriod';
 import { parseHlc } from '../hlc';
 import { isLocalDate, type Hlc, type IsoDateTime, type LocalDate } from '../types';
 import { NUTRITION_CONFIG } from './config';
-import type { RestPlan } from './restDay';
+import { restTargetFromGap, type RestPlan } from './restDay';
 import type { Target } from './types';
 
 export const TARGET_SOURCES = ['auto', 'manual'] as const;
@@ -120,8 +120,10 @@ export function effectiveTarget<T extends Pick<TargetRecord, 'id' | 'weekStart' 
  */
 export function checkInRestPlan<T extends Pick<TargetRecord, 'id' | 'weekStart' | 'accepted' | 'hlc' | 'target' | 'restPlan'>>(records: readonly T[], weekEnd: LocalDate, today: LocalDate): RestPlan | null {
   const now = effectiveTarget(records, today);
+  const plan = now?.restPlan ?? null;
   const analysed = effectiveTarget(records, weekEnd);
-  return (now ?? analysed)?.restPlan ?? null;
+  if (now === null || plan === null || analysed === null || analysed.target.kcal === now.target.kcal) return plan;
+  return { rest: restTargetFromGap(analysed.target, plan.rest.kcal - now.target.kcal), trainingDays: plan.trainingDays };
 }
 
 /**
