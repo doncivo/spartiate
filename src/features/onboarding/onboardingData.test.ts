@@ -138,6 +138,11 @@ describe('onboarding : données (I3-07)', () => {
       expect(await db.data.repos.settings.get('onboarding.answers')).toMatchObject({ step: 'you', heightCm: null, weightKg: null, sessionsPerWeek: 3, weeklyRatePct: 0.25 });
     });
 
+    it('PROG-05 (D-315) : la durée du cycle choisie à l’onboarding devient le dernier réglage de durée', async () => {
+      await finishOnboarding(deps(), { ...FULL, acceptProposal: false, mesoWeeks: 4 }, content);
+      expect(await db.data.repos.settings.get('training.cycleWeeks')).toBe(4);
+    });
+
     it('proposition refusée ou écran Split passé : aucune routine', async () => {
       await finishOnboarding(deps(), { ...FULL, acceptProposal: false }, content);
       expect(await (await db.data.repos.trainingRoutines()).list()).toEqual([]);
