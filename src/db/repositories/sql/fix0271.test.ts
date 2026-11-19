@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { buildExportArchive, parseExportArchive, type ExportData } from '../../../domain/exportImport/archive';
 import { planImport } from '../../../domain/exportImport/plan';
+import { effectiveTarget } from '../../../domain/nutrition/targetRecord';
 import type { DeviceId, LocalDate } from '../../../domain/types';
 import { openBaseDb, type TestDb } from './testSetup';
 
@@ -61,4 +62,19 @@ describe('FIX-0271 : cible importée prévue pour le lundi 16/11', () => {
       });
     }
   }
+});
+
+describe('FIX-0271 revue (point 2) : fusion à la frontière de minuit', () => {
+  it('décision locale prise à 00:30 heure de Paris (23:30 UTC la veille) : la fusion garde la cible que l’appareil d’origine aurait retenue', async () => {
+    const t = await open(A, '2026-11-15T23:30:00.000Z');
+    await t.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-09' as LocalDate, target: kcal(3177), source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false }));
+    const x = await open(X, '2026-11-10T10:00:00.000Z');
+    await x.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-16' as LocalDate, target: kcal(2450), source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false }));
+    // Ordre de référence : les deux décisions avec leurs HLC d'origine, sur le même calendrier que la lecture.
+    const expected = effectiveTarget([...(await (await t.data.repos.nutritionTargets()).list()), ...(await (await x.data.repos.nutritionTargets()).list())], '2026-11-19' as LocalDate);
+    const { bytes } = await buildExportArchive(await (await x.data.repos.exportImport()).readExportData(), { date: '2026-11-10T10:05:00.000Z', sv: 18 });
+    t.clock.advance(60_000);
+    await importInto(t, (await parseExportArchive(bytes, { currentSv: 19, currentYear: 2026 })).data, 'merge');
+    expect(await inForce(t, '2026-11-19')).toBe(expected?.target.kcal);
+  });
 });

@@ -234,6 +234,12 @@ describe('FIX-0271 (D-314) : une cible prévue n’est pas battue par une décis
     expect(upcomingTargets([plan, checkIn], '2026-11-15' as LocalDate).map((r) => r.id)).toEqual(['plan']);
   });
 
+  it('revue : HLC illisible : pas de date de décision, la semaine fait la prise d’effet', () => {
+    const odd = { ...plan, hlc: 'illisible' as Hlc };
+    expect(targetDecidedOn(odd)).toBeNull();
+    expect(targetInForceSince(odd)).toBe('2026-11-16');
+  });
+
   it('Stratégie : date de décision et date de prise d’effet', () => {
     expect(targetDecidedOn(checkIn)).toBe('2026-11-15');
     expect(targetInForceSince(checkIn)).toBe('2026-11-15');
@@ -246,5 +252,14 @@ describe('FIX-0271 (D-314) : une cible prévue n’est pas battue par une décis
     const morning = { ...rec('m', '2026-11-16', 2450, at('2026-11-16T07:00:00.000Z')), restPlan };
     expect(checkInRestPlan([before, morning], '2026-11-15' as LocalDate, '2026-11-16' as LocalDate)).toEqual(restPlan);
     expect(checkInRestPlan([before], '2026-11-15' as LocalDate, '2026-11-16' as LocalDate)).toBeNull();
+  });
+
+  it('revue : cible du jour différente de la semaine analysée : le plan de repos est rapporté à la cible analysée par le même écart', () => {
+    const restPlan = { rest: { kcal: 2100, proteinG: 150, fatG: 70, carbG: 162 }, trainingDays: [1, 2, 4, 5, 6] as const };
+    const analysed = { ...rec('w', '2026-11-09', 3177, at('2026-11-09T10:00:00.000Z')), restPlan: null };
+    const planned = { ...rec('p', '2026-11-16', 2450, at('2026-11-14T10:00:00.000Z')), restPlan };
+    const out = checkInRestPlan([analysed, planned], '2026-11-15' as LocalDate, '2026-11-16' as LocalDate);
+    expect(out?.rest.kcal).toBe(3177 - 350);
+    expect(out?.trainingDays).toEqual([1, 2, 4, 5, 6]);
   });
 });
