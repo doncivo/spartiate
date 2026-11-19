@@ -374,7 +374,7 @@
     },
     {
       "fichier": "src/platform/windowTheme.ts",
-      "story": "FIX-0272",
+      "story": "LOT-27-FIX0272",
       "raison": "Façade platform de la barre de titre Tauri (ADR 0001, constat de l'audit 0.26.0) : code DÉPLACÉ de src/features/settings/theme.ts, déjà au départ (thème appliqué avant le premier rendu) ; aucun octet de logique ajouté, l'import Tauri reste dynamique."
     }
   ]
