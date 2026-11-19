@@ -211,6 +211,8 @@ export async function finishOnboarding(deps: FinishDeps, draft: OnboardingDraft,
     const answers = answersOf(draft);
     const stored = await repos.settings.get('onboarding.answers');
     if (stored === null || stored === undefined || JSON.stringify(parseDraft(stored)) !== JSON.stringify(answers)) await repos.settings.set('onboarding.answers', answers);
+    // PROG-05 (D-315) : la durée du cycle de l'étape 7 devient le dernier réglage de durée (proposée au prochain lancement).
+    if ((await repos.settings.get('training.cycleWeeks')) !== draft.mesoWeeks) await repos.settings.set('training.cycleWeeks', draft.mesoWeeks);
     if ((await repos.settings.get('onboarding.draft')) !== null) await repos.settings.set('onboarding.draft', null);
     return { routineId, routineCreated };
   });
