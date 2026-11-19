@@ -14,7 +14,7 @@
 .ct-toast__bar {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--ct-toast-action-bg);
   transform-origin: left;
   animation-name: ct-toast-countdown;
   animation-timing-function: linear;

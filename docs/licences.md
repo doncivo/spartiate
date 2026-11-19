@@ -125,3 +125,27 @@ Ajoutées en dépendances directes **sans nouvelle entrée dans `Cargo.lock`** (
 - Licence : Creative Commons Attribution 4.0 (CC BY 4.0, <https://creativecommons.org/licenses/by/4.0/>), déclarée sur la page de l’API <https://fitnessvolt.com/strength-standards/api/> : « The data is free to use under CC BY 4.0. » (vérifié le 16/11/2026 ; le bloc Dataset de la page de méthode décrit un autre jeu, « FVCP », et n’est pas la preuve retenue) ; la réponse de l’API précise « Free with a visible attribution link ». Attribution demandée : « Strength standards data by FitnessVolt (https://fitnessvolt.com/strength-standards/) ».
 - Attribution dans l’app : Progrès › Strength Score affiche en clair « Normes : FitnessVolt Strength Standards (Symmetric Strength self-reported gym dataset, version des données du 09/06/2026), https://fitnessvolt.com/strength-standards/, licence CC BY 4.0. » (texte, pas de lien cliquable : l’app n’ouvre pas de lien externe depuis Progrès). La source demande « a visible attribution link » : l’adresse complète est écrite en clair, ce qui satisfait CC BY 4.0 § 3(a)(2) (attribution par un moyen raisonnable selon le support) ; choix révisable par Ali (D-310).
 - Données déclarées par des pratiquants, non jugées (méthode de la source) ; ce que mesurent les charges des tractions et dips est l’hypothèse H-37.
+
+# Licences — dépendances npm livrées (FIX-0272, A-003)
+
+Toutes les dépendances de `dependencies` (package.json), version et licence du verrou (package-lock.json). Les outils de développement (`devDependencies`) ne sont pas livrés.
+
+<!-- licences-npm:début (généré par scripts/release/licences-npm.mjs) -->
+| Paquet | Version | Licence |
+|---|---|---|
+| `@fontsource/cinzel` | 5.3.0 | OFL-1.1 |
+| `@tauri-apps/api` | 2.12.1 | Apache-2.0 OR MIT |
+| `@tauri-apps/plugin-autostart` | 2.7.0 | MIT OR Apache-2.0 |
+| `@tauri-apps/plugin-barcode-scanner` | 2.5.1 | MIT OR Apache-2.0 |
+| `@tauri-apps/plugin-geolocation` | 2.5.0 | MIT OR Apache-2.0 |
+| `@tauri-apps/plugin-opener` | 2.7.0 | MIT OR Apache-2.0 |
+| `@tauri-apps/plugin-process` | 2.4.0 | MIT OR Apache-2.0 |
+| `@tauri-apps/plugin-sql` | 2.5.0 | MIT OR Apache-2.0 |
+| `@tauri-apps/plugin-updater` | 2.13.1 | MIT OR Apache-2.0 |
+| `lucide-react` | 1.49.0 | ISC |
+| `qrcode-generator` | 2.0.4 | MIT |
+| `react` | 18.3.1 | MIT |
+| `react-dom` | 18.3.1 | MIT |
+| `recharts` | 3.10.1 | MIT |
+| `zustand` | 5.0.15 | MIT |
+<!-- licences-npm:fin -->

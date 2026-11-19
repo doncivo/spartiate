@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgb(28 22 48 / 0.45);
+  background: var(--ct-help-scrim);
 }
 
 .ct-shortcuts {
@@ -24,7 +24,7 @@
   background: var(--ct-color-surface);
   color: var(--ct-color-text);
   font-family: var(--ct-font-text);
-  box-shadow: 0 24px 60px rgb(28 22 48 / 0.28);
+  box-shadow: 0 24px 60px var(--ct-help-shadow);
 }
 
 .ct-shortcuts:focus-visible {
