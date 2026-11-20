@@ -121,6 +121,7 @@ export function formatDbFailure(failure: DbFailure, env: DbEnvironment | null): 
  * des versions sur le PC) au lieu du message brut.
  */
 export function failureAlertKey(failure: DbFailure | null, backupFailed: boolean): PlainMessageKey {
+  if (failure?.kind === 'connection-poisoned') return 'app.dbPoisoned';
   if (failure?.phase === 'start') return 'app.startError';
   if (failure?.kind === 'schema-newer') return detectOs() === 'ios' ? 'app.update.schemaNewer' : 'app.update.schemaNewerPc';
   return backupFailed ? 'app.dbBackupError' : 'app.dbError';

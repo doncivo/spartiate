@@ -237,7 +237,7 @@ export function App() {
       )}
       {dbStatus === 'error' && !recoveryFailed && <p role="alert">{t(failureAlertKey(dbFailure, dbBackupFailed))}</p>}
       {/* 0.2.1 : étape, erreur exacte, URL et chemins de la base, copiables (diagnostic sans logs, sur PC comme sur iPhone). */}
-      {dbStatus === 'error' && dbFailure && <DbFailureDetails failure={dbFailure} retry={!recoveryFailed} />}
+      {dbStatus === 'error' && dbFailure && <DbFailureDetails failure={dbFailure} retry={!recoveryFailed && dbFailure.kind !== 'connection-poisoned'} />}
       {container ? (
         <AppContainerProvider container={container}>
           {/* I-03 : écran de verrou ; coquille non montée au lancement verrouillé, masquée et inerte au retour. */}

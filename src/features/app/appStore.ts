@@ -22,7 +22,7 @@ export interface DbFailure {
    * I-06 (ADR 0007 avenant I-06 point 7) : nature de l'échec d'ouverture : base plus récente que l'app, migration, sauvegarde avant
    * migration, autre. Absent pour la suite du démarrage et le chien de garde.
    */
-  readonly kind?: 'schema-newer' | 'migration' | 'backup' | 'other';
+  readonly kind?: 'schema-newer' | 'migration' | 'backup' | 'other' | 'connection-poisoned';
   /** Version de l'app (`appVersion.ts`) ; null si illisible. */
   readonly appVersion?: string | null;
   /** Dernière migration appliquée à la base au moment de l'échec ; null si `schema_migrations` n'a pas été lue. */

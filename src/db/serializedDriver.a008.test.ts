@@ -1,8 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DbError, type SqlDriver } from './driver';
 import { openSqliteWasmDriver } from './drivers/sqliteWasm';
-import { migrate } from './migrator';
-import { migrations } from './migrations';
 import { createSerializedDriver } from './serializedDriver';
 import { useAppStore } from '../features/app/appStore';
 import { bootstrapDatabase } from '../features/app/bootstrap';
@@ -97,6 +95,43 @@ describe('A-008 : échec fermé quand l’annulation ne peut pas être établie'
     await expect(failingWork(r.driver)).rejects.toThrow('work-failed');
     expect((await r.driver.execute("INSERT INTO item VALUES ('suivante')")).rowsAffected).toBe(1);
     expect(r.sent).toContain('DELETE FROM sync_guard');
+  });
+
+  it('qa : COMMIT perdu (`transaction-lost`) inchangé, file rendue, aucun empoisonnement', async () => {
+    const base = await openSqliteWasmDriver();
+    const driver = createSerializedDriver('sqlite-wasm', {
+      execute: (sql, params) => (sql === 'COMMIT' ? Promise.reject(new Error('cannot commit - no transaction is active')) : base.execute(sql, params)),
+      select: (sql, params) => base.select(sql, params),
+      close: () => base.close(),
+    });
+    await driver.execute('CREATE TABLE sync_guard (id INTEGER)');
+    await expect(driver.transaction(() => Promise.resolve(1))).rejects.toMatchObject({ code: 'transaction-lost' });
+    await expect(driver.select('SELECT 1 AS x')).resolves.toEqual([{ x: 1 }]);
+    await driver.close();
+  });
+
+  it('qa : COMMIT rejeté autrement mais ROLLBACK réussi, annulation établie, pas d’empoisonnement', async () => {
+    const base = await openSqliteWasmDriver();
+    const driver = createSerializedDriver('sqlite-wasm', {
+      execute: (sql, params) => (sql === 'COMMIT' ? Promise.reject(new Error('disk I/O error')) : base.execute(sql, params)),
+      select: (sql, params) => base.select(sql, params),
+      close: () => base.close(),
+    });
+    await expect(driver.transaction(() => Promise.resolve(1))).rejects.toThrow('disk I/O error');
+    await expect(driver.select('SELECT 1 AS x')).resolves.toEqual([{ x: 1 }]);
+    await driver.close();
+  });
+
+  it('qa : un abonné tardif est prévenu, un abonné défaillant ne rouvre pas la file', async () => {
+    const r = (current = await rig({ rollback: IPC }));
+    r.driver.onPoisoned?.(() => {
+      throw new Error('abonné défaillant');
+    });
+    await failingWork(r.driver).catch(() => undefined);
+    const late = vi.fn();
+    r.driver.onPoisoned?.(late);
+    expect(late).toHaveBeenCalledOnce();
+    await expect(r.driver.select('SELECT 1')).rejects.toMatchObject({ code: 'connection-poisoned' });
   });
 
   it('critère 6 : retrait de sync_guard en échec après transaction perdue, l’écriture suivante est refusée', async () => {

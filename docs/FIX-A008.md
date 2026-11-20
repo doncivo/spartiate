@@ -1,6 +1,6 @@
 # FIX-A008 — Un ROLLBACK en échec ne doit plus laisser acquitter une écriture (lot 0.28.0, phase 1.3)
 
-Statut : **en cours.** Budget M. Branche `FIX-A008` depuis `origin/main` (`046a085f`). Aucune migration. Rôle : data-model (src/db).
+Statut : **fait (relecture sync-icloud et revue à suivre).** Budget M. Branche `FIX-A008` depuis `origin/main` (`046a085f`). Aucune migration. Rôle : data-model (src/db).
 Origine : audit Codex 0.26.0, A-008 (bloquant), preuve `partie2-rollback.test.mjs` (reprise dans `src/db/serializedDriver.a008.test.ts`,
 SQLite Wasm synthétique, panne injectée avant ROLLBACK). Chapitres PRD : 20 (modèle de données, § 20.0), 18 (états dégradés, écran d'échec).
 ADR 0002 (pilote sérialisé). Fixtures synthétiques uniquement (D-292).
@@ -31,3 +31,44 @@ n'est émise après l'empoisonnement (une instruction de plus serait exécutée 
 
 Périmètre : `src/db/driver.ts` (code d'erreur, abonnement optionnel `onPoisoned`), `src/db/serializedDriver.ts`,
 `src/features/app/{bootstrap,appStore,DbFailureDetails}.ts(x)`, `src/App.tsx` (retry masqué), `src/i18n/fr.ts`. Hors périmètre : C-115, C-138.
+
+## Passe agent du module (data-model) : choix
+
+- Seuls deux états empoisonnent : ROLLBACK rejeté autrement que « no transaction is active » ; retrait de `sync_guard` en échec après transaction
+  perdue. « no transaction is active » (ROLLBACK ou COMMIT), `transaction-lost`, retrait réussi : inchangés.
+- Aucune relance de ROLLBACK ni réouverture : la voie sûre n'existe pas (le pool sqlx du plugin vit côté Rust ; une réouverture depuis le JS ne
+  prouve pas que l'ancienne transaction est close). Seule sortie proposée : fermer puis rouvrir l'app (`app.dbPoisoned`, sans « Réessayer »).
+- Chemin d'erreur réutilisé : `setDbStatus('error', { failure })` de `bootstrapDatabase` (phase `start`, étape `connection-poisoned`, kind
+  `connection-poisoned`), abonnement par `SqlDriver.onPoisoned?` (optionnel : aucun faux pilote existant ne change). Journal : une ligne
+  `db: connexion invalidée (DbError)` sans valeur ; le diagnostic copiable porte l'erreur d'origine et la cause du ROLLBACK (messages SQLite
+  sans paramètres).
+- L'appelant de la transaction fautive reçoit toujours l'erreur d'origine ; les appels suivants reçoivent `connection-poisoned`.
+
+## Passe qa-test
+
+Cas ajoutés : COMMIT perdu (`transaction-lost`, pas d'empoisonnement) ; COMMIT rejeté autrement avec ROLLBACK réussi (annulation établie, pas
+d'empoisonnement) ; abonné tardif et abonné défaillant. Déjà couverts : « no transaction is active » (critère 5 et TRI-22 de
+`serializedDriver.test.ts`), appel déjà en file et fermeture (critère 3). Vérifié : `src/db`, `src/features/app`, `src/platform/tauri` (137 fichiers,
+1092 tests) verts ; `tsc`, `eslint` propres.
+
+## Interactions avec les autres constats (non corrigés ici)
+
+- C-115 (chien de garde, `startupSteps.ts`, `StartupWatchdog.tsx`, `bootstrap.ts`) : « Réessayer » recharge la page ; or le pool sqlx est côté Rust
+  et survit au rechargement, donc une transaction restée ouverte aussi. FIX-COQUILLE devra : ne jamais proposer Réessayer/recharger quand
+  `dbFailure.kind === 'connection-poisoned'` (déjà masqué dans `App.tsx`), ne pas écraser cet état par `ready` ni par un échec de démarrage, et ne
+  pas relancer de migration sur un pilote empoisonné (elle serait refusée).
+- C-138 (restaurations Rust sans exclusion mutuelle, `backup.rs`) : une restauration pendant un état empoisonné ou une transaction ouverte
+  copierait un fichier incohérent. La correction Rust devra refuser ou attendre la fin des écritures, et rendre l'état « connexion invalidée »
+  explicite (redémarrage obligatoire après restauration).
+
+## Périmètre pour la relecture sync-icloud (D-26)
+
+Aucun fichier de `src/sync/**`, `src/domain/sync/**`, `src/db/repositories/**`, aucune migration, aucun déclencheur. À relire : `serializedDriver.ts`
+(chemin TRI-22 : `DELETE FROM sync_guard` après transaction perdue, désormais échec fermé s'il échoue, aucune autre instruction ensuite) et son
+effet sur `sync_outbox` : une écriture ne passe plus jamais hors capture sous garde orpheline.
+
+## Décision proposée (pour docs/decisions.md, non écrite)
+
+D-xxx : « Un pilote SQLite dont l'annulation d'une transaction ne peut pas être établie est empoisonné (`connection-poisoned`) : toute opération
+sauf `close()` est refusée, l'app affiche l'échec et n'offre que le redémarrage. Pas de réouverture automatique de la connexion. » (ADR 0002,
+avenant.)
