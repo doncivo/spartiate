@@ -59,7 +59,15 @@ ou changement ; point de départ de la revue. Non-régression lancée : `src/dom
 - Test ajusté entre rouge et vert (sans changer ce qu'il prouve) : C-064 lisait les deux cycles par `created_at` (même instant, horloge figée),
   ordre non déterministe ; lecture par statut. L'assertion rouge d'origine (interrupteur encore coché) est inchangée.
 
-## Décisions proposées
+## Passe code-reviewer (à froid, agent distinct) : à corriger, puis corrigé
+
+Code juste sur les cinq constats (répartition des séries sans perte ni doublon, date locale du début, réglages non écrasés, échange de jours en une
+transaction, rouge `559a13d4` avant vert `5321f2b6`, preuve C-018 adaptée acceptable, eslint vide, 1 066 tests ciblés verts). À corriger : (1) aucun test de
+la séance commencée la veille et close après minuit ; (2) rollback de C-065 non prouvé. Corrigés par deux tests d'écran dans
+`FixProgramme.screens.test.tsx` (heures locales, indépendants du fuseau ; échec simulé d'`updateDay` après la libération : base intacte, « saveError »),
+qui échoueraient si la date venait de `endedAt` ou sans transaction. Suggestions (3) et (4) écrites dans D-351 et D-352.
+
+## Décisions : D-349, D-350, D-351, D-352 (docs/decisions.md)
 
 - **D-349** : FIX-PROGRAMME (C-063, complète D-316 (2), choix prudent, révisable par Ali) : avec des jours rattachés, la séance du jour close
   le jour même (date locale de son début, même routine, même jour) n'est pas reproposée ; la carte dit « Séance du jour faite. Prochaine
@@ -68,10 +76,10 @@ ou changement ; point de départ de la revue. Non-régression lancée : `src/dom
   contigus ou groupe ; sinon remplissage dans l'ordre des lignes, la dernière reçoit le reste), sans colonne `routine_exercise_id` sur
   `workout_set` (aucune migration) ; une ligne d'un exercice répété sans série est proposée au retrait.
 - **D-351** : FIX-PROGRAMME (C-117, complète D-315 (1)) : « Revoir mes réglages » part de la durée réglée (`training.cycleWeeks`, si 4, 5 ou
-  6) et ne l'écrit que si elle change dans la revue ; 7 semaines et « illimité » ne sont jamais écrasés par une revue.
+  6) et ne l'écrit que si elle change dans la revue ; 7 semaines et « illimité » ne sont jamais écrasés par une revue. Limite (revue) : si `training.cycleWeeks` vaut 7 ou « illimité », la revue affiche la durée de l'onboarding (4, 5 ou 6), pas le réglage réel ; rien n'est écrasé tant qu'on ne la change pas.
 - **D-352** : FIX-PROGRAMME (C-065, complète D-316 (1)) : à l'enregistrement d'une routine, l'unicité du jour de la semaine est contrôlée sur
   le brouillon ; en base, les jours qui changent sont libérés puis écrits dans la même transaction (échange de deux jours permis).
-
+ La libération écrit un `weekday = null` intermédiaire (une capture de synchro de plus, suivie de l'écriture finale au hlc plus récent) ; `src/sync` non touché.
 ## Constats d'Ali à faire
 
 - iPhone, programme à jours rattachés : faire la séance du jour, la clore, revenir sur Aujourd'hui : « Séance du jour faite » et la
