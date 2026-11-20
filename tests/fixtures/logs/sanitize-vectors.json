@@ -9,7 +9,8 @@
     "Mots voisins : comparés après retrait des signes de ponctuation en tête et en fin (lettres, chiffres et % gardés), en minuscules.",
     "qa-test FIX-CONFID-IOS : un mot corporel collé devant le nombre (FC142, hrv48 ; au début du mot ou après un signe, jamais au milieu d'un mot comme 8fc3), une espace insécable (U+00A0, U+202F) entre le nombre et son unité ou son mot corporel, et une valeur JSON séparée de sa clé par une espace ({\"restingHr\": 52}) sont masqués aussi.",
     "Revue 1 FIX-CONFID-IOS : valeur numérique d'une clé (clé=nombre, clé:nombre, clé = nombre, clé: nombre ; clé commençant par une lettre) masquée dès que la clé n'est pas dans allowedKeys (clés composées heart_rate, poidsKg comprises) ; tableau JSON sous une clé non permise ({\"restingHr\":[52]}) masqué ; espaces fines U+2009 et U+2007 traitées comme les insécables. Tout nombre décimal est masqué, versions à deux parties et durées comprises (v0.28, 1.5 s) : choix voulu (D-331).",
-    "Revue 2 FIX-CONFID-IOS : avant un nombre, jusqu'à trois signes parmi [ \" + - ( / , → et les espaces insécables ou fines sont sautés pour trouver la clé ou le mot corporel collé (\"weight\":\"82\", weight=[82], [\"weight\",82], poids=-82, poids(82), poids→82) ; un mot masqué qui ouvre un tableau ([ sans ]) masque les mots suivants jusqu'au ] ; un nombre en tête de mot est masqué si l'un des deux mots précédents est un mot corporel (FC moyenne 142, weight → 82) ; unités kilo, kilos, lb, lbs, pulsations ajoutées. Limite : tout décimal reste masqué, même après une clé permise (version 1.2), et les heures attachées comme 22h30 aussi."
+    "Revue 2 FIX-CONFID-IOS : avant un nombre, jusqu'à trois signes parmi [ \" + - ( / , → et les espaces insécables ou fines sont sautés pour trouver la clé ou le mot corporel collé (\"weight\":\"82\", weight=[82], [\"weight\",82], poids=-82, poids(82), poids→82) ; un mot masqué qui ouvre un tableau ([ sans ]) masque les mots suivants jusqu'au ] ; un nombre en tête de mot est masqué si l'un des deux mots précédents est un mot corporel (FC moyenne 142, weight → 82) ; unités kilo, kilos, lb, lbs, pulsations ajoutées. Limite : tout décimal reste masqué, même après une clé permise (version 1.2), et les heures attachées comme 22h30 aussi.",
+    "Revue 3 FIX-CONFID-IOS : > et ≈ (U+2248) sautés aussi (poids->82, poids=>82, poids≈82)."
   ],
   "vectors": [
     {
@@ -455,6 +456,22 @@
     {
       "input": "code=-5",
       "expected": "code=-5"
+    },
+    {
+      "input": "poids->82",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "poids=>82",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "poids≈82",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "seuil a>2 ok",
+      "expected": "seuil a>2 ok"
     }
   ],
   "codeVectors": [
