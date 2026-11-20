@@ -87,7 +87,7 @@ describe('ERGO-03 critère 2 : cible non pré-remplie', () => {
     expect(button).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(button);
     expect(button).toHaveAttribute('aria-expanded', 'true');
-    for (const label of ['Calories (kcal)', 'Protéines (g)', 'Lipides (g)', 'Glucides (g)']) expect(within(r).getByLabelText(label)).toHaveValue(null);
+    for (const label of ['Calories (kcal)', 'Protéines (g)', 'Lipides (g)', 'Glucides (g)']) expect(within(r).getByLabelText(label)).toHaveValue('');
   });
 
   it('sans cible : le bouton s’appelle « Fixer ma cible »', async () => {

@@ -20,10 +20,12 @@ export type OffMissing = keyof Per100g;
 export type OffRefusal = 'no-nutrition' | 'invalid-code' | 'no-name' | 'implausible';
 
 export type OffConversion =
-  | { readonly ok: true; readonly draft: FoodDraft; readonly missing: readonly OffMissing[] }
+  | { readonly ok: true; readonly draft: FoodDraft; readonly missing: readonly OffMissing[]; /** kcal remplacé par kJ / 4,184 (D-342). */ readonly energyFromKj: boolean }
   | { readonly ok: false; readonly reason: OffRefusal };
 
 const KJ_PER_KCAL = 4.184;
+/** Écart relatif toléré entre kcal × 4,184 et le kJ annoncé (D-342). */
+export const OFF_KJ_TOLERANCE = 0.15;
 
 /** Nombre fini et positif ou nul ; tout le reste (texte, NaN, négatif, infini) : `null`. */
 const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null);
@@ -49,8 +51,10 @@ export function offProductToDraft(product: OffRawProduct, now: IsoDateTime): Off
   const n = product.nutriments;
   const kcalDirect = num(n['energy-kcal_100g']);
   const kj = num(n['energy-kj_100g']);
+  // C-033 : un kcal qui contredit le kJ (plus de 15 %) est remplacé par kJ / 4,184, et le dit.
+  const energyFromKj = kcalDirect !== null && kj !== null && kj > 0 && Math.abs(kcalDirect * KJ_PER_KCAL - kj) / kj > OFF_KJ_TOLERANCE;
   const per100g: Per100g = {
-    kcal: kcalDirect ?? (kj === null ? null : Math.round(kj / KJ_PER_KCAL)),
+    kcal: energyFromKj ? Math.round((kj as number) / KJ_PER_KCAL) : (kcalDirect ?? (kj === null ? null : Math.round(kj / KJ_PER_KCAL))),
     proteinG: num(n['proteins_100g']),
     fatG: num(n['fat_100g']),
     carbG: num(n['carbohydrates_100g']),
@@ -60,7 +64,7 @@ export function offProductToDraft(product: OffRawProduct, now: IsoDateTime): Off
 
   const draft: FoodDraft = { source: 'off', barcode: barcode.code, name, brand: firstBrand === '' ? null : firstBrand, per100g, fetchedAt: now };
   if (validateFoodDraft(draft).length > 0) return { ok: false, reason: 'implausible' };
-  return { ok: true, draft, missing: missingNutrients(per100g) };
+  return { ok: true, draft, missing: missingNutrients(per100g), energyFromKj };
 }
 
 /** Valeurs inconnues (`null`) d'une fiche, dans l'ordre kcal, protéines, lipides, glucides, fibres ; un zéro réel n'est pas manquant. */
