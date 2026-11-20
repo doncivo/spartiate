@@ -124,4 +124,19 @@ describe('FIX-ABERR (C-005) : charge aberrante signalée avant enregistrement', 
     expect(screen.queryByRole('button', { name: 'Corriger' })).toBeNull();
     expect(await openDone()).toBe(1);
   });
+
+  it('passe qa-test : après « Confirmer », la série suivante à la même charge est écrite sans nouvelle question', async () => {
+    openSession();
+    const set = await firstSet();
+    enter(set, '200', '8');
+    fireEvent.click(await within(set).findByRole('button', { name: 'Confirmer' }));
+    await within(set).findByText('Validée');
+    const region = screen.getByRole('region', { name: BENCH });
+    const next = within(region).getAllByRole('group', { name: /^Série \d+$/ }).find((g) => within(g).queryByRole('button', { name: 'Valider la série' }) !== null);
+    if (!next) throw new Error('aucune série à faire');
+    enter(next, '200', '8');
+    await within(next).findByText('Validée');
+    expect(within(next).queryByRole('button', { name: 'Corriger' })).toBeNull();
+    expect(await openDone()).toBe(2);
+  });
 });

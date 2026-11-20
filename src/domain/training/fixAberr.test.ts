@@ -94,3 +94,24 @@ describe('C-005 records et 1RM affichés', () => {
     expect(personalRecords(current(105), history).map((r) => [r.kind, r.value])).toContainEqual(['load', 105]);
   });
 });
+
+describe('FIX-ABERR passe qa-test : cas limites du moteur', () => {
+  const ASSISTED = { id: 'custom-assisted', metric: 'load-reps', equipment: ['assisted-pull-up-machine'], kind: 'compound', assisted: true } as const;
+  it('assisté, poids de corps inconnu : une assistance très haute n’est pas « aberrante » (aucune exclusion, aucune note)', () => {
+    const p = prescribe(input({ exercise: ASSISTED, equipment: null, history: [session(9, 20, [8, 8, 8]), session(2, 50, [8, 8, 8])] }));
+    expect(p.reasons).not.toContain('outlier-excluded');
+    expect(p.reference?.loadKg).toBe(50);
+  });
+  it('assisté, poids de corps connu : une assistance anormalement BASSE (charge totale > 150 %) est écartée de la référence', () => {
+    const p = prescribe(input({ exercise: { ...ASSISTED, bodyweightFraction: 1 }, bodyweightKg: 80, equipment: null, history: [...[14, 11, 8].map((d) => session(d, 40, [8, 8, 8])), session(2, 2, [8, 8, 8])] }));
+    expect(p.reasons).toContain('outlier-excluded');
+    expect(p.reference?.loadKg).toBe(40);
+  });
+  it('séance mixte : seules les séries aberrantes sont écartées, la séance reste la référence avec ses séries plausibles', () => {
+    const mixed = { ...session(2, 100, []), sets: [set(1000, 8, { position: 0 }), set(100, 9, { position: 1 }), set(100, 9, { position: 2 })] };
+    const p = prescribe(input({ history: [...base(), mixed] }));
+    expect(p.reference?.loadKg).toBe(100);
+    expect(p.loadKg as number).toBeLessThan(150);
+    expect(analyzeHistory([...base(), mixed], CFG).unconfirmed).toEqual([{ workoutId: mixed.workoutId, position: 0 }]);
+  });
+});

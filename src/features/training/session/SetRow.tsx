@@ -125,7 +125,10 @@ export function SetRow({ set, number, current = false, loads = null, held = null
     setIssue(null);
     if (checkEntry !== undefined && kind === 'work') {
       setChecking(true);
-      const outlier = await checkEntry(entry, kind).finally(() => setChecking(false));
+      // Contrôle impossible (bloc à la demande non chargé) : la saisie n'est jamais bloquée, bornes absolues seules.
+      const outlier = await checkEntry(entry, kind)
+        .catch(() => null)
+        .finally(() => setChecking(false));
       if (outlier !== null) {
         setAsk({ entry, outlier });
         return;

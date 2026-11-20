@@ -79,10 +79,6 @@ const best = (sets: readonly WorkoutSet[], value: (s: WorkoutSet) => number): { 
   return out;
 };
 
-/**
- * Records de `sets` (une séance) contre `history` (séries des séances closes ANTÉRIEURES, tous exercices confondus ; seules les séries de
- * travail validées avec charge comptent). Un record est strictement supérieur à la meilleure valeur antérieure.
- */
 /** Séance la plus récente : après toute séance close (ordre de `analyzeHistory`). */
 const LIVE_END = '9999-12-31T23:59:59.999Z' as IsoDateTime;
 
@@ -99,6 +95,10 @@ function sessionsOf(exerciseId: string, mine: readonly WorkoutSet[], past: reado
   }));
 }
 
+/**
+ * Records de `sets` (une séance) contre `history` (séries des séances closes ANTÉRIEURES, tous exercices confondus ; seules les séries de
+ * travail validées avec charge comptent). Un record est strictement supérieur à la meilleure valeur antérieure.
+ */
 export function personalRecords(sets: readonly WorkoutSet[], history: readonly WorkoutSet[]): PersonalRecord[] {
   const counted = (s: WorkoutSet): boolean => countsInTonnage(s);
   const records: PersonalRecord[] = [];

@@ -1,6 +1,6 @@
 # FIX-ABERR — Charge aberrante signalée avant enregistrement, référence plafonnée (lot 0.28.0)
 
-Statut : **en cours.** Budget M. Branche `FIX-ABERR` depuis `origin/main` (`68af109d`). Aucune migration (schéma 20 inchangé). Lot 0.28.0, phase 1.2.
+Statut : **code et tests faits sur la branche, non poussés (revue de l'appelant et CI à suivre).** Budget M. Branche `FIX-ABERR` depuis `origin/main` (`68af109d`). Aucune migration (schéma 20 inchangé). Lot 0.28.0, phase 1.2.
 Origine : audit Claude 0.27.0 (`origin/audit-claude-0.27.0`, `docs/audit-claude-0.27.0/constats.md`) : C-005 (bloquant), C-028, C-168 (partie
 C-005) ; preuves `preuves/partie7a-ecrans.test.ts` et `preuves/partie4-moteur.test.ts`, describe « C-005 » (copiées dans `src/`, jamais
 branchées depuis docs/). Chapitres PRD : 11 (§ 11.2 point 1, § 11.3, § 11.4, § 11.5 « aberrantes signalées avant enregistrement »), 13 (séance
@@ -34,6 +34,66 @@ synthétiques uniquement (D-292).
 | 9 | Contrôle de saisie, cas limites : sans historique → rien ; séances seulement partielles → plus grande charge de travail ; lesté (poids de corps connu) sur la charge totale ; haltères par haltère ; exercice sans charge ou série non « travail » → rien ; assisté : voir passe qa-test. | `outlierEntry.test.ts` |
 | 10 | C-168 : les tests qui figeaient le défaut sont réécrits (prescribe.test.ts « charge aberrante », prescribe.review.test.ts B1, session.test.ts bornes). | commit rouge |
 
-Périmètre : `src/domain/training/{estimate1rm,prescribe,explain,exerciseSheet,closure,outlierEntry}.ts`, `src/features/training/session/{SetRow,ActiveSession,outlierCheck,ExerciseProgression}.tsx?`,
-`src/i18n/fr.training.ts`, `src/i18n/fr.progression.ts`, `src/db/repositories/sql/workoutRepository.ts` (lecture de l'historique du résumé).
+Périmètre : `src/domain/training/{estimate1rm,prescribe,explain,exerciseSheet,closure,outlierEntry}.ts`, `src/features/training/session/{SetRow.tsx,ActiveSession.tsx,outlierCheck.ts,ExerciseProgression.tsx}`,
+`src/i18n/fr.training.ts`, `src/i18n/fr.progression.ts`, `src/db/repositories/sql/workoutRepository.ts` (lecture de l'historique du résumé, SELECT seulement).
 Hors périmètre : migrations, synchro, contenu, C-028 « faute à la toute première séance » (voir risques).
+
+## Passe agent du module (training, binôme domain-logic) : choix
+
+- `entryOutlier` (`src/domain/training/outlierEntry.ts`, pur) : référence = 1RM courant / (1 + reps/30), à défaut la plus grande charge de
+  travail validée ; signalée si charge (totale si poids de corps connu) > 1,5 × référence (seuil inclus non signalé). Rien : sans historique,
+  hors série `work`, charge ou répétitions vides, charge déjà validée dans la séance pour cet exercice (une question par charge).
+- `outlierCheck.ts` (séance active, import dynamique au premier contrôle) : lit `progression.history` et le poids de corps (exercice au poids
+  du corps seulement) ; une lecture en échec n'empêche jamais la saisie (journal `training` / `outlier-check-failed`, bornes absolues seules).
+- `SetRow` : « Valider » attend le contrôle ; une question (`role="alert"`, texte du catalogue de la séance active, `fr.training.ts`, hors
+  départ) suspend l'écriture ; « Confirmer » écrit, « Corriger » ne fait rien et rend le focus à la charge ; toute frappe efface la question.
+- `analyzeHistory` : confirmation seulement par une séance ultérieure complète hors décharge (C-028) ; `unconfirmed` liste les aberrantes de
+  toutes les séances (partielles et décharges comprises) ; `latestRaw` (B1) supprimé ; option `outliers: false` pour un assisté au poids de
+  corps inconnu. `prescribe` : référence = `estimates[0]` (dernière séance non aberrante), note `noteOutlierHeld` ; clé `outlierHold` retirée.
+- Records : `sheetRecord` et `personalRecords` écartent `unconfirmed` (le résumé ne connaît pas les décharges : comptées ordinaires ;
+  `historyFor` lit désormais toutes les séries non supprimées pour reconnaître une séance partielle). 1RM de la fiche et Strength Score
+  suivent `analyzeHistory` sans changement.
+- `ENGINE_VERSION` reste 3 (aucune constante modifiée, D-284). `HistorySet.confirmed` reste lu, jamais écrit (aucun indicateur persistant).
+
+## Passe qa-test
+
+- Assisté (D-322) : poids de corps connu, l'aberrante est une assistance anormalement BASSE (charge totale > 150 %) : signalée à la saisie,
+  écartée par le moteur ; inconnu : aucun contrôle relatif ni exclusion (une assistance haute allège l'exercice). Tests `outlierEntry.test.ts`,
+  `fixAberr.test.ts` (qa-test).
+- Lesté : sur la charge totale si le poids de corps est connu, sur le lest sinon ; haltères : par haltère ; métrique sans charge ou
+  chronométrée, échauffement, drop, partielle : aucun contrôle. Séance mixte : seules les séries aberrantes sont écartées.
+- Deux séries de suite à 200 kg : une seule question (UI, qa-test). Correction d'une séance close dans l'historique : pas de contrôle (c'est
+  la voie pour corriger une faute).
+- Ergo02Load.test.tsx sélectionnait la série par rang ; le contrôle asynchrone laisse monter le bloc « Proposition » avant : sélection par nom
+  (docs/journal.md).
+- Vérifications : `src/domain/training` (573 tests), `src/features/training/session`, Ergo02Load, workoutRepository, workoutClosure, plural :
+  verts ; couverture `src/domain/training` 96,7 % instructions, 91,4 % branches, 98,6 % lignes ; `tsc --noEmit` et `eslint` sur les fichiers
+  touchés : propres. Pas de test:bundle ni d'e2e en local (brief) : `outlierCheck` est importé à la demande depuis la séance active.
+
+## Passe code-reviewer
+
+- Relu à froid : commentaire de `personalRecords` déplacé au-dessus de la fonction ; rejet du chargement du bloc de contrôle intercepté dans
+  `SetRow` (la saisie n'est jamais bloquée). Aucun autre écart.
+
+## Risques et restes
+
+- C-028 seconde partie non traitée : une faute à la TOUTE première séance n'a pas de référence (ni à la saisie ni au moteur) et pèse sur le
+  1RM ; piste : comparer rétroactivement à la séance complète suivante (règle hors PRD, à trancher par Ali).
+- Une vraie progression > 150 % (charge de calibration très prudente) n'est reprise qu'après une deuxième séance complète : prescription plus
+  basse une séance (prudent, modifiable par Ali, la modification devient la référence).
+- Le résumé de fin traite les séances de décharge comme ordinaires pour la confirmation des records.
+- Texte « à ce nombre de répétitions » : formulation sans pluriel variable (garde `plural.test.ts`), relecture accessibility-i18n à faire.
+
+## SHA
+
+- Rouge : `e415ffbd` (14 tests rouges, `outlierEntry.test.ts` rouge à l'import). Vert : `c34d2abc`. Passes qa-test et revue : commit suivant.
+
+## Décision proposée (à inscrire par l'appelant, révisable par Ali)
+
+D-3xx — FIX-ABERR (0.28.0) : charge aberrante (audit Claude 0.27.0, C-005, C-028, C-168 ; § 11.2 point 1, § 11.5 ; remplace le choix B1 de la
+PR #60). (1) À la validation d'une série de travail, une charge > 150 % (`outlierRatio`) de la charge habituelle (1RM courant ramené aux
+répétitions, sinon plus grande charge de travail) n'est écrite qu'après « Confirmer » ; « Corriger » n'écrit rien. Sans historique : bornes
+absolues seules. (2) Aucun indicateur persistant (schéma 20 inchangé) : une aberrante n'est confirmée que par une séance ultérieure
+complète (≥ 50 %) hors décharge qui l'atteint à 90 %. (3) Non confirmée, elle n'est ni la référence (dernière séance non aberrante, note
+dite), ni dans le 1RM, ni un record (fiche, résumé). (4) Assisté : poids de corps connu, assistance anormalement basse signalée ; inconnu,
+aucun contrôle relatif. (5) `ENGINE_VERSION` reste 3. Tests : `outlierEntry.test.ts`, `fixAberr.test.ts`, `session/FixAberr.test.tsx`.
