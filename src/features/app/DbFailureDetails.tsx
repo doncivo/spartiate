@@ -201,7 +201,7 @@ export function DbFailureDetails({ failure, readEnvironment = readDbEnvironment,
         {text}
       </pre>
       <div className="ct-db-failure__actions">
-        {retry && (
+        {retry && failure.kind !== 'connection-poisoned' && (
           <button type="button" onClick={() => appReload.run()}>
             {t('app.diag.retry')}
           </button>

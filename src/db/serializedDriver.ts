@@ -216,7 +216,13 @@ export function createSerializedDriver(
       }),
     onPoisoned: (listener) => {
       poisonListeners.push(listener);
-      if (poisoned) listener(poisoned);
+      if (poisoned) {
+        try {
+          listener(poisoned);
+        } catch {
+          // Un abonné défaillant ne rouvre pas la file.
+        }
+      }
     },
     close: () => {
       const done = enqueue(() => raw.close(), true);

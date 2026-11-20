@@ -105,7 +105,8 @@ export const useAppStore = create<AppState>()((set) => ({
   recurrenceFailed: false,
   timeZone: null,
   setTimeZone: (timeZone) => set({ timeZone }),
-  setDbStatus: (dbStatus, options) => set({ dbStatus, dbErrorDetail: options?.detail ?? null, dbBackupFailed: options?.backupFailed ?? false, dbFailure: options?.failure ?? null }),
+  // A-008 : « connexion invalidée » est durable (seul un redémarrage de l'app la lève) : ni « ready » ni un autre échec ne la remplacent.
+  setDbStatus: (dbStatus, options) => set((state) => state.dbFailure?.kind === 'connection-poisoned' ? state : { dbStatus, dbErrorDetail: options?.detail ?? null, dbBackupFailed: options?.backupFailed ?? false, dbFailure: options?.failure ?? null }),
   setDay: (day) => set({ day }),
   setCarryOverFailed: (carryOverFailed) => set({ carryOverFailed }),
   setRecurrenceFailed: (recurrenceFailed) => set({ recurrenceFailed }),

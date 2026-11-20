@@ -76,3 +76,15 @@ avenant.)
 ## Relecture sync-icloud (D-26)
 
 Verdict : **approuvé**. Aucune écriture hors `sync_outbox` après transaction perdue ou retrait de garde en échec ; cycle de synchro surpris par l'empoisonnement : lot, curseur et accusé annulés ensemble (`reader.ts`), intention `inflight` survivante reprise au démarrage (`publisher.ts`), époque, reset et oubli en transactions gardées ; invariants intacts. Tests relancés : serializedDriver.a008 (10), serializedDriver (16), qaTwoDevices (6), crashPoints (59). Constat 1 (assertion `sent` après le retrait de garde en échec) : ajouté. Constats 2 et 3 : registre (BL-093, BL-094). Constat 4 (C-115) : contrainte reprise dans D-326 (5) pour FIX-COQUILLE.
+
+## Passe code-reviewer, revue 1 (à froid) : À CORRIGER, corrigé
+
+- Important 1 : `publishStartFailure` (et `ready`) remplaçait `connection-poisoned` par un échec sans `kind` (texte `app.startError`, « Réessayer »
+  réaffiché, rechargement gardant le pool Rust et sa transaction). Correction : `setDbStatus` du store ne remplace jamais un état
+  `connection-poisoned` (durable, seul un redémarrage de l'app le lève). Rouge 98cc7956, vert dans le commit suivant.
+- Important 2 : critère 7 testé seulement au niveau du store. Ajouts (`src/features/app/poisonedFailure.test.tsx`) : `failureAlertKey` (vert dès
+  l'ajout, aucun défaut) ; rendu de `DbFailureDetails` sans « Réessayer » même avec `retry` demandé (rouge : le bouton ne dépendait que de la prop
+  d'`App.tsx` ; défense posée dans le composant) ; état non écrasé par `publishStartFailure` et par `ready` (rouges).
+- Suggestion 3 : l'abonnement reste avant `ready`, mais `ready` ne peut plus écraser l'empoisonnement (store durable).
+- Suggestion 4 : abonné tardif protégé par try/catch (test qa ajouté).
+- Hors périmètre, au registre par le coordinateur : `BEGIN IMMEDIATE` exécuté puis rejeté par le transport.

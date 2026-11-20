@@ -134,6 +134,16 @@ describe('A-008 : échec fermé quand l’annulation ne peut pas être établie'
     await expect(r.driver.select('SELECT 1')).rejects.toMatchObject({ code: 'connection-poisoned' });
   });
 
+  it('qa : un abonné tardif défaillant ne fait pas échouer l’abonnement', async () => {
+    const r = (current = await rig({ rollback: IPC }));
+    await failingWork(r.driver).catch(() => undefined);
+    expect(() =>
+      r.driver.onPoisoned?.(() => {
+        throw new Error('abonné tardif défaillant');
+      }),
+    ).not.toThrow();
+  });
+
   it('critère 6 : retrait de sync_guard en échec après transaction perdue, l’écriture suivante est refusée', async () => {
     const r = (current = await rig({ rollback: NO_TX, guardDelete: true }));
     await expect(failingWork(r.driver)).rejects.toThrow('work-failed');
