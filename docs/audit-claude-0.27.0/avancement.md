@@ -19,10 +19,10 @@ Worktree : `C:\Dev\spartiate\.codex-tmp\wt-audit-claude`, branche `audit-claude-
 | 7a Aujourd'hui et Entraînement | L | terminée le 20/11 : 98/98 fichiers (+ i18n index/types/plural), C-063 à C-085, C-005 reclassé bloquant, 4 rouges |
 | 7b Nutrition et Progrès | L | terminée le 20/11 : 59/59 fichiers, C-086 à C-106, 4 rouges, aucun bloquant (C-089 photos à vérifier en 8b) |
 | 7c Plus, onboarding, coquilles | L | terminée le 20/11 : 374/374 fichiers (CSS de l'onboarding, des réglages et de la synchro par motifs et lecture partielle), C-107 à C-135, 5 rouges, aucun bloquant |
-| 8a Rust hors sync | L | en cours |
-| 8b Swift | M | à faire |
-| 9 Sécurité et confidentialité | M | à faire |
-| 10 Performance | S | à faire |
+| 8a Rust hors sync | L | terminée le 20/11 : 57/57 fichiers (backup_triggers.rs par structure, Cargo.lock hors relecture), C-136 à C-150, aucun bloquant |
+| 8b Swift | M | en cours : 3 relecteurs |
+| 9 Sécurité et confidentialité | M | en cours : historique git sans secret ; dépôt PUBLIC, données d'usage réelles dans docs/ à consigner |
+| 10 Performance | S | terminée le 20/11 : bundle 196 042 octets normalisés (CI du tag), fuites relevées en partie 7 |
 | 11 Tests et CI | L | à faire |
 | 12 Conformité PRD et documentation | M | à faire |
 
@@ -35,3 +35,4 @@ Worktree : `C:\Dev\spartiate\.codex-tmp\wt-audit-claude`, branche `audit-claude-
 - 20/11 : partie 7a terminée. C-005 reclassé bloquant (faute de frappe prescrite). Motifs et contrastes de tous les écrans faits (preuves/partie7-motifs.mjs, contrastes.mjs) ; contrastes à consigner en 7c.
 - 20/11 : partie 7b terminée. Graphe d'imports : preuves/atteignables.mjs (30 fichiers inaccessibles, dont src/platform/ocr). 7c lancée en 6 lots.
 - 20/11 : partie 7c terminée. Reportés en 8b : src/platform/sync/memory.ts et faultPlan.ts (non lus), exclusion iCloud des photos (C-089). Rust : unwrap/expect de production sains, CSP stricte, sql:allow-execute dans default.json (à consigner en 8a), description NSIS périmée (12).
+- 20/11 : 8a et 10 consignées. Partie 9 : 3 072 commits sans secret ni base ; dépôt doncivo/spartiate PUBLIC, docs/FIX-0172.md:66 (moyenne de sommeil d'Ali) et docs/AUDIT-USAGE.md (cibles kcal réelles) à consigner.

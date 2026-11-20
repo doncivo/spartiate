@@ -2,7 +2,7 @@
 
 Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/lectures.tsv` : ne pas éditer à la main.
 
-- Fichiers de production et d'outillage du périmètre : **892**, lus : **639** (71.6 %).
+- Fichiers de production et d'outillage du périmètre : **892**, lus : **694** (77.8 %).
 - Hors relecture motivée (vendored, généré, binaire) : 179. Tests et supports (partie 11, hors décompte) : 597.
 - Dossiers de Codex exclus (src/db, src/sync, src/domain/sync, src-tauri/src/sync) : 320.
 
@@ -59,35 +59,35 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `scripts/release/split-prd.mjs` | 11 | à lire |  |
 | `scripts/release/verify-signature.mjs` | 11 | à lire |  |
 | `scripts/smoke/build.mjs` | 11 | à lire |  |
-| `src-tauri/Cargo.lock` | 8a | à lire |  |
-| `src-tauri/Cargo.toml` | 8a | à lire |  |
+| `src-tauri/Cargo.lock` | 8a | lu 2026-11-20 (auditeur) | hors relecture : verrou de dépendances, cargo audit vert en CI |
+| `src-tauri/Cargo.toml` | 8a | lu 2026-11-20 (relecteur export et config) |  |
 | `src-tauri/Info.ios.plist` | 8b | à lire |  |
 | `src-tauri/app-icon.png` | — | hors relecture | binaire, hors relecture |
-| `src-tauri/build.rs` | 8a | à lire |  |
-| `src-tauri/capabilities/backups-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/backups.json` | 8a | à lire |  |
-| `src-tauri/capabilities/biometric-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/capture-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/default.json` | 8a | à lire |  |
-| `src-tauri/capabilities/desktop.json` | 8a | à lire |  |
-| `src-tauri/capabilities/export-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/export.json` | 8a | à lire |  |
-| `src-tauri/capabilities/geolocation-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/haptics-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/health-files-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/healthkit-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/import.json` | 8a | à lire |  |
-| `src-tauri/capabilities/live-activity-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/logs-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/logs.json` | 8a | à lire |  |
-| `src-tauri/capabilities/notifications-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/ocr.json` | 8a | à lire |  |
-| `src-tauri/capabilities/off.json` | 8a | à lire |  |
-| `src-tauri/capabilities/privacy-shield-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/signing-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/sync-ios.json` | 8a | à lire |  |
-| `src-tauri/capabilities/sync-pairing.json` | 8a | à lire |  |
-| `src-tauri/capabilities/sync.json` | 8a | à lire |  |
+| `src-tauri/build.rs` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/backups-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/backups.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/biometric-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/capture-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/default.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/desktop.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/export-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/export.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/geolocation-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/haptics-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/health-files-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/healthkit-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/import.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/live-activity-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/logs-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/logs.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/notifications-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/ocr.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/off.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/privacy-shield-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/signing-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/sync-ios.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/sync-pairing.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/capabilities/sync.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
 | `src-tauri/icons/128x128.png` | — | hors relecture | binaire (icône), hors relecture |
 | `src-tauri/icons/128x128@2x.png` | — | hors relecture | binaire (icône), hors relecture |
 | `src-tauri/icons/32x32.png` | — | hors relecture | binaire (icône), hors relecture |
@@ -240,34 +240,34 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src-tauri/plugins/vision/ios/Package.swift` | 8b | à lire |  |
 | `src-tauri/plugins/vision/ios/Sources/VisionPlugin.swift` | 8b | à lire |  |
 | `src-tauri/plugins/vision/src/lib.rs` | 8b | à lire |  |
-| `src-tauri/src/applog.rs` | 8a | à lire |  |
-| `src-tauri/src/backup.rs` | 8a | à lire |  |
-| `src-tauri/src/backup_triggers.rs` | 8a | à lire |  |
-| `src-tauri/src/desktop.rs` | 8a | à lire |  |
-| `src-tauri/src/export.rs` | 8a | à lire |  |
-| `src-tauri/src/export_common.rs` | 8a | à lire |  |
-| `src-tauri/src/export_ios.rs` | 8a | à lire |  |
+| `src-tauri/src/applog.rs` | 8a | lu 2026-11-20 (relecteur journal et coffre) |  |
+| `src-tauri/src/backup.rs` | 8a | lu 2026-11-20 (relecteur sauvegardes) |  |
+| `src-tauri/src/backup_triggers.rs` | 8a | lu 2026-11-20 (relecteur sauvegardes) | structure et fonctions ; 112 corps SQL vérifiés par triggers.test.ts, non relus |
+| `src-tauri/src/desktop.rs` | 8a | lu 2026-11-20 (relecteur journal et coffre) |  |
+| `src-tauri/src/export.rs` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/src/export_common.rs` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/src/export_ios.rs` | 8a | lu 2026-11-20 (relecteur export et config) |  |
 | `src-tauri/src/healthkit.rs` | 8a | lu 2026-11-20 (relecteur dossier Santé) | lu pour la partie 6 |
-| `src-tauri/src/import.rs` | 8a | à lire |  |
-| `src-tauri/src/ios_setup.rs` | 8a | à lire |  |
-| `src-tauri/src/lib.rs` | 8a | à lire |  |
-| `src-tauri/src/live_activity.rs` | 8a | à lire |  |
-| `src-tauri/src/main.rs` | 8a | à lire |  |
-| `src-tauri/src/mobile_call.rs` | 8a | à lire |  |
-| `src-tauri/src/ocr/mod.rs` | 8a | à lire |  |
-| `src-tauri/src/ocr/vision.rs` | 8a | à lire |  |
-| `src-tauri/src/ocr/win.rs` | 8a | à lire |  |
+| `src-tauri/src/import.rs` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/src/ios_setup.rs` | 8a | lu 2026-11-20 (relecteur journal et coffre) |  |
+| `src-tauri/src/lib.rs` | 8a | lu 2026-11-20 (relecteur journal et coffre) |  |
+| `src-tauri/src/live_activity.rs` | 8a | lu 2026-11-20 (relecteur journal et coffre) |  |
+| `src-tauri/src/main.rs` | 8a | lu 2026-11-20 (relecteur journal et coffre) |  |
+| `src-tauri/src/mobile_call.rs` | 8a | lu 2026-11-20 (relecteur journal et coffre) |  |
+| `src-tauri/src/ocr/mod.rs` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/src/ocr/vision.rs` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/src/ocr/win.rs` | 8a | lu 2026-11-20 (relecteur export et config) |  |
 | `src-tauri/src/off.rs` | 8a | lu 2026-11-20 (relecteur journal) | lu pour la partie 5 (appel Open Food Facts) |
-| `src-tauri/src/signing.rs` | 8a | à lire |  |
-| `src-tauri/src/speech/ios.rs` | 8a | à lire |  |
-| `src-tauri/src/speech/mod.rs` | 8a | à lire |  |
-| `src-tauri/src/startup_gate.rs` | 8a | à lire |  |
-| `src-tauri/src/vault.rs` | 8a | à lire |  |
-| `src-tauri/src/vault_ios.rs` | 8a | à lire |  |
-| `src-tauri/src/window_fit.rs` | 8a | à lire |  |
-| `src-tauri/tauri.conf.json` | 8a | à lire |  |
-| `src-tauri/tauri.smoke.conf.json` | 8a | à lire |  |
-| `src-tauri/tauri.windows.conf.json` | 8a | à lire |  |
+| `src-tauri/src/signing.rs` | 8a | lu 2026-11-20 (relecteur journal et coffre) |  |
+| `src-tauri/src/speech/ios.rs` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/src/speech/mod.rs` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/src/startup_gate.rs` | 8a | lu 2026-11-20 (relecteur sauvegardes) |  |
+| `src-tauri/src/vault.rs` | 8a | lu 2026-11-20 (relecteur journal et coffre) |  |
+| `src-tauri/src/vault_ios.rs` | 8a | lu 2026-11-20 (relecteur journal et coffre) |  |
+| `src-tauri/src/window_fit.rs` | 8a | lu 2026-11-20 (relecteur journal et coffre) |  |
+| `src-tauri/tauri.conf.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/tauri.smoke.conf.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/tauri.windows.conf.json` | 8a | lu 2026-11-20 (relecteur export et config) |  |
 | `src-tauri/vendor/sqlx-sqlite/.cargo_vcs_info.json` | — | hors relecture | vendored (plugin SQL et sqlx-sqlite), hors relecture : code tiers figé, garde propre au dépôt relue en 8a |
 | `src-tauri/vendor/sqlx-sqlite/Cargo.toml` | — | hors relecture | vendored (plugin SQL et sqlx-sqlite), hors relecture : code tiers figé, garde propre au dépôt relue en 8a |
 | `src-tauri/vendor/sqlx-sqlite/Cargo.toml.orig` | — | hors relecture | vendored (plugin SQL et sqlx-sqlite), hors relecture : code tiers figé, garde propre au dépôt relue en 8a |
@@ -349,8 +349,8 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src-tauri/vendor/tauri-plugin-sql/src/guard_tests.rs` | — | hors relecture | vendored (plugin SQL et sqlx-sqlite), hors relecture : code tiers figé, garde propre au dépôt relue en 8a |
 | `src-tauri/vendor/tauri-plugin-sql/src/lib.rs` | — | hors relecture | vendored (plugin SQL et sqlx-sqlite), hors relecture : code tiers figé, garde propre au dépôt relue en 8a |
 | `src-tauri/vendor/tauri-plugin-sql/src/wrapper.rs` | — | hors relecture | vendored (plugin SQL et sqlx-sqlite), hors relecture : code tiers figé, garde propre au dépôt relue en 8a |
-| `src-tauri/windows-test.manifest` | 8a | à lire |  |
-| `src-tauri/windows/hooks.nsh` | 8a | à lire |  |
+| `src-tauri/windows-test.manifest` | 8a | lu 2026-11-20 (relecteur export et config) |  |
+| `src-tauri/windows/hooks.nsh` | 8a | lu 2026-11-20 (relecteur export et config) |  |
 | `src/App.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
 | `src/domain/appLock.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
 | `src/domain/appStatus.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
