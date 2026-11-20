@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { buildBaseline } from './baseline';
 import { bedtimeProposal } from './bedtimeProposal';
 import { recoveryScore } from './recoveryScore';
-import { parseShortcutSteps } from './shortcutFiles';
+import { parseShortcutHrv, parseShortcutSteps } from './shortcutFiles';
 import type { NightRecord } from './types';
 
 const night = (day: string, hrvMs: number | null, restingHr: number | null = 60, asleepMinutes: number | null = 450, wakeMinutes: number | null = 420): NightRecord => ({
@@ -95,5 +95,46 @@ describe('C-052 pas.csv : les jours récents sont gardés, le jour le plus ancie
     const r = parseShortcutSteps(text, '2026-11-02', 'Europe/Paris');
     expect(r.rejectedTotal).toBe(0);
     expect(r.days.at(-1)).toEqual({ day: '2026-11-02', steps: 500 });
+  });
+});
+
+describe('FIX-RECUP passe qa-test : cas limites', () => {
+  it('baseline de 1, 2 et 3 valeurs : moins de 2 autres valeurs, rien n’est exclu ; σ indéfini sous 2 valeurs', () => {
+    expect(buildBaseline([night(dd(3, 1), 50)], '2026-03-10', 'hrvMs').stats).toEqual({ mean: 50, sd: null, used: 1, excluded: 0 });
+    expect(buildBaseline([night(dd(3, 1), 50), night(dd(3, 2), 200)], '2026-03-10', 'hrvMs').stats.excluded).toBe(0);
+    // 3 valeurs [50, 50, 200] : 200 contre [50, 50] (σ = 0) gardé ; 50 contre [50, 200] (σ ≈ 106) gardé.
+    expect(buildBaseline([50, 50, 200].map((v, i) => night(dd(3, i + 1), v)), '2026-03-10', 'hrvMs').stats.excluded).toBe(0);
+  });
+  it('6 nuits valides et une aberrante de moins : toujours « baseline_incomplete » (le minimum porte sur les nuits valides)', () => {
+    const nights = [...[48, 50, 52, 50, 48, 52].map((v, i) => night(dd(3, i + 1), v)), night('2026-03-10', 30, 60)];
+    expect(recoveryScore({ today: '2026-03-10', nights, sleepRatio: 1 }).reason).toBe('baseline_incomplete');
+  });
+  it('une nuit courte (< 180 min) n’entre pas dans la baseline, même aberrante', () => {
+    const nights = [...[48, 50, 52, 50, 48, 52, 50].map((v, i) => night(dd(3, i + 1), v)), night(dd(3, 8), 200, 60, 120)];
+    expect(buildBaseline(nights, '2026-03-10', 'hrvMs')).toMatchObject({ validNights: 7, stats: { excluded: 0 } });
+  });
+  it('proposition de coucher : nuit du jour sans durée (null) ou nuit future : jamais une dette', () => {
+    const base = Array.from({ length: 13 }, (_, i) => night(dd(3, 7 + i), 50));
+    expect(bedtimeProposal({ nights: [...base, night(dd(3, 20), null, null, null)], today: '2026-03-20', exertionToday: 0 }).needMinutes).toBe(450);
+    expect(bedtimeProposal({ nights: [...base, night(dd(3, 21), 50, 60, 200)], today: '2026-03-20', exertionToday: 0 }).needMinutes).toBe(450);
+  });
+  it('proposition de coucher : une nuit valide de 8 jours avant n’entre plus dans la dette (fenêtre de 7 jours, aujourd’hui compris)', () => {
+    const nights = Array.from({ length: 14 }, (_, i) => night(dd(3, 7 + i), 50, 60, i === 6 ? 300 : 450));
+    expect(bedtimeProposal({ nights, today: '2026-03-20', exertionToday: 0 }).needMinutes).toBe(450);
+    const inWindow = Array.from({ length: 14 }, (_, i) => night(dd(3, 7 + i), 50, 60, i === 7 ? 300 : 450));
+    expect(bedtimeProposal({ nights: inWindow, today: '2026-03-20', exertionToday: 0 }).needMinutes).toBe(600);
+  });
+  it('pas.csv d’un seul jour tronqué : ce jour est partiel ; HRV tronqué : les dernières lignes sont gardées', () => {
+    const lines = Array.from({ length: 10_001 }, (_, i) => `2026-11-02T${String(Math.floor(i / 3600)).padStart(2, '0')}:${String(Math.floor(i / 60) % 60).padStart(2, '0')}:${String(i % 60).padStart(2, '0')}+01:00;1`);
+    const r = parseShortcutSteps(lines.join('\n'), '2026-11-02', 'Europe/Paris');
+    expect([r.truncated, r.partialDay, r.days]).toEqual([true, '2026-11-02', [{ day: '2026-11-02', steps: 10_000 }]]);
+  });
+});
+
+describe('FIX-RECUP passe qa-test : troncature des autres fichiers Raccourcis', () => {
+  it('hrv.csv de 10 001 lignes, plus ancien en premier : la première ligne est écartée, la dernière gardée', () => {
+    const lines = Array.from({ length: 10_001 }, (_, i) => `${new Date(Date.UTC(2026, 9, 1) + i * 60_000).toISOString()};${i === 0 ? 77 : 40}`);
+    const r = parseShortcutHrv(lines.join('\n'), '2026-11-02', 'Europe/Paris');
+    expect([r.truncated, r.samples.length, r.samples.some((s) => s.value === 77), r.samples.at(-1)?.measuredAt]).toEqual([true, 10_000, false, lines.at(-1)?.split(';')[0]]);
   });
 });
