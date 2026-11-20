@@ -1,6 +1,6 @@
 # FIX-CONFID-IOS — Confidentialité sur l'iPhone : sauvegarde iCloud, photos supprimées, journal sans valeur corporelle (lot 0.28.0)
 
-Statut : **en cours.** Budget M. Branche `FIX-CONFID-IOS` depuis `origin/main` (`29d99d19`, après HIST-01). Lot 0.28.0, phase 2, 1er des 10
+Statut : **prêt pour PR (non poussé).** Commits : rouge `7d400b72`, vert `807e5cef`, qa-test et fiche (commit suivant). Budget M. Branche `FIX-CONFID-IOS` depuis `origin/main` (`29d99d19`, après HIST-01). Lot 0.28.0, phase 2, 1er des 10
 correctifs de l'audit Claude. Rôles : ios-mobile (`ios_setup.rs`, plugin `ct-files`), desktop-tauri (`applog.rs`, plugin SQL vendored),
 security-privacy (règles du journal, § 22). Aucune migration, aucun format sur disque changé, aucune dépendance nouvelle.
 Origine : audit Claude 0.27.0 (`origin/audit-claude-0.27.0`, `docs/audit-claude-0.27.0/constats.md`) : C-152, C-089, C-151, C-140, C-147 ;
@@ -60,3 +60,64 @@ via D-119), D-121. Fixtures synthétiques uniquement (D-292).
 
 Hors périmètre : purge des photos dans les sauvegardes existantes (refusée par la règle 2), relecture de `globalErrors.ts` au-delà du
 masquage (le message passe par la même barrière), synchro (aucun fichier de `src/sync`, `src-tauri/src/sync` touché).
+
+## Passe ios-mobile / desktop-tauri / security-privacy (agent du module) : correction
+
+- Rouge `7d400b72` constaté : Vitest 18 vecteurs rouges (`sanitize.test.ts`) et la preuve de l'audit (`confidentialite.test.ts`) ;
+  `BodyProgress.test.tsx` 2 rouges ; Rust 8 rouges (plafond global, saturation, scopes réservés, rotation verrouillée, trois contrôles
+  statiques de l'exclusion, contrat `ct-files`) et `i04_5` (vecteurs) ; plugin SQL : `fix_confid_deleted_content_does_not_remain_in_free_pages`
+  rouge (photo lisible dans le fichier après suppression).
+- Vert `807e5cef` : `src-tauri/src/backup_exclusion.rs` (nouveau, compilé partout, faux transport), `ios_setup.rs` (ordre : journal,
+  exclusion, purge, SQL), commande Swift `excludeFromBackup` dans `CtFilesPlugin.swift` (aucune dépendance, aucune clé Info.plist, aucun
+  entitlement, aucune permission WebView), `applog.rs` (masquage, débit, scopes, rotation, `backupExclusion` dans `log_read`),
+  `vendor/tauri-plugin-sql/src/wrapper.rs` (`secure_delete`), `src/platform/logs/*` (masquage, état), `AboutSection.tsx` (ligne d'alerte),
+  textes `fr.bodyProgress.ts` et `fr.logs.ts`, matrice (H-38). `cargo fmt` a aussi reformaté les tests du commit rouge (sans changer leur sens).
+- Coût de `secure_delete` sur toute la base : négligeable (pages supprimées réécrites à zéro, base d'un seul utilisateur, aucune mesure
+  de perf touchée) ; choisi plutôt qu'un réglage par suppression, que la liste blanche de pragmas aurait dû ouvrir à la WebView.
+- Fichier verrouillé à la rotation (Windows seulement : sous iOS, un renommage remplace toujours) : suppression de l'ancien `.1` puis
+  nouvel essai ; sinon le fichier courant est vidé et commence par `log` / `rotation-failed` (perte des 256 Kio courants, jamais de blocage).
+
+## Passe qa-test : cas limites
+
+Ajoutés (commit qa) et verts : mot corporel collé (`FC142`, `hrv48`) mais pas au milieu d'un mot (`8fc3a1d`, `sha256` gardés) ; espace
+insécable U+00A0 / U+202F entre nombre et unité ou mot corporel ; unité en majuscules (`82,4 KG`) ; valeur JSON séparée de sa clé par une
+espace (`{"restingHr": 52}`, `{"count": 2}` gardé) ; phrase double (`poids … et FC … bpm`) ; table de débit sous 3 × 1 000 couples (≤ 256,
+journal ≤ 2 × 256 Kio) ; un fichier à la place du dossier `backups/` refusé (`unsafe-folder`, rien demandé au plugin) ; jonction refusée ;
+rejet texte libre du plugin réduit à `failed`. Locaux : `cargo test --features test-hooks --test desktop` 859 verts (2 ignorés) puis ciblés
+53 verts après qa ; `cargo test -p tauri-plugin-sql --features sqlite` 31 + 1 verts ; `cargo fmt --check`, `cargo clippy -D warnings`
+propres ; Vitest `src/platform/logs`, `src/features/settings`, `src/features/bodyProgress`, `src/i18n` (733 verts, puis logs 107 après qa),
+contrôles documentaires et `privacy.test.ts`, `sqlPragmaScan.test.ts` verts ; `tsc` et `eslint` propres. Le code `cfg(target_os = "ios")`
+(transport réel, `exclude_on_launch`, Swift) n'est pas compilé ici : la compilation build-ios du lot fera foi.
+
+## Passe code-reviewer
+
+- Aucun fichier de `src/sync`, `src-tauri/src/sync`, `src/domain` ni migration touché : pas de relecture sync-icloud requise (D-26).
+- Limites relevées, acceptées : (1) `secure_delete` vaut pour la connexion du plugin SQL ; une écriture par une connexion rusqlite (synchro
+  Rust, sauvegardes) n'en hérite pas — aucune ne supprime de photo ; (2) une trame WAL d'avant la suppression peut garder la photo jusqu'au
+  point de contrôle suivant (le test vide le WAL) ; (3) les photos déjà copiées dans les sauvegardes locales y restent jusqu'à leur rotation
+  (dit à l'écran) ; (4) une clé de compteur nouvelle dans un extrait JSON du journal sera masquée tant qu'elle n'est pas ajoutée à
+  `allowedKeys` (choix prudent : masquer par défaut) ; (5) l'exclusion bloque le démarrage 5 s au plus si Swift ne répond pas ; (6) un
+  SHA court commençant par des lettres corporelles (`fc12…`) est masqué.
+- Verdict : approuvé sous réserve de la CI verte et de la compilation build-ios.
+
+## Décisions proposées (à inscrire par l'appelant, pas écrites ici)
+
+- **D-329** (révisable par Ali) : exclusion de la sauvegarde iCloud de l'iPhone pour la base (photos comprises), `backups/` et
+  `Documents/Journal`, posée à chaque démarrage par `ct-files` (`excludeFromBackup`) avant le plugin SQL, jamais bloquante ; le journal
+  reste dans Fichiers. Hypothèse **H-38** « exclusion de sauvegarde iCloud effective », UNVERIFIED (ligne de la matrice), à inscrire au
+  registre (chapitre 26 figé, comme H-37). L'ADR 0014 (« `<app_config_dir>/logs` ») est à compléter par un avenant iPhone (C-147).
+- **D-330** : `PRAGMA secure_delete = ON` posé par Rust sur la connexion de l'app ; les sauvegardes existantes ne sont pas réécrites ;
+  texte de suppression de photo « disparaît de l'app, peut subsister dans les sauvegardes locales de cet appareil jusqu'à leur rotation,
+  jamais ailleurs » (remplace « sans retour possible »).
+- **D-331** : règle du journal (§ 22) : masquage des décimaux, des nombres avec unité corporelle ou après un mot corporel, des valeurs
+  JSON hors `allowedKeys` ; listes partagées dans `tests/fixtures/logs/sanitize-vectors.json` ; une clé de compteur nouvelle s'y ajoute.
+- **D-332** : journal Rust : 60 entrées par minute au plus (`log` / `rate-capped`), 256 couples suivis, compteurs saturés, scopes de
+  Rust (`log`, `sync-rust`, `backup-recovery`, `sql-refused`, `backup-exclusion`) refusés à la WebView, rotation qui vide le fichier
+  courant plutôt que de bloquer.
+
+## Constats à faire par Ali sur l'iPhone (après installation de la version qui contient ce ticket)
+
+1. Réglages › [ton nom] › iCloud › Gérer le stockage › Sauvegardes › cet iPhone : Spartiate absent de la liste ou de taille minime.
+2. Fichiers › Sur mon iPhone › Spartiate › Journal : le journal est toujours là et s'exporte.
+3. Plus › À propos et diagnostic : aucune ligne rouge « … exclues de la sauvegarde iCloud … ».
+Aucun statut ne change avant ces constats (D-36).

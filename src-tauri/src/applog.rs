@@ -400,6 +400,18 @@ fn is_word_char(c: char) -> bool {
     c.is_alphanumeric() || c == '%'
 }
 
+/// Espaces insécables (U+00A0, U+202F) : séparent un nombre de son unité dans un texte formaté en français.
+fn is_nbsp(c: char) -> bool {
+    matches!(c, '\u{a0}' | '\u{202f}')
+}
+
+/// Clé d'un mot qui finit par `"clé":` (extrait JSON coupé par une espace), sinon `None`.
+fn json_key_ending(word: Option<&str>) -> Option<&str> {
+    let head = word?.strip_suffix("\":")?;
+    let open = head.rfind('"')?;
+    Some(&head[open + 1..])
+}
+
 /// Mot voisin comparé aux listes : ponctuation retirée en tête et en fin (lettres, chiffres et `%` gardés), en minuscules.
 fn bare(word: Option<&str>) -> String {
     word.map(|w| w.trim_matches(|c: char| !is_word_char(c)).to_lowercase())
@@ -476,14 +488,18 @@ fn has_body_number(word: &str, previous: Option<&str>, next: Option<&str>) -> bo
         if parts >= 2 {
             return true;
         }
-        let mut u = end;
+        let mut unit = end;
+        while chars.get(unit).is_some_and(|c| is_nbsp(*c)) {
+            unit += 1;
+        }
+        let mut u = unit;
         while chars
             .get(u)
             .is_some_and(|c| c.is_ascii_alphabetic() || *c == '%')
         {
             u += 1;
         }
-        let suffix: String = chars[end..u].iter().collect::<String>().to_lowercase();
+        let suffix: String = chars[unit..u].iter().collect::<String>().to_lowercase();
         if !suffix.is_empty() && BODY_UNITS.contains(&suffix.as_str()) {
             return true;
         }
@@ -493,8 +509,31 @@ fn has_body_number(word: &str, previous: Option<&str>, next: Option<&str>) -> bo
         if suffix.is_empty() && ends_word && BODY_UNITS.contains(&bare(next).as_str()) {
             return true;
         }
+        // Mot corporel collé devant le nombre (« FC142 », « FC 142 » insécable), s'il commence le mot ou suit un signe.
+        let mut p = start;
+        while p > 0 && is_nbsp(chars[p - 1]) {
+            p -= 1;
+        }
+        let mut q = p;
+        while q > 0 && chars[q - 1].is_alphabetic() {
+            q -= 1;
+        }
+        let prefix: String = chars[q..p].iter().collect::<String>().to_lowercase();
+        if !keyed
+            && !prefix.is_empty()
+            && (q == 0 || !chars[q - 1].is_alphanumeric())
+            && BODY_WORDS.contains(&prefix.as_str())
+        {
+            return true;
+        }
         let starts_word = !keyed && chars[..start].iter().all(|c| !c.is_alphanumeric());
         if starts_word {
+            if let Some(key) = json_key_ending(previous) {
+                if is_allowed_key(key) {
+                    continue;
+                }
+                return true;
+            }
             let prev = bare(previous);
             if BODY_WORDS.contains(&prev.as_str()) || BODY_UNITS.contains(&prev.as_str()) {
                 return true;

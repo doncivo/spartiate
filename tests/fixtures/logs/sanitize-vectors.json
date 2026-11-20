@@ -6,7 +6,8 @@
     "codeVectors (revue du lot F) : le champ code est assaini aussi ; forme stricte ^[a-z0-9][a-z0-9.-]{0,63}$, sans séquence hexadécimale de 32 caractères ou plus ni jeton probable (segment entre - et . de 24 caractères ou plus hors UUID exact, ya29.) ; sinon `unknown` (codeAndDetailOf, TypeScript) ou `invalid` (applog::normalize, Rust).",
     "FIX-CONFID-IOS (C-151, C-140, § 22 : aucune donnée corporelle) : un mot devient aussi [masqué] s'il contient un nombre décimal (deux parties séparées par . ou ,, ou des parties séparées par une virgule), un nombre suivi d'une unité de bodyUnits (attachée : 142bpm, 7h30, 18 % ; ou au mot suivant : 82,4 kg), un nombre en tête de mot qui suit un mot de bodyWords ou une unité (FC 142, sommeil 7 h 30), la valeur d'une clé de bodyWords (poids=82, FC:142), ou toute valeur numérique d'un extrait JSON (\"clé\":nombre) dont la clé n'est pas dans allowedKeys.",
     "Restent lisibles : versions de trois parties ou plus séparées par des points (0.27.0), entiers seuls (codes HTTP, compteurs, heures 14:05), UUID, et les valeurs des clés de allowedKeys (comparaison en minuscules ; aussi toute clé qui finit par count, version ou known) en JSON comme en clé=valeur (rules_version=3, nights_known=7, \"files\":12). Un compteur nouveau dans un extrait JSON du journal s'ajoute à allowedKeys (TS et Rust lisent ces listes dans leurs tests).",
-    "Mots voisins : comparés après retrait des signes de ponctuation en tête et en fin (lettres, chiffres et % gardés), en minuscules."
+    "Mots voisins : comparés après retrait des signes de ponctuation en tête et en fin (lettres, chiffres et % gardés), en minuscules.",
+    "qa-test FIX-CONFID-IOS : un mot corporel collé devant le nombre (FC142, hrv48 ; au début du mot ou après un signe, jamais au milieu d'un mot comme 8fc3), une espace insécable (U+00A0, U+202F) entre le nombre et son unité ou son mot corporel, et une valeur JSON séparée de sa clé par une espace ({\"restingHr\": 52}) sont masqués aussi."
   ],
   "vectors": [
     {
@@ -272,6 +273,50 @@
     {
       "input": "error returned from database: (code: 5) database is locked",
       "expected": "error returned from database: (code: 5) database is locked"
+    },
+    {
+      "input": "FC142",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "hrv48 relevé",
+      "expected": "[masqué] relevé"
+    },
+    {
+      "input": "sha256 ok",
+      "expected": "sha256 ok"
+    },
+    {
+      "input": "commit 8fc3a1d",
+      "expected": "commit 8fc3a1d"
+    },
+    {
+      "input": "142\u00a0bpm",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "repos 142\u202fbpm",
+      "expected": "repos [masqué]"
+    },
+    {
+      "input": "FC\u00a0142",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "82,4 KG",
+      "expected": "[masqué] KG"
+    },
+    {
+      "input": "{\"restingHr\": 52}",
+      "expected": "{\"restingHr\": [masqué]"
+    },
+    {
+      "input": "{\"count\": 2}",
+      "expected": "{\"count\": 2}"
+    },
+    {
+      "input": "poids 82,4 kg et FC 142 bpm",
+      "expected": "poids [masqué] kg et FC [masqué] bpm"
     }
   ],
   "codeVectors": [

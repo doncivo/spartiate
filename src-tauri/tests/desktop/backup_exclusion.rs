@@ -269,3 +269,17 @@ fn fix_confid_c152_the_outcome_is_logged_without_value_and_kept_for_the_about_sc
     );
     spartiate_lib::applog::reset_for_tests();
 }
+
+#[test]
+fn fix_confid_qa_a_file_in_place_of_a_folder_is_refused_and_nothing_is_asked() {
+    let dir = tempfile::tempdir().unwrap();
+    let config = dir.path().join("config");
+    std::fs::create_dir_all(&config).unwrap();
+    std::fs::write(config.join("backups"), b"x").unwrap();
+    let fake = Fake::new(Ok(2));
+    assert_eq!(
+        apply(&targets(Some(&config), None), &fake),
+        Err("unsafe-folder")
+    );
+    assert!(fake.seen.lock().unwrap().is_empty());
+}

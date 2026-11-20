@@ -83,6 +83,17 @@ const isDigit = (char: string | undefined): boolean => char !== undefined && cha
 const isUnitChar = (char: string | undefined): boolean => char !== undefined && (isAsciiAlpha(char) || char === '%');
 const isKeyChar = (char: string | undefined): boolean => char !== undefined && (isAsciiAlpha(char) || isDigit(char) || char === '_');
 const isWordChar = (char: string | undefined): boolean => isAlnum(char) || char === '%';
+/** Espaces insécables (U+00A0, U+202F) : séparent un nombre de son unité dans un texte formaté en français (« 142 bpm »). */
+const isNbsp = (char: string | undefined): boolean => char === '\u00a0' || char === '\u202f';
+const isLetter = (char: string | undefined): boolean => char !== undefined && /^\p{L}$/u.test(char);
+
+/** Clé d'un mot qui finit par `"clé":` (extrait JSON coupé par une espace), sinon null. */
+function jsonKeyEnding(word: string | undefined): string | null {
+  if (word === undefined || !word.endsWith('":')) return null;
+  const close = word.length - 2;
+  const open = word.lastIndexOf('"', close - 1);
+  return open < 0 ? null : word.slice(open + 1, close);
+}
 
 /** Mot voisin comparé aux listes : signes de ponctuation retirés en tête et en fin (lettres, chiffres et `%` gardés), en minuscules. */
 function bare(word: string | undefined): string {
@@ -146,14 +157,28 @@ function hasBodyNumber(word: string, previous: string | undefined, next: string 
       keyed = key !== '';
     }
     if (parts >= 2) return true;
-    let u = end;
+    let unit = end;
+    while (isNbsp(chars[unit])) unit += 1;
+    let u = unit;
     while (isUnitChar(chars[u])) u += 1;
-    const suffix = chars.slice(end, u).join('').toLowerCase();
+    const suffix = chars.slice(unit, u).join('').toLowerCase();
     if (suffix !== '' && BODY_UNITS.includes(suffix)) return true;
     const endsWord = chars.slice(end).every((char) => !isAlnum(char) && char !== '%');
     if (suffix === '' && endsWord && BODY_UNITS.includes(bare(next))) return true;
+    // Mot corporel collé devant le nombre (« FC142 », « FC 142 » insécable), s'il commence le mot ou suit un signe.
+    let p = start;
+    while (p > 0 && isNbsp(chars[p - 1])) p -= 1;
+    let q = p;
+    while (q > 0 && isLetter(chars[q - 1])) q -= 1;
+    const prefix = chars.slice(q, p).join('').toLowerCase();
+    if (!keyed && prefix !== '' && (q === 0 || !isAlnum(chars[q - 1])) && BODY_WORDS.includes(prefix)) return true;
     const startsWord = !keyed && chars.slice(0, start).every((char) => !isAlnum(char));
     if (startsWord) {
+      const key = jsonKeyEnding(previous);
+      if (key !== null) {
+        if (isAllowedKey(key)) continue;
+        return true;
+      }
       const prev = bare(previous);
       if (BODY_WORDS.includes(prev) || BODY_UNITS.includes(prev)) return true;
     }
