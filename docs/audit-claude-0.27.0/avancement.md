@@ -24,7 +24,7 @@ Worktree : `C:\Dev\spartiate\.codex-tmp\wt-audit-claude`, branche `audit-claude-
 | 9 Sécurité et confidentialité | M | terminée le 20/11 : C-165 (bloquant, sommeil réel dans un dépôt public), C-166 |
 | 10 Performance | S | terminée le 20/11 : bundle 196 042 octets normalisés (CI du tag), fuites relevées en partie 7 |
 | 11 Tests et CI | L | en cours |
-| 12 Conformité PRD et documentation | M | à faire |
+| 12 Conformité PRD et documentation | M | en cours : 3 relecteurs |
 
 ## Journal
 
@@ -37,3 +37,4 @@ Worktree : `C:\Dev\spartiate\.codex-tmp\wt-audit-claude`, branche `audit-claude-
 - 20/11 : partie 7c terminée. Reportés en 8b : src/platform/sync/memory.ts et faultPlan.ts (non lus), exclusion iCloud des photos (C-089). Rust : unwrap/expect de production sains, CSP stricte, sql:allow-execute dans default.json (à consigner en 8a), description NSIS périmée (12).
 - 20/11 : 8a et 10 consignées. Partie 9 : 3 072 commits sans secret ni base ; dépôt doncivo/spartiate PUBLIC, docs/FIX-0172.md:66 (moyenne de sommeil d'Ali) et docs/AUDIT-USAGE.md (cibles kcal réelles) à consigner.
 - 20/11 : 8b et 9 consignées. C-165 poussé dans bloquants.md. Partie 11 : contrôles par script faits (preuves/partie11-tests.mjs).
+- 20/11 : partie 10 complétée par des mesures locales (preuves/partie10-perf.test.ts) et C-167. Parties 11 et 12 lancées (6 relecteurs). Reste ensuite : rapport.md, tracabilite.md, résumé de la PR.
