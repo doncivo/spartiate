@@ -68,3 +68,47 @@ Preuves : `preuves/partie4-moteur.test.ts`, sortie `preuves/resultats/partie4-mo
 - C-028 mineur — `estimate1rm.ts:107-111`, `:123-124` : la confirmation d'une aberrante compte les séances partielles et de décharge ; une faute de frappe à la toute première séance n'est jamais aberrante et pèse sur le 1RM pendant trois séances.
 - C-029 mineur — `loadGrid.ts:31` : `stackMaxKg` NaN (ligne synchronisée abîmée) → 2 000 charges ; `:72-74` une seule poulie retenue ; `:57-84` matériel `forbidden` non filtré.
 - C-030 mineur — `warmup.ts:50-58` : exercice lesté, échauffement calculé sur le lest seul (≈ 95 % de la charge totale).
+
+## Partie 5 — nutrition et compléments
+
+Preuves : `preuves/partie5-nutrition.test.ts`, sortie `preuves/resultats/partie5-nutrition.log` (6 rouges = constats ; 8 vecteurs verts : cible en vigueur D-314 à trois lignes, moyenne hebdo repos/entraînement, écart par les glucides jamais négatifs, check-in ±150, plancher de lipides 0,6 g/kg, plancher 1 200, tendance EMA, dépense mesurée 21 j = 2 737,03, Mifflin-St Jeor, totaux d'un jour, recette en 3 portions, EAN-13/EAN-8, masque ISO des compléments, instants aux deux changements d'heure, « Pris »).
+Ce qui part vers Open Food Facts (`src-tauri/src/off.rs`) : GET HTTPS du code (8 à 14 chiffres) ou du texte cherché, champs `code,product_name,brands,quantity,nutriments`, User-Agent `Spartiate/<version> (usage personnel)`, sans referer ni corps, aucune donnée corporelle ; journal : code d'événement et statut seulement.
+Hors constat : sel, sodium, repères de qualité et micronutriments (§ 15.7) ne sont pas implémentés (I6) ; le sel et le sodium remontés par Rust sont ignorés par `offProductToDraft`.
+
+### C-031 — important — check-in à deux cibles : la cible de repos passe sous le plancher, refus à « Accepter »
+- `src/domain/nutrition/checkIn.ts:111-123`, `:142-167`, `:199` : plancher et `belowStandardFloor` évalués sur la moyenne hebdomadaire, puis le même écart appliqué à la cible de repos sans borne. Entraînement 1 300, repos 1 250, dépense 1 100, 70 kg → repos **1 164 kcal**, `belowStandardFloor` faux. À « Accepter », `validateTargetRecord` (`targetRecord.ts:55-57`) refuse `min(kcal, rest.kcal)` < 1 200 : erreur au lieu d'une demande de confirmation, rien n'est écrit.
+- Preuve : test rouge C-031. Correction : borner chaque cible au plancher, ou lever `belowStandardFloor` sur la plus basse.
+
+### C-032 — important — correction des grammes d'une entrée : arrondis cumulés enregistrés
+- `src/domain/nutrition/journal.ts:107-112` (`rescaleEntry`), enregistré par `EntryEditor.tsx:38` : le calcul repart des totaux arrondis au dixième. 100 g à 14 kcal → 1 g → 100 g : **10 kcal** enregistrés.
+- Preuve : test rouge C-032. Correction : garder les valeurs pour 100 g (ou non arrondies) dans l'entrée.
+
+### C-033 — important — Open Food Facts : kcal pris tel quel même s'il contredit le kJ
+- `src/domain/nutrition/offProduct.ts:53` : `energy-kcal_100g` prioritaire ; kcal 0 avec 1 500 kJ et macros 10/5/60 → **0 kcal** (attendu ≈ 359) ; `energyMismatch` avertit seulement.
+- Preuve : test rouge C-033. Correction : si kcal × 4,184 s'écarte du kJ de plus de 15 %, prendre kJ / 4,184 et le signaler.
+
+### C-034 — important — Quick Add sans borne ni cohérence sur les macros
+- `src/domain/nutrition/mealEntry.ts:100-103` : 100 kcal avec 5 000 g de protéines → aucune erreur.
+- Preuve : test rouge C-034. Correction : plafond par macro et contrôle 4P + 4G + 9L ≤ kcal + marge.
+
+### C-035 — mineur — rappel de complément perdu le jour du passage à l'heure d'été
+- `src/domain/supplementNotificationPlan.ts:54` : comparaison d'heures murales ; complément à 02:30, replanification le 29/03/2026 à 03:10 → le rappel du jour (qu'iOS sonnerait à 03:30, `notificationInstant.ts:83`) sort du plan et `replace` l'annule (`tauriNotifications.ts:300`).
+- Preuve : test rouge C-035. Correction : laisser la plateforme écarter le passé (elle le fait déjà) ou comparer des instants.
+
+### C-036 — important — lissage de la dépense sur 7 jours (§ 15.1) jamais appliqué
+- `src/features/nutrition/useCases.ts:96`, `:112` : seuls appels à `estimateTdee`, tous deux avec `previousSmoothed: null` (recherche de motifs) → `measuredSmoothed` = mesure brute. Lié : `tdee.ts:126`, `smoothTdee` avec un pas nul rend la valeur précédente et ignore la mesure (2 500 / 2 800 / pas 0 → 2 500).
+- Preuve : recherche `previousSmoothed` (2 appels, null) et test rouge C-036. Correction : persister la dernière valeur lissée et la passer ; pas nul = remplacer ou moyenner.
+
+### C-037 à C-048 — mineurs, améliorations et points à vérifier (lecture)
+- C-037 mineur — `restDay.ts:350-357`, `:363-366` : glucides ramenés à 0 sans recalcul des kcal (1 500 kcal annoncées pour des macros à 1 700) ; `floor` dans `restTargetFromGap`, `round` dans `shiftTarget` (199 contre 200 g).
+- C-038 à vérifier (D-74) — `checkIn.ts:129` : premier check-in sans cible en cours, couverture non contrôlée (`days` et `weighIns` vides → proposition).
+- C-039 mineur, à trancher (D-113) — `renphoDay.ts:79` avec `dayTotals.ts:72-80` : un jour importé de Renpho (une entrée à 00:00) n'est jamais complet, donc jamais dans la dépense mesurée ni la couverture.
+- C-040 mineur — `targetRecord.ts:79-91`, `:107` : horloge d'appareil en avance → date de décision future qui passe devant une cible prévue ; HLC illisible classé au-dessus de tout HLC valide à prise d'effet égale (comparaison de chaînes), alors que D-314 (9) ne lui donne que la semaine.
+- C-041 mineur — `dayTotals.ts:19-26` : totaux du jour non arrondis (0,1 + 0,2 = 0,30000000000000004).
+- C-042 à trancher (D-75) — un seul aliment à lipides « traces » ou un Quick Add sans macros rend inconnus les lipides de toute la journée et le restant (les kcal ne sont pas touchées).
+- C-043 mineur — `barcode.ts:38-41` : code à 8 chiffres valide en EAN-8 et en UPC-E toujours lu en EAN-8 ; le format rapporté par le scanner n'est pas transmis.
+- C-044 mineur — `recipe.ts:121-124`, `:212` : `servings` à 0 → Infinity ; recette vide avec poids cuit → entrée toute à `null` acceptée par `validateMealEntry` (données corrompues seulement).
+- C-045 mineur — `foodSearch.ts:38` : UPC-A tapé sur 12 chiffres ne retrouve pas la fiche en cache (stockée sur 13) ; `normalizeText('Straße')` → « stra e ».
+- C-046 mineur — `src-tauri/src/off.rs:422` : virgule remplacée par un point, « 1,234 » (milliers) → 1,234.
+- C-047 amélioration — `src/platform/photoImage/picker.ts:41` : aucun plafond de taille avant `createImageBitmap` (mémoire iPhone) ; `offLookup.ts:81` : fiche périmée perdue si OFF répond « not-found ».
+- C-048 mineur et à vérifier — compléments : « Pris » silencieux quand l'heure a changé ou le complément est supprimé (`supplementActions.ts:111-116`) ; file d'actions illisible ou tronquée à 200 clés → une prise décochée peut être recochée (contraire à D-252, fenêtre étroite) ; priorité entre plans selon l'ordre des passages et non D-212 (`supplementNotifications.ts:97`, à vérifier) ; heures calmes non appliquées aux compléments (à trancher) ; registre illisible → `pending()` vide, rappels coucher et matin retirés par le `replace` des compléments (`tauriNotifications.ts:461`, à vérifier).

@@ -44,3 +44,46 @@ src/domain/bodyProfile.ts	4	2026-11-20	relecteur Strength Score
 src/domain/bodyProgress/index.ts	4	2026-11-20	relecteur Strength Score	
 src/domain/bodyProgress/measurements.ts	4	2026-11-20	relecteur Strength Score	
 src/domain/bodyProgress/photos.ts	4	2026-11-20	relecteur Strength Score	
+src/domain/nutrition/targetRecord.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/checkIn.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/firstCheckIn.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/tdee.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/weightTrend.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/trendLearning.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/weeklyRate.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/coverage.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/restDay.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/config.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/prefs.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/renphoDay.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/types.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/index.ts	5	2026-11-20	relecteur cibles	
+src/domain/nutrition/journal.ts	5	2026-11-20	relecteur journal	
+src/domain/nutrition/dayTotals.ts	5	2026-11-20	relecteur journal	
+src/domain/nutrition/mealEntry.ts	5	2026-11-20	relecteur journal	
+src/domain/nutrition/food.ts	5	2026-11-20	relecteur journal	
+src/domain/nutrition/foodSearch.ts	5	2026-11-20	relecteur journal	
+src/domain/nutrition/ciqual.ts	5	2026-11-20	relecteur journal	
+src/domain/nutrition/offProduct.ts	5	2026-11-20	relecteur journal	
+src/domain/nutrition/barcode.ts	5	2026-11-20	relecteur journal	
+src/domain/nutrition/recipe.ts	5	2026-11-20	relecteur journal	
+src/domain/nutrition/recipeTypes.ts	5	2026-11-20	relecteur journal	
+src/domain/nutrition/favorites.ts	5	2026-11-20	relecteur journal	
+src/platform/off/index.ts	5	2026-11-20	relecteur journal	
+src/platform/off/parse.ts	5	2026-11-20	relecteur journal	
+src/platform/off/tauriOff.ts	5	2026-11-20	relecteur journal	
+src/platform/off/testing.ts	5	2026-11-20	relecteur journal	
+src/platform/barcode/index.ts	5	2026-11-20	relecteur journal	
+src/platform/barcode/testing.ts	5	2026-11-20	relecteur journal	
+src/platform/ocr/index.ts	5	2026-11-20	relecteur journal	
+src/platform/ocr/nativeOcr.ts	5	2026-11-20	relecteur journal	
+src/platform/ocr/testing.ts	5	2026-11-20	relecteur journal	
+src/platform/ocr/types.ts	5	2026-11-20	relecteur journal	
+src/platform/photoImage/picker.ts	5	2026-11-20	relecteur journal	
+src-tauri/src/off.rs	8a	2026-11-20	relecteur journal	lu pour la partie 5 (appel Open Food Facts)
+src/domain/nutrition/supplements.ts	5	2026-11-20	relecteur compléments	
+src/domain/supplementNotificationPlan.ts	5	2026-11-20	relecteur compléments	
+src/domain/supplementNotificationActions.ts	5	2026-11-20	relecteur compléments	
+src/domain/notificationInstant.ts	5	2026-11-20	relecteur compléments	
+src/features/notifications/supplementNotifications.ts	5	2026-11-20	relecteur compléments	
+src/features/notifications/supplementActions.ts	5	2026-11-20	relecteur compléments	

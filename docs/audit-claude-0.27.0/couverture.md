@@ -2,7 +2,7 @@
 
 Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/lectures.tsv` : ne pas éditer à la main.
 
-- Fichiers de production et d'outillage du périmètre : **892**, lus : **45** (5.0 %).
+- Fichiers de production et d'outillage du périmètre : **892**, lus : **88** (9.9 %).
 - Hors relecture motivée (vendored, généré, binaire) : 179. Tests et supports (partie 11, hors décompte) : 597.
 - Dossiers de Codex exclus (src/db, src/sync, src/domain/sync, src-tauri/src/sync) : 320.
 
@@ -257,7 +257,7 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src-tauri/src/ocr/mod.rs` | 8a | à lire |  |
 | `src-tauri/src/ocr/vision.rs` | 8a | à lire |  |
 | `src-tauri/src/ocr/win.rs` | 8a | à lire |  |
-| `src-tauri/src/off.rs` | 8a | à lire |  |
+| `src-tauri/src/off.rs` | 8a | lu 2026-11-20 (relecteur journal) | lu pour la partie 5 (appel Open Food Facts) |
 | `src-tauri/src/signing.rs` | 8a | à lire |  |
 | `src-tauri/src/speech/ios.rs` | 8a | à lire |  |
 | `src-tauri/src/speech/mod.rs` | 8a | à lire |  |
@@ -406,36 +406,36 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/domain/model/task.ts` | 7c | à lire |  |
 | `src/domain/notificationActions.ts` | 7c | à lire |  |
 | `src/domain/notificationId.ts` | 7c | à lire |  |
-| `src/domain/notificationInstant.ts` | 7c | à lire |  |
+| `src/domain/notificationInstant.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
 | `src/domain/notificationLedger.ts` | 7c | à lire |  |
 | `src/domain/notificationPlan.ts` | 7c | à lire |  |
 | `src/domain/notificationStatus.ts` | 7c | à lire |  |
-| `src/domain/nutrition/barcode.ts` | 5 | à lire |  |
-| `src/domain/nutrition/checkIn.ts` | 5 | à lire |  |
-| `src/domain/nutrition/ciqual.ts` | 5 | à lire |  |
-| `src/domain/nutrition/config.ts` | 5 | à lire |  |
-| `src/domain/nutrition/coverage.ts` | 5 | à lire |  |
-| `src/domain/nutrition/dayTotals.ts` | 5 | à lire |  |
-| `src/domain/nutrition/favorites.ts` | 5 | à lire |  |
-| `src/domain/nutrition/firstCheckIn.ts` | 5 | à lire |  |
-| `src/domain/nutrition/food.ts` | 5 | à lire |  |
-| `src/domain/nutrition/foodSearch.ts` | 5 | à lire |  |
-| `src/domain/nutrition/index.ts` | 5 | à lire |  |
-| `src/domain/nutrition/journal.ts` | 5 | à lire |  |
-| `src/domain/nutrition/mealEntry.ts` | 5 | à lire |  |
-| `src/domain/nutrition/offProduct.ts` | 5 | à lire |  |
-| `src/domain/nutrition/prefs.ts` | 5 | à lire |  |
-| `src/domain/nutrition/recipe.ts` | 5 | à lire |  |
-| `src/domain/nutrition/recipeTypes.ts` | 5 | à lire |  |
-| `src/domain/nutrition/renphoDay.ts` | 5 | à lire |  |
-| `src/domain/nutrition/restDay.ts` | 5 | à lire |  |
-| `src/domain/nutrition/supplements.ts` | 5 | à lire |  |
-| `src/domain/nutrition/targetRecord.ts` | 5 | à lire |  |
-| `src/domain/nutrition/tdee.ts` | 5 | à lire |  |
-| `src/domain/nutrition/trendLearning.ts` | 5 | à lire |  |
-| `src/domain/nutrition/types.ts` | 5 | à lire |  |
-| `src/domain/nutrition/weeklyRate.ts` | 5 | à lire |  |
-| `src/domain/nutrition/weightTrend.ts` | 5 | à lire |  |
+| `src/domain/nutrition/barcode.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/domain/nutrition/checkIn.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
+| `src/domain/nutrition/ciqual.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/domain/nutrition/config.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
+| `src/domain/nutrition/coverage.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
+| `src/domain/nutrition/dayTotals.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/domain/nutrition/favorites.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/domain/nutrition/firstCheckIn.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
+| `src/domain/nutrition/food.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/domain/nutrition/foodSearch.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/domain/nutrition/index.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
+| `src/domain/nutrition/journal.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/domain/nutrition/mealEntry.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/domain/nutrition/offProduct.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/domain/nutrition/prefs.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
+| `src/domain/nutrition/recipe.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/domain/nutrition/recipeTypes.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/domain/nutrition/renphoDay.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
+| `src/domain/nutrition/restDay.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
+| `src/domain/nutrition/supplements.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
+| `src/domain/nutrition/targetRecord.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
+| `src/domain/nutrition/tdee.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
+| `src/domain/nutrition/trendLearning.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
+| `src/domain/nutrition/types.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
+| `src/domain/nutrition/weeklyRate.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
+| `src/domain/nutrition/weightTrend.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
 | `src/domain/occurrenceDedup.ts` | 7c | à lire |  |
 | `src/domain/omitKey.ts` | 7c | à lire |  |
 | `src/domain/onboarding/draft.ts` | 7c | à lire |  |
@@ -471,8 +471,8 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/domain/routineTestKit.ts` | 7c | à lire |  |
 | `src/domain/signingNotice.ts` | 7c | à lire |  |
 | `src/domain/spaceRules.ts` | 7c | à lire |  |
-| `src/domain/supplementNotificationActions.ts` | 5 | à lire |  |
-| `src/domain/supplementNotificationPlan.ts` | 5 | à lire |  |
+| `src/domain/supplementNotificationActions.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
+| `src/domain/supplementNotificationPlan.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
 | `src/domain/syncBanners.ts` | 7c | à lire |  |
 | `src/domain/syntheticTimer.ts` | 7c | à lire |  |
 | `src/domain/taskPostpone.ts` | 7c | à lire |  |
@@ -577,8 +577,8 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/features/cardio/gpsFigures.ts` | 7a | à lire |  |
 | `src/features/notifications/index.ts` | 7c | à lire |  |
 | `src/features/notifications/recoveryNotifications.ts` | 7c | à lire |  |
-| `src/features/notifications/supplementActions.ts` | 7c | à lire |  |
-| `src/features/notifications/supplementNotifications.ts` | 7c | à lire |  |
+| `src/features/notifications/supplementActions.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
+| `src/features/notifications/supplementNotifications.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
 | `src/features/notifications/supplementWake.ts` | 7c | à lire |  |
 | `src/features/nutrition/NutritionRemainingCard.tsx` | 7b | à lire |  |
 | `src/features/nutrition/NutritionScreen.css` | 7b | à lire |  |
@@ -939,8 +939,8 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/platform/backup/startupRecovery.ts` | 8b | à lire |  |
 | `src/platform/backup/tauriBackup.ts` | 8b | à lire |  |
 | `src/platform/backup/types.ts` | 8b | à lire |  |
-| `src/platform/barcode/index.ts` | 5 | à lire |  |
-| `src/platform/barcode/testing.ts` | 5 | à lire |  |
+| `src/platform/barcode/index.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/platform/barcode/testing.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
 | `src/platform/biometric/fake.ts` | 8b | à lire |  |
 | `src/platform/biometric/guard.ts` | 8b | à lire |  |
 | `src/platform/biometric/index.ts` | 8b | à lire |  |
@@ -1000,15 +1000,15 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/platform/notifications/types.ts` | 8b | à lire |  |
 | `src/platform/notifications/unavailable.ts` | 8b | à lire |  |
 | `src/platform/notifications/validate.ts` | 8b | à lire |  |
-| `src/platform/ocr/index.ts` | 5 | à lire |  |
-| `src/platform/ocr/nativeOcr.ts` | 5 | à lire |  |
-| `src/platform/ocr/testing.ts` | 5 | à lire |  |
-| `src/platform/ocr/types.ts` | 5 | à lire |  |
-| `src/platform/off/index.ts` | 5 | à lire |  |
-| `src/platform/off/parse.ts` | 5 | à lire |  |
-| `src/platform/off/tauriOff.ts` | 5 | à lire |  |
-| `src/platform/off/testing.ts` | 5 | à lire |  |
-| `src/platform/photoImage/picker.ts` | 5 | à lire |  |
+| `src/platform/ocr/index.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/platform/ocr/nativeOcr.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/platform/ocr/testing.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/platform/ocr/types.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/platform/off/index.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/platform/off/parse.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/platform/off/tauriOff.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/platform/off/testing.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
+| `src/platform/photoImage/picker.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
 | `src/platform/privacyShield/index.ts` | 8b | à lire |  |
 | `src/platform/privacyShield/tauriPrivacyShield.ts` | 8b | à lire |  |
 | `src/platform/quiet.ts` | 8b | à lire |  |
