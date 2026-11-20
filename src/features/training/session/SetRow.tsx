@@ -1,10 +1,10 @@
 import { tPlural } from '../../../i18n/plural';
 import { Check, X } from 'lucide-react';
-import { useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { defaultEntry, validateSetEntry, type SetEntry, type SetKind, type WorkoutSet, type WorkoutSource } from '../../../domain/training';
 import { stepLoad } from '../../../domain/training/loadGrid';
 import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
-import { Button, Icon } from '../../../ui';
+import { Button, ConfirmDialog, Icon } from '../../../ui';
 import type { Held } from '../loadDisplay';
 import type { OutlierAsk } from './outlierCheck';
 
@@ -105,6 +105,16 @@ export function SetRow({ set, number, current = false, loads = null, held = null
   const [ask, setAsk] = useState<{ readonly entry: SetEntry; readonly outlier: OutlierAsk } | null>(null);
   const [checking, setChecking] = useState(false);
   const loadRef = useRef<HTMLInputElement>(null);
+  const rowRef = useRef<HTMLLIElement>(null);
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  // C-068 : validée au clavier, la ligne perd ses champs ; le focus passe à la série suivante à faire (sinon à la ligne), jamais à body.
+  const refocus = useRef(false);
+  useEffect(() => {
+    if (!set.done || !refocus.current) return;
+    refocus.current = false;
+    const next = document.querySelector<HTMLElement>('.ct-session__set:not(.ct-session__set--done) .ct-session__input');
+    (next ?? rowRef.current)?.focus();
+  }, [set.done]);
   // I2-01 : une proposition acceptée écrit charge et répétitions dans une série à faire ; la saisie repart des valeurs enregistrées (la ligne
   // n'est pas remontée : le focus reste où il est), SAUF si Ali a déjà tapé quelque chose dans cette ligne : sa saisie l'emporte toujours.
   const stored = [set.loadKg, set.reps, set.durationSec, set.rir].map(String).join('|');
@@ -149,12 +159,14 @@ export function SetRow({ set, number, current = false, loads = null, held = null
         return;
       }
     }
+    refocus.current = rowRef.current?.contains(document.activeElement) ?? false;
     onValidate(entry);
   }
 
   function confirmAsk(): void {
     if (ask === null) return;
     setAsk(null);
+    refocus.current = rowRef.current?.contains(document.activeElement) ?? false;
     onValidate(ask.entry);
   }
   function correctAsk(): void {
@@ -210,6 +222,8 @@ export function SetRow({ set, number, current = false, loads = null, held = null
 
   return (
     <li
+      ref={rowRef}
+      tabIndex={-1}
       className={set.done ? 'ct-session__set ct-session__set--done' : current ? 'ct-session__set ct-session__set--current' : 'ct-session__set'}
       role="group"
       aria-label={label}
@@ -258,7 +272,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
                 <option value="partial">{tTraining('kindPartial')}</option>
               </select>
             </label>
-            <button type="button" className="ct-training__icon-button" aria-label={tTraining('sessionRemoveSet')} disabled={busy} onClick={onRemove}>
+            <button type="button" className="ct-training__icon-button" aria-label={tTraining('sessionRemoveSet')} disabled={busy} onClick={() => (sameDraft(draft, synced.draft) ? onRemove() : setConfirmRemove(true))}>
               <Icon icon={X} size="md" />
             </button>
             <button type="button" className="ct-session__validate" disabled={busy || checking || ask !== null} onClick={() => void validate()}>
@@ -289,6 +303,18 @@ export function SetRow({ set, number, current = false, loads = null, held = null
             </div>
           )}
         </>
+      )}
+      {confirmRemove && (
+        <ConfirmDialog
+          title={tTraining('sessionRemoveSetTitle')}
+          description={tTraining('sessionRemoveSetHint')}
+          confirmLabel={tTraining('sessionRemoveConfirm')}
+          onCancel={() => setConfirmRemove(false)}
+          onConfirm={() => {
+            setConfirmRemove(false);
+            onRemove();
+          }}
+        />
       )}
     </li>
   );

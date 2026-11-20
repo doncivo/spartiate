@@ -277,6 +277,10 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
   }, [picking]);
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
+  // C-073 : brouillon modifié = différent de la routine enregistrée ; retraits d'un jour ou d'un exercice confirmés (rien n'est écrit avant l'enregistrement).
+  const [leaving, setLeaving] = useState(false);
+  const [removing, setRemoving] = useState<{ readonly kind: 'day' | 'line'; readonly dayId: string; readonly lineId?: string; readonly name: string } | null>(null);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(toDraft(original));
 
   const allLines = draft.days.flatMap((d) => d.lines);
   const incompatible = new Set(incompatibleRoutineLines(allLines, data.active, data.content.catalog, data.allCustoms).map((l) => l.id));
@@ -415,6 +419,8 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
       return { ...d, lines: applyCircuitLines(rest, dissolveLoneRoutineCircuits(circuitView(rest))) };
     });
 
+  const removeDay = (dayId: string): void => setDraft((now) => ({ ...now, days: now.days.filter((d) => d.id !== dayId) }));
+
   async function save(): Promise<void> {
     setMessage(null);
     const spec = toSpec(draft);
@@ -462,7 +468,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
         <p className="ct-training__reorder-live ct-visually-hidden" aria-live="polite">
           {announce}
         </p>
-        <button type="button" className="ct-training__back" onClick={() => onClose()}>
+        <button type="button" className="ct-training__back" onClick={() => (dirty ? setLeaving(true) : onClose())}>
           <Icon icon={ArrowLeft} size="md" />
           <span>{tTraining('backToRoutines')}</span>
         </button>
@@ -569,7 +575,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
                           type="button"
                           className="ct-training__icon-button"
                           aria-label={tTraining('remove')}
-                          onClick={() => removeLine(day.id, line.id)}
+                          onClick={() => setRemoving({ kind: 'line', dayId: day.id, lineId: line.id, name: resolved.name })}
                         >
                           <Icon icon={X} size="md" />
                         </button>
@@ -597,12 +603,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
               </Button>
               <Button
                 variant="secondary"
-                onClick={() =>
-                  setDraft((now) => ({
-                    ...now,
-                    days: now.days.filter((d) => d.id !== day.id),
-                  }))
-                }
+                onClick={() => (day.lines.length === 0 ? removeDay(day.id) : setRemoving({ kind: 'day', dayId: day.id, name: day.name }))}
               >
                 {tTraining('removeDay')}
               </Button>
@@ -642,6 +643,33 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
             {tTraining('deleteRoutine')}
           </Button>
         </div>
+        {leaving && (
+          <ConfirmDialog
+            title={tTraining('leaveRoutineTitle')}
+            description={tTraining('leaveRoutineHint')}
+            confirmLabel={tTraining('leaveRoutineConfirm')}
+            cancelLabel={tTraining('leaveRoutineStay')}
+            onCancel={() => setLeaving(false)}
+            onConfirm={() => {
+              setLeaving(false);
+              onClose();
+            }}
+          />
+        )}
+        {removing && (
+          <ConfirmDialog
+            title={tTraining(removing.kind === 'day' ? 'removeDayTitle' : 'removeLineTitle', { name: removing.name })}
+            description={tTraining(removing.kind === 'day' ? 'removeDayHint' : 'removeLineHint')}
+            confirmLabel={tTraining('remove')}
+            onCancel={() => setRemoving(null)}
+            onConfirm={() => {
+              const target = removing;
+              setRemoving(null);
+              if (target.kind === 'day') removeDay(target.dayId);
+              else if (target.lineId !== undefined) removeLine(target.dayId, target.lineId);
+            }}
+          />
+        )}
         {confirm && (
           <ConfirmDialog
             title={tTraining('deleteRoutineTitle', { name: original.name })}

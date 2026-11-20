@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { Component, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ErrorInfo, type ReactNode } from 'react';
 import { AppContainerProvider, useAppContainer } from './features/app/AppContainerContext';
 import { useAppStore } from './features/app/appStore';
 import { UndoToast } from './features/app/UndoToast';
@@ -22,9 +22,10 @@ import { startSyncIntegration } from './features/sync/startSync';
 import { AppLockGate } from './features/security/AppLockGate';
 import { bootAppLock } from './features/security/appLockBoot';
 import { isAppLocked } from './features/security/appLockStore';
+import type { startSigningIntegration } from './features/signing/signingRun';
 import { t } from './i18n';
 import { formatPrefsVersion, subscribeFormatPrefs } from './i18n/formatPrefs';
-import { AppShell, TabRail } from './ui';
+import { AppShell, Button, TabRail } from './ui';
 import { PcTopBar, SidebarSyncCard } from './features/app/ShellChrome';
 import { SHORTCUTS } from './features/app/shortcuts';
 import { todayLocal } from './domain/clock';
@@ -94,6 +95,53 @@ function AppShellContent() {
       )}
     </AppShell>
   );
+}
+
+type SigningModule = { readonly startSigningIntegration: typeof startSigningIntegration };
+
+/**
+ * I-02 : démarre l'avis de signature chargé à la demande ; renvoie l'arrêt. C-116 : un bloc illisible est journalisé seulement, l'état de la
+ * base et la coquille ne changent pas.
+ */
+export function startSigningLazily(container: AppContainer, load: () => Promise<SigningModule> = () => import('./features/signing/signingRun')): () => void {
+  let stop: (() => void) | undefined;
+  let cancelled = false;
+  void load().then(
+    (module) => {
+      if (cancelled) return;
+      stop = module.startSigningIntegration(container).dispose;
+    },
+    (error: unknown) => logFailure('signing', error),
+  );
+  return () => {
+    cancelled = true;
+    stop?.();
+  };
+}
+
+/** C-114 : dernière frontière, au-dessus de toute la coquille : message statique et relance au lieu d'un écran blanc (jamais de relance sur un pilote empoisonné, D-326 5). */
+export class RootErrorBoundary extends Component<{ readonly children: ReactNode; readonly reload?: () => void }, { readonly failed: boolean }> {
+  override state = { failed: false };
+
+  static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true };
+  }
+
+  override componentDidCatch(error: Error, _info: ErrorInfo): void {
+    logFailure('render', error);
+  }
+
+  override render(): ReactNode {
+    if (!this.state.failed) return this.props.children;
+    const blocked = useAppStore.getState().dbFailure?.kind === 'connection-poisoned';
+    const reload = this.props.reload ?? ((): void => window.location.reload());
+    return (
+      <div role="alert" className="app-shell">
+        <p>{t('app.crashTitle')}</p>
+        {blocked ? <p>{t('app.dbPoisoned')}</p> : <Button onClick={reload}>{t('app.crashRetry')}</Button>}
+      </div>
+    );
+  }
 }
 
 export function App() {
@@ -168,19 +216,7 @@ export function App() {
   // I-02 : avis d'expiration de la signature (iPhone seulement, chargé à la demande hors du bundle de départ, APRÈS le premier rendu).
   useEffect(() => {
     if (!container?.signing.source.supported) return undefined;
-    let stop: (() => void) | undefined;
-    let cancelled = false;
-    void import('./features/signing/signingRun').then(
-      (module) => {
-        if (cancelled) return;
-        stop = module.startSigningIntegration(container).dispose;
-      },
-      () => publishStartFailure('signing', new Error('chargement impossible')),
-    );
-    return () => {
-      cancelled = true;
-      stop?.();
-    };
+    return startSigningLazily(container);
   }, [container]);
 
   // I5-01 (D-69) : import des fichiers Raccourcis à l'ouverture (iPhone seulement, tâche différée chargée à la demande, jamais avant Aujourd'hui).

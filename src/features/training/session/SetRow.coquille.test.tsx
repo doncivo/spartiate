@@ -79,3 +79,23 @@ describe('C-068 : focus après Entrée', () => {
     await waitFor(() => expect(within(second).getByLabelText(tTraining('sessionLoad'))).toHaveFocus());
   });
 });
+
+describe('C-068 : focus sans série suivante', () => {
+  it('dernière série validée au clavier : le focus reste dans la ligne, pas sur body', async () => {
+    function Alone() {
+      const [done, setDone] = useState(false);
+      return (
+        <ol>
+          <SetRow set={make('s1', 0, done)} number={1} timed={false} source="routine" busy={false} onValidate={() => setDone(true)} onUnvalidate={vi.fn()} onKind={vi.fn()} onRemove={vi.fn()} />
+        </ol>
+      );
+    }
+    render(<Alone />);
+    fireEvent.change(screen.getByLabelText(tTraining('sessionLoad')), { target: { value: '40' } });
+    const reps = screen.getByLabelText(tTraining('sessionReps'));
+    fireEvent.change(reps, { target: { value: '8' } });
+    reps.focus();
+    fireEvent.keyDown(reps, { key: 'Enter' });
+    await waitFor(() => expect(screen.getByRole('group')).toHaveFocus());
+  });
+});

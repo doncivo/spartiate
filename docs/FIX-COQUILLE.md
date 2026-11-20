@@ -23,3 +23,23 @@ product-owner (cette fiche), agent du module, qa-test, code-reviewer : consigné
 ## Passes consignées
 
 - product-owner : fiche ci-dessus, avant les tests.
+- Agent du module : `App.tsx` (`RootErrorBoundary`, `startSigningLazily`), `main.tsx`, `StartupWatchdog` (frontière locale, délai 120 s et pas de « Réessayer » sur les étapes de base, jamais de rechargement sur pilote empoisonné), `StartupBlocked` (prop `retry`), `startupSteps` (`isDatabaseWorkStep`, `stepDeadlineMs`), `DbOpenWatchdog` (délai par étape, pas de « Réessayer » en travail de base), `SetRow`, `RoutinesView`, `CardioGps`, `BodyProgress`, 14 clés i18n (`app.crash*`, `leaveRoutine*`, `remove*Title/Hint`, `sessionRemoveSet*`, `gpsCancel*`, `measureDelete*`). `src/sync/**` non touché.
+- qa-test : bornes de `isDatabaseWorkStep` (`db.migrationX`, `xdb.backup` refusés), dernière série validée au clavier (focus sur la ligne), pilote empoisonné sur les trois chemins (frontière, chien de garde, ouverture). 91 fichiers / 670 tests verts sur `src/features/app`, `src/App.test.tsx`, `training`, `cardio`, `bodyProgress` ; `tsc` et eslint propres ; `startModules.test.ts` vert sans ajout à la liste blanche. Bundle de départ mesuré (`measureStart.ts`, build de production) : 196 689 o (main) -> 197 040 o (+351 o gzip, marge 161 360 o sous le plafond de 358 400 o) ; aucun module nouveau dans le départ.
+- code-reviewer : à faire par l'appelant.
+
+## Écarts au brief
+
+- C-067 : seule la confirmation de l'abandon est livrée. Le brouillon persistant du suivi GPS (tracé en SQLite pour survivre à la WebView tuée) est reporté : il écrit des coordonnées, ce que la garde `geolocationGuard` (D-222) interdit hors table locale dédiée ; à décider.
+- C-068 : le focus perdu du journal des facteurs (`RecoveryToday.tsx`, clé `hlc`) n'est pas traité (zone récupération).
+- C-115 : « effet sur la transaction et le pool Rust » non vérifié ici (aucun rechargement n'est désormais déclenché par l'app pendant une migration ; un rechargement manuel par l'OS reste hors de portée).
+
+## Décisions proposées
+
+- **D-353** : la coquille a une dernière frontière d'erreur (`RootErrorBoundary`, `App.tsx`) : message statique et « Relancer l'app » ; sur pilote empoisonné, seule la consigne de fermer l'app (D-326 5). L'écran « Démarrage bloqué » est protégé par sa propre frontière.
+- **D-354** : une étape de démarrage `db.backup`, `db.schema`, `db.migration.N` ou `db.afterApply` a 120 s avant « Démarrage bloqué » (8 s ailleurs), et ce diagnostic n'offre jamais « Réessayer » ; l'ouverture de la base repart d'un délai de 15 s à chaque étape et ne propose pas « Réessayer » pendant ces étapes.
+- **D-355** : l'échec de chargement du bloc de signature est journalisé seulement ; il ne change jamais l'état de la base (C-116).
+- **D-356** : perte de saisie confirmée : abandon du suivi GPS, retrait d'une série où Ali a saisi une valeur (une série intacte se retire sans question), retour d'un brouillon de routine modifié, retrait d'un jour non vide ou d'un exercice de routine, suppression d'une mesure corporelle. Après Entrée sur une série, le focus passe à la série suivante à faire.
+
+## Constats d'Ali à faire
+
+Aucun (confirmations visibles à l'usage ; relance de l'app après erreur d'affichage non reproductible sans défaut).

@@ -23,14 +23,19 @@ function watchdogMs(): number {
  * Chien de garde de l'ouverture : monté pendant « Chargement… ». Passé le délai, affiche l'étape en cours, l'environnement et « Réessayer »
  * au lieu d'attendre sans fin ; disparaît dès que l'ouverture aboutit ou échoue (l'écran d'échec prend le relais).
  */
+/** Étapes de travail de l'ouverture : recharger la page en plein travail est interdit (C-115). */
+const WORK_STEPS: ReadonlySet<string> = new Set(['schema', 'backup', 'migration', 'afterApply']);
+
 export function DbOpenWatchdog() {
   const progress = useAppStore((s) => s.dbProgress);
-  const [stalled, setStalled] = useState(false);
+  const [stalledKey, setStalledKey] = useState<string | null>(null);
+  // C-115 : chaque étape de base (sauvegarde, migration) repart d'un délai complet ; une migration lente n'est pas un blocage.
+  const progressKey = `${progress?.step ?? ''}.${String(progress?.migration ?? '')}`;
   useEffect(() => {
-    const timer = setTimeout(() => setStalled(true), watchdogMs());
+    const timer = setTimeout(() => setStalledKey(progressKey), watchdogMs());
     return () => clearTimeout(timer);
-  }, []);
-  if (!stalled) return null;
+  }, [progressKey]);
+  if (stalledKey !== progressKey) return null;
   const seconds = Math.round(watchdogMs() / 1000);
   const failure: DbFailure = {
     phase: 'open',
@@ -42,7 +47,7 @@ export function DbOpenWatchdog() {
   return (
     <>
       <p role="alert">{t('app.dbStalled')}</p>
-      <DbFailureDetails failure={failure} />
+      <DbFailureDetails failure={failure} retry={!WORK_STEPS.has(failure.step)} />
     </>
   );
 }

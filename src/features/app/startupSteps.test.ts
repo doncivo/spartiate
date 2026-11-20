@@ -82,3 +82,14 @@ describe('suivi des étapes de démarrage', () => {
     expect(stepCode('')).toBe('etape');
   });
 });
+
+/** FIX-COQUILLE (C-115) : délai propre aux étapes de travail sur la base. */
+describe('étapes de base lentes (C-115)', () => {
+  it('reconnaît sauvegarde, schéma, migration numérotée et après-migration, rien d’autre', async () => {
+    const { isDatabaseWorkStep, stepDeadlineMs, DB_STEP_DEADLINE_MS, STARTUP_STEP_DEADLINE_MS } = await import('./startupSteps');
+    for (const name of ['db.backup', 'db.schema', 'db.migration', 'db.migration.12', 'db.afterApply']) expect(isDatabaseWorkStep(name)).toBe(true);
+    for (const name of ['db.load', 'db.pragma', 'bootstrapApp', 'db.migrationX', 'xdb.backup']) expect(isDatabaseWorkStep(name)).toBe(false);
+    expect(stepDeadlineMs('db.migration.3')).toBe(DB_STEP_DEADLINE_MS);
+    expect(stepDeadlineMs('db.load')).toBe(STARTUP_STEP_DEADLINE_MS);
+  });
+});
