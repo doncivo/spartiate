@@ -8,6 +8,7 @@ export * from './circuit';
 export * from './routineCircuit';
 export * from './restDefault';
 export * from './closure';
+export * from './assisted';
 // Génération (I3-01) : types seulement ; le générateur (`generateSession.ts`, `programModes.ts`) s'importe directement, depuis le bloc à la
 // demande « Séance proposée », comme le moteur de prescription.
 export * from './generationTypes';

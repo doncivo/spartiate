@@ -380,6 +380,8 @@ export type ReasonCode =
   | 'inactivity-discount'
   | 'position-discount'
   | 'bodyweight-unknown'
+  // FIX-ASSIST : exercice assisté, une réduction (inactivité, Recovery, position sans poids de corps, choix de charge) n'a pas baissé l'assistance.
+  | 'assistance-held'
   | 'deload'
   | 'recovery-low'
   | 'recovery-set-removed'
@@ -389,6 +391,8 @@ export type ReasonCode =
   // I2-04 : grille de charges tirée d'un matériel « à vérifier » du profil (information, rien n'est bloqué).
   | 'grid-to-verify'
   | 'equipment-max'
+  // FIX-ASSIST : exercice assisté au minimum d'assistance du matériel : aucun cran possible, échelle de répétitions.
+  | 'assistance-min'
   | 'snap-extra-rep'
   | 'gain-capped'
   | 'unsupported-metric';

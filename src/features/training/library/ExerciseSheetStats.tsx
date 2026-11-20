@@ -28,6 +28,7 @@ const REASON_KEY: Readonly<Record<Extract<SheetOneRm, { kind: 'none' }>['reason'
   noValid: 'sheetNoValid',
   notLoad: 'sheetNotLoad',
   bodyweight: 'sheetBodyweight',
+  assisted: 'sheetAssisted',
 };
 const DIFFICULTY_KEY = { easy: 'sheetEasy', ok: 'sheetOk', hard: 'sheetHard' } as const satisfies Readonly<Record<string, TrainingTextKey>>;
 

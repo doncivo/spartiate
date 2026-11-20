@@ -113,6 +113,13 @@ export function nextLoadAbove(loadKg: number, loads: readonly number[]): number 
   return best;
 }
 
+/** FIX-ASSIST : plus grande charge strictement en dessous (assistance d'un cran plus faible) ; null au minimum du matériel. */
+export function nextLoadBelow(loadKg: number, loads: readonly number[]): number | null {
+  let best: number | null = null;
+  for (const kg of loads) if (kg < loadKg - EPS && kg > EPS && (best === null || kg > best)) best = kg;
+  return best;
+}
+
 /**
  * I4-08 : décote d'inactivité seule, arrondie au cran du matériel (`loads` contient la référence). Cran = écart entre la référence et la
  * charge disponible juste en dessous. Décote < demi-cran : la charge reste la référence. Sinon : la charge disponible la plus proche de la
