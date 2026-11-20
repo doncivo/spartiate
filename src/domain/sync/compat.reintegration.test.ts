@@ -20,16 +20,16 @@ const input = (extra: Partial<ReintegrationInput>): ReintegrationInput => ({ fie
 describe('decideReintegration : ligne présente', () => {
   const cases: readonly [label: string, input: ReintegrationInput, expected: { write: string; reintegrated: number; superseded: number; remove: string[] }][] = [
     ['plus récent que le hlc de la ligne (aucune horloge)', input({ fields: [f('x', 'v', h(2_000))] }), { write: 'update', reintegrated: 1, superseded: 0, remove: ['x'] }],
-    ['plus ancien que le hlc de la ligne (aucune horloge)', input({ fields: [f('x', 'v', h(500))] }), { write: 'none', reintegrated: 0, superseded: 1, remove: ['x'] }],
+    ['plus ancien que le hlc de la ligne (aucune horloge, valeur locale écrite)', input({ fields: [f('x', 'v', h(500))], row: row({ values: new Map([['x', 'locale']]) }) }), { write: 'none', reintegrated: 0, superseded: 1, remove: ['x'] }],
     ['même écriture : hlc égal au hlc de la ligne, sans horloge propre', input({ fields: [f('x', 'v', h(1_000, B))] }), { write: 'update', reintegrated: 1, superseded: 0, remove: ['x'] }],
     ['même écriture : hlc égal au repli « * »', input({ fields: [f('x', 'v', h(700))], row: row({ clocks: new Map([['*', { hlc: h(700), base: null }]]) }) }), { write: 'update', reintegrated: 1, superseded: 0, remove: ['x'] }],
-    ['plus ancien que le repli « * »', input({ fields: [f('x', 'v', h(600))], row: row({ clocks: new Map([['*', { hlc: h(700), base: null }]]) }) }), { write: 'none', reintegrated: 0, superseded: 1, remove: ['x'] }],
+    ['plus ancien que le repli « * » (valeur locale écrite)', input({ fields: [f('x', 'v', h(600))], row: row({ values: new Map([['x', 'locale']]), clocks: new Map([['*', { hlc: h(700), base: null }]]) }) }), { write: 'none', reintegrated: 0, superseded: 1, remove: ['x'] }],
     ['entre le repli « * » et le hlc de la ligne', input({ fields: [f('x', 'v', h(800))], row: row({ clocks: new Map([['*', { hlc: h(700), base: null }]]) }) }), { write: 'update', reintegrated: 1, superseded: 0, remove: ['x'] }],
     ['horloge propre égale : rien (pas de « même écriture »)', input({ fields: [f('x', 'v', h(900))], row: row({ clocks: new Map([['x', { hlc: h(900), base: null }]]) }) }), { write: 'none', reintegrated: 0, superseded: 1, remove: ['x'] }],
     ['horloge propre plus récente', input({ fields: [f('x', 'v', h(900))], row: row({ clocks: new Map([['x', { hlc: h(950, B), base: null }]]) }) }), { write: 'none', reintegrated: 0, superseded: 1, remove: ['x'] }],
     ['horloge propre plus ancienne', input({ fields: [f('x', 'v', h(900))], row: row({ clocks: new Map([['x', { hlc: h(850, B), base: null }]]) }) }), { write: 'update', reintegrated: 1, superseded: 0, remove: ['x'] }],
     ['gagnant dont le parent manque : il attend', input({ fields: [f('a', 'p', h(2_000)), f('x', 'v', h(2_000))], missingParents: new Set(['a']) }), { write: 'update', reintegrated: 1, superseded: 0, remove: ['x'] }],
-    ['perdant dont le parent manque : retiré quand même', input({ fields: [f('a', 'p', h(500))], missingParents: new Set(['a']) }), { write: 'none', reintegrated: 0, superseded: 1, remove: ['a'] }],
+    ['perdant dont le parent manque : retiré quand même', input({ fields: [f('a', 'p', h(500))], missingParents: new Set(['a']), row: row({ values: new Map([['a', 'q']]) }) }), { write: 'none', reintegrated: 0, superseded: 1, remove: ['a'] }],
     ['aucun champ', input({ fields: [] }), { write: 'none', reintegrated: 0, superseded: 0, remove: [] }],
   ];
   it.each(cases)('%s', (_label, given, expected) => {
@@ -61,6 +61,33 @@ describe('decideReintegration : ligne présente', () => {
     const d = decideReintegration(input({ fields: [f('x', 'v', h(2_000))], row: row({ pending: new Set(['x', '*']) }) }));
     expect(d.dropPending).toEqual(['x']);
     expect(decideReintegration(input({ fields: [f('x', 'v', h(500))], row: row({ pending: new Set(['x']) }) })).dropPending).toEqual([]);
+  });
+});
+
+describe('decideReintegration : avenant 39 (FIX-A009b), horloge de CE champ', () => {
+  const star = row({ hlc: h(1_500, B), clocks: new Map([['*', { hlc: h(1_200, B), base: null }]]) });
+  it('sans horloge propre et valeur locale nulle, plus ancien que « * » et que la ligne : jamais écrit ici, appliqué sans conflit', () => {
+    const d = decideReintegration(input({ fields: [f('x', 'v', h(900))], row: star }));
+    expect({ write: d.write, reintegrated: d.reintegrated, superseded: d.superseded, remove: [...d.remove], conflicts: d.conflicts }).toEqual({ write: 'update', reintegrated: 1, superseded: 0, remove: ['x'], conflicts: [] });
+    expect(d.values).toEqual(new Map([['x', 'v']]));
+    expect(d.clocks).toEqual([{ field: 'x', hlc: h(900), base: null }]);
+    expect(d.meta).toBeNull();
+  });
+  it('sans aucune horloge (ni « * ») et valeur nulle : appliqué, repli « * » figé au hlc de la ligne', () => {
+    const d = decideReintegration(input({ fields: [f('x', 'v', h(500))] }));
+    expect(d.write).toBe('update');
+    expect(d.clocks).toEqual([{ field: '*', hlc: h(1_000, B), base: null }, { field: 'x', hlc: h(500), base: null }]);
+    expect(d.conflicts).toEqual([]);
+  });
+  it('deleted_at gardé : toujours la règle ordinaire contre « * » (aucune résurrection ni suppression ancienne)', () => {
+    const local = row({ hlc: h(1_500, B), values: new Map([['deleted_at', null]]), clocks: new Map([['*', { hlc: h(1_200, B), base: null }]]) });
+    const d = decideReintegration(input({ columns: ['a', 'x', 'deleted_at'], fields: [f('deleted_at', '2026-11-20T10:00:00.000Z', h(900))], row: local }));
+    expect(d.write).toBe('none');
+    expect(d.remove).toEqual(['deleted_at']);
+  });
+  it('horloge propre plus récente (écrit localement après) : la valeur locale reste ; horloge propre égale : rien', () => {
+    expect(decideReintegration(input({ fields: [f('x', 'v', h(900))], row: row({ clocks: new Map([['x', { hlc: h(950, B), base: null }]]) }) })).write).toBe('none');
+    expect(decideReintegration(input({ fields: [f('x', 'v', h(900))], row: row({ clocks: new Map([['x', { hlc: h(900), base: null }]]) }) })).write).toBe('none');
   });
 });
 
