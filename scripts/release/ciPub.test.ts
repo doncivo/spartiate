@@ -173,3 +173,15 @@ describe('C-175 : durcissement', () => {
     expect(wf('tests.yml')).toContain('npm audit --omit=dev --audit-level=high');
   });
 });
+
+describe('CI-PUB (revue) : les trois workflows sont du YAML valide', () => {
+  // Un workflow illisible n'a plus aucun déclencheur : GitHub refusait le lancement manuel (« does not have workflow_dispatch trigger »)
+  // et un tag n'aurait rien compilé ni publié. Les tests par motifs ne le voyaient pas.
+  it.each(['build-ios.yml', 'build-windows.yml', 'tests.yml'])('%s : analyse sans erreur, déclencheurs présents', async (name) => {
+    const { parseDocument } = await import('yaml');
+    const doc = parseDocument(readFileSync(resolve(process.cwd(), '.github/workflows', name), 'utf8'));
+    expect(doc.errors.map((e) => e.message)).toEqual([]);
+    const on = (doc.toJS() as { on?: unknown }).on;
+    expect(on).toBeTruthy();
+  });
+});
