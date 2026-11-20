@@ -18,7 +18,7 @@ export const syncFolderFr = {
   forgetLabel: 'Oublier le dossier de synchronisation',
   forgetTitle: 'Oublier le dossier de synchro ?',
   forgetDescription:
-    'Cet appareil ne se synchronisera plus ; ses données restent sur l’appareil. La désinstallation de l’app n’efface pas la clé de synchronisation : choisis « Oublier le dossier et la clé » avant de désinstaller.',
+    'Cet appareil ne se synchronisera plus ; ses données restent sur l’appareil. Pour retirer aussi la clé de synchronisation, choisis « Oublier le dossier et la clé ».',
   forgetFolder: 'Oublier le dossier',
   forgetFolderAndKey: 'Oublier le dossier et la clé',
   errorUnsafe: 'Ce dossier ne peut pas servir à la synchronisation : choisis-en un autre',

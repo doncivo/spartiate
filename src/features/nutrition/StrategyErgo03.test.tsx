@@ -46,13 +46,13 @@ afterEach(async () => {
 });
 
 describe('ERGO-03 critère 1 : cible en vigueur et cible à venir', () => {
-  it('une cible acceptée au lundi 16/11 : « À partir du lundi 16/11 : [retiré] kcal · P · G · L [retirés] », la cible en vigueur reste en chiffre héros', async () => {
+  it('une cible acceptée au lundi 16/11 : « À partir du lundi 16/11 : 2 350 kcal · P 180 · G 240 · L 72 », la cible en vigueur reste en chiffre héros', async () => {
     await seed(TODAY, CURRENT);
     await seed(FUTURE, UPCOMING);
     open();
     const r = await region();
     const line = await within(r).findByText(isUpcoming);
-    expect(norm(line.textContent)).toBe('À partir du lundi 16/11 : [retiré] kcal · P · G · L [retirés]');
+    expect(norm(line.textContent)).toBe('À partir du lundi 16/11 : 2 350 kcal · P 180 · G 240 · L 72');
     expect(norm(r.querySelector('.ct-hero')?.textContent)).toContain('2 600');
   });
 
@@ -119,7 +119,7 @@ describe('FIX-0271 (D-314) : une cible du jour ne masque plus une cible future, 
     const repo = await db.data.repos.nutritionTargets();
     expect((await repo.effective(TODAY))?.target.kcal).toBe(2700);
     expect((await repo.effective(FUTURE))?.target.kcal).toBe(2350);
-    expect(norm((await within(r).findByText(isUpcoming)).textContent)).toContain('À partir du lundi 16/11 : [retiré] kcal');
+    expect(norm((await within(r).findByText(isUpcoming)).textContent)).toContain('À partir du lundi 16/11 : 2 350 kcal');
   });
 
   it('sous 1 200 kcal avec une cible future : seul le plancher est demandé', async () => {
