@@ -13,8 +13,8 @@ Worktree : `C:\Dev\spartiate\.codex-tmp\wt-audit-claude`, branche `audit-claude-
 
 | Partie | Budget | État |
 |---|---|---|
-| 4 Moteur d'entraînement | L | en cours |
-| 5 Nutrition | M | à faire |
+| 4 Moteur d'entraînement | L | terminée le 20/11 : 45/45 fichiers, C-001 à C-030 (1 bloquant), 11 rouges, 20 vecteurs verts |
+| 5 Nutrition | M | en cours |
 | 6 Récupération et Santé | M | à faire |
 | 7a Aujourd'hui et Entraînement | L | à faire |
 | 7b Nutrition et Progrès | L | à faire |
@@ -29,3 +29,4 @@ Worktree : `C:\Dev\spartiate\.codex-tmp\wt-audit-claude`, branche `audit-claude-
 ## Journal
 
 - 20/11 : worktree, branche, squelette, générateur de couverture (892 fichiers de production dans le périmètre).
+- 20/11 : partie 4 terminée. Bloquant C-001 (assisté inversé) poussé dans bloquants.md. Points « à vérifier » relayés en 7a : C-018, C-020, C-024.

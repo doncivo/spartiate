@@ -2,7 +2,7 @@
 
 Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/lectures.tsv` : ne pas éditer à la main.
 
-- Fichiers de production et d'outillage du périmètre : **892**, lus : **0** (0.0 %).
+- Fichiers de production et d'outillage du périmètre : **892**, lus : **45** (5.0 %).
 - Hors relecture motivée (vendored, généré, binaire) : 179. Tests et supports (partie 11, hors décompte) : 597.
 - Dossiers de Codex exclus (src/db, src/sync, src/domain/sync, src-tauri/src/sync) : 320.
 
@@ -357,14 +357,14 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/domain/appUpdate.ts` | 7c | à lire |  |
 | `src/domain/appleReminders.ts` | 7c | à lire |  |
 | `src/domain/backupSchedule.ts` | 7c | à lire |  |
-| `src/domain/bodyProfile.ts` | 4 | à lire |  |
-| `src/domain/bodyProgress/index.ts` | 4 | à lire |  |
-| `src/domain/bodyProgress/measurements.ts` | 4 | à lire |  |
-| `src/domain/bodyProgress/photos.ts` | 4 | à lire |  |
-| `src/domain/cardio/index.ts` | 4 | à lire |  |
-| `src/domain/cardio/progress.ts` | 4 | à lire |  |
-| `src/domain/cardio/session.ts` | 4 | à lire |  |
-| `src/domain/cardio/track.ts` | 4 | à lire |  |
+| `src/domain/bodyProfile.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
+| `src/domain/bodyProgress/index.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
+| `src/domain/bodyProgress/measurements.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
+| `src/domain/bodyProgress/photos.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
+| `src/domain/cardio/index.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
+| `src/domain/cardio/progress.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
+| `src/domain/cardio/session.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
+| `src/domain/cardio/track.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
 | `src/domain/clock.ts` | 7c | à lire |  |
 | `src/domain/compareCodeUnits.ts` | 7c | à lire |  |
 | `src/domain/csvImport.ts` | 7c | à lire |  |
@@ -483,43 +483,43 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/domain/timeFormat.ts` | 7c | à lire |  |
 | `src/domain/timeZone.ts` | 7c | à lire |  |
 | `src/domain/todayList.ts` | 7c | à lire |  |
-| `src/domain/training/bodyweight.ts` | 4 | à lire |  |
-| `src/domain/training/circuit.ts` | 4 | à lire |  |
-| `src/domain/training/closure.ts` | 4 | à lire |  |
-| `src/domain/training/confidence.ts` | 4 | à lire |  |
-| `src/domain/training/config.ts` | 4 | à lire |  |
-| `src/domain/training/constraints.ts` | 4 | à lire |  |
-| `src/domain/training/cycleWeek.ts` | 4 | à lire |  |
-| `src/domain/training/decision.ts` | 4 | à lire |  |
-| `src/domain/training/dumbbellPair.ts` | 4 | à lire |  |
-| `src/domain/training/equipment.ts` | 4 | à lire |  |
-| `src/domain/training/estimate1rm.ts` | 4 | à lire |  |
-| `src/domain/training/exerciseCatalog.ts` | 4 | à lire |  |
-| `src/domain/training/exerciseResolution.ts` | 4 | à lire |  |
-| `src/domain/training/exerciseSheet.ts` | 4 | à lire |  |
-| `src/domain/training/explain.ts` | 4 | à lire |  |
-| `src/domain/training/generateSession.ts` | 4 | à lire |  |
-| `src/domain/training/generationTypes.ts` | 4 | à lire |  |
-| `src/domain/training/index.ts` | 4 | à lire |  |
-| `src/domain/training/loadGrid.ts` | 4 | à lire |  |
-| `src/domain/training/media.ts` | 4 | à lire |  |
-| `src/domain/training/mesocycle.ts` | 4 | à lire |  |
-| `src/domain/training/positionRank.ts` | 4 | à lire |  |
-| `src/domain/training/prescribe.ts` | 4 | à lire |  |
-| `src/domain/training/prescriptionInput.ts` | 4 | à lire |  |
-| `src/domain/training/programDay.ts` | 4 | à lire |  |
-| `src/domain/training/programModes.ts` | 4 | à lire |  |
-| `src/domain/training/programPause.ts` | 4 | à lire |  |
-| `src/domain/training/recoverySplit.ts` | 4 | à lire |  |
-| `src/domain/training/redDay.ts` | 4 | à lire |  |
-| `src/domain/training/replay.ts` | 4 | à lire |  |
-| `src/domain/training/restDefault.ts` | 4 | à lire |  |
-| `src/domain/training/routineCircuit.ts` | 4 | à lire |  |
-| `src/domain/training/routineRules.ts` | 4 | à lire |  |
-| `src/domain/training/session.ts` | 4 | à lire |  |
-| `src/domain/training/strengthScore.ts` | 4 | à lire |  |
-| `src/domain/training/types.ts` | 4 | à lire |  |
-| `src/domain/training/warmup.ts` | 4 | à lire |  |
+| `src/domain/training/bodyweight.ts` | 4 | lu 2026-11-20 (relecteur matériel) |  |
+| `src/domain/training/circuit.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
+| `src/domain/training/closure.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
+| `src/domain/training/confidence.ts` | 4 | lu 2026-11-20 (relecteur prescription) |  |
+| `src/domain/training/config.ts` | 4 | lu 2026-11-20 (relecteur prescription) |  |
+| `src/domain/training/constraints.ts` | 4 | lu 2026-11-20 (relecteur prescription) |  |
+| `src/domain/training/cycleWeek.ts` | 4 | lu 2026-11-20 (relecteur mésocycle) |  |
+| `src/domain/training/decision.ts` | 4 | lu 2026-11-20 (relecteur prescription) |  |
+| `src/domain/training/dumbbellPair.ts` | 4 | lu 2026-11-20 (relecteur matériel) |  |
+| `src/domain/training/equipment.ts` | 4 | lu 2026-11-20 (relecteur matériel) |  |
+| `src/domain/training/estimate1rm.ts` | 4 | lu 2026-11-20 (relecteur prescription) |  |
+| `src/domain/training/exerciseCatalog.ts` | 4 | lu 2026-11-20 (relecteur matériel) |  |
+| `src/domain/training/exerciseResolution.ts` | 4 | lu 2026-11-20 (relecteur matériel) |  |
+| `src/domain/training/exerciseSheet.ts` | 4 | lu 2026-11-20 (relecteur matériel) |  |
+| `src/domain/training/explain.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
+| `src/domain/training/generateSession.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
+| `src/domain/training/generationTypes.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
+| `src/domain/training/index.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
+| `src/domain/training/loadGrid.ts` | 4 | lu 2026-11-20 (relecteur matériel) |  |
+| `src/domain/training/media.ts` | 4 | lu 2026-11-20 (relecteur matériel) |  |
+| `src/domain/training/mesocycle.ts` | 4 | lu 2026-11-20 (relecteur mésocycle) |  |
+| `src/domain/training/positionRank.ts` | 4 | lu 2026-11-20 (relecteur prescription) |  |
+| `src/domain/training/prescribe.ts` | 4 | lu 2026-11-20 (relecteur prescription) |  |
+| `src/domain/training/prescriptionInput.ts` | 4 | lu 2026-11-20 (relecteur prescription) |  |
+| `src/domain/training/programDay.ts` | 4 | lu 2026-11-20 (relecteur mésocycle) |  |
+| `src/domain/training/programModes.ts` | 4 | lu 2026-11-20 (relecteur mésocycle) |  |
+| `src/domain/training/programPause.ts` | 4 | lu 2026-11-20 (relecteur mésocycle) |  |
+| `src/domain/training/recoverySplit.ts` | 4 | lu 2026-11-20 (relecteur mésocycle) |  |
+| `src/domain/training/redDay.ts` | 4 | lu 2026-11-20 (relecteur mésocycle) |  |
+| `src/domain/training/replay.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
+| `src/domain/training/restDefault.ts` | 4 | lu 2026-11-20 (relecteur matériel) |  |
+| `src/domain/training/routineCircuit.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
+| `src/domain/training/routineRules.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
+| `src/domain/training/session.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
+| `src/domain/training/strengthScore.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
+| `src/domain/training/types.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
+| `src/domain/training/warmup.ts` | 4 | lu 2026-11-20 (relecteur matériel) |  |
 | `src/domain/types.ts` | 7c | à lire |  |
 | `src/domain/week.ts` | 7c | à lire |  |
 | `src/features/app/AppContainerContext.tsx` | 7c | à lire |  |

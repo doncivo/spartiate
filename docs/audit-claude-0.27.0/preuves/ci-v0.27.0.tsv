@@ -1,0 +1,26 @@
+# CI du SHA d0566409, lue une fois le 20/11 (gh run view). Runs : Tests 44546872749, Build Windows 44546915864, Build iOS 44549272858 et 44546917390, tous success.
+Performance et bundle	success	134
+cargo audit	success	18
+smoke Windows (binaire réel)	success	390
+Lint et typecheck	success	114
+e2e iphone-webkit	success	95
+cargo test (Windows)	success	793
+Vitest node (5/5)	success	158
+Vitest dom (2/3)	success	136
+Vitest dom (3/3)	success	145
+Vitest node (3/5)	success	100
+Captures app et maquettes	success	278
+Vitest node (1/5)	success	152
+Vitest dom (1/3)	success	174
+e2e iphone (1/4)	success	115
+e2e pc (4/4)	success	89
+e2e pc (3/4)	success	341
+Vitest node (2/5)	success	70
+Vitest node (4/5)	success	157
+e2e pc (2/4)	success	112
+e2e iphone (3/4)	success	132
+e2e iphone (4/4)	success	73
+e2e pc (1/4)	success	100
+e2e iphone (2/4)	success	382
+Couverture fusionnée	success	29
+suite verte	success	7
