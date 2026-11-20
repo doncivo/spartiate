@@ -9,6 +9,7 @@ import {
   routineCircuitsOf,
   ungroupRoutineLines,
   validateRoutine,
+  weekdaysToRelease,
   type Exercise,
   type Routine,
   type RoutineCircuitLine,
@@ -166,6 +167,9 @@ async function saveDraft(access: DataAccess, original: RoutineTree, draft: Draft
     if (spec.name !== original.name) await repo.update(original.id, { name: spec.name });
     const keptDays = new Set(draft.days.map((d) => d.id));
     for (const day of original.days) if (!keptDays.has(day.id)) await repo.removeDay(day.id);
+    // FIX-PROGRAMME (C-065) : jours de la semaine qui changent libérés d'abord (échange de deux jours), puis écrits jour par jour.
+    const released = new Set(weekdaysToRelease(original.days, draft.days.map((d, i) => ({ id: d.id, weekday: spec.days[i]?.weekday ?? null }))));
+    for (const id of released) await repo.updateDay(id, { weekday: null });
     for (const [index, day] of draft.days.entries()) {
       const daySpec = spec.days[index];
       if (!daySpec) continue;
@@ -184,7 +188,7 @@ async function saveDraft(access: DataAccess, original: RoutineTree, draft: Draft
         });
         continue;
       }
-      const weekdayChanged = (before.weekday ?? null) !== (daySpec.weekday ?? null);
+      const weekdayChanged = (released.has(day.id) ? null : (before.weekday ?? null)) !== (daySpec.weekday ?? null);
       if (before.name !== daySpec.name || before.dayOrder !== daySpec.dayOrder || weekdayChanged)
         await repo.updateDay(day.id, {
           name: daySpec.name,

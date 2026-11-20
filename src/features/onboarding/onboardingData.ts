@@ -10,7 +10,9 @@ import {
   onboardingChanges,
   parseDraft,
   planChanged,
+  reviewCycleWeeks,
   reviewStart,
+  cycleWeeksToWrite,
   validateStep,
   type ChangeField,
   type CurrentSettings,
@@ -41,11 +43,12 @@ export async function saveDraft(data: DataAccess, draft: OnboardingDraft): Promi
 
 /** Données actuelles hors brouillon (profil, dernière pesée, préférences de nutrition, matériel actif), lues par les dépôts reçus. */
 async function readCurrent(repos: Repositories): Promise<CurrentSettings> {
-  const [profile, weights, prefsRaw, equipment] = await Promise.all([
+  const [profile, weights, prefsRaw, equipment, cycleWeeks] = await Promise.all([
     repos.profile().then((r) => r.get()),
     repos.bodyWeights().then((r) => r.listRecent(1)),
     repos.settings.get('nutrition.prefs'),
     repos.settings.get('training.activeEquipmentProfile'),
+    repos.settings.get('training.cycleWeeks'),
   ]);
   const prefs = parseNutritionPrefs(prefsRaw);
   return {
@@ -59,6 +62,7 @@ async function readCurrent(repos: Repositories): Promise<CurrentSettings> {
     equipmentProfileId: typeof equipment === 'string' && equipment !== '' ? equipment : null,
     // Cible jamais enregistrée (réglage absent : défaut « maintien » de la lecture) : rien à remplacer.
     nutritionGoal: typeof prefsRaw === 'object' && prefsRaw !== null && (prefsRaw as Record<string, unknown>)['goal'] != null ? prefs.goal : null,
+    cycleWeeks: reviewCycleWeeks(cycleWeeks),
   };
 }
 
@@ -211,8 +215,10 @@ export async function finishOnboarding(deps: FinishDeps, draft: OnboardingDraft,
     const answers = answersOf(draft);
     const stored = await repos.settings.get('onboarding.answers');
     if (stored === null || stored === undefined || JSON.stringify(parseDraft(stored)) !== JSON.stringify(answers)) await repos.settings.set('onboarding.answers', answers);
-    // PROG-05 (D-315) : la durée du cycle de l'étape 7 devient le dernier réglage de durée (proposée au prochain lancement).
-    if ((await repos.settings.get('training.cycleWeeks')) !== draft.mesoWeeks) await repos.settings.set('training.cycleWeeks', draft.mesoWeeks);
+    // PROG-05 (D-315) : la durée du cycle de l'étape 7 devient le dernier réglage de durée (proposée au prochain lancement). FIX-PROGRAMME (C-117) :
+    // en revue, seulement si elle a changé depuis son point de départ (une durée choisie depuis, 7 ou « illimité » compris, n'est pas écrasée).
+    const weeks = cycleWeeksToWrite(draft, baseline);
+    if (weeks !== null && (await repos.settings.get('training.cycleWeeks')) !== weeks) await repos.settings.set('training.cycleWeeks', weeks);
     if ((await repos.settings.get('onboarding.draft')) !== null) await repos.settings.set('onboarding.draft', null);
     return { routineId, routineCreated };
   });

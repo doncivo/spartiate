@@ -188,29 +188,64 @@ export interface RoutineDiff {
 const NO_DIFF: RoutineDiff = { added: [], removed: [], setsChanged: [], hasChanges: false };
 
 /**
+ * FIX-PROGRAMME (C-003) : séries de la séance d'un exercice réparties entre ses lignes du jour (même exercice sur deux lignes hors groupe, admis
+ * par `validateRoutineDay`). Les séries forment des blocs dans l'ordre de la séance (séries consécutives du même exercice hors groupe, ou
+ * toutes celles d'un même groupe) ; autant de blocs que de lignes : le bloc n va à la ligne n. Sinon, répartition dans l'ordre des lignes :
+ * chaque ligne reçoit au plus ses séries prévues, la dernière reçoit le reste. Jamais le total de l'exercice sur chaque ligne.
+ */
+function splitAmongLines(lines: readonly RoutineDay['exercises'][number][], blocks: readonly number[]): number[] {
+  if (blocks.length === lines.length) return [...blocks];
+  let remaining = blocks.reduce((a, b) => a + b, 0);
+  return lines.map((l, i) => {
+    const take = i === lines.length - 1 ? remaining : Math.min(l.sets, remaining);
+    remaining -= take;
+    return take;
+  });
+}
+
+/**
  * Écarts entre la séance et le jour de routine dont elle est partie : exercices ajoutés (dans la séance, absents du jour), retirés (dans
  * le jour, sans aucune série dans la séance ; un remplacement apparaît comme un retrait plus un ajout) et nombre de séries différent. On
  * compare la STRUCTURE de la séance (séries non supprimées hors échauffement, validées ou non) : ce que l'utilisateur a ajouté ou retiré.
+ * Un exercice sur plusieurs lignes : séries appariées aux lignes (`splitAmongLines`) ; une ligne sans série est retirée.
  * Séance sans routine, jour absent ou supprimé : aucun écart (la question n'est pas posée).
  */
 export function routineDiff(workout: WorkoutWithSets, day: RoutineDay | null): RoutineDiff {
   if (workout.routineDayId === null || day === null || day.id !== workout.routineDayId || day.deletedAt !== null) return NO_DIFF;
-  const lines = day.exercises.filter((l) => l.deletedAt === null);
-  const counts = new Map<string, { name: string; count: number; first: WorkoutSet }>();
+  const lines = day.exercises.filter((l) => l.deletedAt === null).sort((a, b) => a.position - b.position || a.id.localeCompare(b.id));
+  const counts = new Map<string, { name: string; count: number; first: WorkoutSet; blocks: number[] }>();
+  let previous: { exerciseId: string; circuitId: string | null } | null = null;
+  const groupBlock = new Map<string, number>();
   for (const s of [...workout.sets].sort((a, b) => a.position - b.position || a.id.localeCompare(b.id))) {
     if (s.deletedAt !== null || s.setKind === 'warmup') continue;
-    const entry = counts.get(s.exerciseId);
-    if (entry) entry.count += 1;
-    else counts.set(s.exerciseId, { name: s.exerciseName, count: 1, first: s });
+    const circuitId = s.circuitId ?? null;
+    const entry = counts.get(s.exerciseId) ?? { name: s.exerciseName, count: 0, first: s, blocks: [] };
+    counts.set(s.exerciseId, entry);
+    entry.count += 1;
+    const key = circuitId === null ? null : `${circuitId} ${s.exerciseId}`;
+    const known = key === null ? undefined : groupBlock.get(key);
+    if (known !== undefined) entry.blocks[known] = (entry.blocks[known] ?? 0) + 1;
+    else if (circuitId === null && previous !== null && previous.exerciseId === s.exerciseId && previous.circuitId === null) entry.blocks[entry.blocks.length - 1] = (entry.blocks[entry.blocks.length - 1] ?? 0) + 1;
+    else {
+      if (key !== null) groupBlock.set(key, entry.blocks.length);
+      entry.blocks.push(1);
+    }
+    previous = { exerciseId: s.exerciseId, circuitId };
   }
   const inRoutine = new Set(lines.map((l) => l.exerciseId));
   const added: RoutineDiffAdded[] = [...counts]
     .filter(([id]) => !inRoutine.has(id))
     .map(([exerciseId, e]) => ({ exerciseId, exerciseName: e.name, sets: e.count, repMin: e.first.targetRepsMin, repMax: e.first.targetRepsMax, restSec: e.first.targetRestSec }));
-  const removed: RoutineDiffRemoved[] = lines.filter((l) => !counts.has(l.exerciseId)).map((l) => ({ lineId: l.id, exerciseId: l.exerciseId, exerciseName: l.exerciseName }));
+  const done = new Map<string, number>();
+  for (const exerciseId of inRoutine) {
+    const own = lines.filter((l) => l.exerciseId === exerciseId);
+    const shares = splitAmongLines(own, counts.get(exerciseId)?.blocks ?? []);
+    own.forEach((l, i) => done.set(l.id, shares[i] ?? 0));
+  }
+  const removed: RoutineDiffRemoved[] = lines.filter((l) => (done.get(l.id) ?? 0) === 0).map((l) => ({ lineId: l.id, exerciseId: l.exerciseId, exerciseName: l.exerciseName }));
   const setsChanged: RoutineDiffSets[] = lines.flatMap((l) => {
-    const e = counts.get(l.exerciseId);
-    return e && e.count !== l.sets ? [{ lineId: l.id, exerciseId: l.exerciseId, exerciseName: l.exerciseName, from: l.sets, to: e.count }] : [];
+    const to = done.get(l.id) ?? 0;
+    return to > 0 && to !== l.sets ? [{ lineId: l.id, exerciseId: l.exerciseId, exerciseName: l.exerciseName, from: l.sets, to }] : [];
   });
   return { added, removed, setsChanged, hasChanges: added.length + removed.length + setsChanged.length > 0 };
 }

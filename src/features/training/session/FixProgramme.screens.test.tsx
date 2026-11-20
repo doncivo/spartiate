@@ -134,7 +134,8 @@ describe('C-064 : la semaine de reprise ne se reconduit pas au 2e cycle dans le 
     expect(await within(r).findByRole('switch', { name: tCycle('rampUpLabel') })).not.toBeChecked();
     fireEvent.click(within(r).getByRole('button', { name: tCycle('start') }));
     await within(r).findByRole('button', { name: tCycle('finish') });
-    expect(await db.driver.select('SELECT ramp_up FROM mesocycle ORDER BY created_at, id')).toEqual([{ ramp_up: 1 }, { ramp_up: 0 }]);
+    // Deux cycles créés au même instant (horloge figée) : lus par statut, jamais par date de création.
+    expect(await db.driver.select("SELECT status, ramp_up FROM mesocycle ORDER BY status = 'active', id")).toEqual([expect.objectContaining({ ramp_up: 1 }), { status: 'active', ramp_up: 0 }]);
   });
 });
 

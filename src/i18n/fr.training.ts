@@ -239,6 +239,8 @@ export const trainingFr = {
   /** PROG-04 (D-316) : jour sans séance prévue dans un programme rattaché aux jours de la semaine. */
   sessionRestTitle: 'Repos',
   sessionRestToday: 'Repos aujourd’hui. Prochaine séance {weekday} : {name}.',
+  sessionDoneTitle: 'Séance faite',
+  sessionDoneToday: 'Séance du jour faite. Prochaine séance {weekday} : {name}.',
   weekdayNames: 'lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche',
   /** PROG-04 : saisie du jour de la semaine d'un jour de routine. */
   dayWeekday: 'Jour de la semaine',

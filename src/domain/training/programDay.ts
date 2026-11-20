@@ -18,6 +18,8 @@ export interface ProgramDayLike {
 export interface ClosedWorkoutLike {
   readonly routineId: string | null;
   readonly routineDayId: string | null;
+  /** FIX-PROGRAMME (C-063) : date locale du début de la séance ; absente : la séance ne compte pas comme « faite aujourd'hui ». */
+  readonly day?: LocalDate | null;
 }
 
 /** `recentClosed` : séances closes, les plus récentes d'abord. Rend l'identifiant du jour, ou null si aucun jour n'a d'exercice. */
@@ -34,14 +36,20 @@ export function nextProgramDay(days: readonly ProgramDayLike[], recentClosed: re
 }
 
 /** PROG-04 (D-316) : séance du jour désignée, ou repos (avec le prochain jour prévu). */
-export type ProgramDayChoice = { readonly kind: 'day'; readonly dayId: string } | { readonly kind: 'rest'; readonly nextDayId: string; readonly nextWeekday: Weekday };
+export type ProgramDayChoice =
+  | { readonly kind: 'day'; readonly dayId: string }
+  | { readonly kind: 'rest'; readonly nextDayId: string; readonly nextWeekday: Weekday }
+  /** FIX-PROGRAMME (C-063) : la séance du jour est déjà faite aujourd'hui ; le prochain jour prévu est donné (au plus tôt demain). */
+  | { readonly kind: 'done'; readonly dayId: string; readonly nextDayId: string; readonly nextWeekday: Weekday };
 
 const hasWeekday = (d: ProgramDayLike): d is ProgramDayLike & { readonly weekday: number } => typeof d.weekday === 'number' && d.weekday >= 1 && d.weekday <= 7;
 
 /**
  * PROG-04 (D-316) : si au moins un jour garni de la routine porte un jour de la semaine, la séance du jour est celle du jour de la semaine de
  * `today` ; un jour sans séance prévue est un jour de repos (le prochain jour prévu est donné) ; une séance manquée est sautée, jamais
- * décalée. Sans aucun jour rattaché : rotation d'avant (`nextProgramDay`). `null` si aucun jour n'a d'exercice.
+ * décalée. FIX-PROGRAMME (C-063) : la séance du jour déjà close aujourd'hui (même routine, même jour, date du début = `today`) n'est pas
+ * reproposée : « faite », avec le prochain jour prévu après aujourd'hui. Sans aucun jour rattaché : rotation d'avant (`nextProgramDay`), qui
+ * passe déjà au jour suivant. `null` si aucun jour n'a d'exercice.
  */
 export function programDayFor(days: readonly ProgramDayLike[], recentClosed: readonly ClosedWorkoutLike[], routineId: string, today: LocalDate): ProgramDayChoice | null {
   const garnished = days.filter((d) => d.exercises.length > 0);
@@ -53,8 +61,13 @@ export function programDayFor(days: readonly ProgramDayLike[], recentClosed: rea
   }
   const wd = weekdayOf(today);
   const todays = dated.find((d) => d.weekday === wd);
-  if (todays !== undefined) return { kind: 'day', dayId: todays.id };
-  const next = [...dated].sort((a, b) => ((a.weekday - wd + 7) % 7) - ((b.weekday - wd + 7) % 7))[0] as ProgramDayLike & { readonly weekday: number };
+  // Jours d'écart (1 à 7) jusqu'au prochain jour prévu APRÈS aujourd'hui ; tri stable : le premier dans l'ordre de la routine à égalité.
+  const ahead = (d: { readonly weekday: number }): number => ((d.weekday - wd + 6) % 7) + 1;
+  const next = [...dated].sort((a, b) => ahead(a) - ahead(b))[0] as ProgramDayLike & { readonly weekday: number };
+  if (todays !== undefined) {
+    const doneToday = recentClosed.some((w) => w.routineId === routineId && w.routineDayId === todays.id && w.day === today);
+    return doneToday ? { kind: 'done', dayId: todays.id, nextDayId: next.id, nextWeekday: next.weekday as Weekday } : { kind: 'day', dayId: todays.id };
+  }
   return { kind: 'rest', nextDayId: next.id, nextWeekday: next.weekday as Weekday };
 }
 
