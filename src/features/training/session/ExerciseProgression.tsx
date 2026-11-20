@@ -107,6 +107,11 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   redDayHeld: 'explainRedDayHeld',
   position: 'explainPosition',
   positionHeld: 'explainPositionHeld',
+  assistDecrease: 'explainAssistDecrease',
+  assistDecreaseUnknownStep: 'explainAssistDecreaseUnknownStep',
+  extraRepAssistMin: 'explainExtraRepAssistMin',
+  inactivityAssistHeld: 'explainInactivityAssistHeld',
+  recoveryLowAssistHeld: 'explainRecoveryLowAssistHeld',
 };
 /** ERGO-02b : phrase d'un écart en kg pour deux haltères (« +2 kg par haltère »), l'écart du moteur étant celui d'un haltère (D-261). */
 const PAIR_KEYS: Partial<Record<ProgressionTextKey, ProgressionTextKey>> = {
@@ -116,6 +121,8 @@ const PAIR_KEYS: Partial<Record<ProgressionTextKey, ProgressionTextKey>> = {
   explainPosition: 'explainPositionPair',
   explainInactivity: 'explainInactivityPair',
   explainRedDay: 'explainRedDayPair',
+  explainAssistDecrease: 'explainAssistDecreasePair',
+  explainAssistDecreaseUnknownStep: 'explainAssistDecreaseUnknownStepPair',
 };
 const OPTION_KEYS: Readonly<Record<OptionKey, ProgressionTextKey>> = {
   optionFatigueLoad: 'optionFatigueLoad',

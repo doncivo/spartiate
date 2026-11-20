@@ -448,6 +448,7 @@ export const trainingFr = {
   sheetNoValid: 'Aucune séance assez complète pour estimer le 1RM.',
   sheetNotLoad: 'Pas de 1RM pour un exercice mesuré sans charge × répétitions.',
   sheetBodyweight: 'Pas de 1RM affiché pour un exercice au poids du corps.',
+  sheetAssisted: 'Pas de 1RM ni de record de charge pour un exercice assisté : la charge saisie est l’assistance.',
   sheetNoRecord: 'Aucune série validée avec une charge.',
   sheetReadError: 'Historique illisible pour l’instant : réessaie plus tard.',
   sheetLine: '{load} × {reps}',

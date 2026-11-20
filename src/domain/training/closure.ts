@@ -1,4 +1,5 @@
 import type { IsoDateTime } from '../types';
+import { CATALOG_ASSISTED_IDS } from './assisted';
 import { DEFAULT_PROGRESSION_CONFIG } from './config';
 import { analyzeHistory, isUnconfirmedOutlier } from './estimate1rm';
 import type { ExerciseSession, RoutineDay } from './types';
@@ -47,19 +48,29 @@ export interface WorkoutSummary {
   readonly records: readonly PersonalRecord[];
 }
 
-/** Série comptée dans le tonnage : travail, validée, charge et répétitions renseignées. */
+/**
+ * Série comptée dans le tonnage : travail, validée, charge et répétitions renseignées, exercice non assisté. FIX-ASSIST (audit C-011) : la charge
+ * saisie d'un assisté est l'assistance, jamais une charge soulevée : hors tonnage et hors records (catalogue toujours ; `assisted` : exercices
+ * personnalisés assistés passés par l'appelant).
+ */
 export function countsInTonnage(set: WorkoutSet): boolean {
-  return set.done && set.setKind === 'work' && set.loadKg !== null && set.reps !== null && set.deletedAt === null;
+  return countsWith(set, NONE);
+}
+
+const NONE: ReadonlySet<string> = new Set();
+
+function countsWith(set: WorkoutSet, assisted: ReadonlySet<string>): boolean {
+  return !CATALOG_ASSISTED_IDS.has(set.exerciseId) && !assisted.has(set.exerciseId) && set.done && set.setKind === 'work' && set.loadKg !== null && set.reps !== null && set.deletedAt === null;
 }
 
 /** Tonnage d'une série (0 hors du tonnage). */
-export function setTonnageKg(set: WorkoutSet): number {
-  return countsInTonnage(set) ? (set.loadKg as number) * (set.reps as number) : 0;
+export function setTonnageKg(set: WorkoutSet, assisted: ReadonlySet<string> = NONE): number {
+  return countsWith(set, assisted) ? (set.loadKg as number) * (set.reps as number) : 0;
 }
 
 /** Tonnage d'une liste de séries, arrondi au centième (somme de flottants). */
-export function tonnageKg(sets: readonly WorkoutSet[]): number {
-  return Math.round(sets.reduce((sum, s) => sum + setTonnageKg(s), 0) * 100) / 100;
+export function tonnageKg(sets: readonly WorkoutSet[], assisted: ReadonlySet<string> = NONE): number {
+  return Math.round(sets.reduce((sum, s) => sum + setTonnageKg(s, assisted), 0) * 100) / 100;
 }
 
 export function workoutDurationSec(workout: { readonly startedAt: string; readonly endedAt: string | null }): number | null {
@@ -99,8 +110,8 @@ function sessionsOf(exerciseId: string, mine: readonly WorkoutSet[], past: reado
  * Records de `sets` (une séance) contre `history` (séries des séances closes ANTÉRIEURES, tous exercices confondus ; seules les séries de
  * travail validées avec charge comptent). Un record est strictement supérieur à la meilleure valeur antérieure.
  */
-export function personalRecords(sets: readonly WorkoutSet[], history: readonly WorkoutSet[]): PersonalRecord[] {
-  const counted = (s: WorkoutSet): boolean => countsInTonnage(s);
+export function personalRecords(sets: readonly WorkoutSet[], history: readonly WorkoutSet[], assisted: ReadonlySet<string> = NONE): PersonalRecord[] {
+  const counted = (s: WorkoutSet): boolean => countsWith(s, assisted);
   const records: PersonalRecord[] = [];
   const exercises = [...new Set(sets.filter(counted).map((s) => s.exerciseId))];
   for (const exerciseId of exercises) {
@@ -122,15 +133,15 @@ export function personalRecords(sets: readonly WorkoutSet[], history: readonly W
   return records;
 }
 
-export function summarizeWorkout(workout: WorkoutWithSets, history: readonly WorkoutSet[] = []): WorkoutSummary {
+export function summarizeWorkout(workout: WorkoutWithSets, history: readonly WorkoutSet[] = [], assisted: ReadonlySet<string> = NONE): WorkoutSummary {
   const live = workout.sets.filter((s) => s.deletedAt === null);
   return {
     durationSec: workoutDurationSec(workout),
     validatedSets: live.filter((s) => s.done).length,
     validatedWorkSets: live.filter((s) => s.done && s.setKind !== 'warmup').length,
     plannedSets: live.length,
-    tonnageKg: tonnageKg(live),
-    records: personalRecords(live, history),
+    tonnageKg: tonnageKg(live, assisted),
+    records: personalRecords(live, history, assisted),
   };
 }
 

@@ -28,7 +28,13 @@ export type ExplanationKey =
   | 'redDay'
   | 'redDayHeld'
   | 'position'
-  | 'positionHeld';
+  | 'positionHeld'
+  // FIX-ASSIST : exercice assisté (la charge saisie est l'assistance).
+  | 'assistDecrease'
+  | 'assistDecreaseUnknownStep'
+  | 'extraRepAssistMin'
+  | 'inactivityAssistHeld'
+  | 'recoveryLowAssistHeld';
 
 export interface Explanation {
   readonly key: ExplanationKey;
@@ -60,8 +66,12 @@ export function explainPrescription(p: Prescription): Explanation {
       return p.loadKg === null ? { key: 'toEnter', params: {} } : { key: 'decision', params: { load: p.loadKg } };
     case 'increase': {
       const reps = p.reference?.reps ?? [];
-      const params = { delta: p.deltaKg ?? 0, sets: reps.length, reps: reps.length > 0 ? Math.min(...reps) : 0 };
-      return { key: p.reasons.includes('increment-unknown') ? 'increaseUnknownStep' : 'increase', params };
+      const delta = p.deltaKg ?? 0;
+      const params = { delta: Math.abs(delta), sets: reps.length, reps: reps.length > 0 ? Math.min(...reps) : 0 };
+      const unknown = p.reasons.includes('increment-unknown');
+      // FIX-ASSIST : un cran négatif est une assistance plus faible (exercice assisté) : « Assistance −x kg », jamais « +x kg ».
+      if (delta < 0) return { key: unknown ? 'assistDecreaseUnknownStep' : 'assistDecrease', params };
+      return { key: unknown ? 'increaseUnknownStep' : 'increase', params: { ...params, delta } };
     }
     case 'rep-ladder':
       return { key: 'repLadder', params: { set } };
@@ -72,10 +82,12 @@ export function explainPrescription(p: Prescription): Explanation {
     case 'extra-rep':
       if (p.reasons.includes('gain-capped')) return { key: 'extraRepCapped', params: { set } };
       if (p.reasons.includes('equipment-max')) return { key: 'extraRepMax', params: { set } };
+      if (p.reasons.includes('assistance-min')) return { key: 'extraRepAssistMin', params: { set } };
       return { key: 'extraRep', params: { set } };
     case 'fatigue':
       return { key: 'fatigue', params: {} };
     case 'inactivity': {
+      if (p.reasons.includes('assistance-held')) return { key: 'inactivityAssistHeld', params: { cut: percent(p.inactivityCut ?? 0) } };
       // I4-08 : l'écart dit est celui de la charge appliquée (arrondie au matériel), jamais la décote théorique ; aucun écart : charge maintenue.
       const ref = p.reference?.loadKg ?? 0;
       const delta = -(p.deltaKg ?? 0);
@@ -102,11 +114,12 @@ export function explainPrescription(p: Prescription): Explanation {
         if (!(delta > 0) || !(ref > 0)) return { key: 'redDayHeld', params: {} };
         return { key: 'redDay', params: { cut: recoveryCut(p), delta: Math.round(delta * 100) / 100 } };
       }
+      if (p.reasons.includes('assistance-held')) return { key: 'recoveryLowAssistHeld', params: {} };
       return { key: p.reasons.includes('recovery-set-removed') ? 'recoveryLowSet' : 'recoveryLow', params: { cut: recoveryCut(p) } };
   }
 }
 
-export type ExplanationNoteKey = 'notePartialIgnored' | 'noteOutlierHeld' | 'noteGridToVerify' | 'notePosition' | 'noteBodyweightUnknown';
+export type ExplanationNoteKey = 'notePartialIgnored' | 'noteOutlierHeld' | 'noteGridToVerify' | 'notePosition' | 'noteBodyweightUnknown' | 'noteAssistanceHeld';
 
 /**
  * I2-04 : précisions ajoutées à la phrase, dans cet ordre : dernière séance ignorée (moins de 50 % des séries faites), puis grille de charges
@@ -122,6 +135,8 @@ export function explanationNotes(p: Prescription): { readonly key: ExplanationNo
   // Poids du corps inconnu (REV-01) : le 1RM et les écarts sont calculés sur le seul lest, ce que la phrase dit.
   if (p.reasons.includes('bodyweight-unknown')) notes.push({ key: 'noteBodyweightUnknown', params: {} });
   // Position (REV-01 constat 6) : dite en note quand la raison principale est autre (la charge reste au-dessus de la référence).
+  // FIX-ASSIST : assistance maintenue malgré une réduction ; dite en note quand la phrase principale ne le dit pas déjà.
+  if (p.reasons.includes('assistance-held') && p.headline !== 'inactivity' && p.headline !== 'recovery-low') notes.push({ key: 'noteAssistanceHeld', params: {} });
   if (p.reasons.includes('position-discount') && p.headline !== 'position') notes.push({ key: 'notePosition', params: { rank: p.positionRank ?? 1, cut: percent(p.positionCut ?? 0) } });
   return notes;
 }
