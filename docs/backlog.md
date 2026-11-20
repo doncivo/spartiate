@@ -256,6 +256,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-194 | audit Claude 0.27.0 | mineur — divers PRD : imputation, assiette, notification de check-in, contrôle ITSApp…, synchronous NORMAL | à faire (lot 0.28.0) |
 | BL-090 | rapport FIX-ASSIST (lot 0.28.0) | historique (`HistoryView`) : un assisté personnalisé (machine assistée) n'est pas exclu comme l'assisté du catalogue | à faire (lot 0.28.0) |
 | BL-091 | rapport FIX-ASSIST (lot 0.28.0) | alerte secondaire d'inactivité : affiche « −x % » pour un exercice assisté dont l'assistance est maintenue | à faire (lot 0.28.0) |
+| BL-092 | rapport FIX-ABERR (lot 0.28.0) | résumé de fin : séance passée datée par la dernière série et non par `ended_at` ; décharges comptées pour confirmer une aberrante (écart à D-323 (2)) | à faire (lot 0.28.0) |
 
 ## 3. Audit Codex 0.26.0
 

@@ -211,3 +211,5 @@ par Ali. Tests : `plausibility.test.ts`, `session/FixAberrPlausible.test.tsx`.
 
 Budget M (150 k) dépassé par l'agent du module (≈ 210 k tokens) : arrêt et point d'étape (docs/LOT-0.28.0.md, cadre). Branche poussée sans PR.
 À la reprise : (1) intégrer origin/main (FIX-ASSIST #157, D-322) et résoudre les conflits attendus dans `prescribe.ts`, `closure.ts`, `exerciseSheet.ts` ; (2) inscrire la décision proposée ci-dessus (D-323) ; (3) relecture data-model de `historyFor` (`workoutRepository.ts`, toutes les séries non supprimées lues) et relecture sync-icloud (repository touché, D-26) ; (4) passe code-reviewer à froid sur le diff fusionné ; (5) test:bundle, push, PR, CI verte, fusion ; puis FIX-A008 (brief prêt hors dépôt : `C:\Dev\spartiate\.codex-tmp\lot028\brief-FIX-A008.md`).
+
+Revue 2 (orchestrateur) : corrections de la revue 1 relues (rouge `fc1032d5`, vert `d41a2b43`, garde privacy identique à main, SHA de la fiche ancêtres de HEAD) ; reste 4c consigné (docs/backlog.md, BL-092) ; test:bundle vert en local hors pairingBundle (défaut des worktrees) : **approuvé sous réserve de la CI verte**.
