@@ -72,3 +72,7 @@ effet sur `sync_outbox` : une écriture ne passe plus jamais hors capture sous g
 D-xxx : « Un pilote SQLite dont l'annulation d'une transaction ne peut pas être établie est empoisonné (`connection-poisoned`) : toute opération
 sauf `close()` est refusée, l'app affiche l'échec et n'offre que le redémarrage. Pas de réouverture automatique de la connexion. » (ADR 0002,
 avenant.)
+
+## Relecture sync-icloud (D-26)
+
+Verdict : **approuvé**. Aucune écriture hors `sync_outbox` après transaction perdue ou retrait de garde en échec ; cycle de synchro surpris par l'empoisonnement : lot, curseur et accusé annulés ensemble (`reader.ts`), intention `inflight` survivante reprise au démarrage (`publisher.ts`), époque, reset et oubli en transactions gardées ; invariants intacts. Tests relancés : serializedDriver.a008 (10), serializedDriver (16), qaTwoDevices (6), crashPoints (59). Constat 1 (assertion `sent` après le retrait de garde en échec) : ajouté. Constats 2 et 3 : registre (BL-093, BL-094). Constat 4 (C-115) : contrainte reprise dans D-326 (5) pour FIX-COQUILLE.

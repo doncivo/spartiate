@@ -138,6 +138,8 @@ describe('A-008 : échec fermé quand l’annulation ne peut pas être établie'
     const r = (current = await rig({ rollback: NO_TX, guardDelete: true }));
     await expect(failingWork(r.driver)).rejects.toThrow('work-failed');
     await expect(r.driver.execute("INSERT INTO item VALUES ('hors-outbox')")).rejects.toMatchObject({ code: 'connection-poisoned' });
+    // Relecture sync-icloud : aucune instruction n'est émise après le retrait de garde en échec (critère 4, aussi sur ce chemin).
+    expect(r.sent.at(-1)).toBe('DELETE FROM sync_guard');
   });
 });
 
