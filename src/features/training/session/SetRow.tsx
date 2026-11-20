@@ -84,6 +84,21 @@ export interface SetRowProps {
   readonly onRemove: () => void;
 }
 
+/** Texte de la question avant écriture (FIX-ABERR) : contrôle relatif, ou vraisemblance à la première séance (décision d'Ali du 20/11). */
+function outlierText(outlier: OutlierAsk, held: Held): string {
+  const load = formatExerciseLoad(outlier.loadKg, held);
+  if (outlier.check === 'relative') {
+    return tTraining(outlier.assisted ? 'sessionOutlierAskAssisted' : 'sessionOutlierAsk', { load, usual: formatExerciseLoad(outlier.usualKg, held), percent: outlier.percent });
+  }
+  const assisted = outlier.exerciseClass === 'assisted';
+  if (outlier.multiple === null || outlier.bodyweightKg === null) {
+    return tTraining(assisted ? 'sessionPlausibleAskAssistedUnknown' : 'sessionPlausibleAskUnknown', { load, cap: formatExerciseLoad(outlier.capKg, held) });
+  }
+  const body = formatExerciseLoad(outlier.bodyweightKg, null);
+  if (assisted) return tTraining('sessionPlausibleAskAssisted', { load, body });
+  return tTraining(outlier.perDumbbell ? 'sessionPlausibleAskDumbbell' : 'sessionPlausibleAsk', { load, body, multiple: formatNumber(outlier.multiple) });
+}
+
 export function SetRow({ set, number, current = false, loads = null, held = null, timed, source, busy, checkEntry, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
   const [draft, setDraft] = useState<Draft>(() => initialDraft(set, timed));
   const [issue, setIssue] = useState<string | null>(null);
@@ -261,11 +276,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
           {ask && (
             <div className="ct-session__outlier">
               <p className="ct-training__error ct-session__num" role="alert">
-                {tTraining(ask.outlier.assisted ? 'sessionOutlierAskAssisted' : 'sessionOutlierAsk', {
-                  load: formatExerciseLoad(ask.outlier.loadKg, held),
-                  usual: formatExerciseLoad(ask.outlier.usualKg, held),
-                  percent: ask.outlier.percent,
-                })}
+                {outlierText(ask.outlier, held)}
               </p>
               <div className="ct-training__actions">
                 <Button variant="primary" disabled={busy} onClick={confirmAsk}>

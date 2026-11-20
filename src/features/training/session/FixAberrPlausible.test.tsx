@@ -65,8 +65,10 @@ async function firstSet(name: string): Promise<HTMLElement> {
   if (!first) throw new Error('aucune série');
   return first;
 }
+/** « Charge (kg) », ou « Charge par haltère (kg) » pour deux haltères (ERGO-02). */
+const LOAD_LABEL = /^Charge (par haltère )?\(kg\)$/;
 function enter(set: HTMLElement, load: string, reps: string): void {
-  fireEvent.change(within(set).getByLabelText('Charge (kg)'), { target: { value: load } });
+  fireEvent.change(within(set).getByLabelText(LOAD_LABEL), { target: { value: load } });
   fireEvent.change(within(set).getByLabelText('Répétitions'), { target: { value: reps } });
   fireEvent.click(within(set).getByRole('button', { name: 'Valider la série' }));
 }
@@ -100,7 +102,7 @@ describe('FIX-ABERR vraisemblance : première séance, poids de corps 80 kg', ()
     enter(set, '201', '5');
     fireEvent.click(await within(set).findByRole('button', { name: 'Corriger' }));
     await waitFor(() => expect(within(set).queryByRole('button', { name: 'Corriger' })).toBeNull());
-    expect(within(set).getByLabelText('Charge (kg)')).toHaveFocus();
+    expect(within(set).getByLabelText(LOAD_LABEL)).toHaveFocus();
     expect(await openDone()).toEqual([]);
   });
 

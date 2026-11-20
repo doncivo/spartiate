@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { session, set } from '../../../tests/fixtures/training/progression';
 import { PLAUSIBILITY_CONFIG as P } from './config';
-import { entryImplausible, plausibilityClass, type PlausibilityOptions } from './outlierEntry';
+import { entryImplausible, plausibilityClass, type PlausibilityExercise, type PlausibilityOptions } from './outlierEntry';
 import type { ExerciseSession, MuscleWeight } from './types';
 
 const work = (loadKg: number | null, reps: number | null = 5) => ({ loadKg, reps });
@@ -32,9 +32,9 @@ describe('FIX-ABERR vraisemblance : type d’exercice', () => {
   });
   it('catalogue embarqué : quelques exercices de chaque type', () => {
     const raw = JSON.parse(readFileSync(new URL('../../../content/exercises/exercises.json', import.meta.url), 'utf8')) as { exercises?: unknown[] } | unknown[];
-    const list = (Array.isArray(raw) ? raw : (raw.exercises ?? [])) as Parameters<typeof plausibilityClass>[0][] & { id: string }[];
+    const list = (Array.isArray(raw) ? raw : (raw.exercises ?? [])) as (PlausibilityExercise & { readonly id: string })[];
     const of = (id: string) => {
-      const e = list.find((x) => (x as { id: string }).id === id);
+      const e = list.find((x) => x.id === id);
       if (!e) throw new Error(id);
       return plausibilityClass(e);
     };
