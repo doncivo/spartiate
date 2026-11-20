@@ -68,3 +68,7 @@ Plantages natifs (Swift, WebKit, panique Rust hors `applog`) non capturés ; ent
 - Contrôles statiques (I-04 critère 9) : aucun `console.warn|error|log` hors `src/platform/desktop/log.ts` ; aucun `eprintln!` hors `applog.rs` ; aucun appel de `log_append` / `log_read` / `log_clear` hors `src/platform/logs/tauriLogs.ts` ; capabilities `logs*.json` exactes.
 - Ni `src/db` ni `src/domain` ne sont touchés ; aucune dépendance npm ni cargo nouvelle (`serde_json`, `libc` sous `cfg(unix)` déjà présents).
 - Fichiers : `src-tauri/src/applog.rs`, `lib.rs`, `build.rs`, `backup.rs`, `desktop.rs`, `sync/mod.rs`, `capabilities/logs.json`, `capabilities/logs-ios.json`, `tests/desktop/{applog,config,main}.rs`, `tests/fixtures/logs/sanitize-vectors.json`, `src/platform/logs/**`, `src/platform/desktop/log.ts`, `src/features/app/bootstrap.ts` (installation), `src/features/settings/{AboutSection.tsx,logs/**}`, `src/i18n/{fr,en}*`.
+
+## Avenant FIX-CONFID-IOS (2026-11-20) : journal sur l'iPhone, masquage et bornes (C-147, C-140, C-151 ; D-329, D-331, D-332)
+
+Sur l'iPhone, le journal est dans `Documents/Journal` (visible dans Fichiers, pour qu'Ali le récupère), non sous `<app_config_dir>/logs` ; ce dossier est exclu de la sauvegarde iCloud au démarrage (D-329, H-38). Le masquage des valeurs corporelles est commun au TS et au Rust (vecteurs `tests/fixtures/logs/sanitize-vectors.json`, D-331). Côté Rust : 60 entrées par minute au plus, 256 couples suivis, compteurs saturés, scopes de Rust refusés à la WebView, rotation qui vide le fichier courant plutôt que de bloquer (D-332).

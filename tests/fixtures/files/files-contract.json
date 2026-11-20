@@ -3,7 +3,8 @@
     "Contrat du plugin Swift ct-files (FILES-IOS-01 critère 4 ; ADR 0009 avenant lot F point A2, décision du 2026-10-08 : sélecteur « Enregistrer dans Fichiers », pas de panneau de partage).",
     "Lu par le contrôle statique src-tauri/tests/desktop/export_ios.rs contre src-tauri/plugins/files/ios/Sources/CtFilesPlugin.swift et src-tauri/src/export_ios.rs.",
     "path : chemin absolu du fichier temporaire écrit par Rust (<cache de l'app>/exports/<16 hex>/<nom>), jamais une valeur venue de la WebView. mime : dérivé par Rust de l'extension (mimeByExtension), revérifié par Swift.",
-    "output : formes de réponse possibles (ensembles exacts de clés). completed faux = annulation, pas une erreur. rejectCodes : codes de rejet Swift, connus de Rust (PLUGIN_REJECT_CODES) ; tout autre code devient failed."
+    "output : formes de réponse possibles (ensembles exacts de clés). completed faux = annulation, pas une erreur. rejectCodes : codes de rejet Swift, connus de Rust (PLUGIN_REJECT_CODES) ; tout autre code devient failed.",
+    "FIX-CONFID-IOS (C-152, C-147) : excludeFromBackup({ paths }) -> { excluded } pose URLResourceValues.isExcludedFromBackup sur chaque dossier (chemin absolu, dossier ordinaire, sous le conteneur de l'app), relit la valeur ; appelé par src-tauri/src/backup_exclusion.rs au démarrage, avant le plugin SQL. argsStruct : structure Decodable du Swift ; rust : fichier Rust qui appelle la commande."
   ],
   "plugin": "ct-files",
   "swiftClass": "CtFilesPlugin",
@@ -22,7 +23,21 @@
         [
           "completed"
         ]
-      ]
+      ],
+      "argsStruct": "PresentArgs",
+      "rust": "export_ios.rs"
+    },
+    "excludeFromBackup": {
+      "input": [
+        "paths"
+      ],
+      "output": [
+        [
+          "excluded"
+        ]
+      ],
+      "argsStruct": "ExcludeArgs",
+      "rust": "backup_exclusion.rs"
     }
   },
   "mimeByExtension": {
@@ -43,5 +58,12 @@
     "not-foreground",
     "failed",
     "timeout"
+  ],
+  "backupExclusionCodes": [
+    "unsafe-folder",
+    "no-data-dir",
+    "partial",
+    "timeout",
+    "failed"
   ]
 }
