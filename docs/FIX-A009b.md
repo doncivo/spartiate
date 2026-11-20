@@ -95,3 +95,7 @@ ordinaire (aucune résurrection) ; ligne absente, trace, égalité, ordre HLC, f
 table déjà publiée naît nulle. Limite résiduelle écrite dans l'avenant ; révisable par Ali.
 
 Commits : ADR `c7d76aca`, rouge `f717c3f0`, vert `1ff6c217`, qa-test et fiche (ce commit).
+
+## Passe code-reviewer (architecte)
+
+Revue 1 (à froid, architecte, ADR amendé) : **approuvé** ; écart retenu (valeur locale non nulle et `deleted_at` exclus : sinon perte d'une valeur légitime ou résurrection) ; limite résiduelle acceptable sans migration. Réserves : (2) la réécriture du cas Y-07 de `reintegrateQa.test.ts`, qui figeait le défaut (C-168), est dans le commit vert `1ff6c217` et non dans le rouge `f717c3f0` (consigné ici, historique non réécrit) ; (3) la garde « colonne ajoutée nulle » tourne sur base vide : un remplissage par `UPDATE` dans une migration lui échapperait (registre BL-098) ; (4) exclure aussi une ligne créée ici et non publiée (`pending` sur `*`) : proposé (registre BL-099). Revue 2 (orchestrateur) : **approuvé sous réserve de la CI verte** (PR #162).
