@@ -93,12 +93,12 @@ describe('Dynamic Type sur iPhone (C-113, préparation en rem)', () => {
     expect(tokens).toMatch(/\nhtml\s*\{[^}]*font-size:\s*100%/);
   });
 
-  it('libellé d’onglet mobile, marque PC et hauteur du bouton en rem (plus de px fixes)', () => {
+  it('libellé d’onglet mobile et marque PC en rem ; bouton à 48 px fixes tant que Dynamic Type est reporté (D-372, revue A11Y)', () => {
     const rail = read('ui/TabRail.css');
     expect(rail).toMatch(/\.ct-tab-rail\[data-layout='mobile'\] \.ct-tab-rail__label\s*\{[^}]*font-size:[^;]*rem/);
     expect(rail).toMatch(/\.ct-tab-rail__mark\s*\{[^}]*font-size:\s*[\d.]+rem/);
     const button = read('ui/Button.css');
-    expect(button).not.toMatch(/\.ct-button\s*\{[^}]*\n\s*height:\s*\d+px/);
-    expect(button).toMatch(/\.ct-button\s*\{[^}]*min-height:[^;]*rem/);
+    // Revue A11Y : la hauteur en rem laissait des surcharges d'écran (min-height: 44px) réduire le bouton de 48 à 44 px ; reportée avec D-372.
+    expect(button).toMatch(/\.ct-button\s*\{[^}]*\n\s*height:\s*48px/);
   });
 });

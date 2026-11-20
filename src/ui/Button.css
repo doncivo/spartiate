@@ -4,9 +4,9 @@
   align-items: center;
   justify-content: center;
   gap: var(--ct-space-2);
-  /* A11Y (C-113) : hauteur en rem (48 px au corps de 16 px), jamais sous 44 px (ERGO-01b) ; le bouton grandit avec le texte au lieu de le couper. */
-  min-height: max(var(--ct-hit-target-min), 3rem);
-  padding: 0.25rem 20px;
+  height: 48px;
+  min-height: var(--ct-hit-target-min); /* ERGO-01b : jamais sous 44 px, même quand un écran réduit la hauteur */
+  padding: 0 20px;
   border-radius: var(--ct-radius-pill);
   font-family: var(--ct-font-text);
   font-weight: var(--ct-font-weight-bold);

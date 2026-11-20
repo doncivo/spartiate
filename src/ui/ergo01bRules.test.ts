@@ -70,8 +70,7 @@ describe('ERGO-01b : boutons arrondis de 44 px au moins', () => {
   it('Button : arrondi et hauteur minimale par le jeton', () => {
     const button = rule(css('src/ui/Button.css'), '.ct-button');
     expect(button).toContain('border-radius: var(--ct-radius-pill)');
-    // A11Y (C-113) : hauteur en rem, plancher de 44 px conservé par le jeton.
-    expect(button).toContain(`min-height: max(${HIT}, 3rem)`);
+    expect(button).toContain(`min-height: ${HIT}`);
   });
 
   it.each([
