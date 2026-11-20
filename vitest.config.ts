@@ -45,6 +45,8 @@ export default mergeConfig(
               thresholds: {
                 // PRD section 8 : règles métier couvertes à 80 % minimum.
                 'src/domain/**': { lines: 80, functions: 80, branches: 80, statements: 80 },
+                // PRD § 11.6 (C-170) : training ≥ 90 %. Mesuré le 20/11/2026 sur src/domain/training seul : lignes 97 %, fonctions 98,39 %, branches 91,86 %, instructions 98,69 %.
+                'src/domain/training/**': { lines: 90, functions: 90, branches: 90, statements: 90 },
               },
             }),
       },

@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { DeviceId } from '../../domain/types';
@@ -163,6 +163,11 @@ describe('suivi GPS (iPhone, premier plan)', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Démarrer le suivi GPS' }));
     await screen.findByText('En attente du signal GPS…');
     fireEvent.click(screen.getByRole('button', { name: 'Abandonner le suivi' }));
+    // C-067 : confirmation ; « Continuer le suivi » ne coupe rien.
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Continuer le suivi' }));
+    expect(gps.calls.stopped).toBe(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Abandonner le suivi' }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Abandonner' }));
     expect(await screen.findByRole('button', { name: 'Démarrer le suivi GPS' })).toBeInTheDocument();
     expect(gps.calls.stopped).toBe(1);
     expect(field('Durée (min ou h:mm:ss)').value).toBe('');
