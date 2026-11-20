@@ -7,7 +7,7 @@
 import { localDateOfInstant } from '../donePeriod';
 import { parseHlc } from '../hlc';
 import { isLocalDate, type Hlc, type IsoDateTime, type LocalDate } from '../types';
-import { NUTRITION_CONFIG } from './config';
+import { floorVerdict } from './floor';
 import { restTargetFromGap, type RestPlan } from './restDay';
 import type { Target } from './types';
 
@@ -52,9 +52,9 @@ export function validateTargetRecord(draft: TargetRecordDraft): TargetRecordIssu
   // Plancher (D-74 point 7) : seulement pour une cible adoptée ; la trace d'une proposition refusée est conservée telle quelle.
   if (draft.accepted) {
     // PROG-01 (revue du 14/11) : le plancher vaut aussi pour la cible des jours de repos.
-    const lowest = rest === null ? kcal : Math.min(kcal, rest.rest.kcal);
-    if (lowest < NUTRITION_CONFIG.confirmedFloorKcal) issues.push('kcal-below-minimum');
-    else if (lowest < NUTRITION_CONFIG.floorKcal && !draft.lowFloorConfirmed) issues.push('confirmation-required');
+    const verdict = floorVerdict(draft.target, rest);
+    if (verdict === 'rejected') issues.push('kcal-below-minimum');
+    else if (verdict === 'confirm' && !draft.lowFloorConfirmed) issues.push('confirmation-required');
   }
   return issues;
 }

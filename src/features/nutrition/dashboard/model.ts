@@ -37,6 +37,8 @@ export interface DayBar {
   readonly state: DayState;
   /** Total loggé ; `null` pour un jour sans entrée ou dont une entrée ignore l'énergie (jamais 0). */
   readonly kcal: number | null;
+  /** FIX-PLANCHER (C-088) : cible du jour selon son type (entraînement ou repos, D-270) ; `null` sans cible. */
+  readonly targetKcal: number | null;
 }
 
 export interface DashboardModel {
@@ -51,6 +53,10 @@ export interface DashboardModel {
   readonly weighInCount: number;
   readonly lastWeighIn: { readonly date: LocalDate; readonly kg: number } | null;
   readonly confidence: TdeeConfidence;
+  /** Cible d'AUJOURD'HUI selon le type du jour (D-270), comme le Journal et Aujourd'hui ; `null` sans cible. */
+  readonly todayTarget: DayTarget | null;
+  /** Cible moyenne des jours complets comparés par la balance (la cible unique sans cible de repos) ; `null` sans cible ou sans jour complet. */
+  readonly compareKcal: number | null;
 }
 
 /** Cible de chaque jour selon son type (PROG-01) ; `undefined` sans cible de repos : comparaison à la cible unique, inchangée. */
@@ -72,17 +78,27 @@ export function dashboardModel(snapshot: NutritionSnapshot): DashboardModel {
   // Tendance, pesées et axe du graphique vont jusqu'à AUJOURD'HUI (comme la carte Poids d'Aujourd'hui, 0.7.1) ; pente, balance et dépense restent à la veille (`reference`).
   const { today } = snapshot;
   const trendStart = addDays(today, -(TREND_WINDOW_DAYS - 1));
+  const perDay = targetForDay(snapshot);
+  const dayKcal = (date: Day): number | null => (target === null ? null : perDay === undefined ? target.kcal : perDay(date).kcal);
+  const completeDates = days.filter((d) => d.usableForTdee && d.kcal !== null && d.date >= weekStart && d.date <= reference).map((d) => d.date);
+  const compareKcal = (): number | null => {
+    if (target === null) return null;
+    if (perDay === undefined) return target.kcal;
+    return completeDates.length === 0 ? null : Math.round(completeDates.reduce((sum, date) => sum + perDay(date).kcal, 0) / completeDates.length);
+  };
   const known = weighIns.filter((w) => w.date <= today);
   return {
     // PROG-01 (D-272) : avec une cible de repos, chaque jour est comparé à la cible de son type.
     balance: weeklyBalance(days, weighIns, target, reference, targetForDay(snapshot)),
     slope: weeklyTrendSlope(trend, reference),
-    bars: days.filter((d) => d.date >= weekStart && d.date <= reference).map((d) => ({ date: d.date, state: d.state, kcal: d.kcal })),
+    bars: days.filter((d) => d.date >= weekStart && d.date <= reference).map((d) => ({ date: d.date, state: d.state, kcal: d.kcal, targetKcal: dayKcal(d.date) })),
     trendPoints: trend.filter((p) => p.date >= trendStart && p.date <= today),
     trendNow: trendAt(trend, today),
     learning: isTrendLearning(known.length),
     weighInCount: known.length,
     lastWeighIn: known.at(-1) ?? null,
     confidence: tdeeConfidence(tdee),
+    todayTarget: snapshot.target === null ? null : dayTargetFor(snapshot.target.target, snapshot.target.restPlan ?? null, today, snapshot.strengthDays ?? new Set()).target,
+    compareKcal: compareKcal(),
   };
 }
