@@ -15,8 +15,11 @@ export interface StartupWatchdogProps {
 
 const poisoned = (): boolean => useAppStore.getState().dbFailure?.kind === 'connection-poisoned';
 
-/** C-114 : le bloc « Démarrage bloqué » illisible ne démonte pas l'app ; un message statique (catalogue de départ) prend sa place. */
-class BlockedLoadBoundary extends Component<{ readonly children: ReactNode }, { readonly failed: boolean }> {
+/**
+ * C-114 : frontière d'erreur unique du départ (racine de l'app, bloc « Démarrage bloqué ») ; le repli est un message statique du catalogue de
+ * départ. `fallback` est évalué au rendu du repli (il lit l'état courant du démarrage).
+ */
+export class FallbackBoundary extends Component<{ readonly children: ReactNode; readonly fallback: () => ReactNode; readonly code: string }, { readonly failed: boolean }> {
   override state = { failed: false };
 
   static getDerivedStateFromError(): { failed: boolean } {
@@ -24,11 +27,11 @@ class BlockedLoadBoundary extends Component<{ readonly children: ReactNode }, { 
   }
 
   override componentDidCatch(error: Error): void {
-    logFailure('startup-blocked-load', error);
+    logFailure(this.props.code, error);
   }
 
   override render(): ReactNode {
-    return this.state.failed ? <p role="alert">{t('app.crashFallback')}</p> : this.props.children;
+    return this.state.failed ? this.props.fallback() : this.props.children;
   }
 }
 
@@ -51,10 +54,10 @@ export function StartupWatchdog({ tracker = startupTracker, now = () => performa
   const seconds = Math.round((now() - blocked.startedAt) / 1000);
   const canRetry = !isDatabaseWorkStep(blocked.name) && !poisoned();
   return (
-    <BlockedLoadBoundary>
+    <FallbackBoundary code="startup-blocked-load" fallback={() => <p role="alert">{t('app.crashFallback')}</p>}>
       <Suspense fallback={null}>
         <StartupBlockedLazy step={blocked.name} seconds={seconds} onRetry={() => (poisoned() ? undefined : onRetry())} onShare={shareLazy} retry={canRetry} />
       </Suspense>
-    </BlockedLoadBoundary>
+    </FallbackBoundary>
   );
 }

@@ -66,7 +66,7 @@ describe('C-114 / C-115 : frontière racine pendant une migration', () => {
       </RootErrorBoundary>,
     );
     expect(screen.queryByRole('button', { name: t('app.crashRetry') })).toBeNull();
-    expect(screen.getByRole('alert')).toHaveTextContent(t('app.dbPoisoned'));
+    expect(screen.getByRole('alert')).toHaveTextContent(t('app.crashMigration'));
     expect(reload).not.toHaveBeenCalled();
   });
 });

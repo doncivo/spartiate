@@ -1,4 +1,4 @@
-import { Component, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ErrorInfo, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { AppContainerProvider, useAppContainer } from './features/app/AppContainerContext';
 import { useAppStore } from './features/app/appStore';
 import { UndoToast } from './features/app/UndoToast';
@@ -9,8 +9,8 @@ import { TABS, useNavigationStore, type TabDefinition } from './features/app/nav
 import { startDesktopIntegration } from './features/app/desktop';
 import { toKeyInput, type ShortcutId } from './features/app/shortcuts';
 import { startAppStartup, type AppStartup } from './features/app/startup';
-import { StartupWatchdog } from './features/app/StartupWatchdog';
-import { startupTracker } from './features/app/startupSteps';
+import { FallbackBoundary, StartupWatchdog } from './features/app/StartupWatchdog';
+import { isDatabaseWorkStep, startupTracker } from './features/app/startupSteps';
 import { registerTabShortcuts } from './features/app/tabShortcuts';
 import { AppearanceScreen, AppleHealthScreen, BodyScreen, ExportImportScreen, LogsScreen, NutritionScreen, SectionNotice, RecoveryFailureLazy, OnboardingHost, preloadScreens, ResetDataScreen, SettingsScreen, ShortcutsHelp, SyncDetailsScreen, TrainingScreen, UpdateBanner } from './features/app/lazyScreens';
 import { AppStatusBanner } from './features/app/AppStatusBanner';
@@ -111,7 +111,7 @@ export function startSigningLazily(container: AppContainer, load: () => Promise<
       if (cancelled) return;
       stop = module.startSigningIntegration(container).dispose;
     },
-    (error: unknown) => logFailure('signing', error),
+    () => logFailure('signing', 'chargement impossible'),
   );
   return () => {
     cancelled = true;
@@ -119,29 +119,26 @@ export function startSigningLazily(container: AppContainer, load: () => Promise<
   };
 }
 
-/** C-114 : dernière frontière, au-dessus de toute la coquille : message statique et relance au lieu d'un écran blanc (jamais de relance sur un pilote empoisonné, D-326 5). */
-export class RootErrorBoundary extends Component<{ readonly children: ReactNode; readonly reload?: () => void }, { readonly failed: boolean }> {
-  override state = { failed: false };
+/** Relancer pendant une migration ou sur un pilote empoisonné est interdit (D-326 5, C-115). */
+const reloadForbidden = (): boolean => useAppStore.getState().dbFailure?.kind === 'connection-poisoned' || isDatabaseWorkStep(startupTracker.current()?.name ?? '');
 
-  static getDerivedStateFromError(): { failed: boolean } {
-    return { failed: true };
-  }
+function RootCrash({ reload }: { readonly reload: () => void }) {
+  const poisoned = useAppStore.getState().dbFailure?.kind === 'connection-poisoned';
+  return (
+    <div role="alert" className="app-shell">
+      <p>{t('app.crashTitle')}</p>
+      {reloadForbidden() ? <p>{t(poisoned ? 'app.dbPoisoned' : 'app.crashMigration')}</p> : <Button onClick={() => (reloadForbidden() ? undefined : reload())}>{t('app.crashRetry')}</Button>}
+    </div>
+  );
+}
 
-  override componentDidCatch(error: Error, _info: ErrorInfo): void {
-    logFailure('render', error);
-  }
-
-  override render(): ReactNode {
-    if (!this.state.failed) return this.props.children;
-    const blocked = useAppStore.getState().dbFailure?.kind === 'connection-poisoned';
-    const reload = this.props.reload ?? ((): void => window.location.reload());
-    return (
-      <div role="alert" className="app-shell">
-        <p>{t('app.crashTitle')}</p>
-        {blocked ? <p>{t('app.dbPoisoned')}</p> : <Button onClick={reload}>{t('app.crashRetry')}</Button>}
-      </div>
-    );
-  }
+/** C-114 : dernière frontière, au-dessus de toute la coquille : message statique et relance au lieu d'un écran blanc. */
+export function RootErrorBoundary({ children, reload = () => window.location.reload() }: { readonly children: ReactNode; readonly reload?: () => void }) {
+  return (
+    <FallbackBoundary code="render" fallback={() => <RootCrash reload={reload} />}>
+      {children}
+    </FallbackBoundary>
+  );
 }
 
 export function App() {

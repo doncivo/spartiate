@@ -40,6 +40,8 @@ export const fr = {
     startError: 'Le démarrage de Spartiate a échoué.',
     crashTitle: 'Spartiate a rencontré une erreur d’affichage.',
     crashRetry: 'Relancer l’app',
+    crashMigration: 'Une mise à jour des données est en cours : ne la relance pas. Si rien ne change, ferme puis rouvre Spartiate ; tes données déjà enregistrées sont intactes.',
+    dbSlow: 'Une sauvegarde ou une mise à jour des données est en cours et peut prendre du temps : patiente, ne ferme pas l’app.',
     crashFallback: 'Le démarrage est bloqué et son écran de détail n’a pas pu se charger. Ferme puis rouvre Spartiate.',
     dbPoisoned: 'La base de données a été protégée après une erreur d’annulation : plus rien n’est enregistré. Ferme puis rouvre Spartiate ; tes données déjà enregistrées sont intactes.',
     sectionPending: 'La section {name} n’est pas encore disponible dans cette version.',

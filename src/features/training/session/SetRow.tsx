@@ -112,8 +112,9 @@ export function SetRow({ set, number, current = false, loads = null, held = null
   useEffect(() => {
     if (!set.done || !refocus.current) return;
     refocus.current = false;
-    const next = document.querySelector<HTMLElement>('.ct-session__set:not(.ct-session__set--done) .ct-session__input');
-    (next ?? rowRef.current)?.focus();
+    const row = rowRef.current;
+    const after = [...document.querySelectorAll<HTMLElement>('.ct-session__set:not(.ct-session__set--done) .ct-session__input')].find((input) => row !== null && (row.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0);
+    (after ?? row)?.focus();
   }, [set.done]);
   // I2-01 : une proposition acceptée écrit charge et répétitions dans une série à faire ; la saisie repart des valeurs enregistrées (la ligne
   // n'est pas remontée : le focus reste où il est), SAUF si Ali a déjà tapé quelque chose dans cette ligne : sa saisie l'emporte toujours.

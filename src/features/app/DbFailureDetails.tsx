@@ -6,6 +6,7 @@ import { startupRecoveryAvailable } from '../../platform/backup/recoveryAvailabl
 import { detectOs, detectRuntime } from '../../platform/runtime';
 import { appReload } from '../security/lockLayer';
 import { useAppStore, type DbFailure } from './appStore';
+import { stepDeadlineMs } from './startupSteps';
 import { UpdateRestoreActionLazy } from './lazyScreens';
 import type { UpdateRestoreOutcome } from './updateRestore';
 import './DbFailureDetails.css';
@@ -29,14 +30,17 @@ const WORK_STEPS: ReadonlySet<string> = new Set(['schema', 'backup', 'migration'
 export function DbOpenWatchdog() {
   const progress = useAppStore((s) => s.dbProgress);
   const [stalledKey, setStalledKey] = useState<string | null>(null);
-  // C-115 : chaque étape de base (sauvegarde, migration) repart d'un délai complet ; une migration lente n'est pas un blocage.
-  const progressKey = `${progress?.step ?? ''}.${String(progress?.migration ?? '')}`;
+  const step = progress?.step ?? '';
+  const working = WORK_STEPS.has(step);
+  // C-115 : chaque étape de base (sauvegarde, migration) repart d'un délai complet, celui des étapes de base ; une migration lente n'est pas un blocage.
+  const progressKey = `${step}.${String(progress?.migration ?? '')}`;
+  const delayMs = working ? Math.max(watchdogMs(), stepDeadlineMs('db.' + step)) : watchdogMs();
   useEffect(() => {
-    const timer = setTimeout(() => setStalledKey(progressKey), watchdogMs());
+    const timer = setTimeout(() => setStalledKey(progressKey), delayMs);
     return () => clearTimeout(timer);
-  }, [progressKey]);
+  }, [progressKey, delayMs]);
   if (stalledKey !== progressKey) return null;
-  const seconds = Math.round(watchdogMs() / 1000);
+  const seconds = Math.round(delayMs / 1000);
   const failure: DbFailure = {
     phase: 'open',
     step: progress?.step ?? 'load',
@@ -46,8 +50,8 @@ export function DbOpenWatchdog() {
   };
   return (
     <>
-      <p role="alert">{t('app.dbStalled')}</p>
-      <DbFailureDetails failure={failure} retry={!WORK_STEPS.has(failure.step)} />
+      <p role="alert">{t(working ? 'app.dbSlow' : 'app.dbStalled')}</p>
+      <DbFailureDetails failure={failure} retry={!working} />
     </>
   );
 }
