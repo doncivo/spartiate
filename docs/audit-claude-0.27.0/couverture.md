@@ -2,7 +2,7 @@
 
 Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/lectures.tsv` : ne pas éditer à la main.
 
-- Fichiers de production et d'outillage du périmètre : **892**, lus : **272** (30.5 %).
+- Fichiers de production et d'outillage du périmètre : **892**, lus : **639** (71.6 %).
 - Hors relecture motivée (vendored, généré, binaire) : 179. Tests et supports (partie 11, hors décompte) : 597.
 - Dossiers de Codex exclus (src/db, src/sync, src/domain/sync, src-tauri/src/sync) : 320.
 
@@ -351,12 +351,12 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src-tauri/vendor/tauri-plugin-sql/src/wrapper.rs` | — | hors relecture | vendored (plugin SQL et sqlx-sqlite), hors relecture : code tiers figé, garde propre au dépôt relue en 8a |
 | `src-tauri/windows-test.manifest` | 8a | à lire |  |
 | `src-tauri/windows/hooks.nsh` | 8a | à lire |  |
-| `src/App.tsx` | 7c | à lire |  |
-| `src/domain/appLock.ts` | 7c | à lire |  |
-| `src/domain/appStatus.ts` | 7c | à lire |  |
-| `src/domain/appUpdate.ts` | 7c | à lire |  |
-| `src/domain/appleReminders.ts` | 7c | à lire |  |
-| `src/domain/backupSchedule.ts` | 7c | à lire |  |
+| `src/App.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/domain/appLock.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/appStatus.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/appUpdate.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/appleReminders.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/backupSchedule.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
 | `src/domain/bodyProfile.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
 | `src/domain/bodyProgress/index.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
 | `src/domain/bodyProgress/measurements.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
@@ -365,51 +365,51 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/domain/cardio/progress.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
 | `src/domain/cardio/session.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
 | `src/domain/cardio/track.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
-| `src/domain/clock.ts` | 7c | à lire |  |
-| `src/domain/compareCodeUnits.ts` | 7c | à lire |  |
-| `src/domain/csvImport.ts` | 7c | à lire |  |
-| `src/domain/dataReset.ts` | 7c | à lire |  |
-| `src/domain/dateInput.ts` | 7c | à lire |  |
-| `src/domain/donePeriod.ts` | 7c | à lire |  |
-| `src/domain/eventKinds.ts` | 7c | à lire |  |
-| `src/domain/eventOccurrences.ts` | 7c | à lire |  |
-| `src/domain/eventReminders.ts` | 7c | à lire |  |
-| `src/domain/eventRules.ts` | 7c | à lire |  |
-| `src/domain/eventTestKit.ts` | 7c | à lire |  |
-| `src/domain/exportImport/archive.ts` | 7c | à lire |  |
-| `src/domain/exportImport/fullExport.ts` | 7c | à lire |  |
-| `src/domain/exportImport/plan.ts` | 7c | à lire |  |
-| `src/domain/exportImport/sha256.ts` | 7c | à lire |  |
-| `src/domain/exportImport/zip.ts` | 7c | à lire |  |
-| `src/domain/focusSession.ts` | 7c | à lire |  |
-| `src/domain/goalRules.ts` | 7c | à lire |  |
+| `src/domain/clock.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/compareCodeUnits.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/csvImport.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/dataReset.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/dateInput.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/donePeriod.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/eventKinds.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/eventOccurrences.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/eventReminders.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/eventRules.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/eventTestKit.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/exportImport/archive.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/exportImport/fullExport.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/exportImport/plan.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/exportImport/sha256.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/exportImport/zip.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/focusSession.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/goalRules.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
 | `src/domain/health/bodyShortcutFiles.ts` | 6 | lu 2026-11-20 (relecteur dossier Santé) |  |
 | `src/domain/health/shortcutWeights.ts` | 6 | lu 2026-11-20 (relecteur dossier Santé) |  |
-| `src/domain/historyExport.ts` | 7c | à lire |  |
-| `src/domain/hlc.ts` | 7c | à lire |  |
-| `src/domain/id.ts` | 7c | à lire |  |
-| `src/domain/itemFilter.ts` | 7c | à lire |  |
-| `src/domain/localDate.ts` | 7c | à lire |  |
-| `src/domain/model/checklist.ts` | 7c | à lire |  |
-| `src/domain/model/event.ts` | 7c | à lire |  |
-| `src/domain/model/externalEvent.ts` | 7c | à lire |  |
-| `src/domain/model/focusSession.ts` | 7c | à lire |  |
-| `src/domain/model/goal.ts` | 7c | à lire |  |
-| `src/domain/model/holiday.ts` | 7c | à lire |  |
-| `src/domain/model/icon.ts` | 7c | à lire |  |
-| `src/domain/model/index.ts` | 7c | à lire |  |
-| `src/domain/model/recurrence.ts` | 7c | à lire |  |
-| `src/domain/model/reminder.ts` | 7c | à lire |  |
-| `src/domain/model/routine.ts` | 7c | à lire |  |
-| `src/domain/model/settings.ts` | 7c | à lire |  |
-| `src/domain/model/space.ts` | 7c | à lire |  |
-| `src/domain/model/task.ts` | 7c | à lire |  |
-| `src/domain/notificationActions.ts` | 7c | à lire |  |
-| `src/domain/notificationId.ts` | 7c | à lire |  |
+| `src/domain/historyExport.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/hlc.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/id.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/itemFilter.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/localDate.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/checklist.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/event.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/externalEvent.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/focusSession.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/goal.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/holiday.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/icon.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/index.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/recurrence.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/reminder.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/routine.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/settings.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/space.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/model/task.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/notificationActions.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/notificationId.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
 | `src/domain/notificationInstant.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
-| `src/domain/notificationLedger.ts` | 7c | à lire |  |
-| `src/domain/notificationPlan.ts` | 7c | à lire |  |
-| `src/domain/notificationStatus.ts` | 7c | à lire |  |
+| `src/domain/notificationLedger.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/notificationPlan.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/notificationStatus.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
 | `src/domain/nutrition/barcode.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
 | `src/domain/nutrition/checkIn.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
 | `src/domain/nutrition/ciqual.ts` | 5 | lu 2026-11-20 (relecteur journal) |  |
@@ -436,16 +436,16 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/domain/nutrition/types.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
 | `src/domain/nutrition/weeklyRate.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
 | `src/domain/nutrition/weightTrend.ts` | 5 | lu 2026-11-20 (relecteur cibles) |  |
-| `src/domain/occurrenceDedup.ts` | 7c | à lire |  |
-| `src/domain/omitKey.ts` | 7c | à lire |  |
-| `src/domain/onboarding/draft.ts` | 7c | à lire |  |
-| `src/domain/onboarding/expenditure.ts` | 7c | à lire |  |
-| `src/domain/onboarding/index.ts` | 7c | à lire |  |
-| `src/domain/onboarding/review.ts` | 7c | à lire |  |
-| `src/domain/onboarding/split.ts` | 7c | à lire |  |
-| `src/domain/projectRules.ts` | 7c | à lire |  |
-| `src/domain/quietHours.ts` | 7c | à lire |  |
-| `src/domain/recap.ts` | 7c | à lire |  |
+| `src/domain/occurrenceDedup.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/omitKey.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/onboarding/draft.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/onboarding/expenditure.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/onboarding/index.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/onboarding/review.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/onboarding/split.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/projectRules.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/quietHours.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/recap.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
 | `src/domain/recovery/baseline.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
 | `src/domain/recovery/bedtimeProposal.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
 | `src/domain/recovery/config.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
@@ -462,27 +462,27 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/domain/recovery/types.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
 | `src/domain/recovery/unusualValues.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
 | `src/domain/recoveryNotificationPlan.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
-| `src/domain/recurrenceEdit.ts` | 7c | à lire |  |
-| `src/domain/recurrenceNext.ts` | 7c | à lire |  |
-| `src/domain/recurrenceRules.ts` | 7c | à lire |  |
-| `src/domain/routineReport.ts` | 7c | à lire |  |
-| `src/domain/routineSchedule.ts` | 7c | à lire |  |
-| `src/domain/routineStreaks.ts` | 7c | à lire |  |
-| `src/domain/routineTestKit.ts` | 7c | à lire |  |
-| `src/domain/signingNotice.ts` | 7c | à lire |  |
-| `src/domain/spaceRules.ts` | 7c | à lire |  |
+| `src/domain/recurrenceEdit.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/recurrenceNext.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/recurrenceRules.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/routineReport.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/routineSchedule.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/routineStreaks.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/routineTestKit.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/signingNotice.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/domain/spaceRules.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
 | `src/domain/supplementNotificationActions.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
 | `src/domain/supplementNotificationPlan.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
-| `src/domain/syncBanners.ts` | 7c | à lire |  |
-| `src/domain/syntheticTimer.ts` | 7c | à lire |  |
-| `src/domain/taskPostpone.ts` | 7c | à lire |  |
-| `src/domain/taskRules.ts` | 7c | à lire |  |
-| `src/domain/taskSchedule.ts` | 7c | à lire |  |
-| `src/domain/taskTrash.ts` | 7c | à lire |  |
-| `src/domain/textEncoding.ts` | 7c | à lire |  |
-| `src/domain/timeFormat.ts` | 7c | à lire |  |
-| `src/domain/timeZone.ts` | 7c | à lire |  |
-| `src/domain/todayList.ts` | 7c | à lire |  |
+| `src/domain/syncBanners.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/syntheticTimer.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/taskPostpone.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/taskRules.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/taskSchedule.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/taskTrash.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/textEncoding.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/timeFormat.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/timeZone.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/todayList.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
 | `src/domain/training/bodyweight.ts` | 4 | lu 2026-11-20 (relecteur matériel) |  |
 | `src/domain/training/circuit.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
 | `src/domain/training/closure.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
@@ -520,52 +520,52 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/domain/training/strengthScore.ts` | 4 | lu 2026-11-20 (relecteur Strength Score) |  |
 | `src/domain/training/types.ts` | 4 | lu 2026-11-20 (relecteur génération) |  |
 | `src/domain/training/warmup.ts` | 4 | lu 2026-11-20 (relecteur matériel) |  |
-| `src/domain/types.ts` | 7c | à lire |  |
-| `src/domain/week.ts` | 7c | à lire |  |
-| `src/features/app/AppContainerContext.tsx` | 7c | à lire |  |
-| `src/features/app/AppStatusBanner.tsx` | 7c | à lire |  |
-| `src/features/app/DbFailureDetails.css` | 7c | à lire |  |
-| `src/features/app/DbFailureDetails.tsx` | 7c | à lire |  |
-| `src/features/app/FileSaveFailure.css` | 7c | à lire |  |
-| `src/features/app/FileSaveFailure.tsx` | 7c | à lire |  |
-| `src/features/app/RecoveryFailure.tsx` | 7c | à lire |  |
-| `src/features/app/SectionNotice.css` | 7c | à lire |  |
-| `src/features/app/SectionNotice.tsx` | 7c | à lire |  |
-| `src/features/app/ShellChrome.css` | 7c | à lire |  |
-| `src/features/app/ShellChrome.tsx` | 7c | à lire |  |
-| `src/features/app/StartupBlocked.tsx` | 7c | à lire |  |
-| `src/features/app/StartupWatchdog.tsx` | 7c | à lire |  |
+| `src/domain/types.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/domain/week.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/features/app/AppContainerContext.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/AppStatusBanner.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/DbFailureDetails.css` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/DbFailureDetails.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/FileSaveFailure.css` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/FileSaveFailure.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/RecoveryFailure.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/SectionNotice.css` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/SectionNotice.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/ShellChrome.css` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/ShellChrome.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/StartupBlocked.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/StartupWatchdog.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
 | `src/features/app/TodayPcSide.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
 | `src/features/app/TodayScreen.css` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
 | `src/features/app/TodayScreen.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
-| `src/features/app/UndoToast.css` | 7c | à lire |  |
-| `src/features/app/UndoToast.tsx` | 7c | à lire |  |
-| `src/features/app/UpdateRestoreAction.tsx` | 7c | à lire |  |
-| `src/features/app/appStatus.ts` | 7c | à lire |  |
-| `src/features/app/appStore.ts` | 7c | à lire |  |
-| `src/features/app/bootstrap.ts` | 7c | à lire |  |
-| `src/features/app/container.ts` | 7c | à lire |  |
-| `src/features/app/desktop.ts` | 7c | à lire |  |
-| `src/features/app/globalErrors.ts` | 7c | à lire |  |
-| `src/features/app/idle.ts` | 7c | à lire |  |
-| `src/features/app/lazyScreens.css` | 7c | à lire |  |
-| `src/features/app/lazyScreens.tsx` | 7c | à lire |  |
-| `src/features/app/logJournalBoot.ts` | 7c | à lire |  |
-| `src/features/app/navigation.ts` | 7c | à lire |  |
-| `src/features/app/notice.ts` | 7c | à lire |  |
-| `src/features/app/saveFile.ts` | 7c | à lire |  |
-| `src/features/app/screenNames.ts` | 7c | à lire |  |
-| `src/features/app/settingsLedger.ts` | 7c | à lire |  |
-| `src/features/app/shareStartupLog.ts` | 7c | à lire |  |
-| `src/features/app/shortcuts.ts` | 7c | à lire |  |
-| `src/features/app/shortcutsHelp.ts` | 7c | à lire |  |
-| `src/features/app/startup.ts` | 7c | à lire |  |
-| `src/features/app/startupSteps.ts` | 7c | à lire |  |
-| `src/features/app/tabShortcuts.ts` | 7c | à lire |  |
-| `src/features/app/timeZoneWatcher.ts` | 7c | à lire |  |
-| `src/features/app/todayTestPreload.ts` | 7c | à lire |  |
-| `src/features/app/undo.ts` | 7c | à lire |  |
-| `src/features/app/updateRestore.ts` | 7c | à lire |  |
+| `src/features/app/UndoToast.css` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/UndoToast.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/UpdateRestoreAction.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/appStatus.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/appStore.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/bootstrap.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/container.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/desktop.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/globalErrors.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/idle.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/lazyScreens.css` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/lazyScreens.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/logJournalBoot.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/navigation.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/notice.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/saveFile.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/screenNames.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/settingsLedger.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/shareStartupLog.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/shortcuts.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/shortcutsHelp.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/startup.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/startupSteps.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/tabShortcuts.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/timeZoneWatcher.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/todayTestPreload.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/undo.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
+| `src/features/app/updateRestore.ts` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
 | `src/features/bodyProgress/BodyProgress.css` | 7b | lu 2026-11-20 (relecteur corps) | lignes 55-134 et recherche ciblée |
 | `src/features/bodyProgress/BodyProgress.tsx` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/features/bodyProgress/BodyZones.tsx` | 7b | lu 2026-11-20 (relecteur corps) |  |
@@ -575,11 +575,11 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/features/cardio/CardioProgress.tsx` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/features/cardio/CardioView.tsx` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/features/cardio/gpsFigures.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/features/notifications/index.ts` | 7c | à lire |  |
-| `src/features/notifications/recoveryNotifications.ts` | 7c | à lire |  |
+| `src/features/notifications/index.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/notifications/recoveryNotifications.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
 | `src/features/notifications/supplementActions.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
 | `src/features/notifications/supplementNotifications.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
-| `src/features/notifications/supplementWake.ts` | 7c | à lire |  |
+| `src/features/notifications/supplementWake.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
 | `src/features/nutrition/NutritionRemainingCard.tsx` | 7b | lu 2026-11-20 (relecteur journal) |  |
 | `src/features/nutrition/NutritionScreen.css` | 7b | lu 2026-11-20 (relecteur journal) | recherche ciblée (couleurs, tailles) |
 | `src/features/nutrition/NutritionScreen.tsx` | 7b | lu 2026-11-20 (relecteur journal) |  |
@@ -622,16 +622,16 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/features/nutrition/supplements/replan.ts` | 7b | lu 2026-11-20 (relecteur check-in) |  |
 | `src/features/nutrition/useCases.ts` | 7b | lu 2026-11-20 (relecteur journal) |  |
 | `src/features/nutrition/useNutritionData.ts` | 7b | lu 2026-11-20 (relecteur journal) |  |
-| `src/features/onboarding/BodyMap.tsx` | 7c | à lire |  |
-| `src/features/onboarding/OnboardingFlow.css` | 7c | à lire |  |
-| `src/features/onboarding/OnboardingFlow.tsx` | 7c | à lire |  |
-| `src/features/onboarding/OnboardingHost.tsx` | 7c | à lire |  |
-| `src/features/onboarding/OptionCards.tsx` | 7c | à lire |  |
-| `src/features/onboarding/StepsBasics.tsx` | 7c | à lire |  |
-| `src/features/onboarding/StepsPlan.tsx` | 7c | à lire |  |
-| `src/features/onboarding/firstSession.ts` | 7c | à lire |  |
-| `src/features/onboarding/launch.ts` | 7c | à lire |  |
-| `src/features/onboarding/onboardingData.ts` | 7c | à lire |  |
+| `src/features/onboarding/BodyMap.tsx` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/onboarding/OnboardingFlow.css` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/onboarding/OnboardingFlow.tsx` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/onboarding/OnboardingHost.tsx` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/onboarding/OptionCards.tsx` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/onboarding/StepsBasics.tsx` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/onboarding/StepsPlan.tsx` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/onboarding/firstSession.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/onboarding/launch.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/onboarding/onboardingData.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
 | `src/features/recovery/FactorJournalCard.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
 | `src/features/recovery/RecoveryProgress.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
 | `src/features/recovery/RecoveryToday.css` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
@@ -639,140 +639,140 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/features/recovery/UnusualValuesCard.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
 | `src/features/recovery/display.ts` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
 | `src/features/recovery/factorJournal.ts` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
-| `src/features/security/AppLockGate.tsx` | 7c | à lire |  |
-| `src/features/security/LockScreen.tsx` | 7c | à lire |  |
-| `src/features/security/appLockBoot.ts` | 7c | à lire |  |
-| `src/features/security/appLockStore.ts` | 7c | à lire |  |
-| `src/features/security/excursion.ts` | 7c | à lire |  |
-| `src/features/security/lockLayer.ts` | 7c | à lire |  |
-| `src/features/security/privacyCover.ts` | 7c | à lire |  |
-| `src/features/security/security.css` | 7c | à lire |  |
-| `src/features/security/startAppLock.ts` | 7c | à lire |  |
-| `src/features/security/systemSettingsAction.ts` | 7c | à lire |  |
-| `src/features/settings/AboutSection.tsx` | 7c | à lire |  |
-| `src/features/settings/AppearanceScreen.css` | 7c | à lire |  |
-| `src/features/settings/AppearanceScreen.tsx` | 7c | à lire |  |
-| `src/features/settings/AppleHealthScreen.tsx` | 7c | à lire |  |
-| `src/features/settings/BackupRow.tsx` | 7c | à lire |  |
-| `src/features/settings/BackupSheet.css` | 7c | à lire |  |
-| `src/features/settings/BackupSheet.tsx` | 7c | à lire |  |
-| `src/features/settings/BodyScreen.css` | 7c | à lire |  |
-| `src/features/settings/BodyScreen.tsx` | 7c | à lire |  |
-| `src/features/settings/ExportImportScreen.tsx` | 7c | à lire |  |
-| `src/features/settings/HealthBodyImportSection.tsx` | 7c | à lire |  |
-| `src/features/settings/LinkRow.tsx` | 7c | à lire |  |
-| `src/features/settings/ProfileCard.tsx` | 7c | à lire |  |
-| `src/features/settings/RecoveryImportSection.tsx` | 7c | à lire |  |
-| `src/features/settings/RecoveryNotificationsSection.css` | 7c | à lire |  |
-| `src/features/settings/RecoveryNotificationsSection.tsx` | 7c | à lire |  |
-| `src/features/settings/ResetDataScreen.tsx` | 7c | à lire |  |
-| `src/features/settings/SecuritySection.tsx` | 7c | à lire |  |
-| `src/features/settings/SettingsPanels.tsx` | 7c | à lire |  |
-| `src/features/settings/SettingsScreen.css` | 7c | à lire |  |
-| `src/features/settings/SettingsScreen.tsx` | 7c | à lire |  |
-| `src/features/settings/SettingsScreenPc.tsx` | 7c | à lire |  |
-| `src/features/settings/TimerTestRow.tsx` | 7c | à lire |  |
-| `src/features/settings/appearance.ts` | 7c | à lire |  |
-| `src/features/settings/backupLabels.ts` | 7c | à lire |  |
-| `src/features/settings/backupScheduler.ts` | 7c | à lire |  |
-| `src/features/settings/backupSchedulerStatus.ts` | 7c | à lire |  |
-| `src/features/settings/backupStore.ts` | 7c | à lire |  |
-| `src/features/settings/healthBodyImport/index.ts` | 7c | à lire |  |
-| `src/features/settings/healthBodyImport/service.ts` | 7c | à lire |  |
-| `src/features/settings/index.ts` | 7c | à lire |  |
-| `src/features/settings/logs/LogsScreen.css` | 7c | à lire |  |
-| `src/features/settings/logs/LogsScreen.tsx` | 7c | à lire |  |
-| `src/features/settings/logs/logExport.ts` | 7c | à lire |  |
-| `src/features/settings/logs/syncReport.ts` | 7c | à lire |  |
-| `src/features/settings/logs/useLogJournal.ts` | 7c | à lire |  |
-| `src/features/settings/recoveryImport/index.ts` | 7c | à lire |  |
-| `src/features/settings/recoveryImport/service.ts` | 7c | à lire |  |
-| `src/features/settings/recoveryImport/statusMessage.ts` | 7c | à lire |  |
-| `src/features/settings/restoreFlow.ts` | 7c | à lire |  |
-| `src/features/settings/restoreMemo.ts` | 7c | à lire |  |
-| `src/features/settings/restoreMemoPeek.ts` | 7c | à lire |  |
-| `src/features/settings/restoreQuiesce.ts` | 7c | à lire |  |
-| `src/features/settings/settingsStore.ts` | 7c | à lire |  |
-| `src/features/settings/settingsUseCases.ts` | 7c | à lire |  |
-| `src/features/settings/syntheticTimer.ts` | 7c | à lire |  |
-| `src/features/settings/theme.ts` | 7c | à lire |  |
-| `src/features/settings/useBackupLabelContext.ts` | 7c | à lire |  |
-| `src/features/settings/useSyncValue.ts` | 7c | à lire |  |
-| `src/features/shortcuts/ShortcutsHelp.css` | 7c | à lire |  |
-| `src/features/shortcuts/ShortcutsHelp.tsx` | 7c | à lire |  |
-| `src/features/shortcuts/ShortcutsSettingsSection.css` | 7c | à lire |  |
-| `src/features/shortcuts/ShortcutsSettingsSection.tsx` | 7c | à lire |  |
-| `src/features/shortcuts/index.ts` | 7c | à lire |  |
-| `src/features/shortcuts/registerShellShortcuts.ts` | 7c | à lire |  |
-| `src/features/signing/SigningAbout.tsx` | 7c | à lire |  |
-| `src/features/signing/requestPermission.ts` | 7c | à lire |  |
-| `src/features/signing/signingNotice.ts` | 7c | à lire |  |
-| `src/features/signing/signingRun.ts` | 7c | à lire |  |
-| `src/features/signing/signingStatus.ts` | 7c | à lire |  |
-| `src/features/signing/signingText.ts` | 7c | à lire |  |
-| `src/features/signing/testKit.ts` | 7c | à lire |  |
+| `src/features/security/AppLockGate.tsx` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/security/LockScreen.tsx` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/security/appLockBoot.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/security/appLockStore.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/security/excursion.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/security/lockLayer.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/security/privacyCover.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/security/security.css` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/security/startAppLock.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/security/systemSettingsAction.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/settings/AboutSection.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/AppearanceScreen.css` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/AppearanceScreen.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/AppleHealthScreen.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/BackupRow.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/BackupSheet.css` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/BackupSheet.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/BodyScreen.css` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/BodyScreen.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/ExportImportScreen.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/HealthBodyImportSection.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/LinkRow.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/ProfileCard.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/RecoveryImportSection.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/RecoveryNotificationsSection.css` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/RecoveryNotificationsSection.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/ResetDataScreen.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/SecuritySection.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/SettingsPanels.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/SettingsScreen.css` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/SettingsScreen.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/SettingsScreenPc.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/TimerTestRow.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/appearance.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/backupLabels.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/backupScheduler.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/backupSchedulerStatus.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/backupStore.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/healthBodyImport/index.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/healthBodyImport/service.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/index.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/logs/LogsScreen.css` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/logs/LogsScreen.tsx` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/logs/logExport.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/logs/syncReport.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/logs/useLogJournal.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/recoveryImport/index.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/recoveryImport/service.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/recoveryImport/statusMessage.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/restoreFlow.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/restoreMemo.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/restoreMemoPeek.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/restoreQuiesce.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/settingsStore.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/settingsUseCases.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/syntheticTimer.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/theme.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/useBackupLabelContext.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/settings/useSyncValue.ts` | 7c | lu 2026-11-20 (relecteur Plus) |  |
+| `src/features/shortcuts/ShortcutsHelp.css` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/shortcuts/ShortcutsHelp.tsx` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/shortcuts/ShortcutsSettingsSection.css` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/shortcuts/ShortcutsSettingsSection.tsx` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/shortcuts/index.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/shortcuts/registerShellShortcuts.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/signing/SigningAbout.tsx` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/signing/requestPermission.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/signing/signingNotice.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/signing/signingRun.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/signing/signingStatus.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/signing/signingText.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/signing/testKit.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
 | `src/features/strength/StrengthScore.css` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
 | `src/features/strength/StrengthScore.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
-| `src/features/sync/CarryReport.css` | 7c | à lire |  |
-| `src/features/sync/CarryReportSheet.tsx` | 7c | à lire |  |
-| `src/features/sync/ConflictList.css` | 7c | à lire |  |
-| `src/features/sync/ConflictList.tsx` | 7c | à lire |  |
-| `src/features/sync/ForgetDeviceDialog.tsx` | 7c | à lire |  |
-| `src/features/sync/IosPairingRow.tsx` | 7c | à lire |  |
-| `src/features/sync/IosPairingScreen.css` | 7c | à lire |  |
-| `src/features/sync/IosPairingScreen.tsx` | 7c | à lire |  |
-| `src/features/sync/JoinProgress.tsx` | 7c | à lire |  |
-| `src/features/sync/ResetSyncDialog.tsx` | 7c | à lire |  |
-| `src/features/sync/RestoreChoiceDialog.tsx` | 7c | à lire |  |
-| `src/features/sync/RestoreChoiceHost.tsx` | 7c | à lire |  |
-| `src/features/sync/RestoreMarkerResume.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsCarryReport.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsCarryReportHost.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsConflicts.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsDedup.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsFolder.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsForget.css` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsForget.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsOwnDeletion.css` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsOwnDeletion.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsOwnDeletionHost.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsPairing.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsRescue.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsReset.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsScreen.css` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsScreen.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDetailsVersion.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncDeviceName.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncNowButton.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncSettingsSection.css` | 7c | à lire |  |
-| `src/features/sync/SyncSettingsSection.tsx` | 7c | à lire |  |
-| `src/features/sync/SyncStatusLine.tsx` | 7c | à lire |  |
-| `src/features/sync/carryReportBannerLine.ts` | 7c | à lire |  |
-| `src/features/sync/carryReportOpen.ts` | 7c | à lire |  |
-| `src/features/sync/carryReportText.ts` | 7c | à lire |  |
-| `src/features/sync/conflictText.ts` | 7c | à lire |  |
-| `src/features/sync/failureKinds.ts` | 7c | à lire |  |
-| `src/features/sync/forgetText.ts` | 7c | à lire |  |
-| `src/features/sync/keyPresence.ts` | 7c | à lire |  |
-| `src/features/sync/pairing-window/PairingView.tsx` | 7c | à lire |  |
-| `src/features/sync/pairing-window/RecoveryKeyEntry.tsx` | 7c | à lire |  |
-| `src/features/sync/pairing-window/main.tsx` | 7c | à lire |  |
-| `src/features/sync/pairing-window/pairing.css` | 7c | à lire |  |
-| `src/features/sync/pairing-window/pairingPlatform.ts` | 7c | à lire |  |
-| `src/features/sync/pairing-window/pairingText.ts` | 7c | à lire |  |
-| `src/features/sync/pairingHub.ts` | 7c | à lire |  |
-| `src/features/sync/pairingStatus.ts` | 7c | à lire |  |
-| `src/features/sync/reloadRetry.ts` | 7c | à lire |  |
-| `src/features/sync/remoteChanges.ts` | 7c | à lire |  |
-| `src/features/sync/resetReason.ts` | 7c | à lire |  |
-| `src/features/sync/resetText.ts` | 7c | à lire |  |
-| `src/features/sync/startSync.ts` | 7c | à lire |  |
-| `src/features/sync/syncConflictUseCases.ts` | 7c | à lire |  |
-| `src/features/sync/syncRestoreControl.ts` | 7c | à lire |  |
-| `src/features/sync/syncRestoreState.ts` | 7c | à lire |  |
-| `src/features/sync/syncStore.ts` | 7c | à lire |  |
-| `src/features/sync/syncText.ts` | 7c | à lire |  |
-| `src/features/sync/testKit.ts` | 7c | à lire |  |
+| `src/features/sync/CarryReport.css` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/CarryReportSheet.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/ConflictList.css` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/ConflictList.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/ForgetDeviceDialog.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/IosPairingRow.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/IosPairingScreen.css` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/IosPairingScreen.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/JoinProgress.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/ResetSyncDialog.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/RestoreChoiceDialog.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/RestoreChoiceHost.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/RestoreMarkerResume.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsCarryReport.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsCarryReportHost.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsConflicts.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsDedup.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsFolder.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsForget.css` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsForget.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsOwnDeletion.css` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsOwnDeletion.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsOwnDeletionHost.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsPairing.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsRescue.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsReset.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsScreen.css` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsScreen.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDetailsVersion.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncDeviceName.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncNowButton.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncSettingsSection.css` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncSettingsSection.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/SyncStatusLine.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/carryReportBannerLine.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/carryReportOpen.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/carryReportText.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/conflictText.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/failureKinds.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/forgetText.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/keyPresence.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/pairing-window/PairingView.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/pairing-window/RecoveryKeyEntry.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/pairing-window/main.tsx` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/pairing-window/pairing.css` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/pairing-window/pairingPlatform.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/pairing-window/pairingText.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/pairingHub.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/pairingStatus.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/reloadRetry.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/remoteChanges.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/resetReason.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/resetText.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/startSync.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/syncConflictUseCases.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/syncRestoreControl.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/syncRestoreState.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/syncStore.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/syncText.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
+| `src/features/sync/testKit.ts` | 7c | lu 2026-11-20 (relecteur synchro (interface)) |  |
 | `src/features/training/EquipmentView.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
 | `src/features/training/LibraryView.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
 | `src/features/training/RoutineCircuitUi.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
@@ -820,43 +820,43 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/features/training/session/restTimer.ts` | 7a | lu 2026-11-20 (relecteur séance) |  |
 | `src/features/training/session/todaySessionPreview.ts` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
 | `src/features/training/trainingState.ts` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
-| `src/features/updater/UpdateBanner.css` | 7c | à lire |  |
-| `src/features/updater/UpdateBanner.tsx` | 7c | à lire |  |
-| `src/features/updater/index.ts` | 7c | à lire |  |
-| `src/features/updater/updateChecks.ts` | 7c | à lire |  |
-| `src/features/updater/updaterStore.ts` | 7c | à lire |  |
-| `src/i18n/appUpdateRestoreText.ts` | 7c | à lire |  |
-| `src/i18n/backupRestoreText.ts` | 7c | à lire |  |
+| `src/features/updater/UpdateBanner.css` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/updater/UpdateBanner.tsx` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/updater/index.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/updater/updateChecks.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/features/updater/updaterStore.ts` | 7c | lu 2026-11-20 (relecteur onboarding) |  |
+| `src/i18n/appUpdateRestoreText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/backupRestoreText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
 | `src/i18n/bodyProgressText.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/bodyText.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/cardioText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/circuitText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/i18n/dataResetText.ts` | 7c | à lire |  |
-| `src/i18n/exportImportText.ts` | 7c | à lire |  |
-| `src/i18n/fileFailureText.ts` | 7c | à lire |  |
-| `src/i18n/format.ts` | 7c | à lire |  |
-| `src/i18n/formatBackup.ts` | 7c | à lire |  |
-| `src/i18n/formatPrefs.ts` | 7c | à lire |  |
-| `src/i18n/formatRoutine.ts` | 7c | à lire |  |
-| `src/i18n/fr.appUpdate.ts` | 7c | à lire |  |
-| `src/i18n/fr.appUpdateRestore.ts` | 7c | à lire |  |
-| `src/i18n/fr.appearance.ts` | 7c | à lire |  |
-| `src/i18n/fr.backup.ts` | 7c | à lire |  |
-| `src/i18n/fr.backupRestore.ts` | 7c | à lire |  |
+| `src/i18n/dataResetText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/exportImportText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fileFailureText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/format.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/formatBackup.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/formatPrefs.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/formatRoutine.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.appUpdate.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.appUpdateRestore.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.appearance.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.backup.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.backupRestore.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
 | `src/i18n/fr.body.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/fr.bodyProgress.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/fr.capture.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/fr.cardio.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.circuit.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/i18n/fr.dataReset.ts` | 7c | à lire |  |
-| `src/i18n/fr.events.ts` | 7c | à lire |  |
-| `src/i18n/fr.exportImport.ts` | 7c | à lire |  |
-| `src/i18n/fr.health.ts` | 7c | à lire |  |
-| `src/i18n/fr.importCsv.ts` | 7c | à lire |  |
-| `src/i18n/fr.logs.ts` | 7c | à lire |  |
-| `src/i18n/fr.notifications.ts` | 7c | à lire |  |
+| `src/i18n/fr.dataReset.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.events.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.exportImport.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.health.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.importCsv.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.logs.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.notifications.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
 | `src/i18n/fr.nutrition.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
-| `src/i18n/fr.onboarding.ts` | 7c | à lire |  |
+| `src/i18n/fr.onboarding.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
 | `src/i18n/fr.progression.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.recipes.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/fr.recovery.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
@@ -865,27 +865,27 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/i18n/fr.routineCircuit.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.routines.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.scan.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
-| `src/i18n/fr.sections.ts` | 7c | à lire |  |
-| `src/i18n/fr.security.ts` | 7c | à lire |  |
-| `src/i18n/fr.shortcuts.ts` | 7c | à lire |  |
-| `src/i18n/fr.signing.ts` | 7c | à lire |  |
-| `src/i18n/fr.startupBlocked.ts` | 7c | à lire |  |
+| `src/i18n/fr.sections.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.security.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.shortcuts.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.signing.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.startupBlocked.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
 | `src/i18n/fr.strength.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.supplementNotifications.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/fr.supplements.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
-| `src/i18n/fr.syncCarryReport.ts` | 7c | à lire |  |
-| `src/i18n/fr.syncConflicts.ts` | 7c | à lire |  |
-| `src/i18n/fr.syncEngine.ts` | 7c | à lire |  |
-| `src/i18n/fr.syncField.ts` | 7c | à lire |  |
-| `src/i18n/fr.syncFolder.ts` | 7c | à lire |  |
-| `src/i18n/fr.syncForget.ts` | 7c | à lire |  |
-| `src/i18n/fr.syncOlderDevice.ts` | 7c | à lire |  |
-| `src/i18n/fr.syncOwnDeletion.ts` | 7c | à lire |  |
-| `src/i18n/fr.syncPairing.ts` | 7c | à lire |  |
-| `src/i18n/fr.syncPublishCause.ts` | 7c | à lire |  |
-| `src/i18n/fr.syncReset.ts` | 7c | à lire |  |
-| `src/i18n/fr.syncRestore.ts` | 7c | à lire |  |
-| `src/i18n/fr.syncVersion.ts` | 7c | à lire |  |
+| `src/i18n/fr.syncCarryReport.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.syncConflicts.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.syncEngine.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.syncField.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.syncFolder.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.syncForget.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.syncOlderDevice.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.syncOwnDeletion.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.syncPairing.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.syncPublishCause.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.syncReset.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.syncRestore.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/fr.syncVersion.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
 | `src/i18n/fr.timer.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.today.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.todayPc.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
@@ -894,32 +894,32 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/i18n/fr.trainingGeneration.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.trainingMedia.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.trainingRecovery.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/i18n/fr.ts` | 7c | à lire |  |
+| `src/i18n/fr.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
 | `src/i18n/fr.workoutReplay.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/i18n/healthText.ts` | 7c | à lire |  |
+| `src/i18n/healthText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
 | `src/i18n/index.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/i18n/logsText.ts` | 7c | à lire |  |
-| `src/i18n/native/fr.json` | 7c | à lire |  |
+| `src/i18n/logsText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/native/fr.json` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
 | `src/i18n/nutritionText.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
-| `src/i18n/onboardingText.ts` | 7c | à lire |  |
+| `src/i18n/onboardingText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
 | `src/i18n/plural.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/i18n/plusText.ts` | 7c | à lire |  |
+| `src/i18n/plusText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
 | `src/i18n/progressionText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/recipesText.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/recoveryFactorsText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/recoveryText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/routineCircuitText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/i18n/sectionsText.ts` | 7c | à lire |  |
-| `src/i18n/settingsRefonteText.ts` | 7c | à lire |  |
+| `src/i18n/sectionsText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/settingsRefonteText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
 | `src/i18n/strengthText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/supplementsText.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
-| `src/i18n/syncCarryReportText.ts` | 7c | à lire |  |
-| `src/i18n/syncOlderDeviceText.ts` | 7c | à lire |  |
-| `src/i18n/syncOwnDeletionText.ts` | 7c | à lire |  |
-| `src/i18n/syncPublishCauseText.ts` | 7c | à lire |  |
-| `src/i18n/syncRefonteText.ts` | 7c | à lire |  |
-| `src/i18n/syncRescue.ts` | 7c | à lire |  |
-| `src/i18n/syncRestoreText.ts` | 7c | à lire |  |
+| `src/i18n/syncCarryReportText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/syncOlderDeviceText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/syncOwnDeletionText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/syncPublishCauseText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/syncRefonteText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/syncRescue.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
+| `src/i18n/syncRestoreText.ts` | 7c | lu 2026-11-20 (relecteur catalogues) |  |
 | `src/i18n/timerText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/todayPcText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/todayText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
@@ -930,7 +930,7 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/i18n/trainingText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/types.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/workoutReplayText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/main.tsx` | 7c | à lire |  |
+| `src/main.tsx` | 7c | lu 2026-11-20 (relecteur démarrage) |  |
 | `src/platform/appVersion.ts` | 8b | à lire |  |
 | `src/platform/backup/index.ts` | 8b | à lire |  |
 | `src/platform/backup/memory.ts` | 8b | à lire |  |
@@ -1038,44 +1038,44 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/platform/tauri/sqlDriver.ts` | 8b | à lire |  |
 | `src/platform/timeZone.ts` | 8b | à lire |  |
 | `src/platform/windowTheme.ts` | 8b | à lire |  |
-| `src/ui/AppShell.css` | 7c | à lire |  |
-| `src/ui/AppShell.tsx` | 7c | à lire |  |
-| `src/ui/Button.css` | 7c | à lire |  |
-| `src/ui/Button.tsx` | 7c | à lire |  |
-| `src/ui/ChoiceDialog.css` | 7c | à lire |  |
-| `src/ui/ChoiceDialog.tsx` | 7c | à lire |  |
-| `src/ui/ConfirmDialog.css` | 7c | à lire |  |
-| `src/ui/ConfirmDialog.tsx` | 7c | à lire |  |
-| `src/ui/HeroFigure.tsx` | 7c | à lire |  |
-| `src/ui/Icon.tsx` | 7c | à lire |  |
-| `src/ui/Kbd.css` | 7c | à lire |  |
-| `src/ui/Kbd.tsx` | 7c | à lire |  |
-| `src/ui/ListSkeleton.css` | 7c | à lire |  |
-| `src/ui/ListSkeleton.tsx` | 7c | à lire |  |
-| `src/ui/MissingValue.tsx` | 7c | à lire |  |
-| `src/ui/Rule.tsx` | 7c | à lire |  |
-| `src/ui/SectionTitle.tsx` | 7c | à lire |  |
-| `src/ui/SegmentedControl.css` | 7c | à lire |  |
-| `src/ui/SegmentedControl.tsx` | 7c | à lire |  |
-| `src/ui/Sheet.css` | 7c | à lire |  |
-| `src/ui/Sheet.tsx` | 7c | à lire |  |
-| `src/ui/Skeleton.css` | 7c | à lire |  |
-| `src/ui/StatusBanner.css` | 7c | à lire |  |
-| `src/ui/StatusBanner.tsx` | 7c | à lire |  |
-| `src/ui/Switch.css` | 7c | à lire |  |
-| `src/ui/Switch.tsx` | 7c | à lire |  |
-| `src/ui/TabIcon.tsx` | 7c | à lire |  |
-| `src/ui/TabRail.css` | 7c | à lire |  |
-| `src/ui/TabRail.tsx` | 7c | à lire |  |
-| `src/ui/Toast.css` | 7c | à lire |  |
-| `src/ui/Toast.tsx` | 7c | à lire |  |
-| `src/ui/WeekdayToggles.css` | 7c | à lire |  |
-| `src/ui/WeekdayToggles.tsx` | 7c | à lire |  |
-| `src/ui/iconStyle.ts` | 7c | à lire |  |
-| `src/ui/index.ts` | 7c | à lire |  |
-| `src/ui/theme/figures.css` | 7c | à lire |  |
-| `src/ui/theme/fonts.css` | 7c | à lire |  |
-| `src/ui/theme/tokens.css` | 7c | à lire |  |
-| `src/ui/useFocusTrap.ts` | 7c | à lire |  |
-| `src/ui/useLayout.ts` | 7c | à lire |  |
-| `src/vite-env.d.ts` | 7c | à lire |  |
+| `src/ui/AppShell.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/AppShell.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/Button.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/Button.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/ChoiceDialog.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/ChoiceDialog.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/ConfirmDialog.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/ConfirmDialog.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/HeroFigure.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/Icon.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/Kbd.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/Kbd.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/ListSkeleton.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/ListSkeleton.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/MissingValue.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/Rule.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/SectionTitle.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/SegmentedControl.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/SegmentedControl.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/Sheet.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/Sheet.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/Skeleton.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/StatusBanner.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/StatusBanner.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/Switch.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/Switch.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/TabIcon.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/TabRail.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/TabRail.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/Toast.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/Toast.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/WeekdayToggles.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/WeekdayToggles.tsx` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/iconStyle.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/index.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/theme/figures.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/theme/fonts.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/theme/tokens.css` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/useFocusTrap.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/ui/useLayout.ts` | 7c | lu 2026-11-20 (relecteur ui et domaine) |  |
+| `src/vite-env.d.ts` | 7c | lu 2026-11-20 (auditeur) | déclarations de types Vite seulement |

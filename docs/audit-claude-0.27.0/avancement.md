@@ -18,8 +18,8 @@ Worktree : `C:\Dev\spartiate\.codex-tmp\wt-audit-claude`, branche `audit-claude-
 | 6 Récupération et Santé | M | terminée le 20/11 : 23/23 fichiers (+ healthkit.rs), C-049 à C-062, 7 rouges, 7 vecteurs verts, aucun bloquant |
 | 7a Aujourd'hui et Entraînement | L | terminée le 20/11 : 98/98 fichiers (+ i18n index/types/plural), C-063 à C-085, C-005 reclassé bloquant, 4 rouges |
 | 7b Nutrition et Progrès | L | terminée le 20/11 : 59/59 fichiers, C-086 à C-106, 4 rouges, aucun bloquant (C-089 photos à vérifier en 8b) |
-| 7c Plus, onboarding, coquilles | L | en cours : 6 relecteurs lancés |
-| 8a Rust hors sync | L | à faire |
+| 7c Plus, onboarding, coquilles | L | terminée le 20/11 : 374/374 fichiers (CSS de l'onboarding, des réglages et de la synchro par motifs et lecture partielle), C-107 à C-135, 5 rouges, aucun bloquant |
+| 8a Rust hors sync | L | en cours |
 | 8b Swift | M | à faire |
 | 9 Sécurité et confidentialité | M | à faire |
 | 10 Performance | S | à faire |
@@ -34,3 +34,4 @@ Worktree : `C:\Dev\spartiate\.codex-tmp\wt-audit-claude`, branche `audit-claude-
 - 20/11 : partie 6 terminée, aucun bloquant (C-049 journée rouge manquée en début d'apprentissage : important).
 - 20/11 : partie 7a terminée. C-005 reclassé bloquant (faute de frappe prescrite). Motifs et contrastes de tous les écrans faits (preuves/partie7-motifs.mjs, contrastes.mjs) ; contrastes à consigner en 7c.
 - 20/11 : partie 7b terminée. Graphe d'imports : preuves/atteignables.mjs (30 fichiers inaccessibles, dont src/platform/ocr). 7c lancée en 6 lots.
+- 20/11 : partie 7c terminée. Reportés en 8b : src/platform/sync/memory.ts et faultPlan.ts (non lus), exclusion iCloud des photos (C-089). Rust : unwrap/expect de production sains, CSP stricte, sql:allow-execute dans default.json (à consigner en 8a), description NSIS périmée (12).
