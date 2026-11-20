@@ -108,7 +108,7 @@ describe('Plus › Export et import', () => {
     expect(await db.driver.select('SELECT 1 FROM body_weight')).toEqual([]);
   });
 
-  it('RESET-01 (D-187) : archive faite avant « Repartir de zéro » : refusée avant l’aperçu, rien n’est réécrit ; une archive d’après s’importe', async () => {
+  it('RESET-01 (D-187) : archive faite avant « Repartir de zéro » : refusée avant l’aperçu, rien n’est réécrit (l’archive d’après, exportée ici, est couverte par le test C-109 ci-dessous)', async () => {
     db.clock.advance(60_000);
     const { resetAllData } = await import('../../sync/dataReset');
     const { SYNC_CATALOGUE } = await import('../../domain/sync/syncTables');
@@ -120,12 +120,26 @@ describe('Plus › Export et import', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Archive refusée : elle date d’avant « Repartir de zéro ».');
     expect(screen.queryByRole('region', { name: 'Aperçu de l’import' })).toBeNull();
     expect(await db.driver.select('SELECT 1 FROM body_weight')).toEqual([]);
-    cleanup();
+  });
+
+  it('FIX-EXPORT C-109 : après « Repartir de zéro », une archive postérieure mais sans horizon est refusée ; celle exportée ici ensuite s’importe', async () => {
     db.clock.advance(60_000);
-    const later = (await buildExportArchive(DATA, { date: new Date(db.clock.nowMs()).toISOString(), sv: 1 })).bytes;
-    files.setPickBytes({ name: 'spartiate-export.zip', bytes: later });
+    const { resetAllData } = await import('../../sync/dataReset');
+    const { SYNC_CATALOGUE } = await import('../../domain/sync/syncTables');
+    const { createMemorySyncLogger } = await import('../../sync/log');
+    expect((await resetAllData(db.data, SYNC_CATALOGUE, createMemorySyncLogger())).kind).toBe('done');
+    db.clock.advance(60_000);
+    const stale = (await buildExportArchive(DATA, { date: new Date(db.clock.nowMs()).toISOString(), sv: 1 })).bytes; // appareil resté avant l'effacement
+    files.setPickBytes({ name: 'spartiate-export.zip', bytes: stale });
     open();
     fireEvent.click(await screen.findByRole('button', { name: 'Choisir une archive…' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/sans preuve/);
+    expect(screen.queryByRole('region', { name: 'Aperçu de l’import' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Exporter mes données' }));
+    await waitFor(() => expect(files.saved).toHaveLength(1));
+    db.clock.advance(60_000);
+    files.setPickBytes({ name: 'spartiate-export.zip', bytes: (files.saved[0] as { data: Uint8Array }).data });
+    fireEvent.click(screen.getByRole('button', { name: 'Choisir une archive…' }));
     expect(await screen.findByRole('region', { name: 'Aperçu de l’import' })).toBeTruthy();
   });
 

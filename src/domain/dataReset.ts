@@ -1,3 +1,4 @@
+import { compareHlc } from './hlc';
 import type { SettingKey } from './model/settings';
 import type { Hlc } from './types';
 
@@ -168,6 +169,28 @@ export function isArchiveBeforeReset(manifestDate: string, resetAtMs: number | n
   if (resetAtMs === null) return false;
   const at = Date.parse(manifestDate);
   return !Number.isFinite(at) || at <= resetAtMs;
+}
+
+export type ArchiveResetVerdict = 'ok' | 'before-reset' | 'unproven';
+
+/**
+ * FIX-EXPORT C-109 (complète D-187) : verdict d'une archive face à la remise à zéro de CET appareil. La date du manifeste ne suffit pas : un appareil
+ * pas encore effacé exporte après l'effacement avec des données d'avant. L'archive ne porte ni hlc ni `created_at` par ligne (équivalence par hash,
+ * D-57) : elle porte, dans son manifeste, l'horizon que l'appareil exportant avait appliqué.
+ * - aucun effacement ici : `ok` ; date antérieure ou égale à l'effacement, ou illisible : `before-reset` ;
+ * - effacement avec horizon ici : archive sans horizon (ancienne version, ou appareil jamais effacé) : `unproven` (refus prudent) ; horizon
+ *   strictement antérieur au nôtre : `before-reset` ; égal ou plus récent : `ok`.
+ */
+export function archiveResetVerdict(input: {
+  readonly manifestDate: string;
+  readonly manifestHorizon: string | null;
+  readonly localResetAtMs: number | null;
+  readonly localHorizon: string | null;
+}): ArchiveResetVerdict {
+  if (isArchiveBeforeReset(input.manifestDate, input.localResetAtMs)) return 'before-reset';
+  if (input.localHorizon === null) return 'ok';
+  if (input.manifestHorizon === null) return 'unproven';
+  return compareHlc(input.manifestHorizon as Hlc, input.localHorizon as Hlc) < 0 ? 'before-reset' : 'ok';
 }
 
 /** Comptes du journal `data-reset` : nombres seulement, jamais une valeur, un identifiant ni une date (D-186). */

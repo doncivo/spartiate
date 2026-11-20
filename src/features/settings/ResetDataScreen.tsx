@@ -10,7 +10,7 @@ import { useAppContainer } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
 import './BodyScreen.css';
 
-const WIPED: readonly DataResetTextKey[] = ['wipedProfile', 'wipedTraining', 'wipedNutrition', 'wipedBody', 'wipedRecovery'];
+const WIPED: readonly DataResetTextKey[] = ['wipedProfile', 'wipedTraining', 'wipedSupplements', 'wipedCardio', 'wipedNutrition', 'wipedBody', 'wipedRecovery', 'wipedTechnical'];
 const KEPT: readonly DataResetTextKey[] = ['keptSettings', 'keptSync', 'keptContent', 'keptHealth'];
 
 type Message = { readonly kind: 'ok' | 'error'; readonly key: DataResetTextKey };

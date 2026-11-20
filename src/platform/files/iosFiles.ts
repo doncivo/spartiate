@@ -1,5 +1,5 @@
 import { pickBytesFromInput, pickTextFromInput } from './browser';
-import { DEFAULT_PICK_MAX_BYTES, FileExportError, MAX_EXPORT_BYTES, type FileService, type SaveRequest, type SaveResult } from './types';
+import { DEFAULT_PICK_ARCHIVE_MAX_BYTES, DEFAULT_PICK_MAX_BYTES, FileExportError, MAX_EXPORT_BYTES, type FileService, type SaveRequest, type SaveResult } from './types';
 
 /**
  * Commande Rust de l'export sur iPhone (`src-tauri/src/export_ios.rs`, capability `export-ios.json`), injectable pour les tests : Rust écrit
@@ -57,6 +57,6 @@ export function createIosFiles(api: IosFileApi = loadIosFileApi()): FileService 
       return answer.completed ? { saved: true } : { saved: false };
     },
     pickText: (options) => pickTextFromInput(options.accept, options.maxBytes ?? DEFAULT_PICK_MAX_BYTES),
-    pickBytes: (options) => pickBytesFromInput(options.accept, options.maxBytes ?? DEFAULT_PICK_MAX_BYTES),
+    pickBytes: (options) => pickBytesFromInput(options.accept, options.maxBytes ?? DEFAULT_PICK_ARCHIVE_MAX_BYTES),
   };
 }

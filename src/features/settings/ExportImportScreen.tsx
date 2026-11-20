@@ -1,10 +1,11 @@
 import { ArrowLeft } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { ArchiveError, DEFAULT_THEME, EXPORT_SV, buildExportArchive, parseExportArchive, type ArchiveErrorCode, type ExportData, type ParsedArchive } from '../../domain/exportImport/archive';
+import { ArchiveError, DEFAULT_THEME, EXPORT_SV, buildExportArchive, exportFitsImportLimit, parseExportArchive, type ArchiveErrorCode, type ExportData, type ParsedArchive } from '../../domain/exportImport/archive';
 import { buildFullExport } from '../../domain/exportImport/fullExport';
 import { planImport, type ImportMode } from '../../domain/exportImport/plan';
 import { nowIso } from '../../domain/clock';
-import { isArchiveBeforeReset } from '../../domain/dataReset';
+import { archiveResetVerdict } from '../../domain/dataReset';
+import { isStrictHlc } from '../../domain/sync/format';
 import { tExportImport, type ExportImportTextKey } from '../../i18n/exportImportText';
 import { FileExportError } from '../../platform/files';
 import { Button, Icon, SegmentedControl, useLayout } from '../../ui';
@@ -53,13 +54,28 @@ export function ExportImportScreen() {
     return theme === DEFAULT_THEME ? base : { ...base, settings: { 'ui.theme': theme } };
   }
 
+  /** Horizon de remise à zéro appliqué par cet appareil (hlc), ou null ; lu dans `sync_meta` (chargé à la demande, comme le reste de la synchro). */
+  async function readHorizon(): Promise<string | null> {
+    const { META } = await import('../../sync/meta');
+    const raw = await data.repos.sync.getMeta(META.dataResetApplied);
+    return isStrictHlc(raw) ? raw : null;
+  }
+
   async function doExport(full = false): Promise<void> {
     setMessage(null);
     setBusy(true);
     try {
       const local = await readLocal(data.repos);
       const date = nowIso(container.clock);
-      const archive = full ? await buildFullExport(local, { date, sv: EXPORT_SV, appVersion: container.appVersion.version ?? 'unknown' }) : await buildExportArchive(local, { date, sv: EXPORT_SV });
+      const resetHorizon = await readHorizon();
+      const archive = full
+        ? await buildFullExport(local, { date, sv: EXPORT_SV, appVersion: container.appVersion.version ?? 'unknown', resetHorizon })
+        : await buildExportArchive(local, { date, sv: EXPORT_SV, resetHorizon });
+      // FIX-EXPORT C-136 : jamais d'archive qu'on ne saurait pas réimporter.
+      if (!exportFitsImportLimit(archive.bytes.length)) {
+        setMessage({ kind: 'error', text: tExportImport('exportNotReimportable') });
+        return;
+      }
       const result = await files.save({ suggestedName: archive.fileName, mime: 'application/zip', data: archive.bytes });
       if (result.saved) setMessage({ kind: 'ok', text: tExportImport(full ? 'exportFullSaved' : 'exportSaved') });
     } catch (error) {
@@ -79,9 +95,11 @@ export function ExportImportScreen() {
       if (picked === null) return;
       const parsed = await parseExportArchive(picked.bytes, { currentSv: EXPORT_SV, currentYear: year });
       // RESET-01 (D-187) : une archive d'avant « Repartir de zéro » ramènerait des données effacées : refus avant l'aperçu, rien n'est écrit.
+      // FIX-EXPORT C-109 : la date ne suffit pas, le manifeste porte l'horizon de l'appareil qui a exporté.
       const { readResetAtMs } = await import('../../sync/dataReset');
-      if (isArchiveBeforeReset(parsed.manifest.date, await readResetAtMs(data.repos))) {
-        setMessage({ kind: 'error', text: tExportImport('refusedBeforeReset') });
+      const verdict = archiveResetVerdict({ manifestDate: parsed.manifest.date, manifestHorizon: parsed.manifest.resetHorizon ?? null, localResetAtMs: await readResetAtMs(data.repos), localHorizon: await readHorizon() });
+      if (verdict !== 'ok') {
+        setMessage({ kind: 'error', text: tExportImport(verdict === 'unproven' ? 'refusedUnproven' : 'refusedBeforeReset') });
         return;
       }
       setPreview({ name: picked.name, parsed, local: await readLocal(data.repos) });
@@ -131,6 +149,9 @@ export function ExportImportScreen() {
 
         <h2 className="ct-body__section ct-section-title">{tExportImport('sectionExport')}</h2>
         <p className="ct-body__hint">{tExportImport('exportHint')}</p>
+        <p className="ct-body__hint" role="note">
+          {tExportImport('exportWarning')}
+        </p>
         <Button variant={preview ? 'secondary' : 'primary'} disabled={busy || !files.canSave()} onClick={() => void doExport()}>
           {tExportImport('exportButton')}
         </Button>

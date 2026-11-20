@@ -61,8 +61,8 @@ afterEach(async () => {
   await Promise.all(opened.splice(0).map((d) => d.close()));
 });
 
-/** Archive 0.23.0 (sv 18, sans les colonnes de la 0019), datée de `date`. */
-async function archiveSv18(date: string): Promise<Uint8Array> {
+/** Archive 0.23.0 (sv 18, sans les colonnes de la 0019), datée de `date` ; `resetHorizon` : horizon de remise à zéro déjà appliqué par l'appareil qui exporte (FIX-EXPORT C-109). */
+async function archiveSv18(date: string, resetHorizon?: string): Promise<Uint8Array> {
   const db = await openBaseDb(A, '2026-11-13T08:00:00.000Z');
   opened.push(db);
   await db.data.transaction(async (repos) => (await repos.trainingRoutines()).create(ROUTINE));
@@ -75,7 +75,7 @@ async function archiveSv18(date: string): Promise<Uint8Array> {
   const bytes = new TextEncoder().encode(JSON.stringify(json));
   return buildZip([
     { name: 'data.json', data: bytes },
-    { name: 'manifest.json', data: new TextEncoder().encode(JSON.stringify({ app: 'spartiate', sv: 18, date, sha256: sha256Hex(bytes) })) },
+    { name: 'manifest.json', data: new TextEncoder().encode(JSON.stringify({ app: 'spartiate', sv: 18, date, sha256: sha256Hex(bytes), ...(resetHorizon === undefined ? {} : { reset_horizon: resetHorizon }) })) },
   ]);
 }
 
@@ -107,7 +107,9 @@ async function importReplace(db: TestDb, bytes: Uint8Array): Promise<void> {
 describe('PROG-01 : Repartir de zéro → onboarding → import Remplacer sv 18', () => {
   it('archive faite APRÈS la remise à zéro : Remplacer importe routine, cible (sans cible de repos) et profil', async () => {
     const db = await resetThenOnboard();
-    await importReplace(db, await archiveSv18('2026-11-14T09:00:00.000Z'));
+    const horizon = await db.data.repos.sync.getMeta('dataResetApplied');
+    expect(horizon).not.toBeNull();
+    await importReplace(db, await archiveSv18('2026-11-14T09:00:00.000Z', horizon as string));
     const preview = await screen.findByRole('region', { name: 'Aperçu de l’import' });
     fireEvent.click(within(preview).getByRole('radio', { name: 'Remplacer' }));
     fireEvent.click(screen.getByRole('button', { name: 'Confirmer l’import' }));

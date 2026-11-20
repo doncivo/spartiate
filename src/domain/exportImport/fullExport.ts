@@ -11,7 +11,7 @@
  * français), fin de ligne CRLF, guillemets doublés, cellule vide = NULL, dates ISO 8601, nombres avec point décimal et sans notation scientifique.
  */
 
-import { canonicalDataJson, ARCHIVE_EXTRA_COLUMNS, TRAINING_EXPORT_TABLES, trainingRows, trainingTable, trainingColumns, type ExportData, type TrainingTable, type TrainingValue, type Manifest, EXPORT_APP } from './archive';
+import { canonicalDataJson, ARCHIVE_EXTRA_COLUMNS, TRAINING_EXPORT_TABLES, trainingRows, trainingTable, trainingColumns, type ExportData, type TrainingTable, type TrainingValue, type Manifest, EXPORT_APP, manifestJson } from './archive';
 import { MEASUREMENT_UNITS, measurementUnit } from '../bodyProgress/measurements';
 import { sha256Hex } from './sha256';
 import { buildZip, type ZipEntry } from './zip';
@@ -239,9 +239,9 @@ export interface BuiltFullExport {
 }
 
 /** Archive complète : même `data.json` et même manifeste que l'export habituel, plus `contenu.json` et un CSV par table. */
-export function buildFullExport(data: ExportData, options: { readonly date: string; readonly sv: number; readonly appVersion: string }): Promise<BuiltFullExport> {
+export function buildFullExport(data: ExportData, options: { readonly date: string; readonly sv: number; readonly appVersion: string; readonly resetHorizon?: string | null }): Promise<BuiltFullExport> {
   const dataBytes = encode(canonicalDataJson(data));
-  const manifest: Manifest = { app: EXPORT_APP, sv: options.sv, date: options.date, sha256: sha256Hex(dataBytes) };
+  const manifest: Manifest = { app: EXPORT_APP, sv: options.sv, date: options.date, sha256: sha256Hex(dataBytes), ...(options.resetHorizon ? { resetHorizon: options.resetHorizon } : {}) };
   const csv: ZipEntry[] = [];
   const files: FullExportFile[] = [];
   const described: { file: string; table: string; rows: number; columns: { name: string; type: string; unit: string | null }[] }[] = [];
@@ -265,7 +265,7 @@ export function buildFullExport(data: ExportData, options: { readonly date: stri
     excluded: [...FULL_EXPORT_EXCLUDED],
   };
   const entries: ZipEntry[] = [
-    { name: 'manifest.json', data: encode(JSON.stringify(manifest)) },
+    { name: 'manifest.json', data: encode(manifestJson(manifest)) },
     { name: 'contenu.json', data: encode(JSON.stringify(content)) },
     { name: 'data.json', data: dataBytes },
     ...csv,
