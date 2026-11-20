@@ -2,7 +2,7 @@
 export const backupRestoreFr = {
   folderIos: 'Dossier de l’app (non visible dans Fichiers)',
   errorSyncBusy: 'Une synchronisation est en cours, réessaie. Rien n’a été modifié.',
-  errorBusy: 'Une mise à jour des notifications est en cours, réessaie dans un instant. Rien n’a été modifié.',
+  errorBusy: 'Une autre opération est en cours (sauvegarde, restauration ou mise à jour des notifications) : réessaie dans un instant. Rien n’a été modifié.',
   errorDbOpen: 'La base n’a pas pu être fermée pour la restauration. Rien n’a été modifié : réessaie.',
   errorBeforeReset: 'Cette sauvegarde date d’avant « Repartir de zéro » : elle ne peut plus être restaurée. Rien n’a été modifié.',
   retry: 'Réessayer',
